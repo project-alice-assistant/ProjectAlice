@@ -17,7 +17,7 @@ Well, it's written in Python but it's been made for Snips that is meant for Rasp
 
 
 # Other repositories
-- [Project Alice installer](https://github.com/Psychokiller1888/ProjectAliceInstaller)
+- [Project Alice Installer](https://github.com/Psychokiller1888/ProjectAliceInstaller)
 - [Project Alice Modules](https://github.com/Psychokiller1888/ProjectAliceModules)
 - [Project Alice Amazon Polly and Google WaveNet cached TTS speeches](https://github.com/Psychokiller1888/ProjectAliceCachedSpeeches/tree/Amazon-EnUs-Joanna)
 
