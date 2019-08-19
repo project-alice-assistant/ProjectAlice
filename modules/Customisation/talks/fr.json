@@ -1,0 +1,25 @@
+{
+	"goingOutQuestion": {
+		"default": [
+			"Vous sortez? Dois-je m'occuper de la maison pendant ce temps?",
+			"Vous quittez tous la maison? Vous voulez que je m'occupe de tout prendant ce temps?"
+		]
+	},
+	"confirmGoingOut": {
+		"default": [
+			"Ok, je m'en occupe! A plus tard!",
+			"Volontiers! Passez du bon temps!"
+		]
+	},
+	"doorTriggeredAlarm": {
+		"default": [
+			"Hello! Vous rentrez à la maison?"
+		]
+	},
+	"welcomeBack": {
+		"default": [
+			"Bienvenu à la maison! J'espère que la sortie se soit bien passée!",
+			"Contente que vous soyez de retours!"
+		]
+	}
+}

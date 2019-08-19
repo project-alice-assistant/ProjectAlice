@@ -1,0 +1,363 @@
+{
+	"newModule": {
+		"default": [
+			"Un nouveau module de type {} essaie de se connecter, est-ce que tu veux l'ajouter à mes appareils?"
+		]
+	},
+	"confirmUnregister": {
+		"default": [
+			"J'ai supprimé cet appareil de ma liste"
+		]
+	},
+	"errorUnregister": {
+		"default": [
+			"Cet appareil n'était pas enregistré sur mon réseau"
+		]
+	},
+	"unregisterInstructions": {
+		"default": [
+			"Débranche l'appareil que tu veux supprimer, attend 5 secondes et rebranche le"
+		]
+	},
+	"whichRoom": {
+		"default": [
+			"Dans quelle pièce sera placé cet appareil?",
+			"D'accord! Dans quelle pièce vas-tu installer cet appareil?"
+		]
+	},
+	"confirmGlobalStop": {
+		"default": [
+			"Ok",
+			"Ok, j'arrête",
+			"Compris"
+		]
+	},
+	"confirmIgnore": {
+		"default": [
+			"Ok, je l'ignore!"
+		]
+	},
+	"confirmAddition": {
+		"default": [
+			"Ok, j'ai ajouté cet appareil",
+			"Le nouvel appareil a été ajouté"
+		]
+	},
+	"busy": {
+		"default": [
+			"Désolée, je suis occupée pour le moment",
+			"Une seconde, je suis occupée pour le moment",
+			"Attend un moment, je suis occupée"
+		]
+	},
+	"langSwitch": {
+		"default": [
+			"Pas de problème, on parle en {}!",
+			"Je parle {} aussi, pas de soucis",
+			"Oui volontier! Je parle aussi {}!"
+		],
+		"short": [
+			"Ok",
+			"Oui"
+		]
+	},
+	"noDestinationLanguage": {
+		"default": [
+			"Désolée, je ne sais pas vers quelle langue changer"
+		]
+	},
+	"langNotSupported": {
+		"default": [
+			"Je suis désolée mais je ne parle pas {}",
+			"Pardon mais je connais pas le {}"
+		]
+	},
+	"langSwitchFailed": {
+		"default": [
+			"Je suis désolée mais je n'ai pas pu changer la langue",
+			"Désolée, le changement de langue a échoué"
+		]
+	},
+	"noActiveModule": {
+		"default": [
+			"Désolée, il n'y a pas de module pour gérer cette requête"
+		],
+		"short": [
+			"Aucun module actif"
+		]
+	},
+	"noProjectIdSet": {
+		"default": [
+			"Je ne peux pas, il n'y a pas de projet renseigné dans mes configurations"
+		]
+	},
+	"noAssistantUpdateOffline": {
+		"default": [
+			"Désolée mais je ne peux pas me mettre à jour en étant hors ligne"
+		]
+	},
+	"confirmAssistantUpdate": {
+		"fr": [
+			"Ok, je le fais! ça va prendre un peu de temps!",
+			"D'accord, je met à jours mes paquets! ça prendra un peu de temps!"
+		]
+	},
+	"bundleUpdateNoCredentials": {
+		"default": [
+			"Je ne peux pas, tu ne m'as pas donné tes informations de connexion à la console Snips"
+		]
+	},
+	"confirmBundleUpdate": {
+		"default": [
+			"Ok, j'ai bien mis à jour mes paquets",
+			"C'est fait, je me suis bien mise à jour"
+		],
+		"short": [
+			"C'est fait"
+		]
+	},
+	"bundleUpdateFailed": {
+		"default": [
+			"Désolée, je n'ai pas pu mettre à jours mes paquets",
+			"Je suis désolée, quelque chose n'a pas fonctionné"
+		],
+		"short": [
+			"Erreur"
+		]
+	},
+	"confirmReboot": {
+		"default": [
+			"Es-tu sûr de vouloir redémarrer?",
+			"Redémarrer prend du temps, es-tu sûr?"
+		]
+	},
+	"askRebootModules": {
+		"default": [
+			"Veux tu aussi redémarrer mes modules?",
+			"Dois-je aussi redémarrer mes modules externes?"
+		]
+	},
+	"confirmRebooting": {
+		"default": [
+			"Ok, je redémarre maintenant!",
+			"Je redémarre, à tout de suite!"
+		]
+	},
+	"confirmRebooted": {
+		"default": [
+			"Je viens de me relancer comme tu me l'a demandé",
+			"Re-bonjour! Je viens de redémarrer"
+		]
+	},
+	"confirmRebootingModules": {
+		"default": [
+			"Re! Je redémarre maintenant tous mes modules externes comme demandé"
+		]
+	},
+	"abortReboot": {
+		"default": [
+			"D'accord, annulation du rédemarrage",
+			"Ok, j'arrête le redémarrage"
+		]
+	},
+	"takingOverSonos": {
+		"default": [
+			"Ok, une seconde s'il te plait...",
+			"Facile, je le fait de suite!",
+			"Bonne idée, je prend possession de Sonos!"
+		],
+		"short": [
+			"Ok",
+			"Entendu"
+		]
+	},
+	"sorryNoSonoHere": {
+		"default": [
+			"Désolée mais il n'y a pas de Sonos ici",
+			"Je ne peux, je ne trouve pas de Sonos",
+			"Impossible de trouver un Sonos ici"
+		],
+		"short": [
+			"Je ne peux pas"
+		]
+	},
+	"retreatSonos": {
+		"default": [
+			"D'accord, je libère Sonos",
+			"Sonos, sois libre!",
+			"Sonos! Je te libère de mon emprise!"
+		],
+		"short": [
+			"Ok, c'est fait!",
+			"Ok"
+		]
+	},
+	"confirmSonosAction": {
+		"default": [
+			"J'ai fais comme demandé",
+			"Je suis là!",
+			"A vos ordres!"
+		],
+		"short": [
+			"Ok"
+		]
+	},
+	"confirmRoomChange": {
+		"default": [
+			"Ok, j'ai changé",
+			"Ok, j'ai bougé",
+			"J'ai mis à jours ma configuration"
+		]
+	},
+	"displayRoomNotSupported": {
+		"default": [
+			"Désolé mais l'affichage dans les autres pièces n'est pas encore supporté",
+			"Malheureusement, je suis incapable d'effectuer cette tâche"
+		]
+	},
+	"confirmDisplayingInfos": {
+		"default": [
+			"Ok, c'est affiché !",
+			"Ok, c'est fait",
+			"C'est affiché comme demandé !"
+		]
+	},
+	"whatToDisplay": {
+		"default": [
+			"Que voulez-vous que j'affiche ?",
+			"Que dois-je afficher ?"
+		]
+	},
+	"internetBack": {
+		"default": [
+			"J'ai pu me reconnecter à internet, je change pour un A S R en ligne"
+		]
+	},
+	"internetLost": {
+		"default": [
+			"J'ai perdu la connexion à internet. J'ai changé l'A S R sur snips"
+		]
+	},
+	"listeningAgain": {
+		"default": [
+			"Je suis de retour pour toi",
+			"Le temps est écoulé, j'écoute de nouveau"
+		]
+	},
+	"confirmDeviceAddingMode": {
+		"default": [
+			"Ok, j'attend la connexion du nouvelle appareil pendant 5 minutes, tu peux le brancher maintenant"
+		]
+	},
+	"requireTasmotaModule": {
+		"default": [
+			"Je suis désolée, mais pour ça le module Tasmota doit être actif"
+		]
+	},
+	"whatHardware": {
+		"default": [
+			"Ok, quel type d'appareil?",
+			"Oui, mais quel genre d'appareil?"
+		]
+	},
+	"whatESP": {
+		"default": [
+			"Et quel genre d'ESP? Bouton, PIR, etc?"
+		]
+	},
+	"connectESPForFlashing": {
+		"default": [
+			"Super, je peux m'en occuper entièrement! Connecte l'appareil en mode flash directement dans un de mes ports USB"
+		]
+	},
+	"espFlashedUnplugReplug": {
+		"default": [
+			"Le flash s'est bien passé! Je vais maintenant configurer l'appareil pour toi. Débranche et rebranche le s'il te plait"
+		]
+	},
+	"espFoundReadyForConf": {
+		"default": [
+			"J'ai trouvé, merci! Je le configure!"
+		]
+	},
+	"usbDeviceFound": {
+		"default": [
+			"Je l'ai trouvé! Relaxe un moment, ça va prendre un peu de temps!"
+		]
+	},
+	"noESPFound": {
+		"default": [
+			"Je n'ai pas pu trouver d'appareil ESP sur mes ports USB, j'annule l'ajout d'appareil"
+		]
+	},
+	"espFailed": {
+		"default": [
+			"Je n'ai pas pu installer ton ESP, je suis vraiment désolée"
+		]
+	},
+	"unknownHardware": {
+		"default": [
+			"Désolée, je ne connais pas ce type d'appareil"
+		]
+	},
+	"espFlashingDone": {
+		"default": [
+			"Ok, j'ai flashé ton appareil avec Tasmota. Tu peux le débrancher et le mettre en fonction"
+		]
+	},
+	"whatConfig": {
+		"default": [
+			"Tu ne pas mentionné de configuration, laquelle veux-tu?"
+		]
+	},
+	"noStartWithoutAdmin": {
+		"default": [
+			"Ok, j'annule mais sans utilisateur je ne peux pas démarrer, je m'eclipse!"
+		]
+	},
+	"addAdminUser": {
+		"default": [
+			"Il semblerait qu'il n'y ai pas encore d'utilisateur défini. Faisons cela ensemble! Quel est ton nom?"
+		]
+	},
+	"confirmUsername": {
+		"default": [
+			"Ai-je bien compris? Ton nom est {}?"
+		]
+	},
+	"confirmNewUser": {
+		"default": [
+			"D'accord {}, je t'ai rajouté au groupe administrateur"
+		]
+	},
+	"soWhatsTheName": {
+		"default": [
+			"Désolée pour mon erreur, quel est ton nom alors? Tu peux aussi l'épeler"
+		]
+	},
+	"userAlreadyExist": {
+		"default": [
+			"Il semblerait qu'il y ai déjà un utilisateur nommé {}. J'ai besoin d'un autre nom s'il te plait"
+		]
+	},
+	"addUserWakeword": {
+		"default": [
+			"Ok {}, je t'ai ajouté. Si tu veux que je reconnaisse ta voix tu dois créé un mot personnalisé. Ce n'est pas obligatoire mais recommandé. Tu veux le faire ?"
+		]
+	},
+	"addWakewordDenied": {
+		"default": [
+			"Ok, j'ai compris, soit juste averti que je ne serai pas capable de savoir quand tu es rentré, en train de dormir par exemple"
+		]
+	},
+	"addWakewordAccepted": {
+		"default": [
+			"<s>Ok, j'ai besoin de trois échantillons où tu dis <break time=\"100ms\"/> \"Hey Alice\" <break time=\"150ms\"/></s><s>Tu dois être dans un environnement silencieux pour que ça fonctionne, le bruit ou les parasites rendent l'enregistrement inutilisable</s><s>On y va, je t'écoute !</s>"
+		]
+	},
+	"howWasTheCapture": {
+		"default": [
+			"J'ai joué la version arrangée de ton mot personnalisé. ça te semble bon ? Dans le cas contraire je peux ré-arranger l'échantillon, dis moi si c'est trop cour ou trop long"
+		]
+	}
+}

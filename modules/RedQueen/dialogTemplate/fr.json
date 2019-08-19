@@ -1,0 +1,210 @@
+{
+	"module": "RedQueen",
+	"icon": "drink",
+	"description": "Discussions avec la RedQueen",
+	"slotTypes": [
+		{
+			"name": "UserState",
+			"matchingStrictness": null,
+			"automaticallyExtensible": false,
+			"useSynonyms": true,
+			"values": [
+				{
+					"value": "onGoingBed",
+					"synonyms": [
+						"se coucher",
+						"me coucher",
+						"nous coucher",
+						"aller dormir",
+						"s'endormir",
+						"au lit"
+					]
+				},
+				{
+					"value": "onLeavingHome",
+					"synonyms": [
+						"quittons",
+						"partir",
+						"quitter la maison",
+						"quitter l'appartement"
+					]
+				},
+				{
+					"value": "onReturningHome",
+					"synonyms": [
+						"rentré",
+						"revenu",
+						"rentré à la maison"
+					]
+				},
+				{
+					"value": "onWatchingTV",
+					"synonyms": [
+						"regarder la télévision",
+						"télévision",
+						"télé",
+						"tévé",
+						"T V"
+					]
+				},
+				{
+					"value": "onEating",
+					"synonyms": [
+						"manger",
+						"se restaurer",
+						"s'attabler",
+						"se sustanter"
+					]
+				},
+				{
+					"value": "onMakeup",
+					"synonyms": [
+						"maquille",
+						"maquiller",
+						"me fais belle",
+						"me fais beau"
+					]
+				},
+				{
+					"value": "onCooking",
+					"synonyms": [
+						"cuisiner",
+						"faire à manger"
+					]
+				}
+			]
+		},
+		{
+			"name": "PersonDesignation",
+			"matchingStrictness": null,
+			"automaticallyExtensible": true,
+			"useSynonyms": true,
+			"values": [
+				{
+					"value": "i",
+					"synonyms": [
+						"je",
+						"moi"
+					]
+				},
+				{
+					"value": "we",
+					"synonyms": [
+						"nous",
+						"on"
+					]
+				}
+			]
+		}
+	],
+	"intents": [
+		{
+			"name": "WhoAreYou",
+			"description": "L'utilisateur veut en savoir plus sur l'assistant",
+			"enabledByDefault": true,
+			"utterances": [
+				"qu'est-ce que t'es",
+				"dis moi ce que tu es",
+				"dites-moi qui vous êtes",
+				"qui tu es putain",
+				"qui diable êtes-vous",
+				"qu'est-ce que tu es",
+				"qu'es-tu",
+				"qui es-tu"
+			],
+			"slots": []
+		},
+		{
+			"name": "GoodMorning",
+			"description": "L'utilisateur souhaite un bonjour à l'assistant",
+			"enabledByDefault": true,
+			"utterances": [
+				"s'il te plaît réveille-toi Alice",
+				"Réveille-toi Alice s'il te plaît",
+				"réveille toi s'il te plait",
+				"réveilles-toi s'il te plait",
+				"ouvre les yeux c'est le matin",
+				"c'est le matin alice",
+				"bonjour alice",
+				"il est temps de se réveiller alice",
+				"alice réveille-toi",
+				"Réveille-toi Alice",
+				"réveille toi la tête endormie",
+				"bon début de journée",
+				"bonjour le matin pour se réveiller",
+				"il est temps de se lever bonjour",
+				"l'heure de se lever",
+				"Bonjour"
+			],
+			"slots": []
+		},
+		{
+			"name": "GoodNight",
+			"description": "L'utilisateur souhaite une bonne nuit à l'assistant",
+			"enabledByDefault": true,
+			"utterances": [
+				"alice il est temps de dormir",
+				"passe une bonne nuit alice",
+				"passe une bonne nuit",
+				"je te souhaite une bonne nuit alice",
+				"je vous souhaite une bonne nuit, faites de beaux rêves",
+				"je vous souhaite une bonne nuit de sommeil",
+				"je vous souhaite une bonne nuit de sommeil serré",
+				"bonne nuit de sommeil serré",
+				"Bonne nuit, dors bien",
+				"dors bien alice",
+				"je te souhaite une bonne nuit",
+				"temps pour dormir, bonne nuit",
+				"bonne nuit dors bien",
+				"nuit nocturne",
+				"bonne nuit",
+				"bonne nuit"
+			],
+			"slots": []
+		},
+		{
+			"name": "ChangeUserState",
+			"description": "",
+			"enabledByDefault": true,
+			"utterances": [
+				"{on:=>Who} va {se coucher:=>State}",
+				"allons {au lit:=>State}",
+				"il est temps d'aller {au lit:=>State}",
+				"{nous:=>Who} somme en train de {cuisiner:=>State}",
+				"{je:=>Who} me {maquille:=>State}",
+				"{je:=>Who} suis en train de me {maquiller:=>State}",
+				"{je:=>Who} vais {au lit:=>State}",
+				"{je:=>Who} vais aller {me coucher:=>State}",
+				"{nous:=>Who} allons {nous coucher:=>State}",
+				"{nous:=>Who} allons aller {au lit:=>State}",
+				"on regarde la {télévision:=>State}",
+				"passe en mode {télé:=>State} s'il te plait",
+				"{nous:=>Who} {quittons:=>State} la maison",
+				"{nous:=>Who} {quittons:=>State} l'appartement",
+				"{on:=>Who} {part:=>State} de la maison",
+				"on va {manger:=>State}",
+				"on s'apprête à {partir:=>State}",
+				"on va {s'endormir:=>State}",
+				"allons {manger:=>State}",
+				"{on:=>Who} est {rentré:=>State}",
+				"{on:=>Who} va regarder {la télé:=>State}"
+			],
+			"slots": [
+				{
+					"name": "State",
+					"description": null,
+					"required": false,
+					"type": "UserState",
+					"missingQuestion": ""
+				},
+				{
+					"name": "Who",
+					"description": null,
+					"required": false,
+					"type": "PersonDesignation",
+					"missingQuestion": ""
+				}
+			]
+		}
+	]
+}

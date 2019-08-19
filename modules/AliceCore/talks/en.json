@@ -1,0 +1,402 @@
+{
+	"newModule": {
+		"default": [
+			"A new module of type {} is trying to connect, do you want to add it to your devices?"
+		]
+	},
+	"confirmUnregister": {
+		"default": [
+			"I have unregistered this device"
+		]
+	},
+	"errorUnregister": {
+		"default": [
+			"The device wasn't registered on my network"
+		]
+	},
+	"unregisterInstructions": {
+		"default": [
+			"Please unplug the device you want to unregister, wait for 5 seconds and plug it back"
+		]
+	},
+	"whichRoom": {
+		"default": [
+			"In which room is this device going to be placed?",
+			"Sure, in what room are you placing this new device?"
+		]
+	},
+	"confirmGlobalStop": {
+		"default": [
+			"Ok",
+			"Done",
+			"Ok I stop"
+		]
+	},
+	"confirmIgnore": {
+		"default": [
+			"Ok, ignoring this device"
+		]
+	},
+	"confirmAddition": {
+		"default": [
+			"Ok, I have added this device",
+			"I added this new device"
+		]
+	},
+	"busy": {
+		"default": [
+			"Sorry, but I'm busy at the moment, please wait",
+			"Wait a second, I'm busy at the moment",
+			"Please wait, I'm kindda busy right now"
+		]
+	},
+	"langSwitch": {
+		"default": [
+			"Ok, let's talk in {} then!",
+			"Sure, I can talk in {}",
+			"No problem, I'm switching to {}"
+		],
+		"short": [
+			"Ok",
+			"Yep"
+		]
+	},
+	"noDestinationLanguage": {
+		"default": [
+			"I'm sorry, but I don't what language to switch to"
+		]
+	},
+	"langNotSupported": {
+		"default": [
+			"I'm sorry but I don't speak {}",
+			"Sorry but I don't know {}"
+		]
+	},
+	"langSwitchFailed": {
+		"default": [
+			"I'm sorry but I couldn't switch the language",
+			"Sorry, the language switch failed for some reason"
+		]
+	},
+	"noActiveModule": {
+		"default": [
+			"Sorry, you don't have any active module to handle this request"
+		],
+		"short": [
+			"No active module"
+		]
+	},
+	"noProjectIdSet": {
+		"default": [
+			"I can't, there's no project id set in my configurations"
+		]
+	},
+	"noAssistantUpdateOffline": {
+		"default": [
+			"I'm sorry but I can't do any update while being offline"
+		]
+	},
+	"confirmAssistantUpdate": {
+		"default": [
+			"Ok, will do! Note that it might take a while!",
+			"Sure, I'll update my bundles. This will take some time!"
+		]
+	},
+	"bundleUpdateNoCredentials": {
+		"default": [
+			"Sorry, I can't, you haven't provided me with the snips console credentials"
+		]
+	},
+	"confirmBundleUpdate": {
+		"default": [
+			"Ok, I just updated my bundles",
+			"My bundles just updated"
+		],
+		"short": [
+			"Done"
+		]
+	},
+	"bundleUpdateFailed": {
+		"default": [
+			"Sorry, I couldn't update my bundles",
+			"I'm sorry, something went wrong updating my bundles"
+		],
+		"short": [
+			"Error"
+		]
+	},
+	"confirmReboot": {
+		"default": [
+			"Are you sure you want to reboot?",
+			"Rebooting takes time, are you sure?"
+		]
+	},
+	"askRebootModules": {
+		"default": [
+			"Do you also want to reboot my external modules?",
+			"Shall I also reboot my external modules?"
+		]
+	},
+	"confirmRebooting": {
+		"default": [
+			"Ok, rebooting now!",
+			"Going down, see you soon again"
+		]
+	},
+	"confirmRebooted": {
+		"default": [
+			"I have just rebooted as you asked",
+			"Hi again! I just rebooted!"
+		]
+	},
+	"confirmRebootingModules": {
+		"default": [
+			"I just rebooted, I'm now rebooting all the external modules",
+			"Hi again! Rebooting all the external modules as asked"
+		]
+	},
+	"abortReboot": {
+		"default": [
+			"Ok, aborting reboot",
+			"Ok, I'm cancelling the reboot"
+		]
+	},
+	"takingOverSonos": {
+		"default": [
+			"Ok, just a second!",
+			"That's gonna be easy, taking over Sonos",
+			"Sure, taking over Sonos!"
+		],
+		"short": [
+			"Ok",
+			"Sure"
+		]
+	},
+	"sorryNoSonoHere": {
+		"default": [
+			"Sorry, no Sonos system here",
+			"I can't, there's no Sonos here",
+			"I can't find any Sonos device here"
+		],
+		"short": [
+			"I can't"
+		]
+	},
+	"retreatSonos": {
+		"default": [
+			"Ok, letting Sonos go",
+			"Sonos! Be free!",
+			"Sonos! I release you from my control!"
+		],
+		"short": [
+			"Ok",
+			"Done"
+		]
+	},
+	"confirmSonosAction": {
+		"default": [
+			"I did as asked",
+			"Here I am now",
+			"I did as you wanted"
+		],
+		"short": [
+			"Ok"
+		]
+	},
+	"confirmRoomChange": {
+		"default": [
+			"Ok, I changed it",
+			"Sure, I moved",
+			"I updated my configuration"
+		]
+	},
+	"displayRoomNotSupported": {
+		"default": [
+			"Sorry, but displaying on other rooms is not yet supported",
+			"I unfortunately can't do that yet"
+		]
+	},
+	"confirmDisplayingInfos": {
+		"default": [
+			"Ok, displayed!",
+			"Ok, done",
+			"Displaying as asked!"
+		]
+	},
+	"whatToDisplay": {
+		"default": [
+			"What do you want to display?",
+			"What is it I should display?",
+			"What should I display?"
+		]
+	},
+	"internetBack": {
+		"default": [
+			"I could connect back to internet, switching back to online ASR"
+		]
+	},
+	"internetLost": {
+		"default": [
+			"I lost internet connection and fell back to Snips ASR"
+		]
+	},
+	"listeningAgain": {
+		"default": [
+			"Hey, just letting you know I'm listening again",
+			"I'm back to listening for you"
+		]
+	},
+	"confirmDeviceAddingMode": {
+		"default": [
+			"Ok, I'm waiting on the new device for the next 5 minutes, you can now power it"
+		]
+	},
+	"requireTasmotaModule": {
+		"default": [
+			"I'm sorry, but for that I need the Tasmota module to be enabled"
+		]
+	},
+	"whatHardware": {
+		"default": [
+			"What kind of device do you want to add?",
+			"Sure, what type of device?"
+		]
+	},
+	"whatESP": {
+		"default": [
+			"And what kind of ESP device? Switch, PIR, etc?"
+		]
+	},
+	"connectESPForFlashing": {
+		"default": [
+			"Great, I can handle the entire process. Connect the ESP device in flash mode directly in one of my USB ports"
+		]
+	},
+	"espFlashedUnplugReplug": {
+		"default": [
+			"The flashing process is done! I will now configure the device for you. Please, unplug and replug it!"
+		]
+	},
+	"espFoundReadyForConf": {
+		"default": [
+			"Found it, thank you! Now configuring it!"
+		]
+	},
+	"usbDeviceFound": {
+		"default": [
+			"Got it! Hang on tight, this is gonna take a while!"
+		]
+	},
+	"noESPFound": {
+		"default": [
+			"I couldn't find any ESP device on my USB ports, I'm aborting the device addition"
+		]
+	},
+	"espFailed": {
+		"default": [
+			"Installing your esp device failed unfortunately, I'm really sorry for that"
+		]
+	},
+	"unknownHardware": {
+		"default": [
+			"I'm sorry, I don't know this type of hardware"
+		]
+	},
+	"espFlashingDone": {
+		"default": [
+			"Ok, I have flashed your esp device with Tasmota, you can now unplug it and power it"
+		]
+	},
+	"whatConfig": {
+		"default": [
+			"You didn't specify any configuration, so tell me, which one?",
+			"Which configuration are you looking for?"
+		]
+	},
+	"noStartWithoutAdmin": {
+		"default": [
+			"Ok, canceling but without user I cannot start, going down"
+		]
+	},
+	"addAdminUser": {
+		"default": [
+			"Welcome to Project Alice! There seems to be no user defined yet, let's do this! Please, tell me your name."
+		]
+	},
+	"confirmUsername": {
+		"default": [
+			"Did I understand correctly? Your name is {}?"
+		]
+	},
+	"confirmNewUser": {
+		"default": [
+			"Ok {}, I have added you to the administrator group"
+		]
+	},
+	"soWhatsTheName": {
+		"default": [
+			"Sorry for my mistake, what's your name then? You can also spell it"
+		]
+	},
+	"userAlreadyExist": {
+		"default": [
+			"There seems to be a user named {} already existing. I need another name please"
+		]
+	},
+	"addUserWakeword": {
+		"default": [
+			"Ok {}, I have added you! If you want me to recognize you based on your voice you need to create a personal wakeword. It is not obligatory but recommended. Do you want to do that?"
+		]
+	},
+	"addWakewordDenied": {
+		"default": [
+			"Ok, I understand, keep in mind I won't be able to define if you are home, sleeping, play games or remember stuff about you"
+		]
+	},
+	"addWakewordAccepted": {
+		"default": [
+			"<s>Ok! I need three samples of you calling me by saying <break time=\"100ms\"/> \"Hey Alice\" <break time=\"150ms\"/></s><s>Remember to be in a calm environement for this to work, noise or parasites make this impossible</s><s>Let's do this, call me!</s>"
+		]
+	},
+	"howWasTheCapture": [
+		"I just played a trimmed version of you speaking the hotword. Was it ok? If not I can trim it more or less, it needs to be cut pretty close to your speaking... Say \"Yes\", \"Too short\" or \"too long\""
+	],
+	"howWasThisCapture": [
+		"How was it? Say \"Yes\", \"Too short\" or \"too long\""
+	],
+	"howWasTheCaptureNow": [
+		"And now? Say \"Yes\", \"Too short\" or \"too long\""
+	],
+	"sampleOk": [
+		"<s>Great, good to hear, {} to go!</s><s>Call me again by saying <break time=\"100ms\"/> \"Hey Alice\" <break time=\"150ms\"/></s>",
+		"<s>Cool, just {} to go!</s><s>Call me again by saying <break time=\"100ms\"/> \"Hey Alice\" <break time=\"150ms\"/></s>",
+		"<s>I need {} more.</s><s>Call me again by saying <break time=\"100ms\"/> \"Hey Alice\" <break time=\"150ms\"/></s>"
+	],
+	"sampleUserSaidNo": [
+		"What no? Longer, shorter or yes..."
+	],
+	"wakewordCaptureDone": [
+		"You did it, I have the three samples and you should be now able to call me by my name and I should be able to recognize you! Enjoy my services!"
+	],
+	"cancellingWakewordCapture": [
+		"Ok, let's forget about it for now. You can retry when the environement is calmer. For now you can call me by saying <break time=\"100ms\"/> \"Hey Snips\", but I won't be able to recognize you though."
+	],
+	"addUserWhatsTheName": [
+		"I can do that! Tell me his name please!",
+		"Sure, just tell me his name",
+		"No problemo, I need you to give me his name though"
+	],
+	"addUserWhatAccessLevel": [
+		"What access level do you want to grant? There's admin, default, kid, worker and guest",
+		"What permissions do you grant? You have the choice between admin, default, kid, worker and guest",
+		"Tell me what access level I should set? Admin? Default? Kid, worker or guest?"
+	],
+	"addUserConfirmUsername": [
+		"Ok, did if I understood correctly the name is {}?",
+		"Did I understand correctly? The name is {}",
+		"Am I correct? The name is {}"
+	],
+	"addUserConfirmed": [
+		"Ok, I have added {} as {}! If you want me to recognize this user based on his voice he needs to create a personal wakeword. It is not obligatory but recommended. Do you want to do that?"
+	]
+}

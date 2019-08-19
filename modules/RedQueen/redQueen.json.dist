@@ -1,0 +1,16 @@
+{
+	"infos": {
+		"name": "Alice",
+		"born": "29.01.2018",
+		"mood": "happy"
+	},
+	"stats": {
+		"happiness": 100,
+		"boredom": 0,
+		"anger": 0,
+		"frustration": 0,
+		"tiredness": 0
+	},
+	"users": {
+	}
+}

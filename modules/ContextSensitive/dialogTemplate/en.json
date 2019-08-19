@@ -1,0 +1,104 @@
+{
+	"module": "ContextSensitive",
+	"icon": "restart",
+	"description": "Provides commands for context sensitive dialog",
+	"slotTypes": [],
+	"intents": [
+		{
+			"name": "DeleteThis",
+			"description": "In a context sensitive dialog, this is used to make the assistant forget something that it has stored",
+			"enabledByDefault": true,
+			"utterances": [
+				"please don't remember this",
+				"don't this remember this please",
+				"remove this please",
+				"please remove this",
+				"please don't remember this anymore",
+				"forget about this please",
+				"forget this please",
+				"delete this please",
+				"please delete this",
+				"please forget about this",
+				"please forget this",
+				"don't remember this anymore",
+				"don't remember this",
+				"delete this",
+				"forget about this"
+			],
+			"slots": []
+		},
+		{
+			"name": "RepeatThis",
+			"description": "",
+			"enabledByDefault": true,
+			"utterances": [
+				"what did you say",
+				"what did you just say",
+				"sorry what did you say",
+				"i did not hear sorry",
+				"sorry what did you just say",
+				"could you say it again",
+				"sorry I did not hear it",
+				"i did not hear that",
+				"repeat this",
+				"please repeat that",
+				"repeat that please",
+				"could you repeat what you just said",
+				"can you please repeat what you just said",
+				"say it again please",
+				"please say it again",
+				"say it again",
+				"say again",
+				"repeat what you just said",
+				"please repeat what you just said",
+				"can you please repeat",
+				"could you please repeat",
+				"can you repeat please"
+			],
+			"slots": []
+		},
+		{
+			"name": "AnswerYesOrNo",
+			"description": "User answers yes or no",
+			"enabledByDefault": false,
+			"utterances": [
+				"{not at all:=>Answer}",
+				"{sure:=>Answer}",
+				"{nope:=>Answer}",
+				"{no thank you:=>Answer}",
+				"{no thanks:=>Answer}",
+				"{yes please:=>Answer}",
+				"{yeah:=>Answer}",
+				"{yep:=>Answer}",
+				"{no:=>Answer}",
+				"{yes:=>Answer}"
+			],
+			"slots": [
+				{
+					"name": "Answer",
+					"description": null,
+					"required": false,
+					"type": "AnswerYesNo",
+					"missingQuestion": ""
+				}
+			]
+		},
+		{
+			"name": "EditThis",
+			"description": "",
+			"enabledByDefault": true,
+			"utterances": [
+				"please edit this",
+				"change this please",
+				"can you edit this please",
+				"can we change this",
+				"please replace this",
+				"this needs to be changed",
+				"change that",
+				"please edit that",
+				"i need you to edit this"
+			],
+			"slots": []
+		}
+	]
+}

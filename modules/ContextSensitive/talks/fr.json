@@ -1,0 +1,19 @@
+{
+	"fromWhatCurrency": {
+		"default": [
+			"De quelle monaie veux-tu convertir?",
+			"A partir de quelle monaie?",
+			"Oui, mais de quelle monaie de base?"
+		]
+	},
+	"noServer": {
+		"default": [
+			"Désolée mais je ne peux pas accéder aux dernières données en ligne"
+		]
+	},
+	"answer": {
+		"default": [
+			"{} {} vaut {} {}"
+		]
+	}
+}

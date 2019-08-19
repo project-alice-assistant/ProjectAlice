@@ -1,0 +1,13 @@
+{
+	"nothing": {
+		"default": [
+			"Sorry, but I didn't say anything",
+			"I didn't say anything, sorry"
+		]
+	},
+	"didntUnderstand": {
+		"default": [
+			"I don't know what you are talking about"
+		]
+	}
+}
