@@ -1,0 +1,68 @@
+{
+	"noAccess": {
+		"default": [
+			"Sorry, I can't, you don't have enough privileges to do that",
+			"Not possible, your access level is too low for this"
+		],
+		"short":[
+			"No access"
+		]
+	},
+	"unknowUser": {
+		"default": [
+			"I'm sorry but I don't know who you are",
+			"Sorry, I can't, I don't know you",
+			"You should call me by my name so I would know who you are"
+		],
+		"short": [
+			"I don't know you"
+		]
+	},
+	"notUnderstood": {
+		"default": [
+			"I'm sorry but I'm not sure I understood what you want",
+			"I did not understand what you want",
+			"Sorry? Can you repeat?",
+			"What??"
+		],
+		"short": [
+			"Sorry?"
+		]
+	},
+	"youreWelcome": {
+		"default": [
+			"You're welcome!",
+			"My pleasure!",
+			"No problem, anytime!"
+		]
+	},
+	"error": {
+		"default": [
+			"Something went wrong, please check my logs"
+		]
+	},
+	"newDeviceAdditionFailed": {
+		"default": [
+			"Sorry, there was a problem adding the new device"
+		]
+	},
+	"newDeviceAdditionSuccess": {
+		"default": [
+			"The new device was found and correctly added!"
+		]
+	},
+	"maxOneAlicePerRoom": {
+		"default": [
+			"I am sorry but you can't have more than one Alice module per room",
+			"I'm so sorry but I can only have one Alice module per room"
+		]
+	},
+	"wakewordCaptured": [
+		"I have captured your wakeword and trimmed it, let's check it",
+		"Ok, captured and trimmed, I'm playing it for you to review",
+		"Got it, I reworked it a little, let's review it"
+	],
+	"isWakewordSampleOk": [
+		"Do you think it was ok? Was it not enough cut or maybe too much?"
+	]
+}

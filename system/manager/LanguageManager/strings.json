@@ -1,0 +1,93 @@
+{
+	"intentSeparator": {
+		"en": [
+			" and also "
+		],
+		"fr": [
+			" et aussi "
+		],
+		"de": [
+			" und auch "
+		]
+	},
+	"inThe": {
+		"en": [
+			"in the room ",
+			"in the ",
+			"in room ",
+			"in "
+		],
+		"fr": [
+			"dans la pièce ",
+			"dans la ",
+			"dans le ",
+			"au "
+		]
+	},
+	"everywhere": {
+		"en": [
+			"everywhere"
+		],
+		"fr": [
+			"partout"
+		],
+		"de": [
+			"überall"
+		]
+	},
+	"+": {
+		"en": [
+			"plus"
+		],
+		"fr": [
+			"plus"
+		],
+		"de": [
+			"plus"
+		]
+	},
+	"-": {
+		"en": [
+			"minus"
+		],
+		"fr": [
+			"moins"
+		],
+		"de": [
+			"minus"
+		]
+	},
+	"*": {
+		"en": [
+			"times"
+		],
+		"fr": [
+			"fois"
+		],
+		"de": [
+			"mal"
+		]
+	},
+	"/": {
+		"en": [
+			"divided by"
+		],
+		"fr": [
+			"divisé par"
+		],
+		"de": [
+			"durch"
+		]
+	},
+	"%": {
+		"en": [
+			"modulo"
+		],
+		"fr": [
+			"modulo"
+		],
+		"de": [
+			"module"
+		]
+	}
+}

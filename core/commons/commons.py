@@ -1,0 +1,279 @@
+# -*- coding: utf-8 -*-
+import inspect
+import json
+import socket
+import time
+from collections import defaultdict
+from contextlib import contextmanager
+from ctypes import *
+from datetime import datetime
+from typing import Any
+
+import functools
+import os
+import warnings
+from paho.mqtt.client import MQTTMessage
+
+import core.base.Managers as managers
+import core.commons.model.Slot as slotModel
+from core.commons.model.PartOfDay import PartOfDay
+
+ERROR_HANDLER_FUNC = CFUNCTYPE(None, c_char_p, c_int, c_char_p, c_int, c_char_p)
+
+def py_error_handler(filename, line, function, err, fmt):
+	pass
+
+c_error_handler = ERROR_HANDLER_FUNC(py_error_handler)
+
+
+@contextmanager
+def shutUpAlsaFFS():
+	asound = cdll.LoadLibrary('libasound.so')
+	asound.snd_lib_error_set_handler(c_error_handler)
+	yield
+	asound.snd_lib_error_set_handler(None)
+
+
+def getFunctionCaller(depth: int = 3):
+	try:
+		return inspect.getmodulename(inspect.stack()[depth][1])
+	except Exception as e:
+		raise
+
+
+def isEqualTranslated(baseString: str, compareTo: str, module: str = 'system') -> bool:
+	"""
+	Compares the basestring to the compareTo string. compareTo string if the key in the strings file
+	If the string in LanguageManager contains more than one value, each value will be compared and True is
+	returned at first match
+
+	:param module: If empty takes the system strings json
+	:param baseString: the base string to compare
+	:param compareTo: the key of the string json to compare to
+	:return:
+	"""
+	strings = managers.LanguageManager.getStrings(compareTo)
+	if strings:
+		if len(strings) == 1:
+			return baseString.strip().lower() == strings[0].strip().lower()
+		else:
+			for string in strings:
+				if baseString.strip().lower() == string.strip().lower():
+					return True
+			return False
+	else:
+		return False
+
+
+def deprecated(func):
+	"""
+	https://stackoverflow.com/questions/2536307/decorators-in-the-python-standard-lib-deprecated-specifically
+	This is a decorator which can be used to mark functions
+	as deprecated. It will result in a warning being emitted
+	when the function is used.
+	"""
+	@functools.wraps(func)
+	def new_func(*args, **kwargs):
+		warnings.simplefilter('always', DeprecationWarning)  # turn off filter
+		warnings.warn("Call to deprecated function {}.".format(func.__name__),
+					  category=DeprecationWarning,
+					  stacklevel=2)
+		warnings.simplefilter('default', DeprecationWarning)  # reset filter
+		return func(*args, **kwargs)
+	return new_func
+
+
+def dictMaxValue(d: dict) -> str:
+	values = list(d.values())
+	keys = list(d.keys())
+	return keys[values.index(max(values))]
+
+
+def rootDir() -> str:
+	return os.path.dirname(os.path.abspath(__file__))  + '/../..'
+
+
+def getDatabaseFile():
+	return 'system/database/data.db'
+
+
+def payload(message: MQTTMessage) -> dict:
+	try:
+		return json.loads(message.payload)
+	except:
+		try:
+			return json.loads(message.payload.decode())
+		except:
+			return {}
+
+
+def parseSlotsToObjects(message: MQTTMessage) -> dict:
+	slots = defaultdict(list)
+	data = payload(message)
+	if 'slots' in data:
+		for slotData in data['slots']:
+			slot = slotModel.Slot(slotData)
+			slots[slot.slotName].append(slot)
+	return slots
+
+
+def parseSlots(message: MQTTMessage) -> dict:
+	data = payload(message)
+	if 'slots' in data:
+		return dict((slot['slotName'], slot['rawValue']) for slot in data['slots'])
+	else:
+		return {}
+
+
+def parseSessionId(message: MQTTMessage) -> Any:
+	data = payload(message)
+	if 'sessionId' in data:
+		return data['sessionId']
+	else:
+		return False
+
+
+def parseCustomData(message: MQTTMessage) -> dict:
+	try:
+		data = payload(message)
+		if 'customData' in data and data['customData']:
+			return json.loads(data['customData'])
+		else:
+			return dict()
+	except:
+		return dict()
+
+
+def parseSiteId(message: MQTTMessage) -> str:
+	data = payload(message)
+	if 'siteId' in data:
+		return data['siteId'].replace('_', ' ') #WTF!! This is highly no no no!!!
+	else:
+		return data['IPAddress'] if 'IPAddress' in data else 'default'
+
+
+def smartSleep(wait: int):
+	startTime = time.time()
+	while time.time() - startTime < wait:
+		continue
+
+
+def clamp(x: float, minimum: float, maximum: float) -> float:
+	return max(minimum, min(x, maximum))
+
+
+def angleToCardinal(angle: float) -> str:
+	if angle > 337.5 or angle <= 22.5:
+		return 'north'
+	elif 22.5 < angle <= 67.5:
+		return 'north east'
+	elif 67.5 < angle <= 112.5:
+		return 'east'
+	elif 112.5 < angle <= 157.5:
+		return 'south east'
+	elif 157.5 < angle <= 202.5:
+		return 'south'
+	elif 202.5 < angle <= 247.5:
+		return 'south west'
+	elif 247.5 < angle <= 292.5:
+		return 'west'
+	elif 292.5 < angle <= 337.5:
+		return 'north west'
+
+
+def partOfTheDay() -> str:
+	hour = int(datetime.now().strftime('%H'))
+
+	if managers.UserManager.checkIfAllUser('sleeping'):
+		return PartOfDay.SLEEPING.value
+	elif 23 <= hour < 5:
+		return PartOfDay.NIGHT.value
+	elif 5 <= hour < 7:
+		return PartOfDay.EARLY_MORNING.value
+	elif 7 <= hour < 12:
+		return PartOfDay.MORNING.value
+	elif 12 <= hour < 18:
+		return PartOfDay.AFTERNOON.value
+	else:
+		return PartOfDay.EVENING.value
+
+
+def isYes(msg: MQTTMessage) -> bool:
+	answer = False
+	try:
+		slots = parseSlotsToObjects(message = msg)
+
+		if 'Answer' in slots and slots['Answer'][0].value['value'] == 'yes':
+			answer = True
+	except:
+		answer = False
+	finally:
+		return answer
+
+
+def getDuration(msg: MQTTMessage) -> int:
+	slots = parseSlotsToObjects(msg)
+	duration = 0
+	if 'Duration' in slots and slots['Duration'][0].entity == 'snips/duration':
+		try:
+			values = slots['duration'][0].value
+			duration += values['seconds']
+			duration += values['minutes'] * 60
+			duration += values['hours'] * 60 * 60
+			duration += values['days'] * 24 * 60 * 60
+			duration += values['weeks'] * 7 * 24 * 60 * 60
+			duration += values['months'] * 4 * 7 * 24 * 60 * 60
+		except Exception:
+			pass
+
+	return duration
+
+
+def toCamelCase(string: str) -> str:
+	return ''.join(x.capitalize() or ' ' for x in string.split(' '))
+
+
+def isSpelledWord(string: str) -> bool:
+	"""
+	Empirical way to check if a string is something spelled by the user by counting the theoretical length of the string against
+	its theoretical spelled length
+	:param string: string to check
+	:return: bool
+	"""
+
+	string = str(string)
+	l = len(string)
+	s = string.replace(' ', '').strip()
+	if l == (len(s) * 2) - 1:
+		return True
+	else:
+		return False
+
+
+def cleanRoomNameToSiteId(roomName: str) -> str:
+	"""
+	User might answer "in the living room" when asked for a room. In that case it should be turned into "living_room"
+	:param roomName: str: original captured name
+	:return: str: formated room name to site id
+	"""
+
+	parasites = managers.LanguageManager.getStrings(key = 'inThe')
+
+	for parasite in parasites:
+		if parasite in roomName:
+			roomName = str(roomName).replace(parasite, '')
+			break
+
+	return str(roomName).strip().replace(' ', '_')
+
+
+def getLocalIp() -> str:
+	sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+	try:
+		sock.connect(('10.255.255.255', 1))
+		ip = sock.getsockname()[0]
+	except:
+		ip = '127.0.0.1'
+	finally:
+		sock.close()
+	return ip

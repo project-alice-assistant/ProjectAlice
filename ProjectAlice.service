@@ -1,0 +1,17 @@
+[Unit]
+Description=Project Alice
+Wants=network-online.target
+After=network-online.target
+
+[Service]
+ExecStartPre=/bin/sleep 5
+#WORKINGDIR
+#EXECSTART
+StandardOutput=inherit
+StandardError=inherit
+Restart=always
+RestartSec=5
+#USER
+
+[Install]
+WantedBy=multi-user.target

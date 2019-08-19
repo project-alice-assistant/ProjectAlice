@@ -1,0 +1,41 @@
+{
+	"notUnderstood": {
+		"default": [
+			"Pardon, je n'ai pas compris ce que tu as dis",
+			"Je n'ai pas compris ta demande",
+			"Pardon? Peut-tu répéter",
+			"Quoi??"
+		],
+		"short": [
+			"Pardon?"
+		]
+	},
+	"youreWelcome": {
+		"default": [
+			"De rien",
+			"Tout le plaisir est pour moi !",
+			"Aucun problème !"
+		]
+	},
+	"error": {
+		"default": [
+			"Il y a eu un problème, contrôle mes logs"
+		]
+	},
+	"newDeviceAdditionFailed": {
+		"default": [
+			"Désolée, il y a eu un problème au moment de l'ajout du nouvel appareil"
+		]
+	},
+	"newDeviceAdditionSuccess": {
+		"default": [
+			"Le nouvel appreil a été trouvé et correctement ajouté!"
+		]
+	},
+	"maxOneAlicePerRoom": {
+		"default": [
+			"Je suis désolée mais il ne peut y avoir qu'un seul module Alice par pièce",
+			"Vraiment désolée mais il ne peut pas y avoir plus d'une module Alice par pièce"
+		]
+	}
+}

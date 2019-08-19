@@ -1,0 +1,12 @@
+# EditorConfig is awesome: https://EditorConfig.org
+
+# top-most EditorConfig file
+root = true
+
+[*.{py,json,sh}]
+indent_style = tab
+insert_final_newline = true
+charset = utf-8
+
+[*.sh]
+end_of_line = lf

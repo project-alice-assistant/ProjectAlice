@@ -1,0 +1,187 @@
+# -*- coding: utf-8 -*-
+from typing import Optional, Any
+
+import core.base.Managers as managers
+from core.base.Manager import Manager
+from core.user.model.AccessLevels import AccessLevel
+from core.user.model.User import User
+
+class UserManager(Manager):
+
+	NAME = 'UserManager'
+
+	DATABASE = {
+		'users': [
+			'id INTEGER PRIMARY KEY',
+			'username TEXT NOT NULL',
+			'state TEXT NOT NULL',
+			'accessLevel TEXT NOT NULL',
+			'lang TEXT',
+			'tts TEXT',
+			'ttsType TEXT',
+			'ttsVoice TEXT'
+		]
+	}
+
+
+	def __init__(self, mainClass):
+		super().__init__(mainClass, self.NAME, self.DATABASE)
+		managers.UserManager = self
+
+		self._users = dict()
+
+
+	def onStart(self):
+		super().onStart()
+		self._loadUsers()
+		self._logger.info('- Loaded {} users'.format(len(self._users)))
+
+
+	def _loadUsers(self):
+		rows = self.databaseFetch(tableName='users', query='SELECT * FROM :__table__', method='all')
+		for row in rows:
+			self._users[row['username']] = User(row)
+
+
+	@property
+	def users(self) -> dict:
+		return self._users
+
+
+	# noinspection SqlResolve
+	def addNewUser(self, name: str, access: str = 'guest', state: str = 'home'):
+		insertId = self.databaseInsert(tableName='users',
+									   query='INSERT INTO :__table__ (username, accessLevel, state, lang) VALUES (:username, :accessLevel, :state, :lang)',
+									   values={'username': name.lower(), 'accessLevel': access, 'state': state, 'lang': managers.LanguageManager.activeLanguageAndCountryCode})
+		if insertId > -1:
+			self._users[name] = User({
+				'username': name.title(),
+				'accessLevel': access,
+				'state': state,
+				'lang': managers.LanguageManager.activeLanguageAndCountryCode,
+				'tts': '',
+				'ttsType': '',
+				'ttsVoice': ''
+			})
+
+
+	def getUserAccessLevel(self, username: str) -> Optional[Any]:
+		if not username in self._users.keys():
+			return None
+
+		return self._users[username].accessLevel
+
+
+	def getUser(self, username: str) -> Optional[User]:
+		if not username in self._users.keys():
+			return None
+
+		return self._users[username]
+
+
+	def getAllUserNames(self, skipGuests: bool = True) -> list:
+		"""
+			Return all users
+			:return: list
+		"""
+		if skipGuests:
+			users = [k for k in self._users.keys() if self._users[k] != 'guest']
+
+		else:
+			users = [k for k in self._users.keys()]
+
+		return users
+
+
+	def checkIfAllUser(self, state: str) -> bool:
+		"""
+		Checks if the given state applies to all users (except for guests)
+		:param state: the state to check
+		:return: boolean
+		"""
+
+		if not self._users:
+			return False
+
+		userNames = self.getAllUserNames()
+
+		for username in userNames:
+			if self._users[username].state != state:
+				return False
+
+		return True
+
+
+	def checkIfUser(self, user: str, state: str) -> bool:
+		"""
+		Checks if the given state applies to the user
+		:param user: str
+		:param state: the state to check
+		:return: boolean
+		"""
+		return self._users[user].state == state
+
+
+	def goingBed(self, user: str = 'all'):
+		if user == 'all':
+			for user in self._users:
+				self._users[user].state('goingBed')
+		else:
+			self._users[user].home = True
+			self._users[user].goingBed = True
+			self._users[user].sleeping = False
+
+
+	def sleeping(self, user: str = 'all'):
+		if user == 'all':
+			for user in self._users:
+				self._users[user].state('sleeping')
+		else:
+			self._users[user].home = True
+			self._users[user].goingBed = False
+			self._users[user].sleeping = True
+
+
+	def wakeup(self, user: str = 'all'):
+		if user == 'all':
+			for user in self._users:
+				self._users[user].state('home')
+		else:
+			self._users[user].home = True
+			self._users[user].goingBed = False
+			self._users[user].sleeping = False
+
+
+	def leftHome(self, user: str = 'all'):
+		if user == 'all':
+			for user in self._users:
+				self._users[user].state('out')
+		else:
+			self._users[user].home = False
+			self._users[user].goingBed = False
+			self._users[user].sleeping = False
+
+
+	def home(self, user: str = 'all'):
+		if user == 'all':
+			for user in self._users:
+				self._users[user].state('home')
+		else:
+			self._users[user].home = True
+			self._users[user].goingBed = False
+			self._users[user].sleeping = False
+
+
+	def hasAccessLevel(self, user: str, requiredAccessLevel: str) -> bool:
+		try:
+			_ = AccessLevel[requiredAccessLevel.upper()]
+		except KeyError:
+			self._logger.error('[{}] Was asked to check access level but accesslevel "{}" doesn\'t exist'.format(self.name, requiredAccessLevel))
+			return False
+
+
+		if user not in self._users.keys():
+			self._logger.error('[{}] Was asked to check access level but user "{}" doesn\'t exist'.format(self.name, user))
+			return False
+
+		return AccessLevel[self._users[user].accessLevel.upper()].value <= AccessLevel[requiredAccessLevel.upper()].value
