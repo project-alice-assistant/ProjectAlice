@@ -19,7 +19,7 @@ settings = {
 	"whisperWhenSleeping": True,
 	"newDeviceBroadcastPort": 12354,
 	"intentsOwner": "",
-	"webInterfaceActive": True,
+	"webInterfaceActive": False,
 	"asr": "snips",
 	"tts": "pico",
 	"ttsType": "male",
