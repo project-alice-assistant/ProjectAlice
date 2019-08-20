@@ -1,7 +1,5 @@
 [Unit]
 Description=Project Alice
-Wants=network-online.target
-After=network-online.target
 
 [Service]
 ExecStartPre=/bin/sleep 5
