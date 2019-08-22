@@ -74,6 +74,7 @@ network={
 			self.fatal('You must specify the wifi parameters')
 
 		# Let's connect to wifi!
+		self._logger.info('Setting up wifi')
 		wpaFile = self._WPA_FILE.replace(
 			'%COUNTRY%',
 			initConfs['wifiCountryCode']
@@ -92,10 +93,13 @@ network={
 		with file.open('w') as f:
 			f.write(wpaFile)
 
+		self._logger.info('wpa_supplicant.conf')
 		subprocess.run(['sudo', 'mv', file, os.path.join('/etc', 'wpa_supplicant', 'wpa_supplicant.conf')])
 
+		self._logger.info('Turning off wifi')
 		subprocess.run(['sudo', 'ifconfig', 'wlan0', 'down'])
 		time.sleep(5)
+		self._logger.info('Turning it back on')
 		subprocess.run(['sudo', 'ifconfig', 'wlan0', 'up'])
 		time.sleep(5)
 
@@ -161,7 +165,7 @@ network={
 		confs['ttsType'] = initConfs['ttsType']
 		confs['ttsVoice'] = initConfs['ttsVoice']
 
-
+		self._logger.info('Installing audio hardware')
 		audioHardware = ''
 		for hardware in initConfs['audioHardware'].keys():
 			if initConfs['audioHardware'][hardware]:
@@ -170,17 +174,16 @@ network={
 
 		if audioHardware == 'respeaker2' or audioHardware == 'respeaker4':
 			subprocess.call(['sudo', os.path.join(commons.rootDir(), 'system', 'scripts', 'audioHardware', 'respeakers.sh')])
+			subprocess.run(['sudo', 'sed', '-i', '-e', 's/%HARDWARE%/{}/', '/etc/systemd/system/snipsledcontrol.service'.format(audioHardware)])
 		elif audioHardware == 'respeaker7':
 			subprocess.call(['sudo', os.path.join(commons.rootDir(), 'system', 'scripts', 'audioHardware', 'respeaker7.sh')])
+			subprocess.run(['sudo', 'sed', '-i', '-e', 's/%HARDWARE%/respeaker7MicArray/', '/etc/systemd/system/snipsledcontrol.service'])
 		elif audioHardware == 'respeakerCoreV2':
 			subprocess.call(['sudo', os.path.join(commons.rootDir(), 'system', 'scripts', 'audioHardware', 'respeakerCoreV2.sh')])
+			subprocess.run(['sudo', 'sed', '-i', '-e', 's/%HARDWARE%/{}/', '/etc/systemd/system/snipsledcontrol.service'.format(audioHardware)])
 		elif audioHardware == 'matrixCreator' or audioHardware == 'matrixVoice':
 			subprocess.call(['sudo', os.path.join(commons.rootDir(), 'system', 'scripts', 'audioHardware', 'matrix.sh')])
-
-		# Handle SLC
-		if confs['useSLC']:
-			pass
-
+			subprocess.run(['sudo', 'sed', '-i', '-e', 's/%HARDWARE%/{}/', '/etc/systemd/system/snipsledcontrol.service'.format(audioHardware.lower())])
 
 		# Do some sorting, just for the eyes
 		temp = sorted(list(confs.keys()))
@@ -217,4 +220,3 @@ network={
 
 	def warning(self, text: str):
 		self._logger.warning(text)
-
