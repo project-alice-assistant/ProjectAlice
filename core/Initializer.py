@@ -3,6 +3,7 @@ import getpass
 import json
 import logging
 import subprocess
+import time
 from pathlib import Path
 
 import importlib
@@ -17,6 +18,18 @@ from core.commons import commons
 class Initializer:
 
 	NAME = 'ProjectAlice'
+
+	_WPA_FILE = '''country=%COUNTRY%
+ctrl_interface=DIR=/var/run/wpa_supplicant GROUP=netdev
+update_config=1
+
+network={
+    ssid="%SSID%"
+    scan_ssid=1
+    psk="%PASS%"
+    key_mgmt=WPA-PSK
+}
+	'''
 
 	def __init__(self):
 		self._logger = logging.getLogger('ProjectAlice')
@@ -57,43 +70,34 @@ class Initializer:
 		config = importlib.import_module('config')
 		confs = config.settings.copy()
 
-		# Let's get the ssid and pass automagically from wpa_supplicant file. For that we need to copy it to Project Alice, because we don't want to change its default permissions
-		# and then delete it
-		wpaSupCopy = Path(os.path.join(commons.rootDir(), 'wpa_supplicant.conf'))
-		ret = subprocess.run(['sudo', 'cp', os.path.join('/etc', 'wpa_supplicant', 'wpa_supplicant.conf'), wpaSupCopy], stdout=subprocess.PIPE)
-		if ret.returncode > 0:
-			self.fatal('wpa_supplicant.conf not found, are we connected to wlan??')
+		# Let's connect to wifi!
+		wpaFile = self._WPA_FILE.replace(
+			'%COUNTRY%',
+			initConfs['wifiCountryCode']
+		).replace(
+			'%SSID%',
+			initConfs['wifiNetworkName']
+		).replace(
+			'%PASS%',
+			initConfs['wifiWPAPass']
+		)
 
-		ret = subprocess.run(['sudo', 'chown', getpass.getuser(), wpaSupCopy], stdout=subprocess.PIPE)
+		file = Path(os.path.join(commons.rootDir(), 'wifi.conf'))
+		if file.exists():
+			os.remove(file)
 
-		file = Path(os.path.join(commons.rootDir(), 'wpa_supplicant.conf'))
-		if not file.exists():
-			self.fatal('wpa_supplicant.conf not found, are we connected to wlan??')
+		with file.open('w') as f:
+			f.write(wpaFile)
 
-		ssid = ''
-		pwd = ''
-		with file.open(mode='r') as f:
-			for line in f:
-				ssidRegex = re.search('.*ssid="(.*?)"', line)
-				if not ssid and ssidRegex and ssidRegex.group(1):
-					ssid = ssidRegex.group(1)
-					continue
+		subprocess.run(['sudo', 'mv', file, os.path.join('/etc', 'wpa_supplicant', 'wpa_supplicant.conf')])
 
-				pwdRegex = re.search('.*psk="(.*?)"', line)
-				if not pwd and pwdRegex and pwdRegex.group(1):
-					pwd = pwdRegex.group(1)
-					continue
+		subprocess.run(['sudo', 'ifconfig', 'wlan0', 'down'])
+		time.sleep(5)
+		subprocess.run(['sudo', 'ifconfig', 'wlan0', 'up'])
+		time.sleep(5)
 
-				if pwd and ssid:
-					break
-
-		os.remove(os.path.join(commons.rootDir(), 'wpa_supplicant.conf'))
-
-		if not ssid or not pwd:
-			self.fatal('Wlan config not found, are we connected to wlan?')
-
-		confs['ssid'] = ssid
-		confs['wifipassword'] = pwd
+		confs['ssid'] = initConfs['wifiNetworkName']
+		confs['wifipassword'] = initConfs['wifiWPAPass']
 
 		# Now let's dump some values to their respective places
 		# First those that need some checks and self filling in case
@@ -170,8 +174,8 @@ class Initializer:
 
 		try:
 			s = json.dumps(sort, indent = 4).replace('false', 'False').replace('true', 'True')
-			with open('config.py', 'w') as f:
-				f.write('settings = {}'.format(s))
+			#with open('config.py', 'w') as f:
+			#	f.write('settings = {}'.format(s))
 		except Exception as e:
 			self.fatal('An error occured while writting final configuration file: {}'.format(e))
 		else:
