@@ -185,6 +185,8 @@ network={
 			subprocess.call(['sudo', os.path.join(commons.rootDir(), 'system', 'scripts', 'audioHardware', 'matrix.sh')])
 			subprocess.run(['sudo', 'sed', '-i', '-e', 's/%HARDWARE%/{}/', '/etc/systemd/system/snipsledcontrol.service'.format(audioHardware.lower())])
 
+		subprocess.run(['sudo', 'systemctl', 'daemon-reload'])
+
 		# Do some sorting, just for the eyes
 		temp = sorted(list(confs.keys()))
 		sort = dict()
