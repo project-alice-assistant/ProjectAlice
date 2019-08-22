@@ -70,6 +70,9 @@ network={
 		config = importlib.import_module('config')
 		confs = config.settings.copy()
 
+		if not initConfs['wifiCountryCode'] or not initConfs['wifiNetworkName'] or not initConfs['wifiWPAPass']:
+			self.fatal('You must specify the wifi parameters')
+
 		# Let's connect to wifi!
 		wpaFile = self._WPA_FILE.replace(
 			'%COUNTRY%',
@@ -157,6 +160,26 @@ network={
 		confs['whisperWhenSleeping'] = initConfs['whisperWhenSleeping']
 		confs['ttsType'] = initConfs['ttsType']
 		confs['ttsVoice'] = initConfs['ttsVoice']
+
+
+		audioHardware = ''
+		for hardware in initConfs['audioHardware'].keys():
+			if initConfs['audioHardware'][hardware]:
+				audioHardware = hardware
+				break
+
+		if audioHardware == 'respeaker2' or audioHardware == 'respeaker4':
+			subprocess.call(['sudo', os.path.join(commons.rootDir(), 'system', 'scripts', 'audioHardware', 'respeakers.sh')])
+		elif audioHardware == 'respeaker7':
+			subprocess.call(['sudo', os.path.join(commons.rootDir(), 'system', 'scripts', 'audioHardware', 'respeaker7.sh')])
+		elif audioHardware == 'respeakerCoreV2':
+			subprocess.call(['sudo', os.path.join(commons.rootDir(), 'system', 'scripts', 'audioHardware', 'respeakerCoreV2.sh')])
+		elif audioHardware == 'matrixCreator' or audioHardware == 'matrixVoice':
+			subprocess.call(['sudo', os.path.join(commons.rootDir(), 'system', 'scripts', 'audioHardware', 'matrix.sh')])
+
+		# Handle SLC
+		if confs['useSLC']:
+			pass
 
 
 		# Do some sorting, just for the eyes
