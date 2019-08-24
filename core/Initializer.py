@@ -202,8 +202,8 @@ network={
 
 		try:
 			s = json.dumps(sort, indent = 4).replace('false', 'False').replace('true', 'True')
-			#with open('config.py', 'w') as f:
-			#	f.write('settings = {}'.format(s))
+			with open('config.py', 'w') as f:
+				f.write('settings = {}'.format(s))
 		except Exception as e:
 			self.fatal('An error occured while writting final configuration file: {}'.format(e))
 		else:
@@ -211,8 +211,7 @@ network={
 
 
 		self.warning('Initializer done with configuring')
-		# TODO Active before public version!
-		#os.remove(os.path.join('/boot/ProjectAlice.yaml'))
+		os.remove(os.path.join('/boot/ProjectAlice.yaml'))
 
 
 	def fatal(self, text: str):

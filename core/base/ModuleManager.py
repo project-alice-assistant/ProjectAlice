@@ -331,7 +331,6 @@ class ModuleManager(Manager):
 		if len(files) > 0:
 			self._logger.info('[{}] Found {} install ticket(s)'.format(self.name, len(files)))
 			self._busyInstalling.set()
-			managers.MqttServer.publish(topic='hermes/leds/systemUpdate')
 
 			try:
 				modulesToBoot = self._installModules(files)
@@ -369,13 +368,13 @@ class ModuleManager(Manager):
 					managers.SnipsServicesManager.runCmd(cmd='restart')
 
 				self._busyInstalling.clear()
-				managers.MqttServer.publish(topic='hermes/nlu/intentParsed')
 
 
 	def _installModules(self, modules: list) -> dict:
 		root = commons.rootDir() + '/system/moduleInstallTickets'
 		availableModules = managers.ConfigManager.modulesConfigurations
 		modulesToBoot = dict()
+		managers.MqttServer.broadcast(topic='hermes/leds/systemUpdate')
 		for file in modules:
 			self._logger.info('[{}] Now taking care of module {}'.format(self.name, os.path.splitext(file)[0]))
 			res = os.path.join(root, file)
@@ -452,4 +451,5 @@ class ModuleManager(Manager):
 				self._logger.error('[{}] Failed installing module "{}": {}'.format(self.name, moduleName, e))
 				os.remove(res)
 
+		managers.MqttServer.broadcast(topic='hermes/leds/clear')
 		return modulesToBoot

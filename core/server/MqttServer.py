@@ -331,10 +331,10 @@ class MqttServer(Manager):
 		else:
 			siteId = commons.parseSiteId(msg)
 
-		text = payload['text']
-		module = managers.ModuleManager.getModuleInstance('ContextSensitive')
-		if module:
-			module.addChat(text=text, siteId=siteId)
+		if 'text' in payload:
+			module = managers.ModuleManager.getModuleInstance('ContextSensitive')
+			if module:
+				module.addChat(text=payload['text'], siteId=siteId)
 
 		managers.broadcast(method='onSay', exceptions=[self.name], args=[session], propagateToModules=True)
 
@@ -524,7 +524,6 @@ class MqttServer(Manager):
 				jsonDict['customData'] = customData
 			else:
 				self._logger.warning('[{}] ContinueDialog was provided customdata of unsupported type: {}'.format(self.name, customData))
-				customData = ''
 
 		if intentFilter:
 			intentList = [str(x).replace('hermes/intent/', '') for x in intentFilter]
@@ -628,6 +627,18 @@ class MqttServer(Manager):
 			payload = json.dumps(payload)
 
 		self._mqttClient.publish(topic, payload, qos, retain)
+
+
+	def broadcast(self, topic: str, payload: dict = None, qos: int = 0, retain: bool = False, deviceType: str = 'AliceSatellite'):
+		if not payload:
+			payload = dict()
+
+		for device in managers.DeviceManager.getDevicesByType(deviceType):
+			payload['siteId'] = device.room
+			self.publish(topic = topic, payload = payload, qos = qos, retain = retain)
+
+		payload['siteId'] = 'default'
+		self.publish(topic=topic, payload=payload, qos=qos, retain=retain)
 
 
 	@property
