@@ -176,7 +176,10 @@ class MqttServer(Manager):
 
 		customData = session.customData
 		if 'intent' in payload and payload['intent']['confidenceScore'] < managers.ConfigManager.getAliceConfigByName('probabilityTreshold'):
-			self.ask(text=managers.TalkManager.randomTalk('notUnderstood', module='system'), client=session.siteId)
+			self.continueDialog(
+				sessionId=sessionId,
+				text=managers.TalkManager.randomTalk('notUnderstood', module='system')
+			)
 			return
 
 		moduleManager = managers.ModuleManager
