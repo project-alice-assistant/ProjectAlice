@@ -424,9 +424,13 @@ class ModuleManager(Manager):
 				if gitCloner.clone():
 					self._logger.info('[{}] Module successfully downloaded'.format(self.name))
 					try:
-						if installFile['requirements']:
-							for requirement in installFile['requirements']:
-								subprocess.run(['./venv/bin/pip3.7', 'install', requirement])
+						if installFile['pipRequirements']:
+							for requirement in installFile['pipRequirements']:
+								subprocess.run(['./venv/bin/pip3', 'install', requirement])
+
+						if installFile['systemRequirements']:
+							for requirement in installFile['systemRequirements']:
+								subprocess.run(['sudo', 'apt-get', 'install', '-y', requirement])
 
 						node = {
 							"active": True,
