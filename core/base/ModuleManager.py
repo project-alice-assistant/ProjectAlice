@@ -374,7 +374,7 @@ class ModuleManager(Manager):
 		root = commons.rootDir() + '/system/moduleInstallTickets'
 		availableModules = managers.ConfigManager.modulesConfigurations
 		modulesToBoot = dict()
-		managers.MqttServer.broadcast(topic='hermes/leds/systemUpdate')
+		managers.MqttServer.broadcast(topic='hermes/leds/systemUpdate', payload=json.dumps({'sticky': True}))
 		for file in modules:
 			self._logger.info('[{}] Now taking care of module {}'.format(self.name, os.path.splitext(file)[0]))
 			res = os.path.join(root, file)
