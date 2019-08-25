@@ -27,3 +27,5 @@ class ModuleStartDelayed(Exception):
 
 
 class ModuleNotConditionCompliant(Exception): pass
+
+class AccessLevelTooLow(Exception): pass

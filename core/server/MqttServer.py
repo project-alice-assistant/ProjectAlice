@@ -9,6 +9,7 @@ import paho.mqtt.client as mqtt
 import paho.mqtt.publish as publish
 
 import core.base.Managers as managers
+from core.ProjectAliceExceptions import AccessLevelTooLow
 from core.base.Manager import Manager
 from core.base.model.Intent import Intent
 from core.commons import commons
@@ -190,7 +191,12 @@ class MqttServer(Manager):
 		modules = moduleManager.getModules()
 		for key, modul in modules.items():
 			module = modul['instance']
-			consumed = module.onMessage(message.topic, session)
+
+			try:
+				consumed = module.onMessage(message.topic, session)
+			except AccessLevelTooLow:
+				# The command was recognized but required higher access level
+				return
 
 			# Authentication might end the session directly from a module
 			if not managers.DialogSessionManager.getSession(sessionId):
@@ -199,6 +205,7 @@ class MqttServer(Manager):
 			if managers.MultiIntentManager.isProcessing(sessionId):
 				managers.MultiIntentManager.processNextIntent(sessionId)
 				return
+
 			elif consumed:
 				return
 

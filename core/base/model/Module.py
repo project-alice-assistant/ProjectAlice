@@ -11,7 +11,7 @@ from paho.mqtt import client as MQTTClient
 from core.commons import commons
 import core.base.Managers as managers
 from core.dialog.model.DialogSession import DialogSession
-from core.ProjectAliceExceptions import ModuleStartingFailed
+from core.ProjectAliceExceptions import ModuleStartingFailed, AccessLevelTooLow
 from core.base.model.Intent import Intent
 
 
@@ -124,14 +124,14 @@ class Module(object):
 					sessionId=session.sessionId,
 					text=managers.TalkManager.randomTalk(talk='unknowUser', module='system')
 				)
-				return False
+				raise AccessLevelTooLow()
 			# Return if intent is for auth users only and the user doesn't have the accesslevel for it
 			if not managers.UserManager.hasAccessLevel(session.user, self._authOnlyIntents[intent]):
 				managers.MqttServer.endTalk(
 					sessionId=session.sessionId,
 					text=managers.TalkManager.randomTalk(talk='noAccess', module='system')
 				)
-				return False
+				raise AccessLevelTooLow()
 
 		return True
 
