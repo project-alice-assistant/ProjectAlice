@@ -65,6 +65,26 @@ class DialogSession:
 		return self._slotsAsObjects
 
 
+	def slotValue(self, slotName: str, index: int = 0) -> str:
+		"""
+		This returns the slot master value, not necesserly what was heard / captured
+		"""
+		if slotName in self._slotsAsObjects.keys():
+			return self.slotsAsObjects[slotName][index].value['value']
+		else:
+			return ''
+
+
+	def slotRawValue(self, slotName: str) -> str:
+		"""
+		This returns the slot raw value, what what really heard / captured, so it can be a synonym per exemple
+		"""
+		if slotName in self._slots.keys():
+			return self._slots[slotName]
+		else:
+			return ''
+
+
 	@property
 	def customData(self) -> dict:
 		return self._customData

@@ -48,8 +48,10 @@ class Module(object):
 
 		return utterances
 
+
 	def getCurrentDir(self):
 		return os.path.dirname(inspect.getfile(self.__class__))
+
 
 	@property
 	def name(self) -> str:

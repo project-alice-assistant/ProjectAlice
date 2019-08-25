@@ -81,7 +81,7 @@ class TalkManager(Manager):
 
 	def randomTalk(self, talk: str, module: str = '', forceShortTalk: bool = False) -> str:
 		"""
-		Gets a random string to speek corresponding to talk string. If no module provided it will use the caller's name
+		Gets a random string to speak corresponding to talk string. If no module provided it will use the caller's name
 		:param talk:
 		:param module:
 		:param forceShortTalk:
