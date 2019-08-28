@@ -8,7 +8,8 @@
 	],
 	"desc": "Red Queen is the official Project Alice personality module",
 	"aliceMinVersion": "",
-	"requirements": [],
+	"systemRequirements": [],
+	"pipRequirements": [],
 	"conditions": {
 		"lang": [
 			"en",

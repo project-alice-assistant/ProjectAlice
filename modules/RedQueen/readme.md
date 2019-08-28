@@ -1,9 +1,16 @@
 # RedQueen
 
 ### Download
+
+##### > WGET method
 ```bash
 wget http://modules.projectalice.ch/RedQueen \
 -O ~/ProjectAlice/system/moduleInstallTickets/RedQueen.install
+```
+
+##### > Alice CLI method
+```bash
+alice module:install ProjectAlice/RedQueen
 ```
 
 ### Desc

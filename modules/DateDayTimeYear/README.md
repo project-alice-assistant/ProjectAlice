@@ -1,9 +1,16 @@
 # DateDayTimeYear
 
 ### Download
+
+##### > WGET method
 ```bash
 wget http://bit.ly/DateDayTimeYear \
 -O ~/ProjectAlice/system/moduleInstallTickets/DateDayTimeYear.install
+```
+
+##### > Alice CLI method
+```bash
+alice module:install Psychokiller1888/DateDayTimeYear
 ```
 
 ### Description

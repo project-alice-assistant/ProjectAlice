@@ -740,6 +740,7 @@
 					"value": "pir",
 					"synonyms": [
 						"détecteur de mouvement",
+						"capteur de mouvement",
 						"capteur infrarouge",
 						"capteur de présence",
 						"pir sensor"
@@ -756,7 +757,6 @@
 				{
 					"value": "yes",
 					"synonyms": [
-						"yes",
 						"oui",
 						"yep",
 						"affirmatif",
@@ -768,7 +768,6 @@
 				{
 					"value": "no",
 					"synonyms": [
-						"no",
 						"non",
 						"nope",
 						"non merci",

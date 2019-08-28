@@ -34,8 +34,6 @@ class DateDayTimeYear(Module):
 		sessionId = session.sessionId
 
 		if intent == self._INTENT_GET_TIME:
-			#managers.ModuleManager.broadcast('onDoAuth', isEvent=False, args=[session.user, siteId])
-			#return True
 			minutes = datetime.now().strftime('%M').lstrip('0')
 			part = datetime.now().strftime('%p')
 

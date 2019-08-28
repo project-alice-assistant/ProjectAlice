@@ -148,8 +148,10 @@ class RedQueen(Module):
 		forms = managers.LanguageManager.getStrings(key='politness', module=self.name)
 
 		for form in forms:
-			if form in text:
-				return True
+			if form not in text:
+				continue
+
+			return True
 
 		return False
 
@@ -170,12 +172,7 @@ class RedQueen(Module):
 		else:
 			chance = 2
 
-		if not self.getConfig('disableMoodTraits') and not\
-			managers.ProtectedIntentManager.isProtectedIntent(session.message.topic)\
-			and not self.politnessUsed(session.payload['input'])\
-			and random.randint(0, 100) < chance\
-			and not managers.MultiIntentManager.isProcessing(session.sessionId):
-
+		if not managers.ProtectedIntentManager.isProtectedIntent(session.message.topic) and not self.politnessUsed(session.payload['input']) and random.randint(0, 100) < chance and not managers.MultiIntentManager.isProcessing(session.sessionId):
 			managers.MqttServer.endTalk(session.sessionId, self.randomTalk('noInTheMood'))
 			return False
 

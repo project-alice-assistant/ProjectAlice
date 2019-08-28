@@ -136,8 +136,6 @@ class AliceSatellite(Module):
 			if 'uid' in payload:
 				managers.DeviceManager.deviceDisconnecting(payload['uid'])
 
-			return True
-
 		return False
 
 
@@ -162,6 +160,9 @@ class AliceSatellite(Module):
 
 
 	def restartDevice(self):
-		devices = managers.DeviceManager.getDevicesByType(deviceType=self.name, connectedOnly=True)
+		devices = managers.DeviceManager.getDevicesByType(deviceType=self.name, connectedOnly=True, onlyOne=False)
+		if not devices:
+			return
+
 		for device in devices:
 			managers.MqttServer.publish(topic='projectalice/devices/restart', payload={'uid': device.uid})

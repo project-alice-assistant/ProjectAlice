@@ -13276,7 +13276,7 @@
 			"enabledByDefault": false,
 			"utterances": [
 				"{l:=>Letters} {a:=>Letters} {u:=>Letters} {r:=>Letters} {e:=>Letters} {n:=>Letters} {t:=>Letters}",
-				"{r:=>Letters} {o:=>Letters} {u:=>Letters} {l:=>Letters} {a:=>Letters} {n:=>Letters} {d:=>Letters}",
+				"{r:=>Letters} {o:=>Letters} {l:=>Letters} {a:=>Letters} {n:=>Letters} {d:=>Letters}",
 				"{p:=>Letters} {l:=>Letters} {a:=>Letters} {n:=>Letters} {e:=>Letters}",
 				"{b:=>Letters} {o:=>Letters} {a:=>Letters} {t:=>Letters}",
 				"{c:=>Letters} {i:=>Letters} {t:=>Letters} {y:=>Letters}",

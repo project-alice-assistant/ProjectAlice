@@ -96,12 +96,10 @@
 			"Désolée mais je ne peux pas me mettre à jour en étant hors ligne"
 		]
 	},
-	"confirmAssistantUpdate": {
-		"fr": [
-			"Ok, je le fais! ça va prendre un peu de temps!",
-			"D'accord, je met à jours mes paquets! ça prendra un peu de temps!"
-		]
-	},
+	"confirmAssistantUpdate": [
+		"Ok, je le fais! ça va prendre un peu de temps!",
+		"D'accord, je met à jours mes paquets! ça prendra un peu de temps!"
+	],
 	"bundleUpdateNoCredentials": {
 		"default": [
 			"Je ne peux pas, tu ne m'as pas donné tes informations de connexion à la console Snips"
@@ -262,7 +260,7 @@
 	},
 	"whatESP": {
 		"default": [
-			"Et quel genre d'ESP? Bouton, PIR, etc?"
+			"Et quel genre d'ESP? Bouton, PIR, et cetera?"
 		]
 	},
 	"connectESPForFlashing": {
@@ -338,26 +336,6 @@
 	"userAlreadyExist": {
 		"default": [
 			"Il semblerait qu'il y ai déjà un utilisateur nommé {}. J'ai besoin d'un autre nom s'il te plait"
-		]
-	},
-	"addUserWakeword": {
-		"default": [
-			"Ok {}, je t'ai ajouté. Si tu veux que je reconnaisse ta voix tu dois créé un mot personnalisé. Ce n'est pas obligatoire mais recommandé. Tu veux le faire ?"
-		]
-	},
-	"addWakewordDenied": {
-		"default": [
-			"Ok, j'ai compris, soit juste averti que je ne serai pas capable de savoir quand tu es rentré, en train de dormir par exemple"
-		]
-	},
-	"addWakewordAccepted": {
-		"default": [
-			"<s>Ok, j'ai besoin de trois échantillons où tu dis <break time=\"100ms\"/> \"Hey Alice\" <break time=\"150ms\"/></s><s>Tu dois être dans un environnement silencieux pour que ça fonctionne, le bruit ou les parasites rendent l'enregistrement inutilisable</s><s>On y va, je t'écoute !</s>"
-		]
-	},
-	"howWasTheCapture": {
-		"default": [
-			"J'ai joué la version arrangée de ton mot personnalisé. ça te semble bon ? Dans le cas contraire je peux ré-arranger l'échantillon, dis moi si c'est trop cour ou trop long"
 		]
 	}
 }

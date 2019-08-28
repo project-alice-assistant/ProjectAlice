@@ -8,7 +8,8 @@
 	],
 	"desc": "Ask for the time, date, day and year",
 	"aliceMinVersion": "",
-	"requirements": [],
+	"systemRequirements": [],
+	"pipRequirements": [],
 	"conditions": {
 		"lang": [
 			"en",

@@ -8,7 +8,8 @@
 	],
 	"desc": "AliceSatellite is the official module to support Project Alice satellites",
 	"aliceMinVersion": "",
-	"requirements": [],
+	"systemRequirements": [],
+	"pipRequirements": [],
 	"conditions": {
 		"lang": [
 			"en",

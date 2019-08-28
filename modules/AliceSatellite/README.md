@@ -1,9 +1,16 @@
 # AliceSatellite
 
 ### Download
+
+##### > WGET method
 ```bash
 wget http://modules.projectalice.ch/AliceSatellite \
 -O ~/ProjectAlice/system/moduleInstallTickets/AliceSatellite.install
+```
+
+##### > Alice CLI method
+```bash
+alice module:install ProjectAlice/AliceSatellite
 ```
 
 ### Description

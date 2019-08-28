@@ -64,7 +64,7 @@
 	},
 	"pressurePlaceSpecific": {
 		"default": [
-			"The pressure is currently {1} millibar at the moduel {0}"
+			"The pressure is currently {1} millibar at the module {0}"
 		],
 		"short": [
 			"{} millibar"

@@ -1,9 +1,16 @@
 # ContextSensitive
 
 ### Download
+
+##### > WGET method
 ```bash
 wget http://modules.projectalice.ch/ContextSensitive \
 -O ~/ProjectAlice/system/moduleInstallTickets/ContextSensitive.install
+```
+
+##### > Alice CLI method
+```bash
+alice module:install ProjectAlice/ContextSensitive
 ```
 
 ### Description
