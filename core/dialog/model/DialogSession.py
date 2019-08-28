@@ -48,6 +48,7 @@ class DialogSession:
 		self._slotsAsObjects = commons.parseSlotsToObjects(self._message)
 		self._customData = commons.parseCustomData(self._message)
 
+
 	def _updateSessionData(self):
 		self._payload = commons.payload(self._message)
 		self._slots = {**self._slots, **commons.parseSlots(self._message)}
