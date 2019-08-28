@@ -648,7 +648,7 @@ class MqttServer(Manager):
 			self.publish(topic = topic, payload = payload, qos = qos, retain = retain)
 
 		payload['siteId'] = 'default'
-		self.publish(topic=topic, payload=payload, qos=qos, retain=retain)
+		self.publish(topic=topic, payload=json.dumps(payload), qos=qos, retain=retain)
 
 
 	@property

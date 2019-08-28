@@ -334,8 +334,9 @@ class ModuleManager(Manager):
 
 			try:
 				modulesToBoot = self._installModules(files)
-			except:
-				pass
+			except Exception:
+				self._logger.error('[{}] Error checking for module install: {}'.format(self.name, e))
+				modulesToBoot = dict()
 			finally:
 				if len(modulesToBoot) > 0:
 					i = 1
@@ -374,7 +375,7 @@ class ModuleManager(Manager):
 		root = commons.rootDir() + '/system/moduleInstallTickets'
 		availableModules = managers.ConfigManager.modulesConfigurations
 		modulesToBoot = dict()
-		managers.MqttServer.broadcast(topic='hermes/leds/systemUpdate', payload=json.dumps({'sticky': True}))
+		managers.MqttServer.broadcast(topic='hermes/leds/systemUpdate', payload={'sticky': True})
 		for file in modules:
 			self._logger.info('[{}] Now taking care of module {}'.format(self.name, os.path.splitext(file)[0]))
 			res = os.path.join(root, file)
