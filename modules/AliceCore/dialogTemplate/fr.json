@@ -127,7 +127,8 @@
 					"synonyms": [
 						"raspberry",
 						"OS",
-						"raspbian"
+						"raspbian",
+						"système"
 					]
 				},
 				{
@@ -733,12 +734,15 @@
 				{
 					"value": "switch",
 					"synonyms": [
-						"souitche"
+						"souitche",
+						"interrupteur"
 					]
 				},
 				{
 					"value": "pir",
 					"synonyms": [
+						"détecteur de présence",
+						"détecteur infrarouge",
 						"détecteur de mouvement",
 						"capteur de mouvement",
 						"capteur infrarouge",
@@ -762,6 +766,7 @@
 						"affirmatif",
 						"ouais",
 						"oui s'il te plaît",
+						"oui s'il te plait",
 						"bien sûr"
 					]
 				},
@@ -5405,8 +5410,7 @@
 				"de type {détecteur de présence:=>EspType}",
 				"type {détecteur infrarouge:=>EspType} s'il te plaît",
 				"{pir sensor:=>EspType}",
-				"{capteur de mouvement:=>EspType}",
-				"{interrupteur:=>EspType}"
+				"{capteur de mouvement:=>EspType}"
 			],
 			"slots": [
 				{
@@ -5431,7 +5435,7 @@
 				"peux-tu ajouter un {souitche:=>EspType} {tasmota:=>Hardware} dans la {chambre à coucher:=>Room}",
 				"ajoute un {esp:=>Hardware} dans mon {bureau:=>Room}",
 				"peux-tu ajouter un {alice:=>Hardware}",
-				"peux-tu ajouter un capteur {pir:=>Hardware}",
+				"peux-tu ajouter un capteur {esp:=>Hardware}",
 				"peux-tu ajouter un satellite {alice:=>Hardware}",
 				"peux-tu ajouter un appareil {esp:=>Hardware} s'il te plaît",
 				"prépare toi pour un nouvel {esp:=>Hardware}",
@@ -5486,9 +5490,9 @@
 			"description": "Demander à Alice de se mettre à jour",
 			"enabledByDefault": true,
 			"utterances": [
-				"mettre à jour {les fichiers d'assistant:=>WhatToUpdate} s'il te plaît",
+				"mettre à jour {fichiers d'assistant:=>WhatToUpdate} s'il te plaît",
 				"mettre à jour les {fichiers d'assistant:=>WhatToUpdate}",
-				"mettre à jour {l'assistant:=>WhatToUpdate}",
+				"mettre à jour l'{assistant:=>WhatToUpdate}",
 				"faire une mise à jour du {système:=>WhatToUpdate}",
 				"veuillez mettre à jour votre {système:=>WhatToUpdate}",
 				"mets-toi à jour s'il te plaît",
