@@ -334,7 +334,7 @@ class ModuleManager(Manager):
 
 			try:
 				modulesToBoot = self._installModules(files)
-			except Exception:
+			except Exception as e:
 				self._logger.error('[{}] Error checking for module install: {}'.format(self.name, e))
 				modulesToBoot = dict()
 			finally:
