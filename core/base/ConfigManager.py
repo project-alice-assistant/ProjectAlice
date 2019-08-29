@@ -130,7 +130,11 @@ class ConfigManager(Manager):
 
 			sort[key] = confs[key]
 
-		sort['modules'] = modules
+		# Only store "active", "version", "author", "conditions" value for module config
+		misterProper = ['active', 'version', 'author', 'conditions']
+		modulesCleaned = {key: value for key, value in modules.items() if key in misterProper}
+
+		sort['modules'] = modulesCleaned
 
 		try:
 			s = json.dumps(sort, indent = 4).replace('false', 'False').replace('true', 'True')
@@ -150,7 +154,7 @@ class ConfigManager(Manager):
 		"""
 
 		# Don't store "active", "version", "author", "conditions" value in module config file
-		misterProper = ['active', 'version', 'author', 'conditions', 'requirements']
+		misterProper = ['active', 'version', 'author', 'conditions']
 		confsCleaned = {key: value for key, value in confs.items() if key not in misterProper}
 
 		s = json.dumps(confsCleaned, indent = 4)

@@ -377,7 +377,9 @@ class ModuleManager(Manager):
 		modulesToBoot = dict()
 		managers.MqttServer.broadcast(topic='hermes/leds/systemUpdate', payload={'sticky': True})
 		for file in modules:
-			self._logger.info('[{}] Now taking care of module {}'.format(self.name, os.path.splitext(file)[0]))
+			moduleName = os.path.splitext(file)[0]
+
+			self._logger.info('[{}] Now taking care of module {}'.format(self.name, moduleName))
 			res = os.path.join(root, file)
 
 			try:

@@ -50,9 +50,6 @@ class MqttServer(Manager):
 		self._wideAskingSessions = list()
 		self._multiDetectionsHolder = list()
 
-		# TODO remove me
-		self._declaredAudioDevices = list()
-
 
 	# noinspection PyUnusedLocal
 	def onLog(self, client, userdata, level, buf):
@@ -399,20 +396,23 @@ class MqttServer(Manager):
 		:param customData: json object
 		"""
 
-		if customData is not None:
-			if isinstance(customData, dict):
-				customData = json.dumps(customData)
-			elif isinstance(customData, str):
-				pass
-			else:
-				self._logger.warning('[{}] Ask was provided customdata of unsupported type: {}'.format(self.name, customData))
-				customData = ''
-
 		if client == 'all':
-			for device in self._declaredAudioDevices:
+			deviceList = managers.DeviceManager.getDevicesByType('AliceSatellite', connectedOnly=True)
+			deviceList.append('default')
+
+			for device in deviceList:
 				device = device.replace('@mqtt', '')
 				self.say(text=text, client=device, customData=customData)
 		else:
+			if customData is not None:
+				if isinstance(customData, dict):
+					customData = json.dumps(customData)
+				elif isinstance(customData, str):
+					pass
+				else:
+					self._logger.warning('[{}] Ask was provided customdata of unsupported type: {}'.format(self.name, customData))
+					customData = ''
+
 			if ' ' in client:
 				client = client.replace(' ', '_')
 
@@ -495,7 +495,10 @@ class MqttServer(Manager):
 
 		if managers.ConfigManager.getAliceConfigByName('outputOnSonos') != '1' or (managers.ConfigManager.getAliceConfigByName('outputOnSonos') == '1' or managers.ModuleManager.getModuleInstance('Sonos') is None and not managers.ModuleManager.getModuleInstance('Sonos').anyModuleHere(client)) or not managers.ModuleManager.getModuleInstance('Sonos').active:
 			if client == 'all':
-				for device in self._declaredAudioDevices:
+				deviceList = managers.DeviceManager.getDevicesByType('AliceSatellite', connectedOnly=True)
+				deviceList.append('default')
+
+				for device in deviceList:
 					device = device.replace('@mqtt', '')
 					self.ask(text=text, client=device, intentFilter=intentFilter, customData=customData)
 			else:
@@ -611,7 +614,10 @@ class MqttServer(Manager):
 			sessionId = str(uuid.uuid4())
 
 		if siteId == 'all':
-			for device in self._declaredAudioDevices:
+			deviceList = managers.DeviceManager.getDevicesByType('AliceSatellite', connectedOnly=True)
+			deviceList.append('default')
+
+			for device in deviceList:
 				device = device.replace('@mqtt', '')
 				self.playSound(sessionId=sessionId, soundFile=soundFile, absolutePath=absolutePath, siteId=device, root=root)
 		else:
@@ -670,14 +676,16 @@ class MqttServer(Manager):
 			self._logger.error('Tried to speak on Sonos but Sonos module is disabled or missing')
 
 
-	def toggleFeedbackSounds(self, state='On'):
+	@staticmethod
+	def toggleFeedbackSounds(state='On'):
 		"""
 		Activates or disables the feedback sounds, on all devices
 		:param state: str On or off
 		"""
-		if not self._declaredAudioDevices:
-			return
 
-		for device in self._declaredAudioDevices:
+		deviceList = managers.DeviceManager.getDevicesByType('AliceSatellite', connectedOnly=True)
+		deviceList.append('default')
+
+		for device in deviceList:
 			device = device.replace('@mqtt', '')
 			publish.single('hermes/feedback/sound/toggle{}'.format(state.title()), payload=json.dumps({'siteId': device}))
