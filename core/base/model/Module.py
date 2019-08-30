@@ -200,7 +200,7 @@ class Module(object):
 
 
 	@staticmethod
-	def say(text: str, siteId: str ='default', customData: dict = None, canBeEnqueued: bool = True):
+	def say(text: str, siteId: str = 'default', customData: dict = None, canBeEnqueued: bool = True):
 		managers.MqttServer.say(text=text, client=siteId, customData=customData, canBeEnqueued=canBeEnqueued)
 
 
@@ -210,8 +210,8 @@ class Module(object):
 
 
 	@staticmethod
-	def continueDialog(sessionId: str, text: str, customData: dict = None, intentFilter: list = None, previousIntent: str = '', slot: str = ''):
-		managers.MqttServer.continueDialog(sessionId=sessionId, text=text, customData=customData, intentFilter=intentFilter, previousIntent=previousIntent, slot=slot)
+	def continueDialog(sessionId: str, text: str, customData: dict = None, intentFilter: list = None, previousIntent: typing.Any = None, slot: str = ''):
+		managers.MqttServer.continueDialog(sessionId=sessionId, text=text, customData=customData, intentFilter=intentFilter, previousIntent=str(previousIntent), slot=slot)
 
 
 	@staticmethod
