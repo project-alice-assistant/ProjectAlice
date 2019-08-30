@@ -355,19 +355,17 @@ class ConfigManager(Manager):
 
 
 	def changeActiveLanguage(self, toLang: str):
-		for langCode, settings in self.getAliceConfigByName('supportedLanguages').items():
-			if langCode == toLang:
-				self.updateAliceConfiguration('activeLanguage', toLang)
-				return True
-
+		if toLang in self.getAliceConfigByName('supportedLanguages'):
+			self.updateAliceConfiguration('activeLanguage', toLang)
+			return True
 		return False
 
 
 	def changeActiveSnipsProjectIdForLanguage(self, projectId: str, forLang: str):
 		langConfig = self.getAliceConfigByName('supportedLanguages').copy()
-		for langCode, settings in self.getAliceConfigByName('supportedLanguages').items():
-			if langCode == forLang:
-				langConfig[langCode]['snipsProjectId'] = projectId
+		
+		if forLang in langConfig:
+			langConfig[forLang]['snipsProjectId'] = projectId
 
 		self.updateAliceConfiguration('supportedLanguages', langConfig)
 
