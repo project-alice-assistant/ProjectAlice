@@ -140,7 +140,7 @@ class Module(object):
 		if not moduleName:
 			moduleName = self.name
 
-		return commons.rootDir() + '/modules/{}/{}'.format(moduleName, resourcePathFile)
+		return os.path.join(commons.rootDir(), 'modules', moduleName, resourcePathFile)
 
 
 	def getConfig(self, key: str) -> typing.Any:
