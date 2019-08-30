@@ -118,23 +118,10 @@ class ConfigManager(Manager):
 		Saves the given configuration into config.py
 		:param confs: the dict to save
 		"""
-
-		# Do some sorting, just for the eyes
-		temp = sorted(list(confs.keys()))
-		sort = dict()
-		modules = dict()
-		for key in temp:
-			if key == 'modules':
-				modules = confs[key]
-				continue
-
-			sort[key] = confs[key]
-
+		sort = dict(sorted(confs.items()))
 		# Only store "active", "version", "author", "conditions" value for module config
 		misterProper = ['active', 'version', 'author', 'conditions']
-		modulesCleaned = {key: value for key, value in modules.items() if key in misterProper}
-
-		sort['modules'] = modulesCleaned
+		sort['modules'] = {key: value for key, value in sort['modules'].items() if key in misterProper}
 
 		try:
 			s = json.dumps(sort, indent = 4).replace('false', 'False').replace('true', 'True')
