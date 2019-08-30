@@ -161,6 +161,10 @@ class RedQueen(Module):
 
 
 	def inTheMood(self, session: DialogSession) -> bool:
+
+		if self.getConfig(key='disableMoodTraits'):
+			return True
+
 		if self.mood == 'Anger':
 			chance = 40
 		elif self.mood == 'Tiredness':
@@ -242,7 +246,7 @@ class RedQueen(Module):
 		self._logger.info('[{}] Scheduled next random speaking in {} seconds'.format(self.name, rnd))
 
 		if not init and not managers.UserManager.checkIfAllUser('goingBed') and not managers.UserManager.checkIfAllUser('sleeping'):
-			managers.MqttServer.say(managers.TalkManager.randomTalk('randomlySpeak{}'.format(self.mood)), client='all')
+			managers.MqttServer.say(self.randomTalk('randomlySpeak{}'.format(self.mood)), client='all')
 
 
 	def changeRedQueenStat(self, stat: str, amount: int):
