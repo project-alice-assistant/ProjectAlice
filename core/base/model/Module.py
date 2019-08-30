@@ -136,8 +136,10 @@ class Module(object):
 		return True
 
 
-	@staticmethod
-	def getResource(moduleName, resourcePathFile) -> str:
+	def getResource(self, moduleName: str = '', resourcePathFile: str = '') -> str:
+		if not moduleName:
+			moduleName = self.name
+
 		return commons.rootDir() + '/modules/{}/{}'.format(moduleName, resourcePathFile)
 
 
@@ -195,6 +197,41 @@ class Module(object):
 	@staticmethod
 	def getModuleInstance(moduleName: str):
 		return managers.ModuleManager.getModuleInstance(moduleName=moduleName)
+
+
+	@staticmethod
+	def say(text: str, siteId: str ='default', customData: dict = None, canBeEnqueued: bool = True):
+		managers.MqttServer.say(text=text, client=siteId, customData=customData, canBeEnqueued=canBeEnqueued)
+
+
+	@staticmethod
+	def ask(text: str, siteId: str = 'default', intentFilter: list = None, customData: dict = None, previousIntent: str = '', canBeEnqueued: bool = True):
+		managers.MqttServer.ask(text=text, client=siteId, intentFilter=intentFilter, customData=customData, previousIntent=previousIntent, canBeEnqueued=canBeEnqueued)
+
+
+	@staticmethod
+	def continueDialog(sessionId: str, text: str, customData: dict = None, intentFilter: list = None, previousIntent: str = '', slot: str = ''):
+		managers.MqttServer.continueDialog(sessionId=sessionId, text=text, customData=customData, intentFilter=intentFilter, previousIntent=previousIntent, slot=slot)
+
+
+	@staticmethod
+	def endDialog(sessionId: str = '', text: str = '', siteId: str = ''):
+		managers.MqttServer.endTalk(sessionId=sessionId, text=text, client=siteId)
+
+
+	@staticmethod
+	def endSession(sessionId):
+		managers.MqttServer.endSession(sessionId=sessionId)
+
+
+	@staticmethod
+	def playSound(soundFile: str, sessionId: str = '', absolutePath: bool = False, siteId: str = 'default', root: str = '', uid: str = ''):
+		managers.MqttServer.playSound(soundFile=soundFile, sessionId=sessionId, absolutePath=absolutePath, siteId=siteId, root=root, uid=uid)
+
+
+	@staticmethod
+	def publish(topic: str, payload: dict = None, qos: int = 0, retain: bool = False):
+		managers.MqttServer.publish(topic=topic, payload=payload, qos=qos, retain=retain)
 
 
 	def onHotword(self, siteId: str): pass
@@ -269,4 +306,3 @@ class Module(object):
 	def onSnipsAssistantDownloadFailed(self, *args): pass
 	def onAuthenticated(self, session: DialogSession, *args): pass
 	def onAuthenticationFailed(self, session: DialogSession, *args): pass
-
