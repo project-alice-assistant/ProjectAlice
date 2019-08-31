@@ -5,12 +5,12 @@ To go further we've built on top of Snips to propose some online alternatives an
 
 
 # Who made this?
-The original code was started end 2015 and several rewrite made it what it is today. It was entirely written by me Psycho until the point, where he decided to open it to the world. There's no money asked, no contribution, but as the license states, you should give back what you've been given, share your improvements and addons to the rest of us, in the form of pull requests.
+The original code was started end 2015 and several rewrites made it what it is today. It was entirely written by me Psycho until the point, where he decided to open it to the world. There's no money asked, no contribution, but as the license states, you should give back what you've been given, share your improvements and addons to the rest of us, in the form of pull requests.
 
 As of may 2019, Jierka joined to prepare Alice for a public release, by providing quality code, fresh ideas and insights over the project. At the same time maxbachmann joined, at first to translate to german for the release but very quickly adopted the code and started contributing to the refactoring, rewrite and module production.
 
 
-# How does it run? What's special about it? Isn't the same as Snips skill server?
+# How does it run? What's special about it? Isn't it the same as Snips skill server?
 Glad you wonder! First things first, it's much more than just a skill server. It's been made very modular, in fact it runs using user developped modules. You won't have to use any console to train your assistant, we have made a way for the creators to share their modules with the language training included, the whole assistant part is automated
 
 Adding new modules is as easy as using either our CLI or a ticketing system. Updates are automatic, so over time the modules will get better and better with the community input to improve utterances and adding more language support.
