@@ -11,6 +11,7 @@ import time
 
 import requests
 from selenium import webdriver
+from selenium.webdriver.chrome.webdriver import WebDriver
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.support import expected_conditions as EC
 # from selenium.webdriver.firefox.options import Options
@@ -35,15 +36,15 @@ class SamkillaManager(Manager):
 	NAME = 'SamkillaManager'
 	ROOT_URL = "https://console.snips.ai"
 
-	def __init__(self, mainClass, devMode = True):
+	def __init__(self, mainClass, devMode: bool = True):
 		super().__init__(mainClass, self.NAME)
 		managers.SamkillaManager = self
 
-		self._currentUrl = ""
+		self._currentUrl = ''
 		self._browser = None
 		self._devMode = devMode
-		self._cookie = ""
-		self._userId = ""
+		self._cookie = ''
+		self._userId = ''
 		self._userEmail = managers.ConfigManager.getAliceConfigByName('snipsConsoleLogin')
 		self._userPassword = managers.ConfigManager.getAliceConfigByName('snipsConsolePassword')
 		self.Assistant = None
@@ -71,8 +72,9 @@ class SamkillaManager(Manager):
 	def userEmail(self) -> str:
 		return self._userEmail
 
-	def sync(self, moduleFilter=None, download: bool = True):
-		self.log('[{}] Sync for module \'{}\''.format(self.NAME, moduleFilter if moduleFilter else "*"))
+
+	def sync(self, moduleFilter: str = None, download: bool = True):
+		self.log('[{}] Sync for module \'{}\''.format(self.NAME, moduleFilter if moduleFilter else '*'))
 
 		started = self.start()
 
@@ -89,7 +91,7 @@ class SamkillaManager(Manager):
 				baseAssistantId=activeProjectId,
 				baseLanguageFilter=activeLang,
 				baseModuleFilter=moduleFilter,
-				newAssistantTitle="ProjectAlice_{}".format(managers.LanguageManager.activeLanguage)
+				newAssistantTitle='ProjectAlice_{}'.format(managers.LanguageManager.activeLanguage)
 			)
 
 			if changes:
@@ -119,7 +121,7 @@ class SamkillaManager(Manager):
 			self.sync()
 
 
-	def log(self, msg):
+	def log(self, msg: str):
 		if self._devMode:
 			self._logger.info(msg)
 
@@ -152,11 +154,14 @@ class SamkillaManager(Manager):
 		# self._browser = webdriver.Firefox('geckodriver', options=options)
 		self._browser = webdriver.Chrome('chromedriver', options=options)
 
-	def getBrowser(self):
+
+	def getBrowser(self) -> WebDriver:
 		return self._browser
+
 
 	def reloadBrowserPage(self):
 		self._browser.execute_script("location.reload()")
+
 
 	def visitUrl(self, url):
 		self._currentUrl = url
@@ -164,7 +169,8 @@ class SamkillaManager(Manager):
 		time.sleep(0.1)
 		# self.log("[Browser] " + self._browser.title +' - ' + self._browser.current_url)
 
-	def login(self, url):
+
+	def login(self, url: str):
 		self.visitUrl(url)
 		self._browser.find_element_by_class_name('cookies-analytics-info__ok-button').click()
 		self._browser.find_element_by_name('email').send_keys(self._userEmail)
@@ -173,12 +179,13 @@ class SamkillaManager(Manager):
 		self._cookie = self._browser.execute_script("return document.cookie")
 		self._userId =  self._browser.execute_script("return window._loggedInUser['id']")
 
-	# @TODO batch gql requests
-	def postGQLBrowserly(self, payload, jsonRequest=True, dataReadyResponse=True, rawResponse=False):
+
+	# TODO batch gql requests
+	def postGQLBrowserly(self, payload: dict, jsonRequest: bool = True, dataReadyResponse: bool = True, rawResponse: bool = False) -> dict:
 		if jsonRequest:
 			payload = json.dumps(payload)
 
-		payload = payload.replace("'", "__SINGLE_QUOTES__").replace("\\n", " ")
+		payload = payload.replace("'", "__SINGLE_QUOTES__").replace("\\n", ' ')
 
 		# self.log(payload)
 		# self._browser.execute_script('console.log(\'' + payload + '\')')
@@ -188,7 +195,7 @@ class SamkillaManager(Manager):
 		self._browser.execute_script('fetch("/gql", {method: "POST", headers:{"accept":"*/*","content-type":"application/json"}, credentials: "same-origin", body:\'' + payload + '\'.replace(/__SINGLE_QUOTES__/g,"\'").replace(/__QUOTES__/g,\'\\\\"\')}).then((data) => { data.text().then((text) => { document.title = text; }); })')
 		wait = WebDriverWait(self._browser, 10)
 		wait.until(EC.title_contains('{'))
-		response = self._browser.execute_script("return document.title")
+		response = self._browser.execute_script('return document.title')
 		self._browser.execute_script("document.title = 'idle'")
 		# self.log(response)
 
@@ -205,9 +212,9 @@ class SamkillaManager(Manager):
 				errorDetails = {'status': 0}
 
 			errorResponse = {
-				"code": errorDetails['status'],
-				"message": complexMessage,
-				"context": path
+				'code': errorDetails['status'],
+				'message': complexMessage,
+				'context': path
 			}
 
 			raise HttpError(errorResponse['code'], errorResponse['message'], errorResponse['context'])
@@ -220,9 +227,10 @@ class SamkillaManager(Manager):
 
 		return jsonResponse[0]['data']
 
+
 	# Do not use for authenticated function like MUTATIONS (and maybe certain QUERY)
 	# console-session is randomly present from browser (document.cookie) so we can't authenticated him automatically
-	def postGQLNatively(self, payload):
+	def postGQLNatively(self, payload: dict) -> requests.Response:
 		# console-session cookie must be present
 		url = self.ROOT_URL + '/gql'
 		headers = {
@@ -241,7 +249,8 @@ class SamkillaManager(Manager):
 		return requests.post(url=url, data=payload, headers=headers)
 
 
-	def findRunnableAssistant(self, assistantId, assistantLanguage, newAssistantTitle="AliceProject", persistLocal=False):
+	# noinspection PyUnusedLocal
+	def findRunnableAssistant(self, assistantId: str, assistantLanguage: str, newAssistantTitle: str = "ProjectAlice", persistLocal: bool = False) -> str:
 		runOnAssistantId = None
 
 		if assistantId == '':
@@ -251,7 +260,7 @@ class SamkillaManager(Manager):
 		if assistantId:
 			if not self.Assistant.exists(assistantId):
 				# If not found remotely, stop everything
-				raise AssistantNotFoundError(4001, "Assistant with id {} not found".format(assistantId), ["assistant"])
+				raise AssistantNotFoundError(4001, "Assistant with id {} not found".format(assistantId), ['assistant'])
 			else:
 				# If found remotely, just use it
 				runOnAssistantId = assistantId
@@ -280,7 +289,7 @@ class SamkillaManager(Manager):
 
 		return runOnAssistantId
 
-	def syncLocalToRemote(self, baseAssistantId, baseModuleFilter, newAssistantTitle="AliceProject", baseLanguageFilter="en"):
+	def syncLocalToRemote(self, baseAssistantId: str, baseModuleFilter: str, newAssistantTitle: str = 'ProjectAlice', baseLanguageFilter: str = 'en') -> bool:
 		# RemoteFetch/LocalCheck/CreateIfNeeded: assistant
 		runOnAssistantId = self.findRunnableAssistant(
 			assistantId=baseAssistantId,
@@ -298,7 +307,7 @@ class SamkillaManager(Manager):
 		return changes
 
 
-	def syncRemoteToLocal(self, baseAssistantId, baseModuleFilter, baseLanguageFilter="en"):
+	def syncRemoteToLocal(self, baseAssistantId: str, baseModuleFilter: str, baseLanguageFilter: str = 'en'):
 		# RemoteFetch/LocalCheck/CreateIfNeeded: assistant
 		runOnAssistantId = self.findRunnableAssistant(
 			assistantId=baseAssistantId,
@@ -310,11 +319,11 @@ class SamkillaManager(Manager):
 		self.MainProcessor.syncRemoteToLocal(runOnAssistantId, languageFilter=baseLanguageFilter, moduleFilter=baseModuleFilter)
 
 
-	def getDialogTemplatesMaps(self, runOnAssistantId, languageFilter, moduleFilter=None):
+	def getDialogTemplatesMaps(self, runOnAssistantId: str, languageFilter: str, moduleFilter: str = None) -> tuple:
 		return self.MainProcessor.buildMapsFromDialogTemplates(runOnAssistantId, languageFilter=languageFilter, moduleFilter=moduleFilter)
 
 
-	def getIntentsByModuleName(self, runOnAssistantId, languageFilter, moduleFilter=None):
+	def getIntentsByModuleName(self, runOnAssistantId: str, languageFilter: str, moduleFilter:str = None) -> list:
 		slotTypesModulesValues, intentsModulesValues, intentNameSkillMatching = self.getDialogTemplatesMaps(
 			runOnAssistantId=runOnAssistantId,
 			languageFilter=languageFilter
@@ -325,13 +334,14 @@ class SamkillaManager(Manager):
 		for dtIntentName, dtModuleName in intentNameSkillMatching.items():
 			if dtModuleName == moduleFilter:
 				intents.append({
-					"name": dtIntentName,
-					"description": intentsModulesValues[dtIntentName]['__otherattributes__']['description']
+					'name': dtIntentName,
+					'description': intentsModulesValues[dtIntentName]['__otherattributes__']['description']
 				})
 
 		return intents
 
-	def getUtterancesByIntentName(self, runOnAssistantId, languageFilter, intentFilter=None):
+
+	def getUtterancesByIntentName(self, runOnAssistantId: str, languageFilter: str, intentFilter: str = None) -> list:
 		slotTypesModulesValues, intentsModulesValues, intentNameSkillMatching = self.getDialogTemplatesMaps(
 			runOnAssistantId=runOnAssistantId,
 			languageFilter=languageFilter
@@ -341,13 +351,12 @@ class SamkillaManager(Manager):
 
 		for dtIntentName, dtModuleName in intentNameSkillMatching.items():
 			if dtIntentName == intentFilter:
-				for utterance, _ in intentsModulesValues[dtIntentName]['utterances'].items():
+				for utterance in intentsModulesValues[dtIntentName]['utterances'].items():
 					utterances.append({
-						"sentence": utterance
+						'sentence': utterance
 					})
 
 		return utterances
-
 
 
 	@property

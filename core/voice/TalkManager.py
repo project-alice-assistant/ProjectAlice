@@ -38,10 +38,7 @@ class TalkManager(Manager):
 				lang = systemLangTalkFile.replace('.json', '')
 
 				with open('{}/{}'.format(systemLangTalksMountpoint, systemLangTalkFile)) as jsonFile:
-					if "system" not in self._langData:
-						self._langData["system"] = dict()
-
-					self._langData["system"][lang] = json.load(jsonFile)
+					self._langData.setdefault('system', dict())[lang] = json.load(jsonFile)
 
 		# Module Talks
 		modules = managers.ModuleManager.getModules()
@@ -58,10 +55,7 @@ class TalkManager(Manager):
 
 				try:
 					with open('{}/{}'.format(langTalksMountpoint, langTalkFile)) as jsonFile:
-						if moduleName not in self._langData:
-							self._langData[moduleName] = dict()
-
-						self._langData[moduleName][lang] = json.load(jsonFile)
+						self._langData.setdefault(moduleName, dict())[lang] = json.load(jsonFile)
 				except FileNotFoundError:
 					continue
 				except ValueError:
@@ -78,7 +72,8 @@ class TalkManager(Manager):
 
 		return arr
 
-	def chooseTalk(module: str, activeLanguage: str, defaultLanguage: str, shortReplyMode: bool) -> str:
+
+	def chooseTalk(self, talk: str, module: str, activeLanguage: str, defaultLanguage: str, shortReplyMode: bool) -> str:
 		try:
 			# Try to find the string needed
 			if shortReplyMode:
@@ -118,15 +113,15 @@ class TalkManager(Manager):
 		"""
 		module = module or self.getFunctionCaller() or ''
 		if not module:
-			return module
+			return ''
 
 		shortReplyMode = forceShortTalk or managers.UserManager.checkIfAllUser('sleeping') or managers.ConfigManager.getAliceConfigByName('shortReplies')
 		activeLanguage = managers.LanguageManager.activeLanguage
 		defaultLanguage = managers.LanguageManager.defaultLanguage
 
-		string = self.chooseTalk(module, activeLanguage, defaultLanguage, shortReplyMode)
+		string = self.chooseTalk(talk, module, activeLanguage, defaultLanguage, shortReplyMode)
 		if not string:
-			return string
+			return ''
 
 		if managers.ConfigManager.getAliceConfigByName('tts') == 'amazon' and \
 			managers.ConfigManager.getAliceConfigByName('whisperWhenSleeping') and \

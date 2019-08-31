@@ -83,4 +83,4 @@ skillsWithUsageQuery = gql('''
     }
   }
   ${skillFieldsFragment}
-''',{"skillFieldsFragment": skillFieldsFragment})
+''',{'skillFieldsFragment': skillFieldsFragment})

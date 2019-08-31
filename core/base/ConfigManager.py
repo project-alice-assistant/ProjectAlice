@@ -249,7 +249,7 @@ class ConfigManager(Manager):
 
 			changes = False
 
-			moduleConfigFile = os.path.join(commons.rootDir(), 'modules/{}/config.json'.format(moduleName))
+			moduleConfigFile = os.path.join(commons.rootDir(), 'modules', moduleName, 'config.json')
 			moduleConfigFileExists = os.path.isfile(moduleConfigFile)
 			moduleConfigFileTemplate = moduleConfigFile + '.dist'
 			moduleConfigFileTemplateExists = os.path.isfile(moduleConfigFileTemplate)
@@ -308,7 +308,7 @@ class ConfigManager(Manager):
 			if module and moduleName != module:
 				continue
 
-			moduleConfigFile = os.path.join(commons.rootDir(), 'modules/{}/config.json'.format(moduleName))
+			moduleConfigFile = os.path.join(commons.rootDir(), 'modules', moduleName, 'config.json')
 			moduleConfigFileExists = os.path.isfile(moduleConfigFile)
 
 			if not self._aliceConfigurations['modules'][moduleName]['active'] or not moduleConfigFileExists:

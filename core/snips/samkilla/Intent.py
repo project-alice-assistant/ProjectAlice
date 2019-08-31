@@ -20,14 +20,14 @@ class Intent:
 	def __init__(self, ctx):
 		self._ctx = ctx
 		self._cacheInit = False
-		self._intentsCache = {"cacheId": {}, "cacheName": {}}
+		self._intentsCache = {'cacheId': dict(), 'cacheName': dict()}
 
 
 	def getIntentByUserIdAndIntentName(self, userId: str, intentName: str) -> dict:
 		if intentName.lower() in self._intentsCache['cacheName']:
 			intent = self._intentsCache['cacheName'][intentName.lower()]
 		else:
-			intent = self.listIntentsByUserId(userId, intentFilter=intentName, intentFilterAttribute="name")
+			intent = self.listIntentsByUserId(userId, intentFilter=intentName, intentFilterAttribute='name')
 
 		return intent
 
@@ -40,16 +40,16 @@ class Intent:
 
 		return intent
 
-	def listIntentsByUserId(self, userId, intentFilter=None, languageFilter=None, intentFilterAttribute="id", returnAllCacheIndexedBy=None):
-		variables = { "userId": userId }
+	def listIntentsByUserId(self, userId, intentFilter=None, languageFilter=None, intentFilterAttribute='id', returnAllCacheIndexedBy=None):
+		variables = { 'userId': userId }
 
 		if languageFilter:
 			variables['lang'] = languageFilter
 
 		gqlRequest = [{
-			"operationName": "IntentsByUserIdWithUsageQuery",
-			"variables": variables,
-			"query": intentsByUserIdWithUsageQuery
+			'operationName': 'IntentsByUserIdWithUsageQuery',
+			'variables': variables,
+			'query': intentsByUserIdWithUsageQuery
 		}]
 		response = self._ctx.postGQLBrowserly(gqlRequest)
 
@@ -65,9 +65,9 @@ class Intent:
 			return self._intentsCache["cache" + key]
 
 		if intentFilter:
-			if intentFilterAttribute == "id":
+			if intentFilterAttribute == 'id':
 				return self._intentsCache['cacheId'][intentFilter]
-			elif intentFilterAttribute == "name":
+			elif intentFilterAttribute == 'name':
 				return self._intentsCache['cacheName'][intentFilter.lower()]
 
 		return response['intents']
@@ -98,12 +98,12 @@ class Intent:
 
 
 	def listUtterancesByIntentId(self, intentId):
-		variables = { "intentId": intentId }
+		variables = { 'intentId': intentId }
 
 		gqlRequest = [{
-			"operationName": "FullIntentQuery",
-			"variables": variables,
-			"query": fullIntentQuery
+			'operationName': 'FullIntentQuery',
+			'variables': variables,
+			'query': fullIntentQuery
 		}]
 		response = self._ctx.postGQLBrowserly(gqlRequest)
 
@@ -113,7 +113,7 @@ class Intent:
 
 	# Warning: mind the language parameter if the skill language is EN, intent must set language to EN
 	# no error will be shown and the skill won't be created
-	def create(self, userId, language, skillId, name="Untitled", description="", enabledByDefault=True, attachToSkill=True, typeEntityMatching=None, slotsDefinition=None, utterancesDefinition=None):
+	def create(self, userId, language, skillId, name='Untitled', description='', enabledByDefault=True, attachToSkill=True, typeEntityMatching=None, slotsDefinition=None, utterancesDefinition=None):
 
 		(structuredSlots, entities) = self.formatSlotsAndEntities(typeEntityMatching, slotsDefinition)
 		(structuredUtterances, exempleQueries) = self.formatUtterancesAndExempleQueries(utterancesDefinition)
@@ -123,32 +123,32 @@ class Intent:
 		if structuredUtterances:
 			finalStructuredUtterances = structuredUtterances
 		else:
-			finalStructuredUtterances.append({ "data": [{"range": { "start": 0, "end": 0 }, "text": "" }] })
+			finalStructuredUtterances.append({ 'data': [{'range': { 'start': 0, 'end': 0 }, 'text': '' }] })
 
 		gqlRequest = [{
-			"operationName": "publishIntent",
-			"variables": {
-				"input": {
-					"config": {
-						"author": self._ctx.userEmail,
-						"description": description,
-						"displayName": name,
-						"enabledByDefault": enabledByDefault,
-						"exampleQueries": exempleQueries,
-						"language": language,
-						"name": name,
-						"private": True,
-						"slots": structuredSlots,
-						"version": "0"
+			'operationName': 'publishIntent',
+			'variables': {
+				'input': {
+					'config': {
+						'author': self._ctx.userEmail,
+						'description': description,
+						'displayName': name,
+						'enabledByDefault': enabledByDefault,
+						'exampleQueries': exempleQueries,
+						'language': language,
+						'name': name,
+						'private': True,
+						'slots': structuredSlots,
+						'version': '0'
 					},
-					"dataset": {
-						"entities": entities,
-						"language": language,
-						"utterances": finalStructuredUtterances
+					'dataset': {
+						'entities': entities,
+						'language': language,
+						'utterances': finalStructuredUtterances
 					}
 				}
 			},
-			"query": publishIntent
+			'query': publishIntent
 		}]
 
 		try:
@@ -176,20 +176,20 @@ class Intent:
 
 	def attachToSkill(self, userId, skillId, intentId, languageFilter=None):
 		existingIntents = self.listIntentsByUserIdAndSkillId(userId=userId, skillId=skillId, languageFilter=languageFilter)
-		variablesIntents = [{"id": intentId}]
+		variablesIntents = [{'id': intentId}]
 
 		for existingIntent in existingIntents:
-			variablesIntents.append({"id": existingIntent['id']})
+			variablesIntents.append({'id': existingIntent['id']})
 
 		gqlRequest = [{
-			"operationName": "patchSkillIntents",
-			"variables": {
-				"input": {
-					"id": skillId,
-					"intents": variablesIntents
+			'operationName': 'patchSkillIntents',
+			'variables': {
+				'input': {
+					'id': skillId,
+					'intents': variablesIntents
 				}
 			},
-			"query": patchSkillIntents
+			'query': patchSkillIntents
 		}]
 		self._ctx.postGQLBrowserly(gqlRequest, rawResponse=True)
 
@@ -201,17 +201,17 @@ class Intent:
 
 		for existingIntent in existingIntents:
 			if existingIntent['id'] != intentId:
-				variablesIntents.append({ "id": existingIntent['id'] })
+				variablesIntents.append({ 'id': existingIntent['id'] })
 
 		gqlRequest = [{
-			"operationName": "patchSkillIntents",
-			"variables": {
-				"input": {
-					"id": skillId,
-					"intents": variablesIntents
+			'operationName': 'patchSkillIntents',
+			'variables': {
+				'input': {
+					'id': skillId,
+					'intents': variablesIntents
 				}
 			},
-			"query": patchSkillIntents
+			'query': patchSkillIntents
 		}]
 		self._ctx.postGQLBrowserly(gqlRequest, rawResponse=True)
 
@@ -220,9 +220,9 @@ class Intent:
 
 	def delete(self, intentId):
 		gqlRequest = [{
-			"operationName": "deleteIntent",
-			"variables":  {"intentId": intentId},
-			"query": deleteIntent
+			'operationName': 'deleteIntent',
+			'variables':  {'intentId': intentId},
+			'query': deleteIntent
 		}]
 		response = self._ctx.postGQLBrowserly(gqlRequest, rawResponse=True)
 		return response
@@ -243,23 +243,23 @@ class Intent:
 		if enabledByDefault: intent['enabledByDefault'] = enabledByDefault
 
 		gqlRequest = [{
-			"operationName": "publishIntent",
-			"variables": {
-				"intentId": intentId,
-				"input": {
-					"config": {
-						"author": intent['author'],
-						"description": intent['description'],
-						"displayName": intent['displayName'],
-						"enabledByDefault": intent['enabledByDefault'],
-						"language": intent['language'],
-						"exampleQueries": exempleQueries,
-						"slots": structuredSlots,
-						"version": intent['version'],
-						"name": intent['name'],
-						"private": True,
+			'operationName': 'publishIntent',
+			'variables': {
+				'intentId': intentId,
+				'input': {
+					'config': {
+						'author': intent['author'],
+						'description': intent['description'],
+						'displayName': intent['displayName'],
+						'enabledByDefault': intent['enabledByDefault'],
+						'language': intent['language'],
+						'exampleQueries': exempleQueries,
+						'slots': structuredSlots,
+						'version': intent['version'],
+						'name': intent['name'],
+						'private': True,
 					},
-					"dataset": {
+					'dataset': {
 						"entities": entities,
 						"language": intent['language'],
 						"utterances": structuredUtterances

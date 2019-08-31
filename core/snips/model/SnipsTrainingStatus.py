@@ -11,9 +11,9 @@ class NLUTrainingStatus:
 
 		data = data['nluStatus']
 
-		self._inProgress = data['inProgress'] if 'inProgress' in data.keys() else False
-		self._needTraining = data['needTraining'] if 'needTraining' in data.keys() else False
-		self._trainingResult = data['trainingResult'] if 'trainingResult' in data.keys() else 'ok'
+		self._inProgress = data['inProgress'] if 'inProgress' in data else False
+		self._needTraining = data['needTraining'] if 'needTraining' in data else False
+		self._trainingResult = data['trainingResult'] if 'trainingResult' in data else 'ok'
 
 
 	@property
@@ -39,9 +39,9 @@ class ASRTrainingStatus:
 
 		data = data['asrStatus']
 
-		self._inProgress = data['inProgress'] if 'inProgress' in data.keys() else False
-		self._needTraining = data['needTraining'] if 'needTraining' in data.keys() else False
-		self._trainingResult = data['trainingResult'] if 'trainingResult' in data.keys() else 'ok'
+		self._inProgress = data['inProgress'] if 'inProgress' in data else False
+		self._needTraining = data['needTraining'] if 'needTraining' in data else False
+		self._trainingResult = data['trainingResult'] if 'trainingResult' in data else 'ok'
 
 
 	@property
@@ -63,7 +63,7 @@ class TrainingStatusResponse:
 	def __init__(self, data: dict):
 		self._nluStatus = NLUTrainingStatus(data)
 		self._asrStatus = ASRTrainingStatus(data)
-		self._approximateDownloadSize = data['approximateDownloadSize'] if 'approximateDownloadSize' in data.keys() else -1
+		self._approximateDownloadSize = data['approximateDownloadSize'] if 'approximateDownloadSize' in data else -1
 
 
 	@property

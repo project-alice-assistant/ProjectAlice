@@ -117,7 +117,7 @@ class Module(object):
 		if not intent in self._supportedIntents:
 			return False
 
-		if intent in self._authOnlyIntents.keys():
+		if intent in self._authOnlyIntents:
 			# Return if intent is for auth users only but the user is unknown
 			if session.user == 'unknown':
 				managers.MqttServer.endTalk(

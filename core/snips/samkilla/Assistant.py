@@ -12,19 +12,19 @@ class Assistant():
 	def __init__(self, ctx):
 		self._ctx = ctx
 
-	def create(self, title, language, platformType="raspberrypi", asrType="snips", hotwordId="hey_snips", rawResponse=False):
+	def create(self, title, language, platformType='raspberrypi', asrType='snips', hotwordId='hey_snips', rawResponse=False):
 		gqlRequest = [{
-			"operationName": "CreateAssistant",
-			"variables": {
-				"input": {
-					"title": title,
-					"platform": {"type": platformType},
-					"asr": {"type": asrType},
-					"language": language,
-					"hotwordId": hotwordId
+			'operationName': 'CreateAssistant',
+			'variables': {
+				'input': {
+					'title': title,
+					'platform': {'type': platformType},
+					'asr': {'type': asrType},
+					'language': language,
+					'hotwordId': hotwordId
 				}
 			},
-			"query": createAssistant
+			'query': createAssistant
 		}]
 		response = self._ctx.postGQLBrowserly(gqlRequest)
 
@@ -42,21 +42,21 @@ class Assistant():
 		if title: input['title'] = title
 
 		gqlRequest = [{
-			"operationName": "PatchAssistant",
-			"variables": {
-				"assistantId": assistantId,
-				"input": input
+			'operationName': 'PatchAssistant',
+			'variables': {
+				'assistantId': assistantId,
+				'input': input
 			},
-			"query": patchAssistant
+			'query': patchAssistant
 		}]
 		self._ctx.postGQLBrowserly(gqlRequest)
 
 
 	def delete(self, assistantId, rawResponse=False):
 		gqlRequest = [{
-			"operationName": "DeleteAssistant",
-			"variables":  {"assistantId": assistantId},
-			"query": deleteAssistant
+			'operationName': 'DeleteAssistant',
+			'variables':  {'assistantId': assistantId},
+			'query': deleteAssistant
 		}]
 		response = self._ctx.postGQLBrowserly(gqlRequest)
 		if rawResponse: return response
@@ -64,24 +64,24 @@ class Assistant():
 		return response
 
 
-	def list(self, rawResponse=False, parseWithAttribute="id"):
+	def list(self, rawResponse=False, parseWithAttribute='id'):
 		gqlRequest = [{
-			"operationName": "AssistantsQuery",
-			"variables":  {},
-			"query": allAssistantsQuery
+			'operationName': 'AssistantsQuery',
+			'variables': dict(),
+			'query': allAssistantsQuery
 		}]
 		response = self._ctx.postGQLBrowserly(gqlRequest)
 		if rawResponse: return response
 
-		if parseWithAttribute and parseWithAttribute != "":
+		if parseWithAttribute and parseWithAttribute != '':
 			return [assistantItem[parseWithAttribute] for assistantItem in response['assistants']]
 
-		return response["assistants"]
+		return response['assistants']
 
 	def getTitleById(self, assistantId):
-		for assistantItem in self.list(parseWithAttribute=""):
-			if assistantItem["id"] == assistantId:
-				return assistantItem["title"]
+		for assistantItem in self.list(parseWithAttribute=''):
+			if assistantItem['id'] == assistantId:
+				return assistantItem['title']
 
 		return ""
 
@@ -100,10 +100,10 @@ class Assistant():
 
 	def forkAssistantSkill(self, assistantId, sourceSkillId):
 		gqlRequest = [{
-			"operationName": "forkAssistantSkill",
-			"variables": {"assistantId": assistantId, "skillId": sourceSkillId},
-			"query": forkAssistantSkill
+			'operationName': 'forkAssistantSkill',
+			'variables': {'assistantId': assistantId, 'skillId': sourceSkillId},
+			'query': forkAssistantSkill
 		}]
 		response = self._ctx.postGQLBrowserly(gqlRequest)
 
-		return response["forkAssistantSkill"]["copiedBundleId"]
+		return response['forkAssistantSkill']['copiedBundleId']

@@ -14,11 +14,11 @@ class SlotTypeRemoteProcessor():
 		self._assistantId = assistantId
 		self._slotTypeLanguage = slotLanguage
 		self._syncState = None
-		self._createdInstances = {"entities":[]}
+		self._createdInstances = {'entities': list()}
 
 	def createNewSavedSlotType(self):
 		return {
-			"name": self._slotType['name']
+			'name': self._slotType['name']
 		}
 
 	def slotTypeValuesToHash(self, entityId=''):
@@ -88,7 +88,7 @@ class SlotTypeRemoteProcessor():
 			return self.syncSlotTypesOnAssistant(slotTypeSyncState=slotTypeSyncState, hashComputationOnly=hashComputationOnly)
 		except:
 			e = sys.exc_info()[0]
-			self._ctx.log("[Safe] Handle error gracefully")
+			self._ctx.log('[Safe] Handle error gracefully')
 			self._ctx.log(e)
 			self._ctx.log(traceback.format_exc())
 			# Deprecated
