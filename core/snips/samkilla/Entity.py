@@ -12,44 +12,44 @@ class Entity():
 	def __init__(self, ctx):
 		self._ctx = ctx
 		self._cacheInit = False
-		self._entitiesCache = {"cacheId": {}, "cacheName": {}}
+		self._entitiesCache = {'cacheId': dict(), 'cacheName': dict()}
 
 	def getEntityByUserEmailAndEntityName(self, userEmail, entityName):
 		entity = None
 
-		if entityName in self._entitiesCache["cacheName"]:
-			entity = self._entitiesCache["cacheName"][entityName]
+		if entityName in self._entitiesCache['cacheName']:
+			entity = self._entitiesCache['cacheName'][entityName]
 		else:
-			entity = self.listEntitiesByUserEmail(userEmail, entityFilter=entityName, entityFilterAttribute="name")
+			entity = self.listEntitiesByUserEmail(userEmail, entityFilter=entityName, entityFilterAttribute='name')
 
 		return entity
 
 	def getEntityByUserEmailAndEntityId(self, userEmail, entityId):
 		entity = None
 
-		if entityId in self._entitiesCache["cacheId"]:
-			entity = self._entitiesCache["cacheId"][entityId]
+		if entityId in self._entitiesCache['cacheId']:
+			entity = self._entitiesCache['cacheId'][entityId]
 		else:
 			entity = self.listEntitiesByUserEmail(userEmail, entityFilter=entityId)
 
 		return entity
 
-	def listEntitiesByUserEmail(self, userEmail, entityFilter=None, languageFilter=None, entityFilterAttribute="id", returnAllCacheIndexedBy=None):
-		variables = {"email": userEmail}
+	def listEntitiesByUserEmail(self, userEmail, entityFilter=None, languageFilter=None, entityFilterAttribute='id', returnAllCacheIndexedBy=None):
+		variables = {'email': userEmail}
 
 		if languageFilter:
-			variables["lang"] = languageFilter
+			variables['lang'] = languageFilter
 
 		gqlRequest = [{
-			"operationName": "customEntitiesWithUsageQuery",
-			"variables": variables,
-			"query": customEntitiesWithUsageQuery
+			'operationName': 'customEntitiesWithUsageQuery',
+			'variables': variables,
+			'query': customEntitiesWithUsageQuery
 		}]
 		response = self._ctx.postGQLBrowserly(gqlRequest)
 
 		for entity in response['entities']:
-			self._entitiesCache["cacheId"][entity["id"]] = entity
-			self._entitiesCache["cacheName"][entity["name"]] = entity
+			self._entitiesCache['cacheId'][entity['id']] = entity
+			self._entitiesCache['cacheName'][entity['name']] = entity
 
 		self._cacheInit = True
 
@@ -58,10 +58,10 @@ class Entity():
 			return self._entitiesCache["cache" + key]
 
 		if entityFilter:
-			if entityFilterAttribute == "id":
-				return self._entitiesCache["cacheId"][entityFilter]
-			elif entityFilterAttribute == "name":
-				return self._entitiesCache["cacheName"][entityFilter]
+			if entityFilterAttribute == 'id':
+				return self._entitiesCache['cacheId'][entityFilter]
+			elif entityFilterAttribute == 'name':
+				return self._entitiesCache['cacheName'][entityFilter]
 
 		return response['entities']
 
@@ -69,7 +69,7 @@ class Entity():
 		entities = list()
 
 		if fromCache and self._cacheInit:
-			entities = self._entitiesCache["cacheId"].values()
+			entities = self._entitiesCache['cacheId'].values()
 		else:
 			entities = self.listEntitiesByUserEmail(userEmail=userEmail, languageFilter=languageFilter)
 
@@ -91,12 +91,12 @@ class Entity():
 		return intentEntities
 
 	def listEntityValuesByEntityId(self, entityId):
-		variables = { "entityId": entityId }
+		variables = { 'entityId': entityId }
 
 		gqlRequest = [{
-			"operationName": "FullCustomEntityQuery",
-			"variables": variables,
-			"query": fullCustomEntityQuery
+			'operationName': 'FullCustomEntityQuery',
+			'variables': variables,
+			'query': fullCustomEntityQuery
 		}]
 		response = self._ctx.postGQLBrowserly(gqlRequest)
 
@@ -111,38 +111,38 @@ class Entity():
 
 		for slotValue in slotValues:
 			formattedSlotValues.append({
-				"value": slotValue["value"],
-				"synonyms": slotValue["synonyms"] if "synonyms" in slotValue else [],
-				"fromWikilists": None
+				'value': slotValue['value'],
+				'synonyms': slotValue['synonyms'] if "synonyms" in slotValue else list(),
+				'fromWikilists': None
 			})
 
 		return formattedSlotValues
 
 	# Warning: mind the language parameter if the assistant language is EN, entity must set language to EN
 	# no error will be shown and the entity won't be created
-	def create(self, name, language, matchingStrictness=1, automaticallyExtensible=False, useSynonyms=True, slotValues=[]):
+	def create(self, name, language, matchingStrictness=1, automaticallyExtensible=False, useSynonyms=True, slotValues=list()):
 
 		# Slot values exemple:
-		#[ {"value": "room"}, {"value": "house", "synonyms": ["entire house"]} ]
+		#[ {'value': 'room'}, {'value': 'house', 'synonyms': ['entire house']} ]
 		formattedSlotValues = self.formatSlotValues(slotValues)
 
 		gqlRequest = [{
-			"operationName": "createIntentEntity",
-			"variables": {
-				"input": {
-					"author": self._ctx._userEmail,
-					"automaticallyExtensible": automaticallyExtensible,
-					"data": formattedSlotValues,
-					"language": language,
-					"name": name,
-					"private": True,
-					"useSynonyms": useSynonyms
+			'operationName': 'createIntentEntity',
+			'variables': {
+				'input': {
+					'author': self._ctx._userEmail,
+					'automaticallyExtensible': automaticallyExtensible,
+					'data': formattedSlotValues,
+					'language': language,
+					'name': name,
+					'private': True,
+					'useSynonyms': useSynonyms
 				}
 			},
-			"query": createIntentEntity
+			'query': createIntentEntity
 		}]
 		response = self._ctx.postGQLBrowserly(gqlRequest)
-		createdEntityId = response["createIntentEntity"]["id"]
+		createdEntityId = response['createIntentEntity']['id']
 
 		return createdEntityId
 
@@ -160,24 +160,24 @@ class Entity():
 			input['data'] = self.formatSlotValues(slotValues)
 
 		gqlRequest = [{
-			"operationName": "patchIntentEntity",
-			"variables": {
-				"intentEntityId": entityId,
-				"input": input
+			'operationName': 'patchIntentEntity',
+			'variables': {
+				'intentEntityId': entityId,
+				'input': input
 			},
-			"query": patchIntentEntity
+			'query': patchIntentEntity
 		}]
 		self._ctx.postGQLBrowserly(gqlRequest, rawResponse=True)
 
 
 	def delete(self, entityId, language=None):
 		gqlRequest = [{
-			"operationName": "deleteIntentEntity",
-			"variables": {
-				"email": self._ctx._userEmail,
-				"id": entityId
-				# "lang": language # seems it's not mandatory
+			'operationName': 'deleteIntentEntity',
+			'variables': {
+				'email': self._ctx._userEmail,
+				'id': entityId
+				# 'lang': language # seems it's not mandatory
 			},
-			"query": deleteIntentEntity
+			'query': deleteIntentEntity
 		}]
 		self._ctx.postGQLBrowserly(gqlRequest, rawResponse=True)

@@ -19,50 +19,50 @@ class Skill():
 	def __init__(self, ctx):
 		self._ctx = ctx
 		self._cacheInit = False
-		self._skillsCache = {"cacheId": {}, "cacheName": {}}
+		self._skillsCache = {'cacheId': dict(), 'cacheName': dict()}
 
 	def getSkillByUserIdAndSkillName(self, userId, skillName):
 		skill = None
 
-		if skillName in self._skillsCache["cacheName"]:
-			skill = self._skillsCache["cacheName"][skillName]
+		if skillName in self._skillsCache['cacheName']:
+			skill = self._skillsCache['cacheName'][skillName]
 		else:
-			skill = self.listSkillsByUserId(userId, skillFilter=skillName, skillFilterAttribute="name")
+			skill = self.listSkillsByUserId(userId, skillFilter=skillName, skillFilterAttribute='name')
 
 		return skill
 
 	def getSkillByUserIdAndSkillId(self, userId, skillId):
 		skill = None
 
-		if skillId in self._skillsCache["cacheId"]:
-			skill = self._skillsCache["cacheId"][skillId]
+		if skillId in self._skillsCache['cacheId']:
+			skill = self._skillsCache['cacheId'][skillId]
 		else:
 			skill = self.listSkillsByUserId(userId, skillFilter=skillId)
 
 		return skill
 
-	def listSkillsByUserId(self, userId, skillFilter=None, skillFilterAttribute="id", languageFilter=None, intentId=None, returnAllCacheIndexedBy=None, page=1, totalSkills=[]):
+	def listSkillsByUserId(self, userId, skillFilter=None, skillFilterAttribute='id', languageFilter=None, intentId=None, returnAllCacheIndexedBy=None, page=1, totalSkills=list()):
 		variables = {
-			"userId": userId,
-			"offset": (page - 1) * 50,
-			"limit": 50,
-			"sort": "lastUpdated"
+			'userId': userId,
+			'offset': (page - 1) * 50,
+			'limit': 50,
+			'sort': 'lastUpdated'
 		}
 
 		# 50 is the max limit server side
-		if languageFilter: variables["lang"] = languageFilter
-		if intentId: variables["intentId"] = intentId
+		if languageFilter: variables['lang'] = languageFilter
+		if intentId: variables['intentId'] = intentId
 
 		gqlRequest = [{
-			"operationName": "SkillsWithUsageQuery",
-			"variables": variables,
-			"query": skillsWithUsageQuery
+			'operationName': 'SkillsWithUsageQuery',
+			'variables': variables,
+			'query': skillsWithUsageQuery
 		}]
 		response = self._ctx.postGQLBrowserly(gqlRequest)
 
 		for skill in response['skills']['skills']:
-			self._skillsCache["cacheId"][skill["id"]] = skill
-			self._skillsCache["cacheName"][skill["name"]] = skill
+			self._skillsCache['cacheId'][skill['id']] = skill
+			self._skillsCache['cacheName'][skill['name']] = skill
 			totalSkills.append(skill)
 
 		if (page - 1) * 50 < response['skills']['pagination']['total']:
@@ -75,10 +75,10 @@ class Skill():
 			return self._skillsCache["cache" + key]
 
 		if skillFilter:
-			if skillFilterAttribute == "id":
-				return self._skillsCache["cacheId"][skillFilter]
-			elif skillFilterAttribute == "name":
-				return self._skillsCache["cacheName"][skillFilter]
+			if skillFilterAttribute == 'id':
+				return self._skillsCache['cacheId'][skillFilter]
+			elif skillFilterAttribute == 'name':
+				return self._skillsCache['cacheName'][skillFilter]
 
 		return totalSkills
 
@@ -87,7 +87,7 @@ class Skill():
 		skills = list()
 
 		if fromCache and self._cacheInit:
-			skills = self._skillsCache["cacheId"].values()
+			skills = self._skillsCache['cacheId'].values()
 		else:
 			skills = self.listSkillsByUserId(userId=userId, languageFilter=languageFilter)
 
@@ -113,24 +113,24 @@ class Skill():
 
 	# Warning: mind the language parameter if the assistant language is EN, skill must set language to EN
 	# no error will be shown and the skill won't be created
-	def create(self, assistantId, language, name="Untitled", description="", imageKey=EnumSkillImageUrl.default, attachToAssistant=True, intents=[]):
+	def create(self, assistantId, language, name='Untitled', description='', imageKey=EnumSkillImageUrl.default, attachToAssistant=True, intents=list()):
 		gqlRequest = [{
-			"operationName": "createSkill",
-			"variables": {
-				"input": {
-					"description": description,
-					"imageUrl": EnumSkillImageUrl.getImageUrl(self._ctx.ROOT_URL, imageKey),
-					"intents": intents,
-					"language": language,
-					"name": name,
-					"private": True
+			'operationName': 'createSkill',
+			'variables': {
+				'input': {
+					'description': description,
+					'imageUrl': EnumSkillImageUrl.getImageUrl(self._ctx.ROOT_URL, imageKey),
+					'intents': intents,
+					'language': language,
+					'name': name,
+					'private': True
 				}
 			},
-			"query": createSkill
+			'query': createSkill
 		}]
 		resp = self._ctx.postGQLBrowserly(gqlRequest)
 
-		createdSkillId = resp["createSkill"]["id"]
+		createdSkillId = resp['createSkill']['id']
 
 		if attachToAssistant:
 			self.attachToAssistant(assistantId=assistantId, skillId=createdSkillId)
@@ -139,20 +139,20 @@ class Skill():
 
 	def attachToAssistant(self, assistantId, skillId):
 		existingSkills = self._ctx.Assistant.extractSkillIdentifiers(assistantId=assistantId)
-		variablesSkills = [{"id": skillId, "parameters": None}]
+		variablesSkills = [{'id': skillId, 'parameters': None}]
 
 		for existingSkillId in existingSkills:
-			variablesSkills.append({"id": existingSkillId, "parameters": None})
+			variablesSkills.append({'id': existingSkillId, 'parameters': None})
 
 		gqlRequest = [{
-			"operationName": "PatchAssistantSkills",
-			"variables": {
-				"assistantId": assistantId,
-				"input": {
-					"skills": variablesSkills
+			'operationName': 'PatchAssistantSkills',
+			'variables': {
+				'assistantId': assistantId,
+				'input': {
+					'skills': variablesSkills
 				}
 			},
-			"query": patchAssistantSkills
+			'query': patchAssistantSkills
 		}]
 		self._ctx.postGQLBrowserly(gqlRequest, rawResponse=True)
 
@@ -168,20 +168,20 @@ class Skill():
 		if imageKey: input['imageUrl'] = EnumSkillImageUrl.getImageUrl(self._ctx.ROOT_URL, imageKey)
 
 		gqlRequest = [{
-			"operationName": "editSkill",
-			"variables": {
-				"input": input
+			'operationName': 'editSkill',
+			'variables': {
+				'input': input
 			},
-			"query": editSkill
+			'query': editSkill
 		}]
 		self._ctx.postGQLBrowserly(gqlRequest, rawResponse=True)
 
 
 	def delete(self, skillId, reload=True):
 		gqlRequest = [{
-			"operationName": "deleteSkill",
-			"variables":  {"skillId": skillId},
-			"query": deleteSkill
+			'operationName': 'deleteSkill',
+			'variables':  {'skillId': skillId},
+			'query': deleteSkill
 		}]
 		self._ctx.postGQLBrowserly(gqlRequest)
 
@@ -196,17 +196,17 @@ class Skill():
 
 		for existingSkillId in existingSkills:
 			if existingSkillId != skillId:
-				variablesSkills.append({"id": existingSkillId, "parameters": None})
+				variablesSkills.append({'id': existingSkillId, 'parameters': None})
 
 		gqlRequest = [{
-			"operationName": "PatchAssistantSkills",
-			"variables": {
-				"assistantId": assistantId,
-				"input": {
-					"skills": variablesSkills
+			'operationName': 'PatchAssistantSkills',
+			'variables': {
+				'assistantId': assistantId,
+				'input': {
+					'skills': variablesSkills
 				}
 			},
-			"query": patchAssistantSkills
+			'query': patchAssistantSkills
 		}]
 		self._ctx.postGQLBrowserly(gqlRequest, rawResponse=True)
 
@@ -219,9 +219,9 @@ class Skill():
 
 	def forkSkillIntent(self, skillId, sourceIntentId, userId, newIntentName=None):
 		gqlRequest = [{
-			"operationName": "forkSkillIntent",
-			"variables": {"skillId": skillId, "intentId": sourceIntentId, "newIntentName": newIntentName},
-			"query": forkSkillIntent
+			'operationName': 'forkSkillIntent',
+			'variables': {'skillId': skillId, 'intentId': sourceIntentId, 'newIntentName': newIntentName},
+			'query': forkSkillIntent
 		}]
 
 		try:
@@ -238,10 +238,10 @@ class Skill():
 					if 'usedIn' in intentDuplicate and intentDuplicate['usedIn']:
 						for skillItem in intentDuplicate['usedIn']:
 							self._ctx.Intent.removeFromSkill(intentId=intentDuplicate['id'], skillId=skillItem['skillId'], userId=userId, deleteAfter=False)
-					self._ctx.Intent.delete(intentId=intentDuplicate["id"])
+					self._ctx.Intent.delete(intentId=intentDuplicate['id'])
 					return self.forkSkillIntent(skillId, sourceIntentId, userId, newIntentName)
 
 			raise he
 
 
-		return response["forkSkillIntent"]["intentCopied"]["id"]
+		return response['forkSkillIntent']['intentCopied']['id']

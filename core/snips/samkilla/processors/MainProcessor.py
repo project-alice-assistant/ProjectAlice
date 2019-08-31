@@ -267,7 +267,7 @@ class MainProcessor():
 					'matchingStrictness': savedSlotType['matchingStrictness'],
 					'automaticallyExtensible': savedSlotType['automaticallyExtensible'],
 					'useSynonyms': savedSlotType['useSynonyms'],
-					'values': []
+					'values': list()
 				}}
 
 				for savedSlotValue in savedSlotType['values']:
@@ -321,11 +321,11 @@ class MainProcessor():
 					'name': savedIntent['name'],
 					'description': savedIntent['description'],
 					'enabledByDefault': savedIntent['enabledByDefault'],
-					'utterances': [],
-					'slots': []
+					'utterances': list(),
+					'slots': list()
 				},
-					'utterances': {},
-					'slots': {}
+					'utterances': dict(),
+					'slots': dict()
 				}
 
 				for savedUtterance in savedIntent['utterances']:
@@ -394,7 +394,7 @@ class MainProcessor():
 							'matchingStrictness': moduleSlotType['matchingStrictness'],
 							'automaticallyExtensible': moduleSlotType['automaticallyExtensible'],
 							'useSynonyms': moduleSlotType['useSynonyms'],
-							'values': []
+							'values': list()
 						}}
 
 					for moduleSlotValue in moduleSlotType['values']:
@@ -418,11 +418,11 @@ class MainProcessor():
 							'name': moduleIntent['name'],
 							'description': moduleIntent['description'],
 							'enabledByDefault': moduleIntent['enabledByDefault'],
-							'utterances': [],
-							'slots': []
+							'utterances': list(),
+							'slots': list()
 						},
-							'utterances': {},
-							'slots': {}
+							'utterances': dict(),
+							'slots': dict()
 						}
 
 					if 'utterances' in moduleIntent:
@@ -437,7 +437,7 @@ class MainProcessor():
 					del self._modules[moduleName]
 					continue
 
-		return (slotTypesModulesValues, intentsModulesValues, intentNameSkillMatching)
+		return slotTypesModulesValues, intentsModulesValues, intentNameSkillMatching
 
 	# TODO to refacto in different method of a new Processor
 	def syncLocalToRemote(self, runOnAssistantId, moduleFilter=None, languageFilter=None):
@@ -709,8 +709,8 @@ class MainProcessor():
 				self._ctx.log('[Deprecated] Module {}'.format(moduleName))
 				moduleCacheData = self._savedAssistants[languageFilter][runOnAssistantId]['modules'][moduleName]
 				skillId = moduleCacheData['skillId']
-				slotTypeKeys = moduleCacheData['slotTypes'].keys() if 'slotTypes' in moduleCacheData else []
-				intentKeys = moduleCacheData['intents'].keys() if 'intents' in moduleCacheData else []
+				slotTypeKeys = moduleCacheData['slotTypes'].keys() if 'slotTypes' in moduleCacheData else list()
+				intentKeys = moduleCacheData['intents'].keys() if 'intents' in moduleCacheData else list()
 
 				for slotTypeName in slotTypeKeys:
 					entityId = moduleCacheData['slotTypes'][slotTypeName]['entityId']
@@ -786,15 +786,15 @@ class MainProcessor():
 			  	'module': moduleName,
 				'icon': EnumSkillImageUrl.urlToResourceKey(skill['imageUrl']),
 				'description': skill['description'],
-				'slotTypes': [],
-				'intents': []
+				'slotTypes': list(),
+				'intents': list()
 			}
 			moduleSyncState = {
 				'skillId': skill['id'],
 				'name': moduleName,
-				'slotTypes': {},
-				'intents': {},
-				'hash': ""
+				'slotTypes': dict(),
+				'intents': dict(),
+				'hash': ''
 			}
 
 			cachedIndexedIntents = self._ctx.Intent.listIntentsByUserIdAndSkillId(userId=self._ctx._userId, skillId=skill['id'], fromCache=True)
@@ -851,7 +851,7 @@ class MainProcessor():
 					})
 					moduleSyncState['slotTypes'][entityName] = {
 						'entityId': entity['id'],
-						'hash': ""
+						'hash': ''
 					}
 
 				for slot in intent['slots']:
@@ -872,7 +872,7 @@ class MainProcessor():
 				})
 				moduleSyncState['intents'][intentName] = {
 					'intentId': intent['id'],
-					'hash': ""
+					'hash': ''
 				}
 
 

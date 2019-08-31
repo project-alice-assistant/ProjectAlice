@@ -60,31 +60,31 @@ class ModuleListCommand(Command):
 			modules = json.loads(result.decode())
 
 			for module in modules:
-				moduleInstallFile = module["html_url"]\
+				moduleInstallFile = module['html_url']\
 										.replace('github.com', 'raw.githubusercontent.com')\
 										.replace('/blob', '') \
 										.replace('/tree', '') \
-									+ '/' + module["name"] + '.install'
+									+ '/' + module['name'] + '.install'
 
 				try:
 					req = requests.get(moduleInstallFile)
 					result = req.content
 					moduleDetails = json.loads(result.decode())
-					tLangs = '|'.join(moduleDetails["conditions"]["lang"]) if 'lang' in moduleDetails['conditions'] else '-'
-					tDesc = moduleDetails["desc"]
+					tLangs = '|'.join(moduleDetails['conditions']['lang']) if 'lang' in moduleDetails['conditions'] else '-'
+					tDesc = moduleDetails['desc']
 
 					if not input.getOption('full'):
 						tDesc = (tDesc[:self.DESCRIPTION_MAX] + '..') if len(tDesc) > self.DESCRIPTION_MAX else tDesc
 
 					TABLE_DATA.append([
-						moduleDetails["name"],
-						moduleDetails["version"],
+						moduleDetails['name'],
+						moduleDetails['version'],
 						tLangs,
 					 	tDesc
 					])
 
 				except Exception as e:
-					self.write('Error get module {}'.format(module["name"]), 'red')
+					self.write('Error get module {}'.format(module['name']), 'red')
 					raise
 
 		except Exception as e:

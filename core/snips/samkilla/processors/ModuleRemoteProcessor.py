@@ -19,14 +19,14 @@ class ModuleRemoteProcessor():
 		self._moduleLanguage = moduleLanguage
 		self._syncState = None
 		self._createdInstances = {
-			"skills":[]
+			'skills': list()
 		}
 
 
 	def createNewSavedModule(self):
 		return {
-			"skillId": None,
-		   	"name": self._moduleName
+			'skillId': None,
+		   	'name': self._moduleName
 		}
 
 
@@ -69,9 +69,9 @@ class ModuleRemoteProcessor():
 			curHash = self.skillValuesToHash(icon=moduleIcon, description=moduleDescription, skillId=skillId)
 
 		return {
-			"skillId": skillId,
-			"hash": curHash,
-			"changes": changes
+			'skillId': skillId,
+			'hash': curHash,
+			'changes': changes
 		}
 
 
@@ -101,5 +101,5 @@ class ModuleRemoteProcessor():
 	def cleanCreatedInstances(self):
 		self._ctx.log("[Cleanup] Deleting {} skills".format(len(self._createdInstances['skills'])))
 		for skill in self._createdInstances['skills']:
-			self._ctx.Skill.removeFromAssistant(assistantId=skill['assistantId'], skillId=skill["id"], deleteAfter=True)
-		self._createdInstances["skills"] = list()
+			self._ctx.Skill.removeFromAssistant(assistantId=skill['assistantId'], skillId=skill['id'], deleteAfter=True)
+		self._createdInstances['skills'] = list()

@@ -16,11 +16,11 @@ class IntentRemoteProcessor():
 		self._assistantId = assistantId
 		self._intentLanguage = intentLanguage
 		self._syncState = None
-		self._createdInstances = {"intents":[]}
+		self._createdInstances = {'intents': list()}
 
 	def createNewSavedIntent(self):
 		return {
-			"name": self._intent["name"]
+			'name': self._intent['name']
 		}
 
 	def intentValuesToHash(self, typeEntityMatching, intentId='', skillId=''):
@@ -32,18 +32,18 @@ class IntentRemoteProcessor():
 			str(intent['enabledByDefault'])
 		)
 
-		for utteranceText in intent["utterances"]:
+		for utteranceText in intent['utterances']:
 			hashSum += str(utteranceText)
 
-		for slotHole in intent["slots"]:
-			hashSum += str(slotHole["name"])
-			hashSum += str(slotHole["description"])
-			hashSum += str(slotHole["required"])
-			hashSum += str(slotHole["type"])
-			hashSum += str(slotHole["missingQuestion"])
+		for slotHole in intent['slots']:
+			hashSum += str(slotHole['name'])
+			hashSum += str(slotHole['description'])
+			hashSum += str(slotHole['required'])
+			hashSum += str(slotHole['type'])
+			hashSum += str(slotHole['missingQuestion'])
 
-			if slotHole["type"] in typeEntityMatching:
-				hashSum += typeEntityMatching[slotHole["type"]]["entityId"]
+			if slotHole['type'] in typeEntityMatching:
+				hashSum += typeEntityMatching[slotHole['type']]['entityId']
 
 		hashSum += intentId + '-' + skillId
 
@@ -56,12 +56,12 @@ class IntentRemoteProcessor():
 		intent = self._intent
 
 		oldInstanceExists = self.doSyncedIntentExists()
-		oldHash = self._syncState["hash"] if oldInstanceExists else ''
-		intentId = self._syncState["intentId"] if oldInstanceExists else ''
+		oldHash = self._syncState['hash'] if oldInstanceExists else ''
+		intentId = self._syncState['intentId'] if oldInstanceExists else ''
 		curHash = self.intentValuesToHash(typeEntityMatching=typeEntityMatching, intentId=intentId, skillId=skillId)
 		changes = False
 
-		fullIntentName = intent["name"]
+		fullIntentName = intent['name']
 
 		if hashComputationOnly or (oldInstanceExists and oldHash == curHash):
 			self._ctx.log("[Sync] Intent model {} = {} has no changes".format(intentId, fullIntentName))
@@ -72,11 +72,11 @@ class IntentRemoteProcessor():
 				userId=self._ctx._userId,
 				intentId=intentId,
 				name=fullIntentName,
-				description=intent["description"],
-				enabledByDefault=intent["enabledByDefault"],
+				description=intent['description'],
+				enabledByDefault=intent['enabledByDefault'],
 				typeEntityMatching=typeEntityMatching,
-				slotsDefinition=intent["slots"],
-				utterancesDefinition=intent["utterances"],
+				slotsDefinition=intent['slots'],
+				utterancesDefinition=intent['utterances'],
 				attachToSkill=True,
 				skillId=skillId,
 				language=self._intentLanguage
@@ -87,19 +87,19 @@ class IntentRemoteProcessor():
 				userId=self._ctx._userId,
 				skillId=skillId,
 				name=fullIntentName,
-				description=intent["description"],
+				description=intent['description'],
 				language=self._intentLanguage,
 				attachToSkill=True,
-				enabledByDefault=intent["enabledByDefault"],
+				enabledByDefault=intent['enabledByDefault'],
 				typeEntityMatching=typeEntityMatching,
-				slotsDefinition=intent["slots"],
-				utterancesDefinition=intent["utterances"]
+				slotsDefinition=intent['slots'],
+				utterancesDefinition=intent['utterances']
 			)
 			self._ctx.log("[Sync] Intent model {} = {} has been created".format(intentId, fullIntentName))
-			self._createdInstances["intents"].append({"id": intentId})
+			self._createdInstances['intents'].append({'id': intentId})
 			curHash = self.intentValuesToHash(typeEntityMatching=typeEntityMatching, intentId=intentId, skillId=skillId)
 
-		return {"intentId": intentId, "hash": curHash, "changes": changes}
+		return {'intentId': intentId, 'hash': curHash, 'changes': changes}
 	
 	
 	def syncIntentsOnAssistantSafely(self, typeEntityMatching, skillId, intentSyncState=None, hashComputationOnly=False):
@@ -122,14 +122,14 @@ class IntentRemoteProcessor():
 		self._syncState = self.createNewSavedIntent() if intentSyncState is None else intentSyncState
 
 		intentMatching = self.syncIntent(typeEntityMatching, skillId, hashComputationOnly)
-		self._syncState["hash"] = intentMatching["hash"]
-		self._syncState["intentId"] = intentMatching["intentId"]
+		self._syncState['hash'] = intentMatching['hash']
+		self._syncState['intentId'] = intentMatching['intentId']
 
-		return self._syncState, intentMatching["changes"]
+		return self._syncState, intentMatching['changes']
 
 
 	def cleanCreatedInstances(self):
-		self._ctx.log("[Cleanup] Deleting {} intents".format(len(self._createdInstances["intents"])))
-		for intent in self._createdInstances["intents"]:
-			self._ctx.Entity.delete(intentId=intent["id"])
-		self._createdInstances["intents"] = list()
+		self._ctx.log("[Cleanup] Deleting {} intents".format(len(self._createdInstances['intents'])))
+		for intent in self._createdInstances['intents']:
+			self._ctx.Entity.delete(intentId=intent['id'])
+		self._createdInstances['intents'] = list()

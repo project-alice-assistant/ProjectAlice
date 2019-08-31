@@ -101,7 +101,7 @@ class ModuleManager(Manager):
 									raise ModuleNotConditionCompliant
 								elif requiredModule['name'] not in availableModules:
 									self._logger.info('[{}] Module {} has another module as dependency, adding download'.format(self.name, moduleName))
-									subprocess.run(['wget', requiredModule['url'], '-O', '{}/system/moduleInstallTickets/{}.install'.format(commons.rootDir(), requiredModule['name'])])
+									subprocess.run(['wget', requiredModule['url'], '-O', os.path.join(commons.rootDir(), 'system', 'moduleInstallTickets', '{}.install'.format(requiredModule['name']))])
 						elif conditionName == 'asrArbitraryCapture':
 							if conditionValue and not managers.ASRManager.asr.capableOfArbitraryCapture:
 								raise ModuleNotConditionCompliant
@@ -209,7 +209,7 @@ class ModuleManager(Manager):
 		except Exception as e:
 			self._logger.error('- Coulnd\'t start module {}. Did you forget to return the intents in onStart()? Error: {}'.format(name, e))
 
-		return []
+		return list()
 
 
 	def isModuleActive(self, moduleName: str) -> bool:
@@ -235,7 +235,7 @@ class ModuleManager(Manager):
 		Boradcasts a call to the given method on every module
 		:param filterOut: array, module not to boradcast to
 		:param method: str, the method name to call on every module
-		:param isEvent: bool, is this broadcast initiated by an event or a message? Changes for customisation module call
+		:param isEvent: bool, is this broadcast initiated by an event or a user interaction? Changes for customisation module call
 		:param args: arguments that should be passed
 		:return:
 		"""
@@ -250,7 +250,8 @@ class ModuleManager(Manager):
 			try:
 				func = getattr(moduleItem['instance'], method)
 				func(*args)
-			except: pass
+			except:
+				self._logger.warning('[{}] Method "{}" not found for module "{}"'.format(self.name, method, moduleItem['instance'].name))
 
 
 	def _reorderCustomisationModule(self, isEvent: bool):

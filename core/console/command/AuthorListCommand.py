@@ -52,7 +52,7 @@ class AuthorListCommand(Command):
 
 			for author in authors:
 				TABLE_DATA.append([
-					author["name"],
+					author['name'],
 				])
 
 		except Exception as e:
