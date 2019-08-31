@@ -14,20 +14,20 @@ class Application(ConsoleApplication):
 
 
 	def __init__(self):
-		self.commandsRegistered = False
-		self.container = dict()
+		self._commandsRegistered = False
+		self._container = dict()
 		super().__init__('AliceConsole', 1)
 
 
 	def run(self, inputt: str = None) -> ConsoleApplication:
-		self.container = dict()
+		self._container = dict()
 
-		if not self.commandsRegistered:
+		if not self._commandsRegistered:
 			self.registerCommands()
-			self.commandsRegistered = True
+			self._commandsRegistered = True
 
 		for k,command in self.commands.items():
-			command.setContainer(self.container)
+			command.setContainer(self._container)
 
 		return super().run(inputt)
 
