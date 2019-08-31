@@ -174,7 +174,7 @@ class Command:
 	def validateName(self, name):
 		reg = re.compile(r'^[^\:]+(\:[^\:]+)*$')
 
-		if name is None or not reg.match(name):
+		if not name or not reg.match(name):
 			raise ValueError('Command name \'{}\' is invalid.'.format(str(name)))
 
 	def getSynopsis(self):
@@ -199,10 +199,7 @@ class Command:
 
 		self.applicationDefinitionMerged = False
 
-	def mergeApplicationDefinition(self, mergeArgs = None):
-		if mergeArgs is None:
-			mergeArgs = True
-
+	def mergeApplicationDefinition(self, mergeArgs = True):
 		if self.application is None or (self.applicationDefinitionMerged is True and (self.applicationDefinitionMergedWithArgs or not mergeArgs)):
 			return
 
@@ -222,33 +219,21 @@ class Command:
 
 		try:
 			questionStyled = self.stringToColored(question, fgColor, bgColor)
+			inputValue = getpass.getpass(questionStyled) if hidden else input(questionStyled)
 
-			if hidden:
-				inputValue = getpass.getpass(questionStyled)
-			else:
-				inputValue = input(questionStyled)
 		except KeyboardInterrupt:
 			sys.exit(0)
 
-		if definition:
-			if inputValue == '':
-				return definition
-
-		return inputValue
+		return definition if definition and not inputValue else inputValue
 
 	def askCombo(self, question, definition, choices, caseSensitive = False, fgColor='reset', bgColor='reset'):
 		while True:
 			inputValue = self.ask(question, definition, fgColor=fgColor, bgColor=bgColor)
 
-			if indexOf(inputValue, choices) < 0:
-				continue
+			if not indexOf(inputValue, choices) < 0:
+				break
 
-			if not caseSensitive:
-				inputValue = inputValue.lower()
-
-			break
-
-		return inputValue
+		return inputValue if caseSensitive else inputValue.lower()
 
 	def askHidden(self, question, definition, fgColor='reset', bgColor='reset'):
 		return self.askAndValidate(question=question, definition=definition, fgColor=fgColor, bgColor=bgColor)
@@ -259,10 +244,7 @@ class Command:
 		if inputValue == '' and definition:
 			inputValue = definition
 
-		if callback:
-			return callback(inputValue)
-		else:
-			return inputValue
+		return callback(inputValue) if callback else inputValue
 
 	def askHiddenAndValidate(self, question, definition, callback, fgColor='reset', bgColor='reset'):
 		return self.askAndValidate(question, definition, callback, True, fgColor, bgColor)
@@ -298,8 +280,7 @@ class Command:
 
 		colorsPairs = REGEX_COLOR.findall(string)
 
-		for colorPair in colorsPairs:
-			(type, color) = colorPair
+		for type, color in colorsPairs:
 			string = string.replace('<{}:{}>'.format(type, color), self._getBackgroundColor(color) if type == 'bg' else self._getForegroundColor(color))
 
 		return bgColor + fgColor + string + Fore.RESET + Back.RESET
@@ -308,6 +289,6 @@ class Command:
 		print(self.stringToColored(data, fgColor, bgColor))
 
 	def nl(self):
-		print('')
+		print()
 
 
