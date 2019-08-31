@@ -224,7 +224,7 @@ class MqttServer(Manager):
 		if payload['modelType'] == 'personal':
 			speaker = payload['modelId']
 			users = {name.lower(): user for name, user in managers.UserManager.users.items()}
-			if speaker in users.keys():
+			if speaker in users:
 				user = users[speaker].name
 
 		session = managers.DialogSessionManager.preSession(siteId, user)
@@ -238,7 +238,7 @@ class MqttServer(Manager):
 			return
 
 		sessions = managers.DialogSessionManager.sessions
-		for sessionId in sessions.keys():
+		for sessionId in sessions:
 			payload = commons.payload(sessions[sessionId].message)
 			if payload['siteId'] != self._multiDetectionsHolder[0]:
 				self.endSession(sessionId=sessionId)

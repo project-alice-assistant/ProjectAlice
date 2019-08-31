@@ -41,15 +41,15 @@ class TTS:
 
 
 	def onStart(self):
-		if self._lang not in self._supportedLangAndVoices.keys():
+		if self._lang not in self._supportedLangAndVoices:
 			self._logger.info('[TTS] Lang "{}" not found, falling back to "{}"'.format(self._lang, 'en-US'))
 			self._lang = 'en-US'
 
-		if self._type not in self._supportedLangAndVoices[self._lang].keys():
+		if self._type not in self._supportedLangAndVoices[self._lang]:
 			self._logger.info('[TTS] Type "{}" not found, falling back to "{}"'.format(self._type, 'male'))
 			self._type = 'male'
 
-		if self._voice not in self._supportedLangAndVoices[self._lang][self._type].keys():
+		if self._voice not in self._supportedLangAndVoices[self._lang][self._type]:
 			voice = self._voice
 			self._voice = next(iter(self._supportedLangAndVoices[self._lang][self._type]))
 			self._logger.info('[TTS] Voice "{}" not found, falling back to "{}"'.format(voice, self._voice))
@@ -86,7 +86,7 @@ class TTS:
 
 	@lang.setter
 	def lang(self, value: str):
-		if value not in self._supportedLangAndVoices.keys():
+		if value not in self._supportedLangAndVoices:
 			self._lang = 'en-US'
 		else:
 			self._lang = value
