@@ -2,6 +2,7 @@
 
 import importlib
 import os
+from pathlib import Path
 
 from core.commons import commons
 from core.console.ConsoleApplication import ConsoleApplication
@@ -57,11 +58,9 @@ class Application(ConsoleApplication):
 
 
 	def loadModuleCommands(self, moduleName: str) -> bool:
-		commandsMountpoint = os.path.join(commons.rootDir(), 'modules', moduleName, 'console')
+		commandsMountpoint = Path(commons.rootDir(), 'modules', moduleName, 'console')
 
-		if not os.path.isdir(commandsMountpoint): return False
-
-		for commandFile in os.listdir(commandsMountpoint):
+		for commandFile in commandsMountpoint.glob('*'):
 			commandClassFile = commandFile.replace('.py', '')
 
 			if commandClassFile.endswith('Command'):

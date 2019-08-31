@@ -35,10 +35,10 @@ network={
 		self._logger = logging.getLogger('ProjectAlice')
 		self._logger.info('Starting Project Alice initializer')
 
-		confsFile = Path(os.path.join(commons.rootDir(), 'config.py'))
-		confsSample = Path(os.path.join(commons.rootDir(), 'configSample.py'))
+		confsFile = Path(commons.rootDir(), 'config.py')
+		confsSample = Path(commons.rootDir(), 'configSample.py')
 
-		initFile = Path(os.path.join('/boot', 'ProjectAlice.yaml'))
+		initFile = Path('/boot', 'ProjectAlice.yaml')
 		if not initFile.exists() and not confsFile.exists():
 			self.fatal('Init file not found and there\'s no configuration file, aborting Project Alice start')
 		elif not initFile.exists():
@@ -86,7 +86,7 @@ network={
 			initConfs['wifiWPAPass']
 		)
 
-		file = Path(os.path.join(commons.rootDir(), 'wifi.conf'))
+		file = Path(commons.rootDir(), 'wifi.conf')
 		file.write_text(wpaFile)
 
 		self._logger.info('wpa_supplicant.conf')
@@ -135,7 +135,7 @@ network={
 			confs['awsSecretKey'] = initConfs['awsSecretKey']
 
 			if initConfs['googleServiceFile']:
-				googleCreds = Path(os.path.join(commons.rootDir(), 'credentials', 'googlecredentials.json'))
+				googleCreds = Path(commons.rootDir(), 'credentials', 'googlecredentials.json')
 				googleCreds.write_text(json.dump(initConfs['googleServiceFile']))
 
 
