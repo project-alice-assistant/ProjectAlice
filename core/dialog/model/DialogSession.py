@@ -70,7 +70,7 @@ class DialogSession:
 		"""
 		This returns the slot master value, not necesserly what was heard / captured
 		"""
-		if slotName in self._slotsAsObjects.keys():
+		if slotName in self._slotsAsObjects:
 			return self.slotsAsObjects[slotName][index].value['value']
 		else:
 			return ''
@@ -80,10 +80,7 @@ class DialogSession:
 		"""
 		This returns the slot raw value, what what really heard / captured, so it can be a synonym per exemple
 		"""
-		if slotName in self._slots.keys():
-			return self._slots[slotName]
-		else:
-			return ''
+		return self._slots.get(slotName, '')
 
 
 	@property
