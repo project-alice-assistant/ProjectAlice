@@ -69,8 +69,9 @@ class ModuleManager(Manager):
 		availableModules = managers.ConfigManager.modulesConfigurations
 		availableModules = collections.OrderedDict(sorted(availableModules.items()))
 
-		customisationModule = availableModules.pop(Customisation.MODULE_NAME)
-		availableModules[Customisation.MODULE_NAME] = customisationModule
+		if Customisation.MODULE_NAME in availableModules:
+			customisationModule = availableModules.pop(Customisation.MODULE_NAME)
+			availableModules[Customisation.MODULE_NAME] = customisationModule
 
 		for moduleName, module in availableModules.items():
 			if moduleToLoad and moduleName != moduleToLoad:
