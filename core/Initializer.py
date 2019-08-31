@@ -186,19 +186,10 @@ network={
 			subprocess.run(['sudo', 'sed', '-i', '-e', 's/%HARDWARE%/{}/', '/etc/systemd/system/snipsledcontrol.service'.format(audioHardware.lower())])
 
 		subprocess.run(['sudo', 'systemctl', 'daemon-reload'])
-
-		# Do some sorting, just for the eyes
-		temp = sorted(list(confs.keys()))
-		sort = dict()
-		modules = dict()
-		for key in temp:
-			if key == 'modules':
-				modules = confs[key]
-				continue
-
-			sort[key] = confs[key]
-
-		sort['modules'] = modules
+		
+		sort = dict(sorted(confs.items()))
+		# pop modules key so it gets added in the back
+		sort['modules'] = sort.pop('modules')
 
 		try:
 			s = json.dumps(sort, indent = 4).replace('false', 'False').replace('true', 'True')
