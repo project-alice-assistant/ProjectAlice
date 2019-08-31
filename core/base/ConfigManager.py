@@ -121,7 +121,8 @@ class ConfigManager(Manager):
 		sort = dict(sorted(confs.items()))
 		# Only store "active", "version", "author", "conditions" value for module config
 		misterProper = ['active', 'version', 'author', 'conditions']
-		sort['modules'] = {key: value for key, value in sort['modules'].items() if key in misterProper}
+		# pop modules key so it gets added in the back
+		sort['modules'] = {key: value for key, value in sort.pop('modules').items() if key in misterProper}
 
 		try:
 			s = json.dumps(sort, indent = 4).replace('false', 'False').replace('true', 'True')
