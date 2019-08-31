@@ -54,7 +54,7 @@ class AssistantSyncCommand(Command):
 		self.nl()
 
 		if input.getOption('download'):
-			snipsConsoleManager._download(languageManager.activeSnipsProjectId)
+			snipsConsoleManager.download(languageManager.activeSnipsProjectId)
 			self.write('Downloading assistant...')
 			self.nl()
 			self.write('Assistant <fg:green>downloaded!<fg:reset>')
