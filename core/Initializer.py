@@ -87,11 +87,7 @@ network={
 		)
 
 		file = Path(os.path.join(commons.rootDir(), 'wifi.conf'))
-		if file.exists():
-			os.remove(file)
-
-		with file.open('w') as f:
-			f.write(wpaFile)
+		file.write_text(wpaFile)
 
 		self._logger.info('wpa_supplicant.conf')
 		subprocess.run(['sudo', 'mv', file, os.path.join('/etc', 'wpa_supplicant', 'wpa_supplicant.conf')])
@@ -140,11 +136,7 @@ network={
 
 			if initConfs['googleServiceFile']:
 				googleCreds = Path(os.path.join(commons.rootDir(), 'credentials', 'googlecredentials.json'))
-				if googleCreds.exists():
-					os.remove(googleCreds)
-
-				with googleCreds.open(mode='w') as f:
-					json.dump(initConfs['googleServiceFile'], f)
+				googleCreds.write_text(json.dump(initConfs['googleServiceFile']))
 
 
 		# Those that don't need checking
@@ -167,7 +159,7 @@ network={
 
 		self._logger.info('Installing audio hardware')
 		audioHardware = ''
-		for hardware in initConfs['audioHardware'].keys():
+		for hardware in initConfs['audioHardware']:
 			if initConfs['audioHardware'][hardware]:
 				audioHardware = hardware
 				break
@@ -193,8 +185,8 @@ network={
 
 		try:
 			s = json.dumps(sort, indent = 4).replace('false', 'False').replace('true', 'True')
-			with open('config.py', 'w') as f:
-				f.write('settings = {}'.format(s))
+			Path('config.py').write_text('settings = {}'.format(s))
+
 		except Exception as e:
 			self.fatal('An error occured while writting final configuration file: {}'.format(e))
 		else:
