@@ -112,7 +112,7 @@ class ModuleManager(Manager):
 				else:
 					name = moduleName
 
-				moduleInstance = self.importFromModule(moduleName = name, isUpdate = isUpdate)
+				moduleInstance = self.importFromModule(moduleName=name, isUpdate=isUpdate)
 
 				if moduleInstance:
 					modules[moduleInstance.name] = {
@@ -122,9 +122,10 @@ class ModuleManager(Manager):
 				self._logger.warning('[{}] Failed loading module: {}'.format(self.name, e))
 				continue
 			except ModuleNotConditionCompliant:
-				self._logger.info('Module {} does not comply to "{}" condition, required "{}"'.format(moduleName, conditionName, conditionValue))
+				self._logger.info('[{}] Module {} does not comply to "{}" condition, required "{}"'.format(self.name, moduleName, conditionName, conditionValue))
 				continue
-			except Exception:
+			except Exception as e:
+				self._logger.warning('[{}] Something went wrong loading a module: {}'.format(self.name, e))
 				continue
 
 		return collections.OrderedDict(sorted(modules.items()))

@@ -166,11 +166,9 @@ class MqttServer(Manager):
 				self.endTalk(sessionId)
 				return
 
-		try:
-			if not managers.ModuleManager.getModuleInstance('RedQueen').inTheMood(session):
-				return
-		except:
-			pass
+		redQueen = managers.ModuleManager.getModuleInstance('RedQueen')
+		if redQueen and not redQueen.inTheMood(session):
+			return
 
 		customData = session.customData
 		if 'intent' in payload and payload['intent']['confidenceScore'] < managers.ConfigManager.getAliceConfigByName('probabilityTreshold'):
@@ -188,7 +186,7 @@ class MqttServer(Manager):
 		modules = moduleManager.getModules()
 		for key, modul in modules.items():
 			module = modul['instance']
-
+			print('called {}'.format(modul['instance'].name))
 			try:
 				consumed = module.onMessage(message.topic, session)
 			except AccessLevelTooLow:
