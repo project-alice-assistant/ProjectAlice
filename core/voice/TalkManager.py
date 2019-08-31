@@ -116,11 +116,9 @@ class TalkManager(Manager):
 		:param forceShortTalk:
 		:return:
 		"""
-
+		module = module or self.getFunctionCaller() or ''
 		if not module:
-			module = self.getFunctionCaller()
-			if not module:
-				return ''
+			return module
 
 		shortReplyMode = forceShortTalk or managers.UserManager.checkIfAllUser('sleeping') or managers.ConfigManager.getAliceConfigByName('shortReplies')
 		activeLanguage = managers.LanguageManager.activeLanguage

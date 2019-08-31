@@ -121,7 +121,7 @@ class SuperManager(Manager):
 
 
 	def getManager(self, managerName):
-		if managerName not in self._managers.keys():
+		if managerName not in self._managers:
 			self._logger.error('{} not found in manager list'.format(managerName))
 			return None
 		return self._managers[managerName]

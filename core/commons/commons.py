@@ -84,9 +84,7 @@ def deprecated(func):
 
 
 def dictMaxValue(d: dict) -> str:
-	values = list(d.values())
-	keys = list(d.keys())
-	return keys[values.index(max(values))]
+	return max(d, key=d.get)
 
 
 def rootDir() -> str:

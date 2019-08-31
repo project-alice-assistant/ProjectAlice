@@ -77,4 +77,4 @@ class MultiIntentManager(Manager):
 
 
 	def isProcessing(self, sessionId: str):
-		return sessionId in self._multiIntents.keys()
+		return sessionId in self._multiIntents
