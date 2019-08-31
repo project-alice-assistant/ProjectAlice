@@ -55,7 +55,7 @@ class ConfigManager(Manager):
 		availableConfigs = config.settings.copy()
 
 		for k, v in configSample.settings.items():
-			if k not in availableConfigs.keys():
+			if k not in availableConfigs:
 				self._logger.info('- New configuration found: {}'.format(k))
 				changes = True
 				availableConfigs[k] = v
@@ -67,7 +67,7 @@ class ConfigManager(Manager):
 		temp = availableConfigs.copy()
 
 		for k, v in temp.items():
-			if k not in configSample.settings.keys():
+			if k not in configSample.settings:
 				self._logger.info('- Deprecated configuration: {}'.format(k))
 				changes = True
 				del availableConfigs[k]
@@ -171,6 +171,7 @@ class ConfigManager(Manager):
 		:param restartSnips: Whether to restart Snips or not after changing the value
 		:param createIfNotExist: If the parent key or the key doesn't exist do create it
 		"""
+		
 		if parent not in self._snipsConfigurations:
 			if not createIfNotExist:
 				self._logger.warning('Asked to update "{}" in snips configuration but key was not found'.format(parent))
@@ -238,14 +239,10 @@ class ConfigManager(Manager):
 		if not configName:
 			return self._modulesConfigurations[moduleName]
 
-		if configName in self._modulesConfigurations[moduleName]:
-			return self._modulesConfigurations[moduleName][configName]
-		else:
-			if not voiceControl:
-				return dict()
-			else:
-				closeMatches = difflib.get_close_matches(word = configName, possibilities = self._modulesConfigurations[moduleName], n = 3)
-				return closeMatches
+		return self._modulesConfigurations[moduleName].get(
+			configName,
+			difflib.get_close_matches(word = configName, possibilities = self._modulesConfigurations[moduleName], n = 3) if voiceControl else dict()
+		)
 
 
 	def _checkAndUpdateModuleConfigFiles(self, module: str = ''):
@@ -262,7 +259,7 @@ class ConfigManager(Manager):
 
 			changes = False
 
-			moduleConfigFile = commons.rootDir() + '/modules/{}/config.json'.format(moduleName)
+			moduleConfigFile = os.path.join(commons.rootDir(), 'modules/{}/config.json'.format(moduleName))
 			moduleConfigFileExists = os.path.isfile(moduleConfigFile)
 			moduleConfigFileTemplate = moduleConfigFile + '.dist'
 			moduleConfigFileTemplateExists = os.path.isfile(moduleConfigFileTemplate)
@@ -288,7 +285,7 @@ class ConfigManager(Manager):
 				configTemplate = json.load(jsonDataFile)
 
 				for k, v in configTemplate.items():
-					if k not in self._modulesConfigurations[moduleName].keys():
+					if k not in self._modulesConfigurations[moduleName]:
 						self._logger.info('- New module configuration found: {} for module {}'.format(k, moduleName))
 						changes = True
 						self._modulesConfigurations[moduleName][k] = v
@@ -321,7 +318,7 @@ class ConfigManager(Manager):
 			if module and moduleName != module:
 				continue
 
-			moduleConfigFile = commons.rootDir() + '/modules/{}/config.json'.format(moduleName)
+			moduleConfigFile = os.path.join(commons.rootDir(), 'modules/{}/config.json'.format(moduleName))
 			moduleConfigFileExists = os.path.isfile(moduleConfigFile)
 
 			if not self._aliceConfigurations['modules'][moduleName]['active'] or not moduleConfigFileExists:
@@ -339,7 +336,7 @@ class ConfigManager(Manager):
 
 	def deactivateModule(self, moduleName: str, persistent = False):
 
-		if moduleName in self.aliceConfigurations['modules'].keys():
+		if moduleName in self.aliceConfigurations['modules']:
 			self._logger.info('[{}] Deactivated module {} {} persistence'.format(self.name, moduleName, "with" if persistent else "without"))
 			self.aliceConfigurations['active'] = False
 
