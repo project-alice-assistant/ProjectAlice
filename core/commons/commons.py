@@ -7,7 +7,7 @@ from collections import defaultdict
 from contextlib import contextmanager
 from ctypes import *
 from datetime import datetime
-from typing import Any
+from typing import Union
 
 import functools
 import os
@@ -34,7 +34,7 @@ def shutUpAlsaFFS():
 	asound.snd_lib_error_set_handler(None)
 
 
-def getFunctionCaller(depth: int = 3):
+def getFunctionCaller(depth: int = 3) -> str:
 	try:
 		return inspect.getmodulename(inspect.stack()[depth][1])
 	except Exception as e:
@@ -53,16 +53,10 @@ def isEqualTranslated(baseString: str, compareTo: str, module: str = 'system') -
 	:return:
 	"""
 	strings = managers.LanguageManager.getStrings(compareTo)
-	if strings:
-		if len(strings) == 1:
-			return baseString.strip().lower() == strings[0].strip().lower()
-		else:
-			for string in strings:
-				if baseString.strip().lower() == string.strip().lower():
-					return True
-			return False
-	else:
-		return False
+	for string in strings:
+		if baseString.strip().lower() == string.strip().lower():
+			return True
+	return False
 
 
 def deprecated(func):
@@ -91,7 +85,7 @@ def rootDir() -> str:
 	return os.path.dirname(os.path.abspath(__file__))  + '/../..'
 
 
-def getDatabaseFile():
+def getDatabaseFile() -> str:
 	return 'system/database/data.db'
 
 
@@ -102,28 +96,24 @@ def payload(message: MQTTMessage) -> dict:
 		try:
 			return json.loads(message.payload.decode())
 		except:
-			return {}
+			return dict()
 
 
 def parseSlotsToObjects(message: MQTTMessage) -> dict:
 	slots = defaultdict(list)
 	data = payload(message)
-	if 'slots' in data:
-		for slotData in data['slots']:
-			slot = slotModel.Slot(slotData)
-			slots[slot.slotName].append(slot)
+	for slotData in data.get('slots', dict()):
+		slot = slotModel.Slot(slotData)
+		slots[slot.slotName].append(slot)
 	return slots
 
 
 def parseSlots(message: MQTTMessage) -> dict:
 	data = payload(message)
-	if 'slots' in data:
-		return dict((slot['slotName'], slot['rawValue']) for slot in data['slots'])
-	else:
-		return {}
+	return dict((slot['slotName'], slot['rawValue']) for slot in data.get('slots', dict()))
 
 
-def parseSessionId(message: MQTTMessage) -> Any:
+def parseSessionId(message: MQTTMessage) -> Union[str,bool]:
 	data = payload(message)
 	return data.get('sessionId', False)
 
@@ -191,16 +181,11 @@ def partOfTheDay() -> str:
 
 
 def isYes(msg: MQTTMessage) -> bool:
-	answer = False
+	slots = parseSlotsToObjects(message = msg)
 	try:
-		slots = parseSlotsToObjects(message = msg)
-
-		if 'Answer' in slots and slots['Answer'][0].value['value'] == 'yes':
-			answer = True
+		return slots['Answer'][0].value['value'] == 'yes'
 	except:
-		answer = False
-	finally:
-		return answer
+		return False
 
 
 def getDuration(msg: MQTTMessage) -> int:
@@ -222,7 +207,7 @@ def getDuration(msg: MQTTMessage) -> int:
 
 
 def toCamelCase(string: str) -> str:
-	return ''.join(x.capitalize() or ' ' for x in string.split(' '))
+	return ''.join(x.capitalize() for x in string.split(' '))
 
 
 def isSpelledWord(string: str) -> bool:
@@ -237,10 +222,7 @@ def isSpelledWord(string: str) -> bool:
 	string = str(string)
 	l = len(string)
 	s = string.replace(' ', '').strip()
-	if l == (len(s) * 2) - 1:
-		return True
-	else:
-		return False
+	return l == (len(s) * 2) - 1
 
 
 def cleanRoomNameToSiteId(roomName: str) -> str:
