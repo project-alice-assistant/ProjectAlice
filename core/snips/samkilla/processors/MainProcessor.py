@@ -207,7 +207,7 @@ class MainProcessor():
 		return intentSyncState
 
 	def persistToGlobalAssistantSlots(self, assistantId, assistantLanguage, slotNameFilter=None):
-		assistantSlotsMountpoint = os.path.joint(self.SAVED_ASSISTANTS_DIR, assistantLanguage, assistantId, 'slots')
+		assistantSlotsMountpoint = os.path.join(self.SAVED_ASSISTANTS_DIR, assistantLanguage, assistantId, 'slots')
 		os.makedirs(assistantSlotsMountpoint, exist_ok=True)
 
 		slotTypes = self._savedSlots[assistantLanguage][assistantId]
