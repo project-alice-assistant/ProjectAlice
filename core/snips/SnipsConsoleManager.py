@@ -6,6 +6,7 @@ import uuid
 
 import os
 import requests
+import tempfile
 
 import core.base.Managers as managers
 from core.base.Manager import Manager
@@ -56,7 +57,7 @@ class SnipsConsoleManager(Manager):
 		self._logger.info('[{}] Starting Snips assistant training and download procedure'.format(self.name))
 		managers.ThreadManager.newLock('SnipsAssistantDownload').set()
 		projectId = managers.LanguageManager.activeSnipsProjectId
-		managers.ThreadManager.newThread(name = 'SnipsAssistantDownload', target = self._download, args = [projectId])
+		managers.ThreadManager.newThread(name = 'SnipsAssistantDownload', target = self.download, args = [projectId])
 
 
 	@staticmethod
@@ -162,16 +163,13 @@ class SnipsConsoleManager(Manager):
 			time.sleep(5)
 
 
-	def _download(self, assistantId: str):
+	def download(self, assistantId: str):
 		try:
 			self._handleTraining(assistantId)
 			self._logger.info('[{}] Downloading assistant...'.format(self.name))
 			req = self._req(url='/v3/assistant/{}/download'.format(assistantId), method='get')
 
-			if os.path.isfile('/tmp/assistant.zip'):
-				os.remove('/tmp/assistant.zip')
-
-			with open('/tmp/assistant.zip', 'wb') as f:
+			with open(os.path.join(tempfile.gettempdir(), 'assistant.zip'), 'wb') as f:
 				f.write(req.content)
 
 			self._logger.info('[{}] Assistant {} trained and downloaded'.format(self.name, assistantId))

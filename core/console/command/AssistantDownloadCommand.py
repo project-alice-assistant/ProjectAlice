@@ -53,7 +53,7 @@ class AssistantDownloadCommand(Command):
 		snipsConsoleManager.onStart()
 
 		self.write('It may take some time...')
-		snipsConsoleManager._download(languageManager.activeSnipsProjectId)
+		snipsConsoleManager.download(languageManager.activeSnipsProjectId)
 
 		self.nl()
 		self.nl()
