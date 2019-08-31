@@ -277,8 +277,7 @@ class MainProcessor():
 						if 'synonyms' in savedSlotValue:
 							for synonym in savedSlotValue['synonyms']:
 								if len(synonym) == 0: continue
-								if synonym not in slotTypesGlobalValues[savedSlotType['name']][savedSlotValue['value']]:
-									slotTypesGlobalValues[savedSlotType['name']][savedSlotValue['value']][synonym] = True
+								slotTypesGlobalValues[savedSlotType['name']][savedSlotValue['value']].setdefault(synonym, True)
 
 		for slotName in slotTypesModulesValues.keys():
 

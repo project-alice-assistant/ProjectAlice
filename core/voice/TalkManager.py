@@ -38,10 +38,7 @@ class TalkManager(Manager):
 				lang = systemLangTalkFile.replace('.json', '')
 
 				with open('{}/{}'.format(systemLangTalksMountpoint, systemLangTalkFile)) as jsonFile:
-					if "system" not in self._langData:
-						self._langData["system"] = dict()
-
-					self._langData["system"][lang] = json.load(jsonFile)
+					self._langData.setdefault('system', dict())[lang] = json.load(jsonFile)
 
 		# Module Talks
 		modules = managers.ModuleManager.getModules()
@@ -58,10 +55,7 @@ class TalkManager(Manager):
 
 				try:
 					with open('{}/{}'.format(langTalksMountpoint, langTalkFile)) as jsonFile:
-						if moduleName not in self._langData:
-							self._langData[moduleName] = dict()
-
-						self._langData[moduleName][lang] = json.load(jsonFile)
+						self._langData.setdefault(moduleName, dict())[lang] = json.load(jsonFile)
 				except FileNotFoundError:
 					continue
 				except ValueError:

@@ -11,11 +11,11 @@ class TasmotaConfigs:
 	def getConfigs(self, deviceBrand: str, room: str) -> list:
 		if deviceBrand not in self._configs:
 			self._logger.error('[{}] Devices brand "{}" unknown'.format(self._name, deviceBrand))
-			return []
+			return list()
 
 		elif self._deviceType not in self._configs[deviceBrand]:
 			self._logger.error('[{}] Devices type "{}" unknown'.format(self._name, self._deviceType))
-			return []
+			return list()
 
 		else:
 			confs = self._configs[deviceBrand][self._deviceType].copy()

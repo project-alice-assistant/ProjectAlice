@@ -99,13 +99,13 @@ class LanguageManager(Manager):
 		if not toLang:
 			toLang = self.activeLanguage
 
-		if not module in self._stringsData.keys():
+		if not module in self._stringsData:
 			self._logger.error('[{}] Asked to get translation from module "{}" but does not exist'.format(self.name, module))
 			return None
-		elif key not in self._stringsData[module].keys():
+		elif key not in self._stringsData[module]:
 			self._logger.error('[{}] Asked to get translation for "{}" from module "{}" but does not exist'.format(self.name, key, module))
 			return None
-		elif toLang not in self._stringsData[module][key].keys():
+		elif toLang not in self._stringsData[module][key]:
 			self._logger.error('[{}] Asked to get "{}" translation for "{}" from module "{}" but does not exist'.format(self.name, toLang, key, module))
 			return None
 		else:
