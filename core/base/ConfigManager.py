@@ -203,21 +203,17 @@ class ConfigManager(Manager):
 		:param createIfNotExist: If that conf doesn't exist, create it
 		:return: config value
 		"""
-		if parent not in self._snipsConfigurations:
-			if not createIfNotExist:
-				self._logger.warning('Tried to get "{}" in snips configuration but key was not found'.format(parent))
-				return None
-			else:
-				self._snipsConfigurations[parent] = dict()
+		if createIfNotExist:
+			self._snipsConfigurations[parent] = self._snipsConfigurations.get(parent, dict())
+			self._snipsConfigurations[parent][key] = self._snipsConfigurations[parent].get(key, '')
 
-		if key not in self._snipsConfigurations[parent]:
-			if not createIfNotExist:
-				self._logger.warning('Tried to get "{}/{}" in snips configuration but key was not found'.format(parent, key))
-				return None
-			else:
-				self._snipsConfigurations[parent][key] = ''
-
-		return self._snipsConfigurations[parent][key]
+		configs = self._snipsConfigurations.get(parent, dict())
+		config = configs.get(key, None)
+		if not configs:
+			self._logger.warning('Tried to get "{}" in snips configuration but key was not found'.format(parent))
+		elif not config:
+			self._logger.warning('Tried to get "{}/{}" in snips configuration but key was not found'.format(parent, key))
+		return config
 
 
 	def configAliceExists(self, configName: str) -> bool:
