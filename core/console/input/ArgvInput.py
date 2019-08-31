@@ -26,7 +26,7 @@ class ArgvInput(Input):
 
 		self.tokens = argv
 
-		super(ArgvInput, self).__init__(definition=definition)
+		super().__init__(definition=definition)
 
 	def setTokens(self, tokens):
 		self.tokens = tokens

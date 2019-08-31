@@ -12,7 +12,7 @@ class ArrayInput(Input):
 	def __init__(self, parameters, definition = None):
 		self.parameters = parameters
 
-		super(ArrayInput, self).__init__(definition)
+		super().__init__(definition)
 
 	def getFirstArgument(self):
 		for key,value in self.parameters.items():

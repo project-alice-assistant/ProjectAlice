@@ -111,7 +111,7 @@ class SamkillaManager(Manager):
 
 
 	def onStart(self):
-		super(SamkillaManager, self).onStart()
+		super().onStart()
 
 		if os.path.exists(os.path.join(commons.rootDir(), 'var', 'assistants', managers.LanguageManager.activeLanguage)):
 			count = len([name for name in os.listdir(os.path.join(commons.rootDir(), 'var', 'assistants', managers.LanguageManager.activeLanguage)) if os.path.isdir(os.path.join(commons.rootDir(), 'var', 'assistants', managers.LanguageManager.activeLanguage, name))])
