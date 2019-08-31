@@ -118,23 +118,11 @@ class ConfigManager(Manager):
 		Saves the given configuration into config.py
 		:param confs: the dict to save
 		"""
-
-		# Do some sorting, just for the eyes
-		temp = sorted(list(confs.keys()))
-		sort = dict()
-		modules = dict()
-		for key in temp:
-			if key == 'modules':
-				modules = confs[key]
-				continue
-
-			sort[key] = confs[key]
-
+		sort = dict(sorted(confs.items()))
 		# Only store "active", "version", "author", "conditions" value for module config
 		misterProper = ['active', 'version', 'author', 'conditions']
-		modulesCleaned = {key: value for key, value in modules.items() if key in misterProper}
-
-		sort['modules'] = modulesCleaned
+		# pop modules key so it gets added in the back
+		sort['modules'] = {key: value for key, value in sort.pop('modules').items() if key in misterProper}
 
 		try:
 			s = json.dumps(sort, indent = 4).replace('false', 'False').replace('true', 'True')
@@ -368,19 +356,17 @@ class ConfigManager(Manager):
 
 
 	def changeActiveLanguage(self, toLang: str):
-		for langCode, settings in self.getAliceConfigByName('supportedLanguages').items():
-			if langCode == toLang:
-				self.updateAliceConfiguration('activeLanguage', toLang)
-				return True
-
+		if toLang in self.getAliceConfigByName('supportedLanguages'):
+			self.updateAliceConfiguration('activeLanguage', toLang)
+			return True
 		return False
 
 
 	def changeActiveSnipsProjectIdForLanguage(self, projectId: str, forLang: str):
 		langConfig = self.getAliceConfigByName('supportedLanguages').copy()
-		for langCode, settings in self.getAliceConfigByName('supportedLanguages').items():
-			if langCode == forLang:
-				langConfig[langCode]['snipsProjectId'] = projectId
+		
+		if forLang in langConfig:
+			langConfig[forLang]['snipsProjectId'] = projectId
 
 		self.updateAliceConfiguration('supportedLanguages', langConfig)
 

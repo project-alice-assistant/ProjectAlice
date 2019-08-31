@@ -95,7 +95,7 @@ class DatabaseManager(Manager):
 		# Let's check if we did not drop a table since an older version
 		for tableName in self._tables:
 			tableName = tableName['name']
-			if not tableName.startswith('sqlite_') and tableName.startswith(callerName + '_') and tableName.split('_')[1] not in schema.keys():
+			if not tableName.startswith('sqlite_') and tableName.startswith(callerName + '_') and tableName.split('_')[1] not in schema:
 				self._logger.info('[{}] Found a deprecated table "{}" for component "{}"'.format(self.name, tableName, callerName))
 
 				try:

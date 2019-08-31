@@ -78,6 +78,35 @@ class TalkManager(Manager):
 
 		return arr
 
+	def chooseTalk(module: str, activeLanguage: str, defaultLanguage: str, shortReplyMode: bool) -> str:
+		try:
+			# Try to find the string needed
+			if shortReplyMode:
+				return random.choice(self._langData[module][activeLanguage][talk]['short'])
+			else:
+				return random.choice(self._langData[module][activeLanguage][talk]['default'])
+		except Exception:
+			try:
+				# Maybe there's only a default version?
+				return random.choice(self._langData[module][activeLanguage][talk]['default'])
+			except Exception:
+				try:
+					# Maybe there's no short/long version?
+					return random.choice(self._langData[module][activeLanguage][talk])
+				except Exception:
+					try:
+						# Fallback to default language then
+						if activeLanguage == defaultLanguage:
+							raise Exception
+
+						self._logger.error('Was asked to get "{}" from "{}" module in "{}" but it doesn\'t exist, falling back to "{}" version instead'.format(talk, module, activeLanguage, defaultLanguage))
+						# call itself again with default language and then exit because activeLanguage == defaultLanguage
+						return self.chooseTalk(module, defaultLanguage, defaultLanguage, shortReplyMode)
+					except Exception:
+						# Give up, that text does not exist...
+						self._logger.error('Was asked to get "{}" from "{}" module but language string doesn\'t exist'.format(talk, module))
+						return ''
+
 
 	def randomTalk(self, talk: str, module: str = '', forceShortTalk: bool = False) -> str:
 		"""
@@ -87,42 +116,17 @@ class TalkManager(Manager):
 		:param forceShortTalk:
 		:return:
 		"""
-
+		module = module or self.getFunctionCaller() or ''
 		if not module:
-			module = self.getFunctionCaller()
-			if not module:
-				return ''
+			return module
 
 		shortReplyMode = forceShortTalk or managers.UserManager.checkIfAllUser('sleeping') or managers.ConfigManager.getAliceConfigByName('shortReplies')
 		activeLanguage = managers.LanguageManager.activeLanguage
 		defaultLanguage = managers.LanguageManager.defaultLanguage
 
-		try:
-			# Try to find the string needed
-			if shortReplyMode:
-				string = random.choice(self._langData[module][activeLanguage][talk]['short'])
-			else:
-				string = random.choice(self._langData[module][activeLanguage][talk]['default'])
-		except Exception:
-			try:
-				# Maybe there's only a default version?
-				string = random.choice(self._langData[module][activeLanguage][talk]['default'])
-			except Exception:
-				try:
-					# Maybe there's no short/long version?
-					string = random.choice(self._langData[module][activeLanguage][talk])
-				except Exception:
-					try:
-						# Fallback to default language then
-						if activeLanguage == defaultLanguage:
-							raise Exception
-
-						self._logger.error('Was asked to get "{}" from "{}" module in "{}" but it doesn\'t exist, falling back to "{}" version instead'.format(talk, module, activeLanguage, defaultLanguage))
-						string = random.choice(self._langData[module][defaultLanguage][talk])
-					except Exception:
-						# Give up, that text does not exist...
-						self._logger.error('Was asked to get "{}" from "{}" module but language string doesn\'t exist'.format(talk, module))
-						return ''
+		string = self.chooseTalk(module, activeLanguage, defaultLanguage, shortReplyMode)
+		if not string:
+			return string
 
 		if managers.ConfigManager.getAliceConfigByName('tts') == 'amazon' and \
 			managers.ConfigManager.getAliceConfigByName('whisperWhenSleeping') and \

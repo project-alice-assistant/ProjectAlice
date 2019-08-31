@@ -83,7 +83,7 @@ class ThreadManager(Manager):
 		if not args:
 			args = list()
 
-		if name in self._threads.keys():
+		if name in self._threads:
 			self._threads[name].join(timeout=2)
 
 		thread = threading.Thread(name = name, target = target, args = args)
@@ -97,11 +97,8 @@ class ThreadManager(Manager):
 
 
 	def terminateThread(self, name: str):
-		thread = None
-		if name in self._threads.keys():
-			thread = self._threads[name]
-			del self._threads[name]
-		else:
+		thread = self._threads.pop(name, None)
+		if not thread:
 			for t in threading.enumerate():
 				if t.name == name:
 					thread = t
@@ -129,4 +126,4 @@ class ThreadManager(Manager):
 
 
 	def getLock(self, name: str) -> threading.Event:
-		return self._locks[name] if name in self._locks else threading.Event()
+		return self._locks.get(name, threading.Event())

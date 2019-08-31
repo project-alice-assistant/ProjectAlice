@@ -9,11 +9,11 @@ from core.commons import commons
 class TasmotaConfigs:
 
 	def getConfigs(self, deviceBrand: str, room: str) -> list:
-		if deviceBrand not in self._configs.keys():
+		if deviceBrand not in self._configs:
 			self._logger.error('[{}] Devices brand "{}" unknown'.format(self._name, deviceBrand))
 			return []
 
-		elif self._deviceType not in self._configs[deviceBrand].keys():
+		elif self._deviceType not in self._configs[deviceBrand]:
 			self._logger.error('[{}] Devices type "{}" unknown'.format(self._name, self._deviceType))
 			return []
 

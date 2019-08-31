@@ -66,17 +66,14 @@ class UserManager(Manager):
 
 
 	def getUserAccessLevel(self, username: str) -> Optional[Any]:
-		if not username in self._users.keys():
+		if not username in self._users:
 			return None
 
 		return self._users[username].accessLevel
 
 
 	def getUser(self, username: str) -> Optional[User]:
-		if not username in self._users.keys():
-			return None
-
-		return self._users[username]
+		return self._users.get(username, None)
 
 
 	def getAllUserNames(self, skipGuests: bool = True) -> list:
@@ -85,10 +82,10 @@ class UserManager(Manager):
 			:return: list
 		"""
 		if skipGuests:
-			users = [k for k in self._users.keys() if self._users[k] != 'guest']
+			users = [k for k in self._users if self._users[k] != 'guest']
 
 		else:
-			users = [k for k in self._users.keys()]
+			users = [k for k in self._users]
 
 		return users
 
@@ -180,7 +177,7 @@ class UserManager(Manager):
 			return False
 
 
-		if user not in self._users.keys():
+		if user not in self._users:
 			self._logger.error('[{}] Was asked to check access level but user "{}" doesn\'t exist'.format(self.name, user))
 			return False
 

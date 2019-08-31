@@ -34,7 +34,7 @@ class Module(object):
 		self._databaseSchema = databaseSchema
 
 		self._supportedIntents = supportedIntents
-		self._authOnlyIntents = dict() if not authOnlyIntents else authOnlyIntents
+		self._authOnlyIntents = authOnlyIntents or dict()
 
 
 	def getUtterancesByIntent(self, intent: Intent, forceLowerCase: bool = True) -> list:
@@ -43,7 +43,7 @@ class Module(object):
 		for dtIntentName, dtModuleName in managers.SamkillaManager.dtIntentNameSkillMatching.items():
 			if dtIntentName == intent.justAction and dtModuleName == self.name:
 
-				for utterance, _ in managers.SamkillaManager.dtIntentsModulesValues[dtIntentName]['utterances'].items():
+				for utterance in managers.SamkillaManager.dtIntentsModulesValues[dtIntentName]['utterances'].keys():
 					utterances.append(utterance.lower() if forceLowerCase else utterance)
 
 		return utterances
@@ -137,10 +137,7 @@ class Module(object):
 
 
 	def getResource(self, moduleName: str = '', resourcePathFile: str = '') -> str:
-		if not moduleName:
-			moduleName = self.name
-
-		return os.path.join(commons.rootDir(), 'modules', moduleName, resourcePathFile)
+		return os.path.join(commons.rootDir(), 'modules', moduleName or self.name, resourcePathFile)
 
 
 	def getConfig(self, key: str) -> typing.Any:

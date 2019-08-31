@@ -57,10 +57,7 @@ class DialogSessionManager(Manager):
 		:param message: dict
 		"""
 		siteId = commons.parseSiteId(message)
-		if siteId not in self._preSessions.keys():
-			session = DialogSession(siteId)
-		else:
-			session = self._preSessions.pop(siteId)
+		session = self._preSessions.pop(siteId, DialogSession(siteId))
 
 		session.extend(message, sessionId)
 
@@ -75,41 +72,30 @@ class DialogSessionManager(Manager):
 		:param sessionId: str
 		:param message: dict
 		"""
-		siteId = commons.parseSiteId(message)
-		if siteId not in self._preSessions.keys():
-			session = DialogSession(siteId)
-		else:
-			session = self._preSessions.pop(siteId)
-
-		session.extend(message, sessionId)
-
-		self._sessions[sessionId] = session
+		session = self.addSession(sessionId, message)
 		managers.ThreadManager.doLater(func=self._sessions.pop, interval=20, args=[sessionId])
 		return session
 
 
 	def removeSession(self, sessionId: str):
-		if sessionId in self._sessions.keys():
+		if sessionId in self._sessions:
 			self._terminatedSessions[sessionId] = self._sessions.pop(sessionId)
 
 
 	def getSession(self, sessionId: str) -> Optional[DialogSession]:
-		if sessionId in self._sessions.keys():
-			return self._sessions[sessionId]
-		else:
-			return None
+		return self._sessions.get(sessionId, None)
 
 
 	def getUser(self, sessionId: str) -> str:
-		if sessionId in self._sessions:
-			return self._sessions[sessionId].user
-		else:
+		if sessionId not in self._sessions:
 			self._logger.warning("[{}] Trying to get user from a session that doesn't exist".format(self.name))
 			return 'unknown'
+		
+		return self._sessions[sessionId].user
 
 
 	def addPreviousIntent(self, sessionId: str, previousIntent: str):
-		if not sessionId in self._sessions.keys():
+		if sessionId not in self._sessions:
 			self._logger.warning('[{}] Was asked to add a previous intent but session was not found'.format(self.name))
 			return
 
@@ -122,7 +108,5 @@ class DialogSessionManager(Manager):
 
 
 	def onSessionStarted(self, session: DialogSession):
-		if session.siteId in self._revivePendingSessions.keys():
-			oldSession = self._revivePendingSessions[session.siteId]
-			self._revivePendingSessions.pop(session.siteId)
-			session.reviveOldSession(oldSession)
+		if session.siteId in self._revivePendingSessions:
+			session.reviveOldSession(self._revivePendingSessions.pop(session.siteId))

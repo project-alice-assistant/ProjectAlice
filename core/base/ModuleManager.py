@@ -84,7 +84,7 @@ class ModuleManager(Manager):
 						self._logger.info('Module {} is disabled'.format(moduleName))
 						continue
 
-				if 'conditions' in module.keys():
+				if 'conditions' in module:
 					for conditionName, conditionValue in module['conditions'].items():
 						if conditionName == 'lang' and managers.LanguageManager.activeLanguage not in conditionValue:
 							raise ModuleNotConditionCompliant
@@ -131,7 +131,7 @@ class ModuleManager(Manager):
 	def importFromModule(self, moduleName: str, moduleResource: str = '', isUpdate: bool = False) -> Module:
 		instance: Module = None
 
-		moduleResource = moduleName if not moduleResource else moduleResource
+		moduleResource = moduleResource or moduleName
 
 		try:
 			moduleImport = importlib.import_module('modules.{}.{}'.format(moduleName, moduleResource))
@@ -257,7 +257,7 @@ class ModuleManager(Manager):
 		:param isEvent: bool
 		"""
 
-		if Customisation.MODULE_NAME not in self._modules.keys():
+		if Customisation.MODULE_NAME not in self._modules:
 			return #Customisation module might be disabled
 
 		if isEvent:
@@ -274,7 +274,7 @@ class ModuleManager(Manager):
 
 
 	def deactivateModule(self, moduleName: str):
-		if moduleName in self._modules.keys():
+		if moduleName in self._modules:
 			del self._modules[moduleName]
 
 
@@ -292,9 +292,9 @@ class ModuleManager(Manager):
 		availableModules = managers.ConfigManager.modulesConfigurations
 
 		i = 0
-		for moduleName in self._modules.keys():
+		for moduleName in self._modules:
 			try:
-				if moduleName not in availableModules.keys():
+				if moduleName not in availableModules:
 					continue
 
 				req = requests.get('https://raw.githubusercontent.com/project-alice-powered-by-snips/ProjectAliceModules/master/PublishedModules/{}/{}/{}.install'.format(
@@ -399,7 +399,7 @@ class ModuleManager(Manager):
 				baseDir:str = '/'.join(dirList[:len(dirList) - 2])
 				directory:str = baseDir + '/modules/' + moduleName
 
-				if moduleName in availableModules.keys():
+				if moduleName in availableModules:
 					localVersionDirExists: bool = os.path.isdir(directory)
 					localVersionAttributeExists: bool = 'version' in availableModules[moduleName]
 
