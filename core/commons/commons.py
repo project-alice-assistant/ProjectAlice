@@ -127,19 +127,13 @@ def parseSlots(message: MQTTMessage) -> dict:
 
 def parseSessionId(message: MQTTMessage) -> Any:
 	data = payload(message)
-	if 'sessionId' in data:
-		return data['sessionId']
-	else:
-		return False
+	return data.get('sessionId', False)
 
 
 def parseCustomData(message: MQTTMessage) -> dict:
 	try:
 		data = payload(message)
-		if 'customData' in data and data['customData']:
-			return json.loads(data['customData'])
-		else:
-			return dict()
+		return json.loads(data['customData'])
 	except:
 		return dict()
 
@@ -149,7 +143,7 @@ def parseSiteId(message: MQTTMessage) -> str:
 	if 'siteId' in data:
 		return data['siteId'].replace('_', ' ') #WTF!! This is highly no no no!!!
 	else:
-		return data['IPAddress'] if 'IPAddress' in data else 'default'
+		return data.get('IPAddress', 'default')
 
 
 def smartSleep(wait: int):
@@ -234,6 +228,7 @@ def toCamelCase(string: str) -> str:
 
 
 def isSpelledWord(string: str) -> bool:
+
 	"""
 	Empirical way to check if a string is something spelled by the user by counting the theoretical length of the string against
 	its theoretical spelled length
