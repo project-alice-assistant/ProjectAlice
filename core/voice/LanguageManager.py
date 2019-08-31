@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 import json
+import os
 from typing import Optional
 
 import re
@@ -87,7 +88,7 @@ class LanguageManager(Manager):
 				continue
 
 			try:
-				with open('modules/{}/strings.json'.format(moduleName)) as jsonFile:
+				with open(os.path.join('modules', moduleName, 'strings.json')) as jsonFile:
 					self._stringsData[moduleName] = json.load(jsonFile)
 			except FileNotFoundError:
 				continue

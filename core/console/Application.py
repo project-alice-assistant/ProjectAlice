@@ -3,6 +3,7 @@
 import importlib
 import os
 
+from core.commons import commons
 from core.console.ConsoleApplication import ConsoleApplication
 from core.base.ConfigManager import ConfigManager
 
@@ -15,10 +16,10 @@ class Application(ConsoleApplication):
 	def __init__(self):
 		self.commandsRegistered = False
 		self.container = dict()
-		super(Application, self).__init__('AliceConsole', 1)
+		super().__init__('AliceConsole', 1)
 
 
-	def run(self, input = None):
+	def run(self, inputt: str = None) -> ConsoleApplication:
 		self.container = dict()
 
 		if not self.commandsRegistered:
@@ -28,7 +29,8 @@ class Application(ConsoleApplication):
 		for k,command in self.commands.items():
 			command.setContainer(self.container)
 
-		return super(Application, self).run(input)
+		return super().run(inputt)
+
 
 	def registerCommands(self):
 		from core.console.command.AssistantSyncCommand import AssistantSyncCommand
@@ -55,24 +57,24 @@ class Application(ConsoleApplication):
 
 
 	def loadModuleCommands(self, moduleName):
-		commandsMountpoint = os.path.dirname(__file__) + '/../../modules/{}/console'.format(moduleName)
+		commandsMountpoint = os.path.join(commons.rootDir(), 'modules', moduleName, 'console')
 
 		if not os.path.isdir(commandsMountpoint): return
 
 		for commandFile in os.listdir(commandsMountpoint):
 			commandClassFile = commandFile.replace('.py', '')
 
-			if commandClassFile.endswith("Command"):
+			if commandClassFile.endswith('Command'):
 				try:
 					commandImport = importlib.import_module('modules.{}.console.{}'.format(moduleName, commandClassFile))
 					klass = getattr(commandImport, commandClassFile)
 					instance = klass()
 					self.add(instance)
 					return True
-				except ImportError as e:
+				except ImportError:
 					continue
-				except AttributeError as e:
+				except AttributeError:
 					continue
-				except Exception as e:
+				except Exception:
 					continue
 

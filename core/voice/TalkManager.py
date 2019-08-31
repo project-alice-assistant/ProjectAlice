@@ -32,12 +32,12 @@ class TalkManager(Manager):
 	def loadTalks(self, moduleToLoad: str = None):
 		# Global System Talks
 		if not moduleToLoad:
-			systemLangTalksMountpoint = 'system/manager/TalkManager/talks'
+			systemLangTalksMountpoint = os.path.join('system', 'manager', 'TalkManager', 'talks')
 
 			for systemLangTalkFile in os.listdir(systemLangTalksMountpoint):
 				lang = systemLangTalkFile.replace('.json', '')
 
-				with open('{}/{}'.format(systemLangTalksMountpoint, systemLangTalkFile)) as jsonFile:
+				with open(os.path.join(systemLangTalksMountpoint, systemLangTalkFile)) as jsonFile:
 					self._langData.setdefault('system', dict())[lang] = json.load(jsonFile)
 
 		# Module Talks
@@ -48,13 +48,13 @@ class TalkManager(Manager):
 			if moduleToLoad and moduleToLoad != moduleName:
 				continue
 
-			langTalksMountpoint = 'modules/{}/talks'.format(moduleName)
+			langTalksMountpoint = os.path.join('modules', moduleName, 'talks')
 
 			for langTalkFile in os.listdir(langTalksMountpoint):
 				lang = langTalkFile.replace('.json', '')
 
 				try:
-					with open('{}/{}'.format(langTalksMountpoint, langTalkFile)) as jsonFile:
+					with open(os.path.join(langTalksMountpoint, langTalkFile)) as jsonFile:
 						self._langData.setdefault(moduleName, dict())[lang] = json.load(jsonFile)
 				except FileNotFoundError:
 					continue

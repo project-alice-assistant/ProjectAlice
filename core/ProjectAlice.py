@@ -50,7 +50,7 @@ class ProjectAlice(Singleton):
 		self._languageManager					= LanguageManager(self)
 		self._languageManager.onStart()
 
-		subprocess.run(['ln', '-sfn', '{}/trained/assistants/assistant_{}'.format(commons.rootDir(), self._languageManager.activeLanguage), '{}/assistant'.format(commons.rootDir())])
+		subprocess.run(['ln', '-sfn', os.path.join(commons.rootDir(), 'trained', 'assistants', 'assistant_{}'.format(self._languageManager.activeLanguage)), os.path.join(commons.rootDir(), 'assistant')])
 
 		self._snipsServicesManager 				= SnipsServicesManager(self)
 		self._snipsServicesManager.onStart()

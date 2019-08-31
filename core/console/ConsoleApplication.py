@@ -104,15 +104,15 @@ class ConsoleApplication:
 
 		return versionMessage
 
-	def run(self, input = None):
-		if input is None:
-			input = ArgvInput()
+	def run(self, inputt = None):
+		if inputt is None:
+			inputt = ArgvInput()
 
-		self.configureIO(input)
+		self.configureIO(inputt)
 		exitCode = -1
 
 		try:
-			exitCode = self.doRun(input)
+			exitCode = self.doRun(inputt)
 		except ValueError as ve:
 			exitCode = 400
 			print(Fore.YELLOW + '[Error]' + Fore.RESET + ' Error with code {}'.format(exitCode))

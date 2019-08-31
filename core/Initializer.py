@@ -174,16 +174,16 @@ network={
 
 		if audioHardware == 'respeaker2' or audioHardware == 'respeaker4':
 			subprocess.call(['sudo', os.path.join(commons.rootDir(), 'system', 'scripts', 'audioHardware', 'respeakers.sh')])
-			subprocess.run(['sudo', 'sed', '-i', '-e', 's/%HARDWARE%/{}/', '/etc/systemd/system/snipsledcontrol.service'.format(audioHardware)])
+			subprocess.run(['sudo', 'sed', '-i', '-e', 's/%HARDWARE%/{}/'.format(audioHardware), os.path.join('/etc', 'systemd', 'system', 'snipsledcontrol.service')])
 		elif audioHardware == 'respeaker7':
 			subprocess.call(['sudo', os.path.join(commons.rootDir(), 'system', 'scripts', 'audioHardware', 'respeaker7.sh')])
-			subprocess.run(['sudo', 'sed', '-i', '-e', 's/%HARDWARE%/respeaker7MicArray/', '/etc/systemd/system/snipsledcontrol.service'])
+			subprocess.run(['sudo', 'sed', '-i', '-e', 's/%HARDWARE%/respeaker7MicArray/', os.path.join('/etc', 'systemd', 'system', 'snipsledcontrol.service')])
 		elif audioHardware == 'respeakerCoreV2':
 			subprocess.call(['sudo', os.path.join(commons.rootDir(), 'system', 'scripts', 'audioHardware', 'respeakerCoreV2.sh')])
-			subprocess.run(['sudo', 'sed', '-i', '-e', 's/%HARDWARE%/{}/', '/etc/systemd/system/snipsledcontrol.service'.format(audioHardware)])
+			subprocess.run(['sudo', 'sed', '-i', '-e', 's/%HARDWARE%/{}/'.format(audioHardware), os.path.join('/etc', 'systemd', 'system', 'snipsledcontrol.service')])
 		elif audioHardware == 'matrixCreator' or audioHardware == 'matrixVoice':
 			subprocess.call(['sudo', os.path.join(commons.rootDir(), 'system', 'scripts', 'audioHardware', 'matrix.sh')])
-			subprocess.run(['sudo', 'sed', '-i', '-e', 's/%HARDWARE%/{}/', '/etc/systemd/system/snipsledcontrol.service'.format(audioHardware.lower())])
+			subprocess.run(['sudo', 'sed', '-i', '-e', 's/%HARDWARE%/{}/'.format(audioHardware.lower()), os.path.join('/etc', 'systemd', 'system', 'snipsledcontrol.service')])
 
 		subprocess.run(['sudo', 'systemctl', 'daemon-reload'])
 		
@@ -202,7 +202,7 @@ network={
 
 
 		self.warning('Initializer done with configuring')
-		os.remove(os.path.join('/boot/ProjectAlice.yaml'))
+		os.remove(os.path.join('/boot', 'ProjectAlice.yaml'))
 
 
 	def fatal(self, text: str):

@@ -5,6 +5,7 @@ import wave
 import os
 import pyaudio
 import shutil
+import tempfile
 from enum import Enum
 from pydub import AudioSegment
 
@@ -114,7 +115,7 @@ class WakewordManager(Manager):
 		stream.close()
 		self._audio.terminate()
 
-		wav = wave.open('/tmp/{}_raw.wav'.format(number), 'w')
+		wav = wave.open(os.path.join(tempfile.gettempdir(), '{}_raw.wav'.format(number)), 'w')
 		wav.setnchannels(managers.ConfigManager.getAliceConfigByName('micChannels'))
 		wav.setsampwidth(2)
 		wav.setframerate(managers.ConfigManager.getAliceConfigByName('micSampleRate'))
@@ -127,7 +128,7 @@ class WakewordManager(Manager):
 
 	def _workAudioFile(self, number: int):
 		self._state = WakewordManagerState.TRIMMING
-		sound = AudioSegment.from_file('/tmp/{}_raw.wav'.format(number), format='wav', frame_rate=managers.ConfigManager.getAliceConfigByName('micSampleRate'))
+		sound = AudioSegment.from_file(os.path.join(tempfile.gettempdir(), '{}_raw.wav'.format(number)), format='wav', frame_rate=managers.ConfigManager.getAliceConfigByName('micSampleRate'))
 		startTrim = self.detectLeadingSilence(sound)
 		endTrim = self.detectLeadingSilence(sound.reverse())
 		duration = len(sound)
@@ -135,7 +136,7 @@ class WakewordManager(Manager):
 		reworked = trimmed.set_frame_rate(16000)
 		reworked = reworked.set_channels(1)
 
-		reworked.export('/tmp/{}.wav'.format(number), format='wav')
+		reworked.export(os.path.join(tempfile.gettempdir(), '{}.wav'.format(number)), format='wav')
 		self._state = WakewordManagerState.CONFIRMING
 
 
@@ -204,7 +205,7 @@ class WakewordManager(Manager):
 			json.dump(config, file, indent=4)
 
 		for i in range(1, 4):
-			shutil.move(os.path.join('/tmp', '{}.wav'.format(i)), os.path.join(path, '{}.wav'.format(i)))
+			shutil.move(os.path.join(tempfile.gettempdir(), '{}.wav'.format(i)), os.path.join(path, '{}.wav'.format(i)))
 
 		self._addWakewordToSnips(path)
 		managers.ThreadManager.newThread(name='SatelliteWakewordUpload', target=self._upload, args=[path, self._wakeword.username], autostart=True)
