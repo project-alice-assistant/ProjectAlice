@@ -80,6 +80,8 @@ class ModuleManager(Manager):
 				if not module['active']:
 					if moduleName in self.NEEDED_MODULES:
 						self._logger.info("Module {} marked as disable but it shouldn't be".format(moduleName))
+						self._mainClass.onStop()
+						break
 					else:
 						self._logger.info('Module {} is disabled'.format(moduleName))
 						continue
