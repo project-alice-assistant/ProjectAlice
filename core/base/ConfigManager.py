@@ -225,14 +225,10 @@ class ConfigManager(Manager):
 
 
 	def getAliceConfigByName(self, configName: str, voiceControl:bool = False) -> dict:
-		if configName in self._aliceConfigurations:
-			return self._aliceConfigurations[configName]
-		else:
-			if not voiceControl:
-				return dict()
-			else:
-				closeMatches = difflib.get_close_matches(word = configName, possibilities = self._aliceConfigurations, n = 3)
-				return closeMatches
+		return self._aliceConfigurations.get(
+			configName,
+			difflib.get_close_matches(word = configName, possibilities = self._aliceConfigurations, n = 3) if voiceControl else dict()
+		)
 
 
 	def getModuleConfigByName(self, moduleName: str, configName: str = '', voiceControl:bool = False) -> dict:
