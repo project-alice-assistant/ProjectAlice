@@ -72,7 +72,8 @@ class TalkManager(Manager):
 
 		return arr
 
-	def chooseTalk(module: str, activeLanguage: str, defaultLanguage: str, shortReplyMode: bool) -> str:
+
+	def chooseTalk(self, talk: str, module: str, activeLanguage: str, defaultLanguage: str, shortReplyMode: bool) -> str:
 		try:
 			# Try to find the string needed
 			if shortReplyMode:
@@ -112,15 +113,15 @@ class TalkManager(Manager):
 		"""
 		module = module or self.getFunctionCaller() or ''
 		if not module:
-			return module
+			return ''
 
 		shortReplyMode = forceShortTalk or managers.UserManager.checkIfAllUser('sleeping') or managers.ConfigManager.getAliceConfigByName('shortReplies')
 		activeLanguage = managers.LanguageManager.activeLanguage
 		defaultLanguage = managers.LanguageManager.defaultLanguage
 
-		string = self.chooseTalk(module, activeLanguage, defaultLanguage, shortReplyMode)
+		string = self.chooseTalk(talk, module, activeLanguage, defaultLanguage, shortReplyMode)
 		if not string:
-			return string
+			return ''
 
 		if managers.ConfigManager.getAliceConfigByName('tts') == 'amazon' and \
 			managers.ConfigManager.getAliceConfigByName('whisperWhenSleeping') and \
