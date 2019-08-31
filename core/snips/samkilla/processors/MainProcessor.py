@@ -122,7 +122,7 @@ class MainProcessor():
 
 		state = self._savedAssistants[assistantLanguage][assistantId]
 
-		with open(os.path.join(assistantMountpoint, 'assistant.json', 'w')) as projectIdFileHandler:
+		with open(os.path.join(assistantMountpoint, 'assistant.json'), 'w') as projectIdFileHandler:
 			json.dump(state, projectIdFileHandler, indent=4, sort_keys=False, ensure_ascii=False)
 			# self._ctx.log('\n[Persist] local assistant {} in {}'.format(assistantId, assistantLanguage))
 
