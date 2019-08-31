@@ -377,7 +377,7 @@ class DeviceManager(Manager):
 
 
 	def deviceConnecting(self, uid: str) -> Optional[Device]:
-		if uid not in self._devices.keys():
+		if uid not in self._devices:
 			self._logger.warning('[{}] A device with uid {} tried to connect but is unknown'.format(self.name, uid))
 			return None
 
@@ -390,7 +390,7 @@ class DeviceManager(Manager):
 
 
 	def deviceDisconnecting(self, uid: str):
-		if uid not in self._devices.keys():
+		if uid not in self._devices:
 			return False
 
 		if self._devices[uid].connected:
@@ -425,4 +425,4 @@ class DeviceManager(Manager):
 
 
 	def getDeviceByUID(self, uid: str) -> Device:
-		return self._devices[uid] if uid in self._devices.keys() else None
+		return self._devices.get(uid, None)
