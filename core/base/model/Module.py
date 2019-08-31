@@ -21,6 +21,7 @@ class Module(object):
 		self._logger = logging.getLogger('ProjectAlice')
 
 		try:
+			
 			path = os.path.join(self.getCurrentDir(), os.path.splitext(inspect.getfile(self.__class__))[0] + '.install')
 			with open(path) as installFile:
 				self._install = json.load(installFile)
