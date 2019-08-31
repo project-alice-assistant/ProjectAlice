@@ -19,17 +19,17 @@ class Application(ConsoleApplication):
 		super().__init__('AliceConsole', 1)
 
 
-	def run(self, inputt: str = None) -> ConsoleApplication:
+	def run(self, inputt: str = None):
 		self._container = dict()
 
 		if not self._commandsRegistered:
 			self.registerCommands()
 			self._commandsRegistered = True
 
-		for k,command in self.commands.items():
+		for command in self.commands.values():
 			command.setContainer(self._container)
 
-		return super().run(inputt)
+		super().run(inputt)
 
 
 	def registerCommands(self):
@@ -52,14 +52,14 @@ class Application(ConsoleApplication):
 
 		modules = configManager.getAliceConfigByName('modules')
 
-		for moduleName, moduleData in modules.items():
+		for moduleName in modules:
 			self.loadModuleCommands(moduleName)
 
 
-	def loadModuleCommands(self, moduleName):
+	def loadModuleCommands(self, moduleName: str) -> bool:
 		commandsMountpoint = os.path.join(commons.rootDir(), 'modules', moduleName, 'console')
 
-		if not os.path.isdir(commandsMountpoint): return
+		if not os.path.isdir(commandsMountpoint): return False
 
 		for commandFile in os.listdir(commandsMountpoint):
 			commandClassFile = commandFile.replace('.py', '')
@@ -71,10 +71,7 @@ class Application(ConsoleApplication):
 					instance = klass()
 					self.add(instance)
 					return True
-				except ImportError:
-					continue
-				except AttributeError:
-					continue
 				except Exception:
 					continue
 
+		return False
