@@ -172,21 +172,11 @@ class ConfigManager(Manager):
 		:param createIfNotExist: If the parent key or the key doesn't exist do create it
 		"""
 		
-		if parent not in self._snipsConfigurations:
-			if not createIfNotExist:
-				self._logger.warning('Asked to update "{}" in snips configuration but key was not found'.format(parent))
-				return
-			else:
-				self._snipsConfigurations[parent] = dict()
+		config = self.getSnipsConfiguration(parent, key, createIfNotExist)
+		if not config:
+			return
 
-		if key not in self._snipsConfigurations[parent]:
-			if not createIfNotExist:
-				self._logger.warning('Asked to update "{}/{}" in snips configuration but key was not found'.format(parent, key))
-				return
-			else:
-				self._snipsConfigurations[parent][key] = ''
-
-		if self._snipsConfigurations[parent][key] != value:
+		if config != value:
 			self._snipsConfigurations[parent][key] = value
 
 			with open('/etc/snips.toml', 'w') as f:
