@@ -10,7 +10,7 @@ from datetime import datetime
 from typing import Union
 
 import functools
-import os
+from pathlib import Path
 import warnings
 from paho.mqtt.client import MQTTMessage
 
@@ -84,11 +84,11 @@ def dictMaxValue(d: dict) -> str:
 
 
 def rootDir() -> str:
-	return os.path.dirname(os.path.abspath(__file__))  + '/../..'
+	return Path(__file__).resolve().parent.parent.parent
 
 
 def getDatabaseFile() -> str:
-	return 'system/database/data.db'
+	return Path('system/database/data.db')
 
 
 def payload(message: MQTTMessage) -> dict:

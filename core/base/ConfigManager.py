@@ -18,7 +18,7 @@ import importlib
 import json
 from core.base.Manager import Manager
 import core.base.Managers as managers
-import os
+from pathlib import Path
 import toml
 import typing
 from core.ProjectAliceExceptions import ConfigurationUpdateFailed
@@ -147,18 +147,15 @@ class ConfigManager(Manager):
 		misterProper = ['active', 'version', 'author', 'conditions']
 		confsCleaned = {key: value for key, value in confs.items() if key not in misterProper}
 
-		s = json.dumps(confsCleaned, indent = 4)
-		moduleConfigFile = os.path.join(commons.rootDir(),'modules', moduleName, 'config.json')
-
-		with open(moduleConfigFile, 'w') as f:
-			f.write(s)
+		moduleConfigFile = Path(commons.rootDir(),'modules', moduleName, 'config.json')
+		moduleConfigFile.write_text(json.dumps(confsCleaned, indent = 4))
 
 
 	def loadSnipsConfigurations(self):
 		self._logger.info('[{}] Loading Snips configuration file'.format(self.name))
-		if os.path.isfile('/etc/snips.toml'):
-			with open('/etc/snips.toml') as confFile:
-				self._snipsConfigurations = toml.load(confFile)
+		snipsConfig = Path('/etc/snips.toml')
+		if snipsConfig.is_file():
+			self._snipsConfigurations = toml.loads(snipsConfig.read_text())
 		else:
 			self._logger.error('Failed retrieving Snips configs')
 			self._mainClass.onStop()
@@ -178,8 +175,7 @@ class ConfigManager(Manager):
 		if config and config != value:
 			self._snipsConfigurations[parent][key] = value
 
-			with open('/etc/snips.toml', 'w') as f:
-				toml.dump(self._snipsConfigurations, f)
+			Path('/etc/snips.toml').write_text(toml.dumps(self._snipsConfigurations))
 
 			if restartSnips:
 				managers.SnipsServicesManager.runCmd('restart')
@@ -245,10 +241,10 @@ class ConfigManager(Manager):
 
 			changes = False
 
-			moduleConfigFile = os.path.join(commons.rootDir(), 'modules', moduleName, 'config.json')
-			moduleConfigFileExists = os.path.isfile(moduleConfigFile)
-			moduleConfigFileTemplate = moduleConfigFile + '.dist'
-			moduleConfigFileTemplateExists = os.path.isfile(moduleConfigFileTemplate)
+			moduleConfigFile = commons.rootDir() / 'modules' / moduleName / 'config.json'
+			moduleConfigFileExists = moduleConfigFile.is_file()
+			moduleConfigFileTemplate = moduleConfigFile.with_suffix(moduleConfigFile.suffix + '.dist')
+			moduleConfigFileTemplateExists = moduleConfigFileTemplate.is_file()
 
 			if not moduleConfigFileTemplateExists and not moduleConfigFileExists:
 				continue
@@ -256,7 +252,7 @@ class ConfigManager(Manager):
 			# If no conf template found but there's a conf file available
 			if not moduleConfigFileTemplateExists and moduleConfigFileExists:
 				# Delete it
-				os.remove(moduleConfigFile)
+				moduleConfigFile.unlink()
 				self._logger.info('- Deprecated module config file found for module {}'.format(moduleName))
 				continue
 
@@ -304,8 +300,8 @@ class ConfigManager(Manager):
 			if module and moduleName != module:
 				continue
 
-			moduleConfigFile = os.path.join(commons.rootDir(), 'modules', moduleName, 'config.json')
-			moduleConfigFileExists = os.path.isfile(moduleConfigFile)
+			moduleConfigFile = commons.rootDir() / 'modules' / moduleName / 'config.json')
+			moduleConfigFileExists = moduleConfigFile.is_file()
 
 			if not self._aliceConfigurations['modules'][moduleName]['active'] or not moduleConfigFileExists:
 				self._modulesConfigurations[moduleName] = {**self._aliceConfigurations['modules'][moduleName]}
