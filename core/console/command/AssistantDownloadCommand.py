@@ -23,7 +23,7 @@ class AssistantDownloadCommand(Command):
 		self.setHelp('> The %command.name% command download the assistant from snips console:\n'
 					 '  <fg:magenta>%command.full_name%<fg:reset>')
 
-	def execute(self, input):
+	def execute(self, inputt):
 		TABLE_DATA = [['Assistant Downloader']]
 		table_instance = DoubleTable(TABLE_DATA)
 		self.write('\n' + table_instance.table + '\n', 'green')

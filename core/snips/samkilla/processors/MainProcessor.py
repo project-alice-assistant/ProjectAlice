@@ -371,13 +371,13 @@ class MainProcessor:
 		intentsModulesValues = dict()
 		intentNameSkillMatching = dict()
 
-		for dir in listdir(rootDir):
-			intentsPath = os.path.join(rootDir, dir, 'dialogTemplate')
+		for d in listdir(rootDir):
+			intentsPath = os.path.join(rootDir, d, 'dialogTemplate')
 
 			if not os.path.isdir(intentsPath):
 				continue
 
-			moduleName = dir
+			moduleName = d
 			self._modules[moduleName] = dict()
 
 			for languageFile in listdir(intentsPath):

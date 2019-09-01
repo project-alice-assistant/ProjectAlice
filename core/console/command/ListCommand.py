@@ -17,7 +17,7 @@ class ListCommand(Command):
 		self.setHelp('> The %command.name% command lists all commands:\n'
 					 '  <fg:magenta>%command.full_name%<fg:reset>')
 
-	def execute(self, input):
+	def execute(self, inputt):
 		commands = self.getApplication().getCommands()
 		sortedCommandKeys = sorted(commands)
 

@@ -69,17 +69,17 @@ class IntentListCommand(Command):
 		self.setHelp('> The %command.name% list intents and utterances:\n'
 					 '  <fg:magenta>%command.full_name%<fg:reset> <fg:yellow>[-m|--module]<fg:reset> <fg:yellow>[-f|--full]<fg:reset> <fg:yellow>[-i|--intent=intentName]<fg:reset>')
 
-	def execute(self, input):
-		if input.getOption('intent'):
-			return self.intentMode(input)
+	def execute(self, inputt):
+		if inputt.getOption('intent'):
+			return self.intentMode(inputt)
 
-		if input.getOption('module'):
-			return self.moduleMode(input)
+		if inputt.getOption('module'):
+			return self.moduleMode(inputt)
 
-		return self.allMode(input)
+		return self.allMode(inputt)
 
 
-	def allMode(self, input):
+	def allMode(self, inputt):
 		TABLE_DATA = [['All Alice intents']]
 		table_instance = DoubleTable(TABLE_DATA)
 		self.write('\n' + table_instance.table + '\n', 'yellow')
@@ -95,7 +95,7 @@ class IntentListCommand(Command):
 
 			tUtterance, _ = random.choice(list(self._intentsModulesValues[dtIntentName]['utterances'].items()))
 
-			if not input.getOption('full'):
+			if not inputt.getOption('full'):
 				tDesc = (tDesc[:self.DESCRIPTION_MAX] + '..') if len(tDesc) > self.DESCRIPTION_MAX else tDesc
 				tUtterance = (tUtterance[:self.DESCRIPTION_MAX] + '..') if len(tUtterance) > self.DESCRIPTION_MAX else tUtterance
 
@@ -110,8 +110,8 @@ class IntentListCommand(Command):
 		self.write(table_instance.table)
 
 
-	def intentMode(self, input):
-		TABLE_DATA = [['Utterances of ' + input.getOption('intent') + ' intent']]
+	def intentMode(self, inputt):
+		TABLE_DATA = [['Utterances of ' + inputt.getOption('intent') + ' intent']]
 		table_instance = DoubleTable(TABLE_DATA)
 		self.write('\n' + table_instance.table + '\n', 'yellow')
 
@@ -121,13 +121,13 @@ class IntentListCommand(Command):
 		intentFound = False
 
 		for dtIntentName, dtModuleName in self._intentNameSkillMatching.items():
-			if dtIntentName == input.getOption('intent') and dtModuleName == input.getOption('module'):
+			if dtIntentName == inputt.getOption('intent') and dtModuleName == inputt.getOption('module'):
 				intentFound = True
 
 				for utterance, _ in self._intentsModulesValues[dtIntentName]['utterances'].items():
 					tDesc = utterance
 
-					if not input.getOption('full'):
+					if not inputt.getOption('full'):
 						tDesc = (tDesc[:self.DESCRIPTION_MAX] + '..') if len(tDesc) > self.DESCRIPTION_MAX else tDesc
 
 					TABLE_DATA.append([
@@ -142,8 +142,8 @@ class IntentListCommand(Command):
 
 		self.write(table_instance.table)
 
-	def moduleMode(self, input):
-		TABLE_DATA = [['Intents of ' + input.getOption('module') + ' module']]
+	def moduleMode(self, inputt):
+		TABLE_DATA = [['Intents of ' + inputt.getOption('module') + ' module']]
 		table_instance = DoubleTable(TABLE_DATA)
 		self.write('\n' + table_instance.table + '\n', 'yellow')
 
@@ -153,12 +153,12 @@ class IntentListCommand(Command):
 		moduleFound = False
 
 		for dtIntentName, dtModuleName in self._intentNameSkillMatching.items():
-			if dtModuleName == input.getOption('module'):
+			if dtModuleName == inputt.getOption('module'):
 				moduleFound = True
 				tDesc = self._intentsModulesValues[dtIntentName]['__otherattributes__']['description']
 				tEnabledByDefault = self._intentsModulesValues[dtIntentName]['__otherattributes__']['enabledByDefault']
 
-				if not input.getOption('full'):
+				if not inputt.getOption('full'):
 					tDesc = (tDesc[:self.DESCRIPTION_MAX] + '..') if len(tDesc) > self.DESCRIPTION_MAX else tDesc
 
 				TABLE_DATA.append([

@@ -79,8 +79,8 @@ class ConsoleApplication:
 		self.verbose = level
 
 	@staticmethod
-	def getCommandName(input):
-		return input.getFirstArgument()
+	def getCommandName(inputt):
+		return inputt.getFirstArgument()
 
 	def getName(self):
 		return self.name
@@ -143,41 +143,41 @@ class ConsoleApplication:
 
 		return exitCode
 
-	def configureIO(self, input):
-		if input.hasParameterOption(['--no-interaction', '-n']):
-			input.setInteractive(False)
+	def configureIO(self, inputt):
+		if inputt.hasParameterOption(['--no-interaction', '-n']):
+			inputt.setInteractive(False)
 
-		if input.hasParameterOption(['--verbose', '-v']):
+		if inputt.hasParameterOption(['--verbose', '-v']):
 			self.setVerbose(1)
 
-	def doRun(self, input):
-		if input.hasParameterOption(['--version', '-V']):
+	def doRun(self, inputt):
+		if inputt.hasParameterOption(['--version', '-V']):
 			print(self.getLongVersion())
 			return 0
 
-		name = self.getCommandName(input)
+		name = self.getCommandName(inputt)
 
-		if input.hasParameterOption(['--help', '-h']):
+		if inputt.hasParameterOption(['--help', '-h']):
 			if name is None:
 				name = 'help'
-				input = ArrayInput(parameters={"command":'help'})
+				inputt = ArrayInput(parameters={"command":'help'})
 			else:
 				self.needHelp = True
 
 		if name is None:
 			name = 'list'
-			input = ArrayInput(parameters={"command":name})
+			inputt = ArrayInput(parameters={"command":name})
 
 		command = self.find(name)
 		self.running = command
-		exitCode = self.doRunCommand(command=command, input=input)
+		exitCode = self.doRunCommand(command=command, inputt=inputt)
 		self.running = None
 
 		return exitCode
 
 	@staticmethod
-	def doRunCommand(command, input):
-		return command.run(input)
+	def doRunCommand(command, inputt):
+		return command.run(inputt)
 
 	def find(self, name):
 		return self.get(name)

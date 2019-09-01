@@ -128,6 +128,7 @@ class ModuleManager(Manager):
 				self._logger.warning('[{}] Something went wrong loading a module: {}'.format(self.name, e))
 				continue
 
+		# noinspection PyTypeChecker
 		return collections.OrderedDict(sorted(modules.items()))
 
 

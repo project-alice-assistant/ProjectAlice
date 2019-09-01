@@ -161,16 +161,16 @@ class Skill:
 
 
 	def edit(self, skillId, name=None, description=None, imageKey=None):
-		input = {'id': skillId}
+		inputt = {'id': skillId}
 
-		if name: input['name'] = name
-		if description: input['description'] = description
-		if imageKey: input['imageUrl'] = EnumSkillImageUrl.getImageUrl(self._ctx.ROOT_URL, imageKey)
+		if name: inputt['name'] = name
+		if description: inputt['description'] = description
+		if imageKey: inputt['imageUrl'] = EnumSkillImageUrl.getImageUrl(self._ctx.ROOT_URL, imageKey)
 
 		gqlRequest = [{
 			'operationName': 'editSkill',
 			'variables': {
-				'input': input
+				'input': inputt
 			},
 			'query': editSkill
 		}]

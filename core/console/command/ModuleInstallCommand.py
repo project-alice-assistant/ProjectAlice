@@ -25,8 +25,8 @@ class ModuleInstallCommand(Command):
 		self.setHelp('> The %command.name% download and install a module from dedicated repository:\n'
 					 '  <fg:magenta>%command.full_name%<fg:reset> <fg:cyan>author/moduleName<fg:reset>')
 
-	def execute(self, input):
-		modulePath = input.getArgument('modulePath')
+	def execute(self, inputt):
+		modulePath = inputt.getArgument('modulePath')
 		parts = modulePath.split("/")
 
 		TABLE_DATA = [['Module Installer']]

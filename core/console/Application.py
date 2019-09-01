@@ -10,6 +10,9 @@ from core.base.ConfigManager import ConfigManager
 #
 # Application is the main entry point of a ConsoleApplication
 #
+from core.console.input import ArgvInput
+
+
 class Application(ConsoleApplication):
 
 
@@ -19,7 +22,7 @@ class Application(ConsoleApplication):
 		super().__init__('AliceConsole', 1)
 
 
-	def run(self, inputt: str = None):
+	def run(self, inputt: ArgvInput = None):
 		self._container = dict()
 
 		if not self._commandsRegistered:
