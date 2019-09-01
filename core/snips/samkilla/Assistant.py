@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
+import requests
 
+from core.snips import SamkillaManager
 from core.snips.samkilla.gql.assistants.createAssistant import createAssistant
 from core.snips.samkilla.gql.assistants.deleteAssistant import deleteAssistant
 from core.snips.samkilla.gql.assistants.forkAssistantSkill import forkAssistantSkill
@@ -9,22 +11,23 @@ from core.snips.samkilla.gql.assistants.queries import allAssistantsQuery
 
 class Assistant:
 
-	def __init__(self, ctx):
+	def __init__(self, ctx: SamkillaManager):
 		self._ctx = ctx
 
-	def create(self, title, language, platformType='raspberrypi', asrType='snips', hotwordId='hey_snips', rawResponse=False):
+
+	def create(self, title: str, language: str, platformType: str = 'raspberrypi', asrType: str = 'snips', hotwordId: str = 'hey_snips', rawResponse: bool = False) -> str:
 		gqlRequest = [{
 			'operationName': 'CreateAssistant',
-			'variables': {
+			'variables'    : {
 				'input': {
-					'title': title,
-					'platform': {'type': platformType},
-					'asr': {'type': asrType},
-					'language': language,
+					'title'    : title,
+					'platform' : {'type': platformType},
+					'asr'      : {'type': asrType},
+					'language' : language,
 					'hotwordId': hotwordId
 				}
 			},
-			'query': createAssistant
+			'query'        : createAssistant
 		}]
 		response = self._ctx.postGQLBrowserly(gqlRequest)
 
@@ -36,39 +39,36 @@ class Assistant:
 		return response['createAssistant']['id']
 
 
-	def edit(self, assistantId, title=None):
+	def edit(self, assistantId: str, title: str = None):
 		inputt = dict()
 
 		if title: inputt['title'] = title
 
 		gqlRequest = [{
 			'operationName': 'PatchAssistant',
-			'variables': {
+			'variables'    : {
 				'assistantId': assistantId,
-				'input': inputt
+				'input'      : inputt
 			},
-			'query': patchAssistant
+			'query'        : patchAssistant
 		}]
 		self._ctx.postGQLBrowserly(gqlRequest)
 
 
-	def delete(self, assistantId, rawResponse=False):
+	def delete(self, assistantId: str) -> requests.Response:
 		gqlRequest = [{
 			'operationName': 'DeleteAssistant',
-			'variables':  {'assistantId': assistantId},
-			'query': deleteAssistant
+			'variables'    : {'assistantId': assistantId},
+			'query'        : deleteAssistant
 		}]
-		response = self._ctx.postGQLBrowserly(gqlRequest)
-		if rawResponse: return response
-
-		return response
+		return self._ctx.postGQLBrowserly(gqlRequest)
 
 
-	def list(self, rawResponse=False, parseWithAttribute='id'):
+	def list(self, rawResponse: bool = False, parseWithAttribute: str = 'id') -> list:
 		gqlRequest = [{
 			'operationName': 'AssistantsQuery',
-			'variables': dict(),
-			'query': allAssistantsQuery
+			'variables'    : dict(),
+			'query'        : allAssistantsQuery
 		}]
 		response = self._ctx.postGQLBrowserly(gqlRequest)
 		if rawResponse: return response
@@ -78,31 +78,34 @@ class Assistant:
 
 		return response['assistants']
 
-	def getTitleById(self, assistantId):
+
+	def getTitleById(self, assistantId: str) -> str:
 		for assistantItem in self.list(parseWithAttribute=''):
 			if assistantItem['id'] == assistantId:
 				return assistantItem['title']
 
-		return ""
+		return ''
 
-	def exists(self, assistantId):
+
+	def exists(self, assistantId: str) -> bool:
 		for listItemAssistantId in self.list():
 			if listItemAssistantId == assistantId:
 				return True
 
 		return False
 
-	def extractSkillIdentifiers(self, assistantId):
+
+	def extractSkillIdentifiers(self, assistantId: str) -> list:
 		skills = self._ctx.getBrowser().execute_script("return window.__APOLLO_STATE__['Assistant:{}']['skills']".format(assistantId))
 
 		return [skill['id'].replace('Skill:', '') for skill in skills]
 
 
-	def forkAssistantSkill(self, assistantId, sourceSkillId):
+	def forkAssistantSkill(self, assistantId: str, sourceSkillId: str) -> str:
 		gqlRequest = [{
 			'operationName': 'forkAssistantSkill',
-			'variables': {'assistantId': assistantId, 'skillId': sourceSkillId},
-			'query': forkAssistantSkill
+			'variables'    : {'assistantId': assistantId, 'skillId': sourceSkillId},
+			'query'        : forkAssistantSkill
 		}]
 		response = self._ctx.postGQLBrowserly(gqlRequest)
 
