@@ -198,8 +198,8 @@ class AmazonTTS(TTS):
 		if not self._cacheFile or not self._text:
 			return
 
-		tmpFile = os.path.join(self.TEMP_ROOT, os.path.splitext(os.path.basename(self._cacheFile))[0] + '.mp3')
-		if not os.path.isfile(self._cacheFile):
+		tmpFile = self.TEMP_ROOT / self._cacheFile.with_suffix('.mp3')
+		if not self._cacheFile.is_file():
 			response = self._client.synthesize_speech(
 				Engine = 'standard',
 				LanguageCode = self._lang,
@@ -214,8 +214,7 @@ class AmazonTTS(TTS):
 				self._logger.error('[{}] Failed downloading speech file'.format(self.TTS.value))
 				return
 
-			with open(tmpFile, 'wb') as f:
-				f.write(response['AudioStream'].read())
+			tmpFile.write_bytes(response['AudioStream'].read())
 
 			self._mp3ToWave(src=tmpFile, dest=self._cacheFile)
 

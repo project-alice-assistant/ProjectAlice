@@ -2,7 +2,7 @@
 import getpass
 import subprocess
 
-import os
+from pathlib import Path
 import re
 
 from core.commons import commons
@@ -21,7 +21,7 @@ class MycroftTTS(TTS):
 		self._online = False
 		self._privacyMalus = 0
 
-		self._mimicDirectory = os.path.join(commons.rootDir(), '..', 'mimic', 'mimic')
+		self._mimicDirectory = commons.rootDir().parent / 'mimic/mimic'
 
 		# TODO => classify genders and countries. First is always default
 		self._supportedLangAndVoices = {
@@ -92,10 +92,10 @@ class MycroftTTS(TTS):
 		if not self._cacheFile or not self._text:
 			return
 
-		if not os.path.isfile(self._cacheFile):
-			if not os.path.isfile(os.path.join(self._mimicDirectory, 'voices', self._voice + '.flitevox')):
-				htsvoice = os.path.join(self._mimicDirectory, 'voices', self._voice + '.htsvoice')
-				if os.path.isfile(htsvoice):
+		if not self._cacheFile.is_file():
+			if not Path(self._mimicDirectory, 'voices', self._voice + '.flitevox').is_file():
+				htsvoice = Path(self._mimicDirectory, 'voices', self._voice + '.htsvoice')
+				if htsvoice.is_file():
 					subprocess.run([
 						'sudo',
 						'-u', getpass.getuser(),

@@ -5,6 +5,7 @@ import uuid
 
 import hashlib
 import os
+from pathlib import Path
 from pydub import AudioSegment
 
 import core.base.Managers as managers
@@ -15,7 +16,7 @@ from core.voice.model.TTSEnum import TTSEnum
 
 
 class TTS:
-	TEMP_ROOT = os.path.join('/tmp', 'tempTTS')
+	TEMP_ROOT = Path('/tmp/tempTTS')
 	TTS = None
 
 	def __init__(self, user: User = None):
@@ -36,7 +37,7 @@ class TTS:
 			self._voice = managers.ConfigManager.getAliceConfigByName('ttsVoice')
 
 		self._cacheDirectory = ''
-		self._cacheFile = ''
+		self._cacheFile: Path = None
 		self._text = ''
 
 
@@ -56,17 +57,16 @@ class TTS:
 
 		self._cacheDir()
 
-		if not os.path.isdir(self.TEMP_ROOT):
-			os.mkdir(self.TEMP_ROOT)
+		self.TEMP_ROOT.mkdir(parents=True, exist_ok=True)
 
 		if self.TTS == TTSEnum.SNIPS:
 			voiceFile = 'cmu_{}_{}'.format(managers.LanguageManager.activeCountryCode.lower(), self._voice)
-			if not os.path.isfile(os.path.join(commons.rootDir(), 'system', 'voices', voiceFile)):
+			if not (commons.rootDir()/'system/voices'/voiceFile).is_file()):
 				self._logger.info('[TTS] Using "{}" as TTS with voice "{}" but voice file not found. Downloading...'.format(self.TTS.value, self._voice))
 
 				process = subprocess.run([
 					'wget', 'https://github.com/MycroftAI/mimic1/blob/development/voices/{}.flitevox?raw=true'.format(voiceFile),
-					'-O', os.path.join(commons.rootDir(), 'var', 'voices', '{}.flitevox'.format(voiceFile))
+					'-O', commons.rootDir()/'var/voices/{}.flitevox'.format(voiceFile))
 				],
 				stdout=subprocess.PIPE)
 
@@ -76,7 +76,7 @@ class TTS:
 
 
 	def _cacheDir(self):
-		self._cacheDirectory = os.path.join(managers.TTSManager.CACHE_ROOT, self.TTS.value, self._lang, self._type, self._voice)
+		self._cacheDirectory = Path(managers.TTSManager.CACHE_ROOT, self.TTS.value, self._lang, self._type, self._voice)
 
 
 	@property
@@ -137,10 +137,10 @@ class TTS:
 	def _speak(self, file: str, session: DialogSession):
 		uid = str(uuid.uuid4())
 		managers.MqttServer.playSound(
-			soundFile=os.path.splitext(os.path.basename(file))[0],
+			soundFile=Path(file).stem,
 			sessionId=session.sessionId,
 			siteId=session.siteId,
-			root=os.path.dirname(file),
+			root=Path(file).parent,
 			uid=uid
 		)
 
@@ -170,11 +170,11 @@ class TTS:
 	def onSay(self, session: DialogSession):
 		self._text = self._checkText(session)
 		if not self._text:
-			self._cacheFile = ''
+			self._cacheFile = None
 			self._text = ''
 			return
 
-		self._cacheFile = os.path.join(self._cacheDirectory, self._hash(text=self._text) + '.wav')
+		self._cacheFile = Path(self._cacheDirectory, self._hash(text=self._text) + '.wav')
 
-		if not os.path.isdir(os.path.dirname(self._cacheFile)):
-			os.makedirs(os.path.dirname(self._cacheFile), exist_ok=True)
+		if not self._cacheFile.parent.is_dir():
+			self._cacheFile.parent.mkdir(parents=True, exist_ok=True)
