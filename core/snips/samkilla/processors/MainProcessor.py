@@ -2,8 +2,7 @@
 
 import json
 
-import os
-from os import listdir
+from pathlib import Path
 
 from core.snips.samkilla.exceptions.HttpError import HttpError
 from core.snips.samkilla.models.EnumSkillImageUrl import EnumSkillImageUrl as EnumSkillImageUrlClass
@@ -16,7 +15,7 @@ EnumSkillImageUrl = EnumSkillImageUrlClass()
 
 class MainProcessor:
 
-	SAVED_ASSISTANTS_DIR = os.path.join('var', 'assistants')
+	SAVED_ASSISTANTS_DIR = Path('var', 'assistants')
 	SAVED_MODULES_DIR = 'modules'
 
 	def __init__(self, ctx):
@@ -31,80 +30,58 @@ class MainProcessor:
 
 
 	def initSavedIntents(self):
-		for lang in listdir(self.SAVED_ASSISTANTS_DIR):
-			if lang.startswith('.'): continue
+		for lang in self.SAVED_ASSISTANTS_DIR.glob('[!.]*'):
+			if not lang.is_dir(): continue
 
-			self._savedIntents[lang] = dict()
-			insideLangDir = os.path.join(self.SAVED_ASSISTANTS_DIR, lang)
-			os.makedirs(insideLangDir, exist_ok=True)
-			self._savedIntents[lang] = dict()
+			self._savedIntents[lang.name] = dict()
 
-			for projectId in listdir(insideLangDir):
-				insideProjectSlotDir = os.path.join(insideLangDir, projectId, 'intents')
-				os.makedirs(insideProjectSlotDir, exist_ok=True)
-				self._savedIntents[lang][projectId] = dict()
+			for projectId in lang.iterdir():
+				directory = projectId / 'intents'
+				directory.mkdir(parents=True, exist_ok=True)
+				self._savedIntents[lang.name][projectId.name] = dict()
 
-				for intent in listdir(insideProjectSlotDir):
-					intentFilePathName = os.path.join(insideProjectSlotDir, intent)
-
-					with open(intentFilePathName) as intentFilePathNameHandler:
-						wholeIntentDefinition = json.load(intentFilePathNameHandler)
-						self._savedIntents[lang][projectId][wholeIntentDefinition['name']] = wholeIntentDefinition
+				for intent in directory.iterdir():
+					intentDefinition = json.load(intent.read_text())
+					self._savedIntents[lang.name][projectId.name][intentDefinition['name']] = intentDefinition
 
 
 	def initSavedSlots(self):
-		for lang in listdir(self.SAVED_ASSISTANTS_DIR):
-			if lang.startswith('.'): continue
+		for lang in self.SAVED_ASSISTANTS_DIR.glob('[!.]*'):
+			if not lang.is_dir(): continue
 
-			self._savedSlots[lang] = dict()
-			insideLangDir = os.path.join(self.SAVED_ASSISTANTS_DIR, lang)
-			os.makedirs(insideLangDir, exist_ok=True)
-			self._savedSlots[lang] = dict()
+			self._savedSlots[lang.name] = dict()
 
-			for projectId in listdir(insideLangDir):
-				insideProjectSlotDir = os.path.join(insideLangDir, projectId, 'slots')
-				os.makedirs(insideProjectSlotDir, exist_ok=True)
-				self._savedSlots[lang][projectId] = dict()
+			for projectId in lang.iterdir():
+				directory = projectId / 'slots'
+				directory.mkdir(parents=True, exist_ok=True)
+				self._savedSlots[lang.name][projectId.name] = dict()
 
-				for slot in listdir(insideProjectSlotDir):
-					slotFilePathName = os.path.join(insideProjectSlotDir, slot)
-
-					with open(slotFilePathName) as slotFilePathNameHandler:
-						wholeSlotDefinition = json.load(slotFilePathNameHandler)
-						self._savedSlots[lang][projectId][wholeSlotDefinition['name']] = wholeSlotDefinition
+				for slot in directory.iterdir():
+					definition = json.load(slot.read_text())
+					self._savedSlots[lang.name][projectId.name][definition['name']] = definition
 
 	def initSavedAssistants(self):
-		os.makedirs(self.SAVED_ASSISTANTS_DIR, exist_ok=True)
+		for lang in self.SAVED_ASSISTANTS_DIR.glob('[!.]*'):
+			if not lang.is_dir(): continue
 
-		for lang in listdir(self.SAVED_ASSISTANTS_DIR):
-			if lang.startswith('.'): continue
+			self._savedAssistants[lang.name] = dict()
 
-			insideLangDir = os.path.join(self.SAVED_ASSISTANTS_DIR, lang)
-			os.makedirs(insideLangDir, exist_ok=True)
-			self._savedAssistants[lang] = dict()
+			for projectId in lang.iterdir():
+				filename = projectId / '_assistant.json'
+				self._savedAssistants[lang.name][projectId.name] = dict()
 
-			for projectId in listdir(insideLangDir):
-				projectIdFilePathName = os.path.join(insideLangDir, projectId, '_assistant.json')
-				self._savedAssistants[lang][projectId] = dict()
-
-				with open(projectIdFilePathName) as projectIdFileHandler:
-					wholeAssistant = json.load(projectIdFileHandler)
-					self._savedAssistants[lang][projectId] = wholeAssistant
-					self.safeBaseDicts(projectId, lang)
+				wholeAssistant = json.load(filename.read_text())
+				self._savedAssistants[lang.name][projectId.name] = wholeAssistant
+				self.safeBaseDicts(projectId.name, lang.name)
 
 	def hasLocalAssistantByIdAndLanguage(self, assistantLanguage, assistantId):
-		return assistantLanguage in self._savedAssistants and assistantId in self._savedAssistants[assistantLanguage]
+		return assistantId in self._savedAssistants.get(assistantLanguage, dict())
 
 	def getLocalFirstAssistantByLanguage(self, assistantLanguage, returnId=False):
-		if assistantLanguage in self._savedAssistants:
-			assistantKeysForLanguage = list(self._savedAssistants[assistantLanguage].keys())
-
-			if len(assistantKeysForLanguage) > 0:
-				if returnId:
-					return self._savedAssistants[assistantLanguage][assistantKeysForLanguage[0]]['id']
-
-				return self._savedAssistants[assistantLanguage][assistantKeysForLanguage[0]]
-
+		assistants = self._savedAssistants.get(assistantLanguage, dict())
+		if assistants:
+			firstAssistant = next(iter(assistants.values()))
+			return firstAssistant['id'] if returnId else firstAssistant
 		return None
 
 
@@ -115,16 +92,15 @@ class MainProcessor:
 			self._savedAssistants[assistantLanguage][assistantId].setdefault(baseDict, dict())
 
 	def persistToLocalAssistantCache(self, assistantId, assistantLanguage):
-		assistantMountpoint = os.path.join(self.SAVED_ASSISTANTS_DIR, assistantLanguage, assistantId)
-		os.makedirs(assistantMountpoint, exist_ok=True)
+		assistantMountpoint = self.SAVED_ASSISTANTS_DIR / assistantLanguage / assistantId
+		assistantMountpoint.mkdir(parents=True, exist_ok=True)
 
 		self.safeBaseDicts(assistantId, assistantLanguage)
 
 		state = self._savedAssistants[assistantLanguage][assistantId]
-
-		with open(os.path.join(assistantMountpoint, 'assistant.json'), 'w') as projectIdFileHandler:
-			json.dump(state, projectIdFileHandler, indent=4, sort_keys=False, ensure_ascii=False)
-			# self._ctx.log('\n[Persist] local assistant {} in {}'.format(assistantId, assistantLanguage))
+		assistantFile = assistantMountpoint / 'assistant.json'
+		assistantFile.write_text(json.dumps(state, indent=4, sort_keys=False, ensure_ascii=False))
+		# self._ctx.log('\n[Persist] local assistant {} in {}'.format(assistantId, assistantLanguage))
 
 	def syncRemoteToLocalAssistant(self, assistantId, assistantLanguage, assistantTitle):
 		if not self.hasLocalAssistantByIdAndLanguage(assistantId=assistantId, assistantLanguage=assistantLanguage):
@@ -164,78 +140,52 @@ class MainProcessor:
 			self.persistToLocalAssistantCache(assistantId=assistantId, assistantLanguage=assistantLanguage)
 
 	def getModuleFromFile(self, moduleFile, moduleLanguage):
-		with open(moduleFile) as f:
-			module = json.load(f)
-			module['language'] = moduleLanguage
+		module = json.loads(Path(moduleFile).read_text())
+		module['language'] = moduleLanguage
 
-			if module['module'] not in self._modules:
-				self._ctx.log('\n[Inconsistent] Module {} has a name different from its directory'.format(module['module']))
-				return None
+		if module['module'] not in self._modules:
+			self._ctx.log('\n[Inconsistent] Module {} has a name different from its directory'.format(module['module']))
+			return None
 
-			self._modules[module['module']][moduleLanguage] = module
-			self._ctx.log('[FilePull] Loading module {}'.format(module['module']))
-			return module
+		self._modules[module['module']][moduleLanguage] = module
+		self._ctx.log('[FilePull] Loading module {}'.format(module['module']))
+		return module
 
 	def getModuleSyncStateByLanguageAndAssistantId(self, moduleName, language, assistantId):
-		moduleSyncState = None
-
-		if language in self._savedAssistants and \
-				assistantId in self._savedAssistants[language] and \
-				moduleName in self._savedAssistants[language][assistantId]['modules']:
-			moduleSyncState = self._savedAssistants[language][assistantId]['modules'][moduleName]
-
-		return moduleSyncState
+		return self._savedAssistants.get(language, dict()).get(assistantId, dict()).get('modules', dict()).get(moduleName, None)
 
 	def getSlotTypeSyncStateByLanguageAndAssistantId(self, slotTypeName, language, assistantId):
-		slotSyncState = None
-
-		if language in self._savedAssistants and \
-				assistantId in self._savedAssistants[language] and \
-				slotTypeName in self._savedAssistants[language][assistantId]['slotTypes']:
-			slotSyncState = self._savedAssistants[language][assistantId]['slotTypes'][slotTypeName]
-
-		return slotSyncState
+		return self._savedAssistants.get(language, dict()).get(assistantId, dict()).get('slotTypes', dict()).get(slotTypeName, None)
 
 	def getIntentSyncStateByLanguageAndAssistantId(self, intentName, language, assistantId):
-		intentSyncState = None
-
-		if language in self._savedAssistants and \
-				assistantId in self._savedAssistants[language] and \
-				intentName in self._savedAssistants[language][assistantId]['intents']:
-			intentSyncState = self._savedAssistants[language][assistantId]['intents'][intentName]
-
-		return intentSyncState
+		return self._savedAssistants.get(language, dict()).get(assistantId, dict()).get('intents', dict()).get(intentName, None)
 
 	def persistToGlobalAssistantSlots(self, assistantId, assistantLanguage, slotNameFilter=None):
-		assistantSlotsMountpoint = os.path.join(self.SAVED_ASSISTANTS_DIR, assistantLanguage, assistantId, 'slots')
-		os.makedirs(assistantSlotsMountpoint, exist_ok=True)
+		assistantSlotsMountpoint = self.SAVED_ASSISTANTS_DIR / assistantLanguage / assistantId / 'slots'
+		assistantSlotsMountpoint.mkdir(parents=True, exist_ok=True)
 
 		slotTypes = self._savedSlots[assistantLanguage][assistantId]
 
-		for slotTypeName in slotTypes:
-			slotType = slotTypes[slotTypeName]
+		for key, value in slotTypes.items():
+			if slotNameFilter and slotNameFilter != key: continue
 
-			if slotNameFilter and slotNameFilter != slotTypeName: continue
-
-			with open(os.path.join(assistantSlotsMountpoint, '{}.json'.format(slotTypeName)), 'w') as slotTypeFileHandler:
-				json.dump(slotType, slotTypeFileHandler, indent=4, sort_keys=False, ensure_ascii=False)
-				# self._ctx.log('[Persist] global slot {}'.format(slotTypeName))
+			slotFile = assistantSlotsMountpoint / '{}.json'.format(key)
+			slotFile.write_text(json.dumps(value, indent=4, sort_keys=False, ensure_ascii=False))
+			# self._ctx.log('[Persist] global slot {}'.format(key))
 
 
 	def persistToGlobalAssistantIntents(self, assistantId, assistantLanguage, intentNameFilter=None):
-		assistantIntentsMountpoint = os.path.join(self.SAVED_ASSISTANTS_DIR, assistantLanguage, assistantId, 'intents')
-		os.makedirs(assistantIntentsMountpoint, exist_ok=True)
+		assistantSlotsMountpoint = self.SAVED_ASSISTANTS_DIR / assistantLanguage / assistantId / 'intents'
+		assistantSlotsMountpoint.mkdir(parents=True, exist_ok=True)
 
 		intents = self._savedIntents[assistantLanguage][assistantId]
 
-		for intentName in intents:
-			intent = intents[intentName]
+		for key, value in intents.items():
+			if intentNameFilter and intentNameFilter != key: continue
 
-			if intentNameFilter and intentNameFilter != intentName: continue
-
-			with open(os.path.join(assistantIntentsMountpoint, '{}.json'.format(intentName)), 'w') as slotTypeFileHandler:
-				json.dump(intent, slotTypeFileHandler, indent=4, sort_keys=False, ensure_ascii=False)
-				# self._ctx.log('[Persist] global intent {}'.format(intentName))
+			intentFile = assistantSlotsMountpoint / '{}.json'.format(key)
+			intentFile.write_text(json.dumps(value, indent=4, sort_keys=False, ensure_ascii=False))
+			# self._ctx.log('[Persist] global slot {}'.format(key))
 
 
 	def syncGlobalSlotType(self, assistantId, assistantLanguage, slotTypeName, slotDefinition, persist=False):
@@ -256,9 +206,7 @@ class MainProcessor:
 		mergedSlotTypes = dict()
 		slotTypesGlobalValues = dict()
 
-		keys = slotTypesModulesValues.keys()
-
-		for slotName in keys:
+		for slotName in slotTypesModulesValues:
 			if slotName in self._savedSlots[slotLanguage][assistantId]:
 				savedSlotType = self._savedSlots[slotLanguage][assistantId][slotName]
 
@@ -276,7 +224,7 @@ class MainProcessor:
 
 						if 'synonyms' in savedSlotValue:
 							for synonym in savedSlotValue['synonyms']:
-								if len(synonym) == 0: continue
+								if not synonym: continue
 								slotTypesGlobalValues[savedSlotType['name']][savedSlotValue['value']].setdefault(synonym, True)
 
 		for slotName in slotTypesModulesValues:
@@ -311,19 +259,18 @@ class MainProcessor:
 		mergedIntents = dict()
 		intentsGlobalValues = dict()
 
-		keys = intentsModulesValues.keys()
-
-		for intentName in keys:
+		for intentName in intentsModulesValues:
 			if intentName in self._savedIntents[intentLanguage][assistantId]:
 				savedIntent = self._savedIntents[intentLanguage][assistantId][intentName]
 
-				intentsGlobalValues[savedIntent['name']] = {'__otherattributes__': {
-					'name': savedIntent['name'],
-					'description': savedIntent['description'],
-					'enabledByDefault': savedIntent['enabledByDefault'],
-					'utterances': list(),
-					'slots': list()
-				},
+				intentsGlobalValues[savedIntent['name']] = {
+					'__otherattributes__': {
+						'name': savedIntent['name'],
+						'description': savedIntent['description'],
+						'enabledByDefault': savedIntent['enabledByDefault'],
+						'utterances': list(),
+						'slots': list()
+					},
 					'utterances': dict(),
 					'slots': dict()
 				}
@@ -364,79 +311,74 @@ class MainProcessor:
 	def buildMapsFromDialogTemplates(self, runOnAssistantId=None, moduleFilter=None, languageFilter=None):
 		self._modules = dict()
 
-		rootDir = 'modules'
-		os.makedirs(rootDir, exist_ok=True)
+		rootDir = Path('modules')
+		rootDir.mkdir(exist_ok=True)
 
 		slotTypesModulesValues = dict()
 		intentsModulesValues = dict()
 		intentNameSkillMatching = dict()
 
-		for d in listdir(rootDir):
-			intentsPath = os.path.join(rootDir, d, 'dialogTemplate')
+		for module in rootDir.iterdir():
+			intentsPath = module / 'dialogTemplate'
 
-			if not os.path.isdir(intentsPath):
-				continue
+			if not intentsPath.is_dir(): continue
 
-			moduleName = d
-			self._modules[moduleName] = dict()
+			self._modules[module.name] = dict()
 
-			for languageFile in listdir(intentsPath):
-				moduleFile = os.path.join(intentsPath, languageFile)
-				moduleLanguage = os.path.basename(moduleFile).replace('.json', '')
-				if languageFilter and languageFilter != moduleLanguage: continue
-				module = self.getModuleFromFile(moduleFile=moduleFile, moduleLanguage=moduleLanguage)
+			for languageFile in intentsPath.iterdir():
+				language = languageFile.stem
+				if languageFilter and languageFilter != language: continue
+
+				module = self.getModuleFromFile(moduleFile=languageFile, moduleLanguage=language)
 				if not module: continue
 
 				# We need all slotTypes values of all modules, even if there is a module filter
 				for moduleSlotType in module['slotTypes']:
 					if moduleSlotType['name'] not in slotTypesModulesValues:
-						slotTypesModulesValues[moduleSlotType['name']] = {'__otherattributes__': {
-							'name': moduleSlotType['name'],
-							'matchingStrictness': moduleSlotType['matchingStrictness'],
-							'automaticallyExtensible': moduleSlotType['automaticallyExtensible'],
-							'useSynonyms': moduleSlotType['useSynonyms'],
-							'values': list()
-						}}
+						slotTypesModulesValues[moduleSlotType['name']] = {
+							'__otherattributes__': {
+								'name': moduleSlotType['name'],
+								'matchingStrictness': moduleSlotType['matchingStrictness'],
+								'automaticallyExtensible': moduleSlotType['automaticallyExtensible'],
+								'useSynonyms': moduleSlotType['useSynonyms'],
+								'values': list()
+							}
+						}
 
 					for moduleSlotValue in moduleSlotType['values']:
 						if moduleSlotValue['value'] not in slotTypesModulesValues[moduleSlotType['name']]:
 							slotTypesModulesValues[moduleSlotType['name']][moduleSlotValue['value']] = dict()
 
-							if 'synonyms' in moduleSlotValue:
-								for synonym in moduleSlotValue['synonyms']:
-									if len(synonym) == 0: continue
-									if synonym not in slotTypesModulesValues[moduleSlotType['name']][
-										moduleSlotValue['value']]:
-										slotTypesModulesValues[moduleSlotType['name']][moduleSlotValue['value']][
-											synonym] = True
+							for synonym in moduleSlotValue.get('synonyms', list()):
+								if not synonym: continue
+								if synonym not in slotTypesModulesValues[moduleSlotType['name']][moduleSlotValue['value']]:
+									slotTypesModulesValues[moduleSlotType['name']][moduleSlotValue['value']][synonym] = True
 
 				# We need all intents values of all modules, even if there is a module filter
 				for moduleIntent in module['intents']:
 					if moduleIntent['name'] not in intentsModulesValues:
-						intentNameSkillMatching[moduleIntent['name']] = moduleName
+						intentNameSkillMatching[moduleIntent['name']] = module.name
 
-						intentsModulesValues[moduleIntent['name']] = {'__otherattributes__': {
-							'name': moduleIntent['name'],
-							'description': moduleIntent['description'],
-							'enabledByDefault': moduleIntent['enabledByDefault'],
-							'utterances': list(),
-							'slots': list()
-						},
+						intentsModulesValues[moduleIntent['name']] = {
+							'__otherattributes__': {
+								'name': moduleIntent['name'],
+								'description': moduleIntent['description'],
+								'enabledByDefault': moduleIntent['enabledByDefault'],
+								'utterances': list(),
+								'slots': list()
+							},
 							'utterances': dict(),
 							'slots': dict()
 						}
 
-					if 'utterances' in moduleIntent:
-						for moduleUtterance in moduleIntent['utterances']:
-							intentsModulesValues[moduleIntent['name']]['utterances'].setdefault(moduleUtterance, True)
+					for moduleUtterance in moduleIntent.get('utterances', list()):
+						intentsModulesValues[moduleIntent['name']]['utterances'].setdefault(moduleUtterance, True)
 
-					if 'slots' in moduleIntent:
-						for moduleSlot in moduleIntent['slots']:
-							intentsModulesValues[moduleIntent['name']]['slots'].setdefault(moduleSlot['name'], moduleSlot)
+					for moduleSlot in moduleIntent.get('slots', list()):
+						intentsModulesValues[moduleIntent['name']]['slots'].setdefault(moduleSlot['name'], moduleSlot)
 
-				if moduleFilter and moduleFilter != moduleName:
-					del self._modules[moduleName]
-					continue
+				if moduleFilter and moduleFilter != module.name:
+					del self._modules[module.name]
 
 		return slotTypesModulesValues, intentsModulesValues, intentNameSkillMatching
 
@@ -490,8 +432,7 @@ class MainProcessor:
 
 		typeEntityMatching = dict()
 
-		for slotName in mergedSlotTypes:
-			slotType = mergedSlotTypes[slotName]
+		for slotName, slotType in mergedSlotTypes.items():
 
 			slotSyncState = self.getSlotTypeSyncStateByLanguageAndAssistantId(
 				slotTypeName=slotName,
@@ -538,7 +479,7 @@ class MainProcessor:
 
 				hasDeprecatedSlotTypes.append(slotTypeName)
 
-		if len(hasDeprecatedSlotTypes) > 0:
+		if hasDeprecatedSlotTypes:
 			globalChanges = True
 
 			for slotTypeName in hasDeprecatedSlotTypes:
@@ -547,10 +488,10 @@ class MainProcessor:
 				if slotTypeName in self._savedSlots[languageFilter][runOnAssistantId]:
 					del self._savedSlots[languageFilter][runOnAssistantId][slotTypeName]
 
-					globalSlotTypeFile = os.path.join(self.SAVED_ASSISTANTS_DIR, languageFilter, runOnAssistantId, 'slots', '{}.json'.format(slotTypeName))
+					globalSlotTypeFile = self.SAVED_ASSISTANTS_DIR / languageFilter / runOnAssistantId / 'slots' / '{}.json'.format(slotTypeName)
 
-					if os.path.isfile(globalSlotTypeFile):
-						os.unlink(globalSlotTypeFile)
+					if globalSlotTypeFile.is_file():
+						globalSlotTypeFile.unlink()
 
 			self.persistToLocalAssistantCache(assistantId=runOnAssistantId, assistantLanguage=languageFilter)
 
@@ -569,8 +510,7 @@ class MainProcessor:
 			intentLanguage=languageFilter
 		)
 
-		for intentName in mergedIntents:
-			intent = mergedIntents[intentName]
+		for intentName, intent in mergedIntents.items():
 
 			intentSyncState = self.getIntentSyncStateByLanguageAndAssistantId(
 				intentName=intentName,
@@ -633,7 +573,7 @@ class MainProcessor:
 
 				hasDeprecatedIntents.append(intentName)
 
-		if len(hasDeprecatedIntents) > 0:
+		if hasDeprecatedIntents:
 			globalChanges = True
 
 			for intentName in hasDeprecatedIntents:
@@ -642,10 +582,10 @@ class MainProcessor:
 				if intentName in self._savedIntents[languageFilter][runOnAssistantId]:
 					del self._savedIntents[languageFilter][runOnAssistantId][intentName]
 
-					globalIntentFile = os.path.join(self.SAVED_ASSISTANTS_DIR, languageFilter, runOnAssistantId, 'intents', '{}.json'.format(intentName))
+					globalIntentFile = self.SAVED_ASSISTANTS_DIR / languageFilter / runOnAssistantId / 'intents' / '{}.json'.format(intentName)
 
-					if os.path.isfile(globalIntentFile):
-						os.unlink(globalIntentFile)
+					if globalIntentFile.is_file():
+						globalIntentFile.unlink()
 
 			self.persistToLocalAssistantCache(assistantId=runOnAssistantId, assistantLanguage=languageFilter)
 
@@ -725,7 +665,7 @@ class MainProcessor:
 
 				hasDeprecatedModules.append(moduleName)
 
-		if len(hasDeprecatedModules) > 0:
+		if hasDeprecatedModules:
 			globalChanges = True
 
 			for moduleName in hasDeprecatedModules:
@@ -879,10 +819,11 @@ class MainProcessor:
 
 			# Persist module configuration
 			moduleConfig = modules[moduleName]
-			moduleIntentsMountpoint = os.path.join(self.SAVED_MODULES_DIR, moduleName, 'dialogTemplate')
-			os.makedirs(moduleIntentsMountpoint, exist_ok=True)
+			moduleIntentsMountpoint = Path(self.SAVED_MODULES_DIR, moduleName, 'dialogTemplate')
+			moduleIntentsMountpoint.mkdir(parents=True, exist_ok=True)
 
-			with open(os.path.join(moduleIntentsMountpoint, '{}.json'.format(languageFilter)), 'w') as moduleConfigFile:
-				json.dump(obj=moduleConfig, fp=moduleConfigFile, indent=4, sort_keys=False, ensure_ascii=False)
-				self._ctx.log('[LocalModule] Finished for module {}'.format(moduleName))
+			moduleIntentsOutputFile = moduleIntentsMountpoint / '{}.json'.format(languageFilter)
+
+			moduleIntentsOutputFile.write_text(json.dump(moduleConfig, indent=4, sort_keys=False, ensure_ascii=False))
+			self._ctx.log('[LocalModule] Finished for module {}'.format(moduleName))
 
