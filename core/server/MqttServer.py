@@ -624,9 +624,7 @@ class MqttServer(Manager):
 			if ' ' in siteId:
 				siteId = siteId.replace(' ', '_')
 
-			soundFile = Path(soundFile) if absolutePath else Path(root, soundFile)
-
-			soundFile.with_suffix('.wav')
+			soundFile = Path(soundFile).with_suffix('.wav') if absolutePath else Path(root, soundFile).with_suffix('.wav')
 
 			if not soundFile.is_file():
 				self._logger.error("Sound file {} doesn't exist".format(soundFile))

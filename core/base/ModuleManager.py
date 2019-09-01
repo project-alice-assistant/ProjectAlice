@@ -328,7 +328,7 @@ class ModuleManager(Manager):
 		managers.ThreadManager.newTimer(interval = 10, func = self._checkForModuleInstall, autoStart = True)
 
 		root = Path(commons.rootDir(), 'system/moduleInstallTickets')
-		files = fnmatch.filter(root.iterdir(), '*.install')
+		files = fnmatch.filter(str(root.iterdir()), '*.install')
 
 		if  self._busyInstalling.isSet() or \
 			not managers.InternetManager.online or \
