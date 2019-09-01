@@ -37,7 +37,8 @@ class ConsoleApplication:
 	def getDefinition(self):
 		return self.definition
 
-	def getDefaultInputDefinition(self):
+	@staticmethod
+	def getDefaultInputDefinition():
 		return InputDefinition([
 			InputArgument(name='command', mode=InputArgument.REQUIRED, description='The command to execute'),
 			InputOption(name='--help',      	shortcut='-h', mode=InputOption.VALUE_NONE, description='Display this help message.'),
@@ -46,7 +47,8 @@ class ConsoleApplication:
 			InputOption(name='--no-interaction',shortcut='-n', mode=InputOption.VALUE_NONE, description='Do not ask any interactive question.')
 		])
 
-	def getDefaultCommands(self):
+	@staticmethod
+	def getDefaultCommands():
 		return [ListCommand(), HelpCommand()]
 
 	def getCommands(self):
@@ -76,7 +78,8 @@ class ConsoleApplication:
 	def setVerbose(self, level):
 		self.verbose = level
 
-	def getCommandName(self, input):
+	@staticmethod
+	def getCommandName(input):
 		return input.getFirstArgument()
 
 	def getName(self):
@@ -172,7 +175,8 @@ class ConsoleApplication:
 
 		return exitCode
 
-	def doRunCommand(self, command, input):
+	@staticmethod
+	def doRunCommand(command, input):
 		return command.run(input)
 
 	def find(self, name):

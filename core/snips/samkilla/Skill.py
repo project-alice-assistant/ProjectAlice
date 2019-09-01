@@ -14,7 +14,7 @@ EnumSkillImageUrl = EnumSkillImageUrlClass()
 import re
 intent_regex = re.compile(r'intent_([a-zA-Z0-9]+)')
 
-class Skill():
+class Skill:
 
 	def __init__(self, ctx):
 		self._ctx = ctx

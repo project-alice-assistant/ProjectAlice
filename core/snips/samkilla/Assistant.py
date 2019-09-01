@@ -7,7 +7,7 @@ from core.snips.samkilla.gql.assistants.patchAssistant import patchAssistant
 from core.snips.samkilla.gql.assistants.queries import allAssistantsQuery
 
 
-class Assistant():
+class Assistant:
 
 	def __init__(self, ctx):
 		self._ctx = ctx

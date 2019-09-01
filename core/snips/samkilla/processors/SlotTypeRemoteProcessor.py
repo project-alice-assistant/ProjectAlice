@@ -6,7 +6,7 @@ import traceback
 import hashlib
 
 
-class SlotTypeRemoteProcessor():
+class SlotTypeRemoteProcessor:
 
 	def __init__(self, ctx, slotType, slotLanguage, assistantId):
 		self._ctx = ctx

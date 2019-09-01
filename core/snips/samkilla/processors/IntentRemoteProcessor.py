@@ -8,7 +8,7 @@ import hashlib
 from core.snips.samkilla.exceptions.IntentError import IntentError
 
 
-class IntentRemoteProcessor():
+class IntentRemoteProcessor:
 
 	def __init__(self, ctx, intent, intentLanguage, assistantId):
 		self._ctx = ctx

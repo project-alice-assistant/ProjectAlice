@@ -106,7 +106,8 @@ class Input:
 		return self.escapeshellarg(token)
 
 
-	def escapeshellargReplaceFunction(self, match):
+	@staticmethod
+	def escapeshellargReplaceFunction(match):
 		match = match.group()
 		return match[0:1] + '\\\''
 

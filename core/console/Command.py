@@ -114,7 +114,8 @@ class Command:
 	def ignoreValidationErrors(self):
 		self.ignoreValidationErrors = True
 
-	def isEnabled(self):
+	@staticmethod
+	def isEnabled():
 		return True
 
 	def getArrayChars(self):
@@ -174,8 +175,9 @@ class Command:
 		self.definition.addArgument(InputArgument(name, mode, description, definition))
 		return self
 
-	def validateName(self, name):
-		reg = re.compile(r'^[^\:]+(\:[^\:]+)*$')
+	@staticmethod
+	def validateName(name):
+		reg = re.compile(r'^[^:]+(:[^:]+)*$')
 
 		if not name or not reg.match(name):
 			raise ValueError('Command name \'{}\' is invalid.'.format(str(name)))
@@ -253,7 +255,8 @@ class Command:
 	def askConfirmation(self, question, definition, caseSensitive = False, fgColor='reset', bgColor='reset'):
 		return self.askCombo(question, definition,['y', 'n', 'yes', 'no'], caseSensitive, fgColor, bgColor)
 
-	def _getForegroundColor(self, color = 'reset'):
+	@staticmethod
+	def _getForegroundColor(color = 'reset'):
 		if color == 'black': return Fore.BLACK
 		if color == 'red': return Fore.RED
 		if color == 'green': return Fore.GREEN
@@ -264,7 +267,8 @@ class Command:
 		if color == 'white': return Fore.WHITE
 		return Fore.RESET
 
-	def _getBackgroundColor(self, color = 'reset'):
+	@staticmethod
+	def _getBackgroundColor(color = 'reset'):
 		if color == 'black': return Back.BLACK
 		if color == 'red': return Back.RED
 		if color == 'green': return Back.GREEN
@@ -289,7 +293,8 @@ class Command:
 	def write(self, data, fgColor='reset', bgColor='reset'):
 		print(self.stringToColored(data, fgColor, bgColor))
 
-	def nl(self):
+	@staticmethod
+	def nl():
 		print()
 
 
