@@ -34,7 +34,7 @@ class Command:
 		self.aliases = list()
 		self.description = 'No description'
 		self.definition = None
-		self.help = 'No help'
+		self.yelp = 'No help'
 		self.applicationDefinitionMerged = False
 		self.applicationDefinitionMergedWithArgs = False
 		self.ignoreValidationErrors = False
@@ -60,7 +60,7 @@ class Command:
 		pass
 
 
-	def execute(self, input):
+	def execute(self, inputt):
 		raise ValueError('You must override the execute() method in the concrete command class.')
 
 	@property
@@ -91,8 +91,8 @@ class Command:
 
 		return self
 
-	def setHelp(self, help):
-		self.help = help + '\n'
+	def setHelp(self, yelp):
+		self.yelp = yelp + '\n'
 
 		return self
 
@@ -100,7 +100,7 @@ class Command:
 		return self.name
 
 	def getHelp(self):
-		return self.help
+		return self.yelp
 
 	def getDefinition(self):
 		return self.definition
@@ -285,8 +285,8 @@ class Command:
 
 		colorsPairs = REGEX_COLOR.findall(string)
 
-		for type, color in colorsPairs:
-			string = string.replace('<{}:{}>'.format(type, color), self._getBackgroundColor(color) if type == 'bg' else self._getForegroundColor(color))
+		for typ, color in colorsPairs:
+			string = string.replace('<{}:{}>'.format(typ, color), self._getBackgroundColor(color) if typ == 'bg' else self._getForegroundColor(color))
 
 		return bgColor + fgColor + string + Fore.RESET + Back.RESET
 

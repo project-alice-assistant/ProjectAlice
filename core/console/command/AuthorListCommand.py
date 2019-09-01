@@ -22,7 +22,7 @@ class AuthorListCommand(Command):
 		self.setHelp('> The %command.name% list authors from dedicated repository:\n'
 					 '  <fg:magenta>%command.full_name%<fg:reset>')
 
-	def execute(self, input):
+	def execute(self, inputt):
 		TABLE_DATA = [['Authors List']]
 		table_instance = DoubleTable(TABLE_DATA)
 		self.write('\n' + table_instance.table + '\n', 'magenta')

@@ -29,8 +29,8 @@ class ModuleListCommand(Command):
 		self.setHelp('> The %command.name% list modules from dedicated repository created by a specific author:\n'
 					 '  <fg:magenta>%command.full_name%<fg:reset> <fg:cyan>authorName<fg:reset> <fg:yellow>[-f|--full]<fg:reset>')
 
-	def execute(self, input):
-		TABLE_DATA = [['Modules created by ' + input.getArgument('authorName')]]
+	def execute(self, inputt):
+		TABLE_DATA = [['Modules created by ' + inputt.getArgument('authorName')]]
 		table_instance = DoubleTable(TABLE_DATA)
 		self.write('\n' + table_instance.table + '\n', 'yellow')
 
@@ -38,13 +38,13 @@ class ModuleListCommand(Command):
 		table_instance = DoubleTable(TABLE_DATA)
 
 		try:
-			req = requests.get('https://api.github.com/' + ModuleManager.GITHUB_API_BASE_URL + '/' + input.getArgument('authorName'))
+			req = requests.get('https://api.github.com/' + ModuleManager.GITHUB_API_BASE_URL + '/' + inputt.getArgument('authorName'))
 
 			if req.status_code == 403:
 				self.write('<bg:red> Github API quota limitations reached<bg:reset>\n')
 				return
-			elif req.status_code//100 == 4:
-				self.write('> Unknown author <fg:red>' + input.getArgument('authorName')+'<fg:reset>')
+			elif req.status_code // 100 == 4:
+				self.write('> Unknown author <fg:red>' + inputt.getArgument('authorName')+'<fg:reset>')
 				self.write('- You can use <fg:yellow>author:list<fg:reset> to list all authors\n')
 				return
 
@@ -65,7 +65,7 @@ class ModuleListCommand(Command):
 					tLangs = '|'.join(moduleDetails['conditions']['lang']) if 'lang' in moduleDetails['conditions'] else '-'
 					tDesc = moduleDetails['desc']
 
-					if not input.getOption('full'):
+					if not inputt.getOption('full'):
 						tDesc = (tDesc[:self.DESCRIPTION_MAX] + '..') if len(tDesc) > self.DESCRIPTION_MAX else tDesc
 
 					TABLE_DATA.append([

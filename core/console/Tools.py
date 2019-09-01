@@ -9,17 +9,17 @@ import re
 WORD_RE = re.compile(r'\w+')
 WORD2_RE = re.compile(r'[^\w]')
 
-def toArray(object):
+def toArray(obj):
 	tmp_array = list()
 
-	for key in object:
-		tmp_array.append(object[key])
+	for key in obj:
+		tmp_array.append(obj[key])
 
 	return tmp_array
 
-def isInt(str):
+def isInt(string):
 	try:
-		int(str)
+		int(string)
 		return True
 	except ValueError:
 		return False
@@ -31,12 +31,12 @@ def indexOf(needle, heystack):
 	except ValueError:
 		return -1
 
-def ucfirst(str, tolower = False):
-	str += ''
-	f = str[0].upper()
+def ucfirst(string, tolower = False):
+	string += ''
+	f = string[0].upper()
 	if tolower:
-		return f + str[1:].lower()
-	return f + str[1:]
+		return f + string[1:].lower()
+	return f + string[1:]
 
 def _capitalizeMatch(m):
 	w = m.group(0)

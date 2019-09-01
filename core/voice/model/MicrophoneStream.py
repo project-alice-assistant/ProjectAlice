@@ -57,7 +57,7 @@ class MicrophoneStream(object):
 		return self
 
 
-	def __exit__(self, type, value, traceback):
+	def __exit__(self, typ, value, traceback):
 		self._audio_stream.stop_stream()
 		self._audio_stream.close()
 		self.closed = True

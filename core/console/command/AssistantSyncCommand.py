@@ -23,7 +23,7 @@ class AssistantSyncCommand(Command):
 		self.setHelp('> The %command.name% command sync dialog templates for all modules:\n'
 					 '  <fg:magenta>%command.full_name%<fg:reset>')
 
-	def execute(self, input):
+	def execute(self, inputt):
 		TABLE_DATA = [['Assistant Dialog Templates Sync']]
 		table_instance = DoubleTable(TABLE_DATA)
 		self.write('\n' + table_instance.table + '\n', 'green')
@@ -52,7 +52,7 @@ class AssistantSyncCommand(Command):
 		self.write('All dialog templates <fg:green>synced!<fg:reset>')
 		self.nl()
 
-		if input.getOption('download'):
+		if inputt.getOption('download'):
 			snipsConsoleManager.download(languageManager.activeSnipsProjectId)
 			self.write('Downloading assistant...')
 			self.nl()

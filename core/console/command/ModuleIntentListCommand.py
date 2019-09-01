@@ -68,33 +68,31 @@ class ModuleIntentListCommand(Command):
 		self.setHelp('> The %command.name% list intents and utterances for a given module:\n'
 					 '  <fg:magenta>%command.full_name%<fg:reset> <fg:cyan>moduleName<fg:reset> <fg:yellow>[-f|--full]<fg:reset> <fg:yellow>[-i|--intent=intentName]<fg:reset>')
 
-	def execute(self, input):
-		TABLE_DATA = [['Intents of module ' + input.getArgument('moduleName')]]
+	def execute(self, inputt):
+		TABLE_DATA = [['Intents of module ' + inputt.getArgument('moduleName')]]
 		table_instance = DoubleTable(TABLE_DATA)
 		self.write('\n' + table_instance.table + '\n', 'yellow')
 
+		if inputt.getOption('intent'):
+			return self.intentMode(inputt)
+
+		return self.moduleMode(inputt)
 
 
-		if input.getOption('intent'):
-			return self.intentMode(input)
-
-		return self.moduleMode(input)
-
-
-	def intentMode(self, input):
+	def intentMode(self, inputt):
 		TABLE_DATA = [['Utterances']]
 		table_instance = DoubleTable(TABLE_DATA)
 
 		intentFound = False
 
 		for dtIntentName, dtModuleName in self._intentNameSkillMatching.items():
-			if dtIntentName == input.getOption('intent'):
+			if dtIntentName == inputt.getOption('intent'):
 				intentFound = True
 
 				for utterance, _ in self._intentsModulesValues[dtIntentName]['utterances'].items():
 					tDesc = utterance
 
-					if not input.getOption('full'):
+					if not inputt.getOption('full'):
 						tDesc = (tDesc[:self.DESCRIPTION_MAX] + '..') if len(tDesc) > self.DESCRIPTION_MAX else tDesc
 
 					TABLE_DATA.append([
@@ -109,18 +107,18 @@ class ModuleIntentListCommand(Command):
 
 		self.write(table_instance.table)
 
-	def moduleMode(self, input):
+	def moduleMode(self, inputt):
 		TABLE_DATA = [['Intent', 'Description']]
 		table_instance = DoubleTable(TABLE_DATA)
 
 		moduleFound = False
 
 		for dtIntentName, dtModuleName in self._intentNameSkillMatching.items():
-			if dtModuleName == input.getArgument('moduleName'):
+			if dtModuleName == inputt.getArgument('moduleName'):
 				moduleFound = True
 				tDesc = self._intentsModulesValues[dtIntentName]['__otherattributes__']['description']
 
-				if not input.getOption('full'):
+				if not inputt.getOption('full'):
 					tDesc = (tDesc[:self.DESCRIPTION_MAX] + '..') if len(tDesc) > self.DESCRIPTION_MAX else tDesc
 
 				TABLE_DATA.append([

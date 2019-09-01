@@ -27,9 +27,9 @@ class HelpCommand(Command):
 
 		return self
 
-	def execute(self, input):
+	def execute(self, inputt):
 		if self.command is None:
-			self.command = self.getApplication().find(input.getArgument('command_name'))
+			self.command = self.getApplication().find(inputt.getArgument('command_name'))
 
 		self.nl()
 		self.write(self.command.getProcessedHelp())

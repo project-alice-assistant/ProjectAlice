@@ -134,17 +134,17 @@ class ArgvInput(Input):
 
 
 		if value is None and option.acceptValue() and len(self.parsed):
-			next = None
+			nekst = None
 
 			if len(self.parsed) != 0:
-				next = self.parsed.pop(0)
+				nekst = self.parsed.pop(0)
 
-			if next[0] is not None and '-' != next[0]:
-				value = next
-			elif next == '':
+			if nekst[0] is not None and '-' != nekst[0]:
+				value = nekst
+			elif nekst == '':
 				value = ''
 			else:
-				self.parsed.insert(0, next)
+				self.parsed.insert(0, nekst)
 
 		if value is None:
 			if option.isValueRequired():

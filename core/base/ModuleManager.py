@@ -78,6 +78,9 @@ class ModuleManager(Manager):
 				continue
 
 			try:
+				conditionName = ''
+				conditionValue = ''
+
 				if not module['active']:
 					if moduleName in self.NEEDED_MODULES:
 						self._logger.info("Module {} marked as disable but it shouldn't be".format(moduleName))
@@ -128,6 +131,7 @@ class ModuleManager(Manager):
 				self._logger.warning('[{}] Something went wrong loading a module: {}'.format(self.name, e))
 				continue
 
+		# noinspection PyTypeChecker
 		return collections.OrderedDict(sorted(modules.items()))
 
 

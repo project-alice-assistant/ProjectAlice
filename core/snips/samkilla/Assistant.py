@@ -37,15 +37,15 @@ class Assistant:
 
 
 	def edit(self, assistantId, title=None):
-		input = dict()
+		inputt = dict()
 
-		if title: input['title'] = title
+		if title: inputt['title'] = title
 
 		gqlRequest = [{
 			'operationName': 'PatchAssistant',
 			'variables': {
 				'assistantId': assistantId,
-				'input': input
+				'input': inputt
 			},
 			'query': patchAssistant
 		}]
