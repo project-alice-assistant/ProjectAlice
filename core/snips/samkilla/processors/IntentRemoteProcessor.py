@@ -111,7 +111,7 @@ class IntentRemoteProcessor():
 
 			# Deprecated
 			# self.cleanCreatedInstances()
-		except Exception as e:
+		except Exception:
 			e = sys.exc_info()[0]
 			self._ctx.log("[Safe] Handle error gracefully")
 			self._ctx.log(e)

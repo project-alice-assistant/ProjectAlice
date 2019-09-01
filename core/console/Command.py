@@ -152,12 +152,10 @@ class Command:
 			if not self.ignoreValidationErrors:
 				raise ValueError(e)
 
-		hasInteract = True
-
 		try:
 			self.interact(inputInstance)
-		except AttributeError:
-			hasInteract = False
+		except:
+			pass
 
 		inputInstance.validate()
 
@@ -215,8 +213,6 @@ class Command:
 			self.applicationDefinitionMergedWithArgs = True
 
 	def ask(self, question = '', definition = None, hidden = False, fgColor='reset', bgColor='reset'):
-		inputValue = ''
-
 		try:
 			questionStyled = self.stringToColored(question, fgColor, bgColor)
 			inputValue = getpass.getpass(questionStyled) if hidden else input(questionStyled)

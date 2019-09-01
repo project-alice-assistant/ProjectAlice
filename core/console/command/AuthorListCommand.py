@@ -55,7 +55,7 @@ class AuthorListCommand(Command):
 					author['name'],
 				])
 
-		except Exception as e:
+		except Exception:
 			self.write('Error listing authors', 'red')
 			raise
 

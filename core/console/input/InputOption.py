@@ -26,6 +26,7 @@ class InputOption:
 		if shortcut is not None:
 			if type(shortcut) == list:
 				for short in shortcut:
+					# noinspection PyUnusedLocal
 					short = re.sub(reg, '', short) # weird
 
 				shortcut = '|'.join(shortcut)

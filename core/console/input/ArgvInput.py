@@ -6,13 +6,13 @@ import sys
 from core.console.input.Input import Input
 from core.console.Tools import indexOf
 
-#
-# ArgvInput is a set of inputs as a argv command line
-#
 class ArgvInput(Input):
+	"""
+	ArgvInput is a set of inputs as a argv command line
+	"""
 
 
-	def __init__(self, argv = None, definition = None, command = None, standalone = False):
+	def __init__(self, argv = None, definition = None, standalone = False):
 		self.tokens = None
 		self.parsed = None
 		self.standalone = standalone

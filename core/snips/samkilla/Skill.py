@@ -22,8 +22,6 @@ class Skill():
 		self._skillsCache = {'cacheId': dict(), 'cacheName': dict()}
 
 	def getSkillByUserIdAndSkillName(self, userId, skillName):
-		skill = None
-
 		if skillName in self._skillsCache['cacheName']:
 			skill = self._skillsCache['cacheName'][skillName]
 		else:
@@ -32,8 +30,6 @@ class Skill():
 		return skill
 
 	def getSkillByUserIdAndSkillId(self, userId, skillId):
-		skill = None
-
 		if skillId in self._skillsCache['cacheId']:
 			skill = self._skillsCache['cacheId'][skillId]
 		else:
@@ -84,8 +80,6 @@ class Skill():
 
 
 	def listSkillsByUserIdAndAssistantId(self, userId, assistantId, languageFilter=None, indexedBy=None, fromCache=False):
-		skills = list()
-
 		if fromCache and self._cacheInit:
 			skills = self._skillsCache['cacheId'].values()
 		else:

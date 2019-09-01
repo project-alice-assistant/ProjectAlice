@@ -104,6 +104,7 @@ class ConsoleApplication:
 
 		return versionMessage
 
+	# TODO doRun() doesn't raise any exceptions
 	def run(self, inputt = None):
 		if inputt is None:
 			inputt = ArgvInput()
@@ -136,7 +137,7 @@ class ConsoleApplication:
 			else:
 				sys.exit(exitCode)
 
-		# return exitCode
+		return exitCode
 
 	def configureIO(self, input):
 		if input.hasParameterOption(['--no-interaction', '-n']):

@@ -83,11 +83,11 @@ class ModuleListCommand(Command):
 					 	tDesc
 					])
 
-				except Exception as e:
+				except Exception:
 					self.write('Error get module {}'.format(module['name']), 'red')
 					raise
 
-		except Exception as e:
+		except Exception:
 			self.write('Error listing modules', 'red')
 			raise
 

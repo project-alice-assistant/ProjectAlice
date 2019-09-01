@@ -80,7 +80,7 @@ class ModuleInstallCommand(Command):
 			urllib.request.urlretrieve(url, "system/moduleInstallTickets/" + moduleName + '.install')
 
 
-		except Exception as e:
+		except Exception:
 			self.write('Error listing authors', 'red')
 			raise
 

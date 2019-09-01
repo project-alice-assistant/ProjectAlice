@@ -26,7 +26,7 @@ class GithubCloner:
 
 		try:
 			return self._doClone(os.path.join('https://api.github.com', self._baseUrl, self._path))
-		except Exception as e:
+		except Exception:
 			return False
 
 

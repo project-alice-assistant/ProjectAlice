@@ -20,6 +20,8 @@ from core.commons.model.PartOfDay import PartOfDay
 
 ERROR_HANDLER_FUNC = CFUNCTYPE(None, c_char_p, c_int, c_char_p, c_int, c_char_p)
 
+
+# noinspection PyUnusedLocal
 def py_error_handler(filename, line, function, err, fmt):
 	pass
 
@@ -37,7 +39,7 @@ def shutUpAlsaFFS():
 def getFunctionCaller(depth: int = 3) -> str:
 	try:
 		return inspect.getmodulename(inspect.stack()[depth][1])
-	except Exception as e:
+	except Exception:
 		raise
 
 
@@ -50,9 +52,9 @@ def isEqualTranslated(baseString: str, compareTo: str, module: str = 'system') -
 	:param module: If empty takes the system strings json
 	:param baseString: the base string to compare
 	:param compareTo: the key of the string json to compare to
-	:return:
+	:return: bool
 	"""
-	strings = managers.LanguageManager.getStrings(compareTo)
+	strings = managers.LanguageManager.getStrings(compareTo, module)
 	for string in strings:
 		if baseString.strip().lower() == string.strip().lower():
 			return True

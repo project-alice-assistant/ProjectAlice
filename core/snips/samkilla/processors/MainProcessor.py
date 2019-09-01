@@ -360,7 +360,7 @@ class MainProcessor():
 		return mergedIntents
 
 
-	def buildMapsFromDialogTemplates(self, runOnAssistantId, moduleFilter=None, languageFilter=None):
+	def buildMapsFromDialogTemplates(self, moduleFilter=None, languageFilter=None):
 		self._modules = dict()
 
 		rootDir = 'modules'
@@ -476,7 +476,7 @@ class MainProcessor():
 		return globalChangesSlotTypes or globalChangesModules or globalChangesIntents
 
 
-	def syncLocalToRemoteSlotTypes(self, slotTypesModulesValues, runOnAssistantId, languageFilter=None, moduleFilter=None):
+	def syncLocalToRemoteSlotTypes(self, slotTypesModulesValues, runOnAssistantId, languageFilter=None):
 		slotTypesSynced = dict()
 		globalChanges = False
 
@@ -556,8 +556,7 @@ class MainProcessor():
 
 
 
-	def syncLocalToRemoteIntents(self, skillNameIdMatching, intentNameSkillMatching, typeEntityMatching,
-								 intentsModulesValues, runOnAssistantId, languageFilter=None, moduleFilter=None):
+	def syncLocalToRemoteIntents(self, skillNameIdMatching, intentNameSkillMatching, typeEntityMatching, intentsModulesValues, runOnAssistantId, languageFilter=None):
 
 		intentsSynced = dict()
 		globalChanges = False
@@ -739,7 +738,7 @@ class MainProcessor():
 	def syncRemoteToLocal(self, runOnAssistantId, moduleFilter=None, languageFilter=None):
 
 		# Build cache
-		remoteIndexedEntities = self._ctx.Entity.listEntitiesByUserEmail(userEmail=self._ctx.userEmail, returnAllCacheIndexedBy='id')
+		# ?? remoteIndexedEntities = self._ctx.Entity.listEntitiesByUserEmail(userEmail=self._ctx.userEmail, returnAllCacheIndexedBy='id')
 		remoteIndexedIntents = self._ctx.Intent.listIntentsByUserId(userId=self._ctx.userId, returnAllCacheIndexedBy='id')
 		remoteIndexedSkills = self._ctx.Skill.listSkillsByUserId(userId=self._ctx.userId, returnAllCacheIndexedBy='id')
 		hasFork = False

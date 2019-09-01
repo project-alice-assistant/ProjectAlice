@@ -67,6 +67,7 @@ class MicrophoneStream(object):
 		self._audio_interface.terminate()
 
 
+	# noinspection PyUnusedLocal
 	def _fill_buffer(self, in_data, frame_count, time_info, status_flags):
 		"""Continuously collect data from the audio stream, into the buffer."""
 		self._buff.put(in_data)
