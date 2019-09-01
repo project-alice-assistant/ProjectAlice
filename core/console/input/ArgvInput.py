@@ -193,7 +193,7 @@ class ArgvInput(Input):
 				if token == value or 0 == indexOf(value+'=', token):
 					pos = indexOf('=', token)
 
-					if False != pos:
+					if pos:
 						return token[pos+1:]
 
 			# weird
