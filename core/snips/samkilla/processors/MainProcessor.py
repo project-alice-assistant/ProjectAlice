@@ -98,7 +98,7 @@ class MainProcessor:
 		self.safeBaseDicts(assistantId, assistantLanguage)
 
 		state = self._savedAssistants[assistantLanguage][assistantId]
-		assistantFile = assistantMountpoint / 'assistant.json'
+		assistantFile = assistantMountpoint / '_assistant.json'
 		assistantFile.write_text(json.dumps(state, indent=4, sort_keys=False, ensure_ascii=False))
 		# self._ctx.log('\n[Persist] local assistant {} in {}'.format(assistantId, assistantLanguage))
 
