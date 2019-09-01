@@ -14,7 +14,7 @@ from core.snips.samkilla.processors.SlotTypeRemoteProcessor import SlotTypeRemot
 
 EnumSkillImageUrl = EnumSkillImageUrlClass()
 
-class MainProcessor():
+class MainProcessor:
 
 	SAVED_ASSISTANTS_DIR = os.path.join('var', 'assistants')
 	SAVED_MODULES_DIR = 'modules'

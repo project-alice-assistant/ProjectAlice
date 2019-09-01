@@ -9,7 +9,7 @@ from core.snips.samkilla.models.EnumSkillImageUrl import EnumSkillImageUrl as En
 
 EnumSkillImageUrl = EnumSkillImageUrlClass()
 
-class ModuleRemoteProcessor():
+class ModuleRemoteProcessor:
 
 	def __init__(self, ctx, assistantId, module, moduleName, moduleLanguage):
 		self._ctx = ctx
