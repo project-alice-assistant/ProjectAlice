@@ -19,6 +19,7 @@ class InputArgument:
 		self.setDefault(default)
 		self.name = name
 		self.description = description
+		self.default = ''
 
 	def getDescription(self):
 		return self.description

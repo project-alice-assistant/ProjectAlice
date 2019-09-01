@@ -40,6 +40,8 @@ class Command:
 		self.ignoreValidationErrors = False
 		self.definition = InputDefinition()
 		self.chars = dict()
+		self.container = None
+		self.name = ''
 
 		if name:
 			self.setName(name)
@@ -61,13 +63,14 @@ class Command:
 	def execute(self, input):
 		raise ValueError('You must override the execute() method in the concrete command class.')
 
-	def setContainer(self, container):
-		self.container = container
-
-		return self
-
-	def getContainer(self):
+	@property
+	def container(self):
 		return self.container
+
+
+	@container.setter
+	def container(self, container):
+		self.container = container
 
 	def setApplication(self, application):
 		self.application = application
