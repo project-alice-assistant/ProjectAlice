@@ -78,6 +78,9 @@ class ModuleManager(Manager):
 				continue
 
 			try:
+				conditionName = ''
+				conditionValue = ''
+
 				if not module['active']:
 					if moduleName in self.NEEDED_MODULES:
 						self._logger.info("Module {} marked as disable but it shouldn't be".format(moduleName))

@@ -44,6 +44,7 @@ class DatabaseManager(Manager):
 
 		# First check for new tables and columns addition/deprecation
 		for tableName, queries in schema.items():
+			colName = ''
 			fullTableName = '{}_{}'.format(callerName, tableName)
 			colsQuery = ', '.join(queries)
 			try:
@@ -127,7 +128,7 @@ class DatabaseManager(Manager):
 		if not query:
 			raise Exception
 
-		insertId = False
+		database = None
 		try:
 			database = self.getConnection()
 			cursor = database.cursor()
@@ -136,8 +137,12 @@ class DatabaseManager(Manager):
 			insertId = cursor.lastrowid
 		except Exception as e:
 			self._logger.warning('[{}] Error inserting data for component "{}" in table "{}": {}'.format(self.name, callerName, tableName, e))
-			database.rollback()
-		finally:
+
+			if database:
+				database.rollback()
+
+			raise
+		else:
 			database.commit()
 			cursor.close()
 			database.close()
@@ -178,7 +183,8 @@ class DatabaseManager(Manager):
 				data = cursor.fetchone()
 		except Exception as e:
 			self._logger.warning('[{}] Error fetching data for component "{}" in table "{}": {}'.format(self.name, callerName, tableName, e))
-		finally:
+			return data
+		else:
 			cursor.close()
 			database.close()
 			return data
@@ -192,6 +198,7 @@ class DatabaseManager(Manager):
 		:param callerName: str
 		:return:
 		"""
+		database = None
 		try:
 			database = self.getConnection()
 			cursor = database.cursor()
@@ -199,8 +206,10 @@ class DatabaseManager(Manager):
 			cursor.execute('DELETE FROM {} WHERE id in (SELECT id FROM {} ORDER BY id LIMIT {})'.format(tableName, tableName, managers.ConfigManager.getAliceConfigByName('autoPruneStoredData')))
 		except Exception as e:
 			self._logger.warning('[{}] Error pruning table "{}" for component "{}": {}'.format(self.name, tableName, callerName, e))
-			database.rollback()
-		finally:
+
+			if database:
+				database.rollback()
+		else:
 			database.commit()
 			cursor.close()
 			database.close()
