@@ -214,7 +214,7 @@ class MqttServer(Manager):
 		siteId = commons.parseSiteId(msg)
 		payload = commons.payload(msg)
 
-		if len(self._multiDetectionsHolder) == 0:
+		if not self._multiDetectionsHolder:
 			managers.ThreadManager.doLater(interval=0.5, func=self.handleMultiDetection)
 
 		self._multiDetectionsHolder.append(payload['siteId'])

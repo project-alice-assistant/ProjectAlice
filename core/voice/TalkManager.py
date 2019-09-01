@@ -122,7 +122,7 @@ class TalkManager(Manager):
 		if managers.ConfigManager.getAliceConfigByName('tts') == 'amazon' and \
 			managers.ConfigManager.getAliceConfigByName('whisperWhenSleeping') and \
 			managers.UserManager.checkIfAllUser('sleeping') and \
-			len(managers.UserManager.getAllUserNames()) > 0:
+			managers.UserManager.getAllUserNames():
 			string = '<amazon:effect name="whispered">{}</amazon:effect>'.format(string)
 
 		return u'{0}'.format(string)

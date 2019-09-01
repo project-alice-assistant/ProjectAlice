@@ -119,7 +119,7 @@ class Command:
 		return True
 
 	def getArrayChars(self):
-		if len(self.chars) != 0:
+		if self.chars:
 			return self.chars
 
 		self.chars = { 'top': '═' , 'top-mid': '╤' , 'top-left': '╔' , 'top-right': '╗'

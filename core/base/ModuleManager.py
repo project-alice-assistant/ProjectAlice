@@ -332,11 +332,11 @@ class ModuleManager(Manager):
 
 		if  self._busyInstalling.isSet() or \
 			not managers.InternetManager.online or \
-			len(files) <= 0 or \
+			not files or \
 			managers.ThreadManager.getLock('SnipsAssistantDownload').isSet():
 			return
 
-		if len(files) > 0:
+		if files:
 			self._logger.info('[{}] Found {} install ticket(s)'.format(self.name, len(files)))
 			self._busyInstalling.set()
 
@@ -347,7 +347,7 @@ class ModuleManager(Manager):
 				self._logger.error('[{}] Error checking for module install: {}'.format(self.name, e))
 				modulesToBoot = dict()
 			finally:
-				if len(modulesToBoot) > 0:
+				if modulesToBoot:
 					i = 1
 					for moduleName, info in modulesToBoot.items():
 						try:
