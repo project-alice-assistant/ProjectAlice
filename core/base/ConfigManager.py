@@ -300,7 +300,7 @@ class ConfigManager(Manager):
 			if module and moduleName != module:
 				continue
 
-			moduleConfigFile = commons.rootDir() / 'modules' / moduleName / 'config.json')
+			moduleConfigFile = Path(commons.rootDir(), 'modules', moduleName, 'config.json')
 			moduleConfigFileExists = moduleConfigFile.is_file()
 
 			if not self._aliceConfigurations['modules'][moduleName]['active'] or not moduleConfigFileExists:
