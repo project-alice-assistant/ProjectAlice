@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-import os
+from pathlib import Path
 from core.base import Managers
 
 
@@ -36,13 +36,8 @@ class Intent(str):
 	def __hash__(self):
 		return hash(self.decoratedSelf())
 
-
 	def decoratedSelf(self) -> str:
-		pathPair = os.path.split(self)
-		intentNamePair = pathPair[1].split(':')
-
-		return pathPair[0] + '/' + self._owner + ':' + str(intentNamePair[1])
-
+		return self.format(owner = self._owner)
 
 	@property
 	def protected(self) -> bool:
@@ -59,8 +54,8 @@ class Intent(str):
 
 	@property
 	def justTopic(self) -> str:
-		return os.path.split(self.decoratedSelf())[-1]
+		return Path(self.decoratedSelf()).name
 
 	@property
 	def justAction(self) -> str:
-		return os.path.split(self.decoratedSelf())[-1].split(':')[1]
+		return self.justTopic.split(':')[1]
