@@ -177,7 +177,7 @@ class Command:
 
 	@staticmethod
 	def validateName(name):
-		reg = re.compile(r'^[^\:]+(\:[^\:]+)*$')
+		reg = re.compile(r'^[^:]+(:[^:]+)*$')
 
 		if not name or not reg.match(name):
 			raise ValueError('Command name \'{}\' is invalid.'.format(str(name)))
