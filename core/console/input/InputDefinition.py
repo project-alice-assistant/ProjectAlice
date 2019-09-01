@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 
 
-from core.console.input.InputOption import InputOption
-from core.console.Tools import toArray, isInt
+from core.console.Tools import isInt, toArray
+
 
 #
 # InputDefinition is a collection of InputArgument and InputOption

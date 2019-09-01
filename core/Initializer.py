@@ -1,15 +1,13 @@
 # -*- coding: utf-8 -*-
-import getpass
+import importlib
 import json
 import logging
+import os
+import shutil
 import subprocess
 import time
 from pathlib import Path
 
-import importlib
-import os
-import re
-import shutil
 import yaml
 
 from core.commons import commons

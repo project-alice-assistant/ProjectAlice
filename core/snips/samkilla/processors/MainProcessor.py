@@ -360,7 +360,7 @@ class MainProcessor():
 		return mergedIntents
 
 
-	def buildMapsFromDialogTemplates(self, runOnAssistantId, moduleFilter=None, languageFilter=None):
+	def buildMapsFromDialogTemplates(self, moduleFilter=None, languageFilter=None):
 		self._modules = dict()
 
 		rootDir = 'modules'
@@ -476,7 +476,7 @@ class MainProcessor():
 		return globalChangesSlotTypes or globalChangesModules or globalChangesIntents
 
 
-	def syncLocalToRemoteSlotTypes(self, slotTypesModulesValues, runOnAssistantId, languageFilter=None, moduleFilter=None):
+	def syncLocalToRemoteSlotTypes(self, slotTypesModulesValues, runOnAssistantId, languageFilter=None):
 		slotTypesSynced = dict()
 		globalChanges = False
 
@@ -556,8 +556,7 @@ class MainProcessor():
 
 
 
-	def syncLocalToRemoteIntents(self, skillNameIdMatching, intentNameSkillMatching, typeEntityMatching,
-								 intentsModulesValues, runOnAssistantId, languageFilter=None, moduleFilter=None):
+	def syncLocalToRemoteIntents(self, skillNameIdMatching, intentNameSkillMatching, typeEntityMatching, intentsModulesValues, runOnAssistantId, languageFilter=None):
 
 		intentsSynced = dict()
 		globalChanges = False
@@ -626,7 +625,7 @@ class MainProcessor():
 					isAttachToSkillIds = (json.loads(json.loads(he.message)['message'])['skillIds'])
 
 					for isAttachToSkillId in isAttachToSkillIds:
-						self._ctx.Intent.removeFromSkill(intentId=intentId, skillId=isAttachToSkillId, userId=self._ctx._userId, deleteAfter=False)
+						self._ctx.Intent.removeFromSkill(intentId=intentId, skillId=isAttachToSkillId, userId=self._ctx.userId, deleteAfter=False)
 
 					self._ctx.Intent.delete(intentId=intentId)
 
@@ -718,7 +717,7 @@ class MainProcessor():
 
 				for intentName in intentKeys:
 					intentId = moduleCacheData['intents'][intentName]['intentId']
-					self._ctx.Intent.removeFromSkill(userId=self._ctx._userId, skillId=skillId, intentId=intentId, deleteAfter=True)
+					self._ctx.Intent.removeFromSkill(userId=self._ctx.userId, skillId=skillId, intentId=intentId, deleteAfter=True)
 
 				self._ctx.Skill.removeFromAssistant(assistantId=runOnAssistantId, skillId=skillId, deleteAfter=True)
 
@@ -739,9 +738,9 @@ class MainProcessor():
 	def syncRemoteToLocal(self, runOnAssistantId, moduleFilter=None, languageFilter=None):
 
 		# Build cache
-		remoteIndexedEntities = self._ctx.Entity.listEntitiesByUserEmail(userEmail=self._ctx._userEmail, returnAllCacheIndexedBy='id')
-		remoteIndexedIntents = self._ctx.Intent.listIntentsByUserId(userId=self._ctx._userId, returnAllCacheIndexedBy='id')
-		remoteIndexedSkills = self._ctx.Skill.listSkillsByUserId(userId=self._ctx._userId, returnAllCacheIndexedBy='id')
+		# ?? remoteIndexedEntities = self._ctx.Entity.listEntitiesByUserEmail(userEmail=self._ctx.userEmail, returnAllCacheIndexedBy='id')
+		remoteIndexedIntents = self._ctx.Intent.listIntentsByUserId(userId=self._ctx.userId, returnAllCacheIndexedBy='id')
+		remoteIndexedSkills = self._ctx.Skill.listSkillsByUserId(userId=self._ctx.userId, returnAllCacheIndexedBy='id')
 		hasFork = False
 
 		# Check for fork and execute fork if needed
@@ -761,20 +760,20 @@ class MainProcessor():
 					intentId = intent['id']
 
 					if intentId not in remoteIndexedIntents:
-						intentId = self._ctx.Skill.forkSkillIntent(skillId=skillId, sourceIntentId=intentId, userId=self._ctx._userId)
+						intentId = self._ctx.Skill.forkSkillIntent(skillId=skillId, sourceIntentId=intentId, userId=self._ctx.userId)
 						self._ctx.log('[Forked] Intent from {} to {} used in skill {}'.format(intent['id'], intentId, skillId))
 						hasFork = True
 
 		if hasFork:
 			# Rebuild cache
-			self._ctx.Entity.listEntitiesByUserEmail(userEmail=self._ctx._userEmail)
-			self._ctx.Intent.listIntentsByUserId(userId=self._ctx._userId)
-			self._ctx.Skill.listSkillsByUserId(userId=self._ctx._userId)
+			self._ctx.Entity.listEntitiesByUserEmail(userEmail=self._ctx.userEmail)
+			self._ctx.Intent.listIntentsByUserId(userId=self._ctx.userId)
+			self._ctx.Skill.listSkillsByUserId(userId=self._ctx.userId)
 
 		# Build each module configuration
 		modules = dict()
 
-		cachedIndexedSkills = self._ctx.Skill.listSkillsByUserIdAndAssistantId(userId=self._ctx._userId, assistantId=runOnAssistantId, fromCache=True)
+		cachedIndexedSkills = self._ctx.Skill.listSkillsByUserIdAndAssistantId(userId=self._ctx.userId, assistantId=runOnAssistantId, fromCache=True)
 
 		for skill in cachedIndexedSkills:
 			moduleName = skillNameToCamelCase(skill['name'])
@@ -797,7 +796,7 @@ class MainProcessor():
 				'hash': ''
 			}
 
-			cachedIndexedIntents = self._ctx.Intent.listIntentsByUserIdAndSkillId(userId=self._ctx._userId, skillId=skill['id'], fromCache=True)
+			cachedIndexedIntents = self._ctx.Intent.listIntentsByUserIdAndSkillId(userId=self._ctx.userId, skillId=skill['id'], fromCache=True)
 			typeEntityMatching = dict()
 
 			for intent in cachedIndexedIntents:
@@ -832,7 +831,7 @@ class MainProcessor():
 
 					utterances.append(text)
 
-				cachedIndexedEntities =  self._ctx.Entity.listEntitiesByUserEmailAndIntentId(userEmail=self._ctx._userEmail, intentId=intent['id'], fromCache=True)
+				cachedIndexedEntities =  self._ctx.Entity.listEntitiesByUserEmailAndIntentId(userEmail=self._ctx.userEmail, intentId=intent['id'], fromCache=True)
 
 				for entity in cachedIndexedEntities:
 					if entity['id'] in typeEntityMatching:

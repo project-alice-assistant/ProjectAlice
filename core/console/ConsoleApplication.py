@@ -2,8 +2,10 @@
 
 import sys
 import traceback
-from colorama import init
-from colorama import Fore, Back, Style
+
+from colorama import Fore, init
+
+# TODO ????
 init()
 
 from core.console.input.ArgvInput import ArgvInput
@@ -104,12 +106,12 @@ class ConsoleApplication:
 
 		return versionMessage
 
+	# TODO doRun() doesn't raise any exceptions
 	def run(self, inputt = None):
 		if inputt is None:
 			inputt = ArgvInput()
 
 		self.configureIO(inputt)
-		exitCode = -1
 
 		try:
 			exitCode = self.doRun(inputt)
@@ -136,7 +138,7 @@ class ConsoleApplication:
 			else:
 				sys.exit(exitCode)
 
-		# return exitCode
+		return exitCode
 
 	def configureIO(self, input):
 		if input.hasParameterOption(['--no-interaction', '-n']):

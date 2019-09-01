@@ -1,25 +1,21 @@
 # -*- coding: utf-8 -*-
 
-import json
-import os
-import requests
 import random
 
 from terminaltables import DoubleTable
 
-from core.console.Command import Command
-from core.console.input.InputArgument import InputArgument
-from core.console.input.InputOption import InputOption
-from core.snips.SamkillaManager import SamkillaManager
-from core.base.ModuleManager import ModuleManager
-from core.snips.SnipsConsoleManager import SnipsConsoleManager
-from core.voice.LanguageManager import LanguageManager
-from core.util.ThreadManager import ThreadManager
-from core.util.DatabaseManager import DatabaseManager
-from core.dialog.ProtectedIntentManager import ProtectedIntentManager
 from core.base.ConfigManager import ConfigManager
+from core.base.ModuleManager import ModuleManager
+from core.console.Command import Command
+from core.console.input.InputOption import InputOption
+from core.dialog.ProtectedIntentManager import ProtectedIntentManager
+from core.snips.SamkillaManager import SamkillaManager
+from core.snips.SnipsConsoleManager import SnipsConsoleManager
 from core.user.UserManager import UserManager
-from core.base.model.GithubCloner import GithubCloner
+from core.util.DatabaseManager import DatabaseManager
+from core.util.ThreadManager import ThreadManager
+from core.voice.LanguageManager import LanguageManager
+
 
 #
 # IntentListCommand list modules from dedicated repository

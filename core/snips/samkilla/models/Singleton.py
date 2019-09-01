@@ -1,9 +1,9 @@
 
 class Singleton:
 
-	INSTANCE 	= None
+	INSTANCE = None
 
-	def __init__(self, name):
+	def __init__(self):
 		if self.INSTANCE:
 			raise KeyboardInterrupt
 		else:

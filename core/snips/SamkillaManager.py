@@ -1,22 +1,16 @@
 # -*- coding: utf-8 -*-
-import os
-
-from core.commons import commons
-
-__author__ = "JRK"
-__version__ = "1.0.0"
-
 import json
+import os
 import time
 
 import requests
 from selenium import webdriver
-from selenium.webdriver.chrome.webdriver import WebDriver
 from selenium.webdriver.chrome.options import Options
+from selenium.webdriver.chrome.webdriver import WebDriver
 from selenium.webdriver.support import expected_conditions as EC
-# from selenium.webdriver.firefox.options import Options
 from selenium.webdriver.support.ui import WebDriverWait
 
+from core.commons import commons
 from core.snips.samkilla.Assistant import Assistant
 from core.snips.samkilla.Entity import Entity
 from core.snips.samkilla.Intent import Intent
@@ -47,16 +41,16 @@ class SamkillaManager(Manager):
 		self._userId = ''
 		self._userEmail = managers.ConfigManager.getAliceConfigByName('snipsConsoleLogin')
 		self._userPassword = managers.ConfigManager.getAliceConfigByName('snipsConsolePassword')
-		self.Assistant = None
-		self.Skill = None
-		self.Intent = None
-		self.Entity = None
+		self._assistant = None
+		self._skill = None
+		self._intent = None
+		self._entity = None
 
 		self._dtSlotTypesModulesValues 		= dict()
 		self._dtIntentsModulesValues		= dict()
 		self._dtIntentNameSkillMatching   	= dict()
 
-		self.MainProcessor = MainProcessor(self)
+		self._mainProcessor = MainProcessor(self)
 		self.initActions()
 		self._loadDialogTemplateMapsInConfigManager()
 
@@ -71,6 +65,11 @@ class SamkillaManager(Manager):
 	@property
 	def userEmail(self) -> str:
 		return self._userEmail
+
+
+	@property
+	def userId(self) -> str:
+		return self._userId
 
 
 	def sync(self, moduleFilter: str = None, download: bool = True):
@@ -140,10 +139,10 @@ class SamkillaManager(Manager):
 
 
 	def initActions(self):
-		self.Assistant = Assistant(self)
-		self.Skill = Skill(self)
-		self.Intent = Intent(self)
-		self.Entity = Entity(self)
+		self._assistant = Assistant(self)
+		self._skill = Skill(self)
+		self._intent = Intent(self)
+		self._entity = Entity(self)
 
 
 	def initBrowser(self):
@@ -228,10 +227,12 @@ class SamkillaManager(Manager):
 		return jsonResponse[0]['data']
 
 
-	# Do not use for authenticated function like MUTATIONS (and maybe certain QUERY)
-	# console-session is randomly present from browser (document.cookie) so we can't authenticated him automatically
 	def postGQLNatively(self, payload: dict) -> requests.Response:
-		# console-session cookie must be present
+		"""
+		Do not use for authenticated function like MUTATIONS (and maybe certain QUERY)
+		console-session is randomly present from browser (document.cookie) so we can't authenticated him automatically
+		console-session cookie must be present
+		"""
 		url = self.ROOT_URL + '/gql'
 		headers = {
 			'Pragma': 'no-cache',
@@ -258,7 +259,7 @@ class SamkillaManager(Manager):
 
 		# AssistantId provided
 		if assistantId:
-			if not self.Assistant.exists(assistantId):
+			if not self._assistant.exists(assistantId):
 				# If not found remotely, stop everything
 				raise AssistantNotFoundError(4001, "Assistant with id {} not found".format(assistantId), ['assistant'])
 			else:
@@ -269,11 +270,11 @@ class SamkillaManager(Manager):
 
 		if not runOnAssistantId:
 			# Try to find the first local assistant for the targeted language
-			localFirstAssistantId = self.MainProcessor.getLocalFirstAssistantByLanguage(assistantLanguage=assistantLanguage, returnId=True)
+			localFirstAssistantId = self._mainProcessor.getLocalFirstAssistantByLanguage(assistantLanguage=assistantLanguage, returnId=True)
 
-			if localFirstAssistantId is None or not self.Assistant.exists(localFirstAssistantId):
+			if localFirstAssistantId is None or not self._assistant.exists(localFirstAssistantId):
 				# If not found remotely, create a new one
-				runOnAssistantId = self.Assistant.create(title=newAssistantTitle, language=assistantLanguage)
+				runOnAssistantId = self._assistant.create(title=newAssistantTitle, language=assistantLanguage)
 				self.log("Using new assistantId: {}".format(runOnAssistantId))
 			else:
 				# If found remotely, just use it
@@ -281,13 +282,14 @@ class SamkillaManager(Manager):
 				self.log("Using first local assistantId: {}".format(runOnAssistantId))
 
 		# Add assistant in cache locally if it isn't the case
-		self.MainProcessor.syncRemoteToLocalAssistant(
+		self._mainProcessor.syncRemoteToLocalAssistant(
 			assistantId=runOnAssistantId,
 			assistantLanguage=assistantLanguage,
-			assistantTitle=self.Assistant.getTitleById(runOnAssistantId)
+			assistantTitle=self._assistant.getTitleById(runOnAssistantId)
 		)
 
 		return runOnAssistantId
+
 
 	def syncLocalToRemote(self, baseAssistantId: str, baseModuleFilter: str, newAssistantTitle: str = 'ProjectAlice', baseLanguageFilter: str = 'en') -> bool:
 		# RemoteFetch/LocalCheck/CreateIfNeeded: assistant
@@ -302,7 +304,7 @@ class SamkillaManager(Manager):
 			managers.LanguageManager.changeActiveSnipsProjectIdForLanguage(runOnAssistantId, baseLanguageFilter)
 
 		# From module intents files to dict then push to SnipsConsole
-		changes = self.MainProcessor.syncLocalToRemote(runOnAssistantId, moduleFilter=baseModuleFilter, languageFilter=baseLanguageFilter)
+		changes = self._mainProcessor.syncLocalToRemote(runOnAssistantId, moduleFilter=baseModuleFilter, languageFilter=baseLanguageFilter)
 
 		return changes
 
@@ -316,11 +318,11 @@ class SamkillaManager(Manager):
 		)
 
 		# From SnipsConsole objects to module intents files
-		self.MainProcessor.syncRemoteToLocal(runOnAssistantId, languageFilter=baseLanguageFilter, moduleFilter=baseModuleFilter)
+		self._mainProcessor.syncRemoteToLocal(runOnAssistantId, languageFilter=baseLanguageFilter, moduleFilter=baseModuleFilter)
 
 
 	def getDialogTemplatesMaps(self, runOnAssistantId: str, languageFilter: str, moduleFilter: str = None) -> tuple:
-		return self.MainProcessor.buildMapsFromDialogTemplates(runOnAssistantId, languageFilter=languageFilter, moduleFilter=moduleFilter)
+		return self._mainProcessor.buildMapsFromDialogTemplates(runOnAssistantId, languageFilter=languageFilter, moduleFilter=moduleFilter)
 
 
 	def getIntentsByModuleName(self, runOnAssistantId: str, languageFilter: str, moduleFilter:str = None) -> list:

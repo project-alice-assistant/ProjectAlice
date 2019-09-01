@@ -1,16 +1,15 @@
 # -*- coding: utf-8 -*-
 
-import os
-import sys
-import re
 import getpass
-from prompt_toolkit import prompt
-from colorama import Fore, Back, Style
+import re
+import sys
 
+from colorama import Back, Fore
+
+from core.console.Tools import indexOf
 from core.console.input.InputArgument import InputArgument
 from core.console.input.InputDefinition import InputDefinition
 from core.console.input.InputOption import InputOption
-from core.console.Tools import indexOf
 
 REGEX_COLOR = re.compile(r'<(fg|bg):([a-z]+)>')
 
@@ -45,13 +44,19 @@ class Command:
 		if name:
 			self.setName(name)
 
-		try:
-			self.create()
-		except AttributeError:
-			raise ValueError('Command \'{}\' does not override create method'.format(str(self.name)))
+		self.create()
 
 		if not self.name:
 			raise ValueError('The command name cannot be empty')
+
+
+	def create(self):
+		raise ValueError('Command \'{}\' does not override create method'.format(str(self.name)))
+
+
+	def interact(self, inputInstance):
+		pass
+
 
 	def execute(self, input):
 		raise ValueError('You must override the execute() method in the concrete command class.')
@@ -152,12 +157,7 @@ class Command:
 			if not self.ignoreValidationErrors:
 				raise ValueError(e)
 
-		hasInteract = True
-
-		try:
-			self.interact(inputInstance)
-		except AttributeError:
-			hasInteract = False
+		self.interact(inputInstance)
 
 		inputInstance.validate()
 
@@ -215,8 +215,6 @@ class Command:
 			self.applicationDefinitionMergedWithArgs = True
 
 	def ask(self, question = '', definition = None, hidden = False, fgColor='reset', bgColor='reset'):
-		inputValue = ''
-
 		try:
 			questionStyled = self.stringToColored(question, fgColor, bgColor)
 			inputValue = getpass.getpass(questionStyled) if hidden else input(questionStyled)

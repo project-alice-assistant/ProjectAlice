@@ -41,7 +41,7 @@ class TelemetryManager(Manager):
 		if not self.isActive:
 			return
 
-		data = self.databaseFetch(
+		self._data = self.databaseFetch(
 			tableName='telemetry',
 			query='SELECT * FROM :__table__ ORDER BY timestamp DESC LIMIT 200',
 			method='all'

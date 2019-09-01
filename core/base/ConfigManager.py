@@ -5,10 +5,12 @@ import configSample
 
 import shutil
 try:
+	# noinspection PyUnresolvedReferences
 	import config
 except ModuleNotFoundError:
 	shutil.copyfile('configSample.py', 'config.py')
 	print('Created config file from config samples')
+	# noinspection PyUnresolvedReferences
 	import config
 
 import difflib

@@ -111,7 +111,6 @@ class Input:
 		return match[0:1] + '\\\''
 
 	def escapeshellarg(self, str):
-		out = ''
 		out = re.sub(r'[^\\]\'', self.escapeshellargReplaceFunction, str)
 		return out
 

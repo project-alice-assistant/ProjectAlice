@@ -1,24 +1,15 @@
 # -*- coding: utf-8 -*-
 
 import json
-import os
-import requests
 import urllib.request
 
+import requests
 from terminaltables import DoubleTable
 
+from core.base.ModuleManager import ModuleManager
 from core.console.Command import Command
 from core.console.input.InputArgument import InputArgument
-from core.console.input.InputOption import InputOption
-from core.snips.SamkillaManager import SamkillaManager
-from core.base.ModuleManager import ModuleManager
-from core.snips.SnipsConsoleManager import SnipsConsoleManager
-from core.voice.LanguageManager import LanguageManager
-from core.util.ThreadManager import ThreadManager
-from core.util.DatabaseManager import DatabaseManager
-from core.dialog.ProtectedIntentManager import ProtectedIntentManager
-from core.user.UserManager import UserManager
-from core.base.model.GithubCloner import GithubCloner
+
 
 #
 # ModuleInstallCommand download a module from dedicated repository
@@ -80,7 +71,7 @@ class ModuleInstallCommand(Command):
 			urllib.request.urlretrieve(url, "system/moduleInstallTickets/" + moduleName + '.install')
 
 
-		except Exception as e:
+		except Exception:
 			self.write('Error listing authors', 'red')
 			raise
 
