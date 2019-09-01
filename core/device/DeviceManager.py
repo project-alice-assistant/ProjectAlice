@@ -1,26 +1,26 @@
 # -*- coding: utf-8 -*-
+import os
 import socket
 import sqlite3
 import threading
 import time
 import uuid
-from typing import Any, Optional, Union
+from random import shuffle
+from typing import Optional
 
+import esptool
+import requests
+from esptool import ESPLoader
+from paho.mqtt.client import MQTTMessage
 from serial import Serial
 from serial.tools import list_ports
 
-from core.commons import commons
 import core.base.Managers as managers
 from core.base.Manager import Manager
+from core.commons import commons
 from core.device.model.Device import Device
-from core.dialog.model.DialogSession import DialogSession
-from paho.mqtt.client import MQTTMessage
-import requests
-import os
-import esptool
-from esptool import ESPLoader
-from random import shuffle
 from core.device.model.TasmotaConfigs import TasmotaConfigs
+from core.dialog.model.DialogSession import DialogSession
 
 
 class DeviceManager(Manager):

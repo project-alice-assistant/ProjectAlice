@@ -3,7 +3,6 @@
 
 from core.console.Command import Command
 from core.console.input.InputArgument import InputArgument
-from core.console.input.InputOption import InputOption
 
 #
 # HelpCommand provides help for a given command

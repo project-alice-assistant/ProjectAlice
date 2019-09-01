@@ -1,12 +1,11 @@
 # -*- coding: utf-8 -*-
-import copy
-from typing import Optional, Dict
+from typing import Dict, Optional
 
 from paho.mqtt.client import MQTTMessage
 
-from core.commons import commons
 import core.base.Managers as managers
 from core.base.Manager import Manager
+from core.commons import commons
 from core.dialog.model.DialogSession import DialogSession
 
 

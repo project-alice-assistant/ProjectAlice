@@ -2,8 +2,10 @@
 
 import sys
 import traceback
-from colorama import init
-from colorama import Fore, Back, Style
+
+from colorama import Fore, init
+
+# TODO ????
 init()
 
 from core.console.input.ArgvInput import ArgvInput
@@ -110,7 +112,6 @@ class ConsoleApplication:
 			inputt = ArgvInput()
 
 		self.configureIO(inputt)
-		exitCode = -1
 
 		try:
 			exitCode = self.doRun(inputt)
