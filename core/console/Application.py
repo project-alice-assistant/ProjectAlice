@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 
 import importlib
-import os
 from pathlib import Path
 
 from core.commons import commons
@@ -60,17 +59,16 @@ class Application(ConsoleApplication):
 	def loadModuleCommands(self, moduleName: str) -> bool:
 		commandsMountpoint = Path(commons.rootDir(), 'modules', moduleName, 'console')
 
-		for commandFile in commandsMountpoint.glob('*'):
-			commandClassFile = os.path.splitext(commandFile.absolute().as_posix())[0]
+		for commandFile in commandsMountpoint.glob('*Command.py'):
+			commandClassFile = commandFile.absolute().as_posix().stem
 
-			if commandClassFile.endswith('Command'):
-				try:
-					commandImport = importlib.import_module('modules.{}.console.{}'.format(moduleName, commandClassFile))
-					klass = getattr(commandImport, commandClassFile)
-					instance = klass()
-					self.add(instance)
-					return True
-				except Exception:
-					continue
+			try:
+				commandImport = importlib.import_module('modules.{}.console.{}'.format(moduleName, commandClassFile))
+				klass = getattr(commandImport, commandClassFile)
+				instance = klass()
+				self.add(instance)
+				return True
+			except Exception:
+				pass
 
 		return False
