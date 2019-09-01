@@ -104,7 +104,7 @@ class ModuleManager(Manager):
 									raise ModuleNotConditionCompliant
 								elif requiredModule['name'] not in availableModules:
 									self._logger.info('[{}] Module {} has another module as dependency, adding download'.format(self.name, moduleName))
-									subprocess.run(['wget', requiredModule['url'], '-O', commons.rootDir()/'system/moduleInstallTickets/{}.install'.format(requiredModule['name']))])
+									subprocess.run(['wget', requiredModule['url'], '-O', Path(commons.rootDir(),'system/moduleInstallTickets/{}.install'.format(requiredModule['name'])))])
 						elif conditionName == 'asrArbitraryCapture':
 							if conditionValue and not managers.ASRManager.asr.capableOfArbitraryCapture:
 								raise ModuleNotConditionCompliant
@@ -313,7 +313,7 @@ class ModuleManager(Manager):
 
 				remoteFile = json.loads(req.content.decode())
 				if float(remoteFile['version']) > float(availableModules[moduleName]['version']):
-					moduleFile = commons.rootDir() / 'system/moduleInstallTickets' / (moduleName + '.install')
+					moduleFile = Path(commons.rootDir(), 'system/moduleInstallTickets',  moduleName + '.install')
 					moduleFile.write_text(json.dumps(remoteFile))
 					i += 1
 
@@ -327,7 +327,7 @@ class ModuleManager(Manager):
 	def _checkForModuleInstall(self):
 		managers.ThreadManager.newTimer(interval = 10, func = self._checkForModuleInstall, autoStart = True)
 
-		root = commons.rootDir() / 'system/moduleInstallTickets'
+		root = Path(commons.rootDir(), 'system/moduleInstallTickets')
 		files = fnmatch.filter(root.iterdir(), '*.install')
 
 		if  self._busyInstalling.isSet() or \
@@ -381,7 +381,7 @@ class ModuleManager(Manager):
 
 
 	def _installModules(self, modules: list) -> dict:
-		root = commons.rootDir() / 'system/moduleInstallTickets'
+		root = Path(commons.rootDir(), 'system/moduleInstallTickets')
 		availableModules = managers.ConfigManager.modulesConfigurations
 		modulesToBoot = dict()
 		managers.MqttServer.broadcast(topic='hermes/leds/systemUpdate', payload={'sticky': True})

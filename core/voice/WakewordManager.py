@@ -193,7 +193,7 @@ class WakewordManager(Manager):
 			'model_version'          : 1
 		}
 
-		path = commons.rootDir() / 'trained/hotwords' / self.wakeword.username.lower()
+		path = Path(commons.rootDir(), 'trained/hotwords', self.wakeword.username.lower())
 
 		if path.is_dir:
 			self._logger.warning('[{}] Destination directory for new wakeword already exists, deleting'.format(self.name))
@@ -230,7 +230,7 @@ class WakewordManager(Manager):
 				add = False
 
 		if add:
-			models.append(commons.rootDir()/'trained/hotwords/snips_hotword=0.53')
+			models.append(Path(commons.rootDir(), 'trained/hotwords/snips_hotword=0.53'))
 
 		models.append('{}=0.52'.format(path))
 		managers.ConfigManager.updateSnipsConfiguration('snips-hotword', 'model', models, restartSnips=True)
@@ -239,7 +239,7 @@ class WakewordManager(Manager):
 
 
 	def uploadToNewDevice(self, uid: str):
-		d = commons.rootDir() / 'trained/hotwords'
+		d = Path(commons.rootDir(), 'trained/hotwords')
 		for f in d:
 			if (d/f).is_file():
 				continue

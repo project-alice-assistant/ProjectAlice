@@ -32,8 +32,8 @@ network={
 		self._logger = logging.getLogger('ProjectAlice')
 		self._logger.info('Starting Project Alice initializer')
 
-		confsFile = commons.rootDir() / 'config.py'
-		confsSample = commons.rootDir() / 'configSample.py'
+		confsFile = Path(commons.rootDir(), 'config.py')
+		confsSample = Path(commons.rootDir(), 'configSample.py')
 
 		initFile = Path('/boot/ProjectAlice.yaml')
 		if not initFile.exists() and not confsFile.exists():
@@ -52,7 +52,7 @@ network={
 
 		elif not confsFile.exists() and confsSample.exists():
 			self.warning('No config file found, creating it from sample file')
-			shutil.copyfile(src=commons.rootDir()/'configSample.py', dst=commons.rootDir()/'config.py')
+			shutil.copyfile(src=Path(commons.rootDir(),'configSample.py'), dst=Path(commons.rootDir(),'config.py'))
 
 		elif confsFile.exists() and not initConfs['forceRewrite']:
 			self.warning('Config file already existing and user not wanting to rewrite, aborting')
@@ -60,8 +60,8 @@ network={
 
 		elif confsFile.exists() and initConfs['forceRewrite']:
 			self.warning('Config file found and force rewrite specified, let\'s restart all this!')
-			(commons.rootDir() / 'config.py').unlink()
-			shutil.copyfile(src=commons.rootDir()/'configSample.py', dst=commons.rootDir()/'config.py')
+			Path(commons.rootDir(), 'config.py').unlink()
+			shutil.copyfile(src=Path(commons.rootDir(),'configSample.py'), dst=Path(commons.rootDir(),'config.py'))
 
 
 		config = importlib.import_module('config')
@@ -83,7 +83,7 @@ network={
 			initConfs['wifiWPAPass']
 		)
 
-		file = commons.rootDir() / 'wifi.conf'
+		file = Path(commons.rootDir(), 'wifi.conf')
 		file.write_text(wpaFile)
 
 		self._logger.info('wpa_supplicant.conf')
@@ -132,7 +132,7 @@ network={
 			confs['awsSecretKey'] = initConfs['awsSecretKey']
 
 			if initConfs['googleServiceFile']:
-				googleCreds = commons.rootDir() / 'credentials/googlecredentials.json'
+				googleCreds = Path(commons.rootDir(), 'credentials/googlecredentials.json')
 				googleCreds.write_text(json.dumps(initConfs['googleServiceFile']))
 
 
@@ -162,16 +162,16 @@ network={
 				break
 
 		if audioHardware == 'respeaker2' or audioHardware == 'respeaker4':
-			subprocess.call(['sudo', commons.rootDir()/'system/scripts/audioHardware/respeakers.sh')])
+			subprocess.call(['sudo', Path(commons.rootDir(), 'system/scripts/audioHardware/respeakers.sh')])
 			subprocess.run(['sudo', 'sed', '-i', '-e', 's/%HARDWARE%/{}/'.format(audioHardware), Path('/etc/systemd/system/snipsledcontrol.service')])
 		elif audioHardware == 'respeaker7':
-			subprocess.call(['sudo', commons.rootDir()/'system/scripts/audioHardware/respeaker7.sh')])
+			subprocess.call(['sudo', Path(commons.rootDir(). 'system/scripts/audioHardware/respeaker7.sh')])
 			subprocess.run(['sudo', 'sed', '-i', '-e', 's/%HARDWARE%/respeaker7MicArray/', Path('/etc/systemd/system/snipsledcontrol.service')])
 		elif audioHardware == 'respeakerCoreV2':
-			subprocess.call(['sudo', commons.rootDir()/'system/scripts/audioHardware/respeakerCoreV2.sh')])
+			subprocess.call(['sudo', Path(commons.rootDir(), 'system/scripts/audioHardware/respeakerCoreV2.sh')])
 			subprocess.run(['sudo', 'sed', '-i', '-e', 's/%HARDWARE%/{}/'.format(audioHardware), Path('/etc/systemd/system/snipsledcontrol.service')])
 		elif audioHardware == 'matrixCreator' or audioHardware == 'matrixVoice':
-			subprocess.call(['sudo', commons.rootDir()/'system/scripts/audioHardware/matrix.sh')])
+			subprocess.call(['sudo', Path(commons.rootDir(), 'system/scripts/audioHardware/matrix.sh')])
 			subprocess.run(['sudo', 'sed', '-i', '-e', 's/%HARDWARE%/{}/'.format(audioHardware.lower()), Path('/etc/systemd/system/snipsledcontrol.service')])
 
 		subprocess.run(['sudo', 'systemctl', 'daemon-reload'])

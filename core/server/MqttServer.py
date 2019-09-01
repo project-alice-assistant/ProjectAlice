@@ -604,7 +604,7 @@ class MqttServer(Manager):
 		"""
 
 		if not root:
-			root = commons.rootDir() / 'system/sounds')
+			root = Path(commons.rootDir(), 'system/sounds')
 		root = Path(root)
 
 		if not uid:
@@ -667,7 +667,7 @@ class MqttServer(Manager):
 		if text == '':
 			return
 
-		subprocess.call(['sudo', commons.rootDir()/'/system/scripts/snipsSuperTTS.sh', Path('/share/tmp.wav'), 'amazon', managers.LanguageManager.activeLanguage, 'US', 'Joanna', 'FEMALE', text, '22050'])
+		subprocess.call(['sudo', Path(commons.rootDir(), '/system/scripts/snipsSuperTTS.sh'), Path('/share/tmp.wav'), 'amazon', managers.LanguageManager.activeLanguage, 'US', 'Joanna', 'FEMALE', text, '22050'])
 
 		sonosModule = managers.ModuleManager.getModuleInstance('Sonos')
 		if sonosModule:

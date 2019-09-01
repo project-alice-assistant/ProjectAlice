@@ -111,7 +111,7 @@ class SamkillaManager(Manager):
 	def onStart(self):
 		super().onStart()
 
-		path = commons.rootDir() / 'var/assistants' / managers.LanguageManager.activeLanguage
+		path = Path(commons.rootDir(), 'var/assistants', managers.LanguageManager.activeLanguage)
 		if path.exists():
 			if not [name.name for name in path.iterdir() if name.is_dir()]:
 				self.sync()

@@ -61,12 +61,12 @@ class TTS:
 
 		if self.TTS == TTSEnum.SNIPS:
 			voiceFile = 'cmu_{}_{}'.format(managers.LanguageManager.activeCountryCode.lower(), self._voice)
-			if not (commons.rootDir()/'system/voices'/voiceFile).is_file()):
+			if not Path(commons.rootDir(), 'system/voices', voiceFile).is_file()):
 				self._logger.info('[TTS] Using "{}" as TTS with voice "{}" but voice file not found. Downloading...'.format(self.TTS.value, self._voice))
 
 				process = subprocess.run([
 					'wget', 'https://github.com/MycroftAI/mimic1/blob/development/voices/{}.flitevox?raw=true'.format(voiceFile),
-					'-O', commons.rootDir()/'var/voices/{}.flitevox'.format(voiceFile))
+					'-O', Path(commons.rootDir(),'var/voices/{}.flitevox'.format(voiceFile))
 				],
 				stdout=subprocess.PIPE)
 
