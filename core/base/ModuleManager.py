@@ -104,7 +104,7 @@ class ModuleManager(Manager):
 									raise ModuleNotConditionCompliant
 								elif requiredModule['name'] not in availableModules:
 									self._logger.info('[{}] Module {} has another module as dependency, adding download'.format(self.name, moduleName))
-									subprocess.run(['wget', requiredModule['url'], '-O', Path(commons.rootDir(),'system/moduleInstallTickets/{}.install'.format(requiredModule['name'])))])
+									subprocess.run(['wget', requiredModule['url'], '-O', Path(commons.rootDir(),'system/moduleInstallTickets/{}.install'.format(requiredModule['name']))])
 						elif conditionName == 'asrArbitraryCapture':
 							if conditionValue and not managers.ASRManager.asr.capableOfArbitraryCapture:
 								raise ModuleNotConditionCompliant

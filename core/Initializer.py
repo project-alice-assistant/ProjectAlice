@@ -165,7 +165,7 @@ network={
 			subprocess.call(['sudo', Path(commons.rootDir(), 'system/scripts/audioHardware/respeakers.sh')])
 			subprocess.run(['sudo', 'sed', '-i', '-e', 's/%HARDWARE%/{}/'.format(audioHardware), Path('/etc/systemd/system/snipsledcontrol.service')])
 		elif audioHardware == 'respeaker7':
-			subprocess.call(['sudo', Path(commons.rootDir(). 'system/scripts/audioHardware/respeaker7.sh')])
+			subprocess.call(['sudo', Path(commons.rootDir(), 'system/scripts/audioHardware/respeaker7.sh')])
 			subprocess.run(['sudo', 'sed', '-i', '-e', 's/%HARDWARE%/respeaker7MicArray/', Path('/etc/systemd/system/snipsledcontrol.service')])
 		elif audioHardware == 'respeakerCoreV2':
 			subprocess.call(['sudo', Path(commons.rootDir(), 'system/scripts/audioHardware/respeakerCoreV2.sh')])

@@ -61,7 +61,7 @@ class TTS:
 
 		if self.TTS == TTSEnum.SNIPS:
 			voiceFile = 'cmu_{}_{}'.format(managers.LanguageManager.activeCountryCode.lower(), self._voice)
-			if not Path(commons.rootDir(), 'system/voices', voiceFile).is_file()):
+			if not Path(commons.rootDir(), 'system/voices', voiceFile).is_file():
 				self._logger.info('[TTS] Using "{}" as TTS with voice "{}" but voice file not found. Downloading...'.format(self.TTS.value, self._voice))
 
 				process = subprocess.run([

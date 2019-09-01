@@ -204,7 +204,7 @@ class WakewordManager(Manager):
 		(path/'config.json').write_text(json.dumps(config, indent=4))
 
 		for i in range(1, 4):
-			shutil.move(Path(tempfile.gettempdir(), '{}.wav'.format(i)), path/'{}.wav'.format(i)))
+			shutil.move(Path(tempfile.gettempdir(), '{}.wav'.format(i)), path/'{}.wav'.format(i))
 
 		self._addWakewordToSnips(path)
 		managers.ThreadManager.newThread(name='SatelliteWakewordUpload', target=self._upload, args=[path, self._wakeword.username], autostart=True)
@@ -244,7 +244,7 @@ class WakewordManager(Manager):
 			if (d/f).is_file():
 				continue
 
-			self._upload(d/f), uid)
+			self._upload(d/f, uid)
 
 
 	def _upload(self, path: str, uid: str = ''):
