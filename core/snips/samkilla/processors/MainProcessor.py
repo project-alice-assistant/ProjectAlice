@@ -557,8 +557,8 @@ class MainProcessor():
 		return typeEntityMatching, globalChanges
 
 
-
-	def syncLocalToRemoteIntents(self, skillNameIdMatching, intentNameSkillMatching, typeEntityMatching, intentsModulesValues, runOnAssistantId, languageFilter=None):
+	# noinspection PyUnusedLocal
+	def syncLocalToRemoteIntents(self, skillNameIdMatching, intentNameSkillMatching, typeEntityMatching, intentsModulesValues, runOnAssistantId, languageFilter=None, moduleFilter=None):
 
 		intentsSynced = dict()
 		globalChanges = False
