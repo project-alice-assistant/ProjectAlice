@@ -351,8 +351,7 @@ class MainProcessor:
 
 							for synonym in moduleSlotValue.get('synonyms', list()):
 								if not synonym: continue
-								if synonym not in slotTypesModulesValues[moduleSlotType['name']][moduleSlotValue['value']]:
-									slotTypesModulesValues[moduleSlotType['name']][moduleSlotValue['value']][synonym] = True
+								slotTypesModulesValues[moduleSlotType['name']][moduleSlotValue['value']][synonym] = True
 
 				# We need all intents values of all modules, even if there is a module filter
 				for moduleIntent in module['intents']:
