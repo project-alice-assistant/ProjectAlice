@@ -42,7 +42,7 @@ class Module(object):
 		for dtIntentName, dtModuleName in managers.SamkillaManager.dtIntentNameSkillMatching.items():
 			if dtIntentName == intent.justAction and dtModuleName == self.name:
 
-				for utterance in managers.SamkillaManager.dtIntentsModulesValues[dtIntentName]['utterances'].keys():
+				for utterance in managers.SamkillaManager.dtIntentsModulesValues[dtIntentName]['utterances']:
 					utterances.append(utterance.lower() if forceLowerCase else utterance)
 
 		return utterances

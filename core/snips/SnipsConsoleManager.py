@@ -87,7 +87,7 @@ class SnipsConsoleManager(Manager):
 				self._user = SnipsConsoleUser(json.loads(req.content)['user'])
 
 				accessToken = self._getAccessToken(token)
-				if len(accessToken.keys()) > 0:
+				if len(accessToken > 0:
 					self._logger.info('- Saving console access token')
 					managers.ConfigManager.updateSnipsConfiguration(parent='project-alice', key='console_token', value=accessToken['token'])
 					managers.ConfigManager.updateSnipsConfiguration(parent='project-alice', key='console_alias', value=accessToken['alias'])
