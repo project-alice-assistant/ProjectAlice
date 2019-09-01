@@ -77,10 +77,9 @@ class ModuleManager(Manager):
 			if moduleToLoad and moduleName != moduleToLoad:
 				continue
 
+			conditionName = ''
+			conditionValue = ''
 			try:
-				conditionName = ''
-				conditionValue = ''
-
 				if not module['active']:
 					if moduleName in self.NEEDED_MODULES:
 						self._logger.info("Module {} marked as disable but it shouldn't be".format(moduleName))
@@ -341,6 +340,7 @@ class ModuleManager(Manager):
 			self._logger.info('[{}] Found {} install ticket(s)'.format(self.name, len(files)))
 			self._busyInstalling.set()
 
+			modulesToBoot = list()
 			try:
 				modulesToBoot = self._installModules(files)
 			except Exception as e:
