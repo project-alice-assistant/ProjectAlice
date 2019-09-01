@@ -87,7 +87,7 @@ class SnipsConsoleManager(Manager):
 				self._user = SnipsConsoleUser(json.loads(req.content)['user'])
 
 				accessToken = self._getAccessToken(token)
-				if len(accessToken > 0:
+				if accessToken:
 					self._logger.info('- Saving console access token')
 					managers.ConfigManager.updateSnipsConfiguration(parent='project-alice', key='console_token', value=accessToken['token'])
 					managers.ConfigManager.updateSnipsConfiguration(parent='project-alice', key='console_alias', value=accessToken['alias'])
@@ -113,7 +113,7 @@ class SnipsConsoleManager(Manager):
 		req = self._req(url='/v1/user/{}/accesstoken'.format(self._user.userId), data={'alias': alias})
 		if req.status_code == 201:
 			return json.loads(req.content)['token']
-		return {}
+		return dict()
 
 
 	def _listAssistants(self) -> dict:
