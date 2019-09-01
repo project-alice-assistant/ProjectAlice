@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-
+from core.snips import SamkillaManager
 from core.snips.samkilla.gql.entities.createIntentEntity import createIntentEntity
 from core.snips.samkilla.gql.entities.deleteIntentEntity import deleteIntentEntity
 from core.snips.samkilla.gql.entities.patchIntentEntity import patchIntentEntity
@@ -7,16 +7,15 @@ from core.snips.samkilla.gql.entities.queries import customEntitiesWithUsageQuer
 from core.snips.samkilla.gql.entities.queries import fullCustomEntityQuery
 
 
-class Entity():
+class Entity:
 
-	def __init__(self, ctx):
+	def __init__(self, ctx: SamkillaManager):
 		self._ctx = ctx
 		self._cacheInit = False
 		self._entitiesCache = {'cacheId': dict(), 'cacheName': dict()}
 
-	def getEntityByUserEmailAndEntityName(self, userEmail, entityName):
-		entity = None
 
+	def getEntityByUserEmailAndEntityName(self, userEmail: str, entityName: str) -> str:
 		if entityName in self._entitiesCache['cacheName']:
 			entity = self._entitiesCache['cacheName'][entityName]
 		else:
@@ -24,9 +23,8 @@ class Entity():
 
 		return entity
 
-	def getEntityByUserEmailAndEntityId(self, userEmail, entityId):
-		entity = None
 
+	def getEntityByUserEmailAndEntityId(self, userEmail: str, entityId: str) -> str:
 		if entityId in self._entitiesCache['cacheId']:
 			entity = self._entitiesCache['cacheId'][entityId]
 		else:
@@ -34,7 +32,8 @@ class Entity():
 
 		return entity
 
-	def listEntitiesByUserEmail(self, userEmail, entityFilter=None, languageFilter=None, entityFilterAttribute='id', returnAllCacheIndexedBy=None):
+
+	def listEntitiesByUserEmail(self, userEmail: str, entityFilter: str = None, languageFilter: str = None, entityFilterAttribute: str = 'id', returnAllCacheIndexedBy: list = None):
 		variables = {'email': userEmail}
 
 		if languageFilter:
@@ -65,9 +64,8 @@ class Entity():
 
 		return response['entities']
 
-	def listEntitiesByUserEmailAndIntentId(self, userEmail, intentId, languageFilter=None, indexedBy=None, fromCache=False):
-		entities = list()
 
+	def listEntitiesByUserEmailAndIntentId(self, userEmail: str, intentId: str, languageFilter: str = None, indexedBy: str = None, fromCache: bool = False):
 		if fromCache and self._cacheInit:
 			entities = self._entitiesCache['cacheId'].values()
 		else:
@@ -90,7 +88,8 @@ class Entity():
 
 		return intentEntities
 
-	def listEntityValuesByEntityId(self, entityId):
+
+	def listEntityValuesByEntityId(self, entityId: str) -> str:
 		variables = { 'entityId': entityId }
 
 		gqlRequest = [{
@@ -103,24 +102,27 @@ class Entity():
 		return response['entity']['data']
 
 
-
-
-
-	def formatSlotValues(self, slotValues):
+	@staticmethod
+	def formatSlotValues(slotValues: list) -> list:
 		formattedSlotValues = list()
 
 		for slotValue in slotValues:
 			formattedSlotValues.append({
 				'value': slotValue['value'],
-				'synonyms': slotValue['synonyms'] if "synonyms" in slotValue else list(),
+				'synonyms': slotValue['synonyms'] if 'synonyms' in slotValue else list(),
 				'fromWikilists': None
 			})
 
 		return formattedSlotValues
 
-	# Warning: mind the language parameter if the assistant language is EN, entity must set language to EN
-	# no error will be shown and the entity won't be created
-	def create(self, name, language, matchingStrictness=1, automaticallyExtensible=False, useSynonyms=True, slotValues=list()):
+	# noinspection PyUnusedLocal
+	def create(self, name: str, language: str, matchingStrictness: int = 1, automaticallyExtensible: bool = False, useSynonyms: bool = True, slotValues: list = None) -> str:
+		"""
+		Warning: mind the language parameter if the assistant language is EN, entity must set language to EN
+		no error will be shown and the entity won't be created
+		"""
+		if not slotValues:
+			slotValues = list()
 
 		# Slot values exemple:
 		#[ {'value': 'room'}, {'value': 'house', 'synonyms': ['entire house']} ]
@@ -130,7 +132,7 @@ class Entity():
 			'operationName': 'createIntentEntity',
 			'variables': {
 				'input': {
-					'author': self._ctx._userEmail,
+					'author': self._ctx.userEmail,
 					'automaticallyExtensible': automaticallyExtensible,
 					'data': formattedSlotValues,
 					'language': language,
@@ -147,34 +149,40 @@ class Entity():
 		return createdEntityId
 
 
-	# Slot values must include old values AND the new ones
-	def edit(self, entityId, name=None, automaticallyExtensible=None, matchingStrictness=None, useSynonyms=None, slotValues=None):
-		input = dict()
+	def edit(self, entityId: str, name: str = None, automaticallyExtensible: bool = False, matchingStrictness: int = None, useSynonyms: bool = False, slotValues: list = None):
+		"""
+		Slot values must include old values AND the new one
+		"""
+		if not slotValues:
+			slotValues = list()
 
-		if name: input['name'] = name
-		if automaticallyExtensible: input['automaticallyExtensible'] = automaticallyExtensible
-		if matchingStrictness: input['matchingStrictness'] = matchingStrictness
-		if useSynonyms: input['useSynonyms'] = useSynonyms
+		inputt = dict()
+
+		if name: inputt['name'] = name
+		if automaticallyExtensible: inputt['automaticallyExtensible'] = automaticallyExtensible
+		if matchingStrictness: inputt['matchingStrictness'] = matchingStrictness
+		if useSynonyms: inputt['useSynonyms'] = useSynonyms
 
 		if slotValues:
-			input['data'] = self.formatSlotValues(slotValues)
+			inputt['data'] = self.formatSlotValues(slotValues)
 
 		gqlRequest = [{
 			'operationName': 'patchIntentEntity',
 			'variables': {
 				'intentEntityId': entityId,
-				'input': input
+				'input': inputt
 			},
 			'query': patchIntentEntity
 		}]
 		self._ctx.postGQLBrowserly(gqlRequest, rawResponse=True)
 
 
-	def delete(self, entityId, language=None):
+	# noinspection PyUnusedLocal
+	def delete(self, entityId: str, language: str = None):
 		gqlRequest = [{
 			'operationName': 'deleteIntentEntity',
 			'variables': {
-				'email': self._ctx._userEmail,
+				'email': self._ctx.userEmail,
 				'id': entityId
 				# 'lang': language # seems it's not mandatory
 			},
