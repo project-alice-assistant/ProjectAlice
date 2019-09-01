@@ -84,7 +84,7 @@ def dictMaxValue(d: dict) -> str:
 
 
 def rootDir() -> str:
-	return str(Path(__file__).resolve().parent.parent.parent)
+	return Path(__file__).resolve().parent.parent.parent
 
 
 def getDatabaseFile() -> str:

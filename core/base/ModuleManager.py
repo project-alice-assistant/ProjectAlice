@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
 
 import collections
+from pathlib import Path
+
 import fnmatch
 import importlib
 import json
@@ -18,6 +20,7 @@ from core.base.model.Module import Module
 from core.ProjectAliceExceptions import ModuleStartingFailed, ModuleStartDelayed, ModuleNotConditionCompliant
 from core.base.model.GithubCloner import GithubCloner
 
+
 #Special case, must be called as last!
 try:
 	# noinspection PyUnresolvedReferences
@@ -33,7 +36,8 @@ class ModuleManager(Manager):
 
 	NEEDED_MODULES = [
 		'AliceCore',
-		'ContextSensitive'
+		'ContextSensitive',
+		'RedQueen'
 	]
 
 	GITHUB_BARE_BASE_URL = 'https://raw.githubusercontent.com/project-alice-powered-by-snips/ProjectAliceModules/master/PublishedModules'
@@ -327,7 +331,7 @@ class ModuleManager(Manager):
 	def _checkForModuleInstall(self):
 		managers.ThreadManager.newTimer(interval = 10, func = self._checkForModuleInstall, autoStart = True)
 
-		root = commons.rootDir() + '/system/moduleInstallTickets'
+		root = Path(commons.rootDir(), 'system', 'moduleInstallTickets')
 		files = fnmatch.filter(os.listdir(root), '*.install')
 
 		if  self._busyInstalling.isSet() or \
