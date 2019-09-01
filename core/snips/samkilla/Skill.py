@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
+import typing
 
+from core.snips import SamkillaManager
 from core.snips.samkilla.exceptions.HttpError import HttpError
 from core.snips.samkilla.gql.assistants.patchAssistantSkills import patchAssistantSkills
 from core.snips.samkilla.gql.skills.createSkill import createSkill
@@ -16,28 +18,22 @@ intent_regex = re.compile(r'intent_([a-zA-Z0-9]+)')
 
 class Skill:
 
-	def __init__(self, ctx):
+	def __init__(self, ctx: SamkillaManager):
 		self._ctx = ctx
 		self._cacheInit = False
 		self._skillsCache = {'cacheId': dict(), 'cacheName': dict()}
 
-	def getSkillByUserIdAndSkillName(self, userId, skillName):
-		if skillName in self._skillsCache['cacheName']:
-			skill = self._skillsCache['cacheName'][skillName]
-		else:
-			skill = self.listSkillsByUserId(userId, skillFilter=skillName, skillFilterAttribute='name')
 
-		return skill
+	def getSkillByUserIdAndSkillName(self, userId: str, skillName: str):
+		return self._skillsCache['cachename'].get(skillName, self.listSkillsByUserId(userId, skillFilter=skillName, skillFilterAttribute='name'))
 
-	def getSkillByUserIdAndSkillId(self, userId, skillId):
-		if skillId in self._skillsCache['cacheId']:
-			skill = self._skillsCache['cacheId'][skillId]
-		else:
-			skill = self.listSkillsByUserId(userId, skillFilter=skillId)
 
-		return skill
+	def getSkillByUserIdAndSkillId(self, userId: str, skillId: str):
+		return self._skillsCache['cacheId'].get(skillId, self.listSkillsByUserId(userId, skillFilter=skillId))
 
-	def listSkillsByUserId(self, userId, skillFilter=None, skillFilterAttribute='id', languageFilter=None, intentId=None, returnAllCacheIndexedBy=None, page=1, totalSkills = None):
+
+	def listSkillsByUserId(self, userId: str, skillFilter: str = None, skillFilterAttribute: str = 'id', languageFilter: str = None,
+	                       intentId: str = None, returnAllCacheIndexedBy: str = None, page: int = 1, totalSkills: int = None) -> typing.Iterable:
 		if not totalSkills:
 			totalSkills = list()
 
@@ -65,13 +61,13 @@ class Skill:
 			totalSkills.append(skill)
 
 		if (page - 1) * 50 < response['skills']['pagination']['total']:
-			return self.listSkillsByUserId(userId, skillFilter, skillFilterAttribute, languageFilter, intentId, returnAllCacheIndexedBy, page=page+1, totalSkills=totalSkills)
+			return self.listSkillsByUserId(userId, skillFilter, skillFilterAttribute, languageFilter, intentId, returnAllCacheIndexedBy, page=page + 1, totalSkills=totalSkills)
 
 		self._cacheInit = True
 
 		if returnAllCacheIndexedBy:
 			key = returnAllCacheIndexedBy[0].upper() + returnAllCacheIndexedBy[1:]
-			return self._skillsCache["cache" + key]
+			return self._skillsCache['cache' + key]
 
 		if skillFilter:
 			if skillFilterAttribute == 'id':
@@ -82,7 +78,7 @@ class Skill:
 		return totalSkills
 
 
-	def listSkillsByUserIdAndAssistantId(self, userId, assistantId, languageFilter=None, indexedBy=None, fromCache=False):
+	def listSkillsByUserIdAndAssistantId(self, userId: str, assistantId: str, languageFilter: str = None, indexedBy: str = None, fromCache: bool = False) -> typing.Iterable:
 		if fromCache and self._cacheInit:
 			skills = self._skillsCache['cacheId'].values()
 		else:
@@ -106,11 +102,12 @@ class Skill:
 		return assistantSkills
 
 
-
-
-	# Warning: mind the language parameter if the assistant language is EN, skill must set language to EN
-	# no error will be shown and the skill won't be created
-	def create(self, assistantId, language, name='Untitled', description='', imageKey=EnumSkillImageUrl.default, attachToAssistant=True, intents = None):
+	def create(self, assistantId: str, language: str, name: str = 'Untitled', description: str = '', imageKey: str = EnumSkillImageUrl.default,
+	           attachToAssistant: bool = True, intents: typing.Iterable = None) -> str:
+		"""
+		Warning: mind the language parameter if the assistant language is EN, skill must set language to EN
+		no error will be shown and the skill won't be created
+		"""
 		if not intents:
 			intents = list()
 
@@ -137,7 +134,8 @@ class Skill:
 
 		return createdSkillId
 
-	def attachToAssistant(self, assistantId, skillId):
+
+	def attachToAssistant(self, assistantId: str, skillId: str):
 		existingSkills = self._ctx.Assistant.extractSkillIdentifiers(assistantId=assistantId)
 		variablesSkills = [{'id': skillId, 'parameters': None}]
 
@@ -160,7 +158,7 @@ class Skill:
 		self._ctx.reloadBrowserPage()
 
 
-	def edit(self, skillId, name=None, description=None, imageKey=None):
+	def edit(self, skillId: str, name: str = None, description: str = None, imageKey: str = None):
 		inputt = {'id': skillId}
 
 		if name: inputt['name'] = name
@@ -177,7 +175,7 @@ class Skill:
 		self._ctx.postGQLBrowserly(gqlRequest, rawResponse=True)
 
 
-	def delete(self, skillId, reload=True):
+	def delete(self, skillId: str, reload: bool = True):
 		gqlRequest = [{
 			'operationName': 'deleteSkill',
 			'variables':  {'skillId': skillId},
@@ -190,7 +188,7 @@ class Skill:
 			self._ctx.reloadBrowserPage()
 
 
-	def removeFromAssistant(self, assistantId, skillId, deleteAfter=False):
+	def removeFromAssistant(self, assistantId: str, skillId: str, deleteAfter: str = False):
 		existingSkills = self._ctx.Assistant.extractSkillIdentifiers(assistantId=assistantId)
 		variablesSkills = list()
 
@@ -217,7 +215,7 @@ class Skill:
 		self._ctx.reloadBrowserPage()
 
 
-	def forkSkillIntent(self, skillId, sourceIntentId, userId, newIntentName=None):
+	def forkSkillIntent(self, skillId: str, sourceIntentId: str, userId: str, newIntentName: str = None) -> str:
 		gqlRequest = [{
 			'operationName': 'forkSkillIntent',
 			'variables': {'skillId': skillId, 'intentId': sourceIntentId, 'newIntentName': newIntentName},
@@ -242,6 +240,5 @@ class Skill:
 					return self.forkSkillIntent(skillId, sourceIntentId, userId, newIntentName)
 
 			raise he
-
 
 		return response['forkSkillIntent']['intentCopied']['id']
