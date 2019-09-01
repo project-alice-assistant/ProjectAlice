@@ -5,6 +5,7 @@ import subprocess
 import uuid
 
 import os
+from pathlib import Path
 import paho.mqtt.client as mqtt
 import paho.mqtt.publish as publish
 
@@ -603,7 +604,8 @@ class MqttServer(Manager):
 		"""
 
 		if not root:
-			root = os.path.join(commons.rootDir(), 'system', 'sounds')
+			root = commons.rootDir() / 'system/sounds')
+		root = Path(root)
 
 		if not uid:
 			uid = str(uuid.uuid4())
@@ -622,7 +624,7 @@ class MqttServer(Manager):
 			if ' ' in siteId:
 				siteId = siteId.replace(' ', '_')
 
-			soundFile = soundFile if absolutePath else os.path.join(root, soundFile)
+			soundFile = soundFile if absolutePath else Path(root, soundFile)
 
 			if not soundFile.endswith('.wav'):
 				soundFile += '.wav'
@@ -665,7 +667,7 @@ class MqttServer(Manager):
 		if text == '':
 			return
 
-		subprocess.call(['sudo', commons.rootDir() + '/system/scripts/snipsSuperTTS.sh', '/share/tmp.wav', 'amazon', managers.LanguageManager.activeLanguage, 'US', 'Joanna', 'FEMALE', text, '22050'])
+		subprocess.call(['sudo', commons.rootDir()/'/system/scripts/snipsSuperTTS.sh', Path('/share/tmp.wav'), 'amazon', managers.LanguageManager.activeLanguage, 'US', 'Joanna', 'FEMALE', text, '22050'])
 
 		sonosModule = managers.ModuleManager.getModuleInstance('Sonos')
 		if sonosModule:

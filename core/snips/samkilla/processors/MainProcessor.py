@@ -41,7 +41,7 @@ class MainProcessor:
 				self._savedIntents[lang.name][projectId.name] = dict()
 
 				for intent in directory.iterdir():
-					intentDefinition = json.load(intent.read_text())
+					intentDefinition = json.loads(intent.read_text())
 					self._savedIntents[lang.name][projectId.name][intentDefinition['name']] = intentDefinition
 
 
@@ -57,7 +57,7 @@ class MainProcessor:
 				self._savedSlots[lang.name][projectId.name] = dict()
 
 				for slot in directory.iterdir():
-					definition = json.load(slot.read_text())
+					definition = json.loads(slot.read_text())
 					self._savedSlots[lang.name][projectId.name][definition['name']] = definition
 
 	def initSavedAssistants(self):
@@ -70,7 +70,7 @@ class MainProcessor:
 				filename = projectId / '_assistant.json'
 				self._savedAssistants[lang.name][projectId.name] = dict()
 
-				wholeAssistant = json.load(filename.read_text())
+				wholeAssistant = json.loads(filename.read_text())
 				self._savedAssistants[lang.name][projectId.name] = wholeAssistant
 				self.safeBaseDicts(projectId.name, lang.name)
 

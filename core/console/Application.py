@@ -60,7 +60,7 @@ class Application(ConsoleApplication):
 
 
 	def loadModuleCommands(self, moduleName: str) -> bool:
-		commandsMountpoint = Path(commons.rootDir(), 'modules', moduleName, 'console')
+		commandsMountpoint = commons.rootDir() / 'modules' / moduleName / 'console')
 
 		for commandFile in commandsMountpoint.glob('*Command.py'):
 			commandClassFile = commandFile.with_suffix('').absolute().as_posix()
