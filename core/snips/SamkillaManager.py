@@ -67,6 +67,11 @@ class SamkillaManager(Manager):
 		return self._userEmail
 
 
+	@property
+	def userId(self) -> str:
+		return self._userId
+
+
 	def sync(self, moduleFilter: str = None, download: bool = True):
 		self.log('[{}] Sync for module \'{}\''.format(self.NAME, moduleFilter if moduleFilter else '*'))
 

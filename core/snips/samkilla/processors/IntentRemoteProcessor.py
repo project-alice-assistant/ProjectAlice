@@ -69,7 +69,7 @@ class IntentRemoteProcessor():
 			changes = True
 			self._ctx.log("[Sync] Intent model {} = {} has been edited".format(intentId, fullIntentName))
 			self._ctx.Intent.edit(
-				userId=self._ctx._userId,
+				userId=self._ctx.userId,
 				intentId=intentId,
 				name=fullIntentName,
 				description=intent['description'],
@@ -84,7 +84,7 @@ class IntentRemoteProcessor():
 		else:
 			changes = True
 			intentId = self._ctx.Intent.create(
-				userId=self._ctx._userId,
+				userId=self._ctx.userId,
 				skillId=skillId,
 				name=fullIntentName,
 				description=intent['description'],
