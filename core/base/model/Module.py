@@ -136,7 +136,7 @@ class Module(object):
 
 
 	def getResource(self, moduleName: str = '', resourcePathFile: str = '') -> str:
-		return Path(commons.rootDir(), 'modules', moduleName or self.name, resourcePathFile)
+		return commons.rootDir() / 'modules' / (moduleName or self.name) / resourcePathFile
 
 
 	def getConfig(self, key: str) -> typing.Any:

@@ -26,7 +26,7 @@ class GoogleTTS(TTS):
 		self._privacyMalus = -20
 
 
-		creds = Credentials.from_service_account_file(filename=os.path.join(commons.rootDir(), 'credentials', 'googlecredentials.json'))
+		creds = Credentials.from_service_account_file(filename=commons.rootDir()/'credentials/googlecredentials.json')
 		self._client = texttospeech.TextToSpeechClient(credentials=creds)
 
 		# TODO implement the others
@@ -141,8 +141,8 @@ class GoogleTTS(TTS):
 		if not self._cacheFile or not self._text:
 			return
 
-		tmpFile = os.path.join(self.TEMP_ROOT, os.path.splitext(os.path.basename(self._cacheFile))[0] + '.mp3')
-		if not os.path.isfile(self._cacheFile):
+		tmpFile = self.TEMP_ROOT / self._cacheFile.with_suffix('.mp3')
+		if not self._cacheFile.is_file():
 			imput = texttospeech.types.module.SynthesisInput(ssml=self._text)
 			audio = texttospeech.types.module.AudioConfig(
 				audio_encoding=texttospeech.enums.AudioEncoding.MP3,
@@ -158,8 +158,7 @@ class GoogleTTS(TTS):
 				self._logger.error('[{}] Failed downloading speech file'.format(self.TTS.value))
 				return
 
-			with open(tmpFile, 'wb') as f:
-				f.write(response.audio_content)
+			tmpFile.write_bytes(response['AudioStream'].read())
 
 			self._mp3ToWave(src=tmpFile, dest=self._cacheFile)
 

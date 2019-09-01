@@ -6,7 +6,7 @@ import importlib
 import json
 import subprocess
 
-import os
+from pathlib import Path
 from typing import Optional
 
 import requests
@@ -104,7 +104,7 @@ class ModuleManager(Manager):
 									raise ModuleNotConditionCompliant
 								elif requiredModule['name'] not in availableModules:
 									self._logger.info('[{}] Module {} has another module as dependency, adding download'.format(self.name, moduleName))
-									subprocess.run(['wget', requiredModule['url'], '-O', os.path.join(commons.rootDir(), 'system', 'moduleInstallTickets', '{}.install'.format(requiredModule['name']))])
+									subprocess.run(['wget', requiredModule['url'], '-O', commons.rootDir()/'system/moduleInstallTickets/{}.install'.format(requiredModule['name']))])
 						elif conditionName == 'asrArbitraryCapture':
 							if conditionValue and not managers.ASRManager.asr.capableOfArbitraryCapture:
 								raise ModuleNotConditionCompliant
@@ -313,8 +313,8 @@ class ModuleManager(Manager):
 
 				remoteFile = json.loads(req.content.decode())
 				if float(remoteFile['version']) > float(availableModules[moduleName]['version']):
-					with open(commons.rootDir() + '/system/moduleInstallTickets/' + moduleName + '.install', 'w') as ticket:
-						json.dump(remoteFile, ticket)
+					moduleFile = commons.rootDir() / 'system/moduleInstallTickets' / (moduleName + '.install')
+					moduleFile.write_text(json.dumps(remoteFile))
 					i += 1
 
 			except Exception as e:
@@ -327,8 +327,8 @@ class ModuleManager(Manager):
 	def _checkForModuleInstall(self):
 		managers.ThreadManager.newTimer(interval = 10, func = self._checkForModuleInstall, autoStart = True)
 
-		root = commons.rootDir() + '/system/moduleInstallTickets'
-		files = fnmatch.filter(os.listdir(root), '*.install')
+		root = commons.rootDir() / 'system/moduleInstallTickets'
+		files = fnmatch.filter(root.iterdir(), '*.install')
 
 		if  self._busyInstalling.isSet() or \
 			not managers.InternetManager.online or \
@@ -381,35 +381,32 @@ class ModuleManager(Manager):
 
 
 	def _installModules(self, modules: list) -> dict:
-		root = commons.rootDir() + '/system/moduleInstallTickets'
+		root = commons.rootDir() / 'system/moduleInstallTickets'
 		availableModules = managers.ConfigManager.modulesConfigurations
 		modulesToBoot = dict()
 		managers.MqttServer.broadcast(topic='hermes/leds/systemUpdate', payload={'sticky': True})
 		for file in modules:
-			moduleName = os.path.splitext(file)[0]
+			moduleName = Path(file).with_suffix('')
 
 			self._logger.info('[{}] Now taking care of module {}'.format(self.name, moduleName))
-			res = os.path.join(root, file)
+			res = root / file
 
 			try:
 				updating = False
 
-				with open(res, 'r') as ticket:
-					installFile = json.load(ticket)
+				installFile = json.loads(res.read_text())
 
 				moduleName = installFile['name']
-				path = os.path.join(installFile['author'], moduleName)
+				path = Path(installFile['author'], moduleName)
 
 				if not moduleName:
 					self._logger.error('[{}] Module name to install not found, aborting to avoid casualties!'.format(self.name))
 					continue
 
-				dirList:list = os.path.dirname(__file__).split('/')
-				baseDir:str = '/'.join(dirList[:len(dirList) - 2])
-				directory:str = baseDir + '/modules/' + moduleName
+				directory = Path(__file__).parent.parent.parent / 'modules' / moduleName
 
 				if moduleName in availableModules:
-					localVersionDirExists: bool = os.path.isdir(directory)
+					localVersionDirExists = directory.is_dir()
 					localVersionAttributeExists: bool = 'version' in availableModules[moduleName]
 
 					localVersionIsLatest: bool = \
@@ -458,14 +455,14 @@ class ModuleManager(Manager):
 						}
 					except Exception as e:
 						self._logger.error('[{}] Failed installing module "{}": {}'.format(self.name, moduleName, e))
-						os.remove(res)
+						res.unlink()
 				else:
 					self._logger.error('[{}] Failed cloning module'.format(self.name))
-					os.remove(res)
+					res.unlink()
 
 			except Exception as e:
 				self._logger.error('[{}] Failed installing module "{}": {}'.format(self.name, moduleName, e))
-				os.remove(res)
+				res.unlink()
 
 		managers.MqttServer.broadcast(topic='hermes/leds/clear')
 		return modulesToBoot

@@ -1,6 +1,4 @@
 # -*- coding: utf-8 -*-
-import os
-
 import core.base.Managers as managers
 from core.base.Manager import Manager
 from core.commons import commons
@@ -13,7 +11,7 @@ from core.voice.model.PicoTTS import PicoTTS
 class TTSManager(Manager):
 	NAME = 'TTSManager'
 
-	CACHE_ROOT = os.path.join(commons.rootDir(), 'var', 'cache')
+	CACHE_ROOT = commons.rootDir() / 'var/cache'
 
 	def __init__(self, mainClass):
 		super().__init__(mainClass, self.NAME)
@@ -40,7 +38,7 @@ class TTSManager(Manager):
 		elif tts == TTSEnum.PICO:
 			self._tts = PicoTTS(user)
 		elif tts == TTSEnum.MYCROFT:
-			if not os.path.isdir(os.path.join(commons.rootDir(), '..', 'mimic', 'voices')):
+			if not (commons.rootDir().parent/'mimic/voices').is_dir():
 				self._logger.warning('[{}] Trying to use Mycroft as TTS but files not available, falling back to picotts'.format(self.NAME))
 				self._tts = PicoTTS(user)
 				tts = TTSEnum.PICO

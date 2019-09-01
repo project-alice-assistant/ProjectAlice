@@ -147,7 +147,7 @@ class ConfigManager(Manager):
 		misterProper = ['active', 'version', 'author', 'conditions']
 		confsCleaned = {key: value for key, value in confs.items() if key not in misterProper}
 
-		moduleConfigFile = Path(commons.rootDir(),'modules', moduleName, 'config.json')
+		moduleConfigFile = commons.rootDir() / 'modules' / moduleName / 'config.json'
 		moduleConfigFile.write_text(json.dumps(confsCleaned, indent = 4))
 
 

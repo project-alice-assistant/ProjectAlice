@@ -824,6 +824,6 @@ class MainProcessor:
 
 			moduleIntentsOutputFile = moduleIntentsMountpoint / '{}.json'.format(languageFilter)
 
-			moduleIntentsOutputFile.write_text(json.dump(moduleConfig, indent=4, sort_keys=False, ensure_ascii=False))
+			moduleIntentsOutputFile.write_text(json.dumps(moduleConfig, indent=4, sort_keys=False, ensure_ascii=False))
 			self._ctx.log('[LocalModule] Finished for module {}'.format(moduleName))
 
