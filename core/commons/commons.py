@@ -84,11 +84,11 @@ def dictMaxValue(d: dict) -> str:
 
 
 def rootDir() -> str:
-	return Path(__file__).resolve().parent.parent.parent
+	return str(Path(__file__).resolve().parent.parent.parent)
 
 
 def getDatabaseFile() -> str:
-	return Path('system/database/data.db')
+	return str(Path('system/database/data.db'))
 
 
 def payload(message: MQTTMessage) -> dict:
