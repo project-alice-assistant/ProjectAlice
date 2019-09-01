@@ -2,7 +2,6 @@
 
 import json
 
-import os
 from pathlib import Path
 
 from core.snips.samkilla.exceptions.HttpError import HttpError
@@ -16,7 +15,7 @@ EnumSkillImageUrl = EnumSkillImageUrlClass()
 
 class MainProcessor:
 
-	SAVED_ASSISTANTS_DIR = os.path.join('var', 'assistants')
+	SAVED_ASSISTANTS_DIR = Path('var', 'assistants')
 	SAVED_MODULES_DIR = 'modules'
 
 	def __init__(self, ctx):
@@ -31,7 +30,7 @@ class MainProcessor:
 
 
 	def initSavedIntents(self):
-		for lang in Path(self.SAVED_ASSISTANTS_DIR).glob('[!.]*'):
+		for lang in self.SAVED_ASSISTANTS_DIR.glob('[!.]*'):
 			if not lang.is_dir(): continue
 
 			self._savedIntents[lang.name] = dict()
@@ -47,7 +46,7 @@ class MainProcessor:
 
 
 	def initSavedSlots(self):
-		for lang in Path(self.SAVED_ASSISTANTS_DIR).glob('[!.]*'):
+		for lang in self.SAVED_ASSISTANTS_DIR.glob('[!.]*'):
 			if not lang.is_dir(): continue
 
 			self._savedSlots[lang.name] = dict()
@@ -62,7 +61,7 @@ class MainProcessor:
 					self._savedSlots[lang.name][projectId.name][definition['name']] = definition
 
 	def initSavedAssistants(self):
-		for lang in Path(self.SAVED_ASSISTANTS_DIR).glob('[!.]*'):
+		for lang in self.SAVED_ASSISTANTS_DIR.glob('[!.]*'):
 			if not lang.is_dir(): continue
 
 			self._savedAssistants[lang.name] = dict()
@@ -93,7 +92,7 @@ class MainProcessor:
 			self._savedAssistants[assistantLanguage][assistantId].setdefault(baseDict, dict())
 
 	def persistToLocalAssistantCache(self, assistantId, assistantLanguage):
-		assistantMountpoint = Path(self.SAVED_ASSISTANTS_DIR, assistantLanguage, assistantId)
+		assistantMountpoint = self.SAVED_ASSISTANTS_DIR / assistantLanguage / assistantId
 		assistantMountpoint.mkdir(parents=True, exist_ok=True)
 
 		self.safeBaseDicts(assistantId, assistantLanguage)
@@ -162,7 +161,7 @@ class MainProcessor:
 		return self._savedAssistants.get(language, dict()).get(assistantId, dict()).get('intents', dict()).get(intentName, None)
 
 	def persistToGlobalAssistantSlots(self, assistantId, assistantLanguage, slotNameFilter=None):
-		assistantSlotsMountpoint = Path(self.SAVED_ASSISTANTS_DIR, assistantLanguage, assistantId, 'slots')
+		assistantSlotsMountpoint = self.SAVED_ASSISTANTS_DIR / assistantLanguage / assistantId / 'slots'
 		assistantSlotsMountpoint.mkdir(parents=True, exist_ok=True)
 
 		slotTypes = self._savedSlots[assistantLanguage][assistantId]
@@ -176,7 +175,7 @@ class MainProcessor:
 
 
 	def persistToGlobalAssistantIntents(self, assistantId, assistantLanguage, intentNameFilter=None):
-		assistantSlotsMountpoint = Path(self.SAVED_ASSISTANTS_DIR, assistantLanguage, assistantId, 'intents')
+		assistantSlotsMountpoint = self.SAVED_ASSISTANTS_DIR / assistantLanguage / assistantId / 'intents'
 		assistantSlotsMountpoint.mkdir(parents=True, exist_ok=True)
 
 		intents = self._savedIntents[assistantLanguage][assistantId]
@@ -489,7 +488,7 @@ class MainProcessor:
 				if slotTypeName in self._savedSlots[languageFilter][runOnAssistantId]:
 					del self._savedSlots[languageFilter][runOnAssistantId][slotTypeName]
 
-					globalSlotTypeFile = Path(self.SAVED_ASSISTANTS_DIR, languageFilter, runOnAssistantId, 'slots', '{}.json'.format(slotTypeName))
+					globalSlotTypeFile = self.SAVED_ASSISTANTS_DIR / languageFilter / runOnAssistantId / 'slots' / '{}.json'.format(slotTypeName)
 
 					if globalSlotTypeFile.is_file():
 						globalSlotTypeFile.unlink()
@@ -583,7 +582,7 @@ class MainProcessor:
 				if intentName in self._savedIntents[languageFilter][runOnAssistantId]:
 					del self._savedIntents[languageFilter][runOnAssistantId][intentName]
 
-					globalIntentFile = Path(self.SAVED_ASSISTANTS_DIR, languageFilter, runOnAssistantId, 'intents', '{}.json'.format(intentName))
+					globalIntentFile = self.SAVED_ASSISTANTS_DIR / languageFilter / runOnAssistantId / 'intents' / '{}.json'.format(intentName)
 
 					if globalIntentFile.is_file():
 						globalIntentFile.unlink()
