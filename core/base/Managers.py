@@ -72,7 +72,7 @@ def broadcast(method, exceptions: list = None, manager: Manager = None, args: li
 		exceptions.append('ProjectAlice')
 
 	deadManagers = list()
-	for name in managers.keys():
+	for name in managers:
 		man = managers[name]
 
 		if not man:

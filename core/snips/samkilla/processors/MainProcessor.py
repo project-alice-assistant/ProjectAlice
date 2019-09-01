@@ -212,7 +212,7 @@ class MainProcessor():
 
 		slotTypes = self._savedSlots[assistantLanguage][assistantId]
 
-		for slotTypeName in slotTypes.keys():
+		for slotTypeName in slotTypes:
 			slotType = slotTypes[slotTypeName]
 
 			if slotNameFilter and slotNameFilter != slotTypeName: continue
@@ -228,7 +228,7 @@ class MainProcessor():
 
 		intents = self._savedIntents[assistantLanguage][assistantId]
 
-		for intentName in intents.keys():
+		for intentName in intents:
 			intent = intents[intentName]
 
 			if intentNameFilter and intentNameFilter != intentName: continue
@@ -279,18 +279,18 @@ class MainProcessor():
 								if len(synonym) == 0: continue
 								slotTypesGlobalValues[savedSlotType['name']][savedSlotValue['value']].setdefault(synonym, True)
 
-		for slotName in slotTypesModulesValues.keys():
+		for slotName in slotTypesModulesValues:
 
 			slotTypeCatalogValues = slotTypesGlobalValues if slotName in slotTypesGlobalValues else slotTypesModulesValues
 
 			mergedSlotTypes[slotName] = slotTypeCatalogValues[slotName]['__otherattributes__']
 			mergedSlotTypes[slotName]['values'] = list()
 
-			for slotValue in slotTypeCatalogValues[slotName].keys():
+			for slotValue in slotTypeCatalogValues[slotName]:
 				if slotValue == '__otherattributes__': continue
 				synonyms = list()
 
-				for synonym in slotTypeCatalogValues[slotName][slotValue].keys():
+				for synonym in slotTypeCatalogValues[slotName][slotValue]:
 					synonyms.append(synonym)
 
 				mergedSlotTypes[slotName]['values'].append({'value': slotValue, 'synonyms': synonyms})
@@ -335,7 +335,7 @@ class MainProcessor():
 					intentsGlobalValues[savedIntent['name']]['slots'].setdefault(moduleSlot['name'], moduleSlot)
 
 
-		for intentName in intentsModulesValues.keys():
+		for intentName in intentsModulesValues:
 
 			intentCatalogValues = intentsGlobalValues if intentName in intentsGlobalValues else intentsModulesValues
 
@@ -343,10 +343,10 @@ class MainProcessor():
 			mergedIntents[intentName]['utterances'] = list()
 			mergedIntents[intentName]['slots'] = list()
 
-			for intentUtteranceValue in intentCatalogValues[intentName]['utterances'].keys():
+			for intentUtteranceValue in intentCatalogValues[intentName]['utterances']:
 				mergedIntents[intentName]['utterances'].append(intentUtteranceValue)
 
-			for intentSlotNameValue in intentCatalogValues[intentName]['slots'].keys():
+			for intentSlotNameValue in intentCatalogValues[intentName]['slots']:
 				mergedIntents[intentName]['slots'].append(intentCatalogValues[intentName]['slots'][intentSlotNameValue])
 
 			self.syncGlobalIntent(
@@ -490,7 +490,7 @@ class MainProcessor():
 
 		typeEntityMatching = dict()
 
-		for slotName in mergedSlotTypes.keys():
+		for slotName in mergedSlotTypes:
 			slotType = mergedSlotTypes[slotName]
 
 			slotSyncState = self.getSlotTypeSyncStateByLanguageAndAssistantId(
@@ -528,7 +528,7 @@ class MainProcessor():
 		# Remove deprecated/renamed slotTypes
 		hasDeprecatedSlotTypes = list()
 
-		for slotTypeName in self._savedAssistants[languageFilter][runOnAssistantId]['slotTypes'].keys():
+		for slotTypeName in self._savedAssistants[languageFilter][runOnAssistantId]['slotTypes']:
 			if slotTypeName not in slotTypesSynced:
 				self._ctx.log('[Deprecated] SlotType {}'.format(slotTypeName))
 				slotTypeCacheData = self._savedAssistants[languageFilter][runOnAssistantId]['slotTypes'][slotTypeName]
@@ -569,7 +569,7 @@ class MainProcessor():
 			intentLanguage=languageFilter
 		)
 
-		for intentName in mergedIntents.keys():
+		for intentName in mergedIntents:
 			intent = mergedIntents[intentName]
 
 			intentSyncState = self.getIntentSyncStateByLanguageAndAssistantId(
@@ -613,7 +613,7 @@ class MainProcessor():
 		# Remove deprecated/renamed slotTypes
 		hasDeprecatedIntents = list()
 
-		for intentName in self._savedAssistants[languageFilter][runOnAssistantId]['intents'].keys():
+		for intentName in self._savedAssistants[languageFilter][runOnAssistantId]['intents']:
 			if intentName not in intentsSynced:
 				self._ctx.log('[Deprecated] Intent {}'.format(intentName))
 				intentCacheData = self._savedAssistants[languageFilter][runOnAssistantId]['intents'][intentName]
@@ -658,7 +658,7 @@ class MainProcessor():
 
 		skillNameIdMatching = dict()
 
-		for moduleName in self._modules.keys():
+		for moduleName in self._modules:
 			if languageFilter not in self._modules[moduleName]:
 				continue
 
@@ -702,7 +702,7 @@ class MainProcessor():
 		# Remove deprecated/renamed modules
 		hasDeprecatedModules = list()
 
-		for moduleName in self._savedAssistants[languageFilter][runOnAssistantId]['modules'].keys():
+		for moduleName in self._savedAssistants[languageFilter][runOnAssistantId]['modules']:
 			if moduleFilter and moduleName != moduleFilter:
 				continue
 
