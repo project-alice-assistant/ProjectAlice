@@ -22,7 +22,7 @@ class Module(object):
 
 		try:
 			path = Path(inspect.getfile(self.__class__)).with_suffix('.install')
-			self._install = json.load(path.read_text())
+			self._install = json.loads(path.read_text())
 		except FileNotFoundError:
 			raise ModuleStartingFailed(error = '[{}] Cannot find install file'.format(type(self).__name__))
 		except Exception as e:
@@ -136,7 +136,7 @@ class Module(object):
 
 
 	def getResource(self, moduleName: str = '', resourcePathFile: str = '') -> str:
-		return commons.rootDir() / 'modules' / moduleName or self.name, resourcePathFile
+		return commons.rootDir() / 'modules' / (moduleName or self.name) / resourcePathFile
 
 
 	def getConfig(self, key: str) -> typing.Any:

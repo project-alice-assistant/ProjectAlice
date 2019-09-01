@@ -79,9 +79,9 @@ class WakewordManager(Manager):
 
 	def newWakeword(self, username: str):
 		for i in range(1, 4):
-			file = os.path.join('/tmp', '{}_raw.wav'.format(i))
-			if os.path.isfile(file):
-				os.remove(path=file)
+			file = Path('/tmp/{}}_raw.wav'.format(i))
+			if file.is_file():
+				file.unlink()
 
 		self._wakeword = Wakeword(username)
 
@@ -115,7 +115,7 @@ class WakewordManager(Manager):
 		stream.close()
 		self._audio.terminate()
 
-		wav = wave.open(os.path.join(tempfile.gettempdir(), '{}_raw.wav'.format(number)), 'w')
+		wav = wave.open(Path(tempfile.gettempdir(), '{}_raw.wav'.format(number)), 'w')
 		wav.setnchannels(managers.ConfigManager.getAliceConfigByName('micChannels'))
 		wav.setsampwidth(2)
 		wav.setframerate(managers.ConfigManager.getAliceConfigByName('micSampleRate'))
@@ -128,7 +128,7 @@ class WakewordManager(Manager):
 
 	def _workAudioFile(self, number: int):
 		self._state = WakewordManagerState.TRIMMING
-		sound = AudioSegment.from_file(os.path.join(tempfile.gettempdir(), '{}_raw.wav'.format(number)), format='wav', frame_rate=managers.ConfigManager.getAliceConfigByName('micSampleRate'))
+		sound = AudioSegment.from_file(Path(tempfile.gettempdir(), '{}_raw.wav'.format(number)), format='wav', frame_rate=managers.ConfigManager.getAliceConfigByName('micSampleRate'))
 		startTrim = self.detectLeadingSilence(sound)
 		endTrim = self.detectLeadingSilence(sound.reverse())
 		duration = len(sound)
@@ -136,7 +136,7 @@ class WakewordManager(Manager):
 		reworked = trimmed.set_frame_rate(16000)
 		reworked = reworked.set_channels(1)
 
-		reworked.export(os.path.join(tempfile.gettempdir(), '{}.wav'.format(number)), format='wav')
+		reworked.export(Path(tempfile.gettempdir(), '{}.wav'.format(number)), format='wav')
 		self._state = WakewordManagerState.CONFIRMING
 
 
@@ -193,19 +193,18 @@ class WakewordManager(Manager):
 			'model_version'          : 1
 		}
 
-		path = os.path.join(commons.rootDir(), 'trained', 'hotwords', self.wakeword.username.lower())
+		path = commons.rootDir() / 'trained/hotwords' / self.wakeword.username.lower()
 
-		if os.path.isdir(path):
+		if path.is_dir:
 			self._logger.warning('[{}] Destination directory for new wakeword already exists, deleting'.format(self.name))
 			shutil.rmtree(path)
 
-		os.mkdir(path)
+		path.mkdir()
 
-		with open(os.path.join(path, 'config.json'), 'w') as file:
-			json.dump(config, file, indent=4)
+		(path/'config.json').write_text(json.dumps(config, indent=4))
 
 		for i in range(1, 4):
-			shutil.move(os.path.join(tempfile.gettempdir(), '{}.wav'.format(i)), os.path.join(path, '{}.wav'.format(i)))
+			shutil.move(Path(tempfile.gettempdir(), '{}.wav'.format(i)), path/'{}.wav'.format(i)))
 
 		self._addWakewordToSnips(path)
 		managers.ThreadManager.newThread(name='SatelliteWakewordUpload', target=self._upload, args=[path, self._wakeword.username], autostart=True)
@@ -220,7 +219,7 @@ class WakewordManager(Manager):
 		if not isinstance(models, list):
 			models = list()
 
-		wakewordName = os.path.split(path)[-1]
+		wakewordName = path.name
 
 		add = True
 		copy = models.copy()
@@ -231,7 +230,7 @@ class WakewordManager(Manager):
 				add = False
 
 		if add:
-			models.append(os.path.join(commons.rootDir(), 'trained', 'hotwords', 'snips_hotword=0.53'))
+			models.append(commons.rootDir()/'trained/hotwords/snips_hotword=0.53')
 
 		models.append('{}=0.52'.format(path))
 		managers.ConfigManager.updateSnipsConfiguration('snips-hotword', 'model', models, restartSnips=True)
@@ -240,12 +239,12 @@ class WakewordManager(Manager):
 
 
 	def uploadToNewDevice(self, uid: str):
-		d = os.path.join(commons.rootDir(), 'trained', 'hotwords')
-		for f in os.listdir(d):
-			if os.path.isfile(os.path.join(d, f)):
+		d = commons.rootDir() / 'trained/hotwords'
+		for f in d:
+			if (d/f).is_file():
 				continue
 
-			self._upload(os.path.join(d, f), uid)
+			self._upload(d/f), uid)
 
 
 	def _upload(self, path: str, uid: str = ''):
@@ -271,14 +270,14 @@ class WakewordManager(Manager):
 
 
 	def _prepareHotword(self, path: str) -> tuple:
-		wakewordName = os.path.split(path)[-1]
-		zipPath = os.path.join(path, '..', wakewordName + '.zip')
+		wakewordName = path.name
+		zipPath = path.parent / (wakewordName + '.zip')
 
 		self._logger.info('[{}] Cleaning up {}'.format(self.name, wakewordName))
-		if os.path.isfile(zipPath):
-			os.remove(zipPath)
+		if zipPath.is_file:
+			zipPath.unlink()
 
 		self._logger.info('[{}] Packing wakeword {}'.format(self.name, wakewordName))
-		shutil.make_archive(base_name=os.path.splitext(zipPath)[0], format='zip', root_dir=path)
+		shutil.make_archive(base_name=zipPath.with_suffix(''), format='zip', root_dir=path)
 
 		return wakewordName, zipPath

@@ -313,7 +313,7 @@ class ModuleManager(Manager):
 
 				remoteFile = json.loads(req.content.decode())
 				if float(remoteFile['version']) > float(availableModules[moduleName]['version']):
-					moduleFile = commons.rootDir() / 'system/moduleInstallTickets' / moduleName + '.install'
+					moduleFile = commons.rootDir() / 'system/moduleInstallTickets' / (moduleName + '.install')
 					moduleFile.write_text(json.dumps(remoteFile))
 					i += 1
 
