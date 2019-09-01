@@ -89,11 +89,11 @@ class IntentListCommand(Command):
 		table_instance.justify_columns[1] = 'center'
 
 
-		for dtIntentName, dtModuleName in self._intentNameSkillMatching.items():
+		for dtIntentName in self._intentNameSkillMatching:
 			tDesc = self._intentsModulesValues[dtIntentName]['__otherattributes__']['description']
 			tEnabledByDefault = self._intentsModulesValues[dtIntentName]['__otherattributes__']['enabledByDefault']
 
-			tUtterance, _ = random.choice(list(self._intentsModulesValues[dtIntentName]['utterances'].items()))
+			tUtterance = random.choice(list(self._intentsModulesValues[dtIntentName]['utterances']))
 
 			if not inputt.getOption('full'):
 				tDesc = (tDesc[:self.DESCRIPTION_MAX] + '..') if len(tDesc) > self.DESCRIPTION_MAX else tDesc
@@ -103,8 +103,8 @@ class IntentListCommand(Command):
 			TABLE_DATA.append([
 				dtIntentName,
 				'X' if tEnabledByDefault else '',
-				'-' if len(tDesc) == 0 else tDesc,
-				'-' if len(tUtterance) == 0 else tUtterance
+				'-' if not tDesc else tDesc,
+				'-' if not tUtterance else tUtterance
 			])
 
 		self.write(table_instance.table)
@@ -131,7 +131,7 @@ class IntentListCommand(Command):
 						tDesc = (tDesc[:self.DESCRIPTION_MAX] + '..') if len(tDesc) > self.DESCRIPTION_MAX else tDesc
 
 					TABLE_DATA.append([
-						'-' if len(tDesc) == 0 else tDesc
+						'-' if not tDesc else tDesc
 					])
 
 		if not intentFound:
@@ -163,7 +163,7 @@ class IntentListCommand(Command):
 
 				TABLE_DATA.append([
 					dtIntentName,
-					'-' if len(tDesc) == 0 else tDesc,
+					'-' if not tDesc else tDesc,
 					'X' if tEnabledByDefault else ''
 				])
 

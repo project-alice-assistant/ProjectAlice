@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 import json
-import os
+from pathlib import Path
 import random
 
 from core.commons import commons
@@ -32,13 +32,11 @@ class TalkManager(Manager):
 	def loadTalks(self, moduleToLoad: str = None):
 		# Global System Talks
 		if not moduleToLoad:
-			systemLangTalksMountpoint = os.path.join('system', 'manager', 'TalkManager', 'talks')
+			systemLangTalksMountpoint = Path('system/manager/TalkManager/talks')
 
-			for systemLangTalkFile in os.listdir(systemLangTalksMountpoint):
-				lang = systemLangTalkFile.replace('.json', '')
-
-				with open(os.path.join(systemLangTalksMountpoint, systemLangTalkFile)) as jsonFile:
-					self._langData.setdefault('system', dict())[lang] = json.load(jsonFile)
+			for systemLangTalkFile in systemLangTalksMountpoint.iterdir():
+				lang = systemLangTalkFile.stem
+				self._langData.setdefault('system', dict())[lang] = json.loads(systemLangTalkFile.read_text())
 
 		# Module Talks
 		modules = managers.ModuleManager.getModules()
@@ -48,14 +46,12 @@ class TalkManager(Manager):
 			if moduleToLoad and moduleToLoad != moduleName:
 				continue
 
-			langTalksMountpoint = os.path.join('modules', moduleName, 'talks')
+			langTalksMountpoint = Path('modules', moduleName, 'talks')
 
-			for langTalkFile in os.listdir(langTalksMountpoint):
-				lang = langTalkFile.replace('.json', '')
-
+			for langTalkFile in langTalksMountpoint.iterdir():
+				lang = langTalkFile.stem
 				try:
-					with open(os.path.join(langTalksMountpoint, langTalkFile)) as jsonFile:
-						self._langData.setdefault(moduleName, dict())[lang] = json.load(jsonFile)
+					self._langData.setdefault(moduleName, dict())[lang] = json.loads(langTalkFile.read_text())
 				except FileNotFoundError:
 					continue
 				except ValueError:
@@ -126,7 +122,7 @@ class TalkManager(Manager):
 		if managers.ConfigManager.getAliceConfigByName('tts') == 'amazon' and \
 			managers.ConfigManager.getAliceConfigByName('whisperWhenSleeping') and \
 			managers.UserManager.checkIfAllUser('sleeping') and \
-			len(managers.UserManager.getAllUserNames()) > 0:
+			managers.UserManager.getAllUserNames():
 			string = '<amazon:effect name="whispered">{}</amazon:effect>'.format(string)
 
 		return u'{0}'.format(string)

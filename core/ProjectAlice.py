@@ -1,9 +1,10 @@
 # -*- coding: utf-8 -*-
 
 import subprocess
+import os
+from pathlib import Path
 
 import django
-import os
 from django.core import management
 
 import core.base.Managers as Managers
@@ -50,7 +51,7 @@ class ProjectAlice(Singleton):
 		self._languageManager					= LanguageManager(self)
 		self._languageManager.onStart()
 
-		subprocess.run(['ln', '-sfn', os.path.join(commons.rootDir(), 'trained', 'assistants', 'assistant_{}'.format(self._languageManager.activeLanguage)), os.path.join(commons.rootDir(), 'assistant')])
+		subprocess.run(['ln', '-sfn', Path(commons.rootDir(),'trained/assistants/assistant_{}'.format(self._languageManager.activeLanguage)), Path(commons.rootDir(), 'assistant')])
 
 		self._snipsServicesManager 				= SnipsServicesManager(self)
 		self._snipsServicesManager.onStart()

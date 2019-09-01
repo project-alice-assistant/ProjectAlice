@@ -348,7 +348,7 @@ class Intent:
 					endText = formattedTextUtterance[lastPieceIndex:lenCleanTextUtterance]
 					data.append({'text': endText, 'range': {'start': lastPieceIndex, 'end': lenCleanTextUtterance}})
 
-			if len(data) == 0:
+			if not data:
 				data.append({'text': formattedTextUtterance, 'range': {'start': 0, 'end': len(formattedTextUtterance)}})
 
 			structuredUtterances.append({'data': data})

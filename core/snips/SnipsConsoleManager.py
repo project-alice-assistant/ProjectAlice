@@ -4,7 +4,7 @@ import json
 import time
 import uuid
 
-import os
+from pathlib import Path
 import requests
 import tempfile
 
@@ -169,8 +169,7 @@ class SnipsConsoleManager(Manager):
 			self._logger.info('[{}] Downloading assistant...'.format(self.name))
 			req = self._req(url='/v3/assistant/{}/download'.format(assistantId), method='get')
 
-			with open(os.path.join(tempfile.gettempdir(), 'assistant.zip'), 'wb') as f:
-				f.write(req.content)
+			Path(tempfile.gettempdir(), 'assistant.zip').write_bytes(req.content)
 
 			self._logger.info('[{}] Assistant {} trained and downloaded'.format(self.name, assistantId))
 			managers.ModuleManager.broadcast(method='onSnipsAssistantDownloaded')

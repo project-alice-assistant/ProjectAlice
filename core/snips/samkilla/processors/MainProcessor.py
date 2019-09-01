@@ -318,12 +318,12 @@ class MainProcessor:
 		intentsModulesValues = dict()
 		intentNameSkillMatching = dict()
 
-		for module in rootDir.iterdir():
-			intentsPath = module / 'dialogTemplate'
+		for modulePath in rootDir.iterdir():
+			intentsPath = modulePath / 'dialogTemplate'
 
 			if not intentsPath.is_dir(): continue
 
-			self._modules[module.name] = dict()
+			self._modules[modulePath.name] = dict()
 
 			for languageFile in intentsPath.iterdir():
 				language = languageFile.stem
@@ -357,7 +357,7 @@ class MainProcessor:
 				# We need all intents values of all modules, even if there is a module filter
 				for moduleIntent in module['intents']:
 					if moduleIntent['name'] not in intentsModulesValues:
-						intentNameSkillMatching[moduleIntent['name']] = module.name
+						intentNameSkillMatching[moduleIntent['name']] = modulePath.name
 
 						intentsModulesValues[moduleIntent['name']] = {
 							'__otherattributes__': {
@@ -377,7 +377,7 @@ class MainProcessor:
 					for moduleSlot in moduleIntent.get('slots', list()):
 						intentsModulesValues[moduleIntent['name']]['slots'].setdefault(moduleSlot['name'], moduleSlot)
 
-				if moduleFilter and moduleFilter != module.name:
+				if moduleFilter and moduleFilter != modulePath.name:
 					del self._modules[module.name]
 
 		return slotTypesModulesValues, intentsModulesValues, intentNameSkillMatching
@@ -824,6 +824,6 @@ class MainProcessor:
 
 			moduleIntentsOutputFile = moduleIntentsMountpoint / '{}.json'.format(languageFilter)
 
-			moduleIntentsOutputFile.write_text(json.dump(moduleConfig, indent=4, sort_keys=False, ensure_ascii=False))
+			moduleIntentsOutputFile.write_text(json.dumps(moduleConfig, indent=4, sort_keys=False, ensure_ascii=False))
 			self._ctx.log('[LocalModule] Finished for module {}'.format(moduleName))
 

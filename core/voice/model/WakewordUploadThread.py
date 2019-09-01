@@ -5,7 +5,7 @@ import socket
 from socket import timeout
 from threading import Thread
 
-import os
+from pathlib import Path
 
 
 class WakewordUploadThread(Thread):
@@ -17,12 +17,12 @@ class WakewordUploadThread(Thread):
 		self._logger = logging.getLogger('ProjectAlice')
 		self._host = host
 		self._port = port
-		self._zipPath = zipPath
+		self._zipPath = Path(zipPath)
 
 
 	def run(self):
 		try:
-			wakewordName = os.path.split(os.path.splitext(self._zipPath)[0])[-1]
+			wakewordName = self._zipPath.stem
 
 			with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
 				sock.bind((self._host, self._port))
@@ -32,7 +32,7 @@ class WakewordUploadThread(Thread):
 				conn, addr = sock.accept()
 				self._logger.info('[WakewordUploadThread] New device connected: {}'.format(addr))
 
-				with open(os.path.join(self._zipPath), 'rb') as f:
+				with self._zipPath.open(mode='rb') as f:
 					data = f.read(1024)
 					while data:
 						conn.send(data)

@@ -96,7 +96,7 @@ class ModuleIntentListCommand(Command):
 						tDesc = (tDesc[:self.DESCRIPTION_MAX] + '..') if len(tDesc) > self.DESCRIPTION_MAX else tDesc
 
 					TABLE_DATA.append([
-						'-' if len(tDesc) == 0 else tDesc
+						'-' if not tDesc else tDesc
 					])
 
 		if not intentFound:
@@ -123,7 +123,7 @@ class ModuleIntentListCommand(Command):
 
 				TABLE_DATA.append([
 					dtIntentName,
-					'-' if len(tDesc) == 0 else tDesc
+					'-' if not tDesc else tDesc
 				])
 
 		if not moduleFound:

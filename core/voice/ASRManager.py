@@ -93,7 +93,7 @@ class ASRManager(Manager):
 			else:
 				managers.MqttServer.publish(topic='hermes/nlu/intentNotRecognized')
 				managers.MqttServer.playSound(
-					soundFile=commons.rootDir() + '/assistant/custom_dialogue/sound/error.wav',
+					soundFile=Path(commons.rootDir(), 'assistant/custom_dialogue/sound/error.wav'),
 					sessionId=uuid.uuid4(),
 					absolutePath=True,
 					siteId=session.siteId

@@ -147,7 +147,7 @@ class ConfigManager(Manager):
 		misterProper = ['active', 'version', 'author', 'conditions']
 		confsCleaned = {key: value for key, value in confs.items() if key not in misterProper}
 
-		moduleConfigFile = Path(commons.rootDir(),'modules', moduleName, 'config.json')
+		moduleConfigFile = Path(commons.rootDir() ,'modules' ,moduleName ,'config.json')
 		moduleConfigFile.write_text(json.dumps(confsCleaned, indent = 4))
 
 
@@ -241,7 +241,7 @@ class ConfigManager(Manager):
 
 			changes = False
 
-			moduleConfigFile = commons.rootDir() / 'modules' / moduleName / 'config.json'
+			moduleConfigFile = Path(commons.rootDir(), 'modules', moduleName, 'config.json')
 			moduleConfigFileExists = moduleConfigFile.is_file()
 			moduleConfigFileTemplate = moduleConfigFile.with_suffix(moduleConfigFile.suffix + '.dist')
 			moduleConfigFileTemplateExists = moduleConfigFileTemplate.is_file()

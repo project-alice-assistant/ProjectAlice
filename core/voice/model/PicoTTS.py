@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 import subprocess
 
-import os
 import re
 
 from core.dialog.model.DialogSession import DialogSession
@@ -75,7 +74,7 @@ class PicoTTS(TTS):
 		if not self._cacheFile or not self._text:
 			return
 
-		if not os.path.isfile(self._cacheFile):
+		if not self._cacheFile.is_file:
 			subprocess.run(['pico2wave', '-l', self._lang, '-w', self._cacheFile, self._text])
 
 		self._speak(file=self._cacheFile, session=session)

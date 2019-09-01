@@ -37,7 +37,7 @@ class ArgvInput(Input):
 
 		token = None
 
-		if len(self.parsed) != 0:
+		if self.parsed:
 			token = self.parsed.pop(0)
 
 		while token is not None:
@@ -133,10 +133,10 @@ class ArgvInput(Input):
 			raise ValueError('The --{} option does not accept a value : {}'.format(str(name),str(value)))
 
 
-		if value is None and option.acceptValue() and len(self.parsed):
+		if value is None and option.acceptValue() and self.parsed:
 			nekst = None
 
-			if len(self.parsed) != 0:
+			if self.parsed:
 				nekst = self.parsed.pop(0)
 
 			if nekst[0] is not None and '-' != nekst[0]:
@@ -185,7 +185,7 @@ class ArgvInput(Input):
 		tokens = self.tokens.copy()
 		token = None
 
-		if len(tokens) != 0:
+		if tokens:
 			token = tokens.pop(0)
 
 		while token:

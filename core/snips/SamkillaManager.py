@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 import json
-import os
 import time
 
 import requests
@@ -112,9 +111,9 @@ class SamkillaManager(Manager):
 	def onStart(self):
 		super().onStart()
 
-		if os.path.exists(os.path.join(commons.rootDir(), 'var', 'assistants', managers.LanguageManager.activeLanguage)):
-			count = len([name for name in os.listdir(os.path.join(commons.rootDir(), 'var', 'assistants', managers.LanguageManager.activeLanguage)) if os.path.isdir(os.path.join(commons.rootDir(), 'var', 'assistants', managers.LanguageManager.activeLanguage, name))])
-			if count <= 0:
+		path = Path(commons.rootDir(), 'var/assistants', managers.LanguageManager.activeLanguage)
+		if path.exists():
+			if not [name.name for name in path.iterdir() if name.is_dir()]:
 				self.sync()
 		else:
 			self.sync()
