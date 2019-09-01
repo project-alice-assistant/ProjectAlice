@@ -22,7 +22,7 @@ class Module(object):
 
 		try:
 			path = Path(inspect.getfile(self.__class__)).with_suffix('.install')
-			self._install = json.load(path.read_text())
+			self._install = json.loads(path.read_text())
 		except FileNotFoundError:
 			raise ModuleStartingFailed(error = '[{}] Cannot find install file'.format(type(self).__name__))
 		except Exception as e:
