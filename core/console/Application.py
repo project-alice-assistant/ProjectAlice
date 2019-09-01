@@ -60,7 +60,7 @@ class Application(ConsoleApplication):
 		commandsMountpoint = Path(commons.rootDir(), 'modules', moduleName, 'console')
 
 		for commandFile in commandsMountpoint.glob('*Command.py'):
-			commandClassFile = commandFile.absolute().as_posix().stem
+			commandClassFile = commandFile.with_suffix('').absolute().as_posix()
 
 			try:
 				commandImport = importlib.import_module('modules.{}.console.{}'.format(moduleName, commandClassFile))
