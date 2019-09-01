@@ -37,7 +37,10 @@ class Skill():
 
 		return skill
 
-	def listSkillsByUserId(self, userId, skillFilter=None, skillFilterAttribute='id', languageFilter=None, intentId=None, returnAllCacheIndexedBy=None, page=1, totalSkills=list()):
+	def listSkillsByUserId(self, userId, skillFilter=None, skillFilterAttribute='id', languageFilter=None, intentId=None, returnAllCacheIndexedBy=None, page=1, totalSkills = None):
+		if not totalSkills:
+			totalSkills = list()
+
 		variables = {
 			'userId': userId,
 			'offset': (page - 1) * 50,
@@ -107,7 +110,10 @@ class Skill():
 
 	# Warning: mind the language parameter if the assistant language is EN, skill must set language to EN
 	# no error will be shown and the skill won't be created
-	def create(self, assistantId, language, name='Untitled', description='', imageKey=EnumSkillImageUrl.default, attachToAssistant=True, intents=list()):
+	def create(self, assistantId, language, name='Untitled', description='', imageKey=EnumSkillImageUrl.default, attachToAssistant=True, intents = None):
+		if not intents:
+			intents = list()
+
 		gqlRequest = [{
 			'operationName': 'createSkill',
 			'variables': {
