@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import importlib
+import os
 from pathlib import Path
 
 from core.commons import commons
@@ -60,7 +61,7 @@ class Application(ConsoleApplication):
 		commandsMountpoint = Path(commons.rootDir(), 'modules', moduleName, 'console')
 
 		for commandFile in commandsMountpoint.glob('*'):
-			commandClassFile = commandFile.replace('.py', '')
+			commandClassFile = os.path.splitext(commandFile.absolute().as_posix())[0]
 
 			if commandClassFile.endswith('Command'):
 				try:

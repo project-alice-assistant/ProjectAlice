@@ -360,7 +360,8 @@ class MainProcessor():
 		return mergedIntents
 
 
-	def buildMapsFromDialogTemplates(self, moduleFilter=None, languageFilter=None):
+	# noinspection PyUnusedLocal
+	def buildMapsFromDialogTemplates(self, runOnAssistantId=None, moduleFilter=None, languageFilter=None):
 		self._modules = dict()
 
 		rootDir = 'modules'
@@ -476,7 +477,8 @@ class MainProcessor():
 		return globalChangesSlotTypes or globalChangesModules or globalChangesIntents
 
 
-	def syncLocalToRemoteSlotTypes(self, slotTypesModulesValues, runOnAssistantId, languageFilter=None):
+	# noinspection PyUnusedLocal
+	def syncLocalToRemoteSlotTypes(self, slotTypesModulesValues, runOnAssistantId, languageFilter=None, moduleFilter=None):
 		slotTypesSynced = dict()
 		globalChanges = False
 

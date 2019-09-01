@@ -134,7 +134,7 @@ network={
 
 			if initConfs['googleServiceFile']:
 				googleCreds = Path(commons.rootDir(), 'credentials', 'googlecredentials.json')
-				googleCreds.write_text(json.dump(initConfs['googleServiceFile']))
+				googleCreds.write_text(json.dumps(initConfs['googleServiceFile']))
 
 
 		# Those that don't need checking
