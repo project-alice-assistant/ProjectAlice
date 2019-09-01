@@ -96,7 +96,7 @@ class TalkManager(Manager):
 
 						self._logger.error('Was asked to get "{}" from "{}" module in "{}" but it doesn\'t exist, falling back to "{}" version instead'.format(talk, module, activeLanguage, defaultLanguage))
 						# call itself again with default language and then exit because activeLanguage == defaultLanguage
-						return self.chooseTalk(module, defaultLanguage, defaultLanguage, shortReplyMode)
+						return self.chooseTalk(talk, module, defaultLanguage, defaultLanguage, shortReplyMode)
 					except Exception:
 						# Give up, that text does not exist...
 						self._logger.error('Was asked to get "{}" from "{}" module but language string doesn\'t exist'.format(talk, module))

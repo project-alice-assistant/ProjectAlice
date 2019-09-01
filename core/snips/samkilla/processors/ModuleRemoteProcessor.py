@@ -87,7 +87,9 @@ class ModuleRemoteProcessor():
 			# self.cleanCreatedInstances()
 			sys.exit(-1)
 
-	def syncModulesOnAssistant(self, moduleSyncState=None, hashComputationOnly=False):
+
+	# noinspection PyUnusedLocal
+	def syncModulesOnAssistant(self, typeEntityMatching=None, moduleSyncState=None, hashComputationOnly=False):
 		self._syncState = self.createNewSavedModule() if moduleSyncState is None else moduleSyncState
 
 		skillData = self.syncSkill(self._module['description'], self._module['icon'], hashComputationOnly)
