@@ -30,7 +30,8 @@ class ModuleRemoteProcessor():
 		}
 
 
-	def skillValuesToHash(self, icon, description, skillId=''):
+	@staticmethod
+	def skillValuesToHash(icon, description, skillId= ''):
 		hashSum = '{}{}{}'.format(icon, description, skillId)
 
 		return hashlib.sha512(hashSum.encode('utf-8')).hexdigest()

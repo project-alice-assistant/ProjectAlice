@@ -67,10 +67,12 @@ class EnumSkillImageUrl(Singleton):
 	def getResourceFileByAttr(self, attrName):
 		return getattr(self, attrName)
 
-	def getImageUrl(self, urlPrefix, enumImageUrlKey=DEFAULT_RESOURCE):
+	@staticmethod
+	def getImageUrl(urlPrefix, enumImageUrlKey=DEFAULT_RESOURCE):
 		return urlPrefix + "/images/bundles/" + enumImageUrlKey
 
-	def urlToResourceKey(self, url):
+	@staticmethod
+	def urlToResourceKey(url):
 		attrName = os.path.basename(url).replace('.svg', '').replace('bundle', '').replace('-', '')
 
 		return attrName
