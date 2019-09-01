@@ -4,7 +4,7 @@ import json
 import logging
 import typing
 
-import os
+from pathlib import Path
 
 from paho.mqtt import client as MQTTClient
 
@@ -21,9 +21,8 @@ class Module(object):
 		self._logger = logging.getLogger('ProjectAlice')
 
 		try:
-			path = os.path.join(self.getCurrentDir(), os.path.splitext(inspect.getfile(self.__class__))[0] + '.install')
-			with open(path) as installFile:
-				self._install = json.load(installFile)
+			path = Path(inspect.getfile(self.__class__)).with_suffix('.install')
+			self._install = json.load(path.read_text())
 		except FileNotFoundError:
 			raise ModuleStartingFailed(error = '[{}] Cannot find install file'.format(type(self).__name__))
 		except Exception as e:
@@ -50,7 +49,7 @@ class Module(object):
 
 
 	def getCurrentDir(self):
-		return os.path.dirname(inspect.getfile(self.__class__))
+		return Path(inspect.getfile(self.__class__)).parent
 
 
 	@property
@@ -137,7 +136,7 @@ class Module(object):
 
 
 	def getResource(self, moduleName: str = '', resourcePathFile: str = '') -> str:
-		return os.path.join(commons.rootDir(), 'modules', moduleName or self.name, resourcePathFile)
+		return Path(commons.rootDir(), 'modules', moduleName or self.name, resourcePathFile)
 
 
 	def getConfig(self, key: str) -> typing.Any:
