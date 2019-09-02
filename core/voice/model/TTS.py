@@ -160,5 +160,4 @@ class TTS:
 
 		self._cacheFile = self.cacheDirectory() / (self._hash(text=self._text) + '.wav')
 
-		if not self.cacheDirectory().is_dir():
-			self.cacheDirectory().mkdir(parents=True, exist_ok=True)
+		self.cacheDirectory().mkdir(parents=True, exist_ok=True)
