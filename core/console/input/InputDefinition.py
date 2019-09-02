@@ -79,7 +79,10 @@ class InputDefinition:
 		_arguments = None
 
 		if commons.isInt(name):
-			_arguments = self.arguments.values()
+			_arguments = list()
+
+			for key in self.arguments:
+				_arguments.append(self.arguments[key])
 		else:
 			_arguments = self.arguments
 
