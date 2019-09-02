@@ -1,8 +1,10 @@
 import json
+import typing
 from pathlib import Path
 
 from core.commons import commons
 from core.ProjectAliceExceptions import HttpError
+from core.snips import SamkillaManager
 from core.snips.samkilla.models.EnumSkillImageUrl import EnumSkillImageUrl as EnumSkillImageUrlClass
 from core.snips.samkilla.processors.IntentRemoteProcessor import IntentRemoteProcessor
 from core.snips.samkilla.processors.ModuleRemoteProcessor import ModuleRemoteProcessor
@@ -16,7 +18,7 @@ class MainProcessor:
 	SAVED_MODULES_DIR = 'modules'
 
 
-	def __init__(self, ctx):
+	def __init__(self, ctx: SamkillaManager):
 		self._ctx = ctx
 		self._modules = dict()
 		self._savedAssistants = dict()
@@ -74,11 +76,11 @@ class MainProcessor:
 				self.safeBaseDicts(projectId.name, lang.name)
 
 
-	def hasLocalAssistantByIdAndLanguage(self, assistantLanguage, assistantId):
+	def hasLocalAssistantByIdAndLanguage(self, assistantLanguage: str, assistantId: str) -> bool:
 		return assistantId in self._savedAssistants.get(assistantLanguage, dict())
 
 
-	def getLocalFirstAssistantByLanguage(self, assistantLanguage, returnId=False):
+	def getLocalFirstAssistantByLanguage(self, assistantLanguage: str, returnId: bool = False) -> typing.Any:
 		assistants = self._savedAssistants.get(assistantLanguage, dict())
 		if assistants:
 			firstAssistant = next(iter(assistants.values()))
@@ -86,14 +88,14 @@ class MainProcessor:
 		return None
 
 
-	def safeBaseDicts(self, assistantId, assistantLanguage):
+	def safeBaseDicts(self, assistantId: str, assistantLanguage: str):
 		baseDicts = ['modules', 'slotTypes', 'intents']
 
 		for baseDict in baseDicts:
 			self._savedAssistants[assistantLanguage][assistantId].setdefault(baseDict, dict())
 
 
-	def persistToLocalAssistantCache(self, assistantId, assistantLanguage):
+	def persistToLocalAssistantCache(self, assistantId: str, assistantLanguage: str):
 		assistantMountpoint = self.SAVED_ASSISTANTS_DIR / assistantLanguage / assistantId
 		assistantMountpoint.mkdir(parents=True, exist_ok=True)
 
@@ -106,7 +108,7 @@ class MainProcessor:
 
 	# self._ctx.log('\n[Persist] local assistant {} in {}'.format(assistantId, assistantLanguage))
 
-	def syncRemoteToLocalAssistant(self, assistantId, assistantLanguage, assistantTitle):
+	def syncRemoteToLocalAssistant(self, assistantId: str, assistantLanguage: str, assistantTitle: str):
 		if not self.hasLocalAssistantByIdAndLanguage(assistantId=assistantId, assistantLanguage=assistantLanguage):
 			newState = {
 				'id'       : assistantId,
@@ -126,28 +128,28 @@ class MainProcessor:
 			self.initSavedIntents()
 
 
-	def syncRemoteToLocalModuleCache(self, assistantId, assistantLanguage, moduleName, syncState, persist=False):
+	def syncRemoteToLocalModuleCache(self, assistantId: str, assistantLanguage: str, moduleName: str, syncState: str, persist: bool = False):
 		self._savedAssistants[assistantLanguage][assistantId]['modules'][moduleName] = syncState
 
 		if persist:
 			self.persistToLocalAssistantCache(assistantId=assistantId, assistantLanguage=assistantLanguage)
 
 
-	def syncRemoteToLocalSlotTypeCache(self, assistantId, assistantLanguage, slotTypeName, syncState, persist=False):
+	def syncRemoteToLocalSlotTypeCache(self, assistantId: str, assistantLanguage: str, slotTypeName: str, syncState: str, persist: bool = False):
 		self._savedAssistants[assistantLanguage][assistantId]['slotTypes'][slotTypeName] = syncState
 
 		if persist:
 			self.persistToLocalAssistantCache(assistantId=assistantId, assistantLanguage=assistantLanguage)
 
 
-	def syncRemoteToLocalIntentCache(self, assistantId, assistantLanguage, intentName, syncState, persist=False):
+	def syncRemoteToLocalIntentCache(self, assistantId: str, assistantLanguage: str, intentName: str, syncState: str, persist: bool = False):
 		self._savedAssistants[assistantLanguage][assistantId]['intents'][intentName] = syncState
 
 		if persist:
 			self.persistToLocalAssistantCache(assistantId=assistantId, assistantLanguage=assistantLanguage)
 
 
-	def getModuleFromFile(self, moduleFile, moduleLanguage):
+	def getModuleFromFile(self, moduleFile: Path, moduleLanguage: str) -> typing.Optional[dict]:
 		module = json.loads(Path(moduleFile).read_text())
 		module['language'] = moduleLanguage
 
@@ -160,19 +162,19 @@ class MainProcessor:
 		return module
 
 
-	def getModuleSyncStateByLanguageAndAssistantId(self, moduleName, language, assistantId):
+	def getModuleSyncStateByLanguageAndAssistantId(self, moduleName: str, language: str, assistantId: str) -> str:
 		return self._savedAssistants.get(language, dict()).get(assistantId, dict()).get('modules', dict()).get(moduleName, None)
 
 
-	def getSlotTypeSyncStateByLanguageAndAssistantId(self, slotTypeName, language, assistantId):
+	def getSlotTypeSyncStateByLanguageAndAssistantId(self, slotTypeName: str, language: str, assistantId: str) -> str:
 		return self._savedAssistants.get(language, dict()).get(assistantId, dict()).get('slotTypes', dict()).get(slotTypeName, None)
 
 
-	def getIntentSyncStateByLanguageAndAssistantId(self, intentName, language, assistantId):
+	def getIntentSyncStateByLanguageAndAssistantId(self, intentName: str, language: str, assistantId: str) -> str:
 		return self._savedAssistants.get(language, dict()).get(assistantId, dict()).get('intents', dict()).get(intentName, None)
 
 
-	def persistToGlobalAssistantSlots(self, assistantId, assistantLanguage, slotNameFilter=None):
+	def persistToGlobalAssistantSlots(self, assistantId: str, assistantLanguage: str, slotNameFilter: str = None):
 		assistantSlotsMountpoint = self.SAVED_ASSISTANTS_DIR / assistantLanguage / assistantId / 'slots'
 		assistantSlotsMountpoint.mkdir(parents=True, exist_ok=True)
 
@@ -186,7 +188,7 @@ class MainProcessor:
 		# self._ctx.log('[Persist] global slot {}'.format(key))
 
 
-	def persistToGlobalAssistantIntents(self, assistantId, assistantLanguage, intentNameFilter=None):
+	def persistToGlobalAssistantIntents(self, assistantId: str, assistantLanguage: str, intentNameFilter: str = None):
 		assistantSlotsMountpoint = self.SAVED_ASSISTANTS_DIR / assistantLanguage / assistantId / 'intents'
 		assistantSlotsMountpoint.mkdir(parents=True, exist_ok=True)
 
@@ -200,21 +202,21 @@ class MainProcessor:
 		# self._ctx.log('[Persist] global slot {}'.format(key))
 
 
-	def syncGlobalSlotType(self, assistantId, assistantLanguage, slotTypeName, slotDefinition, persist=False):
+	def syncGlobalSlotType(self, assistantId: str, assistantLanguage: str, slotTypeName: str, slotDefinition: str, persist: bool = False):
 		self._savedSlots[assistantLanguage][assistantId][slotTypeName] = slotDefinition
 
 		if persist:
 			self.persistToGlobalAssistantSlots(assistantId=assistantId, assistantLanguage=assistantLanguage, slotNameFilter=slotTypeName)
 
 
-	def syncGlobalIntent(self, assistantId, assistantLanguage, intentName, intentDefinition, persist=False):
+	def syncGlobalIntent(self, assistantId: str, assistantLanguage: str, intentName: str, intentDefinition: str, persist: bool = False):
 		self._savedIntents[assistantLanguage][assistantId][intentName] = intentDefinition
 
 		if persist:
 			self.persistToGlobalAssistantIntents(assistantId=assistantId, assistantLanguage=assistantLanguage, intentNameFilter=intentName)
 
 
-	def mergeModuleSlotTypes(self, slotTypesModulesValues, assistantId, slotLanguage=None):
+	def mergeModuleSlotTypes(self, slotTypesModulesValues: str, assistantId: str, slotLanguage: str = None):
 		mergedSlotTypes = dict()
 		slotTypesGlobalValues = dict()
 
@@ -266,7 +268,7 @@ class MainProcessor:
 		return mergedSlotTypes
 
 
-	def mergeModuleIntents(self, intentsModulesValues, assistantId, intentLanguage=None):
+	def mergeModuleIntents(self, intentsModulesValues: str, assistantId: str, intentLanguage: str = None) -> dict:
 		mergedIntents = dict()
 		intentsGlobalValues = dict()
 
@@ -318,7 +320,7 @@ class MainProcessor:
 
 
 	# noinspection PyUnusedLocal
-	def buildMapsFromDialogTemplates(self, runOnAssistantId=None, moduleFilter=None, languageFilter=None):
+	def buildMapsFromDialogTemplates(self, runOnAssistantId: str = None, moduleFilter: str = None, languageFilter: str = None) -> tuple:
 		self._modules = dict()
 
 		rootDir = Path('modules')
@@ -387,13 +389,13 @@ class MainProcessor:
 						intentsModulesValues[moduleIntent['name']]['slots'].setdefault(moduleSlot['name'], moduleSlot)
 
 				if moduleFilter and moduleFilter != modulePath.name:
-					del self._modules[module.name]
+					del self._modules[module['name']]
 
 		return slotTypesModulesValues, intentsModulesValues, intentNameSkillMatching
 
 
 	# TODO to refacto in different method of a new Processor
-	def syncLocalToRemote(self, runOnAssistantId, moduleFilter=None, languageFilter=None):
+	def syncLocalToRemote(self, runOnAssistantId: str, moduleFilter: str = None, languageFilter: str = None) -> bool:
 
 		slotTypesModulesValues, intentsModulesValues, intentNameSkillMatching = self.buildMapsFromDialogTemplates(
 			runOnAssistantId=runOnAssistantId,
@@ -430,7 +432,7 @@ class MainProcessor:
 
 
 	# noinspection PyUnusedLocal
-	def syncLocalToRemoteSlotTypes(self, slotTypesModulesValues, runOnAssistantId, languageFilter=None, moduleFilter=None):
+	def syncLocalToRemoteSlotTypes(self, slotTypesModulesValues: str, runOnAssistantId: str, languageFilter: str = None, moduleFilter: str = None) -> tuple:
 		slotTypesSynced = dict()
 		globalChanges = False
 
@@ -509,7 +511,8 @@ class MainProcessor:
 
 
 	# noinspection PyUnusedLocal
-	def syncLocalToRemoteIntents(self, skillNameIdMatching, intentNameSkillMatching, typeEntityMatching, intentsModulesValues, runOnAssistantId, languageFilter=None, moduleFilter=None):
+	def syncLocalToRemoteIntents(self, skillNameIdMatching: dict, intentNameSkillMatching: dict, typeEntityMatching: dict, intentsModulesValues: str,
+	                             runOnAssistantId: str, languageFilter: str = None, moduleFilter: str = None) -> bool:
 
 		intentsSynced = dict()
 		globalChanges = False
@@ -602,7 +605,7 @@ class MainProcessor:
 		return globalChanges
 
 
-	def syncLocalToRemoteModules(self, typeEntityMatching, runOnAssistantId, languageFilter=None, moduleFilter=None):
+	def syncLocalToRemoteModules(self, typeEntityMatching: dict, runOnAssistantId: str, languageFilter: str = None, moduleFilter: str = None):
 		modulesSynced = dict()
 		globalChanges = False
 
@@ -687,7 +690,7 @@ class MainProcessor:
 
 
 	# TODO to refacto in different method of a new Processor
-	def syncRemoteToLocal(self, runOnAssistantId, moduleFilter=None, languageFilter=None):
+	def syncRemoteToLocal(self, runOnAssistantId: str, moduleFilter: str = None, languageFilter: str = None):
 
 		# Build cache
 		# ?? remoteIndexedEntities = self._ctx.Entity.listEntitiesByUserEmail(userEmail=self._ctx.userEmail, returnAllCacheIndexedBy='id')
