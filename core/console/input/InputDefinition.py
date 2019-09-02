@@ -1,4 +1,4 @@
-from core.console.Tools import isInt, toArray
+from core.commons import commons
 
 
 #
@@ -78,8 +78,8 @@ class InputDefinition:
 
 		_arguments = None
 
-		if isInt(name):
-			_arguments = toArray(self.arguments)
+		if commons.isInt(name):
+			_arguments = self.arguments.values()
 		else:
 			_arguments = self.arguments
 
@@ -89,8 +89,8 @@ class InputDefinition:
 	def hasArgument(self, name):
 		_arguments = self.arguments
 
-		if isInt(name):
-			_arguments = toArray(self.arguments)
+		if commons.isInt(name):
+			_arguments = self.arguments.values()
 			return name < len(_arguments)
 
 		return name in _arguments

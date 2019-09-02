@@ -258,3 +258,17 @@ def getLocalIp() -> str:
 	finally:
 		sock.close()
 	return ip
+
+def isInt(string: str) -> bool:
+	try:
+		int(string)
+		return True
+	except ValueError:
+		return False
+
+
+def indexOf(sub: str, string: str) -> int:
+	try:
+		return string.index(sub)
+	except ValueError:
+		return -1

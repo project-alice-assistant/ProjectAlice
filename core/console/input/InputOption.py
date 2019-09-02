@@ -1,6 +1,6 @@
 import re
 
-from core.console.Tools import indexOf
+from core.commons import commons
 
 
 #
@@ -14,7 +14,7 @@ class InputOption:
 
 
 	def __init__(self, name, shortcut, mode, description, default=None):
-		if indexOf('--', name) == 0:
+		if commons.indexOf('--', name) == 0:
 			name = name[2:]
 
 		if name is None:

@@ -2,7 +2,7 @@ import sys
 
 import re
 
-from core.console.Tools import indexOf
+from core.commons import commons
 from core.console.input.Input import Input
 
 
@@ -47,7 +47,7 @@ class ArgvInput(Input):
 				self.parseArgument(token)
 			elif parseOptions and token == '--':
 				parseOptions = False
-			elif parseOptions and indexOf('--', token) == 0:
+			elif parseOptions and not commons.indexOf('--', token):
 				self.parseLongOption(token)
 			elif parseOptions and '-' == token[0] and '-' != token:
 				self.parseShortOption(token)
@@ -91,7 +91,7 @@ class ArgvInput(Input):
 
 	def parseLongOption(self, token):
 		name = token[2:]
-		pos = indexOf('=', name)
+		pos = commons.indexOf('=', name)
 
 		if pos >= 0:
 			self.addLongOption(name[0:pos], name[pos + 1:])
@@ -184,7 +184,7 @@ class ArgvInput(Input):
 
 		for token in self.tokens:
 			for value in values:
-				if token == value or 0 == indexOf(value + '=', token):
+				if token == value or 0 == commons.indexOf(value + '=', token):
 					return True
 
 		return False
@@ -200,8 +200,8 @@ class ArgvInput(Input):
 
 		while token:
 			for value in values:
-				if token == value or 0 == indexOf(value + '=', token):
-					pos = indexOf('=', token)
+				if token == value or 0 == commons.indexOf(value + '=', token):
+					pos = commons.indexOf('=', token)
 
 					if pos:
 						return token[pos + 1:]

@@ -4,7 +4,7 @@ import sys
 import re
 from colorama import Back, Fore
 
-from core.console.Tools import indexOf
+from core.commons import commons
 from core.console.input.InputArgument import InputArgument
 from core.console.input.InputDefinition import InputDefinition
 from core.console.input.InputOption import InputOption
@@ -258,7 +258,7 @@ class Command:
 		while True:
 			inputValue = self.ask(question, definition, fgColor=fgColor, bgColor=bgColor)
 
-			if not indexOf(inputValue, choices) < 0:
+			if not commons.indexOf(inputValue, choices) < 0:
 				break
 
 		return inputValue if caseSensitive else inputValue.lower()

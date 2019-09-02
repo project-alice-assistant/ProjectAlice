@@ -1,5 +1,4 @@
-from core.console.Tools import indexOf
-from core.console.Tools import isInt
+from core.commons import commons
 from core.console.input.Input import Input
 
 
@@ -24,10 +23,10 @@ class ArrayInput(Input):
 
 	def hasParameterOption(self, values):
 		for k, v in self.parameters.items():
-			if not isInt(k):
+			if not commons.isInt(k):
 				v = k
 
-			if indexOf(v, values) >= 0:
+			if commons.indexOf(v, values) >= 0:
 				return True
 
 		return False
@@ -35,9 +34,9 @@ class ArrayInput(Input):
 
 	def getParameterOption(self, values, cdef):
 		for k, v in self.parameters.items():
-			if not isInt(k) and indexOf(v, values) >= 0:
+			if not commons.isInt(k) and commons.indexOf(v, values) >= 0:
 				return True
-			elif indexOf(v, values) >= 0:
+			elif commons.indexOf(v, values) >= 0:
 				return v
 
 		return cdef
@@ -45,7 +44,7 @@ class ArrayInput(Input):
 
 	def parse(self):
 		for key, value in self.parameters.items():
-			if indexOf('--', key) >= 0:
+			if commons.indexOf('--', key) >= 0:
 				self.addLongOption(key[2:], value)
 			elif '-' == key[0]:
 				self.addShortOption(key[1:], value)
