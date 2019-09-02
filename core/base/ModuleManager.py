@@ -442,10 +442,10 @@ class ModuleManager(Manager):
 								subprocess.run(['sudo', 'apt-get', 'install', '-y', requirement])
 
 						node = {
-							"active": True,
-							"version": installFile['version'],
-							"author": installFile['author'],
-							"conditions": installFile['conditions']
+							'active': True,
+							'version': installFile['version'],
+							'author': installFile['author'],
+							'conditions': installFile['conditions']
 						}
 
 						managers.ConfigManager.addModuleToAliceConfig(installFile['name'], node)
