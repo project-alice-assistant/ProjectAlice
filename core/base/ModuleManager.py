@@ -400,7 +400,7 @@ class ModuleManager(Manager):
 					self._logger.error('[{}] Module name to install not found, aborting to avoid casualties!'.format(self.name))
 					continue
 
-				directory = Path(__file__).parent.parent.parent / 'modules' / moduleName
+				directory = Path(commons.rootDir()) / 'modules' / moduleName
 
 				if moduleName in availableModules:
 					localVersionDirExists = directory.is_dir()

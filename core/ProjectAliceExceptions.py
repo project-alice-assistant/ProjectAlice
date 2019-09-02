@@ -67,3 +67,5 @@ class LanguageManagerLangNotSupported(Exception): pass
 class ConfigurationUpdateFailed(Exception): pass
 class ModuleNotConditionCompliant(Exception): pass
 class AccessLevelTooLow(Exception): pass
+class GithubTokenFailed(Exception): pass
+class GithubRateLimit(Exception): pass
