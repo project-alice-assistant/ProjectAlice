@@ -20,8 +20,8 @@ from core.voice.LanguageManager import LanguageManager
 # ModuleIntentListCommand list modules from dedicated repository
 #
 class ModuleIntentListCommand(Command):
-
 	DESCRIPTION_MAX = 100
+
 
 	def __init__(self):
 		super().__init__()
@@ -57,6 +57,7 @@ class ModuleIntentListCommand(Command):
 			languageFilter=languageManager.activeLanguage
 		)
 
+
 	def create(self):
 		self.setName('module:intent:list')
 		self.setDescription('List intents and utterances for a given module')
@@ -67,6 +68,7 @@ class ModuleIntentListCommand(Command):
 		])
 		self.setHelp('> The %command.name% list intents and utterances for a given module:\n'
 					 '  <fg:magenta>%command.full_name%<fg:reset> <fg:cyan>moduleName<fg:reset> <fg:yellow>[-f|--full]<fg:reset> <fg:yellow>[-i|--intent=intentName]<fg:reset>')
+
 
 	def execute(self, inputt):
 		TABLE_DATA = [['Intents of module ' + inputt.getArgument('moduleName')]]
@@ -106,6 +108,7 @@ class ModuleIntentListCommand(Command):
 			return
 
 		self.write(table_instance.table)
+
 
 	def moduleMode(self, inputt):
 		TABLE_DATA = [['Intent', 'Description']]

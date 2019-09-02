@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
 
 import getpass
-import re
 import sys
 
+import re
 from colorama import Back, Fore
 
 from core.console.Tools import indexOf
@@ -13,11 +13,11 @@ from core.console.input.InputOption import InputOption
 
 REGEX_COLOR = re.compile(r'<(fg|bg):([a-z]+)>')
 
+
 #
 # Command provides an architecture for bundle's commands
 #
 class Command:
-
 	BLACK = 'black'
 	RED = 'red'
 	GREEN = 'green'
@@ -28,7 +28,8 @@ class Command:
 	WHITE = 'white'
 	RESET = 'reset'
 
-	def __init__(self, name = ''):
+
+	def __init__(self, name=''):
 		self.synopsis = None
 		self.application = None
 		self.aliases = list()
@@ -63,6 +64,7 @@ class Command:
 	def execute(self, inputt):
 		raise ValueError('You must override the execute() method in the concrete command class.')
 
+
 	@property
 	def container(self):
 		return self.container
@@ -72,13 +74,16 @@ class Command:
 	def container(self, container):
 		self.container = container
 
+
 	def setApplication(self, application):
 		self.application = application
 
 		return self
 
+
 	def getApplication(self):
 		return self.application
+
 
 	def setName(self, name):
 		self.validateName(name)
@@ -86,51 +91,63 @@ class Command:
 
 		return self
 
+
 	def setDescription(self, description):
 		self.description = description
 
 		return self
+
 
 	def setHelp(self, yelp):
 		self.yelp = yelp + '\n'
 
 		return self
 
+
 	def getName(self):
 		return self.name
+
 
 	def getHelp(self):
 		return self.yelp
 
+
 	def getDefinition(self):
 		return self.definition
+
 
 	def getDescription(self):
 		return self.description
 
+
 	def getAliases(self):
 		return self.aliases
 
+
 	def ignoreValidationErrors(self):
 		self.ignoreValidationErrors = True
+
 
 	@staticmethod
 	def isEnabled():
 		return True
 
+
 	def getArrayChars(self):
 		if self.chars:
 			return self.chars
 
-		self.chars = { 'top': '═' , 'top-mid': '╤' , 'top-left': '╔' , 'top-right': '╗'
-		, 'bottom': '═' , 'bottom-mid': '╧' , 'bottom-left': '╚' , 'bottom-right': '╝'
-		, 'left': '║', 'left-mid': '╟' , 'mid': '─' , 'mid-mid': '┼'
-		, 'right': '║' , 'right-mid': '╢' , 'middle': '│' }
+		self.chars = {'top': '═', 'top-mid': '╤', 'top-left': '╔', 'top-right': '╗'
+			, 'bottom'     : '═', 'bottom-mid': '╧', 'bottom-left': '╚', 'bottom-right': '╝'
+			, 'left'       : '║', 'left-mid': '╟', 'mid': '─', 'mid-mid': '┼'
+			, 'right'      : '║', 'right-mid': '╢', 'middle': '│'}
 
 		return self.chars
 
+
 	def setArrayChars(self, chars):
 		self.chars = chars
+
 
 	def getProcessedHelp(self):
 		name = self.name
@@ -145,11 +162,13 @@ class Command:
 
 		return replaced
 
+
 	def setSynopsis(self, synopsis):
 		if self.synopsis is None:
 			self.synopsis = '{} {}'.format(self.name, synopsis)
 
 		return self
+
 
 	def run(self, inputInstance):
 		self.getSynopsis()
@@ -167,13 +186,16 @@ class Command:
 
 		return self.execute(inputInstance)
 
+
 	def addOption(self, name, shortcut, mode, description, definition):
 		self.definition.addOption(InputOption(name, shortcut, mode, description, definition))
 		return self
 
+
 	def addArgument(self, name, mode, description, definition):
 		self.definition.addArgument(InputArgument(name, mode, description, definition))
 		return self
+
 
 	@staticmethod
 	def validateName(name):
@@ -181,6 +203,7 @@ class Command:
 
 		if not name or not reg.match(name):
 			raise ValueError('Command name \'{}\' is invalid.'.format(str(name)))
+
 
 	def getSynopsis(self):
 		if self.synopsis is None:
@@ -193,7 +216,8 @@ class Command:
 
 		return self.synopsis
 
-	def setDefinition(self, definition = None):
+
+	def setDefinition(self, definition=None):
 
 		if definition is None:
 			self.definition.setDefinition(definition)
@@ -204,7 +228,8 @@ class Command:
 
 		self.applicationDefinitionMerged = False
 
-	def mergeApplicationDefinition(self, mergeArgs = True):
+
+	def mergeApplicationDefinition(self, mergeArgs=True):
 		if self.application is None or (self.applicationDefinitionMerged is True and (self.applicationDefinitionMergedWithArgs or not mergeArgs)):
 			return
 
@@ -219,7 +244,8 @@ class Command:
 		if mergeArgs:
 			self.applicationDefinitionMergedWithArgs = True
 
-	def ask(self, question = '', definition = None, hidden = False, fgColor='reset', bgColor='reset'):
+
+	def ask(self, question='', definition=None, hidden=False, fgColor='reset', bgColor='reset'):
 		try:
 			questionStyled = self.stringToColored(question, fgColor, bgColor)
 			inputValue = getpass.getpass(questionStyled) if hidden else input(questionStyled)
@@ -229,7 +255,8 @@ class Command:
 
 		return definition if definition and not inputValue else inputValue
 
-	def askCombo(self, question, definition, choices, caseSensitive = False, fgColor='reset', bgColor='reset'):
+
+	def askCombo(self, question, definition, choices, caseSensitive=False, fgColor='reset', bgColor='reset'):
 		while True:
 			inputValue = self.ask(question, definition, fgColor=fgColor, bgColor=bgColor)
 
@@ -238,10 +265,12 @@ class Command:
 
 		return inputValue if caseSensitive else inputValue.lower()
 
+
 	def askHidden(self, question, definition, fgColor='reset', bgColor='reset'):
 		return self.askAndValidate(question=question, definition=definition, fgColor=fgColor, bgColor=bgColor)
 
-	def askAndValidate(self, question = '', definition = None, callback = None, hidden = False, fgColor='reset', bgColor='reset'):
+
+	def askAndValidate(self, question='', definition=None, callback=None, hidden=False, fgColor='reset', bgColor='reset'):
 		inputValue = self.ask(question, definition, hidden, fgColor, bgColor)
 
 		if inputValue == '' and definition:
@@ -249,14 +278,17 @@ class Command:
 
 		return callback(inputValue) if callback else inputValue
 
+
 	def askHiddenAndValidate(self, question, definition, callback, fgColor='reset', bgColor='reset'):
 		return self.askAndValidate(question, definition, callback, True, fgColor, bgColor)
 
-	def askConfirmation(self, question, definition, caseSensitive = False, fgColor='reset', bgColor='reset'):
-		return self.askCombo(question, definition,['y', 'n', 'yes', 'no'], caseSensitive, fgColor, bgColor)
+
+	def askConfirmation(self, question, definition, caseSensitive=False, fgColor='reset', bgColor='reset'):
+		return self.askCombo(question, definition, ['y', 'n', 'yes', 'no'], caseSensitive, fgColor, bgColor)
+
 
 	@staticmethod
-	def _getForegroundColor(color = 'reset'):
+	def _getForegroundColor(color='reset'):
 		if color == 'black': return Fore.BLACK
 		if color == 'red': return Fore.RED
 		if color == 'green': return Fore.GREEN
@@ -267,8 +299,9 @@ class Command:
 		if color == 'white': return Fore.WHITE
 		return Fore.RESET
 
+
 	@staticmethod
-	def _getBackgroundColor(color = 'reset'):
+	def _getBackgroundColor(color='reset'):
 		if color == 'black': return Back.BLACK
 		if color == 'red': return Back.RED
 		if color == 'green': return Back.GREEN
@@ -278,6 +311,7 @@ class Command:
 		if color == 'cyan': return Back.CYAN
 		if color == 'white': return Back.WHITE
 		return Back.RESET
+
 
 	def stringToColored(self, string, fgColor='reset', bgColor='reset'):
 		fgColor = self._getForegroundColor(color=fgColor)
@@ -290,11 +324,11 @@ class Command:
 
 		return bgColor + fgColor + string + Fore.RESET + Back.RESET
 
+
 	def write(self, data, fgColor='reset', bgColor='reset'):
 		print(self.stringToColored(data, fgColor, bgColor))
+
 
 	@staticmethod
 	def nl():
 		print()
-
-

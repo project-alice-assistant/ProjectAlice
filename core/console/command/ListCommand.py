@@ -17,16 +17,17 @@ class ListCommand(Command):
 		self.setHelp('> The %command.name% command lists all commands:\n'
 					 '  <fg:magenta>%command.full_name%<fg:reset>')
 
+
 	def execute(self, inputt):
 		commands = self.getApplication().getCommands()
 		sortedCommandKeys = sorted(commands)
 
 		self.nl()
 		self.write('Options :')
-		TABLE_DATA = [['Option', 'Description'],]
+		TABLE_DATA = [['Option', 'Description'], ]
 		table_instance = DoubleTable(TABLE_DATA)
 
-		for k,option in self.getApplication().getDefaultInputDefinition().getOptions().items():
+		for k, option in self.getApplication().getDefaultInputDefinition().getOptions().items():
 			TABLE_DATA.append(['--{} [{}]'.format(option.getName(), option.getShortcut()), option.getDescription()])
 
 		self.write(table_instance.table)
@@ -45,9 +46,6 @@ class ListCommand(Command):
 				desc = '{}...'.format(command.getDescription()[0:limit])
 			else:
 				desc = command.getDescription()
-			TABLE_DATA.append([name,desc])
+			TABLE_DATA.append([name, desc])
 
 		self.write(table_instance.table)
-
-
-

@@ -57,7 +57,6 @@ intentsCustomDataFragment = gql('''
   }
 ''')
 
-
 intentsByUserIdWithUsageQuery = gql('''
 query IntentsByUserIdWithUsageQuery($userId: ID!, $lang: String) {
 intents(

@@ -9,5 +9,3 @@ mutation deleteIntentEntity($id: ID!, $email: String!) {
   }
 }
 ''')
-
-

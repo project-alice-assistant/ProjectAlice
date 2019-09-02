@@ -15,5 +15,3 @@ mutation createIntentEntity($input: CreateIntentEntityInput!) {
 }
 ${entityFieldsFragment}
 ''', {'entityFieldsFragment': entityFieldsFragment})
-
-

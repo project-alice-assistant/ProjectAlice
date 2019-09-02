@@ -1,10 +1,12 @@
 # -*- coding: utf-8 -*-
 
-import re
 import sys
 
-from core.console.input.Input import Input
+import re
+
 from core.console.Tools import indexOf
+from core.console.input.Input import Input
+
 
 class ArgvInput(Input):
 	"""
@@ -12,7 +14,7 @@ class ArgvInput(Input):
 	"""
 
 
-	def __init__(self, argv = None, definition = None, standalone = False):
+	def __init__(self, argv=None, definition=None, standalone=False):
 		self.tokens = None
 		self.parsed = None
 		self.standalone = standalone
@@ -28,8 +30,10 @@ class ArgvInput(Input):
 
 		super().__init__(definition=definition)
 
+
 	def setTokens(self, tokens):
 		self.tokens = tokens
+
 
 	def parse(self):
 		parseOptions = True
@@ -57,6 +61,7 @@ class ArgvInput(Input):
 			except:
 				break
 
+
 	def parseShortOption(self, token):
 		name = token[1:]
 
@@ -65,9 +70,10 @@ class ArgvInput(Input):
 				self.addShortOption(name[0], name[1:])
 			else:
 				self.parseShortOptionSet(name)
-				
+
 		else:
 			self.addShortOption(name, None)
+
 
 	def parseShortOptionSet(self, name):
 		length = len(name)
@@ -79,19 +85,21 @@ class ArgvInput(Input):
 			option = self.definition.getOptionForShortcut(name[i])
 
 			if option.acceptValue():
-				self.addLongOption(option.getName(), None if i == length - 1 else name[i+1:])
+				self.addLongOption(option.getName(), None if i == length - 1 else name[i + 1:])
 				break
 			else:
 				self.addLongOption(option.getName(), None)
+
 
 	def parseLongOption(self, token):
 		name = token[2:]
 		pos = indexOf('=', name)
 
 		if pos >= 0:
-			self.addLongOption( name[0:pos], name[pos+1:])
+			self.addLongOption(name[0:pos], name[pos + 1:])
 		else:
 			self.addLongOption(name, None)
+
 
 	def parseArgument(self, token):
 		c = len(self.arguments)
@@ -115,12 +123,14 @@ class ArgvInput(Input):
 			if not self.standalone:
 				raise ValueError('Too many arguments.')
 
+
 	def addShortOption(self, shortcut, value):
 
 		if not self.definition.hasShortcut(shortcut):
 			raise ValueError('The -{} option does not exist.'.format(str(shortcut)))
 
 		self.addLongOption(self.definition.getOptionForShortcut(shortcut).getName(), value)
+
 
 	def addLongOption(self, name, value):
 
@@ -130,8 +140,7 @@ class ArgvInput(Input):
 		option = self.definition.getOption(name)
 
 		if value is not None and not option.acceptValue():
-			raise ValueError('The --{} option does not accept a value : {}'.format(str(name),str(value)))
-
+			raise ValueError('The --{} option does not accept a value : {}'.format(str(name), str(value)))
 
 		if value is None and option.acceptValue() and self.parsed:
 			nekst = None
@@ -164,6 +173,7 @@ class ArgvInput(Input):
 		else:
 			self.options[name] = value
 
+
 	def getFirstArgument(self):
 		for token in self.tokens:
 			if '-' == token[0]:
@@ -171,14 +181,16 @@ class ArgvInput(Input):
 
 			return token
 
+
 	def hasParameterOption(self, values):
 
 		for token in self.tokens:
 			for value in values:
-				if token == value or 0 == indexOf(value+'=', token):
+				if token == value or 0 == indexOf(value + '=', token):
 					return True
 
 		return False
+
 
 	def getParameterOption(self, values, definition):
 
@@ -190,11 +202,11 @@ class ArgvInput(Input):
 
 		while token:
 			for value in values:
-				if token == value or 0 == indexOf(value+'=', token):
+				if token == value or 0 == indexOf(value + '=', token):
 					pos = indexOf('=', token)
 
 					if pos:
-						return token[pos+1:]
+						return token[pos + 1:]
 
 			# weird
 			# if len(tokens) != 0:
@@ -203,6 +215,7 @@ class ArgvInput(Input):
 			return tokens.pop(0)
 
 		return definition
+
 
 	def __str__(self):
 		tokens = list()
@@ -221,5 +234,3 @@ class ArgvInput(Input):
 			tokens.append(token)
 
 		return ' '.join(tokens)
-
-

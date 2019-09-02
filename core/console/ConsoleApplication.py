@@ -16,11 +16,11 @@ from core.console.input.InputArgument import InputArgument
 from core.console.input.InputDefinition import InputDefinition
 from core.console.input.InputOption import InputOption
 
+
 #
 # ConsoleApplication
 #
 class ConsoleApplication:
-
 
 	def __init__(self, name, version):
 		self.name = name
@@ -34,25 +34,30 @@ class ConsoleApplication:
 		for command in self.getDefaultCommands():
 			self.add(command)
 
+
 	def getDefinition(self):
 		return self.definition
+
 
 	@staticmethod
 	def getDefaultInputDefinition():
 		return InputDefinition([
 			InputArgument(name='command', mode=InputArgument.REQUIRED, description='The command to execute'),
-			InputOption(name='--help',      	shortcut='-h', mode=InputOption.VALUE_NONE, description='Display this help message.'),
-			InputOption(name='--verbose',       shortcut='-v', mode=InputOption.VALUE_NONE, description='Increase the verbosity of messages'),
-			InputOption(name='--version',       shortcut='-V', mode=InputOption.VALUE_NONE, description='Display this application version.'),
-			InputOption(name='--no-interaction',shortcut='-n', mode=InputOption.VALUE_NONE, description='Do not ask any interactive question.')
+			InputOption(name='--help', shortcut='-h', mode=InputOption.VALUE_NONE, description='Display this help message.'),
+			InputOption(name='--verbose', shortcut='-v', mode=InputOption.VALUE_NONE, description='Increase the verbosity of messages'),
+			InputOption(name='--version', shortcut='-V', mode=InputOption.VALUE_NONE, description='Display this application version.'),
+			InputOption(name='--no-interaction', shortcut='-n', mode=InputOption.VALUE_NONE, description='Do not ask any interactive question.')
 		])
+
 
 	@staticmethod
 	def getDefaultCommands():
 		return [ListCommand(), HelpCommand()]
 
+
 	def getCommands(self):
 		return self.commands
+
 
 	def add(self, command):
 		command.setApplication(self)
@@ -68,35 +73,44 @@ class ConsoleApplication:
 
 		return command
 
+
 	def addCommands(self, commands):
 		for command in commands:
 			self.add(command)
 
+
 	def has(self, name):
 		return name in self.commands
 
+
 	def setVerbose(self, level):
 		self.verbose = level
+
 
 	@staticmethod
 	def getCommandName(inputt):
 		return inputt.getFirstArgument()
 
+
 	def getName(self):
 		return self.name
 
+
 	def getVersion(self):
 		return self.version
+
 
 	def setName(self, name):
 		self.name = name
 
 		return self
 
+
 	def setVersion(self, version):
 		self.version = version
 
 		return self
+
 
 	def getLongVersion(self):
 		versionMessage = 'AliceConsole'
@@ -105,12 +119,13 @@ class ConsoleApplication:
 			versionMessage = self.getName()
 
 		if self.getVersion() is not None:
-			versionMessage +=' version ' + str(self.getVersion())
+			versionMessage += ' version ' + str(self.getVersion())
 
 		return versionMessage
 
+
 	# TODO doRun() doesn't raise any exceptions
-	def run(self, inputt = None):
+	def run(self, inputt=None):
 		if inputt is None:
 			inputt = ArgvInput()
 
@@ -143,12 +158,14 @@ class ConsoleApplication:
 
 		return exitCode
 
+
 	def configureIO(self, inputt):
 		if inputt.hasParameterOption(['--no-interaction', '-n']):
 			inputt.setInteractive(False)
 
 		if inputt.hasParameterOption(['--verbose', '-v']):
 			self.setVerbose(1)
+
 
 	def doRun(self, inputt):
 		if inputt.hasParameterOption(['--version', '-V']):
@@ -160,13 +177,13 @@ class ConsoleApplication:
 		if inputt.hasParameterOption(['--help', '-h']):
 			if name is None:
 				name = 'help'
-				inputt = ArrayInput(parameters={"command":'help'})
+				inputt = ArrayInput(parameters={"command": 'help'})
 			else:
 				self.needHelp = True
 
 		if name is None:
 			name = 'list'
-			inputt = ArrayInput(parameters={"command":name})
+			inputt = ArrayInput(parameters={"command": name})
 
 		command = self.find(name)
 		self.running = command
@@ -175,12 +192,15 @@ class ConsoleApplication:
 
 		return exitCode
 
+
 	@staticmethod
 	def doRunCommand(command, inputt):
 		return command.run(inputt)
 
+
 	def find(self, name):
 		return self.get(name)
+
 
 	def get(self, name):
 		if name not in self.commands or self.commands[name] is None:
@@ -195,7 +215,3 @@ class ConsoleApplication:
 			return helpCommand
 
 		return command
-
-
-
-

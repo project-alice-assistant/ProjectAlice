@@ -5,12 +5,12 @@
 # InputArgument is a command line argument
 #
 class InputArgument:
-
 	REQUIRED = 1
 	OPTIONAL = 2
 	ARRAY = 4
 
-	def __init__(self, name, mode = None, description = '', default = None):
+
+	def __init__(self, name, mode=None, description='', default=None):
 		self.mode = mode
 
 		if not mode:
@@ -21,20 +21,26 @@ class InputArgument:
 		self.description = description
 		self.default = ''
 
+
 	def getDescription(self):
 		return self.description
+
 
 	def getDefault(self):
 		return self.default
 
+
 	def getName(self):
 		return self.name
+
 
 	def isRequired(self):
 		return self.mode == self.REQUIRED & self.mode
 
+
 	def isArray(self):
 		return self.mode == self.ARRAY & self.mode
+
 
 	def setDefault(self, definition):
 		if self.mode == self.REQUIRED and definition is not None:

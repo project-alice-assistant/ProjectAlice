@@ -1,8 +1,9 @@
 # -*- coding: utf-8 -*-
 
+import typing
+
 import hashlib
 import re
-import typing
 
 from core.snips import SamkillaManager
 from core.snips.samkilla.exceptions.HttpError import HttpError
@@ -103,7 +104,7 @@ class Intent:
 
 
 	def create(self, userId: str, language: str, skillId: str, name: str = 'Untitled', description: str = '', enabledByDefault: bool = True,
-	           attachToSkill: bool = True, typeEntityMatching: dict = None, slotsDefinition: dict = None, utterancesDefinition: list = None) -> str:
+			   attachToSkill: bool = True, typeEntityMatching: dict = None, slotsDefinition: dict = None, utterancesDefinition: list = None) -> str:
 		"""
 		Warning: mind the language parameter if the skill language is EN, intent must set language to EN
 		no error will be shown and the skill won't be created
@@ -225,7 +226,7 @@ class Intent:
 
 
 	def edit(self, intentId: str, userId: str, language: str = None, skillId: str = None, name: str = None, description: str = None, enabledByDefault: bool = True,
-	         attachToSkill: bool = False, typeEntityMatching: dict = None, slotsDefinition: dict = None, utterancesDefinition: list = None):
+			 attachToSkill: bool = False, typeEntityMatching: dict = None, slotsDefinition: dict = None, utterancesDefinition: list = None):
 		structuredSlots, entities = self.formatSlotsAndEntities(typeEntityMatching, slotsDefinition)
 		structuredUtterances, exempleQueries = self.formatUtterancesAndExempleQueries(utterancesDefinition)
 
@@ -342,7 +343,7 @@ class Intent:
 				counterItems += 1
 
 				data.append({'slot_id': self.hashSlotName(slotName=wordSlotName), 'slot_name': wordSlotName, 'text': wordExemple,
-				             'range'  : {'start': formattedWordSlotIndexStart, 'end': formattedWordSlotIndexEnd}})
+							 'range'  : {'start': formattedWordSlotIndexStart, 'end': formattedWordSlotIndexEnd}})
 
 				if counterItems == maxItems and lastPieceIndex < lenCleanTextUtterance:
 					endText = formattedTextUtterance[lastPieceIndex:lenCleanTextUtterance]

@@ -2,14 +2,15 @@
 
 from terminaltables import DoubleTable
 
-from core.console.Command import Command
 from core.base.ModuleManager import ModuleManager
-from core.snips.SnipsConsoleManager import SnipsConsoleManager
-from core.voice.LanguageManager import LanguageManager
-from core.util.ThreadManager import ThreadManager
-from core.util.DatabaseManager import DatabaseManager
+from core.console.Command import Command
 from core.dialog.ProtectedIntentManager import ProtectedIntentManager
+from core.snips.SnipsConsoleManager import SnipsConsoleManager
 from core.user.UserManager import UserManager
+from core.util.DatabaseManager import DatabaseManager
+from core.util.ThreadManager import ThreadManager
+from core.voice.LanguageManager import LanguageManager
+
 
 #
 # AssistantDownloadCommand download the assistant
@@ -22,6 +23,7 @@ class AssistantDownloadCommand(Command):
 		self.setDefinition()
 		self.setHelp('> The %command.name% command download the assistant from snips console:\n'
 					 '  <fg:magenta>%command.full_name%<fg:reset>')
+
 
 	def execute(self, inputt):
 		TABLE_DATA = [['Assistant Downloader']]
@@ -56,6 +58,3 @@ class AssistantDownloadCommand(Command):
 		self.nl()
 		self.write('Assistant <fg:green>downloaded!<fg:reset>')
 		self.nl()
-
-
-

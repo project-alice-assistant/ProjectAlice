@@ -20,8 +20,6 @@ entityFieldsFragment = gql('''
   }
 ''')
 
-
-
 fullCustomEntityFieldsFragment = gql('''
   fragment FullCustomEntityFieldsFragment on IntentEntity {
     ...EntityFieldsFragment
@@ -36,8 +34,7 @@ fullCustomEntityFieldsFragment = gql('''
     }
   }
   ${entityFieldsFragment}
-''',{'entityFieldsFragment': entityFieldsFragment})
-
+''', {'entityFieldsFragment': entityFieldsFragment})
 
 fullCustomEntityFieldsFragmentWithoutWikiList = gql('''
   fragment FullCustomEntityFieldsFragment on IntentEntity {
@@ -48,8 +45,7 @@ fullCustomEntityFieldsFragmentWithoutWikiList = gql('''
     }
   }
   ${entityFieldsFragment}
-''',{'entityFieldsFragment': entityFieldsFragment})
-
+''', {'entityFieldsFragment': entityFieldsFragment})
 
 customEntitiesWithUsageQuery = gql('''
   query customEntitiesWithUsageQuery($email: String!, $lang: String) {
@@ -62,10 +58,7 @@ customEntitiesWithUsageQuery = gql('''
     }
   }
   ${entityFieldsFragment}
-''',{'entityFieldsFragment': entityFieldsFragment})
-
-
-
+''', {'entityFieldsFragment': entityFieldsFragment})
 
 fullCustomEntityQuery = gql('''
   query FullCustomEntityQuery($entityId: ID!) {
@@ -74,5 +67,4 @@ fullCustomEntityQuery = gql('''
     }
   }
   ${fullCustomEntityFieldsFragment}
-''',{'fullCustomEntityFieldsFragment': fullCustomEntityFieldsFragmentWithoutWikiList})
-
+''', {'fullCustomEntityFieldsFragment': fullCustomEntityFieldsFragmentWithoutWikiList})

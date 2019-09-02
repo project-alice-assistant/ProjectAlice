@@ -14,13 +14,13 @@ from core.console.Command import Command
 #
 class AuthorListCommand(Command):
 
-
 	def create(self):
 		self.setName('author:list')
 		self.setDescription('List authors from dedicated repository')
 		self.setDefinition()
 		self.setHelp('> The %command.name% list authors from dedicated repository:\n'
 					 '  <fg:magenta>%command.full_name%<fg:reset>')
+
 
 	def execute(self, inputt):
 		TABLE_DATA = [['Authors List']]
@@ -48,6 +48,5 @@ class AuthorListCommand(Command):
 		except Exception:
 			self.write('Error listing authors', 'red')
 			raise
-
 
 		self.write(table_instance.table)

@@ -9,6 +9,7 @@ from core.snips.samkilla.models.EnumSkillImageUrl import EnumSkillImageUrl as En
 
 EnumSkillImageUrl = EnumSkillImageUrlClass()
 
+
 class ModuleRemoteProcessor:
 
 	def __init__(self, ctx, assistantId, module, moduleName, moduleLanguage):
@@ -26,12 +27,12 @@ class ModuleRemoteProcessor:
 	def createNewSavedModule(self):
 		return {
 			'skillId': None,
-		   	'name': self._moduleName
+			'name'   : self._moduleName
 		}
 
 
 	@staticmethod
-	def skillValuesToHash(icon, description, skillId= ''):
+	def skillValuesToHash(icon, description, skillId=''):
 		hashSum = '{}{}{}'.format(icon, description, skillId)
 
 		return hashlib.sha512(hashSum.encode('utf-8')).hexdigest()
@@ -71,7 +72,7 @@ class ModuleRemoteProcessor:
 
 		return {
 			'skillId': skillId,
-			'hash': curHash,
+			'hash'   : curHash,
 			'changes': changes
 		}
 

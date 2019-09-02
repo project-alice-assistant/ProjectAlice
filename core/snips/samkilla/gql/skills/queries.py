@@ -42,7 +42,6 @@ skillFieldsFragment = gql('''
   }
 ''')
 
-
 skillsWithUsageQuery = gql('''
  query SkillsWithUsageQuery(
     $lang: String
@@ -83,4 +82,4 @@ skillsWithUsageQuery = gql('''
     }
   }
   ${skillFieldsFragment}
-''',{'skillFieldsFragment': skillFieldsFragment})
+''', {'skillFieldsFragment': skillFieldsFragment})

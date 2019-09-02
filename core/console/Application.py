@@ -3,10 +3,9 @@
 import importlib
 from pathlib import Path
 
+from core.base.ConfigManager import ConfigManager
 from core.commons import commons
 from core.console.ConsoleApplication import ConsoleApplication
-from core.base.ConfigManager import ConfigManager
-
 #
 # Application is the main entry point of a ConsoleApplication
 #
@@ -14,7 +13,6 @@ from core.console.input import ArgvInput
 
 
 class Application(ConsoleApplication):
-
 
 	def __init__(self):
 		self._commandsRegistered = False

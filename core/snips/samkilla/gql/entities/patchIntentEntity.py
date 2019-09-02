@@ -14,5 +14,3 @@ mutation patchIntentEntity(
 }
 ${fullCustomEntityFieldsFragment}
 ''', {'fullCustomEntityFieldsFragment': fullCustomEntityFieldsFragment})
-
-

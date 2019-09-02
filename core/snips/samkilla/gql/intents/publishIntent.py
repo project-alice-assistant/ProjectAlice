@@ -17,8 +17,6 @@ ${intentsFieldsFragment}
 ${intentsCustomDataFragment}
 ''', {'intentsFieldsFragment': intentsFieldsFragment, 'intentsCustomDataFragment': intentsCustomDataFragment})
 
-
-
 publishIntentLight = gql('''
 mutation publishIntent($intentId: ID, $input: PublishIntentInput!) {
   publishIntent(intentId: $intentId, input: $input) {
@@ -33,5 +31,3 @@ mutation publishIntent($intentId: ID, $input: PublishIntentInput!) {
 ${intentsFieldsFragment}
 ${intentsCustomDataFragment}
 ''', {'intentsFieldsFragment': intentsFieldsFragment, 'intentsCustomDataFragment': intentsCustomDataFragment})
-
-

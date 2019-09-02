@@ -1,4 +1,3 @@
-
 class IntentError(Exception):
 
 	def __init__(self, status, message, context):
@@ -7,13 +6,16 @@ class IntentError(Exception):
 		self._context = context
 		super().__init__(message)
 
+
 	@property
 	def status(self):
 		return self._status
 
+
 	@property
 	def message(self):
 		return self._message
+
 
 	@property
 	def context(self):
