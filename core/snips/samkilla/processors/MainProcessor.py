@@ -1,7 +1,7 @@
 import json
 from pathlib import Path
 
-from core.snips.samkilla.exceptions.HttpError import HttpError
+from core.ProjectAliceExceptions import HttpError
 from core.snips.samkilla.models.EnumSkillImageUrl import EnumSkillImageUrl as EnumSkillImageUrlClass
 from core.snips.samkilla.models.util import skillNameToCamelCase
 from core.snips.samkilla.processors.IntentRemoteProcessor import IntentRemoteProcessor

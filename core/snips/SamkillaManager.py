@@ -14,8 +14,7 @@ from core.snips.samkilla.Assistant import Assistant
 from core.snips.samkilla.Entity import Entity
 from core.snips.samkilla.Intent import Intent
 from core.snips.samkilla.Skill import Skill
-from core.snips.samkilla.exceptions.AssistantNotFoundError import AssistantNotFoundError
-from core.snips.samkilla.exceptions.HttpError import HttpError
+from core.ProjectAliceExceptions import AssistantNotFoundError, HttpError
 from core.snips.samkilla.models.EnumSkillImageUrl import EnumSkillImageUrl as EnumSkillImageUrlClass
 from core.snips.samkilla.processors.MainProcessor import MainProcessor
 

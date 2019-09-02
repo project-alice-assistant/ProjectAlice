@@ -4,8 +4,7 @@ import hashlib
 import re
 
 from core.snips import SamkillaManager
-from core.snips.samkilla.exceptions.HttpError import HttpError
-from core.snips.samkilla.exceptions.IntentError import IntentError
+from core.ProjectAliceExceptions import  HttpError, IntentError
 from core.snips.samkilla.gql.intents.deleteIntent import deleteIntent
 from core.snips.samkilla.gql.intents.publishIntent import publishIntent
 from core.snips.samkilla.gql.intents.queries import fullIntentQuery, intentsByUserIdWithUsageQuery

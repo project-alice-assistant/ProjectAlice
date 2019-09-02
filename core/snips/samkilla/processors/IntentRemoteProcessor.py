@@ -4,7 +4,7 @@ import traceback
 import hashlib
 
 from core.snips import SamkillaManager
-from core.snips.samkilla.exceptions.IntentError import IntentError
+from core.ProjectAliceExceptions import IntentError
 
 
 class IntentRemoteProcessor:
