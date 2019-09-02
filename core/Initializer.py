@@ -15,14 +15,14 @@ class Initializer:
 
 	NAME = 'ProjectAlice'
 
-	_WPA_FILE = '''country=%COUNTRY%
+	_WPA_FILE = '''country={wifiCountryCode}
 ctrl_interface=DIR=/var/run/wpa_supplicant GROUP=netdev
 update_config=1
 
 network={
-    ssid="%SSID%"
+    ssid="{wifiNetworkName}"
     scan_ssid=1
-    psk="%PASS%"
+    psk="{wifiWPAPass}"
     key_mgmt=WPA-PSK
 }
 	'''
@@ -71,16 +71,7 @@ network={
 
 		# Let's connect to wifi!
 		self._logger.info('Setting up wifi')
-		wpaFile = self._WPA_FILE.replace(
-			'%COUNTRY%',
-			initConfs['wifiCountryCode']
-		).replace(
-			'%SSID%',
-			initConfs['wifiNetworkName']
-		).replace(
-			'%PASS%',
-			initConfs['wifiWPAPass']
-		)
+		wpaFile = self._WPA_FILE.format(**initConfs)
 
 		file = Path(commons.rootDir(), 'wifi.conf')
 		file.write_text(wpaFile)
