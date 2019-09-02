@@ -5,6 +5,10 @@ import requests
 import shutil
 import json
 
+from core.ProjectAliceExceptions import GithubRateLimit, GithubTokenFailed
+import core.base.Managers as managers
+
+
 class GithubCloner:
 
 	NAME = 'GithubCloner'
@@ -30,14 +34,26 @@ class GithubCloner:
 
 	def _doClone(self, url):
 		try:
-			req = requests.get(url)
+			username = managers.ConfigManager.getAliceConfigByName('githubUsername')
+			token = managers.ConfigManager.getAliceConfigByName('githubToken')
+
+			auth = (username, token) if (username and token) else None
+
+			req = requests.get(url, auth=auth)
+			if req.status_code == 401:
+				raise GithubTokenFailed
+			elif req.status_code == 403:
+				raise GithubRateLimit
+			elif req.status_code != 200:
+				raise Exception
+
 			result = req.content
 			data = json.loads(result.decode())
 			for item in data:
 				path = item['path'].split('/')[3:]
 				path = '/'.join(path)
 				if item['type'] == 'file' and not path.endswith('.install'):
-					fileStream = requests.get(item['download_url'])
+					fileStream = requests.get(item['download_url'], auth=auth)
 
 					with open(os.path.join(self._dest, path), 'wb') as f:
 						f.write(fileStream.content)
@@ -45,6 +61,14 @@ class GithubCloner:
 				elif item['type'] == 'dir':
 					os.mkdir(os.path.join(self._dest, path))
 					self._doClone(url = os.path.join(url, path))
+
+		except GithubTokenFailed:
+			self._logger.error('[{}] Provided Github username / token invalid'.format(self.NAME))
+			raise
+
+		except GithubRateLimit:
+			self._logger.error('[{}] Github rate limit reached, cannot access updates for now. You should consider creating a token to avoid this problem'.format(self.NAME))
+			raise
 
 		except Exception as e:
 			self._logger.error('[{}] Error downloading module: {}'.format(self.NAME, e))

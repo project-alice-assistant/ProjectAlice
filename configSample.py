@@ -30,6 +30,8 @@ settings = {
 	"useSLC": False,
 	"activeLanguage": "en",
 	"moduleAutoUpdate": False,
+	"githubUsername": "",
+	"githubToken": "",
 	"supportedLanguages": {
 		"en": {
 			"snipsProjectId" : "",

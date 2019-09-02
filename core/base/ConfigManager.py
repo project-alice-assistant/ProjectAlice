@@ -119,10 +119,20 @@ class ConfigManager(Manager):
 		:param confs: the dict to save
 		"""
 		sort = dict(sorted(confs.items()))
+
 		# Only store "active", "version", "author", "conditions" value for module config
 		misterProper = ['active', 'version', 'author', 'conditions']
+
 		# pop modules key so it gets added in the back
-		sort['modules'] = {key: value for key, value in sort.pop('modules').items() if key in misterProper}
+		modules = sort.pop('modules')
+		sort['modules'] = dict()
+		for moduleName, conf in modules.items():
+			moduleCleaned = {key: value for key, value in conf.items() if key in misterProper}
+			sort['modules'][moduleName] = moduleCleaned
+
+		#sort['modules'] = {key: value for key, value in modules.items() if key in misterProper}
+
+		print(sort['modules'])
 
 		try:
 			s = json.dumps(sort, indent = 4).replace('false', 'False').replace('true', 'True')
