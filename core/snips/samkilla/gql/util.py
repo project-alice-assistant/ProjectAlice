@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 def gql(query, replaceMap=None):
 	query = query.replace("\n", " ").replace("\t", " ").replace('"', '__QUOTES__')
 

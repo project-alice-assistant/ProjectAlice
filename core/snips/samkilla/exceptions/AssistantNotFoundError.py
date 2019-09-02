@@ -8,15 +8,15 @@ class AssistantNotFoundError(Exception):
 
 
 	@property
-	def status(self):
+	def status(self) -> str:
 		return self._status
 
 
 	@property
-	def message(self):
+	def message(self) -> str:
 		return self._message
 
 
 	@property
-	def context(self):
+	def context(self) -> str:
 		return self._context

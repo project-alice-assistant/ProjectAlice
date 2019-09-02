@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 import core.base.Managers as managers
 from core.base.Manager import Manager
 import requests

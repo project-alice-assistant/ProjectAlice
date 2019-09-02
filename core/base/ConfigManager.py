@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 from core.commons import commons
 import configSample
 

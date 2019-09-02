@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 import os
 
 import core.base.Managers    as managers

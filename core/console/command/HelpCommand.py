@@ -1,6 +1,3 @@
-# -*- coding: utf-8 -*-
-
-
 from core.console.Command import Command
 from core.console.input.InputArgument import InputArgument
 

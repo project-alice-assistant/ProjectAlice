@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 from core.snips.samkilla.gql.util import gql
 
 deleteAssistant = gql('''

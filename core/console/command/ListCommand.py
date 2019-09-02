@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 from terminaltables import DoubleTable
 
 from core.console.Command import Command

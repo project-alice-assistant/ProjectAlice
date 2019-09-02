@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 from core.console.Tools import indexOf
 from core.console.Tools import isInt
 from core.console.input.Input import Input

@@ -1,6 +1,3 @@
-# -*- coding: utf-8 -*-
-
-
 #
 # InputArgument is a command line argument
 #

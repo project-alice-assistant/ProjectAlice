@@ -1,6 +1,3 @@
-# -*- coding: utf-8 -*-
-
-
 class SnipsConsoleUser:
 
 	def __init__(self, data):

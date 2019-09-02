@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 class Wakeword:
 
 	def __init__(self, username: str):

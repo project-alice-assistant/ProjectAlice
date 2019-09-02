@@ -1,6 +1,3 @@
-# -*- coding: utf-8 -*-
-
-
 from core.console.Tools import isInt, toArray
 
 

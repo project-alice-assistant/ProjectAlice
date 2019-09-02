@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 import time
 import uuid
 from pathlib import Path

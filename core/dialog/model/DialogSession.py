@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 from paho.mqtt.client import MQTTMessage
 
 from core.commons import commons

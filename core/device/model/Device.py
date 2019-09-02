@@ -1,6 +1,3 @@
-# -*- coding: utf-8 -*-
-
-
 class Device(object):
 	def __init__(self, data: dict, connected: bool = False):
 		self._id 			= data['id']

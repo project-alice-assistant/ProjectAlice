@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 import json
 import wave
 from pathlib import Path
