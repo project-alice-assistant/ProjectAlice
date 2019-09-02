@@ -1,4 +1,4 @@
-def gql(query, replaceMap=None):
+def gql(query: str, replaceMap: dict = None) -> str:
 	query = query.replace("\n", " ").replace("\t", " ").replace('"', '__QUOTES__')
 
 	if replaceMap:

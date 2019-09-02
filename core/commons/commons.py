@@ -207,7 +207,12 @@ def getDuration(msg: MQTTMessage) -> int:
 	return duration
 
 
-def toCamelCase(string: str) -> str:
+def toCamelCase(string: str, replaceSepCharacters: bool = False, sepCharacters: tuple = None) -> str:
+	if replaceSepCharacters:
+		if not sepCharacters: sepCharacters = ('-', '_')
+		for char in string:
+			string.replace(char, ' ')
+
 	return ''.join(x.capitalize() for x in string.split(' '))
 
 

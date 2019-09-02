@@ -1,9 +1,9 @@
 import json
 from pathlib import Path
 
+from core.commons import commons
 from core.ProjectAliceExceptions import HttpError
 from core.snips.samkilla.models.EnumSkillImageUrl import EnumSkillImageUrl as EnumSkillImageUrlClass
-from core.snips.samkilla.models.util import skillNameToCamelCase
 from core.snips.samkilla.processors.IntentRemoteProcessor import IntentRemoteProcessor
 from core.snips.samkilla.processors.ModuleRemoteProcessor import ModuleRemoteProcessor
 from core.snips.samkilla.processors.SlotTypeRemoteProcessor import SlotTypeRemoteProcessor
@@ -728,7 +728,7 @@ class MainProcessor:
 		cachedIndexedSkills = self._ctx.Skill.listSkillsByUserIdAndAssistantId(userId=self._ctx.userId, assistantId=runOnAssistantId, fromCache=True)
 
 		for skill in cachedIndexedSkills:
-			moduleName = skillNameToCamelCase(skill['name'])
+			moduleName = commons.toCamelCase(string=skill['name'], replaceSepCharacters=True, sepCharacters=('/', '-', '_'))
 
 			if moduleFilter and moduleName != moduleFilter:
 				continue
@@ -757,7 +757,7 @@ class MainProcessor:
 				if intentName.startswith(skill['name'] + '_'):
 					intentName = intentName.replace(skill['name'] + '_', '')
 
-				intentName = skillNameToCamelCase(intentName)
+				intentName = commons.toCamelCase(string=intentName, replaceSepCharacters=True, sepCharacters=('/', '-', '_'))
 
 				utterances = list()
 				slots = list()
@@ -776,7 +776,7 @@ class MainProcessor:
 						start = hole['range']['start'] + positionOffset
 						end = hole['range']['end'] + positionOffset
 						slotName = slotIdAndNameMatching[hole['slotId']]['name']
-						slotName = skillNameToCamelCase(slotName)
+						slotName = commons.toCamelCase(string=slotName, replaceSepCharacters=True, sepCharacters=('/', '-', '_'))
 						newWord = '{' + word + self._ctx.Intent.GLUE_SLOT_WORD + slotName + '}'
 						text = text[:start] + newWord + text[end:]
 						positionOffset += len(newWord) - len(word)
@@ -790,7 +790,7 @@ class MainProcessor:
 						continue
 
 					values = self._ctx.Entity.listEntityValuesByEntityId(entityId=entity['id'])
-					entityName = skillNameToCamelCase(entity['name'])
+					entityName = commons.toCamelCase(string=entity['name'], replaceSepCharacters=True, sepCharacters=('/', '-', '_'))
 					typeEntityMatching[entity['id']] = entityName
 
 					modules[moduleName]['slotTypes'].append({
@@ -807,7 +807,7 @@ class MainProcessor:
 
 				for slot in intent['slots']:
 					slots.append({
-						'name'           : skillNameToCamelCase(slot['name']),
+						'name'           : commons.toCamelCase(string=slot['name'], replaceSepCharacters=True, sepCharacters=('/', '-', '_')),
 						'description'    : slot['description'],
 						'required'       : slot['required'],
 						'type'           : slot['entityId'] if slot['entityId'].startswith('snips/') else typeEntityMatching[slot['entityId']],
