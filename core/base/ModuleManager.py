@@ -106,7 +106,11 @@ class ModuleManager(Manager):
 							if conditionValue and not managers.ASRManager.asr.capableOfArbitraryCapture:
 								raise ModuleNotConditionCompliant
 
-				name = commons.toCamelCase(moduleName)
+				if ' ' in moduleName:
+					name = commons.toCamelCase(moduleName)	
+				else:
+					name = moduleName
+
 				moduleInstance = self.importFromModule(moduleName=name, isUpdate=isUpdate)
 
 				if moduleInstance:
