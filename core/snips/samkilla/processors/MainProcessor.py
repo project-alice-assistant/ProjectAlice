@@ -365,7 +365,7 @@ class MainProcessor:
 								if not synonym: continue
 								slotTypesModulesValues[moduleSlotType['name']][moduleSlotValue['value']][synonym] = True
 
-				# We need all intents values of all modules, even if there is a module filter
+				# We need all intents values of all modules, even if there is a module filters
 				for moduleIntent in module['intents']:
 					if moduleIntent['name'] not in intentsModulesValues:
 						intentNameSkillMatching[moduleIntent['name']] = modulePath.name
@@ -389,7 +389,7 @@ class MainProcessor:
 						intentsModulesValues[moduleIntent['name']]['slots'].setdefault(moduleSlot['name'], moduleSlot)
 
 				if moduleFilter and moduleFilter != modulePath.name:
-					del self._modules[module['name']]
+					del self._modules[module['module']]
 
 		return slotTypesModulesValues, intentsModulesValues, intentNameSkillMatching
 
@@ -487,7 +487,7 @@ class MainProcessor:
 				slotTypeCacheData = self._savedAssistants[languageFilter][runOnAssistantId]['slotTypes'][slotTypeName]
 
 				entityId = slotTypeCacheData['entityId']
-				self._ctx.Entity.delete(entityId=entityId, language=languageFilter)
+				self._ctx.entity.delete(entityId=entityId, language=languageFilter)
 
 				hasDeprecatedSlotTypes.append(slotTypeName)
 
@@ -574,15 +574,15 @@ class MainProcessor:
 				intentId = intentCacheData['intentId']
 
 				try:
-					self._ctx.Intent.delete(intentId=intentId)
+					self._ctx.intent.delete(intentId=intentId)
 
 				except HttpError as he:
 					isAttachToSkillIds = (json.loads(json.loads(he.message)['message'])['skillIds'])
 
 					for isAttachToSkillId in isAttachToSkillIds:
-						self._ctx.Intent.removeFromSkill(intentId=intentId, skillId=isAttachToSkillId, userId=self._ctx.userId, deleteAfter=False)
+						self._ctx.intent.removeFromSkill(intentId=intentId, skillId=isAttachToSkillId, userId=self._ctx.userId, deleteAfter=False)
 
-					self._ctx.Intent.delete(intentId=intentId)
+					self._ctx.intent.delete(intentId=intentId)
 
 				hasDeprecatedIntents.append(intentName)
 
@@ -668,13 +668,13 @@ class MainProcessor:
 
 				for slotTypeName in slotTypeKeys:
 					entityId = moduleCacheData['slotTypes'][slotTypeName]['entityId']
-					self._ctx.Entity.delete(entityId=entityId, language=languageFilter)
+					self._ctx.entity.delete(entityId=entityId, language=languageFilter)
 
 				for intentName in intentKeys:
 					intentId = moduleCacheData['intents'][intentName]['intentId']
-					self._ctx.Intent.removeFromSkill(userId=self._ctx.userId, skillId=skillId, intentId=intentId, deleteAfter=True)
+					self._ctx.intent.removeFromSkill(userId=self._ctx.userId, skillId=skillId, intentId=intentId, deleteAfter=True)
 
-				self._ctx.Skill.removeFromAssistant(assistantId=runOnAssistantId, skillId=skillId, deleteAfter=True)
+				self._ctx.skill.removeFromAssistant(assistantId=runOnAssistantId, skillId=skillId, deleteAfter=True)
 
 				hasDeprecatedModules.append(moduleName)
 
@@ -693,9 +693,9 @@ class MainProcessor:
 	def syncRemoteToLocal(self, runOnAssistantId: str, moduleFilter: str = None, languageFilter: str = None):
 
 		# Build cache
-		# ?? remoteIndexedEntities = self._ctx.Entity.listEntitiesByUserEmail(userEmail=self._ctx.userEmail, returnAllCacheIndexedBy='id')
-		remoteIndexedIntents = self._ctx.Intent.listIntentsByUserId(userId=self._ctx.userId, returnAllCacheIndexedBy='id')
-		remoteIndexedSkills = self._ctx.Skill.listSkillsByUserId(userId=self._ctx.userId, returnAllCacheIndexedBy='id')
+		# ?? remoteIndexedEntities = self._ctx.entity.listEntitiesByUserEmail(userEmail=self._ctx.userEmail, returnAllCacheIndexedBy='id')
+		remoteIndexedIntents = self._ctx.intent.listIntentsByUserId(userId=self._ctx.userId, returnAllCacheIndexedBy='id')
+		remoteIndexedSkills = self._ctx.skill.listSkillsByUserId(userId=self._ctx.userId, returnAllCacheIndexedBy='id')
 		hasFork = False
 
 		# Check for fork and execute fork if needed
@@ -715,20 +715,20 @@ class MainProcessor:
 					intentId = intent['id']
 
 					if intentId not in remoteIndexedIntents:
-						intentId = self._ctx.Skill.forkSkillIntent(skillId=skillId, sourceIntentId=intentId, userId=self._ctx.userId)
+						intentId = self._ctx.skill.forkSkillIntent(skillId=skillId, sourceIntentId=intentId, userId=self._ctx.userId)
 						self._ctx.log('[Forked] Intent from {} to {} used in skill {}'.format(intent['id'], intentId, skillId))
 						hasFork = True
 
 		if hasFork:
 			# Rebuild cache
-			self._ctx.Entity.listEntitiesByUserEmail(userEmail=self._ctx.userEmail)
-			self._ctx.Intent.listIntentsByUserId(userId=self._ctx.userId)
-			self._ctx.Skill.listSkillsByUserId(userId=self._ctx.userId)
+			self._ctx.entity.listEntitiesByUserEmail(userEmail=self._ctx.userEmail)
+			self._ctx.intent.listIntentsByUserId(userId=self._ctx.userId)
+			self._ctx.skill.listSkillsByUserId(userId=self._ctx.userId)
 
 		# Build each module configuration
 		modules = dict()
 
-		cachedIndexedSkills = self._ctx.Skill.listSkillsByUserIdAndAssistantId(userId=self._ctx.userId, assistantId=runOnAssistantId, fromCache=True)
+		cachedIndexedSkills = self._ctx.skill.listSkillsByUserIdAndAssistantId(userId=self._ctx.userId, assistantId=runOnAssistantId, fromCache=True)
 
 		for skill in cachedIndexedSkills:
 			moduleName = commons.toCamelCase(string=skill['name'], replaceSepCharacters=True, sepCharacters=('/', '-', '_'))
@@ -751,7 +751,7 @@ class MainProcessor:
 				'hash'     : ''
 			}
 
-			cachedIndexedIntents = self._ctx.Intent.listIntentsByUserIdAndSkillId(userId=self._ctx.userId, skillId=skill['id'], fromCache=True)
+			cachedIndexedIntents = self._ctx.intent.listIntentsByUserIdAndSkillId(userId=self._ctx.userId, skillId=skill['id'], fromCache=True)
 			typeEntityMatching = dict()
 
 			for intent in cachedIndexedIntents:
@@ -765,7 +765,7 @@ class MainProcessor:
 				utterances = list()
 				slots = list()
 				slotIdAndNameMatching = dict()
-				objectUtterances = self._ctx.Intent.listUtterancesByIntentId(intentId=intent['id'])
+				objectUtterances = self._ctx.intent.listUtterancesByIntentId(intentId=intent['id'])
 
 				for slot in intent['slots']:
 					slotIdAndNameMatching[slot['id']] = slot
@@ -780,19 +780,19 @@ class MainProcessor:
 						end = hole['range']['end'] + positionOffset
 						slotName = slotIdAndNameMatching[hole['slotId']]['name']
 						slotName = commons.toCamelCase(string=slotName, replaceSepCharacters=True, sepCharacters=('/', '-', '_'))
-						newWord = '{' + word + self._ctx.Intent.GLUE_SLOT_WORD + slotName + '}'
+						newWord = '{' + word + self._ctx.intent.GLUE_SLOT_WORD + slotName + '}'
 						text = text[:start] + newWord + text[end:]
 						positionOffset += len(newWord) - len(word)
 
 					utterances.append(text)
 
-				cachedIndexedEntities = self._ctx.Entity.listEntitiesByUserEmailAndIntentId(userEmail=self._ctx.userEmail, intentId=intent['id'], fromCache=True)
+				cachedIndexedEntities = self._ctx.entity.listEntitiesByUserEmailAndIntentId(userEmail=self._ctx.userEmail, intentId=intent['id'], fromCache=True)
 
 				for entity in cachedIndexedEntities:
 					if entity['id'] in typeEntityMatching:
 						continue
 
-					values = self._ctx.Entity.listEntityValuesByEntityId(entityId=entity['id'])
+					values = self._ctx.entity.listEntityValuesByEntityId(entityId=entity['id'])
 					entityName = commons.toCamelCase(string=entity['name'], replaceSepCharacters=True, sepCharacters=('/', '-', '_'))
 					typeEntityMatching[entity['id']] = entityName
 

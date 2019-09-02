@@ -61,6 +61,21 @@ class SamkillaManager(Manager):
 
 
 	@property
+	def entity(self) -> Entity:
+		return self._entity
+
+
+	@property
+	def intent(self) -> Intent:
+		return self._intent
+
+
+	@property
+	def skill(self) -> Skill:
+		return self._skill
+
+
+	@property
 	def userEmail(self) -> str:
 		return self._userEmail
 
