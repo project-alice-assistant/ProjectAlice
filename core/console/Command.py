@@ -65,12 +65,12 @@ class Command:
 
 	@property
 	def container(self):
-		return self.container
+		return self._container
 
 
 	@container.setter
 	def container(self, container):
-		self.container = container
+		self._container = container
 
 
 	def setApplication(self, application):

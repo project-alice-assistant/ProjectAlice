@@ -26,7 +26,7 @@ class Application(ConsoleApplication):
 			self._commandsRegistered = True
 
 		for command in self.commands.values():
-			command.container(self._container)
+			command.container = self._container
 
 		super().run(inputt)
 
