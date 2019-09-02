@@ -153,10 +153,6 @@ class TTS:
 
 	def onSay(self, session: DialogSession):
 		self._text = self._checkText(session)
-		if not self._text:
-			self._cacheFile = None
-			return
-
-		self._cacheFile = self.cacheDirectory() / (self._hash(text=self._text) + '.wav')
-
-		self.cacheDirectory().mkdir(parents=True, exist_ok=True)
+		if self._text:
+			self._cacheFile = self.cacheDirectory() / (self._hash(text=self._text) + '.wav')
+			self.cacheDirectory().mkdir(parents=True, exist_ok=True)

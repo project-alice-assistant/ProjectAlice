@@ -193,7 +193,7 @@ class AmazonTTS(TTS):
 	def onSay(self, session: DialogSession):
 		super().onSay(session)
 
-		if not self._cacheFile or not self._text:
+		if not self._text:
 			return
 
 		tmpFile = self.TEMP_ROOT / self._cacheFile.with_suffix('.mp3')
