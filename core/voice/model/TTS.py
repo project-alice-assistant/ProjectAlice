@@ -35,7 +35,6 @@ class TTS:
 			self._type = managers.ConfigManager.getAliceConfigByName('ttsType')
 			self._voice = managers.ConfigManager.getAliceConfigByName('ttsVoice')
 
-		self._cacheDirectory = ''
 		self._cacheFile: Path = Path()
 		self._text = ''
 
@@ -53,8 +52,6 @@ class TTS:
 			voice = self._voice
 			self._voice = next(iter(self._supportedLangAndVoices[self._lang][self._type]))
 			self._logger.info('[TTS] Voice "{}" not found, falling back to "{}"'.format(voice, self._voice))
-
-		self._cacheDir()
 
 		self.TEMP_ROOT.mkdir(parents=True, exist_ok=True)
 
@@ -74,9 +71,8 @@ class TTS:
 					self._voice = next(iter(self._supportedLangAndVoices[self._lang][self._type]))
 
 
-	def _cacheDir(self):
-		self._cacheDirectory = Path(managers.TTSManager.CACHE_ROOT, self.TTS.value, self._lang, self._type, self._voice)
-
+	@property cacheDirectory(self) -> Path:
+		return Path(managers.TTSManager.CACHE_ROOT, self.TTS.value, self._lang, self._type, self._voice)
 
 	@property
 	def lang(self) -> str:
@@ -85,12 +81,7 @@ class TTS:
 
 	@lang.setter
 	def lang(self, value: str):
-		if value not in self._supportedLangAndVoices:
-			self._lang = 'en-US'
-		else:
-			self._lang = value
-
-		self._cacheDir()
+		self._lang = value if value in self._supportedLangAndVoices else 'en-US'
 
 
 	@property
@@ -100,13 +91,8 @@ class TTS:
 
 	@voice.setter
 	def voice(self, value: str):
-		if value.lower() not in self._supportedLangAndVoices[self._lang][self._type]:
-			self._voice = next(iter(self._supportedLangAndVoices[self._lang][self._type]))
-		else:
-			self._voice = value
-
-		self._cacheDir()
-
+		self._voice = value if value.lower() in self._supportedLangAndVoices[self._lang][self._type] else next(iter(self._supportedLangAndVoices[self._lang][self._type]))
+			
 
 	@property
 	def online(self) -> bool:
@@ -170,10 +156,9 @@ class TTS:
 		self._text = self._checkText(session)
 		if not self._text:
 			self._cacheFile = None
-			self._text = ''
 			return
 
-		self._cacheFile = Path(self._cacheDirectory, self._hash(text=self._text) + '.wav')
+		self._cacheFile = self.cacheDirectory / (self._hash(text=self._text) + '.wav')
 
-		if not self._cacheFile.parent.is_dir():
-			self._cacheFile.parent.mkdir(parents=True, exist_ok=True)
+		if not self.cacheDirectory.is_dir():
+			self.cacheDirectory.mkdir(parents=True, exist_ok=True)
