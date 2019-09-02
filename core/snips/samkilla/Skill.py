@@ -1,8 +1,7 @@
-# -*- coding: utf-8 -*-
 import typing
 
 from core.snips import SamkillaManager
-from core.snips.samkilla.exceptions.HttpError import HttpError
+from core.ProjectAliceExceptions import HttpError
 from core.snips.samkilla.gql.assistants.patchAssistantSkills import patchAssistantSkills
 from core.snips.samkilla.gql.skills.createSkill import createSkill
 from core.snips.samkilla.gql.skills.deleteSkill import deleteSkill
@@ -14,7 +13,9 @@ from core.snips.samkilla.models.EnumSkillImageUrl import EnumSkillImageUrl as En
 EnumSkillImageUrl = EnumSkillImageUrlClass()
 
 import re
+
 intent_regex = re.compile(r'intent_([a-zA-Z0-9]+)')
+
 
 class Skill:
 
@@ -33,15 +34,15 @@ class Skill:
 
 
 	def listSkillsByUserId(self, userId: str, skillFilter: str = None, skillFilterAttribute: str = 'id', languageFilter: str = None,
-	                       intentId: str = None, returnAllCacheIndexedBy: str = None, page: int = 1, totalSkills: int = None) -> typing.Iterable:
+						   intentId: str = None, returnAllCacheIndexedBy: str = None, page: int = 1, totalSkills: int = None) -> typing.Iterable:
 		if not totalSkills:
 			totalSkills = list()
 
 		variables = {
 			'userId': userId,
 			'offset': (page - 1) * 50,
-			'limit': 50,
-			'sort': 'lastUpdated'
+			'limit' : 50,
+			'sort'  : 'lastUpdated'
 		}
 
 		# 50 is the max limit server side
@@ -50,8 +51,8 @@ class Skill:
 
 		gqlRequest = [{
 			'operationName': 'SkillsWithUsageQuery',
-			'variables': variables,
-			'query': skillsWithUsageQuery
+			'variables'    : variables,
+			'query'        : skillsWithUsageQuery
 		}]
 		response = self._ctx.postGQLBrowserly(gqlRequest)
 
@@ -103,7 +104,7 @@ class Skill:
 
 
 	def create(self, assistantId: str, language: str, name: str = 'Untitled', description: str = '', imageKey: str = EnumSkillImageUrl.default,
-	           attachToAssistant: bool = True, intents: typing.Iterable = None) -> str:
+			   attachToAssistant: bool = True, intents: typing.Iterable = None) -> str:
 		"""
 		Warning: mind the language parameter if the assistant language is EN, skill must set language to EN
 		no error will be shown and the skill won't be created
@@ -113,17 +114,17 @@ class Skill:
 
 		gqlRequest = [{
 			'operationName': 'createSkill',
-			'variables': {
+			'variables'    : {
 				'input': {
 					'description': description,
-					'imageUrl': EnumSkillImageUrl.getImageUrl(self._ctx.ROOT_URL, imageKey),
-					'intents': intents,
-					'language': language,
-					'name': name,
-					'private': True
+					'imageUrl'   : EnumSkillImageUrl.getImageUrl(self._ctx.ROOT_URL, imageKey),
+					'intents'    : intents,
+					'language'   : language,
+					'name'       : name,
+					'private'    : True
 				}
 			},
-			'query': createSkill
+			'query'        : createSkill
 		}]
 		resp = self._ctx.postGQLBrowserly(gqlRequest)
 
@@ -144,13 +145,13 @@ class Skill:
 
 		gqlRequest = [{
 			'operationName': 'PatchAssistantSkills',
-			'variables': {
+			'variables'    : {
 				'assistantId': assistantId,
-				'input': {
+				'input'      : {
 					'skills': variablesSkills
 				}
 			},
-			'query': patchAssistantSkills
+			'query'        : patchAssistantSkills
 		}]
 		self._ctx.postGQLBrowserly(gqlRequest, rawResponse=True)
 
@@ -167,10 +168,10 @@ class Skill:
 
 		gqlRequest = [{
 			'operationName': 'editSkill',
-			'variables': {
+			'variables'    : {
 				'input': inputt
 			},
-			'query': editSkill
+			'query'        : editSkill
 		}]
 		self._ctx.postGQLBrowserly(gqlRequest, rawResponse=True)
 
@@ -178,8 +179,8 @@ class Skill:
 	def delete(self, skillId: str, reload: bool = True):
 		gqlRequest = [{
 			'operationName': 'deleteSkill',
-			'variables':  {'skillId': skillId},
-			'query': deleteSkill
+			'variables'    : {'skillId': skillId},
+			'query'        : deleteSkill
 		}]
 		self._ctx.postGQLBrowserly(gqlRequest)
 
@@ -198,13 +199,13 @@ class Skill:
 
 		gqlRequest = [{
 			'operationName': 'PatchAssistantSkills',
-			'variables': {
+			'variables'    : {
 				'assistantId': assistantId,
-				'input': {
+				'input'      : {
 					'skills': variablesSkills
 				}
 			},
-			'query': patchAssistantSkills
+			'query'        : patchAssistantSkills
 		}]
 		self._ctx.postGQLBrowserly(gqlRequest, rawResponse=True)
 
@@ -218,8 +219,8 @@ class Skill:
 	def forkSkillIntent(self, skillId: str, sourceIntentId: str, userId: str, newIntentName: str = None) -> str:
 		gqlRequest = [{
 			'operationName': 'forkSkillIntent',
-			'variables': {'skillId': skillId, 'intentId': sourceIntentId, 'newIntentName': newIntentName},
-			'query': forkSkillIntent
+			'variables'    : {'skillId': skillId, 'intentId': sourceIntentId, 'newIntentName': newIntentName},
+			'query'        : forkSkillIntent
 		}]
 
 		try:

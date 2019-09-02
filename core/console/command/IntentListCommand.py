@@ -1,7 +1,4 @@
-# -*- coding: utf-8 -*-
-
 import random
-
 from terminaltables import DoubleTable
 
 from core.base.ConfigManager import ConfigManager
@@ -21,8 +18,8 @@ from core.voice.LanguageManager import LanguageManager
 # IntentListCommand list modules from dedicated repository
 #
 class IntentListCommand(Command):
-
 	DESCRIPTION_MAX = 100
+
 
 	def __init__(self):
 		super().__init__()
@@ -58,6 +55,7 @@ class IntentListCommand(Command):
 			languageFilter=languageManager.activeLanguage
 		)
 
+
 	def create(self):
 		self.setName('intent:list')
 		self.setDescription('List intents and utterances for a given module')
@@ -68,6 +66,7 @@ class IntentListCommand(Command):
 		])
 		self.setHelp('> The %command.name% list intents and utterances:\n'
 					 '  <fg:magenta>%command.full_name%<fg:reset> <fg:yellow>[-m|--module]<fg:reset> <fg:yellow>[-f|--full]<fg:reset> <fg:yellow>[-i|--intent=intentName]<fg:reset>')
+
 
 	def execute(self, inputt):
 		if inputt.getOption('intent'):
@@ -88,23 +87,21 @@ class IntentListCommand(Command):
 		table_instance = DoubleTable(TABLE_DATA)
 		table_instance.justify_columns[1] = 'center'
 
-
-		for dtIntentName, dtModuleName in self._intentNameSkillMatching.items():
+		for dtIntentName in self._intentNameSkillMatching:
 			tDesc = self._intentsModulesValues[dtIntentName]['__otherattributes__']['description']
 			tEnabledByDefault = self._intentsModulesValues[dtIntentName]['__otherattributes__']['enabledByDefault']
 
-			tUtterance, _ = random.choice(list(self._intentsModulesValues[dtIntentName]['utterances'].items()))
+			tUtterance = random.choice(list(self._intentsModulesValues[dtIntentName]['utterances']))
 
 			if not inputt.getOption('full'):
 				tDesc = (tDesc[:self.DESCRIPTION_MAX] + '..') if len(tDesc) > self.DESCRIPTION_MAX else tDesc
 				tUtterance = (tUtterance[:self.DESCRIPTION_MAX] + '..') if len(tUtterance) > self.DESCRIPTION_MAX else tUtterance
 
-
 			TABLE_DATA.append([
 				dtIntentName,
 				'X' if tEnabledByDefault else '',
-				'-' if len(tDesc) == 0 else tDesc,
-				'-' if len(tUtterance) == 0 else tUtterance
+				'-' if not tDesc else tDesc,
+				'-' if not tUtterance else tUtterance
 			])
 
 		self.write(table_instance.table)
@@ -131,7 +128,7 @@ class IntentListCommand(Command):
 						tDesc = (tDesc[:self.DESCRIPTION_MAX] + '..') if len(tDesc) > self.DESCRIPTION_MAX else tDesc
 
 					TABLE_DATA.append([
-						'-' if len(tDesc) == 0 else tDesc
+						'-' if not tDesc else tDesc
 					])
 
 		if not intentFound:
@@ -141,6 +138,7 @@ class IntentListCommand(Command):
 			return
 
 		self.write(table_instance.table)
+
 
 	def moduleMode(self, inputt):
 		TABLE_DATA = [['Intents of ' + inputt.getOption('module') + ' module']]
@@ -163,7 +161,7 @@ class IntentListCommand(Command):
 
 				TABLE_DATA.append([
 					dtIntentName,
-					'-' if len(tDesc) == 0 else tDesc,
+					'-' if not tDesc else tDesc,
 					'X' if tEnabledByDefault else ''
 				])
 

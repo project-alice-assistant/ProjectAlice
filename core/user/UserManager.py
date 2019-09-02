@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 from typing import Optional, Any
 
 import core.base.Managers as managers

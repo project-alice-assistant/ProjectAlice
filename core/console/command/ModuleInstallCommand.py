@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 import json
 import urllib.request
 
@@ -24,6 +22,7 @@ class ModuleInstallCommand(Command):
 		])
 		self.setHelp('> The %command.name% download and install a module from dedicated repository:\n'
 					 '  <fg:magenta>%command.full_name%<fg:reset> <fg:cyan>author/moduleName<fg:reset>')
+
 
 	def execute(self, inputt):
 		modulePath = inputt.getArgument('modulePath')
@@ -55,18 +54,18 @@ class ModuleInstallCommand(Command):
 
 			self.write('+ Informations:')
 			self.write('===============')
-			self.write('name: <fg:yellow>'+str(module['name'])+'<fg:reset>')
-			self.write('version: <fg:yellow>'+str(module['version'])+'<fg:reset>')
-			self.write('author: <fg:yellow>'+module['author']+'<fg:reset>')
-			self.write('maintainers: <fg:yellow>'+', '.join(module['maintainers'])+'<fg:reset>')
-			self.write('description: <fg:yellow>'+module['desc']+'<fg:reset>')
-			self.write('aliceMinVersion: <fg:yellow>'+module['aliceMinVersion']+'<fg:reset>')
-			self.write('pip requirements: <fg:yellow>'+', '.join(module['pipRequirements'])+'<fg:reset>')
-			self.write('system requirements: <fg:yellow>'+', '.join(module['systemRequirements'])+'<fg:reset>')
+			self.write('name: <fg:yellow>' + str(module['name']) + '<fg:reset>')
+			self.write('version: <fg:yellow>' + str(module['version']) + '<fg:reset>')
+			self.write('author: <fg:yellow>' + module['author'] + '<fg:reset>')
+			self.write('maintainers: <fg:yellow>' + ', '.join(module['maintainers']) + '<fg:reset>')
+			self.write('description: <fg:yellow>' + module['desc'] + '<fg:reset>')
+			self.write('aliceMinVersion: <fg:yellow>' + module['aliceMinVersion'] + '<fg:reset>')
+			self.write('pip requirements: <fg:yellow>' + ', '.join(module['pipRequirements']) + '<fg:reset>')
+			self.write('system requirements: <fg:yellow>' + ', '.join(module['systemRequirements']) + '<fg:reset>')
 			self.nl()
 			self.write('+ Conditions:')
 			self.write('=============')
-			self.write('lang: <fg:yellow>'+', '.join(module['conditions']['lang'])+'<fg:reset>')
+			self.write('lang: <fg:yellow>' + ', '.join(module['conditions']['lang']) + '<fg:reset>')
 
 			urllib.request.urlretrieve(url, "system/moduleInstallTickets/" + moduleName + '.install')
 

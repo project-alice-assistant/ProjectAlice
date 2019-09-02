@@ -1,10 +1,9 @@
-# -*- coding: utf-8 -*-
 import logging
 import subprocess
 import uuid
+from pathlib import Path
 
 import hashlib
-import os
 from pydub import AudioSegment
 
 import core.base.Managers as managers
@@ -15,7 +14,7 @@ from core.voice.model.TTSEnum import TTSEnum
 
 
 class TTS:
-	TEMP_ROOT = os.path.join('/tmp', 'tempTTS')
+	TEMP_ROOT = Path('/tmp/tempTTS')
 	TTS = None
 
 	def __init__(self, user: User = None):
@@ -35,8 +34,7 @@ class TTS:
 			self._type = managers.ConfigManager.getAliceConfigByName('ttsType')
 			self._voice = managers.ConfigManager.getAliceConfigByName('ttsVoice')
 
-		self._cacheDirectory = ''
-		self._cacheFile = ''
+		self._cacheFile: Path = Path()
 		self._text = ''
 
 
@@ -54,19 +52,16 @@ class TTS:
 			self._voice = next(iter(self._supportedLangAndVoices[self._lang][self._type]))
 			self._logger.info('[TTS] Voice "{}" not found, falling back to "{}"'.format(voice, self._voice))
 
-		self._cacheDir()
-
-		if not os.path.isdir(self.TEMP_ROOT):
-			os.mkdir(self.TEMP_ROOT)
+		self.TEMP_ROOT.mkdir(parents=True, exist_ok=True)
 
 		if self.TTS == TTSEnum.SNIPS:
 			voiceFile = 'cmu_{}_{}'.format(managers.LanguageManager.activeCountryCode.lower(), self._voice)
-			if not os.path.isfile(os.path.join(commons.rootDir(), 'system', 'voices', voiceFile)):
+			if not Path(commons.rootDir(), 'system/voices', voiceFile).is_file():
 				self._logger.info('[TTS] Using "{}" as TTS with voice "{}" but voice file not found. Downloading...'.format(self.TTS.value, self._voice))
 
 				process = subprocess.run([
 					'wget', 'https://github.com/MycroftAI/mimic1/blob/development/voices/{}.flitevox?raw=true'.format(voiceFile),
-					'-O', os.path.join(commons.rootDir(), 'var', 'voices', '{}.flitevox'.format(voiceFile))
+					'-O', Path(commons.rootDir(),'var/voices/{}.flitevox'.format(voiceFile))
 				],
 				stdout=subprocess.PIPE)
 
@@ -75,9 +70,8 @@ class TTS:
 					self._voice = next(iter(self._supportedLangAndVoices[self._lang][self._type]))
 
 
-	def _cacheDir(self):
-		self._cacheDirectory = os.path.join(managers.TTSManager.CACHE_ROOT, self.TTS.value, self._lang, self._type, self._voice)
-
+	def cacheDirectory(self) -> Path:
+		return Path(managers.TTSManager.CACHE_ROOT, self.TTS.value, self._lang, self._type, self._voice)
 
 	@property
 	def lang(self) -> str:
@@ -86,12 +80,7 @@ class TTS:
 
 	@lang.setter
 	def lang(self, value: str):
-		if value not in self._supportedLangAndVoices:
-			self._lang = 'en-US'
-		else:
-			self._lang = value
-
-		self._cacheDir()
+		self._lang = value if value in self._supportedLangAndVoices else 'en-US'
 
 
 	@property
@@ -101,13 +90,8 @@ class TTS:
 
 	@voice.setter
 	def voice(self, value: str):
-		if value.lower() not in self._supportedLangAndVoices[self._lang][self._type]:
-			self._voice = next(iter(self._supportedLangAndVoices[self._lang][self._type]))
-		else:
-			self._voice = value
-
-		self._cacheDir()
-
+		self._voice = value if value.lower() in self._supportedLangAndVoices[self._lang][self._type] else next(iter(self._supportedLangAndVoices[self._lang][self._type]))
+			
 
 	@property
 	def online(self) -> bool:
@@ -125,8 +109,8 @@ class TTS:
 
 
 	@staticmethod
-	def _mp3ToWave(src: str, dest: str):
-		subprocess.run(['mpg123', '-q', '-w', dest, src])
+	def _mp3ToWave(src: Path, dest: Path):
+		subprocess.run(['mpg123', '-q', '-w', str(dest), str(src)])
 
 
 	def _hash(self, text: str) -> str:
@@ -134,13 +118,13 @@ class TTS:
 		return hashlib.md5(string.encode('utf-8')).hexdigest()
 
 
-	def _speak(self, file: str, session: DialogSession):
+	def _speak(self, file: Path, session: DialogSession):
 		uid = str(uuid.uuid4())
 		managers.MqttServer.playSound(
-			soundFile=os.path.splitext(os.path.basename(file))[0],
+			soundFile=file.stem,
 			sessionId=session.sessionId,
 			siteId=session.siteId,
-			root=os.path.dirname(file),
+			root=file.parent,
 			uid=uid
 		)
 
@@ -169,12 +153,6 @@ class TTS:
 
 	def onSay(self, session: DialogSession):
 		self._text = self._checkText(session)
-		if not self._text:
-			self._cacheFile = ''
-			self._text = ''
-			return
-
-		self._cacheFile = os.path.join(self._cacheDirectory, self._hash(text=self._text) + '.wav')
-
-		if not os.path.isdir(os.path.dirname(self._cacheFile)):
-			os.makedirs(os.path.dirname(self._cacheFile), exist_ok=True)
+		if self._text:
+			self._cacheFile = self.cacheDirectory() / (self._hash(text=self._text) + '.wav')
+			self.cacheDirectory().mkdir(parents=True, exist_ok=True)

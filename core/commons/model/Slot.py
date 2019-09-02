@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 class Slot(object):
 	def __init__(self, data):
 		self._slotName = data['slotName']

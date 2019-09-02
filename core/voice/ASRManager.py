@@ -1,11 +1,10 @@
-# -*- coding: utf-8 -*-
 import time
 import uuid
+from pathlib import Path
 
 import core.base.Managers as managers
 from core.base.Manager import Manager
 from core.commons import commons
-
 from core.dialog.model.DialogSession import DialogSession
 from core.voice.model import ASR
 from core.voice.model.SnipsASR import SnipsASR
@@ -93,7 +92,7 @@ class ASRManager(Manager):
 			else:
 				managers.MqttServer.publish(topic='hermes/nlu/intentNotRecognized')
 				managers.MqttServer.playSound(
-					soundFile=commons.rootDir() + '/assistant/custom_dialogue/sound/error.wav',
+					soundFile=Path(commons.rootDir(), 'assistant/custom_dialogue/sound/error.wav'),
 					sessionId=uuid.uuid4(),
 					absolutePath=True,
 					siteId=session.siteId

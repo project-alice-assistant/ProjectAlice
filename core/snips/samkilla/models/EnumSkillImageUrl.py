@@ -1,13 +1,11 @@
-# -*- coding: utf-8 -*-
-
 import os
 
 from core.snips.samkilla.models.Singleton import Singleton
 
 DEFAULT_RESOURCE = 'default-bundle.svg'
 
-class EnumSkillImageUrl(Singleton):
 
+class EnumSkillImageUrl(Singleton):
 	default = DEFAULT_RESOURCE
 	air = 'bundle-air.svg'
 	assistant = 'bundle-assistant.svg'
@@ -61,21 +59,21 @@ class EnumSkillImageUrl(Singleton):
 	wind = 'bundle-wind.svg'
 	yoga = 'bundle-yoga.svg'
 
+
 	def __init__(self):
 		Singleton.__init__(self, 'EnumSkillImageUrl')
 
-	def getResourceFileByAttr(self, attrName):
+
+	def getResourceFileByAttr(self, attrName: str) -> str:
 		return getattr(self, attrName)
 
-	@staticmethod
-	def getImageUrl(urlPrefix, enumImageUrlKey=DEFAULT_RESOURCE):
-		return urlPrefix + "/images/bundles/" + enumImageUrlKey
 
 	@staticmethod
-	def urlToResourceKey(url):
-		attrName = os.path.basename(url).replace('.svg', '').replace('bundle', '').replace('-', '')
-
-		return attrName
+	def getImageUrl(urlPrefix: str, enumImageUrlKey: str = DEFAULT_RESOURCE):
+		return '{}/images/bundles/{}'.format(urlPrefix, enumImageUrlKey)
 
 
+	@staticmethod
+	def urlToResourceKey(url: str) -> str:
+		return os.path.basename(url).replace('.svg', '').replace('bundle', '').replace('-', '')
 

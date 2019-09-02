@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 import inspect
 import json
 import logging
@@ -136,7 +135,7 @@ class Module(object):
 
 
 	def getResource(self, moduleName: str = '', resourcePathFile: str = '') -> str:
-		return Path(commons.rootDir(), 'modules', moduleName or self.name, resourcePathFile)
+		return str(Path(commons.rootDir(), 'modules', moduleName or self.name, resourcePathFile))
 
 
 	def getConfig(self, key: str) -> typing.Any:

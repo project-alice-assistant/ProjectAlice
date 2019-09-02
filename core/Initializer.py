@@ -1,8 +1,6 @@
-# -*- coding: utf-8 -*-
 import importlib
 import json
 import logging
-import os
 import shutil
 import subprocess
 import time
@@ -17,14 +15,14 @@ class Initializer:
 
 	NAME = 'ProjectAlice'
 
-	_WPA_FILE = '''country=%COUNTRY%
+	_WPA_FILE = '''country={wifiCountryCode}
 ctrl_interface=DIR=/var/run/wpa_supplicant GROUP=netdev
 update_config=1
 
 network={
-    ssid="%SSID%"
+    ssid="{wifiNetworkName}"
     scan_ssid=1
-    psk="%PASS%"
+    psk="{wifiWPAPass}"
     key_mgmt=WPA-PSK
 }
 	'''
@@ -36,7 +34,7 @@ network={
 		confsFile = Path(commons.rootDir(), 'config.py')
 		confsSample = Path(commons.rootDir(), 'configSample.py')
 
-		initFile = Path('/boot', 'ProjectAlice.yaml')
+		initFile = Path('/boot/ProjectAlice.yaml')
 		if not initFile.exists() and not confsFile.exists():
 			self.fatal('Init file not found and there\'s no configuration file, aborting Project Alice start')
 		elif not initFile.exists():
@@ -53,7 +51,7 @@ network={
 
 		elif not confsFile.exists() and confsSample.exists():
 			self.warning('No config file found, creating it from sample file')
-			shutil.copyfile(src=os.path.join(commons.rootDir(), 'configSample.py'), dst=os.path.join(commons.rootDir(), 'config.py'))
+			shutil.copyfile(src=Path(commons.rootDir(),'configSample.py'), dst=Path(commons.rootDir(),'config.py'))
 
 		elif confsFile.exists() and not initConfs['forceRewrite']:
 			self.warning('Config file already existing and user not wanting to rewrite, aborting')
@@ -61,8 +59,8 @@ network={
 
 		elif confsFile.exists() and initConfs['forceRewrite']:
 			self.warning('Config file found and force rewrite specified, let\'s restart all this!')
-			os.remove(os.path.join(commons.rootDir(), 'config.py'))
-			shutil.copyfile(src=os.path.join(commons.rootDir(), 'configSample.py'), dst=os.path.join(commons.rootDir(), 'config.py'))
+			Path(commons.rootDir(), 'config.py').unlink()
+			shutil.copyfile(src=Path(commons.rootDir(),'configSample.py'), dst=Path(commons.rootDir(),'config.py'))
 
 
 		config = importlib.import_module('config')
@@ -73,22 +71,13 @@ network={
 
 		# Let's connect to wifi!
 		self._logger.info('Setting up wifi')
-		wpaFile = self._WPA_FILE.replace(
-			'%COUNTRY%',
-			initConfs['wifiCountryCode']
-		).replace(
-			'%SSID%',
-			initConfs['wifiNetworkName']
-		).replace(
-			'%PASS%',
-			initConfs['wifiWPAPass']
-		)
+		wpaFile = self._WPA_FILE.format(**initConfs)
 
 		file = Path(commons.rootDir(), 'wifi.conf')
 		file.write_text(wpaFile)
 
 		self._logger.info('wpa_supplicant.conf')
-		subprocess.run(['sudo', 'mv', file, os.path.join('/etc', 'wpa_supplicant', 'wpa_supplicant.conf')])
+		subprocess.run(['sudo', 'mv', file, Path('/etc/wpa_supplicant/wpa_supplicant.conf')])
 
 		self._logger.info('Turning off wifi')
 		subprocess.run(['sudo', 'ifconfig', 'wlan0', 'down'])
@@ -133,7 +122,7 @@ network={
 			confs['awsSecretKey'] = initConfs['awsSecretKey']
 
 			if initConfs['googleServiceFile']:
-				googleCreds = Path(commons.rootDir(), 'credentials', 'googlecredentials.json')
+				googleCreds = Path(commons.rootDir(), 'credentials/googlecredentials.json')
 				googleCreds.write_text(json.dumps(initConfs['googleServiceFile']))
 
 
@@ -163,17 +152,17 @@ network={
 				break
 
 		if audioHardware == 'respeaker2' or audioHardware == 'respeaker4':
-			subprocess.call(['sudo', os.path.join(commons.rootDir(), 'system', 'scripts', 'audioHardware', 'respeakers.sh')])
-			subprocess.run(['sudo', 'sed', '-i', '-e', 's/%HARDWARE%/{}/'.format(audioHardware), os.path.join('/etc', 'systemd', 'system', 'snipsledcontrol.service')])
+			subprocess.call(['sudo', Path(commons.rootDir(), 'system/scripts/audioHardware/respeakers.sh')])
+			subprocess.run(['sudo', 'sed', '-i', '-e', 's/%HARDWARE%/{}/'.format(audioHardware), Path('/etc/systemd/system/snipsledcontrol.service')])
 		elif audioHardware == 'respeaker7':
-			subprocess.call(['sudo', os.path.join(commons.rootDir(), 'system', 'scripts', 'audioHardware', 'respeaker7.sh')])
-			subprocess.run(['sudo', 'sed', '-i', '-e', 's/%HARDWARE%/respeaker7MicArray/', os.path.join('/etc', 'systemd', 'system', 'snipsledcontrol.service')])
+			subprocess.call(['sudo', Path(commons.rootDir(), 'system/scripts/audioHardware/respeaker7.sh')])
+			subprocess.run(['sudo', 'sed', '-i', '-e', 's/%HARDWARE%/respeaker7MicArray/', Path('/etc/systemd/system/snipsledcontrol.service')])
 		elif audioHardware == 'respeakerCoreV2':
-			subprocess.call(['sudo', os.path.join(commons.rootDir(), 'system', 'scripts', 'audioHardware', 'respeakerCoreV2.sh')])
-			subprocess.run(['sudo', 'sed', '-i', '-e', 's/%HARDWARE%/{}/'.format(audioHardware), os.path.join('/etc', 'systemd', 'system', 'snipsledcontrol.service')])
+			subprocess.call(['sudo', Path(commons.rootDir(), 'system/scripts/audioHardware/respeakerCoreV2.sh')])
+			subprocess.run(['sudo', 'sed', '-i', '-e', 's/%HARDWARE%/{}/'.format(audioHardware), Path('/etc/systemd/system/snipsledcontrol.service')])
 		elif audioHardware == 'matrixCreator' or audioHardware == 'matrixVoice':
-			subprocess.call(['sudo', os.path.join(commons.rootDir(), 'system', 'scripts', 'audioHardware', 'matrix.sh')])
-			subprocess.run(['sudo', 'sed', '-i', '-e', 's/%HARDWARE%/{}/'.format(audioHardware.lower()), os.path.join('/etc', 'systemd', 'system', 'snipsledcontrol.service')])
+			subprocess.call(['sudo', Path(commons.rootDir(), 'system/scripts/audioHardware/matrix.sh')])
+			subprocess.run(['sudo', 'sed', '-i', '-e', 's/%HARDWARE%/{}/'.format(audioHardware.lower()), Path('/etc/systemd/system/snipsledcontrol.service')])
 
 		subprocess.run(['sudo', 'systemctl', 'daemon-reload'])
 		
@@ -192,7 +181,7 @@ network={
 
 
 		self.warning('Initializer done with configuring')
-		os.remove(os.path.join('/boot', 'ProjectAlice.yaml'))
+		Path('/boot/ProjectAlice.yaml').unlink()
 
 
 	def fatal(self, text: str):

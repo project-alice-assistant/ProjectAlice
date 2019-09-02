@@ -1,10 +1,8 @@
-# -*- coding: utf-8 -*-
-
 import json
 import time
 import uuid
 
-import os
+from pathlib import Path
 import requests
 import tempfile
 
@@ -127,10 +125,7 @@ class SnipsConsoleManager(Manager):
 
 	def _trainingStatus(self, assistantId: str) -> TrainingStatusResponse:
 		req = self._req(url='/v2/training/assistant/{}'.format(assistantId), method='get')
-		try:
-			return TrainingStatusResponse(json.loads(req.content.decode()))
-		except Exception:
-			raise
+		return TrainingStatusResponse(json.loads(req.content.decode()))
 
 
 	def _handleTraining(self, assistantId: str):
@@ -169,8 +164,7 @@ class SnipsConsoleManager(Manager):
 			self._logger.info('[{}] Downloading assistant...'.format(self.name))
 			req = self._req(url='/v3/assistant/{}/download'.format(assistantId), method='get')
 
-			with open(os.path.join(tempfile.gettempdir(), 'assistant.zip'), 'wb') as f:
-				f.write(req.content)
+			Path(tempfile.gettempdir(), 'assistant.zip').write_bytes(req.content)
 
 			self._logger.info('[{}] Assistant {} trained and downloaded'.format(self.name, assistantId))
 			managers.ModuleManager.broadcast(method='onSnipsAssistantDownloaded')
@@ -183,8 +177,7 @@ class SnipsConsoleManager(Manager):
 
 	def _logout(self):
 		self._req(url='/v1/user/{}/accesstoken/{}'.format(self._user.userId, managers.ConfigManager.getSnipsConfiguration('project-alice', 'console_alias')), method='get')
-		if 'Authorization' in self._headers:
-			del self._headers['Authorization']
+		self._headers.pop('Authorization', None)
 		self._connected = False
 
 		managers.ConfigManager.updateSnipsConfiguration(parent='project-alice', key='console_token', value='')
@@ -213,8 +206,7 @@ class SnipsConsoleManager(Manager):
 		req = requests.request(method=method, url='https://external-gateway.snips.ai{}'.format(url), params=params, json=data, headers=self._headers, **kwargs)
 		if req.status_code == 401:
 			self._logger.warning('[{}] Console token has expired, need to login'.format(self.name))
-			if 'Authorization' in self._headers:
-				del self._headers['Authorization']
+			self._headers.pop('Authorization', None)
 			self._connected = False
 
 			managers.ConfigManager.updateSnipsConfiguration(parent='project-alice', key='console_token', value='')

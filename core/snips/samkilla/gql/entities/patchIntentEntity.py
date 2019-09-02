@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 from core.snips.samkilla.gql.entities.queries import fullCustomEntityFieldsFragment
 from core.snips.samkilla.gql.util import gql
 
@@ -14,5 +12,3 @@ mutation patchIntentEntity(
 }
 ${fullCustomEntityFieldsFragment}
 ''', {'fullCustomEntityFieldsFragment': fullCustomEntityFieldsFragment})
-
-

@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 import json
 
 import requests
@@ -15,8 +13,8 @@ from core.console.input.InputOption import InputOption
 # ModuleListCommand list modules from dedicated repository
 #
 class ModuleListCommand(Command):
-
 	DESCRIPTION_MAX = 100
+
 
 	def create(self):
 		self.setName('module:list')
@@ -28,6 +26,7 @@ class ModuleListCommand(Command):
 		])
 		self.setHelp('> The %command.name% list modules from dedicated repository created by a specific author:\n'
 					 '  <fg:magenta>%command.full_name%<fg:reset> <fg:cyan>authorName<fg:reset> <fg:yellow>[-f|--full]<fg:reset>')
+
 
 	def execute(self, inputt):
 		TABLE_DATA = [['Modules created by ' + inputt.getArgument('authorName')]]
@@ -44,7 +43,7 @@ class ModuleListCommand(Command):
 				self.write('<bg:red> Github API quota limitations reached<bg:reset>\n')
 				return
 			elif req.status_code // 100 == 4:
-				self.write('> Unknown author <fg:red>' + inputt.getArgument('authorName')+'<fg:reset>')
+				self.write('> Unknown author <fg:red>' + inputt.getArgument('authorName') + '<fg:reset>')
 				self.write('- You can use <fg:yellow>author:list<fg:reset> to list all authors\n')
 				return
 
@@ -52,8 +51,8 @@ class ModuleListCommand(Command):
 			modules = json.loads(result.decode())
 
 			for module in modules:
-				moduleInstallFile = module['html_url']\
-										.replace('github.com', 'raw.githubusercontent.com')\
+				moduleInstallFile = module['html_url'] \
+										.replace('github.com', 'raw.githubusercontent.com') \
 										.replace('/blob', '') \
 										.replace('/tree', '') \
 									+ '/' + module['name'] + '.install'
@@ -72,7 +71,7 @@ class ModuleListCommand(Command):
 						moduleDetails['name'],
 						moduleDetails['version'],
 						tLangs,
-					 	tDesc
+						tDesc
 					])
 
 				except Exception:
@@ -82,6 +81,5 @@ class ModuleListCommand(Command):
 		except Exception:
 			self.write('Error listing modules', 'red')
 			raise
-
 
 		self.write(table_instance.table)

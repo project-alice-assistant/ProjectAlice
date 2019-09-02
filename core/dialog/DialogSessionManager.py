@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 from typing import Dict, Optional
 
 from paho.mqtt.client import MQTTMessage

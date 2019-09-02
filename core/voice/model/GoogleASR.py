@@ -1,4 +1,5 @@
-# -*- coding: utf-8 -*-
+from pathlib import Path
+
 import os
 
 from google.cloud import speech
@@ -15,7 +16,7 @@ class GoogleASR(ASR):
 	def __init__(self):
 		super().__init__()
 
-		os.environ['GOOGLE_APPLICATION_CREDENTIALS'] = commons.rootDir() + '/credentials/googlecredentials.json'
+		os.environ['GOOGLE_APPLICATION_CREDENTIALS'] = Path(commons.rootDir(), 'credentials/googlecredentials.json')
 
 		self._client = speech.SpeechClient()
 		self._config = types.RecognitionConfig(

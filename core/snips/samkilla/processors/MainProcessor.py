@@ -1,24 +1,24 @@
-# -*- coding: utf-8 -*-
-
 import json
-
+import typing
 from pathlib import Path
 
-from core.snips.samkilla.exceptions.HttpError import HttpError
+from core.commons import commons
+from core.ProjectAliceExceptions import HttpError
+from core.snips import SamkillaManager
 from core.snips.samkilla.models.EnumSkillImageUrl import EnumSkillImageUrl as EnumSkillImageUrlClass
-from core.snips.samkilla.models.util import skillNameToCamelCase
 from core.snips.samkilla.processors.IntentRemoteProcessor import IntentRemoteProcessor
 from core.snips.samkilla.processors.ModuleRemoteProcessor import ModuleRemoteProcessor
 from core.snips.samkilla.processors.SlotTypeRemoteProcessor import SlotTypeRemoteProcessor
 
 EnumSkillImageUrl = EnumSkillImageUrlClass()
 
-class MainProcessor:
 
+class MainProcessor:
 	SAVED_ASSISTANTS_DIR = Path('var', 'assistants')
 	SAVED_MODULES_DIR = 'modules'
 
-	def __init__(self, ctx):
+
+	def __init__(self, ctx: SamkillaManager):
 		self._ctx = ctx
 		self._modules = dict()
 		self._savedAssistants = dict()
@@ -41,7 +41,7 @@ class MainProcessor:
 				self._savedIntents[lang.name][projectId.name] = dict()
 
 				for intent in directory.iterdir():
-					intentDefinition = json.load(intent.read_text())
+					intentDefinition = json.loads(intent.read_text())
 					self._savedIntents[lang.name][projectId.name][intentDefinition['name']] = intentDefinition
 
 
@@ -57,8 +57,9 @@ class MainProcessor:
 				self._savedSlots[lang.name][projectId.name] = dict()
 
 				for slot in directory.iterdir():
-					definition = json.load(slot.read_text())
+					definition = json.loads(slot.read_text())
 					self._savedSlots[lang.name][projectId.name][definition['name']] = definition
+
 
 	def initSavedAssistants(self):
 		for lang in self.SAVED_ASSISTANTS_DIR.glob('[!.]*'):
@@ -70,14 +71,16 @@ class MainProcessor:
 				filename = projectId / '_assistant.json'
 				self._savedAssistants[lang.name][projectId.name] = dict()
 
-				wholeAssistant = json.load(filename.read_text())
+				wholeAssistant = json.loads(filename.read_text())
 				self._savedAssistants[lang.name][projectId.name] = wholeAssistant
 				self.safeBaseDicts(projectId.name, lang.name)
 
-	def hasLocalAssistantByIdAndLanguage(self, assistantLanguage, assistantId):
+
+	def hasLocalAssistantByIdAndLanguage(self, assistantLanguage: str, assistantId: str) -> bool:
 		return assistantId in self._savedAssistants.get(assistantLanguage, dict())
 
-	def getLocalFirstAssistantByLanguage(self, assistantLanguage, returnId=False):
+
+	def getLocalFirstAssistantByLanguage(self, assistantLanguage: str, returnId: bool = False) -> typing.Any:
 		assistants = self._savedAssistants.get(assistantLanguage, dict())
 		if assistants:
 			firstAssistant = next(iter(assistants.values()))
@@ -85,32 +88,35 @@ class MainProcessor:
 		return None
 
 
-	def safeBaseDicts(self, assistantId, assistantLanguage):
+	def safeBaseDicts(self, assistantId: str, assistantLanguage: str):
 		baseDicts = ['modules', 'slotTypes', 'intents']
 
 		for baseDict in baseDicts:
 			self._savedAssistants[assistantLanguage][assistantId].setdefault(baseDict, dict())
 
-	def persistToLocalAssistantCache(self, assistantId, assistantLanguage):
+
+	def persistToLocalAssistantCache(self, assistantId: str, assistantLanguage: str):
 		assistantMountpoint = self.SAVED_ASSISTANTS_DIR / assistantLanguage / assistantId
 		assistantMountpoint.mkdir(parents=True, exist_ok=True)
 
 		self.safeBaseDicts(assistantId, assistantLanguage)
 
 		state = self._savedAssistants[assistantLanguage][assistantId]
-		assistantFile = assistantMountpoint / 'assistant.json'
+		assistantFile = assistantMountpoint / '_assistant.json'
 		assistantFile.write_text(json.dumps(state, indent=4, sort_keys=False, ensure_ascii=False))
-		# self._ctx.log('\n[Persist] local assistant {} in {}'.format(assistantId, assistantLanguage))
 
-	def syncRemoteToLocalAssistant(self, assistantId, assistantLanguage, assistantTitle):
+
+	# self._ctx.log('\n[Persist] local assistant {} in {}'.format(assistantId, assistantLanguage))
+
+	def syncRemoteToLocalAssistant(self, assistantId: str, assistantLanguage: str, assistantTitle: str):
 		if not self.hasLocalAssistantByIdAndLanguage(assistantId=assistantId, assistantLanguage=assistantLanguage):
 			newState = {
-				'id': assistantId,
-				'name': assistantTitle,
-				'language': assistantLanguage,
-				'modules': dict(),
+				'id'       : assistantId,
+				'name'     : assistantTitle,
+				'language' : assistantLanguage,
+				'modules'  : dict(),
 				'slotTypes': dict(),
-				'intents': dict()
+				'intents'  : dict()
 			}
 
 			if not assistantLanguage in self._savedAssistants:
@@ -121,25 +127,29 @@ class MainProcessor:
 			self.initSavedSlots()
 			self.initSavedIntents()
 
-	def syncRemoteToLocalModuleCache(self, assistantId, assistantLanguage, moduleName, syncState, persist=False):
+
+	def syncRemoteToLocalModuleCache(self, assistantId: str, assistantLanguage: str, moduleName: str, syncState: str, persist: bool = False):
 		self._savedAssistants[assistantLanguage][assistantId]['modules'][moduleName] = syncState
 
 		if persist:
 			self.persistToLocalAssistantCache(assistantId=assistantId, assistantLanguage=assistantLanguage)
 
-	def syncRemoteToLocalSlotTypeCache(self, assistantId, assistantLanguage, slotTypeName, syncState, persist=False):
+
+	def syncRemoteToLocalSlotTypeCache(self, assistantId: str, assistantLanguage: str, slotTypeName: str, syncState: str, persist: bool = False):
 		self._savedAssistants[assistantLanguage][assistantId]['slotTypes'][slotTypeName] = syncState
 
 		if persist:
 			self.persistToLocalAssistantCache(assistantId=assistantId, assistantLanguage=assistantLanguage)
 
-	def syncRemoteToLocalIntentCache(self, assistantId, assistantLanguage, intentName, syncState, persist=False):
+
+	def syncRemoteToLocalIntentCache(self, assistantId: str, assistantLanguage: str, intentName: str, syncState: str, persist: bool = False):
 		self._savedAssistants[assistantLanguage][assistantId]['intents'][intentName] = syncState
 
 		if persist:
 			self.persistToLocalAssistantCache(assistantId=assistantId, assistantLanguage=assistantLanguage)
 
-	def getModuleFromFile(self, moduleFile, moduleLanguage):
+
+	def getModuleFromFile(self, moduleFile: Path, moduleLanguage: str) -> typing.Optional[dict]:
 		module = json.loads(Path(moduleFile).read_text())
 		module['language'] = moduleLanguage
 
@@ -151,16 +161,20 @@ class MainProcessor:
 		self._ctx.log('[FilePull] Loading module {}'.format(module['module']))
 		return module
 
-	def getModuleSyncStateByLanguageAndAssistantId(self, moduleName, language, assistantId):
+
+	def getModuleSyncStateByLanguageAndAssistantId(self, moduleName: str, language: str, assistantId: str) -> str:
 		return self._savedAssistants.get(language, dict()).get(assistantId, dict()).get('modules', dict()).get(moduleName, None)
 
-	def getSlotTypeSyncStateByLanguageAndAssistantId(self, slotTypeName, language, assistantId):
+
+	def getSlotTypeSyncStateByLanguageAndAssistantId(self, slotTypeName: str, language: str, assistantId: str) -> str:
 		return self._savedAssistants.get(language, dict()).get(assistantId, dict()).get('slotTypes', dict()).get(slotTypeName, None)
 
-	def getIntentSyncStateByLanguageAndAssistantId(self, intentName, language, assistantId):
+
+	def getIntentSyncStateByLanguageAndAssistantId(self, intentName: str, language: str, assistantId: str) -> str:
 		return self._savedAssistants.get(language, dict()).get(assistantId, dict()).get('intents', dict()).get(intentName, None)
 
-	def persistToGlobalAssistantSlots(self, assistantId, assistantLanguage, slotNameFilter=None):
+
+	def persistToGlobalAssistantSlots(self, assistantId: str, assistantLanguage: str, slotNameFilter: str = None):
 		assistantSlotsMountpoint = self.SAVED_ASSISTANTS_DIR / assistantLanguage / assistantId / 'slots'
 		assistantSlotsMountpoint.mkdir(parents=True, exist_ok=True)
 
@@ -171,10 +185,10 @@ class MainProcessor:
 
 			slotFile = assistantSlotsMountpoint / '{}.json'.format(key)
 			slotFile.write_text(json.dumps(value, indent=4, sort_keys=False, ensure_ascii=False))
-			# self._ctx.log('[Persist] global slot {}'.format(key))
+		# self._ctx.log('[Persist] global slot {}'.format(key))
 
 
-	def persistToGlobalAssistantIntents(self, assistantId, assistantLanguage, intentNameFilter=None):
+	def persistToGlobalAssistantIntents(self, assistantId: str, assistantLanguage: str, intentNameFilter: str = None):
 		assistantSlotsMountpoint = self.SAVED_ASSISTANTS_DIR / assistantLanguage / assistantId / 'intents'
 		assistantSlotsMountpoint.mkdir(parents=True, exist_ok=True)
 
@@ -185,24 +199,24 @@ class MainProcessor:
 
 			intentFile = assistantSlotsMountpoint / '{}.json'.format(key)
 			intentFile.write_text(json.dumps(value, indent=4, sort_keys=False, ensure_ascii=False))
-			# self._ctx.log('[Persist] global slot {}'.format(key))
+		# self._ctx.log('[Persist] global slot {}'.format(key))
 
 
-	def syncGlobalSlotType(self, assistantId, assistantLanguage, slotTypeName, slotDefinition, persist=False):
+	def syncGlobalSlotType(self, assistantId: str, assistantLanguage: str, slotTypeName: str, slotDefinition: str, persist: bool = False):
 		self._savedSlots[assistantLanguage][assistantId][slotTypeName] = slotDefinition
 
 		if persist:
 			self.persistToGlobalAssistantSlots(assistantId=assistantId, assistantLanguage=assistantLanguage, slotNameFilter=slotTypeName)
 
 
-	def syncGlobalIntent(self, assistantId, assistantLanguage, intentName, intentDefinition, persist=False):
+	def syncGlobalIntent(self, assistantId: str, assistantLanguage: str, intentName: str, intentDefinition: str, persist: bool = False):
 		self._savedIntents[assistantLanguage][assistantId][intentName] = intentDefinition
 
 		if persist:
 			self.persistToGlobalAssistantIntents(assistantId=assistantId, assistantLanguage=assistantLanguage, intentNameFilter=intentName)
 
 
-	def mergeModuleSlotTypes(self, slotTypesModulesValues, assistantId, slotLanguage=None):
+	def mergeModuleSlotTypes(self, slotTypesModulesValues: str, assistantId: str, slotLanguage: str = None):
 		mergedSlotTypes = dict()
 		slotTypesGlobalValues = dict()
 
@@ -211,11 +225,11 @@ class MainProcessor:
 				savedSlotType = self._savedSlots[slotLanguage][assistantId][slotName]
 
 				slotTypesGlobalValues[savedSlotType['name']] = {'__otherattributes__': {
-					'name': savedSlotType['name'],
-					'matchingStrictness': savedSlotType['matchingStrictness'],
+					'name'                   : savedSlotType['name'],
+					'matchingStrictness'     : savedSlotType['matchingStrictness'],
 					'automaticallyExtensible': savedSlotType['automaticallyExtensible'],
-					'useSynonyms': savedSlotType['useSynonyms'],
-					'values': list()
+					'useSynonyms'            : savedSlotType['useSynonyms'],
+					'values'                 : list()
 				}}
 
 				for savedSlotValue in savedSlotType['values']:
@@ -254,8 +268,7 @@ class MainProcessor:
 		return mergedSlotTypes
 
 
-
-	def mergeModuleIntents(self, intentsModulesValues, assistantId, intentLanguage=None):
+	def mergeModuleIntents(self, intentsModulesValues: str, assistantId: str, intentLanguage: str = None) -> dict:
 		mergedIntents = dict()
 		intentsGlobalValues = dict()
 
@@ -265,14 +278,14 @@ class MainProcessor:
 
 				intentsGlobalValues[savedIntent['name']] = {
 					'__otherattributes__': {
-						'name': savedIntent['name'],
-						'description': savedIntent['description'],
+						'name'            : savedIntent['name'],
+						'description'     : savedIntent['description'],
 						'enabledByDefault': savedIntent['enabledByDefault'],
-						'utterances': list(),
-						'slots': list()
+						'utterances'      : list(),
+						'slots'           : list()
 					},
-					'utterances': dict(),
-					'slots': dict()
+					'utterances'         : dict(),
+					'slots'              : dict()
 				}
 
 				for savedUtterance in savedIntent['utterances']:
@@ -280,7 +293,6 @@ class MainProcessor:
 
 				for moduleSlot in savedIntent['slots']:
 					intentsGlobalValues[savedIntent['name']]['slots'].setdefault(moduleSlot['name'], moduleSlot)
-
 
 		for intentName in intentsModulesValues:
 
@@ -308,7 +320,7 @@ class MainProcessor:
 
 
 	# noinspection PyUnusedLocal
-	def buildMapsFromDialogTemplates(self, runOnAssistantId=None, moduleFilter=None, languageFilter=None):
+	def buildMapsFromDialogTemplates(self, runOnAssistantId: str = None, moduleFilter: str = None, languageFilter: str = None) -> tuple:
 		self._modules = dict()
 
 		rootDir = Path('modules')
@@ -318,12 +330,12 @@ class MainProcessor:
 		intentsModulesValues = dict()
 		intentNameSkillMatching = dict()
 
-		for module in rootDir.iterdir():
-			intentsPath = module / 'dialogTemplate'
+		for modulePath in rootDir.iterdir():
+			intentsPath = modulePath / 'dialogTemplate'
 
 			if not intentsPath.is_dir(): continue
 
-			self._modules[module.name] = dict()
+			self._modules[modulePath.name] = dict()
 
 			for languageFile in intentsPath.iterdir():
 				language = languageFile.stem
@@ -337,11 +349,11 @@ class MainProcessor:
 					if moduleSlotType['name'] not in slotTypesModulesValues:
 						slotTypesModulesValues[moduleSlotType['name']] = {
 							'__otherattributes__': {
-								'name': moduleSlotType['name'],
-								'matchingStrictness': moduleSlotType['matchingStrictness'],
+								'name'                   : moduleSlotType['name'],
+								'matchingStrictness'     : moduleSlotType['matchingStrictness'],
 								'automaticallyExtensible': moduleSlotType['automaticallyExtensible'],
-								'useSynonyms': moduleSlotType['useSynonyms'],
-								'values': list()
+								'useSynonyms'            : moduleSlotType['useSynonyms'],
+								'values'                 : list()
 							}
 						}
 
@@ -351,24 +363,23 @@ class MainProcessor:
 
 							for synonym in moduleSlotValue.get('synonyms', list()):
 								if not synonym: continue
-								if synonym not in slotTypesModulesValues[moduleSlotType['name']][moduleSlotValue['value']]:
-									slotTypesModulesValues[moduleSlotType['name']][moduleSlotValue['value']][synonym] = True
+								slotTypesModulesValues[moduleSlotType['name']][moduleSlotValue['value']][synonym] = True
 
-				# We need all intents values of all modules, even if there is a module filter
+				# We need all intents values of all modules, even if there is a module filters
 				for moduleIntent in module['intents']:
 					if moduleIntent['name'] not in intentsModulesValues:
-						intentNameSkillMatching[moduleIntent['name']] = module.name
+						intentNameSkillMatching[moduleIntent['name']] = modulePath.name
 
 						intentsModulesValues[moduleIntent['name']] = {
 							'__otherattributes__': {
-								'name': moduleIntent['name'],
-								'description': moduleIntent['description'],
+								'name'            : moduleIntent['name'],
+								'description'     : moduleIntent['description'],
 								'enabledByDefault': moduleIntent['enabledByDefault'],
-								'utterances': list(),
-								'slots': list()
+								'utterances'      : list(),
+								'slots'           : list()
 							},
-							'utterances': dict(),
-							'slots': dict()
+							'utterances'         : dict(),
+							'slots'              : dict()
 						}
 
 					for moduleUtterance in moduleIntent.get('utterances', list()):
@@ -377,13 +388,14 @@ class MainProcessor:
 					for moduleSlot in moduleIntent.get('slots', list()):
 						intentsModulesValues[moduleIntent['name']]['slots'].setdefault(moduleSlot['name'], moduleSlot)
 
-				if moduleFilter and moduleFilter != module.name:
-					del self._modules[module.name]
+				if moduleFilter and moduleFilter != modulePath.name:
+					del self._modules[module['module']]
 
 		return slotTypesModulesValues, intentsModulesValues, intentNameSkillMatching
 
+
 	# TODO to refacto in different method of a new Processor
-	def syncLocalToRemote(self, runOnAssistantId, moduleFilter=None, languageFilter=None):
+	def syncLocalToRemote(self, runOnAssistantId: str, moduleFilter: str = None, languageFilter: str = None) -> bool:
 
 		slotTypesModulesValues, intentsModulesValues, intentNameSkillMatching = self.buildMapsFromDialogTemplates(
 			runOnAssistantId=runOnAssistantId,
@@ -420,7 +432,7 @@ class MainProcessor:
 
 
 	# noinspection PyUnusedLocal
-	def syncLocalToRemoteSlotTypes(self, slotTypesModulesValues, runOnAssistantId, languageFilter=None, moduleFilter=None):
+	def syncLocalToRemoteSlotTypes(self, slotTypesModulesValues: str, runOnAssistantId: str, languageFilter: str = None, moduleFilter: str = None) -> tuple:
 		slotTypesSynced = dict()
 		globalChanges = False
 
@@ -475,7 +487,7 @@ class MainProcessor:
 				slotTypeCacheData = self._savedAssistants[languageFilter][runOnAssistantId]['slotTypes'][slotTypeName]
 
 				entityId = slotTypeCacheData['entityId']
-				self._ctx.Entity.delete(entityId=entityId, language=languageFilter)
+				self._ctx.entity.delete(entityId=entityId, language=languageFilter)
 
 				hasDeprecatedSlotTypes.append(slotTypeName)
 
@@ -499,7 +511,8 @@ class MainProcessor:
 
 
 	# noinspection PyUnusedLocal
-	def syncLocalToRemoteIntents(self, skillNameIdMatching, intentNameSkillMatching, typeEntityMatching, intentsModulesValues, runOnAssistantId, languageFilter=None, moduleFilter=None):
+	def syncLocalToRemoteIntents(self, skillNameIdMatching: dict, intentNameSkillMatching: dict, typeEntityMatching: dict, intentsModulesValues: str,
+	                             runOnAssistantId: str, languageFilter: str = None, moduleFilter: str = None) -> bool:
 
 		intentsSynced = dict()
 		globalChanges = False
@@ -561,15 +574,15 @@ class MainProcessor:
 				intentId = intentCacheData['intentId']
 
 				try:
-					self._ctx.Intent.delete(intentId=intentId)
+					self._ctx.intent.delete(intentId=intentId)
 
 				except HttpError as he:
 					isAttachToSkillIds = (json.loads(json.loads(he.message)['message'])['skillIds'])
 
 					for isAttachToSkillId in isAttachToSkillIds:
-						self._ctx.Intent.removeFromSkill(intentId=intentId, skillId=isAttachToSkillId, userId=self._ctx.userId, deleteAfter=False)
+						self._ctx.intent.removeFromSkill(intentId=intentId, skillId=isAttachToSkillId, userId=self._ctx.userId, deleteAfter=False)
 
-					self._ctx.Intent.delete(intentId=intentId)
+					self._ctx.intent.delete(intentId=intentId)
 
 				hasDeprecatedIntents.append(intentName)
 
@@ -592,7 +605,7 @@ class MainProcessor:
 		return globalChanges
 
 
-	def syncLocalToRemoteModules(self, typeEntityMatching, runOnAssistantId, languageFilter=None, moduleFilter=None):
+	def syncLocalToRemoteModules(self, typeEntityMatching: dict, runOnAssistantId: str, languageFilter: str = None, moduleFilter: str = None):
 		modulesSynced = dict()
 		globalChanges = False
 
@@ -655,13 +668,13 @@ class MainProcessor:
 
 				for slotTypeName in slotTypeKeys:
 					entityId = moduleCacheData['slotTypes'][slotTypeName]['entityId']
-					self._ctx.Entity.delete(entityId=entityId, language=languageFilter)
+					self._ctx.entity.delete(entityId=entityId, language=languageFilter)
 
 				for intentName in intentKeys:
 					intentId = moduleCacheData['intents'][intentName]['intentId']
-					self._ctx.Intent.removeFromSkill(userId=self._ctx.userId, skillId=skillId, intentId=intentId, deleteAfter=True)
+					self._ctx.intent.removeFromSkill(userId=self._ctx.userId, skillId=skillId, intentId=intentId, deleteAfter=True)
 
-				self._ctx.Skill.removeFromAssistant(assistantId=runOnAssistantId, skillId=skillId, deleteAfter=True)
+				self._ctx.skill.removeFromAssistant(assistantId=runOnAssistantId, skillId=skillId, deleteAfter=True)
 
 				hasDeprecatedModules.append(moduleName)
 
@@ -677,12 +690,12 @@ class MainProcessor:
 
 
 	# TODO to refacto in different method of a new Processor
-	def syncRemoteToLocal(self, runOnAssistantId, moduleFilter=None, languageFilter=None):
+	def syncRemoteToLocal(self, runOnAssistantId: str, moduleFilter: str = None, languageFilter: str = None):
 
 		# Build cache
-		# ?? remoteIndexedEntities = self._ctx.Entity.listEntitiesByUserEmail(userEmail=self._ctx.userEmail, returnAllCacheIndexedBy='id')
-		remoteIndexedIntents = self._ctx.Intent.listIntentsByUserId(userId=self._ctx.userId, returnAllCacheIndexedBy='id')
-		remoteIndexedSkills = self._ctx.Skill.listSkillsByUserId(userId=self._ctx.userId, returnAllCacheIndexedBy='id')
+		# ?? remoteIndexedEntities = self._ctx.entity.listEntitiesByUserEmail(userEmail=self._ctx.userEmail, returnAllCacheIndexedBy='id')
+		remoteIndexedIntents = self._ctx.intent.listIntentsByUserId(userId=self._ctx.userId, returnAllCacheIndexedBy='id')
+		remoteIndexedSkills = self._ctx.skill.listSkillsByUserId(userId=self._ctx.userId, returnAllCacheIndexedBy='id')
 		hasFork = False
 
 		# Check for fork and execute fork if needed
@@ -702,57 +715,57 @@ class MainProcessor:
 					intentId = intent['id']
 
 					if intentId not in remoteIndexedIntents:
-						intentId = self._ctx.Skill.forkSkillIntent(skillId=skillId, sourceIntentId=intentId, userId=self._ctx.userId)
+						intentId = self._ctx.skill.forkSkillIntent(skillId=skillId, sourceIntentId=intentId, userId=self._ctx.userId)
 						self._ctx.log('[Forked] Intent from {} to {} used in skill {}'.format(intent['id'], intentId, skillId))
 						hasFork = True
 
 		if hasFork:
 			# Rebuild cache
-			self._ctx.Entity.listEntitiesByUserEmail(userEmail=self._ctx.userEmail)
-			self._ctx.Intent.listIntentsByUserId(userId=self._ctx.userId)
-			self._ctx.Skill.listSkillsByUserId(userId=self._ctx.userId)
+			self._ctx.entity.listEntitiesByUserEmail(userEmail=self._ctx.userEmail)
+			self._ctx.intent.listIntentsByUserId(userId=self._ctx.userId)
+			self._ctx.skill.listSkillsByUserId(userId=self._ctx.userId)
 
 		# Build each module configuration
 		modules = dict()
 
-		cachedIndexedSkills = self._ctx.Skill.listSkillsByUserIdAndAssistantId(userId=self._ctx.userId, assistantId=runOnAssistantId, fromCache=True)
+		cachedIndexedSkills = self._ctx.skill.listSkillsByUserIdAndAssistantId(userId=self._ctx.userId, assistantId=runOnAssistantId, fromCache=True)
 
 		for skill in cachedIndexedSkills:
-			moduleName = skillNameToCamelCase(skill['name'])
+			moduleName = commons.toCamelCase(string=skill['name'], replaceSepCharacters=True, sepCharacters=('/', '-', '_'))
 
 			if moduleFilter and moduleName != moduleFilter:
 				continue
 
 			modules[moduleName] = {
-			  	'module': moduleName,
-				'icon': EnumSkillImageUrl.urlToResourceKey(skill['imageUrl']),
+				'module'     : moduleName,
+				'icon'       : EnumSkillImageUrl.urlToResourceKey(skill['imageUrl']),
 				'description': skill['description'],
-				'slotTypes': list(),
-				'intents': list()
+				'slotTypes'  : list(),
+				'intents'    : list()
 			}
 			moduleSyncState = {
-				'skillId': skill['id'],
-				'name': moduleName,
+				'skillId'  : skill['id'],
+				'name'     : moduleName,
 				'slotTypes': dict(),
-				'intents': dict(),
-				'hash': ''
+				'intents'  : dict(),
+				'hash'     : ''
 			}
 
-			cachedIndexedIntents = self._ctx.Intent.listIntentsByUserIdAndSkillId(userId=self._ctx.userId, skillId=skill['id'], fromCache=True)
+			cachedIndexedIntents = self._ctx.intent.listIntentsByUserIdAndSkillId(userId=self._ctx.userId, skillId=skill['id'], fromCache=True)
 			typeEntityMatching = dict()
 
 			for intent in cachedIndexedIntents:
 				intentName = intent['name']
 
-				if intentName.startswith(skill['name']+'_'):
-					intentName = intentName.replace(skill['name']+'_', '')
+				if intentName.startswith(skill['name'] + '_'):
+					intentName = intentName.replace(skill['name'] + '_', '')
 
-				intentName = skillNameToCamelCase(intentName)
+				intentName = commons.toCamelCase(string=intentName, replaceSepCharacters=True, sepCharacters=('/', '-', '_'))
 
 				utterances = list()
 				slots = list()
 				slotIdAndNameMatching = dict()
-				objectUtterances = self._ctx.Intent.listUtterancesByIntentId(intentId=intent['id'])
+				objectUtterances = self._ctx.intent.listUtterancesByIntentId(intentId=intent['id'])
 
 				for slot in intent['slots']:
 					slotIdAndNameMatching[slot['id']] = slot
@@ -766,56 +779,55 @@ class MainProcessor:
 						start = hole['range']['start'] + positionOffset
 						end = hole['range']['end'] + positionOffset
 						slotName = slotIdAndNameMatching[hole['slotId']]['name']
-						slotName = skillNameToCamelCase(slotName)
-						newWord = '{' + word + self._ctx.Intent.GLUE_SLOT_WORD + slotName + '}'
+						slotName = commons.toCamelCase(string=slotName, replaceSepCharacters=True, sepCharacters=('/', '-', '_'))
+						newWord = '{' + word + self._ctx.intent.GLUE_SLOT_WORD + slotName + '}'
 						text = text[:start] + newWord + text[end:]
 						positionOffset += len(newWord) - len(word)
 
 					utterances.append(text)
 
-				cachedIndexedEntities =  self._ctx.Entity.listEntitiesByUserEmailAndIntentId(userEmail=self._ctx.userEmail, intentId=intent['id'], fromCache=True)
+				cachedIndexedEntities = self._ctx.entity.listEntitiesByUserEmailAndIntentId(userEmail=self._ctx.userEmail, intentId=intent['id'], fromCache=True)
 
 				for entity in cachedIndexedEntities:
 					if entity['id'] in typeEntityMatching:
 						continue
 
-					values = self._ctx.Entity.listEntityValuesByEntityId(entityId=entity['id'])
-					entityName = skillNameToCamelCase(entity['name'])
+					values = self._ctx.entity.listEntityValuesByEntityId(entityId=entity['id'])
+					entityName = commons.toCamelCase(string=entity['name'], replaceSepCharacters=True, sepCharacters=('/', '-', '_'))
 					typeEntityMatching[entity['id']] = entityName
 
 					modules[moduleName]['slotTypes'].append({
-						'name': entityName,
-						'matchingStrictness': entity['matchingStrictness'],
+						'name'                   : entityName,
+						'matchingStrictness'     : entity['matchingStrictness'],
 						'automaticallyExtensible': entity['automaticallyExtensible'],
-						'useSynonyms': entity['useSynonyms'],
-						'values': values
+						'useSynonyms'            : entity['useSynonyms'],
+						'values'                 : values
 					})
 					moduleSyncState['slotTypes'][entityName] = {
 						'entityId': entity['id'],
-						'hash': ''
+						'hash'    : ''
 					}
 
 				for slot in intent['slots']:
 					slots.append({
-						'name': skillNameToCamelCase(slot['name']),
-						'description': slot['description'],
-						'required': slot['required'],
-						'type': slot['entityId'] if slot['entityId'].startswith('snips/') else typeEntityMatching[slot['entityId']],
+						'name'           : commons.toCamelCase(string=slot['name'], replaceSepCharacters=True, sepCharacters=('/', '-', '_')),
+						'description'    : slot['description'],
+						'required'       : slot['required'],
+						'type'           : slot['entityId'] if slot['entityId'].startswith('snips/') else typeEntityMatching[slot['entityId']],
 						'missingQuestion': slot['missingQuestion']
 					})
 
 				modules[moduleName]['intents'].append({
-					'name': intentName,
-					'description': intent['description'],
+					'name'            : intentName,
+					'description'     : intent['description'],
 					'enabledByDefault': intent['enabledByDefault'],
-					'utterances': utterances,
-					'slots': slots
+					'utterances'      : utterances,
+					'slots'           : slots
 				})
 				moduleSyncState['intents'][intentName] = {
 					'intentId': intent['id'],
-					'hash': ''
+					'hash'    : ''
 				}
-
 
 			# Persist module configuration
 			moduleConfig = modules[moduleName]
@@ -824,6 +836,5 @@ class MainProcessor:
 
 			moduleIntentsOutputFile = moduleIntentsMountpoint / '{}.json'.format(languageFilter)
 
-			moduleIntentsOutputFile.write_text(json.dump(moduleConfig, indent=4, sort_keys=False, ensure_ascii=False))
+			moduleIntentsOutputFile.write_text(json.dumps(moduleConfig, indent=4, sort_keys=False, ensure_ascii=False))
 			self._ctx.log('[LocalModule] Finished for module {}'.format(moduleName))
-

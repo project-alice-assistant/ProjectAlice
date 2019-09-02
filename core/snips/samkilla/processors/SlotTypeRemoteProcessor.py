@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 import sys
 import traceback
 
@@ -16,14 +14,16 @@ class SlotTypeRemoteProcessor:
 		self._syncState = None
 		self._createdInstances = {'entities': list()}
 
+
 	def createNewSavedSlotType(self):
 		return {
 			'name': self._slotType['name']
 		}
 
+
 	def slotTypeValuesToHash(self, entityId=''):
 		slotType = self._slotType
-		
+
 		hashSum = '{}{}{}{}'.format(
 			str(slotType['name']),
 			str(slotType['matchingStrictness']),
@@ -40,9 +40,11 @@ class SlotTypeRemoteProcessor:
 		hashSum += entityId
 
 		return hashlib.sha512(hashSum.encode('utf-8')).hexdigest()
-		
+
+
 	def doSyncedSlotTypeExists(self):
 		return "hash" in self._syncState and "entityId" in self._syncState
+
 
 	def syncSlotType(self, hashComputationOnly=False):
 		slotType = self._slotType
@@ -81,8 +83,8 @@ class SlotTypeRemoteProcessor:
 			curHash = self.slotTypeValuesToHash(entityId=entityId)
 
 		return {"entityId": entityId, "hash": curHash, "changes": changes}
-	
-	
+
+
 	def syncSlotTypesOnAssistantSafely(self, slotTypeSyncState=None, hashComputationOnly=False):
 		try:
 			return self.syncSlotTypesOnAssistant(slotTypeSyncState=slotTypeSyncState, hashComputationOnly=hashComputationOnly)
@@ -94,6 +96,7 @@ class SlotTypeRemoteProcessor:
 			# Deprecated
 			# self.cleanCreatedInstances()
 			sys.exit(-1)
+
 
 	def syncSlotTypesOnAssistant(self, slotTypeSyncState=None, hashComputationOnly=False):
 		self._syncState = self.createNewSavedSlotType() if slotTypeSyncState is None else slotTypeSyncState

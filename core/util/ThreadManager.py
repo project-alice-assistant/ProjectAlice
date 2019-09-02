@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 import threading
 from typing import Callable
 

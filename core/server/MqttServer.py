@@ -1,10 +1,8 @@
-# -*- coding: utf-8 -*-
-
 import json
 import subprocess
 import uuid
 
-import os
+from pathlib import Path
 import paho.mqtt.client as mqtt
 import paho.mqtt.publish as publish
 
@@ -186,7 +184,6 @@ class MqttServer(Manager):
 		modules = moduleManager.getModules()
 		for key, modul in modules.items():
 			module = modul['instance']
-			print('called {}'.format(modul['instance'].name))
 			try:
 				consumed = module.onMessage(message.topic, session)
 			except AccessLevelTooLow:
@@ -213,7 +210,7 @@ class MqttServer(Manager):
 		siteId = commons.parseSiteId(msg)
 		payload = commons.payload(msg)
 
-		if len(self._multiDetectionsHolder) == 0:
+		if not self._multiDetectionsHolder:
 			managers.ThreadManager.doLater(interval=0.5, func=self.handleMultiDetection)
 
 		self._multiDetectionsHolder.append(payload['siteId'])
@@ -603,7 +600,8 @@ class MqttServer(Manager):
 		"""
 
 		if not root:
-			root = os.path.join(commons.rootDir(), 'system', 'sounds')
+			root = Path(commons.rootDir(), 'system/sounds')
+		root = Path(root)
 
 		if not uid:
 			uid = str(uuid.uuid4())
@@ -622,18 +620,13 @@ class MqttServer(Manager):
 			if ' ' in siteId:
 				siteId = siteId.replace(' ', '_')
 
-			soundFile = soundFile if absolutePath else os.path.join(root, soundFile)
+			soundFile = Path(soundFile).with_suffix('.wav') if absolutePath else Path(root, soundFile).with_suffix('.wav')
 
-			if not soundFile.endswith('.wav'):
-				soundFile += '.wav'
-
-			if not os.path.isfile(soundFile):
+			if not soundFile.is_file():
 				self._logger.error("Sound file {} doesn't exist".format(soundFile))
 				return
 
-			with open(soundFile, 'rb') as fp:
-				f = fp.read()
-				self._mqttClient.publish('hermes/audioServer/{}/playBytes/{}'.format(siteId, uid), payload=bytearray(f))
+			self._mqttClient.publish('hermes/audioServer/{}/playBytes/{}'.format(siteId, uid), payload=bytearray(soundFile.read_bytes()))
 
 
 	def publish(self, topic: str, payload: dict = None, qos: int = 0, retain: bool = False):
@@ -665,7 +658,7 @@ class MqttServer(Manager):
 		if text == '':
 			return
 
-		subprocess.call(['sudo', commons.rootDir() + '/system/scripts/snipsSuperTTS.sh', '/share/tmp.wav', 'amazon', managers.LanguageManager.activeLanguage, 'US', 'Joanna', 'FEMALE', text, '22050'])
+		subprocess.call(['sudo', Path(commons.rootDir(), '/system/scripts/snipsSuperTTS.sh'), Path('/share/tmp.wav'), 'amazon', managers.LanguageManager.activeLanguage, 'US', 'Joanna', 'FEMALE', text, '22050'])
 
 		sonosModule = managers.ModuleManager.getModuleInstance('Sonos')
 		if sonosModule:

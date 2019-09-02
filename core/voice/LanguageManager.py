@@ -1,13 +1,12 @@
-# -*- coding: utf-8 -*-
 import json
-import os
+from pathlib import Path
 from typing import Optional
 
 import re
 
 import core.base.Managers as managers
-from core.base.Manager import Manager
 from core.ProjectAliceExceptions import LanguageManagerLangNotSupported
+from core.base.Manager import Manager
 
 
 class LanguageManager(Manager):
@@ -88,8 +87,8 @@ class LanguageManager(Manager):
 				continue
 
 			try:
-				with open(os.path.join('modules', moduleName, 'strings.json')) as jsonFile:
-					self._stringsData[moduleName] = json.load(jsonFile)
+				jsonFile = Path('modules', moduleName, 'strings.json')
+				self._stringsData[moduleName] = json.loads(jsonFile.read_text())
 			except FileNotFoundError:
 				continue
 			except ValueError:

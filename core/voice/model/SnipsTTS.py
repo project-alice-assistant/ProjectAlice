@@ -1,7 +1,4 @@
-# -*- coding: utf-8 -*-
 import subprocess
-
-import os
 
 import core.base.Managers as managers
 from core.commons import commons
@@ -85,10 +82,10 @@ class SnipsTTS(TTS):
 	def onSay(self, session: DialogSession):
 		super().onSay(session)
 
-		if not self._cacheFile or not self._text:
+		if not self._text:
 			return
 
-		if not os.path.isfile(self._cacheFile):
+		if not self._cacheFile.is_file():
 			subprocess.run([
 				'snips-makers-tts',
 				'--output',

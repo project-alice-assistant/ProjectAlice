@@ -1,13 +1,12 @@
-# -*- coding: utf-8 -*-
-
 from terminaltables import DoubleTable
 
 from core.console.Command import Command
 from core.console.input.InputOption import InputOption
 from core.snips.SamkillaManager import SamkillaManager
 from core.snips.SnipsConsoleManager import SnipsConsoleManager
-from core.voice.LanguageManager import LanguageManager
 from core.util.ThreadManager import ThreadManager
+from core.voice.LanguageManager import LanguageManager
+
 
 #
 # AssistantSyncCommand synchronize dialogTemplates + cache with snips assistant
@@ -22,6 +21,7 @@ class AssistantSyncCommand(Command):
 		])
 		self.setHelp('> The %command.name% command sync dialog templates for all modules:\n'
 					 '  <fg:magenta>%command.full_name%<fg:reset>')
+
 
 	def execute(self, inputt):
 		TABLE_DATA = [['Assistant Dialog Templates Sync']]
@@ -58,5 +58,3 @@ class AssistantSyncCommand(Command):
 			self.nl()
 			self.write('Assistant <fg:green>downloaded!<fg:reset>')
 			self.nl()
-
-

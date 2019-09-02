@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 import inspect
 import json
 import socket
@@ -84,11 +83,11 @@ def dictMaxValue(d: dict) -> str:
 
 
 def rootDir() -> str:
-	return Path(__file__).resolve().parent.parent.parent
+	return str(Path(__file__).resolve().parent.parent.parent)
 
 
 def getDatabaseFile() -> str:
-	return Path('system/database/data.db')
+	return str(Path('system/database/data.db'))
 
 
 def payload(message: MQTTMessage) -> dict:
@@ -208,7 +207,12 @@ def getDuration(msg: MQTTMessage) -> int:
 	return duration
 
 
-def toCamelCase(string: str) -> str:
+def toCamelCase(string: str, replaceSepCharacters: bool = False, sepCharacters: tuple = None) -> str:
+	if replaceSepCharacters:
+		if not sepCharacters: sepCharacters = ('-', '_')
+		for char in string:
+			string.replace(char, ' ')
+
 	return ''.join(x.capitalize() for x in string.split(' '))
 
 
@@ -254,3 +258,17 @@ def getLocalIp() -> str:
 	finally:
 		sock.close()
 	return ip
+
+def isInt(string: str) -> bool:
+	try:
+		int(string)
+		return True
+	except ValueError:
+		return False
+
+
+def indexOf(sub: str, string: str) -> int:
+	try:
+		return string.index(sub)
+	except ValueError:
+		return -1

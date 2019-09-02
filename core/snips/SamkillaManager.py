@@ -1,7 +1,6 @@
-# -*- coding: utf-8 -*-
 import json
-import os
 import time
+from pathlib import Path
 
 import requests
 from selenium import webdriver
@@ -15,8 +14,7 @@ from core.snips.samkilla.Assistant import Assistant
 from core.snips.samkilla.Entity import Entity
 from core.snips.samkilla.Intent import Intent
 from core.snips.samkilla.Skill import Skill
-from core.snips.samkilla.exceptions.AssistantNotFoundError import AssistantNotFoundError
-from core.snips.samkilla.exceptions.HttpError import HttpError
+from core.ProjectAliceExceptions import AssistantNotFoundError, HttpError
 from core.snips.samkilla.models.EnumSkillImageUrl import EnumSkillImageUrl as EnumSkillImageUrlClass
 from core.snips.samkilla.processors.MainProcessor import MainProcessor
 
@@ -60,6 +58,21 @@ class SamkillaManager(Manager):
 			runOnAssistantId=managers.LanguageManager.activeSnipsProjectId,
 			languageFilter=managers.LanguageManager.activeLanguage
 		)
+
+
+	@property
+	def entity(self) -> Entity:
+		return self._entity
+
+
+	@property
+	def intent(self) -> Intent:
+		return self._intent
+
+
+	@property
+	def skill(self) -> Skill:
+		return self._skill
 
 
 	@property
@@ -112,11 +125,8 @@ class SamkillaManager(Manager):
 	def onStart(self):
 		super().onStart()
 
-		if os.path.exists(os.path.join(commons.rootDir(), 'var', 'assistants', managers.LanguageManager.activeLanguage)):
-			count = len([name for name in os.listdir(os.path.join(commons.rootDir(), 'var', 'assistants', managers.LanguageManager.activeLanguage)) if os.path.isdir(os.path.join(commons.rootDir(), 'var', 'assistants', managers.LanguageManager.activeLanguage, name))])
-			if count <= 0:
-				self.sync()
-		else:
+		path = Path(commons.rootDir(), 'var/assistants', managers.LanguageManager.activeLanguage)
+		if not path.exists() or not [x for x in path.iterdir() if x.is_dir()]:
 			self.sync()
 
 
@@ -180,10 +190,11 @@ class SamkillaManager(Manager):
 
 
 	# TODO batch gql requests
+	# payload appears to be typed wrong can be string or dict
 	def postGQLBrowserly(self, payload: dict, jsonRequest: bool = True, dataReadyResponse: bool = True, rawResponse: bool = False) -> dict:
 		if jsonRequest:
 			payload = json.dumps(payload)
-
+		
 		payload = payload.replace("'", "__SINGLE_QUOTES__").replace("\\n", ' ')
 
 		# self.log(payload)
@@ -254,25 +265,21 @@ class SamkillaManager(Manager):
 	def findRunnableAssistant(self, assistantId: str, assistantLanguage: str, newAssistantTitle: str = "ProjectAlice", persistLocal: bool = False) -> str:
 		runOnAssistantId = None
 
-		if assistantId == '':
-			assistantId = None
-
 		# AssistantId provided
 		if assistantId:
 			if not self._assistant.exists(assistantId):
 				# If not found remotely, stop everything
 				raise AssistantNotFoundError(4001, "Assistant with id {} not found".format(assistantId), ['assistant'])
-			else:
-				# If found remotely, just use it
-				runOnAssistantId = assistantId
-				self.log("Using provided assistantId: {}".format(runOnAssistantId))
+			# If found remotely, just use it
+			runOnAssistantId = assistantId
+			self.log("Using provided assistantId: {}".format(runOnAssistantId))
 
 
 		if not runOnAssistantId:
 			# Try to find the first local assistant for the targeted language
 			localFirstAssistantId = self._mainProcessor.getLocalFirstAssistantByLanguage(assistantLanguage=assistantLanguage, returnId=True)
 
-			if localFirstAssistantId is None or not self._assistant.exists(localFirstAssistantId):
+			if not localFirstAssistantId or not self._assistant.exists(localFirstAssistantId):
 				# If not found remotely, create a new one
 				runOnAssistantId = self._assistant.create(title=newAssistantTitle, language=assistantLanguage)
 				self.log("Using new assistantId: {}".format(runOnAssistantId))
@@ -304,9 +311,7 @@ class SamkillaManager(Manager):
 			managers.LanguageManager.changeActiveSnipsProjectIdForLanguage(runOnAssistantId, baseLanguageFilter)
 
 		# From module intents files to dict then push to SnipsConsole
-		changes = self._mainProcessor.syncLocalToRemote(runOnAssistantId, moduleFilter=baseModuleFilter, languageFilter=baseLanguageFilter)
-
-		return changes
+		return self._mainProcessor.syncLocalToRemote(runOnAssistantId, moduleFilter=baseModuleFilter, languageFilter=baseLanguageFilter)
 
 
 	def syncRemoteToLocal(self, baseAssistantId: str, baseModuleFilter: str, baseLanguageFilter: str = 'en'):
@@ -350,7 +355,7 @@ class SamkillaManager(Manager):
 		)
 
 		utterances = list()
-
+		
 		for dtIntentName, dtModuleName in intentNameSkillMatching.items():
 			if dtIntentName == intentFilter:
 				for utterance in intentsModulesValues[dtIntentName]['utterances'].items():

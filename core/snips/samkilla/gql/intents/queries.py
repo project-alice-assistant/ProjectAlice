@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 from core.snips.samkilla.gql.util import gql
 
 intentsFieldsFragment = gql('''
@@ -56,7 +54,6 @@ intentsCustomDataFragment = gql('''
     }
   }
 ''')
-
 
 intentsByUserIdWithUsageQuery = gql('''
 query IntentsByUserIdWithUsageQuery($userId: ID!, $lang: String) {

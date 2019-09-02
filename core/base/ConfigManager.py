@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 from core.commons import commons
 import configSample
 
@@ -121,10 +119,16 @@ class ConfigManager(Manager):
 		:param confs: the dict to save
 		"""
 		sort = dict(sorted(confs.items()))
+
 		# Only store "active", "version", "author", "conditions" value for module config
 		misterProper = ['active', 'version', 'author', 'conditions']
+
 		# pop modules key so it gets added in the back
-		sort['modules'] = {key: value for key, value in sort.pop('modules').items() if key in misterProper}
+		modules = sort.pop('modules')
+		sort['modules'] = dict()
+		for moduleName, conf in modules.items():
+			moduleCleaned = {key: value for key, value in conf.items() if key in misterProper}
+			sort['modules'][moduleName] = moduleCleaned
 
 		try:
 			s = json.dumps(sort, indent = 4).replace('false', 'False').replace('true', 'True')
@@ -147,7 +151,7 @@ class ConfigManager(Manager):
 		misterProper = ['active', 'version', 'author', 'conditions']
 		confsCleaned = {key: value for key, value in confs.items() if key not in misterProper}
 
-		moduleConfigFile = Path(commons.rootDir(),'modules', moduleName, 'config.json')
+		moduleConfigFile = Path(commons.rootDir() ,'modules' ,moduleName ,'config.json')
 		moduleConfigFile.write_text(json.dumps(confsCleaned, indent = 4))
 
 
@@ -241,7 +245,7 @@ class ConfigManager(Manager):
 
 			changes = False
 
-			moduleConfigFile = commons.rootDir() / 'modules' / moduleName / 'config.json'
+			moduleConfigFile = Path(commons.rootDir(), 'modules', moduleName, 'config.json')
 			moduleConfigFileExists = moduleConfigFile.is_file()
 			moduleConfigFileTemplate = moduleConfigFile.with_suffix(moduleConfigFile.suffix + '.dist')
 			moduleConfigFileTemplateExists = moduleConfigFileTemplate.is_file()
@@ -300,7 +304,7 @@ class ConfigManager(Manager):
 			if module and moduleName != module:
 				continue
 
-			moduleConfigFile = commons.rootDir() / 'modules' / moduleName / 'config.json')
+			moduleConfigFile = Path(commons.rootDir(), 'modules', moduleName, 'config.json')
 			moduleConfigFileExists = moduleConfigFile.is_file()
 
 			if not self._aliceConfigurations['modules'][moduleName]['active'] or not moduleConfigFileExists:

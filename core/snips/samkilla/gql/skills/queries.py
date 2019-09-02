@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 from core.snips.samkilla.gql.util import gql
 
 skillFieldsFragment = gql('''
@@ -42,7 +40,6 @@ skillFieldsFragment = gql('''
   }
 ''')
 
-
 skillsWithUsageQuery = gql('''
  query SkillsWithUsageQuery(
     $lang: String
@@ -83,4 +80,4 @@ skillsWithUsageQuery = gql('''
     }
   }
   ${skillFieldsFragment}
-''',{'skillFieldsFragment': skillFieldsFragment})
+''', {'skillFieldsFragment': skillFieldsFragment})

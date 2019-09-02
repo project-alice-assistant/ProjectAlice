@@ -1,6 +1,3 @@
-# -*- coding: utf-8 -*-
-
-
 class ThreadTimer(object):
 	def __init__(self, callback, args):
 		self._timer 	= None

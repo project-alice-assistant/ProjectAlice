@@ -17,6 +17,8 @@
     authors: 	Psycho <https://github.com/Psychokiller1888>
     			Jierka <https://github.com/jr-k>
 """
+from pathlib import Path
+
 from core.Initializer import Initializer
 from core.commons import commons
 import logging.handlers
@@ -32,7 +34,7 @@ _logger.setLevel(logging.INFO)
 
 date = int(datetime.now().strftime('%Y%m%d'))
 
-logsMountpoint = commons.rootDir() + '/var/logs'
+logsMountpoint = Path(commons.rootDir(), 'var', 'logs')
 
 handler = logging.FileHandler(filename='{}/logs.log'.format(logsMountpoint), mode='w')
 rotatingHandler = logging.handlers.RotatingFileHandler(filename='{}/{}-logs.log'.format(logsMountpoint, date), mode='a', maxBytes = 100000, backupCount = 20)

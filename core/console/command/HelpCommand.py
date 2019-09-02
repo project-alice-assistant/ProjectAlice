@@ -1,8 +1,6 @@
-# -*- coding: utf-8 -*-
-
-
 from core.console.Command import Command
 from core.console.input.InputArgument import InputArgument
+
 
 #
 # HelpCommand provides help for a given command
@@ -14,6 +12,7 @@ class HelpCommand(Command):
 
 		super().__init__('HelpCommand')
 
+
 	def create(self):
 		self.setName('help')
 		self.setDescription('Displays help for a command')
@@ -22,10 +21,12 @@ class HelpCommand(Command):
 					 '  <fg:magenta>%command.full_name%<fg:reset> <fg:cyan>list<fg:reset>\n\n'
 					 '  To display the list of available commands, please use the list command.')
 
+
 	def setCommand(self, command):
 		self.command = command
 
 		return self
+
 
 	def execute(self, inputt):
 		if self.command is None:
@@ -34,5 +35,3 @@ class HelpCommand(Command):
 		self.nl()
 		self.write(self.command.getProcessedHelp())
 		self.command = None
-
-
