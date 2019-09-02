@@ -71,7 +71,7 @@ class TTS:
 					self._voice = next(iter(self._supportedLangAndVoices[self._lang][self._type]))
 
 
-	@property cacheDirectory(self) -> Path:
+	def cacheDirectory(self) -> Path:
 		return Path(managers.TTSManager.CACHE_ROOT, self.TTS.value, self._lang, self._type, self._voice)
 
 	@property
@@ -158,7 +158,7 @@ class TTS:
 			self._cacheFile = None
 			return
 
-		self._cacheFile = self.cacheDirectory / (self._hash(text=self._text) + '.wav')
+		self._cacheFile = self.cacheDirectory() / (self._hash(text=self._text) + '.wav')
 
-		if not self.cacheDirectory.is_dir():
-			self.cacheDirectory.mkdir(parents=True, exist_ok=True)
+		if not self.cacheDirectory().is_dir():
+			self.cacheDirectory().mkdir(parents=True, exist_ok=True)
