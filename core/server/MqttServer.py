@@ -187,7 +187,6 @@ class MqttServer(Manager):
 		modules = moduleManager.getModules()
 		for key, modul in modules.items():
 			module = modul['instance']
-			print('called {}'.format(modul['instance'].name))
 			try:
 				consumed = module.onMessage(message.topic, session)
 			except AccessLevelTooLow:
