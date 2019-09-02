@@ -258,7 +258,7 @@ class Command:
 		while True:
 			inputValue = self.ask(question, definition, fgColor=fgColor, bgColor=bgColor)
 
-			if not commons.indexOf(inputValue, choices) < 0:
+			if commons.indexOf(inputValue, choices) >= 0:
 				break
 
 		return inputValue if caseSensitive else inputValue.lower()

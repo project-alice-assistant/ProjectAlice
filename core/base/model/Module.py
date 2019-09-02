@@ -14,7 +14,7 @@ from core.ProjectAliceExceptions import ModuleStartingFailed, AccessLevelTooLow
 from core.base.model.Intent import Intent
 
 
-class Module(object):
+class Module:
 
 	def __init__(self, supportedIntents: list, authOnlyIntents: dict = None, databaseSchema: dict = None):
 		self._logger = logging.getLogger('ProjectAlice')
@@ -23,9 +23,9 @@ class Module(object):
 			path = Path(inspect.getfile(self.__class__)).with_suffix('.install')
 			self._install = json.loads(path.read_text())
 		except FileNotFoundError:
-			raise ModuleStartingFailed(error = '[{}] Cannot find install file'.format(type(self).__name__))
+			raise ModuleStartingFailed(error='[{}] Cannot find install file'.format(type(self).__name__))
 		except Exception as e:
-			raise ModuleStartingFailed(error = '[{}] Failed loading module: {}'.format(type(self).__name__, e))
+			raise ModuleStartingFailed(error='[{}] Failed loading module: {}'.format(type(self).__name__, e))
 
 		self._name = self._install['name']
 		self._delayed = False
@@ -94,14 +94,14 @@ class Module(object):
 
 	@staticmethod
 	def broadcast(topic: str):
-		managers.MqttServer.publish(topic = topic)
+		managers.MqttServer.publish(topic=topic)
 
 
 	def notifyDevice(self, topic: str, uid: str = '', siteId: str = ''):
 		if uid:
-			managers.MqttServer.publish(topic = topic, payload = {'uid': uid})
+			managers.MqttServer.publish(topic=topic, payload={'uid': uid})
 		elif siteId:
-			managers.MqttServer.publish(topic = topic, payload = {'siteId': siteId})
+			managers.MqttServer.publish(topic=topic, payload={'siteId': siteId})
 		else:
 			self._logger.warning('[{}] Tried to notify devices but no uid or site id specified'.format(self.name))
 
@@ -250,8 +250,8 @@ class Module(object):
 			if managers.ThreadManager.getLock('SnipsAssistantDownload').isSet():
 				managers.ThreadManager.doLater(interval=5, func=self.onBooted)
 				return False
-			else:
-				managers.ThreadManager.doLater(interval=5, func=self.onStart)
+			
+			managers.ThreadManager.doLater(interval=5, func=self.onStart)
 
 		return True
 

@@ -1,8 +1,7 @@
 from core.dialog.model import DialogSession
 
 
-class MultiIntent(object):
-
+class MultiIntent:
 	def __init__(self, session: DialogSession, string: str):
 		self._originalString = session['payload']['input']
 		self._processedString = string

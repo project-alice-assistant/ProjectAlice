@@ -36,7 +36,7 @@ class Intent(str):
 		return hash(self.decoratedSelf())
 
 	def decoratedSelf(self) -> str:
-		return self.format(owner = self._owner)
+		return self.format(owner=self._owner)
 
 	@property
 	def protected(self) -> bool:

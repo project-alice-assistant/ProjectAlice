@@ -55,7 +55,7 @@ class SnipsConsoleManager(Manager):
 		self._logger.info('[{}] Starting Snips assistant training and download procedure'.format(self.name))
 		managers.ThreadManager.newLock('SnipsAssistantDownload').set()
 		projectId = managers.LanguageManager.activeSnipsProjectId
-		managers.ThreadManager.newThread(name = 'SnipsAssistantDownload', target = self.download, args = [projectId])
+		managers.ThreadManager.newThread(name='SnipsAssistantDownload', target=self.download, args=[projectId])
 
 
 	@staticmethod

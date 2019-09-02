@@ -61,7 +61,7 @@ class TTS:
 
 				process = subprocess.run([
 					'wget', 'https://github.com/MycroftAI/mimic1/blob/development/voices/{}.flitevox?raw=true'.format(voiceFile),
-					'-O', Path(commons.rootDir(),'var/voices/{}.flitevox'.format(voiceFile))
+					'-O', Path(commons.rootDir(), 'var/voices/{}.flitevox'.format(voiceFile))
 				],
 				stdout=subprocess.PIPE)
 

@@ -1,4 +1,4 @@
-class ThreadTimer(object):
+class ThreadTimer:
 	def __init__(self, callback, args):
 		self._timer 	= None
 		self._callback 	= callback

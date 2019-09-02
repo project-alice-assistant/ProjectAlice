@@ -83,7 +83,7 @@ class SuperManager(Manager):
 		return self._managers[ModuleManager.NAME]
 
 
-	def broadcast(self, method, manager = None, exceptions = None):
+	def broadcast(self, method, manager=None, exceptions=None):
 		if not exceptions:
 			exceptions = list()
 
@@ -91,7 +91,7 @@ class SuperManager(Manager):
 			for man in self._managers:
 				if not man:
 					self._logger.warning('Tried to broadcast to a None manager')
-					Timer(interval = 10, function = self.broadcast, args=[method, man, exceptions])
+					Timer(interval=10, function=self.broadcast, args=[method, man, exceptions])
 					continue
 
 				if man.NAME in exceptions:

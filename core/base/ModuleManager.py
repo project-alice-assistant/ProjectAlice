@@ -42,7 +42,7 @@ class ModuleManager(Manager):
 		managers.ModuleManager = self
 		self._busyInstalling = managers.ThreadManager.newLock('moduleInstallation')
 
-		self._moduleInstallThread = managers.ThreadManager.newThread(name = 'ModuleInstallThread', target = self._checkForModuleInstall, autostart = False)
+		self._moduleInstallThread = managers.ThreadManager.newThread(name='ModuleInstallThread', target=self._checkForModuleInstall, autostart=False)
 		self._modules = self._loadModuleList()
 		self._supportedIntents = list()
 
@@ -101,16 +101,12 @@ class ModuleManager(Manager):
 									raise ModuleNotConditionCompliant
 								elif requiredModule['name'] not in availableModules:
 									self._logger.info('[{}] Module {} has another module as dependency, adding download'.format(self.name, moduleName))
-									subprocess.run(['wget', requiredModule['url'], '-O', Path(commons.rootDir(),'system/moduleInstallTickets/{}.install'.format(requiredModule['name']))])
+									subprocess.run(['wget', requiredModule['url'], '-O', Path(commons.rootDir(), 'system/moduleInstallTickets/{}.install'.format(requiredModule['name']))])
 						elif conditionName == 'asrArbitraryCapture':
 							if conditionValue and not managers.ASRManager.asr.capableOfArbitraryCapture:
 								raise ModuleNotConditionCompliant
 
-				if ' ' in moduleName:
-					name = commons.toCamelCase(moduleName)
-				else:
-					name = moduleName
-
+				name = commons.toCamelCase(moduleName)
 				moduleInstance = self.importFromModule(moduleName=name, isUpdate=isUpdate)
 
 				if moduleInstance:
@@ -302,15 +298,14 @@ class ModuleManager(Manager):
 				if moduleName not in availableModules:
 					continue
 
-				req = requests.get('https://raw.githubusercontent.com/project-alice-powered-by-snips/ProjectAliceModules/master/PublishedModules/{}/{}/{}.install'.format(
+				req = requests.get('https://raw.githubusercontent.com/project-alice-powered-by-snips/ProjectAliceModules/master/PublishedModules/{0}/{1}/{1}.install'.format(
 					availableModules[moduleName]['author'],
-					moduleName,
 					moduleName
 				))
 
 				remoteFile = json.loads(req.content.decode())
 				if float(remoteFile['version']) > float(availableModules[moduleName]['version']):
-					moduleFile = Path(commons.rootDir(), 'system/moduleInstallTickets',  moduleName + '.install')
+					moduleFile = Path(commons.rootDir(), 'system/moduleInstallTickets', moduleName + '.install')
 					moduleFile.write_text(json.dumps(remoteFile))
 					i += 1
 
@@ -322,7 +317,7 @@ class ModuleManager(Manager):
 
 
 	def _checkForModuleInstall(self):
-		managers.ThreadManager.newTimer(interval = 10, func = self._checkForModuleInstall, autoStart = True)
+		managers.ThreadManager.newTimer(interval=10, func=self._checkForModuleInstall, autoStart=True)
 
 		root = Path(commons.rootDir(), 'system/moduleInstallTickets')
 		files = [f for f in root.iterdir() if f.suffix == '.install']
@@ -425,7 +420,7 @@ class ModuleManager(Manager):
 					except Exception as e:
 						self._logger.error('[{}] Error stopping "{}" for update: {}'.format(self.name, moduleName, e))
 
-				gitCloner = GithubCloner(baseUrl = self.GITHUB_API_BASE_URL, path = path, dest = directory)
+				gitCloner = GithubCloner(baseUrl=self.GITHUB_API_BASE_URL, path=path, dest=directory)
 
 				if gitCloner.clone():
 					self._logger.info('[{}] Module successfully downloaded'.format(self.name))

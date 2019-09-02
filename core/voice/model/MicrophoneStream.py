@@ -22,7 +22,7 @@ from six.moves import queue
 from core.commons.commons import shutUpAlsaFFS
 
 
-class MicrophoneStream(object):
+class MicrophoneStream:
 	"""Opens a recording stream as a generator yielding the audio chunks."""
 
 	def __init__(self, rate, chunk):

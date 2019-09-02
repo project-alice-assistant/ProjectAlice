@@ -289,7 +289,7 @@ class MqttServer(Manager):
 				intent = Intent(session.payload['intent']['intentName'].split(':')[1])
 				message = mqtt.MQTTMessage(topic=str.encode(str(intent)))
 				message.payload = json.dumps(session.payload)
-				self.onMessage(client = client, userdata = data, message = message)
+				self.onMessage(client=client, userdata=data, message=message)
 
 
 	# noinspection PyUnusedLocal
@@ -382,7 +382,7 @@ class MqttServer(Manager):
 		self.ask(text=text, customData=session.customData, previousIntent=previousIntent, intentFilter=session.intentFilter, client=session.siteId)
 
 
-	def say(self, text, client: str ='default', customData: dict = None, canBeEnqueued: bool = True):
+	def say(self, text, client: str = 'default', customData: dict = None, canBeEnqueued: bool = True):
 		"""
 		Initiate a notification session which is termniated once the text is spoken
 		:param canBeEnqueued: bool
@@ -642,7 +642,7 @@ class MqttServer(Manager):
 
 		for device in managers.DeviceManager.getDevicesByType(deviceType):
 			payload['siteId'] = device.room
-			self.publish(topic = topic, payload = payload, qos = qos, retain = retain)
+			self.publish(topic=topic, payload=payload, qos=qos, retain=retain)
 
 		payload['siteId'] = 'default'
 		self.publish(topic=topic, payload=json.dumps(payload), qos=qos, retain=retain)

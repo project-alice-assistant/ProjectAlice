@@ -186,7 +186,7 @@ class SamkillaManager(Manager):
 		self._browser.find_element_by_name('password').send_keys(self._userPassword)
 		self._browser.find_element_by_css_selector('.login-page__section-public__form .button[type=submit]').click()
 		self._cookie = self._browser.execute_script("return document.cookie")
-		self._userId =  self._browser.execute_script("return window._loggedInUser['id']")
+		self._userId = self._browser.execute_script("return window._loggedInUser['id']")
 
 
 	# TODO batch gql requests
@@ -330,7 +330,7 @@ class SamkillaManager(Manager):
 		return self._mainProcessor.buildMapsFromDialogTemplates(runOnAssistantId, languageFilter=languageFilter, moduleFilter=moduleFilter)
 
 
-	def getIntentsByModuleName(self, runOnAssistantId: str, languageFilter: str, moduleFilter:str = None) -> list:
+	def getIntentsByModuleName(self, runOnAssistantId: str, languageFilter: str, moduleFilter: str = None) -> list:
 		slotTypesModulesValues, intentsModulesValues, intentNameSkillMatching = self.getDialogTemplatesMaps(
 			runOnAssistantId=runOnAssistantId,
 			languageFilter=languageFilter

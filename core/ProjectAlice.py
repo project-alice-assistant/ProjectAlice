@@ -98,7 +98,7 @@ class ProjectAlice(Singleton):
 		Managers.onStart()
 
 		if self._configManager.getAliceConfigByName('webInterfaceActive'):
-			self._threadsManager.newThread(name = 'Django', target = self._startDjango)
+			self._threadsManager.newThread(name='Django', target=self._startDjango)
 
 		if self._configManager.getAliceConfigByName('useSLC'):
 			subprocess.run(['sudo', 'systemctl', 'start', 'snipsledcontrol'])

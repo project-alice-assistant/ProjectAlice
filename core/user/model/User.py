@@ -1,7 +1,7 @@
 import logging
 import typing
 
-class User(object):
+class User:
 	def __init__(self, row: typing.Any):
 		self._logger 		= logging.getLogger('ProjectAlice')
 

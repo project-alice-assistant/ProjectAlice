@@ -25,7 +25,7 @@ class GoogleTTS(TTS):
 		self._privacyMalus = -20
 
 
-		creds = Credentials.from_service_account_file(filename=Path(commons.rootDir(),'credentials/googlecredentials.json'))
+		creds = Credentials.from_service_account_file(filename=Path(commons.rootDir(), 'credentials/googlecredentials.json'))
 		self._client = texttospeech.TextToSpeechClient(credentials=creds)
 
 		# TODO implement the others

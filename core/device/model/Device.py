@@ -1,4 +1,4 @@
-class Device(object):
+class Device:
 	def __init__(self, data: dict, connected: bool = False):
 		self._id 			= data['id']
 		self._deviceType	= data['type']

@@ -1,4 +1,4 @@
-class Slot(object):
+class Slot:
 	def __init__(self, data):
 		self._slotName = data['slotName']
 		self._entity = data['entity']

@@ -31,11 +31,11 @@ class SnipsServicesManager(Manager):
 
 
 	def onStart(self):
-		self.runCmd(cmd = 'start', services = self.snipsServices(withASR=False))
+		self.runCmd(cmd='start', services=self.snipsServices(withASR=False))
 
 
 	def onStop(self):
-		self.runCmd(cmd = 'stop', services = self.snipsServices())
+		self.runCmd(cmd='stop', services=self.snipsServices())
 		# return
 
 

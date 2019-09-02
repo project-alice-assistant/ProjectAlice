@@ -36,10 +36,7 @@ def shutUpAlsaFFS():
 
 
 def getFunctionCaller(depth: int = 3) -> str:
-	try:
-		return inspect.getmodulename(inspect.stack()[depth][1])
-	except Exception:
-		raise
+	return inspect.getmodulename(inspect.stack()[depth][1])
 
 
 def isEqualTranslated(baseString: str, compareTo: str, module: str = 'system') -> bool:
@@ -114,7 +111,7 @@ def parseSlots(message: MQTTMessage) -> dict:
 	return dict((slot['slotName'], slot['rawValue']) for slot in data.get('slots', dict()))
 
 
-def parseSessionId(message: MQTTMessage) -> Union[str,bool]:
+def parseSessionId(message: MQTTMessage) -> Union[str, bool]:
 	data = payload(message)
 	return data.get('sessionId', False)
 
@@ -146,22 +143,8 @@ def clamp(x: float, minimum: float, maximum: float) -> float:
 
 
 def angleToCardinal(angle: float) -> str:
-	if angle > 337.5 or angle <= 22.5:
-		return 'north'
-	elif 22.5 < angle <= 67.5:
-		return 'north east'
-	elif 67.5 < angle <= 112.5:
-		return 'east'
-	elif 112.5 < angle <= 157.5:
-		return 'south east'
-	elif 157.5 < angle <= 202.5:
-		return 'south'
-	elif 202.5 < angle <= 247.5:
-		return 'south west'
-	elif 247.5 < angle <= 292.5:
-		return 'west'
-	elif 292.5 < angle <= 337.5:
-		return 'north west'
+	cardinals = ['north', 'north east', 'east', 'south east', 'south', 'south west', 'west', 'north west']
+	return cardinals[int(((num+45/2)%360)/(45))]
 
 
 def partOfTheDay() -> str:
@@ -182,7 +165,7 @@ def partOfTheDay() -> str:
 
 
 def isYes(msg: MQTTMessage) -> bool:
-	slots = parseSlotsToObjects(message = msg)
+	slots = parseSlotsToObjects(message=msg)
 	try:
 		return slots['Answer'][0].value['value'] == 'yes'
 	except:
@@ -238,7 +221,7 @@ def cleanRoomNameToSiteId(roomName: str) -> str:
 	:return: str: formated room name to site id
 	"""
 
-	parasites = managers.LanguageManager.getStrings(key = 'inThe')
+	parasites = managers.LanguageManager.getStrings(key='inThe')
 
 	for parasite in parasites:
 		if parasite in roomName:

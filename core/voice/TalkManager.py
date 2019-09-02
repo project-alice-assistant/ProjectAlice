@@ -58,7 +58,7 @@ class TalkManager(Manager):
 					continue
 
 
-	def getTexts(self, module, talk, strType = 'default') -> list:
+	def getTexts(self, module, talk, strType='default') -> list:
 		arr = list()
 		try:
 			module = commons.toCamelCase(module)

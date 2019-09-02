@@ -42,12 +42,12 @@ class ThreadManager(Manager):
 		self._logger.info('[{}] Cleaned {} dead timers'.format(self.NAME, i))
 
 
-	def newTimer(self, interval: float, func: str, args = None, autoStart = True) -> threading.Timer:
+	def newTimer(self, interval: float, func: str, args: list = None, autoStart: bool = True) -> threading.Timer:
 		if not args:
 			args = list()
 
-		threadTimer = ThreadTimer(callback = func, args = args)
-		t = threading.Timer(interval = interval, function = self.onTimerEnd, args=[threadTimer])
+		threadTimer = ThreadTimer(callback=func, args=args)
+		t = threading.Timer(interval=interval, function=self.onTimerEnd, args=[threadTimer])
 		t.daemon = True
 		threadTimer.timer = t
 		self._timers.append(threadTimer)
@@ -58,10 +58,10 @@ class ThreadManager(Manager):
 		return t
 
 
-	def doLater(self, interval: float, func: str, args = None):
+	def doLater(self, interval: float, func: str, args: list = None):
 		if not args:
 			args = list()
-		self.newTimer(interval = interval, func = func, args = args)
+		self.newTimer(interval=interval, func=func, args=args)
 
 
 	def onTimerEnd(self, t: ThreadTimer):
@@ -84,7 +84,7 @@ class ThreadManager(Manager):
 		if name in self._threads:
 			self._threads[name].join(timeout=2)
 
-		thread = threading.Thread(name = name, target = target, args = args)
+		thread = threading.Thread(name=name, target=target, args=args)
 		thread.setDaemon(True)
 
 		if autostart:

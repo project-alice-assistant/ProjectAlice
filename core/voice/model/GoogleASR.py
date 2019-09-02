@@ -20,12 +20,12 @@ class GoogleASR(ASR):
 
 		self._client = speech.SpeechClient()
 		self._config = types.RecognitionConfig(
-			encoding = enums.RecognitionConfig.AudioEncoding.LINEAR16,
-			sample_rate_hertz = managers.ConfigManager.getAliceConfigByName('micSampleRate'),
-			language_code = managers.LanguageManager.activeLanguageAndCountryCode
+			encoding=enums.RecognitionConfig.AudioEncoding.LINEAR16,
+			sample_rate_hertz=managers.ConfigManager.getAliceConfigByName('micSampleRate'),
+			language_code=managers.LanguageManager.activeLanguageAndCountryCode
 		)
 		self._capableOfArbitraryCapture = True
-		self._streamingConfig = types.StreamingRecognitionConfig(config = self._config, single_utterance = True, interim_results = False)
+		self._streamingConfig = types.StreamingRecognitionConfig(config=self._config, single_utterance=True, interim_results=False)
 
 	@staticmethod
 	def _listen(responses):

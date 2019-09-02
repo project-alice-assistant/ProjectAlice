@@ -1,6 +1,3 @@
-from core.commons import commons
-import configSample
-
 import shutil
 try:
 	# noinspection PyUnresolvedReferences
@@ -14,12 +11,15 @@ except ModuleNotFoundError:
 import difflib
 import importlib
 import json
+from pathlib import Path
+import typing
+import toml
+
+import configSample
+from core.ProjectAliceExceptions import ConfigurationUpdateFailed
 from core.base.Manager import Manager
 import core.base.Managers as managers
-from pathlib import Path
-import toml
-import typing
-from core.ProjectAliceExceptions import ConfigurationUpdateFailed
+from core.commons import commons
 
 
 class ConfigManager(Manager):
@@ -131,9 +131,8 @@ class ConfigManager(Manager):
 			sort['modules'][moduleName] = moduleCleaned
 
 		try:
-			s = json.dumps(sort, indent = 4).replace('false', 'False').replace('true', 'True')
-			with open('config.py', 'w') as f:
-				f.write('settings = {}'.format(s))
+			s = json.dumps(sort, indent=4).replace('false', 'False').replace('true', 'True')
+			Path('config.py').write_text('settings = {}'.format(s))
 			importlib.reload(config)
 		except Exception as e:
 			raise ConfigurationUpdateFailed(e)
@@ -151,8 +150,8 @@ class ConfigManager(Manager):
 		misterProper = ['active', 'version', 'author', 'conditions']
 		confsCleaned = {key: value for key, value in confs.items() if key not in misterProper}
 
-		moduleConfigFile = Path(commons.rootDir() ,'modules' ,moduleName ,'config.json')
-		moduleConfigFile.write_text(json.dumps(confsCleaned, indent = 4))
+		moduleConfigFile = Path(commons.rootDir(), 'modules', moduleName, 'config.json')
+		moduleConfigFile.write_text(json.dumps(confsCleaned, indent=4))
 
 
 	def loadSnipsConfigurations(self):
@@ -165,7 +164,7 @@ class ConfigManager(Manager):
 			self._mainClass.onStop()
 
 
-	def updateSnipsConfiguration(self, parent: str, key: str, value, restartSnips: bool = False, createIfNotExist:bool = True):
+	def updateSnipsConfiguration(self, parent: str, key: str, value, restartSnips: bool = False, createIfNotExist: bool = True):
 		"""
 		Setting a config in snips.toml
 		:param parent: Parent key in toml
@@ -174,7 +173,7 @@ class ConfigManager(Manager):
 		:param restartSnips: Whether to restart Snips or not after changing the value
 		:param createIfNotExist: If the parent key or the key doesn't exist do create it
 		"""
-		
+
 		config = self.getSnipsConfiguration(parent=parent, key=key, createIfNotExist=createIfNotExist)
 		if config and config != value:
 			self._snipsConfigurations[parent][key] = value
@@ -185,7 +184,7 @@ class ConfigManager(Manager):
 				managers.SnipsServicesManager.runCmd('restart')
 
 
-	def getSnipsConfiguration(self, parent: str, key: str, createIfNotExist:bool = True) -> typing.Optional[str]:
+	def getSnipsConfiguration(self, parent: str, key: str, createIfNotExist: bool = True) -> typing.Optional[str]:
 		"""
 		Getting a specific configuration from snips.toml
 		:param parent: parent key
@@ -211,14 +210,14 @@ class ConfigManager(Manager):
 		return moduleName in self._modulesConfigurations and configName in self._modulesConfigurations[moduleName]
 
 
-	def getAliceConfigByName(self, configName: str, voiceControl:bool = False) -> dict:
+	def getAliceConfigByName(self, configName: str, voiceControl: bool = False) -> dict:
 		return self._aliceConfigurations.get(
 			configName,
-			difflib.get_close_matches(word = configName, possibilities = self._aliceConfigurations, n = 3) if voiceControl else dict()
+			difflib.get_close_matches(word=configName, possibilities=self._aliceConfigurations, n=3) if voiceControl else dict()
 		)
 
 
-	def getModuleConfigByName(self, moduleName: str, configName: str = '', voiceControl:bool = False) -> dict:
+	def getModuleConfigByName(self, moduleName: str, configName: str = '', voiceControl: bool = False) -> dict:
 		if moduleName not in self._modulesConfigurations:
 			return dict()
 
@@ -227,7 +226,7 @@ class ConfigManager(Manager):
 
 		return self._modulesConfigurations[moduleName].get(
 			configName,
-			difflib.get_close_matches(word = configName, possibilities = self._modulesConfigurations[moduleName], n = 3) if voiceControl else dict()
+			difflib.get_close_matches(word=configName, possibilities=self._modulesConfigurations[moduleName], n=3) if voiceControl else dict()
 		)
 
 
@@ -320,7 +319,7 @@ class ConfigManager(Manager):
 				self._logger.error('- Error in config file for module {}'.format(moduleName))
 
 
-	def deactivateModule(self, moduleName: str, persistent = False):
+	def deactivateModule(self, moduleName: str, persistent: bool = False):
 
 		if moduleName in self.aliceConfigurations['modules']:
 			self._logger.info('[{}] Deactivated module {} {} persistence'.format(self.name, moduleName, "with" if persistent else "without"))
@@ -339,7 +338,7 @@ class ConfigManager(Manager):
 
 	def changeActiveSnipsProjectIdForLanguage(self, projectId: str, forLang: str):
 		langConfig = self.getAliceConfigByName('supportedLanguages').copy()
-		
+
 		if forLang in langConfig:
 			langConfig[forLang]['snipsProjectId'] = projectId
 

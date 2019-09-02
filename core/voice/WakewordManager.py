@@ -88,7 +88,7 @@ class WakewordManager(Manager):
 	def addASample(self):
 		self._state = WakewordManagerState.RECORDING
 		number = len(self._wakeword.samples) + 1
-		managers.ThreadManager.newThread(name = 'captureWakeword', target = self._captureWakeword, args = [number], autostart = True)
+		managers.ThreadManager.newThread(name='captureWakeword', target=self._captureWakeword, args=[number], autostart=True)
 
 
 	def _captureWakeword(self, number: int):
@@ -96,11 +96,11 @@ class WakewordManager(Manager):
 			self._audio = pyaudio.PyAudio()
 
 		stream = self._audio.open(
-			format = self._audio.get_format_from_width(2),
-			channels = managers.ConfigManager.getAliceConfigByName('micChannels'),
-			rate = managers.ConfigManager.getAliceConfigByName('micSampleRate'),
-			input = True,
-			frames_per_buffer = int(managers.ConfigManager.getAliceConfigByName('micSampleRate') / 10)
+			format=self._audio.get_format_from_width(2),
+			channels=managers.ConfigManager.getAliceConfigByName('micChannels'),
+			rate=managers.ConfigManager.getAliceConfigByName('micSampleRate'),
+			input=True,
+			frames_per_buffer=int(managers.ConfigManager.getAliceConfigByName('micSampleRate') / 10)
 		)
 		self._logger.info('[{}] Now recording...'.format(self.name))
 		frames = list()

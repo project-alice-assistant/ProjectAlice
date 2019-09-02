@@ -1,9 +1,9 @@
 import logging
 
 import os
-import requests
-import shutil
 import json
+import shutil
+import requests
 
 from core.ProjectAliceExceptions import GithubRateLimit, GithubTokenFailed
 import core.base.Managers as managers
@@ -60,7 +60,7 @@ class GithubCloner:
 
 				elif item['type'] == 'dir':
 					os.mkdir(os.path.join(self._dest, path))
-					self._doClone(url = os.path.join(url, path))
+					self._doClone(url=os.path.join(url, path))
 
 		except GithubTokenFailed:
 			self._logger.error('[{}] Provided Github username / token invalid'.format(self.NAME))

@@ -51,7 +51,7 @@ network={
 
 		elif not confsFile.exists() and confsSample.exists():
 			self.warning('No config file found, creating it from sample file')
-			shutil.copyfile(src=Path(commons.rootDir(),'configSample.py'), dst=Path(commons.rootDir(),'config.py'))
+			shutil.copyfile(src=Path(commons.rootDir(), 'configSample.py'), dst=Path(commons.rootDir(), 'config.py'))
 
 		elif confsFile.exists() and not initConfs['forceRewrite']:
 			self.warning('Config file already existing and user not wanting to rewrite, aborting')
@@ -60,7 +60,7 @@ network={
 		elif confsFile.exists() and initConfs['forceRewrite']:
 			self.warning('Config file found and force rewrite specified, let\'s restart all this!')
 			Path(commons.rootDir(), 'config.py').unlink()
-			shutil.copyfile(src=Path(commons.rootDir(),'configSample.py'), dst=Path(commons.rootDir(),'config.py'))
+			shutil.copyfile(src=Path(commons.rootDir(), 'configSample.py'), dst=Path(commons.rootDir(), 'config.py'))
 
 
 		config = importlib.import_module('config')
@@ -151,7 +151,7 @@ network={
 				audioHardware = hardware
 				break
 
-		if audioHardware == 'respeaker2' or audioHardware == 'respeaker4':
+		if audioHardware in ('respeaker2', 'respeaker4'):
 			subprocess.call(['sudo', Path(commons.rootDir(), 'system/scripts/audioHardware/respeakers.sh')])
 			subprocess.run(['sudo', 'sed', '-i', '-e', 's/%HARDWARE%/{}/'.format(audioHardware), Path('/etc/systemd/system/snipsledcontrol.service')])
 		elif audioHardware == 'respeaker7':
@@ -160,18 +160,18 @@ network={
 		elif audioHardware == 'respeakerCoreV2':
 			subprocess.call(['sudo', Path(commons.rootDir(), 'system/scripts/audioHardware/respeakerCoreV2.sh')])
 			subprocess.run(['sudo', 'sed', '-i', '-e', 's/%HARDWARE%/{}/'.format(audioHardware), Path('/etc/systemd/system/snipsledcontrol.service')])
-		elif audioHardware == 'matrixCreator' or audioHardware == 'matrixVoice':
+		elif audioHardware in ('matrixCreator', 'matrixVoice'):
 			subprocess.call(['sudo', Path(commons.rootDir(), 'system/scripts/audioHardware/matrix.sh')])
 			subprocess.run(['sudo', 'sed', '-i', '-e', 's/%HARDWARE%/{}/'.format(audioHardware.lower()), Path('/etc/systemd/system/snipsledcontrol.service')])
 
 		subprocess.run(['sudo', 'systemctl', 'daemon-reload'])
-		
+
 		sort = dict(sorted(confs.items()))
 		# pop modules key so it gets added in the back
 		sort['modules'] = sort.pop('modules')
 
 		try:
-			s = json.dumps(sort, indent = 4).replace('false', 'False').replace('true', 'True')
+			s = json.dumps(sort, indent=4).replace('false', 'False').replace('true', 'True')
 			Path('config.py').write_text('settings = {}'.format(s))
 
 		except Exception as e:

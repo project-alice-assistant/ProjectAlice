@@ -46,7 +46,7 @@ class ArrayInput(Input):
 		for key, value in self.parameters.items():
 			if commons.indexOf('--', key) >= 0:
 				self.addLongOption(key[2:], value)
-			elif '-' == key[0]:
+			elif key[0] == '-':
 				self.addShortOption(key[1:], value)
 			else:
 				self.addArgument(key, value)
@@ -85,8 +85,8 @@ class ArrayInput(Input):
 		params = list()
 
 		for k, v in self.parameters.items():
-			if '-' == k[0]:
-				params.append('{}{}'.format(k, ('{}{}'.format('=', self.escapeToken(v)) if '' != v else '')))
+			if k[0] == '-':
+				params.append('{}{}'.format(k, ('{}{}'.format('=', self.escapeToken(v)) if v != '' else '')))
 			else:
 				params.append(self.escapeToken(v))
 
