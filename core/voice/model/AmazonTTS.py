@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 import subprocess
 
-import os
 import re
 
 import core.base.Managers as managers

@@ -2,10 +2,9 @@
 import logging
 import subprocess
 import uuid
+from pathlib import Path
 
 import hashlib
-import os
-from pathlib import Path
 from pydub import AudioSegment
 
 import core.base.Managers as managers
@@ -37,7 +36,7 @@ class TTS:
 			self._voice = managers.ConfigManager.getAliceConfigByName('ttsVoice')
 
 		self._cacheDirectory = ''
-		self._cacheFile: Path = None
+		self._cacheFile: Path = Path()
 		self._text = ''
 
 
@@ -125,8 +124,8 @@ class TTS:
 
 
 	@staticmethod
-	def _mp3ToWave(src: str, dest: str):
-		subprocess.run(['mpg123', '-q', '-w', dest, src])
+	def _mp3ToWave(src: Path, dest: Path):
+		subprocess.run(['mpg123', '-q', '-w', str(dest), str(src)])
 
 
 	def _hash(self, text: str) -> str:
@@ -134,13 +133,13 @@ class TTS:
 		return hashlib.md5(string.encode('utf-8')).hexdigest()
 
 
-	def _speak(self, file: str, session: DialogSession):
+	def _speak(self, file: Path, session: DialogSession):
 		uid = str(uuid.uuid4())
 		managers.MqttServer.playSound(
-			soundFile=Path(file).stem,
+			soundFile=file.stem,
 			sessionId=session.sessionId,
 			siteId=session.siteId,
-			root=Path(file).parent,
+			root=file.parent,
 			uid=uid
 		)
 

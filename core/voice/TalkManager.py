@@ -1,11 +1,12 @@
 # -*- coding: utf-8 -*-
 import json
 from pathlib import Path
+
 import random
 
-from core.commons import commons
 import core.base.Managers as managers
 from core.base.Manager import Manager
+from core.commons import commons
 
 
 class TalkManager(Manager):

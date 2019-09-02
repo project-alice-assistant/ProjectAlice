@@ -6,8 +6,8 @@ from typing import Optional
 import re
 
 import core.base.Managers as managers
-from core.base.Manager import Manager
 from core.ProjectAliceExceptions import LanguageManagerLangNotSupported
+from core.base.Manager import Manager
 
 
 class LanguageManager(Manager):

@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 import json
 import wave
+from pathlib import Path
 
-import os
 import pyaudio
 import shutil
 import tempfile
@@ -212,7 +212,7 @@ class WakewordManager(Manager):
 		self._state = WakewordManagerState.IDLE
 
 
-	def _addWakewordToSnips(self, path: str):
+	def _addWakewordToSnips(self, path: Path):
 		# TODO unhardcode sensitivity
 		models: list = managers.ConfigManager.getSnipsConfiguration('snips-hotword', 'model', createIfNotExist=True)
 
@@ -247,7 +247,7 @@ class WakewordManager(Manager):
 			self._upload(d/f, uid)
 
 
-	def _upload(self, path: str, uid: str = ''):
+	def _upload(self, path: Path, uid: str = ''):
 		wakewordName, zipPath = self._prepareHotword(path)
 
 		l = len(managers.DeviceManager.getDevicesByType(deviceType='AliceSatellite', connectedOnly=False)) if uid else 1
@@ -269,7 +269,7 @@ class WakewordManager(Manager):
 			thread.start()
 
 
-	def _prepareHotword(self, path: str) -> tuple:
+	def _prepareHotword(self, path: Path) -> tuple:
 		wakewordName = path.name
 		zipPath = path.parent / (wakewordName + '.zip')
 
@@ -278,6 +278,6 @@ class WakewordManager(Manager):
 			zipPath.unlink()
 
 		self._logger.info('[{}] Packing wakeword {}'.format(self.name, wakewordName))
-		shutil.make_archive(base_name=zipPath.with_suffix(''), format='zip', root_dir=path)
+		shutil.make_archive(base_name=zipPath.with_suffix(''), format='zip', root_dir=str(path))
 
 		return wakewordName, zipPath

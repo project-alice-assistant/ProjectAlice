@@ -4,7 +4,6 @@ import json
 import subprocess
 import uuid
 
-import os
 from pathlib import Path
 import paho.mqtt.client as mqtt
 import paho.mqtt.publish as publish

@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 import getpass
 import subprocess
-
 from pathlib import Path
+
 import re
 
 from core.commons import commons
@@ -21,7 +21,7 @@ class MycroftTTS(TTS):
 		self._online = False
 		self._privacyMalus = 0
 
-		self._mimicDirectory = Path(commons.rootDir().parent, 'mimic/mimic')
+		self._mimicDirectory = Path(Path(commons.rootDir()).parent, 'mimic/mimic')
 
 		# TODO => classify genders and countries. First is always default
 		self._supportedLangAndVoices = {

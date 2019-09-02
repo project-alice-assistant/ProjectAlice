@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 
 import collections
-import fnmatch
 import importlib
 import json
 import subprocess

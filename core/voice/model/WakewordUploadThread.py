@@ -2,10 +2,9 @@
 
 import logging
 import socket
+from pathlib import Path
 from socket import timeout
 from threading import Thread
-
-from pathlib import Path
 
 
 class WakewordUploadThread(Thread):
