@@ -76,13 +76,8 @@ class InputDefinition:
 		if not self.hasArgument(name):
 			raise ValueError('The {} argument does not exist.'.format(str(name)))
 
-		_arguments = None
-
 		if commons.isInt(name):
-			_arguments = list()
-
-			for key in self.arguments:
-				_arguments.append(self.arguments[key])
+			_arguments = list(self.arguments.values())
 		else:
 			_arguments = self.arguments
 
