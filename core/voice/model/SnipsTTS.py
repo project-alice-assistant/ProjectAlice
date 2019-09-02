@@ -82,7 +82,7 @@ class SnipsTTS(TTS):
 	def onSay(self, session: DialogSession):
 		super().onSay(session)
 
-		if not self._cacheFile or not self._text:
+		if not self._text:
 			return
 
 		if not self._cacheFile.is_file():
