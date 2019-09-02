@@ -130,10 +130,6 @@ class ConfigManager(Manager):
 			moduleCleaned = {key: value for key, value in conf.items() if key in misterProper}
 			sort['modules'][moduleName] = moduleCleaned
 
-		#sort['modules'] = {key: value for key, value in modules.items() if key in misterProper}
-
-		print(sort['modules'])
-
 		try:
 			s = json.dumps(sort, indent = 4).replace('false', 'False').replace('true', 'True')
 			with open('config.py', 'w') as f:
