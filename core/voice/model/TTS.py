@@ -1,5 +1,6 @@
 import logging
 import subprocess
+import tempfile
 import uuid
 from pathlib import Path
 
@@ -14,7 +15,7 @@ from core.voice.model.TTSEnum import TTSEnum
 
 
 class TTS:
-	TEMP_ROOT = Path('/tmp/tempTTS')
+	TEMP_ROOT = Path(tempfile.gettempdir(), '/tempTTS')
 	TTS = None
 
 	def __init__(self, user: User = None):

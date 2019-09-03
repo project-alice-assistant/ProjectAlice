@@ -4,6 +4,8 @@ import traceback
 from colorama import Fore, init
 
 # TODO ????
+from core.console import Command
+
 init()
 
 from core.console.input.ArgvInput import ArgvInput
@@ -15,12 +17,12 @@ from core.console.input.InputDefinition import InputDefinition
 from core.console.input.InputOption import InputOption
 
 
-#
-# ConsoleApplication
-#
 class ConsoleApplication:
+	"""
+	ConsoleApplication
+	"""
 
-	def __init__(self, name, version):
+	def __init__(self, name: str, version: str):
 		self.name = name
 		self.version = version
 		self.verbose = 0
@@ -33,12 +35,12 @@ class ConsoleApplication:
 			self.add(command)
 
 
-	def getDefinition(self):
+	def getDefinition(self) -> InputDefinition:
 		return self.definition
 
 
 	@staticmethod
-	def getDefaultInputDefinition():
+	def getDefaultInputDefinition() -> InputDefinition:
 		return InputDefinition([
 			InputArgument(name='command', mode=InputArgument.REQUIRED, description='The command to execute'),
 			InputOption(name='--help', shortcut='-h', mode=InputOption.VALUE_NONE, description='Display this help message.'),
@@ -49,15 +51,15 @@ class ConsoleApplication:
 
 
 	@staticmethod
-	def getDefaultCommands():
+	def getDefaultCommands() -> list:
 		return [ListCommand(), HelpCommand()]
 
 
-	def getCommands(self):
+	def getCommands(self) -> dict:
 		return self.commands
 
 
-	def add(self, command):
+	def add(self, command: Command) -> Command:
 		command.setApplication(self)
 
 		if not command.isEnabled():
@@ -72,45 +74,41 @@ class ConsoleApplication:
 		return command
 
 
-	def addCommands(self, commands):
+	def addCommands(self, commands: list):
 		for command in commands:
 			self.add(command)
 
 
-	def has(self, name):
+	def has(self, name: str) -> bool:
 		return name in self.commands
 
 
-	def setVerbose(self, level):
+	def setVerbose(self, level: int):
 		self.verbose = level
 
 
 	@staticmethod
-	def getCommandName(inputt):
+	def getCommandName(inputt: ArgvInput) -> str:
 		return inputt.getFirstArgument()
 
 
-	def getName(self):
+	def getName(self) -> str:
 		return self.name
 
 
-	def getVersion(self):
+	def getVersion(self) -> str:
 		return self.version
 
 
-	def setName(self, name):
+	def setName(self, name: str):
 		self.name = name
 
-		return self
 
-
-	def setVersion(self, version):
+	def setVersion(self, version: str):
 		self.version = version
 
-		return self
 
-
-	def getLongVersion(self):
+	def getLongVersion(self) -> str:
 		versionMessage = 'AliceConsole'
 
 		if self.getName() is not None:
@@ -123,7 +121,7 @@ class ConsoleApplication:
 
 
 	# TODO doRun() doesn't raise any exceptions
-	def run(self, inputt=None):
+	def run(self, inputt: ArgvInput = None) -> int:
 		if inputt is None:
 			inputt = ArgvInput()
 
@@ -157,7 +155,7 @@ class ConsoleApplication:
 		return exitCode
 
 
-	def configureIO(self, inputt):
+	def configureIO(self, inputt: ArgvInput):
 		if inputt.hasParameterOption(['--no-interaction', '-n']):
 			inputt.setInteractive(False)
 
@@ -165,7 +163,7 @@ class ConsoleApplication:
 			self.setVerbose(1)
 
 
-	def doRun(self, inputt):
+	def doRun(self, inputt: ArgvInput) -> int:
 		if inputt.hasParameterOption(['--version', '-V']):
 			print(self.getLongVersion())
 			return 0
@@ -192,15 +190,15 @@ class ConsoleApplication:
 
 
 	@staticmethod
-	def doRunCommand(command, inputt):
+	def doRunCommand(command: Command, inputt: ArgvInput):
 		return command.run(inputt)
 
 
-	def find(self, name):
+	def find(self, name: str):
 		return self.get(name)
 
 
-	def get(self, name):
+	def get(self, name: str) -> Command:
 		if name not in self.commands or self.commands[name] is None:
 			raise ValueError('The command \'{}\' does not exist.'.format(str(name)))
 
