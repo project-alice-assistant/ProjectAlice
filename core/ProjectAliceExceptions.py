@@ -4,7 +4,7 @@ import core.base.Managers as managers
 
 class SamkillaException(Exception):
 
-	def __init__(self, status: str, message: str, context: str):
+	def __init__(self, status: int, message: str, context: list):
 		self._status = status
 		self._message = message
 		self._context = context
@@ -12,7 +12,7 @@ class SamkillaException(Exception):
 
 
 	@property
-	def status(self) -> str:
+	def status(self) -> int:
 		return self._status
 
 
@@ -22,7 +22,7 @@ class SamkillaException(Exception):
 
 
 	@property
-	def context(self) -> str:
+	def context(self) -> list:
 		return self._context
 
 
@@ -49,17 +49,17 @@ class ModuleStartDelayed(Exception):
 
 
 class IntentError(SamkillaException):
-	def __init__(self, status: str, message: str, context: str):
+	def __init__(self, status: int, message: str, context: list):
 		super().__init__(status, message, context)
 
 
 class HttpError(SamkillaException):
-	def __init__(self, status: str, message: str, context: str):
+	def __init__(self, status: int, message: str, context: list):
 		super().__init__(status, message, context)
 
 
 class AssistantNotFoundError(SamkillaException):
-	def __init__(self, status: str, message: str, context: str):
+	def __init__(self, status: int, message: str, context: list):
 		super().__init__(status, message, context)
 
 
