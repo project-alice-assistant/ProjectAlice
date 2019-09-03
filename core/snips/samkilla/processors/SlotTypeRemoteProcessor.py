@@ -98,7 +98,7 @@ class SlotTypeRemoteProcessor:
 			sys.exit(-1)
 
 
-	def syncSlotTypesOnAssistant(self, slotTypeSyncState: str = None, hashComputationOnly: str = False) -> tuple:
+	def syncSlotTypesOnAssistant(self, slotTypeSyncState: str = None, hashComputationOnly: bool = False) -> tuple:
 		self._syncState = self.createNewSavedSlotType() if slotTypeSyncState is None else slotTypeSyncState
 
 		slotTypeMatching = self.syncSlotType(hashComputationOnly)
