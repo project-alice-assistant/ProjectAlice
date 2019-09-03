@@ -55,6 +55,7 @@ class TTS:
 
 		if not self.TEMP_ROOT.is_dir():
 			subprocess.run(['sudo', 'mkdir', str(self.TEMP_ROOT)])
+			subprocess.run(['sudo', 'chown', 'pi', str(self.TEMP_ROOT)])
 
 		if self.TTS == TTSEnum.SNIPS:
 			voiceFile = 'cmu_{}_{}'.format(managers.LanguageManager.activeCountryCode.lower(), self._voice)
