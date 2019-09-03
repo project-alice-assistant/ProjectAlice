@@ -241,21 +241,11 @@ class MainProcessor:
 								if not synonym: continue
 								slotTypesGlobalValues[savedSlotType['name']][savedSlotValue['value']].setdefault(synonym, True)
 
-		for slotName in slotTypesModulesValues:
+		for slotName, slotValue in slotTypesModulesValues.items():
+			slotTypeCatalogValues = slotTypesGlobalValues.get(slotName, slotValue)
 
-			slotTypeCatalogValues = slotTypesGlobalValues if slotName in slotTypesGlobalValues else slotTypesModulesValues
-
-			mergedSlotTypes[slotName] = slotTypeCatalogValues[slotName]['__otherattributes__']
-			mergedSlotTypes[slotName]['values'] = list()
-
-			for slotValue in slotTypeCatalogValues[slotName]:
-				if slotValue == '__otherattributes__': continue
-				synonyms = list()
-
-				for synonym in slotTypeCatalogValues[slotName][slotValue]:
-					synonyms.append(synonym)
-
-				mergedSlotTypes[slotName]['values'].append({'value': slotValue, 'synonyms': synonyms})
+			mergedSlotTypes[slotName] = slotTypeCatalogValues.pop('__otherattributes__')
+			mergedSlotTypes[slotName]['values'] = [{'value': key, 'synonyms': list(value)} for key, value in slotTypeCatalogValues.items()]
 
 			self.syncGlobalSlotType(
 				assistantId=assistantId,
@@ -294,19 +284,12 @@ class MainProcessor:
 				for moduleSlot in savedIntent['slots']:
 					intentsGlobalValues[savedIntent['name']]['slots'].setdefault(moduleSlot['name'], moduleSlot)
 
-		for intentName in intentsModulesValues:
+		for intentName, intentValue in intentsModulesValues.items():
+			intentCatalogValues = intentsGlobalValues.get(intentName, intentValue)
 
-			intentCatalogValues = intentsGlobalValues if intentName in intentsGlobalValues else intentsModulesValues
-
-			mergedIntents[intentName] = intentCatalogValues[intentName]['__otherattributes__']
-			mergedIntents[intentName]['utterances'] = list()
-			mergedIntents[intentName]['slots'] = list()
-
-			for intentUtteranceValue in intentCatalogValues[intentName]['utterances']:
-				mergedIntents[intentName]['utterances'].append(intentUtteranceValue)
-
-			for intentSlotNameValue in intentCatalogValues[intentName]['slots']:
-				mergedIntents[intentName]['slots'].append(intentCatalogValues[intentName]['slots'][intentSlotNameValue])
+			mergedIntents[intentName] = intentCatalogValues['__otherattributes__']
+			mergedIntents[intentName]['utterances'] = list(intentCatalogValues['utterances'])
+			mergedIntents[intentName]['slots'] = list(intentCatalogValues['slots'].values())
 
 			self.syncGlobalIntent(
 				assistantId=assistantId,
@@ -663,14 +646,12 @@ class MainProcessor:
 				self._ctx.log('[Deprecated] Module {}'.format(moduleName))
 				moduleCacheData = self._savedAssistants[languageFilter][runOnAssistantId]['modules'][moduleName]
 				skillId = moduleCacheData['skillId']
-				slotTypeKeys = moduleCacheData['slotTypes'].keys() if 'slotTypes' in moduleCacheData else list()
-				intentKeys = moduleCacheData['intents'].keys() if 'intents' in moduleCacheData else list()
-
-				for slotTypeName in slotTypeKeys:
+				
+				for slotTypeName in moduleCacheData.get('slotTypes', list()):
 					entityId = moduleCacheData['slotTypes'][slotTypeName]['entityId']
 					self._ctx.entity.delete(entityId=entityId, language=languageFilter)
 
-				for intentName in intentKeys:
+				for intentName in moduleCacheData.get('intents', list()):
 					intentId = moduleCacheData['intents'][intentName]['intentId']
 					self._ctx.intent.removeFromSkill(userId=self._ctx.userId, skillId=skillId, intentId=intentId, deleteAfter=True)
 
