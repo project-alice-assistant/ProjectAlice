@@ -47,12 +47,12 @@ class InputDefinition:
 
 	def addArguments(self, _arguments):
 		if _arguments:
-			for index, argument in _arguments.items():
+			for argument in _arguments.values():
 				self.addArgument(argument)
 
 
 	def addArgument(self, argument):
-		if argument.name in self.arguments and self.arguments[argument.name]:
+		if self.arguments.get(argument.name):
 			raise ValueError('An argument with name {} already exists.'.format(str(argument.name)))
 
 		if self.hasAnArrayArgument:
@@ -76,22 +76,16 @@ class InputDefinition:
 		if not self.hasArgument(name):
 			raise ValueError('The {} argument does not exist.'.format(str(name)))
 
-		if commons.isInt(name):
-			_arguments = list(self.arguments.values())
-		else:
-			_arguments = self.arguments
+		_arguments = list(self.arguments.values()) if commons.isInt(name) else self.arguments
 
 		return _arguments[name]
 
 
 	def hasArgument(self, name):
-		_arguments = self.arguments
-
 		if commons.isInt(name):
-			_arguments = self.arguments.values()
-			return name < len(_arguments)
+			return name < len(self.arguments)
 
-		return name in _arguments
+		return name in self.arguments
 
 
 	def getArguments(self):
@@ -99,10 +93,7 @@ class InputDefinition:
 
 
 	def getArgumentCount(self):
-		if self.hasAnArrayArgument:
-			return 20000000  # Any huge number
-		else:
-			return len(self.arguments)
+		return len(self.arguments) if not self.hasAnArrayArgument else 20000000  # Any huge number
 
 
 	def getArgumentRequiredCount(self):
@@ -110,12 +101,7 @@ class InputDefinition:
 
 
 	def getArgumentDefaults(self):
-		values = list()
-
-		for index, argument in self.arguments.items():
-			values[argument.name] = argument.getDefault()
-
-		return values
+		return {x.name: x.getDefault for x in self.arguments.values()}
 
 
 	def setOptions(self, options):
@@ -125,7 +111,7 @@ class InputDefinition:
 
 
 	def addOptions(self, options):
-		for index, option in options.items():
+		for option in options.values():
 			self.addOption(option)
 
 
@@ -169,11 +155,7 @@ class InputDefinition:
 
 
 	def getOptionDefaults(self):
-		values = list()
-
-		for index, option in self.options.items():
-			values[option.name] = option.getDefault()
-		return values
+		return {x.name: x.getDefault for x in self.options.values()}
 
 
 	def shortcutToName(self, shortcut):
@@ -186,42 +168,30 @@ class InputDefinition:
 	def getSynopsis(self):
 		elements = list()
 
-		for index, option in self.getOptions().items():
-			if option.getShortcut():
-				shortcut = '-{}|'.format(option.getShortcut())
-			else:
-				shortcut = ''
-
-			out = '['
+		for option in self.getOptions().values():
+			shortcut = '-{}|'.format(option.getShortcut()) if option.getShortcut() else ''
 
 			if option.isValueRequired():
-				out += str(shortcut) + '--' + str(option.name) + '="..."'
+				out = '[{}--{}="..."]'
 			elif option.isValueOptional():
-				out += str(shortcut) + '--' + str(option.name) + '[="..."]'
+				out = '[{}--{}[="..."]]'
 			else:
-				out += str(shortcut) + '--' + str(option.name)
+				out = '[{}--{}]'
 
-			out += ']'
+			elements.append(out.format(shortcut, option.name))
 
-			elements.append(out)
-
-		for index, argument in self.getArguments().items():
-			out = ''
-
-			if argument.isRequired():
-				out += argument.name
-				if argument.isArray():
-					out += '1'
-			else:
-				out += '[' + str(argument.name) + ']'
-
-				if argument.isArray():
-					out += '1'
-
-			elements.append(out)
+		for argument in self.getArguments().values():
+			out = '[{}]'
+			if not argument.isRequired():
+				out = '{}'
 
 			if argument.isArray():
-				elements.append('... [' + str(argument.name) + 'N]')
+				out += '1'
+
+			elements.append(out.format(argument.name))
+
+			if argument.isArray():
+				elements.append('... [{}N]'.format(argument.name))
 
 		return ' '.join(elements)
 
