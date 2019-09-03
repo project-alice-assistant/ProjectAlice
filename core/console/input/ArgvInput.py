@@ -164,7 +164,7 @@ class ArgvInput(Input):
 					value = True
 
 		if option.isArray():
-			if name not in self.options or self.options[name] is None:
+			if not self.options.get(name):
 				self.options[name] = list()
 
 			self.options[name].append(value)
@@ -174,10 +174,8 @@ class ArgvInput(Input):
 
 	def getFirstArgument(self):
 		for token in self.tokens:
-			if '-' == token[0]:
-				continue
-
-			return token
+			if not token.startswith('-'):
+				return token
 
 
 	def hasParameterOption(self, values):
@@ -198,7 +196,7 @@ class ArgvInput(Input):
 		if tokens:
 			token = tokens.pop(0)
 
-		while token:
+		if token:
 			for value in values:
 				if token == value or 0 == commons.indexOf(value + '=', token):
 					pos = commons.indexOf('=', token)

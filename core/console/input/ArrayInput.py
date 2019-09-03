@@ -26,7 +26,7 @@ class ArrayInput(Input):
 			if not commons.isInt(k):
 				v = k
 
-			if commons.indexOf(v, values) >= 0:
+			if commons.indexOf(v, values) != -1:
 				return True
 
 		return False
@@ -36,7 +36,7 @@ class ArrayInput(Input):
 		for k, v in self.parameters.items():
 			if not commons.isInt(k) and commons.indexOf(v, values) >= 0:
 				return True
-			elif commons.indexOf(v, values) >= 0:
+			elif commons.indexOf(v, values) != -1:
 				return v
 
 		return cdef
@@ -44,7 +44,7 @@ class ArrayInput(Input):
 
 	def parse(self):
 		for key, value in self.parameters.items():
-			if commons.indexOf('--', key) >= 0:
+			if commons.indexOf('--', key) != -1:
 				self.addLongOption(key[2:], value)
 			elif key[0] == '-':
 				self.addShortOption(key[1:], value)
@@ -85,8 +85,8 @@ class ArrayInput(Input):
 		params = list()
 
 		for k, v in self.parameters.items():
-			if k[0] == '-':
-				params.append('{}{}'.format(k, ('{}{}'.format('=', self.escapeToken(v)) if v != '' else '')))
+			if k.startswith('-'):
+				params.append('{}{}{}'.format(k, '=' if v else '', self.escapeToken(v)))
 			else:
 				params.append(self.escapeToken(v))
 
