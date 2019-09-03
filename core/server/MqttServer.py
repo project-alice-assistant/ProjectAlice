@@ -541,7 +541,9 @@ class MqttServer(Manager):
 
 		if slot:
 			if intentFilter and len(intentList) > 1:
-				self._logger.warning('[{}] You canno specify a slot if you have more than one intent in the intent filter'.format(self.name))
+				self._logger.warning('[{}] Can\'t specify a slot if you have more than one intent in the intent filter'.format(self.name))
+			elif not intentFilter:
+				self._logger.warning('[{}] Can\'t use a slot definition without setting an intent filter'.format(self.name))
 			else:
 				jsonDict['slot'] = slot
 
