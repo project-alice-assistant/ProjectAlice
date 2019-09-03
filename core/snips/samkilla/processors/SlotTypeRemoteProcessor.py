@@ -3,10 +3,12 @@ import traceback
 
 import hashlib
 
+from core.snips import SamkillaManager
+
 
 class SlotTypeRemoteProcessor:
 
-	def __init__(self, ctx, slotType, slotLanguage, assistantId):
+	def __init__(self, ctx: SamkillaManager, slotType: dict, slotLanguage: str, assistantId: str):
 		self._ctx = ctx
 		self._slotType = slotType
 		self._assistantId = assistantId
@@ -15,13 +17,13 @@ class SlotTypeRemoteProcessor:
 		self._createdInstances = {'entities': list()}
 
 
-	def createNewSavedSlotType(self):
+	def createNewSavedSlotType(self) -> dict:
 		return {
 			'name': self._slotType['name']
 		}
 
 
-	def slotTypeValuesToHash(self, entityId=''):
+	def slotTypeValuesToHash(self, entityId: str = '') -> str:
 		slotType = self._slotType
 
 		hashSum = '{}{}{}{}'.format(
@@ -42,14 +44,14 @@ class SlotTypeRemoteProcessor:
 		return hashlib.sha512(hashSum.encode('utf-8')).hexdigest()
 
 
-	def doSyncedSlotTypeExists(self):
+	def syncedSlotTypeExists(self) -> bool:
 		return 'hash' in self._syncState and 'entityId' in self._syncState
 
 
-	def syncSlotType(self, hashComputationOnly=False):
+	def syncSlotType(self, hashComputationOnly = False) -> dict:
 		slotType = self._slotType
 
-		oldInstanceExists = self.doSyncedSlotTypeExists()
+		oldInstanceExists = self.syncedSlotTypeExists()
 		oldHash = self._syncState['hash'] if oldInstanceExists else ''
 		entityId = self._syncState['entityId'] if oldInstanceExists else ''
 		curHash = self.slotTypeValuesToHash(entityId=entityId)
@@ -85,7 +87,7 @@ class SlotTypeRemoteProcessor:
 		return {'entityId': entityId, 'hash': curHash, 'changes': changes}
 
 
-	def syncSlotTypesOnAssistantSafely(self, slotTypeSyncState=None, hashComputationOnly=False):
+	def syncSlotTypesOnAssistantSafely(self, slotTypeSyncState: str = None, hashComputationOnly: bool = False):
 		try:
 			return self.syncSlotTypesOnAssistant(slotTypeSyncState=slotTypeSyncState, hashComputationOnly=hashComputationOnly)
 		except:
@@ -93,12 +95,10 @@ class SlotTypeRemoteProcessor:
 			self._ctx.log('[Safe] Handle error gracefully')
 			self._ctx.log(e)
 			self._ctx.log(traceback.format_exc())
-			# Deprecated
-			# self.cleanCreatedInstances()
 			sys.exit(-1)
 
 
-	def syncSlotTypesOnAssistant(self, slotTypeSyncState=None, hashComputationOnly=False):
+	def syncSlotTypesOnAssistant(self, slotTypeSyncState: str = None, hashComputationOnly: str = False) -> tuple:
 		self._syncState = self.createNewSavedSlotType() if slotTypeSyncState is None else slotTypeSyncState
 
 		slotTypeMatching = self.syncSlotType(hashComputationOnly)

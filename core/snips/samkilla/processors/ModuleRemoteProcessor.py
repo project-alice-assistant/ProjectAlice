@@ -23,7 +23,7 @@ class ModuleRemoteProcessor:
 		}
 
 
-	def createNewSavedModule(self):
+	def createNewSavedModule(self) -> dict:
 		return {
 			'skillId': None,
 			'name'   : self._moduleName
@@ -36,12 +36,12 @@ class ModuleRemoteProcessor:
 		return hashlib.sha512(hashSum.encode('utf-8')).hexdigest()
 
 
-	def doSyncedSkillExists(self) -> bool:
+	def syncedSkillExists(self) -> bool:
 		return 'hash' in self._syncState and str(self._syncState['skillId']).startswith('skill_')
 
 
 	def syncSkill(self, moduleDescription: str, moduleIcon: str, hashComputationOnly: bool = False):
-		oldInstanceExists = self.doSyncedSkillExists()
+		oldInstanceExists = self.syncedSkillExists()
 		oldHash = self._syncState['hash'] if oldInstanceExists else ''
 		skillId = self._syncState['skillId'] if oldInstanceExists else ''
 		curHash = self.skillValuesToHash(icon=moduleIcon, description=moduleDescription, skillId=skillId)
