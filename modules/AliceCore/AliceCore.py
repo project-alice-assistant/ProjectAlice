@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 import getpass
 import subprocess
 import time

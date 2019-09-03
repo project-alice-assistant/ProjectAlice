@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 import json
 
 import core.base.Managers    as managers

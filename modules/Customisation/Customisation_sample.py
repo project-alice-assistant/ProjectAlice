@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 from core.base.model.Module import Module
 from core.dialog.model.DialogSession import DialogSession
 
