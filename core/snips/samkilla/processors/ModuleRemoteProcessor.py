@@ -3,6 +3,7 @@ import traceback
 
 import hashlib
 
+from core.snips import SamkillaManager
 from core.snips.samkilla.models.EnumSkillImageUrl import EnumSkillImageUrl as EnumSkillImageUrlClass
 
 EnumSkillImageUrl = EnumSkillImageUrlClass()
@@ -10,7 +11,7 @@ EnumSkillImageUrl = EnumSkillImageUrlClass()
 
 class ModuleRemoteProcessor:
 
-	def __init__(self, ctx, assistantId, module, moduleName, moduleLanguage):
+	def __init__(self, ctx: SamkillaManager, assistantId: str, module: dict, moduleName: str, moduleLanguage: str):
 		self._ctx = ctx
 		self._assistantId = assistantId
 		self._module = module
@@ -30,18 +31,16 @@ class ModuleRemoteProcessor:
 
 
 	@staticmethod
-	def skillValuesToHash(icon, description, skillId=''):
+	def skillValuesToHash(icon: str, description: str, skillId: str = '') -> str:
 		hashSum = '{}{}{}'.format(icon, description, skillId)
-
 		return hashlib.sha512(hashSum.encode('utf-8')).hexdigest()
 
 
-	def doSyncedSkillExists(self):
-		return 'hash' in self._syncState and \
-			   str(self._syncState['skillId']).startswith('skill_')
+	def doSyncedSkillExists(self) -> bool:
+		return 'hash' in self._syncState and str(self._syncState['skillId']).startswith('skill_')
 
 
-	def syncSkill(self, moduleDescription, moduleIcon, hashComputationOnly=False):
+	def syncSkill(self, moduleDescription: str, moduleIcon: str, hashComputationOnly: bool = False):
 		oldInstanceExists = self.doSyncedSkillExists()
 		oldHash = self._syncState['hash'] if oldInstanceExists else ''
 		skillId = self._syncState['skillId'] if oldInstanceExists else ''
@@ -75,7 +74,7 @@ class ModuleRemoteProcessor:
 		}
 
 
-	def syncModulesOnAssistantSafely(self, typeEntityMatching, moduleSyncState=None, hashComputationOnly=False):
+	def syncModulesOnAssistantSafely(self, typeEntityMatching: str, moduleSyncState: str = None, hashComputationOnly: bool = False):
 		try:
 			return self.syncModulesOnAssistant(typeEntityMatching=typeEntityMatching, moduleSyncState=moduleSyncState, hashComputationOnly=hashComputationOnly)
 		except:
@@ -83,13 +82,11 @@ class ModuleRemoteProcessor:
 			self._ctx.log('[Safe] Handle error gracefully')
 			self._ctx.log(e)
 			self._ctx.log(traceback.format_exc())
-			# Deprecated
-			# self.cleanCreatedInstances()
 			sys.exit(-1)
 
 
 	# noinspection PyUnusedLocal
-	def syncModulesOnAssistant(self, typeEntityMatching=None, moduleSyncState=None, hashComputationOnly=False):
+	def syncModulesOnAssistant(self, typeEntityMatching: str = None, moduleSyncState: str = None, hashComputationOnly: bool = False) -> tuple:
 		self._syncState = self.createNewSavedModule() if moduleSyncState is None else moduleSyncState
 
 		skillData = self.syncSkill(self._module['description'], self._module['icon'], hashComputationOnly)
