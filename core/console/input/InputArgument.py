@@ -46,7 +46,7 @@ class InputArgument:
 		if self.isArray():
 			if definition is None:
 				definition = list()
-			elif type(definition) != list:
+			elif not isinstance(definition, list):
 				raise ValueError('A default value for an array argument must be an array.')
 
 		self.default = definition

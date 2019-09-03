@@ -23,7 +23,7 @@ class InputOption:
 		reg = re.compile(r'-')
 
 		if shortcut is not None:
-			if type(shortcut) == list:
+			if isinstance(shortcut, list):
 				for short in shortcut:
 					# noinspection PyUnusedLocal
 					short = re.sub(reg, '', short)  # weird
@@ -59,19 +59,19 @@ class InputOption:
 
 
 
-	def acceptValue(self):
+	def acceptValue(self) -> bool:
 		return self.isValueRequired() or self.isValueOptional()
 
 
-	def isValueRequired(self):
+	def isValueRequired(self) -> bool:
 		return self.VALUE_REQUIRED == (self.VALUE_REQUIRED & self.mode)
 
 
-	def isValueOptional(self):
+	def isValueOptional(self) -> bool:
 		return self.VALUE_OPTIONAL == (self.VALUE_OPTIONAL & self.mode)
 
 
-	def isArray(self):
+	def isArray(self) -> bool:
 		return self.VALUE_IS_ARRAY == (self.VALUE_IS_ARRAY & self.mode)
 
 
@@ -83,7 +83,7 @@ class InputOption:
 		if self.isArray():
 			if default is None:
 				default = list()
-			elif type(default) != list:
+			elif not isinstance(default, list):
 				raise ValueError('A default value for an array option must be an array.')
 
 		if self.acceptValue():
