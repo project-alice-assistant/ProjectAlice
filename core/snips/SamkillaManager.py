@@ -90,14 +90,14 @@ class SamkillaManager(Manager):
 		return self._userId
 
 
-	def sync(self, moduleFilter: str = None, download: bool = True):
+	def sync(self, moduleFilter: str = None, download: bool = True) -> bool:
 		self.log('[{}] Sync for module \'{}\''.format(self.name, moduleFilter if moduleFilter else '*'))
 
 		started = self.start()
 
 		if not started:
 			self.log('[{}] No credentials. Unable to synchronize assistant with remote console'.format(self.name))
-			return
+			return False
 
 		activeLang: str = managers.LanguageManager.activeLanguage
 		activeProjectId: str = managers.LanguageManager.activeSnipsProjectId
