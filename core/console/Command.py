@@ -233,10 +233,10 @@ class Command:
 
 		if mergeArgs:
 			currentArguments = self.definition.getArguments()
-			self.definition.setArguments(self.application.getDefinition().getArguments())
+			self.definition.setArguments(self.application.definition().getArguments())
 			self.definition.addArguments(currentArguments)
 
-		self.definition.addOptions(self.application.getDefinition().getOptions())
+		self.definition.addOptions(self.application.definition().getOptions())
 		self.applicationDefinitionMerged = True
 
 		if mergeArgs:

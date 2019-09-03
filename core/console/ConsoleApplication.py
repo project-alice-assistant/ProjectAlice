@@ -2,10 +2,9 @@ import sys
 import traceback
 
 from colorama import Fore, init
-
-# TODO ????
 from core.console import Command
 
+# TODO ????
 init()
 
 from core.console.input.ArgvInput import ArgvInput
@@ -23,20 +22,21 @@ class ConsoleApplication:
 	"""
 
 	def __init__(self, name: str, version: str):
-		self.name = name
-		self.version = version
-		self.verbose = 0
-		self.commands = dict()
-		self.running = None
-		self.needHelp = False
-		self.definition = self.getDefaultInputDefinition()
+		self._name = name
+		self._version = version
+		self._verbosity = 0
+		self._commands = dict()
+		self._running = None
+		self._needHelp = False
+		self._definition = self.getDefaultInputDefinition()
 
 		for command in self.getDefaultCommands():
 			self.add(command)
 
 
-	def getDefinition(self) -> InputDefinition:
-		return self.definition
+	@property
+	def definition(self) -> InputDefinition:
+		return self._definition
 
 
 	@staticmethod
@@ -54,9 +54,9 @@ class ConsoleApplication:
 	def getDefaultCommands() -> list:
 		return [ListCommand(), HelpCommand()]
 
-
-	def getCommands(self) -> dict:
-		return self.commands
+	@property
+	def commands(self) -> dict:
+		return self._commands
 
 
 	def add(self, command: Command) -> Command:
@@ -66,7 +66,7 @@ class ConsoleApplication:
 			command.setApplication(None)
 			return
 
-		if command.getDefinition() is None:
+		if command.definition() is None:
 			raise ValueError('Command class {} is not correctly initialized. You probably forgot to call the parent constructor.'.format(str(command.__class__.__name__)))
 
 		self.commands[command.getName()] = command
@@ -83,8 +83,14 @@ class ConsoleApplication:
 		return name in self.commands
 
 
-	def setVerbose(self, level: int):
-		self.verbose = level
+	@property
+	def verbosity(self) -> int:
+		return self._verbosity
+
+
+	@verbosity.setter
+	def verbosity(self, level: int):
+		self._verbosity = level
 
 
 	@staticmethod
@@ -93,19 +99,21 @@ class ConsoleApplication:
 
 
 	def getName(self) -> str:
-		return self.name
-
-
-	def getVersion(self) -> str:
-		return self.version
+		return self._name
 
 
 	def setName(self, name: str):
-		self.name = name
+		self._name = name
 
 
-	def setVersion(self, version: str):
-		self.version = version
+	@property
+	def version(self) -> str:
+		return self._version
+
+
+	@version.setter
+	def version(self, version: str):
+		self._version = version
 
 
 	def getLongVersion(self) -> str:
@@ -114,8 +122,8 @@ class ConsoleApplication:
 		if self.getName() is not None:
 			versionMessage = self.getName()
 
-		if self.getVersion() is not None:
-			versionMessage += ' version ' + str(self.getVersion())
+		if self._version is not None:
+			versionMessage += ' version ' + str(self._version)
 
 		return versionMessage
 
@@ -134,7 +142,7 @@ class ConsoleApplication:
 			print(Fore.YELLOW + '[Error]' + Fore.RESET + ' Error with code {}'.format(exitCode))
 			print(Fore.YELLOW + '[Error]' + Fore.RESET + ' Message {}'.format(str(ve)))
 
-			if self.verbose > 0:
+			if self._verbosity > 0:
 				print(traceback.format_exc())
 				sys.exit(exitCode)
 			else:
@@ -146,7 +154,7 @@ class ConsoleApplication:
 			print(Fore.RED + '[Exception]' + Fore.RESET + ' Message {}'.format(str(e)))
 			# print('\n Message: ' + str(self.running.getSynopsis()))
 
-			if self.verbose > 0:
+			if self._verbosity > 0:
 				print(traceback.format_exc())
 				sys.exit(exitCode)
 			else:
@@ -160,7 +168,7 @@ class ConsoleApplication:
 			inputt.setInteractive(False)
 
 		if inputt.hasParameterOption(['--verbose', '-v']):
-			self.setVerbose(1)
+			self.verbosity = 1
 
 
 	def doRun(self, inputt: ArgvInput) -> int:
@@ -175,16 +183,16 @@ class ConsoleApplication:
 				name = 'help'
 				inputt = ArrayInput(parameters={'command': 'help'})
 			else:
-				self.needHelp = True
+				self._needHelp = True
 
 		if name is None:
 			name = 'list'
 			inputt = ArrayInput(parameters={"command": name})
 
 		command = self.find(name)
-		self.running = command
+		self._running = command
 		exitCode = self.doRunCommand(command=command, inputt=inputt)
-		self.running = None
+		self._running = None
 
 		return exitCode
 
@@ -204,8 +212,8 @@ class ConsoleApplication:
 
 		command = self.commands[name]
 
-		if self.needHelp:
-			self.needHelp = False
+		if self._needHelp:
+			self._needHelp = False
 			helpCommand = self.get('help')
 			helpCommand.setCommand(command)
 			return helpCommand

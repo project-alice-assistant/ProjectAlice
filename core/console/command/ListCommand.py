@@ -17,7 +17,7 @@ class ListCommand(Command):
 
 
 	def execute(self, inputt):
-		commands = self.getApplication().getCommands()
+		commands = self.getApplication().commands()
 		sortedCommandKeys = sorted(commands)
 
 		self.nl()
