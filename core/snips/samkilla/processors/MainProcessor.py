@@ -693,7 +693,7 @@ class MainProcessor:
 	def syncRemoteToLocal(self, runOnAssistantId: str, moduleFilter: str = None, languageFilter: str = None):
 
 		# Build cache
-		# ?? remoteIndexedEntities = self._ctx.entity.listEntitiesByUserEmail(userEmail=self._ctx.userEmail, returnAllCacheIndexedBy='id')
+		self._ctx.entity.listEntitiesByUserEmail(userEmail=self._ctx.userEmail, returnAllCacheIndexedBy='id')
 		remoteIndexedIntents = self._ctx.intent.listIntentsByUserId(userId=self._ctx.userId, returnAllCacheIndexedBy='id')
 		remoteIndexedSkills = self._ctx.skill.listSkillsByUserId(userId=self._ctx.userId, returnAllCacheIndexedBy='id')
 		hasFork = False
