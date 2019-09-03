@@ -536,10 +536,14 @@ class MqttServer(Manager):
 		if intentFilter:
 			intentList = [str(x).replace('hermes/intent/', '') for x in intentFilter]
 			jsonDict['intentFilter'] = intentList
-			jsonDict['intentFilter'].append(Intent('GlobalStop').justTopic)
+			if not slot:
+				jsonDict['intentFilter'].append(Intent('GlobalStop').justTopic)
 
 		if slot:
-			jsonDict['slot'] = slot
+			if intentFilter and len(intentList) > 1:
+				self._logger.warning('[{}] You canno specify a slot if you have more than one intent in the intent filter'.format(self.name))
+			else:
+				jsonDict['slot'] = slot
 
 		session = managers.DialogSessionManager.getSession(sessionId=sessionId)
 		session.intentFilter = intentFilter
