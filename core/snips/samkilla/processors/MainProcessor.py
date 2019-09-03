@@ -699,7 +699,7 @@ class MainProcessor:
 		hasFork = False
 
 		# Check for fork and execute fork if needed
-		for assistant in self._ctx.Assistant.list(rawResponse=True)['assistants']:
+		for assistant in self._ctx.assistant.list(rawResponse=True)['assistants']:
 			if assistant['id'] != runOnAssistantId:
 				continue
 
@@ -707,7 +707,7 @@ class MainProcessor:
 				skillId = skill['id']
 
 				if skillId not in remoteIndexedSkills:
-					skillId = self._ctx.Assistant.forkAssistantSkill(assistantId=runOnAssistantId, sourceSkillId=skillId)
+					skillId = self._ctx.assistant.forkAssistantSkill(assistantId=runOnAssistantId, sourceSkillId=skillId)
 					self._ctx.log('[Forked] Skill from {} to {}'.format(skill['id'], skillId))
 					hasFork = True
 

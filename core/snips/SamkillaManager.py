@@ -76,6 +76,11 @@ class SamkillaManager(Manager):
 
 
 	@property
+	def assistant(self) -> Assistant:
+		return self._assistant
+
+
+	@property
 	def userEmail(self) -> str:
 		return self._userEmail
 
