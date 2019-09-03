@@ -8,10 +8,7 @@ class InputArgument:
 
 
 	def __init__(self, name, mode=None, description='', default=None):
-		self.mode = mode
-
-		if not mode:
-			self.mode = self.OPTIONAL
+		self.mode = mode or self.OPTIONAL
 
 		self.setDefault(default)
 		self._name = name
@@ -32,11 +29,11 @@ class InputArgument:
 
 
 	def isRequired(self):
-		return self.mode == self.REQUIRED & self.mode
+		return self.mode == self.REQUIRED
 
 
 	def isArray(self):
-		return self.mode == self.ARRAY & self.mode
+		return self.mode == self.ARRAY
 
 
 	def setDefault(self, definition):

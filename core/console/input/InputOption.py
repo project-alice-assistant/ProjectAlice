@@ -64,20 +64,20 @@ class InputOption:
 
 
 	def isValueRequired(self) -> bool:
-		return self.VALUE_REQUIRED == (self.VALUE_REQUIRED & self.mode)
+		return self.mode == self.VALUE_REQUIRED
 
 
 	def isValueOptional(self) -> bool:
-		return self.VALUE_OPTIONAL == (self.VALUE_OPTIONAL & self.mode)
+		return self.mode == self.VALUE_OPTIONAL
 
 
 	def isArray(self) -> bool:
-		return self.VALUE_IS_ARRAY == (self.VALUE_IS_ARRAY & self.mode)
+		return self.mode == self.VALUE_IS_ARRAY
 
 
 	def setDefault(self, default):
 
-		if self.VALUE_NONE == (self.VALUE_NONE & self.mode) and default is not None:
+		if self.mode == self.VALUE_NONE and default is not None:
 			raise ValueError('Cannot set a default value when using InputOption.VALUE_NONE mode.')
 
 		if self.isArray():
