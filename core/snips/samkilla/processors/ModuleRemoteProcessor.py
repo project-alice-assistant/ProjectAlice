@@ -74,7 +74,7 @@ class ModuleRemoteProcessor:
 		}
 
 
-	def syncModulesOnAssistantSafely(self, typeEntityMatching: str, moduleSyncState: str = None, hashComputationOnly: bool = False):
+	def syncModulesOnAssistantSafely(self, typeEntityMatching: dict, moduleSyncState: str = None, hashComputationOnly: bool = False):
 		try:
 			return self.syncModulesOnAssistant(typeEntityMatching=typeEntityMatching, moduleSyncState=moduleSyncState, hashComputationOnly=hashComputationOnly)
 		except:
@@ -86,7 +86,7 @@ class ModuleRemoteProcessor:
 
 
 	# noinspection PyUnusedLocal
-	def syncModulesOnAssistant(self, typeEntityMatching: str = None, moduleSyncState: str = None, hashComputationOnly: bool = False) -> tuple:
+	def syncModulesOnAssistant(self, typeEntityMatching: dict = None, moduleSyncState: str = None, hashComputationOnly: bool = False) -> tuple:
 		self._syncState = self.createNewSavedModule() if moduleSyncState is None else moduleSyncState
 
 		skillData = self.syncSkill(self._module['description'], self._module['icon'], hashComputationOnly)

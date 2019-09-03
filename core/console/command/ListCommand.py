@@ -17,7 +17,7 @@ class ListCommand(Command):
 
 
 	def execute(self, inputt):
-		commands = self.getApplication().commands()
+		commands = self.application().commands()
 		sortedCommandKeys = sorted(commands)
 
 		self.nl()
@@ -25,7 +25,7 @@ class ListCommand(Command):
 		TABLE_DATA = [['Option', 'Description'], ]
 		table_instance = DoubleTable(TABLE_DATA)
 
-		for k, option in self.getApplication().getDefaultInputDefinition().getOptions().items():
+		for k, option in self.application().getDefaultInputDefinition().getOptions().items():
 			TABLE_DATA.append(['--{} [{}]'.format(option.getName(), option.getShortcut()), option.getDescription()])
 
 		self.write(table_instance.table)

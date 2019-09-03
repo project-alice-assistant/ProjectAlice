@@ -21,7 +21,7 @@ class ConsoleApplication:
 	ConsoleApplication
 	"""
 
-	def __init__(self, name: str, version: str):
+	def __init__(self, name: str, version: int):
 		self._name = name
 		self._version = version
 		self._verbosity = 0
@@ -60,10 +60,10 @@ class ConsoleApplication:
 
 
 	def add(self, command: Command) -> Command:
-		command.setApplication(self)
+		command.application(self)
 
 		if not command.isEnabled():
-			command.setApplication(None)
+			command.application(None)
 			return
 
 		if command.definition() is None:
@@ -107,12 +107,12 @@ class ConsoleApplication:
 
 
 	@property
-	def version(self) -> str:
+	def version(self) -> int:
 		return self._version
 
 
 	@version.setter
-	def version(self, version: str):
+	def version(self, version: int):
 		self._version = version
 
 

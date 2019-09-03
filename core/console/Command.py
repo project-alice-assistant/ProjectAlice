@@ -5,17 +5,18 @@ import re
 from colorama import Back, Fore
 
 from core.commons import commons
+from core.console.input import ArgvInput
 from core.console.input.InputArgument import InputArgument
 from core.console.input.InputDefinition import InputDefinition
 from core.console.input.InputOption import InputOption
 
 REGEX_COLOR = re.compile(r'<(fg|bg):([a-z]+)>')
 
-
-#
-# Command provides an architecture for bundle's commands
-#
 class Command:
+	"""
+	Command provides an architecture for bundle's commands
+	"""
+
 	BLACK = 'black'
 	RED = 'red'
 	GREEN = 'green'
@@ -27,9 +28,9 @@ class Command:
 	RESET = 'reset'
 
 
-	def __init__(self, name=''):
+	def __init__(self, name: str = ''):
 		self.synopsis = None
-		self.application = None
+		self._application = None
 		self.aliases = list()
 		self.description = 'No description'
 		self.definition = None
@@ -52,35 +53,35 @@ class Command:
 
 
 	def create(self):
-		raise ValueError('Command \'{}\' does not override create method'.format(str(self.name)))
+		raise NotImplemented('Command "{}" does not override create method'.format(str(self.name)))
 
 
 	def interact(self, inputInstance):
 		pass
 
 
-	def execute(self, inputt):
-		raise ValueError('You must override the execute() method in the concrete command class.')
+	def execute(self, inputt: ArgvInput):
+		raise NotImplemented('You must override the execute() method in the command class.')
 
 
 	@property
-	def container(self):
+	def container(self) -> dict:
 		return self._container
 
 
 	@container.setter
-	def container(self, container):
+	def container(self, container: dict):
 		self._container = container
 
 
-	def setApplication(self, application):
-		self.application = application
+	@property
+	def application(self):
+		return self._application
 
-		return self
 
-
-	def getApplication(self):
-		return self.application
+	@application.setter
+	def application(self, application: dict):
+		self._application = application
 
 
 	def setName(self, name):
@@ -228,15 +229,15 @@ class Command:
 
 
 	def mergeApplicationDefinition(self, mergeArgs=True):
-		if self.application is None or (self.applicationDefinitionMerged is True and (self.applicationDefinitionMergedWithArgs or not mergeArgs)):
+		if self._application is None or (self.applicationDefinitionMerged is True and (self.applicationDefinitionMergedWithArgs or not mergeArgs)):
 			return
 
 		if mergeArgs:
 			currentArguments = self.definition.getArguments()
-			self.definition.setArguments(self.application.definition().getArguments())
+			self.definition.setArguments(self._application.definition().getArguments())
 			self.definition.addArguments(currentArguments)
 
-		self.definition.addOptions(self.application.definition().getOptions())
+		self.definition.addOptions(self._application.definition().getOptions())
 		self.applicationDefinitionMerged = True
 
 		if mergeArgs:

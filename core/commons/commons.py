@@ -144,7 +144,7 @@ def clamp(x: float, minimum: float, maximum: float) -> float:
 
 def angleToCardinal(angle: float) -> str:
 	cardinals = ['north', 'north east', 'east', 'south east', 'south', 'south west', 'west', 'north west']
-	return cardinals[int(((num+45/2)%360)/(45))]
+	return cardinals[int(((angle+45/2)%360) / 45)]
 
 
 def partOfTheDay() -> str:
@@ -193,7 +193,7 @@ def getDuration(msg: MQTTMessage) -> int:
 def toCamelCase(string: str, replaceSepCharacters: bool = False, sepCharacters: tuple = None) -> str:
 	if replaceSepCharacters:
 		if not sepCharacters: sepCharacters = ('-', '_')
-		for char in string:
+		for char in sepCharacters:
 			string.replace(char, ' ')
 
 	return ''.join(x.capitalize() for x in string.split(' '))
