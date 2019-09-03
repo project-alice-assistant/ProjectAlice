@@ -16,6 +16,7 @@ from paho.mqtt.client import MQTTMessage
 import core.base.Managers as managers
 import core.commons.model.Slot as slotModel
 from core.commons.model.PartOfDay import PartOfDay
+from core.dialog.model import DialogSession
 
 ERROR_HANDLER_FUNC = CFUNCTYPE(None, c_char_p, c_int, c_char_p, c_int, c_char_p)
 
@@ -172,8 +173,8 @@ def isYes(msg: MQTTMessage) -> bool:
 		return False
 
 
-def getDuration(msg: MQTTMessage) -> int:
-	slots = parseSlotsToObjects(msg)
+def getDuration(session: DialogSession) -> int:
+	slots = session.slotsAsObject()
 	duration = 0
 	if 'Duration' in slots and slots['Duration'][0].entity == 'snips/duration':
 		try:

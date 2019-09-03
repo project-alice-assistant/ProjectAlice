@@ -551,7 +551,7 @@ class AliceCore(Module):
 
 		elif intent == self._INTENT_STOP_LISTEN:
 			if 'Duration' in slots:
-				duration = commons.getDuration(session.message)
+				duration = commons.getDuration(session)
 				if duration > 0:
 					managers.ThreadManager.doLater(interval=duration, func=self.unmuteSite, args=[siteId])
 
