@@ -267,7 +267,9 @@ class SamkillaManager(Manager):
 
 
 	# noinspection PyUnusedLocal
-	def findRunnableAssistant(self, assistantId: str, assistantLanguage: str, newAssistantTitle: str = 'ProjectAlice', persistLocal: bool = False) -> str:
+	def findRunnableAssistant(self, assistantId: str, assistantLanguage: str, newAssistantTitle: str = '', persistLocal: bool = False) -> str:
+		if not newAssistantTitle: newAssistantTitle = 'ProjectAlice_{}'.format(managers.LanguageManager.activeLanguage)
+
 		runOnAssistantId = None
 
 		# AssistantId provided
@@ -303,8 +305,9 @@ class SamkillaManager(Manager):
 		return runOnAssistantId
 
 
-	def syncLocalToRemote(self, baseAssistantId: str, baseModuleFilter: str, newAssistantTitle: str = 'ProjectAlice', baseLanguageFilter: str = 'en') -> bool:
+	def syncLocalToRemote(self, baseAssistantId: str, baseModuleFilter: str, newAssistantTitle: str = '', baseLanguageFilter: str = 'en') -> bool:
 		# RemoteFetch/LocalCheck/CreateIfNeeded: assistant
+
 		runOnAssistantId = self.findRunnableAssistant(
 			assistantId=baseAssistantId,
 			assistantLanguage=baseLanguageFilter,
