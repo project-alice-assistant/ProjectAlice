@@ -175,7 +175,7 @@ class ConsoleApplication:
 		if inputt.hasParameterOption(['--help', '-h']):
 			if name is None:
 				name = 'help'
-				inputt = ArrayInput(parameters={"command": 'help'})
+				inputt = ArrayInput(parameters={'command': 'help'})
 			else:
 				self.needHelp = True
 

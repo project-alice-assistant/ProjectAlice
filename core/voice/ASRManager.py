@@ -86,7 +86,7 @@ class ASRManager(Manager):
 				# Add Global Intents
 				intentFilter.append(Intent('GlobalStop').justTopic)
 
-				managers.MqttServer.publish(topic='hermes/asr/textCaptured', payload={'sessionId': session.sessionId, 'text': result, 'siteId': session.siteId, "likelihood": 1, 'seconds': processing})
+				managers.MqttServer.publish(topic='hermes/asr/textCaptured', payload={'sessionId': session.sessionId, 'text': result, 'siteId': session.siteId, 'likelihood': 1, 'seconds': processing})
 
 				managers.MqttServer.publish(topic='hermes/nlu/query', payload={'id':session.sessionId, 'input': result, 'intentFilter': intentFilter, 'sessionId': session.sessionId})
 			else:

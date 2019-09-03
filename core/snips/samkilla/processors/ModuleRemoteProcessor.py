@@ -65,7 +65,7 @@ class ModuleRemoteProcessor:
 				attachToAssistant=True
 			)
 			self._ctx.log("[Sync] Skill model {} = {} has been created".format(skillId, self._moduleName))
-			self._createdInstances['skills'].append({"id": skillId, "assistantId": self._assistantId})
+			self._createdInstances['skills'].append({'id': skillId, 'assistantId': self._assistantId})
 			curHash = self.skillValuesToHash(icon=moduleIcon, description=moduleDescription, skillId=skillId)
 
 		return {

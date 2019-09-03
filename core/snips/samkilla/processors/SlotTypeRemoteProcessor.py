@@ -33,7 +33,7 @@ class SlotTypeRemoteProcessor:
 
 		for valueObject in slotType['values']:
 			hashSum += str(valueObject['value'])
-			if "synonyms" in valueObject:
+			if 'synonyms' in valueObject:
 				for synonym in valueObject['synonyms']:
 					hashSum += str(synonym)
 
@@ -43,7 +43,7 @@ class SlotTypeRemoteProcessor:
 
 
 	def doSyncedSlotTypeExists(self):
-		return "hash" in self._syncState and "entityId" in self._syncState
+		return 'hash' in self._syncState and 'entityId' in self._syncState
 
 
 	def syncSlotType(self, hashComputationOnly=False):
@@ -79,10 +79,10 @@ class SlotTypeRemoteProcessor:
 				slotValues=slotType['values']
 			)
 			self._ctx.log("[Sync] Entity|SlotType model {} = {} has been created".format(entityId, slotType['name']))
-			self._createdInstances['entities'].append({"id": entityId})
+			self._createdInstances['entities'].append({'id': entityId})
 			curHash = self.slotTypeValuesToHash(entityId=entityId)
 
-		return {"entityId": entityId, "hash": curHash, "changes": changes}
+		return {'entityId': entityId, 'hash': curHash, 'changes': changes}
 
 
 	def syncSlotTypesOnAssistantSafely(self, slotTypeSyncState=None, hashComputationOnly=False):

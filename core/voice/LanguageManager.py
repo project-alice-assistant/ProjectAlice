@@ -169,7 +169,7 @@ class LanguageManager(Manager):
 		if self._activeLanguage != 'en':
 			string = str(string).lower()
 
-			if self._activeLanguage == "fr":
+			if self._activeLanguage == 'fr':
 				for match in re.findall(self._floatExpressionPattern, string):
 					m = match.replace('.', ',')
 					string = string.replace(match, m)

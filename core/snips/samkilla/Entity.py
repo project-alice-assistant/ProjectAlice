@@ -44,7 +44,7 @@ class Entity:
 
 		if returnAllCacheIndexedBy:
 			key = returnAllCacheIndexedBy[0].upper() + returnAllCacheIndexedBy[1:]
-			return self._entitiesCache["cache" + key]
+			return self._entitiesCache['cache' + key]
 
 		if entityFilter:
 			if entityFilterAttribute == 'id':

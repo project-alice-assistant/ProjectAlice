@@ -52,7 +52,7 @@ class Intent:
 
 		if returnAllCacheIndexedBy:
 			key = returnAllCacheIndexedBy[0].upper() + returnAllCacheIndexedBy[1:]
-			return self._intentsCache["cache" + key]
+			return self._intentsCache['cache' + key]
 
 		if intentFilter:
 			if intentFilterAttribute == 'id':
@@ -254,13 +254,13 @@ class Intent:
 						'private'         : True,
 					},
 					'dataset': {
-						"entities"  : entities,
-						"language"  : intent['language'],
-						"utterances": structuredUtterances
+						'entities'  : entities,
+						'language'  : intent['language'],
+						'utterances': structuredUtterances
 					}
 				}
 			},
-			"query"        : publishIntent
+			'query'        : publishIntent
 		}]
 		self._ctx.postGQLBrowserly(gqlRequest, rawResponse=True)
 
@@ -276,16 +276,16 @@ class Intent:
 			snipsSpecialSlot = slot['type'].startswith('snips/')
 			slotEntityId = slot['type'] if snipsSpecialSlot else typeEntityMatching[slot['type']]['entityId']
 
-			entities.append({"id": slotEntityId, "name": slotEntityId if snipsSpecialSlot else slot['type']})
+			entities.append({'id': slotEntityId, 'name': slotEntityId if snipsSpecialSlot else slot['type']})
 
 			structuredSlots.append({
-				"entityId"       : slotEntityId,
-				"id"             : self.hashSlotName(slotName=slot['name']),
-				"missingQuestion": slot['missingQuestion'],
-				"name"           : slot['name'],
-				"description"    : slot['description'],
-				"required"       : slot['required'],
-				"parameters"     : None
+				'entityId'       : slotEntityId,
+				'id'             : self.hashSlotName(slotName=slot['name']),
+				'missingQuestion': slot['missingQuestion'],
+				'name'           : slot['name'],
+				'description'    : slot['description'],
+				'required'       : slot['required'],
+				'parameters'     : None
 			})
 
 		return structuredSlots, entities
