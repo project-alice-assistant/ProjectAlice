@@ -53,10 +53,10 @@ class ModuleRemoteProcessor:
 		elif oldInstanceExists:
 			changes = True
 			self._ctx.log("[Sync] Skill model {} = {} has been edited".format(skillId, self._moduleName))
-			self._ctx.Skill.edit(skillId, description=moduleDescription, imageKey=EnumSkillImageUrl.getResourceFileByAttr(moduleIcon))
+			self._ctx.skill.edit(skillId, description=moduleDescription, imageKey=EnumSkillImageUrl.getResourceFileByAttr(moduleIcon))
 		else:
 			changes = True
-			skillId = self._ctx.Skill.create(
+			skillId = self._ctx.skill.create(
 				assistantId=self._assistantId,
 				name=self._moduleName,
 				description=moduleDescription,
@@ -103,5 +103,5 @@ class ModuleRemoteProcessor:
 	def cleanCreatedInstances(self):
 		self._ctx.log("[Cleanup] Deleting {} skills".format(len(self._createdInstances['skills'])))
 		for skill in self._createdInstances['skills']:
-			self._ctx.Skill.removeFromAssistant(assistantId=skill['assistantId'], skillId=skill['id'], deleteAfter=True)
+			self._ctx.skill.removeFromAssistant(assistantId=skill['assistantId'], skillId=skill['id'], deleteAfter=True)
 		self._createdInstances['skills'] = list()

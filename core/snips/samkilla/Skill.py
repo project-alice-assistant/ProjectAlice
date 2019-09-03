@@ -137,7 +137,7 @@ class Skill:
 
 
 	def attachToAssistant(self, assistantId: str, skillId: str):
-		existingSkills = self._ctx.Assistant.extractSkillIdentifiers(assistantId=assistantId)
+		existingSkills = self._ctx.assistant.extractSkillIdentifiers(assistantId=assistantId)
 		variablesSkills = [{'id': skillId, 'parameters': None}]
 
 		for existingSkillId in existingSkills:
@@ -190,7 +190,7 @@ class Skill:
 
 
 	def removeFromAssistant(self, assistantId: str, skillId: str, deleteAfter: str = False):
-		existingSkills = self._ctx.Assistant.extractSkillIdentifiers(assistantId=assistantId)
+		existingSkills = self._ctx.assistant.extractSkillIdentifiers(assistantId=assistantId)
 		variablesSkills = list()
 
 		for existingSkillId in existingSkills:
@@ -230,14 +230,14 @@ class Skill:
 
 			if len(items) == 1:
 				oldIntentId = "intent_{}".format(items[0])
-				intentDuplicate = self._ctx.Intent.getIntentByUserIdAndIntentId(userId, oldIntentId)
+				intentDuplicate = self._ctx.intent.getIntentByUserIdAndIntentId(userId, oldIntentId)
 				self._ctx.log("Duplicate intent with id,name {},{}".format(oldIntentId, intentDuplicate['name']))
 
 				if intentDuplicate:
 					if 'usedIn' in intentDuplicate and intentDuplicate['usedIn']:
 						for skillItem in intentDuplicate['usedIn']:
-							self._ctx.Intent.removeFromSkill(intentId=intentDuplicate['id'], skillId=skillItem['skillId'], userId=userId, deleteAfter=False)
-					self._ctx.Intent.delete(intentId=intentDuplicate['id'])
+							self._ctx.intent.removeFromSkill(intentId=intentDuplicate['id'], skillId=skillItem['skillId'], userId=userId, deleteAfter=False)
+					self._ctx.intent.delete(intentId=intentDuplicate['id'])
 					return self.forkSkillIntent(skillId, sourceIntentId, userId, newIntentName)
 
 			raise he

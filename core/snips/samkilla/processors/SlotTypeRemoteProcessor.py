@@ -60,7 +60,7 @@ class SlotTypeRemoteProcessor:
 		elif oldInstanceExists:
 			changes = True
 			self._ctx.log("[Sync] Entity|SlotType model {} = {} has been edited".format(entityId, slotType['name']))
-			self._ctx.Entity.edit(
+			self._ctx.entity.edit(
 				entityId,
 				name=slotType['name'],
 				matchingStrictness=slotType['matchingStrictness'],
@@ -70,7 +70,7 @@ class SlotTypeRemoteProcessor:
 			)
 		else:
 			changes = True
-			entityId = self._ctx.Entity.create(
+			entityId = self._ctx.entity.create(
 				language=self._slotTypeLanguage,
 				name=slotType['name'],
 				matchingStrictness=slotType['matchingStrictness'],
@@ -111,5 +111,5 @@ class SlotTypeRemoteProcessor:
 	def cleanCreatedInstances(self):
 		self._ctx.log("[Cleanup] Deleting {} entities".format(len(self._createdInstances['entities'])))
 		for entity in self._createdInstances['entities']:
-			self._ctx.Entity.delete(entityId=entity['id'])
+			self._ctx.entity.delete(entityId=entity['id'])
 		self._createdInstances['entities'] = list()

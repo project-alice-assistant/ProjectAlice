@@ -69,7 +69,7 @@ class IntentRemoteProcessor:
 		elif oldInstanceExists:
 			changes = True
 			self._ctx.log('[Sync] Intent model {} = {} has been edited'.format(intentId, fullIntentName))
-			self._ctx.Intent.edit(
+			self._ctx.intent.edit(
 				userId=self._ctx.userId,
 				intentId=intentId,
 				name=fullIntentName,
@@ -84,7 +84,7 @@ class IntentRemoteProcessor:
 			)
 		else:
 			changes = True
-			intentId = self._ctx.Intent.create(
+			intentId = self._ctx.intent.create(
 				userId=self._ctx.userId,
 				skillId=skillId,
 				name=fullIntentName,
@@ -130,5 +130,5 @@ class IntentRemoteProcessor:
 	def cleanCreatedInstances(self):
 		self._ctx.log("[Cleanup] Deleting {} intents".format(len(self._createdInstances['intents'])))
 		for intent in self._createdInstances['intents']:
-			self._ctx.Entity.delete(intentId=intent['id'])
+			self._ctx.entity.delete(intentId=intent['id'])
 		self._createdInstances['intents'] = list()
