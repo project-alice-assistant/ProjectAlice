@@ -76,12 +76,8 @@ class ASRManager(Manager):
 				result = managers.LanguageManager.sanitizeNluQuery(result)
 				self._logger.debug('[{}] - {} output: "{}"'.format(self.NAME, self._asr.__class__.__name__, result))
 
-				inheritedIntentFilter = session.intentFilter if session.intentFilter else None
-
-				if not inheritedIntentFilter:
-					intentFilter = [intent.justTopic for intent in managers.ModuleManager.supportedIntents if isinstance(intent, Intent) and not intent.protected]
-				else:
-					intentFilter = [intent.justTopic for intent in inheritedIntentFilter if isinstance(intent, Intent) and not intent.protected]
+				supportedIntents = session.intentFilter or managers.ModuleManager.supportedIntents
+				intentFilter = [intent.justTopic for intent in supportedIntents if isinstance(intent, Intent) and not intent.protected]
 
 				# Add Global Intents
 				intentFilter.append(Intent('GlobalStop').justTopic)

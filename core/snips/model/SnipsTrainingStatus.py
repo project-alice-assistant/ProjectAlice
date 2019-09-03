@@ -9,9 +9,9 @@ class NLUTrainingStatus:
 
 		data = data['nluStatus']
 
-		self._inProgress = data['inProgress'] if 'inProgress' in data else False
-		self._needTraining = data['needTraining'] if 'needTraining' in data else False
-		self._trainingResult = data['trainingResult'] if 'trainingResult' in data else 'ok'
+		self._inProgress = data.get('inProgress', False)
+		self._needTraining = data.get('needTraining', False)
+		self._trainingResult = data.get('trainingResult', 'ok')
 
 
 	@property
@@ -37,9 +37,9 @@ class ASRTrainingStatus:
 
 		data = data['asrStatus']
 
-		self._inProgress = data['inProgress'] if 'inProgress' in data else False
-		self._needTraining = data['needTraining'] if 'needTraining' in data else False
-		self._trainingResult = data['trainingResult'] if 'trainingResult' in data else 'ok'
+		self._inProgress = data.get('inProgress', False)
+		self._needTraining = data.get('needTraining', False)
+		self._trainingResult = data.get('trainingResult', 'ok')
 
 
 	@property

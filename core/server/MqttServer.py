@@ -453,7 +453,7 @@ class MqttServer(Manager):
 			self._logger.warning('[{}] Ask was provided customdata of unsupported type: {}'.format(self.name, customData))
 			customData = dict()
 
-		user = customData['user'] if customData and 'user' in customData else 'unknown'
+		user = customData.get('user', 'unknown') if customData else 'unknown'
 		preSession = managers.DialogSessionManager.preSession(client, user)
 		if previousIntent:
 			preSession.intentHistory.append(previousIntent)

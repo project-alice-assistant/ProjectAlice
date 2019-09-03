@@ -91,7 +91,7 @@ class SamkillaManager(Manager):
 
 
 	def sync(self, moduleFilter: str = None, download: bool = True) -> bool:
-		self.log('[{}] Sync for module \'{}\''.format(self.name, moduleFilter if moduleFilter else '*'))
+		self.log('[{}] Sync for module \'{}\''.format(self.name, moduleFilter or '*'))
 
 		started = self.start()
 
@@ -219,7 +219,7 @@ class SamkillaManager(Manager):
 		if 'errors' in jsonResponse[0]:
 			firstError = jsonResponse[0]['errors'][0]
 			complexMessage = firstError['message']
-			path = firstError['path'] if 'path' in firstError else ['']
+			path = firstError.get('path', '')
 
 			try:
 				errorDetails = json.loads(complexMessage)

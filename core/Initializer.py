@@ -91,8 +91,8 @@ network={
 
 		# Now let's dump some values to their respective places
 		# First those that need some checks and self filling in case
-		confs['mqttHost'] = initConfs['mqttHost'] if initConfs['mqttHost'] else 'localhost'
-		confs['mqttPort'] = initConfs['mqttPort'] if initConfs['mqttPort'] else 1883
+		confs['mqttHost'] = initConfs['mqttHost'] or 'localhost'
+		confs['mqttPort'] = initConfs['mqttPort'] or 1883
 
 		if not initConfs['snipsConsoleLogin'] or not initConfs['snipsConsolePassword'] or not initConfs['intentsOwner']:
 			self.fatal('You must specify a Snips console login, password and intent owner')

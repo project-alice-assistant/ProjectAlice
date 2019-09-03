@@ -118,7 +118,7 @@ class IntentRemoteProcessor:
 
 
 	def syncIntentsOnAssistant(self, typeEntityMatching: dict, skillId: str, intentSyncState: str = None, hashComputationOnly: bool = False) -> tuple:
-		self._syncState = self.createNewSavedIntent() if not intentSyncState else intentSyncState
+		self._syncState = intentSyncState or self.createNewSavedIntent()
 
 		intentMatching = self.syncIntent(typeEntityMatching, skillId, hashComputationOnly)
 		self._syncState['hash'] = intentMatching['hash']
