@@ -1,9 +1,10 @@
 import getpass
 import subprocess
 import time
+from pathlib import Path
 from zipfile import ZipFile
 
-import uuid
+import tempfile
 
 import core.base.Managers as managers
 from core.ProjectAliceExceptions import ConfigurationUpdateFailed, LanguageManagerLangNotSupported, ModuleStartDelayed
@@ -64,7 +65,8 @@ class AliceCore(Module):
 			self._INTENT_ANSWER_WAKEWORD_CUTTING,
 			self._INTENT_DUMMY_WAKEWORD_OK,
 			self._INTENT_WAKEWORD,
-			self._INTENT_ADD_USER
+			self._INTENT_ADD_USER,
+			self._INTENT_ANSWER_ACCESSLEVEL
 		]
 
 		self._AUTH_ONLY_INTENTS = {
@@ -92,7 +94,7 @@ class AliceCore(Module):
 
 
 	def _addFirstUser(self):
-		managers.MqttServer.ask(
+		self.ask(
 			text=self.randomTalk('addAdminUser'),
 			intentFilter=[self._INTENT_ANSWER_NAME, self._INTENT_SPELL_WORD],
 			previousIntent=self._INTENT_DUMMY_ADD_USER,
@@ -105,7 +107,7 @@ class AliceCore(Module):
 			self.delayed = False
 
 			if not managers.ThreadManager.getLock('AddingWakeword').isSet():
-				managers.MqttServer.say(text=self.randomTalk('noStartWithoutAdmin'), client=session.siteId)
+				self.say(text=self.randomTalk('noStartWithoutAdmin'), siteId=session.siteId)
 
 				def stop():
 					subprocess.run(['sudo', 'systemctl', 'stop', 'ProjectAlice'])
@@ -113,7 +115,7 @@ class AliceCore(Module):
 				managers.ThreadManager.doLater(interval=10, func=stop)
 			else:
 				managers.ThreadManager.getLock('AddingWakeword').clear()
-				managers.MqttServer.say(text=self.randomTalk('cancellingWakewordCapture'), client=session.siteId)
+				self.say(text=self.randomTalk('cancellingWakewordCapture'), siteId=session.siteId)
 				managers.ThreadManager.doLater(interval=2, func=self.onStart)
 
 
@@ -163,9 +165,9 @@ class AliceCore(Module):
 		onReboot = managers.ConfigManager.getAliceConfigByName('onReboot')
 		if onReboot:
 			if onReboot == 'greet':
-				managers.ThreadManager.doLater(interval=3, func=managers.MqttServer.say, args=[self.randomTalk('confirmRebooted'), 'all'])
+				managers.ThreadManager.doLater(interval=3, func=self.say, args=[self.randomTalk('confirmRebooted'), 'all'])
 			elif onReboot == 'greetAndRebootModules':
-				managers.ThreadManager.doLater(interval=3, func=managers.MqttServer.say, args=[self.randomTalk('confirmRebootingModules'), 'all'])
+				managers.ThreadManager.doLater(interval=3, func=self.say, args=[self.randomTalk('confirmRebootingModules'), 'all'])
 			else:
 				self._logger.warning('[{}] onReboot config has an unknown value'.format(self.name))
 
@@ -191,11 +193,12 @@ class AliceCore(Module):
 
 	def onSnipsAssistantDownloaded(self, *args):
 		try:
-			with ZipFile('/tmp/assistant.zip') as zipfile:
-				zipfile.extractall('/tmp')
+			filepath = Path(tempfile.gettempdir(),'assistant').with_suffix('.zip')
+			with ZipFile(str(filepath)) as zipfile:
+				zipfile.extractall(tempfile.gettempdir())
 
 			subprocess.run(['sudo', 'rm', '-rf', commons.rootDir() + '/trained/assistants/assistant_{}'.format(managers.LanguageManager.activeLanguage)])
-			subprocess.run(['sudo', 'cp', '-R', '/tmp/assistant', commons.rootDir() + '/trained/assistants/assistant_{}'.format(managers.LanguageManager.activeLanguage)])
+			subprocess.run(['sudo', 'cp', '-R', str(filepath.stem), commons.rootDir() + '/trained/assistants/assistant_{}'.format(managers.LanguageManager.activeLanguage)])
 			subprocess.run(['sudo', 'chown', '-R', getpass.getuser(), commons.rootDir() + '/trained/assistants/assistant_{}'.format(managers.LanguageManager.activeLanguage)])
 
 			subprocess.run(['sudo', 'ln', '-sfn', commons.rootDir() + '/trained/assistants/assistant_{}'.format(managers.LanguageManager.activeLanguage), commons.rootDir() + '/assistant'])
@@ -205,18 +208,18 @@ class AliceCore(Module):
 
 			managers.SnipsServicesManager.runCmd('restart')
 
-			managers.MqttServer.say(text=self.randomTalk('confirmBundleUpdate'))
+			self.say(text=self.randomTalk('confirmBundleUpdate'))
 		except:
-			managers.MqttServer.say(text=self.randomTalk('bundleUpdateFailed'))
+			self.say(text=self.randomTalk('bundleUpdateFailed'))
 
 
 	def onSnipsAssistantDownloadFailed(self, *args):
-		managers.MqttServer.say(text=self.randomTalk('bundleUpdateFailed'))
+		self.say(text=self.randomTalk('bundleUpdateFailed'))
 
 
 	def onMessage(self, intent: str, session: DialogSession) -> bool:
 		if intent == self._INTENT_GLOBAL_STOP:
-			managers.MqttServer.endTalk(sessionId=session.sessionId, text=self.randomTalk('confirmGlobalStop'), client=session.siteId)
+			self.endDialog(sessionId=session.sessionId, text=self.randomTalk('confirmGlobalStop'), siteId=session.siteId)
 			return True
 
 		if not self.filterIntent(intent, session):
@@ -231,13 +234,13 @@ class AliceCore(Module):
 
 		if intent == self._INTENT_ADD_DEVICE or session.previousIntent == self._INTENT_ADD_DEVICE:
 			if managers.DeviceManager.isBusy():
-				managers.MqttServer.endTalk(sessionId=sessionId,
+				self.endDialog(sessionId=sessionId,
 											text=self.randomTalk('busy'),
-											client=siteId)
+											siteId=siteId)
 				return True
 
 			if 'Hardware' not in slots:
-				managers.MqttServer.continueDialog(
+				self.continueDialog(
 					sessionId=sessionId,
 					text=self.randomTalk('whatHardware'),
 					intentFilter=[self._INTENT_ANSWER_HARDWARE_TYPE, self._INTENT_ANSWER_ESP_TYPE],
@@ -246,7 +249,7 @@ class AliceCore(Module):
 				return True
 
 			elif slotsObj['Hardware'][0].value['value'] == 'esp' and 'EspType' not in slots:
-				managers.MqttServer.continueDialog(
+				self.continueDialog(
 					sessionId=sessionId,
 					text=self.randomTalk('whatESP'),
 					intentFilter=[self._INTENT_ANSWER_HARDWARE_TYPE, self._INTENT_ANSWER_ESP_TYPE],
@@ -255,7 +258,7 @@ class AliceCore(Module):
 				return True
 
 			elif 'Room' not in slots:
-				managers.MqttServer.continueDialog(
+				self.continueDialog(
 					sessionId=sessionId,
 					text=self.randomTalk('whichRoom'),
 					intentFilter=[self._INTENT_ANSWER_ROOM],
@@ -266,23 +269,23 @@ class AliceCore(Module):
 			hardware = slotsObj['Hardware'][0].value['value']
 			if hardware == 'esp':
 				if not managers.ModuleManager.isModuleActive('Tasmota'):
-					managers.MqttServer.endTalk(sessionId=sessionId, text=self.randomTalk('requireTasmotaModule'))
+					self.endDialog(sessionId=sessionId, text=self.randomTalk('requireTasmotaModule'))
 					return True
 
 				if managers.DeviceManager.isBusy():
-					managers.MqttServer.endTalk(sessionId=sessionId, text=self.randomTalk('busy'))
+					self.endDialog(sessionId=sessionId, text=self.randomTalk('busy'))
 					return True
 
 				if not managers.DeviceManager.startTasmotaFlashingProcess(commons.cleanRoomNameToSiteId(slots['Room']), slotsObj['EspType'][0].value['value'], session):
-					managers.MqttServer.endTalk(sessionId=sessionId, text=self.randomTalk('espFailed'))
+					self.endDialog(sessionId=sessionId, text=self.randomTalk('espFailed'))
 
 			elif hardware == 'satellite':
 				if managers.DeviceManager.startBroadcastingForNewDevice(commons.cleanRoomNameToSiteId(slots['Room']), siteId):
-					managers.MqttServer.endTalk(sessionId=sessionId, text=self.randomTalk('confirmDeviceAddingMode'))
+					self.endDialog(sessionId=sessionId, text=self.randomTalk('confirmDeviceAddingMode'))
 				else:
-					managers.MqttServer.endTalk(sessionId=sessionId, text=self.randomTalk('busy'))
+					self.endDialog(sessionId=sessionId, text=self.randomTalk('busy'))
 			else:
-				managers.MqttServer.continueDialog(
+				self.continueDialog(
 					sessionId=sessionId,
 					text=self.randomTalk('unknownHardware'),
 					intentFilter=[self._INTENT_ANSWER_HARDWARE_TYPE],
@@ -293,15 +296,15 @@ class AliceCore(Module):
 		elif intent == self._INTENT_MODULE_GREETING:
 			if 'uid' not in payload or 'siteId' not in payload:
 				self._logger.warning('A device tried to connect but is missing informations in the payload, refused')
-				managers.MqttServer.publish(topic='projectalice/devices/connectionRefused', payload={'siteId': payload['siteId']})
+				self.publish(topic='projectalice/devices/connectionRefused', payload={'siteId': payload['siteId']})
 				return True
 
 			device = managers.DeviceManager.deviceConnecting(uid=payload['uid'])
 			if device:
 				self._logger.info('Device with uid {} of type {} in room {} connected'.format(device.uid, device.deviceType, device.room))
-				managers.MqttServer.publish(topic='projectalice/devices/connectionAccepted', payload={'siteId': payload['siteId'], 'uid': payload['uid']})
+				self.publish(topic='projectalice/devices/connectionAccepted', payload={'siteId': payload['siteId'], 'uid': payload['uid']})
 			else:
-				managers.MqttServer.publish(topic='projectalice/devices/connectionRefused', payload={'siteId': payload['siteId'], 'uid': payload['uid']})
+				self.publish(topic='projectalice/devices/connectionRefused', payload={'siteId': payload['siteId'], 'uid': payload['uid']})
 				return True
 
 		elif intent == self._INTENT_ANSWER_YES_OR_NO:
@@ -309,7 +312,7 @@ class AliceCore(Module):
 				if 'step' in customData:
 					if customData['step'] == 1:
 						if commons.isYes(session.message):
-							managers.MqttServer.continueDialog(
+							self.continueDialog(
 								sessionId=sessionId,
 								text=self.randomTalk('askRebootModules'),
 								intentFilter=[self._INTENT_ANSWER_YES_OR_NO],
@@ -320,30 +323,30 @@ class AliceCore(Module):
 								}
 							)
 						else:
-							managers.MqttServer.endTalk(sessionId, self.randomTalk('abortReboot'))
+							self.endDialog(sessionId, self.randomTalk('abortReboot'))
 					else:
 						value = 'greet'
 						if commons.isYes(session.message):
 							value = 'greetAndRebootModules'
 
 						managers.ConfigManager.updateAliceConfiguration('onReboot', value)
-						managers.MqttServer.endTalk(sessionId, self.randomTalk('confirmRebooting'))
+						self.endDialog(sessionId, self.randomTalk('confirmRebooting'))
 						managers.ThreadManager.doLater(interval=5, func=self.restart)
 				else:
-					managers.MqttServer.endTalk(sessionId)
+					self.endDialog(sessionId)
 					self._logger.warn('[{}] Asked to reboot, but missing params'.format(self.name))
 
 			elif session.previousIntent == self._INTENT_DUMMY_ADD_USER:
 				if commons.isYes(session.message):
 					managers.UserManager.addNewUser(customData['name'], AccessLevel.ADMIN.name.lower())
-					managers.MqttServer.continueDialog(
+					self.continueDialog(
 						sessionId=sessionId,
 						text=self.randomTalk('addUserWakeword', replace=[customData['name']]),
 						intentFilter=[self._INTENT_ANSWER_YES_OR_NO],
 						previousIntent=self._INTENT_DUMMY_ADD_WAKEWORD
 					)
 				else:
-					managers.MqttServer.continueDialog(
+					self.continueDialog(
 						sessionId=sessionId,
 						text=self.randomTalk('soWhatsTheName'),
 						intentFilter=[self._INTENT_ANSWER_NAME, self._INTENT_SPELL_WORD],
@@ -354,7 +357,7 @@ class AliceCore(Module):
 				if commons.isYes(session.message):
 					managers.WakewordManager.newWakeword(username=customData['name'])
 					managers.ThreadManager.newLock('AddingWakeword').set()
-					managers.MqttServer.continueDialog(
+					self.continueDialog(
 						sessionId=sessionId,
 						text=self.randomTalk('addWakewordAccepted'),
 						intentFilter=[self._INTENT_WAKEWORD],
@@ -365,12 +368,12 @@ class AliceCore(Module):
 						self.delayed = False
 						managers.ThreadManager.doLater(interval=2, func=self.onStart)
 
-					managers.MqttServer.endTalk(sessionId=sessionId, text=self.randomTalk('addWakewordDenied'))
+					self.endDialog(sessionId=sessionId, text=self.randomTalk('addWakewordDenied'))
 			elif session.previousIntent == self._INTENT_WAKEWORD:
 				if commons.isYes(session.message):
 					if managers.WakewordManager.getLastSampleNumber() < 3:
 						managers.WakewordManager.state = WakewordManagerState.IDLE
-						managers.MqttServer.continueDialog(
+						self.continueDialog(
 							sessionId=sessionId,
 							text=self.randomTalk('sampleOk', replace=[3 - managers.WakewordManager.getLastSampleNumber()]),
 							intentFilter=[self._INTENT_WAKEWORD],
@@ -383,10 +386,10 @@ class AliceCore(Module):
 							managers.ThreadManager.doLater(interval=2, func=self.onStart)
 
 						managers.WakewordManager.finalizeWakeword()
-						managers.MqttServer.endTalk(sessionId=sessionId, text=self.randomTalk('wakewordCaptureDone'))
+						self.endDialog(sessionId=sessionId, text=self.randomTalk('wakewordCaptureDone'))
 
 				else:
-					managers.MqttServer.continueDialog(
+					self.continueDialog(
 						sessionId=sessionId,
 						text=self.randomTalk('sampleUserSaidNo'),
 						intentFilter=[self._INTENT_WAKEWORD],
@@ -395,14 +398,14 @@ class AliceCore(Module):
 			elif session.previousIntent == self._INTENT_ADD_USER:
 				if commons.isYes(session.message):
 					managers.UserManager.addNewUser(slots['addUserConfirmed'], slots['UserAccessLevel'])
-					managers.MqttServer.continueDialog(
+					self.continueDialog(
 						sessionId=sessionId,
 						text=self.randomTalk('addUserWakeword', replace=[slots['Name'], slots['UserAccessLevel']]),
 						intentFilter=[self._INTENT_ANSWER_YES_OR_NO],
 						previousIntent=self._INTENT_DUMMY_ADD_USER_WAKEWORD
 					)
 				else:
-					managers.MqttServer.continueDialog(
+					self.continueDialog(
 						sessionId=sessionId,
 						text=self.randomTalk('soWhatsTheName'),
 						intentFilter=[self._INTENT_ANSWER_NAME, self._INTENT_SPELL_WORD],
@@ -414,7 +417,7 @@ class AliceCore(Module):
 					# TODO
 					return True
 				else:
-					managers.MqttServer.endSession(sessionId=sessionId)
+					self.endSession(sessionId=sessionId)
 
 			else:
 				return False
@@ -427,8 +430,9 @@ class AliceCore(Module):
 					break
 				time.sleep(0.5)
 
-			managers.MqttServer.playSound(
-				soundFile='/tmp/{}.wav'.format(managers.WakewordManager.getLastSampleNumber()),
+			filepath = Path(tempfile.gettempdir(), managers.WakewordManager.getLastSampleNumber()).with_suffix('.wav')
+			self.playSound(
+				soundFile=str(filepath),
 				sessionId='checking-wakeword',
 				siteId=session.siteId,
 				absolutePath=True
@@ -436,7 +440,7 @@ class AliceCore(Module):
 
 			text = 'howWasTheCapture' if managers.WakewordManager.getLastSampleNumber() == 1 else 'howWasThisCapture'
 
-			managers.MqttServer.continueDialog(
+			self.continueDialog(
 				sessionId=sessionId,
 				text=self.randomTalk(text),
 				intentFilter=[self._INTENT_ANSWER_WAKEWORD_CUTTING, self._INTENT_ANSWER_YES_OR_NO],
@@ -456,14 +460,15 @@ class AliceCore(Module):
 					break
 				time.sleep(0.5)
 
-			managers.MqttServer.playSound(
-				soundFile='/tmp/{}.wav'.format(managers.WakewordManager.getLastSampleNumber()),
+			filepath = Path(tempfile.gettempdir(), managers.WakewordManager.getLastSampleNumber()).with_suffix('.wav')
+			self.playSound(
+				soundFile=str(filepath),
 				sessionId='checking-wakeword',
 				siteId=session.siteId,
 				absolutePath=True
 			)
 
-			managers.MqttServer.continueDialog(
+			self.continueDialog(
 				sessionId=sessionId,
 				text=self.randomTalk('howWasTheCaptureNow'),
 				intentFilter=[self._INTENT_ANSWER_WAKEWORD_CUTTING, self._INTENT_ANSWER_YES_OR_NO],
@@ -471,25 +476,25 @@ class AliceCore(Module):
 			)
 
 		elif intent == self._INTENT_SWITCH_LANGUAGE:
-			managers.MqttServer.publish(topic='hermes/asr/textCaptured', payload={'siteId': siteId})
+			self.publish(topic='hermes/asr/textCaptured', payload={'siteId': siteId})
 			if 'ToLang' not in slots:
-				managers.MqttServer.endTalk(text=self.randomTalk('noDestinationLanguage'))
+				self.endDialog(text=self.randomTalk('noDestinationLanguage'))
 				return True
 
 			try:
 				managers.LanguageManager.changeActiveLanguage(slots['ToLang'])
 				managers.ThreadManager.doLater(interval=3, func=self.langSwitch, args=[slots['ToLang'], siteId, False])
 			except LanguageManagerLangNotSupported:
-				managers.MqttServer.endTalk(text=self.randomTalk(text='langNotSupported', replace=[slots['ToLang']]))
+				self.endDialog(text=self.randomTalk(text='langNotSupported', replace=[slots['ToLang']]))
 			except ConfigurationUpdateFailed:
-				managers.MqttServer.endTalk(text=self.randomTalk('langSwitchFailed'))
+				self.endDialog(text=self.randomTalk('langSwitchFailed'))
 
 		elif intent == self._INTENT_UPDATE_ALICE:
 			if not managers.InternetManager.online:
-				managers.MqttServer.endTalk(sessionId=sessionId, text=self.randomTalk('noAssistantUpdateOffline'))
+				self.endDialog(sessionId=sessionId, text=self.randomTalk('noAssistantUpdateOffline'))
 				return True
 
-			managers.MqttServer.publish('hermes/leds/systemUpdate')
+			self.publish('hermes/leds/systemUpdate')
 
 			if 'WhatToUpdate' not in slots:
 				update = 1
@@ -505,7 +510,7 @@ class AliceCore(Module):
 
 			if update == 1 or update == 5: # All or system
 				self._logger.info('[{}] Updating system'.format(self.name))
-				managers.MqttServer.endTalk(sessionId=sessionId, text=self.randomTalk('confirmAssistantUpdate'))
+				self.endDialog(sessionId=sessionId, text=self.randomTalk('confirmAssistantUpdate'))
 
 				def systemUpdate():
 					subprocess.run(['sudo', 'apt-get', 'update'])
@@ -515,30 +520,30 @@ class AliceCore(Module):
 
 			if update == 1 or update == 4: # All or modules
 				self._logger.info('[{}] Updating modules'.format(self.name))
-				managers.MqttServer.endTalk(sessionId=sessionId, text=self.randomTalk('confirmAssistantUpdate'))
+				self.endDialog(sessionId=sessionId, text=self.randomTalk('confirmAssistantUpdate'))
 				managers.ModuleManager.checkForModuleUpdates()
 
 			if update == 1 or update == 2: # All or Alice
 				self._logger.info('[{}] Updating Alice'.format(self.name))
 				self._logger.info('[{}] Not implemented yet'.format(self.name))
 				if update == 2:
-					managers.MqttServer.endTalk(sessionId=sessionId, text=self.randomTalk('confirmAssistantUpdate'))
+					self.endDialog(sessionId=sessionId, text=self.randomTalk('confirmAssistantUpdate'))
 
 			if update == 1 or update == 3: # All or Assistant
 				self._logger.info('[{}] Updating assistant'.format(self.name))
 
 				if not managers.LanguageManager.activeSnipsProjectId:
-					managers.MqttServer.endTalk(sessionId=sessionId, text=self.randomTalk('noProjectIdSet'))
+					self.endDialog(sessionId=sessionId, text=self.randomTalk('noProjectIdSet'))
 				elif not managers.SnipsConsoleManager.loginCredentialsAreConfigured():
-					managers.MqttServer.endTalk(sessionId=sessionId, text=self.randomTalk('bundleUpdateNoCredentials'))
+					self.endDialog(sessionId=sessionId, text=self.randomTalk('bundleUpdateNoCredentials'))
 				else:
 					if update == 3:
-						managers.MqttServer.endTalk(sessionId=sessionId, text=self.randomTalk('confirmAssistantUpdate'))
+						self.endDialog(sessionId=sessionId, text=self.randomTalk('confirmAssistantUpdate'))
 
 					managers.ThreadManager.doLater(interval=2, func=managers.SamkillaManager.sync)
 
 		elif intent == self._INTENT_REBOOT:
-			managers.MqttServer.continueDialog(
+			self.continueDialog(
 				sessionId=sessionId,
 				text=self.randomTalk('confirmReboot'),
 				intentFilter=[self._INTENT_ANSWER_YES_OR_NO],
@@ -559,7 +564,7 @@ class AliceCore(Module):
 			if aliceModule:
 				aliceModule.notifyDevice('projectalice/devices/stopListen', siteId=siteId)
 
-			managers.MqttServer.endTalk(sessionId=sessionId)
+			self.endDialog(sessionId=sessionId)
 
 		elif session.previousIntent == self._INTENT_DUMMY_ADD_USER and (intent == self._INTENT_ANSWER_NAME or intent == self._INTENT_SPELL_WORD):
 			if len(managers.UserManager.users) <= 0:
@@ -573,14 +578,14 @@ class AliceCore(Module):
 						name += slot.value['value']
 
 				if name in managers.UserManager.getAllUserNames(skipGuests=False):
-					managers.MqttServer.continueDialog(
+					self.continueDialog(
 						sessionId=sessionId,
 						text=self.randomTalk(text='userAlreadyExist', replace=[name]),
 						intentFilter=[self._INTENT_ANSWER_NAME, self._INTENT_SPELL_WORD],
 						previousIntent=self._INTENT_DUMMY_ADD_USER
 					)
 				else:
-					managers.MqttServer.continueDialog(
+					self.continueDialog(
 						sessionId=sessionId,
 						text=self.randomTalk(text='confirmUsername', replace=[name]),
 						intentFilter=[self._INTENT_ANSWER_YES_OR_NO],
@@ -590,11 +595,11 @@ class AliceCore(Module):
 						}
 					)
 			else:
-				managers.MqttServer.endTalk(sessionId)
+				self.endDialog(sessionId)
 
-		elif intent == self._INTENT_ADD_USER or session.previousIntent == self._INTENT_ADD_USER:
+		elif intent == self._INTENT_ADD_USER or session.previousIntent == self._INTENT_ADD_USER or intent == self._INTENT_ANSWER_ACCESSLEVEL and not intent == self._INTENT_SPELL_WORD:
 			if 'Name' not in slots:
-				managers.MqttServer.continueDialog(
+				self.continueDialog(
 					sessionId=sessionId,
 					text=self.randomTalk('addUserWhatsTheName'),
 					intentFilter=[self._INTENT_ANSWER_NAME],
@@ -603,8 +608,17 @@ class AliceCore(Module):
 				)
 				return True
 
+			if session.slotRawValue('Name') == 'unknownword':
+				self.continueDialog(
+					sessionId=sessionId,
+					text=managers.TalkManager.randomTalk('notUnderstood', module='system'),
+					intentFilter=[self._INTENT_ANSWER_NAME, self._INTENT_SPELL_WORD],
+					previousIntent=self._INTENT_DUMMY_ADD_USER
+				)
+				return True
+
 			if slots['Name'] in managers.UserManager.getAllUserNames(skipGuests=False):
-				managers.MqttServer.continueDialog(
+				self.continueDialog(
 					sessionId=sessionId,
 					text=self.randomTalk(text='userAlreadyExist', replace=[slots['Name']]),
 					intentFilter=[self._INTENT_ANSWER_NAME, self._INTENT_SPELL_WORD],
@@ -613,7 +627,7 @@ class AliceCore(Module):
 				return True
 
 			if 'UserAccessLevel' not in slots:
-				managers.MqttServer.continueDialog(
+				self.continueDialog(
 					sessionId=sessionId,
 					text=self.randomTalk('addUserWhatAccessLevel'),
 					intentFilter=[self._INTENT_ANSWER_ACCESSLEVEL],
@@ -622,7 +636,7 @@ class AliceCore(Module):
 				)
 				return True
 
-			managers.MqttServer.continueDialog(
+			self.continueDialog(
 				sessionId=sessionId,
 				text=self.randomTalk(text='addUserConfirmUsername', replace=[slots['Name']]),
 				intentFilter=[self._INTENT_ANSWER_YES_OR_NO],
@@ -637,14 +651,14 @@ class AliceCore(Module):
 
 			session.slots['Name']['value'] = name
 			if name in managers.UserManager.getAllUserNames(skipGuests=False):
-				managers.MqttServer.continueDialog(
+				self.continueDialog(
 					sessionId=sessionId,
 					text=self.randomTalk(text='userAlreadyExist', replace=[name]),
 					intentFilter=[self._INTENT_ANSWER_NAME, self._INTENT_SPELL_WORD],
 					previousIntent=self._INTENT_ADD_USER
 				)
 			else:
-				managers.MqttServer.continueDialog(
+				self.continueDialog(
 					sessionId=sessionId,
 					text=self.randomTalk(text='addUserConfirmUsername', replace=[name]),
 					intentFilter=[self._INTENT_ANSWER_YES_OR_NO],
@@ -656,7 +670,7 @@ class AliceCore(Module):
 
 	def unmuteSite(self, siteId):
 		managers.ModuleManager.getModuleInstance('AliceSatellite').notifyDevice('projectalice/devices/startListen', siteId=siteId)
-		managers.ThreadManager.doLater(interval=1, func=managers.MqttServer.say, args=[self.randomTalk('listeningAgain'), siteId])
+		managers.ThreadManager.doLater(interval=1, func=self.say, args=[self.randomTalk('listeningAgain'), siteId])
 
 
 	@staticmethod
@@ -677,16 +691,17 @@ class AliceCore(Module):
 
 
 	def langSwitch(self, newLang: str, siteId: str):
-		managers.MqttServer.publish(topic='hermes/asr/textCaptured', payload={'siteId': siteId})
+		self.publish(topic='hermes/asr/textCaptured', payload={'siteId': siteId})
 		subprocess.call([commons.rootDir() + '/system/scripts/langSwitch.sh', newLang])
 		managers.ThreadManager.doLater(interval=3, func=self._confirmLangSwitch, args=[newLang, siteId])
 
 
 	def _confirmLangSwitch(self, siteId: str):
-		managers.MqttServer.publish(topic='hermes/leds/onStop', payload={'siteId': siteId})
-		managers.MqttServer.say(text=self.randomTalk('langSwitch'), client=siteId)
+		self.publish(topic='hermes/leds/onStop', payload={'siteId': siteId})
+		self.say(text=self.randomTalk('langSwitch'), siteId=siteId)
 
 
+	# noinspection PyUnusedLocal
 	@staticmethod
 	def changeFeedbackSound(inDialog: bool, siteId: str = 'all'):
 		# Unfortunately we can't yet get rid of the feedback sound because Alice hears herself finishing the sentence and capturing part of it

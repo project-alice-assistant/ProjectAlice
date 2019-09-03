@@ -56,7 +56,7 @@ class ArrayInput(Input):
 		if not self.definition.hasShortcut(shortcut):
 			raise ValueError('The -{} option does not exist.'.format(str(shortcut)))
 
-		self.addLongOption(self.definition.getOptionForShortcut(shortcut).getName(), value)
+		self.addLongOption(self.definition.getOptionForShortcut(shortcut).name, value)
 
 
 	def addLongOption(self, name, value):

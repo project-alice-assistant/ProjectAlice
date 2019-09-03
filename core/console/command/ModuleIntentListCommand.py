@@ -57,7 +57,7 @@ class ModuleIntentListCommand(Command):
 
 
 	def create(self):
-		self.setName('module:intent:list')
+		self.name = 'module:intent:list'
 		self.setDescription('List intents and utterances for a given module')
 		self.setDefinition([
 			InputArgument(name='moduleName', mode=InputArgument.REQUIRED, description='Module\'s name'),

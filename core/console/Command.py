@@ -10,6 +10,7 @@ from core.console.input.InputArgument import InputArgument
 from core.console.input.InputDefinition import InputDefinition
 from core.console.input.InputOption import InputOption
 
+
 REGEX_COLOR = re.compile(r'<(fg|bg):([a-z]+)>')
 
 class Command:
@@ -41,10 +42,10 @@ class Command:
 		self.definition = InputDefinition()
 		self.chars = dict()
 		self.container = None
-		self.name = ''
+		self._name = ''
 
 		if name:
-			self.setName(name)
+			self._name = name
 
 		self.create()
 
@@ -83,14 +84,6 @@ class Command:
 	def application(self, application: dict):
 		self._application = application
 
-
-	def setName(self, name):
-		self.validateName(name)
-		self.name = name
-
-		return self
-
-
 	def setDescription(self, description):
 		self.description = description
 
@@ -102,10 +95,14 @@ class Command:
 
 		return self
 
+	@property
+	def name(self) -> str:
+		return self._name
 
-	def getName(self):
-		return self.name
-
+	@name.setter
+	def name(self, name):
+		self.validateName(name)
+		self._name = name
 
 	def getHelp(self):
 		return self.yelp
@@ -234,10 +231,10 @@ class Command:
 
 		if mergeArgs:
 			currentArguments = self.definition.getArguments()
-			self.definition.setArguments(self._application.definition().getArguments())
+			self.definition.setArguments(self._application.definition.getArguments())
 			self.definition.addArguments(currentArguments)
 
-		self.definition.addOptions(self._application.definition().getOptions())
+		self.definition.addOptions(self._application.definition.getOptions())
 		self.applicationDefinitionMerged = True
 
 		if mergeArgs:

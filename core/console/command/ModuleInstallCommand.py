@@ -15,7 +15,7 @@ from core.console.input.InputArgument import InputArgument
 class ModuleInstallCommand(Command):
 
 	def create(self):
-		self.setName('module:install')
+		self.name = 'module:install'
 		self.setDescription('Download and install module from dedicated repository')
 		self.setDefinition([
 			InputArgument(name='modulePath', mode=InputArgument.REQUIRED, description='Module path (e.g. ProjectAlice/AliceCore)'),

@@ -83,10 +83,10 @@ class ArgvInput(Input):
 			option = self.definition.getOptionForShortcut(name[i])
 
 			if option.acceptValue():
-				self.addLongOption(option.getName(), None if i == length - 1 else name[i + 1:])
+				self.addLongOption(option.name, None if i == length - 1 else name[i + 1:])
 				break
 			else:
-				self.addLongOption(option.getName(), None)
+				self.addLongOption(option.name, None)
 
 
 	def parseLongOption(self, token):
@@ -106,17 +106,17 @@ class ArgvInput(Input):
 			arg = self.definition.getArgument(c)
 
 			if arg.isArray():
-				self.arguments[arg.getName()] = [token]
+				self.arguments[arg.name] = [token]
 			else:
-				self.arguments[arg.getName()] = token
+				self.arguments[arg.name] = token
 
 		elif self.definition.hasArgument(c - 1) and self.definition.getArgument(c - 1).isArray():
 			arg = self.definition.getArgument(c - 1)
 
-			if arg.getName() not in self.arguments or self.arguments[arg.getName()] is None:
-				self.arguments[arg.getName()] = list()
+			if arg.name not in self.arguments or self.arguments[arg.name] is None:
+				self.arguments[arg.name] = list()
 
-			self.arguments[arg.getName()].append(token)
+			self.arguments[arg.name].append(token)
 		else:
 			if not self.standalone:
 				raise ValueError('Too many arguments.')
@@ -127,7 +127,7 @@ class ArgvInput(Input):
 		if not self.definition.hasShortcut(shortcut):
 			raise ValueError('The -{} option does not exist.'.format(str(shortcut)))
 
-		self.addLongOption(self.definition.getOptionForShortcut(shortcut).getName(), value)
+		self.addLongOption(self.definition.getOptionForShortcut(shortcut).name, value)
 
 
 	def addLongOption(self, name, value):

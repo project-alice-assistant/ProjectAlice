@@ -37,7 +37,7 @@ class InputOption:
 		elif not int(mode) or mode > 15 or mode < 1:
 			raise ValueError('Option mode {} is not valid.'.format(str(mode)))
 
-		self.name = name
+		self._name = name
 		self.shortcut = shortcut
 		self.mode = mode
 		self.description = description
@@ -53,8 +53,10 @@ class InputOption:
 		return self.shortcut
 
 
-	def getName(self):
-		return self.name
+	@property
+	def name(self) -> str:
+		return self._name
+
 
 
 	def acceptValue(self):
@@ -99,7 +101,7 @@ class InputOption:
 
 
 	def equals(self, option):
-		return option.getName() == self.getName() and \
+		return option.name == self.name and \
 			   option.getShortcut() == self.getShortcut() and \
 			   option.getDefault() == self.getDefault() and \
 			   option.isArray() == self.isArray() and \

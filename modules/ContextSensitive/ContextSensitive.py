@@ -1,6 +1,6 @@
 import json
 
-import core.base.Managers    as managers
+import core.base.Managers as managers
 from core.base.model.Intent import Intent
 from core.base.model.Module import Module
 from core.dialog.model.DialogSession import DialogSession
@@ -38,7 +38,7 @@ class ContextSensitive(Module):
 			for module in modules.values():
 				try:
 					if module['instance'].onContextSensitiveDelete(sessionId):
-						managers.MqttServer.endTalk(sessionId=sessionId)
+						self.endSession(sessionId=sessionId)
 						return True
 				except Exception:
 					continue
@@ -54,10 +54,9 @@ class ContextSensitive(Module):
 					continue
 
 		elif intent == self._INTENT_REPEAT_THIS:
-			managers.MqttServer.endTalk(sessionId, text=self.getLastChat(siteId=siteId))
+			self.endDialog(sessionId, text=self.getLastChat(siteId=siteId))
 			return True
 
-		managers.MqttServer.endTalk(sessionId, text=self.randomTalk('didntUnderstand'))
 		return True
 
 

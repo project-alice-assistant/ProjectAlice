@@ -57,7 +57,7 @@ class IntentListCommand(Command):
 
 
 	def create(self):
-		self.setName('intent:list')
+		self.name = 'intent:list'
 		self.setDescription('List intents and utterances for a given module')
 		self.setDefinition([
 			InputOption(name='--module', shortcut='-m', mode=InputOption.VALUE_OPTIONAL, description='Show more data about specific module'),

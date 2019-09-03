@@ -14,7 +14,7 @@ class InputArgument:
 			self.mode = self.OPTIONAL
 
 		self.setDefault(default)
-		self.name = name
+		self._name = name
 		self.description = description
 		self.default = ''
 
@@ -26,9 +26,9 @@ class InputArgument:
 	def getDefault(self):
 		return self.default
 
-
-	def getName(self):
-		return self.name
+	@property
+	def name(self) -> str:
+		return self._name
 
 
 	def isRequired(self):

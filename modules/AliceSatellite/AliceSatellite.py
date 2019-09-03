@@ -75,9 +75,9 @@ class AliceSatellite(Module):
 				return False
 
 			if place != siteId:
-				managers.MqttServer.endTalk(sessionId, self.randomTalk('temperaturePlaceSpecific').format(place, temp.replace('.0', '')))
+				self.endDialog(sessionId, self.randomTalk('temperaturePlaceSpecific').format(place, temp.replace('.0', '')))
 			else:
-				managers.MqttServer.endTalk(sessionId, self.randomTalk('temperature').format(temp.replace('.0', '')))
+				self.endDialog(sessionId, self.randomTalk('temperature').format(temp.replace('.0', '')))
 
 			return True
 
@@ -90,9 +90,9 @@ class AliceSatellite(Module):
 				humidity = int(round(float(humidity), 0))
 
 			if place != siteId:
-				managers.MqttServer.endTalk(sessionId, self.randomTalk(text='humidityPlaceSpecific', replace=[place, humidity]))
+				self.endDialog(sessionId, self.randomTalk(text='humidityPlaceSpecific', replace=[place, humidity]))
 			else:
-				managers.MqttServer.endTalk(sessionId, self.randomTalk(text='humidity', replace=[humidity]))
+				self.endDialog(sessionId, self.randomTalk(text='humidity', replace=[humidity]))
 
 			return True
 
@@ -103,9 +103,9 @@ class AliceSatellite(Module):
 				return False
 
 			if place != siteId:
-				managers.MqttServer.endTalk(sessionId, managers.TalkManager.randomTalk('co2PlaceSpecific').format(place, co2))
+				self.endDialog(sessionId, managers.TalkManager.randomTalk('co2PlaceSpecific').format(place, co2))
 			else:
-				managers.MqttServer.endTalk(sessionId, managers.TalkManager.randomTalk('co2').format(co2))
+				self.endDialog(sessionId, managers.TalkManager.randomTalk('co2').format(co2))
 
 			return True
 
@@ -118,9 +118,9 @@ class AliceSatellite(Module):
 				pressure = int(round(float(pressure), 0))
 
 			if place != siteId:
-				managers.MqttServer.endTalk(sessionId, self.randomTalk(text='pressurePlaceSpecific', replace=[place, pressure]))
+				self.endDialog(sessionId, self.randomTalk(text='pressurePlaceSpecific', replace=[place, pressure]))
 			else:
-				managers.MqttServer.endTalk(sessionId, self.randomTalk(text='pressure', replace=[pressure]))
+				self.endDialog(sessionId, self.randomTalk(text='pressure', replace=[pressure]))
 
 			return True
 
@@ -164,4 +164,4 @@ class AliceSatellite(Module):
 			return
 
 		for device in devices:
-			managers.MqttServer.publish(topic='projectalice/devices/restart', payload={'uid': device.uid})
+			self.publish(topic='projectalice/devices/restart', payload={'uid': device.uid})

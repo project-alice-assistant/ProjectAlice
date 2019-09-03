@@ -60,16 +60,16 @@ class ConsoleApplication:
 
 
 	def add(self, command: Command) -> Command:
-		command.application(self)
+		command.application = self
 
 		if not command.isEnabled():
-			command.application(None)
+			command.application = None
 			return
 
-		if command.definition() is None:
+		if command.definition is None:
 			raise ValueError('Command class {} is not correctly initialized. You probably forgot to call the parent constructor.'.format(str(command.__class__.__name__)))
 
-		self.commands[command.getName()] = command
+		self.commands[command.name] = command
 
 		return command
 
@@ -97,14 +97,13 @@ class ConsoleApplication:
 	def getCommandName(inputt: ArgvInput) -> str:
 		return inputt.getFirstArgument()
 
-
-	def getName(self) -> str:
+	@property
+	def name(self) -> str:
 		return self._name
 
-
-	def setName(self, name: str):
+	@name.setter
+	def name(self, name: str):
 		self._name = name
-
 
 	@property
 	def version(self) -> int:
@@ -119,8 +118,8 @@ class ConsoleApplication:
 	def getLongVersion(self) -> str:
 		versionMessage = 'AliceConsole'
 
-		if self.getName() is not None:
-			versionMessage = self.getName()
+		if self.name is not None:
+			versionMessage = self.name
 
 		if self._version is not None:
 			versionMessage += ' version ' + str(self._version)

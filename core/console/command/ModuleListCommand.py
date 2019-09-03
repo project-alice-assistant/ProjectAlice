@@ -17,7 +17,7 @@ class ModuleListCommand(Command):
 
 
 	def create(self):
-		self.setName('module:list')
+		self.name = 'module:list'
 		self.setDescription('List remote modules from dedicated repository created by a specific author')
 		self.setDefinition([
 			InputArgument(name='authorName', mode=InputArgument.REQUIRED, description='Author\'s name'),

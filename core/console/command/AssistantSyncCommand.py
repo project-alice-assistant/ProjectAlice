@@ -14,7 +14,7 @@ from core.voice.LanguageManager import LanguageManager
 class AssistantSyncCommand(Command):
 
 	def create(self):
-		self.setName('assistant:sync')
+		self.name = 'assistant:sync'
 		self.setDescription('Sync dialog templates for all modules')
 		self.setDefinition([
 			InputOption(name='--download', shortcut='-d', mode=InputOption.VALUE_NONE, description='Also download the new trained assistant'),

@@ -13,7 +13,7 @@ from core.console.Command import Command
 class AuthorListCommand(Command):
 
 	def create(self):
-		self.setName('author:list')
+		self.name = 'author:list'
 		self.setDescription('List authors from dedicated repository')
 		self.setDefinition()
 		self.setHelp('> The %command.name% list authors from dedicated repository:\n'

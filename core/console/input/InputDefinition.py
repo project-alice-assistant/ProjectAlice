@@ -52,8 +52,8 @@ class InputDefinition:
 
 
 	def addArgument(self, argument):
-		if argument.getName() in self.arguments and self.arguments[argument.getName()]:
-			raise ValueError('An argument with name {} already exists.'.format(str(argument.getName())))
+		if argument.name in self.arguments and self.arguments[argument.name]:
+			raise ValueError('An argument with name {} already exists.'.format(str(argument.name)))
 
 		if self.hasAnArrayArgument:
 			raise ValueError('Cannot add an argument after an array argument.')
@@ -69,7 +69,7 @@ class InputDefinition:
 		else:
 			self.hasOptional = True
 
-		self.arguments[argument.getName()] = argument
+		self.arguments[argument.name] = argument
 
 
 	def getArgument(self, name):
@@ -113,7 +113,7 @@ class InputDefinition:
 		values = list()
 
 		for index, argument in self.arguments.items():
-			values[argument.getName()] = argument.getDefault()
+			values[argument.name] = argument.getDefault()
 
 		return values
 
@@ -130,19 +130,19 @@ class InputDefinition:
 
 
 	def addOption(self, option):
-		if option.getName() in self.options and self.options[option.getName()]:
-			raise ValueError('An option named {} already exists.'.format(str(option.getName())))
+		if option.name in self.options and self.options[option.name]:
+			raise ValueError('An option named {} already exists.'.format(str(option.name)))
 
 		if option.getShortcut():
 			for shortcut in option.getShortcut().split('|'):
 				if shortcut in self.shortcuts:
 					raise ValueError('An option with shortcut -{} already exists.'.format(str(shortcut)))
 
-		self.options[option.getName()] = option
+		self.options[option.name] = option
 
 		if option.getShortcut():
 			for shortcut in option.getShortcut().split('|'):
-				self.shortcuts[shortcut] = option.getName()
+				self.shortcuts[shortcut] = option.name
 
 
 	def getOption(self, name):
@@ -172,7 +172,7 @@ class InputDefinition:
 		values = list()
 
 		for index, option in self.options.items():
-			values[option.getName()] = option.getDefault()
+			values[option.name] = option.getDefault()
 		return values
 
 
@@ -195,11 +195,11 @@ class InputDefinition:
 			out = '['
 
 			if option.isValueRequired():
-				out += str(shortcut) + '--' + str(option.getName()) + '="..."'
+				out += str(shortcut) + '--' + str(option.name) + '="..."'
 			elif option.isValueOptional():
-				out += str(shortcut) + '--' + str(option.getName()) + '[="..."]'
+				out += str(shortcut) + '--' + str(option.name) + '[="..."]'
 			else:
-				out += str(shortcut) + '--' + str(option.getName())
+				out += str(shortcut) + '--' + str(option.name)
 
 			out += ']'
 
@@ -209,11 +209,11 @@ class InputDefinition:
 			out = ''
 
 			if argument.isRequired():
-				out += argument.getName()
+				out += argument.name
 				if argument.isArray():
 					out += '1'
 			else:
-				out += '[' + str(argument.getName()) + ']'
+				out += '[' + str(argument.name) + ']'
 
 				if argument.isArray():
 					out += '1'
@@ -221,7 +221,7 @@ class InputDefinition:
 			elements.append(out)
 
 			if argument.isArray():
-				elements.append('... [' + str(argument.getName()) + 'N]')
+				elements.append('... [' + str(argument.name) + 'N]')
 
 		return ' '.join(elements)
 

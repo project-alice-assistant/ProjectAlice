@@ -14,7 +14,7 @@ class HelpCommand(Command):
 
 
 	def create(self):
-		self.setName('help')
+		self.name = 'help'
 		self.setDescription('Displays help for a command')
 		self.setDefinition([InputArgument(name='command_name', mode=InputArgument.OPTIONAL, description='The command name', default='help')])
 		self.setHelp('> The %command.name% command displays help for a given command:\n'
@@ -30,7 +30,7 @@ class HelpCommand(Command):
 
 	def execute(self, inputt):
 		if self.command is None:
-			self.command = self.application().find(inputt.getArgument('command_name'))
+			self.command = self.application.find(inputt.getArgument('command_name'))
 
 		self.nl()
 		self.write(self.command.getProcessedHelp())

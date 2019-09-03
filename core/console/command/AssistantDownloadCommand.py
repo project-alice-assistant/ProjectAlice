@@ -16,7 +16,7 @@ from core.voice.LanguageManager import LanguageManager
 class AssistantDownloadCommand(Command):
 
 	def create(self):
-		self.setName('assistant:download')
+		self.name = 'assistant:download'
 		self.setDescription('Download assistant')
 		self.setDefinition()
 		self.setHelp('> The %command.name% command download the assistant from snips console:\n'

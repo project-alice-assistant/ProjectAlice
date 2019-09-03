@@ -9,7 +9,7 @@ from core.console.Command import Command
 class ListCommand(Command):
 
 	def create(self):
-		self.setName('list')
+		self.name = 'list'
 		self.setDescription('List all commands')
 		self.setDefinition()
 		self.setHelp('> The %command.name% command lists all commands:\n'
@@ -17,7 +17,7 @@ class ListCommand(Command):
 
 
 	def execute(self, inputt):
-		commands = self.application().commands()
+		commands = self.application.commands
 		sortedCommandKeys = sorted(commands)
 
 		self.nl()
@@ -25,8 +25,8 @@ class ListCommand(Command):
 		TABLE_DATA = [['Option', 'Description'], ]
 		table_instance = DoubleTable(TABLE_DATA)
 
-		for k, option in self.application().getDefaultInputDefinition().getOptions().items():
-			TABLE_DATA.append(['--{} [{}]'.format(option.getName(), option.getShortcut()), option.getDescription()])
+		for k, option in self.application.getDefaultInputDefinition().getOptions().items():
+			TABLE_DATA.append(['--{} [{}]'.format(option.name, option.getShortcut()), option.getDescription()])
 
 		self.write(table_instance.table)
 
