@@ -230,7 +230,7 @@ class Intent:
 		intent = self.getIntentByUserIdAndIntentId(userId=userId, intentId=intentId)
 
 		if not intent:
-			raise IntentError(4003, 'Intent {} doesn't exist'.format(intentId), ['intent'])
+			raise IntentError(4003, 'Intent {} doesn\'t exist'.format(intentId), ['intent'])
 
 		if name: intent['name'] = name
 		if description: intent['description'] = description
