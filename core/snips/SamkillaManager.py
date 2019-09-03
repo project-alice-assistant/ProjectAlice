@@ -91,12 +91,12 @@ class SamkillaManager(Manager):
 
 
 	def sync(self, moduleFilter: str = None, download: bool = True):
-		self.log('[{}] Sync for module \'{}\''.format(self.NAME, moduleFilter if moduleFilter else '*'))
+		self.log('[{}] Sync for module \'{}\''.format(self.name, moduleFilter if moduleFilter else '*'))
 
 		started = self.start()
 
 		if not started:
-			self.log('[{}] No credentials. Unable to synchronize assistant with remote console'.format(self.NAME))
+			self.log('[{}] No credentials. Unable to synchronize assistant with remote console'.format(self.name))
 			return
 
 		activeLang: str = managers.LanguageManager.activeLanguage
@@ -113,16 +113,16 @@ class SamkillaManager(Manager):
 
 			if changes:
 				if download:
-					self.log('[{}] Changes detected during sync, let\'s update the assistant...'.format(self.NAME))
+					self.log('[{}] Changes detected during sync, let\'s update the assistant...'.format(self.name))
 					managers.SnipsConsoleManager.doDownload()
 				else:
-					self.log('[{}] Changes detected during sync but not downloading yet'.format(self.NAME))
+					self.log('[{}] Changes detected during sync but not downloading yet'.format(self.name))
 			else:
-				self.log('[{}] No changes detected during sync'.format(self.NAME))
+				self.log('[{}] No changes detected during sync'.format(self.name))
 
 			self.stop()
 		except AssistantNotFoundError:
-			self.log('[{}] Assistant project id \'{}\' for lang \'{}\' doesn\'t exist. Check your config.py'.format(self.NAME, activeProjectId, activeLang))
+			self.log('[{}] Assistant project id \'{}\' for lang \'{}\' doesn\'t exist. Check your config.py'.format(self.name, activeProjectId, activeLang))
 
 		return changes
 
@@ -174,7 +174,7 @@ class SamkillaManager(Manager):
 
 
 	def reloadBrowserPage(self):
-		self._browser.execute_script("location.reload()")
+		self._browser.execute_script('location.reload()')
 
 
 	def visitUrl(self, url):
@@ -190,7 +190,7 @@ class SamkillaManager(Manager):
 		self._browser.find_element_by_name('email').send_keys(self._userEmail)
 		self._browser.find_element_by_name('password').send_keys(self._userPassword)
 		self._browser.find_element_by_css_selector('.login-page__section-public__form .button[type=submit]').click()
-		self._cookie = self._browser.execute_script("return document.cookie")
+		self._cookie = self._browser.execute_script('return document.cookie')
 		self._userId = self._browser.execute_script("return window._loggedInUser['id']")
 
 
@@ -267,17 +267,17 @@ class SamkillaManager(Manager):
 
 
 	# noinspection PyUnusedLocal
-	def findRunnableAssistant(self, assistantId: str, assistantLanguage: str, newAssistantTitle: str = "ProjectAlice", persistLocal: bool = False) -> str:
+	def findRunnableAssistant(self, assistantId: str, assistantLanguage: str, newAssistantTitle: str = 'ProjectAlice', persistLocal: bool = False) -> str:
 		runOnAssistantId = None
 
 		# AssistantId provided
 		if assistantId:
 			if not self._assistant.exists(assistantId):
 				# If not found remotely, stop everything
-				raise AssistantNotFoundError(4001, "Assistant with id {} not found".format(assistantId), ['assistant'])
+				raise AssistantNotFoundError(4001, 'Assistant with id {} not found'.format(assistantId), ['assistant'])
 			# If found remotely, just use it
 			runOnAssistantId = assistantId
-			self.log("Using provided assistantId: {}".format(runOnAssistantId))
+			self.log('Using provided assistantId: {}'.format(runOnAssistantId))
 
 
 		if not runOnAssistantId:
@@ -287,11 +287,11 @@ class SamkillaManager(Manager):
 			if not localFirstAssistantId or not self._assistant.exists(localFirstAssistantId):
 				# If not found remotely, create a new one
 				runOnAssistantId = self._assistant.create(title=newAssistantTitle, language=assistantLanguage)
-				self.log("Using new assistantId: {}".format(runOnAssistantId))
+				self.log('Using new assistantId: {}'.format(runOnAssistantId))
 			else:
 				# If found remotely, just use it
 				runOnAssistantId = localFirstAssistantId
-				self.log("Using first local assistantId: {}".format(runOnAssistantId))
+				self.log('Using first local assistantId: {}'.format(runOnAssistantId))
 
 		# Add assistant in cache locally if it isn't the case
 		self._mainProcessor.syncRemoteToLocalAssistant(
