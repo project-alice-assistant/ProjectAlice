@@ -141,15 +141,10 @@ class ArgvInput(Input):
 			raise ValueError('The --{} option does not accept a value : {}'.format(str(name), str(value)))
 
 		if value is None and option.acceptValue() and self.parsed:
-			nekst = None
+			nekst = self.parsed.pop(0)
 
-			if self.parsed:
-				nekst = self.parsed.pop(0)
-
-			if nekst[0] is not None and '-' != nekst[0]:
+			if not nekst.startswith('-'):
 				value = nekst
-			elif nekst == '':
-				value = ''
 			else:
 				self.parsed.insert(0, nekst)
 
