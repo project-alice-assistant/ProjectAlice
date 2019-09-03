@@ -102,10 +102,7 @@ class Input:
 
 
 	def escapeToken(self, token):
-		reg = re.compile(r'^[w-]+')
-		result = reg.match(token)
-
-		return token if result else self.escapeshellarg(token)
+		return token if token[:1] in ['', 'w', '-'] else self.escapeshellarg(token)
 
 
 	@staticmethod
