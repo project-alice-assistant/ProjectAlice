@@ -157,15 +157,15 @@ class DialogSession:
 
 
 	def __repr__(self):
-		output = "[{}] -> ".format(self.__class__.__name__) + "{"
+		output = '[{}] -> '.format(self.__class__.__name__) + '{'
 		output += "_siteId='" + str(self._siteId)+"', "
-		output += "_sessionId='" + str(self._sessionId)+"', "
-		output += "_user='" + str(self._user)+"', "
-		output += "_message='" + str(self._message)+"', "
-		output += "_slots='" + str(self._slots)+"', "
-		output += "_slotsAsObjects='" + str(self._slotsAsObjects)+"', "
-		output += "_customData='" + str(self._customData)+"', "
-		output += "_payload='" + str(self._payload)+"', "
-		output += "_intentHistory='" + str(self._intentHistory)+"', "
-		output += "EndOfObject}"
+		output += "_sessionId='" + str(self._sessionId) + "', "
+		output += "_user='" + str(self._user) + "', "
+		output += "_message='" + str(self._message) + "', "
+		output += "_slots='" + str(self._slots) + "', "
+		output += "_slotsAsObjects='" + str(self._slotsAsObjects) + "', "
+		output += "_customData='" + str(self._customData) + "', "
+		output += "_payload='" + str(self._payload) + "', "
+		output += "_intentHistory='" + str(self._intentHistory) + "', "
+		output += 'EndOfObject}'
 		return output

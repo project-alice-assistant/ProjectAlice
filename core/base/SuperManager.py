@@ -25,7 +25,7 @@ class SuperManager(Manager):
 		if not self.INSTANCE:
 			self.INSTANCE = self
 		else:
-			self._logger.error("Trying to instanciate {} but instance already existing".format(self.NAME))
+			self._logger.error('Trying to instanciate {} but instance already existing'.format(self.NAME))
 
 		managers = {
 			ConfigManager.NAME					: ConfigManager(self),

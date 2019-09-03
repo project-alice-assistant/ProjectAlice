@@ -74,7 +74,7 @@ class ASRManager(Manager):
 				managers.MqttServer.publish(topic='hermes/asr/stopListening', payload={'sessionId': session.sessionId, 'siteId': session.siteId})
 
 				result = managers.LanguageManager.sanitizeNluQuery(result)
-				self._logger.debug("[{}] - {} output: \"{}\"".format(self.NAME, self._asr.__class__.__name__, result))
+				self._logger.debug('[{}] - {} output: "{}"'.format(self.NAME, self._asr.__class__.__name__, result))
 
 				inheritedIntentFilter = session.intentFilter if session.intentFilter else None
 

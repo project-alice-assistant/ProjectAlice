@@ -38,7 +38,7 @@ class ModuleRemoteProcessor:
 
 	def doSyncedSkillExists(self):
 		return 'hash' in self._syncState and \
-			   str(self._syncState['skillId']).startswith("skill_")
+			   str(self._syncState['skillId']).startswith('skill_')
 
 
 	def syncSkill(self, moduleDescription, moduleIcon, hashComputationOnly=False):
@@ -49,10 +49,10 @@ class ModuleRemoteProcessor:
 		changes = False
 
 		if hashComputationOnly or (oldInstanceExists and oldHash == curHash):
-			self._ctx.log("[Sync] Skill model {} = {} has no changes".format(skillId, self._moduleName))
+			self._ctx.log('[Sync] Skill model {} = {} has no changes'.format(skillId, self._moduleName))
 		elif oldInstanceExists:
 			changes = True
-			self._ctx.log("[Sync] Skill model {} = {} has been edited".format(skillId, self._moduleName))
+			self._ctx.log('[Sync] Skill model {} = {} has been edited'.format(skillId, self._moduleName))
 			self._ctx.skill.edit(skillId, description=moduleDescription, imageKey=EnumSkillImageUrl.getResourceFileByAttr(moduleIcon))
 		else:
 			changes = True
@@ -64,7 +64,7 @@ class ModuleRemoteProcessor:
 				imageKey=EnumSkillImageUrl.getResourceFileByAttr(moduleIcon),
 				attachToAssistant=True
 			)
-			self._ctx.log("[Sync] Skill model {} = {} has been created".format(skillId, self._moduleName))
+			self._ctx.log('[Sync] Skill model {} = {} has been created'.format(skillId, self._moduleName))
 			self._createdInstances['skills'].append({'id': skillId, 'assistantId': self._assistantId})
 			curHash = self.skillValuesToHash(icon=moduleIcon, description=moduleDescription, skillId=skillId)
 
@@ -80,7 +80,7 @@ class ModuleRemoteProcessor:
 			return self.syncModulesOnAssistant(typeEntityMatching=typeEntityMatching, moduleSyncState=moduleSyncState, hashComputationOnly=hashComputationOnly)
 		except:
 			e = sys.exc_info()[0]
-			self._ctx.log("[Safe] Handle error gracefully")
+			self._ctx.log('[Safe] Handle error gracefully')
 			self._ctx.log(e)
 			self._ctx.log(traceback.format_exc())
 			# Deprecated
@@ -101,7 +101,7 @@ class ModuleRemoteProcessor:
 
 
 	def cleanCreatedInstances(self):
-		self._ctx.log("[Cleanup] Deleting {} skills".format(len(self._createdInstances['skills'])))
+		self._ctx.log('[Cleanup] Deleting {} skills'.format(len(self._createdInstances['skills'])))
 		for skill in self._createdInstances['skills']:
 			self._ctx.skill.removeFromAssistant(assistantId=skill['assistantId'], skillId=skill['id'], deleteAfter=True)
 		self._createdInstances['skills'] = list()

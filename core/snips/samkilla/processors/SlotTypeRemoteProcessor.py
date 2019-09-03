@@ -56,10 +56,10 @@ class SlotTypeRemoteProcessor:
 		changes = False
 
 		if hashComputationOnly or (oldInstanceExists and oldHash == curHash):
-			self._ctx.log("[Sync] Entity|SlotType model {} = {} has no changes".format(entityId, slotType['name']))
+			self._ctx.log('[Sync] Entity|SlotType model {} = {} has no changes'.format(entityId, slotType['name']))
 		elif oldInstanceExists:
 			changes = True
-			self._ctx.log("[Sync] Entity|SlotType model {} = {} has been edited".format(entityId, slotType['name']))
+			self._ctx.log('[Sync] Entity|SlotType model {} = {} has been edited'.format(entityId, slotType['name']))
 			self._ctx.entity.edit(
 				entityId,
 				name=slotType['name'],
@@ -78,7 +78,7 @@ class SlotTypeRemoteProcessor:
 				useSynonyms=slotType['useSynonyms'],
 				slotValues=slotType['values']
 			)
-			self._ctx.log("[Sync] Entity|SlotType model {} = {} has been created".format(entityId, slotType['name']))
+			self._ctx.log('[Sync] Entity|SlotType model {} = {} has been created'.format(entityId, slotType['name']))
 			self._createdInstances['entities'].append({'id': entityId})
 			curHash = self.slotTypeValuesToHash(entityId=entityId)
 
@@ -109,7 +109,7 @@ class SlotTypeRemoteProcessor:
 
 
 	def cleanCreatedInstances(self):
-		self._ctx.log("[Cleanup] Deleting {} entities".format(len(self._createdInstances['entities'])))
+		self._ctx.log('[Cleanup] Deleting {} entities'.format(len(self._createdInstances['entities'])))
 		for entity in self._createdInstances['entities']:
 			self._ctx.entity.delete(entityId=entity['id'])
 		self._createdInstances['entities'] = list()

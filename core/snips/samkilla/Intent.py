@@ -14,7 +14,7 @@ UTTERANCES_DEFINITION_REGEX = re.compile(r'{(.*?):=>(.*?)}')
 
 
 class Intent:
-	GLUE_SLOT_WORD = ":=>"
+	GLUE_SLOT_WORD = ':=>'
 
 
 	def __init__(self, ctx: SamkillaManager):
@@ -147,7 +147,7 @@ class Intent:
 			response = self._ctx.postGQLBrowserly(gqlRequest)
 		except HttpError as he:
 			if he.status == 409:
-				self._ctx.log("Duplicate intent with name {}".format(name))
+				self._ctx.log('Duplicate intent with name {}'.format(name))
 				intentDuplicate = self.getIntentByUserIdAndIntentName(userId, name)
 
 				if intentDuplicate:
@@ -230,7 +230,7 @@ class Intent:
 		intent = self.getIntentByUserIdAndIntentId(userId=userId, intentId=intentId)
 
 		if not intent:
-			raise IntentError(4003, "Intent {} doesn't exist".format(intentId), ['intent'])
+			raise IntentError(4003, 'Intent {} doesn't exist'.format(intentId), ['intent'])
 
 		if name: intent['name'] = name
 		if description: intent['description'] = description
