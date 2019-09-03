@@ -53,7 +53,8 @@ class TTS:
 			self._voice = next(iter(self._supportedLangAndVoices[self._lang][self._type]))
 			self._logger.info('[TTS] Voice "{}" not found, falling back to "{}"'.format(voice, self._voice))
 
-		self.TEMP_ROOT.mkdir(parents=True, exist_ok=True)
+		if not self.TEMP_ROOT.is_dir():
+			subprocess.run(['sudo', 'mkdir', str(self.TEMP_ROOT)])
 
 		if self.TTS == TTSEnum.SNIPS:
 			voiceFile = 'cmu_{}_{}'.format(managers.LanguageManager.activeCountryCode.lower(), self._voice)
