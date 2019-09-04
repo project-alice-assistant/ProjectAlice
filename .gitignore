@@ -127,6 +127,7 @@ assistant
 system/data/data.db
 
 trained/hotwords/*
+!trained/hotwords/snips_hotword/
 !trained/hotwords/.gitkeep
 
 var/cache/*

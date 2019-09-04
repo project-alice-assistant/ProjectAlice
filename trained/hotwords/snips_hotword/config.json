@@ -1,0 +1,21 @@
+{
+    "dither": 1.0, 
+    "featurizer": "mel", 
+    "frame_length_ms": 25.0, 
+    "frame_shift_ms": 10.0, 
+    "high_freq": 0, 
+    "hotword_key": "hey_snips", 
+    "input_node_name": "input_node", 
+    "mel_low_freq": 20, 
+    "model_id": "workflow-hey_snips_subww_feedback_10seeds-2018_12_04T12_13_05_evaluated_model_0002", 
+    "num_mel_bins": 20, 
+    "output_node_name": "output_node", 
+    "preemphasis_coefficient": 0.97, 
+    "remove_dc_offset": false, 
+    "sample_rate": 16000, 
+    "streamable": true, 
+    "use_log_fbank": true, 
+    "w_max": 100, 
+    "w_smooth": 30, 
+    "window_type": "povey"
+}
