@@ -2,13 +2,17 @@
 # InputArgument is a command line argument
 #
 class InputArgument:
-	REQUIRED = 1
-	OPTIONAL = 2
-	ARRAY = 4
+	class Mode(Flag):
+		OPTIONAL = 0
+		REQUIRED = auto()
+		IS_ARRAY = auto()
 
 
 	def __init__(self, name, mode=None, description='', default=None):
-		self.mode = mode or self.OPTIONAL
+		try:
+			self.mode = self.Mode(mode or self.Mode.Optional)
+		except:
+			raise ValueError('Argument mode {} is not valid.'.format(mode))
 
 		self.setDefault(default)
 		self._name = name
@@ -28,17 +32,17 @@ class InputArgument:
 		return self._name
 
 
-	def isRequired(self):
-		return self.mode == self.REQUIRED
+	def isRequired(self) -> bool:
+		return bool(self.mode & self.Mode.REQUIRED)
 
 
 	def isArray(self):
-		return self.mode == self.ARRAY
+		return bool(self.mode & self.Mode.ARRAY)
 
 
 	def setDefault(self, definition):
-		if self.mode == self.REQUIRED and definition is not None:
-			raise ValueError('Cannot set a default value except for OPTIONNAL mode')
+		if self.isRequired() and definition is not None:
+			raise ValueError('Cannot set a default value except for OPTIONAL mode')
 
 		if self.isArray():
 			if definition is None:

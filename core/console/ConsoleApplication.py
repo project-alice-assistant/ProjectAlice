@@ -42,11 +42,11 @@ class ConsoleApplication:
 	@staticmethod
 	def getDefaultInputDefinition() -> InputDefinition:
 		return InputDefinition([
-			InputArgument(name='command', mode=InputArgument.REQUIRED, description='The command to execute'),
-			InputOption(name='--help', shortcut='-h', mode=InputOption.VALUE_NONE, description='Display this help message.'),
-			InputOption(name='--verbose', shortcut='-v', mode=InputOption.VALUE_NONE, description='Increase the verbosity of messages'),
-			InputOption(name='--version', shortcut='-V', mode=InputOption.VALUE_NONE, description='Display this application version.'),
-			InputOption(name='--no-interaction', shortcut='-n', mode=InputOption.VALUE_NONE, description='Do not ask any interactive question.')
+			InputArgument(name='command', mode=InputArgument.Mode.REQUIRED, description='The command to execute'),
+			InputOption(name='--help', shortcut='-h', mode=InputOption.Mode.NONE, description='Display this help message.'),
+			InputOption(name='--verbose', shortcut='-v', mode=InputOption.Mode.NONE, description='Increase the verbosity of messages'),
+			InputOption(name='--version', shortcut='-V', mode=InputOption.Mode.NONE, description='Display this application version.'),
+			InputOption(name='--no-interaction', shortcut='-n', mode=InputOption.Mode.NONE, description='Do not ask any interactive question.')
 		])
 
 

@@ -1,16 +1,18 @@
 import re
 
 from core.commons import commons
+from enum import Flag, auto
 
 
 #
 # InputOption is a command line option (--option)
 #
 class InputOption:
-	VALUE_NONE = 1
-	VALUE_REQUIRED = 2
-	VALUE_OPTIONAL = 4
-	VALUE_IS_ARRAY = 8
+	class Mode(Flag):
+		NONE = 0
+		REQUIRED = auto()
+		OPTIONAL = auto()
+		IS_ARRAY = auto()
 
 
 	def __init__(self, name, shortcut, mode, description, default=None):
@@ -32,14 +34,13 @@ class InputOption:
 			else:
 				shortcut = re.sub(reg, '', shortcut)
 
-		if mode is None:
-			mode = self.VALUE_NONE
-		elif not int(mode) or mode > 15 or mode < 1:
-			raise ValueError('Option mode {} is not valid.'.format(mode))
-
 		self._name = name
 		self.shortcut = shortcut
-		self.mode = mode
+		try:
+			self.mode = self.Mode(mode or self.Mode.NONE)
+		except:
+			raise ValueError('Option mode {} is not valid.'.format(mode))
+
 		self.description = description
 		self.default = list()
 
@@ -64,21 +65,21 @@ class InputOption:
 
 
 	def isValueRequired(self) -> bool:
-		return self.mode == self.VALUE_REQUIRED
+		return bool(self.mode & self.Mode.REQUIRED)
 
 
 	def isValueOptional(self) -> bool:
-		return self.mode == self.VALUE_OPTIONAL
+		return bool(self.mode & self.Mode.OPTIONAL)
 
 
 	def isArray(self) -> bool:
-		return self.mode == self.VALUE_IS_ARRAY
+		return bool(self.mode & self.Mode.IS_ARRAY)
 
 
 	def setDefault(self, default):
 
-		if self.mode == self.VALUE_NONE and default is not None:
-			raise ValueError('Cannot set a default value when using InputOption.VALUE_NONE mode.')
+		if not bool(self.mode) and default is not None:
+			raise ValueError('Cannot set a default value when using InputOption.Mode.VALUE_NONE mode.')
 
 		if self.isArray():
 			if default is None:
