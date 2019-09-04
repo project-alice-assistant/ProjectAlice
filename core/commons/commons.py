@@ -165,8 +165,8 @@ def partOfTheDay() -> str:
 		return PartOfDay.EVENING.value
 
 
-def isYes(msg: MQTTMessage) -> bool:
-	slots = parseSlotsToObjects(message=msg)
+def isYes(session: DialogSession) -> bool:
+	slots = session.slotsAsObjects
 	try:
 		return slots['Answer'][0].value['value'] == 'yes'
 	except:
@@ -174,7 +174,7 @@ def isYes(msg: MQTTMessage) -> bool:
 
 
 def getDuration(session: DialogSession) -> int:
-	slots = session.slotsAsObject()
+	slots = session.slotsAsObjects
 	duration = 0
 	if 'Duration' in slots and slots['Duration'][0].entity == 'snips/duration':
 		try:
@@ -201,7 +201,6 @@ def toCamelCase(string: str, replaceSepCharacters: bool = False, sepCharacters: 
 
 
 def isSpelledWord(string: str) -> bool:
-
 	"""
 	Empirical way to check if a string is something spelled by the user by counting the theoretical length of the string against
 	its theoretical spelled length
@@ -209,10 +208,7 @@ def isSpelledWord(string: str) -> bool:
 	:return: bool
 	"""
 
-	string = str(string)
-	l = len(string)
-	s = string.replace(' ', '').strip()
-	return l == (len(s) * 2) - 1
+	return len(string) == (len(str(string).replace(' ', '').strip()) * 2) - 1
 
 
 def cleanRoomNameToSiteId(roomName: str) -> str:
@@ -242,6 +238,7 @@ def getLocalIp() -> str:
 	finally:
 		sock.close()
 	return ip
+
 
 def isInt(string: str) -> bool:
 	try:

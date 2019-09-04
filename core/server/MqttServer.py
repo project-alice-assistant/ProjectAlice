@@ -5,6 +5,7 @@ import uuid
 from pathlib import Path
 import paho.mqtt.client as mqtt
 import paho.mqtt.publish as publish
+import traceback
 
 import core.base.Managers as managers
 from core.ProjectAliceExceptions import AccessLevelTooLow

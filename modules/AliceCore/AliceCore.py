@@ -311,7 +311,7 @@ class AliceCore(Module):
 			if session.previousIntent == self._INTENT_REBOOT:
 				if 'step' in customData:
 					if customData['step'] == 1:
-						if commons.isYes(session.message):
+						if commons.isYes(session):
 							self.continueDialog(
 								sessionId=sessionId,
 								text=self.randomTalk('askRebootModules'),
@@ -326,7 +326,7 @@ class AliceCore(Module):
 							self.endDialog(sessionId, self.randomTalk('abortReboot'))
 					else:
 						value = 'greet'
-						if commons.isYes(session.message):
+						if commons.isYes(session):
 							value = 'greetAndRebootModules'
 
 						managers.ConfigManager.updateAliceConfiguration('onReboot', value)
@@ -337,7 +337,7 @@ class AliceCore(Module):
 					self._logger.warn('[{}] Asked to reboot, but missing params'.format(self.name))
 
 			elif session.previousIntent == self._INTENT_DUMMY_ADD_USER:
-				if commons.isYes(session.message):
+				if commons.isYes(session):
 					managers.UserManager.addNewUser(customData['name'], AccessLevel.ADMIN.name.lower())
 					self.continueDialog(
 						sessionId=sessionId,
@@ -354,7 +354,7 @@ class AliceCore(Module):
 					)
 
 			elif session.previousIntent == self._INTENT_DUMMY_ADD_WAKEWORD:
-				if commons.isYes(session.message):
+				if commons.isYes(session):
 					managers.WakewordManager.newWakeword(username=customData['name'])
 					managers.ThreadManager.newLock('AddingWakeword').set()
 					self.continueDialog(
@@ -369,8 +369,9 @@ class AliceCore(Module):
 						managers.ThreadManager.doLater(interval=2, func=self.onStart)
 
 					self.endDialog(sessionId=sessionId, text=self.randomTalk('addWakewordDenied'))
+
 			elif session.previousIntent == self._INTENT_WAKEWORD:
-				if commons.isYes(session.message):
+				if commons.isYes(session):
 					if managers.WakewordManager.getLastSampleNumber() < 3:
 						managers.WakewordManager.state = WakewordManagerState.IDLE
 						self.continueDialog(
@@ -395,9 +396,10 @@ class AliceCore(Module):
 						intentFilter=[self._INTENT_WAKEWORD],
 						previousIntent=self._INTENT_DUMMY_WAKEWORD_INSTRUCTION
 					)
+
 			elif session.previousIntent == self._INTENT_ADD_USER:
-				if commons.isYes(session.message):
-					managers.UserManager.addNewUser(slots['addUserConfirmed'], slots['UserAccessLevel'])
+				if commons.isYes(session):
+					managers.UserManager.addNewUser(customData['username'], slots['UserAccessLevel'])
 					self.continueDialog(
 						sessionId=sessionId,
 						text=self.randomTalk('addUserWakeword', replace=[slots['Name'], slots['UserAccessLevel']]),
@@ -413,7 +415,7 @@ class AliceCore(Module):
 					)
 
 			elif session.previousIntent == self._INTENT_DUMMY_ADD_USER_WAKEWORD:
-				if commons.isYes(session.message):
+				if commons.isYes(session):
 					# TODO
 					return True
 				else:
@@ -597,7 +599,7 @@ class AliceCore(Module):
 			else:
 				self.endDialog(sessionId)
 
-		elif intent == self._INTENT_ADD_USER or session.previousIntent == self._INTENT_ADD_USER or intent == self._INTENT_ANSWER_ACCESSLEVEL and not intent == self._INTENT_SPELL_WORD:
+		elif intent == self._INTENT_ADD_USER or session.previousIntent == self._INTENT_ADD_USER or intent == self._INTENT_ANSWER_ACCESSLEVEL and intent != self._INTENT_SPELL_WORD:
 			if 'Name' not in slots:
 				self.continueDialog(
 					sessionId=sessionId,
@@ -613,7 +615,7 @@ class AliceCore(Module):
 					sessionId=sessionId,
 					text=managers.TalkManager.randomTalk('notUnderstood', module='system'),
 					intentFilter=[self._INTENT_ANSWER_NAME, self._INTENT_SPELL_WORD],
-					previousIntent=self._INTENT_DUMMY_ADD_USER
+					previousIntent=self._INTENT_ADD_USER
 				)
 				return True
 
@@ -640,7 +642,10 @@ class AliceCore(Module):
 				sessionId=sessionId,
 				text=self.randomTalk(text='addUserConfirmUsername', replace=[slots['Name']]),
 				intentFilter=[self._INTENT_ANSWER_YES_OR_NO],
-				previousIntent=self._INTENT_ADD_USER
+				previousIntent=self._INTENT_ADD_USER,
+				customData={
+					'username': slots['Name']
+				}
 			)
 			return True
 
@@ -648,6 +653,7 @@ class AliceCore(Module):
 			name = ''
 			for slot in slotsObj['Letters']:
 				name += slot.value['value']
+			print(name)
 
 			session.slots['Name']['value'] = name
 			if name in managers.UserManager.getAllUserNames(skipGuests=False):
@@ -662,7 +668,10 @@ class AliceCore(Module):
 					sessionId=sessionId,
 					text=self.randomTalk(text='addUserConfirmUsername', replace=[name]),
 					intentFilter=[self._INTENT_ANSWER_YES_OR_NO],
-					previousIntent=self._INTENT_ADD_USER
+					previousIntent=self._INTENT_ADD_USER,
+					customData={
+						'username': name
+					}
 				)
 
 		return True
