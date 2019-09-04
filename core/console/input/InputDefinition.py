@@ -53,7 +53,7 @@ class InputDefinition:
 
 	def addArgument(self, argument):
 		if self.arguments.get(argument.name):
-			raise ValueError('An argument with name {} already exists.'.format(str(argument.name)))
+			raise ValueError('An argument with name {} already exists.'.format(argument.name))
 
 		if self.hasAnArrayArgument:
 			raise ValueError('Cannot add an argument after an array argument.')
@@ -74,7 +74,7 @@ class InputDefinition:
 
 	def getArgument(self, name):
 		if not self.hasArgument(name):
-			raise ValueError('The {} argument does not exist.'.format(str(name)))
+			raise ValueError('The {} argument does not exist.'.format(name))
 
 		_arguments = list(self.arguments.values()) if commons.isInt(name) else self.arguments
 
@@ -117,12 +117,12 @@ class InputDefinition:
 
 	def addOption(self, option):
 		if option.name in self.options and self.options[option.name]:
-			raise ValueError('An option named {} already exists.'.format(str(option.name)))
+			raise ValueError('An option named {} already exists.'.format(option.name))
 
 		if option.getShortcut():
 			for shortcut in option.getShortcut().split('|'):
 				if shortcut in self.shortcuts:
-					raise ValueError('An option with shortcut -{} already exists.'.format(str(shortcut)))
+					raise ValueError('An option with shortcut -{} already exists.'.format(shortcut))
 
 		self.options[option.name] = option
 
@@ -133,7 +133,7 @@ class InputDefinition:
 
 	def getOption(self, name):
 		if not self.hasOption(name):
-			raise ValueError('The --{} option does not exist.'.format(str(name)))
+			raise ValueError('The --{} option does not exist.'.format(name))
 
 		return self.options[name]
 
@@ -160,7 +160,7 @@ class InputDefinition:
 
 	def shortcutToName(self, shortcut):
 		if shortcut not in self.shortcuts or not self.shortcuts[shortcut]:
-			raise ValueError('The -{} option does not exist.'.format(str(shortcut)))
+			raise ValueError('The -{} option does not exist.'.format(shortcut))
 
 		return self.shortcuts[shortcut]
 

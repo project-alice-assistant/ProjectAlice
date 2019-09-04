@@ -54,20 +54,20 @@ class ArrayInput(Input):
 
 	def addShortOption(self, shortcut, value):
 		if not self.definition.hasShortcut(shortcut):
-			raise ValueError('The -{} option does not exist.'.format(str(shortcut)))
+			raise ValueError('The -{} option does not exist.'.format(shortcut))
 
 		self.addLongOption(self.definition.getOptionForShortcut(shortcut).name, value)
 
 
 	def addLongOption(self, name, value):
 		if not self.definition.hasOption(name):
-			raise ValueError('The -{} option does not exist.'.format(str(name)))
+			raise ValueError('The -{} option does not exist.'.format(name))
 
 		option = self.definition.getOption(name)
 
 		if value is None:
 			if option.isValueRequired():
-				raise ValueError('The -{} option requires a value.'.format(str(name)))
+				raise ValueError('The -{} option requires a value.'.format(name))
 
 			value = option.getDefault() if option.isValueOptional() else True
 
@@ -76,7 +76,7 @@ class ArrayInput(Input):
 
 	def addArgument(self, name, value):
 		if not self.definition.hasArgument(name):
-			raise ValueError('The {} argument does not exist.'.format(str(name)))
+			raise ValueError('The {} argument does not exist.'.format(name))
 
 		self.arguments[name] = value
 

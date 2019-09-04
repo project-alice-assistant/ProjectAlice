@@ -67,7 +67,7 @@ class ConsoleApplication:
 			return
 
 		if command.definition is None:
-			raise ValueError('Command class {} is not correctly initialized. You probably forgot to call the parent constructor.'.format(str(command.__class__.__name__)))
+			raise ValueError('Command class {} is not correctly initialized. You probably forgot to call the parent constructor.'.format(command.__class__.__name__))
 
 		self.commands[command.name] = command
 
@@ -139,7 +139,7 @@ class ConsoleApplication:
 		except ValueError as ve:
 			exitCode = 400
 			print(Fore.YELLOW + '[Error]' + Fore.RESET + ' Error with code {}'.format(exitCode))
-			print(Fore.YELLOW + '[Error]' + Fore.RESET + ' Message {}'.format(str(ve)))
+			print(Fore.YELLOW + '[Error]' + Fore.RESET + ' Message {}'.format(ve))
 
 			if self._verbosity > 0:
 				print(traceback.format_exc())
@@ -150,7 +150,7 @@ class ConsoleApplication:
 		except Exception as e:
 			exitCode = 500
 			print(Fore.RED + '[Exception]' + Fore.RESET + ' Error with code {}'.format(exitCode))
-			print(Fore.RED + '[Exception]' + Fore.RESET + ' Message {}'.format(str(e)))
+			print(Fore.RED + '[Exception]' + Fore.RESET + ' Message {}'.format(e))
 			# print('\n Message: ' + str(self.running.getSynopsis()))
 
 			if self._verbosity > 0:
@@ -207,7 +207,7 @@ class ConsoleApplication:
 
 	def get(self, name: str) -> Command:
 		if name not in self.commands or self.commands[name] is None:
-			raise ValueError('The command \'{}\' does not exist.'.format(str(name)))
+			raise ValueError('The command \'{}\' does not exist.'.format(name))
 
 		command = self.commands[name]
 

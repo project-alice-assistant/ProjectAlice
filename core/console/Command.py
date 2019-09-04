@@ -54,7 +54,7 @@ class Command:
 
 
 	def create(self):
-		raise NotImplemented('Command "{}" does not override create method'.format(str(self.name)))
+		raise NotImplemented('Command "{}" does not override create method'.format(self.name))
 
 
 	def interact(self, inputInstance):
@@ -198,7 +198,7 @@ class Command:
 		reg = re.compile(r'^[^:]+(:[^:]+)*$')
 
 		if not name or not reg.match(name):
-			raise ValueError('Command name \'{}\' is invalid.'.format(str(name)))
+			raise ValueError('Command name \'{}\' is invalid.'.format(name))
 
 
 	def getSynopsis(self):

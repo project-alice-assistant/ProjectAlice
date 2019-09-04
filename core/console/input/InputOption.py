@@ -35,7 +35,7 @@ class InputOption:
 		if mode is None:
 			mode = self.VALUE_NONE
 		elif not int(mode) or mode > 15 or mode < 1:
-			raise ValueError('Option mode {} is not valid.'.format(str(mode)))
+			raise ValueError('Option mode {} is not valid.'.format(mode))
 
 		self._name = name
 		self.shortcut = shortcut

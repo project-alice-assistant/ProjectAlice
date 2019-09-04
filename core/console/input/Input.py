@@ -57,7 +57,7 @@ class Input:
 
 	def getArgument(self, name):
 		if not self.definition.hasArgument(name):
-			raise ValueError('The {} argument does not exist.'.format(str(name)))
+			raise ValueError('The {} argument does not exist.'.format(name))
 
 		return self.arguments.get(name) or self.definition.getArgument(name).getDefault()
 
@@ -68,7 +68,7 @@ class Input:
 
 	def setArgument(self, name, value):
 		if not self.definition.hasArgument(name):
-			raise ValueError('The {} argument does not exist.'.format(str(name)))
+			raise ValueError('The {} argument does not exist.'.format(name))
 
 		self.arguments[name] = value
 
