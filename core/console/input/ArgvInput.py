@@ -93,7 +93,7 @@ class ArgvInput(Input):
 		name = token[2:]
 		pos = commons.indexOf('=', name)
 
-		if pos >= 0:
+		if pos != -1:
 			self.addLongOption(name[0:pos], name[pos + 1:])
 		else:
 			self.addLongOption(name, None)
