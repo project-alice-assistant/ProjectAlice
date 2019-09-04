@@ -14,7 +14,7 @@ class InputOption:
 
 
 	def __init__(self, name, shortcut, mode, description, default=None):
-		if commons.indexOf('--', name) == 0:
+		if name.startswith('--'):
 			name = name[2:]
 
 		if name is None:
