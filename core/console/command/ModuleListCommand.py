@@ -20,8 +20,8 @@ class ModuleListCommand(Command):
 		self.name = 'module:list'
 		self.setDescription('List remote modules from dedicated repository created by a specific author')
 		self.setDefinition([
-			InputArgument(name='authorName', mode=InputArgument.REQUIRED, description='Author\'s name'),
-			InputOption(name='--full', shortcut='-f', mode=InputOption.VALUE_NONE, description='Display full description instead of truncated one'),
+			InputArgument(name='authorName', mode=InputArgument.Mode.REQUIRED, description='Author\'s name'),
+			InputOption(name='--full', shortcut='-f', mode=InputOption.Mode.NONE, description='Display full description instead of truncated one'),
 
 		])
 		self.setHelp('> The %command.name% list modules from dedicated repository created by a specific author:\n'

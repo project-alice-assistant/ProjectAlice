@@ -106,7 +106,7 @@ class SnipsConsoleManager(Manager):
 
 
 	def _getAccessToken(self, token: str) -> dict:
-		alias = 'projectalice-{}'.format(str(uuid.uuid4())).replace('-', '')[:29]
+		alias = 'projectalice-{}'.format(uuid.uuid4()).replace('-', '')[:29]
 		self._headers['Authorization'] = token
 		req = self._req(url='/v1/user/{}/accesstoken'.format(self._user.userId), data={'alias': alias})
 		if req.status_code == 201:

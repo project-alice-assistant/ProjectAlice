@@ -54,7 +54,7 @@ class Command:
 
 
 	def create(self):
-		raise NotImplemented('Command "{}" does not override create method'.format(str(self.name)))
+		raise NotImplemented('Command "{}" does not override create method'.format(self.name))
 
 
 	def interact(self, inputInstance):
@@ -198,7 +198,7 @@ class Command:
 		reg = re.compile(r'^[^:]+(:[^:]+)*$')
 
 		if not name or not reg.match(name):
-			raise ValueError('Command name \'{}\' is invalid.'.format(str(name)))
+			raise ValueError('Command name \'{}\' is invalid.'.format(name))
 
 
 	def getSynopsis(self):
@@ -249,14 +249,14 @@ class Command:
 		except KeyboardInterrupt:
 			sys.exit(0)
 
-		return definition if definition and not inputValue else inputValue
+		return inputValue or definition
 
 
 	def askCombo(self, question, definition, choices, caseSensitive=False, fgColor='reset', bgColor='reset'):
 		while True:
 			inputValue = self.ask(question, definition, fgColor=fgColor, bgColor=bgColor)
 
-			if commons.indexOf(inputValue, choices) >= 0:
+			if commons.indexOf(inputValue, choices) != -1:
 				break
 
 		return inputValue if caseSensitive else inputValue.lower()

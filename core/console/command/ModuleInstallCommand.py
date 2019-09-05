@@ -18,7 +18,7 @@ class ModuleInstallCommand(Command):
 		self.name = 'module:install'
 		self.setDescription('Download and install module from dedicated repository')
 		self.setDefinition([
-			InputArgument(name='modulePath', mode=InputArgument.REQUIRED, description='Module path (e.g. ProjectAlice/AliceCore)'),
+			InputArgument(name='modulePath', mode=InputArgument.Mode.REQUIRED, description='Module path (e.g. ProjectAlice/AliceCore)'),
 		])
 		self.setHelp('> The %command.name% download and install a module from dedicated repository:\n'
 					 '  <fg:magenta>%command.full_name%<fg:reset> <fg:cyan>author/moduleName<fg:reset>')

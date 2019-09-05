@@ -1,20 +1,22 @@
 import re
 
 from core.commons import commons
+from enum import Flag, auto
 
 
 #
 # InputOption is a command line option (--option)
 #
 class InputOption:
-	VALUE_NONE = 1
-	VALUE_REQUIRED = 2
-	VALUE_OPTIONAL = 4
-	VALUE_IS_ARRAY = 8
+	class Mode(Flag):
+		NONE = 0
+		REQUIRED = auto()
+		OPTIONAL = auto()
+		IS_ARRAY = auto()
 
 
 	def __init__(self, name, shortcut, mode, description, default=None):
-		if commons.indexOf('--', name) == 0:
+		if name.startswith('--'):
 			name = name[2:]
 
 		if name is None:
@@ -23,7 +25,7 @@ class InputOption:
 		reg = re.compile(r'-')
 
 		if shortcut is not None:
-			if type(shortcut) == list:
+			if isinstance(shortcut, list):
 				for short in shortcut:
 					# noinspection PyUnusedLocal
 					short = re.sub(reg, '', short)  # weird
@@ -32,14 +34,13 @@ class InputOption:
 			else:
 				shortcut = re.sub(reg, '', shortcut)
 
-		if mode is None:
-			mode = self.VALUE_NONE
-		elif not int(mode) or mode > 15 or mode < 1:
-			raise ValueError('Option mode {} is not valid.'.format(str(mode)))
-
 		self._name = name
 		self.shortcut = shortcut
-		self.mode = mode
+		try:
+			self.mode = self.Mode(mode or self.Mode.NONE)
+		except:
+			raise ValueError('Option mode {} is not valid.'.format(mode))
+
 		self.description = description
 		self.default = list()
 
@@ -59,31 +60,31 @@ class InputOption:
 
 
 
-	def acceptValue(self):
+	def acceptValue(self) -> bool:
 		return self.isValueRequired() or self.isValueOptional()
 
 
-	def isValueRequired(self):
-		return self.VALUE_REQUIRED == (self.VALUE_REQUIRED & self.mode)
+	def isValueRequired(self) -> bool:
+		return bool(self.mode & self.Mode.REQUIRED)
 
 
-	def isValueOptional(self):
-		return self.VALUE_OPTIONAL == (self.VALUE_OPTIONAL & self.mode)
+	def isValueOptional(self) -> bool:
+		return bool(self.mode & self.Mode.OPTIONAL)
 
 
-	def isArray(self):
-		return self.VALUE_IS_ARRAY == (self.VALUE_IS_ARRAY & self.mode)
+	def isArray(self) -> bool:
+		return bool(self.mode & self.Mode.IS_ARRAY)
 
 
 	def setDefault(self, default):
 
-		if self.VALUE_NONE == (self.VALUE_NONE & self.mode) and default is not None:
-			raise ValueError('Cannot set a default value when using InputOption.VALUE_NONE mode.')
+		if not bool(self.mode) and default is not None:
+			raise ValueError('Cannot set a default value when using InputOption.Mode.VALUE_NONE mode.')
 
 		if self.isArray():
 			if default is None:
 				default = list()
-			elif type(default) != list:
+			elif not isinstance(default, list):
 				raise ValueError('A default value for an array option must be an array.')
 
 		if self.acceptValue():

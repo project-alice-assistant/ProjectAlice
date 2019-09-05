@@ -60,9 +60,9 @@ class ModuleIntentListCommand(Command):
 		self.name = 'module:intent:list'
 		self.setDescription('List intents and utterances for a given module')
 		self.setDefinition([
-			InputArgument(name='moduleName', mode=InputArgument.REQUIRED, description='Module\'s name'),
-			InputOption(name='--full', shortcut='-f', mode=InputOption.VALUE_NONE, description='Display full description instead of truncated one'),
-			InputOption(name='--intent', shortcut='-i', mode=InputOption.VALUE_OPTIONAL, description='Show more data about specific intent'),
+			InputArgument(name='moduleName', mode=InputArgument.Mode.REQUIRED, description='Module\'s name'),
+			InputOption(name='--full', shortcut='-f', mode=InputOption.Mode.NONE, description='Display full description instead of truncated one'),
+			InputOption(name='--intent', shortcut='-i', mode=InputOption.Mode.OPTIONAL, description='Show more data about specific intent'),
 		])
 		self.setHelp('> The %command.name% list intents and utterances for a given module:\n'
 					 '  <fg:magenta>%command.full_name%<fg:reset> <fg:cyan>moduleName<fg:reset> <fg:yellow>[-f|--full]<fg:reset> <fg:yellow>[-i|--intent=intentName]<fg:reset>')

@@ -16,7 +16,7 @@ class Input:
 
 		if definition is None:
 			self.definition = InputDefinition()
-		elif type(definition) == list:
+		elif isinstance(definition, list):
 			self.definition = InputDefinition(definition)
 			self.bind(definition)
 			self.validate()
@@ -50,20 +50,16 @@ class Input:
 
 
 	def getArguments(self):
-		allArguments = dict()
-		allArguments.update(self.definition.getArgumentDefaults())
+		allArguments = self.definition.getArgumentDefaults()
 		allArguments.update(self.arguments)
 		return allArguments
 
 
 	def getArgument(self, name):
 		if not self.definition.hasArgument(name):
-			raise ValueError('The {} argument does not exist.'.format(str(name)))
+			raise ValueError('The {} argument does not exist.'.format(name))
 
-		if name in self.arguments and self.arguments[name] is not None:
-			return self.arguments[name]
-		else:
-			return self.definition.getArgument(name).getDefault()
+		return self.arguments.get(name) or self.definition.getArgument(name).getDefault()
 
 
 	def getSynopsisBuffer(self):
@@ -72,7 +68,7 @@ class Input:
 
 	def setArgument(self, name, value):
 		if not self.definition.hasArgument(name):
-			raise ValueError('The {} argument does not exist.'.format(str(name)))
+			raise ValueError('The {} argument does not exist.'.format(name))
 
 		self.arguments[name] = value
 
@@ -82,25 +78,21 @@ class Input:
 
 
 	def getOptions(self):
-		allOptions = dict()
-		allOptions.update(self.definition.getOptionDefaults())
+		allOptions = self.definition.getOptionDefaults()
 		allOptions.update(self.options)
 		return allOptions
 
 
-	def getOption(self, name):
+	def getOption(self, name: str):
 		if not self.definition.hasOption(name):
-			raise ValueError('The {} option does not exist.'.format(str(name)))
+			raise ValueError('The {} option does not exist.'.format(name))
 
-		if name in self.options and self.options[name] is not None:
-			return self.options[name]
-		else:
-			return self.definition.getOption(name).getDefault()
+		return self.options.get(name) or self.definition.getOption(name).getDefault()
 
 
-	def setOption(self, name, value):
+	def setOption(self, name: str, value):
 		if not self.definition.hasOption(name):
-			raise ValueError('The {} option does not exist.'.format(str(name)))
+			raise ValueError('The {} option does not exist.'.format(name))
 
 		self.options[name] = value
 
@@ -110,21 +102,14 @@ class Input:
 
 
 	def escapeToken(self, token):
-		reg = re.compile(r'^[w-]+')
-		result = reg.match(token)
-
-		if result:
-			return token
-
-		return self.escapeshellarg(token)
+		return token if token[:1] in ['', 'w', '-'] else self.escapeshellarg(token)
 
 
 	@staticmethod
 	def escapeshellargReplaceFunction(match):
 		match = match.group()
-		return match[0:1] + '\\\''
+		return match[0] + '\\\''
 
 
 	def escapeshellarg(self, string):
-		out = re.sub(r'[^\\]\'', self.escapeshellargReplaceFunction, string)
-		return out
+		return re.sub(r'[^\\]\'', self.escapeshellargReplaceFunction, string)

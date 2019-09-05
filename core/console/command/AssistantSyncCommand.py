@@ -17,7 +17,7 @@ class AssistantSyncCommand(Command):
 		self.name = 'assistant:sync'
 		self.setDescription('Sync dialog templates for all modules')
 		self.setDefinition([
-			InputOption(name='--download', shortcut='-d', mode=InputOption.VALUE_NONE, description='Also download the new trained assistant'),
+			InputOption(name='--download', shortcut='-d', mode=InputOption.Mode.NONE, description='Also download the new trained assistant'),
 		])
 		self.setHelp('> The %command.name% command sync dialog templates for all modules:\n'
 					 '  <fg:magenta>%command.full_name%<fg:reset>')

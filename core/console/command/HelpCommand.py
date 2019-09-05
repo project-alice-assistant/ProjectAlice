@@ -16,7 +16,7 @@ class HelpCommand(Command):
 	def create(self):
 		self.name = 'help'
 		self.setDescription('Displays help for a command')
-		self.setDefinition([InputArgument(name='command_name', mode=InputArgument.OPTIONAL, description='The command name', default='help')])
+		self.setDefinition([InputArgument(name='command_name', mode=InputArgument.Mode.OPTIONAL, description='The command name', default='help')])
 		self.setHelp('> The %command.name% command displays help for a given command:\n'
 					 '  <fg:magenta>%command.full_name%<fg:reset> <fg:cyan>list<fg:reset>\n\n'
 					 '  To display the list of available commands, please use the list command.')

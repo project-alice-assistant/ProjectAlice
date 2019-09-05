@@ -78,7 +78,7 @@ class ArgvInput(Input):
 
 		for i in range(0, length):
 			if not self.definition.hasShortcut(name[i]):
-				raise ValueError('The -{} option does not exist.'.format(str(name[i])))
+				raise ValueError('The -{} option does not exist.'.format(name[i]))
 
 			option = self.definition.getOptionForShortcut(name[i])
 
@@ -93,7 +93,7 @@ class ArgvInput(Input):
 		name = token[2:]
 		pos = commons.indexOf('=', name)
 
-		if pos >= 0:
+		if pos != -1:
 			self.addLongOption(name[0:pos], name[pos + 1:])
 		else:
 			self.addLongOption(name, None)
@@ -125,7 +125,7 @@ class ArgvInput(Input):
 	def addShortOption(self, shortcut, value):
 
 		if not self.definition.hasShortcut(shortcut):
-			raise ValueError('The -{} option does not exist.'.format(str(shortcut)))
+			raise ValueError('The -{} option does not exist.'.format(shortcut))
 
 		self.addLongOption(self.definition.getOptionForShortcut(shortcut).name, value)
 
@@ -133,29 +133,24 @@ class ArgvInput(Input):
 	def addLongOption(self, name, value):
 
 		if not self.definition.hasOption(name):
-			raise ValueError('The --{} option does not exist.'.format(str(name)))
+			raise ValueError('The --{} option does not exist.'.format(name))
 
 		option = self.definition.getOption(name)
 
 		if value is not None and not option.acceptValue():
-			raise ValueError('The --{} option does not accept a value : {}'.format(str(name), str(value)))
+			raise ValueError('The --{} option does not accept a value : {}'.format(name, value))
 
 		if value is None and option.acceptValue() and self.parsed:
-			nekst = None
+			nekst = self.parsed.pop(0)
 
-			if self.parsed:
-				nekst = self.parsed.pop(0)
-
-			if nekst[0] is not None and '-' != nekst[0]:
+			if not nekst.startswith('-'):
 				value = nekst
-			elif nekst == '':
-				value = ''
 			else:
 				self.parsed.insert(0, nekst)
 
 		if value is None:
 			if option.isValueRequired():
-				raise ValueError('The --{} option requires a value.'.format(str(name)))
+				raise ValueError('The --{} option requires a value.'.format(name))
 
 			if not option.isArray():
 				if option.isValueOptional():
@@ -164,7 +159,7 @@ class ArgvInput(Input):
 					value = True
 
 		if option.isArray():
-			if name not in self.options or self.options[name] is None:
+			if not self.options.get(name):
 				self.options[name] = list()
 
 			self.options[name].append(value)
@@ -174,10 +169,8 @@ class ArgvInput(Input):
 
 	def getFirstArgument(self):
 		for token in self.tokens:
-			if '-' == token[0]:
-				continue
-
-			return token
+			if not token.startswith('-'):
+				return token
 
 
 	def hasParameterOption(self, values):
@@ -198,7 +191,7 @@ class ArgvInput(Input):
 		if tokens:
 			token = tokens.pop(0)
 
-		while token:
+		if token:
 			for value in values:
 				if token == value or 0 == commons.indexOf(value + '=', token):
 					pos = commons.indexOf('=', token)
