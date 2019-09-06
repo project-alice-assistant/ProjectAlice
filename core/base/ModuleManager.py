@@ -112,7 +112,7 @@ class ModuleManager(Manager):
 									raise ModuleNotConditionCompliant
 
 						elif conditionName == 'asrArbitraryCapture':
-							if conditionValue and not managers.ASRManager.asr.capableOfArbitraryCapture:
+							if conditionValue and not managers.ASRManager.asr.isCapableOfArbitraryCapture:
 								raise ModuleNotConditionCompliant
 
 						elif conditionName == 'activeManager':
