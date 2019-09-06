@@ -111,7 +111,7 @@ class DatabaseManager(Manager):
 
 	def insert(self, tableName: str, query: str, callerName: str, values: dict = None) -> int:
 		"""
-		Fetch data from database
+		Insert data in database
 		:param values:
 		:param tableName:
 		:param query:

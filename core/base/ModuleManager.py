@@ -90,11 +90,13 @@ class ModuleManager(Manager):
 					for conditionName, conditionValue in module['conditions'].items():
 						if conditionName == 'lang' and managers.LanguageManager.activeLanguage not in conditionValue:
 							raise ModuleNotConditionCompliant
+
 						elif conditionName == 'online':
 							if conditionValue and managers.ConfigManager.getAliceConfigByName('stayCompletlyOffline'):
 								raise ModuleNotConditionCompliant
 							elif not conditionValue and not managers.ConfigManager.getAliceConfigByName('stayCompletlyOffline'):
 								raise ModuleNotConditionCompliant
+
 						elif conditionName == 'module':
 							for requiredModule in conditionValue:
 								if requiredModule['name'] in availableModules and not availableModules[requiredModule['name']]['active']:
@@ -102,9 +104,21 @@ class ModuleManager(Manager):
 								elif requiredModule['name'] not in availableModules:
 									self._logger.info('[{}] Module {} has another module as dependency, adding download'.format(self.name, moduleName))
 									subprocess.run(['wget', requiredModule['url'], '-O', Path(commons.rootDir(), 'system/moduleInstallTickets/{}.install'.format(requiredModule['name']))])
+
+						elif conditionName == 'notModule':
+							for excludedModule in conditionValue:
+								if excludedModule in availableModules and availableModules[excludedModule]['active']:
+									raise ModuleNotConditionCompliant
+
 						elif conditionName == 'asrArbitraryCapture':
 							if conditionValue and not managers.ASRManager.asr.capableOfArbitraryCapture:
 								raise ModuleNotConditionCompliant
+
+						elif conditionName == 'activeManager':
+							for manager in conditionValue:
+								man = managers.getManager(manager)
+								if not man or not man.isActive:
+									raise ModuleNotConditionCompliant
 
 				if ' ' in moduleName:
 					name = commons.toCamelCase(moduleName)	

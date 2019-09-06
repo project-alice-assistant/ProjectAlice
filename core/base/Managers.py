@@ -1,4 +1,5 @@
 import logging
+from typing import Optional
 
 from core.base.Manager import Manager
 
@@ -91,3 +92,7 @@ def broadcast(method, exceptions: list = None, manager: Manager = None, args: li
 
 	for name in deadManagers:
 		del managers[name]
+
+
+def getManager(managerName: str) -> Optional[Manager]:
+	return managers.get(managerName, None)

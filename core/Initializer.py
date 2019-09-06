@@ -70,21 +70,26 @@ network={
 			self.fatal('You must specify the wifi parameters')
 
 		# Let's connect to wifi!
-		self._logger.info('Setting up wifi')
-		wpaFile = self._WPA_FILE.format(**initConfs)
+		wpaSupplicant = Path('/etc/wpa_supplicant/wpa_supplicant.conf')
 
-		file = Path(commons.rootDir(), 'wifi.conf')
-		file.write_text(wpaFile)
+		if not wpaSupplicant.is_file():
+			self._logger.info('Setting up wifi')
+			wpaFile = self._WPA_FILE.format(**initConfs)
 
-		self._logger.info('wpa_supplicant.conf')
-		subprocess.run(['sudo', 'mv', file, Path('/etc/wpa_supplicant/wpa_supplicant.conf')])
+			file = Path(commons.rootDir(), 'wifi.conf')
+			file.write_text(wpaFile)
 
-		self._logger.info('Turning off wifi')
-		subprocess.run(['sudo', 'ifconfig', 'wlan0', 'down'])
-		time.sleep(5)
-		self._logger.info('Turning it back on')
-		subprocess.run(['sudo', 'ifconfig', 'wlan0', 'up'])
-		time.sleep(5)
+			self._logger.info('wpa_supplicant.conf')
+			subprocess.run(['sudo', 'mv', file, wpaSupplicant])
+
+			self._logger.info('Turning off wifi')
+			subprocess.run(['sudo', 'ifconfig', 'wlan0', 'down'])
+			time.sleep(5)
+			self._logger.info('Turning it back on')
+			subprocess.run(['sudo', 'ifconfig', 'wlan0', 'up'])
+			time.sleep(5)
+			subprocess.run(['/usr/bin/sudo', '/sbin/shutdown', '-r', 'now'])
+
 
 		confs['ssid'] = initConfs['wifiNetworkName']
 		confs['wifipassword'] = initConfs['wifiWPAPass']

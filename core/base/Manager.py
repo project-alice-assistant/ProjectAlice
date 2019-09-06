@@ -65,7 +65,7 @@ class Manager(Singleton):
 
 
 	def pruneTable(self, tableName: str):
-		return managers.DatabaseManager.pruneTable(tableName=tableName, callerName=self.name)
+		return managers.DatabaseManager.prune(tableName=tableName, callerName=self.name)
 
 
 	def onBooted(self): pass
