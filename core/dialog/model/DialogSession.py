@@ -76,7 +76,7 @@ class DialogSession:
 
 	def slotRawValue(self, slotName: str) -> str:
 		"""
-		This returns the slot raw value, what what really heard / captured, so it can be a synonym per exemple
+		This returns the slot raw value, what whas really heard / captured, so it can be a synonym per exemple
 		"""
 		return self._slots.get(slotName, '')
 

@@ -60,3 +60,11 @@ class TelemetryManager(Manager):
 			query='INSERT INTO :__table__ (type, value, service, siteId, timestamp) VALUES (:type, :value, :service, :siteId, :timestamp)',
 			values={'type': ttype.value, 'value': value, 'service': service, 'siteId': siteId, 'timestamp': timestamp}
 		)
+
+
+	def getData(self, ttype: TelemetryType, siteId: str, service: str = None):
+		return self.databaseFetch(
+			tableName='telemetry',
+			query='SELECT * FROM :__table__ WHERE type = :type and siteId = :siteId order by timestamp DESC LIMIT 1',
+			values={'type': ttype.value, siteId: siteId}
+		)
