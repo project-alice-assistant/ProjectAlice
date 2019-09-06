@@ -1,7 +1,10 @@
+from enum import Flag, auto
+
 #
 # InputArgument is a command line argument
 #
 class InputArgument:
+
 	class Mode(Flag):
 		OPTIONAL = 0
 		REQUIRED = auto()
@@ -10,7 +13,7 @@ class InputArgument:
 
 	def __init__(self, name, mode=None, description='', default=None):
 		try:
-			self.mode = self.Mode(mode or self.Mode.Optional)
+			self.mode = self.Mode(mode or self.Mode.OPTIONAL)
 		except:
 			raise ValueError('Argument mode {} is not valid.'.format(mode))
 
@@ -37,7 +40,7 @@ class InputArgument:
 
 
 	def isArray(self):
-		return bool(self.mode & self.Mode.ARRAY)
+		return bool(self.mode & self.Mode.IS_ARRAY)
 
 
 	def setDefault(self, definition):
