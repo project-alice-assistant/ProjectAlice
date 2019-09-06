@@ -43,8 +43,8 @@ class ConfigManager(Manager):
 		self._checkAndUpdateAliceConfigFile()
 		self.loadSnipsConfigurations()
 
-		self._checkAndUpdateModuleConfigFiles()
 		self.loadModuleConfigurations()
+		self._checkAndUpdateModuleConfigFiles()
 
 
 	def _checkAndUpdateAliceConfigFile(self):
@@ -235,7 +235,6 @@ class ConfigManager(Manager):
 
 		# Iterate through all modules declared in global config file
 		for moduleName in self._modulesConfigurations:
-
 			if module and moduleName != module:
 				continue
 
