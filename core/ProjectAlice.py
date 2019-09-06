@@ -64,15 +64,18 @@ class ProjectAlice(Singleton):
 		self._usersManager 						= UserManager(self)
 		self._snipsSessionManager 				= DialogSessionManager(self)
 		self._multiIntentManager 				= MultiIntentManager(self)
-		self._moduleManager 					= ModuleManager(self)
+		self._telemetryManager                  = TelemetryManager(self)
+		self._moduleManager                     = ModuleManager(self)
 		self._devicesManager 					= DeviceManager(self)
 		self._internetManager 					= InternetManager(self)
 		self._snipsConsoleManager 				= SnipsConsoleManager(self)
 		self._samkillaManager	 				= SamkillaManager(self)
 		self._wakewordManager 					= WakewordManager(self)
-		self._telemetryManager 					= TelemetryManager(self)
 
 		self._randomTalkManager 				= TalkManager(self)
+
+		Managers.onStart()
+
 		self._randomTalkManager.onStart()
 		self._languageManager.loadStrings()
 
@@ -94,8 +97,6 @@ class ProjectAlice(Singleton):
 		if self._internetManager.online:
 			self._snipsConsoleManager.onStart()
 			self._samkillaManager.onStart()
-
-		Managers.onStart()
 
 		if self._configManager.getAliceConfigByName('webInterfaceActive'):
 			self._threadsManager.newThread(name='Django', target=self._startDjango)

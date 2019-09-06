@@ -10,6 +10,8 @@ from core.snips.SamkillaManager import SamkillaManager
 from core.snips.SnipsConsoleManager import SnipsConsoleManager
 from core.user.UserManager import UserManager
 from core.util.DatabaseManager import DatabaseManager
+from core.util.InternetManager import InternetManager
+from core.util.TelemetryManager import TelemetryManager
 from core.util.ThreadManager import ThreadManager
 from core.voice.LanguageManager import LanguageManager
 
@@ -41,6 +43,12 @@ class ModuleIntentListCommand(Command):
 
 		userManager = UserManager(self)
 		userManager.onStart()
+
+		internetManager = InternetManager(self)
+		internetManager.onStart()
+
+		telemetryManager = TelemetryManager(self)
+		telemetryManager.onStart()
 
 		moduleManager = ModuleManager(self)
 		moduleManager.onStart()

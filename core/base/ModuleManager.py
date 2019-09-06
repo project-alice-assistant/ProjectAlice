@@ -43,8 +43,8 @@ class ModuleManager(Manager):
 		self._busyInstalling = managers.ThreadManager.newLock('moduleInstallation')
 
 		self._moduleInstallThread = managers.ThreadManager.newThread(name='ModuleInstallThread', target=self._checkForModuleInstall, autostart=False)
-		self._modules = self._loadModuleList()
 		self._supportedIntents = list()
+		self._modules = dict()
 
 
 	@property
@@ -118,6 +118,7 @@ class ModuleManager(Manager):
 						elif conditionName == 'activeManager':
 							for manager in conditionValue:
 								man = managers.getManager(manager)
+								print(man)
 								if not man or not man.isActive:
 									raise ModuleNotConditionCompliant
 
@@ -173,6 +174,7 @@ class ModuleManager(Manager):
 
 	def onStart(self):
 		super().onStart()
+		self._modules = self._loadModuleList()
 		self.checkForModuleUpdates()
 		self.startAllModules()
 
