@@ -64,5 +64,8 @@
 	],
 	"isWakewordSampleOk": [
 		"Do you think it was ok? Was it not enough cut or maybe too much?"
+	],
+	"offline": [
+		"I'm sorry but I can't do that while being offline"
 	]
 }

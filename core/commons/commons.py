@@ -253,3 +253,32 @@ def indexOf(sub: str, string: str) -> int:
 		return string.index(sub)
 	except ValueError:
 		return -1
+
+def online(func):
+	"""
+	Decorator for methods module methods that require to be online, that will either execute
+	the method normal or returns a random offline answer when alice is offline
+
+	:param *args: variable number of arguments
+	:param **kwargs: keyworded, variable-length argument list
+	:return: return value of function or random offline string in the current language
+	Examples:
+        An intent that requires ethernet can be defined the following way:
+
+		def onMessage(self, intent: str, session: DialogSession) -> bool:
+			if intent == self._INTENT_EXAMPLE:
+				self.endDialog(sessionId=session.sessionId, text=self.exampleIntent())
+				return True
+			return False
+		
+		@online
+		def exampleIntent(self) -> str:
+			request = requests.get('http://api.open-notify.org')
+			return request.text
+	"""
+	def wrapper(*args, **kwargs):
+		if managers.InternetManager.online:
+			return func(*args, **kwargs)
+		else:
+			return managers.TalkManager.randomTalk('offline', module='system')'
+	return wrapper
