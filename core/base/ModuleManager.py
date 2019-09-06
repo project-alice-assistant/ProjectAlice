@@ -107,7 +107,8 @@ class ModuleManager(Manager):
 
 						elif conditionName == 'notModule':
 							for excludedModule in conditionValue:
-								if excludedModule in availableModules and availableModules[excludedModule]['active']:
+								author, name = excludedModule.split('/')
+								if name in availableModules and availableModules[name]['author'] == author and availableModules[name]['active']:
 									raise ModuleNotConditionCompliant
 
 						elif conditionName == 'asrArbitraryCapture':
