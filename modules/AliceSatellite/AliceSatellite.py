@@ -27,8 +27,8 @@ class AliceSatellite(Module):
 		self._temperatures = dict()
 		self._sensorReadings = dict()
 
-		SuperManager.getInstance().protectedIntentManager.protectIntent(self._FEEDBACK_SENSORS)
-		SuperManager.getInstance().protectedIntentManager.protectIntent(self._DEVICE_DISCONNECTION)
+		self.ProtectedIntentManager.protectIntent(self._FEEDBACK_SENSORS)
+		self.ProtectedIntentManager.protectIntent(self._DEVICE_DISCONNECTION)
 
 		super().__init__(self._SUPPORTED_INTENTS)
 
@@ -103,9 +103,9 @@ class AliceSatellite(Module):
 				return False
 
 			if place != siteId:
-				self.endDialog(sessionId, SuperManager.getInstance().talkManager.randomTalk('co2PlaceSpecific').format(place, co2))
+				self.endDialog(sessionId, self.TalkManager.randomTalk('co2PlaceSpecific').format(place, co2))
 			else:
-				self.endDialog(sessionId, SuperManager.getInstance().talkManager.randomTalk('co2').format(co2))
+				self.endDialog(sessionId, self.TalkManager.randomTalk('co2').format(co2))
 
 			return True
 
@@ -133,7 +133,7 @@ class AliceSatellite(Module):
 		elif intent == self._DEVICE_DISCONNECTION:
 			payload = session.payload
 			if 'uid' in payload:
-				SuperManager.getInstance().deviceManager.deviceDisconnecting(payload['uid'])
+				self.DeviceManager.deviceDisconnecting(payload['uid'])
 
 		return False
 
@@ -159,7 +159,7 @@ class AliceSatellite(Module):
 
 
 	def restartDevice(self):
-		devices = SuperManager.getInstance().deviceManager.getDevicesByType(deviceType=self.name, connectedOnly=True, onlyOne=False)
+		devices = self.DeviceManager.getDevicesByType(deviceType=self.name, connectedOnly=True, onlyOne=False)
 		if not devices:
 			return
 

@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import inspect
 import json
 import logging
@@ -84,7 +86,7 @@ class Module:
 	def onStart(self) -> list:
 		self._logger.info('Starting {} module'.format(self.name))
 		self._initDB()
-		SuperManager.getInstance().mqttManager.subscribeModuleIntents(self.name)
+		self.MqttServer.subscribeModuleIntents(self.name)
 		return self._supportedIntents
 
 
@@ -93,16 +95,11 @@ class Module:
 			mqttClient.subscribe(str(intent))
 
 
-	@staticmethod
-	def broadcast(topic: str):
-		SuperManager.getInstance().mqttManager.publish(topic=topic)
-
-
 	def notifyDevice(self, topic: str, uid: str = '', siteId: str = ''):
 		if uid:
-			SuperManager.getInstance().mqttManager.publish(topic=topic, payload={'uid': uid})
+			self.MqttServer.publish(topic=topic, payload={'uid': uid})
 		elif siteId:
-			SuperManager.getInstance().mqttManager.publish(topic=topic, payload={'siteId': siteId})
+			self.MqttServer.publish(topic=topic, payload={'siteId': siteId})
 		else:
 			self._logger.warning('[{}] Tried to notify devices but no uid or site id specified'.format(self.name))
 
@@ -119,16 +116,16 @@ class Module:
 		if intent in self._authOnlyIntents:
 			# Return if intent is for auth users only but the user is unknown
 			if session.user == 'unknown':
-				SuperManager.getInstance().mqttManager.endTalk(
+				self.endDialog(
 					sessionId=session.sessionId,
-					text=SuperManager.getInstance().talkManager.randomTalk(talk='unknowUser', module='system')
+					text=self.TalkManager.randomTalk(talk='unknowUser', module='system')
 				)
 				raise AccessLevelTooLow()
 			# Return if intent is for auth users only and the user doesn't have the accesslevel for it
-			if not SuperManager.getInstance().userManager.hasAccessLevel(session.user, self._authOnlyIntents[intent]):
-				SuperManager.getInstance().mqttManager.endTalk(
+			if not self.UserManager.hasAccessLevel(session.user, self._authOnlyIntents[intent]):
+				self.endDialog(
 					sessionId=session.sessionId,
-					text=SuperManager.getInstance().talkManager.randomTalk(talk='noAccess', module='system')
+					text=self.TalkManager.randomTalk(talk='noAccess', module='system')
 				)
 				raise AccessLevelTooLow()
 
@@ -139,95 +136,10 @@ class Module:
 		return str(Path(commons.rootDir(), 'modules', moduleName or self.name, resourcePathFile))
 
 
-	def getConfig(self, key: str) -> typing.Any:
-		return SuperManager.getInstance().configManager.getModuleConfigByName(moduleName=self.name, configName=key)
-
-
-	def updateConfig(self, key: str, value: typing.Any) -> typing.Any:
-		SuperManager.getInstance().configManager.updateModuleConfigurationFile(moduleName=self.name, key=key, value=value)
-
-
-	@staticmethod
-	def getAliceConfig(key: str) -> typing.Any:
-		return SuperManager.getInstance().configManager.getAliceConfigByName(configName=key)
-
-
-	@staticmethod
-	def updateAliceConfig(key: str, value: typing.Any) -> typing.Any:
-		SuperManager.getInstance().configManager.updateAliceConfiguration(key=key, value=value)
-
-
-	@staticmethod
-	def activeLanguage() -> str:
-		return SuperManager.getInstance().languageManager.activeLanguage
-
-
-	@staticmethod
-	def defaultLanguage() -> str:
-		return SuperManager.getInstance().languageManager.defaultLanguage
-
-
 	def _initDB(self) -> bool:
 		if self._databaseSchema:
-			return SuperManager.getInstance().databaseManager.initDB(schema=self._databaseSchema, callerName=self.name)
+			return self.DatabaseManager.initDB(schema=self._databaseSchema, callerName=self.name)
 		return True
-
-
-	def databaseFetch(self, tableName: str, query: str, values: dict = None, method: str = 'one') -> list:
-		return SuperManager.getInstance().databaseManager.fetch(tableName=tableName, query=query, values=values, callerName=self.name, method=method)
-
-
-	def databaseInsert(self, tableName: str, query: str, values: dict = None) -> int:
-		return SuperManager.getInstance().databaseManager.insert(tableName=tableName, query=query, values=values, callerName=self.name)
-
-
-	def randomTalk(self, text: str, replace: list = None) -> str:
-		string = SuperManager.getInstance().talkManager.randomTalk(talk=text, module=self.name)
-
-		if replace:
-			string = string.format(*replace)
-
-		return string
-
-
-	@staticmethod
-	def getModuleInstance(moduleName: str):
-		return SuperManager.getInstance().moduleManager.getModuleInstance(moduleName=moduleName)
-
-
-	@staticmethod
-	def say(text: str, siteId: str = 'default', customData: dict = None, canBeEnqueued: bool = True):
-		SuperManager.getInstance().mqttManager.say(text=text, client=siteId, customData=customData, canBeEnqueued=canBeEnqueued)
-
-
-	@staticmethod
-	def ask(text: str, siteId: str = 'default', intentFilter: list = None, customData: dict = None, previousIntent: str = '', canBeEnqueued: bool = True):
-		SuperManager.getInstance().mqttManager.ask(text=text, client=siteId, intentFilter=intentFilter, customData=customData, previousIntent=previousIntent, canBeEnqueued=canBeEnqueued)
-
-
-	@staticmethod
-	def continueDialog(sessionId: str, text: str, customData: dict = None, intentFilter: list = None, previousIntent: typing.Any = None, slot: str = ''):
-		SuperManager.getInstance().mqttManager.continueDialog(sessionId=sessionId, text=text, customData=customData, intentFilter=intentFilter, previousIntent=str(previousIntent), slot=slot)
-
-
-	@staticmethod
-	def endDialog(sessionId: str = '', text: str = '', siteId: str = ''):
-		SuperManager.getInstance().mqttManager.endTalk(sessionId=sessionId, text=text, client=siteId)
-
-
-	@staticmethod
-	def endSession(sessionId):
-		SuperManager.getInstance().mqttManager.endSession(sessionId=sessionId)
-
-
-	@staticmethod
-	def playSound(soundFile: str, sessionId: str = '', absolutePath: bool = False, siteId: str = 'default', root: str = '', uid: str = ''):
-		SuperManager.getInstance().mqttManager.playSound(soundFile=soundFile, sessionId=sessionId, absolutePath=absolutePath, siteId=siteId, root=root, uid=uid)
-
-
-	@staticmethod
-	def publish(topic: str, payload: dict = None, qos: int = 0, retain: bool = False):
-		SuperManager.getInstance().mqttManager.publish(topic=topic, payload=payload, qos=qos, retain=retain)
 
 
 	def onHotword(self, siteId: str): pass
@@ -248,19 +160,19 @@ class Module:
 	def onBooted(self):
 		if self.delayed:
 			self._logger.info('[{}] Delayed start'.format(self.name))
-			if SuperManager.getInstance().threadManager.getLock('SnipsAssistantDownload').isSet():
-				SuperManager.getInstance().threadManager.doLater(interval=5, func=self.onBooted)
+			if self.ThreadManager.getLock('SnipsAssistantDownload').isSet():
+				self.ThreadManager.doLater(interval=5, func=self.onBooted)
 				return False
 			
-			SuperManager.getInstance().threadManager.doLater(interval=5, func=self.onStart)
+			self.ThreadManager.doLater(interval=5, func=self.onStart)
 
 		return True
 
 	def onModuleInstalled(self):
-		SuperManager.getInstance().mqttManager.subscribeModuleIntents(self.name)
+		self.MqttServer.subscribeModuleIntents(self.name)
 
 	def onModuleUpdated(self):
-		SuperManager.getInstance().mqttManager.subscribeModuleIntents(self.name)
+		self.MqttServer.subscribeModuleIntents(self.name)
 
 	def onSleep(self): pass
 	def onWakeup(self): pass
@@ -302,3 +214,186 @@ class Module:
 	def onSnipsAssistantDownloadFailed(self, *args): pass
 	def onAuthenticated(self, session: DialogSession, *args): pass
 	def onAuthenticationFailed(self, session: DialogSession, *args): pass
+
+
+	# HELPERS
+	def getConfig(self, key: str) -> typing.Any:
+		return self.ConfigManager.getModuleConfigByName(moduleName=self.name, configName=key)
+
+
+	def updateConfig(self, key: str, value: typing.Any) -> typing.Any:
+		self.ConfigManager.updateModuleConfigurationFile(moduleName=self.name, key=key, value=value)
+
+
+	def getAliceConfig(self, key: str) -> typing.Any:
+		return self.ConfigManager.getAliceConfigByName(configName=key)
+
+
+	def updateAliceConfig(self, key: str, value: typing.Any) -> typing.Any:
+		self.ConfigManager.updateAliceConfiguration(key=key, value=value)
+
+
+	def activeLanguage(self) -> str:
+		return self.LanguageManager.activeLanguage
+
+
+	def defaultLanguage(self) -> str:
+		return self.LanguageManager.defaultLanguage
+
+
+	def databaseFetch(self, tableName: str, query: str, values: dict = None, method: str = 'one') -> list:
+		return self.DatabaseManager.fetch(tableName=tableName, query=query, values=values, callerName=self.name, method=method)
+
+
+	def databaseInsert(self, tableName: str, query: str, values: dict = None) -> int:
+		return self.DatabaseManager.insert(tableName=tableName, query=query, values=values, callerName=self.name)
+
+
+	def randomTalk(self, text: str, replace: list = None) -> str:
+		string = self.TalkManager.randomTalk(talk=text, module=self.name)
+
+		if replace:
+			string = string.format(*replace)
+
+		return string
+
+
+	def getModuleInstance(self, moduleName: str) -> Module:
+		return self.ModuleManager.getModuleInstance(moduleName=moduleName)
+
+
+	def say(self, text: str, siteId: str = 'default', customData: dict = None, canBeEnqueued: bool = True):
+		self.MqttServer.say(text=text, client=siteId, customData=customData, canBeEnqueued=canBeEnqueued)
+
+
+	def ask(self, text: str, siteId: str = 'default', intentFilter: list = None, customData: dict = None, previousIntent: str = '', canBeEnqueued: bool = True):
+		self.MqttServer.ask(text=text, client=siteId, intentFilter=intentFilter, customData=customData, previousIntent=previousIntent, canBeEnqueued=canBeEnqueued)
+
+
+	def continueDialog(self, sessionId: str, text: str, customData: dict = None, intentFilter: list = None, previousIntent: typing.Any = None, slot: str = ''):
+		self.MqttServer.continueDialog(sessionId=sessionId, text=text, customData=customData, intentFilter=intentFilter, previousIntent=str(previousIntent), slot=slot)
+
+
+	def endDialog(self, sessionId: str = '', text: str = '', siteId: str = ''):
+		self.MqttServer.endTalk(sessionId=sessionId, text=text, client=siteId)
+
+
+	def endSession(self, sessionId):
+		self.MqttServer.endSession(sessionId=sessionId)
+
+
+	def playSound(self, soundFile: str, sessionId: str = '', absolutePath: bool = False, siteId: str = 'default', root: str = '', uid: str = ''):
+		self.MqttServer.playSound(soundFile=soundFile, sessionId=sessionId, absolutePath=absolutePath, siteId=siteId, root=root, uid=uid)
+
+
+	def publish(self, topic: str, payload: dict = None, qos: int = 0, retain: bool = False):
+		self.MqttServer.publish(topic=topic, payload=payload, qos=qos, retain=retain)
+
+
+	def broadcast(self, topic: str):
+		self.MqttServer.publish(topic=topic)
+
+
+	@property
+	def ConfigManager(self):
+		return SuperManager.getInstance().configManager
+
+
+	@property
+	def ModuleManager(self):
+		return SuperManager.getInstance().moduleManager
+
+
+	@property
+	def DeviceManager(self):
+		return SuperManager.getInstance().deviceManager
+
+
+	@property
+	def DialogSessionManager(self):
+		return SuperManager.getInstance().dialogSessionManager
+
+
+	@property
+	def MultiIntentManager(self):
+		return SuperManager.getInstance().multiIntentManager
+
+
+	@property
+	def ProtectedIntentManager(self):
+		return SuperManager.getInstance().protectedIntentManager
+
+
+	@property
+	def MqttServer(self):
+		return SuperManager.getInstance().mqttManager
+
+
+	@property
+	def SamkillaManager(self):
+		return SuperManager.getInstance().samkillaManager
+
+
+	@property
+	def SnipsConsoleManager(self):
+		return SuperManager.getInstance().snipsConsoleManager
+
+
+	@property
+	def SnipsServicesManager(self):
+		return SuperManager.getInstance().snipsServicesManager
+
+
+	@property
+	def UserManager(self):
+		return SuperManager.getInstance().userManager
+
+
+	@property
+	def DatabaseManager(self):
+		return SuperManager.getInstance().databaseManager
+
+
+	@property
+	def InternetManager(self):
+		return SuperManager.getInstance().internetManager
+
+
+	@property
+	def TelemetryManager(self):
+		return SuperManager.getInstance().telemetryManager
+
+
+	@property
+	def ThreadManager(self):
+		return SuperManager.getInstance().threadManager
+
+
+	@property
+	def TimeManager(self):
+		return SuperManager.getInstance().timeManager
+
+
+	@property
+	def ASRManager(self):
+		return SuperManager.getInstance().ASRManager
+
+
+	@property
+	def LanguageManager(self):
+		return SuperManager.getInstance().languageManager
+
+
+	@property
+	def TalkManager(self):
+		return SuperManager.getInstance().talkManager
+
+
+	@property
+	def TTSManager(self):
+		return SuperManager.getInstance().TTSManager
+
+
+	@property
+	def WakewordManager(self):
+		return SuperManager.getInstance().wakewordManager

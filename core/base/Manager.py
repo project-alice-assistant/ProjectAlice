@@ -55,18 +55,6 @@ class Manager(Singleton):
 		return True
 
 
-	def databaseFetch(self, tableName: str, query: str, values: dict = None, method: str = 'one') -> list:
-		return SuperManager.getInstance().databaseManager.fetch(tableName=tableName, query=query, values=values, callerName=self.name, method=method)
-
-
-	def databaseInsert(self, tableName: str, query: str, values: dict = None) -> int:
-		return SuperManager.getInstance().databaseManager.insert(tableName=tableName, query=query, values=values, callerName=self.name)
-
-
-	def pruneTable(self, tableName: str):
-		return SuperManager.getInstance().databaseManager.prune(tableName=tableName, callerName=self.name)
-
-
 	def onBooted(self): pass
 	def onFullMinute(self): pass
 	def onFiveMinute(self): pass
@@ -92,6 +80,17 @@ class Manager(Singleton):
 
 
 	# HELPERS
+	def databaseFetch(self, tableName: str, query: str, values: dict = None, method: str = 'one') -> list:
+		return self.DatabaseManager.fetch(tableName=tableName, query=query, values=values, callerName=self.name, method=method)
+
+
+	def databaseInsert(self, tableName: str, query: str, values: dict = None) -> int:
+		return self.DatabaseManager.insert(tableName=tableName, query=query, values=values, callerName=self.name)
+
+
+	def pruneTable(self, tableName: str):
+		return self.DatabaseManager.prune(tableName=tableName, callerName=self.name)
+
 
 	@property
 	def ConfigManager(self):

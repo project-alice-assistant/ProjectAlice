@@ -1,6 +1,5 @@
 import json
 
-from core.base.SuperManager import SuperManager
 from core.base.model.Intent import Intent
 from core.base.model.Module import Module
 from core.dialog.model.DialogSession import DialogSession
@@ -34,7 +33,7 @@ class ContextSensitive(Module):
 		siteId = session.siteId
 
 		if intent == self._INTENT_DELETE_THIS:
-			modules = SuperManager.getInstance().moduleManager.getModules()
+			modules = self.ModuleManager.getModules()
 			for module in modules.values():
 				try:
 					if module['instance'].onContextSensitiveDelete(sessionId):
@@ -44,11 +43,11 @@ class ContextSensitive(Module):
 					continue
 
 		elif intent == self._INTENT_EDIT_THIS:
-			modules = SuperManager.getInstance().moduleManager.getModules()
+			modules = self.ModuleManager.getModules()
 			for module in modules.values():
 				try:
 					if module['instance'].onContextSensitiveEdit(sessionId):
-						SuperManager.getInstance().mqttManager.endTalk(sessionId=sessionId)
+						self.MqttServer.endTalk(sessionId=sessionId)
 						return True
 				except:
 					continue

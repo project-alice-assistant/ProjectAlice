@@ -7,7 +7,6 @@ import shutil
 from random import randint
 
 from core.ProjectAliceExceptions import ModuleStartingFailed
-from core.base.SuperManager import SuperManager
 from core.base.model.Intent import Intent
 from core.base.model.Module import Module
 from core.commons import commons
@@ -71,11 +70,11 @@ class RedQueen(Module):
 
 
 	def onSleep(self):
-		SuperManager.getInstance().userManager.sleeping()
+		self.UserManager.sleeping()
 
 
 	def onWakeup(self):
-		SuperManager.getInstance().userManager.wakeup()
+		self.UserManager.wakeup()
 
 
 	@property
@@ -94,7 +93,7 @@ class RedQueen(Module):
 
 
 	def onQuarterHour(self):
-		if not SuperManager.getInstance().userManager.checkIfAllUser('sleeping'):
+		if not self.UserManager.checkIfAllUser('sleeping'):
 			self.changeRedQueenStat('tiredness', 1)
 			self.changeRedQueenStat('boredom', 2)
 			self.changeRedQueenStat('happiness', -1)
@@ -143,7 +142,7 @@ class RedQueen(Module):
 
 
 	def politnessUsed(self, text: str) -> bool:
-		forms = SuperManager.getInstance().languageManager.getStrings(key='politness', module=self.name)
+		forms = self.LanguageManager.getStrings(key='politness', module=self.name)
 
 		for form in forms:
 			if form not in text:
@@ -173,7 +172,7 @@ class RedQueen(Module):
 		else:
 			chance = 2
 
-		if not SuperManager.getInstance().protectedIntentManager.isProtectedIntent(session.message.topic) and not self.politnessUsed(session.payload['input']) and random.randint(0, 100) < chance and not SuperManager.getInstance().multiIntentManager.isProcessing(session.sessionId):
+		if not self.ProtectedIntentManager.isProtectedIntent(session.message.topic) and not self.politnessUsed(session.payload['input']) and random.randint(0, 100) < chance and not self.MultiIntentManager.isProcessing(session.sessionId):
 			self.endDialog(session.sessionId, self.randomTalk('noInTheMood'))
 			return False
 
@@ -189,7 +188,7 @@ class RedQueen(Module):
 			if 'State' not in slots.keys():
 				self._logger.error('[{}] No state provided for changing user state'.format(self.name))
 				self.endDialog(sessionId=session.sessionId,
-											text=SuperManager.getInstance().talkManager.randomTalk('error', module='system'),
+											text=self.TalkManager.randomTalk('error', module='system'),
 											siteId=session.siteId)
 				return True
 
@@ -197,12 +196,12 @@ class RedQueen(Module):
 				pass
 			else:
 				try:
-					SuperManager.getInstance().moduleManager.broadcast(slots['State'][0].value['value'])
+					self.ModuleManager.broadcast(slots['State'][0].value['value'])
 				except:
 					self._logger.warning('[{}] Unsupported user state "{}"'.format(self.name, slots['State'][0].value['value']))
 
 			self.endDialog(sessionId=session.sessionId,
-										text=SuperManager.getInstance().talkManager.randomTalk(slots['State'][0].value['value']),
+										text=self.TalkManager.randomTalk(slots['State'][0].value['value']),
 										siteId=session.siteId)
 
 		elif intent == self._INTENT_GOOD_NIGHT:
@@ -210,10 +209,10 @@ class RedQueen(Module):
 										text=self.randomTalk('goodNight'),
 										siteId=session.siteId)
 
-			SuperManager.getInstance().moduleManager.broadcast('onSleep')
+			self.ModuleManager.broadcast('onSleep')
 
 		elif intent == self._INTENT_GOOD_MORNING:
-			SuperManager.getInstance().moduleManager.broadcast('onWakeup')
+			self.ModuleManager.broadcast('onWakeup')
 			time.sleep(0.5)
 			self.endDialog(sessionId=session.sessionId,
 										text=self.randomTalk('goodMorning'),
@@ -240,10 +239,10 @@ class RedQueen(Module):
 			maxi /= 2
 
 		rnd = random.randint(mini, maxi)
-		SuperManager.getInstance().threadManager.doLater(interval=rnd, func=self.randomlySpeak)
+		self.ThreadManager.doLater(interval=rnd, func=self.randomlySpeak)
 		self._logger.info('[{}] Scheduled next random speaking in {} seconds'.format(self.name, rnd))
 
-		if not init and not SuperManager.getInstance().userManager.checkIfAllUser('goingBed') and not SuperManager.getInstance().userManager.checkIfAllUser('sleeping'):
+		if not init and not self.UserManager.checkIfAllUser('goingBed') and not self.UserManager.checkIfAllUser('sleeping'):
 			self.say(self.randomTalk('randomlySpeak{}'.format(self.mood)), siteId='all')
 
 
