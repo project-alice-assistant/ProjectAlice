@@ -118,7 +118,6 @@ class ModuleManager(Manager):
 						elif conditionName == 'activeManager':
 							for manager in conditionValue:
 								man = managers.getManager(manager)
-								print(man)
 								if not man or not man.isActive:
 									raise ModuleNotConditionCompliant
 

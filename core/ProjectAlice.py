@@ -49,7 +49,7 @@ class ProjectAlice(Singleton):
 		self._languageManager					= LanguageManager(self)
 		self._languageManager.onStart()
 
-		subprocess.run(['ln', '-sfn', Path(commons.rootDir(),'trained/assistants/assistant_{}'.format(self._languageManager.activeLanguage)), Path(commons.rootDir(), 'assistant')])
+		#subprocess.run(['ln', '-sfn', Path(commons.rootDir(),'trained/assistants/assistant_{}'.format(self._languageManager.activeLanguage)), Path(commons.rootDir(), 'assistant')])
 
 		self._snipsServicesManager 				= SnipsServicesManager(self)
 		self._snipsServicesManager.onStart()
@@ -74,8 +74,6 @@ class ProjectAlice(Singleton):
 
 		self._randomTalkManager 				= TalkManager(self)
 
-		Managers.onStart()
-
 		self._randomTalkManager.onStart()
 		self._languageManager.loadStrings()
 
@@ -97,6 +95,8 @@ class ProjectAlice(Singleton):
 		if self._internetManager.online:
 			self._snipsConsoleManager.onStart()
 			self._samkillaManager.onStart()
+
+		Managers.onStart()
 
 		if self._configManager.getAliceConfigByName('webInterfaceActive'):
 			self._threadsManager.newThread(name='Django', target=self._startDjango)
