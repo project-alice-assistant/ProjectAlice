@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from core.base.Manager import Manager
+from core.base.model.Manager import Manager
 from core.base.SuperManager import SuperManager
 
 

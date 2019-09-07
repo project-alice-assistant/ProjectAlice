@@ -1,7 +1,7 @@
 import sqlite3
 import typing
 
-from core.base.Manager import Manager
+from core.base.model.Manager import Manager
 from core.base.SuperManager import SuperManager
 from core.commons import commons
 

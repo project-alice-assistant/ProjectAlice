@@ -123,7 +123,7 @@ class Manager(Singleton):
 
 
 	@property
-	def MqttServer(self):
+	def MqttManager(self):
 		return SuperManager.getInstance().mqttManager
 
 

@@ -4,7 +4,7 @@ from core.base.SuperManager import SuperManager
 from core.commons import commons
 from core.dialog.model import DialogSession
 from core.dialog.model.MultiIntent import MultiIntent
-from core.base.Manager import Manager
+from core.base.model.Manager import Manager
 
 
 class MultiIntentManager(Manager):

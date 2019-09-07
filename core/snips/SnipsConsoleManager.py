@@ -6,7 +6,7 @@ from pathlib import Path
 import requests
 import tempfile
 
-from core.base.Manager import Manager
+from core.base.model.Manager import Manager
 from core.base.SuperManager import SuperManager
 from core.snips.model.SnipsConsoleUser import SnipsConsoleUser
 from core.snips.model.SnipsTrainingStatus import SnipsTrainingType, TrainingStatusResponse

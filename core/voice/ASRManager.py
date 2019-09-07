@@ -2,8 +2,7 @@ import time
 import uuid
 from pathlib import Path
 
-from core.base.Manager import Manager
-from core.base.SuperManager import SuperManager
+from core.base.model.Manager import Manager
 from core.commons import commons
 from core.dialog.model.DialogSession import DialogSession
 from core.voice.model import ASR

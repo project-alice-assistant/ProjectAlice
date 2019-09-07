@@ -10,7 +10,7 @@ import requests
 
 from core.base.SuperManager import SuperManager
 from core.commons import commons
-from core.base.Manager import Manager
+from core.base.model.Manager import Manager
 from core.base.model.Module import Module
 from core.ProjectAliceExceptions import ModuleStartingFailed, ModuleStartDelayed, ModuleNotConditionCompliant
 from core.base.model.GithubCloner import GithubCloner

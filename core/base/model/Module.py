@@ -86,7 +86,7 @@ class Module:
 	def onStart(self) -> list:
 		self._logger.info('Starting {} module'.format(self.name))
 		self._initDB()
-		self.MqttServer.subscribeModuleIntents(self.name)
+		self.MqttManager.subscribeModuleIntents(self.name)
 		return self._supportedIntents
 
 
@@ -97,9 +97,9 @@ class Module:
 
 	def notifyDevice(self, topic: str, uid: str = '', siteId: str = ''):
 		if uid:
-			self.MqttServer.publish(topic=topic, payload={'uid': uid})
+			self.MqttManager.publish(topic=topic, payload={'uid': uid})
 		elif siteId:
-			self.MqttServer.publish(topic=topic, payload={'siteId': siteId})
+			self.MqttManager.publish(topic=topic, payload={'siteId': siteId})
 		else:
 			self._logger.warning('[{}] Tried to notify devices but no uid or site id specified'.format(self.name))
 
@@ -169,10 +169,10 @@ class Module:
 		return True
 
 	def onModuleInstalled(self):
-		self.MqttServer.subscribeModuleIntents(self.name)
+		self.MqttManager.subscribeModuleIntents(self.name)
 
 	def onModuleUpdated(self):
-		self.MqttServer.subscribeModuleIntents(self.name)
+		self.MqttManager.subscribeModuleIntents(self.name)
 
 	def onSleep(self): pass
 	def onWakeup(self): pass
@@ -263,35 +263,35 @@ class Module:
 
 
 	def say(self, text: str, siteId: str = 'default', customData: dict = None, canBeEnqueued: bool = True):
-		self.MqttServer.say(text=text, client=siteId, customData=customData, canBeEnqueued=canBeEnqueued)
+		self.MqttManager.say(text=text, client=siteId, customData=customData, canBeEnqueued=canBeEnqueued)
 
 
 	def ask(self, text: str, siteId: str = 'default', intentFilter: list = None, customData: dict = None, previousIntent: str = '', canBeEnqueued: bool = True):
-		self.MqttServer.ask(text=text, client=siteId, intentFilter=intentFilter, customData=customData, previousIntent=previousIntent, canBeEnqueued=canBeEnqueued)
+		self.MqttManager.ask(text=text, client=siteId, intentFilter=intentFilter, customData=customData, previousIntent=previousIntent, canBeEnqueued=canBeEnqueued)
 
 
 	def continueDialog(self, sessionId: str, text: str, customData: dict = None, intentFilter: list = None, previousIntent: typing.Any = None, slot: str = ''):
-		self.MqttServer.continueDialog(sessionId=sessionId, text=text, customData=customData, intentFilter=intentFilter, previousIntent=str(previousIntent), slot=slot)
+		self.MqttManager.continueDialog(sessionId=sessionId, text=text, customData=customData, intentFilter=intentFilter, previousIntent=str(previousIntent), slot=slot)
 
 
 	def endDialog(self, sessionId: str = '', text: str = '', siteId: str = ''):
-		self.MqttServer.endTalk(sessionId=sessionId, text=text, client=siteId)
+		self.MqttManager.endTalk(sessionId=sessionId, text=text, client=siteId)
 
 
 	def endSession(self, sessionId):
-		self.MqttServer.endSession(sessionId=sessionId)
+		self.MqttManager.endSession(sessionId=sessionId)
 
 
 	def playSound(self, soundFile: str, sessionId: str = '', absolutePath: bool = False, siteId: str = 'default', root: str = '', uid: str = ''):
-		self.MqttServer.playSound(soundFile=soundFile, sessionId=sessionId, absolutePath=absolutePath, siteId=siteId, root=root, uid=uid)
+		self.MqttManager.playSound(soundFile=soundFile, sessionId=sessionId, absolutePath=absolutePath, siteId=siteId, root=root, uid=uid)
 
 
 	def publish(self, topic: str, payload: dict = None, qos: int = 0, retain: bool = False):
-		self.MqttServer.publish(topic=topic, payload=payload, qos=qos, retain=retain)
+		self.MqttManager.publish(topic=topic, payload=payload, qos=qos, retain=retain)
 
 
 	def broadcast(self, topic: str):
-		self.MqttServer.publish(topic=topic)
+		self.MqttManager.publish(topic=topic)
 
 
 	@property
@@ -325,7 +325,7 @@ class Module:
 
 
 	@property
-	def MqttServer(self):
+	def MqttManager(self):
 		return SuperManager.getInstance().mqttManager
 
 

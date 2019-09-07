@@ -150,11 +150,11 @@ class AliceCore(Module):
 
 
 	def onSleep(self):
-		self.MqttServer.toggleFeedbackSounds('off')
+		self.MqttManager.toggleFeedbackSounds('off')
 
 
 	def onWakeup(self):
-		self.MqttServer.toggleFeedbackSounds('on')
+		self.MqttManager.toggleFeedbackSounds('on')
 
 
 	def onBooted(self):

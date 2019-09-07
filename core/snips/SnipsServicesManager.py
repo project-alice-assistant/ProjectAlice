@@ -1,6 +1,6 @@
 import subprocess
 
-from core.base.Manager import Manager
+from core.base.model.Manager import Manager
 from core.base.SuperManager import SuperManager
 from core.voice.model.SnipsASR import SnipsASR
 

@@ -1,7 +1,7 @@
 import threading
 from typing import Callable
 
-from core.base.Manager import Manager
+from core.base.model.Manager import Manager
 from core.util.model.ThreadTimer import ThreadTimer
 
 

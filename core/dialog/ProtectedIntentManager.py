@@ -1,6 +1,6 @@
 import os
 
-from core.base.Manager import Manager
+from core.base.model.Manager import Manager
 
 
 class ProtectedIntentManager(Manager):

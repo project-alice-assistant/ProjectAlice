@@ -47,7 +47,7 @@ class ContextSensitive(Module):
 			for module in modules.values():
 				try:
 					if module['instance'].onContextSensitiveEdit(sessionId):
-						self.MqttServer.endTalk(sessionId=sessionId)
+						self.MqttManager.endTalk(sessionId=sessionId)
 						return True
 				except:
 					continue

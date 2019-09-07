@@ -14,7 +14,7 @@ from paho.mqtt.client import MQTTMessage
 from serial import Serial
 from serial.tools import list_ports
 
-from core.base.Manager import Manager
+from core.base.model.Manager import Manager
 from core.base.SuperManager import SuperManager
 from core.commons import commons
 from core.device.model.Device import Device

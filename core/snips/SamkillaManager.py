@@ -21,7 +21,7 @@ from core.snips.samkilla.processors.MainProcessor import MainProcessor
 
 EnumSkillImageUrl = EnumSkillImageUrlClass()
 
-from core.base.Manager import Manager
+from core.base.model.Manager import Manager
 
 class SamkillaManager(Manager):
 

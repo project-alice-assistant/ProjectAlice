@@ -1,6 +1,6 @@
 from typing import Optional, Any
 
-from core.base.Manager import Manager
+from core.base.model.Manager import Manager
 from core.base.SuperManager import SuperManager
 from core.user.model.AccessLevels import AccessLevel
 from core.user.model.User import User

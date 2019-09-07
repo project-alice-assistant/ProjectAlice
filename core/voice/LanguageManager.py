@@ -5,7 +5,7 @@ from typing import Optional
 import re
 
 from core.ProjectAliceExceptions import LanguageManagerLangNotSupported
-from core.base.Manager import Manager
+from core.base.model.Manager import Manager
 from core.base.SuperManager import SuperManager
 
 

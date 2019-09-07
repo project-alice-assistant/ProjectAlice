@@ -20,7 +20,7 @@ import toml
 
 import configSample
 from core.ProjectAliceExceptions import ConfigurationUpdateFailed
-from core.base.Manager import Manager
+from core.base.model.Manager import Manager
 from core.commons import commons
 
 
