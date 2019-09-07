@@ -1,10 +1,10 @@
 from paho.mqtt.client import MQTTMessage
 
 from core.base.SuperManager import SuperManager
+from core.base.model.Manager import Manager
 from core.commons import commons
 from core.dialog.model import DialogSession
 from core.dialog.model.MultiIntent import MultiIntent
-from core.base.model.Manager import Manager
 
 
 class MultiIntentManager(Manager):

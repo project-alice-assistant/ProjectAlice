@@ -1,21 +1,21 @@
-import os
 import socket
 import sqlite3
 import threading
 import time
 import uuid
-from random import shuffle
 from typing import Optional
 
 import esptool
+import os
 import requests
 from esptool import ESPLoader
 from paho.mqtt.client import MQTTMessage
+from random import shuffle
 from serial import Serial
 from serial.tools import list_ports
 
-from core.base.model.Manager import Manager
 from core.base.SuperManager import SuperManager
+from core.base.model.Manager import Manager
 from core.commons import commons
 from core.device.model.Device import Device
 from core.device.model.TasmotaConfigs import TasmotaConfigs

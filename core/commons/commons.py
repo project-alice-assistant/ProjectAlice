@@ -6,10 +6,10 @@ from collections import defaultdict
 from contextlib import contextmanager
 from ctypes import *
 from datetime import datetime
+from pathlib import Path
 from typing import Union
 
 import functools
-from pathlib import Path
 import warnings
 from paho.mqtt.client import MQTTMessage
 

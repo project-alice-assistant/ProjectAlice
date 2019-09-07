@@ -15,15 +15,15 @@
     authors: 	Psycho <https://github.com/Psychokiller1888>
     			Jierka <https://github.com/jr-k>
 """
-from pathlib import Path
-
-from core.Initializer import Initializer
-from core.commons import commons
 import logging.handlers
 import signal
 import sys
 import traceback
 from datetime import datetime
+from pathlib import Path
+
+from core.Initializer import Initializer
+from core.commons import commons
 
 formatter = logging.Formatter('%(asctime)s [%(threadName)s] - [%(levelname)s] - %(message)s')
 
@@ -58,6 +58,7 @@ import subprocess
 import time
 
 
+# noinspection PyUnusedLocal
 def stopHandler(signum, frame):
 	global RUNNING
 	RUNNING = False

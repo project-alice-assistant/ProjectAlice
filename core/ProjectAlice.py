@@ -1,7 +1,7 @@
 import subprocess
-import os
 
 import django
+import os
 from django.core import management
 
 from core.base.SuperManager import SuperManager

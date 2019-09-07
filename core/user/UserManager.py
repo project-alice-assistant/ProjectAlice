@@ -1,9 +1,10 @@
-from typing import Optional, Any
+from typing import Any, Optional
 
-from core.base.model.Manager import Manager
 from core.base.SuperManager import SuperManager
+from core.base.model.Manager import Manager
 from core.user.model.AccessLevels import AccessLevel
 from core.user.model.User import User
+
 
 class UserManager(Manager):
 

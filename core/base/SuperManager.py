@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import logging
 
+
 class SuperManager(object):
 
 	NAME        = 'SuperManager'

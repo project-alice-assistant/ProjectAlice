@@ -4,16 +4,15 @@ import inspect
 import json
 import logging
 import typing
-
 from pathlib import Path
 
 from paho.mqtt import client as MQTTClient
 
+from core.ProjectAliceExceptions import AccessLevelTooLow, ModuleStartingFailed
 from core.base.SuperManager import SuperManager
+from core.base.model.Intent import Intent
 from core.commons import commons, constants
 from core.dialog.model.DialogSession import DialogSession
-from core.ProjectAliceExceptions import ModuleStartingFailed, AccessLevelTooLow
-from core.base.model.Intent import Intent
 
 
 class Module:

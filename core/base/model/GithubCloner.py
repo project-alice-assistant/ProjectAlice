@@ -1,9 +1,9 @@
+import json
 import logging
 
 import os
-import json
-import shutil
 import requests
+import shutil
 
 from core.ProjectAliceExceptions import GithubRateLimit, GithubTokenFailed
 from core.base.SuperManager import SuperManager

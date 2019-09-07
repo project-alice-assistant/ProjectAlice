@@ -2,6 +2,7 @@ import sys
 import traceback
 
 from colorama import Fore, init
+
 from core.console import Command
 
 # TODO ????

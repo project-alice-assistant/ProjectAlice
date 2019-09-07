@@ -2,8 +2,8 @@ import json
 import typing
 from pathlib import Path
 
-from core.commons import commons
 from core.ProjectAliceExceptions import HttpError
+from core.commons import commons
 from core.snips import SamkillaManager
 from core.snips.samkilla.models.EnumSkillImageUrl import EnumSkillImageUrl as EnumSkillImageUrlClass
 from core.snips.samkilla.processors.IntentRemoteProcessor import IntentRemoteProcessor

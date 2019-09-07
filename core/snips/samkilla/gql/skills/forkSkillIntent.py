@@ -1,5 +1,4 @@
-from core.snips.samkilla.gql.intents.queries import intentsCustomDataFragment
-from core.snips.samkilla.gql.intents.queries import intentsFieldsFragment
+from core.snips.samkilla.gql.intents.queries import intentsCustomDataFragment, intentsFieldsFragment
 from core.snips.samkilla.gql.util import gql
 
 forkSkillIntent = gql('''

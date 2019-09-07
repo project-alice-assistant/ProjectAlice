@@ -3,8 +3,8 @@ import traceback
 
 import hashlib
 
-from core.snips import SamkillaManager
 from core.ProjectAliceExceptions import IntentError
+from core.snips import SamkillaManager
 
 
 class IntentRemoteProcessor:

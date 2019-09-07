@@ -1,7 +1,7 @@
 import typing
 
-from core.snips import SamkillaManager
 from core.ProjectAliceExceptions import HttpError
+from core.snips import SamkillaManager
 from core.snips.samkilla.gql.assistants.patchAssistantSkills import patchAssistantSkills
 from core.snips.samkilla.gql.skills.createSkill import createSkill
 from core.snips.samkilla.gql.skills.deleteSkill import deleteSkill

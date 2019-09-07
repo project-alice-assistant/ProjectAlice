@@ -2,18 +2,17 @@ import collections
 import importlib
 import json
 import subprocess
-
 from pathlib import Path
 from typing import Optional
 
 import requests
 
+from core.ProjectAliceExceptions import ModuleNotConditionCompliant, ModuleStartDelayed, ModuleStartingFailed
 from core.base.SuperManager import SuperManager
-from core.commons import commons
+from core.base.model.GithubCloner import GithubCloner
 from core.base.model.Manager import Manager
 from core.base.model.Module import Module
-from core.ProjectAliceExceptions import ModuleStartingFailed, ModuleStartDelayed, ModuleNotConditionCompliant
-from core.base.model.GithubCloner import GithubCloner
+from core.commons import commons
 
 #Special case, must be called as last!
 try:

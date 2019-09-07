@@ -8,8 +8,8 @@ import tempfile
 from enum import Enum
 from pydub import AudioSegment
 
-from core.base.model.Manager import Manager
 from core.base.SuperManager import SuperManager
+from core.base.model.Manager import Manager
 from core.commons import commons
 from core.commons.commons import shutUpAlsaFFS
 from core.voice.model.Wakeword import Wakeword

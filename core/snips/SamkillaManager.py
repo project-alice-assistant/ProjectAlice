@@ -9,13 +9,13 @@ from selenium.webdriver.chrome.webdriver import WebDriver
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.ui import WebDriverWait
 
+from core.ProjectAliceExceptions import AssistantNotFoundError, HttpError
 from core.base.SuperManager import SuperManager
 from core.commons import commons
 from core.snips.samkilla.Assistant import Assistant
 from core.snips.samkilla.Entity import Entity
 from core.snips.samkilla.Intent import Intent
 from core.snips.samkilla.Skill import Skill
-from core.ProjectAliceExceptions import AssistantNotFoundError, HttpError
 from core.snips.samkilla.models.EnumSkillImageUrl import EnumSkillImageUrl as EnumSkillImageUrlClass
 from core.snips.samkilla.processors.MainProcessor import MainProcessor
 
