@@ -288,7 +288,7 @@ def online(randomTalk: bool = True, text: str = ''):
 			if managers.InternetManager.online:
 				return func(*args, **kwargs)
 			elif randomTalk:
-				return managers.TalkManager.randomTalk('offline', module='system')'
+				return managers.TalkManager.randomTalk('offline', module='system')
 			else:
 				return text
 		return functionWrapper
