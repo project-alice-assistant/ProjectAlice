@@ -52,8 +52,9 @@ def isEqualTranslated(baseString: str, compareTo: str, module: str = 'system') -
 	:return: bool
 	"""
 	strings = managers.LanguageManager.getStrings(compareTo, module)
+	baseString = baseString.strip().lower()
 	for string in strings:
-		if baseString.strip().lower() == string.strip().lower():
+		if baseString == string.strip().lower():
 			return True
 	return False
 
