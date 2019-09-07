@@ -98,7 +98,6 @@ class LanguageManager(Manager):
 	def getTranslations(self, module: str, key: str, toLang: str = '') -> Optional[list]:
 		if not toLang:
 			toLang = self.activeLanguage
-
 		if not module in self._stringsData:
 			self._logger.error('[{}] Asked to get translation from module "{}" but does not exist'.format(self.name, module))
 			return None

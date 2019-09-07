@@ -84,6 +84,7 @@ class Module:
 	def onStart(self) -> list:
 		self._logger.info('Starting {} module'.format(self.name))
 		self._initDB()
+		managers.MqttServer.subscribeModuleIntents(self.name)
 		return self._supportedIntents
 
 
