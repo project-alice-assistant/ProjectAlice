@@ -284,10 +284,10 @@ def online(randomTalk: bool = True, text: str = ''):
 	"""
 	def argumentWrapper(func):
 		def functionWrapper(*args, **kwargs):
-			if test:
+			if managers.InternetManager.online:
 				return func(*args, **kwargs)
 			elif randomTalk:
-				return  'random'
+				return managers.TalkManager.randomTalk('offline', module='system')'
 			else:
 				return text
 		return functionWrapper
