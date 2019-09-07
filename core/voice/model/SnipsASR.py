@@ -5,7 +5,4 @@ class SnipsASR(ASR):
 
 	def __init__(self):
 		super().__init__()
-		pass
-
-	def isCapableOfArbitraryCapture(self):
-		return False
+		self._capableOfArbitraryCapture = False

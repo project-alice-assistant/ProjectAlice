@@ -3,5 +3,5 @@ class ASR:
 		self._capableOfArbitraryCapture = False
 
 	@property
-	def isCapableOfArbitraryCapture(self) -> bool:
+	def capableOfArbitraryCapture(self) -> bool:
 		return self._capableOfArbitraryCapture
