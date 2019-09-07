@@ -325,7 +325,8 @@
 	},
 	"confirmUsername": {
 		"default": [
-			"Did I understand correctly? Your name is {}?"
+			"Did I understand correctly? Your name is {}?",
+			"Is it correct, your name is {}?"
 		]
 	},
 	"confirmNewUser": {
@@ -335,7 +336,7 @@
 	},
 	"soWhatsTheName": {
 		"default": [
-			"Sorry for my mistake, what's your name then? You can also spell it"
+			"Sorry for my mistake, what's the name then? You can also spell it"
 		]
 	},
 	"userAlreadyExist": {
@@ -392,7 +393,7 @@
 		"Tell me what access level I should set? Admin? Default? Kid, worker or guest?"
 	],
 	"addUserConfirmUsername": [
-		"Ok, did if I understood correctly the name is {}?",
+		"Ok, did I understand correctly, the name is {}?",
 		"Did I understand correctly? The name is {}",
 		"Am I correct? The name is {}"
 	],

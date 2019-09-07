@@ -16,7 +16,7 @@ alice module:install ProjectAlice/AliceSatellite
 ### Description
 AliceSatellite is the official module to support Project Alice satellites
 
-- Version: 0.3
+- Version: 1.0
 - Author: ProjectAlice
 - Maintainers:
   - Psycho, Jierka

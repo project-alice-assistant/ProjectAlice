@@ -19,10 +19,4 @@ class Customisation(Module):
 		if not self.filterIntent(intent, session):
 			return False
 
-		siteId = session.siteId
-		slots = session.slots
-		sessionId = session.slotsAsObjects
-		customData = session.customData
-		payload = session.payload
-
 		return True

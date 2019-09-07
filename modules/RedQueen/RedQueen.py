@@ -159,7 +159,6 @@ class RedQueen(Module):
 
 
 	def inTheMood(self, session: DialogSession) -> bool:
-
 		if self.getConfig(key='disableMoodTraits'):
 			return True
 

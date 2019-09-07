@@ -83,7 +83,7 @@ class AliceCore(Module):
 	def onStart(self):
 		self.changeFeedbackSound(inDialog=False)
 
-		if len(SuperManager.getInstance().userManager.users) <= 0:
+		if not SuperManager.getInstance().userManager.users:
 			if not self.delayed:
 				self._logger.warning('[{}] No user found in database'.format(self.name))
 				raise ModuleStartDelayed(self.name)
@@ -121,7 +121,7 @@ class AliceCore(Module):
 
 	def onSessionTimeout(self, session: DialogSession):
 		if self.delayed:
-			if len(SuperManager.getInstance().userManager.users) <= 0:
+			if not SuperManager.getInstance().userManager.users:
 				self._addFirstUser()
 			else:
 				self.delayed = False
@@ -129,7 +129,7 @@ class AliceCore(Module):
 
 	def onSessionError(self, session: DialogSession):
 		if self.delayed:
-			if len(SuperManager.getInstance().userManager.users) <= 0:
+			if not SuperManager.getInstance().userManager.users:
 				self._addFirstUser()
 			else:
 				self.delayed = False
@@ -193,8 +193,8 @@ class AliceCore(Module):
 
 	def onSnipsAssistantDownloaded(self, *args):
 		try:
-			filepath = Path(tempfile.gettempdir(),'assistant').with_suffix('.zip')
-			with ZipFile(str(filepath)) as zipfile:
+			filepath = Path(tempfile.gettempdir(),'assistant.zip')
+			with ZipFile(filepath) as zipfile:
 				zipfile.extractall(tempfile.gettempdir())
 
 			subprocess.run(['sudo', 'rm', '-rf', commons.rootDir() + '/trained/assistants/assistant_{}'.format(SuperManager.getInstance().languageManager.activeLanguage)])
@@ -232,11 +232,13 @@ class AliceCore(Module):
 		customData = session.customData
 		payload = session.payload
 
-		if intent == self._INTENT_ADD_DEVICE or session.previousIntent == self._INTENT_ADD_DEVICE:
+		if self._INTENT_ADD_DEVICE in {intent, session.previousIntent}:
 			if SuperManager.getInstance().deviceManager.isBusy():
-				self.endDialog(sessionId=sessionId,
-											text=self.randomTalk('busy'),
-											siteId=siteId)
+				self.endDialog(
+					sessionId=sessionId,
+					text=self.randomTalk('busy'),
+					siteId=siteId
+				)
 				return True
 
 			if 'Hardware' not in slots:
@@ -500,17 +502,16 @@ class AliceCore(Module):
 
 			if 'WhatToUpdate' not in slots:
 				update = 1
+			elif slots['WhatToUpdate'] == 'alice':
+				update = 2
+			elif slots['WhatToUpdate'] == 'assistant':
+				update = 3
+			elif slots['WhatToUpdate'] == 'modules':
+				update = 4
 			else:
-				if slots['WhatToUpdate'] == 'alice':
-					update = 2
-				elif slots['WhatToUpdate'] == 'assistant':
-					update = 3
-				elif slots['WhatToUpdate'] == 'modules':
-					update = 4
-				else:
-					update = 5
+				update = 5
 
-			if update == 1 or update == 5: # All or system
+			if update in {1, 5}: # All or system
 				self._logger.info('[{}] Updating system'.format(self.name))
 				self.endDialog(sessionId=sessionId, text=self.randomTalk('confirmAssistantUpdate'))
 
@@ -520,18 +521,18 @@ class AliceCore(Module):
 
 				SuperManager.getInstance().threadManager.doLater(interval=2, func=systemUpdate)
 
-			if update == 1 or update == 4: # All or modules
+			if update in {1, 4}: # All or modules
 				self._logger.info('[{}] Updating modules'.format(self.name))
 				self.endDialog(sessionId=sessionId, text=self.randomTalk('confirmAssistantUpdate'))
 				SuperManager.getInstance().moduleManager.checkForModuleUpdates()
 
-			if update == 1 or update == 2: # All or Alice
+			if update in {1, 2}: # All or Alice
 				self._logger.info('[{}] Updating Alice'.format(self.name))
 				self._logger.info('[{}] Not implemented yet'.format(self.name))
 				if update == 2:
 					self.endDialog(sessionId=sessionId, text=self.randomTalk('confirmAssistantUpdate'))
 
-			if update == 1 or update == 3: # All or Assistant
+			if update in {1, 3}: # All or Assistant
 				self._logger.info('[{}] Updating assistant'.format(self.name))
 
 				if not SuperManager.getInstance().languageManager.activeSnipsProjectId:
@@ -568,16 +569,14 @@ class AliceCore(Module):
 
 			self.endDialog(sessionId=sessionId)
 
-		elif session.previousIntent == self._INTENT_DUMMY_ADD_USER and (intent == self._INTENT_ANSWER_NAME or intent == self._INTENT_SPELL_WORD):
-			if len(SuperManager.getInstance().userManager.users) <= 0:
+		elif session.previousIntent == self._INTENT_DUMMY_ADD_USER and intent in {self._INTENT_ANSWER_NAME, self._INTENT_SPELL_WORD}:
+			if not SuperManager.getInstance().userManager.users:
 				if intent == self._INTENT_ANSWER_NAME:
 					name: str = str(slots['Name']).lower()
 					if commons.isSpelledWord(name):
 						name = name.replace(' ', '')
 				else:
-					name = ''
-					for slot in slotsObj['Letters']:
-						name += slot.value['value']
+					name = ''.join([slot.value['value'] for slot in slotsObj['Letters']])
 
 				if name in SuperManager.getInstance().userManager.getAllUserNames(skipGuests=False):
 					self.continueDialog(
@@ -599,7 +598,7 @@ class AliceCore(Module):
 			else:
 				self.endDialog(sessionId)
 
-		elif intent == self._INTENT_ADD_USER or session.previousIntent == self._INTENT_ADD_USER or intent == self._INTENT_ANSWER_ACCESSLEVEL and intent != self._INTENT_SPELL_WORD:
+		elif intent in {self._INTENT_ADD_USER, self._INTENT_ANSWER_ACCESSLEVEL}  or session.previousIntent == self._INTENT_ADD_USER and intent != self._INTENT_SPELL_WORD:
 			if 'Name' not in slots:
 				self.continueDialog(
 					sessionId=sessionId,
@@ -650,10 +649,7 @@ class AliceCore(Module):
 			return True
 
 		elif intent == self._INTENT_SPELL_WORD and session.previousIntent == self._INTENT_ADD_USER:
-			name = ''
-			for slot in slotsObj['Letters']:
-				name += slot.value['value']
-			print(name)
+			name = ''.join([slot.value['value'] for slot in slotsObj['Letters']])
 
 			session.slots['Name']['value'] = name
 			if name in SuperManager.getInstance().userManager.getAllUserNames(skipGuests=False):
