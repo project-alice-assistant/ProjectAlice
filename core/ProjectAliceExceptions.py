@@ -1,5 +1,6 @@
 import logging
-import core.base.Managers as managers
+
+from core.base.SuperManager import SuperManager
 
 
 class SamkillaException(Exception):
@@ -37,15 +38,15 @@ class ModuleStartingFailed(Exception):
 		self._logger.error('An error occured while starting a module: {}'.format(error))
 
 		if moduleName:
-			managers.ConfigManager.deactivateModule(moduleName)
-			managers.ModuleManager.deactivateModule(moduleName)
+			SuperManager.getInstance().configManager.deactivateModule(moduleName)
+			SuperManager.getInstance().moduleManager.deactivateModule(moduleName)
 
 
 class ModuleStartDelayed(Exception):
 	def __init__(self, moduleName):
 		self._logger = logging.getLogger('ProjectAlice')
 		self._logger.warning('[{}] Delaying module start'.format(moduleName))
-		managers.ModuleManager.getModuleInstance(moduleName).delayed = True
+		SuperManager.getInstance().moduleManager.getModuleInstance(moduleName).delayed = True
 
 
 class IntentError(SamkillaException):

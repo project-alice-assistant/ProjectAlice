@@ -28,16 +28,16 @@ class AssistantSyncCommand(Command):
 		table_instance = DoubleTable(TABLE_DATA)
 		self.write('\n' + table_instance.table + '\n', 'green')
 
-		languageManager = LanguageManager(self)
+		languageManager = LanguageManager()
 		languageManager.onStart()
 
-		threadManager = ThreadManager(self)
+		threadManager = ThreadManager()
 		threadManager.onStart()
 
-		snipsConsoleManager = SnipsConsoleManager(self)
+		snipsConsoleManager = SnipsConsoleManager()
 		snipsConsoleManager.onStart()
 
-		samkillaManager = SamkillaManager(self)
+		samkillaManager = SamkillaManager()
 
 		self.write('It may take some time...')
 		changes = samkillaManager.sync(download=False)

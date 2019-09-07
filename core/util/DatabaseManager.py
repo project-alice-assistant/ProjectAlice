@@ -1,8 +1,8 @@
 import sqlite3
 import typing
 
-import core.base.Managers as managers
 from core.base.Manager import Manager
+from core.base.SuperManager import SuperManager
 from core.commons import commons
 
 
@@ -10,9 +10,8 @@ class DatabaseManager(Manager):
 
 	NAME = 'DatabaseManager'
 
-	def __init__(self, mainClass):
-		super().__init__(mainClass, self.NAME)
-		managers.DatabaseManager = self
+	def __init__(self):
+		super().__init__(self.NAME)
 		self._tables = list()
 
 
@@ -201,7 +200,7 @@ class DatabaseManager(Manager):
 			database = self.getConnection()
 			cursor = database.cursor()
 
-			cursor.execute('DELETE FROM {} WHERE id in (SELECT id FROM {} ORDER BY id LIMIT {})'.format(tableName, tableName, managers.ConfigManager.getAliceConfigByName('autoPruneStoredData')))
+			cursor.execute('DELETE FROM {} WHERE id in (SELECT id FROM {} ORDER BY id LIMIT {})'.format(tableName, tableName, SuperManager.getInstance().configManager.getAliceConfigByName('autoPruneStoredData')))
 		except Exception as e:
 			self._logger.warning('[{}] Error pruning table "{}" for component "{}": {}'.format(self.name, tableName, callerName, e))
 

@@ -13,8 +13,8 @@ from pathlib import Path
 import warnings
 from paho.mqtt.client import MQTTMessage
 
-import core.base.Managers as managers
 import core.commons.model.Slot as slotModel
+from core.base.SuperManager import SuperManager
 from core.commons.model.PartOfDay import PartOfDay
 from core.dialog.model import DialogSession
 
@@ -24,6 +24,7 @@ ERROR_HANDLER_FUNC = CFUNCTYPE(None, c_char_p, c_int, c_char_p, c_int, c_char_p)
 # noinspection PyUnusedLocal
 def py_error_handler(filename, line, function, err, fmt):
 	pass
+
 
 c_error_handler = ERROR_HANDLER_FUNC(py_error_handler)
 
@@ -51,7 +52,7 @@ def isEqualTranslated(baseString: str, compareTo: str, module: str = 'system') -
 	:param compareTo: the key of the string json to compare to
 	:return: bool
 	"""
-	strings = managers.LanguageManager.getStrings(compareTo, module)
+	strings = SuperManager.getInstance().languageManager.getStrings(compareTo, module)
 	baseString = baseString.strip().lower()
 	for string in strings:
 		if baseString == string.strip().lower():
@@ -66,14 +67,18 @@ def deprecated(func):
 	as deprecated. It will result in a warning being emitted
 	when the function is used.
 	"""
+
+
 	@functools.wraps(func)
 	def new_func(*args, **kwargs):
 		warnings.simplefilter('always', DeprecationWarning)  # turn off filter
-		warnings.warn("Call to deprecated function {}.".format(func.__name__),
-					  category=DeprecationWarning,
-					  stacklevel=2)
+		warnings.warn('Call to deprecated function {}.'.format(func.__name__),
+		              category=DeprecationWarning,
+		              stacklevel=2)
 		warnings.simplefilter('default', DeprecationWarning)  # reset filter
 		return func(*args, **kwargs)
+
+
 	return new_func
 
 
@@ -129,7 +134,7 @@ def parseCustomData(message: MQTTMessage) -> dict:
 def parseSiteId(message: MQTTMessage) -> str:
 	data = payload(message)
 	if 'siteId' in data:
-		return data['siteId'].replace('_', ' ') #WTF!! This is highly no no no!!!
+		return data['siteId'].replace('_', ' ')  # WTF!! This is highly no no no!!!
 	else:
 		return data.get('IPAddress', 'default')
 
@@ -146,13 +151,13 @@ def clamp(x: float, minimum: float, maximum: float) -> float:
 
 def angleToCardinal(angle: float) -> str:
 	cardinals = ['north', 'north east', 'east', 'south east', 'south', 'south west', 'west', 'north west']
-	return cardinals[int(((angle+45/2)%360) / 45)]
+	return cardinals[int(((angle + 45 / 2) % 360) / 45)]
 
 
 def partOfTheDay() -> str:
 	hour = int(datetime.now().strftime('%H'))
 
-	if managers.UserManager.checkIfAllUser('sleeping'):
+	if SuperManager.getInstance().userManager.checkIfAllUser('sleeping'):
 		return PartOfDay.SLEEPING.value
 	elif 23 <= hour < 5:
 		return PartOfDay.NIGHT.value
@@ -219,7 +224,7 @@ def cleanRoomNameToSiteId(roomName: str) -> str:
 	:return: str: formated room name to site id
 	"""
 
-	parasites = managers.LanguageManager.getStrings(key='inThe')
+	parasites = SuperManager.getInstance().languageManager.getStrings(key='inThe')
 
 	for parasite in parasites:
 		if parasite in roomName:
@@ -255,6 +260,7 @@ def indexOf(sub: str, string: str) -> int:
 	except ValueError:
 		return -1
 
+
 def online(randomTalk: bool = True, text: str = ''):
 	"""
 	(return a) decorator to mark a function that required ethernet.
@@ -266,6 +272,8 @@ def online(randomTalk: bool = True, text: str = ''):
 		@online(randomTalk=False, text=<myText>)
 	a own text can be used when bein offline aswell
 
+	:param text:
+	:param randomTalk:
 	:param *args: variable number of arguments
 	:param **kwargs: keyworded, variable-length argument list
 	:return: return value of function or random offline string in the current language
@@ -277,21 +285,27 @@ def online(randomTalk: bool = True, text: str = ''):
 				self.endDialog(sessionId=session.sessionId, text=self.exampleIntent())
 				return True
 			return False
-		
+
 		@online
 		def exampleIntent(self) -> str:
 			request = requests.get('http://api.open-notify.org')
 			return request.text
 	"""
+
+
 	def argumentWrapper(func):
 		def functionWrapper(*args, **kwargs):
-			if managers.InternetManager.online:
+			if SuperManager.getInstance().internetManager.online:
 				return func(*args, **kwargs)
 			elif randomTalk:
-				return managers.TalkManager.randomTalk('offline', module='system')
+				return SuperManager.getInstance().talkManager.randomTalk('offline', module='system')
 			else:
 				return text
+
+
 		return functionWrapper
+
+
 	if callable(randomTalk):
 		return argumentWrapper(randomTalk)
 	return argumentWrapper

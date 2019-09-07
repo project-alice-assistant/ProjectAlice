@@ -1,135 +1,193 @@
-from collections import OrderedDict
-from threading import Timer
+from __future__ import annotations
 
-from core.base.ConfigManager import ConfigManager
-from core.base.Manager import Manager
-from core.base.ModuleManager import ModuleManager
-from core.server.MqttServer import MqttServer
-from core.dialog.MultiIntentManager import MultiIntentManager
-from core.dialog.ProtectedIntentManager import ProtectedIntentManager
-from core.voice.TalkManager import TalkManager
-from core.dialog.DialogSessionManager import DialogSessionManager
-from core.util.ThreadManager import ThreadManager
-from core.util.TimeManager import TimeManager
-from core.user.UserManager import UserManager
+import logging
+
+class SuperManager(object):
+
+	NAME        = 'SuperManager'
+	_INSTANCE   = None
 
 
-class SuperManager(Manager):
+	def __new__(cls, *args, **kwargs):
+		if not isinstance(SuperManager._INSTANCE, SuperManager):
+			SuperManager._INSTANCE = object.__new__(cls)
 
-	NAME = 'SuperManager'
-	INSTANCE = None
+		return SuperManager._INSTANCE
+
 
 	def __init__(self, mainClass):
-		Manager.__init__(self, mainClass, self.NAME)
+		self._logger                   = logging.getLogger('ProjectAlice')
 
-		if not self.INSTANCE:
-			self.INSTANCE = self
-		else:
-			self._logger.error('Trying to instanciate {} but instance already existing'.format(self.NAME))
+		SuperManager._INSTANCE         = self
+		self._managers                 = dict()
 
-		managers = {
-			ConfigManager.NAME					: ConfigManager(self),
-			UserManager.NAME 					: UserManager(self),
-			ThreadManager.NAME 					: ThreadManager(self),
-			ProtectedIntentManager.NAME 		: ProtectedIntentManager(self),
-			MqttServer.NAME 					: MqttServer(self),
-			TimeManager.NAME 					: TimeManager(self),
-			TalkManager.NAME 					: TalkManager(self),
-			DialogSessionManager.NAME 			: DialogSessionManager(self),
-			MultiIntentManager.NAME 			: MultiIntentManager(self),
-			ModuleManager.NAME 					: ModuleManager(self)
-		}
-		self._managers = OrderedDict(managers)
-
-
-	@property
-	def ConfigManager(self):
-		return self._managers[ConfigManager.NAME]
-
-	@property
-	def ThreadManager(self):
-		return self._managers[ThreadManager.NAME]
-
-	@property
-	def ProtectedIntentManager(self):
-		return self._managers[ProtectedIntentManager.NAME]
-
-	@property
-	def MqttServer(self):
-		return self._managers[MqttServer.NAME]
-
-	@property
-	def TimeManager(self):
-		return self._managers[TimeManager.NAME]
-
-	@property
-	def TalkManager(self):
-		return self._managers[TalkManager.NAME]
-
-	@property
-	def UserManager(self):
-		return self._managers[UserManager.NAME]
-
-	@property
-	def DialogSessionManager(self):
-		return self._managers[DialogSessionManager.NAME]
-
-	@property
-	def MultiIntentManager(self):
-		return self._managers[MultiIntentManager.NAME]
-
-	@property
-	def ModuleManager(self):
-		return self._managers[ModuleManager.NAME]
-
-
-	def broadcast(self, method, manager=None, exceptions=None):
-		if not exceptions:
-			exceptions = list()
-
-		if not manager:
-			for man in self._managers:
-				if not man:
-					self._logger.warning('Tried to broadcast to a None manager')
-					Timer(interval=10, function=self.broadcast, args=[method, man, exceptions])
-					continue
-
-				if man.NAME in exceptions:
-					continue
-
-				try:
-					func = getattr(man, method)
-					func()
-				except:
-					self._logger.warning("Couldn't find method {} in manager {}".format(method, man.NAME))
-		else:
-			if manager.NAME in exceptions:
-				return
-
-			try:
-				func = getattr(manager, method)
-				func()
-			except:
-				self._logger.warning("Couldn't find method {} in manager {}".format(method, manager.NAME))
-
-
-	def registerManager(self, manager):
-		if manager.NAME not in self._managers:
-			self._managers[manager.NAME] = manager
-
-
-	def getManager(self, managerName):
-		if managerName not in self._managers:
-			self._logger.error('{} not found in manager list'.format(managerName))
-			return None
-		return self._managers[managerName]
+		self.projectAlice              = mainClass
+		self.configManager             = None
+		self.databaseManager           = None
+		self.languageManager           = None
+		self.snipsServicesManager      = None
+		self.ASRManager                = None
+		self.TTSManager                = None
+		self.protectedIntentManager    = None
+		self.threadManager             = None
+		self.mqttManager               = None
+		self.timeManager               = None
+		self.dialogSessionManager      = None
+		self.multiIntentManager        = None
+		self.telemetryManager          = None
+		self.moduleManager             = None
+		self.deviceManager             = None
+		self.internetManager           = None
+		self.snipsConsoleManager       = None
+		self.samkillaManager           = None
+		self.wakewordManager           = None
+		self.userManager               = None
+		self.talkManager               = None
 
 
 	def onStart(self):
+		configManager = self._managers.pop('ConfigManager')
+		configManager.onStart()
+
+		snipsServicesManager = self._managers.pop('SnipsServicesManager')
+		snipsServicesManager.onStart()
+
+		databaseManager = self._managers.pop('DatabaseManager')
+		databaseManager.onStart()
+
+		userManager = self._managers.pop('UserManager')
+		userManager.onStart()
+
+		mqttManager = self._managers.pop('MqttManager')
+		mqttManager.onStart()
+
+		languageManager = self._managers.pop('LanguageManager')
+
+		talkManager = self._managers.pop('TalkManager')
+		moduleManager = self._managers.pop('ModuleManager')
+
+		samkillaManager = self._managers.pop('SamkillaManager')
+
 		for manager in self._managers.values():
-			manager.onStart()
+			if manager:
+				manager.onStart()
+
+		languageManager.onStart()
+		talkManager.onStart()
+		moduleManager.onStart()
+		samkillaManager.onStart()
+
+		self._managers[configManager.name] = configManager
+		self._managers[languageManager.name] = languageManager
+		self._managers[talkManager.name] = talkManager
+		self._managers[snipsServicesManager.name] = snipsServicesManager
+		self._managers[databaseManager.name] = databaseManager
+		self._managers[userManager.name] = userManager
+		self._managers[mqttManager.name] = mqttManager
+		self._managers[moduleManager.name] = moduleManager
+		self._managers[samkillaManager.name] = samkillaManager
+
+
+	def onBooted(self):
+		for manager in self._managers.values():
+			if manager:
+				manager.onBooted()
+
+
+	@staticmethod
+	def getInstance() -> SuperManager:
+		return SuperManager._INSTANCE
+
+
+	def initManagers(self):
+		from core.base.ConfigManager            import ConfigManager
+		from core.base.ModuleManager            import ModuleManager
+		from core.device.DeviceManager          import DeviceManager
+		from core.dialog.DialogSessionManager   import DialogSessionManager
+		from core.dialog.MultiIntentManager     import MultiIntentManager
+		from core.dialog.ProtectedIntentManager import ProtectedIntentManager
+		from core.server.MqttServer             import MqttServer
+		from core.snips.SamkillaManager         import SamkillaManager
+		from core.snips.SnipsConsoleManager     import SnipsConsoleManager
+		from core.snips.SnipsServicesManager    import SnipsServicesManager
+		from core.user.UserManager              import UserManager
+		from core.util.DatabaseManager          import DatabaseManager
+		from core.util.InternetManager          import InternetManager
+		from core.util.TelemetryManager         import TelemetryManager
+		from core.util.ThreadManager            import ThreadManager
+		from core.util.TimeManager              import TimeManager
+		from core.voice.ASRManager              import ASRManager
+		from core.voice.LanguageManager         import LanguageManager
+		from core.voice.TalkManager             import TalkManager
+		from core.voice.TTSManager              import TTSManager
+		from core.voice.WakewordManager         import WakewordManager
+
+		self.configManager 				= ConfigManager()
+		self.databaseManager 			= DatabaseManager()
+		self.languageManager			= LanguageManager()
+		self.snipsServicesManager 		= SnipsServicesManager()
+		self.ASRManager 				= ASRManager()
+		self.TTSManager 				= TTSManager()
+		self.threadManager 		    	= ThreadManager()
+		self.protectedIntentManager 	= ProtectedIntentManager()
+		self.mqttManager 				= MqttServer()
+		self.timeManager 				= TimeManager()
+		self.userManager 				= UserManager()
+		self.dialogSessionManager 		= DialogSessionManager()
+		self.multiIntentManager 		= MultiIntentManager()
+		self.telemetryManager           = TelemetryManager()
+		self.moduleManager              = ModuleManager()
+		self.deviceManager 		    	= DeviceManager()
+		self.internetManager 			= InternetManager()
+		self.snipsConsoleManager 		= SnipsConsoleManager()
+		self.samkillaManager	 		= SamkillaManager()
+		self.wakewordManager 			= WakewordManager()
+		self.talkManager 			    = TalkManager()
+
+		self._managers = {name[0].upper() + name[1:]: manager for name, manager in self.__dict__.items() if name.endswith('Manager')}
+
+
+	def broadcast(self, method, exceptions: list = None, manager = None, args: list = None, propagateToModules: bool = False):
+		if not exceptions and not manager:
+			self._logger.warning('[Managers] Cannot broadcast to manager, the calling method has to be put in exceptions')
+
+		if not args:
+			args = list()
+
+		if 'ProjectAlice' not in exceptions:
+			exceptions.append('ProjectAlice')
+
+		deadManagers = list()
+		for name in self._managers:
+			man = self._managers[name]
+
+			if not man:
+				deadManagers.append(name)
+				continue
+
+			if (manager and man.name != manager.name) or man.name in exceptions:
+				continue
+
+			try:
+				func = getattr(man, method)
+				func(*args)
+			except AttributeError:
+				self._logger.warning("[{}] Couldn't find method {} in manager {}".format(self.NAME, method, man.name))
+
+		if propagateToModules:
+			self._managers['ModuleManager'].broadcast(method=method, args=args)
+
+		for name in deadManagers:
+			del self._managers[name]
 
 
 	def onStop(self):
-		for manager in self._managers.values():
-			manager.onStop()
+		try:
+			for managerName, manager in self._managers.items():
+				manager.onStop()
+		except Exception as e:
+			self._logger.info('[SuperManager] Error while shutting down manager "{}": {}'.format(managerName, e))
+
+	@property
+	def manager(self, managerName: str):
+		return self._managers.get(managerName, None)

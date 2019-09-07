@@ -28,25 +28,25 @@ class AssistantDownloadCommand(Command):
 		table_instance = DoubleTable(TABLE_DATA)
 		self.write('\n' + table_instance.table + '\n', 'green')
 
-		languageManager = LanguageManager(self)
+		languageManager = LanguageManager()
 		languageManager.onStart()
 
-		threadManager = ThreadManager(self)
+		threadManager = ThreadManager()
 		threadManager.onStart()
 
-		protectedIntentManager = ProtectedIntentManager(self)
+		protectedIntentManager = ProtectedIntentManager()
 		protectedIntentManager.onStart()
 
-		databaseManager = DatabaseManager(self)
+		databaseManager = DatabaseManager()
 		databaseManager.onStart()
 
-		userManager = UserManager(self)
+		userManager = UserManager()
 		userManager.onStart()
 
-		moduleManager = ModuleManager(self)
+		moduleManager = ModuleManager()
 		moduleManager.onStart()
 
-		snipsConsoleManager = SnipsConsoleManager(self)
+		snipsConsoleManager = SnipsConsoleManager()
 		snipsConsoleManager.onStart()
 
 		self.write('It may take some time...')

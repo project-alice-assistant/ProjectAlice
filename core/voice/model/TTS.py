@@ -7,7 +7,7 @@ from pathlib import Path
 import hashlib
 from pydub import AudioSegment
 
-import core.base.Managers as managers
+from core.base.SuperManager import SuperManager
 from core.commons import commons
 from core.dialog.model.DialogSession import DialogSession
 from core.user.model.User import User
@@ -31,9 +31,9 @@ class TTS:
 			self._type = user.ttsType
 			self._voice = user.ttsVoice
 		else:
-			self._lang = managers.LanguageManager.activeLanguageAndCountryCode
-			self._type = managers.ConfigManager.getAliceConfigByName('ttsType')
-			self._voice = managers.ConfigManager.getAliceConfigByName('ttsVoice')
+			self._lang = SuperManager.getInstance().languageManager.activeLanguageAndCountryCode
+			self._type = SuperManager.getInstance().configManager.getAliceConfigByName('ttsType')
+			self._voice = SuperManager.getInstance().configManager.getAliceConfigByName('ttsVoice')
 
 		self._cacheFile: Path = Path()
 		self._text = ''
@@ -58,7 +58,7 @@ class TTS:
 			subprocess.run(['sudo', 'chown', 'pi', str(self.TEMP_ROOT)])
 
 		if self.TTS == TTSEnum.SNIPS:
-			voiceFile = 'cmu_{}_{}'.format(managers.LanguageManager.activeCountryCode.lower(), self._voice)
+			voiceFile = 'cmu_{}_{}'.format(SuperManager.getInstance().languageManager.activeCountryCode.lower(), self._voice)
 			if not Path(commons.rootDir(), 'system/voices', voiceFile).is_file():
 				self._logger.info('[TTS] Using "{}" as TTS with voice "{}" but voice file not found. Downloading...'.format(self.TTS.value, self._voice))
 
@@ -74,7 +74,7 @@ class TTS:
 
 
 	def cacheDirectory(self) -> Path:
-		return Path(managers.TTSManager.CACHE_ROOT, self.TTS.value, self._lang, self._type, self._voice)
+		return Path(SuperManager.getInstance().TTSManager.CACHE_ROOT, self.TTS.value, self._lang, self._type, self._voice)
 
 	@property
 	def lang(self) -> str:
@@ -123,7 +123,7 @@ class TTS:
 
 	def _speak(self, file: Path, session: DialogSession):
 		uid = str(uuid.uuid4())
-		managers.MqttServer.playSound(
+		SuperManager.getInstance().mqttManager.playSound(
 			soundFile=file.stem,
 			sessionId=session.sessionId,
 			siteId=session.siteId,
@@ -132,7 +132,7 @@ class TTS:
 		)
 
 		duration = round(len(AudioSegment.from_file(file)) / 1000, 2)
-		managers.ThreadManager.doLater(interval=duration + 0.1, func=self._sayFinished, args=[session.sessionId, session])
+		SuperManager.getInstance().threadManager.doLater(interval=duration + 0.1, func=self._sayFinished, args=[session.sessionId, session])
 
 
 	@staticmethod
@@ -140,7 +140,7 @@ class TTS:
 		if 'id' not in session.payload:
 			return
 
-		managers.MqttServer.publish(
+		SuperManager.getInstance().mqttManager.publish(
 			topic='hermes/tts/sayFinished',
 			payload={
 				'id': session.payload['id'],

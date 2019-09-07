@@ -1,7 +1,7 @@
 from typing import Optional, Any
 
-import core.base.Managers as managers
 from core.base.Manager import Manager
+from core.base.SuperManager import SuperManager
 from core.user.model.AccessLevels import AccessLevel
 from core.user.model.User import User
 
@@ -23,10 +23,8 @@ class UserManager(Manager):
 	}
 
 
-	def __init__(self, mainClass):
-		super().__init__(mainClass, self.NAME, self.DATABASE)
-		managers.UserManager = self
-
+	def __init__(self):
+		super().__init__(self.NAME, self.DATABASE)
 		self._users = dict()
 
 
@@ -51,13 +49,13 @@ class UserManager(Manager):
 	def addNewUser(self, name: str, access: str = 'guest', state: str = 'home'):
 		insertId = self.databaseInsert(tableName='users',
 									   query='INSERT INTO :__table__ (username, accessLevel, state, lang) VALUES (:username, :accessLevel, :state, :lang)',
-									   values={'username': name.lower(), 'accessLevel': access, 'state': state, 'lang': managers.LanguageManager.activeLanguageAndCountryCode})
+									   values={'username': name.lower(), 'accessLevel': access, 'state': state, 'lang': SuperManager.getInstance().languageManager.activeLanguageAndCountryCode})
 		if insertId > -1:
 			self._users[name] = User({
 				'username': name.title(),
 				'accessLevel': access,
 				'state': state,
-				'lang': managers.LanguageManager.activeLanguageAndCountryCode,
+				'lang': SuperManager.getInstance().languageManager.activeLanguageAndCountryCode,
 				'tts': '',
 				'ttsType': '',
 				'ttsVoice': ''

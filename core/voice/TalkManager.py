@@ -3,8 +3,8 @@ from pathlib import Path
 
 import random
 
-import core.base.Managers as managers
 from core.base.Manager import Manager
+from core.base.SuperManager import SuperManager
 from core.commons import commons
 
 
@@ -12,10 +12,8 @@ class TalkManager(Manager):
 
 	NAME = 'TalkManager'
 
-	def __init__(self, mainClass):
-		super().__init__(mainClass, self.NAME)
-
-		managers.TalkManager = self
+	def __init__(self):
+		super().__init__(self.NAME)
 		self._langData = dict()
 
 
@@ -39,10 +37,9 @@ class TalkManager(Manager):
 				self._langData.setdefault('system', dict())[lang] = json.loads(systemLangTalkFile.read_text())
 
 		# Module Talks
-		modules = managers.ModuleManager.getModules()
+		modules = SuperManager.getInstance().configManager.modulesConfigurations
 
-		for module in modules.values():
-			moduleName = module['instance'].name
+		for moduleName in modules:
 			if moduleToLoad and moduleToLoad != moduleName:
 				continue
 
@@ -62,7 +59,7 @@ class TalkManager(Manager):
 		arr = list()
 		try:
 			module = commons.toCamelCase(module)
-			arr = self._langData[module][managers.LanguageManager.activeLanguage][talk][strType]
+			arr = self._langData[module][SuperManager.getInstance().languageManager.activeLanguage][talk][strType]
 		except KeyError:
 			self._logger.warning('Was asked to return unexisting texts {} for module {} with type {}'.format(talk, module, strType))
 
@@ -111,18 +108,18 @@ class TalkManager(Manager):
 		if not module:
 			return ''
 
-		shortReplyMode = forceShortTalk or managers.UserManager.checkIfAllUser('sleeping') or managers.ConfigManager.getAliceConfigByName('shortReplies')
-		activeLanguage = managers.LanguageManager.activeLanguage
-		defaultLanguage = managers.LanguageManager.defaultLanguage
+		shortReplyMode = forceShortTalk or SuperManager.getInstance().userManager.checkIfAllUser('sleeping') or SuperManager.getInstance().configManager.getAliceConfigByName('shortReplies')
+		activeLanguage = SuperManager.getInstance().languageManager.activeLanguage
+		defaultLanguage = SuperManager.getInstance().languageManager.defaultLanguage
 
 		string = self.chooseTalk(talk, module, activeLanguage, defaultLanguage, shortReplyMode)
 		if not string:
 			return ''
 
-		if managers.ConfigManager.getAliceConfigByName('tts') == 'amazon' and \
-			managers.ConfigManager.getAliceConfigByName('whisperWhenSleeping') and \
-			managers.UserManager.checkIfAllUser('sleeping') and \
-			managers.UserManager.getAllUserNames():
+		if SuperManager.getInstance().configManager.getAliceConfigByName('tts') == 'amazon' and \
+			SuperManager.getInstance().configManager.getAliceConfigByName('whisperWhenSleeping') and \
+			SuperManager.getInstance().userManager.checkIfAllUser('sleeping') and \
+			SuperManager.getInstance().userManager.getAllUserNames():
 			string = '<amazon:effect name="whispered">{}</amazon:effect>'.format(string)
 
 		return u'{0}'.format(string)

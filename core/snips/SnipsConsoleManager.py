@@ -6,8 +6,8 @@ from pathlib import Path
 import requests
 import tempfile
 
-import core.base.Managers as managers
 from core.base.Manager import Manager
+from core.base.SuperManager import SuperManager
 from core.snips.model.SnipsConsoleUser import SnipsConsoleUser
 from core.snips.model.SnipsTrainingStatus import SnipsTrainingType, TrainingStatusResponse
 
@@ -16,15 +16,14 @@ class SnipsConsoleManager(Manager):
 
 	NAME = 'SnipsConsoleManager'
 
-	def __init__(self, mainClass):
-		super().__init__(mainClass, self.NAME)
-		managers.SnipsConsoleManager = self
+	def __init__(self):
+		super().__init__(self.NAME)
 
-		self._connected = False
-		self._tries = 0
-		self._user = None
+		self._connected     = False
+		self._tries         = 0
+		self._user          = None
 
-		self._headers = {
+		self._headers       = {
 			'Accept'    	: 'application/json',
 			'Content-Type' 	: 'application/json'
 		}
@@ -33,13 +32,13 @@ class SnipsConsoleManager(Manager):
 	def onStart(self):
 		super().onStart()
 
-		if managers.ConfigManager.getSnipsConfiguration('project-alice', 'console_token'):
+		if SuperManager.getInstance().configManager.getSnipsConfiguration('project-alice', 'console_token'):
 			self._logger.info('[{}] Snips console authorized'.format(self.name))
-			self._headers['Authorization'] = 'JWT {}'.format(managers.ConfigManager.getSnipsConfiguration('project-alice', 'console_token'))
+			self._headers['Authorization'] = 'JWT {}'.format(SuperManager.getInstance().configManager.getSnipsConfiguration('project-alice', 'console_token'))
 
 			self._user = SnipsConsoleUser({
-				'id': managers.ConfigManager.getSnipsConfiguration('project-alice', 'console_user_id'),
-				'email': managers.ConfigManager.getSnipsConfiguration('project-alice', 'console_user_email')
+				'id': SuperManager.getInstance().configManager.getSnipsConfiguration('project-alice', 'console_user_id'),
+				'email': SuperManager.getInstance().configManager.getSnipsConfiguration('project-alice', 'console_user_email')
 			})
 
 			self._connected = True
@@ -53,15 +52,15 @@ class SnipsConsoleManager(Manager):
 
 	def doDownload(self):
 		self._logger.info('[{}] Starting Snips assistant training and download procedure'.format(self.name))
-		managers.ThreadManager.newLock('SnipsAssistantDownload').set()
-		projectId = managers.LanguageManager.activeSnipsProjectId
-		managers.ThreadManager.newThread(name='SnipsAssistantDownload', target=self.download, args=[projectId])
+		SuperManager.getInstance().threadManager.newLock('SnipsAssistantDownload').set()
+		projectId = SuperManager.getInstance().languageManager.activeSnipsProjectId
+		SuperManager.getInstance().threadManager.newThread(name='SnipsAssistantDownload', target=self.download, args=[projectId])
 
 
 	@staticmethod
 	def loginCredentialsAreConfigured():
-		return managers.ConfigManager.getAliceConfigByName('snipsConsoleLogin') and \
-			   managers.ConfigManager.getAliceConfigByName('snipsConsolePassword')
+		return SuperManager.getInstance().configManager.getAliceConfigByName('snipsConsoleLogin') and \
+			   SuperManager.getInstance().configManager.getAliceConfigByName('snipsConsolePassword')
 
 
 	def _login(self):
@@ -71,10 +70,10 @@ class SnipsConsoleManager(Manager):
 			self._tries = 0
 			return
 
-		self._logger.info('- Connecting to Snips console using account {}'.format(managers.ConfigManager.getAliceConfigByName('snipsConsoleLogin')))
+		self._logger.info('- Connecting to Snips console using account {}'.format(SuperManager.getInstance().configManager.getAliceConfigByName('snipsConsoleLogin')))
 		payload = {
-			'email'   : managers.ConfigManager.getAliceConfigByName('snipsConsoleLogin'),
-			'password': managers.ConfigManager.getAliceConfigByName('snipsConsolePassword')
+			'email'   : SuperManager.getInstance().configManager.getAliceConfigByName('snipsConsoleLogin'),
+			'password': SuperManager.getInstance().configManager.getAliceConfigByName('snipsConsolePassword')
 		}
 
 		req = self._req(url='/v1/user/auth', data=payload)
@@ -87,10 +86,10 @@ class SnipsConsoleManager(Manager):
 				accessToken = self._getAccessToken(token)
 				if accessToken:
 					self._logger.info('- Saving console access token')
-					managers.ConfigManager.updateSnipsConfiguration(parent='project-alice', key='console_token', value=accessToken['token'])
-					managers.ConfigManager.updateSnipsConfiguration(parent='project-alice', key='console_alias', value=accessToken['alias'])
-					managers.ConfigManager.updateSnipsConfiguration(parent='project-alice', key='console_user_id', value=self._user.userId)
-					managers.ConfigManager.updateSnipsConfiguration(parent='project-alice', key='console_user_email', value=self._user.userEmail)
+					SuperManager.getInstance().configManager.updateSnipsConfiguration(parent='project-alice', key='console_token', value=accessToken['token'])
+					SuperManager.getInstance().configManager.updateSnipsConfiguration(parent='project-alice', key='console_alias', value=accessToken['alias'])
+					SuperManager.getInstance().configManager.updateSnipsConfiguration(parent='project-alice', key='console_user_id', value=self._user.userId)
+					SuperManager.getInstance().configManager.updateSnipsConfiguration(parent='project-alice', key='console_user_email', value=self._user.userEmail)
 
 					self._connected = True
 					self._tries = 0
@@ -129,7 +128,7 @@ class SnipsConsoleManager(Manager):
 
 
 	def _handleTraining(self, assistantId: str):
-		trainingLock = managers.ThreadManager.newLock('TrainingAssistantLock')
+		trainingLock = SuperManager.getInstance().threadManager.newLock('TrainingAssistantLock')
 		trainingLock.set()
 		while trainingLock.isSet():
 			trainingStatus = self._trainingStatus(assistantId)
@@ -167,23 +166,23 @@ class SnipsConsoleManager(Manager):
 			Path(tempfile.gettempdir(), 'assistant.zip').write_bytes(req.content)
 
 			self._logger.info('[{}] Assistant {} trained and downloaded'.format(self.name, assistantId))
-			managers.ModuleManager.broadcast(method='onSnipsAssistantDownloaded')
+			SuperManager.getInstance().moduleManager.broadcast(method='onSnipsAssistantDownloaded')
 		except Exception as e:
 			self._logger.error('[{}] Assistant download failed: {}'.format(self.name, e))
-			managers.ModuleManager.broadcast(method='onSnipsAssistantDownloadFailed')
+			SuperManager.getInstance().moduleManager.broadcast(method='onSnipsAssistantDownloadFailed')
 		finally:
-			managers.ThreadManager.getLock('SnipsAssistantDownload').clear()
+			SuperManager.getInstance().threadManager.getLock('SnipsAssistantDownload').clear()
 
 
 	def _logout(self):
-		self._req(url='/v1/user/{}/accesstoken/{}'.format(self._user.userId, managers.ConfigManager.getSnipsConfiguration('project-alice', 'console_alias')), method='get')
+		self._req(url='/v1/user/{}/accesstoken/{}'.format(self._user.userId, SuperManager.getInstance().configManager.getSnipsConfiguration('project-alice', 'console_alias')), method='get')
 		self._headers.pop('Authorization', None)
 		self._connected = False
 
-		managers.ConfigManager.updateSnipsConfiguration(parent='project-alice', key='console_token', value='')
-		managers.ConfigManager.updateSnipsConfiguration(parent='project-alice', key='console_alias', value='')
-		managers.ConfigManager.updateSnipsConfiguration(parent='project-alice', key='console_user_id', value='')
-		managers.ConfigManager.updateSnipsConfiguration(parent='project-alice', key='console_user_email', value='')
+		SuperManager.getInstance().configManager.updateSnipsConfiguration(parent='project-alice', key='console_token', value='')
+		SuperManager.getInstance().configManager.updateSnipsConfiguration(parent='project-alice', key='console_alias', value='')
+		SuperManager.getInstance().configManager.updateSnipsConfiguration(parent='project-alice', key='console_user_id', value='')
+		SuperManager.getInstance().configManager.updateSnipsConfiguration(parent='project-alice', key='console_user_email', value='')
 
 
 	def login(self):
@@ -209,10 +208,10 @@ class SnipsConsoleManager(Manager):
 			self._headers.pop('Authorization', None)
 			self._connected = False
 
-			managers.ConfigManager.updateSnipsConfiguration(parent='project-alice', key='console_token', value='')
-			managers.ConfigManager.updateSnipsConfiguration(parent='project-alice', key='console_alias', value='')
-			managers.ConfigManager.updateSnipsConfiguration(parent='project-alice', key='console_user_id', value='')
-			managers.ConfigManager.updateSnipsConfiguration(parent='project-alice', key='console_user_email', value='')
+			SuperManager.getInstance().configManager.updateSnipsConfiguration(parent='project-alice', key='console_token', value='')
+			SuperManager.getInstance().configManager.updateSnipsConfiguration(parent='project-alice', key='console_alias', value='')
+			SuperManager.getInstance().configManager.updateSnipsConfiguration(parent='project-alice', key='console_user_id', value='')
+			SuperManager.getInstance().configManager.updateSnipsConfiguration(parent='project-alice', key='console_user_email', value='')
 
 			self._login()
 		return req

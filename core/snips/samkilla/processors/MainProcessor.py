@@ -216,7 +216,7 @@ class MainProcessor:
 			self.persistToGlobalAssistantIntents(assistantId=assistantId, assistantLanguage=assistantLanguage, intentNameFilter=intentName)
 
 
-	def mergeModuleSlotTypes(self, slotTypesModulesValues: str, assistantId: str, slotLanguage: str = None):
+	def mergeModuleSlotTypes(self, slotTypesModulesValues: dict, assistantId: str, slotLanguage: str = None):
 		mergedSlotTypes = dict()
 		slotTypesGlobalValues = dict()
 
@@ -258,7 +258,7 @@ class MainProcessor:
 		return mergedSlotTypes
 
 
-	def mergeModuleIntents(self, intentsModulesValues: str, assistantId: str, intentLanguage: str = None) -> dict:
+	def mergeModuleIntents(self, intentsModulesValues: dict, assistantId: str, intentLanguage: str = None) -> dict:
 		mergedIntents = dict()
 		intentsGlobalValues = dict()
 
@@ -415,7 +415,7 @@ class MainProcessor:
 
 
 	# noinspection PyUnusedLocal
-	def syncLocalToRemoteSlotTypes(self, slotTypesModulesValues: str, runOnAssistantId: str, languageFilter: str = None, moduleFilter: str = None) -> tuple:
+	def syncLocalToRemoteSlotTypes(self, slotTypesModulesValues: dict, runOnAssistantId: str, languageFilter: str = None, moduleFilter: str = None) -> tuple:
 		slotTypesSynced = dict()
 		globalChanges = False
 
@@ -494,7 +494,7 @@ class MainProcessor:
 
 
 	# noinspection PyUnusedLocal
-	def syncLocalToRemoteIntents(self, skillNameIdMatching: dict, intentNameSkillMatching: dict, typeEntityMatching: dict, intentsModulesValues: str,
+	def syncLocalToRemoteIntents(self, skillNameIdMatching: dict, intentNameSkillMatching: dict, typeEntityMatching: dict, intentsModulesValues: dict,
 	                             runOnAssistantId: str, languageFilter: str = None, moduleFilter: str = None) -> bool:
 
 		intentsSynced = dict()

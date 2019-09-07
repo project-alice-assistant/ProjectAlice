@@ -1,5 +1,6 @@
 from pathlib import Path
-from core.base import Managers
+
+from core.base.SuperManager import SuperManager
 
 
 class Intent(str):
@@ -11,11 +12,11 @@ class Intent(str):
 
 	# noinspection PyUnusedLocal
 	def __init__(self, value: str, isProtected: bool = False):
-		self._owner = Managers.ConfigManager.getAliceConfigByName('intentsOwner')
+		self._owner = SuperManager.getInstance().configManager.getAliceConfigByName('intentsOwner')
 		self._protected = isProtected
 
 		if isProtected:
-			Managers.ProtectedIntentManager.protectIntent(self.decoratedSelf())
+			SuperManager.getInstance().protectedIntentManager.protectIntent(self.decoratedSelf())
 
 		super().__init__()
 

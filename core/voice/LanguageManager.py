@@ -4,18 +4,17 @@ from typing import Optional
 
 import re
 
-import core.base.Managers as managers
 from core.ProjectAliceExceptions import LanguageManagerLangNotSupported
 from core.base.Manager import Manager
+from core.base.SuperManager import SuperManager
 
 
 class LanguageManager(Manager):
 
 	NAME = 'LanguageManager'
 
-	def __init__(self, mainClass):
-		super().__init__(mainClass, self.NAME)
-		managers.LanguageManager 		= self
+	def __init__(self):
+		super().__init__(self.NAME)
 		self._supportedLanguages 		= list()
 		self._activeLanguage 			= ''
 		self._activeCountryCode 		= ''
@@ -62,10 +61,11 @@ class LanguageManager(Manager):
 	def onStart(self):
 		super().onStart()
 		self._loadSupportedLanguages()
+		self.loadStrings()
 
 
 	def onBooted(self):
-		data = managers.TalkManager.langData
+		data = SuperManager.getInstance().talkManager.langData
 		if self.NAME in data:
 			self._locals = data[self.NAME]
 
@@ -85,7 +85,7 @@ class LanguageManager(Manager):
 		with open(Path('system/manager/LanguageManager/strings.json')) as jsonFile:
 			self._stringsData['system'] = json.load(jsonFile)
 
-		for moduleName, module in managers.ModuleManager.getModules().items():
+		for moduleName in SuperManager.getInstance().configManager.modulesConfigurations:
 			if moduleToLoad and moduleName != moduleToLoad:
 				continue
 
@@ -119,8 +119,8 @@ class LanguageManager(Manager):
 
 
 	def _loadSupportedLanguages(self):
-		activeLangDef: str = managers.ConfigManager.getAliceConfigByName('activeLanguage')
-		langDef: dict = managers.ConfigManager.getAliceConfigByName('supportedLanguages')
+		activeLangDef: str = SuperManager.getInstance().configManager.getAliceConfigByName('activeLanguage')
+		langDef: dict = SuperManager.getInstance().configManager.getAliceConfigByName('supportedLanguages')
 
 		for langCode, settings in langDef.items():
 			self._supportedLanguages.append(langCode)
@@ -190,7 +190,7 @@ class LanguageManager(Manager):
 		if toLang not in self._supportedLanguages:
 			raise LanguageManagerLangNotSupported
 
-		managers.ConfigManager.changeActiveLanguage(toLang)
+		SuperManager.getInstance().configManager.changeActiveLanguage(toLang)
 		self._loadSupportedLanguages()
 
 
@@ -200,5 +200,5 @@ class LanguageManager(Manager):
 		if forLang not in self._supportedLanguages:
 			raise LanguageManagerLangNotSupported
 
-		managers.ConfigManager.changeActiveSnipsProjectIdForLanguage(projectId, forLang)
+		SuperManager.getInstance().configManager.changeActiveSnipsProjectIdForLanguage(projectId, forLang)
 		self._loadSupportedLanguages()

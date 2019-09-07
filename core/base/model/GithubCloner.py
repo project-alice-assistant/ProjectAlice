@@ -6,7 +6,7 @@ import shutil
 import requests
 
 from core.ProjectAliceExceptions import GithubRateLimit, GithubTokenFailed
-import core.base.Managers as managers
+from core.base.SuperManager import SuperManager
 
 
 class GithubCloner:
@@ -34,8 +34,8 @@ class GithubCloner:
 
 	def _doClone(self, url):
 		try:
-			username = managers.ConfigManager.getAliceConfigByName('githubUsername')
-			token = managers.ConfigManager.getAliceConfigByName('githubToken')
+			username = SuperManager.getInstance().configManager.getAliceConfigByName('githubUsername')
+			token = SuperManager.getInstance().configManager.getAliceConfigByName('githubToken')
 
 			auth = (username, token) if (username and token) else None
 

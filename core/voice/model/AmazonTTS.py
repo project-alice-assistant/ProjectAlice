@@ -2,7 +2,7 @@ import subprocess
 
 import re
 
-import core.base.Managers as managers
+from core.base.SuperManager import SuperManager
 from core.dialog.model.DialogSession import DialogSession
 from core.user.model.User import User
 from core.voice.model.TTS import TTS
@@ -23,9 +23,9 @@ class AmazonTTS(TTS):
 		self._privacyMalus = -20
 		self._client = boto3.client(
 			'polly',
-			region_name=managers.ConfigManager.getAliceConfigByName('awsRegion'),
-			aws_access_key_id=managers.ConfigManager.getAliceConfigByName('awsAccessKey'),
-			aws_secret_access_key=managers.ConfigManager.getAliceConfigByName('awsSecretKey')
+			region_name=SuperManager.getInstance().configManager.getAliceConfigByName('awsRegion'),
+			aws_access_key_id=SuperManager.getInstance().configManager.getAliceConfigByName('awsAccessKey'),
+			aws_secret_access_key=SuperManager.getInstance().configManager.getAliceConfigByName('awsSecretKey')
 		)
 
 		# TODO implement the others

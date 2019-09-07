@@ -1,6 +1,5 @@
 import os
 
-import core.base.Managers    as managers
 from core.base.Manager import Manager
 
 
@@ -8,10 +7,8 @@ class ProtectedIntentManager(Manager):
 
 	NAME = 'ProtectedIntentManager'
 
-	def __init__(self, mainClass):
-		super().__init__(mainClass, self.NAME)
-
-		managers.ProtectedIntentManager = self
+	def __init__(self):
+		super().__init__(self.NAME)
 
 		# Protected intents cannot be randomly rejected by Alice
 		self._protectedIntents = list()

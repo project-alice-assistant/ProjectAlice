@@ -1,7 +1,7 @@
 import time
 
-import core.base.Managers as managers
 from core.base.Manager import Manager
+from core.base.SuperManager import SuperManager
 from core.util.model import TelemetryType
 
 
@@ -20,25 +20,25 @@ class TelemetryManager(Manager):
 	}
 
 
-	def __init__(self, mainClass):
-		super().__init__(mainClass, self.NAME, self.DATABASE)
-		managers.TelemetryManager = self
-
-		if not managers.ConfigManager.getAliceConfigByName('enableDataStoring'):
-			self.isActive = False
-			self._logger.info('[{}] Data storing is disabled'.format(self.name))
-
+	def __init__(self):
+		super().__init__(self.NAME, self.DATABASE)
 		self._data = list
 
 
+	def onStart(self):
+		if not SuperManager.getInstance().configManager.getAliceConfigByName('enableDataStoring'):
+			self._isActive = False
+			self._logger.info('[{}] Data storing is disabled'.format(self.name))
+
+
 	def onQuarterHour(self):
-		if managers.ConfigManager.getAliceConfigByName('autoPruneStoredData') > 0:
+		if SuperManager.getInstance().configManager.getAliceConfigByName('autoPruneStoredData') > 0:
 			self.pruneTable('telemetry')
 
 
 	# noinspection SqlResolve
 	def loadData(self):
-		if not self.isActive:
+		if not self._isActive:
 			return
 
 		self._data = self.databaseFetch(

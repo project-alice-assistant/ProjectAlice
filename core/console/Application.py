@@ -47,7 +47,7 @@ class Application(ConsoleApplication):
 		from core.console.command.IntentListCommand import IntentListCommand
 		self.add(IntentListCommand())
 
-		configManager = ConfigManager(self)
+		configManager = ConfigManager()
 
 		modules = configManager.getAliceConfigByName('modules')
 

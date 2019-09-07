@@ -14,8 +14,8 @@ from paho.mqtt.client import MQTTMessage
 from serial import Serial
 from serial.tools import list_ports
 
-import core.base.Managers as managers
 from core.base.Manager import Manager
+from core.base.SuperManager import SuperManager
 from core.commons import commons
 from core.device.model.Device import Device
 from core.device.model.TasmotaConfigs import TasmotaConfigs
@@ -37,29 +37,39 @@ class DeviceManager(Manager):
 	}
 
 
-	def __init__(self, mainClass):
-		super().__init__(mainClass, self.NAME, self.DATABASE)
-		managers.DeviceManager = self
+	def __init__(self):
+		super().__init__(self.NAME, self.DATABASE)
 
-		self._devices = dict()
-		self._broadcastRoom = ''
-		self._broadcastFlag = threading.Event()
+		self._devices           = dict()
+		self._broadcastRoom     = ''
+		self._broadcastFlag     = threading.Event()
 
-		self._broadcastPort = int(managers.ConfigManager.getAliceConfigByName('newDeviceBroadcastPort')) # Default 12354
-		self._broadcastTimer = None
+		self._broadcastPort     = None
+		self._broadcastTimer    = None
 
-		self._flashThread = None
+		self._flashThread       = None
 
-		self._listenPort = self._broadcastPort + 1
+		self._listenPort        = None
 
-		self._broadcastSocket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+		self._broadcastSocket   = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 		self._broadcastSocket.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
 		self._broadcastSocket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
 
-		self._listenSocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+		self._listenSocket      = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 		self._listenSocket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
 		self._listenSocket.settimeout(2)
+
+
+	def onStart(self):
+		super().onStart()
+
+		self._broadcastPort = int(SuperManager.getInstance().configManager.getAliceConfigByName('newDeviceBroadcastPort'))  # Default 12354
+		self._listenPort = self._broadcastPort + 1
+
 		self._listenSocket.bind(('', self._listenPort))
+
+		self.loadDevices()
+		self._logger.info('- Loaded {} devices'.format(len(self._devices)))
 
 
 	@property
@@ -67,24 +77,15 @@ class DeviceManager(Manager):
 		return self._broadcastRoom
 
 
-	def onStart(self):
-		if not super().onStart():
-			self._logger.error('[{}] Failed to start'.format(self.name))
-			return
-
-		self.loadDevices()
-		self._logger.info('- Loaded {} devices'.format(len(self._devices)))
-
-
 	def onBooted(self):
-		managers.MqttServer.publish(topic='projectalice/devices/coreReconnection')
+		SuperManager.getInstance().mqttManager.publish(topic='projectalice/devices/coreReconnection')
 
 
 	def onStop(self):
 		super().onStop()
 		self.stopBroadcasting()
 		self._broadcastSocket.close()
-		managers.MqttServer.publish(topic='projectalice/devices/coreDisconnection')
+		SuperManager.getInstance().mqttManager.publish(topic='projectalice/devices/coreDisconnection')
 
 
 	@staticmethod
@@ -92,7 +93,7 @@ class DeviceManager(Manager):
 		if not 'projectalice/devices/' in message.topic:
 			return None
 
-		return managers.DialogSessionManager.addTempSession(sessionId=uuid.uuid4(), message=message)
+		return SuperManager.getInstance().dialogSessionManager.addTempSession(sessionId=uuid.uuid4(), message=message)
 
 
 	def loadDevices(self):
@@ -112,7 +113,7 @@ class DeviceManager(Manager):
 
 	@staticmethod
 	def isBusy():
-		return managers.ThreadManager.isThreadAlive('broadcast')
+		return SuperManager.getInstance().threadManager.isThreadAlive('broadcast')
 
 
 	@property
@@ -139,7 +140,7 @@ class DeviceManager(Manager):
 
 
 	def startTasmotaFlashingProcess(self, room: str, espType: str, session: DialogSession) -> bool:
-		managers.ThreadManager.doLater(interval=0.5, func=managers.MqttServer.endTalk, args=[session.sessionId, managers.TalkManager.randomTalk('connectESPForFlashing', module='AliceCore')])
+		SuperManager.getInstance().threadManager.doLater(interval=0.5, func=SuperManager.getInstance().mqttManager.endTalk, args=[session.sessionId, SuperManager.getInstance().talkManager.randomTalk('connectESPForFlashing', module='AliceCore')])
 
 		self._broadcastFlag.set()
 		if os.path.isfile('sonoff.bin'):
@@ -155,7 +156,7 @@ class DeviceManager(Manager):
 			self._broadcastFlag.clear()
 			return False
 
-		managers.ThreadManager.newThread(name='flashThread', target=self.doFlashTasmota, args=[room, espType, session.siteId])
+		SuperManager.getInstance().threadManager.newThread(name='flashThread', target=self.doFlashTasmota, args=[room, espType, session.siteId])
 		return True
 
 
@@ -199,7 +200,7 @@ class DeviceManager(Manager):
 	def doFlashTasmota(self, room: str, espType: str, siteId: str):
 		port = self.findUSBPort(timeout=60)
 		if port:
-			managers.MqttServer.say(text=managers.TalkManager.randomTalk('usbDeviceFound', module='AliceCore'), client=siteId)
+			SuperManager.getInstance().mqttManager.say(text=SuperManager.getInstance().talkManager.randomTalk('usbDeviceFound', module='AliceCore'), client=siteId)
 			try:
 				mac = ESPLoader.detect_chip(port=port, baud=115200).read_mac()
 				mac = '%s' % (':'.join(map(lambda x: '%02x' % x, mac)))
@@ -219,26 +220,26 @@ class DeviceManager(Manager):
 				esptool.main(cmd)
 			except Exception as e:
 				self._logger.error('[{}] Something went wrong flashing esp device: {}'.format(self.name, e))
-				managers.MqttServer.say(text=managers.TalkManager.randomTalk('espFailed', module='AliceCore'), client=siteId)
+				SuperManager.getInstance().mqttManager.say(text=SuperManager.getInstance().talkManager.randomTalk('espFailed', module='AliceCore'), client=siteId)
 				self._broadcastFlag.clear()
 				return
 		else:
-			managers.MqttServer.say(text=managers.TalkManager.randomTalk('noESPFound', module='AliceCore'), client=siteId)
+			SuperManager.getInstance().mqttManager.say(text=SuperManager.getInstance().talkManager.randomTalk('noESPFound', module='AliceCore'), client=siteId)
 			self._broadcastFlag.clear()
 			return
 
 		self._logger.info('[{}] Tasmota flash done'.format(self.name))
-		managers.MqttServer.say(text=managers.TalkManager.randomTalk('espFlashedUnplugReplug', module='AliceCore'), client=siteId)
+		SuperManager.getInstance().mqttManager.say(text=SuperManager.getInstance().talkManager.randomTalk('espFlashedUnplugReplug', module='AliceCore'), client=siteId)
 		found = self.findUSBPort(timeout = 60)
 		if found:
-			managers.MqttServer.say(text=managers.TalkManager.randomTalk('espFoundReadyForConf', module='AliceCore'), client=siteId)
+			SuperManager.getInstance().mqttManager.say(text=SuperManager.getInstance().talkManager.randomTalk('espFoundReadyForConf', module='AliceCore'), client=siteId)
 			time.sleep(10)
 			uid = self._getFreeUID(mac)
 			tasmotaConfigs = TasmotaConfigs(deviceType=espType, uid=uid)
 			confs = tasmotaConfigs.getBacklogConfigs(room)
 			if not confs:
 				self._logger.error('[{}] Something went wrong getting tasmota configuration'.format(self.name))
-				managers.MqttServer.say(text=managers.TalkManager.randomTalk('espFailed', module='AliceCore'), client=siteId)
+				SuperManager.getInstance().mqttManager.say(text=SuperManager.getInstance().talkManager.randomTalk('espFailed', module='AliceCore'), client=siteId)
 			else:
 				serial = Serial()
 				serial.baudrate = 115200
@@ -269,17 +270,17 @@ class DeviceManager(Manager):
 
 					serial.close()
 					self._logger.info('[{}] Tasmota flashing and configuring done'.format(self.name))
-					managers.MqttServer.say(text=managers.TalkManager.randomTalk('espFlashingDone', module='AliceCore'), client=siteId)
+					SuperManager.getInstance().mqttManager.say(text=SuperManager.getInstance().talkManager.randomTalk('espFlashingDone', module='AliceCore'), client=siteId)
 					self.addNewDevice(espType, room, uid)
 					self._broadcastFlag.clear()
 
 				except Exception as e:
 					self._logger.error('[{}] Something went wrong writting configuration to esp device: {}'.format(self.name, e))
-					managers.MqttServer.say(text=managers.TalkManager.randomTalk('espFailed', module='AliceCore'), client=siteId)
+					SuperManager.getInstance().mqttManager.say(text=SuperManager.getInstance().talkManager.randomTalk('espFailed', module='AliceCore'), client=siteId)
 					self._broadcastFlag.clear()
 					serial.close()
 		else:
-			managers.MqttServer.say(text=managers.TalkManager.randomTalk('espFailed', module='AliceCore'), client=siteId)
+			SuperManager.getInstance().mqttManager.say(text=SuperManager.getInstance().talkManager.randomTalk('espFailed', module='AliceCore'), client=siteId)
 			self._broadcastFlag.clear()
 			return
 
@@ -317,11 +318,11 @@ class DeviceManager(Manager):
 
 		self._logger.info('[{}] Started broadcasting on {} for new device addition. Attributed uid: {}'.format(self.name, self._broadcastPort, uid))
 		self._listenSocket.listen(2)
-		managers.ThreadManager.newThread(name='broadcast', target=self.broadcast, args=[room, uid, siteId])
+		SuperManager.getInstance().threadManager.newThread(name='broadcast', target=self.broadcast, args=[room, uid, siteId])
 
-		self._broadcastTimer = managers.ThreadManager.newTimer(interval = 300, func=self.stopBroadcasting)
+		self._broadcastTimer = SuperManager.getInstance().threadManager.newTimer(interval = 300, func=self.stopBroadcasting)
 
-		managers.ModuleManager.broadcast(method = 'onBroadcastingForNewDeviceStart')
+		SuperManager.getInstance().moduleManager.broadcast(method = 'onBroadcastingForNewDeviceStart')
 		return True
 
 
@@ -333,7 +334,7 @@ class DeviceManager(Manager):
 			self._broadcastTimer.cancel()
 
 		self._broadcastRoom = ''
-		managers.ModuleManager.broadcast(method='onBroadcastingForNewDeviceStop')
+		SuperManager.getInstance().moduleManager.broadcast(method='onBroadcastingForNewDeviceStop')
 
 
 	def broadcast(self, room: str, uid: str, replyOnSiteId: str):
@@ -352,22 +353,22 @@ class DeviceManager(Manager):
 					for satellite in self.getDevicesByRoom(room):
 						if satellite.deviceType.lower() == 'alicesatellite':
 							self._logger.warning('[{}] Cannot have more than one Alice module per room, aborting'.format(self.name))
-							managers.MqttServer.say(text = managers.TalkManager.randomTalk('maxOneAlicePerRoom', module='system'), client=replyOnSiteId)
+							SuperManager.getInstance().mqttManager.say(text = SuperManager.getInstance().talkManager.randomTalk('maxOneAlicePerRoom', module='system'), client=replyOnSiteId)
 							answer = 'nok'
 							break
 
 				if answer != 'nok':
 					if self.addNewDevice(deviceType, room, uid):
 						self._logger.info('[{}] New device with uid {} successfully added'.format(self.name, uid))
-						managers.MqttServer.say(text = managers.TalkManager.randomTalk('newDeviceAdditionSuccess', module='system'), client=replyOnSiteId)
+						SuperManager.getInstance().mqttManager.say(text = SuperManager.getInstance().talkManager.randomTalk('newDeviceAdditionSuccess', module='system'), client=replyOnSiteId)
 						answer = 'ok'
 					else:
 						self._logger.info('[{}] Failed adding new device'.format(self.name))
-						managers.MqttServer.say(text = managers.TalkManager.randomTalk('newDeviceAdditionFailed', module='system'), client=replyOnSiteId)
+						SuperManager.getInstance().mqttManager.say(text = SuperManager.getInstance().talkManager.randomTalk('newDeviceAdditionFailed', module='system'), client=replyOnSiteId)
 						answer = 'nok'
 
 					if deviceType.lower() == 'alicesatellite':
-						managers.ThreadManager.doLater(interval=5, func=managers.WakewordManager.uploadToNewDevice, args=[uid])
+						SuperManager.getInstance().threadManager.doLater(interval=5, func=SuperManager.getInstance().wakewordManager.uploadToNewDevice, args=[uid])
 
 				self._broadcastSocket.sendto(bytes(answer, encoding='utf8'), (deviceIp, self._broadcastPort))
 				self.stopBroadcasting()
@@ -382,8 +383,8 @@ class DeviceManager(Manager):
 
 		if not self._devices[uid].connected:
 			self._devices[uid].connected = True
-			managers.broadcast('onDeviceConnecting', exceptions=[self.name])
-			managers.ModuleManager.broadcast('onDeviceConnecting')
+			SuperManager.getInstance().broadcast('onDeviceConnecting', exceptions=[self.name])
+			SuperManager.getInstance().moduleManager.broadcast('onDeviceConnecting')
 
 		return self._devices[uid]
 
@@ -394,8 +395,8 @@ class DeviceManager(Manager):
 
 		if self._devices[uid].connected:
 			self._devices[uid].connected = False
-			managers.broadcast('onDeviceDisconnecting', exceptions=[self.name])
-			managers.ModuleManager.broadcast('onDeviceDisconnecting')
+			SuperManager.getInstance().broadcast('onDeviceDisconnecting', exceptions=[self.name])
+			SuperManager.getInstance().moduleManager.broadcast('onDeviceDisconnecting')
 
 
 	def getDevicesByRoom(self, room: str, connectedOnly: bool = False) -> list:

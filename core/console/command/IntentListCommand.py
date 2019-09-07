@@ -24,31 +24,31 @@ class IntentListCommand(Command):
 	def __init__(self):
 		super().__init__()
 
-		configManager = ConfigManager(self)
+		configManager = ConfigManager()
 		configManager.onStart()
 
-		languageManager = LanguageManager(self)
+		languageManager = LanguageManager()
 		languageManager.onStart()
 
-		threadManager = ThreadManager(self)
+		threadManager = ThreadManager()
 		threadManager.onStart()
 
-		protectedIntentManager = ProtectedIntentManager(self)
+		protectedIntentManager = ProtectedIntentManager()
 		protectedIntentManager.onStart()
 
-		databaseManager = DatabaseManager(self)
+		databaseManager = DatabaseManager()
 		databaseManager.onStart()
 
-		userManager = UserManager(self)
+		userManager = UserManager()
 		userManager.onStart()
 
-		moduleManager = ModuleManager(self)
+		moduleManager = ModuleManager()
 		moduleManager.onStart()
 
-		snipsConsoleManager = SnipsConsoleManager(self)
+		snipsConsoleManager = SnipsConsoleManager()
 		snipsConsoleManager.onStart()
 
-		samkillaManager = SamkillaManager(self)
+		samkillaManager = SamkillaManager()
 
 		self._slotTypesModulesValues, self._intentsModulesValues, self._intentNameSkillMatching = samkillaManager.getDialogTemplatesMaps(
 			runOnAssistantId=languageManager.activeSnipsProjectId,

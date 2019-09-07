@@ -1,20 +1,21 @@
-import core.base.Managers as managers
 from core.base.Manager import Manager
 import requests
+
+from core.base.SuperManager import SuperManager
+
 
 class InternetManager(Manager):
 
 	NAME = 'InternetManager'
 
-	def __init__(self, mainClass):
-		super().__init__(mainClass, self.NAME)
-		managers.InternetManager = self
+	def __init__(self):
+		super().__init__(self.NAME)
 		self._online = False
 
 
 	def onStart(self):
 		super().onStart()
-		if not managers.ConfigManager.getAliceConfigByName('stayCompletlyOffline'):
+		if not SuperManager.getInstance().configManager.getAliceConfigByName('stayCompletlyOffline'):
 			self._checkOnlineState()
 		else:
 			self._logger.info('[{}] Configurations set to stay completly offline'.format(self.name))
@@ -30,7 +31,7 @@ class InternetManager(Manager):
 
 
 	def onFullMinute(self):
-		if not managers.ConfigManager.getAliceConfigByName('stayCompletlyOffline'):
+		if not SuperManager.getInstance().configManager.getAliceConfigByName('stayCompletlyOffline'):
 			self._checkOnlineState()
 
 
@@ -39,7 +40,7 @@ class InternetManager(Manager):
 			req = requests.get(addr)
 			if req.status_code == 204:
 				if not self._online:
-					managers.broadcast(method='onInternetConnected', exceptions=[self._name])
+					SuperManager.getInstance().broadcast(method='onInternetConnected', exceptions=[self._name])
 
 				self._online = True
 				return
@@ -47,6 +48,6 @@ class InternetManager(Manager):
 			pass
 
 		if self._online:
-			managers.broadcast(method='onInternetLost', exceptions=[self._name])
+			SuperManager.getInstance().broadcast(method='onInternetLost', exceptions=[self._name])
 
 		self._online = False

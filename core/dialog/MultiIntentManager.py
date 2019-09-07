@@ -1,7 +1,7 @@
 from paho.mqtt.client import MQTTMessage
 
+from core.base.SuperManager import SuperManager
 from core.commons import commons
-import core.base.Managers as managers
 from core.dialog.model import DialogSession
 from core.dialog.model.MultiIntent import MultiIntent
 from core.base.Manager import Manager
@@ -11,10 +11,8 @@ class MultiIntentManager(Manager):
 
 	NAME = 'MultiIntentManager'
 
-	def __init__(self, mainClass):
-		super().__init__(mainClass, self.NAME)
-
-		managers.MultiIntentManager = self
+	def __init__(self):
+		super().__init__(self.NAME)
 		self._multiIntents = dict()
 
 
@@ -25,13 +23,13 @@ class MultiIntentManager(Manager):
 
 	def processMessage(self, message: MQTTMessage) -> bool:
 		sessionId = commons.parseSessionId(message)
-		session = managers.DialogSessionManager.getSession(sessionId)
+		session = SuperManager.getInstance().dialogSessionManager.getSession(sessionId)
 		if not session or self.isProcessing(sessionId):
 			return False
 
 		payload = session.payload
 		if 'input' in payload:
-			separators = managers.LanguageManager.getStrings('intentSeparator')
+			separators = SuperManager.getInstance().languageManager.getStrings('intentSeparator')
 			GLUE_SPLITTER = '__multi_intent__'
 			userInput = payload['input']
 
@@ -64,7 +62,7 @@ class MultiIntentManager(Manager):
 
 	@staticmethod
 	def _queryNLU(session: DialogSession, string: str):
-		managers.MqttServer.publish(topic='hermes/nlu/query', payload={
+		SuperManager.getInstance().mqttManager.publish(topic='hermes/nlu/query', payload={
 			'input': string,
 			'sessionId': session.sessionId,
 			'intentFilter': session.intentFilter

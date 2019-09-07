@@ -5,7 +5,7 @@ import os
 from google.cloud import speech
 from google.cloud.speech import enums, types
 
-import core.base.Managers as managers
+from core.base.SuperManager import SuperManager
 from core.commons import commons
 from core.voice.model.ASR import ASR
 from core.voice.model.MicrophoneStream import MicrophoneStream
@@ -21,8 +21,8 @@ class GoogleASR(ASR):
 		self._client = speech.SpeechClient()
 		self._config = types.RecognitionConfig(
 			encoding=enums.RecognitionConfig.AudioEncoding.LINEAR16,
-			sample_rate_hertz=managers.ConfigManager.getAliceConfigByName('micSampleRate'),
-			language_code=managers.LanguageManager.activeLanguageAndCountryCode
+			sample_rate_hertz=SuperManager.getInstance().configManager.getAliceConfigByName('micSampleRate'),
+			language_code=SuperManager.getInstance().languageManager.activeLanguageAndCountryCode
 		)
 		self._capableOfArbitraryCapture = True
 		self._streamingConfig = types.StreamingRecognitionConfig(config=self._config, single_utterance=True, interim_results=False)
@@ -45,7 +45,7 @@ class GoogleASR(ASR):
 
 
 	def onListen(self) -> str:
-		micSampleRate = managers.ConfigManager.getAliceConfigByName('micSampleRate')
+		micSampleRate = SuperManager.getInstance().configManager.getAliceConfigByName('micSampleRate')
 
 		with MicrophoneStream(int(micSampleRate), int(micSampleRate / 10)) as stream:
 			audio_generator = stream.generator()

@@ -1,6 +1,6 @@
 import subprocess
 
-import core.base.Managers as managers
+from core.base.SuperManager import SuperManager
 from core.commons import commons
 from core.dialog.model.DialogSession import DialogSession
 from core.user.model.User import User
@@ -92,7 +92,7 @@ class SnipsTTS(TTS):
 				self._cacheFile,
 				'file://{}/var/voices/cmu_{}_{}.flitevox'.format(
 					commons.rootDir(),
-					managers.LanguageManager.activeCountryCode.lower(),
+					SuperManager.getInstance().languageManager.activeCountryCode.lower(),
 					self._voice
 				),
 				self._text])

@@ -9,6 +9,7 @@ from selenium.webdriver.chrome.webdriver import WebDriver
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.ui import WebDriverWait
 
+from core.base.SuperManager import SuperManager
 from core.commons import commons
 from core.snips.samkilla.Assistant import Assistant
 from core.snips.samkilla.Entity import Entity
@@ -20,7 +21,6 @@ from core.snips.samkilla.processors.MainProcessor import MainProcessor
 
 EnumSkillImageUrl = EnumSkillImageUrlClass()
 
-import core.base.Managers as managers
 from core.base.Manager import Manager
 
 class SamkillaManager(Manager):
@@ -28,35 +28,47 @@ class SamkillaManager(Manager):
 	NAME = 'SamkillaManager'
 	ROOT_URL = "https://console.snips.ai"
 
-	def __init__(self, mainClass, devMode: bool = True):
-		super().__init__(mainClass, self.NAME)
-		managers.SamkillaManager = self
+	def __init__(self, devMode: bool = True):
+		super().__init__(self.NAME)
 
-		self._currentUrl = ''
-		self._browser = None
-		self._devMode = devMode
-		self._cookie = ''
-		self._userId = ''
-		self._userEmail = managers.ConfigManager.getAliceConfigByName('snipsConsoleLogin')
-		self._userPassword = managers.ConfigManager.getAliceConfigByName('snipsConsolePassword')
-		self._assistant = None
-		self._skill = None
-		self._intent = None
-		self._entity = None
+		self._currentUrl    = ''
+		self._browser       = None
+		self._devMode       = devMode
+		self._cookie        = ''
+		self._userId        = ''
+		self._userEmail     = ''
+		self._userPassword  = ''
+		self._assistant     = None
+		self._skill         = None
+		self._intent        = None
+		self._entity        = None
 
 		self._dtSlotTypesModulesValues 		= dict()
 		self._dtIntentsModulesValues		= dict()
 		self._dtIntentNameSkillMatching   	= dict()
 
+		self._mainProcessor = None
+
+
+	def onStart(self):
+		super().onStart()
+
+		self._userEmail = SuperManager.getInstance().configManager.getAliceConfigByName('snipsConsoleLogin')
+		self._userPassword = SuperManager.getInstance().configManager.getAliceConfigByName('snipsConsolePassword')
+
 		self._mainProcessor = MainProcessor(self)
 		self.initActions()
 		self._loadDialogTemplateMapsInConfigManager()
 
+		path = Path(commons.rootDir(), 'var/assistants', SuperManager.getInstance().languageManager.activeLanguage)
+		if not path.exists() or not [x for x in path.iterdir() if x.is_dir()]:
+			self.sync()
+
 
 	def _loadDialogTemplateMapsInConfigManager(self):
 		self._dtSlotTypesModulesValues, self._dtIntentsModulesValues, self._dtIntentNameSkillMatching = self.getDialogTemplatesMaps(
-			runOnAssistantId=managers.LanguageManager.activeSnipsProjectId,
-			languageFilter=managers.LanguageManager.activeLanguage
+			runOnAssistantId=SuperManager.getInstance().languageManager.activeSnipsProjectId,
+			languageFilter=SuperManager.getInstance().languageManager.activeLanguage
 		)
 
 
@@ -99,8 +111,8 @@ class SamkillaManager(Manager):
 			self.log('[{}] No credentials. Unable to synchronize assistant with remote console'.format(self.name))
 			return False
 
-		activeLang: str = managers.LanguageManager.activeLanguage
-		activeProjectId: str = managers.LanguageManager.activeSnipsProjectId
+		activeLang: str = SuperManager.getInstance().languageManager.activeLanguage
+		activeProjectId: str = SuperManager.getInstance().languageManager.activeSnipsProjectId
 		changes: bool = False
 
 		try:
@@ -108,13 +120,13 @@ class SamkillaManager(Manager):
 				baseAssistantId=activeProjectId,
 				baseLanguageFilter=activeLang,
 				baseModuleFilter=moduleFilter,
-				newAssistantTitle='ProjectAlice_{}'.format(managers.LanguageManager.activeLanguage)
+				newAssistantTitle='ProjectAlice_{}'.format(SuperManager.getInstance().languageManager.activeLanguage)
 			)
 
 			if changes:
 				if download:
 					self.log('[{}] Changes detected during sync, let\'s update the assistant...'.format(self.name))
-					managers.SnipsConsoleManager.doDownload()
+					SuperManager.getInstance().snipsConsoleManager.doDownload()
 				else:
 					self.log('[{}] Changes detected during sync but not downloading yet'.format(self.name))
 			else:
@@ -127,21 +139,13 @@ class SamkillaManager(Manager):
 		return changes
 
 
-	def onStart(self):
-		super().onStart()
-
-		path = Path(commons.rootDir(), 'var/assistants', managers.LanguageManager.activeLanguage)
-		if not path.exists() or not [x for x in path.iterdir() if x.is_dir()]:
-			self.sync()
-
-
 	def log(self, msg: str):
 		if self._devMode:
 			self._logger.info(msg)
 
 
 	def start(self):
-		if managers.SnipsConsoleManager.loginCredentialsAreConfigured():
+		if SuperManager.getInstance().snipsConsoleManager.loginCredentialsAreConfigured():
 			self.initBrowser()
 			self.login(self.ROOT_URL + '/home/apps')
 			return True
@@ -268,7 +272,7 @@ class SamkillaManager(Manager):
 
 	# noinspection PyUnusedLocal
 	def findRunnableAssistant(self, assistantId: str, assistantLanguage: str, newAssistantTitle: str = '', persistLocal: bool = False) -> str:
-		if not newAssistantTitle: newAssistantTitle = 'ProjectAlice_{}'.format(managers.LanguageManager.activeLanguage)
+		if not newAssistantTitle: newAssistantTitle = 'ProjectAlice_{}'.format(SuperManager.getInstance().languageManager.activeLanguage)
 
 		runOnAssistantId = None
 
@@ -315,8 +319,8 @@ class SamkillaManager(Manager):
 			persistLocal=True
 		)
 
-		if managers.LanguageManager.activeSnipsProjectId != runOnAssistantId:
-			managers.LanguageManager.changeActiveSnipsProjectIdForLanguage(runOnAssistantId, baseLanguageFilter)
+		if SuperManager.getInstance().languageManager.activeSnipsProjectId != runOnAssistantId:
+			SuperManager.getInstance().languageManager.changeActiveSnipsProjectIdForLanguage(runOnAssistantId, baseLanguageFilter)
 
 		# From module intents files to dict then push to SnipsConsole
 		return self._mainProcessor.syncLocalToRemote(runOnAssistantId, moduleFilter=baseModuleFilter, languageFilter=baseLanguageFilter)

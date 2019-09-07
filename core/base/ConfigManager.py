@@ -1,4 +1,7 @@
 import shutil
+
+from core.base.SuperManager import SuperManager
+
 try:
 	# noinspection PyUnresolvedReferences
 	import config
@@ -18,7 +21,6 @@ import toml
 import configSample
 from core.ProjectAliceExceptions import ConfigurationUpdateFailed
 from core.base.Manager import Manager
-import core.base.Managers as managers
 from core.commons import commons
 
 
@@ -26,9 +28,8 @@ class ConfigManager(Manager):
 
 	NAME = 'ConfigManager'
 
-	def __init__(self, mainClass):
-		super().__init__(mainClass, self.NAME)
-		managers.ConfigManager			= self
+	def __init__(self):
+		super().__init__(self.NAME)
 		self._snipsConfigurations 		= dict()
 		self._aliceConfigurations 		= config.settings
 		self._modulesConfigurations 	= dict()
@@ -161,7 +162,7 @@ class ConfigManager(Manager):
 			self._snipsConfigurations = toml.loads(snipsConfig.read_text())
 		else:
 			self._logger.error('Failed retrieving Snips configs')
-			self._mainClass.onStop()
+			SuperManager.getInstance().onStop()
 
 
 	def updateSnipsConfiguration(self, parent: str, key: str, value, restartSnips: bool = False, createIfNotExist: bool = True):
@@ -181,7 +182,7 @@ class ConfigManager(Manager):
 			Path('/etc/snips.toml').write_text(toml.dumps(self._snipsConfigurations))
 
 			if restartSnips:
-				managers.SnipsServicesManager.runCmd('restart')
+				SuperManager.getInstance().snipsServicesManager.runCmd('restart')
 
 
 	def getSnipsConfiguration(self, parent: str, key: str, createIfNotExist: bool = True) -> typing.Optional[str]:

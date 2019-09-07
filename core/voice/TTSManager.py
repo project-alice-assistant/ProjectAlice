@@ -1,7 +1,7 @@
 from pathlib import Path
 
-import core.base.Managers as managers
 from core.base.Manager import Manager
+from core.base.SuperManager import SuperManager
 from core.commons import commons
 from core.dialog.model.DialogSession import DialogSession
 from core.user.model.User import User
@@ -14,17 +14,11 @@ class TTSManager(Manager):
 
 	CACHE_ROOT = Path(commons.rootDir(), 'var/cache')
 
-	def __init__(self, mainClass):
-		super().__init__(mainClass, self.NAME)
-		managers.TTSManager = self
+	def __init__(self):
+		super().__init__(self.NAME)
 
 		self._fallback = None
-
-		tts = self._loadTTS(managers.ConfigManager.getAliceConfigByName('tts').lower())
-		self._logger.info('[{}] Started "{}" TTS'.format(self.name, tts.value))
-
-		if (managers.ConfigManager.getAliceConfigByName('stayCompletlyOffline') or managers.ConfigManager.getAliceConfigByName('keepTTSOffline')) and self._tts.online:
-			self._tts = PicoTTS()
+		self._tts = None
 
 
 	def _loadTTS(self, tts: str, user: User = None) -> TTSEnum:
@@ -70,6 +64,13 @@ class TTSManager(Manager):
 
 	def onStart(self):
 		super().onStart()
+
+		if (SuperManager.getInstance().configManager.getAliceConfigByName('stayCompletlyOffline') or SuperManager.getInstance().configManager.getAliceConfigByName('keepTTSOffline')) and self._tts.online:
+			self._tts = PicoTTS()
+		else:
+			tts = self._loadTTS(SuperManager.getInstance().configManager.getAliceConfigByName('tts').lower())
+			self._logger.info('[{}] Started "{}" TTS'.format(self.name, tts.value))
+
 		self._tts.onStart()
 
 
@@ -78,7 +79,7 @@ class TTSManager(Manager):
 			self._fallback.onSay(session)
 		else:
 			if session.user != 'unknown':
-				user: User = managers.UserManager.getUser(session.user)
+				user: User = SuperManager.getInstance().userManager.getUser(session.user)
 				if user and user.tts:
 					self._loadTTS(user.tts, user)
 					self._tts.onStart()

@@ -1,7 +1,6 @@
 import threading
 from typing import Callable
 
-import core.base.Managers as managers
 from core.base.Manager import Manager
 from core.util.model.ThreadTimer import ThreadTimer
 
@@ -10,13 +9,12 @@ class ThreadManager(Manager):
 
 	NAME = 'ThreadManager'
 
-	def __init__(self, mainClass):
-		super().__init__(mainClass, self.NAME)
+	def __init__(self):
+		super().__init__(self.NAME)
 
-		managers.ThreadManager = self
-		self._timers			= list()
-		self._threads 			= dict()
-		self._locks 			= dict()
+		self._timers	= list()
+		self._threads 	= dict()
+		self._locks 	= dict()
 
 
 	def onStop(self):

@@ -1,7 +1,7 @@
 import subprocess
 
-import core.base.Managers as managers
 from core.base.Manager import Manager
+from core.base.SuperManager import SuperManager
 from core.voice.model.SnipsASR import SnipsASR
 
 
@@ -9,9 +9,8 @@ class SnipsServicesManager(Manager):
 
 	NAME = 'SnipsServicesManager'
 
-	def __init__(self, mainClass):
-		super().__init__(mainClass, self.NAME)
-		managers.SnipsServicesManager = self
+	def __init__(self):
+		super().__init__(self.NAME)
 
 		self._snipsServices = [
 			'snips-hotword',
@@ -36,7 +35,6 @@ class SnipsServicesManager(Manager):
 
 	def onStop(self):
 		self.runCmd(cmd='stop', services=self.snipsServices())
-		# return
 
 
 	def runCmd(self, cmd: str, services: list = None):
@@ -44,8 +42,7 @@ class SnipsServicesManager(Manager):
 			services = self._snipsServices
 
 		for service in services:
-
-			if service == 'snips-asr' and not isinstance(managers.ASRManager.asr, SnipsASR):
+			if service == 'snips-asr' and not isinstance(SuperManager.getInstance().ASRManager.asr, SnipsASR):
 				continue
 
 			result = subprocess.run(['sudo', 'systemctl', cmd, service], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
@@ -60,8 +57,8 @@ class SnipsServicesManager(Manager):
 		topic = 'hermes/feedback/sound/toggleOn' if state == 'on' else 'hermes/feedback/sound/toggleOff'
 
 		if siteId == 'all':
-			devices = managers.DeviceManager.getDevicesByType(deviceType='AliceSatellite', connectedOnly=True)
+			devices = SuperManager.getInstance().deviceManager.getDevicesByType(deviceType='AliceSatellite', connectedOnly=True)
 			for device in devices:
-				managers.MqttServer.publish(topic=topic, payload={'siteId': device.room})
+				SuperManager.getInstance().mqttManager.publish(topic=topic, payload={'siteId': device.room})
 		else:
-			managers.MqttServer.publish(topic=topic, payload={'siteId': siteId})
+			SuperManager.getInstance().mqttManager.publish(topic=topic, payload={'siteId': siteId})

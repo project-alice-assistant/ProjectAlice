@@ -2,8 +2,8 @@ from typing import Dict, Optional
 
 from paho.mqtt.client import MQTTMessage
 
-import core.base.Managers as managers
 from core.base.Manager import Manager
+from core.base.SuperManager import SuperManager
 from core.commons import commons
 from core.dialog.model.DialogSession import DialogSession
 
@@ -19,14 +19,13 @@ class DialogSessionManager(Manager):
 
 	NAME = 'DialogSessionManager'
 
-	def __init__(self, mainClass):
-		super().__init__(mainClass, self.NAME)
+	def __init__(self):
+		super().__init__(self.NAME)
 
-		managers.DialogSessionManager = self
-		self._preSessions: Dict[str, DialogSession] = dict()
-		self._sessions: Dict[str, DialogSession] = dict()
-		self._terminatedSessions: Dict[str, DialogSession] = dict()
-		self._revivePendingSessions: Dict[str, DialogSession] = dict()
+		self._preSessions: Dict[str, DialogSession]             = dict()
+		self._sessions: Dict[str, DialogSession]                = dict()
+		self._terminatedSessions: Dict[str, DialogSession]      = dict()
+		self._revivePendingSessions: Dict[str, DialogSession]   = dict()
 
 
 	@property
@@ -71,7 +70,7 @@ class DialogSessionManager(Manager):
 		:param message: dict
 		"""
 		session = self.addSession(sessionId, message)
-		managers.ThreadManager.doLater(func=self._sessions.pop, interval=20, args=[sessionId])
+		SuperManager.getInstance().threadManager.doLater(func=self._sessions.pop, interval=20, args=[sessionId])
 		return session
 
 

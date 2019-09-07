@@ -1,6 +1,6 @@
 from typing import Optional
 
-import core.base.Managers as managers
+from core.base.SuperManager import SuperManager
 from core.commons import commons
 from core.commons.model.Singleton import Singleton
 from core.dialog.model.DialogSession import DialogSession
@@ -8,12 +8,11 @@ from core.dialog.model.DialogSession import DialogSession
 
 class Manager(Singleton):
 
-	def __init__(self, mainClass, name: str, databaseSchema: dict = None):
+	def __init__(self, name: str, databaseSchema: dict = None):
 		super().__init__(name)
-		self._mainClass = mainClass
-		self._name = name
-		self._databaseSchema = databaseSchema
-		self._isActive = True
+		self._name              = name
+		self._databaseSchema    = databaseSchema
+		self._isActive          = True
 
 		self._logger.info('Initializing {}'.format(name))
 
@@ -52,20 +51,20 @@ class Manager(Singleton):
 
 	def _initDB(self):
 		if self._databaseSchema:
-			return managers.DatabaseManager.initDB(schema=self._databaseSchema, callerName=self.name)
+			return SuperManager.getInstance().databaseManager.initDB(schema=self._databaseSchema, callerName=self.name)
 		return True
 
 
 	def databaseFetch(self, tableName: str, query: str, values: dict = None, method: str = 'one') -> list:
-		return managers.DatabaseManager.fetch(tableName=tableName, query=query, values=values, callerName=self.name, method=method)
+		return SuperManager.getInstance().databaseManager.fetch(tableName=tableName, query=query, values=values, callerName=self.name, method=method)
 
 
 	def databaseInsert(self, tableName: str, query: str, values: dict = None) -> int:
-		return managers.DatabaseManager.insert(tableName=tableName, query=query, values=values, callerName=self.name)
+		return SuperManager.getInstance().databaseManager.insert(tableName=tableName, query=query, values=values, callerName=self.name)
 
 
 	def pruneTable(self, tableName: str):
-		return managers.DatabaseManager.prune(tableName=tableName, callerName=self.name)
+		return SuperManager.getInstance().databaseManager.prune(tableName=tableName, callerName=self.name)
 
 
 	def onBooted(self): pass

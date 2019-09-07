@@ -1,6 +1,5 @@
 import re
 
-from core.commons import commons
 from enum import Flag, auto
 
 

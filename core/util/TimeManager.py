@@ -1,25 +1,23 @@
 from datetime import datetime
 
-import core.base.Managers as managers
 from core.base.Manager import Manager
+from core.base.SuperManager import SuperManager
 
 
 class TimeManager(Manager):
 
 	NAME = 'TimeManager'
 
-	def __init__(self, mainClass):
-		super().__init__(mainClass, self.NAME)
+	def __init__(self):
+		super().__init__(self.NAME)
 
-		managers.TimeManager 	= self
 		self._fullMinuteTimer 	= None
 		self._fiveMinuteTimer 	= None
 		self._quarterHourTimer 	= None
 		self._fullHourTimer 	= None
 
 
-	def onStart(self):
-		super().onStart()
+	def onBooted(self):
 		self.onFullMinute()
 		self.onFiveMinute()
 		self.onQuarterHour()
@@ -28,45 +26,45 @@ class TimeManager(Manager):
 
 	def onFullMinute(self):
 		if self._fullMinuteTimer:
-			managers.ModuleManager.broadcast('onFullMinute')
-			managers.broadcast('onFullMinute', exceptions=[self.NAME])
+			SuperManager.getInstance().moduleManager.broadcast('onFullMinute')
+			SuperManager.getInstance().broadcast('onFullMinute', exceptions=[self.NAME])
 
 		second = int(datetime.now().strftime('%S'))
 		secondsTillFullMinute = 60 - second
-		self._fullMinuteTimer = managers.ThreadManager.newTimer(secondsTillFullMinute, self.onFullMinute)
+		self._fullMinuteTimer = SuperManager.getInstance().threadManager.newTimer(secondsTillFullMinute, self.onFullMinute)
 
 
 	def onFiveMinute(self):
 		if self._fiveMinuteTimer:
-			managers.ModuleManager.broadcast('onFiveMinute')
-			managers.broadcast('onFiveMinute', exceptions=[self.NAME])
+			SuperManager.getInstance().moduleManager.broadcast('onFiveMinute')
+			SuperManager.getInstance().broadcast('onFiveMinute', exceptions=[self.NAME])
 
 		minute = int(datetime.now().strftime('%M'))
 		second = int(datetime.now().strftime('%S'))
 		secondsTillFive = 60 * (round(300 / 60) - (minute % round(300 / 60))) - second
 
-		self._fiveMinuteTimer = managers.ThreadManager.newTimer(secondsTillFive, self.onFiveMinute)
+		self._fiveMinuteTimer = SuperManager.getInstance().threadManager.newTimer(secondsTillFive, self.onFiveMinute)
 
 
 	def onQuarterHour(self):
 		if self._quarterHourTimer:
-			managers.ModuleManager.broadcast('onQuarterHour')
-			managers.broadcast('onQuarterHour', exceptions=[self.NAME])
+			SuperManager.getInstance().moduleManager.broadcast('onQuarterHour')
+			SuperManager.getInstance().broadcast('onQuarterHour', exceptions=[self.NAME])
 
 		minute = int(datetime.now().strftime('%M'))
 		second = int(datetime.now().strftime('%S'))
 		secondsTillQuarter = 60 * (round(900 / 60) - (minute % round(900 / 60))) - second
 
-		self._quarterHourTimer = managers.ThreadManager.newTimer(secondsTillQuarter, self.onQuarterHour)
+		self._quarterHourTimer = SuperManager.getInstance().threadManager.newTimer(secondsTillQuarter, self.onQuarterHour)
 
 
 	def onFullHour(self):
 		if self._fullHourTimer:
-			managers.ModuleManager.broadcast('onFullHour')
-			managers.broadcast('onFullHour', exceptions=[self.NAME])
+			SuperManager.getInstance().moduleManager.broadcast('onFullHour')
+			SuperManager.getInstance().broadcast('onFullHour', exceptions=[self.NAME])
 
 		minute = int(datetime.now().strftime('%M'))
 		second = int(datetime.now().strftime('%S'))
 
 		secondsTillFullHour = ((60 - minute) * 60) - second
-		self._fullHourTimer = managers.ThreadManager.newTimer(secondsTillFullHour, self.onFullHour)
+		self._fullHourTimer = SuperManager.getInstance().threadManager.newTimer(secondsTillFullHour, self.onFullHour)

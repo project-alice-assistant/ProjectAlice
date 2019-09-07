@@ -1,4 +1,4 @@
-import core.base.Managers as managers
+from core.base.SuperManager import SuperManager
 from core.base.model.Intent import Intent
 from core.base.model.Module import Module
 from core.dialog.model.DialogSession import DialogSession
@@ -27,14 +27,14 @@ class AliceSatellite(Module):
 		self._temperatures = dict()
 		self._sensorReadings = dict()
 
-		managers.ProtectedIntentManager.protectIntent(self._FEEDBACK_SENSORS)
-		managers.ProtectedIntentManager.protectIntent(self._DEVICE_DISCONNECTION)
+		SuperManager.getInstance().protectedIntentManager.protectIntent(self._FEEDBACK_SENSORS)
+		SuperManager.getInstance().protectedIntentManager.protectIntent(self._DEVICE_DISCONNECTION)
 
 		super().__init__(self._SUPPORTED_INTENTS)
 
 
 	def onBooted(self):
-		confManager = managers.ConfigManager
+		confManager = SuperManager.getInstance().configManager
 		if confManager.configAliceExists('onReboot') and confManager.getAliceConfigByName('onReboot') == 'greetAndRebootModules':
 			self.restartDevice()
 
@@ -103,9 +103,9 @@ class AliceSatellite(Module):
 				return False
 
 			if place != siteId:
-				self.endDialog(sessionId, managers.TalkManager.randomTalk('co2PlaceSpecific').format(place, co2))
+				self.endDialog(sessionId, SuperManager.getInstance().talkManager.randomTalk('co2PlaceSpecific').format(place, co2))
 			else:
-				self.endDialog(sessionId, managers.TalkManager.randomTalk('co2').format(co2))
+				self.endDialog(sessionId, SuperManager.getInstance().talkManager.randomTalk('co2').format(co2))
 
 			return True
 
@@ -133,7 +133,7 @@ class AliceSatellite(Module):
 		elif intent == self._DEVICE_DISCONNECTION:
 			payload = session.payload
 			if 'uid' in payload:
-				managers.DeviceManager.deviceDisconnecting(payload['uid'])
+				SuperManager.getInstance().deviceManager.deviceDisconnecting(payload['uid'])
 
 		return False
 
@@ -159,7 +159,7 @@ class AliceSatellite(Module):
 
 
 	def restartDevice(self):
-		devices = managers.DeviceManager.getDevicesByType(deviceType=self.name, connectedOnly=True, onlyOne=False)
+		devices = SuperManager.getInstance().deviceManager.getDevicesByType(deviceType=self.name, connectedOnly=True, onlyOne=False)
 		if not devices:
 			return
 
