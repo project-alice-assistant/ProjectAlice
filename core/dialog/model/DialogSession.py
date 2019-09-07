@@ -1,12 +1,13 @@
 from paho.mqtt.client import MQTTMessage
 
-from core.commons import commons
+from core.commons import commons, constants
+
 
 class DialogSession:
 	def __init__(self, siteId):
 		self._siteId = siteId
 		self._sessionId = ''
-		self._user = 'unknown'
+		self._user = constants.UNKNOWN_USER
 		self._message = None
 		self._slots = dict()
 		self._slotsAsObjects = dict()

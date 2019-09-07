@@ -2,7 +2,7 @@ from pathlib import Path
 
 from core.base.model.Manager import Manager
 from core.base.SuperManager import SuperManager
-from core.commons import commons
+from core.commons import commons, constants
 from core.dialog.model.DialogSession import DialogSession
 from core.user.model.User import User
 from core.voice.model.PicoTTS import PicoTTS
@@ -78,7 +78,7 @@ class TTSManager(Manager):
 		if self._fallback:
 			self._fallback.onSay(session)
 		else:
-			if session.user != 'unknown':
+			if session.user != constants.UNKNOWN_USER:
 				user: User = SuperManager.getInstance().userManager.getUser(session.user)
 				if user and user.tts:
 					self._loadTTS(user.tts, user)

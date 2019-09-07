@@ -274,8 +274,6 @@ def online(randomTalk: bool = True, text: str = ''):
 
 	:param text:
 	:param randomTalk:
-	:param *args: variable number of arguments
-	:param **kwargs: keyworded, variable-length argument list
 	:return: return value of function or random offline string in the current language
 	Examples:
         An intent that requires ethernet can be defined the following way:

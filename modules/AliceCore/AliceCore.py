@@ -9,7 +9,7 @@ import tempfile
 from core.ProjectAliceExceptions import ConfigurationUpdateFailed, LanguageManagerLangNotSupported, ModuleStartDelayed
 from core.base.model.Intent import Intent
 from core.base.model.Module import Module
-from core.commons import commons
+from core.commons import commons, constants
 from core.dialog.model.DialogSession import DialogSession
 from core.user.model.AccessLevels import AccessLevel
 from core.voice.WakewordManager import WakewordManagerState
@@ -608,7 +608,7 @@ class AliceCore(Module):
 				)
 				return True
 
-			if session.slotRawValue('Name') == 'unknownword':
+			if session.slotRawValue('Name') == constants.UNKNOWN_WORD:
 				self.continueDialog(
 					sessionId=sessionId,
 					text=self.TalkManager.randomTalk('notUnderstood', module='system'),

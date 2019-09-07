@@ -10,7 +10,7 @@ from core.ProjectAliceExceptions import AccessLevelTooLow
 from core.base.model.Manager import Manager
 from core.base.SuperManager import SuperManager
 from core.base.model.Intent import Intent
-from core.commons import commons
+from core.commons import commons, constants
 from core.commons.commons import deprecated
 from core.dialog.model.DialogSession import DialogSession
 
@@ -221,7 +221,7 @@ class MqttServer(Manager):
 
 		self._multiDetectionsHolder.append(payload['siteId'])
 
-		user = 'unknown'
+		user = constants.UNKNOWN_USER
 		if payload['modelType'] == 'personal':
 			speaker = payload['modelId']
 			users = {name.lower(): user for name, user in SuperManager.getInstance().userManager.users.items()}
@@ -459,7 +459,7 @@ class MqttServer(Manager):
 			self._logger.warning('[{}] Ask was provided customdata of unsupported type: {}'.format(self.name, customData))
 			customData = dict()
 
-		user = customData.get('user', 'unknown') if customData else 'unknown'
+		user = customData.get('user', constants.UNKNOWN_USER) if customData else constants.UNKNOWN_USER
 		preSession = SuperManager.getInstance().dialogSessionManager.preSession(client, user)
 		if previousIntent:
 			preSession.intentHistory.append(previousIntent)

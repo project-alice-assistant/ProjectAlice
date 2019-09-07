@@ -4,7 +4,7 @@ from paho.mqtt.client import MQTTMessage
 
 from core.base.model.Manager import Manager
 from core.base.SuperManager import SuperManager
-from core.commons import commons
+from core.commons import commons, constants
 from core.dialog.model.DialogSession import DialogSession
 
 
@@ -86,7 +86,7 @@ class DialogSessionManager(Manager):
 	def getUser(self, sessionId: str) -> str:
 		if sessionId not in self._sessions:
 			self._logger.warning("[{}] Trying to get user from a session that doesn't exist".format(self.name))
-			return 'unknown'
+			return constants.UNKNOWN_USER
 		
 		return self._sessions[sessionId].user
 

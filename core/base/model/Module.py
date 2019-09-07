@@ -10,7 +10,7 @@ from pathlib import Path
 from paho.mqtt import client as MQTTClient
 
 from core.base.SuperManager import SuperManager
-from core.commons import commons
+from core.commons import commons, constants
 from core.dialog.model.DialogSession import DialogSession
 from core.ProjectAliceExceptions import ModuleStartingFailed, AccessLevelTooLow
 from core.base.model.Intent import Intent
@@ -115,7 +115,7 @@ class Module:
 
 		if intent in self._authOnlyIntents:
 			# Return if intent is for auth users only but the user is unknown
-			if session.user == 'unknown':
+			if session.user == constants.UNKNOWN_USER:
 				self.endDialog(
 					sessionId=session.sessionId,
 					text=self.TalkManager.randomTalk(talk='unknowUser', module='system')
