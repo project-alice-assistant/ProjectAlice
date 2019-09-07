@@ -58,6 +58,7 @@ class LanguageManager(Manager):
 	def activeLanguageAndCountryCode(self):
 		return '{}-{}'.format(self._activeLanguage, self._activeCountryCode)
 
+
 	def onStart(self):
 		super().onStart()
 		self._loadSupportedLanguages()
@@ -67,6 +68,7 @@ class LanguageManager(Manager):
 		data = managers.TalkManager.langData
 		if self.NAME in data:
 			self._locals = data[self.NAME]
+
 
 	def sanitizeNluQuery(self, query: str = '') -> str:
 		for sign, langsValues in self._stringsData['system'].items():
@@ -78,8 +80,9 @@ class LanguageManager(Manager):
 
 		return query
 
+
 	def loadStrings(self, moduleToLoad: str = ''):
-		with open('system/manager/LanguageManager/strings.json') as jsonFile:
+		with open(Path('system/manager/LanguageManager/strings.json')) as jsonFile:
 			self._stringsData['system'] = json.load(jsonFile)
 
 		for moduleName, module in managers.ModuleManager.getModules().items():
@@ -100,13 +103,13 @@ class LanguageManager(Manager):
 			toLang = self.activeLanguage
 		if not module in self._stringsData:
 			self._logger.error('[{}] Asked to get translation from module "{}" but does not exist'.format(self.name, module))
-			return None
+			return list()
 		elif key not in self._stringsData[module]:
 			self._logger.error('[{}] Asked to get translation for "{}" from module "{}" but does not exist'.format(self.name, key, module))
-			return None
+			return list()
 		elif toLang not in self._stringsData[module][key]:
 			self._logger.error('[{}] Asked to get "{}" translation for "{}" from module "{}" but does not exist'.format(self.name, toLang, key, module))
-			return None
+			return list()
 		else:
 			return self._stringsData[module][key][toLang]
 

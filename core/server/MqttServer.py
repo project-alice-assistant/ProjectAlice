@@ -132,78 +132,81 @@ class MqttServer(Manager):
 
 	# noinspection PyUnusedLocal
 	def onMessage(self, client, userdata, message: mqtt.MQTTMessage):
-		if message.topic == self._HERMES_INTENT_PARSED:
-			return
-
-		siteId = commons.parseSiteId(message)
-		payload = commons.payload(message)
-		sessionId = commons.parseSessionId(message)
-
-		session = managers.DialogSessionManager.getSession(sessionId)
-		if session:
-			session.update(message)
-			if managers.MultiIntentManager.processMessage(message):
+		try:
+			if message.topic == self._HERMES_INTENT_PARSED:
 				return
 
-		if message.topic == self._HERMES_CAPTURED:
-			managers.ModuleManager.broadcast('onASRCaptured', args=[payload])
-			return
+			siteId = commons.parseSiteId(message)
+			payload = commons.payload(message)
+			sessionId = commons.parseSessionId(message)
 
-		elif message.topic == self._HERMES_START_LISTENING:
-			managers.ModuleManager.broadcast('onListening', args=[siteId])
-			return
+			session = managers.DialogSessionManager.getSession(sessionId)
+			if session:
+				session.update(message)
+				if managers.MultiIntentManager.processMessage(message):
+					return
 
-		elif message.topic == self._HERMES_HOTWORD_TOGGLE_ON:
-			managers.ModuleManager.broadcast('onHotwordToggleOn', args=[siteId])
-			return
+			if message.topic == self._HERMES_CAPTURED:
+				managers.ModuleManager.broadcast('onASRCaptured', args=[payload])
+				return
 
-		session = managers.DialogSessionManager.getSession(sessionId)
-		if not session:
-			session = managers.DeviceManager.onMessage(message)
+			elif message.topic == self._HERMES_START_LISTENING:
+				managers.ModuleManager.broadcast('onListening', args=[siteId])
+				return
+
+			elif message.topic == self._HERMES_HOTWORD_TOGGLE_ON:
+				managers.ModuleManager.broadcast('onHotwordToggleOn', args=[siteId])
+				return
+
+			session = managers.DialogSessionManager.getSession(sessionId)
 			if not session:
-				self._logger.warning('[{}] Got a message on ({}) but nobody knows what to do with it'.format(self.name, message.topic))
-				self.endTalk(sessionId)
+				session = managers.DeviceManager.onMessage(message)
+				if not session:
+					self._logger.warning('[{}] Got a message on ({}) but nobody knows what to do with it'.format(self.name, message.topic))
+					self.endTalk(sessionId)
+					return
+
+			redQueen = managers.ModuleManager.getModuleInstance('RedQueen')
+			if redQueen and not redQueen.inTheMood(session):
 				return
 
-		redQueen = managers.ModuleManager.getModuleInstance('RedQueen')
-		if redQueen and not redQueen.inTheMood(session):
-			return
-
-		customData = session.customData
-		if 'intent' in payload and payload['intent']['confidenceScore'] < managers.ConfigManager.getAliceConfigByName('probabilityTreshold'):
-			self.continueDialog(
-				sessionId=sessionId,
-				text=managers.TalkManager.randomTalk('notUnderstood', module='system')
-			)
-			return
-
-		moduleManager = managers.ModuleManager
-		module = moduleManager.getModuleInstance('ContextSensitive')
-		if module:
-			module.addToMessageHistory(session)
-
-		modules = moduleManager.getModules()
-		for key, modul in modules.items():
-			module = modul['instance']
-			try:
-				consumed = module.onMessage(message.topic, session)
-			except AccessLevelTooLow:
-				# The command was recognized but required higher access level
+			customData = session.customData
+			if 'intent' in payload and payload['intent']['confidenceScore'] < managers.ConfigManager.getAliceConfigByName('probabilityTreshold'):
+				self.continueDialog(
+					sessionId=sessionId,
+					text=managers.TalkManager.randomTalk('notUnderstood', module='system')
+				)
 				return
 
-			# Authentication might end the session directly from a module
-			if not managers.DialogSessionManager.getSession(sessionId):
-				return
+			moduleManager = managers.ModuleManager
+			module = moduleManager.getModuleInstance('ContextSensitive')
+			if module:
+				module.addToMessageHistory(session)
 
-			if managers.MultiIntentManager.isProcessing(sessionId):
-				managers.MultiIntentManager.processNextIntent(sessionId)
-				return
+			modules = moduleManager.getModules()
+			for key, modul in modules.items():
+				module = modul['instance']
+				try:
+					consumed = module.onMessage(message.topic, session)
+				except AccessLevelTooLow:
+					# The command was recognized but required higher access level
+					return
 
-			elif consumed:
-				return
+				# Authentication might end the session directly from a module
+				if not managers.DialogSessionManager.getSession(sessionId):
+					return
 
-		self._logger.warning("[{}] Intent \"{}\" wasn't consumed by any module".format(self.name, message.topic))
-		self.endTalk(sessionId)
+				if managers.MultiIntentManager.isProcessing(sessionId):
+					managers.MultiIntentManager.processNextIntent(sessionId)
+					return
+
+				elif consumed:
+					return
+
+			self._logger.warning("[{}] Intent \"{}\" wasn't consumed by any module".format(self.name, message.topic))
+			self.endTalk(sessionId)
+		except Exception as e:
+			self._logger.error('[{}] Uncaught error in onMessage: {}'.format(self.name, e))
 
 
 	# noinspection PyUnusedLocal

@@ -182,6 +182,7 @@ class Module:
 
 
 	def randomTalk(self, text: str, replace: list = None) -> str:
+		print('x')
 		string = managers.TalkManager.randomTalk(talk=text, module=self.name)
 
 		if replace:

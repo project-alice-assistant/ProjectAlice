@@ -44,7 +44,7 @@ class ModuleManager(Manager):
 
 		self._moduleInstallThread = managers.ThreadManager.newThread(name='ModuleInstallThread', target=self._checkForModuleInstall, autostart=False)
 		self._supportedIntents = list()
-		self._modules = dict()
+		self._modules = self._loadModuleList()
 
 
 	@property
@@ -173,7 +173,6 @@ class ModuleManager(Manager):
 
 	def onStart(self):
 		super().onStart()
-		self._modules = self._loadModuleList()
 		self.checkForModuleUpdates()
 		self.startAllModules()
 
