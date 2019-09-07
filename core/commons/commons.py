@@ -254,10 +254,16 @@ def indexOf(sub: str, string: str) -> int:
 	except ValueError:
 		return -1
 
-def online(func):
+def online(randomTalk: bool = True, text: str = ''):
 	"""
-	Decorator for methods module methods that require to be online, that will either execute
-	the method normal or returns a random offline answer when alice is offline
+	(return a) decorator to mark a function that required ethernet.
+
+    This decorator can be used (with or or without parameters) to define
+    a function that requires ethernet. In the Default mode without arguments shown
+	in the example it will either execute whats in the function or when alice is
+	offline return a random offline answer. Using the parameters:
+		@online(randomTalk=False, text=<myText>)
+	a own text can be used when bein offline aswell
 
 	:param *args: variable number of arguments
 	:param **kwargs: keyworded, variable-length argument list
@@ -276,9 +282,15 @@ def online(func):
 			request = requests.get('http://api.open-notify.org')
 			return request.text
 	"""
-	def wrapper(*args, **kwargs):
-		if managers.InternetManager.online:
-			return func(*args, **kwargs)
-		else:
-			return managers.TalkManager.randomTalk('offline', module='system')'
-	return wrapper
+	def argumentWrapper(func):
+		def functionWrapper(*args, **kwargs):
+			if test:
+				return func(*args, **kwargs)
+			elif randomTalk:
+				return  'random'
+			else:
+				return text
+		return functionWrapper
+	if callable(randomTalk):
+		return argumentWrapper(randomTalk)
+	return argumentWrapper
