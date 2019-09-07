@@ -182,7 +182,7 @@ class ConfigManager(Manager):
 			Path('/etc/snips.toml').write_text(toml.dumps(self._snipsConfigurations))
 
 			if restartSnips:
-				SuperManager.getInstance().snipsServicesManager.runCmd('restart')
+				self.SnipsServicesManager.runCmd('restart')
 
 
 	def getSnipsConfiguration(self, parent: str, key: str, createIfNotExist: bool = True) -> typing.Optional[str]:

@@ -144,7 +144,7 @@ class SuperManager(object):
 		self.wakewordManager            = WakewordManager()
 		self.talkManager                = TalkManager()
 
-		self._managers = {name.capitalize(): manager for name, manager in self.__dict__.items() if name.endswith('Manager')}
+		self._managers = {name[0].upper() + name[1:]: manager for name, manager in self.__dict__.items() if name.endswith('Manager')}
 
 
 	def broadcast(self, method, exceptions: list = None, manager = None, args: list = None, propagateToModules: bool = False):

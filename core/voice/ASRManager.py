@@ -29,13 +29,13 @@ class ASRManager(Manager):
 	def onStart(self):
 		super().onStart()
 
-		if SuperManager.getInstance().configManager.getAliceConfigByName(configName='asr').lower() == 'google' and not SuperManager.getInstance().configManager.getAliceConfigByName('keepASROffline') and not SuperManager.getInstance().configManager.getAliceConfigByName('stayCompletlyOffline'):
+		if self.ConfigManager.getAliceConfigByName(configName='asr').lower() == 'google' and not self.ConfigManager.getAliceConfigByName('keepASROffline') and not self.ConfigManager.getAliceConfigByName('stayCompletlyOffline'):
 			self._asr = GoogleASR()
-			SuperManager.getInstance().snipsServicesManager.runCmd('stop', ['snips-asr'])
+			self.SnipsServicesManager.runCmd('stop', ['snips-asr'])
 			self._logger.info('[{}] Turned Snips ASR off'.format(self.name))
 		else:
 			self._asr = SnipsASR()
-			SuperManager.getInstance().snipsServicesManager.runCmd('start', ['snips-asr'])
+			self.SnipsServicesManager.runCmd('start', ['snips-asr'])
 			self._logger.info('[{}] Started Snips ASR'.format(self.name))
 
 
@@ -45,22 +45,22 @@ class ASRManager(Manager):
 
 
 	def onInternetConnected(self, *args):
-		if not SuperManager.getInstance().configManager.getAliceConfigByName('keepASROffline'):
-			asr = SuperManager.getInstance().configManager.getAliceConfigByName('asr').lower()
-			if asr != 'snips' and not SuperManager.getInstance().configManager.getAliceConfigByName('keepASROffline') and not SuperManager.getInstance().configManager.getAliceConfigByName('stayCompletlyOffline'):
+		if not self.ConfigManager.getAliceConfigByName('keepASROffline'):
+			asr = self.ConfigManager.getAliceConfigByName('asr').lower()
+			if asr != 'snips' and not self.ConfigManager.getAliceConfigByName('keepASROffline') and not self.ConfigManager.getAliceConfigByName('stayCompletlyOffline'):
 				self._logger.info('[{}] Connected to internet, switching ASR'.format(self.name))
-				SuperManager.getInstance().snipsServicesManager.runCmd('stop', ['snips-asr'])
+				self.SnipsServicesManager.runCmd('stop', ['snips-asr'])
 				if asr == 'google':
 					self._asr = GoogleASR()
-				SuperManager.getInstance().threadManager.doLater(interval=3, func=SuperManager.getInstance().mqttManager.say, args=[SuperManager.getInstance().talkManager.randomTalk('internetBack', module='AliceCore'), 'all'])
+				self.ThreadManager.doLater(interval=3, func=self.MqttManager.say, args=[self.TalkManager.randomTalk('internetBack', module='AliceCore'), 'all'])
 
 
 	def onInternetLost(self, *args):
 		if not isinstance(self._asr, SnipsASR):
 			self._logger.info('[{}] Internet lost, switching to snips ASR'.format(self.name))
-			SuperManager.getInstance().snipsServicesManager.runCmd('start', ['snips-asr'])
+			self.SnipsServicesManager.runCmd('start', ['snips-asr'])
 			self._asr = SnipsASR()
-			SuperManager.getInstance().threadManager.doLater(interval=3, func=SuperManager.getInstance().mqttManager.say, args=[SuperManager.getInstance().talkManager.randomTalk('internetLost', module='AliceCore'), 'all'])
+			self.ThreadManager.doLater(interval=3, func=self.MqttManager.say, args=[self.TalkManager.randomTalk('internetLost', module='AliceCore'), 'all'])
 
 
 	def onStartListening(self, session: DialogSession):
@@ -74,23 +74,23 @@ class ASRManager(Manager):
 
 			if result:
 				# Stop listener as fast as possible
-				SuperManager.getInstance().mqttManager.publish(topic='hermes/asr/stopListening', payload={'sessionId': session.sessionId, 'siteId': session.siteId})
+				self.MqttManager.publish(topic='hermes/asr/stopListening', payload={'sessionId': session.sessionId, 'siteId': session.siteId})
 
-				result = SuperManager.getInstance().languageManager.sanitizeNluQuery(result)
+				result = self.LanguageManager.sanitizeNluQuery(result)
 				self._logger.debug('[{}] - {} output: "{}"'.format(self.NAME, self._asr.__class__.__name__, result))
 
-				supportedIntents = session.intentFilter or SuperManager.getInstance().moduleManager.supportedIntents
+				supportedIntents = session.intentFilter or self.ModuleManager.supportedIntents
 				intentFilter = [intent.justTopic for intent in supportedIntents if isinstance(intent, Intent) and not intent.protected]
 
 				# Add Global Intents
 				intentFilter.append(Intent('GlobalStop').justTopic)
 
-				SuperManager.getInstance().mqttManager.publish(topic='hermes/asr/textCaptured', payload={'sessionId': session.sessionId, 'text': result, 'siteId': session.siteId, 'likelihood': 1, 'seconds': processing})
+				self.MqttManager.publish(topic='hermes/asr/textCaptured', payload={'sessionId': session.sessionId, 'text': result, 'siteId': session.siteId, 'likelihood': 1, 'seconds': processing})
 
-				SuperManager.getInstance().mqttManager.publish(topic='hermes/nlu/query', payload={'id':session.sessionId, 'input': result, 'intentFilter': intentFilter, 'sessionId': session.sessionId})
+				self.MqttManager.publish(topic='hermes/nlu/query', payload={'id':session.sessionId, 'input': result, 'intentFilter': intentFilter, 'sessionId': session.sessionId})
 			else:
-				SuperManager.getInstance().mqttManager.publish(topic='hermes/nlu/intentNotRecognized')
-				SuperManager.getInstance().mqttManager.playSound(
+				self.MqttManager.publish(topic='hermes/nlu/intentNotRecognized')
+				self.MqttManager.playSound(
 					soundFile=Path(commons.rootDir(), 'assistant/custom_dialogue/sound/error.wav'),
 					sessionId=uuid.uuid4(),
 					absolutePath=True,

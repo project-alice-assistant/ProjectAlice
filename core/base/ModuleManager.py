@@ -49,8 +49,8 @@ class ModuleManager(Manager):
 	def onStart(self):
 		super().onStart()
 
-		self._busyInstalling = SuperManager.getInstance().threadManager.newLock('moduleInstallation')
-		self._moduleInstallThread = SuperManager.getInstance().threadManager.newThread(name='ModuleInstallThread', target=self._checkForModuleInstall, autostart=False)
+		self._busyInstalling = self.ThreadManager.newLock('moduleInstallation')
+		self._moduleInstallThread = self.ThreadManager.newThread(name='ModuleInstallThread', target=self._checkForModuleInstall, autostart=False)
 
 		self._modules = self._loadModuleList()
 		self.checkForModuleUpdates()
@@ -73,7 +73,7 @@ class ModuleManager(Manager):
 		else:
 			modules = dict()
 
-		availableModules = SuperManager.getInstance().configManager.modulesConfigurations
+		availableModules = self.ConfigManager.modulesConfigurations
 		availableModules = collections.OrderedDict(sorted(availableModules.items()))
 
 		if Customisation.MODULE_NAME in availableModules:
@@ -98,13 +98,13 @@ class ModuleManager(Manager):
 
 				if 'conditions' in module:
 					for conditionName, conditionValue in module['conditions'].items():
-						if conditionName == 'lang' and SuperManager.getInstance().languageManager.activeLanguage not in conditionValue:
+						if conditionName == 'lang' and self.LanguageManager.activeLanguage not in conditionValue:
 							raise ModuleNotConditionCompliant
 
 						elif conditionName == 'online':
-							if conditionValue and SuperManager.getInstance().configManager.getAliceConfigByName('stayCompletlyOffline'):
+							if conditionValue and self.ConfigManager.getAliceConfigByName('stayCompletlyOffline'):
 								raise ModuleNotConditionCompliant
-							elif not conditionValue and not SuperManager.getInstance().configManager.getAliceConfigByName('stayCompletlyOffline'):
+							elif not conditionValue and not self.ConfigManager.getAliceConfigByName('stayCompletlyOffline'):
 								raise ModuleNotConditionCompliant
 
 						elif conditionName == 'module':
@@ -122,7 +122,7 @@ class ModuleManager(Manager):
 									raise ModuleNotConditionCompliant
 
 						elif conditionName == 'asrArbitraryCapture':
-							if conditionValue and not SuperManager.getInstance().ASRManager.asr.capableOfArbitraryCapture:
+							if conditionValue and not self.ASRManager.asr.capableOfArbitraryCapture:
 								raise ModuleNotConditionCompliant
 
 						elif conditionName == 'activeManager':
@@ -305,17 +305,17 @@ class ModuleManager(Manager):
 
 
 	def checkForModuleUpdates(self):
-		if not SuperManager.getInstance().configManager.getAliceConfigByName('moduleAutoUpdate'):
+		if not self.ConfigManager.getAliceConfigByName('moduleAutoUpdate'):
 			return
 
 		self._logger.info('[{}] Checking for module updates'.format(self.name))
-		if not SuperManager.getInstance().internetManager.online:
+		if not self.InternetManager.online:
 			self._logger.info('[{}] Not connected...'.format(self.name))
 			return
 
 		self._busyInstalling.set()
 
-		availableModules = SuperManager.getInstance().configManager.modulesConfigurations
+		availableModules = self.ConfigManager.modulesConfigurations
 
 		i = 0
 		for moduleName in self._modules:
@@ -342,15 +342,15 @@ class ModuleManager(Manager):
 
 
 	def _checkForModuleInstall(self):
-		SuperManager.getInstance().threadManager.newTimer(interval=10, func=self._checkForModuleInstall, autoStart=True)
+		self.ThreadManager.newTimer(interval=10, func=self._checkForModuleInstall, autoStart=True)
 
 		root = Path(commons.rootDir(), 'system/moduleInstallTickets')
 		files = [f for f in root.iterdir() if f.suffix == '.install']
 
 		if  self._busyInstalling.isSet() or \
-			not SuperManager.getInstance().internetManager.online or \
+			not self.InternetManager.online or \
 			not files or \
-			SuperManager.getInstance().threadManager.getLock('SnipsAssistantDownload').isSet():
+			self.ThreadManager.getLock('SnipsAssistantDownload').isSet():
 			return
 
 		if files:
@@ -369,9 +369,9 @@ class ModuleManager(Manager):
 					for moduleName, info in modulesToBoot.items():
 						try:
 							if i == len(modulesToBoot):
-								SuperManager.getInstance().samkillaManager.sync(moduleFilter=moduleName)
+								self.SamkillaManager.sync(moduleFilter=moduleName)
 							else:
-								SuperManager.getInstance().samkillaManager.sync(moduleFilter=moduleName, download=False)
+								self.SamkillaManager.sync(moduleFilter=moduleName, download=False)
 							i += 1
 						except Exception as esamk:
 							self._logger.error('[{}] Failed syncing with remote snips console {}'.format(self.name, esamk))
@@ -379,8 +379,8 @@ class ModuleManager(Manager):
 						self._modules = self._loadModuleList(moduleToLoad=moduleName, isUpdate=info['update'])
 
 						try:
-							SuperManager.getInstance().languageManager.loadStrings(moduleToLoad=moduleName)
-							SuperManager.getInstance().talkManager.loadTalks(moduleToLoad=moduleName)
+							self.LanguageManager.loadStrings(moduleToLoad=moduleName)
+							self.TalkManager.loadTalks(moduleToLoad=moduleName)
 
 							if info['update']:
 								self._modules[moduleName]['instance'].onModuleUpdated()
@@ -392,16 +392,16 @@ class ModuleManager(Manager):
 						except Exception:
 							pass
 
-					SuperManager.getInstance().snipsServicesManager.runCmd(cmd='restart')
+					self.SnipsServicesManager.runCmd(cmd='restart')
 
 				self._busyInstalling.clear()
 
 
 	def _installModules(self, modules: list) -> dict:
 		root = Path(commons.rootDir(), 'system/moduleInstallTickets')
-		availableModules = SuperManager.getInstance().configManager.modulesConfigurations
+		availableModules = self.ConfigManager.modulesConfigurations
 		modulesToBoot = dict()
-		SuperManager.getInstance().mqttManager.broadcast(topic='hermes/leds/systemUpdate', payload={'sticky': True})
+		self.MqttManager.broadcast(topic='hermes/leds/systemUpdate', payload={'sticky': True})
 		for file in modules:
 			moduleName = Path(file).with_suffix('')
 
@@ -465,7 +465,7 @@ class ModuleManager(Manager):
 							'conditions': installFile['conditions']
 						}
 
-						SuperManager.getInstance().configManager.addModuleToAliceConfig(installFile['name'], node)
+						self.ConfigManager.addModuleToAliceConfig(installFile['name'], node)
 						subprocess.run(['mv', res, directory])
 						modulesToBoot[moduleName] = {
 							'update': updating
@@ -481,5 +481,5 @@ class ModuleManager(Manager):
 				self._logger.error('[{}] Failed installing module "{}": {}'.format(self.name, moduleName, e))
 				res.unlink()
 
-		SuperManager.getInstance().mqttManager.broadcast(topic='hermes/leds/clear')
+		self.MqttManager.broadcast(topic='hermes/leds/clear')
 		return modulesToBoot

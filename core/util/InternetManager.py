@@ -15,7 +15,7 @@ class InternetManager(Manager):
 
 	def onStart(self):
 		super().onStart()
-		if not SuperManager.getInstance().configManager.getAliceConfigByName('stayCompletlyOffline'):
+		if not self.ConfigManager.getAliceConfigByName('stayCompletlyOffline'):
 			self._checkOnlineState()
 		else:
 			self._logger.info('[{}] Configurations set to stay completly offline'.format(self.name))
@@ -31,7 +31,7 @@ class InternetManager(Manager):
 
 
 	def onFullMinute(self):
-		if not SuperManager.getInstance().configManager.getAliceConfigByName('stayCompletlyOffline'):
+		if not self.ConfigManager.getAliceConfigByName('stayCompletlyOffline'):
 			self._checkOnlineState()
 
 
