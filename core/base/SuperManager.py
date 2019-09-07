@@ -122,29 +122,29 @@ class SuperManager(object):
 		from core.voice.TTSManager              import TTSManager
 		from core.voice.WakewordManager         import WakewordManager
 
-		self.configManager 				= ConfigManager()
-		self.databaseManager 			= DatabaseManager()
-		self.languageManager			= LanguageManager()
-		self.snipsServicesManager 		= SnipsServicesManager()
-		self.ASRManager 				= ASRManager()
-		self.TTSManager 				= TTSManager()
-		self.threadManager 		    	= ThreadManager()
-		self.protectedIntentManager 	= ProtectedIntentManager()
-		self.mqttManager 				= MqttServer()
-		self.timeManager 				= TimeManager()
-		self.userManager 				= UserManager()
-		self.dialogSessionManager 		= DialogSessionManager()
-		self.multiIntentManager 		= MultiIntentManager()
+		self.configManager              = ConfigManager()
+		self.databaseManager            = DatabaseManager()
+		self.languageManager            = LanguageManager()
+		self.snipsServicesManager       = SnipsServicesManager()
+		self.ASRManager                 = ASRManager()
+		self.TTSManager                 = TTSManager()
+		self.threadManager              = ThreadManager()
+		self.protectedIntentManager     = ProtectedIntentManager()
+		self.mqttManager                = MqttServer()
+		self.timeManager                = TimeManager()
+		self.userManager                = UserManager()
+		self.dialogSessionManager       = DialogSessionManager()
+		self.multiIntentManager         = MultiIntentManager()
 		self.telemetryManager           = TelemetryManager()
 		self.moduleManager              = ModuleManager()
-		self.deviceManager 		    	= DeviceManager()
-		self.internetManager 			= InternetManager()
-		self.snipsConsoleManager 		= SnipsConsoleManager()
-		self.samkillaManager	 		= SamkillaManager()
-		self.wakewordManager 			= WakewordManager()
-		self.talkManager 			    = TalkManager()
+		self.deviceManager              = DeviceManager()
+		self.internetManager            = InternetManager()
+		self.snipsConsoleManager        = SnipsConsoleManager()
+		self.samkillaManager            = SamkillaManager()
+		self.wakewordManager            = WakewordManager()
+		self.talkManager                = TalkManager()
 
-		self._managers = {name[0].upper() + name[1:]: manager for name, manager in self.__dict__.items() if name.endswith('Manager')}
+		self._managers = {name.capitalize(): manager for name, manager in self.__dict__.items() if name.endswith('Manager')}
 
 
 	def broadcast(self, method, exceptions: list = None, manager = None, args: list = None, propagateToModules: bool = False):
