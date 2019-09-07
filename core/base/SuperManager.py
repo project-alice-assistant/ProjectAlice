@@ -188,6 +188,6 @@ class SuperManager(object):
 		except Exception as e:
 			self._logger.info('[SuperManager] Error while shutting down manager "{}": {}'.format(managerName, e))
 
-	@property
-	def manager(self, managerName: str):
+
+	def getManager(self, managerName: str):
 		return self._managers.get(managerName, None)

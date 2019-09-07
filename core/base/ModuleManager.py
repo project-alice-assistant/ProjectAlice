@@ -127,7 +127,9 @@ class ModuleManager(Manager):
 
 						elif conditionName == 'activeManager':
 							for manager in conditionValue:
-								man = SuperManager.getInstance().manager(manager)
+								if not manager: continue
+
+								man = SuperManager.getInstance().getManager(manager)
 								if not man or not man.isActive:
 									raise ModuleNotConditionCompliant
 
