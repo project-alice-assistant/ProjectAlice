@@ -94,7 +94,6 @@ network={
 		confs['wifipassword'] = initConfs['wifiWPAPass']
 
 		# Update our sources
-		subprocess.run(['cd', commons.rootDir()])
 		subprocess.run(['git', 'stash'])
 		subprocess.run(['git', 'pull'])
 
