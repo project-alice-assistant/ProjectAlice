@@ -148,6 +148,8 @@ network={
 		confs['whisperWhenSleeping'] = initConfs['whisperWhenSleeping']
 		confs['ttsType'] = initConfs['ttsType']
 		confs['ttsVoice'] = initConfs['ttsVoice']
+		confs['githubUsername'] = initConfs['githubUsername']
+		confs['githubToken'] = initConfs['githubToken']
 
 		self._logger.info('Installing audio hardware')
 		audioHardware = ''
