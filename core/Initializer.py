@@ -191,7 +191,7 @@ network={
 
 
 		self.warning('Initializer done with configuring')
-		#subprocess.run(['sudo', 'rm', str(Path('/boot/ProjectAlice.yaml'))])
+		subprocess.run(['sudo', 'rm', str(Path('/boot/ProjectAlice.yaml'))])
 
 
 	def fatal(self, text: str):
