@@ -53,22 +53,22 @@ class SamkillaManager(Manager):
 	def onStart(self):
 		super().onStart()
 
-		self._userEmail = SuperManager.getInstance().configManager.getAliceConfigByName('snipsConsoleLogin')
-		self._userPassword = SuperManager.getInstance().configManager.getAliceConfigByName('snipsConsolePassword')
+		self._userEmail = self.ConfigManager.getAliceConfigByName('snipsConsoleLogin')
+		self._userPassword = self.ConfigManager.getAliceConfigByName('snipsConsolePassword')
 
 		self._mainProcessor = MainProcessor(self)
 		self.initActions()
 		self._loadDialogTemplateMapsInConfigManager()
 
-		path = Path(commons.rootDir(), 'var/assistants', SuperManager.getInstance().languageManager.activeLanguage)
+		path = Path(commons.rootDir(), 'var/assistants', self.LanguageManager.activeLanguage)
 		if not path.exists() or not [x for x in path.iterdir() if x.is_dir()]:
 			self.sync()
 
 
 	def _loadDialogTemplateMapsInConfigManager(self):
 		self._dtSlotTypesModulesValues, self._dtIntentsModulesValues, self._dtIntentNameSkillMatching = self.getDialogTemplatesMaps(
-			runOnAssistantId=SuperManager.getInstance().languageManager.activeSnipsProjectId,
-			languageFilter=SuperManager.getInstance().languageManager.activeLanguage
+			runOnAssistantId=self.LanguageManager.activeSnipsProjectId,
+			languageFilter=self.LanguageManager.activeLanguage
 		)
 
 
@@ -111,8 +111,8 @@ class SamkillaManager(Manager):
 			self.log('[{}] No credentials. Unable to synchronize assistant with remote console'.format(self.name))
 			return False
 
-		activeLang: str = SuperManager.getInstance().languageManager.activeLanguage
-		activeProjectId: str = SuperManager.getInstance().languageManager.activeSnipsProjectId
+		activeLang: str = self.LanguageManager.activeLanguage
+		activeProjectId: str = self.LanguageManager.activeSnipsProjectId
 		changes: bool = False
 
 		try:
@@ -120,13 +120,13 @@ class SamkillaManager(Manager):
 				baseAssistantId=activeProjectId,
 				baseLanguageFilter=activeLang,
 				baseModuleFilter=moduleFilter,
-				newAssistantTitle='ProjectAlice_{}'.format(SuperManager.getInstance().languageManager.activeLanguage)
+				newAssistantTitle='ProjectAlice_{}'.format(self.LanguageManager.activeLanguage)
 			)
 
 			if changes:
 				if download:
 					self.log('[{}] Changes detected during sync, let\'s update the assistant...'.format(self.name))
-					SuperManager.getInstance().snipsConsoleManager.doDownload()
+					self.SnipsConsoleManager.doDownload()
 				else:
 					self.log('[{}] Changes detected during sync but not downloading yet'.format(self.name))
 			else:
@@ -145,7 +145,7 @@ class SamkillaManager(Manager):
 
 
 	def start(self):
-		if SuperManager.getInstance().snipsConsoleManager.loginCredentialsAreConfigured():
+		if self.SnipsConsoleManager.loginCredentialsAreConfigured():
 			self.initBrowser()
 			self.login(self.ROOT_URL + '/home/apps')
 			return True

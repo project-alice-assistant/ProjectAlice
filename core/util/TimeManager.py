@@ -48,7 +48,7 @@ class TimeManager(Manager):
 
 	def onQuarterHour(self):
 		if self._quarterHourTimer:
-			SuperManager.getInstance().moduleManager.broadcast('onQuarterHour')
+			self.ModuleManager.broadcast('onQuarterHour')
 			SuperManager.getInstance().broadcast('onQuarterHour', exceptions=[self.NAME])
 
 		minute = int(datetime.now().strftime('%M'))
@@ -67,4 +67,4 @@ class TimeManager(Manager):
 		second = int(datetime.now().strftime('%S'))
 
 		secondsTillFullHour = ((60 - minute) * 60) - second
-		self._fullHourTimer = SuperManager.getInstance().threadManager.newTimer(secondsTillFullHour, self.onFullHour)
+		self._fullHourTimer = self.ThreadManager.newTimer(secondsTillFullHour, self.onFullHour)

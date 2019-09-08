@@ -15,14 +15,14 @@ class Initializer:
 
 	NAME = 'ProjectAlice'
 
-	_WPA_FILE = '''country={wifiCountryCode}
+	_WPA_FILE = '''country=%wifiCountryCode%
 ctrl_interface=DIR=/var/run/wpa_supplicant GROUP=netdev
 update_config=1
 
 network={
-    ssid="{wifiNetworkName}"
+    ssid="%wifiNetworkName%"
     scan_ssid=1
-    psk="{wifiWPAPass}"
+    psk="%wifiWPAPass%"
     key_mgmt=WPA-PSK
 }
 	'''
@@ -71,24 +71,23 @@ network={
 
 		# Let's connect to wifi!
 		wpaSupplicant = Path('/etc/wpa_supplicant/wpa_supplicant.conf')
+		bootWpaSupplicant = Path('/boot/wpa_supplicant.conf')
 
 		if not wpaSupplicant.is_file():
 			self._logger.info('Setting up wifi')
-			wpaFile = self._WPA_FILE.format(**initConfs)
+			wpaFile = self._WPA_FILE\
+				.replace('%wifiCountryCode%', initConfs['wifiCountryCode'])\
+				.replace('%wifiNetworkName%', initConfs['wifiNetworkName'])\
+				.replace('%wifiWPAPass%', initConfs['wifiWPAPass'])
 
 			file = Path(commons.rootDir(), 'wifi.conf')
 			file.write_text(wpaFile)
 
 			self._logger.info('wpa_supplicant.conf')
-			subprocess.run(['sudo', 'mv', file, wpaSupplicant])
-
-			self._logger.info('Turning off wifi')
-			subprocess.run(['sudo', 'ifconfig', 'wlan0', 'down'])
-			time.sleep(5)
-			self._logger.info('Turning it back on')
-			subprocess.run(['sudo', 'ifconfig', 'wlan0', 'up'])
-			time.sleep(5)
+			subprocess.run(['sudo', 'mv', str(file), bootWpaSupplicant])
+			time.sleep(2)
 			subprocess.run(['/usr/bin/sudo', '/sbin/shutdown', '-r', 'now'])
+			exit(0)
 
 
 		confs['ssid'] = initConfs['wifiNetworkName']
@@ -188,7 +187,7 @@ network={
 
 
 		self.warning('Initializer done with configuring')
-		Path('/boot/ProjectAlice.yaml').unlink()
+		#subprocess.run(['sudo', 'rm', str(Path('/boot/ProjectAlice.yaml'))])
 
 
 	def fatal(self, text: str):

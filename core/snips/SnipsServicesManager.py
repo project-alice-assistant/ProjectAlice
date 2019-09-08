@@ -1,6 +1,5 @@
 import subprocess
 
-from core.base.SuperManager import SuperManager
 from core.base.model.Manager import Manager
 from core.voice.model.SnipsASR import SnipsASR
 
@@ -42,7 +41,7 @@ class SnipsServicesManager(Manager):
 			services = self._snipsServices
 
 		for service in services:
-			if service == 'snips-asr' and not isinstance(SuperManager.getInstance().ASRManager.asr, SnipsASR):
+			if service == 'snips-asr' and not isinstance(self.ASRManager.asr, SnipsASR):
 				continue
 
 			result = subprocess.run(['sudo', 'systemctl', cmd, service], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
@@ -52,13 +51,12 @@ class SnipsServicesManager(Manager):
 				self._logger.info("[{}] Tried to {} the {} service but it returned with return code {}".format(self.name, cmd, service, result.returncode))
 
 
-	@staticmethod
-	def toggleFeedbackSound(state: str, siteId: str = 'all'):
+	def toggleFeedbackSound(self, state: str, siteId: str = 'all'):
 		topic = 'hermes/feedback/sound/toggleOn' if state == 'on' else 'hermes/feedback/sound/toggleOff'
 
 		if siteId == 'all':
-			devices = SuperManager.getInstance().deviceManager.getDevicesByType(deviceType='AliceSatellite', connectedOnly=True)
+			devices = self.DeviceManager.getDevicesByType(deviceType='AliceSatellite', connectedOnly=True)
 			for device in devices:
-				SuperManager.getInstance().mqttManager.publish(topic=topic, payload={'siteId': device.room})
+				self.MqttManager.publish(topic=topic, payload={'siteId': device.room})
 		else:
-			SuperManager.getInstance().mqttManager.publish(topic=topic, payload={'siteId': siteId})
+			self.MqttManager.publish(topic=topic, payload={'siteId': siteId})

@@ -1,7 +1,6 @@
 import sqlite3
 import typing
 
-from core.base.SuperManager import SuperManager
 from core.base.model.Manager import Manager
 from core.commons import commons
 
@@ -200,7 +199,7 @@ class DatabaseManager(Manager):
 			database = self.getConnection()
 			cursor = database.cursor()
 
-			cursor.execute('DELETE FROM {} WHERE id in (SELECT id FROM {} ORDER BY id LIMIT {})'.format(tableName, tableName, SuperManager.getInstance().configManager.getAliceConfigByName('autoPruneStoredData')))
+			cursor.execute('DELETE FROM {} WHERE id in (SELECT id FROM {} ORDER BY id LIMIT {})'.format(tableName, tableName, self.ConfigManager.getAliceConfigByName('autoPruneStoredData')))
 		except Exception as e:
 			self._logger.warning('[{}] Error pruning table "{}" for component "{}": {}'.format(self.name, tableName, callerName, e))
 
