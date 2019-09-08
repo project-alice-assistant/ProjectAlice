@@ -93,6 +93,11 @@ network={
 		confs['ssid'] = initConfs['wifiNetworkName']
 		confs['wifipassword'] = initConfs['wifiWPAPass']
 
+		# Update our sources
+		subprocess.run(['cd', commons.rootDir()])
+		subprocess.run(['git', 'stash'])
+		subprocess.run(['git', 'pull'])
+
 		# Now let's dump some values to their respective places
 		# First those that need some checks and self filling in case
 		confs['mqttHost'] = initConfs['mqttHost'] or 'localhost'
