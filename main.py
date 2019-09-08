@@ -71,7 +71,7 @@ def main():
 	signal.signal(signal.SIGINT, stopHandler)
 	signal.signal(signal.SIGTERM, stopHandler)
 
-	Initializer()
+	Initializer().initProjectAlice()
 	projectAlice = ProjectAlice()
 	try:
 		while RUNNING:

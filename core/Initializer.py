@@ -31,33 +31,37 @@ network={
 		self._logger = logging.getLogger('ProjectAlice')
 		self._logger.info('Starting Project Alice initializer')
 
-		confsFile = Path(commons.rootDir(), 'config.py')
-		confsSample = Path(commons.rootDir(), 'configSample.py')
+		self._confsFile = Path(commons.rootDir(), 'config.py')
+		self._confsSample = Path(commons.rootDir(), 'configSample.py')
+		self._initFile = Path('/boot/ProjectAlice.yaml')
 
-		initFile = Path('/boot/ProjectAlice.yaml')
-		if not initFile.exists() and not confsFile.exists():
+
+	def initProjectAlice(self) -> bool:
+
+		if not self._initFile.exists() and not self._confsFile.exists():
 			self.fatal('Init file not found and there\'s no configuration file, aborting Project Alice start')
-		elif not initFile.exists():
-			return
+		elif not self._initFile.exists():
+			return False
 
-		with initFile.open(mode='r') as f:
+
+		with self._initFile.open(mode='r') as f:
 			try:
 				initConfs = yaml.safe_load(f)
 			except yaml.YAMLError as e:
 				self.fatal('Failed loading init configurations: {}'.format(e))
 
-		if not confsFile.exists() and not confsSample.exists():
+		if not self._confsFile.exists() and not self._confsSample.exists():
 			self.fatal('No config and no config sample found, can\'t continue')
 
-		elif not confsFile.exists() and confsSample.exists():
+		elif not self._confsFile.exists() and self._confsSample.exists():
 			self.warning('No config file found, creating it from sample file')
 			shutil.copyfile(src=Path(commons.rootDir(), 'configSample.py'), dst=Path(commons.rootDir(), 'config.py'))
 
-		elif confsFile.exists() and not initConfs['forceRewrite']:
+		elif self._confsFile.exists() and not initConfs['forceRewrite']:
 			self.warning('Config file already existing and user not wanting to rewrite, aborting')
-			return
+			return False
 
-		elif confsFile.exists() and initConfs['forceRewrite']:
+		elif self._confsFile.exists() and initConfs['forceRewrite']:
 			self.warning('Config file found and force rewrite specified, let\'s restart all this!')
 			Path(commons.rootDir(), 'config.py').unlink()
 			shutil.copyfile(src=Path(commons.rootDir(), 'configSample.py'), dst=Path(commons.rootDir(), 'config.py'))
@@ -182,13 +186,11 @@ network={
 
 		try:
 			s = json.dumps(sort, indent=4).replace('false', 'False').replace('true', 'True')
-			Path('config.py').write_text('settings = {}'.format(s))
-
+			self._confsFile.write_text('settings = {}'.format(s))
 		except Exception as e:
 			self.fatal('An error occured while writting final configuration file: {}'.format(e))
 		else:
 			importlib.reload(config)
-
 
 		self.warning('Initializer done with configuring')
 		subprocess.run(['sudo', 'rm', str(Path('/boot/ProjectAlice.yaml'))])

@@ -19,10 +19,11 @@ class ProjectAlice(Singleton):
 
 		self._superManager.initManagers()
 		self._superManager.onStart()
-		self._superManager.onBooted()
 
 		if self._superManager.configManager.getAliceConfigByName('useSLC'):
 			subprocess.run(['sudo', 'systemctl', 'start', 'snipsledcontrol'])
+
+		self._superManager.onBooted()
 
 
 	@property
