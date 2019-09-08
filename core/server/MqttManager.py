@@ -15,8 +15,8 @@ from core.commons.commons import deprecated
 from core.dialog.model.DialogSession import DialogSession
 
 
-class MqttServer(Manager):
-	NAME = 'MqttServer'
+class MqttManager(Manager):
+	NAME = 'MqttManager'
 
 	_HERMES_DEFAULT_HOTWORD_DETECTED = 'hermes/hotword/default/detected'
 	_HERMES_HOTWORD_USER_DETECTED = 'hermes/hotword/{user}/detected'

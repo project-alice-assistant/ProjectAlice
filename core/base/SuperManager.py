@@ -107,7 +107,7 @@ class SuperManager(object):
 		from core.dialog.DialogSessionManager   import DialogSessionManager
 		from core.dialog.MultiIntentManager     import MultiIntentManager
 		from core.dialog.ProtectedIntentManager import ProtectedIntentManager
-		from core.server.MqttServer             import MqttServer
+		from core.server.MqttManager            import MqttManager
 		from core.snips.SamkillaManager         import SamkillaManager
 		from core.snips.SnipsConsoleManager     import SnipsConsoleManager
 		from core.snips.SnipsServicesManager    import SnipsServicesManager
@@ -131,7 +131,7 @@ class SuperManager(object):
 		self.TTSManager                 = TTSManager()
 		self.threadManager              = ThreadManager()
 		self.protectedIntentManager     = ProtectedIntentManager()
-		self.mqttManager                = MqttServer()
+		self.mqttManager                = MqttManager()
 		self.timeManager                = TimeManager()
 		self.userManager                = UserManager()
 		self.dialogSessionManager       = DialogSessionManager()
