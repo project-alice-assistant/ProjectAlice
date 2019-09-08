@@ -43,12 +43,35 @@ network={
 		elif not self._initFile.exists():
 			return False
 
-
 		with self._initFile.open(mode='r') as f:
 			try:
 				initConfs = yaml.safe_load(f)
 			except yaml.YAMLError as e:
 				self.fatal('Failed loading init configurations: {}'.format(e))
+
+		# Let's connect to wifi!
+		if not initConfs['wifiCountryCode'] or not initConfs['wifiNetworkName'] or not initConfs['wifiWPAPass']:
+			self.fatal('You must specify the wifi parameters')
+
+		wpaSupplicant = Path('/etc/wpa_supplicant/wpa_supplicant.conf')
+		bootWpaSupplicant = Path('/boot/wpa_supplicant.conf')
+
+		if not wpaSupplicant.is_file():
+			self._logger.info('Setting up wifi')
+			wpaFile = self._WPA_FILE\
+				.replace('%wifiCountryCode%', initConfs['wifiCountryCode'])\
+				.replace('%wifiNetworkName%', initConfs['wifiNetworkName'])\
+				.replace('%wifiWPAPass%', initConfs['wifiWPAPass'])
+
+			file = Path(commons.rootDir(), 'wifi.conf')
+			file.write_text(wpaFile)
+
+			self._logger.info('wpa_supplicant.conf')
+			subprocess.run(['sudo', 'mv', str(file), bootWpaSupplicant])
+			time.sleep(1)
+			subprocess.run(['/usr/bin/sudo', '/sbin/shutdown', '-r', 'now'])
+			exit(0)
+
 
 		if not self._confsFile.exists() and not self._confsSample.exists():
 			self.fatal('No config and no config sample found, can\'t continue')
@@ -66,33 +89,8 @@ network={
 			Path(commons.rootDir(), 'config.py').unlink()
 			shutil.copyfile(src=Path(commons.rootDir(), 'configSample.py'), dst=Path(commons.rootDir(), 'config.py'))
 
-
 		config = importlib.import_module('config')
 		confs = config.settings.copy()
-
-		if not initConfs['wifiCountryCode'] or not initConfs['wifiNetworkName'] or not initConfs['wifiWPAPass']:
-			self.fatal('You must specify the wifi parameters')
-
-		# Let's connect to wifi!
-		wpaSupplicant = Path('/etc/wpa_supplicant/wpa_supplicant.conf')
-		bootWpaSupplicant = Path('/boot/wpa_supplicant.conf')
-
-		if not wpaSupplicant.is_file():
-			self._logger.info('Setting up wifi')
-			wpaFile = self._WPA_FILE\
-				.replace('%wifiCountryCode%', initConfs['wifiCountryCode'])\
-				.replace('%wifiNetworkName%', initConfs['wifiNetworkName'])\
-				.replace('%wifiWPAPass%', initConfs['wifiWPAPass'])
-
-			file = Path(commons.rootDir(), 'wifi.conf')
-			file.write_text(wpaFile)
-
-			self._logger.info('wpa_supplicant.conf')
-			subprocess.run(['sudo', 'mv', str(file), bootWpaSupplicant])
-			time.sleep(2)
-			subprocess.run(['/usr/bin/sudo', '/sbin/shutdown', '-r', 'now'])
-			exit(0)
-
 
 		confs['ssid'] = initConfs['wifiNetworkName']
 		confs['wifipassword'] = initConfs['wifiWPAPass']
