@@ -198,8 +198,9 @@ class ConfigManager(Manager):
 			self._snipsConfigurations[parent][key] = self._snipsConfigurations[parent].get(key, '')
 
 		config = self._snipsConfigurations.get(parent, dict()).get(key, None)
-		if not config:
+		if config is None:
 			self._logger.warning('Tried to get "{}/{}" in snips configuration but key was not found'.format(parent, key))
+
 		return config
 
 
