@@ -11,6 +11,21 @@ import yaml
 from core.commons import commons
 
 
+class initDict(dict):
+
+	def __init__(self, default: dict):
+		self._logger = logging.getLogger('ProjectAlice')
+		super().__init__(default)
+
+
+	def __getitem__(self, item):
+		try:
+			return super().__getitem__(item)
+		except:
+			self._logger.warning('Missing key "{}" in provided yaml file. Are you using a deprecated yaml file version?'.format(item))
+			return ''
+
+
 class Initializer:
 
 	NAME = 'ProjectAlice'
@@ -45,7 +60,7 @@ network={
 
 		with self._initFile.open(mode='r') as f:
 			try:
-				initConfs = yaml.safe_load(f)
+				initConfs = initDict(yaml.safe_load(f))
 			except yaml.YAMLError as e:
 				self.fatal('Failed loading init configurations: {}'.format(e))
 
@@ -96,8 +111,8 @@ network={
 		confs['wifipassword'] = initConfs['wifiWPAPass']
 
 		# Update our sources
-		subprocess.run(['git', 'stash'])
-		subprocess.run(['git', 'pull'])
+		#subprocess.run(['git', 'stash'])
+		#subprocess.run(['git', 'pull'])
 
 		# Now let's dump some values to their respective places
 		# First those that need some checks and self filling in case
@@ -191,6 +206,7 @@ network={
 			importlib.reload(config)
 
 		self.warning('Initializer done with configuring')
+		self.fatal('stop')
 		subprocess.run(['sudo', 'rm', str(Path('/boot/ProjectAlice.yaml'))])
 
 
