@@ -404,7 +404,7 @@ class ModuleManager(Manager):
 		for file in modules:
 			moduleName = Path(file).with_suffix('')
 
-			self._logger.info('[{}] Now taking care of module {}'.format(self.name, moduleName))
+			self._logger.info('[{}] Now taking care of module {}'.format(self.name, moduleName.stem))
 			res = root / file
 
 			try:

@@ -12,7 +12,7 @@ class TelemetryManager(Manager):
 			'id integer PRIMARY KEY',
 			'type TEXT NOT NULL',
 			'value TEXT NOT NULL',
-			'service TEXT',
+			'service TEXT NOT NULL',
 			'siteId TEXT NOT NULL',
 			'timestamp INTEGER NOT NULL'
 		]
@@ -25,13 +25,14 @@ class TelemetryManager(Manager):
 
 
 	def onStart(self):
+		super().onStart()
 		if not self.ConfigManager.getAliceConfigByName('enableDataStoring'):
 			self._isActive = False
 			self._logger.info('[{}] Data storing is disabled'.format(self.name))
 
 
 	def onQuarterHour(self):
-		if self.ConfigManager.getAliceConfigByName('autoPruneStoredData') > 0:
+		if self.ConfigManager.getAliceConfigByName('autoPruneStoredData') > 0 and self._isActive:
 			self.pruneTable('telemetry')
 
 

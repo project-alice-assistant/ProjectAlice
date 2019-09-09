@@ -40,16 +40,26 @@ class DatabaseManager(Manager):
 
 		# First check for new tables and columns addition/deprecation
 		for tableName, queries in schema.items():
-			colName = ''
+
 			fullTableName = '{}_{}'.format(callerName, tableName)
 			colsQuery = ', '.join(queries)
+			colName = ''
+
 			try:
-				cursor.execute('CREATE TABLE IF NOT EXISTS {} ({})'.format(fullTableName, colsQuery))
-				database.commit()
+				query = "SELECT COUNT(name) FROM sqlite_master WHERE type = 'table' and name='{}'".format(fullTableName)
+				cursor.execute(query)
+				if cursor.fetchone()[0] < 1:
+					self._logger.info('[{}] Missing data table "{}", creating it...'.format(self.name, fullTableName))
+					try:
+						cursor.execute('CREATE TABLE {} ({})'.format(fullTableName, colsQuery))
+						database.commit()
+						continue
+					except Exception as e:
+						database.rollback()
+						raise
 			except Exception as e:
 				self._logger.error('[{}] Something went wrong creating database table "{}" for component {}: {}'.format(self.name, fullTableName, callerName, e))
-				database.rollback()
-				return False
+				continue
 
 			try:
 				cursor.execute('PRAGMA table_info({})'.format(fullTableName))
