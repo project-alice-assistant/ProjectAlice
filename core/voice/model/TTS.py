@@ -118,6 +118,11 @@ class TTS:
 
 
 	@staticmethod
+	def getWhisperMarkup() -> tuple:
+		return None
+
+
+	@staticmethod
 	def _mp3ToWave(src: Path, dest: Path):
 		subprocess.run(['mpg123', '-q', '-w', str(dest), str(src)])
 

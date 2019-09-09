@@ -116,10 +116,12 @@ class TalkManager(Manager):
 		if not string:
 			return ''
 
-		if SuperManager.getInstance().configManager.getAliceConfigByName('tts') == 'amazon' and \
-			SuperManager.getInstance().configManager.getAliceConfigByName('whisperWhenSleeping') and \
-			SuperManager.getInstance().userManager.checkIfAllUser('sleeping') and \
-			SuperManager.getInstance().userManager.getAllUserNames():
-			string = '<amazon:effect name="whispered">{}</amazon:effect>'.format(string)
+
+		if self.ConfigManager.getAliceConfigByName('whisperWhenSleeping') and \
+			self.TTSManager.tts.getWhisperMarkup() and \
+			SuperManager.getInstance().userManager.checkIfAllUser('sleeping'):
+
+			start, end = self.TTSManager.tts.getWhisperMarkup()
+			string = '{}{}{}'.format(start, string, end)
 
 		return u'{0}'.format(string)

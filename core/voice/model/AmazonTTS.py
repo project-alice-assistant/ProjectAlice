@@ -181,6 +181,11 @@ class AmazonTTS(TTS):
 
 
 	@staticmethod
+	def getWhisperMarkup() -> tuple:
+		return '<amazon:effect name="whispered">', '</amazon:effect>'
+
+
+	@staticmethod
 	def _checkText(session: DialogSession) -> str:
 		text = session.payload['text']
 

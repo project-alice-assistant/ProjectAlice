@@ -81,7 +81,6 @@ class UserManager(Manager):
 		"""
 		if skipGuests:
 			users = [k for k in self._users if self._users[k] != 'guest']
-
 		else:
 			users = [k for k in self._users]
 
