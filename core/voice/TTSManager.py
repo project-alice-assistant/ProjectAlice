@@ -25,10 +25,12 @@ class TTSManager(Manager):
 	def onStart(self):
 		super().onStart()
 
+		tts = self._loadTTS(SuperManager.getInstance().configManager.getAliceConfigByName('tts').lower())
+
 		if (SuperManager.getInstance().configManager.getAliceConfigByName('stayCompletlyOffline') or SuperManager.getInstance().configManager.getAliceConfigByName('keepTTSOffline')) and self._tts.online:
 			self._tts = PicoTTS()
+			self._logger.info('[{}] Started "Pico" TTS'.format(self.name))
 		else:
-			tts = self._loadTTS(SuperManager.getInstance().configManager.getAliceConfigByName('tts').lower())
 			self._logger.info('[{}] Started "{}" TTS'.format(self.name, tts.value))
 
 		self._tts.onStart()
