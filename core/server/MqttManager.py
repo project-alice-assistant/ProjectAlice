@@ -174,11 +174,23 @@ class MqttManager(Manager):
 
 			customData = session.customData
 			if 'intent' in payload and payload['intent']['confidenceScore'] < SuperManager.getInstance().configManager.getAliceConfigByName('probabilityTreshold'):
-				self.continueDialog(
-					sessionId=sessionId,
-					text=SuperManager.getInstance().talkManager.randomTalk('notUnderstood', module='system')
-				)
+				if session.notUnderstood < 3:
+					session.notUnderstood += 1
+
+					self.continueDialog(
+						sessionId=sessionId,
+						text=SuperManager.getInstance().talkManager.randomTalk('notUnderstood', module='system')
+					)
+				else:
+					del session.notUnderstood
+
+					self.endTalk(
+						sessionId=sessionId,
+						text=SuperManager.getInstance().talkManager.randomTalk('notUnderstood', module='system')
+					)
 				return
+
+			del session.notUnderstood
 
 			moduleManager = SuperManager.getInstance().moduleManager
 			module = moduleManager.getModuleInstance('ContextSensitive')

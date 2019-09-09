@@ -15,6 +15,7 @@ class DialogSession:
 		self._payload = dict()
 		self._intentHistory = list()
 		self._intentFilter = list()
+		self._notUnderstood = 0
 
 
 	def extend(self, message: MQTTMessage, sessionId: str = None):
@@ -157,7 +158,17 @@ class DialogSession:
 		self._intentFilter = value
 
 
-	def __repr__(self):
+	@property
+	def notUnderstood(self) -> int:
+		return self._notUnderstood
+
+
+	@notUnderstood.deleter
+	def notUnderstood(self):
+		self._notUnderstood = 0
+
+
+	def __repr__(self) -> str:
 		output = '[{}] -> '.format(self.__class__.__name__) + '{'
 		output += "_siteId='" + str(self._siteId)+"', "
 		output += "_sessionId='" + str(self._sessionId) + "', "
@@ -168,5 +179,6 @@ class DialogSession:
 		output += "_customData='" + str(self._customData) + "', "
 		output += "_payload='" + str(self._payload) + "', "
 		output += "_intentHistory='" + str(self._intentHistory) + "', "
-		output += 'EndOfObject}'
+		output += "_notUnderstood='" + str(self._notUnderstood)
+		output += '}'
 		return output
