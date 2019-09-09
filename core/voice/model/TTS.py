@@ -25,21 +25,26 @@ class TTS:
 		self._supportedLangAndVoices = dict()
 		self._client = None
 		self._cacheRoot = self.TTS
+		self._user = user
 
-		if user:
-			self._lang = user.lang
-			self._type = user.ttsType
-			self._voice = user.ttsVoice
-		else:
-			self._lang = SuperManager.getInstance().languageManager.activeLanguageAndCountryCode
-			self._type = SuperManager.getInstance().configManager.getAliceConfigByName('ttsType')
-			self._voice = SuperManager.getInstance().configManager.getAliceConfigByName('ttsVoice')
+		self._lang = ''
+		self._type = ''
+		self._voice = ''
 
 		self._cacheFile: Path = Path()
 		self._text = ''
 
 
 	def onStart(self):
+		if self._user:
+			self._lang = self._user.lang
+			self._type = self._user.ttsType.lower()
+			self._voice = self._user.ttsVoice.lower()
+		else:
+			self._lang = SuperManager.getInstance().languageManager.activeLanguageAndCountryCode
+			self._type = SuperManager.getInstance().configManager.getAliceConfigByName('ttsType').lower()
+			self._voice = SuperManager.getInstance().configManager.getAliceConfigByName('ttsVoice').lower()
+
 		if self._lang not in self._supportedLangAndVoices:
 			self._logger.info('[TTS] Lang "{}" not found, falling back to "{}"'.format(self._lang, 'en-US'))
 			self._lang = 'en-US'

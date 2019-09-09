@@ -63,6 +63,7 @@ class SuperManager(object):
 		mqttManager.onStart()
 
 		languageManager = self._managers.pop('LanguageManager')
+		languageManager.onStart()
 
 		talkManager = self._managers.pop('TalkManager')
 		moduleManager = self._managers.pop('ModuleManager')
@@ -73,7 +74,6 @@ class SuperManager(object):
 			if manager:
 				manager.onStart()
 
-		languageManager.onStart()
 		talkManager.onStart()
 		moduleManager.onStart()
 		samkillaManager.onStart()

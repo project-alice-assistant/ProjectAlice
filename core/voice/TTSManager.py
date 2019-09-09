@@ -22,6 +22,18 @@ class TTSManager(Manager):
 		self._tts = None
 
 
+	def onStart(self):
+		super().onStart()
+
+		if (SuperManager.getInstance().configManager.getAliceConfigByName('stayCompletlyOffline') or SuperManager.getInstance().configManager.getAliceConfigByName('keepTTSOffline')) and self._tts.online:
+			self._tts = PicoTTS()
+		else:
+			tts = self._loadTTS(SuperManager.getInstance().configManager.getAliceConfigByName('tts').lower())
+			self._logger.info('[{}] Started "{}" TTS'.format(self.name, tts.value))
+
+		self._tts.onStart()
+
+
 	def _loadTTS(self, tts: str, user: User = None) -> TTSEnum:
 		try:
 			tts = TTSEnum(tts)
@@ -66,18 +78,6 @@ class TTSManager(Manager):
 
 	def onInternetConnected(self, *args):
 		self._fallback = None
-
-
-	def onStart(self):
-		super().onStart()
-
-		if (SuperManager.getInstance().configManager.getAliceConfigByName('stayCompletlyOffline') or SuperManager.getInstance().configManager.getAliceConfigByName('keepTTSOffline')) and self._tts.online:
-			self._tts = PicoTTS()
-		else:
-			tts = self._loadTTS(SuperManager.getInstance().configManager.getAliceConfigByName('tts').lower())
-			self._logger.info('[{}] Started "{}" TTS'.format(self.name, tts.value))
-
-		self._tts.onStart()
 
 
 	def onSay(self, session: DialogSession):
