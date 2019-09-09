@@ -6,6 +6,7 @@ from core.commons import commons, constants
 from core.dialog.model.DialogSession import DialogSession
 from core.user.model.User import User
 from core.voice.model.PicoTTS import PicoTTS
+from core.voice.model.TTS import TTS
 from core.voice.model.TTSEnum import TTSEnum
 
 
@@ -51,6 +52,11 @@ class TTSManager(Manager):
 			self._tts = SnipsTTS(user)
 
 		return tts
+
+
+	@property
+	def tts(self) -> TTS:
+		return self._tts
 
 
 	def onInternetLost(self, *args):

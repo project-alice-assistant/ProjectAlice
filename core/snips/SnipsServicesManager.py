@@ -1,7 +1,10 @@
 import subprocess
+from pathlib import Path
 
 from core.base.model.Manager import Manager
+from core.commons import commons
 from core.voice.model.SnipsASR import SnipsASR
+from core.voice.model.SnipsTTS import SnipsTTS
 
 
 class SnipsServicesManager(Manager):
@@ -17,7 +20,8 @@ class SnipsServicesManager(Manager):
 			'snips-dialogue',
 			'snips-injection',
 			'snips-audio-server',
-			'snips-asr'
+			'snips-asr',
+			'snips-tts'
 		]
 
 
@@ -37,11 +41,15 @@ class SnipsServicesManager(Manager):
 
 
 	def runCmd(self, cmd: str, services: list = None):
+		if not Path(commons.rootDir() + '/assistant').exists():
+			self._logger.warning('[{}] Assistant not yet existing, cannot start Snips for now')
+			return
+
 		if not services:
 			services = self._snipsServices
 
 		for service in services:
-			if service == 'snips-asr' and not isinstance(self.ASRManager.asr, SnipsASR):
+			if (service == 'snips-asr' and not isinstance(self.ASRManager.asr, SnipsASR)) or (service == 'snips-tts' and not isinstance(self.TTSManager.tts, SnipsTTS)):
 				continue
 
 			result = subprocess.run(['sudo', 'systemctl', cmd, service], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
