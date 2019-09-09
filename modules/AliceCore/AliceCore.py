@@ -707,6 +707,9 @@ class AliceCore(Module):
 
 	# noinspection PyUnusedLocal
 	def changeFeedbackSound(self, inDialog: bool, siteId: str = 'all'):
+		if not Path(commons.rootDir() + '/assistant').exists():
+			return
+
 		# Unfortunately we can't yet get rid of the feedback sound because Alice hears herself finishing the sentence and capturing part of it
 		if inDialog:
 			state = '_ask'

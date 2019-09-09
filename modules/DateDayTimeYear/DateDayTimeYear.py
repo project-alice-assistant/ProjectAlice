@@ -41,17 +41,17 @@ class DateDayTimeYear(Module):
 			else:
 				hours = datetime.now().strftime('%H').lstrip('0')
 
-			self.MqttManager.endTalk(sessionId, self.TalkManager.randomTalk('time').format(hours, minutes, part))
+			self.endDialog(sessionId, self.TalkManager.randomTalk('time').format(hours, minutes, part))
 		elif intent == self._INTENT_GET_DATE:
 			date = datetime.now().strftime('%d %B %Y')
 			date = self.LanguageManager.localize(date)
-			self.MqttManager.endTalk(sessionId, self.TalkManager.randomTalk('date').format(date))
+			self.endDialog(sessionId, self.TalkManager.randomTalk('date').format(date))
 		elif intent == self._INTENT_GET_DAY:
 			day = datetime.now().strftime('%A')
 			day = self.LanguageManager.localize(day)
-			self.MqttManager.endTalk(sessionId, self.TalkManager.randomTalk('day').format(day))
+			self.endDialog(sessionId, self.TalkManager.randomTalk('day').format(day))
 		elif intent == self._INTENT_GET_YEAR:
 			year = datetime.now().strftime('%Y')
-			self.MqttManager.endTalk(sessionId, self.TalkManager.randomTalk('day').format(year))
+			self.endDialog(sessionId, self.TalkManager.randomTalk('day').format(year))
 
 		return True

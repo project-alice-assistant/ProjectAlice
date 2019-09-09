@@ -65,7 +65,7 @@ settings = {
 	"modules": {
 		"AliceCore": {
 			"active"    : True,
-			"version"   : 1.02,
+			"version"   : 1.04,
 			"author"    : "ProjectAlice",
 			"conditions": {
 				"lang": [
@@ -76,7 +76,7 @@ settings = {
 		},
 		"AliceSatellite": {
 			"active"    : True,
-			"version"   : 0.3,
+			"version"   : 1.0,
 			"author"    : "ProjectAlice",
 			"conditions": {
 				"lang": [
@@ -87,7 +87,7 @@ settings = {
 		},
 		"ContextSensitive": {
 			"active"    : True,
-			"version"   : 0.3,
+			"version"   : 1.0,
 			"author"    : "ProjectAlice",
 			"conditions": {
 				"lang": [
@@ -98,7 +98,7 @@ settings = {
 		},
 		"Customisation": {
 			"active"    : True,
-			"version"   : 0.2,
+			"version"   : 1.01,
 			"author"    : "ProjectAlice",
 			"conditions": {
 				"lang": [
@@ -109,7 +109,7 @@ settings = {
 		},
 		"DateDayTimeYear": {
 			"active"    : True,
-			"version"   : 0.35,
+			"version"   : 1.01,
 			"author"    : "Psychokiller1888",
 			"conditions": {
 				"lang": [
@@ -121,7 +121,7 @@ settings = {
 		},
 		"RedQueen": {
 			"active"    : True,
-			"version"   : 0.7,
+			"version"   : 1.02,
 			"author"    : "ProjectAlice",
 			"conditions": {
 				"lang": [

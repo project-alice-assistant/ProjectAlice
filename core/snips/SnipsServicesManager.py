@@ -42,7 +42,7 @@ class SnipsServicesManager(Manager):
 
 	def runCmd(self, cmd: str, services: list = None):
 		if not Path(commons.rootDir() + '/assistant').exists():
-			self._logger.warning('[{}] Assistant not yet existing, cannot start Snips for now')
+			self._logger.warning('[{}] Assistant not yet existing, cannot start Snips for now'.format(self.name))
 			return
 
 		if not services:

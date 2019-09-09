@@ -16,7 +16,7 @@ alice module:install Psychokiller1888/DateDayTimeYear
 ### Description
 Ask for the time, date, day and year
 
-- Version: 0.35
+- Version: 1.01
 - Author: Psycho
 - Maintainers:
   - Jierka
