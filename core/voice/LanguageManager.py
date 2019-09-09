@@ -26,36 +26,7 @@ class LanguageManager(Manager):
 		self._locals 					= list()
 
 		self._floatExpressionPattern 	= re.compile(r'([0-9]+\.[0-9]+)')
-
-
-	@property
-	def activeSnipsProjectId(self) -> str:
-		return self._activeSnipsProjectId
-
-
-	@property
-	def activeLanguage(self) -> str:
-		return self._activeLanguage
-
-
-	@property
-	def defaultLanguage(self) -> str:
-		return self._defaultLanguage
-
-
-	@property
-	def activeCountryCode(self) -> str:
-		return self._activeCountryCode
-
-
-	@property
-	def defaultCountryCode(self) -> str:
-		return self._defaultCountryCode
-
-
-	@property
-	def activeLanguageAndCountryCode(self):
-		return '{}-{}'.format(self._activeLanguage, self._activeCountryCode)
+		self._mathSigns                 = ('+', '-', '/', '*', '%')
 
 
 	def onStart(self):
@@ -72,7 +43,7 @@ class LanguageManager(Manager):
 
 	def sanitizeNluQuery(self, query: str = '') -> str:
 		for sign, langsValues in self._stringsData['system'].items():
-			if len(sign) == 1:
+			if sign in self._mathSigns:
 				if sign == '-':
 					query = query.replace(' ' + sign + ' ', langsValues[self.activeLanguage][0])
 				else:
@@ -202,3 +173,33 @@ class LanguageManager(Manager):
 
 		SuperManager.getInstance().configManager.changeActiveSnipsProjectIdForLanguage(projectId, forLang)
 		self._loadSupportedLanguages()
+
+
+	@property
+	def activeSnipsProjectId(self) -> str:
+		return self._activeSnipsProjectId
+
+
+	@property
+	def activeLanguage(self) -> str:
+		return self._activeLanguage
+
+
+	@property
+	def defaultLanguage(self) -> str:
+		return self._defaultLanguage
+
+
+	@property
+	def activeCountryCode(self) -> str:
+		return self._activeCountryCode
+
+
+	@property
+	def defaultCountryCode(self) -> str:
+		return self._defaultCountryCode
+
+
+	@property
+	def activeLanguageAndCountryCode(self) -> str:
+		return '{}-{}'.format(self._activeLanguage, self._activeCountryCode)
