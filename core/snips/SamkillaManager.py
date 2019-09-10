@@ -10,7 +10,6 @@ from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.ui import WebDriverWait
 
 from core.ProjectAliceExceptions import AssistantNotFoundError, HttpError
-from core.base.SuperManager import SuperManager
 from core.commons import commons
 from core.snips.samkilla.Assistant import Assistant
 from core.snips.samkilla.Entity import Entity
@@ -272,7 +271,7 @@ class SamkillaManager(Manager):
 
 	# noinspection PyUnusedLocal
 	def findRunnableAssistant(self, assistantId: str, assistantLanguage: str, newAssistantTitle: str = '', persistLocal: bool = False) -> str:
-		if not newAssistantTitle: newAssistantTitle = 'ProjectAlice_{}'.format(SuperManager.getInstance().languageManager.activeLanguage)
+		if not newAssistantTitle: newAssistantTitle = 'ProjectAlice_{}'.format(self.LanguageManager.activeLanguage)
 
 		runOnAssistantId = None
 
@@ -319,8 +318,8 @@ class SamkillaManager(Manager):
 			persistLocal=True
 		)
 
-		if SuperManager.getInstance().languageManager.activeSnipsProjectId != runOnAssistantId:
-			SuperManager.getInstance().languageManager.changeActiveSnipsProjectIdForLanguage(runOnAssistantId, baseLanguageFilter)
+		if self.LanguageManager.activeSnipsProjectId != runOnAssistantId:
+			self.LanguageManager.changeActiveSnipsProjectIdForLanguage(runOnAssistantId, baseLanguageFilter)
 
 		# From module intents files to dict then push to SnipsConsole
 		return self._mainProcessor.syncLocalToRemote(runOnAssistantId, moduleFilter=baseModuleFilter, languageFilter=baseLanguageFilter)

@@ -1,6 +1,5 @@
-import subprocess
-
 import re
+import subprocess
 
 from core.dialog.model.DialogSession import DialogSession
 from core.user.model.User import User

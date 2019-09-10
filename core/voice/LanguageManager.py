@@ -1,11 +1,9 @@
 import json
+import re
 from pathlib import Path
 from typing import Optional
 
-import re
-
 from core.ProjectAliceExceptions import LanguageManagerLangNotSupported
-from core.base.SuperManager import SuperManager
 from core.base.model.Manager import Manager
 
 
@@ -36,7 +34,7 @@ class LanguageManager(Manager):
 
 
 	def onBooted(self):
-		data = SuperManager.getInstance().talkManager.langData
+		data = self.TalkManager.langData
 		if self.NAME in data:
 			self._locals = data[self.NAME]
 
@@ -56,7 +54,7 @@ class LanguageManager(Manager):
 		with open(Path('system/manager/LanguageManager/strings.json')) as jsonFile:
 			self._stringsData['system'] = json.load(jsonFile)
 
-		for moduleName in SuperManager.getInstance().configManager.modulesConfigurations:
+		for moduleName in self.ConfigManager.modulesConfigurations:
 			if moduleToLoad and moduleName != moduleToLoad:
 				continue
 
@@ -90,8 +88,8 @@ class LanguageManager(Manager):
 
 
 	def _loadSupportedLanguages(self):
-		activeLangDef: str = SuperManager.getInstance().configManager.getAliceConfigByName('activeLanguage')
-		langDef: dict = SuperManager.getInstance().configManager.getAliceConfigByName('supportedLanguages')
+		activeLangDef: str = self.ConfigManager.getAliceConfigByName('activeLanguage')
+		langDef: dict = self.ConfigManager.getAliceConfigByName('supportedLanguages')
 
 		for langCode, settings in langDef.items():
 			self._supportedLanguages.append(langCode)
@@ -161,7 +159,7 @@ class LanguageManager(Manager):
 		if toLang not in self._supportedLanguages:
 			raise LanguageManagerLangNotSupported
 
-		SuperManager.getInstance().configManager.changeActiveLanguage(toLang)
+		self.ConfigManager.changeActiveLanguage(toLang)
 		self._loadSupportedLanguages()
 
 
@@ -171,7 +169,7 @@ class LanguageManager(Manager):
 		if forLang not in self._supportedLanguages:
 			raise LanguageManagerLangNotSupported
 
-		SuperManager.getInstance().configManager.changeActiveSnipsProjectIdForLanguage(projectId, forLang)
+		self.ConfigManager.changeActiveSnipsProjectIdForLanguage(projectId, forLang)
 		self._loadSupportedLanguages()
 
 

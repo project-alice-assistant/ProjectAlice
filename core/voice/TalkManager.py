@@ -1,9 +1,7 @@
 import json
+import random
 from pathlib import Path
 
-import random
-
-from core.base.SuperManager import SuperManager
 from core.base.model.Manager import Manager
 from core.commons import commons
 
@@ -37,7 +35,7 @@ class TalkManager(Manager):
 				self._langData.setdefault('system', dict())[lang] = json.loads(systemLangTalkFile.read_text())
 
 		# Module Talks
-		modules = SuperManager.getInstance().configManager.modulesConfigurations
+		modules = self.ConfigManager.modulesConfigurations
 
 		for moduleName in modules:
 			if moduleToLoad and moduleToLoad != moduleName:
@@ -59,7 +57,7 @@ class TalkManager(Manager):
 		arr = list()
 		try:
 			module = commons.toCamelCase(module)
-			arr = self._langData[module][SuperManager.getInstance().languageManager.activeLanguage][talk][strType]
+			arr = self._langData[module][self.LanguageManager.activeLanguage][talk][strType]
 		except KeyError:
 			self._logger.warning('Was asked to return unexisting texts {} for module {} with type {}'.format(talk, module, strType))
 
@@ -108,9 +106,9 @@ class TalkManager(Manager):
 		if not module:
 			return ''
 
-		shortReplyMode = forceShortTalk or SuperManager.getInstance().userManager.checkIfAllUser('sleeping') or SuperManager.getInstance().configManager.getAliceConfigByName('shortReplies')
-		activeLanguage = SuperManager.getInstance().languageManager.activeLanguage
-		defaultLanguage = SuperManager.getInstance().languageManager.defaultLanguage
+		shortReplyMode = forceShortTalk or self.UserManager.checkIfAllUser('sleeping') or self.ConfigManager.getAliceConfigByName('shortReplies')
+		activeLanguage = self.LanguageManager.activeLanguage
+		defaultLanguage = self.LanguageManager.defaultLanguage
 
 		string = self.chooseTalk(talk, module, activeLanguage, defaultLanguage, shortReplyMode)
 		if not string:
@@ -119,7 +117,7 @@ class TalkManager(Manager):
 
 		if self.ConfigManager.getAliceConfigByName('whisperWhenSleeping') and \
 			self.TTSManager.tts.getWhisperMarkup() and \
-			SuperManager.getInstance().userManager.checkIfAllUser('sleeping'):
+			self.UserManager.checkIfAllUser('sleeping'):
 
 			start, end = self.TTSManager.tts.getWhisperMarkup()
 			string = '{}{}{}'.format(start, string, end)

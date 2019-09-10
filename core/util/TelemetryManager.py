@@ -63,8 +63,12 @@ class TelemetryManager(Manager):
 
 
 	def getData(self, ttype: TelemetryType, siteId: str, service: str = None):
+		values = {'type': ttype.value, 'siteId': siteId}
+		if service:
+			values['service'] = service
+
 		return self.databaseFetch(
 			tableName='telemetry',
-			query='SELECT * FROM :__table__ WHERE type = :type and siteId = :siteId order by timestamp DESC LIMIT 1',
-			values={'type': ttype.value, siteId: siteId}
+			query='SELECT * FROM :__table__ WHERE type = :type and siteId = :siteId {} order by timestamp DESC LIMIT 1'.format('and service = :service' if service else ''),
+			values=values
 		)

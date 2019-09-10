@@ -1,6 +1,5 @@
 from pathlib import Path
 
-from core.base.SuperManager import SuperManager
 from core.base.model.Manager import Manager
 from core.commons import commons, constants
 from core.dialog.model.DialogSession import DialogSession
@@ -25,9 +24,9 @@ class TTSManager(Manager):
 	def onStart(self):
 		super().onStart()
 
-		tts = self._loadTTS(SuperManager.getInstance().configManager.getAliceConfigByName('tts').lower())
+		tts = self._loadTTS(self.ConfigManager.getAliceConfigByName('tts').lower())
 
-		if (SuperManager.getInstance().configManager.getAliceConfigByName('stayCompletlyOffline') or SuperManager.getInstance().configManager.getAliceConfigByName('keepTTSOffline')) and self._tts.online:
+		if (self.ConfigManager.getAliceConfigByName('stayCompletlyOffline') or self.ConfigManager.getAliceConfigByName('keepTTSOffline')) and self._tts.online:
 			self._tts = PicoTTS()
 			self._logger.info('[{}] Started "Pico" TTS'.format(self.name))
 		else:
@@ -87,7 +86,7 @@ class TTSManager(Manager):
 			self._fallback.onSay(session)
 		else:
 			if session.user != constants.UNKNOWN_USER:
-				user: User = SuperManager.getInstance().userManager.getUser(session.user)
+				user: User = self.UserManager.getUser(session.user)
 				if user and user.tts:
 					self._loadTTS(user.tts, user)
 					self._tts.onStart()

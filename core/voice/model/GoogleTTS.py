@@ -1,7 +1,7 @@
+import re
 import subprocess
 from pathlib import Path
 
-import re
 from google.oauth2.service_account import Credentials
 
 from core.commons import commons

@@ -1,6 +1,5 @@
-import subprocess
-
 import re
+import subprocess
 
 from core.base.SuperManager import SuperManager
 from core.dialog.model.DialogSession import DialogSession

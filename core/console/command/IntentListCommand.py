@@ -1,4 +1,5 @@
 import random
+
 from terminaltables import DoubleTable
 
 from core.base.ConfigManager import ConfigManager

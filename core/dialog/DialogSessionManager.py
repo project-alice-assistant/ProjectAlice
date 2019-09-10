@@ -2,7 +2,6 @@ from typing import Dict, Optional
 
 from paho.mqtt.client import MQTTMessage
 
-from core.base.SuperManager import SuperManager
 from core.base.model.Manager import Manager
 from core.commons import commons, constants
 from core.dialog.model.DialogSession import DialogSession
@@ -70,7 +69,7 @@ class DialogSessionManager(Manager):
 		:param message: dict
 		"""
 		session = self.addSession(sessionId, message)
-		SuperManager.getInstance().threadManager.doLater(func=self._sessions.pop, interval=20, args=[sessionId])
+		self.ThreadManager.doLater(func=self._sessions.pop, interval=20, args=[sessionId])
 		return session
 
 

@@ -2,6 +2,8 @@ from __future__ import annotations
 
 import logging
 
+from core.commons import constants
+
 
 class SuperManager(object):
 
@@ -183,6 +185,7 @@ class SuperManager(object):
 
 
 	def onStop(self):
+		managerName = constants.UNKNOWN_MANAGER
 		try:
 			for managerName, manager in self._managers.items():
 				manager.onStop()

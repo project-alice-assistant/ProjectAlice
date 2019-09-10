@@ -1,7 +1,7 @@
 import getpass
+import re
 import sys
 
-import re
 from colorama import Back, Fore
 
 from core.commons import commons

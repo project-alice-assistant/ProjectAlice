@@ -1,7 +1,9 @@
+import functools
 import inspect
 import json
 import socket
 import time
+import warnings
 from collections import defaultdict
 from contextlib import contextmanager
 from ctypes import *
@@ -9,8 +11,6 @@ from datetime import datetime
 from pathlib import Path
 from typing import Union
 
-import functools
-import warnings
 from paho.mqtt.client import MQTTMessage
 
 import core.commons.model.Slot as slotModel

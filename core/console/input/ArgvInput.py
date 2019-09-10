@@ -1,6 +1,5 @@
-import sys
-
 import re
+import sys
 
 from core.commons import commons
 from core.console.input.Input import Input

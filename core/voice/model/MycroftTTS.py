@@ -1,8 +1,7 @@
 import getpass
+import re
 import subprocess
 from pathlib import Path
-
-import re
 
 from core.commons import commons
 from core.dialog.model.DialogSession import DialogSession

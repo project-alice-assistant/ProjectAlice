@@ -1,12 +1,11 @@
 import json
+import tempfile
 import time
 import uuid
 from pathlib import Path
 
 import requests
-import tempfile
 
-from core.base.SuperManager import SuperManager
 from core.base.model.Manager import Manager
 from core.snips.model.SnipsConsoleUser import SnipsConsoleUser
 from core.snips.model.SnipsTrainingStatus import SnipsTrainingType, TrainingStatusResponse
@@ -209,8 +208,8 @@ class SnipsConsoleManager(Manager):
 
 			self.ConfigManager.updateSnipsConfiguration(parent='project-alice', key='console_token', value='')
 			self.ConfigManager.updateSnipsConfiguration(parent='project-alice', key='console_alias', value='')
-			SuperManager.getInstance().configManager.updateSnipsConfiguration(parent='project-alice', key='console_user_id', value='')
-			SuperManager.getInstance().configManager.updateSnipsConfiguration(parent='project-alice', key='console_user_email', value='')
+			self.ConfigManager.updateSnipsConfiguration(parent='project-alice', key='console_user_id', value='')
+			self.ConfigManager.updateSnipsConfiguration(parent='project-alice', key='console_user_email', value='')
 
 			self._login()
 		return req

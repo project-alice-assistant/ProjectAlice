@@ -1,16 +1,16 @@
+import os
 import socket
 import sqlite3
 import threading
 import time
 import uuid
+from random import shuffle
 from typing import Optional
 
 import esptool
-import os
 import requests
 from esptool import ESPLoader
 from paho.mqtt.client import MQTTMessage
-from random import shuffle
 from serial import Serial
 from serial.tools import list_ports
 

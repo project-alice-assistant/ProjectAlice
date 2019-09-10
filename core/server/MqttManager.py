@@ -61,7 +61,7 @@ class MqttManager(Manager):
 		self._mqttClient.on_log = self.onLog
 
 		self._mqttClient.message_callback_add(self._HERMES_DEFAULT_HOTWORD_DETECTED, self.onHotwordDetected)
-		for username in SuperManager.getInstance().userManager.getAllUserNames():
+		for username in self.UserManager.getAllUserNames():
 			self._mqttClient.message_callback_add(self._HERMES_HOTWORD_USER_DETECTED.replace('{user}', username), self.onHotwordDetected)
 
 		self._mqttClient.message_callback_add(self._HERMES_SESSION_STARTED, self.onSnipsSessionStarted)
@@ -82,7 +82,7 @@ class MqttManager(Manager):
 
 		self._mqttClient.message_callback_add(self._HERMES_SESSION_QUEUED, self.onSnipsSessionQueued)
 
-		self._mqttClient.connect(SuperManager.getInstance().configManager.getAliceConfigByName('mqttHost'), int(SuperManager.getInstance().configManager.getAliceConfigByName('mqttPort')))
+		self._mqttClient.connect(self.ConfigManager.getAliceConfigByName('mqttHost'), int(self.ConfigManager.getAliceConfigByName('mqttPort')))
 
 		self._mqttClient.loop_start()
 		self._logger.info('Started {}'.format(self.NAME))
@@ -115,7 +115,7 @@ class MqttManager(Manager):
 			(self._HERMES_HOTWORD_TOGGLE_ON, 0)
 		]
 
-		for username in SuperManager.getInstance().userManager.getAllUserNames():
+		for username in self.UserManager.getAllUserNames():
 			subscribedEvents.append((self._HERMES_HOTWORD_USER_DETECTED.replace('{user}', username), 0))
 
 		self._mqttClient.subscribe(subscribedEvents)
@@ -125,10 +125,10 @@ class MqttManager(Manager):
 
 	def subscribeModuleIntents(self, moduleName: str = None):
 		if moduleName:
-			SuperManager.getInstance().moduleManager.getModuleInstance(moduleName).subscribe(self._mqttClient)
+			self.ModuleManager.getModuleInstance(moduleName).subscribe(self._mqttClient)
 			return
 
-		for module in SuperManager.getInstance().moduleManager.getModules().copy().values():
+		for module in self.ModuleManager.getModules().copy().values():
 			module['instance'].subscribe(self._mqttClient)
 
 
@@ -142,51 +142,51 @@ class MqttManager(Manager):
 			payload = commons.payload(message)
 			sessionId = commons.parseSessionId(message)
 
-			session = SuperManager.getInstance().dialogSessionManager.getSession(sessionId)
+			session = self.DialogSessionManager.getSession(sessionId)
 			if session:
 				session.update(message)
-				if SuperManager.getInstance().multiIntentManager.processMessage(message):
+				if self.MultiIntentManager.processMessage(message):
 					return
 
 			if message.topic == self._HERMES_CAPTURED:
-				SuperManager.getInstance().moduleManager.broadcast('onASRCaptured', args=[payload])
+				self.ModuleManager.broadcast('onASRCaptured', args=[payload])
 				return
 
 			elif message.topic == self._HERMES_START_LISTENING:
-				SuperManager.getInstance().moduleManager.broadcast('onListening', args=[siteId])
+				self.ModuleManager.broadcast('onListening', args=[siteId])
 				return
 
 			elif message.topic == self._HERMES_HOTWORD_TOGGLE_ON:
-				SuperManager.getInstance().moduleManager.broadcast('onHotwordToggleOn', args=[siteId])
+				self.ModuleManager.broadcast('onHotwordToggleOn', args=[siteId])
 				return
 
-			session = SuperManager.getInstance().dialogSessionManager.getSession(sessionId)
+			session = self.DialogSessionManager.getSession(sessionId)
 			if not session:
-				session = SuperManager.getInstance().deviceManager.onMessage(message)
+				session = self.DeviceManager.onMessage(message)
 				if not session:
 					self._logger.warning('[{}] Got a message on ({}) but nobody knows what to do with it'.format(self.name, message.topic))
 					self.endTalk(sessionId)
 					return
 
-			redQueen = SuperManager.getInstance().moduleManager.getModuleInstance('RedQueen')
+			redQueen = self.ModuleManager.getModuleInstance('RedQueen')
 			if redQueen and not redQueen.inTheMood(session):
 				return
 
 			customData = session.customData
-			if 'intent' in payload and payload['intent']['confidenceScore'] < SuperManager.getInstance().configManager.getAliceConfigByName('probabilityTreshold'):
+			if 'intent' in payload and payload['intent']['confidenceScore'] < self.ConfigManager.getAliceConfigByName('probabilityTreshold'):
 				if session.notUnderstood < 3:
 					session.notUnderstood += 1
 
 					self.continueDialog(
 						sessionId=sessionId,
-						text=SuperManager.getInstance().talkManager.randomTalk('notUnderstood', module='system')
+						text=self.TalkManager.randomTalk('notUnderstood', module='system')
 					)
 				else:
 					del session.notUnderstood
 
 					self.endTalk(
 						sessionId=sessionId,
-						text=SuperManager.getInstance().talkManager.randomTalk('notUnderstood', module='system')
+						text=self.TalkManager.randomTalk('notUnderstood', module='system')
 					)
 				return
 
@@ -207,11 +207,11 @@ class MqttManager(Manager):
 					return
 
 				# Authentication might end the session directly from a module
-				if not SuperManager.getInstance().dialogSessionManager.getSession(sessionId):
+				if not self.DialogSessionManager.getSession(sessionId):
 					return
 
-				if SuperManager.getInstance().multiIntentManager.isProcessing(sessionId):
-					SuperManager.getInstance().multiIntentManager.processNextIntent(sessionId)
+				if self.MultiIntentManager.isProcessing(sessionId):
+					self.MultiIntentManager.processNextIntent(sessionId)
 					return
 
 				elif consumed:
@@ -229,20 +229,20 @@ class MqttManager(Manager):
 		payload = commons.payload(msg)
 
 		if not self._multiDetectionsHolder:
-			SuperManager.getInstance().threadManager.doLater(interval=0.5, func=self.handleMultiDetection)
+			self.ThreadManager.doLater(interval=0.5, func=self.handleMultiDetection)
 
 		self._multiDetectionsHolder.append(payload['siteId'])
 
 		user = constants.UNKNOWN_USER
 		if payload['modelType'] == 'personal':
 			speaker = payload['modelId']
-			users = {name.lower(): user for name, user in SuperManager.getInstance().userManager.users.items()}
+			users = {name.lower(): user for name, user in self.UserManager.users.items()}
 			if speaker in users:
 				user = users[speaker].name
 
-		session = SuperManager.getInstance().dialogSessionManager.preSession(siteId, user)
+		session = self.DialogSessionManager.preSession(siteId, user)
 		SuperManager.getInstance().broadcast(method='onHotword', exceptions=[self.name], args=[siteId, session])
-		SuperManager.getInstance().moduleManager.broadcast('onHotword', args=[siteId])
+		self.ModuleManager.broadcast('onHotword', args=[siteId])
 
 
 	def handleMultiDetection(self):
@@ -250,7 +250,7 @@ class MqttManager(Manager):
 			self._multiDetectionsHolder = list()
 			return
 
-		sessions = SuperManager.getInstance().dialogSessionManager.sessions
+		sessions = self.DialogSessionManager.sessions
 		for sessionId in sessions:
 			payload = commons.payload(sessions[sessionId].message)
 			if payload['siteId'] != self._multiDetectionsHolder[0]:
@@ -262,7 +262,7 @@ class MqttManager(Manager):
 	# noinspection PyUnusedLocal
 	def onSnipsSessionStarted(self, client, data, msg: mqtt.MQTTMessage):
 		sessionId = commons.parseSessionId(msg)
-		session = SuperManager.getInstance().dialogSessionManager.addSession(sessionId=sessionId, message=msg)
+		session = self.DialogSessionManager.addSession(sessionId=sessionId, message=msg)
 
 		if session:
 			SuperManager.getInstance().broadcast(method='onSessionStarted', exceptions=[self.name], args=[session], propagateToModules=True)
@@ -551,6 +551,7 @@ class MqttManager(Manager):
 			else:
 				self._logger.warning('[{}] ContinueDialog was provided customdata of unsupported type: {}'.format(self.name, customData))
 
+		intentList = list()
 		if intentFilter:
 			intentList = [str(x).replace('hermes/intent/', '') for x in intentFilter]
 			jsonDict['intentFilter'] = intentList

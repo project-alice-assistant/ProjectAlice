@@ -1,6 +1,5 @@
 from paho.mqtt.client import MQTTMessage
 
-from core.base.SuperManager import SuperManager
 from core.base.model.Manager import Manager
 from core.commons import commons
 from core.dialog.model import DialogSession
@@ -23,13 +22,13 @@ class MultiIntentManager(Manager):
 
 	def processMessage(self, message: MQTTMessage) -> bool:
 		sessionId = commons.parseSessionId(message)
-		session = SuperManager.getInstance().dialogSessionManager.getSession(sessionId)
+		session = self.DialogSessionManager.getSession(sessionId)
 		if not session or self.isProcessing(sessionId):
 			return False
 
 		payload = session.payload
 		if 'input' in payload:
-			separators = SuperManager.getInstance().languageManager.getStrings('intentSeparator')
+			separators = self.LanguageManager.getStrings('intentSeparator')
 			GLUE_SPLITTER = '__multi_intent__'
 			userInput = payload['input']
 
@@ -60,9 +59,8 @@ class MultiIntentManager(Manager):
 		return True
 
 
-	@staticmethod
-	def _queryNLU(session: DialogSession, string: str):
-		SuperManager.getInstance().mqttManager.publish(topic='hermes/nlu/query', payload={
+	def _queryNLU(self, session: DialogSession, string: str):
+		self.MqttManager.publish(topic='hermes/nlu/query', payload={
 			'input': string,
 			'sessionId': session.sessionId,
 			'intentFilter': session.intentFilter

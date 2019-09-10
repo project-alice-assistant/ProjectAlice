@@ -1,7 +1,6 @@
+import hashlib
 import sys
 import traceback
-
-import hashlib
 
 from core.snips import SamkillaManager
 from core.snips.samkilla.models.EnumSkillImageUrl import EnumSkillImageUrl as EnumSkillImageUrlClass

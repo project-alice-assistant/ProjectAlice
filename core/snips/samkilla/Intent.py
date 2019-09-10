@@ -1,7 +1,6 @@
-import typing
-
 import hashlib
 import re
+import typing
 
 from core.ProjectAliceExceptions import HttpError, IntentError
 from core.snips import SamkillaManager

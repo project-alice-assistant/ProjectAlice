@@ -1,14 +1,13 @@
 import json
+import shutil
+import tempfile
 import wave
+from enum import Enum
 from pathlib import Path
 
 import pyaudio
-import shutil
-import tempfile
-from enum import Enum
 from pydub import AudioSegment
 
-from core.base.SuperManager import SuperManager
 from core.base.model.Manager import Manager
 from core.commons import commons
 from core.commons.commons import shutUpAlsaFFS
@@ -87,7 +86,7 @@ class WakewordManager(Manager):
 	def addASample(self):
 		self._state = WakewordManagerState.RECORDING
 		number = len(self._wakeword.samples) + 1
-		SuperManager.getInstance().threadManager.newThread(name='captureWakeword', target=self._captureWakeword, args=[number], autostart=True)
+		self.ThreadManager.newThread(name='captureWakeword', target=self._captureWakeword, args=[number], autostart=True)
 
 
 	def _captureWakeword(self, number: int):
@@ -96,16 +95,16 @@ class WakewordManager(Manager):
 
 		stream = self._audio.open(
 			format=self._audio.get_format_from_width(2),
-			channels=SuperManager.getInstance().configManager.getAliceConfigByName('micChannels'),
-			rate=SuperManager.getInstance().configManager.getAliceConfigByName('micSampleRate'),
+			channels=self.ConfigManager.getAliceConfigByName('micChannels'),
+			rate=self.ConfigManager.getAliceConfigByName('micSampleRate'),
 			input=True,
-			frames_per_buffer=int(SuperManager.getInstance().configManager.getAliceConfigByName('micSampleRate') / 10)
+			frames_per_buffer=int(self.ConfigManager.getAliceConfigByName('micSampleRate') / 10)
 		)
 		self._logger.info('[{}] Now recording...'.format(self.name))
 		frames = list()
 
-		for i in range(0, int(SuperManager.getInstance().configManager.getAliceConfigByName('micSampleRate') / int(SuperManager.getInstance().configManager.getAliceConfigByName('micSampleRate') / 10) * self.RECORD_SECONDS)):
-			data = stream.read(int(SuperManager.getInstance().configManager.getAliceConfigByName('micSampleRate') / 10))
+		for i in range(0, int(self.ConfigManager.getAliceConfigByName('micSampleRate') / int(self.ConfigManager.getAliceConfigByName('micSampleRate') / 10) * self.RECORD_SECONDS)):
+			data = stream.read(int(self.ConfigManager.getAliceConfigByName('micSampleRate') / 10))
 			frames.append(data)
 
 		self._logger.info('[{}] Recording over'.format(self.name))
@@ -114,9 +113,9 @@ class WakewordManager(Manager):
 		self._audio.terminate()
 
 		wav = wave.open(Path(tempfile.gettempdir(), '{}_raw.wav'.format(number)), 'w')
-		wav.setnchannels(SuperManager.getInstance().configManager.getAliceConfigByName('micChannels'))
+		wav.setnchannels(self.ConfigManager.getAliceConfigByName('micChannels'))
 		wav.setsampwidth(2)
-		wav.setframerate(SuperManager.getInstance().configManager.getAliceConfigByName('micSampleRate'))
+		wav.setframerate(self.ConfigManager.getAliceConfigByName('micSampleRate'))
 		wav.writeframes((b''.join(frames)))
 		wav.close()
 
@@ -126,7 +125,7 @@ class WakewordManager(Manager):
 
 	def _workAudioFile(self, number: int):
 		self._state = WakewordManagerState.TRIMMING
-		sound = AudioSegment.from_file(Path(tempfile.gettempdir(), '{}_raw.wav'.format(number)), format='wav', frame_rate=SuperManager.getInstance().configManager.getAliceConfigByName('micSampleRate'))
+		sound = AudioSegment.from_file(Path(tempfile.gettempdir(), '{}_raw.wav'.format(number)), format='wav', frame_rate=self.ConfigManager.getAliceConfigByName('micSampleRate'))
 		startTrim = self.detectLeadingSilence(sound)
 		endTrim = self.detectLeadingSilence(sound.reverse())
 		duration = len(sound)
@@ -205,14 +204,14 @@ class WakewordManager(Manager):
 			shutil.move(Path(tempfile.gettempdir(), '{}.wav'.format(i)), path/'{}.wav'.format(i))
 
 		self._addWakewordToSnips(path)
-		SuperManager.getInstance().threadManager.newThread(name='SatelliteWakewordUpload', target=self._upload, args=[path, self._wakeword.username], autostart=True)
+		self.ThreadManager.newThread(name='SatelliteWakewordUpload', target=self._upload, args=[path, self._wakeword.username], autostart=True)
 
 		self._state = WakewordManagerState.IDLE
 
 
 	def _addWakewordToSnips(self, path: Path):
 		# TODO unhardcode sensitivity
-		models: list = SuperManager.getInstance().configManager.getSnipsConfiguration('snips-hotword', 'model', createIfNotExist=True)
+		models: list = self.ConfigManager.getSnipsConfiguration('snips-hotword', 'model', createIfNotExist=True)
 
 		if not isinstance(models, list):
 			models = list()
@@ -231,7 +230,7 @@ class WakewordManager(Manager):
 			models.append(Path(commons.rootDir(), 'trained/hotwords/snips_hotword=0.53'))
 
 		models.append('{}=0.52'.format(path))
-		SuperManager.getInstance().configManager.updateSnipsConfiguration('snips-hotword', 'model', models, restartSnips=True)
+		self.ConfigManager.updateSnipsConfiguration('snips-hotword', 'model', models, restartSnips=True)
 
 		self._upload(path)
 
@@ -248,7 +247,7 @@ class WakewordManager(Manager):
 	def _upload(self, path: Path, uid: str = ''):
 		wakewordName, zipPath = self._prepareHotword(path)
 
-		l = len(SuperManager.getInstance().deviceManager.getDevicesByType(deviceType='AliceSatellite', connectedOnly=False)) if uid else 1
+		l = len(self.DeviceManager.getDevicesByType(deviceType='AliceSatellite', connectedOnly=False)) if uid else 1
 		for _ in range(0, l):
 			port = 8080 + len(self._wakewordUploadThreads)
 
@@ -261,7 +260,7 @@ class WakewordManager(Manager):
 			if uid:
 				payload['uid'] = uid
 
-			SuperManager.getInstance().mqttManager.publish(topic='projectalice/devices/alice/newhotword', payload=payload)
+			self.MqttManager.publish(topic='projectalice/devices/alice/newhotword', payload=payload)
 			thread = WakewordUploadThread(host=commons.getLocalIp(), zipPath=zipPath, port=port)
 			self._wakewordUploadThreads.append(thread)
 			thread.start()

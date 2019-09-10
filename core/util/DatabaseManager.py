@@ -54,7 +54,7 @@ class DatabaseManager(Manager):
 						cursor.execute('CREATE TABLE {} ({})'.format(fullTableName, colsQuery))
 						database.commit()
 						continue
-					except Exception as e:
+					except Exception:
 						database.rollback()
 						raise
 			except Exception as e:

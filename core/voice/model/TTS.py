@@ -1,11 +1,11 @@
+import hashlib
 import logging
 import subprocess
+import tempfile
 import uuid
 from pathlib import Path
 from typing import Optional
 
-import hashlib
-import tempfile
 from pydub import AudioSegment
 
 from core.base.SuperManager import SuperManager

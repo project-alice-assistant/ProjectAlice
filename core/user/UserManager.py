@@ -1,6 +1,5 @@
 from typing import Any, Optional
 
-from core.base.SuperManager import SuperManager
 from core.base.model.Manager import Manager
 from core.user.model.AccessLevels import AccessLevel
 from core.user.model.User import User
@@ -50,13 +49,13 @@ class UserManager(Manager):
 	def addNewUser(self, name: str, access: str = 'guest', state: str = 'home'):
 		insertId = self.databaseInsert(tableName='users',
 									   query='INSERT INTO :__table__ (username, accessLevel, state, lang) VALUES (:username, :accessLevel, :state, :lang)',
-									   values={'username': name.lower(), 'accessLevel': access, 'state': state, 'lang': SuperManager.getInstance().languageManager.activeLanguageAndCountryCode})
+									   values={'username': name.lower(), 'accessLevel': access, 'state': state, 'lang': self.LanguageManager.activeLanguageAndCountryCode})
 		if insertId > -1:
 			self._users[name] = User({
 				'username': name.title(),
 				'accessLevel': access,
 				'state': state,
-				'lang': SuperManager.getInstance().languageManager.activeLanguageAndCountryCode,
+				'lang': self.LanguageManager.activeLanguageAndCountryCode,
 				'tts': '',
 				'ttsType': '',
 				'ttsVoice': ''
