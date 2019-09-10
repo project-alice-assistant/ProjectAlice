@@ -110,7 +110,9 @@ network={
 		confs['ssid'] = initConfs['wifiNetworkName']
 		confs['wifipassword'] = initConfs['wifiWPAPass']
 
-		# Update our sources
+		# Update our system and sources
+		subprocess.run(['sudo', 'apt-get', 'update'])
+		subprocess.run(['sudo', 'apt-get', 'dist-upgrade', '-y'])
 		subprocess.run(['git', 'stash'])
 		subprocess.run(['git', 'pull'])
 		subprocess.run(['git', 'stash', 'clear'])
@@ -224,6 +226,8 @@ network={
 		subprocess.run(['sudo', 'rm', str(Path('/boot/ProjectAlice.yaml'))])
 
 		self.warning('Initializer done with configuring')
+		time.sleep(2)
+		subprocess.run(['sudo', 'shutdown', '-r', 'now'])
 
 
 	def fatal(self, text: str):
