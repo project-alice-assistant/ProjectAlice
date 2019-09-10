@@ -204,12 +204,16 @@ class DatabaseManager(Manager):
 		:param callerName: str
 		:return:
 		"""
-		database = None
+
+		query = 'DELETE FROM {} WHERE id in (SELECT id FROM {} ORDER BY id LIMIT {})'.format(tableName, tableName, self.ConfigManager.getAliceConfigByName('autoPruneStoredData'))
+		query = self.basicChecks(tableName, query, callerName)
+		if not query:
+			return
+
 		try:
 			database = self.getConnection()
 			cursor = database.cursor()
-
-			cursor.execute('DELETE FROM {} WHERE id in (SELECT id FROM {} ORDER BY id LIMIT {})'.format(tableName, tableName, self.ConfigManager.getAliceConfigByName('autoPruneStoredData')))
+			cursor.execute(query)
 		except Exception as e:
 			self._logger.warning('[{}] Error pruning table "{}" for component "{}": {}'.format(self.name, tableName, callerName, e))
 
@@ -221,14 +225,14 @@ class DatabaseManager(Manager):
 			database.close()
 
 
-	def basicChecks(self, tableName: str, query: str, callerName: str, values: dict) -> str:
+	def basicChecks(self, tableName: str, query: str, callerName: str, values: dict = None) -> str:
 		if ':__table__' not in query:
 			self._logger.warning('[{}] The query must use \':__table__\' for the table name'.format(self.name))
 			return ''
 		elif tableName.startswith('sqlite_'):
 			self._logger.warning('[{}] You cannot access system tables'.format(self.name))
 			return ''
-		elif ':__table__' in values:
+		elif values and ':__table__' in values:
 			self._logger.warning("[{}] Cannot use reserved sqlite keyword \":__table__\"")
 			return ''
 		else:
