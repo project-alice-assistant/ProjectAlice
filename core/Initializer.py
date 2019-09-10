@@ -222,7 +222,7 @@ network={
 			importlib.reload(config)
 
 		subprocess.run(['sudo', 'rm', '-rf', Path(commons.rootDir(), 'assistant')])
-		subprocess.run(['sudo', 'rm', '-rf', Path(commons.rootDir(), 'trained', 'assistants', confs['activeLanguage'])])
+		subprocess.run(['sudo', 'rm', '-rf', Path(commons.rootDir(), 'trained', 'assistants', 'assistant_{}'.format(confs['activeLanguage']))])
 		subprocess.run(['sudo', 'rm', str(Path('/boot/ProjectAlice.yaml'))])
 
 		self.warning('Initializer done with configuring')
