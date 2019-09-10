@@ -177,7 +177,7 @@ network={
 				audioHardware = hardware
 				break
 
-		if audioHardware in ('respeaker2', 'respeaker4'):
+		if audioHardware in ('respeaker2', 'respeaker4', 'respeaker6'):
 			subprocess.call(['sudo', Path(commons.rootDir(), 'system/scripts/audioHardware/respeakers.sh')])
 			subprocess.run(['sudo', 'sed', '-i', '-e', 's/%HARDWARE%/{}/'.format(audioHardware), Path('/etc/systemd/system/snipsledcontrol.service')])
 		elif audioHardware == 'respeaker7':
