@@ -38,16 +38,16 @@ class TTS:
 
 	def onStart(self):
 		if self._user:
-			self._lang = self._user.lang.lower()
-			self._type = self._user.ttsType.lower()
+			self._lang = self._user.lang
+			self._type = self._user.ttsType
 			self._voice = self._user.ttsVoice
 		else:
-			self._lang = SuperManager.getInstance().languageManager.activeLanguageAndCountryCode.lower()
-			self._type = SuperManager.getInstance().configManager.getAliceConfigByName('ttsType').lower()
+			self._lang = SuperManager.getInstance().languageManager.activeLanguageAndCountryCode
+			self._type = SuperManager.getInstance().configManager.getAliceConfigByName('ttsType')
 			self._voice = SuperManager.getInstance().configManager.getAliceConfigByName('ttsVoice')
 
 		if self._lang not in self._supportedLangAndVoices:
-			self._logger.info('[TTS] Lang "{}" not found, falling back to "{}"'.format(self._lang, 'en-us'))
+			self._logger.info('[TTS] Lang "{}" not found, falling back to "{}"'.format(self._lang, 'en-Us'))
 			self._lang = 'en-US'
 
 		if self._type not in self._supportedLangAndVoices[self._lang]:
@@ -100,7 +100,7 @@ class TTS:
 
 	@voice.setter
 	def voice(self, value: str):
-		self._voice = value if value.lower() in self._supportedLangAndVoices[self._lang][self._type] else next(iter(self._supportedLangAndVoices[self._lang][self._type]))
+		self._voice = value if value in self._supportedLangAndVoices[self._lang][self._type] else next(iter(self._supportedLangAndVoices[self._lang][self._type]))
 			
 
 	@property

@@ -32,146 +32,146 @@ class AmazonTTS(TTS):
 		self._supportedLangAndVoices = {
 			'arb': {
 				'female': {
-					'zeina': {
+					'Zeina': {
 						'neural': False
 					}
 				}
 			},
-			'cmn-cn': {
+			'cmn-CN': {
 				'female': {
-					'zhiyu': {
+					'Zhiyu': {
 						'neural': False
 					}
 				}
 			},
-			'da-dk': {
+			'da-DK': {
 				'male': {
-					'mads': {
+					'Mads': {
 						'neural': False
 					}
 				},
 				'female': {
-					'naja': {
+					'Naja': {
 						'neural': False
 					}
 				}
 			},
-			'nl-nl': {
+			'nl-NL': {
 				'male': {
-					'ruben': {
+					'Ruben': {
 						'neural': False
 					}
 				},
 				'female': {
-					'lotte': {
+					'Lotte': {
 						'neural': False
 					}
 				}
 			},
-			'en-au': {
+			'en-AU': {
 				'male': {
-					'russell': {
+					'Russell': {
 						'neural': False
 					}
 				},
 				'female': {
-					'nicole': {
+					'Nicole': {
 						'neural': False
 					}
 				}
 			},
-			'en-gb': {
+			'en-GB': {
 				'male': {
-					'brian': {
+					'Brian': {
 						'neural': True
 					}
 				},
 				'female': {
-					'amy': {
+					'Amy': {
 						'neural': True
 					},
-					'emma': {
+					'Emma': {
 						'neural': True
 					}
 				}
 			},
-			'en-in': {
+			'en-IN': {
 				'female': {
-					'aditi': {
+					'Aditi': {
 						'neural': False
 					},
-					'raveena': {
+					'Raveena': {
 						'neural': False
 					}
 				}
 			},
-			'en-us': {
+			'en-US': {
 				'male': {
-					'joey': {
+					'Joey': {
 						'neural': True
 					},
-					'justin': {
+					'Justin': {
 						'neural': True
 					},
-					'matthew': {
+					'Matthew': {
 						'neural': True
 					},
 				},
 				'female': {
-					'ivy': {
+					'Ivy': {
 						'neural': True
 					},
-					'joanna': {
+					'Joanna': {
 						'neural': True
 					},
-					'kendra': {
+					'Kendra': {
 						'neural': True
 					},
-					'kimberly': {
+					'Kimberly': {
 						'neural': True
 					},
-					'salli': {
+					'Salli': {
 						'neural': True
 					}
 				}
 			},
-			'en-gb-wls': {
+			'en-GB-WLS': {
 				'male': {
-					'geraint': {
+					'Geraint': {
 						'neural': False
 					}
 				}
 			},
-			'fr-fr': {
+			'fr-FR': {
 				'male': {
-					'mathieu': {
+					'Mathieu': {
 						'neural': False
 					}
 				},
 				'female': {
-					'celine': {
+					'Celine': {
 						'neural': False
 					}
 				}
 			},
-			'fr-ca': {
+			'fr-CA': {
 				'female': {
-					'chantal': {
+					'Chantal': {
 						'neural': False
 					}
 				}
 			},
-			'de-de': {
+			'de-DE': {
 				'male': {
-					'hans': {
+					'Hans': {
 						'neural': False
 					}
 				},
 				'female': {
-					'marlene': {
+					'Marlene': {
 						'neural': False
 					},
-					'vicki': {
+					'Vicki': {
 						'neural': False
 					}
 				}
