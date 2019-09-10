@@ -113,6 +113,7 @@ network={
 		# Update our sources
 		subprocess.run(['git', 'stash'])
 		subprocess.run(['git', 'pull'])
+		subprocess.run(['git', 'stash', 'clear'])
 
 		# Now let's dump some values to their respective places
 		# First those that need some checks and self filling in case
@@ -218,8 +219,8 @@ network={
 		else:
 			importlib.reload(config)
 
-		subprocess.call(['sudo', 'rm-rf', Path(commons.rootDir()), 'assistant'])
-		subprocess.call(['sudo', 'rm-rf', Path(commons.rootDir()), 'trained', 'assistants', confs['activeLanguage']])
+		subprocess.call(['sudo', 'rm', '-rf', Path(commons.rootDir()), 'assistant'])
+		subprocess.call(['sudo', 'rm', '-rf', Path(commons.rootDir()), 'trained', 'assistants', confs['activeLanguage']])
 
 		self.warning('Initializer done with configuring')
 		subprocess.run(['sudo', 'rm', str(Path('/boot/ProjectAlice.yaml'))])
