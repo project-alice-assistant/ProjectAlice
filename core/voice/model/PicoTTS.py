@@ -16,44 +16,44 @@ class PicoTTS(TTS):
 		self._online = False
 		self._privacyMalus = 0
 		self._supportedLangAndVoices = {
-			'en-US': {
+			'en-us': {
 				'male': {
-					'en-US': {
+					'en-us': {
 						'neural': False
 					}
 				}
 			},
-			'en-GB': {
+			'en-gb': {
 				'male': {
-					'en-GB': {
+					'en-gb': {
 						'neural': False
 					},
 				}
 			},
-			'de-DE': {
+			'de-de': {
 				'male': {
-					'de-DE': {
+					'de-de': {
 						'neural': False
 					},
 				}
 			},
-			'es-ES': {
+			'es-es': {
 				'male': {
-					'es-ES': {
+					'es-es': {
 						'neural': False
 					},
 				}
 			},
-			'fr-FR': {
+			'fr-fr': {
 				'male': {
-					'fr-FR': {
+					'fr-fr': {
 						'neural': False
 					},
 				}
 			},
-			'it-IT': {
+			'it-it': {
 				'male': {
-					'it-IT': {
+					'it-it': {
 						'neural': False
 					},
 				}

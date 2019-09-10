@@ -38,14 +38,14 @@ class AmazonTTS(TTS):
 					}
 				}
 			},
-			'cmn-CN': {
+			'cmn-cn': {
 				'female': {
 					'zhiyu': {
 						'neural': False
 					}
 				}
 			},
-			'da-DK': {
+			'da-dk': {
 				'male': {
 					'mads': {
 						'neural': False
@@ -57,7 +57,7 @@ class AmazonTTS(TTS):
 					}
 				}
 			},
-			'nl-NL': {
+			'nl-nl': {
 				'male': {
 					'ruben': {
 						'neural': False
@@ -69,7 +69,7 @@ class AmazonTTS(TTS):
 					}
 				}
 			},
-			'en-AU': {
+			'en-au': {
 				'male': {
 					'russell': {
 						'neural': False
@@ -81,7 +81,7 @@ class AmazonTTS(TTS):
 					}
 				}
 			},
-			'en-GB': {
+			'en-gb': {
 				'male': {
 					'brian': {
 						'neural': True
@@ -96,7 +96,7 @@ class AmazonTTS(TTS):
 					}
 				}
 			},
-			'en-IN': {
+			'en-in': {
 				'female': {
 					'aditi': {
 						'neural': False
@@ -106,7 +106,7 @@ class AmazonTTS(TTS):
 					}
 				}
 			},
-			'en-US': {
+			'en-us': {
 				'male': {
 					'joey': {
 						'neural': True
@@ -136,14 +136,14 @@ class AmazonTTS(TTS):
 					}
 				}
 			},
-			'en-GB-WLS': {
+			'en-gb-wls': {
 				'male': {
 					'geraint': {
 						'neural': False
 					}
 				}
 			},
-			'fr-FR': {
+			'fr-fr': {
 				'male': {
 					'mathieu': {
 						'neural': False
@@ -155,14 +155,14 @@ class AmazonTTS(TTS):
 					}
 				}
 			},
-			'fr-CA': {
+			'fr-ca': {
 				'female': {
 					'chantal': {
 						'neural': False
 					}
 				}
 			},
-			'de-DE': {
+			'de-de': {
 				'male': {
 					'hans': {
 						'neural': False

@@ -2,6 +2,7 @@ import logging
 import subprocess
 import uuid
 from pathlib import Path
+from typing import Optional
 
 import hashlib
 import tempfile
@@ -37,16 +38,16 @@ class TTS:
 
 	def onStart(self):
 		if self._user:
-			self._lang = self._user.lang
+			self._lang = self._user.lang.lower()
 			self._type = self._user.ttsType.lower()
-			self._voice = self._user.ttsVoice.lower()
+			self._voice = self._user.ttsVoice
 		else:
-			self._lang = SuperManager.getInstance().languageManager.activeLanguageAndCountryCode
+			self._lang = SuperManager.getInstance().languageManager.activeLanguageAndCountryCode.lower()
 			self._type = SuperManager.getInstance().configManager.getAliceConfigByName('ttsType').lower()
-			self._voice = SuperManager.getInstance().configManager.getAliceConfigByName('ttsVoice').lower()
+			self._voice = SuperManager.getInstance().configManager.getAliceConfigByName('ttsVoice')
 
 		if self._lang not in self._supportedLangAndVoices:
-			self._logger.info('[TTS] Lang "{}" not found, falling back to "{}"'.format(self._lang, 'en-US'))
+			self._logger.info('[TTS] Lang "{}" not found, falling back to "{}"'.format(self._lang, 'en-us'))
 			self._lang = 'en-US'
 
 		if self._type not in self._supportedLangAndVoices[self._lang]:
@@ -118,7 +119,7 @@ class TTS:
 
 
 	@staticmethod
-	def getWhisperMarkup() -> tuple:
+	def getWhisperMarkup() -> Optional[tuple]:
 		return None
 
 
