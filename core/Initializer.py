@@ -173,6 +173,9 @@ network={
 		confs['githubUsername'] = initConfs['githubUsername']
 		confs['githubToken'] = initConfs['githubToken']
 
+		if initConfs['snipsProjectId'] and confs['activeLanguage'] in confs['supportedLanguages']:
+			confs['supportedLanguages']['activeLanguage']['snipsProjectId'] = initConfs['snipsProjectId']
+
 		self._logger.info('Installing audio hardware')
 		audioHardware = ''
 		for hardware in initConfs['audioHardware']:
