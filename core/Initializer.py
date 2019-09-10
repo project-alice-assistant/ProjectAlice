@@ -177,18 +177,32 @@ network={
 				audioHardware = hardware
 				break
 
-		if audioHardware in ('respeaker2', 'respeaker4', 'respeaker6'):
+		if audioHardware in ('respeaker2', 'respeaker4', 'respeaker6MicArray'):
 			subprocess.call(['sudo', Path(commons.rootDir(), 'system/scripts/audioHardware/respeakers.sh')])
 			subprocess.run(['sudo', 'sed', '-i', '-e', 's/%HARDWARE%/{}/'.format(audioHardware), Path('/etc/systemd/system/snipsledcontrol.service')])
+
+			if audioHardware == 'respeaker6MicArray':
+				subprocess.run(['sudo', 'cp', Path(commons.rootDir(), 'system', 'asounds', 'respeaker6micarray.conf'), Path('/etc/asound.conf')])
+
 		elif audioHardware == 'respeaker7':
 			subprocess.call(['sudo', Path(commons.rootDir(), 'system/scripts/audioHardware/respeaker7.sh')])
 			subprocess.run(['sudo', 'sed', '-i', '-e', 's/%HARDWARE%/respeaker7MicArray/', Path('/etc/systemd/system/snipsledcontrol.service')])
+
 		elif audioHardware == 'respeakerCoreV2':
 			subprocess.call(['sudo', Path(commons.rootDir(), 'system/scripts/audioHardware/respeakerCoreV2.sh')])
 			subprocess.run(['sudo', 'sed', '-i', '-e', 's/%HARDWARE%/{}/'.format(audioHardware), Path('/etc/systemd/system/snipsledcontrol.service')])
+
 		elif audioHardware in ('matrixCreator', 'matrixVoice'):
 			subprocess.call(['sudo', Path(commons.rootDir(), 'system/scripts/audioHardware/matrix.sh')])
 			subprocess.run(['sudo', 'sed', '-i', '-e', 's/%HARDWARE%/{}/'.format(audioHardware.lower()), Path('/etc/systemd/system/snipsledcontrol.service')])
+
+		elif audioHardware == 'aiy':
+			subprocess.run(['sudo', 'cp', Path(commons.rootDir(), 'system', 'asounds', 'aiy.conf'), Path('/etc/asound.conf')])
+			confs['useSLC'] = False
+
+		elif audioHardware == 'usbMic':
+			subprocess.run(['sudo', 'cp', Path(commons.rootDir(), 'system', 'asounds', 'usbmic.conf'), Path('/etc/asound.conf')])
+			confs['useSLC'] = False
 
 		subprocess.run(['sudo', 'systemctl', 'daemon-reload'])
 
@@ -203,6 +217,9 @@ network={
 			self.fatal('An error occured while writting final configuration file: {}'.format(e))
 		else:
 			importlib.reload(config)
+
+		subprocess.call(['sudo', 'rm-rf', Path(commons.rootDir()), 'assistant'])
+		subprocess.call(['sudo', 'rm-rf', Path(commons.rootDir()), 'trained', 'assistants', confs['activeLanguage']])
 
 		self.warning('Initializer done with configuring')
 		subprocess.run(['sudo', 'rm', str(Path('/boot/ProjectAlice.yaml'))])
