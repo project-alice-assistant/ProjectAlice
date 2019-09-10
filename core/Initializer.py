@@ -20,7 +20,7 @@ class initDict(dict):
 
 	def __getitem__(self, item):
 		try:
-			return super().__getitem__(item)
+			return super().__getitem__(item) or ''
 		except:
 			self._logger.warning('Missing key "{}" in provided yaml file. Are you using a deprecated yaml file version?'.format(item))
 			return ''
@@ -111,8 +111,8 @@ network={
 		confs['wifipassword'] = initConfs['wifiWPAPass']
 
 		# Update our sources
-		#subprocess.run(['git', 'stash'])
-		#subprocess.run(['git', 'pull'])
+		subprocess.run(['git', 'stash'])
+		subprocess.run(['git', 'pull'])
 
 		# Now let's dump some values to their respective places
 		# First those that need some checks and self filling in case
@@ -149,7 +149,6 @@ network={
 			if initConfs['googleServiceFile']:
 				googleCreds = Path(commons.rootDir(), 'credentials/googlecredentials.json')
 				googleCreds.write_text(json.dumps(initConfs['googleServiceFile']))
-
 
 		# Those that don't need checking
 		confs['micSampleRate'] = initConfs['micSampleRate']
@@ -206,7 +205,6 @@ network={
 			importlib.reload(config)
 
 		self.warning('Initializer done with configuring')
-		self.fatal('stop')
 		subprocess.run(['sudo', 'rm', str(Path('/boot/ProjectAlice.yaml'))])
 
 
