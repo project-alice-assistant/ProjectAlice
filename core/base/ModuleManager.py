@@ -229,7 +229,7 @@ class ModuleManager(Manager):
 		except ModuleStartDelayed:
 			pass
 		except Exception as e:
-			self._logger.error('- Coulnd\'t start module {}. Did you forget to return the intents in onStart()? Error: {}'.format(name, e))
+			self._logger.error('- Couldn\'t start module {}. Did you forget to return the intents in onStart()? Error: {}'.format(name, e))
 
 		return list()
 
