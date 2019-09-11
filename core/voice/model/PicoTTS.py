@@ -72,7 +72,7 @@ class PicoTTS(TTS):
 		if not self._text:
 			return
 
-		if not self._cacheFile.is_file:
+		if not self._cacheFile.exists():
 			subprocess.run(['pico2wave', '-l', self._lang, '-w', self._cacheFile, self._text])
 
 		self._speak(file=self._cacheFile, session=session)
