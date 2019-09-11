@@ -47,7 +47,7 @@ class TTS:
 			self._voice = SuperManager.getInstance().configManager.getAliceConfigByName('ttsVoice')
 
 		if self._lang not in self._supportedLangAndVoices:
-			self._logger.info('[TTS] Lang "{}" not found, falling back to "{}"'.format(self._lang, 'en-Us'))
+			self._logger.info('[TTS] Lang "{}" not found, falling back to "{}"'.format(self._lang, 'en-US'))
 			self._lang = 'en-US'
 
 		if self._type not in self._supportedLangAndVoices[self._lang]:

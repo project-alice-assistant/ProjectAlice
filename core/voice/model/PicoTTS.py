@@ -15,30 +15,30 @@ class PicoTTS(TTS):
 		self._online = False
 		self._privacyMalus = 0
 		self._supportedLangAndVoices = {
-			'en-us': {
+			'en-US': {
 				'male': {
-					'en-us': {
+					'en-US': {
 						'neural': False
 					}
 				}
 			},
-			'en-gb': {
+			'en-GB': {
 				'male': {
-					'en-gb': {
+					'en-GB': {
 						'neural': False
 					},
 				}
 			},
-			'de-de': {
+			'de-DE': {
 				'male': {
-					'de-de': {
+					'de-DE': {
 						'neural': False
 					},
 				}
 			},
-			'es-es': {
+			'es-ES': {
 				'male': {
-					'es-es': {
+					'es-ES': {
 						'neural': False
 					},
 				}
