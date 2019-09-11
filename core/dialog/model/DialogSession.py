@@ -57,6 +57,10 @@ class DialogSession:
 		self._customData = {**self._customData, **commons.parseCustomData(self._message)}
 
 
+	def addToHistory(self, intent: Intent):
+		self._intentHistory.append(intent)
+
+
 	@property
 	def slots(self) -> dict:
 		return self._slots

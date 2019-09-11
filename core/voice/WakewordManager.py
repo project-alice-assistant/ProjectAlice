@@ -76,7 +76,7 @@ class WakewordManager(Manager):
 
 	def newWakeword(self, username: str):
 		for i in range(1, 4):
-			file = Path('/tmp/{}}_raw.wav'.format(i))
+			file = Path('/tmp/{}_raw.wav'.format(i))
 			if file.is_file():
 				file.unlink()
 
@@ -90,37 +90,40 @@ class WakewordManager(Manager):
 
 
 	def _captureWakeword(self, number: int):
-		with shutUpAlsaFFS():
-			self._audio = pyaudio.PyAudio()
+		try:
+			with shutUpAlsaFFS():
+				self._audio = pyaudio.PyAudio()
 
-		stream = self._audio.open(
-			format=self._audio.get_format_from_width(2),
-			channels=self.ConfigManager.getAliceConfigByName('micChannels'),
-			rate=self.ConfigManager.getAliceConfigByName('micSampleRate'),
-			input=True,
-			frames_per_buffer=int(self.ConfigManager.getAliceConfigByName('micSampleRate') / 10)
-		)
-		self._logger.info('[{}] Now recording...'.format(self.name))
-		frames = list()
+			stream = self._audio.open(
+				format=self._audio.get_format_from_width(2),
+				channels=self.ConfigManager.getAliceConfigByName('micChannels'),
+				rate=self.ConfigManager.getAliceConfigByName('micSampleRate'),
+				input=True,
+				frames_per_buffer=int(self.ConfigManager.getAliceConfigByName('micSampleRate') / 10)
+			)
+			self._logger.info('[{}] Now recording...'.format(self.name))
+			frames = list()
 
-		for i in range(0, int(self.ConfigManager.getAliceConfigByName('micSampleRate') / int(self.ConfigManager.getAliceConfigByName('micSampleRate') / 10) * self.RECORD_SECONDS)):
-			data = stream.read(int(self.ConfigManager.getAliceConfigByName('micSampleRate') / 10))
-			frames.append(data)
+			for i in range(0, int(self.ConfigManager.getAliceConfigByName('micSampleRate') / int(self.ConfigManager.getAliceConfigByName('micSampleRate') / 10) * self.RECORD_SECONDS)):
+				data = stream.read(int(self.ConfigManager.getAliceConfigByName('micSampleRate') / 10))
+				frames.append(data)
 
-		self._logger.info('[{}] Recording over'.format(self.name))
-		stream.stop_stream()
-		stream.close()
-		self._audio.terminate()
+			self._logger.info('[{}] Recording over'.format(self.name))
+			stream.stop_stream()
+			stream.close()
+			self._audio.terminate()
 
-		wav = wave.open(Path(tempfile.gettempdir(), '{}_raw.wav'.format(number)), 'w')
-		wav.setnchannels(self.ConfigManager.getAliceConfigByName('micChannels'))
-		wav.setsampwidth(2)
-		wav.setframerate(self.ConfigManager.getAliceConfigByName('micSampleRate'))
-		wav.writeframes((b''.join(frames)))
-		wav.close()
+			wav = wave.open(str(Path(tempfile.gettempdir(), '{}_raw.wav'.format(number))), 'w')
+			wav.setnchannels(self.ConfigManager.getAliceConfigByName('micChannels'))
+			wav.setsampwidth(2)
+			wav.setframerate(self.ConfigManager.getAliceConfigByName('micSampleRate'))
+			wav.writeframes((b''.join(frames)))
+			wav.close()
 
-		self._wakeword.samples.append(wav)
-		self._workAudioFile(number)
+			self._wakeword.samples.append(wav)
+			self._workAudioFile(number)
+		except Exception as e:
+			self._logger.error('[{}] Error capturing wakeword: {}'.format(self.name, e))
 
 
 	def _workAudioFile(self, number: int):

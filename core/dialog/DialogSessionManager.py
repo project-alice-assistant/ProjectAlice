@@ -96,7 +96,7 @@ class DialogSessionManager(Manager):
 			return
 
 		session = self._sessions[sessionId]
-		session.intentHistory.append(previousIntent)
+		session.addToHistory(previousIntent)
 
 
 	def planSessionRevival(self, session: DialogSession):

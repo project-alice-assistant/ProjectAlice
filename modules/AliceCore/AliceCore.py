@@ -32,9 +32,9 @@ class AliceCore(Module):
 	_INTENT_ANSWER_NAME = Intent('AnswerName', isProtected=True)
 	_INTENT_SPELL_WORD = Intent('SpellWord', isProtected=True)
 	_INTENT_ANSWER_WAKEWORD_CUTTING = Intent('AnswerWakewordCutting', isProtected=True)
-	_INTENT_DUMMY_ADD_USER = Intent('DummyUser', isProtected=True)
-	_INTENT_DUMMY_ADD_WAKEWORD = Intent('DummyWakeword', isProtected=True),
-	_INTENT_DUMMY_WAKEWORD_INSTRUCTION = Intent('DummyInstruction', isProtected=True)
+	_INTENT_DUMMY_ADD_USER = Intent('DummyAddUser', isProtected=True)
+	_INTENT_DUMMY_ADD_WAKEWORD = Intent('DummyAddWakeword', isProtected=True)
+	_INTENT_DUMMY_WAKEWORD_INSTRUCTION = Intent('DummyWakewordInstruction', isProtected=True)
 	_INTENT_DUMMY_WAKEWORD_OK = Intent('DummyWakewordOk', isProtected=True)
 	_INTENT_DUMMY_ADD_USER_WAKEWORD = Intent('DummyAddUserWakeword', isProtected=True)
 	_INTENT_WAKEWORD = Intent('CallWakeword', isProtected=True)
@@ -684,7 +684,7 @@ class AliceCore(Module):
 
 	@staticmethod
 	def reboot():
-		subprocess.run(['sudo', 'reboot'])
+		subprocess.run(['sudo', 'shutdown', '-r', 'now'])
 
 
 	@staticmethod
