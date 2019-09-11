@@ -652,7 +652,7 @@ class MqttManager(Manager):
 
 			soundFile = Path(soundFile).with_suffix('.wav') if absolutePath else Path(root, soundFile).with_suffix('.wav')
 
-			if not soundFile.is_file():
+			if not soundFile.exists():
 				self._logger.error("Sound file {} doesn't exist".format(soundFile))
 				return
 

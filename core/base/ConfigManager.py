@@ -158,7 +158,7 @@ class ConfigManager(Manager):
 	def loadSnipsConfigurations(self):
 		self._logger.info('[{}] Loading Snips configuration file'.format(self.name))
 		snipsConfig = Path('/etc/snips.toml')
-		if snipsConfig.is_file():
+		if snipsConfig.exists():
 			self._snipsConfigurations = toml.loads(snipsConfig.read_text())
 		else:
 			self._logger.error('Failed retrieving Snips configs')
@@ -246,9 +246,9 @@ class ConfigManager(Manager):
 			changes = False
 
 			moduleConfigFile = Path(commons.rootDir(), 'modules', moduleName, 'config.json')
-			moduleConfigFileExists = moduleConfigFile.is_file()
+			moduleConfigFileExists = moduleConfigFile.exists()
 			moduleConfigFileTemplate = moduleConfigFile.with_suffix(moduleConfigFile.suffix + '.dist')
-			moduleConfigFileTemplateExists = moduleConfigFileTemplate.is_file()
+			moduleConfigFileTemplateExists = moduleConfigFileTemplate.exists()
 
 			if not moduleConfigFileTemplateExists and not moduleConfigFileExists:
 				continue
@@ -305,7 +305,7 @@ class ConfigManager(Manager):
 				continue
 
 			moduleConfigFile = Path(commons.rootDir(), 'modules', moduleName, 'config.json')
-			moduleConfigFileExists = moduleConfigFile.is_file()
+			moduleConfigFileExists = moduleConfigFile.exists()
 
 			if not self._aliceConfigurations['modules'][moduleName]['active'] or not moduleConfigFileExists:
 				self._modulesConfigurations[moduleName] = {**self._aliceConfigurations['modules'][moduleName]}

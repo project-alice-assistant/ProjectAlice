@@ -85,7 +85,7 @@ class SnipsTTS(TTS):
 		if not self._text:
 			return
 
-		if not self._cacheFile.is_file():
+		if not self._cacheFile.exists():
 			subprocess.run([
 				'snips-makers-tts',
 				'--output',

@@ -77,7 +77,7 @@ class WakewordManager(Manager):
 	def newWakeword(self, username: str):
 		for i in range(1, 4):
 			file = Path('/tmp/{}_raw.wav'.format(i))
-			if file.is_file():
+			if file.exists():
 				file.unlink()
 
 		self._wakeword = Wakeword(username)
@@ -239,12 +239,12 @@ class WakewordManager(Manager):
 
 
 	def uploadToNewDevice(self, uid: str):
-		d = Path(commons.rootDir(), 'trained/hotwords')
-		for f in d:
-			if (d/f).is_file():
+		directory = Path(commons.rootDir(), 'trained/hotwords')
+		for fiile in directory:
+			if (directory/fiile).is_file():
 				continue
 
-			self._upload(d/f, uid)
+			self._upload(directory/fiile, uid)
 
 
 	def _upload(self, path: Path, uid: str = ''):

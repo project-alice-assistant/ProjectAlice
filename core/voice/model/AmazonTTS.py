@@ -201,7 +201,7 @@ class AmazonTTS(TTS):
 			return
 
 		tmpFile = self.TEMP_ROOT / self._cacheFile.with_suffix('.mp3')
-		if not self._cacheFile.is_file():
+		if not self._cacheFile.exists():
 			response = self._client.synthesize_speech(
 				Engine='standard',
 				LanguageCode=self._lang,

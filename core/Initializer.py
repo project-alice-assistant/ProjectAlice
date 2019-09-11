@@ -71,7 +71,7 @@ network={
 		wpaSupplicant = Path('/etc/wpa_supplicant/wpa_supplicant.conf')
 		bootWpaSupplicant = Path('/boot/wpa_supplicant.conf')
 
-		if not wpaSupplicant.is_file():
+		if not wpaSupplicant.exists():
 			self._logger.info('Setting up wifi')
 			wpaFile = self._WPA_FILE\
 				.replace('%wifiCountryCode%', initConfs['wifiCountryCode'])\

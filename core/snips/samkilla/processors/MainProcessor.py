@@ -485,7 +485,7 @@ class MainProcessor:
 
 					globalSlotTypeFile = self.SAVED_ASSISTANTS_DIR / languageFilter / runOnAssistantId / 'slots' / '{}.json'.format(slotTypeName)
 
-					if globalSlotTypeFile.is_file():
+					if globalSlotTypeFile.exists():
 						globalSlotTypeFile.unlink()
 
 			self.persistToLocalAssistantCache(assistantId=runOnAssistantId, assistantLanguage=languageFilter)
@@ -580,7 +580,7 @@ class MainProcessor:
 
 					globalIntentFile = self.SAVED_ASSISTANTS_DIR / languageFilter / runOnAssistantId / 'intents' / '{}.json'.format(intentName)
 
-					if globalIntentFile.is_file():
+					if globalIntentFile.exists():
 						globalIntentFile.unlink()
 
 			self.persistToLocalAssistantCache(assistantId=runOnAssistantId, assistantLanguage=languageFilter)

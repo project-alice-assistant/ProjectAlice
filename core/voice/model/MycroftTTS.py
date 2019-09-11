@@ -90,10 +90,10 @@ class MycroftTTS(TTS):
 		if not self._text:
 			return
 
-		if not self._cacheFile.is_file():
-			if not Path(self._mimicDirectory, 'voices', self._voice + '.flitevox').is_file():
+		if not self._cacheFile.exists():
+			if not Path(self._mimicDirectory, 'voices', self._voice + '.flitevox').exists():
 				htsvoice = Path(self._mimicDirectory, 'voices', self._voice + '.htsvoice')
-				if htsvoice.is_file():
+				if htsvoice.exists():
 					subprocess.run([
 						'sudo',
 						'-u', getpass.getuser(),

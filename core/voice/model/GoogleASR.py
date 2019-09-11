@@ -26,6 +26,7 @@ class GoogleASR(ASR):
 		self._capableOfArbitraryCapture = True
 		self._streamingConfig = types.StreamingRecognitionConfig(config=self._config, single_utterance=True, interim_results=False)
 
+
 	@staticmethod
 	def _listen(responses):
 		for response in responses:

@@ -141,7 +141,7 @@ class GoogleTTS(TTS):
 			return
 
 		tmpFile = self.TEMP_ROOT / self._cacheFile.with_suffix('.mp3')
-		if not self._cacheFile.is_file():
+		if not self._cacheFile.exists():
 			imput = texttospeech.types.module.SynthesisInput(ssml=self._text)
 			audio = texttospeech.types.module.AudioConfig(
 				audio_encoding=texttospeech.enums.AudioEncoding.MP3,
