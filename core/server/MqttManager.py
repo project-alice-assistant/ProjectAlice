@@ -5,6 +5,7 @@ from pathlib import Path
 
 import paho.mqtt.client as mqtt
 import paho.mqtt.publish as publish
+import traceback
 
 from core.ProjectAliceExceptions import AccessLevelTooLow
 from core.base.SuperManager import SuperManager
@@ -219,6 +220,11 @@ class MqttManager(Manager):
 			self._logger.warning("[{}] Intent \"{}\" wasn't consumed by any module".format(self.name, message.topic))
 			self.endTalk(sessionId)
 		except Exception as e:
+			try:
+				self._logger.info(traceback.print_exc())
+			except:
+				pass
+
 			self._logger.error('[{}] Uncaught error in onMessage: {}'.format(self.name, e))
 
 
