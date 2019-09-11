@@ -128,7 +128,7 @@ network={
 			reqs = ' '.join([line.rstrip('\n') for line in open(Path(commons.rootDir(), 'sysrequirements.txt'))])
 			subprocess.run(['sudo', 'apt-get', 'install', '-y', '--allow-unauthenticated', reqs])
 			subprocess.run(['./venv/bin/pip3', 'install', '-r', str(Path(commons.rootDir(), 'piprequirements.txt'))])
-			subprocess.run(['sudo', 'systemctl', 'stop snips-*'])
+			subprocess.run(['sudo', 'systemctl', 'stop', 'snips-*'])
 			subprocess.run(['sudo', 'systemctl', 'disable', 'snips-asr'])
 			subprocess.run(['sudo', 'systemctl', 'disable', 'snips-nlu'])
 			subprocess.run(['sudo', 'systemctl', 'disable', 'snips-dialogue'])
@@ -197,7 +197,7 @@ network={
 		confs['githubToken'] = initConfs['githubToken']
 
 		if initConfs['snipsProjectId'] and confs['activeLanguage'] in confs['supportedLanguages']:
-			confs['supportedLanguages']['activeLanguage']['snipsProjectId'] = initConfs['snipsProjectId']
+			confs['supportedLanguages'][confs['activeLanguage']]['snipsProjectId'] = initConfs['snipsProjectId']
 
 		self._logger.info('Installing audio hardware')
 		audioHardware = ''
