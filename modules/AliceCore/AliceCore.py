@@ -88,8 +88,8 @@ class AliceCore(Module):
 				raise ModuleStartDelayed(self.name)
 			else:
 				self._addFirstUser()
-		else:
-			return super().onStart()
+
+		return super().onStart()
 
 
 	def _addFirstUser(self):

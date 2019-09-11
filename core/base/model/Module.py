@@ -82,13 +82,6 @@ class Module:
 		self._delayed = value
 
 
-	def onStart(self) -> list:
-		self._logger.info('Starting {} module'.format(self.name))
-		self._initDB()
-		self.MqttManager.subscribeModuleIntents(self.name)
-		return self._supportedIntents
-
-
 	def subscribe(self, mqttClient: MQTTClient):
 		for intent in self._supportedIntents:
 			mqttClient.subscribe(str(intent))
@@ -156,13 +149,21 @@ class Module:
 	def onCaptured(self, session: DialogSession): pass
 	def onIntentParsed(self, session: DialogSession): pass
 
+
+	def onStart(self) -> list:
+		self._logger.info('Starting {} module'.format(self.name))
+		self._initDB()
+		self.MqttManager.subscribeModuleIntents(self.name)
+		return self._supportedIntents
+
+
 	def onBooted(self):
 		if self.delayed:
-			self._logger.info('[{}] Delayed start'.format(self.name))
 			if self.ThreadManager.getLock('SnipsAssistantDownload').isSet():
 				self.ThreadManager.doLater(interval=5, func=self.onBooted)
 				return False
-			
+
+			self._logger.info('[{}] Delayed start'.format(self.name))
 			self.ThreadManager.doLater(interval=5, func=self.onStart)
 
 		return True
