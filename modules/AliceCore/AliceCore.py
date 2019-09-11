@@ -438,7 +438,7 @@ class AliceCore(Module):
 					break
 				time.sleep(0.5)
 
-			filepath = Path(tempfile.gettempdir(), self.WakewordManager.getLastSampleNumber()).with_suffix('.wav')
+			filepath = Path(tempfile.gettempdir(), str(self.WakewordManager.getLastSampleNumber())).with_suffix('.wav')
 			self.playSound(
 				soundFile=str(filepath),
 				sessionId='checking-wakeword',
@@ -468,7 +468,7 @@ class AliceCore(Module):
 					break
 				time.sleep(0.5)
 
-			filepath = Path(tempfile.gettempdir(), self.WakewordManager.getLastSampleNumber()).with_suffix('.wav')
+			filepath = Path(tempfile.gettempdir(), str(self.WakewordManager.getLastSampleNumber())).with_suffix('.wav')
 			self.playSound(
 				soundFile=str(filepath),
 				sessionId='checking-wakeword',

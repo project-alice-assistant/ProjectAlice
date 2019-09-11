@@ -195,7 +195,7 @@ class WakewordManager(Manager):
 
 		path = Path(commons.rootDir(), 'trained/hotwords', self.wakeword.username.lower())
 
-		if path.is_dir:
+		if path.exists():
 			self._logger.warning('[{}] Destination directory for new wakeword already exists, deleting'.format(self.name))
 			shutil.rmtree(path)
 
@@ -274,7 +274,7 @@ class WakewordManager(Manager):
 		zipPath = path.parent / (wakewordName + '.zip')
 
 		self._logger.info('[{}] Cleaning up {}'.format(self.name, wakewordName))
-		if zipPath.is_file:
+		if zipPath.exists():
 			zipPath.unlink()
 
 		self._logger.info('[{}] Packing wakeword {}'.format(self.name, wakewordName))
