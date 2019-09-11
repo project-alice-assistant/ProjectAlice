@@ -49,6 +49,7 @@ network={
 		self._confsFile = Path(commons.rootDir(), 'config.py')
 		self._confsSample = Path(commons.rootDir(), 'configSample.py')
 		self._initFile = Path('/boot/ProjectAlice.yaml')
+		self._latest = 1.0
 
 
 	def initProjectAlice(self) -> bool:
@@ -63,6 +64,10 @@ network={
 				initConfs = initDict(yaml.safe_load(f))
 			except yaml.YAMLError as e:
 				self.fatal('Failed loading init configurations: {}'.format(e))
+
+		# Check that we are running using the latest yaml
+		if initConfs['version'] < self._latest:
+			self.fatal('The yaml file you are using is deprecated. Please update it before trying again')
 
 		# Let's connect to wifi!
 		if not initConfs['wifiCountryCode'] or not initConfs['wifiNetworkName'] or not initConfs['wifiWPAPass']:
@@ -107,15 +112,31 @@ network={
 		config = importlib.import_module('config')
 		confs = config.settings.copy()
 
-		confs['ssid'] = initConfs['wifiNetworkName']
-		confs['wifipassword'] = initConfs['wifiWPAPass']
-
 		# Update our system and sources
 		subprocess.run(['sudo', 'apt-get', 'update'])
 		subprocess.run(['sudo', 'apt-get', 'dist-upgrade', '-y'])
 		subprocess.run(['git', 'stash'])
 		subprocess.run(['git', 'pull'])
 		subprocess.run(['git', 'stash', 'clear'])
+
+		# Do some installation if wanted by the user
+		if initConfs['doGroundInstall']:
+			subprocess.run(['sudo', 'bash', '-c', 'echo "deb https://raspbian.snips.ai/$(lsb_release -cs) stable main" > /etc/apt/sources.list.d/snips.list'])
+			subprocess.run(['sudo', 'apt-key',  'adv', '--keyserver gpg.mozilla.org', '--recv-keys D4F50CDCA10A2849'])
+			subprocess.run(['sudo', 'apt-get', 'update'])
+
+			reqs = ' '.join([line.rstrip('\n') for line in open(Path(commons.rootDir(), 'sysrequirements.txt'))])
+			subprocess.run(['sudo', 'apt-get', 'install', '-y', '--allow-unauthenticated', reqs])
+			subprocess.run(['./venv/bin/pip3', 'install', '-r', str(Path(commons.rootDir(), 'piprequirements.txt'))])
+			subprocess.run(['sudo', 'systemctl', 'stop snips-*'])
+			subprocess.run(['sudo', 'systemctl', 'disable', 'snips-asr'])
+			subprocess.run(['sudo', 'systemctl', 'disable', 'snips-nlu'])
+			subprocess.run(['sudo', 'systemctl', 'disable', 'snips-dialogue'])
+			subprocess.run(['sudo', 'systemctl', 'disable', 'snips-injection'])
+			subprocess.run(['sudo', 'systemctl', 'disable', 'snips-hotword'])
+			subprocess.run(['sudo', 'systemctl', 'disable', 'snips-audio-server'])
+			subprocess.run(['sudo', 'systemctl', 'disable', 'snips-makers-tts'])
+
 
 		# Now let's dump some values to their respective places
 		# First those that need some checks and self filling in case
@@ -154,6 +175,8 @@ network={
 				googleCreds.write_text(json.dumps(initConfs['googleServiceFile']))
 
 		# Those that don't need checking
+		confs['ssid'] = initConfs['wifiNetworkName']
+		confs['wifipassword'] = initConfs['wifiWPAPass']
 		confs['micSampleRate'] = initConfs['micSampleRate']
 		confs['micChannels'] = initConfs['micChannels']
 		confs['useSLC'] = initConfs['useSLC']

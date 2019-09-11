@@ -23,3 +23,5 @@ PyInquirer
 prompt_toolkit==1.0.14
 colorama
 pyyaml
+boto3
+google-cloud-texttospeech
