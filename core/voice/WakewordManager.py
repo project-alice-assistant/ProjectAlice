@@ -232,7 +232,7 @@ class WakewordManager(Manager):
 		if add:
 			models.append(str(Path(commons.rootDir(), 'trained/hotwords/snips_hotword=0.53')))
 
-		models.append('{}=0.52'.format(path))
+		models.append('{}=0.52'.format(str(path)))
 		self.ConfigManager.updateSnipsConfiguration('snips-hotword', 'model', models, restartSnips=True)
 
 		self._upload(path)
