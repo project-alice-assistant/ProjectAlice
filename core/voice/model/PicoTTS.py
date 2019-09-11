@@ -43,16 +43,16 @@ class PicoTTS(TTS):
 					},
 				}
 			},
-			'fr-fr': {
+			'fr-FR': {
 				'male': {
-					'fr-fr': {
+					'fr-FR': {
 						'neural': False
 					},
 				}
 			},
-			'it-it': {
+			'it-IT': {
 				'male': {
-					'it-it': {
+					'it-IT': {
 						'neural': False
 					},
 				}
