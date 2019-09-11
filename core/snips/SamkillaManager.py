@@ -209,46 +209,40 @@ class SamkillaManager(Manager):
 		# self._browser.execute_script('console.log(\'' + payload + '\')')
 		# self._browser.execute_script('console.log(\'' + payload + '\'.replace(/__SINGLE_QUOTES__/g,"\'").replace(/__QUOTES__/g,\'\\\\"\'))')
 
-		try:
-			self._browser.execute_script("document.title = 'loading'")
-			self._browser.execute_script('fetch("/gql", {method: "POST", headers:{"accept":"*/*","content-type":"application/json"}, credentials: "same-origin", body:\'' + payload + '\'.replace(/__SINGLE_QUOTES__/g,"\'").replace(/__QUOTES__/g,\'\\\\"\')}).then((data) => { data.text().then((text) => { document.title = text; }); })')
-			wait = WebDriverWait(self._browser, 10)
-			wait.until(EC.title_contains('{'))
-			response = self._browser.execute_script('return document.title')
-			self._browser.execute_script("document.title = 'idle'")
-			# self.log(response)
+		self._browser.execute_script("document.title = 'loading'")
+		self._browser.execute_script('fetch("/gql", {method: "POST", headers:{"accept":"*/*","content-type":"application/json"}, credentials: "same-origin", body:\'' + payload + '\'.replace(/__SINGLE_QUOTES__/g,"\'").replace(/__QUOTES__/g,\'\\\\"\')}).then((data) => { data.text().then((text) => { document.title = text; }); })')
+		wait = WebDriverWait(self._browser, 10)
+		wait.until(EC.title_contains('{'))
+		response = self._browser.execute_script('return document.title')
+		self._browser.execute_script("document.title = 'idle'")
 
-			jsonResponse = json.loads(response)
+		jsonResponse = json.loads(response)
 
-			if 'errors' in jsonResponse[0]:
-				firstError = jsonResponse[0]['errors'][0]
-				complexMessage = firstError['message']
-				path = firstError.get('path', '')
+		if 'errors' in jsonResponse[0]:
+			firstError = jsonResponse[0]['errors'][0]
+			complexMessage = firstError['message']
+			path = firstError.get('path', '')
 
-				try:
-					errorDetails = json.loads(complexMessage)
-				except:
-					errorDetails = {'status': 0}
+			try:
+				errorDetails = json.loads(complexMessage)
+			except:
+				errorDetails = {'status': 0}
 
-				errorResponse = {
-					'code': errorDetails['status'],
-					'message': complexMessage,
-					'context': path
-				}
+			errorResponse = {
+				'code': errorDetails['status'],
+				'message': complexMessage,
+				'context': path
+			}
 
-				raise HttpError(errorResponse['code'], errorResponse['message'], errorResponse['context'])
+			raise HttpError(errorResponse['code'], errorResponse['message'], errorResponse['context'])
 
-			if rawResponse:
-				return response
+		if rawResponse:
+			return response
 
-			if not dataReadyResponse:
-				return jsonResponse
+		if not dataReadyResponse:
+			return jsonResponse
 
-			return jsonResponse[0]['data']
-		except Exception as e:
-			self._logger.error('[{}] Error while sending POST request: {}'.format(self.name, e))
-			raise
-
+		return jsonResponse[0]['data']
 
 
 	def postGQLNatively(self, payload: dict) -> requests.Response:
