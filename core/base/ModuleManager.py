@@ -457,6 +457,10 @@ class ModuleManager(Manager):
 							for requirement in installFile['systemRequirements']:
 								subprocess.run(['sudo', 'apt-get', 'install', '-y', requirement])
 
+						if installFile['script']:
+							subprocess.run(['sudo', 'chmod', '+x', str(directory / installFile['script'])])
+							subprocess.run(['sudo', str(directory / installFile['script'])])
+
 						node = {
 							'active': True,
 							'version': installFile['version'],
