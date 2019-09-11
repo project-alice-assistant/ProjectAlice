@@ -1,5 +1,6 @@
 from paho.mqtt.client import MQTTMessage
 
+from core.base.model import Intent
 from core.commons import commons, constants
 
 
@@ -144,8 +145,8 @@ class DialogSession:
 
 
 	@property
-	def previousIntent(self) -> list:
-		return self._intentHistory[-1] if self._intentHistory else ''
+	def previousIntent(self) -> Intent:
+		return self._intentHistory[-1] if self._intentHistory else None
 
 
 	@property
@@ -169,16 +170,18 @@ class DialogSession:
 
 
 	def __repr__(self) -> str:
-		output = '[{}] -> '.format(self.__class__.__name__) + '{'
-		output += "_siteId='" + str(self._siteId)+"', "
-		output += "_sessionId='" + str(self._sessionId) + "', "
-		output += "_user='" + str(self._user) + "', "
-		output += "_message='" + str(self._message) + "', "
-		output += "_slots='" + str(self._slots) + "', "
-		output += "_slotsAsObjects='" + str(self._slotsAsObjects) + "', "
-		output += "_customData='" + str(self._customData) + "', "
-		output += "_payload='" + str(self._payload) + "', "
-		output += "_intentHistory='" + str(self._intentHistory) + "', "
-		output += "_notUnderstood='" + str(self._notUnderstood)
-		output += '}'
+		output = '[{}] -> [\n'.format(self.__class__.__name__)
+		output += '\t"siteId: "{}",\n'.format(self.siteId)
+		output += '\t"sessionId: "{}",\n'.format(self._sessionId)
+		output += '\t"user: "{}",\n'.format(self._user)
+		output += '\t"message: "{}",\n'.format(self._message.topic)
+		output += '\t"slots: "{}",\n'.format(self._slots)
+		output += '\t"slotsAsObject: "{}",\n'.format(self._slotsAsObjects)
+		output += '\t"customData: "{}",\n'.format(self._customData)
+		output += '\t"payload: "{}",\n'.format(self._payload)
+		output += '\t"previousIntent: "{}",\n'.format(self.previousIntent)
+		output += '\t"intentHistory: "{}",\n'.format(self._intentHistory)
+		output += '\t"intentFilter: "{}",\n'.format(self._intentFilter)
+		output += '\t"notUnderstood: "{}"\n'.format(self._notUnderstood)
+		output += ']'
 		return output
