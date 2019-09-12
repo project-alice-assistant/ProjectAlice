@@ -226,7 +226,7 @@ network={
 			subprocess.run(['sudo', 'sed', '-i', '-e', 's/%HARDWARE%/{}/'.format(audioHardware.lower()), Path('/etc/systemd/system/snipsledcontrol.service')])
 
 		elif audioHardware == 'aiy':
-			subprocess.run(['sudo', 'cp', Path(commons.rootDir(), 'system', 'asounds', 'aiy.conf'), Path('/etc/asound.conf')])
+			subprocess.run(['sudo', Path(commons.rootDir(), 'system/scripts/audioHardware/aiy.sh')])
 			confs['useSLC'] = False
 
 		elif audioHardware == 'usbMic':
