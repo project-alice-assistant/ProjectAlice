@@ -40,6 +40,8 @@ class WakewordManager(Manager):
 		self._wakeword  = None
 		self._threshold = 0
 		self._wakewordUploadThreads = list()
+		self._sampleRate = self.ConfigManager.getAliceConfigByName('micSampleRate')
+		self._channels = self.ConfigManager.getAliceConfigByName('micChannels')
 
 
 	def onStart(self):
@@ -53,6 +55,11 @@ class WakewordManager(Manager):
 		for thread in self._wakewordUploadThreads:
 			if thread.isAlive():
 				thread.join(timeout=2)
+
+
+	def tryCaptureFix(self):
+		self._sampleRate /= 2
+		self._channels = 1
 
 
 	@property
@@ -81,6 +88,8 @@ class WakewordManager(Manager):
 				file.unlink()
 
 		self._wakeword = Wakeword(username)
+		self._sampleRate = self.ConfigManager.getAliceConfigByName('micSampleRate')
+		self._channels = self.ConfigManager.getAliceConfigByName('micChannels')
 
 
 	def addASample(self):
@@ -96,16 +105,16 @@ class WakewordManager(Manager):
 
 			stream = self._audio.open(
 				format=self._audio.get_format_from_width(2),
-				channels=self.ConfigManager.getAliceConfigByName('micChannels'),
-				rate=self.ConfigManager.getAliceConfigByName('micSampleRate'),
+				channels=self._channels,
+				rate=self._sampleRate,
 				input=True,
-				frames_per_buffer=int(self.ConfigManager.getAliceConfigByName('micSampleRate') / 10)
+				frames_per_buffer=int(self._sampleRate / 10)
 			)
 			self._logger.info('[{}] Now recording...'.format(self.name))
 			frames = list()
 
-			for i in range(0, int(self.ConfigManager.getAliceConfigByName('micSampleRate') / int(self.ConfigManager.getAliceConfigByName('micSampleRate') / 10) * self.RECORD_SECONDS)):
-				data = stream.read(int(self.ConfigManager.getAliceConfigByName('micSampleRate') / 10))
+			for i in range(0, int(self._sampleRate / int(self._sampleRate / 10) * self.RECORD_SECONDS)):
+				data = stream.read(int(self._sampleRate / 10))
 				frames.append(data)
 
 			self._logger.info('[{}] Recording over'.format(self.name))
@@ -114,9 +123,9 @@ class WakewordManager(Manager):
 			self._audio.terminate()
 
 			wav = wave.open(str(Path(tempfile.gettempdir(), '{}_raw.wav'.format(number))), 'w')
-			wav.setnchannels(self.ConfigManager.getAliceConfigByName('micChannels'))
+			wav.setnchannels(self._channels)
 			wav.setsampwidth(2)
-			wav.setframerate(self.ConfigManager.getAliceConfigByName('micSampleRate'))
+			wav.setframerate(self._sampleRate)
 			wav.writeframes((b''.join(frames)))
 			wav.close()
 
@@ -128,7 +137,13 @@ class WakewordManager(Manager):
 
 	def _workAudioFile(self, number: int):
 		self._state = WakewordManagerState.TRIMMING
-		sound = AudioSegment.from_file(Path(tempfile.gettempdir(), '{}_raw.wav'.format(number)), format='wav', frame_rate=self.ConfigManager.getAliceConfigByName('micSampleRate'))
+
+		filepath = Path(tempfile.gettempdir(), '{}_raw.wav'.format(number))
+		if not filepath.exists():
+			self._logger.error('[{}] Raw wakeword "{}" wasn\'t found'.format(self.name, number))
+
+
+		sound = AudioSegment.from_file(filepath, format='wav', frame_rate=self._sampleRate)
 		startTrim = self.detectLeadingSilence(sound)
 		endTrim = self.detectLeadingSilence(sound.reverse())
 		duration = len(sound)

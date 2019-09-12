@@ -35,6 +35,7 @@ class AliceCore(Module):
 	_INTENT_DUMMY_ADD_USER = Intent('DummyAddUser', isProtected=True)
 	_INTENT_DUMMY_ADD_WAKEWORD = Intent('DummyAddWakeword', isProtected=True)
 	_INTENT_DUMMY_WAKEWORD_INSTRUCTION = Intent('DummyWakewordInstruction', isProtected=True)
+	_INTENT_DUMMY_WAKEWORD_FAILED = Intent('DummyWakewordFAILED', isProtected=True)
 	_INTENT_DUMMY_WAKEWORD_OK = Intent('DummyWakewordOk', isProtected=True)
 	_INTENT_DUMMY_ADD_USER_WAKEWORD = Intent('DummyAddUserWakeword', isProtected=True)
 	_INTENT_WAKEWORD = Intent('CallWakeword', isProtected=True)
@@ -61,6 +62,7 @@ class AliceCore(Module):
 			self._INTENT_DUMMY_ADD_USER,
 			self._INTENT_DUMMY_ADD_WAKEWORD,
 			self._INTENT_DUMMY_WAKEWORD_INSTRUCTION,
+			self._INTENT_DUMMY_WAKEWORD_FAILED,
 			self._INTENT_ANSWER_WAKEWORD_CUTTING,
 			self._INTENT_DUMMY_WAKEWORD_OK,
 			self._INTENT_WAKEWORD,
@@ -187,7 +189,7 @@ class AliceCore(Module):
 
 	def onSayFinished(self, session: DialogSession):
 		if self.ThreadManager.getLock('AddingWakeword').isSet() and self.WakewordManager.state == WakewordManagerState.IDLE:
-			self.ThreadManager.doLater(interval=1, func=self.WakewordManager.addASample)
+			self.ThreadManager.doLater(interval=0.5, func=self.WakewordManager.addASample)
 
 
 	def onSnipsAssistantDownloaded(self, *args):
@@ -427,6 +429,23 @@ class AliceCore(Module):
 				else:
 					self.endSession(sessionId=sessionId)
 
+			elif session.previousIntent == self._INTENT_DUMMY_WAKEWORD_FAILED:
+				if commons.isYes(session):
+					self.WakewordManager.tryCaptureFix()
+					self.continueDialog(
+						sessionId=sessionId,
+						text=self.randomTalk('addWakewordAccepted'),
+						intentFilter=[self._INTENT_WAKEWORD],
+						previousIntent=self._INTENT_DUMMY_WAKEWORD_INSTRUCTION
+					)
+				else:
+					if self.delayed:
+						self.delayed = False
+						self.ThreadManager.getLock('AddingWakeword').clear()
+						self.ThreadManager.doLater(interval=2, func=self.onStart)
+
+					self.endDialog(sessionId=sessionId, text=self.randomTalk('cancellingWakewordCapture'))
+
 			else:
 				return False
 
@@ -439,21 +458,30 @@ class AliceCore(Module):
 				time.sleep(0.5)
 
 			filepath = Path(tempfile.gettempdir(), str(self.WakewordManager.getLastSampleNumber())).with_suffix('.wav')
-			self.playSound(
-				soundFile=str(filepath),
-				sessionId='checking-wakeword',
-				siteId=session.siteId,
-				absolutePath=True
-			)
 
-			text = 'howWasTheCapture' if self.WakewordManager.getLastSampleNumber() == 1 else 'howWasThisCapture'
+			if not filepath.exists():
+				self.continueDialog(
+					sessionId=sessionId,
+					text=self.randomTalk('wakewordCaptureFailed'),
+					intentFilter=[self._INTENT_ANSWER_YES_OR_NO],
+					previousIntent=self._INTENT_DUMMY_WAKEWORD_FAILED
+				)
+			else:
+				self.playSound(
+					soundFile=str(filepath),
+					sessionId='checking-wakeword',
+					siteId=session.siteId,
+					absolutePath=True
+				)
 
-			self.continueDialog(
-				sessionId=sessionId,
-				text=self.randomTalk(text),
-				intentFilter=[self._INTENT_ANSWER_WAKEWORD_CUTTING, self._INTENT_ANSWER_YES_OR_NO],
-				previousIntent=self._INTENT_WAKEWORD
-			)
+				text = 'howWasTheCapture' if self.WakewordManager.getLastSampleNumber() == 1 else 'howWasThisCapture'
+
+				self.continueDialog(
+					sessionId=sessionId,
+					text=self.randomTalk(text),
+					intentFilter=[self._INTENT_ANSWER_WAKEWORD_CUTTING, self._INTENT_ANSWER_YES_OR_NO],
+					previousIntent=self._INTENT_WAKEWORD
+				)
 
 		elif intent == self._INTENT_ANSWER_WAKEWORD_CUTTING:
 			if 'More' in slots:

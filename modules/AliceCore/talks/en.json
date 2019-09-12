@@ -359,6 +359,9 @@
 			"<s>Ok! I need three samples of you calling me by saying <break time=\"100ms\"/> \"Hey Alice\" <break time=\"150ms\"/></s><s>Remember to be in a calm environement for this to work, noise or parasites make this impossible</s><s>Let's do this, call me!</s>"
 		]
 	},
+	"wakewordCaptureFailed": [
+		"Something went wrong capturing the wakeword. Do you want me to try to fix the problem and retry?"
+	],
 	"howWasTheCapture": [
 		"I just played a trimmed version of you speaking the hotword. Was it ok? If not I can trim it more or less, it needs to be cut pretty close to your speaking... Say \"Yes\", \"Too short\" or \"too long\""
 	],
