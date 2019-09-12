@@ -141,6 +141,7 @@ class WakewordManager(Manager):
 		filepath = Path(tempfile.gettempdir(), '{}_raw.wav'.format(number))
 		if not filepath.exists():
 			self._logger.error('[{}] Raw wakeword "{}" wasn\'t found'.format(self.name, number))
+			return
 
 
 		sound = AudioSegment.from_file(filepath, format='wav', frame_rate=self._sampleRate)
