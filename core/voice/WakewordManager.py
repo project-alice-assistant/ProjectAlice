@@ -141,6 +141,7 @@ class WakewordManager(Manager):
 		filepath = Path(tempfile.gettempdir(), '{}_raw.wav'.format(number))
 		if not filepath.exists():
 			self._logger.error('[{}] Raw wakeword "{}" wasn\'t found'.format(self.name, number))
+			self._state = WakewordManagerState.CONFIRMING
 			return
 
 
