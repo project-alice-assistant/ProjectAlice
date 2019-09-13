@@ -460,7 +460,7 @@ class AliceCore(Module):
 						intentFilter=[self._INTENT_ANSWER_YES_OR_NO],
 						previousIntent=self._INTENT_DUMMY_WAKEWORD_FAILED
 					)
-					break
+					return True
 				time.sleep(0.5)
 
 			filepath = Path(tempfile.gettempdir(), str(self.WakewordManager.getLastSampleNumber())).with_suffix('.wav')
