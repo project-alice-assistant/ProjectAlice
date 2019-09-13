@@ -1,66 +1,32 @@
 from terminaltables import DoubleTable
 
-from core.base.ConfigManager import ConfigManager
-from core.base.ModuleManager import ModuleManager
+from core.base.SuperManager import SuperManager
 from core.console.Command import Command
 from core.console.input.InputArgument import InputArgument
 from core.console.input.InputOption import InputOption
-from core.dialog.ProtectedIntentManager import ProtectedIntentManager
 from core.snips.SamkillaManager import SamkillaManager
-from core.snips.SnipsConsoleManager import SnipsConsoleManager
-from core.user.UserManager import UserManager
-from core.util.DatabaseManager import DatabaseManager
-from core.util.InternetManager import InternetManager
-from core.util.TelemetryManager import TelemetryManager
-from core.util.ThreadManager import ThreadManager
-from core.voice.LanguageManager import LanguageManager
 
 
-#
-# ModuleIntentListCommand list modules from dedicated repository
-#
 class ModuleIntentListCommand(Command):
+	#
+	# ModuleIntentListCommand list modules from dedicated repository
+	#
+
 	DESCRIPTION_MAX = 100
 
 
 	def __init__(self):
 		super().__init__()
 
-		configManager = ConfigManager()
-		configManager.onStart()
-
-		languageManager = LanguageManager()
-		languageManager.onStart()
-
-		threadManager = ThreadManager()
-		threadManager.onStart()
-
-		protectedIntentManager = ProtectedIntentManager()
-		protectedIntentManager.onStart()
-
-		databaseManager = DatabaseManager()
-		databaseManager.onStart()
-
-		userManager = UserManager()
-		userManager.onStart()
-
-		internetManager = InternetManager()
-		internetManager.onStart()
-
-		telemetryManager = TelemetryManager()
-		telemetryManager.onStart()
-
-		moduleManager = ModuleManager()
-		moduleManager.onStart()
-
-		snipsConsoleManager = SnipsConsoleManager()
-		snipsConsoleManager.onStart()
+		superManager = SuperManager(self)
+		superManager.initManagers()
+		superManager.onStart()
 
 		samkillaManager = SamkillaManager()
 
 		self._slotTypesModulesValues, self._intentsModulesValues, self._intentNameSkillMatching = samkillaManager.getDialogTemplatesMaps(
-			runOnAssistantId=languageManager.activeSnipsProjectId,
-			languageFilter=languageManager.activeLanguage
+			runOnAssistantId=superManager.languageManager.activeSnipsProjectId,
+			languageFilter=superManager.languageManager.activeLanguage
 		)
 
 
