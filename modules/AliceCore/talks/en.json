@@ -362,6 +362,9 @@
 	"wakewordCaptureFailed": [
 		"Something went wrong capturing the wakeword. Do you want me to try to fix the problem and retry?"
 	],
+	"wakewordCaptureTooNoisy": [
+		"There seems to be too much noise in your environement or you mic is too sensitive, the capture is too long. Do you want to try again?"
+	],
 	"howWasTheCapture": [
 		"I just played a trimmed version of you speaking the hotword. Was it ok? If not I can trim it more or less, it needs to be cut pretty close to your speaking... Say \"Yes\", \"Too short\" or \"too long\""
 	],

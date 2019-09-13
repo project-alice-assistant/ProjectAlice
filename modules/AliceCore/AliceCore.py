@@ -454,6 +454,12 @@ class AliceCore(Module):
 			while self.WakewordManager.state != WakewordManagerState.CONFIRMING:
 				i += 1
 				if i > 15:
+					self.continueDialog(
+						sessionId=sessionId,
+						text=self.randomTalk('wakewordCaptureTooNoisy'),
+						intentFilter=[self._INTENT_ANSWER_YES_OR_NO],
+						previousIntent=self._INTENT_DUMMY_WAKEWORD_FAILED
+					)
 					break
 				time.sleep(0.5)
 
