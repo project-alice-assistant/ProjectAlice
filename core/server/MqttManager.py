@@ -176,7 +176,7 @@ class MqttManager(Manager):
 			customData = session.customData
 			if 'intent' in payload and payload['intent']['confidenceScore'] < self.ConfigManager.getAliceConfigByName('probabilityTreshold'):
 				if session.notUnderstood < 3:
-					session.notUnderstood += 1
+					session.notUnderstood = session.notUnderstood + 1
 
 					self.continueDialog(
 						sessionId=sessionId,

@@ -168,6 +168,11 @@ class DialogSession:
 		return self._notUnderstood
 
 
+	@notUnderstood.setter
+	def notUnderstood(self, value: int):
+		self._notUnderstood = value
+
+
 	@notUnderstood.deleter
 	def notUnderstood(self):
 		self._notUnderstood = 0
