@@ -133,6 +133,7 @@ class WakewordManager(Manager):
 			self._workAudioFile(number)
 		except Exception as e:
 			self._logger.error('[{}] Error capturing wakeword: {}'.format(self.name, e))
+			self._state = WakewordManagerState.IDLE
 
 
 	def _workAudioFile(self, number: int):
@@ -141,7 +142,7 @@ class WakewordManager(Manager):
 		filepath = Path(tempfile.gettempdir(), '{}_raw.wav'.format(number))
 		if not filepath.exists():
 			self._logger.error('[{}] Raw wakeword "{}" wasn\'t found'.format(self.name, number))
-			self._state = WakewordManagerState.CONFIRMING
+			self._state = WakewordManagerState.IDLE
 			return
 
 
