@@ -84,7 +84,10 @@ class Module:
 
 	def subscribe(self, mqttClient: MQTTClient):
 		for intent in self._supportedIntents:
-			mqttClient.subscribe(str(intent))
+			try:
+				mqttClient.subscribe(str(intent))
+			except:
+				self._logger.error('Failed subscribing to intent "{}"'.format(str(intent)))
 
 
 	def notifyDevice(self, topic: str, uid: str = '', siteId: str = ''):
