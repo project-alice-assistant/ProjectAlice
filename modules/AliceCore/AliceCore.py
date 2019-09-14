@@ -556,6 +556,9 @@ class AliceCore(Module):
 				def systemUpdate():
 					subprocess.run(['sudo', 'apt-get', 'update'])
 					subprocess.run(['sudo', 'apt-get', 'dist-upgrade', '-y'])
+					subprocess.run(['git', 'stash'])
+					subprocess.run(['git', 'pull'])
+					subprocess.run(['git', 'stash', 'clear'])
 
 				self.ThreadManager.doLater(interval=2, func=systemUpdate)
 
@@ -566,7 +569,6 @@ class AliceCore(Module):
 
 			if update in {1, 2}: # All or Alice
 				self._logger.info('[{}] Updating Alice'.format(self.name))
-				self._logger.info('[{}] Not implemented yet'.format(self.name))
 				if update == 2:
 					self.endDialog(sessionId=sessionId, text=self.randomTalk('confirmAssistantUpdate'))
 
