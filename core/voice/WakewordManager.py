@@ -93,6 +93,10 @@ class WakewordManager(Manager):
 		self._channels = self.ConfigManager.getAliceConfigByName('micChannels')
 
 
+	def removeSample(self):
+		self._wakeword.samples.pop()
+
+
 	def addASample(self):
 		self._state = WakewordManagerState.RECORDING
 		number = len(self._wakeword.samples) + 1

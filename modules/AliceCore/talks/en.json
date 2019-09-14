@@ -356,14 +356,11 @@
 	},
 	"addWakewordAccepted": {
 		"default": [
-			"<s>Ok! I need three samples of you calling me by saying <break time=\"100ms\"/> \"Hey Alice\" <break time=\"150ms\"/></s><s>Remember to be in a calm environement for this to work, noise or parasites make this impossible</s><s>Let's do this, call me!</s>"
+			"<s>Ok! I need three samples of you calling me by saying <break time=\"100ms\"/> \"Hey Alice\" <break time=\"150ms\"/></s><s>Remember to be in a calm environment for this to work, noise or parasites make this impossible</s><s>Let's do this, call me!</s>"
 		]
 	},
 	"wakewordCaptureFailed": [
 		"Something went wrong capturing the wakeword. Do you want me to try to fix the problem and retry?"
-	],
-	"wakewordCaptureTooNoisy": [
-		"There seems to be too much noise in your environement or you mic is too sensitive, the capture is too long. Do you want to try again?"
 	],
 	"howWasTheCapture": [
 		"I just played a trimmed version of you speaking the hotword. Was it ok? If not I can trim it more or less, it needs to be cut pretty close to your speaking... Say \"Ok\", \"Trim more\", \"Trim less\" or \"Restart\""
@@ -379,14 +376,15 @@
 		"<s>Cool, just {} to go!</s><s>Call me again by saying <break time=\"100ms\"/> \"Hey Alice\" <break time=\"150ms\"/></s>",
 		"<s>I need {} more.</s><s>Call me again by saying <break time=\"100ms\"/> \"Hey Alice\" <break time=\"150ms\"/></s>"
 	],
-	"sampleUserSaidNo": [
-		"What no? Longer, shorter or yes..."
+	"restartSample": [
+		"<s>Ok, let's try this one again.</s> <s>Call me again by saying <break time=\"100ms\"/> \"Hey Alice\" <break time=\"150ms\"/></s>",
+		"<s>Sure, let's restart.</s> <s>Call me again by saying <break time=\"100ms\"/> \"Hey Alice\" <break time=\"150ms\"/></s>"
 	],
 	"wakewordCaptureDone": [
 		"You did it, I have the three samples and you should be now able to call me by my name and I should be able to recognize you! Enjoy my services!"
 	],
 	"cancellingWakewordCapture": [
-		"Ok, let's forget about it for now. You can retry when the environement is calmer. For now you can call me by saying <break time=\"100ms\"/> \"Hey Snips\", but I won't be able to recognize you though."
+		"Ok, let's forget about it for now. You can retry when the environment is calmer. For now you can call me by saying <break time=\"100ms\"/> \"Hey Snips\", but I won't be able to recognize you though."
 	],
 	"addUserWhatsTheName": [
 		"I can do that! Tell me his name please!",
