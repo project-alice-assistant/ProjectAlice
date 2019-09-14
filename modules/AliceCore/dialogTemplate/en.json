@@ -27,7 +27,7 @@
 			]
 		},
 		{
-			"name": "More",
+			"name": "WakewordCaptureResult",
 			"matchingStrictness": null,
 			"automaticallyExtensible": true,
 			"useSynonyms": true,
@@ -35,29 +35,40 @@
 				{
 					"value": "more",
 					"synonyms": [
+						"trim more",
 						"a bit more",
 						"more",
 						"much more",
-						"longer",
+						"shorter",
 						"too long"
 					]
-				}
-			]
-		},
-		{
-			"name": "Less",
-			"matchingStrictness": null,
-			"automaticallyExtensible": true,
-			"useSynonyms": true,
-			"values": [
+				},
 				{
 					"value": "less",
 					"synonyms": [
+						"trim less",
 						"a bit less",
 						"less",
 						"much less",
-						"shorter",
+						"longer",
 						"too short"
+					]
+				},
+				{
+					"value": "restart",
+					"synonyms": [
+						"start over",
+						"try again",
+						"again"
+					]
+				},
+				{
+					"value": "ok",
+					"synonyms": [
+						"okay",
+						"perfect",
+						"yes",
+						"nailed it"
 					]
 				}
 			]
@@ -13299,28 +13310,18 @@
 			"description": "User tells Alice to trim the wakeword a bit more or less",
 			"enabledByDefault": false,
 			"utterances": [
-				"{more:=>More}",
-				"trim a little {more:=>More}",
-				"you can make it {shorter:=>Less}",
-				"can you try to trim a little {more:=>More}",
-				"that's {too short:=>Less}",
-				"make it {longer:=>More}",
-				"it needs to be {longer:=>More}",
-				"could you try to make it {shorter:=>Less} please"
+				"{more:=>WakewordCaptureResult}",
+				"{trim more:=>WakewordCaptureResult}",
+				"please {a bit more:=>WakewordCaptureResult}",
+				"{start over:=>WakewordCaptureResult}",
+				"it's {perfect:=>WakewordCaptureResult}"
 			],
 			"slots": [
 				{
-					"name": "More",
+					"name": "WakewordCaptureResult",
 					"description": null,
 					"required": false,
-					"type": "More",
-					"missingQuestion": ""
-				},
-				{
-					"name": "Less",
-					"description": null,
-					"required": false,
-					"type": "Less",
+					"type": "WakewordCaptureResult",
 					"missingQuestion": ""
 				}
 			]

@@ -366,13 +366,13 @@
 		"There seems to be too much noise in your environement or you mic is too sensitive, the capture is too long. Do you want to try again?"
 	],
 	"howWasTheCapture": [
-		"I just played a trimmed version of you speaking the hotword. Was it ok? If not I can trim it more or less, it needs to be cut pretty close to your speaking... Say \"Yes\", \"Too short\" or \"too long\""
+		"I just played a trimmed version of you speaking the hotword. Was it ok? If not I can trim it more or less, it needs to be cut pretty close to your speaking... Say \"Ok\", \"Trim more\", \"Trim less\" or \"Restart\""
 	],
 	"howWasThisCapture": [
-		"How was it? Say \"Yes\", \"Too short\" or \"too long\""
+		"How was it? Say \"Ok\", \"Trim more\", \"Trim less\" or \"Restart\""
 	],
 	"howWasTheCaptureNow": [
-		"And now? Say \"Yes\", \"Too short\" or \"too long\""
+		"And now? Say \"Ok\", \"Trim more\", \"Trim less\" or \"Restart\""
 	],
 	"sampleOk": [
 		"<s>Great, good to hear, {} to go!</s><s>Call me again by saying <break time=\"100ms\"/> \"Hey Alice\" <break time=\"150ms\"/></s>",

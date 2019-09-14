@@ -60,6 +60,7 @@ class WakewordManager(Manager):
 	def tryCaptureFix(self):
 		self._sampleRate /= 2
 		self._channels = 1
+		self._state = WakewordManagerState.IDLE
 
 
 	@property
