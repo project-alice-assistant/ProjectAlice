@@ -49,7 +49,7 @@ network={
 		self._confsFile = Path(commons.rootDir(), 'config.py')
 		self._confsSample = Path(commons.rootDir(), 'configSample.py')
 		self._initFile = Path('/boot/ProjectAlice.yaml')
-		self._latest = 1.0
+		self._latest = 1.01
 
 
 	def initProjectAlice(self) -> bool:
@@ -136,6 +136,7 @@ network={
 			subprocess.run(['sudo', 'systemctl', 'disable', 'snips-hotword'])
 			subprocess.run(['sudo', 'systemctl', 'disable', 'snips-audio-server'])
 			subprocess.run(['sudo', 'systemctl', 'disable', 'snips-makers-tts'])
+			subprocess.run(['sudo', 'systemctl', 'disable', 'snips-tts'])
 
 
 		# Now let's dump some values to their respective places

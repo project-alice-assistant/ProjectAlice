@@ -21,7 +21,8 @@ class SnipsServicesManager(Manager):
 			'snips-injection',
 			'snips-audio-server',
 			'snips-asr',
-			'snips-tts'
+			'snips-tts',
+			'snips-makers-tts'
 		]
 
 
