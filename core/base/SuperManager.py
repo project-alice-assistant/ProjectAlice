@@ -178,7 +178,7 @@ class SuperManager(object):
 				self._logger.warning("[{}] Couldn't find method {} in manager {}".format(self.NAME, method, man.name))
 
 		if propagateToModules:
-			self._managers['ModuleManager'].broadcast(method=method, args=args)
+			self.moduleManager.broadcast(method=method, args=args)
 
 		for name in deadManagers:
 			del self._managers[name]
