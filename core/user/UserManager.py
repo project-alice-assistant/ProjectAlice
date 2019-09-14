@@ -173,8 +173,8 @@ class UserManager(Manager):
 			return False
 
 
-		if user not in self._users:
+		if user.lower() not in self._users:
 			self._logger.error('[{}] Was asked to check access level but user "{}" doesn\'t exist'.format(self.name, user))
 			return False
 
-		return AccessLevel[self._users[user].accessLevel.upper()].value <= AccessLevel[requiredAccessLevel.upper()].value
+		return AccessLevel[self._users[user.lower()].accessLevel.upper()].value <= AccessLevel[requiredAccessLevel.upper()].value
