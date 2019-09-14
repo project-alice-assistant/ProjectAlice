@@ -152,7 +152,7 @@ class SuperManager(object):
 
 	def broadcast(self, method, exceptions: list = None, manager = None, args: list = None, propagateToModules: bool = False):
 		if not exceptions and not manager:
-			self._logger.warning('[Managers] Cannot broadcast to manager, the calling method has to be put in exceptions')
+			self._logger.warning('[Managers] Cannot broadcast to itself, the calling method has to be put in exceptions')
 
 		if not args:
 			args = list()
