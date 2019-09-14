@@ -278,7 +278,7 @@ class Module:
 
 
 	def endDialog(self, sessionId: str = '', text: str = '', siteId: str = ''):
-		self.MqttManager.endTalk(sessionId=sessionId, text=text, client=siteId)
+		self.MqttManager.endDialog(sessionId=sessionId, text=text, client=siteId)
 
 
 	def endSession(self, sessionId):

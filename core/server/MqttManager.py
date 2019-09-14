@@ -166,7 +166,7 @@ class MqttManager(Manager):
 				session = self.DeviceManager.onMessage(message)
 				if not session:
 					self._logger.warning('[{}] Got a message on ({}) but nobody knows what to do with it'.format(self.name, message.topic))
-					self.endTalk(sessionId)
+					self.endDialog(sessionId)
 					return
 
 			redQueen = self.ModuleManager.getModuleInstance('RedQueen')
@@ -185,7 +185,7 @@ class MqttManager(Manager):
 				else:
 					del session.notUnderstood
 
-					self.endTalk(
+					self.endDialog(
 						sessionId=sessionId,
 						text=self.TalkManager.randomTalk('notUnderstood', module='system')
 					)
@@ -218,7 +218,7 @@ class MqttManager(Manager):
 					return
 
 			self._logger.warning("[{}] Intent \"{}\" wasn't consumed by any module".format(self.name, message.topic))
-			self.endTalk(sessionId)
+			self.endDialog(sessionId)
 		except Exception as e:
 			try:
 				self._logger.info(traceback.print_exc())
@@ -582,7 +582,12 @@ class MqttManager(Manager):
 			self._speakOnSonos(text, 'default')
 
 
+	@deprecated
 	def endTalk(self, sessionId: str = '', text: str = '', client: str = ''):
+		return self.endDialog(sessionId, text, client)
+
+
+	def endDialog(self, sessionId: str = '', text: str = '', client: str = ''):
 		"""
 		Ends a session by speaking the given text
 		:param sessionId: int session id to terminate

@@ -138,7 +138,7 @@ class DeviceManager(Manager):
 
 
 	def startTasmotaFlashingProcess(self, room: str, espType: str, session: DialogSession) -> bool:
-		self.ThreadManager.doLater(interval=0.5, func=self.MqttManager.endTalk, args=[session.sessionId, self.TalkManager.randomTalk('connectESPForFlashing', module='AliceCore')])
+		self.ThreadManager.doLater(interval=0.5, func=self.MqttManager.endDialog, args=[session.sessionId, self.TalkManager.randomTalk('connectESPForFlashing', module='AliceCore')])
 
 		self._broadcastFlag.set()
 		if os.path.isfile('sonoff.bin'):
