@@ -7,6 +7,7 @@ from zipfile import ZipFile
 import tempfile
 
 from core.ProjectAliceExceptions import ConfigurationUpdateFailed, LanguageManagerLangNotSupported, ModuleStartDelayed
+from core.base.SuperManager import SuperManager
 from core.base.model.Intent import Intent
 from core.base.model.Module import Module
 from core.commons import commons, constants
@@ -559,6 +560,7 @@ class AliceCore(Module):
 					subprocess.run(['git', 'stash'])
 					subprocess.run(['git', 'pull'])
 					subprocess.run(['git', 'stash', 'clear'])
+					SuperManager.getInstance().threadManager.doLater(interval=2, func=subprocess.run, args=['sudo', 'systemctl', 'restart', 'ProjectAlice'])
 
 				self.ThreadManager.doLater(interval=2, func=systemUpdate)
 
@@ -737,7 +739,7 @@ class AliceCore(Module):
 
 	def langSwitch(self, newLang: str, siteId: str):
 		self.publish(topic='hermes/asr/textCaptured', payload={'siteId': siteId})
-		subprocess.call([commons.rootDir() + '/system/scripts/langSwitch.sh', newLang])
+		subprocess.run([commons.rootDir() + '/system/scripts/langSwitch.sh', newLang])
 		self.ThreadManager.doLater(interval=3, func=self._confirmLangSwitch, args=[newLang, siteId])
 
 
