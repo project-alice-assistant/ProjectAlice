@@ -361,20 +361,14 @@ class ModuleManager(Manager):
 				modulesToBoot = self._installModules(files)
 			except Exception as e:
 				self._logger.error('[{}] Error checking for module install: {}'.format(self.name, e))
-				modulesToBoot = dict()
 			finally:
 				if modulesToBoot:
-					i = 1
-					for moduleName, info in modulesToBoot.items():
-						try:
-							if i == len(modulesToBoot):
-								self.SamkillaManager.sync(moduleFilter=[moduleName])
-							else:
-								self.SamkillaManager.sync(moduleFilter=[moduleName], download=False)
-							i += 1
-						except Exception as esamk:
-							self._logger.error('[{}] Failed syncing with remote snips console {}'.format(self.name, esamk))
+					try:
+						self.SamkillaManager.sync(moduleFilter=modulesToBoot.keys())
+					except Exception as esamk:
+						self._logger.error('[{}] Failed syncing with remote snips console {}'.format(self.name, esamk))
 
+					for moduleName, info in modulesToBoot.items():
 						self._modules = self._loadModuleList(moduleToLoad=moduleName, isUpdate=info['update'])
 
 						try:
