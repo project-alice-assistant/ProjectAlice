@@ -101,8 +101,11 @@ class SamkillaManager(Manager):
 		return self._userId
 
 
-	def sync(self, moduleFilter: str = None, download: bool = True) -> bool:
-		self.log('[{}] Sync for module \'{}\''.format(self.name, moduleFilter or '*'))
+	def sync(self, moduleFilter: list = None, download: bool = True) -> bool:
+		if moduleFilter is None:
+			moduleFilter = list()
+
+		self.log('[{}] Sync for module/s [{}]'.format(self.name, ', '.join(moduleFilter) or '*'))
 
 		started = self.start()
 
@@ -307,7 +310,7 @@ class SamkillaManager(Manager):
 		return runOnAssistantId
 
 
-	def syncLocalToRemote(self, baseAssistantId: str, baseModuleFilter: str, newAssistantTitle: str = '', baseLanguageFilter: str = 'en') -> bool:
+	def syncLocalToRemote(self, baseAssistantId: str, baseModuleFilter: list, newAssistantTitle: str = '', baseLanguageFilter: str = 'en') -> bool:
 		# RemoteFetch/LocalCheck/CreateIfNeeded: assistant
 
 		runOnAssistantId = self.findRunnableAssistant(

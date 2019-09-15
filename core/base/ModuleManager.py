@@ -368,9 +368,9 @@ class ModuleManager(Manager):
 					for moduleName, info in modulesToBoot.items():
 						try:
 							if i == len(modulesToBoot):
-								self.SamkillaManager.sync(moduleFilter=moduleName)
+								self.SamkillaManager.sync(moduleFilter=[moduleName])
 							else:
-								self.SamkillaManager.sync(moduleFilter=moduleName, download=False)
+								self.SamkillaManager.sync(moduleFilter=[moduleName], download=False)
 							i += 1
 						except Exception as esamk:
 							self._logger.error('[{}] Failed syncing with remote snips console {}'.format(self.name, esamk))

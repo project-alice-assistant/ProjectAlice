@@ -303,7 +303,10 @@ class MainProcessor:
 
 
 	# noinspection PyUnusedLocal
-	def buildMapsFromDialogTemplates(self, runOnAssistantId: str = None, moduleFilter: str = None, languageFilter: str = None) -> tuple:
+	def buildMapsFromDialogTemplates(self, runOnAssistantId: str = None, moduleFilter: list = None, languageFilter: str = None) -> tuple:
+		if moduleFilter is None:
+			moduleFilter = list()
+
 		self._modules = dict()
 
 		rootDir = Path('modules')
@@ -371,14 +374,14 @@ class MainProcessor:
 					for moduleSlot in moduleIntent.get('slots', list()):
 						intentsModulesValues[moduleIntent['name']]['slots'].setdefault(moduleSlot['name'], moduleSlot)
 
-				if moduleFilter and moduleFilter != modulePath.name:
+				if moduleFilter and modulePath.name not in moduleFilter:
 					del self._modules[module['module']]
 
 		return slotTypesModulesValues, intentsModulesValues, intentNameSkillMatching
 
 
 	# TODO to refacto in different method of a new Processor
-	def syncLocalToRemote(self, runOnAssistantId: str, moduleFilter: str = None, languageFilter: str = None) -> bool:
+	def syncLocalToRemote(self, runOnAssistantId: str, moduleFilter: list = None, languageFilter: str = None) -> bool:
 
 		slotTypesModulesValues, intentsModulesValues, intentNameSkillMatching = self.buildMapsFromDialogTemplates(
 			runOnAssistantId=runOnAssistantId,
@@ -415,7 +418,7 @@ class MainProcessor:
 
 
 	# noinspection PyUnusedLocal
-	def syncLocalToRemoteSlotTypes(self, slotTypesModulesValues: dict, runOnAssistantId: str, languageFilter: str = None, moduleFilter: str = None) -> tuple:
+	def syncLocalToRemoteSlotTypes(self, slotTypesModulesValues: dict, runOnAssistantId: str, languageFilter: str = None, moduleFilter: list = None) -> tuple:
 		slotTypesSynced = dict()
 		globalChanges = False
 
@@ -495,7 +498,7 @@ class MainProcessor:
 
 	# noinspection PyUnusedLocal
 	def syncLocalToRemoteIntents(self, skillNameIdMatching: dict, intentNameSkillMatching: dict, typeEntityMatching: dict, intentsModulesValues: dict,
-	                             runOnAssistantId: str, languageFilter: str = None, moduleFilter: str = None) -> bool:
+	                             runOnAssistantId: str, languageFilter: str = None, moduleFilter: list = None) -> bool:
 
 		intentsSynced = dict()
 		globalChanges = False
@@ -588,7 +591,7 @@ class MainProcessor:
 		return globalChanges
 
 
-	def syncLocalToRemoteModules(self, typeEntityMatching: dict, runOnAssistantId: str, languageFilter: str = None, moduleFilter: str = None):
+	def syncLocalToRemoteModules(self, typeEntityMatching: dict, runOnAssistantId: str, languageFilter: str = None, moduleFilter: list = None):
 		modulesSynced = dict()
 		globalChanges = False
 
@@ -639,7 +642,7 @@ class MainProcessor:
 		hasDeprecatedModules = list()
 
 		for moduleName in self._savedAssistants[languageFilter][runOnAssistantId]['modules']:
-			if moduleFilter and moduleName != moduleFilter:
+			if moduleFilter and moduleName not in moduleFilter:
 				continue
 
 			if moduleName not in modulesSynced:
@@ -671,7 +674,7 @@ class MainProcessor:
 
 
 	# TODO to refacto in different method of a new Processor
-	def syncRemoteToLocal(self, runOnAssistantId: str, moduleFilter: str = None, languageFilter: str = None):
+	def syncRemoteToLocal(self, runOnAssistantId: str, moduleFilter: list = None, languageFilter: str = None):
 
 		# Build cache
 		self._ctx.entity.listEntitiesByUserEmail(userEmail=self._ctx.userEmail, returnAllCacheIndexedBy='id')
@@ -714,7 +717,7 @@ class MainProcessor:
 		for skill in cachedIndexedSkills:
 			moduleName = commons.toCamelCase(string=skill['name'], replaceSepCharacters=True, sepCharacters=('/', '-', '_'))
 
-			if moduleFilter and moduleName != moduleFilter:
+			if moduleFilter and moduleName not in moduleFilter:
 				continue
 
 			modules[moduleName] = {
