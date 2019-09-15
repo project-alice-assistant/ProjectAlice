@@ -34,6 +34,7 @@ class RedQueen(Module):
 
 
 	def onStart(self):
+		super().onStart()
 		redQueenIdentityFile = self._getRedQueenIdentityFileName()
 		redQueenIdentityFileTemplate = redQueenIdentityFile + '.dist'
 
@@ -55,7 +56,7 @@ class RedQueen(Module):
 			with open(self._getRedQueenIdentityFileName(), 'r') as f:
 				self._redQueen = json.load(f)
 
-		return super().onStart()
+		return self._SUPPORTED_INTENTS
 
 
 	def onStop(self):

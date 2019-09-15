@@ -329,9 +329,10 @@ class ModuleManager(Manager):
 
 				remoteFile = json.loads(req.content.decode())
 				if float(remoteFile['version']) > float(availableModules[moduleName]['version']):
+					i += 1
 					moduleFile = Path(commons.rootDir(), 'system/moduleInstallTickets', moduleName + '.install')
 					moduleFile.write_text(json.dumps(remoteFile))
-					i += 1
+					self._modules[moduleName]['instance'].active = False
 
 			except Exception as e:
 				self._logger.warning('[{}] Error checking updates for module "{}": {}'.format(self.name, moduleName, e))

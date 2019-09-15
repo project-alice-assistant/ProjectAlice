@@ -29,6 +29,7 @@ class Module:
 			raise ModuleStartingFailed(error='[{}] Failed loading module: {}'.format(type(self).__name__, e))
 
 		self._name = self._install['name']
+		self._active = True
 		self._delayed = False
 		self._databaseSchema = databaseSchema
 
@@ -50,6 +51,16 @@ class Module:
 
 	def getCurrentDir(self):
 		return Path(inspect.getfile(self.__class__)).parent
+
+
+	@property
+	def active(self) -> bool:
+		return self._active
+
+
+	@active.setter
+	def active(self, value: bool):
+		self._active = value
 
 
 	@property
@@ -154,7 +165,11 @@ class Module:
 
 
 	def onStart(self) -> list:
-		self._logger.info('Starting {} module'.format(self.name))
+		if not self._active:
+			self._logger.info('Module {} is not active'.format(self.name))
+		else:
+			self._logger.info('Starting {} module'.format(self.name))
+
 		self._initDB()
 		self.MqttManager.subscribeModuleIntents(self.name)
 		return self._supportedIntents

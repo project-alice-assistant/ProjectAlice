@@ -83,6 +83,7 @@ class AliceCore(Module):
 
 
 	def onStart(self):
+		super().onStart()
 		self.changeFeedbackSound(inDialog=False)
 
 		if not self.UserManager.users:
@@ -92,7 +93,7 @@ class AliceCore(Module):
 			else:
 				self._addFirstUser()
 
-		return super().onStart()
+		return self._SUPPORTED_INTENTS
 
 
 	def _addFirstUser(self):
