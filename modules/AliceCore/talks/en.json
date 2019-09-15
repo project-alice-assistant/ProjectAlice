@@ -383,6 +383,10 @@
 	"wakewordCaptureDone": [
 		"You did it, I have the three samples and you should be now able to call me by my name and I should be able to recognize you! Enjoy my services!"
 	],
+	"wakewordCaptureTooNoisy": [
+		"There seems to be too much noise or your microphone is too sensitive, I couldn't capture the wakeword. Do you want to try again?",
+		"I think there's either too much noise or your microphone's settings are too sensitive, I can't capture the wakeword. Shall we try again?"
+	],
 	"cancellingWakewordCapture": [
 		"Ok, let's forget about it for now. You can retry when the environment is calmer. For now you can call me by saying <break time=\"100ms\"/> \"Hey Snips\", but I won't be able to recognize you though."
 	],
