@@ -21,8 +21,7 @@ class SnipsServicesManager(Manager):
 			'snips-injection',
 			'snips-audio-server',
 			'snips-asr',
-			'snips-tts',
-			'snips-makers-tts'
+			'snips-tts'
 		]
 
 
@@ -56,6 +55,8 @@ class SnipsServicesManager(Manager):
 			result = subprocess.run(['sudo', 'systemctl', cmd, service], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 			if result.returncode == 0:
 				self._logger.info("[{}] Service {} {}'ed".format(self.name, service, cmd))
+			elif result.returncode == 5:
+				pass
 			else:
 				self._logger.info("[{}] Tried to {} the {} service but it returned with return code {}".format(self.name, cmd, service, result.returncode))
 

@@ -1,3 +1,4 @@
+import getpass
 import importlib
 import json
 import logging
@@ -207,24 +208,40 @@ network={
 				audioHardware = hardware
 				break
 
+		serviceFilePath = Path('/etc/systemd/system/ProjectAlice.service')
+		if not serviceFilePath.exists():
+			subprocess.run(['sudo', 'cp', 'ProjectAlice.service', str(serviceFilePath)])
+
+		subprocess.run(['sudo', 'sed', '-i', 'e', 's/#WORKINGDIR/WorkingDirectory=\/home\/{}\/ProjectAlice/'.format(getpass.getuser()), str(serviceFilePath)])
+		subprocess.run(['sudo', 'sed', '-i', 'e', 's/#EXECSTART/ExecStart=\/home\/{}\/ProjectAlice\/venv\/bin\/python3 main.py/'.format(getpass.getuser()), str(serviceFilePath)])
+		subprocess.run(['sudo', 'sed', '-i', 'e', 's/#USER/User={}/'.format(getpass.getuser()), str(serviceFilePath)])
+
+		slcPath = Path('/etc/systemd/system/snipsledcontrol.service')
+		if not slcPath.exists():
+			subprocess.run(['sudo', 'cp', '/home/{}/snipsLedControl/snipsledcontrol.service'.format(getpass.getuser()), str(slcPath)])
+
+		subprocess.run(['sudo', 'sed', '-i', 'e', 's/%WORKING_DIR%/\/home\/{}\/snipsLedControl/'.format(getpass.getuser()), str(slcPath)])
+		subprocess.run(['sudo', 'sed', '-i', 'e', 's/%EXECSTART%/\/home\/{}\/snipsLedControl\/venv\/bin\/python3 main.py --hardware=%HARDWARE% --pattern=projectalice/'.format(getpass.getuser()), str(slcPath)])
+		subprocess.run(['sudo', 'sed', '-i', 'e', 's/%USER%/{}/'.format(getpass.getuser()), str(slcPath)])
+
 		if audioHardware in ('respeaker2', 'respeaker4', 'respeaker6MicArray'):
 			subprocess.run(['sudo', Path(commons.rootDir(), 'system/scripts/audioHardware/respeakers.sh')])
-			subprocess.run(['sudo', 'sed', '-i', '-e', 's/%HARDWARE%/{}/'.format(audioHardware), Path('/etc/systemd/system/snipsledcontrol.service')])
+			subprocess.run(['sudo', 'sed', '-i', '-e', 's/%HARDWARE%/{}/'.format(audioHardware), str(slcPath)])
 
 			if audioHardware == 'respeaker6MicArray':
 				subprocess.run(['sudo', 'cp', Path(commons.rootDir(), 'system', 'asounds', 'respeaker6micarray.conf'), Path('/etc/asound.conf')])
 
 		elif audioHardware == 'respeaker7':
 			subprocess.run(['sudo', Path(commons.rootDir(), 'system/scripts/audioHardware/respeaker7.sh')])
-			subprocess.run(['sudo', 'sed', '-i', '-e', 's/%HARDWARE%/respeaker7MicArray/', Path('/etc/systemd/system/snipsledcontrol.service')])
+			subprocess.run(['sudo', 'sed', '-i', '-e', 's/%HARDWARE%/respeaker7MicArray/', str(slcPath)])
 
 		elif audioHardware == 'respeakerCoreV2':
 			subprocess.run(['sudo', Path(commons.rootDir(), 'system/scripts/audioHardware/respeakerCoreV2.sh')])
-			subprocess.run(['sudo', 'sed', '-i', '-e', 's/%HARDWARE%/{}/'.format(audioHardware), Path('/etc/systemd/system/snipsledcontrol.service')])
+			subprocess.run(['sudo', 'sed', '-i', '-e', 's/%HARDWARE%/{}/'.format(audioHardware), str(slcPath)])
 
 		elif audioHardware in ('matrixCreator', 'matrixVoice'):
 			subprocess.run(['sudo', Path(commons.rootDir(), 'system/scripts/audioHardware/matrix.sh')])
-			subprocess.run(['sudo', 'sed', '-i', '-e', 's/%HARDWARE%/{}/'.format(audioHardware.lower()), Path('/etc/systemd/system/snipsledcontrol.service')])
+			subprocess.run(['sudo', 'sed', '-i', '-e', 's/%HARDWARE%/{}/'.format(audioHardware.lower()), str(slcPath)])
 
 		elif audioHardware == 'aiy':
 			subprocess.run(['sudo', Path(commons.rootDir(), 'system/scripts/audioHardware/aiy.sh')])
