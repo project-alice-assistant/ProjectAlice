@@ -216,40 +216,51 @@ network={
 		subprocess.run(['sudo', 'sed', '-i', 'e', 's/#EXECSTART/ExecStart=\/home\/{}\/ProjectAlice\/venv\/bin\/python3 main.py/'.format(getpass.getuser()), str(serviceFilePath)])
 		subprocess.run(['sudo', 'sed', '-i', 'e', 's/#USER/User={}/'.format(getpass.getuser()), str(serviceFilePath)])
 
-		slcPath = Path('/etc/systemd/system/snipsledcontrol.service')
-		if not slcPath.exists():
-			subprocess.run(['sudo', 'cp', '/home/{}/snipsLedControl/snipsledcontrol.service'.format(getpass.getuser()), str(slcPath)])
+		slcServiceFilePath = Path('/etc/systemd/system/snipsledcontrol.service')
+		if initConfs['useSLC']:
 
-		subprocess.run(['sudo', 'sed', '-i', 'e', 's/%WORKING_DIR%/\/home\/{}\/snipsLedControl/'.format(getpass.getuser()), str(slcPath)])
-		subprocess.run(['sudo', 'sed', '-i', 'e', 's/%EXECSTART%/\/home\/{}\/snipsLedControl\/venv\/bin\/python3 main.py --hardware=%HARDWARE% --pattern=projectalice/'.format(getpass.getuser()), str(slcPath)])
-		subprocess.run(['sudo', 'sed', '-i', 'e', 's/%USER%/{}/'.format(getpass.getuser()), str(slcPath)])
+			if not Path('/home', getpass.getuser(), 'snipsLedControl'):
+				subprocess.run(['git', 'clone', 'https://github.com/Psychokiller1888/snipsLedControl.git', str(Path('/home', getpass.getuser(), 'snipsLedControl'))])
+			else:
+				subprocess.run(['git', '-C', str(Path('/home', getpass.getuser(), 'snipsLedControl')), 'stash'])
+				subprocess.run(['git', '-C', str(Path('/home', getpass.getuser(), 'snipsLedControl')), 'pull'])
+				subprocess.run(['git', '-C', str(Path('/home', getpass.getuser(), 'snipsLedControl')), 'stash', 'clear'])
+
+			if not slcServiceFilePath.exists():
+				subprocess.run(['sudo', 'cp', '/home/{}/snipsLedControl/snipsledcontrol.service'.format(getpass.getuser()), str(slcServiceFilePath)])
+
+			subprocess.run(['sudo', 'sed', '-i', 'e', 's/%WORKING_DIR%/\/home\/{}\/snipsLedControl/'.format(getpass.getuser()), str(slcServiceFilePath)])
+			subprocess.run(['sudo', 'sed', '-i', 'e', 's/%EXECSTART%/\/home\/{}\/snipsLedControl\/venv\/bin\/python3 main.py --hardware=%HARDWARE% --pattern=projectalice/'.format(getpass.getuser()), str(slcServiceFilePath)])
+			subprocess.run(['sudo', 'sed', '-i', 'e', 's/%USER%/{}/'.format(getpass.getuser()), str(slcServiceFilePath)])
 
 		if audioHardware in ('respeaker2', 'respeaker4', 'respeaker6MicArray'):
 			subprocess.run(['sudo', Path(commons.rootDir(), 'system/scripts/audioHardware/respeakers.sh')])
-			subprocess.run(['sudo', 'sed', '-i', '-e', 's/%HARDWARE%/{}/'.format(audioHardware), str(slcPath)])
+			if initConfs['useSLC']:
+				subprocess.run(['sudo', 'sed', '-i', '-e', 's/%HARDWARE%/{}/'.format(audioHardware), str(slcServiceFilePath)])
 
 			if audioHardware == 'respeaker6MicArray':
 				subprocess.run(['sudo', 'cp', Path(commons.rootDir(), 'system', 'asounds', 'respeaker6micarray.conf'), Path('/etc/asound.conf')])
 
 		elif audioHardware == 'respeaker7':
 			subprocess.run(['sudo', Path(commons.rootDir(), 'system/scripts/audioHardware/respeaker7.sh')])
-			subprocess.run(['sudo', 'sed', '-i', '-e', 's/%HARDWARE%/respeaker7MicArray/', str(slcPath)])
+			if initConfs['useSLC']:
+				subprocess.run(['sudo', 'sed', '-i', '-e', 's/%HARDWARE%/respeaker7MicArray/', str(slcServiceFilePath)])
 
 		elif audioHardware == 'respeakerCoreV2':
 			subprocess.run(['sudo', Path(commons.rootDir(), 'system/scripts/audioHardware/respeakerCoreV2.sh')])
-			subprocess.run(['sudo', 'sed', '-i', '-e', 's/%HARDWARE%/{}/'.format(audioHardware), str(slcPath)])
+			if initConfs['useSLC']:
+				subprocess.run(['sudo', 'sed', '-i', '-e', 's/%HARDWARE%/{}/'.format(audioHardware), str(slcServiceFilePath)])
 
 		elif audioHardware in ('matrixCreator', 'matrixVoice'):
 			subprocess.run(['sudo', Path(commons.rootDir(), 'system/scripts/audioHardware/matrix.sh')])
-			subprocess.run(['sudo', 'sed', '-i', '-e', 's/%HARDWARE%/{}/'.format(audioHardware.lower()), str(slcPath)])
+			if initConfs['useSLC']:
+				subprocess.run(['sudo', 'sed', '-i', '-e', 's/%HARDWARE%/{}/'.format(audioHardware.lower()), str(slcServiceFilePath)])
 
 		elif audioHardware == 'aiy':
 			subprocess.run(['sudo', Path(commons.rootDir(), 'system/scripts/audioHardware/aiy.sh')])
-			confs['useSLC'] = False
 
 		elif audioHardware == 'usbMic':
 			subprocess.run(['sudo', 'cp', Path(commons.rootDir(), 'system', 'asounds', 'usbmic.conf'), Path('/etc/asound.conf')])
-			confs['useSLC'] = False
 
 		subprocess.run(['sudo', 'systemctl', 'daemon-reload'])
 
