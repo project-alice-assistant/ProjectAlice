@@ -1,11 +1,10 @@
 from terminaltables import DoubleTable
 import click
 
-from core.snips.SamkillaManager import SamkillaManager
-from config import settings
+from core.base.SuperManager import SuperManager
 
 @click.command(name='module:intent:list')
-@click.argument('module_name') # , help='Author\'s name'
+@click.argument('module_name')
 @click.option('--intent', '-i', help='Show more data about specific intent')
 @click.option('--full', '-f', is_flag=True, help='Display full description instead of truncated one')
 def ModuleIntentListCommand(module_name: str, intent: str, full: bool):
@@ -15,10 +14,16 @@ def ModuleIntentListCommand(module_name: str, intent: str, full: bool):
 	table_instance = DoubleTable(TABLE_DATA)
 	click.secho('\n{}\n'.format(table_instance.table), fg='yellow')
 
-	samkillaManager = SamkillaManager()
+	superManager = SuperManager(None)
+	superManager.initManagers()
+	superManager.onStart()
+
+	samkillaManager = superManager.getManager('SamkillaManager')
+	languageManager = superManager.getManager('LanguageManager')
+
 	_slotTypesModulesValues, _intentsModulesValues, _intentNameSkillMatching = samkillaManager.getDialogTemplatesMaps(
-		runOnAssistantId=settings['supportedLanguages'][settings['activeLanguage']]['snipsProjectId'],
-		languageFilter=settings['activeLanguage']
+		runOnAssistantId=languageManager.activeSnipsProjectId,
+		languageFilter=languageManager.activeLanguage
 	)
 
 	found = False
@@ -39,10 +44,10 @@ def ModuleIntentListCommand(module_name: str, intent: str, full: bool):
 		TABLE_DATA = [['Intent', 'Description']]
 		table_instance = DoubleTable(TABLE_DATA)
 
-		for dtIntentName, dtModuleName in self._intentNameSkillMatching.items():
+		for dtIntentName, dtModuleName in _intentNameSkillMatching.items():
 			if dtModuleName == module_name:
 				found = True
-				tDesc = self._intentsModulesValues[dtIntentName]['__otherattributes__']['description']
+				tDesc = _intentsModulesValues[dtIntentName]['__otherattributes__']['description']
 
 				if not full:
 					tDesc = (tDesc[:100] + '..') if len(tDesc) > 100 else tDesc
