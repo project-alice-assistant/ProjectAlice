@@ -283,6 +283,7 @@ network={
 
 		self.warning('Initializer done with configuring')
 		time.sleep(2)
+		subprocess.run(['sudo', 'systemctl', 'enable', 'ProjectAlice'])
 		subprocess.run(['sudo', 'shutdown', '-r', 'now'])
 
 
