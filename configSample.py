@@ -29,6 +29,7 @@ settings = {
 	"awsSecretKey": "",
 	"useSLC": False,
 	"activeLanguage": "en",
+	"activeCountryCode": "US",
 	"moduleAutoUpdate": False,
 	"githubUsername": "",
 	"githubToken": "",
@@ -65,7 +66,7 @@ settings = {
 	"modules": {
 		"AliceCore": {
 			"active"    : True,
-			"version"   : 1.04,
+			"version"   : 1.05,
 			"author"    : "ProjectAlice",
 			"conditions": {
 				"lang": [

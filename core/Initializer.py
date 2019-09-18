@@ -50,7 +50,7 @@ network={
 		self._confsFile = Path(commons.rootDir(), 'config.py')
 		self._confsSample = Path(commons.rootDir(), 'configSample.py')
 		self._initFile = Path('/boot/ProjectAlice.yaml')
-		self._latest = 1.01
+		self._latest = 1.02
 
 
 	def initProjectAlice(self) -> bool:
@@ -66,7 +66,7 @@ network={
 				self.fatal('Failed loading init configurations: {}'.format(e))
 
 		# Check that we are running using the latest yaml
-		if initConfs['version'] < self._latest:
+		if float(initConfs['version']) < self._latest:
 			self.fatal('The yaml file you are using is deprecated. Please update it before trying again')
 
 		# Let's connect to wifi!
@@ -140,8 +140,8 @@ network={
 
 		# Now let's dump some values to their respective places
 		# First those that need some checks and self filling in case
-		confs['mqttHost'] = initConfs['mqttHost'] or 'localhost'
-		confs['mqttPort'] = initConfs['mqttPort'] or 1883
+		confs['mqttHost'] = str(initConfs['mqttHost']) or 'localhost'
+		confs['mqttPort'] = str(initConfs['mqttPort']) or '1883'
 
 		if not initConfs['snipsConsoleLogin'] or not initConfs['snipsConsolePassword'] or not initConfs['intentsOwner']:
 			self.fatal('You must specify a Snips console login, password and intent owner')
@@ -150,7 +150,7 @@ network={
 		confs['snipsConsolePassword'] = initConfs['snipsConsolePassword']
 		confs['intentsOwner'] = initConfs['intentsOwner']
 
-		confs['stayCompletlyOffline'] = initConfs['stayCompletlyOffline']
+		confs['stayCompletlyOffline'] = bool(initConfs['stayCompletlyOffline'])
 		if initConfs['stayCompletlyOffline']:
 			confs['keepASROffline'] = True
 			confs['keepTTSOffline'] = True
@@ -161,9 +161,9 @@ network={
 			confs['awsAccessKey'] = ''
 			confs['awsSecretKey'] = ''
 		else:
-			confs['keepASROffline'] = initConfs['keepASROffline']
-			confs['keepTTSOffline'] = initConfs['keepTTSOffline']
-			confs['moduleAutoUpdate'] = initConfs['moduleAutoUpdate']
+			confs['keepASROffline'] = bool(initConfs['keepASROffline'])
+			confs['keepTTSOffline'] = bool(initConfs['keepTTSOffline'])
+			confs['moduleAutoUpdate'] = bool(initConfs['moduleAutoUpdate'])
 			confs['asr'] = initConfs['asr']
 			confs['tts'] = initConfs['tts']
 			confs['awsRegion'] = initConfs['awsRegion']
@@ -177,20 +177,20 @@ network={
 		# Those that don't need checking
 		confs['ssid'] = initConfs['wifiNetworkName']
 		confs['wifipassword'] = initConfs['wifiWPAPass']
-		confs['micSampleRate'] = initConfs['micSampleRate']
-		confs['micChannels'] = initConfs['micChannels']
-		confs['useSLC'] = initConfs['useSLC']
-		confs['webInterfaceActive'] = initConfs['webInterfaceActive']
-		confs['newDeviceBroadcastPort'] = initConfs['newDeviceBroadcastPort']
+		confs['micSampleRate'] = int(initConfs['micSampleRate'])
+		confs['micChannels'] = int(initConfs['micChannels'])
+		confs['useSLC'] = bool(initConfs['useSLC'])
+		confs['webInterfaceActive'] = bool(initConfs['webInterfaceActive'])
+		confs['newDeviceBroadcastPort'] = int(initConfs['newDeviceBroadcastPort'])
 		confs['activeLanguage'] = initConfs['activeLanguage']
 		confs['activeCountryCode'] = initConfs['activeCountryCode']
 		confs['baseCurrency'] = initConfs['baseCurrency']
 		confs['baseUnits'] = initConfs['baseUnits']
-		confs['enableDataStoring'] = initConfs['enableDataStoring']
+		confs['enableDataStoring'] = bool(initConfs['enableDataStoring'])
 		confs['autoPruneStoredData'] = initConfs['autoPruneStoredData']
-		confs['probabilityTreshold'] = initConfs['probabilityTreshold']
-		confs['shortReplies'] = initConfs['shortReplies']
-		confs['whisperWhenSleeping'] = initConfs['whisperWhenSleeping']
+		confs['probabilityTreshold'] = float(initConfs['probabilityTreshold'])
+		confs['shortReplies'] = bool(initConfs['shortReplies'])
+		confs['whisperWhenSleeping'] = bool(initConfs['whisperWhenSleeping'])
 		confs['ttsType'] = initConfs['ttsType']
 		confs['ttsVoice'] = initConfs['ttsVoice']
 		confs['githubUsername'] = initConfs['githubUsername']
@@ -254,7 +254,7 @@ network={
 			if initConfs['useSLC']:
 				subprocess.run(['sudo', 'sed', '-i', '-e', 's/%HARDWARE%/{}/'.format(audioHardware.lower()), str(slcServiceFilePath)])
 
-		elif audioHardware == 'aiy':
+		elif audioHardware == 'googleAIY':
 			subprocess.run(['sudo', Path(commons.rootDir(), 'system/scripts/audioHardware/aiy.sh')])
 
 		elif audioHardware == 'usbMic':
