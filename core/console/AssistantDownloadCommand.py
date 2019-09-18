@@ -1,13 +1,7 @@
 from terminaltables import DoubleTable
 import click
 
-from core.base.ModuleManager import ModuleManager
-from core.dialog.ProtectedIntentManager import ProtectedIntentManager
-from core.snips.SnipsConsoleManager import SnipsConsoleManager
-from core.user.UserManager import UserManager
-from core.util.DatabaseManager import DatabaseManager
-from core.util.ThreadManager import ThreadManager
-from core.voice.LanguageManager import LanguageManager
+from core.base.SuperManager import SuperManager
 
 @click.command(name='assistant:download')
 def AssistantDownloadCommand():
@@ -16,26 +10,12 @@ def AssistantDownloadCommand():
 	table_instance = DoubleTable(TABLE_DATA)
 	click.secho('\n{}\n'.format(table_instance.table), fg='green')
 
-	languageManager = LanguageManager()
-	languageManager.onStart()
+	superManager = SuperManager(None)
+	superManager.initManagers()
+	superManager.onStart()
 
-	threadManager = ThreadManager()
-	threadManager.onStart()
-
-	protectedIntentManager = ProtectedIntentManager()
-	protectedIntentManager.onStart()
-
-	databaseManager = DatabaseManager()
-	databaseManager.onStart()
-
-	userManager = UserManager()
-	userManager.onStart()
-
-	moduleManager = ModuleManager()
-	moduleManager.onStart()
-
-	snipsConsoleManager = SnipsConsoleManager()
-	snipsConsoleManager.onStart()
+	snipsConsoleManager = superManager.getManager('SnipsConsoleManager')
+	languageManager = superManager.getManager('LanguageManager')
 
 	click.echo('It may take some time...')
 	snipsConsoleManager.download(languageManager.activeSnipsProjectId)
