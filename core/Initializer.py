@@ -256,6 +256,8 @@ network={
 
 		elif audioHardware == 'googleAIY':
 			subprocess.run(['sudo', Path(commons.rootDir(), 'system/scripts/audioHardware/aiy.sh')])
+			if initConfs['useSLC']:
+				subprocess.run(['sudo', 'sed', '-i', '-e', 's/%HARDWARE%/{}/'.format('googleAIY'), str(slcServiceFilePath)])
 
 		elif audioHardware == 'usbMic':
 			subprocess.run(['sudo', 'cp', Path(commons.rootDir(), 'system', 'asounds', 'usbmic.conf'), Path('/etc/asound.conf')])
