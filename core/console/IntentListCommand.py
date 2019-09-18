@@ -3,15 +3,7 @@ import click
 
 from terminaltables import DoubleTable
 
-from core.base.ConfigManager import ConfigManager
-from core.base.ModuleManager import ModuleManager
-from core.dialog.ProtectedIntentManager import ProtectedIntentManager
-from core.snips.SamkillaManager import SamkillaManager
-from core.snips.SnipsConsoleManager import SnipsConsoleManager
-from core.user.UserManager import UserManager
-from core.util.DatabaseManager import DatabaseManager
-from core.util.ThreadManager import ThreadManager
-from core.voice.LanguageManager import LanguageManager
+from core.base.SuperManager import SuperManager
 
 #TODO module has to be required when intent is given
 @click.command(name='intent:list')
@@ -21,31 +13,12 @@ from core.voice.LanguageManager import LanguageManager
 def IntentListCommand(module: bool, intent: bool, full: bool):
 	"""List intents and utterances for a given module"""
 	
-	configManager = ConfigManager()
-	configManager.onStart()
+	superManager = SuperManager(None)
+	superManager.initManagers()
+	superManager.onStart()
 
-	languageManager = LanguageManager()
-	languageManager.onStart()
-
-	threadManager = ThreadManager()
-	threadManager.onStart()
-
-	protectedIntentManager = ProtectedIntentManager()
-	protectedIntentManager.onStart()
-
-	databaseManager = DatabaseManager()
-	databaseManager.onStart()
-
-	userManager = UserManager()
-	userManager.onStart()
-
-	moduleManager = ModuleManager()
-	moduleManager.onStart()
-
-	snipsConsoleManager = SnipsConsoleManager()
-	snipsConsoleManager.onStart()
-
-	samkillaManager = SamkillaManager()
+	samkillaManager = superManager.getManager('SamkillaManager')
+	languageManager = superManager.getManager('LanguageManager')
 
 	_slotTypesModulesValues, _intentsModulesValues, _intentNameSkillMatching = samkillaManager.getDialogTemplatesMaps(
 		runOnAssistantId=languageManager.activeSnipsProjectId,
@@ -82,7 +55,7 @@ def IntentListCommand(module: bool, intent: bool, full: bool):
 		table_instance = DoubleTable(TABLE_DATA)
 
 		for dtIntentName, dtModuleName in _intentNameSkillMatching.items():
-			if dtModuleName == inputt.getOption('module'):
+			if dtModuleName == module:
 				found = True
 				tDesc = _intentsModulesValues[dtIntentName]['__otherattributes__']['description']
 				tEnabledByDefault = _intentsModulesValues[dtIntentName]['__otherattributes__']['enabledByDefault']
