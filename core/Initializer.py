@@ -54,7 +54,6 @@ network={
 
 
 	def initProjectAlice(self) -> bool:
-
 		if not self._initFile.exists() and not self._confsFile.exists():
 			self.fatal('Init file not found and there\'s no configuration file, aborting Project Alice start')
 		elif not self._initFile.exists():
@@ -136,7 +135,6 @@ network={
 			subprocess.run(['sudo', 'systemctl', 'disable', 'snips-injection'])
 			subprocess.run(['sudo', 'systemctl', 'disable', 'snips-hotword'])
 			subprocess.run(['sudo', 'systemctl', 'disable', 'snips-audio-server'])
-			subprocess.run(['sudo', 'systemctl', 'disable', 'snips-makers-tts'])
 			subprocess.run(['sudo', 'systemctl', 'disable', 'snips-tts'])
 
 
@@ -201,20 +199,20 @@ network={
 		if initConfs['snipsProjectId'] and confs['activeLanguage'] in confs['supportedLanguages']:
 			confs['supportedLanguages'][confs['activeLanguage']]['snipsProjectId'] = initConfs['snipsProjectId']
 
+		serviceFilePath = Path('/etc/systemd/system/ProjectAlice.service')
+		if not serviceFilePath.exists():
+			subprocess.run(['sudo', 'cp', 'ProjectAlice.service', serviceFilePath])
+
+		subprocess.run(['sudo', 'sed', '-i', '-e', 's/\#WORKINGDIR/WorkingDirectory=\/home\/{}\/ProjectAlice/'.format(getpass.getuser()), str(serviceFilePath)])
+		subprocess.run(['sudo', 'sed', '-i', '-e', 's/\#EXECSTART/ExecStart=\/home\/{}\/ProjectAlice\/venv\/bin\/python3 main.py/'.format(getpass.getuser()), str(serviceFilePath)])
+		subprocess.run(['sudo', 'sed', '-i', '-e', 's/\#USER/User={}/'.format(getpass.getuser()), str(serviceFilePath)])
+
 		self._logger.info('Installing audio hardware')
 		audioHardware = ''
 		for hardware in initConfs['audioHardware']:
 			if initConfs['audioHardware'][hardware]:
 				audioHardware = hardware
 				break
-
-		serviceFilePath = Path('/etc/systemd/system/ProjectAlice.service')
-		if not serviceFilePath.exists():
-			subprocess.run(['sudo', 'cp', 'ProjectAlice.service', str(serviceFilePath)])
-
-		subprocess.run(['sudo', 'sed', '-i', 'e', 's/#WORKINGDIR/WorkingDirectory=\/home\/{}\/ProjectAlice/'.format(getpass.getuser()), str(serviceFilePath)])
-		subprocess.run(['sudo', 'sed', '-i', 'e', 's/#EXECSTART/ExecStart=\/home\/{}\/ProjectAlice\/venv\/bin\/python3 main.py/'.format(getpass.getuser()), str(serviceFilePath)])
-		subprocess.run(['sudo', 'sed', '-i', 'e', 's/#USER/User={}/'.format(getpass.getuser()), str(serviceFilePath)])
 
 		slcServiceFilePath = Path('/etc/systemd/system/snipsledcontrol.service')
 		if initConfs['useSLC']:
@@ -229,9 +227,9 @@ network={
 			if not slcServiceFilePath.exists():
 				subprocess.run(['sudo', 'cp', '/home/{}/snipsLedControl/snipsledcontrol.service'.format(getpass.getuser()), str(slcServiceFilePath)])
 
-			subprocess.run(['sudo', 'sed', '-i', 'e', 's/%WORKING_DIR%/\/home\/{}\/snipsLedControl/'.format(getpass.getuser()), str(slcServiceFilePath)])
-			subprocess.run(['sudo', 'sed', '-i', 'e', 's/%EXECSTART%/\/home\/{}\/snipsLedControl\/venv\/bin\/python3 main.py --hardware=%HARDWARE% --pattern=projectalice/'.format(getpass.getuser()), str(slcServiceFilePath)])
-			subprocess.run(['sudo', 'sed', '-i', 'e', 's/%USER%/{}/'.format(getpass.getuser()), str(slcServiceFilePath)])
+			subprocess.run(['sudo', 'sed', '-i', '-e', 's/%WORKING_DIR%/\/home\/{}\/snipsLedControl/'.format(getpass.getuser()), str(slcServiceFilePath)])
+			subprocess.run(['sudo', 'sed', '-i', '-e', 's/%EXECSTART%/\/home\/{}\/snipsLedControl\/venv\/bin\/python3 main.py --hardware=%HARDWARE% --pattern=projectalice/'.format(getpass.getuser()), str(slcServiceFilePath)])
+			subprocess.run(['sudo', 'sed', '-i', '-e', 's/%USER%/{}/'.format(getpass.getuser()), str(slcServiceFilePath)])
 
 		if audioHardware in ('respeaker2', 'respeaker4', 'respeaker6MicArray'):
 			subprocess.run(['sudo', Path(commons.rootDir(), 'system/scripts/audioHardware/respeakers.sh')])
