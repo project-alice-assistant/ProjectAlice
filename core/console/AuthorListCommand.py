@@ -1,12 +1,12 @@
 import click
-import requests
-from terminaltables import DoubleTable
-
-from core.base.ModuleManager import ModuleManager
 
 @click.command(name='author:list')
 def AuthorListCommand():
 	"""List authors from dedicated repository"""
+
+	import requests
+	from terminaltables import DoubleTable
+	from core.base.ModuleManager import ModuleManager
 	
 	TABLE_DATA = [['Authors List']]
 	table_instance = DoubleTable(TABLE_DATA)

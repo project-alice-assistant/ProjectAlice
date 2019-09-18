@@ -1,9 +1,4 @@
-import random
 import click
-
-from terminaltables import DoubleTable
-
-from core.base.SuperManager import SuperManager
 
 #TODO module has to be required when intent is given
 @click.command(name='intent:list')
@@ -12,6 +7,10 @@ from core.base.SuperManager import SuperManager
 @click.option('--full', '-f', is_flag=True, help='Display full description instead of truncated one')
 def IntentListCommand(module: bool, intent: bool, full: bool):
 	"""List intents and utterances for a given module"""
+
+	import random
+	from terminaltables import DoubleTable
+	from core.base.SuperManager import SuperManager
 	
 	superManager = SuperManager(None)
 	superManager.initManagers()

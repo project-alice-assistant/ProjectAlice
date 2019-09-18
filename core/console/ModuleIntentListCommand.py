@@ -1,7 +1,4 @@
-from terminaltables import DoubleTable
 import click
-
-from core.base.SuperManager import SuperManager
 
 @click.command(name='module:intent:list')
 @click.argument('module_name')
@@ -9,6 +6,9 @@ from core.base.SuperManager import SuperManager
 @click.option('--full', '-f', is_flag=True, help='Display full description instead of truncated one')
 def ModuleIntentListCommand(module_name: str, intent: str, full: bool):
 	"""List intents and utterances for MODULE_NAME"""
+
+	from terminaltables import DoubleTable
+	from core.base.SuperManager import SuperManager
 
 	TABLE_DATA = [['Intents of module ' + module_name]]
 	table_instance = DoubleTable(TABLE_DATA)

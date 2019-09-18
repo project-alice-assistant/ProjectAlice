@@ -1,12 +1,12 @@
-from terminaltables import DoubleTable
 import click
-
-from core.base.SuperManager import SuperManager
 
 @click.command(name='assistant:sync')
 @click.option('--download', '-d', is_flag=True, help='Also download the new trained assistant')
 def AssistantSyncCommand(download: bool):
 	"""Sync dialog templates for all modules"""
+
+	from terminaltables import DoubleTable
+	from core.base.SuperManager import SuperManager
 
 	TABLE_DATA = [['Assistant Dialog Templates Sync']]
 	table_instance = DoubleTable(TABLE_DATA)
@@ -22,7 +22,6 @@ def AssistantSyncCommand(download: bool):
 
 	click.echo('It may take some time...\n')
 	changes = samkillaManager.sync(download=False)
-
 	if changes:
 		click.echo('There are {}'.format(click.style('changes', fg='green')))
 	else:

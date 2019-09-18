@@ -1,14 +1,14 @@
-import requests
-from terminaltables import DoubleTable
 import click
-
-from core.base.ModuleManager import ModuleManager
 
 @click.command(name='module:list')
 @click.argument('author_name') # , help='Author\'s name'
 @click.option('--full', '-f', is_flag=True, help='Display full description instead of truncated one')
 def ModuleListCommand(author_name: str, full: bool):
 	"""List remote modules from dedicated repository created by a AUTHOR_NAME"""
+
+	import requests
+	from terminaltables import DoubleTable
+	from core.base.ModuleManager import ModuleManager
 
 	TABLE_DATA = [['Modules created by ' + author_name]]
 	table_instance = DoubleTable(TABLE_DATA)

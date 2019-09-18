@@ -1,11 +1,12 @@
-from terminaltables import DoubleTable
 import click
-
-from core.base.SuperManager import SuperManager
 
 @click.command(name='assistant:download')
 def AssistantDownloadCommand():
 	"""Download assistant"""
+
+	from terminaltables import DoubleTable
+	from core.base.SuperManager import SuperManager
+
 	TABLE_DATA = [['Assistant Downloader']]
 	table_instance = DoubleTable(TABLE_DATA)
 	click.secho('\n{}\n'.format(table_instance.table), fg='green')

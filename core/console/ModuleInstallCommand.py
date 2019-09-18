@@ -1,9 +1,4 @@
-import urllib.request
-import requests
-from terminaltables import DoubleTable
 import click
-
-from core.base.ModuleManager import ModuleManager
 
 #TODO improve help text
 @click.command(name='module:install')
@@ -11,6 +6,11 @@ from core.base.ModuleManager import ModuleManager
 @click.argument('module_name')
 def ModuleInstallCommand(author_name: str, module_name: str):
 	"""Download and install module from dedicated repository"""
+
+	import urllib.request
+	import requests
+	from terminaltables import DoubleTable
+	from core.base.ModuleManager import ModuleManager
 
 	TABLE_DATA = [['Module Installer']]
 	table_instance = DoubleTable(TABLE_DATA)
