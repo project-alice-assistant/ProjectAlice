@@ -335,6 +335,14 @@ class ConfigManager(Manager):
 				self._writeToAliceConfigurationFile(self._aliceConfigurations)
 
 
+	def removeModule(self, moduleName: str):
+		if moduleName in self.aliceConfigurations['modules']:
+			modules = self.aliceConfigurations['modules']
+			modules.pop(moduleName)
+			self.aliceConfigurations['modules'] = modules
+			self._writeToAliceConfigurationFile(self._aliceConfigurations)
+
+
 	def changeActiveLanguage(self, toLang: str):
 		if toLang in self.getAliceConfigByName('supportedLanguages'):
 			self.updateAliceConfiguration('activeLanguage', toLang)

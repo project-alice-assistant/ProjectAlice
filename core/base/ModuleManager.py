@@ -548,3 +548,11 @@ class ModuleManager(Manager):
 				return True
 
 		return False
+
+
+	def removeModule(self, moduleName: str):
+		if not moduleName in self._modules:
+			return
+		else:
+			self.configureModuleIntents(moduleName, False)
+			del self._modules[moduleName]
