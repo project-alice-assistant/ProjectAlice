@@ -555,4 +555,5 @@ class ModuleManager(Manager):
 			return
 		else:
 			self.configureModuleIntents(moduleName, False)
+			self.ConfigManager.removeModule(moduleName)
 			del self._modules[moduleName]
