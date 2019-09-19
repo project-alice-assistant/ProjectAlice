@@ -139,7 +139,7 @@ network={
 
 
 		# Now let's dump some values to their respective places
-		# First those that need some checks and self filling in case
+		# First those that need some checks and self filling in case unspecified
 		confs['mqttHost'] = str(initConfs['mqttHost']) or 'localhost'
 		confs['mqttPort'] = str(initConfs['mqttPort']) or '1883'
 
@@ -198,6 +198,10 @@ network={
 
 		if initConfs['snipsProjectId'] and confs['activeLanguage'] in confs['supportedLanguages']:
 			confs['supportedLanguages'][confs['activeLanguage']]['snipsProjectId'] = initConfs['snipsProjectId']
+
+		if initConfs['deviceName'] != 'default':
+			subprocess.run(['sudo', 'sed', '-i', '-e', 's/\# bind = "default@mqtt"/bind = "{}@mqtt"/'.format(initConfs['deviceName']), Path('/etc', 'snips.toml')])
+			subprocess.run(['sudo', 'sed', '-i', '-e', 's/bind = ".*@mqtt"/bind = "{}@mqtt"/'.format(initConfs['deviceName']), Path('/etc', 'snips.toml')])
 
 		serviceFilePath = Path('/etc/systemd/system/ProjectAlice.service')
 		if not serviceFilePath.exists():
