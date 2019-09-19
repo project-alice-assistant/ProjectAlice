@@ -21,7 +21,7 @@ import toml
 import configSample
 from core.ProjectAliceExceptions import ConfigurationUpdateFailed
 from core.base.model.Manager import Manager
-from core.commons import commons
+from core.commons import commons, constants
 
 
 class ConfigManager(Manager):
@@ -43,9 +43,14 @@ class ConfigManager(Manager):
 
 		self._checkAndUpdateAliceConfigFile()
 		self.loadSnipsConfigurations()
+		self._setDefaultSiteId()
 
 		self.loadModuleConfigurations()
 		self._checkAndUpdateModuleConfigFiles()
+
+
+	def _setDefaultSiteId(self):
+		constants.DEFAULT_SITE_ID = self._snipsConfigurations.get('snips-audio-server', {'bind': 'default'}).get('bind', 'default')
 
 
 	def _checkAndUpdateAliceConfigFile(self):
