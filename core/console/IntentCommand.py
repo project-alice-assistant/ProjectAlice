@@ -1,23 +1,27 @@
 import click
+import random
+from terminaltables import DoubleTable
+from core.base.SuperManager import SuperManager
 
-#TODO module has to be required when intent is given
-@click.command(name='intent:list')
+@click.group()
+def intent():
+	pass
+
+
+@intent.command(name='list')
 @click.option('--module', '-m', help='Show more data about specific module')
 @click.option('--intent', '-i', help='Show more data about specific intent')
 @click.option('--full', '-f', is_flag=True, help='Display full description instead of truncated one')
-def IntentListCommand(module: bool, intent: bool, full: bool):
+def intentList(module: bool, intent: bool, full: bool):
 	"""List intents and utterances for a given module"""
-
-	import random
-	from terminaltables import DoubleTable
-	from core.base.SuperManager import SuperManager
 	
 	superManager = SuperManager(None)
 	superManager.initManagers()
-	superManager.onStart()
 
 	samkillaManager = superManager.getManager('SamkillaManager')
+	samkillaManager.onStart()
 	languageManager = superManager.getManager('LanguageManager')
+	languageManager.onStart()
 
 	_slotTypesModulesValues, _intentsModulesValues, _intentNameSkillMatching = samkillaManager.getDialogTemplatesMaps(
 		runOnAssistantId=languageManager.activeSnipsProjectId,
