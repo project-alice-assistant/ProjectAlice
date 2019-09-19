@@ -19,6 +19,7 @@ def AssistantDownloadCommand():
 	languageManager = superManager.getManager('LanguageManager')
 
 	click.echo('It may take some time...')
-	snipsConsoleManager.download(languageManager.activeSnipsProjectId)
-
-	click.echo('\n\nAssistant {}\n'.format(click.style('downloaded!', fg='green')))
+	if snipsConsoleManager.download(languageManager.activeSnipsProjectId):
+		click.echo('\n\nAssistant {}\n'.format(click.style('downloaded!', fg='green')))
+	else:
+		click.echo('\n\nAssistant {}\n'.format(click.style('download failed!', fg='red')), err=True)
