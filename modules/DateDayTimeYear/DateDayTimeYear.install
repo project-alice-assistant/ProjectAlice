@@ -7,7 +7,7 @@
 		"maxbachmann"
 	],
 	"desc": "Ask for the time, date, day and year",
-	"aliceMinVersion": "",
+	"aliceMinVersion": 0.10,
 	"systemRequirements": [],
 	"pipRequirements": [],
 	"conditions": {

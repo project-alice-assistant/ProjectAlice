@@ -7,7 +7,7 @@
 		"Jierka"
 	],
 	"desc": "Red Queen is the official Project Alice personality module",
-	"aliceMinVersion": "",
+	"aliceMinVersion": 0.10,
 	"systemRequirements": [],
 	"pipRequirements": [],
 	"conditions": {

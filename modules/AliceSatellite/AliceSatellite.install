@@ -7,7 +7,7 @@
 		"Jierka"
 	],
 	"desc": "AliceSatellite is the official module to support Project Alice satellites",
-	"aliceMinVersion": "",
+	"aliceMinVersion": 0.10,
 	"systemRequirements": [],
 	"pipRequirements": [],
 	"conditions": {

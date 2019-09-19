@@ -20,7 +20,7 @@ AliceSatellite is the official module to support Project Alice satellites
 - Author: ProjectAlice
 - Maintainers:
   - Psycho, Jierka
-- Alice minimum version: N/A
+- Alice minimum version: 0.10
 - Conditions:
   - EN
   - FR

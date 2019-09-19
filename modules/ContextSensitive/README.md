@@ -20,7 +20,7 @@ ContextSensitive is the official context sensitive module. It handle intents lik
 - Author: ProjectAlice
 - Maintainers:
   - Psycho, Jierka
-- Alice minimum version: N/A
+- Alice minimum version: 0.10
 - Conditions:
   - EN
   - FR

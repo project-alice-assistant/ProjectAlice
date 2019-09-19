@@ -21,7 +21,7 @@ Ask for the time, date, day and year
 - Maintainers:
   - Jierka
   - maxbachmann
-- Alice minimum version: N/A
+- Alice minimum version: 0.10
 - Conditions:
   - en
   - fr

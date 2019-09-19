@@ -12,7 +12,7 @@ from core.base.SuperManager import SuperManager
 from core.base.model.GithubCloner import GithubCloner
 from core.base.model.Manager import Manager
 from core.base.model.Module import Module
-from core.commons import commons
+from core.commons import commons, constants
 
 #Special case, must be called as last!
 try:
@@ -93,8 +93,7 @@ class ModuleManager(Manager):
 						self._logger.info('Module {} is disabled'.format(moduleName))
 						continue
 
-				if 'conditions' in module:
-					self.checkModuleConditions(moduleName, module['conditions'], availableModules)
+				self.checkModuleConditions(moduleName, module['conditions'], availableModules)
 
 				if ' ' in moduleName:
 					name = commons.toCamelCase(moduleName)	
@@ -380,8 +379,14 @@ class ModuleManager(Manager):
 
 				directory = Path(commons.rootDir()) / 'modules' / moduleName
 
+				conditions = {
+					'aliceMinVersion': installFile['aliceMinVersion']
+				}
+
 				if 'conditions' in installFile:
-					self.checkModuleConditions(moduleName, installFile['conditions'], availableModules)
+					conditions = {**conditions, **installFile['conditions']}
+
+				self.checkModuleConditions(moduleName, conditions, availableModules)
 
 				if moduleName in availableModules:
 					localVersionDirExists = directory.is_dir()
@@ -460,6 +465,9 @@ class ModuleManager(Manager):
 
 
 	def checkModuleConditions(self, moduleName: str, conditions: dict, availableModules: dict) -> bool:
+
+		if 'aliceMinVersion' in conditions and conditions['aliceMinVersion'] > constants.VERSION:
+			raise ModuleNotConditionCompliant(message='Module is not compliant', moduleName=moduleName, condition='Alice minimum version', conditionValue=conditions['aliceMinVersion'])
 
 		for conditionName, conditionValue in conditions.items():
 			if conditionName == 'lang' and self.LanguageManager.activeLanguage not in conditionValue:

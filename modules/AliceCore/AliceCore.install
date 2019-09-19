@@ -7,7 +7,7 @@
 		"Jierka"
 	],
 	"desc": "AliceCore is the official module that handles all core intents",
-	"aliceMinVersion": "",
+	"aliceMinVersion": 0.10,
 	"systemRequirements": [],
 	"pipRequirements": [],
 	"conditions": {

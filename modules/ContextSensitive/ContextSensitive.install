@@ -7,7 +7,7 @@
 		"Jierka"
 	],
 	"desc": "ContextSensitive is the official context sensitive module. It handle intents like \"Delete this\", \"Forget about that\"",
-	"aliceMinVersion": "",
+	"aliceMinVersion": 0.10,
 	"systemRequirements": [],
 	"pipRequirements": [],
 	"conditions": {
