@@ -277,7 +277,7 @@ class ModuleManager(Manager):
 		if moduleName in self._modules:
 			self.ConfigManager.deactivateModule(moduleName)
 			self.configureModuleIntents(moduleName=moduleName, state=False)
-			del self._modules[moduleName]
+			self._deactivatedModules[moduleName] = self._modules.pop(moduleName)
 
 
 	def checkForModuleUpdates(self):
