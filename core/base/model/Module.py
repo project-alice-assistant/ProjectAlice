@@ -280,11 +280,11 @@ class Module:
 		return self.ModuleManager.getModuleInstance(moduleName=moduleName)
 
 
-	def say(self, text: str, siteId: str = 'default', customData: dict = None, canBeEnqueued: bool = True):
+	def say(self, text: str, siteId: str = constants.DEFAULT_SITE_ID, customData: dict = None, canBeEnqueued: bool = True):
 		self.MqttManager.say(text=text, client=siteId, customData=customData, canBeEnqueued=canBeEnqueued)
 
 
-	def ask(self, text: str, siteId: str = 'default', intentFilter: list = None, customData: dict = None, previousIntent: str = '', canBeEnqueued: bool = True):
+	def ask(self, text: str, siteId: str = constants.DEFAULT_SITE_ID, intentFilter: list = None, customData: dict = None, previousIntent: str = '', canBeEnqueued: bool = True):
 		self.MqttManager.ask(text=text, client=siteId, intentFilter=intentFilter, customData=customData, previousIntent=previousIntent, canBeEnqueued=canBeEnqueued)
 
 
@@ -300,7 +300,7 @@ class Module:
 		self.MqttManager.endSession(sessionId=sessionId)
 
 
-	def playSound(self, soundFile: str, sessionId: str = '', absolutePath: bool = False, siteId: str = 'default', root: str = '', uid: str = ''):
+	def playSound(self, soundFile: str, sessionId: str = '', absolutePath: bool = False, siteId: str = constants.DEFAULT_SITE_ID, root: str = '', uid: str = ''):
 		self.MqttManager.playSound(soundFile=soundFile, sessionId=sessionId, absolutePath=absolutePath, siteId=siteId, root=root, uid=uid)
 
 

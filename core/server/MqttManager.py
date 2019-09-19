@@ -405,7 +405,7 @@ class MqttManager(Manager):
 		self.ask(text=text, customData=session.customData, previousIntent=previousIntent, intentFilter=session.intentFilter, client=session.siteId)
 
 
-	def say(self, text, client: str = 'default', customData: dict = None, canBeEnqueued: bool = True):
+	def say(self, text, client: str = constants.DEFAULT_SITE_ID, customData: dict = None, canBeEnqueued: bool = True):
 		"""
 		Initiate a notification session which is termniated once the text is spoken
 		:param canBeEnqueued: bool
@@ -416,7 +416,7 @@ class MqttManager(Manager):
 
 		if client == 'all':
 			deviceList = self.DeviceManager.getDevicesByType('AliceSatellite', connectedOnly=True)
-			deviceList.append('default')
+			deviceList.append(constants.DEFAULT_SITE_ID)
 
 			for device in deviceList:
 				device = device.replace('@mqtt', '')
@@ -457,7 +457,7 @@ class MqttManager(Manager):
 				}))
 
 
-	def ask(self, text: str, client: str = 'default', intentFilter: list = None, customData: dict = None, previousIntent: str = '', canBeEnqueued: bool = True):
+	def ask(self, text: str, client: str = constants.DEFAULT_SITE_ID, intentFilter: list = None, customData: dict = None, previousIntent: str = '', canBeEnqueued: bool = True):
 		"""
 		Initiates a new session by asking something and waiting on user answer
 		:param canBeEnqueued: wheter or not this can be played later if the dialog manager is busy
@@ -514,7 +514,7 @@ class MqttManager(Manager):
 		if self.ConfigManager.getAliceConfigByName('outputOnSonos') != '1' or (self.ConfigManager.getAliceConfigByName('outputOnSonos') == '1' or self.ModuleManager.getModuleInstance('Sonos') is None and not self.ModuleManager.getModuleInstance('Sonos').anyModuleHere(client)) or not self.ModuleManager.getModuleInstance('Sonos').active:
 			if client == 'all':
 				deviceList = self.DeviceManager.getDevicesByType('AliceSatellite', connectedOnly=True)
-				deviceList.append('default')
+				deviceList.append(constants.DEFAULT_SITE_ID)
 
 				for device in deviceList:
 					device = device.replace('@mqtt', '')
@@ -579,7 +579,7 @@ class MqttManager(Manager):
 		else:
 			jsonDict['text'] = ''
 			self._mqttClient.publish('hermes/dialogueManager/continueSession', json.dumps(jsonDict))
-			self._speakOnSonos(text, 'default')
+			self._speakOnSonos(text, constants.DEFAULT_SITE_ID)
 
 
 	@deprecated
@@ -623,7 +623,7 @@ class MqttManager(Manager):
 		}))
 
 
-	def playSound(self, soundFile: str, sessionId: str = '', absolutePath: bool = False, siteId: str = 'default', root: str = '', uid: str = ''):
+	def playSound(self, soundFile: str, sessionId: str = '', absolutePath: bool = False, siteId: str = constants.DEFAULT_SITE_ID, root: str = '', uid: str = ''):
 		"""
 		Plays a sound
 		:param uid: a unique id for that sound
@@ -646,7 +646,7 @@ class MqttManager(Manager):
 
 		if siteId == 'all':
 			deviceList = self.DeviceManager.getDevicesByType('AliceSatellite', connectedOnly=True)
-			deviceList.append('default')
+			deviceList.append(constants.DEFAULT_SITE_ID)
 
 			for device in deviceList:
 				device = device.replace('@mqtt', '')
@@ -679,7 +679,7 @@ class MqttManager(Manager):
 			payload['siteId'] = device.room
 			self.publish(topic=topic, payload=payload, qos=qos, retain=retain)
 
-		payload['siteId'] = 'default'
+		payload['siteId'] = constants.DEFAULT_SITE_ID
 		self.publish(topic=topic, payload=json.dumps(payload), qos=qos, retain=retain)
 
 
@@ -710,7 +710,7 @@ class MqttManager(Manager):
 		"""
 
 		deviceList = SuperManager.getInstance().deviceManager.getDevicesByType('AliceSatellite', connectedOnly=True)
-		deviceList.append('default')
+		deviceList.append(constants.DEFAULT_SITE_ID)
 
 		for device in deviceList:
 			device = device.replace('@mqtt', '')

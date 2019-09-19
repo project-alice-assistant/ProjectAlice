@@ -15,6 +15,7 @@ from paho.mqtt.client import MQTTMessage
 
 import core.commons.model.Slot as slotModel
 from core.base.SuperManager import SuperManager
+from core.commons import constants
 from core.commons.model.PartOfDay import PartOfDay
 from core.dialog.model import DialogSession
 
@@ -136,7 +137,7 @@ def parseSiteId(message: MQTTMessage) -> str:
 	if 'siteId' in data:
 		return data['siteId'].replace('_', ' ')  # WTF!! This is highly no no no!!!
 	else:
-		return data.get('IPAddress', 'default')
+		return data.get('IPAddress', constants.DEFAULT_SITE_ID)
 
 
 def smartSleep(wait: int):
