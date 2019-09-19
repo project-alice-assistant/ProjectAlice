@@ -34,6 +34,10 @@ Well, it's written in Python but it's been made for Snips that is meant for Rasp
 Hey, did you read what I wrote a bit higher? You have to! Just kidding but yes, your contributions are more than welcome, be it core side or on the module side. You'll find more about the guidelines on our wiki.
 
 
+# Copyrights
+If you see or find a copyright breach, feel free to contact us immediately. It is not our intention to steal anyone else's work or plagiarize your work and is just the result of a missunderstanding that we will gladly fix immediately!
+
+
 # Other repositories
 - [Project Alice Installer](https://github.com/Psychokiller1888/ProjectAliceInstaller)
 - [Project Alice Modules](https://github.com/Psychokiller1888/ProjectAliceModules)
