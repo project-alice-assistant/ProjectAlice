@@ -1,5 +1,4 @@
 enum34
-django
 pyalsaaudio
 pyaudio
 python-dateutil
