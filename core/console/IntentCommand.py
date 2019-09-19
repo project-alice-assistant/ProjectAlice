@@ -5,6 +5,7 @@ from core.base.SuperManager import SuperManager
 
 @click.group()
 def intent():
+	"""Intent related commands"""
 	pass
 
 

@@ -5,12 +5,13 @@ from core.base.ModuleManager import ModuleManager
 
 @click.group()
 def author():
+	"""Module Author related commands"""
 	pass
 
 
 @author.command(name='list')
 def authorList():
-	"""List authors from dedicated repository"""
+	"""List module authors from the ProjectAliceModules repository"""
 	
 	TABLE_DATA = [['Authors List']]
 	table_instance = DoubleTable(TABLE_DATA)

@@ -6,6 +6,7 @@ from core.base.ModuleManager import ModuleManager
 
 @click.group()
 def module():
+	"""Module related commands"""
 	pass
 
 

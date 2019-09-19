@@ -4,6 +4,7 @@ from core.base.SuperManager import SuperManager
 
 @click.group()
 def assistant():
+	"""Assistant related commands"""
 	pass
 
 
@@ -24,10 +25,9 @@ def download():
 	languageManager.onStart()
 
 	click.echo('It may take some time...')
-	if snipsConsoleManager.download(languageManager.activeSnipsProjectId):
-		click.echo('\n\nAssistant {}\n'.format(click.style('downloaded!', fg='green')))
-	else:
-		click.echo('\n\nAssistant {}\n'.format(click.style('download failed!', fg='red')), err=True)
+	snipsConsoleManager.download(languageManager.activeSnipsProjectId)
+
+	click.echo('\n\nAssistant {}\n'.format(click.style('downloaded!', fg='green')))
 
 
 @assistant.command()
@@ -65,8 +65,5 @@ def sync(download: bool):
 	click.echo('\nAll dialog templates {}\n'.format(click.style('synced!', fg='green')))
 
 	if download:
-		click.echo('Downloading assistant which may take some time...')
-		if snipsConsoleManager.download(languageManager.activeSnipsProjectId):
-			click.echo('\n\nAssistant {}\n'.format(click.style('downloaded!', fg='green')))
-		else:
-			click.echo('\n\nAssistant {}\n'.format(click.style('download failed!', fg='red')), err=True)
+		snipsConsoleManager.download(languageManager.activeSnipsProjectId)
+		click.echo('Downloading assistant...\nAssistant {}\n'.format(click.style('downloaded!', fg='green')))

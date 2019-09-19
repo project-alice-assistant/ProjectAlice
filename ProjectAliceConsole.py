@@ -7,7 +7,11 @@ from core.console.IntentCommand import intent
 
 @click.group(context_settings={'help_option_names':['--help', '-h']})
 def cli():
-    pass
+	"""
+	This is the Command Line Interface of Project Alice.
+	Currently the following commands are supported.
+	"""
+	pass
 
 cli.add_command(module)
 cli.add_command(author)
