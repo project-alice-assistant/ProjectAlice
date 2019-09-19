@@ -111,6 +111,10 @@ class Module:
 
 
 	def filterIntent(self, intent: str, session: DialogSession) -> bool:
+		# Return if the module isn't active
+		if not self.active:
+			return False
+
 		# Return if previous intent is not supported by this module
 		if session.previousIntent and session.previousIntent not in self._supportedIntents:
 			return False

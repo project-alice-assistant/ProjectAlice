@@ -100,6 +100,7 @@ class ModuleManager(Manager):
 
 						moduleInstance = self.importFromModule(moduleName=moduleName, isUpdate=False)
 						if moduleInstance:
+							moduleInstance.active = False
 							self._deactivatedModules[moduleInstance.name] = {
 								'instance': moduleInstance
 							}
@@ -309,7 +310,6 @@ class ModuleManager(Manager):
 					i += 1
 					moduleFile = Path(commons.rootDir(), 'system/moduleInstallTickets', moduleName + '.install')
 					moduleFile.write_text(json.dumps(remoteFile))
-					self._modules[moduleName]['instance'].active = False
 
 			except Exception as e:
 				self._logger.warning('[{}] Error checking updates for module "{}": {}'.format(self.name, moduleName, e))
