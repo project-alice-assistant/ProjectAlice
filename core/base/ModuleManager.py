@@ -83,8 +83,6 @@ class ModuleManager(Manager):
 			if moduleToLoad and moduleName != moduleToLoad:
 				continue
 
-			conditionName = ''
-			conditionValue = ''
 			try:
 				if not module['active']:
 					if moduleName in self.NEEDED_MODULES:
@@ -96,41 +94,7 @@ class ModuleManager(Manager):
 						continue
 
 				if 'conditions' in module:
-					for conditionName, conditionValue in module['conditions'].items():
-						if conditionName == 'lang' and self.LanguageManager.activeLanguage not in conditionValue:
-							raise ModuleNotConditionCompliant
-
-						elif conditionName == 'online':
-							if conditionValue and self.ConfigManager.getAliceConfigByName('stayCompletlyOffline'):
-								raise ModuleNotConditionCompliant
-							elif not conditionValue and not self.ConfigManager.getAliceConfigByName('stayCompletlyOffline'):
-								raise ModuleNotConditionCompliant
-
-						elif conditionName == 'module':
-							for requiredModule in conditionValue:
-								if requiredModule['name'] in availableModules and not availableModules[requiredModule['name']]['active']:
-									raise ModuleNotConditionCompliant
-								elif requiredModule['name'] not in availableModules:
-									self._logger.info('[{}] Module {} has another module as dependency, adding download'.format(self.name, moduleName))
-									subprocess.run(['wget', requiredModule['url'], '-O', Path(commons.rootDir(), 'system/moduleInstallTickets/{}.install'.format(requiredModule['name']))])
-
-						elif conditionName == 'notModule':
-							for excludedModule in conditionValue:
-								author, name = excludedModule.split('/')
-								if name in availableModules and availableModules[name]['author'] == author and availableModules[name]['active']:
-									raise ModuleNotConditionCompliant
-
-						elif conditionName == 'asrArbitraryCapture':
-							if conditionValue and not self.ASRManager.asr.capableOfArbitraryCapture:
-								raise ModuleNotConditionCompliant
-
-						elif conditionName == 'activeManager':
-							for manager in conditionValue:
-								if not manager: continue
-
-								man = SuperManager.getInstance().getManager(manager)
-								if not man or not man.isActive:
-									raise ModuleNotConditionCompliant
+					self.checkModuleConditions(moduleName, module['conditions'], availableModules)
 
 				if ' ' in moduleName:
 					name = commons.toCamelCase(moduleName)	
@@ -146,8 +110,8 @@ class ModuleManager(Manager):
 			except ModuleStartingFailed as e:
 				self._logger.warning('[{}] Failed loading module: {}'.format(self.name, e))
 				continue
-			except ModuleNotConditionCompliant:
-				self._logger.info('[{}] Module {} does not comply to "{}" condition, required "{}"'.format(self.name, moduleName, conditionName, conditionValue))
+			except ModuleNotConditionCompliant as e:
+				self._logger.info('[{}] Module {} does not comply to "{}" condition, required "{}"'.format(self.name, moduleName, e.condition, e.conditionValue))
 				continue
 			except Exception as e:
 				self._logger.warning('[{}] Something went wrong loading a module: {}'.format(self.name, e))
@@ -416,6 +380,9 @@ class ModuleManager(Manager):
 
 				directory = Path(commons.rootDir()) / 'modules' / moduleName
 
+				if 'conditions' in installFile:
+					self.checkModuleConditions(moduleName, installFile['conditions'], availableModules)
+
 				if moduleName in availableModules:
 					localVersionDirExists = directory.is_dir()
 					localVersionAttributeExists: bool = 'version' in availableModules[moduleName]
@@ -479,9 +446,55 @@ class ModuleManager(Manager):
 					self._logger.error('[{}] Failed cloning module'.format(self.name))
 					res.unlink()
 
+			except ModuleNotConditionCompliant as e:
+				self._logger.info('[{}] Module {} does not comply to "{}" condition, required "{}"'.format(self.name, moduleName, e.condition, e.conditionValue))
+				res.unlink()
+
 			except Exception as e:
 				self._logger.error('[{}] Failed installing module "{}": {}'.format(self.name, moduleName, e))
 				res.unlink()
 
 		self.MqttManager.broadcast(topic='hermes/leds/clear')
 		return modulesToBoot
+
+
+
+	def checkModuleConditions(self, moduleName: str, conditions: dict, availableModules: dict) -> bool:
+
+		for conditionName, conditionValue in conditions.items():
+			if conditionName == 'lang' and self.LanguageManager.activeLanguage not in conditionValue:
+				raise ModuleNotConditionCompliant(message='Module is not compliant', moduleName=moduleName, condition=conditionName, conditionValue=conditionValue)
+
+			elif conditionName == 'online':
+				if conditionValue and self.ConfigManager.getAliceConfigByName('stayCompletlyOffline'):
+					raise ModuleNotConditionCompliant(message='Module is not compliant', moduleName=moduleName, condition=conditionName, conditionValue=conditionValue)
+				elif not conditionValue and not self.ConfigManager.getAliceConfigByName('stayCompletlyOffline'):
+					raise ModuleNotConditionCompliant(message='Module is not compliant', moduleName=moduleName, condition=conditionName, conditionValue=conditionValue)
+
+			elif conditionName == 'module':
+				for requiredModule in conditionValue:
+					if requiredModule['name'] in availableModules and not availableModules[requiredModule['name']]['active']:
+						raise ModuleNotConditionCompliant(message='Module is not compliant', moduleName=moduleName, condition=conditionName, conditionValue=conditionValue)
+					elif requiredModule['name'] not in availableModules:
+						self._logger.info('[{}] Module {} has another module as dependency, adding download'.format(self.name, moduleName))
+						subprocess.run(['wget', requiredModule['url'], '-O', Path(commons.rootDir(), 'system/moduleInstallTickets/{}.install'.format(requiredModule['name']))])
+
+			elif conditionName == 'notModule':
+				for excludedModule in conditionValue:
+					author, name = excludedModule.split('/')
+					if name in availableModules and availableModules[name]['author'] == author and availableModules[name]['active']:
+						raise ModuleNotConditionCompliant(message='Module is not compliant', moduleName=moduleName, condition=conditionName, conditionValue=conditionValue)
+
+			elif conditionName == 'asrArbitraryCapture':
+				if conditionValue and not self.ASRManager.asr.capableOfArbitraryCapture:
+					raise ModuleNotConditionCompliant(message='Module is not compliant', moduleName=moduleName, condition=conditionName, conditionValue=conditionValue)
+
+			elif conditionName == 'activeManager':
+				for manager in conditionValue:
+					if not manager: continue
+
+					man = SuperManager.getInstance().getManager(manager)
+					if not man or not man.isActive:
+						raise ModuleNotConditionCompliant(message='Module is not compliant', moduleName=moduleName, condition=conditionName, conditionValue=conditionValue)
+
+		return True

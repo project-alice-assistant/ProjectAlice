@@ -64,9 +64,32 @@ class AssistantNotFoundError(SamkillaException):
 		super().__init__(status, message, context)
 
 
-class LanguageManagerLangNotSupported(Exception): pass
-class ConfigurationUpdateFailed(Exception): pass
-class ModuleNotConditionCompliant(Exception): pass
+class ModuleNotConditionCompliant(Exception):
+
+	def __init__(self, message: str, moduleName: str, condition: str, conditionValue: str):
+		self._moduleName = moduleName
+		self._condition = condition
+		self._conditionValue = conditionValue
+		super().__init__(message)
+
+
+	@property
+	def moduleName(self) -> str:
+		return self._moduleName
+
+
+	@property
+	def condition(self) -> str:
+		return self._condition
+
+
+	@property
+	def conditionValue(self) -> str:
+		return self._conditionValue
+
+
 class AccessLevelTooLow(Exception): pass
 class GithubTokenFailed(Exception): pass
 class GithubRateLimit(Exception): pass
+class LanguageManagerLangNotSupported(Exception): pass
+class ConfigurationUpdateFailed(Exception): pass
