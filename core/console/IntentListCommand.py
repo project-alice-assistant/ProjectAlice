@@ -3,7 +3,7 @@ import click
 #TODO module has to be required when intent is given
 @click.command(name='intent:list')
 @click.option('--module', '-m', help='Show more data about specific module')
-@click.option('--intent', '-i', help='Show more data about specific intent')
+@click.option('--intent', '-i', help='Show more data about specific intent (requires module to be set)')
 @click.option('--full', '-f', is_flag=True, help='Display full description instead of truncated one')
 def IntentListCommand(module: bool, intent: bool, full: bool):
 	"""List intents and utterances for a given module"""
@@ -27,7 +27,9 @@ def IntentListCommand(module: bool, intent: bool, full: bool):
 	DESCRIPTION_MAX = 100
 	found = False
 
-	if intent:
+	if intent and not module:
+		raise click.UsageError("The option --intent requires --module to be set")
+	elif intent:
 		TABLE_DATA = [['Utterances of ' + intent + ' intent']]
 		table_instance = DoubleTable(TABLE_DATA)
 		click.secho('\n{}\n'.format(table_instance.table), fg='yellow')
