@@ -38,7 +38,6 @@ class ModuleStartingFailed(Exception):
 		self._logger.error('An error occured while starting a module: {}'.format(error))
 
 		if moduleName:
-			SuperManager.getInstance().configManager.deactivateModule(moduleName)
 			SuperManager.getInstance().moduleManager.deactivateModule(moduleName)
 
 

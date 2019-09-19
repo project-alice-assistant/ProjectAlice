@@ -683,6 +683,15 @@ class MqttManager(Manager):
 		self.publish(topic=topic, payload=json.dumps(payload), qos=qos, retain=retain)
 
 
+	def configureIntents(self, intents: list):
+		self.publish(
+			topic='hermes/dialogueManager/configure',
+			payload={
+				'intents': intents
+			}
+		)
+
+
 	@property
 	def mqttClient(self):
 		return self._mqttClient

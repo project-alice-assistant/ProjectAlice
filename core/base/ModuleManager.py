@@ -9,6 +9,7 @@ import requests
 
 from core.ProjectAliceExceptions import ModuleNotConditionCompliant, ModuleStartDelayed, ModuleStartingFailed
 from core.base.SuperManager import SuperManager
+from core.base.model import Intent
 from core.base.model.GithubCloner import GithubCloner
 from core.base.model.Manager import Manager
 from core.base.model.Module import Module
@@ -43,6 +44,7 @@ class ModuleManager(Manager):
 		self._moduleInstallThread   = None
 		self._supportedIntents      = list()
 		self._modules               = dict()
+		self._deactivatedModules    = dict()
 
 
 	def onStart(self):
@@ -52,6 +54,10 @@ class ModuleManager(Manager):
 		self._moduleInstallThread = self.ThreadManager.newThread(name='ModuleInstallThread', target=self._checkForModuleInstall, autostart=False)
 
 		self._modules = self._loadModuleList()
+
+		for moduleName in self._deactivatedModules:
+			self.configureModuleIntents(moduleName=moduleName, state=False)
+
 		self.checkForModuleUpdates()
 		self.startAllModules()
 
@@ -91,6 +97,12 @@ class ModuleManager(Manager):
 						break
 					else:
 						self._logger.info('Module {} is disabled'.format(moduleName))
+
+						moduleInstance = self.importFromModule(moduleName=moduleName, isUpdate=False)
+						if moduleInstance:
+							self._deactivatedModules[moduleInstance.name] = {
+								'instance': moduleInstance
+							}
 						continue
 
 				self.checkModuleConditions(moduleName, module['conditions'], availableModules)
@@ -263,6 +275,8 @@ class ModuleManager(Manager):
 
 	def deactivateModule(self, moduleName: str):
 		if moduleName in self._modules:
+			self.ConfigManager.deactivateModule(moduleName)
+			self.configureModuleIntents(moduleName=moduleName, state=False)
 			del self._modules[moduleName]
 
 
@@ -463,7 +477,6 @@ class ModuleManager(Manager):
 		return modulesToBoot
 
 
-
 	def checkModuleConditions(self, moduleName: str, conditions: dict, availableModules: dict) -> bool:
 
 		if 'aliceMinVersion' in conditions and conditions['aliceMinVersion'] > constants.VERSION:
@@ -506,3 +519,32 @@ class ModuleManager(Manager):
 						raise ModuleNotConditionCompliant(message='Module is not compliant', moduleName=moduleName, condition=conditionName, conditionValue=conditionValue)
 
 		return True
+
+
+	def configureModuleIntents(self, moduleName: str, state: bool):
+		try:
+			confs = list()
+			module = self._modules.get(moduleName, self._deactivatedModules.get(moduleName))['instance']
+			for intent in module.supportedIntents:
+				if self.isIntentInUse(intent=intent, filtered=[moduleName]):
+					continue
+
+				confs.append({
+					'intentId': intent.justTopic,
+					'enable'  : state
+				})
+
+			self.MqttManager.configureIntents(confs)
+		except Exception as e:
+			self._logger.warning('[{}] Intent configuration failed: {}'.format(self.name, e))
+
+
+	def isIntentInUse(self, intent: Intent, filtered: list) -> bool:
+		for moduleName, module in self._modules.items():
+			if moduleName in filtered:
+				continue
+
+			if intent in module['instance'].supportedIntents:
+				return True
+
+		return False
