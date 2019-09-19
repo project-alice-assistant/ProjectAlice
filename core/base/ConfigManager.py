@@ -329,7 +329,7 @@ class ConfigManager(Manager):
 
 		if moduleName in self.aliceConfigurations['modules']:
 			self._logger.info('[{}] Deactivated module {} {} persistence'.format(self.name, moduleName, 'with' if persistent else 'without'))
-			self.aliceConfigurations['active'] = False
+			self.aliceConfigurations['modules'][moduleName]['active'] = False
 
 			if persistent:
 				self._writeToAliceConfigurationFile(self._aliceConfigurations)
