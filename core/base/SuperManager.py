@@ -46,6 +46,7 @@ class SuperManager(object):
 		self.wakewordManager           = None
 		self.userManager               = None
 		self.talkManager               = None
+		self.webInterface              = None
 
 
 	def onStart(self):
@@ -124,6 +125,7 @@ class SuperManager(object):
 		from core.voice.TalkManager             import TalkManager
 		from core.voice.TTSManager              import TTSManager
 		from core.voice.WakewordManager         import WakewordManager
+		from core.interface.WebInterfaceManager import WebInterfaceManager
 
 		self.configManager              = ConfigManager()
 		self.databaseManager            = DatabaseManager()
@@ -146,6 +148,7 @@ class SuperManager(object):
 		self.samkillaManager            = SamkillaManager()
 		self.wakewordManager            = WakewordManager()
 		self.talkManager                = TalkManager()
+		self.webInterface               = WebInterfaceManager()
 
 		self._managers = {name[0].upper() + name[1:]: manager for name, manager in self.__dict__.items() if name.endswith('Manager')}
 
