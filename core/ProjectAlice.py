@@ -1,8 +1,4 @@
-import os
 import subprocess
-
-import django
-from django.core import management
 
 from core.base.SuperManager import SuperManager
 from core.commons.model.Singleton import Singleton
