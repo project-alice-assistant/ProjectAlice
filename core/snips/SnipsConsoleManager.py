@@ -155,7 +155,7 @@ class SnipsConsoleManager(Manager):
 			time.sleep(5)
 
 
-	def download(self, assistantId: str):
+	def download(self, assistantId: str) -> bool:
 		try:
 			self._handleTraining(assistantId)
 			self._logger.info('[{}] Downloading assistant...'.format(self.name))
@@ -165,9 +165,11 @@ class SnipsConsoleManager(Manager):
 
 			self._logger.info('[{}] Assistant {} trained and downloaded'.format(self.name, assistantId))
 			self.ModuleManager.broadcast(method='onSnipsAssistantDownloaded')
+			return True
 		except Exception as e:
 			self._logger.error('[{}] Assistant download failed: {}'.format(self.name, e))
 			self.ModuleManager.broadcast(method='onSnipsAssistantDownloadFailed')
+			return False
 		finally:
 			self.ThreadManager.getLock('SnipsAssistantDownload').clear()
 
