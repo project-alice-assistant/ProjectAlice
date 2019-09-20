@@ -17,7 +17,7 @@ alice module:install ProjectAlice/AliceCore
 ### Description
 AliceCore is the official module that handles all core intents
 
-- Version: 1.06
+- Version: 1.08
 - Author: ProjectAlice
 - Maintainers:
   - Psycho, Jierka

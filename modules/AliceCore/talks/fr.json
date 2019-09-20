@@ -337,5 +337,68 @@
 		"default": [
 			"Il semblerait qu'il y ai déjà un utilisateur nommé {}. J'ai besoin d'un autre nom s'il te plait"
 		]
-	}
+	},
+	"addUserWakeword": {
+		"default": [
+			"Ok {},Je t'ai ajouté! Si tu veux que je te reconnaisse par ta voix nous devons te créer un wakeword personnel. Ce n'est pas obligatoire mais conseillé. Veux-tu le faire?"
+		]
+	},
+	"addWakewordDenied": {
+		"default": [
+			"Ok, je comprend, garde toutefois en tête que je ne serai pas capable de définir si tu es à la maison, ou si tu dors ou même me rappeller de choses te concernant."
+		]
+	},
+	"addWakewordAccepted": {
+		"default": [
+			"<s>Ok! J'ai besoin de trois specimens de toi qui m'appelle en disant <break time=\"100ms\"/> \"Hey Alice\" <break time=\"150ms\"/></s><s>Sois dans un environement calme pour que ça fonctionne, les bruits parasites rende l'opération impossible</s><s>On y va, appelle moi!</s>"
+		]
+	},
+	"wakewordCaptureFailed": [
+		"Il y a eu un problème au moment de la capture. Veux-tu que j'essaie de corriger le soucis et qu'on essaie à nouveau?"
+	],
+	"howWasTheCapture": [
+		"Je viens de jouer une version coupée de toi m'appelant. Etait-ce ok? Si non, je peux couper plus ou moin, ça doit être coupé très proche de ta voix... Dis \"Ok\", \"Coupe plus\", \"Coupe moins\" ou \"Recommence\""
+	],
+	"howWasThisCapture": [
+		"Comment c'était? Dis \"Ok\", \"Coupe plus\", \"Coupe moins\" ou \"Recommence\""
+	],
+	"howWasTheCaptureNow": [
+		"Et maintenant? Dis \"Ok\", \"Coupe plus\", \"Coupe moins\" ou \"Recommence\""
+	],
+	"sampleOk": [
+		"<s>Super, contente que ça marche, encore {} à faire! Appelle moi à nouveau en disant <break time=\"100ms\"/> \"Hey Alice\" <break time=\"150ms\"/></s>",
+		"<s>Génial, plus que {}! Appelle moi à nouveau en disant <break time=\"100ms\"/> \"Hey Alice\" <break time=\"150ms\"/></s>"
+	],
+	"restartSample": [
+		"<s>Ok, on retente! Appelle moi à nouveau en disant <break time=\"100ms\"/> \"Hey Alice\" <break time=\"150ms\"/></s>",
+		"<s>On essaie à nouveau, pas de problème! Appelle moi à nouveau en disant <break time=\"100ms\"/> \"Hey Alice\" <break time=\"150ms\"/></s>"
+	],
+	"wakewordCaptureDone": [
+		"C'est tout bon, c'est fait! J'ai les trois spécimens et tu devrais pouvoir m'appeller par mon nom et je devrais pouvoir te reconnaitre! Profite de mes services!"
+	],
+	"wakewordCaptureTooNoisy": [
+		"Il semblerait qu'il y ai trop de bruit ou que ton micro est trop sensible, je n'ai pas pu capturer ton appel. Tu veux essayer à nouveau?"
+	],
+	"cancellingWakewordCapture": [
+		"Ok, on oublie pour le moment. Tu pourras essayer à nouveau quand ce sera plus calme. Pour le moment tu peux m'appeller en disant <break time=\"100ms\"/> \"Hey Snips\" mais je ne pourrai pas te reconnaitre"
+	],
+	"addUserWhatsTheName": [
+		"Je peux le faire! Donne moi son nom s'il te plaît!",
+		"Ouai! Donne moi son nom s'il te plaît!"
+	],
+	"addUserWhatAccessLevel": [
+		"Quel niveau d'accès veux-tu accorderr? Admin, défaut, enfant, employé ou visiteur?"
+	],
+	"addUserConfirmUsername": [
+		"Ok, ai-je bien compris, le nom est {}?"
+	],
+	"addUserConfirmed": [
+		"Ok, j'ai ajouté {} en tant que {}. Si tu veux qu'il soit reconnu par sa voix, on peux ajouter un wakeword personnel. Ce n'est pas obligoire mais recommandé. On le fait?"
+	],
+	"addUserAddWakewordAccepted": [
+		"<s>Ok {}! J'ai besoin de trois specimens de toi qui m'appelle en disant <break time=\"100ms\"/> \"Hey Alice\" <break time=\"150ms\"/></s><s>Sois dans un environement calme pour que ça fonctionne, les bruits parasites rende l'opération impossible</s><s>On y va, appelle moi!</s>"
+	],
+	"addUserAddWakewordDenied": [
+		"Ok, je comprend, mais n'oublie pas que je ne serai pas capable de savoir si {} est à la maison, dors ou me rappeller de chose à son sujet."
+	]
 }

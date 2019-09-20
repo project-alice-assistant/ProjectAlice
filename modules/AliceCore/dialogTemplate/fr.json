@@ -3,6 +3,79 @@
 	"icon": "settings",
 	"description": "Contient les discussions qui permettent de gérer l'administration globale d'Alice",
 	"slotTypes": [
+				{
+			"name": "UserAccessLevel",
+			"matchingStrictness": null,
+			"automaticallyExtensible": false,
+			"useSynonyms": false,
+			"values": [
+				{
+					"value": "admin"
+				},
+				{
+					"value": "défaut"
+				},
+				{
+					"value": "enfant"
+				},
+				{
+					"value": "employé"
+				},
+				{
+					"value": "visiteur"
+				}
+			]
+		},
+		{
+			"name": "WakewordCaptureResult",
+			"matchingStrictness": null,
+			"automaticallyExtensible": true,
+			"useSynonyms": true,
+			"values": [
+				{
+					"value": "more",
+					"synonyms": [
+						"coupe plus",
+						"enlève plus",
+						"un peu plus",
+						"plus",
+						"bien plus",
+						"beaucoup plus",
+						"plus court",
+						"trop long"
+					]
+				},
+				{
+					"value": "less",
+					"synonyms": [
+						"coupe moin",
+						"enlève moin",
+						"un peu moin",
+						"moin",
+						"beaucoup moin",
+						"plus long",
+						"trop court"
+					]
+				},
+				{
+					"value": "restart",
+					"synonyms": [
+						"recommence",
+						"on essaie à nouveau",
+						"encore une fois"
+					]
+				},
+				{
+					"value": "ok",
+					"synonyms": [
+						"okay",
+						"parfait",
+						"oui",
+						"c'est bon"
+					]
+				}
+			]
+		},
 		{
 			"name": "More",
 			"matchingStrictness": null,
