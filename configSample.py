@@ -65,7 +65,7 @@ settings = {
 	"modules": {
 		"AliceCore": {
 			"active"    : True,
-			"version"   : 1.05,
+			"version"   : 1.06,
 			"author"    : "ProjectAlice",
 			"conditions": {
 				"lang": [
