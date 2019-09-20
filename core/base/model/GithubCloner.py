@@ -1,4 +1,3 @@
-import json
 import logging
 import os
 import shutil
@@ -47,8 +46,7 @@ class GithubCloner:
 			elif req.status_code != 200:
 				raise Exception
 
-			result = req.content
-			data = json.loads(result.decode())
+			data = req.json()
 			for item in data:
 				path = item['path'].split('/')[3:]
 				path = '/'.join(path)

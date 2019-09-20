@@ -305,7 +305,7 @@ class ModuleManager(Manager):
 					moduleName
 				))
 
-				remoteFile = json.loads(req.content.decode())
+				remoteFile = req.json()
 				if float(remoteFile['version']) > float(availableModules[moduleName]['version']):
 					i += 1
 					moduleFile = Path(commons.rootDir(), 'system/moduleInstallTickets', moduleName + '.install')
