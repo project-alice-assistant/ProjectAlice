@@ -399,10 +399,20 @@ class AliceCore(Module):
 
 			elif session.previousIntent == self._INTENT_DUMMY_ADD_USER_WAKEWORD:
 				if commons.isYes(session):
-					# TODO
+					self.WakewordManager.newWakeword(username=customData['username'])
+					self.ThreadManager.newLock('AddingWakeword').set()
+					self.continueDialog(
+						sessionId=sessionId,
+						text=self.randomTalk(text='addUserAddWakewordAccepted', replace=[customData['username']]),
+						intentFilter=[self._INTENT_WAKEWORD],
+						previousIntent=self._INTENT_DUMMY_WAKEWORD_INSTRUCTION
+					)
 					return True
 				else:
-					self.endSession(sessionId=sessionId)
+					self.endDialog(
+						sessionId=sessionId,
+						text=self.randomTalk(text='addUserAddWakewordDenied', replace=[customData['username'], customData['username']])
+					)
 
 			elif session.previousIntent == self._INTENT_DUMMY_WAKEWORD_FAILED:
 				if commons.isYes(session):
