@@ -75,14 +75,14 @@ class ThreadManager(Manager):
 			self._timers.remove(t)
 
 
-	def newThread(self, name: str, target: Callable, args: list = None, autostart: bool = True) -> threading.Thread:
+	def newThread(self, name: str, target: Callable, args: list = None, kwargs: dict = None, autostart: bool = True) -> threading.Thread:
 		if not args:
 			args = list()
 
 		if name in self._threads:
 			self._threads[name].join(timeout=2)
 
-		thread = threading.Thread(name=name, target=target, args=args)
+		thread = threading.Thread(name=name, target=target, args=args, kwargs=kwargs)
 		thread.setDaemon(True)
 
 		if autostart:

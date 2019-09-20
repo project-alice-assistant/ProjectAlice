@@ -24,3 +24,5 @@ colorama
 pyyaml
 boto3
 google-cloud-texttospeech
+Flask
+flask-classful

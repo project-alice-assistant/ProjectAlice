@@ -1,0 +1,13 @@
+{% extends 'base.html' %}
+
+{% block header %}
+  <h1>{% block title %}Modules{% endblock %}</h1>
+{% endblock %}
+
+{% block content %}
+    {% for moduleName in modules.keys() %}
+        <div>
+            {{ moduleName }}
+        </div>
+    {% endfor %}
+{% endblock %}

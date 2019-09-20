@@ -58,6 +58,8 @@ settings = {
 
 	"onReboot": "", # This is for system use only
 
+	"webInterfaceActive": False,
+
 	#-----------------------
 	# Modules
 	#-----------------------
@@ -65,7 +67,7 @@ settings = {
 	"modules": {
 		"AliceCore": {
 			"active"    : True,
-			"version"   : 1.06,
+			"version"   : 1.08,
 			"author"    : "ProjectAlice",
 			"conditions": {
 				"lang": [
