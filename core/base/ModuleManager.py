@@ -287,7 +287,7 @@ class ModuleManager(Manager):
 
 
 	def checkForModuleUpdates(self):
-		if not self.ConfigManager.getAliceConfigByName('moduleAutoUpdate'):
+		if self.ConfigManager.getAliceConfigByName('stayCompletlyOffline'):
 			return
 
 		self._logger.info('[{}] Checking for module updates'.format(self.name))
@@ -313,8 +313,15 @@ class ModuleManager(Manager):
 				remoteFile = req.json()
 				if float(remoteFile['version']) > float(availableModules[moduleName]['version']):
 					i += 1
-					moduleFile = Path(commons.rootDir(), 'system/moduleInstallTickets', moduleName + '.install')
-					moduleFile.write_text(json.dumps(remoteFile))
+
+					if not self.ConfigManager.getAliceConfigByName('moduleAutoUpdate'):
+						if moduleName in self._modules:
+							self._modules[moduleName]['instance'].updateAvailable = True
+						elif moduleName in self._deactivatedModules:
+							self._deactivatedModules[moduleName]['instance'].updateAvailable = True
+					else:
+						moduleFile = Path(commons.rootDir(), 'system/moduleInstallTickets', moduleName + '.install')
+						moduleFile.write_text(json.dumps(remoteFile))
 
 			except Exception as e:
 				self._logger.warning('[{}] Error checking updates for module "{}": {}'.format(self.name, moduleName, e))

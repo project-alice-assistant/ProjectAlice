@@ -32,12 +32,12 @@ header {
 }
 
 nav {
-    height: 100%;
 	width: 150px;
     position: fixed;
     z-index: 1;
     top: 54px;
     left: 2px;
+    bottom: 2px;
     background-color: #1e1e1e;
     color: #d1d1d1;
     size: 1em;
@@ -97,8 +97,9 @@ a:hover {
     position: fixed;
     top: 54px;
     left: 154px;
-    width: 100%;
-    height: 100%;
+    right: 0;
+    bottom: 2px;
+    margin-right: 2px;
 }
 
 .moduleTile {
@@ -173,4 +174,18 @@ a:hover {
     cursor: pointer;
     background-color: #636363;
     color: #fffe37;
+}
+
+.console {
+    margin: 20px;
+    height: 95%;
+    background-color: black;
+    color: #d1d1d1;
+    overflow: scroll;
+    overflow-x: hidden;
+    padding: 10px;
+}
+
+.logLine {
+    display: block;
 }

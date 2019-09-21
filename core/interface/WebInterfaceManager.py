@@ -4,6 +4,7 @@ from core.base.model.Manager import Manager
 from core.commons import commons
 from core.interface.views.IndexView import IndexView
 from core.interface.views.ModulesView import ModulesView
+from core.interface.views.SyslogView import SyslogView
 
 
 class WebInterfaceManager(Manager):
@@ -22,13 +23,14 @@ class WebInterfaceManager(Manager):
 		else:
 			IndexView.register(self.app)
 			ModulesView.register(self.app)
+			SyslogView.register(self.app)
 
 			self.ThreadManager.newThread(
 				name='WebInterface',
 				target=self.app.run,
 				kwargs={
 					'debug': True,
-					'port': self.ConfigManager.getAliceConfigByName('webInterfacePort'),
+					'port': int(self.ConfigManager.getAliceConfigByName('webInterfacePort')),
 					'host': commons.getLocalIp(),
 					'use_reloader': False
 				}

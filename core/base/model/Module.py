@@ -31,6 +31,7 @@ class Module:
 		self._name = self._install['name']
 		self._author = self._install['author']
 		self._version = self._install['version']
+		self._updateAvailable = False
 		self._active = True
 		self._delayed = False
 		self._databaseSchema = databaseSchema
@@ -93,6 +94,16 @@ class Module:
 	@version.setter
 	def version(self, value: float):
 		self._version = value
+
+
+	@property
+	def updateAvailable(self) -> bool:
+		return self._updateAvailable
+
+
+	@updateAvailable.setter
+	def updateAvailable(self, value: bool):
+		self._updateAvailable = value
 
 
 	@property
@@ -213,9 +224,11 @@ class Module:
 		return True
 
 	def onModuleInstalled(self):
+		self._updateAvailable = False
 		self.MqttManager.subscribeModuleIntents(self.name)
 
 	def onModuleUpdated(self):
+		self._updateAvailable = False
 		self.MqttManager.subscribeModuleIntents(self.name)
 
 	def onSleep(self): pass
