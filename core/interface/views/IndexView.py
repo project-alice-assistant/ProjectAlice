@@ -1,8 +1,10 @@
-from flask_classful import FlaskView
-from flask import render_template
+from flask_classful import FlaskView, route
 
 class IndexView(FlaskView):
-	route_base = '/'
 
+	@route('/')
+	@route('/home')
+	@route('/index')
+	@route('/start')
 	def index(self):
 		return ''

@@ -20,17 +20,17 @@
 			<div class="moduleActions">
 				<div class="moduleButton">
 					{% if module.active is sameas true %}
-						OFF
+						Disable
 					{% else %}
-						ON
+						Enable
 					{% endif %}
 				</div>
 				<div class="moduleButton">
-					DELETE
+					Delete
 				</div>
 				{% if module.updateAvailable is sameas true %}
 				<div class="moduleButton">
-					UPDATE
+					Update
 				</div>
 				{% endif %}
 			</div>

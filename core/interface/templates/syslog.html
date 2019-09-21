@@ -1,30 +1,14 @@
 {% extends 'base.html' %}
 
 {% block header %}
-	{% block title %}Modules{% endblock %}
+	{% block title %}Syslog{% endblock %}
 {% endblock %}
 
 {% block content %}
-	{% for moduleName, moduleInstance in modules.items() %}
-		<div class="moduleTile">
-			<div class="moduleTitle">
-				<div class="moduleName">{{ moduleName }}</div>
-				<div class="moduleVersion">v {{ moduleInstance.version }}</div>
-			</div>
-			<div class="moduleAuthor">
-				by {{ moduleInstance.author }}
-			</div>
-			<div class="moduleStatus {{ moduleInstance.status }}">
-				Status: {{ moduleInstance.status }}
-			</div>
-			<div class="moduleActions">
-				<div class="moduleButton">
-					OFF
-				</div>
-				<div class="moduleButton">
-					DEL
-				</div>
-			</div>
-		</div>
-	{% endfor %}
+	<script src="{{ url_for('static', filename='jquery-3.4.1.min.js') }}"></script>
+	<div class="console">
+		{% for line in data %}
+			<span class="logLine">{{ line }}</span>
+		{% endfor %}
+	</div>
 {% endblock %}
