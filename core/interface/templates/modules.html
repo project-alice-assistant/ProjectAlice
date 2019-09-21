@@ -5,25 +5,34 @@
 {% endblock %}
 
 {% block content %}
-	{% for moduleName, moduleInstance in modules.items() %}
+	{% for moduleName, module in modules.items() %}
 		<div class="moduleTile">
 			<div class="moduleTitle">
 				<div class="moduleName">{{ moduleName }}</div>
-				<div class="moduleVersion">v {{ moduleInstance.version }}</div>
+				<div class="moduleVersion">v {{ module.version }}</div>
 			</div>
 			<div class="moduleAuthor">
-				by {{ moduleInstance.author }}
+				by {{ module.author }}
 			</div>
-			<div class="moduleStatus {{ moduleInstance.status }}">
-				Status: {{ moduleInstance.status }}
+			<div class="moduleStatus {% if module.active is sameas true %}active{% else %}disabled{% endif %}">
+				Status: {% if module.active is sameas true %}enabled{% else %}disabled{% endif %}
 			</div>
 			<div class="moduleActions">
 				<div class="moduleButton">
-					OFF
+					{% if module.active is sameas true %}
+						OFF
+					{% else %}
+						ON
+					{% endif %}
 				</div>
 				<div class="moduleButton">
-					DEL
+					DELETE
 				</div>
+				{% if module.updateAvailable is sameas true %}
+				<div class="moduleButton">
+					UPDATE
+				</div>
+				{% endif %}
 			</div>
 		</div>
 	{% endfor %}

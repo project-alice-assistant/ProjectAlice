@@ -7,4 +7,7 @@ from core.base.SuperManager import SuperManager
 class ModulesView(FlaskView):
 
 	def index(self):
-		return render_template('modules.html', modules=SuperManager.getInstance().moduleManager.getModules(False))
+		modules = {moduleName: module['instance'] for moduleName, module in SuperManager.getInstance().moduleManager.getModules(False).items()}
+		deactivatedModules = {moduleName: module['instance'] for moduleName, module in SuperManager.getInstance().moduleManager.deactivatedModules.items()}
+		modules = {**modules, **deactivatedModules}
+		return render_template('modules.html', modules=modules)

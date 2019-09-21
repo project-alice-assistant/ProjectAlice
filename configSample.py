@@ -59,6 +59,7 @@ settings = {
 	"onReboot": "", # This is for system use only
 
 	"webInterfaceActive": False,
+	"webInterfacePort": 5000,
 
 	#-----------------------
 	# Modules

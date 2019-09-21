@@ -67,6 +67,18 @@ li:hover {
     color: #fffe37;
 }
 
+a:link,
+a:visited,
+a:active
+{
+    text-decoration: none;
+    color: #d1d1d1;
+}
+
+a:hover {
+    color: #fffe37;
+}
+
 .page {
     color: #1e1e1e;
 }
