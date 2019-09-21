@@ -12,6 +12,7 @@ from pathlib import Path
 from typing import Union
 
 from paho.mqtt.client import MQTTMessage
+from googletrans import Translator
 
 import core.commons.model.Slot as slotModel
 from core.base.SuperManager import SuperManager
@@ -308,3 +309,25 @@ def online(randomTalk: bool = True, text: str = ''):
 	if callable(randomTalk):
 		return argumentWrapper(randomTalk)
 	return argumentWrapper
+
+def translate(text: Union[str, list], destLang: str, srcLang: str = None):
+	"""
+	Translates a string or a list of strings into a different language using
+	google translator. Especially helpful when a api is only available in one
+	language, but the module should support other languages aswell.
+
+	:param text: string or list of strings to translate
+	:param destLang: language to translate to (ISO639-1 code)
+	:param srcLang: source language to translate (ISO639-1 code)
+	:return: translated string or list of strings
+	"""
+	if srcLang:
+		if srcLang == destLang:
+			return text
+		if isinstance(text, str):
+			return Translator().translate(text, dest=destLang, src=srcLang).text
+		return [result.text for result in Translator().translate(text, dest=destLang, src=srcLang)]
+
+	if isinstance(text, str):
+		return Translator().translate(text, dest=destLang).text
+	return [result.text for result in Translator().translate(text, dest=destLang)]
