@@ -5,11 +5,16 @@
 	<ul>
 		<li>Home</li>
 		<li>Modules</li>
+		<li>Syslog</li>
 	</ul>
 </nav>
-<section class="content">
+<section class="page">
 	<header>
-		{% block header %}{% endblock %}
+		<div class="pageTitle">
+			{% block header %}{% endblock %}
+		</div>
 	</header>
-	{% block content %}{% endblock %}
+	<section class="content">
+		{% block content %}{% endblock %}
+	</section>
 </section>
