@@ -42,7 +42,7 @@ def module(author_name: str, module_name: str):
 			+ 'author: {}\n'.format(click.style(module['author'], fg='yellow'))
 			+ 'maintainers: {}\n'.format(click.style(', '.join(module['maintainers']), fg='yellow'))
 			+ 'description: {}\n'.format(click.style(module['desc'], fg='yellow'))
-			+ 'aliceMinVersion: {}\n'.format(click.style(module['aliceMinVersion'], fg='yellow'))
+			+ 'aliceMinVersion: {}\n'.format(str(click.style(module['aliceMinVersion']), fg='yellow'))
 			+ 'pip requirements: {}\n'.format(click.style(', '.join(module['pipRequirements']), fg='yellow'))
 			+ 'system requirements: {}\n\n'.format(click.style(', '.join(module['systemRequirements']), fg='yellow'))
 			+ '+ Conditions:\n'
@@ -53,6 +53,6 @@ def module(author_name: str, module_name: str):
 		urllib.request.urlretrieve(url, 'system/moduleInstallTickets/{}.install'.format(module_name))
 
 	except Exception as e:
-		click.secho('Error listing authors', err=True, fg='red')
+		click.secho('Failed to add the module', err=True, fg='red')
 
 
