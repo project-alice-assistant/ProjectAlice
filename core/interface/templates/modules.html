@@ -1,13 +1,30 @@
 {% extends 'base.html' %}
 
 {% block header %}
-	<h1>{% block title %}Modules{% endblock %}</h1>
+	{% block title %}Modules{% endblock %}
 {% endblock %}
 
 {% block content %}
 	{% for moduleName, moduleInstance in modules.items() %}
-		<div>
-			{{ moduleName }}
+		<div class="moduleTile">
+			<div class="moduleTitle">
+				<div class="moduleName">{{ moduleName }}</div>
+				<div class="moduleVersion">v {{ moduleInstance.version }}</div>
+			</div>
+			<div class="moduleAuthor">
+				by {{ moduleInstance.author }}
+			</div>
+			<div class="moduleStatus {{ moduleInstance.status }}">
+				Status: {{ moduleInstance.status }}
+			</div>
+			<div class="moduleActions">
+				<div class="moduleButton">
+					OFF
+				</div>
+				<div class="moduleButton">
+					DEL
+				</div>
+			</div>
 		</div>
 	{% endfor %}
 {% endblock %}
