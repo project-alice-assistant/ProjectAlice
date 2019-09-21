@@ -79,7 +79,7 @@ class SnipsConsoleManager(Manager):
 			self._logger.info('[{}] Connected to Snips console. Fetching and saving access token'.format(self.NAME))
 			try:
 				token = req.headers['authorization']
-				self._user = SnipsConsoleUser(json.loads(req.content)['user'])
+				self._user = SnipsConsoleUser(req.json()['user'])
 
 				accessToken = self._getAccessToken(token)
 				if accessToken:
@@ -107,13 +107,13 @@ class SnipsConsoleManager(Manager):
 		self._headers['Authorization'] = token
 		req = self._req(url='/v1/user/{}/accesstoken'.format(self._user.userId), data={'alias': alias})
 		if req.status_code == 201:
-			return json.loads(req.content)['token']
+			return req.json()['token']
 		return dict()
 
 
 	def _listAssistants(self) -> dict:
 		req = self._req(url='/v3/assistant', method='get', data={'userId': self._user.userId})
-		return json.loads(req.content)['assistants']
+		return req.json()['assistants']
 
 
 	def _trainAssistant(self, assistantId: str, trainingType: SnipsTrainingType):
@@ -122,7 +122,7 @@ class SnipsConsoleManager(Manager):
 
 	def _trainingStatus(self, assistantId: str) -> TrainingStatusResponse:
 		req = self._req(url='/v2/training/assistant/{}'.format(assistantId), method='get')
-		return TrainingStatusResponse(json.loads(req.content.decode()))
+		return TrainingStatusResponse(req.json())
 
 
 	def _handleTraining(self, assistantId: str):
@@ -155,7 +155,7 @@ class SnipsConsoleManager(Manager):
 			time.sleep(5)
 
 
-	def download(self, assistantId: str):
+	def download(self, assistantId: str) -> bool:
 		try:
 			self._handleTraining(assistantId)
 			self._logger.info('[{}] Downloading assistant...'.format(self.name))
@@ -165,9 +165,11 @@ class SnipsConsoleManager(Manager):
 
 			self._logger.info('[{}] Assistant {} trained and downloaded'.format(self.name, assistantId))
 			self.ModuleManager.broadcast(method='onSnipsAssistantDownloaded')
+			return True
 		except Exception as e:
 			self._logger.error('[{}] Assistant download failed: {}'.format(self.name, e))
 			self.ModuleManager.broadcast(method='onSnipsAssistantDownloadFailed')
+			return False
 		finally:
 			self.ThreadManager.getLock('SnipsAssistantDownload').clear()
 

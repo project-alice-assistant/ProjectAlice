@@ -162,7 +162,6 @@ class DeviceManager(Manager):
 		oldPorts = list()
 		scanPresent = True
 		found = False
-		port = ''
 		tries = 0
 		self._logger.info('[{}] Looking for USB device for the next {} seconds'.format(self.name, timeout))
 		while not found:
@@ -192,7 +191,7 @@ class DeviceManager(Manager):
 
 			time.sleep(0.5)
 
-		return port
+		return ''
 
 
 	def doFlashTasmota(self, room: str, espType: str, siteId: str):
