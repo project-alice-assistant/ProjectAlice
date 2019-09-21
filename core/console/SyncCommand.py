@@ -12,9 +12,9 @@ def Sync():
 def assistant(download: bool):
 	"""Sync dialog templates for all modules"""
 
-    _logger = logging.getLogger('ProjectAlice')
-    _logger.setLevel(logging.INFO)
-    _logger.addHandler(logging.StreamHandler())
+	_logger = logging.getLogger('ProjectAlice')
+	_logger.setLevel(logging.INFO)
+	_logger.addHandler(logging.StreamHandler())
 
 	superManager = SuperManager(None)
 	superManager.initManagers()
