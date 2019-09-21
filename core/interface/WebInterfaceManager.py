@@ -1,6 +1,7 @@
 from flask import Flask
 
 from core.base.model.Manager import Manager
+from core.commons import commons
 from core.interface.views.IndexView import IndexView
 from core.interface.views.ModulesView import ModulesView
 
@@ -28,7 +29,7 @@ class WebInterfaceManager(Manager):
 				kwargs={
 					'debug': True,
 					'port': 5000,
-					'host': '192.168.1.127',
+					'host': commons.getLocalIp(),
 					'use_reloader': False
 				}
 			)
