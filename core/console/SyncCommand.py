@@ -21,6 +21,8 @@ def assistant(download: bool):
 
 	samkillaManager = superManager.getManager('SamkillaManager')
 	samkillaManager.onStart()
+	superManager.getManager('LanguageManager').onStart()
+    superManager.getManager('SnipsConsoleManager').onStart()
 
 	try:
 		samkillaManager.sync(download=download)
