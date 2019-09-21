@@ -28,7 +28,7 @@ class WebInterfaceManager(Manager):
 				target=self.app.run,
 				kwargs={
 					'debug': True,
-					'port': 5000,
+					'port': self.ConfigManager.getAliceConfigByName('webInterfacePort'),
 					'host': commons.getLocalIp(),
 					'use_reloader': False
 				}
