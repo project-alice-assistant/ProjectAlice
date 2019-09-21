@@ -29,6 +29,8 @@ class Module:
 			raise ModuleStartingFailed(error='[{}] Failed loading module: {}'.format(type(self).__name__, e))
 
 		self._name = self._install['name']
+		self._author = self._install['author']
+		self._version = self._install['version']
 		self._active = True
 		self._delayed = False
 		self._databaseSchema = databaseSchema
@@ -71,6 +73,26 @@ class Module:
 	@name.setter
 	def name(self, value: str):
 		self._name = value
+
+
+	@property
+	def author(self) -> str:
+		return self._author
+
+
+	@author.setter
+	def author(self, value: str):
+		self._author = value
+
+
+	@property
+	def version(self) -> float:
+		return self._version
+
+
+	@version.setter
+	def version(self, value: float):
+		self._version = value
 
 
 	@property

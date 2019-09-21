@@ -63,8 +63,13 @@ class ModuleManager(Manager):
 
 
 	@property
-	def supportedIntents(self):
+	def supportedIntents(self) -> list:
 		return self._supportedIntents
+
+
+	@property
+	def deactivatedModules(self) -> dict:
+		return self._deactivatedModules
 
 
 	def onBooted(self):
@@ -72,7 +77,7 @@ class ModuleManager(Manager):
 		self._moduleInstallThread.start()
 
 
-	def _loadModuleList(self, moduleToLoad: str = '', isUpdate: bool = False):
+	def _loadModuleList(self, moduleToLoad: str = '', isUpdate: bool = False) -> dict:
 		if moduleToLoad:
 			modules = self._modules.copy()
 		else:
