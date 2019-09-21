@@ -22,12 +22,12 @@ cli.add_command(Update)
 
 # import command namespaces from modules
 for path in Path('modules').glob('*/console'):
-    path = (path/path.parent.name).with_suffix('.py')
+	path = (path/path.parent.name).with_suffix('.py')
 	if path.is_file():
 		spec = importlib.util.spec_from_file_location(path.stem, path)
 		moduleCli = importlib.util.module_from_spec(spec)
 		spec.loader.exec_module(moduleCli)
-		if hasattr(moduleCli, path.stem)
+		if hasattr(moduleCli, path.stem):
 			cli.add_command(getattr(moduleCli, path.stem))
 
 if __name__ == '__main__':
