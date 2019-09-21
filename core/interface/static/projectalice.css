@@ -1,0 +1,35 @@
+body {
+	background-color: black;
+    color: aqua;
+}
+
+nav {
+    height: 100%;
+	width: 150px;
+    position: fixed;
+    z-index: 1;
+    top: 0;
+    left: 0;
+    background-color: #1a1a1a;
+    padding-top: 20px;
+    padding-left: 20px;
+    color: #d1d1d1;
+    size: 1em;
+    margin: 2px;
+}
+
+ul {
+    list-style-type: none;
+    margin: 0;
+    padding: 0;
+}
+
+li {
+    margin-top: 5px;
+    color: #d1d1d1;
+}
+
+.content {
+    margin-left: 170px;
+    color: #d1d1d1;
+}

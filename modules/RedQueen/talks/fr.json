@@ -41,6 +41,71 @@
 			"Bonne nuit!"
 		]
 	},
+	"onGoingBed": {
+		"default": [
+			"Ok, je m'occupe de tout, pas de soucis",
+			"Pas de problème, je m'occupe de tout"
+		],
+		"short": [
+			"Ok"
+		]
+	},
+	"onLeavingHome": {
+		"default": [
+			"Ok, je m'occupe de tout, pas de soucis",
+			"Pas de problème, je m'occupe de tout"
+		],
+		"short": [
+			"Ok"
+		]
+	},
+	"onReturningHome": {
+		"default": [
+			"Bonjours! Bienvenue à la maison!",
+			"Bienvenue à la maison! Contente d'avoir de la compagnie à nouveau!"
+		],
+		"short": [
+			"Bienvenue!",
+			"Bonjours!"
+		]
+	},
+	"onWatchingTV": {
+		"default": [
+			"Ok, j'ai changé la lumière!",
+			"Passe un bon moment!"
+		],
+		"short": [
+			"Ok"
+		]
+	},
+	"onEating": {
+		"default": [
+			"Ok, j'ai changé les lumières! Bon appetit!",
+			"Bon appetit!"
+		],
+		"short": [
+			"Ok"
+		]
+	},
+	"onMakeup": {
+		"default": [
+			"Ok, j'ai changé les lumières pour que tu voies mieux!",
+			"Tu n'as de toute façon pas besoin de maquillage, tu es belle au naturel",
+			"C'est toi qui rend le maquillage beau et pas l'inverse"
+		],
+		"short": [
+			"Je change la lumière!"
+		]
+	},
+	"onCooking": {
+		"default": [
+			"Ok, je change la lumière à la cuisine",
+			"Fais quelque chose de bon!"
+		],
+		"short": [
+			"Je change la lumière!"
+		]
+	},
 	"thanksForBeingNice": {
 		"default": [
 			"<break time=\"750ms\"/>Merci de demander comme ça gentiment!",
