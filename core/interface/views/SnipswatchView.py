@@ -1,4 +1,5 @@
 import time
+from pathlib import Path
 
 import subprocess
 
@@ -13,8 +14,11 @@ class SnipswatchView(FlaskView):
 	def __init__(self):
 		super().__init__()
 		self._counter = 0
-		self._watch = list()
 		self._thread = None
+		self._file = Path('/tmp/snipswatch.txt')
+
+		if self._file.exists():
+			subprocess.run(['sudo', 'rm', self._file])
 
 
 	def index(self):
@@ -22,13 +26,13 @@ class SnipswatchView(FlaskView):
 
 
 	def startWatching(self):
-		process = subprocess.Popen('snips-watch -vv', shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+		process = subprocess.Popen('snips-watch -vv', shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
 
 		while True:
 			out = process.stdout.readline().decode()
 			if out != '':
-				self._watch.append(out.strip())
-			time.sleep(0.1)
+				with self._file.open('a') as f:
+					f.write(out)
 
 
 	def update(self):
@@ -47,7 +51,10 @@ class SnipswatchView(FlaskView):
 
 
 	def _getData(self) -> list:
-		data = self._watch.copy()
-		ret = data[self._counter:]
-		self._counter = len(data)
-		return ret
+		try:
+			data = self._file.open('r').readlines()
+			ret = data[self._counter:]
+			self._counter = len(data)
+			return ret
+		except:
+			return list()
