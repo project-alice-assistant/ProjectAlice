@@ -19,7 +19,7 @@ import typing
 import toml
 
 import configSample
-from core.ProjectAliceExceptions import ConfigurationUpdateFailed
+from core.ProjectAliceExceptions import ConfigurationUpdateFailed, VitalConfigMissing
 from core.base.model.Manager import Manager
 from core.commons import commons, constants
 
@@ -41,12 +41,25 @@ class ConfigManager(Manager):
 			'conditions'
 		]
 
+		self._vitalConfigs = [
+			'intentsOwner',
+			'snipsConsoleLogin',
+			'snipsConsolePassword'
+		]
+
 		self._checkAndUpdateAliceConfigFile()
 		self.loadSnipsConfigurations()
 		self._setDefaultSiteId()
 
 		self.loadModuleConfigurations()
 		self._checkAndUpdateModuleConfigFiles()
+
+
+	def onStart(self):
+		super().onStart()
+		for conf in self._vitalConfigs:
+			if conf not in self._aliceConfigurations or self._aliceConfigurations[conf] == '':
+				raise VitalConfigMissing()
 
 
 	def _setDefaultSiteId(self):
@@ -372,3 +385,8 @@ class ConfigManager(Manager):
 	@property
 	def modulesConfigurations(self) -> dict:
 		return self._modulesConfigurations
+
+
+	@property
+	def vitalConfigs(self) -> list:
+		return self._vitalConfigs

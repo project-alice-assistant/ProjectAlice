@@ -92,3 +92,10 @@ class GithubTokenFailed(Exception): pass
 class GithubRateLimit(Exception): pass
 class LanguageManagerLangNotSupported(Exception): pass
 class ConfigurationUpdateFailed(Exception): pass
+
+class VitalConfigMissing(Exception):
+	def __init__(self, message: str):
+		super().__init__(message)
+		self._logger = logging.getLogger('ProjectAlice')
+		self._logger.warning('[ConfigManager] A vital configuration ("{}") is missing. Make sure the following configurations are set: {}'.format(message, ' / '.join(SuperManager.getInstance().configManager.vitalConfigs)))
+		SuperManager.getInstance().projectAlice.onStop()
