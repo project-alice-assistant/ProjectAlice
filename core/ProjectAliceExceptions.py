@@ -58,6 +58,11 @@ class HttpError(SamkillaException):
 		super().__init__(status, message, context)
 
 
+class IntentWithUnknownSlotError(SamkillaException):
+	def __init__(self, status: int, message: str, context: list):
+		super().__init__(status, message, context)
+
+
 class AssistantNotFoundError(SamkillaException):
 	def __init__(self, status: int, message: str, context: list):
 		super().__init__(status, message, context)

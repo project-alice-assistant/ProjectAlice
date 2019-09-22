@@ -9,7 +9,7 @@ from selenium.webdriver.chrome.webdriver import WebDriver
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.ui import WebDriverWait
 
-from core.ProjectAliceExceptions import AssistantNotFoundError, HttpError
+from core.ProjectAliceExceptions import AssistantNotFoundError, HttpError, IntentWithUnknownSlotError
 from core.commons import commons
 from core.snips.samkilla.Assistant import Assistant
 from core.snips.samkilla.Entity import Entity
@@ -203,17 +203,19 @@ class SamkillaManager(Manager):
 	# TODO batch gql requests
 	# payload appears to be typed wrong can be string or dict
 	def postGQLBrowserly(self, payload: dict, jsonRequest: bool = True, dataReadyResponse: bool = True, rawResponse: bool = False) -> dict:
-		if jsonRequest:
-			payload = json.dumps(payload)
-		
-		payload = payload.replace("'", "__SINGLE_QUOTES__").replace("\\n", ' ')
+		injectedPayload = payload
 
-		# self.log(payload)
-		# self._browser.execute_script('console.log(\'' + payload + '\')')
-		# self._browser.execute_script('console.log(\'' + payload + '\'.replace(/__SINGLE_QUOTES__/g,"\'").replace(/__QUOTES__/g,\'\\\\"\'))')
+		if jsonRequest:
+			injectedPayload = json.dumps(payload)
+		
+		injectedPayload = injectedPayload.replace("'", "__SINGLE_QUOTES__").replace("\\n", ' ')
+
+		# self.log(injectedPayload)
+		# self._browser.execute_script('console.log(\'' + injectedPayload + '\')')
+		# self._browser.execute_script('console.log(\'' + injectedPayload + '\'.replace(/__SINGLE_QUOTES__/g,"\'").replace(/__QUOTES__/g,\'\\\\"\'))')
 
 		self._browser.execute_script("document.title = 'loading'")
-		self._browser.execute_script('fetch("/gql", {method: "POST", headers:{"accept":"*/*","content-type":"application/json"}, credentials: "same-origin", body:\'' + payload + '\'.replace(/__SINGLE_QUOTES__/g,"\'").replace(/__QUOTES__/g,\'\\\\"\')}).then((data) => { data.text().then((text) => { document.title = text; }); })')
+		self._browser.execute_script('fetch("/gql", {method: "POST", headers:{"accept":"*/*","content-type":"application/json"}, credentials: "same-origin", body:\'' + injectedPayload + '\'.replace(/__SINGLE_QUOTES__/g,"\'").replace(/__QUOTES__/g,\'\\\\"\')}).then((data) => { data.text().then((text) => { document.title = text; }); })')
 		wait = WebDriverWait(self._browser, 10)
 		wait.until(EC.title_contains('{'))
 		response = self._browser.execute_script('return document.title')
@@ -236,6 +238,9 @@ class SamkillaManager(Manager):
 				'message': complexMessage,
 				'context': path
 			}
+
+			if 'non-nullable field IntentSlot.name' in complexMessage:
+				raise IntentWithUnknownSlotError(errorResponse['code'], payload[0]['variables']['input']['config']['displayName'], 'intent')
 
 			raise HttpError(errorResponse['code'], errorResponse['message'], errorResponse['context'])
 

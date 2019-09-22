@@ -2,7 +2,7 @@ import hashlib
 import re
 import typing
 
-from core.ProjectAliceExceptions import HttpError, IntentError
+from core.ProjectAliceExceptions import HttpError, IntentError, IntentWithUnknownSlotError
 from core.snips import SamkillaManager
 from core.snips.samkilla.gql.intents.deleteIntent import deleteIntent
 from core.snips.samkilla.gql.intents.publishIntent import publishIntent
@@ -144,6 +144,8 @@ class Intent:
 
 		try:
 			response = self._ctx.postGQLBrowserly(gqlRequest)
+		except IntentWithUnknownSlotError as iwuse:
+			raise ValueError('[Inconsistent] Intent {} is using unknown Slots'.format(iwuse.message))
 		except HttpError as he:
 			if he.status == 409:
 				self._ctx.log('Duplicate intent with name {}'.format(name))
@@ -261,11 +263,15 @@ class Intent:
 			},
 			'query'        : publishIntent
 		}]
-		self._ctx.postGQLBrowserly(gqlRequest, rawResponse=True)
 
-		if attachToSkill:
-			self.attachToSkill(userId=userId, skillId=skillId, intentId=intentId, languageFilter=language)
+		try:
+			self._ctx.postGQLBrowserly(gqlRequest, rawResponse=True)
 
+			if attachToSkill:
+				self.attachToSkill(userId=userId, skillId=skillId, intentId=intentId, languageFilter=language)
+
+		except IntentWithUnknownSlotError as iwuse:
+			self._ctx.log('[Inconsistent] Intent {} is using unknown Slots'.format(iwuse.message))
 
 	def formatSlotsAndEntities(self, typeEntityMatching: dict, slotsDefinition: dict) -> tuple:
 		entities = list()
@@ -273,6 +279,10 @@ class Intent:
 
 		for slot in slotsDefinition:
 			snipsSpecialSlot = slot['type'].startswith('snips/')
+
+			if slot['type'] not in typeEntityMatching:
+				continue
+
 			slotEntityId = slot['type'] if snipsSpecialSlot else typeEntityMatching[slot['type']]['entityId']
 
 			entities.append({'id': slotEntityId, 'name': slotEntityId if snipsSpecialSlot else slot['type']})
