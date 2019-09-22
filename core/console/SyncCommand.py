@@ -35,7 +35,8 @@ def assistant(download: bool):
 	
 	if download:
 		download = snipsConsoleManager.download(languageManager.activeSnipsProjectId)
-		if downloaded:
+		
+		if download:
 			click.echo('\n\nAssistant {}\n'.format(click.style('downloaded!', fg='green')))
 		else:
 			click.echo('\n\nAssistant {}\n'.format(click.style('download failed', fg='red')), err=True)
