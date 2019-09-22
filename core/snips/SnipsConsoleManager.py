@@ -122,6 +122,8 @@ class SnipsConsoleManager(Manager):
 
 	def _trainingStatus(self, assistantId: str) -> TrainingStatusResponse:
 		req = self._req(url='/v2/training/assistant/{}'.format(assistantId), method='get')
+		if req.status_code // 100 == 4:
+			raise Exception('Snips API return a error: {}'.format(req.status_code))
 		return TrainingStatusResponse(req.json())
 
 
