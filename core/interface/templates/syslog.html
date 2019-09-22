@@ -6,9 +6,19 @@
 
 {% block content %}
 	<script src="{{ url_for('static', filename='jquery-3.4.1.min.js') }}"></script>
-	<div class="console">
-		{% for line in data %}
-			<span class="logLine">{{ line }}</span>
-		{% endfor %}
+	<script type=text/javascript>
+		$SCRIPT_ROOT = {{ request.script_root|tojson|safe }};
+		$.get(
+		    $SCRIPT_ROOT + '/syslog/update',
+			function(data) {
+		        for (let i = 0; i < data.length; i++) {
+		            $('#console').append(
+		                '<span class="logLine">' + data[i] + '</span>'
+					)
+				}
+			}
+		)
+	</script>
+	<div class="console" id="console">
 	</div>
 {% endblock %}
