@@ -12,7 +12,6 @@ class SyslogView(FlaskView):
 
 	def __init__(self):
 		super().__init__()
-		self._lastLine = 0
 		self._counter = 0
 
 
@@ -21,6 +20,11 @@ class SyslogView(FlaskView):
 
 
 	def update(self):
+		return jsonify(data=self._getData())
+
+
+	def refresh(self):
+		self._counter = 0
 		return jsonify(data=self._getData())
 
 

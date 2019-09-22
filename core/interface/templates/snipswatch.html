@@ -1,40 +1,26 @@
 {% extends 'base.html' %}
 
 {% block header %}
-	{% block title %}Syslog{% endblock %}
+	{% block title %}Snips Watch{% endblock %}
 {% endblock %}
 
 {% block content %}
 	<script src="{{ url_for('static', filename='jquery-3.4.1.min.js') }}"></script>
 	<script type=text/javascript>
 		let $SCRIPT_ROOT = {{ request.script_root|tojson|safe }};
-		function getLogColor(line) {
-		    if (line.includes('[INFO]')) {
-		        return 'logInfo'
-			}
-		    else if (line.includes('[WARNING]')) {
-		        return 'logWarning'
-			}
-		    else if (line.includes('[ERROR]')) {
-		        return 'logError'
-			}
-		    else {
-		        return 'logInfo'
-			}
-		}
 		function refreshData(type) {
 		    $.get(
-				$SCRIPT_ROOT + '/syslog/' + type,
+				$SCRIPT_ROOT + '/snipswatch/' + type,
                 function (data) {
 				    let container = $('#console');
                     for (let i = 0; i < data.data.length; i++) {
                         container.append(
-                            '<span class="logLine ' + getLogColor(data.data[i]) + '">' + data.data[i] + '</span>'
+                            '<span class="logLine">' + data.data[i] + '</span>'
                         );
                     }
                     container.animate(
                         {
-							scrollTop: container.scrollHeight
+							scrollTop: container[0].scrollHeight - container[0].clientHeight
                     	},
 						250
 					)

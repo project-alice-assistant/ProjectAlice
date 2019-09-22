@@ -181,11 +181,32 @@ a:hover {
     height: 95%;
     background-color: black;
     color: #d1d1d1;
-    overflow: scroll;
+    overflow-y: scroll;
     overflow-x: hidden;
     padding: 10px;
 }
 
 .logLine {
     display: block;
+}
+
+::-webkit-scrollbar {
+    width: 8px;
+    background-color: black;
+}
+
+::-webkit-scrollbar-thumb {
+    background-color: #343434;
+}
+
+.logInfo {
+    color: #d1d1d1;
+}
+
+.logWarning {
+    color: orange;
+}
+
+.logError {
+    color: red;
 }
