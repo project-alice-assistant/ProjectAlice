@@ -150,17 +150,27 @@ class MainProcessor:
 
 
 	def getModuleFromFile(self, moduleFile: Path, moduleLanguage: str) -> typing.Optional[dict]:
-		module = json.loads(Path(moduleFile).read_text())
-		module['language'] = moduleLanguage
+		try:
+			module = json.loads(Path(moduleFile).read_text())
 
-		if module['module'] not in self._modules:
-			self._ctx.log('\n[Inconsistent] Module {} has a name different from its directory'.format(module['module']))
+			if 'module' not in module:
+				self._ctx.log('\n[Inconsistent] File {} has no \'module\' name definition'.format(moduleFile))
+				return None
+
+			module['language'] = moduleLanguage
+
+			if module['module'] not in self._modules:
+				self._ctx.log(
+					'\n[Inconsistent] Module {} has a name different from its directory'.format(module['module']))
+				return None
+
+			self._modules[module['module']][moduleLanguage] = module
+			self._ctx.log('[FilePull] Loading module {}'.format(module['module']))
+			return module
+
+		except json.decoder.JSONDecodeError as jsonError:
+			self._ctx.log('\n[Inconsistent] File {} has a bad json format'.format(moduleFile))
 			return None
-
-		self._modules[module['module']][moduleLanguage] = module
-		self._ctx.log('[FilePull] Loading module {}'.format(module['module']))
-		return module
-
 
 	def getModuleSyncStateByLanguageAndAssistantId(self, moduleName: str, language: str, assistantId: str) -> str:
 		return self._savedAssistants.get(language, dict()).get(assistantId, dict()).get('modules', dict()).get(moduleName, None)
@@ -328,7 +338,8 @@ class MainProcessor:
 				if languageFilter and languageFilter != language: continue
 
 				module = self.getModuleFromFile(moduleFile=languageFile, moduleLanguage=language)
-				if not module: continue
+				if not module:
+					return None, None, None
 
 				# We need all slotTypes values of all modules, even if there is a module filter
 				for moduleSlotType in module['slotTypes']:
@@ -388,6 +399,9 @@ class MainProcessor:
 			moduleFilter=moduleFilter,
 			languageFilter=languageFilter
 		)
+
+		if not slotTypesModulesValues or not intentsModulesValues or not intentNameSkillMatching:
+			return False
 
 		# Get a dict with all slotTypes
 		typeEntityMatching, globalChangesSlotTypes = self.syncLocalToRemoteSlotTypes(
