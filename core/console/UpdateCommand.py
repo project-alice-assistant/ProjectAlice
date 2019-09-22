@@ -23,11 +23,10 @@ def assistant():
 
 	superManager = SuperManager(None)
 	superManager.initManagers()
+	superManager.onStart()
 
 	snipsConsoleManager = superManager.getManager('SnipsConsoleManager')
-	snipsConsoleManager.onStart()
 	languageManager = superManager.getManager('LanguageManager')
-	languageManager.onStart()
 
 	downloaded = snipsConsoleManager.download(languageManager.activeSnipsProjectId)
 

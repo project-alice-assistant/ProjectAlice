@@ -18,14 +18,11 @@ def assistant(download: bool):
 
 	superManager = SuperManager(None)
 	superManager.initManagers()
+	superManager.onStart()
 
 	samkillaManager = superManager.getManager('SamkillaManager')
-	samkillaManager.onStart()
 	snipsConsoleManager = superManager.getManager('SnipsConsoleManager')
-	snipsConsoleManager.onStart()
 	languageManager = superManager.getManager('LanguageManager')
-	languageManager.onStart()
-
 
 	try:
 		samkillaManager.sync(download=False)
