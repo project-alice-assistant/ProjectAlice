@@ -29,6 +29,9 @@ def assistant():
 	languageManager = superManager.getManager('LanguageManager')
 	languageManager.onStart()
 
-	snipsConsoleManager.download(languageManager.activeSnipsProjectId)
+	downloaded = snipsConsoleManager.download(languageManager.activeSnipsProjectId)
 
-	click.echo('\n\nAssistant {}\n'.format(click.style('downloaded!', fg='green')))
+	if downloaded:
+		click.echo('\n\nAssistant {}\n'.format(click.style('downloaded!', fg='green')))
+	else:
+		click.echo('\n\nAssistant {}\n'.format(click.style('download failed', fg='red')), err=True)
