@@ -12,7 +12,6 @@ class SyslogView(FlaskView):
 
 	def __init__(self):
 		super().__init__()
-		self._lastLine = 0
 		self._counter = 0
 
 

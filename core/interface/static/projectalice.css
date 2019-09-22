@@ -61,7 +61,7 @@ li {
     padding-left: 10px;
 }
 
-li:hover {
+li:hover, li:hover a {
     cursor: pointer;
     background-color: #636363;
     color: #fffe37;
@@ -181,7 +181,7 @@ a:hover {
     height: 95%;
     background-color: black;
     color: #d1d1d1;
-    overflow: scroll;
+    overflow-y: scroll;
     overflow-x: hidden;
     padding: 10px;
 }
