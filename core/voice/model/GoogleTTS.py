@@ -157,7 +157,7 @@ class GoogleTTS(TTS):
 				self._logger.error('[{}] Failed downloading speech file'.format(self.TTS.value))
 				return
 
-			tmpFile.write_bytes(response['AudioStream'].read())
+			tmpFile.write_bytes(response.audio_content)
 
 			self._mp3ToWave(src=tmpFile, dest=self._cacheFile)
 
