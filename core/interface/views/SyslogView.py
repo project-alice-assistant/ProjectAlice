@@ -15,7 +15,8 @@ class SyslogView(FlaskView):
 		self._lastLine = 0
 
 	def index(self):
-		return render_template('syslog.html', data=self.getData())
+		data = ['] -'.join(line.split('] -')[1:]) for line in self.getData()]
+		return render_template('syslog.html', data=data)
 
 
 	def getData(self):
