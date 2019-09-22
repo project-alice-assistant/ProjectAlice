@@ -134,16 +134,12 @@ class LanguageManager(Manager):
 
 
 	def localize(self, string: str) -> str:
-		string = str(string)
-		string = string.lower()
+		string = str(string).lower()
 
-		if self._activeLanguage != 'en':
-			string = str(string).lower()
-
-			if self._activeLanguage == 'fr':
-				for match in re.findall(self._floatExpressionPattern, string):
-					m = match.replace('.', ',')
-					string = string.replace(match, m)
+		if self._activeLanguage == 'fr':
+			for match in re.findall(self._floatExpressionPattern, string):
+				m = match.replace('.', ',')
+				string = string.replace(match, m)
 
 		for key in self._locals:
 			if key in string:
