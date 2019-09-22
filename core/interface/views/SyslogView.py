@@ -1,7 +1,7 @@
 from pathlib import Path
 
-from flask_classful import FlaskView, route
-from flask import render_template
+from flask_classful import FlaskView
+from flask import render_template, jsonify
 
 from core.commons import commons
 
@@ -13,16 +13,19 @@ class SyslogView(FlaskView):
 	def __init__(self):
 		super().__init__()
 		self._lastLine = 0
+		self._counter = 0
+
 
 	def index(self):
-		data = ['] -'.join(line.split('] -')[1:]) for line in self._getData()]
-		return render_template('syslog.html', data=data)
+		return render_template('syslog.html')
 
 
-	@route('/update')
 	def update(self):
-		return self._getData()
+		return jsonify(data=self._getData())
 
 
-	def _getData(self):
-		return self.LOGS.open('r').readlines()
+	def _getData(self) -> list:
+		data = self.LOGS.open('r').readlines()
+		ret = data[self._counter:]
+		self._counter = len(data)
+		return ['] -'.join(line.split('] -')[1:]) for line in ret]

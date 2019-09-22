@@ -7,15 +7,25 @@
 {% block content %}
 	<script src="{{ url_for('static', filename='jquery-3.4.1.min.js') }}"></script>
 	<script type=text/javascript>
-		$SCRIPT_ROOT = {{ request.script_root|tojson|safe }};
-		$.get(
-		    $SCRIPT_ROOT + '/syslog/update',
-			function(data) {
-		        for (let i = 0; i < data.length; i++) {
-		            $('#console').append(
-		                '<span class="logLine">' + data[i] + '</span>'
-					)
-				}
+		let $SCRIPT_ROOT = {{ request.script_root|tojson|safe }};
+		function refreshData() {
+		    $.get(
+				$SCRIPT_ROOT + '/syslog/update',
+                function (data) {
+                    for (let i = 0; i < data.data.length; i++) {
+                        $('#console').append(
+                            '<span class="logLine">' + data.data[i] + '</span>'
+                        )
+						$('#console').scrollTop = $('#console').scrollHeight
+                    }
+                }
+			)
+		}
+		$(document).ready(
+		    function() {
+				setInterval(function() {
+				    refreshData()
+				}, 500)
 			}
 		)
 	</script>
