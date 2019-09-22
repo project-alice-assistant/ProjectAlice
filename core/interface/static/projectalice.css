@@ -61,7 +61,7 @@ li {
     padding-left: 10px;
 }
 
-li:hover, li:hover a {
+li:hover {
     cursor: pointer;
     background-color: #636363;
     color: #fffe37;

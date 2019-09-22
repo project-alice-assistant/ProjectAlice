@@ -8,11 +8,11 @@
 	<script src="{{ url_for('static', filename='jquery-3.4.1.min.js') }}"></script>
 	<script type=text/javascript>
 		let $SCRIPT_ROOT = {{ request.script_root|tojson|safe }};
-		let container = $('#console');
 		function refreshData(type) {
 		    $.get(
 				$SCRIPT_ROOT + '/snipswatch/' + type,
                 function (data) {
+				    let container = $('#console');
                     for (let i = 0; i < data.data.length; i++) {
                         container.append(
                             '<span class="logLine">' + data.data[i] + '</span>'
