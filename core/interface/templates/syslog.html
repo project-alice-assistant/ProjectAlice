@@ -8,6 +8,20 @@
 	<script src="{{ url_for('static', filename='jquery-3.4.1.min.js') }}"></script>
 	<script type=text/javascript>
 		let $SCRIPT_ROOT = {{ request.script_root|tojson|safe }};
+		function getLogColor(line) {
+		    if (line.includes('[INFO]')) {
+		        return 'logInfo'
+			}
+		    else if (line.includes('[WARNING]')) {
+		        return 'logWarning'
+			}
+		    else if (line.includes('[ERROR]')) {
+		        return 'logError'
+			}
+		    else {
+		        return 'logInfo'
+			}
+		}
 		function refreshData() {
 		    $.get(
 				$SCRIPT_ROOT + '/syslog/update',
@@ -15,7 +29,7 @@
                     for (let i = 0; i < data.data.length; i++) {
                         let console = $('#console');
                         console.append(
-                            '<span class="logLine">' + data.data[i] + '</span>'
+                            '<span class="logLine ' + getLogColor(data.data[i]) + '">' + data.data[i] + '</span>'
                         );
 						console.scrollTop = console.scrollHeight;
                     }
@@ -24,6 +38,18 @@
 		}
 		$(document).ready(
 		    function() {
+		        $.get(
+					$SCRIPT_ROOT + '/syslog/refresh',
+					function (data) {
+						for (let i = 0; i < data.data.length; i++) {
+							let console = $('#console');
+							console.append(
+								'<span class="logLine ' + getLogColor(data.data[i]) + '">' + data.data[i] + '</span>'
+							);
+							console.scrollTop = console.scrollHeight;
+						}
+					}
+				);
 				setInterval(function() {
 				    refreshData()
 				}, 500)

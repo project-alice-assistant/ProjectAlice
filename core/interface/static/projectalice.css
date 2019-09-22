@@ -189,3 +189,24 @@ a:hover {
 .logLine {
     display: block;
 }
+
+::-webkit-scrollbar {
+    width: 8px;
+    background-color: black;
+}
+
+::-webkit-scrollbar-thumb {
+    background-color: #343434;
+}
+
+.logInfo {
+    color: #d1d1d1;
+}
+
+.logWarning {
+    color: orange;
+}
+
+.logError {
+    color: red;
+}
