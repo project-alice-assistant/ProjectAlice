@@ -321,6 +321,9 @@ def translate(text: Union[str, list], destLang: str, srcLang: str = None):
 	:param srcLang: source language to translate (ISO639-1 code)
 	:return: translated string or list of strings
 	"""
+	if not destLang:
+		destLang = SuperManager.getInstance().languageManager.activeLanguage
+
 	if srcLang:
 		if srcLang == destLang:
 			return text
