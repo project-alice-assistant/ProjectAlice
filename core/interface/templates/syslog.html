@@ -13,10 +13,11 @@
 				$SCRIPT_ROOT + '/syslog/update',
                 function (data) {
                     for (let i = 0; i < data.data.length; i++) {
-                        $('#console').append(
+                        let console = $('#console');
+                        console.append(
                             '<span class="logLine">' + data.data[i] + '</span>'
-                        )
-						$('#console').scrollTop = $('#console').scrollHeight
+                        );
+						console.scrollTop = console.scrollHeight;
                     }
                 }
 			)
