@@ -1,6 +1,7 @@
 import click
 from terminaltables import DoubleTable
 from core.base.SuperManager import SuperManager
+import logging.handlers
 
 @click.group()
 def Update():
@@ -12,6 +13,10 @@ def Update():
 def assistant():
 	"""Update the voice assistant by retraining"""
 
+	_logger = logging.getLogger('ProjectAlice')
+	_logger.setLevel(logging.INFO)
+	_logger.addHandler(logging.StreamHandler())
+	
 	TABLE_DATA = [['Assistant Downloader']]
 	table_instance = DoubleTable(TABLE_DATA)
 	click.secho('\n{}\n'.format(table_instance.table), fg='green')
@@ -24,7 +29,6 @@ def assistant():
 	languageManager = superManager.getManager('LanguageManager')
 	languageManager.onStart()
 
-	click.echo('It may take some time...')
 	snipsConsoleManager.download(languageManager.activeSnipsProjectId)
 
 	click.echo('\n\nAssistant {}\n'.format(click.style('downloaded!', fg='green')))

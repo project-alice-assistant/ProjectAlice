@@ -21,10 +21,16 @@ def assistant(download: bool):
 
 	samkillaManager = superManager.getManager('SamkillaManager')
 	samkillaManager.onStart()
-	superManager.getManager('LanguageManager').onStart()
-	superManager.getManager('SnipsConsoleManager').onStart()
+	snipsConsoleManager = superManager.getManager('SnipsConsoleManager')
+	snipsConsoleManager.onStart()
+	languageManager = superManager.getManager('LanguageManager')
+	languageManager.onStart()
+
 
 	try:
-		samkillaManager.sync(download=download)
+		samkillaManager.sync(download=False)
 	except Exception as e:
 		click.echo('Failed syncing with remote snips console {}'.format(e))
+	
+	if download:
+		snipsConsoleManager.download(languageManager.activeSnipsProjectId)
