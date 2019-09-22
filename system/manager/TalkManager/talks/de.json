@@ -51,18 +51,18 @@
 	},
 	"newDeviceAdditionSuccess": {
 		"default": [
-			"Das neue Geräte wurde gefunden und erfolgreich hinzugefügt!"
+			"Das neue Gerät wurde gefunden und erfolgreich hinzugefügt!"
 		]
 	},
 	"maxOneAlicePerRoom": {
 		"default": [
 			"Es tut mir leid, aber ich kann nicht mehrere Geräte pro Raum haben",
-			"Entschuldigung, mehrer Alice pro Raum verkraftest du einfach nicht!"
+			"Entschuldigung, mehrere Alice pro Raum verkraftest du einfach nicht!"
 		]
 	},
 	"wakewordCaptured": [
-		"Ich habe dein deine Aufnahme bearbeitet, lass sie uns prüfen!",
-		"Ok, aufgenommen und beschnitten. Ich spiele es zum Überprüfen nochmal ab!"
+		"Ich habe deine Aufnahme bearbeitet, lass sie uns prüfen!",
+		"Ok, aufgenommen und gekürzt. Ich spiele es zum Überprüfen nochmal ab!"
 	],
 	"isWakewordSampleOk": [
 		"War das so ok? Habe ich zu viel abgeschnitten oder doch eher zu wenig?"
