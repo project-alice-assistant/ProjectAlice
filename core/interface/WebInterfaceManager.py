@@ -22,14 +22,7 @@ class WebInterfaceManager(Manager):
 		super().__init__(self.NAME)
 		log = logging.getLogger('werkzeug')
 		log.setLevel(logging.ERROR)
-
-		file = Path('{}/core/interface/languages/{}.json'.format(commons.rootDir(), self.LanguageManager.activeLanguage.lower()))
-		if not file.exists():
-			self._logger.warning('[{}] Lang "{}" not found, falling back to "en"'.format(self.name, self.LanguageManager.activeLanguage.lower()))
-			file = Path('{}/core/interface/languages/en.json'.format(commons.rootDir()))
-
-		with file.open('r') as f:
-			self._langData = json.load(f)
+		self._langData = dict()
 
 
 	@property
@@ -42,6 +35,17 @@ class WebInterfaceManager(Manager):
 		if not self.ConfigManager.getAliceConfigByName('webInterfaceActive'):
 			self._logger.info('[{}] Web interface is disabled by settings'.format(self.name))
 		else:
+			langFile = Path('{}/core/interface/languages/{}.json'.format(commons.rootDir(), self.LanguageManager.activeLanguage.lower()))
+
+			if not langFile.exists():
+				self._logger.warning('[{}] Lang "{}" not found, falling back to "en"'.format(self.name, self.LanguageManager.activeLanguage.lower()))
+				langFile = Path('{}/core/interface/languages/en.json'.format(commons.rootDir()))
+			else:
+				self._logger.info('[{}] Loaded interface in "{}"'.format(self.name, self.LanguageManager.activeLanguage.lower()))
+
+			with langFile.open('r') as f:
+				self._langData = json.load(f)
+
 			IndexView.register(self.app)
 			ModulesView.register(self.app)
 			SyslogView.register(self.app)
