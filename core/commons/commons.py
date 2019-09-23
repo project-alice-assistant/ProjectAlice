@@ -63,51 +63,6 @@ def isEqualTranslated(baseString: str, compareTo: str, module: str = 'system') -
 	return False
 
 
-def escapeAnsi(line: str) -> str:
-	ansi =re.compile(r'(\x9B|\x1B\[)[0-?]*[ -/]*[@-~]')
-	return ansi.sub('', line)
-
-
-COLOR_DICT = {
-	'31': [(255, 0, 0), (128, 0, 0)],
-	'32': [(0, 255, 0), (0, 128, 0)],
-	'33': [(255, 255, 0), (128, 128, 0)],
-	'34': [(0, 0, 255), (0, 0, 128)],
-	'35': [(255, 0, 255), (128, 0, 128)],
-	'36': [(0, 255, 255), (0, 128, 128)],
-}
-
-
-COLOR_REGEX = re.compile(r'\[(?P<arg_1>\d+)(;(?P<arg_2>\d+)(;(?P<arg_3>\d+))?)?m')
-BOLD_TEMPLATE = '<span style="color: rgb{}; font-weight: bolder">'
-LIGHT_TEMPLATE = '<span style="color: rgb{}">'
-
-
-def ansiToHtml(text):
-	# Courtesy of https://stackoverflow.com/questions/19212665/python-converting-ansi-color-codes-to-html
-	text = text.replace('[m', '</span>')
-
-	def single_sub(match):
-		argsdict = match.groupdict()
-		if argsdict['arg_3'] is None:
-			if argsdict['arg_2'] is None:
-				bold, color = argsdict['arg_1'], 0
-			else:
-				bold, color = argsdict['arg_1'], str(argsdict['arg_2'])
-		else:
-			bold, color = argsdict['arg_2'], str(argsdict['arg_3'])
-
-			template = BOLD_TEMPLATE if bold else LIGHT_TEMPLATE
-			color = COLOR_DICT.get(color, 31)
-
-			if bold:
-				return template.format(color[1])
-
-			return template.format(color[0])
-
-	return COLOR_REGEX.sub(single_sub, text)
-
-
 def deprecated(func):
 	"""
 	https://stackoverflow.com/questions/2536307/decorators-in-the-python-standard-lib-deprecated-specifically

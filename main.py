@@ -14,6 +14,7 @@
 
     authors: 	Psycho <https://github.com/Psychokiller1888>
     			Jierka <https://github.com/jr-k>
+				maxbachmann <https://github.com/maxbachmann>
 """
 import logging.handlers
 import signal
