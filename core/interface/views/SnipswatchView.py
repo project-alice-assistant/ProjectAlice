@@ -39,8 +39,8 @@ class SnipswatchView(FlaskView):
 			if out != '':
 				with self._file.open('a+') as f:
 					line = commons.escapeAnsi(out)
+					line = self._importantColoring.sub('<span class="logYellow">\\1</span>', line)
 					line = self._timeColoring.sub('<span class="logYellow">\\1</span>', line)
-					#line = self._importantColoring.sub('<span class="logYellow">\\1</span>', line)
 					f.write(line)
 
 
