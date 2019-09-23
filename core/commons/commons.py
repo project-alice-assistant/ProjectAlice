@@ -24,7 +24,6 @@ from core.dialog.model import DialogSession
 
 ERROR_HANDLER_FUNC = CFUNCTYPE(None, c_char_p, c_int, c_char_p, c_int, c_char_p)
 
-
 # noinspection PyUnusedLocal
 def py_error_handler(filename, line, function, err, fmt):
 	pass
@@ -65,8 +64,48 @@ def isEqualTranslated(baseString: str, compareTo: str, module: str = 'system') -
 
 
 def escapeAnsi(line: str) -> str:
-	ansi =re.compile(r'(\x9B|\x1B\[)[0-?]*[ -\/]*[@-~]')
+	ansi =re.compile(r'(\x9B|\x1B\[)[0-?]*[ -/]*[@-~]')
 	return ansi.sub('', line)
+
+
+COLOR_DICT = {
+	'31': [(255, 0, 0), (128, 0, 0)],
+	'32': [(0, 255, 0), (0, 128, 0)],
+	'33': [(255, 255, 0), (128, 128, 0)],
+	'34': [(0, 0, 255), (0, 0, 128)],
+	'35': [(255, 0, 255), (128, 0, 128)],
+	'36': [(0, 255, 255), (0, 128, 128)],
+}
+
+
+COLOR_REGEX = re.compile(r'\[(?P<arg_1>\d+)(;(?P<arg_2>\d+)(;(?P<arg_3>\d+))?)?m')
+BOLD_TEMPLATE = '<span style="color: rgb{}; font-weight: bolder">'
+LIGHT_TEMPLATE = '<span style="color: rgb{}">'
+
+
+def ansiToHtml(text):
+	# Courtesy of https://stackoverflow.com/questions/19212665/python-converting-ansi-color-codes-to-html
+	text = text.replace('[m', '</span>')
+
+	def single_sub(match):
+		argsdict = match.groupdict()
+		if argsdict['arg_3'] is None:
+			if argsdict['arg_2'] is None:
+				bold, color = argsdict['arg_1'], 0
+			else:
+				bold, color = argsdict['arg_1'], str(argsdict['arg_2'])
+		else:
+			bold, color = argsdict['arg_2'], str(argsdict['arg_3'])
+
+			template = BOLD_TEMPLATE if bold else LIGHT_TEMPLATE
+			color = COLOR_DICT.get(color, 31)
+
+			if bold:
+				return template.format(color[1])
+
+			return template.format(color[0])
+
+	return COLOR_REGEX.sub(single_sub, text)
 
 
 def deprecated(func):
@@ -82,8 +121,8 @@ def deprecated(func):
 	def new_func(*args, **kwargs):
 		warnings.simplefilter('always', DeprecationWarning)  # turn off filter
 		warnings.warn('Call to deprecated function {}.'.format(func.__name__),
-		              category=DeprecationWarning,
-		              stacklevel=2)
+					  category=DeprecationWarning,
+					  stacklevel=2)
 		warnings.simplefilter('default', DeprecationWarning)  # reset filter
 		return func(*args, **kwargs)
 
@@ -274,8 +313,8 @@ def online(randomTalk: bool = True, text: str = ''):
 	"""
 	(return a) decorator to mark a function that required ethernet.
 
-    This decorator can be used (with or or without parameters) to define
-    a function that requires ethernet. In the Default mode without arguments shown
+	This decorator can be used (with or or without parameters) to define
+	a function that requires ethernet. In the Default mode without arguments shown
 	in the example it will either execute whats in the function or when alice is
 	offline return a random offline answer. Using the parameters:
 		@online(randomTalk=False, text=<myText>)
@@ -285,7 +324,7 @@ def online(randomTalk: bool = True, text: str = ''):
 	:param randomTalk:
 	:return: return value of function or random offline string in the current language
 	Examples:
-        An intent that requires ethernet can be defined the following way:
+		An intent that requires ethernet can be defined the following way:
 
 		def onMessage(self, intent: str, session: DialogSession) -> bool:
 			if intent == self._INTENT_EXAMPLE:

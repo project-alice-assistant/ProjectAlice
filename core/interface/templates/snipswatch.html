@@ -9,23 +9,17 @@
 	<script type=text/javascript>
 		let $SCRIPT_ROOT = {{ request.script_root|tojson|safe }};
 		function refreshData(type) {
-		    $.get(
-				$SCRIPT_ROOT + '/snipswatch/' + type,
-                function (data) {
-				    let container = $('#console');
-                    for (let i = 0; i < data.data.length; i++) {
-                        container.append(
-                            '<span class="logLine">' + data.data[i] + '</span>'
-                        );
-                    }
-                    container.animate(
-                        {
-							scrollTop: container[0].scrollHeight - container[0].clientHeight
-                    	},
-						250
-					)
+		    let container = $('#console');
+			$.get($SCRIPT_ROOT + '/snipswatch/' + type, function(data) {
+				for (let i = 0; i < data.data.length; i++) {
+                    container.append(
+                        '<span class="logLine">' + data.data[i] + '</span>'
+                    );
                 }
-			)
+			})
+				.always(function(data) {
+					container.scrollTop(container.prop('scrollHeight'))
+				});
 		}
 		$(document).ready(
 		    function() {

@@ -8,6 +8,8 @@ from core.base.SuperManager import SuperManager
 from core.commons import commons
 from core.interface.views.View import View
 
+from ansi2html import Ansi2HTMLConverter
+
 
 class SnipswatchView(View):
 
@@ -18,8 +20,9 @@ class SnipswatchView(View):
 		self._file = Path('/tmp/snipswatch.txt')
 		self._thread = None
 
-		self._timeColoring = re.compile('(\[[0-9]+:[0-9]+:[0-9]+\])')
-		self._importantColoring = re.compile('"([a-zA-Z0-9.-/*]+)"')
+		self._importantColoring = re.compile('([\'"].+[\'"])')
+		self._intentColoring = re.compile('detected intent ([a-zA-Z0-9:]+?)')
+		self._timeColoring = re.compile('(\[[0-9]{2}:[0-9]{2}:[0-9]{2}\])')
 
 		if self._file.exists():
 			subprocess.run(['sudo', 'rm', self._file])
@@ -31,15 +34,20 @@ class SnipswatchView(View):
 
 	def startWatching(self):
 		process = subprocess.Popen('snips-watch -vv', shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+		conv = Ansi2HTMLConverter()
 
-		while True:
+		flag = SuperManager.getInstance().threadManager.newLock('running')
+		flag.set()
+		while flag.isSet():
 			out = process.stdout.readline().decode()
 			if out != '':
-				with self._file.open('a+') as f:
+				with self._file.open('a+') as fp:
+					#line = commons.ansiToHtml(out)
 					line = commons.escapeAnsi(out)
 					line = self._importantColoring.sub('<span class="logYellow">\\1</span>', line)
+					line = self._intentColoring.sub('<span class="logYellow">\\1</span>', line)
 					line = self._timeColoring.sub('<span class="logYellow">\\1</span>', line)
-					f.write(line)
+					fp.write(line)
 
 
 	def update(self):

@@ -23,23 +23,18 @@
 			}
 		}
 		function refreshData(type) {
-		    $.get(
-				$SCRIPT_ROOT + '/syslog/' + type,
-                function (data) {
-				    let container = $('#console');
-                    for (let i = 0; i < data.data.length; i++) {
-                        container.append(
-                            '<span class="logLine ' + getLogColor(data.data[i]) + '">' + data.data[i] + '</span>'
-                        );
-                    }
-                    container.animate(
-                        {
-							scrollTop: container.scrollHeight
-                    	},
-						250
-					)
+		    let container = $('#console');
+
+		    $.get($SCRIPT_ROOT + '/syslog/' + type, function(data) {
+				for (let i = 0; i < data.data.length; i++) {
+                    container.append(
+                        '<span class="logLine ' + getLogColor(data.data[i]) + '">' + data.data[i] + '</span>'
+                    );
                 }
-			)
+			})
+				.always(function(data) {
+					container.scrollTop(container.prop('scrollHeight'))
+				});
 		}
 		$(document).ready(
 		    function() {
