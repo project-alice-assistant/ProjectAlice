@@ -2,6 +2,7 @@ from flask import Flask
 
 from core.base.model.Manager import Manager
 from core.commons import commons
+from core.interface.views.AdminView import AdminView
 from core.interface.views.IndexView import IndexView
 from core.interface.views.ModulesView import ModulesView
 from core.interface.views.SnipswatchView import SnipswatchView
@@ -29,6 +30,7 @@ class WebInterfaceManager(Manager):
 			ModulesView.register(self.app)
 			SyslogView.register(self.app)
 			SnipswatchView.register(self.app)
+			AdminView.register(self.app)
 
 			self.ThreadManager.newThread(
 				name='WebInterface',

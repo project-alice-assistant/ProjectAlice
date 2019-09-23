@@ -106,6 +106,10 @@ class ModuleManager(Manager):
 						moduleInstance = self.importFromModule(moduleName=moduleName, isUpdate=False)
 						if moduleInstance:
 							moduleInstance.active = False
+
+							if moduleName in self.NEEDED_MODULES:
+								moduleInstance.required = True
+
 							self._deactivatedModules[moduleInstance.name] = {
 								'instance': moduleInstance
 							}
@@ -121,6 +125,10 @@ class ModuleManager(Manager):
 				moduleInstance = self.importFromModule(moduleName=name, isUpdate=isUpdate)
 
 				if moduleInstance:
+
+					if moduleName in self.NEEDED_MODULES:
+						moduleInstance.required = True
+
 					modules[moduleInstance.name] = {
 						'instance': moduleInstance
 					}

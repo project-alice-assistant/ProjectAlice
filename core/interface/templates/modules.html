@@ -18,16 +18,18 @@
 				Status: {% if module.active is sameas true %}enabled{% else %}disabled{% endif %}
 			</div>
 			<div class="moduleActions">
-				<div class="moduleButton">
-					{% if module.active is sameas true %}
-						Disable
-					{% else %}
-						Enable
-					{% endif %}
-				</div>
-				<div class="moduleButton">
-					Delete
-				</div>
+				{% if not module.required %}
+					<div class="moduleButton">
+						{% if module.active is sameas true %}
+							Disable
+						{% else %}
+							Enable
+						{% endif %}
+					</div>
+					<div class="moduleButton">
+						Delete
+					</div>
+				{% endif %}
 				{% if module.updateAvailable is sameas true %}
 				<div class="moduleButton">
 					Update

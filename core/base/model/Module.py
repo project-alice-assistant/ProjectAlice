@@ -34,6 +34,7 @@ class Module:
 		self._updateAvailable = False
 		self._active = True
 		self._delayed = False
+		self._required = False
 		self._databaseSchema = databaseSchema
 
 		self._supportedIntents = supportedIntents
@@ -104,6 +105,16 @@ class Module:
 	@updateAvailable.setter
 	def updateAvailable(self, value: bool):
 		self._updateAvailable = value
+
+
+	@property
+	def required(self) -> bool:
+		return self._required
+
+
+	@required.setter
+	def required(self, value: bool):
+		self._required = value
 
 
 	@property
