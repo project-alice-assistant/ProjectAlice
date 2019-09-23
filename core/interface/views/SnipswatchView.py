@@ -31,7 +31,7 @@ class SnipswatchView(View):
 
 
 	def startWatching(self):
-		process = subprocess.Popen('snips-watch -vv --no-color', shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+		process = subprocess.Popen('snips-watch -vv --html', shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
 
 		flag = SuperManager.getInstance().threadManager.newLock('running')
 		flag.set()
@@ -39,10 +39,8 @@ class SnipswatchView(View):
 			out = process.stdout.readline().decode()
 			if out != '':
 				with self._file.open('a+') as fp:
-					line = commons.escapeAnsi(out)
-					line = self._importantColoring.sub('<span class="logYellow">\\1</span>', line)
-					line = self._intentColoring.sub('<span class="logYellow">\\1</span>', line)
-					line = self._timeColoring.sub('<span class="logYellow">\\1</span>', line)
+					line = out.replace('#009900', '"yellow"')
+					line = line.replace('#0000ff', '"yellow"')
 					fp.write(line)
 
 
