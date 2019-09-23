@@ -23,12 +23,13 @@ class WebInterfaceManager(Manager):
 		log = logging.getLogger('werkzeug')
 		log.setLevel(logging.ERROR)
 
-		file = Path(commons.rootDir(), '/core/interface/languages/{}.json'.format(self.LanguageManager.activeLanguage.lower()))
+		file = Path('{}/core/interface/languages/{}.json'.format(commons.rootDir(), self.LanguageManager.activeLanguage.lower()))
 		if not file.exists():
 			self._logger.warning('[{}] Lang "{}" not found, falling back to "en"'.format(self.name, self.LanguageManager.activeLanguage.lower()))
-			file = Path(commons.rootDir(), '/core/interface/languages/en.json')
+			file = Path('{}/core/interface/languages/en.json'.format(commons.rootDir()))
 
-		self._langData = json.load(file)
+		with file.open('r') as f:
+			self._langData = json.load(f)
 
 
 	@property
