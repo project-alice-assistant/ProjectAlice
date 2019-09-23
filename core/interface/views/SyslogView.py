@@ -1,12 +1,12 @@
 from pathlib import Path
 
-from flask_classful import FlaskView
-from flask import render_template, jsonify
+from flask import jsonify, render_template
 
 from core.commons import commons
+from core.interface.views.View import View
 
 
-class SyslogView(FlaskView):
+class SyslogView(View):
 
 	LOGS = Path(commons.rootDir(), 'var', 'logs', 'logs.log')
 
@@ -16,7 +16,7 @@ class SyslogView(FlaskView):
 
 
 	def index(self):
-		return render_template('syslog.html')
+		return render_template('syslog.html', langData=self._langData)
 
 
 	def update(self):

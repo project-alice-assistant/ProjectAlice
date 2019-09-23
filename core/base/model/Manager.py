@@ -196,3 +196,6 @@ class Manager(Singleton):
 	def WakewordManager(self):
 		return SuperManager.getInstance().wakewordManager
 
+	@property
+	def WebInterfaceManager(self):
+		return SuperManager.getInstance().webInterfaceManager

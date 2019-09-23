@@ -1,3 +1,7 @@
+import json
+import logging
+from pathlib import Path
+
 from flask import Flask
 
 from core.base.model.Manager import Manager
@@ -7,7 +11,6 @@ from core.interface.views.IndexView import IndexView
 from core.interface.views.ModulesView import ModulesView
 from core.interface.views.SnipswatchView import SnipswatchView
 from core.interface.views.SyslogView import SyslogView
-import logging
 
 
 class WebInterfaceManager(Manager):
@@ -19,6 +22,17 @@ class WebInterfaceManager(Manager):
 		super().__init__(self.NAME)
 		log = logging.getLogger('werkzeug')
 		log.setLevel(logging.ERROR)
+
+		file = Path(commons.rootDir(), '/core/interface/languages/{}.json'.format(self.LanguageManager.activeLanguage.lower()))
+		if not file.exists():
+			file = Path(commons.rootDir(), '/core/interface/languages/en.json')
+
+		self._langData = json.load(file)
+
+
+	@property
+	def langData(self) -> dict:
+		return self._langData
 
 
 	def onStart(self):

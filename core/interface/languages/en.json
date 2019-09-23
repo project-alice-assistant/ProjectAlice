@@ -1,0 +1,13 @@
+{
+	"home": "home",
+	"modules" : "modules",
+	"syslog": "syslog",
+	"snipswatch": "snipswatch",
+	"admin": "admin",
+	"by": "by",
+	"status": "status",
+	"enable": "enable",
+	"disable": "disable",
+	"delete": "delete",
+	"update": "update"
+}

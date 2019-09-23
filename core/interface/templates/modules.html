@@ -1,7 +1,7 @@
 {% extends 'base.html' %}
 
 {% block header %}
-	{% block title %}Modules{% endblock %}
+	{% block title %}{{ langData.modules }}{% endblock %}
 {% endblock %}
 
 {% block content %}
@@ -12,27 +12,27 @@
 				<div class="moduleVersion">v {{ module.version }}</div>
 			</div>
 			<div class="moduleAuthor">
-				by {{ module.author }}
+				{{ langData.by }} {{ module.author }}
 			</div>
 			<div class="moduleStatus {% if module.active is sameas true %}active{% else %}disabled{% endif %}">
-				Status: {% if module.active is sameas true %}enabled{% else %}disabled{% endif %}
+				{{ langData.status }}: {% if module.active is sameas true %}enabled{% else %}disabled{% endif %}
 			</div>
 			<div class="moduleActions">
 				{% if not module.required %}
 					<div class="moduleButton">
 						{% if module.active is sameas true %}
-							Disable
+							{{ langData.disable }}
 						{% else %}
-							Enable
+							{{ langData.enable }}
 						{% endif %}
 					</div>
 					<div class="moduleButton">
-						Delete
+						{{ langData.delete }}
 					</div>
 				{% endif %}
 				{% if module.updateAvailable is sameas true %}
 				<div class="moduleButton">
-					Update
+					{{ langData.update }}
 				</div>
 				{% endif %}
 			</div>

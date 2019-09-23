@@ -3,10 +3,10 @@
 <link rel="stylesheet" href="{{ url_for('static', filename='projectalice.css') }}">
 <nav>
 	<ul>
-		<li onclick="location.href='/home';">Home</li>
-		<li onclick="location.href='/modules';">Modules</li>
-		<li onclick="location.href='/syslog';">Syslog</li>
-		<li onclick="location.href='/snipswatch';">SnipsWatch</li>
+		<li onclick="location.href='/home';">{{ langData.home }}</li>
+		<li onclick="location.href='/modules';">{{ langData.modules }}</li>
+		<li onclick="location.href='/syslog';">{{ langData.syslog }}</li>
+		<li onclick="location.href='/snipswatch';">{{ langData.snipswatch }}</li>
 	</ul>
 </nav>
 <section class="page">
