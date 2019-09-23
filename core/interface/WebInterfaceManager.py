@@ -25,6 +25,7 @@ class WebInterfaceManager(Manager):
 
 		file = Path(commons.rootDir(), '/core/interface/languages/{}.json'.format(self.LanguageManager.activeLanguage.lower()))
 		if not file.exists():
+			self._logger.warning('[{}] Lang "{}" not found, falling back to "en"'.format(self.name, self.LanguageManager.activeLanguage.lower()))
 			file = Path(commons.rootDir(), '/core/interface/languages/en.json')
 
 		self._langData = json.load(file)
