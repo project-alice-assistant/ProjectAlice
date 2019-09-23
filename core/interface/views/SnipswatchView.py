@@ -8,8 +8,6 @@ from core.base.SuperManager import SuperManager
 from core.commons import commons
 from core.interface.views.View import View
 
-from ansi2html import Ansi2HTMLConverter
-
 
 class SnipswatchView(View):
 
@@ -34,7 +32,6 @@ class SnipswatchView(View):
 
 	def startWatching(self):
 		process = subprocess.Popen('snips-watch -vv --no-color', shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
-		conv = Ansi2HTMLConverter()
 
 		flag = SuperManager.getInstance().threadManager.newLock('running')
 		flag.set()
