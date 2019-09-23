@@ -124,7 +124,7 @@ settings = {
 		},
 		"RedQueen": {
 			"active"    : True,
-			"version"   : 1.03,
+			"version"   : 1.04,
 			"author"    : "ProjectAlice",
 			"conditions": {
 				"lang": [

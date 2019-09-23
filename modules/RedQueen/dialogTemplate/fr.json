@@ -25,6 +25,7 @@
 					"synonyms": [
 						"quittons",
 						"partir",
+						"part",
 						"quitter la maison",
 						"quitter l'appartement"
 					]
@@ -187,7 +188,7 @@
 				"on va {s'endormir:=>State}",
 				"allons {manger:=>State}",
 				"{on:=>Who} est {rentré:=>State}",
-				"{on:=>Who} va regarder {la télé:=>State}"
+				"{on:=>Who} va regarder la {télé:=>State}"
 			],
 			"slots": [
 				{
