@@ -42,8 +42,7 @@ class SnipswatchView(View):
 			out = process.stdout.readline().decode()
 			if out != '':
 				with self._file.open('a+') as fp:
-					#line = commons.ansiToHtml(out)
-					line = self._importantColoring.sub('<span class="logYellow">\\1</span>', line)
+					line = self._importantColoring.sub('<span class="logYellow">\\1</span>', out)
 					line = self._intentColoring.sub('<span class="logYellow">\\1</span>', line)
 					line = self._timeColoring.sub('<span class="logYellow">\\1</span>', line)
 					fp.write(line)
