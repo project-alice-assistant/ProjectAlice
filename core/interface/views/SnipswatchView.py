@@ -18,10 +18,6 @@ class SnipswatchView(View):
 		self._file = Path('/tmp/snipswatch.txt')
 		self._thread = None
 
-		self._importantColoring = re.compile('([\'"].+[\'"])')
-		self._intentColoring = re.compile('detected intent ([a-zA-Z0-9:]+?)')
-		self._timeColoring = re.compile('(\[[0-9]{2}:[0-9]{2}:[0-9]{2}\])')
-
 		if self._file.exists():
 			subprocess.run(['sudo', 'rm', self._file])
 
@@ -37,10 +33,9 @@ class SnipswatchView(View):
 		flag.set()
 		while flag.isSet():
 			out = process.stdout.readline().decode()
-			if out != '':
+			if out:
 				with self._file.open('a+') as fp:
-					line = out.replace('#009900', '"yellow"')
-					line = line.replace('#0000ff', '"yellow"')
+					line = out.replace('<b><font color=#009900>', '<b><font color="green">').replace('#009900', '"yellow"').replace('#0000ff', '"green"')
 					fp.write(line)
 
 
