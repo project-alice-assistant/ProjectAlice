@@ -37,27 +37,43 @@ class TTS:
 
 
 	def onStart(self):
-		if self._user:
-			self._lang = self._user.lang
-			self._type = self._user.ttsType
-			self._voice = self._user.ttsVoice
+		if self._user and self._user.ttsLanguage:
+			self._lang = self._user.ttsLanguage
+			self._logger.info('[TTS] Language from user settings: "{}"'.format(self._lang))
+		elif SuperManager.getInstance().configManager.getAliceConfigByName('ttsLanguage'):
+			self._lang = SuperManager.getInstance().configManager.getAliceConfigByName('ttsLanguage')
+			self._logger.info('[TTS] Language from config: "{}"'.format(self._lang))
 		else:
 			self._lang = SuperManager.getInstance().languageManager.activeLanguageAndCountryCode
+			self._logger.info('[TTS] Language from active language: "{}"'.format(self._lang))
+
+		if self._user and self._user.ttsType:
+			self._type = self._user.ttsType
+			self._logger.info('[TTS] Type from user settings: "{}"'.format(self._type))
+		else:
 			self._type = SuperManager.getInstance().configManager.getAliceConfigByName('ttsType')
+			self._logger.info('[TTS] Type from config: "{}"'.format(self._type))
+
+		if self._user and self._user.ttsVoice:
+			self._voice = self._user.ttsVoice
+			self._logger.info('[TTS] Voice from user settings: "{}"'.format(self._voice))
+		else:
 			self._voice = SuperManager.getInstance().configManager.getAliceConfigByName('ttsVoice')
+			self._logger.info('[TTS] Voice from config: "{}"'.format(self._voice))
 
 		if self._lang not in self._supportedLangAndVoices:
-			self._logger.info('[TTS] Lang "{}" not found, falling back to "{}"'.format(self._lang, 'en-US'))
+			self._logger.info('[TTS] Language "{}" not found, falling back to "{}"'.format(self._lang, 'en-US'))
 			self._lang = 'en-US'
 
 		if self._type not in self._supportedLangAndVoices[self._lang]:
-			self._logger.info('[TTS] Type "{}" not found, falling back to "{}"'.format(self._type, 'male'))
-			self._type = 'male'
+			tts_type = self._type
+			self._type = next(iter(self._supportedLangAndVoices[self._lang]))
+			self._logger.info('[TTS] Type "{}" not found for the language, falling back to "{}"'.format(tts_type, self._type))
 
 		if self._voice not in self._supportedLangAndVoices[self._lang][self._type]:
 			voice = self._voice
 			self._voice = next(iter(self._supportedLangAndVoices[self._lang][self._type]))
-			self._logger.info('[TTS] Voice "{}" not found, falling back to "{}"'.format(voice, self._voice))
+			self._logger.info('[TTS] Voice "{}" not found for the language and type, falling back to "{}"'.format(voice, self._voice))
 
 		if not self.TEMP_ROOT.is_dir():
 			subprocess.run(['sudo', 'mkdir', str(self.TEMP_ROOT)])
@@ -94,6 +110,16 @@ class TTS:
 
 
 	@property
+	def ttsType(self) -> str:
+		return self._type
+
+
+	@ttsType.setter
+	def ttsType(self, value: str):
+		self._type = value if value in self._supportedLangAndVoices[self._lang] else next(iter(self._supportedLangAndVoices[self._lang]))
+
+
+	@property
 	def voice(self) -> str:
 		return self._voice
 
@@ -101,7 +127,7 @@ class TTS:
 	@voice.setter
 	def voice(self, value: str):
 		self._voice = value if value in self._supportedLangAndVoices[self._lang][self._type] else next(iter(self._supportedLangAndVoices[self._lang][self._type]))
-			
+
 
 	@property
 	def online(self) -> bool:
