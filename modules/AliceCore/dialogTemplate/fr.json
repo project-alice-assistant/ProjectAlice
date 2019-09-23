@@ -48,11 +48,11 @@
 				{
 					"value": "less",
 					"synonyms": [
-						"coupe moin",
-						"enlève moin",
-						"un peu moin",
-						"moin",
-						"beaucoup moin",
+						"coupe moins",
+						"enlève moins",
+						"un peu moins",
+						"moins",
+						"beaucoup moins",
 						"plus long",
 						"trop court"
 					]
@@ -72,42 +72,6 @@
 						"parfait",
 						"oui",
 						"c'est bon"
-					]
-				}
-			]
-		},
-		{
-			"name": "More",
-			"matchingStrictness": null,
-			"automaticallyExtensible": true,
-			"useSynonyms": true,
-			"values": [
-				{
-					"value": "more",
-					"synonyms": [
-						"un peu plus",
-						"augmente",
-						"beaucoup plus",
-						"plus grand",
-						"plus long"
-					]
-				}
-			]
-		},
-		{
-			"name": "Less",
-			"matchingStrictness": null,
-			"automaticallyExtensible": true,
-			"useSynonyms": true,
-			"values": [
-				{
-					"value": "less",
-					"synonyms": [
-						"un peu moins",
-						"diminue",
-						"beaucoup moins",
-						"plus petit",
-						"plus court"
 					]
 				}
 			]
@@ -192,7 +156,8 @@
 					"value": "assistant",
 					"synonyms": [
 						"assistant snips",
-						"bundles"
+						"bundles",
+						"fichiers d'assistant"
 					]
 				},
 				{
@@ -5693,28 +5658,18 @@
 			"description": "L'utilisateur peut demander à Alice de raccourcir/rallonger le wakework",
 			"enabledByDefault": false,
 			"utterances": [
-				"{plus:=>More}",
-				"coupe un peu {plus:=>More}",
-				"plus {petit:=>Less}",
-				"peux-tu le raccourcir un peu {plus:=>More}",
-				"c'est {trop court:=>Less}",
-				"fait le plus {long:=>More}",
-				"ça doit être plus {long:=>More}",
-				"essaye plus {court:=>Less} s'il te plaît"
+				"{plus:=>WakewordCaptureResult}",
+				"{un peu plus:=>WakewordCaptureResult}",
+				"{recommence:=>WakewordCaptureResult}",
+				"{beaucoup moins:=>WakewordCaptureResult} s'il te plaît"
+				"{pluc court:=>WakewordCaptureResult} s'il te plaît"
 			],
 			"slots": [
 				{
-					"name": "More",
+					"name": "WakewordCaptureResult",
 					"description": null,
 					"required": false,
-					"type": "More",
-					"missingQuestion": ""
-				},
-				{
-					"name": "Less",
-					"description": null,
-					"required": false,
-					"type": "Less",
+					"type": "WakewordCaptureResult",
 					"missingQuestion": ""
 				}
 			]
