@@ -7,6 +7,7 @@ from flask_classful import FlaskView
 from flask import render_template, jsonify
 
 from core.base.SuperManager import SuperManager
+from core.commons import commons
 
 
 class SnipswatchView(FlaskView):
@@ -32,8 +33,8 @@ class SnipswatchView(FlaskView):
 		while True:
 			out = process.stdout.readline().decode()
 			if out != '':
-				with self._file.open('a') as f:
-					f.write(out)
+				with self._file.open('a+') as f:
+					f.write(commons.escapeAnsi(out))
 
 
 	def update(self):

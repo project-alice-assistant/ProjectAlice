@@ -1,3 +1,5 @@
+import re
+
 import functools
 import inspect
 import json
@@ -60,6 +62,11 @@ def isEqualTranslated(baseString: str, compareTo: str, module: str = 'system') -
 		if baseString == string.strip().lower():
 			return True
 	return False
+
+
+def escapeAnsi(line: str) -> str:
+	ansi =re.compile(r'(\x9B|\x1B\[)[0-?]*[ -\/]*[@-~]')
+	return ansi.sub('', line)
 
 
 def deprecated(func):
