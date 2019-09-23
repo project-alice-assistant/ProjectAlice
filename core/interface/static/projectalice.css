@@ -64,7 +64,7 @@ li {
 li:hover {
     cursor: pointer;
     background-color: #636363;
-    color: #fffe37;
+    color: yellow;
 }
 
 a:link,
@@ -76,7 +76,7 @@ a:active
 }
 
 a:hover {
-    color: #fffe37;
+    color: yellow;
 }
 
 .page {
@@ -134,7 +134,7 @@ a:hover {
 }
 
 .active {
-    color: #fffe37;
+    color: yellow;
 }
 
 .disabled {
@@ -173,7 +173,7 @@ a:hover {
 .moduleButton:hover {
     cursor: pointer;
     background-color: #636363;
-    color: #fffe37;
+    color: yellow;
 }
 
 .console {

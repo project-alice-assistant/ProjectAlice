@@ -16,6 +16,7 @@ class SnipswatchView(FlaskView):
 		self._counter = 0
 		self._thread = None
 		self._file = Path('/tmp/snipswatch.txt')
+		self._thread = None
 
 		if self._file.exists():
 			subprocess.run(['sudo', 'rm', self._file])
@@ -40,11 +41,12 @@ class SnipswatchView(FlaskView):
 
 
 	def refresh(self):
-		self._thread = SuperManager.getInstance().threadManager.newThread(
-			name='snipswatch',
-			target=self.startWatching,
-			autostart=True
-		)
+		if not self._thread:
+			self._thread = SuperManager.getInstance().threadManager.newThread(
+				name='snipswatch',
+				target=self.startWatching,
+				autostart=True
+			)
 
 		self._counter = 0
 		return jsonify(data=self._getData())
