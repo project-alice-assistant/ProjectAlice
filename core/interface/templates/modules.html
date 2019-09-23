@@ -18,22 +18,20 @@
 				{{ langData.status }}: {% if module.active is sameas true %}enabled{% else %}disabled{% endif %}
 			</div>
 			<div class="moduleActions">
-				{% if not module.required %}
-					<div class="moduleButton">
-						{% if module.active is sameas true %}
-							{{ langData.disable }}
-						{% else %}
-							{{ langData.enable }}
-						{% endif %}
-					</div>
-					<div class="moduleButton">
-						{{ langData.delete }}
-					</div>
-				{% endif %}
-				{% if module.updateAvailable is sameas true %}
 				<div class="moduleButton">
-					{{ langData.updatee }}
+					{% if module.active is sameas true %}
+						{{ langData.disable }}
+					{% else %}
+						{{ langData.enable }}
+					{% endif %}
 				</div>
+				<div class="moduleButton">
+					{{ langData.delete }}
+				</div>
+				{% if module.updateAvailable is sameas true %}
+					<div class="moduleButton">
+						{{ langData.updatee }}
+					</div>
 				{% endif %}
 			</div>
 		</div>

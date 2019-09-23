@@ -40,7 +40,7 @@ class SnipswatchView(View):
 			if out != '':
 				with self._file.open('a+') as fp:
 					line = out.replace('#009900', '"yellow"')
-					line = out.replace('#0000ff', '"yellow"')
+					line = line.replace('#0000ff', '"yellow"')
 					fp.write(line)
 
 
