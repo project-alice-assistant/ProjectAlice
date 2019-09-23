@@ -1,3 +1,4 @@
+import re
 import time
 from pathlib import Path
 
@@ -19,6 +20,9 @@ class SnipswatchView(FlaskView):
 		self._file = Path('/tmp/snipswatch.txt')
 		self._thread = None
 
+		self._timeColoring = re.compile('(\[[0-9]+:[0-9]+:[0-9]+\])')
+		self._importantColoring = re.compile('"([a-zA-Z0-9.-/*]+)"')
+
 		if self._file.exists():
 			subprocess.run(['sudo', 'rm', self._file])
 
@@ -34,7 +38,10 @@ class SnipswatchView(FlaskView):
 			out = process.stdout.readline().decode()
 			if out != '':
 				with self._file.open('a+') as f:
-					f.write(commons.escapeAnsi(out))
+					line = commons.escapeAnsi(out)
+					line = self._timeColoring.sub('<span class="logYellow">\\1</span>', line)
+					#line = self._importantColoring.sub('<span class="logYellow">\\1</span>', line)
+					f.write(line)
 
 
 	def update(self):
@@ -50,7 +57,7 @@ class SnipswatchView(FlaskView):
 			)
 
 		self._counter = 0
-		return jsonify(data=self._getData())
+		return self.update()
 
 
 	def _getData(self) -> list:

@@ -25,7 +25,7 @@ class SyslogView(FlaskView):
 
 	def refresh(self):
 		self._counter = 0
-		return jsonify(data=self._getData())
+		return self.update()
 
 
 	def _getData(self) -> list:

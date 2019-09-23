@@ -210,3 +210,7 @@ a:hover {
 .logError {
     color: red;
 }
+
+.logYellow {
+    color: yellow;
+}
