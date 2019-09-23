@@ -5661,7 +5661,7 @@
 				"{plus:=>WakewordCaptureResult}",
 				"{un peu plus:=>WakewordCaptureResult}",
 				"{recommence:=>WakewordCaptureResult}",
-				"{beaucoup moins:=>WakewordCaptureResult} s'il te plaît"
+				"{beaucoup moins:=>WakewordCaptureResult} s'il te plaît",
 				"{pluc court:=>WakewordCaptureResult} s'il te plaît"
 			],
 			"slots": [
