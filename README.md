@@ -3,6 +3,12 @@ Project Alice is a smart home assistant completly based on [Snips](https://snips
 
 To go further we've built on top of Snips to propose some online alternatives and fallbacks, that are all disabled by default.
 
+# Installing
+Please follow the wiki: https://github.com/project-alice-powered-by-snips/ProjectAlice/wiki/Installing
+
+# Chat with us and the community
+Join us on our [Dicord server](https://discord.gg/Jfcj355)
+
 
 # Who made this?
 The original code was started end 2015 and several rewrites made it what it is today. It was entirely written by me *Psycho* until the point, where he decided to open it to the world. There's no money asked, no contribution, but as the license states, you should give back what you've been given, share your improvements and addons to the rest of us, in the form of pull requests.

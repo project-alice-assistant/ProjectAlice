@@ -191,6 +191,7 @@ network={
 		confs['probabilityTreshold'] = float(initConfs['probabilityTreshold'])
 		confs['shortReplies'] = bool(initConfs['shortReplies'])
 		confs['whisperWhenSleeping'] = bool(initConfs['whisperWhenSleeping'])
+		confs['ttsLanguage'] = initConfs['ttsLanguage']
 		confs['ttsType'] = initConfs['ttsType']
 		confs['ttsVoice'] = initConfs['ttsVoice']
 		confs['githubUsername'] = initConfs['githubUsername']

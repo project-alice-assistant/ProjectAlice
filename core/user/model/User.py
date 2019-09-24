@@ -11,6 +11,7 @@ class User:
 			self._state 		= row['state']
 			self._lang 			= row['lang']
 			self._tts 			= row['tts']
+			self._ttsLanguage	= row['ttsLanguage']
 			self._ttsType		= row['ttsType']
 			self._ttsVoice 		= row['ttsVoice']
 
@@ -46,6 +47,10 @@ class User:
 	@property
 	def tts(self) -> str:
 		return self._tts
+
+	@property
+	def ttsLanguage(self) -> str:
+		return self._ttsLanguage
 
 	@property
 	def ttsType(self) -> str:

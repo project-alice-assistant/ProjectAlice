@@ -17,6 +17,7 @@ class UserManager(Manager):
 			'accessLevel TEXT NOT NULL',
 			'lang TEXT',
 			'tts TEXT',
+			'ttsLanguage TEXT',
 			'ttsType TEXT',
 			'ttsVoice TEXT'
 		]
@@ -57,6 +58,7 @@ class UserManager(Manager):
 				'state': state,
 				'lang': self.LanguageManager.activeLanguageAndCountryCode,
 				'tts': '',
+				'ttsLanguage': '',
 				'ttsType': '',
 				'ttsVoice': ''
 			})

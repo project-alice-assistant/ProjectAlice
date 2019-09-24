@@ -21,8 +21,9 @@ settings = {
 	"intentsOwner": "",
 	"asr": "snips",
 	"tts": "pico",
+	"ttsLanguage": "en-US",
 	"ttsType": "male",
-	"ttsVoice": "en-US",
+	"ttsVoice": "en-US", # The name of the voice on the TTS service
 	"awsRegion": "eu-central-1",
 	"awsAccessKey": "",
 	"awsSecretKey": "",
