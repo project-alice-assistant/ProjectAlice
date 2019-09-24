@@ -183,10 +183,10 @@ class DatabaseManager(Manager):
 
 			cursor.execute(query, values)
 
-			if method == 'all':
-				data = cursor.fetchall()
-			else:
+			if method == 'one':
 				data = cursor.fetchone()
+			else:
+				data = cursor.fetchall()
 		except Exception as e:
 			self._logger.warning('[{}] Error fetching data for component "{}" in table "{}": {}'.format(self.name, callerName, tableName, e))
 			return data

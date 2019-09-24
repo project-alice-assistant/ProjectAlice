@@ -80,7 +80,10 @@ class Manager(Singleton):
 
 
 	# HELPERS
-	def databaseFetch(self, tableName: str, query: str, values: dict = None, method: str = 'one') -> list:
+	def databaseFetch(self, tableName: str, query: str = None, values: dict = None, method: str = 'one') -> list:
+		if not query:
+			query = 'SELECT * FROM :__table__'
+
 		return self.DatabaseManager.fetch(tableName=tableName, query=query, values=values, callerName=self.name, method=method)
 
 

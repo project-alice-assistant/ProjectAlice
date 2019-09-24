@@ -1,9 +1,30 @@
 {% extends 'base.html' %}
 
 {% block header %}
+	<link rel="stylesheet" href="{{ url_for('static', filename='css/jquery-ui.theme.min.css') }}">
+	<script src="{{ url_for('static', filename='js/jquery-3.4.1.min.js') }}"></script>
+	<script src="{{ url_for('static', filename='js/jquery-ui.js') }}"></script>
+	<script src="{{ url_for('static', filename='js/widgets.js') }}"></script>
+
 	{% block title %}{{ langData.home }}{% endblock %}
 {% endblock %}
 
 {% block content %}
-
+	<div class="toolbar">
+		<span class="toolbarButton">
+			<i class="fas fa-plus-circle"></i>
+		</span>
+		<span class="toolbarButton">
+			<i class="fas fa-minus-circle"></i>
+		</span>
+	</div>
+	<div class="widgetsPane">
+		{% for widgetName, widget in widgets.items() %}
+			{% if widget.state is sameas True %}
+			<div class="widget {{ widget.size }}" id="{{ widget.parent }}_{{ widget.name }}" data-posx="{{ widget.x }}px" data-posy="{{ widget.y }}px">
+				{{ widgetName }} {{ widget.state }}
+			</div>
+			{% endif %}
+		{% endfor %}
+	</div>
 {% endblock %}

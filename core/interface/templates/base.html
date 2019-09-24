@@ -1,6 +1,9 @@
 <!doctype html>
 <title>Project Alice - {% block title %}{% endblock %}</title>
-<link rel="stylesheet" href="{{ url_for('static', filename='projectalice.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/projectalice.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/fontawesome.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/brands.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/solid.css') }}">
 <nav>
 	<ul>
 		<li onclick="location.href='/home';">{{ langData.home }}</li>
