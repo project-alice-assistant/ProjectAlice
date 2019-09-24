@@ -1,7 +1,7 @@
 # ProjectAlice
-Project Alice is a smart home assistant completly based on [Snips](https://snips.ai) that is modular and extensible. Snips runs entirely offline and therefor **guarantees** your privacy.
+Project Alice is a smart voice home assistant completely based on [Snips](https://snips.ai) that is modular and extensible. Since Snips runs entirely offline and never sends or shares your voice interactions with anyone, Project Alice **guarantees** your privacy in your home or wherever you’re using Project Alice.
 
-To go further we've built on top of Snips to propose some online alternatives and fallbacks, that are all disabled by default.
+However, as an option, since we've built Project Alice on top of Snips, Project Alice can be configured to use some online alternatives and fall backs (for example, using Amazon or Google’s Text to Speech engines), just like Snips. Since Snips (and the Project Alice team) strongly believe that decisions about your privacy should be made by you and you alone, these options are all disabled by default.
 
 # Installing
 Please follow the wiki: https://github.com/project-alice-powered-by-snips/ProjectAlice/wiki/Installing
@@ -11,33 +11,34 @@ Join us on our [Dicord server](https://discord.gg/Jfcj355)
 
 
 # Who made this?
-The original code was started end 2015 and several rewrites made it what it is today. It was entirely written by me *Psycho* until the point, where he decided to open it to the world. There's no money asked, no contribution, but as the license states, you should give back what you've been given, share your improvements and addons to the rest of us, in the form of pull requests.
+The original code base was started at the end 2015 and several rewrites made it what it is today. It was entirely written by me *Psycho* until recently, where I decided to make the code openly available to the world. 
 
-As of may 2019, *Jierka* joined to prepare Alice for a public release, by providing quality code, fresh ideas and insights over the project. At the same time *maxbachmann* joined, at first to translate to german for the release but very quickly adopted the code and started contributing to the refactoring, rewrite and module production.
+In of May 2019, *Jierka* joined the project to prepare Project Alice for a public release by providing quality code, fresh ideas and insights for the project. At the same time *maxbachmann* also joined the project, at first to translate to German for the release, but soon moved beyond his initial commitment and started contributing to the refactoring, rewrite and module production.
 
+If you want to use Project Alice in a non-commercial setting, I’m not asking you for any money, or a financial contribution, but as the license states, you should try to give back for what you've been given; please share your improvements and add-ons to the rest of us, in the form of pull requests.
 
 # How does it run? What's special about it? Isn't it the same as Snips skill server?
-Glad you wonder! First things first, it's much more than just a skill server. It's been made very modular, in fact it runs using user developed modules. You won't have to use any console to train your assistant, we have made a way for the creators to share their modules with the language training included, the whole assistant part is automated
+Glad you asked! First things first, it's much more than just a skill server. It's been made very modular, in fact it runs using user developed modules (or skills). You won't have to use any console to train your assistant, we have made a way for the creators to share their modules with the language training included, the whole assistant part is automated.
 
 Adding new modules is as easy as using either our CLI or a ticketing system. Updates are automatic, so over time the modules will get better and better with the community input to improve utterances and adding more language support.
 
-Project Alice is meant as an event system, everything triggering events that can be used by modules, such as "onHighCO2", "onTemperatureTooCold" and many others!
+Project Alice goes far beyond just acting on your voice requests.  Project Alice is meant as an event driven automation system for your home.  Anything that triggers an event (a voice request or a sensor changing states are considered “events” by Project Alice) can be used by modules to drive further interactions.  For example, a sensor indicating "HighCO2" or "TemperatureTooCold" can be used by a module to create interactions (e.g. Snips announcing, “Warning high CO2 Level detected, move to fresh air immediately” or “It seems a bit chilly, would you like me to turn up the heat?”.  The only limits are your imagination!!
 
-Alice has her own mood, can use different voices for different users, knows the user talking to her, likes or dislikes people based on their interaction with her. She can automate your home routine by using a customisation module.
+Finally, Project Alice has her own mood (which can vary based on your interactions with her), can use different voices for different users, knows which user is talking to her, and even likes or dislikes people based on their interactions with her. She can also automate your home routines by using a customization module (e.g. turn on air conditioning and lights when a sensor indicates it is too hot and the sun has set).
 
-That's only a scratch of Project Alice... If you want more, I highly suggest you give it a try
+This is only scratching the surface of Project Alice can and will be able to do... If you want more, I highly suggest you give it a try.
 
 
 # Project Alice, as in "Resident Evil", isn't that scary?
-Ok, yes, I do admit it may sound scary, but you have my word no one will die down here. I really like the red queen in that movie/game serie and I decided to name the assistant Alice, which lead to my project, Project Alice.
+Ok, yes, I do admit if you’re familiar with the game it may sound a bit scary, but you have my word no one will get hurt fighting against the Umbrella Corporation :). Bottom line, I just really like the Red Queen in that movie/game series so I decided to name the voice assistant Alice, and that naturally lead to me calling the project, Project Alice.
 
 
 # Where does it run?
-Well, it's written in Python but it's been made for Snips that is meant for Raspberry and some other platforms such as the respeaker core or the Matrix Creator. So this pretty limits the choices. A raspberry 3, 3b, 3b+, 3A+ or 4 for the main unit is a good choice. You cannot run Snips on a pi zero but pi zero is more than enough for satellites.
+Well, since it's written in Python and runs on top of the Snips platform, that means that hardware choices are limited to those that are supported by Snips. This means a Raspberry Pi and some other platforms such as the respeaker core or the Matrix Creator are the best choices for a hardware platform. As for which Raspberry Pi, a raspberry 3, 3b, 3b+, 3A+ or 4 for the main unit are good choices. You cannot run Snips on a pi zero but pi zero is more than enough for satellites. A satellite runs a subset of the Snips platform, and sends and receives interactions to the main unit.
 
 
 # Can we contribute?
-Hey, did you read what I wrote a bit higher? You have to! Just kidding but yes, your contributions are more than welcome, be it core side or on the module side. You'll find more about the guidelines on our wiki.
+Hey, did you skip ahead and not read what I wrote a bit earlier? You have to! Just kidding, but yes, your contributions are more than welcome, be it core side or on the module side. You'll find more about the guidelines on our wiki.
 
 
 # Other repositories
