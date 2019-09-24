@@ -5,13 +5,13 @@ from core.interface.views.View import View
 
 
 class IndexView(View):
+	route_base = '/'
 
 	def __init__(self):
 		super().__init__()
 
-	@route('/')
-	@route('/home')
-	@route('/index')
-	@route('/start')
+	@route('/', endpoint='index')
+	@route('/home/', endpoint='index')
+	@route('/index/', endpoint='index')
 	def index(self):
 		return render_template('home.html', langData=self._langData)

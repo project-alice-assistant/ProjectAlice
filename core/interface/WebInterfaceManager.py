@@ -23,7 +23,6 @@ class WebInterfaceManager(Manager):
 		log = logging.getLogger('werkzeug')
 		log.setLevel(logging.ERROR)
 		self._langData = dict()
-		self.app.config['SEND_FILE_MAX_AGE_DEFAULT'] = 0
 
 
 	@property
@@ -57,7 +56,7 @@ class WebInterfaceManager(Manager):
 				name='WebInterface',
 				target=self.app.run,
 				kwargs={
-					'debug': False,
+					'debug': True,
 					'port': int(self.ConfigManager.getAliceConfigByName('webInterfacePort')),
 					'host': commons.getLocalIp(),
 					'use_reloader': False
