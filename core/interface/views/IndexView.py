@@ -1,7 +1,8 @@
-from flask import render_template
+import json
+
+from flask import render_template, request
 from flask_classful import route
 
-from core.base.SuperManager import SuperManager
 from core.interface.views.View import View
 
 
@@ -16,3 +17,13 @@ class IndexView(View):
 	@route('/index/', endpoint='index')
 	def index(self):
 		return render_template('home.html', widgets=self.WebInterfaceManager.widgets, langData=self._langData)
+
+
+	@route('/home/saveWidgetPos', methods=['POST'])
+	def saveWidgetPosition(self):
+		try:
+			x = request.form.get('x')
+			y = request.form.get('y')
+			return json.dumps({'status': 'OK'})
+		except:
+			return json.dumps({'status': 'FAILED'})
