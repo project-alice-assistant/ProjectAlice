@@ -256,6 +256,21 @@ a:hover {
     color: white;
 }
 
+.widgetDelete {
+    visibility: hidden;
+    position: absolute;
+    z-index: 50;
+    top: -15px;
+    left: -15px;
+    width: 50px;
+    height: 50px;
+    border-radius: 25px;
+    color: #d1d1d1;
+    font-size: 3em;
+    background-color: #1e1e1e;
+    text-align: center;
+}
+
 .widget {
 	border: 2px solid #1e1e1e;
     display: inline-block;
