@@ -27,8 +27,6 @@ class IndexView(View):
 			widget.x = request.form.get('x')
 			widget.y = request.form.get('y')
 
-			print(widget)
-
 			query = 'UPDATE :__table__ SET posx = :posx, posy = :posy WHERE parent = :parent AND name = :name'
 			values = {
 				'parent': widget.parent,
