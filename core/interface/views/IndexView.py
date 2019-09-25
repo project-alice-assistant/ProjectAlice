@@ -17,27 +17,19 @@ class IndexView(View):
 	@route('/home/', endpoint='index')
 	@route('/index/', endpoint='index')
 	def index(self):
-		return render_template('home.html', widgets=self.WebInterfaceManager.widgets, langData=self._langData)
+		return render_template('home.html', widgets=self.ModuleManager.widgets, langData=self._langData)
 
 
 	@route('/home/saveWidgetPos', methods=['POST'])
 	def saveWidgetPosition(self):
 		try:
-			widget = self.WebInterfaceManager.widgets[request.form.get('id')]
+			p, w = request.form.get('id').split('_')
+
+			widget = self.ModuleManager.widgets[p][w]
 			widget.x = request.form.get('x')
 			widget.y = request.form.get('y')
+			widget.saveToDB()
 
-			query = 'UPDATE :__table__ SET posx = :posx, posy = :posy WHERE parent = :parent AND name = :name'
-			values = {
-				'parent': widget.parent,
-				'name': widget.name,
-				'posx': widget.x,
-				'posy': widget.y
-			}
-
-			if self.DatabaseManager.update('widgets', self.WebInterfaceManager.name, values, query):
-				return json.dumps({'status': 'OK'})
-			else:
-				raise Exception
+			return json.dumps({'status': 'OK'})
 		except:
 			return json.dumps({'status': 'FAILED'})

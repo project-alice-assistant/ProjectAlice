@@ -36,8 +36,20 @@ class ModuleManager(Manager):
 	GITHUB_BARE_BASE_URL = 'https://raw.githubusercontent.com/project-alice-powered-by-snips/ProjectAliceModules/master/PublishedModules'
 	GITHUB_API_BASE_URL = 'repositories/193512918/contents/PublishedModules'
 
+	DATABASE = {
+		'widgets': [
+			'parent TEXT NOT NULL UNIQUE',
+			'name TEXT NOT NULL UNIQUE',
+			'posx INTEGER NOT NULL',
+			'posy INTEGER NOT NULL',
+			'state TEXT NOT NULL',
+			'size TEXT NOT NULL',
+			'options TEXT NOT NULL'
+		]
+	}
+
 	def __init__(self):
-		super().__init__(self.NAME)
+		super().__init__(self.NAME, self.DATABASE)
 
 		self._busyInstalling        = None
 
@@ -45,6 +57,7 @@ class ModuleManager(Manager):
 		self._supportedIntents      = list()
 		self._modules               = dict()
 		self._deactivatedModules    = dict()
+		self._widgets               = dict()
 
 
 	def onStart(self):
@@ -60,6 +73,11 @@ class ModuleManager(Manager):
 
 		self.checkForModuleUpdates()
 		self.startAllModules()
+
+
+	@property
+	def widgets(self) -> dict:
+		return self._widgets
 
 
 	@property
@@ -210,6 +228,10 @@ class ModuleManager(Manager):
 		try:
 			name = moduleInstance.name
 			intents = moduleInstance.onStart()
+
+			if moduleInstance.widgets:
+				self._widgets[name] = moduleInstance.widgets
+
 			if intents:
 				self._logger.info('- Started!')
 				return intents

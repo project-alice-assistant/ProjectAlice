@@ -128,6 +128,10 @@ class DatabaseManager(Manager):
 		return True
 
 
+	def replace(self, tableName: str, query: str, callerName: str, values: dict = None) -> int:
+		return self.insert(tableName, query, callerName, values)
+
+
 	def insert(self, tableName: str, query: str, callerName: str, values: dict = None) -> int:
 		"""
 		Insert data in database
@@ -229,6 +233,35 @@ class DatabaseManager(Manager):
 			cursor.close()
 			database.close()
 			return data
+
+
+	def purge(self, tableName: str, callerName: str):
+		query = 'DELETE FROM :__table__ WHERE 1'
+		self.delete(tableName=tableName, callerName=callerName, query=query)
+
+
+	def delete(self, tableName: str, callerName: str, query: str, values: dict = None):
+
+		if not values:
+			values = dict()
+
+		query = self.basicChecks(tableName, query, callerName)
+		if not query:
+			return
+
+		try:
+			database = self.getConnection()
+			cursor = database.cursor()
+			cursor.execute(query, values)
+		except Exception as e:
+			self._logger.warning('[{}] Error deleting from table "{}" for component "{}": {}'.format(self.name, tableName, callerName, e))
+
+			if database:
+				database.rollback()
+		else:
+			database.commit()
+			cursor.close()
+			database.close()
 
 
 	# noinspection SqlResolve

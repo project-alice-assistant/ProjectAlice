@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import importlib
 import inspect
 import json
 import logging
@@ -36,9 +37,62 @@ class Module:
 		self._delayed = False
 		self._required = False
 		self._databaseSchema = databaseSchema
+		self._widgets = dict()
 
 		self._supportedIntents = supportedIntents
 		self._authOnlyIntents = authOnlyIntents or dict()
+
+		self.loadWidgets()
+
+
+	def loadWidgets(self):
+		fp = Path(self.getCurrentDir(), 'widgets')
+		if fp.exists():
+			self._logger.info('[{}] Loading {} widgets'.format(self.name, len(list(fp.glob('*.py'))) - 1))
+
+			data = self.DatabaseManager.fetch(
+				tableName='widgets',
+				query='SELECT * FROM :__table__ WHERE parent = :parent',
+				callerName=self.ModuleManager.name,
+				values={'parent': self.name},
+				method='all'
+			)
+			if data:
+				data = {row['name']: row for row in data}
+
+			for file in fp.glob('*.py'):
+				if file.name.startswith('__'):
+					continue
+
+				widgetName = Path(file).stem
+				widgetImport = importlib.import_module('modules.{}.widgets.{}'.format(self.name, widgetName))
+				klass = getattr(widgetImport, widgetName)
+
+				if widgetName in data: # widget already exists in DB
+					self._widgets[widgetName] = klass(data[widgetName])
+					del data[widgetName]
+					self._logger.info('[{}] Loaded widget "{}"'.format(self.name, widgetName))
+
+				else: # widget is new
+					self._logger.info('[{}] Adding widget "{}"'.format(self.name, widgetName))
+					widget = klass({
+						'name': widgetName,
+						'parent': self.name,
+					})
+					self._widgets[widgetName] = widget
+					widget.saveToDB()
+
+			for widgetName in data: # deprecated widgets
+				self._logger.info('[{}] Widget "{}" is deprecated, removing'.format(self.name, widgetName))
+				self.DatabaseManager.delete(
+					tableName='widgets',
+					callerName=self.ModuleManager.name,
+					query='DELETE FROM :__table__ WHERE parent = :parent AND name = :name',
+					values={
+						'parent': self.name,
+						'name': widgetName
+					}
+				)
 
 
 	def getUtterancesByIntent(self, intent: Intent, forceLowerCase: bool = True) -> list:
@@ -55,6 +109,11 @@ class Module:
 
 	def getCurrentDir(self):
 		return Path(inspect.getfile(self.__class__)).parent
+
+
+	@property
+	def widgets(self) -> dict:
+		return self._widgets
 
 
 	@property
