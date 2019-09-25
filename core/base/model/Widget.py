@@ -1,5 +1,9 @@
+import inspect
 import json
+import logging
 import sqlite3
+
+from pathlib import Path
 
 from core.base.SuperManager import SuperManager
 
@@ -10,6 +14,7 @@ class Widget:
 	OPTIONS = dict()
 
 	def __init__(self, data: sqlite3.Row):
+		self._logger = logging.getLogger('ProjectAlice')
 		self._name = data['name']
 		self._parent = data['parent']
 
@@ -41,6 +46,27 @@ class Widget:
 				'options': json.dumps(self.options)
 			}
 		)
+
+
+	def getCurrentDir(self) -> Path:
+		return Path(inspect.getfile(self.__class__)).parent
+
+
+	def html(self) -> str:
+		try:
+			file = self.getCurrentDir() / 'templates/{}.html'.format(self._name)
+			return file.open().read()
+		except:
+			self._logger.warning("[{}] Widget doesn't have html file".format(self.name))
+			return ''
+
+
+	def js(self) -> str:
+		return '<script src="../../modules/{}/widget/js/{}.js"></script>'.format(self.name, self.name)
+
+
+	def css(self) -> str:
+		return '<link rel="stylesheet" href="../../modules/{}/widgets/css/{}.css">'.format(self.name, self.name)
 
 
 	@property
