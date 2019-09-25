@@ -12,6 +12,7 @@ class IndexView(View):
 	def __init__(self):
 		super().__init__()
 
+
 	@route('/', endpoint='index')
 	@route('/home/', endpoint='index')
 	@route('/index/', endpoint='index')
@@ -22,8 +23,23 @@ class IndexView(View):
 	@route('/home/saveWidgetPos', methods=['POST'])
 	def saveWidgetPosition(self):
 		try:
-			x = request.form.get('x')
-			y = request.form.get('y')
-			return json.dumps({'status': 'OK'})
+			widget = self.WebInterfaceManager.widgets[request.form.get('id')]
+			widget.x = request.form.get('x')
+			widget.y = request.form.get('y')
+
+			print(widget)
+
+			query = 'UPDATE :__table__ SET posx = :posx, posy = :posy WHERE parent = :parent AND name = :name'
+			values = {
+				'parent': widget.parent,
+				'name': widget.name,
+				'posx': widget.x,
+				'posy': widget.y
+			}
+
+			if self.DatabaseManager.update('widgets', self.WebInterfaceManager.name, values, query):
+				return json.dumps({'status': 'OK'})
+			else:
+				raise Exception
 		except:
 			return json.dumps({'status': 'FAILED'})

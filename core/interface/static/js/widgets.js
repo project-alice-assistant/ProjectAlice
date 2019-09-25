@@ -9,12 +9,13 @@ $(function(){
     $('.widgetsPane').droppable({
 
         drop: function(event, ui) {
-            let posx = $(ui.draggable).position().left;
-            let posy = $(ui.draggable).position().top;
-
             $.ajax({
                 url: '/home/saveWidgetPos',
-                data: {x: posx, y: posy},
+                data: {
+                    id: $(ui.draggable).attr('id'),
+                    x: $(ui.draggable).position().left,
+                    y: $(ui.draggable).position().top
+                },
                 type: 'POST'
             })
         }

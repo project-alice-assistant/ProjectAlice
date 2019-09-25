@@ -45,13 +45,24 @@ class DatabaseManager(Manager):
 			colsQuery = ', '.join(queries)
 			colName = ''
 
+			if colsQuery.count(' UNIQUE') > 1:
+				colsQuery = colsQuery.replace(' UNIQUE', '')
+				unique = list()
+				for query in queries:
+					if 'UNIQUE' in query:
+						unique.append(query.split(' ')[0])
+
+				unique = ', UNIQUE({})'.format(', '.join(unique))
+			else:
+				unique = ''
+
 			try:
 				query = "SELECT COUNT(name) FROM sqlite_master WHERE type = 'table' and name='{}'".format(fullTableName)
 				cursor.execute(query)
 				if cursor.fetchone()[0] < 1:
 					self._logger.info('[{}] Missing data table "{}", creating it...'.format(self.name, fullTableName))
 					try:
-						cursor.execute('CREATE TABLE {} ({})'.format(fullTableName, colsQuery))
+						cursor.execute('CREATE TABLE {} ({}{})'.format(fullTableName, colsQuery, unique))
 						database.commit()
 						continue
 					except Exception:
@@ -156,6 +167,30 @@ class DatabaseManager(Manager):
 				return insertId
 			else:
 				raise Exception
+
+
+	def update(self, tableName: str, callerName: str, values: dict, query: str = None, row: tuple = None) -> bool:
+		if not query:
+			updates = ['{} = :{}'.format(col, val) for col, val in values.items()]
+			query = 'UPDATE :__table__ SET {} WHERE {} = {}'.format(' ,'.join(updates), row[0], row[1])
+
+		query = self.basicChecks(tableName, query, callerName, values)
+		if not query:
+			raise Exception
+
+		try:
+			database = self.getConnection()
+			cursor = database.cursor()
+			cursor.execute(query, values)
+		except Exception as e:
+			self._logger.warning('[{}] Error updating data for component "{}" in table "{}": {}'.format(self.name, callerName, tableName, e))
+			raise
+		else:
+			database.commit()
+			cursor.close()
+			database.close()
+			return True
+
 
 
 	def fetch(self, tableName: str, query: str, callerName: str, values: dict = None, method: str = 'one') -> typing.Iterable:

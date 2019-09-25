@@ -78,3 +78,13 @@ class WidgetInfo:
 	@options.setter
 	def options(self, value: str):
 		self._options = value
+
+
+	def __repr__(self):
+		return '---- WIDGET -----' + \
+		       '\n Parent: ' + self.parent + \
+		       '\n Name: ' + self.name + \
+		       '\n Size: ' + self.size + \
+		       '\n State: ' + str(self.state) + \
+		       '\n PosX: ' + str(self.x) + \
+		       '\n PosY: ' + str(self.y)
