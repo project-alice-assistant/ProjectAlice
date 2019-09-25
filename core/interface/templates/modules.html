@@ -5,6 +5,7 @@
 {% endblock %}
 
 {% block content %}
+	<div class="modulesPane">
 	{% for moduleName, module in modules.items() %}
 		<div class="moduleTile">
 			<div class="moduleTitle">
@@ -36,4 +37,5 @@
 			</div>
 		</div>
 	{% endfor %}
+	</div>
 {% endblock %}

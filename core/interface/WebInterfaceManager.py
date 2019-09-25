@@ -22,8 +22,8 @@ class WebInterfaceManager(Manager):
 
 	DATABASE = {
 		'widgets': [
-			'parent TEXT NOT NULL',
-			'name TEXT NOT NULL',
+			'parent TEXT NOT NULL UNIQUE',
+			'name TEXT NOT NULL UNIQUE',
 			'posx INTEGER NOT NULL',
 			'posy INTEGER NOT NULL',
 			'state TEXT NOT NULL',
@@ -95,4 +95,4 @@ class WebInterfaceManager(Manager):
 		)
 
 		for widget in widgets:
-			self._widgetsInfo[widget['name']] = WidgetInfo(widget)
+			self._widgetsInfo['{}_{}'.format(widget['parent'], widget['name'])] = WidgetInfo(widget)

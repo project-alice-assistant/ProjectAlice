@@ -121,6 +121,17 @@ a:hover {
     cursor: pointer;
 }
 
+.modulesPane {
+    position: fixed;
+    top: 56px;
+    left: 154px;
+    right: 0;
+    bottom: 0;
+    margin: 5px;
+    overflow-y: auto;
+    overflow-x: hidden;
+}
+
 .moduleTile {
     font-family: 'marskeregular', Arial, sans-serif;
     display: inline-block;
