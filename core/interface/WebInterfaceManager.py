@@ -2,7 +2,7 @@ import json
 import logging
 from pathlib import Path
 
-from flask import Flask
+from flask import Flask, send_from_directory
 
 from core.base.model.Manager import Manager
 from core.commons import commons
@@ -24,6 +24,11 @@ class WebInterfaceManager(Manager):
 		log = logging.getLogger('werkzeug')
 		log.setLevel(logging.ERROR)
 		self._langData = dict()
+
+
+	@app.route('/base/<path:filename>')
+	def base_static(self, filename):
+		return send_from_directory(self.app.root_path + '/../static/', filename)
 
 
 	@property

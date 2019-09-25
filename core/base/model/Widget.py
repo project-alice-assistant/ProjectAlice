@@ -61,14 +61,6 @@ class Widget:
 			return ''
 
 
-	def js(self) -> str:
-		return '<script src="../../modules/{}/widget/js/{}.js"></script>'.format(self.name, self.name)
-
-
-	def css(self) -> str:
-		return '<link rel="stylesheet" href="../../modules/{}/widgets/css/{}.css">'.format(self.name, self.name)
-
-
 	@property
 	def parent(self) -> str:
 		return self._parent

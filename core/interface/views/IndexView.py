@@ -1,8 +1,10 @@
 import json
+from pathlib import Path
 
-from flask import render_template, request
+from flask import render_template, request, send_from_directory
 from flask_classful import route
 
+from core.base.SuperManager import SuperManager
 from core.interface.views.View import View
 
 
@@ -18,6 +20,16 @@ class IndexView(View):
 	@route('/index/', endpoint='index')
 	def index(self):
 		return render_template('home.html', widgets=self.ModuleManager.widgets, langData=self._langData)
+
+
+	@route('widget_static/<path:filename>')
+	def widget_static(self, filename: str):
+		parent, fileType, filename = filename.split('/')
+		return send_from_directory('{}/../../modules/{}/widgets/{}/'.format(
+			SuperManager.getInstance().webInterfaceManager.app.root_path,
+			parent,
+			fileType
+		), filename)
 
 
 	@route('/home/saveWidgetPos', methods=['POST'])

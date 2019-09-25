@@ -8,8 +8,8 @@
 
 	{% for widgetList in widgets.values() %}
 		{% for widget in widgetList.values() %}
-			{{ widget.js()|safe }}
-			{{ widget.css()|safe }}
+			<script src="{{ url_for('IndexView:widget_static', filename=widget.parent + '/js/' + widget.name + '.js') }}"></script>
+			<link rel="stylesheet" href="{{ url_for('IndexView:widget_static', filename=widget.parent + '/css/' + widget.name + '.css') }}">
 		{% endfor %}
 	{% endfor %}
 
