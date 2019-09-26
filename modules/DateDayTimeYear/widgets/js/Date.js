@@ -6,7 +6,7 @@
     function startTime() {
         let today = new Date(),
             d = checkTime(today.getDay()),
-            m = checkTime(today.getMonth());
+            m = checkTime(today.getMonth()),
             y = checkTime(today.getFullYear());
 
         $('#DateDayTimeYear_date').html(d + '.' + m + '.' + y);
