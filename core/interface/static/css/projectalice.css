@@ -130,20 +130,27 @@ a:hover {
     margin: 5px;
     overflow-y: auto;
     overflow-x: hidden;
+    display: flex;
+    flex-wrap: wrap;
+    align-content: flex-start;
 }
 
 .moduleTile {
     font-family: 'marskeregular', Arial, sans-serif;
-    display: inline-block;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-start;
     background-color: #636363;
     margin: 10px;
     width: 300px;
-    height: 150px;
+    height: 200px;
     color: #d1d1d1;
+    align-content: flex-start;
 }
 
 .moduleTitle {
     height: 25px;
+    width: 100%;
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -153,14 +160,21 @@ a:hover {
 }
 
 .moduleAuthor {
+    display: flex;
+    width: 100%;
+    flex-grow: 1;
+    align-items: flex-start;
+    justify-items: flex-start;
     font-style: italic;
-    margin-top: 2px;
-    margin-left: 2px;
+    margin-top: 5px;
+    margin-left: 4px;
 }
 
 .moduleStatus {
-    margin-top: 5px;
-    margin-left: 2px;
+    display: flex;
+    flex-grow: 1;
+    margin-top: 10px;
+    margin-left: 4px;
 }
 
 .active {
@@ -183,9 +197,10 @@ a:hover {
 
 .moduleActions {
     display: flex;
+    width: 100%;
+    height: 125px;
     justify-content: space-between;
-    height: 40px;
-    margin-top: 40px;
+    align-items: flex-end;
 }
 
 
