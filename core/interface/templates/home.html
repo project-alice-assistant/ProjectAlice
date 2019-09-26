@@ -29,28 +29,27 @@
 			<i class="fas fa-minus-circle"></i>
 		</span>
 	</div>
-	<div class="widgetsPane">
-		<div id="addWidgetDialog" title="{{ langData.addWidgetTitle }}">
-			{% for parentName, widgetList in widgets.items() %}
-				<div class="addWidgetCategory">
-					<div class="addWidgetCategoryTitle">
-						{{ parentName }}
-					</div>
-					<div class="addWidgetList">
-						{% for widgetName, widget in widgetList.items() %}
-							{% if widget.state == "0" %}
-								<div class="addWidgetLine">
-									{{ widgetName }}
-								</div>
-							{% endif %}
-						{% endfor %}
-					</div>
+	<div id="addWidgetDialog" title="{{ langData.addWidgetTitle }}">
+		{% for parentName, widgetList in widgets.items() %}
+			<div class="addWidgetCategory">
+				<div class="addWidgetCategoryTitle">
+					{{ parentName }}
 				</div>
-			{% endfor %}
-		</div>
+				<div class="addWidgetList">
+					{% for widgetName, widget in widgetList.items() %}
+						<div class="addWidgetLine" id="addWidgetLine_{{ widget.parent }}_{{ widget.name }}" {% if (widget.state|int) == 0 %}style="display: block;"{% else %}style="display: none;"{% endif %}>
+							<div class="addWidgetName">{{ widgetName }}</div>
+							<div class="addWidgetCheck"><i class="fas fa-check-circle"></i></div>
+						</div>
+					{% endfor %}
+				</div>
+			</div>
+		{% endfor %}
+	</div>
+	<div class="widgetsPane">
 		{% for parentName, widgetList in widgets.items() %}
 			{% for widgetName, widget in widgetList.items() %}
-				{% if widget.state == "1" %}
+				{% if (widget.state|int) == 1 %}
 				<div class="widget {{ widget.size }}" id="{{ widget.parent }}_{{ widget.name }}" style="position: relative; top: {{ widget.y }}px; left: {{ widget.x }}px;">
 					<div class="widgetDelete">
 						<i class="fas fa-minus-circle"></i>

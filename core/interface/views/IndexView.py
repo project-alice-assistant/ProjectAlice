@@ -60,3 +60,18 @@ class IndexView(View):
 		except Exception as e:
 			self._logger.warning("[Widget] Couldn't remove from home: {}".format(e))
 			return json.dumps({'status': 'FAILED'})
+
+
+	@route('/home/addWidget', methods=['POST'])
+	def addWidget(self):
+		try:
+			line, p, w = request.form.get('id').split('_')
+
+			widget = self.ModuleManager.widgets[p][w]
+			widget.state = 1
+			widget.saveToDB()
+
+			return json.dumps({'status': 'OK'})
+		except Exception as e:
+			self._logger.warning("[Widget] Couldn't add to home: {}".format(e))
+			return json.dumps({'status': 'FAILED'})

@@ -28,7 +28,10 @@ $(function(){
         width: 600,
         height: 600,
         modal: true,
-        resizable: false
+        resizable: false,
+        close: function() {
+            location.reload()
+        }
     });
 
     $('#removeWidget').on('click', function() {
@@ -43,6 +46,7 @@ $(function(){
         $('#widgetCheck').hide();
         $('#addWidget').show();
         $('#removeWidget').show();
+        location.reload()
     });
 
     $('.fa-minus-circle').on('click', function() {
@@ -60,5 +64,18 @@ $(function(){
 
     $('.fa-plus-circle').on('click', function() {
         $('#addWidgetDialog').dialog('open');
+    });
+
+    $('.addWidgetCheck').on('click', function() {
+        if ($(this).parents('.addWidgetLine').length > 0) {
+            $.ajax({
+                url: '/home/addWidget',
+                data: {
+                    id: $(this).parent().attr('id')
+                },
+                type: 'POST'
+            });
+            $(this).parent().remove();
+        }
     });
 });

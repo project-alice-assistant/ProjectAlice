@@ -34,7 +34,7 @@ class Widget:
 	def saveToDB(self):
 		SuperManager.getInstance().databaseManager.replace(
 			tableName='widgets',
-			query='REPLACE INTO :__table__ (parent, name, posx, posy, state, size, options) VALUES (:parent, :name, :posx, :posy, :state, :size, :options)',
+			query='REPLACE INTO :__table__ (parent, name, posx, posy, state, options) VALUES (:parent, :name, :posx, :posy, :state, :options)',
 			callerName=SuperManager.getInstance().moduleManager.name,
 			values={
 				'parent': self.parent,
@@ -42,7 +42,6 @@ class Widget:
 				'posx': self.x,
 				'posy': self.y,
 				'state': self.state,
-				'size': self.size,
 				'options': json.dumps(self.options)
 			}
 		)

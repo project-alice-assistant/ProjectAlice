@@ -18,7 +18,6 @@ class WebInterfaceManager(Manager):
 	NAME = 'WebInterfaceManager'
 	app = Flask(__name__)
 
-
 	def __init__(self):
 		super().__init__(self.NAME)
 		log = logging.getLogger('werkzeug')

@@ -298,12 +298,29 @@ a:hover {
 
 .addWidgetLine {
     font-family: 'marskeregular', Arial, sans-serif;
-    height: 35px;
+    height: 25px;
     color: #d1d1d1;
     font-size: 1.2em;
     display: flex;
     align-items: center;
-    padding-left: 25px;
+    margin-top: 5px;
+}
+
+.addWidgetName {
+    float: left;
+    width: 400px;
+    margin-left: 25px;
+}
+
+.addWidgetCheck {
+    float: right;
+    color: #d1d1d1;
+    margin-right: 15px;
+}
+
+.addWidgetCheck:hover {
+    color: yellow;
+    cursor: pointer;
 }
 
 .widget {
