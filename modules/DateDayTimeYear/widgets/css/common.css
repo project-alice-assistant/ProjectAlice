@@ -1,0 +1,20 @@
+@font-face {
+	font-family: 'digital-7_mono';
+	src: url('../fonts/digital-7_mono-webfont.woff2') format('woff2'),
+	url('../fonts/digital-7_mono-webfont.woff') format('woff');
+	font-weight: normal;
+	font-style: normal;
+}
+
+.DateDayTimeYear {
+	width: 100%;
+	height: 100%;
+	padding: 5px;
+	background-color: #964b4b;
+	color: #d1d1d1;
+}
+
+.DateDayTimeYear .icon {
+	width: 100%;
+	font-size: 1.5em;
+}

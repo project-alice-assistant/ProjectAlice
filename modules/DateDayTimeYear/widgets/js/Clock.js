@@ -1,5 +1,5 @@
 (function () {
-    let up = true
+    let up = true;
     function checkTime(i) {
         return (i < 10) ? '0' + i : i;
     }
