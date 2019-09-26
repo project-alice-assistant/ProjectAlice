@@ -1,6 +1,6 @@
 import json
 
-from flask import render_template, request, send_from_directory
+from flask import render_template, request, send_from_directory, jsonify, redirect, url_for
 from flask_classful import route
 
 from core.base.SuperManager import SuperManager
@@ -41,10 +41,10 @@ class IndexView(View):
 			widget.y = request.form.get('y')
 			widget.saveToDB()
 
-			return json.dumps({'status': 'OK'})
+			return jsonify(success=True)
 		except Exception as e:
 			self._logger.warning("[Widget] Couldn't save position: {}".format(e))
-			return json.dumps({'status': 'FAILED'})
+			return jsonify(success=False)
 
 
 	@route('/home/removeWidget', methods=['POST'])
@@ -56,10 +56,10 @@ class IndexView(View):
 			widget.state = 0
 			widget.saveToDB()
 
-			return json.dumps({'status': 'OK'})
+			return jsonify(success=True)
 		except Exception as e:
 			self._logger.warning("[Widget] Couldn't remove from home: {}".format(e))
-			return json.dumps({'status': 'FAILED'})
+			return jsonify(success=False)
 
 
 	@route('/home/addWidget', methods=['POST'])
@@ -71,7 +71,7 @@ class IndexView(View):
 			widget.state = 1
 			widget.saveToDB()
 
-			return json.dumps({'status': 'OK'})
+			return redirect('home.html')
 		except Exception as e:
 			self._logger.warning("[Widget] Couldn't add to home: {}".format(e))
-			return json.dumps({'status': 'FAILED'})
+			return jsonify(success=False)

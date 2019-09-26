@@ -348,6 +348,16 @@ class ConfigManager(Manager):
 				self._writeToAliceConfigurationFile(self._aliceConfigurations)
 
 
+	def activateModule(self, moduleName: str, persistent: bool = False):
+
+		if moduleName in self.aliceConfigurations['modules']:
+			self._logger.info('[{}] Activated module {} {} persistence'.format(self.name, moduleName, 'with' if persistent else 'without'))
+			self.aliceConfigurations['modules'][moduleName]['active'] = True
+
+			if persistent:
+				self._writeToAliceConfigurationFile(self._aliceConfigurations)
+
+
 	def removeModule(self, moduleName: str):
 		if moduleName in self.aliceConfigurations['modules']:
 			modules = self.aliceConfigurations['modules']

@@ -30,7 +30,8 @@ class ModuleManager(Manager):
 
 	NEEDED_MODULES = [
 		'AliceCore',
-		'ContextSensitive'
+		'ContextSensitive',
+		'RedQueen'
 	]
 
 	GITHUB_BARE_BASE_URL = 'https://raw.githubusercontent.com/project-alice-powered-by-snips/ProjectAliceModules/master/PublishedModules'
@@ -308,11 +309,21 @@ class ModuleManager(Manager):
 				self._modules.update(modules)
 
 
-	def deactivateModule(self, moduleName: str):
+	def deactivateModule(self, moduleName: str, persistent: bool = False):
 		if moduleName in self._modules:
-			self.ConfigManager.deactivateModule(moduleName)
+			self._modules[moduleName]['instance'].active = False
+			self.ConfigManager.deactivateModule(moduleName, persistent)
 			self.configureModuleIntents(moduleName=moduleName, state=False)
 			self._deactivatedModules[moduleName] = self._modules.pop(moduleName)
+
+
+	def activateModule(self, moduleName: str, persistent: bool = False):
+		if moduleName in self._deactivatedModules:
+			self.ConfigManager.activateModule(moduleName, persistent)
+			self.configureModuleIntents(moduleName=moduleName, state=True)
+			self._modules[moduleName] = self._deactivatedModules.pop(moduleName)
+			self._modules[moduleName]['instance'].active = True
+			self._modules[moduleName]['instance'].onStart()
 
 
 	def checkForModuleUpdates(self):
@@ -571,7 +582,7 @@ class ModuleManager(Manager):
 					continue
 
 				confs.append({
-					'intentId': intent.justTopic,
+					'intentId': intent.justTopic if hasattr(intent, 'justTopic') else intent,
 					'enable'  : state
 				})
 
@@ -598,3 +609,4 @@ class ModuleManager(Manager):
 			self.configureModuleIntents(moduleName, False)
 			self.ConfigManager.removeModule(moduleName)
 			del self._modules[moduleName]
+

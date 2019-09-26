@@ -171,8 +171,7 @@ a:hover {
 }
 
 .moduleStatus {
-    display: flex;
-    flex-grow: 1;
+    width: 100%;
     margin-top: 10px;
     margin-left: 4px;
 }
@@ -198,11 +197,31 @@ a:hover {
 .moduleActions {
     display: flex;
     width: 100%;
-    height: 125px;
+    height: 69px;
     justify-content: space-between;
     align-items: flex-end;
 }
 
+.moduleIntents {
+    display: none;
+    width: 100%;
+    height: 125px;
+    align-items: flex-start;
+}
+
+.moduleViewIntents,
+.moduleSettings {
+    width: 100%;
+    margin-top: 10px;
+    margin-right: 4px;
+    text-align: right;
+}
+
+.moduleViewIntents:hover,
+.moduleSettings:hover {
+    cursor: pointer;
+    color: yellow;
+}
 
 .moduleButton {
     display: flex;

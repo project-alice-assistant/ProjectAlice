@@ -1,6 +1,7 @@
 {% extends 'base.html' %}
 
 {% block header %}
+	<script src="{{ url_for('static', filename='js/modules.js') }}"></script>
 	{% block title %}{{ langData.modules }}{% endblock %}
 {% endblock %}
 
@@ -18,19 +19,25 @@
 			<div class="moduleStatus {% if module.active is sameas true %}active{% else %}disabled{% endif %}">
 				{{ langData.status }}: {% if module.active is sameas true %}enabled{% else %}disabled{% endif %}
 			</div>
+			<div class="moduleViewIntents">
+				 {{ langData.viewIntents }} <i class="fas fa-eye"></i>
+			</div>
+			<div class="moduleSettings">
+				{{ langData.moduleSettings }} <i class="fas fa-cog"></i>
+			</div>
 			<div class="moduleActions">
-				<div class="moduleButton"{% if module.required is sameas true %} style="display: none;"{% endif %}>
+				<div class="moduleButton"{% if module.required is sameas true %} style="display: none;"{% endif %} id="toggle_{{ moduleName }}">
 					{% if module.active is sameas true %}
 						{{ langData.disable }}
 					{% else %}
 						{{ langData.enable }}
 					{% endif %}
 				</div>
-				<div class="moduleButton"{% if module.required is sameas true %} style="display: none;"{% endif %}>
+				<div class="moduleButton"{% if module.required is sameas true %} style="display: none;"{% endif %} id="delete_{{ moduleName }}">
 					{{ langData.delete }}
 				</div>
 				{% if module.updateAvailable is sameas true %}
-					<div class="moduleButton">
+					<div class="moduleButton" id="update_{{ moduleName }}">
 						{{ langData.updatee }}
 					</div>
 				{% endif %}

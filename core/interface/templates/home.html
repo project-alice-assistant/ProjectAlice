@@ -1,10 +1,6 @@
 {% extends 'base.html' %}
 
 {% block header %}
-	<link rel="stylesheet" href="{{ url_for('static', filename='css/jquery-ui.css') }}">
-	<link rel="stylesheet" href="{{ url_for('static', filename='css/theme.css') }}">
-	<script src="{{ url_for('static', filename='js/jquery-3.4.1.min.js') }}"></script>
-	<script src="{{ url_for('static', filename='js/jquery-ui.js') }}"></script>
 	<script src="{{ url_for('static', filename='js/widgets.js') }}"></script>
 
 	{% for widgetList in widgets.values() %}

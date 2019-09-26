@@ -10,5 +10,7 @@
 	"disable": "désactiver",
 	"delete": "supprimer",
 	"updatee": "mise à jour",
-	"addWidgetTitle": "Widgets disponibles"
+	"addWidgetTitle": "Widgets disponibles",
+	"viewIntents": "Voir intents",
+	"moduleSettings": "Configuration"
 }

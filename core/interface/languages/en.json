@@ -10,5 +10,7 @@
 	"disable": "disable",
 	"delete": "delete",
 	"updatee": "update",
-	"addWidgetTitle": "Available widgets"
+	"addWidgetTitle": "Available widgets",
+	"viewIntents": "View intents",
+	"moduleSettings": "Module settings"
 }
