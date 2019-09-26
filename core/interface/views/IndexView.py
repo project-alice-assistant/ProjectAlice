@@ -1,5 +1,4 @@
 import json
-from pathlib import Path
 
 from flask import render_template, request, send_from_directory
 from flask_classful import route
@@ -43,5 +42,21 @@ class IndexView(View):
 			widget.saveToDB()
 
 			return json.dumps({'status': 'OK'})
-		except:
+		except Exception as e:
+			self._logger.warning("[Widget] Couldn't save position: {}".format(e))
+			return json.dumps({'status': 'FAILED'})
+
+
+	@route('/home/removeWidget', methods=['POST'])
+	def removeWidget(self):
+		try:
+			p, w = request.form.get('id').split('_')
+
+			widget = self.ModuleManager.widgets[p][w]
+			widget.state = 0
+			widget.saveToDB()
+
+			return json.dumps({'status': 'OK'})
+		except Exception as e:
+			self._logger.warning("[Widget] Couldn't remove from home: {}".format(e))
 			return json.dumps({'status': 'FAILED'})

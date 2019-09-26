@@ -1,3 +1,5 @@
+import logging
+
 from flask_classful import FlaskView
 
 from core.base.SuperManager import SuperManager
@@ -7,6 +9,7 @@ class View(FlaskView):
 
 	def __init__(self):
 		super().__init__()
+		self._logger = logging.getLogger('ProjectAlice')
 		self._langData = self.WebInterfaceManager.langData
 
 

@@ -257,7 +257,7 @@ a:hover {
 }
 
 .widgetDelete {
-    visibility: hidden;
+    display: none;
     position: absolute;
     z-index: 50;
     top: -15px;
@@ -269,6 +269,15 @@ a:hover {
     font-size: 3em;
     background-color: #1e1e1e;
     text-align: center;
+}
+
+.widgetDelete:hover {
+    color: yellow;
+    cursor: pointer;
+}
+
+#widgetCheck {
+    display: none;
 }
 
 .widget {
