@@ -9,5 +9,6 @@
 	"enable": "aktivieren",
 	"disable": "deaktivieren",
 	"delete": "löschen",
-	"updatee": "aktualisieren"
+	"updatee": "aktualisieren",
+	"addWidgetTitle": "Verfügbare Widgets"
 }

@@ -280,6 +280,32 @@ a:hover {
     display: none;
 }
 
+.addWidgetCategory {
+    width: 100%;
+    background-color: #343434;
+}
+
+.addWidgetCategoryTitle {
+    font-family: 'marskeregular', Arial, sans-serif;
+    height: 50px;
+    background-color: #1e1e1e;
+    color: #d1d1d1;
+    font-size: 1.6em;
+    display: flex;
+    align-items: center;
+    padding-left: 15px;
+}
+
+.addWidgetLine {
+    font-family: 'marskeregular', Arial, sans-serif;
+    height: 35px;
+    color: #d1d1d1;
+    font-size: 1.2em;
+    display: flex;
+    align-items: center;
+    padding-left: 25px;
+}
+
 .widget {
 	border: 2px solid #1e1e1e;
     display: inline-block;

@@ -22,6 +22,15 @@ $(function(){
 
     });
 
+    $('#addWidgetDialog').dialog({
+        autoOpen: false,
+        draggable: false,
+        width: 600,
+        height: 600,
+        modal: true,
+        resizable: false
+    });
+
     $('#removeWidget').on('click', function() {
         $('.widgetDelete').show();
         $('#widgetCheck').show();
@@ -47,5 +56,9 @@ $(function(){
             });
             $(this).parent().parent().remove();
         }
-    })
+    });
+
+    $('.fa-plus-circle').on('click', function() {
+        $('#addWidgetDialog').dialog('open');
+    });
 });

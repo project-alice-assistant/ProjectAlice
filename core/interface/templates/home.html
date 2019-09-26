@@ -1,7 +1,8 @@
 {% extends 'base.html' %}
 
 {% block header %}
-	<link rel="stylesheet" href="{{ url_for('static', filename='css/jquery-ui.theme.min.css') }}">
+	<link rel="stylesheet" href="{{ url_for('static', filename='css/jquery-ui.css') }}">
+	<link rel="stylesheet" href="{{ url_for('static', filename='css/theme.css') }}">
 	<script src="{{ url_for('static', filename='js/jquery-3.4.1.min.js') }}"></script>
 	<script src="{{ url_for('static', filename='js/jquery-ui.js') }}"></script>
 	<script src="{{ url_for('static', filename='js/widgets.js') }}"></script>
@@ -29,6 +30,24 @@
 		</span>
 	</div>
 	<div class="widgetsPane">
+		<div id="addWidgetDialog" title="{{ langData.addWidgetTitle }}">
+			{% for parentName, widgetList in widgets.items() %}
+				<div class="addWidgetCategory">
+					<div class="addWidgetCategoryTitle">
+						{{ parentName }}
+					</div>
+					<div class="addWidgetList">
+						{% for widgetName, widget in widgetList.items() %}
+							{% if widget.state == "0" %}
+								<div class="addWidgetLine">
+									{{ widgetName }}
+								</div>
+							{% endif %}
+						{% endfor %}
+					</div>
+				</div>
+			{% endfor %}
+		</div>
 		{% for parentName, widgetList in widgets.items() %}
 			{% for widgetName, widget in widgetList.items() %}
 				{% if widget.state == "1" %}

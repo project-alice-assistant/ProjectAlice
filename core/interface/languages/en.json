@@ -9,5 +9,6 @@
 	"enable": "enable",
 	"disable": "disable",
 	"delete": "delete",
-	"updatee": "update"
+	"updatee": "update",
+	"addWidgetTitle": "Available widgets"
 }
