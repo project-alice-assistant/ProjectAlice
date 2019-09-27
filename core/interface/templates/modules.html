@@ -13,7 +13,7 @@
 				<div class="moduleName">{{ moduleName }}</div>
 				<div class="moduleVersion">v {{ module.version }}</div>
 			</div>
-			<div class="moduleDefaultView">
+			<div class="moduleContainer moduleDefaultView">
 				<div class="moduleAuthor">
 					{{ langData.by }} {{ module.author }}
 				</div>
@@ -44,11 +44,15 @@
 					{% endif %}
 				</div>
 			</div>
-			<div class="moduleIntentsView">
-				<div class=""><i class="fas fa-times-circle"></i></div>
-				<div>
+			<div class="moduleContainer moduleIntentsView">
+				<div class="moduleIntentsViewCloseButton">
+					<i class="fas fa-times-circle"></i>
+				</div>
+				<div class="modulesIntentsViewList">
 					{% for intent in module.supportedIntents %}
-						<div>{{ intent.justTopic }}</div>
+						{% if not 'Dummy' in intent %}
+							<div class="intentTopic" title="{{ module.getUtterancesByIntent(intent, true, true)|random }}">{{ intent.justTopic }}</div>
+						{% endif %}
 					{% endfor %}
 				</div>
 			</div>

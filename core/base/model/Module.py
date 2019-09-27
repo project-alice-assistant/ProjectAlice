@@ -4,6 +4,8 @@ import importlib
 import inspect
 import json
 import logging
+import re
+
 import typing
 from pathlib import Path
 
@@ -41,6 +43,8 @@ class Module:
 
 		self._supportedIntents = supportedIntents
 		self._authOnlyIntents = authOnlyIntents or dict()
+
+		self._utteranceSlotCleaner = re.compile('{(.+?):=>.+?}')
 
 		self.loadWidgets()
 
@@ -95,13 +99,21 @@ class Module:
 				)
 
 
-	def getUtterancesByIntent(self, intent: Intent, forceLowerCase: bool = True) -> list:
+	def getUtterancesByIntent(self, intent: Intent, forceLowerCase: bool = True, cleanSlots: bool = False) -> list:
 		utterances = list()
 
-		for dtIntentName, dtModuleName in SuperManager.getInstance().samkillaManager.dtIntentNameSkillMatching.items():
-			if dtIntentName == intent.justAction and dtModuleName == self.name:
+		if isinstance(intent, str):
+			check = intent.split('/')[-1].split(':')[-1]
+		else:
+			check = intent.justAction
+
+		for dtIntentName, dtModuleName in self.SamkillaManager.dtIntentNameSkillMatching.items():
+			if dtIntentName == check and dtModuleName == self.name:
 
 				for utterance in self.SamkillaManager.dtIntentsModulesValues[dtIntentName]['utterances']:
+					if cleanSlots:
+						utterance = re.sub(self._utteranceSlotCleaner, '\\1', utterance)
+
 					utterances.append(utterance.lower() if forceLowerCase else utterance)
 
 		return utterances

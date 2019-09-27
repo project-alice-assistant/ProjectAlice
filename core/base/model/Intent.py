@@ -36,12 +36,15 @@ class Intent(str):
 	def __hash__(self):
 		return hash(self.decoratedSelf())
 
+
 	def decoratedSelf(self) -> str:
 		return self.format(owner=self._owner)
+
 
 	@property
 	def protected(self) -> bool:
 		return self._protected
+
 
 	@property
 	def owner(self) -> str:
@@ -52,9 +55,11 @@ class Intent(str):
 	def owner(self, value: str):
 		self._owner = value
 
+
 	@property
 	def justTopic(self) -> str:
 		return Path(self.decoratedSelf()).name
+
 
 	@property
 	def justAction(self) -> str:

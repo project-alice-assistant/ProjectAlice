@@ -1,4 +1,3 @@
-import json
 from collections import OrderedDict
 
 from flask import render_template, request, jsonify

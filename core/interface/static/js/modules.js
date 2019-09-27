@@ -1,3 +1,5 @@
+$( document ).tooltip();
+
 $(function(){
 	$('[id^=toggle_]').on('click', function () {
 		$.ajax({
@@ -13,7 +15,12 @@ $(function(){
 	});
 
 	$('.moduleViewIntents').on('click', function() {
-	    $(this).parent().css('display', 'none');
+	    $(this).parent('.moduleDefaultView').css('display', 'none');
         $(this).parent().parent().children('.moduleIntentsView').css('display', 'flex');
-    })
+    });
+
+    $('.moduleIntentsViewCloseButton').on('click', function() {
+        $(this).parent().parent().children('.moduleDefaultView').css('display', 'flex');
+	    $(this).parent('.moduleIntentsView').css('display', 'none');
+    });
 });
