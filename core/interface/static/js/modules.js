@@ -10,5 +10,10 @@ $(function(){
                 location.reload();
             }
         });
-	})
+	});
+
+	$('.moduleViewIntents').on('click', function() {
+	    $(this).parent().css('display', 'none');
+        $(this).parent().parent().children('.moduleIntentsView').css('display', 'flex');
+    })
 });

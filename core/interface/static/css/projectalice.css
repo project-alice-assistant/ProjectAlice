@@ -148,6 +148,30 @@ a:hover {
     align-content: flex-start;
 }
 
+.moduleDefaultView {
+    position: absolute;
+    top: 35px;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-start;
+    width: 300px;
+    height: 165px;
+    align-content: flex-start;
+    background-color: #636363;
+}
+
+.moduleIntentsView {
+    display: none;
+    position: absolute;
+    top: 35px;
+    flex-wrap: wrap;
+    align-items: flex-start;
+    width: 300px;
+    height: 165px;
+    align-content: flex-start;
+    background-color: #636363;
+}
+
 .moduleTitle {
     height: 25px;
     width: 100%;
