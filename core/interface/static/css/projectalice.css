@@ -358,10 +358,9 @@ a:hover {
 }
 
 .widget {
+    display: block;
 	border: 2px solid #1e1e1e;
-    display: inline-block;
     background-color: #343434;
-    margin: 5px;
 }
 
 .w_tiny {

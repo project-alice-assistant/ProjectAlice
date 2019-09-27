@@ -3,7 +3,7 @@ $(function(){
         containment: '.widgetsPane',
         snap: '.widget',
         grid: [10, 10]
-    });
+    }).css('position', 'absolute');
 
 
     $('.widgetsPane').droppable({
