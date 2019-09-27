@@ -41,6 +41,7 @@ class DialogSession:
 		self._message = session.message
 		self._intentHistory = session.intentHistory
 		self._intentFilter = session.intentFilter
+		self._notUnderstood = session.notUnderstood
 
 
 	def _parseMessage(self):

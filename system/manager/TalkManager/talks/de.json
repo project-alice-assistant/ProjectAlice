@@ -29,6 +29,16 @@
 			"Wie bitte?"
 		]
 	},
+	"notUnderstoodEnd": {
+		"default": [
+			"Tut mir leid, ich konnte deine Frage nicht verstanden",
+			"Sorry, aber ich konnte es nicht verstehen",
+			"Ok, stop, ich verstehe es einfach nicht"
+		],
+		"short": [
+			"Stop... Ich verstehe es nicht"
+		]
+	},
 	"youreWelcome": {
 		"default": [
 			"Gern geschehen!",
