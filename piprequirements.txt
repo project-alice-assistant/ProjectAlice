@@ -20,7 +20,7 @@ pydub
 terminaltables
 PyInquirer
 prompt_toolkit==1.0.14
-colorama
+click
 pyyaml
 boto3
 google-cloud-texttospeech

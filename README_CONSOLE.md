@@ -9,4 +9,4 @@ AliceConsole
 - terminaltables
 - PyInquirer
 - prompt_toolkit==1.0.14
-- colorama
+- click
