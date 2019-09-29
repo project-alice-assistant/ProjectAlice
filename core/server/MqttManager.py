@@ -302,6 +302,7 @@ class MqttManager(Manager):
 		session = self.DialogSessionManager.getSession(sessionId=sessionId)
 
 		if session:
+			session.update(msg)
 			SuperManager.getInstance().broadcast(method='onCaptured', exceptions=[self.name], args=[session], propagateToModules=True)
 
 

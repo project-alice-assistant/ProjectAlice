@@ -123,6 +123,7 @@ class WakewordManager(Manager):
 
 
 	def _workAudioFile(self):
+		print('here')
 		self._state = WakewordManagerState.TRIMMING
 
 		self.wakeword.getSample().close()
