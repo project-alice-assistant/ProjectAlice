@@ -191,7 +191,7 @@ class AliceCore(Module):
 
 	def onSayFinished(self, session: DialogSession):
 		if self.ThreadManager.getLock('AddingWakeword').isSet() and self.WakewordManager.state == WakewordManagerState.IDLE:
-			self.ThreadManager.doLater(interval=0.5, func=self.WakewordManager.addASample)
+			self.ThreadManager.doLater(interval=0.1, func=self.WakewordManager.addASample)
 
 
 	def onSnipsAssistantDownloaded(self, *args):

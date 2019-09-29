@@ -1,16 +1,18 @@
 import json
+import struct
+
 import shutil
 import tempfile
-import wave
 from enum import Enum
 from pathlib import Path
 
-import pyaudio
+import paho.mqtt.client as mqtt
 from pydub import AudioSegment
 
+from core.base.model.Intent import Intent
 from core.base.model.Manager import Manager
 from core.commons import commons
-from core.commons.commons import shutUpAlsaFFS
+from core.dialog.model.DialogSession import DialogSession
 from core.voice.model.Wakeword import Wakeword
 from core.voice.model.WakewordUploadThread import WakewordUploadThread
 
@@ -57,29 +59,10 @@ class WakewordManager(Manager):
 				thread.join(timeout=2)
 
 
-	def tryCaptureFix(self):
-		self._sampleRate /= 2
-		self._channels = 1
-		self._state = WakewordManagerState.IDLE
-
-
-	@property
-	def wakeword(self) -> Wakeword:
-		return self._wakeword
-
-
-	@property
-	def state(self) -> WakewordManagerState:
-		return self._state
-
-
-	@state.setter
-	def state(self, value: WakewordManagerState):
-		self._state = value
-
-
-	def isDefaultThreshold(self) -> bool:
-		return self._threshold == self.THRESHOLD
+	def onCaptured(self, session: DialogSession):
+		if session.message.topic.endswith('CallWakeword'):
+			self.MqttManager.mqttClient.unsubscribe('hermes/audioServer/default/audioFrame')
+			self._workAudioFile()
 
 
 	def newWakeword(self, username: str):
@@ -93,60 +76,60 @@ class WakewordManager(Manager):
 		self._channels = self.ConfigManager.getAliceConfigByName('micChannels')
 
 
-	def removeSample(self):
-		self._wakeword.samples.pop()
-
-
 	def addASample(self):
-		self._state = WakewordManagerState.RECORDING
-		number = len(self._wakeword.samples) + 1
-		self.ThreadManager.newThread(name='captureWakeword', target=self._captureWakeword, args=[number], autostart=True)
+		self.wakeword.newSample()
+		self.MqttManager.mqttClient.subscribe('hermes/audioServer/default/audioFrame')
 
 
-	def _captureWakeword(self, number: int):
+	def captureWakeword(self, message: mqtt.MQTTMessage):
+		# @author DasBasti
+		# https://gist.github.com/DasBasti/050bf6c3232d4bb54c741a1f057459d3
+
 		try:
-			with shutUpAlsaFFS():
-				self._audio = pyaudio.PyAudio()
+			riff, size, fformat = struct.unpack('<4sI4s', message.payload[:12])
+			if riff != b'RIFF':
+				self._logger.error('[{}] Wakeword capture frame parse error'.format(self.name))
+				return
 
-			stream = self._audio.open(
-				format=self._audio.get_format_from_width(2),
-				channels=self._channels,
-				rate=self._sampleRate,
-				input=True,
-				frames_per_buffer=int(self._sampleRate / 10)
-			)
-			self._logger.info('[{}] Now recording...'.format(self.name))
-			frames = list()
+			if fformat != b'WAVE':
+				self._logger.error('[{}] Wakeword capture frame wrong format'.format(self.name))
+				return
 
-			for i in range(0, int(self._sampleRate / int(self._sampleRate / 10) * self.RECORD_SECONDS)):
-				data = stream.read(int(self._sampleRate / 10))
-				frames.append(data)
+			chunkHeader = message.payload[12:20]
+			subChunkId, subChunkSize = struct.unpack('<4sI', chunkHeader)
 
-			self._logger.info('[{}] Recording over'.format(self.name))
-			stream.stop_stream()
-			stream.close()
-			self._audio.terminate()
+			if subChunkId == b'fmt ':
+				aFormat, channels, samplerate, byterate, blockAlign, bps = struct.unpack('HHIIHH', message.payload[20:36])
 
-			wav = wave.open(str(Path(tempfile.gettempdir(), '{}_raw.wav'.format(number))), 'w')
-			wav.setnchannels(self._channels)
-			wav.setsampwidth(2)
-			wav.setframerate(self._sampleRate)
-			wav.writeframes((b''.join(frames)))
-			wav.close()
+			record = self.wakeword.getSample()
 
-			self._wakeword.samples.append(wav)
-			self._workAudioFile(number)
+			if self._state != WakewordManagerState.RECORDING:
+				record.setframerate(samplerate)
+				record.setnchannels(channels)
+				record.setsampwidth(2)
+				self._state = WakewordManagerState.RECORDING
+
+			offset = 36
+			while offset < size:
+				subChunk2Id, subChunk2Size = struct.unpack('<4sI', message.payload[offset:offset + 8])
+				offset += 8
+				if subChunk2Id == b'data' and self._state == WakewordManagerState.RECORDING:
+					record.writeframes(message.payload[offset:offset + subChunk2Size])
+
+				offset = offset + subChunk2Size + 8
+
 		except Exception as e:
 			self._logger.error('[{}] Error capturing wakeword: {}'.format(self.name, e))
-			self._state = WakewordManagerState.IDLE
 
 
-	def _workAudioFile(self, number: int):
+	def _workAudioFile(self):
 		self._state = WakewordManagerState.TRIMMING
 
-		filepath = Path(tempfile.gettempdir(), '{}_raw.wav'.format(number))
+		self.wakeword.getSample().close()
+
+		filepath = self.wakeword.getSamplePath()
 		if not filepath.exists():
-			self._logger.error('[{}] Raw wakeword "{}" wasn\'t found'.format(self.name, number))
+			self._logger.error('[{}] Raw wakeword "{}" wasn\'t found'.format(self.name, len(self.wakeword.samples)))
 			self._state = WakewordManagerState.IDLE
 			return
 
@@ -159,18 +142,18 @@ class WakewordManager(Manager):
 		reworked = trimmed.set_frame_rate(16000)
 		reworked = reworked.set_channels(1)
 
-		reworked.export(Path(tempfile.gettempdir(), '{}.wav'.format(number)), format='wav')
+		reworked.export(Path(tempfile.gettempdir(), '{}.wav'.format(len(self.wakeword.samples))), format='wav')
 		self._state = WakewordManagerState.CONFIRMING
 
 
 	def trimMore(self):
 		self._threshold += 2
-		self._workAudioFile(len(self._wakeword.samples))
+		self._workAudioFile()
 
 
-	def trimLess(self):
+	def xtrimLess(self):
 		self._threshold -= 2
-		self._workAudioFile(len(self._wakeword.samples))
+		self._workAudioFile()
 
 
 	def detectLeadingSilence(self, sound):
@@ -178,6 +161,20 @@ class WakewordManager(Manager):
 		while sound[trim : trim + 10].dBFS < self._threshold and trim < len(sound):
 			trim += 10
 		return trim
+
+
+	def tryCaptureFix(self):
+		self._sampleRate /= 2
+		self._channels = 1
+		self._state = WakewordManagerState.IDLE
+
+
+	def removeSample(self):
+		self._wakeword.samples.pop()
+
+
+	def isDefaultThreshold(self) -> bool:
+		return self._threshold == self.THRESHOLD
 
 
 	def getLastSampleNumber(self) -> int:
@@ -304,3 +301,18 @@ class WakewordManager(Manager):
 		shutil.make_archive(base_name=zipPath.with_suffix(''), format='zip', root_dir=str(path))
 
 		return wakewordName, zipPath
+
+
+	@property
+	def state(self) -> WakewordManagerState:
+		return self._state
+
+
+	@state.setter
+	def state(self, value: WakewordManagerState):
+		self._state = value
+
+
+	@property
+	def wakeword(self) -> Wakeword:
+		return self._wakeword
