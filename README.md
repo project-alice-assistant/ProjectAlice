@@ -45,8 +45,8 @@ If you see or find a copyright breach, feel free to contact us immediately. It i
 
 
 # Other repositories
-- [Project Alice Installer](https://github.com/Psychokiller1888/ProjectAliceInstaller)
-- [Project Alice Modules](https://github.com/Psychokiller1888/ProjectAliceModules)
-- [Project Alice Amazon Polly and Google WaveNet cached TTS speeches](https://github.com/Psychokiller1888/ProjectAliceCachedSpeeches/tree/Amazon-EnUs-Joanna)
+-  [Project Alice Installer](https://github.com/Psychokiller1888/ProjectAliceInstaller)
+-  [Project Alice Modules](https://github.com/Psychokiller1888/ProjectAliceModules)
+-  [Project Alice Amazon Polly and Google WaveNet cached TTS speeches](https://github.com/Psychokiller1888/ProjectAliceCachedSpeeches/tree/Amazon-EnUs-Joanna)
 
-- [Donate](https://paypal.me/Psychokiller1888)
+-  [Donate](https://paypal.me/Psychokiller1888)
