@@ -136,7 +136,7 @@ class ModuleManager(Manager):
 				self.checkModuleConditions(moduleName, module['conditions'], availableModules)
 
 				if ' ' in moduleName:
-					name = commons.toCamelCase(moduleName)	
+					name = commons.toCamelCase(moduleName)
 				else:
 					name = moduleName
 

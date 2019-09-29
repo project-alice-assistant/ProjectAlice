@@ -663,7 +663,7 @@ class MainProcessor:
 				self._ctx.log('[Deprecated] Module {}'.format(moduleName))
 				moduleCacheData = self._savedAssistants[languageFilter][runOnAssistantId]['modules'][moduleName]
 				skillId = moduleCacheData['skillId']
-				
+
 				for slotTypeName in moduleCacheData.get('slotTypes', list()):
 					entityId = moduleCacheData['slotTypes'][slotTypeName]['entityId']
 					self._ctx.entity.delete(entityId=entityId, language=languageFilter)

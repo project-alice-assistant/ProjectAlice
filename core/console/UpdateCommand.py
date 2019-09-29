@@ -16,7 +16,7 @@ def assistant():
 	_logger = logging.getLogger('ProjectAlice')
 	_logger.setLevel(logging.INFO)
 	_logger.addHandler(logging.StreamHandler())
-	
+
 	TABLE_DATA = [['Assistant Downloader']]
 	table_instance = DoubleTable(TABLE_DATA)
 	click.secho('\n{}\n'.format(table_instance.table), fg='green')

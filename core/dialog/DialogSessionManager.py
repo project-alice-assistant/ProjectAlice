@@ -86,7 +86,7 @@ class DialogSessionManager(Manager):
 		if sessionId not in self._sessions:
 			self._logger.warning("[{}] Trying to get user from a session that doesn't exist".format(self.name))
 			return constants.UNKNOWN_USER
-		
+
 		return self._sessions[sessionId].user
 
 

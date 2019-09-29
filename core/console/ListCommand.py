@@ -1,7 +1,7 @@
 import random
 import click
 import requests
-from terminaltables import SingleTable
+from terminaltables import SingleTable # type: ignore
 from core.base.ModuleManager import ModuleManager
 from core.console.Helpers import OptionEatAll
 from core.base.SuperManager import SuperManager
@@ -103,7 +103,7 @@ def modules(authors: list, full: bool):
 @click.option('--full', '-f', is_flag=True, help='Display full description instead of truncated one')
 def intents(module: str, full: bool):
 	"""List intents and utterances for a given module"""
-	
+
 	superManager = SuperManager(None)
 	superManager.initManagers()
 

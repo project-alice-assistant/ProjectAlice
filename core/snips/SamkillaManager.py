@@ -373,7 +373,7 @@ class SamkillaManager(Manager):
 		)
 
 		utterances = list()
-		
+
 		for dtIntentName, dtModuleName in intentNameSkillMatching.items():
 			if dtIntentName == intentFilter:
 				for utterance in intentsModulesValues[dtIntentName]['utterances'].items():
