@@ -284,7 +284,7 @@ network={
 		subprocess.run(['sudo', 'rm', '-rf', Path(commons.rootDir(), 'assistant')])
 		subprocess.run(['sudo', 'rm', '-rf', Path(commons.rootDir(), 'trained', 'assistants', 'assistant_{}'.format(confs['activeLanguage']))])
 		subprocess.run(['sudo', 'rm', '-rf', Path(commons.rootDir(), 'var', 'assistants', confs['activeLanguage'])])
-		subprocess.run(['sudo', 'rm', str(Path('/boot/ProjectAlice.yaml'))])
+		subprocess.run(['sudo', 'mv', str(Path('/boot/ProjectAlice.yaml')), str(Path('/boot/ProjectAlice.yaml.bak'))])
 
 		self.warning('Initializer done with configuring')
 		time.sleep(2)

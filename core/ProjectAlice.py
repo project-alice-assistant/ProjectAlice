@@ -30,3 +30,5 @@ class ProjectAlice(Singleton):
 	def onStop(self):
 		self._logger.info('[ProjectAlice] Shutting down Project Alice')
 		self._superManager.onStop()
+		if self._superManager.configManager.getAliceConfigByName('useSLC'):
+			subprocess.run(['sudo', 'systemctl', 'stop', 'snipsledcontrol'])

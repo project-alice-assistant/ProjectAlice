@@ -177,7 +177,8 @@ class SuperManager(object):
 			try:
 				func = getattr(man, method)
 				func(*args)
-			except AttributeError:
+			except AttributeError as e:
+				print(e)
 				self._logger.warning("[{}] Couldn't find method {} in manager {}".format(self.NAME, method, man.name))
 
 		if propagateToModules:

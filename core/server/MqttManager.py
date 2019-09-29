@@ -38,6 +38,8 @@ class MqttManager(Manager):
 
 	_HERMES_HOTWORD_TOGGLE_ON = 'hermes/hotword/toggleOn'
 
+	_HERMES_AUDIO_FRAME = 'hermes/audioServer/default/audioFrame'
+
 
 	def __init__(self):
 		super().__init__(self.NAME)
@@ -136,6 +138,15 @@ class MqttManager(Manager):
 	# noinspection PyUnusedLocal
 	def onMessage(self, client, userdata, message: mqtt.MQTTMessage):
 		try:
+			if message.topic == self._HERMES_AUDIO_FRAME:
+				SuperManager.getInstance().broadcast(
+					method='onAudioFrame',
+					exceptions=[self.name],
+					args=[message],
+					propagateToModules=True
+				)
+				return
+
 			if message.topic == self._HERMES_INTENT_PARSED:
 				return
 
@@ -149,8 +160,7 @@ class MqttManager(Manager):
 				if self.MultiIntentManager.processMessage(message):
 					return
 
-			if message.topic == self._HERMES_CAPTURED:
-				self.ModuleManager.broadcast('onASRCaptured', args=[payload])
+			if message.topic == self._HERMES_CAPTURED and session:
 				return
 
 			elif message.topic == self._HERMES_START_LISTENING:
@@ -698,7 +708,7 @@ class MqttManager(Manager):
 
 
 	@property
-	def mqttClient(self):
+	def mqttClient(self) -> mqtt.Client:
 		return self._mqttClient
 
 
