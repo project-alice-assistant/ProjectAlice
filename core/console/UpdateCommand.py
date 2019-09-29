@@ -1,5 +1,5 @@
 import click
-from terminaltables import DoubleTable
+from terminaltables import DoubleTable # type: ignore
 from core.base.SuperManager import SuperManager
 import logging.handlers
 
