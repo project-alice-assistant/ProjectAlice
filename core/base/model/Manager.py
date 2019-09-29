@@ -1,5 +1,7 @@
 from typing import Optional
 
+from paho.mqtt.client import MQTTMessage
+
 from core.base.SuperManager import SuperManager
 from core.commons import commons
 from core.commons.model.Singleton import Singleton
@@ -77,6 +79,7 @@ class Manager(Singleton):
 	def onSay(self, session: DialogSession): pass
 	def onSayFinished(self, session: DialogSession): pass
 	def onSessionQueued(self, session: DialogSession): pass
+	def onAudioFrame(self, message: MQTTMessage): pass
 
 
 	# HELPERS

@@ -9,7 +9,6 @@ from pathlib import Path
 import paho.mqtt.client as mqtt
 from pydub import AudioSegment
 
-from core.base.model.Intent import Intent
 from core.base.model.Manager import Manager
 from core.commons import commons
 from core.dialog.model.DialogSession import DialogSession
@@ -60,7 +59,7 @@ class WakewordManager(Manager):
 
 
 	def onCaptured(self, session: DialogSession):
-		if session.message.topic.endswith('CallWakeword'):
+		if self.state == WakewordManagerState.RECORDING:
 			self.MqttManager.mqttClient.unsubscribe('hermes/audioServer/default/audioFrame')
 			self._workAudioFile()
 
@@ -78,15 +77,17 @@ class WakewordManager(Manager):
 
 	def addASample(self):
 		self.wakeword.newSample()
+		self.state = WakewordManagerState.RECORDING
 		self.MqttManager.mqttClient.subscribe('hermes/audioServer/default/audioFrame')
 
 
-	def captureWakeword(self, message: mqtt.MQTTMessage):
+	def onAudioFrame(self, message: mqtt.MQTTMessage):
 		# @author DasBasti
 		# https://gist.github.com/DasBasti/050bf6c3232d4bb54c741a1f057459d3
 
 		try:
 			riff, size, fformat = struct.unpack('<4sI4s', message.payload[:12])
+
 			if riff != b'RIFF':
 				self._logger.error('[{}] Wakeword capture frame parse error'.format(self.name))
 				return
@@ -100,30 +101,29 @@ class WakewordManager(Manager):
 
 			if subChunkId == b'fmt ':
 				aFormat, channels, samplerate, byterate, blockAlign, bps = struct.unpack('HHIIHH', message.payload[20:36])
+				bitrate = (samplerate * channels * bps) / 1024
 
 			record = self.wakeword.getSample()
 
-			if self._state != WakewordManagerState.RECORDING:
+			if not record._datawritten:
 				record.setframerate(samplerate)
 				record.setnchannels(channels)
 				record.setsampwidth(2)
-				self._state = WakewordManagerState.RECORDING
 
-			offset = 36
-			while offset < size:
-				subChunk2Id, subChunk2Size = struct.unpack('<4sI', message.payload[offset:offset + 8])
-				offset += 8
+			chunkOffset = 52
+			while chunkOffset < size:
+				subChunk2Id, subChunk2Size = struct.unpack('<4sI', message.payload[chunkOffset:chunkOffset + 8])
+				chunkOffset += 8
 				if subChunk2Id == b'data' and self._state == WakewordManagerState.RECORDING:
-					record.writeframes(message.payload[offset:offset + subChunk2Size])
+					record.writeframes(message.payload[chunkOffset:chunkOffset + subChunk2Size])
 
-				offset = offset + subChunk2Size + 8
+				chunkOffset = chunkOffset + subChunk2Size + 8
 
 		except Exception as e:
 			self._logger.error('[{}] Error capturing wakeword: {}'.format(self.name, e))
 
 
 	def _workAudioFile(self):
-		print('here')
 		self._state = WakewordManagerState.TRIMMING
 
 		self.wakeword.getSample().close()
@@ -152,7 +152,7 @@ class WakewordManager(Manager):
 		self._workAudioFile()
 
 
-	def xtrimLess(self):
+	def trimLess(self):
 		self._threshold -= 2
 		self._workAudioFile()
 

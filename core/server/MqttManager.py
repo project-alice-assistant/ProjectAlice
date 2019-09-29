@@ -139,7 +139,12 @@ class MqttManager(Manager):
 	def onMessage(self, client, userdata, message: mqtt.MQTTMessage):
 		try:
 			if message.topic == self._HERMES_AUDIO_FRAME:
-				self.WakewordManager.captureWakeword(message)
+				SuperManager.getInstance().broadcast(
+					method='onAudioFrame',
+					exceptions=[self.name],
+					args=[message],
+					propagateToModules=True
+				)
 				return
 
 			if message.topic == self._HERMES_INTENT_PARSED:
@@ -302,7 +307,6 @@ class MqttManager(Manager):
 		session = self.DialogSessionManager.getSession(sessionId=sessionId)
 
 		if session:
-			session.update(msg)
 			SuperManager.getInstance().broadcast(method='onCaptured', exceptions=[self.name], args=[session], propagateToModules=True)
 
 

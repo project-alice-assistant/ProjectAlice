@@ -10,6 +10,7 @@ import typing
 from pathlib import Path
 
 from paho.mqtt import client as MQTTClient
+from paho.mqtt.client import MQTTMessage
 
 from core.ProjectAliceExceptions import AccessLevelTooLow, ModuleStartingFailed
 from core.base.SuperManager import SuperManager
@@ -353,6 +354,7 @@ class Module:
 	def onSnipsAssistantDownloadFailed(self, *args): pass
 	def onAuthenticated(self, session: DialogSession, *args): pass
 	def onAuthenticationFailed(self, session: DialogSession, *args): pass
+	def onAudioFrame(self, message: MQTTMessage):pass
 
 
 	# HELPERS

@@ -27,12 +27,12 @@ class Wakeword:
 
 
 	def newSample(self):
-		self.samples.append(wave.open(str(self.getSamplePath(len(self.samples) + 1)), 'wb'))
+		self._samples.append(wave.open(str(self.getSamplePath(len(self._samples) + 1)), 'wb'))
 
 
 	def getSamplePath(self, number: int = None) -> Path:
 		if not number:
-			number = len(self.samples) - 1
+			number = len(self._samples)
 
 		return Path(tempfile.gettempdir(), '{}_raw.wav'.format(number))
 
