@@ -91,7 +91,7 @@ class MqttManager(Manager):
 
 	def onBooted(self):
 		super().onBooted()
-		self.playSound(soundFile='boot')
+		self.playSound(soundFile=Path('boot'))
 
 
 	def onStop(self):
@@ -628,7 +628,7 @@ class MqttManager(Manager):
 		}))
 
 
-	def playSound(self, soundFile: str, sessionId: str = '', absolutePath: bool = False, siteId: str = constants.DEFAULT_SITE_ID, root: str = '', uid: str = ''):
+	def playSound(self, soundFile: Path, sessionId: str = '', absolutePath: bool = False, siteId: str = constants.DEFAULT_SITE_ID, root: str = '', uid: str = ''):
 		"""
 		Plays a sound
 		:param uid: a unique id for that sound
@@ -660,7 +660,7 @@ class MqttManager(Manager):
 			if ' ' in siteId:
 				siteId = siteId.replace(' ', '_')
 
-			soundFile = Path(soundFile).with_suffix('.wav') if absolutePath else Path(root, soundFile).with_suffix('.wav')
+			soundFile = (root if absolutePath else '') / soundFile.with_suffix('.wav')
 
 			if not soundFile.exists():
 				self._logger.error("Sound file {} doesn't exist".format(soundFile))

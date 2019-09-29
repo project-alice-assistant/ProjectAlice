@@ -1,4 +1,4 @@
-from paho.mqtt.client import MQTTMessage
+from paho.mqtt.client import MQTTMessage # type: ignore
 
 from core.base.model import Intent
 from core.commons import commons, constants

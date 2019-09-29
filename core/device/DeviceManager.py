@@ -7,12 +7,12 @@ import uuid
 from random import shuffle
 from typing import Optional
 
-import esptool
+import esptool # type: ignore
 import requests
-from esptool import ESPLoader
-from paho.mqtt.client import MQTTMessage
-from serial import Serial
-from serial.tools import list_ports
+from esptool import ESPLoader # type: ignore
+from paho.mqtt.client import MQTTMessage # type: ignore
+from serial import Serial # type: ignore
+from serial.tools import list_ports # type: ignore
 
 from core.base.SuperManager import SuperManager
 from core.base.model.Manager import Manager

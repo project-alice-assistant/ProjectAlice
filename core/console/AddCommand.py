@@ -1,7 +1,7 @@
 import click
 import urllib.request
 import requests
-from terminaltables import DoubleTable
+from terminaltables import DoubleTable # type: ignore
 from core.base.ModuleManager import ModuleManager
 
 @click.group()
