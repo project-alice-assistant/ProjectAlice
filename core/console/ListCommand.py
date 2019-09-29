@@ -101,7 +101,7 @@ def modules(authors: list, full: bool):
 @List.command()
 @click.option('--module', '-m', help='Show more data about specific module')
 @click.option('--full', '-f', is_flag=True, help='Display full description instead of truncated one')
-def intents(module: bool, full: bool):
+def intents(module: str, full: bool):
 	"""List intents and utterances for a given module"""
 	
 	superManager = SuperManager(None)
