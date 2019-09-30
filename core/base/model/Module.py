@@ -124,6 +124,10 @@ class Module:
 		return Path(inspect.getfile(self.__class__)).parent
 
 
+	def getMyConfigs(self) -> dict:
+		return self.ConfigManager.getModuleConfigs(self.name)
+
+
 	@property
 	def widgets(self) -> dict:
 		return self._widgets
@@ -306,13 +310,16 @@ class Module:
 
 		return True
 
+
 	def onModuleInstalled(self):
 		self._updateAvailable = False
 		self.MqttManager.subscribeModuleIntents(self.name)
 
+
 	def onModuleUpdated(self):
 		self._updateAvailable = False
 		self.MqttManager.subscribeModuleIntents(self.name)
+
 
 	def onSleep(self): pass
 	def onWakeup(self): pass

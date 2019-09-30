@@ -237,11 +237,15 @@ class ConfigManager(Manager):
 		)
 
 
-	def getModuleConfigByName(self, moduleName: str, configName: str = '', voiceControl: bool = False) -> dict:
+	def getModuleConfigs(self, moduleName: str) -> dict:
+		return self.getModuleConfigByName(moduleName, constants.ALL)
+
+
+	def getModuleConfigByName(self, moduleName: str, configName: str, voiceControl: bool = False) -> dict:
 		if moduleName not in self._modulesConfigurations:
 			return dict()
 
-		if not configName:
+		if configName == constants.ALL:
 			return self._modulesConfigurations[moduleName]
 
 		return self._modulesConfigurations[moduleName].get(
