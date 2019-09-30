@@ -53,7 +53,7 @@ class Module:
 	def loadWidgets(self):
 		fp = Path(self.getCurrentDir(), 'widgets')
 		if fp.exists():
-			self._logger.info(f'[{self.name}] Loading {len(list(fp.glob('*.py'))) - 1} widgets')
+			self._logger.info(f"[{self.name}] Loading {len(list(fp.glob('*.py'))) - 1} widgets")
 
 			data = self.DatabaseManager.fetch(
 				tableName='widgets',

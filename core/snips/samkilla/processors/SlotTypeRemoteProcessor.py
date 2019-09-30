@@ -25,7 +25,7 @@ class SlotTypeRemoteProcessor:
 	def slotTypeValuesToHash(self, entityId: str = '') -> str:
 		slotType = self._slotType
 
-		hashSum = f'{str(slotType['name'])}{str(slotType['matchingStrictness'])}{str(slotType['automaticallyExtensible'])}{str(slotType['useSynonyms']}'
+		hashSum = f"{str(slotType['name'])}{str(slotType['matchingStrictness'])}{str(slotType['automaticallyExtensible'])}{str(slotType['useSynonyms']}"
 
 		for valueObject in slotType['values']:
 			hashSum += str(valueObject['value'])
@@ -52,10 +52,10 @@ class SlotTypeRemoteProcessor:
 		changes = False
 
 		if hashComputationOnly or (oldInstanceExists and oldHash == curHash):
-			self._ctx.log(f'[Sync] Entity|SlotType model {entityId} = {slotType['name']} has no changes')
+			self._ctx.log(f"[Sync] Entity|SlotType model {entityId} = {slotType['name']} has no changes")
 		elif oldInstanceExists:
 			changes = True
-			self._ctx.log(f'[Sync] Entity|SlotType model {entityId} = {slotType['name']} has been edited')
+			self._ctx.log(f"[Sync] Entity|SlotType model {entityId} = {slotType['name']} has been edited")
 			self._ctx.entity.edit(
 				entityId,
 				name=slotType['name'],

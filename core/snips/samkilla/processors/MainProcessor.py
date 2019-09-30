@@ -154,18 +154,18 @@ class MainProcessor:
 			module = json.loads(Path(moduleFile).read_text())
 
 			if 'module' not in module:
-				self._ctx.log(f'\n[Inconsistent] File {moduleFile} has no \'module\' name definition')
+				self._ctx.log(f"\n[Inconsistent] File {moduleFile} has no 'module' name definition")
 				return None
 
 			module['language'] = moduleLanguage
 
 			if module['module'] not in self._modules:
 				self._ctx.log(
-					f'\n[Inconsistent] Module {module['module']} has a name different from its directory')
+					f"\n[Inconsistent] Module {module['module']} has a name different from its directory")
 				return None
 
 			self._modules[module['module']][moduleLanguage] = module
-			self._ctx.log(f'[FilePull] Loading module {module['module']}')
+			self._ctx.log(f"[FilePull] Loading module {module['module']}")
 			return module
 
 		except json.decoder.JSONDecodeError as jsonError:
@@ -706,7 +706,7 @@ class MainProcessor:
 
 				if skillId not in remoteIndexedSkills:
 					skillId = self._ctx.assistant.forkAssistantSkill(assistantId=runOnAssistantId, sourceSkillId=skillId)
-					self._ctx.log(f'[Forked] Skill from {skill['id']} to {skillId}')
+					self._ctx.log(f"[Forked] Skill from {skill['id']} to {skillId}")
 					hasFork = True
 
 				for intent in skill['intents']:
@@ -714,7 +714,7 @@ class MainProcessor:
 
 					if intentId not in remoteIndexedIntents:
 						intentId = self._ctx.skill.forkSkillIntent(skillId=skillId, sourceIntentId=intentId, userId=self._ctx.userId)
-						self._ctx.log(f'[Forked] Intent from {skill['id']} to {intentId} used in skill {skillId}')
+						self._ctx.log(f"[Forked] Intent from {skill['id']} to {intentId} used in skill {skillId}")
 						hasFork = True
 
 		if hasFork:

@@ -102,5 +102,5 @@ class VitalConfigMissing(Exception):
 	def __init__(self, message: str):
 		super().__init__(message)
 		self._logger = logging.getLogger('ProjectAlice')
-		self._logger.warning(f'[ConfigManager] A vital configuration ("{message}") is missing. Make sure the following configurations are set: {' / '.join(SuperManager.getInstance().configManager.vitalConfigs)}')
+		self._logger.warning(f'[ConfigManager] A vital configuration ("{message}") is missing. Make sure the following configurations are set: {" / ".join(SuperManager.getInstance().configManager.vitalConfigs)}')
 		SuperManager.getInstance().projectAlice.onStop()

@@ -97,7 +97,7 @@ class ModuleRemoteProcessor:
 
 
 	def cleanCreatedInstances(self):
-		self._ctx.log(f'[Cleanup] Deleting {len(self._createdInstances['skills'])} skills')
+		self._ctx.log(f"[Cleanup] Deleting {len(self._createdInstances['skills'])} skills")
 		for skill in self._createdInstances['skills']:
 			self._ctx.skill.removeFromAssistant(assistantId=skill['assistantId'], skillId=skill['id'], deleteAfter=True)
 		self._createdInstances['skills'] = list()

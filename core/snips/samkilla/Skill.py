@@ -231,7 +231,7 @@ class Skill:
 			if len(items) == 1:
 				oldIntentId = f'intent_{items[0]}'
 				intentDuplicate = self._ctx.intent.getIntentByUserIdAndIntentId(userId, oldIntentId)
-				self._ctx.log(f'Duplicate intent with id,name {oldIntentId},{intentDuplicate['name']}')
+				self._ctx.log(f"Duplicate intent with id, name {oldIntentId}, {intentDuplicate['name']}"")
 
 				if intentDuplicate:
 					if 'usedIn' in intentDuplicate and intentDuplicate['usedIn']:
