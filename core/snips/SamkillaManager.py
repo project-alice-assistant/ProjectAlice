@@ -105,12 +105,12 @@ class SamkillaManager(Manager):
 		if moduleFilter is None:
 			moduleFilter = list()
 
-		self.log('[{}] Sync for module/s [{}]'.format(self.name, ', '.join(moduleFilter) or '*'))
+		self.log(f"[{self.name}] Sync for module/s [{', '.join(moduleFilter) or '*'}]")
 
 		started = self.start()
 
 		if not started:
-			self.log('[{}] No credentials. Unable to synchronize assistant with remote console'.format(self.name))
+			self.log(f'[{self.name}] No credentials. Unable to synchronize assistant with remote console')
 			return False
 
 		activeLang: str = self.LanguageManager.activeLanguage
@@ -122,21 +122,21 @@ class SamkillaManager(Manager):
 				baseAssistantId=activeProjectId,
 				baseLanguageFilter=activeLang,
 				baseModuleFilter=moduleFilter,
-				newAssistantTitle='ProjectAlice_{}'.format(self.LanguageManager.activeLanguage)
+				newAssistantTitle=f'ProjectAlice_{self.LanguageManager.activeLanguage}'
 			)
 
 			if changes:
 				if download:
-					self.log('[{}] Changes detected during sync, let\'s update the assistant...'.format(self.name))
+					self.log(f'[{self.name}] Changes detected during sync, let\'s update the assistant...')
 					self.SnipsConsoleManager.doDownload()
 				else:
-					self.log('[{}] Changes detected during sync but not downloading yet'.format(self.name))
+					self.log(f'[{self.name}] Changes detected during sync but not downloading yet')
 			else:
-				self.log('[{}] No changes detected during sync'.format(self.name))
+				self.log(f'[{self.name}] No changes detected during sync')
 
 			self.stop()
 		except AssistantNotFoundError:
-			self.log('[{}] Assistant project id \'{}\' for lang \'{}\' doesn\'t exist. Check your config.py'.format(self.name, activeProjectId, activeLang))
+			self.log(f'[{self.name}] Assistant project id \'{activeProjectId}\' for lang \'{activeLang}\' doesn\'t exist. Check your config.py')
 
 		return changes
 
@@ -278,7 +278,7 @@ class SamkillaManager(Manager):
 
 	# noinspection PyUnusedLocal
 	def findRunnableAssistant(self, assistantId: str, assistantLanguage: str, newAssistantTitle: str = '', persistLocal: bool = False) -> str:
-		if not newAssistantTitle: newAssistantTitle = 'ProjectAlice_{}'.format(self.LanguageManager.activeLanguage)
+		if not newAssistantTitle: newAssistantTitle = f'ProjectAlice_{self.LanguageManager.activeLanguage}'
 
 		runOnAssistantId = None
 
@@ -286,10 +286,10 @@ class SamkillaManager(Manager):
 		if assistantId:
 			if not self._assistant.exists(assistantId):
 				# If not found remotely, stop everything
-				raise AssistantNotFoundError(4001, 'Assistant with id {} not found'.format(assistantId), ['assistant'])
+				raise AssistantNotFoundError(4001, f'Assistant with id {assistantId} not found', ['assistant'])
 			# If found remotely, just use it
 			runOnAssistantId = assistantId
-			self.log('Using provided assistantId: {}'.format(runOnAssistantId))
+			self.log(f'Using provided assistantId: {runOnAssistantId}')
 
 
 		if not runOnAssistantId:
@@ -299,11 +299,11 @@ class SamkillaManager(Manager):
 			if not localFirstAssistantId or not self._assistant.exists(localFirstAssistantId):
 				# If not found remotely, create a new one
 				runOnAssistantId = self._assistant.create(title=newAssistantTitle, language=assistantLanguage)
-				self.log('Using new assistantId: {}'.format(runOnAssistantId))
+				self.log(f'Using new assistantId: {runOnAssistantId}')
 			else:
 				# If found remotely, just use it
 				runOnAssistantId = localFirstAssistantId
-				self.log('Using first local assistantId: {}'.format(runOnAssistantId))
+				self.log(f'Using first local assistantId: {runOnAssistantId}')
 
 		# Add assistant in cache locally if it isn't the case
 		self._mainProcessor.syncRemoteToLocalAssistant(

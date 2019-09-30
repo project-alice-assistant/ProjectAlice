@@ -1,3 +1,4 @@
+from textwrap import dedent
 from paho.mqtt.client import MQTTMessage # type: ignore
 
 from core.base.model import Intent
@@ -180,18 +181,18 @@ class DialogSession:
 
 
 	def __repr__(self) -> str:
-		output = '[{}] -> [\n'.format(self.__class__.__name__)
-		output += '\t"siteId: "{}",\n'.format(self.siteId)
-		output += '\t"sessionId: "{}",\n'.format(self._sessionId)
-		output += '\t"user: "{}",\n'.format(self._user)
-		output += '\t"message: "{}",\n'.format(self._message.topic)
-		output += '\t"slots: "{}",\n'.format(self._slots)
-		output += '\t"slotsAsObject: "{}",\n'.format(self._slotsAsObjects)
-		output += '\t"customData: "{}",\n'.format(self._customData)
-		output += '\t"payload: "{}",\n'.format(self._payload)
-		output += '\t"previousIntent: "{}",\n'.format(self.previousIntent)
-		output += '\t"intentHistory: "{}",\n'.format(self._intentHistory)
-		output += '\t"intentFilter: "{}",\n'.format(self._intentFilter)
-		output += '\t"notUnderstood: "{}"\n'.format(self._notUnderstood)
-		output += ']'
-		return output
+		return dedent(f'''\
+			[{self.__class__.__name__}] -> [\n'
+			\t"siteId: "{self.siteId}",\n'
+			\t"sessionId: "{self._sessionId}",\n'
+			\t"user: "{self._user}",\n'
+			\t"message: "{self._message.topic}",\n'
+			\t"slots: "{self._slots}",\n'
+			\t"slotsAsObject: "{self._slotsAsObjects}",\n'
+			\t"customData: "{self._customData}",\n'
+			\t"payload: "{self._payload}",\n'
+			\t"previousIntent: "{self.previousIntent}",\n'
+			\t"intentHistory: "{self._intentHistory}",\n'
+			\t"intentFilter: "{self._intentFilter}",\n'
+			\t"notUnderstood: "{self._notUnderstood}"\n]'
+		''')

@@ -1,3 +1,4 @@
+from textwrap import dedent
 import click
 import urllib.request
 import requests
@@ -25,31 +26,32 @@ def module(author_name: str, module_name: str):
 		req = requests.get(url)
 
 		if req.status_code // 100 == 4:
-			click.echo(
-				f"> Unknown {click.style(f'{author_name}/{module_name}', fg='red')} pair\n"
-				f"- You can use {click.style('author:list', fg='yellow')} to list all authors\n"
-				f"- You can use {click.style('module:list', fg='yellow')} to list all modules from an author\n\n",
+			click.echo(dedent(f"""
+				> Unknown {click.style(f'{author_name}/{module_name}', fg='red')} pair
+				- You can use {click.style('author:list', fg='yellow')} to list all authors
+				- You can use {click.style('module:list', fg='yellow')} to list all modules from an author
+				"""),
 				err=True
 			)
 			return
 
 		module = req.json()
-		click.echo(
-			"+ Informations:\n"
-			"===============\n"
-			f"name: {click.style(str(module['name']), fg='yellow')}\n"
-			f"version: {click.style(str(module['version']), fg='yellow')}\n"
-			f"author: {click.style(module['author'], fg='yellow')}\n"
-			f"maintainers: {click.style(', '.join(module['maintainers']), fg='yellow')}\n"
-			f"description: {click.style(module['desc'], fg='yellow')}\n"
-			f"aliceMinVersion: {click.style(str(module['aliceMinVersion']), fg='yellow')}\n"
-			f"pip requirements: {click.style(', '.join(module['pipRequirements']), fg='yellow')}\n"
-			f"system requirements: {click.style(', '.join(module['systemRequirements']), fg='yellow')}\n\n"
+		click.echo(dedent(f"""
+			+ Informations:
+			===============
+			name: {click.style(str(module['name']), fg='yellow')}
+			version: {click.style(str(module['version']), fg='yellow')}
+			author: {click.style(module['author'], fg='yellow')}
+			maintainers: {click.style(', '.join(module['maintainers']), fg='yellow')}
+			description: {click.style(module['desc'], fg='yellow')}
+			aliceMinVersion: {click.style(str(module['aliceMinVersion']), fg='yellow')}
+			pip requirements: {click.style(', '.join(module['pipRequirements']), fg='yellow')}
+			system requirements: {click.style(', '.join(module['systemRequirements']), fg='yellow')}
 
-			"+ Conditions:\n"
-			"=============\n"
-			f"lang: {click.style(', '.join(module['conditions']['lang']), fg='yellow')}\n\n"
-		)
+			+ Conditions:\n"
+			=============\n"
+			lang: {click.style(', '.join(module['conditions']['lang']), fg='yellow')}
+		"""))
 
 		urllib.request.urlretrieve(url, f'system/moduleInstallTickets/{module_name}.install')
 

@@ -66,7 +66,7 @@ class WakewordManager(Manager):
 
 	def newWakeword(self, username: str):
 		for i in range(1, 4):
-			file = Path('/tmp/{}_raw.wav'.format(i))
+			file = Path(f'/tmp/{i}_raw.wav')
 			if file.exists():
 				file.unlink()
 
@@ -89,11 +89,11 @@ class WakewordManager(Manager):
 			riff, size, fformat = struct.unpack('<4sI4s', message.payload[:12])
 
 			if riff != b'RIFF':
-				self._logger.error('[{}] Wakeword capture frame parse error'.format(self.name))
+				self._logger.error(f'[{self.name}] Wakeword capture frame parse error')
 				return
 
 			if fformat != b'WAVE':
-				self._logger.error('[{}] Wakeword capture frame wrong format'.format(self.name))
+				self._logger.error(f'[{self.name}] Wakeword capture frame wrong format')
 				return
 
 			chunkHeader = message.payload[12:20]
@@ -120,7 +120,7 @@ class WakewordManager(Manager):
 				chunkOffset = chunkOffset + subChunk2Size + 8
 
 		except Exception as e:
-			self._logger.error('[{}] Error capturing wakeword: {}'.format(self.name, e))
+			self._logger.error(f'[{self.name}] Error capturing wakeword: {e}')
 
 
 	def _workAudioFile(self):
@@ -130,7 +130,7 @@ class WakewordManager(Manager):
 
 		filepath = self.wakeword.getSamplePath()
 		if not filepath.exists():
-			self._logger.error('[{}] Raw wakeword "{}" wasn\'t found'.format(self.name, len(self.wakeword.samples)))
+			self._logger.error(f'[{self.name}] Raw wakeword "{len(self.wakeword.samples)}" wasn\'t found')
 			self._state = WakewordManagerState.IDLE
 			return
 
@@ -143,7 +143,7 @@ class WakewordManager(Manager):
 		reworked = trimmed.set_frame_rate(16000)
 		reworked = reworked.set_channels(1)
 
-		reworked.export(Path(tempfile.gettempdir(), '{}.wav'.format(len(self.wakeword.samples))), format='wav')
+		reworked.export(Path(tempfile.gettempdir(), f'{len(self.wakeword.samples)}.wav'), format='wav')
 		self._state = WakewordManagerState.CONFIRMING
 
 
@@ -186,7 +186,7 @@ class WakewordManager(Manager):
 
 
 	def finalizeWakeword(self):
-		self._logger.info('[{}] Finalyzing wakeword'.format(self.name))
+		self._logger.info(f'[{self.name}] Finalyzing wakeword')
 		self._state = WakewordManagerState.FINALIZING
 
 		config = {
@@ -217,7 +217,7 @@ class WakewordManager(Manager):
 		path = Path(commons.rootDir(), 'trained/hotwords', self.wakeword.username.lower())
 
 		if path.exists():
-			self._logger.warning('[{}] Destination directory for new wakeword already exists, deleting'.format(self.name))
+			self._logger.warning(f'[{self.name}] Destination directory for new wakeword already exists, deleting')
 			shutil.rmtree(path)
 
 		path.mkdir()
@@ -225,7 +225,7 @@ class WakewordManager(Manager):
 		(path/'config.json').write_text(json.dumps(config, indent=4))
 
 		for i in range(1, 4):
-			shutil.move(Path(tempfile.gettempdir(), '{}.wav'.format(i)), path/'{}.wav'.format(i))
+			shutil.move(Path(tempfile.gettempdir(), f'{i}.wav'), path/f'{i}.wav')
 
 		self._addWakewordToSnips(path)
 		self.ThreadManager.newThread(name='SatelliteWakewordUpload', target=self._upload, args=[path, self._wakeword.username], autostart=True)
@@ -253,7 +253,7 @@ class WakewordManager(Manager):
 		if add:
 			models.append(str(Path(commons.rootDir(), 'trained/hotwords/snips_hotword=0.53')))
 
-		models.append('{}=0.52'.format(str(path)))
+		models.append(f'{str(path)}=0.52')
 		self.ConfigManager.updateSnipsConfiguration('snips-hotword', 'model', models, restartSnips=True)
 
 		self._upload(path)
@@ -294,11 +294,11 @@ class WakewordManager(Manager):
 		wakewordName = path.name
 		zipPath = path.parent / (wakewordName + '.zip')
 
-		self._logger.info('[{}] Cleaning up {}'.format(self.name, wakewordName))
+		self._logger.info(f'[{self.name}] Cleaning up {wakewordName}')
 		if zipPath.exists():
 			zipPath.unlink()
 
-		self._logger.info('[{}] Packing wakeword {}'.format(self.name, wakewordName))
+		self._logger.info(f'[{self.name}] Packing wakeword {wakewordName}')
 		shutil.make_archive(base_name=zipPath.with_suffix(''), format='zip', root_dir=str(path))
 
 		return wakewordName, zipPath
