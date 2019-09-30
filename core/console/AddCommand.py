@@ -26,33 +26,34 @@ def module(author_name: str, module_name: str):
 
 		if req.status_code // 100 == 4:
 			click.echo(
-				'> Unknown {} pair\n'.format(click.style('{}/{}'.format(author_name, module_name), fg='red'))
-				+ '- You can use {} to list all authors\n'.format(click.style('author:list', fg='yellow'))
-				+ '- You can use {} to list all modules from an author\n\n'.format(click.style('module:list', fg='yellow')),
+				f"> Unknown {click.style(f'{author_name}/{module_name}', fg='red')} pair\n"
+				f"- You can use {click.style('author:list', fg='yellow')} to list all authors\n"
+				f"- You can use {click.style('module:list', fg='yellow')} to list all modules from an author\n\n",
 				err=True
 			)
 			return
 
 		module = req.json()
 		click.echo(
-			'+ Informations:\n'
-			+ '===============\n'
-			+ 'name: {}\n'.format(click.style(str(module['name']), fg='yellow'))
-			+ 'version: {}\n'.format(click.style(str(module['version']), fg='yellow'))
-			+ 'author: {}\n'.format(click.style(module['author'], fg='yellow'))
-			+ 'maintainers: {}\n'.format(click.style(', '.join(module['maintainers']), fg='yellow'))
-			+ 'description: {}\n'.format(click.style(module['desc'], fg='yellow'))
-			+ 'aliceMinVersion: {}\n'.format(click.style(str(module['aliceMinVersion']), fg='yellow'))
-			+ 'pip requirements: {}\n'.format(click.style(', '.join(module['pipRequirements']), fg='yellow'))
-			+ 'system requirements: {}\n\n'.format(click.style(', '.join(module['systemRequirements']), fg='yellow'))
-			+ '+ Conditions:\n'
-			+ '=============\n'
-			+ 'lang: {}\n\n'.format(click.style(', '.join(module['conditions']['lang']), fg='yellow'))
+			"+ Informations:\n"
+			"===============\n"
+			f"name: {click.style(str(module['name']), fg='yellow')}\n"
+			f"version: {click.style(str(module['version']), fg='yellow')}\n"
+			f"author: {click.style(module['author'], fg='yellow')}\n"
+			f"maintainers: {click.style(', '.join(module['maintainers']), fg='yellow')}\n"
+			f"description: {click.style(module['desc'], fg='yellow')}\n"
+			f"aliceMinVersion: {click.style(str(module['aliceMinVersion']), fg='yellow')}\n"
+			f"pip requirements: {click.style(', '.join(module['pipRequirements']), fg='yellow')}\n"
+			f"system requirements: {click.style(', '.join(module['systemRequirements']), fg='yellow')}\n\n"
+
+			"+ Conditions:\n"
+			"=============\n"
+			f"lang: {click.style(', '.join(module['conditions']['lang']), fg='yellow')}\n\n"
 		)
 
 		urllib.request.urlretrieve(url, 'system/moduleInstallTickets/{}.install'.format(module_name))
 
 	except Exception as e:
-		click.secho('Failed to add the module', err=True, fg='red')
+		click.secho(f'Failed to add the module: {e}', err=True, fg='red')
 
 

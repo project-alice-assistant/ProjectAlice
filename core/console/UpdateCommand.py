@@ -19,7 +19,7 @@ def assistant():
 
 	TABLE_DATA = [['Assistant Downloader']]
 	table_instance = DoubleTable(TABLE_DATA)
-	click.secho('\n{}\n'.format(table_instance.table), fg='green')
+	click.secho(f'\n{table_instance.table}\n', fg='green')
 
 	superManager = SuperManager(None)
 	superManager.initManagers()
@@ -31,6 +31,6 @@ def assistant():
 	downloaded = snipsConsoleManager.download(languageManager.activeSnipsProjectId)
 
 	if downloaded:
-		click.echo('\n\nAssistant {}\n'.format(click.style('downloaded!', fg='green')))
+		click.echo(f"\n\nAssistant {click.style('downloaded!', fg='green')}\n")
 	else:
-		click.echo('\n\nAssistant {}\n'.format(click.style('download failed', fg='red')), err=True)
+		click.echo(f"\n\nAssistant {click.style('download failed', fg='red')}\n", err=True)

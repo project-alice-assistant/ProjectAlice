@@ -61,18 +61,21 @@ def modules(authors: list, full: bool):
 		tableInstance = SingleTable(tableData, click.style(author, fg='yellow'))
 
 		try:
-			req = requests.get('https://api.github.com/{}/{}'.format(ModuleManager.GITHUB_API_BASE_URL, author))
+			req = requests.get(f'https://api.github.com/{ModuleManager.GITHUB_API_BASE_URL}/{author)}')
 
 			if req.status_code == 403:
 				click.secho('Github API quota limitations reached\n', err=True, bg='red')
 				return
 			elif req.status_code // 100 == 4:
-				click.echo('> Unknown author ' + click.style(author, fg='red'), err=True)
-				click.echo('- You can use {} to list all authors\n'.format(click.style('author:list', fg='yellow')), err=True)
+				click.echo(
+					f"> Unknown author {click.style(author, fg='red')}\n"
+					f"- You can use {click.style('author:list', fg='yellow')} to list all authors\n".format(),
+					err=True
+				)
 				return
 
 			for module in req.json():
-				moduleInstallFile = '{0}/{1}/{2}/{2}.install'.format(ModuleManager.GITHUB_BARE_BASE_URL, author, module['name'])
+				moduleInstallFile = f"{ModuleManager.GITHUB_BARE_BASE_URL}/{author}/{module['name']}/{module['name']}.install"
 
 				try:
 					moduleDetails = requests.get(moduleInstallFile).json()
@@ -90,7 +93,7 @@ def modules(authors: list, full: bool):
 					])
 
 				except Exception:
-					click.secho('Error get module {}'.format(module['name']), err=True, fg='red')
+					click.secho(f"Error get module {module['name']}", err=True, fg='red')
 					raise
 
 		except Exception:
