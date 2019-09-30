@@ -345,7 +345,7 @@ class ConfigManager(Manager):
 	def deactivateModule(self, moduleName: str, persistent: bool = False):
 
 		if moduleName in self.aliceConfigurations['modules']:
-			self._logger.info(f'[{self.name}] Deactivated module {moduleName} {'with' if persistent else 'without'} persistence')
+			self._logger.info(f"[{self.name}] Deactivated module {moduleName} {'with' if persistent else 'without'} persistence")
 			self.aliceConfigurations['modules'][moduleName]['active'] = False
 
 			if persistent:
@@ -355,7 +355,7 @@ class ConfigManager(Manager):
 	def activateModule(self, moduleName: str, persistent: bool = False):
 
 		if moduleName in self.aliceConfigurations['modules']:
-			self._logger.info(f'[{self.name}] Activated module {moduleName} {'with' if persistent else 'without'} persistence')
+			self._logger.info(f"[{self.name}] Activated module {moduleName} {'with' if persistent else 'without'} persistence")
 			self.aliceConfigurations['modules'][moduleName]['active'] = True
 
 			if persistent:
