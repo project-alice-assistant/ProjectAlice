@@ -61,7 +61,7 @@ def modules(authors: list, full: bool):
 		tableInstance = SingleTable(tableData, click.style(author, fg='yellow'))
 
 		try:
-			req = requests.get(f'https://api.github.com/{ModuleManager.GITHUB_API_BASE_URL}/{author)}')
+			req = requests.get(f'https://api.github.com/{ModuleManager.GITHUB_API_BASE_URL}/{author}')
 
 			if req.status_code == 403:
 				click.secho('Github API quota limitations reached\n', err=True, bg='red')

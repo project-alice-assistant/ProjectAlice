@@ -29,11 +29,11 @@ def assistant(download: bool):
 	except Exception as e:
 		click.echo('Failed syncing with remote snips console: {}'.format(e), err=True)
 		return
-	
+
 	if download:
 		downloaded = snipsConsoleManager.download(languageManager.activeSnipsProjectId)
 
 		if downloaded:
-			click.echo(f"\n\nAssistant {click.style('downloaded!', fg='green')}\n"))
+			click.echo(f"\n\nAssistant {click.style('downloaded!', fg='green')}\n")
 		else:
 			click.echo(f"\n\nAssistant {click.style('download failed', fg='red')}\n", err=True)
