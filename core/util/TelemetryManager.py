@@ -69,6 +69,6 @@ class TelemetryManager(Manager):
 
 		return self.databaseFetch(
 			tableName='telemetry',
-			query=f'SELECT * FROM :__table__ WHERE type = :type and siteId = :siteId {'and service = :service' if service else ''} order by timestamp DESC LIMIT 1',
+			query=f"SELECT * FROM :__table__ WHERE type = :type and siteId = :siteId {'and service = :service' if service else ''} order by timestamp DESC LIMIT 1",
 			values=values
 		)

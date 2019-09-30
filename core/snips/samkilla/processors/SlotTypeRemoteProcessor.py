@@ -25,7 +25,7 @@ class SlotTypeRemoteProcessor:
 	def slotTypeValuesToHash(self, entityId: str = '') -> str:
 		slotType = self._slotType
 
-		hashSum = f"{str(slotType['name'])}{str(slotType['matchingStrictness'])}{str(slotType['automaticallyExtensible'])}{str(slotType['useSynonyms']}"
+		hashSum = f"{str(slotType['name'])}{str(slotType['matchingStrictness'])}{str(slotType['automaticallyExtensible'])}{str(slotType['useSynonyms'])}"
 
 		for valueObject in slotType['values']:
 			hashSum += str(valueObject['value'])
@@ -74,7 +74,7 @@ class SlotTypeRemoteProcessor:
 				useSynonyms=slotType['useSynonyms'],
 				slotValues=slotType['values']
 			)
-			self._ctx.log(f'[Sync] Entity|SlotType model {entityId} = {slotType['name']} has been created')
+			self._ctx.log(f"[Sync] Entity|SlotType model {entityId} = {slotType['name']} has been created")
 			self._createdInstances['entities'].append({'id': entityId})
 			curHash = self.slotTypeValuesToHash(entityId=entityId)
 
@@ -103,7 +103,7 @@ class SlotTypeRemoteProcessor:
 
 
 	def cleanCreatedInstances(self):
-		self._ctx.log(f'[Cleanup] Deleting {len(self._createdInstances['entities'])} entities')
+		self._ctx.log(f"[Cleanup] Deleting {len(self._createdInstances['entities'])} entities")
 		for entity in self._createdInstances['entities']:
 			self._ctx.entity.delete(entityId=entity['id'])
 		self._createdInstances['entities'] = list()
