@@ -283,8 +283,8 @@ class ModuleManager(Manager):
 			try:
 				func = getattr(moduleItem['instance'], method)
 				func(*args)
-			except:
-				self._logger.warning('[{}] Method "{}" not found for module "{}"'.format(self.name, method, moduleItem['instance'].name))
+			except Exception as e:
+				self._logger.warning('[{}] Method "{}" not found for module "{}": {}'.format(self.name, method, moduleItem['instance'].name, e))
 
 
 	def _reorderCustomisationModule(self, isEvent: bool):

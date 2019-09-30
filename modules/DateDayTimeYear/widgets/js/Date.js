@@ -1,13 +1,9 @@
 (function () {
-    function checkTime(i) {
-        return (i < 10) ? '0' + i : i;
-    }
-
     function startTime() {
-        let today = new Date(),
-            d = checkTime(today.getDay()),
-            m = checkTime(today.getMonth()),
-            y = checkTime(today.getFullYear());
+        let today = new Date();
+        let d = String(today.getDay()).padStart(2, '0');
+        let m = String(today.getMonth()).padStart(2, '0');
+        let y = String(today.getFullYear());
 
         $('#DateDayTimeYear_date').html(d + '.' + m + '.' + y);
 

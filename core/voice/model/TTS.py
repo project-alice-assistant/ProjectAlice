@@ -2,14 +2,13 @@ import hashlib
 import logging
 import subprocess
 import tempfile
-import uuid
 from pathlib import Path
 from typing import Optional
 
 from pydub import AudioSegment
 
 from core.base.SuperManager import SuperManager
-from core.commons import commons
+from core.commons import commons, constants
 from core.dialog.model.DialogSession import DialogSession
 from core.user.model.User import User
 from core.voice.model.TTSEnum import TTSEnum
@@ -160,13 +159,11 @@ class TTS:
 
 
 	def _speak(self, file: Path, session: DialogSession):
-		uid = str(uuid.uuid4())
 		SuperManager.getInstance().mqttManager.playSound(
-			soundFile=file.stem,
+			soundFilename=file.stem,
+			location=file.parent,
 			sessionId=session.sessionId,
-			siteId=session.siteId,
-			root=file.parent,
-			uid=uid
+			siteId=session.siteId
 		)
 
 		duration = round(len(AudioSegment.from_file(file)) / 1000, 2)
@@ -179,7 +176,7 @@ class TTS:
 			return
 
 		SuperManager.getInstance().mqttManager.publish(
-			topic='hermes/tts/sayFinished',
+			topic=constants.TOPIC_TTS_FINISHED,
 			payload={
 				'id': session.payload['id'],
 				'sessionId': sid

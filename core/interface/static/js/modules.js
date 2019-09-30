@@ -1,6 +1,8 @@
 $( document ).tooltip();
 
 $(function(){
+    let module;
+
 	$('[id^=toggle_]').on('click', function () {
 		$.ajax({
             url: '/modules/toggle',
@@ -13,6 +15,22 @@ $(function(){
             }
         });
 	});
+
+	$('[id^=config_for_]').dialog({
+        autoOpen: false,
+        draggable: false,
+        width: 600,
+        height: 600,
+        modal: true,
+        resizable: false,
+        close: function() {
+            location.reload()
+        }
+    });
+
+	$('.moduleSettingsssss').on('click', function() {
+        $('#config_for_' + $(this).data('forModule')).dialog('open');
+    });
 
 	$('.moduleViewIntents').on('click', function() {
 	    $(this).parent('.moduleDefaultView').css('display', 'none');

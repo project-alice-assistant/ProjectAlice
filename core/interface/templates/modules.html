@@ -6,6 +6,22 @@
 {% endblock %}
 
 {% block content %}
+	{% for module in modules.values() %}
+		<div id="config_for_{{ module.name }}" title="{{ langData.moduleSettings }}">
+			<form method="post" autocomplete="off" novalidate>
+				{% for configName, configValue in module.getMyConfigs() %}
+					<label for="{{ configName }}">{{ configName }}</label>
+					{% if configValue is sameas true or configValue is sameas false %}
+						<input type="checkbox" name="{{ configName }}" value="{{ configValue }}" id="{{ configName }} {% if configValue is sameas true %}checked{% endif %}">
+					{% else %}
+						<input type="text" name="{{ configName }}" value="{{ configValue }}" id="{{ configName }}">
+					{% endif %}
+				{% endfor %}
+				<input type="hidden" name="moduleName" value="{{ module.name }}">
+				<input type="submit" value="{{ langData.OK }}">
+			</form>
+		</div>
+	{% endfor %}
 	<div class="modulesPane">
 	{% for moduleName, module in modules.items() %}
 		<div class="moduleTile">
@@ -23,7 +39,7 @@
 				<div class="moduleViewIntents">
 					 {{ langData.viewIntents }} <i class="fas fa-eye"></i>
 				</div>
-				<div class="moduleSettings">
+				<div class="moduleSettings" data-forModule="{{ moduleName }}">
 					{{ langData.moduleSettings }} <i class="fas fa-cog"></i>
 				</div>
 				<div class="moduleActions">

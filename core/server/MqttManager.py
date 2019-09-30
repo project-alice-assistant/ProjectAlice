@@ -19,28 +19,6 @@ from core.dialog.model.DialogSession import DialogSession
 class MqttManager(Manager):
 	NAME = 'MqttManager'
 
-	_HERMES_DEFAULT_HOTWORD_DETECTED = 'hermes/hotword/default/detected'
-	_HERMES_HOTWORD_USER_DETECTED = 'hermes/hotword/{user}/detected'
-
-	_HERMES_START_LISTENING = 'hermes/asr/startListening'
-
-	_HERMES_SESSION_STARTED = 'hermes/dialogueManager/sessionStarted'
-	_HERMES_SESSION_QUEUED = 'hermes/dialogueManager/sessionQueued'
-	_HERMES_SESSION_ENDED = 'hermes/dialogueManager/sessionEnded'
-
-	_HERMES_CAPTURED = 'hermes/asr/textCaptured'
-
-	_HERMES_NOT_RECOGNIZED = 'hermes/dialogueManager/intentNotRecognized'
-	_HERMES_INTENT_PARSED = 'hermes/nlu/intentParsed'
-
-	_HERMES_SAY = 'hermes/tts/say'
-	_HERMES_SAY_FINISHED = 'hermes/tts/sayFinished'
-
-	_HERMES_HOTWORD_TOGGLE_ON = 'hermes/hotword/toggleOn'
-
-	_HERMES_AUDIO_FRAME = 'hermes/audioServer/default/audioFrame'
-
-
 	def __init__(self):
 		super().__init__(self.NAME)
 
@@ -63,27 +41,27 @@ class MqttManager(Manager):
 		self._mqttClient.on_connect = self.onConnect
 		self._mqttClient.on_log = self.onLog
 
-		self._mqttClient.message_callback_add(self._HERMES_DEFAULT_HOTWORD_DETECTED, self.onHotwordDetected)
+		self._mqttClient.message_callback_add(constants.TOPIC_HOTWORD_DETECTED, self.onHotwordDetected)
 		for username in self.UserManager.getAllUserNames():
-			self._mqttClient.message_callback_add(self._HERMES_HOTWORD_USER_DETECTED.replace('{user}', username), self.onHotwordDetected)
+			self._mqttClient.message_callback_add(constants.TOPIC_WAKEWORD_DETECTED.replace('{user}', username), self.onHotwordDetected)
 
-		self._mqttClient.message_callback_add(self._HERMES_SESSION_STARTED, self.onSnipsSessionStarted)
+		self._mqttClient.message_callback_add(constants.TOPIC_SESSION_STARTED, self.onSnipsSessionStarted)
 
-		self._mqttClient.message_callback_add(self._HERMES_START_LISTENING, self.onSnipsStartListening)
+		self._mqttClient.message_callback_add(constants.TOPIC_ASR_START_LISTENING, self.onSnipsStartListening)
 
-		self._mqttClient.message_callback_add(self._HERMES_INTENT_PARSED, self.onSnipsIntentParsed)
+		self._mqttClient.message_callback_add(constants.TOPIC_INTENT_PARSED, self.onSnipsIntentParsed)
 
-		self._mqttClient.message_callback_add(self._HERMES_CAPTURED, self.onSnipsCaptured)
+		self._mqttClient.message_callback_add(constants.TOPIC_TEXT_CAPTURED, self.onSnipsCaptured)
 
-		self._mqttClient.message_callback_add(self._HERMES_SAY, self.onSnipsSay)
+		self._mqttClient.message_callback_add(constants.TOPIC_TTS_SAY, self.onSnipsSay)
 
-		self._mqttClient.message_callback_add(self._HERMES_SAY_FINISHED, self.onSnipsSayFinished)
+		self._mqttClient.message_callback_add(constants.TOPIC_TTS_FINISHED, self.onSnipsSayFinished)
 
-		self._mqttClient.message_callback_add(self._HERMES_SESSION_ENDED, self.onSnipsSessionEnded)
+		self._mqttClient.message_callback_add(constants.TOPIC_SESSION_ENDED, self.onSnipsSessionEnded)
 
-		self._mqttClient.message_callback_add(self._HERMES_NOT_RECOGNIZED, self.onSnipsIntentNotRecognized)
+		self._mqttClient.message_callback_add(constants.TOPIC_INTENT_NOT_RECOGNIZED, self.onSnipsIntentNotRecognized)
 
-		self._mqttClient.message_callback_add(self._HERMES_SESSION_QUEUED, self.onSnipsSessionQueued)
+		self._mqttClient.message_callback_add(constants.TOPIC_SESSION_QUEUED, self.onSnipsSessionQueued)
 
 		self._mqttClient.connect(self.ConfigManager.getAliceConfigByName('mqttHost'), int(self.ConfigManager.getAliceConfigByName('mqttPort')))
 
@@ -93,7 +71,7 @@ class MqttManager(Manager):
 
 	def onBooted(self):
 		super().onBooted()
-		self.playSound(soundFile=Path('boot'))
+		self.playSound(soundFilename='boot')
 
 
 	def onStop(self):
@@ -106,20 +84,20 @@ class MqttManager(Manager):
 	def onConnect(self, client, userdata, flags, rc):
 
 		subscribedEvents = [
-			(self._HERMES_SESSION_ENDED, 0),
-			(self._HERMES_SESSION_STARTED, 0),
-			(self._HERMES_DEFAULT_HOTWORD_DETECTED, 0),
-			(self._HERMES_NOT_RECOGNIZED, 0),
-			(self._HERMES_INTENT_PARSED, 0),
-			(self._HERMES_SAY_FINISHED, 0),
-			(self._HERMES_START_LISTENING, 0),
-			(self._HERMES_SAY, 0),
-			(self._HERMES_CAPTURED, 0),
-			(self._HERMES_HOTWORD_TOGGLE_ON, 0)
+			(constants.TOPIC_SESSION_ENDED, 0),
+			(constants.TOPIC_SESSION_STARTED, 0),
+			(constants.TOPIC_HOTWORD_DETECTED, 0),
+			(constants.TOPIC_INTENT_NOT_RECOGNIZED, 0),
+			(constants.TOPIC_INTENT_PARSED, 0),
+			(constants.TOPIC_TTS_FINISHED, 0),
+			(constants.TOPIC_ASR_START_LISTENING, 0),
+			(constants.TOPIC_TTS_SAY, 0),
+			(constants.TOPIC_TEXT_CAPTURED, 0),
+			(constants.TOPIC_HOTWORD_TOGGLE_ON, 0)
 		]
 
 		for username in self.UserManager.getAllUserNames():
-			subscribedEvents.append((self._HERMES_HOTWORD_USER_DETECTED.replace('{user}', username), 0))
+			subscribedEvents.append((constants.TOPIC_WAKEWORD_DETECTED.replace('{user}', username), 0))
 
 		self._mqttClient.subscribe(subscribedEvents)
 		self.subscribeModuleIntents()
@@ -138,7 +116,7 @@ class MqttManager(Manager):
 	# noinspection PyUnusedLocal
 	def onMessage(self, client, userdata, message: mqtt.MQTTMessage):
 		try:
-			if message.topic == self._HERMES_AUDIO_FRAME:
+			if message.topic == constants.TOPIC_AUDIO_FRAME:
 				SuperManager.getInstance().broadcast(
 					method='onAudioFrame',
 					exceptions=[self.name],
@@ -147,7 +125,7 @@ class MqttManager(Manager):
 				)
 				return
 
-			if message.topic == self._HERMES_INTENT_PARSED:
+			if message.topic == constants.TOPIC_INTENT_PARSED:
 				return
 
 			siteId = commons.parseSiteId(message)
@@ -160,14 +138,14 @@ class MqttManager(Manager):
 				if self.MultiIntentManager.processMessage(message):
 					return
 
-			if message.topic == self._HERMES_CAPTURED and session:
+			if message.topic == constants.TOPIC_TEXT_CAPTURED and session:
 				return
 
-			elif message.topic == self._HERMES_START_LISTENING:
+			elif message.topic == constants.TOPIC_ASR_START_LISTENING:
 				self.ModuleManager.broadcast('onListening', args=[siteId])
 				return
 
-			elif message.topic == self._HERMES_HOTWORD_TOGGLE_ON:
+			elif message.topic == constants.TOPIC_HOTWORD_TOGGLE_ON:
 				self.ModuleManager.broadcast('onHotwordToggleOn', args=[siteId])
 				return
 
@@ -450,7 +428,7 @@ class MqttManager(Manager):
 				client = client.replace(' ', '_')
 
 			if self.ConfigManager.getAliceConfigByName('outputOnSonos') != '1' or (self.ConfigManager.getAliceConfigByName('outputOnSonos') == '1' and self.ModuleManager.getModuleInstance('Sonos') is None or not self.ModuleManager.getModuleInstance('Sonos').anyModuleHere(client)) or not self.ModuleManager.getModuleInstance('Sonos').active:
-				self._mqttClient.publish('hermes/dialogueManager/startSession', json.dumps({
+				self._mqttClient.publish(constants.TOPIC_START_SESSION, json.dumps({
 					'siteId'    : client,
 					'init'      : {
 						'type'                   : 'notification',
@@ -462,7 +440,7 @@ class MqttManager(Manager):
 				}))
 			else:
 				self._speakOnSonos(text, client)
-				self._mqttClient.publish('hermes/dialogueManager/startSession', json.dumps({
+				self._mqttClient.publish(constants.TOPIC_START_SESSION, json.dumps({
 					'siteId'    : client,
 					'init'      : {
 						'type'                   : 'notification',
@@ -535,10 +513,10 @@ class MqttManager(Manager):
 					device = device.replace('@mqtt', '')
 					self.ask(text=text, client=device, intentFilter=intentFilter, customData=customData)
 			else:
-				self._mqttClient.publish('hermes/dialogueManager/startSession', json.dumps(jsonDict))
+				self._mqttClient.publish(constants.TOPIC_START_SESSION, json.dumps(jsonDict))
 		else:
 			jsonDict['init']['text'] = ''
-			self._mqttClient.publish('hermes/dialogueManager/startSession', json.dumps(jsonDict))
+			self._mqttClient.publish(constants.TOPIC_START_SESSION, json.dumps(jsonDict))
 
 			self._speakOnSonos(text, client)
 
@@ -590,10 +568,10 @@ class MqttManager(Manager):
 		session.intentFilter = intentFilter
 
 		if self.ConfigManager.getAliceConfigByName('outputOnSonos') != '1' or (self.ConfigManager.getAliceConfigByName('outputOnSonos') == '1' and self.ModuleManager.getModuleInstance('Sonos') is None or not self.ModuleManager.getModuleInstance('Sonos').anyModuleHere(session.siteId)) or not self.ModuleManager.getModuleInstance('Sonos').active:
-			self._mqttClient.publish('hermes/dialogueManager/continueSession', json.dumps(jsonDict))
+			self._mqttClient.publish(constants.TOPIC_CONTINUE_SESSION, json.dumps(jsonDict))
 		else:
 			jsonDict['text'] = ''
-			self._mqttClient.publish('hermes/dialogueManager/continueSession', json.dumps(jsonDict))
+			self._mqttClient.publish(constants.TOPIC_CONTINUE_SESSION, json.dumps(jsonDict))
 			self._speakOnSonos(text, constants.DEFAULT_SITE_ID)
 
 
@@ -616,16 +594,16 @@ class MqttManager(Manager):
 
 		if self.ConfigManager.getAliceConfigByName('outputOnSonos') != '1' or (self.ConfigManager.getAliceConfigByName('outputOnSonos') == '1' and self.ModuleManager.getModuleInstance('Sonos') is None or not self.ModuleManager.getModuleInstance('Sonos').anyModuleHere(client)) or not self.ModuleManager.getModuleInstance('Sonos').active:
 			if text:
-				self._mqttClient.publish('hermes/dialogueManager/endSession', json.dumps({
+				self._mqttClient.publish(constants.TOPIC_END_SESSION, json.dumps({
 					'sessionId': sessionId,
 					'text'     : text
 				}))
 			else:
-				self._mqttClient.publish('hermes/dialogueManager/endSession', json.dumps({
+				self._mqttClient.publish(constants.TOPIC_END_SESSION, json.dumps({
 					'sessionId': sessionId
 				}))
 		else:
-			self._mqttClient.publish('hermes/dialogueManager/endSession', json.dumps({
+			self._mqttClient.publish(constants.TOPIC_END_SESSION, json.dumps({
 				'sessionId': sessionId
 			}))
 			if text:
@@ -633,31 +611,23 @@ class MqttManager(Manager):
 
 
 	def endSession(self, sessionId):
-		self._mqttClient.publish('hermes/dialogueManager/endSession', json.dumps({
+		self._mqttClient.publish(constants.TOPIC_END_SESSION, json.dumps({
 			'sessionId': sessionId
 		}))
 
 
-	def playSound(self, soundFile: Path, sessionId: str = '', absolutePath: bool = False, siteId: str = constants.DEFAULT_SITE_ID, root: Path = None, uid: str = ''):
-		"""
-		Plays a sound
-		:param uid: a unique id for that sound
-		:param absolutePath: bool
-		:param sessionId: int a session id
-		:param soundFile: str The sound file name
-		:param siteId: int Where to play the sound
-		:param root: If different from default
-		"""
+	def playSound(self, soundFilename: str, location: Path = None, sessionId: str = '', siteId: str = constants.DEFAULT_SITE_ID, uid: str = ''):
 
-		if not root:
-			root = Path(commons.rootDir(), 'system/sounds')
-		root = Path(root)
+		if not sessionId:
+			sessionId = str(uuid.uuid4())
 
 		if not uid:
 			uid = str(uuid.uuid4())
 
-		if not sessionId:
-			sessionId = str(uuid.uuid4())
+		if not location:
+			location = Path(commons.rootDir()) / 'system' / 'sounds'
+		elif not str(location).startswith('/'):
+			location = Path(commons.rootDir()) / location
 
 		if siteId == 'all':
 			deviceList = self.DeviceManager.getDevicesByType('AliceSatellite', connectedOnly=True)
@@ -665,20 +635,18 @@ class MqttManager(Manager):
 
 			for device in deviceList:
 				device = device.replace('@mqtt', '')
-				self.playSound(sessionId=sessionId, soundFile=soundFile, absolutePath=absolutePath, siteId=device, root=root)
+				self.playSound(soundFilename, location, sessionId, siteId, uid)
 		else:
 			if ' ' in siteId:
 				siteId = siteId.replace(' ', '_')
 
-			soundFile = soundFile.with_suffix('.wav')
-			if absolutePath:
-				soundFile = root / soundFile
+			soundFile = Path(location / soundFilename).with_suffix('.wav')
 
 			if not soundFile.exists():
-				self._logger.error("Sound file {} doesn't exist".format(soundFile))
+				self._logger.error("[{}] Sound file {} doesn't exist".format(self.name, soundFile))
 				return
 
-			self._mqttClient.publish('hermes/audioServer/{}/playBytes/{}'.format(siteId, uid), payload=bytearray(soundFile.read_bytes()))
+			self._mqttClient.publish(constants.TOPIC_PLAY_BYTES.format(siteId, uid), payload=bytearray(soundFile.read_bytes()))
 
 
 	def publish(self, topic: str, payload: dict = None, qos: int = 0, retain: bool = False):
@@ -702,7 +670,7 @@ class MqttManager(Manager):
 
 	def configureIntents(self, intents: list):
 		self.publish(
-			topic='hermes/dialogueManager/configure',
+			topic=constants.TOPIC_DIALOGUE_MANAGER_CONFIGURE,
 			payload={
 				'intents': intents
 			}
@@ -740,4 +708,4 @@ class MqttManager(Manager):
 
 		for device in deviceList:
 			device = device.replace('@mqtt', '')
-			publish.single('hermes/feedback/sound/toggle{}'.format(state.title()), payload=json.dumps({'siteId': device}))
+			publish.single(constants.TOPIC_TOGGLE_FEEDBACK.format(state.title()), payload=json.dumps({'siteId': device}))

@@ -2,7 +2,7 @@ import subprocess
 from pathlib import Path
 
 from core.base.model.Manager import Manager
-from core.commons import commons
+from core.commons import commons, constants
 from core.voice.model.SnipsASR import SnipsASR
 from core.voice.model.SnipsTTS import SnipsTTS
 
@@ -62,7 +62,7 @@ class SnipsServicesManager(Manager):
 
 
 	def toggleFeedbackSound(self, state: str, siteId: str = 'all'):
-		topic = 'hermes/feedback/sound/toggleOn' if state == 'on' else 'hermes/feedback/sound/toggleOff'
+		topic = constants.TOPIC_HOTWORD_TOGGLE_ON if state == 'on' else constants.TOPIC_TOGGLE_FEEDBACK_OFF
 
 		if siteId == 'all':
 			devices = self.DeviceManager.getDevicesByType(deviceType='AliceSatellite', connectedOnly=True)
