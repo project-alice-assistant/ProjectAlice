@@ -20,7 +20,7 @@ def authors():
 	tableInstance = SingleTable(tableData, click.style('Authors', fg='yellow'))
 
 	try:
-		req = requests.get('https://api.github.com/{}'.format(ModuleManager.GITHUB_API_BASE_URL))
+		req = requests.get(f'https://api.github.com/{ModuleManager.GITHUB_API_BASE_URL}')
 
 		if req.status_code == 403:
 			click.secho('Github API quota limitations reached\n', err=True, bg='red')
@@ -44,7 +44,7 @@ def modules(authors: list, full: bool):
 
 	if not authors:
 		authors = list()
-		req = requests.get('https://api.github.com/{}'.format(ModuleManager.GITHUB_API_BASE_URL))
+		req = requests.get(f'https://api.github.com/{ModuleManager.GITHUB_API_BASE_URL}')
 
 		if req.status_code == 403:
 			click.secho('Github API quota limitations reached\n', err=True, bg='red')
@@ -69,7 +69,7 @@ def modules(authors: list, full: bool):
 			elif req.status_code // 100 == 4:
 				click.echo(
 					f"> Unknown author {click.style(author, fg='red')}\n"
-					f"- You can use {click.style('author:list', fg='yellow')} to list all authors\n".format(),
+					f"- You can use {click.style('author:list', fg='yellow')} to list all authors\n",
 					err=True
 				)
 				return

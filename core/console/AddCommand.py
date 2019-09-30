@@ -18,10 +18,10 @@ def module(author_name: str, module_name: str):
 
 	TABLE_DATA = [['Module Installer']]
 	table_instance = DoubleTable(TABLE_DATA)
-	click.secho('\n{}\n'.format(table_instance.table), fg='yellow')
+	click.secho(f'\n{table_instance.table}\n', fg='yellow')
 
 	try:
-		url = '{0}/{1}/{2}/{2}.install'.format(ModuleManager.GITHUB_BARE_BASE_URL, author_name, module_name)
+		url = f'{ModuleManager.GITHUB_BARE_BASE_URL}/{author_name}/{module_name}/{module_name}.install'
 		req = requests.get(url)
 
 		if req.status_code // 100 == 4:
@@ -51,7 +51,7 @@ def module(author_name: str, module_name: str):
 			f"lang: {click.style(', '.join(module['conditions']['lang']), fg='yellow')}\n\n"
 		)
 
-		urllib.request.urlretrieve(url, 'system/moduleInstallTickets/{}.install'.format(module_name))
+		urllib.request.urlretrieve(url, f'system/moduleInstallTickets/{module_name}.install')
 
 	except Exception as e:
 		click.secho(f'Failed to add the module: {e}', err=True, fg='red')

@@ -8,7 +8,7 @@ class Singleton:
 		self._logger = logging.getLogger('ProjectAlice')
 
 		if self.INSTANCE:
-			self._logger.error('Trying to instanciate {} but instance already exists'.format(name))
+			self._logger.error(f'Trying to instanciate {name} but instance already exists')
 			raise KeyboardInterrupt
 		else:
 			self.INSTANCE = self

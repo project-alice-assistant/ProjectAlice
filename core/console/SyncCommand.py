@@ -27,7 +27,7 @@ def assistant(download: bool):
 	try:
 		samkillaManager.sync(download=False)
 	except Exception as e:
-		click.echo('Failed syncing with remote snips console: {}'.format(e), err=True)
+		click.echo(f'Failed syncing with remote snips console: {e}', err=True)
 		return
 
 	if download:

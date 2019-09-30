@@ -178,7 +178,7 @@ class SuperManager(object):
 				func = getattr(man, method)
 				func(*args)
 			except AttributeError as e:
-				self._logger.warning("[{}] Couldn't find method {} in manager {}: {}".format(self.NAME, method, man.name, e))
+				self._logger.warning(f"[{self.NAME}] Couldn't find method {method} in manager {man.name}: {e}")
 
 		if propagateToModules:
 			self.moduleManager.broadcast(method=method, args=args)
@@ -193,7 +193,7 @@ class SuperManager(object):
 			for managerName, manager in self._managers.items():
 				manager.onStop()
 		except Exception as e:
-			self._logger.info('[SuperManager] Error while shutting down manager "{}": {}'.format(managerName, e))
+			self._logger.info(f'[SuperManager] Error while shutting down manager "{managerName}": {e}')
 
 
 	def getManager(self, managerName: str):

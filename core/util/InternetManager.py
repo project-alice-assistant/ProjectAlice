@@ -18,7 +18,7 @@ class InternetManager(Manager):
 		if not self.ConfigManager.getAliceConfigByName('stayCompletlyOffline'):
 			self._checkOnlineState()
 		else:
-			self._logger.info('[{}] Configurations set to stay completly offline'.format(self.name))
+			self._logger.info(f'[{self.name}] Configurations set to stay completly offline')
 
 
 	@property

@@ -53,10 +53,10 @@ class Widget:
 
 	def html(self) -> str:
 		try:
-			file = self.getCurrentDir() / 'templates/{}.html'.format(self._name)
+			file = self.getCurrentDir() / f'templates/{self.name}.html'
 			return file.open().read()
 		except:
-			self._logger.warning("[{}] Widget doesn't have html file".format(self.name))
+			self._logger.warning(f"[{self.name}] Widget doesn't have html file")
 			return ''
 
 

@@ -42,7 +42,7 @@ class SnipsServicesManager(Manager):
 
 	def runCmd(self, cmd: str, services: list = None):
 		if not Path(commons.rootDir() + '/assistant').exists():
-			self._logger.warning('[{}] Assistant not yet existing, shouldn\'t handle Snips for now'.format(self.name))
+			self._logger.warning(f'[{self.name}] Assistant not yet existing, shouldn\'t handle Snips for now')
 			return
 
 		if not services:
@@ -54,11 +54,11 @@ class SnipsServicesManager(Manager):
 
 			result = subprocess.run(['sudo', 'systemctl', cmd, service], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 			if result.returncode == 0:
-				self._logger.info("[{}] Service {} {}'ed".format(self.name, service, cmd))
+				self._logger.info(f"[{self.name}] Service {service} {cmd}'ed")
 			elif result.returncode == 5:
 				pass
 			else:
-				self._logger.info("[{}] Tried to {} the {} service but it returned with return code {}".format(self.name, cmd, service, result.returncode))
+				self._logger.info(f"[{self.name}] Tried to {cmd} the {service} service but it returned with return code {result.returncode}")
 
 
 	def toggleFeedbackSound(self, state: str, siteId: str = 'all'):

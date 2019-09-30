@@ -37,5 +37,5 @@ class ModulesView(View):
 
 			return self.index()
 		except Exception as e:
-			self._logger.warning('[Modules] Failed toggling module: {}'.format(e))
+			self._logger.warning(f'[Modules] Failed toggling module: {e}')
 			return self.index()

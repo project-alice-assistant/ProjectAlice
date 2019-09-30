@@ -34,7 +34,7 @@ class Wakeword:
 		if not number:
 			number = len(self._samples)
 
-		return Path(tempfile.gettempdir(), '{}_raw.wav'.format(number))
+		return Path(tempfile.gettempdir(), f'{number}_raw.wav')
 
 
 	def getSample(self, number: int = None) -> wave.Wave_write:

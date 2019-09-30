@@ -25,12 +25,7 @@ class SlotTypeRemoteProcessor:
 	def slotTypeValuesToHash(self, entityId: str = '') -> str:
 		slotType = self._slotType
 
-		hashSum = '{}{}{}{}'.format(
-			str(slotType['name']),
-			str(slotType['matchingStrictness']),
-			str(slotType['automaticallyExtensible']),
-			str(slotType['useSynonyms'])
-		)
+		hashSum = f'{str(slotType['name'])}{str(slotType['matchingStrictness'])}{str(slotType['automaticallyExtensible'])}{str(slotType['useSynonyms']}'
 
 		for valueObject in slotType['values']:
 			hashSum += str(valueObject['value'])
@@ -57,10 +52,10 @@ class SlotTypeRemoteProcessor:
 		changes = False
 
 		if hashComputationOnly or (oldInstanceExists and oldHash == curHash):
-			self._ctx.log('[Sync] Entity|SlotType model {} = {} has no changes'.format(entityId, slotType['name']))
+			self._ctx.log(f'[Sync] Entity|SlotType model {entityId} = {slotType['name']} has no changes')
 		elif oldInstanceExists:
 			changes = True
-			self._ctx.log('[Sync] Entity|SlotType model {} = {} has been edited'.format(entityId, slotType['name']))
+			self._ctx.log(f'[Sync] Entity|SlotType model {entityId} = {slotType['name']} has been edited')
 			self._ctx.entity.edit(
 				entityId,
 				name=slotType['name'],
@@ -79,7 +74,7 @@ class SlotTypeRemoteProcessor:
 				useSynonyms=slotType['useSynonyms'],
 				slotValues=slotType['values']
 			)
-			self._ctx.log('[Sync] Entity|SlotType model {} = {} has been created'.format(entityId, slotType['name']))
+			self._ctx.log(f'[Sync] Entity|SlotType model {entityId} = {slotType['name']} has been created')
 			self._createdInstances['entities'].append({'id': entityId})
 			curHash = self.slotTypeValuesToHash(entityId=entityId)
 
@@ -108,7 +103,7 @@ class SlotTypeRemoteProcessor:
 
 
 	def cleanCreatedInstances(self):
-		self._ctx.log('[Cleanup] Deleting {} entities'.format(len(self._createdInstances['entities'])))
+		self._ctx.log(f'[Cleanup] Deleting {len(self._createdInstances['entities'])} entities')
 		for entity in self._createdInstances['entities']:
 			self._ctx.entity.delete(entityId=entity['id'])
 		self._createdInstances['entities'] = list()

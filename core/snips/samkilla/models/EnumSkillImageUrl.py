@@ -70,7 +70,7 @@ class EnumSkillImageUrl(Singleton):
 
 	@staticmethod
 	def getImageUrl(urlPrefix: str, enumImageUrlKey: str = DEFAULT_RESOURCE):
-		return '{}/images/bundles/{}'.format(urlPrefix, enumImageUrlKey)
+		return f'{urlPrefix}/images/bundles/{enumImageUrlKey}'
 
 
 	@staticmethod

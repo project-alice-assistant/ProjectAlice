@@ -95,7 +95,7 @@ class Assistant:
 
 
 	def extractSkillIdentifiers(self, assistantId: str) -> list:
-		skills = self._ctx.getBrowser().execute_script("return window.__APOLLO_STATE__['Assistant:{}']['skills']".format(assistantId))
+		skills = self._ctx.getBrowser().execute_script(f"return window.__APOLLO_STATE__['Assistant:{assistantId}']['skills']")
 
 		return [skill['id'].replace('Skill:', '') for skill in skills]
 

@@ -145,10 +145,10 @@ class Intent:
 		try:
 			response = self._ctx.postGQLBrowserly(gqlRequest)
 		except IntentWithUnknownSlotError as iwuse:
-			raise ValueError('[Inconsistent] Intent {} is using unknown Slots'.format(iwuse.message))
+			raise ValueError(f'[Inconsistent] Intent {iwuse.message} is using unknown Slots')
 		except HttpError as he:
 			if he.status == 409:
-				self._ctx.log('Duplicate intent with name {}'.format(name))
+				self._ctx.log(f'Duplicate intent with name {name}')
 				intentDuplicate = self.getIntentByUserIdAndIntentName(userId, name)
 
 				if intentDuplicate:
@@ -231,7 +231,7 @@ class Intent:
 		intent = self.getIntentByUserIdAndIntentId(userId=userId, intentId=intentId)
 
 		if not intent:
-			raise IntentError(4003, 'Intent {} doesn\'t exist'.format(intentId), ['intent'])
+			raise IntentError(4003, f'Intent {intentId} doesn\'t exist', ['intent'])
 
 		if name: intent['name'] = name
 		if description: intent['description'] = description
@@ -271,7 +271,7 @@ class Intent:
 				self.attachToSkill(userId=userId, skillId=skillId, intentId=intentId, languageFilter=language)
 
 		except IntentWithUnknownSlotError as iwuse:
-			self._ctx.log('[Inconsistent] Intent {} is using unknown Slots'.format(iwuse.message))
+			self._ctx.log(f'[Inconsistent] Intent {iwuse.message} is using unknown Slots')
 
 	def formatSlotsAndEntities(self, typeEntityMatching: dict, slotsDefinition: dict) -> tuple:
 		entities = list()

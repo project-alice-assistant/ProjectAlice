@@ -61,15 +61,15 @@ class GithubCloner:
 					self._doClone(url=os.path.join(url, path))
 
 		except GithubTokenFailed:
-			self._logger.error('[{}] Provided Github username / token invalid'.format(self.NAME))
+			self._logger.error(f'[{self.NAME}] Provided Github username / token invalid')
 			return False
 
 		except GithubRateLimit:
-			self._logger.error('[{}] Github rate limit reached, cannot access updates for now. You should consider creating a token to avoid this problem'.format(self.NAME))
+			self._logger.error(f'[{self.NAME}] Github rate limit reached, cannot access updates for now. You should consider creating a token to avoid this problem')
 			return False
 
 		except Exception as e:
-			self._logger.error('[{}] Error downloading module: {}'.format(self.NAME, e))
+			self._logger.error(f'[{self.NAME}] Error downloading module: {e}')
 			raise
 
 		return True
