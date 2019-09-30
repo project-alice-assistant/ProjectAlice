@@ -2,7 +2,6 @@ import hashlib
 import logging
 import subprocess
 import tempfile
-import uuid
 from pathlib import Path
 from typing import Optional
 
@@ -160,13 +159,11 @@ class TTS:
 
 
 	def _speak(self, file: Path, session: DialogSession):
-		uid = str(uuid.uuid4())
 		SuperManager.getInstance().mqttManager.playSound(
-			soundFile=file.stem,
+			soundFilename=file.stem,
+			location=file.parent,
 			sessionId=session.sessionId,
-			siteId=session.siteId,
-			root=file.parent,
-			uid=uid
+			siteId=session.siteId
 		)
 
 		duration = round(len(AudioSegment.from_file(file)) / 1000, 2)

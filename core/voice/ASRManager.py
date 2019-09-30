@@ -1,9 +1,6 @@
 import time
-import uuid
-from pathlib import Path
 
 from core.base.model.Manager import Manager
-from core.commons import commons
 from core.dialog.model.DialogSession import DialogSession
 from core.voice.model import ASR
 from core.voice.model.SnipsASR import SnipsASR
@@ -90,8 +87,7 @@ class ASRManager(Manager):
 			else:
 				self.MqttManager.publish(topic='hermes/nlu/intentNotRecognized')
 				self.MqttManager.playSound(
-					soundFile=Path(commons.rootDir(), 'assistant/custom_dialogue/sound/error.wav'),
-					sessionId=uuid.uuid4(),
-					absolutePath=True,
+					soundFilename='error',
+					location='assistant/custom_dialogue/sound',
 					siteId=session.siteId
 				)

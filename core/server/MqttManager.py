@@ -93,7 +93,7 @@ class MqttManager(Manager):
 
 	def onBooted(self):
 		super().onBooted()
-		self.playSound(soundFile=Path('boot'))
+		self.playSound(soundFilename='boot')
 
 
 	def onStop(self):
@@ -638,26 +638,18 @@ class MqttManager(Manager):
 		}))
 
 
-	def playSound(self, soundFile: Path, sessionId: str = '', absolutePath: bool = False, siteId: str = constants.DEFAULT_SITE_ID, root: Path = None, uid: str = ''):
-		"""
-		Plays a sound
-		:param uid: a unique id for that sound
-		:param absolutePath: bool
-		:param sessionId: int a session id
-		:param soundFile: str The sound file name
-		:param siteId: int Where to play the sound
-		:param root: If different from default
-		"""
+	def playSound(self, soundFilename: str, location: Path = None, sessionId: str = '', siteId: str = constants.DEFAULT_SITE_ID, uid: str = ''):
 
-		if not root:
-			root = Path(commons.rootDir(), 'system/sounds')
-		root = Path(root)
+		if not sessionId:
+			sessionId = str(uuid.uuid4())
 
 		if not uid:
 			uid = str(uuid.uuid4())
 
-		if not sessionId:
-			sessionId = str(uuid.uuid4())
+		if not location:
+			location = Path(commons.rootDir()) / 'system' / 'sounds'
+		elif not str(location).startswith('/'):
+			location = Path(commons.rootDir()) / location
 
 		if siteId == 'all':
 			deviceList = self.DeviceManager.getDevicesByType('AliceSatellite', connectedOnly=True)
@@ -665,17 +657,15 @@ class MqttManager(Manager):
 
 			for device in deviceList:
 				device = device.replace('@mqtt', '')
-				self.playSound(sessionId=sessionId, soundFile=soundFile, absolutePath=absolutePath, siteId=device, root=root)
+				self.playSound(soundFilename, location, sessionId, siteId, uid)
 		else:
 			if ' ' in siteId:
 				siteId = siteId.replace(' ', '_')
 
-			soundFile = soundFile.with_suffix('.wav')
-			if absolutePath:
-				soundFile = root / soundFile
+			soundFile = Path(location / soundFilename).with_suffix('.wav')
 
 			if not soundFile.exists():
-				self._logger.error("Sound file {} doesn't exist".format(soundFile))
+				self._logger.error("[{}] Sound file {} doesn't exist".format(self.name, soundFile))
 				return
 
 			self._mqttClient.publish('hermes/audioServer/{}/playBytes/{}'.format(siteId, uid), payload=bytearray(soundFile.read_bytes()))
