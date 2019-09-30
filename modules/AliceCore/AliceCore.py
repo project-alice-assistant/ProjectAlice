@@ -541,7 +541,7 @@ class AliceCore(Module):
 			)
 
 		elif intent == self._INTENT_SWITCH_LANGUAGE:
-			self.publish(topic='hermes/asr/textCaptured', payload={'siteId': siteId})
+			self.publish(topic=constants.TOPIC_TEXT_CAPTURED, payload={'siteId': siteId})
 			if 'ToLang' not in slots:
 				self.endDialog(text=self.randomTalk('noDestinationLanguage'))
 				return True
@@ -760,7 +760,7 @@ class AliceCore(Module):
 
 
 	def langSwitch(self, newLang: str, siteId: str):
-		self.publish(topic='hermes/asr/textCaptured', payload={'siteId': siteId})
+		self.publish(topic=constants.TOPIC_TEXT_CAPTURED, payload={'siteId': siteId})
 		subprocess.run([commons.rootDir() + '/system/scripts/langSwitch.sh', newLang])
 		self.ThreadManager.doLater(interval=3, func=self._confirmLangSwitch, args=[newLang, siteId])
 

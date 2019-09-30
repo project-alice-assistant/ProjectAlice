@@ -1,6 +1,7 @@
 import time
 
 from core.base.model.Manager import Manager
+from core.commons import constants
 from core.dialog.model.DialogSession import DialogSession
 from core.voice.model import ASR
 from core.voice.model.SnipsASR import SnipsASR
@@ -70,7 +71,7 @@ class ASRManager(Manager):
 
 			if result:
 				# Stop listener as fast as possible
-				self.MqttManager.publish(topic='hermes/asr/stopListening', payload={'sessionId': session.sessionId, 'siteId': session.siteId})
+				self.MqttManager.publish(topic=constants.TOPIC_STOP_LISTENING, payload={'sessionId': session.sessionId, 'siteId': session.siteId})
 
 				result = self.LanguageManager.sanitizeNluQuery(result)
 				self._logger.debug('[{}] - {} output: "{}"'.format(self.NAME, self._asr.__class__.__name__, result))
@@ -81,11 +82,11 @@ class ASRManager(Manager):
 				# Add Global Intents
 				intentFilter.append(Intent('GlobalStop').justTopic)
 
-				self.MqttManager.publish(topic='hermes/asr/textCaptured', payload={'sessionId': session.sessionId, 'text': result, 'siteId': session.siteId, 'likelihood': 1, 'seconds': processing})
+				self.MqttManager.publish(topic=constants.TOPIC_TEXT_CAPTURED, payload={'sessionId': session.sessionId, 'text': result, 'siteId': session.siteId, 'likelihood': 1, 'seconds': processing})
 
-				self.MqttManager.publish(topic='hermes/nlu/query', payload={'id':session.sessionId, 'input': result, 'intentFilter': intentFilter, 'sessionId': session.sessionId})
+				self.MqttManager.publish(topic=constants.TOPIC_NLU_QUERY, payload={'id':session.sessionId, 'input': result, 'intentFilter': intentFilter, 'sessionId': session.sessionId})
 			else:
-				self.MqttManager.publish(topic='hermes/nlu/intentNotRecognized')
+				self.MqttManager.publish(topic=constants.TOPIC_INTENT_NOT_RECOGNIZED)
 				self.MqttManager.playSound(
 					soundFilename='error',
 					location='assistant/custom_dialogue/sound',

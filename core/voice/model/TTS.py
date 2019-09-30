@@ -8,7 +8,7 @@ from typing import Optional
 from pydub import AudioSegment
 
 from core.base.SuperManager import SuperManager
-from core.commons import commons
+from core.commons import commons, constants
 from core.dialog.model.DialogSession import DialogSession
 from core.user.model.User import User
 from core.voice.model.TTSEnum import TTSEnum
@@ -176,7 +176,7 @@ class TTS:
 			return
 
 		SuperManager.getInstance().mqttManager.publish(
-			topic='hermes/tts/sayFinished',
+			topic=constants.TOPIC_TTS_FINISHED,
 			payload={
 				'id': session.payload['id'],
 				'sessionId': sid
