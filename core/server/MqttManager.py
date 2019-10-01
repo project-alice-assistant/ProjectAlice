@@ -616,7 +616,7 @@ class MqttManager(Manager):
 		}))
 
 
-	def playSound(self, soundFilename: str, location: Path = None, sessionId: str = '', siteId: str = constants.DEFAULT_SITE_ID, uid: str = '', suffix: str = 'wav'):
+	def playSound(self, soundFilename: str, location: Path = None, sessionId: str = '', siteId: str = constants.DEFAULT_SITE_ID, uid: str = '', suffix: str = '.wav'):
 
 		if not sessionId:
 			sessionId = str(uuid.uuid4())
