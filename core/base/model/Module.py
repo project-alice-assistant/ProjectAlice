@@ -124,13 +124,6 @@ class Module:
 		return Path(inspect.getfile(self.__class__)).parent
 
 
-	def getMyConfigs(self, removeInfoSettings: bool = True) -> dict:
-		settings = self.ConfigManager.getModuleConfigs(self.name)
-		if removeInfoSettings:
-			pass
-		return self.ConfigManager.getModuleConfigs(self.name)
-
-
 	@property
 	def widgets(self) -> dict:
 		return self._widgets
@@ -370,6 +363,15 @@ class Module:
 	# HELPERS
 	def getConfig(self, key: str) -> typing.Any:
 		return self.ConfigManager.getModuleConfigByName(moduleName=self.name, configName=key)
+
+
+	def getModuleConfigs(self, withInfo: bool = False) -> dict:
+		if not withInfo:
+			return self.ConfigManager.getModuleConfigs(self.name)
+		else:
+			mySettings = self.ConfigManager.getModuleConfigs(self.name)
+			infoSettings = self.ConfigManager.aliceModuleConfigurationKeys
+			return {key: value for key, value in mySettings if key not in infoSettings}
 
 
 	def updateConfig(self, key: str, value: typing.Any) -> typing.Any:
