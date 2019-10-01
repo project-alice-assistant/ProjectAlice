@@ -59,7 +59,7 @@ class ConfigManager(Manager):
 		super().onStart()
 		for conf in self._vitalConfigs:
 			if conf not in self._aliceConfigurations or self._aliceConfigurations[conf] == '':
-				raise VitalConfigMissing()
+				raise VitalConfigMissing(conf)
 
 
 	def _setDefaultSiteId(self):
@@ -108,7 +108,7 @@ class ConfigManager(Manager):
 				self._logger.warning(f'[{self.name}] Was asked to update {key} but key doesn\'t exist')
 				raise Exception
 
-			#Remove module configurations
+			# Remove module configurations
 			if key == 'modules':
 				value = dict((k, v) for k, v in value.items() if k not in self._aliceModuleConfigurationKeys)
 

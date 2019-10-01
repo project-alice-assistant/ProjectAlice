@@ -124,7 +124,10 @@ class Module:
 		return Path(inspect.getfile(self.__class__)).parent
 
 
-	def getMyConfigs(self) -> dict:
+	def getMyConfigs(self, removeInfoSettings: bool = True) -> dict:
+		settings = self.ConfigManager.getModuleConfigs(self.name)
+		if removeInfoSettings:
+			pass
 		return self.ConfigManager.getModuleConfigs(self.name)
 
 
