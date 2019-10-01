@@ -430,8 +430,8 @@ class Module:
 		self.MqttManager.endSession(sessionId=sessionId)
 
 
-	def playSound(self, soundFile: Path, sessionId: str = '', absolutePath: bool = False, siteId: str = constants.DEFAULT_SITE_ID, root: Path = None, uid: str = ''):
-		self.MqttManager.playSound(soundFile=soundFile, sessionId=sessionId, absolutePath=absolutePath, siteId=siteId, root=root, uid=uid)
+	def playSound(self, soundFilename: str, location: Path = None, sessionId: str = '', siteId: str = constants.DEFAULT_SITE_ID, uid: str = ''):
+		self.MqttManager.playSound(soundFilename=soundFilename, location=location, sessionId=sessionId, siteId=siteId, uid=uid)
 
 
 	def publish(self, topic: str, payload: dict = None, qos: int = 0, retain: bool = False):

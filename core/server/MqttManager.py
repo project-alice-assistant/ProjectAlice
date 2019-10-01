@@ -616,7 +616,7 @@ class MqttManager(Manager):
 		}))
 
 
-	def playSound(self, soundFilename: str, location: Path = None, sessionId: str = '', siteId: str = constants.DEFAULT_SITE_ID, uid: str = ''):
+	def playSound(self, soundFilename: str, location: Path = None, sessionId: str = '', siteId: str = constants.DEFAULT_SITE_ID, uid: str = '', suffix: str = 'wav'):
 
 		if not sessionId:
 			sessionId = str(uuid.uuid4())
@@ -640,7 +640,7 @@ class MqttManager(Manager):
 			if ' ' in siteId:
 				siteId = siteId.replace(' ', '_')
 
-			soundFile = Path(location / soundFilename).with_suffix('.wav')
+			soundFile = Path(location / soundFilename).with_suffix(suffix)
 
 			if not soundFile.exists():
 				self._logger.error("[{}] Sound file {} doesn't exist".format(self.name, soundFile))
