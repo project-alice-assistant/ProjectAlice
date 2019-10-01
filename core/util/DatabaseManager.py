@@ -252,8 +252,7 @@ class DatabaseManager(Manager):
 		database = None
 		try:
 			database = self.getConnection()
-			cursor = database.cursor()
-			cursor.execute(query, values)
+			database.execute(query, values)
 		except sqlite3.Error as e:
 			self._logger.warning(f'[{self.name}] Error deleting from table "{tableName}" for component "{callerName}": {e}')
 
@@ -261,7 +260,6 @@ class DatabaseManager(Manager):
 				database.rollback()
 		else:
 			database.commit()
-			cursor.close()
 			database.close()
 
 
@@ -279,10 +277,10 @@ class DatabaseManager(Manager):
 		if not query:
 			return
 
+		database = None
 		try:
 			database = self.getConnection()
-			cursor = database.cursor()
-			cursor.execute(query)
+			database.execute(query)
 		except Exception as e:
 			self._logger.warning(f'[{self.name}] Error pruning table "{tableName}" for component "{callerName}": {e}')
 
@@ -290,19 +288,18 @@ class DatabaseManager(Manager):
 				database.rollback()
 		else:
 			database.commit()
-			cursor.close()
 			database.close()
 
 
-	def basicChecks(self, tableName: str, query: str, callerName: str, values: dict = None) -> str:
+	def basicChecks(self, tableName: str, query: str, callerName: str, values: dict = None) -> typing.Optional[str]:
 		if ':__table__' not in query:
 			self._logger.warning(f'[{self.name}] The query must use \':__table__\' for the table name. Caller: {callerName}')
-			return ''
+			return None
 		elif tableName.startswith('sqlite_'):
 			self._logger.warning(f'[{self.name}] You cannot access system tables. Caller; {callerName}')
-			return ''
+			return None
 		elif values and ':__table__' in values:
 			self._logger.warning(f"[{self.name}] Cannot use reserved sqlite keyword \":__table__\". Caller: {callerName}")
-			return ''
+			return None
 		else:
 			return query.replace(':__table__', callerName + '_' + tableName)
