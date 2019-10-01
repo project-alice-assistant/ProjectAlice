@@ -92,6 +92,8 @@ class ModuleNotConditionCompliant(Exception):
 		return self._conditionValue
 
 
+class DbConnectionError(Exception): pass
+class InvalidQuery(Exception): pass
 class AccessLevelTooLow(Exception): pass
 class GithubTokenFailed(Exception): pass
 class GithubRateLimit(Exception): pass

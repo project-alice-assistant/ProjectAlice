@@ -3,6 +3,7 @@ import typing
 
 from core.base.model.Manager import Manager
 from core.commons import commons
+from core.ProjectAliceExceptions import DbConnectionError, InvalidQuery
 
 
 class DatabaseManager(Manager):
@@ -29,7 +30,11 @@ class DatabaseManager(Manager):
 
 	@staticmethod
 	def getConnection() -> sqlite3.Connection:
-		con = sqlite3.connect(commons.getDatabaseFile())
+		try:
+            con = sqlite3.connect(commons.getDatabaseFile())
+        except sqlite3.Error as e:
+            self._logger.error(f'[{self.name}] Failed to connect to DB ({commons.getDatabaseFile()}): {e}')
+            raise DbConnectionError(e)
 		con.row_factory = sqlite3.Row
 		return con
 
@@ -147,21 +152,20 @@ class DatabaseManager(Manager):
 		query = self.basicChecks(tableName, query, callerName, values)
 
 		if not query:
-			raise Exception
+			raise InvalidQuery
 
-		database = None
 		try:
 			database = self.getConnection()
 			cursor = database.cursor()
 
 			cursor.execute(query, values)
 			insertId = cursor.lastrowid
+		except DbConnectionError as e:
+			self._logger.warning(f'[{self.name}] Error inserting data for component "{callerName}" in table "{tableName}": {e}')
+			raise
 		except sqlite3.Error as e:
 			self._logger.warning(f'[{self.name}] Error inserting data for component "{callerName}" in table "{tableName}": {e}')
-
-			if database:
-				database.rollback()
-
+			database.rollback()
 			raise
 		else:
 			database.commit()
@@ -180,13 +184,13 @@ class DatabaseManager(Manager):
 
 		query = self.basicChecks(tableName, query, callerName, values)
 		if not query:
-			raise Exception
+			raise InvalidQuery
 
 		try:
 			database = self.getConnection()
 			cursor = database.cursor()
 			cursor.execute(query, values)
-		except sqlite3.Error as e:
+		except (DbConnectionError, sqlite3.Error) as e:
 			self._logger.warning(f'[{self.name}] Error updating data for component "{callerName}" in table "{tableName}": {e}')
 			raise
 		else:
@@ -210,11 +214,9 @@ class DatabaseManager(Manager):
 		if not values:
 			values = dict()
 
-		data = list()
-
 		query = self.basicChecks(tableName, query, callerName, values)
 		if not query:
-			return data
+			return list()
 
 		try:
 			database = self.getConnection()
@@ -226,9 +228,9 @@ class DatabaseManager(Manager):
 				data = cursor.fetchone()
 			else:
 				data = cursor.fetchall()
-		except sqlite3.Error as e:
+		except (DbConnectionError, sqlite3.Error) as e:
 			self._logger.warning(f'[{self.name}] Error fetching data for component "{callerName}" in table "{tableName}": {e}')
-			return data
+			return list()
 		else:
 			cursor.close()
 			database.close()
@@ -249,15 +251,15 @@ class DatabaseManager(Manager):
 		if not query:
 			return
 
-		database = None
 		try:
 			database = self.getConnection()
 			database.execute(query, values)
+		except DbConnectionError as e:
+			self._logger.warning(f'[{self.name}] Error deleting from table "{tableName}" for component "{callerName}": {e}')
 		except sqlite3.Error as e:
 			self._logger.warning(f'[{self.name}] Error deleting from table "{tableName}" for component "{callerName}": {e}')
-
-			if database:
-				database.rollback()
+			database.rollback()
+			database.close()
 		else:
 			database.commit()
 			database.close()
@@ -277,15 +279,15 @@ class DatabaseManager(Manager):
 		if not query:
 			return
 
-		database = None
 		try:
 			database = self.getConnection()
 			database.execute(query)
-		except Exception as e:
+		except DbConnectionError as e:
 			self._logger.warning(f'[{self.name}] Error pruning table "{tableName}" for component "{callerName}": {e}')
-
-			if database:
-				database.rollback()
+		except sqlite3.Error as e:
+			self._logger.warning(f'[{self.name}] Error pruning table "{tableName}" for component "{callerName}": {e}')
+			database.rollback()
+			database.close()
 		else:
 			database.commit()
 			database.close()
