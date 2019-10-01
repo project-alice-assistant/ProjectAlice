@@ -8,8 +8,8 @@
 {% block content %}
 	{% for module in modules.values() %}
 		<div id="config_for_{{ module.name }}" title="{{ langData.moduleSettings }}">
-			<form method="post" autocomplete="off" novalidate>
-				{% for configName, configValue in module.getMyConfigs() %}
+			<form name="config_for_{{ module.name }}" method="post" autocomplete="off" novalidate>
+				{% for configName, configValue in module.getModuleConfigs() %}
 					<label for="{{ configName }}">{{ configName }}</label>
 					{% if configValue is sameas true or configValue is sameas false %}
 						<input type="checkbox" name="{{ configName }}" value="{{ configValue }}" id="{{ configName }} {% if configValue is sameas true %}checked{% endif %}">
