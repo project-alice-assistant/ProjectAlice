@@ -38,15 +38,15 @@ class WebInterfaceManager(Manager):
 	def onStart(self):
 		super().onStart()
 		if not self.ConfigManager.getAliceConfigByName('webInterfaceActive'):
-			self._logger.info('[{}] Web interface is disabled by settings'.format(self.name))
+			self._logger.info(f'[{self.name}] Web interface is disabled by settings')
 		else:
-			langFile = Path('{}/core/interface/languages/{}.json'.format(commons.rootDir(), self.LanguageManager.activeLanguage.lower()))
+			langFile = Path(commons.rootDir(), f'core/interface/languages/{self.LanguageManager.activeLanguage.lower()}.json')
 
 			if not langFile.exists():
-				self._logger.warning('[{}] Lang "{}" not found, falling back to "en"'.format(self.name, self.LanguageManager.activeLanguage.lower()))
-				langFile = Path('{}/core/interface/languages/en.json'.format(commons.rootDir()))
+				self._logger.warning(f'[{self.name}] Lang "{self.LanguageManager.activeLanguage.lower()}" not found, falling back to "en"')
+				langFile = Path(commons.rootDir(), 'core/interface/languages/en.json')
 			else:
-				self._logger.info('[{}] Loaded interface in "{}"'.format(self.name, self.LanguageManager.activeLanguage.lower()))
+				self._logger.info(f'[{self.name}] Loaded interface in "{self.LanguageManager.activeLanguage.lower()}"')
 
 			with langFile.open('r') as f:
 				self._langData = json.load(f)

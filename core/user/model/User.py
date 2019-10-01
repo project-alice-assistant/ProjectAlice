@@ -24,9 +24,9 @@ class User:
 		self._eating 		= False
 
 		try:
-			exec("self._%s = '%s'" % (self._state, True))
+			exec(f"self._{self._state} = 'True'")
 		except:
-			self._logger.error('Invalid state "{}" for user "{}"'.format(row['state'], self._name))
+			self._logger.error(f"Invalid state \"{row['state']}\" for user \"{self._name}\"")
 
 	@property
 	def name(self) -> str:

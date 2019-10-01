@@ -16,7 +16,7 @@ class Manager(Singleton):
 		self._databaseSchema    = databaseSchema
 		self._isActive          = True
 
-		self._logger.info('Initializing {}'.format(name))
+		self._logger.info(f'Initializing {name}')
 
 
 	@property
@@ -38,17 +38,17 @@ class Manager(Singleton):
 		try:
 			return commons.getFunctionCaller()
 		except Exception as e:
-			self._logger.error('[{}] Something went wrong retrieving function caller: {}'.format(self.name, e))
+			self._logger.error(f'[{self.name}] Something went wrong retrieving function caller: {e}')
 			return None
 
 
 	def onStart(self):
-		self._logger.info('Starting {}'.format(self._name))
+		self._logger.info(f'Starting {self.name}')
 		return self._initDB()
 
 
 	def onStop(self):
-		self._logger.info('Stopping {}'.format(self._name))
+		self._logger.info(f'Stopping {self.name}')
 
 
 	def _initDB(self):

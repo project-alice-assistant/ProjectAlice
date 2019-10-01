@@ -106,7 +106,7 @@ class MainProcessor:
 		assistantFile.write_text(json.dumps(state, indent=4, sort_keys=False, ensure_ascii=False))
 
 
-	# self._ctx.log('\n[Persist] local assistant {} in {}'.format(assistantId, assistantLanguage))
+	# self._ctx.log(f'\n[Persist] local assistant {assistantId} in {assistantLanguage}')
 
 	def syncRemoteToLocalAssistant(self, assistantId: str, assistantLanguage: str, assistantTitle: str):
 		if not self.hasLocalAssistantByIdAndLanguage(assistantId=assistantId, assistantLanguage=assistantLanguage):
@@ -154,22 +154,22 @@ class MainProcessor:
 			module = json.loads(Path(moduleFile).read_text())
 
 			if 'module' not in module:
-				self._ctx.log('\n[Inconsistent] File {} has no \'module\' name definition'.format(moduleFile))
+				self._ctx.log(f"\n[Inconsistent] File {moduleFile} has no 'module' name definition")
 				return None
 
 			module['language'] = moduleLanguage
 
 			if module['module'] not in self._modules:
 				self._ctx.log(
-					'\n[Inconsistent] Module {} has a name different from its directory'.format(module['module']))
+					f"\n[Inconsistent] Module {module['module']} has a name different from its directory")
 				return None
 
 			self._modules[module['module']][moduleLanguage] = module
-			self._ctx.log('[FilePull] Loading module {}'.format(module['module']))
+			self._ctx.log(f"[FilePull] Loading module {module['module']}")
 			return module
 
 		except json.decoder.JSONDecodeError as jsonError:
-			self._ctx.log('\n[Inconsistent] File {} has a bad json format'.format(moduleFile))
+			self._ctx.log(f'\n[Inconsistent] File {moduleFile} has a bad json format')
 			return None
 
 	def getModuleSyncStateByLanguageAndAssistantId(self, moduleName: str, language: str, assistantId: str) -> str:
@@ -193,9 +193,9 @@ class MainProcessor:
 		for key, value in slotTypes.items():
 			if slotNameFilter and slotNameFilter != key: continue
 
-			slotFile = assistantSlotsMountpoint / '{}.json'.format(key)
+			slotFile = assistantSlotsMountpoint / f'{key}.json'
 			slotFile.write_text(json.dumps(value, indent=4, sort_keys=False, ensure_ascii=False))
-		# self._ctx.log('[Persist] global slot {}'.format(key))
+		# self._ctx.log(f'[Persist] global slot {key}')
 
 
 	def persistToGlobalAssistantIntents(self, assistantId: str, assistantLanguage: str, intentNameFilter: str = None):
@@ -207,9 +207,9 @@ class MainProcessor:
 		for key, value in intents.items():
 			if intentNameFilter and intentNameFilter != key: continue
 
-			intentFile = assistantSlotsMountpoint / '{}.json'.format(key)
+			intentFile = assistantSlotsMountpoint / f'{key}.json'
 			intentFile.write_text(json.dumps(value, indent=4, sort_keys=False, ensure_ascii=False))
-		# self._ctx.log('[Persist] global slot {}'.format(key))
+		# self._ctx.log(f'[Persist] global slot {key}')
 
 
 	def syncGlobalSlotType(self, assistantId: str, assistantLanguage: str, slotTypeName: str, slotDefinition: str, persist: bool = False):
@@ -483,7 +483,7 @@ class MainProcessor:
 
 		for slotTypeName in self._savedAssistants[languageFilter][runOnAssistantId]['slotTypes']:
 			if slotTypeName not in slotTypesSynced:
-				self._ctx.log('[Deprecated] SlotType {}'.format(slotTypeName))
+				self._ctx.log(f'[Deprecated] SlotType {slotTypeName}')
 				slotTypeCacheData = self._savedAssistants[languageFilter][runOnAssistantId]['slotTypes'][slotTypeName]
 
 				entityId = slotTypeCacheData['entityId']
@@ -500,7 +500,7 @@ class MainProcessor:
 				if slotTypeName in self._savedSlots[languageFilter][runOnAssistantId]:
 					del self._savedSlots[languageFilter][runOnAssistantId][slotTypeName]
 
-					globalSlotTypeFile = self.SAVED_ASSISTANTS_DIR / languageFilter / runOnAssistantId / 'slots' / '{}.json'.format(slotTypeName)
+					globalSlotTypeFile = self.SAVED_ASSISTANTS_DIR / languageFilter / runOnAssistantId / 'slots' / f'{slotTypeName}.json'
 
 					if globalSlotTypeFile.exists():
 						globalSlotTypeFile.unlink()
@@ -568,7 +568,7 @@ class MainProcessor:
 
 		for intentName in self._savedAssistants[languageFilter][runOnAssistantId]['intents']:
 			if intentName not in intentsSynced:
-				self._ctx.log('[Deprecated] Intent {}'.format(intentName))
+				self._ctx.log(f'[Deprecated] Intent {intentName}')
 				intentCacheData = self._savedAssistants[languageFilter][runOnAssistantId]['intents'][intentName]
 
 				intentId = intentCacheData['intentId']
@@ -595,7 +595,7 @@ class MainProcessor:
 				if intentName in self._savedIntents[languageFilter][runOnAssistantId]:
 					del self._savedIntents[languageFilter][runOnAssistantId][intentName]
 
-					globalIntentFile = self.SAVED_ASSISTANTS_DIR / languageFilter / runOnAssistantId / 'intents' / '{}.json'.format(intentName)
+					globalIntentFile = self.SAVED_ASSISTANTS_DIR / languageFilter / runOnAssistantId / 'intents' / f'{intentName}.json'
 
 					if globalIntentFile.exists():
 						globalIntentFile.unlink()
@@ -660,7 +660,7 @@ class MainProcessor:
 				continue
 
 			if moduleName not in modulesSynced:
-				self._ctx.log('[Deprecated] Module {}'.format(moduleName))
+				self._ctx.log(f'[Deprecated] Module {moduleName}')
 				moduleCacheData = self._savedAssistants[languageFilter][runOnAssistantId]['modules'][moduleName]
 				skillId = moduleCacheData['skillId']
 
@@ -706,7 +706,7 @@ class MainProcessor:
 
 				if skillId not in remoteIndexedSkills:
 					skillId = self._ctx.assistant.forkAssistantSkill(assistantId=runOnAssistantId, sourceSkillId=skillId)
-					self._ctx.log('[Forked] Skill from {} to {}'.format(skill['id'], skillId))
+					self._ctx.log(f"[Forked] Skill from {skill['id']} to {skillId}")
 					hasFork = True
 
 				for intent in skill['intents']:
@@ -714,7 +714,7 @@ class MainProcessor:
 
 					if intentId not in remoteIndexedIntents:
 						intentId = self._ctx.skill.forkSkillIntent(skillId=skillId, sourceIntentId=intentId, userId=self._ctx.userId)
-						self._ctx.log('[Forked] Intent from {} to {} used in skill {}'.format(intent['id'], intentId, skillId))
+						self._ctx.log(f"[Forked] Intent from {skill['id']} to {intentId} used in skill {skillId}")
 						hasFork = True
 
 		if hasFork:
@@ -832,7 +832,7 @@ class MainProcessor:
 			moduleIntentsMountpoint = Path(self.SAVED_MODULES_DIR, moduleName, 'dialogTemplate')
 			moduleIntentsMountpoint.mkdir(parents=True, exist_ok=True)
 
-			moduleIntentsOutputFile = moduleIntentsMountpoint / '{}.json'.format(languageFilter)
+			moduleIntentsOutputFile = moduleIntentsMountpoint / f'{languageFilter}.json'
 
 			moduleIntentsOutputFile.write_text(json.dumps(moduleConfig, indent=4, sort_keys=False, ensure_ascii=False))
-			self._ctx.log('[LocalModule] Finished for module {}'.format(moduleName))
+			self._ctx.log(f'[LocalModule] Finished for module {moduleName}')

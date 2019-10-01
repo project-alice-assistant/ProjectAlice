@@ -1,3 +1,4 @@
+from textwrap import dedent
 import click
 import urllib.request
 import requests
@@ -18,41 +19,43 @@ def module(author_name: str, module_name: str):
 
 	TABLE_DATA = [['Module Installer']]
 	table_instance = DoubleTable(TABLE_DATA)
-	click.secho('\n{}\n'.format(table_instance.table), fg='yellow')
+	click.secho(f'\n{table_instance.table}\n', fg='yellow')
 
 	try:
-		url = '{0}/{1}/{2}/{2}.install'.format(ModuleManager.GITHUB_BARE_BASE_URL, author_name, module_name)
+		url = f'{ModuleManager.GITHUB_BARE_BASE_URL}/{author_name}/{module_name}/{module_name}.install'
 		req = requests.get(url)
 
 		if req.status_code // 100 == 4:
-			click.echo(
-				'> Unknown {} pair\n'.format(click.style('{}/{}'.format(author_name, module_name), fg='red'))
-				+ '- You can use {} to list all authors\n'.format(click.style('author:list', fg='yellow'))
-				+ '- You can use {} to list all modules from an author\n\n'.format(click.style('module:list', fg='yellow')),
+			click.echo(dedent(f"""
+				> Unknown {click.style(f'{author_name}/{module_name}', fg='red')} pair
+				- You can use {click.style('author:list', fg='yellow')} to list all authors
+				- You can use {click.style('module:list', fg='yellow')} to list all modules from an author
+				"""),
 				err=True
 			)
 			return
 
 		module = req.json()
-		click.echo(
-			'+ Informations:\n'
-			+ '===============\n'
-			+ 'name: {}\n'.format(click.style(str(module['name']), fg='yellow'))
-			+ 'version: {}\n'.format(click.style(str(module['version']), fg='yellow'))
-			+ 'author: {}\n'.format(click.style(module['author'], fg='yellow'))
-			+ 'maintainers: {}\n'.format(click.style(', '.join(module['maintainers']), fg='yellow'))
-			+ 'description: {}\n'.format(click.style(module['desc'], fg='yellow'))
-			+ 'aliceMinVersion: {}\n'.format(click.style(str(module['aliceMinVersion']), fg='yellow'))
-			+ 'pip requirements: {}\n'.format(click.style(', '.join(module['pipRequirements']), fg='yellow'))
-			+ 'system requirements: {}\n\n'.format(click.style(', '.join(module['systemRequirements']), fg='yellow'))
-			+ '+ Conditions:\n'
-			+ '=============\n'
-			+ 'lang: {}\n\n'.format(click.style(', '.join(module['conditions']['lang']), fg='yellow'))
-		)
+		click.echo(dedent(f"""
+			+ Informations:
+			===============
+			name: {click.style(str(module['name']), fg='yellow')}
+			version: {click.style(str(module['version']), fg='yellow')}
+			author: {click.style(module['author'], fg='yellow')}
+			maintainers: {click.style(', '.join(module['maintainers']), fg='yellow')}
+			description: {click.style(module['desc'], fg='yellow')}
+			aliceMinVersion: {click.style(str(module['aliceMinVersion']), fg='yellow')}
+			pip requirements: {click.style(', '.join(module['pipRequirements']), fg='yellow')}
+			system requirements: {click.style(', '.join(module['systemRequirements']), fg='yellow')}
 
-		urllib.request.urlretrieve(url, 'system/moduleInstallTickets/{}.install'.format(module_name))
+			+ Conditions:\n"
+			=============\n"
+			lang: {click.style(', '.join(module['conditions']['lang']), fg='yellow')}
+		"""))
+
+		urllib.request.urlretrieve(url, f'system/moduleInstallTickets/{module_name}.install')
 
 	except Exception as e:
-		click.secho('Failed to add the module', err=True, fg='red')
+		click.secho(f'Failed to add the module: {e}', err=True, fg='red')
 
 

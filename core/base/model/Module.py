@@ -28,9 +28,9 @@ class Module:
 			path = Path(inspect.getfile(self.__class__)).with_suffix('.install')
 			self._install = json.loads(path.read_text())
 		except FileNotFoundError:
-			raise ModuleStartingFailed(error='[{}] Cannot find install file'.format(type(self).__name__))
+			raise ModuleStartingFailed(error=f'[{type(self).__name__}] Cannot find install file')
 		except Exception as e:
-			raise ModuleStartingFailed(error='[{}] Failed loading module: {}'.format(type(self).__name__, e))
+			raise ModuleStartingFailed(error=f'[{type(self).__name__}] Failed loading module: {e}')
 
 		self._name = self._install['name']
 		self._author = self._install['author']
@@ -53,7 +53,7 @@ class Module:
 	def loadWidgets(self):
 		fp = Path(self.getCurrentDir(), 'widgets')
 		if fp.exists():
-			self._logger.info('[{}] Loading {} widgets'.format(self.name, len(list(fp.glob('*.py'))) - 1))
+			self._logger.info(f"[{self.name}] Loading {len(list(fp.glob('*.py'))) - 1} widgets")
 
 			data = self.DatabaseManager.fetch(
 				tableName='widgets',
@@ -70,16 +70,16 @@ class Module:
 					continue
 
 				widgetName = Path(file).stem
-				widgetImport = importlib.import_module('modules.{}.widgets.{}'.format(self.name, widgetName))
+				widgetImport = importlib.import_module(f'modules.{self.name}.widgets.{widgetName}')
 				klass = getattr(widgetImport, widgetName)
 
 				if widgetName in data: # widget already exists in DB
 					self._widgets[widgetName] = klass(data[widgetName])
 					del data[widgetName]
-					self._logger.info('[{}] Loaded widget "{}"'.format(self.name, widgetName))
+					self._logger.info(f'[{self.name}] Loaded widget "{widgetName}"')
 
 				else: # widget is new
-					self._logger.info('[{}] Adding widget "{}"'.format(self.name, widgetName))
+					self._logger.info(f'[{self.name}] Adding widget "{widgetName}"')
 					widget = klass({
 						'name': widgetName,
 						'parent': self.name,
@@ -88,7 +88,7 @@ class Module:
 					widget.saveToDB()
 
 			for widgetName in data: # deprecated widgets
-				self._logger.info('[{}] Widget "{}" is deprecated, removing'.format(self.name, widgetName))
+				self._logger.info(f'[{self.name}] Widget "{widgetName}" is deprecated, removing')
 				self.DatabaseManager.delete(
 					tableName='widgets',
 					callerName=self.ModuleManager.name,
@@ -218,7 +218,7 @@ class Module:
 			try:
 				mqttClient.subscribe(str(intent))
 			except:
-				self._logger.error('Failed subscribing to intent "{}"'.format(str(intent)))
+				self._logger.error(f'Failed subscribing to intent "{str(intent)}"')
 
 
 	def notifyDevice(self, topic: str, uid: str = '', siteId: str = ''):
@@ -227,7 +227,7 @@ class Module:
 		elif siteId:
 			self.MqttManager.publish(topic=topic, payload={'siteId': siteId})
 		else:
-			self._logger.warning('[{}] Tried to notify devices but no uid or site id specified'.format(self.name))
+			self._logger.warning(f'[{self.name}] Tried to notify devices but no uid or site id specified')
 
 
 	def filterIntent(self, intent: str, session: DialogSession) -> bool:
@@ -290,9 +290,9 @@ class Module:
 
 	def onStart(self) -> list:
 		if not self._active:
-			self._logger.info('Module {} is not active'.format(self.name))
+			self._logger.info(f'Module {self.name} is not active')
 		else:
-			self._logger.info('Starting {} module'.format(self.name))
+			self._logger.info(f'Starting {self.name} module')
 
 		self._initDB()
 		self.MqttManager.subscribeModuleIntents(self.name)
@@ -305,7 +305,7 @@ class Module:
 				self.ThreadManager.doLater(interval=5, func=self.onBooted)
 				return False
 
-			self._logger.info('[{}] Delayed start'.format(self.name))
+			self._logger.info(f'[{self.name}] Delayed start')
 			self.ThreadManager.doLater(interval=5, func=self.onStart)
 
 		return True
@@ -332,12 +332,12 @@ class Module:
 	def onMakeup(self): pass
 	def onContextSensitiveDelete(self, sessionId: str):	pass
 	def onContextSensitiveEdit(self, sessionId: str): pass
-	def onStop(self): self._logger.info('[{}] Stopping'.format(self.name))
+	def onStop(self): self._logger.info(f'[{self.name}] Stopping')
 	def onFullMinute(self): pass
 	def onFiveMinute(self): pass
 	def onQuarterHour(self): pass
 	def onFullHour(self): pass
-	def onMessage(self, intent: str, session: DialogSession): raise NotImplementedError('[{}] onMessage must be implemented!'.format(self.name))
+	def onMessage(self, intent: str, session: DialogSession): raise NotImplementedError(f'[{self.name}] onMessage must be implemented!')
 	def onCancel(self): pass
 	def onASRCaptured(self, *args): pass
 	def onWakeword(self): pass

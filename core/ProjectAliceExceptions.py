@@ -29,13 +29,13 @@ class SamkillaException(Exception):
 
 class FunctionNotImplemented(Exception):
 	def __init__(self, clazz: str, funcName: str):
-		raise NotImplementedError('[{}] {} needs implementation!!'.format(clazz, funcName))
+		raise NotImplementedError(f'[{clazz}] {funcName} needs implementation!!')
 
 
 class ModuleStartingFailed(Exception):
 	def __init__(self, moduleName: str = '', error: str = ''):
 		self._logger = logging.getLogger('ProjectAlice')
-		self._logger.error('An error occured while starting a module: {}'.format(error))
+		self._logger.error(f'An error occured while starting a module: {error}')
 
 		if moduleName:
 			SuperManager.getInstance().moduleManager.deactivateModule(moduleName)
@@ -44,7 +44,7 @@ class ModuleStartingFailed(Exception):
 class ModuleStartDelayed(Exception):
 	def __init__(self, moduleName):
 		self._logger = logging.getLogger('ProjectAlice')
-		self._logger.warning('[{}] Delaying module start'.format(moduleName))
+		self._logger.warning(f'[{moduleName}] Delaying module start')
 		SuperManager.getInstance().moduleManager.getModuleInstance(moduleName).delayed = True
 
 
@@ -102,5 +102,5 @@ class VitalConfigMissing(Exception):
 	def __init__(self, message: str):
 		super().__init__(message)
 		self._logger = logging.getLogger('ProjectAlice')
-		self._logger.warning('[ConfigManager] A vital configuration ("{}") is missing. Make sure the following configurations are set: {}'.format(message, ' / '.join(SuperManager.getInstance().configManager.vitalConfigs)))
+		self._logger.warning(f'[ConfigManager] A vital configuration ("{message}") is missing. Make sure the following configurations are set: {" / ".join(SuperManager.getInstance().configManager.vitalConfigs)}')
 		SuperManager.getInstance().projectAlice.onStop()

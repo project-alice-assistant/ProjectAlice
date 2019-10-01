@@ -24,11 +24,9 @@ class IndexView(View):
 	@route('widget_static/<path:filename>')
 	def widget_static(self, filename: str):
 		parent, fileType, filename = filename.split('/')
-		return send_from_directory('{}/../../modules/{}/widgets/{}/'.format(
-			SuperManager.getInstance().webInterfaceManager.app.root_path,
-			parent,
-			fileType
-		), filename)
+		return send_from_directory(
+			f'{SuperManager.getInstance().webInterfaceManager.app.root_path}/../../modules/{parent}/widgets/{fileType}/',
+			filename)
 
 
 	@route('/home/saveWidgetPos', methods=['POST'])
@@ -43,7 +41,7 @@ class IndexView(View):
 
 			return jsonify(success=True)
 		except Exception as e:
-			self._logger.warning("[Widget] Couldn't save position: {}".format(e))
+			self._logger.warning(f"[Widget] Couldn't save position: {e}")
 			return jsonify(success=False)
 
 
@@ -58,7 +56,7 @@ class IndexView(View):
 
 			return jsonify(success=True)
 		except Exception as e:
-			self._logger.warning("[Widget] Couldn't remove from home: {}".format(e))
+			self._logger.warning(f"[Widget] Couldn't remove from home: {e}")
 			return jsonify(success=False)
 
 
@@ -73,5 +71,5 @@ class IndexView(View):
 
 			return redirect('home.html')
 		except Exception as e:
-			self._logger.warning("[Widget] Couldn't add to home: {}".format(e))
+			self._logger.warning(f"[Widget] Couldn't add to home: {e}")
 			return jsonify(success=False)

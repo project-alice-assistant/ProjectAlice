@@ -189,7 +189,7 @@ class AmazonTTS(TTS):
 		text = session.payload['text']
 
 		if not re.search('<speak>', text):
-			text = '<speak><amazon:auto-breaths>{}</amazon:auto-breaths></speak>'.format(text)
+			text = f'<speak><amazon:auto-breaths>{text}</amazon:auto-breaths></speak>'
 
 		return text
 
@@ -213,7 +213,7 @@ class AmazonTTS(TTS):
 			)
 
 			if not response:
-				self._logger.error('[{}] Failed downloading speech file'.format(self.TTS.value))
+				self._logger.error(f'[{self.TTS.value}] Failed downloading speech file')
 				return
 
 			tmpFile.write_bytes(response['AudioStream'].read())

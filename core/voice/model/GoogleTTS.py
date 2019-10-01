@@ -129,7 +129,7 @@ class GoogleTTS(TTS):
 		text = session.payload['text']
 
 		if not re.search('<speak>', text):
-			text = '<speak>{}</speak>'.format(text)
+			text = f'<speak>{text}</speak>'
 
 		return text
 
@@ -154,7 +154,7 @@ class GoogleTTS(TTS):
 
 			response = self._client.synthesize_speech(imput, voice, audio)
 			if not response:
-				self._logger.error('[{}] Failed downloading speech file'.format(self.TTS.value))
+				self._logger.error(f'[{self.TTS.value}] Failed downloading speech file')
 				return
 
 			tmpFile.write_bytes(response.audio_content)

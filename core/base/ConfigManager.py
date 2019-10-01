@@ -67,7 +67,7 @@ class ConfigManager(Manager):
 
 
 	def _checkAndUpdateAliceConfigFile(self):
-		self._logger.info('[{}] Checking Alice configuration file'.format(self.name))
+		self._logger.info(f'[{self.name}] Checking Alice configuration file')
 
 		changes = False
 
@@ -75,11 +75,11 @@ class ConfigManager(Manager):
 
 		for k, v in configSample.settings.items():
 			if k not in availableConfigs:
-				self._logger.info('- New configuration found: {}'.format(k))
+				self._logger.info(f'- New configuration found: {k}')
 				changes = True
 				availableConfigs[k] = v
 			elif type(availableConfigs[k]) != type(v):
-				self._logger.info('- Existing configuration type missmatch: {}, replaced with sample configuration'.format(k))
+				self._logger.info(f'- Existing configuration type missmatch: {k}, replaced with sample configuration')
 				changes = True
 				availableConfigs[k] = v
 
@@ -87,7 +87,7 @@ class ConfigManager(Manager):
 
 		for k, v in temp.items():
 			if k not in configSample.settings:
-				self._logger.info('- Deprecated configuration: {}'.format(k))
+				self._logger.info(f'- Deprecated configuration: {k}')
 				changes = True
 				del availableConfigs[k]
 
@@ -105,7 +105,7 @@ class ConfigManager(Manager):
 	def updateAliceConfiguration(self, key: str, value: typing.Any):
 		try:
 			if key not in self._aliceConfigurations:
-				self._logger.warning('[{}] Was asked to update {} but key doesn\'t exist'.format(self.name, key))
+				self._logger.warning(f'[{self.name}] Was asked to update {key} but key doesn\'t exist')
 				raise Exception
 
 			#Remove module configurations
@@ -120,11 +120,11 @@ class ConfigManager(Manager):
 
 	def updateModuleConfigurationFile(self, moduleName: str, key: str, value: typing.Any):
 		if moduleName not in self._modulesConfigurations:
-			self._logger.warning('[{}] Was asked to update {} in module {} but module doesn\'t exist'.format(self.name, key, moduleName))
+			self._logger.warning(f'[{self.name}] Was asked to update {key} in module {moduleName} but module doesn\'t exist')
 			return
 
 		if key not in self._modulesConfigurations[moduleName]:
-			self._logger.warning('[{}] Was asked to update {} in module {} but key doesn\'t exist'.format(self.name, key, moduleName))
+			self._logger.warning(f'[{self.name}] Was asked to update {key} in module {moduleName} but key doesn\'t exist')
 			return
 
 		self._modulesConfigurations[moduleName][key] = value
@@ -151,7 +151,7 @@ class ConfigManager(Manager):
 
 		try:
 			s = json.dumps(sort, indent=4).replace('false', 'False').replace('true', 'True')
-			Path('config.py').write_text('settings = {}'.format(s))
+			Path('config.py').write_text(f'settings = {s}')
 			importlib.reload(config)
 		except Exception as e:
 			raise ConfigurationUpdateFailed(e)
@@ -174,7 +174,7 @@ class ConfigManager(Manager):
 
 
 	def loadSnipsConfigurations(self):
-		self._logger.info('[{}] Loading Snips configuration file'.format(self.name))
+		self._logger.info(f'[{self.name}] Loading Snips configuration file')
 		snipsConfig = Path('/etc/snips.toml')
 		if snipsConfig.exists():
 			self._snipsConfigurations = toml.loads(snipsConfig.read_text())
@@ -217,7 +217,7 @@ class ConfigManager(Manager):
 
 		config = self._snipsConfigurations.get(parent, dict()).get(key, None)
 		if config is None:
-			self._logger.warning('Tried to get "{}/{}" in snips configuration but key was not found'.format(parent, key))
+			self._logger.warning(f'Tried to get "{parent}/{key}" in snips configuration but key was not found')
 
 		return config
 
@@ -255,7 +255,7 @@ class ConfigManager(Manager):
 
 
 	def _checkAndUpdateModuleConfigFiles(self, module: str = ''):
-		self._logger.info('[{}] Checking module configuration files'.format(self.name))
+		self._logger.info(f'[{self.name}] Checking module configuration files')
 
 		# Iterate through all modules declared in global config file
 		for moduleName in self._modulesConfigurations:
@@ -279,13 +279,13 @@ class ConfigManager(Manager):
 			if not moduleConfigFileTemplateExists and moduleConfigFileExists:
 				# Delete it
 				moduleConfigFile.unlink()
-				self._logger.info('- Deprecated module config file found for module {}'.format(moduleName))
+				self._logger.info(f'- Deprecated module config file found for module {moduleName}')
 				continue
 
 			# Use dist (aka default config file) to generate a genuine config file if needed
 			if moduleConfigFileTemplateExists and not moduleConfigFileExists:
 				shutil.copyfile(moduleConfigFileTemplate, moduleConfigFile)
-				self._logger.info('- New config file setup for module {}'.format(moduleName))
+				self._logger.info(f'- New config file setup for module {moduleName}')
 				continue
 
 			# The final case is if moduleConfigFileTemplateExists and moduleConfigFileExists
@@ -294,11 +294,11 @@ class ConfigManager(Manager):
 
 				for k, v in configTemplate.items():
 					if k not in self._modulesConfigurations[moduleName]:
-						self._logger.info('- New module configuration found: {} for module {}'.format(k, moduleName))
+						self._logger.info(f'- New module configuration found: {k} for module {moduleName}')
 						changes = True
 						self._modulesConfigurations[moduleName][k] = v
 					elif type(self._modulesConfigurations[moduleName][k]) != type(v):
-						self._logger.info('- Existing module configuration type missmatch: {}, replaced with sample configuration for module {}'.format(k, moduleName))
+						self._logger.info(f'- Existing module configuration type missmatch: {k}, replaced with sample configuration for module {moduleName}')
 						changes = True
 						self._modulesConfigurations[moduleName][k] = v
 
@@ -309,7 +309,7 @@ class ConfigManager(Manager):
 					continue
 
 				if k not in configTemplate and k not in self._aliceModuleConfigurationKeys:
-					self._logger.info('- Deprecated module configuration: "{}" for module "{}"'.format(k, moduleName))
+					self._logger.info(f'- Deprecated module configuration: "{k}" for module "{moduleName}"')
 					changes = True
 					del self._modulesConfigurations[moduleName][k]
 
@@ -318,7 +318,7 @@ class ConfigManager(Manager):
 
 
 	def loadModuleConfigurations(self, module: str = ''):
-		self._logger.info('[{}] Loading module configurations'.format(self.name))
+		self._logger.info(f'[{self.name}] Loading module configurations')
 
 		# Iterate through all modules declared in global config file
 		for moduleName in self._aliceConfigurations['modules']:
@@ -334,18 +334,18 @@ class ConfigManager(Manager):
 				continue
 
 			try:
-				self._logger.info('- Loading config file for module {}'.format(moduleName))
+				self._logger.info(f'- Loading config file for module {moduleName}')
 				with open(moduleConfigFile) as jsonFile:
 					self._modulesConfigurations[moduleName] = {**json.load(jsonFile), **self._aliceConfigurations['modules'][moduleName]}
 
 			except json.decoder.JSONDecodeError:
-				self._logger.error('- Error in config file for module {}'.format(moduleName))
+				self._logger.error(f'- Error in config file for module {moduleName}')
 
 
 	def deactivateModule(self, moduleName: str, persistent: bool = False):
 
 		if moduleName in self.aliceConfigurations['modules']:
-			self._logger.info('[{}] Deactivated module {} {} persistence'.format(self.name, moduleName, 'with' if persistent else 'without'))
+			self._logger.info(f"[{self.name}] Deactivated module {moduleName} {'with' if persistent else 'without'} persistence")
 			self.aliceConfigurations['modules'][moduleName]['active'] = False
 
 			if persistent:
@@ -355,7 +355,7 @@ class ConfigManager(Manager):
 	def activateModule(self, moduleName: str, persistent: bool = False):
 
 		if moduleName in self.aliceConfigurations['modules']:
-			self._logger.info('[{}] Activated module {} {} persistence'.format(self.name, moduleName, 'with' if persistent else 'without'))
+			self._logger.info(f"[{self.name}] Activated module {moduleName} {'with' if persistent else 'without'} persistence")
 			self.aliceConfigurations['modules'][moduleName]['active'] = True
 
 			if persistent:

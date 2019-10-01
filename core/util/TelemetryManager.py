@@ -28,7 +28,7 @@ class TelemetryManager(Manager):
 		super().onStart()
 		if not self.ConfigManager.getAliceConfigByName('enableDataStoring'):
 			self._isActive = False
-			self._logger.info('[{}] Data storing is disabled'.format(self.name))
+			self._logger.info(f'[{self.name}] Data storing is disabled')
 
 
 	def onQuarterHour(self):
@@ -69,6 +69,6 @@ class TelemetryManager(Manager):
 
 		return self.databaseFetch(
 			tableName='telemetry',
-			query='SELECT * FROM :__table__ WHERE type = :type and siteId = :siteId {} order by timestamp DESC LIMIT 1'.format('and service = :service' if service else ''),
+			query=f"SELECT * FROM :__table__ WHERE type = :type and siteId = :siteId {'and service = :service' if service else ''} order by timestamp DESC LIMIT 1",
 			values=values
 		)
