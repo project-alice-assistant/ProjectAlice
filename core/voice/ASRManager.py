@@ -9,7 +9,7 @@ from core.voice.model.SnipsASR import SnipsASR
 try:
 	# noinspection PyUnresolvedReferences
 	from core.voice.model.GoogleASR import GoogleASR
-except ImportError:
+except:
 	pass
 
 from core.base.model.Intent import Intent

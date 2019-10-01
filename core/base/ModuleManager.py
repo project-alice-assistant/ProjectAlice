@@ -213,7 +213,7 @@ class ModuleManager(Manager):
 			except ModuleStartingFailed:
 				self._modules[moduleName]['active'] = False
 			except ModuleStartDelayed:
-				pass
+				self._logger.info(f'[{self.name}] Module {moduleName} start is delayed')
 
 		supportedIntents = list(set(supportedIntents))
 
@@ -236,9 +236,9 @@ class ModuleManager(Manager):
 				self._logger.info('- Started!')
 				return intents
 		except ModuleStartingFailed:
-			pass
+			raise
 		except ModuleStartDelayed:
-			pass
+			raise
 		except Exception as e:
 			self._logger.error(f'- Couldn\'t start module {name}. Did you forget to return the intents in onStart()? Error: {e}')
 
