@@ -249,6 +249,7 @@ class DatabaseManager(Manager):
 		if not query:
 			return
 
+		database = None
 		try:
 			database = self.getConnection()
 			cursor = database.cursor()
