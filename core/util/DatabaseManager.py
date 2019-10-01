@@ -22,7 +22,7 @@ class DatabaseManager(Manager):
 		try:
 			cursor.execute("SELECT name FROM main.sqlite_master WHERE type = 'table' and name NOT LIKE 'sqlite_%'")
 			self._tables = cursor.fetchall()
-		except Exception as e:
+		except sqlite3.Error as e:
 			self._logger.error(f'[{self.name}] Something went wrong fetching database tables: {e}')
 			return False
 
@@ -65,10 +65,10 @@ class DatabaseManager(Manager):
 						cursor.execute(f'CREATE TABLE {fullTableName} ({colsQuery}{unique})')
 						database.commit()
 						continue
-					except Exception:
+					except sqlite3.Error:
 						database.rollback()
 						raise
-			except Exception as e:
+			except sqlite3.Error as e:
 				self._logger.error(f'[{self.name}] Something went wrong creating database table "{fullTableName}" for component {callerName}: {e}')
 				continue
 
@@ -86,7 +86,7 @@ class DatabaseManager(Manager):
 						cursor.execute(f'ALTER TABLE {fullTableName} ADD COLUMN {column}')
 
 				database.commit()
-			except Exception as e:
+			except sqlite3.Error as e:
 				self._logger.info(f'[{self.name}] Failed altering table "{fullTableName}" for component "{callerName}": {e}')
 				database.rollback()
 				return False
@@ -105,7 +105,7 @@ class DatabaseManager(Manager):
 					cursor.execute(f"DROP TABLE {'bak_' + fullTableName}")
 					database.commit()
 
-			except Exception as e:
+			except sqlite3.Error as e:
 				self._logger.error(f'[{self.name}] Something went wrong initializing database for module {callerName}: {e}')
 				database.rollback()
 				return False
@@ -119,7 +119,7 @@ class DatabaseManager(Manager):
 				try:
 					cursor.execute(f'DROP TABLE {tableName}')
 					database.commit()
-				except Exception as e:
+				except sqlite3.Error as e:
 					self._logger.error(f'[{self.name}] Failed dropping deprecated table "{tableName}" for component "{callerName}": {e}')
 					continue
 
@@ -156,7 +156,7 @@ class DatabaseManager(Manager):
 
 			cursor.execute(query, values)
 			insertId = cursor.lastrowid
-		except Exception as e:
+		except sqlite3.Error as e:
 			self._logger.warning(f'[{self.name}] Error inserting data for component "{callerName}" in table "{tableName}": {e}')
 
 			if database:
@@ -186,7 +186,7 @@ class DatabaseManager(Manager):
 			database = self.getConnection()
 			cursor = database.cursor()
 			cursor.execute(query, values)
-		except Exception as e:
+		except sqlite3.Error as e:
 			self._logger.warning(f'[{self.name}] Error updating data for component "{callerName}" in table "{tableName}": {e}')
 			raise
 		else:
@@ -226,7 +226,7 @@ class DatabaseManager(Manager):
 				data = cursor.fetchone()
 			else:
 				data = cursor.fetchall()
-		except Exception as e:
+		except sqlite3.Error as e:
 			self._logger.warning(f'[{self.name}] Error fetching data for component "{callerName}" in table "{tableName}": {e}')
 			return data
 		else:
@@ -253,7 +253,7 @@ class DatabaseManager(Manager):
 			database = self.getConnection()
 			cursor = database.cursor()
 			cursor.execute(query, values)
-		except Exception as e:
+		except sqlite3.Error as e:
 			self._logger.warning(f'[{self.name}] Error deleting from table "{tableName}" for component "{callerName}": {e}')
 
 			if database:
