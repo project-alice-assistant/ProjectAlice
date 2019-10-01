@@ -65,7 +65,7 @@ class DatabaseManager(Manager):
 						cursor.execute(f'CREATE TABLE {fullTableName} ({colsQuery}{unique})')
 						database.commit()
 						continue
-					except Exception:
+					except:
 						database.rollback()
 						raise
 			except Exception as e:

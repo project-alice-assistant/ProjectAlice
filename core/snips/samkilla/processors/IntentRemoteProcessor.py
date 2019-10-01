@@ -104,7 +104,7 @@ class IntentRemoteProcessor:
 		except IntentError as ie:
 			self._ctx.log('[Safe] Handle error gracefully')
 			self._ctx.log(ie.message)
-		except Exception:
+		except:
 			e = sys.exc_info()[0]
 			self._ctx.log('[Safe] Handle error gracefully')
 			self._ctx.log(e)

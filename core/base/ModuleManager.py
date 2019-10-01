@@ -409,7 +409,7 @@ class ModuleManager(Manager):
 
 							self._startModule(moduleInstance=self._modules[moduleName]['instance'])
 							self._modules[moduleName]['instance'].onBooted()
-						except Exception:
+						except:
 							pass
 
 					self.SnipsServicesManager.runCmd(cmd='restart')

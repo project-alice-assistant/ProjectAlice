@@ -194,7 +194,7 @@ def getDuration(session: DialogSession) -> int:
 			duration += values['days'] * 24 * 60 * 60
 			duration += values['weeks'] * 7 * 24 * 60 * 60
 			duration += values['months'] * 4 * 7 * 24 * 60 * 60
-		except Exception:
+		except:
 			pass
 
 	return duration

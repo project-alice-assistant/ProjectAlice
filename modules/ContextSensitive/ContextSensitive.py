@@ -39,7 +39,7 @@ class ContextSensitive(Module):
 					if module['instance'].onContextSensitiveDelete(sessionId):
 						self.endSession(sessionId=sessionId)
 						return True
-				except Exception:
+				except:
 					continue
 
 		elif intent == self._INTENT_EDIT_THIS:
