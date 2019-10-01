@@ -71,15 +71,15 @@ class TalkManager(Manager):
 				return random.choice(self._langData[module][activeLanguage][talk]['short'])
 			else:
 				return random.choice(self._langData[module][activeLanguage][talk]['default'])
-		except Exception:
+		except:
 			try:
 				# Maybe there's only a default version?
 				return random.choice(self._langData[module][activeLanguage][talk]['default'])
-			except Exception:
+			except:
 				try:
 					# Maybe there's no short/long version?
 					return random.choice(self._langData[module][activeLanguage][talk])
-				except Exception:
+				except:
 					try:
 						# Fallback to default language then
 						if activeLanguage == defaultLanguage:
@@ -88,7 +88,7 @@ class TalkManager(Manager):
 						self._logger.error(f'[{self.name}] Was asked to get "{talk}" from "{module}" module in "{activeLanguage}" but it doesn\'t exist, falling back to "{defaultLanguage}" version instead')
 						# call itself again with default language and then exit because activeLanguage == defaultLanguage
 						return self.chooseTalk(talk, module, defaultLanguage, defaultLanguage, shortReplyMode)
-					except Exception:
+					except:
 						# Give up, that text does not exist...
 						self._logger.error(f'[{self.name}] Was asked to get "{talk}" from "{module}" module but language string doesn\'t exist')
 						return ''

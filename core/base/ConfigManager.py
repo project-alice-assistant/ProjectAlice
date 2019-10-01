@@ -59,7 +59,7 @@ class ConfigManager(Manager):
 		super().onStart()
 		for conf in self._vitalConfigs:
 			if conf not in self._aliceConfigurations or self._aliceConfigurations[conf] == '':
-				raise VitalConfigMissing()
+				raise VitalConfigMissing(conf)
 
 
 	def _setDefaultSiteId(self):
@@ -108,7 +108,7 @@ class ConfigManager(Manager):
 				self._logger.warning(f'[{self.name}] Was asked to update {key} but key doesn\'t exist')
 				raise Exception
 
-			#Remove module configurations
+			# Remove module configurations
 			if key == 'modules':
 				value = dict((k, v) for k, v in value.items() if k not in self._aliceModuleConfigurationKeys)
 
@@ -237,21 +237,15 @@ class ConfigManager(Manager):
 		)
 
 
-	def getModuleConfigs(self, moduleName: str) -> dict:
-		return self.getModuleConfigByName(moduleName, constants.ALL)
-
-
-	def getModuleConfigByName(self, moduleName: str, configName: str, voiceControl: bool = False) -> dict:
+	def getModuleConfigByName(self, moduleName: str, configName: str) -> typing.Any:
 		if moduleName not in self._modulesConfigurations:
-			return dict()
+			return None
 
-		if configName == constants.ALL:
-			return self._modulesConfigurations[moduleName]
+		return self._modulesConfigurations[moduleName].get(configName, None)
 
-		return self._modulesConfigurations[moduleName].get(
-			configName,
-			difflib.get_close_matches(word=configName, possibilities=self._modulesConfigurations[moduleName], n=3) if voiceControl else dict()
-		)
+
+	def getModuleConfigs(self, moduleName: str) -> dict:
+		return self._modulesConfigurations.get(moduleName, dict())
 
 
 	def _checkAndUpdateModuleConfigFiles(self, module: str = ''):
@@ -404,3 +398,8 @@ class ConfigManager(Manager):
 	@property
 	def vitalConfigs(self) -> list:
 		return self._vitalConfigs
+
+
+	@property
+	def aliceModuleConfigurationKeys(self) -> list:
+		return self._aliceModuleConfigurationKeys

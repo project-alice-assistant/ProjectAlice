@@ -370,7 +370,7 @@ class DeviceManager(Manager):
 				self._broadcastSocket.sendto(bytes(answer, encoding='utf8'), (deviceIp, self._broadcastPort))
 				self.stopBroadcasting()
 			except socket.timeout:
-				pass
+				self._logger.info(f'[{self.name}] No device query received')
 
 
 	def deviceConnecting(self, uid: str) -> Optional[Device]:

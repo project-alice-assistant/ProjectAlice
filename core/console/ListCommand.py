@@ -31,7 +31,7 @@ def authors():
 				author['name'],
 			])
 
-	except Exception:
+	except:
 		click.secho('Error listing authors', err=True, fg='red')
 	else:
 		click.echo(tableInstance.table)
@@ -92,11 +92,11 @@ def modules(authors: list, full: bool):
 						description
 					])
 
-				except Exception:
+				except:
 					click.secho(f"Error get module {module['name']}", err=True, fg='red')
 					raise
 
-		except Exception:
+		except:
 			click.secho('Error listing modules', err=True, fg='red')
 		else:
 			click.echo(tableInstance.table)

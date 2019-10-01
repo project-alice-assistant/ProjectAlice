@@ -78,7 +78,7 @@ def main():
 		while RUNNING:
 			time.sleep(0.1)
 	except KeyboardInterrupt:
-		pass
+		_logger.info('Interruption detected')
 	finally:
 		projectAlice.onStop()
 		_logger.info('Project Alice stopped, see you soon!')

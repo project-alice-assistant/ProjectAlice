@@ -459,10 +459,10 @@ class AliceCore(Module):
 				)
 			else:
 				self.playSound(
-					soundFile=str(filepath),
+					soundFilename=filepath.stem,
+					location=filepath.parent,
 					sessionId='checking-wakeword',
-					siteId=session.siteId,
-					absolutePath=True
+					siteId=session.siteId
 				)
 
 				text = 'howWasTheCapture' if self.WakewordManager.getLastSampleNumber() == 1 else 'howWasThisCapture'
@@ -524,12 +524,12 @@ class AliceCore(Module):
 					return True
 				time.sleep(0.5)
 
-			filepath = Path(tempfile.gettempdir(), str(self.WakewordManager.getLastSampleNumber())).with_suffix('.wav')
+			filepath = Path(tempfile.gettempdir(), str(self.WakewordManager.getLastSampleNumber()))
 			self.playSound(
-				soundFile=str(filepath),
+				soundFilename=filepath.stem,
+				location=filepath.parent,
 				sessionId='checking-wakeword',
-				siteId=session.siteId,
-				absolutePath=True
+				siteId=session.siteId
 			)
 
 			self.continueDialog(
