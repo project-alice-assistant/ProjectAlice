@@ -9,12 +9,12 @@
 <script src="{{ url_for('static', filename='js/jquery-3.4.1.min.js') }}"></script>
 <script src="{{ url_for('static', filename='js/jquery-ui.js') }}"></script>
 <nav>
-	<ul>
-		<li onclick="location.href='/home';">{{ langData.home }}</li>
-		<li onclick="location.href='/modules';">{{ langData.modules }}</li>
-		<li onclick="location.href='/syslog';">{{ langData.syslog }}</li>
-		<li onclick="location.href='/snipswatch';">{{ langData.snipswatch }}</li>
-		<li onclick="location.href='/admin';">{{ langData.admin }}</li>
+	<ul class="mainMenuList">
+		<li class="mainMenuListItem" onclick="location.href='/home';">{{ langData.home }}</li>
+		<li class="mainMenuListItem" onclick="location.href='/modules';">{{ langData.modules }}</li>
+		<li class="mainMenuListItem" onclick="location.href='/syslog';">{{ langData.syslog }}</li>
+		<li class="mainMenuListItem" onclick="location.href='/snipswatch';">{{ langData.snipswatch }}</li>
+		<li class="mainMenuListItem" onclick="location.href='/admin';">{{ langData.admin }}</li>
 	</ul>
 </nav>
 <section class="page">

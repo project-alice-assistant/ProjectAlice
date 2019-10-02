@@ -43,13 +43,14 @@ nav {
     size: 1em;
 }
 
-ul {
+.mainMenuList {
     list-style-type: none;
     margin: 0;
     padding: 0;
 }
 
-li {
+.mainMenuListItem {
+    width: 130px;
     margin: 5px;
     color: #d1d1d1;
     font-family: 'marskeregular', Arial, sans-serif;
@@ -61,7 +62,7 @@ li {
     padding-left: 10px;
 }
 
-li:hover {
+.mainMenuListItem:hover {
     cursor: pointer;
     background-color: #636363;
     color: yellow;
@@ -501,4 +502,19 @@ input:focus {
 .w_large_tall {
     width: 300px;
     height: 400px;
+}
+
+.w_extralarge {
+    width: 500px;
+    height: 500px;
+}
+
+.w_extralarge_wide {
+    width: 700px;
+    height: 500px;
+}
+
+.w_extralarge_tall {
+    width: 500px;
+    height: 700px;
 }

@@ -6,6 +6,7 @@ from pathlib import Path
 from typing import Optional
 
 import requests
+import shutil
 
 from core.ProjectAliceExceptions import ModuleNotConditionCompliant, ModuleStartDelayed, ModuleStartingFailed
 from core.base.SuperManager import SuperManager
@@ -607,3 +608,4 @@ class ModuleManager(Manager):
 			self.ConfigManager.removeModule(moduleName)
 			del self._modules[moduleName]
 
+		shutil.rmtree(Path(commons.rootDir(), 'modules', moduleName))
