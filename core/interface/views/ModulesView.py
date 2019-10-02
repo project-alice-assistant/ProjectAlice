@@ -39,7 +39,7 @@ class ModulesView(View):
 
 
 	@route('/delete', methods=['POST'])
-	def toggleModule(self):
+	def deleteModule(self):
 		try:
 			action, module = request.form.get('id').split('_')
 			self.ModuleManager.removeModule(module)
