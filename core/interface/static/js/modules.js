@@ -1,7 +1,42 @@
 $( document ).tooltip();
 
 $(function(){
-    let module;
+    let API_URL = 'https://api.github.com/repositories/193512918/contents/PublishedModules';
+
+    let modules = [];
+
+    function refreshStore() {
+        $.ajax({
+            dataType: 'json',
+            url: API_URL,
+            success: function (data) {
+                $.each(data, function (author) {
+                    author = data[author];
+                    if (author['type'] === 'dir') {
+                        $.ajax({
+                            dataType: 'json',
+                            url: author['url'],
+                            success: function (subdata) {
+                                $.each(subdata, function (module) {
+                                    module = subdata[module];
+                                    if (module['type'] === 'dir') {
+                                        modules.push(module);
+                                    }
+                                })
+                            }
+                        })
+                    }
+                });
+            }
+        });
+    }
+
+    function displayStoreContent() {
+        modules.forEach(function(module) {
+            let $tile = $('<div class="moduleStoreModuleTile">' + module['name'] + '</div>');
+            $('#modulesStore').append($tile)
+        });
+    }
 
 	$('[id^=toggle_]').on('click', function () {
 		$.ajax({
@@ -51,4 +86,21 @@ $(function(){
             }
         });
     });
+
+    $('#openModuleStore').on('click', function(){
+        $('#modulesPane').hide();
+        $('#modulesStore').css('display', 'flex');
+        $('#openModuleStore').hide();
+        $('#closeModuleStore').show();
+        displayStoreContent();
+    });
+
+    $('#closeModuleStore').on('click', function(){
+        $('#modulesPane').css('display', 'flex');
+        $('#modulesStore').hide();
+        $('#openModuleStore').show();
+        $('#closeModuleStore').hide();
+    });
+
+    refreshStore()
 });

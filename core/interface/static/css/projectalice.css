@@ -122,9 +122,40 @@ a:hover {
     cursor: pointer;
 }
 
+.modulesStore {
+    position: fixed;
+    top: 96px;
+    left: 154px;
+    right: 0;
+    bottom: 0;
+    margin: 5px;
+    overflow-y: auto;
+    overflow-x: hidden;
+    display: none;
+    flex-wrap: wrap;
+    align-content: flex-start;
+}
+
+.moduleStoreModuleTile {
+    font-family: 'marskeregular', Arial, sans-serif;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-start;
+    background-color: #636363;
+    margin: 10px;
+    width: 200px;
+    height: 200px;
+    color: #d1d1d1;
+    align-content: flex-start;
+}
+
+#closeModuleStore {
+    display: none;
+}
+
 .modulesPane {
     position: fixed;
-    top: 56px;
+    top: 96px;
     left: 154px;
     right: 0;
     bottom: 0;
