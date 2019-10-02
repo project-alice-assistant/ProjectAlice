@@ -38,6 +38,17 @@ class ModulesView(View):
 			return self.index()
 
 
+	@route('/delete', methods=['POST'])
+	def toggleModule(self):
+		try:
+			action, module = request.form.get('id').split('_')
+			self.ModuleManager.removeModule(module)
+			return self.index()
+		except Exception as e:
+			self._logger.warning(f'[Modules] Failed deleting module: {e}')
+			return self.index()
+
+
 	@route('/saveModuleSettings', methods=['POST'])
 	def saveModuleSettings(self):
 		moduleName = request.form['moduleName']

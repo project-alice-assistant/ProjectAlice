@@ -38,4 +38,17 @@ $(function(){
         $(this).parent().parent().children('.moduleDefaultView').css('display', 'flex');
 	    $(this).parent('.moduleIntentsView').css('display', 'none');
     });
+
+    $('.moduleButton').on('click', function(){
+        $.ajax({
+            url: '/modules/delete',
+            data: {
+                id: $(this).attr('id')
+            },
+            type: 'POST',
+            success: function() {
+                location.reload();
+            }
+        });
+    })
 });
