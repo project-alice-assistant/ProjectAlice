@@ -12,16 +12,13 @@ class ModulesView(View):
 
 	def __init__(self):
 		super().__init__()
-		self._on = "it's on baby"
+
 
 	def index(self):
 		modules = {moduleName: module['instance'] for moduleName, module in SuperManager.getInstance().moduleManager.getModules(False).items()}
 		deactivatedModules = {moduleName: module['instance'] for moduleName, module in SuperManager.getInstance().moduleManager.deactivatedModules.items()}
 		modules = {**modules, **deactivatedModules}
 		modules = OrderedDict(sorted(modules.items()))
-
-		# TODO Remove for prod!!
-		modules['DateDayTimeYear'].updateAvailable = True
 
 		return render_template('modules.html', modules=modules, langData=self._langData)
 

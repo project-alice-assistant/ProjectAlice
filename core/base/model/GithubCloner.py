@@ -1,4 +1,6 @@
 import logging
+from pathlib import Path
+
 import os
 import shutil
 
@@ -12,7 +14,7 @@ class GithubCloner:
 
 	NAME = 'GithubCloner'
 
-	def __init__(self, baseUrl: str, path: str, dest: str):
+	def __init__(self, baseUrl: str, path: Path, dest: Path):
 		self._logger = logging.getLogger('ProjectAlice')
 		self._baseUrl = baseUrl
 		self._path = path
@@ -20,18 +22,18 @@ class GithubCloner:
 
 
 	def clone(self) -> bool:
-		if os.path.isdir(self._dest):
+		if self._dest.exists():
 			self._cleanDestDir()
 		else:
-			os.mkdir(self._dest)
+			self._dest.mkdir(parents=True)
 
 		try:
-			return self._doClone(os.path.join('https://api.github.com', self._baseUrl, self._path))
+			return self._doClone(f'https://api.github.com/{self._baseUrl}/{self._path}')
 		except:
 			return False
 
 
-	def _doClone(self, url):
+	def _doClone(self, url: str) -> bool:
 		try:
 			username = SuperManager.getInstance().configManager.getAliceConfigByName('githubUsername')
 			token = SuperManager.getInstance().configManager.getAliceConfigByName('githubToken')
@@ -48,17 +50,15 @@ class GithubCloner:
 
 			data = req.json()
 			for item in data:
-				path = item['path'].split('/')[3:]
-				path = '/'.join(path)
-				if item['type'] == 'file' and not path.endswith('.install'):
+				path = Path(*Path(item['path']).parts[3:])
+				if item['type'] == 'file':
+					if path.suffix == 'install':
+						continue
 					fileStream = requests.get(item['download_url'], auth=auth)
-
-					with open(os.path.join(self._dest, path), 'wb') as f:
-						f.write(fileStream.content)
-
-				elif item['type'] == 'dir':
-					os.mkdir(os.path.join(self._dest, path))
-					self._doClone(url=os.path.join(url, path))
+					Path(self._dest / path).write_bytes(fileStream.content)
+				else:
+					Path(self._dest / path).mkdir(parents=True)
+					self._doClone(url=item['url'])
 
 		except GithubTokenFailed:
 			self._logger.error(f'[{self.NAME}] Provided Github username / token invalid')
