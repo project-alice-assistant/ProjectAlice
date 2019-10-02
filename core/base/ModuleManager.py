@@ -609,3 +609,5 @@ class ModuleManager(Manager):
 			del self._modules[moduleName]
 
 		shutil.rmtree(Path(commons.rootDir(), 'modules', moduleName))
+		# TODO Samkilla cleaning
+		self.SnipsConsoleManager.doDownload()
