@@ -280,7 +280,7 @@ class Intent:
 		for slot in slotsDefinition:
 			snipsSpecialSlot = slot['type'].startswith('snips/')
 
-			if slot['type'] not in typeEntityMatching:
+			if slot['type'] not in typeEntityMatching and not snipsSpecialSlot:
 				continue
 
 			slotEntityId = slot['type'] if snipsSpecialSlot else typeEntityMatching[slot['type']]['entityId']
