@@ -366,12 +366,12 @@ class Module:
 
 
 	def getModuleConfigs(self, withInfo: bool = False) -> dict:
-		if not withInfo:
+		if withInfo:
 			return self.ConfigManager.getModuleConfigs(self.name)
 		else:
 			mySettings = self.ConfigManager.getModuleConfigs(self.name)
 			infoSettings = self.ConfigManager.aliceModuleConfigurationKeys
-			return {key: value for key, value in mySettings if key not in infoSettings}
+			return {key: value for key, value in mySettings.items() if key not in infoSettings}
 
 
 	def updateConfig(self, key: str, value: typing.Any) -> typing.Any:

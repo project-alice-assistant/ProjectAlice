@@ -39,3 +39,24 @@ class ModulesView(View):
 		except Exception as e:
 			self._logger.warning(f'[Modules] Failed toggling module: {e}')
 			return self.index()
+
+
+	@route('/saveModuleSettings', methods=['POST'])
+	def saveModuleSettings(self):
+		moduleName = request.form['moduleName']
+		for confName, confValue in request.form.items():
+			if confName == 'moduleName':
+				continue
+
+			if confValue == 'on':
+				confValue = True
+			elif confValue == 'off':
+				confValue = False
+
+			SuperManager.getInstance().configManager.updateModuleConfigurationFile(
+				moduleName=moduleName,
+				key=confName,
+				value=confValue
+			)
+
+		return self.index()

@@ -6,19 +6,23 @@
 {% endblock %}
 
 {% block content %}
-	{% for module in modules.values() %}
-		<div id="config_for_{{ module.name }}" title="{{ langData.moduleSettings }}">
-			<form name="config_for_{{ module.name }}" method="post" autocomplete="off" novalidate>
-				{% for configName, configValue in module.getModuleConfigs() %}
-					<label for="{{ configName }}">{{ configName }}</label>
-					{% if configValue is sameas true or configValue is sameas false %}
-						<input type="checkbox" name="{{ configName }}" value="{{ configValue }}" id="{{ configName }} {% if configValue is sameas true %}checked{% endif %}">
-					{% else %}
-						<input type="text" name="{{ configName }}" value="{{ configValue }}" id="{{ configName }}">
-					{% endif %}
+	{% for moduleName, module in modules.items() %}
+		<div id="config_for_{{ moduleName }}" title="{{ langData.moduleSettings }}">
+			<form action="/modules/saveModuleSettings" name="config_for_{{ moduleName }}" method="post" autocomplete="off" novalidate>
+				{% for configName, configValue in module.getModuleConfigs().items() %}
+					<div class="moduleConfigBox">
+						<label class="moduleConfigLabel" for="{{ configName }}">{{ configName }}</label>
+						{% if configValue is sameas true or configValue is sameas false %}
+							<input type="checkbox" name="{{ configName }}" value="on" id="{{ configName }}" {% if configValue is sameas true %}checked{% endif %}>
+							<!-- Make sure unchecked chexboxes send off data -->
+							<input type="hidden" name="{{ configName }}" value="off">
+						{% else %}
+							<input type="text" name="{{ configName }}" value="{{ configValue }}" id="{{ configName }}">
+						{% endif %}
+					</div>
 				{% endfor %}
-				<input type="hidden" name="moduleName" value="{{ module.name }}">
-				<input type="submit" value="{{ langData.OK }}">
+				<input type="hidden" name="moduleName" value="{{ moduleName }}">
+				<input class="moduleConfigSave" type="submit" value="{{ langData.save }}">
 			</form>
 		</div>
 	{% endfor %}
@@ -39,9 +43,11 @@
 				<div class="moduleViewIntents">
 					 {{ langData.viewIntents }} <i class="fas fa-eye"></i>
 				</div>
-				<div class="moduleSettings" data-forModule="{{ moduleName }}">
-					{{ langData.moduleSettings }} <i class="fas fa-cog"></i>
-				</div>
+				{% if module.getModuleConfigs()|length %}
+					<div class="moduleSettings" data-forModule="{{ moduleName }}">
+						{{ langData.moduleSettings }} <i class="fas fa-cog"></i>
+					</div>
+				{% endif %}
 				<div class="moduleActions">
 					<div class="moduleButton"{% if module.required is sameas true %} style="display: none;"{% endif %} id="toggle_{{ moduleName }}">
 						{% if module.active is sameas true %}

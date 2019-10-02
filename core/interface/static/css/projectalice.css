@@ -221,6 +221,8 @@ a:hover {
     height: 69px;
     justify-content: space-between;
     align-items: flex-end;
+	position: absolute;
+	bottom: -10px;
 }
 
 .moduleIntents {
@@ -285,6 +287,38 @@ a:hover {
 
 .intentTopic:hover {
     color: yellow;
+}
+
+.moduleConfigBox {
+ 	width: 500px;
+	margin-top: 10px;
+}
+
+.moduleConfigLabel {
+	display: inline-block;
+	min-width: 250px;
+}
+
+.moduleConfigSave {
+	margin-top: 25px;
+	width: 100%;
+	background-color: #636363;
+	border: none;
+	cursor: pointer;
+	color: #d1d1d1;
+	font-size: 1.3em;
+	min-height: 30px;
+}
+
+input {
+	background-color: #1e1e1e;
+	color: #d1d1d1;
+	border: #d1d1d1 dotted 1px;
+	outline: none;
+}
+
+input:focus {
+	border: yellow dotted 1px;
 }
 
 .console {

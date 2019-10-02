@@ -22,14 +22,11 @@ $(function(){
         width: 600,
         height: 600,
         modal: true,
-        resizable: false,
-        close: function() {
-            location.reload()
-        }
+        resizable: false
     });
 
-	$('.moduleSettingsssss').on('click', function() {
-        $('#config_for_' + $(this).data('forModule')).dialog('open');
+	$('.moduleSettings').on('click', function() {
+        $('#config_for_' + $(this).attr('data-forModule')).dialog('open');
     });
 
 	$('.moduleViewIntents').on('click', function() {
