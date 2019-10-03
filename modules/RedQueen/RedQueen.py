@@ -228,8 +228,8 @@ class RedQueen(Module):
 
 
 	def randomlySpeak(self, init: bool = False):
-		mini = self.getConfig('randomTalkMinDelay')
-		maxi = self.getConfig('randomTalkMaxDelay')
+		mini = int(self.getConfig('randomTalkMinDelay'))
+		maxi = int(self.getConfig('randomTalkMaxDelay'))
 
 		if self.mood == 'Anger':
 			maxi /= 3
