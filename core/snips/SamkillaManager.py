@@ -207,7 +207,7 @@ class SamkillaManager(Manager):
 
 		if jsonRequest:
 			injectedPayload = json.dumps(payload)
-		
+
 		injectedPayload = injectedPayload.replace("'", "__SINGLE_QUOTES__").replace("\\n", ' ')
 
 		# self.log(injectedPayload)
@@ -374,7 +374,7 @@ class SamkillaManager(Manager):
 
 		utterances = list()
 
-		for dtIntentName, dtModuleName in intentNameSkillMatching.items():
+		for dtIntentName in intentNameSkillMatching:
 			if dtIntentName == intentFilter:
 				for utterance in intentsModulesValues[dtIntentName]['utterances'].items():
 					utterances.append({

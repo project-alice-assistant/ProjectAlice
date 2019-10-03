@@ -186,7 +186,7 @@ class MqttManager(Manager):
 				module.addToMessageHistory(session)
 
 			modules = self.ModuleManager.getModules()
-			for key, modul in modules.items():
+			for modul in modules.values():
 				module = modul['instance']
 				try:
 					consumed = module.onMessage(message.topic, session)

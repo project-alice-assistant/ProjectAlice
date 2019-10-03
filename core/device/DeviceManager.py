@@ -410,7 +410,7 @@ class DeviceManager(Manager):
 
 	def getDevicesByType(self, deviceType: str, connectedOnly: bool = False) -> list:
 		deviceList = list()
-		for uid, device in self._devices.items():
+		for device in self._devices.values():
 			if device.deviceType == deviceType:
 				if connectedOnly:
 					if device.connected:
