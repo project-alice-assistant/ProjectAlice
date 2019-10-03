@@ -1,5 +1,3 @@
-import re
-
 import functools
 import inspect
 import json

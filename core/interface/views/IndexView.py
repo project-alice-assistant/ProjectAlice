@@ -1,6 +1,4 @@
-import json
-
-from flask import render_template, request, send_from_directory, jsonify, redirect, url_for
+from flask import render_template, request, send_from_directory, jsonify, redirect
 from flask_classful import route
 
 from core.base.SuperManager import SuperManager
