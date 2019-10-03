@@ -15,7 +15,7 @@ class GoogleASR(ASR):
 	def __init__(self):
 		super().__init__()
 
-		os.environ['GOOGLE_APPLICATION_CREDENTIALS'] = Path(commons.rootDir(), 'credentials/googlecredentials.json')
+		os.environ['GOOGLE_APPLICATION_CREDENTIALS'] = str(Path(commons.rootDir(), 'credentials/googlecredentials.json'))
 
 		self._client = speech.SpeechClient()
 		self._config = types.RecognitionConfig(
