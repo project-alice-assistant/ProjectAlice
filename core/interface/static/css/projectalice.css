@@ -155,6 +155,7 @@ a:hover {
     height: 300px;
     color: #d1d1d1;
     align-content: flex-start;
+    box-shadow: 0 0 20px 5px #141414;
 }
 
 .modulesStoreModuleTitle {
@@ -238,6 +239,7 @@ a:hover {
     height: 200px;
     color: #d1d1d1;
     align-content: flex-start;
+    box-shadow: 0 0 20px 5px #141414;
 }
 
 .moduleContainer {
