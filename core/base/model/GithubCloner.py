@@ -1,10 +1,8 @@
 import logging
 from pathlib import Path
 
-import os
-import shutil
-
 import requests
+import shutil
 
 from core.ProjectAliceExceptions import GithubRateLimit, GithubTokenFailed
 from core.base.SuperManager import SuperManager
@@ -78,16 +76,19 @@ class GithubCloner:
 	def _cleanDestDir(self):
 		filesToDelete = list()
 		directoriesToDelete = list()
-		for file in os.listdir(self._dest):
-			filename = os.fsdecode(file)
-			if (os.path.isdir(os.path.join(self._dest, filename)) and not filename.startswith('_')) or filename == '__pycache__':
-				directoriesToDelete.append(filename)
-			elif not os.path.isfile(os.path.join(self._dest, filename + '.dist')) and not filename.endswith('.conf'):
-				filesToDelete.append(filename)
+		for file in self._dest.iterdir():
+			if file.suffix == '.conf' or file.with_suffix('.dist').exists():
+				continue
+
+			if (file.is_dir() and not file.name.startswith('_')) or file.name == '__pycache__':
+				directoriesToDelete.append(file)
+
+			elif file.is_file():
+				filesToDelete.append(file)
 
 		# Not deleting directories and files directly because they are needed for the .dist check
 		for directory in directoriesToDelete:
-			shutil.rmtree(os.path.join(self._dest, directory))
+			shutil.rmtree(directory)
 
 		for file in filesToDelete:
-			os.remove(os.path.join(self._dest, file))
+			file.unlink()

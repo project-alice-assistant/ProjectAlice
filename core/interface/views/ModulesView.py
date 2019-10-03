@@ -1,9 +1,11 @@
+import subprocess
 from collections import OrderedDict
 
 from flask import render_template, request, jsonify
 from flask_classful import route
 
 from core.base.SuperManager import SuperManager
+from core.commons import commons
 from core.interface.views.View import View
 
 
@@ -68,3 +70,14 @@ class ModulesView(View):
 			)
 
 		return self.index()
+
+
+	@route('/install', methods=['POST'])
+	def installModule(self):
+		try:
+			module = request.form.get('module')
+			subprocess.run(['wget', f'http://modules.projectalice.ch/{module}', '-O', f'{commons.rootDir()}/system/moduleInstallTickets/{module}.install'])
+			return jsonify(success=True)
+		except Exception as e:
+			self._logger.warning(f'[Modules] Failed installing module: {e}')
+			return jsonify(success=False)

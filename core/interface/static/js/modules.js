@@ -1,41 +1,52 @@
-$( document ).tooltip();
+$(document).tooltip();
 
 $(function(){
-    let API_URL = 'https://api.github.com/repositories/193512918/contents/PublishedModules';
-
-    let modules = [];
-
-    function refreshStore() {
+    function loadStoreData() {
         $.ajax({
-            dataType: 'json',
-            url: API_URL,
-            success: function (data) {
-                $.each(data, function (author) {
-                    author = data[author];
-                    if (author['type'] === 'dir') {
-                        $.ajax({
-                            dataType: 'json',
-                            url: author['url'],
-                            success: function (subdata) {
-                                $.each(subdata, function (module) {
-                                    module = subdata[module];
-                                    if (module['type'] === 'dir') {
-                                        modules.push(module);
-                                    }
-                                })
-                            }
-                        })
-                    }
+            type: 'GET',
+            dataType: 'JSON',
+            url: 'https://api.github.com/search/code?q=extension:install+repo:project-alice-powered-by-snips/ProjectAliceModules',
+            success: function(data) {
+                $.each(data['items'], function (index, searchResult) {
+                    $.ajax({
+                        type: 'GET',
+                        dataType: 'JSON',
+                        url: searchResult['url'],
+                        headers: {
+                            'accept': 'application/vnd.github.VERSION.raw'
+                        },
+                        success: function (installer) {
+                            addToStore(installer);
+                        }
+                    })
                 });
             }
         });
     }
 
-    function displayStoreContent() {
-        modules.forEach(function(module) {
-            let $tile = $('<div class="moduleStoreModuleTile">' + module['name'] + '</div>');
-            $('#modulesStore').append($tile)
-        });
+    function addToStore(installer) {
+        if ($('#modulesPane').find('#' + installer['name'] + '-' + installer['author']).length === 0) {
+            let $tile = $('<div class="moduleStoreModuleTile">' +
+                '<div class="modulesStoreModuleTitle">' + installer['name'] + '</div>' +
+                '<div class="modulesStoreModuleAuthor"><i class="fas fa-at"></i> ' + installer['author'] + '</div>' +
+                '<div class="modulesStoreModuleVersion"><i class="fas fa-code-branch"></i> ' + installer['version'] + '</div>' +
+                '<div class="modulesStoreModuleCategory"><i class="fas fa-bookmark"></i> ' + installer['category'] + '</div>' +
+                '<div class="moduleStoreModuleDescription">' + installer['desc'] + '</div>' +
+                '<div class="moduleStoreModuleDownload"><i class="fas fa-download"></i></div>' +
+                '</div>');
+
+            $tile.on('click', function(){
+                $.ajax({
+                    url: '/modules/install',
+                    data: {
+                        module: installer['name']
+                    },
+                    type: 'POST'
+                });
+            });
+
+            $('#modulesStore').append($tile);
+        }
     }
 
 	$('[id^=toggle_]').on('click', function () {
@@ -92,7 +103,6 @@ $(function(){
         $('#modulesStore').css('display', 'flex');
         $('#openModuleStore').hide();
         $('#closeModuleStore').show();
-        displayStoreContent();
     });
 
     $('#closeModuleStore').on('click', function(){
@@ -102,5 +112,5 @@ $(function(){
         $('#closeModuleStore').hide();
     });
 
-    refreshStore()
+    loadStoreData();
 });

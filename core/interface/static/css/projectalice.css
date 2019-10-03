@@ -15,6 +15,14 @@
     font-style: normal;
 }
 
+@font-face {
+    font-family: 'neogreyregular';
+    src: url('../webfonts/neogreyregular-webfont.woff2') format('woff2'),
+         url('../webfonts/neogreyregular-webfont.woff') format('woff');
+    font-weight: normal;
+    font-style: normal;
+}
+
 html,
 body {
     background-color: black;
@@ -143,10 +151,62 @@ a:hover {
     align-items: flex-start;
     background-color: #636363;
     margin: 10px;
-    width: 200px;
-    height: 200px;
+    width: 300px;
+    height: 300px;
     color: #d1d1d1;
     align-content: flex-start;
+}
+
+.modulesStoreModuleTitle {
+    background-color: #343434;
+    height: 30px;
+    width: 100%;
+    display: flex;
+    align-items: center;
+    padding-left: 5px;
+    font-size: 1.25em;
+    box-sizing: border-box;
+}
+
+.modulesStoreModuleAuthor,
+.modulesStoreModuleVersion,
+.modulesStoreModuleCategory {
+    width: 100%;
+    font-size: 1em;
+    margin: 5px;
+}
+
+.moduleStoreModuleDescription {
+    font-family: neogreyregular, sans-serif;
+    width: 100%;
+    font-size: 0.75em;
+    margin: 5px;
+    background-color: #343434;
+    height: 110px;
+    min-height: 110px;
+    box-sizing: border-box;
+    padding: 5px;
+    overflow-x: hidden;
+    overflow-y: auto;
+}
+
+.moduleStoreModuleDownload {
+    height: 50px;
+    width: 50%;
+    margin: 10px auto auto auto;
+    background-color: #343434;
+    display: flex;
+    align-content: center;
+    align-items: center;
+    justify-items: center;
+    justify-content: center;
+    font-size: 2em;
+}
+
+.moduleStoreModuleDownload:hover {
+    cursor: pointer;
+    background-color: #636363;
+    color: yellow;
 }
 
 #closeModuleStore {

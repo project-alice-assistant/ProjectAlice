@@ -38,7 +38,7 @@
 	</div>
 	<div class="modulesPane" id="modulesPane">
 	{% for moduleName, module in modules.items() %}
-		<div class="moduleTile">
+		<div class="moduleTile" id="{{ moduleName }}-{{ module.author }}">
 			<div class="moduleTitle">
 				<div class="moduleName">{{ moduleName }}</div>
 				<div class="moduleVersion">v {{ module.version }}</div>
