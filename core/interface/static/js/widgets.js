@@ -2,12 +2,14 @@ $(function(){
     $('.widget').draggable({
         containment: '.widgetsPane',
         snap: '.widget',
-        grid: [10, 10]
+        grid: [10, 10],
+        start: function(event, ui) {
+            $(this).parent().append($(this))
+        }
     }).css('position', 'absolute');
 
 
     $('.widgetsPane').droppable({
-
         drop: function(event, ui) {
             $.ajax({
                 url: '/home/saveWidgetPos',

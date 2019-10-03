@@ -531,8 +531,8 @@ input:focus {
 
 .widget {
     display: block;
-	border: 2px solid #1e1e1e;
     background-color: #343434;
+    box-shadow: 0 0 20px 5px #141414;
 }
 
 .w_tiny {
