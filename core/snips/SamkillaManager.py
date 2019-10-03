@@ -221,6 +221,8 @@ class SamkillaManager(Manager):
 		response = self._browser.execute_script('return document.title')
 		self._browser.execute_script("document.title = 'idle'")
 
+		# self.log(response)
+
 		jsonResponse = json.loads(response)
 
 		if 'errors' in jsonResponse[0]:

@@ -5,7 +5,7 @@ from core.snips.samkilla.gql.assistants.createAssistant import createAssistant
 from core.snips.samkilla.gql.assistants.deleteAssistant import deleteAssistant
 from core.snips.samkilla.gql.assistants.forkAssistantSkill import forkAssistantSkill
 from core.snips.samkilla.gql.assistants.patchAssistant import patchAssistant
-from core.snips.samkilla.gql.assistants.queries import allAssistantsQuery
+from core.snips.samkilla.gql.assistants.queries import allAssistantsQuery, assistantWithSkillsQuery
 
 
 class Assistant:
@@ -94,10 +94,21 @@ class Assistant:
 		return False
 
 
-	def extractSkillIdentifiers(self, assistantId: str) -> list:
+	def extractSkillIdentifiersLegacy(self, assistantId: str) -> list:
 		skills = self._ctx.getBrowser().execute_script(f"return window.__APOLLO_STATE__['Assistant:{assistantId}']['skills']")
 
 		return [skill['id'].replace('Skill:', '') for skill in skills]
+
+
+	def extractSkillIdentifiers(self, assistantId: str) -> list:
+		gqlRequest = [{
+			'operationName': 'AssistantWithSkillsQuery',
+			'variables': {'assistantId': assistantId},
+			'query': assistantWithSkillsQuery
+		}]
+		response = self._ctx.postGQLBrowserly(gqlRequest)
+
+		return [skill['id'] for skill in response['assistant']['skills']]
 
 
 	def forkAssistantSkill(self, assistantId: str, sourceSkillId: str) -> str:
