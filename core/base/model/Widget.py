@@ -30,11 +30,13 @@ class Widget:
 		else:
 			self._options = self.OPTIONS
 
+		self._index = data['index']
+
 
 	def saveToDB(self):
 		SuperManager.getInstance().databaseManager.replace(
 			tableName='widgets',
-			query='REPLACE INTO :__table__ (parent, name, posx, posy, state, options) VALUES (:parent, :name, :posx, :posy, :state, :options)',
+			query='REPLACE INTO :__table__ (parent, name, posx, posy, state, options, index) VALUES (:parent, :name, :posx, :posy, :state, :options, :index)',
 			callerName=SuperManager.getInstance().moduleManager.name,
 			values={
 				'parent': self.parent,
@@ -42,7 +44,8 @@ class Widget:
 				'posx': self.x,
 				'posy': self.y,
 				'state': self.state,
-				'options': json.dumps(self.options)
+				'options': json.dumps(self.options),
+				'index': self.index
 			}
 		)
 
@@ -130,6 +133,16 @@ class Widget:
 		self._options = value
 
 
+	@property
+	def index(self) -> int:
+		return self._index
+
+
+	@index.setter
+	def index(self, value: int):
+		self._index = value
+
+
 	def __repr__(self):
 		return '---- WIDGET -----' + \
 		       '\n Parent: ' + self.parent + \
@@ -137,4 +150,5 @@ class Widget:
 		       '\n Size: ' + self.size + \
 		       '\n State: ' + str(self.state) + \
 		       '\n PosX: ' + str(self.x) + \
-		       '\n PosY: ' + str(self.y)
+		       '\n PosY: ' + str(self.y) +\
+		       '\n Index: ' + str(self.index)

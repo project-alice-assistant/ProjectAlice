@@ -45,7 +45,8 @@ class ModuleManager(Manager):
 			'posx INTEGER NOT NULL',
 			'posy INTEGER NOT NULL',
 			'state TEXT NOT NULL',
-			'options TEXT NOT NULL'
+			'options TEXT NOT NULL',
+			'index INTEGER'
 		]
 	}
 
