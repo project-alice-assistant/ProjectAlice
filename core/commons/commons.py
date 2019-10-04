@@ -4,7 +4,7 @@ import json
 import socket
 import time
 import warnings
-from collections import defaultdict
+from collections.abc import defaultdict
 from contextlib import contextmanager
 from ctypes import *
 from datetime import datetime
