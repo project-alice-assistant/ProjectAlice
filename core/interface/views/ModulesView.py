@@ -1,5 +1,5 @@
 import subprocess
-from collections.abc import OrderedDict
+from collections import OrderedDict
 
 from flask import render_template, request, jsonify
 from flask_classful import route
