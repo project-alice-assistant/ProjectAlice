@@ -10,7 +10,7 @@
 			"useSynonyms": false,
 			"values": [
 				{
-					"value": "admin"
+					"value": "administrateur"
 				},
 				{
 					"value": "défaut"
@@ -22,7 +22,7 @@
 					"value": "employé"
 				},
 				{
-					"value": "visiteur"
+					"value": "invité"
 				}
 			]
 		},
@@ -5630,6 +5630,31 @@
 			]
 		},
 		{
+			"name": "AnswerNumber",
+			"description": "",
+			"enabledByDefault": false,
+			"utterances": [
+				"{10:=>Number}",
+				"{5:=>Number}",
+				"{103:=>Number}",
+				"{784:=>Number}",
+				"{9567:=>Number}",
+				"{5:=>Number} {1:=>Number} {3:=>Number}",
+				"{50:=>Number} {342:=>Number} {9:=>Number}",
+				"{1:=>Number} {1:=>Number} {0:=>Number} {5:=>Number}",
+				"{102:=>Number} {895:=>Number} {0:=>Number} {75:=>Number}"
+			],
+			"slots": [
+				{
+					"name": "Number",
+					"description": null,
+					"required": false,
+					"type": "snips/number",
+					"missingQuestion": ""
+				}
+			]
+		},
+		{
 			"name": "SpellWord",
 			"description": "L'utilisateur épelle un mot",
 			"enabledByDefault": false,
@@ -5683,6 +5708,66 @@
 				"hey alice"
 			],
 			"slots": []
+		},
+		{
+			"name": "AddNewUser",
+			"description": "L'utilisateur ajoute un nouvel utilisateur",
+			"enabledByDefault": true,
+			"utterances": [
+				"peux-tu ajouter un nouvel utilisateur s'il te plaît",
+				"peux-tu ajouter un nouveau compte s'il te plaît",
+				"ajoute un nouveau compte {invité:=>UserAccessLevel}",
+				"ajoute un {administrateur:=>UserAccessLevel}",
+				"j'ai besoin d'ajouter un {administrateur:=>UserAccessLevel}",
+				"peux-tu ajouter un nouveau useur",
+				"peux-tu ajouter un nouveau useur dans ta base de donnée",
+				"je te présente {John:=>Name} notre {invité:=>UserAccessLevel}",
+				"peux-tu ajouter {Natalija:=>Name} en tant que {administrateur:=>UserAccessLevel}",
+				"j'aimerai te présenter {Roland:=>Name}"
+			],
+			"slots": [
+				{
+					"name": "UserAccessLevel",
+					"description": null,
+					"required": false,
+					"type": "UserAccessLevel",
+					"missingQuestion": ""
+				},
+				{
+					"name": "Name",
+					"description": null,
+					"required": false,
+					"type": "Name",
+					"missingQuestion": ""
+				}
+			]
+		},
+		{
+			"name": "AnswerAccessLevel",
+			"description": "L'utilisateur répond avec un niveau d'accès",
+			"enabledByDefault": false,
+			"utterances": [
+				"{administrateur:=>UserAccessLevel}",
+				"{défaut:=>UserAccessLevel}",
+				"{enfant:=>UserAccessLevel}",
+				"{employé:=>UserAccessLevel}",
+				"{invité:=>UserAccessLevel}",
+				"en tant que {invité:=>UserAccessLevel}",
+				"comme {défaut:=>UserAccessLevel} s'il te plait",
+				"avec les permissions {invité:=>UserAccessLevel}",
+				"avec un accès {employé:=>UserAccessLevel}",
+				"un {enfant:=>UserAccessLevel}",
+				"donne lui le droit {employé:=>UserAccessLevel} s'il te plait"
+			],
+			"slots": [
+				{
+					"name": "UserAccessLevel",
+					"description": null,
+					"required": false,
+					"type": "UserAccessLevel",
+					"missingQuestion": ""
+				}
+			]
 		}
 	]
 }
