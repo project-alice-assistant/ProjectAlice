@@ -185,7 +185,7 @@ def getDuration(session: DialogSession) -> int:
 	duration = 0
 	if 'Duration' in slots and slots['Duration'][0].entity == 'snips/duration':
 		try:
-			values = slots['duration'][0].value
+			values = slots['Duration'][0].value
 			duration += values['seconds']
 			duration += values['minutes'] * 60
 			duration += values['hours'] * 60 * 60
@@ -200,8 +200,7 @@ def getDuration(session: DialogSession) -> int:
 
 def toCamelCase(string: str, replaceSepCharacters: bool = False, sepCharacters: tuple = None) -> str:
 	if replaceSepCharacters:
-		if not sepCharacters: sepCharacters = ('-', '_')
-		for char in sepCharacters:
+		for char in sepCharacters or ('-', '_'):
 			string = string.replace(char, ' ')
 
 	return ''.join(x.capitalize() for x in string.split(' '))
