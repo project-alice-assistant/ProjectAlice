@@ -1,11 +1,15 @@
 import requests
+import time
+import tempfile
+from pathlib import Path
 
 from core.snips import SamkillaManager
+from core.snips.samkilla.gql.assistants.trainAssistant import trainAssistant
 from core.snips.samkilla.gql.assistants.createAssistant import createAssistant
 from core.snips.samkilla.gql.assistants.deleteAssistant import deleteAssistant
 from core.snips.samkilla.gql.assistants.forkAssistantSkill import forkAssistantSkill
 from core.snips.samkilla.gql.assistants.patchAssistant import patchAssistant
-from core.snips.samkilla.gql.assistants.queries import allAssistantsQuery, assistantWithSkillsQuery
+from core.snips.samkilla.gql.assistants.queries import allAssistantsQuery, assistantWithSkillsQuery, assistantTrainingStatusQuery
 
 
 class Assistant:
@@ -120,3 +124,35 @@ class Assistant:
 		response = self._ctx.postGQLBrowserly(gqlRequest)
 
 		return response['forkAssistantSkill']['copiedBundleId']
+
+	def trainAssistant(self, assistantId: str) -> bool:
+		gqlRequest = [{
+			'operationName': 'TrainAssistantV2',
+			'variables': {'assistantId': assistantId},
+			'query': trainAssistant
+		}]
+		response = self._ctx.postGQLBrowserly(gqlRequest)
+
+		return True
+
+	def trainingStatusAssistantReady(self, assistantId: str) -> bool:
+		gqlRequest = [{
+			'operationName': 'AssistantTrainingStatusQuery',
+			'variables': {'assistantId': assistantId},
+			'query': assistantTrainingStatusQuery
+		}]
+		response = self._ctx.postGQLBrowserly(gqlRequest)
+
+		asrProgress = response['assistant']['training']['asrStatus']['inProgress']
+		asrResult = response['assistant']['training']['asrStatus']['trainingResult']
+		asrNeedTraining = response['assistant']['training']['asrStatus']['needTraining']
+
+		nluProgress = response['assistant']['training']['nluStatus']['inProgress']
+		nluResult = response['assistant']['training']['nluStatus']['trainingResult']
+		nluNeedTraining = response['assistant']['training']['nluStatus']['needTraining']
+
+		if not asrProgress and not asrNeedTraining and asrResult == 'ok' \
+			and not nluProgress and not nluNeedTraining and nluResult == 'ok':
+			return True
+
+		return False
