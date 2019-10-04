@@ -4,21 +4,30 @@ $(function(){
         snap: '.widget',
         grid: [10, 10],
         start: function(event, ui) {
-            $(this).parent().append($(this))
+            $(this).parent().append($(this));
+            $(this).css('z-index', $('.widgetsPane').children().length);
         }
     }).css('position', 'absolute');
 
 
     $('.widgetsPane').droppable({
         drop: function(event, ui) {
+            let arr = [];
+
+            $('.widgetsPane').children().each(function () {
+               arr.push($(this).attr('id'));
+            });
+
             $.ajax({
+                contentType: 'application/json',
                 url: '/home/saveWidgetPos',
-                data: {
+                data: JSON.stringify({
                     id: $(ui.draggable).attr('id'),
                     x: $(ui.draggable).position().left,
                     y: $(ui.draggable).position().top,
-                    index: $('.widget').length
-                },
+                    index: $('.widget').length,
+                    order: arr
+                }),
                 type: 'POST'
             })
         }

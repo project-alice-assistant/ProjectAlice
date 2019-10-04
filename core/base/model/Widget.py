@@ -30,13 +30,13 @@ class Widget:
 		else:
 			self._options = self.OPTIONS
 
-		self._index = data['index']
+		self._zindex = data['zindex'] if 'zindex' in data.keys() else 9999
 
 
 	def saveToDB(self):
 		SuperManager.getInstance().databaseManager.replace(
 			tableName='widgets',
-			query='REPLACE INTO :__table__ (parent, name, posx, posy, state, options, index) VALUES (:parent, :name, :posx, :posy, :state, :options, :index)',
+			query='REPLACE INTO :__table__ (parent, name, posx, posy, state, options, zindex) VALUES (:parent, :name, :posx, :posy, :state, :options, :zindex)',
 			callerName=SuperManager.getInstance().moduleManager.name,
 			values={
 				'parent': self.parent,
@@ -45,7 +45,7 @@ class Widget:
 				'posy': self.y,
 				'state': self.state,
 				'options': json.dumps(self.options),
-				'index': self.index
+				'zindex': self.zindex
 			}
 		)
 
@@ -134,13 +134,13 @@ class Widget:
 
 
 	@property
-	def index(self) -> int:
-		return self._index
+	def zindex(self) -> int:
+		return self._zindex
 
 
-	@index.setter
-	def index(self, value: int):
-		self._index = value
+	@zindex.setter
+	def zindex(self, value: int):
+		self._zindex = value
 
 
 	def __repr__(self):
@@ -151,4 +151,4 @@ class Widget:
 		       '\n State: ' + str(self.state) + \
 		       '\n PosX: ' + str(self.x) + \
 		       '\n PosY: ' + str(self.y) +\
-		       '\n Index: ' + str(self.index)
+		       '\n Z-Index: ' + str(self.zindex)

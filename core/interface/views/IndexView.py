@@ -30,12 +30,20 @@ class IndexView(View):
 	@route('/home/saveWidgetPos', methods=['POST'])
 	def saveWidgetPosition(self):
 		try:
-			p, w = request.form.get('id').split('_')
+			data = request.get_json()
+			p, w = data['id'].split('_')
 
 			widget = self.ModuleManager.widgets[p][w]
-			widget.x = request.form.get('x')
-			widget.y = request.form.get('y')
+			widget.x = data['x']
+			widget.y = data['y']
 			widget.saveToDB()
+
+			order = data['order']
+			for index, widget in enumerate(order, start=1):
+				widgetParent, widgetName = widget.split('_')
+				widget = self.ModuleManager.widgets[widgetParent][widgetName]
+				widget.zindex = index
+				widget.saveToDB()
 
 			return jsonify(success=True)
 		except Exception as e:
