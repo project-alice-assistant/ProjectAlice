@@ -48,8 +48,8 @@ def module(author_name: str, module_name: str):
 			pip requirements: {click.style(', '.join(module['pipRequirements']), fg='yellow')}
 			system requirements: {click.style(', '.join(module['systemRequirements']), fg='yellow')}
 
-			+ Conditions:\n"
-			=============\n"
+			+ Conditions:
+			=============
 			lang: {click.style(', '.join(module['conditions']['lang']), fg='yellow')}
 		"""))
 
