@@ -87,7 +87,7 @@ class DatabaseManager(Manager):
 					cols.append(colName)
 					if colName not in installedColumns:
 						self._logger.info(f'[{self.name}] Found a missing column "{colName}" for table "{fullTableName}" in component "{callerName}"')
-						cursor.execute(f'ALTER TABLE {fullTableName} ADD COLUMN {column}')
+						cursor.execute(f'ALTER TABLE {fullTableName} ADD COLUMN `{column}`')
 
 				database.commit()
 			except sqlite3.Error as e:
