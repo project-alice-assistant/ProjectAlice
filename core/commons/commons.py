@@ -202,7 +202,7 @@ def toCamelCase(string: str, replaceSepCharacters: bool = False, sepCharacters: 
 	if replaceSepCharacters:
 		if not sepCharacters: sepCharacters = ('-', '_')
 		for char in sepCharacters:
-			string.replace(char, ' ')
+			string = string.replace(char, ' ')
 
 	return ''.join(x.capitalize() for x in string.split(' '))
 
