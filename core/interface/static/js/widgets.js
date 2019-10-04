@@ -16,12 +16,12 @@ $(function(){
                 data: {
                     id: $(ui.draggable).attr('id'),
                     x: $(ui.draggable).position().left,
-                    y: $(ui.draggable).position().top
+                    y: $(ui.draggable).position().top,
+                    index: $('.widget').length
                 },
                 type: 'POST'
             })
         }
-
     });
 
     $('#addWidgetDialog').dialog({
