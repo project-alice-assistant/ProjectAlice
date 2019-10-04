@@ -6,12 +6,6 @@ from core.dialog.model.DialogSession import DialogSession
 from core.voice.model import ASR
 from core.voice.model.SnipsASR import SnipsASR
 
-try:
-	# noinspection PyUnresolvedReferences
-	from core.voice.model.GoogleASR import GoogleASR
-except:
-	pass
-
 from core.base.model.Intent import Intent
 
 class ASRManager(Manager):
@@ -27,6 +21,9 @@ class ASRManager(Manager):
 		super().onStart()
 
 		if self.ConfigManager.getAliceConfigByName(configName='asr').lower() == 'google' and not self.ConfigManager.getAliceConfigByName('keepASROffline') and not self.ConfigManager.getAliceConfigByName('stayCompletlyOffline'):
+			# noinspection PyUnresolvedReferences
+			from core.voice.model.GoogleASR import GoogleASR
+
 			self._asr = GoogleASR()
 			self.SnipsServicesManager.runCmd('stop', ['snips-asr'])
 			self._logger.info(f'[{self.name}] Turned Snips ASR off')

@@ -28,8 +28,7 @@ class DatabaseManager(Manager):
 			return False
 
 
-	@staticmethod
-	def getConnection() -> sqlite3.Connection:
+	def getConnection(self) -> sqlite3.Connection:
 		try:
 			con = sqlite3.connect(commons.getDatabaseFile())
 		except sqlite3.Error as e:
@@ -88,7 +87,7 @@ class DatabaseManager(Manager):
 					cols.append(colName)
 					if colName not in installedColumns:
 						self._logger.info(f'[{self.name}] Found a missing column "{colName}" for table "{fullTableName}" in component "{callerName}"')
-						cursor.execute(f'ALTER TABLE {fullTableName} ADD COLUMN {column}')
+						cursor.execute(f'ALTER TABLE {fullTableName} ADD COLUMN `{column}`')
 
 				database.commit()
 			except sqlite3.Error as e:
@@ -154,6 +153,7 @@ class DatabaseManager(Manager):
 		if not query:
 			raise InvalidQuery
 
+		database = None
 		try:
 			database = self.getConnection()
 			cursor = database.cursor()
@@ -251,6 +251,7 @@ class DatabaseManager(Manager):
 		if not query:
 			return
 
+		database = None
 		try:
 			database = self.getConnection()
 			database.execute(query, values)
@@ -279,6 +280,7 @@ class DatabaseManager(Manager):
 		if not query:
 			return
 
+		database = None
 		try:
 			database = self.getConnection()
 			database.execute(query)

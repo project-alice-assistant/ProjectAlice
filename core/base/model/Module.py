@@ -57,7 +57,7 @@ class Module:
 
 			data = self.DatabaseManager.fetch(
 				tableName='widgets',
-				query='SELECT * FROM :__table__ WHERE parent = :parent',
+				query='SELECT * FROM :__table__ WHERE parent = :parent ORDER BY `zindex`',
 				callerName=self.ModuleManager.name,
 				values={'parent': self.name},
 				method='all'
