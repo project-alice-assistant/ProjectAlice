@@ -65,7 +65,7 @@ class ModuleManager(Manager):
 	def onStart(self):
 		super().onStart()
 
-		self._busyInstalling = self.ThreadManager.newLock('moduleInstallation')
+		self._busyInstalling = self.ThreadManager.newEvent('moduleInstallation')
 		self._moduleInstallThread = self.ThreadManager.newThread(name='ModuleInstallThread', target=self._checkForModuleInstall, autostart=False)
 
 		self._modules = self._loadModuleList()
@@ -380,7 +380,7 @@ class ModuleManager(Manager):
 		if  self._busyInstalling.isSet() or \
 			not self.InternetManager.online or \
 			not files or \
-			self.ThreadManager.getLock('SnipsAssistantDownload').isSet():
+			self.ThreadManager.getEvent('SnipsAssistantDownload').isSet():
 			return
 
 		if files:

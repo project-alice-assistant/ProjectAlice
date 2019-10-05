@@ -50,7 +50,7 @@ class SnipsConsoleManager(Manager):
 
 	def doDownload(self):
 		self._logger.info(f'[{self.name}] Starting Snips assistant training and download procedure')
-		self.ThreadManager.newLock('SnipsAssistantDownload').set()
+		self.ThreadManager.newEvent('SnipsAssistantDownload').set()
 		projectId = self.LanguageManager.activeSnipsProjectId
 		self.ThreadManager.newThread(name='SnipsAssistantDownload', target=self.download, args=[projectId])
 
@@ -127,7 +127,7 @@ class SnipsConsoleManager(Manager):
 
 
 	def _handleTraining(self, assistantId: str):
-		trainingLock = self.ThreadManager.newLock('TrainingAssistantLock')
+		trainingLock = self.ThreadManager.newEvent('TrainingAssistantLock')
 		trainingLock.set()
 		while trainingLock.isSet():
 			trainingStatus = self._trainingStatus(assistantId)
@@ -172,7 +172,7 @@ class SnipsConsoleManager(Manager):
 			self.ModuleManager.broadcast(method='onSnipsAssistantDownloadFailed')
 			return False
 		finally:
-			self.ThreadManager.getLock('SnipsAssistantDownload').clear()
+			self.ThreadManager.getEvent('SnipsAssistantDownload').clear()
 
 
 	def _logout(self):

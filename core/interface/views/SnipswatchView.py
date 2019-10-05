@@ -27,7 +27,7 @@ class SnipswatchView(View):
 	def startWatching(self):
 		process = subprocess.Popen('snips-watch -vv --html', shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
 
-		flag = SuperManager.getInstance().threadManager.newLock('running')
+		flag = SuperManager.getInstance().threadManager.newEvent('running')
 		flag.set()
 		while flag.isSet():
 			out = process.stdout.readline().decode()

@@ -14,8 +14,17 @@ class AliceEvent(Event):
 
 	def set(self) -> None:
 		super().set()
+		self.broadcast(state='set')
+
+
+	def clear(self) -> None:
+		super().clear()
+		self.broadcast(state='clear')
+
+
+	def broadcast(self, state: str):
 		SuperManager.getInstance().broadcast(
-			method=self.eventName(),
+			method=f'{self.eventName()}{state.title()}',
 			exceptions=[constants.DUMMY],
 			args=self._args,
 			propagateToModules=True,
@@ -23,14 +32,10 @@ class AliceEvent(Event):
 		)
 
 
-	def eventName(self) -> str:
-		return f'on{commons.toCamelCase(self.name)}'
-
-
-	def clear(self) -> None:
-		super().clear()
-
-
 	@property
 	def name(self) -> str:
 		return self._name
+
+
+	def eventName(self) -> str:
+		return f'on{commons.toCamelCase(self.name)}'

@@ -67,3 +67,10 @@ class WebInterfaceManager(Manager):
 					'use_reloader': False
 				}
 			)
+
+
+	def onModuleInstallation(self):
+		pass
+
+
+

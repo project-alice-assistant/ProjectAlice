@@ -109,7 +109,7 @@ class AliceCore(Module):
 		if self.delayed:
 			self.delayed = False
 
-			if not self.ThreadManager.getLock('AddingWakeword').isSet():
+			if not self.ThreadManager.getEvent('AddingWakeword').isSet():
 				self.say(text=self.randomTalk('noStartWithoutAdmin'), siteId=session.siteId)
 
 				def stop():
@@ -117,7 +117,7 @@ class AliceCore(Module):
 
 				self.ThreadManager.doLater(interval=10, func=stop)
 			else:
-				self.ThreadManager.getLock('AddingWakeword').clear()
+				self.ThreadManager.getEvent('AddingWakeword').clear()
 				self.say(text=self.randomTalk('cancellingWakewordCapture'), siteId=session.siteId)
 				self.ThreadManager.doLater(interval=2, func=self.onStart)
 
@@ -143,7 +143,7 @@ class AliceCore(Module):
 
 
 	def onSessionEnded(self, session: DialogSession):
-		if not self.ThreadManager.getLock('AddingWakeword').isSet():
+		if not self.ThreadManager.getEvent('AddingWakeword').isSet():
 			self.changeFeedbackSound(inDialog=False, siteId=session.siteId)
 
 			if self.delayed:
@@ -190,7 +190,7 @@ class AliceCore(Module):
 
 
 	def onSayFinished(self, session: DialogSession):
-		if self.ThreadManager.getLock('AddingWakeword').isSet() and self.WakewordManager.state == WakewordManagerState.IDLE:
+		if self.ThreadManager.getEvent('AddingWakeword').isSet() and self.WakewordManager.state == WakewordManagerState.IDLE:
 			self.ThreadManager.doLater(interval=0.5, func=self.WakewordManager.addASample)
 
 
@@ -366,7 +366,7 @@ class AliceCore(Module):
 			elif session.previousIntent == self._INTENT_DUMMY_ADD_WAKEWORD:
 				if commons.isYes(session):
 					self.WakewordManager.newWakeword(username=customData['name'])
-					self.ThreadManager.newLock('AddingWakeword').set()
+					self.ThreadManager.newEvent('AddingWakeword').set()
 					self.continueDialog(
 						sessionId=sessionId,
 						text=self.randomTalk('addWakewordAccepted'),
@@ -400,7 +400,7 @@ class AliceCore(Module):
 			elif session.previousIntent == self._INTENT_DUMMY_ADD_USER_WAKEWORD:
 				if commons.isYes(session):
 					self.WakewordManager.newWakeword(username=customData['username'])
-					self.ThreadManager.newLock('AddingWakeword').set()
+					self.ThreadManager.newEvent('AddingWakeword').set()
 					self.continueDialog(
 						sessionId=sessionId,
 						text=self.randomTalk(text='addUserAddWakewordAccepted', replace=[customData['username']]),
@@ -426,7 +426,7 @@ class AliceCore(Module):
 				else:
 					if self.delayed:
 						self.delayed = False
-						self.ThreadManager.getLock('AddingWakeword').clear()
+						self.ThreadManager.getEvent('AddingWakeword').clear()
 						self.ThreadManager.doLater(interval=2, func=self.onStart)
 
 					self.endDialog(sessionId=sessionId, text=self.randomTalk('cancellingWakewordCapture'))
@@ -504,7 +504,7 @@ class AliceCore(Module):
 					self.endDialog(sessionId=sessionId, text=self.randomTalk('wakewordCaptureDone'))
 					self.WakewordManager.finalizeWakeword()
 
-					self.ThreadManager.getLock('AddingWakeword').clear()
+					self.ThreadManager.getEvent('AddingWakeword').clear()
 					if self.delayed:
 						self.delayed = False
 						self.ThreadManager.doLater(interval=2, func=self.onStart)

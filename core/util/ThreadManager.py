@@ -15,7 +15,7 @@ class ThreadManager(Manager):
 
 		self._timers	= list()
 		self._threads 	= dict()
-		self._locks 	= dict()
+		self._events 	= dict()
 
 
 	def onStop(self):
@@ -28,8 +28,8 @@ class ThreadManager(Manager):
 			if thread.isAlive():
 				thread.join(timeout=1)
 
-		for lock in self._locks.values():
-			lock.clear()
+		for event in self._events.values():
+			event.clear()
 
 
 	def onQuarterHour(self):
@@ -113,14 +113,12 @@ class ThreadManager(Manager):
 			return self._threads[name].isAlive()
 
 
-	def newLock(self, name: str) -> AliceEvent:
-		if name in self._locks:
-			return self._locks[name]
+	def newEvent(self, name: str) -> AliceEvent:
+		if name not in self._events:
+			self._events[name] = AliceEvent(name)
 
-		lock = AliceEvent(name)
-		self._locks[name] = lock
-		return lock
+		return self._events[name]
 
 
-	def getLock(self, name: str) -> AliceEvent:
-		return self._locks.get(name, AliceEvent(name))
+	def getEvent(self, name: str) -> AliceEvent:
+		return self._events.get(name, AliceEvent(name))

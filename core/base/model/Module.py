@@ -297,7 +297,7 @@ class Module:
 
 	def onBooted(self):
 		if self.delayed:
-			if self.ThreadManager.getLock('SnipsAssistantDownload').isSet():
+			if self.ThreadManager.getEvent('SnipsAssistantDownload').isSet():
 				self.ThreadManager.doLater(interval=5, func=self.onBooted)
 				return False
 
