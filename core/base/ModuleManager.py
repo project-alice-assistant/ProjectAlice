@@ -265,13 +265,14 @@ class ModuleManager(Manager):
 		return self._modules
 
 
-	def broadcast(self, method: str, isEvent: bool = True, filterOut: list = None, args: list = None):
+	def broadcast(self, method: str, isEvent: bool = True, filterOut: list = None, args: list = None, silent: bool = False):
 		"""
 		Boradcasts a call to the given method on every module
 		:param filterOut: array, module not to boradcast to
 		:param method: str, the method name to call on every module
 		:param isEvent: bool, is this broadcast initiated by an event or a user interaction? Changes for customisation module call
 		:param args: arguments that should be passed
+		:param silent
 		:return:
 		"""
 		if not args:
@@ -286,7 +287,8 @@ class ModuleManager(Manager):
 				func = getattr(moduleItem['instance'], method)
 				func(*args)
 			except Exception as e:
-				self._logger.warning(f'[{self.name}] Method "{method}" not found for module "{moduleItem["instance"].name}": {e}')
+				if not silent:
+					self._logger.warning(f'[{self.name}] Method "{method}" not found for module "{moduleItem["instance"].name}": {e}')
 
 
 	def _reorderCustomisationModule(self, isEvent: bool):

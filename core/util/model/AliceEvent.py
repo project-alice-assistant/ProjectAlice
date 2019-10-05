@@ -18,7 +18,8 @@ class AliceEvent(Event):
 			method=self.eventName(),
 			exceptions=[constants.DUMMY],
 			args=self._args,
-			propagateToModules=True
+			propagateToModules=True,
+			silent=True
 		)
 
 
