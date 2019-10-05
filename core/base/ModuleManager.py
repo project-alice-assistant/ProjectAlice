@@ -405,8 +405,18 @@ class ModuleManager(Manager):
 
 							if info['update']:
 								self._modules[moduleName]['instance'].onModuleUpdated()
+								SuperManager.getInstance().broadcast(
+									method='onModuleUpdated',
+									exceptions=self.name,
+									propagateToModules=False
+								)
 							else:
 								self._modules[moduleName]['instance'].onModuleInstalled()
+								SuperManager.getInstance().broadcast(
+									method='onModuleInstalled',
+									exceptions=self.name,
+									propagateToModules=False
+								)
 
 							self._startModule(moduleInstance=self._modules[moduleName]['instance'])
 							self._modules[moduleName]['instance'].onBooted()

@@ -6,9 +6,10 @@ from core.commons import constants, commons
 
 class AliceEvent(Event):
 
-	def __init__(self, name: str):
+	def __init__(self, name: str, callback: str = None):
 		super().__init__()
 		self._name = name
+		self._callback = callback
 		self._args = list()
 
 
@@ -19,7 +20,19 @@ class AliceEvent(Event):
 
 	def clear(self, *args, **kwargs) -> None:
 		super().clear()
-		self.broadcast(state='clear', *args, **kwargs)
+
+		if not self._callback:
+			self.broadcast(state='clear', *args, **kwargs)
+		else:
+			SuperManager.getInstance().broadcast(
+				method=self._callback,
+				exceptions=[constants.DUMMY],
+				args=self._args,
+				propagateToModules=True,
+				silent=True,
+				*args,
+				**kwargs
+			)
 
 
 	def broadcast(self, state: str, *args, **kwargs):

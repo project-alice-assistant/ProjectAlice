@@ -8,6 +8,7 @@ from core.interface.views.View import View
 class IndexView(View):
 	route_base = '/'
 
+
 	def __init__(self):
 		super().__init__()
 

@@ -58,6 +58,8 @@ class Manager(Singleton):
 
 
 	def onBooted(self, *args, **kwargs): pass
+	def onModuleInstalled(self, *args, **kwargs): pass
+	def onModuleUpdated(self, *args, **kwargs): pass
 	def onFullMinute(self, *args, **kwargs): pass
 	def onFiveMinute(self, *args, **kwargs): pass
 	def onQuarterHour(self, *args, **kwargs): pass

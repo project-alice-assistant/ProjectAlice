@@ -1,4 +1,5 @@
 import subprocess
+import time
 from collections import OrderedDict
 
 from flask import render_template, request, jsonify
@@ -11,6 +12,7 @@ from core.interface.views.View import View
 
 class ModulesView(View):
 	route_base = '/modules/'
+
 
 	def __init__(self):
 		super().__init__()
@@ -76,9 +78,27 @@ class ModulesView(View):
 	def installModule(self):
 		try:
 			module = request.form.get('module')
-			#subprocess.run(['wget', f'http://modules.projectalice.ch/{module}', '-O', f'{module}.install'])
-			#subprocess.run(['mv', f'{module}.install', f'{commons.rootDir()}/system/moduleInstallTickets/{module}.install'])
+			self.WebInterfaceManager.newModuleInstallProcess(module)
+			subprocess.run(['wget', f'http://modules.projectalice.ch/{module}', '-O', f'{module}.install'])
+			subprocess.run(['mv', f'{module}.install', f'{commons.rootDir()}/system/moduleInstallTickets/{module}.install'])
 			return jsonify(success=True)
 		except Exception as e:
 			self._logger.warning(f'[Modules] Failed installing module: {e}')
 			return jsonify(success=False)
+
+
+	@route('/checkInstallStatus', methods=['POST'])
+	def checkInstallStatus(self):
+		module = request.form.get('module')
+		if module not in self.WebInterfaceManager.moduleInstallProcesses:
+			return jsonify(success=True)
+		else:
+			return jsonify(success=False)
+
+
+	def onModuleInstalled(self, *args):
+		try:
+			module = args[0]
+			self.WebInterfaceManager.moduleInstallProcesses.pop(module)
+		except Exception as e:
+			self._logger.error(f'[ModulesView] Failed setting module status to "installed": {e}')

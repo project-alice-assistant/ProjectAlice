@@ -29,9 +29,9 @@ $(function(){
 
     function addToStore(installer) {
         if ($('#modulesPane').find('#' + installer['name'] + '-' + installer['author']).length === 0) {
-            let $tile = $('<div class="moduleStoreModuleTile">' +
+            let $tile = $('<div class="moduleStoreModuleTile" id="' + installer['name'] + 'InstallTile">' +
                 '<div class="modulesStoreModuleTitle">' + installer['name'] + '</div>' +
-                '<div class="modulesStoreModuleAuthor"><i class="fas users-cog"></i> ' + installer['author'] + '</div>' +
+                '<div class="modulesStoreModuleAuthor"><i class="fas user-cog"></i> ' + installer['author'] + '</div>' +
                 '<div class="modulesStoreModuleVersion"><i class="fas fa-code-branch" style="margin-right: 3px;"></i> ' + installer['version'] + '</div>' +
                 '<div class="modulesStoreModuleCategory"><i class="fas fa-bookmark"></i> ' + installer['category'] + '</div>' +
                 '<div class="moduleStoreModuleDescription">' + installer['desc'] + '</div>' +
@@ -46,15 +46,35 @@ $(function(){
                         module: $(this).data('module')
                     },
                     type: 'POST'
-                }).done(function () {
+                }).done(function() {
                     $button.hide();
                     $button.parent().children('.moduleStoreModuleWaitAnimation').css('display', 'flex');
-                }).then(function() {});
+                }).then(function() {
+                    setTimeout(function () {
+                        checkInstallStatus(installer['name'] + 'InstallTile');
+                    }, 10000);
+                });
             });
 
             $tile.append($button);
             $('#modulesStore').append($tile);
         }
+    }
+
+    function checkInstallStatus(module) {
+        $.ajax({
+            url: '/modules/checkInstallStatus',
+            data: {
+                module: module
+            },
+            type: 'POST'
+        }).done(function () {
+            $('#' + module).remove();
+        }).fail(function() {
+            setTimeout(function () {
+                checkInstallStatus(module);
+            }, 1000);
+        })
     }
 
 	$('[id^=toggle_]').on('click', function () {

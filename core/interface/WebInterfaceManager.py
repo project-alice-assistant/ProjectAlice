@@ -1,5 +1,6 @@
 import json
 import logging
+import time
 from pathlib import Path
 
 from flask import Flask, send_from_directory
@@ -18,11 +19,14 @@ class WebInterfaceManager(Manager):
 	NAME = 'WebInterfaceManager'
 	app = Flask(__name__)
 
+	_VIEWS = [AdminView, IndexView, ModulesView, SnipswatchView, SyslogView]
+
 	def __init__(self):
 		super().__init__(self.NAME)
 		log = logging.getLogger('werkzeug')
 		log.setLevel(logging.ERROR)
 		self._langData = dict()
+		self._moduleInstallProcesses = dict()
 
 
 	@app.route('/base/<path:filename>')
@@ -51,11 +55,8 @@ class WebInterfaceManager(Manager):
 			with langFile.open('r') as f:
 				self._langData = json.load(f)
 
-			IndexView.register(self.app)
-			ModulesView.register(self.app)
-			SyslogView.register(self.app)
-			SnipswatchView.register(self.app)
-			AdminView.register(self.app)
+			for view in self._VIEWS:
+				view.register(self.app)
 
 			self.ThreadManager.newThread(
 				name='WebInterface',
@@ -69,8 +70,34 @@ class WebInterfaceManager(Manager):
 			)
 
 
-	def onModuleInstallation(self):
-		pass
+	def onModuleInstallated(self, args: list = None):
+		self.broadcast(
+			method='onModuleInstalled',
+			args=args
+		)
 
 
+	def broadcast(self, method: str, silent: bool = True, args: list = None):
+		if not args:
+			args = list()
 
+		for view in self._VIEWS:
+			try:
+				func = getattr(view, method)
+				func(*args)
+			except AttributeError as e:
+				if not silent:
+					# noinspection PyUnboundLocalVariable,PyUnresolvedReferences
+					self._logger.warning(f"[{self.NAME}] Couldn't find method {method} in view {instance.name}: {e}")
+
+
+	def newModuleInstallProcess(self, module):
+		self._moduleInstallProcesses[module] = {
+			'startedAt': time.time(),
+			'status'   : 'installing'
+		}
+
+
+	@property
+	def moduleInstallProcesses(self) -> dict:
+		return self._moduleInstallProcesses

@@ -305,6 +305,7 @@ a:hover {
 }
 
 .moduleName {
+    overflow: hidden;
     font-size: 1.25em;
 }
 
