@@ -199,6 +199,11 @@ def getDuration(session: DialogSession) -> int:
 
 
 def toCamelCase(string: str, replaceSepCharacters: bool = False, sepCharacters: tuple = None) -> str:
+	join = toPascalCase(string, replaceSepCharacters, sepCharacters)
+	return join[0].lower() + join[1:]
+
+
+def toPascalCase(string: str, replaceSepCharacters: bool = False, sepCharacters: tuple = None) -> str:
 	if replaceSepCharacters:
 		for char in sepCharacters or ('-', '_'):
 			string = string.replace(char, ' ')

@@ -4,6 +4,7 @@ UNKNOWN_WORD = 'unknownword'
 UNKNOWN_USER = 'unknownUser'
 UNKNOWN_MANAGER = 'unknownManager'
 ALL = 'all'
+DUMMY = 'dummy'
 
 TOPIC_AUDIO_FRAME = 'hermes/audioServer/default/audioFrame'
 TOPIC_HOTWORD_DETECTED = 'hermes/hotword/default/detected'

@@ -2,6 +2,7 @@ import threading
 from typing import Callable
 
 from core.base.model.Manager import Manager
+from core.util.model.AliceEvent import AliceEvent
 from core.util.model.ThreadTimer import ThreadTimer
 
 
@@ -112,14 +113,14 @@ class ThreadManager(Manager):
 			return self._threads[name].isAlive()
 
 
-	def newLock(self, name: str) -> threading.Event:
+	def newLock(self, name: str) -> AliceEvent:
 		if name in self._locks:
 			return self._locks[name]
 
-		lock = threading.Event()
+		lock = AliceEvent(name)
 		self._locks[name] = lock
 		return lock
 
 
-	def getLock(self, name: str) -> threading.Event:
-		return self._locks.get(name, threading.Event())
+	def getLock(self, name: str) -> AliceEvent:
+		return self._locks.get(name, AliceEvent())
