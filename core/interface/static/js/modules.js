@@ -14,11 +14,10 @@ $(function(){
                         url: searchResult['url'],
                         headers: {
                             'accept': 'application/vnd.github.VERSION.raw'
-                        },
-                        success: function (installer) {
-                            addToStore(installer);
                         }
-                    })
+                    }).done(function(installer) {
+                        addToStore(installer);
+                    });
                 });
             }
         });
@@ -42,11 +41,10 @@ $(function(){
                     data: {
                         module: installer['name']
                     },
-                    type: 'POST',
-                    success: function() {
-                        $('.moduleStoreModuleWaitAnimation').css('display', 'flex');
-                        $('.moduleStoreModuleDownloadButton').css('display', 'none');
-                    }
+                    type: 'POST'
+                }).done(function() {
+                    $('.moduleStoreModuleWaitAnimation').css('display', 'flex');
+                    $('.moduleStoreModuleDownloadButton').css('display', 'none');
                 });
             });
 
@@ -60,10 +58,9 @@ $(function(){
             data: {
                 id: $(this).attr('id')
             },
-            type: 'POST',
-            success: function() {
-                location.reload();
-            }
+            type: 'POST'
+        }).done(function() {
+            location.reload();
         });
 	});
 
@@ -96,10 +93,9 @@ $(function(){
             data: {
                 id: $(this).attr('id')
             },
-            type: 'POST',
-            success: function() {
-                location.reload();
-            }
+            type: 'POST'
+        }).done(function() {
+            location.reload();
         });
     });
 
