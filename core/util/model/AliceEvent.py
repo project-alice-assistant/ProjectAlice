@@ -12,23 +12,25 @@ class AliceEvent(Event):
 		self._args = list()
 
 
-	def set(self) -> None:
+	def set(self, *args, **kwargs) -> None:
 		super().set()
 		self.broadcast(state='set')
 
 
-	def clear(self) -> None:
+	def clear(self, *args, **kwargs) -> None:
 		super().clear()
-		self.broadcast(state='clear')
+		self.broadcast(state='clear', *args, **kwargs)
 
 
-	def broadcast(self, state: str):
+	def broadcast(self, state: str, *args, **kwargs):
 		SuperManager.getInstance().broadcast(
 			method=f'{self.eventName()}{state.title()}',
 			exceptions=[constants.DUMMY],
 			args=self._args,
 			propagateToModules=True,
-			silent=True
+			silent=True,
+			*args,
+			**kwargs
 		)
 
 
