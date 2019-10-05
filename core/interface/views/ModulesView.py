@@ -76,8 +76,8 @@ class ModulesView(View):
 	def installModule(self):
 		try:
 			module = request.form.get('module')
-			subprocess.run(['wget', f'http://modules.projectalice.ch/{module}', '-O', f'{module}.install'])
-			subprocess.run(['mv', f'{module}.install', f'{commons.rootDir()}/system/moduleInstallTickets/{module}.install'])
+			#subprocess.run(['wget', f'http://modules.projectalice.ch/{module}', '-O', f'{module}.install'])
+			#subprocess.run(['mv', f'{module}.install', f'{commons.rootDir()}/system/moduleInstallTickets/{module}.install'])
 			return jsonify(success=True)
 		except Exception as e:
 			self._logger.warning(f'[Modules] Failed installing module: {e}')

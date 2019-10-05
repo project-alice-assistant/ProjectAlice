@@ -41,11 +41,13 @@
 		<div class="moduleTile" id="{{ moduleName }}-{{ module.author }}">
 			<div class="moduleTitle">
 				<div class="moduleName">{{ moduleName }}</div>
-				<div class="moduleVersion">v {{ module.version }}</div>
 			</div>
 			<div class="moduleContainer moduleDefaultView">
 				<div class="moduleAuthor">
-					{{ langData.by }} {{ module.author }}
+					<i class="fas fa-users-cog"></i> {{ module.author }}
+				</div>
+				<div class="moduleVersion">
+					<i class="fas fa-code-branch" style="margin-right: 3px;"></i> {{ module.version }}
 				</div>
 				<div class="moduleStatus {% if module.active is sameas true %}active{% else %}disabled{% endif %}">
 					{{ langData.status }}: {% if module.active is sameas true %}enabled{% else %}disabled{% endif %}
