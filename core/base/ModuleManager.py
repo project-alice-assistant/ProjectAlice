@@ -265,7 +265,7 @@ class ModuleManager(Manager):
 		return self._modules
 
 
-	def broadcast(self, method: str, isEvent: bool = True, filterOut: list = None, args: list = None, silent: bool = False):
+	def broadcast(self, method: str, isEvent: bool = True, filterOut: list = None, silent: bool = False, args: list = None):
 		"""
 		Boradcasts a call to the given method on every module
 		:param filterOut: array, module not to boradcast to

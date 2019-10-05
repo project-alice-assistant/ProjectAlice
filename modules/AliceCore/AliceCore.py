@@ -106,7 +106,7 @@ class AliceCore(Module):
 
 
 	def onUserCancel(self, session: DialogSession):
-		if self.delayed:
+		if self.delayed: # type: ignore
 			self.delayed = False
 
 			if not self.ThreadManager.getEvent('AddingWakeword').isSet():
@@ -147,7 +147,7 @@ class AliceCore(Module):
 			self.changeFeedbackSound(inDialog=False, siteId=session.siteId)
 
 			if self.delayed:
-				if len(self.UserManager.users) <= 0:
+				if not self.UserManager.users:
 					self._addFirstUser()
 				else:
 					self.delayed = False
@@ -196,7 +196,7 @@ class AliceCore(Module):
 
 	def onSnipsAssistantDownloaded(self, *args):
 		try:
-			filepath = Path(tempfile.gettempdir(),'assistant.zip')
+			filepath = Path(tempfile.gettempdir(), 'assistant.zip')
 			with ZipFile(filepath) as zipfile:
 				zipfile.extractall(tempfile.gettempdir())
 
@@ -459,10 +459,10 @@ class AliceCore(Module):
 				)
 			else:
 				self.playSound(
-					soundFilename=filepath.stem,
-					location=filepath.parent,
+					soundFile=filepath,
 					sessionId='checking-wakeword',
-					siteId=session.siteId
+					siteId=session.siteId,
+					absolutePath=True
 				)
 
 				text = 'howWasTheCapture' if self.WakewordManager.getLastSampleNumber() == 1 else 'howWasThisCapture'
@@ -524,12 +524,12 @@ class AliceCore(Module):
 					return True
 				time.sleep(0.5)
 
-			filepath = Path(tempfile.gettempdir(), str(self.WakewordManager.getLastSampleNumber()))
+			filepath = Path(tempfile.gettempdir(), str(self.WakewordManager.getLastSampleNumber())).with_suffix('.wav')
 			self.playSound(
-				soundFilename=filepath.stem,
-				location=filepath.parent,
+				soundFile=filepath,
 				sessionId='checking-wakeword',
-				siteId=session.siteId
+				siteId=session.siteId,
+				absolutePath=True
 			)
 
 			self.continueDialog(
@@ -541,7 +541,7 @@ class AliceCore(Module):
 			)
 
 		elif intent == self._INTENT_SWITCH_LANGUAGE:
-			self.publish(topic=constants.TOPIC_TEXT_CAPTURED, payload={'siteId': siteId})
+			self.publish(topic='hermes/asr/textCaptured', payload={'siteId': siteId})
 			if 'ToLang' not in slots:
 				self.endDialog(text=self.randomTalk('noDestinationLanguage'))
 				return True
@@ -749,7 +749,7 @@ class AliceCore(Module):
 
 	@staticmethod
 	def restart():
-		subprocess.run(['sudo', 'restart', 'ProjectAlice'])
+		subprocess.run(['sudo', 'systemctl', 'restart', 'ProjectAlice'])
 
 
 	def cancelUnregister(self):
@@ -760,7 +760,7 @@ class AliceCore(Module):
 
 
 	def langSwitch(self, newLang: str, siteId: str):
-		self.publish(topic=constants.TOPIC_TEXT_CAPTURED, payload={'siteId': siteId})
+		self.publish(topic='hermes/asr/textCaptured', payload={'siteId': siteId})
 		subprocess.run([commons.rootDir() + '/system/scripts/langSwitch.sh', newLang])
 		self.ThreadManager.doLater(interval=3, func=self._confirmLangSwitch, args=[newLang, siteId])
 
