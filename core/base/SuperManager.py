@@ -153,15 +153,15 @@ class SuperManager(object):
 		self._managers = {name[0].upper() + name[1:]: manager for name, manager in self.__dict__.items() if name.endswith('Manager')}
 
 
-	def broadcast(self, method, exceptions: list = None, manager = None, args: list = None, propagateToModules: bool = False, silent: bool = False):
+	def broadcast(self, method, exceptions: list = None, manager = None, propagateToModules: bool = False, silent: bool = False, args: list = None):
 		if not exceptions and not manager:
-			self._logger.warning('[Managers] Cannot broadcast to itself, the calling method has to be put in exceptions')
-
-		if not args:
-			args = list()
+			self._logger.warning(f'[{self.NAME}] Cannot broadcast to itself, the calling method has to be put in exceptions')
 
 		if 'ProjectAlice' not in exceptions:
 			exceptions.append('ProjectAlice')
+
+		if not args:
+			args = list()
 
 		deadManagers = list()
 		for name in self._managers:
@@ -182,7 +182,7 @@ class SuperManager(object):
 					self._logger.warning(f"[{self.NAME}] Couldn't find method {method} in manager {man.name}: {e}")
 
 		if propagateToModules:
-			self.moduleManager.broadcast(method=method, args=args, silent=silent)
+			self.moduleManager.broadcast(method=method, silent=silent, args=args)
 
 		for name in deadManagers:
 			del self._managers[name]
@@ -194,7 +194,7 @@ class SuperManager(object):
 			for managerName, manager in self._managers.items():
 				manager.onStop()
 		except Exception as e:
-			self._logger.info(f'[SuperManager] Error while shutting down manager "{managerName}": {e}')
+			self._logger.info(f'[{self.NAME}] Error while shutting down manager "{managerName}": {e}')
 
 
 	def getManager(self, managerName: str):

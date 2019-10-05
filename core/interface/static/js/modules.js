@@ -1,6 +1,9 @@
 $(document).tooltip();
 
 $(function(){
+
+    let storeLoaded = false;
+
     function loadStoreData() {
         $.ajax({
             type: 'GET',
@@ -14,39 +17,64 @@ $(function(){
                         url: searchResult['url'],
                         headers: {
                             'accept': 'application/vnd.github.VERSION.raw'
-                        },
-                        success: function (installer) {
-                            addToStore(installer);
                         }
-                    })
+                    }).done(function(installer) {
+                        addToStore(installer);
+                    });
                 });
             }
         });
+        storeLoaded = true;
     }
 
     function addToStore(installer) {
         if ($('#modulesPane').find('#' + installer['name'] + '-' + installer['author']).length === 0) {
-            let $tile = $('<div class="moduleStoreModuleTile">' +
+            let $tile = $('<div class="moduleStoreModuleTile" id="' + installer['name'] + 'InstallTile">' +
                 '<div class="modulesStoreModuleTitle">' + installer['name'] + '</div>' +
-                '<div class="modulesStoreModuleAuthor"><i class="fas fa-at"></i> ' + installer['author'] + '</div>' +
-                '<div class="modulesStoreModuleVersion"><i class="fas fa-code-branch"></i> ' + installer['version'] + '</div>' +
+                '<div class="modulesStoreModuleAuthor"><i class="fas user-cog"></i> ' + installer['author'] + '</div>' +
+                '<div class="modulesStoreModuleVersion"><i class="fas fa-code-branch" style="margin-right: 3px;"></i> ' + installer['version'] + '</div>' +
                 '<div class="modulesStoreModuleCategory"><i class="fas fa-bookmark"></i> ' + installer['category'] + '</div>' +
                 '<div class="moduleStoreModuleDescription">' + installer['desc'] + '</div>' +
-                '<div class="moduleStoreModuleDownload"><i class="fas fa-download"></i></div>' +
+                '<div class="moduleStoreModuleWaitAnimation"><i class="fas fa-spinner fa-spin"></i></div>' +
                 '</div>');
 
-            $tile.on('click', function(){
+            let $button = $('<div class="moduleStoreModuleDownload moduleStoreModuleDownloadButton" data-module="' + installer['name'] + '"><i class="fas fa-download"></i></div>');
+            $button.on('click', function() {
                 $.ajax({
                     url: '/modules/install',
                     data: {
-                        module: installer['name']
+                        module: $(this).data('module')
                     },
                     type: 'POST'
+                }).done(function() {
+                    $button.hide();
+                    $button.parent().children('.moduleStoreModuleWaitAnimation').css('display', 'flex');
+                }).then(function() {
+                    setTimeout(function () {
+                        checkInstallStatus(installer['name'] + 'InstallTile');
+                    }, 10000);
                 });
             });
 
+            $tile.append($button);
             $('#modulesStore').append($tile);
         }
+    }
+
+    function checkInstallStatus(module) {
+        $.ajax({
+            url: '/modules/checkInstallStatus',
+            data: {
+                module: module
+            },
+            type: 'POST'
+        }).done(function () {
+            $('#' + module).remove();
+        }).fail(function() {
+            setTimeout(function () {
+                checkInstallStatus(module);
+            }, 1000);
+        })
     }
 
 	$('[id^=toggle_]').on('click', function () {
@@ -55,10 +83,9 @@ $(function(){
             data: {
                 id: $(this).attr('id')
             },
-            type: 'POST',
-            success: function() {
-                location.reload();
-            }
+            type: 'POST'
+        }).done(function() {
+            location.reload();
         });
 	});
 
@@ -72,7 +99,7 @@ $(function(){
     });
 
 	$('.moduleSettings').on('click', function() {
-        $('#config_for_' + $(this).attr('data-forModule')).dialog('open');
+        $('#config_for_' + $(this).data('forModule')).dialog('open');
     });
 
 	$('.moduleViewIntents').on('click', function() {
@@ -91,26 +118,27 @@ $(function(){
             data: {
                 id: $(this).attr('id')
             },
-            type: 'POST',
-            success: function() {
-                location.reload();
-            }
+            type: 'POST'
+        }).done(function() {
+            location.reload();
         });
     });
 
-    $('#openModuleStore').on('click', function(){
+    $('#openModuleStore').on('click', function() {
+        if (!storeLoaded) {
+            loadStoreData();
+        }
+
         $('#modulesPane').hide();
         $('#modulesStore').css('display', 'flex');
         $('#openModuleStore').hide();
         $('#closeModuleStore').show();
     });
 
-    $('#closeModuleStore').on('click', function(){
+    $('#closeModuleStore').on('click', function() {
         $('#modulesPane').css('display', 'flex');
         $('#modulesStore').hide();
         $('#openModuleStore').show();
         $('#closeModuleStore').hide();
     });
-
-    loadStoreData();
 });
