@@ -32,7 +32,8 @@ $(function(){
                 '<div class="modulesStoreModuleVersion"><i class="fas fa-code-branch"></i> ' + installer['version'] + '</div>' +
                 '<div class="modulesStoreModuleCategory"><i class="fas fa-bookmark"></i> ' + installer['category'] + '</div>' +
                 '<div class="moduleStoreModuleDescription">' + installer['desc'] + '</div>' +
-                '<div class="moduleStoreModuleDownload"><i class="fas fa-download"></i></div>' +
+                '<div class="moduleStoreModuleDownload moduleStoreModuleWaitAnimation"><i class="fas fa-spinner fa-spin"></i></div>' +
+                '<div class="moduleStoreModuleDownload moduleStoreModuleDownloadButton"><i class="fas fa-download"></i></div>' +
                 '</div>');
 
             $tile.on('click', function(){
@@ -41,7 +42,11 @@ $(function(){
                     data: {
                         module: installer['name']
                     },
-                    type: 'POST'
+                    type: 'POST',
+                    success: function() {
+                        $('.moduleStoreModuleWaitAnimation').css('display', 'flex');
+                        $('.moduleStoreModuleDownloadButton').css('display', 'none');
+                    }
                 });
             });
 

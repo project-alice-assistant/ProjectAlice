@@ -196,7 +196,6 @@ a:hover {
     width: 50%;
     margin: 10px auto auto auto;
     background-color: #343434;
-    display: flex;
     align-content: center;
     align-items: center;
     justify-items: center;
@@ -208,6 +207,14 @@ a:hover {
     cursor: pointer;
     background-color: #636363;
     color: yellow;
+}
+
+.moduleStoreModuleWaitAnimation {
+    display: none;
+}
+
+.moduleStoreModuleDownloadButton {
+    display: flex;
 }
 
 #closeModuleStore {

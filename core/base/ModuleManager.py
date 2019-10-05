@@ -339,8 +339,6 @@ class ModuleManager(Manager):
 			self._logger.info(f'[{self.name}] Not connected...')
 			return
 
-		self._busyInstalling.set()
-
 		availableModules = self.ConfigManager.modulesConfigurations
 
 		i = 0
@@ -368,7 +366,6 @@ class ModuleManager(Manager):
 				self._logger.warning(f'[{self.name}] Error checking updates for module "{moduleName}": {e}')
 
 		self._logger.info(f'[{self.name}] Found {i} module update(s)')
-		self._busyInstalling.clear()
 
 
 	def _checkForModuleInstall(self):
