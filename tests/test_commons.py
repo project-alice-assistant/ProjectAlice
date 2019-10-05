@@ -3,9 +3,9 @@ from core.commons import commons
 
 def test_toCamelCase():
     """Test whether string gets correctly converted to camel case"""
-    assert commons.toCamelCase('example string') == 'ExampleString'
-    assert commons.toCamelCase('Example-string_2', replaceSepCharacters=True) == 'ExampleString2'
-    assert commons.toCamelCase('Example+string/2', replaceSepCharacters=True, sepCharacters=('+', '/')) == 'ExampleString2'
+    assert commons.toCamelCase('example string') == 'exampleString'
+    assert commons.toCamelCase('Example-string_2', replaceSepCharacters=True) == 'exampleString2'
+    assert commons.toCamelCase('Example+string/2', replaceSepCharacters=True, sepCharacters=('+', '/')) == 'exampleString2'
 
 
 def test_isSpelledWord():
