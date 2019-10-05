@@ -156,7 +156,7 @@ def angleToCardinal(angle: float) -> str:
 
 
 def partOfTheDay() -> str:
-	hour = int(datetime.now().strftime('%H'))
+	hour = datetime.now().hour
 
 	if SuperManager.getInstance().userManager.checkIfAllUser('sleeping'):
 		return PartOfDay.SLEEPING.value
