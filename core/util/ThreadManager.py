@@ -123,4 +123,4 @@ class ThreadManager(Manager):
 
 
 	def getLock(self, name: str) -> AliceEvent:
-		return self._locks.get(name, AliceEvent())
+		return self._locks.get(name, AliceEvent(name))
