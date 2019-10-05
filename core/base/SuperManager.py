@@ -155,7 +155,7 @@ class SuperManager(object):
 
 	def broadcast(self, method, exceptions: list = None, manager = None, propagateToModules: bool = False, silent: bool = False, args: list = None):
 		if not exceptions and not manager:
-			self._logger.warning('[Managers] Cannot broadcast to itself, the calling method has to be put in exceptions')
+			self._logger.warning(f'[{self.NAME}] Cannot broadcast to itself, the calling method has to be put in exceptions')
 
 		if 'ProjectAlice' not in exceptions:
 			exceptions.append('ProjectAlice')
@@ -194,7 +194,7 @@ class SuperManager(object):
 			for managerName, manager in self._managers.items():
 				manager.onStop()
 		except Exception as e:
-			self._logger.info(f'[SuperManager] Error while shutting down manager "{managerName}": {e}')
+			self._logger.info(f'[{self.NAME}] Error while shutting down manager "{managerName}": {e}')
 
 
 	def getManager(self, managerName: str):
