@@ -23,15 +23,6 @@ def test_isSpelledWord():
     assert commons.isSpelledWord('e x am p l e') == False
 
 
-def test_isInt():
-    """Test whether string is spelled"""
-    assert commons.isInt('1') == True
-    # noinspection PyTypeChecker
-    assert commons.isInt(1) == True
-    assert commons.isInt('1.1') == False
-    assert commons.isInt('a') == False
-
-
 def test_getDuration():
     """Test getDuration method"""
 
