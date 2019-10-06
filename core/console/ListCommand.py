@@ -37,7 +37,7 @@ def authors():
 		click.echo(tableInstance.table)
 
 @List.command()
-@click.option('--authors', '-a', cls=OptionEatAll, help='specify authors to check')
+@click.option('--authors', '-a', 'authorsList', cls=OptionEatAll, help='specify authors to check')
 @click.option('--full', '-f', is_flag=True, help='Display full description instead of truncated one')
 def modules(authorsList: list, full: bool):
 	"""List modules from the ProjectAliceModules repository"""
