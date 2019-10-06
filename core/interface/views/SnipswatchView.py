@@ -16,9 +16,6 @@ class SnipswatchView(View):
 		self._file = tempfile.TemporaryFile()
 		self._thread = None
 
-		if self._file.exists():
-			subprocess.run(['sudo', 'rm', self._file])
-
 
 	def index(self):
 		return render_template('snipswatch.html', langData=self._langData)
