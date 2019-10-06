@@ -1,6 +1,15 @@
 import pytest
 from core.commons import commons
 
+def test_getFunctionCaller():
+    assert commons.getFunctionCaller(1) == 'test_commons'
+
+def test_toPascalCase():
+    """Test whether string gets correctly converted to pascal case"""
+    assert commons.toPascalCase('example string') == 'ExampleString'
+    assert commons.toPascalCase('Example-string_2', replaceSepCharacters=True) == 'ExampleString2'
+    assert commons.toPascalCase('Example+string/2', replaceSepCharacters=True, sepCharacters=('+', '/')) == 'ExampleString2'
+
 def test_toCamelCase():
     """Test whether string gets correctly converted to camel case"""
     assert commons.toCamelCase('example string') == 'exampleString'
