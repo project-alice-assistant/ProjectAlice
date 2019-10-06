@@ -1,4 +1,3 @@
-import pytest
 from core.commons import commons
 
 def test_toCamelCase():
@@ -18,6 +17,7 @@ def test_isSpelledWord():
 def test_isInt():
     """Test whether string is spelled"""
     assert commons.isInt('1') == True
+    # noinspection PyTypeChecker
     assert commons.isInt(1) == True
     assert commons.isInt('1.1') == False
     assert commons.isInt('a') == False
@@ -26,14 +26,14 @@ def test_isInt():
 def test_getDuration():
     """Test getDuration method"""
 
-    class DialogSession():
+    class DialogSession:
         def __init__(self, retVal: dict):
             self.retVal = retVal
         @property
         def slotsAsObjects(self) -> dict:
             return self.retVal
 
-    class TimeObject():
+    class TimeObject:
         def __init__(self, retVal: dict, entity: str = 'snips/duration'):
             self.retVal = retVal
             self._entity = entity
