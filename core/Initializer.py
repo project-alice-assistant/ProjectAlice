@@ -236,7 +236,7 @@ network={
 			subprocess.run(['sudo', 'sed', '-i', '-e', f's/%EXECSTART%/\/home\/{getpass.getuser()}\/snipsLedControl\/venv\/bin\/python3 main.py --hardware=%HARDWARE% --pattern=projectalice/', str(slcServiceFilePath)])
 			subprocess.run(['sudo', 'sed', '-i', '-e', f's/%USER%/{getpass.getuser()}/', str(slcServiceFilePath)])
 
-		if audioHardware in ('respeaker2', 'respeaker4', 'respeaker6MicArray'):
+		if audioHardware in {'respeaker2', 'respeaker4', 'respeaker6MicArray'}:
 			subprocess.run(['sudo', Path(commons.rootDir(), 'system/scripts/audioHardware/respeakers.sh')])
 			if initConfs['useSLC']:
 				subprocess.run(['sudo', 'sed', '-i', '-e', f's/%HARDWARE%/{audioHardware}/', str(slcServiceFilePath)])
@@ -254,7 +254,7 @@ network={
 			if initConfs['useSLC']:
 				subprocess.run(['sudo', 'sed', '-i', '-e', f's/%HARDWARE%/{audioHardware}/', str(slcServiceFilePath)])
 
-		elif audioHardware in ('matrixCreator', 'matrixVoice'):
+		elif audioHardware in {'matrixCreator', 'matrixVoice'}:
 			subprocess.run(['sudo', Path(commons.rootDir(), 'system/scripts/audioHardware/matrix.sh')])
 			if initConfs['useSLC']:
 				subprocess.run(['sudo', 'sed', '-i', '-e', f's/%HARDWARE%/{audioHardware.lower()}/', str(slcServiceFilePath)])
