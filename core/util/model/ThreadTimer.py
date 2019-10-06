@@ -1,5 +1,5 @@
 class ThreadTimer:
-	def __init__(self, callback: str, *args: tuple, **kwargs: dict):
+	def __init__(self, callback: str, args: list, kwargs: dict):
 		self._timer 	= None
 		self._callback 	= callback
 		self._args 		= args

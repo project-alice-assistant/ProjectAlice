@@ -77,10 +77,8 @@ class ModuleManager(Manager):
 		self.startAllModules()
 
 
-	def onSnipsAssistantDownloaded(self, *args: tuple, **kwargs: dict):
-		argv = args[0] or dict()
-
-		for moduleName, module in argv.items():
+	def onSnipsAssistantDownloaded(self, *args, **kwargs):
+		for moduleName, module in kwargs.items():
 			if module['update']:
 				method = 'onModuleUpdated'
 				self._modules[moduleName]['instance'].onModuleUpdated()
@@ -284,7 +282,7 @@ class ModuleManager(Manager):
 		return self._modules
 
 
-	def broadcast(self, method: str, isEvent: bool = True, filterOut: list = None, silent: bool = False, *args: tuple, **kwargs: dict):
+	def broadcast(self, method: str, isEvent: bool = True, filterOut: list = None, silent: bool = False, *args, **kwargs):
 		"""
 		Boradcasts a call to the given method on every module
 		:param filterOut: array, module not to boradcast to

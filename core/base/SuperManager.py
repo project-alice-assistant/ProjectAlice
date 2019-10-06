@@ -153,7 +153,7 @@ class SuperManager(object):
 		self._managers = {name[0].upper() + name[1:]: manager for name, manager in self.__dict__.items() if name.endswith('Manager')}
 
 
-	def broadcast(self, method, exceptions: list = None, manager = None, propagateToModules: bool = False, silent: bool = False, *args: tuple, **kwargs: dict):
+	def broadcast(self, method, exceptions: list = None, manager = None, propagateToModules: bool = False, silent: bool = False, *args, **kwargs):
 		if not exceptions and not manager:
 			self._logger.warning(f'[{self.NAME}] Cannot broadcast to itself, the calling method has to be put in exceptions')
 

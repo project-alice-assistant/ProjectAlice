@@ -41,11 +41,11 @@ class ThreadManager(Manager):
 		self._logger.info(f'[{self.NAME}] Cleaned {i} dead timers')
 
 
-	def newTimer(self, interval: float, func: str, autoStart: bool = True, *args: tuple, **kwargs: dict) -> threading.Timer:
-		if not args:
-			args = list()
+	def newTimer(self, interval: float, func: str, autoStart: bool = True, args: list = None, kwargs: dict = None) -> threading.Timer:
+		args = args or list()
+		kwargs = kwargs or dict()
 
-		threadTimer = ThreadTimer(callback=func, *args, **kwargs)
+		threadTimer = ThreadTimer(callback=func, args=args, kwargs=kwargs)
 		t = threading.Timer(interval=interval, function=self.onTimerEnd, args=[threadTimer])
 		t.daemon = True
 		threadTimer.timer = t
@@ -57,14 +57,12 @@ class ThreadManager(Manager):
 		return t
 
 
-	def doLater(self, interval: float, func: str, *args: tuple):
-		if not args:
-			args = list()
-		self.newTimer(interval=interval, func=func, *args)
+	def doLater(self, interval: float, func: str, args: list = None, kwargs: dict = None):
+		self.newTimer(interval=interval, func=func, args=args, kwargs=kwargs)
 
 
 	def onTimerEnd(self, t: ThreadTimer):
-		t.callback(*t.args)
+		t.callback(*t.args, **t.kwargs)
 		self.removeTimer(t)
 
 
@@ -76,11 +74,14 @@ class ThreadManager(Manager):
 			self._timers.remove(t)
 
 
-	def newThread(self, name: str, target: Callable, autostart: bool = True, *args: tuple, **kwargs: dict) -> threading.Thread:
+	def newThread(self, name: str, target: Callable, autostart: bool = True, args: list = None, kwargs: dict = None) -> threading.Thread:
+		args = args or list()
+		kwargs = kwargs or dict()
+
 		if name in self._threads:
 			self._threads[name].join(timeout=2)
 
-		thread = threading.Thread(name=name, target=target, *args, **kwargs)
+		thread = threading.Thread(name=name, target=target, args=args, kwargs=kwargs)
 		thread.setDaemon(True)
 
 		if autostart:

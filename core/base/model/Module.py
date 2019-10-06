@@ -268,23 +268,23 @@ class Module:
 		return True
 
 
-	def onHotword(self, session: DialogSession, *args: tuple, **kwargs: dict): pass
-	def onSay(self, session: DialogSession, *args: tuple, **kwargs: dict): pass
-	def onSayFinished(self, session: DialogSession, *args: tuple, **kwargs: dict): pass
-	def onHotwordToggleOn(self, session: DialogSession, *args: tuple, **kwargs: dict): pass
-	def onUserCancel(self, session: DialogSession, *args: tuple, **kwargs: dict): pass
-	def onSessionTimeout(self, session: DialogSession, *args: tuple, **kwargs: dict): pass
-	def onSessionError(self, session: DialogSession, *args: tuple, **kwargs: dict): pass
-	def onSessionEnded(self, session: DialogSession, *args: tuple, **kwargs: dict): pass
-	def onSessionStarted(self, session: DialogSession, *args: tuple, **kwargs: dict): pass
-	def onSessionQueued(self, session: DialogSession, *args: tuple, **kwargs: dict): pass
-	def onIntentNotRecognized(self, session: DialogSession, *args: tuple, **kwargs: dict): pass
-	def onStartListening(self, session: DialogSession, *args: tuple, **kwargs: dict): pass
-	def onCaptured(self, session: DialogSession, *args: tuple, **kwargs: dict): pass
-	def onIntentParsed(self, session: DialogSession, *args: tuple, **kwargs: dict): pass
+	def onHotword(self, siteId: str, *args, **kwargs): pass
+	def onSay(self, session: DialogSession, *args, **kwargs): pass
+	def onSayFinished(self, session: DialogSession, *args, **kwargs): pass
+	def onHotwordToggleOn(self, siteId: str, *args, **kwargs): pass
+	def onUserCancel(self, session: DialogSession, *args, **kwargs): pass
+	def onSessionTimeout(self, session: DialogSession, *args, **kwargs): pass
+	def onSessionError(self, session: DialogSession, *args, **kwargs): pass
+	def onSessionEnded(self, session: DialogSession, *args, **kwargs): pass
+	def onSessionStarted(self, session: DialogSession, *args, **kwargs): pass
+	def onSessionQueued(self, session: DialogSession, *args, **kwargs): pass
+	def onIntentNotRecognized(self, session: DialogSession, *args, **kwargs): pass
+	def onStartListening(self, session: DialogSession, *args, **kwargs): pass
+	def onCaptured(self, session: DialogSession, *args, **kwargs): pass
+	def onIntentParsed(self, session: DialogSession, *args, **kwargs): pass
 
 
-	def onStart(self, *args: tuple, **kwargs: dict) -> list:
+	def onStart(self, *args, **kwargs) -> list:
 		if not self._active:
 			self._logger.info(f'Module {self.name} is not active')
 		else:
@@ -295,7 +295,7 @@ class Module:
 		return self._supportedIntents
 
 
-	def onBooted(self, *args: tuple, **kwargs: dict):
+	def onBooted(self, *args, **kwargs):
 		if self.delayed:
 			if self.ThreadManager.getEvent('SnipsAssistantDownload').isSet():
 				self.ThreadManager.doLater(interval=5, func=self.onBooted)
@@ -307,12 +307,12 @@ class Module:
 		return True
 
 
-	def onModuleInstalled(self, *args: tuple, **kwargs: dict):
+	def onModuleInstalled(self, *args, **kwargs):
 		self._updateAvailable = False
 		self.MqttManager.subscribeModuleIntents(self.name)
 
 
-	def onModuleUpdated(self, *args: tuple, **kwargs: dict):
+	def onModuleUpdated(self, *args, **kwargs):
 		self._updateAvailable = False
 		self.MqttManager.subscribeModuleIntents(self.name)
 		SuperManager.getInstance().broadcast(
@@ -322,47 +322,47 @@ class Module:
 		)
 
 
-	def onSleep(self, *args: tuple, **kwargs: dict): pass
-	def onWakeup(self, *args: tuple, **kwargs: dict): pass
-	def onGoingBed(self, *args: tuple, **kwargs: dict): pass
-	def onLeavingHome(self, *args: tuple, **kwargs: dict): pass
-	def onReturningHome(self, *args: tuple, **kwargs: dict): pass
-	def onEating(self, *args: tuple, **kwargs: dict): pass
-	def onWatchingTV(self, *args: tuple, **kwargs: dict): pass
-	def onCooking(self, *args: tuple, **kwargs: dict): pass
-	def onMakeup(self, *args: tuple, **kwargs: dict): pass
-	def onContextSensitiveDelete(self, sessionId: str, *args: tuple, **kwargs: dict):	pass
-	def onContextSensitiveEdit(self, sessionId: str, *args: tuple, **kwargs: dict): pass
-	def onStop(self, *args: tuple, **kwargs: dict): self._logger.info(f'[{self.name}] Stopping')
-	def onFullMinute(self, *args: tuple, **kwargs: dict): pass
-	def onFiveMinute(self, *args: tuple, **kwargs: dict): pass
-	def onQuarterHour(self, *args: tuple, **kwargs: dict): pass
-	def onFullHour(self, *args: tuple, **kwargs: dict): pass
-	def onMessage(self, intent: str, session: DialogSession, *args: tuple, **kwargs: dict): raise NotImplementedError(f'[{self.name}] onMessage must be implemented!')
-	def onCancel(self, *args: tuple, **kwargs: dict): pass
-	def onASRCaptured(self, *args: tuple, **kwargs: dict): pass
-	def onWakeword(self, *args: tuple, **kwargs: dict): pass
-	def onMotionDetected(self, *args: tuple, **kwargs: dict): pass
-	def onMotionStopped(self, *args: tuple, **kwargs: dict): pass
-	def onButtonPressed(self, *args: tuple, **kwargs: dict): pass
-	def onButtonReleased(self, *args: tuple, **kwargs: dict): pass
-	def onDeviceConnecting(self, *args: tuple, **kwargs: dict): pass
-	def onDeviceDisconnecting(self, *args: tuple, **kwargs: dict): pass
-	def onRaining(self, *args: tuple, **kwargs: dict): pass
-	def onWindy(self, *args: tuple, **kwargs: dict): pass
-	def onFreezing(self, deviceList: list, *args: tuple, **kwargs: dict): pass
-	def onTemperatureAlert(self, deviceList: list, *args: tuple, **kwargs: dict): pass
-	def onCO2Alert(self, deviceList: list, *args: tuple, **kwargs: dict): pass
-	def onHumidityAlert(self, deviceList: list, *args: tuple, **kwargs: dict): pass
-	def onNoiseAlert(self, deviceList: list, *args: tuple, **kwargs: dict): pass
-	def onPressureAlert(self, deviceList: list, *args: tuple, **kwargs: dict): pass
-	def onBroadcastingForNewDeviceStart(self, session: DialogSession, *args: tuple, **kwargs: dict): pass
-	def onBroadcastingForNewDeviceStop(self, *args: tuple, **kwargs: dict): pass
-	def onSnipsAssistantDownloaded(self, *args: tuple, **kwargs: dict): pass
-	def onSnipsAssistantDownloadFailed(self, *args: tuple, **kwargs: dict): pass
-	def onAuthenticated(self, session: DialogSession, *args: tuple, **kwargs: dict): pass
-	def onAuthenticationFailed(self, session: DialogSession, *args: tuple, **kwargs: dict): pass
-	def onAudioFrame(self, message: MQTTMessage, *args: tuple, **kwargs: dict):pass
+	def onSleep(self, *args, **kwargs): pass
+	def onWakeup(self, *args, **kwargs): pass
+	def onGoingBed(self, *args, **kwargs): pass
+	def onLeavingHome(self, *args, **kwargs): pass
+	def onReturningHome(self, *args, **kwargs): pass
+	def onEating(self, *args, **kwargs): pass
+	def onWatchingTV(self, *args, **kwargs): pass
+	def onCooking(self, *args, **kwargs): pass
+	def onMakeup(self, *args, **kwargs): pass
+	def onContextSensitiveDelete(self, sessionId: str, *args, **kwargs):	pass
+	def onContextSensitiveEdit(self, sessionId: str, *args, **kwargs): pass
+	def onStop(self, *args, **kwargs): self._logger.info(f'[{self.name}] Stopping')
+	def onFullMinute(self, *args, **kwargs): pass
+	def onFiveMinute(self, *args, **kwargs): pass
+	def onQuarterHour(self, *args, **kwargs): pass
+	def onFullHour(self, *args, **kwargs): pass
+	def onMessage(self, intent: str, session: DialogSession, *args, **kwargs): raise NotImplementedError(f'[{self.name}] onMessage must be implemented!')
+	def onCancel(self, *args, **kwargs): pass
+	def onASRCaptured(self, *args, **kwargs): pass
+	def onWakeword(self, *args, **kwargs): pass
+	def onMotionDetected(self, *args, **kwargs): pass
+	def onMotionStopped(self, *args, **kwargs): pass
+	def onButtonPressed(self, *args, **kwargs): pass
+	def onButtonReleased(self, *args, **kwargs): pass
+	def onDeviceConnecting(self, *args, **kwargs): pass
+	def onDeviceDisconnecting(self, *args, **kwargs): pass
+	def onRaining(self, *args, **kwargs): pass
+	def onWindy(self, *args, **kwargs): pass
+	def onFreezing(self, deviceList: list, *args, **kwargs): pass
+	def onTemperatureAlert(self, deviceList: list, *args, **kwargs): pass
+	def onCO2Alert(self, deviceList: list, *args, **kwargs): pass
+	def onHumidityAlert(self, deviceList: list, *args, **kwargs): pass
+	def onNoiseAlert(self, deviceList: list, *args, **kwargs): pass
+	def onPressureAlert(self, deviceList: list, *args, **kwargs): pass
+	def onBroadcastingForNewDeviceStart(self, session: DialogSession, *args, **kwargs): pass
+	def onBroadcastingForNewDeviceStop(self, *args, **kwargs): pass
+	def onSnipsAssistantDownloaded(self, *args, **kwargs): pass
+	def onSnipsAssistantDownloadFailed(self, *args, **kwargs): pass
+	def onAuthenticated(self, session: DialogSession, *args, **kwargs): pass
+	def onAuthenticationFailed(self, session: DialogSession, *args, **kwargs): pass
+	def onAudioFrame(self, message: MQTTMessage, *args, **kwargs):pass
 
 
 	# HELPERS

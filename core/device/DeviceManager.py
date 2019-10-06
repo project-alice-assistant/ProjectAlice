@@ -317,7 +317,7 @@ class DeviceManager(Manager):
 		self._listenSocket.listen(2)
 		self.ThreadManager.newThread(name='broadcast', target=self.broadcast, args=[room, uid, siteId])
 
-		self._broadcastTimer = self.ThreadManager.newTimer(interval = 300, func=self.stopBroadcasting)
+		self._broadcastTimer = self.ThreadManager.newTimer(interval=300, func=self.stopBroadcasting)
 
 		self.ModuleManager.broadcast(method = 'onBroadcastingForNewDeviceStart')
 		return True

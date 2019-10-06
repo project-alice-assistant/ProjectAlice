@@ -189,12 +189,12 @@ class AliceCore(Module):
 		self.UserManager.home()
 
 
-	def onSayFinished(self, session: DialogSession, *args: tuple, **kwargs: dict):
+	def onSayFinished(self, session: DialogSession, *args, **kwargs):
 		if self.ThreadManager.getEvent('AddingWakeword').isSet() and self.WakewordManager.state == WakewordManagerState.IDLE:
 			self.ThreadManager.doLater(interval=0.5, func=self.WakewordManager.addASample)
 
 
-	def onSnipsAssistantDownloaded(self, *args: tuple, **kwargs: dict):
+	def onSnipsAssistantDownloaded(self, *args, **kwargs):
 		try:
 			filepath = Path(tempfile.gettempdir(), 'assistant.zip')
 			with ZipFile(filepath) as zipfile:
@@ -459,10 +459,10 @@ class AliceCore(Module):
 				)
 			else:
 				self.playSound(
-					soundFile=filepath,
+					soundFilename=str(self.WakewordManager.getLastSampleNumber()),
+					location=Path(tempfile.gettempdir()),
 					sessionId='checking-wakeword',
-					siteId=session.siteId,
-					absolutePath=True
+					siteId=session.siteId
 				)
 
 				text = 'howWasTheCapture' if self.WakewordManager.getLastSampleNumber() == 1 else 'howWasThisCapture'
@@ -524,12 +524,11 @@ class AliceCore(Module):
 					return True
 				time.sleep(0.5)
 
-			filepath = Path(tempfile.gettempdir(), str(self.WakewordManager.getLastSampleNumber())).with_suffix('.wav')
 			self.playSound(
-				soundFile=filepath,
+				soundFilename=str(self.WakewordManager.getLastSampleNumber()),
+				location=Path(tempfile.gettempdir()),
 				sessionId='checking-wakeword',
-				siteId=session.siteId,
-				absolutePath=True
+				siteId=session.siteId
 			)
 
 			self.continueDialog(
@@ -548,7 +547,7 @@ class AliceCore(Module):
 
 			try:
 				self.LanguageManager.changeActiveLanguage(slots['ToLang'])
-				self.ThreadManager.doLater(interval=3, func=self.langSwitch, args=[slots['ToLang'], siteId, False])
+				self.ThreadManager.doLater(interval=3, func=self.langSwitch, args=[slots['ToLang'], siteId])
 			except LanguageManagerLangNotSupported:
 				self.endDialog(text=self.randomTalk(text='langNotSupported', replace=[slots['ToLang']]))
 			except ConfigurationUpdateFailed:
@@ -762,7 +761,7 @@ class AliceCore(Module):
 	def langSwitch(self, newLang: str, siteId: str):
 		self.publish(topic='hermes/asr/textCaptured', payload={'siteId': siteId})
 		subprocess.run([commons.rootDir() + '/system/scripts/langSwitch.sh', newLang])
-		self.ThreadManager.doLater(interval=3, func=self._confirmLangSwitch, args=[newLang, siteId])
+		self.ThreadManager.doLater(interval=3, func=self._confirmLangSwitch, args=[siteId])
 
 
 	def _confirmLangSwitch(self, siteId: str):

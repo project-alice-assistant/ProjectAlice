@@ -70,7 +70,7 @@ class WebInterfaceManager(Manager):
 			)
 
 
-	def onModuleInstallated(self, *args: tuple, **kwargs: dict):
+	def onModuleInstallated(self, *args, **kwargs):
 		self.broadcast(
 			method='onModuleInstalled',
 			*args,
@@ -78,7 +78,7 @@ class WebInterfaceManager(Manager):
 		)
 
 
-	def broadcast(self, method: str, silent: bool = True, *args: tuple, **kwargs: dict):
+	def broadcast(self, method: str, silent: bool = True, *args, **kwargs):
 		for view in self._VIEWS:
 			try:
 				func = getattr(view, method)

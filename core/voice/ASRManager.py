@@ -46,7 +46,7 @@ class ASRManager(Manager):
 				self.SnipsServicesManager.runCmd('stop', ['snips-asr'])
 				if asr == 'google':
 					self._asr = GoogleASR()
-				self.ThreadManager.doLater(interval=3, func=self.MqttManager.say, args=[self.TalkManager.randomTalk('internetBack', module='AliceCore'), 'all'])
+				self.ThreadManager.doLater(interval=3, func=self.MqttManager.say, args=[self.TalkManager.randomTalk('internetBack', 'AliceCore'), 'all'])
 
 
 	def onInternetLost(self):
@@ -57,7 +57,7 @@ class ASRManager(Manager):
 			self.ThreadManager.doLater(interval=3, func=self.MqttManager.say, args=[self.TalkManager.randomTalk('internetLost', module='AliceCore'), 'all'])
 
 
-	def onStartListening(self, session: DialogSession, *args: tuple, **kwargs: dict):
+	def onStartListening(self, session: DialogSession, *args, **kwargs):
 		if isinstance(self._asr, SnipsASR):
 			return
 		else:

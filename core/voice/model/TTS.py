@@ -167,11 +167,11 @@ class TTS:
 		)
 
 		duration = round(len(AudioSegment.from_file(file)) / 1000, 2)
-		SuperManager.getInstance().threadManager.doLater(interval=duration + 0.1, func=self._sayFinished, args=[session.sessionId, session])
+		SuperManager.getInstance().threadManager.doLater(interval=duration + 0.1, func=self._sayFinished, args=[session])
 
 
 	@staticmethod
-	def _sayFinished(sid: str, session: DialogSession):
+	def _sayFinished(session: DialogSession):
 		if 'id' not in session.payload:
 			return
 
@@ -179,7 +179,7 @@ class TTS:
 			topic=constants.TOPIC_TTS_FINISHED,
 			payload={
 				'id': session.payload['id'],
-				'sessionId': sid
+				'sessionId': session.sessionId
 			}
 		)
 

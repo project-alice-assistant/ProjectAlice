@@ -94,7 +94,7 @@ class ModulesView(View):
 		return jsonify(status)
 
 
-	def onModuleInstalled(self, **kwargs: dict):
+	def onModuleInstalled(self, **kwargs):
 		module = ''
 		try:
 			module = kwargs['module']
@@ -103,7 +103,7 @@ class ModulesView(View):
 			self._logger.error(f'[ModulesView] Failed setting module "{module}" status to "installed": {e}')
 
 
-	def onModuleInstallFailed(self, **kwargs: dict):
+	def onModuleInstallFailed(self, **kwargs):
 		module = ''
 		try:
 			module = kwargs['module']

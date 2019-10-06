@@ -5,7 +5,7 @@ from core.base.SuperManager import SuperManager
 
 class Intent(str):
 
-	def __new__(cls, value: str, *args: tuple, **kwargs: dict):
+	def __new__(cls, value: str, *args, **kwargs):
 		value = 'hermes/intent/{owner}:' + value
 		return super().__new__(cls, value)
 

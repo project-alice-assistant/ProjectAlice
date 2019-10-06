@@ -71,7 +71,7 @@ def deprecated(func):
 
 
 	@functools.wraps(func)
-	def new_func(*args: tuple, **kwargs: dict):
+	def new_func(*args, **kwargs):
 		warnings.simplefilter('always', DeprecationWarning)  # turn off filter
 		warnings.warn(f'Call to deprecated function {func.__name__}.',
 					  category=DeprecationWarning,
@@ -297,7 +297,7 @@ def online(randomTalk: bool = True, text: str = ''):
 
 
 	def argumentWrapper(func):
-		def functionWrapper(*args: tuple, **kwargs: dict):
+		def functionWrapper(*args, **kwargs):
 			if SuperManager.getInstance().internetManager.online:
 				return func(*args, **kwargs)
 			elif randomTalk:

@@ -52,7 +52,7 @@ class SnipsConsoleManager(Manager):
 		self._logger.info(f'[{self.name}] Starting Snips assistant training and download procedure')
 		self.ThreadManager.newEvent('SnipsAssistantDownload', onClearCallback='onSnipsAssistantDownloaded').set(moduleInfos=modulesInfos)
 		projectId = self.LanguageManager.activeSnipsProjectId
-		self.ThreadManager.newThread(name='SnipsAssistantDownload', target=self.download, args=[projectId, modulesInfos])
+		self.ThreadManager.newThread(name='SnipsAssistantDownload', target=self.download, args=[projectId])
 
 
 	def loginCredentialsAreConfigured(self):
@@ -156,7 +156,7 @@ class SnipsConsoleManager(Manager):
 			time.sleep(5)
 
 
-	def download(self, assistantId: str, modulesInfos: dict = None) -> bool:
+	def download(self, assistantId: str) -> bool:
 		try:
 			self._handleTraining(assistantId)
 			self._logger.info(f'[{self.name}] Downloading assistant...')
