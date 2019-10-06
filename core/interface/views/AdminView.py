@@ -8,5 +8,6 @@ class AdminView(View):
 	def __init__(self):
 		super().__init__()
 
+
 	def index(self):
 		return render_template('admin.html', langData=self._langData)

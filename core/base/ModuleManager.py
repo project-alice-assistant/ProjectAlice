@@ -265,7 +265,7 @@ class ModuleManager(Manager):
 		return self._modules
 
 
-	def broadcast(self, method: str, isEvent: bool = True, filterOut: list = None, args: list = None, silent: bool = False):
+	def broadcast(self, method: str, isEvent: bool = True, filterOut: list = None, silent: bool = False, args: list = None):
 		"""
 		Boradcasts a call to the given method on every module
 		:param filterOut: array, module not to boradcast to
@@ -339,8 +339,6 @@ class ModuleManager(Manager):
 			self._logger.info(f'[{self.name}] Not connected...')
 			return
 
-		self._busyInstalling.set()
-
 		availableModules = self.ConfigManager.modulesConfigurations
 
 		i = 0
@@ -368,7 +366,6 @@ class ModuleManager(Manager):
 				self._logger.warning(f'[{self.name}] Error checking updates for module "{moduleName}": {e}')
 
 		self._logger.info(f'[{self.name}] Found {i} module update(s)')
-		self._busyInstalling.clear()
 
 
 	def _checkForModuleInstall(self):
@@ -408,8 +405,18 @@ class ModuleManager(Manager):
 
 							if info['update']:
 								self._modules[moduleName]['instance'].onModuleUpdated()
+								SuperManager.getInstance().broadcast(
+									method='onModuleUpdated',
+									exceptions=self.name,
+									propagateToModules=False
+								)
 							else:
 								self._modules[moduleName]['instance'].onModuleInstalled()
+								SuperManager.getInstance().broadcast(
+									method='onModuleInstalled',
+									exceptions=self.name,
+									propagateToModules=False
+								)
 
 							self._startModule(moduleInstance=self._modules[moduleName]['instance'])
 							self._modules[moduleName]['instance'].onBooted()
