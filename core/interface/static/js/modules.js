@@ -4,29 +4,6 @@ $(function(){
 
     let storeLoaded = false;
 
-    function loadStoreData() {
-        $.ajax({
-            type: 'GET',
-            dataType: 'JSON',
-            url: 'https://api.github.com/search/code?q=extension:install+repo:project-alice-powered-by-snips/ProjectAliceModules',
-            success: function(data) {
-                $.each(data['items'], function (index, searchResult) {
-                    $.ajax({
-                        type: 'GET',
-                        dataType: 'JSON',
-                        url: searchResult['url'],
-                        headers: {
-                            'accept': 'application/vnd.github.VERSION.raw'
-                        }
-                    }).done(function(installer) {
-                        addToStore(installer);
-                    });
-                });
-            }
-        });
-        storeLoaded = true;
-    }
-
     function addToStore(installer) {
         if ($('#modulesPane').find('#' + installer['name'] + '-' + installer['author']).length === 0) {
             let $tile = $('<div class="moduleStoreModuleTile" id="' + installer['name'] + 'InstallTile">' +
@@ -60,6 +37,29 @@ $(function(){
             $tile.append($button);
             $('#modulesStore').append($tile);
         }
+    }
+
+    function loadStoreData() {
+        $.ajax({
+            type: 'GET',
+            dataType: 'JSON',
+            url: 'https://api.github.com/search/code?q=extension:install+repo:project-alice-powered-by-snips/ProjectAliceModules',
+            success: function(data) {
+                $.each(data['items'], function (index, searchResult) {
+                    $.ajax({
+                        type: 'GET',
+                        dataType: 'JSON',
+                        url: searchResult['url'],
+                        headers: {
+                            'accept': 'application/vnd.github.VERSION.raw'
+                        }
+                    }).done(function(installer) {
+                        addToStore(installer);
+                    });
+                });
+            }
+        });
+        storeLoaded = true;
     }
 
     function checkInstallStatus(module) {
