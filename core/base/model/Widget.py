@@ -1,3 +1,4 @@
+from textwrap import dedent
 import inspect
 import json
 import logging
@@ -144,11 +145,13 @@ class Widget:
 
 
 	def __repr__(self):
-		return '---- WIDGET -----' + \
-		       '\n Parent: ' + self.parent + \
-		       '\n Name: ' + self.name + \
-		       '\n Size: ' + self.size + \
-		       '\n State: ' + str(self.state) + \
-		       '\n PosX: ' + str(self.x) + \
-		       '\n PosY: ' + str(self.y) +\
-		       '\n Z-Index: ' + str(self.zindex)
+		return dedent(f'''\
+			---- WIDGET -----
+			Parent: {self.parent}
+			Name: {self.name}
+			Size: {self.size}
+			State: {self.state}
+			PosX: {self.x}
+			PosY: {self.y}
+			Z-Index: {self.zindex}\
+		''')
