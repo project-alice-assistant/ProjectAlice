@@ -95,16 +95,18 @@ class ModulesView(View):
 
 
 	def onModuleInstalled(self, *args):
+		module = ''
 		try:
 			module = args[0]
 			self.WebInterfaceManager.moduleInstallProcesses[module]['status'] = 'installed'
 		except Exception as e:
-			self._logger.error(f'[ModulesView] Failed setting module status to "installed": {e}')
+			self._logger.error(f'[ModulesView] Failed setting module "{module}" status to "installed": {e}')
 
 
 	def onModuleInstallFailed(self, *args):
+		module = ''
 		try:
 			module = args[0]
 			self.WebInterfaceManager.moduleInstallProcesses[module]['status'] = 'failed'
 		except Exception as e:
-			self._logger.error(f'[ModulesView] Failed setting module status to "failed": {e}')
+			self._logger.error(f'[ModulesView] Failed setting module "{module}" status to "failed": {e}')

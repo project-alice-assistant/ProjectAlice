@@ -5,7 +5,9 @@ from pathlib import Path
 
 import requests
 
+from core.base.SuperManager import SuperManager
 from core.base.model.Manager import Manager
+from core.commons import constants
 from core.snips.model.SnipsConsoleUser import SnipsConsoleUser
 from core.snips.model.SnipsTrainingStatus import SnipsTrainingType, TrainingStatusResponse
 
@@ -48,11 +50,11 @@ class SnipsConsoleManager(Manager):
 			self.isActive = False
 
 
-	def doDownload(self):
+	def doDownload(self, modulesInfos: dict = None):
 		self._logger.info(f'[{self.name}] Starting Snips assistant training and download procedure')
-		self.ThreadManager.newEvent('SnipsAssistantDownload').set()
+		self.ThreadManager.newEvent('SnipsAssistantDownload', onClearCallback='onSnipsAssistantDownloaded').set(args=[modulesInfos])
 		projectId = self.LanguageManager.activeSnipsProjectId
-		self.ThreadManager.newThread(name='SnipsAssistantDownload', target=self.download, args=[projectId])
+		self.ThreadManager.newThread(name='SnipsAssistantDownload', target=self.download, args=[projectId, modulesInfos])
 
 
 	def loginCredentialsAreConfigured(self):
@@ -156,7 +158,7 @@ class SnipsConsoleManager(Manager):
 			time.sleep(5)
 
 
-	def download(self, assistantId: str) -> bool:
+	def download(self, assistantId: str, modulesInfos: dict = None) -> bool:
 		try:
 			self._handleTraining(assistantId)
 			self._logger.info(f'[{self.name}] Downloading assistant...')
@@ -165,7 +167,13 @@ class SnipsConsoleManager(Manager):
 			Path(tempfile.gettempdir(), 'assistant.zip').write_bytes(req.content)
 
 			self._logger.info(f'[{self.name}] Assistant {assistantId} trained and downloaded')
-			self.ModuleManager.broadcast(method='onSnipsAssistantDownloaded')
+			# SuperManager.getInstance().broadcast(
+			# 	method='onSnipsAssistantDownloaded',
+			# 	exceptions=[constants.DUMMY],
+			# 	propagateToModules=True,
+			# 	args=[modulesInfos]
+			# )
+
 			self.ThreadManager.getEvent('SnipsAssistantDownload').clear()
 			return True
 		except Exception as e:

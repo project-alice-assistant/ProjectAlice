@@ -113,9 +113,9 @@ class ThreadManager(Manager):
 			return self._threads[name].isAlive()
 
 
-	def newEvent(self, name: str, callback: str = None) -> AliceEvent:
+	def newEvent(self, name: str, onSetCallback: str = None, onClearCallback: str = None, *args: list) -> AliceEvent:
 		if name not in self._events:
-			self._events[name] = AliceEvent(name, callback)
+			self._events[name] = AliceEvent(name, onSetCallback, onClearCallback, args)
 
 		return self._events[name]
 

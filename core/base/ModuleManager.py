@@ -77,6 +77,26 @@ class ModuleManager(Manager):
 		self.startAllModules()
 
 
+	def onSnipsAssistantDownloaded(self, *args: list):
+		argv = args[0] or dict()
+
+		for moduleName, module in argv.items():
+			if module['update']:
+				method = 'onModuleUpdated'
+				self._modules[moduleName]['instance'].onModuleUpdated()
+			else:
+				method = 'onModuleInstalled'
+				self._modules[moduleName]['instance'].onModuleInstalled()
+
+			SuperManager.getInstance().broadcast(
+				method=method,
+				exceptions=[constants.DUMMY],
+				propagateToModules=False,
+				args=[moduleName]
+			)
+
+
+
 	@property
 	def widgets(self) -> dict:
 		return self._widgets
@@ -392,10 +412,10 @@ class ModuleManager(Manager):
 			finally:
 				if modulesToBoot:
 					try:
-						self.SamkillaManager.sync(moduleFilter=modulesToBoot.keys())
+						self.SamkillaManager.sync(moduleFilter=modulesToBoot)
 					except Exception as esamk:
 						self._logger.error(f'[{self.name}] Failed syncing with remote snips console {esamk}')
-						return
+						raise
 
 					for moduleName, info in modulesToBoot.items():
 						self._modules = self._loadModuleList(moduleToLoad=moduleName, isUpdate=info['update'])
@@ -406,18 +426,8 @@ class ModuleManager(Manager):
 
 							if info['update']:
 								self._modules[moduleName]['instance'].onModuleUpdated()
-								SuperManager.getInstance().broadcast(
-									method='onModuleUpdated',
-									exceptions=self.name,
-									propagateToModules=False
-								)
 							else:
 								self._modules[moduleName]['instance'].onModuleInstalled()
-								SuperManager.getInstance().broadcast(
-									method='onModuleInstalled',
-									exceptions=self.name,
-									propagateToModules=False
-								)
 
 							self._startModule(moduleInstance=self._modules[moduleName]['instance'])
 							self._modules[moduleName]['instance'].onBooted()
@@ -485,6 +495,7 @@ class ModuleManager(Manager):
 						self._modules[moduleName]['instance'].onStop()
 					except Exception as e:
 						self._logger.error(f'[{self.name}] Error stopping "{moduleName}" for update: {e}')
+						raise
 
 				gitCloner = GithubCloner(baseUrl=self.GITHUB_API_BASE_URL, path=path, dest=directory)
 
@@ -525,7 +536,8 @@ class ModuleManager(Manager):
 						SuperManager.getInstance().broadcast(
 							method='onModuleInstallFailed',
 							exceptions=self.name,
-							propagateToModules=False
+							propagateToModules=False,
+							args=[self.name]
 						)
 				else:
 					self._logger.error(f'[{self.name}] Failed cloning module')
@@ -533,7 +545,8 @@ class ModuleManager(Manager):
 					SuperManager.getInstance().broadcast(
 						method='onModuleInstallFailed',
 						exceptions=self.name,
-						propagateToModules=False
+						propagateToModules=False,
+						args=[self.name]
 					)
 
 			except ModuleNotConditionCompliant as e:
@@ -542,7 +555,8 @@ class ModuleManager(Manager):
 				SuperManager.getInstance().broadcast(
 					method='onModuleInstallFailed',
 					exceptions=self.name,
-					propagateToModules=False
+					propagateToModules=False,
+					args=[self.name]
 				)
 
 			except Exception as e:
@@ -551,7 +565,8 @@ class ModuleManager(Manager):
 				SuperManager.getInstance().broadcast(
 					method='onModuleInstallFailed',
 					exceptions=self.name,
-					propagateToModules=False
+					propagateToModules=False,
+					args=[self.name]
 				)
 
 		self.MqttManager.broadcast(topic='hermes/leds/clear')
