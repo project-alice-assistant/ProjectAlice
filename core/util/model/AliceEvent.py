@@ -49,11 +49,11 @@ class AliceEvent(Event):
 
 	def broadcast(self, state: str, *args, **kwargs):
 		SuperManager.getInstance().broadcast(
-			method=f'{self.eventName()}{state.title()}',
+			method=commons.toCamelCase(f'{self.eventName()}{state}'),
 			exceptions=[constants.DUMMY],
 			args=self._args,
 			propagateToModules=True,
-			silent=False,
+			silent=True,
 			*args,
 			**kwargs
 		)
