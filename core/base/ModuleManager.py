@@ -395,6 +395,7 @@ class ModuleManager(Manager):
 						self.SamkillaManager.sync(moduleFilter=modulesToBoot.keys())
 					except Exception as esamk:
 						self._logger.error(f'[{self.name}] Failed syncing with remote snips console {esamk}')
+						return
 
 					for moduleName, info in modulesToBoot.items():
 						self._modules = self._loadModuleList(moduleToLoad=moduleName, isUpdate=info['update'])
@@ -521,17 +522,37 @@ class ModuleManager(Manager):
 					except Exception as e:
 						self._logger.error(f'[{self.name}] Failed installing module "{moduleName}": {e}')
 						res.unlink()
+						SuperManager.getInstance().broadcast(
+							method='onModuleInstallFailed',
+							exceptions=self.name,
+							propagateToModules=False
+						)
 				else:
 					self._logger.error(f'[{self.name}] Failed cloning module')
 					res.unlink()
+					SuperManager.getInstance().broadcast(
+						method='onModuleInstallFailed',
+						exceptions=self.name,
+						propagateToModules=False
+					)
 
 			except ModuleNotConditionCompliant as e:
 				self._logger.info(f'[{self.name}] Module {moduleName} does not comply to "{e.condition}" condition, required "{e.conditionValue}"')
 				res.unlink()
+				SuperManager.getInstance().broadcast(
+					method='onModuleInstallFailed',
+					exceptions=self.name,
+					propagateToModules=False
+				)
 
 			except Exception as e:
 				self._logger.error(f'[{self.name}] Failed installing module "{moduleName}": {e}')
 				res.unlink()
+				SuperManager.getInstance().broadcast(
+					method='onModuleInstallFailed',
+					exceptions=self.name,
+					propagateToModules=False
+				)
 
 		self.MqttManager.broadcast(topic='hermes/leds/clear')
 		return modulesToBoot

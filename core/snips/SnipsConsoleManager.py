@@ -166,13 +166,13 @@ class SnipsConsoleManager(Manager):
 
 			self._logger.info(f'[{self.name}] Assistant {assistantId} trained and downloaded')
 			self.ModuleManager.broadcast(method='onSnipsAssistantDownloaded')
+			self.ThreadManager.getEvent('SnipsAssistantDownload').clear()
 			return True
 		except Exception as e:
 			self._logger.error(f'[{self.name}] Assistant download failed: {e}')
 			self.ModuleManager.broadcast(method='onSnipsAssistantDownloadFailed')
-			return False
-		finally:
 			self.ThreadManager.getEvent('SnipsAssistantDownload').clear()
+			return False
 
 
 	def _logout(self):

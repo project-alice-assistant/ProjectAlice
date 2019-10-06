@@ -44,10 +44,10 @@
 			</div>
 			<div class="moduleContainer moduleDefaultView">
 				<div class="moduleAuthor">
-					<i class="fas fa-user-cog"></i> {{ module.author }}
+					<i class="fas fa-user-cog fa-pull-left"></i> {{ module.author }}
 				</div>
 				<div class="moduleVersion">
-					<i class="fas fa-code-branch" style="margin-right: 3px;"></i> {{ module.version }}
+					<i class="fas fa-code-branch fa-pull-left"></i> {{ module.version }}
 				</div>
 				<div class="moduleStatus {% if module.active is sameas true %}active{% else %}disabled{% endif %}">
 					{{ langData.status }}: {% if module.active is sameas true %}enabled{% else %}disabled{% endif %}

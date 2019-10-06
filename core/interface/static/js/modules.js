@@ -36,6 +36,7 @@ $(function(){
                 '<div class="modulesStoreModuleCategory"><i class="fas fa-bookmark"></i> ' + installer['category'] + '</div>' +
                 '<div class="moduleStoreModuleDescription">' + installer['desc'] + '</div>' +
                 '<div class="moduleStoreModuleWaitAnimation"><i class="fas fa-spinner fa-spin"></i></div>' +
+                '<div class="moduleStoreModuleDownloadFail"><i class="fas fa-exclamation-triangle"></i></div>' +
                 '</div>');
 
             let $button = $('<div class="moduleStoreModuleDownload moduleStoreModuleDownloadButton" data-module="' + installer['name'] + '"><i class="fas fa-download"></i></div>');
@@ -68,8 +69,19 @@ $(function(){
                 module: module
             },
             type: 'POST'
-        }).done(function () {
-            $('#' + module).remove();
+        }).done(function (data) {
+            if (data['status'] === 'installed') {
+                $('#' + module).remove();
+            }
+            else if (data['status'] === 'installing') {
+                setTimeout(function () {
+                    checkInstallStatus(module);
+                }, 1000);
+            }
+            else if (data['status'] === 'failed') {
+                $('#' + module).children('.moduleStoreModuleWaitAnimation').hide();
+                $('#' + module).children('.moduleStoreModuleDownloadFail').css('display', 'flex');
+            }
         }).fail(function() {
             setTimeout(function () {
                 checkInstallStatus(module);
