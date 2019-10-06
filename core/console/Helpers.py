@@ -4,7 +4,7 @@ class OptionEatAll(click.Option):
 	"""
 	taken from https://stackoverflow.com/questions/48391777/nargs-equivalent-for-options-in-click
 	"""
-	def __init__(self, *args, **kwargs):
+	def __init__(self, *args: tuple, **kwargs: dict):
 		self.save_other_options = kwargs.pop('save_other_options', True)
 		nargs = kwargs.pop('nargs', -1)
 		assert nargs == -1, f'nargs, if set, must be -1 not {nargs}'

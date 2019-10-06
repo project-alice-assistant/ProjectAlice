@@ -189,12 +189,12 @@ class AliceCore(Module):
 		self.UserManager.home()
 
 
-	def onSayFinished(self, session: DialogSession):
+	def onSayFinished(self, session: DialogSession, *args: tuple, **kwargs: dict):
 		if self.ThreadManager.getEvent('AddingWakeword').isSet() and self.WakewordManager.state == WakewordManagerState.IDLE:
 			self.ThreadManager.doLater(interval=0.5, func=self.WakewordManager.addASample)
 
 
-	def onSnipsAssistantDownloaded(self, *args):
+	def onSnipsAssistantDownloaded(self, *args: tuple, **kwargs: dict):
 		try:
 			filepath = Path(tempfile.gettempdir(), 'assistant.zip')
 			with ZipFile(filepath) as zipfile:

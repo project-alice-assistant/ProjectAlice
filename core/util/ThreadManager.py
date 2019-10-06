@@ -41,11 +41,11 @@ class ThreadManager(Manager):
 		self._logger.info(f'[{self.NAME}] Cleaned {i} dead timers')
 
 
-	def newTimer(self, interval: float, func: str, args: list = None, autoStart: bool = True) -> threading.Timer:
+	def newTimer(self, interval: float, func: str, autoStart: bool = True, *args: tuple, **kwargs: dict) -> threading.Timer:
 		if not args:
 			args = list()
 
-		threadTimer = ThreadTimer(callback=func, args=args)
+		threadTimer = ThreadTimer(callback=func, *args, **kwargs)
 		t = threading.Timer(interval=interval, function=self.onTimerEnd, args=[threadTimer])
 		t.daemon = True
 		threadTimer.timer = t
@@ -57,10 +57,10 @@ class ThreadManager(Manager):
 		return t
 
 
-	def doLater(self, interval: float, func: str, args: list = None):
+	def doLater(self, interval: float, func: str, *args: tuple):
 		if not args:
 			args = list()
-		self.newTimer(interval=interval, func=func, args=args)
+		self.newTimer(interval=interval, func=func, *args)
 
 
 	def onTimerEnd(self, t: ThreadTimer):
@@ -76,14 +76,11 @@ class ThreadManager(Manager):
 			self._timers.remove(t)
 
 
-	def newThread(self, name: str, target: Callable, args: list = None, kwargs: dict = None, autostart: bool = True) -> threading.Thread:
-		if not args:
-			args = list()
-
+	def newThread(self, name: str, target: Callable, autostart: bool = True, *args: tuple, **kwargs: dict) -> threading.Thread:
 		if name in self._threads:
 			self._threads[name].join(timeout=2)
 
-		thread = threading.Thread(name=name, target=target, args=args, kwargs=kwargs)
+		thread = threading.Thread(name=name, target=target, *args, **kwargs)
 		thread.setDaemon(True)
 
 		if autostart:
@@ -113,7 +110,7 @@ class ThreadManager(Manager):
 			return self._threads[name].isAlive()
 
 
-	def newEvent(self, name: str, onSetCallback: str = None, onClearCallback: str = None, *args: list) -> AliceEvent:
+	def newEvent(self, name: str, onSetCallback: str = None, onClearCallback: str = None) -> AliceEvent:
 		if name not in self._events:
 			self._events[name] = AliceEvent(name, onSetCallback, onClearCallback)
 

@@ -121,7 +121,7 @@ class MqttManager(Manager):
 					method='onAudioFrame',
 					exceptions=[self.name],
 					propagateToModules=True,
-					args=[message]
+					kwargs={'message': message}
 				)
 				return
 
@@ -234,7 +234,7 @@ class MqttManager(Manager):
 				user = users[speaker].name
 
 		session = self.DialogSessionManager.preSession(siteId, user)
-		SuperManager.getInstance().broadcast(method='onHotword', exceptions=[self.name], args=[siteId, session])
+		SuperManager.getInstance().broadcast(method='onHotword', exceptions=[self.name], kwargs={'siteId': siteId, 'session': session})
 		self.ModuleManager.broadcast('onHotword', args=[siteId])
 
 
@@ -258,7 +258,7 @@ class MqttManager(Manager):
 		session = self.DialogSessionManager.addSession(sessionId=sessionId, message=msg)
 
 		if session:
-			SuperManager.getInstance().broadcast(method='onSessionStarted', exceptions=[self.name], propagateToModules=True, args=[session])
+			SuperManager.getInstance().broadcast(method='onSessionStarted', exceptions=[self.name], propagateToModules=True, kwargs={'session': session})
 
 
 	# noinspection PyUnusedLocal
@@ -267,7 +267,7 @@ class MqttManager(Manager):
 		session = self.DialogSessionManager.addSession(sessionId=sessionId, message=msg)
 
 		if session:
-			SuperManager.getInstance().broadcast(method='onSessionQueued', exceptions=[self.name], propagateToModules=True, args=[session])
+			SuperManager.getInstance().broadcast(method='onSessionQueued', exceptions=[self.name], propagateToModules=True, kwargs={'session': session})
 
 
 	# noinspection PyUnusedLocal
@@ -276,7 +276,7 @@ class MqttManager(Manager):
 		session = self.DialogSessionManager.getSession(sessionId=sessionId)
 
 		if session:
-			SuperManager.getInstance().broadcast(method='onStartListening', exceptions=[self.name], propagateToModules=True, args=[session])
+			SuperManager.getInstance().broadcast(method='onStartListening', exceptions=[self.name], propagateToModules=True, kwargs={'session': session})
 
 
 	# noinspection PyUnusedLocal
@@ -285,7 +285,7 @@ class MqttManager(Manager):
 		session = self.DialogSessionManager.getSession(sessionId=sessionId)
 
 		if session:
-			SuperManager.getInstance().broadcast(method='onCaptured', exceptions=[self.name], propagateToModules=True, args=[session])
+			SuperManager.getInstance().broadcast(method='onCaptured', exceptions=[self.name], propagateToModules=True, kwargs={'session': session})
 
 
 	def onSnipsIntentParsed(self, client, data, msg: mqtt.MQTTMessage):
@@ -294,7 +294,7 @@ class MqttManager(Manager):
 
 		if session:
 			session.update(msg)
-			SuperManager.getInstance().broadcast(method='onIntentParsed', exceptions=[self.name], propagateToModules=True, args=[session])
+			SuperManager.getInstance().broadcast(method='onIntentParsed', exceptions=[self.name], propagateToModules=True, kwargs={'session': session})
 
 			if self.ConfigManager.getAliceConfigByName('asr').lower() != 'snips':
 				intent = Intent(session.payload['intent']['intentName'].split(':')[1])
@@ -317,18 +317,18 @@ class MqttManager(Manager):
 		reason = session.payload['termination']['reason']
 		if reason:
 			if reason == 'abortedByUser':
-				SuperManager.getInstance().broadcast(method='onUserCancel', exceptions=[self.name], propagateToModules=True, args=[session])
+				SuperManager.getInstance().broadcast(method='onUserCancel', exceptions=[self.name], propagateToModules=True, kwargs={'session': session})
 			elif reason == 'timeout':
-				SuperManager.getInstance().broadcast(method='onSessionTimeout', exceptions=[self.name], propagateToModules=True, args=[session])
+				SuperManager.getInstance().broadcast(method='onSessionTimeout', exceptions=[self.name], propagateToModules=True, kwargs={'session': session})
 			elif reason == 'intentNotRecognized':
 				# This should never trigger, as "sendIntentNotRecognized" is always set to True, but we never know
 				self.onSnipsIntentNotRecognized(None, data, msg)
 			elif reason == 'error':
-				SuperManager.getInstance().broadcast(method='onSessionError', exceptions=[self.name], propagateToModules=True, args=[session])
+				SuperManager.getInstance().broadcast(method='onSessionError', exceptions=[self.name], propagateToModules=True, kwargs={'session': session})
 			else:
-				SuperManager.getInstance().broadcast(method='onSessionEnded', exceptions=[self.name], propagateToModules=True, args=[session])
+				SuperManager.getInstance().broadcast(method='onSessionEnded', exceptions=[self.name], propagateToModules=True, kwargs={'session': session})
 
-		SuperManager.getInstance().broadcast(method='onSessionEnded', exceptions=[self.name], propagateToModules=True, args=[session])
+		SuperManager.getInstance().broadcast(method='onSessionEnded', exceptions=[self.name], propagateToModules=True, kwargs={'session': session})
 		self.DialogSessionManager.removeSession(sessionId=sessionId)
 
 
@@ -349,7 +349,7 @@ class MqttManager(Manager):
 			if module:
 				module.addChat(text=payload['text'], siteId=siteId)
 
-		SuperManager.getInstance().broadcast(method='onSay', exceptions=[self.name], propagateToModules=True, args=[session])
+		SuperManager.getInstance().broadcast(method='onSay', exceptions=[self.name], propagateToModules=True, kwargs={'session': session})
 
 
 	# noinspection PyUnusedLocal
@@ -361,7 +361,7 @@ class MqttManager(Manager):
 		if session:
 			session.payload = payload
 
-		SuperManager.getInstance().broadcast(method='onSayFinished', exceptions=[self.name], propagateToModules=True, args=[session])
+		SuperManager.getInstance().broadcast(method='onSayFinished', exceptions=[self.name], propagateToModules=True, kwargs={'session': session})
 
 
 	# noinspection PyUnusedLocal
@@ -388,7 +388,7 @@ class MqttManager(Manager):
 				del session.notUnderstood
 				self.endDialog(sessionId=sessionId, text=self.TalkManager.randomTalk('notUnderstoodEnd', module='system'))
 
-		SuperManager.getInstance().broadcast(method='onIntentNotRecognized', exceptions=[self.name], propagateToModules=True, args=[session])
+		SuperManager.getInstance().broadcast(method='onIntentNotRecognized', exceptions=[self.name], propagateToModules=True, kwargs={'session': session})
 
 
 	def reviveSession(self, session: DialogSession, text: str):
@@ -635,7 +635,7 @@ class MqttManager(Manager):
 
 			for device in deviceList:
 				device = device.replace('@mqtt', '')
-				self.playSound(soundFilename, location, sessionId, siteId, uid)
+				self.playSound(soundFilename, location, sessionId, device, uid)
 		else:
 			if ' ' in siteId:
 				siteId = siteId.replace(' ', '_')

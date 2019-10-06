@@ -77,7 +77,7 @@ class ModuleManager(Manager):
 		self.startAllModules()
 
 
-	def onSnipsAssistantDownloaded(self, *args: list, **kwargs: dict):
+	def onSnipsAssistantDownloaded(self, *args: tuple, **kwargs: dict):
 		argv = args[0] or dict()
 
 		for moduleName, module in argv.items():
@@ -91,8 +91,7 @@ class ModuleManager(Manager):
 			SuperManager.getInstance().broadcast(
 				method=method,
 				exceptions=[constants.DUMMY],
-				propagateToModules=False,
-				args=[moduleName]
+				module=moduleName
 			)
 
 
@@ -285,7 +284,7 @@ class ModuleManager(Manager):
 		return self._modules
 
 
-	def broadcast(self, method: str, isEvent: bool = True, filterOut: list = None, silent: bool = False, args: list = None):
+	def broadcast(self, method: str, isEvent: bool = True, filterOut: list = None, silent: bool = False, *args: tuple, **kwargs: dict):
 		"""
 		Boradcasts a call to the given method on every module
 		:param filterOut: array, module not to boradcast to
@@ -295,8 +294,6 @@ class ModuleManager(Manager):
 		:param silent
 		:return:
 		"""
-		if not args:
-			args = list()
 
 		self._reorderCustomisationModule(isEvent)
 		for moduleItem in self._modules.values():
@@ -305,7 +302,7 @@ class ModuleManager(Manager):
 
 			try:
 				func = getattr(moduleItem['instance'], method)
-				func(*args)
+				func(*args, **kwargs)
 			except Exception as e:
 				if not silent:
 					self._logger.warning(f'[{self.name}] Method "{method}" not found for module "{moduleItem["instance"].name}": {e}')
@@ -537,7 +534,7 @@ class ModuleManager(Manager):
 							method='onModuleInstallFailed',
 							exceptions=self.name,
 							propagateToModules=False,
-							args=[self.name]
+							module=moduleName
 						)
 				else:
 					self._logger.error(f'[{self.name}] Failed cloning module')
@@ -545,8 +542,7 @@ class ModuleManager(Manager):
 					SuperManager.getInstance().broadcast(
 						method='onModuleInstallFailed',
 						exceptions=self.name,
-						propagateToModules=False,
-						args=[self.name]
+						module=moduleName
 					)
 
 			except ModuleNotConditionCompliant as e:
@@ -555,8 +551,7 @@ class ModuleManager(Manager):
 				SuperManager.getInstance().broadcast(
 					method='onModuleInstallFailed',
 					exceptions=self.name,
-					propagateToModules=False,
-					args=[self.name]
+					module=moduleName
 				)
 
 			except Exception as e:
@@ -565,8 +560,7 @@ class ModuleManager(Manager):
 				SuperManager.getInstance().broadcast(
 					method='onModuleInstallFailed',
 					exceptions=self.name,
-					propagateToModules=False,
-					args=[self.name]
+					module=moduleName
 				)
 
 		self.MqttManager.broadcast(topic='hermes/leds/clear')

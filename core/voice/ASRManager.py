@@ -38,7 +38,7 @@ class ASRManager(Manager):
 		return self._asr
 
 
-	def onInternetConnected(self, *args):
+	def onInternetConnected(self):
 		if not self.ConfigManager.getAliceConfigByName('keepASROffline'):
 			asr = self.ConfigManager.getAliceConfigByName('asr').lower()
 			if asr != 'snips' and not self.ConfigManager.getAliceConfigByName('keepASROffline') and not self.ConfigManager.getAliceConfigByName('stayCompletlyOffline'):
@@ -49,7 +49,7 @@ class ASRManager(Manager):
 				self.ThreadManager.doLater(interval=3, func=self.MqttManager.say, args=[self.TalkManager.randomTalk('internetBack', module='AliceCore'), 'all'])
 
 
-	def onInternetLost(self, *args):
+	def onInternetLost(self):
 		if not isinstance(self._asr, SnipsASR):
 			self._logger.info(f'[{self.name}] Internet lost, switching to snips ASR')
 			self.SnipsServicesManager.runCmd('start', ['snips-asr'])
@@ -57,7 +57,7 @@ class ASRManager(Manager):
 			self.ThreadManager.doLater(interval=3, func=self.MqttManager.say, args=[self.TalkManager.randomTalk('internetLost', module='AliceCore'), 'all'])
 
 
-	def onStartListening(self, session: DialogSession):
+	def onStartListening(self, session: DialogSession, *args: tuple, **kwargs: dict):
 		if isinstance(self._asr, SnipsASR):
 			return
 		else:

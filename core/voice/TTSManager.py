@@ -72,16 +72,16 @@ class TTSManager(Manager):
 		return self._tts
 
 
-	def onInternetLost(self, *args):
+	def onInternetLost(self):
 		if self._tts.online:
 			self._fallback = PicoTTS()
 
 
-	def onInternetConnected(self, *args):
+	def onInternetConnected(self):
 		self._fallback = None
 
 
-	def onSay(self, session: DialogSession):
+	def onSay(self, session: DialogSession, *args: tuple, **kwargs: dict):
 		if self._fallback:
 			self._fallback.onSay(session)
 		else:

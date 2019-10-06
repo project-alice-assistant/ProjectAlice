@@ -42,12 +42,12 @@ class Manager(Singleton):
 			return None
 
 
-	def onStart(self, *args, **kwargs):
+	def onStart(self, *args: tuple, **kwargs: dict):
 		self._logger.info(f'Starting {self.name}')
 		return self._initDB()
 
 
-	def onStop(self, *args, **kwargs):
+	def onStop(self, *args: tuple, **kwargs: dict):
 		self._logger.info(f'Stopping {self.name}')
 
 
@@ -57,32 +57,33 @@ class Manager(Singleton):
 		return True
 
 
-	def onBooted(self, *args, **kwargs): pass
-	def onModuleInstalled(self, *args, **kwargs): pass
-	def onModuleUpdated(self, *args, **kwargs): pass
-	def onFullMinute(self, *args, **kwargs): pass
-	def onFiveMinute(self, *args, **kwargs): pass
-	def onQuarterHour(self, *args, **kwargs): pass
-	def onFullHour(self, *args, **kwargs): pass
-	def onDeviceConnecting(self, *args, **kwargs): pass
-	def onDeviceDisconnecting(self, *args, **kwargs): pass
-	def onInternetConnected(self, *args, **kwargs): pass
-	def onInternetLost(self, *args, **kwargs): pass
-	def onHotword(self, siteId: str, session: DialogSession, *args, **kwargs): pass
-	def onSessionStarted(self, session: DialogSession, *args, **kwargs): pass
-	def onStartListening(self, session: DialogSession, *args, **kwargs): pass
-	def onCaptured(self, session: DialogSession, *args, **kwargs): pass
-	def onIntentParsed(self, session: DialogSession, *args, **kwargs): pass
-	def onUserCancel(self, session: DialogSession, *args, **kwargs): pass
-	def onSessionTimeout(self, session: DialogSession, *args, **kwargs): pass
-	def onIntentNotRecognized(self, session: DialogSession, *args, **kwargs): pass
-	def onSessionError(self, session: DialogSession, *args, **kwargs): pass
-	def onSessionEnded(self, session: DialogSession, *args, **kwargs): pass
-	def onSay(self, session: DialogSession, *args, **kwargs): pass
-	def onSayFinished(self, session: DialogSession, *args, **kwargs): pass
-	def onSessionQueued(self, session: DialogSession, *args, **kwargs): pass
-	def onAudioFrame(self, message: MQTTMessage, *args, **kwargs): pass
-	def onSnipsAssistantDownloaded(self, *args, **kwargs): pass
+	def onBooted(self, *args: tuple, **kwargs: dict): pass
+	def onModuleInstalled(self, *args: tuple, **kwargs: dict): pass
+	def onModuleUpdated(self, *args: tuple, **kwargs: dict): pass
+	def onFullMinute(self, *args: tuple, **kwargs: dict): pass
+	def onFiveMinute(self, *args: tuple, **kwargs: dict): pass
+	def onQuarterHour(self, *args: tuple, **kwargs: dict): pass
+	def onFullHour(self, *args: tuple, **kwargs: dict): pass
+	def onDeviceConnecting(self, *args: tuple, **kwargs: dict): pass
+	def onDeviceDisconnecting(self, *args: tuple, **kwargs: dict): pass
+	def onInternetConnected(self, *args: tuple, **kwargs: dict): pass
+	def onInternetLost(self, *args: tuple, **kwargs: dict): pass
+	def onHotword(self, session: DialogSession, *args: tuple, **kwargs: dict): pass
+	def onHotwordToggleOn(self, session: DialogSession, *args: tuple, **kwargs: dict):pass
+	def onSessionStarted(self, session: DialogSession, *args: tuple, **kwargs: dict): pass
+	def onStartListening(self, session: DialogSession, *args: tuple, **kwargs: dict): pass
+	def onCaptured(self, session: DialogSession, *args: tuple, **kwargs: dict): pass
+	def onIntentParsed(self, session: DialogSession, *args: tuple, **kwargs: dict): pass
+	def onUserCancel(self, session: DialogSession, *args: tuple, **kwargs: dict): pass
+	def onSessionTimeout(self, session: DialogSession, *args: tuple, **kwargs: dict): pass
+	def onIntentNotRecognized(self, session: DialogSession, *args: tuple, **kwargs: dict): pass
+	def onSessionError(self, session: DialogSession, *args: tuple, **kwargs: dict): pass
+	def onSessionEnded(self, session: DialogSession, *args: tuple, **kwargs: dict): pass
+	def onSay(self, session: DialogSession, *args: tuple, **kwargs: dict): pass
+	def onSayFinished(self, session: DialogSession, *args: tuple, **kwargs: dict): pass
+	def onSessionQueued(self, session: DialogSession, *args: tuple, **kwargs: dict): pass
+	def onAudioFrame(self, message: MQTTMessage, *args: tuple, **kwargs: dict): pass
+	def onSnipsAssistantDownloaded(self, *args: tuple, **kwargs: dict): pass
 
 
 	# HELPERS
