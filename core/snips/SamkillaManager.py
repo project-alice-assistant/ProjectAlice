@@ -101,9 +101,9 @@ class SamkillaManager(Manager):
 		return self._userId
 
 
-	def sync(self, moduleFilter: list = None, download: bool = True) -> bool:
+	def sync(self, moduleFilter: dict = None, download: bool = True) -> bool:
 		if moduleFilter is None:
-			moduleFilter = list()
+			moduleFilter = dict()
 
 		self.log(f"[{self.name}] Sync for module/s [{', '.join(moduleFilter) or '*'}]")
 
@@ -121,14 +121,14 @@ class SamkillaManager(Manager):
 			changes = self.syncLocalToRemote(
 				baseAssistantId=activeProjectId,
 				baseLanguageFilter=activeLang,
-				baseModuleFilter=moduleFilter,
+				baseModuleFilter=list(moduleFilter.keys()),
 				newAssistantTitle=f'ProjectAlice_{self.LanguageManager.activeLanguage}'
 			)
 
 			if changes:
 				if download:
 					self.log(f'[{self.name}] Changes detected during sync, let\'s update the assistant...')
-					self.SnipsConsoleManager.doDownload()
+					self.SnipsConsoleManager.doDownload(moduleFilter)
 				else:
 					self.log(f'[{self.name}] Changes detected during sync but not downloading yet')
 			else:

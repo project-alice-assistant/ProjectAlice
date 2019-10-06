@@ -6,30 +6,42 @@ from core.commons import constants, commons
 
 class AliceEvent(Event):
 
-	def __init__(self, name: str, callback: str = None):
+	def __init__(self, name: str, onSet: str = None, onClear: str = None):
 		super().__init__()
 		self._name = name
-		self._callback = callback
+		self._onSet = onSet
+		self._onClear = onClear
 		self._args = list()
 
 
 	def set(self, *args, **kwargs) -> None:
 		super().set()
-		self.broadcast(state='set')
+		if not self._onSet:
+			self.broadcast(state='set', *args, **kwargs)
+		else:
+			SuperManager.getInstance().broadcast(
+				method=self._onSet,
+				exceptions=[constants.DUMMY],
+				args=self._args,
+				propagateToModules=True,
+				silent=False,
+				*args,
+				**kwargs
+			)
 
 
 	def clear(self, *args, **kwargs) -> None:
 		super().clear()
 
-		if not self._callback:
+		if not self._onClear:
 			self.broadcast(state='clear', *args, **kwargs)
 		else:
 			SuperManager.getInstance().broadcast(
-				method=self._callback,
+				method=self._onClear,
 				exceptions=[constants.DUMMY],
 				args=self._args,
 				propagateToModules=True,
-				silent=True,
+				silent=False,
 				*args,
 				**kwargs
 			)
@@ -41,7 +53,7 @@ class AliceEvent(Event):
 			exceptions=[constants.DUMMY],
 			args=self._args,
 			propagateToModules=True,
-			silent=True,
+			silent=False,
 			*args,
 			**kwargs
 		)

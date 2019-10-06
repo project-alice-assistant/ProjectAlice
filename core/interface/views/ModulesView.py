@@ -90,15 +90,23 @@ class ModulesView(View):
 	@route('/checkInstallStatus', methods=['POST'])
 	def checkInstallStatus(self):
 		module = request.form.get('module')
-		if module not in self.WebInterfaceManager.moduleInstallProcesses:
-			return jsonify(success=True)
-		else:
-			return jsonify(success=False)
+		status = self.WebInterfaceManager.moduleInstallProcesses.get(module, {'status': 'unknown'})['status']
+		return jsonify(status)
 
 
 	def onModuleInstalled(self, *args):
+		module = ''
 		try:
 			module = args[0]
-			self.WebInterfaceManager.moduleInstallProcesses.pop(module)
+			self.WebInterfaceManager.moduleInstallProcesses[module]['status'] = 'installed'
 		except Exception as e:
-			self._logger.error(f'[ModulesView] Failed setting module status to "installed": {e}')
+			self._logger.error(f'[ModulesView] Failed setting module "{module}" status to "installed": {e}')
+
+
+	def onModuleInstallFailed(self, *args):
+		module = ''
+		try:
+			module = args[0]
+			self.WebInterfaceManager.moduleInstallProcesses[module]['status'] = 'failed'
+		except Exception as e:
+			self._logger.error(f'[ModulesView] Failed setting module "{module}" status to "failed": {e}')

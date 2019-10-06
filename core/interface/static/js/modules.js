@@ -4,29 +4,6 @@ $(function(){
 
     let storeLoaded = false;
 
-    function loadStoreData() {
-        $.ajax({
-            type: 'GET',
-            dataType: 'JSON',
-            url: 'https://api.github.com/search/code?q=extension:install+repo:project-alice-powered-by-snips/ProjectAliceModules',
-            success: function(data) {
-                $.each(data['items'], function (index, searchResult) {
-                    $.ajax({
-                        type: 'GET',
-                        dataType: 'JSON',
-                        url: searchResult['url'],
-                        headers: {
-                            'accept': 'application/vnd.github.VERSION.raw'
-                        }
-                    }).done(function(installer) {
-                        addToStore(installer);
-                    });
-                });
-            }
-        });
-        storeLoaded = true;
-    }
-
     function addToStore(installer) {
         if ($('#modulesPane').find('#' + installer['name'] + '-' + installer['author']).length === 0) {
             let $tile = $('<div class="moduleStoreModuleTile" id="' + installer['name'] + 'InstallTile">' +
@@ -36,6 +13,7 @@ $(function(){
                 '<div class="modulesStoreModuleCategory"><i class="fas fa-bookmark"></i> ' + installer['category'] + '</div>' +
                 '<div class="moduleStoreModuleDescription">' + installer['desc'] + '</div>' +
                 '<div class="moduleStoreModuleWaitAnimation"><i class="fas fa-spinner fa-spin"></i></div>' +
+                '<div class="moduleStoreModuleDownloadFail"><i class="fas fa-exclamation-triangle"></i></div>' +
                 '</div>');
 
             let $button = $('<div class="moduleStoreModuleDownload moduleStoreModuleDownloadButton" data-module="' + installer['name'] + '"><i class="fas fa-download"></i></div>');
@@ -68,13 +46,47 @@ $(function(){
                 module: module
             },
             type: 'POST'
-        }).done(function () {
-            $('#' + module).remove();
+        }).done(function (data) {
+            if (data['status'] === 'installed') {
+                $('#' + module).remove();
+            }
+            else if (data['status'] === 'installing') {
+                setTimeout(function () {
+                    checkInstallStatus(module);
+                }, 1000);
+            }
+            else if (data['status'] === 'failed') {
+                $('#' + module).children('.moduleStoreModuleWaitAnimation').hide();
+                $('#' + module).children('.moduleStoreModuleDownloadFail').css('display', 'flex');
+            }
         }).fail(function() {
             setTimeout(function () {
                 checkInstallStatus(module);
             }, 1000);
         })
+    }
+
+    function loadStoreData() {
+        $.ajax({
+            type: 'GET',
+            dataType: 'JSON',
+            url: 'https://api.github.com/search/code?q=extension:install+repo:project-alice-powered-by-snips/ProjectAliceModules',
+            success: function(data) {
+                $.each(data['items'], function (index, searchResult) {
+                    $.ajax({
+                        type: 'GET',
+                        dataType: 'JSON',
+                        url: searchResult['url'],
+                        headers: {
+                            'accept': 'application/vnd.github.VERSION.raw'
+                        }
+                    }).done(function(installer) {
+                        addToStore(installer);
+                    });
+                });
+            }
+        });
+        storeLoaded = true;
     }
 
 	$('[id^=toggle_]').on('click', function () {
