@@ -147,11 +147,11 @@ class Widget:
 	def __repr__(self):
 		return dedent(f'''\
 			---- WIDGET -----
-			Parent: {self.parent}
-			Name: {self.name}
-			Size: {self.size}
-			State: {self.state}
-			PosX: {self.x}
-			PosY: {self.y}
-			Z-Index: {self.zindex}\
+			 Parent: {self.parent}
+			 Name: {self.name}
+			 Size: {self.size}
+			 State: {self.state}
+			 PosX: {self.x}
+			 PosY: {self.y}
+			 Z-Index: {self.zindex}\
 		''')
