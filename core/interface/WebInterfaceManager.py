@@ -70,7 +70,7 @@ class WebInterfaceManager(Manager):
 			)
 
 
-	def onModuleInstallated(self, *args, **kwargs):
+	def onModuleInstalled(self, *args, **kwargs):
 		self.broadcast(
 			method='onModuleInstalled',
 			*args,
