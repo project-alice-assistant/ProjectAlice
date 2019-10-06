@@ -182,17 +182,18 @@ class DialogSession:
 
 	def __repr__(self) -> str:
 		return dedent(f'''\
-			[{self.__class__.__name__}] -> [\n'
-			\t"siteId: "{self.siteId}",\n'
-			\t"sessionId: "{self._sessionId}",\n'
-			\t"user: "{self._user}",\n'
-			\t"message: "{self._message.topic}",\n'
-			\t"slots: "{self._slots}",\n'
-			\t"slotsAsObject: "{self._slotsAsObjects}",\n'
-			\t"customData: "{self._customData}",\n'
-			\t"payload: "{self._payload}",\n'
-			\t"previousIntent: "{self.previousIntent}",\n'
-			\t"intentHistory: "{self._intentHistory}",\n'
-			\t"intentFilter: "{self._intentFilter}",\n'
-			\t"notUnderstood: "{self._notUnderstood}"\n]'
+			[{self.__class__.__name__}] -> [
+				siteId: "{self.siteId}",
+				sessionId: "{self._sessionId}",
+				user: "{self._user}",
+				message: "{self._message.topic}",
+				slots: "{self._slots}",
+				slotsAsObject: "{self._slotsAsObjects}",
+				customData: "{self._customData}",
+				payload: "{self._payload}",
+				previousIntent: "{self.previousIntent}",
+				intentHistory: "{self._intentHistory}",
+				intentFilter: "{self._intentFilter}",
+				notUnderstood: "{self._notUnderstood}"
+			]
 		''')
