@@ -39,11 +39,11 @@ def authors():
 @List.command()
 @click.option('--authors', '-a', cls=OptionEatAll, help='specify authors to check')
 @click.option('--full', '-f', is_flag=True, help='Display full description instead of truncated one')
-def modules(authors: list, full: bool):
+def modules(authorsList: list, full: bool):
 	"""List modules from the ProjectAliceModules repository"""
 
-	if not authors:
-		authors = list()
+	if not authorsList:
+		authorsList = list()
 		req = requests.get(f'https://api.github.com/{ModuleManager.GITHUB_API_BASE_URL}')
 
 		if req.status_code == 403:
@@ -51,11 +51,11 @@ def modules(authors: list, full: bool):
 			return
 
 		for author in req.json():
-			authors.append(author['name'])
+			authorsList.append(author['name'])
 
 	maxDescriptionLength = 100
 
-	for author in authors:
+	for author in authorsList:
 
 		tableData = [['Module Name', 'Version', 'Langs', 'Description']]
 		tableInstance = SingleTable(tableData, click.style(author, fg='yellow'))
