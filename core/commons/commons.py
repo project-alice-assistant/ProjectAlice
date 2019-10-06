@@ -116,7 +116,7 @@ def parseSlotsToObjects(message: MQTTMessage) -> dict:
 
 def parseSlots(message: MQTTMessage) -> dict:
 	data = payload(message)
-	return dict((slot['slotName'], slot['rawValue']) for slot in data.get('slots', dict()))
+	return { slot['slotName']: slot['rawValue'] for slot in data.get('slots', dict()) }
 
 
 def parseSessionId(message: MQTTMessage) -> Union[str, bool]:
@@ -219,7 +219,7 @@ def isSpelledWord(string: str) -> bool:
 	:return: bool
 	"""
 
-	return len(string) == (len(str(string).replace(' ', '').strip()) * 2) - 1
+	return len(string) == (len(string.replace(' ', '').strip()) * 2) - 1
 
 
 def cleanRoomNameToSiteId(roomName: str) -> str:
@@ -233,10 +233,10 @@ def cleanRoomNameToSiteId(roomName: str) -> str:
 
 	for parasite in parasites:
 		if parasite in roomName:
-			roomName = str(roomName).replace(parasite, '')
+			roomName = roomName.replace(parasite, '')
 			break
 
-	return str(roomName).strip().replace(' ', '_')
+	return roomName.strip().replace(' ', '_')
 
 
 def getLocalIp() -> str:
