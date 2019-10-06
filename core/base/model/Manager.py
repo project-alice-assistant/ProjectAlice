@@ -68,7 +68,8 @@ class Manager(Singleton):
 	def onDeviceDisconnecting(self, *args, **kwargs): pass
 	def onInternetConnected(self, *args, **kwargs): pass
 	def onInternetLost(self, *args, **kwargs): pass
-	def onHotword(self, siteId: str, session: DialogSession, *args, **kwargs): pass
+	def onHotword(self, siteId: str, *args, **kwargs): pass
+	def onHotwordToggleOn(self, siteId: str, *args, **kwargs): pass
 	def onSessionStarted(self, session: DialogSession, *args, **kwargs): pass
 	def onStartListening(self, session: DialogSession, *args, **kwargs): pass
 	def onCaptured(self, session: DialogSession, *args, **kwargs): pass

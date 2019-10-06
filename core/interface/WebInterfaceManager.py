@@ -70,21 +70,19 @@ class WebInterfaceManager(Manager):
 			)
 
 
-	def onModuleInstallated(self, args: list = None):
+	def onModuleInstalled(self, *args, **kwargs):
 		self.broadcast(
 			method='onModuleInstalled',
-			args=args
+			*args,
+			**kwargs
 		)
 
 
-	def broadcast(self, method: str, silent: bool = True, args: list = None):
-		if not args:
-			args = list()
-
+	def broadcast(self, method: str, silent: bool = True, *args, **kwargs):
 		for view in self._VIEWS:
 			try:
 				func = getattr(view, method)
-				func(*args)
+				func(*args, **kwargs)
 			except AttributeError as e:
 				if not silent:
 					# noinspection PyUnboundLocalVariable,PyUnresolvedReferences

@@ -41,11 +41,11 @@ class ThreadManager(Manager):
 		self._logger.info(f'[{self.NAME}] Cleaned {i} dead timers')
 
 
-	def newTimer(self, interval: float, func: str, args: list = None, autoStart: bool = True) -> threading.Timer:
-		if not args:
-			args = list()
+	def newTimer(self, interval: float, func: str, autoStart: bool = True, args: list = None, kwargs: dict = None) -> threading.Timer:
+		args = args or list()
+		kwargs = kwargs or dict()
 
-		threadTimer = ThreadTimer(callback=func, args=args)
+		threadTimer = ThreadTimer(callback=func, args=args, kwargs=kwargs)
 		t = threading.Timer(interval=interval, function=self.onTimerEnd, args=[threadTimer])
 		t.daemon = True
 		threadTimer.timer = t
@@ -57,14 +57,12 @@ class ThreadManager(Manager):
 		return t
 
 
-	def doLater(self, interval: float, func: str, args: list = None):
-		if not args:
-			args = list()
-		self.newTimer(interval=interval, func=func, args=args)
+	def doLater(self, interval: float, func: str, args: list = None, kwargs: dict = None):
+		self.newTimer(interval=interval, func=func, args=args, kwargs=kwargs)
 
 
 	def onTimerEnd(self, t: ThreadTimer):
-		t.callback(*t.args)
+		t.callback(*t.args, **t.kwargs)
 		self.removeTimer(t)
 
 
@@ -76,9 +74,9 @@ class ThreadManager(Manager):
 			self._timers.remove(t)
 
 
-	def newThread(self, name: str, target: Callable, args: list = None, kwargs: dict = None, autostart: bool = True) -> threading.Thread:
-		if not args:
-			args = list()
+	def newThread(self, name: str, target: Callable, autostart: bool = True, args: list = None, kwargs: dict = None) -> threading.Thread:
+		args = args or list()
+		kwargs = kwargs or dict()
 
 		if name in self._threads:
 			self._threads[name].join(timeout=2)
@@ -113,7 +111,7 @@ class ThreadManager(Manager):
 			return self._threads[name].isAlive()
 
 
-	def newEvent(self, name: str, onSetCallback: str = None, onClearCallback: str = None, *args: list) -> AliceEvent:
+	def newEvent(self, name: str, onSetCallback: str = None, onClearCallback: str = None) -> AliceEvent:
 		if name not in self._events:
 			self._events[name] = AliceEvent(name, onSetCallback, onClearCallback)
 

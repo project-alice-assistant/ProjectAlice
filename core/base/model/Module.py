@@ -309,18 +309,12 @@ class Module:
 
 	def onModuleInstalled(self, *args, **kwargs):
 		self._updateAvailable = False
-		self.MqttManager.subscribeModuleIntents(self.name)
+		#self.MqttManager.subscribeModuleIntents(self.name)
 
 
 	def onModuleUpdated(self, *args, **kwargs):
 		self._updateAvailable = False
-		self.MqttManager.subscribeModuleIntents(self.name)
-		SuperManager.getInstance().broadcast(
-			method='onModuleUpdated',
-			exceptions=[constants.DUMMY],
-			propagateToModules=False,
-			args=[self.name]
-		)
+		#self.MqttManager.subscribeModuleIntents(self.name)
 
 
 	def onSleep(self, *args, **kwargs): pass

@@ -94,19 +94,19 @@ class ModulesView(View):
 		return jsonify(status)
 
 
-	def onModuleInstalled(self, *args):
+	def onModuleInstalled(self, **kwargs):
 		module = ''
 		try:
-			module = args[0]
+			module = kwargs['module']
 			self.WebInterfaceManager.moduleInstallProcesses[module]['status'] = 'installed'
 		except Exception as e:
 			self._logger.error(f'[ModulesView] Failed setting module "{module}" status to "installed": {e}')
 
 
-	def onModuleInstallFailed(self, *args):
+	def onModuleInstallFailed(self, **kwargs):
 		module = ''
 		try:
-			module = args[0]
+			module = kwargs['module']
 			self.WebInterfaceManager.moduleInstallProcesses[module]['status'] = 'failed'
 		except Exception as e:
 			self._logger.error(f'[ModulesView] Failed setting module "{module}" status to "failed": {e}')

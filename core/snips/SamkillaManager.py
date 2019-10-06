@@ -133,6 +133,8 @@ class SamkillaManager(Manager):
 					self.log(f'[{self.name}] Changes detected during sync but not downloading yet')
 			else:
 				self.log(f'[{self.name}] No changes detected during sync')
+				self.ModuleManager.onSnipsAssistantDownloaded(moduleFilter)
+
 
 			self.stop()
 		except AssistantNotFoundError:

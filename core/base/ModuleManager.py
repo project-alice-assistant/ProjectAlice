@@ -77,9 +77,8 @@ class ModuleManager(Manager):
 		self.startAllModules()
 
 
-	def onSnipsAssistantDownloaded(self, *args: list, **kwargs: dict):
+	def onSnipsAssistantDownloaded(self, *args, **kwargs):
 		argv = args[0] or dict()
-
 		for moduleName, module in argv.items():
 			if module['update']:
 				method = 'onModuleUpdated'
@@ -91,10 +90,8 @@ class ModuleManager(Manager):
 			SuperManager.getInstance().broadcast(
 				method=method,
 				exceptions=[constants.DUMMY],
-				propagateToModules=False,
-				args=[moduleName]
+				module=moduleName
 			)
-
 
 
 	@property
@@ -285,7 +282,7 @@ class ModuleManager(Manager):
 		return self._modules
 
 
-	def broadcast(self, method: str, isEvent: bool = True, filterOut: list = None, silent: bool = False, args: list = None):
+	def broadcast(self, method: str, isEvent: bool = True, filterOut: list = None, silent: bool = False, *args, **kwargs):
 		"""
 		Boradcasts a call to the given method on every module
 		:param filterOut: array, module not to boradcast to
@@ -295,8 +292,6 @@ class ModuleManager(Manager):
 		:param silent
 		:return:
 		"""
-		if not args:
-			args = list()
 
 		self._reorderCustomisationModule(isEvent)
 		for moduleItem in self._modules.values():
@@ -305,7 +300,7 @@ class ModuleManager(Manager):
 
 			try:
 				func = getattr(moduleItem['instance'], method)
-				func(*args)
+				func(*args, **kwargs)
 			except Exception as e:
 				if not silent:
 					self._logger.warning(f'[{self.name}] Method "{method}" not found for module "{moduleItem["instance"].name}": {e}')
@@ -411,12 +406,6 @@ class ModuleManager(Manager):
 				self._logger.error(f'[{self.name}] Error checking for module install: {e}')
 			finally:
 				if modulesToBoot:
-					try:
-						self.SamkillaManager.sync(moduleFilter=modulesToBoot)
-					except Exception as esamk:
-						self._logger.error(f'[{self.name}] Failed syncing with remote snips console {esamk}')
-						raise
-
 					for moduleName, info in modulesToBoot.items():
 						self._modules = self._loadModuleList(moduleToLoad=moduleName, isUpdate=info['update'])
 
@@ -424,15 +413,16 @@ class ModuleManager(Manager):
 							self.LanguageManager.loadStrings(moduleToLoad=moduleName)
 							self.TalkManager.loadTalks(moduleToLoad=moduleName)
 
-							if info['update']:
-								self._modules[moduleName]['instance'].onModuleUpdated()
-							else:
-								self._modules[moduleName]['instance'].onModuleInstalled()
-
 							self._startModule(moduleInstance=self._modules[moduleName]['instance'])
 							self._modules[moduleName]['instance'].onBooted()
 						except:
 							pass
+
+					try:
+						self.SamkillaManager.sync(moduleFilter=modulesToBoot)
+					except Exception as esamk:
+						self._logger.error(f'[{self.name}] Failed syncing with remote snips console {esamk}')
+						raise
 
 					self.SnipsServicesManager.runCmd(cmd='restart')
 
@@ -537,7 +527,7 @@ class ModuleManager(Manager):
 							method='onModuleInstallFailed',
 							exceptions=self.name,
 							propagateToModules=False,
-							args=[self.name]
+							module=moduleName
 						)
 				else:
 					self._logger.error(f'[{self.name}] Failed cloning module')
@@ -545,8 +535,7 @@ class ModuleManager(Manager):
 					SuperManager.getInstance().broadcast(
 						method='onModuleInstallFailed',
 						exceptions=self.name,
-						propagateToModules=False,
-						args=[self.name]
+						module=moduleName
 					)
 
 			except ModuleNotConditionCompliant as e:
@@ -555,8 +544,7 @@ class ModuleManager(Manager):
 				SuperManager.getInstance().broadcast(
 					method='onModuleInstallFailed',
 					exceptions=self.name,
-					propagateToModules=False,
-					args=[self.name]
+					module=moduleName
 				)
 
 			except Exception as e:
@@ -565,8 +553,7 @@ class ModuleManager(Manager):
 				SuperManager.getInstance().broadcast(
 					method='onModuleInstallFailed',
 					exceptions=self.name,
-					propagateToModules=False,
-					args=[self.name]
+					module=moduleName
 				)
 
 		self.MqttManager.broadcast(topic='hermes/leds/clear')
