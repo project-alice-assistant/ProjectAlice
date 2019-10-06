@@ -50,7 +50,7 @@ class GithubCloner:
 			for item in data:
 				path = Path(*Path(item['path']).parts[3:])
 				if item['type'] == 'file':
-					if path.suffix == 'install':
+					if path.suffix == '.install':
 						continue
 					fileStream = requests.get(item['download_url'], auth=auth)
 					Path(self._dest / path).write_bytes(fileStream.content)
