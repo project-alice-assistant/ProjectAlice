@@ -5,9 +5,7 @@ from pathlib import Path
 
 import requests
 
-from core.base.SuperManager import SuperManager
 from core.base.model.Manager import Manager
-from core.commons import constants
 from core.snips.model.SnipsConsoleUser import SnipsConsoleUser
 from core.snips.model.SnipsTrainingStatus import SnipsTrainingType, TrainingStatusResponse
 

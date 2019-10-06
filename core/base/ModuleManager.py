@@ -77,7 +77,7 @@ class ModuleManager(Manager):
 		self.startAllModules()
 
 
-	def onSnipsAssistantDownloaded(self, *args: list):
+	def onSnipsAssistantDownloaded(self, *args: list, **kwargs: dict):
 		argv = args[0] or dict()
 
 		for moduleName, module in argv.items():

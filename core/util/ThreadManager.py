@@ -115,7 +115,7 @@ class ThreadManager(Manager):
 
 	def newEvent(self, name: str, onSetCallback: str = None, onClearCallback: str = None, *args: list) -> AliceEvent:
 		if name not in self._events:
-			self._events[name] = AliceEvent(name, onSetCallback, onClearCallback, args)
+			self._events[name] = AliceEvent(name, onSetCallback, onClearCallback)
 
 		return self._events[name]
 
