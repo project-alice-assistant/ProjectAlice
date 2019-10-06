@@ -1,5 +1,5 @@
 import subprocess
-from pathlib import Path
+import tempfile
 
 from flask import jsonify, render_template
 
@@ -13,7 +13,7 @@ class SnipswatchView(View):
 		super().__init__()
 		self._counter = 0
 		self._thread = None
-		self._file = Path('/tmp/snipswatch.txt')
+		self._file = tempfile.TemporaryFile()
 		self._thread = None
 
 		if self._file.exists():
