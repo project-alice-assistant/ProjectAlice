@@ -78,7 +78,8 @@ class ModuleManager(Manager):
 
 
 	def onSnipsAssistantDownloaded(self, *args, **kwargs):
-		for moduleName, module in kwargs.items():
+		argv = args[0] or dict()
+		for moduleName, module in argv.items():
 			if module['update']:
 				method = 'onModuleUpdated'
 				self._modules[moduleName]['instance'].onModuleUpdated()
@@ -91,7 +92,6 @@ class ModuleManager(Manager):
 				exceptions=[constants.DUMMY],
 				module=moduleName
 			)
-
 
 
 	@property
@@ -406,12 +406,6 @@ class ModuleManager(Manager):
 				self._logger.error(f'[{self.name}] Error checking for module install: {e}')
 			finally:
 				if modulesToBoot:
-					try:
-						self.SamkillaManager.sync(moduleFilter=modulesToBoot)
-					except Exception as esamk:
-						self._logger.error(f'[{self.name}] Failed syncing with remote snips console {esamk}')
-						raise
-
 					for moduleName, info in modulesToBoot.items():
 						self._modules = self._loadModuleList(moduleToLoad=moduleName, isUpdate=info['update'])
 
@@ -419,15 +413,16 @@ class ModuleManager(Manager):
 							self.LanguageManager.loadStrings(moduleToLoad=moduleName)
 							self.TalkManager.loadTalks(moduleToLoad=moduleName)
 
-							if info['update']:
-								self._modules[moduleName]['instance'].onModuleUpdated()
-							else:
-								self._modules[moduleName]['instance'].onModuleInstalled()
-
 							self._startModule(moduleInstance=self._modules[moduleName]['instance'])
 							self._modules[moduleName]['instance'].onBooted()
 						except:
 							pass
+
+					try:
+						self.SamkillaManager.sync(moduleFilter=modulesToBoot)
+					except Exception as esamk:
+						self._logger.error(f'[{self.name}] Failed syncing with remote snips console {esamk}')
+						raise
 
 					self.SnipsServicesManager.runCmd(cmd='restart')
 
