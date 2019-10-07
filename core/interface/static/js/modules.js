@@ -4,6 +4,34 @@ $(function(){
 
     let storeLoaded = false;
 
+        function checkInstallStatus(module) {
+        $.ajax({
+            url: '/modules/checkInstallStatus',
+            data: {
+                module: module
+            },
+            type: 'POST'
+        }).done(function (status) {
+            status = JSON.stringify(status).trim();
+            if (status === JSON.stringify('installed')) {
+                $('#' + module + 'InstallTile').remove();
+            }
+            else if (status === JSON.stringify('failed') || status === JSON.stringify('unknown')) {
+                $('#' + module).children('.moduleStoreModuleWaitAnimation').hide();
+                $('#' + module).children('.moduleStoreModuleDownloadFail').css('display', 'flex');
+            }
+            else {
+                setTimeout(function () {
+                    checkInstallStatus(module);
+                }, 5000);
+            }
+        }).fail(function() {
+            setTimeout(function () {
+                checkInstallStatus(module);
+            }, 1000);
+        })
+    }
+
     function addToStore(installer) {
         if ($('#modulesPane').find('#' + installer['name'] + '-' + installer['author']).length === 0) {
             let $tile = $('<div class="moduleStoreModuleTile" id="' + installer['name'] + 'InstallTile">' +
@@ -37,34 +65,6 @@ $(function(){
             $tile.append($button);
             $('#modulesStore').append($tile);
         }
-    }
-
-    function checkInstallStatus(module) {
-        $.ajax({
-            url: '/modules/checkInstallStatus',
-            data: {
-                module: module
-            },
-            type: 'POST'
-        }).done(function (status) {
-            status = JSON.stringify(status).trim();
-            if (status === JSON.stringify('installed')) {
-                $('#' + module + 'InstallTile').remove();
-            }
-            else if (status === JSON.stringify('failed') || status === JSON.stringify('unknown')) {
-                $('#' + module).children('.moduleStoreModuleWaitAnimation').hide();
-                $('#' + module).children('.moduleStoreModuleDownloadFail').css('display', 'flex');
-            }
-            else {
-                setTimeout(function () {
-                    checkInstallStatus(module);
-                }, 5000);
-            }
-        }).fail(function() {
-            setTimeout(function () {
-                checkInstallStatus(module);
-            }, 1000);
-        })
     }
 
     function loadStoreData() {

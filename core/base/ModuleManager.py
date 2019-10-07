@@ -78,7 +78,8 @@ class ModuleManager(Manager):
 
 
 	def onSnipsAssistantDownloaded(self, *args, **kwargs):
-		argv = args[0] or dict()
+		argv = kwargs.get('moduleInfos', dict())
+
 		for moduleName, module in argv.items():
 			if module['update']:
 				method = 'onModuleUpdated'

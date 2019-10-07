@@ -1,4 +1,6 @@
 import json
+from typing import Dict, Deque
+from collections import deque
 
 from core.base.model.Intent import Intent
 from core.base.model.Module import Module
@@ -19,8 +21,8 @@ class ContextSensitive(Module):
 			self._INTENT_EDIT_THIS
 		]
 
-		self._history = list()
-		self._sayHistory = dict()
+		self._history: Deque = deque(list(), 10)
+		self._sayHistory: Dict[str, Deque] = dict()
 
 		super().__init__(self._SUPPORTED_INTENTS)
 
@@ -39,7 +41,7 @@ class ContextSensitive(Module):
 					if module['instance'].onContextSensitiveDelete(sessionId):
 						self.endSession(sessionId=sessionId)
 						return True
-				except:
+				except Exception:
 					continue
 
 		elif intent == self._INTENT_EDIT_THIS:
@@ -70,32 +72,23 @@ class ContextSensitive(Module):
 				customData['speaker'] = session.user
 				data = session.payload
 				data['customData'] = customData
-				session.payload = json.dumps(data)
+				session.payload = data
 
-			self._history.append(session)
-
-			if len(self._history) > 10:
-				self._history.pop(0)
+			self._history.appendleft(session)
 		except Exception as e:
 			self._logger.error('Error in {} module: {}'.format(self.name, e))
 
 
 	def lastMessage(self):
-		return self._history[len(self._history) - 1]
+		return self._history[-1] if self._history else None
 
 
-	def addChat(self, text, siteId):
-		if siteId not in self._sayHistory.keys():
-			self._sayHistory[siteId] = list()
+	def addChat(self, text: str, siteId: str):
+		if siteId not in self._sayHistory:
+			self._sayHistory[siteId] = deque(list(), 10)
 
-		self._sayHistory[siteId].append(text)
-
-		if len(self._sayHistory[siteId]) > 10:
-			self._sayHistory[siteId].pop(0)
+		self._sayHistory[siteId].appendleft(text)
 
 
-	def getLastChat(self, siteId):
-		if siteId not in self._sayHistory or len(self._sayHistory[siteId]) <= 0:
-			return self.randomTalk('nothing')
-
-		return self._sayHistory[siteId][len(self._sayHistory[siteId]) - 1]
+	def getLastChat(self, siteId: str):
+		return self._sayHistory[siteId][-1] if self._sayHistory.get(siteId) else self.randomTalk('nothing')

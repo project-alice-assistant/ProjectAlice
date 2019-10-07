@@ -10,18 +10,19 @@ wget http://modules.projectalice.ch/ContextSensitive \
 
 ##### > Alice CLI method
 ```bash
-alice module:install ProjectAlice/ContextSensitive
+./alice add module ProjectAlice ContextSensitive
 ```
 
 ### Description
 ContextSensitive is the official context sensitive module. It handle intents like "Delete this", "Forget about that"
 
-- Version: 1.0
+- Version: 1.02
 - Author: ProjectAlice
 - Maintainers:
-  - Psycho, Jierka
+  - Psycho, Jierka, maxbachmann
 - Alice minimum version: 0.10
 - Conditions:
   - EN
   - FR
+  - DE
 - Requirements: N/A
