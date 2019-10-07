@@ -1,4 +1,7 @@
 import subprocess
+import uuid
+from pathlib import Path
+
 import tempfile
 
 from flask import jsonify, render_template
@@ -13,7 +16,7 @@ class SnipswatchView(View):
 		super().__init__()
 		self._counter = 0
 		self._thread = None
-		self._file = tempfile.TemporaryFile(mode='a+')
+		self._file = Path(tempfile.gettempdir(), f'snipswatch_{uuid.uuid4()}')
 		self._thread = None
 
 
@@ -29,11 +32,15 @@ class SnipswatchView(View):
 		while flag.isSet():
 			out = process.stdout.readline().decode()
 			if out:
-				line = out.replace('<b><font color=#009900>', '<b><font color="green">').replace('#009900', '"yellow"').replace('#0000ff', '"green"')
-				self._file.write(line)
+				with open(self._file, 'a+') as fp:
+					line = out.replace('<b><font color=#009900>', '<b><font color="green">').replace('#009900', '"yellow"').replace('#0000ff', '"green"')
+					fp.write(line)
 
 
 	def update(self):
+		if not self._thread:
+			self.refresh()
+
 		return jsonify(data=self._getData())
 
 
@@ -51,7 +58,7 @@ class SnipswatchView(View):
 
 	def _getData(self) -> list:
 		try:
-			data = self._file.readlines()
+			data = self._file.open('r').readlines()
 			ret = data[self._counter:]
 			self._counter = len(data)
 			return ret
