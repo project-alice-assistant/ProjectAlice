@@ -446,19 +446,44 @@ input:focus {
     display: none;
 }
 
-.autoscrollBar {
+.toolBar {
+    display: flex;
     color: #d1d1d1;
     height: 40px;
     font-size: 1.2em;
     margin: 5px 0 0 20px;
 }
 
-.autoscrollBar i {
+.autoscrollButton {
+    display: flex;
+    height: 40px;
+    text-align: left;
+    align-items: center;
+}
+
+.verbosityButtons {
+    display: flex;
+    height: 40px;
+    flex-grow: 1;
+    justify-content: flex-end;
+    align-items: center;
+    margin-right: 20px;
+}
+
+.snipswatchActiveVerbosity {
+    color: yellow;
+}
+
+.verbosityButtons i {
+    margin-left: 10px;
+}
+
+.toolBar i {
     font-size: 1.5em;
     cursor: pointer;
 }
 
-.autoscrollBar i:hover {
+.toolBar i:hover {
     color: yellow;
 }
 

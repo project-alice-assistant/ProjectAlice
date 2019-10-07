@@ -14,7 +14,7 @@ $(function() {
         });
     }
 
-        $('#checkedCheckbox').on('click', function() {
+    $('#checkedCheckbox').on('click', function() {
         $(this).hide();
         $('#emptyCheckbox').show();
     });
@@ -22,6 +22,19 @@ $(function() {
     $('#emptyCheckbox').on('click', function() {
         $(this).hide();
         $('#checkedCheckbox').show();
+    });
+
+    $('[class^="fas fa-thermometer"]').on('click', function() {
+        $('[class^="fas fa-thermometer"]').removeClass('snipswatchActiveVerbosity');
+        $(this).addClass('snipswatchActiveVerbosity');
+
+        $.ajax({
+            url: '/snipswatch/verbosity',
+            data: {
+                level: $(this).data('verbosity')
+            },
+            type: 'POST'
+        })
     });
 
 
