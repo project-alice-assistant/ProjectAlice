@@ -67,65 +67,9 @@ settings = {
 	#-----------------------
 
 	"modules": {
-		"AliceCore": {
-			"active"    : True,
-			"version"   : 1.10,
-			"author"    : "ProjectAlice",
-			"conditions": {
-				"lang": [
-					"en",
-					"fr"
-				]
-			}
-		},
-		"AliceSatellite": {
-			"active"    : True,
-			"version"   : 1.0,
-			"author"    : "ProjectAlice",
-			"conditions": {
-				"lang": [
-					"en",
-					"fr"
-				]
-			}
-		},
-		"ContextSensitive": {
-			"active"    : True,
-			"version"   : 1.0,
-			"author"    : "ProjectAlice",
-			"conditions": {
-				"lang": [
-					"en",
-					"fr"
-				]
-			}
-		},
 		"Customisation": {
 			"active"    : True,
 			"version"   : 1.01,
-			"author"    : "ProjectAlice",
-			"conditions": {
-				"lang": [
-					"en",
-					"fr"
-				]
-			}
-		},
-		"DateDayTimeYear": {
-			"active"    : True,
-			"version"   : 1.01,
-			"author"    : "Psychokiller1888",
-			"conditions": {
-				"lang": [
-					"en",
-					"fr",
-					"de"
-				]
-			}
-		},
-		"RedQueen": {
-			"active"    : True,
-			"version"   : 1.04,
 			"author"    : "ProjectAlice",
 			"conditions": {
 				"lang": [

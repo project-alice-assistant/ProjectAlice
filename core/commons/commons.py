@@ -1,9 +1,7 @@
-import functools
 import inspect
 import json
 import socket
 import time
-import warnings
 from collections import defaultdict
 from contextlib import contextmanager
 from ctypes import *
@@ -11,6 +9,9 @@ from datetime import datetime
 from pathlib import Path
 from typing import Union
 
+import functools
+import warnings
+from googletrans import Translator
 from paho.mqtt.client import MQTTMessage
 
 import core.commons.model.Slot as slotModel
@@ -315,7 +316,6 @@ def translate(text: Union[str, list], destLang: str, srcLang: str = None):
 	:param srcLang: source language to translate (ISO639-1 code)
 	:return: translated string or list of strings
 	"""
-	from googletrans import Translator
 
 	if not destLang:
 		destLang = SuperManager.getInstance().languageManager.activeLanguage

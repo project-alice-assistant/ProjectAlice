@@ -357,7 +357,9 @@ class Module:
 	def onSnipsAssistantDownloadFailed(self, *args, **kwargs): pass
 	def onAuthenticated(self, session: DialogSession, *args, **kwargs): pass
 	def onAuthenticationFailed(self, session: DialogSession, *args, **kwargs): pass
-	def onAudioFrame(self, message: MQTTMessage, *args, **kwargs):pass
+	def onAudioFrame(self, message: MQTTMessage, *args, **kwargs): pass
+	def onSnipsAssistantInstalled(self, *args, **kwargs): pass
+	def onSnipsAssistantFailedInstalling(self, *args, **kwargs): pass
 
 
 	# HELPERS

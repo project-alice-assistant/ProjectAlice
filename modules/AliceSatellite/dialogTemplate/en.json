@@ -1,7 +1,0 @@
-{
-	"module": "AliceSatellite",
-	"icon": "air",
-	"description": "This module allows interaction with the Alice satellites",
-	"slotTypes": [],
-	"intents": []
-}
