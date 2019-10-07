@@ -12,7 +12,6 @@ from pathlib import Path
 from typing import Union
 
 from paho.mqtt.client import MQTTMessage
-from googletrans import Translator
 
 import core.commons.model.Slot as slotModel
 from core.base.SuperManager import SuperManager
@@ -316,6 +315,8 @@ def translate(text: Union[str, list], destLang: str, srcLang: str = None):
 	:param srcLang: source language to translate (ISO639-1 code)
 	:return: translated string or list of strings
 	"""
+	from googletrans import Translator
+
 	if not destLang:
 		destLang = SuperManager.getInstance().languageManager.activeLanguage
 
