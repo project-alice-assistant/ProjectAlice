@@ -13,7 +13,7 @@ class SnipswatchView(View):
 		super().__init__()
 		self._counter = 0
 		self._thread = None
-		self._file = tempfile.TemporaryFile()
+		self._file = tempfile.TemporaryFile(mode='a+')
 		self._thread = None
 
 
@@ -29,9 +29,8 @@ class SnipswatchView(View):
 		while flag.isSet():
 			out = process.stdout.readline().decode()
 			if out:
-				with self._file.open('a+') as fp:
-					line = out.replace('<b><font color=#009900>', '<b><font color="green">').replace('#009900', '"yellow"').replace('#0000ff', '"green"')
-					fp.write(line)
+				line = out.replace('<b><font color=#009900>', '<b><font color="green">').replace('#009900', '"yellow"').replace('#0000ff', '"green"')
+				self._file.write(line)
 
 
 	def update(self):
@@ -52,7 +51,7 @@ class SnipswatchView(View):
 
 	def _getData(self) -> list:
 		try:
-			data = self._file.open('r').readlines()
+			data = self._file.readlines()
 			ret = data[self._counter:]
 			self._counter = len(data)
 			return ret
