@@ -442,9 +442,29 @@ input:focus {
 	border: yellow dotted 1px;
 }
 
+#emptyCheckbox {
+    display: none;
+}
+
+.autoscrollBar {
+    color: #d1d1d1;
+    height: 40px;
+    font-size: 1.2em;
+    margin: 5px 0 0 20px;
+}
+
+.autoscrollBar i {
+    font-size: 1.5em;
+    cursor: pointer;
+}
+
+.autoscrollBar i:hover {
+    color: yellow;
+}
+
 .console {
     margin: 20px;
-    height: 93%;
+    height: 85%;
     background-color: black;
     color: #d1d1d1;
     overflow-y: scroll;

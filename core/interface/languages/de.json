@@ -13,5 +13,6 @@
 	"addWidgetTitle": "Verfügbare Widgets",
 	"viewIntents": "Intents ansehen",
 	"moduleSettings": "Moduleinstellungen",
-	"save": "Speichern"
+	"save": "Speichern",
+	"followLogs": "Autoscroll"
 }

@@ -6,45 +6,10 @@
 
 {% block content %}
 	<script src="{{ url_for('static', filename='js/jquery-3.4.1.min.js') }}"></script>
-	<script type=text/javascript>
-		let $SCRIPT_ROOT = {{ request.script_root|tojson|safe }};
-		function getLogColor(line) {
-		    if (line.includes('[INFO]')) {
-		        return 'logInfo'
-			}
-		    else if (line.includes('[WARNING]')) {
-		        return 'logWarning'
-			}
-		    else if (line.includes('[ERROR]')) {
-		        return 'logError'
-			}
-		    else {
-		        return 'logInfo'
-			}
-		}
-		function refreshData(type) {
-		    let container = $('#console');
-
-		    $.get($SCRIPT_ROOT + '/syslog/' + type, function(data) {
-				for (let i = 0; i < data.data.length; i++) {
-                    container.append(
-                        '<span class="logLine ' + getLogColor(data.data[i]) + '">' + data.data[i] + '</span>'
-                    );
-                }
-			})
-				.always(function(data) {
-					container.scrollTop(container.prop('scrollHeight'))
-				});
-		}
-		$(document).ready(
-		    function() {
-		        refreshData('refresh');
-				setInterval(function() {
-				    refreshData('update')
-				}, 500)
-			}
-		)
-	</script>
+	<script src="{{ url_for('static', filename='js/syslog.js') }}"></script>
+	<div class="autoscrollBar">
+		<i id="emptyCheckbox" class="far fa-square fa-pull-left"></i><i id="checkedCheckbox" class="far fa-check-square fa-pull-left"></i> {{ langData.followLogs }}
+	</div>
 	<div class="console" id="console">
 	</div>
 {% endblock %}

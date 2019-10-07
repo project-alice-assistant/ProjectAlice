@@ -13,5 +13,6 @@
 	"addWidgetTitle": "Available widgets",
 	"viewIntents": "View intents",
 	"moduleSettings": "Module settings",
-	"save": "Save"
+	"save": "Save",
+	"followLogs": "Autoscroll"
 }
