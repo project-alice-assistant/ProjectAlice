@@ -1,5 +1,4 @@
 import subprocess
-import time
 from collections import OrderedDict
 
 from flask import render_template, request, jsonify
@@ -92,21 +91,3 @@ class ModulesView(View):
 		module = request.form.get('module')
 		status = self.WebInterfaceManager.moduleInstallProcesses.get(module, {'status': 'unknown'})['status']
 		return jsonify(status)
-
-
-	def onModuleInstalled(self, **kwargs):
-		module = ''
-		try:
-			module = kwargs['module']
-			self.WebInterfaceManager.moduleInstallProcesses[module]['status'] = 'installed'
-		except Exception as e:
-			self._logger.error(f'[ModulesView] Failed setting module "{module}" status to "installed": {e}')
-
-
-	def onModuleInstallFailed(self, **kwargs):
-		module = ''
-		try:
-			module = kwargs['module']
-			self.WebInterfaceManager.moduleInstallProcesses[module]['status'] = 'failed'
-		except Exception as e:
-			self._logger.error(f'[ModulesView] Failed setting module "{module}" status to "failed": {e}')

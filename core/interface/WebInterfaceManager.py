@@ -70,30 +70,29 @@ class WebInterfaceManager(Manager):
 			)
 
 
-	def onModuleInstalled(self, *args, **kwargs):
-		self.broadcast(
-			method='onModuleInstalled',
-			*args,
-			**kwargs
-		)
-
-
-	def broadcast(self, method: str, silent: bool = True, *args, **kwargs):
-		for view in self._VIEWS:
-			try:
-				func = getattr(view, method)
-				func(*args, **kwargs)
-			except AttributeError as e:
-				if not silent:
-					# noinspection PyUnboundLocalVariable,PyUnresolvedReferences
-					self._logger.warning(f"[{self.NAME}] Couldn't find method {method} in view {instance.name}: {e}")
-
-
 	def newModuleInstallProcess(self, module):
 		self._moduleInstallProcesses[module] = {
 			'startedAt': time.time(),
 			'status'   : 'installing'
 		}
+
+
+	def onModuleInstalled(self, **kwargs):
+		module = ''
+		try:
+			module = kwargs['module']
+			self.moduleInstallProcesses[module]['status'] = 'installed'
+		except Exception as e:
+			self._logger.error(f'[ModulesView] Failed setting module "{module}" status to "installed": {e}')
+
+
+	def onModuleInstallFailed(self, **kwargs):
+		module = ''
+		try:
+			module = kwargs['module']
+			self.moduleInstallProcesses[module]['status'] = 'failed'
+		except Exception as e:
+			self._logger.error(f'[ModulesView] Failed setting module "{module}" status to "failed": {e}')
 
 
 	@property

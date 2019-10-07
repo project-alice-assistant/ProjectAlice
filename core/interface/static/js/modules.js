@@ -18,6 +18,8 @@ $(function(){
 
             let $button = $('<div class="moduleStoreModuleDownload moduleStoreModuleDownloadButton" data-module="' + installer['name'] + '"><i class="fas fa-download"></i></div>');
             $button.on('click', function() {
+                $button.hide();
+                $button.parent().children('.moduleStoreModuleWaitAnimation').css('display', 'flex');
                 $.ajax({
                     url: '/modules/install',
                     data: {
@@ -25,11 +27,9 @@ $(function(){
                     },
                     type: 'POST'
                 }).done(function() {
-                    $button.hide();
-                    $button.parent().children('.moduleStoreModuleWaitAnimation').css('display', 'flex');
                 }).then(function() {
                     setTimeout(function () {
-                        checkInstallStatus(installer['name'] + 'InstallTile');
+                        checkInstallStatus(installer['name']);
                     }, 10000);
                 });
             });
@@ -46,18 +46,19 @@ $(function(){
                 module: module
             },
             type: 'POST'
-        }).done(function (data) {
-            if (data['status'] === 'installed') {
-                $('#' + module).remove();
+        }).done(function (status) {
+            status = JSON.stringify(status).trim();
+            if (status === JSON.stringify('installed')) {
+                $('#' + module + 'InstallTile').remove();
             }
-            else if (data['status'] === 'installing') {
-                setTimeout(function () {
-                    checkInstallStatus(module);
-                }, 1000);
-            }
-            else if (data['status'] === 'failed') {
+            else if (status === JSON.stringify('failed') || status === JSON.stringify('unknown')) {
                 $('#' + module).children('.moduleStoreModuleWaitAnimation').hide();
                 $('#' + module).children('.moduleStoreModuleDownloadFail').css('display', 'flex');
+            }
+            else {
+                setTimeout(function () {
+                    checkInstallStatus(module);
+                }, 5000);
             }
         }).fail(function() {
             setTimeout(function () {
@@ -148,9 +149,6 @@ $(function(){
     });
 
     $('#closeModuleStore').on('click', function() {
-        $('#modulesPane').css('display', 'flex');
-        $('#modulesStore').hide();
-        $('#openModuleStore').show();
-        $('#closeModuleStore').hide();
+        location.reload()
     });
 });
