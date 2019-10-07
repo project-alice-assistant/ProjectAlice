@@ -115,16 +115,16 @@ network={
 		confs = config.settings.copy()
 
 		# Update our system and sources
-		#subprocess.run(['sudo', 'apt-get', 'update'])
-		#subprocess.run(['sudo', 'apt-get', 'dist-upgrade', '-y'])
-		#subprocess.run(['git', 'stash'])
-		#subprocess.run(['git', 'checkout', initConfs['updateChannel']])
-		#subprocess.run(['git', 'pull'])
-		#subprocess.run(['git', 'stash', 'clear'])
+		subprocess.run(['sudo', 'apt-get', 'update'])
+		subprocess.run(['sudo', 'apt-get', 'dist-upgrade', '-y'])
+		subprocess.run(['git', 'stash'])
+		subprocess.run(['git', 'checkout', initConfs['updateChannel']])
+		subprocess.run(['git', 'pull'])
+		subprocess.run(['git', 'stash', 'clear'])
 
 
 		# Do some installation if wanted by the user
-		if initConfs['doGroundInstall'] and False:
+		if initConfs['doGroundInstall']:
 			subprocess.run(['sudo', 'bash', '-c', 'echo "deb https://raspbian.snips.ai/$(lsb_release -cs) stable main" > /etc/apt/sources.list.d/snips.list'])
 			subprocess.run(['sudo', 'apt-key',  'adv', '--keyserver', 'gpg.mozilla.org', '--recv-keys', 'D4F50CDCA10A2849'])
 			subprocess.run(['sudo', 'apt-get', 'update'])
@@ -286,12 +286,12 @@ network={
 		subprocess.run(['sudo', 'rm', '-rf', Path(commons.rootDir(), 'assistant')])
 		subprocess.run(['sudo', 'rm', '-rf', Path(commons.rootDir(), 'trained', 'assistants', f"assistant_{confs['activeLanguage']}")])
 		subprocess.run(['sudo', 'rm', '-rf', Path(commons.rootDir(), 'var', 'assistants', confs['activeLanguage'])])
-		#subprocess.run(['sudo', 'mv', str(Path('/boot/ProjectAlice.yaml')), str(Path('/boot/ProjectAlice.yaml.bak'))])
+		subprocess.run(['sudo', 'mv', str(Path('/boot/ProjectAlice.yaml')), str(Path('/boot/ProjectAlice.yaml.bak'))])
 
 		self.warning('Initializer done with configuring')
-		#time.sleep(2)
-		#subprocess.run(['sudo', 'systemctl', 'enable', 'ProjectAlice'])
-		#subprocess.run(['sudo', 'shutdown', '-r', 'now'])
+		time.sleep(2)
+		subprocess.run(['sudo', 'systemctl', 'enable', 'ProjectAlice'])
+		subprocess.run(['sudo', 'shutdown', '-r', 'now'])
 
 
 	def fatal(self, text: str):
