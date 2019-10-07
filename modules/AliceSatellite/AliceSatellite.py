@@ -1,15 +1,9 @@
 from core.base.SuperManager import SuperManager
-from core.base.model.Intent import Intent
 from core.base.model.Module import Module
 from core.dialog.model.DialogSession import DialogSession
 
 
 class AliceSatellite(Module):
-	_INTENT_TEMPERATURE = Intent('GetTemperature')
-	_INTENT_HUMIDITY = Intent('GetHumidity')
-	_INTENT_CO2 = Intent('GetCo2Level')
-	_INTENT_PRESSURE = Intent('GetPressure')
-
 	_FEEDBACK_SENSORS = 'projectalice/devices/alice/sensorsFeedback'
 	_DEVICE_DISCONNECTION = 'projectalice/devices/alice/disconnection'
 
@@ -17,14 +11,9 @@ class AliceSatellite(Module):
 	def __init__(self):
 		self._SUPPORTED_INTENTS = [
 			self._FEEDBACK_SENSORS,
-			self._INTENT_TEMPERATURE,
-			self._INTENT_HUMIDITY,
-			self._INTENT_CO2,
-			self._INTENT_PRESSURE,
 			self._DEVICE_DISCONNECTION
 		]
 
-		self._temperatures = dict()
 		self._sensorReadings = dict()
 
 		self.ProtectedIntentManager.protectIntent(self._FEEDBACK_SENSORS)
@@ -59,83 +48,17 @@ class AliceSatellite(Module):
 		if not self.filterIntent(intent, session):
 			return False
 
-		sessionId = session.sessionId
-		siteId = session.siteId
-		slots = session.slots
-
-		if 'Place' in slots:
-			place = slots['Place']
-		else:
-			place = siteId
-
-		if intent == self._INTENT_TEMPERATURE:
-			temp = self.getSensorValue(place, 'temperature')
-
-			if temp == 'undefined':
-				return False
-
-			if place != siteId:
-				self.endDialog(sessionId, self.randomTalk('temperaturePlaceSpecific').format(place, temp.replace('.0', '')))
-			else:
-				self.endDialog(sessionId, self.randomTalk('temperature').format(temp.replace('.0', '')))
-
-			return True
-
-		elif intent == self._INTENT_HUMIDITY:
-			humidity = self.getSensorValue(place, 'humidity')
-
-			if humidity == 'undefined':
-				return False
-			else:
-				humidity = int(round(float(humidity), 0))
-
-			if place != siteId:
-				self.endDialog(sessionId, self.randomTalk(text='humidityPlaceSpecific', replace=[place, humidity]))
-			else:
-				self.endDialog(sessionId, self.randomTalk(text='humidity', replace=[humidity]))
-
-			return True
-
-		elif intent == self._INTENT_CO2:
-			co2 = self.getSensorValue(place, 'gas')
-
-			if co2 == 'undefined':
-				return False
-
-			if place != siteId:
-				self.endDialog(sessionId, self.TalkManager.randomTalk('co2PlaceSpecific').format(place, co2))
-			else:
-				self.endDialog(sessionId, self.TalkManager.randomTalk('co2').format(co2))
-
-			return True
-
-		elif intent == self._INTENT_PRESSURE:
-			pressure = self.getSensorValue(place, 'pressure')
-
-			if pressure == 'undefined':
-				return False
-			else:
-				pressure = int(round(float(pressure), 0))
-
-			if place != siteId:
-				self.endDialog(sessionId, self.randomTalk(text='pressurePlaceSpecific', replace=[place, pressure]))
-			else:
-				self.endDialog(sessionId, self.randomTalk(text='pressure', replace=[pressure]))
-
-			return True
-
-		elif intent == self._FEEDBACK_SENSORS:
+		if intent == self._FEEDBACK_SENSORS:
 			payload = session.payload
 			if 'data' in payload:
-				self._sensorReadings[siteId] = payload['data']
-			return True
+				self._sensorReadings[session.siteId] = payload['data']
 
 		elif intent == self._DEVICE_DISCONNECTION:
 			payload = session.payload
 			if 'uid' in payload:
 				self.DeviceManager.deviceDisconnecting(payload['uid'])
 
-		return False
+		return True
 
 
 	def getSensorReadings(self):
@@ -147,15 +70,7 @@ class AliceSatellite(Module):
 
 
 	def getSensorValue(self, siteId: str, value: str) -> str:
-		if siteId not in self._sensorReadings.keys():
-			return 'undefined'
-
-		data = self._sensorReadings[siteId]
-		if value in data:
-			ret = data[value]
-			return ret
-		else:
-			return 'undefined'
+		return self._sensorReadings.get(siteId, dict()).get(value, 'undefined')
 
 
 	def restartDevice(self):
