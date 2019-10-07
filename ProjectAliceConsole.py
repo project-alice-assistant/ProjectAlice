@@ -9,11 +9,11 @@ from core.console.UpdateCommand import Update
 
 @click.group(context_settings={'help_option_names':['--help', '-h']})
 def cli():
-        """
-        This is the Command Line Interface of Project Alice.
-        Currently the following commands are supported.
-        """
-        pass
+		"""
+		This is the Command Line Interface of Project Alice.
+		Currently the following commands are supported.
+		"""
+		pass
 
 cli.add_command(Add)
 cli.add_command(List)
@@ -31,5 +31,5 @@ for path in Path('modules').glob('*/console'):
 			cli.add_command(getattr(moduleCli, path.stem))
 
 if __name__ == '__main__':
-        cli()
+	cli()
 
