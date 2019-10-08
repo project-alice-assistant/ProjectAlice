@@ -42,6 +42,9 @@ Well, since it's written in Python and runs on top of the Snips platform, that m
 # Can we contribute?
 Hey, did you skip ahead and not read what I wrote a bit earlier? You have to! Just kidding, but yes, your contributions are more than welcome, be it core side or on the module side. You'll find more about the guidelines on our wiki.
 
+# Copyright
+Project Alice ships under GPLv3, it means you are free to use and redistribute our code but are not allowed to use any part of it under a closed license. Give the community back what you've been given!
+Regarding third party tools, scripts, material we use, I took care to mention original creators in files and respect their copyright. If something has slept under my supervision know that it was in no case intended and is the result of a mistake and I ask you to contact me directly to solve the issue asap.
 
 # Other repositories
 - [Project Alice Installer](https://github.com/Psychokiller1888/ProjectAliceInstaller)
