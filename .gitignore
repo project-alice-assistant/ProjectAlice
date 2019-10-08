@@ -148,3 +148,6 @@ trained/assistants/*
 
 var/assistants/*
 !var/assistants/.gitkeep
+
+docsHtml/*
+!docsHtml/.gitkeep

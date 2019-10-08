@@ -1,2 +1,10 @@
-site_name: Project Alice documentation
+site_name: Project Alice
+repo_url: https://github.com/project-alice-powered-by-snips/ProjectAlice
+site_description: Smart Home assistant, a framework for Snips.ai
+site_author: Psychokiller1888
 docs_dir: docs
+site_dir: docsHtml
+pages:
+- ['index.md', 'Introduction']
+- ['user-guide.md', 'User Guide']
+- ['about.md', 'About']
