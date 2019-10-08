@@ -1,7 +1,7 @@
 $(function() {
-    function refreshData(type) {
+    function refreshData() {
         let container = $('#console');
-        $.get('/snipswatch/' + type, function(data) {
+        $.get('/snipswatch/refreshConsole', function(data) {
             for (let i = 0; i < data.data.length; i++) {
                 container.append(
                     '<span class="logLine">' + data.data[i] + '</span>'
@@ -27,20 +27,16 @@ $(function() {
     $('[class^="fas fa-thermometer"]').on('click', function() {
         $('[class^="fas fa-thermometer"]').removeClass('snipswatchActiveVerbosity');
         $(this).addClass('snipswatchActiveVerbosity');
-
         $.ajax({
             url: '/snipswatch/verbosity',
             data: {
-                level: $(this).data('verbosity')
+                verbosity: $(this).data('verbosity')
             },
             type: 'POST'
         })
     });
 
-
-    refreshData('refresh');
-
     setInterval(function() {
-        refreshData('update')
+        refreshData()
     }, 500)
 });

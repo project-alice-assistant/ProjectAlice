@@ -12,6 +12,8 @@ from core.interface.views.View import View
 
 
 class SnipswatchView(View):
+	route_base = '/snipswatch/'
+
 
 	def __init__(self):
 		super().__init__()
@@ -26,6 +28,7 @@ class SnipswatchView(View):
 
 	def startWatching(self, verbosity: int = 2):
 		arg = ' -' + verbosity * 'v' if verbosity > 0 else ''
+		print(arg)
 		process = subprocess.Popen(f'snips-watch {arg} --html', shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
 
 		flag = SuperManager.getInstance().threadManager.newEvent('running')
@@ -38,14 +41,8 @@ class SnipswatchView(View):
 					fp.write(line)
 
 
-	def update(self):
-		if not self._thread:
-			self.refresh()
-
-		return jsonify(data=self._getData())
-
-
-	def refresh(self, verbosity: int = 2):
+	@route('/refreshConsole', methods=['GET'])
+	def refreshConsole(self, verbosity: int = 2):
 		if not self._thread or not self._thread.isAlive():
 			self._thread = SuperManager.getInstance().threadManager.newThread(
 				name='snipswatch',
@@ -53,17 +50,22 @@ class SnipswatchView(View):
 				autostart=True,
 				args=[verbosity]
 			)
+			self._counter = 0
 
-		self._counter = 0
-		return self.update()
+		return jsonify(data=self._getData())
 
 
 	@route('/verbosity', methods=['POST'])
 	def verbosity(self):
-		if self._thread and self._thread.isAlive():
-			self._thread.join(timeout=2)
+		try:
+			if self._thread and self._thread.isAlive():
+				self._thread.join(timeout=2)
 
-		return self.refresh(verbosity=request.form.get('verbosity'))
+			verbosity = int(request.form.get('verbosity'))
+			return self.refreshConsole(verbosity=verbosity)
+		except Exception as e:
+			self._logger.error(f'[SnipswatchView] Error setting verbosity: {e}')
+			return jsonify(success=False)
 
 
 	def _getData(self) -> list:
