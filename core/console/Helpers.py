@@ -37,6 +37,7 @@ class OptionEatAll(click.Option):
 
 		retval = super(OptionEatAll, self).add_to_parser(parser, ctx)
 		for name in self.opts:
+			# noinspection PyProtectedMember
 			our_parser = parser._long_opt.get(name) or parser._short_opt.get(name)
 			if our_parser:
 				self._eat_all_parser = our_parser

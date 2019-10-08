@@ -284,7 +284,7 @@ class Module:
 	def onIntentParsed(self, session: DialogSession, *args, **kwargs): pass
 
 
-	def onStart(self, *args, **kwargs) -> list:
+	def onStart(self) -> list:
 		if not self._active:
 			self._logger.info(f'Module {self.name} is not active')
 		else:
@@ -295,7 +295,7 @@ class Module:
 		return self._supportedIntents
 
 
-	def onBooted(self, *args, **kwargs):
+	def onBooted(self):
 		if self.delayed:
 			if self.ThreadManager.getEvent('SnipsAssistantDownload').isSet():
 				self.ThreadManager.doLater(interval=5, func=self.onBooted)
@@ -307,12 +307,12 @@ class Module:
 		return True
 
 
-	def onModuleInstalled(self, *args, **kwargs):
+	def onModuleInstalled(self):
 		self._updateAvailable = False
 		#self.MqttManager.subscribeModuleIntents(self.name)
 
 
-	def onModuleUpdated(self, *args, **kwargs):
+	def onModuleUpdated(self):
 		self._updateAvailable = False
 		#self.MqttManager.subscribeModuleIntents(self.name)
 
@@ -326,7 +326,7 @@ class Module:
 	def onWatchingTV(self, *args, **kwargs): pass
 	def onCooking(self, *args, **kwargs): pass
 	def onMakeup(self, *args, **kwargs): pass
-	def onContextSensitiveDelete(self, sessionId: str, *args, **kwargs):	pass
+	def onContextSensitiveDelete(self, sessionId: str, *args, **kwargs): pass
 	def onContextSensitiveEdit(self, sessionId: str, *args, **kwargs): pass
 	def onStop(self, *args, **kwargs): self._logger.info(f'[{self.name}] Stopping')
 	def onFullMinute(self, *args, **kwargs): pass

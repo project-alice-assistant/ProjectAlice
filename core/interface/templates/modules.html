@@ -61,14 +61,14 @@
 					</div>
 				{% endif %}
 				<div class="moduleActions">
-					<div class="moduleButton"{% if module.required is sameas true %} style="display: none;"{% endif %} id="toggle_{{ moduleName }}">
+					<div class="moduleButton" {% if module.required is sameas true %} style="display: none;" {% endif %} id="toggle_{{ moduleName }}">
 						{% if module.active is sameas true %}
 							{{ langData.disable }}
 						{% else %}
 							{{ langData.enable }}
 						{% endif %}
 					</div>
-					<div class="moduleButton"{% if module.required is sameas true %} style="display: none;"{% endif %} id="delete_{{ moduleName }}">
+					<div class="moduleButton" {% if module.required is sameas true %} style="display: none;" {% endif %} id="delete_{{ moduleName }}">
 						{{ langData.delete }}
 					</div>
 					{% if module.updateAvailable is sameas true %}

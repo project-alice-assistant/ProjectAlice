@@ -35,22 +35,22 @@ def module(author_name: str, module_name: str):
 			)
 			return
 
-		module = req.json()
+		theModule = req.json()
 		click.echo(dedent(f"""
 			+ Informations:
 			===============
-			name: {click.style(str(module['name']), fg='yellow')}
-			version: {click.style(str(module['version']), fg='yellow')}
-			author: {click.style(module['author'], fg='yellow')}
-			maintainers: {click.style(', '.join(module['maintainers']), fg='yellow')}
-			description: {click.style(module['desc'], fg='yellow')}
-			aliceMinVersion: {click.style(str(module['aliceMinVersion']), fg='yellow')}
-			pip requirements: {click.style(', '.join(module['pipRequirements']), fg='yellow')}
-			system requirements: {click.style(', '.join(module['systemRequirements']), fg='yellow')}
+			name: {click.style(str(theModule['name']), fg='yellow')}
+			version: {click.style(str(theModule['version']), fg='yellow')}
+			author: {click.style(theModule['author'], fg='yellow')}
+			maintainers: {click.style(', '.join(theModule['maintainers']), fg='yellow')}
+			description: {click.style(theModule['desc'], fg='yellow')}
+			aliceMinVersion: {click.style(str(theModule['aliceMinVersion']), fg='yellow')}
+			pip requirements: {click.style(', '.join(theModule['pipRequirements']), fg='yellow')}
+			system requirements: {click.style(', '.join(theModule['systemRequirements']), fg='yellow')}
 
 			+ Conditions:
 			=============
-			lang: {click.style(', '.join(module['conditions']['lang']), fg='yellow')}
+			lang: {click.style(', '.join(theModule['conditions']['lang']), fg='yellow')}
 		"""))
 
 		urllib.request.urlretrieve(url, f'system/moduleInstallTickets/{module_name}.install')

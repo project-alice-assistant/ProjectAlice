@@ -257,7 +257,7 @@ class SnipsConsoleManager(Manager):
 				propagateToModules=True
 			)
 		except Exception as e:
-			self._logger.error(f'[{self.name}] Failed installing Snips Assistant')
+			self._logger.error(f'[{self.name}] Failed installing Snips Assistant: {e}')
 			SuperManager.getInstance().broadcast(
 				method='onSnipsAssistantFailedInstalling',
 				exceptions=[constants.DUMMY],

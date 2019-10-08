@@ -244,7 +244,7 @@ class SamkillaManager(Manager):
 			}
 
 			if 'non-nullable field IntentSlot.name' in complexMessage:
-				raise IntentWithUnknownSlotError(errorResponse['code'], payload[0]['variables']['input']['config']['displayName'], 'intent')
+				raise IntentWithUnknownSlotError(errorResponse['code'], payload[0]['variables']['input']['config']['displayName'], ['intent'])
 
 			raise HttpError(errorResponse['code'], errorResponse['message'], errorResponse['context'])
 

@@ -1,7 +1,4 @@
 import requests
-import time
-import tempfile
-from pathlib import Path
 
 from core.snips import SamkillaManager
 from core.snips.samkilla.gql.assistants.trainAssistant import trainAssistant
@@ -125,13 +122,13 @@ class Assistant:
 
 		return response['forkAssistantSkill']['copiedBundleId']
 
-	def trainAssistant(self, assistantId: str) -> bool:
+	@staticmethod
+	def trainAssistant(assistantId: str) -> bool:
 		gqlRequest = [{
 			'operationName': 'TrainAssistantV2',
 			'variables': {'assistantId': assistantId},
 			'query': trainAssistant
 		}]
-		response = self._ctx.postGQLBrowserly(gqlRequest)
 
 		return True
 

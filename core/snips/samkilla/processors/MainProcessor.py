@@ -168,7 +168,7 @@ class MainProcessor:
 			self._ctx.log(f"[FilePull] Loading module {module['module']}")
 			return module
 
-		except json.decoder.JSONDecodeError as jsonError:
+		except json.decoder.JSONDecodeError:
 			self._ctx.log(f'\n[Inconsistent] File {moduleFile} has a bad json format')
 			return None
 

@@ -34,7 +34,7 @@
 				</div>
 				<div class="addWidgetList">
 					{% for widgetName, widget in widgetList.items() %}
-						<div class="addWidgetLine" id="addWidgetLine_{{ widget.parent }}_{{ widget.name }}" {% if (widget.state|int) == 0 %}style="display: block;"{% else %}style="display: none;"{% endif %}>
+						<div class="addWidgetLine" id="addWidgetLine_{{ widget.parent }}_{{ widget.name }}" {% if (widget.state|int) == 0 %}style="display: block;" {% else %} style="display: none;"{% endif %}>
 							<div class="addWidgetName">{{ widgetName }}</div>
 							<div class="addWidgetCheck"><i class="fas fa-check-circle"></i></div>
 						</div>

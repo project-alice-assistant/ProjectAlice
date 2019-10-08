@@ -99,12 +99,14 @@ class WakewordManager(Manager):
 			chunkHeader = message.payload[12:20]
 			subChunkId, subChunkSize = struct.unpack('<4sI', chunkHeader)
 
+			samplerate = 22050
+			channels = 2
 			if subChunkId == b'fmt ':
 				aFormat, channels, samplerate, byterate, blockAlign, bps = struct.unpack('HHIIHH', message.payload[20:36])
-				bitrate = (samplerate * channels * bps) / 1024
 
 			record = self.wakeword.getSample()
 
+			# noinspection PyProtectedMember
 			if not record._datawritten:
 				record.setframerate(samplerate)
 				record.setnchannels(channels)

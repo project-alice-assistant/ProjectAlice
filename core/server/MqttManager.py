@@ -237,7 +237,7 @@ class MqttManager(Manager):
 		SuperManager.getInstance().broadcast(method='onHotword', exceptions=[self.name], propagateToModules=True, siteId=siteId)
 
 
-	def handleMultiDetection(self, *args: tuple, **kwargs: tuple):
+	def handleMultiDetection(self):
 		if len(self._multiDetectionsHolder) <= 1:
 			self._multiDetectionsHolder = list()
 			return
