@@ -6,10 +6,10 @@ Project Alice is a smart voice home assistant completely based on [Snips](https:
 However, as an option, since we've built Project Alice on top of Snips, Project Alice can be configured to use some online alternatives and fall backs (for example, using Amazon or Google’s Text to Speech engines), just like Snips. Since Snips (and the Project Alice team) strongly believe that decisions about your privacy should be made by you and you alone, these options are all disabled by default.
 
 # Installing
-Please follow the wiki: https://github.com/project-alice-powered-by-snips/ProjectAlice/wiki/Installing
+Please follow the [wiki](https://github.com/project-alice-powered-by-snips/ProjectAlice/wiki/Installing)
 
 # Chat with us and the community
-Join us on our [Dicord server](https://discord.gg/Jfcj355)
+Join us on our [Discord server](https://discord.gg/Jfcj355)
 
 
 # Who made this?
