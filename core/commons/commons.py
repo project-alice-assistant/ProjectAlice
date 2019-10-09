@@ -9,7 +9,7 @@ from contextlib import contextmanager
 from ctypes import *
 from datetime import datetime
 from pathlib import Path
-from typing import Union
+from typing import Union, Callable
 
 from paho.mqtt.client import MQTTMessage
 from googletrans import Translator
