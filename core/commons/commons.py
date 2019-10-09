@@ -300,9 +300,7 @@ def online(randomTalk: bool = True, text: str = ''):
 			
 			if randomTalk:
 				return SuperManager.getInstance().talkManager.randomTalk('offline', module='system')
-			else:
-				return text
-			return result
+			return text
 
 		return functionWrapper
 
