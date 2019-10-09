@@ -128,24 +128,7 @@ class WakewordManager(Manager):
 	def _workAudioFile(self):
 		self._state = WakewordManagerState.TRIMMING
 
-		sample = self.wakeword.getSample()
-
-		try:
-			sample.getnchannels()
-		except:
-			sample.setnchannels(self.ConfigManager.getAliceConfigByName('micChannels'))
-
-		try:
-			sample.getframerate()
-		except:
-			sample.setframerate(self.ConfigManager.getAliceConfigByName('micSampleRate'))
-
-		try:
-			sample.getsampwidth()
-		except:
-			sample.setsampwidth(2)
-
-		sample.close()
+		self.wakeword.getSample().close()
 
 		filepath = self.wakeword.getSamplePath()
 		if not filepath.exists():
