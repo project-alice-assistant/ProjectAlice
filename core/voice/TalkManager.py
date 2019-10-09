@@ -42,6 +42,8 @@ class TalkManager(Manager):
 				continue
 
 			langTalksMountpoint = Path('modules', moduleName, 'talks')
+			if not langTalksMountpoint.exists():
+				continue
 
 			for langTalkFile in langTalksMountpoint.iterdir():
 				lang = langTalkFile.stem
