@@ -287,16 +287,20 @@ def online(randomTalk: bool = True, text: str = ''):
 			return request.text
 	"""
 
-
 	def argumentWrapper(func):
 		def functionWrapper(*args, **kwargs):
-			if SuperManager.getInstance().internetManager.online:
-				return func(*args, **kwargs)
-			elif randomTalk:
+			internetManager = SuperManager.getInstance().internetManager
+			if internetManager.online:
+				try:
+					return func(*args, **kwargs)
+				except:
+					internetManager._checkOnlineState()
+					if internetManager.online:
+						raise
+			
+			if randomTalk:
 				return SuperManager.getInstance().talkManager.randomTalk('offline', module='system')
-			else:
-				return text
-
+			return text
 
 		return functionWrapper
 
