@@ -171,13 +171,6 @@ class SnipsConsoleManager(Manager):
 			Path(tempfile.gettempdir(), 'assistant.zip').write_bytes(req.content)
 
 			self._logger.info(f'[{self.name}] Assistant {assistantId} trained and downloaded')
-			# SuperManager.getInstance().broadcast(
-			# 	method='onSnipsAssistantDownloaded',
-			# 	exceptions=[constants.DUMMY],
-			# 	propagateToModules=True,
-			# 	args=[modulesInfos]
-			# )
-
 			self.ThreadManager.getEvent('SnipsAssistantDownload').clear()
 			return True
 		except Exception as e:
