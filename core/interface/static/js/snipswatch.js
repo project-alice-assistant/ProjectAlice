@@ -1,10 +1,14 @@
 $(function () {
 	function refreshData() {
 		let container = $('#console');
-		$.get('/snipswatch/refreshConsole', function (data) {
-			for (let i = 0; i < data.data.length; i++) {
+		$.ajax({
+			url: '/snipswatch/refreshConsole',
+			dataType: 'json',
+			type: 'POST'
+		}).done(function (response) {
+			for (let i = 0; i < response.data.length; i++) {
 				container.append(
-					'<span class="logLine">' + data.data[i] + '</span>'
+					'<span class="logLine">' + response.data[i] + '</span>'
 				);
 			}
 		}).always(function (data) {
