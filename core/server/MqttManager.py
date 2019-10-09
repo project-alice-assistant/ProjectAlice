@@ -233,7 +233,7 @@ class MqttManager(Manager):
 			if speaker in users:
 				user = users[speaker].name
 
-		session = self.DialogSessionManager.preSession(siteId, user)
+		self.DialogSessionManager.preSession(siteId, user)
 		SuperManager.getInstance().broadcast(method='onHotword', exceptions=[self.name], propagateToModules=True, siteId=siteId)
 
 
