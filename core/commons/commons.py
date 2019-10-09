@@ -1,7 +1,9 @@
+import functools
 import inspect
 import json
 import socket
 import time
+import warnings
 from collections import defaultdict
 from contextlib import contextmanager
 from ctypes import *
@@ -9,10 +11,8 @@ from datetime import datetime
 from pathlib import Path
 from typing import Union
 
-import functools
-import warnings
-from googletrans import Translator
 from paho.mqtt.client import MQTTMessage
+from googletrans import Translator
 
 import core.commons.model.Slot as slotModel
 from core.base.SuperManager import SuperManager
@@ -258,7 +258,7 @@ def indexOf(sub: str, string: str) -> int:
 		return -1
 
 
-def online(randomTalk: bool = True, text: str = ''):
+def online(text: str = '', offlineHandler: Callable = None):
 	"""
 	(return a) decorator to mark a function that required ethernet.
 
@@ -266,25 +266,47 @@ def online(randomTalk: bool = True, text: str = ''):
 	a function that requires ethernet. In the Default mode without arguments shown
 	in the example it will either execute whats in the function or when alice is
 	offline return a random offline answer. Using the parameters:
-		@online(randomTalk=False, text=<myText>)
-	a own text can be used when bein offline aswell
+		@online(text=<myText>)
+	a own text can be used when being offline aswell and using the parameters:
+		@online(offlineHandler=<myFunc>)
+	a own offline handler can be called, which is especially helpful when the intent wants to
+	use endDialog, continueDialog ... inside the decorated function -> does not return the text
 
 	:param text:
-	:param randomTalk:
+	:param offlineHandler:
 	:return: return value of function or random offline string in the current language
 	Examples:
 		An intent that requires ethernet can be defined the following way:
 
 		def onMessage(self, intent: str, session: DialogSession) -> bool:
+			if not self.filterIntent(intent, session):
+				return False
 			if intent == self._INTENT_EXAMPLE:
 				self.endDialog(sessionId=session.sessionId, text=self.exampleIntent())
-				return True
-			return False
+			elif intent == self._INTENT_EXAMPLE_2:
+				self.endDialog(sessionId=session.sessionId, text=self.exampleIntent2())
+			elif intent == self._INTENT_EXAMPLE_3:
+				self.exampleIntent2(session)
+			
+			return True
 
 		@online
 		def exampleIntent(self) -> str:
 			request = requests.get('http://api.open-notify.org')
 			return request.text
+
+		@online(text='offlineText')
+		def exampleIntent2(self) -> str:
+			request = requests.get('http://api.open-notify.org')
+			return request.text
+		
+		def offlineHandler(self, session: DialogSession):
+			self.endDialog(sessionId=session.sessionId, text='offlineText')
+
+		@online(text='offlineText')
+		def exampleIntent2(self, session: DialogSession):
+			request = requests.get('http://api.open-notify.org')
+			self.endDialog(sessionId=session.sessionId, text=request.text)
 	"""
 
 	def argumentWrapper(func):
@@ -298,12 +320,13 @@ def online(randomTalk: bool = True, text: str = ''):
 					if internetManager.online:
 						raise
 			
-			if randomTalk:
+			if callable(text) or not text and not offlineHandler:
 				return SuperManager.getInstance().talkManager.randomTalk('offline', module='system')
+			if offlineHandler:
+				return offlineHandler(*args, **kwargs)
 			return text
 
 		return functionWrapper
-
 
 	if callable(randomTalk):
 		return argumentWrapper(randomTalk)
@@ -320,7 +343,6 @@ def translate(text: Union[str, list], destLang: str, srcLang: str = None):
 	:param srcLang: source language to translate (ISO639-1 code)
 	:return: translated string or list of strings
 	"""
-
 	if not destLang:
 		destLang = SuperManager.getInstance().languageManager.activeLanguage
 
