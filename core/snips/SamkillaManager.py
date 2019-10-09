@@ -59,10 +59,6 @@ class SamkillaManager(Manager):
 		self.initActions()
 		self._loadDialogTemplateMapsInConfigManager()
 
-		path = Path(commons.rootDir(), 'var/assistants', self.LanguageManager.activeLanguage)
-		if not path.exists() or not [x for x in path.iterdir() if x.is_dir()]:
-			self.sync()
-
 
 	def _loadDialogTemplateMapsInConfigManager(self):
 		self._dtSlotTypesModulesValues, self._dtIntentsModulesValues, self._dtIntentNameSkillMatching = self.getDialogTemplatesMaps(
