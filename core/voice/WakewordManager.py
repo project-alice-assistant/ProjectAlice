@@ -99,6 +99,8 @@ class WakewordManager(Manager):
 			chunkHeader = message.payload[12:20]
 			subChunkId, subChunkSize = struct.unpack('<4sI', chunkHeader)
 
+			samplerate = 22050
+			channels = 2
 			if subChunkId == b'fmt ':
 				aFormat, channels, samplerate, byterate, blockAlign, bps = struct.unpack('HHIIHH', message.payload[20:36])
 
@@ -106,9 +108,7 @@ class WakewordManager(Manager):
 
 			# noinspection PyProtectedMember
 			if not record._datawritten:
-				# noinspection PyUnboundLocalVariable
 				record.setframerate(samplerate)
-				# noinspection PyUnboundLocalVariable
 				record.setnchannels(channels)
 				record.setsampwidth(2)
 
@@ -128,7 +128,10 @@ class WakewordManager(Manager):
 	def _workAudioFile(self):
 		self._state = WakewordManagerState.TRIMMING
 
-		self.wakeword.getSample().close()
+		sample = self.wakeword.getSample()
+		sample.setnchannels(sample.getnchannels() or 1)
+		sample.setframerate(sample.getframerate() or 22050)
+		sample.close()
 
 		filepath = self.wakeword.getSamplePath()
 		if not filepath.exists():
