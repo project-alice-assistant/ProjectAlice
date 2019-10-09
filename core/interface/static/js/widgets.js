@@ -41,7 +41,7 @@ $(function () {
 		modal: true,
 		resizable: false,
 		close: function () {
-			location.reload()
+			location.reload();
 		}
 	});
 

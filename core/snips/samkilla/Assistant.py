@@ -124,12 +124,11 @@ class Assistant:
 
 	@staticmethod
 	def trainAssistant(assistantId: str) -> bool:
-		gqlRequest = [{
-			'operationName': 'TrainAssistantV2',
-			'variables': {'assistantId': assistantId},
-			'query': trainAssistant
-		}]
-
+		# gqlRequest = [{
+		# 	'operationName': 'TrainAssistantV2',
+		# 	'variables': {'assistantId': assistantId},
+		# 	'query': trainAssistant
+		# }]
 		return True
 
 	def trainingStatusAssistantReady(self, assistantId: str) -> bool:

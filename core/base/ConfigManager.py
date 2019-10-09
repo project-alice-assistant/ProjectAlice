@@ -291,7 +291,7 @@ class ConfigManager(Manager):
 						self._logger.info(f'- New module configuration found: {k} for module {moduleName}')
 						changes = True
 						self._modulesConfigurations[moduleName][k] = v
-					elif type(self._modulesConfigurations[moduleName][k]) != type(v):
+					elif not isinstance(self._modulesConfigurations[moduleName][k], type(v)):
 						self._logger.info(f'- Existing module configuration type missmatch: {k}, replaced with sample configuration for module {moduleName}')
 						changes = True
 						self._modulesConfigurations[moduleName][k] = v
