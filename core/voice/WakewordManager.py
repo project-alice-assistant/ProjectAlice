@@ -129,8 +129,22 @@ class WakewordManager(Manager):
 		self._state = WakewordManagerState.TRIMMING
 
 		sample = self.wakeword.getSample()
-		sample.setnchannels(sample.getnchannels() or 1)
-		sample.setframerate(sample.getframerate() or 22050)
+
+		try:
+			sample.getnchannels()
+		except:
+			sample.setnchannels(self.ConfigManager.getAliceConfigByName('micChannels'))
+
+		try:
+			sample.getframerate()
+		except:
+			sample.setframerate(self.ConfigManager.getAliceConfigByName('micSampleRate'))
+
+		try:
+			sample.getsampwidth()
+		except:
+			sample.setsampwidth(2)
+
 		sample.close()
 
 		filepath = self.wakeword.getSamplePath()
