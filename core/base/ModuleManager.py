@@ -81,6 +81,10 @@ class ModuleManager(Manager):
 		argv = kwargs.get('moduleInfos', dict())
 
 		for moduleName, module in argv.items():
+
+			self._startModule(moduleInstance=self._modules[moduleName]['instance'])
+			self._modules[moduleName]['instance'].onBooted()
+
 			if module['update']:
 				method = 'onModuleUpdated'
 				self._modules[moduleName]['instance'].onModuleUpdated()
@@ -413,9 +417,6 @@ class ModuleManager(Manager):
 						try:
 							self.LanguageManager.loadStrings(moduleToLoad=moduleName)
 							self.TalkManager.loadTalks(moduleToLoad=moduleName)
-
-							self._startModule(moduleInstance=self._modules[moduleName]['instance'])
-							self._modules[moduleName]['instance'].onBooted()
 						except:
 							pass
 
