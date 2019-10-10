@@ -328,8 +328,8 @@ def online(text: str = '', offlineHandler: Callable = None):
 
 		return functionWrapper
 
-	if callable(randomTalk):
-		return argumentWrapper(randomTalk)
+	if callable(text):
+		return argumentWrapper(text)
 	return argumentWrapper
 
 
