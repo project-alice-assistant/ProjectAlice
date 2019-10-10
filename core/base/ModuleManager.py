@@ -81,13 +81,6 @@ class ModuleManager(Manager):
 		argv = kwargs.get('modulesInfos', dict())
 
 		for moduleName, module in argv.items():
-			if module['update']:
-				self._modules[moduleName]['instance'].onModuleUpdated()
-				method = 'onModuleUpdated'
-			else:
-				self._modules[moduleName]['instance'].onModuleInstalled()
-				method = 'onModuleInstalled'
-
 			try:
 				self._startModule(moduleInstance=self._modules[moduleName]['instance'])
 			except ModuleStartDelayed:
@@ -96,7 +89,7 @@ class ModuleManager(Manager):
 			self._modules[moduleName]['instance'].onBooted()
 
 			SuperManager.getInstance().broadcast(
-				method=method,
+				method='onModuleUpdated' if module['update'] else 'onModuleInstalled',
 				exceptions=[constants.DUMMY],
 				module=moduleName
 			)
