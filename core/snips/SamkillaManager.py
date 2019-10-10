@@ -117,7 +117,7 @@ class SamkillaManager(Manager):
 			changes = self.syncLocalToRemote(
 				baseAssistantId=activeProjectId,
 				baseLanguageFilter=activeLang,
-				baseModuleFilter=list(moduleFilter.keys()),
+				baseModuleFilter=list(moduleFilter),
 				newAssistantTitle=f'ProjectAlice_{self.LanguageManager.activeLanguage}'
 			)
 
