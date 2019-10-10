@@ -48,6 +48,7 @@ class SnipsServicesManager(Manager):
 
 	def onSnipsAssistantInstalled(self):
 		self.runCmd(cmd='restart')
+		time.sleep(1)
 
 
 	def onSnipsAssistantDownloaded(self, **kwargs):
