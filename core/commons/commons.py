@@ -332,7 +332,8 @@ def online(text: str = '', offlineHandler: Callable = None):
 		return argumentWrapper(randomTalk)
 	return argumentWrapper
 
-def translate(text: Union[str, list], destLang: str, srcLang: str = None):
+
+def translate(text: Union[str, list], destLang: str, srcLang: str = None) -> Union[str, list]:
 	"""
 	Translates a string or a list of strings into a different language using
 	google translator. Especially helpful when a api is only available in one
@@ -345,14 +346,17 @@ def translate(text: Union[str, list], destLang: str, srcLang: str = None):
 	"""
 	if not destLang:
 		destLang = SuperManager.getInstance().languageManager.activeLanguage
+	
+	if srcLang == destLang:
+		return text
 
+	kwargs = {
+		'text': text,
+		'dest': destLang
+	}
 	if srcLang:
-		if srcLang == destLang:
-			return text
-		if isinstance(text, str):
-			return Translator().translate(text, dest=destLang, src=srcLang).text
-		return [result.text for result in Translator().translate(text, dest=destLang, src=srcLang)]
+		kwargs['src'] = destLang
 
 	if isinstance(text, str):
-		return Translator().translate(text, dest=destLang).text
-	return [result.text for result in Translator().translate(text, dest=destLang)]
+		return Translator().translate(**kwargs).text
+	return [result.text for result in Translator().translate(**kwargs)]
