@@ -81,7 +81,8 @@ class WebInterfaceManager(Manager):
 		module = ''
 		try:
 			module = kwargs['module']
-			self.moduleInstallProcesses[module]['status'] = 'installed'
+			if module in self.moduleInstallProcesses:
+				self.moduleInstallProcesses[module]['status'] = 'installed'
 		except Exception as e:
 			self._logger.error(f'[ModulesView] Failed setting module "{module}" status to "installed": {e}')
 
@@ -90,7 +91,8 @@ class WebInterfaceManager(Manager):
 		module = ''
 		try:
 			module = kwargs['module']
-			self.moduleInstallProcesses[module]['status'] = 'failed'
+			if module in self.moduleInstallProcesses:
+				self.moduleInstallProcesses[module]['status'] = 'failed'
 		except Exception as e:
 			self._logger.error(f'[ModulesView] Failed setting module "{module}" status to "failed": {e}')
 
