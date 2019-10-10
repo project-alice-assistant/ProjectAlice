@@ -21,7 +21,7 @@ from core.dialog.model.DialogSession import DialogSession
 
 class Module:
 
-	def __init__(self, supportedIntents: list, authOnlyIntents: dict = None, databaseSchema: dict = None):
+	def __init__(self, supportedIntents: list, actionMappings: dict = None, authOnlyIntents: dict = None, databaseSchema: dict = None):
 		self._logger = logging.getLogger('ProjectAlice')
 
 		try:
@@ -43,6 +43,7 @@ class Module:
 		self._widgets = dict()
 
 		self._supportedIntents = supportedIntents
+		self._actionMappings = actionMappings
 		self._authOnlyIntents = authOnlyIntents or dict()
 
 		self._utteranceSlotCleaner = re.compile('{(.+?):=>.+?}')
@@ -316,6 +317,15 @@ class Module:
 		self._updateAvailable = False
 		#self.MqttManager.subscribeModuleIntents(self.name)
 
+	def onMessage(self, intent: str, session: DialogSession) -> bool:
+		if self._actionMappings is None:
+			raise NotImplementedError(f'[{self.name}] onMessage must be implemented!')
+
+		try:
+			self._actionMappings[intent](intent=intent, session=session)
+			return True
+		except KeyError:
+			return False
 
 	def onSleep(self): pass
 	def onWakeup(self): pass
@@ -333,7 +343,6 @@ class Module:
 	def onFiveMinute(self): pass
 	def onQuarterHour(self): pass
 	def onFullHour(self): pass
-	def onMessage(self, intent: str, session: DialogSession): raise NotImplementedError(f'[{self.name}] onMessage must be implemented!')
 	def onCancel(self): pass
 	def onASRCaptured(self): pass
 	def onWakeword(self): pass
