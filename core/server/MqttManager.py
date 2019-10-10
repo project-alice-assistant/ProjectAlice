@@ -189,7 +189,7 @@ class MqttManager(Manager):
 			for modul in modules.values():
 				module = modul['instance']
 				try:
-					consumed = module.onMessage(message.topic, session)
+					consumed = module.filterIntent(message.topic, session) and module.onMessage(message.topic, session)
 				except AccessLevelTooLow:
 					# The command was recognized but required higher access level
 					return
