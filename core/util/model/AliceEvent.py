@@ -11,10 +11,17 @@ class AliceEvent(Event):
 		self._name = name
 		self._onSet = onSet
 		self._onClear = onClear
+		self._kwargs = dict()
 
 
 	def set(self, **kwargs) -> None:
 		super().set()
+
+		if kwargs:
+			self._kwargs = kwargs
+		else:
+			kwargs = dict()
+
 		if not self._onSet:
 			self.broadcast(state='set', **kwargs)
 		else:
@@ -29,6 +36,9 @@ class AliceEvent(Event):
 
 	def clear(self, **kwargs) -> None:
 		super().clear()
+
+		if kwargs:
+			kwargs = {**kwargs, **self._kwargs}
 
 		if not self._onClear:
 			self.broadcast(state='clear', **kwargs)
