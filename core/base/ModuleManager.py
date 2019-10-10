@@ -77,7 +77,7 @@ class ModuleManager(Manager):
 		self.startAllModules()
 
 
-	def onSnipsAssistantDownloaded(self, **kwargs):
+	def onSnipsAssistantInstalled(self, **kwargs):
 		argv = kwargs.get('modulesInfos', dict())
 
 		for moduleName, module in argv.items():
@@ -418,14 +418,11 @@ class ModuleManager(Manager):
 							self.TalkManager.loadTalks(moduleToLoad=moduleName)
 						except:
 							pass
-
 					try:
 						self.SamkillaManager.sync(moduleFilter=modulesToBoot)
 					except Exception as esamk:
 						self._logger.error(f'[{self.name}] Failed syncing with remote snips console {esamk}')
 						raise
-
-					self.SnipsServicesManager.runCmd(cmd='restart')
 
 				self._busyInstalling.clear()
 

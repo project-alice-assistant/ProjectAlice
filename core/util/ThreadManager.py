@@ -29,8 +29,8 @@ class ThreadManager(Manager):
 				thread.join(timeout=1)
 
 		for event in self._events.values():
-			event.clear()
-
+			if event.isSet():
+				event.clear()
 
 	def onQuarterHour(self):
 		i = 0

@@ -363,12 +363,12 @@ class Module:
 	def onBroadcastingForNewDeviceStart(self, session: DialogSession): pass
 	def onBroadcastingForNewDeviceStop(self): pass
 	def onSnipsAssistantDownloaded(self, **kwargs): pass
-	def onSnipsAssistantDownloadFailed(self): pass
+	def onSnipsAssistantDownloadFailed(self, **kwargs): pass
 	def onAuthenticated(self, session: DialogSession): pass
 	def onAuthenticationFailed(self, session: DialogSession): pass
 	def onAudioFrame(self, message: MQTTMessage): pass
-	def onSnipsAssistantInstalled(self): pass
-	def onSnipsAssistantFailedInstalling(self): pass
+	def onSnipsAssistantInstalled(self, **kwargs): pass
+	def onSnipsAssistantFailedInstalling(self, **kwargs): pass
 
 
 	# HELPERS

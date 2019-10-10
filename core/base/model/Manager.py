@@ -83,9 +83,9 @@ class Manager(Singleton):
 	def onSayFinished(self, session: DialogSession): pass
 	def onSessionQueued(self, session: DialogSession): pass
 	def onAudioFrame(self, message: MQTTMessage): pass
-	def onSnipsAssistantDownloaded(self): pass
-	def onSnipsAssistantInstalled(self): pass
-	def onSnipsAssistantFailedInstalling(self): pass
+	def onSnipsAssistantDownloaded(self, **kwargs): pass
+	def onSnipsAssistantInstalled(self, **kwargs): pass
+	def onSnipsAssistantFailedInstalling(self, **kwargs): pass
 
 
 	# HELPERS

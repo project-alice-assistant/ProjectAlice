@@ -1,6 +1,12 @@
+import getpass
 import subprocess
+import time
 from pathlib import Path
+from zipfile import ZipFile
 
+import tempfile
+
+from core.base.SuperManager import SuperManager
 from core.base.model.Manager import Manager
 from core.commons import commons, constants
 from core.voice.model.SnipsASR import SnipsASR
@@ -38,6 +44,47 @@ class SnipsServicesManager(Manager):
 
 	def onStop(self):
 		self.runCmd(cmd='stop', services=self.snipsServices())
+
+
+	def onSnipsAssistantInstalled(self):
+		self.runCmd(cmd='restart')
+
+
+	def onSnipsAssistantDownloaded(self, **kwargs):
+		try:
+			filepath = Path(tempfile.gettempdir(), 'assistant.zip')
+			with ZipFile(filepath) as zipfile:
+				zipfile.extractall(tempfile.gettempdir())
+
+			subprocess.run(['sudo', 'rm', '-rf', commons.rootDir() + f'/trained/assistants/assistant_{self.LanguageManager.activeLanguage}'])
+			subprocess.run(['sudo', 'rm', '-rf', commons.rootDir() + '/assistant'])
+			subprocess.run(['sudo', 'cp', '-R', str(filepath).replace('.zip', ''), commons.rootDir() + f'/trained/assistants/assistant_{self.LanguageManager.activeLanguage}'])
+
+			time.sleep(0.5)
+
+			subprocess.run(['sudo', 'chown', '-R', getpass.getuser(), commons.rootDir() + f'/trained/assistants/assistant_{self.LanguageManager.activeLanguage}'])
+			subprocess.run(['sudo', 'ln', '-sfn', commons.rootDir() + f'/trained/assistants/assistant_{self.LanguageManager.activeLanguage}', commons.rootDir() + '/assistant'])
+			subprocess.run(['sudo', 'ln', '-sfn', commons.rootDir() + f'/system/sounds/{self.LanguageManager.activeLanguage}/start_of_input.wav', commons.rootDir() + '/assistant/custom_dialogue/sound/start_of_input.wav'])
+			subprocess.run(['sudo', 'ln', '-sfn', commons.rootDir() + f'/system/sounds/{self.LanguageManager.activeLanguage}/end_of_input.wav', commons.rootDir() + '/assistant/custom_dialogue/sound/end_of_input.wav'])
+			subprocess.run(['sudo', 'ln', '-sfn', commons.rootDir() + f'/system/sounds/{self.LanguageManager.activeLanguage}/error.wav', commons.rootDir() + '/assistant/custom_dialogue/sound/error.wav'])
+
+			time.sleep(0.5)
+			self.onSnipsAssistantInstalled()
+
+			SuperManager.getInstance().broadcast(
+				method='onSnipsAssistantInstalled',
+				exceptions=[self.name],
+				propagateToModules=True,
+				**kwargs
+			)
+		except Exception as e:
+			self._logger.error(f'[{self.name}] Failed installing Snips Assistant: {e}')
+			SuperManager.getInstance().broadcast(
+				method='onSnipsAssistantFailedInstalling',
+				exceptions=[constants.DUMMY],
+				propagateToModules=True,
+				**kwargs
+			)
 
 
 	def runCmd(self, cmd: str, services: list = None):
