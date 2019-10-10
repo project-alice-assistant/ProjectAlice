@@ -129,8 +129,7 @@ class SamkillaManager(Manager):
 					self.log(f'[{self.name}] Changes detected during sync but not downloading yet')
 			else:
 				self.log(f'[{self.name}] No changes detected during sync')
-				kwargs = {'moduleInfos': moduleFilter}
-				self.ModuleManager.onSnipsAssistantDownloaded(**kwargs)
+				self.ModuleManager.onSnipsAssistantDownloaded(moduleInfos=moduleFilter)
 
 
 			self.stop()
