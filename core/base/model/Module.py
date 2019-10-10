@@ -325,7 +325,7 @@ class Module:
 			self._actionMappings[intent](intent=intent, session=session)
 			return True
 		except KeyError:
-			return False
+			raise NotImplementedError(f'[{self.name}] The intent: {intent} is missing in the actionMappings!')
 
 	def onSleep(self): pass
 	def onWakeup(self): pass
