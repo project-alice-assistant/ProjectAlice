@@ -42,12 +42,12 @@ class Manager(Singleton):
 			return None
 
 
-	def onStart(self, *args, **kwargs):
+	def onStart(self):
 		self._logger.info(f'Starting {self.name}')
 		return self._initDB()
 
 
-	def onStop(self, *args, **kwargs):
+	def onStop(self):
 		self._logger.info(f'Stopping {self.name}')
 
 
@@ -57,35 +57,35 @@ class Manager(Singleton):
 		return True
 
 
-	def onBooted(self, *args, **kwargs): pass
-	def onModuleInstalled(self, *args, **kwargs): pass
-	def onModuleUpdated(self, *args, **kwargs): pass
-	def onFullMinute(self, *args, **kwargs): pass
-	def onFiveMinute(self, *args, **kwargs): pass
-	def onQuarterHour(self, *args, **kwargs): pass
-	def onFullHour(self, *args, **kwargs): pass
-	def onDeviceConnecting(self, *args, **kwargs): pass
-	def onDeviceDisconnecting(self, *args, **kwargs): pass
-	def onInternetConnected(self, *args, **kwargs): pass
-	def onInternetLost(self, *args, **kwargs): pass
-	def onHotword(self, siteId: str, *args, **kwargs): pass
-	def onHotwordToggleOn(self, siteId: str, *args, **kwargs): pass
-	def onSessionStarted(self, session: DialogSession, *args, **kwargs): pass
-	def onStartListening(self, session: DialogSession, *args, **kwargs): pass
-	def onCaptured(self, session: DialogSession, *args, **kwargs): pass
-	def onIntentParsed(self, session: DialogSession, *args, **kwargs): pass
-	def onUserCancel(self, session: DialogSession, *args, **kwargs): pass
-	def onSessionTimeout(self, session: DialogSession, *args, **kwargs): pass
-	def onIntentNotRecognized(self, session: DialogSession, *args, **kwargs): pass
-	def onSessionError(self, session: DialogSession, *args, **kwargs): pass
-	def onSessionEnded(self, session: DialogSession, *args, **kwargs): pass
-	def onSay(self, session: DialogSession, *args, **kwargs): pass
-	def onSayFinished(self, session: DialogSession, *args, **kwargs): pass
-	def onSessionQueued(self, session: DialogSession, *args, **kwargs): pass
-	def onAudioFrame(self, message: MQTTMessage, *args, **kwargs): pass
-	def onSnipsAssistantDownloaded(self, *args, **kwargs): pass
-	def onSnipsAssistantInstalled(self, *args, **kwargs): pass
-	def onSnipsAssistantFailedInstalling(self, *args, **kwargs): pass
+	def onBooted(self): pass
+	def onModuleInstalled(self): pass
+	def onModuleUpdated(self): pass
+	def onFullMinute(self): pass
+	def onFiveMinute(self): pass
+	def onQuarterHour(self): pass
+	def onFullHour(self): pass
+	def onDeviceConnecting(self): pass
+	def onDeviceDisconnecting(self): pass
+	def onInternetConnected(self): pass
+	def onInternetLost(self): pass
+	def onHotword(self, siteId: str): pass
+	def onHotwordToggleOn(self, siteId: str): pass
+	def onSessionStarted(self, session: DialogSession): pass
+	def onStartListening(self, session: DialogSession): pass
+	def onCaptured(self, session: DialogSession): pass
+	def onIntentParsed(self, session: DialogSession): pass
+	def onUserCancel(self, session: DialogSession): pass
+	def onSessionTimeout(self, session: DialogSession): pass
+	def onIntentNotRecognized(self, session: DialogSession): pass
+	def onSessionError(self, session: DialogSession): pass
+	def onSessionEnded(self, session: DialogSession): pass
+	def onSay(self, session: DialogSession): pass
+	def onSayFinished(self, session: DialogSession): pass
+	def onSessionQueued(self, session: DialogSession): pass
+	def onAudioFrame(self, message: MQTTMessage): pass
+	def onSnipsAssistantDownloaded(self): pass
+	def onSnipsAssistantInstalled(self): pass
+	def onSnipsAssistantFailedInstalling(self): pass
 
 
 	# HELPERS
