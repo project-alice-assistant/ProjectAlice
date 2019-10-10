@@ -21,7 +21,7 @@ from core.dialog.model.DialogSession import DialogSession
 
 class Module:
 
-	def __init__(self, supportedIntents: list, authOnlyIntents: dict = None, databaseSchema: dict = None):
+	def __init__(self, supportedIntents: list, actionMappings: dict = None, authOnlyIntents: dict = None, databaseSchema: dict = None):
 		self._logger = logging.getLogger('ProjectAlice')
 
 		try:
@@ -43,6 +43,7 @@ class Module:
 		self._widgets = dict()
 
 		self._supportedIntents = supportedIntents
+		self._actionMappings = actionMappings
 		self._authOnlyIntents = authOnlyIntents or dict()
 
 		self._utteranceSlotCleaner = re.compile('{(.+?):=>.+?}')
@@ -316,6 +317,15 @@ class Module:
 		self._updateAvailable = False
 		#self.MqttManager.subscribeModuleIntents(self.name)
 
+	def onMessage(self, intent: str, session: DialogSession) -> bool:
+		if self._actionMappings is None:
+			raise NotImplementedError(f'[{self.name}] onMessage must be implemented!')
+
+		try:
+			self._actionMappings[intent](intent=intent, session=session)
+			return True
+		except KeyError:
+			raise NotImplementedError(f'[{self.name}] The intent: {intent} is missing in the actionMappings!')
 
 	def onSleep(self): pass
 	def onWakeup(self): pass
@@ -333,7 +343,6 @@ class Module:
 	def onFiveMinute(self): pass
 	def onQuarterHour(self): pass
 	def onFullHour(self): pass
-	def onMessage(self, intent: str, session: DialogSession): raise NotImplementedError(f'[{self.name}] onMessage must be implemented!')
 	def onCancel(self): pass
 	def onASRCaptured(self): pass
 	def onWakeword(self): pass
@@ -353,13 +362,13 @@ class Module:
 	def onPressureAlert(self, deviceList: list): pass
 	def onBroadcastingForNewDeviceStart(self, session: DialogSession): pass
 	def onBroadcastingForNewDeviceStop(self): pass
-	def onSnipsAssistantDownloaded(self): pass
-	def onSnipsAssistantDownloadFailed(self): pass
+	def onSnipsAssistantDownloaded(self, **kwargs): pass
+	def onSnipsAssistantDownloadFailed(self, **kwargs): pass
 	def onAuthenticated(self, session: DialogSession): pass
 	def onAuthenticationFailed(self, session: DialogSession): pass
 	def onAudioFrame(self, message: MQTTMessage): pass
-	def onSnipsAssistantInstalled(self): pass
-	def onSnipsAssistantFailedInstalling(self): pass
+	def onSnipsAssistantInstalled(self, **kwargs): pass
+	def onSnipsAssistantFailedInstalling(self, **kwargs): pass
 
 
 	# HELPERS

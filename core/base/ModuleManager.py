@@ -77,17 +77,10 @@ class ModuleManager(Manager):
 		self.startAllModules()
 
 
-	def onSnipsAssistantDownloaded(self, *args, **kwargs):
-		argv = kwargs.get('moduleInfos', dict())
+	def onSnipsAssistantInstalled(self, **kwargs):
+		argv = kwargs.get('modulesInfos', dict())
 
 		for moduleName, module in argv.items():
-			if module['update']:
-				self._modules[moduleName]['instance'].onModuleUpdated()
-				method = 'onModuleUpdated'
-			else:
-				self._modules[moduleName]['instance'].onModuleInstalled()
-				method = 'onModuleInstalled'
-
 			try:
 				self._startModule(moduleInstance=self._modules[moduleName]['instance'])
 			except ModuleStartDelayed:
@@ -96,7 +89,7 @@ class ModuleManager(Manager):
 			self._modules[moduleName]['instance'].onBooted()
 
 			SuperManager.getInstance().broadcast(
-				method=method,
+				method='onModuleUpdated' if module['update'] else 'onModuleInstalled',
 				exceptions=[constants.DUMMY],
 				module=moduleName
 			)
@@ -309,9 +302,12 @@ class ModuleManager(Manager):
 			try:
 				func = getattr(moduleItem['instance'], method)
 				func(*args, **kwargs)
-			except Exception as e:
+			except AttributeError as e:
 				if not silent:
 					self._logger.warning(f'[{self.name}] Method "{method}" not found for module "{moduleItem["instance"].name}": {e}')
+			except TypeError:
+				# Do nothing, it's most prolly kwargs
+				pass
 
 
 	def _reorderCustomisationModule(self, isEvent: bool):
@@ -422,14 +418,11 @@ class ModuleManager(Manager):
 							self.TalkManager.loadTalks(moduleToLoad=moduleName)
 						except:
 							pass
-
 					try:
 						self.SamkillaManager.sync(moduleFilter=modulesToBoot)
 					except Exception as esamk:
 						self._logger.error(f'[{self.name}] Failed syncing with remote snips console {esamk}')
 						raise
-
-					self.SnipsServicesManager.runCmd(cmd='restart')
 
 				self._busyInstalling.clear()
 

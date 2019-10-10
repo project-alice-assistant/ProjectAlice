@@ -38,23 +38,23 @@ class AliceEvent(Event):
 		super().clear()
 
 		if kwargs:
-			kwargs = {**kwargs, **self._kwargs}
+			self._kwargs = {**kwargs, **self._kwargs}
 
 		if not self._onClear:
-			self.broadcast(state='clear', **kwargs)
+			self.broadcast(state='clear', **self._kwargs)
 		else:
 			SuperManager.getInstance().broadcast(
 				method=self._onClear,
 				exceptions=[constants.DUMMY],
 				propagateToModules=True,
 				silent=False,
-				**kwargs
+				**self._kwargs
 			)
 
 
 	def broadcast(self, state: str, **kwargs):
 		SuperManager.getInstance().broadcast(
-			method=commons.toCamelCase(f'{self.eventName()} {state}'),
+			method=self.eventName(state),
 			exceptions=[constants.DUMMY],
 			propagateToModules=True,
 			silent=True,
@@ -67,5 +67,5 @@ class AliceEvent(Event):
 		return self._name
 
 
-	def eventName(self) -> str:
-		return f'on{commons.toCamelCase(self.name)}'
+	def eventName(self, state: str) -> str:
+		return f'on{commons.toPascalCase(self.name)}{state.capitalize()}'

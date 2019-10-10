@@ -1,6 +1,5 @@
 import json
 import time
-from pathlib import Path
 
 import requests
 from selenium import webdriver
@@ -10,7 +9,6 @@ from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.ui import WebDriverWait
 
 from core.ProjectAliceExceptions import AssistantNotFoundError, HttpError, IntentWithUnknownSlotError
-from core.commons import commons
 from core.snips.samkilla.Assistant import Assistant
 from core.snips.samkilla.Entity import Entity
 from core.snips.samkilla.Intent import Intent
@@ -129,7 +127,7 @@ class SamkillaManager(Manager):
 					self.log(f'[{self.name}] Changes detected during sync but not downloading yet')
 			else:
 				self.log(f'[{self.name}] No changes detected during sync')
-				self.ModuleManager.onSnipsAssistantDownloaded(moduleInfos=moduleFilter)
+				self.ModuleManager.onSnipsAssistantDownloaded(modulesInfos=moduleFilter)
 
 
 			self.stop()

@@ -177,6 +177,9 @@ class SuperManager(object):
 			except AttributeError as e:
 				if not silent:
 					self._logger.warning(f"[{self.NAME}] Couldn't find method {method} in manager {man.name}: {e}")
+			except TypeError:
+				# Do nothing, it's most prolly kwargs
+				pass
 
 		if propagateToModules:
 			self.moduleManager.broadcast(method=method, silent=silent, *args, **kwargs)
