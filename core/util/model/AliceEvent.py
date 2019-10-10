@@ -54,7 +54,7 @@ class AliceEvent(Event):
 
 	def broadcast(self, state: str, **kwargs):
 		SuperManager.getInstance().broadcast(
-			method=f'{self.eventName(state)}',
+			method=self.eventName(state),
 			exceptions=[constants.DUMMY],
 			propagateToModules=True,
 			silent=True,
