@@ -126,6 +126,16 @@ class WakewordManager(Manager):
 
 
 	def _workAudioFile(self):
+		sample = self.wakeword.getSample()
+
+		# noinspection PyProtectedMember
+		if not sample._datawritten:
+			self._logger.error(f'[{self.name}] Something went wrong capturing audio, no data available in sample')
+			self._state = WakewordManagerState.IDLE
+			return
+
+		sample.close()
+
 		self._state = WakewordManagerState.TRIMMING
 
 		self.wakeword.getSample().close()
