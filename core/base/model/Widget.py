@@ -19,19 +19,17 @@ class Widget:
 		self._name = data['name']
 		self._parent = data['parent']
 
-		self._state = data.get('state', 0)
-
-		self._x = data.get('posx', 0)
-		self._y = data.get('posy', 0)
-
-		self._size = data.get('size', self.SIZE)
-		options = data.get('options')
+		self._state = data['state'] if 'state' in data.keys() else 0
+		self._x = data['posx'] if 'posx' in data.keys() else 0
+		self._y = data['posy'] if 'posy' in data.keys() else 0
+		self._size = data['size'] if 'size' in data.keys() else self.SIZE
+		options = data['options'] if 'options' in data.keys() else self.OPTIONS
 		if options:
 			self._options = json.loads(options)
 		else:
 			self._options = self.OPTIONS
 
-		self._zindex = data.get('zindex', 9999)
+		self._zindex = data['zindex'] if 'zindex' in data.keys() else 9999
 
 
 	def saveToDB(self):
