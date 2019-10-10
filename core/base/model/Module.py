@@ -353,7 +353,7 @@ class Module:
 	def onPressureAlert(self, deviceList: list): pass
 	def onBroadcastingForNewDeviceStart(self, session: DialogSession): pass
 	def onBroadcastingForNewDeviceStop(self): pass
-	def onSnipsAssistantDownloaded(self): pass
+	def onSnipsAssistantDownloaded(self, **kwargs): pass
 	def onSnipsAssistantDownloadFailed(self): pass
 	def onAuthenticated(self, session: DialogSession): pass
 	def onAuthenticationFailed(self, session: DialogSession): pass

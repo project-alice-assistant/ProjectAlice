@@ -77,8 +77,8 @@ class ModuleManager(Manager):
 		self.startAllModules()
 
 
-	def onSnipsAssistantDownloaded(self, *args, **kwargs):
-		argv = kwargs.get('moduleInfos', dict())
+	def onSnipsAssistantDownloaded(self, **kwargs):
+		argv = kwargs.get('modulesInfos', dict())
 
 		for moduleName, module in argv.items():
 			if module['update']:
@@ -309,9 +309,12 @@ class ModuleManager(Manager):
 			try:
 				func = getattr(moduleItem['instance'], method)
 				func(*args, **kwargs)
-			except Exception as e:
+			except AttributeError as e:
 				if not silent:
 					self._logger.warning(f'[{self.name}] Method "{method}" not found for module "{moduleItem["instance"].name}": {e}')
+			except TypeError:
+				# Do nothing, it's most prolly kwargs
+				pass
 
 
 	def _reorderCustomisationModule(self, isEvent: bool):
