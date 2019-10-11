@@ -21,7 +21,7 @@ from core.dialog.model.DialogSession import DialogSession
 
 class Module:
 
-	def __init__(self, supportedIntents: typing.Iterable, authOnlyIntents: dict = None, databaseSchema: dict = None):
+	def __init__(self, supportedIntents: list, actionMappings: dict = None, authOnlyIntents: dict = None, databaseSchema: dict = None):
 		self._logger = logging.getLogger('ProjectAlice')
 
 		try:
@@ -42,11 +42,8 @@ class Module:
 		self._databaseSchema = databaseSchema
 		self._widgets = dict()
 
-		if isinstance(supportedIntents, dict):
-			self._supportedIntents = supportedIntents
-		elif isinstance(supportedIntents, list):
-			self._supportedIntents = {intent: None for intent in supportedIntents}
-
+		self._supportedIntents = supportedIntents
+		self._actionMappings = actionMappings
 		self._authOnlyIntents = authOnlyIntents or dict()
 
 		self._utteranceSlotCleaner = re.compile('{(.+?):=>.+?}')
@@ -194,12 +191,12 @@ class Module:
 
 
 	@property
-	def supportedIntents(self) -> dict:
+	def supportedIntents(self) -> list:
 		return self._supportedIntents
 
 
 	@supportedIntents.setter
-	def supportedIntents(self, value: dict):
+	def supportedIntents(self, value: list):
 		self._supportedIntents = value
 
 
@@ -288,7 +285,7 @@ class Module:
 	def onIntentParsed(self, session: DialogSession): pass
 
 
-	def onStart(self) -> dict:
+	def onStart(self) -> list:
 		if not self._active:
 			self._logger.info(f'Module {self.name} is not active')
 		else:
@@ -320,17 +317,15 @@ class Module:
 		self._updateAvailable = False
 		#self.MqttManager.subscribeModuleIntents(self.name)
 
-
 	def onMessage(self, intent: str, session: DialogSession) -> bool:
-		if self._supportedIntents[intent] is None:
+		if self._actionMappings is None:
 			raise NotImplementedError(f'[{self.name}] onMessage must be implemented!')
 
 		try:
-			self._supportedIntents[intent](intent=intent, session=session)
+			self._actionMappings[intent](intent=intent, session=session)
 			return True
 		except KeyError:
-			raise NotImplementedError(f'[{self.name}] The intent: {intent} has no mapping!')
-
+			raise NotImplementedError(f'[{self.name}] The intent: {intent} is missing in the actionMappings!')
 
 	def onSleep(self): pass
 	def onWakeup(self): pass
