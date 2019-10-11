@@ -1,4 +1,4 @@
-VERSION = 0.12
+VERSION = 0.13
 DEFAULT_SITE_ID = 'default'
 UNKNOWN_WORD = 'unknownword'
 UNKNOWN_USER = 'unknownUser'
