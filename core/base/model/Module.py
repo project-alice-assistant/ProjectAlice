@@ -45,7 +45,7 @@ class Module:
 		if isinstance(supportedIntents, dict):
 			self._supportedIntents = supportedIntents
 		elif isinstance(supportedIntents, list):
-			self._supportedIntents = {intent: None for intent in supportedIntents}
+			self._supportedIntents = dict.fromkeys(supportedIntents)
 
 		self._authOnlyIntents = authOnlyIntents or dict()
 
