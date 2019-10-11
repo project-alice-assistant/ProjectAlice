@@ -1,7 +1,7 @@
 from paho.mqtt.client import MQTTMessage
 
 from core.base.model.Manager import Manager
-from core.commons import commons
+from core.commons import commons, constants
 from core.dialog.model import DialogSession
 from core.dialog.model.MultiIntent import MultiIntent
 
@@ -60,7 +60,7 @@ class MultiIntentManager(Manager):
 
 
 	def _queryNLU(self, session: DialogSession, string: str):
-		self.MqttManager.publish(topic='hermes/nlu/query', payload={
+		self.MqttManager.publish(topic=constants.TOPIC_NLU_QUERY, payload={
 			'input': string,
 			'sessionId': session.sessionId,
 			'intentFilter': session.intentFilter

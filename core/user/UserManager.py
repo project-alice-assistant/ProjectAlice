@@ -17,6 +17,7 @@ class UserManager(Manager):
 			'accessLevel TEXT NOT NULL',
 			'lang TEXT',
 			'tts TEXT',
+			'ttsLanguage TEXT',
 			'ttsType TEXT',
 			'ttsVoice TEXT'
 		]
@@ -31,7 +32,7 @@ class UserManager(Manager):
 	def onStart(self):
 		super().onStart()
 		self._loadUsers()
-		self._logger.info('- Loaded {} users'.format(len(self._users)))
+		self._logger.info(f'- Loaded {len(self._users)} users')
 
 
 	def _loadUsers(self):
@@ -57,6 +58,7 @@ class UserManager(Manager):
 				'state': state,
 				'lang': self.LanguageManager.activeLanguageAndCountryCode,
 				'tts': '',
+				'ttsLanguage': '',
 				'ttsType': '',
 				'ttsVoice': ''
 			})
@@ -169,12 +171,12 @@ class UserManager(Manager):
 		try:
 			_ = AccessLevel[requiredAccessLevel.upper()]
 		except KeyError:
-			self._logger.error('[{}] Was asked to check access level but accesslevel "{}" doesn\'t exist'.format(self.name, requiredAccessLevel))
+			self._logger.error(f'[{self.name}] Was asked to check access level but accesslevel "{requiredAccessLevel}" doesn\'t exist')
 			return False
 
 
 		if user.lower() not in self._users:
-			self._logger.error('[{}] Was asked to check access level but user "{}" doesn\'t exist'.format(self.name, user))
+			self._logger.error(f'[{self.name}] Was asked to check access level but user "{user}" doesn\'t exist')
 			return False
 
 		return AccessLevel[self._users[user.lower()].accessLevel.upper()].value <= AccessLevel[requiredAccessLevel.upper()].value

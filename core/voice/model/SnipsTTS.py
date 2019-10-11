@@ -90,11 +90,7 @@ class SnipsTTS(TTS):
 				'snips-makers-tts',
 				'--output',
 				self._cacheFile,
-				'file://{}/var/voices/cmu_{}_{}.flitevox'.format(
-					commons.rootDir(),
-					SuperManager.getInstance().languageManager.activeCountryCode.lower(),
-					self._voice
-				),
+				f'file://{commons.rootDir()}/var/voices/cmu_{SuperManager.getInstance().languageManager.activeCountryCode.lower()}_{self._voice}.flitevox',
 				self._text])
 
 		self._speak(file=self._cacheFile, session=session)

@@ -1,8 +1,4 @@
-import os
 import subprocess
-
-import django
-from django.core import management
 
 from core.base.SuperManager import SuperManager
 from core.commons.model.Singleton import Singleton
@@ -34,10 +30,5 @@ class ProjectAlice(Singleton):
 	def onStop(self):
 		self._logger.info('[ProjectAlice] Shutting down Project Alice')
 		self._superManager.onStop()
-
-
-	@staticmethod
-	def _startDjango():
-		os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'web.gui.settings')
-		django.setup()
-		management.call_command('runserver', '0:8000', '--noreload')
+		if self._superManager.configManager.getAliceConfigByName('useSLC'):
+			subprocess.run(['sudo', 'systemctl', 'stop', 'snipsledcontrol'])

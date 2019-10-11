@@ -27,7 +27,7 @@ class WakewordUploadThread(Thread):
 				sock.listen()
 
 				conn, addr = sock.accept()
-				self._logger.info('[WakewordUploadThread] New device connected: {}'.format(addr))
+				self._logger.info(f'[WakewordUploadThread] New device connected: {addr}')
 
 				with self._zipPath.open(mode='rb') as f:
 					data = f.read(1024)
@@ -35,7 +35,7 @@ class WakewordUploadThread(Thread):
 						conn.send(data)
 						data = f.read(1024)
 
-				self._logger.info('[WakewordUploadThread] Waiting on a feedback from {}'.format(addr[0]))
+				self._logger.info(f'[WakewordUploadThread] Waiting on a feedback from {addr[0]}')
 				conn.settimeout(20)
 				try:
 					while True:
@@ -45,7 +45,7 @@ class WakewordUploadThread(Thread):
 							break
 
 						if answer == '0':
-							self._logger.info('[WakewordUploadThread] Wakeword "{}" upload to {} success'.format(wakewordName, addr[0]))
+							self._logger.info(f'[WakewordUploadThread] Wakeword "{wakewordName}" upload to {addr[0]} success')
 							break
 						elif answer == '-1':
 							self._logger.warning('[WakewordUploadThread] The device failed downloading the hotword')
@@ -56,4 +56,4 @@ class WakewordUploadThread(Thread):
 				except timeout:
 					self._logger.warning('[WakewordUploadThread] The device did not confirm the operation as successfull in time. The hotword installation might have failed')
 		except Exception as e:
-			self._logger.info('[WakewordUploadThread] Error uploading wakeword: {}'.format(e))
+			self._logger.info(f'[WakewordUploadThread] Error uploading wakeword: {e}')

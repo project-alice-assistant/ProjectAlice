@@ -14,6 +14,7 @@
 
     authors: 	Psycho <https://github.com/Psychokiller1888>
     			Jierka <https://github.com/jr-k>
+				maxbachmann <https://github.com/maxbachmann>
 """
 import logging.handlers
 import signal
@@ -34,8 +35,8 @@ date = int(datetime.now().strftime('%Y%m%d'))
 
 logsMountpoint = Path(commons.rootDir(), 'var', 'logs')
 
-handler = logging.FileHandler(filename='{}/logs.log'.format(logsMountpoint), mode='w')
-rotatingHandler = logging.handlers.RotatingFileHandler(filename='{}/{}-logs.log'.format(logsMountpoint, date), mode='a', maxBytes = 100000, backupCount = 20)
+handler = logging.FileHandler(filename=f'{logsMountpoint}/logs.log', mode='w')
+rotatingHandler = logging.handlers.RotatingFileHandler(filename=f'{logsMountpoint}/{date}-logs.log', mode='a', maxBytes = 100000, backupCount = 20)
 streamHandler = logging.StreamHandler()
 
 handler.setFormatter(formatter)
@@ -49,7 +50,7 @@ def exceptionListener(*exc_info):
 	global _logger
 	_logger.error('An unhandled exception occured')
 	text = ''.join(traceback.format_exception(*exc_info))
-	_logger.error('- Traceback: {}'.format(text))
+	_logger.error(f'- Traceback: {text}')
 
 sys.excepthook = exceptionListener
 
@@ -77,7 +78,7 @@ def main():
 		while RUNNING:
 			time.sleep(0.1)
 	except KeyboardInterrupt:
-		pass
+		_logger.info('Interruption detected')
 	finally:
 		projectAlice.onStop()
 		_logger.info('Project Alice stopped, see you soon!')

@@ -9,17 +9,18 @@ from contextlib import contextmanager
 from ctypes import *
 from datetime import datetime
 from pathlib import Path
-from typing import Union
+from typing import Union, Callable
 
 from paho.mqtt.client import MQTTMessage
+from googletrans import Translator
 
 import core.commons.model.Slot as slotModel
 from core.base.SuperManager import SuperManager
+from core.commons import constants
 from core.commons.model.PartOfDay import PartOfDay
 from core.dialog.model import DialogSession
 
 ERROR_HANDLER_FUNC = CFUNCTYPE(None, c_char_p, c_int, c_char_p, c_int, c_char_p)
-
 
 # noinspection PyUnusedLocal
 def py_error_handler(filename, line, function, err, fmt):
@@ -72,9 +73,9 @@ def deprecated(func):
 	@functools.wraps(func)
 	def new_func(*args, **kwargs):
 		warnings.simplefilter('always', DeprecationWarning)  # turn off filter
-		warnings.warn('Call to deprecated function {}.'.format(func.__name__),
-		              category=DeprecationWarning,
-		              stacklevel=2)
+		warnings.warn(f'Call to deprecated function {func.__name__}.',
+					  category=DeprecationWarning,
+					  stacklevel=2)
 		warnings.simplefilter('default', DeprecationWarning)  # reset filter
 		return func(*args, **kwargs)
 
@@ -115,7 +116,7 @@ def parseSlotsToObjects(message: MQTTMessage) -> dict:
 
 def parseSlots(message: MQTTMessage) -> dict:
 	data = payload(message)
-	return dict((slot['slotName'], slot['rawValue']) for slot in data.get('slots', dict()))
+	return { slot['slotName']: slot['rawValue'] for slot in data.get('slots', dict()) }
 
 
 def parseSessionId(message: MQTTMessage) -> Union[str, bool]:
@@ -136,7 +137,7 @@ def parseSiteId(message: MQTTMessage) -> str:
 	if 'siteId' in data:
 		return data['siteId'].replace('_', ' ')  # WTF!! This is highly no no no!!!
 	else:
-		return data.get('IPAddress', 'default')
+		return data.get('IPAddress', constants.DEFAULT_SITE_ID)
 
 
 def smartSleep(wait: int):
@@ -155,7 +156,7 @@ def angleToCardinal(angle: float) -> str:
 
 
 def partOfTheDay() -> str:
-	hour = int(datetime.now().strftime('%H'))
+	hour = datetime.now().hour
 
 	if SuperManager.getInstance().userManager.checkIfAllUser('sleeping'):
 		return PartOfDay.SLEEPING.value
@@ -184,24 +185,28 @@ def getDuration(session: DialogSession) -> int:
 	duration = 0
 	if 'Duration' in slots and slots['Duration'][0].entity == 'snips/duration':
 		try:
-			values = slots['duration'][0].value
+			values = slots['Duration'][0].value
 			duration += values['seconds']
 			duration += values['minutes'] * 60
 			duration += values['hours'] * 60 * 60
 			duration += values['days'] * 24 * 60 * 60
 			duration += values['weeks'] * 7 * 24 * 60 * 60
 			duration += values['months'] * 4 * 7 * 24 * 60 * 60
-		except Exception:
+		except:
 			pass
 
 	return duration
 
 
 def toCamelCase(string: str, replaceSepCharacters: bool = False, sepCharacters: tuple = None) -> str:
+	join = toPascalCase(string, replaceSepCharacters, sepCharacters)
+	return join[0].lower() + join[1:]
+
+
+def toPascalCase(string: str, replaceSepCharacters: bool = False, sepCharacters: tuple = None) -> str:
 	if replaceSepCharacters:
-		if not sepCharacters: sepCharacters = ('-', '_')
-		for char in sepCharacters:
-			string.replace(char, ' ')
+		for char in sepCharacters or ('-', '_'):
+			string = string.replace(char, ' ')
 
 	return ''.join(x.capitalize() for x in string.split(' '))
 
@@ -214,7 +219,7 @@ def isSpelledWord(string: str) -> bool:
 	:return: bool
 	"""
 
-	return len(string) == (len(str(string).replace(' ', '').strip()) * 2) - 1
+	return len(string) == (len(string.replace(' ', '').strip()) * 2) - 1
 
 
 def cleanRoomNameToSiteId(roomName: str) -> str:
@@ -228,10 +233,10 @@ def cleanRoomNameToSiteId(roomName: str) -> str:
 
 	for parasite in parasites:
 		if parasite in roomName:
-			roomName = str(roomName).replace(parasite, '')
+			roomName = roomName.replace(parasite, '')
 			break
 
-	return str(roomName).strip().replace(' ', '_')
+	return roomName.strip().replace(' ', '_')
 
 
 def getLocalIp() -> str:
@@ -246,14 +251,6 @@ def getLocalIp() -> str:
 	return ip
 
 
-def isInt(string: str) -> bool:
-	try:
-		int(string)
-		return True
-	except ValueError:
-		return False
-
-
 def indexOf(sub: str, string: str) -> int:
 	try:
 		return string.index(sub)
@@ -261,49 +258,105 @@ def indexOf(sub: str, string: str) -> int:
 		return -1
 
 
-def online(randomTalk: bool = True, text: str = ''):
+def online(text: str = '', offlineHandler: Callable = None):
 	"""
 	(return a) decorator to mark a function that required ethernet.
 
-    This decorator can be used (with or or without parameters) to define
-    a function that requires ethernet. In the Default mode without arguments shown
+	This decorator can be used (with or or without parameters) to define
+	a function that requires ethernet. In the Default mode without arguments shown
 	in the example it will either execute whats in the function or when alice is
 	offline return a random offline answer. Using the parameters:
-		@online(randomTalk=False, text=<myText>)
-	a own text can be used when bein offline aswell
+		@online(text=<myText>)
+	a own text can be used when being offline aswell and using the parameters:
+		@online(offlineHandler=<myFunc>)
+	a own offline handler can be called, which is especially helpful when the intent wants to
+	use endDialog, continueDialog ... inside the decorated function -> does not return the text
 
 	:param text:
-	:param randomTalk:
+	:param offlineHandler:
 	:return: return value of function or random offline string in the current language
 	Examples:
-        An intent that requires ethernet can be defined the following way:
+		An intent that requires ethernet can be defined the following way:
 
 		def onMessage(self, intent: str, session: DialogSession) -> bool:
+			if not self.filterIntent(intent, session):
+				return False
 			if intent == self._INTENT_EXAMPLE:
 				self.endDialog(sessionId=session.sessionId, text=self.exampleIntent())
-				return True
-			return False
+			elif intent == self._INTENT_EXAMPLE_2:
+				self.endDialog(sessionId=session.sessionId, text=self.exampleIntent2())
+			elif intent == self._INTENT_EXAMPLE_3:
+				self.exampleIntent2(session)
+			
+			return True
 
 		@online
 		def exampleIntent(self) -> str:
 			request = requests.get('http://api.open-notify.org')
 			return request.text
-	"""
 
+		@online(text='offlineText')
+		def exampleIntent2(self) -> str:
+			request = requests.get('http://api.open-notify.org')
+			return request.text
+		
+		def offlineHandler(self, session: DialogSession):
+			self.endDialog(sessionId=session.sessionId, text='offlineText')
+
+		@online(text='offlineText')
+		def exampleIntent2(self, session: DialogSession):
+			request = requests.get('http://api.open-notify.org')
+			self.endDialog(sessionId=session.sessionId, text=request.text)
+	"""
 
 	def argumentWrapper(func):
 		def functionWrapper(*args, **kwargs):
-			if SuperManager.getInstance().internetManager.online:
-				return func(*args, **kwargs)
-			elif randomTalk:
+			internetManager = SuperManager.getInstance().internetManager
+			if internetManager.online:
+				try:
+					return func(*args, **kwargs)
+				except:
+					internetManager._checkOnlineState()
+					if internetManager.online:
+						raise
+			
+			if callable(text) or not text and not offlineHandler:
 				return SuperManager.getInstance().talkManager.randomTalk('offline', module='system')
-			else:
-				return text
-
+			if offlineHandler:
+				return offlineHandler(*args, **kwargs)
+			return text
 
 		return functionWrapper
 
-
-	if callable(randomTalk):
-		return argumentWrapper(randomTalk)
+	if callable(text):
+		return argumentWrapper(text)
 	return argumentWrapper
+
+
+def translate(text: Union[str, list], destLang: str, srcLang: str = None) -> Union[str, list]:
+	"""
+	Translates a string or a list of strings into a different language using
+	google translator. Especially helpful when a api is only available in one
+	language, but the module should support other languages aswell.
+
+	:param text: string or list of strings to translate
+	:param destLang: language to translate to (ISO639-1 code)
+	:param srcLang: source language to translate (ISO639-1 code)
+	:return: translated string or list of strings
+	"""
+	if not destLang:
+		destLang = SuperManager.getInstance().languageManager.activeLanguage
+	
+	if srcLang == destLang:
+		return text
+
+	kwargs = {
+		'text': text,
+		'dest': destLang
+	}
+	if srcLang:
+		kwargs['src'] = destLang
+
+	if isinstance(text, str):
+		return Translator().translate(**kwargs).text
+	return [result.text for result in Translator().translate(**kwargs)]

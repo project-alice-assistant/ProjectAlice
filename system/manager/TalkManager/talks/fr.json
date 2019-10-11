@@ -1,4 +1,23 @@
 {
+	"noAccess": {
+		"default": [
+			"Désolée, mais tu n'as pas accès à cette fonction",
+			"Impossible, ton niveau de privilège est trop bas"
+		],
+		"short":[
+			"Pas d'accès"
+		]
+	},
+	"unknowUser": {
+		"default": [
+			"Désolée, mais je ne sais pas qui tu es",
+			"Pardon, je ne peux pas, je ne te connais pas",
+			"Tu devrais m'appeller par mon nom pour que je te reconnaisse"
+		],
+		"short": [
+			"Je ne te connais pas"
+		]
+	},
 	"notUnderstood": {
 		"default": [
 			"Pardon, je n'ai pas compris ce que tu as dis",
@@ -8,6 +27,16 @@
 		],
 		"short": [
 			"Pardon?"
+		]
+	},
+	"notUnderstoodEnd": {
+		"default": [
+			"Désolée mais je n'arrive pas à te comprendre",
+			"Je ne comprend pas, on s'arrête là",
+			"Pardon, mais je ne comprend pas ce que tu veux dire"
+		],
+		"short": [
+			"Je ne comprend pas, on s'arrête là"
 		]
 	},
 	"youreWelcome": {

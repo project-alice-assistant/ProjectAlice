@@ -29,6 +29,17 @@
 			"Sorry?"
 		]
 	},
+	"notUnderstoodEnd": {
+		"default": [
+			"Sorry but I can't understand you",
+			"Sorry, I can understand what you want",
+			"Ok, we stop here, I can't understand your request",
+			"Ok, stop, I just don't understand"
+		],
+		"short": [
+			"Ok, stop, I just don't understand"
+		]
+	},
 	"youreWelcome": {
 		"default": [
 			"You're welcome!",

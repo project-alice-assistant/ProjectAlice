@@ -24,11 +24,7 @@ class IntentRemoteProcessor:
 	def intentValuesToHash(self, typeEntityMatching: dict, intentId: str = '', skillId: str = ''):
 		intent = self._intent
 
-		hashSum = '{}{}{}'.format(
-			str(intent['name']),
-			str(intent['description']),
-			str(intent['enabledByDefault'])
-		)
+		hashSum = f"{str(intent['name'])}{str(intent['description'])}{str(intent['enabledByDefault'])}"
 
 		for utteranceText in intent['utterances']:
 			hashSum += str(utteranceText)
@@ -64,10 +60,10 @@ class IntentRemoteProcessor:
 		fullIntentName = intent['name']
 
 		if hashComputationOnly or (oldInstanceExists and oldHash == curHash):
-			self._ctx.log('[Sync] Intent model {} = {} has no changes'.format(intentId, fullIntentName))
+			self._ctx.log(f'[Sync] Intent model {intentId} = {fullIntentName} has no changes')
 		elif oldInstanceExists:
 			changes = True
-			self._ctx.log('[Sync] Intent model {} = {} has been edited'.format(intentId, fullIntentName))
+			self._ctx.log(f'[Sync] Intent model {intentId} = {fullIntentName} has been edited')
 			self._ctx.intent.edit(
 				userId=self._ctx.userId,
 				intentId=intentId,
@@ -95,7 +91,7 @@ class IntentRemoteProcessor:
 				slotsDefinition=intent['slots'],
 				utterancesDefinition=intent['utterances']
 			)
-			self._ctx.log('[Sync] Intent model {} = {} has been created'.format(intentId, fullIntentName))
+			self._ctx.log(f'[Sync] Intent model {intentId} = {fullIntentName} has been created')
 			self._createdInstances['intents'].append({'id': intentId})
 			curHash = self.intentValuesToHash(typeEntityMatching=typeEntityMatching, intentId=intentId, skillId=skillId)
 
@@ -108,7 +104,7 @@ class IntentRemoteProcessor:
 		except IntentError as ie:
 			self._ctx.log('[Safe] Handle error gracefully')
 			self._ctx.log(ie.message)
-		except Exception:
+		except:
 			e = sys.exc_info()[0]
 			self._ctx.log('[Safe] Handle error gracefully')
 			self._ctx.log(e)
@@ -127,7 +123,7 @@ class IntentRemoteProcessor:
 
 
 	def cleanCreatedInstances(self):
-		self._ctx.log("[Cleanup] Deleting {} intents".format(len(self._createdInstances['intents'])))
+		self._ctx.log(f"[Cleanup] Deleting {len(self._createdInstances['intents'])} intents")
 		for intent in self._createdInstances['intents']:
 			self._ctx.entity.delete(intentId=intent['id'])
 		self._createdInstances['intents'] = list()

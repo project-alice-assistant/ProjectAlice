@@ -1,6 +1,5 @@
 import json
 import time
-from pathlib import Path
 
 import requests
 from selenium import webdriver
@@ -9,8 +8,7 @@ from selenium.webdriver.chrome.webdriver import WebDriver
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.ui import WebDriverWait
 
-from core.ProjectAliceExceptions import AssistantNotFoundError, HttpError
-from core.commons import commons
+from core.ProjectAliceExceptions import AssistantNotFoundError, HttpError, IntentWithUnknownSlotError
 from core.snips.samkilla.Assistant import Assistant
 from core.snips.samkilla.Entity import Entity
 from core.snips.samkilla.Intent import Intent
@@ -59,10 +57,6 @@ class SamkillaManager(Manager):
 		self.initActions()
 		self._loadDialogTemplateMapsInConfigManager()
 
-		path = Path(commons.rootDir(), 'var/assistants', self.LanguageManager.activeLanguage)
-		if not path.exists() or not [x for x in path.iterdir() if x.is_dir()]:
-			self.sync()
-
 
 	def _loadDialogTemplateMapsInConfigManager(self):
 		self._dtSlotTypesModulesValues, self._dtIntentsModulesValues, self._dtIntentNameSkillMatching = self.getDialogTemplatesMaps(
@@ -101,16 +95,16 @@ class SamkillaManager(Manager):
 		return self._userId
 
 
-	def sync(self, moduleFilter: list = None, download: bool = True) -> bool:
+	def sync(self, moduleFilter: dict = None, download: bool = True) -> bool:
 		if moduleFilter is None:
-			moduleFilter = list()
+			moduleFilter = dict()
 
-		self.log('[{}] Sync for module/s [{}]'.format(self.name, ', '.join(moduleFilter) or '*'))
+		self.log(f"[{self.name}] Sync for module/s [{', '.join(moduleFilter) or '*'}]")
 
 		started = self.start()
 
 		if not started:
-			self.log('[{}] No credentials. Unable to synchronize assistant with remote console'.format(self.name))
+			self.log(f'[{self.name}] No credentials. Unable to synchronize assistant with remote console')
 			return False
 
 		activeLang: str = self.LanguageManager.activeLanguage
@@ -121,22 +115,24 @@ class SamkillaManager(Manager):
 			changes = self.syncLocalToRemote(
 				baseAssistantId=activeProjectId,
 				baseLanguageFilter=activeLang,
-				baseModuleFilter=moduleFilter,
-				newAssistantTitle='ProjectAlice_{}'.format(self.LanguageManager.activeLanguage)
+				baseModuleFilter=list(moduleFilter),
+				newAssistantTitle=f'ProjectAlice_{self.LanguageManager.activeLanguage}'
 			)
 
 			if changes:
 				if download:
-					self.log('[{}] Changes detected during sync, let\'s update the assistant...'.format(self.name))
-					self.SnipsConsoleManager.doDownload()
+					self.log(f'[{self.name}] Changes detected during sync, let\'s update the assistant...')
+					self.SnipsConsoleManager.doDownload(moduleFilter)
 				else:
-					self.log('[{}] Changes detected during sync but not downloading yet'.format(self.name))
+					self.log(f'[{self.name}] Changes detected during sync but not downloading yet')
 			else:
-				self.log('[{}] No changes detected during sync'.format(self.name))
+				self.log(f'[{self.name}] No changes detected during sync')
+				self.ModuleManager.onSnipsAssistantDownloaded(modulesInfos=moduleFilter)
+
 
 			self.stop()
 		except AssistantNotFoundError:
-			self.log('[{}] Assistant project id \'{}\' for lang \'{}\' doesn\'t exist. Check your config.py'.format(self.name, activeProjectId, activeLang))
+			self.log(f'[{self.name}] Assistant project id \'{activeProjectId}\' for lang \'{activeLang}\' doesn\'t exist. Check your config.py')
 
 		return changes
 
@@ -203,21 +199,25 @@ class SamkillaManager(Manager):
 	# TODO batch gql requests
 	# payload appears to be typed wrong can be string or dict
 	def postGQLBrowserly(self, payload: dict, jsonRequest: bool = True, dataReadyResponse: bool = True, rawResponse: bool = False) -> dict:
-		if jsonRequest:
-			payload = json.dumps(payload)
-		
-		payload = payload.replace("'", "__SINGLE_QUOTES__").replace("\\n", ' ')
+		injectedPayload = payload
 
-		# self.log(payload)
-		# self._browser.execute_script('console.log(\'' + payload + '\')')
-		# self._browser.execute_script('console.log(\'' + payload + '\'.replace(/__SINGLE_QUOTES__/g,"\'").replace(/__QUOTES__/g,\'\\\\"\'))')
+		if jsonRequest:
+			injectedPayload = json.dumps(payload)
+
+		injectedPayload = injectedPayload.replace("'", "__SINGLE_QUOTES__").replace("\\n", ' ')
+
+		# self.log(injectedPayload)
+		# self._browser.execute_script('console.log(\'' + injectedPayload + '\')')
+		# self._browser.execute_script('console.log(\'' + injectedPayload + '\'.replace(/__SINGLE_QUOTES__/g,"\'").replace(/__QUOTES__/g,\'\\\\"\'))')
 
 		self._browser.execute_script("document.title = 'loading'")
-		self._browser.execute_script('fetch("/gql", {method: "POST", headers:{"accept":"*/*","content-type":"application/json"}, credentials: "same-origin", body:\'' + payload + '\'.replace(/__SINGLE_QUOTES__/g,"\'").replace(/__QUOTES__/g,\'\\\\"\')}).then((data) => { data.text().then((text) => { document.title = text; }); })')
+		self._browser.execute_script('fetch("/gql", {method: "POST", headers:{"accept":"*/*","content-type":"application/json"}, credentials: "same-origin", body:\'' + injectedPayload + '\'.replace(/__SINGLE_QUOTES__/g,"\'").replace(/__QUOTES__/g,\'\\\\"\')}).then((data) => { data.text().then((text) => { document.title = text; }); })')
 		wait = WebDriverWait(self._browser, 10)
 		wait.until(EC.title_contains('{'))
 		response = self._browser.execute_script('return document.title')
 		self._browser.execute_script("document.title = 'idle'")
+
+		# self.log(response)
 
 		jsonResponse = json.loads(response)
 
@@ -236,6 +236,9 @@ class SamkillaManager(Manager):
 				'message': complexMessage,
 				'context': path
 			}
+
+			if 'non-nullable field IntentSlot.name' in complexMessage:
+				raise IntentWithUnknownSlotError(errorResponse['code'], payload[0]['variables']['input']['config']['displayName'], ['intent'])
 
 			raise HttpError(errorResponse['code'], errorResponse['message'], errorResponse['context'])
 
@@ -273,7 +276,7 @@ class SamkillaManager(Manager):
 
 	# noinspection PyUnusedLocal
 	def findRunnableAssistant(self, assistantId: str, assistantLanguage: str, newAssistantTitle: str = '', persistLocal: bool = False) -> str:
-		if not newAssistantTitle: newAssistantTitle = 'ProjectAlice_{}'.format(self.LanguageManager.activeLanguage)
+		if not newAssistantTitle: newAssistantTitle = f'ProjectAlice_{self.LanguageManager.activeLanguage}'
 
 		runOnAssistantId = None
 
@@ -281,10 +284,10 @@ class SamkillaManager(Manager):
 		if assistantId:
 			if not self._assistant.exists(assistantId):
 				# If not found remotely, stop everything
-				raise AssistantNotFoundError(4001, 'Assistant with id {} not found'.format(assistantId), ['assistant'])
+				raise AssistantNotFoundError(4001, f'Assistant with id {assistantId} not found', ['assistant'])
 			# If found remotely, just use it
 			runOnAssistantId = assistantId
-			self.log('Using provided assistantId: {}'.format(runOnAssistantId))
+			self.log(f'Using provided assistantId: {runOnAssistantId}')
 
 
 		if not runOnAssistantId:
@@ -294,11 +297,11 @@ class SamkillaManager(Manager):
 			if not localFirstAssistantId or not self._assistant.exists(localFirstAssistantId):
 				# If not found remotely, create a new one
 				runOnAssistantId = self._assistant.create(title=newAssistantTitle, language=assistantLanguage)
-				self.log('Using new assistantId: {}'.format(runOnAssistantId))
+				self.log(f'Using new assistantId: {runOnAssistantId}')
 			else:
 				# If found remotely, just use it
 				runOnAssistantId = localFirstAssistantId
-				self.log('Using first local assistantId: {}'.format(runOnAssistantId))
+				self.log(f'Using first local assistantId: {runOnAssistantId}')
 
 		# Add assistant in cache locally if it isn't the case
 		self._mainProcessor.syncRemoteToLocalAssistant(
@@ -368,8 +371,8 @@ class SamkillaManager(Manager):
 		)
 
 		utterances = list()
-		
-		for dtIntentName, dtModuleName in intentNameSkillMatching.items():
+
+		for dtIntentName in intentNameSkillMatching:
 			if dtIntentName == intentFilter:
 				for utterance in intentsModulesValues[dtIntentName]['utterances'].items():
 					utterances.append({

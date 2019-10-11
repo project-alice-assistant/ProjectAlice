@@ -1,8 +1,14 @@
+import getpass
 import subprocess
+import time
 from pathlib import Path
+from zipfile import ZipFile
 
+import tempfile
+
+from core.base.SuperManager import SuperManager
 from core.base.model.Manager import Manager
-from core.commons import commons
+from core.commons import commons, constants
 from core.voice.model.SnipsASR import SnipsASR
 from core.voice.model.SnipsTTS import SnipsTTS
 
@@ -40,9 +46,51 @@ class SnipsServicesManager(Manager):
 		self.runCmd(cmd='stop', services=self.snipsServices())
 
 
+	def onSnipsAssistantInstalled(self, **kwargs):
+		self.runCmd(cmd='restart')
+		time.sleep(1)
+
+
+	def onSnipsAssistantDownloaded(self, **kwargs):
+		try:
+			filepath = Path(tempfile.gettempdir(), 'assistant.zip')
+			with ZipFile(filepath) as zipfile:
+				zipfile.extractall(tempfile.gettempdir())
+
+			subprocess.run(['sudo', 'rm', '-rf', commons.rootDir() + f'/trained/assistants/assistant_{self.LanguageManager.activeLanguage}'])
+			subprocess.run(['sudo', 'rm', '-rf', commons.rootDir() + '/assistant'])
+			subprocess.run(['sudo', 'cp', '-R', str(filepath).replace('.zip', ''), commons.rootDir() + f'/trained/assistants/assistant_{self.LanguageManager.activeLanguage}'])
+
+			time.sleep(0.5)
+
+			subprocess.run(['sudo', 'chown', '-R', getpass.getuser(), commons.rootDir() + f'/trained/assistants/assistant_{self.LanguageManager.activeLanguage}'])
+			subprocess.run(['sudo', 'ln', '-sfn', commons.rootDir() + f'/trained/assistants/assistant_{self.LanguageManager.activeLanguage}', commons.rootDir() + '/assistant'])
+			subprocess.run(['sudo', 'ln', '-sfn', commons.rootDir() + f'/system/sounds/{self.LanguageManager.activeLanguage}/start_of_input.wav', commons.rootDir() + '/assistant/custom_dialogue/sound/start_of_input.wav'])
+			subprocess.run(['sudo', 'ln', '-sfn', commons.rootDir() + f'/system/sounds/{self.LanguageManager.activeLanguage}/end_of_input.wav', commons.rootDir() + '/assistant/custom_dialogue/sound/end_of_input.wav'])
+			subprocess.run(['sudo', 'ln', '-sfn', commons.rootDir() + f'/system/sounds/{self.LanguageManager.activeLanguage}/error.wav', commons.rootDir() + '/assistant/custom_dialogue/sound/error.wav'])
+
+			time.sleep(0.5)
+			self.onSnipsAssistantInstalled()
+
+			SuperManager.getInstance().broadcast(
+				method='onSnipsAssistantInstalled',
+				exceptions=[self.name],
+				propagateToModules=True,
+				**kwargs
+			)
+		except Exception as e:
+			self._logger.error(f'[{self.name}] Failed installing Snips Assistant: {e}')
+			SuperManager.getInstance().broadcast(
+				method='onSnipsAssistantFailedInstalling',
+				exceptions=[constants.DUMMY],
+				propagateToModules=True,
+				**kwargs
+			)
+
+
 	def runCmd(self, cmd: str, services: list = None):
 		if not Path(commons.rootDir() + '/assistant').exists():
-			self._logger.warning('[{}] Assistant not yet existing, shouldn\'t handle Snips for now'.format(self.name))
+			self._logger.warning(f'[{self.name}] Assistant not yet existing, shouldn\'t handle Snips for now')
 			return
 
 		if not services:
@@ -54,15 +102,15 @@ class SnipsServicesManager(Manager):
 
 			result = subprocess.run(['sudo', 'systemctl', cmd, service], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 			if result.returncode == 0:
-				self._logger.info("[{}] Service {} {}'ed".format(self.name, service, cmd))
+				self._logger.info(f"[{self.name}] Service {service} {cmd}'ed")
 			elif result.returncode == 5:
 				pass
 			else:
-				self._logger.info("[{}] Tried to {} the {} service but it returned with return code {}".format(self.name, cmd, service, result.returncode))
+				self._logger.info(f"[{self.name}] Tried to {cmd} the {service} service but it returned with return code {result.returncode}")
 
 
 	def toggleFeedbackSound(self, state: str, siteId: str = 'all'):
-		topic = 'hermes/feedback/sound/toggleOn' if state == 'on' else 'hermes/feedback/sound/toggleOff'
+		topic = constants.TOPIC_HOTWORD_TOGGLE_ON if state == 'on' else constants.TOPIC_TOGGLE_FEEDBACK_OFF
 
 		if siteId == 'all':
 			devices = self.DeviceManager.getDevicesByType(deviceType='AliceSatellite', connectedOnly=True)

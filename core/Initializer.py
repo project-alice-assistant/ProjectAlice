@@ -23,7 +23,7 @@ class initDict(dict):
 		try:
 			return super().__getitem__(item) or ''
 		except:
-			self._logger.warning('Missing key "{}" in provided yaml file. Are you using a deprecated yaml file version?'.format(item))
+			self._logger.warning(f'Missing key "{item}" in provided yaml file. Are you using a deprecated yaml file version?')
 			return ''
 
 
@@ -50,7 +50,7 @@ network={
 		self._confsFile = Path(commons.rootDir(), 'config.py')
 		self._confsSample = Path(commons.rootDir(), 'configSample.py')
 		self._initFile = Path('/boot/ProjectAlice.yaml')
-		self._latest = 1.02
+		self._latest = 1.03
 
 
 	def initProjectAlice(self) -> bool:
@@ -63,7 +63,7 @@ network={
 			try:
 				initConfs = initDict(yaml.safe_load(f))
 			except yaml.YAMLError as e:
-				self.fatal('Failed loading init configurations: {}'.format(e))
+				self.fatal(f'Failed loading init configurations: {e}')
 
 		# Check that we are running using the latest yaml
 		if float(initConfs['version']) < self._latest:
@@ -92,6 +92,8 @@ network={
 			subprocess.run(['/usr/bin/sudo', '/sbin/shutdown', '-r', 'now'])
 			exit(0)
 
+		if not initConfs['snipsConsoleLogin'] or not initConfs['snipsConsolePassword'] or not initConfs['intentsOwner']:
+			self.fatal('You must specify a Snips console login, password and intent owner')
 
 		if not self._confsFile.exists() and not self._confsSample.exists():
 			self.fatal('No config and no config sample found, can\'t continue')
@@ -116,8 +118,10 @@ network={
 		subprocess.run(['sudo', 'apt-get', 'update'])
 		subprocess.run(['sudo', 'apt-get', 'dist-upgrade', '-y'])
 		subprocess.run(['git', 'stash'])
+		subprocess.run(['git', 'checkout', initConfs['updateChannel']])
 		subprocess.run(['git', 'pull'])
 		subprocess.run(['git', 'stash', 'clear'])
+
 
 		# Do some installation if wanted by the user
 		if initConfs['doGroundInstall']:
@@ -139,12 +143,9 @@ network={
 
 
 		# Now let's dump some values to their respective places
-		# First those that need some checks and self filling in case
+		# First those that need some checks and self filling in case unspecified
 		confs['mqttHost'] = str(initConfs['mqttHost']) or 'localhost'
 		confs['mqttPort'] = str(initConfs['mqttPort']) or '1883'
-
-		if not initConfs['snipsConsoleLogin'] or not initConfs['snipsConsolePassword'] or not initConfs['intentsOwner']:
-			self.fatal('You must specify a Snips console login, password and intent owner')
 
 		confs['snipsConsoleLogin'] = initConfs['snipsConsoleLogin']
 		confs['snipsConsolePassword'] = initConfs['snipsConsolePassword']
@@ -191,21 +192,28 @@ network={
 		confs['probabilityTreshold'] = float(initConfs['probabilityTreshold'])
 		confs['shortReplies'] = bool(initConfs['shortReplies'])
 		confs['whisperWhenSleeping'] = bool(initConfs['whisperWhenSleeping'])
+		confs['ttsLanguage'] = initConfs['ttsLanguage']
 		confs['ttsType'] = initConfs['ttsType']
 		confs['ttsVoice'] = initConfs['ttsVoice']
 		confs['githubUsername'] = initConfs['githubUsername']
 		confs['githubToken'] = initConfs['githubToken']
+		confs['ttsLanguage'] = initConfs['ttsLanguage']
 
 		if initConfs['snipsProjectId'] and confs['activeLanguage'] in confs['supportedLanguages']:
 			confs['supportedLanguages'][confs['activeLanguage']]['snipsProjectId'] = initConfs['snipsProjectId']
+
+		if initConfs['deviceName'] != 'default':
+			subprocess.run(['sudo', 'sed', '-i', '-e', f's/\# bind = "default@mqtt"/bind = "{initConfs["deviceName"]}@mqtt"/', Path('/etc/snips.toml')])
+			subprocess.run(['sudo', 'sed', '-i', '-e', f's/bind = ".*@mqtt"/bind = "{initConfs["deviceName"]}@mqtt"/', Path('/etc/snips.toml')])
+			subprocess.run(['sudo', 'sed', '-i', '-e', f's/DEFAULT_SITE_ID = \'default\'/DEFAULT_SITE_ID = \'"{initConfs["deviceName"]}\'"/', Path(commons.rootDir(), 'core/commons/constants.py')])
 
 		serviceFilePath = Path('/etc/systemd/system/ProjectAlice.service')
 		if not serviceFilePath.exists():
 			subprocess.run(['sudo', 'cp', 'ProjectAlice.service', serviceFilePath])
 
-		subprocess.run(['sudo', 'sed', '-i', '-e', 's/\#WORKINGDIR/WorkingDirectory=\/home\/{}\/ProjectAlice/'.format(getpass.getuser()), str(serviceFilePath)])
-		subprocess.run(['sudo', 'sed', '-i', '-e', 's/\#EXECSTART/ExecStart=\/home\/{}\/ProjectAlice\/venv\/bin\/python3 main.py/'.format(getpass.getuser()), str(serviceFilePath)])
-		subprocess.run(['sudo', 'sed', '-i', '-e', 's/\#USER/User={}/'.format(getpass.getuser()), str(serviceFilePath)])
+		subprocess.run(['sudo', 'sed', '-i', '-e', f's/\#WORKINGDIR/WorkingDirectory=\/home\/{getpass.getuser()}\/ProjectAlice/', str(serviceFilePath)])
+		subprocess.run(['sudo', 'sed', '-i', '-e', f's/\#EXECSTART/ExecStart=\/home\/{getpass.getuser()}\/ProjectAlice\/venv\/bin\/python3 main.py/', str(serviceFilePath)])
+		subprocess.run(['sudo', 'sed', '-i', '-e', f's/\#USER/User={getpass.getuser()}/', str(serviceFilePath)])
 
 		self._logger.info('Installing audio hardware')
 		audioHardware = ''
@@ -225,16 +233,16 @@ network={
 				subprocess.run(['git', '-C', str(Path('/home', getpass.getuser(), 'snipsLedControl')), 'stash', 'clear'])
 
 			if not slcServiceFilePath.exists():
-				subprocess.run(['sudo', 'cp', '/home/{}/snipsLedControl/snipsledcontrol.service'.format(getpass.getuser()), str(slcServiceFilePath)])
+				subprocess.run(['sudo', 'cp', f'/home/{getpass.getuser()}/snipsLedControl/snipsledcontrol.service', str(slcServiceFilePath)])
 
-			subprocess.run(['sudo', 'sed', '-i', '-e', 's/%WORKING_DIR%/\/home\/{}\/snipsLedControl/'.format(getpass.getuser()), str(slcServiceFilePath)])
-			subprocess.run(['sudo', 'sed', '-i', '-e', 's/%EXECSTART%/\/home\/{}\/snipsLedControl\/venv\/bin\/python3 main.py --hardware=%HARDWARE% --pattern=projectalice/'.format(getpass.getuser()), str(slcServiceFilePath)])
-			subprocess.run(['sudo', 'sed', '-i', '-e', 's/%USER%/{}/'.format(getpass.getuser()), str(slcServiceFilePath)])
+			subprocess.run(['sudo', 'sed', '-i', '-e', f's/%WORKING_DIR%/\/home\/{getpass.getuser()}\/snipsLedControl/', str(slcServiceFilePath)])
+			subprocess.run(['sudo', 'sed', '-i', '-e', f's/%EXECSTART%/\/home\/{getpass.getuser()}\/snipsLedControl\/venv\/bin\/python3 main.py --hardware=%HARDWARE% --pattern=projectalice/', str(slcServiceFilePath)])
+			subprocess.run(['sudo', 'sed', '-i', '-e', f's/%USER%/{getpass.getuser()}/', str(slcServiceFilePath)])
 
-		if audioHardware in ('respeaker2', 'respeaker4', 'respeaker6MicArray'):
+		if audioHardware in {'respeaker2', 'respeaker4', 'respeaker6MicArray'}:
 			subprocess.run(['sudo', Path(commons.rootDir(), 'system/scripts/audioHardware/respeakers.sh')])
 			if initConfs['useSLC']:
-				subprocess.run(['sudo', 'sed', '-i', '-e', 's/%HARDWARE%/{}/'.format(audioHardware), str(slcServiceFilePath)])
+				subprocess.run(['sudo', 'sed', '-i', '-e', f's/%HARDWARE%/{audioHardware}/', str(slcServiceFilePath)])
 
 			if audioHardware == 'respeaker6MicArray':
 				subprocess.run(['sudo', 'cp', Path(commons.rootDir(), 'system', 'asounds', 'respeaker6micarray.conf'), Path('/etc/asound.conf')])
@@ -247,17 +255,17 @@ network={
 		elif audioHardware == 'respeakerCoreV2':
 			subprocess.run(['sudo', Path(commons.rootDir(), 'system/scripts/audioHardware/respeakerCoreV2.sh')])
 			if initConfs['useSLC']:
-				subprocess.run(['sudo', 'sed', '-i', '-e', 's/%HARDWARE%/{}/'.format(audioHardware), str(slcServiceFilePath)])
+				subprocess.run(['sudo', 'sed', '-i', '-e', f's/%HARDWARE%/{audioHardware}/', str(slcServiceFilePath)])
 
-		elif audioHardware in ('matrixCreator', 'matrixVoice'):
+		elif audioHardware in {'matrixCreator', 'matrixVoice'}:
 			subprocess.run(['sudo', Path(commons.rootDir(), 'system/scripts/audioHardware/matrix.sh')])
 			if initConfs['useSLC']:
-				subprocess.run(['sudo', 'sed', '-i', '-e', 's/%HARDWARE%/{}/'.format(audioHardware.lower()), str(slcServiceFilePath)])
+				subprocess.run(['sudo', 'sed', '-i', '-e', f's/%HARDWARE%/{audioHardware.lower()}/', str(slcServiceFilePath)])
 
 		elif audioHardware == 'googleAIY':
 			subprocess.run(['sudo', Path(commons.rootDir(), 'system/scripts/audioHardware/aiy.sh')])
 			if initConfs['useSLC']:
-				subprocess.run(['sudo', 'sed', '-i', '-e', 's/%HARDWARE%/{}/'.format('googleAIY'), str(slcServiceFilePath)])
+				subprocess.run(['sudo', 'sed', '-i', '-e', 's/%HARDWARE%/googleAIY/', str(slcServiceFilePath)])
 
 		elif audioHardware == 'usbMic':
 			subprocess.run(['sudo', 'cp', Path(commons.rootDir(), 'system', 'asounds', 'usbmic.conf'), Path('/etc/asound.conf')])
@@ -270,16 +278,16 @@ network={
 
 		try:
 			s = json.dumps(sort, indent=4).replace('false', 'False').replace('true', 'True')
-			self._confsFile.write_text('settings = {}'.format(s))
+			self._confsFile.write_text(f'settings = {s}')
 		except Exception as e:
-			self.fatal('An error occured while writting final configuration file: {}'.format(e))
+			self.fatal(f'An error occured while writting final configuration file: {e}')
 		else:
 			importlib.reload(config)
 
 		subprocess.run(['sudo', 'rm', '-rf', Path(commons.rootDir(), 'assistant')])
-		subprocess.run(['sudo', 'rm', '-rf', Path(commons.rootDir(), 'trained', 'assistants', 'assistant_{}'.format(confs['activeLanguage']))])
+		subprocess.run(['sudo', 'rm', '-rf', Path(commons.rootDir(), 'trained', 'assistants', f"assistant_{confs['activeLanguage']}")])
 		subprocess.run(['sudo', 'rm', '-rf', Path(commons.rootDir(), 'var', 'assistants', confs['activeLanguage'])])
-		subprocess.run(['sudo', 'rm', str(Path('/boot/ProjectAlice.yaml'))])
+		subprocess.run(['sudo', 'mv', str(Path('/boot/ProjectAlice.yaml')), str(Path('/boot/ProjectAlice.yaml.bak'))])
 
 		self.warning('Initializer done with configuring')
 		time.sleep(2)

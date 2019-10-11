@@ -1,5 +1,7 @@
 from typing import Optional
 
+from paho.mqtt.client import MQTTMessage
+
 from core.base.SuperManager import SuperManager
 from core.commons import commons
 from core.commons.model.Singleton import Singleton
@@ -14,7 +16,7 @@ class Manager(Singleton):
 		self._databaseSchema    = databaseSchema
 		self._isActive          = True
 
-		self._logger.info('Initializing {}'.format(name))
+		self._logger.info(f'Initializing {name}')
 
 
 	@property
@@ -36,17 +38,17 @@ class Manager(Singleton):
 		try:
 			return commons.getFunctionCaller()
 		except Exception as e:
-			self._logger.error('[{}] Something went wrong retrieving function caller: {}'.format(self.name, e))
+			self._logger.error(f'[{self.name}] Something went wrong retrieving function caller: {e}')
 			return None
 
 
 	def onStart(self):
-		self._logger.info('Starting {}'.format(self._name))
+		self._logger.info(f'Starting {self.name}')
 		return self._initDB()
 
 
 	def onStop(self):
-		self._logger.info('Stopping {}'.format(self._name))
+		self._logger.info(f'Stopping {self.name}')
 
 
 	def _initDB(self):
@@ -56,15 +58,18 @@ class Manager(Singleton):
 
 
 	def onBooted(self): pass
+	def onModuleInstalled(self): pass
+	def onModuleUpdated(self): pass
 	def onFullMinute(self): pass
 	def onFiveMinute(self): pass
 	def onQuarterHour(self): pass
 	def onFullHour(self): pass
-	def onDeviceConnecting(self, *args): pass
-	def onDeviceDisconnecting(self, *args): pass
-	def onInternetConnected(self, *args): pass
-	def onInternetLost(self, *args): pass
-	def onHotword(self, siteId: str, session: DialogSession): pass
+	def onDeviceConnecting(self): pass
+	def onDeviceDisconnecting(self): pass
+	def onInternetConnected(self): pass
+	def onInternetLost(self): pass
+	def onHotword(self, siteId: str): pass
+	def onHotwordToggleOn(self, siteId: str): pass
 	def onSessionStarted(self, session: DialogSession): pass
 	def onStartListening(self, session: DialogSession): pass
 	def onCaptured(self, session: DialogSession): pass
@@ -77,10 +82,17 @@ class Manager(Singleton):
 	def onSay(self, session: DialogSession): pass
 	def onSayFinished(self, session: DialogSession): pass
 	def onSessionQueued(self, session: DialogSession): pass
+	def onAudioFrame(self, message: MQTTMessage): pass
+	def onSnipsAssistantDownloaded(self, **kwargs): pass
+	def onSnipsAssistantInstalled(self, **kwargs): pass
+	def onSnipsAssistantFailedInstalling(self, **kwargs): pass
 
 
 	# HELPERS
-	def databaseFetch(self, tableName: str, query: str, values: dict = None, method: str = 'one') -> list:
+	def databaseFetch(self, tableName: str, query: str = None, values: dict = None, method: str = 'one') -> list:
+		if not query:
+			query = 'SELECT * FROM :__table__'
+
 		return self.DatabaseManager.fetch(tableName=tableName, query=query, values=values, callerName=self.name, method=method)
 
 
@@ -196,3 +208,6 @@ class Manager(Singleton):
 	def WakewordManager(self):
 		return SuperManager.getInstance().wakewordManager
 
+	@property
+	def WebInterfaceManager(self):
+		return SuperManager.getInstance().webInterfaceManager

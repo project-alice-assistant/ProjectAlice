@@ -28,9 +28,9 @@ class TTSManager(Manager):
 
 		if (self.ConfigManager.getAliceConfigByName('stayCompletlyOffline') or self.ConfigManager.getAliceConfigByName('keepTTSOffline')) and self._tts.online:
 			self._tts = PicoTTS()
-			self._logger.info('[{}] Started "Pico" TTS'.format(self.name))
+			self._logger.info(f'[{self.name}] Started "Pico" TTS')
 		else:
-			self._logger.info('[{}] Started "{}" TTS'.format(self.name, tts.value))
+			self._logger.info(f'[{self.name}] Started "{tts.value}" TTS')
 
 		self._tts.onStart()
 
@@ -48,7 +48,7 @@ class TTSManager(Manager):
 			self._tts = PicoTTS(user)
 		elif tts == TTSEnum.MYCROFT:
 			if not Path(Path(commons.rootDir()).parent, 'mimic/voices').is_dir():
-				self._logger.warning('[{}] Trying to use Mycroft as TTS but files not available, falling back to picotts'.format(self.NAME))
+				self._logger.warning(f'[{self.NAME}] Trying to use Mycroft as TTS but files not available, falling back to picotts')
 				self._tts = PicoTTS(user)
 				tts = TTSEnum.PICO
 			else:
@@ -72,16 +72,16 @@ class TTSManager(Manager):
 		return self._tts
 
 
-	def onInternetLost(self, *args):
+	def onInternetLost(self):
 		if self._tts.online:
 			self._fallback = PicoTTS()
 
 
-	def onInternetConnected(self, *args):
+	def onInternetConnected(self):
 		self._fallback = None
 
 
-	def onSay(self, session: DialogSession):
+	def onSay(self, session: DialogSession, *args, **kwargs):
 		if self._fallback:
 			self._fallback.onSay(session)
 		else:

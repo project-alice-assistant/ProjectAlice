@@ -71,13 +71,13 @@ class LanguageManager(Manager):
 		if not toLang:
 			toLang = self.activeLanguage
 		if not module in self._stringsData:
-			self._logger.error('[{}] Asked to get translation from module "{}" but does not exist'.format(self.name, module))
+			self._logger.error(f'[{self.name}] Asked to get translation from module "{module}" but does not exist')
 			return list()
 		elif key not in self._stringsData[module]:
-			self._logger.error('[{}] Asked to get translation for "{}" from module "{}" but does not exist'.format(self.name, key, module))
+			self._logger.error(f'[{self.name}] Asked to get translation for "{key}" from module "{module}" but does not exist')
 			return list()
 		elif toLang not in self._stringsData[module][key]:
-			self._logger.error('[{}] Asked to get "{}" translation for "{}" from module "{}" but does not exist'.format(self.name, toLang, key, module))
+			self._logger.error(f'[{self.name}] Asked to get "{toLang}" translation for "{key}" from module "{module}" but does not exist')
 			return list()
 		else:
 			return self._stringsData[module][key][toLang]
@@ -104,46 +104,42 @@ class LanguageManager(Manager):
 
 		if not self._activeLanguage:
 			if self._defaultLanguage:
-				self._logger.warning('[{}] No active language defined, falling back to {}'.format(self.name, self._defaultLanguage))
+				self._logger.warning(f'[{self.name}] No active language defined, falling back to {self._defaultLanguage}')
 				self._activeLanguage = self._defaultLanguage
 				self._activeCountryCode = self._defaultCountryCode
 			else:
-				self._logger.warning('[{}] No active language or default language defined, falling back to "en"'.format(self.name))
+				self._logger.warning(f'[{self.name}] No active language or default language defined, falling back to "en"')
 				self._activeLanguage = 'en'
 				self._activeCountryCode = 'US'
 		else:
-			self._logger.info('[{}] Active language set to "{}"'.format(self.name, self.activeLanguageAndCountryCode))
+			self._logger.info(f'[{self.name}] Active language set to "{self.activeLanguageAndCountryCode}"')
 
 		if not self._defaultLanguage:
 			if self._activeLanguage:
-				self._logger.warning('[{}] No default language defined, falling back to {}'.format(self.name, self._activeLanguage))
+				self._logger.warning(f'[{self.name}] No default language defined, falling back to {self._activeLanguage}')
 				self._defaultLanguage = self._activeLanguage
 				self._defaultCountryCode = self._activeCountryCode
 			else:
-				self._logger.warning('[{}] No default language or active language defined, falling back to "en"'.format(self.name))
+				self._logger.warning(f'[{self.name}] No default language or active language defined, falling back to "en"')
 				self._defaultLanguage = 'en'
 				self._defaultCountryCode = 'US'
 				self._activeLanguage = self._defaultLanguage
 				self._activeCountryCode = self._defaultCountryCode
 		else:
-			self._logger.info('[{}] Default language set to "{}"'.format(self.name, self.activeLanguageAndCountryCode))
+			self._logger.info(f'[{self.name}] Default language set to "{self.activeLanguageAndCountryCode}"')
 
 
 		if not self._activeSnipsProjectId:
-			self._logger.info('[{}] No active snips project id set'.format(self.name))
+			self._logger.info(f'[{self.name}] No active snips project id set')
 
 
 	def localize(self, string: str) -> str:
-		string = str(string)
-		string = string.lower()
+		string = str(string).lower()
 
-		if self._activeLanguage != 'en':
-			string = str(string).lower()
-
-			if self._activeLanguage == 'fr':
-				for match in re.findall(self._floatExpressionPattern, string):
-					m = match.replace('.', ',')
-					string = string.replace(match, m)
+		if self._activeLanguage == 'fr':
+			for match in re.findall(self._floatExpressionPattern, string):
+				m = match.replace('.', ',')
+				string = string.replace(match, m)
 
 		for key in self._locals:
 			if key in string:
@@ -200,4 +196,4 @@ class LanguageManager(Manager):
 
 	@property
 	def activeLanguageAndCountryCode(self) -> str:
-		return '{}-{}'.format(self._activeLanguage, self._activeCountryCode)
+		return f'{self._activeLanguage}-{self._activeCountryCode}'

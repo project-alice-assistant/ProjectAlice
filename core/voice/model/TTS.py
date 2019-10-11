@@ -2,14 +2,13 @@ import hashlib
 import logging
 import subprocess
 import tempfile
-import uuid
 from pathlib import Path
 from typing import Optional
 
 from pydub import AudioSegment
 
 from core.base.SuperManager import SuperManager
-from core.commons import commons
+from core.commons import commons, constants
 from core.dialog.model.DialogSession import DialogSession
 from core.user.model.User import User
 from core.voice.model.TTSEnum import TTSEnum
@@ -37,40 +36,56 @@ class TTS:
 
 
 	def onStart(self):
-		if self._user:
-			self._lang = self._user.lang
-			self._type = self._user.ttsType
-			self._voice = self._user.ttsVoice
+		if self._user and self._user.ttsLanguage:
+			self._lang = self._user.ttsLanguage
+			self._logger.info(f'[TTS] Language from user settings: "{self._lang}"')
+		elif SuperManager.getInstance().configManager.getAliceConfigByName('ttsLanguage'):
+			self._lang = SuperManager.getInstance().configManager.getAliceConfigByName('ttsLanguage')
+			self._logger.info(f'[TTS] Language from config: "{self._lang}"')
 		else:
 			self._lang = SuperManager.getInstance().languageManager.activeLanguageAndCountryCode
+			self._logger.info(f'[TTS] Language from active language: "{self._lang}"')
+
+		if self._user and self._user.ttsType:
+			self._type = self._user.ttsType
+			self._logger.info(f'[TTS] Type from user settings: "{self._type}"')
+		else:
 			self._type = SuperManager.getInstance().configManager.getAliceConfigByName('ttsType')
+			self._logger.info(f'[TTS] Type from config: "{self._type}"')
+
+		if self._user and self._user.ttsVoice:
+			self._voice = self._user.ttsVoice
+			self._logger.info(f'[TTS] Voice from user settings: "{self._voice}"')
+		else:
 			self._voice = SuperManager.getInstance().configManager.getAliceConfigByName('ttsVoice')
+			self._logger.info(f'[TTS] Voice from config: "{self._voice}"')
 
 		if self._lang not in self._supportedLangAndVoices:
-			self._logger.info('[TTS] Lang "{}" not found, falling back to "{}"'.format(self._lang, 'en-US'))
+			self._logger.info(f'[TTS] Language "{self._lang}" not found, falling back to "en-US"')
 			self._lang = 'en-US'
 
 		if self._type not in self._supportedLangAndVoices[self._lang]:
-			self._logger.info('[TTS] Type "{}" not found, falling back to "{}"'.format(self._type, 'male'))
-			self._type = 'male'
+			tts_type = self._type
+			self._type = next(iter(self._supportedLangAndVoices[self._lang]))
+			self._logger.info(f'[TTS] Type "{tts_type}" not found for the language, falling back to "{self._type}"')
 
 		if self._voice not in self._supportedLangAndVoices[self._lang][self._type]:
 			voice = self._voice
 			self._voice = next(iter(self._supportedLangAndVoices[self._lang][self._type]))
-			self._logger.info('[TTS] Voice "{}" not found, falling back to "{}"'.format(voice, self._voice))
+			self._logger.info(f'[TTS] Voice "{voice}" not found for the language and type, falling back to "{self._voice}"')
 
 		if not self.TEMP_ROOT.is_dir():
 			subprocess.run(['sudo', 'mkdir', str(self.TEMP_ROOT)])
 			subprocess.run(['sudo', 'chown', 'pi', str(self.TEMP_ROOT)])
 
 		if self.TTS == TTSEnum.SNIPS:
-			voiceFile = 'cmu_{}_{}'.format(SuperManager.getInstance().languageManager.activeCountryCode.lower(), self._voice)
+			voiceFile = f'cmu_{SuperManager.getInstance().languageManager.activeCountryCode.lower()}_{self._voice}'
 			if not Path(commons.rootDir(), 'system/voices', voiceFile).exists():
-				self._logger.info('[TTS] Using "{}" as TTS with voice "{}" but voice file not found. Downloading...'.format(self.TTS.value, self._voice))
+				self._logger.info(f'[TTS] Using "{self.TTS.value}" as TTS with voice "{self._voice}" but voice file not found. Downloading...')
 
 				process = subprocess.run([
-					'wget', 'https://github.com/MycroftAI/mimic1/blob/development/voices/{}.flitevox?raw=true'.format(voiceFile),
-					'-O', Path(commons.rootDir(), 'var/voices/{}.flitevox'.format(voiceFile))
+					'wget', f'https://github.com/MycroftAI/mimic1/blob/development/voices/{voiceFile}.flitevox?raw=true',
+					'-O', Path(commons.rootDir(), f'var/voices/{voiceFile}.flitevox')
 				],
 				stdout=subprocess.PIPE)
 
@@ -94,6 +109,16 @@ class TTS:
 
 
 	@property
+	def ttsType(self) -> str:
+		return self._type
+
+
+	@ttsType.setter
+	def ttsType(self, value: str):
+		self._type = value if value in self._supportedLangAndVoices[self._lang] else next(iter(self._supportedLangAndVoices[self._lang]))
+
+
+	@property
 	def voice(self) -> str:
 		return self._voice
 
@@ -101,7 +126,7 @@ class TTS:
 	@voice.setter
 	def voice(self, value: str):
 		self._voice = value if value in self._supportedLangAndVoices[self._lang][self._type] else next(iter(self._supportedLangAndVoices[self._lang][self._type]))
-			
+
 
 	@property
 	def online(self) -> bool:
@@ -129,34 +154,32 @@ class TTS:
 
 
 	def _hash(self, text: str) -> str:
-		string = '{}_{}_{}_{}_{}_22050'.format(text, self.TTS, self._lang, self._type, self._voice)
+		string = f'{text}_{self.TTS}_{self._lang}_{self._type}_{self._voice}_22050'
 		return hashlib.md5(string.encode('utf-8')).hexdigest()
 
 
 	def _speak(self, file: Path, session: DialogSession):
-		uid = str(uuid.uuid4())
 		SuperManager.getInstance().mqttManager.playSound(
-			soundFile=file.stem,
+			soundFilename=file.stem,
+			location=file.parent,
 			sessionId=session.sessionId,
-			siteId=session.siteId,
-			root=file.parent,
-			uid=uid
+			siteId=session.siteId
 		)
 
 		duration = round(len(AudioSegment.from_file(file)) / 1000, 2)
-		SuperManager.getInstance().threadManager.doLater(interval=duration + 0.1, func=self._sayFinished, args=[session.sessionId, session])
+		SuperManager.getInstance().threadManager.doLater(interval=duration + 0.1, func=self._sayFinished, args=[session])
 
 
 	@staticmethod
-	def _sayFinished(sid: str, session: DialogSession):
+	def _sayFinished(session: DialogSession):
 		if 'id' not in session.payload:
 			return
 
 		SuperManager.getInstance().mqttManager.publish(
-			topic='hermes/tts/sayFinished',
+			topic=constants.TOPIC_TTS_FINISHED,
 			payload={
 				'id': session.payload['id'],
-				'sessionId': sid
+				'sessionId': session.sessionId
 			}
 		)
 

@@ -7,7 +7,7 @@
 		"Jierka"
 	],
 	"desc": "A module for anyone to override Project Alice default behavior",
-	"aliceMinVersion": "",
+	"aliceMinVersion": 0.10,
 	"systemRequirements": [],
 	"pipRequirements": [],
 	"conditions": {

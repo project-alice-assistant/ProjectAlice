@@ -46,6 +46,7 @@ class SuperManager(object):
 		self.wakewordManager           = None
 		self.userManager               = None
 		self.talkManager               = None
+		self.webInterfaceManager       = None
 
 
 	def onStart(self):
@@ -124,6 +125,7 @@ class SuperManager(object):
 		from core.voice.TalkManager             import TalkManager
 		from core.voice.TTSManager              import TTSManager
 		from core.voice.WakewordManager         import WakewordManager
+		from core.interface.WebInterfaceManager import WebInterfaceManager
 
 		self.configManager              = ConfigManager()
 		self.databaseManager            = DatabaseManager()
@@ -146,16 +148,14 @@ class SuperManager(object):
 		self.samkillaManager            = SamkillaManager()
 		self.wakewordManager            = WakewordManager()
 		self.talkManager                = TalkManager()
+		self.webInterfaceManager        = WebInterfaceManager()
 
 		self._managers = {name[0].upper() + name[1:]: manager for name, manager in self.__dict__.items() if name.endswith('Manager')}
 
 
-	def broadcast(self, method, exceptions: list = None, manager = None, args: list = None, propagateToModules: bool = False):
+	def broadcast(self, method, exceptions: list = None, manager = None, propagateToModules: bool = False, silent: bool = False, *args, **kwargs):
 		if not exceptions and not manager:
-			self._logger.warning('[Managers] Cannot broadcast to itself, the calling method has to be put in exceptions')
-
-		if not args:
-			args = list()
+			self._logger.warning(f'[{self.NAME}] Cannot broadcast to itself, the calling method has to be put in exceptions')
 
 		if 'ProjectAlice' not in exceptions:
 			exceptions.append('ProjectAlice')
@@ -173,12 +173,16 @@ class SuperManager(object):
 
 			try:
 				func = getattr(man, method)
-				func(*args)
-			except AttributeError:
-				self._logger.warning("[{}] Couldn't find method {} in manager {}".format(self.NAME, method, man.name))
+				func(*args, **kwargs)
+			except AttributeError as e:
+				if not silent:
+					self._logger.warning(f"[{self.NAME}] Couldn't find method {method} in manager {man.name}: {e}")
+			except TypeError:
+				# Do nothing, it's most prolly kwargs
+				pass
 
 		if propagateToModules:
-			self.moduleManager.broadcast(method=method, args=args)
+			self.moduleManager.broadcast(method=method, silent=silent, *args, **kwargs)
 
 		for name in deadManagers:
 			del self._managers[name]
@@ -190,7 +194,7 @@ class SuperManager(object):
 			for managerName, manager in self._managers.items():
 				manager.onStop()
 		except Exception as e:
-			self._logger.info('[SuperManager] Error while shutting down manager "{}": {}'.format(managerName, e))
+			self._logger.info(f'[{self.NAME}] Error while shutting down manager "{managerName}": {e}')
 
 
 	def getManager(self, managerName: str):

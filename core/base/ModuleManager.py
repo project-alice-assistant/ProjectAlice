@@ -6,13 +6,15 @@ from pathlib import Path
 from typing import Optional
 
 import requests
+import shutil
 
 from core.ProjectAliceExceptions import ModuleNotConditionCompliant, ModuleStartDelayed, ModuleStartingFailed
 from core.base.SuperManager import SuperManager
+from core.base.model import Intent
 from core.base.model.GithubCloner import GithubCloner
 from core.base.model.Manager import Manager
 from core.base.model.Module import Module
-from core.commons import commons
+from core.commons import commons, constants
 
 #Special case, must be called as last!
 try:
@@ -29,36 +31,83 @@ class ModuleManager(Manager):
 
 	NEEDED_MODULES = [
 		'AliceCore',
-		'ContextSensitive'
+		'ContextSensitive',
+		'RedQueen'
 	]
 
 	GITHUB_BARE_BASE_URL = 'https://raw.githubusercontent.com/project-alice-powered-by-snips/ProjectAliceModules/master/PublishedModules'
 	GITHUB_API_BASE_URL = 'repositories/193512918/contents/PublishedModules'
 
+	DATABASE = {
+		'widgets': [
+			'parent TEXT NOT NULL UNIQUE',
+			'name TEXT NOT NULL UNIQUE',
+			'posx INTEGER NOT NULL',
+			'posy INTEGER NOT NULL',
+			'state TEXT NOT NULL',
+			'options TEXT NOT NULL',
+			'zindex INTEGER'
+		]
+	}
+
 	def __init__(self):
-		super().__init__(self.NAME)
+		super().__init__(self.NAME, self.DATABASE)
 
 		self._busyInstalling        = None
 
 		self._moduleInstallThread   = None
 		self._supportedIntents      = list()
 		self._modules               = dict()
+		self._deactivatedModules    = dict()
+		self._widgets               = dict()
 
 
 	def onStart(self):
 		super().onStart()
 
-		self._busyInstalling = self.ThreadManager.newLock('moduleInstallation')
+		self._busyInstalling = self.ThreadManager.newEvent('moduleInstallation')
 		self._moduleInstallThread = self.ThreadManager.newThread(name='ModuleInstallThread', target=self._checkForModuleInstall, autostart=False)
 
 		self._modules = self._loadModuleList()
+
+		for moduleName in self._deactivatedModules:
+			self.configureModuleIntents(moduleName=moduleName, state=False)
+
 		self.checkForModuleUpdates()
 		self.startAllModules()
 
 
+	def onSnipsAssistantInstalled(self, **kwargs):
+		argv = kwargs.get('modulesInfos', dict())
+
+		for moduleName, module in argv.items():
+			try:
+				self._startModule(moduleInstance=self._modules[moduleName]['instance'])
+			except ModuleStartDelayed:
+				self._logger.info(f'[{self.name}] Module "{moduleName}" start is delayed')
+
+			self._modules[moduleName]['instance'].onBooted()
+
+			SuperManager.getInstance().broadcast(
+				method='onModuleUpdated' if module['update'] else 'onModuleInstalled',
+				exceptions=[constants.DUMMY],
+				module=moduleName
+			)
+
+
 	@property
-	def supportedIntents(self):
+	def widgets(self) -> dict:
+		return self._widgets
+
+
+	@property
+	def supportedIntents(self) -> list:
 		return self._supportedIntents
+
+
+	@property
+	def deactivatedModules(self) -> dict:
+		return self._deactivatedModules
 
 
 	def onBooted(self):
@@ -66,7 +115,7 @@ class ModuleManager(Manager):
 		self._moduleInstallThread.start()
 
 
-	def _loadModuleList(self, moduleToLoad: str = '', isUpdate: bool = False):
+	def _loadModuleList(self, moduleToLoad: str = '', isUpdate: bool = False) -> dict:
 		if moduleToLoad:
 			modules = self._modules.copy()
 		else:
@@ -83,74 +132,52 @@ class ModuleManager(Manager):
 			if moduleToLoad and moduleName != moduleToLoad:
 				continue
 
-			conditionName = ''
-			conditionValue = ''
 			try:
 				if not module['active']:
 					if moduleName in self.NEEDED_MODULES:
-						self._logger.info("Module {} marked as disable but it shouldn't be".format(moduleName))
+						self._logger.info(f"Module {moduleName} marked as disable but it shouldn't be")
 						SuperManager.getInstance().onStop()
 						break
 					else:
-						self._logger.info('Module {} is disabled'.format(moduleName))
+						self._logger.info(f'Module {moduleName} is disabled')
+
+						moduleInstance = self.importFromModule(moduleName=moduleName, isUpdate=False)
+						if moduleInstance:
+							moduleInstance.active = False
+
+							if moduleName in self.NEEDED_MODULES:
+								moduleInstance.required = True
+
+							self._deactivatedModules[moduleInstance.name] = {
+								'instance': moduleInstance
+							}
 						continue
 
-				if 'conditions' in module:
-					for conditionName, conditionValue in module['conditions'].items():
-						if conditionName == 'lang' and self.LanguageManager.activeLanguage not in conditionValue:
-							raise ModuleNotConditionCompliant
-
-						elif conditionName == 'online':
-							if conditionValue and self.ConfigManager.getAliceConfigByName('stayCompletlyOffline'):
-								raise ModuleNotConditionCompliant
-							elif not conditionValue and not self.ConfigManager.getAliceConfigByName('stayCompletlyOffline'):
-								raise ModuleNotConditionCompliant
-
-						elif conditionName == 'module':
-							for requiredModule in conditionValue:
-								if requiredModule['name'] in availableModules and not availableModules[requiredModule['name']]['active']:
-									raise ModuleNotConditionCompliant
-								elif requiredModule['name'] not in availableModules:
-									self._logger.info('[{}] Module {} has another module as dependency, adding download'.format(self.name, moduleName))
-									subprocess.run(['wget', requiredModule['url'], '-O', Path(commons.rootDir(), 'system/moduleInstallTickets/{}.install'.format(requiredModule['name']))])
-
-						elif conditionName == 'notModule':
-							for excludedModule in conditionValue:
-								author, name = excludedModule.split('/')
-								if name in availableModules and availableModules[name]['author'] == author and availableModules[name]['active']:
-									raise ModuleNotConditionCompliant
-
-						elif conditionName == 'asrArbitraryCapture':
-							if conditionValue and not self.ASRManager.asr.capableOfArbitraryCapture:
-								raise ModuleNotConditionCompliant
-
-						elif conditionName == 'activeManager':
-							for manager in conditionValue:
-								if not manager: continue
-
-								man = SuperManager.getInstance().getManager(manager)
-								if not man or not man.isActive:
-									raise ModuleNotConditionCompliant
+				self.checkModuleConditions(moduleName, module['conditions'], availableModules)
 
 				if ' ' in moduleName:
-					name = commons.toCamelCase(moduleName)	
+					name = commons.toCamelCase(moduleName)
 				else:
 					name = moduleName
 
 				moduleInstance = self.importFromModule(moduleName=name, isUpdate=isUpdate)
 
 				if moduleInstance:
+
+					if moduleName in self.NEEDED_MODULES:
+						moduleInstance.required = True
+
 					modules[moduleInstance.name] = {
 						'instance': moduleInstance
 					}
 			except ModuleStartingFailed as e:
-				self._logger.warning('[{}] Failed loading module: {}'.format(self.name, e))
+				self._logger.warning(f'[{self.name}] Failed loading module: {e}')
 				continue
-			except ModuleNotConditionCompliant:
-				self._logger.info('[{}] Module {} does not comply to "{}" condition, required "{}"'.format(self.name, moduleName, conditionName, conditionValue))
+			except ModuleNotConditionCompliant as e:
+				self._logger.info(f'[{self.name}] Module {moduleName} does not comply to "{e.condition}" condition, required "{e.conditionValue}"')
 				continue
 			except Exception as e:
-				self._logger.warning('[{}] Something went wrong loading a module: {}'.format(self.name, e))
+				self._logger.warning(f'[{self.name}] Something went wrong loading a module: {e}')
 				continue
 
 		# noinspection PyTypeChecker
@@ -164,7 +191,7 @@ class ModuleManager(Manager):
 		moduleResource = moduleResource or moduleName
 
 		try:
-			moduleImport = importlib.import_module('modules.{}.{}'.format(moduleName, moduleResource))
+			moduleImport = importlib.import_module(f'modules.{moduleName}.{moduleResource}')
 
 			if isUpdate:
 				moduleImport = importlib.reload(moduleImport)
@@ -173,11 +200,11 @@ class ModuleManager(Manager):
 			instance: Module = klass()
 		except ImportError as e:
 			if moduleName != Customisation.MODULE_NAME:
-				self._logger.error("[{}] Couldn't import module {}.{}: {}".format(self.name, moduleName, moduleResource, e))
+				self._logger.error(f"[{self.name}] Couldn't import module {moduleName}.{moduleResource}: {e}")
 		except AttributeError as e:
-			self._logger.error("[{}] Couldn't find main class for module {}.{}: {}".format(self.name, moduleName, moduleResource, e))
+			self._logger.error(f"[{self.name}] Couldn't find main class for module {moduleName}.{moduleResource}: {e}")
 		except Exception as e:
-			self._logger.error("[{}] Couldn't instanciate module {}.{}: {}".format(self.name, moduleName, moduleResource, e))
+			self._logger.error(f"[{self.name}] Couldn't instanciate module {moduleName}.{moduleResource}: {e}")
 
 		return instance
 
@@ -188,7 +215,7 @@ class ModuleManager(Manager):
 		self._reorderCustomisationModule(True)
 		for moduleItem in self._modules.values():
 			moduleItem['instance'].onStop()
-			self._logger.info('- [{}] Stopped!'.format(moduleItem['instance'].name))
+			self._logger.info(f"- [{moduleItem['instance'].name}] Stopped!")
 
 
 	def onFullHour(self):
@@ -206,13 +233,13 @@ class ModuleManager(Manager):
 			except ModuleStartingFailed:
 				self._modules[moduleName]['active'] = False
 			except ModuleStartDelayed:
-				pass
+				self._logger.info(f'[{self.name}] Module {moduleName} start is delayed')
 
 		supportedIntents = list(set(supportedIntents))
 
 		self._supportedIntents = supportedIntents
 
-		self._logger.info('[{}] All modules started. {} intents supported'.format(self.name, len(supportedIntents)))
+		self._logger.info(f'[{self.name}] All modules started. {len(supportedIntents)} intents supported')
 
 
 	def _startModule(self, moduleInstance: Module) -> list:
@@ -221,15 +248,19 @@ class ModuleManager(Manager):
 		try:
 			name = moduleInstance.name
 			intents = moduleInstance.onStart()
+
+			if moduleInstance.widgets:
+				self._widgets[name] = moduleInstance.widgets
+
 			if intents:
 				self._logger.info('- Started!')
 				return intents
 		except ModuleStartingFailed:
-			pass
+			raise
 		except ModuleStartDelayed:
-			pass
+			raise
 		except Exception as e:
-			self._logger.error('- Couldn\'t start module {}. Did you forget to return the intents in onStart()? Error: {}'.format(name, e))
+			self._logger.error(f'- Couldn\'t start module {name}. Did you forget to return the intents in onStart()? Error: {e}')
 
 		return list()
 
@@ -241,7 +272,7 @@ class ModuleManager(Manager):
 	def getModuleInstance(self, moduleName: str) -> Optional[Module]:
 		if moduleName not in self._modules:
 			if moduleName != Customisation.MODULE_NAME:
-				self._logger.warning('[{}] Module "{}" is disabled or does not exist in modules manager'.format(self.name, moduleName))
+				self._logger.warning(f'[{self.name}] Module "{moduleName}" is disabled or does not exist in modules manager')
 			return None
 		else:
 			return self._modules[moduleName]['instance']
@@ -252,17 +283,16 @@ class ModuleManager(Manager):
 		return self._modules
 
 
-	def broadcast(self, method: str, isEvent: bool = True, filterOut: list = None, args: list = None):
+	def broadcast(self, method: str, isEvent: bool = True, filterOut: list = None, silent: bool = False, *args, **kwargs):
 		"""
 		Boradcasts a call to the given method on every module
 		:param filterOut: array, module not to boradcast to
 		:param method: str, the method name to call on every module
 		:param isEvent: bool, is this broadcast initiated by an event or a user interaction? Changes for customisation module call
 		:param args: arguments that should be passed
+		:param silent
 		:return:
 		"""
-		if not args:
-			args = list()
 
 		self._reorderCustomisationModule(isEvent)
 		for moduleItem in self._modules.values():
@@ -271,9 +301,13 @@ class ModuleManager(Manager):
 
 			try:
 				func = getattr(moduleItem['instance'], method)
-				func(*args)
-			except:
-				self._logger.warning('[{}] Method "{}" not found for module "{}"'.format(self.name, method, moduleItem['instance'].name))
+				func(*args, **kwargs)
+			except AttributeError as e:
+				if not silent:
+					self._logger.warning(f'[{self.name}] Method "{method}" not found for module "{moduleItem["instance"].name}": {e}')
+			except TypeError:
+				# Do nothing, it's most prolly kwargs
+				pass
 
 
 	def _reorderCustomisationModule(self, isEvent: bool):
@@ -298,21 +332,31 @@ class ModuleManager(Manager):
 				self._modules.update(modules)
 
 
-	def deactivateModule(self, moduleName: str):
+	def deactivateModule(self, moduleName: str, persistent: bool = False):
 		if moduleName in self._modules:
-			del self._modules[moduleName]
+			self._modules[moduleName]['instance'].active = False
+			self.ConfigManager.deactivateModule(moduleName, persistent)
+			self.configureModuleIntents(moduleName=moduleName, state=False)
+			self._deactivatedModules[moduleName] = self._modules.pop(moduleName)
+
+
+	def activateModule(self, moduleName: str, persistent: bool = False):
+		if moduleName in self._deactivatedModules:
+			self.ConfigManager.activateModule(moduleName, persistent)
+			self.configureModuleIntents(moduleName=moduleName, state=True)
+			self._modules[moduleName] = self._deactivatedModules.pop(moduleName)
+			self._modules[moduleName]['instance'].active = True
+			self._modules[moduleName]['instance'].onStart()
 
 
 	def checkForModuleUpdates(self):
-		if not self.ConfigManager.getAliceConfigByName('moduleAutoUpdate'):
+		if self.ConfigManager.getAliceConfigByName('stayCompletlyOffline'):
 			return
 
-		self._logger.info('[{}] Checking for module updates'.format(self.name))
+		self._logger.info(f'[{self.name}] Checking for module updates')
 		if not self.InternetManager.online:
-			self._logger.info('[{}] Not connected...'.format(self.name))
+			self._logger.info(f'[{self.name}] Not connected...')
 			return
-
-		self._busyInstalling.set()
 
 		availableModules = self.ConfigManager.modulesConfigurations
 
@@ -322,23 +366,25 @@ class ModuleManager(Manager):
 				if moduleName not in availableModules:
 					continue
 
-				req = requests.get('https://raw.githubusercontent.com/project-alice-powered-by-snips/ProjectAliceModules/master/PublishedModules/{0}/{1}/{1}.install'.format(
-					availableModules[moduleName]['author'],
-					moduleName
-				))
+				req = requests.get(f'https://raw.githubusercontent.com/project-alice-powered-by-snips/ProjectAliceModules/master/PublishedModules/{availableModules[moduleName]["author"]}/{moduleName}/{moduleName}.install')
 
-				remoteFile = json.loads(req.content.decode())
+				remoteFile = req.json()
 				if float(remoteFile['version']) > float(availableModules[moduleName]['version']):
 					i += 1
-					moduleFile = Path(commons.rootDir(), 'system/moduleInstallTickets', moduleName + '.install')
-					moduleFile.write_text(json.dumps(remoteFile))
-					self._modules[moduleName]['instance'].active = False
+
+					if not self.ConfigManager.getAliceConfigByName('moduleAutoUpdate'):
+						if moduleName in self._modules:
+							self._modules[moduleName]['instance'].updateAvailable = True
+						elif moduleName in self._deactivatedModules:
+							self._deactivatedModules[moduleName]['instance'].updateAvailable = True
+					else:
+						moduleFile = Path(commons.rootDir(), 'system/moduleInstallTickets', moduleName + '.install')
+						moduleFile.write_text(json.dumps(remoteFile))
 
 			except Exception as e:
-				self._logger.warning('[{}] Error checking updates for module "{}": {}'.format(self.name, moduleName, e))
+				self._logger.warning(f'[{self.name}] Error checking updates for module "{moduleName}": {e}')
 
-		self._logger.info('[{}] Found {} module update(s)'.format(self.name, i))
-		self._busyInstalling.clear()
+		self._logger.info(f'[{self.name}] Found {i} module update(s)')
 
 
 	def _checkForModuleInstall(self):
@@ -350,43 +396,33 @@ class ModuleManager(Manager):
 		if  self._busyInstalling.isSet() or \
 			not self.InternetManager.online or \
 			not files or \
-			self.ThreadManager.getLock('SnipsAssistantDownload').isSet():
+			self.ThreadManager.getEvent('SnipsAssistantDownload').isSet():
 			return
 
 		if files:
-			self._logger.info('[{}] Found {} install ticket(s)'.format(self.name, len(files)))
+			self._logger.info(f'[{self.name}] Found {len(files)} install ticket(s)')
 			self._busyInstalling.set()
 
 			modulesToBoot = list()
 			try:
 				modulesToBoot = self._installModules(files)
 			except Exception as e:
-				self._logger.error('[{}] Error checking for module install: {}'.format(self.name, e))
+				self._logger.error(f'[{self.name}] Error checking for module install: {e}')
 			finally:
 				if modulesToBoot:
-					try:
-						self.SamkillaManager.sync(moduleFilter=modulesToBoot.keys())
-					except Exception as esamk:
-						self._logger.error('[{}] Failed syncing with remote snips console {}'.format(self.name, esamk))
-
 					for moduleName, info in modulesToBoot.items():
 						self._modules = self._loadModuleList(moduleToLoad=moduleName, isUpdate=info['update'])
 
 						try:
 							self.LanguageManager.loadStrings(moduleToLoad=moduleName)
 							self.TalkManager.loadTalks(moduleToLoad=moduleName)
-
-							if info['update']:
-								self._modules[moduleName]['instance'].onModuleUpdated()
-							else:
-								self._modules[moduleName]['instance'].onModuleInstalled()
-
-							self._startModule(moduleInstance=self._modules[moduleName]['instance'])
-							self._modules[moduleName]['instance'].onBooted()
-						except Exception:
+						except:
 							pass
-
-					self.SnipsServicesManager.runCmd(cmd='restart')
+					try:
+						self.SamkillaManager.sync(moduleFilter=modulesToBoot)
+					except Exception as esamk:
+						self._logger.error(f'[{self.name}] Failed syncing with remote snips console {esamk}')
+						raise
 
 				self._busyInstalling.clear()
 
@@ -399,7 +435,7 @@ class ModuleManager(Manager):
 		for file in modules:
 			moduleName = Path(file).with_suffix('')
 
-			self._logger.info('[{}] Now taking care of module {}'.format(self.name, moduleName.stem))
+			self._logger.info(f'[{self.name}] Now taking care of module {moduleName.stem}')
 			res = root / file
 
 			try:
@@ -411,10 +447,19 @@ class ModuleManager(Manager):
 				path = Path(installFile['author'], moduleName)
 
 				if not moduleName:
-					self._logger.error('[{}] Module name to install not found, aborting to avoid casualties!'.format(self.name))
+					self._logger.error(f'[{self.name}] Module name to install not found, aborting to avoid casualties!')
 					continue
 
 				directory = Path(commons.rootDir()) / 'modules' / moduleName
+
+				conditions = {
+					'aliceMinVersion': installFile['aliceMinVersion']
+				}
+
+				if 'conditions' in installFile:
+					conditions = {**conditions, **installFile['conditions']}
+
+				self.checkModuleConditions(moduleName, conditions, availableModules)
 
 				if moduleName in availableModules:
 					localVersionDirExists = directory.is_dir()
@@ -426,23 +471,24 @@ class ModuleManager(Manager):
 						float(availableModules[moduleName]['version']) >= float(installFile['version'])
 
 					if localVersionIsLatest:
-						self._logger.warning('[{}] Module "{}" is already installed, skipping'.format(self.name, moduleName))
+						self._logger.warning(f'[{self.name}] Module "{moduleName}" is already installed, skipping')
 						subprocess.run(['sudo', 'rm', res])
 						continue
 					else:
-						self._logger.warning('[{}] Module "{}" needs updating'.format(self.name, moduleName))
+						self._logger.warning(f'[{self.name}] Module "{moduleName}" needs updating')
 						updating = True
 
 				if moduleName in self._modules:
 					try:
 						self._modules[moduleName]['instance'].onStop()
 					except Exception as e:
-						self._logger.error('[{}] Error stopping "{}" for update: {}'.format(self.name, moduleName, e))
+						self._logger.error(f'[{self.name}] Error stopping "{moduleName}" for update: {e}')
+						raise
 
 				gitCloner = GithubCloner(baseUrl=self.GITHUB_API_BASE_URL, path=path, dest=directory)
 
 				if gitCloner.clone():
-					self._logger.info('[{}] Module successfully downloaded'.format(self.name))
+					self._logger.info(f'[{self.name}] Module successfully downloaded')
 					try:
 						pipReq = installFile.get('pipRequirements', None)
 						sysReq = installFile.get('systemRequirements', None)
@@ -473,15 +519,126 @@ class ModuleManager(Manager):
 							'update': updating
 						}
 					except Exception as e:
-						self._logger.error('[{}] Failed installing module "{}": {}'.format(self.name, moduleName, e))
+						self._logger.error(f'[{self.name}] Failed installing module "{moduleName}": {e}')
 						res.unlink()
+						SuperManager.getInstance().broadcast(
+							method='onModuleInstallFailed',
+							exceptions=self.name,
+							propagateToModules=False,
+							module=moduleName
+						)
 				else:
-					self._logger.error('[{}] Failed cloning module'.format(self.name))
+					self._logger.error(f'[{self.name}] Failed cloning module')
 					res.unlink()
+					SuperManager.getInstance().broadcast(
+						method='onModuleInstallFailed',
+						exceptions=self.name,
+						module=moduleName
+					)
+
+			except ModuleNotConditionCompliant as e:
+				self._logger.info(f'[{self.name}] Module {moduleName} does not comply to "{e.condition}" condition, required "{e.conditionValue}"')
+				res.unlink()
+				SuperManager.getInstance().broadcast(
+					method='onModuleInstallFailed',
+					exceptions=self.name,
+					module=moduleName
+				)
 
 			except Exception as e:
-				self._logger.error('[{}] Failed installing module "{}": {}'.format(self.name, moduleName, e))
+				self._logger.error(f'[{self.name}] Failed installing module "{moduleName}": {e}')
 				res.unlink()
+				SuperManager.getInstance().broadcast(
+					method='onModuleInstallFailed',
+					exceptions=self.name,
+					module=moduleName
+				)
 
 		self.MqttManager.broadcast(topic='hermes/leds/clear')
 		return modulesToBoot
+
+
+	def checkModuleConditions(self, moduleName: str, conditions: dict, availableModules: dict) -> bool:
+
+		if 'aliceMinVersion' in conditions and conditions['aliceMinVersion'] > constants.VERSION:
+			raise ModuleNotConditionCompliant(message='Module is not compliant', moduleName=moduleName, condition='Alice minimum version', conditionValue=conditions['aliceMinVersion'])
+
+		for conditionName, conditionValue in conditions.items():
+			if conditionName == 'lang' and self.LanguageManager.activeLanguage not in conditionValue:
+				raise ModuleNotConditionCompliant(message='Module is not compliant', moduleName=moduleName, condition=conditionName, conditionValue=conditionValue)
+
+			elif conditionName == 'online':
+				if conditionValue and self.ConfigManager.getAliceConfigByName('stayCompletlyOffline'):
+					raise ModuleNotConditionCompliant(message='Module is not compliant', moduleName=moduleName, condition=conditionName, conditionValue=conditionValue)
+				elif not conditionValue and not self.ConfigManager.getAliceConfigByName('stayCompletlyOffline'):
+					raise ModuleNotConditionCompliant(message='Module is not compliant', moduleName=moduleName, condition=conditionName, conditionValue=conditionValue)
+
+			elif conditionName == 'module':
+				for requiredModule in conditionValue:
+					if requiredModule['name'] in availableModules and not availableModules[requiredModule['name']]['active']:
+						raise ModuleNotConditionCompliant(message='Module is not compliant', moduleName=moduleName, condition=conditionName, conditionValue=conditionValue)
+					elif requiredModule['name'] not in availableModules:
+						self._logger.info(f'[{self.name}] Module {moduleName} has another module as dependency, adding download')
+						subprocess.run(['wget', requiredModule['url'], '-O', Path(commons.rootDir(), f"system/moduleInstallTickets/{requiredModule['name']}.install")])
+
+			elif conditionName == 'notModule':
+				for excludedModule in conditionValue:
+					author, name = excludedModule.split('/')
+					if name in availableModules and availableModules[name]['author'] == author and availableModules[name]['active']:
+						raise ModuleNotConditionCompliant(message='Module is not compliant', moduleName=moduleName, condition=conditionName, conditionValue=conditionValue)
+
+			elif conditionName == 'asrArbitraryCapture':
+				if conditionValue and not self.ASRManager.asr.capableOfArbitraryCapture:
+					raise ModuleNotConditionCompliant(message='Module is not compliant', moduleName=moduleName, condition=conditionName, conditionValue=conditionValue)
+
+			elif conditionName == 'activeManager':
+				for manager in conditionValue:
+					if not manager: continue
+
+					man = SuperManager.getInstance().getManager(manager)
+					if not man or not man.isActive:
+						raise ModuleNotConditionCompliant(message='Module is not compliant', moduleName=moduleName, condition=conditionName, conditionValue=conditionValue)
+
+		return True
+
+
+	def configureModuleIntents(self, moduleName: str, state: bool):
+		try:
+			confs = list()
+			module = self._modules.get(moduleName, self._deactivatedModules.get(moduleName))['instance']
+			for intent in module.supportedIntents:
+				if self.isIntentInUse(intent=intent, filtered=[moduleName]):
+					continue
+
+				confs.append({
+					'intentId': intent.justTopic if hasattr(intent, 'justTopic') else intent,
+					'enable'  : state
+				})
+
+			self.MqttManager.configureIntents(confs)
+		except Exception as e:
+			self._logger.warning(f'[{self.name}] Intent configuration failed: {e}')
+
+
+	def isIntentInUse(self, intent: Intent, filtered: list) -> bool:
+		for moduleName, module in self._modules.items():
+			if moduleName in filtered:
+				continue
+
+			if intent in module['instance'].supportedIntents:
+				return True
+
+		return False
+
+
+	def removeModule(self, moduleName: str):
+		if not moduleName in self._modules:
+			return
+		else:
+			self.configureModuleIntents(moduleName, False)
+			self.ConfigManager.removeModule(moduleName)
+			del self._modules[moduleName]
+
+		shutil.rmtree(Path(commons.rootDir(), 'modules', moduleName))
+		# TODO Samkilla cleaning
+		self.SnipsConsoleManager.doDownload()

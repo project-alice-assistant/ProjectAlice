@@ -28,7 +28,7 @@ class TimeManager(Manager):
 		if self._fullMinuteTimer:
 			SuperManager.getInstance().broadcast('onFullMinute', exceptions=[self.NAME], propagateToModules=True)
 
-		second = int(datetime.now().strftime('%S'))
+		second = datetime.now().second
 		secondsTillFullMinute = 60 - second
 		self._fullMinuteTimer = self.ThreadManager.newTimer(secondsTillFullMinute, self.onFullMinute)
 
@@ -37,8 +37,8 @@ class TimeManager(Manager):
 		if self._fiveMinuteTimer:
 			SuperManager.getInstance().broadcast('onFiveMinute', exceptions=[self.NAME], propagateToModules=True)
 
-		minute = int(datetime.now().strftime('%M'))
-		second = int(datetime.now().strftime('%S'))
+		minute = datetime.now().minute
+		second = datetime.now().second
 		secondsTillFive = 60 * (round(300 / 60) - (minute % round(300 / 60))) - second
 
 		self._fiveMinuteTimer = self.ThreadManager.newTimer(secondsTillFive, self.onFiveMinute)
@@ -48,8 +48,8 @@ class TimeManager(Manager):
 		if self._quarterHourTimer:
 			SuperManager.getInstance().broadcast('onQuarterHour', exceptions=[self.NAME], propagateToModules=True)
 
-		minute = int(datetime.now().strftime('%M'))
-		second = int(datetime.now().strftime('%S'))
+		minute = datetime.now().minute
+		second = datetime.now().second
 		secondsTillQuarter = 60 * (round(900 / 60) - (minute % round(900 / 60))) - second
 
 		self._quarterHourTimer = self.ThreadManager.newTimer(secondsTillQuarter, self.onQuarterHour)
@@ -59,8 +59,7 @@ class TimeManager(Manager):
 		if self._fullHourTimer:
 			SuperManager.getInstance().broadcast('onFullHour', exceptions=[self.NAME], propagateToModules=True)
 
-		minute = int(datetime.now().strftime('%M'))
-		second = int(datetime.now().strftime('%S'))
-
+		minute = datetime.now().minute
+		second = datetime.now().second
 		secondsTillFullHour = ((60 - minute) * 60) - second
 		self._fullHourTimer = self.ThreadManager.newTimer(secondsTillFullHour, self.onFullHour)

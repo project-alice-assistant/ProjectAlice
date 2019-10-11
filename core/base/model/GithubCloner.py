@@ -1,9 +1,8 @@
-import json
 import logging
-import os
-import shutil
+from pathlib import Path
 
 import requests
+import shutil
 
 from core.ProjectAliceExceptions import GithubRateLimit, GithubTokenFailed
 from core.base.SuperManager import SuperManager
@@ -13,7 +12,7 @@ class GithubCloner:
 
 	NAME = 'GithubCloner'
 
-	def __init__(self, baseUrl: str, path: str, dest: str):
+	def __init__(self, baseUrl: str, path: Path, dest: Path):
 		self._logger = logging.getLogger('ProjectAlice')
 		self._baseUrl = baseUrl
 		self._path = path
@@ -21,18 +20,18 @@ class GithubCloner:
 
 
 	def clone(self) -> bool:
-		if os.path.isdir(self._dest):
+		if self._dest.exists():
 			self._cleanDestDir()
 		else:
-			os.mkdir(self._dest)
+			self._dest.mkdir(parents=True)
 
 		try:
-			return self._doClone(os.path.join('https://api.github.com', self._baseUrl, self._path))
-		except Exception:
+			return self._doClone(f'https://api.github.com/{self._baseUrl}/{self._path}')
+		except:
 			return False
 
 
-	def _doClone(self, url):
+	def _doClone(self, url: str) -> bool:
 		try:
 			username = SuperManager.getInstance().configManager.getAliceConfigByName('githubUsername')
 			token = SuperManager.getInstance().configManager.getAliceConfigByName('githubToken')
@@ -47,31 +46,28 @@ class GithubCloner:
 			elif req.status_code != 200:
 				raise Exception
 
-			result = req.content
-			data = json.loads(result.decode())
+			data = req.json()
 			for item in data:
-				path = item['path'].split('/')[3:]
-				path = '/'.join(path)
-				if item['type'] == 'file' and not path.endswith('.install'):
+				path = Path(*Path(item['path']).parts[3:])
+				if item['type'] == 'file':
+					if path.suffix == '.install':
+						continue
 					fileStream = requests.get(item['download_url'], auth=auth)
-
-					with open(os.path.join(self._dest, path), 'wb') as f:
-						f.write(fileStream.content)
-
-				elif item['type'] == 'dir':
-					os.mkdir(os.path.join(self._dest, path))
-					self._doClone(url=os.path.join(url, path))
+					Path(self._dest / path).write_bytes(fileStream.content)
+				else:
+					Path(self._dest / path).mkdir(parents=True)
+					self._doClone(url=item['url'])
 
 		except GithubTokenFailed:
-			self._logger.error('[{}] Provided Github username / token invalid'.format(self.NAME))
+			self._logger.error(f'[{self.NAME}] Provided Github username / token invalid')
 			return False
 
 		except GithubRateLimit:
-			self._logger.error('[{}] Github rate limit reached, cannot access updates for now. You should consider creating a token to avoid this problem'.format(self.NAME))
+			self._logger.error(f'[{self.NAME}] Github rate limit reached, cannot access updates for now. You should consider creating a token to avoid this problem')
 			return False
 
 		except Exception as e:
-			self._logger.error('[{}] Error downloading module: {}'.format(self.NAME, e))
+			self._logger.error(f'[{self.NAME}] Error downloading module: {e}')
 			raise
 
 		return True
@@ -80,16 +76,19 @@ class GithubCloner:
 	def _cleanDestDir(self):
 		filesToDelete = list()
 		directoriesToDelete = list()
-		for file in os.listdir(self._dest):
-			filename = os.fsdecode(file)
-			if (os.path.isdir(os.path.join(self._dest, filename)) and not filename.startswith('_')) or filename == '__pycache__':
-				directoriesToDelete.append(filename)
-			elif not os.path.isfile(os.path.join(self._dest, filename + '.dist')) and not filename.endswith('.conf'):
-				filesToDelete.append(filename)
+		for file in self._dest.iterdir():
+			if file.suffix == '.conf' or file.with_suffix('.dist').exists():
+				continue
+
+			if (file.is_dir() and not file.name.startswith('_')) or file.name == '__pycache__':
+				directoriesToDelete.append(file)
+
+			elif file.is_file():
+				filesToDelete.append(file)
 
 		# Not deleting directories and files directly because they are needed for the .dist check
 		for directory in directoriesToDelete:
-			shutil.rmtree(os.path.join(self._dest, directory))
+			shutil.rmtree(directory)
 
 		for file in filesToDelete:
-			os.remove(os.path.join(self._dest, file))
+			file.unlink()

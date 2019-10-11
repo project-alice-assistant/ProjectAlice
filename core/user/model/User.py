@@ -11,6 +11,7 @@ class User:
 			self._state 		= row['state']
 			self._lang 			= row['lang']
 			self._tts 			= row['tts']
+			self._ttsLanguage	= row['ttsLanguage']
 			self._ttsType		= row['ttsType']
 			self._ttsVoice 		= row['ttsVoice']
 
@@ -23,9 +24,9 @@ class User:
 		self._eating 		= False
 
 		try:
-			exec("self._%s = '%s'" % (self._state, True))
+			exec(f"self._{self._state} = 'True'")
 		except:
-			self._logger.error('Invalid state "{}" for user "{}"'.format(row['state'], self._name))
+			self._logger.error(f"Invalid state \"{row['state']}\" for user \"{self._name}\"")
 
 	@property
 	def name(self) -> str:
@@ -46,6 +47,10 @@ class User:
 	@property
 	def tts(self) -> str:
 		return self._tts
+
+	@property
+	def ttsLanguage(self) -> str:
+		return self._ttsLanguage
 
 	@property
 	def ttsType(self) -> str:

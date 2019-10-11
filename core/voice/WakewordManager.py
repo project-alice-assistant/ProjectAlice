@@ -1,16 +1,17 @@
 import json
+import struct
+
 import shutil
 import tempfile
-import wave
 from enum import Enum
 from pathlib import Path
 
-import pyaudio
+import paho.mqtt.client as mqtt
 from pydub import AudioSegment
 
 from core.base.model.Manager import Manager
-from core.commons import commons
-from core.commons.commons import shutUpAlsaFFS
+from core.commons import commons, constants
+from core.dialog.model.DialogSession import DialogSession
 from core.voice.model.Wakeword import Wakeword
 from core.voice.model.WakewordUploadThread import WakewordUploadThread
 
@@ -57,34 +58,15 @@ class WakewordManager(Manager):
 				thread.join(timeout=2)
 
 
-	def tryCaptureFix(self):
-		self._sampleRate /= 2
-		self._channels = 1
-		self._state = WakewordManagerState.IDLE
-
-
-	@property
-	def wakeword(self) -> Wakeword:
-		return self._wakeword
-
-
-	@property
-	def state(self) -> WakewordManagerState:
-		return self._state
-
-
-	@state.setter
-	def state(self, value: WakewordManagerState):
-		self._state = value
-
-
-	def isDefaultThreshold(self) -> bool:
-		return self._threshold == self.THRESHOLD
+	def onCaptured(self, session: DialogSession):
+		if self.state == WakewordManagerState.RECORDING:
+			self.MqttManager.mqttClient.unsubscribe(constants.TOPIC_AUDIO_FRAME)
+			self._workAudioFile()
 
 
 	def newWakeword(self, username: str):
 		for i in range(1, 4):
-			file = Path('/tmp/{}_raw.wav'.format(i))
+			file = Path(f'/tmp/{i}_raw.wav')
 			if file.exists():
 				file.unlink()
 
@@ -93,60 +75,74 @@ class WakewordManager(Manager):
 		self._channels = self.ConfigManager.getAliceConfigByName('micChannels')
 
 
-	def removeSample(self):
-		self._wakeword.samples.pop()
-
-
 	def addASample(self):
-		self._state = WakewordManagerState.RECORDING
-		number = len(self._wakeword.samples) + 1
-		self.ThreadManager.newThread(name='captureWakeword', target=self._captureWakeword, args=[number], autostart=True)
+		self.wakeword.newSample()
+		self.state = WakewordManagerState.RECORDING
+		self.MqttManager.mqttClient.subscribe(constants.TOPIC_AUDIO_FRAME)
 
 
-	def _captureWakeword(self, number: int):
+	def onAudioFrame(self, message: mqtt.MQTTMessage):
+		# @author DasBasti
+		# https://gist.github.com/DasBasti/050bf6c3232d4bb54c741a1f057459d3
+
 		try:
-			with shutUpAlsaFFS():
-				self._audio = pyaudio.PyAudio()
+			riff, size, fformat = struct.unpack('<4sI4s', message.payload[:12])
 
-			stream = self._audio.open(
-				format=self._audio.get_format_from_width(2),
-				channels=self._channels,
-				rate=self._sampleRate,
-				input=True,
-				frames_per_buffer=int(self._sampleRate / 10)
-			)
-			self._logger.info('[{}] Now recording...'.format(self.name))
-			frames = list()
+			if riff != b'RIFF':
+				self._logger.error(f'[{self.name}] Wakeword capture frame parse error')
+				return
 
-			for i in range(0, int(self._sampleRate / int(self._sampleRate / 10) * self.RECORD_SECONDS)):
-				data = stream.read(int(self._sampleRate / 10))
-				frames.append(data)
+			if fformat != b'WAVE':
+				self._logger.error(f'[{self.name}] Wakeword capture frame wrong format')
+				return
 
-			self._logger.info('[{}] Recording over'.format(self.name))
-			stream.stop_stream()
-			stream.close()
-			self._audio.terminate()
+			chunkHeader = message.payload[12:20]
+			subChunkId, subChunkSize = struct.unpack('<4sI', chunkHeader)
 
-			wav = wave.open(str(Path(tempfile.gettempdir(), '{}_raw.wav'.format(number))), 'w')
-			wav.setnchannels(self._channels)
-			wav.setsampwidth(2)
-			wav.setframerate(self._sampleRate)
-			wav.writeframes((b''.join(frames)))
-			wav.close()
+			samplerate = 22050
+			channels = 2
+			if subChunkId == b'fmt ':
+				aFormat, channels, samplerate, byterate, blockAlign, bps = struct.unpack('HHIIHH', message.payload[20:36])
 
-			self._wakeword.samples.append(wav)
-			self._workAudioFile(number)
+			record = self.wakeword.getSample()
+
+			# noinspection PyProtectedMember
+			if not record._datawritten:
+				record.setframerate(samplerate)
+				record.setnchannels(channels)
+				record.setsampwidth(2)
+
+			chunkOffset = 52
+			while chunkOffset < size:
+				subChunk2Id, subChunk2Size = struct.unpack('<4sI', message.payload[chunkOffset:chunkOffset + 8])
+				chunkOffset += 8
+				if subChunk2Id == b'data' and self._state == WakewordManagerState.RECORDING:
+					record.writeframes(message.payload[chunkOffset:chunkOffset + subChunk2Size])
+
+				chunkOffset = chunkOffset + subChunk2Size + 8
+
 		except Exception as e:
-			self._logger.error('[{}] Error capturing wakeword: {}'.format(self.name, e))
+			self._logger.error(f'[{self.name}] Error capturing wakeword: {e}')
+
+
+	def _workAudioFile(self):
+		sample = self.wakeword.getSample()
+
+		# noinspection PyProtectedMember
+		if not sample._datawritten:
+			self._logger.error(f'[{self.name}] Something went wrong capturing audio, no data available in sample')
 			self._state = WakewordManagerState.IDLE
+			return
 
+		sample.close()
 
-	def _workAudioFile(self, number: int):
 		self._state = WakewordManagerState.TRIMMING
 
-		filepath = Path(tempfile.gettempdir(), '{}_raw.wav'.format(number))
+		self.wakeword.getSample().close()
+
+		filepath = self.wakeword.getSamplePath()
 		if not filepath.exists():
-			self._logger.error('[{}] Raw wakeword "{}" wasn\'t found'.format(self.name, number))
+			self._logger.error(f'[{self.name}] Raw wakeword "{len(self.wakeword.samples)}" wasn\'t found')
 			self._state = WakewordManagerState.IDLE
 			return
 
@@ -159,18 +155,18 @@ class WakewordManager(Manager):
 		reworked = trimmed.set_frame_rate(16000)
 		reworked = reworked.set_channels(1)
 
-		reworked.export(Path(tempfile.gettempdir(), '{}.wav'.format(number)), format='wav')
+		reworked.export(Path(tempfile.gettempdir(), f'{len(self.wakeword.samples)}.wav'), format='wav')
 		self._state = WakewordManagerState.CONFIRMING
 
 
 	def trimMore(self):
 		self._threshold += 2
-		self._workAudioFile(len(self._wakeword.samples))
+		self._workAudioFile()
 
 
 	def trimLess(self):
 		self._threshold -= 2
-		self._workAudioFile(len(self._wakeword.samples))
+		self._workAudioFile()
 
 
 	def detectLeadingSilence(self, sound):
@@ -178,6 +174,20 @@ class WakewordManager(Manager):
 		while sound[trim : trim + 10].dBFS < self._threshold and trim < len(sound):
 			trim += 10
 		return trim
+
+
+	def tryCaptureFix(self):
+		self._sampleRate /= 2
+		self._channels = 1
+		self._state = WakewordManagerState.IDLE
+
+
+	def removeSample(self):
+		self._wakeword.samples.pop()
+
+
+	def isDefaultThreshold(self) -> bool:
+		return self._threshold == self.THRESHOLD
 
 
 	def getLastSampleNumber(self) -> int:
@@ -188,7 +198,7 @@ class WakewordManager(Manager):
 
 
 	def finalizeWakeword(self):
-		self._logger.info('[{}] Finalyzing wakeword'.format(self.name))
+		self._logger.info(f'[{self.name}] Finalyzing wakeword')
 		self._state = WakewordManagerState.FINALIZING
 
 		config = {
@@ -219,7 +229,7 @@ class WakewordManager(Manager):
 		path = Path(commons.rootDir(), 'trained/hotwords', self.wakeword.username.lower())
 
 		if path.exists():
-			self._logger.warning('[{}] Destination directory for new wakeword already exists, deleting'.format(self.name))
+			self._logger.warning(f'[{self.name}] Destination directory for new wakeword already exists, deleting')
 			shutil.rmtree(path)
 
 		path.mkdir()
@@ -227,7 +237,7 @@ class WakewordManager(Manager):
 		(path/'config.json').write_text(json.dumps(config, indent=4))
 
 		for i in range(1, 4):
-			shutil.move(Path(tempfile.gettempdir(), '{}.wav'.format(i)), path/'{}.wav'.format(i))
+			shutil.move(Path(tempfile.gettempdir(), f'{i}.wav'), path/f'{i}.wav')
 
 		self._addWakewordToSnips(path)
 		self.ThreadManager.newThread(name='SatelliteWakewordUpload', target=self._upload, args=[path, self._wakeword.username], autostart=True)
@@ -255,7 +265,7 @@ class WakewordManager(Manager):
 		if add:
 			models.append(str(Path(commons.rootDir(), 'trained/hotwords/snips_hotword=0.53')))
 
-		models.append('{}=0.52'.format(str(path)))
+		models.append(f'{str(path)}=0.52')
 		self.ConfigManager.updateSnipsConfiguration('snips-hotword', 'model', models, restartSnips=True)
 
 		self._upload(path)
@@ -296,11 +306,26 @@ class WakewordManager(Manager):
 		wakewordName = path.name
 		zipPath = path.parent / (wakewordName + '.zip')
 
-		self._logger.info('[{}] Cleaning up {}'.format(self.name, wakewordName))
+		self._logger.info(f'[{self.name}] Cleaning up {wakewordName}')
 		if zipPath.exists():
 			zipPath.unlink()
 
-		self._logger.info('[{}] Packing wakeword {}'.format(self.name, wakewordName))
+		self._logger.info(f'[{self.name}] Packing wakeword {wakewordName}')
 		shutil.make_archive(base_name=zipPath.with_suffix(''), format='zip', root_dir=str(path))
 
 		return wakewordName, zipPath
+
+
+	@property
+	def state(self) -> WakewordManagerState:
+		return self._state
+
+
+	@state.setter
+	def state(self, value: WakewordManagerState):
+		self._state = value
+
+
+	@property
+	def wakeword(self) -> Wakeword:
+		return self._wakeword

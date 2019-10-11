@@ -42,6 +42,8 @@ class TalkManager(Manager):
 				continue
 
 			langTalksMountpoint = Path('modules', moduleName, 'talks')
+			if not langTalksMountpoint.exists():
+				continue
 
 			for langTalkFile in langTalksMountpoint.iterdir():
 				lang = langTalkFile.stem
@@ -59,7 +61,7 @@ class TalkManager(Manager):
 			module = commons.toCamelCase(module)
 			arr = self._langData[module][self.LanguageManager.activeLanguage][talk][strType]
 		except KeyError:
-			self._logger.warning('[{}] Was asked to return unexisting texts {} for module {} with type {}'.format(self.name, talk, module, strType))
+			self._logger.warning(f'[{self.name}] Was asked to return unexisting texts {talk} for module {module} with type {strType}')
 
 		return arr
 
@@ -71,26 +73,26 @@ class TalkManager(Manager):
 				return random.choice(self._langData[module][activeLanguage][talk]['short'])
 			else:
 				return random.choice(self._langData[module][activeLanguage][talk]['default'])
-		except Exception:
+		except:
 			try:
 				# Maybe there's only a default version?
 				return random.choice(self._langData[module][activeLanguage][talk]['default'])
-			except Exception:
+			except:
 				try:
 					# Maybe there's no short/long version?
 					return random.choice(self._langData[module][activeLanguage][talk])
-				except Exception:
+				except:
 					try:
 						# Fallback to default language then
 						if activeLanguage == defaultLanguage:
 							raise Exception
 
-						self._logger.error('[{}] Was asked to get "{}" from "{}" module in "{}" but it doesn\'t exist, falling back to "{}" version instead'.format(self.name, talk, module, activeLanguage, defaultLanguage))
+						self._logger.error(f'[{self.name}] Was asked to get "{talk}" from "{module}" module in "{activeLanguage}" but it doesn\'t exist, falling back to "{defaultLanguage}" version instead')
 						# call itself again with default language and then exit because activeLanguage == defaultLanguage
 						return self.chooseTalk(talk, module, defaultLanguage, defaultLanguage, shortReplyMode)
-					except Exception:
+					except:
 						# Give up, that text does not exist...
-						self._logger.error('[{}] Was asked to get "{}" from "{}" module but language string doesn\'t exist'.format(self.name, talk, module))
+						self._logger.error(f'[{self.name}] Was asked to get "{talk}" from "{module}" module but language string doesn\'t exist')
 						return ''
 
 
@@ -120,6 +122,6 @@ class TalkManager(Manager):
 			self.UserManager.checkIfAllUser('sleeping'):
 
 			start, end = self.TTSManager.tts.getWhisperMarkup()
-			string = '{}{}{}'.format(start, string, end)
+			string = f'{start}{string}{end}'
 
-		return u'{0}'.format(string)
+		return string

@@ -1,0 +1,18 @@
+{
+	"home": "home",
+	"modules" : "modulen",
+	"syslog": "syslog",
+	"snipswatch": "snipswatch",
+	"admin": "admin",
+	"by": "von",
+	"status": "status",
+	"enable": "aktivieren",
+	"disable": "deaktivieren",
+	"delete": "löschen",
+	"updatee": "aktualisieren",
+	"addWidgetTitle": "Verfügbare Widgets",
+	"viewIntents": "Intents ansehen",
+	"moduleSettings": "Moduleinstellungen",
+	"save": "Speichern",
+	"followLogs": "Autoscroll"
+}
