@@ -322,6 +322,9 @@ class Module:
 
 
 	def onMessage(self, intent: str, session: DialogSession) -> bool:
+		if not self.filterIntent(intent, session):
+			return False
+
 		if self._supportedIntents[intent] is None:
 			raise NotImplementedError(f'[{self.name}] onMessage must be implemented!')
 
