@@ -16,7 +16,7 @@ class Manager(Singleton):
 		self._databaseSchema    = databaseSchema
 		self._isActive          = True
 
-		self._logger.info(f'Initializing {name}')
+		self.logInfo(f'Initializing {name}')
 
 
 	@property
@@ -38,17 +38,17 @@ class Manager(Singleton):
 		try:
 			return commons.getFunctionCaller()
 		except Exception as e:
-			self._logger.error(f'[{self.name}] Something went wrong retrieving function caller: {e}')
+			self.logError(f'[{self.name}] Something went wrong retrieving function caller: {e}')
 			return None
 
 
 	def onStart(self):
-		self._logger.info(f'Starting {self.name}')
+		self.logInfo(f'Starting {self.name}')
 		return self._initDB()
 
 
 	def onStop(self):
-		self._logger.info(f'Stopping {self.name}')
+		self.logInfo(f'Stopping {self.name}')
 
 
 	def _initDB(self):
@@ -102,6 +102,30 @@ class Manager(Singleton):
 
 	def pruneTable(self, tableName: str):
 		return self.DatabaseManager.prune(tableName=tableName, callerName=self.name)
+
+
+	def logInfo(self, msg: str):
+		self.LoggingManager.info(msg)
+
+
+	def logError(self, msg: str):
+		self.LoggingManager.error(msg)
+
+
+	def logDebug(self, msg: str):
+		self.LoggingManager.debug(msg)
+
+
+	def logFatal(self, msg: str):
+		self.LoggingManager.fatal(msg)
+
+
+	def logWarning(self, msg: str):
+		self.LoggingManager.warning(msg)
+
+
+	def logCritical(self, msg: str):
+		self.LoggingManager.warning(msg)
 
 
 	@property
@@ -208,6 +232,12 @@ class Manager(Singleton):
 	def WakewordManager(self):
 		return SuperManager.getInstance().wakewordManager
 
+
 	@property
 	def WebInterfaceManager(self):
 		return SuperManager.getInstance().webInterfaceManager
+
+
+	@property
+	def LoggingManager(self):
+		return SuperManager.getInstance().loggingManager

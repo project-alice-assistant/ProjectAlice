@@ -47,9 +47,13 @@ class SuperManager(object):
 		self.userManager               = None
 		self.talkManager               = None
 		self.webInterfaceManager       = None
+		self.loggingManager            = None
 
 
 	def onStart(self):
+		loggingManager = self._managers.pop('LoggingManager')
+		loggingManager.onStart()
+
 		configManager = self._managers.pop('ConfigManager')
 		configManager.onStart()
 
@@ -126,6 +130,7 @@ class SuperManager(object):
 		from core.voice.TTSManager              import TTSManager
 		from core.voice.WakewordManager         import WakewordManager
 		from core.interface.WebInterfaceManager import WebInterfaceManager
+		from core.util.LoggingManager           import LoggingManager
 
 		self.configManager              = ConfigManager()
 		self.databaseManager            = DatabaseManager()
@@ -149,6 +154,7 @@ class SuperManager(object):
 		self.wakewordManager            = WakewordManager()
 		self.talkManager                = TalkManager()
 		self.webInterfaceManager        = WebInterfaceManager()
+		self.loggingManager             = LoggingManager()
 
 		self._managers = {name[0].upper() + name[1:]: manager for name, manager in self.__dict__.items() if name.endswith('Manager')}
 

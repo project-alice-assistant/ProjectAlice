@@ -3,7 +3,6 @@ from __future__ import annotations
 import importlib
 import inspect
 import json
-import logging
 import re
 
 import typing
@@ -22,8 +21,6 @@ from core.dialog.model.DialogSession import DialogSession
 class Module:
 
 	def __init__(self, supportedIntents: typing.Iterable, authOnlyIntents: dict = None, databaseSchema: dict = None):
-		self._logger = logging.getLogger('ProjectAlice')
-
 		try:
 			path = Path(inspect.getfile(self.__class__)).with_suffix('.install')
 			self._install = json.loads(path.read_text())
@@ -57,7 +54,7 @@ class Module:
 	def loadWidgets(self):
 		fp = Path(self.getCurrentDir(), 'widgets')
 		if fp.exists():
-			self._logger.info(f"[{self.name}] Loading {len(list(fp.glob('*.py'))) - 1} widgets")
+			self.logInfo(f"[{self.name}] Loading {len(list(fp.glob('*.py'))) - 1} widgets")
 
 			data = self.DatabaseManager.fetch(
 				tableName='widgets',
@@ -80,10 +77,10 @@ class Module:
 				if widgetName in data: # widget already exists in DB
 					self._widgets[widgetName] = klass(data[widgetName])
 					del data[widgetName]
-					self._logger.info(f'[{self.name}] Loaded widget "{widgetName}"')
+					self.logInfo(f'[{self.name}] Loaded widget "{widgetName}"')
 
 				else: # widget is new
-					self._logger.info(f'[{self.name}] Adding widget "{widgetName}"')
+					self.logInfo(f'[{self.name}] Adding widget "{widgetName}"')
 					widget = klass({
 						'name': widgetName,
 						'parent': self.name,
@@ -92,7 +89,7 @@ class Module:
 					widget.saveToDB()
 
 			for widgetName in data: # deprecated widgets
-				self._logger.info(f'[{self.name}] Widget "{widgetName}" is deprecated, removing')
+				self.logInfo(f'[{self.name}] Widget "{widgetName}" is deprecated, removing')
 				self.DatabaseManager.delete(
 					tableName='widgets',
 					callerName=self.ModuleManager.name,
@@ -218,7 +215,7 @@ class Module:
 			try:
 				mqttClient.subscribe(str(intent))
 			except:
-				self._logger.error(f'Failed subscribing to intent "{str(intent)}"')
+				self.logError(f'Failed subscribing to intent "{str(intent)}"')
 
 
 	def notifyDevice(self, topic: str, uid: str = '', siteId: str = ''):
@@ -227,7 +224,7 @@ class Module:
 		elif siteId:
 			self.MqttManager.publish(topic=topic, payload={'siteId': siteId})
 		else:
-			self._logger.warning(f'[{self.name}] Tried to notify devices but no uid or site id specified')
+			self.logWarning(f'[{self.name}] Tried to notify devices but no uid or site id specified')
 
 
 	def filterIntent(self, intent: str, session: DialogSession) -> bool:
@@ -290,9 +287,9 @@ class Module:
 
 	def onStart(self) -> dict:
 		if not self._active:
-			self._logger.info(f'Module {self.name} is not active')
+			self.logInfo(f'Module {self.name} is not active')
 		else:
-			self._logger.info(f'Starting {self.name} module')
+			self.logInfo(f'Starting {self.name} module')
 
 		self._initDB()
 		self.MqttManager.subscribeModuleIntents(self.name)
@@ -305,7 +302,7 @@ class Module:
 				self.ThreadManager.doLater(interval=5, func=self.onBooted)
 				return False
 
-			self._logger.info(f'[{self.name}] Delayed start')
+			self.logInfo(f'[{self.name}] Delayed start')
 			self.ThreadManager.doLater(interval=5, func=self.onStart)
 
 		return True
@@ -345,7 +342,7 @@ class Module:
 	def onMakeup(self): pass
 	def onContextSensitiveDelete(self, sessionId: str): pass
 	def onContextSensitiveEdit(self, sessionId: str): pass
-	def onStop(self): self._logger.info(f'[{self.name}] Stopping')
+	def onStop(self): self.logInfo(f'[{self.name}] Stopping')
 	def onFullMinute(self): pass
 	def onFiveMinute(self): pass
 	def onQuarterHour(self): pass
@@ -465,6 +462,30 @@ class Module:
 		self.MqttManager.publish(topic=topic)
 
 
+	def logInfo(self, msg: str):
+		self.LoggingManager.info(msg)
+
+
+	def logError(self, msg: str):
+		self.LoggingManager.error(msg)
+
+
+	def logDebug(self, msg: str):
+		self.LoggingManager.debug(msg)
+
+
+	def logFatal(self, msg: str):
+		self.LoggingManager.fatal(msg)
+
+
+	def logWarning(self, msg: str):
+		self.LoggingManager.warning(msg)
+
+
+	def logCritical(self, msg: str):
+		self.LoggingManager.warning(msg)
+
+
 	@property
 	def ConfigManager(self):
 		return SuperManager.getInstance().configManager
@@ -573,3 +594,8 @@ class Module:
 	@property
 	def WebInterfaceManager(self):
 		return SuperManager.getInstance().webInterfaceManager
+
+
+	@property
+	def LoggingManager(self):
+		return SuperManager.getInstance().loggingManager
