@@ -124,7 +124,7 @@ githubUsername:
 githubToken:
 
 # !WARNING! You know what you are doing by changing the following to anything else than "master"!
-# This allows to to init ProjectAlice on any branches, even unstable ones
+# This allows to init ProjectAlice on any branches, even unstable ones
 updateChannel: master
 
 # Google
