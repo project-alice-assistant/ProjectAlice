@@ -205,7 +205,7 @@ network={
 		if initConfs['deviceName'] != 'default':
 			subprocess.run(['sudo', 'sed', '-i', '-e', f's/\# bind = "default@mqtt"/bind = "{initConfs["deviceName"]}@mqtt"/', Path('/etc/snips.toml')])
 			subprocess.run(['sudo', 'sed', '-i', '-e', f's/bind = ".*@mqtt"/bind = "{initConfs["deviceName"]}@mqtt"/', Path('/etc/snips.toml')])
-			subprocess.run(['sudo', 'sed', '-i', '-e', f's/DEFAULT_SITE_ID = \'default\'/DEFAULT_SITE_ID = \'"{initConfs["deviceName"]}\'"/', Path(commons.rootDir(), 'core/commons/constants.py')])
+			subprocess.run(['sudo', 'sed', '-i', '-e', f's/DEFAULT_SITE_ID = \'default\'/DEFAULT_SITE_ID = \'{initConfs["deviceName"]}\'/', Path(commons.rootDir(), 'core/commons/constants.py')])
 
 		serviceFilePath = Path('/etc/systemd/system/ProjectAlice.service')
 		if not serviceFilePath.exists():
