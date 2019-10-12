@@ -242,7 +242,7 @@ class ModuleManager(Manager):
 		self.logInfo(f'All modules started. {len(supportedIntents)} intents supported')
 
 
-	def _startModule(self, moduleInstance: Module) -> list:
+	def _startModule(self, moduleInstance: Module) -> dict:
 		name = 'undefined'
 
 		try:
@@ -262,7 +262,7 @@ class ModuleManager(Manager):
 		except Exception as e:
 			self.logError(f'- Couldn\'t start module {name}. Did you forget to return the intents in onStart()? Error: {e}')
 
-		return list()
+		return dict()
 
 
 	def isModuleActive(self, moduleName: str) -> bool:
