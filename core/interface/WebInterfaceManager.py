@@ -84,7 +84,7 @@ class WebInterfaceManager(Manager):
 			if module in self.moduleInstallProcesses:
 				self.moduleInstallProcesses[module]['status'] = 'installed'
 		except Exception as e:
-			self.logError(f'[ModulesView] Failed setting module "{module}" status to "installed": {e}')
+			self.logError(f'Failed setting module "{module}" status to "installed": {e}')
 
 
 	def onModuleInstallFailed(self, **kwargs):
@@ -94,7 +94,7 @@ class WebInterfaceManager(Manager):
 			if module in self.moduleInstallProcesses:
 				self.moduleInstallProcesses[module]['status'] = 'failed'
 		except Exception as e:
-			self.logError(f'[ModulesView] Failed setting module "{module}" status to "failed": {e}')
+			self.logError(f'Failed setting module "{module}" status to "failed": {e}')
 
 
 	@property

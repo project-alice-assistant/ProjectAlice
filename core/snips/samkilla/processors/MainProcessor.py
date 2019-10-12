@@ -195,7 +195,7 @@ class MainProcessor:
 
 			slotFile = assistantSlotsMountpoint / f'{key}.json'
 			slotFile.write_text(json.dumps(value, indent=4, sort_keys=False, ensure_ascii=False))
-		# self._ctx.log(f'[Persist] global slot {key}')
+		# self._ctx.log(f'Global slot {key}')
 
 
 	def persistToGlobalAssistantIntents(self, assistantId: str, assistantLanguage: str, intentNameFilter: str = None):
@@ -209,7 +209,7 @@ class MainProcessor:
 
 			intentFile = assistantSlotsMountpoint / f'{key}.json'
 			intentFile.write_text(json.dumps(value, indent=4, sort_keys=False, ensure_ascii=False))
-		# self._ctx.log(f'[Persist] global slot {key}')
+		# self._ctx.log(f'Global slot {key}')
 
 
 	def syncGlobalSlotType(self, assistantId: str, assistantLanguage: str, slotTypeName: str, slotDefinition: str, persist: bool = False):
@@ -483,7 +483,7 @@ class MainProcessor:
 
 		for slotTypeName in self._savedAssistants[languageFilter][runOnAssistantId]['slotTypes']:
 			if slotTypeName not in slotTypesSynced:
-				self._ctx.log(f'[Deprecated] SlotType {slotTypeName}')
+				self._ctx.log(f'Deprecated slotType {slotTypeName}')
 				slotTypeCacheData = self._savedAssistants[languageFilter][runOnAssistantId]['slotTypes'][slotTypeName]
 
 				entityId = slotTypeCacheData['entityId']
@@ -568,7 +568,7 @@ class MainProcessor:
 
 		for intentName in self._savedAssistants[languageFilter][runOnAssistantId]['intents']:
 			if intentName not in intentsSynced:
-				self._ctx.log(f'[Deprecated] Intent {intentName}')
+				self._ctx.log(f'Deprecated intent {intentName}')
 				intentCacheData = self._savedAssistants[languageFilter][runOnAssistantId]['intents'][intentName]
 
 				intentId = intentCacheData['intentId']
@@ -660,7 +660,7 @@ class MainProcessor:
 				continue
 
 			if moduleName not in modulesSynced:
-				self._ctx.log(f'[Deprecated] Module {moduleName}')
+				self._ctx.log(f'Deprecated module {moduleName}')
 				moduleCacheData = self._savedAssistants[languageFilter][runOnAssistantId]['modules'][moduleName]
 				skillId = moduleCacheData['skillId']
 
@@ -835,4 +835,4 @@ class MainProcessor:
 			moduleIntentsOutputFile = moduleIntentsMountpoint / f'{languageFilter}.json'
 
 			moduleIntentsOutputFile.write_text(json.dumps(moduleConfig, indent=4, sort_keys=False, ensure_ascii=False))
-			self._ctx.log(f'[LocalModule] Finished for module {moduleName}')
+			self._ctx.log(f'Finished for module {moduleName}')

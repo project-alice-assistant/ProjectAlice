@@ -35,7 +35,7 @@ class SamkillaException(_ProjectAliceException):
 
 class FunctionNotImplemented(_ProjectAliceException):
 	def __init__(self, clazz: str, funcName: str):
-		self.logError(f'{funcName} must be implemented!')
+		self.logError(f'{funcName} must be implemented in {clazz}!')
 
 
 class ModuleStartingFailed(_ProjectAliceException):
@@ -106,5 +106,5 @@ class ConfigurationUpdateFailed(_ProjectAliceException): pass
 class VitalConfigMissing(_ProjectAliceException):
 	def __init__(self, message: str = None):
 		super().__init__(message)
-		self.logWarning(f'[ConfigManager] A vital configuration ("{message}") is missing. Make sure the following configurations are set: {" / ".join(SuperManager.getInstance().configManager.vitalConfigs)}')
+		self.logWarning(f'A vital configuration ("{message}") is missing. Make sure the following configurations are set: {" / ".join(SuperManager.getInstance().configManager.vitalConfigs)}')
 		SuperManager.getInstance().projectAlice.onStop()

@@ -74,7 +74,7 @@ class SnipswatchView(View):
 
 			return self.refreshConsole()
 		except Exception as e:
-			self.logError(f'[SnipswatchView] Error setting verbosity: {e}')
+			self.logError(f'Error setting verbosity: {e}')
 			return jsonify(success=False)
 
 
