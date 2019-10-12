@@ -3,7 +3,7 @@ from core.util.model.Logger import Logger
 
 class Singleton(Logger):
 
-	INSTANCE 	= None
+	INSTANCE = None
 
 	def __init__(self, name):
 		super().__init__()
@@ -15,5 +15,6 @@ class Singleton(Logger):
 			self.INSTANCE = self
 
 
-	def getInstance(self):
-		return self.INSTANCE
+	@staticmethod
+	def getInstance():
+		return Singleton.INSTANCE

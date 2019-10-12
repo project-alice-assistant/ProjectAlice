@@ -6,7 +6,7 @@ from core.util.model.Logger import Logger
 
 class _ProjectAliceException(Exception, Logger):
 
-	def __init__(self, message: str, status: int = None, context: list = None):
+	def __init__(self, message: str = None, status: int = None, context: list = None):
 		self._message = message
 		self._status = status
 		self._context = context
@@ -62,9 +62,9 @@ class HttpError(_ProjectAliceException):
 		super().__init__(message, status, context)
 
 
-class IntentWithUnknownSlotError(SamkillaException):
+class IntentWithUnknownSlotError(_ProjectAliceException):
 	def __init__(self, status: int, message: str, context: list):
-		super().__init__(status, message, context)
+		super().__init__(message, status, context)
 
 
 class AssistantNotFoundError(_ProjectAliceException):

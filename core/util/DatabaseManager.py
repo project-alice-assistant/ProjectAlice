@@ -33,7 +33,7 @@ class DatabaseManager(Manager):
 			con = sqlite3.connect(commons.getDatabaseFile())
 		except sqlite3.Error as e:
 			self.logError(f'[{self.name}] Failed to connect to DB ({commons.getDatabaseFile()}): {e}')
-			raise DbConnectionError(e)
+			raise DbConnectionError()
 		con.row_factory = sqlite3.Row
 		return con
 

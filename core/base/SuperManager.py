@@ -1,16 +1,28 @@
 from __future__ import annotations
 
+import logging
 from core.commons import constants
-from core.commons.model.Singleton import Singleton
 
 
-class SuperManager(Singleton):
+class SuperManager(object):
 
 	NAME        = 'SuperManager'
+	_INSTANCE   = None
+
+
+	def __new__(cls, *args, **kwargs):
+		if not isinstance(SuperManager._INSTANCE, SuperManager):
+			SuperManager._INSTANCE = object.__new__(cls)
+
+		return SuperManager._INSTANCE
+
 
 	def __init__(self, mainClass):
-		super().__init__(self.NAME)
+		super().__init__()
 
+		self._logger = logging.getLogger('ProjectAlice')
+
+		SuperManager._INSTANCE         = self
 		self._managers                 = dict()
 
 		self.projectAlice              = mainClass
@@ -87,6 +99,11 @@ class SuperManager(Singleton):
 				manager.onBooted()
 
 
+	@staticmethod
+	def getInstance() -> SuperManager:
+		return SuperManager._INSTANCE
+
+
 	def initManagers(self):
 		from core.base.ConfigManager            import ConfigManager
 		from core.base.ModuleManager            import ModuleManager
@@ -139,7 +156,7 @@ class SuperManager(Singleton):
 
 	def broadcast(self, method, exceptions: list = None, manager = None, propagateToModules: bool = False, silent: bool = False, *args, **kwargs):
 		if not exceptions and not manager:
-			self.logWarning(f'[{self.NAME}] Cannot broadcast to itself, the calling method has to be put in exceptions')
+			self._logger.warning(f'[{self.NAME}] Cannot broadcast to itself, the calling method has to be put in exceptions')
 
 		if 'ProjectAlice' not in exceptions:
 			exceptions.append('ProjectAlice')
@@ -160,7 +177,7 @@ class SuperManager(Singleton):
 				func(*args, **kwargs)
 			except AttributeError as e:
 				if not silent:
-					self.logWarning(f"[{self.NAME}] Couldn't find method {method} in manager {man.name}: {e}")
+					self._logger.warning(f"[{self.NAME}] Couldn't find method {method} in manager {man.name}: {e}")
 			except TypeError:
 				# Do nothing, it's most prolly kwargs
 				pass
@@ -178,7 +195,7 @@ class SuperManager(Singleton):
 			for managerName, manager in self._managers.items():
 				manager.onStop()
 		except Exception as e:
-			self.logError(f'[{self.NAME}] Error while shutting down manager "{managerName}": {e}')
+			self._logger.error(f'[{self.NAME}] Error while shutting down manager "{managerName}": {e}')
 
 
 	def getManager(self, managerName: str):
