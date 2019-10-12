@@ -1,26 +1,16 @@
 from __future__ import annotations
 
 from core.commons import constants
-from core.util.model.Logger import Logger
+from core.commons.model.Singleton import Singleton
 
 
-class SuperManager(object, Logger):
+class SuperManager(Singleton):
 
 	NAME        = 'SuperManager'
-	_INSTANCE   = None
-
-
-	def __new__(cls, *args, **kwargs):
-		if not isinstance(SuperManager._INSTANCE, SuperManager):
-			SuperManager._INSTANCE = object.__new__(cls)
-
-		return SuperManager._INSTANCE
-
 
 	def __init__(self, mainClass):
-		super().__init__()
+		super().__init__(self.NAME)
 
-		SuperManager._INSTANCE         = self
 		self._managers                 = dict()
 
 		self.projectAlice              = mainClass
@@ -95,11 +85,6 @@ class SuperManager(object, Logger):
 		for manager in self._managers.values():
 			if manager:
 				manager.onBooted()
-
-
-	@staticmethod
-	def getInstance() -> SuperManager:
-		return SuperManager._INSTANCE
 
 
 	def initManagers(self):

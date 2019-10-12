@@ -13,3 +13,7 @@ class Singleton(Logger):
 			raise KeyboardInterrupt
 		else:
 			self.INSTANCE = self
+
+
+	def getInstance(self):
+		return self.INSTANCE
