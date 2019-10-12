@@ -5,8 +5,9 @@ from core.commons import commons
 
 class Logger:
 
-	def __init__(self, *args, **kwargs):
+	def __init__(self, depth: int = 4, *args, **kwargs):
 		self._logger = logging.getLogger('ProjectAlice')
+		self._depth = depth
 
 
 	def logInfo(self, msg: str):
@@ -38,6 +39,5 @@ class Logger:
 		func(self.decorate(msg), exc_info=printStack)
 
 
-	@staticmethod
-	def decorate(msg: str) -> str:
-		return f'[{commons.getFunctionCaller(depth=4)}] {msg}'
+	def decorate(self, msg: str) -> str:
+		return f'[{commons.getFunctionCaller(depth=self._depth)}] {msg}'
