@@ -10,7 +10,7 @@ class ProjectAlice(Singleton):
 
 	def __init__(self):
 		Singleton.__init__(self, self.NAME)
-		self._logger.info('Starting up project Alice core')
+		self.logInfo('Starting up project Alice core')
 		self._superManager = SuperManager(self)
 
 		self._superManager.initManagers()
@@ -28,7 +28,7 @@ class ProjectAlice(Singleton):
 
 
 	def onStop(self):
-		self._logger.info('[ProjectAlice] Shutting down Project Alice')
+		self.logInfo('Shutting down Project Alice')
 		self._superManager.onStop()
 		if self._superManager.configManager.getAliceConfigByName('useSLC'):
 			subprocess.run(['sudo', 'systemctl', 'stop', 'snipsledcontrol'])

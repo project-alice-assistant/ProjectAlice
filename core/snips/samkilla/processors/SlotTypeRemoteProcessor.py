@@ -86,7 +86,7 @@ class SlotTypeRemoteProcessor:
 			return self.syncSlotTypesOnAssistant(slotTypeSyncState=slotTypeSyncState, hashComputationOnly=hashComputationOnly)
 		except:
 			e = sys.exc_info()[0]
-			self._ctx.log('[Safe] Handle error gracefully')
+			self._ctx.log('Handle error gracefully')
 			self._ctx.log(e)
 			self._ctx.log(traceback.format_exc())
 			sys.exit(-1)

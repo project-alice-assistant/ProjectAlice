@@ -1,8 +1,7 @@
 from __future__ import annotations
 
-import logging
-
 from core.commons import constants
+from core.util.model.Logger import Logger
 
 
 class SuperManager(object):
@@ -19,7 +18,9 @@ class SuperManager(object):
 
 
 	def __init__(self, mainClass):
-		self._logger                   = logging.getLogger('ProjectAlice')
+		super().__init__()
+
+		self._logger = Logger()
 
 		SuperManager._INSTANCE         = self
 		self._managers                 = dict()
@@ -158,7 +159,7 @@ class SuperManager(object):
 			exceptions = list()
 
 		if not exceptions and not manager:
-			self._logger.warning(f'[{self.NAME}] Cannot broadcast to itself, the calling method has to be put in exceptions')
+			self._logger.logWarning('Cannot broadcast to itself, the calling method has to be put in exceptions')
 
 		if 'ProjectAlice' not in exceptions:
 			exceptions.append('ProjectAlice')
@@ -179,7 +180,7 @@ class SuperManager(object):
 				func(*args, **kwargs)
 			except AttributeError as e:
 				if not silent:
-					self._logger.warning(f"[{self.NAME}] Couldn't find method {method} in manager {man.name}: {e}")
+					self._logger.logWarning(f"Couldn't find method {method} in manager {man.name}: {e}")
 			except TypeError:
 				# Do nothing, it's most prolly kwargs
 				pass
@@ -197,7 +198,7 @@ class SuperManager(object):
 			for managerName, manager in self._managers.items():
 				manager.onStop()
 		except Exception as e:
-			self._logger.info(f'[{self.NAME}] Error while shutting down manager "{managerName}": {e}')
+			self._logger.logError(f'Error while shutting down manager "{managerName}": {e}')
 
 
 	def getManager(self, managerName: str):

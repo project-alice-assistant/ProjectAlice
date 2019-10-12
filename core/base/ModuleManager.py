@@ -84,7 +84,7 @@ class ModuleManager(Manager):
 			try:
 				self._startModule(moduleInstance=self._modules[moduleName]['instance'])
 			except ModuleStartDelayed:
-				self._logger.info(f'[{self.name}] Module "{moduleName}" start is delayed')
+				self.logInfo(f'Module "{moduleName}" start is delayed')
 
 			self._modules[moduleName]['instance'].onBooted()
 
@@ -135,11 +135,11 @@ class ModuleManager(Manager):
 			try:
 				if not module['active']:
 					if moduleName in self.NEEDED_MODULES:
-						self._logger.info(f"Module {moduleName} marked as disable but it shouldn't be")
+						self.logInfo(f"Module {moduleName} marked as disable but it shouldn't be")
 						SuperManager.getInstance().onStop()
 						break
 					else:
-						self._logger.info(f'Module {moduleName} is disabled')
+						self.logInfo(f'Module {moduleName} is disabled')
 
 						moduleInstance = self.importFromModule(moduleName=moduleName, isUpdate=False)
 						if moduleInstance:
@@ -171,13 +171,13 @@ class ModuleManager(Manager):
 						'instance': moduleInstance
 					}
 			except ModuleStartingFailed as e:
-				self._logger.warning(f'[{self.name}] Failed loading module: {e}')
+				self.logWarning(f'Failed loading module: {e}')
 				continue
 			except ModuleNotConditionCompliant as e:
-				self._logger.info(f'[{self.name}] Module {moduleName} does not comply to "{e.condition}" condition, required "{e.conditionValue}"')
+				self.logInfo(f'Module {moduleName} does not comply to "{e.condition}" condition, required "{e.conditionValue}"')
 				continue
 			except Exception as e:
-				self._logger.warning(f'[{self.name}] Something went wrong loading a module: {e}')
+				self.logWarning(f'Something went wrong loading a module: {e}')
 				continue
 
 		# noinspection PyTypeChecker
@@ -200,11 +200,11 @@ class ModuleManager(Manager):
 			instance: Module = klass()
 		except ImportError as e:
 			if moduleName != Customisation.MODULE_NAME:
-				self._logger.error(f"[{self.name}] Couldn't import module {moduleName}.{moduleResource}: {e}")
+				self.logError(f"Couldn't import module {moduleName}.{moduleResource}: {e}")
 		except AttributeError as e:
-			self._logger.error(f"[{self.name}] Couldn't find main class for module {moduleName}.{moduleResource}: {e}")
+			self.logError(f"Couldn't find main class for module {moduleName}.{moduleResource}: {e}")
 		except Exception as e:
-			self._logger.error(f"[{self.name}] Couldn't instanciate module {moduleName}.{moduleResource}: {e}")
+			self.logError(f"Couldn't instanciate module {moduleName}.{moduleResource}: {e}")
 
 		return instance
 
@@ -215,7 +215,7 @@ class ModuleManager(Manager):
 		self._reorderCustomisationModule(True)
 		for moduleItem in self._modules.values():
 			moduleItem['instance'].onStop()
-			self._logger.info(f"- [{moduleItem['instance'].name}] Stopped!")
+			self.logInfo(f"- Stopped!")
 
 
 	def onFullHour(self):
@@ -233,16 +233,16 @@ class ModuleManager(Manager):
 			except ModuleStartingFailed:
 				self._modules[moduleName]['active'] = False
 			except ModuleStartDelayed:
-				self._logger.info(f'[{self.name}] Module {moduleName} start is delayed')
+				self.logInfo(f'Module {moduleName} start is delayed')
 
 		supportedIntents = list(set(supportedIntents))
 
 		self._supportedIntents = supportedIntents
 
-		self._logger.info(f'[{self.name}] All modules started. {len(supportedIntents)} intents supported')
+		self.logInfo(f'All modules started. {len(supportedIntents)} intents supported')
 
 
-	def _startModule(self, moduleInstance: Module) -> list:
+	def _startModule(self, moduleInstance: Module) -> dict:
 		name = 'undefined'
 
 		try:
@@ -253,16 +253,16 @@ class ModuleManager(Manager):
 				self._widgets[name] = moduleInstance.widgets
 
 			if intents:
-				self._logger.info('- Started!')
+				self.logInfo('- Started!')
 				return intents
 		except ModuleStartingFailed:
 			raise
 		except ModuleStartDelayed:
 			raise
 		except Exception as e:
-			self._logger.error(f'- Couldn\'t start module {name}. Did you forget to return the intents in onStart()? Error: {e}')
+			self.logError(f'- Couldn\'t start module {name}. Did you forget to return the intents in onStart()? Error: {e}')
 
-		return list()
+		return dict()
 
 
 	def isModuleActive(self, moduleName: str) -> bool:
@@ -272,7 +272,7 @@ class ModuleManager(Manager):
 	def getModuleInstance(self, moduleName: str) -> Optional[Module]:
 		if moduleName not in self._modules:
 			if moduleName != Customisation.MODULE_NAME:
-				self._logger.warning(f'[{self.name}] Module "{moduleName}" is disabled or does not exist in modules manager')
+				self.logWarning(f'Module "{moduleName}" is disabled or does not exist in modules manager')
 			return None
 		else:
 			return self._modules[moduleName]['instance']
@@ -304,7 +304,7 @@ class ModuleManager(Manager):
 				func(*args, **kwargs)
 			except AttributeError as e:
 				if not silent:
-					self._logger.warning(f'[{self.name}] Method "{method}" not found for module "{moduleItem["instance"].name}": {e}')
+					self.logWarning(f'Method "{method}" not found for module "{moduleItem["instance"].name}": {e}')
 			except TypeError:
 				# Do nothing, it's most prolly kwargs
 				pass
@@ -353,9 +353,9 @@ class ModuleManager(Manager):
 		if self.ConfigManager.getAliceConfigByName('stayCompletlyOffline'):
 			return
 
-		self._logger.info(f'[{self.name}] Checking for module updates')
+		self.logInfo('Checking for module updates')
 		if not self.InternetManager.online:
-			self._logger.info(f'[{self.name}] Not connected...')
+			self.logInfo('Not connected...')
 			return
 
 		availableModules = self.ConfigManager.modulesConfigurations
@@ -382,9 +382,9 @@ class ModuleManager(Manager):
 						moduleFile.write_text(json.dumps(remoteFile))
 
 			except Exception as e:
-				self._logger.warning(f'[{self.name}] Error checking updates for module "{moduleName}": {e}')
+				self.logWarning(f'Error checking updates for module "{moduleName}": {e}')
 
-		self._logger.info(f'[{self.name}] Found {i} module update(s)')
+		self.logInfo(f'Found {i} module update(s)')
 
 
 	def _checkForModuleInstall(self):
@@ -400,7 +400,7 @@ class ModuleManager(Manager):
 			return
 
 		if files:
-			self._logger.info(f'[{self.name}] Found {len(files)} install ticket(s)')
+			self.logInfo(f'Found {len(files)} install ticket(s)')
 			self._busyInstalling.set()
 
 			modulesToBoot = list()
@@ -421,7 +421,7 @@ class ModuleManager(Manager):
 					try:
 						self.SamkillaManager.sync(moduleFilter=modulesToBoot)
 					except Exception as esamk:
-						self._logger.error(f'[{self.name}] Failed syncing with remote snips console {esamk}')
+						self.logError(f'Failed syncing with remote snips console {esamk}')
 						raise
 
 				self._busyInstalling.clear()
@@ -435,7 +435,7 @@ class ModuleManager(Manager):
 		for file in modules:
 			moduleName = Path(file).with_suffix('')
 
-			self._logger.info(f'[{self.name}] Now taking care of module {moduleName.stem}')
+			self.logInfo(f'Now taking care of module {moduleName.stem}')
 			res = root / file
 
 			try:
@@ -447,7 +447,7 @@ class ModuleManager(Manager):
 				path = Path(installFile['author'], moduleName)
 
 				if not moduleName:
-					self._logger.error(f'[{self.name}] Module name to install not found, aborting to avoid casualties!')
+					self.logError('Module name to install not found, aborting to avoid casualties!')
 					continue
 
 				directory = Path(commons.rootDir()) / 'modules' / moduleName
@@ -471,24 +471,24 @@ class ModuleManager(Manager):
 						float(availableModules[moduleName]['version']) >= float(installFile['version'])
 
 					if localVersionIsLatest:
-						self._logger.warning(f'[{self.name}] Module "{moduleName}" is already installed, skipping')
+						self.logWarning(f'Module "{moduleName}" is already installed, skipping')
 						subprocess.run(['sudo', 'rm', res])
 						continue
 					else:
-						self._logger.warning(f'[{self.name}] Module "{moduleName}" needs updating')
+						self.logWarning(f'Module "{moduleName}" needs updating')
 						updating = True
 
 				if moduleName in self._modules:
 					try:
 						self._modules[moduleName]['instance'].onStop()
 					except Exception as e:
-						self._logger.error(f'[{self.name}] Error stopping "{moduleName}" for update: {e}')
+						self.logError(f'Error stopping "{moduleName}" for update: {e}')
 						raise
 
 				gitCloner = GithubCloner(baseUrl=self.GITHUB_API_BASE_URL, path=path, dest=directory)
 
 				if gitCloner.clone():
-					self._logger.info(f'[{self.name}] Module successfully downloaded')
+					self.logInfo('Module successfully downloaded')
 					try:
 						pipReq = installFile.get('pipRequirements', None)
 						sysReq = installFile.get('systemRequirements', None)
@@ -519,7 +519,7 @@ class ModuleManager(Manager):
 							'update': updating
 						}
 					except Exception as e:
-						self._logger.error(f'[{self.name}] Failed installing module "{moduleName}": {e}')
+						self.logError(f'Failed installing module "{moduleName}": {e}')
 						res.unlink()
 						SuperManager.getInstance().broadcast(
 							method='onModuleInstallFailed',
@@ -528,7 +528,7 @@ class ModuleManager(Manager):
 							module=moduleName
 						)
 				else:
-					self._logger.error(f'[{self.name}] Failed cloning module')
+					self.logError('Failed cloning module')
 					res.unlink()
 					SuperManager.getInstance().broadcast(
 						method='onModuleInstallFailed',
@@ -537,7 +537,7 @@ class ModuleManager(Manager):
 					)
 
 			except ModuleNotConditionCompliant as e:
-				self._logger.info(f'[{self.name}] Module {moduleName} does not comply to "{e.condition}" condition, required "{e.conditionValue}"')
+				self.logInfo(f'Module {moduleName} does not comply to "{e.condition}" condition, required "{e.conditionValue}"')
 				res.unlink()
 				SuperManager.getInstance().broadcast(
 					method='onModuleInstallFailed',
@@ -546,7 +546,7 @@ class ModuleManager(Manager):
 				)
 
 			except Exception as e:
-				self._logger.error(f'[{self.name}] Failed installing module "{moduleName}": {e}')
+				self.logError(f'Failed installing module "{moduleName}": {e}')
 				res.unlink()
 				SuperManager.getInstance().broadcast(
 					method='onModuleInstallFailed',
@@ -578,7 +578,7 @@ class ModuleManager(Manager):
 					if requiredModule['name'] in availableModules and not availableModules[requiredModule['name']]['active']:
 						raise ModuleNotConditionCompliant(message='Module is not compliant', moduleName=moduleName, condition=conditionName, conditionValue=conditionValue)
 					elif requiredModule['name'] not in availableModules:
-						self._logger.info(f'[{self.name}] Module {moduleName} has another module as dependency, adding download')
+						self.logInfo(f'Module {moduleName} has another module as dependency, adding download')
 						subprocess.run(['wget', requiredModule['url'], '-O', Path(commons.rootDir(), f"system/moduleInstallTickets/{requiredModule['name']}.install")])
 
 			elif conditionName == 'notModule':
@@ -617,7 +617,7 @@ class ModuleManager(Manager):
 
 			self.MqttManager.configureIntents(confs)
 		except Exception as e:
-			self._logger.warning(f'[{self.name}] Intent configuration failed: {e}')
+			self.logWarning(f'Intent configuration failed: {e}')
 
 
 	def isIntentInUse(self, intent: Intent, filtered: list) -> bool:

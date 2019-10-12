@@ -1,4 +1,3 @@
-import logging
 from pathlib import Path
 
 import requests
@@ -6,14 +5,15 @@ import shutil
 
 from core.ProjectAliceExceptions import GithubRateLimit, GithubTokenFailed
 from core.base.SuperManager import SuperManager
+from core.util.model.Logger import Logger
 
 
-class GithubCloner:
+class GithubCloner(Logger):
 
 	NAME = 'GithubCloner'
 
-	def __init__(self, baseUrl: str, path: Path, dest: Path):
-		self._logger = logging.getLogger('ProjectAlice')
+	def __init__(self, baseUrl: str, path: Path, dest: Path, *args, **kwargs):
+		super().__init__(*args, **kwargs)
 		self._baseUrl = baseUrl
 		self._path = path
 		self._dest = dest
@@ -59,15 +59,15 @@ class GithubCloner:
 					self._doClone(url=item['url'])
 
 		except GithubTokenFailed:
-			self._logger.error(f'[{self.NAME}] Provided Github username / token invalid')
+			self.logError('Provided Github username / token invalid')
 			return False
 
 		except GithubRateLimit:
-			self._logger.error(f'[{self.NAME}] Github rate limit reached, cannot access updates for now. You should consider creating a token to avoid this problem')
+			self.logError('Github rate limit reached, cannot access updates for now. You should consider creating a token to avoid this problem')
 			return False
 
 		except Exception as e:
-			self._logger.error(f'[{self.NAME}] Error downloading module: {e}')
+			self.logError(f'Error downloading module: {e}')
 			raise
 
 		return True

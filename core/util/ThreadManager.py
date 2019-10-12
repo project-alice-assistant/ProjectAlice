@@ -38,7 +38,7 @@ class ThreadManager(Manager):
 			if not threadTimer.timer.isAlive():
 				self._timers.remove(threadTimer)
 				i += 1
-		self._logger.info(f'[{self.NAME}] Cleaned {i} dead timers')
+		self.logInfo(f'Cleaned {i} dead timers')
 
 
 	def newTimer(self, interval: float, func: str, autoStart: bool = True, args: list = None, kwargs: dict = None) -> threading.Timer:

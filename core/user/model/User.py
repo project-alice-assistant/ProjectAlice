@@ -1,9 +1,11 @@
-import logging
 import typing
 
-class User:
+from core.util.model.Logger import Logger
+
+
+class User(Logger):
 	def __init__(self, row: typing.Any):
-		self._logger 		= logging.getLogger('ProjectAlice')
+		super().__init__()
 
 		if row:
 			self._name 			= row['username']
@@ -26,7 +28,7 @@ class User:
 		try:
 			exec(f"self._{self._state} = 'True'")
 		except:
-			self._logger.error(f"Invalid state \"{row['state']}\" for user \"{self._name}\"")
+			self.logError(f"Invalid state \"{row['state']}\" for user \"{self._name}\"")
 
 	@property
 	def name(self) -> str:

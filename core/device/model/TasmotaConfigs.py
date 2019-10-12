@@ -1,18 +1,17 @@
-import logging
-
 from core.base.SuperManager import SuperManager
 from core.commons import commons
+from core.util.model.Logger import Logger
 
 
-class TasmotaConfigs:
+class TasmotaConfigs(Logger):
 
 	def getConfigs(self, deviceBrand: str, room: str) -> list:
 		if deviceBrand not in self._configs:
-			self._logger.error(f'[{self._name}] Devices brand "{deviceBrand}" unknown')
+			self.logError(f'[{self._name}] Devices brand "{deviceBrand}" unknown')
 			return list()
 
 		elif self._deviceType not in self._configs[deviceBrand]:
-			self._logger.error(f'[{self._name}] Devices type "{self._deviceType}" unknown')
+			self.logError(f'[{self._name}] Devices type "{self._deviceType}" unknown')
 			return list()
 
 		else:
@@ -39,8 +38,8 @@ class TasmotaConfigs:
 
 
 	def __init__(self, deviceType: str, uid: str):
+		super().__init__()
 		self._name = 'TasmotaConfigs'
-		self._logger = logging.getLogger('ProjectAlice')
 
 		self._deviceType = deviceType
 		self._uid = uid

@@ -32,4 +32,4 @@ class SyslogView(View):
 		data = self.LOGS.open('r').readlines()
 		ret = data[self._counter:]
 		self._counter = len(data)
-		return ['] -'.join(line.split('] -')[1:]) for line in ret]
+		return ['] -'.join(line.split('] -')[2:]) for line in ret]

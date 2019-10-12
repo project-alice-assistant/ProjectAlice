@@ -1,21 +1,21 @@
 from textwrap import dedent
 import inspect
 import json
-import logging
 import sqlite3
 
 from pathlib import Path
 
 from core.base.SuperManager import SuperManager
+from core.util.model.Logger import Logger
 
 
-class Widget:
+class Widget(Logger):
 
 	SIZE = 'w'
 	OPTIONS = dict()
 
 	def __init__(self, data: sqlite3.Row):
-		self._logger = logging.getLogger('ProjectAlice')
+		super().__init__()
 		self._name = data['name']
 		self._parent = data['parent']
 
@@ -58,7 +58,7 @@ class Widget:
 			file = self.getCurrentDir() / f'templates/{self.name}.html'
 			return file.open().read()
 		except:
-			self._logger.warning(f"[{self.name}] Widget doesn't have html file")
+			self.logWarning(f"Widget doesn't have html file")
 			return ''
 
 

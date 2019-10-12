@@ -89,11 +89,11 @@ class WakewordManager(Manager):
 			riff, size, fformat = struct.unpack('<4sI4s', message.payload[:12])
 
 			if riff != b'RIFF':
-				self._logger.error(f'[{self.name}] Wakeword capture frame parse error')
+				self.logError(f'Wakeword capture frame parse error')
 				return
 
 			if fformat != b'WAVE':
-				self._logger.error(f'[{self.name}] Wakeword capture frame wrong format')
+				self.logError(f'Wakeword capture frame wrong format')
 				return
 
 			chunkHeader = message.payload[12:20]
@@ -122,7 +122,7 @@ class WakewordManager(Manager):
 				chunkOffset = chunkOffset + subChunk2Size + 8
 
 		except Exception as e:
-			self._logger.error(f'[{self.name}] Error capturing wakeword: {e}')
+			self.logError(f'Error capturing wakeword: {e}')
 
 
 	def _workAudioFile(self):
@@ -130,7 +130,7 @@ class WakewordManager(Manager):
 
 		# noinspection PyProtectedMember
 		if not sample._datawritten:
-			self._logger.error(f'[{self.name}] Something went wrong capturing audio, no data available in sample')
+			self.logError(f'Something went wrong capturing audio, no data available in sample')
 			self._state = WakewordManagerState.IDLE
 			return
 
@@ -142,7 +142,7 @@ class WakewordManager(Manager):
 
 		filepath = self.wakeword.getSamplePath()
 		if not filepath.exists():
-			self._logger.error(f'[{self.name}] Raw wakeword "{len(self.wakeword.samples)}" wasn\'t found')
+			self.logError(f'Raw wakeword "{len(self.wakeword.samples)}" wasn\'t found')
 			self._state = WakewordManagerState.IDLE
 			return
 
@@ -198,7 +198,7 @@ class WakewordManager(Manager):
 
 
 	def finalizeWakeword(self):
-		self._logger.info(f'[{self.name}] Finalyzing wakeword')
+		self.logInfo(f'Finalyzing wakeword')
 		self._state = WakewordManagerState.FINALIZING
 
 		config = {
@@ -229,7 +229,7 @@ class WakewordManager(Manager):
 		path = Path(commons.rootDir(), 'trained/hotwords', self.wakeword.username.lower())
 
 		if path.exists():
-			self._logger.warning(f'[{self.name}] Destination directory for new wakeword already exists, deleting')
+			self.logWarning(f'Destination directory for new wakeword already exists, deleting')
 			shutil.rmtree(path)
 
 		path.mkdir()
@@ -306,11 +306,11 @@ class WakewordManager(Manager):
 		wakewordName = path.name
 		zipPath = path.parent / (wakewordName + '.zip')
 
-		self._logger.info(f'[{self.name}] Cleaning up {wakewordName}')
+		self.logInfo(f'Cleaning up {wakewordName}')
 		if zipPath.exists():
 			zipPath.unlink()
 
-		self._logger.info(f'[{self.name}] Packing wakeword {wakewordName}')
+		self.logInfo(f'Packing wakeword {wakewordName}')
 		shutil.make_archive(base_name=zipPath.with_suffix(''), format='zip', root_dir=str(path))
 
 		return wakewordName, zipPath
