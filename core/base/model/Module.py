@@ -45,7 +45,7 @@ class Module:
 		if isinstance(supportedIntents, dict):
 			self._supportedIntents = supportedIntents
 		elif isinstance(supportedIntents, list):
-			self._supportedIntents = {intent: None for intent in supportedIntents}
+			self._supportedIntents = dict.fromkeys(supportedIntents)
 
 		self._authOnlyIntents = authOnlyIntents or dict()
 
@@ -322,13 +322,15 @@ class Module:
 
 
 	def onMessage(self, intent: str, session: DialogSession) -> bool:
-		if self._supportedIntents is None:
-			raise NotImplementedError(f'[{self.name}] onMessage must be implemented!')
+		if self._supportedIntents[intent] is None:
+			raise NotImplementedError(f'[{self.name}] onMessage must be implemented when no intent: function dict is provided"!')
 
 		try:
 			return self._supportedIntents[intent](intent=intent, session=session)
 		except KeyError:
 			raise NotImplementedError(f'[{self.name}] The intent: {intent} has no mapping!')
+		except NameError:
+			raise NotImplementedError(f'[{self.name}] The intent callback: {self._supportedIntents[intent]} must be implemented!')
 
 
 	def onSleep(self): pass
