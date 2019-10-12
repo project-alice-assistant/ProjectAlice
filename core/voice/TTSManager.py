@@ -81,7 +81,7 @@ class TTSManager(Manager):
 		self._fallback = None
 
 
-	def onSay(self, session: DialogSession, *args, **kwargs):
+	def onSay(self, session: DialogSession):
 		if self._fallback:
 			self._fallback.onSay(session)
 		else:

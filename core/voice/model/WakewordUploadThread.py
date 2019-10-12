@@ -3,7 +3,6 @@ from pathlib import Path
 from socket import timeout
 from threading import Thread
 
-from core.base.SuperManager import SuperManager
 from core.util.model.Logger import Logger
 
 

@@ -260,7 +260,7 @@ class DeviceManager(Manager):
 
 						for piece in arr:
 							serial.write(piece.encode())
-							self.logInfo('Sent {}'.format(self.name, piece.replace('\r\n', '')))
+							self.logInfo('Sent {}'.format(piece.replace('\r\n', '')))
 							time.sleep(0.5)
 
 						time.sleep(group['waitAfter'])
