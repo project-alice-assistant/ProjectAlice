@@ -110,7 +110,7 @@ $(function () {
 	});
 
 	$('.moduleSettings').on('click', function () {
-		$('#config_for_' + $(this).data('forModule')).dialog('open');
+		$('#config_for_' + $(this).attr('data-forModule')).dialog('open');
 	});
 
 	$('.moduleViewIntents').on('click', function () {
