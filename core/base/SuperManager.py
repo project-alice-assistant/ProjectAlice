@@ -154,6 +154,9 @@ class SuperManager(object):
 
 
 	def broadcast(self, method, exceptions: list = None, manager = None, propagateToModules: bool = False, silent: bool = False, *args, **kwargs):
+		if not exceptions:
+			exceptions = list()
+
 		if not exceptions and not manager:
 			self._logger.warning(f'[{self.NAME}] Cannot broadcast to itself, the calling method has to be put in exceptions')
 

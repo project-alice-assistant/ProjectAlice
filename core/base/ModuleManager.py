@@ -407,7 +407,7 @@ class ModuleManager(Manager):
 			try:
 				modulesToBoot = self._installModules(files)
 			except Exception as e:
-				self._logger.error(f'[{self.name}] Error checking for module install: {e}')
+				self._logger.error(f'[{self.name}] Error installing module: {e}')
 			finally:
 				if modulesToBoot:
 					for moduleName, info in modulesToBoot.items():
