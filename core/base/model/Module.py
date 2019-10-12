@@ -199,7 +199,7 @@ class Module:
 
 
 	@supportedIntents.setter
-	def supportedIntents(self, value: dict):
+	def supportedIntents(self, value: list):
 		self._supportedIntents = value
 
 
@@ -326,8 +326,7 @@ class Module:
 			raise NotImplementedError(f'[{self.name}] onMessage must be implemented when no intent: function dict is provided"!')
 
 		try:
-			self._supportedIntents[intent](intent=intent, session=session)
-			return True
+			return self._supportedIntents[intent](intent=intent, session=session)
 		except KeyError:
 			raise NotImplementedError(f'[{self.name}] The intent: {intent} has no mapping!')
 		except NameError:

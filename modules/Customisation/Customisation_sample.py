@@ -10,7 +10,7 @@ class Customisation(Module):
 
 
 	def __init__(self):
-		self._SUPPORTED_INTENTS = dict()
+		self._SUPPORTED_INTENTS = list()
 
 		super().__init__(self._SUPPORTED_INTENTS)
 
