@@ -1,10 +1,9 @@
 from flask_classful import FlaskView
 
 from core.base.SuperManager import SuperManager
-from core.util.model.Logger import Logger
 
 
-class View(FlaskView, Logger):
+class View(FlaskView):
 
 	def __init__(self):
 		super().__init__()

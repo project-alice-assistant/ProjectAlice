@@ -10,7 +10,7 @@ class Logger:
 
 
 	def logInfo(self, msg: str):
-		self.doLog(function='info', msg=msg)
+		self.doLog(function='info', msg=msg, printStack=False)
 
 
 	def logError(self, msg: str):
@@ -18,7 +18,7 @@ class Logger:
 
 
 	def logDebug(self, msg: str):
-		self.doLog(function='debug', msg=msg)
+		self.doLog(function='debug', msg=msg, printStack=False)
 
 
 	def logFatal(self, msg: str):
@@ -26,18 +26,18 @@ class Logger:
 
 
 	def logWarning(self, msg: str):
-		self.doLog(function='warning', msg=msg)
+		self.doLog(function='warning', msg=msg, printStack=False)
 
 
 	def logCritical(self, msg: str):
 		self.doLog(function='critical', msg=msg)
 
 
-	def doLog(self, function: callable, msg: str):
+	def doLog(self, function: callable, msg: str, printStack=True):
 		func = getattr(self._logger, function)
-		func(self.decorate(msg), exc_info=True)
+		func(self.decorate(msg), exc_info=printStack)
 
 
 	@staticmethod
 	def decorate(msg: str) -> str:
-		return f'[{commons.getFunctionCaller()}] {msg}'
+		return f'[{commons.getFunctionCaller(depth=4)}] {msg}'

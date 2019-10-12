@@ -18,7 +18,9 @@ class TTS(Logger):
 	TEMP_ROOT = Path(tempfile.gettempdir(), '/tempTTS')
 	TTS = None
 
-	def __init__(self, user: User = None):
+	def __init__(self, user: User = None, *args, **kwargs):
+		super().__init__(*args, **kwargs)
+
 		self._online = False
 		self._privacyMalus = 0
 		self._supportedLangAndVoices = dict()
