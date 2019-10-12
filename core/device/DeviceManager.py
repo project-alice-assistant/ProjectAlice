@@ -106,7 +106,7 @@ class DeviceManager(Manager):
 			count = self.databaseFetch(tableName='devices', query='SELECT COUNT() FROM :__table__ WHERE uid = :uid', values={'uid': uid})[0]
 			return count <= 0
 		except sqlite3.OperationalError as e:
-			self._logger.warning(f"[{self.name}] Couldn't check device from database: {e}")
+			self.logWarning(f"[{self.name}] Couldn't check device from database: {e}")
 			return False
 
 
@@ -133,7 +133,7 @@ class DeviceManager(Manager):
 			self._devices[uid] = d
 			return True
 		except Exception as e:
-			self._logger.warning(f"[{self.name}] Couldn't insert device in database: {e}")
+			self.logWarning(f"[{self.name}] Couldn't insert device in database: {e}")
 			return False
 
 
@@ -150,7 +150,7 @@ class DeviceManager(Manager):
 				file.write(req.content)
 				self.logInfo(f'[{self.name}] Downloaded sonoff.bin')
 		except Exception as e:
-			self._logger.error(f'[{self.name}] Something went wrong downloading sonoff.bin: {e}')
+			self.logError(f'[{self.name}] Something went wrong downloading sonoff.bin: {e}')
 			self._broadcastFlag.clear()
 			return False
 
@@ -216,7 +216,7 @@ class DeviceManager(Manager):
 				cmd.append('--erase-all')
 				esptool.main(cmd)
 			except Exception as e:
-				self._logger.error(f'[{self.name}] Something went wrong flashing esp device: {e}')
+				self.logError(f'[{self.name}] Something went wrong flashing esp device: {e}')
 				self.MqttManager.say(text=self.TalkManager.randomTalk('espFailed', module='AliceCore'), client=siteId)
 				self._broadcastFlag.clear()
 				return
@@ -235,7 +235,7 @@ class DeviceManager(Manager):
 			tasmotaConfigs = TasmotaConfigs(deviceType=espType, uid=uid)
 			confs = tasmotaConfigs.getBacklogConfigs(room)
 			if not confs:
-				self._logger.error(f'[{self.name}] Something went wrong getting tasmota configuration')
+				self.logError(f'[{self.name}] Something went wrong getting tasmota configuration')
 				self.MqttManager.say(text=self.TalkManager.randomTalk('espFailed', module='AliceCore'), client=siteId)
 			else:
 				serial = Serial()
@@ -272,7 +272,7 @@ class DeviceManager(Manager):
 					self._broadcastFlag.clear()
 
 				except Exception as e:
-					self._logger.error(f'[{self.name}] Something went wrong writting configuration to esp device: {e}')
+					self.logError(f'[{self.name}] Something went wrong writting configuration to esp device: {e}')
 					self.MqttManager.say(text=self.TalkManager.randomTalk('espFailed', module='AliceCore'), client=siteId)
 					self._broadcastFlag.clear()
 					serial.close()
@@ -349,7 +349,7 @@ class DeviceManager(Manager):
 				if deviceType.lower() == 'alicesatellite':
 					for satellite in self.getDevicesByRoom(room):
 						if satellite.deviceType.lower() == 'alicesatellite':
-							self._logger.warning(f'[{self.name}] Cannot have more than one Alice module per room, aborting')
+							self.logWarning(f'[{self.name}] Cannot have more than one Alice module per room, aborting')
 							self.MqttManager.say(text = self.TalkManager.randomTalk('maxOneAlicePerRoom', module='system'), client=replyOnSiteId)
 							answer = 'nok'
 							break
@@ -375,7 +375,7 @@ class DeviceManager(Manager):
 
 	def deviceConnecting(self, uid: str) -> Optional[Device]:
 		if uid not in self._devices:
-			self._logger.warning(f'[{self.name}] A device with uid {uid} tried to connect but is unknown')
+			self.logWarning(f'[{self.name}] A device with uid {uid} tried to connect but is unknown')
 			return None
 
 		if not self._devices[uid].connected:

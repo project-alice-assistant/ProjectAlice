@@ -105,7 +105,7 @@ class ConfigManager(Manager):
 	def updateAliceConfiguration(self, key: str, value: typing.Any):
 		try:
 			if key not in self._aliceConfigurations:
-				self._logger.warning(f'[{self.name}] Was asked to update {key} but key doesn\'t exist')
+				self.logWarning(f'[{self.name}] Was asked to update {key} but key doesn\'t exist')
 				raise Exception
 
 			# Remove module configurations
@@ -120,11 +120,11 @@ class ConfigManager(Manager):
 
 	def updateModuleConfigurationFile(self, moduleName: str, key: str, value: typing.Any):
 		if moduleName not in self._modulesConfigurations:
-			self._logger.warning(f'[{self.name}] Was asked to update {key} in module {moduleName} but module doesn\'t exist')
+			self.logWarning(f'[{self.name}] Was asked to update {key} in module {moduleName} but module doesn\'t exist')
 			return
 
 		if key not in self._modulesConfigurations[moduleName]:
-			self._logger.warning(f'[{self.name}] Was asked to update {key} in module {moduleName} but key doesn\'t exist')
+			self.logWarning(f'[{self.name}] Was asked to update {key} in module {moduleName} but key doesn\'t exist')
 			return
 
 		self._modulesConfigurations[moduleName][key] = value
@@ -179,7 +179,7 @@ class ConfigManager(Manager):
 		if snipsConfig.exists():
 			self._snipsConfigurations = toml.loads(snipsConfig.read_text())
 		else:
-			self._logger.error('Failed retrieving Snips configs')
+			self.logError('Failed retrieving Snips configs')
 			SuperManager.getInstance().onStop()
 
 
@@ -217,7 +217,7 @@ class ConfigManager(Manager):
 
 		config = self._snipsConfigurations.get(parent, dict()).get(key, None)
 		if config is None:
-			self._logger.warning(f'Tried to get "{parent}/{key}" in snips configuration but key was not found')
+			self.logWarning(f'Tried to get "{parent}/{key}" in snips configuration but key was not found')
 
 		return config
 
@@ -333,7 +333,7 @@ class ConfigManager(Manager):
 					self._modulesConfigurations[moduleName] = {**json.load(jsonFile), **self._aliceConfigurations['modules'][moduleName]}
 
 			except json.decoder.JSONDecodeError:
-				self._logger.error(f'- Error in config file for module {moduleName}')
+				self.logError(f'- Error in config file for module {moduleName}')
 
 
 	def deactivateModule(self, moduleName: str, persistent: bool = False):

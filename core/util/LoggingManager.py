@@ -32,4 +32,4 @@ class LoggingManager(Manager):
 
 
 	def critical(self, msg: str):
-		self._logger.warning(msg, exc_info=True)
+		self._logger.critical(msg, exc_info=True)

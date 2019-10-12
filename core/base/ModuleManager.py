@@ -171,13 +171,13 @@ class ModuleManager(Manager):
 						'instance': moduleInstance
 					}
 			except ModuleStartingFailed as e:
-				self._logger.warning(f'[{self.name}] Failed loading module: {e}')
+				self.logWarning(f'[{self.name}] Failed loading module: {e}')
 				continue
 			except ModuleNotConditionCompliant as e:
 				self.logInfo(f'[{self.name}] Module {moduleName} does not comply to "{e.condition}" condition, required "{e.conditionValue}"')
 				continue
 			except Exception as e:
-				self._logger.warning(f'[{self.name}] Something went wrong loading a module: {e}')
+				self.logWarning(f'[{self.name}] Something went wrong loading a module: {e}')
 				continue
 
 		# noinspection PyTypeChecker
@@ -200,11 +200,11 @@ class ModuleManager(Manager):
 			instance: Module = klass()
 		except ImportError as e:
 			if moduleName != Customisation.MODULE_NAME:
-				self._logger.error(f"[{self.name}] Couldn't import module {moduleName}.{moduleResource}: {e}")
+				self.logError(f"[{self.name}] Couldn't import module {moduleName}.{moduleResource}: {e}")
 		except AttributeError as e:
-			self._logger.error(f"[{self.name}] Couldn't find main class for module {moduleName}.{moduleResource}: {e}")
+			self.logError(f"[{self.name}] Couldn't find main class for module {moduleName}.{moduleResource}: {e}")
 		except Exception as e:
-			self._logger.error(f"[{self.name}] Couldn't instanciate module {moduleName}.{moduleResource}: {e}")
+			self.logError(f"[{self.name}] Couldn't instanciate module {moduleName}.{moduleResource}: {e}")
 
 		return instance
 
@@ -260,7 +260,7 @@ class ModuleManager(Manager):
 		except ModuleStartDelayed:
 			raise
 		except Exception as e:
-			self._logger.error(f'- Couldn\'t start module {name}. Did you forget to return the intents in onStart()? Error: {e}')
+			self.logError(f'- Couldn\'t start module {name}. Did you forget to return the intents in onStart()? Error: {e}')
 
 		return list()
 
@@ -272,7 +272,7 @@ class ModuleManager(Manager):
 	def getModuleInstance(self, moduleName: str) -> Optional[Module]:
 		if moduleName not in self._modules:
 			if moduleName != Customisation.MODULE_NAME:
-				self._logger.warning(f'[{self.name}] Module "{moduleName}" is disabled or does not exist in modules manager')
+				self.logWarning(f'[{self.name}] Module "{moduleName}" is disabled or does not exist in modules manager')
 			return None
 		else:
 			return self._modules[moduleName]['instance']
@@ -304,7 +304,7 @@ class ModuleManager(Manager):
 				func(*args, **kwargs)
 			except AttributeError as e:
 				if not silent:
-					self._logger.warning(f'[{self.name}] Method "{method}" not found for module "{moduleItem["instance"].name}": {e}')
+					self.logWarning(f'[{self.name}] Method "{method}" not found for module "{moduleItem["instance"].name}": {e}')
 			except TypeError:
 				# Do nothing, it's most prolly kwargs
 				pass
@@ -382,7 +382,7 @@ class ModuleManager(Manager):
 						moduleFile.write_text(json.dumps(remoteFile))
 
 			except Exception as e:
-				self._logger.warning(f'[{self.name}] Error checking updates for module "{moduleName}": {e}')
+				self.logWarning(f'[{self.name}] Error checking updates for module "{moduleName}": {e}')
 
 		self.logInfo(f'[{self.name}] Found {i} module update(s)')
 
@@ -407,7 +407,7 @@ class ModuleManager(Manager):
 			try:
 				modulesToBoot = self._installModules(files)
 			except Exception as e:
-				self._logger.error(f'[{self.name}] Error checking for module install: {e}')
+				self.logError(f'[{self.name}] Error checking for module install: {e}')
 			finally:
 				if modulesToBoot:
 					for moduleName, info in modulesToBoot.items():
@@ -421,7 +421,7 @@ class ModuleManager(Manager):
 					try:
 						self.SamkillaManager.sync(moduleFilter=modulesToBoot)
 					except Exception as esamk:
-						self._logger.error(f'[{self.name}] Failed syncing with remote snips console {esamk}')
+						self.logError(f'[{self.name}] Failed syncing with remote snips console {esamk}')
 						raise
 
 				self._busyInstalling.clear()
@@ -447,7 +447,7 @@ class ModuleManager(Manager):
 				path = Path(installFile['author'], moduleName)
 
 				if not moduleName:
-					self._logger.error(f'[{self.name}] Module name to install not found, aborting to avoid casualties!')
+					self.logError(f'[{self.name}] Module name to install not found, aborting to avoid casualties!')
 					continue
 
 				directory = Path(commons.rootDir()) / 'modules' / moduleName
@@ -471,18 +471,18 @@ class ModuleManager(Manager):
 						float(availableModules[moduleName]['version']) >= float(installFile['version'])
 
 					if localVersionIsLatest:
-						self._logger.warning(f'[{self.name}] Module "{moduleName}" is already installed, skipping')
+						self.logWarning(f'[{self.name}] Module "{moduleName}" is already installed, skipping')
 						subprocess.run(['sudo', 'rm', res])
 						continue
 					else:
-						self._logger.warning(f'[{self.name}] Module "{moduleName}" needs updating')
+						self.logWarning(f'[{self.name}] Module "{moduleName}" needs updating')
 						updating = True
 
 				if moduleName in self._modules:
 					try:
 						self._modules[moduleName]['instance'].onStop()
 					except Exception as e:
-						self._logger.error(f'[{self.name}] Error stopping "{moduleName}" for update: {e}')
+						self.logError(f'[{self.name}] Error stopping "{moduleName}" for update: {e}')
 						raise
 
 				gitCloner = GithubCloner(baseUrl=self.GITHUB_API_BASE_URL, path=path, dest=directory)
@@ -519,7 +519,7 @@ class ModuleManager(Manager):
 							'update': updating
 						}
 					except Exception as e:
-						self._logger.error(f'[{self.name}] Failed installing module "{moduleName}": {e}')
+						self.logError(f'[{self.name}] Failed installing module "{moduleName}": {e}')
 						res.unlink()
 						SuperManager.getInstance().broadcast(
 							method='onModuleInstallFailed',
@@ -528,7 +528,7 @@ class ModuleManager(Manager):
 							module=moduleName
 						)
 				else:
-					self._logger.error(f'[{self.name}] Failed cloning module')
+					self.logError(f'[{self.name}] Failed cloning module')
 					res.unlink()
 					SuperManager.getInstance().broadcast(
 						method='onModuleInstallFailed',
@@ -546,7 +546,7 @@ class ModuleManager(Manager):
 				)
 
 			except Exception as e:
-				self._logger.error(f'[{self.name}] Failed installing module "{moduleName}": {e}')
+				self.logError(f'[{self.name}] Failed installing module "{moduleName}": {e}')
 				res.unlink()
 				SuperManager.getInstance().broadcast(
 					method='onModuleInstallFailed',
@@ -617,7 +617,7 @@ class ModuleManager(Manager):
 
 			self.MqttManager.configureIntents(confs)
 		except Exception as e:
-			self._logger.warning(f'[{self.name}] Intent configuration failed: {e}')
+			self.logWarning(f'[{self.name}] Intent configuration failed: {e}')
 
 
 	def isIntentInUse(self, intent: Intent, filtered: list) -> bool:

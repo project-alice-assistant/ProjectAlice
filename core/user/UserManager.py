@@ -171,12 +171,12 @@ class UserManager(Manager):
 		try:
 			_ = AccessLevel[requiredAccessLevel.upper()]
 		except KeyError:
-			self._logger.error(f'[{self.name}] Was asked to check access level but accesslevel "{requiredAccessLevel}" doesn\'t exist')
+			self.logError(f'[{self.name}] Was asked to check access level but accesslevel "{requiredAccessLevel}" doesn\'t exist')
 			return False
 
 
 		if user.lower() not in self._users:
-			self._logger.error(f'[{self.name}] Was asked to check access level but user "{user}" doesn\'t exist')
+			self.logError(f'[{self.name}] Was asked to check access level but user "{user}" doesn\'t exist')
 			return False
 
 		return AccessLevel[self._users[user.lower()].accessLevel.upper()].value <= AccessLevel[requiredAccessLevel.upper()].value

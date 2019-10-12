@@ -44,7 +44,7 @@ class SnipsConsoleManager(Manager):
 			self.logInfo(f'[{self.name}] Snips console not authorized')
 			self._login()
 		else:
-			self._logger.warning(f'[{self.name}] Snips console credentials not found')
+			self.logWarning(f'[{self.name}] Snips console credentials not found')
 			self.isActive = False
 
 
@@ -96,11 +96,11 @@ class SnipsConsoleManager(Manager):
 				else:
 					raise Exception(f'[{self.name}] Error fetching JWT console token')
 			except Exception as e:
-				self._logger.error(f"[{self.name}] Couldn't retrieve snips console token: {e}")
+				self.logError(f"[{self.name}] Couldn't retrieve snips console token: {e}")
 				self._connected = False
 				return
 		else:
-			self._logger.error(f"[{self.name}] Couldn't connect to Snips console: {req.status_code}")
+			self.logError(f"[{self.name}] Couldn't connect to Snips console: {req.status_code}")
 			self._connected = False
 
 
@@ -171,7 +171,7 @@ class SnipsConsoleManager(Manager):
 			self.ThreadManager.getEvent('SnipsAssistantDownload').clear()
 			return True
 		except Exception as e:
-			self._logger.error(f'[{self.name}] Assistant download failed: {e}')
+			self.logError(f'[{self.name}] Assistant download failed: {e}')
 			self.ModuleManager.broadcast(method='onSnipsAssistantDownloadFailed')
 			self.ThreadManager.getEvent('SnipsAssistantDownload').clear()
 			return False
@@ -190,7 +190,7 @@ class SnipsConsoleManager(Manager):
 
 	def login(self):
 		if self._connected:
-			self._logger.error('SnipsConsole: cannot login, already logged in')
+			self.logError('SnipsConsole: cannot login, already logged in')
 		else:
 			self._login()
 
@@ -207,7 +207,7 @@ class SnipsConsoleManager(Manager):
 		"""
 		req = requests.request(method=method, url=f'https://external-gateway.snips.ai{url}', params=params, json=data, headers=self._headers, **kwargs)
 		if req.status_code == 401:
-			self._logger.warning(f'[{self.name}] Console token has expired, need to login')
+			self.logWarning(f'[{self.name}] Console token has expired, need to login')
 			self._headers.pop('Authorization', None)
 			self._connected = False
 

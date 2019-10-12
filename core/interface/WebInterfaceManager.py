@@ -47,7 +47,7 @@ class WebInterfaceManager(Manager):
 			langFile = Path(commons.rootDir(), f'core/interface/languages/{self.LanguageManager.activeLanguage.lower()}.json')
 
 			if not langFile.exists():
-				self._logger.warning(f'[{self.name}] Lang "{self.LanguageManager.activeLanguage.lower()}" not found, falling back to "en"')
+				self.logWarning(f'[{self.name}] Lang "{self.LanguageManager.activeLanguage.lower()}" not found, falling back to "en"')
 				langFile = Path(commons.rootDir(), 'core/interface/languages/en.json')
 			else:
 				self.logInfo(f'[{self.name}] Loaded interface in "{self.LanguageManager.activeLanguage.lower()}"')
@@ -84,7 +84,7 @@ class WebInterfaceManager(Manager):
 			if module in self.moduleInstallProcesses:
 				self.moduleInstallProcesses[module]['status'] = 'installed'
 		except Exception as e:
-			self._logger.error(f'[ModulesView] Failed setting module "{module}" status to "installed": {e}')
+			self.logError(f'[ModulesView] Failed setting module "{module}" status to "installed": {e}')
 
 
 	def onModuleInstallFailed(self, **kwargs):
@@ -94,7 +94,7 @@ class WebInterfaceManager(Manager):
 			if module in self.moduleInstallProcesses:
 				self.moduleInstallProcesses[module]['status'] = 'failed'
 		except Exception as e:
-			self._logger.error(f'[ModulesView] Failed setting module "{module}" status to "failed": {e}')
+			self.logError(f'[ModulesView] Failed setting module "{module}" status to "failed": {e}')
 
 
 	@property

@@ -31,7 +31,7 @@ class MqttManager(Manager):
 	# noinspection PyUnusedLocal
 	def onLog(self, client, userdata, level, buf):
 		if level != 16:
-			self._logger.error(buf)
+			self.logError(buf)
 
 
 	def onStart(self):
@@ -153,7 +153,7 @@ class MqttManager(Manager):
 			if not session:
 				session = self.DeviceManager.onMessage(message)
 				if not session:
-					self._logger.warning(f'[{self.name}] Got a message on ({message.topic}) but nobody knows what to do with it')
+					self.logWarning(f'[{self.name}] Got a message on ({message.topic}) but nobody knows what to do with it')
 					self.endDialog(sessionId)
 					return
 
@@ -213,7 +213,7 @@ class MqttManager(Manager):
 			except:
 				pass
 
-			self._logger.error(f'[{self.name}] Uncaught error in onMessage: {e}')
+			self.logError(f'[{self.name}] Uncaught error in onMessage: {e}')
 
 
 	# noinspection PyUnusedLocal
@@ -420,7 +420,7 @@ class MqttManager(Manager):
 				elif isinstance(customData, str):
 					pass
 				else:
-					self._logger.warning(f'[{self.name}] Ask was provided customdata of unsupported type: {customData}')
+					self.logWarning(f'[{self.name}] Ask was provided customdata of unsupported type: {customData}')
 					customData = ''
 
 			if ' ' in client:
@@ -465,7 +465,7 @@ class MqttManager(Manager):
 			client = client.replace(' ', '_')
 
 		if customData is not None and not isinstance(customData, dict):
-			self._logger.warning(f'[{self.name}] Ask was provided customdata of unsupported type: {customData}')
+			self.logWarning(f'[{self.name}] Ask was provided customdata of unsupported type: {customData}')
 			customData = dict()
 
 		user = customData.get('user', constants.UNKNOWN_USER) if customData else constants.UNKNOWN_USER
@@ -546,7 +546,7 @@ class MqttManager(Manager):
 			elif isinstance(customData, str):
 				jsonDict['customData'] = customData
 			else:
-				self._logger.warning(f'[{self.name}] ContinueDialog was provided customdata of unsupported type: {customData}')
+				self.logWarning(f'[{self.name}] ContinueDialog was provided customdata of unsupported type: {customData}')
 
 		intentList = list()
 		if intentFilter:
@@ -557,9 +557,9 @@ class MqttManager(Manager):
 
 		if slot:
 			if intentFilter and len(intentList) > 1:
-				self._logger.warning(f'[{self.name}] Can\'t specify a slot if you have more than one intent in the intent filter')
+				self.logWarning(f'[{self.name}] Can\'t specify a slot if you have more than one intent in the intent filter')
 			elif not intentFilter:
-				self._logger.warning(f'[{self.name}] Can\'t use a slot definition without setting an intent filter')
+				self.logWarning(f'[{self.name}] Can\'t use a slot definition without setting an intent filter')
 			else:
 				jsonDict['slot'] = slot
 
@@ -642,7 +642,7 @@ class MqttManager(Manager):
 			soundFile = Path(location / soundFilename).with_suffix(suffix)
 
 			if not soundFile.exists():
-				self._logger.error(f"[{self.name}] Sound file {soundFile} doesn't exist")
+				self.logError(f"[{self.name}] Sound file {soundFile} doesn't exist")
 				return
 
 			self._mqttClient.publish(constants.TOPIC_PLAY_BYTES.format(siteId, uid), payload=bytearray(soundFile.read_bytes()))
@@ -692,7 +692,7 @@ class MqttManager(Manager):
 		if sonosModule:
 			sonosModule.aliceSpeak(client)
 		else:
-			self._logger.error('Tried to speak on Sonos but Sonos module is disabled or missing')
+			self.logError('Tried to speak on Sonos but Sonos module is disabled or missing')
 
 
 	@staticmethod

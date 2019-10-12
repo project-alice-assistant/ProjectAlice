@@ -79,7 +79,7 @@ class SnipsServicesManager(Manager):
 				**kwargs
 			)
 		except Exception as e:
-			self._logger.error(f'[{self.name}] Failed installing Snips Assistant: {e}')
+			self.logError(f'[{self.name}] Failed installing Snips Assistant: {e}')
 			SuperManager.getInstance().broadcast(
 				method='onSnipsAssistantFailedInstalling',
 				exceptions=[constants.DUMMY],
@@ -90,7 +90,7 @@ class SnipsServicesManager(Manager):
 
 	def runCmd(self, cmd: str, services: list = None):
 		if not Path(commons.rootDir() + '/assistant').exists():
-			self._logger.warning(f'[{self.name}] Assistant not yet existing, shouldn\'t handle Snips for now')
+			self.logWarning(f'[{self.name}] Assistant not yet existing, shouldn\'t handle Snips for now')
 			return
 
 		if not services:
