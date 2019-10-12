@@ -56,7 +56,7 @@ class Module(Logger):
 	def loadWidgets(self):
 		fp = Path(self.getCurrentDir(), 'widgets')
 		if fp.exists():
-			self.logInfo(f"[{self.name}] Loading {len(list(fp.glob('*.py'))) - 1} widgets")
+			self.logInfo(f"Loading {len(list(fp.glob('*.py'))) - 1} widgets")
 
 			data = self.DatabaseManager.fetch(
 				tableName='widgets',
@@ -79,10 +79,10 @@ class Module(Logger):
 				if widgetName in data: # widget already exists in DB
 					self._widgets[widgetName] = klass(data[widgetName])
 					del data[widgetName]
-					self.logInfo(f'[{self.name}] Loaded widget "{widgetName}"')
+					self.logInfo(f'Loaded widget "{widgetName}"')
 
 				else: # widget is new
-					self.logInfo(f'[{self.name}] Adding widget "{widgetName}"')
+					self.logInfo(f'Adding widget "{widgetName}"')
 					widget = klass({
 						'name': widgetName,
 						'parent': self.name,
@@ -91,7 +91,7 @@ class Module(Logger):
 					widget.saveToDB()
 
 			for widgetName in data: # deprecated widgets
-				self.logInfo(f'[{self.name}] Widget "{widgetName}" is deprecated, removing')
+				self.logInfo(f'Widget "{widgetName}" is deprecated, removing')
 				self.DatabaseManager.delete(
 					tableName='widgets',
 					callerName=self.ModuleManager.name,
@@ -226,7 +226,7 @@ class Module(Logger):
 		elif siteId:
 			self.MqttManager.publish(topic=topic, payload={'siteId': siteId})
 		else:
-			self.logWarning(f'[{self.name}] Tried to notify devices but no uid or site id specified')
+			self.logWarning(f'Tried to notify devices but no uid or site id specified')
 
 
 	def filterIntent(self, intent: str, session: DialogSession) -> bool:
@@ -304,7 +304,7 @@ class Module(Logger):
 				self.ThreadManager.doLater(interval=5, func=self.onBooted)
 				return False
 
-			self.logInfo(f'[{self.name}] Delayed start')
+			self.logInfo(f'Delayed start')
 			self.ThreadManager.doLater(interval=5, func=self.onStart)
 
 		return True

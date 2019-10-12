@@ -28,7 +28,7 @@ class TelemetryManager(Manager):
 		super().onStart()
 		if not self.ConfigManager.getAliceConfigByName('enableDataStoring'):
 			self._isActive = False
-			self.logInfo(f'[{self.name}] Data storing is disabled')
+			self.logInfo('Data storing is disabled')
 
 
 	def onQuarterHour(self):

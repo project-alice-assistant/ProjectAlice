@@ -67,7 +67,7 @@ class ConfigManager(Manager):
 
 
 	def _checkAndUpdateAliceConfigFile(self):
-		self.logInfo(f'[{self.name}] Checking Alice configuration file')
+		self.logInfo('Checking Alice configuration file')
 
 		changes = False
 
@@ -105,7 +105,7 @@ class ConfigManager(Manager):
 	def updateAliceConfiguration(self, key: str, value: typing.Any):
 		try:
 			if key not in self._aliceConfigurations:
-				self.logWarning(f'[{self.name}] Was asked to update {key} but key doesn\'t exist')
+				self.logWarning(f'Was asked to update {key} but key doesn\'t exist')
 				raise Exception
 
 			# Remove module configurations
@@ -120,11 +120,11 @@ class ConfigManager(Manager):
 
 	def updateModuleConfigurationFile(self, moduleName: str, key: str, value: typing.Any):
 		if moduleName not in self._modulesConfigurations:
-			self.logWarning(f'[{self.name}] Was asked to update {key} in module {moduleName} but module doesn\'t exist')
+			self.logWarning(f'Was asked to update {key} in module {moduleName} but module doesn\'t exist')
 			return
 
 		if key not in self._modulesConfigurations[moduleName]:
-			self.logWarning(f'[{self.name}] Was asked to update {key} in module {moduleName} but key doesn\'t exist')
+			self.logWarning(f'Was asked to update {key} in module {moduleName} but key doesn\'t exist')
 			return
 
 		self._modulesConfigurations[moduleName][key] = value
@@ -174,7 +174,7 @@ class ConfigManager(Manager):
 
 
 	def loadSnipsConfigurations(self):
-		self.logInfo(f'[{self.name}] Loading Snips configuration file')
+		self.logInfo('Loading Snips configuration file')
 		snipsConfig = Path('/etc/snips.toml')
 		if snipsConfig.exists():
 			self._snipsConfigurations = toml.loads(snipsConfig.read_text())
@@ -249,7 +249,7 @@ class ConfigManager(Manager):
 
 
 	def _checkAndUpdateModuleConfigFiles(self, module: str = ''):
-		self.logInfo(f'[{self.name}] Checking module configuration files')
+		self.logInfo('Checking module configuration files')
 
 		# Iterate through all modules declared in global config file
 		for moduleName in self._modulesConfigurations:
@@ -312,7 +312,7 @@ class ConfigManager(Manager):
 
 
 	def loadModuleConfigurations(self, module: str = ''):
-		self.logInfo(f'[{self.name}] Loading module configurations')
+		self.logInfo('Loading module configurations')
 
 		# Iterate through all modules declared in global config file
 		for moduleName in self._aliceConfigurations['modules']:
@@ -339,7 +339,7 @@ class ConfigManager(Manager):
 	def deactivateModule(self, moduleName: str, persistent: bool = False):
 
 		if moduleName in self.aliceConfigurations['modules']:
-			self.logInfo(f"[{self.name}] Deactivated module {moduleName} {'with' if persistent else 'without'} persistence")
+			self.logInfo(f"Deactivated module {moduleName} {'with' if persistent else 'without'} persistence")
 			self.aliceConfigurations['modules'][moduleName]['active'] = False
 
 			if persistent:
@@ -349,7 +349,7 @@ class ConfigManager(Manager):
 	def activateModule(self, moduleName: str, persistent: bool = False):
 
 		if moduleName in self.aliceConfigurations['modules']:
-			self.logInfo(f"[{self.name}] Activated module {moduleName} {'with' if persistent else 'without'} persistence")
+			self.logInfo(f"Activated module {moduleName} {'with' if persistent else 'without'} persistence")
 			self.aliceConfigurations['modules'][moduleName]['active'] = True
 
 			if persistent:

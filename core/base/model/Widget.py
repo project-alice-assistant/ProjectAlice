@@ -58,7 +58,7 @@ class Widget(Logger):
 			file = self.getCurrentDir() / f'templates/{self.name}.html'
 			return file.open().read()
 		except:
-			self.logWarning(f"[{self.name}] Widget doesn't have html file")
+			self.logWarning(f"Widget doesn't have html file")
 			return ''
 
 

@@ -156,7 +156,7 @@ class SuperManager(object):
 
 	def broadcast(self, method, exceptions: list = None, manager = None, propagateToModules: bool = False, silent: bool = False, *args, **kwargs):
 		if not exceptions and not manager:
-			self._logger.logWarning(f'[{self.NAME}] Cannot broadcast to itself, the calling method has to be put in exceptions')
+			self._logger.logWarning('Cannot broadcast to itself, the calling method has to be put in exceptions')
 
 		if 'ProjectAlice' not in exceptions:
 			exceptions.append('ProjectAlice')
@@ -177,7 +177,7 @@ class SuperManager(object):
 				func(*args, **kwargs)
 			except AttributeError as e:
 				if not silent:
-					self._logger.logWarning(f"[{self.NAME}] Couldn't find method {method} in manager {man.name}: {e}")
+					self._logger.logWarning(f"Couldn't find method {method} in manager {man.name}: {e}")
 			except TypeError:
 				# Do nothing, it's most prolly kwargs
 				pass
@@ -195,7 +195,7 @@ class SuperManager(object):
 			for managerName, manager in self._managers.items():
 				manager.onStop()
 		except Exception as e:
-			self._logger.logError(f'[{self.NAME}] Error while shutting down manager "{managerName}": {e}')
+			self._logger.logError(f'Error while shutting down manager "{managerName}": {e}')
 
 
 	def getManager(self, managerName: str):

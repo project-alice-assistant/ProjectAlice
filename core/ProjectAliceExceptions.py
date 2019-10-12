@@ -35,7 +35,7 @@ class SamkillaException(_ProjectAliceException):
 
 class FunctionNotImplemented(_ProjectAliceException):
 	def __init__(self, clazz: str, funcName: str):
-		self.logError(f'[{clazz}] {funcName} must be implemented!')
+		self.logError(f'{funcName} must be implemented!')
 
 
 class ModuleStartingFailed(_ProjectAliceException):
@@ -48,7 +48,7 @@ class ModuleStartingFailed(_ProjectAliceException):
 
 class ModuleStartDelayed(_ProjectAliceException):
 	def __init__(self, moduleName):
-		self.logWarning(f'[{moduleName}] Delaying module start')
+		self.logWarning('Delaying module start')
 		SuperManager.getInstance().moduleManager.getModuleInstance(moduleName).delayed = True
 
 

@@ -99,12 +99,12 @@ class SamkillaManager(Manager):
 		if moduleFilter is None:
 			moduleFilter = dict()
 
-		self.log(f"[{self.name}] Sync for module/s [{', '.join(moduleFilter) or '*'}]")
+		self.log(f"Sync for module/s [{', '.join(moduleFilter) or '*'}]")
 
 		started = self.start()
 
 		if not started:
-			self.log(f'[{self.name}] No credentials. Unable to synchronize assistant with remote console')
+			self.log('No credentials. Unable to synchronize assistant with remote console')
 			return False
 
 		activeLang: str = self.LanguageManager.activeLanguage
@@ -121,18 +121,18 @@ class SamkillaManager(Manager):
 
 			if changes:
 				if download:
-					self.log(f'[{self.name}] Changes detected during sync, let\'s update the assistant...')
+					self.log('Changes detected during sync, let\'s update the assistant...')
 					self.SnipsConsoleManager.doDownload(moduleFilter)
 				else:
-					self.log(f'[{self.name}] Changes detected during sync but not downloading yet')
+					self.log('Changes detected during sync but not downloading yet')
 			else:
-				self.log(f'[{self.name}] No changes detected during sync')
+				self.log('No changes detected during sync')
 				self.ModuleManager.onSnipsAssistantDownloaded(modulesInfos=moduleFilter)
 
 
 			self.stop()
 		except AssistantNotFoundError:
-			self.log(f'[{self.name}] Assistant project id \'{activeProjectId}\' for lang \'{activeLang}\' doesn\'t exist. Check your config.py')
+			self.log(f'Assistant project id \'{activeProjectId}\' for lang \'{activeLang}\' doesn\'t exist. Check your config.py')
 
 		return changes
 

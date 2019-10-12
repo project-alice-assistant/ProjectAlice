@@ -38,7 +38,7 @@ class Manager(Singleton):
 		try:
 			return commons.getFunctionCaller()
 		except Exception as e:
-			self.logError(f'[{self.name}] Something went wrong retrieving function caller: {e}')
+			self.logError(f'Something went wrong retrieving function caller: {e}')
 			return None
 
 
