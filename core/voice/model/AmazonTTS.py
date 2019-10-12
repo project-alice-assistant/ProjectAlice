@@ -213,7 +213,7 @@ class AmazonTTS(TTS):
 			)
 
 			if not response:
-				self._logger.error(f'[{self.TTS.value}] Failed downloading speech file')
+				self.logError(f'[{self.TTS.value}] Failed downloading speech file')
 				return
 
 			tmpFile.write_bytes(response['AudioStream'].read())

@@ -205,7 +205,7 @@ class MqttManager(Manager):
 				elif consumed:
 					return
 
-			self._logger.warning(f"[{self.name}] Intent \"{message.topic}\" wasn't consumed by any module")
+			self.logWarning(f"[{self.name}] Intent \"{message.topic}\" wasn't consumed by any module")
 			self.endDialog(sessionId)
 		except Exception as e:
 			try:

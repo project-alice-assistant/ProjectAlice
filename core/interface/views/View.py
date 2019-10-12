@@ -1,15 +1,13 @@
-import logging
-
 from flask_classful import FlaskView
 
 from core.base.SuperManager import SuperManager
+from core.util.model.Logger import Logger
 
 
-class View(FlaskView):
+class View(FlaskView, Logger):
 
 	def __init__(self):
 		super().__init__()
-		self._logger = logging.getLogger('ProjectAlice')
 		self._langData = self.WebInterfaceManager.langData
 
 

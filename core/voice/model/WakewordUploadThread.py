@@ -1,17 +1,18 @@
-import logging
 import socket
 from pathlib import Path
 from socket import timeout
 from threading import Thread
 
+from core.base.SuperManager import SuperManager
+from core.util.model.Logger import Logger
 
-class WakewordUploadThread(Thread):
+
+class WakewordUploadThread(Thread, Logger):
 
 	def __init__(self, host: str, port: int, zipPath: str):
 		super().__init__()
 		self.setDaemon(True)
 
-		self._logger = logging.getLogger('ProjectAlice')
 		self._host = host
 		self._port = port
 		self._zipPath = Path(zipPath)
@@ -23,11 +24,11 @@ class WakewordUploadThread(Thread):
 
 			with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
 				sock.bind((self._host, self._port))
-				self._logger.info('[WakewordUploadThread] Waiting for a device to connect')
+				self.logInfo('[WakewordUploadThread] Waiting for a device to connect')
 				sock.listen()
 
 				conn, addr = sock.accept()
-				self._logger.info(f'[WakewordUploadThread] New device connected: {addr}')
+				self.logInfo(f'[WakewordUploadThread] New device connected: {addr}')
 
 				with self._zipPath.open(mode='rb') as f:
 					data = f.read(1024)
@@ -35,25 +36,25 @@ class WakewordUploadThread(Thread):
 						conn.send(data)
 						data = f.read(1024)
 
-				self._logger.info(f'[WakewordUploadThread] Waiting on a feedback from {addr[0]}')
+				self.logInfo(f'[WakewordUploadThread] Waiting on a feedback from {addr[0]}')
 				conn.settimeout(20)
 				try:
 					while True:
 						answer = conn.recv(1024).decode()
 						if not answer:
-							self._logger.info('[WakewordUploadThread] The device closed the connection before confirming...')
+							self.logInfo('[WakewordUploadThread] The device closed the connection before confirming...')
 							break
 
 						if answer == '0':
-							self._logger.info(f'[WakewordUploadThread] Wakeword "{wakewordName}" upload to {addr[0]} success')
+							self.logInfo(f'[WakewordUploadThread] Wakeword "{wakewordName}" upload to {addr[0]} success')
 							break
 						elif answer == '-1':
-							self._logger.warning('[WakewordUploadThread] The device failed downloading the hotword')
+							self.logWarning('[WakewordUploadThread] The device failed downloading the hotword')
 							break
 						elif answer == '-2':
-							self._logger.warning('[WakewordUploadThread] The device failed installing the hotword')
+							self.logWarning('[WakewordUploadThread] The device failed installing the hotword')
 							break
 				except timeout:
-					self._logger.warning('[WakewordUploadThread] The device did not confirm the operation as successfull in time. The hotword installation might have failed')
+					self.logWarning('[WakewordUploadThread] The device did not confirm the operation as successfull in time. The hotword installation might have failed')
 		except Exception as e:
-			self._logger.info(f'[WakewordUploadThread] Error uploading wakeword: {e}')
+			self.logInfo(f'[WakewordUploadThread] Error uploading wakeword: {e}')

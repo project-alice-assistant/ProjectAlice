@@ -1,7 +1,6 @@
 import getpass
 import importlib
 import json
-import logging
 import shutil
 import subprocess
 import time
@@ -10,12 +9,12 @@ from pathlib import Path
 import yaml
 
 from core.commons import commons
+from core.util.model.Logger import Logger
 
 
-class initDict(dict):
+class initDict(dict, Logger):
 
 	def __init__(self, default: dict):
-		self._logger = logging.getLogger('ProjectAlice')
 		super().__init__(default)
 
 
@@ -23,11 +22,11 @@ class initDict(dict):
 		try:
 			return super().__getitem__(item) or ''
 		except:
-			self._logger.warning(f'Missing key "{item}" in provided yaml file. Are you using a deprecated yaml file version?')
+			self.logWarning(f'Missing key "{item}" in provided yaml file. Are you using a deprecated yaml file version?')
 			return ''
 
 
-class Initializer:
+class Initializer(Logger):
 
 	NAME = 'ProjectAlice'
 
@@ -44,8 +43,8 @@ network={
 	'''
 
 	def __init__(self):
-		self._logger = logging.getLogger('ProjectAlice')
-		self._logger.info('Starting Project Alice initializer')
+		super().__init__()
+		self.logInfo('Starting Project Alice initializer')
 
 		self._confsFile = Path(commons.rootDir(), 'config.py')
 		self._confsSample = Path(commons.rootDir(), 'configSample.py')
@@ -77,7 +76,7 @@ network={
 		bootWpaSupplicant = Path('/boot/wpa_supplicant.conf')
 
 		if not wpaSupplicant.exists():
-			self._logger.info('Setting up wifi')
+			self.logInfo('Setting up wifi')
 			wpaFile = self._WPA_FILE\
 				.replace('%wifiCountryCode%', initConfs['wifiCountryCode'])\
 				.replace('%wifiNetworkName%', initConfs['wifiNetworkName'])\
@@ -86,7 +85,7 @@ network={
 			file = Path(commons.rootDir(), 'wifi.conf')
 			file.write_text(wpaFile)
 
-			self._logger.info('wpa_supplicant.conf')
+			self.logInfo('wpa_supplicant.conf')
 			subprocess.run(['sudo', 'mv', str(file), bootWpaSupplicant])
 			time.sleep(1)
 			subprocess.run(['/usr/bin/sudo', '/sbin/shutdown', '-r', 'now'])
@@ -215,7 +214,7 @@ network={
 		subprocess.run(['sudo', 'sed', '-i', '-e', f's/\#EXECSTART/ExecStart=\/home\/{getpass.getuser()}\/ProjectAlice\/venv\/bin\/python3 main.py/', str(serviceFilePath)])
 		subprocess.run(['sudo', 'sed', '-i', '-e', f's/\#USER/User={getpass.getuser()}/', str(serviceFilePath)])
 
-		self._logger.info('Installing audio hardware')
+		self.logInfo('Installing audio hardware')
 		audioHardware = ''
 		for hardware in initConfs['audioHardware']:
 			if initConfs['audioHardware'][hardware]:
@@ -296,9 +295,9 @@ network={
 
 
 	def fatal(self, text: str):
-		self._logger.fatal(text)
+		self.logFatal(text)
 		exit()
 
 
 	def warning(self, text: str):
-		self._logger.warning(text)
+		self.logWarning(text)

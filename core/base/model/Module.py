@@ -16,11 +16,13 @@ from core.base.SuperManager import SuperManager
 from core.base.model.Intent import Intent
 from core.commons import commons, constants
 from core.dialog.model.DialogSession import DialogSession
+from core.util.model.Logger import Logger
 
 
-class Module:
+class Module(Logger):
 
 	def __init__(self, supportedIntents: typing.Iterable, authOnlyIntents: dict = None, databaseSchema: dict = None):
+		super().__init__()
 		try:
 			path = Path(inspect.getfile(self.__class__)).with_suffix('.install')
 			self._install = json.loads(path.read_text())
@@ -462,30 +464,6 @@ class Module:
 		self.MqttManager.publish(topic=topic)
 
 
-	def logInfo(self, msg: str):
-		self.LoggingManager.info(msg)
-
-
-	def logError(self, msg: str):
-		self.LoggingManager.error(msg)
-
-
-	def logDebug(self, msg: str):
-		self.LoggingManager.debug(msg)
-
-
-	def logFatal(self, msg: str):
-		self.LoggingManager.fatal(msg)
-
-
-	def logWarning(self, msg: str):
-		self.LoggingManager.warning(msg)
-
-
-	def logCritical(self, msg: str):
-		self.LoggingManager.warning(msg)
-
-
 	@property
 	def ConfigManager(self):
 		return SuperManager.getInstance().configManager
@@ -594,8 +572,3 @@ class Module:
 	@property
 	def WebInterfaceManager(self):
 		return SuperManager.getInstance().webInterfaceManager
-
-
-	@property
-	def LoggingManager(self):
-		return SuperManager.getInstance().loggingManager

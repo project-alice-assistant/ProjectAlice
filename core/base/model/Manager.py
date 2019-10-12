@@ -104,30 +104,6 @@ class Manager(Singleton):
 		return self.DatabaseManager.prune(tableName=tableName, callerName=self.name)
 
 
-	def logInfo(self, msg: str):
-		self.LoggingManager.info(msg)
-
-
-	def logError(self, msg: str):
-		self.LoggingManager.error(msg)
-
-
-	def logDebug(self, msg: str):
-		self.LoggingManager.debug(msg)
-
-
-	def logFatal(self, msg: str):
-		self.LoggingManager.fatal(msg)
-
-
-	def logWarning(self, msg: str):
-		self.LoggingManager.warning(msg)
-
-
-	def logCritical(self, msg: str):
-		self.LoggingManager.warning(msg)
-
-
 	@property
 	def ConfigManager(self):
 		return SuperManager.getInstance().configManager
@@ -236,8 +212,3 @@ class Manager(Singleton):
 	@property
 	def WebInterfaceManager(self):
 		return SuperManager.getInstance().webInterfaceManager
-
-
-	@property
-	def LoggingManager(self):
-		return SuperManager.getInstance().loggingManager

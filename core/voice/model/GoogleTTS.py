@@ -154,7 +154,7 @@ class GoogleTTS(TTS):
 
 			response = self._client.synthesize_speech(imput, voice, audio)
 			if not response:
-				self._logger.error(f'[{self.TTS.value}] Failed downloading speech file')
+				self.logError(f'[{self.TTS.value}] Failed downloading speech file')
 				return
 
 			tmpFile.write_bytes(response.audio_content)

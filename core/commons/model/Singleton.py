@@ -1,14 +1,15 @@
-import logging
+from core.util.model.Logger import Logger
 
-class Singleton:
+
+class Singleton(Logger):
 
 	INSTANCE 	= None
 
 	def __init__(self, name):
-		self._logger = logging.getLogger('ProjectAlice')
+		super().__init__()
 
 		if self.INSTANCE:
-			self._logger.error(f'Trying to instanciate {name} but instance already exists')
+			self.logError(f'Trying to instanciate {name} but instance already exists')
 			raise KeyboardInterrupt
 		else:
 			self.INSTANCE = self

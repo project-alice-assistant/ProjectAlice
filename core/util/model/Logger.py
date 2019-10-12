@@ -1,35 +1,30 @@
 import logging
 
-from core.base.model.Manager import Manager
+class Logger:
 
-
-class LoggingManager(Manager):
-	NAME = 'LoggingManager'
-
-	def __init__(self):
-		super().__init__(self.NAME)
+	def __init__(self, *args, **kwargs):
 		self._logger = logging.getLogger('ProjectAlice')
 
 
-	def info(self, msg: str):
+	def logInfo(self, msg: str):
 		self._logger.info(msg, exc_info=True)
 
 
-	def error(self, msg: str):
+	def logError(self, msg: str):
 		self._logger.error(msg, exc_info=True)
 
 
-	def debug(self, msg: str):
+	def logDebug(self, msg: str):
 		self._logger.debug(msg, exc_info=True)
 
 
-	def fatal(self, msg: str):
+	def logFatal(self, msg: str):
 		self._logger.fatal(msg, exc_info=True)
 
 
-	def warning(self, msg: str):
+	def logWarning(self, msg: str):
 		self._logger.warning(msg, exc_info=True)
 
 
-	def critical(self, msg: str):
+	def logCritical(self, msg: str):
 		self._logger.critical(msg, exc_info=True)

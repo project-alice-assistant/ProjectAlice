@@ -48,7 +48,7 @@ class IndexView(View):
 
 			return jsonify(success=True)
 		except Exception as e:
-			self._logger.warning(f"[Widget] Couldn't save position: {e}")
+			self.logWarning(f"[Widget] Couldn't save position: {e}")
 			return jsonify(success=False)
 
 
@@ -63,7 +63,7 @@ class IndexView(View):
 
 			return jsonify(success=True)
 		except Exception as e:
-			self._logger.warning(f"[Widget] Couldn't remove from home: {e}")
+			self.logWarning(f"[Widget] Couldn't remove from home: {e}")
 			return jsonify(success=False)
 
 
@@ -78,5 +78,5 @@ class IndexView(View):
 
 			return redirect('home.html')
 		except Exception as e:
-			self._logger.warning(f"[Widget] Couldn't add to home: {e}")
+			self.logWarning(f"[Widget] Couldn't add to home: {e}")
 			return jsonify(success=False)
