@@ -64,11 +64,11 @@ class SnipsConsoleManager(Manager):
 	def _login(self):
 		self._tries += 1
 		if self._tries > 3:
-			self._logger.info(f'- Tried to login {self._tries} times, giving up now')
+			self._logger.info(f'[{self.name}] Tried to login {self._tries} times, giving up now')
 			self._tries = 0
 			return
 
-		self._logger.info(f"- Connecting to Snips console using account {self.ConfigManager.getAliceConfigByName('snipsConsoleLogin')}")
+		self._logger.info(f"[{self.name}] Connecting to Snips console using account {self.ConfigManager.getAliceConfigByName('snipsConsoleLogin')}")
 		payload = {
 			'email'   : self.ConfigManager.getAliceConfigByName('snipsConsoleLogin'),
 			'password': self.ConfigManager.getAliceConfigByName('snipsConsolePassword')
@@ -83,22 +83,24 @@ class SnipsConsoleManager(Manager):
 
 				accessToken = self._getAccessToken(token)
 				if accessToken:
-					self._logger.info('- Saving console access token')
+					self._logger.info(f'[{self.name}] Saving console access token')
 					self.ConfigManager.updateSnipsConfiguration(parent='project-alice', key='console_token', value=accessToken['token'])
 					self.ConfigManager.updateSnipsConfiguration(parent='project-alice', key='console_alias', value=accessToken['alias'])
 					self.ConfigManager.updateSnipsConfiguration(parent='project-alice', key='console_user_id', value=self._user.userId)
 					self.ConfigManager.updateSnipsConfiguration(parent='project-alice', key='console_user_email', value=self._user.userEmail)
 
+					self._headers['Authorization'] = f"JWT {accessToken['token']}"
+
 					self._connected = True
 					self._tries = 0
 				else:
-					raise Exception('- Error fetching JWT console token')
+					raise Exception(f'[{self.name}] Error fetching JWT console token')
 			except Exception as e:
-				self._logger.error(f"- Couldn't retrieve snips console token: {e}")
+				self._logger.error(f"[{self.name}] Couldn't retrieve snips console token: {e}")
 				self._connected = False
 				return
 		else:
-			self._logger.error(f"- Couldn't connect to Snips console: {req.status_code}")
+			self._logger.error(f"[{self.name}] Couldn't connect to Snips console: {req.status_code}")
 			self._connected = False
 
 
@@ -205,7 +207,7 @@ class SnipsConsoleManager(Manager):
 		"""
 		req = requests.request(method=method, url=f'https://external-gateway.snips.ai{url}', params=params, json=data, headers=self._headers, **kwargs)
 		if req.status_code == 401:
-			self._logger.warning('[{}] Console token has expired, need to login')
+			self._logger.warning(f'[{self.name}] Console token has expired, need to login')
 			self._headers.pop('Authorization', None)
 			self._connected = False
 

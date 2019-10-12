@@ -320,15 +320,16 @@ class Module:
 		self._updateAvailable = False
 		#self.MqttManager.subscribeModuleIntents(self.name)
 
+
 	def onMessage(self, intent: str, session: DialogSession) -> bool:
 		if self._supportedIntents is None:
 			raise NotImplementedError(f'[{self.name}] onMessage must be implemented!')
 
 		try:
-			self._supportedIntents[intent](intent=intent, session=session)
-			return True
+			return self._supportedIntents[intent](intent=intent, session=session)
 		except KeyError:
 			raise NotImplementedError(f'[{self.name}] The intent: {intent} has no mapping!')
+
 
 	def onSleep(self): pass
 	def onWakeup(self): pass
