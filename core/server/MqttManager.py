@@ -66,7 +66,7 @@ class MqttManager(Manager):
 		self._mqttClient.connect(self.ConfigManager.getAliceConfigByName('mqttHost'), int(self.ConfigManager.getAliceConfigByName('mqttPort')))
 
 		self._mqttClient.loop_start()
-		self._logger.info(f'Started {self.NAME}')
+		self.logInfo(f'Started {self.NAME}')
 
 
 	def onBooted(self):
@@ -209,7 +209,7 @@ class MqttManager(Manager):
 			self.endDialog(sessionId)
 		except Exception as e:
 			try:
-				self._logger.info(traceback.print_exc())
+				self.logInfo(traceback.print_exc())
 			except:
 				pass
 

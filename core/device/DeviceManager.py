@@ -69,7 +69,7 @@ class DeviceManager(Manager):
 		self._listenSocket.bind(('', self._listenPort))
 
 		self.loadDevices()
-		self._logger.info(f'- Loaded {len(self._devices)} devices')
+		self.logInfo(f'- Loaded {len(self._devices)} devices')
 
 
 	@property
@@ -148,7 +148,7 @@ class DeviceManager(Manager):
 			req = requests.get('https://github.com/arendst/Sonoff-Tasmota/releases/download/v6.5.0/sonoff.bin')
 			with open('sonoff.bin', 'wb') as file:
 				file.write(req.content)
-				self._logger.info(f'[{self.name}] Downloaded sonoff.bin')
+				self.logInfo(f'[{self.name}] Downloaded sonoff.bin')
 		except Exception as e:
 			self._logger.error(f'[{self.name}] Something went wrong downloading sonoff.bin: {e}')
 			self._broadcastFlag.clear()
@@ -163,7 +163,7 @@ class DeviceManager(Manager):
 		scanPresent = True
 		found = False
 		tries = 0
-		self._logger.info(f'[{self.name}] Looking for USB device for the next {timeout} seconds')
+		self.logInfo(f'[{self.name}] Looking for USB device for the next {timeout} seconds')
 		while not found:
 			tries += 1
 			if tries > timeout * 2:
@@ -179,14 +179,14 @@ class DeviceManager(Manager):
 
 			if len(newPorts) < len(oldPorts):
 				# User disconnected a device
-				self._logger.info(f'[{self.name}] USB device disconnected')
+				self.logInfo(f'[{self.name}] USB device disconnected')
 				oldPorts = list()
 				scanPresent = True
 			else:
 				changes = [port for port in newPorts if port not in oldPorts]
 				if changes:
 					port = changes[0]
-					self._logger.info(f'[{self.name}] Found usb device on {port}')
+					self.logInfo(f'[{self.name}] Found usb device on {port}')
 					return port
 
 			time.sleep(0.5)
@@ -225,7 +225,7 @@ class DeviceManager(Manager):
 			self._broadcastFlag.clear()
 			return
 
-		self._logger.info(f'[{self.name}] Tasmota flash done')
+		self.logInfo(f'[{self.name}] Tasmota flash done')
 		self.MqttManager.say(text=self.TalkManager.randomTalk('espFlashedUnplugReplug', module='AliceCore'), client=siteId)
 		found = self.findUSBPort(timeout = 60)
 		if found:
@@ -260,13 +260,13 @@ class DeviceManager(Manager):
 
 						for piece in arr:
 							serial.write(piece.encode())
-							self._logger.info('[{}] Sent {}'.format(self.name, piece.replace('\r\n', '')))
+							self.logInfo('[{}] Sent {}'.format(self.name, piece.replace('\r\n', '')))
 							time.sleep(0.5)
 
 						time.sleep(group['waitAfter'])
 
 					serial.close()
-					self._logger.info(f'[{self.name}] Tasmota flashing and configuring done')
+					self.logInfo(f'[{self.name}] Tasmota flashing and configuring done')
 					self.MqttManager.say(text=self.TalkManager.randomTalk('espFlashingDone', module='AliceCore'), client=siteId)
 					self.addNewDevice(espType, room, uid)
 					self._broadcastFlag.clear()
@@ -313,7 +313,7 @@ class DeviceManager(Manager):
 		if not uid:
 			uid = self._getFreeUID()
 
-		self._logger.info(f'[{self.name}] Started broadcasting on {self._broadcastPort} for new device addition. Attributed uid: {uid}')
+		self.logInfo(f'[{self.name}] Started broadcasting on {self._broadcastPort} for new device addition. Attributed uid: {uid}')
 		self._listenSocket.listen(2)
 		self.ThreadManager.newThread(name='broadcast', target=self.broadcast, args=[room, uid, siteId])
 
@@ -324,7 +324,7 @@ class DeviceManager(Manager):
 
 
 	def stopBroadcasting(self):
-		self._logger.info('Stopped broadcasting for new devices')
+		self.logInfo('Stopped broadcasting for new devices')
 		self._broadcastFlag.clear()
 
 		if self._broadcastTimer:
@@ -356,11 +356,11 @@ class DeviceManager(Manager):
 
 				if answer != 'nok':
 					if self.addNewDevice(deviceType, room, uid):
-						self._logger.info(f'[{self.name}] New device with uid {uid} successfully added')
+						self.logInfo(f'[{self.name}] New device with uid {uid} successfully added')
 						self.MqttManager.say(text = self.TalkManager.randomTalk('newDeviceAdditionSuccess', module='system'), client=replyOnSiteId)
 						answer = 'ok'
 					else:
-						self._logger.info(f'[{self.name}] Failed adding new device')
+						self.logInfo(f'[{self.name}] Failed adding new device')
 						self.MqttManager.say(text = self.TalkManager.randomTalk('newDeviceAdditionFailed', module='system'), client=replyOnSiteId)
 						answer = 'nok'
 
@@ -370,7 +370,7 @@ class DeviceManager(Manager):
 				self._broadcastSocket.sendto(bytes(answer, encoding='utf8'), (deviceIp, self._broadcastPort))
 				self.stopBroadcasting()
 			except socket.timeout:
-				self._logger.info(f'[{self.name}] No device query received')
+				self.logInfo(f'[{self.name}] No device query received')
 
 
 	def deviceConnecting(self, uid: str) -> Optional[Device]:

@@ -26,11 +26,11 @@ class ASRManager(Manager):
 
 			self._asr = GoogleASR()
 			self.SnipsServicesManager.runCmd('stop', ['snips-asr'])
-			self._logger.info(f'[{self.name}] Turned Snips ASR off')
+			self.logInfo(f'[{self.name}] Turned Snips ASR off')
 		else:
 			self._asr = SnipsASR()
 			self.SnipsServicesManager.runCmd('start', ['snips-asr'])
-			self._logger.info(f'[{self.name}] Started Snips ASR')
+			self.logInfo(f'[{self.name}] Started Snips ASR')
 
 
 	@property
@@ -42,7 +42,7 @@ class ASRManager(Manager):
 		if not self.ConfigManager.getAliceConfigByName('keepASROffline'):
 			asr = self.ConfigManager.getAliceConfigByName('asr').lower()
 			if asr != 'snips' and not self.ConfigManager.getAliceConfigByName('keepASROffline') and not self.ConfigManager.getAliceConfigByName('stayCompletlyOffline'):
-				self._logger.info(f'[{self.name}] Connected to internet, switching ASR')
+				self.logInfo(f'[{self.name}] Connected to internet, switching ASR')
 				self.SnipsServicesManager.runCmd('stop', ['snips-asr'])
 				if asr == 'google':
 					self._asr = GoogleASR()
@@ -51,7 +51,7 @@ class ASRManager(Manager):
 
 	def onInternetLost(self):
 		if not isinstance(self._asr, SnipsASR):
-			self._logger.info(f'[{self.name}] Internet lost, switching to snips ASR')
+			self.logInfo(f'[{self.name}] Internet lost, switching to snips ASR')
 			self.SnipsServicesManager.runCmd('start', ['snips-asr'])
 			self._asr = SnipsASR()
 			self.ThreadManager.doLater(interval=3, func=self.MqttManager.say, args=[self.TalkManager.randomTalk('internetLost', module='AliceCore'), 'all'])
@@ -71,7 +71,7 @@ class ASRManager(Manager):
 				self.MqttManager.publish(topic=constants.TOPIC_STOP_LISTENING, payload={'sessionId': session.sessionId, 'siteId': session.siteId})
 
 				result = self.LanguageManager.sanitizeNluQuery(result)
-				self._logger.debug(f'[{self.NAME}] - {self._asr.__class__.__name__} output: "{result}"')
+				self.logDebug(f'[{self.NAME}] - {self._asr.__class__.__name__} output: "{result}"')
 
 				supportedIntents = session.intentFilter or self.ModuleManager.supportedIntents.keys()
 				intentFilter = [intent.justTopic for intent in supportedIntents if isinstance(intent, Intent) and not intent.protected]

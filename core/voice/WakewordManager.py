@@ -198,7 +198,7 @@ class WakewordManager(Manager):
 
 
 	def finalizeWakeword(self):
-		self._logger.info(f'[{self.name}] Finalyzing wakeword')
+		self.logInfo(f'[{self.name}] Finalyzing wakeword')
 		self._state = WakewordManagerState.FINALIZING
 
 		config = {
@@ -306,11 +306,11 @@ class WakewordManager(Manager):
 		wakewordName = path.name
 		zipPath = path.parent / (wakewordName + '.zip')
 
-		self._logger.info(f'[{self.name}] Cleaning up {wakewordName}')
+		self.logInfo(f'[{self.name}] Cleaning up {wakewordName}')
 		if zipPath.exists():
 			zipPath.unlink()
 
-		self._logger.info(f'[{self.name}] Packing wakeword {wakewordName}')
+		self.logInfo(f'[{self.name}] Packing wakeword {wakewordName}')
 		shutil.make_archive(base_name=zipPath.with_suffix(''), format='zip', root_dir=str(path))
 
 		return wakewordName, zipPath

@@ -102,11 +102,11 @@ class SnipsServicesManager(Manager):
 
 			result = subprocess.run(['sudo', 'systemctl', cmd, service], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 			if result.returncode == 0:
-				self._logger.info(f"[{self.name}] Service {service} {cmd}'ed")
+				self.logInfo(f"[{self.name}] Service {service} {cmd}'ed")
 			elif result.returncode == 5:
 				pass
 			else:
-				self._logger.info(f"[{self.name}] Tried to {cmd} the {service} service but it returned with return code {result.returncode}")
+				self.logInfo(f"[{self.name}] Tried to {cmd} the {service} service but it returned with return code {result.returncode}")
 
 
 	def toggleFeedbackSound(self, state: str, siteId: str = 'all'):

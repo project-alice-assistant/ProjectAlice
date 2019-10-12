@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 import logging
 
 from core.base.model.Manager import Manager

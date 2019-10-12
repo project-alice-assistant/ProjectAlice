@@ -64,7 +64,7 @@ class DatabaseManager(Manager):
 				query = f"SELECT COUNT(name) FROM sqlite_master WHERE type = 'table' and name='{fullTableName}'"
 				cursor.execute(query)
 				if cursor.fetchone()[0] < 1:
-					self._logger.info(f'[{self.name}] Missing data table "{fullTableName}", creating it...')
+					self.logInfo(f'[{self.name}] Missing data table "{fullTableName}", creating it...')
 					try:
 						cursor.execute(f'CREATE TABLE {fullTableName} ({colsQuery}{unique})')
 						database.commit()
@@ -86,12 +86,12 @@ class DatabaseManager(Manager):
 					colName = column.split(' ')[0]
 					cols.append(colName)
 					if colName not in installedColumns:
-						self._logger.info(f'[{self.name}] Found a missing column "{colName}" for table "{fullTableName}" in component "{callerName}"')
+						self.logInfo(f'[{self.name}] Found a missing column "{colName}" for table "{fullTableName}" in component "{callerName}"')
 						cursor.execute(f'ALTER TABLE {fullTableName} ADD COLUMN `{colName}`')
 
 				database.commit()
 			except sqlite3.Error as e:
-				self._logger.info(f'[{self.name}] Failed altering table "{fullTableName}" for component "{callerName}": {e}')
+				self.logInfo(f'[{self.name}] Failed altering table "{fullTableName}" for component "{callerName}": {e}')
 				database.rollback()
 				return False
 
@@ -99,7 +99,7 @@ class DatabaseManager(Manager):
 				doUpdate = False
 				for column in installedColumns:
 					if column not in cols:
-						self._logger.info(f'[{self.name}] Found a deprecated column "{colName}" for table "{fullTableName}" in component "{callerName}"')
+						self.logInfo(f'[{self.name}] Found a deprecated column "{colName}" for table "{fullTableName}" in component "{callerName}"')
 						doUpdate = True
 
 				if doUpdate:
@@ -118,7 +118,7 @@ class DatabaseManager(Manager):
 		for tableName in self._tables:
 			tableName = tableName['name']
 			if not tableName.startswith('sqlite_') and tableName.startswith(callerName + '_') and tableName.split('_')[1] not in schema:
-				self._logger.info(f'[{self.name}] Found a deprecated table "{tableName}" for component "{callerName}"')
+				self.logInfo(f'[{self.name}] Found a deprecated table "{tableName}" for component "{callerName}"')
 
 				try:
 					cursor.execute(f'DROP TABLE {tableName}')

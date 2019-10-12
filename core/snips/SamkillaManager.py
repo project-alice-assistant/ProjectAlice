@@ -139,7 +139,7 @@ class SamkillaManager(Manager):
 
 	def log(self, msg: str):
 		if self._devMode:
-			self._logger.info(msg)
+			self.logInfo(msg)
 
 
 	def start(self):

@@ -32,7 +32,7 @@ class UserManager(Manager):
 	def onStart(self):
 		super().onStart()
 		self._loadUsers()
-		self._logger.info(f'- Loaded {len(self._users)} users')
+		self.logInfo(f'- Loaded {len(self._users)} users')
 
 
 	def _loadUsers(self):

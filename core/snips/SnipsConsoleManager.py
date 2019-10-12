@@ -31,7 +31,7 @@ class SnipsConsoleManager(Manager):
 		super().onStart()
 
 		if self.ConfigManager.getSnipsConfiguration('project-alice', 'console_token'):
-			self._logger.info(f'[{self.name}] Snips console authorized')
+			self.logInfo(f'[{self.name}] Snips console authorized')
 			self._headers['Authorization'] = f"JWT {self.ConfigManager.getSnipsConfiguration('project-alice', 'console_token')}"
 
 			self._user = SnipsConsoleUser({
@@ -41,7 +41,7 @@ class SnipsConsoleManager(Manager):
 
 			self._connected = True
 		elif self.loginCredentialsAreConfigured():
-			self._logger.info(f'[{self.name}] Snips console not authorized')
+			self.logInfo(f'[{self.name}] Snips console not authorized')
 			self._login()
 		else:
 			self._logger.warning(f'[{self.name}] Snips console credentials not found')
@@ -49,7 +49,7 @@ class SnipsConsoleManager(Manager):
 
 
 	def doDownload(self, modulesInfos: dict = None):
-		self._logger.info(f'[{self.name}] Starting Snips assistant training and download procedure')
+		self.logInfo(f'[{self.name}] Starting Snips assistant training and download procedure')
 		self.ThreadManager.newEvent('SnipsAssistantDownload', onClearCallback='onSnipsAssistantDownloaded').set(modulesInfos=modulesInfos)
 
 		projectId = self.LanguageManager.activeSnipsProjectId
@@ -64,11 +64,11 @@ class SnipsConsoleManager(Manager):
 	def _login(self):
 		self._tries += 1
 		if self._tries > 3:
-			self._logger.info(f'[{self.name}] Tried to login {self._tries} times, giving up now')
+			self.logInfo(f'[{self.name}] Tried to login {self._tries} times, giving up now')
 			self._tries = 0
 			return
 
-		self._logger.info(f"[{self.name}] Connecting to Snips console using account {self.ConfigManager.getAliceConfigByName('snipsConsoleLogin')}")
+		self.logInfo(f"[{self.name}] Connecting to Snips console using account {self.ConfigManager.getAliceConfigByName('snipsConsoleLogin')}")
 		payload = {
 			'email'   : self.ConfigManager.getAliceConfigByName('snipsConsoleLogin'),
 			'password': self.ConfigManager.getAliceConfigByName('snipsConsolePassword')
@@ -76,14 +76,14 @@ class SnipsConsoleManager(Manager):
 
 		req = self._req(url='/v1/user/auth', data=payload)
 		if req.status_code == 200:
-			self._logger.info(f'[{self.NAME}] Connected to Snips console. Fetching and saving access token')
+			self.logInfo(f'[{self.NAME}] Connected to Snips console. Fetching and saving access token')
 			try:
 				token = req.headers['authorization']
 				self._user = SnipsConsoleUser(req.json()['user'])
 
 				accessToken = self._getAccessToken(token)
 				if accessToken:
-					self._logger.info(f'[{self.name}] Saving console access token')
+					self.logInfo(f'[{self.name}] Saving console access token')
 					self.ConfigManager.updateSnipsConfiguration(parent='project-alice', key='console_token', value=accessToken['token'])
 					self.ConfigManager.updateSnipsConfiguration(parent='project-alice', key='console_alias', value=accessToken['alias'])
 					self.ConfigManager.updateSnipsConfiguration(parent='project-alice', key='console_user_id', value=self._user.userId)
@@ -145,13 +145,13 @@ class SnipsConsoleManager(Manager):
 			elif trainingStatus.nluStatus.needTraining and \
 				 not trainingStatus.nluStatus.inProgress and \
 				 not trainingStatus.asrStatus.inProgress:
-				self._logger.info(f'[{self.name}] Training NLU')
+				self.logInfo(f'[{self.name}] Training NLU')
 				self._trainAssistant(assistantId, SnipsTrainingType.NLU)
 
 			elif not trainingStatus.nluStatus.inProgress and \
 				 trainingStatus.asrStatus.needTraining and \
 				 not trainingStatus.asrStatus.inProgress:
-				self._logger.info(f'[{self.name}] Training ASR')
+				self.logInfo(f'[{self.name}] Training ASR')
 				self._trainAssistant(assistantId, SnipsTrainingType.ASR)
 			else:
 				raise Exception(f'[{self.name}] Something went wrong while training the assistant')
@@ -162,12 +162,12 @@ class SnipsConsoleManager(Manager):
 	def download(self, assistantId: str) -> bool:
 		try:
 			self._handleTraining(assistantId)
-			self._logger.info(f'[{self.name}] Downloading assistant...')
+			self.logInfo(f'[{self.name}] Downloading assistant...')
 			req = self._req(url=f'/v3/assistant/{assistantId}/download', method='get')
 
 			Path(tempfile.gettempdir(), 'assistant.zip').write_bytes(req.content)
 
-			self._logger.info(f'[{self.name}] Assistant {assistantId} trained and downloaded')
+			self.logInfo(f'[{self.name}] Assistant {assistantId} trained and downloaded')
 			self.ThreadManager.getEvent('SnipsAssistantDownload').clear()
 			return True
 		except Exception as e:
