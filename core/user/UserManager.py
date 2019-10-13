@@ -15,6 +15,7 @@ class UserManager(Manager):
 			'username TEXT NOT NULL',
 			'state TEXT NOT NULL',
 			'accessLevel TEXT NOT NULL',
+			'pin INTEGER'
 			'lang TEXT',
 			'tts TEXT',
 			'ttsLanguage TEXT',

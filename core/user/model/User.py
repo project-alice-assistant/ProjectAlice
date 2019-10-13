@@ -10,6 +10,7 @@ class User(Logger):
 		if row:
 			self._name 			= row['username']
 			self._accessLevel 	= row['accessLevel']
+			self._pin           = row['pin']
 			self._state 		= row['state']
 			self._lang 			= row['lang']
 			self._tts 			= row['tts']
@@ -26,7 +27,9 @@ class User(Logger):
 		self._eating 		= False
 
 		try:
-			exec(f"self._{self._state} = 'True'")
+			func = getattr(self, f'self._{self._state}')
+			func(True)
+			#exec(f"self._{self._state} = 'True'")
 		except:
 			self.logError(f"Invalid state \"{row['state']}\" for user \"{self._name}\"")
 
@@ -37,6 +40,10 @@ class User(Logger):
 	@property
 	def accessLevel(self) -> str:
 		return self._accessLevel
+
+	@property
+	def pin(self) -> int:
+		return self._pin
 
 	@property
 	def state(self) -> str:
@@ -97,6 +104,10 @@ class User(Logger):
 	@accessLevel.setter
 	def accessLevel(self, value: str):
 		self._accessLevel = value
+
+	@pin.setter
+	def pin(self, value: int):
+		self._pin = value
 
 	@state.setter
 	def state(self, value: str):
