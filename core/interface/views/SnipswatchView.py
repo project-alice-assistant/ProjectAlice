@@ -25,7 +25,7 @@ class SnipswatchView(View):
 
 	def index(self):
 		self.newProcess()
-		return render_template('snipswatch.html', langData=self._langData)
+		return render_template('snipswatch.html', langData=self._langData, devMode=self.ConfigManager.getAliceConfigByName('webInterfaceDevMode'))
 
 
 	def newProcess(self, verbosity: int = 2):

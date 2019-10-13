@@ -4,6 +4,7 @@
 	"syslog": "syslog",
 	"snipswatch": "snipswatch",
 	"admin": "admin",
+	"devMode": "devMode",
 	"by": "by",
 	"status": "status",
 	"enable": "enable",

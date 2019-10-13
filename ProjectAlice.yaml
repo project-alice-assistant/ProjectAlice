@@ -13,7 +13,7 @@
 #                                              #
 ################################################
 #            DON'T CHANGE ME                   #
-version: 1.03
+version: 1.04
 ################################################
 
 # If you place this file into /boot after a first initialization it won't overwrite your settings unless you set this to yes
@@ -29,7 +29,6 @@ wifiCountryCode:
 
 deviceName: default
 soundPlaybackAndRecordEnabled: yes
-
 
 # Connection
 mqttHost: localhost
@@ -65,11 +64,15 @@ micChannels: 1
 # System
 # Whether to install Snips Led Control or not. SLC is the best way to manage your device leds if you have any
 useSLC: yes
+
 stayCompletlyOffline: no
 keepASROffline: yes
 keepTTSOffline: yes
 moduleAutoUpdate: yes
 webInterfaceActive: yes
+
+# Use this to enable the module dev part on the interface
+webInterfaceDevMode: no
 
 # You should leave this by default, but who knows
 newDeviceBroadcastPort: 12354

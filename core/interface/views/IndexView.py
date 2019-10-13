@@ -17,15 +17,14 @@ class IndexView(View):
 	@route('/home/', endpoint='index')
 	@route('/index/', endpoint='index')
 	def index(self):
-		return render_template('home.html', widgets=self.ModuleManager.widgets, langData=self._langData)
+		return render_template('home.html', widgets=self.ModuleManager.widgets, langData=self._langData, devMode=self.ConfigManager.getAliceConfigByName('webInterfaceDevMode'))
 
 
 	@route('widget_static/<path:filename>')
 	def widget_static(self, filename: str):
 		parent, fileType, filename = filename.split('/')
 		return send_from_directory(
-			f'{SuperManager.getInstance().webInterfaceManager.app.root_path}/../../modules/{parent}/widgets/{fileType}/',
-			filename)
+			f'{SuperManager.getInstance().webInterfaceManager.app.root_path}/../../modules/{parent}/widgets/{fileType}/', filename)
 
 
 	@route('/home/saveWidgetPos', methods=['POST'])

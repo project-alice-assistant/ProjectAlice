@@ -181,6 +181,7 @@ network={
 		confs['micChannels'] = int(initConfs['micChannels'])
 		confs['useSLC'] = bool(initConfs['useSLC'])
 		confs['webInterfaceActive'] = bool(initConfs['webInterfaceActive'])
+		confs['webInterfaceDevMode'] = bool(initConfs['webInterfaceDevMode'])
 		confs['newDeviceBroadcastPort'] = int(initConfs['newDeviceBroadcastPort'])
 		confs['activeLanguage'] = initConfs['activeLanguage']
 		confs['activeCountryCode'] = initConfs['activeCountryCode']

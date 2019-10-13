@@ -10,4 +10,4 @@ class AdminView(View):
 
 
 	def index(self):
-		return render_template('admin.html', langData=self._langData)
+		return render_template('admin.html', langData=self._langData, devMode=self.ConfigManager.getAliceConfigByName('webInterfaceDevMode'))

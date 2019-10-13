@@ -61,6 +61,7 @@ settings = {
 
 	"webInterfaceActive": False,
 	"webInterfacePort": 5000,
+	"webInterfaceDevMode": False,
 
 	#-----------------------
 	# Modules

@@ -16,7 +16,7 @@ class SyslogView(View):
 
 
 	def index(self):
-		return render_template('syslog.html', langData=self._langData)
+		return render_template('syslog.html', langData=self._langData, devMode=self.ConfigManager.getAliceConfigByName('webInterfaceDevMode'))
 
 
 	def update(self):

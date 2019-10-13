@@ -12,6 +12,7 @@ from core.interface.views.IndexView import IndexView
 from core.interface.views.ModulesView import ModulesView
 from core.interface.views.SnipswatchView import SnipswatchView
 from core.interface.views.SyslogView import SyslogView
+from core.interface.views.DevModeView import DevModeView
 
 
 class WebInterfaceManager(Manager):
@@ -19,7 +20,7 @@ class WebInterfaceManager(Manager):
 	NAME = 'WebInterfaceManager'
 	app = Flask(__name__)
 
-	_VIEWS = [AdminView, IndexView, ModulesView, SnipswatchView, SyslogView]
+	_VIEWS = [AdminView, IndexView, ModulesView, SnipswatchView, SyslogView, DevModeView]
 
 	def __init__(self):
 		super().__init__(self.NAME)

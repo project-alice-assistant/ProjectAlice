@@ -23,7 +23,7 @@ class ModulesView(View):
 		modules = {**modules, **deactivatedModules}
 		modules = OrderedDict(sorted(modules.items()))
 
-		return render_template('modules.html', modules=modules, langData=self._langData)
+		return render_template('modules.html', modules=modules, langData=self._langData, devMode=self.ConfigManager.getAliceConfigByName('webInterfaceDevMode'))
 
 
 	@route('/toggle', methods=['POST'])
