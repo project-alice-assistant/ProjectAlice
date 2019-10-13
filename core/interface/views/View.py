@@ -1,6 +1,7 @@
 from flask_classful import FlaskView
 
 from core.base.SuperManager import SuperManager
+from core.util.model.Logger import Logger
 
 
 class View(FlaskView):
@@ -8,6 +9,31 @@ class View(FlaskView):
 	def __init__(self):
 		super().__init__()
 		self._langData = self.WebInterfaceManager.langData
+		self._logger = Logger(depth=6)
+
+
+	def logInfo(self, msg: str):
+		self._logger.logInfo(msg)
+
+
+	def logWarning(self, msg: str):
+		self._logger.logWarning(msg)
+
+
+	def logDebug(self, msg: str):
+		self._logger.logDebug(msg)
+
+
+	def logCritical(self, msg: str):
+		self._logger.logCritical(msg)
+
+
+	def logError(self, msg: str):
+		self._logger.logError(msg)
+
+
+	def logFatal(self, msg: str):
+		self._logger.logFatal(msg)
 
 
 	@property
