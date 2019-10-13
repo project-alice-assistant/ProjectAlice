@@ -28,12 +28,12 @@ $(function () {
 		});
 	}
 
-	$('#checkedCheckbox').on('click', function () {
+	$('#checkedCheckbox').on('click touchstart', function () {
 		$(this).hide();
 		$('#emptyCheckbox').show();
 	});
 
-	$('#emptyCheckbox').on('click', function () {
+	$('#emptyCheckbox').on('click touchstart', function () {
 		$(this).hide();
 		$('#checkedCheckbox').show();
 	});

@@ -18,17 +18,17 @@ $(function () {
 		});
 	}
 
-	$('#checkedCheckbox').on('click', function () {
+	$('#checkedCheckbox').on('click touchstart', function () {
 		$(this).hide();
 		$('#emptyCheckbox').show();
 	});
 
-	$('#emptyCheckbox').on('click', function () {
+	$('#emptyCheckbox').on('click touchstart', function () {
 		$(this).hide();
 		$('#checkedCheckbox').show();
 	});
 
-	$('[class^="fas fa-thermometer"]').on('click', function () {
+	$('[class^="fas fa-thermometer"]').on('click touchstart', function () {
 		$('[class^="fas fa-thermometer"]').removeClass('snipswatchActiveVerbosity');
 		$(this).addClass('snipswatchActiveVerbosity');
 		$.ajax({

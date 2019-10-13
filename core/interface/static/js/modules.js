@@ -43,7 +43,7 @@ $(function () {
 				'</div>');
 
 			let $button = $('<div class="moduleStoreModuleDownload moduleStoreModuleDownloadButton" data-module="' + installer['name'] + '"><i class="fas fa-download"></i></div>');
-			$button.on('click', function () {
+			$button.on('click touchstart', function () {
 				$button.hide();
 				$button.parent().children('.moduleStoreModuleWaitAnimation').css('display', 'flex');
 				$.ajax({
@@ -88,7 +88,7 @@ $(function () {
 		storeLoaded = true;
 	}
 
-	$('[id^=toggle_]').on('click', function () {
+	$('[id^=toggle_]').on('click touchstart', function () {
 		$.ajax({
 			url: '/modules/toggle',
 			data: {
@@ -109,21 +109,21 @@ $(function () {
 		resizable: false
 	});
 
-	$('.moduleSettings').on('click', function () {
+	$('.moduleSettings').on('click touchstart', function () {
 		$('#config_for_' + $(this).attr('data-forModule')).dialog('open');
 	});
 
-	$('.moduleViewIntents').on('click', function () {
+	$('.moduleViewIntents').on('click touchstart', function () {
 		$(this).parent('.moduleDefaultView').css('display', 'none');
 		$(this).parent().parent().children('.moduleIntentsView').css('display', 'flex');
 	});
 
-	$('.moduleIntentsViewCloseButton').on('click', function () {
+	$('.moduleIntentsViewCloseButton').on('click touchstart', function () {
 		$(this).parent().parent().children('.moduleDefaultView').css('display', 'flex');
 		$(this).parent('.moduleIntentsView').css('display', 'none');
 	});
 
-	$('.moduleButton').on('click', function () {
+	$('.moduleButton').on('click touchstart', function () {
 		$.ajax({
 			url: '/modules/delete',
 			data: {
@@ -135,7 +135,7 @@ $(function () {
 		});
 	});
 
-	$('#openModuleStore').on('click', function () {
+	$('#openModuleStore').on('click touchstart', function () {
 		if (!storeLoaded) {
 			loadStoreData();
 		}
@@ -146,7 +146,7 @@ $(function () {
 		$('#closeModuleStore').show();
 	});
 
-	$('#closeModuleStore').on('click', function () {
+	$('#closeModuleStore').on('click touchstart', function () {
 		location.reload();
 	});
 });

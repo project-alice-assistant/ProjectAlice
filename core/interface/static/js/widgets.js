@@ -45,14 +45,14 @@ $(function () {
 		}
 	});
 
-	$('#removeWidget').on('click', function () {
+	$('#removeWidget').on('click touchstart', function () {
 		$('.widgetDelete').show();
 		$('#widgetCheck').show();
 		$('#addWidget').hide();
 		$('#removeWidget').hide();
 	});
 
-	$('#widgetCheck').on('click', function () {
+	$('#widgetCheck').on('click touchstart', function () {
 		$('.widgetDelete').hide();
 		$('#widgetCheck').hide();
 		$('#addWidget').show();
@@ -60,7 +60,7 @@ $(function () {
 		location.reload();
 	});
 
-	$('.fa-minus-circle').on('click', function () {
+	$('.fa-minus-circle').on('click touchstart', function () {
 		if ($(this).parents('.widget').length > 0) {
 			$.ajax({
 				url: '/home/removeWidget',
@@ -73,11 +73,11 @@ $(function () {
 		}
 	});
 
-	$('.fa-plus-circle').on('click', function () {
+	$('.fa-plus-circle').on('click touchstart', function () {
 		$('#addWidgetDialog').dialog('open');
 	});
 
-	$('.addWidgetCheck').on('click', function () {
+	$('.addWidgetCheck').on('click touchstart', function () {
 		if ($(this).parents('.addWidgetLine').length > 0) {
 			$.ajax({
 				url: '/home/addWidget',
@@ -89,4 +89,8 @@ $(function () {
 			$(this).parent().remove();
 		}
 	});
+
+	$('[id^=widgetSettings_]').on('click touchstart', function () {
+
+	})
 });
