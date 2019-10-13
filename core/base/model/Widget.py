@@ -4,6 +4,7 @@ import json
 import sqlite3
 
 from pathlib import Path
+from typing import Optional, Dict
 
 from core.base.SuperManager import SuperManager
 from core.util.model.Logger import Logger
@@ -30,6 +31,20 @@ class Widget(Logger):
 			self._options = self.OPTIONS
 
 		self._zindex = data['zindex'] if 'zindex' in data.keys() else 9999
+		self._language = self.loadLanguage()
+
+
+	def loadLanguage(self) -> Optional[Dict]:
+		try:
+			file = self.getCurrentDir() / f'languages/{self.name}.json'
+			with file.open() as fp:
+				return json.load(fp)
+		except FileNotFoundError:
+			self.logWarning(f'Missing language file for widget {self.name}')
+			return None
+		except Exception as e:
+			self.logWarning(f"Coulnd't import language file for widget {self.name}")
+			return None
 
 
 	def saveToDB(self):
@@ -60,6 +75,10 @@ class Widget(Logger):
 		except:
 			self.logWarning(f"Widget doesn't have html file")
 			return ''
+
+
+	def getLanguageString(self, key: str) -> str:
+		return self._language.get(key, 'Missing string')
 
 
 	@property

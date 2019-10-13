@@ -609,6 +609,23 @@ input:focus {
     box-shadow: 0 0 20px 5px #141414;
 }
 
+.widgetIcons {
+    font-size: 1.5em;
+    display: flex;
+    align-items: flex-start;
+}
+
+.widgetIcon {
+    display: flex;
+    flex-grow: 1;
+}
+
+.widget .widgetIcon:nth-child(2) {
+    display: flex;
+    flex-grow: 1;
+    justify-content: flex-end;
+}
+
 .w_tiny {
     width: 50px;
     height: 50px;
