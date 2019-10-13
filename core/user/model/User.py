@@ -27,7 +27,7 @@ class User(Logger):
 		self._eating 		= False
 
 		try:
-			func = getattr(self, f'self._{self._state}')
+			func = getattr(self, f'_{self._state}')
 			func(True)
 			#exec(f"self._{self._state} = 'True'")
 		except:
