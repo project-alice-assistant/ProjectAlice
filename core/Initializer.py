@@ -56,6 +56,7 @@ network={
 		if not self._initFile.exists() and not self._confsFile.exists():
 			self.fatal('Init file not found and there\'s no configuration file, aborting Project Alice start')
 		elif not self._initFile.exists():
+			self.logInfo('No initialization needed')
 			return False
 
 		with self._initFile.open(mode='r') as f:
@@ -85,8 +86,8 @@ network={
 			file = Path(commons.rootDir(), 'wifi.conf')
 			file.write_text(wpaFile)
 
-			self.logInfo('wpa_supplicant.conf')
 			subprocess.run(['sudo', 'mv', str(file), bootWpaSupplicant])
+			self.logInfo('Successfully initialized wpa_supplicant.conf')
 			time.sleep(1)
 			subprocess.run(['/usr/bin/sudo', '/sbin/shutdown', '-r', 'now'])
 			exit(0)
