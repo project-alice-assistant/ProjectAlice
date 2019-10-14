@@ -5,7 +5,7 @@ import inspect
 import json
 import re
 
-from typing import Dict, Iterable, Callable, Any
+from typing import Dict, Iterable, Callable, Any, Tuple
 from pathlib import Path
 
 from paho.mqtt import client as MQTTClient
@@ -41,10 +41,13 @@ class Module(Logger):
 		self._databaseSchema = databaseSchema
 		self._widgets = dict()
 
-		if isinstance(supportedIntents, dict):
-			self._supportedIntents: Dict[Intent, Callable] = supportedIntents
-		elif isinstance(supportedIntents, list):
-			self._supportedIntents: Dict[Intent, None]= dict.fromkeys(supportedIntents)
+
+		self._supportedIntents: Dict[str, Tuple[Intent, Callable]] = dict()
+		for item in supportedIntents:
+			if isinstance(item, tuple):
+				self.supportedIntents[str(item[0])] = item
+			elif isinstance(item, Intent):
+				self.supportedIntents[str(item)] = (item, self.onMessage)
 
 		self._authOnlyIntents = authOnlyIntents or dict()
 
@@ -235,7 +238,7 @@ class Module(Logger):
 			return False
 
 		# Return if previous intent is not supported by this module
-		if session.previousIntent and session.previousIntent not in self._supportedIntents:
+		if session.previousIntent and str(session.previousIntent) not in self._supportedIntents:
 			return False
 
 		# Return if this intent is not supported by this module
@@ -266,8 +269,10 @@ class Module(Logger):
 		if not forMe:
 			return False
 
-		#TODO intent mapping
-		return self.onMessage(intent, session)
+		if self._supportedIntents[intent][0].hasDialogMapping():
+			return self._supportedIntents[intent][0].dialogMapping.onDialog(intent, session)
+		else:
+			return self._supportedIntents[intent][1](intent, session)
 
 
 	def getResource(self, moduleName: str = '', resourcePathFile: str = '') -> str:
@@ -330,15 +335,8 @@ class Module(Logger):
 
 
 	def onMessage(self, intent: str, session: DialogSession) -> bool:
-		if self._supportedIntents[intent] is None:
-			raise NotImplementedError(f'[{self.name}] onMessage must be implemented when no intent: function dict is provided"!')
-
-		try:
-			return self._supportedIntents[intent](intent=intent, session=session)
-		except KeyError:
-			raise NotImplementedError(f'[{self.name}] The intent: {intent} has no mapping!')
-		except NameError:
-			raise NotImplementedError(f'[{self.name}] The intent callback: {self._supportedIntents[intent]} must be implemented!')
+		self.logWarning(f'onMessage not implemented for module {self.name}')
+		return False
 
 
 	def onSleep(self): pass

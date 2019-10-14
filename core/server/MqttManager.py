@@ -205,7 +205,10 @@ class MqttManager(Manager):
 					return
 
 			self.logWarning(f"Intent \"{message.topic}\" wasn't consumed by any module")
-			self.endDialog(sessionId)
+			self.endDialog(
+				sessionId=sessionId,
+				text=self.TalkManager.randomTalk('notUnderstoodEnd', module='system')
+			)
 		except Exception as e:
 			try:
 				self.logInfo(traceback.print_exc())

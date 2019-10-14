@@ -1,4 +1,5 @@
 from pathlib import Path
+from typing import Dict, Callable
 
 from core.base.SuperManager import SuperManager
 from core.dialog.model.DialogMapping import DialogMapping
@@ -23,24 +24,28 @@ class Intent(str):
 		super().__init__()
 
 
-	def __str__(self):
+	def __str__(self) -> str:
 		return self.decoratedSelf()
 
 
-	def __repr__(self):
+	def __repr__(self) -> str:
 		return self.decoratedSelf()
 
 
-	def __eq__(self, other):
+	def __eq__(self, other) -> bool:
 		return self.decoratedSelf() == other
 
 
-	def __hash__(self):
+	def __hash__(self) -> int:
 		return hash(self.decoratedSelf())
 
 
 	def decoratedSelf(self) -> str:
 		return self.format(owner=self._owner)
+
+
+	def hasDialogMapping(self) -> bool:
+		return self.dialogMapping is not None
 
 
 	@property
@@ -74,5 +79,5 @@ class Intent(str):
 
 
 	@dialogMapping.setter
-	def dialogMapping(self, value: DialogMapping):
-		self._dialogMapping = value
+	def dialogMapping(self, value: Dict[str, Dict[int, Callable]]):
+		self._dialogMapping = DialogMapping(value)
