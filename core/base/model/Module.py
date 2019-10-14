@@ -336,9 +336,7 @@ class Module(Logger):
 		#self.MqttManager.subscribeModuleIntents(self.name)
 
 
-	def onMessage(self, intent: str, session: DialogSession) -> bool:
-		self.logWarning(f'onMessage not implemented for module {self.name}')
-		return False
+	def onMessage(self, intent: str, session: DialogSession) -> bool: return False
 
 
 	def onSleep(self): pass
