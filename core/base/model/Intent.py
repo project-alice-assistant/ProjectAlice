@@ -1,6 +1,7 @@
 from pathlib import Path
 
 from core.base.SuperManager import SuperManager
+from core.dialog.model.DialogMapping import DialogMapping
 
 
 class Intent(str):
@@ -14,6 +15,7 @@ class Intent(str):
 	def __init__(self, value: str, isProtected: bool = False):
 		self._owner = SuperManager.getInstance().configManager.getAliceConfigByName('intentsOwner')
 		self._protected = isProtected
+		self._dialogMapping = None
 
 		if isProtected:
 			SuperManager.getInstance().protectedIntentManager.protectIntent(self.decoratedSelf())
@@ -64,3 +66,13 @@ class Intent(str):
 	@property
 	def justAction(self) -> str:
 		return self.justTopic.split(':')[1]
+
+
+	@property
+	def dialogMapping(self) -> DialogMapping:
+		return self._dialogMapping
+
+
+	@dialogMapping.setter
+	def dialogMapping(self, value: DialogMapping):
+		self._dialogMapping = value
