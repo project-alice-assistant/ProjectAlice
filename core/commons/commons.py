@@ -258,7 +258,7 @@ def indexOf(sub: str, string: str) -> int:
 		return -1
 
 
-def online(text: str = '', offlineHandler: Callable = None):
+def online(text: str = '', offlineHandler: Callable = None, returnText: bool = False):
 	"""
 	(return a) decorator to mark a function that required ethernet.
 
@@ -321,7 +321,13 @@ def online(text: str = '', offlineHandler: Callable = None):
 						raise
 			
 			if callable(text) or not text and not offlineHandler:
-				return SuperManager.getInstance().talkManager.randomTalk('offline', module='system')
+				text = SuperManager.getInstance().talkManager.randomTalk('offline', module='system')
+				session = kwargs.get('session')
+				if isinstance(session, DialogSession) or returnText:
+					self.endDialog(session.sessionId, text=text)
+					return True
+				else:
+					return text
 			if offlineHandler:
 				return offlineHandler(*args, **kwargs)
 			return text
