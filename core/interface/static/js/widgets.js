@@ -1,4 +1,14 @@
 $(function () {
+
+	$('.widgetOptions').dialog({
+		autoOpen: false,
+		draggable: false,
+		width: 600,
+		height: 600,
+		modal: true,
+		resizable: false
+	});
+
 	$('.widget').draggable({
 		containment: '.widgetsPane',
 		snap: '.widget',

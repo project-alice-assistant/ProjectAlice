@@ -26,7 +26,7 @@ class Widget(Logger):
 		self._size = data['size'] if 'size' in data.keys() else self.SIZE
 		options = data['options'] if 'options' in data.keys() else self.OPTIONS
 		if options:
-			self._options = json.loads(options)
+			self._options = {**self.OPTIONS, **json.loads(options)}
 		else:
 			self._options = self.OPTIONS
 
