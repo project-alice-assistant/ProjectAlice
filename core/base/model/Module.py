@@ -270,9 +270,11 @@ class Module(Logger):
 			return False
 
 		if self._supportedIntents[intent][0].hasDialogMapping():
-			return self._supportedIntents[intent][0].dialogMapping.onDialog(intent, session)
-		else:
-			return self._supportedIntents[intent][1](intent, session)
+			consumed = self._supportedIntents[intent][0].dialogMapping.onDialog(intent, session)
+			if consumed:
+				return True
+
+		return self._supportedIntents[intent][1](intent, session)
 
 
 	def getResource(self, moduleName: str = '', resourcePathFile: str = '') -> str:
