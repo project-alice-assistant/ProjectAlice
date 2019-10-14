@@ -124,13 +124,15 @@ network={
 
 		# Do some installation if wanted by the user
 		if initConfs['doGroundInstall']:
+			subprocess.run(['./venv/bin/pip3', 'install', '-r', str(Path(commons.rootDir(), 'piprequirements.txt'))])
+
 			subprocess.run(['sudo', 'bash', '-c', 'echo "deb https://raspbian.snips.ai/$(lsb_release -cs) stable main" > /etc/apt/sources.list.d/snips.list'])
 			subprocess.run(['sudo', 'apt-key',  'adv', '--keyserver', 'gpg.mozilla.org', '--recv-keys', 'D4F50CDCA10A2849'])
 			subprocess.run(['sudo', 'apt-get', 'update'])
 
 			reqs = [line.rstrip('\n') for line in open(Path(commons.rootDir(), 'sysrequirements.txt'))]
 			subprocess.run(['sudo', 'apt-get', 'install', '-y', '--allow-unauthenticated'] + reqs)
-			subprocess.run(['./venv/bin/pip3', 'install', '-r', str(Path(commons.rootDir(), 'piprequirements.txt'))])
+
 			subprocess.run(['sudo', 'systemctl', 'stop', 'snips-*'])
 			subprocess.run(['sudo', 'systemctl', 'disable', 'snips-asr'])
 			subprocess.run(['sudo', 'systemctl', 'disable', 'snips-nlu'])
