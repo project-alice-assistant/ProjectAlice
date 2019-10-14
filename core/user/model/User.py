@@ -27,9 +27,7 @@ class User(Logger):
 		self._eating 		= False
 
 		try:
-			func = getattr(self, f'_{self._state}')
-			func(True)
-			#exec(f"self._{self._state} = 'True'")
+			exec(f"self._{self._state} = 'True'")
 		except:
 			self.logError(f"Invalid state \"{row['state']}\" for user \"{self._name}\"")
 

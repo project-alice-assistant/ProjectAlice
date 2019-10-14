@@ -13,10 +13,10 @@ class TimeManager(Manager):
 
 
 	def onBooted(self):
-		self.timerSignal(self, 1, 'onFullMinute')
-		self.timerSignal(self, 5, 'onFiveMinute')
-		self.timerSignal(self, 15, 'onQuarterHour')
-		self.timerSignal(self, 60, 'onFullHour')
+		self.timerSignal(1, 'onFullMinute')
+		self.timerSignal(5, 'onFiveMinute')
+		self.timerSignal(15, 'onQuarterHour')
+		self.timerSignal(60, 'onFullHour')
 
 
 	def timerSignal(self, minutes: int, signal: str, running: bool = False):
