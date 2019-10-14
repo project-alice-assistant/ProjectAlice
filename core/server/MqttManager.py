@@ -451,9 +451,10 @@ class MqttManager(Manager):
 				}))
 
 
-	def ask(self, text: str, client: str = constants.DEFAULT_SITE_ID, intentFilter: list = None, customData: dict = None, previousIntent: str = '', canBeEnqueued: bool = True):
+	def ask(self, text: str, client: str = constants.DEFAULT_SITE_ID, intentFilter: list = None, customData: dict = None, previousIntent: str = '', canBeEnqueued: bool = True, currentDialogState: str = ''):
 		"""
 		Initiates a new session by asking something and waiting on user answer
+		:param currentDialogState: a str representing a state in the dialog, usefull for multiturn dialogs
 		:param canBeEnqueued: wheter or not this can be played later if the dialog manager is busy
 		:param previousIntent: the previous intent that triggered the method, if available
 		:param text: str The text to speak
@@ -476,6 +477,7 @@ class MqttManager(Manager):
 			preSession.intentHistory.append(previousIntent)
 
 		preSession.intentFilter = intentFilter
+		preSession.currentState = currentDialogState
 
 		if client == 'all':
 			if not customData:
@@ -522,9 +524,10 @@ class MqttManager(Manager):
 			self._speakOnSonos(text, client)
 
 
-	def continueDialog(self, sessionId: str, text: str, customData: dict = None, intentFilter: list = None, previousIntent: str = '', slot: str = ''):
+	def continueDialog(self, sessionId: str, text: str, customData: dict = None, intentFilter: list = None, previousIntent: str = '', slot: str = '', currentDialogState: str = ''):
 		"""
 		Continues a dialog
+		:param currentDialogState: a str representing a state in the dialog, usefull for multiturn dialogs
 		:param sessionId: int session id to continue
 		:param customData: json str
 		:param text: str text spoken
@@ -567,6 +570,7 @@ class MqttManager(Manager):
 
 		session = self.DialogSessionManager.getSession(sessionId=sessionId)
 		session.intentFilter = intentFilter
+		session.currentState = currentDialogState
 
 		if self.ConfigManager.getAliceConfigByName('outputOnSonos') != '1' or (self.ConfigManager.getAliceConfigByName('outputOnSonos') == '1' and self.ModuleManager.getModuleInstance('Sonos') is None or not self.ModuleManager.getModuleInstance('Sonos').anyModuleHere(session.siteId)) or not self.ModuleManager.getModuleInstance('Sonos').active:
 			self._mqttClient.publish(constants.TOPIC_CONTINUE_SESSION, json.dumps(jsonDict))

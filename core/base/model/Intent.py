@@ -79,5 +79,5 @@ class Intent(str):
 
 
 	@dialogMapping.setter
-	def dialogMapping(self, value: Dict[str, Dict[int, Callable]]):
+	def dialogMapping(self, value: Dict[str, Callable]):
 		self._dialogMapping = DialogMapping(value)

@@ -1,30 +1,25 @@
 from typing import Callable, Dict
 
+from core.commons import commons, constants
 from core.util.model.Logger import Logger
 
 
 class DialogMapping(Logger):
 
-	def __init__(self, mapping: Dict[str, Dict[int, Callable]]):
+	def __init__(self, mapping: Dict[str, Callable]):
 		super().__init__(depth=6)
 
-		self._mapping = mapping
-		self._state = 0
+		caller = commons.getFunctionCaller()
+		self._mapping = {f'{caller}:{state}': func for state, func in mapping.items()}
+		self._state = constants.DEFAULT
 
 
-	def onDialog(self, intent, session) -> bool:
-		if not session.previousIntent:
-			return False
+	def onDialog(self, intent, session, caller: str) -> bool:
+		state = f'{caller}:{session.currentState}'
 
-		if session.previousIntent in self._mapping:
+		if state in self._mapping:
 			try:
-				consumed = self._mapping[session.previousIntent][self._state](intent=intent, session=session)
-				self._state += 1
-
-				if int(self.state) >= len(self._mapping[session.previousIntent]):
-					self._state = 0
-
-				return consumed
+				return self._mapping[state](intent=intent, session=session)
 			except Exception as e:
 				self.logError(f"Can't continue dialog for intent {intent}, method to call for previous intent {session.previousIntent} not found: {e}")
 
@@ -32,10 +27,10 @@ class DialogMapping(Logger):
 
 
 	@property
-	def state(self) -> int:
+	def state(self) -> str:
 		return self._state
 
 
 	@state.setter
-	def state(self, value: int):
+	def state(self, value: str):
 		self._state = value

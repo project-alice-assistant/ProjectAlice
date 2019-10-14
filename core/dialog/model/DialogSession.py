@@ -18,6 +18,7 @@ class DialogSession:
 		self._intentHistory = list()
 		self._intentFilter = list()
 		self._notUnderstood = 0
+		self._currentState = constants.DEFAULT
 
 
 	def extend(self, message: MQTTMessage, sessionId: str = None):
@@ -178,6 +179,16 @@ class DialogSession:
 	@notUnderstood.deleter
 	def notUnderstood(self):
 		self._notUnderstood = 0
+
+
+	@property
+	def currentState(self) -> str:
+		return self._currentState
+
+
+	@currentState.setter
+	def currentState(self, value: str):
+		self._currentState = value
 
 
 	def __repr__(self) -> str:
