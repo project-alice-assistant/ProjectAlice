@@ -5,7 +5,7 @@ import inspect
 import json
 import re
 
-import typing
+from typing import Dict, Iterable, Callable, Any
 from pathlib import Path
 
 from paho.mqtt import client as MQTTClient
@@ -21,7 +21,7 @@ from core.util.model.Logger import Logger
 
 class Module(Logger):
 
-	def __init__(self, supportedIntents: typing.Iterable, authOnlyIntents: dict = None, databaseSchema: dict = None):
+	def __init__(self, supportedIntents: Iterable, authOnlyIntents: dict = None, databaseSchema: dict = None):
 		super().__init__(depth=6)
 		try:
 			path = Path(inspect.getfile(self.__class__)).with_suffix('.install')
@@ -42,9 +42,9 @@ class Module(Logger):
 		self._widgets = dict()
 
 		if isinstance(supportedIntents, dict):
-			self._supportedIntents = supportedIntents
+			self._supportedIntents: Dict[Intent, Callable] = supportedIntents
 		elif isinstance(supportedIntents, list):
-			self._supportedIntents = dict.fromkeys(supportedIntents)
+			self._supportedIntents: Dict[Intent, None]= dict.fromkeys(supportedIntents)
 
 		self._authOnlyIntents = authOnlyIntents or dict()
 
@@ -261,6 +261,15 @@ class Module(Logger):
 		return True
 
 
+	def dispatchMessage(self, intent: str, session: DialogSession) -> bool:
+		forMe = self.filterIntent(intent, session)
+		if not forMe:
+			return False
+
+		#TODO intent mapping
+		return self.onMessage(intent, session)
+
+
 	def getResource(self, moduleName: str = '', resourcePathFile: str = '') -> str:
 		return str(Path(commons.rootDir(), 'modules', moduleName or self.name, resourcePathFile))
 
@@ -377,7 +386,7 @@ class Module(Logger):
 
 
 	# HELPERS
-	def getConfig(self, key: str) -> typing.Any:
+	def getConfig(self, key: str) -> Any:
 		return self.ConfigManager.getModuleConfigByName(moduleName=self.name, configName=key)
 
 
@@ -390,15 +399,15 @@ class Module(Logger):
 			return {key: value for key, value in mySettings.items() if key not in infoSettings}
 
 
-	def updateConfig(self, key: str, value: typing.Any) -> typing.Any:
+	def updateConfig(self, key: str, value: Any) -> Any:
 		self.ConfigManager.updateModuleConfigurationFile(moduleName=self.name, key=key, value=value)
 
 
-	def getAliceConfig(self, key: str) -> typing.Any:
+	def getAliceConfig(self, key: str) -> Any:
 		return self.ConfigManager.getAliceConfigByName(configName=key)
 
 
-	def updateAliceConfig(self, key: str, value: typing.Any) -> typing.Any:
+	def updateAliceConfig(self, key: str, value: Any) -> Any:
 		self.ConfigManager.updateAliceConfiguration(key=key, value=value)
 
 
