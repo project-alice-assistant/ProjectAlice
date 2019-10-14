@@ -323,7 +323,7 @@ def online(text: str = '', offlineHandler: Callable = None, returnText: bool = F
 			if callable(text) or not text and not offlineHandler:
 				text = SuperManager.getInstance().talkManager.randomTalk('offline', module='system')
 				session = kwargs.get('session')
-				if isinstance(session, DialogSession) or returnText:
+				if isinstance(session, DialogSession) and not returnText:
 					self.endDialog(session.sessionId, text=text)
 					return True
 				else:
