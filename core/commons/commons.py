@@ -326,9 +326,7 @@ def online(text: str = '', offlineHandler: Callable = None, returnText: bool = F
 				if isinstance(session, DialogSession) and not returnText:
 					self.endDialog(session.sessionId, text=text)
 					return True
-				else:
-					return text
-			if offlineHandler:
+			elif offlineHandler:
 				return offlineHandler(*args, **kwargs)
 			return text
 
