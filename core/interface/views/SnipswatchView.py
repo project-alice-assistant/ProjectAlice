@@ -1,3 +1,5 @@
+import re
+
 import os
 import subprocess
 from pathlib import Path
@@ -55,6 +57,7 @@ class SnipswatchView(View):
 			if out:
 				with open(self._file, 'a+') as fp:
 					line = out.replace('<b><font color=#009900>', '<b><font color="green">').replace('#009900', '"yellow"').replace('#0000ff', '"green"')
+					line = re.sub('<s>(.*?)</s>', '\\1', line)
 					fp.write(line)
 
 
