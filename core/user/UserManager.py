@@ -66,6 +66,12 @@ class UserManager(Manager):
 			})
 
 
+	def addUserPinCode(self, name: str, pinCode: int):
+		self.DatabaseManager.update(tableName='users',
+		                            caller=self.name,
+		                            values={'pin': pinCode},
+		                            row=('username', name))
+
 	def getUserAccessLevel(self, username: str) -> Optional[Any]:
 		if not username in self._users:
 			return None
