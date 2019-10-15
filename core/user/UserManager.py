@@ -57,6 +57,7 @@ class UserManager(Manager):
 				'username': name.title(),
 				'accessLevel': access,
 				'state': state,
+				'pin': '',
 				'lang': self.LanguageManager.activeLanguageAndCountryCode,
 				'tts': '',
 				'ttsLanguage': '',
@@ -168,16 +169,9 @@ class UserManager(Manager):
 			self._users[user].sleeping = False
 
 
-	def hasAccessLevel(self, user: str, requiredAccessLevel: str) -> bool:
-		try:
-			_ = AccessLevel[requiredAccessLevel.upper()]
-		except KeyError:
-			self.logError(f'Was asked to check access level but accesslevel "{requiredAccessLevel}" doesn\'t exist')
-			return False
-
-
+	def hasAccessLevel(self, user: str, requiredAccessLevel: int) -> bool:
 		if user.lower() not in self._users:
 			self.logError(f'Was asked to check access level but user "{user}" doesn\'t exist')
 			return False
 
-		return AccessLevel[self._users[user.lower()].accessLevel.upper()].value <= AccessLevel[requiredAccessLevel.upper()].value
+		return AccessLevel[self._users[user.lower()].accessLevel.upper()].value <= requiredAccessLevel

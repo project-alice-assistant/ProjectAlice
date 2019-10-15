@@ -41,7 +41,6 @@ class Module(Logger):
 		self._databaseSchema = databaseSchema
 		self._widgets = dict()
 
-
 		self._supportedIntents: Dict[str, Tuple[Intent, Callable]] = dict()
 		for item in supportedIntents:
 			if isinstance(item, tuple):
@@ -49,10 +48,8 @@ class Module(Logger):
 			elif isinstance(item, Intent):
 				self.supportedIntents[str(item)] = (item, self.onMessage)
 
-		self._authOnlyIntents = authOnlyIntents or dict()
-
+		self._authOnlyIntents = {intent: level.value for intent, level in authOnlyIntents.items()} if authOnlyIntents else dict()
 		self._utteranceSlotCleaner = re.compile('{(.+?):=>.+?}')
-
 		self.loadWidgets()
 
 

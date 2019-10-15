@@ -19,7 +19,7 @@ class DialogMapping(Logger):
 
 		if state in self._mapping:
 			try:
-				return self._mapping[state](intent=intent, session=session)
+				return self._mapping[state](intent, session)
 			except Exception as e:
 				self.logError(f"Can't continue dialog for intent {intent}, method to call for previous intent {session.previousIntent} not found: {e}")
 

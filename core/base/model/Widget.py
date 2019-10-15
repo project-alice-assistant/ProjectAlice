@@ -24,9 +24,9 @@ class Widget(Logger):
 		self._x = data['posx'] if 'posx' in data.keys() else 0
 		self._y = data['posy'] if 'posy' in data.keys() else 0
 		self._size = data['size'] if 'size' in data.keys() else self.SIZE
-		options = data['options'] if 'options' in data.keys() else self.OPTIONS
+		options = json.loads(data['options']) if 'options' in data.keys() else self.OPTIONS
 		if options:
-			self._options = {**self.OPTIONS, **json.loads(options)}
+			self._options = {**self.OPTIONS, **options}
 		else:
 			self._options = self.OPTIONS
 
