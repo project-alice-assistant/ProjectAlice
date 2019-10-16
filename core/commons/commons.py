@@ -320,14 +320,15 @@ def online(text: str = '', offlineHandler: Callable = None, returnText: bool = F
 					if internetManager.online:
 						raise
 			
-			if callable(text) or not text and not offlineHandler:
-				text = SuperManager.getInstance().talkManager.randomTalk('offline', module='system')
-				session = kwargs.get('session')
-				if isinstance(session, DialogSession) and not returnText:
-					self.endDialog(session.sessionId, text=text)
-					return True
-			elif offlineHandler:
+			if offlineHandler:
 				return offlineHandler(*args, **kwargs)
+			if callable(text) or not text:
+				text = SuperManager.getInstance().talkManager.randomTalk('offline', module='system')
+			if not returnText:
+				session = kwargs.get('session')
+				if isinstance(session, DialogSession):
+					self.endDialog(session.sessionId, text=text)
+					return
 			return text
 
 		return functionWrapper
