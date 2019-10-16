@@ -1,4 +1,5 @@
 import typing
+from textwrap import dedent
 
 from core.util.model.Logger import Logger
 
@@ -138,3 +139,16 @@ class User(Logger):
 	@eating.setter
 	def eating(self, value: bool):
 		self._eating = value
+
+	def __repr__(self):
+		return dedent(f'''\
+			[User {self.name}]
+			Name: {self.name}
+			AccessLevel: {self.accessLevel}
+			State: {self.state}
+			Pin: {self.pin}
+			Lang: {self.lang}
+			TTS: {self.tts}
+			TtsLanguage: {self.ttsLanguage}
+			TtsType: {self.ttsType}
+			TtsVoice: {self.ttsVoice}''')

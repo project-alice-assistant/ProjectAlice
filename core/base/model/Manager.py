@@ -96,7 +96,7 @@ class Manager(Singleton):
 		return self.DatabaseManager.fetch(tableName=tableName, query=query, values=values, callerName=self.name, method=method)
 
 
-	def databaseInsert(self, tableName: str, query: str, values: dict = None) -> int:
+	def databaseInsert(self, tableName: str, query: str = None, values: dict = None) -> int:
 		return self.DatabaseManager.insert(tableName=tableName, query=query, values=values, callerName=self.name)
 
 

@@ -136,7 +136,7 @@ class DatabaseManager(Manager):
 		return self.insert(tableName, query, callerName, values)
 
 
-	def insert(self, tableName: str, query: str, callerName: str, values: dict = None) -> int:
+	def insert(self, tableName: str, query: str = None, callerName: str = None, values: dict = None) -> int:
 		"""
 		Insert data in database
 		:param values:
@@ -146,7 +146,15 @@ class DatabaseManager(Manager):
 		:return: list
 		"""
 		if not values:
-			values = dict()
+			raise Exception('Cannot DB insert without values...')
+
+		if not callerName:
+			callerName = commons.getFunctionCaller()
+
+		if not query:
+			cols = ', '.join(values.keys())
+			data = ', :'.join(values.keys())
+			query = f'INSERT INTO :__table__ ({cols}) VALUES (:{data})'
 
 		query = self.basicChecks(tableName, query, callerName, values)
 

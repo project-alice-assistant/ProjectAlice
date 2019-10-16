@@ -53,8 +53,13 @@ class UserManager(Manager):
 			pinCode = 1234
 
 		insertId = self.databaseInsert(tableName='users',
-									   query='INSERT INTO :__table__ (username, accessLevel, state, pin, lang) VALUES (:username, :accessLevel, :state, :pin, :lang)',
-									   values={'username': name.lower(), 'accessLevel': access, 'state': state, 'pin': pinCode, 'lang': self.LanguageManager.activeLanguageAndCountryCode})
+									   values={
+										   'username': name.lower(),
+										   'accessLevel': access,
+										   'state': state,
+										   'pin': pinCode,
+										   'lang': self.LanguageManager.activeLanguageAndCountryCode
+									   })
 		if insertId > -1:
 			self._users[name] = User({
 				'username': name.title(),
