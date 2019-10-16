@@ -168,7 +168,8 @@ class MqttManager(Manager):
 
 					self.continueDialog(
 						sessionId=sessionId,
-						text=self.TalkManager.randomTalk('notUnderstood', module='system')
+						text=self.TalkManager.randomTalk('notUnderstood', module='system'),
+						currentDialogState=session.currentState
 					)
 				else:
 					del session.notUnderstood

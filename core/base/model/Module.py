@@ -271,7 +271,7 @@ class Module(Logger):
 			if consumed:
 				return True
 
-		return self._supportedIntents[intent][1](intent, session)
+		return self._supportedIntents[intent][1](session=session, intent=intent)
 
 
 	def getResource(self, moduleName: str = '', resourcePathFile: str = '') -> str:

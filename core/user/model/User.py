@@ -10,8 +10,8 @@ class User(Logger):
 		if row:
 			self._name 			= row['username']
 			self._accessLevel 	= row['accessLevel']
-			self._pin           = row['pin']
 			self._state 		= row['state']
+			self._pin           = row['pin']
 			self._lang 			= row['lang']
 			self._tts 			= row['tts']
 			self._ttsLanguage	= row['ttsLanguage']

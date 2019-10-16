@@ -29,7 +29,7 @@ class WakewordManager(Manager):
 	NAME = 'WakewordManager'
 
 	RECORD_SECONDS = 2.5
-	THRESHOLD = -45.0
+	THRESHOLD = -40.0
 
 
 	def __init__(self):
