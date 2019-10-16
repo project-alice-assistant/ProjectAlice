@@ -168,8 +168,7 @@ class MqttManager(Manager):
 
 					self.continueDialog(
 						sessionId=sessionId,
-						text=self.TalkManager.randomTalk('notUnderstood', module='system'),
-						currentDialogState=session.currentState
+						text=self.TalkManager.randomTalk('notUnderstood', module='system')
 					)
 				else:
 					del session.notUnderstood
@@ -210,8 +209,7 @@ class MqttManager(Manager):
 
 				self.continueDialog(
 					sessionId=sessionId,
-					text=self.TalkManager.randomTalk('notUnderstood', module='system'),
-					currentDialogState=session.currentState
+					text=self.TalkManager.randomTalk('notUnderstood', module='system')
 				)
 				return
 			else:
@@ -490,7 +488,9 @@ class MqttManager(Manager):
 			preSession.intentHistory.append(previousIntent)
 
 		preSession.intentFilter = intentFilter
-		preSession.currentState = currentDialogState
+
+		if currentDialogState:
+			preSession.currentState = currentDialogState
 
 		if client == 'all':
 			if not customData:
@@ -583,7 +583,9 @@ class MqttManager(Manager):
 
 		session = self.DialogSessionManager.getSession(sessionId=sessionId)
 		session.intentFilter = intentFilter
-		session.currentState = currentDialogState
+
+		if currentDialogState:
+			session.currentState = currentDialogState
 
 		if self.ConfigManager.getAliceConfigByName('outputOnSonos') != '1' or (self.ConfigManager.getAliceConfigByName('outputOnSonos') == '1' and self.ModuleManager.getModuleInstance('Sonos') is None or not self.ModuleManager.getModuleInstance('Sonos').anyModuleHere(session.siteId)) or not self.ModuleManager.getModuleInstance('Sonos').active:
 			self._mqttClient.publish(constants.TOPIC_CONTINUE_SESSION, json.dumps(jsonDict))
