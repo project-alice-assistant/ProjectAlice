@@ -199,7 +199,7 @@ class MqttManager(Manager):
 					self.MultiIntentManager.processNextIntent(sessionId)
 					return
 
-				elif consumed:
+				elif consumed or consumed is None:
 					return
 
 			self.logWarning(f"Intent \"{message.topic}\" wasn't consumed by any module")
@@ -221,12 +221,7 @@ class MqttManager(Manager):
 			return
 
 		except Exception as e:
-			try:
-				self.logInfo(traceback.print_exc())
-			except:
-				pass
-
-			self.logError(f'Uncaught error in onMessage: {e}')
+			self.logError(f'Error in onMessage: {e}')
 
 
 	# noinspection PyUnusedLocal
@@ -393,7 +388,7 @@ class MqttManager(Manager):
 					module.onMessage(Intent('UserRandomAnswer'), session)
 					return
 
-			if session.notUnderstood < 3:
+			if session.notUnderstood < self.ConfigManager.getAliceConfigByName('notUnderstoodRetries'):
 				session.notUnderstood = session.notUnderstood + 1
 				self.reviveSession(session, self.TalkManager.randomTalk('notUnderstood', module='system'))
 			else:

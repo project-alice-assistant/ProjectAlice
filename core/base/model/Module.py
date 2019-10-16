@@ -268,7 +268,7 @@ class Module(Logger):
 
 		if self._supportedIntents[intent][0].hasDialogMapping():
 			consumed = self._supportedIntents[intent][0].dialogMapping.onDialog(intent, session, self.name)
-			if consumed:
+			if consumed or consumed is None:
 				return True
 
 		return self._supportedIntents[intent][1](session=session, intent=intent)

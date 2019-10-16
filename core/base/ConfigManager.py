@@ -194,7 +194,7 @@ class ConfigManager(Manager):
 		"""
 
 		config = self.getSnipsConfiguration(parent=parent, key=key, createIfNotExist=createIfNotExist)
-		if config is not None and config != value:
+		if config is not None:
 			self._snipsConfigurations[parent][key] = value
 
 			Path('/etc/snips.toml').write_text(toml.dumps(self._snipsConfigurations))

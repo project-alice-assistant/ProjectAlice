@@ -1,5 +1,6 @@
+from __future__ import annotations
 from textwrap import dedent
-from paho.mqtt.client import MQTTMessage # type: ignore
+from paho.mqtt.client import MQTTMessage
 
 from core.base.model import Intent
 from core.commons import commons, constants
@@ -34,7 +35,7 @@ class DialogSession:
 		self._updateSessionData()
 
 
-	def reviveOldSession(self, session):
+	def reviveOldSession(self, session: DialogSession):
 		self._payload = session.payload
 		self._slots = session.slots
 		self._slotsAsObjects = session.slotsAsObjects
@@ -44,6 +45,7 @@ class DialogSession:
 		self._intentHistory = session.intentHistory
 		self._intentFilter = session.intentFilter
 		self._notUnderstood = session.notUnderstood
+		self._currentState = session.currentState
 
 
 	def _parseMessage(self):

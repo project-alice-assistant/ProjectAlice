@@ -246,7 +246,6 @@ class WakewordManager(Manager):
 
 
 	def _addWakewordToSnips(self, path: Path):
-		# TODO unhardcode sensitivity
 		models: list = self.ConfigManager.getSnipsConfiguration('snips-hotword', 'model', createIfNotExist=True)
 
 		if not isinstance(models, list):
@@ -254,21 +253,19 @@ class WakewordManager(Manager):
 
 		wakewordName = path.name
 
-		add = True
+		addHeySnips = True
 		copy = models.copy()
 		for i, model in enumerate(copy):
 			if wakewordName in model:
 				models.pop(i)
 			elif '/snips_hotword=' in model:
-				add = False
+				addHeySnips = False
 
-		if add:
+		if addHeySnips:
 			models.append(str(Path(commons.rootDir(), 'trained/hotwords/snips_hotword=0.53')))
 
 		models.append(f'{str(path)}=0.52')
 		self.ConfigManager.updateSnipsConfiguration('snips-hotword', 'model', models, restartSnips=True)
-
-		self._upload(path)
 
 
 	def uploadToNewDevice(self, uid: str):
