@@ -36,7 +36,7 @@ class Widget(Logger):
 
 	def loadLanguage(self) -> Optional[Dict]:
 		try:
-			file = self.getCurrentDir() / f'languages/{self.name}.json'
+			file = self.getCurrentDir() / f'lang/{self.name}.lang.json'
 			with file.open() as fp:
 				return json.load(fp)
 		except FileNotFoundError:
