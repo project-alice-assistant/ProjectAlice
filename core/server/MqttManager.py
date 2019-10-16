@@ -163,7 +163,7 @@ class MqttManager(Manager):
 
 			customData = session.customData
 			if 'intent' in payload and payload['intent']['confidenceScore'] < self.ConfigManager.getAliceConfigByName('probabilityTreshold'):
-				if session.notUnderstood < 3:
+				if session.notUnderstood < self.ConfigManager.getAliceConfigByName('notUnderstoodRetries'):
 					session.notUnderstood = session.notUnderstood + 1
 
 					self.continueDialog(
@@ -178,8 +178,6 @@ class MqttManager(Manager):
 						text=self.TalkManager.randomTalk('notUnderstoodEnd', module='system')
 					)
 				return
-
-			del session.notUnderstood
 
 			module = self.ModuleManager.getModuleInstance('ContextSensitive')
 			if module:
@@ -206,10 +204,24 @@ class MqttManager(Manager):
 					return
 
 			self.logWarning(f"Intent \"{message.topic}\" wasn't consumed by any module")
-			self.endDialog(
-				sessionId=sessionId,
-				text=self.TalkManager.randomTalk('notUnderstood', module='system')
-			)
+
+			if session.notUnderstood < self.ConfigManager.getAliceConfigByName('notUnderstoodRetries'):
+				session.notUnderstood = session.notUnderstood + 1
+
+				self.continueDialog(
+					sessionId=sessionId,
+					text=self.TalkManager.randomTalk('notUnderstood', module='system'),
+					currentDialogState=session.currentState
+				)
+				return
+			else:
+				del session.notUnderstood
+				self.endDialog(
+					sessionId=sessionId,
+					text=self.TalkManager.randomTalk('notUnderstoodEnd', module='system')
+				)
+			return
+
 		except Exception as e:
 			try:
 				self.logInfo(traceback.print_exc())

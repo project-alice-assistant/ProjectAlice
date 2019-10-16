@@ -3,6 +3,7 @@ Use double quotes!
 """
 
 settings = {
+	"notUnderstoodRetries": 3,
 	"ssid": "",
 	"wifipassword": "",
 	"mqttHost": "localhost",
