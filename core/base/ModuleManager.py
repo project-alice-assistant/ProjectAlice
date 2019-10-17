@@ -231,7 +231,7 @@ class ModuleManager(Manager):
 			try:
 				supportedIntents += self._startModule(moduleItem['instance'])
 			except ModuleStartingFailed:
-				self._modules[moduleName]['active'] = False
+				continue
 			except ModuleStartDelayed:
 				self.logInfo(f'Module {moduleName} start is delayed')
 
