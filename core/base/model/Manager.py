@@ -87,6 +87,19 @@ class Manager(Singleton):
 	def onSnipsAssistantDownloaded(self, **kwargs): pass
 	def onSnipsAssistantInstalled(self, **kwargs): pass
 	def onSnipsAssistantFailedInstalling(self, **kwargs): pass
+	def onUVIndexAlert(self, deviceList: list): pass
+	def onRaining(self, deviceList: list): pass
+	def onTooMuchRain(self, deviceList: list): pass
+	def onWindy(self, deviceList: list): pass
+	def onFreezing(self, deviceList: list): pass
+	def onTemperatureHighAlert(self, deviceList: list): pass
+	def onTemperatureLowAlert(self, deviceList: list): pass
+	def onCO2Alert(self, deviceList: list): pass
+	def onHumidityHighAlert(self, deviceList: list): pass
+	def onHumidityLowAlert(self, deviceList: list): pass
+	def onNoiseAlert(self, deviceList: list): pass
+	def onPressureHighAlert(self, deviceList: list): pass
+	def onPressureLowAlert(self, deviceList: list): pass
 
 
 	# HELPERS
