@@ -296,16 +296,18 @@ class ModuleManager(Manager):
 
 		self._reorderCustomisationModule(isEvent)
 		for moduleItem in self._modules.values():
+
 			if filterOut and moduleItem['instance'].name in filterOut:
 				continue
 
 			try:
 				func = getattr(moduleItem['instance'], method)
 				func(*args, **kwargs)
+
 			except AttributeError as e:
 				if not silent:
 					self.logWarning(f'Method "{method}" not found for module "{moduleItem["instance"].name}": {e}')
-			except TypeError:
+			except TypeError as e:
 				# Do nothing, it's most prolly kwargs
 				pass
 

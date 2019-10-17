@@ -42,7 +42,7 @@ class Module(Logger):
 		self._widgets = dict()
 
 		self._myIntents: List[Intent] = list()
-		self._supportedIntents: Dict[str, Tuple[Intent, Callable]] = dict()
+		self._supportedIntents: Dict[str, Tuple[(str, Intent), Callable]] = dict()
 		for item in supportedIntents:
 			if isinstance(item, tuple):
 				self._supportedIntents[str(item[0])] = item
@@ -50,6 +50,8 @@ class Module(Logger):
 			elif isinstance(item, Intent):
 				self._supportedIntents[str(item)] = (item, self.onMessage)
 				self._myIntents.append(item)
+			elif isinstance(item, str):
+				self._supportedIntents[item] = (item, self.onMessage)
 
 		self._authOnlyIntents = {intent: level.value for intent, level in authOnlyIntents.items()} if authOnlyIntents else dict()
 		self._utteranceSlotCleaner = re.compile('{(.+?):=>.+?}')
@@ -276,7 +278,8 @@ class Module(Logger):
 		if not forMe:
 			return False
 
-		if self._supportedIntents[intent][0].hasDialogMapping():
+		intentt = self._supportedIntents[intent][0]
+		if isinstance(intentt, Intent) and intentt.hasDialogMapping():
 			consumed = self._supportedIntents[intent][0].dialogMapping.onDialog(intent, session, self.name)
 			if consumed or consumed is None:
 				return True

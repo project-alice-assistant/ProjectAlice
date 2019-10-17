@@ -59,6 +59,7 @@ class Manager(Singleton):
 
 
 	def onBooted(self): pass
+	def onMessage(self, intent: str, session: DialogSession) -> bool: return False
 	def onModuleInstalled(self): pass
 	def onModuleUpdated(self): pass
 	def onFullMinute(self): pass

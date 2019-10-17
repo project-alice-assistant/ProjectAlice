@@ -149,12 +149,11 @@ class MqttManager(Manager):
 				return
 
 			session = self.DialogSessionManager.getSession(sessionId)
-			if not session:
-				session = self.DeviceManager.onMessage(message)
-				if not session:
-					self.logWarning(f'Got a message on ({message.topic}) but nobody knows what to do with it')
-					self.endDialog(sessionId)
-					return
+			if not session: # It is a device trying to communicate with Alice
+				session = self.DeviceManager.deviceMessage(message)
+				SuperManager.getInstance().broadcast(method='onMessage', exceptions=[self.name], args=[message.topic, session])
+				self.ModuleManager.broadcast(method='dispatchMessage', intent=message.topic, session=session)
+				return
 
 			redQueen = self.ModuleManager.getModuleInstance('RedQueen')
 			if redQueen and not redQueen.inTheMood(session):
@@ -191,8 +190,8 @@ class MqttManager(Manager):
 					return
 
 				# Authentication might end the session directly from a module
-				if not self.DialogSessionManager.getSession(sessionId):
-					return
+				# if not self.DialogSessionManager.getSession(sessionId):
+				# 	return
 
 				if self.MultiIntentManager.isProcessing(sessionId):
 					self.MultiIntentManager.processNextIntent(sessionId)
@@ -202,7 +201,6 @@ class MqttManager(Manager):
 					return
 
 			self.logWarning(f"Intent \"{message.topic}\" wasn't consumed by any module")
-
 			if session.notUnderstood < self.ConfigManager.getAliceConfigByName('notUnderstoodRetries'):
 				session.notUnderstood = session.notUnderstood + 1
 

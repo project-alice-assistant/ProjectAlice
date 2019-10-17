@@ -114,8 +114,8 @@ class ConfigManager(Manager):
 
 			self._aliceConfigurations[key] = value
 			self._writeToAliceConfigurationFile(self.aliceConfigurations)
-		except Exception as e:
-			raise ConfigurationUpdateFailed(e)
+		except Exception:
+			raise ConfigurationUpdateFailed()
 
 
 	def updateModuleConfigurationFile(self, moduleName: str, key: str, value: typing.Any):
@@ -153,8 +153,8 @@ class ConfigManager(Manager):
 			s = json.dumps(sort, indent=4).replace('false', 'False').replace('true', 'True')
 			Path('config.py').write_text(f'settings = {s}')
 			importlib.reload(config)
-		except Exception as e:
-			raise ConfigurationUpdateFailed(e)
+		except Exception:
+			raise ConfigurationUpdateFailed()
 
 
 	@staticmethod

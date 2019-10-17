@@ -8,14 +8,15 @@ from core.dialog.model.DialogMapping import DialogMapping
 class Intent(str):
 
 	def __new__(cls, value: str, *args, **kwargs):
-		value = 'hermes/intent/{owner}:' + value
+		if kwargs.get('userIntent', True):
+			value = 'hermes/intent/{owner}:' + value
 		return super().__new__(cls, value)
 
 
-	# noinspection PyUnusedLocal
-	def __init__(self, value: str, isProtected: bool = False):
+	def __init__(self, _value: str, isProtected: bool = False, userIntent: bool = True):
 		self._owner = SuperManager.getInstance().configManager.getAliceConfigByName('intentsOwner')
 		self._protected = isProtected
+		self._userIntent = userIntent
 		self._dialogMapping = None
 
 		if isProtected:
@@ -41,7 +42,10 @@ class Intent(str):
 
 
 	def decoratedSelf(self) -> str:
-		return self.format(owner=self._owner)
+		if self._userIntent:
+			return self.format(owner=self._owner)
+		else:
+			return self.lower()
 
 
 	def hasDialogMapping(self) -> bool:
