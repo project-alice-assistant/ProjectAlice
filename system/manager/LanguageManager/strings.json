@@ -1,4 +1,15 @@
 {
+	"outside": {
+		"en": [
+			"outside"
+		],
+		"fr": [
+			"dehors"
+		],
+		"de": [
+			"draussen"
+		]
+	},
 	"intentSeparator": {
 		"en": [
 			" and also "
