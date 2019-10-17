@@ -1,3 +1,4 @@
+import typing
 from typing import Optional
 
 from paho.mqtt.client import MQTTMessage
@@ -89,7 +90,7 @@ class Manager(Singleton):
 
 
 	# HELPERS
-	def databaseFetch(self, tableName: str, query: str = None, values: dict = None, method: str = 'one') -> list:
+	def databaseFetch(self, tableName: str, query: str = None, values: dict = None, method: str = 'one') -> typing.Iterable:
 		if not query:
 			query = 'SELECT * FROM :__table__'
 

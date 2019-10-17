@@ -1,4 +1,5 @@
 import time
+from typing import Iterable
 
 from core.base.model.Manager import Manager
 from core.util.model import TelemetryType
@@ -29,6 +30,8 @@ class TelemetryManager(Manager):
 		if not self.ConfigManager.getAliceConfigByName('enableDataStoring'):
 			self._isActive = False
 			self.logInfo('Data storing is disabled')
+		else:
+			self.loadData()
 
 
 	def onQuarterHour(self):
@@ -58,17 +61,17 @@ class TelemetryManager(Manager):
 		self.databaseInsert(
 			tableName='telemetry',
 			query='INSERT INTO :__table__ (type, value, service, siteId, timestamp) VALUES (:type, :value, :service, :siteId, :timestamp)',
-			values={'type': ttype.value, 'value': value, 'service': service, 'siteId': siteId, 'timestamp': timestamp}
+			values={'type': ttype.value, 'value': value, 'service': service, 'siteId': siteId, 'timestamp': round(timestamp)}
 		)
 
 
-	def getData(self, ttype: TelemetryType, siteId: str, service: str = None):
+	def getData(self, ttype: TelemetryType, siteId: str, service: str = None) -> Iterable:
 		values = {'type': ttype.value, 'siteId': siteId}
 		if service:
 			values['service'] = service
 
 		return self.databaseFetch(
 			tableName='telemetry',
-			query=f"SELECT * FROM :__table__ WHERE type = :type and siteId = :siteId {'and service = :service' if service else ''} order by timestamp DESC LIMIT 1",
+			query="SELECT value, timestamp FROM :__table__ WHERE type = :type and siteId = :siteId ORDER BY `timestamp` DESC LIMIT 1",
 			values=values
 		)
