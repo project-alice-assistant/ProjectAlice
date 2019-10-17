@@ -89,7 +89,7 @@ class DeviceManager(Manager):
 
 
 	def onMessage(self, message: MQTTMessage) -> Optional[DialogSession]:
-		if not 'projectalice/devices/' in message.topic:
+		if not 'projectalice/devices/' in message.topic and not 'zigbee2mqtt/bridge' in message.topic:
 			return None
 
 		return self.DialogSessionManager.addTempSession(sessionId=uuid.uuid4(), message=message)

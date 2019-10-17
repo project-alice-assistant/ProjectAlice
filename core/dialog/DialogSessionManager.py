@@ -69,7 +69,7 @@ class DialogSessionManager(Manager):
 		:param message: dict
 		"""
 		session = self.addSession(sessionId, message)
-		self.ThreadManager.doLater(self._sessions.pop, interval=20, args=[sessionId])
+		self.ThreadManager.doLater(interval=20, func=self._sessions.pop, args=[sessionId])
 		return session
 
 
