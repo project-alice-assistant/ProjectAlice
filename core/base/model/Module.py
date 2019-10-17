@@ -5,7 +5,7 @@ import inspect
 import json
 import re
 
-from typing import Dict, Iterable, Callable, Any, Tuple
+from typing import Dict, Iterable, Callable, Any, Tuple, List
 from pathlib import Path
 
 from paho.mqtt import client as MQTTClient
@@ -41,12 +41,15 @@ class Module(Logger):
 		self._databaseSchema = databaseSchema
 		self._widgets = dict()
 
+		self._myIntents: List[Intent] = list()
 		self._supportedIntents: Dict[str, Tuple[Intent, Callable]] = dict()
 		for item in supportedIntents:
 			if isinstance(item, tuple):
-				self.supportedIntents[str(item[0])] = item
+				self._supportedIntents[str(item[0])] = item
+				self._myIntents.append(item[0])
 			elif isinstance(item, Intent):
-				self.supportedIntents[str(item)] = (item, self.onMessage)
+				self._supportedIntents[str(item)] = (item, self.onMessage)
+				self._myIntents.append(item)
 
 		self._authOnlyIntents = {intent: level.value for intent, level in authOnlyIntents.items()} if authOnlyIntents else dict()
 		self._utteranceSlotCleaner = re.compile('{(.+?):=>.+?}')
@@ -106,10 +109,12 @@ class Module(Logger):
 	def getUtterancesByIntent(self, intent: Intent, forceLowerCase: bool = True, cleanSlots: bool = False) -> list:
 		utterances = list()
 
-		if isinstance(intent, str):
-			check = intent.split('/')[-1].split(':')[-1]
-		else:
+		if isinstance(intent, tuple):
+			check = intent[0].justAction
+		elif isinstance(intent, Intent):
 			check = intent.justAction
+		else:
+			check = intent.split('/')[-1].split(':')[-1]
 
 		for dtIntentName, dtModuleName in self.SamkillaManager.dtIntentNameSkillMatching.items():
 			if dtIntentName == check and dtModuleName == self.name:
@@ -200,6 +205,11 @@ class Module(Logger):
 	@supportedIntents.setter
 	def supportedIntents(self, value: list):
 		self._supportedIntents = value
+
+
+	@property
+	def myIntents(self) -> list:
+		return self._myIntents
 
 
 	@property
