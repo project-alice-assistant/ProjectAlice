@@ -262,6 +262,10 @@ network={
 
 		elif audioHardware in {'matrixCreator', 'matrixVoice'}:
 			subprocess.run(['sudo', Path(commons.rootDir(), 'system/scripts/audioHardware/matrix.sh')])
+			subprocess.run(['sudo', 'cp', Path(commons.rootDir(), 'system', 'asounds', 'matrix.conf'), Path('/etc/asound.conf')])
+
+			subprocess.run(['sudo', 'sed', '-i', '-e', f's/\# mike = "Built-in Microphone"/mike = "MATRIXIO-SOUND: - (hw:2,0)"/', Path('/etc/snips.toml')])
+
 			if initConfs['useSLC']:
 				subprocess.run(['sudo', 'sed', '-i', '-e', f's/%HARDWARE%/{audioHardware.lower()}/', str(slcServiceFilePath)])
 
