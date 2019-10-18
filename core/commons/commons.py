@@ -100,6 +100,7 @@ def payload(message: MQTTMessage) -> dict:
 	try:
 		p = message.payload
 		p = p.decode()
+
 		return json.loads(p)
 	except (UnicodeDecodeError, AttributeError):
 		try:
