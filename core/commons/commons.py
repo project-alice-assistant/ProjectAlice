@@ -16,6 +16,7 @@ from googletrans import Translator
 
 import core.commons.model.Slot as slotModel
 from core.base.SuperManager import SuperManager
+from core.base.model.Module import Module
 from core.commons import constants
 from core.commons.model.PartOfDay import PartOfDay
 from core.dialog.model import DialogSession
@@ -310,19 +311,20 @@ def online(text: str = '', offlineHandler: Callable = None, returnText: bool = F
 	"""
 
 	def argumentWrapper(func):
-		def functionWrapper(self, *args, **kwargs):
+		def functionWrapper(*args, **kwargs):
 			nonlocal text
+			self = args[0] if args and isinstance(args[0], Module) else None
 			internetManager = SuperManager.getInstance().internetManager
 			if internetManager.online:
 				try:
-					return func(self, *args, **kwargs)
+					return func(*args, **kwargs)
 				except:
 					internetManager._checkOnlineState()
 					if internetManager.online:
 						raise
 			
 			if offlineHandler:
-				return offlineHandler(self, *args, **kwargs)
+				return offlineHandler(*args, **kwargs)
 			if callable(text) or not text:
 				text = SuperManager.getInstance().talkManager.randomTalk('offline', module='system')
 			elif hasattr(self, 'name'):
