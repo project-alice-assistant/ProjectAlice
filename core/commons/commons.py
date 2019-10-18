@@ -16,6 +16,7 @@ from googletrans import Translator
 
 import core.commons.model.Slot as slotModel
 from core.base.SuperManager import SuperManager
+from core.base.model.Module import Module
 from core.commons import constants
 from core.commons.model.PartOfDay import PartOfDay
 from core.dialog.model import DialogSession
@@ -266,59 +267,42 @@ def indexOf(sub: str, string: str) -> int:
 		return -1
 
 
-def online(text: str = '', offlineHandler: Callable = None):
+def online(text: str = '', offlineHandler: Callable = None, returnText: bool = False):
 	"""
-	(return a) decorator to mark a function that required ethernet.
+	(return a) decorator to mark a function that requires ethernet.
 
 	This decorator can be used (with or or without parameters) to define
 	a function that requires ethernet. In the Default mode without arguments shown
 	in the example it will either execute whats in the function or when alice is
-	offline return a random offline answer. Using the parameters:
+	offline ends the dialog with a random offline answer.
+	Using the parameters:
 		@online(text=<myText>)
 	a own text can be used when being offline aswell and using the parameters:
 		@online(offlineHandler=<myFunc>)
-	a own offline handler can be called, which is especially helpful when the intent wants to
-	use endDialog, continueDialog ... inside the decorated function -> does not return the text
+	a own offline handler can be called, which is helpful when not only endDialog has to be called,
+	but some other cleanup is required aswell
+
+	When there is no named argument 'session' of type DialogSession in the arguments of the decorated function,
+	the decorator will return the text instead. This behaviour can be enforced aswell using:
+		@online(returnText=True)
 
 	:param text:
 	:param offlineHandler:
+	:param returnText:
 	:return: return value of function or random offline string in the current language
 	Examples:
 		An intent that requires ethernet can be defined the following way:
 
-		def onMessage(self, intent: str, session: DialogSession) -> bool:
-			if not self.filterIntent(intent, session):
-				return False
-			if intent == self._INTENT_EXAMPLE:
-				self.endDialog(sessionId=session.sessionId, text=self.exampleIntent())
-			elif intent == self._INTENT_EXAMPLE_2:
-				self.endDialog(sessionId=session.sessionId, text=self.exampleIntent2())
-			elif intent == self._INTENT_EXAMPLE_3:
-				self.exampleIntent2(session)
-			
-			return True
-
 		@online
-		def exampleIntent(self) -> str:
-			request = requests.get('http://api.open-notify.org')
-			return request.text
-
-		@online(text='offlineText')
-		def exampleIntent2(self) -> str:
-			request = requests.get('http://api.open-notify.org')
-			return request.text
-		
-		def offlineHandler(self, session: DialogSession):
-			self.endDialog(sessionId=session.sessionId, text='offlineText')
-
-		@online(text='offlineText')
-		def exampleIntent2(self, session: DialogSession):
+		def exampleIntent(self, session: DialogSession, **_kwargs):
 			request = requests.get('http://api.open-notify.org')
 			self.endDialog(sessionId=session.sessionId, text=request.text)
 	"""
 
 	def argumentWrapper(func):
 		def functionWrapper(*args, **kwargs):
+			nonlocal text
+			self = args[0] if args and isinstance(args[0], Module) else None
 			internetManager = SuperManager.getInstance().internetManager
 			if internetManager.online:
 				try:
@@ -328,11 +312,17 @@ def online(text: str = '', offlineHandler: Callable = None):
 					if internetManager.online:
 						raise
 			
-			if callable(text) or not text and not offlineHandler:
-				return SuperManager.getInstance().talkManager.randomTalk('offline', module='system')
 			if offlineHandler:
 				return offlineHandler(*args, **kwargs)
-			return text
+			if callable(text) or not text:
+				text = SuperManager.getInstance().talkManager.randomTalk('offline', module='system')
+			elif hasattr(self, 'name'):
+				text = SuperManager.getInstance().talkManager.randomTalk(text, module=self.name)
+			if returnText:
+				return text
+			session = kwargs.get('session')
+			if isinstance(session, DialogSession):
+				SuperManager.getInstance().mqttManager.endDialog(sessionId=session.sessionId, text=text)
 
 		return functionWrapper
 
