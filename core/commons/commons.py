@@ -96,13 +96,20 @@ def getDatabaseFile() -> str:
 
 
 def payload(message: MQTTMessage) -> dict:
+	p = ''
 	try:
-		return json.loads(message.payload)
-	except:
+		p = message.payload
+		p = p.decode()
+		return json.loads(p)
+	except (UnicodeDecodeError, AttributeError):
 		try:
-			return json.loads(message.payload.decode())
-		except:
-			return dict()
+			return json.loads(message.payload)
+		except ValueError:
+			raise
+	except ValueError:
+		return {p: p}
+	except:
+		return dict()
 
 
 def parseSlotsToObjects(message: MQTTMessage) -> dict:
