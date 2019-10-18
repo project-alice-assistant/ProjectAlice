@@ -266,7 +266,8 @@ def online(text: str = '', offlineHandler: Callable = None, returnText: bool = F
 	This decorator can be used (with or or without parameters) to define
 	a function that requires ethernet. In the Default mode without arguments shown
 	in the example it will either execute whats in the function or when alice is
-	offline return a random offline answer. Using the parameters:
+	offline ends the dialog with a random offline answer.
+	Using the parameters:
 		@online(text=<myText>)
 	a own text can be used when being offline aswell and using the parameters:
 		@online(offlineHandler=<myFunc>)
@@ -333,7 +334,7 @@ def online(text: str = '', offlineHandler: Callable = None, returnText: bool = F
 				return text
 			session = kwargs.get('session')
 			if isinstance(session, DialogSession):
-				self.endDialog(session.sessionId, text=text)
+				SuperManager.getInstance().mqttManager.endDialog(sessionId=session.sessionId, text=text)
 			
 
 		return functionWrapper
