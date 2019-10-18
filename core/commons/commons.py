@@ -274,8 +274,8 @@ def online(text: str = '', offlineHandler: Callable = None, returnText: bool = F
 	a own offline handler can be called, which is helpful when not only endDialog has to be called,
 	but some other cleanup is required aswell
 
-	When there is no named argument of type DialogSession in the arguments of the decorated function, it will
-	return the text instead. This behaviour can be enforced using:
+	When there is no named argument 'session' of type DialogSession in the arguments of the decorated function,
+	the decorator will return the text instead. This behaviour can be enforced aswell using:
 		@online(returnText=True)
 
 	:param text:
