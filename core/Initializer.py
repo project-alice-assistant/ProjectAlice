@@ -50,7 +50,7 @@ network={
 		self._confsFile = Path(commons.rootDir(), 'config.py')
 		self._confsSample = Path(commons.rootDir(), 'configSample.py')
 		self._initFile = Path('/boot/ProjectAlice.yaml')
-		self._latest = 1.03
+		self._latest = 1.05
 
 
 	def initProjectAlice(self) -> bool:
