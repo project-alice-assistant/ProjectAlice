@@ -310,20 +310,22 @@ def online(text: str = '', offlineHandler: Callable = None, returnText: bool = F
 	"""
 
 	def argumentWrapper(func):
-		def functionWrapper(*args, **kwargs):
+		def functionWrapper(self, *args, **kwargs):
 			internetManager = SuperManager.getInstance().internetManager
 			if internetManager.online:
 				try:
-					return func(*args, **kwargs)
+					return func(self, *args, **kwargs)
 				except:
 					internetManager._checkOnlineState()
 					if internetManager.online:
 						raise
 			
 			if offlineHandler:
-				return offlineHandler(*args, **kwargs)
+				return offlineHandler(self, *args, **kwargs)
 			if callable(text) or not text:
 				text = SuperManager.getInstance().talkManager.randomTalk('offline', module='system')
+			elif hasattr(self, 'name'):
+    			text = SuperManager.getInstance().talkManager.randomTalk(text, module=self.name)
 			if not returnText:
 				session = kwargs.get('session')
 				if isinstance(session, DialogSession):
