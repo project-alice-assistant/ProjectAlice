@@ -36,7 +36,7 @@ class MqttManager(Manager):
 	def onStart(self):
 		super().onStart()
 
-		self._mqttClient.on_message = self.onMessage
+		self._mqttClient.on_message = self.onMqttMessage
 		self._mqttClient.on_connect = self.onConnect
 		self._mqttClient.on_log = self.onLog
 
@@ -113,7 +113,7 @@ class MqttManager(Manager):
 
 
 	# noinspection PyUnusedLocal
-	def onMessage(self, client, userdata, message: mqtt.MQTTMessage):
+	def onMqttMessage(self, client, userdata, message: mqtt.MQTTMessage):
 		try:
 			if message.topic == constants.TOPIC_AUDIO_FRAME:
 				SuperManager.getInstance().broadcast(
@@ -304,7 +304,7 @@ class MqttManager(Manager):
 				intent = Intent(session.payload['intent']['intentName'].split(':')[1])
 				message = mqtt.MQTTMessage(topic=str.encode(str(intent)))
 				message.payload = json.dumps(session.payload)
-				self.onMessage(client=client, userdata=data, message=message)
+				self.onMqttMessage(client=client, userdata=data, message=message)
 
 
 	# noinspection PyUnusedLocal
@@ -661,8 +661,8 @@ class MqttManager(Manager):
 			self._mqttClient.publish(constants.TOPIC_PLAY_BYTES.format(siteId, uid), payload=bytearray(soundFile.read_bytes()))
 
 
-	def publish(self, topic: str, payload: dict = None, qos: int = 0, retain: bool = False):
-		if payload:
+	def publish(self, topic: str, payload: (dict, str) = None, qos: int = 0, retain: bool = False):
+		if payload and isinstance(payload, dict):
 			payload = json.dumps(payload)
 
 		self._mqttClient.publish(topic, payload, qos, retain)
