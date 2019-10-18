@@ -48,7 +48,7 @@ class SnipsConsoleManager(Manager):
 		else:
 			self.logWarning('Snips console credentials not found')
 			if not Path(commons.rootDir(), '/assistant').exists():
-				self.logError('Not assistant found, cannot start')
+				self.logError('No assistant found, cannot start')
 				SuperManager.getInstance().projectAlice.onStop()
 			else:
 				self.logWarning('Assistant is existing, allowing to boot but functions will be restricted!')
