@@ -311,6 +311,7 @@ def online(text: str = '', offlineHandler: Callable = None, returnText: bool = F
 
 	def argumentWrapper(func):
 		def functionWrapper(self, *args, **kwargs):
+			nonlocal text
 			internetManager = SuperManager.getInstance().internetManager
 			if internetManager.online:
 				try:
