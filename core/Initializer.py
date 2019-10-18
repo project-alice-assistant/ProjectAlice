@@ -2,6 +2,7 @@ import getpass
 import importlib
 import json
 import shutil
+import socket
 import subprocess
 import time
 from pathlib import Path
@@ -69,15 +70,15 @@ network={
 		if float(initConfs['version']) < self._latest:
 			self.fatal('The yaml file you are using is deprecated. Please update it before trying again')
 
-		# Let's connect to wifi!
-		if not initConfs['wifiCountryCode'] or not initConfs['wifiNetworkName'] or not initConfs['wifiWPAPass']:
-			self.fatal('You must specify the wifi parameters')
-
 		wpaSupplicant = Path('/etc/wpa_supplicant/wpa_supplicant.conf')
-		bootWpaSupplicant = Path('/boot/wpa_supplicant.conf')
-
-		if not wpaSupplicant.exists():
+		if not wpaSupplicant.exists() and initConfs['useWifi']:
 			self.logInfo('Setting up wifi')
+
+			if not initConfs['wifiCountryCode'] or not initConfs['wifiNetworkName'] or not initConfs['wifiWPAPass']:
+				self.fatal('You must specify the wifi parameters')
+
+			bootWpaSupplicant = Path('/boot/wpa_supplicant.conf')
+
 			wpaFile = self._WPA_FILE\
 				.replace('%wifiCountryCode%', initConfs['wifiCountryCode'])\
 				.replace('%wifiNetworkName%', initConfs['wifiNetworkName'])\
@@ -91,6 +92,16 @@ network={
 			time.sleep(1)
 			subprocess.run(['/usr/bin/sudo', '/sbin/shutdown', '-r', 'now'])
 			exit(0)
+
+		connected = False
+		try:
+			socket.create_connection(("www.google.com", 80))
+			connected = True
+		except:
+			pass
+
+		if not connected:
+			self.fatal('Your device needs internet access to continue, to download the updates and create the assistant')
 
 		if not initConfs['snipsConsoleLogin'] or not initConfs['snipsConsolePassword'] or not initConfs['intentsOwner']:
 			self.fatal('You must specify a Snips console login, password and intent owner')

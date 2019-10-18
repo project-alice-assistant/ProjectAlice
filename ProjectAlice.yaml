@@ -23,6 +23,7 @@ forceRewrite: no
 doGroundInstall: yes
 
 # Base configs
+useWifi: yes
 wifiNetworkName:
 wifiWPAPass:
 wifiCountryCode:
