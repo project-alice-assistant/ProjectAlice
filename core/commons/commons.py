@@ -261,7 +261,7 @@ def indexOf(sub: str, string: str) -> int:
 
 def online(text: str = '', offlineHandler: Callable = None, returnText: bool = False):
 	"""
-	(return a) decorator to mark a function that required ethernet.
+	(return a) decorator to mark a function that requires ethernet.
 
 	This decorator can be used (with or or without parameters) to define
 	a function that requires ethernet. In the Default mode without arguments shown
@@ -271,42 +271,22 @@ def online(text: str = '', offlineHandler: Callable = None, returnText: bool = F
 		@online(text=<myText>)
 	a own text can be used when being offline aswell and using the parameters:
 		@online(offlineHandler=<myFunc>)
-	a own offline handler can be called, which is especially helpful when the intent wants to
-	use endDialog, continueDialog ... inside the decorated function -> does not return the text
+	a own offline handler can be called, which is helpful when not only endDialog has to be called,
+	but some other cleanup is required aswell
+
+	When there is no named argument of type DialogSession in the arguments of the decorated function, it will
+	return the text instead. This behaviour can be enforced using:
+		@online(returnText=True)
 
 	:param text:
 	:param offlineHandler:
+	:param returnText:
 	:return: return value of function or random offline string in the current language
 	Examples:
 		An intent that requires ethernet can be defined the following way:
 
-		def onMessage(self, intent: str, session: DialogSession) -> bool:
-			if not self.filterIntent(intent, session):
-				return False
-			if intent == self._INTENT_EXAMPLE:
-				self.endDialog(sessionId=session.sessionId, text=self.exampleIntent())
-			elif intent == self._INTENT_EXAMPLE_2:
-				self.endDialog(sessionId=session.sessionId, text=self.exampleIntent2())
-			elif intent == self._INTENT_EXAMPLE_3:
-				self.exampleIntent2(session)
-			
-			return True
-
 		@online
-		def exampleIntent(self) -> str:
-			request = requests.get('http://api.open-notify.org')
-			return request.text
-
-		@online(text='offlineText')
-		def exampleIntent2(self) -> str:
-			request = requests.get('http://api.open-notify.org')
-			return request.text
-		
-		def offlineHandler(self, session: DialogSession):
-			self.endDialog(sessionId=session.sessionId, text='offlineText')
-
-		@online(text='offlineText')
-		def exampleIntent2(self, session: DialogSession):
+		def exampleIntent(self, session: DialogSession, **_kwargs):
 			request = requests.get('http://api.open-notify.org')
 			self.endDialog(sessionId=session.sessionId, text=request.text)
 	"""
@@ -335,7 +315,6 @@ def online(text: str = '', offlineHandler: Callable = None, returnText: bool = F
 			session = kwargs.get('session')
 			if isinstance(session, DialogSession):
 				SuperManager.getInstance().mqttManager.endDialog(sessionId=session.sessionId, text=text)
-			
 
 		return functionWrapper
 
