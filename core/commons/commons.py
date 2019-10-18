@@ -325,13 +325,13 @@ def online(text: str = '', offlineHandler: Callable = None, returnText: bool = F
 			if callable(text) or not text:
 				text = SuperManager.getInstance().talkManager.randomTalk('offline', module='system')
 			elif hasattr(self, 'name'):
-    			text = SuperManager.getInstance().talkManager.randomTalk(text, module=self.name)
-			if not returnText:
-				session = kwargs.get('session')
-				if isinstance(session, DialogSession):
-					self.endDialog(session.sessionId, text=text)
-					return
-			return text
+				text = SuperManager.getInstance().talkManager.randomTalk(text, module=self.name)
+			if returnText:
+				return text
+			session = kwargs.get('session')
+			if isinstance(session, DialogSession):
+				self.endDialog(session.sessionId, text=text)
+			
 
 		return functionWrapper
 
