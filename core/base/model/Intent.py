@@ -74,7 +74,10 @@ class Intent(str):
 
 	@property
 	def justAction(self) -> str:
-		return self.justTopic.split(':')[1]
+		if self._userIntent:
+			return self.justTopic.split(':')[1]
+		else:
+			return self.justTopic
 
 
 	@property
