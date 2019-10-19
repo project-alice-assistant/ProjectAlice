@@ -1,6 +1,5 @@
 import logging
-
-from core.commons import commons
+import inspect
 
 
 class Logger:
@@ -40,4 +39,4 @@ class Logger:
 
 
 	def decorate(self, msg: str) -> str:
-		return f'[{commons.getFunctionCaller(depth=self._depth)}] {msg}'
+		return f'[{inspect.getmodulename(inspect.stack()[self._depth][1])}] {msg}'
