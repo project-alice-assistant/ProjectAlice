@@ -86,7 +86,7 @@ class Decorators:
 		def argumentWrapper(func):
 			@wraps(func)
 			def functionWrapper(*args, **kwargs):
-				internetManager = caller.InternetManager
+				internetManager = SuperManager.getInstance().internetManager
 				if internetManager.online:
 					try:
 						return func(*args, **kwargs)
