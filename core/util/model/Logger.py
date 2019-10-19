@@ -25,8 +25,8 @@ class Logger:
 		self.doLog(function='fatal', msg=msg)
 
 
-	def logWarning(self, msg: str):
-		self.doLog(function='warning', msg=msg, printStack=False)
+	def logWarning(self, msg: str, printStack: bool = False):
+		self.doLog(function='warning', msg=msg, printStack=printStack)
 
 
 	def logCritical(self, msg: str):
