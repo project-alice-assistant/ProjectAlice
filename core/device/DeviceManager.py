@@ -16,7 +16,6 @@ from serial.tools import list_ports # type: ignore
 
 from core.base.SuperManager import SuperManager
 from core.base.model.Manager import Manager
-from core.commons import Commons
 from core.device.model.Device import Device
 from core.device.model.TasmotaConfigs import TasmotaConfigs
 from core.dialog.model.DialogSession import DialogSession
@@ -312,7 +311,7 @@ class DeviceManager(Manager):
 		if self.isBusy():
 			return False
 
-		self._broadcastRoom = Commons.cleanRoomNameToSiteId(room)
+		self._broadcastRoom = self.Commons.cleanRoomNameToSiteId(room)
 
 		if not uid:
 			uid = self._getFreeUID()
@@ -341,7 +340,7 @@ class DeviceManager(Manager):
 	def broadcast(self, room: str, uid: str, replyOnSiteId: str):
 		self._broadcastFlag.set()
 		while self._broadcastFlag.isSet():
-			self._broadcastSocket.sendto(bytes(f'{Commons.getLocalIp()}:{self._listenPort}:{room}:{uid}', encoding='utf8'), ('<broadcast>', self._broadcastPort))
+			self._broadcastSocket.sendto(bytes(f'{self.Commons.getLocalIp()}:{self._listenPort}:{room}:{uid}', encoding='utf8'), ('<broadcast>', self._broadcastPort))
 			try:
 				sock, address = self._listenSocket.accept()
 				sock.settimeout(None)

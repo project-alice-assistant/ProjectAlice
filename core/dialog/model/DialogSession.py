@@ -2,8 +2,9 @@ from __future__ import annotations
 from textwrap import dedent
 from paho.mqtt.client import MQTTMessage
 
+from core.base.SuperManager import SuperManager
 from core.base.model import Intent
-from core.commons import Commons, constants
+from core.commons import constants
 
 
 class DialogSession:
@@ -49,17 +50,17 @@ class DialogSession:
 
 
 	def _parseMessage(self):
-		self._payload = Commons.payload(self._message)
-		self._slots = Commons.parseSlots(self._message)
-		self._slotsAsObjects = Commons.parseSlotsToObjects(self._message)
-		self._customData = Commons.parseCustomData(self._message)
+		self._payload = SuperManager.getInstance().commons.payload(self._message)
+		self._slots = SuperManager.getInstance().commons.parseSlots(self._message)
+		self._slotsAsObjects = SuperManager.getInstance().commons.parseSlotsToObjects(self._message)
+		self._customData = SuperManager.getInstance().commons.parseCustomData(self._message)
 
 
 	def _updateSessionData(self):
-		self._payload = Commons.payload(self._message)
-		self._slots = {**self._slots, **Commons.parseSlots(self._message)}
-		self._slotsAsObjects = {**self._slotsAsObjects, **Commons.parseSlotsToObjects(self._message)}
-		self._customData = {**self._customData, **Commons.parseCustomData(self._message)}
+		self._payload = SuperManager.getInstance().commons.payload(self._message)
+		self._slots = {**self._slots, **SuperManager.getInstance().commons.parseSlots(self._message)}
+		self._slotsAsObjects = {**self._slotsAsObjects, **SuperManager.getInstance().commons.parseSlotsToObjects(self._message)}
+		self._customData = {**self._customData, **SuperManager.getInstance().commons.parseCustomData(self._message)}
 
 
 	def addToHistory(self, intent: Intent):

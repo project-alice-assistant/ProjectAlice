@@ -10,8 +10,7 @@ from core.ProjectAliceExceptions import AccessLevelTooLow
 from core.base.SuperManager import SuperManager
 from core.base.model.Intent import Intent
 from core.base.model.Manager import Manager
-from core.commons import Commons, constants
-from core.commons.Commons import deprecated
+from core.commons import constants
 from core.dialog.model.DialogSession import DialogSession
 
 
@@ -127,9 +126,9 @@ class MqttManager(Manager):
 			if message.topic == constants.TOPIC_INTENT_PARSED:
 				return
 
-			siteId = Commons.parseSiteId(message)
-			payload = Commons.payload(message)
-			sessionId = Commons.parseSessionId(message)
+			siteId = self.Commons.parseSiteId(message)
+			payload = self.Commons.payload(message)
+			sessionId = self.Commons.parseSessionId(message)
 
 			session = self.DialogSessionManager.getSession(sessionId)
 			if session:
@@ -223,8 +222,8 @@ class MqttManager(Manager):
 
 	# noinspection PyUnusedLocal
 	def onHotwordDetected(self, client, data, msg):
-		siteId = Commons.parseSiteId(msg)
-		payload = Commons.payload(msg)
+		siteId = self.Commons.parseSiteId(msg)
+		payload = self.Commons.payload(msg)
 
 		if not self._multiDetectionsHolder:
 			self.ThreadManager.doLater(interval=0.5, func=self.handleMultiDetection)
@@ -249,7 +248,7 @@ class MqttManager(Manager):
 
 		sessions = self.DialogSessionManager.sessions
 		for sessionId in sessions:
-			payload = Commons.payload(sessions[sessionId].message)
+			payload = self.Commons.payload(sessions[sessionId].message)
 			if payload['siteId'] != self._multiDetectionsHolder[0]:
 				self.endSession(sessionId=sessionId)
 
@@ -258,7 +257,7 @@ class MqttManager(Manager):
 
 	# noinspection PyUnusedLocal
 	def onSnipsSessionStarted(self, client, data, msg: mqtt.MQTTMessage):
-		sessionId = Commons.parseSessionId(msg)
+		sessionId = self.Commons.parseSessionId(msg)
 		session = self.DialogSessionManager.addSession(sessionId=sessionId, message=msg)
 
 		if session:
@@ -267,7 +266,7 @@ class MqttManager(Manager):
 
 	# noinspection PyUnusedLocal
 	def onSnipsSessionQueued(self, client, data, msg: mqtt.MQTTMessage):
-		sessionId = Commons.parseSessionId(msg)
+		sessionId = self.Commons.parseSessionId(msg)
 		session = self.DialogSessionManager.addSession(sessionId=sessionId, message=msg)
 
 		if session:
@@ -276,7 +275,7 @@ class MqttManager(Manager):
 
 	# noinspection PyUnusedLocal
 	def onSnipsStartListening(self, client, data, msg: mqtt.MQTTMessage):
-		sessionId = Commons.parseSessionId(msg)
+		sessionId = self.Commons.parseSessionId(msg)
 		session = self.DialogSessionManager.getSession(sessionId=sessionId)
 
 		if session:
@@ -285,7 +284,7 @@ class MqttManager(Manager):
 
 	# noinspection PyUnusedLocal
 	def onSnipsCaptured(self, client, data, msg: mqtt.MQTTMessage):
-		sessionId = Commons.parseSessionId(msg)
+		sessionId = self.Commons.parseSessionId(msg)
 		session = self.DialogSessionManager.getSession(sessionId=sessionId)
 
 		if session:
@@ -293,7 +292,7 @@ class MqttManager(Manager):
 
 
 	def onSnipsIntentParsed(self, client, data, msg: mqtt.MQTTMessage):
-		sessionId = Commons.parseSessionId(msg)
+		sessionId = self.Commons.parseSessionId(msg)
 		session = self.DialogSessionManager.getSession(sessionId=sessionId)
 
 		if session:
@@ -309,7 +308,7 @@ class MqttManager(Manager):
 
 	# noinspection PyUnusedLocal
 	def onSnipsSessionEnded(self, client, data, msg: mqtt.MQTTMessage):
-		sessionId = Commons.parseSessionId(msg)
+		sessionId = self.Commons.parseSessionId(msg)
 		session = self.DialogSessionManager.getSession(sessionId)
 
 		if session:
@@ -338,15 +337,15 @@ class MqttManager(Manager):
 
 	# noinspection PyUnusedLocal
 	def onSnipsSay(self, client, data, msg: mqtt.MQTTMessage):
-		sessionId = Commons.parseSessionId(msg)
-		payload = Commons.payload(msg)
+		sessionId = self.Commons.parseSessionId(msg)
+		payload = self.Commons.payload(msg)
 
 		session = self.DialogSessionManager.getSession(sessionId)
 		if session:
 			session.payload = payload
 			siteId = session.siteId
 		else:
-			siteId = Commons.parseSiteId(msg)
+			siteId = self.Commons.parseSiteId(msg)
 
 		if 'text' in payload:
 			module = self.ModuleManager.getModuleInstance('ContextSensitive')
@@ -358,8 +357,8 @@ class MqttManager(Manager):
 
 	# noinspection PyUnusedLocal
 	def onSnipsSayFinished(self, client, data, msg: mqtt.MQTTMessage):
-		sessionId = Commons.parseSessionId(msg)
-		payload = Commons.payload(msg)
+		sessionId = self.Commons.parseSessionId(msg)
+		payload = self.Commons.payload(msg)
 
 		session = self.DialogSessionManager.getSession(sessionId)
 		if session:
@@ -370,7 +369,7 @@ class MqttManager(Manager):
 
 	# noinspection PyUnusedLocal
 	def onSnipsIntentNotRecognized(self, client, data, msg: mqtt.MQTTMessage):
-		sessionId = Commons.parseSessionId(msg)
+		sessionId = self.Commons.parseSessionId(msg)
 		session = self.DialogSessionManager.getSession(sessionId)
 
 		if not session:
@@ -637,9 +636,9 @@ class MqttManager(Manager):
 			uid = str(uuid.uuid4())
 
 		if not location:
-			location = Path(Commons.rootDir()) / 'system' / 'sounds'
+			location = Path(self.Commons.rootDir()) / 'system' / 'sounds'
 		elif not str(location).startswith('/'):
-			location = Path(Commons.rootDir()) / location
+			location = Path(self.Commons.rootDir()) / location
 
 		if siteId == 'all':
 			deviceList = self.DeviceManager.getDevicesByType('AliceSatellite', connectedOnly=True)
@@ -699,7 +698,7 @@ class MqttManager(Manager):
 		if text == '':
 			return
 
-		subprocess.call(['sudo', Path(Commons.rootDir(), '/system/scripts/snipsSuperTTS.sh'), Path('/share/tmp.wav'), 'amazon', self.LanguageManager.activeLanguage, 'US', 'Joanna', 'FEMALE', text, '22050'])
+		subprocess.call(['sudo', Path(self.Commons.rootDir(), '/system/scripts/snipsSuperTTS.sh'), Path('/share/tmp.wav'), 'amazon', self.LanguageManager.activeLanguage, 'US', 'Joanna', 'FEMALE', text, '22050'])
 
 		sonosModule = self.ModuleManager.getModuleInstance('Sonos')
 		if sonosModule:

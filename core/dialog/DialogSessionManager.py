@@ -52,7 +52,7 @@ class DialogSessionManager(Manager):
 		:param sessionId: str
 		:param message: dict
 		"""
-		siteId = Commons.parseSiteId(message)
+		siteId = self.Commons.parseSiteId(message)
 		session = self._preSessions.pop(siteId, DialogSession(siteId))
 
 		session.extend(message, sessionId)

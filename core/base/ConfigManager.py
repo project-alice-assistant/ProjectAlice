@@ -21,7 +21,7 @@ import toml
 import configSample
 from core.ProjectAliceExceptions import ConfigurationUpdateFailed, VitalConfigMissing
 from core.base.model.Manager import Manager
-from core.commons import Commons, constants
+from core.commons import constants
 
 
 class ConfigManager(Manager):
@@ -157,8 +157,7 @@ class ConfigManager(Manager):
 			raise ConfigurationUpdateFailed()
 
 
-	@staticmethod
-	def _writeToModuleConfigurationFile(moduleName: str, confs: dict):
+	def _writeToModuleConfigurationFile(self, moduleName: str, confs: dict):
 		"""
 		Saaves the given configuration into config.py of the Module
 		:param moduleName: the targeted module
@@ -169,7 +168,7 @@ class ConfigManager(Manager):
 		misterProper = ['active', 'version', 'author', 'conditions']
 		confsCleaned = {key: value for key, value in confs.items() if key not in misterProper}
 
-		moduleConfigFile = Path(Commons.rootDir(), 'modules', moduleName, 'config.json')
+		moduleConfigFile = Path(self.Commons.rootDir(), 'modules', moduleName, 'config.json')
 		moduleConfigFile.write_text(json.dumps(confsCleaned, indent=4))
 
 
@@ -261,7 +260,7 @@ class ConfigManager(Manager):
 
 			changes = False
 
-			moduleConfigFile = Path(Commons.rootDir(), 'modules', moduleName, 'config.json')
+			moduleConfigFile = Path(self.Commons.rootDir(), 'modules', moduleName, 'config.json')
 			moduleConfigFileExists = moduleConfigFile.exists()
 			moduleConfigFileTemplate = moduleConfigFile.with_suffix(moduleConfigFile.suffix + '.dist')
 			moduleConfigFileTemplateExists = moduleConfigFileTemplate.exists()
@@ -320,7 +319,7 @@ class ConfigManager(Manager):
 			if module and moduleName != module:
 				continue
 
-			moduleConfigFile = Path(Commons.rootDir(), 'modules', moduleName, 'config.json')
+			moduleConfigFile = Path(self.Commons.rootDir(), 'modules', moduleName, 'config.json')
 			moduleConfigFileExists = moduleConfigFile.exists()
 
 			if not self._aliceConfigurations['modules'][moduleName]['active'] or not moduleConfigFileExists:

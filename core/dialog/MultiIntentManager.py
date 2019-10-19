@@ -21,7 +21,7 @@ class MultiIntentManager(Manager):
 
 
 	def processMessage(self, message: MQTTMessage) -> bool:
-		sessionId = Commons.parseSessionId(message)
+		sessionId = self.Commons.parseSessionId(message)
 		session = self.DialogSessionManager.getSession(sessionId)
 		if not session or self.isProcessing(sessionId):
 			return False

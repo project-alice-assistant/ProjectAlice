@@ -1,6 +1,7 @@
 from typing import Callable, Dict
 
-from core.commons import Commons, constants
+from core.base.SuperManager import SuperManager
+from core.commons import constants
 from core.util.model.Logger import Logger
 
 
@@ -9,7 +10,7 @@ class DialogMapping(Logger):
 	def __init__(self, mapping: Dict[str, Callable]):
 		super().__init__(depth=6)
 
-		caller = Commons.getFunctionCaller()
+		caller = SuperManager.getInstance().commons.getFunctionCaller()
 		self._mapping = {f'{caller}:{state}': func for state, func in mapping.items()}
 		self._state = constants.DEFAULT
 

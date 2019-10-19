@@ -1,7 +1,7 @@
 from threading import Event
 
 from core.base.SuperManager import SuperManager
-from core.commons import constants, Commons
+from core.commons import constants
 
 
 class AliceEvent(Event):
@@ -68,4 +68,4 @@ class AliceEvent(Event):
 
 
 	def eventName(self, state: str) -> str:
-		return f'on{Commons.toPascalCase(self.name)}{state.capitalize()}'
+		return f'on{SuperManager.getInstance().commons.toPascalCase(self.name)}{state.capitalize()}'

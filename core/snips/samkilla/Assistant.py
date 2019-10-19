@@ -1,7 +1,6 @@
 import requests
 
 from core.snips import SamkillaManager
-from core.snips.samkilla.gql.assistants.trainAssistant import trainAssistant
 from core.snips.samkilla.gql.assistants.createAssistant import createAssistant
 from core.snips.samkilla.gql.assistants.deleteAssistant import deleteAssistant
 from core.snips.samkilla.gql.assistants.forkAssistantSkill import forkAssistantSkill

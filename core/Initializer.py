@@ -9,7 +9,6 @@ from pathlib import Path
 
 import yaml
 
-from core.commons import Commons
 from core.util.model.Logger import Logger
 
 
@@ -47,8 +46,10 @@ network={
 		super().__init__()
 		self.logInfo('Starting Project Alice initializer')
 
-		self._confsFile = Path(Commons.rootDir(), 'config.py')
-		self._confsSample = Path(Commons.rootDir(), 'configSample.py')
+		self._rootDir = Path(__file__).resolve().parent.parent.parent
+
+		self._confsFile = Path(self._rootDir, 'config.py')
+		self._confsSample = Path(self._rootDir, 'configSample.py')
 		self._initFile = Path('/boot/ProjectAlice.yaml')
 		self._latest = 1.06
 
@@ -84,7 +85,7 @@ network={
 				.replace('%wifiNetworkName%', initConfs['wifiNetworkName'])\
 				.replace('%wifiWPAPass%', initConfs['wifiWPAPass'])
 
-			file = Path(Commons.rootDir(), 'wifi.conf')
+			file = Path(self._rootDir, 'wifi.conf')
 			file.write_text(wpaFile)
 
 			subprocess.run(['sudo', 'mv', str(file), bootWpaSupplicant])
@@ -111,7 +112,7 @@ network={
 
 		elif not self._confsFile.exists() and self._confsSample.exists():
 			self.warning('No config file found, creating it from sample file')
-			shutil.copyfile(src=Path(Commons.rootDir(), 'configSample.py'), dst=Path(Commons.rootDir(), 'config.py'))
+			shutil.copyfile(src=Path(self._rootDir, 'configSample.py'), dst=Path(self._rootDir, 'config.py'))
 
 		elif self._confsFile.exists() and not initConfs['forceRewrite']:
 			self.warning('Config file already existing and user not wanting to rewrite, aborting')
@@ -119,8 +120,8 @@ network={
 
 		elif self._confsFile.exists() and initConfs['forceRewrite']:
 			self.warning('Config file found and force rewrite specified, let\'s restart all this!')
-			Path(Commons.rootDir(), 'config.py').unlink()
-			shutil.copyfile(src=Path(Commons.rootDir(), 'configSample.py'), dst=Path(Commons.rootDir(), 'config.py'))
+			Path(self._rootDir, 'config.py').unlink()
+			shutil.copyfile(src=Path(self._rootDir, 'configSample.py'), dst=Path(self._rootDir, 'config.py'))
 
 		config = importlib.import_module('config')
 		confs = config.settings.copy()
@@ -136,13 +137,13 @@ network={
 
 		# Do some installation if wanted by the user
 		if initConfs['doGroundInstall']:
-			subprocess.run(['./venv/bin/pip3', 'install', '-r', str(Path(Commons.rootDir(), 'piprequirements.txt'))])
+			subprocess.run(['./venv/bin/pip3', 'install', '-r', str(Path(self._rootDir, 'piprequirements.txt'))])
 
 			subprocess.run(['sudo', 'bash', '-c', 'echo "deb https://raspbian.snips.ai/$(lsb_release -cs) stable main" > /etc/apt/sources.list.d/snips.list'])
 			subprocess.run(['sudo', 'apt-key',  'adv', '--keyserver', 'gpg.mozilla.org', '--recv-keys', 'D4F50CDCA10A2849'])
 			subprocess.run(['sudo', 'apt-get', 'update'])
 
-			reqs = [line.rstrip('\n') for line in open(Path(Commons.rootDir(), 'sysrequirements.txt'))]
+			reqs = [line.rstrip('\n') for line in open(Path(self._rootDir, 'sysrequirements.txt'))]
 			subprocess.run(['sudo', 'apt-get', 'install', '-y', '--allow-unauthenticated'] + reqs)
 
 			subprocess.run(['sudo', 'systemctl', 'stop', 'snips-*'])
@@ -185,7 +186,7 @@ network={
 			confs['awsSecretKey'] = initConfs['awsSecretKey']
 
 			if initConfs['googleServiceFile']:
-				googleCreds = Path(Commons.rootDir(), 'credentials/googlecredentials.json')
+				googleCreds = Path(self._rootDir, 'credentials/googlecredentials.json')
 				googleCreds.write_text(json.dumps(initConfs['googleServiceFile']))
 
 		# Those that don't need checking
@@ -220,7 +221,7 @@ network={
 		if initConfs['deviceName'] != 'default':
 			subprocess.run(['sudo', 'sed', '-i', '-e', f's/\# bind = "default@mqtt"/bind = "{initConfs["deviceName"]}@mqtt"/', Path('/etc/snips.toml')])
 			subprocess.run(['sudo', 'sed', '-i', '-e', f's/bind = ".*@mqtt"/bind = "{initConfs["deviceName"]}@mqtt"/', Path('/etc/snips.toml')])
-			subprocess.run(['sudo', 'sed', '-i', '-e', f's/DEFAULT_SITE_ID = \'default\'/DEFAULT_SITE_ID = \'{initConfs["deviceName"]}\'/', Path(Commons.rootDir(), 'core/commons/constants.py')])
+			subprocess.run(['sudo', 'sed', '-i', '-e', f's/DEFAULT_SITE_ID = \'default\'/DEFAULT_SITE_ID = \'{initConfs["deviceName"]}\'/', Path(self._rootDir, 'core/commons/constants.py')])
 
 		serviceFilePath = Path('/etc/systemd/system/ProjectAlice.service')
 		if not serviceFilePath.exists():
@@ -255,26 +256,26 @@ network={
 			subprocess.run(['sudo', 'sed', '-i', '-e', f's/%USER%/{getpass.getuser()}/', str(slcServiceFilePath)])
 
 		if audioHardware in {'respeaker2', 'respeaker4', 'respeaker6MicArray'}:
-			subprocess.run(['sudo', Path(Commons.rootDir(), 'system/scripts/audioHardware/respeakers.sh')])
+			subprocess.run(['sudo', Path(self._rootDir, 'system/scripts/audioHardware/respeakers.sh')])
 			if initConfs['useSLC']:
 				subprocess.run(['sudo', 'sed', '-i', '-e', f's/%HARDWARE%/{audioHardware}/', str(slcServiceFilePath)])
 
 			if audioHardware == 'respeaker6MicArray':
-				subprocess.run(['sudo', 'cp', Path(Commons.rootDir(), 'system', 'asounds', 'respeaker6micarray.conf'), Path('/etc/asound.conf')])
+				subprocess.run(['sudo', 'cp', Path(self._rootDir, 'system', 'asounds', 'respeaker6micarray.conf'), Path('/etc/asound.conf')])
 
 		elif audioHardware == 'respeaker7':
-			subprocess.run(['sudo', Path(Commons.rootDir(), 'system/scripts/audioHardware/respeaker7.sh')])
+			subprocess.run(['sudo', Path(self._rootDir, 'system/scripts/audioHardware/respeaker7.sh')])
 			if initConfs['useSLC']:
 				subprocess.run(['sudo', 'sed', '-i', '-e', 's/%HARDWARE%/respeaker7MicArray/', str(slcServiceFilePath)])
 
 		elif audioHardware == 'respeakerCoreV2':
-			subprocess.run(['sudo', Path(Commons.rootDir(), 'system/scripts/audioHardware/respeakerCoreV2.sh')])
+			subprocess.run(['sudo', Path(self._rootDir, 'system/scripts/audioHardware/respeakerCoreV2.sh')])
 			if initConfs['useSLC']:
 				subprocess.run(['sudo', 'sed', '-i', '-e', f's/%HARDWARE%/{audioHardware}/', str(slcServiceFilePath)])
 
 		elif audioHardware in {'matrixCreator', 'matrixVoice'}:
-			subprocess.run(['sudo', Path(Commons.rootDir(), 'system/scripts/audioHardware/matrix.sh')])
-			subprocess.run(['sudo', 'cp', Path(Commons.rootDir(), 'system', 'asounds', 'matrix.conf'), Path('/etc/asound.conf')])
+			subprocess.run(['sudo', Path(self._rootDir, 'system/scripts/audioHardware/matrix.sh')])
+			subprocess.run(['sudo', 'cp', Path(self._rootDir, 'system', 'asounds', 'matrix.conf'), Path('/etc/asound.conf')])
 
 			subprocess.run(['sudo', 'sed', '-i', '-e', f's/\# mike = "Built-in Microphone"/mike = "MATRIXIO-SOUND: - (hw:2,0)"/', Path('/etc/snips.toml')])
 
@@ -282,12 +283,12 @@ network={
 				subprocess.run(['sudo', 'sed', '-i', '-e', f's/%HARDWARE%/{audioHardware.lower()}/', str(slcServiceFilePath)])
 
 		elif audioHardware == 'googleAIY':
-			subprocess.run(['sudo', Path(Commons.rootDir(), 'system/scripts/audioHardware/aiy.sh')])
+			subprocess.run(['sudo', Path(self._rootDir, 'system/scripts/audioHardware/aiy.sh')])
 			if initConfs['useSLC']:
 				subprocess.run(['sudo', 'sed', '-i', '-e', 's/%HARDWARE%/googleAIY/', str(slcServiceFilePath)])
 
 		elif audioHardware == 'usbMic':
-			subprocess.run(['sudo', 'cp', Path(Commons.rootDir(), 'system', 'asounds', 'usbmic.conf'), Path('/etc/asound.conf')])
+			subprocess.run(['sudo', 'cp', Path(self._rootDir, 'system', 'asounds', 'usbmic.conf'), Path('/etc/asound.conf')])
 
 		subprocess.run(['sudo', 'systemctl', 'daemon-reload'])
 
@@ -303,9 +304,9 @@ network={
 		else:
 			importlib.reload(config)
 
-		subprocess.run(['sudo', 'rm', '-rf', Path(Commons.rootDir(), 'assistant')])
-		subprocess.run(['sudo', 'rm', '-rf', Path(Commons.rootDir(), 'trained', 'assistants', f"assistant_{confs['activeLanguage']}")])
-		subprocess.run(['sudo', 'rm', '-rf', Path(Commons.rootDir(), 'var', 'assistants', confs['activeLanguage'])])
+		subprocess.run(['sudo', 'rm', '-rf', Path(self._rootDir, 'assistant')])
+		subprocess.run(['sudo', 'rm', '-rf', Path(self._rootDir, 'trained', 'assistants', f"assistant_{confs['activeLanguage']}")])
+		subprocess.run(['sudo', 'rm', '-rf', Path(self._rootDir, 'var', 'assistants', confs['activeLanguage'])])
 		subprocess.run(['sudo', 'mv', str(Path('/boot/ProjectAlice.yaml')), str(Path('/boot/ProjectAlice.yaml.bak'))])
 
 		self.warning('Initializer done with configuring')

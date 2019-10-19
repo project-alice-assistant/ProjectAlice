@@ -19,7 +19,7 @@ class MycroftTTS(TTS):
 		self._online = False
 		self._privacyMalus = 0
 
-		self._mimicDirectory = Path(Path(Commons.rootDir()).parent, 'mimic/mimic')
+		self._mimicDirectory = Path(Path(self.Commons.rootDir()).parent, 'mimic/mimic')
 
 		# TODO => classify genders and countries. First is always default
 		self._supportedLangAndVoices = {

@@ -24,7 +24,6 @@ from datetime import datetime
 from pathlib import Path
 
 from core.Initializer import Initializer
-from core.commons import Commons
 
 formatter = logging.Formatter('%(asctime)s [%(threadName)s] - [%(levelname)s] - %(message)s')
 
@@ -33,7 +32,7 @@ _logger.setLevel(logging.INFO)
 
 date = int(datetime.now().strftime('%Y%m%d'))
 
-logsMountpoint = Path(Commons.rootDir(), 'var', 'logs')
+logsMountpoint = Path(Path(__file__).resolve().parent.parent.parent, 'var', 'logs')
 
 handler = logging.FileHandler(filename=f'{logsMountpoint}/logs.log', mode='w')
 rotatingHandler = logging.handlers.RotatingFileHandler(filename=f'{logsMountpoint}/{date}-logs.log', mode='a', maxBytes = 100000, backupCount = 20)

@@ -45,11 +45,11 @@ class WebInterfaceManager(Manager):
 		if not self.ConfigManager.getAliceConfigByName('webInterfaceActive'):
 			self.logInfo(f'Web interface is disabled by settings')
 		else:
-			langFile = Path(Commons.rootDir(), f'core/interface/languages/{self.LanguageManager.activeLanguage.lower()}.json')
+			langFile = Path(self.Commons.rootDir(), f'core/interface/languages/{self.LanguageManager.activeLanguage.lower()}.json')
 
 			if not langFile.exists():
 				self.logWarning(f'Lang "{self.LanguageManager.activeLanguage.lower()}" not found, falling back to "en"')
-				langFile = Path(Commons.rootDir(), 'core/interface/languages/en.json')
+				langFile = Path(self.Commons.rootDir(), 'core/interface/languages/en.json')
 			else:
 				self.logInfo(f'Loaded interface in "{self.LanguageManager.activeLanguage.lower()}"')
 
@@ -65,7 +65,7 @@ class WebInterfaceManager(Manager):
 				kwargs={
 					'debug': True,
 					'port': int(self.ConfigManager.getAliceConfigByName('webInterfacePort')),
-					'host': Commons.getLocalIp(),
+					'host': self.Commons.getLocalIp(),
 					'use_reloader': False
 				}
 			)

@@ -12,7 +12,7 @@ from core.voice.model.TTSEnum import TTSEnum
 class TTSManager(Manager):
 	NAME = 'TTSManager'
 
-	CACHE_ROOT = Path(Commons.rootDir(), 'var/cache')
+	CACHE_ROOT = Path(self.Commons.rootDir(), 'var/cache')
 
 	def __init__(self):
 		super().__init__(self.NAME)
@@ -47,7 +47,7 @@ class TTSManager(Manager):
 		elif tts == TTSEnum.PICO:
 			self._tts = PicoTTS(user)
 		elif tts == TTSEnum.MYCROFT:
-			if not Path(Path(Commons.rootDir()).parent, 'mimic/voices').is_dir():
+			if not Path(Path(self.Commons.rootDir()).parent, 'mimic/voices').is_dir():
 				self.logWarning(f'Trying to use Mycroft as TTS but files not available, falling back to picotts')
 				self._tts = PicoTTS(user)
 				tts = TTSEnum.PICO

@@ -2,7 +2,6 @@ import sqlite3
 import typing
 
 from core.base.model.Manager import Manager
-from core.commons import Commons
 from core.ProjectAliceExceptions import DbConnectionError, InvalidQuery
 
 
@@ -30,9 +29,9 @@ class DatabaseManager(Manager):
 
 	def getConnection(self) -> sqlite3.Connection:
 		try:
-			con = sqlite3.connect(Commons.getDatabaseFile())
+			con = sqlite3.connect(self.Commons.getDatabaseFile())
 		except sqlite3.Error as e:
-			self.logError(f'Failed to connect to DB ({Commons.getDatabaseFile()}): {e}')
+			self.logError(f'Failed to connect to DB ({self.Commons.getDatabaseFile()}): {e}')
 			raise DbConnectionError()
 		con.row_factory = sqlite3.Row
 		return con
@@ -149,7 +148,7 @@ class DatabaseManager(Manager):
 			raise Exception('Cannot DB insert without values...')
 
 		if not callerName:
-			callerName = Commons.getFunctionCaller()
+			callerName = self.Commons.getFunctionCaller()
 
 		if not query:
 			cols = ', '.join(values.keys())

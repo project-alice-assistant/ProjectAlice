@@ -144,3 +144,9 @@ class View(FlaskView):
 	@property
 	def WebInterfaceManager(self):
 		return SuperManager.getInstance().webInterfaceManager
+
+
+
+	@property
+	def Commons(self):
+		return SuperManager.getInstance().commons

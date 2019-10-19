@@ -7,7 +7,7 @@ from core.interface.views.View import View
 
 
 class SyslogView(View):
-	LOGS = Path(Commons.rootDir(), 'var', 'logs', 'logs.log')
+	LOGS = Path(self.Commons.rootDir(), 'var', 'logs', 'logs.log')
 
 
 	def __init__(self):
