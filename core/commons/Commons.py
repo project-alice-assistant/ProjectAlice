@@ -15,7 +15,6 @@ from paho.mqtt.client import MQTTMessage
 from googletrans import Translator
 
 import core.commons.model.Slot as slotModel
-from core.base.SuperManager import SuperManager
 from core.base.model.Manager import Manager
 from core.base.model.Module import Module
 from core.commons import constants
@@ -25,6 +24,9 @@ from core.dialog.model.DialogSession import DialogSession
 class Commons(Manager):
 
 	ERROR_HANDLER_FUNC = CFUNCTYPE(None, c_char_p, c_int, c_char_p, c_int, c_char_p)
+	
+	def __init__(self):
+		super().__init__('Commons')
 
 
 	@staticmethod
