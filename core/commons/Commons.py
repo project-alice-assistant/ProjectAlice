@@ -317,8 +317,8 @@ class Commons(Manager):
 		def argumentWrapper(func):
 			def functionWrapper(*args, **kwargs):
 				nonlocal text
-				self = args[0] if args and isinstance(args[0], Module) else None
-				internetManager = self.InternetManager
+				caller = args[0] if args and isinstance(args[0], Module) else None
+				internetManager = caller.InternetManager
 				if internetManager.online:
 					try:
 						return func(*args, **kwargs)
@@ -330,14 +330,14 @@ class Commons(Manager):
 				if offlineHandler:
 					return offlineHandler(*args, **kwargs)
 				if callable(text) or not text:
-					text = self.TalkManager.randomTalk('offline', module='system')
-				elif hasattr(self, 'name'):
-					text = self.TalkManager.randomTalk(text, module=self.name)
+					text = caller.TalkManager.randomTalk('offline', module='system')
+				elif hasattr(caller, 'name'):
+					text = caller.TalkManager.randomTalk(text, module=self.name)
 				if returnText:
 					return text
 				session = kwargs.get('session')
 				if isinstance(session, DialogSession):
-					self.MqttManager.endDialog(sessionId=session.sessionId, text=text)
+					caller.MqttManager.endDialog(sessionId=session.sessionId, text=text)
 
 			return functionWrapper
 
