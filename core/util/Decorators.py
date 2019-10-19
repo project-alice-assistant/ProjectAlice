@@ -2,10 +2,11 @@ from typing import Callable
 
 import warnings
 
-import functools
+from functools import wraps
 
 from core.base.model.Module import Module
 from core.dialog.model.DialogSession import DialogSession
+from core.base.SuperManager import SuperManager
 
 
 class Decorators:
@@ -20,12 +21,12 @@ class Decorators:
 		"""
 
 
-		@functools.wraps(func)
+		@wraps(func)
 		def new_func(*args, **kwargs):
 			warnings.simplefilter('always', DeprecationWarning)  # turn off filter
 			warnings.warn(f'Call to deprecated function {func.__name__}.',
-			              category=DeprecationWarning,
-			              stacklevel=2)
+				category=DeprecationWarning,
+				stacklevel=2)
 			warnings.simplefilter('default', DeprecationWarning)  # reset filter
 			return func(*args, **kwargs)
 
@@ -65,13 +66,27 @@ class Decorators:
 				request = requests.get('http://api.open-notify.org')
 				self.endDialog(sessionId=session.sessionId, text=request.text)
 		"""
+		def _offlineHandler(*args, **kwargs):
+			nonlocal text
+			caller = args[0] if args and isinstance(args[0], Module) else None
 
+			if offlineHandler:
+				return offlineHandler(*args, **kwargs)
+
+			if callable(text) or not text:
+				text = SuperManager.getInstance().talkManager.randomTalk('offline', module='system')
+			elif hasattr(caller, 'name'):
+				text = SuperManager.getInstance().talkManager.randomTalk(text, module=caller.name)
+
+			session = kwargs.get('session')
+			if not returnText and isinstance(session, DialogSession):
+				SuperManager.getInstance().mqttManager.endDialog(sessionId=session.sessionId, text=text)
+			return text
 
 		def argumentWrapper(func):
+			@wraps(func)
 			def functionWrapper(*args, **kwargs):
-				nonlocal text
-				caller = args[0] if args and isinstance(args[0], Module) else None
-				internetManager = caller.InternetManager
+				internetManager = SuperManager.getInstance().internetManager
 				if internetManager.online:
 					try:
 						return func(*args, **kwargs)
@@ -80,20 +95,8 @@ class Decorators:
 						if internetManager.online:
 							raise
 
-				if offlineHandler:
-					return offlineHandler(*args, **kwargs)
-				if callable(text) or not text:
-					text = caller.TalkManager.randomTalk('offline', module='system')
-				elif hasattr(caller, 'name'):
-					text = caller.TalkManager.randomTalk(text, module=caller.name)
-				if returnText:
-					return text
-				session = kwargs.get('session')
-				if isinstance(session, DialogSession):
-					caller.MqttManager.endDialog(sessionId=session.sessionId, text=text)
+				return _offlineHandler(*args, **kwargs)
 
 			return functionWrapper
 
-		if callable(text):
-			return argumentWrapper(text)
-		return argumentWrapper
+		return argumentWrapper(text) if callable(text) else argumentWrapper
