@@ -47,7 +47,7 @@ class ConfigManager(Manager):
 			'snipsConsolePassword'
 		]
 
-		self._checkAndUpdateAliceConfigFile()
+		self._aliceConfigurations = self._checkAndUpdateAliceConfigFile()
 		self.loadSnipsConfigurations()
 		self._setDefaultSiteId()
 
@@ -66,7 +66,7 @@ class ConfigManager(Manager):
 		constants.DEFAULT_SITE_ID = self._snipsConfigurations.get('snips-audio-server', {'bind': 'default@mqtt'}).get('bind', 'default@mqtt').replace('@mqtt', '')
 
 
-	def _checkAndUpdateAliceConfigFile(self):
+	def _checkAndUpdateAliceConfigFile(self) -> dict:
 		self.logInfo('Checking Alice configuration file')
 
 		changes = False
@@ -93,6 +93,8 @@ class ConfigManager(Manager):
 
 		if changes:
 			self._writeToAliceConfigurationFile(availableConfigs)
+
+		return availableConfigs
 
 
 	def addModuleToAliceConfig(self, moduleName: str, data: dict):
