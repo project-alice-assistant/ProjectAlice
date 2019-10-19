@@ -368,7 +368,7 @@ class ModuleManager(Manager):
 				if moduleName not in availableModules:
 					continue
 
-				req = requests.get(f'https://raw.githubusercontent.com/project-alice-powered-by-snips/ProjectAliceModules/master/PublishedModules/{availableModules[moduleName]["author"]}/{moduleName}/{moduleName}.install')
+				req = requests.get(f'https://raw.githubusercontent.com/project-alice-powered-by-snips/ProjectAliceModules/{self.ConfigManager.getAliceConfigByName("updateChannel")}/PublishedModules/{availableModules[moduleName]["author"]}/{moduleName}/{moduleName}.install')
 
 				remoteFile = req.json()
 				if float(remoteFile['version']) > float(availableModules[moduleName]['version']):
