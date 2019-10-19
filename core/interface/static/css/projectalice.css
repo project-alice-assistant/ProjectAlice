@@ -37,6 +37,7 @@ header {
 	background-color: #1e1e1e;
 	margin: 2px;
 	color: #d1d1d1;
+	display: flex;
 }
 
 nav {
@@ -98,7 +99,22 @@ a:hover {
 	font-size: 2em;
 	display: flex;
 	align-items: center;
-	height: 100%
+	height: 100%;
+	flex-grow: 1;
+}
+
+.updateChannelMarker {
+	font-family: 'marskeregular', Arial, sans-serif;
+	margin-left: 15px;
+	font-size: 1em;
+	display: flex;
+	align-items: center;
+	height: 100%;
+	font-style: italic;
+	color: red;
+	flex-grow: 1;
+	justify-content: flex-end;
+	margin-right: 15px;
 }
 
 .content {

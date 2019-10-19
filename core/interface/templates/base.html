@@ -9,6 +9,9 @@
 <link rel="stylesheet" href="{{ url_for('static', filename='css/regular.css') }}">
 <script src="{{ url_for('static', filename='js/jquery-3.4.1.min.js') }}"></script>
 <script src="{{ url_for('static', filename='js/jquery-ui.js') }}"></script>
+
+{% block loaders %}{% endblock %}
+
 <nav>
 	<ul class="mainMenuList">
 		<li class="mainMenuListItem" onclick="location.href='/home';">{{ langData.home }}</li>
@@ -24,8 +27,13 @@
 <section class="page">
 	<header>
 		<div class="pageTitle">
-			{% block header %}{% endblock %}
+			{% block pageTitle %}{% endblock %}
 		</div>
+		{% if updateChannel != 'master' %}
+			<div class="updateChannelMarker">
+				{{ updateChannel }}
+			</div>
+		{% endif %}
 	</header>
 	<section class="content">
 		{% block content %}{% endblock %}

@@ -11,4 +11,7 @@ class DevModeView(View):
 
 
 	def index(self):
-		return render_template('devmode.html', langData=self._langData, devMode=self.ConfigManager.getAliceConfigByName('webInterfaceDevMode'))
+		return render_template('devmode.html',
+		                       langData=self._langData,
+		                       devMode=self.ConfigManager.getAliceConfigByName('webInterfaceDevMode'),
+		                       updateChannel=self.ConfigManager.getAliceConfigByName('updateChannel'))

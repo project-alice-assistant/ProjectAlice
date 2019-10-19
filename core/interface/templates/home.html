@@ -1,6 +1,10 @@
 {% extends 'base.html' %}
 
-{% block header %}
+{% block title %}
+	{{ langData.home }}
+{% endblock %}
+
+{% block loaders %}
 	<script src="{{ url_for('static', filename='js/widgets.js') }}"></script>
 
 	{% for widgetList in widgets.values() %}
@@ -10,8 +14,10 @@
 			<link rel="stylesheet" href="{{ url_for('IndexView:widget_static', filename=widget.parent + '/css/' + widget.name + '.css') }}">
 		{% endfor %}
 	{% endfor %}
+{% endblock %}
 
-	{% block title %}{{ langData.home }}{% endblock %}
+{% block pageTitle %}
+	{{ langData.home }}
 {% endblock %}
 
 {% block content %}
