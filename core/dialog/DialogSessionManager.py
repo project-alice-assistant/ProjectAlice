@@ -3,7 +3,7 @@ from typing import Dict, Optional
 from paho.mqtt.client import MQTTMessage
 
 from core.base.model.Manager import Manager
-from core.commons import Commons, constants
+from core.commons import constants
 from core.dialog.model.DialogSession import DialogSession
 
 

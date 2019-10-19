@@ -1,7 +1,7 @@
 from paho.mqtt.client import MQTTMessage
 
 from core.base.model.Manager import Manager
-from core.commons import Commons, constants
+from core.commons import constants
 from core.dialog.model import DialogSession
 from core.dialog.model.MultiIntent import MultiIntent
 

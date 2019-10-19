@@ -42,7 +42,7 @@ class Widget(Logger):
 		except FileNotFoundError:
 			self.logWarning(f'Missing language file for widget {self.name}')
 			return None
-		except Exception as e:
+		except Exception:
 			self.logWarning(f"Coulnd't import language file for widget {self.name}")
 			return None
 

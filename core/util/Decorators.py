@@ -9,6 +9,7 @@ from core.dialog.model.DialogSession import DialogSession
 
 
 class Decorators:
+
 	@classmethod
 	def deprecated(cls, func):
 		"""

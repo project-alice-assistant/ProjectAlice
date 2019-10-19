@@ -27,6 +27,7 @@ class SuperManager(object):
 
 		self.projectAlice              = mainClass
 		self.commons                   = None
+		self.commonsManager            = None
 		self.configManager             = None
 		self.databaseManager           = None
 		self.languageManager           = None
@@ -52,7 +53,7 @@ class SuperManager(object):
 
 
 	def onStart(self):
-		commons = self._managers.pop('Commons')
+		commons = self._managers.pop('CommonsManager')
 		commons.onStart()
 
 		configManager = self._managers.pop('ConfigManager')
@@ -109,7 +110,7 @@ class SuperManager(object):
 
 
 	def initManagers(self):
-		from core.commons.Commons               import Commons
+		from core.commons.CommonsManager        import CommonsManager
 		from core.base.ConfigManager            import ConfigManager
 		from core.base.ModuleManager            import ModuleManager
 		from core.device.DeviceManager          import DeviceManager
@@ -133,7 +134,8 @@ class SuperManager(object):
 		from core.voice.WakewordManager         import WakewordManager
 		from core.interface.WebInterfaceManager import WebInterfaceManager
 
-		self.commons                    = Commons()
+		self.commons                    = CommonsManager()
+		self.commonsManager             = self.commons
 		self.configManager              = ConfigManager()
 		self.databaseManager            = DatabaseManager()
 		self.languageManager            = LanguageManager()

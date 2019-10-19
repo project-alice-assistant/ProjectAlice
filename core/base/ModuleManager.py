@@ -307,7 +307,7 @@ class ModuleManager(Manager):
 			except AttributeError as e:
 				if not silent:
 					self.logWarning(f'Method "{method}" not found for module "{moduleItem["instance"].name}": {e}')
-			except TypeError as e:
+			except TypeError:
 				# Do nothing, it's most prolly kwargs
 				pass
 

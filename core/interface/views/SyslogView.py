@@ -2,17 +2,16 @@ from pathlib import Path
 
 from flask import jsonify, render_template
 
-from core.commons import Commons
 from core.interface.views.View import View
 
 
 class SyslogView(View):
-	LOGS = Path(self.Commons.rootDir(), 'var', 'logs', 'logs.log')
 
 
 	def __init__(self):
 		super().__init__()
 		self._counter = 0
+		self._logs = Path(self.Commons.rootDir(), 'var', 'logs', 'logs.log')
 
 
 	def index(self):
@@ -29,7 +28,7 @@ class SyslogView(View):
 
 
 	def _getData(self) -> list:
-		data = self.LOGS.open('r').readlines()
+		data = self._logs.open('r').readlines()
 		ret = data[self._counter:]
 		self._counter = len(data)
 		return ['] -'.join(line.split('] -')[2:]) for line in ret]

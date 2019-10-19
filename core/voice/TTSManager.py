@@ -1,7 +1,7 @@
 from pathlib import Path
 
 from core.base.model.Manager import Manager
-from core.commons import Commons, constants
+from core.commons import constants
 from core.dialog.model.DialogSession import DialogSession
 from core.user.model.User import User
 from core.voice.model.PicoTTS import PicoTTS
@@ -12,13 +12,12 @@ from core.voice.model.TTSEnum import TTSEnum
 class TTSManager(Manager):
 	NAME = 'TTSManager'
 
-	CACHE_ROOT = Path(self.Commons.rootDir(), 'var/cache')
-
 	def __init__(self):
 		super().__init__(self.NAME)
 
 		self._fallback = None
 		self._tts = None
+		self._cacheRoot = Path(self.Commons.rootDir(), 'var/cache')
 
 
 	def onStart(self):
@@ -70,6 +69,11 @@ class TTSManager(Manager):
 	@property
 	def tts(self) -> TTS:
 		return self._tts
+
+
+	@property
+	def cacheRoot(self) -> Path:
+		return self._cacheRoot
 
 
 	def onInternetLost(self):

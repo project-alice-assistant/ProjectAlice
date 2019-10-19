@@ -45,6 +45,7 @@ class ASRManager(Manager):
 				self.logInfo(f'Connected to internet, switching ASR')
 				self.SnipsServicesManager.runCmd('stop', ['snips-asr'])
 				if asr == 'google':
+					# noinspection PyUnresolvedReferences
 					self._asr = GoogleASR()
 				self.ThreadManager.doLater(interval=3, func=self.MqttManager.say, args=[self.TalkManager.randomTalk('internetBack', 'AliceCore'), 'all'])
 

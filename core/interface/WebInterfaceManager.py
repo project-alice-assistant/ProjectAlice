@@ -6,7 +6,6 @@ from pathlib import Path
 from flask import Flask, send_from_directory
 
 from core.base.model.Manager import Manager
-from core.commons import Commons
 from core.interface.views.AdminView import AdminView
 from core.interface.views.IndexView import IndexView
 from core.interface.views.ModulesView import ModulesView

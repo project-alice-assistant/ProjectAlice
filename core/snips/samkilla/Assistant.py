@@ -122,7 +122,7 @@ class Assistant:
 		return response['forkAssistantSkill']['copiedBundleId']
 
 	@staticmethod
-	def trainAssistant(assistantId: str) -> bool:
+	def trainAssistant(_assistantId: str) -> bool:
 		# gqlRequest = [{
 		# 	'operationName': 'TrainAssistantV2',
 		# 	'variables': {'assistantId': assistantId},

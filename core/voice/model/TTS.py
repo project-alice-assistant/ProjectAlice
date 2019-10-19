@@ -7,7 +7,7 @@ from typing import Optional
 from pydub import AudioSegment
 
 from core.base.SuperManager import SuperManager
-from core.commons import Commons, constants
+from core.commons import constants
 from core.dialog.model.DialogSession import DialogSession
 from core.user.model.User import User
 from core.util.model.Logger import Logger
@@ -81,12 +81,12 @@ class TTS(Logger):
 
 		if self.TTS == TTSEnum.SNIPS:
 			voiceFile = f'cmu_{SuperManager.getInstance().languageManager.activeCountryCode.lower()}_{self._voice}'
-			if not Path(Commons.rootDir(), 'system/voices', voiceFile).exists():
+			if not Path(SuperManager.getInstance().commons.rootDir(), 'system/voices', voiceFile).exists():
 				self.logInfo(f'Using "{self.TTS.value}" as TTS with voice "{self._voice}" but voice file not found. Downloading...')
 
 				process = subprocess.run([
 					'wget', f'https://github.com/MycroftAI/mimic1/blob/development/voices/{voiceFile}.flitevox?raw=true',
-					'-O', Path(Commons.rootDir(), f'var/voices/{voiceFile}.flitevox')
+					'-O', Path(SuperManager.getInstance().commons.rootDir(), f'var/voices/{voiceFile}.flitevox')
 				],
 				stdout=subprocess.PIPE)
 
@@ -96,7 +96,7 @@ class TTS(Logger):
 
 
 	def cacheDirectory(self) -> Path:
-		return Path(SuperManager.getInstance().TTSManager.CACHE_ROOT, self.TTS.value, self._lang, self._type, self._voice)
+		return Path(SuperManager.getInstance().TTSManager.cacheRoot, self.TTS.value, self._lang, self._type, self._voice)
 
 
 	@property

@@ -7,19 +7,18 @@ from contextlib import contextmanager
 from ctypes import *
 from datetime import datetime
 from pathlib import Path
-from typing import Union, Callable
+from typing import Union
 
 from paho.mqtt.client import MQTTMessage
 from googletrans import Translator
 
 import core.commons.model.Slot as slotModel
 from core.base.model.Manager import Manager
-from core.base.model.Module import Module
 from core.commons import constants
 from core.commons.model.PartOfDay import PartOfDay
 from core.dialog.model.DialogSession import DialogSession
 
-class Commons(Manager):
+class CommonsManager(Manager):
 
 	ERROR_HANDLER_FUNC = CFUNCTYPE(None, c_char_p, c_int, c_char_p, c_int, c_char_p)
 	
@@ -289,4 +288,4 @@ class Commons(Manager):
 def py_error_handler(filename, line, function, err, fmt):
 	pass
 
-c_error_handler = Commons.ERROR_HANDLER_FUNC(py_error_handler)
+c_error_handler = CommonsManager.ERROR_HANDLER_FUNC(py_error_handler)

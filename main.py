@@ -32,7 +32,7 @@ _logger.setLevel(logging.INFO)
 
 date = int(datetime.now().strftime('%Y%m%d'))
 
-logsMountpoint = Path(Path(__file__).resolve().parent.parent.parent, 'var', 'logs')
+logsMountpoint = Path(Path(__file__).resolve().parent, 'var', 'logs')
 
 handler = logging.FileHandler(filename=f'{logsMountpoint}/logs.log', mode='w')
 rotatingHandler = logging.handlers.RotatingFileHandler(filename=f'{logsMountpoint}/{date}-logs.log', mode='a', maxBytes = 100000, backupCount = 20)

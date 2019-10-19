@@ -46,7 +46,7 @@ network={
 		super().__init__()
 		self.logInfo('Starting Project Alice initializer')
 
-		self._rootDir = Path(__file__).resolve().parent.parent.parent
+		self._rootDir = Path(__file__).resolve().parent.parent
 
 		self._confsFile = Path(self._rootDir, 'config.py')
 		self._confsSample = Path(self._rootDir, 'configSample.py')
