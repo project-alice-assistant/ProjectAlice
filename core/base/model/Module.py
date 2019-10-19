@@ -23,7 +23,7 @@ from core.util.model.Logger import Logger
 class Module(Logger):
 
 	def __init__(self, supportedIntents: Iterable, authOnlyIntents: dict = None, databaseSchema: dict = None):
-		super().__init__(depth=6)
+		super().__init__(depth=3)
 		try:
 			path = Path(inspect.getfile(self.__class__)).with_suffix('.install')
 			self._install = json.loads(path.read_text())
