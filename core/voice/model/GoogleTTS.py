@@ -4,7 +4,7 @@ from pathlib import Path
 
 from google.oauth2.service_account import Credentials
 
-from core.commons import commons
+from core.commons import Commons
 from core.dialog.model.DialogSession import DialogSession
 from core.user.model.User import User
 from core.voice.model.TTS import TTS
@@ -25,7 +25,7 @@ class GoogleTTS(TTS):
 		self._privacyMalus = -20
 
 
-		creds = Credentials.from_service_account_file(filename=Path(commons.rootDir(), 'credentials/googlecredentials.json'))
+		creds = Credentials.from_service_account_file(filename=Path(Commons.rootDir(), 'credentials/googlecredentials.json'))
 		self._client = texttospeech.TextToSpeechClient(credentials=creds)
 
 		# TODO implement the others

@@ -3,7 +3,7 @@ from typing import Dict, Optional
 from paho.mqtt.client import MQTTMessage
 
 from core.base.model.Manager import Manager
-from core.commons import commons, constants
+from core.commons import Commons, constants
 from core.dialog.model.DialogSession import DialogSession
 
 
@@ -52,7 +52,7 @@ class DialogSessionManager(Manager):
 		:param sessionId: str
 		:param message: dict
 		"""
-		siteId = commons.parseSiteId(message)
+		siteId = Commons.parseSiteId(message)
 		session = self._preSessions.pop(siteId, DialogSession(siteId))
 
 		session.extend(message, sessionId)

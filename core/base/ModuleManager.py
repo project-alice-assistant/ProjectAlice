@@ -14,7 +14,7 @@ from core.base.model import Intent
 from core.base.model.GithubCloner import GithubCloner
 from core.base.model.Manager import Manager
 from core.base.model.Module import Module
-from core.commons import commons, constants
+from core.commons import Commons, constants
 
 #Special case, must be called as last!
 try:
@@ -156,7 +156,7 @@ class ModuleManager(Manager):
 				self.checkModuleConditions(moduleName, module['conditions'], availableModules)
 
 				if ' ' in moduleName:
-					name = commons.toCamelCase(moduleName)
+					name = Commons.toCamelCase(moduleName)
 				else:
 					name = moduleName
 
@@ -380,7 +380,7 @@ class ModuleManager(Manager):
 						elif moduleName in self._deactivatedModules:
 							self._deactivatedModules[moduleName]['instance'].updateAvailable = True
 					else:
-						moduleFile = Path(commons.rootDir(), 'system/moduleInstallTickets', moduleName + '.install')
+						moduleFile = Path(Commons.rootDir(), 'system/moduleInstallTickets', moduleName + '.install')
 						moduleFile.write_text(json.dumps(remoteFile))
 
 			except Exception as e:
@@ -392,7 +392,7 @@ class ModuleManager(Manager):
 	def _checkForModuleInstall(self):
 		self.ThreadManager.newTimer(interval=10, func=self._checkForModuleInstall, autoStart=True)
 
-		root = Path(commons.rootDir(), 'system/moduleInstallTickets')
+		root = Path(Commons.rootDir(), 'system/moduleInstallTickets')
 		files = [f for f in root.iterdir() if f.suffix == '.install']
 
 		if  self._busyInstalling.isSet() or \
@@ -430,7 +430,7 @@ class ModuleManager(Manager):
 
 
 	def _installModules(self, modules: list) -> dict:
-		root = Path(commons.rootDir(), 'system/moduleInstallTickets')
+		root = Path(Commons.rootDir(), 'system/moduleInstallTickets')
 		availableModules = self.ConfigManager.modulesConfigurations
 		modulesToBoot = dict()
 		self.MqttManager.broadcast(topic='hermes/leds/systemUpdate', payload={'sticky': True})
@@ -452,7 +452,7 @@ class ModuleManager(Manager):
 					self.logError('Module name to install not found, aborting to avoid casualties!')
 					continue
 
-				directory = Path(commons.rootDir()) / 'modules' / moduleName
+				directory = Path(Commons.rootDir()) / 'modules' / moduleName
 
 				conditions = {
 					'aliceMinVersion': installFile['aliceMinVersion']
@@ -581,7 +581,7 @@ class ModuleManager(Manager):
 						raise ModuleNotConditionCompliant(message='Module is not compliant', moduleName=moduleName, condition=conditionName, conditionValue=conditionValue)
 					elif requiredModule['name'] not in availableModules:
 						self.logInfo(f'Module {moduleName} has another module as dependency, adding download')
-						subprocess.run(['wget', requiredModule['url'], '-O', Path(commons.rootDir(), f"system/moduleInstallTickets/{requiredModule['name']}.install")])
+						subprocess.run(['wget', requiredModule['url'], '-O', Path(Commons.rootDir(), f"system/moduleInstallTickets/{requiredModule['name']}.install")])
 
 			elif conditionName == 'notModule':
 				for excludedModule in conditionValue:
@@ -641,6 +641,6 @@ class ModuleManager(Manager):
 			self.ConfigManager.removeModule(moduleName)
 			del self._modules[moduleName]
 
-		shutil.rmtree(Path(commons.rootDir(), 'modules', moduleName))
+		shutil.rmtree(Path(Commons.rootDir(), 'modules', moduleName))
 		# TODO Samkilla cleaning
 		self.SnipsConsoleManager.doDownload()

@@ -4,7 +4,7 @@ from typing import Optional
 from paho.mqtt.client import MQTTMessage
 
 from core.base.SuperManager import SuperManager
-from core.commons import commons
+from core.commons import Commons
 from core.commons.model.Singleton import Singleton
 from core.dialog.model.DialogSession import DialogSession
 
@@ -37,7 +37,7 @@ class Manager(Singleton):
 
 	def getFunctionCaller(self) -> Optional[str]:
 		try:
-			return commons.getFunctionCaller()
+			return Commons.getFunctionCaller()
 		except Exception as e:
 			self.logError(f'Something went wrong retrieving function caller: {e}')
 			return None

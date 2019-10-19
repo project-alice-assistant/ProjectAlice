@@ -1,26 +1,26 @@
-from core.commons import commons
+from core.commons import Commons
 
 def test_getFunctionCaller():
-    assert commons.getFunctionCaller(1) == 'test_commons'
+    assert Commons.getFunctionCaller(1) == 'test_commons'
 
 def test_toPascalCase():
     """Test whether string gets correctly converted to pascal case"""
-    assert commons.toPascalCase('example string') == 'ExampleString'
-    assert commons.toPascalCase('Example-string_2', replaceSepCharacters=True) == 'ExampleString2'
-    assert commons.toPascalCase('Example+string/2', replaceSepCharacters=True, sepCharacters=('+', '/')) == 'ExampleString2'
+    assert Commons.toPascalCase('example string') == 'ExampleString'
+    assert Commons.toPascalCase('Example-string_2', replaceSepCharacters=True) == 'ExampleString2'
+    assert Commons.toPascalCase('Example+string/2', replaceSepCharacters=True, sepCharacters=('+', '/')) == 'ExampleString2'
 
 def test_toCamelCase():
     """Test whether string gets correctly converted to camel case"""
-    assert commons.toCamelCase('example string') == 'exampleString'
-    assert commons.toCamelCase('Example-string_2', replaceSepCharacters=True) == 'exampleString2'
-    assert commons.toCamelCase('Example+string/2', replaceSepCharacters=True, sepCharacters=('+', '/')) == 'exampleString2'
+    assert Commons.toCamelCase('example string') == 'exampleString'
+    assert Commons.toCamelCase('Example-string_2', replaceSepCharacters=True) == 'exampleString2'
+    assert Commons.toCamelCase('Example+string/2', replaceSepCharacters=True, sepCharacters=('+', '/')) == 'exampleString2'
 
 
 def test_isSpelledWord():
     """Test whether string is spelled"""
-    assert commons.isSpelledWord('e x a m p l e') == True
-    assert commons.isSpelledWord('example') == False
-    assert commons.isSpelledWord('e x am p l e') == False
+    assert Commons.isSpelledWord('e x a m p l e') == True
+    assert Commons.isSpelledWord('example') == False
+    assert Commons.isSpelledWord('e x am p l e') == False
 
 
 def test_getDuration():
@@ -52,6 +52,6 @@ def test_getDuration():
 		'weeks': 2,
 		'months': 1
     }
-    assert commons.getDuration(DialogSession({'Duration': [TimeObject(timeDict)]})) == 3902706
-    assert commons.getDuration(DialogSession({'Duration': [TimeObject(timeDict, 'customDurationIntent')]})) == 0
-    assert commons.getDuration(DialogSession(dict())) == 0
+    assert Commons.getDuration(DialogSession({'Duration': [TimeObject(timeDict)]})) == 3902706
+    assert Commons.getDuration(DialogSession({'Duration': [TimeObject(timeDict, 'customDurationIntent')]})) == 0
+    assert Commons.getDuration(DialogSession(dict())) == 0

@@ -7,7 +7,7 @@ import tempfile
 
 from core.base.SuperManager import SuperManager
 from core.base.model.Manager import Manager
-from core.commons import commons
+from core.commons import Commons
 from core.snips.model.SnipsConsoleUser import SnipsConsoleUser
 from core.snips.model.SnipsTrainingStatus import SnipsTrainingType, TrainingStatusResponse
 
@@ -47,7 +47,7 @@ class SnipsConsoleManager(Manager):
 			self._login()
 		else:
 			self.logWarning('Snips console credentials not found')
-			if not Path(commons.rootDir(), '/assistant').exists():
+			if not Path(Commons.rootDir(), '/assistant').exists():
 				self.logError('No assistant found, cannot start')
 				SuperManager.getInstance().projectAlice.onStop()
 			else:

@@ -14,7 +14,7 @@ from paho.mqtt.client import MQTTMessage
 from core.ProjectAliceExceptions import AccessLevelTooLow, ModuleStartingFailed
 from core.base.SuperManager import SuperManager
 from core.base.model.Intent import Intent
-from core.commons import commons, constants
+from core.commons import Commons, constants
 from core.dialog.model.DialogSession import DialogSession
 from core.user.model.AccessLevels import AccessLevel
 from core.util.model.Logger import Logger
@@ -289,7 +289,7 @@ class Module(Logger):
 
 
 	def getResource(self, moduleName: str = '', resourcePathFile: str = '') -> str:
-		return str(Path(commons.rootDir(), 'modules', moduleName or self.name, resourcePathFile))
+		return str(Path(Commons.rootDir(), 'modules', moduleName or self.name, resourcePathFile))
 
 
 	def _initDB(self) -> bool:

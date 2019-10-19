@@ -1,7 +1,7 @@
 from paho.mqtt.client import MQTTMessage
 
 from core.base.model.Manager import Manager
-from core.commons import commons, constants
+from core.commons import Commons, constants
 from core.dialog.model import DialogSession
 from core.dialog.model.MultiIntent import MultiIntent
 
@@ -21,7 +21,7 @@ class MultiIntentManager(Manager):
 
 
 	def processMessage(self, message: MQTTMessage) -> bool:
-		sessionId = commons.parseSessionId(message)
+		sessionId = Commons.parseSessionId(message)
 		session = self.DialogSessionManager.getSession(sessionId)
 		if not session or self.isProcessing(sessionId):
 			return False

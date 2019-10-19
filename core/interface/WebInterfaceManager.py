@@ -6,7 +6,7 @@ from pathlib import Path
 from flask import Flask, send_from_directory
 
 from core.base.model.Manager import Manager
-from core.commons import commons
+from core.commons import Commons
 from core.interface.views.AdminView import AdminView
 from core.interface.views.IndexView import IndexView
 from core.interface.views.ModulesView import ModulesView
@@ -45,11 +45,11 @@ class WebInterfaceManager(Manager):
 		if not self.ConfigManager.getAliceConfigByName('webInterfaceActive'):
 			self.logInfo(f'Web interface is disabled by settings')
 		else:
-			langFile = Path(commons.rootDir(), f'core/interface/languages/{self.LanguageManager.activeLanguage.lower()}.json')
+			langFile = Path(Commons.rootDir(), f'core/interface/languages/{self.LanguageManager.activeLanguage.lower()}.json')
 
 			if not langFile.exists():
 				self.logWarning(f'Lang "{self.LanguageManager.activeLanguage.lower()}" not found, falling back to "en"')
-				langFile = Path(commons.rootDir(), 'core/interface/languages/en.json')
+				langFile = Path(Commons.rootDir(), 'core/interface/languages/en.json')
 			else:
 				self.logInfo(f'Loaded interface in "{self.LanguageManager.activeLanguage.lower()}"')
 
@@ -65,7 +65,7 @@ class WebInterfaceManager(Manager):
 				kwargs={
 					'debug': True,
 					'port': int(self.ConfigManager.getAliceConfigByName('webInterfacePort')),
-					'host': commons.getLocalIp(),
+					'host': Commons.getLocalIp(),
 					'use_reloader': False
 				}
 			)

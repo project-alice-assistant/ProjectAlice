@@ -2,12 +2,12 @@ from pathlib import Path
 
 from flask import jsonify, render_template
 
-from core.commons import commons
+from core.commons import Commons
 from core.interface.views.View import View
 
 
 class SyslogView(View):
-	LOGS = Path(commons.rootDir(), 'var', 'logs', 'logs.log')
+	LOGS = Path(Commons.rootDir(), 'var', 'logs', 'logs.log')
 
 
 	def __init__(self):

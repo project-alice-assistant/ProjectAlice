@@ -1,5 +1,5 @@
 from core.base.SuperManager import SuperManager
-from core.commons import commons
+from core.commons import Commons
 from core.util.model.Logger import Logger
 
 
@@ -29,7 +29,7 @@ class TasmotaConfigs(Logger):
 			group = dict()
 			group['cmds'] = list()
 			for cmd in cmdGroup['cmds']:
-				cmd = cmd.replace('{mqtthost}', commons.getLocalIp()).replace('{identifier}', self._uid).replace('{room}', room).replace('{uid}', self._uid).replace('{type}', self._deviceType).replace('{ssid}', SuperManager.getInstance().configManager.getAliceConfigByName('ssid')).replace('{wifipass}', SuperManager.getInstance().configManager.getAliceConfigByName('wifipassword'))
+				cmd = cmd.replace('{mqtthost}', Commons.getLocalIp()).replace('{identifier}', self._uid).replace('{room}', room).replace('{uid}', self._uid).replace('{type}', self._deviceType).replace('{ssid}', SuperManager.getInstance().configManager.getAliceConfigByName('ssid')).replace('{wifipass}', SuperManager.getInstance().configManager.getAliceConfigByName('wifipassword'))
 				group['cmds'].append(cmd)
 			group['waitAfter'] = cmdGroup['waitAfter']
 			cmds.append(group)

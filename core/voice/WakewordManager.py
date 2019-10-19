@@ -10,7 +10,7 @@ import paho.mqtt.client as mqtt
 from pydub import AudioSegment
 
 from core.base.model.Manager import Manager
-from core.commons import commons, constants
+from core.commons import Commons, constants
 from core.dialog.model.DialogSession import DialogSession
 from core.voice.model.Wakeword import Wakeword
 from core.voice.model.WakewordUploadThread import WakewordUploadThread
@@ -226,7 +226,7 @@ class WakewordManager(Manager):
 			'model_version'          : 1
 		}
 
-		path = Path(commons.rootDir(), 'trained/hotwords', self.wakeword.username.lower())
+		path = Path(Commons.rootDir(), 'trained/hotwords', self.wakeword.username.lower())
 
 		if path.exists():
 			self.logWarning(f'Destination directory for new wakeword already exists, deleting')
@@ -262,14 +262,14 @@ class WakewordManager(Manager):
 				addHeySnips = False
 
 		if addHeySnips:
-			models.append(str(Path(commons.rootDir(), 'trained/hotwords/snips_hotword=0.53')))
+			models.append(str(Path(Commons.rootDir(), 'trained/hotwords/snips_hotword=0.53')))
 
 		models.append(f'{str(path)}=0.52')
 		self.ConfigManager.updateSnipsConfiguration('snips-hotword', 'model', models, restartSnips=True)
 
 
 	def uploadToNewDevice(self, uid: str):
-		directory = Path(commons.rootDir(), 'trained/hotwords')
+		directory = Path(Commons.rootDir(), 'trained/hotwords')
 		for fiile in directory:
 			if (directory/fiile).is_file():
 				continue
@@ -285,7 +285,7 @@ class WakewordManager(Manager):
 			port = 8080 + len(self._wakewordUploadThreads)
 
 			payload = {
-				'ip': commons.getLocalIp(),
+				'ip': Commons.getLocalIp(),
 				'port': port,
 				'name': wakewordName
 			}
@@ -294,7 +294,7 @@ class WakewordManager(Manager):
 				payload['uid'] = uid
 
 			self.MqttManager.publish(topic='projectalice/devices/alice/newhotword', payload=payload)
-			thread = WakewordUploadThread(host=commons.getLocalIp(), zipPath=zipPath, port=port)
+			thread = WakewordUploadThread(host=Commons.getLocalIp(), zipPath=zipPath, port=port)
 			self._wakewordUploadThreads.append(thread)
 			thread.start()
 

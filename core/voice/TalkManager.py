@@ -3,7 +3,7 @@ import random
 from pathlib import Path
 
 from core.base.model.Manager import Manager
-from core.commons import commons
+from core.commons import Commons
 
 
 class TalkManager(Manager):
@@ -58,7 +58,7 @@ class TalkManager(Manager):
 	def getTexts(self, module, talk, strType='default') -> list:
 		arr = list()
 		try:
-			module = commons.toCamelCase(module)
+			module = Commons.toCamelCase(module)
 			arr = self._langData[module][self.LanguageManager.activeLanguage][talk][strType]
 		except KeyError:
 			self.logWarning(f'Was asked to return unexisting texts {talk} for module {module} with type {strType}')

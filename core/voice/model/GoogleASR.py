@@ -5,7 +5,7 @@ from google.cloud import speech
 from google.cloud.speech import enums, types
 
 from core.base.SuperManager import SuperManager
-from core.commons import commons
+from core.commons import Commons
 from core.voice.model.ASR import ASR
 from core.voice.model.MicrophoneStream import MicrophoneStream
 
@@ -15,7 +15,7 @@ class GoogleASR(ASR):
 	def __init__(self):
 		super().__init__()
 
-		os.environ['GOOGLE_APPLICATION_CREDENTIALS'] = str(Path(commons.rootDir(), 'credentials/googlecredentials.json'))
+		os.environ['GOOGLE_APPLICATION_CREDENTIALS'] = str(Path(Commons.rootDir(), 'credentials/googlecredentials.json'))
 
 		self._client = speech.SpeechClient()
 		self._config = types.RecognitionConfig(

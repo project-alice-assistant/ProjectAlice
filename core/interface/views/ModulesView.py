@@ -5,7 +5,7 @@ from flask import render_template, request, jsonify
 from flask_classful import route
 
 from core.base.SuperManager import SuperManager
-from core.commons import commons
+from core.commons import Commons
 from core.interface.views.View import View
 
 
@@ -83,7 +83,7 @@ class ModulesView(View):
 			module = request.form.get('module')
 			self.WebInterfaceManager.newModuleInstallProcess(module)
 			subprocess.run(['wget', f'http://modules.projectalice.ch/{module}', '-O', f'{module}.install'])
-			subprocess.run(['mv', f'{module}.install', f'{commons.rootDir()}/system/moduleInstallTickets/{module}.install'])
+			subprocess.run(['mv', f'{module}.install', f'{Commons.rootDir()}/system/moduleInstallTickets/{module}.install'])
 			return jsonify(success=True)
 		except Exception as e:
 			self.logWarning(f'Failed installing module: {e}')
