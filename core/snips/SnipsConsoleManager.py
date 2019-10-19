@@ -5,7 +5,9 @@ from pathlib import Path
 import requests
 import tempfile
 
+from core.base.SuperManager import SuperManager
 from core.base.model.Manager import Manager
+from core.commons import commons
 from core.snips.model.SnipsConsoleUser import SnipsConsoleUser
 from core.snips.model.SnipsTrainingStatus import SnipsTrainingType, TrainingStatusResponse
 
@@ -45,7 +47,12 @@ class SnipsConsoleManager(Manager):
 			self._login()
 		else:
 			self.logWarning('Snips console credentials not found')
-			self.isActive = False
+			if not Path(commons.rootDir(), '/assistant').exists():
+				self.logError('No assistant found, cannot start')
+				SuperManager.getInstance().projectAlice.onStop()
+			else:
+				self.logWarning('Assistant is existing, allowing to boot but functions will be restricted!')
+				self.isActive = False
 
 
 	def doDownload(self, modulesInfos: dict = None):

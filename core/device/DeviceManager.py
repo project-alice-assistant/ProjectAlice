@@ -137,6 +137,10 @@ class DeviceManager(Manager):
 			return False
 
 
+	def addZigBeeDevice(self):
+		pass
+
+
 	def startTasmotaFlashingProcess(self, room: str, espType: str, session: DialogSession) -> bool:
 		self.ThreadManager.doLater(interval=0.5, func=self.MqttManager.endDialog, args=[session.sessionId, self.TalkManager.randomTalk('connectESPForFlashing', module='AliceCore')])
 
