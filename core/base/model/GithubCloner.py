@@ -26,7 +26,7 @@ class GithubCloner(Logger):
 			self._dest.mkdir(parents=True)
 
 		try:
-			return self._doClone(f'https://api.github.com/{self._baseUrl}/{self._path}')
+			return self._doClone(f'https://api.github.com/{self._baseUrl}/{self._path}?ref={SuperManager.getInstance().configManager.getAliceConfigByName("updateChannel")}')
 		except:
 			return False
 
@@ -52,7 +52,8 @@ class GithubCloner(Logger):
 				if item['type'] == 'file':
 					if path.suffix == '.install':
 						continue
-					fileStream = requests.get(item['download_url'], auth=auth)
+
+					fileStream = requests.get(url=item['download_url'], auth=auth)
 					Path(self._dest / path).write_bytes(fileStream.content)
 				else:
 					Path(self._dest / path).mkdir(parents=True)

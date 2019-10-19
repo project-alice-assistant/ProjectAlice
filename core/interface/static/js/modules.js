@@ -75,7 +75,7 @@ $(function () {
 					$.ajax({
 						type: 'GET',
 						dataType: 'JSON',
-						url: searchResult['url'],
+						url: searchResult['url'] + '&ref=' + updateChannel,
 						headers: {
 							'accept': 'application/vnd.github.VERSION.raw'
 						}

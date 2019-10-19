@@ -34,6 +34,7 @@ settings = {
 	"moduleAutoUpdate": False,
 	"githubUsername": "",
 	"githubToken": "",
+	"updateChannel": "master",
 	"supportedLanguages": {
 		"en": {
 			"snipsProjectId" : "",

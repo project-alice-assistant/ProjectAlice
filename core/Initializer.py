@@ -50,7 +50,7 @@ network={
 		self._confsFile = Path(commons.rootDir(), 'config.py')
 		self._confsSample = Path(commons.rootDir(), 'configSample.py')
 		self._initFile = Path('/boot/ProjectAlice.yaml')
-		self._latest = 1.05
+		self._latest = 1.06
 
 
 	def initProjectAlice(self) -> bool:
@@ -212,6 +212,7 @@ network={
 		confs['githubUsername'] = initConfs['githubUsername']
 		confs['githubToken'] = initConfs['githubToken']
 		confs['ttsLanguage'] = initConfs['ttsLanguage']
+		confs['updateChannel'] = initConfs['updateChannel']
 
 		if initConfs['snipsProjectId'] and confs['activeLanguage'] in confs['supportedLanguages']:
 			confs['supportedLanguages'][confs['activeLanguage']]['snipsProjectId'] = initConfs['snipsProjectId']

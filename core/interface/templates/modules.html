@@ -1,6 +1,9 @@
 {% extends 'base.html' %}
 
 {% block header %}
+	<script type="text/javascript">
+		updateChannel = {{ updateChannel }};
+	</script>
 	<script src="{{ url_for('static', filename='js/modules.js') }}"></script>
 	{% block title %}{{ langData.modules }}{% endblock %}
 {% endblock %}

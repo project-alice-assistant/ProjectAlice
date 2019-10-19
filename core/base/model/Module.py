@@ -16,6 +16,7 @@ from core.base.SuperManager import SuperManager
 from core.base.model.Intent import Intent
 from core.commons import commons, constants
 from core.dialog.model.DialogSession import DialogSession
+from core.user.model.AccessLevels import AccessLevel
 from core.util.model.Logger import Logger
 
 
@@ -53,7 +54,7 @@ class Module(Logger):
 			elif isinstance(item, str):
 				self._supportedIntents[item] = (item, self.onMessage)
 
-		self._authOnlyIntents = {intent: level.value for intent, level in authOnlyIntents.items()} if authOnlyIntents else dict()
+		self._authOnlyIntents: Dict[Intent, AccessLevel] = {intent: level.value for intent, level in authOnlyIntents.items()} if authOnlyIntents else dict()
 		self._utteranceSlotCleaner = re.compile('{(.+?):=>.+?}')
 		self.loadWidgets()
 
