@@ -4,7 +4,7 @@ from core.commons import constants
 from core.util.model.Logger import Logger
 
 
-class SuperManager(object):
+class SuperManager(Logger):
 
 	NAME        = 'SuperManager'
 	_INSTANCE   = None
@@ -18,9 +18,7 @@ class SuperManager(object):
 
 
 	def __init__(self, mainClass):
-		super().__init__()
-
-		self._logger = Logger()
+		super().__init__(depth=3)
 
 		SuperManager._INSTANCE         = self
 		self._managers                 = dict()
@@ -32,8 +30,8 @@ class SuperManager(object):
 		self.databaseManager           = None
 		self.languageManager           = None
 		self.snipsServicesManager      = None
-		self.ASRManager                = None
-		self.TTSManager                = None
+		self.asrManager                = None
+		self.ttsManager                = None
 		self.protectedIntentManager    = None
 		self.threadManager             = None
 		self.mqttManager               = None
@@ -140,8 +138,8 @@ class SuperManager(object):
 		self.databaseManager            = DatabaseManager()
 		self.languageManager            = LanguageManager()
 		self.snipsServicesManager       = SnipsServicesManager()
-		self.ASRManager                 = ASRManager()
-		self.TTSManager                 = TTSManager()
+		self.asrManager                 = ASRManager()
+		self.ttsManager                 = TTSManager()
 		self.threadManager              = ThreadManager()
 		self.protectedIntentManager     = ProtectedIntentManager()
 		self.mqttManager                = MqttManager()
@@ -162,52 +160,19 @@ class SuperManager(object):
 		self._managers = {name[0].upper() + name[1:]: manager for name, manager in self.__dict__.items() if name.endswith('Manager')}
 
 
-	def broadcast(self, method, exceptions: list = None, manager = None, propagateToModules: bool = False, silent: bool = False, *args, **kwargs):
-		if not exceptions:
-			exceptions = list()
-
-		if not exceptions and not manager:
-			self._logger.logWarning('Cannot broadcast to itself, the calling method has to be put in exceptions')
-
-		if 'ProjectAlice' not in exceptions:
-			exceptions.append('ProjectAlice')
-
-		deadManagers = list()
-		for name in self._managers:
-			man = self._managers[name]
-
-			if not man:
-				deadManagers.append(name)
-				continue
-
-			if (manager and man.name != manager.name) or man.name in exceptions:
-				continue
-
-			try:
-				func = getattr(man, method)
-				func(*args, **kwargs)
-			except AttributeError as e:
-				if not silent:
-					self._logger.logWarning(f"Couldn't find method {method} in manager {man.name}: {e}")
-			except TypeError:
-				# Do nothing, it's most prolly kwargs
-				pass
-
-		if propagateToModules:
-			self.moduleManager.broadcast(method=method, silent=silent, *args, **kwargs)
-
-		for name in deadManagers:
-			del self._managers[name]
-
-
 	def onStop(self):
 		managerName = constants.UNKNOWN_MANAGER
 		try:
 			for managerName, manager in self._managers.items():
 				manager.onStop()
 		except Exception as e:
-			self._logger.logError(f'Error while shutting down manager "{managerName}": {e}')
+			self.logError(f'Error while shutting down manager "{managerName}": {e}')
 
 
 	def getManager(self, managerName: str):
 		return self._managers.get(managerName, None)
+
+
+	@property
+	def managers(self):
+		return self._managers

@@ -4,16 +4,15 @@ import requests
 import shutil
 
 from core.ProjectAliceExceptions import GithubRateLimit, GithubTokenFailed
-from core.base.SuperManager import SuperManager
-from core.util.model.Logger import Logger
+from core.base.model.ProjectAliceObject import ProjectAliceObject
 
 
-class GithubCloner(Logger):
+class GithubCloner(ProjectAliceObject):
 
 	NAME = 'GithubCloner'
 
-	def __init__(self, baseUrl: str, path: Path, dest: Path, *args, **kwargs):
-		super().__init__(*args, **kwargs)
+	def __init__(self, baseUrl: str, path: Path, dest: Path):
+		super().__init__(logDepth=3)
 		self._baseUrl = baseUrl
 		self._path = path
 		self._dest = dest
@@ -26,15 +25,15 @@ class GithubCloner(Logger):
 			self._dest.mkdir(parents=True)
 
 		try:
-			return self._doClone(f'https://api.github.com/{self._baseUrl}/{self._path}?ref={SuperManager.getInstance().configManager.getAliceConfigByName("updateChannel")}')
+			return self._doClone(f'https://api.github.com/{self._baseUrl}/{self._path}?ref={self.ConfigManager.getAliceConfigByName("updateChannel")}')
 		except:
 			return False
 
 
 	def _doClone(self, url: str) -> bool:
 		try:
-			username = SuperManager.getInstance().configManager.getAliceConfigByName('githubUsername')
-			token = SuperManager.getInstance().configManager.getAliceConfigByName('githubToken')
+			username = self.ConfigManager.getAliceConfigByName('githubUsername')
+			token = self.ConfigManager.getAliceConfigByName('githubToken')
 
 			auth = (username, token) if (username and token) else None
 

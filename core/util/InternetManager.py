@@ -1,6 +1,5 @@
 import requests
 
-from core.base.SuperManager import SuperManager
 from core.base.model.Manager import Manager
 
 
@@ -40,7 +39,7 @@ class InternetManager(Manager):
 			req = requests.get(addr)
 			if req.status_code == 204:
 				if not self._online:
-					SuperManager.getInstance().broadcast(method='onInternetConnected', exceptions=[self._name])
+					self.broadcast(method='onInternetConnected', exceptions=[self._name])
 
 				self._online = True
 				return
@@ -48,6 +47,6 @@ class InternetManager(Manager):
 			pass
 
 		if self._online:
-			SuperManager.getInstance().broadcast(method='onInternetLost', exceptions=[self._name])
+			self.broadcast(method='onInternetLost', exceptions=[self._name])
 
 		self._online = False

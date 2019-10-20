@@ -6,7 +6,6 @@ from zipfile import ZipFile
 
 import tempfile
 
-from core.base.SuperManager import SuperManager
 from core.base.model.Manager import Manager
 from core.commons import constants
 from core.voice.model.SnipsASR import SnipsASR
@@ -72,7 +71,7 @@ class SnipsServicesManager(Manager):
 			time.sleep(0.5)
 			self.onSnipsAssistantInstalled()
 
-			SuperManager.getInstance().broadcast(
+			self.broadcast(
 				method='onSnipsAssistantInstalled',
 				exceptions=[self.name],
 				propagateToModules=True,
@@ -80,7 +79,7 @@ class SnipsServicesManager(Manager):
 			)
 		except Exception as e:
 			self.logError(f'Failed installing Snips Assistant: {e}')
-			SuperManager.getInstance().broadcast(
+			self.broadcast(
 				method='onSnipsAssistantFailedInstalling',
 				exceptions=[constants.DUMMY],
 				propagateToModules=True,

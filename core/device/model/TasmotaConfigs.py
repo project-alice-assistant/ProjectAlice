@@ -1,8 +1,7 @@
-from core.base.SuperManager import SuperManager
-from core.util.model.Logger import Logger
+from core.base.model.ProjectAliceObject import ProjectAliceObject
 
 
-class TasmotaConfigs(Logger):
+class TasmotaConfigs(ProjectAliceObject):
 
 	def getConfigs(self, deviceBrand: str, room: str) -> list:
 		if deviceBrand not in self._configs:
@@ -28,7 +27,10 @@ class TasmotaConfigs(Logger):
 			group = dict()
 			group['cmds'] = list()
 			for cmd in cmdGroup['cmds']:
-				cmd = cmd.replace('{mqtthost}', SuperManager.getInstance().commons.getLocalIp()).replace('{identifier}', self._uid).replace('{room}', room).replace('{uid}', self._uid).replace('{type}', self._deviceType).replace('{ssid}', SuperManager.getInstance().configManager.getAliceConfigByName('ssid')).replace('{wifipass}', SuperManager.getInstance().configManager.getAliceConfigByName('wifipassword'))
+				cmd = cmd.replace('{mqtthost}', self.Commons.getLocalIp()).replace('{identifier}', self._uid)\
+					.replace('{room}', room).replace('{uid}', self._uid).replace('{type}', self._deviceType)\
+					.replace('{ssid}', self.ConfigManager.getAliceConfigByName('ssid'))\
+					.replace('{wifipass}', self.ConfigManager.getAliceConfigByName('wifipassword'))
 				group['cmds'].append(cmd)
 			group['waitAfter'] = cmdGroup['waitAfter']
 			cmds.append(group)

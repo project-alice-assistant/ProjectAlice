@@ -96,7 +96,7 @@ class TTS(Logger):
 
 
 	def cacheDirectory(self) -> Path:
-		return Path(SuperManager.getInstance().TTSManager.cacheRoot, self.TTS.value, self._lang, self._type, self._voice)
+		return Path(SuperManager.getInstance().ttsManager.cacheRoot, self.TTS.value, self._lang, self._type, self._voice)
 
 
 	@property

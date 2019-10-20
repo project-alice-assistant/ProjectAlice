@@ -1,12 +1,12 @@
 import typing
 from textwrap import dedent
 
-from core.util.model.Logger import Logger
+from core.base.model.ProjectAliceObject import ProjectAliceObject
 
 
-class User(Logger):
+class User(ProjectAliceObject):
 	def __init__(self, row: typing.Any):
-		super().__init__()
+		super().__init__(logDepth=3)
 
 		if row:
 			self._name 			= row['username']

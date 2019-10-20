@@ -1,16 +1,15 @@
 from typing import Callable, Dict
 
-from core.base.SuperManager import SuperManager
+from core.base.model.ProjectAliceObject import ProjectAliceObject
 from core.commons import constants
-from core.util.model.Logger import Logger
 
 
-class DialogMapping(Logger):
+class DialogMapping(ProjectAliceObject):
 
 	def __init__(self, mapping: Dict[str, Callable]):
 		super().__init__(depth=6)
 
-		caller = SuperManager.getInstance().commons.getFunctionCaller()
+		caller = self.Commons.getFunctionCaller()
 		self._mapping = {f'{caller}:{state}': func for state, func in mapping.items()}
 		self._state = constants.DEFAULT
 

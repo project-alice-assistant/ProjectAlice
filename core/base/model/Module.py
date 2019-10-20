@@ -9,21 +9,19 @@ from typing import Dict, Iterable, Callable, Any, Tuple, List
 from pathlib import Path
 
 from paho.mqtt import client as MQTTClient
-from paho.mqtt.client import MQTTMessage
 
 from core.ProjectAliceExceptions import AccessLevelTooLow, ModuleStartingFailed
-from core.base.SuperManager import SuperManager
 from core.base.model.Intent import Intent
+from core.base.model.ProjectAliceObject import ProjectAliceObject
 from core.commons import constants
 from core.dialog.model.DialogSession import DialogSession
 from core.user.model.AccessLevels import AccessLevel
-from core.util.model.Logger import Logger
 
 
-class Module(Logger):
+class Module(ProjectAliceObject):
 
 	def __init__(self, supportedIntents: Iterable, authOnlyIntents: dict = None, databaseSchema: dict = None):
-		super().__init__(depth=3)
+		super().__init__(logDepth=4)
 		try:
 			path = Path(inspect.getfile(self.__class__)).with_suffix('.install')
 			self._install = json.loads(path.read_text())
@@ -54,11 +52,12 @@ class Module(Logger):
 			elif isinstance(item, str):
 				self._supportedIntents[item] = (item, self.onMessage)
 
-		self._authOnlyIntents: Dict[Intent, AccessLevel] = {intent: level.value for intent, level in authOnlyIntents.items()} if authOnlyIntents else dict()
+		self._authOnlyIntents: Dict[str, AccessLevel] = {str(intent): level.value for intent, level in authOnlyIntents.items()} if authOnlyIntents else dict()
 		self._utteranceSlotCleaner = re.compile('{(.+?):=>.+?}')
 		self.loadWidgets()
 
 
+	# noinspection SqlResolve
 	def loadWidgets(self):
 		fp = Path(self.getCurrentDir(), 'widgets')
 		if fp.exists():
@@ -298,22 +297,6 @@ class Module(Logger):
 		return True
 
 
-	def onHotword(self, siteId: str): pass
-	def onSay(self, session: DialogSession): pass
-	def onSayFinished(self, session: DialogSession): pass
-	def onHotwordToggleOn(self, siteId: str): pass
-	def onUserCancel(self, session: DialogSession): pass
-	def onSessionTimeout(self, session: DialogSession): pass
-	def onSessionError(self, session: DialogSession): pass
-	def onSessionEnded(self, session: DialogSession): pass
-	def onSessionStarted(self, session: DialogSession): pass
-	def onSessionQueued(self, session: DialogSession): pass
-	def onIntentNotRecognized(self, session: DialogSession): pass
-	def onStartListening(self, session: DialogSession): pass
-	def onCaptured(self, session: DialogSession): pass
-	def onIntentParsed(self, session: DialogSession): pass
-
-
 	def onStart(self) -> dict:
 		if not self._active:
 			self.logInfo(f'Module {self.name} is not active')
@@ -345,58 +328,6 @@ class Module(Logger):
 	def onModuleUpdated(self):
 		self._updateAvailable = False
 		#self.MqttManager.subscribeModuleIntents(self.name)
-
-
-	def onMessage(self, intent: str, session: DialogSession) -> bool: return False
-
-
-	def onSleep(self): pass
-	def onWakeup(self): pass
-	def onGoingBed(self): pass
-	def onLeavingHome(self): pass
-	def onReturningHome(self): pass
-	def onEating(self): pass
-	def onWatchingTV(self): pass
-	def onCooking(self): pass
-	def onMakeup(self): pass
-	def onContextSensitiveDelete(self, sessionId: str): pass
-	def onContextSensitiveEdit(self, sessionId: str): pass
-	def onStop(self): self.logInfo(f'[{self.name}] Stopping')
-	def onFullMinute(self): pass
-	def onFiveMinute(self): pass
-	def onQuarterHour(self): pass
-	def onFullHour(self): pass
-	def onCancel(self): pass
-	def onASRCaptured(self): pass
-	def onWakeword(self): pass
-	def onMotionDetected(self): pass
-	def onMotionStopped(self): pass
-	def onButtonPressed(self): pass
-	def onButtonReleased(self): pass
-	def onDeviceConnecting(self): pass
-	def onDeviceDisconnecting(self): pass
-	def onUVIndexAlert(self, deviceList: list): pass
-	def onRaining(self, deviceList: list): pass
-	def onTooMuchRain(self, deviceList: list): pass
-	def onWindy(self, deviceList: list): pass
-	def onFreezing(self, deviceList: list): pass
-	def onTemperatureHighAlert(self, deviceList: list): pass
-	def onTemperatureLowAlert(self, deviceList: list): pass
-	def onCO2Alert(self, deviceList: list): pass
-	def onHumidityHighAlert(self, deviceList: list): pass
-	def onHumidityLowAlert(self, deviceList: list): pass
-	def onNoiseAlert(self, deviceList: list): pass
-	def onPressureHighAlert(self, deviceList: list): pass
-	def onPressureLowAlert(self, deviceList: list): pass
-	def onBroadcastingForNewDeviceStart(self, session: DialogSession): pass
-	def onBroadcastingForNewDeviceStop(self): pass
-	def onSnipsAssistantDownloaded(self, **kwargs): pass
-	def onSnipsAssistantDownloadFailed(self, **kwargs): pass
-	def onAuthenticated(self, session: DialogSession): pass
-	def onAuthenticationFailed(self, session: DialogSession): pass
-	def onAudioFrame(self, message: MQTTMessage): pass
-	def onSnipsAssistantInstalled(self, **kwargs): pass
-	def onSnipsAssistantFailedInstalling(self, **kwargs): pass
 
 
 	# HELPERS
@@ -480,122 +411,3 @@ class Module(Logger):
 
 	def publish(self, topic: str, payload: dict = None, qos: int = 0, retain: bool = False):
 		self.MqttManager.publish(topic=topic, payload=payload, qos=qos, retain=retain)
-
-
-	def broadcast(self, topic: str):
-		self.MqttManager.publish(topic=topic)
-
-
-	@property
-	def ConfigManager(self):
-		return SuperManager.getInstance().configManager
-
-
-	@property
-	def ModuleManager(self):
-		return SuperManager.getInstance().moduleManager
-
-
-	@property
-	def DeviceManager(self):
-		return SuperManager.getInstance().deviceManager
-
-
-	@property
-	def DialogSessionManager(self):
-		return SuperManager.getInstance().dialogSessionManager
-
-
-	@property
-	def MultiIntentManager(self):
-		return SuperManager.getInstance().multiIntentManager
-
-
-	@property
-	def ProtectedIntentManager(self):
-		return SuperManager.getInstance().protectedIntentManager
-
-
-	@property
-	def MqttManager(self):
-		return SuperManager.getInstance().mqttManager
-
-
-	@property
-	def SamkillaManager(self):
-		return SuperManager.getInstance().samkillaManager
-
-
-	@property
-	def SnipsConsoleManager(self):
-		return SuperManager.getInstance().snipsConsoleManager
-
-
-	@property
-	def SnipsServicesManager(self):
-		return SuperManager.getInstance().snipsServicesManager
-
-
-	@property
-	def UserManager(self):
-		return SuperManager.getInstance().userManager
-
-
-	@property
-	def DatabaseManager(self):
-		return SuperManager.getInstance().databaseManager
-
-
-	@property
-	def InternetManager(self):
-		return SuperManager.getInstance().internetManager
-
-
-	@property
-	def TelemetryManager(self):
-		return SuperManager.getInstance().telemetryManager
-
-
-	@property
-	def ThreadManager(self):
-		return SuperManager.getInstance().threadManager
-
-
-	@property
-	def TimeManager(self):
-		return SuperManager.getInstance().timeManager
-
-
-	@property
-	def ASRManager(self):
-		return SuperManager.getInstance().ASRManager
-
-
-	@property
-	def LanguageManager(self):
-		return SuperManager.getInstance().languageManager
-
-
-	@property
-	def TalkManager(self):
-		return SuperManager.getInstance().talkManager
-
-
-	@property
-	def TTSManager(self):
-		return SuperManager.getInstance().TTSManager
-
-
-	@property
-	def WakewordManager(self):
-		return SuperManager.getInstance().wakewordManager
-
-
-	@property
-	def WebInterfaceManager(self):
-		return SuperManager.getInstance().webInterfaceManager
-
-
-	@property
-	def Commons(self):
-		return SuperManager.getInstance().commons

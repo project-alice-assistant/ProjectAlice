@@ -1,17 +1,14 @@
-import typing
 from typing import Optional
 
-from paho.mqtt.client import MQTTMessage
-
 from core.base.SuperManager import SuperManager
-from core.commons.model.Singleton import Singleton
-from core.dialog.model.DialogSession import DialogSession
+from core.base.model.ProjectAliceObject import ProjectAliceObject
 
 
-class Manager(Singleton):
+class Manager(ProjectAliceObject):
 
 	def __init__(self, name: str, databaseSchema: dict = None):
-		super().__init__(name)
+		super().__init__(logDepth=3)
+
 		self._name              = name
 		self._databaseSchema    = databaseSchema
 		self._isActive          = True
@@ -57,56 +54,8 @@ class Manager(Singleton):
 		return True
 
 
-	def onBooted(self): pass
-
-
-	# noinspection PyUnusedLocal,PyMethodMayBeStatic
-	def onMessage(self, intent: str, session: DialogSession) -> bool: return False
-	def onModuleInstalled(self): pass
-	def onModuleUpdated(self): pass
-	def onFullMinute(self): pass
-	def onFiveMinute(self): pass
-	def onQuarterHour(self): pass
-	def onFullHour(self): pass
-	def onDeviceConnecting(self): pass
-	def onDeviceDisconnecting(self): pass
-	def onInternetConnected(self): pass
-	def onInternetLost(self): pass
-	def onHotword(self, siteId: str): pass
-	def onHotwordToggleOn(self, siteId: str): pass
-	def onSessionStarted(self, session: DialogSession): pass
-	def onStartListening(self, session: DialogSession): pass
-	def onCaptured(self, session: DialogSession): pass
-	def onIntentParsed(self, session: DialogSession): pass
-	def onUserCancel(self, session: DialogSession): pass
-	def onSessionTimeout(self, session: DialogSession): pass
-	def onIntentNotRecognized(self, session: DialogSession): pass
-	def onSessionError(self, session: DialogSession): pass
-	def onSessionEnded(self, session: DialogSession): pass
-	def onSay(self, session: DialogSession): pass
-	def onSayFinished(self, session: DialogSession): pass
-	def onSessionQueued(self, session: DialogSession): pass
-	def onAudioFrame(self, message: MQTTMessage): pass
-	def onSnipsAssistantDownloaded(self, **kwargs): pass
-	def onSnipsAssistantInstalled(self, **kwargs): pass
-	def onSnipsAssistantFailedInstalling(self, **kwargs): pass
-	def onUVIndexAlert(self, deviceList: list): pass
-	def onRaining(self, deviceList: list): pass
-	def onTooMuchRain(self, deviceList: list): pass
-	def onWindy(self, deviceList: list): pass
-	def onFreezing(self, deviceList: list): pass
-	def onTemperatureHighAlert(self, deviceList: list): pass
-	def onTemperatureLowAlert(self, deviceList: list): pass
-	def onCO2Alert(self, deviceList: list): pass
-	def onHumidityHighAlert(self, deviceList: list): pass
-	def onHumidityLowAlert(self, deviceList: list): pass
-	def onNoiseAlert(self, deviceList: list): pass
-	def onPressureHighAlert(self, deviceList: list): pass
-	def onPressureLowAlert(self, deviceList: list): pass
-
-
 	# HELPERS
-	def databaseFetch(self, tableName: str, query: str = None, values: dict = None, method: str = 'one') -> typing.Iterable:
+	def databaseFetch(self, tableName: str, query: str = None, values: dict = None, method: str = 'one') -> list:
 		if not query:
 			query = 'SELECT * FROM :__table__'
 
@@ -119,118 +68,3 @@ class Manager(Singleton):
 
 	def pruneTable(self, tableName: str):
 		return self.DatabaseManager.prune(tableName=tableName, callerName=self.name)
-
-
-	@property
-	def ConfigManager(self):
-		return SuperManager.getInstance().configManager
-
-
-	@property
-	def ModuleManager(self):
-		return SuperManager.getInstance().moduleManager
-
-
-	@property
-	def DeviceManager(self):
-		return SuperManager.getInstance().deviceManager
-
-
-	@property
-	def DialogSessionManager(self):
-		return SuperManager.getInstance().dialogSessionManager
-
-
-	@property
-	def MultiIntentManager(self):
-		return SuperManager.getInstance().multiIntentManager
-
-
-	@property
-	def ProtectedIntentManager(self):
-		return SuperManager.getInstance().protectedIntentManager
-
-
-	@property
-	def MqttManager(self):
-		return SuperManager.getInstance().mqttManager
-
-
-	@property
-	def SamkillaManager(self):
-		return SuperManager.getInstance().samkillaManager
-
-
-	@property
-	def SnipsConsoleManager(self):
-		return SuperManager.getInstance().snipsConsoleManager
-
-
-	@property
-	def SnipsServicesManager(self):
-		return SuperManager.getInstance().snipsServicesManager
-
-
-	@property
-	def UserManager(self):
-		return SuperManager.getInstance().userManager
-
-
-	@property
-	def DatabaseManager(self):
-		return SuperManager.getInstance().databaseManager
-
-
-	@property
-	def InternetManager(self):
-		return SuperManager.getInstance().internetManager
-
-
-	@property
-	def TelemetryManager(self):
-		return SuperManager.getInstance().telemetryManager
-
-
-	@property
-	def ThreadManager(self):
-		return SuperManager.getInstance().threadManager
-
-
-	@property
-	def TimeManager(self):
-		return SuperManager.getInstance().timeManager
-
-
-	@property
-	def ASRManager(self):
-		return SuperManager.getInstance().ASRManager
-
-
-	@property
-	def LanguageManager(self):
-		return SuperManager.getInstance().languageManager
-
-
-	@property
-	def TalkManager(self):
-		return SuperManager.getInstance().talkManager
-
-
-	@property
-	def TTSManager(self):
-		return SuperManager.getInstance().TTSManager
-
-
-	@property
-	def WakewordManager(self):
-		return SuperManager.getInstance().wakewordManager
-
-
-	@property
-	def WebInterfaceManager(self):
-		return SuperManager.getInstance().webInterfaceManager
-
-
-	@property
-	def Commons(self):
-		return SuperManager.getInstance().commons
