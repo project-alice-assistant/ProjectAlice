@@ -58,7 +58,7 @@ class Manager(ProjectAliceObject):
 		return True
 
 
-	def broadcast(self, method, exceptions: list = None, manager = None, propagateToModules: bool = False, silent: bool = False, *args, **kwargs):
+	def broadcast(self, method: str, exceptions: list = None, manager = None, propagateToModules: bool = False, silent: bool = False, *args, **kwargs):
 		if not exceptions:
 			exceptions = list()
 
@@ -92,54 +92,6 @@ class Manager(ProjectAliceObject):
 
 		for name in deadManagers:
 			del SuperManager.getInstance().managers[name]
-
-
-	def onBooted(self): pass
-
-
-	# noinspection PyUnusedLocal,PyMethodMayBeStatic
-	def onMessage(self, intent: str, session: DialogSession) -> bool: return False
-	def onModuleInstalled(self): pass
-	def onModuleUpdated(self): pass
-	def onFullMinute(self): pass
-	def onFiveMinute(self): pass
-	def onQuarterHour(self): pass
-	def onFullHour(self): pass
-	def onDeviceConnecting(self): pass
-	def onDeviceDisconnecting(self): pass
-	def onInternetConnected(self): pass
-	def onInternetLost(self): pass
-	def onHotword(self, siteId: str): pass
-	def onHotwordToggleOn(self, siteId: str): pass
-	def onSessionStarted(self, session: DialogSession): pass
-	def onStartListening(self, session: DialogSession): pass
-	def onCaptured(self, session: DialogSession): pass
-	def onIntentParsed(self, session: DialogSession): pass
-	def onUserCancel(self, session: DialogSession): pass
-	def onSessionTimeout(self, session: DialogSession): pass
-	def onIntentNotRecognized(self, session: DialogSession): pass
-	def onSessionError(self, session: DialogSession): pass
-	def onSessionEnded(self, session: DialogSession): pass
-	def onSay(self, session: DialogSession): pass
-	def onSayFinished(self, session: DialogSession): pass
-	def onSessionQueued(self, session: DialogSession): pass
-	def onAudioFrame(self, message: MQTTMessage): pass
-	def onSnipsAssistantDownloaded(self, **kwargs): pass
-	def onSnipsAssistantInstalled(self, **kwargs): pass
-	def onSnipsAssistantFailedInstalling(self, **kwargs): pass
-	def onUVIndexAlert(self, deviceList: list): pass
-	def onRaining(self, deviceList: list): pass
-	def onTooMuchRain(self, deviceList: list): pass
-	def onWindy(self, deviceList: list): pass
-	def onFreezing(self, deviceList: list): pass
-	def onTemperatureHighAlert(self, deviceList: list): pass
-	def onTemperatureLowAlert(self, deviceList: list): pass
-	def onCO2Alert(self, deviceList: list): pass
-	def onHumidityHighAlert(self, deviceList: list): pass
-	def onHumidityLowAlert(self, deviceList: list): pass
-	def onNoiseAlert(self, deviceList: list): pass
-	def onPressureHighAlert(self, deviceList: list): pass
-	def onPressureLowAlert(self, deviceList: list): pass
 
 
 	# HELPERS

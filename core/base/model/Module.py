@@ -298,22 +298,6 @@ class Module(ProjectAliceObject):
 		return True
 
 
-	def onHotword(self, siteId: str): pass
-	def onSay(self, session: DialogSession): pass
-	def onSayFinished(self, session: DialogSession): pass
-	def onHotwordToggleOn(self, siteId: str): pass
-	def onUserCancel(self, session: DialogSession): pass
-	def onSessionTimeout(self, session: DialogSession): pass
-	def onSessionError(self, session: DialogSession): pass
-	def onSessionEnded(self, session: DialogSession): pass
-	def onSessionStarted(self, session: DialogSession): pass
-	def onSessionQueued(self, session: DialogSession): pass
-	def onIntentNotRecognized(self, session: DialogSession): pass
-	def onStartListening(self, session: DialogSession): pass
-	def onCaptured(self, session: DialogSession): pass
-	def onIntentParsed(self, session: DialogSession): pass
-
-
 	def onStart(self) -> dict:
 		if not self._active:
 			self.logInfo(f'Module {self.name} is not active')
@@ -345,58 +329,6 @@ class Module(ProjectAliceObject):
 	def onModuleUpdated(self):
 		self._updateAvailable = False
 		#self.MqttManager.subscribeModuleIntents(self.name)
-
-
-	def onMessage(self, intent: str, session: DialogSession) -> bool: return False
-
-
-	def onSleep(self): pass
-	def onWakeup(self): pass
-	def onGoingBed(self): pass
-	def onLeavingHome(self): pass
-	def onReturningHome(self): pass
-	def onEating(self): pass
-	def onWatchingTV(self): pass
-	def onCooking(self): pass
-	def onMakeup(self): pass
-	def onContextSensitiveDelete(self, sessionId: str): pass
-	def onContextSensitiveEdit(self, sessionId: str): pass
-	def onStop(self): self.logInfo(f'[{self.name}] Stopping')
-	def onFullMinute(self): pass
-	def onFiveMinute(self): pass
-	def onQuarterHour(self): pass
-	def onFullHour(self): pass
-	def onCancel(self): pass
-	def onASRCaptured(self): pass
-	def onWakeword(self): pass
-	def onMotionDetected(self): pass
-	def onMotionStopped(self): pass
-	def onButtonPressed(self): pass
-	def onButtonReleased(self): pass
-	def onDeviceConnecting(self): pass
-	def onDeviceDisconnecting(self): pass
-	def onUVIndexAlert(self, deviceList: list): pass
-	def onRaining(self, deviceList: list): pass
-	def onTooMuchRain(self, deviceList: list): pass
-	def onWindy(self, deviceList: list): pass
-	def onFreezing(self, deviceList: list): pass
-	def onTemperatureHighAlert(self, deviceList: list): pass
-	def onTemperatureLowAlert(self, deviceList: list): pass
-	def onCO2Alert(self, deviceList: list): pass
-	def onHumidityHighAlert(self, deviceList: list): pass
-	def onHumidityLowAlert(self, deviceList: list): pass
-	def onNoiseAlert(self, deviceList: list): pass
-	def onPressureHighAlert(self, deviceList: list): pass
-	def onPressureLowAlert(self, deviceList: list): pass
-	def onBroadcastingForNewDeviceStart(self, session: DialogSession): pass
-	def onBroadcastingForNewDeviceStop(self): pass
-	def onSnipsAssistantDownloaded(self, **kwargs): pass
-	def onSnipsAssistantDownloadFailed(self, **kwargs): pass
-	def onAuthenticated(self, session: DialogSession): pass
-	def onAuthenticationFailed(self, session: DialogSession): pass
-	def onAudioFrame(self, message: MQTTMessage): pass
-	def onSnipsAssistantInstalled(self, **kwargs): pass
-	def onSnipsAssistantFailedInstalling(self, **kwargs): pass
 
 
 	# HELPERS
