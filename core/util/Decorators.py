@@ -104,7 +104,7 @@ class Decorators:
 	
 
 	@classmethod
-	def anyExcept(cls, text: str = '', exceptions: Tuple[BaseException, ...] = None, exceptHandler: Callable = None, returnText: bool = False):
+	def anyExcept(cls, text: str = '', exceptions: Tuple[BaseException, ...] = None, exceptHandler: Callable = None, returnText: bool = False, printStack=False):
 		def _exceptHandler(*args, **kwargs):
 			nonlocal text
 
@@ -129,7 +129,7 @@ class Decorators:
 				try:
 					return func(*args, **kwargs)
 				except exceptions as e:
-					Logger(depth=6).logWarning(e)
+					Logger(depth=6).logWarning(msg=e, printStack=printStack)
 					return _exceptHandler(*args, **kwargs)
 
 			return functionWrapper
