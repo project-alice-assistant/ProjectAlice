@@ -433,7 +433,13 @@ a:hover {
 
 .moduleConfigLabel {
 	display: inline-block;
-	min-width: 250px;
+	width: 200px;
+	overflow: hidden;
+}
+
+.moduleConfigInput {
+	display: inline-block;
+	width: 290px;
 }
 
 .moduleConfigSave {

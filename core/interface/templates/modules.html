@@ -23,13 +23,13 @@
 					<div class="moduleConfigBox">
 						<label class="moduleConfigLabel" for="{{ configName }}">{{ configName }}</label>
 						{% if configValue is sameas true or configValue is sameas false %}
-							<input type="checkbox" name="{{ configName }}" value="on" id="{{ configName }}" {% if configValue is sameas true %}checked{% endif %}>
+							<input class="moduleConfigInput" type="checkbox" name="{{ configName }}" value="on" id="{{ configName }}" {% if configValue is sameas true %}checked{% endif %}>
 							<!-- Make sure unchecked chexboxes send off data -->
-							<input type="hidden" name="{{ configName }}" value="off">
+							<input class="moduleConfigInput" type="hidden" name="{{ configName }}" value="off">
 						{% elif 'password' in configName.lower() or 'secret' in configName.lower() %}
-							<input type="password" name="{{ configName }}" value="{{ configValue }}" id="{{ configName }}">
+							<input class="moduleConfigInput" type="password" name="{{ configName }}" value="{{ configValue }}" id="{{ configName }}">
 						{% else %}
-							<input type="text" name="{{ configName }}" value="{{ configValue }}" id="{{ configName }}">
+							<input class="moduleConfigInput" type="text" name="{{ configName }}" value="{{ configValue }}" id="{{ configName }}">
 						{% endif %}
 					</div>
 				{% endfor %}
