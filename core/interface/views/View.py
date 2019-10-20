@@ -118,7 +118,7 @@ class View(FlaskView):
 
 	@property
 	def ASRManager(self):
-		return SuperManager.getInstance().ASRManager
+		return SuperManager.getInstance().asrManager
 
 
 	@property
@@ -133,7 +133,7 @@ class View(FlaskView):
 
 	@property
 	def TTSManager(self):
-		return SuperManager.getInstance().TTSManager
+		return SuperManager.getInstance().ttsManager
 
 
 	@property

@@ -1,10 +1,10 @@
 from __future__ import annotations
 
+from core.base.model.ProjectAliceObject import ProjectAliceObject
 from core.commons import constants
-from core.util.model.Logger import Logger
 
 
-class SuperManager(object):
+class SuperManager(ProjectAliceObject):
 
 	NAME        = 'SuperManager'
 	_INSTANCE   = None
@@ -18,9 +18,7 @@ class SuperManager(object):
 
 
 	def __init__(self, mainClass):
-		super().__init__()
-
-		self._logger = Logger()
+		super().__init__(logDepth=3)
 
 		SuperManager._INSTANCE         = self
 		self._managers                 = dict()
@@ -32,8 +30,8 @@ class SuperManager(object):
 		self.databaseManager           = None
 		self.languageManager           = None
 		self.snipsServicesManager      = None
-		self.ASRManager                = None
-		self.TTSManager                = None
+		self.asrManager                = None
+		self.ttsManager                = None
 		self.protectedIntentManager    = None
 		self.threadManager             = None
 		self.mqttManager               = None
@@ -140,8 +138,8 @@ class SuperManager(object):
 		self.databaseManager            = DatabaseManager()
 		self.languageManager            = LanguageManager()
 		self.snipsServicesManager       = SnipsServicesManager()
-		self.ASRManager                 = ASRManager()
-		self.TTSManager                 = TTSManager()
+		self.asrManager                 = ASRManager()
+		self.ttsManager                 = TTSManager()
 		self.threadManager              = ThreadManager()
 		self.protectedIntentManager     = ProtectedIntentManager()
 		self.mqttManager                = MqttManager()
@@ -168,7 +166,7 @@ class SuperManager(object):
 			for managerName, manager in self._managers.items():
 				manager.onStop()
 		except Exception as e:
-			self._logger.logError(f'Error while shutting down manager "{managerName}": {e}')
+			self.logError(f'Error while shutting down manager "{managerName}": {e}')
 
 
 	def getManager(self, managerName: str):

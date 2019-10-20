@@ -1,4 +1,4 @@
-from core.base.SuperManager import SuperManager
+import core.base.SuperManager as SM
 from core.util.model.Logger import Logger
 
 
@@ -80,114 +80,114 @@ class ProjectAliceObject(Logger):
 
 	@property
 	def ConfigManager(self):
-		return SuperManager.getInstance().configManager
+		return SM.SuperManager.getInstance().configManager
 
 
 	@property
 	def ModuleManager(self):
-		return SuperManager.getInstance().moduleManager
+		return SM.SuperManager.getInstance().moduleManager
 
 
 	@property
 	def DeviceManager(self):
-		return SuperManager.getInstance().deviceManager
+		return SM.SuperManager.getInstance().deviceManager
 
 
 	@property
 	def DialogSessionManager(self):
-		return SuperManager.getInstance().dialogSessionManager
+		return SM.SuperManager.getInstance().dialogSessionManager
 
 
 	@property
 	def MultiIntentManager(self):
-		return SuperManager.getInstance().multiIntentManager
+		return SM.SuperManager.getInstance().multiIntentManager
 
 
 	@property
 	def ProtectedIntentManager(self):
-		return SuperManager.getInstance().protectedIntentManager
+		return SM.SuperManager.getInstance().protectedIntentManager
 
 
 	@property
 	def MqttManager(self):
-		return SuperManager.getInstance().mqttManager
+		return SM.SuperManager.getInstance().mqttManager
 
 
 	@property
 	def SamkillaManager(self):
-		return SuperManager.getInstance().samkillaManager
+		return SM.SuperManager.getInstance().samkillaManager
 
 
 	@property
 	def SnipsConsoleManager(self):
-		return SuperManager.getInstance().snipsConsoleManager
+		return SM.SuperManager.getInstance().snipsConsoleManager
 
 
 	@property
 	def SnipsServicesManager(self):
-		return SuperManager.getInstance().snipsServicesManager
+		return SM.SuperManager.getInstance().snipsServicesManager
 
 
 	@property
 	def UserManager(self):
-		return SuperManager.getInstance().userManager
+		return SM.SuperManager.getInstance().userManager
 
 
 	@property
 	def DatabaseManager(self):
-		return SuperManager.getInstance().databaseManager
+		return SM.SuperManager.getInstance().databaseManager
 
 
 	@property
 	def InternetManager(self):
-		return SuperManager.getInstance().internetManager
+		return SM.SuperManager.getInstance().internetManager
 
 
 	@property
 	def TelemetryManager(self):
-		return SuperManager.getInstance().telemetryManager
+		return SM.SuperManager.getInstance().telemetryManager
 
 
 	@property
 	def ThreadManager(self):
-		return SuperManager.getInstance().threadManager
+		return SM.SuperManager.getInstance().threadManager
 
 
 	@property
 	def TimeManager(self):
-		return SuperManager.getInstance().timeManager
+		return SM.SuperManager.getInstance().timeManager
 
 
 	@property
 	def ASRManager(self):
-		return SuperManager.getInstance().ASRManager
+		return SM.SuperManager.getInstance().asrManager
 
 
 	@property
 	def LanguageManager(self):
-		return SuperManager.getInstance().languageManager
+		return SM.SuperManager.getInstance().languageManager
 
 
 	@property
 	def TalkManager(self):
-		return SuperManager.getInstance().talkManager
+		return SM.SuperManager.getInstance().talkManager
 
 
 	@property
 	def TTSManager(self):
-		return SuperManager.getInstance().TTSManager
+		return SM.SuperManager.getInstance().ttsManager
 
 
 	@property
 	def WakewordManager(self):
-		return SuperManager.getInstance().wakewordManager
+		return SM.SuperManager.getInstance().wakewordManager
 
 
 	@property
 	def WebInterfaceManager(self):
-		return SuperManager.getInstance().webInterfaceManager
+		return SM.SuperManager.getInstance().webInterfaceManager
 
 
 	@property
 	def Commons(self):
-		return SuperManager.getInstance().commons
+		return SM.SuperManager.getInstance().commons
