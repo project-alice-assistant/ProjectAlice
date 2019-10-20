@@ -80,6 +80,6 @@
 		"I'm sorry but I can't do that while being offline"
 	],
 	"except": [
-		"I am sorry but a exception occured while executing this intent"
+		"I am sorry but an exception occured while executing this intent"
 	]
 }
