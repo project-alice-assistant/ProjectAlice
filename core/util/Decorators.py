@@ -86,7 +86,7 @@ class Decorators:
 
 		def argumentWrapper(func):
 			@wraps(func)
-			def functionWrapper(*args, **kwargs):
+			def offlineDecorator(*args, **kwargs):
 				internetManager = SuperManager.getInstance().internetManager
 				if internetManager.online:
 					try:
@@ -98,13 +98,14 @@ class Decorators:
 
 				return _offlineHandler(*args, **kwargs)
 
-			return functionWrapper
+			return offlineDecorator
 
 		return argumentWrapper(text) if callable(text) else argumentWrapper
 	
 
 	@classmethod
-	def anyExcept(cls, text: str = '', exceptions: Tuple[BaseException, ...] = None, exceptHandler: Callable = None, returnText: bool = False, printStack=False):
+	def anyExcept(cls, text: str = '', exceptions: Tuple[BaseException, ...] = None, exceptHandler: Callable = None, returnText: bool = False, printStack: bool = False):
+		
 		def _exceptHandler(*args, **kwargs):
 			nonlocal text
 
@@ -125,14 +126,14 @@ class Decorators:
 
 		def argumentWrapper(func):
 			@wraps(func)
-			def functionWrapper(*args, **kwargs):
+			def exceptionDecorator(*args, **kwargs):
 				try:
 					return func(*args, **kwargs)
 				except exceptions as e:
 					Logger(depth=6).logWarning(msg=e, printStack=printStack)
 					return _exceptHandler(*args, **kwargs)
 
-			return functionWrapper
+			return exceptionDecorator
 
 		exceptions = exceptions or Exception
 		return argumentWrapper(text) if callable(text) else argumentWrapper
