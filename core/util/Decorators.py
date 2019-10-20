@@ -1,4 +1,4 @@
-from typing import Callable
+from typing import Callable, Tuple
 
 import warnings
 
@@ -7,6 +7,7 @@ from functools import wraps
 from core.base.model.Module import Module
 from core.dialog.model.DialogSession import DialogSession
 from core.base.SuperManager import SuperManager
+from core.util.model.Logger import Logger
 
 
 class Decorators:
@@ -19,7 +20,6 @@ class Decorators:
 		as deprecated. It will result in a warning being emitted
 		when the function is used.
 		"""
-
 
 		@wraps(func)
 		def new_func(*args, **kwargs):
@@ -68,10 +68,11 @@ class Decorators:
 		"""
 		def _offlineHandler(*args, **kwargs):
 			nonlocal text
-			caller = args[0] if args and isinstance(args[0], Module) else None
 
 			if offlineHandler:
 				return offlineHandler(*args, **kwargs)
+			
+			caller = args[0] if args and isinstance(args[0], Module) else None
 
 			if callable(text) or not text:
 				text = SuperManager.getInstance().talkManager.randomTalk('offline', module='system')
@@ -85,7 +86,7 @@ class Decorators:
 
 		def argumentWrapper(func):
 			@wraps(func)
-			def functionWrapper(*args, **kwargs):
+			def offlineDecorator(*args, **kwargs):
 				internetManager = SuperManager.getInstance().internetManager
 				if internetManager.online:
 					try:
@@ -97,6 +98,42 @@ class Decorators:
 
 				return _offlineHandler(*args, **kwargs)
 
-			return functionWrapper
+			return offlineDecorator
 
+		return argumentWrapper(text) if callable(text) else argumentWrapper
+	
+
+	@classmethod
+	def anyExcept(cls, text: str = '', exceptions: Tuple[BaseException, ...] = None, exceptHandler: Callable = None, returnText: bool = False, printStack: bool = False):
+		
+		def _exceptHandler(*args, **kwargs):
+			nonlocal text
+
+			if exceptHandler:
+				return exceptHandler(*args, **kwargs)
+			
+			caller = args[0] if args and isinstance(args[0], Module) else None
+
+			if callable(text) or not text:
+				text = SuperManager.getInstance().talkManager.randomTalk('except', module='system')
+			elif hasattr(caller, 'name'):
+				text = SuperManager.getInstance().talkManager.randomTalk(text, module=caller.name)
+
+			session = kwargs.get('session')
+			if not returnText and isinstance(session, DialogSession):
+				SuperManager.getInstance().mqttManager.endDialog(sessionId=session.sessionId, text=text)
+			return text
+
+		def argumentWrapper(func):
+			@wraps(func)
+			def exceptionDecorator(*args, **kwargs):
+				try:
+					return func(*args, **kwargs)
+				except exceptions as e:
+					Logger(depth=6).logWarning(msg=e, printStack=printStack)
+					return _exceptHandler(*args, **kwargs)
+
+			return exceptionDecorator
+
+		exceptions = exceptions or Exception
 		return argumentWrapper(text) if callable(text) else argumentWrapper
