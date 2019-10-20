@@ -24,6 +24,6 @@ click
 pyyaml
 boto3
 google-cloud-texttospeech
-Flask
+flask
 flask-classful
 googletrans
