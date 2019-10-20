@@ -1,4 +1,4 @@
-from core.commons import CommonsManager
+from core.commons.CommonsManager import CommonsManager
 
 def test_getFunctionCaller():
     assert CommonsManager.getFunctionCaller(1) == 'test_commons'
