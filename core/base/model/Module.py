@@ -52,7 +52,7 @@ class Module(ProjectAliceObject):
 			elif isinstance(item, str):
 				self._supportedIntents[item] = (item, self.onMessage)
 
-		self._authOnlyIntents: Dict[Intent, AccessLevel] = {intent: level.value for intent, level in authOnlyIntents.items()} if authOnlyIntents else dict()
+		self._authOnlyIntents: Dict[str, AccessLevel] = {str(intent): level.value for intent, level in authOnlyIntents.items()} if authOnlyIntents else dict()
 		self._utteranceSlotCleaner = re.compile('{(.+?):=>.+?}')
 		self.loadWidgets()
 

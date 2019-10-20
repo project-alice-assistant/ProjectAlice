@@ -33,10 +33,14 @@ class Logger:
 		self.doLog(function='critical', msg=msg)
 
 
-	def doLog(self, function: callable, msg: str, printStack=True):
+	def doLog(self, function: callable, msg: str, printStack=True, depth: int = None):
+		if depth is None:
+			depth = self._depth
+
 		func = getattr(self._logger, function)
-		func(self.decorate(msg), exc_info=printStack)
+		func(self.decorate(msg, depth), exc_info=printStack)
 
 
-	def decorate(self, msg: str) -> str:
-		return f'[{inspect.getmodulename(inspect.stack()[self._depth][1])}] {msg}'
+	# noinspection PyMethodMayBeStatic
+	def decorate(self, msg: str, depth: int) -> str:
+		return f'[{inspect.getmodulename(inspect.stack()[depth][1])}] {msg}'
