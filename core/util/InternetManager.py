@@ -1,6 +1,5 @@
 import requests
 
-from core.base.SuperManager import SuperManager
 from core.base.model.Manager import Manager
 
 

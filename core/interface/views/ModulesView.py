@@ -4,7 +4,6 @@ from collections import OrderedDict
 from flask import render_template, request, jsonify
 from flask_classful import route
 
-from core.base.SuperManager import SuperManager
 from core.interface.views.View import View
 
 
@@ -17,8 +16,8 @@ class ModulesView(View):
 
 
 	def index(self):
-		modules = {moduleName: module['instance'] for moduleName, module in SuperManager.getInstance().moduleManager.getModules(False).items()}
-		deactivatedModules = {moduleName: module['instance'] for moduleName, module in SuperManager.getInstance().moduleManager.deactivatedModules.items()}
+		modules = {moduleName: module['instance'] for moduleName, module in self.ModuleManager.getModules(False).items()}
+		deactivatedModules = {moduleName: module['instance'] for moduleName, module in self.ModuleManager.deactivatedModules.items()}
 		modules = {**modules, **deactivatedModules}
 		modules = OrderedDict(sorted(modules.items()))
 
@@ -67,7 +66,7 @@ class ModulesView(View):
 			elif confValue == 'off':
 				confValue = False
 
-			SuperManager.getInstance().configManager.updateModuleConfigurationFile(
+			self.ConfigManager.updateModuleConfigurationFile(
 				moduleName=moduleName,
 				key=confName,
 				value=confValue

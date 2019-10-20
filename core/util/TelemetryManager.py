@@ -1,7 +1,6 @@
 import time
 from typing import Iterable
 
-from core.base.SuperManager import SuperManager
 from core.base.model.Manager import Manager
 from core.util.model.TelemetryType import TelemetryType
 

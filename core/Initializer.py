@@ -9,13 +9,13 @@ from pathlib import Path
 
 import yaml
 
-from core.util.model.Logger import Logger
+from core.base.model.ProjectAliceObject import ProjectAliceObject
 
 
-class initDict(dict, Logger):
+class initDict(dict, ProjectAliceObject):
 
 	def __init__(self, default: dict):
-		super().__init__(default)
+		super().__init__(default, logDepth=3)
 
 
 	def __getitem__(self, item):
@@ -26,7 +26,7 @@ class initDict(dict, Logger):
 			return ''
 
 
-class Initializer(Logger):
+class Initializer(ProjectAliceObject):
 
 	NAME = 'ProjectAlice'
 
@@ -43,7 +43,7 @@ network={
 	'''
 
 	def __init__(self):
-		super().__init__()
+		super().__init__(logDepth=3)
 		self.logInfo('Starting Project Alice initializer')
 
 		self._rootDir = Path(__file__).resolve().parent.parent

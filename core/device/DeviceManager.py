@@ -14,7 +14,6 @@ from paho.mqtt.client import MQTTMessage # type: ignore
 from serial import Serial # type: ignore
 from serial.tools import list_ports # type: ignore
 
-from core.base.SuperManager import SuperManager
 from core.base.model.Manager import Manager
 from core.device.model.Device import Device
 from core.device.model.TasmotaConfigs import TasmotaConfigs
@@ -318,7 +317,7 @@ class DeviceManager(Manager):
 
 		self.logInfo(f'Started broadcasting on {self._broadcastPort} for new device addition. Attributed uid: {uid}')
 		self._listenSocket.listen(2)
-		self.ThreadManager.newThread(name='broadcast', target=self.broadcast, args=[room, uid, siteId])
+		self.ThreadManager.newThread(name='broadcast', target=self.startBroadcast, args=[room, uid, siteId])
 
 		self._broadcastTimer = self.ThreadManager.newTimer(interval=300, func=self.stopBroadcasting)
 
@@ -337,7 +336,7 @@ class DeviceManager(Manager):
 		self.ModuleManager.broadcast(method='onBroadcastingForNewDeviceStop')
 
 
-	def broadcast(self, room: str, uid: str, replyOnSiteId: str):
+	def startBroadcast(self, room: str, uid: str, replyOnSiteId: str):
 		self._broadcastFlag.set()
 		while self._broadcastFlag.isSet():
 			self._broadcastSocket.sendto(bytes(f'{self.Commons.getLocalIp()}:{self._listenPort}:{room}:{uid}', encoding='utf8'), ('<broadcast>', self._broadcastPort))
@@ -383,8 +382,7 @@ class DeviceManager(Manager):
 
 		if not self._devices[uid].connected:
 			self._devices[uid].connected = True
-			self.broadcast('onDeviceConnecting', exceptions=[self.name])
-			self.ModuleManager.broadcast('onDeviceConnecting')
+			self.broadcast('onDeviceConnecting', exceptions=[self.name], propagateToModules=True)
 
 		return self._devices[uid]
 
@@ -395,8 +393,7 @@ class DeviceManager(Manager):
 
 		if self._devices[uid].connected:
 			self._devices[uid].connected = False
-			self.broadcast('onDeviceDisconnecting', exceptions=[self.name])
-			self.ModuleManager.broadcast('onDeviceDisconnecting')
+			self.broadcast('onDeviceDisconnecting', exceptions=[self.name], propagateToModules=True)
 
 
 	def getDevicesByRoom(self, room: str, connectedOnly: bool = False) -> list:

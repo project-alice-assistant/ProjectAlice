@@ -1,11 +1,7 @@
-import typing
 from typing import Optional
-
-from paho.mqtt.client import MQTTMessage
 
 from core.base.SuperManager import SuperManager
 from core.base.model.ProjectAliceObject import ProjectAliceObject
-from core.dialog.model.DialogSession import DialogSession
 
 
 class Manager(ProjectAliceObject):
@@ -95,7 +91,7 @@ class Manager(ProjectAliceObject):
 
 
 	# HELPERS
-	def databaseFetch(self, tableName: str, query: str = None, values: dict = None, method: str = 'one') -> typing.Iterable:
+	def databaseFetch(self, tableName: str, query: str = None, values: dict = None, method: str = 'one') -> list:
 		if not query:
 			query = 'SELECT * FROM :__table__'
 

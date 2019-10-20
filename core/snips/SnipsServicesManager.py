@@ -6,7 +6,6 @@ from zipfile import ZipFile
 
 import tempfile
 
-from core.base.SuperManager import SuperManager
 from core.base.model.Manager import Manager
 from core.commons import constants
 from core.voice.model.SnipsASR import SnipsASR

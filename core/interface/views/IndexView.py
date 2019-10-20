@@ -1,7 +1,6 @@
 from flask import render_template, request, send_from_directory, jsonify, redirect
 from flask_classful import route
 
-from core.base.SuperManager import SuperManager
 from core.interface.views.View import View
 
 
@@ -28,7 +27,7 @@ class IndexView(View):
 	def widget_static(self, filename: str):
 		parent, fileType, filename = filename.split('/')
 		return send_from_directory(
-			f'{SuperManager.getInstance().webInterfaceManager.app.root_path}/../../modules/{parent}/widgets/{fileType}/', filename)
+			f'{self.WebInterfaceManager.app.root_path}/../../modules/{parent}/widgets/{fileType}/', filename)
 
 
 	@route('/home/saveWidgetPos', methods=['POST'])

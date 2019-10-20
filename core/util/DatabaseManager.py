@@ -208,7 +208,7 @@ class DatabaseManager(Manager):
 
 
 
-	def fetch(self, tableName: str, query: str, callerName: str, values: dict = None, method: str = 'one') -> typing.Iterable:
+	def fetch(self, tableName: str, query: str, callerName: str, values: dict = None, method: str = 'one') -> list:
 		"""
 		Fetch data from database
 		:param values:

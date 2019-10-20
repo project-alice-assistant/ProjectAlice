@@ -79,6 +79,11 @@ class ProjectAliceObject(Logger):
 
 
 	@property
+	def ProjectAlice(self):
+		return SM.SuperManager.getInstance().projectAlice
+
+
+	@property
 	def ConfigManager(self):
 		return SM.SuperManager.getInstance().configManager
 

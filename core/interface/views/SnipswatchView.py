@@ -9,7 +9,6 @@ import tempfile
 from flask import jsonify, render_template, request
 from flask_classful import route
 
-from core.base.SuperManager import SuperManager
 from core.interface.views.View import View
 
 
@@ -34,7 +33,7 @@ class SnipswatchView(View):
 
 
 	def newProcess(self, verbosity: int = 2):
-		SuperManager.getInstance().threadManager.getEvent('snipswatchrunning').clear()
+		self.ThreadManager.getEvent('snipswatchrunning').clear()
 		self._counter = 0
 		if self._file.exists():
 			os.remove(self._file)
@@ -45,7 +44,7 @@ class SnipswatchView(View):
 			self._process.kill()
 
 		self._process = subprocess.Popen(f'snips-watch {arg} --html', shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
-		self._thread = SuperManager.getInstance().threadManager.newThread(
+		self._thread = self.ThreadManager.newThread(
 			name='snipswatch',
 			target=self.startWatching,
 			autostart=True
@@ -53,7 +52,7 @@ class SnipswatchView(View):
 
 
 	def startWatching(self):
-		flag = SuperManager.getInstance().threadManager.newEvent('snipswatchrunning')
+		flag = self.ThreadManager.newEvent('snipswatchrunning')
 		flag.set()
 		while flag.isSet():
 			out = self._process.stdout.readline().decode()
