@@ -71,7 +71,7 @@ class Decorators:
 
 			if offlineHandler:
 				return offlineHandler(*args, **kwargs)
-			
+
 			caller = args[0] if args and isinstance(args[0], Module) else None
 
 			if callable(text) or not text:
@@ -81,7 +81,10 @@ class Decorators:
 
 			session = kwargs.get('session')
 			if not returnText and isinstance(session, DialogSession):
-				SuperManager.getInstance().mqttManager.endDialog(sessionId=session.sessionId, text=text)
+				if session.sessionId in SuperManager.getInstance().dialogSessionManager.sessions:
+					SuperManager.getInstance().mqttManager.endDialog(sessionId=session.sessionId, text=text)
+				else:
+					SuperManager.getInstance().mqttManager.say(text=text, client=session.siteId)
 			return text
 
 		def argumentWrapper(func):
@@ -101,17 +104,17 @@ class Decorators:
 			return offlineDecorator
 
 		return argumentWrapper(text) if callable(text) else argumentWrapper
-	
+
 
 	@classmethod
 	def anyExcept(cls, text: str = '', exceptions: Tuple[BaseException, ...] = None, exceptHandler: Callable = None, returnText: bool = False, printStack: bool = False):
-		
+
 		def _exceptHandler(*args, **kwargs):
 			nonlocal text
 
 			if exceptHandler:
 				return exceptHandler(*args, **kwargs)
-			
+
 			caller = args[0] if args and isinstance(args[0], Module) else None
 
 			if callable(text) or not text:
@@ -121,7 +124,10 @@ class Decorators:
 
 			session = kwargs.get('session')
 			if not returnText and isinstance(session, DialogSession):
-				SuperManager.getInstance().mqttManager.endDialog(sessionId=session.sessionId, text=text)
+				if session.sessionId in SuperManager.getInstance().dialogSessionManager.sessions:
+					SuperManager.getInstance().mqttManager.endDialog(sessionId=session.sessionId, text=text)
+				else:
+					SuperManager.getInstance().mqttManager.say(text=text, client=session.siteId)
 			return text
 
 		def argumentWrapper(func):
