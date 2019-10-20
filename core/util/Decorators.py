@@ -118,7 +118,7 @@ class Decorators:
 			caller = args[0] if args and isinstance(args[0], Module) else None
 
 			if callable(text) or not text:
-				text = SuperManager.getInstance().talkManager.randomTalk('except', module='system')
+				text = SuperManager.getInstance().talkManager.randomTalk('error', module='system')
 			elif hasattr(caller, 'name'):
 				text = SuperManager.getInstance().talkManager.randomTalk(text, module=caller.name)
 

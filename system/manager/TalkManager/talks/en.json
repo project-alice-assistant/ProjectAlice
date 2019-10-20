@@ -78,8 +78,5 @@
 	],
 	"offline": [
 		"I'm sorry but I can't do that while being offline"
-	],
-	"except": [
-		"I am sorry but an exception occured while executing this intent"
 	]
 }

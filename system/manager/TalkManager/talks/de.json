@@ -79,8 +79,5 @@
 	],
 	"offline": [
 		"Entschuldigung, das kann ich nicht machen wenn ich offline bin."
-	],
-	"except": [
-		"Entschuldigung, beim Ausführen deines Wunsches ist ein Fehler augetreten"
 	]
 }
