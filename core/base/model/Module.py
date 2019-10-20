@@ -9,7 +9,6 @@ from typing import Dict, Iterable, Callable, Any, Tuple, List
 from pathlib import Path
 
 from paho.mqtt import client as MQTTClient
-from paho.mqtt.client import MQTTMessage
 
 from core.ProjectAliceExceptions import AccessLevelTooLow, ModuleStartingFailed
 from core.base.model.Intent import Intent
@@ -22,7 +21,7 @@ from core.user.model.AccessLevels import AccessLevel
 class Module(ProjectAliceObject):
 
 	def __init__(self, supportedIntents: Iterable, authOnlyIntents: dict = None, databaseSchema: dict = None):
-		super().__init__(logDepth=3)
+		super().__init__(logDepth=4)
 		try:
 			path = Path(inspect.getfile(self.__class__)).with_suffix('.install')
 			self._install = json.loads(path.read_text())

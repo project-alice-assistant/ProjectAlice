@@ -8,6 +8,42 @@ class ProjectAliceObject(Logger):
 		super().__init__(depth=logDepth)
 
 
+	def broadcast(self, method: str, exceptions: list = None, manager = None, propagateToModules: bool = False, silent: bool = False, *args, **kwargs):
+		if not exceptions:
+			exceptions = list()
+
+		if not exceptions and not manager:
+			self._logger.logWarning('Cannot broadcast to itself, the calling method has to be put in exceptions')
+
+		if 'ProjectAlice' not in exceptions:
+			exceptions.append('ProjectAlice')
+
+		deadManagers = list()
+		for name, man in SM.SuperManager.getInstance().managers.items():
+			if not man:
+				deadManagers.append(name)
+				continue
+
+			if (manager and man.name != manager.name) or man.name in exceptions:
+				continue
+
+			try:
+				func = getattr(man, method)
+				func(*args, **kwargs)
+			except AttributeError as e:
+				if not silent:
+					self._logger.logWarning(f"Couldn't find method {method} in manager {man.name}: {e}")
+			except TypeError:
+				# Do nothing, it's most prolly kwargs
+				pass
+
+		if propagateToModules:
+			self.ModuleManager.broadcast(method=method, silent=silent, *args, **kwargs)
+
+		for name in deadManagers:
+			del SM.SuperManager.getInstance().managers[name]
+
+
 	def onStart(self): pass
 	def onStop(self): pass
 	def onBooted(self): pass

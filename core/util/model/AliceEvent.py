@@ -1,10 +1,10 @@
 from threading import Event
 
-from core.base.SuperManager import SuperManager
+from core.base.model.ProjectAliceObject import ProjectAliceObject
 from core.commons import constants
 
 
-class AliceEvent(Event):
+class AliceEvent(Event, ProjectAliceObject):
 
 	def __init__(self, name: str, onSet: str = None, onClear: str = None):
 		super().__init__()
@@ -23,9 +23,9 @@ class AliceEvent(Event):
 			kwargs = dict()
 
 		if not self._onSet:
-			self.broadcast(state='set', **kwargs)
+			self.doBroadcast(state='set', **kwargs)
 		else:
-			SuperManager.getInstance().broadcast(
+			self.broadcast(
 				method=self._onSet,
 				exceptions=[constants.DUMMY],
 				propagateToModules=True,
@@ -41,9 +41,9 @@ class AliceEvent(Event):
 			self._kwargs = {**kwargs, **self._kwargs}
 
 		if not self._onClear:
-			self.broadcast(state='clear', **self._kwargs)
+			self.doBroadcast(state='clear', **self._kwargs)
 		else:
-			SuperManager.getInstance().broadcast(
+			self.broadcast(
 				method=self._onClear,
 				exceptions=[constants.DUMMY],
 				propagateToModules=True,
@@ -52,8 +52,8 @@ class AliceEvent(Event):
 			)
 
 
-	def broadcast(self, state: str, **kwargs):
-		SuperManager.getInstance().broadcast(
+	def doBroadcast(self, state: str, **kwargs):
+		self.broadcast(
 			method=self.eventName(state),
 			exceptions=[constants.DUMMY],
 			propagateToModules=True,
@@ -68,4 +68,4 @@ class AliceEvent(Event):
 
 
 	def eventName(self, state: str) -> str:
-		return f'on{SuperManager.getInstance().commons.toPascalCase(self.name)}{state.capitalize()}'
+		return f'on{self.Commons.toPascalCase(self.name)}{state.capitalize()}'
