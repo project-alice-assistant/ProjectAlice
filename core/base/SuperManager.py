@@ -1,10 +1,10 @@
 from __future__ import annotations
 
-from core.base.model.ProjectAliceObject import ProjectAliceObject
 from core.commons import constants
+from core.util.model.Logger import Logger
 
 
-class SuperManager(ProjectAliceObject):
+class SuperManager(Logger):
 
 	NAME        = 'SuperManager'
 	_INSTANCE   = None
@@ -18,7 +18,7 @@ class SuperManager(ProjectAliceObject):
 
 
 	def __init__(self, mainClass):
-		super().__init__(logDepth=3)
+		super().__init__(depth=3)
 
 		SuperManager._INSTANCE         = self
 		self._managers                 = dict()
