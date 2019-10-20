@@ -12,7 +12,6 @@ from paho.mqtt import client as MQTTClient
 from paho.mqtt.client import MQTTMessage
 
 from core.ProjectAliceExceptions import AccessLevelTooLow, ModuleStartingFailed
-from core.base.SuperManager import SuperManager
 from core.base.model.Intent import Intent
 from core.base.model.ProjectAliceObject import ProjectAliceObject
 from core.commons import constants
@@ -59,6 +58,7 @@ class Module(ProjectAliceObject):
 		self.loadWidgets()
 
 
+	# noinspection SqlResolve
 	def loadWidgets(self):
 		fp = Path(self.getCurrentDir(), 'widgets')
 		if fp.exists():
@@ -480,7 +480,3 @@ class Module(ProjectAliceObject):
 
 	def publish(self, topic: str, payload: dict = None, qos: int = 0, retain: bool = False):
 		self.MqttManager.publish(topic=topic, payload=payload, qos=qos, retain=retain)
-
-
-	def broadcast(self, topic: str):
-		self.MqttManager.publish(topic=topic)

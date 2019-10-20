@@ -21,7 +21,7 @@ class TimeManager(Manager):
 
 	def timerSignal(self, minutes: int, signal: str, running: bool = False):
 		if running:
-			SuperManager.getInstance().broadcast(signal, exceptions=[self.NAME], propagateToModules=True)
+			self.broadcast(signal, exceptions=[self.NAME], propagateToModules=True)
 
 		minute = datetime.now().minute
 		second = datetime.now().second

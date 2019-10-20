@@ -88,7 +88,7 @@ class ModuleManager(Manager):
 
 			self._modules[moduleName]['instance'].onBooted()
 
-			SuperManager.getInstance().broadcast(
+			self.broadcast(
 				method='onModuleUpdated' if module['update'] else 'onModuleInstalled',
 				exceptions=[constants.DUMMY],
 				module=moduleName
@@ -433,7 +433,7 @@ class ModuleManager(Manager):
 		root = Path(self.Commons.rootDir(), 'system/moduleInstallTickets')
 		availableModules = self.ConfigManager.modulesConfigurations
 		modulesToBoot = dict()
-		self.MqttManager.broadcast(topic='hermes/leds/systemUpdate', payload={'sticky': True})
+		self.MqttManager.mqttBroadcast(topic='hermes/leds/systemUpdate', payload={'sticky': True})
 		for file in modules:
 			moduleName = Path(file).with_suffix('')
 
@@ -523,7 +523,7 @@ class ModuleManager(Manager):
 					except Exception as e:
 						self.logError(f'Failed installing module "{moduleName}": {e}')
 						res.unlink()
-						SuperManager.getInstance().broadcast(
+						self.broadcast(
 							method='onModuleInstallFailed',
 							exceptions=self.name,
 							propagateToModules=False,
@@ -532,7 +532,7 @@ class ModuleManager(Manager):
 				else:
 					self.logError('Failed cloning module')
 					res.unlink()
-					SuperManager.getInstance().broadcast(
+					self.broadcast(
 						method='onModuleInstallFailed',
 						exceptions=self.name,
 						module=moduleName
@@ -541,7 +541,7 @@ class ModuleManager(Manager):
 			except ModuleNotConditionCompliant as e:
 				self.logInfo(f'Module {moduleName} does not comply to "{e.condition}" condition, required "{e.conditionValue}"')
 				res.unlink()
-				SuperManager.getInstance().broadcast(
+				self.broadcast(
 					method='onModuleInstallFailed',
 					exceptions=self.name,
 					module=moduleName
@@ -550,13 +550,13 @@ class ModuleManager(Manager):
 			except Exception as e:
 				self.logError(f'Failed installing module "{moduleName}": {e}')
 				res.unlink()
-				SuperManager.getInstance().broadcast(
+				self.broadcast(
 					method='onModuleInstallFailed',
 					exceptions=self.name,
 					module=moduleName
 				)
 
-		self.MqttManager.broadcast(topic='hermes/leds/clear')
+		self.MqttManager.mqttBroadcast(topic='hermes/leds/clear')
 		return modulesToBoot
 
 

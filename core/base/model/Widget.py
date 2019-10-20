@@ -6,11 +6,10 @@ import sqlite3
 from pathlib import Path
 from typing import Optional, Dict
 
-from core.base.SuperManager import SuperManager
-from core.util.model.Logger import Logger
+from core.base.model.ProjectAliceObject import ProjectAliceObject
 
 
-class Widget(Logger):
+class Widget(ProjectAliceObject):
 
 	SIZE = 'w'
 	OPTIONS = dict()
@@ -47,11 +46,12 @@ class Widget(Logger):
 			return None
 
 
+	# noinspection SqlResolve
 	def saveToDB(self):
-		SuperManager.getInstance().databaseManager.replace(
+		self.DatabaseManager.replace(
 			tableName='widgets',
 			query='REPLACE INTO :__table__ (parent, name, posx, posy, state, options, zindex) VALUES (:parent, :name, :posx, :posy, :state, :options, :zindex)',
-			callerName=SuperManager.getInstance().moduleManager.name,
+			callerName=self.ModuleManager.name,
 			values={
 				'parent': self.parent,
 				'name': self.name,

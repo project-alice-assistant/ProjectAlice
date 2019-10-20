@@ -162,44 +162,6 @@ class SuperManager(object):
 		self._managers = {name[0].upper() + name[1:]: manager for name, manager in self.__dict__.items() if name.endswith('Manager')}
 
 
-	def broadcast(self, method, exceptions: list = None, manager = None, propagateToModules: bool = False, silent: bool = False, *args, **kwargs):
-		if not exceptions:
-			exceptions = list()
-
-		if not exceptions and not manager:
-			self._logger.logWarning('Cannot broadcast to itself, the calling method has to be put in exceptions')
-
-		if 'ProjectAlice' not in exceptions:
-			exceptions.append('ProjectAlice')
-
-		deadManagers = list()
-		for name in self._managers:
-			man = self._managers[name]
-
-			if not man:
-				deadManagers.append(name)
-				continue
-
-			if (manager and man.name != manager.name) or man.name in exceptions:
-				continue
-
-			try:
-				func = getattr(man, method)
-				func(*args, **kwargs)
-			except AttributeError as e:
-				if not silent:
-					self._logger.logWarning(f"Couldn't find method {method} in manager {man.name}: {e}")
-			except TypeError:
-				# Do nothing, it's most prolly kwargs
-				pass
-
-		if propagateToModules:
-			self.moduleManager.broadcast(method=method, silent=silent, *args, **kwargs)
-
-		for name in deadManagers:
-			del self._managers[name]
-
-
 	def onStop(self):
 		managerName = constants.UNKNOWN_MANAGER
 		try:
@@ -211,3 +173,8 @@ class SuperManager(object):
 
 	def getManager(self, managerName: str):
 		return self._managers.get(managerName, None)
+
+
+	@property
+	def managers(self):
+		return self._managers

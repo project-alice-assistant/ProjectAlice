@@ -72,7 +72,7 @@ class SnipsServicesManager(Manager):
 			time.sleep(0.5)
 			self.onSnipsAssistantInstalled()
 
-			SuperManager.getInstance().broadcast(
+			self.broadcast(
 				method='onSnipsAssistantInstalled',
 				exceptions=[self.name],
 				propagateToModules=True,
@@ -80,7 +80,7 @@ class SnipsServicesManager(Manager):
 			)
 		except Exception as e:
 			self.logError(f'Failed installing Snips Assistant: {e}')
-			SuperManager.getInstance().broadcast(
+			self.broadcast(
 				method='onSnipsAssistantFailedInstalling',
 				exceptions=[constants.DUMMY],
 				propagateToModules=True,

@@ -383,7 +383,7 @@ class DeviceManager(Manager):
 
 		if not self._devices[uid].connected:
 			self._devices[uid].connected = True
-			SuperManager.getInstance().broadcast('onDeviceConnecting', exceptions=[self.name])
+			self.broadcast('onDeviceConnecting', exceptions=[self.name])
 			self.ModuleManager.broadcast('onDeviceConnecting')
 
 		return self._devices[uid]
@@ -395,7 +395,7 @@ class DeviceManager(Manager):
 
 		if self._devices[uid].connected:
 			self._devices[uid].connected = False
-			SuperManager.getInstance().broadcast('onDeviceDisconnecting', exceptions=[self.name])
+			self.broadcast('onDeviceDisconnecting', exceptions=[self.name])
 			self.ModuleManager.broadcast('onDeviceDisconnecting')
 
 

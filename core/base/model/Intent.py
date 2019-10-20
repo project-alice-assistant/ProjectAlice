@@ -1,11 +1,11 @@
 from pathlib import Path
 from typing import Dict, Callable
 
-from core.base.SuperManager import SuperManager
+from core.base.model.ProjectAliceObject import ProjectAliceObject
 from core.dialog.model.DialogMapping import DialogMapping
 
 
-class Intent(str):
+class Intent(str, ProjectAliceObject):
 
 	def __new__(cls, value: str, *args, **kwargs):
 		if kwargs.get('userIntent', True):
@@ -14,13 +14,13 @@ class Intent(str):
 
 
 	def __init__(self, _value: str, isProtected: bool = False, userIntent: bool = True):
-		self._owner = SuperManager.getInstance().configManager.getAliceConfigByName('intentsOwner')
+		self._owner = self.ConfigManager.getAliceConfigByName('intentsOwner')
 		self._protected = isProtected
 		self._userIntent = userIntent
 		self._dialogMapping = None
 
 		if isProtected:
-			SuperManager.getInstance().protectedIntentManager.protectIntent(self.decoratedSelf())
+			self.ProtectedIntentManager.protectIntent(self.decoratedSelf())
 
 		super().__init__()
 

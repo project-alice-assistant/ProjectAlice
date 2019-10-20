@@ -4,14 +4,15 @@ from typing import Optional
 from paho.mqtt.client import MQTTMessage
 
 from core.base.SuperManager import SuperManager
-from core.commons.model.Singleton import Singleton
+from core.base.model.ProjectAliceObject import ProjectAliceObject
 from core.dialog.model.DialogSession import DialogSession
 
 
-class Manager(Singleton):
+class Manager(ProjectAliceObject):
 
 	def __init__(self, name: str, databaseSchema: dict = None):
-		super().__init__(name)
+		super().__init__(logDepth=3)
+
 		self._name              = name
 		self._databaseSchema    = databaseSchema
 		self._isActive          = True
@@ -55,6 +56,42 @@ class Manager(Singleton):
 		if self._databaseSchema:
 			return SuperManager.getInstance().databaseManager.initDB(schema=self._databaseSchema, callerName=self.name)
 		return True
+
+
+	def broadcast(self, method, exceptions: list = None, manager = None, propagateToModules: bool = False, silent: bool = False, *args, **kwargs):
+		if not exceptions:
+			exceptions = list()
+
+		if not exceptions and not manager:
+			self._logger.logWarning('Cannot broadcast to itself, the calling method has to be put in exceptions')
+
+		if 'ProjectAlice' not in exceptions:
+			exceptions.append('ProjectAlice')
+
+		deadManagers = list()
+		for name, man in SuperManager.getInstance().managers.items():
+			if not man:
+				deadManagers.append(name)
+				continue
+
+			if (manager and man.name != manager.name) or man.name in exceptions:
+				continue
+
+			try:
+				func = getattr(man, method)
+				func(*args, **kwargs)
+			except AttributeError as e:
+				if not silent:
+					self._logger.logWarning(f"Couldn't find method {method} in manager {man.name}: {e}")
+			except TypeError:
+				# Do nothing, it's most prolly kwargs
+				pass
+
+		if propagateToModules:
+			self.ModuleManager.broadcast(method=method, silent=silent, *args, **kwargs)
+
+		for name in deadManagers:
+			del SuperManager.getInstance().managers[name]
 
 
 	def onBooted(self): pass
@@ -119,118 +156,3 @@ class Manager(Singleton):
 
 	def pruneTable(self, tableName: str):
 		return self.DatabaseManager.prune(tableName=tableName, callerName=self.name)
-
-
-	@property
-	def ConfigManager(self):
-		return SuperManager.getInstance().configManager
-
-
-	@property
-	def ModuleManager(self):
-		return SuperManager.getInstance().moduleManager
-
-
-	@property
-	def DeviceManager(self):
-		return SuperManager.getInstance().deviceManager
-
-
-	@property
-	def DialogSessionManager(self):
-		return SuperManager.getInstance().dialogSessionManager
-
-
-	@property
-	def MultiIntentManager(self):
-		return SuperManager.getInstance().multiIntentManager
-
-
-	@property
-	def ProtectedIntentManager(self):
-		return SuperManager.getInstance().protectedIntentManager
-
-
-	@property
-	def MqttManager(self):
-		return SuperManager.getInstance().mqttManager
-
-
-	@property
-	def SamkillaManager(self):
-		return SuperManager.getInstance().samkillaManager
-
-
-	@property
-	def SnipsConsoleManager(self):
-		return SuperManager.getInstance().snipsConsoleManager
-
-
-	@property
-	def SnipsServicesManager(self):
-		return SuperManager.getInstance().snipsServicesManager
-
-
-	@property
-	def UserManager(self):
-		return SuperManager.getInstance().userManager
-
-
-	@property
-	def DatabaseManager(self):
-		return SuperManager.getInstance().databaseManager
-
-
-	@property
-	def InternetManager(self):
-		return SuperManager.getInstance().internetManager
-
-
-	@property
-	def TelemetryManager(self):
-		return SuperManager.getInstance().telemetryManager
-
-
-	@property
-	def ThreadManager(self):
-		return SuperManager.getInstance().threadManager
-
-
-	@property
-	def TimeManager(self):
-		return SuperManager.getInstance().timeManager
-
-
-	@property
-	def ASRManager(self):
-		return SuperManager.getInstance().ASRManager
-
-
-	@property
-	def LanguageManager(self):
-		return SuperManager.getInstance().languageManager
-
-
-	@property
-	def TalkManager(self):
-		return SuperManager.getInstance().talkManager
-
-
-	@property
-	def TTSManager(self):
-		return SuperManager.getInstance().TTSManager
-
-
-	@property
-	def WakewordManager(self):
-		return SuperManager.getInstance().wakewordManager
-
-
-	@property
-	def WebInterfaceManager(self):
-		return SuperManager.getInstance().webInterfaceManager
-
-
-	@property
-	def Commons(self):
-		return SuperManager.getInstance().commons
