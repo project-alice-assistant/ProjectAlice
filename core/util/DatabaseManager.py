@@ -208,7 +208,7 @@ class DatabaseManager(Manager):
 
 
 
-	def fetch(self, tableName: str, query: str, callerName: str, values: dict = None, method: str = 'one') -> list:
+	def fetch(self, tableName: str, query: str, callerName: str, values: dict = None, method: str = 'one') -> sqlite3.Row:
 		"""
 		Fetch data from database
 		:param values:
@@ -223,7 +223,7 @@ class DatabaseManager(Manager):
 
 		query = self.basicChecks(tableName, query, callerName, values)
 		if not query:
-			return list()
+			return sqlite3.Row()
 
 		try:
 			database = self.getConnection()
@@ -237,7 +237,7 @@ class DatabaseManager(Manager):
 				data = cursor.fetchall()
 		except (DbConnectionError, sqlite3.Error) as e:
 			self.logWarning(f'Error fetching data for component "{callerName}" in table "{tableName}": {e}')
-			return list()
+			return sqlite3.Row()
 		else:
 			cursor.close()
 			database.close()

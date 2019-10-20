@@ -3,6 +3,8 @@ from __future__ import annotations
 import importlib
 import inspect
 import json
+import sqlite3
+
 import re
 
 from typing import Dict, Iterable, Callable, Any, Tuple, List
@@ -364,7 +366,7 @@ class Module(ProjectAliceObject):
 		return self.LanguageManager.defaultLanguage
 
 
-	def databaseFetch(self, tableName: str, query: str, values: dict = None, method: str = 'one') -> list:
+	def databaseFetch(self, tableName: str, query: str, values: dict = None, method: str = 'one') -> sqlite3.Row:
 		return self.DatabaseManager.fetch(tableName=tableName, query=query, values=values, callerName=self.name, method=method)
 
 
