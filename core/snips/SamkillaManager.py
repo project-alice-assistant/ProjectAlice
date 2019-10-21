@@ -119,7 +119,7 @@ class SamkillaManager(Manager):
 				baseAssistantId=activeProjectId,
 				baseLanguageFilter=activeLang,
 				baseModuleFilter=list(moduleFilter),
-				newAssistantTitle=f'ProjectAlice_{datetime.today()}_{self.LanguageManager.activeLanguage}'
+				newAssistantTitle=f"ProjectAlice_{datetime.today().strftime('%Y-%m-%d')}_{self.LanguageManager.activeLanguage}"
 			)
 
 			if changes:
@@ -279,7 +279,7 @@ class SamkillaManager(Manager):
 
 	# noinspection PyUnusedLocal
 	def findRunnableAssistant(self, assistantId: str, assistantLanguage: str, newAssistantTitle: str = '', persistLocal: bool = False) -> str:
-		if not newAssistantTitle: newAssistantTitle = f'ProjectAlice_{datetime.today()}_{self.LanguageManager.activeLanguage}'
+		if not newAssistantTitle: newAssistantTitle = f"ProjectAlice_{datetime.today().strftime('%Y-%m-%d')}_{self.LanguageManager.activeLanguage}"
 
 		runOnAssistantId = None
 
