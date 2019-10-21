@@ -119,7 +119,7 @@ class SamkillaManager(Manager):
 				baseAssistantId=activeProjectId,
 				baseLanguageFilter=activeLang,
 				baseModuleFilter=list(moduleFilter),
-				newAssistantTitle=f'ProjectAlice_{self.LanguageManager.activeLanguage}'
+				newAssistantTitle=f'ProjectAlice_{datetime.today()}_{self.LanguageManager.activeLanguage}'
 			)
 
 			if changes:
