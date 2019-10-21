@@ -92,7 +92,7 @@ class ConfigManager(Manager):
 				del availableConfigs[k]
 
 		if changes:
-			self._writeToAliceConfigurationFile(availableConfigs)
+			self.writeToAliceConfigurationFile(availableConfigs)
 
 		return availableConfigs
 
@@ -115,7 +115,7 @@ class ConfigManager(Manager):
 				value = dict((k, v) for k, v in value.items() if k not in self._aliceModuleConfigurationKeys)
 
 			self._aliceConfigurations[key] = value
-			self._writeToAliceConfigurationFile(self.aliceConfigurations)
+			self.writeToAliceConfigurationFile(self.aliceConfigurations)
 		except Exception:
 			raise ConfigurationUpdateFailed()
 
@@ -133,8 +133,7 @@ class ConfigManager(Manager):
 		self._writeToModuleConfigurationFile(moduleName, self._modulesConfigurations[moduleName])
 
 
-	@staticmethod
-	def _writeToAliceConfigurationFile(confs: dict):
+	def writeToAliceConfigurationFile(self, confs: dict):
 		"""
 		Saves the given configuration into config.py
 		:param confs: the dict to save
@@ -150,6 +149,8 @@ class ConfigManager(Manager):
 		for moduleName, conf in modules.items():
 			moduleCleaned = {key: value for key, value in conf.items() if key in misterProper}
 			sort['modules'][moduleName] = moduleCleaned
+
+		self._aliceConfigurations = sort
 
 		try:
 			s = json.dumps(sort, indent=4).replace('false', 'False').replace('true', 'True')
@@ -231,10 +232,10 @@ class ConfigManager(Manager):
 		return moduleName in self._modulesConfigurations and configName in self._modulesConfigurations[moduleName]
 
 
-	def getAliceConfigByName(self, configName: str, voiceControl: bool = False) -> dict:
+	def getAliceConfigByName(self, configName: str, voiceControl: bool = False) -> str:
 		return self._aliceConfigurations.get(
 			configName,
-			difflib.get_close_matches(word=configName, possibilities=self._aliceConfigurations, n=3) if voiceControl else dict()
+			difflib.get_close_matches(word=configName, possibilities=self._aliceConfigurations, n=3) if voiceControl else ''
 		)
 
 
@@ -344,7 +345,7 @@ class ConfigManager(Manager):
 			self.aliceConfigurations['modules'][moduleName]['active'] = False
 
 			if persistent:
-				self._writeToAliceConfigurationFile(self._aliceConfigurations)
+				self.writeToAliceConfigurationFile(self._aliceConfigurations)
 
 
 	def activateModule(self, moduleName: str, persistent: bool = False):
@@ -354,7 +355,7 @@ class ConfigManager(Manager):
 			self.aliceConfigurations['modules'][moduleName]['active'] = True
 
 			if persistent:
-				self._writeToAliceConfigurationFile(self._aliceConfigurations)
+				self.writeToAliceConfigurationFile(self._aliceConfigurations)
 
 
 	def removeModule(self, moduleName: str):
@@ -362,7 +363,7 @@ class ConfigManager(Manager):
 			modules = self.aliceConfigurations['modules']
 			modules.pop(moduleName)
 			self.aliceConfigurations['modules'] = modules
-			self._writeToAliceConfigurationFile(self._aliceConfigurations)
+			self.writeToAliceConfigurationFile(self._aliceConfigurations)
 
 
 	def changeActiveLanguage(self, toLang: str):
