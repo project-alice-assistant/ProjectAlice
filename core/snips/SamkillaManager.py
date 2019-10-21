@@ -1,5 +1,6 @@
 import json
 import time
+from datetime import datetime
 
 import requests
 from selenium import webdriver
@@ -101,9 +102,7 @@ class SamkillaManager(Manager):
 
 		self.log(f"Sync for module/s [{', '.join(moduleFilter) or '*'}]")
 
-		started = self.start()
-
-		if not started:
+		if not self.start():
 			self.log('No credentials. Unable to synchronize assistant with remote console')
 			return False
 
@@ -276,7 +275,7 @@ class SamkillaManager(Manager):
 
 	# noinspection PyUnusedLocal
 	def findRunnableAssistant(self, assistantId: str, assistantLanguage: str, newAssistantTitle: str = '', persistLocal: bool = False) -> str:
-		if not newAssistantTitle: newAssistantTitle = f'ProjectAlice_{self.LanguageManager.activeLanguage}'
+		if not newAssistantTitle: newAssistantTitle = f'ProjectAlice_{datetime.today()}_{self.LanguageManager.activeLanguage}'
 
 		runOnAssistantId = None
 
