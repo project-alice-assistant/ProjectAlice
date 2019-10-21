@@ -15,5 +15,7 @@
 	"viewIntents": "View intents",
 	"moduleSettings": "Module settings",
 	"save": "Save",
-	"followLogs": "Autoscroll"
+	"followLogs": "Autoscroll",
+	"adminTabTitleSetting": "Alice Settings",
+	"adminTabTitleUtilities": "Utilities"
 }

@@ -5,6 +5,7 @@
 {% endblock %}
 
 {% block loaders %}
+	<script src="{{ url_for('static', filename='js/admin.js') }}"></script>
 {% endblock %}
 
 {% block pageTitle %}
@@ -12,5 +13,16 @@
 {% endblock %}
 
 {% block content %}
+	<div id="adminPageTabs">
+		<ul>
+			<li><a href="#AliceSettings">{{ langData.adminTabTitleSetting }}</a></li>
+			<li><a href="#Utilities">{{ langData.adminTabTitleUtilities }}</a></li>
+		</ul>
+		<div id="AliceSettings">
 
+		</div>
+		<div id="Utilities">
+
+		</div>
+	</div>
 {% endblock %}

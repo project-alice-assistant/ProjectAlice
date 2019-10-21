@@ -15,5 +15,7 @@
 	"viewIntents": "Voir intents",
 	"moduleSettings": "Configuration",
 	"save": "Sauvegarder",
-	"followLogs": "Autoscroll"
+	"followLogs": "Autoscroll",
+	"adminTabTitleSetting": "Parametres Alice",
+	"adminTabTitleUtilities": "Utilitaires"
 }
