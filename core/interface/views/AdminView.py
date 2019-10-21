@@ -13,4 +13,5 @@ class AdminView(View):
 		return render_template('admin.html',
 		                       langData=self._langData,
 		                       devMode=self.ConfigManager.getAliceConfigByName('webInterfaceDevMode'),
-		                       updateChannel=self.ConfigManager.getAliceConfigByName('updateChannel'))
+		                       updateChannel=self.ConfigManager.getAliceConfigByName('updateChannel'),
+		                       aliceSettings=self.ConfigManager.aliceConfigurations)

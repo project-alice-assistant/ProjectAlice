@@ -19,7 +19,24 @@
 			<li><a href="#Utilities">{{ langData.adminTabTitleUtilities }}</a></li>
 		</ul>
 		<div id="AliceSettings">
-
+			<form action="/admin/saveAliceSettings" name="config_for_{{ moduleName }}" method="post" autocomplete="off" novalidate>
+				{% for settingName, settingValue in aliceSettings.items() %}
+					<div class="moduleConfigBox">
+						<label class="moduleConfigLabel" for="{{ settingName }}">{{ settingName }}</label>
+						{% if settingValue is sameas true or settingValue is sameas false %}
+							<input class="moduleConfigInput" type="checkbox" name="{{ settingName }}" value="on" id="{{ settingName }}" {% if settingValue is sameas true %}checked{% endif %}>
+							<!-- Make sure unchecked chexboxes send off data -->
+							<input class="moduleConfigInput" type="hidden" name="{{ settingName }}" value="off">
+						{% elif 'password' in settingName.lower() or 'secret' in settingName.lower() %}
+							<input class="moduleConfigInput" type="password" name="{{ settingName }}" value="{{ settingValue }}" id="{{ settingName }}">
+						{% else %}
+							<input class="moduleConfigInput" type="text" name="{{ settingName }}" value="{{ settingValue }}" id="{{ settingName }}">
+						{% endif %}
+					</div>
+				{% endfor %}
+				<input type="hidden" name="moduleName" value="{{ moduleName }}">
+				<input class="moduleConfigSave" type="submit" value="{{ langData.save }}">
+			</form>
 		</div>
 		<div id="Utilities">
 
