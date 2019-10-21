@@ -59,7 +59,7 @@ class SamkillaManager(Manager):
 		self.initActions()
 		self._loadDialogTemplateMapsInConfigManager()
 
-		if not Path(self.Commons.rootDir(), f'var/trained/assistants/assistant_{self.LanguageManager.activeLanguage}').exists():
+		if not Path(self.Commons.rootDir(), f'trained/assistants/assistant_{self.LanguageManager.activeLanguage}').exists():
 			self.sync()
 
 
