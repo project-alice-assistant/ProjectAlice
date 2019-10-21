@@ -431,18 +431,17 @@ a:hover {
 	margin-top: 10px;
 }
 
-.moduleConfigLabel {
+.configLabel {
 	display: inline-block;
 	width: 200px;
 	overflow: hidden;
 }
 
-.moduleConfigInput {
+.configInput {
 	display: inline-block;
-	width: 290px;
 }
 
-.moduleConfigSave {
+.configSaveButton {
 	margin-top: 25px;
 	width: 100%;
 	background-color: #636363;
@@ -724,4 +723,62 @@ input:focus {
 .w_extralarge_tall {
 	width: 500px;
 	height: 700px;
+}
+
+#adminPageTabsContainer {
+	display: flex;
+	height: 95%;
+	color: #d1d1d1;
+	margin: 5px 5px 0 5px;
+	border: 2px solid #343434;
+	border-top: none;
+	flex-direction: column;
+	padding-bottom: 5px;
+}
+
+#adminPageTabsContainer ul {
+	display: flex;
+	align-content: flex-start;
+	height: 50px;
+	background-color: #343434;
+	margin-top: 0;
+	padding-left: 5px;
+}
+
+#adminPageTabsContainer li {
+	font-family: 'marskeregular', Arial, sans-serif;
+	display: inline-flex;
+	align-items: center;
+	box-sizing: border-box;
+	padding-left: 10px;
+	padding-right: 10px;
+	background-color: #5c5c5c;
+	height: 45px;
+	margin-left: 5px;
+	margin-top: 5px;
+	border-radius: 5px 5px 0 0;
+	border: 2px solid #1e1e1e;
+	border-bottom: 0;
+	color: #d1d1d1;
+	font-size: 1.25em;
+}
+
+#adminPageTabsContainer li:hover {
+	background-color: #1e1e1e;
+	cursor: pointer;
+	color: yellow;
+}
+
+#adminPageTabsContainer .activeTab {
+	background-color: #1e1e1e;
+}
+
+.tabsContent {
+	display: flex;
+	font-family: 'neogreyregular', Arial, sans-serif;
+	font-size: 0.8em;
+	color: #d1d1d1;
+	padding-left: 10px;
+	overflow-y: auto;
+	overflow-x: hidden;
 }

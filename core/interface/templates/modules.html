@@ -21,20 +21,20 @@
 			<form action="/modules/saveModuleSettings" name="config_for_{{ moduleName }}" method="post" autocomplete="off" novalidate>
 				{% for configName, configValue in module.getModuleConfigs().items() %}
 					<div class="moduleConfigBox">
-						<label class="moduleConfigLabel" for="{{ configName }}">{{ configName }}</label>
+						<label class="configLabel" for="{{ configName }}">{{ configName }}</label>
 						{% if configValue is sameas true or configValue is sameas false %}
-							<input class="moduleConfigInput" type="checkbox" name="{{ configName }}" value="on" id="{{ configName }}" {% if configValue is sameas true %}checked{% endif %}>
+							<input class="configInput" type="checkbox" name="{{ configName }}" value="on" id="{{ configName }}" {% if configValue is sameas true %}checked{% endif %}>
 							<!-- Make sure unchecked chexboxes send off data -->
-							<input class="moduleConfigInput" type="hidden" name="{{ configName }}" value="off">
+							<input class="configInput" type="hidden" name="{{ configName }}" value="off">
 						{% elif 'password' in configName.lower() or 'secret' in configName.lower() %}
-							<input class="moduleConfigInput" type="password" name="{{ configName }}" value="{{ configValue }}" id="{{ configName }}">
+							<input class="configInput" type="password" name="{{ configName }}" value="{{ configValue }}" id="{{ configName }}">
 						{% else %}
-							<input class="moduleConfigInput" type="text" name="{{ configName }}" value="{{ configValue }}" id="{{ configName }}">
+							<input class="configInput" type="text" name="{{ configName }}" value="{{ configValue }}" id="{{ configName }}">
 						{% endif %}
 					</div>
 				{% endfor %}
 				<input type="hidden" name="moduleName" value="{{ moduleName }}">
-				<input class="moduleConfigSave" type="submit" value="{{ langData.save }}">
+				<input class="configSaveButton" type="submit" value="{{ langData.save }}">
 			</form>
 		</div>
 	{% endfor %}
