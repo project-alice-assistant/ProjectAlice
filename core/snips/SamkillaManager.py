@@ -1,6 +1,7 @@
 import json
 import time
 from datetime import datetime
+from pathlib import Path
 
 import requests
 from selenium import webdriver
@@ -57,6 +58,9 @@ class SamkillaManager(Manager):
 		self._mainProcessor = MainProcessor(self)
 		self.initActions()
 		self._loadDialogTemplateMapsInConfigManager()
+
+		if not Path(self.Commons.rootDir(), f'var/trained/assistants/assistant_{self.LanguageManager.activeLanguage}').exists():
+			self.sync()
 
 
 	def _loadDialogTemplateMapsInConfigManager(self):
