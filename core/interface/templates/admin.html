@@ -22,19 +22,21 @@
 			<div id="AliceSettings">
 				<form action="/admin/saveAliceSettings" name="config_for_{{ moduleName }}" method="post" autocomplete="off" novalidate>
 					{% for settingName, settingValue in aliceSettings.items() if not settingName == 'modules' and not settingName == 'supportedLanguages' %}
-						<div class="moduleConfigBox">
+						<div class="configLine">
 							<label class="configLabel" for="{{ settingName }}">{{ settingName }}</label>
-							{% if settingValue is sameas true or settingValue is sameas false %}
-								<input class="configInput" type="checkbox" name="{{ settingName }}" value="on" id="{{ settingName }}" {% if settingValue is sameas true %}checked{% endif %}>
-								<!-- Make sure unchecked chexboxes send off data -->
-								<input class="configInput" type="hidden" name="{{ settingName }}" value="off">
-							{% elif settingValue is number %}
-								<input class="configInput" type="number" name="{{ settingName }}" value="{{ settingValue }}" id="{{ settingName }}">
-							{% elif 'password' in settingName.lower() or 'secret' in settingName.lower() %}
-								<input class="configInput" type="password" name="{{ settingName }}" value="{{ settingValue }}" id="{{ settingName }}">
-							{% else %}
-								<input class="configInput" type="text" name="{{ settingName }}" value="{{ settingValue }}" id="{{ settingName }}">
-							{% endif %}
+							<div class="configInput">
+								{% if settingValue is sameas true or settingValue is sameas false %}
+									<input type="checkbox" name="{{ settingName }}" value="on" id="{{ settingName }}" {% if settingValue is sameas true %}checked{% endif %}>
+									<!-- Make sure unchecked chexboxes send off data -->
+									<input class="configInput" type="hidden" name="{{ settingName }}" value="off">
+								{% elif settingValue is number %}
+									<input type="number" name="{{ settingName }}" value="{{ settingValue }}" id="{{ settingName }}">
+								{% elif 'password' in settingName.lower() or 'secret' in settingName.lower() %}
+									<input type="password" name="{{ settingName }}" value="{{ settingValue }}" id="{{ settingName }}">
+								{% else %}
+									<input type="text" name="{{ settingName }}" value="{{ settingValue }}" id="{{ settingName }}">
+								{% endif %}
+							</div>
 						</div>
 					{% endfor %}
 					<input class="configSaveButton" type="submit" value="{{ langData.save }}">

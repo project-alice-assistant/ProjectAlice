@@ -431,14 +431,24 @@ a:hover {
 	margin-top: 10px;
 }
 
+.configLine {
+	width: 100%;
+	display: table-row;
+	height: 30px;
+}
+
 .configLabel {
-	display: inline-block;
-	width: 200px;
+	display: table-cell;
 	overflow: hidden;
 }
 
 .configInput {
-	display: inline-block;
+	display: table-cell;
+	padding-left: 20px;
+}
+
+.tabsContent form {
+	display: table;
 }
 
 .configSaveButton {
