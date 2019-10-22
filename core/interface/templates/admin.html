@@ -31,7 +31,7 @@
 									<input type="hidden" name="{{ settingName }}" value="off">
 								{% elif settingValue is number %}
 									<input type="number" name="{{ settingName }}" value="{{ settingValue }}" id="{{ settingName }}">
-								{% elif 'password' in settingName.lower() or 'secret' in settingName.lower() %}
+								{% elif 'password' in settingName.lower() or 'secret' in settingName.lower() or 'token' in settingName.lower() or 'code' in settingName.lower() %}
 									<input type="password" name="{{ settingName }}" value="{{ settingValue }}" id="{{ settingName }}">
 								{% else %}
 									<input type="text" name="{{ settingName }}" value="{{ settingValue }}" id="{{ settingName }}">
