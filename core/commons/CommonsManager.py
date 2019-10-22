@@ -81,6 +81,9 @@ class CommonsManager(Manager):
 			p = message.payload
 			p = p.decode()
 
+			if p == 'true' or p == 'false':
+				raise ValueError
+
 			return json.loads(p)
 		except (UnicodeDecodeError, AttributeError):
 			try:
@@ -88,7 +91,7 @@ class CommonsManager(Manager):
 			except ValueError:
 				raise
 		except ValueError:
-			return {p: p}
+			return {str(p): p}
 		except:
 			return dict()
 
