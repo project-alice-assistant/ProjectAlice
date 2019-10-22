@@ -7,7 +7,7 @@ settings = {
 	"ssid": "",
 	"wifipassword": "",
 	"mqttHost": "localhost",
-	"mqttPort": "1883",
+	"mqttPort": 1883,
 	"micSampleRate": 44100,
 	"micChannels": 1,
 	"enableDataStoring": False,

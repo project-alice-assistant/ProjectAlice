@@ -28,7 +28,7 @@
 								{% if settingValue is sameas true or settingValue is sameas false %}
 									<input type="checkbox" name="{{ settingName }}" value="on" id="{{ settingName }}" {% if settingValue is sameas true %}checked{% endif %}>
 									<!-- Make sure unchecked chexboxes send off data -->
-									<input class="configInput" type="hidden" name="{{ settingName }}" value="off">
+									<input type="hidden" name="{{ settingName }}" value="off">
 								{% elif settingValue is number %}
 									<input type="number" name="{{ settingName }}" value="{{ settingValue }}" id="{{ settingName }}">
 								{% elif 'password' in settingName.lower() or 'secret' in settingName.lower() %}

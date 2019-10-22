@@ -159,7 +159,7 @@ network={
 		# Now let's dump some values to their respective places
 		# First those that need some checks and self filling in case unspecified
 		confs['mqttHost'] = str(initConfs['mqttHost']) or 'localhost'
-		confs['mqttPort'] = str(initConfs['mqttPort']) or '1883'
+		confs['mqttPort'] = initConfs['mqttPort'] or 1883
 
 		confs['snipsConsoleLogin'] = initConfs['snipsConsoleLogin']
 		confs['snipsConsolePassword'] = initConfs['snipsConsolePassword']

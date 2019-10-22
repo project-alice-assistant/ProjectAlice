@@ -17,20 +17,22 @@
 
 {% block content %}
 	{% for moduleName, module in modules.items() %}
-		<div id="config_for_{{ moduleName }}" title="{{ langData.moduleSettings }}">
+		<div id="config_for_{{ moduleName }}" title="{{ langData.moduleSettings }}" class="configBox">
 			<form action="/modules/saveModuleSettings" name="config_for_{{ moduleName }}" method="post" autocomplete="off" novalidate>
 				{% for configName, configValue in module.getModuleConfigs().items() %}
-					<div class="moduleConfigBox">
+					<div class="configLine">
 						<label class="configLabel" for="{{ configName }}">{{ configName }}</label>
-						{% if configValue is sameas true or configValue is sameas false %}
-							<input class="configInput" type="checkbox" name="{{ configName }}" value="on" id="{{ configName }}" {% if configValue is sameas true %}checked{% endif %}>
-							<!-- Make sure unchecked chexboxes send off data -->
-							<input class="configInput" type="hidden" name="{{ configName }}" value="off">
-						{% elif 'password' in configName.lower() or 'secret' in configName.lower() %}
-							<input class="configInput" type="password" name="{{ configName }}" value="{{ configValue }}" id="{{ configName }}">
-						{% else %}
-							<input class="configInput" type="text" name="{{ configName }}" value="{{ configValue }}" id="{{ configName }}">
-						{% endif %}
+						<div class="configInput">
+							{% if configValue is sameas true or configValue is sameas false %}
+								<input type="checkbox" name="{{ configName }}" value="on" id="{{ configName }}" {% if configValue is sameas true %}checked{% endif %}>
+								<!-- Make sure unchecked chexboxes send off data -->
+								<input type="hidden" name="{{ configName }}" value="off">
+							{% elif 'password' in configName.lower() or 'secret' in configName.lower() %}
+								<input type="password" name="{{ configName }}" value="{{ configValue }}" id="{{ configName }}">
+							{% else %}
+								<input type="text" name="{{ configName }}" value="{{ configValue }}" id="{{ configName }}">
+							{% endif %}
+						</div>
 					</div>
 				{% endfor %}
 				<input type="hidden" name="moduleName" value="{{ moduleName }}">
