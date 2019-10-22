@@ -426,9 +426,9 @@ a:hover {
 	color: yellow;
 }
 
-.moduleConfigBox {
-	width: 500px;
-	margin-top: 10px;
+.configBox {
+	width: 100%;
+	display: table;
 }
 
 .configLine {
@@ -440,15 +440,17 @@ a:hover {
 .configLabel {
 	display: table-cell;
 	overflow: hidden;
+	text-align: left;
+	vertical-align: middle;
+	cursor: pointer;
 }
 
 .configInput {
 	display: table-cell;
 	padding-left: 20px;
-}
-
-.tabsContent form {
-	display: table;
+	width: 100%;
+	text-align: left;
+	vertical-align: middle;
 }
 
 .configSaveButton {
@@ -465,9 +467,20 @@ a:hover {
 input {
 	background-color: #1e1e1e;
 	color: #d1d1d1;
-	border: #636363 dotted 1px;
+	border: 1px dotted #636363;
 	outline: none;
 	padding: 5px;
+	width: auto;
+	margin-left: 20px;
+	margin-right: 20px;
+}
+
+input:hover {
+	border: dotted 1px;
+}
+
+input[type='text'], input[type='password'], input[type='number'] {
+	width: 95%;
 }
 
 input:focus {

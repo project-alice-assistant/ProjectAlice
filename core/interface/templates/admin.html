@@ -19,7 +19,7 @@
 			<li class="tab" data-for="Utilities">{{ langData.adminTabTitleUtilities }}</li>
 		</ul>
 		<div class="tabsContent">
-			<div id="AliceSettings">
+			<div id="AliceSettings" class="configBox">
 				<form action="/admin/saveAliceSettings" name="config_for_{{ moduleName }}" method="post" autocomplete="off" novalidate>
 					{% for settingName, settingValue in aliceSettings.items() if not settingName == 'modules' and not settingName == 'supportedLanguages' %}
 						<div class="configLine">

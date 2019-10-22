@@ -22,7 +22,9 @@ class AdminView(View):
 	@route('/saveAliceSettings', methods=['POST'])
 	def saveAliceSettings(self):
 		try:
-			confs = {key: False if value == 'off' else True if value == 'on' else value for key, value in request.form.items()}
+			# Create the conf dict. on and off values are translated to True and False and we try to cast to int
+			# because HTTP data is type less.
+			confs = {key: False if value == 'off' else True if value == 'on' else int(value) if value.isdigit() else float(value) if self.isfloat(value) else value for key, value in request.form.items()}
 
 			confs['modules'] = self.ConfigManager.getAliceConfigByName('modules')
 			confs['supportedLanguages'] = self.ConfigManager.getAliceConfigByName('supportedLanguages')
@@ -32,3 +34,12 @@ class AdminView(View):
 		except Exception as e:
 			self.logError(f'Failed saving Alice config: {e}')
 			return self.index()
+
+
+	# noinspection PyMethodMayBeStatic
+	def isfloat(self, value: str) -> bool:
+		try:
+			value = float(value)
+			return True
+		except:
+			return False
