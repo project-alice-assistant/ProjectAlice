@@ -434,7 +434,7 @@ a:hover {
 .configLine {
 	width: 100%;
 	display: table-row;
-	height: 30px;
+	height: 40px;
 }
 
 .configLabel {
@@ -465,8 +465,9 @@ a:hover {
 input {
 	background-color: #1e1e1e;
 	color: #d1d1d1;
-	border: #d1d1d1 dotted 1px;
+	border: #636363 dotted 1px;
 	outline: none;
+	padding: 5px;
 }
 
 input:focus {
