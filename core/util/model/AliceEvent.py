@@ -35,6 +35,11 @@ class AliceEvent(Event, ProjectAliceObject):
 
 
 	def clear(self, **kwargs) -> None:
+		"""
+		Clears an event and calls the onClear method if any or builds a "onYourEventName" broadcast
+		:param kwargs:
+		:return:
+		"""
 		super().clear()
 
 		if kwargs:
@@ -50,6 +55,14 @@ class AliceEvent(Event, ProjectAliceObject):
 				silent=False,
 				**self._kwargs
 			)
+
+
+	def cancel(self) -> None:
+		"""
+		Clears an event but doesn't call the onClear event
+		:return:
+		"""
+		super().clear()
 
 
 	def doBroadcast(self, state: str, **kwargs):
