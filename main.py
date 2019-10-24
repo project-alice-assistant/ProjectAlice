@@ -64,15 +64,21 @@ def stopHandler(signum, frame):
 	RUNNING = False
 
 
+def restart():
+	global RUNNING
+	RUNNING = False
+
+
 def main():
 	subprocess.run(['clear'])
 	global RUNNING
+	RUNNING = True
 
 	signal.signal(signal.SIGINT, stopHandler)
 	signal.signal(signal.SIGTERM, stopHandler)
 
 	Initializer().initProjectAlice()
-	projectAlice = ProjectAlice()
+	projectAlice = ProjectAlice(restartHandler=restart)
 	try:
 		while RUNNING:
 			time.sleep(0.1)
@@ -81,9 +87,11 @@ def main():
 	finally:
 		projectAlice.onStop()
 		_logger.info('Project Alice stopped, see you soon!')
+		if projectAlice.restart:
+			time.sleep(5)
+			main()
+
 
 RUNNING = False
-
 if __name__ == '__main__':
-	RUNNING = True
 	main()

@@ -1,4 +1,6 @@
-from flask import render_template, request
+import subprocess
+
+from flask import render_template, request, jsonify
 from flask_classful import route
 
 from core.interface.views.View import View
@@ -33,6 +35,26 @@ class AdminView(View):
 			return self.index()
 		except Exception as e:
 			self.logError(f'Failed saving Alice config: {e}')
+			return self.index()
+
+
+	@route('/restart', methods=['POST'])
+	def restart(self):
+		try:
+			self.ProjectAlice.doRestart()
+			return jsonify(success=True)
+		except Exception as e:
+			self.logError(f'Failed restarting Alice: {e}')
+			return self.index()
+
+
+	@route('/reboot', methods=['POST'])
+	def reboot(self):
+		try:
+			subprocess.run(['sudo', 'shutdown', '-r', 'now'])
+			self.ProjectAlice.doRestart()
+		except Exception as e:
+			self.logError(f'Failed rebooting device: {e}')
 			return self.index()
 
 

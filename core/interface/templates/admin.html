@@ -42,8 +42,19 @@
 					<input class="configSaveButton" type="submit" value="{{ langData.save }}">
 				</form>
 			</div>
-			<div id="Utilities">
-				blablabla
+			<div id="Utilities" class="utilitiesBox">
+				<div id="restart" class="utility">
+					<div class="utilityIcon">
+						<i class="fas fa-redo-alt"></i>
+					</div>
+					<div class="utilityText">{{ langData.restartAlice }}</div>
+				</div>
+				<div id="reboot" class="utility">
+					<div class="utilityIcon">
+						<i class="fas fa-power-off"></i>
+					</div>
+					<div class="utilityText">{{ langData.reboot }}</div>
+				</div>
 			</div>
 		</div>
 	</div>

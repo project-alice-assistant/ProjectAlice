@@ -31,4 +31,19 @@ $(function () {
 			}
 		});
 	});
+
+	$('#restart').on('click', function () {
+		$.ajax({
+			url: '/admin/restart',
+			type: 'POST'
+		});
+	});
+
+	$('#reboot').on('click', function () {
+		$.ajax({
+			url: '/admin/reboot',
+			type: 'POST'
+		});
+	});
+
 });

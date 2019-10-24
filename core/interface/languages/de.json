@@ -17,5 +17,7 @@
 	"save": "Speichern",
 	"followLogs": "Autoscroll",
 	"adminTabTitleSetting": "Alice Einstellungen",
-	"adminTabTitleUtilities": "Utilities"
+	"adminTabTitleUtilities": "Utilities",
+	"restartAlice": "Alice neustarten",
+	"reboot": "Reboot"
 }

@@ -487,6 +487,43 @@ input:focus {
 	border: yellow dotted 1px;
 }
 
+.utilitiesBox {
+	width: 100%;
+	display: flex;
+	align-items: flex-start;
+	justify-content: flex-start;
+}
+
+.utility {
+	width: 150px;
+	height: 150px;
+	background-color: #343434;
+	color: #d1d1d1;
+	display: flex;
+	align-items: center;
+	flex-direction: column;
+	margin-left: 20px;
+	margin-top: 20px;
+}
+
+.utility:hover {
+	cursor: pointer;
+	background-color: #636363;
+	color: yellow;
+}
+
+.utilityIcon {
+	width: 100%;
+	text-align: center;
+	font-size: 5em;
+	margin-top: 15px;
+}
+
+.utilityText {
+	font-size: 1.25em;
+	margin-top: 10px;
+}
+
 #emptyCheckbox {
 	display: none;
 }

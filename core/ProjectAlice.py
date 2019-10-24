@@ -8,9 +8,11 @@ class ProjectAlice(Singleton):
 
 	NAME = 'ProjectAlice'
 
-	def __init__(self):
+	def __init__(self, restartHandler: callable):
 		Singleton.__init__(self, self.NAME)
 		self.logInfo('Starting up project Alice core')
+		self._restart = False
+		self._restartHandler = restartHandler
 		self._superManager = SuperManager(self)
 
 		self._superManager.initManagers()
@@ -25,6 +27,21 @@ class ProjectAlice(Singleton):
 	@property
 	def name(self) -> str:
 		return self.NAME
+
+
+	@property
+	def restart(self) -> bool:
+		return self._restart
+
+
+	@restart.setter
+	def restart(self, value: bool):
+		self._restart = value
+
+
+	def doRestart(self):
+		self._restart = True
+		self._restartHandler()
 
 
 	def onStop(self):
