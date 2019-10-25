@@ -49,3 +49,5 @@ class ProjectAlice(Singleton):
 		self._superManager.onStop()
 		if self._superManager.configManager.getAliceConfigByName('useSLC'):
 			subprocess.run(['sudo', 'systemctl', 'stop', 'snipsledcontrol'])
+
+		self.INSTANCE = None

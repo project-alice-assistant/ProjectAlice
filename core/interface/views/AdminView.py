@@ -41,7 +41,7 @@ class AdminView(View):
 	@route('/restart', methods=['POST'])
 	def restart(self):
 		try:
-			self.ProjectAlice.doRestart()
+			self.ThreadManager.doLater(interval=2, func=self.ProjectAlice.doRestart)
 			return jsonify(success=True)
 		except Exception as e:
 			self.logError(f'Failed restarting Alice: {e}')
@@ -51,8 +51,8 @@ class AdminView(View):
 	@route('/reboot', methods=['POST'])
 	def reboot(self):
 		try:
-			subprocess.run(['sudo', 'shutdown', '-r', 'now'])
-			self.ProjectAlice.doRestart()
+			self.ThreadManager.doLater(interval=2, func=subprocess.run, args=[['sudo', 'shutdown', '-r', 'now']])
+			return jsonify(success=True)
 		except Exception as e:
 			self.logError(f'Failed rebooting device: {e}')
 			return self.index()
