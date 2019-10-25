@@ -51,11 +51,17 @@ class AdminView(View):
 	@route('/reboot', methods=['POST'])
 	def reboot(self):
 		try:
+			self.ProjectAlice.onStop()
 			self.ThreadManager.doLater(interval=2, func=subprocess.run, args=[['sudo', 'shutdown', '-r', 'now']])
 			return jsonify(success=True)
 		except Exception as e:
 			self.logError(f'Failed rebooting device: {e}')
 			return self.index()
+
+
+	@route('/areYouHere', methods=['POST'])
+	def areYouHere(self):
+		return jsonify(success=False) if self.ProjectAlice.restart else jsonify(success=True)
 
 
 	# noinspection PyMethodMayBeStatic

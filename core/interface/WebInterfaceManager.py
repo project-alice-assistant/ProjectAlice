@@ -55,19 +55,27 @@ class WebInterfaceManager(Manager):
 			with langFile.open('r') as f:
 				self._langData = json.load(f)
 
-			for view in self._VIEWS:
-				view.register(self.app)
+			try:
+				for view in self._VIEWS:
+					view.register(self.app)
+			except:
+				# Passing because of a reboot we can re register
+				pass
 
 			self.ThreadManager.newThread(
 				name='WebInterface',
 				target=self.app.run,
 				kwargs={
-					'debug': True,
+					'debug': False,
 					'port': int(self.ConfigManager.getAliceConfigByName('webInterfacePort')),
 					'host': self.Commons.getLocalIp(),
 					'use_reloader': False
 				}
 			)
+
+
+	def onStop(self):
+		self.ThreadManager.terminateThread('WebInterface')
 
 
 	def newModuleInstallProcess(self, module):

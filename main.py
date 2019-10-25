@@ -17,6 +17,7 @@
 				maxbachmann <https://github.com/maxbachmann>
 """
 import logging.handlers
+import os
 import signal
 import sys
 import traceback
@@ -88,7 +89,8 @@ def main():
 		projectAlice.onStop()
 		_logger.info('Project Alice stopped, see you soon!')
 		if projectAlice.restart:
-			time.sleep(5)
+			time.sleep(3)
+			sys.stdout.flush()
 			main()
 
 
