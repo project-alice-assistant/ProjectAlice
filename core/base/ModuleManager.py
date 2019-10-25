@@ -79,6 +79,8 @@ class ModuleManager(Manager):
 
 	def onSnipsAssistantInstalled(self, **kwargs):
 		argv = kwargs.get('modulesInfos', dict())
+		if not argv:
+			return
 
 		for moduleName, module in argv.items():
 			try:

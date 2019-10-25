@@ -521,7 +521,8 @@ input:focus {
 
 .utilityText {
 	font-size: 1.25em;
-	margin-top: 10px;
+	margin-top: 7px;
+	text-align: center;
 }
 
 #emptyCheckbox {

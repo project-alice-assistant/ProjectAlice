@@ -1,11 +1,12 @@
 $(function () {
 
+	let locked = false;
 	let $defaultTab = $('#adminPageTabsContainer ul li:first');
 	$defaultTab.addClass('activeTab');
 
-	function hello($icon) {
+	function areYouReady($icon) {
 		$.ajax({
-			url: '/admin/areYouHere',
+			url: '/admin/areYouReady',
 			type: 'POST'
 		}).done(function(response) {
 			if (response['success']) {
@@ -14,17 +15,35 @@ $(function () {
 				setTimeout(function () {
 					$icon.removeClass('green');
 					$icon.removeClass('fa-spin');
+					locked = false;
 				}, 3000);
 			} else {
 				setTimeout(function () {
-					hello($icon);
+					areYouReady($icon);
 				}, 1000);
 			}
 		}).fail(function() {
 			setTimeout(function () {
-				hello($icon);
+				areYouReady($icon);
 			}, 1000);
 		});
+	}
+
+	function handleUtilityClick($div, endpoint, timeout) {
+		if (locked) {
+			return;
+		}
+
+		locked = true;
+		let $icon = $div.children('.utilityIcon').children('i');
+		$icon.addClass('fa-spin red');
+		$.ajax({
+			url: '/admin/' + endpoint,
+			type: 'POST'
+		});
+		setTimeout(function () {
+			areYouReady($icon);
+		}, timeout);
 	}
 
 	$('.tabsContent').children().each(function () {
@@ -57,27 +76,14 @@ $(function () {
 	});
 
 	$('#restart').on('click', function () {
-		let $icon = $(this).children('.utilityIcon').children('i');
-		$icon.addClass('fa-spin red');
-		$.ajax({
-			url: '/admin/restart',
-			type: 'POST'
-		});
-		setTimeout(function () {
-			hello($icon);
-		}, 5000);
+		handleUtilityClick($(this), 'restart', 5000);
 	});
 
 	$('#reboot').on('click', function () {
-		let $icon = $(this).children('.utilityIcon').children('i');
-		$icon.addClass('fa-spin red');
-		$.ajax({
-			url: '/admin/reboot',
-			type: 'POST'
-		});
-		setTimeout(function () {
-			hello($icon);
-		}, 10000);
+		handleUtilityClick($(this), 'reboot', 10000);
 	});
 
+	$('#trainAndDownload').on('click', function () {
+		handleUtilityClick($(this), 'assistantDownload', 5000);
+	});
 });

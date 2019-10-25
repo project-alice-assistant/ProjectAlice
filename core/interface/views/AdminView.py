@@ -11,6 +11,7 @@ class AdminView(View):
 
 	def __init__(self):
 		super().__init__()
+		self._waitType = ''
 
 
 	def index(self):
@@ -41,27 +42,43 @@ class AdminView(View):
 	@route('/restart', methods=['POST'])
 	def restart(self):
 		try:
+			self._waitType = 'restart'
 			self.ThreadManager.doLater(interval=2, func=self.ProjectAlice.doRestart)
 			return jsonify(success=True)
 		except Exception as e:
 			self.logError(f'Failed restarting Alice: {e}')
-			return self.index()
+			return jsonify(success=False)
 
 
 	@route('/reboot', methods=['POST'])
 	def reboot(self):
 		try:
+			self._waitType = 'reboot'
 			self.ProjectAlice.onStop()
 			self.ThreadManager.doLater(interval=2, func=subprocess.run, args=[['sudo', 'shutdown', '-r', 'now']])
 			return jsonify(success=True)
 		except Exception as e:
 			self.logError(f'Failed rebooting device: {e}')
-			return self.index()
+			return jsonify(success=False)
 
 
-	@route('/areYouHere', methods=['POST'])
-	def areYouHere(self):
-		return jsonify(success=False) if self.ProjectAlice.restart else jsonify(success=True)
+	@route('/assistantDownload', methods=['POST'])
+	def assistantDownload(self):
+		try:
+			self._waitType = 'snipsdownload'
+			self.SnipsConsoleManager.doDownload()
+			return jsonify(success=True)
+		except Exception as e:
+			self.logError(f'Failed downloading assistant: {e}')
+			return jsonify(success=False)
+
+
+	@route('/areYouReady', methods=['POST'])
+	def areYouReady(self):
+		if not self._waitType or self._waitType in ['restart', 'reboot']:
+			return jsonify(success=False) if self.ProjectAlice.restart else jsonify(success=True)
+		elif self._waitType == 'snipsdownload':
+			return jsonify(success=False) if self.ThreadManager.getEvent('SnipsAssistantDownload').isSet() else jsonify(success=True)
 
 
 	# noinspection PyMethodMayBeStatic

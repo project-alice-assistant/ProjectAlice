@@ -19,5 +19,6 @@
 	"adminTabTitleSetting": "Alice Settings",
 	"adminTabTitleUtilities": "Utilities",
 	"restartAlice": "Restart Alice",
-	"reboot": "Reboot"
+	"reboot": "Reboot",
+	"trainAndDlAssistant": "Download assistant"
 }

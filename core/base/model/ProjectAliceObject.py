@@ -13,7 +13,7 @@ class ProjectAliceObject(Logger):
 			exceptions = list()
 
 		if not exceptions and not manager:
-			self._logger.logWarning('Cannot broadcast to itself, the calling method has to be put in exceptions')
+			self.logWarning('Cannot broadcast to itself, the calling method has to be put in exceptions')
 
 		if 'ProjectAlice' not in exceptions:
 			exceptions.append('ProjectAlice')
@@ -32,7 +32,7 @@ class ProjectAliceObject(Logger):
 				func(*args, **kwargs)
 			except AttributeError as e:
 				if not silent:
-					self._logger.logWarning(f"Couldn't find method {method} in manager {man.name}: {e}")
+					self.logWarning(f"Couldn't find method {method} in manager {man.name}: {e}")
 			except TypeError:
 				# Do nothing, it's most prolly kwargs
 				pass

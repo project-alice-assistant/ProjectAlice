@@ -18,6 +18,7 @@ class WebInterfaceManager(Manager):
 
 	NAME = 'WebInterfaceManager'
 	app = Flask(__name__)
+	app.config['SEND_FILE_MAX_AGE_DEFAULT'] = 0
 
 	_VIEWS = [AdminView, IndexView, ModulesView, SnipswatchView, SyslogView, DevModeView]
 
@@ -66,7 +67,7 @@ class WebInterfaceManager(Manager):
 				name='WebInterface',
 				target=self.app.run,
 				kwargs={
-					'debug': False,
+					'debug': True,
 					'port': int(self.ConfigManager.getAliceConfigByName('webInterfacePort')),
 					'host': self.Commons.getLocalIp(),
 					'use_reloader': False
