@@ -9,7 +9,12 @@ $(function () {
 			type: 'POST'
 		}).done(function(response) {
 			if (response['success']) {
-				$icon.removeClass('fa-spin')
+				$icon.removeClass('red');
+				$icon.addClass('green');
+				setTimeout(function () {
+					$icon.removeClass('green');
+					$icon.removeClass('fa-spin');
+				}, 3000);
 			} else {
 				setTimeout(function () {
 					hello($icon);
@@ -53,7 +58,7 @@ $(function () {
 
 	$('#restart').on('click', function () {
 		let $icon = $(this).children('.utilityIcon').children('i');
-		$icon.addClass('fa-spin');
+		$icon.addClass('fa-spin red');
 		$.ajax({
 			url: '/admin/restart',
 			type: 'POST'
@@ -65,7 +70,7 @@ $(function () {
 
 	$('#reboot').on('click', function () {
 		let $icon = $(this).children('.utilityIcon').children('i');
-		$icon.addClass('fa-spin');
+		$icon.addClass('fa-spin red');
 		$.ajax({
 			url: '/admin/reboot',
 			type: 'POST'

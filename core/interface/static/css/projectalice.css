@@ -843,3 +843,11 @@ input:focus {
 	overflow-y: auto;
 	overflow-x: hidden;
 }
+
+.red {
+	color: red;
+}
+
+.green {
+	color: green;
+}
