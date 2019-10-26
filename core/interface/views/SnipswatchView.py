@@ -7,7 +7,6 @@ from pathlib import Path
 import tempfile
 
 from flask import jsonify, render_template, request
-from flask_classful import route
 
 from core.interface.views.View import View
 
@@ -63,12 +62,10 @@ class SnipswatchView(View):
 					fp.write(line)
 
 
-	@route('/refreshConsole', methods=['POST'])
 	def refreshConsole(self):
 		return jsonify(data=self._getData())
 
 
-	@route('/verbosity', methods=['POST'])
 	def verbosity(self):
 		try:
 			if self._process:

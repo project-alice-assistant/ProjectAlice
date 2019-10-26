@@ -2,17 +2,12 @@ import subprocess
 from collections import OrderedDict
 
 from flask import render_template, request, jsonify
-from flask_classful import route
 
 from core.interface.views.View import View
 
 
 class ModulesView(View):
 	route_base = '/modules/'
-
-
-	def __init__(self):
-		super().__init__()
 
 
 	def index(self):
@@ -28,7 +23,6 @@ class ModulesView(View):
 		                       updateChannel=self.ConfigManager.getAliceConfigByName('updateChannel'))
 
 
-	@route('/toggle', methods=['POST'])
 	def toggleModule(self):
 		try:
 			action, module = request.form.get('id').split('_')
@@ -43,7 +37,6 @@ class ModulesView(View):
 			return self.index()
 
 
-	@route('/delete', methods=['POST'])
 	def deleteModule(self):
 		try:
 			action, module = request.form.get('id').split('_')
@@ -54,7 +47,6 @@ class ModulesView(View):
 			return self.index()
 
 
-	@route('/saveModuleSettings', methods=['POST'])
 	def saveModuleSettings(self):
 		moduleName = request.form['moduleName']
 		for confName, confValue in request.form.items():
@@ -75,7 +67,6 @@ class ModulesView(View):
 		return self.index()
 
 
-	@route('/install', methods=['POST'])
 	def installModule(self):
 		try:
 			module = request.form.get('module')
@@ -88,7 +79,6 @@ class ModulesView(View):
 			return jsonify(success=False)
 
 
-	@route('/checkInstallStatus', methods=['POST'])
 	def checkInstallStatus(self):
 		module = request.form.get('module')
 		status = self.WebInterfaceManager.moduleInstallProcesses.get(module, {'status': 'unknown'})['status']

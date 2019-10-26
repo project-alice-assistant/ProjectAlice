@@ -7,11 +7,6 @@ from core.interface.views.View import View
 class IndexView(View):
 	route_base = '/'
 
-
-	def __init__(self):
-		super().__init__()
-
-
 	@route('/', endpoint='index')
 	@route('/home/', endpoint='index')
 	@route('/index/', endpoint='index')
@@ -30,7 +25,6 @@ class IndexView(View):
 			f'{self.WebInterfaceManager.app.root_path}/../../modules/{parent}/widgets/{fileType}/', filename)
 
 
-	@route('/home/saveWidgetPos', methods=['POST'])
 	def saveWidgetPosition(self):
 		try:
 			data = request.get_json()
@@ -54,7 +48,6 @@ class IndexView(View):
 			return jsonify(success=False)
 
 
-	@route('/home/removeWidget', methods=['POST'])
 	def removeWidget(self):
 		try:
 			p, w = request.form.get('id').split('_')
@@ -69,7 +62,6 @@ class IndexView(View):
 			return jsonify(success=False)
 
 
-	@route('/home/addWidget', methods=['POST'])
 	def addWidget(self):
 		try:
 			line, p, w = request.form.get('id').split('_')

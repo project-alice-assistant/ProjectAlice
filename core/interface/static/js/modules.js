@@ -47,7 +47,7 @@ $(function () {
 				$button.hide();
 				$button.parent().children('.moduleStoreModuleWaitAnimation').css('display', 'flex');
 				$.ajax({
-					url: '/modules/install/',
+					url: '/modules/installModule/',
 					data: {
 						module: $(this).data('module')
 					},
@@ -90,7 +90,7 @@ $(function () {
 
 	$('[id^=toggle_]').on('click touchstart', function () {
 		$.ajax({
-			url: '/modules/toggle/',
+			url: '/modules/toggleModule/',
 			data: {
 				id: $(this).attr('id')
 			},
@@ -125,7 +125,7 @@ $(function () {
 
 	$('.moduleButton').on('click touchstart', function () {
 		$.ajax({
-			url: '/modules/delete/',
+			url: '/modules/deleteModule/',
 			data: {
 				id: $(this).attr('id')
 			},

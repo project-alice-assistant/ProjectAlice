@@ -18,7 +18,7 @@
 {% block content %}
 	{% for moduleName, module in modules.items() %}
 		<div id="config_for_{{ moduleName }}" title="{{ langData.moduleSettings }}" class="configBox">
-			<form action="/modules/saveModuleSettings" name="config_for_{{ moduleName }}" method="post" autocomplete="off" novalidate>
+			<form action="/modules/saveModuleSettings/" name="config_for_{{ moduleName }}" method="post" autocomplete="off" novalidate>
 				{% for settingName, settingValue in module.getModuleConfigs().items() %}
 					<div class="configLine">
 						<label class="configLabel" for="{{ settingName }}">{{ settingName }}</label>

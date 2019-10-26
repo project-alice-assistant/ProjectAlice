@@ -15,7 +15,7 @@ $(function () {
 	function refreshData(type) {
 		let container = $('#console');
 
-		$.get('/syslog/' + type + '/', function (data) {
+		$.post('/syslog/' + type + '/', function (data) {
 			for (let i = 0; i < data.data.length; i++) {
 				container.append(
 					'<span class="logLine ' + getLogColor(data.data[i]) + '">' + data.data[i] + '</span>'
