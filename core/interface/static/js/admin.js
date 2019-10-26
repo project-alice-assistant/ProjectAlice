@@ -6,7 +6,7 @@ $(function () {
 
 	function areYouReady($icon) {
 		$.ajax({
-			url: '/admin/areYouReady',
+			url: '/admin/areYouReady/',
 			type: 'POST'
 		}).done(function(response) {
 			if (response['success']) {
@@ -38,7 +38,7 @@ $(function () {
 		let $icon = $div.children('.utilityIcon').children('i');
 		$icon.addClass('fa-spin red');
 		$.ajax({
-			url: '/admin/' + endpoint,
+			url: '/admin/' + endpoint + '/',
 			type: 'POST'
 		});
 		setTimeout(function () {

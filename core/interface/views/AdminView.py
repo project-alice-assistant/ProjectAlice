@@ -1,18 +1,14 @@
 import subprocess
 
 from flask import render_template, request, jsonify
-from flask_classful import route
 
 from core.interface.views.View import View
 
 
 class AdminView(View):
+	excluded_methods = ['isfloat']
 	route_base = '/admin/'
-
-	def __init__(self):
-		super().__init__()
-		self._waitType = ''
-
+	waitType = ''
 
 	def index(self):
 		return render_template('admin.html',
@@ -22,7 +18,16 @@ class AdminView(View):
 		                       aliceSettings=self.ConfigManager.aliceConfigurations)
 
 
-	@route('/saveAliceSettings', methods=['POST'])
+	@classmethod
+	def setWaitType(cls, value: str):
+		cls.waitType = value
+
+
+	@classmethod
+	def getWaitType(cls) -> str:
+		return cls.waitType
+
+
 	def saveAliceSettings(self):
 		try:
 			# Create the conf dict. on and off values are translated to True and False and we try to cast to int
@@ -39,10 +44,9 @@ class AdminView(View):
 			return self.index()
 
 
-	@route('/restart', methods=['POST'])
-	def restart(self):
+	def restart(self) -> dict:
 		try:
-			self._waitType = 'restart'
+			self.__class__.setWaitType('restart')
 			self.ThreadManager.doLater(interval=2, func=self.ProjectAlice.doRestart)
 			return jsonify(success=True)
 		except Exception as e:
@@ -50,10 +54,9 @@ class AdminView(View):
 			return jsonify(success=False)
 
 
-	@route('/reboot', methods=['POST'])
-	def reboot(self):
+	def reboot(self) -> dict:
 		try:
-			self._waitType = 'reboot'
+			self.__class__.setWaitType('reboot')
 			self.ProjectAlice.onStop()
 			self.ThreadManager.doLater(interval=2, func=subprocess.run, args=[['sudo', 'shutdown', '-r', 'now']])
 			return jsonify(success=True)
@@ -62,10 +65,9 @@ class AdminView(View):
 			return jsonify(success=False)
 
 
-	@route('/assistantDownload', methods=['POST'])
-	def assistantDownload(self):
+	def assistantDownload(self) -> dict:
 		try:
-			self._waitType = 'snipsdownload'
+			self.__class__.setWaitType('snipsdownload')
 			self.SnipsConsoleManager.doDownload()
 			return jsonify(success=True)
 		except Exception as e:
@@ -73,12 +75,13 @@ class AdminView(View):
 			return jsonify(success=False)
 
 
-	@route('/areYouReady', methods=['POST'])
-	def areYouReady(self):
-		if not self._waitType or self._waitType in ['restart', 'reboot']:
+	def areYouReady(self) -> bool:
+		if not self.__class__.getWaitType() or self.__class__.getWaitType() in ['restart', 'reboot']:
 			return jsonify(success=False) if self.ProjectAlice.restart else jsonify(success=True)
-		elif self._waitType == 'snipsdownload':
+		elif self.__class__.getWaitType() == 'snipsdownload':
 			return jsonify(success=False) if self.ThreadManager.getEvent('SnipsAssistantDownload').isSet() else jsonify(success=True)
+		else:
+			return False
 
 
 	# noinspection PyMethodMayBeStatic

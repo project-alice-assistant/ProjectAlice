@@ -59,8 +59,9 @@ class WebInterfaceManager(Manager):
 			try:
 				for view in self._VIEWS:
 					view.register(self.app)
-			except:
+			except Exception as e:
 				# Passing because of a reboot we can't re register
+				self.logInfo(f'Exception while registering view: {e}')
 				pass
 
 			self.ThreadManager.newThread(

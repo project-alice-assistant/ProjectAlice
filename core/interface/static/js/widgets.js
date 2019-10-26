@@ -30,7 +30,7 @@ $(function () {
 
 			$.ajax({
 				contentType: 'application/json',
-				url: '/home/saveWidgetPos',
+				url: '/home/saveWidgetPos/',
 				data: JSON.stringify({
 					id: $(ui.draggable).attr('id'),
 					x: $(ui.draggable).position().left,
@@ -73,7 +73,7 @@ $(function () {
 	$('.fa-minus-circle').on('click touchstart', function () {
 		if ($(this).parents('.widget').length > 0) {
 			$.ajax({
-				url: '/home/removeWidget',
+				url: '/home/removeWidget/',
 				data: {
 					id: $(this).parent().parent().attr('id')
 				},
@@ -90,7 +90,7 @@ $(function () {
 	$('.addWidgetCheck').on('click touchstart', function () {
 		if ($(this).parents('.addWidgetLine').length > 0) {
 			$.ajax({
-				url: '/home/addWidget',
+				url: '/home/addWidget/',
 				data: {
 					id: $(this).parent().attr('id')
 				},

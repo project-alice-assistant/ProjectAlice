@@ -6,7 +6,7 @@ $(function () {
 
 	function checkInstallStatus(module) {
 		$.ajax({
-			url: '/modules/checkInstallStatus',
+			url: '/modules/checkInstallStatus/',
 			data: {
 				'module': module
 			},
@@ -47,7 +47,7 @@ $(function () {
 				$button.hide();
 				$button.parent().children('.moduleStoreModuleWaitAnimation').css('display', 'flex');
 				$.ajax({
-					url: '/modules/install',
+					url: '/modules/install/',
 					data: {
 						module: $(this).data('module')
 					},
@@ -69,7 +69,7 @@ $(function () {
 		$.ajax({
 			type: 'GET',
 			dataType: 'JSON',
-			url: 'https://api.github.com/search/code?q=extension:install+repo:project-alice-powered-by-snips/ProjectAliceModules',
+			url: 'https://api.github.com/search/code?q=extension:install+repo:project-alice-powered-by-snips/ProjectAliceModules/',
 			success: function (data) {
 				$.each(data['items'], function (index, searchResult) {
 					$.ajax({
@@ -90,7 +90,7 @@ $(function () {
 
 	$('[id^=toggle_]').on('click touchstart', function () {
 		$.ajax({
-			url: '/modules/toggle',
+			url: '/modules/toggle/',
 			data: {
 				id: $(this).attr('id')
 			},
@@ -125,7 +125,7 @@ $(function () {
 
 	$('.moduleButton').on('click touchstart', function () {
 		$.ajax({
-			url: '/modules/delete',
+			url: '/modules/delete/',
 			data: {
 				id: $(this).attr('id')
 			},

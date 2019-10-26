@@ -2,7 +2,7 @@ $(function () {
 	function refreshData() {
 		let container = $('#console');
 		$.ajax({
-			url: '/snipswatch/refreshConsole',
+			url: '/snipswatch/refreshConsole/',
 			dataType: 'json',
 			type: 'POST'
 		}).done(function (response) {
@@ -32,7 +32,7 @@ $(function () {
 		$('[class^="fas fa-thermometer"]').removeClass('snipswatchActiveVerbosity');
 		$(this).addClass('snipswatchActiveVerbosity');
 		$.ajax({
-			url: '/snipswatch/verbosity',
+			url: '/snipswatch/verbosity/',
 			data: {
 				verbosity: $(this).data('verbosity')
 			},
