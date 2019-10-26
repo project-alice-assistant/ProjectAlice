@@ -9,6 +9,7 @@ class User(ProjectAliceObject):
 		super().__init__(logDepth=3)
 
 		if row:
+			self._id            = row['id']
 			self._name 			= row['username']
 			self._accessLevel 	= row['accessLevel']
 			self._state 		= row['state']
@@ -31,6 +32,18 @@ class User(ProjectAliceObject):
 			exec(f"self._{self._state} = 'True'")
 		except:
 			self.logError(f"Invalid state \"{row['state']}\" for user \"{self._name}\"")
+
+
+		# flask login reqs
+		self._isAuthenticated = False
+		self._isActive = True
+		self._isAnonymous = False
+
+
+	@property
+	def id(self) -> int:
+		return self._id
+
 
 	@property
 	def name(self) -> str:
@@ -152,3 +165,18 @@ class User(ProjectAliceObject):
 			TtsLanguage: {self.ttsLanguage}
 			TtsType: {self.ttsType}
 			TtsVoice: {self.ttsVoice}''')
+
+
+	# Flask login reqs
+
+	def is_authenticated(self) -> bool:
+		return self._isAuthenticated
+
+	def is_active(self) -> bool:
+		return self._isActive
+
+	def is_anonymous(self) -> bool:
+		return self._isAnonymous
+
+	def get_id(self) -> int:
+		return self._id

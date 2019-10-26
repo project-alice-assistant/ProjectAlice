@@ -62,6 +62,7 @@ class UserManager(Manager):
 									   })
 		if insertId > -1:
 			self._users[name] = User({
+				'id': insertId,
 				'username': name.title(),
 				'accessLevel': access,
 				'state': state,

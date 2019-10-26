@@ -1,6 +1,7 @@
 import subprocess
 
 from flask import render_template, request, jsonify
+from flask_login import login_required
 
 from core.interface.model.View import View
 
@@ -10,6 +11,8 @@ class AdminView(View):
 	route_base = '/admin/'
 	waitType = ''
 
+
+	#@login_required
 	def index(self):
 		return render_template('admin.html',
 		                       langData=self._langData,
@@ -84,7 +87,7 @@ class AdminView(View):
 			return False
 
 
-	# noinspection PyMethodMayBeStatic
+	# noinspection PyMethodMayBeStatic,PyUnusedLocal
 	def isfloat(self, value: str) -> bool:
 		try:
 			value = float(value)

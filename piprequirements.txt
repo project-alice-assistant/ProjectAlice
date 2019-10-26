@@ -26,4 +26,5 @@ boto3
 google-cloud-texttospeech
 flask
 flask-classful
+flask-login
 googletrans

@@ -4,8 +4,12 @@ import time
 from pathlib import Path
 
 from flask import Flask, send_from_directory
+from flask_login import LoginManager
+import random
+import string
 
 from core.base.model.Manager import Manager
+from core.interface.views.AdminAuth import AdminAuth
 from core.interface.views.AdminView import AdminView
 from core.interface.views.IndexView import IndexView
 from core.interface.views.ModulesView import ModulesView
@@ -20,7 +24,7 @@ class WebInterfaceManager(Manager):
 	app = Flask(__name__)
 	app.config['SEND_FILE_MAX_AGE_DEFAULT'] = 0
 
-	_VIEWS = [AdminView, IndexView, ModulesView, SnipswatchView, SyslogView, DevModeView]
+	_VIEWS = [AdminView, AdminAuth, IndexView, ModulesView, SnipswatchView, SyslogView, DevModeView]
 
 	def __init__(self):
 		super().__init__(self.NAME)
@@ -28,6 +32,7 @@ class WebInterfaceManager(Manager):
 		log.setLevel(logging.ERROR)
 		self._langData = dict()
 		self._moduleInstallProcesses = dict()
+		self._flaskLoginManager = None
 
 
 	@app.route('/base/<path:filename>')
@@ -52,6 +57,12 @@ class WebInterfaceManager(Manager):
 				langFile = Path(self.Commons.rootDir(), 'core/interface/languages/en.json')
 			else:
 				self.logInfo(f'Loaded interface in "{self.LanguageManager.activeLanguage.lower()}"')
+
+			key = ''.join([random.choice(string.ascii_letters + string.digits + string.punctuation) for n in range(20)])
+			self.app.secret_key = key.encode()
+			self._flaskLoginManager = LoginManager()
+			self._flaskLoginManager.init_app(self.app)
+			self._flaskLoginManager.login_view = '/adminAuth/'
 
 			with langFile.open('r') as f:
 				self._langData = json.load(f)
@@ -110,3 +121,8 @@ class WebInterfaceManager(Manager):
 	@property
 	def moduleInstallProcesses(self) -> dict:
 		return self._moduleInstallProcesses
+
+
+	@property
+	def flaskLoginManager(self) -> LoginManager:
+		return self._flaskLoginManager

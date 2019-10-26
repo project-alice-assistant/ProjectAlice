@@ -1,4 +1,5 @@
 import core.base.SuperManager as SM
+from core.commons import constants
 from core.util.model.Logger import Logger
 
 
@@ -51,7 +52,7 @@ class ProjectAliceObject(Logger):
 	def onModuleUpdated(self): pass
 	def onInternetConnected(self): pass
 	def onInternetLost(self): pass
-	def onHotword(self, siteId: str): pass
+	def onHotword(self, siteId: str, user: str = constants.UNKNOWN_USER): pass
 	def onHotwordToggleOn(self, siteId: str): pass
 	def onSessionStarted(self, session): pass
 	def onStartListening(self, session): pass

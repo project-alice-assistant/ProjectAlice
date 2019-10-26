@@ -238,7 +238,7 @@ class MqttManager(Manager):
 				user = users[speaker].name
 
 		self.DialogSessionManager.preSession(siteId, user)
-		self.broadcast(method='onHotword', exceptions=[self.name], propagateToModules=True, siteId=siteId)
+		self.broadcast(method='onHotword', exceptions=[self.name], propagateToModules=True, siteId=siteId, user=user)
 
 
 	def handleMultiDetection(self):
