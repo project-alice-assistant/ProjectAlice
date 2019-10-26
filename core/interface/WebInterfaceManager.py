@@ -60,7 +60,7 @@ class WebInterfaceManager(Manager):
 				for view in self._VIEWS:
 					view.register(self.app)
 			except:
-				# Passing because of a reboot we can re register
+				# Passing because of a reboot we can't re register
 				pass
 
 			self.ThreadManager.newThread(
