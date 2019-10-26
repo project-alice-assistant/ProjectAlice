@@ -1,6 +1,6 @@
 from flask import render_template
 
-from core.interface.views.View import View
+from core.interface.model.View import View
 
 
 class DevModeView(View):

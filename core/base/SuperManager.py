@@ -48,6 +48,7 @@ class SuperManager(Logger):
 		self.userManager               = None
 		self.talkManager               = None
 		self.webInterfaceManager       = None
+		self.SnipsWatchManager         = None
 
 
 	def onStart(self):
@@ -131,9 +132,9 @@ class SuperManager(Logger):
 		from core.voice.TTSManager              import TTSManager
 		from core.voice.WakewordManager         import WakewordManager
 		from core.interface.WebInterfaceManager import WebInterfaceManager
+		from core.snips.SnipsWatchManager       import SnipsWatchManager
 
-		self.commons                    = CommonsManager()
-		self.commonsManager             = self.commons
+		self.commonsManager             = CommonsManager()
 		self.configManager              = ConfigManager()
 		self.databaseManager            = DatabaseManager()
 		self.languageManager            = LanguageManager()
@@ -156,6 +157,7 @@ class SuperManager(Logger):
 		self.wakewordManager            = WakewordManager()
 		self.talkManager                = TalkManager()
 		self.webInterfaceManager        = WebInterfaceManager()
+		self.snipsWatchManager          = SnipsWatchManager()
 
 		self._managers = {name[0].upper() + name[1:]: manager for name, manager in self.__dict__.items() if name.endswith('Manager')}
 
@@ -174,5 +176,5 @@ class SuperManager(Logger):
 
 
 	@property
-	def managers(self):
+	def managers(self) -> dict:
 		return self._managers

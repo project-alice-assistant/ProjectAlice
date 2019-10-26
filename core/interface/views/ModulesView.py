@@ -3,7 +3,7 @@ from collections import OrderedDict
 
 from flask import render_template, request, jsonify
 
-from core.interface.views.View import View
+from core.interface.model.View import View
 
 
 class ModulesView(View):

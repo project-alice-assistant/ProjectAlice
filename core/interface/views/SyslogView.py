@@ -2,7 +2,7 @@ from pathlib import Path
 
 from flask import jsonify, render_template
 
-from core.interface.views.View import View
+from core.interface.model.View import View
 
 
 class SyslogView(View):

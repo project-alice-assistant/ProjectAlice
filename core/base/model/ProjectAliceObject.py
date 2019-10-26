@@ -231,4 +231,9 @@ class ProjectAliceObject(Logger):
 
 	@property
 	def Commons(self):
-		return SM.SuperManager.getInstance().commons
+		return SM.SuperManager.getInstance().commonsManager
+
+
+	@property
+	def SnipsWatchManager(self):
+		return SM.SuperManager.getInstance().snipsWatchManager

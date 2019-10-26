@@ -1,7 +1,7 @@
 from flask import render_template, request, send_from_directory, jsonify, redirect
 from flask_classful import route
 
-from core.interface.views.View import View
+from core.interface.model.View import View
 
 
 class IndexView(View):
