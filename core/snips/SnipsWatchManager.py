@@ -3,7 +3,10 @@ import subprocess
 import tempfile
 import time
 from pathlib import Path
+
+# noinspection PyUnresolvedReferences
 from fcntl import fcntl, F_GETFL, F_SETFL
+# noinspection PyUnresolvedReferences
 from os import O_NONBLOCK
 
 from core.base.model.Manager import Manager
