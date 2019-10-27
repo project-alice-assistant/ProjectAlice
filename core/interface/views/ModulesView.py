@@ -33,7 +33,7 @@ class ModulesView(View):
 
 			return self.index()
 		except Exception as e:
-			self.logWarning(f'Failed toggling module: {e}')
+			self.logWarning(f'Failed toggling module: {e}', printStack=True)
 			return self.index()
 
 
@@ -43,7 +43,7 @@ class ModulesView(View):
 			self.ModuleManager.removeModule(module)
 			return self.index()
 		except Exception as e:
-			self.logWarning(f'Failed deleting module: {e}')
+			self.logWarning(f'Failed deleting module: {e}', printStack=True)
 			return self.index()
 
 
@@ -75,7 +75,7 @@ class ModulesView(View):
 			subprocess.run(['mv', f'{module}.install', f'{self.Commons.rootDir()}/system/moduleInstallTickets/{module}.install'])
 			return jsonify(success=True)
 		except Exception as e:
-			self.logWarning(f'Failed installing module: {e}')
+			self.logWarning(f'Failed installing module: {e}', printStack=True)
 			return jsonify(success=False)
 
 

@@ -17,7 +17,7 @@ class UserManager(Manager):
 			'username TEXT NOT NULL',
 			'state TEXT NOT NULL',
 			'accessLevel TEXT NOT NULL',
-			'pin INTEGER',
+			'pin TEXT',
 			'lang TEXT',
 			'tts TEXT',
 			'ttsLanguage TEXT',
@@ -50,7 +50,7 @@ class UserManager(Manager):
 
 
 	@staticmethod
-	def getHashedPassword(password: str, logRounds: int = 12) -> str:
+	def getHashedPassword(password: int, logRounds: int = 12) -> str:
 		return bcrypt.hashpw(str(password), bcrypt.gensalt(log_rounds=logRounds))
 
 
@@ -194,8 +194,7 @@ class UserManager(Manager):
 
 
 	def hasAccessLevel(self, user: str, requiredAccessLevel: int) -> bool:
-		if user.lower() not in self._users:
-			self.logError(f'Was asked to check access level but user "{user}" doesn\'t exist')
-			return False
+		if isinstance(requiredAccessLevel, AccessLevel):
+			requiredAccessLevel = requiredAccessLevel.value
 
-		return AccessLevel[self._users[user.lower()].accessLevel.upper()].value <= requiredAccessLevel
+		return user.lower() in self._users and AccessLevel[self._users[user.lower()].accessLevel.upper()].value <= requiredAccessLevel
