@@ -1,4 +1,5 @@
 from flask import render_template, request, jsonify, redirect
+from flask_login import login_user
 
 from core.interface.model.View import View
 
@@ -16,21 +17,23 @@ class AdminAuth(View):
 		except:
 			self.logWarning('No next page after auth success, falling back to index.html')
 
-		if self.__class__.user and self.__class__.user.isAuthenticated:
-			return redirect(self.__class__.nextPage)
-		else:
-			self.ModuleManager.getModuleInstance('AliceCore').explainInterfaceAuth()
-			return render_template('adminAuth.html', langData=self._langData)
+		self.ModuleManager.getModuleInstance('AliceCore').explainInterfaceAuth()
+		return render_template('adminAuth.html', langData=self._langData)
 
 
 	def checkAuthState(self):
-		return jsonify(success=True if self.__class__.user and self.__class__.user.isAuthenticated else False)
+		if self.__class__.user and self.__class__.user.isAuthenticated:
+			login_user(self.__class__.user)
+			return redirect(self.__class__.nextPage)
 
 
 	def authenticate(self):
 		try:
 			code = request.form.get('usercode')
-			return jsonify(success=True)
+			if self.UserManager.checkPinCode(self.__class__.user, str(code)):
+				return jsonify(success=True)
+			else:
+				return jsonify(success=False)
 		except Exception as e:
 			self.logError(f'Failed auth trial: {e}')
 			return jsonify(success=False)

@@ -4,7 +4,7 @@ $(function () {
 
 	function checkAuth() {
 		$.post('/adminAuth/checkAuthState/', function (response) {
-			if (response['success']) {
+			if (!response['success']) {
 				location.reload();
 			}
 			else {

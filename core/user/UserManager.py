@@ -54,6 +54,10 @@ class UserManager(Manager):
 		return bcrypt.hashpw(str(password).encode(), bcrypt.gensalt(rounds=rounds))
 
 
+	def checkPinCode(self, user: User, password: str):
+		return user in self._users and self._users[user].checkPassword(password)
+
+
 	# noinspection SqlResolve
 	def addNewUser(self, name: str, access: str = 'guest', state: str = 'home', pinCode: int = None):
 		hashedPassword = self.getHashedPassword(pinCode or 1234)
@@ -99,6 +103,13 @@ class UserManager(Manager):
 
 	def getUser(self, username: str) -> Optional[User]:
 		return self._users.get(username, None)
+
+
+	def getUserById(self, userId: int) -> Optional[User]:
+		for user in self._users:
+			if user.id == userId:
+				return user
+		return None
 
 
 	def getAllUserNames(self, skipGuests: bool = True) -> list:
