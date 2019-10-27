@@ -51,7 +51,7 @@ class UserManager(Manager):
 
 	@staticmethod
 	def getHashedPassword(password: int, logRounds: int = 12) -> str:
-		return bcrypt.hashpw(str(password), bcrypt.gensalt(log_rounds=logRounds))
+		return bcrypt.hashpw(str(password), bcrypt.gensalt(rounds=logRounds))
 
 
 	# noinspection SqlResolve
