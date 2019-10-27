@@ -41,7 +41,7 @@ class DatabaseManager(Manager):
 		database = self.getConnection()
 		cursor = database.cursor()
 
-		# First check for new tables and columns addition/deprecation
+		# First check for new tables and columns addition/deprecation/type changes
 		for tableName, queries in schema.items():
 
 			fullTableName = f'{callerName}_{tableName}'
@@ -78,15 +78,16 @@ class DatabaseManager(Manager):
 			try:
 				cursor.execute(f'PRAGMA table_info({fullTableName})')
 				rows = cursor.fetchall()
-				installedColumns = [x[1] for x in rows]
+				installedColumns = {x[1]: x[2] for x in rows}
 
-				cols = list()
+				cols = dict()
 				for column in schema[tableName]:
 					colName = column.split(' ')[0]
-					cols.append(colName)
+					colType = column.split(' ')[1]
+					cols[colName] = colType
 					if colName not in installedColumns:
 						self.logInfo(f'Found a missing column "{colName}" for table "{fullTableName}" in component "{callerName}"')
-						cursor.execute(f'ALTER TABLE {fullTableName} ADD COLUMN `{colName}`')
+						cursor.execute(f'ALTER TABLE {fullTableName} ADD COLUMN `{colName}` `{colType}`')
 
 				database.commit()
 			except sqlite3.Error as e:
@@ -98,7 +99,10 @@ class DatabaseManager(Manager):
 				doUpdate = False
 				for column in installedColumns:
 					if column not in cols:
-						self.logInfo(f'Found a deprecated column "{colName}" for table "{fullTableName}" in component "{callerName}"')
+						self.logInfo(f'Found a deprecated column "{column}" for table "{fullTableName}" in component "{callerName}"')
+						doUpdate = True
+					elif installedColumns[column].lower() != cols[column].lower():
+						self.logInfo(f'Column "{column}" has changed data type for component "{callerName}"')
 						doUpdate = True
 
 				if doUpdate:
