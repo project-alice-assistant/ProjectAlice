@@ -1,6 +1,8 @@
 import typing
 from textwrap import dedent
 
+import bcrypt
+
 from core.base.model.ProjectAliceObject import ProjectAliceObject
 
 
@@ -54,7 +56,7 @@ class User(ProjectAliceObject):
 		return self._accessLevel
 
 	@property
-	def pin(self) -> int:
+	def pin(self) -> str:
 		return self._pin
 
 	@property
@@ -118,7 +120,7 @@ class User(ProjectAliceObject):
 		self._accessLevel = value
 
 	@pin.setter
-	def pin(self, value: int):
+	def pin(self, value: str):
 		self._pin = value
 
 	@state.setter
@@ -152,6 +154,9 @@ class User(ProjectAliceObject):
 	@eating.setter
 	def eating(self, value: bool):
 		self._eating = value
+
+	def checkPassword(self, password: str) -> bool:
+		return bcrypt.checkpw(str(password), self.pin)
 
 	def __repr__(self):
 		return dedent(f'''\
