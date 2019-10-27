@@ -2,6 +2,19 @@ $(function () {
 
 	let code = '';
 
+	function checkAuth() {
+		$.post('/adminAuth/checkAuthState/', function (response) {
+			if (response['success']) {
+				location.reload();
+			}
+			else {
+				setTimeout(function () {
+					checkAuth();
+				}, 1000);
+			}
+		})
+	}
+
 	$('.adminAuthKeyboardKey').on('click touchstart', function () {
 		let key = $(this).html();
 		code = code + key.toString();
@@ -23,4 +36,8 @@ $(function () {
 			});
 		}
 	});
+
+	setTimeout(function () {
+		checkAuth();
+	}, 1000);
 });
