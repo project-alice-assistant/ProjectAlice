@@ -120,7 +120,7 @@ class User(ProjectAliceObject):
 		self._accessLevel = value
 
 	@pin.setter
-	def pin(self, value: int):
+	def pin(self, value: str):
 		self._pin = value
 
 	@state.setter
