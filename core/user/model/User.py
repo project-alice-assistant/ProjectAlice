@@ -156,7 +156,7 @@ class User(ProjectAliceObject):
 		self._eating = value
 
 	def checkPassword(self, password: str) -> bool:
-    	return bcrypt.checkpw(str(password), self.pin)
+		return bcrypt.checkpw(str(password), self.pin)
 
 	def __repr__(self):
 		return dedent(f'''\
