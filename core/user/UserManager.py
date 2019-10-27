@@ -1,5 +1,7 @@
 from typing import Any, Optional
 
+import bcrypt
+
 from core.base.model.Manager import Manager
 from core.user.model.AccessLevels import AccessLevel
 from core.user.model.User import User
@@ -47,26 +49,32 @@ class UserManager(Manager):
 		return self._users
 
 
+	@staticmethod
+	def getHashedPassword(password: str, logRounds: int = 12) -> str:
+		password = str(password)
+    	return bcrypt.hashpw(password, bcrypt.gensalt(log_rounds=logRounds))
+
+
 	# noinspection SqlResolve
 	def addNewUser(self, name: str, access: str = 'guest', state: str = 'home', pinCode: int = None):
-		if not pinCode:
-			pinCode = 1234
+		hashedPassword = self.getHashedPassword(pinCode or 1234)
 
-		insertId = self.databaseInsert(tableName='users',
-									   values={
-										   'username': name.lower(),
-										   'accessLevel': access,
-										   'state': state,
-										   'pin': pinCode,
-										   'lang': self.LanguageManager.activeLanguageAndCountryCode
-									   })
+		insertId = self.databaseInsert(
+			tableName='users',
+			values={
+				'username': name.lower(),
+				'accessLevel': access,
+				'state': state,
+				'pin': hashedPassword,
+				'lang': self.LanguageManager.activeLanguageAndCountryCode
+			})
 		if insertId > -1:
 			self._users[name] = User({
 				'id': insertId,
 				'username': name.title(),
 				'accessLevel': access,
 				'state': state,
-				'pin': pinCode,
+				'pin': hashedPassword,
 				'lang': self.LanguageManager.activeLanguageAndCountryCode,
 				'tts': '',
 				'ttsLanguage': '',
@@ -76,10 +84,12 @@ class UserManager(Manager):
 
 
 	def addUserPinCode(self, name: str, pinCode: int):
-		self.DatabaseManager.update(tableName='users',
-		                            caller=self.name,
-		                            values={'pin': pinCode},
-		                            row=('username', name))
+		self.DatabaseManager.update(
+			tableName='users',
+			caller=self.name,
+			values={'pin': self.getHashedPassword(pinCode)},
+			row=('username', name))
+
 
 	def getUserAccessLevel(self, username: str) -> Optional[Any]:
 		if not username in self._users:
