@@ -24,7 +24,7 @@ class SnipsWatchManager(Manager):
 		self._lastCheck = 0
 
 
-	def startWatching(self, verbosity: int = 2):
+	def startWatching(self, verbosity: int = 0):
 		self._lastCheck = int(time.time())
 		self.stopWatching()
 
@@ -42,7 +42,7 @@ class SnipsWatchManager(Manager):
 		)
 
 
-	def watch(self, verbosity: int = 2):
+	def watch(self, verbosity: int = 0):
 		flag = self.ThreadManager.getEvent('snipswatchrunning')
 
 		arg = ' -' + verbosity * 'v' if verbosity > 0 else ''

@@ -108,12 +108,14 @@ class SnipsServicesManager(Manager):
 				self.logInfo(f"Tried to {cmd} the {service} service but it returned with return code {result.returncode}")
 
 
-	def toggleFeedbackSound(self, state: str, siteId: str = 'all'):
+	def toggleFeedbackSound(self, state: str, siteId: str = constants.ALL):
 		topic = constants.TOPIC_HOTWORD_TOGGLE_ON if state == 'on' else constants.TOPIC_TOGGLE_FEEDBACK_OFF
 
 		if siteId == 'all':
 			devices = self.DeviceManager.getDevicesByType(deviceType='AliceSatellite', connectedOnly=True)
 			for device in devices:
 				self.MqttManager.publish(topic=topic, payload={'siteId': device.room})
+
+			self.MqttManager.publish(topic=topic, payload={'siteId': constants.DEFAULT_SITE_ID})
 		else:
 			self.MqttManager.publish(topic=topic, payload={'siteId': siteId})

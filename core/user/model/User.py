@@ -169,6 +169,14 @@ class User(ProjectAliceObject):
 
 	# Flask login reqs
 
+	@property
+	def isAuthenticated(self) -> bool:
+		return self.is_authenticated()
+
+	@isAuthenticated.setter
+	def isAuthenticated(self, value: bool):
+		self._isAuthenticated = value
+
 	def is_authenticated(self) -> bool:
 		return self._isAuthenticated
 
