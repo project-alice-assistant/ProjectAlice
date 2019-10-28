@@ -4,7 +4,7 @@ $(function () {
 
 	function checkAuth() {
 		$.post('/adminAuth/checkAuthState/', function (response) {
-			if (!response['success']) {
+			if (response['success']) {
 				location.reload();
 			}
 			else {
@@ -28,7 +28,7 @@ $(function () {
 
 		if (code.length === 4) {
 			$.ajax({
-				url: '/adminAuth/login',
+				url: '/adminAuth/authenticate/',
 				type: 'POST',
 				data: {
 					usercode: code
