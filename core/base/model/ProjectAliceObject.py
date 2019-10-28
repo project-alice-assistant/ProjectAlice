@@ -84,7 +84,7 @@ class ProjectAliceObject(Logger):
 	def onFullHour(self): pass
 	def onCancel(self): pass
 	def onASRCaptured(self): pass
-	def onWakeword(self): pass
+	def onWakeword(self, siteId: str, user: str = constants.UNKNOWN_USER): pass
 	def onMotionDetected(self): pass
 	def onMotionStopped(self): pass
 	def onButtonPressed(self): pass

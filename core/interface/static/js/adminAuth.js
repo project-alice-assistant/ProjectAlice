@@ -4,10 +4,13 @@ $(function () {
 
 	function checkAuth() {
 		$.post('/adminAuth/checkAuthState/', function (response) {
-			if (response['success']) {
-				location.reload();
+			if (response.hasOwnProperty('success') && !response.success) {
+				setTimeout(function () {
+					checkAuth();
+				}, 1000);
 			}
-			else {
+			else if (response.hasOwnProperty('username')) {
+				$('#username').text(response.username);
 				setTimeout(function () {
 					checkAuth();
 				}, 1000);

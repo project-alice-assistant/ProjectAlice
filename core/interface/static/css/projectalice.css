@@ -853,8 +853,20 @@ input:focus {
 	color: green;
 }
 
+.adminAuthDisplayUser {
+	display: flex;
+	margin-top: 25px;
+	width: 100%;
+	height: 50px;
+	color: #d1d1d1;
+	font-family: 'marskeregular', Arial, sans-serif;
+	font-size: 2em;
+	align-items: center;
+	justify-content: center;
+}
+
 .adminAuthKeyContainer {
-	margin-top: 50px;
+	margin-top: 25px;
 	display: flex;
 	width: 100%;
 	justify-content: center;
