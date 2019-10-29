@@ -137,6 +137,7 @@ network={
 
 		# Do some installation if wanted by the user
 		if initConfs['doGroundInstall']:
+			subprocess.run(['./venv/bin/pip3', 'uninstall', '-r', str(Path(self._rootDir, 'pipuninstalls.txt'))])
 			subprocess.run(['./venv/bin/pip3', 'install', '-r', str(Path(self._rootDir, 'piprequirements.txt'))])
 
 			subprocess.run(['sudo', 'bash', '-c', 'echo "deb https://raspbian.snips.ai/$(lsb_release -cs) stable main" > /etc/apt/sources.list.d/snips.list'])
