@@ -19,8 +19,7 @@ class ModulesView(View):
 		return render_template(template_name_or_list='modules.html',
 		                       modules=modules,
 		                       langData=self._langData,
-		                       devMode=self.ConfigManager.getAliceConfigByName('webInterfaceDevMode'),
-		                       updateChannel=self.ConfigManager.getAliceConfigByName('updateChannel'))
+		                       aliceSettings=self.ConfigManager.aliceConfigurations)
 
 
 	def toggleModule(self):

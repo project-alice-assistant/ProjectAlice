@@ -14,10 +14,8 @@ class AdminView(View):
 
 	@login_required
 	def index(self):
-		return render_template('admin.html',
+		return render_template(template_name_or_list='admin.html',
 		                       langData=self._langData,
-		                       devMode=self.ConfigManager.getAliceConfigByName('webInterfaceDevMode'),
-		                       updateChannel=self.ConfigManager.getAliceConfigByName('updateChannel'),
 		                       aliceSettings=self.ConfigManager.aliceConfigurations)
 
 

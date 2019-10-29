@@ -147,7 +147,6 @@ class MqttManager(Manager):
 				self.ModuleManager.broadcast('onHotwordToggleOn', siteId=siteId)
 				return
 
-			session = self.DialogSessionManager.getSession(sessionId)
 			if not session: # It is a device trying to communicate with Alice
 				session = self.DeviceManager.deviceMessage(message)
 				self.broadcast(method='onMessage', exceptions=[self.name], args=[message.topic, session])

@@ -24,7 +24,7 @@ $(function () {
 
 	$('.adminAuthKeyboardKey').on('click touchstart', function () {
 		if (!keyboardAuthNotified) {
-			$.post('/admin/keyboardAuth/');
+			$.post('/adminAuth/keyboardAuth/');
 			keyboardAuthNotified = true;
 		}
 

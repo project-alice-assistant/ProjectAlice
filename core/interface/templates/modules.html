@@ -6,7 +6,7 @@
 
 {% block loaders %}
 	<script type="text/javascript">
-		updateChannel = '{{ updateChannel }}';
+		updateChannel = '{{ aliceSettings['updateChannel'] }}';
 	</script>
 	<script src="{{ url_for('static', filename='js/modules.js') }}"></script>
 {% endblock %}

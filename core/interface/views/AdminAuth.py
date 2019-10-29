@@ -3,6 +3,7 @@ import datetime
 from flask import render_template, request, jsonify, redirect
 from flask_login import login_user, current_user
 
+from core.dialog.model.DialogSession import DialogSession
 from core.interface.model.View import View
 from core.user.model.User import User
 
@@ -12,6 +13,7 @@ class AdminAuth(View):
 
 	nextPage = 'index'
 	user = None
+	linkedSnipsSession = None
 
 
 	def index(self):
@@ -24,7 +26,9 @@ class AdminAuth(View):
 			return redirect(self.__class__.nextPage)
 
 		self.ModuleManager.getModuleInstance('AliceCore').explainInterfaceAuth()
-		return render_template('adminAuth.html', langData=self._langData)
+		return render_template(template_name_or_list='adminAuth.html',
+		                       langData=self._langData,
+		                       aliceSettings=self.ConfigManager.aliceConfigurations)
 
 
 	def checkAuthState(self):
@@ -53,6 +57,8 @@ class AdminAuth(View):
 
 	def keyboardAuth(self):
 		self.ModuleManager.getModuleInstance('AliceCore').authWithKeyboard()
+		if self.__class__.linkedSnipsSession is not None:
+			self.MqttManager.endSession(sessionId=self.__class__.linkedSnipsSession.sessionId)
 		return jsonify(success=True)
 
 
@@ -74,3 +80,8 @@ class AdminAuth(View):
 	@classmethod
 	def getUser(cls) -> User:
 		return cls.user
+
+
+	@classmethod
+	def setLinkedSnipsSession(cls, session: DialogSession):
+		cls.linkedSnipsSession = session

@@ -11,11 +11,10 @@ class IndexView(View):
 	@route('/home/', endpoint='index')
 	@route('/index/', endpoint='index')
 	def index(self):
-		return render_template('home.html',
+		return render_template(template_name_or_list='home.html',
 		                       widgets=self.ModuleManager.widgets,
 		                       langData=self._langData,
-		                       devMode=self.ConfigManager.getAliceConfigByName('webInterfaceDevMode'),
-		                       updateChannel=self.ConfigManager.getAliceConfigByName('updateChannel'))
+		                       aliceSettings=self.ConfigManager.aliceConfigurations)
 
 
 	@route('widget_static/<path:filename>')

@@ -21,10 +21,9 @@ class SnipswatchView(View):
 
 	def index(self):
 		self.SnipsWatchManager.startWatching()
-		return render_template('snipswatch.html',
+		return render_template(template_name_or_list='snipswatch.html',
 		                       langData=self._langData,
-		                       devMode=self.ConfigManager.getAliceConfigByName('webInterfaceDevMode'),
-		                       updateChannel=self.ConfigManager.getAliceConfigByName('updateChannel'))
+		                       aliceSettings=self.ConfigManager.aliceConfigurations)
 
 
 	def refreshConsole(self):

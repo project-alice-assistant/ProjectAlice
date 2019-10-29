@@ -121,3 +121,8 @@ class ThreadManager(Manager):
 
 	def getEvent(self, name: str) -> AliceEvent:
 		return self._events.get(name, AliceEvent(name))
+
+
+	def clearEvent(self, name: str):
+		if name in self._events:
+			self._events.pop(name).clear()
