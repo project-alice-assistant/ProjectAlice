@@ -30,7 +30,7 @@ $(function () {
 
 			$.ajax({
 				contentType: 'application/json',
-				url: '/home/saveWidgetPos/',
+				url: '/home/saveWidgetPosition/',
 				data: JSON.stringify({
 					id: $(ui.draggable).attr('id'),
 					x: $(ui.draggable).position().left,

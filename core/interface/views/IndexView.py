@@ -20,10 +20,10 @@ class IndexView(View):
 	@route('widget_static/<path:filename>')
 	def widget_static(self, filename: str):
 		parent, fileType, filename = filename.split('/')
-		return send_from_directory(
-			f'{self.WebInterfaceManager.app.root_path}/../../modules/{parent}/widgets/{fileType}/', filename)
+		return send_from_directory(f'{self.WebInterfaceManager.app.root_path}/../../modules/{parent}/widgets/{fileType}/', filename)
 
 
+	@route('/home/saveWidgetPosition/', methods=['POST'])
 	def saveWidgetPosition(self):
 		try:
 			data = request.get_json()
@@ -47,6 +47,7 @@ class IndexView(View):
 			return jsonify(success=False)
 
 
+	@route('/home/removeWidget/', methods=['POST'])
 	def removeWidget(self):
 		try:
 			p, w = request.form.get('id').split('_')
@@ -61,6 +62,7 @@ class IndexView(View):
 			return jsonify(success=False)
 
 
+	@route('/home/addWidget/', methods=['POST'])
 	def addWidget(self):
 		try:
 			line, p, w = request.form.get('id').split('_')
