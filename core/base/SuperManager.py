@@ -48,7 +48,7 @@ class SuperManager(Logger):
 		self.userManager               = None
 		self.talkManager               = None
 		self.webInterfaceManager       = None
-		self.SnipsWatchManager         = None
+		self.snipsWatchManager         = None
 
 
 	def onStart(self):
