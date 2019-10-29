@@ -109,7 +109,7 @@ class SnipsServicesManager(Manager):
 
 
 	def toggleFeedbackSound(self, state: str, siteId: str = constants.ALL):
-		topic = constants.TOPIC_HOTWORD_TOGGLE_ON if state == 'on' else constants.TOPIC_TOGGLE_FEEDBACK_OFF
+		topic = constants.TOPIC_TOGGLE_FEEDBACK_ON if state == 'on' else constants.TOPIC_TOGGLE_FEEDBACK_OFF
 
 		if siteId == 'all':
 			devices = self.DeviceManager.getDevicesByType(deviceType='AliceSatellite', connectedOnly=True)
