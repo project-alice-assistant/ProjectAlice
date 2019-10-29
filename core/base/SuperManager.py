@@ -135,6 +135,7 @@ class SuperManager(Logger):
 		from core.snips.SnipsWatchManager       import SnipsWatchManager
 
 		self.commonsManager             = CommonsManager()
+		self.commons                    = self.commonsManager
 		self.configManager              = ConfigManager()
 		self.databaseManager            = DatabaseManager()
 		self.languageManager            = LanguageManager()
