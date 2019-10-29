@@ -55,7 +55,7 @@ class UserManager(Manager):
 
 
 	def checkPinCode(self, user: User, password: str):
-		return user in self._users and self._users[user].checkPassword(password)
+		return user in self._users.values() and user.checkPassword(password)
 
 
 	# noinspection SqlResolve

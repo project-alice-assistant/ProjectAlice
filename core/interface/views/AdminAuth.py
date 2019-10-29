@@ -51,6 +51,11 @@ class AdminAuth(View):
 			return jsonify(success=False)
 
 
+	def keyboardAuth(self):
+		self.ModuleManager.getModuleInstance('AliceCore').authWithKeyboard()
+		return jsonify(success=True)
+
+
 	@classmethod
 	def setNextPage(cls, url: str):
 		cls.nextPage = url
@@ -64,3 +69,8 @@ class AdminAuth(View):
 	@classmethod
 	def setUser(cls, user: User = None):
 		cls.user = user
+
+
+	@classmethod
+	def getUser(cls) -> User:
+		return cls.user

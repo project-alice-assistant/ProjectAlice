@@ -1,6 +1,7 @@
 $(function () {
 
 	let code = '';
+	let keyboardAuthNotified = false;
 
 	function checkAuth() {
 		$.post('/adminAuth/checkAuthState/', function (response) {
@@ -22,6 +23,11 @@ $(function () {
 	}
 
 	$('.adminAuthKeyboardKey').on('click touchstart', function () {
+		if (!keyboardAuthNotified) {
+			$.post('/admin/keyboardAuth/');
+			keyboardAuthNotified = true;
+		}
+
 		if (code.length >= 4) {
 			return;
 		}
