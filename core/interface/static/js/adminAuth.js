@@ -23,7 +23,7 @@ $(function () {
 
 	$('.adminAuthKeyboardKey').on('click touchstart', function () {
 		if (code.length >= 4) {
-			return
+			return;
 		}
 
 		let key = $(this).html();
@@ -41,7 +41,7 @@ $(function () {
 				if (!response.hasOwnProperty('success') || !response.success) {
 					code = '';
 					$('#codeContainer').children('.adminAuthDisplayDigit').each(function () {
-						$(this).removeClass('adminAuthDigitFilled')
+						$(this).removeClass('adminAuthDigitFilled');
 					});
 				}
 			});
