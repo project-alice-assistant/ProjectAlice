@@ -29,7 +29,7 @@ class AdminAuth(View):
 		if self.__class__.user is not None:
 			if self.__class__.user.isAuthenticated:
 				login_user(self.__class__.user)
-				return redirect(self.__class__.nextPage)
+				return jsonify(nextPage=self.__class__.nextPage)
 			else:
 				return jsonify(username=self.__class__.user.name)
 		else:
@@ -40,8 +40,8 @@ class AdminAuth(View):
 		try:
 			code = request.form.get('usercode')
 			if self.UserManager.checkPinCode(self.__class__.user, str(code)):
-				login_user(self.__class__.user)
-				return redirect(self.__class__.nextPage)
+				self.__class__.user.isAuthenticated = True
+				return jsonify(success=True)
 			else:
 				return jsonify(success=False)
 		except Exception as e:

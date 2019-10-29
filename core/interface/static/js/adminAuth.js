@@ -15,10 +15,17 @@ $(function () {
 					checkAuth();
 				}, 1000);
 			}
+			else if (response.hasOwnProperty('nextPage')) {
+				window.location.replace(response.nextPage);
+			}
 		})
 	}
 
 	$('.adminAuthKeyboardKey').on('click touchstart', function () {
+		if (code.length >= 4) {
+			return
+		}
+
 		let key = $(this).html();
 		code = code + key.toString();
 
@@ -30,11 +37,12 @@ $(function () {
 		});
 
 		if (code.length === 4) {
-			$.ajax({
-				url: '/adminAuth/authenticate/',
-				type: 'POST',
-				data: {
-					usercode: code
+			$.post('/adminAuth/authenticate/', {usercode: code}, function (response) {
+				if (!response.hasOwnProperty('success') || !response.success) {
+					code = '';
+					$('#codeContainer').children('.adminAuthDisplayDigit').each(function () {
+						$(this).removeClass('adminAuthDigitFilled')
+					});
 				}
 			});
 		}

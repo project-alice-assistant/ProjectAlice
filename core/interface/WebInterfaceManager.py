@@ -62,7 +62,7 @@ class WebInterfaceManager(Manager):
 			self.app.secret_key = key.encode()
 			self._flaskLoginManager = LoginManager()
 			self._flaskLoginManager.init_app(self.app)
-			self._flaskLoginManager.user_loader(self.UserManager.getUser)
+			self._flaskLoginManager.user_loader(self.UserManager.getUserById)
 			self._flaskLoginManager.login_view = '/adminAuth/'
 
 			with langFile.open('r') as f:

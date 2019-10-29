@@ -106,7 +106,7 @@ class UserManager(Manager):
 
 
 	def getUserById(self, userId: int) -> Optional[User]:
-		for user in self._users:
+		for user in self._users.values():
 			if user.id == userId:
 				return user
 		return None

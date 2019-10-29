@@ -12,7 +12,7 @@ class AdminView(View):
 	waitType = ''
 
 
-	#@login_required
+	@login_required
 	def index(self):
 		return render_template('admin.html',
 		                       langData=self._langData,
