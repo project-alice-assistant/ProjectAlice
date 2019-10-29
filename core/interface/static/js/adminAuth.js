@@ -7,13 +7,13 @@ $(function () {
 			if (response.hasOwnProperty('success') && !response.success) {
 				setTimeout(function () {
 					checkAuth();
-				}, 1000);
+				}, 250);
 			}
 			else if (response.hasOwnProperty('username')) {
 				$('#username').text(response.username);
 				setTimeout(function () {
 					checkAuth();
-				}, 1000);
+				}, 250);
 			}
 			else if (response.hasOwnProperty('nextPage')) {
 				window.location.replace(response.nextPage);
@@ -50,5 +50,5 @@ $(function () {
 
 	setTimeout(function () {
 		checkAuth();
-	}, 1000);
+	}, 250);
 });

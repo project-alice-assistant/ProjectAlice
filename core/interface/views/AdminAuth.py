@@ -1,3 +1,5 @@
+import datetime
+
 from flask import render_template, request, jsonify, redirect
 from flask_login import login_user, current_user
 
@@ -28,7 +30,7 @@ class AdminAuth(View):
 	def checkAuthState(self):
 		if self.__class__.user is not None:
 			if self.__class__.user.isAuthenticated:
-				login_user(self.__class__.user)
+				login_user(user=self.__class__.user, duration=datetime.timedelta(minutes=15))
 				return jsonify(nextPage=self.__class__.nextPage)
 			else:
 				return jsonify(username=self.__class__.user.name)
