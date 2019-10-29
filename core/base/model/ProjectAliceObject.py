@@ -1,3 +1,5 @@
+import json
+
 import core.base.SuperManager as SM
 from core.commons import constants
 from core.util.model.Logger import Logger
@@ -7,6 +9,10 @@ class ProjectAliceObject(Logger):
 
 	def __init__(self, logDepth: int = 3, *args, **kwargs):
 		super().__init__(depth=logDepth)
+
+
+	def __repr__(self):
+		return json.dumps(self.__dict__)
 
 
 	def broadcast(self, method: str, exceptions: list = None, manager = None, propagateToModules: bool = False, silent: bool = False, *args, **kwargs):

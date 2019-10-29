@@ -9,6 +9,7 @@ import random
 import string
 
 from core.base.model.Manager import Manager
+from core.interface.api.UsersApi import UsersApi
 from core.interface.views.AdminAuth import AdminAuth
 from core.interface.views.AdminView import AdminView
 from core.interface.views.IndexView import IndexView
@@ -25,6 +26,7 @@ class WebInterfaceManager(Manager):
 	app.config['SEND_FILE_MAX_AGE_DEFAULT'] = 0
 
 	_VIEWS = [AdminView, AdminAuth, IndexView, ModulesView, SnipswatchView, SyslogView, DevModeView]
+	_APIS = [UsersApi]
 
 	def __init__(self):
 		super().__init__(self.NAME)
@@ -68,13 +70,20 @@ class WebInterfaceManager(Manager):
 			with langFile.open('r') as f:
 				self._langData = json.load(f)
 
-			try:
-				for view in self._VIEWS:
+
+			for view in self._VIEWS:
+				try:
 					view.register(self.app)
-			except Exception as e:
-				# Passing because of a reboot we can't re register
-				self.logInfo(f'Exception while registering view: {e}')
-				pass
+				except Exception as e:
+					self.logInfo(f'Exception while registering view: {e}')
+					continue
+
+			for api in self._APIS:
+				try:
+					api.register(self.app)
+				except Exception as e:
+					self.logInfo(f'Exception while registering api endpoint: {e}')
+					continue
 
 			self.ThreadManager.newThread(
 				name='WebInterface',

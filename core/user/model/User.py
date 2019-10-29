@@ -1,5 +1,4 @@
 import typing
-from textwrap import dedent
 
 import bcrypt
 
@@ -40,6 +39,20 @@ class User(ProjectAliceObject):
 		self._isAuthenticated = False
 		self._isActive = True
 		self._isAnonymous = False
+
+
+	def toJson(self) -> dict:
+		return {
+			'id': self._id,
+			'name': self._name,
+			'accessLevel': self._accessLevel,
+			'state': self._state,
+			'lang': self._lang,
+			'tts': self._tts,
+			'ttsLanguage': self._ttsLanguage,
+			'ttsType': self._ttsType,
+			'ttsVoice': self._ttsVoice
+		}
 
 
 	@property
@@ -157,20 +170,6 @@ class User(ProjectAliceObject):
 
 	def checkPassword(self, password: str) -> bool:
 		return bcrypt.checkpw(str(password).encode(), self.pin.encode())
-
-	def __repr__(self):
-		return dedent(f'''\
-			[User {self.name}]
-			Name: {self.name}
-			AccessLevel: {self.accessLevel}
-			State: {self.state}
-			Pin: {self.pin}
-			Lang: {self.lang}
-			TTS: {self.tts}
-			TtsLanguage: {self.ttsLanguage}
-			TtsType: {self.ttsType}
-			TtsVoice: {self.ttsVoice}''')
-
 
 	# Flask login reqs
 
