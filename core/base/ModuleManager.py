@@ -58,6 +58,7 @@ class ModuleManager(Manager):
 		self._moduleInstallThread   = None
 		self._supportedIntents      = list()
 		self._modules               = dict()
+		self._failedModules         = dict()
 		self._deactivatedModules    = dict()
 		self._widgets               = dict()
 
@@ -124,7 +125,7 @@ class ModuleManager(Manager):
 			modules = dict()
 
 		availableModules = self.ConfigManager.modulesConfigurations
-		availableModules = collections.OrderedDict(sorted(availableModules.items()))
+		availableModules = dict(sorted(availableModules.items()))
 
 		if Customisation.MODULE_NAME in availableModules:
 			customisationModule = availableModules.pop(Customisation.MODULE_NAME)
@@ -172,6 +173,11 @@ class ModuleManager(Manager):
 					modules[moduleInstance.name] = {
 						'instance': moduleInstance
 					}
+				else:
+					self._failedModules[name] = { 
+						'instance': None
+					}
+					
 			except ModuleStartingFailed as e:
 				self.logWarning(f'Failed loading module: {e}')
 				continue
@@ -183,7 +189,7 @@ class ModuleManager(Manager):
 				continue
 
 		# noinspection PyTypeChecker
-		return collections.OrderedDict(sorted(modules.items()))
+		return dict(sorted(modules.items()))
 
 
 	# noinspection PyTypeChecker
@@ -281,7 +287,7 @@ class ModuleManager(Manager):
 
 
 	def getModules(self, isEvent: bool = False) -> dict:
-		self._reorderCustomisationModule(isEvent)
+		self._reorderCustomisationModule(isEvent)		
 		return self._modules
 
 
@@ -323,17 +329,10 @@ class ModuleManager(Manager):
 		if Customisation.MODULE_NAME not in self._modules:
 			return #Customisation module might be disabled
 
-		if isEvent:
-			if list(self._modules.items())[0][0] == Customisation.MODULE_NAME:
-				customisationModule = self._modules.pop(Customisation.MODULE_NAME)
-				self._modules[Customisation.MODULE_NAME] = customisationModule
-		else:
-			if list(self._modules.items())[0][0] != Customisation.MODULE_NAME:
-				customisationModule = self._modules.pop(Customisation.MODULE_NAME)
-				modules = self._modules.copy()
-				self._modules = collections.OrderedDict()
-				self._modules[Customisation.MODULE_NAME] = customisationModule
-				self._modules.update(modules)
+		if isEvent and list(self._modules.keys())[0] == Customisation.MODULE_NAME:
+			self._modules[Customisation.MODULE_NAME] = self._modules.pop(Customisation.MODULE_NAME)
+		elif list(self._modules.keys())[0] != Customisation.MODULE_NAME:
+			self._modules = {Customisation.MODULE_NAME: None, **self._modules}
 
 
 	def deactivateModule(self, moduleName: str, persistent: bool = False):
@@ -365,28 +364,34 @@ class ModuleManager(Manager):
 		availableModules = self.ConfigManager.modulesConfigurations
 
 		i = 0
-		for moduleName in self._modules:
-			try:
-				if moduleName not in availableModules:
-					continue
-
-				req = requests.get(f'https://raw.githubusercontent.com/project-alice-powered-by-snips/ProjectAliceModules/{self.ConfigManager.getAliceConfigByName("updateChannel")}/PublishedModules/{availableModules[moduleName]["author"]}/{moduleName}/{moduleName}.install')
-
-				remoteFile = req.json()
-				if float(remoteFile['version']) > float(availableModules[moduleName]['version']):
-					i += 1
-
-					if not self.ConfigManager.getAliceConfigByName('moduleAutoUpdate'):
-						if moduleName in self._modules:
-							self._modules[moduleName]['instance'].updateAvailable = True
-						elif moduleName in self._deactivatedModules:
-							self._deactivatedModules[moduleName]['instance'].updateAvailable = True
+		for modList in (self._modules, self._failedModules):
+			for moduleName in modList:
+				try:
+					if moduleName not in availableModules:
+						continue
+	
+					req = requests.get(f'https://raw.githubusercontent.com/project-alice-powered-by-snips/ProjectAliceModules/{self.ConfigManager.getAliceConfigByName("updateChannel")}/PublishedModules/{availableModules[moduleName]["author"]}/{moduleName}/{moduleName}.install')
+	
+					remoteFile = req.json()
+					if float(remoteFile['version']) > float(availableModules[moduleName]['version']):
+						i += 1
+						self.logInfo(f'❌ {moduleName} - Version {availableModules[moduleName]["version"]} < {remoteFile["version"]} in {self.ConfigManager.getAliceConfigByName("updateChannel")}')
+	
+						if not self.ConfigManager.getAliceConfigByName('moduleAutoUpdate'):
+							if moduleName in self._modules:
+								self._modules[moduleName]['instance'].updateAvailable = True
+							elif moduleName in self._deactivatedModules:
+								self._deactivatedModules[moduleName]['instance'].updateAvailable = True
+						else:
+							moduleFile = Path(self.Commons.rootDir(), 'system/moduleInstallTickets', moduleName + '.install')
+							moduleFile.write_text(json.dumps(remoteFile))
+							if modulName in self._failedModules:
+								del self._failedModules[moduleName]
 					else:
-						moduleFile = Path(self.Commons.rootDir(), 'system/moduleInstallTickets', moduleName + '.install')
-						moduleFile.write_text(json.dumps(remoteFile))
-
-			except Exception as e:
-				self.logWarning(f'Error checking updates for module "{moduleName}": {e}')
+						self.logInfo(f'✔ {moduleName} - Version {availableModules[moduleName]["version"]} in {self.ConfigManager.getAliceConfigByName("updateChannel")}')
+						
+				except Exception as e:
+					self.logWarning(f'Error checking updates for module "{moduleName}": {e}')
 
 		self.logInfo(f'Found {i} module update(s)')
 
