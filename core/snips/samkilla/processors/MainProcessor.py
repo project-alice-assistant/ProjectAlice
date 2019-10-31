@@ -610,11 +610,9 @@ class MainProcessor:
 
 		skillNameIdMatching = dict()
 
-		for moduleName in self._modules:
-			if languageFilter not in self._modules[moduleName]:
+		for moduleName, moduleSettings in self._modules.items():
+			if languageFilter not in moduleSettings:
 				continue
-
-			module = self._modules[moduleName][languageFilter]
 
 			moduleSyncState = self.getModuleSyncStateByLanguageAndAssistantId(
 				moduleName=moduleName,
@@ -626,7 +624,7 @@ class MainProcessor:
 			moduleRemoteProcessor = ModuleRemoteProcessor(
 				ctx=self._ctx,
 				assistantId=runOnAssistantId,
-				module=module,
+				module=moduleSettings[languageFilter],
 				moduleName=moduleName,
 				moduleLanguage=languageFilter
 			)
@@ -760,12 +758,9 @@ class MainProcessor:
 				intentName = SuperManager.getInstance().commons.toCamelCase(string=intentName, replaceSepCharacters=True, sepCharacters=('/', '-', '_'))
 
 				utterances = list()
-				slots = list()
-				slotIdAndNameMatching = dict()
 				objectUtterances = self._ctx.intent.listUtterancesByIntentId(intentId=intent['id'])
 
-				for slot in intent['slots']:
-					slotIdAndNameMatching[slot['id']] = slot
+				slotIdAndNameMatching = {slot['id']: slot for slot in intent['slots']}
 
 				for objectUtterance in objectUtterances:
 					text = objectUtterance['text']
@@ -805,14 +800,13 @@ class MainProcessor:
 						'hash'    : ''
 					}
 
-				for slot in intent['slots']:
-					slots.append({
-						'name'           : SuperManager.getInstance().commons.toCamelCase(string=slot['name'], replaceSepCharacters=True, sepCharacters=('/', '-', '_')),
-						'description'    : slot['description'],
-						'required'       : slot['required'],
-						'type'           : slot['entityId'] if slot['entityId'].startswith('snips/') else typeEntityMatching[slot['entityId']],
-						'missingQuestion': slot['missingQuestion']
-					})
+				slots = [{
+					'name'           : SuperManager.getInstance().commons.toCamelCase(string=slot['name'], replaceSepCharacters=True, sepCharacters=('/', '-', '_')),
+					'description'    : slot['description'],
+					'required'       : slot['required'],
+					'type'           : slot['entityId'] if slot['entityId'].startswith('snips/') else typeEntityMatching[slot['entityId']],
+					'missingQuestion': slot['missingQuestion']
+				} for slot in intent['slots']]
 
 				modules[moduleName]['intents'].append({
 					'name'            : intentName,

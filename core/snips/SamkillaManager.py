@@ -350,39 +350,25 @@ class SamkillaManager(Manager):
 
 
 	def getIntentsByModuleName(self, runOnAssistantId: str, languageFilter: str, moduleFilter: str = None) -> list:
-		slotTypesModulesValues, intentsModulesValues, intentNameSkillMatching = self.getDialogTemplatesMaps(
+		_, intentsModulesValues, intentNameSkillMatching = self.getDialogTemplatesMaps(
 			runOnAssistantId=runOnAssistantId,
 			languageFilter=languageFilter
 		)
 
-		intents = list()
-
-		for dtIntentName, dtModuleName in intentNameSkillMatching.items():
-			if dtModuleName == moduleFilter:
-				intents.append({
-					'name': dtIntentName,
-					'description': intentsModulesValues[dtIntentName]['__otherattributes__']['description']
-				})
-
-		return intents
+		return [{
+			'name': intentName,
+			'description': intentsModulesValues[intentName]['__otherattributes__']['description']
+		} for intentName, moduleName in intentNameSkillMatching.items() if moduleName == moduleFilter]
 
 
 	def getUtterancesByIntentName(self, runOnAssistantId: str, languageFilter: str, intentFilter: str = None) -> list:
-		slotTypesModulesValues, intentsModulesValues, intentNameSkillMatching = self.getDialogTemplatesMaps(
+		_, intentsModulesValues, intentNameSkillMatching = self.getDialogTemplatesMaps(
 			runOnAssistantId=runOnAssistantId,
 			languageFilter=languageFilter
 		)
 
-		utterances = list()
-
-		for dtIntentName in intentNameSkillMatching:
-			if dtIntentName == intentFilter:
-				for utterance in intentsModulesValues[dtIntentName]['utterances'].items():
-					utterances.append({
-						'sentence': utterance
-					})
-
-		return utterances
+		return [{'sentence': utterance} for intent in intentNameSkillMatching if intent == intentFilter
+			for utterance in intentsModulesValues[intent]['utterances'].items()]
 
 
 	@property

@@ -50,12 +50,8 @@ class DatabaseManager(Manager):
 
 			if colsQuery.count(' UNIQUE') > 1:
 				colsQuery = colsQuery.replace(' UNIQUE', '')
-				unique = list()
-				for query in queries:
-					if 'UNIQUE' in query:
-						unique.append(query.split(' ')[0])
-
-				unique = f", UNIQUE({', '.join(unique)})"
+				uniqueList = [query.split(' ')[0] for query in queries if 'UNIQUE' in query]
+				unique = f", UNIQUE({', '.join(uniqueList)})"
 			else:
 				unique = ''
 

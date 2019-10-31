@@ -61,32 +61,32 @@ class ASRManager(Manager):
 	def onStartListening(self, session: DialogSession, *args, **kwargs):
 		if isinstance(self._asr, SnipsASR):
 			return
+
+		start = time.time()
+		result = self._asr.onListen()
+		end = time.time()
+		processing = float(end - start)
+
+		if result:
+			# Stop listener as fast as possible
+			self.MqttManager.publish(topic=constants.TOPIC_STOP_LISTENING, payload={'sessionId': session.sessionId, 'siteId': session.siteId})
+
+			result = self.LanguageManager.sanitizeNluQuery(result)
+			self.logDebug(f'{self._asr.__class__.__name__} output: "{result}"')
+
+			supportedIntents = session.intentFilter or self.ModuleManager.supportedIntents.keys()
+			intentFilter = [intent.justTopic for intent in supportedIntents if isinstance(intent, Intent) and not intent.protected]
+
+			# Add Global Intents
+			intentFilter.append(Intent('GlobalStop').justTopic)
+
+			self.MqttManager.publish(topic=constants.TOPIC_TEXT_CAPTURED, payload={'sessionId': session.sessionId, 'text': result, 'siteId': session.siteId, 'likelihood': 1, 'seconds': processing})
+
+			self.MqttManager.publish(topic=constants.TOPIC_NLU_QUERY, payload={'id':session.sessionId, 'input': result, 'intentFilter': intentFilter, 'sessionId': session.sessionId})
 		else:
-			start = time.time()
-			result = self._asr.onListen()
-			end = time.time()
-			processing = float(end - start)
-
-			if result:
-				# Stop listener as fast as possible
-				self.MqttManager.publish(topic=constants.TOPIC_STOP_LISTENING, payload={'sessionId': session.sessionId, 'siteId': session.siteId})
-
-				result = self.LanguageManager.sanitizeNluQuery(result)
-				self.logDebug(f'{self._asr.__class__.__name__} output: "{result}"')
-
-				supportedIntents = session.intentFilter or self.ModuleManager.supportedIntents.keys()
-				intentFilter = [intent.justTopic for intent in supportedIntents if isinstance(intent, Intent) and not intent.protected]
-
-				# Add Global Intents
-				intentFilter.append(Intent('GlobalStop').justTopic)
-
-				self.MqttManager.publish(topic=constants.TOPIC_TEXT_CAPTURED, payload={'sessionId': session.sessionId, 'text': result, 'siteId': session.siteId, 'likelihood': 1, 'seconds': processing})
-
-				self.MqttManager.publish(topic=constants.TOPIC_NLU_QUERY, payload={'id':session.sessionId, 'input': result, 'intentFilter': intentFilter, 'sessionId': session.sessionId})
-			else:
-				self.MqttManager.publish(topic=constants.TOPIC_INTENT_NOT_RECOGNIZED)
-				self.MqttManager.playSound(
-					soundFilename='error',
-					location='assistant/custom_dialogue/sound',
-					siteId=session.siteId
-				)
+			self.MqttManager.publish(topic=constants.TOPIC_INTENT_NOT_RECOGNIZED)
+			self.MqttManager.playSound(
+				soundFilename='error',
+				location='assistant/custom_dialogue/sound',
+				siteId=session.siteId
+			)

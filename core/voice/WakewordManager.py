@@ -270,7 +270,7 @@ class WakewordManager(Manager):
 
 	def uploadToNewDevice(self, uid: str):
 		directory = Path(self.Commons.rootDir(), 'trained/hotwords')
-		for fiile in directory:
+		for fiile in directory.iterdir():
 			if (directory/fiile).is_file():
 				continue
 
