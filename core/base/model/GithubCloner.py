@@ -57,6 +57,8 @@ class GithubCloner(ProjectAliceObject):
 				else:
 					Path(self._dest / path).mkdir(parents=True)
 					self._doClone(url=item['url'])
+			
+			return True
 
 		except GithubTokenFailed:
 			self.logError('Provided Github username / token invalid')
@@ -69,8 +71,6 @@ class GithubCloner(ProjectAliceObject):
 		except Exception as e:
 			self.logError(f'Error downloading module: {e}')
 			raise
-
-		return True
 
 
 	def _cleanDestDir(self):

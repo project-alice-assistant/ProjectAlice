@@ -207,7 +207,9 @@ class DatabaseManager(Manager):
 			return True
 
 
-
+	#TODO this not really right, right now it either returns a list of sqlite3.Row when the method is not 'one',
+	# a sqlite2.Row or None when it is None and when there is an exception or no query sqlite3.Row() is a broken syntax
+	# -> will throw an TypeError (should probably return a empty list or None instead)
 	def fetch(self, tableName: str, query: str, callerName: str, values: dict = None, method: str = 'one') -> sqlite3.Row:
 		"""
 		Fetch data from database

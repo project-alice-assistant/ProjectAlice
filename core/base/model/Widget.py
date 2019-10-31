@@ -19,6 +19,7 @@ class Widget(ProjectAliceObject):
 		self._name = data['name']
 		self._parent = data['parent']
 
+		# sqlite3.Row does not support .get like dicts
 		self._state = data['state'] if 'state' in data.keys() else 0
 		self._x = data['posx'] if 'posx' in data.keys() else 0
 		self._y = data['posy'] if 'posy' in data.keys() else 0
