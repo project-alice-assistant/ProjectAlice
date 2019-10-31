@@ -10,10 +10,8 @@ class ModulesView(View):
 
 
 	def index(self):
-		modules = {moduleName: module['instance'] for moduleName, module in self.ModuleManager.getModules(False).items()}
-		deactivatedModules = {moduleName: module['instance'] for moduleName, module in self.ModuleManager.deactivatedModules.items()}
-		modules = {**modules, **deactivatedModules}
-		modules = dict(sorted(modules.items()))
+		modules = {**self.ModuleManager.getModules(False), **self.ModuleManager.deactivatedModules}
+		modules = {moduleName: module['instance'] for moduleName, module in sorted(modules.items())}
 
 		return render_template(template_name_or_list='modules.html',
 		                       modules=modules,
@@ -24,7 +22,7 @@ class ModulesView(View):
 
 	def toggleModule(self):
 		try:
-			action, module = request.form.get('id').split('_')
+			_, module = request.form.get('id').split('_')
 			if self.ModuleManager.isModuleActive(module):
 				self.ModuleManager.deactivateModule(moduleName=module, persistent=True)
 			else:
@@ -38,7 +36,7 @@ class ModulesView(View):
 
 	def deleteModule(self):
 		try:
-			action, module = request.form.get('id').split('_')
+			_, module = request.form.get('id').split('_')
 			self.ModuleManager.removeModule(module)
 			return self.index()
 		except Exception as e:
