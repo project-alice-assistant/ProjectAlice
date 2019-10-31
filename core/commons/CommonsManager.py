@@ -193,8 +193,9 @@ class CommonsManager(Manager):
 		return duration
 
 
-	def toCamelCase(self, string: str, replaceSepCharacters: bool = False, sepCharacters: tuple = None) -> str:
-		join = self.toPascalCase(string, replaceSepCharacters, sepCharacters)
+	@classmethod
+	def toCamelCase(cls, string: str, replaceSepCharacters: bool = False, sepCharacters: tuple = None) -> str:
+		join = cls.toPascalCase(string, replaceSepCharacters, sepCharacters)
 		return join[0].lower() + join[1:]
 
 
