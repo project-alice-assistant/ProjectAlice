@@ -1,5 +1,4 @@
 import subprocess
-from collections import OrderedDict
 
 from flask import render_template, request, jsonify
 
@@ -14,7 +13,7 @@ class ModulesView(View):
 		modules = {moduleName: module['instance'] for moduleName, module in self.ModuleManager.getModules(False).items()}
 		deactivatedModules = {moduleName: module['instance'] for moduleName, module in self.ModuleManager.deactivatedModules.items()}
 		modules = {**modules, **deactivatedModules}
-		modules = OrderedDict(sorted(modules.items()))
+		modules = dict(sorted(modules.items()))
 
 		return render_template(template_name_or_list='modules.html',
 		                       modules=modules,
