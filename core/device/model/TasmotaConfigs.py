@@ -33,7 +33,7 @@ class TasmotaConfigs(ProjectAliceObject):
 					ssid=self.ConfigManager.getAliceConfigByName('ssid'),
 					wifipass=self.ConfigManager.getAliceConfigByName('wifipassword')
 				) for cmd in cmdGroup['cmds']]
-	
+
 			group['waitAfter'] = cmdGroup['waitAfter']
 			cmds.append(group)
 

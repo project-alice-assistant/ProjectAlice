@@ -181,7 +181,7 @@ class Intent:
 
 	def removeFromSkill(self, userId: str, skillId: str, intentId: str, languageFilter: str = None, deleteAfter: bool = True):
 		existingIntents = self.listIntentsByUserIdAndSkillId(userId=userId, skillId=skillId, languageFilter=languageFilter)
-		
+
 		variablesIntents = [{'id': x['id']} for x in existingIntents if x['id'] != intentId]
 
 		gqlRequest = [{

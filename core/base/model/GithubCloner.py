@@ -57,7 +57,7 @@ class GithubCloner(ProjectAliceObject):
 				else:
 					Path(self._dest / path).mkdir(parents=True)
 					self._doClone(url=item['url'])
-			
+
 			return True
 
 		except GithubTokenFailed:

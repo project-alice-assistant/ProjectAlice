@@ -202,7 +202,7 @@ class DeviceManager(Manager):
 			self.MqttManager.say(text=self.TalkManager.randomTalk('noESPFound', module='AliceCore'), client=siteId)
 			self._broadcastFlag.clear()
 			return
-		
+
 		self.MqttManager.say(text=self.TalkManager.randomTalk('usbDeviceFound', module='AliceCore'), client=siteId)
 		try:
 			mac = ESPLoader.detect_chip(port=port, baud=115200).read_mac()
