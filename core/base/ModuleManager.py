@@ -1,4 +1,3 @@
-import collections
 import importlib
 import json
 import subprocess
@@ -118,13 +117,10 @@ class ModuleManager(Manager):
 
 
 	def _loadModuleList(self, moduleToLoad: str = '', isUpdate: bool = False) -> dict:
-		if moduleToLoad:
-			modules = self._modules.copy()
-		else:
-			modules = dict()
+		modules = self._modules.copy() if moduleToLoad else dict()
 
 		availableModules = self.ConfigManager.modulesConfigurations
-		availableModules = collections.OrderedDict(sorted(availableModules.items()))
+		availableModules = dict(sorted(availableModules.items()))
 
 		if Customisation.MODULE_NAME in availableModules:
 			customisationModule = availableModules.pop(Customisation.MODULE_NAME)
@@ -182,8 +178,7 @@ class ModuleManager(Manager):
 				self.logWarning(f'Something went wrong loading a module: {e}')
 				continue
 
-		# noinspection PyTypeChecker
-		return collections.OrderedDict(sorted(modules.items()))
+		return dict(sorted(modules.items()))
 
 
 	# noinspection PyTypeChecker
@@ -323,17 +318,10 @@ class ModuleManager(Manager):
 		if Customisation.MODULE_NAME not in self._modules:
 			return #Customisation module might be disabled
 
-		if isEvent:
-			if list(self._modules.items())[0][0] == Customisation.MODULE_NAME:
-				customisationModule = self._modules.pop(Customisation.MODULE_NAME)
-				self._modules[Customisation.MODULE_NAME] = customisationModule
-		else:
-			if list(self._modules.items())[0][0] != Customisation.MODULE_NAME:
-				customisationModule = self._modules.pop(Customisation.MODULE_NAME)
-				modules = self._modules.copy()
-				self._modules = collections.OrderedDict()
-				self._modules[Customisation.MODULE_NAME] = customisationModule
-				self._modules.update(modules)
+		if isEvent and list(self._modules.keys())[0] == Customisation.MODULE_NAME:
+			self._modules[Customisation.MODULE_NAME] = self._modules.pop(Customisation.MODULE_NAME)
+		elif list(self._modules.keys())[0] != Customisation.MODULE_NAME:
+			self._modules = {Customisation.MODULE_NAME: None, **self._modules}
 
 
 	def deactivateModule(self, moduleName: str, persistent: bool = False):
