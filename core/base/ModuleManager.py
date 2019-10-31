@@ -609,11 +609,10 @@ class ModuleManager(Manager):
 	def configureModuleIntents(self, moduleName: str, state: bool):
 		try:
 			module = self._modules.get(moduleName, self._deactivatedModules.get(moduleName))['instance']
-			confDict = lambda intent: {
-					'intentId': intent.justTopic if hasattr(intent, 'justTopic') else intent,
-					'enable'  : state
-				}
-			confs = [confDict(intent) for intent in module.supportedIntents if not self.isIntentInUse(intent=intent, filtered=[moduleName])]
+			confs = [{
+				'intentId': intent.justTopic if hasattr(intent, 'justTopic') else intent,
+				'enable'  : state
+			} for intent in module.supportedIntents if not self.isIntentInUse(intent=intent, filtered=[moduleName])]
 
 			self.MqttManager.configureIntents(confs)
 		except Exception as e:
