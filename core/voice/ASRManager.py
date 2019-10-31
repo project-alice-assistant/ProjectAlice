@@ -26,11 +26,11 @@ class ASRManager(Manager):
 
 			self._asr = GoogleASR()
 			self.SnipsServicesManager.runCmd('stop', ['snips-asr'])
-			self.logInfo(f'Turned Snips ASR off')
+			self.logInfo('Turned Snips ASR off')
 		else:
 			self._asr = SnipsASR()
 			self.SnipsServicesManager.runCmd('start', ['snips-asr'])
-			self.logInfo(f'Started Snips ASR')
+			self.logInfo('Started Snips ASR')
 
 
 	@property
@@ -42,7 +42,7 @@ class ASRManager(Manager):
 		if not self.ConfigManager.getAliceConfigByName('keepASROffline'):
 			asr = self.ConfigManager.getAliceConfigByName('asr').lower()
 			if asr != 'snips' and not self.ConfigManager.getAliceConfigByName('keepASROffline') and not self.ConfigManager.getAliceConfigByName('stayCompletlyOffline'):
-				self.logInfo(f'Connected to internet, switching ASR')
+				self.logInfo('Connected to internet, switching ASR')
 				self.SnipsServicesManager.runCmd('stop', ['snips-asr'])
 				if asr == 'google':
 					# noinspection PyUnresolvedReferences
@@ -52,7 +52,7 @@ class ASRManager(Manager):
 
 	def onInternetLost(self):
 		if not isinstance(self._asr, SnipsASR):
-			self.logInfo(f'Internet lost, switching to snips ASR')
+			self.logInfo('Internet lost, switching to snips ASR')
 			self.SnipsServicesManager.runCmd('start', ['snips-asr'])
 			self._asr = SnipsASR()
 			self.ThreadManager.doLater(interval=3, func=self.MqttManager.say, args=[self.TalkManager.randomTalk('internetLost', module='AliceCore'), 'all'])
@@ -74,7 +74,7 @@ class ASRManager(Manager):
 			result = self.LanguageManager.sanitizeNluQuery(result)
 			self.logDebug(f'{self._asr.__class__.__name__} output: "{result}"')
 
-			supportedIntents = session.intentFilter or self.ModuleManager.supportedIntents.keys()
+			supportedIntents = session.intentFilter or self.ModuleManager.supportedIntents
 			intentFilter = [intent.justTopic for intent in supportedIntents if isinstance(intent, Intent) and not intent.protected]
 
 			# Add Global Intents

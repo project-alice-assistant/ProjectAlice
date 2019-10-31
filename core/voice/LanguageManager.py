@@ -108,7 +108,7 @@ class LanguageManager(Manager):
 				self._activeLanguage = self._defaultLanguage
 				self._activeCountryCode = self._defaultCountryCode
 			else:
-				self.logWarning(f'No active language or default language defined, falling back to "en"')
+				self.logWarning('No active language or default language defined, falling back to "en"')
 				self._activeLanguage = 'en'
 				self._activeCountryCode = 'US'
 		else:
@@ -120,7 +120,7 @@ class LanguageManager(Manager):
 				self._defaultLanguage = self._activeLanguage
 				self._defaultCountryCode = self._activeCountryCode
 			else:
-				self.logWarning(f'No default language or active language defined, falling back to "en"')
+				self.logWarning('No default language or active language defined, falling back to "en"')
 				self._defaultLanguage = 'en'
 				self._defaultCountryCode = 'US'
 				self._activeLanguage = self._defaultLanguage
@@ -130,7 +130,7 @@ class LanguageManager(Manager):
 
 
 		if not self._activeSnipsProjectId:
-			self.logInfo(f'No active snips project id set')
+			self.logInfo('No active snips project id set')
 
 
 	def localize(self, string: str) -> str:

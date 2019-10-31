@@ -27,21 +27,20 @@ class ModulesView(View):
 				self.ModuleManager.deactivateModule(moduleName=module, persistent=True)
 			else:
 				self.ModuleManager.activateModule(moduleName=module, persistent=True)
-
-			return self.index()
 		except Exception as e:
 			self.logWarning(f'Failed toggling module: {e}', printStack=True)
-			return self.index()
+		
+		return self.index()
 
 
 	def deleteModule(self):
 		try:
 			_, module = request.form.get('id').split('_')
 			self.ModuleManager.removeModule(module)
-			return self.index()
 		except Exception as e:
 			self.logWarning(f'Failed deleting module: {e}', printStack=True)
-			return self.index()
+
+		return self.index()
 
 
 	def saveModuleSettings(self):

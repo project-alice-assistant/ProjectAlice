@@ -47,7 +47,7 @@ class TTSManager(Manager):
 			self._tts = PicoTTS(user)
 		elif tts == TTSEnum.MYCROFT:
 			if not Path(Path(self.Commons.rootDir()).parent, 'mimic/voices').is_dir():
-				self.logWarning(f'Trying to use Mycroft as TTS but files not available, falling back to picotts')
+				self.logWarning('Trying to use Mycroft as TTS but files not available, falling back to picotts')
 				self._tts = PicoTTS(user)
 				tts = TTSEnum.PICO
 			else:

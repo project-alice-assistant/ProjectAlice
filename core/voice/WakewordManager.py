@@ -89,11 +89,11 @@ class WakewordManager(Manager):
 			riff, size, fformat = struct.unpack('<4sI4s', message.payload[:12])
 
 			if riff != b'RIFF':
-				self.logError(f'Wakeword capture frame parse error')
+				self.logError('Wakeword capture frame parse error')
 				return
 
 			if fformat != b'WAVE':
-				self.logError(f'Wakeword capture frame wrong format')
+				self.logError('Wakeword capture frame wrong format')
 				return
 
 			chunkHeader = message.payload[12:20]
@@ -130,7 +130,7 @@ class WakewordManager(Manager):
 
 		# noinspection PyProtectedMember
 		if not sample._datawritten:
-			self.logError(f'Something went wrong capturing audio, no data available in sample')
+			self.logError('Something went wrong capturing audio, no data available in sample')
 			self._state = WakewordManagerState.IDLE
 			return
 
@@ -229,7 +229,7 @@ class WakewordManager(Manager):
 		path = Path(self.Commons.rootDir(), 'trained/hotwords', self.wakeword.username.lower())
 
 		if path.exists():
-			self.logWarning(f'Destination directory for new wakeword already exists, deleting')
+			self.logWarning('Destination directory for new wakeword already exists, deleting')
 			shutil.rmtree(path)
 
 		path.mkdir()

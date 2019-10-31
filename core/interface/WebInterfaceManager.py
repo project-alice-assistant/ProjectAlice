@@ -48,7 +48,7 @@ class WebInterfaceManager(Manager):
 	def onStart(self):
 		super().onStart()
 		if not self.ConfigManager.getAliceConfigByName('webInterfaceActive'):
-			self.logInfo(f'Web interface is disabled by settings')
+			self.logInfo('Web interface is disabled by settings')
 		else:
 			langFile = Path(self.Commons.rootDir(), f'core/interface/languages/{self.LanguageManager.activeLanguage.lower()}.json')
 

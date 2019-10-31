@@ -51,12 +51,8 @@ class CommonsManager(Manager):
 		:param compareTo: the key of the string json to compare to
 		:return: bool
 		"""
-		strings = self.LanguageManager.getStrings(compareTo, module)
 		baseString = baseString.strip().lower()
-		for string in strings:
-			if baseString == string.strip().lower():
-				return True
-		return False
+		return any(x.strip().lower() == baseString for x in self.LanguageManager.getStrings(compareTo, module))
 
 
 	@staticmethod
@@ -82,10 +78,13 @@ class CommonsManager(Manager):
 			p = p.decode()
 
 			if p == 'true' or p == 'false':
+				# TODO this is the same as return {str(p): p}, but less readable
+				# in this case even return {p: p} should be enough since it is already a string
 				raise ValueError
 
 			return json.loads(p)
 		except (UnicodeDecodeError, AttributeError):
+			#TODO whats the goal behind this? currently this try/except is superfluous
 			try:
 				return json.loads(message.payload)
 			except ValueError:

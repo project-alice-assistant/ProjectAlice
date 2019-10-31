@@ -566,9 +566,9 @@ class MqttManager(Manager):
 
 		if slot:
 			if intentFilter and len(intentList) > 1:
-				self.logWarning(f'Can\'t specify a slot if you have more than one intent in the intent filter')
+				self.logWarning('Can\'t specify a slot if you have more than one intent in the intent filter')
 			elif not intentFilter:
-				self.logWarning(f'Can\'t use a slot definition without setting an intent filter')
+				self.logWarning('Can\'t use a slot definition without setting an intent filter')
 			else:
 				jsonDict['slot'] = slot
 
