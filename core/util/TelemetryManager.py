@@ -19,10 +19,44 @@ class TelemetryManager(Manager):
 		]
 	}
 
+	TELEMETRY_MAPPINGS = {
+		TelemetryType.WIND_STRENGTH: {
+			'onWindy': ['upperThreshold', 'WindAlertFromKmh']
+		},
+		TelemetryType.TEMPERATURE: {
+			'onTemperatureHighAlert': ['upperThreshold', 'TemperatureAlertHigh'],
+			'onTemperatureLowAlert': ['lowerThreshold', 'TemperatureAlertLow'],
+			'onFreezing': ['lowerThreshold', 0]
+		},
+		TelemetryType.CO2: {
+			'onCO2Alert': ['upperThreshold', 'CO2AlertHigh']
+		},
+		TelemetryType.HUMIDITY: {
+			'onHumidityHighAlert': ['upperThreshold', 'HumidityAlertHigh'],
+			'onHumidityLowAlert': ['lowerThreshold', 'HumidityAlertLow']
+		},
+		TelemetryType.PRESSURE: {
+			'onPressureHighAlert': ['upperThreshold', 'PressureAlertHigh'],
+			'onPressureLowAlert': ['lowerThreshold', 'PressureAlertLow']
+		},
+		TelemetryType.NOISE: {
+			'onNoiseAlert': ['upperThreshold', 'NoiseAlert']
+		},
+		TelemetryType.RAIN: {
+			'onRaining': None
+		},
+		TelemetryType.SUM_RAIN_1: {
+			'onTooMuchRain': ['upperThreshold', 'TooMuchRainAlert']
+		},
+		TelemetryType.UV_INDEX: {
+			'onUVIndexAlert': ['upperThreshold', 'UVIndexAlert']
+		}
+	}
+
 
 	def __init__(self):
 		super().__init__(self.NAME, self.DATABASE)
-		self._data = list
+		self._data = list()
 
 
 	def onStart(self):
@@ -64,48 +98,20 @@ class TelemetryManager(Manager):
 			values={'type': ttype.value, 'value': value, 'service': service, 'siteId': siteId, 'timestamp': round(timestamp)}
 		)
 
-		if ttype == TelemetryType.WIND_STRENGTH:
-			if float(value) > float(self.ConfigManager.getModuleConfigByName('WindAlertFromKmh')):
-				self.broadcast(method='onWindy', exceptions=self.name, propagateToModules=True, args=[service])
-
-		elif ttype == TelemetryType.TEMPERATURE:
-			if float(value) > float(self.ConfigManager.getModuleConfigByName('TemperatureAlertHigh')):
-				self.broadcast(method='onTemperatureHighAlert', exceptions=self.name, propagateToModules=True, args=[service])
-			elif float(value) < float(self.ConfigManager.getModuleConfigByName('TemperatureAlertLow')):
-				self.broadcast(method='onTemperatureLowAlert', exceptions=self.name, propagateToModules=True, args=[service])
-			elif float(value) < 0:
-				self.broadcast(method='onFreezing', exceptions=self.name, propagateToModules=True, args=[service])
-
-		elif ttype == TelemetryType.CO2:
-			if float(value) > float(self.ConfigManager.getModuleConfigByName('CO2AlertHigh')):
-				self.broadcast(method='onCO2Alert', exceptions=self.name, propagateToModules=True, args=[service])
-
-		elif ttype == TelemetryType.HUMIDITY:
-			if float(value) > float(self.ConfigManager.getModuleConfigByName('HumidityAlertHigh')):
-				self.broadcast(method='onHumidityHighAlert', exceptions=self.name, propagateToModules=True, args=[service])
-			elif float(value) < float(self.ConfigManager.getModuleConfigByName('HumidityAlertLow')):
-				self.broadcast(method='onHumidityLowAlert', exceptions=self.name, propagateToModules=True, args=[service])
-
-		elif ttype == TelemetryType.PRESSURE:
-			if float(value) > float(self.ConfigManager.getModuleConfigByName('PressureAlertHigh')):
-				self.broadcast(method='onPressureHighAlert', exceptions=self.name, propagateToModules=True, args=[service])
-			elif float(value) < float(self.ConfigManager.getModuleConfigByName('PressureAlertLow')):
-				self.broadcast(method='onPressureLowAlert', exceptions=self.name, propagateToModules=True, args=[service])
-
-		elif ttype == TelemetryType.NOISE:
-			if float(value) > float(self.ConfigManager.getModuleConfigByName('NoiseAlert')):
-				self.broadcast(method='onNoiseAlert', exceptions=self.name, propagateToModules=True, args=[service])
-
-		elif ttype == TelemetryType.RAIN:
-			self.broadcast(method='onRaining', exceptions=self.name, propagateToModules=True, args=[service])
-
-		elif ttype == TelemetryType.SUM_RAIN_1:
-			if float(value) > float(self.ConfigManager.getModuleConfigByName('TooMuchRainAlert')):
-				self.broadcast(method='onTooMuchRain', exceptions=self.name, propagateToModules=True, args=[service])
-
-		elif ttype == TelemetryType.UV_INDEX:
-			if float(value) > float(self.ConfigManager.getModuleConfigByName('UVIndexAlert')):
-				self.broadcast(method='onUVIndexAlert', exceptions=self.name, propagateToModules=True, args=[service])
+		#TODO getModuleCOnfigByName needs a modulename and the configname, but right now only the config name is provided
+		# should this be a aliceConfig? or where to take the module name from?
+		messages = self.TELEMETRY_MAPPINGS.get(ttype, dict())
+		for message, settings in messages.items():
+			if settings is None:
+				self.broadcast(method=message, exceptions=self.name, propagateToModules=True, args=[service])
+				break
+			
+			threshold = float(self.ConfigManager.getModuleConfigByName(settings[1]) if isinstance(settings[1], str) else settings[1])
+			value = float(value)
+			if settings[0] == 'upperThreshold' and value > threshold or \
+				settings[0] == 'lowerThreshold' and value < threshold:
+				self.broadcast(method=message, exceptions=self.name, propagateToModules=True, args=[service])
+				break
 
 
 	def getData(self, ttype: TelemetryType, siteId: str, service: str = None) -> Iterable:

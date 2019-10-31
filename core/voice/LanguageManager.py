@@ -102,31 +102,25 @@ class LanguageManager(Manager):
 				self._activeCountryCode = settings['countryCode']
 				self._activeSnipsProjectId = settings['snipsProjectId']
 
-		if not self._activeLanguage:
-			if self._defaultLanguage:
-				self.logWarning(f'No active language defined, falling back to {self._defaultLanguage}')
-				self._activeLanguage = self._defaultLanguage
-				self._activeCountryCode = self._defaultCountryCode
-			else:
-				self.logWarning('No active language or default language defined, falling back to "en"')
-				self._activeLanguage = 'en'
-				self._activeCountryCode = 'US'
-		else:
-			self.logInfo(f'Active language set to "{self.activeLanguageAndCountryCode}"')
+		if not self._activeLanguage and self._defaultLanguage:
+			self.logWarning(f'No active language defined, falling back to {self._defaultLanguage}')
+			self._activeLanguage = self._defaultLanguage
+			self._activeCountryCode = self._defaultCountryCode
 
-		if not self._defaultLanguage:
-			if self._activeLanguage:
-				self.logWarning(f'No default language defined, falling back to {self._activeLanguage}')
-				self._defaultLanguage = self._activeLanguage
-				self._defaultCountryCode = self._activeCountryCode
-			else:
-				self.logWarning('No default language or active language defined, falling back to "en"')
-				self._defaultLanguage = 'en'
-				self._defaultCountryCode = 'US'
-				self._activeLanguage = self._defaultLanguage
-				self._activeCountryCode = self._defaultCountryCode
-		else:
+		elif self._activeLanguage and not self._defaultLanguage:
+			self.logWarning(f'No default language defined, falling back to {self._activeLanguage}')
+			self._defaultLanguage = self._activeLanguage
+			self._defaultCountryCode = self._activeCountryCode
+
+		elif self._activeLanguage and self._defaultLanguage:
+			self.logInfo(f'Active language set to "{self.activeLanguageAndCountryCode}"')
+			#TODO this message appears wrong since the default language was not set to the active language
 			self.logInfo(f'Default language set to "{self.activeLanguageAndCountryCode}"')
+
+		else:
+			self.logWarning('No active language or default language defined, falling back to "en"')
+			self._activeLanguage = self._defaultLanguage = 'en'
+			self._activeCountryCode = self._defaultCountryCode = 'US'
 
 
 		if not self._activeSnipsProjectId:
@@ -134,6 +128,7 @@ class LanguageManager(Manager):
 
 
 	def localize(self, string: str) -> str:
+		#TODO either typing is wrong or this string conversion is superfluous
 		string = str(string).lower()
 
 		if self._activeLanguage == 'fr':
@@ -150,6 +145,7 @@ class LanguageManager(Manager):
 
 
 	def changeActiveLanguage(self, toLang: str):
+		#TODO either typing is wrong or this string conversion is superfluous
 		toLang = str(toLang).lower()
 
 		if toLang not in self._supportedLanguages:
@@ -160,6 +156,7 @@ class LanguageManager(Manager):
 
 
 	def changeActiveSnipsProjectIdForLanguage(self, projectId: str, forLang: str):
+		#TODO either typing is wrong or this string conversion is superfluous
 		forLang = str(forLang).lower()
 
 		if forLang not in self._supportedLanguages:

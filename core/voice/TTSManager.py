@@ -88,11 +88,12 @@ class TTSManager(Manager):
 	def onSay(self, session: DialogSession):
 		if self._fallback:
 			self._fallback.onSay(session)
-		else:
-			if session.user != constants.UNKNOWN_USER:
-				user: User = self.UserManager.getUser(session.user)
-				if user and user.tts:
-					self._loadTTS(user.tts, user)
-					self._tts.onStart()
+			return
 
-			self._tts.onSay(session)
+		if session.user != constants.UNKNOWN_USER:
+			user: User = self.UserManager.getUser(session.user)
+			if user and user.tts:
+				self._loadTTS(user.tts, user)
+				self._tts.onStart()
+
+		self._tts.onSay(session)

@@ -43,7 +43,7 @@ class Widget(ProjectAliceObject):
 			self.logWarning(f'Missing language file for widget {self.name}')
 			return None
 		except Exception:
-			self.logWarning(f"Coulnd't import language file for widget {self.name}")
+			self.logWarning(f"Couldn't import language file for widget {self.name}")
 			return None
 
 

@@ -193,8 +193,7 @@ class WakewordManager(Manager):
 	def getLastSampleNumber(self) -> int:
 		if self._wakeword and self._wakeword.samples:
 			return len(self._wakeword.samples)
-		else:
-			return 1
+		return 1
 
 
 	def finalizeWakeword(self):
@@ -264,7 +263,7 @@ class WakewordManager(Manager):
 		if addHeySnips:
 			models.append(str(Path(self.Commons.rootDir(), 'trained/hotwords/snips_hotword=0.53')))
 
-		models.append(f'{str(path)}=0.52')
+		models.append(f'{path}=0.52')
 		self.ConfigManager.updateSnipsConfiguration('snips-hotword', 'model', models, restartSnips=True)
 
 
