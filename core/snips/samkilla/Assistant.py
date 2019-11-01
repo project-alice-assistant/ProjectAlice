@@ -33,9 +33,7 @@ class Assistant:
 		# Mandatory after a create action to update APOLLO_STATE, @TODO maybe update the state manually to improve performances ?
 		self._ctx.reloadBrowserPage()
 
-		if rawResponse: return response
-
-		return response['createAssistant']['id']
+		return response if rawResponse else response['createAssistant']['id']
 
 
 	def edit(self, assistantId: str, title: str = None):

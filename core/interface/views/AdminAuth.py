@@ -48,11 +48,11 @@ class AdminAuth(View):
 			if self.UserManager.checkPinCode(self.__class__.user, str(code)):
 				self.__class__.user.isAuthenticated = True
 				return jsonify(success=True)
-			else:
-				return jsonify(success=False)
+
 		except Exception as e:
 			self.logError(f'Failed auth trial: {e}')
-			return jsonify(success=False)
+		
+		return jsonify(success=False)
 
 
 	def keyboardAuth(self):

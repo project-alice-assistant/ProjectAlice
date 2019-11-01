@@ -26,10 +26,7 @@ class ProtectedIntentManager(Manager):
 
 	@staticmethod
 	def _cleanIntentString(intent: str) -> str:
-		if '/' in intent:
-			intent = os.path.split(intent)[-1]
-
-		return intent
+		return os.path.split(intent)[-1] if '/' in intent else intent
 
 
 	@property

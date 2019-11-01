@@ -104,11 +104,9 @@ class ThreadManager(Manager):
 
 	def isThreadAlive(self, name: str) -> bool:
 		if name not in self._threads:
-			for t in threading.enumerate():
-				if t.name == name and t.isAlive():
-					return True
-		else:
-			return self._threads[name].isAlive()
+			return any(t.name == name and t.isAlive() for t in threading.enumerate())
+
+		return self._threads[name].isAlive()
 
 
 	def newEvent(self, name: str, onSetCallback: str = None, onClearCallback: str = None) -> AliceEvent:
