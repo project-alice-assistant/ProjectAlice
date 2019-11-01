@@ -47,7 +47,7 @@ class TTSManager(Manager):
 			self._tts = PicoTTS(user)
 		elif tts == TTSEnum.MYCROFT:
 			if not Path(Path(self.Commons.rootDir()).parent, 'mimic/voices').is_dir():
-				self.logWarning(f'Trying to use Mycroft as TTS but files not available, falling back to picotts')
+				self.logWarning('Trying to use Mycroft as TTS but files not available, falling back to picotts')
 				self._tts = PicoTTS(user)
 				tts = TTSEnum.PICO
 			else:
@@ -88,11 +88,12 @@ class TTSManager(Manager):
 	def onSay(self, session: DialogSession):
 		if self._fallback:
 			self._fallback.onSay(session)
-		else:
-			if session.user != constants.UNKNOWN_USER:
-				user: User = self.UserManager.getUser(session.user)
-				if user and user.tts:
-					self._loadTTS(user.tts, user)
-					self._tts.onStart()
+			return
 
-			self._tts.onSay(session)
+		if session.user != constants.UNKNOWN_USER:
+			user: User = self.UserManager.getUser(session.user)
+			if user and user.tts:
+				self._loadTTS(user.tts, user)
+				self._tts.onStart()
+
+		self._tts.onSay(session)

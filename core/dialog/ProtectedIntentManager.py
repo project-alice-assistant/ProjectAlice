@@ -17,12 +17,11 @@ class ProtectedIntentManager(Manager):
 	def protectIntent(self, intent: str):
 		intent = self._cleanIntentString(intent)
 		if intent not in self._protectedIntents:
-			self._protectedIntents.append(str(intent))
+			self._protectedIntents.append(intent)
 
 
 	def isProtectedIntent(self, intent: str) -> bool:
-		intent = self._cleanIntentString(intent)
-		return str(intent) in self._protectedIntents
+		return self._cleanIntentString(intent) in self._protectedIntents
 
 
 	@staticmethod

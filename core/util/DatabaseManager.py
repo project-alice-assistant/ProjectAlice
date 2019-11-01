@@ -50,12 +50,8 @@ class DatabaseManager(Manager):
 
 			if colsQuery.count(' UNIQUE') > 1:
 				colsQuery = colsQuery.replace(' UNIQUE', '')
-				unique = list()
-				for query in queries:
-					if 'UNIQUE' in query:
-						unique.append(query.split(' ')[0])
-
-				unique = f", UNIQUE({', '.join(unique)})"
+				uniqueList = [query.split(' ')[0] for query in queries if 'UNIQUE' in query]
+				unique = f", UNIQUE({', '.join(uniqueList)})"
 			else:
 				unique = ''
 
@@ -211,7 +207,9 @@ class DatabaseManager(Manager):
 			return True
 
 
-
+	#TODO this not really right, right now it either returns a list of sqlite3.Row when the method is not 'one',
+	# a sqlite2.Row or None when it is None and when there is an exception or no query sqlite3.Row() is a broken syntax
+	# -> will throw an TypeError (should probably return a empty list or None instead)
 	def fetch(self, tableName: str, query: str, callerName: str, values: dict = None, method: str = 'one') -> sqlite3.Row:
 		"""
 		Fetch data from database

@@ -1,4 +1,3 @@
-import collections
 import importlib
 import json
 import subprocess
@@ -119,10 +118,7 @@ class ModuleManager(Manager):
 
 
 	def _loadModuleList(self, moduleToLoad: str = '', isUpdate: bool = False) -> dict:
-		if moduleToLoad:
-			modules = self._modules.copy()
-		else:
-			modules = dict()
+		modules = self._modules.copy() if moduleToLoad else dict()
 
 		availableModules = self.ConfigManager.modulesConfigurations
 		availableModules = dict(sorted(availableModules.items()))
@@ -188,7 +184,6 @@ class ModuleManager(Manager):
 				self.logWarning(f'Something went wrong loading a module: {e}')
 				continue
 
-		# noinspection PyTypeChecker
 		return dict(sorted(modules.items()))
 
 
@@ -613,16 +608,11 @@ class ModuleManager(Manager):
 
 	def configureModuleIntents(self, moduleName: str, state: bool):
 		try:
-			confs = list()
 			module = self._modules.get(moduleName, self._deactivatedModules.get(moduleName))['instance']
-			for intent in module.supportedIntents:
-				if self.isIntentInUse(intent=intent, filtered=[moduleName]):
-					continue
-
-				confs.append({
-					'intentId': intent.justTopic if hasattr(intent, 'justTopic') else intent,
-					'enable'  : state
-				})
+			confs = [{
+				'intentId': intent.justTopic if hasattr(intent, 'justTopic') else intent,
+				'enable'  : state
+			} for intent in module.supportedIntents if not self.isIntentInUse(intent=intent, filtered=[moduleName])]
 
 			self.MqttManager.configureIntents(confs)
 		except Exception as e:

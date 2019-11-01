@@ -240,7 +240,7 @@ class Module(ProjectAliceObject):
 		elif siteId:
 			self.MqttManager.publish(topic=topic, payload={'siteId': siteId})
 		else:
-			self.logWarning(f'Tried to notify devices but no uid or site id specified')
+			self.logWarning('Tried to notify devices but no uid or site id specified')
 
 
 	def filterIntent(self, intent: str, session: DialogSession) -> bool:
@@ -316,7 +316,7 @@ class Module(ProjectAliceObject):
 				self.ThreadManager.doLater(interval=5, func=self.onBooted)
 				return False
 
-			self.logInfo(f'Delayed start')
+			self.logInfo('Delayed start')
 			self.ThreadManager.doLater(interval=5, func=self.onStart)
 
 		return True

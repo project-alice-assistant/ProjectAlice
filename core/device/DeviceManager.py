@@ -198,32 +198,27 @@ class DeviceManager(Manager):
 
 	def doFlashTasmota(self, room: str, espType: str, siteId: str):
 		port = self.findUSBPort(timeout=60)
-		if port:
-			self.MqttManager.say(text=self.TalkManager.randomTalk('usbDeviceFound', module='AliceCore'), client=siteId)
-			try:
-				mac = ESPLoader.detect_chip(port=port, baud=115200).read_mac()
-				mac = '%s' % (':'.join(map(lambda x: '%02x' % x, mac)))
-				cmd = list()
-				cmd.append('--port')
-				cmd.append(port)
-				cmd.append('--baud')
-				cmd.append('115200')
-				cmd.append('--after')
-				cmd.append('no_reset')
-				cmd.append('write_flash')
-				cmd.append('--flash_mode')
-				cmd.append('dout')
-				cmd.append('0x00000')
-				cmd.append('sonoff.bin')
-				cmd.append('--erase-all')
-				esptool.main(cmd)
-			except Exception as e:
-				self.logError(f'Something went wrong flashing esp device: {e}')
-				self.MqttManager.say(text=self.TalkManager.randomTalk('espFailed', module='AliceCore'), client=siteId)
-				self._broadcastFlag.clear()
-				return
-		else:
+		if not port:
 			self.MqttManager.say(text=self.TalkManager.randomTalk('noESPFound', module='AliceCore'), client=siteId)
+			self._broadcastFlag.clear()
+			return
+
+		self.MqttManager.say(text=self.TalkManager.randomTalk('usbDeviceFound', module='AliceCore'), client=siteId)
+		try:
+			mac = ESPLoader.detect_chip(port=port, baud=115200).read_mac()
+			mac = ':'.join([f'{x:02x}' for x in mac])
+			cmd = [
+				'--port', port,
+				'--baud','115200',
+				'--after', 'no_reset', 'write_flash',
+				'--flash_mode', 'dout', '0x00000', 'sonoff.bin',
+				'--erase-all'
+			]
+
+			esptool.main(cmd)
+		except Exception as e:
+			self.logError(f'Something went wrong flashing esp device: {e}')
+			self.MqttManager.say(text=self.TalkManager.randomTalk('espFailed', module='AliceCore'), client=siteId)
 			self._broadcastFlag.clear()
 			return
 
@@ -397,28 +392,11 @@ class DeviceManager(Manager):
 
 
 	def getDevicesByRoom(self, room: str, connectedOnly: bool = False) -> list:
-		deviceList = list()
-		for uid, device in self._devices.items():
-			if device.room.lower() == room.lower():
-				if connectedOnly:
-					if device.connected:
-						deviceList.append(device)
-				else:
-					deviceList.append(device)
-		return deviceList
+		return [x for x in self._devices.values() if x.room.lower() == room.lower() and (not connectedOnly or x.connected)]
 
 
 	def getDevicesByType(self, deviceType: str, connectedOnly: bool = False) -> list:
-		deviceList = list()
-		for device in self._devices.values():
-			if device.deviceType == deviceType:
-				if connectedOnly:
-					if device.connected:
-						deviceList.append(device)
-				else:
-					deviceList.append(device)
-
-		return deviceList
+		return [x for x in self._devices.values() if x.deviceType == deviceType and (not connectedOnly or x.connected)]
 
 
 	def getDeviceByUID(self, uid: str) -> Device:

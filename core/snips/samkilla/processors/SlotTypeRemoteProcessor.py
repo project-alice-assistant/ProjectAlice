@@ -29,9 +29,8 @@ class SlotTypeRemoteProcessor:
 
 		for valueObject in slotType['values']:
 			hashSum += str(valueObject['value'])
-			if 'synonyms' in valueObject:
-				for synonym in valueObject['synonyms']:
-					hashSum += str(synonym)
+			for synonym in valueObject.get('synonyms', list()):
+				hashSum += str(synonym)
 
 		hashSum += entityId
 

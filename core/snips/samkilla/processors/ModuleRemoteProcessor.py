@@ -86,6 +86,8 @@ class ModuleRemoteProcessor:
 
 	# noinspection PyUnusedLocal
 	def syncModulesOnAssistant(self, typeEntityMatching: dict = None, moduleSyncState: str = None, hashComputationOnly: bool = False) -> tuple:
+		#TODO this appears wrong moduleSyncState is a str according to typing while self.createNewSavedModule() returns a dict
+		# is is used as a dict aswell. Is the typing wrong?
 		self._syncState = moduleSyncState or self.createNewSavedModule()
 
 		skillData = self.syncSkill(self._module['description'], self._module['icon'], hashComputationOnly)

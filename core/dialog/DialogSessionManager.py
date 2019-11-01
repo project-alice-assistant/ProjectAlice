@@ -92,7 +92,7 @@ class DialogSessionManager(Manager):
 
 	def addPreviousIntent(self, sessionId: str, previousIntent: str):
 		if sessionId not in self._sessions:
-			self.logWarning(f'Was asked to add a previous intent but session was not found')
+			self.logWarning('Was asked to add a previous intent but session was not found')
 			return
 
 		session = self._sessions[sessionId]
