@@ -79,19 +79,11 @@ class Assistant:
 
 
 	def getTitleById(self, assistantId: str) -> str:
-		for assistantItem in self.list(parseWithAttribute=''):
-			if assistantItem['id'] == assistantId:
-				return assistantItem['title']
-
-		return ''
+		return next((item['title'] for item in self.list(parseWithAttribute='') if item['id'] == assistantId), '')
 
 
 	def exists(self, assistantId: str) -> bool:
-		for listItemAssistantId in self.list():
-			if listItemAssistantId == assistantId:
-				return True
-
-		return False
+		return any(itemId == assistantId for itemId in self.list())
 
 
 	def extractSkillIdentifiersLegacy(self, assistantId: str) -> list:
@@ -146,8 +138,5 @@ class Assistant:
 		nluResult = response['assistant']['training']['nluStatus']['trainingResult']
 		nluNeedTraining = response['assistant']['training']['nluStatus']['needTraining']
 
-		if not asrProgress and not asrNeedTraining and asrResult == 'ok' \
-			and not nluProgress and not nluNeedTraining and nluResult == 'ok':
-			return True
-
-		return False
+		return not asrProgress and not asrNeedTraining and asrResult == 'ok' \
+			and not nluProgress and not nluNeedTraining and nluResult == 'ok'

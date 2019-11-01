@@ -65,18 +65,14 @@ class Entity:
 		indexedIntentEntities = dict()
 
 		for entity in entities:
-			if entity['usedIn']:
-				for intentMeta in entity['usedIn']:
-					if intentMeta['intentId'] == intentId:
-						if indexedBy:
-							indexedIntentEntities[entity[indexedBy]] = entity
-						else:
-							intentEntities.append(entity)
+			for intentMeta in entity['usedIn'] or list():
+				if intentMeta['intentId'] == intentId:
+					if indexedBy:
+						indexedIntentEntities[entity[indexedBy]] = entity
+					else:
+						intentEntities.append(entity)
 
-		if indexedBy:
-			return indexedIntentEntities
-
-		return intentEntities
+		return indexedIntentEntities if indexedBy else intentEntities
 
 
 	def listEntityValuesByEntityId(self, entityId: str) -> str:
@@ -94,16 +90,11 @@ class Entity:
 
 	@staticmethod
 	def formatSlotValues(slotValues: list) -> list:
-		formattedSlotValues = list()
-
-		for slotValue in slotValues:
-			formattedSlotValues.append({
-				'value'        : slotValue['value'],
-				'synonyms'     : slotValue.get('synonyms', list()),
-				'fromWikilists': None
-			})
-
-		return formattedSlotValues
+		return [{
+			'value'        : slotValue['value'],
+			'synonyms'     : slotValue.get('synonyms', list()),
+			'fromWikilists': None
+		} for slotValue in slotValues]
 
 
 	# noinspection PyUnusedLocal
@@ -112,12 +103,10 @@ class Entity:
 		Warning: mind the language parameter if the assistant language is EN, entity must set language to EN
 		no error will be shown and the entity won't be created
 		"""
-		if not slotValues:
-			slotValues = list()
 
 		# Slot values exemple:
 		# [ {'value': 'room'}, {'value': 'house', 'synonyms': ['entire house']} ]
-		formattedSlotValues = self.formatSlotValues(slotValues)
+		formattedSlotValues = self.formatSlotValues(slotValues) if slotValues else list()
 
 		gqlRequest = [{
 			'operationName': 'createIntentEntity',
@@ -144,8 +133,6 @@ class Entity:
 		"""
 		Slot values must include old values AND the new one
 		"""
-		if not slotValues:
-			slotValues = list()
 
 		inputt = dict()
 
