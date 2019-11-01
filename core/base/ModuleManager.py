@@ -154,10 +154,7 @@ class ModuleManager(Manager):
 
 				self.checkModuleConditions(moduleName, module['conditions'], availableModules)
 
-				if ' ' in moduleName:
-					name = self.Commons.toCamelCase(moduleName)
-				else:
-					name = moduleName
+				name = self.Commons.toCamelCase(moduleName) if ' ' in moduleName else moduleName
 
 				moduleInstance = self.importFromModule(moduleName=name, isUpdate=isUpdate)
 
@@ -247,8 +244,6 @@ class ModuleManager(Manager):
 
 
 	def _startModule(self, moduleInstance: Module) -> dict:
-		name = 'undefined'
-
 		try:
 			name = moduleInstance.name
 			intents = moduleInstance.onStart()
@@ -259,12 +254,10 @@ class ModuleManager(Manager):
 			if intents:
 				self.logInfo('- Started!')
 				return intents
-		except ModuleStartingFailed:
-			raise
-		except ModuleStartDelayed:
+		except (ModuleStartingFailed, ModuleStartDelayed):
 			raise
 		except Exception as e:
-			self.logError(f'- Couldn\'t start module {name}. Did you forget to return the intents in onStart()? Error: {e}')
+			self.logError(f'- Couldn\'t start module {name or "undefined"}. Did you forget to return the intents in onStart()? Error: {e}')
 
 		return dict()
 
@@ -274,12 +267,12 @@ class ModuleManager(Manager):
 
 
 	def getModuleInstance(self, moduleName: str) -> Optional[Module]:
-		if moduleName not in self._modules:
-			if moduleName != Customisation.MODULE_NAME:
-				self.logWarning(f'Module "{moduleName}" is disabled or does not exist in modules manager')
-			return None
-		else:
+		if moduleName in self._modules:
 			return self._modules[moduleName]['instance']
+		
+		if moduleName != Customisation.MODULE_NAME:
+			self.logWarning(f'Module "{moduleName}" is disabled or does not exist in modules manager')
+		return
 
 
 	def getModules(self, isEvent: bool = False) -> dict:
@@ -360,34 +353,33 @@ class ModuleManager(Manager):
 		availableModules = self.ConfigManager.modulesConfigurations
 
 		i = 0
-		for modList in (self._modules, self._failedModules):
-			for moduleName in modList:
-				try:
-					if moduleName not in availableModules:
-						continue
+		for moduleName in {**self._modules, **self._failedModules}:
+			try:
+				if moduleName not in availableModules:
+					continue
 	
-					req = requests.get(f'https://raw.githubusercontent.com/project-alice-powered-by-snips/ProjectAliceModules/{self.ConfigManager.getAliceConfigByName("updateChannel")}/PublishedModules/{availableModules[moduleName]["author"]}/{moduleName}/{moduleName}.install')
+				req = requests.get(f'https://raw.githubusercontent.com/project-alice-powered-by-snips/ProjectAliceModules/{self.ConfigManager.getAliceConfigByName("updateChannel")}/PublishedModules/{availableModules[moduleName]["author"]}/{moduleName}/{moduleName}.install')
 	
-					remoteFile = req.json()
-					if float(remoteFile['version']) > float(availableModules[moduleName]['version']):
-						i += 1
-						self.logInfo(f'❌ {moduleName} - Version {availableModules[moduleName]["version"]} < {remoteFile["version"]} in {self.ConfigManager.getAliceConfigByName("updateChannel")}')
+				remoteFile = req.json()
+				if float(remoteFile['version']) > float(availableModules[moduleName]['version']):
+					i += 1
+					self.logInfo(f'❌ {moduleName} - Version {availableModules[moduleName]["version"]} < {remoteFile["version"]} in {self.ConfigManager.getAliceConfigByName("updateChannel")}')
 	
-						if not self.ConfigManager.getAliceConfigByName('moduleAutoUpdate'):
-							if moduleName in self._modules:
-								self._modules[moduleName]['instance'].updateAvailable = True
-							elif moduleName in self._deactivatedModules:
-								self._deactivatedModules[moduleName]['instance'].updateAvailable = True
-						else:
-							moduleFile = Path(self.Commons.rootDir(), 'system/moduleInstallTickets', moduleName + '.install')
-							moduleFile.write_text(json.dumps(remoteFile))
-							if modulName in self._failedModules:
-								del self._failedModules[moduleName]
+					if not self.ConfigManager.getAliceConfigByName('moduleAutoUpdate'):
+						if moduleName in self._modules:
+							self._modules[moduleName]['instance'].updateAvailable = True
+						elif moduleName in self._deactivatedModules:
+							self._deactivatedModules[moduleName]['instance'].updateAvailable = True
 					else:
-						self.logInfo(f'✔ {moduleName} - Version {availableModules[moduleName]["version"]} in {self.ConfigManager.getAliceConfigByName("updateChannel")}')
+						moduleFile = Path(self.Commons.rootDir(), 'system/moduleInstallTickets', moduleName + '.install')
+						moduleFile.write_text(json.dumps(remoteFile))
+						if moduleName in self._failedModules:
+							del self._failedModules[moduleName]
+				else:
+					self.logInfo(f'✔ {moduleName} - Version {availableModules[moduleName]["version"]} in {self.ConfigManager.getAliceConfigByName("updateChannel")}')
 						
-				except Exception as e:
-					self.logWarning(f'Error checking updates for module "{moduleName}": {e}')
+			except Exception as e:
+				self.logWarning(f'Error checking updates for module "{moduleName}": {e}')
 
 		self.logInfo(f'Found {i} module update(s)')
 
@@ -408,7 +400,7 @@ class ModuleManager(Manager):
 			self.logInfo(f'Found {len(files)} install ticket(s)')
 			self._busyInstalling.set()
 
-			modulesToBoot = list()
+			modulesToBoot = dict()
 			try:
 				modulesToBoot = self._installModules(files)
 			except Exception as e:
@@ -458,21 +450,16 @@ class ModuleManager(Manager):
 				directory = Path(self.Commons.rootDir()) / 'modules' / moduleName
 
 				conditions = {
-					'aliceMinVersion': installFile['aliceMinVersion']
+					'aliceMinVersion': installFile['aliceMinVersion'],
+					**installFile.get('conditions', dict())
 				}
-
-				if 'conditions' in installFile:
-					conditions = {**conditions, **installFile['conditions']}
 
 				self.checkModuleConditions(moduleName, conditions, availableModules)
 
 				if moduleName in availableModules:
-					localVersionDirExists = directory.is_dir()
-					localVersionAttributeExists: bool = 'version' in availableModules[moduleName]
-
 					localVersionIsLatest: bool = \
-						localVersionDirExists and \
-						localVersionAttributeExists and \
+						directory.is_dir() and \
+						'version' in availableModules[moduleName] and \
 						float(availableModules[moduleName]['version']) >= float(installFile['version'])
 
 					if localVersionIsLatest:
@@ -495,17 +482,15 @@ class ModuleManager(Manager):
 				if gitCloner.clone():
 					self.logInfo('Module successfully downloaded')
 					try:
-						pipReq = installFile.get('pipRequirements', None)
-						sysReq = installFile.get('systemRequirements', None)
-						scriptReq = installFile.get('script', None)
+						pipReqs = installFile.get('pipRequirements', list())
+						sysReqs = installFile.get('systemRequirements', list())
+						scriptReq = installFile.get('script')
 
-						if pipReq:
-							for requirement in pipReq:
-								subprocess.run(['./venv/bin/pip3', 'install', requirement])
+						for requirement in pipReqs:
+							subprocess.run(['./venv/bin/pip3', 'install', requirement])
 
-						if sysReq:
-							for requirement in sysReq:
-								subprocess.run(['sudo', 'apt-get', 'install', '-y', requirement])
+						for requirement in sysReqs:
+							subprocess.run(['sudo', 'apt-get', 'install', '-y', requirement])
 
 						if scriptReq:
 							subprocess.run(['sudo', 'chmod', '+x', str(directory / scriptReq)])
@@ -626,12 +611,12 @@ class ModuleManager(Manager):
 
 
 	def removeModule(self, moduleName: str):
-		if not moduleName in self._modules:
+		if moduleName not in self._modules:
 			return
-		else:
-			self.configureModuleIntents(moduleName, False)
-			self.ConfigManager.removeModule(moduleName)
-			del self._modules[moduleName]
+
+		self.configureModuleIntents(moduleName, False)
+		self.ConfigManager.removeModule(moduleName)
+		del self._modules[moduleName]
 
 		shutil.rmtree(Path(self.Commons.rootDir(), 'modules', moduleName))
 		# TODO Samkilla cleaning
