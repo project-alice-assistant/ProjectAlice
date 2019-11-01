@@ -382,9 +382,8 @@ class DeviceManager(Manager):
 
 
 	def deviceDisconnecting(self, uid: str):
-		#TODO why does it return false when there is no return value specified
 		if uid not in self._devices:
-			return False
+			return
 
 		if self._devices[uid].connected:
 			self._devices[uid].connected = False
