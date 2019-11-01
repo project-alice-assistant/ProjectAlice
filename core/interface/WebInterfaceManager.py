@@ -35,7 +35,10 @@ class WebInterfaceManager(Manager):
 		self._langData = dict()
 		self._moduleInstallProcesses = dict()
 		self._flaskLoginManager = None
-
+		
+	@app.route('/favicon.ico')
+	def favicon():
+		return send_from_directory('static/','favicon.ico', mimetype='image/vnd.microsoft.icon')
 
 	@app.route('/base/<path:filename>')
 	def base_static(self, filename):
