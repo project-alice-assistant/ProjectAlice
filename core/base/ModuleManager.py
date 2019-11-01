@@ -621,14 +621,8 @@ class ModuleManager(Manager):
 
 
 	def isIntentInUse(self, intent: Intent, filtered: list) -> bool:
-		for moduleName, module in self._modules.items():
-			if moduleName in filtered:
-				continue
-
-			if intent in module['instance'].supportedIntents:
-				return True
-
-		return False
+		return any(intent in module['instance'].supportedIntents
+			for name, module in self._modules.items() if name not in filtered)
 
 
 	def removeModule(self, moduleName: str):

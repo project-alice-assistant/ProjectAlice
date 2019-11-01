@@ -113,6 +113,7 @@ class IntentRemoteProcessor:
 
 
 	def syncIntentsOnAssistant(self, typeEntityMatching: dict, skillId: str, intentSyncState: str = None, hashComputationOnly: bool = False) -> tuple:
+		# TODO this is used like a dict and appears to be a dict but typing says it is a string -> somethings wrong here
 		self._syncState = intentSyncState or self.createNewSavedIntent()
 
 		intentMatching = self.syncIntent(typeEntityMatching, skillId, hashComputationOnly)

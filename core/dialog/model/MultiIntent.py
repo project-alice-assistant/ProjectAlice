@@ -15,10 +15,7 @@ class MultiIntent:
 
 
 	def getNextIntent(self) -> str:
-		if self._intents:
-			return self._intents.pop(0)
-
-		return ''
+		return self._intents.pop(0) if self._intents else ''
 
 
 	@property

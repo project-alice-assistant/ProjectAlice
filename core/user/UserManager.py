@@ -89,13 +89,13 @@ class UserManager(Manager):
 	def addUserPinCode(self, name: str, pinCode: int):
 		self.DatabaseManager.update(
 			tableName='users',
-			caller=self.name,
+			callerName=self.name,
 			values={'pin': self.getHashedPassword(pinCode)},
 			row=('username', name))
 
 
 	def getUserAccessLevel(self, username: str) -> Optional[Any]:
-		if not username in self._users:
+		if username not in self._users:
 			return None
 
 		return self._users[username].accessLevel
@@ -106,10 +106,7 @@ class UserManager(Manager):
 
 
 	def getUserById(self, userId: int) -> Optional[User]:
-		for user in self._users.values():
-			if user.id == userId:
-				return user
-		return None
+		return next((user for user in self._users.values() if user.id == userId), None)
 
 
 	def getAllUserNames(self, skipGuests: bool = True) -> list:
@@ -117,12 +114,7 @@ class UserManager(Manager):
 			Return all users
 			:return: list
 		"""
-		if skipGuests:
-			users = [k for k in self._users if self._users[k] != 'guest']
-		else:
-			users = [k for k in self._users]
-
-		return users
+		return [k for k in self._users if not skipGuests or self._users[k] != 'guest']
 
 
 	def checkIfAllUser(self, state: str) -> bool:
@@ -131,17 +123,7 @@ class UserManager(Manager):
 		:param state: the state to check
 		:return: boolean
 		"""
-
-		if not self._users:
-			return False
-
-		userNames = self.getAllUserNames()
-
-		for username in userNames:
-			if self._users[username].state != state:
-				return False
-
-		return True
+		return self._users and all(self._users[username].state == state for username in self.getAllUserNames())
 
 
 	def checkIfUser(self, user: str, state: str) -> bool:

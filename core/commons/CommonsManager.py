@@ -167,9 +167,8 @@ class CommonsManager(Manager):
 
 	@staticmethod
 	def isYes(session: DialogSession) -> bool:
-		slots = session.slotsAsObjects
 		try:
-			return slots['Answer'][0].value['value'] == 'yes'
+			return session.slotsAsObjects['Answer'][0].value['value'] == 'yes'
 		except:
 			return False
 
@@ -216,7 +215,6 @@ class CommonsManager(Manager):
 		:param string: string to check
 		:return: bool
 		"""
-
 		return len(string) == (len(string.replace(' ', '').strip()) * 2) - 1
 
 

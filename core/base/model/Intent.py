@@ -71,10 +71,7 @@ class Intent(str, ProjectAliceObject):
 
 	@property
 	def justAction(self) -> str:
-		if self._userIntent:
-			return self.justTopic.split(':')[1]
-		else:
-			return self.justTopic
+		return self.justTopic.split(':')[1] if self._userIntent else self.justTopic
 
 
 	@property

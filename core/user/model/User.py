@@ -6,9 +6,13 @@ from core.base.model.ProjectAliceObject import ProjectAliceObject
 
 
 class User(ProjectAliceObject):
+	#TODO should probably by typing.Optional[dict]
 	def __init__(self, row: typing.Any):
 		super().__init__(logDepth=3)
 
+		#TODO is it correct to init these values only when row exists?
+		# -> will throw exception when property is called or should they be
+		# inited to None instead
 		if row:
 			self._id            = row['id']
 			self._name 			= row['username']
@@ -58,7 +62,6 @@ class User(ProjectAliceObject):
 	@property
 	def id(self) -> int:
 		return self._id
-
 
 	@property
 	def name(self) -> str:
@@ -181,6 +184,8 @@ class User(ProjectAliceObject):
 	def isAuthenticated(self, value: bool):
 		self._isAuthenticated = value
 
+	#TODO this should probably be properties aswell
+	# (actually some are already and should probably just be removed)
 	def is_authenticated(self) -> bool:
 		return self._isAuthenticated
 

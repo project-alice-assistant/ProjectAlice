@@ -127,8 +127,7 @@ class DeviceManager(Manager):
 		try:
 			values = {'type': ttype, 'uid': uid, 'room': room}
 			values['id'] = self.databaseInsert(tableName='devices', query='INSERT INTO :__table__ (type, uid, room) VALUES (:type, :uid, :room)', values=values)
-			d = Device(values, True)
-			self._devices[uid] = d
+			self._devices[uid] = Device(values, True)
 			return True
 		except Exception as e:
 			self.logWarning(f"Couldn't insert device in database: {e}")
@@ -383,6 +382,7 @@ class DeviceManager(Manager):
 
 
 	def deviceDisconnecting(self, uid: str):
+		#TODO why does it return false when there is no return value specified
 		if uid not in self._devices:
 			return False
 
@@ -399,5 +399,5 @@ class DeviceManager(Manager):
 		return [x for x in self._devices.values() if x.deviceType == deviceType and (not connectedOnly or x.connected)]
 
 
-	def getDeviceByUID(self, uid: str) -> Device:
+	def getDeviceByUID(self, uid: str) -> Optional[Device]:
 		return self._devices.get(uid, None)

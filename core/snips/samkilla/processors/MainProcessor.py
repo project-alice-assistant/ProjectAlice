@@ -155,13 +155,13 @@ class MainProcessor:
 
 			if 'module' not in module:
 				self._ctx.log(f"File \"{moduleFile}\" has no 'module' name definition")
-				return None
+				return
 
 			module['language'] = moduleLanguage
 
 			if module['module'] not in self._modules:
 				self._ctx.log(f"Module \"{module['module']}\" has a name different from its directory")
-				return None
+				return
 
 			self._modules[module['module']][moduleLanguage] = module
 			self._ctx.log(f"Loading module {module['module']}")
@@ -169,7 +169,7 @@ class MainProcessor:
 
 		except json.decoder.JSONDecodeError:
 			self._ctx.log(f'\nInconsistent file, "{moduleFile}" has a bad json format')
-			return None
+			return
 
 	def getModuleSyncStateByLanguageAndAssistantId(self, moduleName: str, language: str, assistantId: str) -> str:
 		return self._savedAssistants.get(language, dict()).get(assistantId, dict()).get('modules', dict()).get(moduleName, None)
