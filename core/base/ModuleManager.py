@@ -166,6 +166,7 @@ class ModuleManager(Manager):
 					if moduleName in self.NEEDED_MODULES:
 						moduleInstance.required = True
 
+					# TODO refacto this to modules[moduleInstance.name] = moduleInstance. The dict is useless here
 					modules[moduleInstance.name] = {
 						'instance': moduleInstance
 					}
