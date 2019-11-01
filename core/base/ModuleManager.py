@@ -282,7 +282,7 @@ class ModuleManager(Manager):
 
 
 	def getModules(self, isEvent: bool = False) -> dict:
-		self._reorderCustomisationModule(isEvent)		
+		self._reorderCustomisationModule(isEvent)
 		return self._modules
 
 
