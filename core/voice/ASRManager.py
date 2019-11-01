@@ -45,8 +45,9 @@ class ASRManager(Manager):
 				self.logInfo('Connected to internet, switching ASR')
 				self.SnipsServicesManager.runCmd('stop', ['snips-asr'])
 				if asr == 'google':
-					#TODO why is the GoogleASR imported in onStart but not here?
+					# TODO needs better handling. A header import with some checks if needed or not
 					# noinspection PyUnresolvedReferences
+					from core.voice.model.GoogleASR import GoogleASR
 					self._asr = GoogleASR()
 				self.ThreadManager.doLater(interval=3, func=self.MqttManager.say, args=[self.TalkManager.randomTalk('internetBack', 'AliceCore'), 'all'])
 

@@ -98,15 +98,14 @@ class TelemetryManager(Manager):
 			values={'type': ttype.value, 'value': value, 'service': service, 'siteId': siteId, 'timestamp': round(timestamp)}
 		)
 
-		#TODO getModuleCOnfigByName needs a modulename and the configname, but right now only the config name is provided
-		# should this be a aliceConfig? or where to take the module name from?
 		messages = self.TELEMETRY_MAPPINGS.get(ttype, dict())
 		for message, settings in messages.items():
 			if settings is None:
 				self.broadcast(method=message, exceptions=self.name, propagateToModules=True, args=[service])
 				break
-			
-			threshold = float(self.ConfigManager.getModuleConfigByName(settings[1]) if isinstance(settings[1], str) else settings[1])
+
+			#TODO check if Telemetry module available
+			threshold = float(self.ConfigManager.getModuleConfigByName('Telemetry', settings[1]) if isinstance(settings[1], str) else settings[1])
 			value = float(value)
 			if settings[0] == 'upperThreshold' and value > threshold or \
 				settings[0] == 'lowerThreshold' and value < threshold:

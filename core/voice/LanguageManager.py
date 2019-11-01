@@ -114,8 +114,7 @@ class LanguageManager(Manager):
 
 		elif self._activeLanguage and self._defaultLanguage:
 			self.logInfo(f'Active language set to "{self.activeLanguageAndCountryCode}"')
-			#TODO this message appears wrong since the default language was not set to the active language
-			self.logInfo(f'Default language set to "{self.activeLanguageAndCountryCode}"')
+			self.logInfo(f'Default language set to "{self.defaultLanguage}-{self.defaultCountryCode}"')
 
 		else:
 			self.logWarning('No active language or default language defined, falling back to "en"')
@@ -128,8 +127,7 @@ class LanguageManager(Manager):
 
 
 	def localize(self, string: str) -> str:
-		#TODO either typing is wrong or this string conversion is superfluous
-		string = str(string).lower()
+		string = string.lower()
 
 		if self._activeLanguage == 'fr':
 			for match in re.findall(self._floatExpressionPattern, string):
@@ -145,8 +143,7 @@ class LanguageManager(Manager):
 
 
 	def changeActiveLanguage(self, toLang: str):
-		#TODO either typing is wrong or this string conversion is superfluous
-		toLang = str(toLang).lower()
+		toLang = toLang.lower()
 
 		if toLang not in self._supportedLanguages:
 			raise LanguageManagerLangNotSupported
@@ -156,8 +153,7 @@ class LanguageManager(Manager):
 
 
 	def changeActiveSnipsProjectIdForLanguage(self, projectId: str, forLang: str):
-		#TODO either typing is wrong or this string conversion is superfluous
-		forLang = str(forLang).lower()
+		forLang = forLang.lower()
 
 		if forLang not in self._supportedLanguages:
 			raise LanguageManagerLangNotSupported
