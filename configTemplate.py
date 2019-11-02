@@ -1,15 +1,18 @@
 settings = {
 	'notUnderstoodRetries': {
 		'defaultValue': 3,
-		'dataType': 'integer'
+		'dataType': 'integer',
+		'description': 'Defines how many times Alice will ask to repeat if not understood before she gives up'
 	},
 	'ssid': {
 		'defaultValue': '',
-		'dataType': 'string'
+		'dataType': 'string',
+		'decription': 'Your Wifi name'
 	},
 	'wifipassword': {
 		'defaultValue': '',
-		'dataType': 'string'
+		'dataType': 'string',
+		'descritption': 'Your Wifi password'
 	},
 	'mqttHost': {
 		'defaultValue': 'localhost',
@@ -34,7 +37,7 @@ settings = {
 	'autoPruneStoredData': {
 		'defaultValue': 0,
 		'dataType': 'integer',
-		'comment': 'Set to max entries to keep, 0 to disable pruning'
+		'decription': 'Set to max entries to keep, 0 to disable pruning'
 	},
 	'probabilityTreshold': {
 		'defaultValue': 0.45,
