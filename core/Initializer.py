@@ -49,7 +49,7 @@ network={
 		self._rootDir = Path(__file__).resolve().parent.parent
 
 		self._confsFile = Path(self._rootDir, 'config.py')
-		self._confsSample = Path(self._rootDir, 'configSample.py')
+		self._confsSample = Path(self._rootDir, 'configTemplate.py')
 		self._initFile = Path('/boot/ProjectAlice.yaml')
 		self._latest = 1.06
 
@@ -96,7 +96,7 @@ network={
 
 		connected = False
 		try:
-			socket.create_connection(("www.google.com", 80))
+			socket.create_connection(('www.google.com', 80))
 			connected = True
 		except:
 			pass
@@ -108,7 +108,7 @@ network={
 			self.fatal('You must specify a Snips console login, password and intent owner')
 
 		if not self._confsFile.exists() and not self._confsSample.exists():
-			self.fatal('No config and no config sample found, can\'t continue')
+			self.fatal('No config and no config template found, can\'t continue')
 
 		elif not self._confsFile.exists() and self._confsSample.exists():
 			self.warning('No config file found, creating it from sample file')
