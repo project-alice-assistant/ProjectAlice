@@ -2,23 +2,24 @@ import shutil
 
 from core.base.SuperManager import SuperManager
 
+import json
+from pathlib import Path
+
+import configTemplate
 try:
-	# noinspection PyUnresolvedReferences
+	# noinspection PyUnresolvedReferences,PyPackageRequirements
 	import config
 except ModuleNotFoundError:
-	shutil.copyfile('configSample.py', 'config.py')
-	print('Created config file from config samples')
-	# noinspection PyUnresolvedReferences
+	c = {configName: configName['defaultValue'] for configName in configTemplate.settings}
+	Path('config.py').write_text(f'settings = {json.dumps(c, indent=4)}')
+	print('Created config file from config template')
+	# noinspection PyUnresolvedReferences,PyPackageRequirements
 	import config
 
 import difflib
 import importlib
-import json
-from pathlib import Path
 import typing
 import toml
-
-import configSample
 from core.ProjectAliceExceptions import ConfigurationUpdateFailed, VitalConfigMissing
 from core.base.model.Manager import Manager
 from core.commons import constants
@@ -73,20 +74,20 @@ class ConfigManager(Manager):
 
 		availableConfigs = config.settings.copy()
 
-		for k, v in configSample.settings.items():
-			if k not in availableConfigs:
-				self.logInfo(f'- New configuration found: {k}')
+		for setting, definiton in configTemplate.settings.items():
+			if setting not in availableConfigs:
+				self.logInfo(f'- New configuration found: {setting}')
 				changes = True
-				availableConfigs[k] = v
-			elif type(availableConfigs[k]) != type(v):
-				self.logInfo(f'- Existing configuration type missmatch: {k}, replaced with sample configuration')
+				availableConfigs[setting] = definiton['defaultValue']
+			elif type(availableConfigs[setting]) != type(definiton['defaultValue']):
+				self.logInfo(f'- Existing configuration type missmatch: {setting}, replaced with template configuration')
 				changes = True
-				availableConfigs[k] = v
+				availableConfigs[setting] = definiton['defaultValue']
 
 		temp = availableConfigs.copy()
 
 		for k, v in temp.items():
-			if k not in configSample.settings:
+			if k not in configTemplate.settings:
 				self.logInfo(f'- Deprecated configuration: {k}')
 				changes = True
 				del availableConfigs[k]
@@ -145,9 +146,10 @@ class ConfigManager(Manager):
 
 		# pop modules key so it gets added in the back
 		modules = sort.pop('modules')
+
 		sort['modules'] = dict()
-		for moduleName, conf in modules.items():
-			moduleCleaned = {key: value for key, value in conf.items() if key in misterProper}
+		for moduleName, setting in modules.items():
+			moduleCleaned = {key: value for key, value in setting.items() if key in misterProper}
 			sort['modules'][moduleName] = moduleCleaned
 
 		self._aliceConfigurations = sort
@@ -232,7 +234,7 @@ class ConfigManager(Manager):
 		return moduleName in self._modulesConfigurations and configName in self._modulesConfigurations[moduleName]
 
 
-	def getAliceConfigByName(self, configName: str, voiceControl: bool = False) -> str:
+	def getAliceConfigByName(self, configName: str, voiceControl: bool = False) -> typing.Any:
 		return self._aliceConfigurations.get(
 			configName,
 			difflib.get_close_matches(word=configName, possibilities=self._aliceConfigurations, n=3) if voiceControl else ''
@@ -286,9 +288,9 @@ class ConfigManager(Manager):
 
 			# The final case is if moduleConfigFileTemplateExists and moduleConfigFileExists
 			with open(moduleConfigFileTemplate) as jsonDataFile:
-				configTemplate = json.load(jsonDataFile)
+				configSample = json.load(jsonDataFile)
 
-				for k, v in configTemplate.items():
+				for k, v in configSample.items():
 					if k not in self._modulesConfigurations[moduleName]:
 						self.logInfo(f'- New module configuration found: {k} for module {moduleName}')
 						changes = True
@@ -304,7 +306,7 @@ class ConfigManager(Manager):
 				if k == 'active':
 					continue
 
-				if k not in configTemplate and k not in self._aliceModuleConfigurationKeys:
+				if k not in configSample and k not in self._aliceModuleConfigurationKeys:
 					self.logInfo(f'- Deprecated module configuration: "{k}" for module "{moduleName}"')
 					changes = True
 					del self._modulesConfigurations[moduleName][k]
