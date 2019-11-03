@@ -2,23 +2,21 @@ import shutil
 
 from core.base.SuperManager import SuperManager
 
+import json
+from pathlib import Path
+
+import configTemplate
 try:
-	# noinspection PyUnresolvedReferences
+	# noinspection PyUnresolvedReferences,PyPackageRequirements
 	import config
+	configFileExist = True
 except ModuleNotFoundError:
-	shutil.copyfile('configSample.py', 'config.py')
-	print('Created config file from config samples')
-	# noinspection PyUnresolvedReferences
-	import config
+	configFileNotExist = False
 
 import difflib
 import importlib
-import json
-from pathlib import Path
 import typing
 import toml
-
-import configSample
 from core.ProjectAliceExceptions import ConfigurationUpdateFailed, VitalConfigMissing
 from core.base.model.Manager import Manager
 from core.commons import constants
@@ -30,8 +28,6 @@ class ConfigManager(Manager):
 
 	def __init__(self):
 		super().__init__(self.NAME)
-		self._snipsConfigurations 		= dict()
-		self._aliceConfigurations 		= config.settings
 		self._modulesConfigurations 	= dict()
 
 		self._aliceModuleConfigurationKeys = [
@@ -47,8 +43,9 @@ class ConfigManager(Manager):
 			'snipsConsolePassword'
 		]
 
-		self._aliceConfigurations = self._checkAndUpdateAliceConfigFile()
-		self.loadSnipsConfigurations()
+		self._aliceConfigurations: typing.Dict[str, typing.Any] = self._loadCheckAndUpdateAliceConfigFile()
+		self._aliceTemplateConfigurations: typing.Dict[str, dict] = configTemplate.settings
+		self._snipsConfigurations = self.loadSnipsConfigurations()
 		self._setDefaultSiteId()
 
 		self.loadModuleConfigurations()
@@ -66,35 +63,46 @@ class ConfigManager(Manager):
 		constants.DEFAULT_SITE_ID = self._snipsConfigurations.get('snips-audio-server', {'bind': 'default@mqtt'}).get('bind', 'default@mqtt').replace('@mqtt', '')
 
 
-	def _checkAndUpdateAliceConfigFile(self) -> dict:
+	def _loadCheckAndUpdateAliceConfigFile(self) -> dict:
 		self.logInfo('Checking Alice configuration file')
 
+		if not configFileExist:
+			self.logInfo('Creating config file from config template')
+			confs = {configName: configData['defaultValue'] if 'defaultValue' in configData else configData for configName, configData in configTemplate.settings.items()}
+			Path('config.py').write_text(f'settings = {json.dumps(confs, indent=4)}')
+			aliceConfigs = importlib.import_module('config.py').settings.copy()
+		else:
+			aliceConfigs = config.settings.copy()
+
 		changes = False
-
-		availableConfigs = config.settings.copy()
-
-		for k, v in configSample.settings.items():
-			if k not in availableConfigs:
-				self.logInfo(f'- New configuration found: {k}')
+		for setting, definiton in configTemplate.settings.items():
+			if setting not in aliceConfigs:
+				self.logInfo(f'- New configuration found: {setting}')
 				changes = True
-				availableConfigs[k] = v
-			elif type(availableConfigs[k]) != type(v):
-				self.logInfo(f'- Existing configuration type missmatch: {k}, replaced with sample configuration')
+				aliceConfigs[setting] = definiton['defaultValue']
+			elif 'defaultValue' in definiton and not isinstance(aliceConfigs[setting], type(definiton['defaultValue'])):
 				changes = True
-				availableConfigs[k] = v
+				try:
+					# First try to cast the seting we have to the new type
+					aliceConfigs[setting] = type(definiton['defaultValue'])(aliceConfigs[setting])
+					self.logInfo(f'- Existing configuration type missmatch: {setting}, cast variable to template configuration type')
+				except Exception:
+					# If casting failed let's fall back to the new default value
+					self.logInfo(f'- Existing configuration type missmatch: {setting}, replaced with template configuration')
+					aliceConfigs[setting] = definiton['defaultValue']
 
-		temp = availableConfigs.copy()
+		temp = aliceConfigs.copy()
 
 		for k, v in temp.items():
-			if k not in configSample.settings:
+			if k not in configTemplate.settings:
 				self.logInfo(f'- Deprecated configuration: {k}')
 				changes = True
-				del availableConfigs[k]
+				del aliceConfigs[k]
 
 		if changes:
-			self.writeToAliceConfigurationFile(availableConfigs)
+			self.writeToAliceConfigurationFile(aliceConfigs)
 
-		return availableConfigs
+		return aliceConfigs
 
 
 	def addModuleToAliceConfig(self, moduleName: str, data: dict):
@@ -145,9 +153,10 @@ class ConfigManager(Manager):
 
 		# pop modules key so it gets added in the back
 		modules = sort.pop('modules')
+
 		sort['modules'] = dict()
-		for moduleName, conf in modules.items():
-			moduleCleaned = {key: value for key, value in conf.items() if key in misterProper}
+		for moduleName, setting in modules.items():
+			moduleCleaned = {key: value for key, value in setting.items() if key in misterProper}
 			sort['modules'][moduleName] = moduleCleaned
 
 		self._aliceConfigurations = sort
@@ -175,11 +184,11 @@ class ConfigManager(Manager):
 		moduleConfigFile.write_text(json.dumps(confsCleaned, indent=4))
 
 
-	def loadSnipsConfigurations(self):
+	def loadSnipsConfigurations(self) -> dict:
 		self.logInfo('Loading Snips configuration file')
 		snipsConfig = Path('/etc/snips.toml')
 		if snipsConfig.exists():
-			self._snipsConfigurations = toml.loads(snipsConfig.read_text())
+			return toml.loads(snipsConfig.read_text())
 		else:
 			self.logError('Failed retrieving Snips configs')
 			SuperManager.getInstance().onStop()
@@ -232,7 +241,7 @@ class ConfigManager(Manager):
 		return moduleName in self._modulesConfigurations and configName in self._modulesConfigurations[moduleName]
 
 
-	def getAliceConfigByName(self, configName: str, voiceControl: bool = False) -> str:
+	def getAliceConfigByName(self, configName: str, voiceControl: bool = False) -> typing.Any:
 		return self._aliceConfigurations.get(
 			configName,
 			difflib.get_close_matches(word=configName, possibilities=self._aliceConfigurations, n=3) if voiceControl else ''
@@ -286,9 +295,9 @@ class ConfigManager(Manager):
 
 			# The final case is if moduleConfigFileTemplateExists and moduleConfigFileExists
 			with open(moduleConfigFileTemplate) as jsonDataFile:
-				configTemplate = json.load(jsonDataFile)
+				configSample = json.load(jsonDataFile)
 
-				for k, v in configTemplate.items():
+				for k, v in configSample.items():
 					if k not in self._modulesConfigurations[moduleName]:
 						self.logInfo(f'- New module configuration found: {k} for module {moduleName}')
 						changes = True
@@ -304,7 +313,7 @@ class ConfigManager(Manager):
 				if k == 'active':
 					continue
 
-				if k not in configTemplate and k not in self._aliceModuleConfigurationKeys:
+				if k not in configSample and k not in self._aliceModuleConfigurationKeys:
 					self.logInfo(f'- Deprecated module configuration: "{k}" for module "{moduleName}"')
 					changes = True
 					del self._modulesConfigurations[moduleName][k]
@@ -382,6 +391,17 @@ class ConfigManager(Manager):
 		self.updateAliceConfiguration('supportedLanguages', langConfig)
 
 
+	def getAliceConfigType(self, confName: str) -> typing.Optional[str]:
+		# noinspection PyTypeChecker
+		return self._aliceConfigurations.get(confName['dataType'], None)
+
+
+	def isAliceConfHidden(self, confName: str) -> bool:
+		return True if confName in self._aliceTemplateConfigurations and \
+		               'display' in self._aliceTemplateConfigurations and \
+		               self._aliceTemplateConfigurations['display'] == 'hidden' else False
+
+
 	@property
 	def snipsConfigurations(self) -> dict:
 		return self._snipsConfigurations
@@ -405,3 +425,8 @@ class ConfigManager(Manager):
 	@property
 	def aliceModuleConfigurationKeys(self) -> list:
 		return self._aliceModuleConfigurationKeys
+
+
+	@property
+	def aliceTemplateConfigurations(self) -> dict:
+		return self._aliceTemplateConfigurations
