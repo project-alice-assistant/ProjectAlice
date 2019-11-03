@@ -6,6 +6,7 @@ import socket
 import subprocess
 import time
 from pathlib import Path
+import configTemplate
 
 import yaml
 
@@ -112,7 +113,8 @@ network={
 
 		elif not self._confsFile.exists() and self._confsSample.exists():
 			self.warning('No config file found, creating it from sample file')
-			shutil.copyfile(src=Path(self._rootDir, 'configSample.py'), dst=Path(self._rootDir, 'config.py'))
+			confs = {configName: configData['defaultValue'] if 'defaultValue' in configData else configData for configName, configData in configTemplate.settings.items()}
+			Path('config.py').write_text(f'settings = {json.dumps(confs, indent=4)}')
 
 		elif self._confsFile.exists() and not initConfs['forceRewrite']:
 			self.warning('Config file already existing and user not wanting to rewrite, aborting')
