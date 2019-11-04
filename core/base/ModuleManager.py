@@ -379,7 +379,7 @@ class ModuleManager(Manager):
 					self.logInfo(f'✔ {moduleName} - Version {availableModules[moduleName]["version"]} in {self.ConfigManager.getAliceConfigByName("updateChannel")}')
 						
 			except Exception as e:
-				self.logWarning(f'Error checking updates for module "{moduleName}": {e}')
+				self.logError(f'Error checking updates for module "{moduleName}": {e}')
 
 		self.logInfo(f'Found {i} module update(s)')
 

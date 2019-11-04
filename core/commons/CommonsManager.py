@@ -23,7 +23,7 @@ from core.dialog.model.DialogSession import DialogSession
 class CommonsManager(Manager):
 
 	ERROR_HANDLER_FUNC = CFUNCTYPE(None, c_char_p, c_int, c_char_p, c_int, c_char_p)
-	VERSION_PARSER_REGEX = re.compile('(?P<mainVersion>\d+?)\.(?P<updateVersion>\d+?)\.(?P<hotfix>\d+?)(-(?P<releaseType>a|b|rc)(?P<releaseNumber>\d*)?)?')
+	VERSION_PARSER_REGEX = re.compile('(?P<mainVersion>\d+?)\.(?P<updateVersion>\d+?)(\.(?P<hotfix>\d+?))?(-(?P<releaseType>a|b|rc)(?P<releaseNumber>\d*))?')
 	
 	def __init__(self):
 		super().__init__('Commons')
@@ -318,7 +318,7 @@ class CommonsManager(Manager):
 
 	@classmethod
 	def parseVersionNumber(cls, version: str) -> Optional[Match[str]]:
-		return cls.VERSION_PARSER_REGEX.search(version)
+		return cls.VERSION_PARSER_REGEX.search(str(version))
 
 
 # noinspection PyUnusedLocal
