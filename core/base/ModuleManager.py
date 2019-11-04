@@ -257,6 +257,7 @@ class ModuleManager(Manager):
 		except (ModuleStartingFailed, ModuleStartDelayed):
 			raise
 		except Exception as e:
+			# noinspection PyUnboundLocalVariable
 			self.logError(f'- Couldn\'t start module {name or "undefined"}. Did you forget to return the intents in onStart()? Error: {e}')
 
 		return dict()
@@ -460,7 +461,7 @@ class ModuleManager(Manager):
 					localVersionIsLatest: bool = \
 						directory.is_dir() and \
 						'version' in availableModules[moduleName] and \
-						float(availableModules[moduleName]['version']) >= float(installFile['version'])
+						self.Commons.isUpToDate(installFile['version'], availableModules[moduleName]['version'])
 
 					if localVersionIsLatest:
 						self.logWarning(f'Module "{moduleName}" is already installed, skipping')
@@ -550,7 +551,7 @@ class ModuleManager(Manager):
 
 	def checkModuleConditions(self, moduleName: str, conditions: dict, availableModules: dict) -> bool:
 
-		if 'aliceMinVersion' in conditions and self.Commons.isUpToDate(conditions['aliceMinVersion']):
+		if 'aliceMinVersion' in conditions and not self.Commons.isUpToDate(conditions['aliceMinVersion']):
 			raise ModuleNotConditionCompliant(message='Module is not compliant', moduleName=moduleName, condition='Alice minimum version', conditionValue=conditions['aliceMinVersion'])
 
 		for conditionName, conditionValue in conditions.items():

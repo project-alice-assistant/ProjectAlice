@@ -289,10 +289,12 @@ class CommonsManager(Manager):
 
 
 	def isUpToDate(self, compare: str, compareTo: str = None) -> bool:
-		actualVersion = self.parseVersionNumber(constants.VERSION) if not compareTo else self.parseVersionNumber(compareTo)
+		compareTo = constants.VERSION if compareTo is None else compareTo
+
+		actualVersion = self.parseVersionNumber(compareTo)
 		targetVersion = self.parseVersionNumber(compare)
 
-		if actualVersion == targetVersion:
+		if compare == compareTo:
 			return True
 
 		if (not actualVersion.group('mainVersion') or not actualVersion.group('updateVersion')) or \
