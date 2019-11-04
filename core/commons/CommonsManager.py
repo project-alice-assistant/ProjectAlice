@@ -23,7 +23,7 @@ from core.dialog.model.DialogSession import DialogSession
 class CommonsManager(Manager):
 
 	ERROR_HANDLER_FUNC = CFUNCTYPE(None, c_char_p, c_int, c_char_p, c_int, c_char_p)
-	VERSION_PARSER_REGEX = re.compile('(?P<mainVersion>\d+?).(?P<updateVersion>\d+?).(?P<hotfix>\d+?)?(-(?P<releaseType>a|b|rc)(?P<releaseNumber>\d*)?)?')
+	VERSION_PARSER_REGEX = re.compile('(?P<mainVersion>\d+?)\.(?P<updateVersion>\d+?)\.(?P<hotfix>\d+?)(-(?P<releaseType>a|b|rc)(?P<releaseNumber>\d*)?)?')
 	
 	def __init__(self):
 		super().__init__('Commons')
@@ -288,8 +288,8 @@ class CommonsManager(Manager):
 		return [result.text for result in Translator().translate(**kwargs)]
 
 
-	def isUpToDate(self, compare: str) -> bool:
-		actualVersion = self.parseVersionNumber(constants.VERSION)
+	def isUpToDate(self, compare: str, compareTo: str = None) -> bool:
+		actualVersion = self.parseVersionNumber(constants.VERSION) if not compareTo else compareTo
 		targetVersion = self.parseVersionNumber(compare)
 
 		try:
