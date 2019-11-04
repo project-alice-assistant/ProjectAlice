@@ -51,7 +51,7 @@ If you see or find a copyright breach, feel free to contact us immediately. It i
 
 
 # Special thanks and retired official devs
--   May 2019 - novembre 2019: *Jierka* for the work provided on the core
+-   May 2019 - November 2019: *Jierka* for the work provided on the core
 
 
 # Other repositories
