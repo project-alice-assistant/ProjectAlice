@@ -46,8 +46,12 @@ Hey, did you skip ahead and not read what I wrote a bit earlier? You have to! Ju
 Project Alice ships under GPLv3, it means you are free to use and redistribute our code but are not allowed to use any part of it under a closed license. Give the community back what you've been given!
 Regarding third party tools, scripts, material we use, I took care to mention original creators in files and respect their copyright. If something has slept under my supervision know that it was in no case intended and is the result of a mistake and I ask you to contact me directly to solve the issue asap.
 
-# Copyrights
+# Third party copyrights
 If you see or find a copyright breach, feel free to contact us immediately. It is not our intention to steal anyone else's work or plagiarize your work and is just the result of a missunderstanding that we will gladly fix immediately!
+
+
+# Special thanks and retired official devs
+-   May 2019 - novembre 2019: *Jierka* for the work provided on the core
 
 
 # Other repositories
