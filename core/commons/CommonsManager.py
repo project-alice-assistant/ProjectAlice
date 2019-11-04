@@ -1,5 +1,7 @@
 import inspect
 import json
+
+import re
 import socket
 import time
 from collections import defaultdict
@@ -7,7 +9,7 @@ from contextlib import contextmanager
 from ctypes import *
 from datetime import datetime
 from pathlib import Path
-from typing import Union
+from typing import Union, Optional, Match
 
 from paho.mqtt.client import MQTTMessage
 from googletrans import Translator
@@ -21,6 +23,7 @@ from core.dialog.model.DialogSession import DialogSession
 class CommonsManager(Manager):
 
 	ERROR_HANDLER_FUNC = CFUNCTYPE(None, c_char_p, c_int, c_char_p, c_int, c_char_p)
+	VERSION_PARSER_REGEX = re.compile('(?P<mainVersion>\d+?).(?P<updateVersion>\d+?).(?P<hotfix>\d+?)(-(?P<releaseType>a|b|rc)(?P<releaseNumber>\d*)?)?')
 	
 	def __init__(self):
 		super().__init__('Commons')
@@ -283,6 +286,24 @@ class CommonsManager(Manager):
 		if isinstance(text, str):
 			return Translator().translate(**kwargs).text
 		return [result.text for result in Translator().translate(**kwargs)]
+
+
+	def isUpToDate(self, compare: str) -> bool:
+		actualVersion = self.parseVersionNumber(constants.VERSION)
+		targetVersion = self.parseVersionNumber(compare)
+
+		# check version digits first
+		if actualVersion.group('mainVersion') < targetVersion.group('mainVersion') or \
+			actualVersion.group('updateVersion') < targetVersion.group('updateVersion') or \
+			actualVersion.group('hotfix') < targetVersion.group('hotfix'):
+			return False
+		else:
+			return False
+
+
+	@classmethod
+	def parseVersionNumber(cls, version: str) -> Optional[Match[str]]:
+		return cls.VERSION_PARSER_REGEX.search(version)
 
 
 # noinspection PyUnusedLocal
