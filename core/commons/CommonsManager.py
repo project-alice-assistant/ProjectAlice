@@ -308,9 +308,9 @@ class CommonsManager(Manager):
 				# check the release types now
 				if not actualVersion.group('releaseType') and targetVersion.group('releaseType') in ('a', 'b', 'rc'):
 					return False
-				elif actualVersion.group('releaseType') == 'a' and targetVersion.group('relaseType') in ('b', 'rc'):
+				elif actualVersion.group('releaseType') == 'a' and targetVersion.group('releaseType') in ('b', 'rc'):
 					return False
-				elif actualVersion.group('releaseType') == 'b' and targetVersion.group('relaseType') == 'rc':
+				elif actualVersion.group('releaseType') == 'b' and targetVersion.group('releaseType') == 'rc':
 					return False
 				elif not actualVersion.group('releaseNumber') and targetVersion.group('releaseNumber') != '':
 					return False
