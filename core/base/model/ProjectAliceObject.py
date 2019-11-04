@@ -8,7 +8,8 @@ from core.util.model.Logger import Logger
 class ProjectAliceObject(Logger):
 
 	def __init__(self, logDepth: int = 3, *args, **kwargs):
-		super().__init__(depth=logDepth)
+		self._depth = logDepth
+		super().__init__(depth=self._depth)
 
 
 	def __repr__(self):

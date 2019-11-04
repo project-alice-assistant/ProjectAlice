@@ -12,9 +12,10 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>
 
-    authors: 	Psycho <https://github.com/Psychokiller1888>
-    			Jierka <https://github.com/jr-k>
-				maxbachmann <https://github.com/maxbachmann>
+    authors: 	            Psycho <https://github.com/Psychokiller1888>
+							maxbachmann <https://github.com/maxbachmann>
+	retired or
+	inactive authors:       Jierka <https://github.com/jr-k>
 """
 import logging.handlers
 import os

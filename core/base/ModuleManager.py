@@ -361,7 +361,7 @@ class ModuleManager(Manager):
 				req = requests.get(f'https://raw.githubusercontent.com/project-alice-powered-by-snips/ProjectAliceModules/{self.ConfigManager.getAliceConfigByName("updateChannel")}/PublishedModules/{availableModules[moduleName]["author"]}/{moduleName}/{moduleName}.install')
 	
 				remoteFile = req.json()
-				if float(remoteFile['version']) > float(availableModules[moduleName]['version']):
+				if not self.Commons.isUpToDate(remoteFile['version'], availableModules[moduleName]['version']):
 					i += 1
 					self.logInfo(f'❌ {moduleName} - Version {availableModules[moduleName]["version"]} < {remoteFile["version"]} in {self.ConfigManager.getAliceConfigByName("updateChannel")}')
 	
@@ -379,7 +379,7 @@ class ModuleManager(Manager):
 					self.logInfo(f'✔ {moduleName} - Version {availableModules[moduleName]["version"]} in {self.ConfigManager.getAliceConfigByName("updateChannel")}')
 						
 			except Exception as e:
-				self.logWarning(f'Error checking updates for module "{moduleName}": {e}')
+				self.logError(f'Error checking updates for module "{moduleName}": {e}')
 
 		self.logInfo(f'Found {i} module update(s)')
 
@@ -550,7 +550,7 @@ class ModuleManager(Manager):
 
 	def checkModuleConditions(self, moduleName: str, conditions: dict, availableModules: dict) -> bool:
 
-		if 'aliceMinVersion' in conditions and conditions['aliceMinVersion'] > constants.VERSION:
+		if 'aliceMinVersion' in conditions and self.Commons.isUpToDate(conditions['aliceMinVersion']):
 			raise ModuleNotConditionCompliant(message='Module is not compliant', moduleName=moduleName, condition='Alice minimum version', conditionValue=conditions['aliceMinVersion'])
 
 		for conditionName, conditionValue in conditions.items():

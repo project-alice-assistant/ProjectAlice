@@ -51,7 +51,7 @@ network={
 		self._confsFile = Path(self._rootDir, 'config.py')
 		self._confsSample = Path(self._rootDir, 'configTemplate.py')
 		self._initFile = Path('/boot/ProjectAlice.yaml')
-		self._latest = 1.06
+		self._latest = 1.07
 
 
 	def initProjectAlice(self) -> bool:
@@ -113,7 +113,7 @@ network={
 		elif not self._confsFile.exists() and self._confsSample.exists():
 			self.warning('No config file found, creating it from sample file')
 			confs = {configName: configData['defaultValue'] if 'defaultValue' in configData else configData for configName, configData in configTemplate.settings.items()}
-			Path('config.py').write_text(f'settings = {json.dumps(confs, indent=4)}')
+			Path('config.py').write_text(f"settings = {json.dumps(confs, indent=4).replace('false', 'False').replace('true', 'True')}")
 
 		elif self._confsFile.exists() and not initConfs['forceRewrite']:
 			self.warning('Config file already existing and user not wanting to rewrite, aborting')
@@ -123,7 +123,7 @@ network={
 			self.warning('Config file found and force rewrite specified, let\'s restart all this!')
 			Path(self._rootDir, 'config.py').unlink()
 			confs = {configName: configData['defaultValue'] if 'defaultValue' in configData else configData for configName, configData in configTemplate.settings.items()}
-			Path('config.py').write_text(f'settings = {json.dumps(confs, indent=4)}')
+			Path('config.py').write_text(f"'settings = {json.dumps(confs, indent=4).replace('false', 'False').replace('true', 'True')}'")
 
 		config = importlib.import_module('config')
 		confs = config.settings.copy()

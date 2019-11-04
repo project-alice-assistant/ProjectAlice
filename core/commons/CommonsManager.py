@@ -1,5 +1,7 @@
 import inspect
 import json
+
+import re
 import socket
 import time
 from collections import defaultdict
@@ -7,7 +9,7 @@ from contextlib import contextmanager
 from ctypes import *
 from datetime import datetime
 from pathlib import Path
-from typing import Union
+from typing import Union, Optional, Match
 
 from paho.mqtt.client import MQTTMessage
 from googletrans import Translator
@@ -21,6 +23,7 @@ from core.dialog.model.DialogSession import DialogSession
 class CommonsManager(Manager):
 
 	ERROR_HANDLER_FUNC = CFUNCTYPE(None, c_char_p, c_int, c_char_p, c_int, c_char_p)
+	VERSION_PARSER_REGEX = re.compile('(?P<mainVersion>\d+)\.(?P<updateVersion>\d+)(\.(?P<hotfix>\d+))?(-(?P<releaseType>a|b|rc)(?P<releaseNumber>\d+))?')
 	
 	def __init__(self):
 		super().__init__('Commons')
@@ -283,6 +286,46 @@ class CommonsManager(Manager):
 		if isinstance(text, str):
 			return Translator().translate(**kwargs).text
 		return [result.text for result in Translator().translate(**kwargs)]
+
+
+	def isUpToDate(self, compare: str, compareTo: str = None) -> bool:
+		actualVersion = self.parseVersionNumber(constants.VERSION) if not compareTo else self.parseVersionNumber(compareTo)
+		targetVersion = self.parseVersionNumber(compare)
+
+		if (not actualVersion.group('mainVersion') or not actualVersion.group('updateVersion')) or \
+			(not targetVersion.group('mainVersion') or not targetVersion.group('updateVersion')):
+			self.logError(f'Something went wrong checking versions {compare} to {compareTo}')
+			return True
+
+		try:
+			# check version digits
+			if (int(actualVersion.group('mainVersion')) < int(targetVersion.group('mainVersion'))) or \
+					(int(actualVersion.group('updateVersion')) < int(targetVersion.group('updateVersion'))) or \
+					(not actualVersion.group('hotfix') or not targetVersion.group('hotfix')) or \
+					(int(actualVersion.group('hotfix')) < int(targetVersion.group('hotfix'))):
+				return False
+			else:
+				# check the release types now
+				if not actualVersion.group('releaseType') and targetVersion.group('releaseType') in ('a', 'b', 'rc'):
+					return False
+				elif actualVersion.group('releaseType') == 'a' and targetVersion.group('relaseType') in ('b', 'rc'):
+					return False
+				elif actualVersion.group('releaseType') == 'b' and targetVersion.group('relaseType') == 'rc':
+					return False
+				elif not actualVersion.group('releaseNumber') and targetVersion.group('releaseNumber') != '':
+					return False
+				elif int(actualVersion.group('releaseNumber')) < int(targetVersion.group('releaseNumber')):
+					return False
+		except Exception as e:
+			self.logError(f'{e}')
+			return True
+
+		return True
+
+
+	@classmethod
+	def parseVersionNumber(cls, version: str) -> Optional[Match[str]]:
+		return cls.VERSION_PARSER_REGEX.search(str(version))
 
 
 # noinspection PyUnusedLocal
