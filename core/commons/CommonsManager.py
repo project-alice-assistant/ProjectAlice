@@ -23,7 +23,7 @@ from core.dialog.model.DialogSession import DialogSession
 class CommonsManager(Manager):
 
 	ERROR_HANDLER_FUNC = CFUNCTYPE(None, c_char_p, c_int, c_char_p, c_int, c_char_p)
-	VERSION_PARSER_REGEX = re.compile('(?P<mainVersion>\d+?).(?P<updateVersion>\d+?).(?P<hotfix>\d+?)(-(?P<releaseType>a|b|rc)(?P<releaseNumber>\d*)?)?')
+	VERSION_PARSER_REGEX = re.compile('(?P<mainVersion>\d+?).(?P<updateVersion>\d+?).(?P<hotfix>\d+?)?(-(?P<releaseType>a|b|rc)(?P<releaseNumber>\d*)?)?')
 	
 	def __init__(self):
 		super().__init__('Commons')
@@ -292,13 +292,28 @@ class CommonsManager(Manager):
 		actualVersion = self.parseVersionNumber(constants.VERSION)
 		targetVersion = self.parseVersionNumber(compare)
 
-		# check version digits first
-		if actualVersion.group('mainVersion') < targetVersion.group('mainVersion') or \
-			actualVersion.group('updateVersion') < targetVersion.group('updateVersion') or \
-			actualVersion.group('hotfix') < targetVersion.group('hotfix'):
-			return False
-		else:
-			return False
+		try:
+			# check version digits first
+			if int(actualVersion.group('mainVersion')) < int(targetVersion.group('mainVersion')) or \
+				int(actualVersion.group('updateVersion')) < int(targetVersion.group('updateVersion')) or \
+				int(actualVersion.group('hotfix')) < int(targetVersion.group('hotfix')):
+				return False
+			else:
+				# check the release types now
+				if not actualVersion.group('releaseType') and targetVersion.group('releaseType') in ('a', 'b', 'rc'):
+					return False
+				elif actualVersion.group('releaseType') == 'a' and targetVersion.group('relaseType') in ('b', 'rc'):
+					return False
+				elif actualVersion.group('releaseType') == 'b' and targetVersion.group('relaseType') == 'rc':
+					return False
+				elif not actualVersion.group('releaseNumber') and targetVersion.group('releaseNumber') != '':
+					return False
+				elif int(actualVersion.group('releaseNumber')) < int(targetVersion.group('releaseNumber')):
+					return False
+		except Exception:
+			return True
+
+		return True
 
 
 	@classmethod
