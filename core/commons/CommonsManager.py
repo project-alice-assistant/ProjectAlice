@@ -292,6 +292,9 @@ class CommonsManager(Manager):
 		actualVersion = self.parseVersionNumber(constants.VERSION) if not compareTo else self.parseVersionNumber(compareTo)
 		targetVersion = self.parseVersionNumber(compare)
 
+		if actualVersion == targetVersion:
+			return True
+
 		if (not actualVersion.group('mainVersion') or not actualVersion.group('updateVersion')) or \
 			(not targetVersion.group('mainVersion') or not targetVersion.group('updateVersion')):
 			self.logError(f'Something went wrong checking versions {compare} to {compareTo}')
