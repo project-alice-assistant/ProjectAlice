@@ -23,7 +23,7 @@ from core.dialog.model.DialogSession import DialogSession
 class CommonsManager(Manager):
 
 	ERROR_HANDLER_FUNC = CFUNCTYPE(None, c_char_p, c_int, c_char_p, c_int, c_char_p)
-	VERSION_PARSER_REGEX = re.compile('(?P<mainVersion>\d+?)\.(?P<updateVersion>\d+?)(\.(?P<hotfix>\d+?))?(-(?P<releaseType>a|b|rc)(?P<releaseNumber>\d*))?')
+	VERSION_PARSER_REGEX = re.compile('(?P<mainVersion>\d+)\.(?P<updateVersion>\d+)(\.(?P<hotfix>\d+))?(-(?P<releaseType>a|b|rc)(?P<releaseNumber>\d+))?')
 	
 	def __init__(self):
 		super().__init__('Commons')
@@ -289,14 +289,20 @@ class CommonsManager(Manager):
 
 
 	def isUpToDate(self, compare: str, compareTo: str = None) -> bool:
-		actualVersion = self.parseVersionNumber(constants.VERSION) if not compareTo else compareTo
+		actualVersion = self.parseVersionNumber(constants.VERSION) if not compareTo else self.parseVersionNumber(compareTo)
 		targetVersion = self.parseVersionNumber(compare)
 
+		if (not actualVersion.group('mainVersion') or not actualVersion.group('updateVersion')) or \
+			(not targetVersion.group('mainVersion') or not targetVersion.group('updateVersion')):
+			self.logError(f'Something went wrong checking versions {compare} to {compareTo}')
+			return True
+
 		try:
-			# check version digits first
-			if int(actualVersion.group('mainVersion')) < int(targetVersion.group('mainVersion')) or \
-				int(actualVersion.group('updateVersion')) < int(targetVersion.group('updateVersion')) or \
-				int(actualVersion.group('hotfix')) < int(targetVersion.group('hotfix')):
+			# check version digits
+			if (int(actualVersion.group('mainVersion')) < int(targetVersion.group('mainVersion'))) or \
+					(int(actualVersion.group('updateVersion')) < int(targetVersion.group('updateVersion'))) or \
+					(not actualVersion.group('hotfix') or not targetVersion.group('hotfix')) or \
+					(int(actualVersion.group('hotfix')) < int(targetVersion.group('hotfix'))):
 				return False
 			else:
 				# check the release types now
@@ -310,7 +316,8 @@ class CommonsManager(Manager):
 					return False
 				elif int(actualVersion.group('releaseNumber')) < int(targetVersion.group('releaseNumber')):
 					return False
-		except Exception:
+		except Exception as e:
+			self.logError(f'{e}')
 			return True
 
 		return True

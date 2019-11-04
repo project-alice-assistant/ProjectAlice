@@ -550,7 +550,7 @@ class ModuleManager(Manager):
 
 	def checkModuleConditions(self, moduleName: str, conditions: dict, availableModules: dict) -> bool:
 
-		if 'aliceMinVersion' in conditions and not self.Commons.isUpToDate(conditions['aliceMinVersion']):
+		if 'aliceMinVersion' in conditions and self.Commons.isUpToDate(conditions['aliceMinVersion']):
 			raise ModuleNotConditionCompliant(message='Module is not compliant', moduleName=moduleName, condition='Alice minimum version', conditionValue=conditions['aliceMinVersion'])
 
 		for conditionName, conditionValue in conditions.items():
