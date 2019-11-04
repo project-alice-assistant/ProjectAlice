@@ -1,7 +1,6 @@
 import getpass
 import importlib
 import json
-import shutil
 import socket
 import subprocess
 import time
@@ -123,7 +122,8 @@ network={
 		elif self._confsFile.exists() and initConfs['forceRewrite']:
 			self.warning('Config file found and force rewrite specified, let\'s restart all this!')
 			Path(self._rootDir, 'config.py').unlink()
-			shutil.copyfile(src=Path(self._rootDir, 'configSample.py'), dst=Path(self._rootDir, 'config.py'))
+			confs = {configName: configData['defaultValue'] if 'defaultValue' in configData else configData for configName, configData in configTemplate.settings.items()}
+			Path('config.py').write_text(f'settings = {json.dumps(confs, indent=4)}')
 
 		config = importlib.import_module('config')
 		confs = config.settings.copy()
