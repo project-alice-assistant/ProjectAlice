@@ -130,11 +130,12 @@ settings = {
 	},
 	'githubToken': {
 		'defaultValue': '',
-		'dataType': 'string'
+		'dataType': 'password'
 	},
 	'updateChannel': {
 		'defaultValue': 'master',
-		'dataType': 'string'
+		'dataType': 'list',
+		'values': ['stable', 'release candidate', 'beta', 'alpha']
 	},
 	'supportedLanguages': {
 		'en': {

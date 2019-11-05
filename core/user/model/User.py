@@ -172,6 +172,10 @@ class User(ProjectAliceObject):
 		self._eating = value
 
 	def checkPassword(self, password: str) -> bool:
+		if self.pin is None:
+			self.logWarning('No pin defined for this user')
+			return False
+
 		return bcrypt.checkpw(str(password).encode(), self.pin.encode())
 
 	# Flask login reqs

@@ -16,7 +16,8 @@ class AdminView(View):
 	def index(self):
 		return render_template(template_name_or_list='admin.html',
 		                       langData=self._langData,
-		                       aliceSettings=self.ConfigManager.aliceConfigurations)
+		                       aliceSettings=self.ConfigManager.aliceConfigurations,
+		                       aliceSettingsTemplate=self.ConfigManager.aliceTemplateConfigurations)
 
 
 	@classmethod
