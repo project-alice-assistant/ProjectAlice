@@ -4,6 +4,7 @@ import importlib
 import inspect
 import json
 import sqlite3
+import functools
 
 import re
 
@@ -68,7 +69,8 @@ class Module(ProjectAliceObject):
 		intents = dict()
 		for name in dir(cls):
 			method = getattr(cls, name)
-			if isinstance(method, IntentWrapper):
+			if isinstance(method, functools.partial) and isinstance(method.func, IntentWrapper):
+				method = method.func
 				if not method.requiredState:
 					intents[method.intent] = (Intent(method.intent, isProtected=method.isProtected, userIntent=method.userIntent), method)
 					continue

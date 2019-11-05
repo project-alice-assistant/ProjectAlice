@@ -146,6 +146,33 @@ class Decorators:
 
 
 	class Intent:
+		"""
+		(return a) decorator to mark a function as an intent.
+
+		This decorator can be used to map a function to a intent. 
+
+		:param intentName:
+		:param requiredState:
+		:param isProtected:
+		:param userIntent:
+		:return: return value of the decorated function
+		Examples:
+			An intent handler can be mapped to the intent 'intentName' the following way:
+
+			@Intent('intentName')
+			def exampleIntent(self, session: DialogSession, **_kwargs):
+				request = requests.get('http://api.open-notify.org')
+				self.endDialog(sessionId=session.sessionId, text=request.text)
+			
+			When the function should only be called when the current dialogState is 'currentState':
+
+			@Intent('intentName', requiredState='currentState')
+			def exampleIntent(self, session: DialogSession, **_kwargs):
+				request = requests.get('http://api.open-notify.org')
+				self.endDialog(sessionId=session.sessionId, text=request.text)
+			
+			In the same way all other parameters supported by the Intent class can be used in the decorator
+		"""
 		class IntentWrapper:
 			def __init__(self, intentName: str, requiredState: str, isProtected: bool, userIntent: bool, method: Callable):
 				self.intent = intentName
