@@ -23,7 +23,7 @@ from core.util.Decorators import IntentWrapper
 
 class Module(ProjectAliceObject):
 
-	def __init__(self, supportedIntents: Iterable, authOnlyIntents: dict = None, databaseSchema: dict = None):
+	def __init__(self, supportedIntents: Iterable = None, authOnlyIntents: dict = None, databaseSchema: dict = None):
 		super().__init__(logDepth=4)
 		try:
 			path = Path(inspect.getfile(self.__class__)).with_suffix('.install')
@@ -42,6 +42,9 @@ class Module(ProjectAliceObject):
 		self._required = False
 		self._databaseSchema = databaseSchema
 		self._widgets = dict()
+
+		if not supportedIntents:
+			supportedIntents = list()
 
 		self._myIntents: List[Intent] = list()
 		self._supportedIntents: Dict[str, Tuple[(str, Intent), Callable]] = dict()
