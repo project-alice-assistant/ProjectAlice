@@ -70,10 +70,10 @@ class Module(ProjectAliceObject):
 			method = getattr(cls, name)
 			if isinstance(method, IntentWrapper):
 				if not method.requiredState:
-					intents[method.intent] = (Intent(method.intent), method)
+					intents[method.intent] = (Intent(method.intent, isProtected=method.isProtected, userIntent=method.userIntent), method)
 					continue
 				if method.intent not in intents:
-					intents[method.intent] = Intent(method.intent)
+					intents[method.intent] = Intent(method.intent, isProtected=method.isProtected, userIntent=method.userIntent)
 
 				intents[method.intent].addDialogMapping({method.requiredState: method})
 		

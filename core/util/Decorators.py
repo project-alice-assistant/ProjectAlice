@@ -8,7 +8,6 @@ from core.base.model.Module import Module
 from core.dialog.model.DialogSession import DialogSession
 from core.base.SuperManager import SuperManager
 from core.util.model.Logger import Logger
-from core.base.model.Intent import Intent
 
 
 class Decorators:
@@ -148,28 +147,24 @@ class Decorators:
 
 	class Intent:
 		class IntentWrapper:
-			def __init__(self, intentName: str, method: Callable, requiredState: str = None):
+			def __init__(self, intentName: str, requiredState: str, isProtected: bool, userIntent: bool, method: Callable):
+				self.intent = intentName
+				self.requiredState = requiredState
+				self.isProtected = isProtected
+				self.userIntent = userIntent
 				self._method = method
-				self._intent = intentName
-				self._requiredState = requiredState
 
 			def __call__(self, *args, **kwargs):
 				return self._method(*args, **kwargs)
 
-			@property
-			def intent(self) -> str:
-				return self._intent
-
-			@property
-			def requiredState(self) -> str:
-				return self._requiredState
-
-		def __init__(self, intentName: str, requiredState: str = None):
+		def __init__(self, intentName: str, requiredState: str = None, isProtected: bool = False, userIntent: bool = True):
 			self._intentName = intentName
 			self._requiredState = requiredState
+			self._isProtected = isProtected
+			self._userIntent = userIntent
 
 		def __call__(self, func: Callable):
-			return self.IntentWrapper(self._intentName, func, self._requiredState)
+			return self.IntentWrapper(self._intentName, func, self._requiredState, self._isProtected, self._userIntent)
 
 
 
