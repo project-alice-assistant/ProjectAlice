@@ -82,3 +82,10 @@ class Intent(str, ProjectAliceObject):
 	@dialogMapping.setter
 	def dialogMapping(self, value: Dict[str, Callable]):
 		self._dialogMapping = DialogMapping(value)
+	
+	
+	def addDialogMapping(self, value: Dict[str, Callable]):
+		if self._dialogMapping:
+			self._dialogMapping.addMappings(value)
+		else:
+			self._dialogMapping = DialogMapping(value)

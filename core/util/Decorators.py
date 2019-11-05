@@ -147,22 +147,30 @@ class Decorators:
 
 
 	class Intent:
-		def __init__(self, intentName: str):
+		class IntentWrapper:
+			def __init__(self, intentName: str, method: Callable, requiredState: str = None):
+				self._method = method
+				self._intent = intentName
+				self._requiredState = requiredState
+
+			def __call__(self, *args, **kwargs):
+				return self._method(*args, **kwargs)
+
+			@property
+			def intent(self) -> str:
+				return self._intent
+
+			@property
+			def requiredState(self) -> str:
+				return self._requiredState
+
+		def __init__(self, intentName: str, requiredState: str = None):
 			self._intentName = intentName
+			self._requiredState = requiredState
 
 		def __call__(self, func: Callable):
-			return IntentWrapper(self._intentName, func)
+			return self.IntentWrapper(self._intentName, func, self._requiredState)
 
 
 
-class IntentWrapper:
-	def __init__(self, intentName: str, method: Callable):
-		self._method = method
-		self._intent = Intent(intentName)
 
-	def __call__(self, *args, **kwargs):
-		return self._method(*args, **kwargs)
-
-	@property
-	def intent(self):
-		return self._intent

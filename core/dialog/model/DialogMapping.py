@@ -26,6 +26,10 @@ class DialogMapping(ProjectAliceObject):
 		return False
 
 
+	def addMappings(self, mapping: Dict[str, Callable]):
+		caller = self.Commons.getFunctionCaller()
+		self._mapping.update({f'{caller}:{state}': func for state, func in mapping.items()})
+
 	@property
 	def state(self) -> str:
 		return self._state

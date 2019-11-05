@@ -18,7 +18,7 @@ from core.base.model.ProjectAliceObject import ProjectAliceObject
 from core.commons import constants
 from core.dialog.model.DialogSession import DialogSession
 from core.user.model.AccessLevels import AccessLevel
-from core.util.Decorators import IntentWrapper
+from core.util.Decorators.Intent import IntentWrapper
 
 
 class Module(ProjectAliceObject):
@@ -65,12 +65,19 @@ class Module(ProjectAliceObject):
 
 	@classmethod
 	def intentMethods(cls) -> list:
-		intents = list()
+		intents = dict()
 		for name in dir(cls):
 			method = getattr(cls, name)
 			if isinstance(method, IntentWrapper):
-				intents.append((method.intent, method))
-		return intents
+				if not method.requiredState:
+					intents[method.intent] = (Intent(method.intent), method)
+					continue
+				if method.intent not in intents:
+					intents[method.intent] = Intent(method.intent)
+
+				intents[method.intent].addDialogMapping({method.requiredState: method})
+		
+		return list(intents.values())
 
 
 	# noinspection SqlResolve
