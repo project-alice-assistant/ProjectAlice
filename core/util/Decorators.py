@@ -8,6 +8,7 @@ from core.base.model.Module import Module
 from core.dialog.model.DialogSession import DialogSession
 from core.base.SuperManager import SuperManager
 from core.util.model.Logger import Logger
+from core.base.model.Intent import Intent as IntentObject
 
 
 class Decorators:
@@ -149,7 +150,7 @@ class Decorators:
 		"""
 		(return a) decorator to mark a function as an intent.
 
-		This decorator can be used to map a function to a intent. 
+		This decorator can be used to map a function to a intent.
 
 		:param intentName:
 		:param requiredState:
@@ -163,14 +164,14 @@ class Decorators:
 			def exampleIntent(self, session: DialogSession, **_kwargs):
 				request = requests.get('http://api.open-notify.org')
 				self.endDialog(sessionId=session.sessionId, text=request.text)
-			
+
 			When the function should only be called when the current dialogState is 'currentState':
 
 			@Intent('intentName', requiredState='currentState')
 			def exampleIntent(self, session: DialogSession, **_kwargs):
 				request = requests.get('http://api.open-notify.org')
 				self.endDialog(sessionId=session.sessionId, text=request.text)
-			
+
 			In the same way all other parameters supported by the Intent class can be used in the decorator.
 
 
@@ -182,19 +183,21 @@ class Decorators:
 			def exampleIntent(self, session: DialogSession, **_kwargs):
 				request = requests.get('http://api.open-notify.org')
 				self.endDialog(sessionId=session.sessionId, text=request.text)
-
 		"""
 		class IntentWrapper:
 			def __init__(self, intentName: str, requiredState: str, isProtected: bool, userIntent: bool, method: Callable):
-				self.intent = intentName
+				self.intentName = intentName
 				self.requiredState = requiredState
 				self.isProtected = isProtected
 				self.userIntent = userIntent
 				self.decoratedMethod = method
 
+			def intent(self):
+				return IntentObject(self.intentName, isProtected=self.isProtected, userIntent=self.userIntent)
+
 			def __call__(self, instance, *args, **kwargs):
 				return self.decoratedMethod(instance, *args, **kwargs)
-		
+
 			def __get__(self, instance, owner):
 				return partial(self, instance)
 

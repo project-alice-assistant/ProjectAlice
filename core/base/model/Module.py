@@ -8,7 +8,7 @@ import functools
 
 import re
 
-from typing import Dict, Iterable, Callable, Any, Tuple, List
+from typing import Dict, Iterable, Callable, Any, Tuple, List, Generator
 from pathlib import Path
 
 from paho.mqtt import client as MQTTClient
@@ -65,22 +65,29 @@ class Module(ProjectAliceObject):
 
 
 	@classmethod
-	def intentMethods(cls) -> list:
-		intents = dict()
+	def decoratedIntentMethods(cls) -> Generator[IntentWrapper, None, None]:
 		for name in dir(cls):
 			method = getattr(cls, name)
 			if isinstance(method, functools.partial):
 				method = method.func
 				while isinstance(method, IntentWrapper):
-					if not method.requiredState:
-						intents[method.intent] = (Intent(method.intent, isProtected=method.isProtected, userIntent=method.userIntent), method)
-					else:
-						if method.intent not in intents:
-							intents[method.intent] = Intent(method.intent, isProtected=method.isProtected, userIntent=method.userIntent)
-
-						intents[method.intent].addDialogMapping({method.requiredState: method})
+					yield method
 					method = method.decoratedMethod
-		
+
+
+	@classmethod
+	def intentMethods(cls) -> list:
+		intents = dict()
+		for method in cls.decoratedIntentMethods():
+			if not method.requiredState:
+				intents[method.intentName] = (method.intent(), method)
+				continue
+
+			if method.intentName not in intents:
+				intents[method.intentName] = method.intent()
+
+			intents[method.intentName].addDialogMapping({method.requiredState: method})
+
 		return list(intents.values())
 
 
