@@ -280,7 +280,8 @@ class ConfigManager(Manager):
 				self.logInfo(f'- New config file for module "{moduleName}", creating from template')
 
 				template = json.load(moduleConfigTemplate.open())
-				confs = {configName: configData['defaultValue'] if 'defaultValue' in configData else configData for configName, configData in template}
+
+				confs = {configName: configData['defaultValue'] if 'defaultValue' in configData else configData for configName, configData in template.items()}
 				self._modulesTemplateConfigurations[moduleName] = template
 				self._writeToModuleConfigurationFile(moduleName, confs)
 
