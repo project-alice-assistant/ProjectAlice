@@ -110,19 +110,20 @@ class ConfigManager(Manager):
 
 
 	def updateAliceConfiguration(self, key: str, value: typing.Any):
+		if key not in self._aliceConfigurations:
+			self.logWarning(f'Was asked to update {key} but key doesn\'t exist')
+			raise ConfigurationUpdateFailed()
+		
 		try:
-			if key not in self._aliceConfigurations:
-				self.logWarning(f'Was asked to update {key} but key doesn\'t exist')
-				raise Exception
-
 			# Remove module configurations
 			if key == 'modules':
-				value = dict((k, v) for k, v in value.items() if k not in self._aliceModuleConfigurationKeys)
-
-			self._aliceConfigurations[key] = value
-			self.writeToAliceConfigurationFile(self.aliceConfigurations)
-		except Exception:
+				value = {k: v for k, v in value.items() if k not in self._aliceModuleConfigurationKeys}
+		except AttributeError:
 			raise ConfigurationUpdateFailed()
+
+		self._aliceConfigurations[key] = value
+		self.writeToAliceConfigurationFile(self.aliceConfigurations)
+		
 
 
 	def updateModuleConfigurationFile(self, moduleName: str, key: str, value: typing.Any):
