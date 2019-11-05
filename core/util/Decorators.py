@@ -2,7 +2,7 @@ from typing import Callable, Tuple
 
 import warnings
 
-from functools import wraps, partial
+from functools import wraps
 
 from core.base.model.Module import Module
 from core.dialog.model.DialogSession import DialogSession
@@ -184,22 +184,25 @@ class Decorators:
 				request = requests.get('http://api.open-notify.org')
 				self.endDialog(sessionId=session.sessionId, text=request.text)
 		"""
-		class IntentWrapper:
-			def __init__(self, intentName: str, requiredState: str, isProtected: bool, userIntent: bool, method: Callable):
+		class Wrapper:
+			def __init__(self, method: Callable, intentName: str, requiredState: str, isProtected: bool, userIntent: bool):
+				self.decoratedMethod = method
 				self.intentName = intentName
 				self.requiredState = requiredState
-				self.isProtected = isProtected
-				self.userIntent = userIntent
-				self.decoratedMethod = method
+				self._isProtected = isProtected
+				self._userIntent = userIntent
 
+			@property
 			def intent(self):
-				return IntentObject(self.intentName, isProtected=self.isProtected, userIntent=self.userIntent)
+				return IntentObject(self.intentName, isProtected=self._isProtected, userIntent=self._userIntent)
 
 			def __call__(self, *args, **kwargs):
-				return self.decoratedMethod(self._instance, *args, **kwargs)
+				instance = self._instance or SuperManager.getInstance().moduleManager.getModuleInstance(self._owner.__name__)
+				return self.decoratedMethod(instance, *args, **kwargs)
 
 			def __get__(self, instance, owner):
 				self._instance = instance
+				self._owner = owner
 				return self
 
 		def __init__(self, intentName: str, requiredState: str = None, isProtected: bool = False, userIntent: bool = True):
@@ -209,7 +212,7 @@ class Decorators:
 			self._userIntent = userIntent
 
 		def __call__(self, func: Callable):
-			return self.IntentWrapper(self._intentName, func, self._requiredState, self._isProtected, self._userIntent)
+			return self.Wrapper(func, self._intentName, self._requiredState, self._isProtected, self._userIntent)
 
 
 

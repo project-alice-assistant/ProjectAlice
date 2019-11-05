@@ -19,7 +19,7 @@ from core.base.model.ProjectAliceObject import ProjectAliceObject
 from core.commons import constants
 from core.dialog.model.DialogSession import DialogSession
 from core.user.model.AccessLevels import AccessLevel
-from core.util.Decorators.Intent import IntentWrapper
+from core.util.Decorators import Decorators
 
 
 class Module(ProjectAliceObject):
@@ -49,7 +49,7 @@ class Module(ProjectAliceObject):
 
 		self._myIntents: List[Intent] = list()
 		self._supportedIntents: Dict[str, Tuple[(str, Intent), Callable]] = dict()
-		for item in [*supportedIntents, *self.intentMethods()]:
+		for item in (*supportedIntents, *self.intentMethods()):
 			if isinstance(item, tuple):
 				self._supportedIntents[str(item[0])] = item
 				self._myIntents.append(item[0])
@@ -65,10 +65,10 @@ class Module(ProjectAliceObject):
 
 
 	@classmethod
-	def decoratedIntentMethods(cls) -> Generator[IntentWrapper, None, None]:
+	def decoratedIntentMethods(cls) -> Generator[Decorators.Intent.Wrapper, None, None]:
 		for name in dir(cls):
 			method = getattr(cls, name)
-			while isinstance(method, IntentWrapper):
+			while isinstance(method, Decorators.Intent.Wrapper):
 				yield method
 				method = method.decoratedMethod
 
@@ -78,11 +78,11 @@ class Module(ProjectAliceObject):
 		intents = dict()
 		for method in cls.decoratedIntentMethods():
 			if not method.requiredState:
-				intents[method.intentName] = (method.intent(), method)
+				intents[method.intentName] = (method.intent, method)
 				continue
 
 			if method.intentName not in intents:
-				intents[method.intentName] = method.intent()
+				intents[method.intentName] = method.intent
 
 			intents[method.intentName].addDialogMapping({method.requiredState: method})
 
