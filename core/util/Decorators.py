@@ -2,7 +2,7 @@ from typing import Callable, Tuple
 
 import warnings
 
-from functools import wraps
+from functools import wraps, partial
 
 from core.base.model.Module import Module
 from core.dialog.model.DialogSession import DialogSession
@@ -154,8 +154,11 @@ class Decorators:
 				self.userIntent = userIntent
 				self._method = method
 
-			def __call__(self, *args, **kwargs):
-				return self._method(*args, **kwargs)
+			def __call__(self, instance, *args, **kwargs):
+				return self._method(instance, *args, **kwargs)
+		
+			def __get__(self, instance, owner):
+				return partial(self, instance)
 
 		def __init__(self, intentName: str, requiredState: str = None, isProtected: bool = False, userIntent: bool = True):
 			self._intentName = intentName
