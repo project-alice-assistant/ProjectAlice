@@ -399,9 +399,8 @@ class ConfigManager(Manager):
 
 
 	def isAliceConfHidden(self, confName: str) -> bool:
-		return True if confName in self._aliceTemplateConfigurations and \
-		               'display' in self._aliceTemplateConfigurations and \
-		               self._aliceTemplateConfigurations['display'] == 'hidden' else False
+		return confName in self._aliceTemplateConfigurations and \
+			self._aliceTemplateConfigurations.get('display') == 'hidden'
 
 
 	@property
