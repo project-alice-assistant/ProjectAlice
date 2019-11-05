@@ -350,7 +350,7 @@ class Module(ProjectAliceObject):
 		return self.ConfigManager.getModuleConfigsTemplate(self.name)
 
 
-	def updateConfig(self, key: str, value: Any) -> Any:
+	def updateConfig(self, key: str, value: Any):
 		self.ConfigManager.updateModuleConfigurationFile(moduleName=self.name, key=key, value=value)
 
 
@@ -358,7 +358,7 @@ class Module(ProjectAliceObject):
 		return self.ConfigManager.getAliceConfigByName(configName=key)
 
 
-	def updateAliceConfig(self, key: str, value: Any) -> Any:
+	def updateAliceConfig(self, key: str, value: Any):
 		self.ConfigManager.updateAliceConfiguration(key=key, value=value)
 
 
