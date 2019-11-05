@@ -73,21 +73,21 @@ class ConfigManager(Manager):
 			aliceConfigs = config.settings.copy()
 
 		changes = False
-		for setting, definiton in configTemplate.settings.items():
+		for setting, definition in configTemplate.settings.items():
 			if setting not in aliceConfigs:
 				self.logInfo(f'- New configuration found: {setting}')
 				changes = True
-				aliceConfigs[setting] = definiton['defaultValue']
-			elif 'defaultValue' in definiton and not isinstance(aliceConfigs[setting], type(definiton['defaultValue'])):
+				aliceConfigs[setting] = definition['defaultValue']
+			elif 'defaultValue' in definition and not isinstance(aliceConfigs[setting], type(definition['defaultValue'])):
 				changes = True
 				try:
 					# First try to cast the seting we have to the new type
-					aliceConfigs[setting] = type(definiton['defaultValue'])(aliceConfigs[setting])
+					aliceConfigs[setting] = type(definition['defaultValue'])(aliceConfigs[setting])
 					self.logInfo(f'- Existing configuration type missmatch: {setting}, cast variable to template configuration type')
 				except Exception:
 					# If casting failed let's fall back to the new default value
 					self.logInfo(f'- Existing configuration type missmatch: {setting}, replaced with template configuration')
-					aliceConfigs[setting] = definiton['defaultValue']
+					aliceConfigs[setting] = definition['defaultValue']
 
 		temp = aliceConfigs.copy()
 
@@ -296,22 +296,22 @@ class ConfigManager(Manager):
 				self._modulesTemplateConfigurations[moduleName] = configSample
 
 				changes = False
-				for setting, definiton in configSample.items():
+				for setting, definition in configSample.items():
 					if setting not in config:
 						self.logInfo(f'- New configuration found for module "{moduleName}": {setting}')
 						changes = True
-						config[setting] = definiton['defaultValue']
+						config[setting] = definition['defaultValue']
 
-					elif 'defaultValue' in definiton and not isinstance(config[setting], type(definiton['defaultValue'])):
+					elif 'defaultValue' in definition and not isinstance(config[setting], type(definition['defaultValue'])):
 						changes = True
 						try:
 							# First try to cast the seting we have to the new type
-							config[setting] = type(definiton['defaultValue'])(config[setting])
+							config[setting] = type(definition['defaultValue'])(config[setting])
 							self.logInfo(f'- Existing configuration type missmatch for module "{moduleName}": {setting}, cast variable to template configuration type')
 						except Exception:
 							# If casting failed let's fall back to the new default value
 							self.logInfo(f'- Existing configuration type missmatch for module "{moduleName}": {setting}, replaced with template configuration')
-							config[setting] = definiton['defaultValue']
+							config[setting] = definition['defaultValue']
 
 				temp = config.copy()
 				for k, v in temp.items():
