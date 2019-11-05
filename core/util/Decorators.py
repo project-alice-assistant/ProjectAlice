@@ -171,7 +171,18 @@ class Decorators:
 				request = requests.get('http://api.open-notify.org')
 				self.endDialog(sessionId=session.sessionId, text=request.text)
 			
-			In the same way all other parameters supported by the Intent class can be used in the decorator
+			In the same way all other parameters supported by the Intent class can be used in the decorator.
+
+
+			Mapping multiple intents to the same function is possible aswell using
+			(make sure that the intent decorators are used in front of any other decorators):
+
+			@Intent('intentName1')
+			@Intent('intentName2')
+			def exampleIntent(self, session: DialogSession, **_kwargs):
+				request = requests.get('http://api.open-notify.org')
+				self.endDialog(sessionId=session.sessionId, text=request.text)
+
 		"""
 		class IntentWrapper:
 			def __init__(self, intentName: str, requiredState: str, isProtected: bool, userIntent: bool, method: Callable):
@@ -179,10 +190,10 @@ class Decorators:
 				self.requiredState = requiredState
 				self.isProtected = isProtected
 				self.userIntent = userIntent
-				self._method = method
+				self.decoratedMethod = method
 
 			def __call__(self, instance, *args, **kwargs):
-				return self._method(instance, *args, **kwargs)
+				return self.decoratedMethod(instance, *args, **kwargs)
 		
 			def __get__(self, instance, owner):
 				return partial(self, instance)

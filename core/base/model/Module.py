@@ -69,15 +69,17 @@ class Module(ProjectAliceObject):
 		intents = dict()
 		for name in dir(cls):
 			method = getattr(cls, name)
-			if isinstance(method, functools.partial) and isinstance(method.func, IntentWrapper):
+			if isinstance(method, functools.partial):
 				method = method.func
-				if not method.requiredState:
-					intents[method.intent] = (Intent(method.intent, isProtected=method.isProtected, userIntent=method.userIntent), method)
-					continue
-				if method.intent not in intents:
-					intents[method.intent] = Intent(method.intent, isProtected=method.isProtected, userIntent=method.userIntent)
+				while isinstance(method, IntentWrapper):
+					if not method.requiredState:
+						intents[method.intent] = (Intent(method.intent, isProtected=method.isProtected, userIntent=method.userIntent), method)
+					else:
+						if method.intent not in intents:
+							intents[method.intent] = Intent(method.intent, isProtected=method.isProtected, userIntent=method.userIntent)
 
-				intents[method.intent].addDialogMapping({method.requiredState: method})
+						intents[method.intent].addDialogMapping({method.requiredState: method})
+					method = method.decoratedMethod
 		
 		return list(intents.values())
 
