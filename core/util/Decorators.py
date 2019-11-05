@@ -8,6 +8,7 @@ from core.base.model.Module import Module
 from core.dialog.model.DialogSession import DialogSession
 from core.base.SuperManager import SuperManager
 from core.util.model.Logger import Logger
+from core.base.model.Intent import Intent
 
 
 class Decorators:
@@ -143,3 +144,25 @@ class Decorators:
 
 		exceptions = exceptions or Exception
 		return argumentWrapper(text) if callable(text) else argumentWrapper
+
+
+	class Intent:
+		def __init__(self, intentName: str):
+			self._intentName = intentName
+
+		def __call__(self, func: Callable):
+			return IntentWrapper(self._intentName, func)
+
+
+
+class IntentWrapper:
+	def __init__(self, intentName: str, method: Callable):
+		self._method = method
+		self._intent = Intent(intentName)
+
+	def __call__(self, *args, **kwargs):
+		return self._method(*args, **kwargs)
+
+	@property
+	def intent(self):
+		return self._intent

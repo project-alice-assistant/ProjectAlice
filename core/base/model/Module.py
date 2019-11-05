@@ -18,6 +18,7 @@ from core.base.model.ProjectAliceObject import ProjectAliceObject
 from core.commons import constants
 from core.dialog.model.DialogSession import DialogSession
 from core.user.model.AccessLevels import AccessLevel
+from core.util.Decorators import IntentWrapper
 
 
 class Module(ProjectAliceObject):
@@ -44,7 +45,7 @@ class Module(ProjectAliceObject):
 
 		self._myIntents: List[Intent] = list()
 		self._supportedIntents: Dict[str, Tuple[(str, Intent), Callable]] = dict()
-		for item in supportedIntents:
+		for item in (supportedIntents, self.intentMethods()):
 			if isinstance(item, tuple):
 				self._supportedIntents[str(item[0])] = item
 				self._myIntents.append(item[0])
@@ -57,6 +58,16 @@ class Module(ProjectAliceObject):
 		self._authOnlyIntents: Dict[str, AccessLevel] = {str(intent): level.value for intent, level in authOnlyIntents.items()} if authOnlyIntents else dict()
 		self._utteranceSlotCleaner = re.compile('{(.+?):=>.+?}')
 		self.loadWidgets()
+
+
+	@classmethod
+	def intentMethods(cls) -> list:
+		intents = list()
+		for name in dir(cls):
+			method = getattr(cls, name)
+			if isinstance(method, IntentWrapper):
+				intents.append((method.intent, method))
+		return intents
 
 
 	# noinspection SqlResolve
