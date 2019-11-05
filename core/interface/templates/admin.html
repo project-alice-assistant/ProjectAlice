@@ -33,6 +33,22 @@
 									<input type="number" name="{{ settingName }}" value="{{ settingValue }}" id="{{ settingName }}">
 								{% elif aliceSettingsTemplate[settingName]['dataType'] == 'password' %}
 									<input type="password" name="{{ settingName }}" value="{{ settingValue }}" id="{{ settingName }}">
+								{% elif aliceSettingsTemplate[settingName]['dataType'] == 'string' %}
+									<input type="text" name="{{ settingName }}" value="{{ settingValue }}" id="{{ settingName }}">
+								{% elif aliceSettingsTemplate[settingName]['dataType'] == 'list' %}
+									{% if aliceSettingsTemplate[settingName]['values'] is mapping %}
+										<select name="{{ settingName }}" id="{{ settingName }}">
+											{% for optionName, optionValue in aliceSettingsTemplate[settingName]['values'].items() %}
+												<option value="{{ optionValue }}" {% if optionValue == settingValue %}selected{% endif %}>{{ optionName }}</option>
+											{% endfor %}
+										</select>
+									{% else %}
+										<select name="{{ settingName }}" id="{{ settingName }}">
+											{% for optionValue in aliceSettingsTemplate[settingName]['values'] %}
+												<option value="{{ optionValue }}" {% if optionValue == settingValue %}selected{% endif %}>{{ optionValue }}</option>
+											{% endfor %}
+										</select>
+									{% endif %}
 								{% else %}
 									<input type="text" name="{{ settingName }}" value="{{ settingValue }}" id="{{ settingName }}">
 								{% endif %}

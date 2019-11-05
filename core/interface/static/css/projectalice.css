@@ -464,7 +464,7 @@ a:hover {
 	min-height: 30px;
 }
 
-input {
+input, select {
 	background-color: #1e1e1e;
 	color: #d1d1d1;
 	border: 1px dotted #636363;
@@ -473,13 +473,14 @@ input {
 	width: auto;
 	margin-left: 20px;
 	margin-right: 20px;
+	box-sizing:content-box;
 }
 
 input:hover {
 	border: dotted 1px;
 }
 
-input[type='text'], input[type='password'], input[type='number'] {
+input[type='text'], input[type='password'], input[type='number'], select {
 	width: 95%;
 }
 

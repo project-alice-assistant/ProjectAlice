@@ -135,7 +135,7 @@ class ModuleManager(Manager):
 				if not module['active']:
 					if moduleName in self.NEEDED_MODULES:
 						self.logInfo(f"Module {moduleName} marked as disable but it shouldn't be")
-						SuperManager.getInstance().onStop()
+						self.ProjectAlice.onStop()
 						break
 					else:
 						self.logInfo(f'Module {moduleName} is disabled')
@@ -179,7 +179,7 @@ class ModuleManager(Manager):
 				self.logInfo(f'Module {moduleName} does not comply to "{e.condition}" condition, required "{e.conditionValue}"')
 				continue
 			except Exception as e:
-				self.logWarning(f'Something went wrong loading a module: {e}')
+				self.logWarning(f'Something went wrong loading module {moduleName}: {e}')
 				continue
 
 		return dict(sorted(modules.items()))

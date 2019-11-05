@@ -41,7 +41,7 @@ class ProjectAlice(Singleton):
 
 	def doRestart(self):
 		self._restart = True
-		self._restartHandler()
+		self.onStop()
 
 
 	def onStop(self):
@@ -51,3 +51,4 @@ class ProjectAlice(Singleton):
 			subprocess.run(['sudo', 'systemctl', 'stop', 'snipsledcontrol'])
 
 		self.INSTANCE = None
+		self._restartHandler()

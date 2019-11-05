@@ -346,6 +346,10 @@ class Module(ProjectAliceObject):
 			return {key: value for key, value in mySettings.items() if key not in infoSettings}
 
 
+	def getModuleConfigsTemplate(self) -> dict:
+		return self.ConfigManager.getModuleConfigsTemplate(self.name)
+
+
 	def updateConfig(self, key: str, value: Any) -> Any:
 		self.ConfigManager.updateModuleConfigurationFile(moduleName=self.name, key=key, value=value)
 

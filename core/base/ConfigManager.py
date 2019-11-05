@@ -28,7 +28,6 @@ class ConfigManager(Manager):
 
 	def __init__(self):
 		super().__init__(self.NAME)
-		self._modulesConfigurations 	= dict()
 
 		self._aliceModuleConfigurationKeys = [
 			'active',
@@ -48,8 +47,9 @@ class ConfigManager(Manager):
 		self._snipsConfigurations = self.loadSnipsConfigurations()
 		self._setDefaultSiteId()
 
-		self.loadModuleConfigurations()
-		self._checkAndUpdateModuleConfigFiles()
+		self._modulesConfigurations = dict()
+		self._modulesTemplateConfigurations: typing.Dict[str, dict] = dict()
+		self._modulesConfigurations = self.loadCheckAndUpdateModuleConfigurations()
 
 
 	def onStart(self):
@@ -108,8 +108,7 @@ class ConfigManager(Manager):
 	def addModuleToAliceConfig(self, moduleName: str, data: dict):
 		self._modulesConfigurations[moduleName] = {**self._modulesConfigurations[moduleName], **data} if moduleName in self._modulesConfigurations else data
 		self.updateAliceConfiguration('modules', self._modulesConfigurations)
-		self._checkAndUpdateModuleConfigFiles(moduleName)
-		self.loadModuleConfigurations(moduleName)
+		self.loadCheckAndUpdateModuleConfigurations(moduleName)
 
 
 	def updateAliceConfiguration(self, key: str, value: typing.Any):
@@ -171,7 +170,7 @@ class ConfigManager(Manager):
 
 	def _writeToModuleConfigurationFile(self, moduleName: str, confs: dict):
 		"""
-		Saaves the given configuration into config.py of the Module
+		Saves the given configuration into config.py of the Module
 		:param moduleName: the targeted module
 		:param confs: the dict to save
 		"""
@@ -249,14 +248,101 @@ class ConfigManager(Manager):
 
 
 	def getModuleConfigByName(self, moduleName: str, configName: str) -> typing.Any:
-		if moduleName not in self._modulesConfigurations:
-			return None
-
-		return self._modulesConfigurations[moduleName].get(configName, None)
+		return self._modulesConfigurations.get(moduleName, dict()).get(configName, None)
 
 
 	def getModuleConfigs(self, moduleName: str) -> dict:
 		return self._modulesConfigurations.get(moduleName, dict())
+
+
+	def getModuleConfigsTemplateByName(self, moduleName: str, configName: str) -> typing.Any:
+		return self._modulesTemplateConfigurations.get(moduleName, dict()).get(configName, None)
+
+
+	def getModuleConfigsTemplate(self, moduleName: str) -> dict:
+		return self._modulesTemplateConfigurations.get(moduleName, dict())
+
+
+	def loadCheckAndUpdateModuleConfigurations(self, module: str = None) -> dict:
+		modulesConfigurations = dict()
+
+		modulesPath = Path(self.Commons.rootDir() + '/modules')
+		for moduleDirectory in modulesPath.glob('*'):
+			if not moduleDirectory.is_dir() or (module is not None and moduleDirectory.stem != module) or moduleDirectory.stem.startswith('_'):
+				continue
+
+			self.logInfo(f'Checking configuration for module {moduleDirectory.stem}')
+
+			moduleConfigFile = Path(modulesPath / moduleDirectory / 'config.json')
+			moduleConfigTemplate = Path(modulesPath / moduleDirectory / 'config.json.dist')
+			moduleName = moduleDirectory.stem
+			config = dict()
+
+			if not moduleConfigFile.exists() and moduleConfigTemplate.exists():
+				self.logInfo(f'- New config file for module "{moduleName}", creating from template')
+
+				template = json.load(moduleConfigTemplate.open())
+				confs = {configName: configData['defaultValue'] if 'defaultValue' in configData else configData for configName, configData in template}
+				self._modulesTemplateConfigurations[moduleName] = template
+				self._writeToModuleConfigurationFile(moduleName, confs)
+
+			elif moduleConfigFile.exists() and not moduleConfigTemplate.exists():
+				self.logInfo(f'- Deprecated config file for module "{moduleName}", removing')
+				moduleConfigFile.unlink()
+				self._modulesTemplateConfigurations[moduleName] = dict()
+				modulesConfigurations[moduleName] = dict()
+
+			elif moduleConfigFile.exists() and moduleConfigTemplate.exists():
+				config = json.load(moduleConfigFile.open())
+				configSample = json.load(moduleConfigTemplate.open())
+				self._modulesTemplateConfigurations[moduleName] = configSample
+
+				changes = False
+				for setting, definiton in configSample.items():
+					if setting not in config:
+						self.logInfo(f'- New configuration found for module "{moduleName}": {setting}')
+						changes = True
+						config[setting] = definiton['defaultValue']
+
+					elif 'defaultValue' in definiton and not isinstance(config[setting], type(definiton['defaultValue'])):
+						changes = True
+						try:
+							# First try to cast the seting we have to the new type
+							config[setting] = type(definiton['defaultValue'])(config[setting])
+							self.logInfo(f'- Existing configuration type missmatch for module "{moduleName}": {setting}, cast variable to template configuration type')
+						except Exception:
+							# If casting failed let's fall back to the new default value
+							self.logInfo(f'- Existing configuration type missmatch for module "{moduleName}": {setting}, replaced with template configuration')
+							config[setting] = definiton['defaultValue']
+
+				temp = config.copy()
+				for k, v in temp.items():
+					if k not in configSample:
+						self.logInfo(f'- Deprecated configuration for module "{moduleName}": {k}')
+						changes = True
+						del config[k]
+
+				if changes:
+					self._writeToModuleConfigurationFile(moduleName, config)
+
+			if moduleName in self._aliceConfigurations['modules']:
+				config = {**config, **self._aliceConfigurations['modules'][moduleName]}
+			else:
+				# For some reason we have a module not declared in alice configs...
+				self.logInfo(f'Missing module declaration in Alice config file for module {moduleName}')
+				installFile = json.load(Path(modulesPath / moduleDirectory / f'{moduleName}.install').open())
+				node = {
+					'active'    : False,
+					'version'   : installFile['version'],
+					'author'    : installFile['author'],
+					'conditions': installFile['conditions']
+				}
+				self._modulesConfigurations[moduleName] = {**config, **node}
+				self.updateAliceConfiguration('modules', self._modulesConfigurations)
+
+			modulesConfigurations[moduleName] = config
+
+		return modulesConfigurations
 
 
 	def _checkAndUpdateModuleConfigFiles(self, module: str = ''):
@@ -341,7 +427,8 @@ class ConfigManager(Manager):
 			try:
 				self.logInfo(f'- Loading config file for module {moduleName}')
 				with open(moduleConfigFile) as jsonFile:
-					self._modulesConfigurations[moduleName] = {**json.load(jsonFile), **self._aliceConfigurations['modules'][moduleName]}
+					confs = {configName: configData['defaultValue'] if 'defaultValue' in configData else configData for configName, configData in json.load(jsonFile).items()}
+					self._modulesConfigurations[moduleName] = {**confs, **self._aliceConfigurations['modules'][moduleName]}
 
 			except json.decoder.JSONDecodeError:
 				self.logError(f'- Error in config file for module {moduleName}')
