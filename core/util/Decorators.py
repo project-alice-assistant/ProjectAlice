@@ -195,11 +195,12 @@ class Decorators:
 			def intent(self):
 				return IntentObject(self.intentName, isProtected=self.isProtected, userIntent=self.userIntent)
 
-			def __call__(self, instance, *args, **kwargs):
-				return self.decoratedMethod(instance, *args, **kwargs)
+			def __call__(self, *args, **kwargs):
+				return self.decoratedMethod(self._instance, *args, **kwargs)
 
 			def __get__(self, instance, owner):
-				return partial(self, instance)
+				self._instance = instance
+				return self
 
 		def __init__(self, intentName: str, requiredState: str = None, isProtected: bool = False, userIntent: bool = True):
 			self._intentName = intentName

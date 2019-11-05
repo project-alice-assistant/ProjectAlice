@@ -49,7 +49,7 @@ class Module(ProjectAliceObject):
 
 		self._myIntents: List[Intent] = list()
 		self._supportedIntents: Dict[str, Tuple[(str, Intent), Callable]] = dict()
-		for item in (supportedIntents, self.intentMethods()):
+		for item in [*supportedIntents, *self.intentMethods()]:
 			if isinstance(item, tuple):
 				self._supportedIntents[str(item[0])] = item
 				self._myIntents.append(item[0])
@@ -68,11 +68,9 @@ class Module(ProjectAliceObject):
 	def decoratedIntentMethods(cls) -> Generator[IntentWrapper, None, None]:
 		for name in dir(cls):
 			method = getattr(cls, name)
-			if isinstance(method, functools.partial):
-				method = method.func
-				while isinstance(method, IntentWrapper):
-					yield method
-					method = method.decoratedMethod
+			while isinstance(method, IntentWrapper):
+				yield method
+				method = method.decoratedMethod
 
 
 	@classmethod
