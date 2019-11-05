@@ -79,7 +79,7 @@ settings = {
 	'tts': {
 		'defaultValue': 'pico',
 		'dataType': 'list',
-		'values': ['pico', 'mycroft', 'amazon polly', 'google wavenet', 'snips makers']
+		'values': {'Pico': 'pico', 'Mycroft': 'mycroft', 'Amazon Polly': 'amazon', 'Google Wavenet': 'google', 'Snips Makers TTS': 'snips'}
 	},
 	'ttsLanguage': {
 		'defaultValue': 'en-US',
@@ -135,7 +135,7 @@ settings = {
 	'updateChannel': {
 		'defaultValue': 'master',
 		'dataType': 'list',
-		'values': ['stable', 'release candidate', 'beta', 'alpha']
+		'values': {'Release': 'master', 'Release candidate': 'rc', 'Beta': 'beta', 'Alpha': 'alpha'}
 	},
 	'supportedLanguages': {
 		'en': {
