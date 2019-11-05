@@ -1,5 +1,3 @@
-import shutil
-
 from core.base.SuperManager import SuperManager
 
 import json
@@ -325,6 +323,10 @@ class ConfigManager(Manager):
 				if changes:
 					self._writeToModuleConfigurationFile(moduleName, config)
 
+			else:
+				self._modulesTemplateConfigurations[moduleName] = dict()
+				modulesConfigurations[moduleName] = dict()
+
 			if moduleName in self._aliceConfigurations['modules']:
 				config = {**config, **self._aliceConfigurations['modules'][moduleName]}
 			else:
@@ -343,95 +345,6 @@ class ConfigManager(Manager):
 			modulesConfigurations[moduleName] = config
 
 		return modulesConfigurations
-
-
-	def _checkAndUpdateModuleConfigFiles(self, module: str = ''):
-		self.logInfo('Checking module configuration files')
-
-		# Iterate through all modules declared in global config file
-		for moduleName in self._modulesConfigurations:
-			if module and moduleName != module:
-				continue
-
-			if not self._modulesConfigurations[moduleName]['active']:
-				continue
-
-			changes = False
-
-			moduleConfigFile = Path(self.Commons.rootDir(), 'modules', moduleName, 'config.json')
-			moduleConfigFileExists = moduleConfigFile.exists()
-			moduleConfigFileTemplate = moduleConfigFile.with_suffix(moduleConfigFile.suffix + '.dist')
-			moduleConfigFileTemplateExists = moduleConfigFileTemplate.exists()
-
-			if not moduleConfigFileTemplateExists and not moduleConfigFileExists:
-				continue
-
-			# If no conf template found but there's a conf file available
-			if not moduleConfigFileTemplateExists and moduleConfigFileExists:
-				# Delete it
-				moduleConfigFile.unlink()
-				self.logInfo(f'- Deprecated module config file found for module {moduleName}')
-				continue
-
-			# Use dist (aka default config file) to generate a genuine config file if needed
-			if moduleConfigFileTemplateExists and not moduleConfigFileExists:
-				shutil.copyfile(moduleConfigFileTemplate, moduleConfigFile)
-				self.logInfo(f'- New config file setup for module {moduleName}')
-				continue
-
-			# The final case is if moduleConfigFileTemplateExists and moduleConfigFileExists
-			with open(moduleConfigFileTemplate) as jsonDataFile:
-				configSample = json.load(jsonDataFile)
-
-				for k, v in configSample.items():
-					if k not in self._modulesConfigurations[moduleName]:
-						self.logInfo(f'- New module configuration found: {k} for module {moduleName}')
-						changes = True
-						self._modulesConfigurations[moduleName][k] = v
-					elif not isinstance(self._modulesConfigurations[moduleName][k], type(v)):
-						self.logInfo(f'- Existing module configuration type missmatch: {k}, replaced with sample configuration for module {moduleName}')
-						changes = True
-						self._modulesConfigurations[moduleName][k] = v
-
-			temp = self._modulesConfigurations[moduleName].copy()
-
-			for k, v in temp.items():
-				if k == 'active':
-					continue
-
-				if k not in configSample and k not in self._aliceModuleConfigurationKeys:
-					self.logInfo(f'- Deprecated module configuration: "{k}" for module "{moduleName}"')
-					changes = True
-					del self._modulesConfigurations[moduleName][k]
-
-			if changes:
-				self._writeToModuleConfigurationFile(moduleName, self.modulesConfigurations[moduleName])
-
-
-	def loadModuleConfigurations(self, module: str = ''):
-		self.logInfo('Loading module configurations')
-
-		# Iterate through all modules declared in global config file
-		for moduleName in self._aliceConfigurations['modules']:
-
-			if module and moduleName != module:
-				continue
-
-			moduleConfigFile = Path(self.Commons.rootDir(), 'modules', moduleName, 'config.json')
-			moduleConfigFileExists = moduleConfigFile.exists()
-
-			if not self._aliceConfigurations['modules'][moduleName]['active'] or not moduleConfigFileExists:
-				self._modulesConfigurations[moduleName] = {**self._aliceConfigurations['modules'][moduleName]}
-				continue
-
-			try:
-				self.logInfo(f'- Loading config file for module {moduleName}')
-				with open(moduleConfigFile) as jsonFile:
-					confs = {configName: configData['defaultValue'] if 'defaultValue' in configData else configData for configName, configData in json.load(jsonFile).items()}
-					self._modulesConfigurations[moduleName] = {**confs, **self._aliceConfigurations['modules'][moduleName]}
-
-			except json.decoder.JSONDecodeError:
-				self.logError(f'- Error in config file for module {moduleName}')
 
 
 	def deactivateModule(self, moduleName: str, persistent: bool = False):
