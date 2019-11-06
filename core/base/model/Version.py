@@ -80,6 +80,10 @@ class Version(str, ProjectAliceObject):
 		return self._infos == other.infos
 
 
+	def __ne__(self, other: Version) -> bool:
+		return not self.__eq__(other)
+
+
 	def __ge__(self, other: Version) -> bool:
 		return self.__eq__(other) or self.__gt__(other)
 
