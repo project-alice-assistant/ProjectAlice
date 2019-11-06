@@ -13,6 +13,7 @@ from core.base.model import Intent
 from core.base.model.GithubCloner import GithubCloner
 from core.base.model.Manager import Manager
 from core.base.model.Module import Module
+from core.base.model.Version import Version
 from core.commons import constants
 
 #Special case, must be called as last!
@@ -362,7 +363,7 @@ class ModuleManager(Manager):
 				req = requests.get(f'https://raw.githubusercontent.com/project-alice-powered-by-snips/ProjectAliceModules/{self.ConfigManager.getAliceConfigByName("updateChannel")}/PublishedModules/{availableModules[moduleName]["author"]}/{moduleName}/{moduleName}.install')
 	
 				remoteFile = req.json()
-				if not self.Commons.isUpToDate(remoteFile['version'], availableModules[moduleName]['version']):
+				if Version(availableModules[moduleName]['version']) < Version(remoteFile['version']):
 					i += 1
 					self.logInfo(f'❌ {moduleName} - Version {availableModules[moduleName]["version"]} < {remoteFile["version"]} in {self.ConfigManager.getAliceConfigByName("updateChannel")}')
 	
@@ -461,7 +462,7 @@ class ModuleManager(Manager):
 					localVersionIsLatest: bool = \
 						directory.is_dir() and \
 						'version' in availableModules[moduleName] and \
-						self.Commons.isUpToDate(installFile['version'], availableModules[moduleName]['version'])
+						Version(availableModules[moduleName]['version']) >= Version(installFile['version'])
 
 					if localVersionIsLatest:
 						self.logWarning(f'Module "{moduleName}" is already installed, skipping')
@@ -551,7 +552,7 @@ class ModuleManager(Manager):
 
 	def checkModuleConditions(self, moduleName: str, conditions: dict, availableModules: dict) -> bool:
 
-		if 'aliceMinVersion' in conditions and not self.Commons.isUpToDate(conditions['aliceMinVersion']):
+		if 'aliceMinVersion' in conditions and Version(conditions['aliceMinVersion']) > Version(constants.VERSION):
 			raise ModuleNotConditionCompliant(message='Module is not compliant', moduleName=moduleName, condition='Alice minimum version', conditionValue=conditions['aliceMinVersion'])
 
 		for conditionName, conditionValue in conditions.items():

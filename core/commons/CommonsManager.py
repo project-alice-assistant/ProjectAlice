@@ -288,46 +288,6 @@ class CommonsManager(Manager):
 		return [result.text for result in Translator().translate(**kwargs)]
 
 
-	def isUpToDate(self, compare: str, compareTo: str = None) -> bool:
-		compareTo = constants.VERSION if compareTo is None else compareTo
-
-		actualVersion = self.parseVersionNumber(compareTo)
-		targetVersion = self.parseVersionNumber(compare)
-
-		if compare == compareTo:
-			return True
-
-		if (not actualVersion.group('mainVersion') or not actualVersion.group('updateVersion')) or \
-			(not targetVersion.group('mainVersion') or not targetVersion.group('updateVersion')):
-			self.logError(f'Something went wrong checking versions {compare} to {compareTo}')
-			return True
-
-		try:
-			# check version digits
-			if (int(actualVersion.group('mainVersion')) < int(targetVersion.group('mainVersion'))) or \
-					(int(actualVersion.group('updateVersion')) < int(targetVersion.group('updateVersion'))) or \
-					(not actualVersion.group('hotfix') or not targetVersion.group('hotfix')) or \
-					(int(actualVersion.group('hotfix')) < int(targetVersion.group('hotfix'))):
-				return False
-			else:
-				# check the release types now
-				if not actualVersion.group('releaseType') and targetVersion.group('releaseType') in ('a', 'b', 'rc'):
-					return False
-				elif actualVersion.group('releaseType') == 'a' and targetVersion.group('releaseType') in ('b', 'rc'):
-					return False
-				elif actualVersion.group('releaseType') == 'b' and targetVersion.group('releaseType') == 'rc':
-					return False
-				elif not actualVersion.group('releaseNumber') and targetVersion.group('releaseNumber') != '':
-					return False
-				elif int(actualVersion.group('releaseNumber')) < int(targetVersion.group('releaseNumber')):
-					return False
-		except Exception as e:
-			self.logError(f'{e}')
-			return True
-
-		return True
-
-
 	@classmethod
 	def parseVersionNumber(cls, version: str) -> Optional[Match[str]]:
 		return cls.VERSION_PARSER_REGEX.search(str(version))
