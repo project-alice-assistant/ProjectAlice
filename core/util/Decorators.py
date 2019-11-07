@@ -1,4 +1,4 @@
-from typing import Callable, Tuple, Any
+from typing import Callable, Tuple, Any, Union
 
 import warnings
 
@@ -185,10 +185,10 @@ class IntentHandler:
 			self.endDialog(sessionId=session.sessionId, text=request.text)
 	"""
 	class Wrapper:
-		def __init__(self, method: Callable, intentName: str, requiredState: str, isProtected: bool, userIntent: bool):
+		def __init__(self, method: Callable, intent: Union[str, Intent], requiredState: str, isProtected: bool, userIntent: bool):
 			self.decoratedMethod = method
-			self.intentName = intentName
 			self.requiredState = requiredState
+			self._intent = intent
 			self._isProtected = isProtected
 			self._userIntent = userIntent
 			self._owner = None
@@ -196,7 +196,13 @@ class IntentHandler:
 
 		@property
 		def intent(self) -> Intent:
-			return Intent(self.intentName, isProtected=self._isProtected, userIntent=self._userIntent)
+			if isinstance(self._intent, Intent):
+				return self._intent
+			return Intent(self._intent, isProtected=self._isProtected, userIntent=self._userIntent)
+
+		@property
+		def intentName(self) -> str:
+			return str(self._intent)
 
 		def __call__(self, *args, **kwargs):
 			if self._owner:
@@ -206,15 +212,11 @@ class IntentHandler:
 		def __set_name__(self, owner, name):
 			self._owner = owner
 
-	def __init__(self, intentName: str, requiredState: str = None, isProtected: bool = False, userIntent: bool = True):
-		self._intentName = intentName
+	def __init__(self, intent: Union[str, Intent], requiredState: str = None, isProtected: bool = False, userIntent: bool = True):
+		self._intent = intent
 		self._requiredState = requiredState
 		self._isProtected = isProtected
 		self._userIntent = userIntent
 
 	def __call__(self, func: Callable) -> IntentHandler.Wrapper:
-		return self.Wrapper(func, self._intentName, self._requiredState, self._isProtected, self._userIntent)
-
-
-
-
+		return self.Wrapper(func, self._intent, self._requiredState, self._isProtected, self._userIntent)
