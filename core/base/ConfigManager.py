@@ -1,11 +1,11 @@
-import requests
-
-from core.base.SuperManager import SuperManager
-
 import json
 from pathlib import Path
 
+import requests
+import shutil
+
 import configTemplate
+from core.base.SuperManager import SuperManager
 from core.base.model.GithubCloner import GithubCloner
 from core.base.model.Version import Version
 
@@ -337,17 +337,23 @@ class ConfigManager(Manager):
 			if moduleName in self._aliceConfigurations['modules']:
 				config = {**config, **self._aliceConfigurations['modules'][moduleName]}
 			else:
-				# For some reason we have a module not declared in alice configs...
-				self.logInfo(f'Missing module declaration in Alice config file for module {moduleName}')
-				installFile = json.load(Path(modulesPath / moduleDirectory / f'{moduleName}.install').open())
-				node = {
-					'active'    : False,
-					'version'   : installFile['version'],
-					'author'    : installFile['author'],
-					'conditions': installFile['conditions']
-				}
-				self._modulesConfigurations[moduleName] = {**config, **node}
-				self.updateAliceConfiguration('modules', self._modulesConfigurations)
+				# For some reason we have a module not declared in alice configs... I think getting rid of it is best
+				self.logInfo(f'Module "{moduleName}" is not declared in config but files are existing, cleaning up')
+				shutil.rmtree(moduleDirectory, ignore_errors=True)
+				continue
+
+			# TODO decide what's best
+			# Or generate its infos?
+			# self.logInfo(f'Missing module declaration in Alice config file for module {moduleName}')
+			# installFile = json.load(Path(modulesPath / moduleDirectory / f'{moduleName}.install').open())
+			# node = {
+			# 	'active'    : False,
+			# 	'version'   : installFile['version'],
+			# 	'author'    : installFile['author'],
+			# 	'conditions': installFile['conditions']
+			# }
+			# self._modulesConfigurations[moduleName] = {**config, **node}
+			# self.updateAliceConfiguration('modules', self._modulesConfigurations)
 
 			modulesConfigurations[moduleName] = config
 

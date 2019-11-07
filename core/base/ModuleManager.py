@@ -16,14 +16,6 @@ from core.base.model.Module import Module
 from core.base.model.Version import Version
 from core.commons import constants
 
-#Special case, must be called as last!
-try:
-	# noinspection PyUnresolvedReferences
-	from modules.Customisation.Customisation import Customisation
-except:
-	# Load the sample file as dummy
-	from modules.Customisation.Customisation_sample import Customisation
-
 
 class ModuleManager(Manager):
 
@@ -124,10 +116,6 @@ class ModuleManager(Manager):
 		availableModules = self.ConfigManager.modulesConfigurations
 		availableModules = dict(sorted(availableModules.items()))
 
-		if Customisation.MODULE_NAME in availableModules:
-			customisationModule = availableModules.pop(Customisation.MODULE_NAME)
-			availableModules[Customisation.MODULE_NAME] = customisationModule
-
 		for moduleName, module in availableModules.items():
 			if moduleToLoad and moduleName != moduleToLoad:
 				continue
@@ -201,8 +189,7 @@ class ModuleManager(Manager):
 			klass = getattr(moduleImport, moduleName)
 			instance: Module = klass()
 		except ImportError as e:
-			if moduleName != Customisation.MODULE_NAME:
-				self.logError(f"Couldn't import module {moduleName}.{moduleResource}: {e}")
+			self.logError(f"Couldn't import module {moduleName}.{moduleResource}: {e}")
 		except AttributeError as e:
 			self.logError(f"Couldn't find main class for module {moduleName}.{moduleResource}: {e}")
 		except Exception as e:
@@ -214,7 +201,6 @@ class ModuleManager(Manager):
 	def onStop(self):
 		super().onStop()
 
-		self._reorderCustomisationModule(True)
 		for moduleItem in self._modules.values():
 			moduleItem['instance'].onStop()
 			self.logInfo(f"- Stopped!")
@@ -226,7 +212,6 @@ class ModuleManager(Manager):
 
 	def startAllModules(self):
 		supportedIntents = list()
-		self._reorderCustomisationModule(True)
 
 		tmp = self._modules.copy()
 		for moduleName, moduleItem in tmp.items():
@@ -271,29 +256,26 @@ class ModuleManager(Manager):
 	def getModuleInstance(self, moduleName: str, silent: bool = False) -> Optional[Module]:
 		if moduleName in self._modules:
 			return self._modules[moduleName]['instance']
-		
-		if moduleName != Customisation.MODULE_NAME and not silent:
+
+		if not silent:
 			self.logWarning(f'Module "{moduleName}" is disabled or does not exist in modules manager')
 		return
 
 
-	def getModules(self, isEvent: bool = False) -> dict:
-		self._reorderCustomisationModule(isEvent)
+	def getModules(self) -> dict:
 		return self._modules
 
 
-	def broadcast(self, method: str, isEvent: bool = True, filterOut: list = None, silent: bool = False, *args, **kwargs):
+	def broadcast(self, method: str, filterOut: list = None, silent: bool = False, *args, **kwargs):
 		"""
 		Boradcasts a call to the given method on every module
 		:param filterOut: array, module not to boradcast to
 		:param method: str, the method name to call on every module
-		:param isEvent: bool, is this broadcast initiated by an event or a user interaction? Changes for customisation module call
 		:param args: arguments that should be passed
 		:param silent
 		:return:
 		"""
 
-		self._reorderCustomisationModule(isEvent)
 		for moduleItem in self._modules.values():
 
 			if filterOut and moduleItem['instance'].name in filterOut:
@@ -309,21 +291,6 @@ class ModuleManager(Manager):
 			except TypeError:
 				# Do nothing, it's most prolly kwargs
 				pass
-
-
-	def _reorderCustomisationModule(self, isEvent: bool):
-		"""
-		If it's an event call, customisationModule should go last in line. If it's a message call, customisationModule should go first
-		:param isEvent: bool
-		"""
-
-		if Customisation.MODULE_NAME not in self._modules:
-			return #Customisation module might be disabled
-
-		if isEvent and list(self._modules.keys())[0] == Customisation.MODULE_NAME:
-			self._modules[Customisation.MODULE_NAME] = self._modules.pop(Customisation.MODULE_NAME)
-		elif list(self._modules.keys())[0] != Customisation.MODULE_NAME:
-			self._modules = {Customisation.MODULE_NAME: None, **self._modules}
 
 
 	def deactivateModule(self, moduleName: str, persistent: bool = False):
@@ -364,6 +331,9 @@ class ModuleManager(Manager):
 				req = requests.get(f'https://raw.githubusercontent.com/project-alice-powered-by-snips/ProjectAliceModules/{updateSource}/PublishedModules/{availableModules[moduleName]["author"]}/{moduleName}/{moduleName}.install')
 	
 				remoteFile = req.json()
+				if not remoteFile:
+					raise Exception
+
 				if Version(availableModules[moduleName]['version']) < Version(remoteFile['version']):
 					i += 1
 					self.logInfo(f'❌ {moduleName} - Version {availableModules[moduleName]["version"]} < {remoteFile["version"]} in {self.ConfigManager.getAliceConfigByName("updateChannel")}')

@@ -16,20 +16,31 @@ class Version(str, ProjectAliceObject):
 	def __init__(self, versionString: str):
 		super().__init__()
 		self._string = versionString
-		matches = self.VERSION_PARSER_REGEX.search(versionString)
 
-		if not matches:
+		try:
+			matches = self.VERSION_PARSER_REGEX.search(str(versionString))
+
+			if not matches:
+				raise TypeError
+			else:
+				self._isVersionNumber = True
+				self._infos = {
+					'mainVersion'  : int(matches.group('mainVersion')),
+					'updateVersion': int(matches.group('updateVersion')),
+					'hotfix'       : -1 if not matches.group('hotfix') else int(matches.group('hotfix')),
+					'releaseType'  : matches.group('releaseType') or 'master',
+					'releaseNumber': 1 if not matches.group('releaseNumber') else int(matches.group('releaseNumber'))
+				}
+				self.isOldVersioning()
+		except TypeError:
 			self._isVersionNumber = False
-		else:
-			self._isVersionNumber = True
 			self._infos = {
-				'mainVersion': int(matches.group('mainVersion')),
-				'updateVersion': int(matches.group('updateVersion')),
-				'hotfix': -1 if not matches.group('hotfix') else int(matches.group('hotfix')),
-				'releaseType': matches.group('releaseType') or 'master',
-				'releaseNumber': 1 if not matches.group('releaseNumber') else int(matches.group('releaseNumber'))
+				'mainVersion'  : 0,
+				'updateVersion': 0,
+				'hotfix'       : 0,
+				'releaseType'  : '',
+				'releaseNumber': 0
 			}
-			self.isOldVersioning()
 
 
 	def __gt__(self, other: Version) -> bool:

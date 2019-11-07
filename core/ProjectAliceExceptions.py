@@ -41,7 +41,7 @@ class FunctionNotImplemented(_ProjectAliceException):
 
 class ModuleStartingFailed(_ProjectAliceException):
 	def __init__(self, moduleName: str = '', error: str = ''):
-		super().__init__()
+		super().__init__(message=error)
 		self._logger.logError(f'An error occured while starting a module: {error}')
 
 		if moduleName:

@@ -122,6 +122,10 @@ class ProjectAliceObject(Logger):
 	def onSnipsAssistantFailedInstalling(self, **kwargs): pass
 
 
+	def onModuleInstallFailed(self, **kwargs):
+		pass
+
+
 	@property
 	def ProjectAlice(self):
 		return SM.SuperManager.getInstance().projectAlice

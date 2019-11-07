@@ -170,23 +170,23 @@ settings = {
 		'values': ['CHF', 'EUR', 'USD', 'GBP', 'AUD']
 	},
 
-	'baseUnits': {
+	'baseUnits'          : {
 		'defaultValue': 'metric',
 		'dataType': 'list',
 		'values': ['metric', 'kelvin', 'imperial']
 	},
 
-	'onReboot': {
+	'onReboot'           : {
 		'defaultValue': '',
 		'dataType': 'string',
 		'display': 'hidden'
 	},
 
-	'webInterfaceActive': {
+	'webInterfaceActive' : {
 		'defaultValue': False,
 		'dataType': 'boolean'
 	},
-	'webInterfacePort': {
+	'webInterfacePort'   : {
 		'defaultValue': 5000,
 		'dataType': 'integer'
 	},
@@ -199,17 +199,5 @@ settings = {
 	# Modules
 	#-----------------------
 
-	'modules': {
-		'Customisation': {
-			'active'    : True,
-			'version'   : 1.01,
-			'author'    : 'ProjectAlice',
-			'conditions': {
-				'lang': [
-					'en',
-					'fr'
-				]
-			}
-		}
-	}
+	'modules'            : {}
 }

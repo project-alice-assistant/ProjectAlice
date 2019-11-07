@@ -1,7 +1,8 @@
-import subprocess
+import json
+from pathlib import Path
 
-from flask import render_template, request, jsonify
 import requests
+from flask import jsonify, render_template, request
 
 from core.base.model.GithubCloner import GithubCloner
 from core.base.model.Version import Version
@@ -14,7 +15,7 @@ class ModulesView(View):
 
 
 	def index(self):
-		modules = {**self.ModuleManager.getModules(False), **self.ModuleManager.deactivatedModules}
+		modules = {**self.ModuleManager.getModules(), **self.ModuleManager.deactivatedModules}
 		modules = {moduleName: module['instance'] for moduleName, module in sorted(modules.items())}
 
 		return render_template(template_name_or_list='modules.html',
@@ -69,9 +70,16 @@ class ModulesView(View):
 	def installModule(self):
 		try:
 			module = request.form.get('module')
+			author = request.form.get('author')
+
+			req = requests.get(f'https://raw.githubusercontent.com/project-alice-powered-by-snips/ProjectAliceModules/{self.ConfigManager.getModulesUpdateSource()}/PublishedModules/{author}/{module}/{module}.install')
+			remoteFile = req.json()
+			if not remoteFile:
+				return jsonify(success=False)
+
+			moduleFile = Path(self.Commons.rootDir(), f'system/moduleInstallTickets/{module}.install')
+			moduleFile.write_text(json.dumps(remoteFile))
 			self.WebInterfaceManager.newModuleInstallProcess(module)
-			subprocess.run(['wget', f'http://modules.projectalice.ch/{module}', '-O', f'{module}.install'])
-			subprocess.run(['mv', f'{module}.install', f'{self.Commons.rootDir()}/system/moduleInstallTickets/{module}.install'])
 			return jsonify(success=True)
 		except Exception as e:
 			self.logWarning(f'Failed installing module: {e}', printStack=True)
@@ -95,18 +103,19 @@ class ModulesView(View):
 			for module in results['items']:
 				try:
 					req = requests.get(
-						url=module['url'].split('?')[0],
-						params={'ref': updateSource},
+						url=f"{module['url'].split('?')[0]}?ref={updateSource}",
 						headers={'Accept': 'application/vnd.github.VERSION.raw'},
 						auth=GithubCloner.getGithubAuth()
 					)
 					installer = req.json()
 					if installer:
 						installers[installer['name']] = installer
+
 				except Exception:
 					continue
 
+		actualVersion = Version(constants.VERSION)
 		return {
 			moduleName: moduleInfo for moduleName, moduleInfo in installers.items()
-			if self.ModuleManager.getModuleInstance(moduleName=moduleName, silent=True) is None and Version(constants.VERSION) >= Version(moduleInfo['aliceMinVersion'])
+			if self.ModuleManager.getModuleInstance(moduleName=moduleName, silent=True) is None and actualVersion >= Version(moduleInfo['aliceMinVersion'])
 		}

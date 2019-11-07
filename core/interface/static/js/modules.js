@@ -42,14 +42,15 @@ $(function () {
 				'<div class="moduleStoreModuleDownloadFail"><i class="fas fa-exclamation-triangle"></i></div>' +
 				'</div>');
 
-			let $button = $('<div class="moduleStoreModuleDownload moduleStoreModuleDownloadButton" data-module="' + installer['name'] + '"><i class="fas fa-download"></i></div>');
+			let $button = $('<div class="moduleStoreModuleDownload moduleStoreModuleDownloadButton" data-module="' + installer['name'] + '" data-author="' + installer['author'] + '"><i class="fas fa-download"></i></div>');
 			$button.on('click touchstart', function () {
 				$button.hide();
 				$button.parent().children('.moduleStoreModuleWaitAnimation').css('display', 'flex');
 				$.ajax({
 					url: '/modules/installModule/',
 					data: {
-						module: $(this).data('module')
+						module: $(this).data('module'),
+						author: $(this).data('author')
 					},
 					type: 'POST'
 				}).done(function () {

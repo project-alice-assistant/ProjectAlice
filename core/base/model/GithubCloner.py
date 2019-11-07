@@ -55,7 +55,7 @@ class GithubCloner(ProjectAliceObject):
 					if path.suffix == '.install':
 						continue
 
-					fileStream = requests.get(url=item['download_url'], auth=auth)
+					fileStream = requests.get(url=item['download_url'], auth=self.getGithubAuth())
 					Path(self._dest / path).write_bytes(fileStream.content)
 				else:
 					Path(self._dest / path).mkdir(parents=True)
