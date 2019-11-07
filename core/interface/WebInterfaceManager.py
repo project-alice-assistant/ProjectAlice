@@ -1,22 +1,22 @@
 import json
 import logging
+import string
 import time
 from pathlib import Path
 
+import random
 from flask import Flask, send_from_directory
 from flask_login import LoginManager
-import random
-import string
 
 from core.base.model.Manager import Manager
 from core.interface.api.UsersApi import UsersApi
 from core.interface.views.AdminAuth import AdminAuth
 from core.interface.views.AdminView import AdminView
+from core.interface.views.DevModeView import DevModeView
 from core.interface.views.IndexView import IndexView
 from core.interface.views.ModulesView import ModulesView
 from core.interface.views.SnipswatchView import SnipswatchView
 from core.interface.views.SyslogView import SyslogView
-from core.interface.views.DevModeView import DevModeView
 
 
 class WebInterfaceManager(Manager):
@@ -115,6 +115,7 @@ class WebInterfaceManager(Manager):
 		module = ''
 		try:
 			module = kwargs['module']
+			print(module)
 			if module in self.moduleInstallProcesses:
 				self.moduleInstallProcesses[module]['status'] = 'installed'
 		except Exception as e:

@@ -233,20 +233,7 @@ a:hover {
 	color: yellow;
 }
 
-.moduleStoreModuleWaitAnimation {
-	display: none;
-	height: 50px;
-	width: 50%;
-	margin: 10px auto auto auto;
-	background-color: #343434;
-	align-content: center;
-	align-items: center;
-	justify-items: center;
-	justify-content: center;
-	font-size: 2em;
-}
-
-.moduleStoreModuleDownloadFail {
+.moduleStoreModuleButtonAnimation {
 	display: none;
 	height: 50px;
 	width: 50%;

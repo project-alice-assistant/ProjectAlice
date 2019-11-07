@@ -3,6 +3,7 @@ $(document).tooltip();
 $(function () {
 
 	let storeLoaded = false;
+	let selectedModulesToDownload = [];
 
 	function checkInstallStatus(module) {
 		$.ajax({
@@ -38,27 +39,17 @@ $(function () {
 				'<div class="modulesStoreModuleVersion"><i class="fas fa-code-branch" style="margin-right: 3px;"></i> ' + installer['version'] + '</div>' +
 				'<div class="modulesStoreModuleCategory"><i class="fas fa-bookmark"></i> ' + installer['category'] + '</div>' +
 				'<div class="moduleStoreModuleDescription">' + installer['desc'] + '</div>' +
-				'<div class="moduleStoreModuleWaitAnimation"><i class="fas fa-spinner fa-spin"></i></div>' +
-				'<div class="moduleStoreModuleDownloadFail"><i class="fas fa-exclamation-triangle"></i></div>' +
+				'<div class="moduleStoreModuleSelected moduleStoreModuleButtonAnimation"><i class="fas fa-cart-arrow-down"></i></div>' +
+				'<div class="moduleStoreModuleWaitAnimation moduleStoreModuleButtonAnimation"><i class="fas fa-spinner fa-spin"></i></div>' +
+				'<div class="moduleStoreModuleDownloadFail moduleStoreModuleButtonAnimation"><i class="fas fa-exclamation-triangle"></i></div>' +
 				'</div>');
 
-			let $button = $('<div class="moduleStoreModuleDownload moduleStoreModuleDownloadButton" data-module="' + installer['name'] + '" data-author="' + installer['author'] + '"><i class="fas fa-download"></i></div>');
+			let $button = $('<div class="moduleStoreModuleDownload moduleStoreModuleDownloadButton"><i class="fas fa-download"></i></div>');
 			$button.on('click touchstart', function () {
 				$button.hide();
-				$button.parent().children('.moduleStoreModuleWaitAnimation').css('display', 'flex');
-				$.ajax({
-					url: '/modules/installModule/',
-					data: {
-						module: $(this).data('module'),
-						author: $(this).data('author')
-					},
-					type: 'POST'
-				}).done(function () {
-				}).then(function () {
-					setTimeout(function () {
-						checkInstallStatus(installer['name']);
-					}, 10000);
-				});
+				$button.parent().children('.moduleStoreModuleSelected').css('display', 'flex');
+				selectedModulesToDownload.push({'module': installer['name'], 'author': installer['author']});
+				$('#applyModuleStore').show();
 			});
 
 			$tile.append($button);
@@ -78,6 +69,28 @@ $(function () {
 		});
 		storeLoaded = true;
 	}
+
+	$('#applyModuleStore').on('click touchstart', function () {
+		$('.moduleStoreModuleSelected').hide();
+		$.each(selectedModulesToDownload, function (index, module) {
+			$('#' + module['module'] + 'InstallTile').children('.moduleStoreModuleWaitAnimation').css('display', 'flex');
+		});
+
+		$.ajax({
+			url: '/modules/installModules/',
+			data: JSON.stringify({
+				modules: selectedModulesToDownload
+			}),
+			type: 'POST'
+		}).done(function () {
+		}).then(function () {
+			$.each(selectedModulesToDownload, function (index, module) {
+				setTimeout(function () {
+					checkInstallStatus(module['module']);
+				}, 10000);
+			});
+		});
+	});
 
 	$('[id^=toggle_]').on('click touchstart', function () {
 		$.ajax({
@@ -140,4 +153,6 @@ $(function () {
 	$('#closeModuleStore').on('click touchstart', function () {
 		location.reload();
 	});
+
+	$('#applyModuleStore').hide();
 });

@@ -67,19 +67,22 @@ class ModulesView(View):
 		return self.index()
 
 
-	def installModule(self):
+	def installModules(self):
 		try:
-			module = request.form.get('module')
-			author = request.form.get('author')
+			modules = request.get_json()
+			print(modules)
 
-			req = requests.get(f'https://raw.githubusercontent.com/project-alice-powered-by-snips/ProjectAliceModules/{self.ConfigManager.getModulesUpdateSource()}/PublishedModules/{author}/{module}/{module}.install')
-			remoteFile = req.json()
-			if not remoteFile:
-				return jsonify(success=False)
+			for module in modules:
+				self.WebInterfaceManager.newModuleInstallProcess(module['module'])
+				req = requests.get(f'https://raw.githubusercontent.com/project-alice-powered-by-snips/ProjectAliceModules/{self.ConfigManager.getModulesUpdateSource()}/PublishedModules/{module["author"]}/{module["module"]}/{module["module"]}.install')
+				remoteFile = req.json()
+				if not remoteFile:
+					self.WebInterfaceManager.moduleInstallProcesses[module['module']]['status'] = 'failed'
+					continue
 
-			moduleFile = Path(self.Commons.rootDir(), f'system/moduleInstallTickets/{module}.install')
-			moduleFile.write_text(json.dumps(remoteFile))
-			self.WebInterfaceManager.newModuleInstallProcess(module)
+				moduleFile = Path(self.Commons.rootDir(), f'system/moduleInstallTickets/{module["module"]}.install')
+				moduleFile.write_text(json.dumps(remoteFile))
+
 			return jsonify(success=True)
 		except Exception as e:
 			self.logWarning(f'Failed installing module: {e}', printStack=True)
@@ -89,6 +92,7 @@ class ModulesView(View):
 	def checkInstallStatus(self):
 		module = request.form.get('module')
 		status = self.WebInterfaceManager.moduleInstallProcesses.get(module, {'status': 'unknown'})['status']
+		print(status)
 		return jsonify(status)
 
 
