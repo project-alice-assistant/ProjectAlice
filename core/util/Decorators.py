@@ -153,7 +153,6 @@ class IntentHandler:
 
 	This decorator can be used to map a function to a intent.
 
-	:param intentName:
 	:param requiredState:
 	:param isProtected:
 	:param userIntent:
