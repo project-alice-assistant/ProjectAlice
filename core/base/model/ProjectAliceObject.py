@@ -120,10 +120,7 @@ class ProjectAliceObject(Logger):
 	def onAudioFrame(self, message): pass
 	def onSnipsAssistantInstalled(self, **kwargs): pass
 	def onSnipsAssistantFailedInstalling(self, **kwargs): pass
-
-
-	def onModuleInstallFailed(self, **kwargs):
-		pass
+	def onModuleInstallFailed(self, **kwargs): pass
 
 
 	@property
