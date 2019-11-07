@@ -1,14 +1,15 @@
-from typing import Callable, Tuple, Any, Union
+from __future__ import annotations
 
-import warnings
+from typing import Callable, Tuple, Union
 
 import functools
+import warnings
 
+from core.base.SuperManager import SuperManager
+from core.base.model.Intent import Intent
 from core.base.model.Module import Module
 from core.dialog.model.DialogSession import DialogSession
-from core.base.SuperManager import SuperManager
 from core.util.model.Logger import Logger
-from core.base.model.Intent import Intent
 
 
 class Decorators:
