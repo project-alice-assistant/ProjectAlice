@@ -20,38 +20,48 @@
 		<div id="config_for_{{ moduleName }}" title="{{ langData.moduleSettings }}" class="configBox">
 			<form action="/modules/saveModuleSettings/" name="config_for_{{ moduleName }}" method="post" autocomplete="off" novalidate>
 				{% for settingName, settingValue in module.getModuleConfigs().items() %}
-					<div class="configLine">
-						<label class="configLabel" for="{{ settingName }}" title="{{ module.getModuleConfigsTemplate()['description'] }}">{{ settingName }}</label>
-						<div class="configInput">
-							{% if module.getModuleConfigsTemplate()[settingName]['dataType'] == 'boolean' %}
-								<input type="checkbox" name="{{ settingName }}" value="on" id="{{ settingName }}" {% if settingValue is sameas true %}checked{% endif %}>
-								<!-- Make sure unchecked chexboxes send off data -->
-								<input type="hidden" name="{{ settingName }}" value="off">
-							{% elif module.getModuleConfigsTemplate()[settingName]['dataType'] == 'integer' %}
-								<input type="number" name="{{ settingName }}" value="{{ settingValue }}" id="{{ settingName }}">
-							{% elif module.getModuleConfigsTemplate()[settingName]['dataType'] == 'password' %}
-								<input type="password" name="{{ settingName }}" value="{{ settingValue }}" id="{{ settingName }}">
-							{% elif module.getModuleConfigsTemplate()[settingName]['dataType'] == 'string' %}
-								<input type="text" name="{{ settingName }}" value="{{ settingValue }}" id="{{ settingName }}">
-							{% elif module.getModuleConfigsTemplate()[settingName]['dataType'] == 'list' %}
-								{% if module.getModuleConfigsTemplate()[settingName]['values'] is mapping %}
-									<select name="{{ settingName }}" id="{{ settingName }}">
-										{% for optionName, optionValue in module.getModuleConfigsTemplate()[settingName]['values'].items() %}
-											<option value="{{ optionValue }}" {% if optionValue == settingValue %}selected{% endif %}>{{ optionName }}</option>
-										{% endfor %}
-									</select>
+					{% if module.getModuleConfigsTemplate()[settingName]['display'] != 'hidden' %}
+						<div class="configLine">
+							<label class="configLabel" for="{{ settingName }}"
+								   title="{{ module.getModuleConfigsTemplate()['description'] }}">{{ settingName }}</label>
+							<div class="configInput">
+								{% if module.getModuleConfigsTemplate()[settingName]['dataType'] == 'boolean' %}
+									<input type="checkbox" name="{{ settingName }}" value="on" id="{{ settingName }}"
+										   {% if settingValue is sameas true %}checked{% endif %}>
+									<!-- Make sure unchecked chexboxes send off data -->
+									<input type="hidden" name="{{ settingName }}" value="off">
+								{% elif module.getModuleConfigsTemplate()[settingName]['dataType'] == 'integer' %}
+									<input type="number" name="{{ settingName }}" value="{{ settingValue }}"
+										   id="{{ settingName }}">
+								{% elif module.getModuleConfigsTemplate()[settingName]['dataType'] == 'password' %}
+									<input type="password" name="{{ settingName }}" value="{{ settingValue }}"
+										   id="{{ settingName }}">
+								{% elif module.getModuleConfigsTemplate()[settingName]['dataType'] == 'string' %}
+									<input type="text" name="{{ settingName }}" value="{{ settingValue }}"
+										   id="{{ settingName }}">
+								{% elif module.getModuleConfigsTemplate()[settingName]['dataType'] == 'list' %}
+									{% if module.getModuleConfigsTemplate()[settingName]['values'] is mapping %}
+										<select name="{{ settingName }}" id="{{ settingName }}">
+											{% for optionName, optionValue in module.getModuleConfigsTemplate()[settingName]['values'].items() %}
+												<option value="{{ optionValue }}"
+														{% if optionValue == settingValue %}selected{% endif %}>{{ optionName }}</option>
+											{% endfor %}
+										</select>
+									{% else %}
+										<select name="{{ settingName }}" id="{{ settingName }}">
+											{% for optionValue in module.getModuleConfigsTemplate()[settingName]['values'] %}
+												<option value="{{ optionValue }}"
+														{% if optionValue == settingValue %}selected{% endif %}>{{ optionValue }}</option>
+											{% endfor %}
+										</select>
+									{% endif %}
 								{% else %}
-									<select name="{{ settingName }}" id="{{ settingName }}">
-										{% for optionValue in module.getModuleConfigsTemplate()[settingName]['values'] %}
-											<option value="{{ optionValue }}" {% if optionValue == settingValue %}selected{% endif %}>{{ optionValue }}</option>
-										{% endfor %}
-									</select>
+									<input type="text" name="{{ settingName }}" value="{{ settingValue }}"
+										   id="{{ settingName }}">
 								{% endif %}
-							{% else %}
-								<input type="text" name="{{ settingName }}" value="{{ settingValue }}" id="{{ settingName }}">
-							{% endif %}
+							</div>
 						</div>
-					</div>
+					{% endif %}
 				{% endfor %}
 				<input type="hidden" name="moduleName" value="{{ moduleName }}">
 				<input class="configSaveButton" type="submit" value="{{ langData.save }}">
