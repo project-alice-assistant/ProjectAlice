@@ -4,6 +4,7 @@ import requests
 import shutil
 
 from core.ProjectAliceExceptions import GithubRateLimit, GithubTokenFailed
+from core.base.SuperManager import SuperManager
 from core.base.model.ProjectAliceObject import ProjectAliceObject
 
 
@@ -16,6 +17,13 @@ class GithubCloner(ProjectAliceObject):
 		self._baseUrl = baseUrl
 		self._path = path
 		self._dest = dest
+
+
+	@classmethod
+	def getGithubAuth(cls) -> tuple:
+		username = SuperManager.getInstance().configManager.getAliceConfigByName('githubUsername')
+		token = SuperManager.getInstance().configManager.getAliceConfigByName('githubToken')
+		return (username, token) if (username and token) else None
 
 
 	def clone(self) -> bool:
@@ -32,12 +40,7 @@ class GithubCloner(ProjectAliceObject):
 
 	def _doClone(self, url: str) -> bool:
 		try:
-			username = self.ConfigManager.getAliceConfigByName('githubUsername')
-			token = self.ConfigManager.getAliceConfigByName('githubToken')
-
-			auth = (username, token) if (username and token) else None
-
-			req = requests.get(url, auth=auth)
+			req = requests.get(url, auth=self.getGithubAuth())
 			if req.status_code == 401:
 				raise GithubTokenFailed
 			elif req.status_code == 403:

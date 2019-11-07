@@ -67,23 +67,13 @@ $(function () {
 
 	function loadStoreData() {
 		$.ajax({
-			type: 'GET',
-			dataType: 'JSON',
-			url: 'https://api.github.com/search/code?q=extension:install+repo:project-alice-powered-by-snips/ProjectAliceModules/',
-			success: function (data) {
-				$.each(data['items'], function (index, searchResult) {
-					$.ajax({
-						type: 'GET',
-						dataType: 'JSON',
-						url: searchResult['url'] + '&ref=' + updateChannel,
-						headers: {
-							'accept': 'application/vnd.github.VERSION.raw'
-						}
-					}).done(function (installer) {
-						addToStore(installer);
-					});
-				});
-			}
+			url: '/modules/loadStoreData/',
+			type: 'POST'
+		}).done(function (answer){
+			$('#moduleStoreWait').hide();
+			$.each(answer, function(moduleName, installer){
+				addToStore(installer);
+			});
 		});
 		storeLoaded = true;
 	}

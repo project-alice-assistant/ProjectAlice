@@ -160,6 +160,14 @@ a:hover {
 	align-content: flex-start;
 }
 
+.moduleStoreWait {
+	width: 100%;
+	color: #d1d1d1;
+	font-size: 10em;
+	text-align: center;
+	margin-top: 30px;
+}
+
 .moduleStoreModuleTile {
 	font-family: 'marskeregular', Arial, sans-serif;
 	display: flex;

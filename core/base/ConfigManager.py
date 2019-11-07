@@ -6,6 +6,7 @@ import json
 from pathlib import Path
 
 import configTemplate
+from core.base.model.GithubCloner import GithubCloner
 from core.base.model.Version import Version
 
 try:
@@ -412,11 +413,7 @@ class ConfigManager(Manager):
 		if self.getAliceConfigByName('updateChannel') == 'master':
 			return updateSource
 
-		username = self.getAliceConfigByName('githubUsername')
-		token = self.getAliceConfigByName('githubToken')
-		auth = (username, token) if (username and token) else None
-
-		req = requests.get('https://api.github.com/repos/project-alice-powered-by-snips/ProjectAliceModules/branches', auth=auth)
+		req = requests.get('https://api.github.com/repos/project-alice-powered-by-snips/ProjectAliceModules/branches', auth=GithubCloner.getGithubAuth())
 		result = req.json()
 		if result:
 			userUpdatePref = self.getAliceConfigByName('updateChannel')

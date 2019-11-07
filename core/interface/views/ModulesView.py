@@ -1,7 +1,11 @@
 import subprocess
 
 from flask import render_template, request, jsonify
+import requests
 
+from core.base.model.GithubCloner import GithubCloner
+from core.base.model.Version import Version
+from core.commons import constants
 from core.interface.model.View import View
 
 
@@ -78,3 +82,31 @@ class ModulesView(View):
 		module = request.form.get('module')
 		status = self.WebInterfaceManager.moduleInstallProcesses.get(module, {'status': 'unknown'})['status']
 		return jsonify(status)
+
+
+	def loadStoreData(self):
+		installers = dict()
+		updateSource = self.ConfigManager.getModulesUpdateSource()
+		req = requests.get(
+			url='https://api.github.com/search/code?q=extension:install+repo:project-alice-powered-by-snips/ProjectAliceModules/',
+			auth=GithubCloner.getGithubAuth())
+		results = req.json()
+		if results:
+			for module in results['items']:
+				try:
+					req = requests.get(
+						url=module['url'].split('?')[0],
+						params={'ref': updateSource},
+						headers={'Accept': 'application/vnd.github.VERSION.raw'},
+						auth=GithubCloner.getGithubAuth()
+					)
+					installer = req.json()
+					if installer:
+						installers[installer['name']] = installer
+				except Exception:
+					continue
+
+		return {
+			moduleName: moduleInfo for moduleName, moduleInfo in installers.items()
+			if self.ModuleManager.getModuleInstance(moduleName=moduleName, silent=True) is None and Version(constants.VERSION) >= Version(moduleInfo['aliceMinVersion'])
+		}

@@ -268,11 +268,11 @@ class ModuleManager(Manager):
 		return moduleName in self._modules
 
 
-	def getModuleInstance(self, moduleName: str) -> Optional[Module]:
+	def getModuleInstance(self, moduleName: str, silent: bool = False) -> Optional[Module]:
 		if moduleName in self._modules:
 			return self._modules[moduleName]['instance']
 		
-		if moduleName != Customisation.MODULE_NAME:
+		if moduleName != Customisation.MODULE_NAME and not silent:
 			self.logWarning(f'Module "{moduleName}" is disabled or does not exist in modules manager')
 		return
 
