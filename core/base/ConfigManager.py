@@ -1,9 +1,13 @@
+import requests
+
 from core.base.SuperManager import SuperManager
 
 import json
 from pathlib import Path
 
 import configTemplate
+from core.base.model.Version import Version
+
 try:
 	# noinspection PyUnresolvedReferences,PyPackageRequirements
 	import config
@@ -401,6 +405,39 @@ class ConfigManager(Manager):
 	def isAliceConfHidden(self, confName: str) -> bool:
 		return confName in self._aliceTemplateConfigurations and \
 			self._aliceTemplateConfigurations.get('display') == 'hidden'
+
+
+	def getModulesUpdateSource(self) -> str:
+		updateSource = 'master'
+		if self.getAliceConfigByName('updateChannel') == 'master':
+			return updateSource
+
+		username = self.getAliceConfigByName('githubUsername')
+		token = self.getAliceConfigByName('githubToken')
+		auth = (username, token) if (username and token) else None
+
+		req = requests.get('https://api.github.com/repos/project-alice-powered-by-snips/ProjectAliceModules/branches', auth=auth)
+		result = req.json()
+		if result:
+			userUpdatePref = self.getAliceConfigByName('updateChannel')
+			versions = list()
+			for branch in result:
+				repoVersion = Version(branch['name'])
+				if not repoVersion.isVersionNumber:
+					continue
+
+				if userUpdatePref == 'alpha' and repoVersion.infos['releaseType'] in ('master', 'rc', 'b', 'a'):
+					versions.append(repoVersion)
+				elif userUpdatePref == 'beta' and repoVersion.infos['releaseType'] in ('master', 'rc', 'b'):
+					versions.append(repoVersion)
+				elif userUpdatePref == 'rc' and repoVersion.infos['releaseType'] in ('master', 'rc'):
+					versions.append(repoVersion)
+
+			if len(versions) > 0:
+				versions.sort(reverse=True)
+				updateSource = versions[0]
+
+		return updateSource
 
 
 	@property

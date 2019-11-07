@@ -25,7 +25,7 @@ class GithubCloner(ProjectAliceObject):
 			self._dest.mkdir(parents=True)
 
 		try:
-			return self._doClone(f'https://api.github.com/{self._baseUrl}/{self._path}?ref={self.ConfigManager.getAliceConfigByName("updateChannel")}')
+			return self._doClone(f'https://api.github.com/{self._baseUrl}/{self._path}?ref={self.ConfigManager.getModulesUpdateSource()}')
 		except:
 			return False
 

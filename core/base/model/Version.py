@@ -97,6 +97,10 @@ class Version(str, ProjectAliceObject):
 		return self.__eq__(other) or not self.__gt__(other)
 
 
+	def __repr__(self):
+		return f'{self.infos["mainVersion"]}.{self.infos["updateVersion"]}.{self.infos["hotfix"]}-{self.infos["releaseType"]}{self.infos["releaseNumber"]}'
+
+
 	def isOldVersioning(self) -> bool:
 		if self._infos['hotfix'] == -1:
 			self.logWarning(f'Use of deprecated version number: {self._string}. Please use 3 digits format: x.x.x(-[a/b/rc]x)')

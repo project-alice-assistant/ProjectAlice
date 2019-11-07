@@ -353,6 +353,7 @@ class ModuleManager(Manager):
 			return
 
 		availableModules = self.ConfigManager.modulesConfigurations
+		updateSource = self.ConfigManager.getModulesUpdateSource()
 
 		i = 0
 		for moduleName in {**self._modules, **self._failedModules}:
@@ -360,7 +361,7 @@ class ModuleManager(Manager):
 				if moduleName not in availableModules:
 					continue
 	
-				req = requests.get(f'https://raw.githubusercontent.com/project-alice-powered-by-snips/ProjectAliceModules/{self.ConfigManager.getAliceConfigByName("updateChannel")}/PublishedModules/{availableModules[moduleName]["author"]}/{moduleName}/{moduleName}.install')
+				req = requests.get(f'https://raw.githubusercontent.com/project-alice-powered-by-snips/ProjectAliceModules/{updateSource}/PublishedModules/{availableModules[moduleName]["author"]}/{moduleName}/{moduleName}.install')
 	
 				remoteFile = req.json()
 				if Version(availableModules[moduleName]['version']) < Version(remoteFile['version']):
