@@ -268,7 +268,7 @@ class ModuleManager(Manager):
 
 	def broadcast(self, method: str, filterOut: list = None, silent: bool = False, *args, **kwargs):
 		"""
-		Boradcasts a call to the given method on every module
+		Broadcasts a call to the given method on every module
 		:param filterOut: array, module not to boradcast to
 		:param method: str, the method name to call on every module
 		:param args: arguments that should be passed
