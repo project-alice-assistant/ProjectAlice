@@ -7,7 +7,7 @@ import sqlite3
 
 import re
 
-from typing import Dict, Iterable, Callable, Any, Tuple, List
+from typing import Dict, Iterable, Callable, Any, Tuple, List, Generator
 from pathlib import Path
 
 from paho.mqtt import client as MQTTClient
@@ -18,11 +18,12 @@ from core.base.model.ProjectAliceObject import ProjectAliceObject
 from core.commons import constants
 from core.dialog.model.DialogSession import DialogSession
 from core.user.model.AccessLevels import AccessLevel
+from core.util.Decorators import IntentHandler
 
 
 class Module(ProjectAliceObject):
 
-	def __init__(self, supportedIntents: Iterable, authOnlyIntents: dict = None, databaseSchema: dict = None):
+	def __init__(self, supportedIntents: Iterable = None, authOnlyIntents: dict = None, databaseSchema: dict = None):
 		super().__init__(logDepth=4)
 		try:
 			path = Path(inspect.getfile(self.__class__)).with_suffix('.install')
@@ -42,9 +43,12 @@ class Module(ProjectAliceObject):
 		self._databaseSchema = databaseSchema
 		self._widgets = dict()
 
+		if not supportedIntents:
+			supportedIntents = list()
+
 		self._myIntents: List[Intent] = list()
 		self._supportedIntents: Dict[str, Tuple[(str, Intent), Callable]] = dict()
-		for item in supportedIntents:
+		for item in (*supportedIntents, *self.intentMethods()):
 			if isinstance(item, tuple):
 				self._supportedIntents[str(item[0])] = item
 				self._myIntents.append(item[0])
@@ -57,6 +61,31 @@ class Module(ProjectAliceObject):
 		self._authOnlyIntents: Dict[str, AccessLevel] = {str(intent): level.value for intent, level in authOnlyIntents.items()} if authOnlyIntents else dict()
 		self._utteranceSlotCleaner = re.compile('{(.+?):=>.+?}')
 		self.loadWidgets()
+
+
+	@classmethod
+	def decoratedIntentMethods(cls) -> Generator[IntentHandler.Wrapper, None, None]:
+		for name in dir(cls):
+			method = getattr(cls, name)
+			while isinstance(method, IntentHandler.Wrapper):
+				yield method
+				method = method.decoratedMethod
+
+
+	@classmethod
+	def intentMethods(cls) -> list:
+		intents = dict()
+		for method in cls.decoratedIntentMethods():
+			if not method.requiredState:
+				intents[method.intentName] = (method.intent, method)
+				continue
+
+			if method.intentName not in intents:
+				intents[method.intentName] = method.intent
+
+			intents[method.intentName].addDialogMapping({method.requiredState: method})
+
+		return list(intents.values())
 
 
 	# noinspection SqlResolve
