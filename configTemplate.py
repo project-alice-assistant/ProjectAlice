@@ -11,7 +11,7 @@ settings = {
 	},
 	'wifipassword': {
 		'defaultValue': '',
-		'dataType': 'string',
+		'dataType'    : 'password',
 		'descritption': 'Your Wifi password'
 	},
 	'mqttHost': {
@@ -101,7 +101,7 @@ settings = {
 	},
 	'awsAccessKey': {
 		'defaultValue': '',
-		'dataType': 'string'
+		'dataType'    : 'password'
 	},
 	'awsSecretKey': {
 		'defaultValue': '',

@@ -12,6 +12,7 @@ $(function () {
 			}
 			else if (response.hasOwnProperty('username')) {
 				$('#username').text(response.username);
+				$('#adminAuthKeyboardContainer').slideDown(250);
 				setTimeout(function () {
 					checkAuth();
 				}, 250);
@@ -22,7 +23,7 @@ $(function () {
 		})
 	}
 
-	$('.adminAuthKeyboardKey').on('click touchstart', function () {
+	$('.adminAuthKeyboardKey').on('touchstart', function () {
 		if (!keyboardAuthNotified) {
 			$.post('/adminAuth/keyboardAuth/');
 			keyboardAuthNotified = true;
@@ -53,6 +54,8 @@ $(function () {
 			});
 		}
 	});
+
+	$('#adminAuthKeyboardContainer').hide();
 
 	setTimeout(function () {
 		checkAuth();
