@@ -19,7 +19,7 @@ from core.base.model.ProjectAliceObject import ProjectAliceObject
 from core.commons import constants
 from core.dialog.model.DialogSession import DialogSession
 from core.user.model.AccessLevels import AccessLevel
-from core.util.Decorators import Decorators
+from core.util.Decorators import IntentHandler
 
 
 class Module(ProjectAliceObject):
@@ -65,10 +65,10 @@ class Module(ProjectAliceObject):
 
 
 	@classmethod
-	def decoratedIntentMethods(cls) -> Generator[Decorators.Intent.Wrapper, None, None]:
+	def decoratedIntentMethods(cls) -> Generator[IntentHandler.Wrapper, None, None]:
 		for name in dir(cls):
 			method = getattr(cls, name)
-			while isinstance(method, Decorators.Intent.Wrapper):
+			while isinstance(method, IntentHandler.Wrapper):
 				yield method
 				method = method.decoratedMethod
 

@@ -8,7 +8,7 @@ from core.base.model.Module import Module
 from core.dialog.model.DialogSession import DialogSession
 from core.base.SuperManager import SuperManager
 from core.util.model.Logger import Logger
-from core.base.model.Intent import Intent as IntentObject
+from core.base.model.Intent import Intent
 
 
 class Decorators:
@@ -146,73 +146,73 @@ class Decorators:
 		return argumentWrapper(text) if callable(text) else argumentWrapper
 
 
-	class Intent:
-		"""
-		(return a) decorator to mark a function as an intent.
+class IntentHandler:
+	"""
+	(return a) decorator to mark a function as an intent.
 
-		This decorator can be used to map a function to a intent.
+	This decorator can be used to map a function to a intent.
 
-		:param intentName:
-		:param requiredState:
-		:param isProtected:
-		:param userIntent:
-		:return: return value of the decorated function
-		Examples:
-			An intent handler can be mapped to the intent 'intentName' the following way:
+	:param intentName:
+	:param requiredState:
+	:param isProtected:
+	:param userIntent:
+	:return: return value of the decorated function
+	Examples:
+		An intent handler can be mapped to the intent 'intentName' the following way:
 
-			@Intent('intentName')
-			def exampleIntent(self, session: DialogSession, **_kwargs):
-				request = requests.get('http://api.open-notify.org')
-				self.endDialog(sessionId=session.sessionId, text=request.text)
+		@Intent('intentName')
+		def exampleIntent(self, session: DialogSession, **_kwargs):
+			request = requests.get('http://api.open-notify.org')
+			self.endDialog(sessionId=session.sessionId, text=request.text)
 
-			When the function should only be called when the current dialogState is 'currentState':
+		When the function should only be called when the current dialogState is 'currentState':
 
-			@Intent('intentName', requiredState='currentState')
-			def exampleIntent(self, session: DialogSession, **_kwargs):
-				request = requests.get('http://api.open-notify.org')
-				self.endDialog(sessionId=session.sessionId, text=request.text)
+		@Intent('intentName', requiredState='currentState')
+		def exampleIntent(self, session: DialogSession, **_kwargs):
+			request = requests.get('http://api.open-notify.org')
+			self.endDialog(sessionId=session.sessionId, text=request.text)
 
-			In the same way all other parameters supported by the Intent class can be used in the decorator.
+		In the same way all other parameters supported by the Intent class can be used in the decorator.
 
 
-			Mapping multiple intents to the same function is possible aswell using
-			(make sure that the intent decorators are used in front of any other decorators):
+		Mapping multiple intents to the same function is possible aswell using
+		(make sure that the intent decorators are used in front of any other decorators):
 
-			@Intent('intentName1')
-			@Intent('intentName2')
-			def exampleIntent(self, session: DialogSession, **_kwargs):
-				request = requests.get('http://api.open-notify.org')
-				self.endDialog(sessionId=session.sessionId, text=request.text)
-		"""
-		class Wrapper:
-			def __init__(self, method: Callable, intentName: str, requiredState: str, isProtected: bool, userIntent: bool):
-				self.decoratedMethod = method
-				self.intentName = intentName
-				self.requiredState = requiredState
-				self._isProtected = isProtected
-				self._userIntent = userIntent
-
-			@property
-			def intent(self):
-				return IntentObject(self.intentName, isProtected=self._isProtected, userIntent=self._userIntent)
-
-			def __call__(self, *args, **kwargs):
-				instance = self._instance or SuperManager.getInstance().moduleManager.getModuleInstance(self._owner.__name__)
-				return self.decoratedMethod(instance, *args, **kwargs)
-
-			def __get__(self, instance, owner):
-				self._instance = instance
-				self._owner = owner
-				return self
-
-		def __init__(self, intentName: str, requiredState: str = None, isProtected: bool = False, userIntent: bool = True):
-			self._intentName = intentName
-			self._requiredState = requiredState
+		@Intent('intentName1')
+		@Intent('intentName2')
+		def exampleIntent(self, session: DialogSession, **_kwargs):
+			request = requests.get('http://api.open-notify.org')
+			self.endDialog(sessionId=session.sessionId, text=request.text)
+	"""
+	class Wrapper:
+		def __init__(self, method: Callable, intentName: str, requiredState: str, isProtected: bool, userIntent: bool):
+			self.decoratedMethod = method
+			self.intentName = intentName
+			self.requiredState = requiredState
 			self._isProtected = isProtected
 			self._userIntent = userIntent
+			self._owner = None
 
-		def __call__(self, func: Callable):
-			return self.Wrapper(func, self._intentName, self._requiredState, self._isProtected, self._userIntent)
+		@property
+		def intent(self):
+			return Intent(self.intentName, isProtected=self._isProtected, userIntent=self._userIntent)
+
+		def __call__(self, *args, **kwargs):
+			if self._owner:
+				return self.decoratedMethod(SuperManager.getInstance().moduleManager.getModuleInstance(self._owner.__name__), *args, **kwargs)
+			return self.decoratedMethod(*args, **kwargs)
+
+		def __set_name__(self, owner, name):
+			self._owner = owner
+
+	def __init__(self, intentName: str, requiredState: str = None, isProtected: bool = False, userIntent: bool = True):
+		self._intentName = intentName
+		self._requiredState = requiredState
+		self._isProtected = isProtected
+		self._userIntent = userIntent
+
+	def __call__(self, func: Callable):
+		return self.Wrapper(func, self._intentName, self._requiredState, self._isProtected, self._userIntent)
 
 
 
