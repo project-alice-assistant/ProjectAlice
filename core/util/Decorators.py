@@ -1,8 +1,8 @@
-from typing import Callable, Tuple
+from typing import Callable, Tuple, Any
 
 import warnings
 
-from functools import wraps
+import functools
 
 from core.base.model.Module import Module
 from core.dialog.model.DialogSession import DialogSession
@@ -22,7 +22,7 @@ class Decorators:
 		when the function is used.
 		"""
 
-		@wraps(func)
+		@functools.wraps(func)
 		def new_func(*args, **kwargs):
 			warnings.simplefilter('always', DeprecationWarning)  # turn off filter
 			warnings.warn(f'Call to deprecated function {func.__name__}.',
@@ -89,7 +89,7 @@ class Decorators:
 			return text
 
 		def argumentWrapper(func):
-			@wraps(func)
+			@functools.wraps(func)
 			def offlineDecorator(*args, **kwargs):
 				internetManager = SuperManager.getInstance().internetManager
 				if internetManager.online:
@@ -132,7 +132,7 @@ class Decorators:
 			return text
 
 		def argumentWrapper(func):
-			@wraps(func)
+			@functools.wraps(func)
 			def exceptionDecorator(*args, **kwargs):
 				try:
 					return func(*args, **kwargs)
@@ -192,9 +192,10 @@ class IntentHandler:
 			self._isProtected = isProtected
 			self._userIntent = userIntent
 			self._owner = None
+			functools.update_wrapper(self, method, updated=[])
 
 		@property
-		def intent(self):
+		def intent(self) -> Intent:
 			return Intent(self.intentName, isProtected=self._isProtected, userIntent=self._userIntent)
 
 		def __call__(self, *args, **kwargs):
@@ -211,7 +212,7 @@ class IntentHandler:
 		self._isProtected = isProtected
 		self._userIntent = userIntent
 
-	def __call__(self, func: Callable):
+	def __call__(self, func: Callable) -> IntentHandler.Wrapper:
 		return self.Wrapper(func, self._intentName, self._requiredState, self._isProtected, self._userIntent)
 
 
