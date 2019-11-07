@@ -98,7 +98,10 @@ class Version(str, ProjectAliceObject):
 
 
 	def __repr__(self):
-		return f'{self.infos["mainVersion"]}.{self.infos["updateVersion"]}.{self.infos["hotfix"]}-{self.infos["releaseType"]}{self.infos["releaseNumber"]}'
+		if self.isVersionNumber and not self.isOldVersioning():
+			return f'{self.infos["mainVersion"]}.{self.infos["updateVersion"]}.{self.infos["hotfix"]}-{self.infos["releaseType"]}{self.infos["releaseNumber"]}'
+		else:
+			return self._string
 
 
 	def isOldVersioning(self) -> bool:
