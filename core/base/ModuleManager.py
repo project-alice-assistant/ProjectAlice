@@ -70,7 +70,7 @@ class ModuleManager(Manager):
 		self.startAllModules()
 
 
-	def onSnipsAssistantInstalled(self, **kwargs):
+	def onSnipsAssistantDownloaded(self, **kwargs):
 		argv = kwargs.get('modulesInfos', dict())
 		if not argv:
 			return

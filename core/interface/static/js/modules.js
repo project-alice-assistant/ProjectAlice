@@ -1,8 +1,6 @@
 $(document).tooltip();
 
 $(function () {
-
-	let storeLoaded = false;
 	let selectedModulesToDownload = [];
 
 	function checkInstallStatus(module) {
@@ -17,8 +15,8 @@ $(function () {
 			if (status === JSON.stringify('installed')) {
 				$('#' + module + 'InstallTile').remove();
 			} else if (status === JSON.stringify('failed') || status === JSON.stringify('unknown')) {
-				$('#' + module).children('.moduleStoreModuleWaitAnimation').hide();
-				$('#' + module).children('.moduleStoreModuleDownloadFail').css('display', 'flex');
+				$('#' + module + 'InstallTile').children('.moduleStoreModuleWaitAnimation').hide();
+				$('#' + module + 'InstallTile').children('.moduleStoreModuleDownloadFail').css('display', 'flex');
 			} else {
 				setTimeout(function () {
 					checkInstallStatus(module);
@@ -67,20 +65,20 @@ $(function () {
 				addToStore(installer);
 			});
 		});
-		storeLoaded = true;
 	}
 
 	$('#applyModuleStore').on('click touchstart', function () {
 		$('.moduleStoreModuleSelected').hide();
+		$(this).hide();
 		$.each(selectedModulesToDownload, function (index, module) {
 			$('#' + module['module'] + 'InstallTile').children('.moduleStoreModuleWaitAnimation').css('display', 'flex');
 		});
 
 		$.ajax({
 			url: '/modules/installModules/',
-			data: JSON.stringify({
-				modules: selectedModulesToDownload
-			}),
+			data: JSON.stringify(selectedModulesToDownload),
+			contentType: 'application/json',
+			dataType: 'json',
 			type: 'POST'
 		}).done(function () {
 		}).then(function () {
@@ -140,10 +138,7 @@ $(function () {
 	});
 
 	$('#openModuleStore').on('click touchstart', function () {
-		if (!storeLoaded) {
-			loadStoreData();
-		}
-
+		loadStoreData();
 		$('#modulesPane').hide();
 		$('#modulesStore').css('display', 'flex');
 		$('#openModuleStore').hide();

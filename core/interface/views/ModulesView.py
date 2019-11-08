@@ -69,8 +69,7 @@ class ModulesView(View):
 
 	def installModules(self):
 		try:
-			modules = request.get_json()
-			print(modules)
+			modules = request.json
 
 			for module in modules:
 				self.WebInterfaceManager.newModuleInstallProcess(module['module'])
@@ -92,7 +91,6 @@ class ModulesView(View):
 	def checkInstallStatus(self):
 		module = request.form.get('module')
 		status = self.WebInterfaceManager.moduleInstallProcesses.get(module, {'status': 'unknown'})['status']
-		print(status)
 		return jsonify(status)
 
 
