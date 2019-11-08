@@ -283,13 +283,7 @@ class ConfigManager(Manager):
 			config = dict()
 
 			if not moduleConfigFile.exists() and moduleConfigTemplate.exists():
-				self.logInfo(f'- New config file for module "{moduleName}", creating from template')
-
-				template = json.load(moduleConfigTemplate.open())
-
-				confs = {configName: configData['defaultValue'] if 'defaultValue' in configData else configData for configName, configData in template.items()}
-				self._modulesTemplateConfigurations[moduleName] = template
-				self._writeToModuleConfigurationFile(moduleName, confs)
+				self._newModuleConfigFile(moduleName, moduleConfigTemplate)
 
 			elif moduleConfigFile.exists() and not moduleConfigTemplate.exists():
 				self.logInfo(f'- Deprecated config file for module "{moduleName}", removing')
@@ -331,7 +325,9 @@ class ConfigManager(Manager):
 					if changes:
 						self._writeToModuleConfigurationFile(moduleName, config)
 				except Exception as e:
-					self.logError(f'Failed updating existing module config file for module {moduleDirectory}: {e}')
+					self.logError(f'Failed updating existing module config file for module {moduleName}: {e}')
+					moduleConfigFile.unlink()
+					self._newModuleConfigFile(moduleName, moduleConfigTemplate)
 
 			else:
 				self._modulesTemplateConfigurations[moduleName] = dict()
@@ -361,6 +357,16 @@ class ConfigManager(Manager):
 			modulesConfigurations[moduleName] = config
 
 		return modulesConfigurations
+
+
+	def _newModuleConfigFile(self, moduleName: str, moduleConfigTemplate: Path):
+		self.logInfo(f'- New config file for module "{moduleName}", creating from template')
+
+		template = json.load(moduleConfigTemplate.open())
+
+		confs = {configName: configData['defaultValue'] if 'defaultValue' in configData else configData for configName, configData in template.items()}
+		self._modulesTemplateConfigurations[moduleName] = template
+		self._writeToModuleConfigurationFile(moduleName, confs)
 
 
 	def deactivateModule(self, moduleName: str, persistent: bool = False):
