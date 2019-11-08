@@ -325,9 +325,12 @@ class ConfigManager(Manager):
 					if changes:
 						self._writeToModuleConfigurationFile(moduleName, config)
 				except Exception as e:
-					self.logError(f'Failed updating existing module config file for module {moduleName}: {e}')
+					self.logWarning(f'- Failed updating existing module config file for module {moduleName}: {e}')
 					moduleConfigFile.unlink()
-					self._newModuleConfigFile(moduleName, moduleConfigTemplate)
+					if moduleConfigTemplate.exists():
+						self._newModuleConfigFile(moduleName, moduleConfigTemplate)
+					else:
+						self.logWarning(f'- Cannot create config, template not existing, skipping module')
 
 			else:
 				self._modulesTemplateConfigurations[moduleName] = dict()
