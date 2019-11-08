@@ -278,7 +278,7 @@ class ConfigManager(Manager):
 			self.logInfo(f'Checking configuration for module {moduleDirectory.stem}')
 
 			moduleConfigFile = Path(modulesPath / moduleDirectory / 'config.json')
-			moduleConfigTemplate = Path(modulesPath / moduleDirectory / 'configTemplate.json')
+			moduleConfigTemplate = Path(modulesPath / moduleDirectory / 'config.template')
 			moduleName = moduleDirectory.stem
 			config = dict()
 
