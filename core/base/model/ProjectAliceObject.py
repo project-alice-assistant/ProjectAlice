@@ -20,8 +20,13 @@ class ProjectAliceObject(Logger):
 		if not exceptions:
 			exceptions = list()
 
+		if isinstance(exceptions, list):
+			exceptions = eval(f'[{exceptions}]')
+
 		if not exceptions and not manager:
+			# Prevent infinite loop of broadcaster being broadcasted to re broadcasting
 			self.logWarning('Cannot broadcast to itself, the calling method has to be put in exceptions')
+			return
 
 		if 'ProjectAlice' not in exceptions:
 			exceptions.append('ProjectAlice')
