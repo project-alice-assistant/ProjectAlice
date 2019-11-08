@@ -5,4 +5,4 @@ install:
   - pip install pytest paho-mqtt googletrans
 
 script:
-  - pytest --verbose
+  - pytest tests/unittests/ --cov=core

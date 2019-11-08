@@ -196,9 +196,9 @@ class IntentHandler:
 
 		@property
 		def intent(self) -> Intent:
-			if isinstance(self._intent, Intent):
-				return self._intent
-			return Intent(self._intent, isProtected=self._isProtected, userIntent=self._userIntent)
+			if isinstance(self._intent, str):
+				return Intent(self._intent, isProtected=self._isProtected, userIntent=self._userIntent)
+			return self._intent
 
 		@property
 		def intentName(self) -> str:
