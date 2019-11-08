@@ -3,7 +3,6 @@ from unittest import mock
 from unittest.mock import MagicMock
 
 from core.util.Decorators import IntentHandler, Decorators
-from core.base.model.Intent import Intent
 
 class TestDecorators(unittest.TestCase):
 
@@ -24,7 +23,7 @@ class TestDecorators(unittest.TestCase):
 			@IntentHandler('intent1')
 			def single_decorator(self, *args, **kwargs):
 				return self, args, kwargs
-			
+
 			@IntentHandler(mock_intent('intent2'))
 			@IntentHandler('intent3', isProtected=True, userIntent=False)
 			def multiple_decorator(self, *args, **kwargs):
@@ -84,7 +83,6 @@ class TestDecorators(unittest.TestCase):
 			mappings,
 			"The intent <-> function mappings can not be retrieved correctly"
 		)
-
 
 
 if __name__ == "__main__":
