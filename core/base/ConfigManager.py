@@ -302,33 +302,36 @@ class ConfigManager(Manager):
 				configSample = json.load(moduleConfigTemplate.open())
 				self._modulesTemplateConfigurations[moduleName] = configSample
 
-				changes = False
-				for setting, definition in configSample.items():
-					if setting not in config:
-						self.logInfo(f'- New configuration found for module "{moduleName}": {setting}')
-						changes = True
-						config[setting] = definition['defaultValue']
-
-					elif 'defaultValue' in definition and not isinstance(config[setting], type(definition['defaultValue'])):
-						changes = True
-						try:
-							# First try to cast the seting we have to the new type
-							config[setting] = type(definition['defaultValue'])(config[setting])
-							self.logInfo(f'- Existing configuration type missmatch for module "{moduleName}": {setting}, cast variable to template configuration type')
-						except Exception:
-							# If casting failed let's fall back to the new default value
-							self.logInfo(f'- Existing configuration type missmatch for module "{moduleName}": {setting}, replaced with template configuration')
+				try:
+					changes = False
+					for setting, definition in configSample.items():
+						if setting not in config:
+							self.logInfo(f'- New configuration found for module "{moduleName}": {setting}')
+							changes = True
 							config[setting] = definition['defaultValue']
 
-				temp = config.copy()
-				for k, v in temp.items():
-					if k not in configSample:
-						self.logInfo(f'- Deprecated configuration for module "{moduleName}": {k}')
-						changes = True
-						del config[k]
+						elif 'defaultValue' in definition and not isinstance(config[setting], type(definition['defaultValue'])):
+							changes = True
+							try:
+								# First try to cast the seting we have to the new type
+								config[setting] = type(definition['defaultValue'])(config[setting])
+								self.logInfo(f'- Existing configuration type missmatch for module "{moduleName}": {setting}, cast variable to template configuration type')
+							except Exception:
+								# If casting failed let's fall back to the new default value
+								self.logInfo(f'- Existing configuration type missmatch for module "{moduleName}": {setting}, replaced with template configuration')
+								config[setting] = definition['defaultValue']
 
-				if changes:
-					self._writeToModuleConfigurationFile(moduleName, config)
+					temp = config.copy()
+					for k, v in temp.items():
+						if k not in configSample:
+							self.logInfo(f'- Deprecated configuration for module "{moduleName}": {k}')
+							changes = True
+							del config[k]
+
+					if changes:
+						self._writeToModuleConfigurationFile(moduleName, config)
+				except Exception as e:
+					self.logError(f'Failed updating existing module config file for module {moduleDirectory}: {e}')
 
 			else:
 				self._modulesTemplateConfigurations[moduleName] = dict()
