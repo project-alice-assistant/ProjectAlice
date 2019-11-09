@@ -115,7 +115,6 @@ class WebInterfaceManager(Manager):
 		module = ''
 		try:
 			module = kwargs['module']
-			print(module)
 			if module in self.moduleInstallProcesses:
 				self.moduleInstallProcesses[module]['status'] = 'installed'
 		except Exception as e:
