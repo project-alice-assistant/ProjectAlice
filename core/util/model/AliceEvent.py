@@ -29,7 +29,6 @@ class AliceEvent(Event, ProjectAliceObject):
 				method=self._onSet,
 				exceptions=[constants.DUMMY],
 				propagateToModules=True,
-				silent=False,
 				**kwargs
 			)
 
@@ -52,7 +51,6 @@ class AliceEvent(Event, ProjectAliceObject):
 				method=self._onClear,
 				exceptions=[constants.DUMMY],
 				propagateToModules=True,
-				silent=False,
 				**self._kwargs
 			)
 

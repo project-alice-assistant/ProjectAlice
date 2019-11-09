@@ -177,7 +177,7 @@ class SnipsConsoleManager(Manager):
 			return True
 		except Exception as e:
 			self.logError(f'Assistant download failed: {e}')
-			self.ModuleManager.broadcast(method='onSnipsAssistantDownloadFailed')
+			self.broadcast(method='onSnipsAssistantDownloadFailed', exceptions=[self.name], propagateToModules=True)
 			self.ThreadManager.getEvent('SnipsAssistantDownload').cancel()
 			return False
 

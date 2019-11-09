@@ -51,7 +51,7 @@ class ProjectAliceObject(Logger):
 				pass
 
 		if propagateToModules:
-			self.ModuleManager.broadcast(method=method, silent=silent, *args, **kwargs)
+			self.ModuleManager.moduleBroadcast(method=method, silent=silent, *args, **kwargs)
 
 		for name in deadManagers:
 			del SM.SuperManager.getInstance().managers[name]

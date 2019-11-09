@@ -68,7 +68,6 @@ class MqttManager(Manager):
 
 
 	def onBooted(self):
-		super().onBooted()
 		self.playSound(soundFilename='boot')
 
 
@@ -139,18 +138,14 @@ class MqttManager(Manager):
 			if message.topic == constants.TOPIC_TEXT_CAPTURED and session:
 				return
 
-			elif message.topic == constants.TOPIC_ASR_START_LISTENING:
-				self.ModuleManager.broadcast('onListening', siteId=siteId)
-				return
-
 			elif message.topic == constants.TOPIC_HOTWORD_TOGGLE_ON:
-				self.ModuleManager.broadcast('onHotwordToggleOn', siteId=siteId)
+				self.broadcast(method='onHotwordToggleOn', exceptions=[constants.DUMMY], siteId=siteId)
 				return
 
 			if not session: # It is a device trying to communicate with Alice
 				session = self.DeviceManager.deviceMessage(message)
-				self.broadcast(method='onMessage', exceptions=[self.name], args=[message.topic, session])
-				self.ModuleManager.broadcast(method='dispatchMessage', intent=message.topic, session=session)
+				#self.broadcast(method='onMessage', exceptions=[self.name], args=[message.topic, session])
+				#self.ModuleManager.moduleBroadcast(method='dispatchMessage', intent=message.topic, session=session)
 				return
 
 			redQueen = self.ModuleManager.getModuleInstance('RedQueen')
@@ -317,7 +312,7 @@ class MqttManager(Manager):
 		if session:
 			session.update(msg)
 		else:
-			self.ModuleManager.broadcast('onSessionEnded')
+			self.broadcast(method='onSessionEnded', exceptions=[self.name])
 			return
 
 		reason = session.payload['termination']['reason']

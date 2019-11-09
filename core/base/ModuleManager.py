@@ -106,7 +106,7 @@ class ModuleManager(Manager):
 
 
 	def onBooted(self):
-		self.broadcast('onBooted')
+		self.moduleBroadcast('onBooted')
 		self._moduleInstallThread.start()
 
 
@@ -266,10 +266,10 @@ class ModuleManager(Manager):
 		return self._modules
 
 
-	def broadcast(self, method: str, filterOut: list = None, silent: bool = False, *args, **kwargs):
+	def moduleBroadcast(self, method: str, filterOut: list = None, silent: bool = False, *args, **kwargs):
 		"""
 		Broadcasts a call to the given method on every module
-		:param filterOut: array, module not to boradcast to
+		:param filterOut: array, module not to broadcast to
 		:param method: str, the method name to call on every module
 		:param args: arguments that should be passed
 		:param silent
@@ -487,7 +487,6 @@ class ModuleManager(Manager):
 						self.broadcast(
 							method='onModuleInstallFailed',
 							exceptions=self.name,
-							propagateToModules=False,
 							module=moduleName
 						)
 				else:
