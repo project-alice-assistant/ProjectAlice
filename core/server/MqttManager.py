@@ -144,8 +144,8 @@ class MqttManager(Manager):
 
 			if not session: # It is a device trying to communicate with Alice
 				session = self.DeviceManager.deviceMessage(message)
-				#self.broadcast(method='onMessage', exceptions=[self.name], args=[message.topic, session])
-				#self.ModuleManager.moduleBroadcast(method='dispatchMessage', intent=message.topic, session=session)
+				self.broadcast(method='onMessage', exceptions=[self.name], args=[message.topic, session])
+				self.ModuleManager.moduleBroadcast(method='dispatchMessage', intent=message.topic, session=session)
 				return
 
 			redQueen = self.ModuleManager.getModuleInstance('RedQueen')
