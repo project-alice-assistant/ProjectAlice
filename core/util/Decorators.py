@@ -8,7 +8,6 @@ import warnings
 from core.base.SuperManager import SuperManager
 from core.base.model.Intent import Intent
 from core.base.model.Module import Module
-from core.dialog.model.DialogSession import DialogSession
 from core.util.model.Logger import Logger
 
 
@@ -37,7 +36,7 @@ class Decorators:
 
 
 	@classmethod
-	def online(cls, text: str = '', offlineHandler: Callable = None, returnText: bool = False):
+	def online(cls, func: Callable = None, text: str = 'offline', offlineHandler: Callable = None, returnText: bool = False):
 		"""
 		(return a) decorator to mark a function that requires ethernet.
 
@@ -69,25 +68,26 @@ class Decorators:
 				self.endDialog(sessionId=session.sessionId, text=request.text)
 		"""
 		def _offlineHandler(*args, **kwargs):
-			nonlocal text
-
 			if offlineHandler:
 				return offlineHandler(*args, **kwargs)
 
-			caller = args[0] if args and isinstance(args[0], Module) else None
+			caller = args[0] if args else None
+			module = getattr(caller, 'name', 'system')
+			newText = SuperManager.getInstance().talkManager.randomTalk(text, module=module)
+			if not newText and module != 'system':
+				newText = SuperManager.getInstance().talkManager.randomTalk(text, module='system') or text
 
-			if callable(text) or not text:
-				text = SuperManager.getInstance().talkManager.randomTalk('offline', module='system')
-			elif hasattr(caller, 'name'):
-				text = SuperManager.getInstance().talkManager.randomTalk(text, module=caller.name)
+			if returnText:
+				return newText
 
 			session = kwargs.get('session')
-			if not returnText and isinstance(session, DialogSession):
+			try:
 				if session.sessionId in SuperManager.getInstance().dialogSessionManager.sessions:
-					SuperManager.getInstance().mqttManager.endDialog(sessionId=session.sessionId, text=text)
+					SuperManager.getInstance().mqttManager.endDialog(sessionId=session.sessionId, text=newText)
 				else:
-					SuperManager.getInstance().mqttManager.say(text=text, client=session.siteId)
-			return text
+					SuperManager.getInstance().mqttManager.say(text=newText, client=session.siteId)
+			except AttributeError:
+				return newText
 
 		def argumentWrapper(func):
 			@functools.wraps(func)
@@ -105,32 +105,33 @@ class Decorators:
 
 			return offlineDecorator
 
-		return argumentWrapper(text) if callable(text) else argumentWrapper
+		return argumentWrapper(func) if func else argumentWrapper
 
 
 	@classmethod
-	def anyExcept(cls, text: str = '', exceptions: Tuple[BaseException, ...] = None, exceptHandler: Callable = None, returnText: bool = False, printStack: bool = False):
+	def anyExcept(cls, func: Callable = None, text: str = 'error', exceptions: Tuple[BaseException, ...] = None, exceptHandler: Callable = None, returnText: bool = False, printStack: bool = False):
 
 		def _exceptHandler(*args, **kwargs):
-			nonlocal text
-
 			if exceptHandler:
 				return exceptHandler(*args, **kwargs)
 
-			caller = args[0] if args and isinstance(args[0], Module) else None
+			caller = args[0] if args else None
+			module = getattr(caller, 'name', 'system')
+			newText = SuperManager.getInstance().talkManager.randomTalk(text, module=module)
+			if not newText and module != 'system':
+				newText = SuperManager.getInstance().talkManager.randomTalk(text, module='system') or text
 
-			if callable(text) or not text:
-				text = SuperManager.getInstance().talkManager.randomTalk('error', module='system')
-			elif hasattr(caller, 'name'):
-				text = SuperManager.getInstance().talkManager.randomTalk(text, module=caller.name)
+			if returnText:
+				return newText
 
 			session = kwargs.get('session')
-			if not returnText and isinstance(session, DialogSession):
+			try:
 				if session.sessionId in SuperManager.getInstance().dialogSessionManager.sessions:
-					SuperManager.getInstance().mqttManager.endDialog(sessionId=session.sessionId, text=text)
+					SuperManager.getInstance().mqttManager.endDialog(sessionId=session.sessionId, text=newText)
 				else:
-					SuperManager.getInstance().mqttManager.say(text=text, client=session.siteId)
-			return text
+					SuperManager.getInstance().mqttManager.say(text=newText, client=session.siteId)
+			except AttributeError:
+				return newText
 
 		def argumentWrapper(func):
 			@functools.wraps(func)
@@ -144,7 +145,7 @@ class Decorators:
 			return exceptionDecorator
 
 		exceptions = exceptions or Exception
-		return argumentWrapper(text) if callable(text) else argumentWrapper
+		return argumentWrapper(func) if func else argumentWrapper
 
 
 class IntentHandler:
