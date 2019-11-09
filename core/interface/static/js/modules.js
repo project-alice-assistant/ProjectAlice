@@ -35,9 +35,9 @@ $(function () {
 				'<div class="modulesStoreModuleTitle">' + installer['name'] + '</div>' +
 				'<div class="modulesStoreModuleAuthor"><i class="fas user-cog"></i> ' + installer['author'] + '</div>' +
 				'<div class="modulesStoreModuleVersion"><i class="fas fa-code-branch" style="margin-right: 3px;"></i> ' + installer['version'] + '</div>' +
-				'<div class="modulesStoreModuleCategory"><i class="fas fa-bookmark"></i> ' + installer['category'] + '</div>' +
+				'<div class="modulesStoreModuleCategory"><i class="fas fa-tags"></i> ' + installer['category'] + '</div>' +
 				'<div class="moduleStoreModuleDescription">' + installer['desc'] + '</div>' +
-				'<div class="moduleStoreModuleSelected moduleStoreModuleButtonAnimation"><i class="fas fa-cart-arrow-down"></i></div>' +
+				'<div class="moduleStoreModuleSelected moduleStoreModuleButtonAnimation"><i class="fas fa-shopping-cart"></i></div>' +
 				'<div class="moduleStoreModuleWaitAnimation moduleStoreModuleButtonAnimation"><i class="fas fa-spinner fa-spin"></i></div>' +
 				'<div class="moduleStoreModuleDownloadFail moduleStoreModuleButtonAnimation"><i class="fas fa-exclamation-triangle"></i></div>' +
 				'</div>');
