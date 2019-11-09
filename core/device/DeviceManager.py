@@ -1,18 +1,18 @@
-import os
 import socket
 import sqlite3
 import threading
 import time
 import uuid
-from random import shuffle
 from typing import Optional
 
-import esptool # type: ignore
+import esptool  # type: ignore
+import os
 import requests
-from esptool import ESPLoader # type: ignore
-from paho.mqtt.client import MQTTMessage # type: ignore
-from serial import Serial # type: ignore
-from serial.tools import list_ports # type: ignore
+from esptool import ESPLoader  # type: ignore
+from paho.mqtt.client import MQTTMessage  # type: ignore
+from random import shuffle
+from serial import Serial  # type: ignore
+from serial.tools import list_ports  # type: ignore
 
 from core.base.model.Manager import Manager
 from core.device.model.Device import Device
@@ -315,7 +315,7 @@ class DeviceManager(Manager):
 
 		self._broadcastTimer = self.ThreadManager.newTimer(interval=300, func=self.stopBroadcasting)
 
-		self.ModuleManager.broadcast(method = 'onBroadcastingForNewDeviceStart')
+		self.ModuleManager.moduleBroadcast(method='onBroadcastingForNewDeviceStart')
 		return True
 
 
@@ -327,7 +327,7 @@ class DeviceManager(Manager):
 			self._broadcastTimer.cancel()
 
 		self._broadcastRoom = ''
-		self.ModuleManager.broadcast(method='onBroadcastingForNewDeviceStop')
+		self.ModuleManager.moduleBroadcast(method='onBroadcastingForNewDeviceStop')
 
 
 	def startBroadcast(self, room: str, uid: str, replyOnSiteId: str):
@@ -376,7 +376,7 @@ class DeviceManager(Manager):
 
 		if not self._devices[uid].connected:
 			self._devices[uid].connected = True
-			self.broadcast('onDeviceConnecting', exceptions=[self.name], propagateToModules=True)
+			self.broadcast(method='onDeviceConnecting', exceptions=[self.name], propagateToModules=True)
 
 		return self._devices[uid]
 
@@ -387,7 +387,7 @@ class DeviceManager(Manager):
 
 		if self._devices[uid].connected:
 			self._devices[uid].connected = False
-			self.broadcast('onDeviceDisconnecting', exceptions=[self.name], propagateToModules=True)
+			self.broadcast(method='onDeviceDisconnecting', exceptions=[self.name], propagateToModules=True)
 
 
 	def getDevicesByRoom(self, room: str, connectedOnly: bool = False) -> list:

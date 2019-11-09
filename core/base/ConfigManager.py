@@ -52,7 +52,7 @@ class ConfigManager(Manager):
 
 		self._modulesConfigurations = dict()
 		self._modulesTemplateConfigurations: typing.Dict[str, dict] = dict()
-		self._modulesConfigurations = self.loadCheckAndUpdateModuleConfigurations()
+		self.loadCheckAndUpdateModuleConfigurations()
 
 
 	def onStart(self):
@@ -267,7 +267,7 @@ class ConfigManager(Manager):
 		return self._modulesTemplateConfigurations.get(moduleName, dict())
 
 
-	def loadCheckAndUpdateModuleConfigurations(self, module: str = None) -> dict:
+	def loadCheckAndUpdateModuleConfigurations(self, module: str = None):
 		modulesConfigurations = dict()
 
 		modulesPath = Path(self.Commons.rootDir() + '/modules')
@@ -278,7 +278,7 @@ class ConfigManager(Manager):
 			self.logInfo(f'Checking configuration for module {moduleDirectory.stem}')
 
 			moduleConfigFile = Path(modulesPath / moduleDirectory / 'config.json')
-			moduleConfigTemplate = Path(modulesPath / moduleDirectory / 'config.template')
+			moduleConfigTemplate = Path(modulesPath / moduleDirectory / 'config.json.template')
 			moduleName = moduleDirectory.stem
 			config = dict()
 
@@ -359,7 +359,7 @@ class ConfigManager(Manager):
 
 			modulesConfigurations[moduleName] = config
 
-		return modulesConfigurations
+		self._modulesConfigurations = modulesConfigurations
 
 
 	def _newModuleConfigFile(self, moduleName: str, moduleConfigTemplate: Path):

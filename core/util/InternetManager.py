@@ -39,7 +39,7 @@ class InternetManager(Manager):
 			req = requests.get(addr)
 			if req.status_code == 204:
 				if not self._online:
-					self.broadcast(method='onInternetConnected', exceptions=[self._name])
+					self.broadcast(method='onInternetConnected', exceptions=[self.name], propagateToModules=True)
 
 				self._online = True
 				return
@@ -47,6 +47,6 @@ class InternetManager(Manager):
 			pass
 
 		if self._online:
-			self.broadcast(method='onInternetLost', exceptions=[self._name])
+			self.broadcast(method='onInternetLost', exceptions=[self.name], propagateToModules=True)
 
 		self._online = False
