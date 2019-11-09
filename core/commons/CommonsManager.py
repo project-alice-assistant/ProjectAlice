@@ -70,27 +70,18 @@ class CommonsManager(Manager):
 
 	@staticmethod
 	def payload(message: MQTTMessage) -> dict:
-		p = ''
+		payloadString = message.payload
 		try:
-			p = message.payload
-			p = p.decode()
-
-			if p == 'true' or p == 'false':
-				# TODO this is the same as return {str(p): p}, but less readable
-				# in this case even return {p: p} should be enough since it is already a string
-				raise ValueError
-
-			return json.loads(p)
-		except (UnicodeDecodeError, AttributeError):
-			#TODO whats the goal behind this? currently this try/except is superfluous
-			try:
-				return json.loads(message.payload)
-			except ValueError:
-				raise
-		except ValueError:
-			return {str(p): p}
-		except:
-			return dict()
+			payload = json.loads(payloadString)
+		except (ValueError, TypeError):
+			payload = dict()
+		
+		if payload == True:
+			payload = {'true': 'true'}
+		elif payload == False:
+			payload = {'false': 'false'}
+		
+		return payload
 
 
 	def parseSlotsToObjects(self, message: MQTTMessage) -> dict:
