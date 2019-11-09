@@ -1,11 +1,11 @@
 import importlib
 import json
-import subprocess
-from pathlib import Path
-from typing import Optional
 
 import requests
 import shutil
+import subprocess
+from pathlib import Path
+from typing import Optional
 
 from core.ProjectAliceExceptions import ModuleNotConditionCompliant, ModuleStartDelayed, ModuleStartingFailed
 from core.base.SuperManager import SuperManager
@@ -105,6 +105,11 @@ class ModuleManager(Manager):
 		return self._deactivatedModules
 
 
+	@property
+	def neededModules(self) -> list:
+		return self.NEEDED_MODULES
+
+
 	def onBooted(self):
 		self.moduleBroadcast('onBooted')
 		self._moduleInstallThread.start()
@@ -193,7 +198,7 @@ class ModuleManager(Manager):
 		except AttributeError as e:
 			self.logError(f"Couldn't find main class for module {moduleName}.{moduleResource}: {e}")
 		except Exception as e:
-			self.logError(f"Couldn't instanciate module {moduleName}.{moduleResource}: {e}")
+			self.logError(f"Couldn't instantiate module {moduleName}.{moduleResource}: {e}")
 
 		return instance
 
@@ -583,12 +588,16 @@ class ModuleManager(Manager):
 
 
 	def removeModule(self, moduleName: str):
-		if moduleName not in self._modules:
+		if moduleName not in self._modules and moduleName not in self._deactivatedModules:
 			return
 
 		self.configureModuleIntents(moduleName, False)
 		self.ConfigManager.removeModule(moduleName)
-		del self._modules[moduleName]
+
+		try:
+			del self._modules[moduleName]
+		except KeyError:
+			del self._deactivatedModules[moduleName]
 
 		shutil.rmtree(Path(self.Commons.rootDir(), 'modules', moduleName))
 		# TODO Samkilla cleaning

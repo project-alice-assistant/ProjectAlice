@@ -1,8 +1,8 @@
 import json
-from pathlib import Path
 
 import requests
 import shutil
+from pathlib import Path
 
 import configTemplate
 from core.base.SuperManager import SuperManager
@@ -340,26 +340,29 @@ class ConfigManager(Manager):
 				config = {**config, **self._aliceConfigurations['modules'][moduleName]}
 			else:
 				# For some reason we have a module not declared in alice configs... I think getting rid of it is best
-				self.logInfo(f'Module "{moduleName}" is not declared in config but files are existing, cleaning up')
-				shutil.rmtree(moduleDirectory, ignore_errors=True)
-				continue
-
-			# TODO decide what's best
-			# Or generate its infos?
-			# self.logInfo(f'Missing module declaration in Alice config file for module {moduleName}')
-			# installFile = json.load(Path(modulesPath / moduleDirectory / f'{moduleName}.install').open())
-			# node = {
-			# 	'active'    : False,
-			# 	'version'   : installFile['version'],
-			# 	'author'    : installFile['author'],
-			# 	'conditions': installFile['conditions']
-			# }
-			# self._modulesConfigurations[moduleName] = {**config, **node}
-			# self.updateAliceConfiguration('modules', self._modulesConfigurations)
+				if moduleName not in self.ModuleManager.neededModules:
+					self.logInfo(f'Module "{moduleName}" is not declared in config but files are existing, cleaning up')
+					shutil.rmtree(moduleDirectory, ignore_errors=True)
+					continue
+				else:
+					self.logInfo(f'Required module "{moduleName}" is missing definition in Alice config, generating them')
+					try:
+						installFile = json.load(Path(modulesPath / moduleDirectory / f'{moduleName}.install').open())
+						node = {
+							'active'    : False,
+							'version'   : installFile['version'],
+							'author'    : installFile['author'],
+							'conditions': installFile['conditions']
+						}
+						self._modulesConfigurations[moduleName] = {**config, **node}
+						self.updateAliceConfiguration('modules', self._modulesConfigurations)
+					except Exception as e:
+						self.logError(f'Failed generating default config for required module {moduleName}')
+						continue
 
 			modulesConfigurations[moduleName] = config
 
-		self._modulesConfigurations = modulesConfigurations
+		self._modulesConfigurations = {**self._modulesConfigurations, **modulesConfigurations}
 
 
 	def _newModuleConfigFile(self, moduleName: str, moduleConfigTemplate: Path):

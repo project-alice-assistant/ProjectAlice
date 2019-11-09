@@ -125,7 +125,7 @@ $(function () {
 		$(this).parent('.moduleIntentsView').css('display', 'none');
 	});
 
-	$('.moduleButton').on('click touchstart', function () {
+	$('[id^=delete_]').on('click touchstart', function () {
 		$.ajax({
 			url: '/modules/deleteModule/',
 			data: {

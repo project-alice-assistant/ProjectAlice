@@ -28,7 +28,7 @@
 								{% if module.getModuleConfigsTemplate()[settingName]['dataType'] == 'boolean' %}
 									<input type="checkbox" name="{{ settingName }}" value="on" id="{{ settingName }}"
 										   {% if settingValue is sameas true %}checked{% endif %}>
-									<!-- Make sure unchecked chexboxes send off data -->
+									<!-- Make sure unchecked checkboxes send off data -->
 									<input type="hidden" name="{{ settingName }}" value="off">
 								{% elif module.getModuleConfigsTemplate()[settingName]['dataType'] == 'integer' %}
 									<input type="number" name="{{ settingName }}" value="{{ settingValue }}"
