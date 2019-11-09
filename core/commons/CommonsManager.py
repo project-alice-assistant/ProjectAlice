@@ -69,11 +69,6 @@ class CommonsManager(Manager):
 
 
 	@staticmethod
-	def getDatabaseFile() -> str:
-		return str(Path('system/database/data.db'))
-
-
-	@staticmethod
 	def payload(message: MQTTMessage) -> dict:
 		p = ''
 		try:

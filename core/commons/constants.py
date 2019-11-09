@@ -7,6 +7,7 @@ UNKNOWN_MANAGER = 'unknownManager'
 UNKNOWN = 'unknown'
 ALL = 'all'
 DUMMY = 'dummy'
+DATABASE_FILE = 'system/database/data.db'
 
 TOPIC_AUDIO_FRAME = 'hermes/audioServer/default/audioFrame'
 TOPIC_HOTWORD_DETECTED = 'hermes/hotword/default/detected'
