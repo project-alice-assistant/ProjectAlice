@@ -446,3 +446,11 @@ class Module(ProjectAliceObject):
 
 	def publish(self, topic: str, payload: dict = None, qos: int = 0, retain: bool = False):
 		self.MqttManager.publish(topic=topic, payload=payload, qos=qos, retain=retain)
+
+
+	def decorate(self, msg: str, depth: int) -> str:
+		"""
+		overwrite Logger decoration method, since it should always
+		be the module name
+		"""
+		return f'[{self.name}] {msg}'
