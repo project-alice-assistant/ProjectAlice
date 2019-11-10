@@ -70,9 +70,8 @@ class CommonsManager(Manager):
 
 	@staticmethod
 	def payload(message: MQTTMessage) -> dict:
-		payloadString = message.payload
 		try:
-			payload = json.loads(payloadString)
+			payload = json.loads(message.payload)
 		except (ValueError, TypeError):
 			payload = dict()
 		
