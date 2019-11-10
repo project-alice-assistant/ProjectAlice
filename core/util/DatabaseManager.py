@@ -3,6 +3,7 @@ import typing
 
 from core.base.model.Manager import Manager
 from core.ProjectAliceExceptions import DbConnectionError, InvalidQuery
+from core.commons import constants
 
 
 class DatabaseManager(Manager):
@@ -29,9 +30,9 @@ class DatabaseManager(Manager):
 
 	def getConnection(self) -> sqlite3.Connection:
 		try:
-			con = sqlite3.connect(self.Commons.getDatabaseFile())
+			con = sqlite3.connect(constants.DATABASE_FILE)
 		except sqlite3.Error as e:
-			self.logError(f'Failed to connect to DB ({self.Commons.getDatabaseFile()}): {e}')
+			self.logError(f'Failed to connect to DB ({constants.DATABASE_FILE}): {e}')
 			raise DbConnectionError()
 		con.row_factory = sqlite3.Row
 		return con

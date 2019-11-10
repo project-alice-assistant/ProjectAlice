@@ -48,9 +48,10 @@ class TestDecorators(unittest.TestCase):
 				self.online = online
 				self.keepOffline = keepOffline
 
-			def checkOnlineState(self):
+			def checkOnlineState(self) -> bool:
 				if not self.keepOffline:
 					self.online = False
+				return self.online
 
 
 

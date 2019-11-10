@@ -97,8 +97,7 @@ class Decorators:
 					try:
 						return func(*args, **kwargs)
 					except:
-						internetManager.checkOnlineState()
-						if internetManager.online:
+						if internetManager.checkOnlineState():
 							raise
 
 				return _offlineHandler(*args, **kwargs)
