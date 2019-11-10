@@ -35,7 +35,7 @@ class InternetManager(Manager):
 			self.checkOnlineState()
 
 
-	def checkOnlineState(self, addr: str = 'http://clients3.google.com/generate_204'):
+	def checkOnlineState(self, addr: str = 'http://clients3.google.com/generate_204') -> bool:
 		try:
 			online = requests.get(addr).status_code == 204
 		except RequestException:
@@ -47,3 +47,4 @@ class InternetManager(Manager):
 		elif not self._online and online:
 			self._online = True
 			self.broadcast(method='onInternetConnected', exceptions=[self.name], propagateToModules=True)
+		return online
