@@ -3,6 +3,7 @@ from unittest import mock
 from unittest.mock import MagicMock
 
 from core.commons.CommonsManager import CommonsManager
+from core.commons import constants
 
 class TestCommonsManager(unittest.TestCase):
 	
@@ -55,49 +56,94 @@ class TestCommonsManager(unittest.TestCase):
 		self.assertEqual(
 			CommonsManager.payload(MQTTMessage(b'true')),
 			{'true': 'true'})
-		
-
-	def test_toPascalCase(self):
-		"""Test whether string gets correctly converted to pascal case"""
-		self.assertEqual(CommonsManager.toPascalCase('example string'), 'ExampleString')
-		self.assertEqual(CommonsManager.toPascalCase('Example-string_2', replaceSepCharacters=True), 'ExampleString2')
-		self.assertEqual(CommonsManager.toPascalCase('Example+string/2', replaceSepCharacters=True, sepCharacters=('+', '/')), 'ExampleString2')
 
 
-	def test_toCamelCase(self):
-		"""Test whether string gets correctly converted to camel case"""
-		self.assertEqual(CommonsManager.toCamelCase('example string'), 'exampleString')
-		self.assertEqual(CommonsManager.toCamelCase('Example-string_2', replaceSepCharacters=True), 'exampleString2')
-		self.assertEqual(CommonsManager.toCamelCase('Example+string/2', replaceSepCharacters=True, sepCharacters=('+', '/')), 'exampleString2')
+	def test_parseSlotsToObjects(self):
+		class MQTTMessage:
+			def __init__(self, payload):
+				self.payload = payload
+
+		self.assertEqual(
+			CommonsManager.parseSlotsToObjects(MQTTMessage(None)),
+			dict())
+		#TODO more tests required
 
 
-	def test_isSpelledWord(self):
-		"""Test whether string is spelled"""
-		self.assertTrue(CommonsManager.isSpelledWord('e x a m p l e'))
-		self.assertFalse(CommonsManager.isSpelledWord('example'))
-		self.assertFalse(CommonsManager.isSpelledWord('e x am p l e'))
+	def test_parseSlots(self):
+		class MQTTMessage:
+			def __init__(self, payload):
+				self.payload = payload
+
+		self.assertEqual(
+			CommonsManager.parseSlots(MQTTMessage(None)),
+			dict())
+		message = MQTTMessage('{"slots": [\
+			{"slotName": "slotName1", "rawValue": "rawValue1"},\
+			{"slotName": "slotName2", "rawValue": "rawValue2"}]}')
+		self.assertEqual(
+			CommonsManager.parseSlots(message),
+			{"slotName1": "rawValue1", "slotName2": "rawValue2"})
+
+
+	def test_parseSessionId(self):
+		class MQTTMessage:
+			def __init__(self, payload):
+				self.payload = payload
+
+		self.assertEqual(
+			CommonsManager.parseSessionId(MQTTMessage(None)),
+			False)
+		self.assertEqual(
+			CommonsManager.parseSessionId(MQTTMessage('{"sessionId": "sessionIdValue"}')),
+			"sessionIdValue")
+
+
+	def test_parseCustomData(self):
+		class MQTTMessage:
+			def __init__(self, payload):
+				self.payload = payload
+
+		self.assertEqual(
+			CommonsManager.parseCustomData(MQTTMessage(None)),
+			dict())
+		self.assertEqual(
+			CommonsManager.parseCustomData(MQTTMessage(b'{"customData": "nonJsonString"}')),
+			dict())
+		self.assertEqual(
+			CommonsManager.parseCustomData(MQTTMessage(b'{"customData": null}')),
+			dict())
+		self.assertEqual(
+			CommonsManager.parseCustomData(MQTTMessage('{"customData": "{\\"test\\": \\"test\\"}"}')),
+			{'test': 'test'})
+
+
+	def test_parseSiteId(self):
+		class MQTTMessage:
+			def __init__(self, payload):
+				self.payload = payload
+
+		self.assertEqual(
+			CommonsManager.parseSiteId(MQTTMessage('{"siteId": "site_id", "IPAddress": "127.0.0.1"}')),
+			'site id')
+		self.assertEqual(
+			CommonsManager.parseSiteId(MQTTMessage('{"IPAddress": "127.0.0.1"}')),
+			'127.0.0.1')
+		self.assertEqual(
+			CommonsManager.parseSiteId(MQTTMessage('{}')),
+			constants.DEFAULT_SITE_ID)
 
 
 	def test_getDuration(self):
 		"""Test getDuration method"""
 
 		class DialogSession:
-			def __init__(self, retVal: dict):
-				self.retVal = retVal
-			@property
-			def slotsAsObjects(self) -> dict:
-				return self.retVal
+			def __init__(self, slotsAsObjects: dict):
+				self.slotsAsObjects = slotsAsObjects
 
 		class TimeObject:
-			def __init__(self, retVal: dict, entity: str = 'snips/duration'):
-				self.retVal = retVal
-				self._entity = entity
-			@property
-			def entity(self) -> str:
-				return self._entity
-			@property
-			def value(self) -> dict:
-				return self.retVal
+			def __init__(self, value: dict, entity: str = 'snips/duration'):
+				self.value = value
+				self.entity = entity
 
 		timeDict = {
 			'seconds': 6,
@@ -113,6 +159,30 @@ class TestCommonsManager(unittest.TestCase):
 
 		session = DialogSession({'Duration': [TimeObject(timeDict, 'customDurationIntent')]})
 		self.assertEqual(CommonsManager.getDuration(session), 0)
+
+		session = DialogSession({'Duration': [TimeObject(dict())]})
+		self.assertEqual(CommonsManager.getDuration(session), 0)
+
+
+	def test_toCamelCase(self):
+		"""Test whether string gets correctly converted to camel case"""
+		self.assertEqual(CommonsManager.toCamelCase('example string'), 'exampleString')
+		self.assertEqual(CommonsManager.toCamelCase('Example-string_2', replaceSepCharacters=True), 'exampleString2')
+		self.assertEqual(CommonsManager.toCamelCase('Example+string/2', replaceSepCharacters=True, sepCharacters=('+', '/')), 'exampleString2')
+
+
+	def test_toPascalCase(self):
+		"""Test whether string gets correctly converted to pascal case"""
+		self.assertEqual(CommonsManager.toPascalCase('example string'), 'ExampleString')
+		self.assertEqual(CommonsManager.toPascalCase('Example-string_2', replaceSepCharacters=True), 'ExampleString2')
+		self.assertEqual(CommonsManager.toPascalCase('Example+string/2', replaceSepCharacters=True, sepCharacters=('+', '/')), 'ExampleString2')
+
+
+	def test_isSpelledWord(self):
+		"""Test whether string is spelled"""
+		self.assertTrue(CommonsManager.isSpelledWord('e x a m p l e'))
+		self.assertFalse(CommonsManager.isSpelledWord('example'))
+		self.assertFalse(CommonsManager.isSpelledWord('e x am p l e'))
 
 
 	def test_clamp(self):

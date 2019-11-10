@@ -84,35 +84,40 @@ class CommonsManager(Manager):
 		return payload
 
 
-	def parseSlotsToObjects(self, message: MQTTMessage) -> dict:
+	@classmethod
+	def parseSlotsToObjects(cls, message: MQTTMessage) -> dict:
 		slots = defaultdict(list)
-		data = self.payload(message)
+		data = cls.payload(message)
 		for slotData in data.get('slots', dict()):
 			slot = slotModel.Slot(slotData)
 			slots[slot.slotName].append(slot)
 		return slots
 
 
-	def parseSlots(self, message: MQTTMessage) -> dict:
-		data = self.payload(message)
+	@classmethod
+	def parseSlots(cls, message: MQTTMessage) -> dict:
+		data = cls.payload(message)
 		return {slot['slotName']: slot['rawValue'] for slot in data.get('slots', dict())}
 
 
-	def parseSessionId(self, message: MQTTMessage) -> Union[str, bool]:
-		data = self.payload(message)
+	@classmethod
+	def parseSessionId(cls, message: MQTTMessage) -> Union[str, bool]:
+		data = cls.payload(message)
 		return data.get('sessionId', False)
 
 
-	def parseCustomData(self, message: MQTTMessage) -> dict:
+	@classmethod
+	def parseCustomData(cls, message: MQTTMessage) -> dict:
 		try:
-			data = self.payload(message)
+			data = cls.payload(message)
 			return json.loads(data['customData'])
-		except:
+		except (ValueError, TypeError, KeyError):
 			return dict()
 
 
-	def parseSiteId(self, message: MQTTMessage) -> str:
-		data = self.payload(message)
+	@classmethod
+	def parseSiteId(cls, message: MQTTMessage) -> str:
+		data = cls.payload(message)
 		if 'siteId' in data:
 			return data['siteId'].replace('_', ' ')  # WTF!! This is highly no no no!!!
 		else:
@@ -158,7 +163,7 @@ class CommonsManager(Manager):
 	def isYes(session: DialogSession) -> bool:
 		try:
 			return session.slotsAsObjects['Answer'][0].value['value'] == 'yes'
-		except:
+		except (TypeError, KeyError, IndexError, AttributeError):
 			return False
 
 
@@ -175,7 +180,7 @@ class CommonsManager(Manager):
 				duration += values['days'] * 24 * 60 * 60
 				duration += values['weeks'] * 7 * 24 * 60 * 60
 				duration += values['months'] * 4 * 7 * 24 * 60 * 60
-			except:
+			except (TypeError, KeyError):
 				pass
 
 		return duration
