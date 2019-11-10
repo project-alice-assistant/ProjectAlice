@@ -76,9 +76,9 @@ class CommonsManager(Manager):
 		except (ValueError, TypeError):
 			payload = dict()
 		
-		if payload == True:
+		if payload is True:
 			payload = {'true': 'true'}
-		elif payload == False:
+		elif payload is False:
 			payload = {'false': 'false'}
 		
 		return payload
