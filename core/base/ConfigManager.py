@@ -357,7 +357,7 @@ class ConfigManager(Manager):
 						self._modulesConfigurations[moduleName] = {**config, **node}
 						self.updateAliceConfiguration('modules', self._modulesConfigurations)
 					except Exception as e:
-						self.logError(f'Failed generating default config for required module {moduleName}')
+						self.logError(f'Failed generating default config for required module {moduleName}: {e}')
 						continue
 
 			modulesConfigurations[moduleName] = config

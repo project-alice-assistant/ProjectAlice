@@ -5,7 +5,7 @@ from core.interface.model.Api import Api
 
 class UsersApi(Api):
 
-	route_base = f'/api/{Api.version()}/users/'
+	route_base = f'/api/{Api.version()}/modules/'
 
 	def __init__(self):
 		super().__init__()
@@ -15,5 +15,5 @@ class UsersApi(Api):
 		return jsonify(data=[user.toJson() for user in self.UserManager.users.values()])
 
 
-	def get(self, userId: int):
+	def get(self, module: str):
 		return jsonify(data=self.UserManager.getUserById(userId).toJson())

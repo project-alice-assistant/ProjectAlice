@@ -49,7 +49,8 @@ class ModuleManager(Manager):
 
 		self._moduleInstallThread   = None
 		self._supportedIntents      = list()
-		self._modules               = dict()
+		self._allModules            = dict()
+		self._activeModules         = dict()
 		self._failedModules         = dict()
 		self._deactivatedModules    = dict()
 		self._widgets               = dict()
@@ -61,7 +62,8 @@ class ModuleManager(Manager):
 		self._busyInstalling = self.ThreadManager.newEvent('moduleInstallation')
 		self._moduleInstallThread = self.ThreadManager.newThread(name='ModuleInstallThread', target=self._checkForModuleInstall, autostart=False)
 
-		self._modules = self._loadModuleList()
+		self._activeModules = self._loadModuleList()
+		self._allModules = {**self._activeModules, **self._deactivatedModules, **self._failedModules}
 
 		for moduleName in self._deactivatedModules:
 			self.configureModuleIntents(moduleName=moduleName, state=False)
@@ -77,11 +79,11 @@ class ModuleManager(Manager):
 
 		for moduleName, module in argv.items():
 			try:
-				self._startModule(moduleInstance=self._modules[moduleName]['instance'])
+				self._startModule(moduleInstance=self._activeModules[moduleName]['instance'])
 			except ModuleStartDelayed:
 				self.logInfo(f'Module "{moduleName}" start is delayed')
 
-			self._modules[moduleName]['instance'].onBooted()
+			self._activeModules[moduleName]['instance'].onBooted()
 
 			self.broadcast(
 				method='onModuleUpdated' if module['update'] else 'onModuleInstalled',
@@ -101,13 +103,23 @@ class ModuleManager(Manager):
 
 
 	@property
+	def neededModules(self) -> list:
+		return self.NEEDED_MODULES
+
+
+	@property
+	def activeModules(self) -> dict:
+		return self._activeModules
+
+
+	@property
 	def deactivatedModules(self) -> dict:
 		return self._deactivatedModules
 
 
 	@property
-	def neededModules(self) -> list:
-		return self.NEEDED_MODULES
+	def failedModules(self) -> dict:
+		return self._failedModules
 
 
 	def onBooted(self):
@@ -116,7 +128,7 @@ class ModuleManager(Manager):
 
 
 	def _loadModuleList(self, moduleToLoad: str = '', isUpdate: bool = False) -> dict:
-		modules = self._modules.copy() if moduleToLoad else dict()
+		modules = self._activeModules.copy() if moduleToLoad else dict()
 
 		availableModules = self.ConfigManager.modulesConfigurations
 		availableModules = dict(sorted(availableModules.items()))
@@ -206,7 +218,7 @@ class ModuleManager(Manager):
 	def onStop(self):
 		super().onStop()
 
-		for moduleItem in self._modules.values():
+		for moduleItem in self._activeModules.values():
 			moduleItem['instance'].onStop()
 			self.logInfo(f"- Stopped!")
 
@@ -218,7 +230,7 @@ class ModuleManager(Manager):
 	def startAllModules(self):
 		supportedIntents = list()
 
-		tmp = self._modules.copy()
+		tmp = self._activeModules.copy()
 		for moduleName, moduleItem in tmp.items():
 			try:
 				supportedIntents += self._startModule(moduleItem['instance'])
@@ -255,20 +267,16 @@ class ModuleManager(Manager):
 
 
 	def isModuleActive(self, moduleName: str) -> bool:
-		return moduleName in self._modules
+		return moduleName in self._activeModules
 
 
 	def getModuleInstance(self, moduleName: str, silent: bool = False) -> Optional[Module]:
-		if moduleName in self._modules:
-			return self._modules[moduleName]['instance']
+		if moduleName in self._activeModules:
+			return self._activeModules[moduleName]['instance']
 
 		if not silent:
 			self.logWarning(f'Module "{moduleName}" is disabled or does not exist in modules manager')
 		return
-
-
-	def getModules(self) -> dict:
-		return self._modules
 
 
 	def moduleBroadcast(self, method: str, filterOut: list = None, silent: bool = False, *args, **kwargs):
@@ -281,7 +289,7 @@ class ModuleManager(Manager):
 		:return:
 		"""
 
-		for moduleItem in self._modules.values():
+		for moduleItem in self._activeModules.values():
 
 			if filterOut and moduleItem['instance'].name in filterOut:
 				continue
@@ -299,20 +307,20 @@ class ModuleManager(Manager):
 
 
 	def deactivateModule(self, moduleName: str, persistent: bool = False):
-		if moduleName in self._modules:
-			self._modules[moduleName]['instance'].active = False
+		if moduleName in self._activeModules:
+			self._activeModules[moduleName]['instance'].active = False
 			self.ConfigManager.deactivateModule(moduleName, persistent)
 			self.configureModuleIntents(moduleName=moduleName, state=False)
-			self._deactivatedModules[moduleName] = self._modules.pop(moduleName)
+			self._deactivatedModules[moduleName] = self._activeModules.pop(moduleName)
 
 
 	def activateModule(self, moduleName: str, persistent: bool = False):
 		if moduleName in self._deactivatedModules:
 			self.ConfigManager.activateModule(moduleName, persistent)
 			self.configureModuleIntents(moduleName=moduleName, state=True)
-			self._modules[moduleName] = self._deactivatedModules.pop(moduleName)
-			self._modules[moduleName]['instance'].active = True
-			self._modules[moduleName]['instance'].onStart()
+			self._activeModules[moduleName] = self._deactivatedModules.pop(moduleName)
+			self._activeModules[moduleName]['instance'].active = True
+			self._activeModules[moduleName]['instance'].onStart()
 
 
 	def checkForModuleUpdates(self):
@@ -328,7 +336,7 @@ class ModuleManager(Manager):
 		updateSource = self.ConfigManager.getModulesUpdateSource()
 
 		i = 0
-		for moduleName in {**self._modules, **self._failedModules}:
+		for moduleName in {**self._activeModules, **self._failedModules}:
 			try:
 				if moduleName not in availableModules:
 					continue
@@ -344,8 +352,8 @@ class ModuleManager(Manager):
 					self.logInfo(f'❌ {moduleName} - Version {availableModules[moduleName]["version"]} < {remoteFile["version"]} in {self.ConfigManager.getAliceConfigByName("updateChannel")}')
 	
 					if not self.ConfigManager.getAliceConfigByName('moduleAutoUpdate'):
-						if moduleName in self._modules:
-							self._modules[moduleName]['instance'].updateAvailable = True
+						if moduleName in self._activeModules:
+							self._activeModules[moduleName]['instance'].updateAvailable = True
 						elif moduleName in self._deactivatedModules:
 							self._deactivatedModules[moduleName]['instance'].updateAvailable = True
 					else:
@@ -386,7 +394,7 @@ class ModuleManager(Manager):
 			finally:
 				if modulesToBoot:
 					for moduleName, info in modulesToBoot.items():
-						self._modules = self._loadModuleList(moduleToLoad=moduleName, isUpdate=info['update'])
+						self._activeModules = self._loadModuleList(moduleToLoad=moduleName, isUpdate=info['update'])
 
 						try:
 							self.LanguageManager.loadStrings(moduleToLoad=moduleName)
@@ -448,9 +456,9 @@ class ModuleManager(Manager):
 						self.logWarning(f'Module "{moduleName}" needs updating')
 						updating = True
 
-				if moduleName in self._modules:
+				if moduleName in self._activeModules:
 					try:
-						self._modules[moduleName]['instance'].onStop()
+						self._activeModules[moduleName]['instance'].onStop()
 					except Exception as e:
 						self.logError(f'Error stopping "{moduleName}" for update: {e}')
 						raise
@@ -571,7 +579,7 @@ class ModuleManager(Manager):
 
 	def configureModuleIntents(self, moduleName: str, state: bool):
 		try:
-			module = self._modules.get(moduleName, self._deactivatedModules.get(moduleName))['instance']
+			module = self._activeModules.get(moduleName, self._deactivatedModules.get(moduleName))['instance']
 			confs = [{
 				'intentId': intent.justTopic if hasattr(intent, 'justTopic') else intent,
 				'enable'  : state
@@ -584,18 +592,18 @@ class ModuleManager(Manager):
 
 	def isIntentInUse(self, intent: Intent, filtered: list) -> bool:
 		return any(intent in module['instance'].supportedIntents
-			for name, module in self._modules.items() if name not in filtered)
+		           for name, module in self._activeModules.items() if name not in filtered)
 
 
 	def removeModule(self, moduleName: str):
-		if moduleName not in self._modules and moduleName not in self._deactivatedModules:
+		if moduleName not in {**self._activeModules, **self._deactivatedModules, **self._failedModules}:
 			return
 
 		self.configureModuleIntents(moduleName, False)
 		self.ConfigManager.removeModule(moduleName)
 
 		try:
-			del self._modules[moduleName]
+			del self._activeModules[moduleName]
 		except KeyError:
 			del self._deactivatedModules[moduleName]
 
