@@ -1,11 +1,11 @@
 import importlib
 import json
-
-import requests
-import shutil
 import subprocess
 from pathlib import Path
 from typing import Optional
+
+import requests
+import shutil
 
 from core.ProjectAliceExceptions import ModuleNotConditionCompliant, ModuleStartDelayed, ModuleStartingFailed
 from core.base.SuperManager import SuperManager
@@ -92,6 +92,10 @@ class ModuleManager(Manager):
 			)
 
 
+	def onModuleInstalled(self):
+		pass
+
+
 	@property
 	def widgets(self) -> dict:
 		return self._widgets
@@ -118,6 +122,11 @@ class ModuleManager(Manager):
 
 
 	@property
+	def allModules(self) -> dict:
+		return self._allModules
+
+
+	@property
 	def failedModules(self) -> dict:
 		return self._failedModules
 
@@ -128,7 +137,7 @@ class ModuleManager(Manager):
 
 
 	def _loadModuleList(self, moduleToLoad: str = '', isUpdate: bool = False) -> dict:
-		modules = self._activeModules.copy() if moduleToLoad else dict()
+		modules = self._allModules.copy() if moduleToLoad else dict()
 
 		availableModules = self.ConfigManager.modulesConfigurations
 		availableModules = dict(sorted(availableModules.items()))
@@ -336,7 +345,7 @@ class ModuleManager(Manager):
 		updateSource = self.ConfigManager.getModulesUpdateSource()
 
 		i = 0
-		for moduleName in {**self._activeModules, **self._failedModules}:
+		for moduleName in self._allModules:
 			try:
 				if moduleName not in availableModules:
 					continue
@@ -395,6 +404,7 @@ class ModuleManager(Manager):
 				if modulesToBoot:
 					for moduleName, info in modulesToBoot.items():
 						self._activeModules = self._loadModuleList(moduleToLoad=moduleName, isUpdate=info['update'])
+						self._allModules = {**self._allModules, **self._activeModules}
 
 						try:
 							self.LanguageManager.loadStrings(moduleToLoad=moduleName)
