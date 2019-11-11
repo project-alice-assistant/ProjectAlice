@@ -1,10 +1,10 @@
 import json
-
-import paho.mqtt.client as mqtt
-import paho.mqtt.publish as publish
 import subprocess
 import uuid
 from pathlib import Path
+
+import paho.mqtt.client as mqtt
+import paho.mqtt.publish as publish
 
 from core.ProjectAliceExceptions import AccessLevelTooLow
 from core.base.model.Intent import Intent
@@ -106,7 +106,7 @@ class MqttManager(Manager):
 			self.ModuleManager.getModuleInstance(moduleName).subscribe(self._mqttClient)
 			return
 
-		for module in self.ModuleManager.activeModules().copy().values():
+		for module in self.ModuleManager.activeModules.values():
 			module['instance'].subscribe(self._mqttClient)
 
 
@@ -173,8 +173,7 @@ class MqttManager(Manager):
 			if module:
 				module.addToMessageHistory(session)
 
-			modules = self.ModuleManager.activeModules()
-			for modul in modules.values():
+			for modul in self.ModuleManager.activeModules.values():
 				module = modul['instance']
 				try:
 					consumed = module.dispatchMessage(message.topic, session)

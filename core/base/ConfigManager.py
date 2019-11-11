@@ -1,10 +1,11 @@
 import json
+from pathlib import Path
 
 import requests
 import shutil
-from pathlib import Path
 
 import configTemplate
+from core.base.ModuleManager import ModuleManager
 from core.base.SuperManager import SuperManager
 from core.base.model.GithubCloner import GithubCloner
 from core.base.model.Version import Version
@@ -340,7 +341,7 @@ class ConfigManager(Manager):
 				config = {**config, **self._aliceConfigurations['modules'][moduleName]}
 			else:
 				# For some reason we have a module not declared in alice configs... I think getting rid of it is best
-				if moduleName not in self.ModuleManager.neededModules:
+				if moduleName not in ModuleManager.NEEDED_MODULES:
 					self.logInfo(f'Module "{moduleName}" is not declared in config but files are existing, cleaning up')
 					shutil.rmtree(moduleDirectory, ignore_errors=True)
 					continue
