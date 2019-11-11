@@ -82,6 +82,9 @@ class ModuleManager(Manager):
 				self._startModule(moduleInstance=self._activeModules[moduleName]['instance'])
 			except ModuleStartDelayed:
 				self.logInfo(f'Module "{moduleName}" start is delayed')
+			except KeyError as e:
+				self.logError(f'Module "{moduleName} not found, skipping: {e}')
+				continue
 
 			self._activeModules[moduleName]['instance'].onBooted()
 
