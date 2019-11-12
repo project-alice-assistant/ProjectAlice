@@ -355,7 +355,8 @@ class ConfigManager(Manager):
 							'author'    : installFile['author'],
 							'conditions': installFile['conditions']
 						}
-						self._modulesConfigurations[moduleName] = {**config, **node}
+						config = {**config, **node}
+						self._modulesConfigurations[moduleName] = config
 						self.updateAliceConfiguration('modules', self._modulesConfigurations)
 					except Exception as e:
 						self.logError(f'Failed generating default config for required module {moduleName}: {e}')
