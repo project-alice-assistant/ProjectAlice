@@ -110,7 +110,7 @@ class ConfigManager(Manager):
 
 
 	def addModuleToAliceConfig(self, moduleName: str, data: dict):
-		self._modulesConfigurations[moduleName] = {**self._modulesConfigurations[moduleName], **data} if moduleName in self._modulesConfigurations else data
+		self._modulesConfigurations[moduleName] = data
 		self.updateAliceConfiguration('modules', self._modulesConfigurations)
 		self.loadCheckAndUpdateModuleConfigurations(moduleName)
 
@@ -350,7 +350,7 @@ class ConfigManager(Manager):
 					try:
 						installFile = json.load(Path(modulesPath / moduleDirectory / f'{moduleName}.install').open())
 						node = {
-							'active'    : False,
+							'active'    : True,
 							'version'   : installFile['version'],
 							'author'    : installFile['author'],
 							'conditions': installFile['conditions']
