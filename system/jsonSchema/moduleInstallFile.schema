@@ -1,0 +1,132 @@
+{
+	"definitions": {},
+	"$schema": "http://json-schema.org/draft-07/schema#",
+	"$id": "http://example.com/root.json",
+	"type": "object",
+	"title": "Module install file schema",
+	"required": [
+		"name",
+		"version",
+		"author",
+		"maintainers",
+		"desc",
+		"aliceMinVersion",
+		"systemRequirements",
+		"pipRequirements",
+		"conditions"
+	],
+	"properties": {
+		"name": {
+			"$id": "#/properties/name",
+			"type": "string",
+			"title": "Name of the module",
+			"default": "",
+			"examples": [
+				"AliceCore"
+			],
+			"pattern": "^(.*)$"
+		},
+		"version": {
+			"$id": "#/properties/version",
+			"type": "string",
+			"title": "Version of the module",
+			"default": "",
+			"examples": [
+				"1.0.9"
+			],
+			"pattern": "^(.*)$"
+		},
+		"author": {
+			"$id": "#/properties/author",
+			"type": "string",
+			"title": "Github username",
+			"default": "",
+			"examples": [
+				"ProjectAlice"
+			],
+			"pattern": "^(.*)$"
+		},
+		"maintainers": {
+			"$id": "#/properties/maintainers",
+			"type": "array",
+			"title": "A place for maintainers to credit themselves",
+			"items": {
+				"$id": "#/properties/maintainers/items",
+				"type": "string",
+				"title": "Github username",
+				"default": "",
+				"examples": [
+					"maxbachmann",
+					"Psychokiller1888"
+				],
+				"pattern": "^(.*)$"
+			}
+		},
+		"desc": {
+			"$id": "#/properties/desc",
+			"type": "string",
+			"title": "Description of the module",
+			"default": "",
+			"examples": [
+				"This module is one of the standard modules and does support core functions such as adding users"
+			],
+			"pattern": "^(.*)$"
+		},
+		"aliceMinVersion": {
+			"$id": "#/properties/aliceMinVersion",
+			"type": "string",
+			"title": "The minimum Alice version required for this module version to install",
+			"default": "",
+			"examples": [
+				"1.0.0-a3"
+			],
+			"pattern": "^(.*)$"
+		},
+		"systemRequirements": {
+			"$id": "#/properties/systemRequirements",
+			"type": "array",
+			"title": "The Systemrequirements Schema"
+		},
+		"pipRequirements": {
+			"$id": "#/properties/pipRequirements",
+			"type": "array",
+			"title": "Add any requirements that need to be installed through PIP",
+			"items": {
+				"$id": "#/properties/pipRequirements/items",
+				"type": "string",
+				"title": "PIP packages, supporting versioning",
+				"default": "",
+				"examples": [
+					"BringApi>=0.0.3"
+				],
+				"pattern": "^(.*)$"
+			}
+		},
+		"conditions": {
+			"$id": "#/properties/conditions",
+			"type": "object",
+			"title": "Conditions for the module to start",
+			"required": [
+				"lang"
+			],
+			"properties": {
+				"lang": {
+					"$id": "#/properties/conditions/properties/lang",
+					"type": "array",
+					"title": "The Lang Schema",
+					"items": {
+						"$id": "#/properties/conditions/properties/lang/items",
+						"type": "string",
+						"title": "The Items Schema",
+						"default": "",
+						"examples": [
+							"en",
+							"de"
+						],
+						"pattern": "^(.*)$"
+					}
+				}
+			}
+		}
+	}
+}
