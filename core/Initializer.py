@@ -27,7 +27,6 @@ class initDict(dict, ProjectAliceObject):
 
 
 class Initializer(ProjectAliceObject):
-
 	NAME = 'ProjectAlice'
 
 	_WPA_FILE = '''country=%wifiCountryCode%
@@ -41,6 +40,7 @@ network={
     key_mgmt=WPA-PSK
 }
 	'''
+
 
 	def __init__(self):
 		super().__init__(logDepth=3)
@@ -80,9 +80,9 @@ network={
 
 			bootWpaSupplicant = Path('/boot/wpa_supplicant.conf')
 
-			wpaFile = self._WPA_FILE\
-				.replace('%wifiCountryCode%', str(initConfs['wifiCountryCode']))\
-				.replace('%wifiNetworkName%', str(initConfs['wifiNetworkName']))\
+			wpaFile = self._WPA_FILE \
+				.replace('%wifiCountryCode%', str(initConfs['wifiCountryCode'])) \
+				.replace('%wifiNetworkName%', str(initConfs['wifiNetworkName'])) \
 				.replace('%wifiWPAPass%', str(initConfs['wifiWPAPass']))
 
 			file = Path(self._rootDir, 'wifi.conf')
@@ -142,7 +142,7 @@ network={
 			subprocess.run(['./venv/bin/pip3', 'install', '-r', str(Path(self._rootDir, 'piprequirements.txt'))])
 
 			subprocess.run(['sudo', 'bash', '-c', 'echo "deb https://raspbian.snips.ai/$(lsb_release -cs) stable main" > /etc/apt/sources.list.d/snips.list'])
-			subprocess.run(['sudo', 'apt-key',  'adv', '--keyserver', 'gpg.mozilla.org', '--recv-keys', 'D4F50CDCA10A2849'])
+			subprocess.run(['sudo', 'apt-key', 'adv', '--keyserver', 'gpg.mozilla.org', '--recv-keys', 'D4F50CDCA10A2849'])
 			subprocess.run(['sudo', 'apt-get', 'update'])
 
 			reqs = [line.rstrip('\n') for line in open(Path(self._rootDir, 'sysrequirements.txt'))]
@@ -156,7 +156,6 @@ network={
 			subprocess.run(['sudo', 'systemctl', 'disable', 'snips-hotword'])
 			subprocess.run(['sudo', 'systemctl', 'disable', 'snips-audio-server'])
 			subprocess.run(['sudo', 'systemctl', 'disable', 'snips-tts'])
-
 
 		# Now let's dump some values to their respective places
 		# First those that need some checks and self filling in case unspecified
