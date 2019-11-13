@@ -45,7 +45,7 @@
 									{% else %}
 										<select name="{{ settingName }}" id="{{ settingName }}">
 											{% for optionValue in aliceSettingsTemplate[settingName]['values'] %}
-												<option value="{{ optionValue }}" {% if optionValue == settingValue %}selected{% endif %}>{{ optionName }}</option>
+												<option value="{{ optionValue }}" {% if optionValue == settingValue %}selected{% endif %}>{{ optionValue }}</option>
 											{% endfor %}
 										</select>
 									{% endif %}
