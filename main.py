@@ -18,7 +18,6 @@
 	inactive authors:       Jierka <https://github.com/jr-k>
 """
 import logging.handlers
-import os
 import signal
 import sys
 import traceback
