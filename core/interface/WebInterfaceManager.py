@@ -38,7 +38,7 @@ class WebInterfaceManager(Manager):
 		self._flaskLoginManager = None
 		
 	@app.route('/favicon.ico')
-	def favicon():
+	def favicon(self):
 		return send_from_directory('static/','favicon.ico', mimetype='image/vnd.microsoft.icon')
 
 	@app.route('/base/<path:filename>')
@@ -64,7 +64,7 @@ class WebInterfaceManager(Manager):
 			else:
 				self.logInfo(f'Loaded interface in "{self.LanguageManager.activeLanguage.lower()}"')
 
-			key = ''.join([random.choice(string.ascii_letters + string.digits + string.punctuation) for n in range(20)])
+			key = ''.join([random.choice(string.ascii_letters + string.digits + string.punctuation) for _ in range(20)])
 			self.app.secret_key = key.encode()
 			self._flaskLoginManager = LoginManager()
 			self._flaskLoginManager.init_app(self.app)

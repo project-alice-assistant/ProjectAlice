@@ -6,7 +6,11 @@ import subprocess
 import time
 from pathlib import Path
 
-import yaml
+try:
+	import yaml
+except:
+	subprocess.run(['./venv/bin/pip3', 'install', 'pyyaml'])
+	import yaml
 
 import configTemplate
 from core.base.model.ProjectAliceObject import ProjectAliceObject
