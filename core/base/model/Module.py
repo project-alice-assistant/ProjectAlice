@@ -4,12 +4,10 @@ import importlib
 import inspect
 import json
 import sqlite3
+from pathlib import Path
+from typing import Any, Callable, Dict, Iterable, List, Tuple
 
 import re
-
-from typing import Dict, Iterable, Callable, Any, Tuple, List, Generator
-from pathlib import Path
-
 from paho.mqtt import client as MQTTClient
 
 from core.ProjectAliceExceptions import AccessLevelTooLow, ModuleStartingFailed
@@ -454,3 +452,16 @@ class Module(ProjectAliceObject):
 		be the module name
 		"""
 		return f'[{self.name}] {msg}'
+
+
+	def toJson(self) -> dict:
+		return {
+			'name': self._name,
+			'author': self._author,
+			'version': self._version,
+			'updateAvailable': self._updateAvailable,
+			'active': self._active,
+			'delayed': self._delayed,
+			'required': self._required,
+			'databaseSchema': self._databaseSchema
+		}

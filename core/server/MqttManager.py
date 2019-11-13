@@ -107,7 +107,7 @@ class MqttManager(Manager):
 			return
 
 		for module in self.ModuleManager.activeModules.values():
-			module['instance'].subscribe(self._mqttClient)
+			module.subscribe(self._mqttClient)
 
 
 	# noinspection PyUnusedLocal
@@ -174,9 +174,8 @@ class MqttManager(Manager):
 				module.addToMessageHistory(session)
 
 			for modul in self.ModuleManager.activeModules.values():
-				module = modul['instance']
 				try:
-					consumed = module.dispatchMessage(message.topic, session)
+					consumed = modul.dispatchMessage(message.topic, session)
 				except AccessLevelTooLow:
 					# The command was recognized but required higher access level
 					return
