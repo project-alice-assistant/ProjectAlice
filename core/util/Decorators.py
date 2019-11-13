@@ -125,6 +125,7 @@ def Online(func: Callable = None, text: str = 'offline', offlineHandler: Callabl
 	the decorator will return the text instead. This behaviour can be enforced aswell using:
 		@online(returnText=True)
 
+	:param func:
 	:param text:
 	:param offlineHandler:
 	:param returnText:

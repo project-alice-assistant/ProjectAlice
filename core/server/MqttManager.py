@@ -11,7 +11,7 @@ from core.base.model.Intent import Intent
 from core.base.model.Manager import Manager
 from core.commons import constants
 from core.dialog.model.DialogSession import DialogSession
-from core.util.Decorators import Decorators
+from core.util.Decorators import deprecated
 
 
 class MqttManager(Manager):
@@ -582,7 +582,7 @@ class MqttManager(Manager):
 			self._speakOnSonos(text, constants.DEFAULT_SITE_ID)
 
 
-	@Decorators.deprecated
+	@deprecated
 	def endTalk(self, sessionId: str = '', text: str = '', client: str = ''):
 		return self.endDialog(sessionId, text, client)
 
@@ -689,7 +689,7 @@ class MqttManager(Manager):
 		return self._mqttClient
 
 
-	@Decorators.deprecated
+	@deprecated
 	def _speakOnSonos(self, text, client):
 		if text == '':
 			return
