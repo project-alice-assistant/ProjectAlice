@@ -1,26 +1,23 @@
-import logging
-
-from core.base.SuperManager import SuperManager
-from core.commons import commons
+from core.base.model.ProjectAliceObject import ProjectAliceObject
 
 
-class TasmotaConfigs:
+class TasmotaConfigs(ProjectAliceObject):
 
 	def getConfigs(self, deviceBrand: str, room: str) -> list:
 		if deviceBrand not in self._configs:
-			self._logger.error(f'[{self._name}] Devices brand "{deviceBrand}" unknown')
+			self.logError(f'[{self._name}] Devices brand "{deviceBrand}" unknown')
 			return list()
 
 		elif self._deviceType not in self._configs[deviceBrand]:
-			self._logger.error(f'[{self._name}] Devices type "{self._deviceType}" unknown')
+			self.logError(f'[{self._name}] Devices type "{self._deviceType}" unknown')
 			return list()
 
 		else:
 			confs = self._configs[deviceBrand][self._deviceType].copy()
-			for i in range(len(confs)):
-				for j in range(len(confs[i])):
-					confs[i][j]['topic'] = confs[i][j]['topic'].replace('{identifier}', self._uid)
-					confs[i][j]['payload'] = confs[i][j]['payload'].replace('{identifier}', self._uid).replace('{room}', room).replace('{uid}', self._uid).replace('{type}', self._deviceType)
+			for deviceConfs in confs:
+				for conf in deviceConfs:
+					conf['topic'] = conf['topic'].format(identifier=self._uid)
+					conf['payload'] = conf['payload'].format(identifier=self._uid, room=room, type=self._deviceType)
 			return confs
 
 
@@ -28,10 +25,15 @@ class TasmotaConfigs:
 		cmds = list()
 		for cmdGroup in self._backlogConfigs:
 			group = dict()
-			group['cmds'] = list()
-			for cmd in cmdGroup['cmds']:
-				cmd = cmd.replace('{mqtthost}', commons.getLocalIp()).replace('{identifier}', self._uid).replace('{room}', room).replace('{uid}', self._uid).replace('{type}', self._deviceType).replace('{ssid}', SuperManager.getInstance().configManager.getAliceConfigByName('ssid')).replace('{wifipass}', SuperManager.getInstance().configManager.getAliceConfigByName('wifipassword'))
-				group['cmds'].append(cmd)
+			group['cmds'] = [cmd.format(
+					mqtthost=self.Commons.getLocalIp(),
+					identifier=self._uid,
+					room=room,
+					type=self._deviceType,
+					ssid=self.ConfigManager.getAliceConfigByName('ssid'),
+					wifipass=self.ConfigManager.getAliceConfigByName('wifipassword')
+				) for cmd in cmdGroup['cmds']]
+
 			group['waitAfter'] = cmdGroup['waitAfter']
 			cmds.append(group)
 
@@ -39,8 +41,8 @@ class TasmotaConfigs:
 
 
 	def __init__(self, deviceType: str, uid: str):
+		super().__init__()
 		self._name = 'TasmotaConfigs'
-		self._logger = logging.getLogger('ProjectAlice')
 
 		self._deviceType = deviceType
 		self._uid = uid
@@ -95,9 +97,9 @@ class TasmotaConfigs:
 			},
 			{
 				'cmds'     : [
-					'rule1 on System#Boot do publish projectalice/devices/tasmota/feedback/hello/{identifier} {"siteId":"{room}","deviceType":"{type}","uid":"{identifier}"} endon',
+					'rule1 on System#Boot do publish projectalice/devices/tasmota/feedback/hello/{identifier} {{"siteId":"{room}","deviceType":"{type}","uid":"{identifier}"}} endon',
 					'rule1 1',
-					'rule2 on switch1#state do publish projectalice/devices/tasmota/feedback/{identifier} {"siteId":"{room}","deviceType":"{type}","feedback":%value%,"uid":"{identifier}"} endon',
+					'rule2 on switch1#state do publish projectalice/devices/tasmota/feedback/{identifier} {{"siteId":"{room}","deviceType":"{type}","feedback":%value%,"uid":"{identifier}"}} endon',
 					'rule2 1',
 					'restart 1'
 				],
@@ -165,7 +167,7 @@ class TasmotaConfigs:
 						},
 						{
 							'topic'  : 'projectalice/devices/tasmota/cmd/{identifier}/rule1',
-							'payload': 'on switch1#state do publish projectalice/devices/tasmota/feedback/{uid} {"siteId":"{room}","deviceType":"{type}","feedback":%value%,"uid":"{uid}"} endon'
+							'payload': 'on switch1#state do publish projectalice/devices/tasmota/feedback/{identifier} {{"siteId":"{room}","deviceType":"{type}","feedback":%value%,"uid":"{identifier}"}} endon'
 						},
 						{
 							'topic'  : 'projectalice/devices/tasmota/cmd/{identifier}/rule1',
@@ -211,7 +213,7 @@ class TasmotaConfigs:
 						},
 						{
 							'topic'  : 'projectalice/devices/tasmota/cmd/{identifier}/rule1',
-							'payload': 'on switch1#state do publish projectalice/devices/tasmota/feedback/{uid} {"siteId":"{room}","deviceType":"{type}","feedback":%value%,"uid":"{uid}"} endon'
+							'payload': 'on switch1#state do publish projectalice/devices/tasmota/feedback/{identifier} {{"siteId":"{room}","deviceType":"{type}","feedback":%value%,"uid":"{identifier}"}} endon'
 						},
 						{
 							'topic'  : 'projectalice/devices/tasmota/cmd/{identifier}/rule1',

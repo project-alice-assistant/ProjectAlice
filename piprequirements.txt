@@ -1,4 +1,3 @@
-enum34
 pyalsaaudio
 pyaudio
 python-dateutil
@@ -24,6 +23,8 @@ click
 pyyaml
 boto3
 google-cloud-texttospeech
-Flask
+flask
 flask-classful
+flask-login
 googletrans
+bcrypt

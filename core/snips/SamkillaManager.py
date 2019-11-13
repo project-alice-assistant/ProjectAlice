@@ -1,5 +1,7 @@
 import json
 import time
+from datetime import datetime
+from pathlib import Path
 
 import requests
 from selenium import webdriver
@@ -57,6 +59,9 @@ class SamkillaManager(Manager):
 		self.initActions()
 		self._loadDialogTemplateMapsInConfigManager()
 
+		if not Path(self.Commons.rootDir(), f'trained/assistants/assistant_{self.LanguageManager.activeLanguage}').exists():
+			self.sync()
+
 
 	def _loadDialogTemplateMapsInConfigManager(self):
 		self._dtSlotTypesModulesValues, self._dtIntentsModulesValues, self._dtIntentNameSkillMatching = self.getDialogTemplatesMaps(
@@ -99,12 +104,10 @@ class SamkillaManager(Manager):
 		if moduleFilter is None:
 			moduleFilter = dict()
 
-		self.log(f"[{self.name}] Sync for module/s [{', '.join(moduleFilter) or '*'}]")
+		self.log(f"Sync for module/s [{', '.join(moduleFilter) or '*'}]")
 
-		started = self.start()
-
-		if not started:
-			self.log(f'[{self.name}] No credentials. Unable to synchronize assistant with remote console')
+		if not self.start():
+			self.log('No credentials. Unable to synchronize assistant with remote console')
 			return False
 
 		activeLang: str = self.LanguageManager.activeLanguage
@@ -116,30 +119,30 @@ class SamkillaManager(Manager):
 				baseAssistantId=activeProjectId,
 				baseLanguageFilter=activeLang,
 				baseModuleFilter=list(moduleFilter),
-				newAssistantTitle=f'ProjectAlice_{self.LanguageManager.activeLanguage}'
+				newAssistantTitle=f"ProjectAlice_{datetime.today().strftime('%Y-%m-%d')}_{self.LanguageManager.activeLanguage}"
 			)
 
 			if changes:
 				if download:
-					self.log(f'[{self.name}] Changes detected during sync, let\'s update the assistant...')
+					self.log('Changes detected during sync, let\'s update the assistant...')
 					self.SnipsConsoleManager.doDownload(moduleFilter)
 				else:
-					self.log(f'[{self.name}] Changes detected during sync but not downloading yet')
+					self.log('Changes detected during sync but not downloading yet')
 			else:
-				self.log(f'[{self.name}] No changes detected during sync')
+				self.log('No changes detected during sync')
 				self.ModuleManager.onSnipsAssistantDownloaded(modulesInfos=moduleFilter)
 
 
 			self.stop()
 		except AssistantNotFoundError:
-			self.log(f'[{self.name}] Assistant project id \'{activeProjectId}\' for lang \'{activeLang}\' doesn\'t exist. Check your config.py')
+			self.log(f'Assistant project id \'{activeProjectId}\' for lang \'{activeLang}\' doesn\'t exist. Check your config.py')
 
 		return changes
 
 
 	def log(self, msg: str):
 		if self._devMode:
-			self._logger.info(msg)
+			self.logInfo(msg)
 
 
 	def start(self):
@@ -276,7 +279,7 @@ class SamkillaManager(Manager):
 
 	# noinspection PyUnusedLocal
 	def findRunnableAssistant(self, assistantId: str, assistantLanguage: str, newAssistantTitle: str = '', persistLocal: bool = False) -> str:
-		if not newAssistantTitle: newAssistantTitle = f'ProjectAlice_{self.LanguageManager.activeLanguage}'
+		if not newAssistantTitle: newAssistantTitle = f"ProjectAlice_{datetime.today().strftime('%Y-%m-%d')}_{self.LanguageManager.activeLanguage}"
 
 		runOnAssistantId = None
 
@@ -347,39 +350,25 @@ class SamkillaManager(Manager):
 
 
 	def getIntentsByModuleName(self, runOnAssistantId: str, languageFilter: str, moduleFilter: str = None) -> list:
-		slotTypesModulesValues, intentsModulesValues, intentNameSkillMatching = self.getDialogTemplatesMaps(
+		_, intentsModulesValues, intentNameSkillMatching = self.getDialogTemplatesMaps(
 			runOnAssistantId=runOnAssistantId,
 			languageFilter=languageFilter
 		)
 
-		intents = list()
-
-		for dtIntentName, dtModuleName in intentNameSkillMatching.items():
-			if dtModuleName == moduleFilter:
-				intents.append({
-					'name': dtIntentName,
-					'description': intentsModulesValues[dtIntentName]['__otherattributes__']['description']
-				})
-
-		return intents
+		return [{
+			'name': intentName,
+			'description': intentsModulesValues[intentName]['__otherattributes__']['description']
+		} for intentName, moduleName in intentNameSkillMatching.items() if moduleName == moduleFilter]
 
 
 	def getUtterancesByIntentName(self, runOnAssistantId: str, languageFilter: str, intentFilter: str = None) -> list:
-		slotTypesModulesValues, intentsModulesValues, intentNameSkillMatching = self.getDialogTemplatesMaps(
+		_, intentsModulesValues, intentNameSkillMatching = self.getDialogTemplatesMaps(
 			runOnAssistantId=runOnAssistantId,
 			languageFilter=languageFilter
 		)
 
-		utterances = list()
-
-		for dtIntentName in intentNameSkillMatching:
-			if dtIntentName == intentFilter:
-				for utterance in intentsModulesValues[dtIntentName]['utterances'].items():
-					utterances.append({
-						'sentence': utterance
-					})
-
-		return utterances
+		return [{'sentence': utterance} for intent in intentNameSkillMatching if intent == intentFilter
+			for utterance in intentsModulesValues[intent]['utterances'].items()]
 
 
 	@property

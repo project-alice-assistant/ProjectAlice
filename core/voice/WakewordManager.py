@@ -10,7 +10,7 @@ import paho.mqtt.client as mqtt
 from pydub import AudioSegment
 
 from core.base.model.Manager import Manager
-from core.commons import commons, constants
+from core.commons import constants
 from core.dialog.model.DialogSession import DialogSession
 from core.voice.model.Wakeword import Wakeword
 from core.voice.model.WakewordUploadThread import WakewordUploadThread
@@ -29,7 +29,7 @@ class WakewordManager(Manager):
 	NAME = 'WakewordManager'
 
 	RECORD_SECONDS = 2.5
-	THRESHOLD = -45.0
+	THRESHOLD = -40.0
 
 
 	def __init__(self):
@@ -89,11 +89,11 @@ class WakewordManager(Manager):
 			riff, size, fformat = struct.unpack('<4sI4s', message.payload[:12])
 
 			if riff != b'RIFF':
-				self._logger.error(f'[{self.name}] Wakeword capture frame parse error')
+				self.logError('Wakeword capture frame parse error')
 				return
 
 			if fformat != b'WAVE':
-				self._logger.error(f'[{self.name}] Wakeword capture frame wrong format')
+				self.logError('Wakeword capture frame wrong format')
 				return
 
 			chunkHeader = message.payload[12:20]
@@ -122,7 +122,7 @@ class WakewordManager(Manager):
 				chunkOffset = chunkOffset + subChunk2Size + 8
 
 		except Exception as e:
-			self._logger.error(f'[{self.name}] Error capturing wakeword: {e}')
+			self.logError(f'Error capturing wakeword: {e}')
 
 
 	def _workAudioFile(self):
@@ -130,7 +130,7 @@ class WakewordManager(Manager):
 
 		# noinspection PyProtectedMember
 		if not sample._datawritten:
-			self._logger.error(f'[{self.name}] Something went wrong capturing audio, no data available in sample')
+			self.logError('Something went wrong capturing audio, no data available in sample')
 			self._state = WakewordManagerState.IDLE
 			return
 
@@ -142,7 +142,7 @@ class WakewordManager(Manager):
 
 		filepath = self.wakeword.getSamplePath()
 		if not filepath.exists():
-			self._logger.error(f'[{self.name}] Raw wakeword "{len(self.wakeword.samples)}" wasn\'t found')
+			self.logError(f'Raw wakeword "{len(self.wakeword.samples)}" wasn\'t found')
 			self._state = WakewordManagerState.IDLE
 			return
 
@@ -193,12 +193,11 @@ class WakewordManager(Manager):
 	def getLastSampleNumber(self) -> int:
 		if self._wakeword and self._wakeword.samples:
 			return len(self._wakeword.samples)
-		else:
-			return 1
+		return 1
 
 
 	def finalizeWakeword(self):
-		self._logger.info(f'[{self.name}] Finalyzing wakeword')
+		self.logInfo(f'Finalyzing wakeword')
 		self._state = WakewordManagerState.FINALIZING
 
 		config = {
@@ -226,10 +225,10 @@ class WakewordManager(Manager):
 			'model_version'          : 1
 		}
 
-		path = Path(commons.rootDir(), 'trained/hotwords', self.wakeword.username.lower())
+		path = Path(self.Commons.rootDir(), 'trained/hotwords', self.wakeword.username.lower())
 
 		if path.exists():
-			self._logger.warning(f'[{self.name}] Destination directory for new wakeword already exists, deleting')
+			self.logWarning('Destination directory for new wakeword already exists, deleting')
 			shutil.rmtree(path)
 
 		path.mkdir()
@@ -246,7 +245,6 @@ class WakewordManager(Manager):
 
 
 	def _addWakewordToSnips(self, path: Path):
-		# TODO unhardcode sensitivity
 		models: list = self.ConfigManager.getSnipsConfiguration('snips-hotword', 'model', createIfNotExist=True)
 
 		if not isinstance(models, list):
@@ -254,26 +252,24 @@ class WakewordManager(Manager):
 
 		wakewordName = path.name
 
-		add = True
+		addHeySnips = True
 		copy = models.copy()
 		for i, model in enumerate(copy):
 			if wakewordName in model:
 				models.pop(i)
 			elif '/snips_hotword=' in model:
-				add = False
+				addHeySnips = False
 
-		if add:
-			models.append(str(Path(commons.rootDir(), 'trained/hotwords/snips_hotword=0.53')))
+		if addHeySnips:
+			models.append(str(Path(self.Commons.rootDir(), 'trained/hotwords/snips_hotword=0.53')))
 
-		models.append(f'{str(path)}=0.52')
+		models.append(f'{path}=0.52')
 		self.ConfigManager.updateSnipsConfiguration('snips-hotword', 'model', models, restartSnips=True)
-
-		self._upload(path)
 
 
 	def uploadToNewDevice(self, uid: str):
-		directory = Path(commons.rootDir(), 'trained/hotwords')
-		for fiile in directory:
+		directory = Path(self.Commons.rootDir(), 'trained/hotwords')
+		for fiile in directory.iterdir():
 			if (directory/fiile).is_file():
 				continue
 
@@ -288,7 +284,7 @@ class WakewordManager(Manager):
 			port = 8080 + len(self._wakewordUploadThreads)
 
 			payload = {
-				'ip': commons.getLocalIp(),
+				'ip': self.Commons.getLocalIp(),
 				'port': port,
 				'name': wakewordName
 			}
@@ -297,7 +293,7 @@ class WakewordManager(Manager):
 				payload['uid'] = uid
 
 			self.MqttManager.publish(topic='projectalice/devices/alice/newhotword', payload=payload)
-			thread = WakewordUploadThread(host=commons.getLocalIp(), zipPath=zipPath, port=port)
+			thread = WakewordUploadThread(host=self.Commons.getLocalIp(), zipPath=zipPath, port=port)
 			self._wakewordUploadThreads.append(thread)
 			thread.start()
 
@@ -306,11 +302,11 @@ class WakewordManager(Manager):
 		wakewordName = path.name
 		zipPath = path.parent / (wakewordName + '.zip')
 
-		self._logger.info(f'[{self.name}] Cleaning up {wakewordName}')
+		self.logInfo(f'Cleaning up {wakewordName}')
 		if zipPath.exists():
 			zipPath.unlink()
 
-		self._logger.info(f'[{self.name}] Packing wakeword {wakewordName}')
+		self.logInfo(f'Packing wakeword {wakewordName}')
 		shutil.make_archive(base_name=zipPath.with_suffix(''), format='zip', root_dir=str(path))
 
 		return wakewordName, zipPath

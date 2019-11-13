@@ -3,7 +3,7 @@ from typing import Dict, Optional
 from paho.mqtt.client import MQTTMessage
 
 from core.base.model.Manager import Manager
-from core.commons import commons, constants
+from core.commons import constants
 from core.dialog.model.DialogSession import DialogSession
 
 
@@ -52,7 +52,7 @@ class DialogSessionManager(Manager):
 		:param sessionId: str
 		:param message: dict
 		"""
-		siteId = commons.parseSiteId(message)
+		siteId = self.Commons.parseSiteId(message)
 		session = self._preSessions.pop(siteId, DialogSession(siteId))
 
 		session.extend(message, sessionId)
@@ -69,7 +69,7 @@ class DialogSessionManager(Manager):
 		:param message: dict
 		"""
 		session = self.addSession(sessionId, message)
-		self.ThreadManager.doLater(self._sessions.pop, interval=20, args=[sessionId])
+		self.ThreadManager.doLater(interval=20, func=self._sessions.pop, args=[sessionId])
 		return session
 
 
@@ -84,7 +84,7 @@ class DialogSessionManager(Manager):
 
 	def getUser(self, sessionId: str) -> str:
 		if sessionId not in self._sessions:
-			self._logger.warning(f"[{self.name}] Trying to get user from a session that doesn't exist")
+			self.logWarning(f"Trying to get user from a session that doesn't exist")
 			return constants.UNKNOWN_USER
 
 		return self._sessions[sessionId].user
@@ -92,7 +92,7 @@ class DialogSessionManager(Manager):
 
 	def addPreviousIntent(self, sessionId: str, previousIntent: str):
 		if sessionId not in self._sessions:
-			self._logger.warning(f'[{self.name}] Was asked to add a previous intent but session was not found')
+			self.logWarning('Was asked to add a previous intent but session was not found')
 			return
 
 		session = self._sessions[sessionId]

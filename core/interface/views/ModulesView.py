@@ -1,58 +1,52 @@
-import subprocess
-from collections import OrderedDict
+import json
+from pathlib import Path
 
-from flask import render_template, request, jsonify
-from flask_classful import route
+import requests
+from flask import jsonify, render_template, request
 
-from core.base.SuperManager import SuperManager
-from core.commons import commons
-from core.interface.views.View import View
+from core.base.model.GithubCloner import GithubCloner
+from core.base.model.Version import Version
+from core.commons import constants
+from core.interface.model.View import View
 
 
 class ModulesView(View):
 	route_base = '/modules/'
 
 
-	def __init__(self):
-		super().__init__()
-
-
 	def index(self):
-		modules = {moduleName: module['instance'] for moduleName, module in SuperManager.getInstance().moduleManager.getModules(False).items()}
-		deactivatedModules = {moduleName: module['instance'] for moduleName, module in SuperManager.getInstance().moduleManager.deactivatedModules.items()}
-		modules = {**modules, **deactivatedModules}
-		modules = OrderedDict(sorted(modules.items()))
+		modules = self.ModuleManager.allModules
+		modules = {moduleName: module for moduleName, module in sorted(modules.items())}
 
-		return render_template('modules.html', modules=modules, langData=self._langData)
+		return render_template(template_name_or_list='modules.html',
+		                       modules=modules,
+		                       langData=self._langData,
+		                       aliceSettings=self.ConfigManager.aliceConfigurations)
 
 
-	@route('/toggle', methods=['POST'])
 	def toggleModule(self):
 		try:
-			action, module = request.form.get('id').split('_')
+			_, module = request.form.get('id').split('_')
 			if self.ModuleManager.isModuleActive(module):
 				self.ModuleManager.deactivateModule(moduleName=module, persistent=True)
 			else:
 				self.ModuleManager.activateModule(moduleName=module, persistent=True)
-
-			return self.index()
 		except Exception as e:
-			self._logger.warning(f'[Modules] Failed toggling module: {e}')
-			return self.index()
+			self.logWarning(f'Failed toggling module: {e}', printStack=True)
+		
+		return self.index()
 
 
-	@route('/delete', methods=['POST'])
 	def deleteModule(self):
 		try:
-			action, module = request.form.get('id').split('_')
+			_, module = request.form.get('id').split('_')
 			self.ModuleManager.removeModule(module)
-			return self.index()
 		except Exception as e:
-			self._logger.warning(f'[Modules] Failed deleting module: {e}')
-			return self.index()
+			self.logWarning(f'Failed deleting module: {e}', printStack=True)
+
+		return self.index()
 
 
-	@route('/saveModuleSettings', methods=['POST'])
 	def saveModuleSettings(self):
 		moduleName = request.form['moduleName']
 		for confName, confValue in request.form.items():
@@ -64,7 +58,7 @@ class ModulesView(View):
 			elif confValue == 'off':
 				confValue = False
 
-			SuperManager.getInstance().configManager.updateModuleConfigurationFile(
+			self.ConfigManager.updateModuleConfigurationFile(
 				moduleName=moduleName,
 				key=confName,
 				value=confValue
@@ -73,21 +67,57 @@ class ModulesView(View):
 		return self.index()
 
 
-	@route('/install', methods=['POST'])
-	def installModule(self):
+	def installModules(self):
 		try:
-			module = request.form.get('module')
-			self.WebInterfaceManager.newModuleInstallProcess(module)
-			subprocess.run(['wget', f'http://modules.projectalice.ch/{module}', '-O', f'{module}.install'])
-			subprocess.run(['mv', f'{module}.install', f'{commons.rootDir()}/system/moduleInstallTickets/{module}.install'])
+			modules = request.json
+
+			for module in modules:
+				self.WebInterfaceManager.newModuleInstallProcess(module['module'])
+				req = requests.get(f'https://raw.githubusercontent.com/project-alice-powered-by-snips/ProjectAliceModules/{self.ConfigManager.getModulesUpdateSource()}/PublishedModules/{module["author"]}/{module["module"]}/{module["module"]}.install')
+				remoteFile = req.json()
+				if not remoteFile:
+					self.WebInterfaceManager.moduleInstallProcesses[module['module']]['status'] = 'failed'
+					continue
+
+				moduleFile = Path(self.Commons.rootDir(), f'system/moduleInstallTickets/{module["module"]}.install')
+				moduleFile.write_text(json.dumps(remoteFile))
+
 			return jsonify(success=True)
 		except Exception as e:
-			self._logger.warning(f'[Modules] Failed installing module: {e}')
+			self.logWarning(f'Failed installing module: {e}', printStack=True)
 			return jsonify(success=False)
 
 
-	@route('/checkInstallStatus', methods=['POST'])
 	def checkInstallStatus(self):
 		module = request.form.get('module')
 		status = self.WebInterfaceManager.moduleInstallProcesses.get(module, {'status': 'unknown'})['status']
 		return jsonify(status)
+
+
+	def loadStoreData(self):
+		installers = dict()
+		updateSource = self.ConfigManager.getModulesUpdateSource()
+		req = requests.get(
+			url='https://api.github.com/search/code?q=extension:install+repo:project-alice-powered-by-snips/ProjectAliceModules/',
+			auth=GithubCloner.getGithubAuth())
+		results = req.json()
+		if results:
+			for module in results['items']:
+				try:
+					req = requests.get(
+						url=f"{module['url'].split('?')[0]}?ref={updateSource}",
+						headers={'Accept': 'application/vnd.github.VERSION.raw'},
+						auth=GithubCloner.getGithubAuth()
+					)
+					installer = req.json()
+					if installer:
+						installers[installer['name']] = installer
+
+				except Exception:
+					continue
+
+		actualVersion = Version(constants.VERSION)
+		return {
+			moduleName: moduleInfo for moduleName, moduleInfo in installers.items()
+			if self.ModuleManager.getModuleInstance(moduleName=moduleName, silent=True) is None and actualVersion >= Version(moduleInfo['aliceMinVersion'])
+		}

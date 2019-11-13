@@ -6,6 +6,6 @@ apt-get update
 apt-get upgrade -y
 apt-get install -y matrixio-creator-init libmatrixio-creator-hal libmatrixio-creator-hal-dev
 
-sudo -u pi bash <<EOF
+sudo -u "$(logname)" bash <<EOF
     /home/pi/snipsLedControl/venv/bin/pip3 --no-cache-dir install matrix-lite
 EOF

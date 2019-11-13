@@ -60,10 +60,10 @@ class IntentRemoteProcessor:
 		fullIntentName = intent['name']
 
 		if hashComputationOnly or (oldInstanceExists and oldHash == curHash):
-			self._ctx.log(f'[Sync] Intent model {intentId} = {fullIntentName} has no changes')
+			self._ctx.log(f'Intent model {intentId} ({fullIntentName}) has no changes')
 		elif oldInstanceExists:
 			changes = True
-			self._ctx.log(f'[Sync] Intent model {intentId} = {fullIntentName} has been edited')
+			self._ctx.log(f'Intent model {intentId} ({fullIntentName}) has been edited')
 			self._ctx.intent.edit(
 				userId=self._ctx.userId,
 				intentId=intentId,
@@ -91,7 +91,7 @@ class IntentRemoteProcessor:
 				slotsDefinition=intent['slots'],
 				utterancesDefinition=intent['utterances']
 			)
-			self._ctx.log(f'[Sync] Intent model {intentId} = {fullIntentName} has been created')
+			self._ctx.log(f'Intent model {intentId} ({fullIntentName}) has been created')
 			self._createdInstances['intents'].append({'id': intentId})
 			curHash = self.intentValuesToHash(typeEntityMatching=typeEntityMatching, intentId=intentId, skillId=skillId)
 
@@ -102,17 +102,18 @@ class IntentRemoteProcessor:
 		try:
 			return self.syncIntentsOnAssistant(typeEntityMatching=typeEntityMatching, skillId=skillId, intentSyncState=intentSyncState, hashComputationOnly=hashComputationOnly)
 		except IntentError as ie:
-			self._ctx.log('[Safe] Handle error gracefully')
+			self._ctx.log('Handle error gracefully')
 			self._ctx.log(ie.message)
 		except:
 			e = sys.exc_info()[0]
-			self._ctx.log('[Safe] Handle error gracefully')
+			self._ctx.log('Handle error gracefully')
 			self._ctx.log(e)
 			self._ctx.log(traceback.format_exc())
 			sys.exit(-1)
 
 
 	def syncIntentsOnAssistant(self, typeEntityMatching: dict, skillId: str, intentSyncState: str = None, hashComputationOnly: bool = False) -> tuple:
+		# TODO this is used like a dict and appears to be a dict but typing says it is a string -> somethings wrong here
 		self._syncState = intentSyncState or self.createNewSavedIntent()
 
 		intentMatching = self.syncIntent(typeEntityMatching, skillId, hashComputationOnly)

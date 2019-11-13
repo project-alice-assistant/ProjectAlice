@@ -1,4 +1,14 @@
 $(function () {
+
+	$('.widgetOptions').dialog({
+		autoOpen: false,
+		draggable: false,
+		width: 600,
+		height: 600,
+		modal: true,
+		resizable: false
+	});
+
 	$('.widget').draggable({
 		containment: '.widgetsPane',
 		snap: '.widget',
@@ -20,7 +30,7 @@ $(function () {
 
 			$.ajax({
 				contentType: 'application/json',
-				url: '/home/saveWidgetPos',
+				url: '/home/saveWidgetPosition/',
 				data: JSON.stringify({
 					id: $(ui.draggable).attr('id'),
 					x: $(ui.draggable).position().left,
@@ -45,14 +55,14 @@ $(function () {
 		}
 	});
 
-	$('#removeWidget').on('click', function () {
+	$('#removeWidget').on('click touchstart', function () {
 		$('.widgetDelete').show();
 		$('#widgetCheck').show();
 		$('#addWidget').hide();
 		$('#removeWidget').hide();
 	});
 
-	$('#widgetCheck').on('click', function () {
+	$('#widgetCheck').on('click touchstart', function () {
 		$('.widgetDelete').hide();
 		$('#widgetCheck').hide();
 		$('#addWidget').show();
@@ -60,10 +70,10 @@ $(function () {
 		location.reload();
 	});
 
-	$('.fa-minus-circle').on('click', function () {
+	$('.fa-minus-circle').on('click touchstart', function () {
 		if ($(this).parents('.widget').length > 0) {
 			$.ajax({
-				url: '/home/removeWidget',
+				url: '/home/removeWidget/',
 				data: {
 					id: $(this).parent().parent().attr('id')
 				},
@@ -73,14 +83,14 @@ $(function () {
 		}
 	});
 
-	$('.fa-plus-circle').on('click', function () {
+	$('.fa-plus-circle').on('click touchstart', function () {
 		$('#addWidgetDialog').dialog('open');
 	});
 
-	$('.addWidgetCheck').on('click', function () {
+	$('.addWidgetCheck').on('click touchstart', function () {
 		if ($(this).parents('.addWidgetLine').length > 0) {
 			$.ajax({
-				url: '/home/addWidget',
+				url: '/home/addWidget/',
 				data: {
 					id: $(this).parent().attr('id')
 				},
@@ -89,4 +99,8 @@ $(function () {
 			$(this).parent().remove();
 		}
 	});
+
+	$('[id^=widgetSettings_]').on('click touchstart', function () {
+
+	})
 });

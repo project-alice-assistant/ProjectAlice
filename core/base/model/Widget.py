@@ -1,42 +1,58 @@
 from textwrap import dedent
 import inspect
 import json
-import logging
 import sqlite3
 
 from pathlib import Path
+from typing import Optional, Dict
 
-from core.base.SuperManager import SuperManager
+from core.base.model.ProjectAliceObject import ProjectAliceObject
 
 
-class Widget:
+class Widget(ProjectAliceObject):
 
 	SIZE = 'w'
 	OPTIONS = dict()
 
 	def __init__(self, data: sqlite3.Row):
-		self._logger = logging.getLogger('ProjectAlice')
+		super().__init__()
 		self._name = data['name']
 		self._parent = data['parent']
 
+		# sqlite3.Row does not support .get like dicts
 		self._state = data['state'] if 'state' in data.keys() else 0
 		self._x = data['posx'] if 'posx' in data.keys() else 0
 		self._y = data['posy'] if 'posy' in data.keys() else 0
 		self._size = data['size'] if 'size' in data.keys() else self.SIZE
-		options = data['options'] if 'options' in data.keys() else self.OPTIONS
+		options = json.loads(data['options']) if 'options' in data.keys() else self.OPTIONS
 		if options:
-			self._options = json.loads(options)
+			self._options = {**self.OPTIONS, **options}
 		else:
 			self._options = self.OPTIONS
 
 		self._zindex = data['zindex'] if 'zindex' in data.keys() else 9999
+		self._language = self.loadLanguage()
 
 
+	def loadLanguage(self) -> Optional[Dict]:
+		try:
+			file = self.getCurrentDir() / f'lang/{self.name}.lang.json'
+			with file.open() as fp:
+				return json.load(fp)
+		except FileNotFoundError:
+			self.logWarning(f'Missing language file for widget {self.name}')
+			return None
+		except Exception:
+			self.logWarning(f"Couldn't import language file for widget {self.name}")
+			return None
+
+
+	# noinspection SqlResolve
 	def saveToDB(self):
-		SuperManager.getInstance().databaseManager.replace(
+		self.DatabaseManager.replace(
 			tableName='widgets',
 			query='REPLACE INTO :__table__ (parent, name, posx, posy, state, options, zindex) VALUES (:parent, :name, :posx, :posy, :state, :options, :zindex)',
-			callerName=SuperManager.getInstance().moduleManager.name,
+			callerName=self.ModuleManager.name,
 			values={
 				'parent': self.parent,
 				'name': self.name,
@@ -58,8 +74,12 @@ class Widget:
 			file = self.getCurrentDir() / f'templates/{self.name}.html'
 			return file.open().read()
 		except:
-			self._logger.warning(f"[{self.name}] Widget doesn't have html file")
+			self.logWarning(f"Widget doesn't have html file")
 			return ''
+
+
+	def getLanguageString(self, key: str) -> str:
+		return self._language.get(key, 'Missing string')
 
 
 	@property

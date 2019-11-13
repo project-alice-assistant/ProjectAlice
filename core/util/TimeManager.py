@@ -1,6 +1,5 @@
 from datetime import datetime
 
-from core.base.SuperManager import SuperManager
 from core.base.model.Manager import Manager
 
 
@@ -11,55 +10,19 @@ class TimeManager(Manager):
 	def __init__(self):
 		super().__init__(self.NAME)
 
-		self._fullMinuteTimer 	= None
-		self._fiveMinuteTimer 	= None
-		self._quarterHourTimer 	= None
-		self._fullHourTimer 	= None
-
 
 	def onBooted(self):
-		self.onFullMinute()
-		self.onFiveMinute()
-		self.onQuarterHour()
-		self.onFullHour()
+		self.timerSignal(1, 'onFullMinute')
+		self.timerSignal(5, 'onFiveMinute')
+		self.timerSignal(15, 'onQuarterHour')
+		self.timerSignal(60, 'onFullHour')
 
 
-	def onFullMinute(self):
-		if self._fullMinuteTimer:
-			SuperManager.getInstance().broadcast('onFullMinute', exceptions=[self.NAME], propagateToModules=True)
-
-		second = datetime.now().second
-		secondsTillFullMinute = 60 - second
-		self._fullMinuteTimer = self.ThreadManager.newTimer(secondsTillFullMinute, self.onFullMinute)
-
-
-	def onFiveMinute(self):
-		if self._fiveMinuteTimer:
-			SuperManager.getInstance().broadcast('onFiveMinute', exceptions=[self.NAME], propagateToModules=True)
+	def timerSignal(self, minutes: int, signal: str, running: bool = False):
+		if running:
+			self.broadcast(signal, exceptions=[self.name], propagateToModules=True)
 
 		minute = datetime.now().minute
 		second = datetime.now().second
-		secondsTillFive = 60 * (round(300 / 60) - (minute % round(300 / 60))) - second
-
-		self._fiveMinuteTimer = self.ThreadManager.newTimer(secondsTillFive, self.onFiveMinute)
-
-
-	def onQuarterHour(self):
-		if self._quarterHourTimer:
-			SuperManager.getInstance().broadcast('onQuarterHour', exceptions=[self.NAME], propagateToModules=True)
-
-		minute = datetime.now().minute
-		second = datetime.now().second
-		secondsTillQuarter = 60 * (round(900 / 60) - (minute % round(900 / 60))) - second
-
-		self._quarterHourTimer = self.ThreadManager.newTimer(secondsTillQuarter, self.onQuarterHour)
-
-
-	def onFullHour(self):
-		if self._fullHourTimer:
-			SuperManager.getInstance().broadcast('onFullHour', exceptions=[self.NAME], propagateToModules=True)
-
-		minute = datetime.now().minute
-		second = datetime.now().second
-		secondsTillFullHour = ((60 - minute) * 60) - second
-		self._fullHourTimer = self.ThreadManager.newTimer(secondsTillFullHour, self.onFullHour)
+		missingSeconds = 60 * (minutes - minute % minutes) - second
+		self.ThreadManager.doLater(interval=missingSeconds, func=self.timerSignal, args=[minutes, signal, True])

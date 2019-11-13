@@ -1,12 +1,15 @@
+from __future__ import annotations
 from textwrap import dedent
-from paho.mqtt.client import MQTTMessage # type: ignore
+from paho.mqtt.client import MQTTMessage
 
 from core.base.model import Intent
-from core.commons import commons, constants
+from core.base.model.ProjectAliceObject import ProjectAliceObject
+from core.commons import constants
 
 
-class DialogSession:
+class DialogSession(ProjectAliceObject):
 	def __init__(self, siteId):
+		super().__init__(logDepth=5)
 		self._siteId = siteId
 		self._sessionId = ''
 		self._user = constants.UNKNOWN_USER
@@ -18,6 +21,7 @@ class DialogSession:
 		self._intentHistory = list()
 		self._intentFilter = list()
 		self._notUnderstood = 0
+		self._currentState = constants.DEFAULT
 
 
 	def extend(self, message: MQTTMessage, sessionId: str = None):
@@ -33,7 +37,7 @@ class DialogSession:
 		self._updateSessionData()
 
 
-	def reviveOldSession(self, session):
+	def reviveOldSession(self, session: DialogSession):
 		self._payload = session.payload
 		self._slots = session.slots
 		self._slotsAsObjects = session.slotsAsObjects
@@ -43,20 +47,21 @@ class DialogSession:
 		self._intentHistory = session.intentHistory
 		self._intentFilter = session.intentFilter
 		self._notUnderstood = session.notUnderstood
+		self._currentState = session.currentState
 
 
 	def _parseMessage(self):
-		self._payload = commons.payload(self._message)
-		self._slots = commons.parseSlots(self._message)
-		self._slotsAsObjects = commons.parseSlotsToObjects(self._message)
-		self._customData = commons.parseCustomData(self._message)
+		self._payload = self.Commons.payload(self._message)
+		self._slots = self.Commons.parseSlots(self._message)
+		self._slotsAsObjects = self.Commons.parseSlotsToObjects(self._message)
+		self._customData = self.Commons.parseCustomData(self._message)
 
 
 	def _updateSessionData(self):
-		self._payload = commons.payload(self._message)
-		self._slots = {**self._slots, **commons.parseSlots(self._message)}
-		self._slotsAsObjects = {**self._slotsAsObjects, **commons.parseSlotsToObjects(self._message)}
-		self._customData = {**self._customData, **commons.parseCustomData(self._message)}
+		self._payload = self.Commons.payload(self._message)
+		self._slots = {**self._slots, **self.Commons.parseSlots(self._message)}
+		self._slotsAsObjects = {**self._slotsAsObjects, **self.Commons.parseSlotsToObjects(self._message)}
+		self._customData = {**self._customData, **self.Commons.parseCustomData(self._message)}
 
 
 	def addToHistory(self, intent: Intent):
@@ -178,6 +183,16 @@ class DialogSession:
 	@notUnderstood.deleter
 	def notUnderstood(self):
 		self._notUnderstood = 0
+
+
+	@property
+	def currentState(self) -> str:
+		return self._currentState
+
+
+	@currentState.setter
+	def currentState(self, value: str):
+		self._currentState = value
 
 
 	def __repr__(self) -> str:

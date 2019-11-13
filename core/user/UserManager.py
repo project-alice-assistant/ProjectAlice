@@ -1,5 +1,7 @@
 from typing import Any, Optional
 
+import bcrypt
+
 from core.base.model.Manager import Manager
 from core.user.model.AccessLevels import AccessLevel
 from core.user.model.User import User
@@ -15,6 +17,7 @@ class UserManager(Manager):
 			'username TEXT NOT NULL',
 			'state TEXT NOT NULL',
 			'accessLevel TEXT NOT NULL',
+			'pin TEXT',
 			'lang TEXT',
 			'tts TEXT',
 			'ttsLanguage TEXT',
@@ -32,7 +35,7 @@ class UserManager(Manager):
 	def onStart(self):
 		super().onStart()
 		self._loadUsers()
-		self._logger.info(f'- Loaded {len(self._users)} users')
+		self.logInfo(f'- Loaded {len(self._users)} users')
 
 
 	def _loadUsers(self):
@@ -46,16 +49,35 @@ class UserManager(Manager):
 		return self._users
 
 
+	@staticmethod
+	def getHashedPassword(password: int, rounds: int = 12) -> str:
+		return bcrypt.hashpw(str(password).encode(), bcrypt.gensalt(rounds=rounds))
+
+
+	def checkPinCode(self, user: User, password: str):
+		return user in self._users.values() and user.checkPassword(password)
+
+
 	# noinspection SqlResolve
-	def addNewUser(self, name: str, access: str = 'guest', state: str = 'home'):
-		insertId = self.databaseInsert(tableName='users',
-									   query='INSERT INTO :__table__ (username, accessLevel, state, lang) VALUES (:username, :accessLevel, :state, :lang)',
-									   values={'username': name.lower(), 'accessLevel': access, 'state': state, 'lang': self.LanguageManager.activeLanguageAndCountryCode})
+	def addNewUser(self, name: str, access: str = 'guest', state: str = 'home', pinCode: int = None):
+		hashedPassword = self.getHashedPassword(pinCode or 1234)
+
+		insertId = self.databaseInsert(
+			tableName='users',
+			values={
+				'username': name.lower(),
+				'accessLevel': access,
+				'state': state,
+				'pin': hashedPassword,
+				'lang': self.LanguageManager.activeLanguageAndCountryCode
+			})
 		if insertId > -1:
 			self._users[name] = User({
+				'id': insertId,
 				'username': name.title(),
 				'accessLevel': access,
 				'state': state,
+				'pin': hashedPassword,
 				'lang': self.LanguageManager.activeLanguageAndCountryCode,
 				'tts': '',
 				'ttsLanguage': '',
@@ -64,8 +86,16 @@ class UserManager(Manager):
 			})
 
 
+	def addUserPinCode(self, name: str, pinCode: int):
+		self.DatabaseManager.update(
+			tableName='users',
+			callerName=self.name,
+			values={'pin': self.getHashedPassword(pinCode)},
+			row=('username', name))
+
+
 	def getUserAccessLevel(self, username: str) -> Optional[Any]:
-		if not username in self._users:
+		if username not in self._users:
 			return None
 
 		return self._users[username].accessLevel
@@ -75,17 +105,16 @@ class UserManager(Manager):
 		return self._users.get(username, None)
 
 
+	def getUserById(self, userId: int) -> Optional[User]:
+		return next((user for user in self._users.values() if user.id == userId), None)
+
+
 	def getAllUserNames(self, skipGuests: bool = True) -> list:
 		"""
 			Return all users
 			:return: list
 		"""
-		if skipGuests:
-			users = [k for k in self._users if self._users[k] != 'guest']
-		else:
-			users = [k for k in self._users]
-
-		return users
+		return [k for k in self._users if not skipGuests or self._users[k] != 'guest']
 
 
 	def checkIfAllUser(self, state: str) -> bool:
@@ -94,17 +123,7 @@ class UserManager(Manager):
 		:param state: the state to check
 		:return: boolean
 		"""
-
-		if not self._users:
-			return False
-
-		userNames = self.getAllUserNames()
-
-		for username in userNames:
-			if self._users[username].state != state:
-				return False
-
-		return True
+		return self._users and all(self._users[username].state == state for username in self.getAllUserNames())
 
 
 	def checkIfUser(self, user: str, state: str) -> bool:
@@ -167,16 +186,8 @@ class UserManager(Manager):
 			self._users[user].sleeping = False
 
 
-	def hasAccessLevel(self, user: str, requiredAccessLevel: str) -> bool:
-		try:
-			_ = AccessLevel[requiredAccessLevel.upper()]
-		except KeyError:
-			self._logger.error(f'[{self.name}] Was asked to check access level but accesslevel "{requiredAccessLevel}" doesn\'t exist')
-			return False
+	def hasAccessLevel(self, user: str, requiredAccessLevel: int) -> bool:
+		if isinstance(requiredAccessLevel, AccessLevel):
+			requiredAccessLevel = requiredAccessLevel.value
 
-
-		if user.lower() not in self._users:
-			self._logger.error(f'[{self.name}] Was asked to check access level but user "{user}" doesn\'t exist')
-			return False
-
-		return AccessLevel[self._users[user.lower()].accessLevel.upper()].value <= AccessLevel[requiredAccessLevel.upper()].value
+		return user.lower() in self._users and AccessLevel[self._users[user.lower()].accessLevel.upper()].value <= requiredAccessLevel

@@ -1,20 +1,17 @@
-import logging
+import typing
 
 from core.base.SuperManager import SuperManager
+from core.util.model.Logger import Logger
 
 
-class SamkillaException(Exception):
+class _ProjectAliceException(Exception):
 
-	def __init__(self, status: int, message: str, context: list):
-		self._status = status
+	def __init__(self, message: str = None, status: int = None, context: list = None):
+		self._logger = Logger()
 		self._message = message
+		self._status = status
 		self._context = context
 		super().__init__(message)
-
-
-	@property
-	def status(self) -> int:
-		return self._status
 
 
 	@property
@@ -23,53 +20,62 @@ class SamkillaException(Exception):
 
 
 	@property
-	def context(self) -> list:
+	def status(self) -> typing.Optional[int]:
+		return self._status
+
+
+	@property
+	def context(self) -> typing.Optional[list]:
 		return self._context
 
 
-class FunctionNotImplemented(Exception):
+class SamkillaException(_ProjectAliceException):
+	def __init__(self, status: int, message: str, context: list):
+		super().__init__(message, status, context)
+
+
+class FunctionNotImplemented(_ProjectAliceException):
 	def __init__(self, clazz: str, funcName: str):
-		raise NotImplementedError(f'[{clazz}] {funcName} needs implementation!!')
+		self._logger.logError(f'{funcName} must be implemented in {clazz}!')
 
 
-class ModuleStartingFailed(Exception):
+class ModuleStartingFailed(_ProjectAliceException):
 	def __init__(self, moduleName: str = '', error: str = ''):
-		self._logger = logging.getLogger('ProjectAlice')
-		self._logger.error(f'An error occured while starting a module: {error}')
+		super().__init__(message=error)
+		self._logger.logInfo(f'An error occured while starting a module: {error}')
 
 		if moduleName:
 			SuperManager.getInstance().moduleManager.deactivateModule(moduleName)
 
 
-class ModuleStartDelayed(Exception):
+class ModuleStartDelayed(_ProjectAliceException):
 	def __init__(self, moduleName):
-		self._logger = logging.getLogger('ProjectAlice')
-		self._logger.warning(f'[{moduleName}] Delaying module start')
+		super().__init__(moduleName)
+		self._logger.logWarning('Delaying module start')
 		SuperManager.getInstance().moduleManager.getModuleInstance(moduleName).delayed = True
 
 
-class IntentError(SamkillaException):
+class IntentError(_ProjectAliceException):
 	def __init__(self, status: int, message: str, context: list):
-		super().__init__(status, message, context)
+		super().__init__(message, status, context)
 
 
-class HttpError(SamkillaException):
+class HttpError(_ProjectAliceException):
 	def __init__(self, status: int, message: str, context: list):
-		super().__init__(status, message, context)
+		super().__init__(message, status, context)
 
 
-class IntentWithUnknownSlotError(SamkillaException):
+class IntentWithUnknownSlotError(_ProjectAliceException):
 	def __init__(self, status: int, message: str, context: list):
-		super().__init__(status, message, context)
+		super().__init__(message, status, context)
 
 
-class AssistantNotFoundError(SamkillaException):
+class AssistantNotFoundError(_ProjectAliceException):
 	def __init__(self, status: int, message: str, context: list):
-		super().__init__(status, message, context)
+		super().__init__(message, status, context)
 
 
-class ModuleNotConditionCompliant(Exception):
-
+class ModuleNotConditionCompliant(_ProjectAliceException):
 	def __init__(self, message: str, moduleName: str, condition: str, conditionValue: str):
 		self._moduleName = moduleName
 		self._condition = condition
@@ -92,17 +98,16 @@ class ModuleNotConditionCompliant(Exception):
 		return self._conditionValue
 
 
-class DbConnectionError(Exception): pass
-class InvalidQuery(Exception): pass
-class AccessLevelTooLow(Exception): pass
-class GithubTokenFailed(Exception): pass
-class GithubRateLimit(Exception): pass
-class LanguageManagerLangNotSupported(Exception): pass
-class ConfigurationUpdateFailed(Exception): pass
+class DbConnectionError(_ProjectAliceException): pass
+class InvalidQuery(_ProjectAliceException): pass
+class AccessLevelTooLow(_ProjectAliceException): pass
+class GithubTokenFailed(_ProjectAliceException): pass
+class GithubRateLimit(_ProjectAliceException): pass
+class LanguageManagerLangNotSupported(_ProjectAliceException): pass
+class ConfigurationUpdateFailed(_ProjectAliceException): pass
 
-class VitalConfigMissing(Exception):
+class VitalConfigMissing(_ProjectAliceException):
 	def __init__(self, message: str = None):
 		super().__init__(message)
-		self._logger = logging.getLogger('ProjectAlice')
-		self._logger.warning(f'[ConfigManager] A vital configuration ("{message}") is missing. Make sure the following configurations are set: {" / ".join(SuperManager.getInstance().configManager.vitalConfigs)}')
+		self._logger.logWarning(f'A vital configuration ("{message}") is missing. Make sure the following configurations are set: {" / ".join(SuperManager.getInstance().configManager.vitalConfigs)}')
 		SuperManager.getInstance().projectAlice.onStop()

@@ -1,6 +1,6 @@
 import requests
+from requests.exceptions import RequestException
 
-from core.base.SuperManager import SuperManager
 from core.base.model.Manager import Manager
 
 
@@ -16,9 +16,9 @@ class InternetManager(Manager):
 	def onStart(self):
 		super().onStart()
 		if not self.ConfigManager.getAliceConfigByName('stayCompletlyOffline'):
-			self._checkOnlineState()
+			self.checkOnlineState()
 		else:
-			self._logger.info(f'[{self.name}] Configurations set to stay completly offline')
+			self.logInfo('Configurations set to stay completly offline')
 
 
 	@property
@@ -27,27 +27,24 @@ class InternetManager(Manager):
 
 
 	def onBooted(self):
-		self._checkOnlineState()
+		self.checkOnlineState()
 
 
 	def onFullMinute(self):
 		if not self.ConfigManager.getAliceConfigByName('stayCompletlyOffline'):
-			self._checkOnlineState()
+			self.checkOnlineState()
 
 
-	def _checkOnlineState(self, addr: str = 'http://clients3.google.com/generate_204'):
+	def checkOnlineState(self, addr: str = 'http://clients3.google.com/generate_204') -> bool:
 		try:
-			req = requests.get(addr)
-			if req.status_code == 204:
-				if not self._online:
-					SuperManager.getInstance().broadcast(method='onInternetConnected', exceptions=[self._name])
-
-				self._online = True
-				return
-		except:
-			pass
-
-		if self._online:
-			SuperManager.getInstance().broadcast(method='onInternetLost', exceptions=[self._name])
-
-		self._online = False
+			online = requests.get(addr).status_code == 204
+		except RequestException:
+			online = False
+		
+		if self._online and not online:
+			self._online = False
+			self.broadcast(method='onInternetLost', exceptions=[self.name], propagateToModules=True)
+		elif not self._online and online:
+			self._online = True
+			self.broadcast(method='onInternetConnected', exceptions=[self.name], propagateToModules=True)
+		return online

@@ -1,6 +1,6 @@
 {
 	"name": "AliceCore",
-	"version": 1.14,
+	"version": "1.0.20",
 	"author": "ProjectAlice",
 	"maintainers": [
 		"Psycho",
@@ -8,7 +8,7 @@
 		"maxbachmann"
 	],
 	"desc": "AliceCore is the official module that handles all core intents",
-	"aliceMinVersion": 0.11,
+	"aliceMinVersion": "1.0.0-a3",
 	"systemRequirements": [],
 	"pipRequirements": [],
 	"conditions": {

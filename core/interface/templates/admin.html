@@ -1,9 +1,83 @@
 {% extends 'base.html' %}
 
-{% block header %}
-	{% block title %}{{ langData.admin }}{% endblock %}
+{% block title %}
+	{{ langData.admin }}
+{% endblock %}
+
+{% block loaders %}
+	<script src="{{ url_for('static', filename='js/admin.js') }}"></script>
+{% endblock %}
+
+{% block pageTitle %}
+	{{ langData.admin }}
 {% endblock %}
 
 {% block content %}
-
+	<div id="adminPageTabsContainer">
+		<ul>
+			<li class="tab" data-for="AliceSettings">{{ langData.adminTabTitleSetting }}</li>
+			<li class="tab" data-for="Utilities">{{ langData.adminTabTitleUtilities }}</li>
+		</ul>
+		<div class="tabsContent">
+			<div id="AliceSettings" class="configBox">
+				<form action="/admin/saveAliceSettings/" name="config_for_{{ moduleName }}" method="post" autocomplete="off" novalidate>
+					{% for settingName, settingValue in aliceSettings.items() if not settingName == 'modules' and not settingName == 'supportedLanguages' %}
+						<div class="configLine">
+							<label class="configLabel" for="{{ settingName }}">{{ settingName }}</label>
+							<div class="configInput">
+								{% if aliceSettingsTemplate[settingName]['dataType'] == 'boolean' %}
+									<input type="checkbox" name="{{ settingName }}" value="on" id="{{ settingName }}" {% if settingValue is sameas true %}checked{% endif %}>
+									<!-- Make sure unchecked chexboxes send off data -->
+									<input type="hidden" name="{{ settingName }}" value="off">
+								{% elif aliceSettingsTemplate[settingName]['dataType'] == 'integer' %}
+									<input type="number" name="{{ settingName }}" value="{{ settingValue }}" id="{{ settingName }}">
+								{% elif aliceSettingsTemplate[settingName]['dataType'] == 'password' %}
+									<input type="password" name="{{ settingName }}" value="{{ settingValue }}" id="{{ settingName }}">
+								{% elif aliceSettingsTemplate[settingName]['dataType'] == 'string' %}
+									<input type="text" name="{{ settingName }}" value="{{ settingValue }}" id="{{ settingName }}">
+								{% elif aliceSettingsTemplate[settingName]['dataType'] == 'list' %}
+									{% if aliceSettingsTemplate[settingName]['values'] is mapping %}
+										<select name="{{ settingName }}" id="{{ settingName }}">
+											{% for optionName, optionValue in aliceSettingsTemplate[settingName]['values'].items() %}
+												<option value="{{ optionValue }}" {% if optionValue == settingValue %}selected{% endif %}>{{ optionName }}</option>
+											{% endfor %}
+										</select>
+									{% else %}
+										<select name="{{ settingName }}" id="{{ settingName }}">
+											{% for optionValue in aliceSettingsTemplate[settingName]['values'] %}
+												<option value="{{ optionValue }}" {% if optionValue == settingValue %}selected{% endif %}>{{ optionValue }}</option>
+											{% endfor %}
+										</select>
+									{% endif %}
+								{% else %}
+									<input type="text" name="{{ settingName }}" value="{{ settingValue }}" id="{{ settingName }}">
+								{% endif %}
+							</div>
+						</div>
+					{% endfor %}
+					<input class="configSaveButton" type="submit" value="{{ langData.save }}">
+				</form>
+			</div>
+			<div id="Utilities" class="utilitiesBox">
+				<div id="restart" class="utility">
+					<div class="utilityIcon">
+						<i class="fas fa-redo-alt"></i>
+					</div>
+					<div class="utilityText">{{ langData.restartAlice }}</div>
+				</div>
+				<div id="reboot" class="utility">
+					<div class="utilityIcon">
+						<i class="fas fa-power-off"></i>
+					</div>
+					<div class="utilityText">{{ langData.reboot }}</div>
+				</div>
+				<div id="trainAndDownload" class="utility">
+					<div class="utilityIcon">
+						<i class="fas fa-arrow-circle-down"></i>
+					</div>
+					<div class="utilityText">{{ langData.trainAndDlAssistant }}</div>
+				</div>
+			</div>
+		</div>
+	</div>
 {% endblock %}

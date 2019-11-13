@@ -2,21 +2,32 @@ from pathlib import Path
 
 from flask import jsonify, render_template
 
-from core.commons import commons
-from core.interface.views.View import View
+from core.interface.model.View import View
 
 
 class SyslogView(View):
-	LOGS = Path(commons.rootDir(), 'var', 'logs', 'logs.log')
-
+	route_base = '/syslog/'
+	counter = 0
 
 	def __init__(self):
 		super().__init__()
-		self._counter = 0
+		self._logs = Path(self.Commons.rootDir(), 'var', 'logs', 'logs.log')
 
 
 	def index(self):
-		return render_template('syslog.html', langData=self._langData)
+		return render_template(template_name_or_list='syslog.html',
+		                       langData=self._langData,
+		                       aliceSettings=self.ConfigManager.aliceConfigurations)
+
+
+	@classmethod
+	def setCounter(cls, value: int):
+		cls.counter = value
+
+
+	@classmethod
+	def getCounter(cls) -> int:
+		return cls.counter
 
 
 	def update(self):
@@ -24,12 +35,12 @@ class SyslogView(View):
 
 
 	def refresh(self):
-		self._counter = 0
+		self.__class__.setCounter(0)
 		return self.update()
 
 
 	def _getData(self) -> list:
-		data = self.LOGS.open('r').readlines()
-		ret = data[self._counter:]
-		self._counter = len(data)
-		return ['] -'.join(line.split('] -')[1:]) for line in ret]
+		data = self._logs.open('r').readlines()
+		ret = data[self.__class__.getCounter():]
+		self.__class__.setCounter(len(data))
+		return ['] -'.join(line.split('] -')[2:]) for line in ret]

@@ -38,7 +38,7 @@ class ThreadManager(Manager):
 			if not threadTimer.timer.isAlive():
 				self._timers.remove(threadTimer)
 				i += 1
-		self._logger.info(f'[{self.NAME}] Cleaned {i} dead timers')
+		self.logInfo(f'Cleaned {i} dead timers')
 
 
 	def newTimer(self, interval: float, func: str, autoStart: bool = True, args: list = None, kwargs: dict = None) -> threading.Timer:
@@ -104,19 +104,23 @@ class ThreadManager(Manager):
 
 	def isThreadAlive(self, name: str) -> bool:
 		if name not in self._threads:
-			for t in threading.enumerate():
-				if t.name == name and t.isAlive():
-					return True
-		else:
-			return self._threads[name].isAlive()
+			return any(t.name == name and t.isAlive() for t in threading.enumerate())
+
+		return self._threads[name].isAlive()
 
 
 	def newEvent(self, name: str, onSetCallback: str = None, onClearCallback: str = None) -> AliceEvent:
-		if name not in self._events:
-			self._events[name] = AliceEvent(name, onSetCallback, onClearCallback)
+		if name in self._events:
+			self._events[name].clear()
 
+		self._events[name] = AliceEvent(name, onSetCallback, onClearCallback)
 		return self._events[name]
 
 
 	def getEvent(self, name: str) -> AliceEvent:
 		return self._events.get(name, AliceEvent(name))
+
+
+	def clearEvent(self, name: str):
+		if name in self._events:
+			self._events.pop(name).clear()

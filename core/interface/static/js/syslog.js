@@ -15,7 +15,7 @@ $(function () {
 	function refreshData(type) {
 		let container = $('#console');
 
-		$.get('/syslog/' + type, function (data) {
+		$.post('/syslog/' + type + '/', function (data) {
 			for (let i = 0; i < data.data.length; i++) {
 				container.append(
 					'<span class="logLine ' + getLogColor(data.data[i]) + '">' + data.data[i] + '</span>'
@@ -28,12 +28,12 @@ $(function () {
 		});
 	}
 
-	$('#checkedCheckbox').on('click', function () {
+	$('#checkedCheckbox').on('click touchstart', function () {
 		$(this).hide();
 		$('#emptyCheckbox').show();
 	});
 
-	$('#emptyCheckbox').on('click', function () {
+	$('#emptyCheckbox').on('click touchstart', function () {
 		$(this).hide();
 		$('#checkedCheckbox').show();
 	});

@@ -118,9 +118,6 @@ config.py
 credentials/*
 !credentials/.gitkeep
 
-modules/Customisation/Customisation.py
-modulesDeprecated/Customisation/Customisation.py
-
 assistant
 
 system/data/data.db

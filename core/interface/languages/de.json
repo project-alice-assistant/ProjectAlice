@@ -4,6 +4,7 @@
 	"syslog": "syslog",
 	"snipswatch": "snipswatch",
 	"admin": "admin",
+	"devMode": "devMode",
 	"by": "von",
 	"status": "status",
 	"enable": "aktivieren",
@@ -14,5 +15,10 @@
 	"viewIntents": "Intents ansehen",
 	"moduleSettings": "Moduleinstellungen",
 	"save": "Speichern",
-	"followLogs": "Autoscroll"
+	"followLogs": "Autoscroll",
+	"adminTabTitleSetting": "Alice Einstellungen",
+	"adminTabTitleUtilities": "Utilities",
+	"restartAlice": "Alice neustarten",
+	"reboot": "Reboot",
+	"trainAndDlAssistant": "Assistant herunterladen"
 }

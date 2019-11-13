@@ -1,7 +1,8 @@
 import time
+from typing import Iterable
 
 from core.base.model.Manager import Manager
-from core.util.model import TelemetryType
+from core.util.model.TelemetryType import TelemetryType
 
 
 class TelemetryManager(Manager):
@@ -18,17 +19,53 @@ class TelemetryManager(Manager):
 		]
 	}
 
+	TELEMETRY_MAPPINGS = {
+		TelemetryType.WIND_STRENGTH: {
+			'onWindy': ['upperThreshold', 'WindAlertFromKmh']
+		},
+		TelemetryType.TEMPERATURE: {
+			'onTemperatureHighAlert': ['upperThreshold', 'TemperatureAlertHigh'],
+			'onTemperatureLowAlert': ['lowerThreshold', 'TemperatureAlertLow'],
+			'onFreezing': ['lowerThreshold', 0]
+		},
+		TelemetryType.CO2: {
+			'onCO2Alert': ['upperThreshold', 'CO2AlertHigh']
+		},
+		TelemetryType.HUMIDITY: {
+			'onHumidityHighAlert': ['upperThreshold', 'HumidityAlertHigh'],
+			'onHumidityLowAlert': ['lowerThreshold', 'HumidityAlertLow']
+		},
+		TelemetryType.PRESSURE: {
+			'onPressureHighAlert': ['upperThreshold', 'PressureAlertHigh'],
+			'onPressureLowAlert': ['lowerThreshold', 'PressureAlertLow']
+		},
+		TelemetryType.NOISE: {
+			'onNoiseAlert': ['upperThreshold', 'NoiseAlert']
+		},
+		TelemetryType.RAIN: {
+			'onRaining': None
+		},
+		TelemetryType.SUM_RAIN_1: {
+			'onTooMuchRain': ['upperThreshold', 'TooMuchRainAlert']
+		},
+		TelemetryType.UV_INDEX: {
+			'onUVIndexAlert': ['upperThreshold', 'UVIndexAlert']
+		}
+	}
+
 
 	def __init__(self):
 		super().__init__(self.NAME, self.DATABASE)
-		self._data = list
+		self._data = list()
 
 
 	def onStart(self):
 		super().onStart()
 		if not self.ConfigManager.getAliceConfigByName('enableDataStoring'):
 			self._isActive = False
-			self._logger.info(f'[{self.name}] Data storing is disabled')
+			self.logInfo('Data storing is disabled')
+		else:
+			self.loadData()
 
 
 	def onQuarterHour(self):
@@ -58,17 +95,31 @@ class TelemetryManager(Manager):
 		self.databaseInsert(
 			tableName='telemetry',
 			query='INSERT INTO :__table__ (type, value, service, siteId, timestamp) VALUES (:type, :value, :service, :siteId, :timestamp)',
-			values={'type': ttype.value, 'value': value, 'service': service, 'siteId': siteId, 'timestamp': timestamp}
+			values={'type': ttype.value, 'value': value, 'service': service, 'siteId': siteId, 'timestamp': round(timestamp)}
 		)
 
+		messages = self.TELEMETRY_MAPPINGS.get(ttype, dict())
+		for message, settings in messages.items():
+			if settings is None:
+				self.broadcast(method=message, exceptions=[self.name], propagateToModules=True, args=[service])
+				break
 
-	def getData(self, ttype: TelemetryType, siteId: str, service: str = None):
+			#TODO check if Telemetry module available
+			threshold = float(self.ConfigManager.getModuleConfigByName('Telemetry', settings[1]) if isinstance(settings[1], str) else settings[1])
+			value = float(value)
+			if settings[0] == 'upperThreshold' and value > threshold or \
+				settings[0] == 'lowerThreshold' and value < threshold:
+				self.broadcast(method=message, exceptions=[self.name], propagateToModules=True, args=[service])
+				break
+
+
+	def getData(self, ttype: TelemetryType, siteId: str, service: str = None) -> Iterable:
 		values = {'type': ttype.value, 'siteId': siteId}
 		if service:
 			values['service'] = service
 
 		return self.databaseFetch(
 			tableName='telemetry',
-			query=f"SELECT * FROM :__table__ WHERE type = :type and siteId = :siteId {'and service = :service' if service else ''} order by timestamp DESC LIMIT 1",
+			query="SELECT value, timestamp FROM :__table__ WHERE type = :type and siteId = :siteId ORDER BY `timestamp` DESC LIMIT 1",
 			values=values
 		)

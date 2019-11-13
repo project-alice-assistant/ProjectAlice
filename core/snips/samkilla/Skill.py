@@ -35,6 +35,7 @@ class Skill:
 
 	def listSkillsByUserId(self, userId: str, skillFilter: str = None, skillFilterAttribute: str = 'id', languageFilter: str = None,
 						   intentId: str = None, returnAllCacheIndexedBy: str = None, page: int = 1, totalSkills: int = None) -> typing.Iterable:
+		#TODO this is strange totalSkills is a int when it is defined (typing) -> line 63 would throw since it tries to append
 		if not totalSkills:
 			totalSkills = list()
 
@@ -89,18 +90,14 @@ class Skill:
 		indexedAssistantSkills = dict()
 
 		for skill in skills:
-			if skill['usedIn']:
-				for assistantMeta in skill['usedIn']:
-					if assistantMeta['assistantId'] == assistantId:
-						if indexedBy:
-							indexedAssistantSkills[skill[indexedBy]] = skill
-						else:
-							assistantSkills.append(skill)
+			for assistantMeta in skill['usedIn'] or list():
+				if assistantMeta['assistantId'] == assistantId:
+					if indexedBy:
+						indexedAssistantSkills[skill[indexedBy]] = skill
+					else:
+						assistantSkills.append(skill)
 
-		if indexedBy:
-			return indexedAssistantSkills
-
-		return assistantSkills
+		return indexedAssistantSkills if indexedBy else assistantSkills
 
 
 	def create(self, assistantId: str, language: str, name: str = 'Untitled', description: str = '', imageKey: str = EnumSkillImageUrl.default,
@@ -109,8 +106,6 @@ class Skill:
 		Warning: mind the language parameter if the assistant language is EN, skill must set language to EN
 		no error will be shown and the skill won't be created
 		"""
-		if not intents:
-			intents = list()
 
 		gqlRequest = [{
 			'operationName': 'createSkill',
@@ -118,7 +113,7 @@ class Skill:
 				'input': {
 					'description': description,
 					'imageUrl'   : EnumSkillImageUrl.getImageUrl(self._ctx.ROOT_URL, imageKey),
-					'intents'    : intents,
+					'intents'    : intents or list(),
 					'language'   : language,
 					'name'       : name,
 					'private'    : True
@@ -191,11 +186,7 @@ class Skill:
 
 	def removeFromAssistant(self, assistantId: str, skillId: str, deleteAfter: str = False):
 		existingSkills = self._ctx.assistant.extractSkillIdentifiers(assistantId=assistantId)
-		variablesSkills = list()
-
-		for existingSkillId in existingSkills:
-			if existingSkillId != skillId:
-				variablesSkills.append({'id': existingSkillId, 'parameters': None})
+		variablesSkills = [{'id': x, 'parameters': None} for x in existingSkills if x != skillId]
 
 		gqlRequest = [{
 			'operationName': 'PatchAssistantSkills',
@@ -233,12 +224,10 @@ class Skill:
 				intentDuplicate = self._ctx.intent.getIntentByUserIdAndIntentId(userId, oldIntentId)
 				self._ctx.log(f"Duplicate intent with id, name {oldIntentId}, {intentDuplicate['name']}")
 
-				if intentDuplicate:
-					if 'usedIn' in intentDuplicate and intentDuplicate['usedIn']:
-						for skillItem in intentDuplicate['usedIn']:
-							self._ctx.intent.removeFromSkill(intentId=intentDuplicate['id'], skillId=skillItem['skillId'], userId=userId, deleteAfter=False)
-					self._ctx.intent.delete(intentId=intentDuplicate['id'])
-					return self.forkSkillIntent(skillId, sourceIntentId, userId, newIntentName)
+				for skillItem in intentDuplicate.get('usedIn') or list():
+					self._ctx.intent.removeFromSkill(intentId=intentDuplicate['id'], skillId=skillItem['skillId'], userId=userId, deleteAfter=False)
+				self._ctx.intent.delete(intentId=intentDuplicate['id'])
+				return self.forkSkillIntent(skillId, sourceIntentId, userId, newIntentName)
 
 			raise he
 

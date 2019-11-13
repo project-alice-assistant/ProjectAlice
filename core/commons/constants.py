@@ -1,11 +1,13 @@
-VERSION = 0.12
+VERSION = '1.0.0-a3'
 DEFAULT_SITE_ID = 'default'
+DEFAULT = 'default'
 UNKNOWN_WORD = 'unknownword'
 UNKNOWN_USER = 'unknownUser'
 UNKNOWN_MANAGER = 'unknownManager'
 UNKNOWN = 'unknown'
 ALL = 'all'
 DUMMY = 'dummy'
+DATABASE_FILE = 'system/database/data.db'
 
 TOPIC_AUDIO_FRAME = 'hermes/audioServer/default/audioFrame'
 TOPIC_HOTWORD_DETECTED = 'hermes/hotword/default/detected'

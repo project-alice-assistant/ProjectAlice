@@ -1,5 +1,4 @@
 import hashlib
-import logging
 import subprocess
 import tempfile
 from pathlib import Path
@@ -8,18 +7,20 @@ from typing import Optional
 from pydub import AudioSegment
 
 from core.base.SuperManager import SuperManager
-from core.commons import commons, constants
+from core.commons import constants
 from core.dialog.model.DialogSession import DialogSession
 from core.user.model.User import User
+from core.util.model.Logger import Logger
 from core.voice.model.TTSEnum import TTSEnum
 
 
-class TTS:
+class TTS(Logger):
 	TEMP_ROOT = Path(tempfile.gettempdir(), '/tempTTS')
 	TTS = None
 
-	def __init__(self, user: User = None):
-		self._logger = logging.getLogger('ProjectAlice')
+	def __init__(self, user: User = None, *args, **kwargs):
+		super().__init__(*args, **kwargs)
+
 		self._online = False
 		self._privacyMalus = 0
 		self._supportedLangAndVoices = dict()
@@ -38,41 +39,41 @@ class TTS:
 	def onStart(self):
 		if self._user and self._user.ttsLanguage:
 			self._lang = self._user.ttsLanguage
-			self._logger.info(f'[TTS] Language from user settings: "{self._lang}"')
+			self.logInfo(f'Language from user settings: "{self._lang}"')
 		elif SuperManager.getInstance().configManager.getAliceConfigByName('ttsLanguage'):
 			self._lang = SuperManager.getInstance().configManager.getAliceConfigByName('ttsLanguage')
-			self._logger.info(f'[TTS] Language from config: "{self._lang}"')
+			self.logInfo(f'Language from config: "{self._lang}"')
 		else:
 			self._lang = SuperManager.getInstance().languageManager.activeLanguageAndCountryCode
-			self._logger.info(f'[TTS] Language from active language: "{self._lang}"')
+			self.logInfo(f'Language from active language: "{self._lang}"')
 
 		if self._user and self._user.ttsType:
 			self._type = self._user.ttsType
-			self._logger.info(f'[TTS] Type from user settings: "{self._type}"')
+			self.logInfo(f'Type from user settings: "{self._type}"')
 		else:
 			self._type = SuperManager.getInstance().configManager.getAliceConfigByName('ttsType')
-			self._logger.info(f'[TTS] Type from config: "{self._type}"')
+			self.logInfo(f'Type from config: "{self._type}"')
 
 		if self._user and self._user.ttsVoice:
 			self._voice = self._user.ttsVoice
-			self._logger.info(f'[TTS] Voice from user settings: "{self._voice}"')
+			self.logInfo(f'Voice from user settings: "{self._voice}"')
 		else:
 			self._voice = SuperManager.getInstance().configManager.getAliceConfigByName('ttsVoice')
-			self._logger.info(f'[TTS] Voice from config: "{self._voice}"')
+			self.logInfo(f'Voice from config: "{self._voice}"')
 
 		if self._lang not in self._supportedLangAndVoices:
-			self._logger.info(f'[TTS] Language "{self._lang}" not found, falling back to "en-US"')
+			self.logWarning(f'Language "{self._lang}" not found, falling back to "en-US"')
 			self._lang = 'en-US'
 
 		if self._type not in self._supportedLangAndVoices[self._lang]:
 			tts_type = self._type
 			self._type = next(iter(self._supportedLangAndVoices[self._lang]))
-			self._logger.info(f'[TTS] Type "{tts_type}" not found for the language, falling back to "{self._type}"')
+			self.logWarning(f'Type "{tts_type}" not found for the language, falling back to "{self._type}"')
 
 		if self._voice not in self._supportedLangAndVoices[self._lang][self._type]:
 			voice = self._voice
 			self._voice = next(iter(self._supportedLangAndVoices[self._lang][self._type]))
-			self._logger.info(f'[TTS] Voice "{voice}" not found for the language and type, falling back to "{self._voice}"')
+			self.logWarning(f'Voice "{voice}" not found for the language and type, falling back to "{self._voice}"')
 
 		if not self.TEMP_ROOT.is_dir():
 			subprocess.run(['sudo', 'mkdir', str(self.TEMP_ROOT)])
@@ -80,22 +81,22 @@ class TTS:
 
 		if self.TTS == TTSEnum.SNIPS:
 			voiceFile = f'cmu_{SuperManager.getInstance().languageManager.activeCountryCode.lower()}_{self._voice}'
-			if not Path(commons.rootDir(), 'system/voices', voiceFile).exists():
-				self._logger.info(f'[TTS] Using "{self.TTS.value}" as TTS with voice "{self._voice}" but voice file not found. Downloading...')
+			if not Path(SuperManager.getInstance().commons.rootDir(), 'system/voices', voiceFile).exists():
+				self.logInfo(f'Using "{self.TTS.value}" as TTS with voice "{self._voice}" but voice file not found. Downloading...')
 
 				process = subprocess.run([
 					'wget', f'https://github.com/MycroftAI/mimic1/blob/development/voices/{voiceFile}.flitevox?raw=true',
-					'-O', Path(commons.rootDir(), f'var/voices/{voiceFile}.flitevox')
+					'-O', Path(SuperManager.getInstance().commons.rootDir(), f'var/voices/{voiceFile}.flitevox')
 				],
 				stdout=subprocess.PIPE)
 
 				if process.returncode > 0:
-					self._logger.error('[TTS] Failed downloading voice file, falling back to slt')
+					self.logError('Failed downloading voice file, falling back to slt')
 					self._voice = next(iter(self._supportedLangAndVoices[self._lang][self._type]))
 
 
 	def cacheDirectory(self) -> Path:
-		return Path(SuperManager.getInstance().TTSManager.CACHE_ROOT, self.TTS.value, self._lang, self._type, self._voice)
+		return Path(SuperManager.getInstance().ttsManager.cacheRoot, self.TTS.value, self._lang, self._type, self._voice)
 
 
 	@property

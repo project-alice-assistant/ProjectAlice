@@ -1,7 +1,6 @@
 import requests
 
 from core.snips import SamkillaManager
-from core.snips.samkilla.gql.assistants.trainAssistant import trainAssistant
 from core.snips.samkilla.gql.assistants.createAssistant import createAssistant
 from core.snips.samkilla.gql.assistants.deleteAssistant import deleteAssistant
 from core.snips.samkilla.gql.assistants.forkAssistantSkill import forkAssistantSkill
@@ -34,9 +33,7 @@ class Assistant:
 		# Mandatory after a create action to update APOLLO_STATE, @TODO maybe update the state manually to improve performances ?
 		self._ctx.reloadBrowserPage()
 
-		if rawResponse: return response
-
-		return response['createAssistant']['id']
+		return response if rawResponse else response['createAssistant']['id']
 
 
 	def edit(self, assistantId: str, title: str = None):
@@ -80,19 +77,11 @@ class Assistant:
 
 
 	def getTitleById(self, assistantId: str) -> str:
-		for assistantItem in self.list(parseWithAttribute=''):
-			if assistantItem['id'] == assistantId:
-				return assistantItem['title']
-
-		return ''
+		return next((item['title'] for item in self.list(parseWithAttribute='') if item['id'] == assistantId), '')
 
 
 	def exists(self, assistantId: str) -> bool:
-		for listItemAssistantId in self.list():
-			if listItemAssistantId == assistantId:
-				return True
-
-		return False
+		return any(itemId == assistantId for itemId in self.list())
 
 
 	def extractSkillIdentifiersLegacy(self, assistantId: str) -> list:
@@ -123,7 +112,7 @@ class Assistant:
 		return response['forkAssistantSkill']['copiedBundleId']
 
 	@staticmethod
-	def trainAssistant(assistantId: str) -> bool:
+	def trainAssistant(_assistantId: str) -> bool:
 		# gqlRequest = [{
 		# 	'operationName': 'TrainAssistantV2',
 		# 	'variables': {'assistantId': assistantId},
@@ -147,8 +136,5 @@ class Assistant:
 		nluResult = response['assistant']['training']['nluStatus']['trainingResult']
 		nluNeedTraining = response['assistant']['training']['nluStatus']['needTraining']
 
-		if not asrProgress and not asrNeedTraining and asrResult == 'ok' \
-			and not nluProgress and not nluNeedTraining and nluResult == 'ok':
-			return True
-
-		return False
+		return not asrProgress and not asrNeedTraining and asrResult == 'ok' \
+			and not nluProgress and not nluNeedTraining and nluResult == 'ok'

@@ -72,18 +72,14 @@ class Intent:
 		indexedSkillIntents = dict()
 
 		for intent in intents:
-			if intent['usedIn']:
-				for skillMeta in intent['usedIn']:
-					if skillMeta['skillId'] == skillId:
-						if indexedBy:
-							indexedSkillIntents[intent[indexedBy]] = intent
-						else:
-							skillIntents.append(intent)
+			for skillMeta in intent['usedIn'] or list():
+				if skillMeta['skillId'] == skillId:
+					if indexedBy:
+						indexedSkillIntents[intent[indexedBy]] = intent
+					else:
+						skillIntents.append(intent)
 
-		if indexedBy:
-			return indexedSkillIntents
-
-		return skillIntents
+		return indexedSkillIntents if indexedBy else skillIntents
 
 
 	def listUtterancesByIntentId(self, intentId: str) -> list:
@@ -109,12 +105,7 @@ class Intent:
 		structuredSlots, entities = self.formatSlotsAndEntities(typeEntityMatching, slotsDefinition)
 		structuredUtterances, exempleQueries = self.formatUtterancesAndExempleQueries(utterancesDefinition)
 
-		finalStructuredUtterances = list()
-
-		if structuredUtterances:
-			finalStructuredUtterances = structuredUtterances
-		else:
-			finalStructuredUtterances.append({'data': [{'range': {'start': 0, 'end': 0}, 'text': ''}]})
+		finalStructuredUtterances = structuredUtterances or [{'data': [{'range': {'start': 0, 'end': 0}, 'text': ''}]}]
 
 		gqlRequest = [{
 			'operationName': 'publishIntent',
@@ -145,7 +136,7 @@ class Intent:
 		try:
 			response = self._ctx.postGQLBrowserly(gqlRequest)
 		except IntentWithUnknownSlotError as iwuse:
-			raise ValueError(f'[Inconsistent] Intent {iwuse.message} is using unknown Slots')
+			raise ValueError(f'Inconsistent intent, "{iwuse.message}" is using unknown Slots')
 		except HttpError as he:
 			if he.status == 409:
 				self._ctx.log(f'Duplicate intent with name {name}')
@@ -191,11 +182,7 @@ class Intent:
 	def removeFromSkill(self, userId: str, skillId: str, intentId: str, languageFilter: str = None, deleteAfter: bool = True):
 		existingIntents = self.listIntentsByUserIdAndSkillId(userId=userId, skillId=skillId, languageFilter=languageFilter)
 
-		variablesIntents = list()
-
-		for existingIntent in existingIntents:
-			if existingIntent['id'] != intentId:
-				variablesIntents.append({'id': existingIntent['id']})
+		variablesIntents = [{'id': x['id']} for x in existingIntents if x['id'] != intentId]
 
 		gqlRequest = [{
 			'operationName': 'patchSkillIntents',
@@ -219,8 +206,7 @@ class Intent:
 			'variables'    : {'intentId': intentId},
 			'query'        : deleteIntent
 		}]
-		response = self._ctx.postGQLBrowserly(gqlRequest, rawResponse=True)
-		return response
+		return self._ctx.postGQLBrowserly(gqlRequest, rawResponse=True)
 
 
 	def edit(self, intentId: str, userId: str, language: str = None, skillId: str = None, name: str = None, description: str = None, enabledByDefault: bool = True,
@@ -271,7 +257,7 @@ class Intent:
 				self.attachToSkill(userId=userId, skillId=skillId, intentId=intentId, languageFilter=language)
 
 		except IntentWithUnknownSlotError as iwuse:
-			self._ctx.log(f'[Inconsistent] Intent {iwuse.message} is using unknown Slots')
+			self._ctx.log(f'Inconsistent intent, "{iwuse.message}" is using unknown Slots')
 
 	def formatSlotsAndEntities(self, typeEntityMatching: dict, slotsDefinition: dict) -> tuple:
 		entities = list()

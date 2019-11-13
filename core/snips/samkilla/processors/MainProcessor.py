@@ -3,7 +3,7 @@ import typing
 from pathlib import Path
 
 from core.ProjectAliceExceptions import HttpError
-from core.commons import commons
+from core.base.SuperManager import SuperManager
 from core.snips import SamkillaManager
 from core.snips.samkilla.models.EnumSkillImageUrl import EnumSkillImageUrl as EnumSkillImageUrlClass
 from core.snips.samkilla.processors.IntentRemoteProcessor import IntentRemoteProcessor
@@ -154,23 +154,22 @@ class MainProcessor:
 			module = json.loads(Path(moduleFile).read_text())
 
 			if 'module' not in module:
-				self._ctx.log(f"\n[Inconsistent] File {moduleFile} has no 'module' name definition")
-				return None
+				self._ctx.log(f"File \"{moduleFile}\" has no 'module' name definition")
+				return
 
 			module['language'] = moduleLanguage
 
 			if module['module'] not in self._modules:
-				self._ctx.log(
-					f"\n[Inconsistent] Module {module['module']} has a name different from its directory")
-				return None
+				self._ctx.log(f"Module \"{module['module']}\" has a name different from its directory")
+				return
 
 			self._modules[module['module']][moduleLanguage] = module
-			self._ctx.log(f"[FilePull] Loading module {module['module']}")
+			self._ctx.log(f"Loading module {module['module']}")
 			return module
 
 		except json.decoder.JSONDecodeError:
-			self._ctx.log(f'\n[Inconsistent] File {moduleFile} has a bad json format')
-			return None
+			self._ctx.log(f'\nInconsistent file, "{moduleFile}" has a bad json format')
+			return
 
 	def getModuleSyncStateByLanguageAndAssistantId(self, moduleName: str, language: str, assistantId: str) -> str:
 		return self._savedAssistants.get(language, dict()).get(assistantId, dict()).get('modules', dict()).get(moduleName, None)
@@ -195,7 +194,7 @@ class MainProcessor:
 
 			slotFile = assistantSlotsMountpoint / f'{key}.json'
 			slotFile.write_text(json.dumps(value, indent=4, sort_keys=False, ensure_ascii=False))
-		# self._ctx.log(f'[Persist] global slot {key}')
+		# self._ctx.log(f'Global slot {key}')
 
 
 	def persistToGlobalAssistantIntents(self, assistantId: str, assistantLanguage: str, intentNameFilter: str = None):
@@ -209,7 +208,7 @@ class MainProcessor:
 
 			intentFile = assistantSlotsMountpoint / f'{key}.json'
 			intentFile.write_text(json.dumps(value, indent=4, sort_keys=False, ensure_ascii=False))
-		# self._ctx.log(f'[Persist] global slot {key}')
+		# self._ctx.log(f'Global slot {key}')
 
 
 	def syncGlobalSlotType(self, assistantId: str, assistantLanguage: str, slotTypeName: str, slotDefinition: str, persist: bool = False):
@@ -483,7 +482,7 @@ class MainProcessor:
 
 		for slotTypeName in self._savedAssistants[languageFilter][runOnAssistantId]['slotTypes']:
 			if slotTypeName not in slotTypesSynced:
-				self._ctx.log(f'[Deprecated] SlotType {slotTypeName}')
+				self._ctx.log(f'Deprecated slotType {slotTypeName}')
 				slotTypeCacheData = self._savedAssistants[languageFilter][runOnAssistantId]['slotTypes'][slotTypeName]
 
 				entityId = slotTypeCacheData['entityId']
@@ -568,7 +567,7 @@ class MainProcessor:
 
 		for intentName in self._savedAssistants[languageFilter][runOnAssistantId]['intents']:
 			if intentName not in intentsSynced:
-				self._ctx.log(f'[Deprecated] Intent {intentName}')
+				self._ctx.log(f'Deprecated intent {intentName}')
 				intentCacheData = self._savedAssistants[languageFilter][runOnAssistantId]['intents'][intentName]
 
 				intentId = intentCacheData['intentId']
@@ -611,11 +610,9 @@ class MainProcessor:
 
 		skillNameIdMatching = dict()
 
-		for moduleName in self._modules:
-			if languageFilter not in self._modules[moduleName]:
+		for moduleName, moduleSettings in self._modules.items():
+			if languageFilter not in moduleSettings:
 				continue
-
-			module = self._modules[moduleName][languageFilter]
 
 			moduleSyncState = self.getModuleSyncStateByLanguageAndAssistantId(
 				moduleName=moduleName,
@@ -627,7 +624,7 @@ class MainProcessor:
 			moduleRemoteProcessor = ModuleRemoteProcessor(
 				ctx=self._ctx,
 				assistantId=runOnAssistantId,
-				module=module,
+				module=moduleSettings[languageFilter],
 				moduleName=moduleName,
 				moduleLanguage=languageFilter
 			)
@@ -660,7 +657,7 @@ class MainProcessor:
 				continue
 
 			if moduleName not in modulesSynced:
-				self._ctx.log(f'[Deprecated] Module {moduleName}')
+				self._ctx.log(f'Deprecated module {moduleName}')
 				moduleCacheData = self._savedAssistants[languageFilter][runOnAssistantId]['modules'][moduleName]
 				skillId = moduleCacheData['skillId']
 
@@ -729,7 +726,7 @@ class MainProcessor:
 		cachedIndexedSkills = self._ctx.skill.listSkillsByUserIdAndAssistantId(userId=self._ctx.userId, assistantId=runOnAssistantId, fromCache=True)
 
 		for skill in cachedIndexedSkills:
-			moduleName = commons.toCamelCase(string=skill['name'], replaceSepCharacters=True, sepCharacters=('/', '-', '_'))
+			moduleName = SuperManager.getInstance().commons.toCamelCase(string=skill['name'], replaceSepCharacters=True, sepCharacters=('/', '-', '_'))
 
 			if moduleFilter and moduleName not in moduleFilter:
 				continue
@@ -758,15 +755,12 @@ class MainProcessor:
 				if intentName.startswith(skill['name'] + '_'):
 					intentName = intentName.replace(skill['name'] + '_', '')
 
-				intentName = commons.toCamelCase(string=intentName, replaceSepCharacters=True, sepCharacters=('/', '-', '_'))
+				intentName = SuperManager.getInstance().commons.toCamelCase(string=intentName, replaceSepCharacters=True, sepCharacters=('/', '-', '_'))
 
 				utterances = list()
-				slots = list()
-				slotIdAndNameMatching = dict()
 				objectUtterances = self._ctx.intent.listUtterancesByIntentId(intentId=intent['id'])
 
-				for slot in intent['slots']:
-					slotIdAndNameMatching[slot['id']] = slot
+				slotIdAndNameMatching = {slot['id']: slot for slot in intent['slots']}
 
 				for objectUtterance in objectUtterances:
 					text = objectUtterance['text']
@@ -777,7 +771,7 @@ class MainProcessor:
 						start = hole['range']['start'] + positionOffset
 						end = hole['range']['end'] + positionOffset
 						slotName = slotIdAndNameMatching[hole['slotId']]['name']
-						slotName = commons.toCamelCase(string=slotName, replaceSepCharacters=True, sepCharacters=('/', '-', '_'))
+						slotName = SuperManager.getInstance().commons.toCamelCase(string=slotName, replaceSepCharacters=True, sepCharacters=('/', '-', '_'))
 						newWord = '{' + word + self._ctx.intent.GLUE_SLOT_WORD + slotName + '}'
 						text = text[:start] + newWord + text[end:]
 						positionOffset += len(newWord) - len(word)
@@ -791,7 +785,7 @@ class MainProcessor:
 						continue
 
 					values = self._ctx.entity.listEntityValuesByEntityId(entityId=entity['id'])
-					entityName = commons.toCamelCase(string=entity['name'], replaceSepCharacters=True, sepCharacters=('/', '-', '_'))
+					entityName = SuperManager.getInstance().commons.toCamelCase(string=entity['name'], replaceSepCharacters=True, sepCharacters=('/', '-', '_'))
 					typeEntityMatching[entity['id']] = entityName
 
 					modules[moduleName]['slotTypes'].append({
@@ -806,14 +800,13 @@ class MainProcessor:
 						'hash'    : ''
 					}
 
-				for slot in intent['slots']:
-					slots.append({
-						'name'           : commons.toCamelCase(string=slot['name'], replaceSepCharacters=True, sepCharacters=('/', '-', '_')),
-						'description'    : slot['description'],
-						'required'       : slot['required'],
-						'type'           : slot['entityId'] if slot['entityId'].startswith('snips/') else typeEntityMatching[slot['entityId']],
-						'missingQuestion': slot['missingQuestion']
-					})
+				slots = [{
+					'name'           : SuperManager.getInstance().commons.toCamelCase(string=slot['name'], replaceSepCharacters=True, sepCharacters=('/', '-', '_')),
+					'description'    : slot['description'],
+					'required'       : slot['required'],
+					'type'           : slot['entityId'] if slot['entityId'].startswith('snips/') else typeEntityMatching[slot['entityId']],
+					'missingQuestion': slot['missingQuestion']
+				} for slot in intent['slots']]
 
 				modules[moduleName]['intents'].append({
 					'name'            : intentName,
@@ -835,4 +828,4 @@ class MainProcessor:
 			moduleIntentsOutputFile = moduleIntentsMountpoint / f'{languageFilter}.json'
 
 			moduleIntentsOutputFile.write_text(json.dumps(moduleConfig, indent=4, sort_keys=False, ensure_ascii=False))
-			self._ctx.log(f'[LocalModule] Finished for module {moduleName}')
+			self._ctx.log(f'Finished for module {moduleName}')

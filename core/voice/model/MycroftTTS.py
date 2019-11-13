@@ -3,7 +3,7 @@ import re
 import subprocess
 from pathlib import Path
 
-from core.commons import commons
+from core.base.SuperManager import SuperManager
 from core.dialog.model.DialogSession import DialogSession
 from core.user.model.User import User
 from core.voice.model.TTS import TTS
@@ -19,7 +19,7 @@ class MycroftTTS(TTS):
 		self._online = False
 		self._privacyMalus = 0
 
-		self._mimicDirectory = Path(Path(commons.rootDir()).parent, 'mimic/mimic')
+		self._mimicDirectory = Path(Path(SuperManager.getInstance().commons.rootDir()).parent, 'mimic/mimic')
 
 		# TODO => classify genders and countries. First is always default
 		self._supportedLangAndVoices = {

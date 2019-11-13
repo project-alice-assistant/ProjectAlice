@@ -12,11 +12,13 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>
 
-    authors: 	Psycho <https://github.com/Psychokiller1888>
-    			Jierka <https://github.com/jr-k>
-				maxbachmann <https://github.com/maxbachmann>
+    authors: 	            Psycho <https://github.com/Psychokiller1888>
+							maxbachmann <https://github.com/maxbachmann>
+	retired or
+	inactive authors:       Jierka <https://github.com/jr-k>
 """
 import logging.handlers
+import os
 import signal
 import sys
 import traceback
@@ -24,7 +26,6 @@ from datetime import datetime
 from pathlib import Path
 
 from core.Initializer import Initializer
-from core.commons import commons
 
 formatter = logging.Formatter('%(asctime)s [%(threadName)s] - [%(levelname)s] - %(message)s')
 
@@ -33,7 +34,7 @@ _logger.setLevel(logging.INFO)
 
 date = int(datetime.now().strftime('%Y%m%d'))
 
-logsMountpoint = Path(commons.rootDir(), 'var', 'logs')
+logsMountpoint = Path(Path(__file__).resolve().parent, 'var', 'logs')
 
 handler = logging.FileHandler(filename=f'{logsMountpoint}/logs.log', mode='w')
 rotatingHandler = logging.handlers.RotatingFileHandler(filename=f'{logsMountpoint}/{date}-logs.log', mode='a', maxBytes = 100000, backupCount = 20)
@@ -65,15 +66,21 @@ def stopHandler(signum, frame):
 	RUNNING = False
 
 
+def restart():
+	global RUNNING
+	RUNNING = False
+
+
 def main():
 	subprocess.run(['clear'])
 	global RUNNING
+	RUNNING = True
 
 	signal.signal(signal.SIGINT, stopHandler)
 	signal.signal(signal.SIGTERM, stopHandler)
 
 	Initializer().initProjectAlice()
-	projectAlice = ProjectAlice()
+	projectAlice = ProjectAlice(restartHandler=restart)
 	try:
 		while RUNNING:
 			time.sleep(0.1)
@@ -82,9 +89,12 @@ def main():
 	finally:
 		projectAlice.onStop()
 		_logger.info('Project Alice stopped, see you soon!')
+		if projectAlice.restart:
+			time.sleep(3)
+			sys.stdout.flush()
+			main()
+
 
 RUNNING = False
-
 if __name__ == '__main__':
-	RUNNING = True
 	main()

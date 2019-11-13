@@ -1,14 +1,24 @@
-import logging
 import typing
 
-class User:
-	def __init__(self, row: typing.Any):
-		self._logger 		= logging.getLogger('ProjectAlice')
+import bcrypt
 
+from core.base.model.ProjectAliceObject import ProjectAliceObject
+
+
+class User(ProjectAliceObject):
+	#TODO should probably by typing.Optional[dict]
+	def __init__(self, row: typing.Any):
+		super().__init__(logDepth=3)
+
+		#TODO is it correct to init these values only when row exists?
+		# -> will throw exception when property is called or should they be
+		# inited to None instead
 		if row:
+			self._id            = row['id']
 			self._name 			= row['username']
 			self._accessLevel 	= row['accessLevel']
 			self._state 		= row['state']
+			self._pin           = row['pin']
 			self._lang 			= row['lang']
 			self._tts 			= row['tts']
 			self._ttsLanguage	= row['ttsLanguage']
@@ -26,7 +36,32 @@ class User:
 		try:
 			exec(f"self._{self._state} = 'True'")
 		except:
-			self._logger.error(f"Invalid state \"{row['state']}\" for user \"{self._name}\"")
+			self.logError(f"Invalid state \"{row['state']}\" for user \"{self._name}\"")
+
+
+		# flask login reqs
+		self._isAuthenticated = False
+		self._isActive = True
+		self._isAnonymous = False
+
+
+	def toJson(self) -> dict:
+		return {
+			'id': self._id,
+			'name': self._name,
+			'accessLevel': self._accessLevel,
+			'state': self._state,
+			'lang': self._lang,
+			'tts': self._tts,
+			'ttsLanguage': self._ttsLanguage,
+			'ttsType': self._ttsType,
+			'ttsVoice': self._ttsVoice
+		}
+
+
+	@property
+	def id(self) -> int:
+		return self._id
 
 	@property
 	def name(self) -> str:
@@ -35,6 +70,10 @@ class User:
 	@property
 	def accessLevel(self) -> str:
 		return self._accessLevel
+
+	@property
+	def pin(self) -> str:
+		return self._pin
 
 	@property
 	def state(self) -> str:
@@ -96,6 +135,10 @@ class User:
 	def accessLevel(self, value: str):
 		self._accessLevel = value
 
+	@pin.setter
+	def pin(self, value: str):
+		self._pin = value
+
 	@state.setter
 	def state(self, value: str):
 		self._state = value
@@ -127,3 +170,34 @@ class User:
 	@eating.setter
 	def eating(self, value: bool):
 		self._eating = value
+
+	def checkPassword(self, password: str) -> bool:
+		if self.pin is None:
+			self.logWarning('No pin defined for this user')
+			return False
+
+		return bcrypt.checkpw(str(password).encode(), self.pin.encode())
+
+	# Flask login reqs
+
+	@property
+	def isAuthenticated(self) -> bool:
+		return self.is_authenticated()
+
+	@isAuthenticated.setter
+	def isAuthenticated(self, value: bool):
+		self._isAuthenticated = value
+
+	#TODO this should probably be properties aswell
+	# (actually some are already and should probably just be removed)
+	def is_authenticated(self) -> bool:
+		return self._isAuthenticated
+
+	def is_active(self) -> bool:
+		return self._isActive
+
+	def is_anonymous(self) -> bool:
+		return self._isAnonymous
+
+	def get_id(self) -> int:
+		return self._id

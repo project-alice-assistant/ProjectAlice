@@ -19,7 +19,7 @@ https://github.com/GoogleCloudPlatform/python-docs-samples/blob/master/speech/mi
 import pyaudio
 from six.moves import queue
 
-from core.commons.commons import shutUpAlsaFFS
+from core.base.SuperManager import SuperManager
 
 
 class MicrophoneStream:
@@ -35,7 +35,7 @@ class MicrophoneStream:
 
 
 	def __enter__(self):
-		with shutUpAlsaFFS():
+		with SuperManager.getInstance().commons.shutUpAlsaFFS():
 			self._audio_interface = pyaudio.PyAudio()
 
 		self._audio_stream = self._audio_interface.open(

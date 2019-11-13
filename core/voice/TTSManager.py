@@ -1,7 +1,7 @@
 from pathlib import Path
 
 from core.base.model.Manager import Manager
-from core.commons import commons, constants
+from core.commons import constants
 from core.dialog.model.DialogSession import DialogSession
 from core.user.model.User import User
 from core.voice.model.PicoTTS import PicoTTS
@@ -12,13 +12,12 @@ from core.voice.model.TTSEnum import TTSEnum
 class TTSManager(Manager):
 	NAME = 'TTSManager'
 
-	CACHE_ROOT = Path(commons.rootDir(), 'var/cache')
-
 	def __init__(self):
 		super().__init__(self.NAME)
 
 		self._fallback = None
 		self._tts = None
+		self._cacheRoot = Path(self.Commons.rootDir(), 'var/cache')
 
 
 	def onStart(self):
@@ -28,9 +27,9 @@ class TTSManager(Manager):
 
 		if (self.ConfigManager.getAliceConfigByName('stayCompletlyOffline') or self.ConfigManager.getAliceConfigByName('keepTTSOffline')) and self._tts.online:
 			self._tts = PicoTTS()
-			self._logger.info(f'[{self.name}] Started "Pico" TTS')
+			self.logInfo('Started "Pico" TTS')
 		else:
-			self._logger.info(f'[{self.name}] Started "{tts.value}" TTS')
+			self.logInfo(f'Started "{tts.value}" TTS')
 
 		self._tts.onStart()
 
@@ -47,8 +46,8 @@ class TTSManager(Manager):
 		elif tts == TTSEnum.PICO:
 			self._tts = PicoTTS(user)
 		elif tts == TTSEnum.MYCROFT:
-			if not Path(Path(commons.rootDir()).parent, 'mimic/voices').is_dir():
-				self._logger.warning(f'[{self.NAME}] Trying to use Mycroft as TTS but files not available, falling back to picotts')
+			if not Path(Path(self.Commons.rootDir()).parent, 'mimic/voices').is_dir():
+				self.logWarning('Trying to use Mycroft as TTS but files not available, falling back to picotts')
 				self._tts = PicoTTS(user)
 				tts = TTSEnum.PICO
 			else:
@@ -72,6 +71,11 @@ class TTSManager(Manager):
 		return self._tts
 
 
+	@property
+	def cacheRoot(self) -> Path:
+		return self._cacheRoot
+
+
 	def onInternetLost(self):
 		if self._tts.online:
 			self._fallback = PicoTTS()
@@ -81,14 +85,15 @@ class TTSManager(Manager):
 		self._fallback = None
 
 
-	def onSay(self, session: DialogSession, *args, **kwargs):
+	def onSay(self, session: DialogSession):
 		if self._fallback:
 			self._fallback.onSay(session)
-		else:
-			if session.user != constants.UNKNOWN_USER:
-				user: User = self.UserManager.getUser(session.user)
-				if user and user.tts:
-					self._loadTTS(user.tts, user)
-					self._tts.onStart()
+			return
 
-			self._tts.onSay(session)
+		if session.user != constants.UNKNOWN_USER:
+			user: User = self.UserManager.getUser(session.user)
+			if user and user.tts:
+				self._loadTTS(user.tts, user)
+				self._tts.onStart()
+
+		self._tts.onSay(session)

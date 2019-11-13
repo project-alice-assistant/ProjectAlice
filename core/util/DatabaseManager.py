@@ -2,8 +2,8 @@ import sqlite3
 import typing
 
 from core.base.model.Manager import Manager
-from core.commons import commons
 from core.ProjectAliceExceptions import DbConnectionError, InvalidQuery
+from core.commons import constants
 
 
 class DatabaseManager(Manager):
@@ -24,16 +24,16 @@ class DatabaseManager(Manager):
 			cursor.execute("SELECT name FROM main.sqlite_master WHERE type = 'table' and name NOT LIKE 'sqlite_%'")
 			self._tables = cursor.fetchall()
 		except sqlite3.Error as e:
-			self._logger.error(f'[{self.name}] Something went wrong fetching database tables: {e}')
+			self.logError(f'Something went wrong fetching database tables: {e}')
 			return False
 
 
 	def getConnection(self) -> sqlite3.Connection:
 		try:
-			con = sqlite3.connect(commons.getDatabaseFile())
+			con = sqlite3.connect(constants.DATABASE_FILE)
 		except sqlite3.Error as e:
-			self._logger.error(f'[{self.name}] Failed to connect to DB ({commons.getDatabaseFile()}): {e}')
-			raise DbConnectionError(e)
+			self.logError(f'Failed to connect to DB ({constants.DATABASE_FILE}): {e}')
+			raise DbConnectionError()
 		con.row_factory = sqlite3.Row
 		return con
 
@@ -42,7 +42,7 @@ class DatabaseManager(Manager):
 		database = self.getConnection()
 		cursor = database.cursor()
 
-		# First check for new tables and columns addition/deprecation
+		# First check for new tables and columns addition/deprecation/type changes
 		for tableName, queries in schema.items():
 
 			fullTableName = f'{callerName}_{tableName}'
@@ -51,12 +51,8 @@ class DatabaseManager(Manager):
 
 			if colsQuery.count(' UNIQUE') > 1:
 				colsQuery = colsQuery.replace(' UNIQUE', '')
-				unique = list()
-				for query in queries:
-					if 'UNIQUE' in query:
-						unique.append(query.split(' ')[0])
-
-				unique = f", UNIQUE({', '.join(unique)})"
+				uniqueList = [query.split(' ')[0] for query in queries if 'UNIQUE' in query]
+				unique = f", UNIQUE({', '.join(uniqueList)})"
 			else:
 				unique = ''
 
@@ -64,7 +60,7 @@ class DatabaseManager(Manager):
 				query = f"SELECT COUNT(name) FROM sqlite_master WHERE type = 'table' and name='{fullTableName}'"
 				cursor.execute(query)
 				if cursor.fetchone()[0] < 1:
-					self._logger.info(f'[{self.name}] Missing data table "{fullTableName}", creating it...')
+					self.logInfo(f'Missing data table "{fullTableName}", creating it...')
 					try:
 						cursor.execute(f'CREATE TABLE {fullTableName} ({colsQuery}{unique})')
 						database.commit()
@@ -73,25 +69,26 @@ class DatabaseManager(Manager):
 						database.rollback()
 						raise
 			except sqlite3.Error as e:
-				self._logger.error(f'[{self.name}] Something went wrong creating database table "{fullTableName}" for component {callerName}: {e}')
+				self.logError(f'Something went wrong creating database table "{fullTableName}" for component {callerName}: {e}')
 				continue
 
 			try:
 				cursor.execute(f'PRAGMA table_info({fullTableName})')
 				rows = cursor.fetchall()
-				installedColumns = [x[1] for x in rows]
+				installedColumns = {x[1]: x[2] for x in rows}
 
-				cols = list()
+				cols = dict()
 				for column in schema[tableName]:
 					colName = column.split(' ')[0]
-					cols.append(colName)
+					colType = column.split(' ')[1]
+					cols[colName] = colType
 					if colName not in installedColumns:
-						self._logger.info(f'[{self.name}] Found a missing column "{colName}" for table "{fullTableName}" in component "{callerName}"')
-						cursor.execute(f'ALTER TABLE {fullTableName} ADD COLUMN `{colName}`')
+						self.logInfo(f'Found a missing column "{colName}" for table "{fullTableName}" in component "{callerName}"')
+						cursor.execute(f'ALTER TABLE {fullTableName} ADD COLUMN `{colName}` `{colType}`')
 
 				database.commit()
 			except sqlite3.Error as e:
-				self._logger.info(f'[{self.name}] Failed altering table "{fullTableName}" for component "{callerName}": {e}')
+				self.logInfo(f'Failed altering table "{fullTableName}" for component "{callerName}": {e}')
 				database.rollback()
 				return False
 
@@ -99,7 +96,10 @@ class DatabaseManager(Manager):
 				doUpdate = False
 				for column in installedColumns:
 					if column not in cols:
-						self._logger.info(f'[{self.name}] Found a deprecated column "{colName}" for table "{fullTableName}" in component "{callerName}"')
+						self.logInfo(f'Found a deprecated column "{column}" for table "{fullTableName}" in component "{callerName}"')
+						doUpdate = True
+					elif installedColumns[column].lower() != cols[column].lower():
+						self.logInfo(f'Column "{column}" has changed data type for component "{callerName}"')
 						doUpdate = True
 
 				if doUpdate:
@@ -110,7 +110,7 @@ class DatabaseManager(Manager):
 					database.commit()
 
 			except sqlite3.Error as e:
-				self._logger.error(f'[{self.name}] Something went wrong initializing database for module {callerName}: {e}')
+				self.logError(f'Something went wrong initializing database for module {callerName}: {e}')
 				database.rollback()
 				return False
 
@@ -118,13 +118,13 @@ class DatabaseManager(Manager):
 		for tableName in self._tables:
 			tableName = tableName['name']
 			if not tableName.startswith('sqlite_') and tableName.startswith(callerName + '_') and tableName.split('_')[1] not in schema:
-				self._logger.info(f'[{self.name}] Found a deprecated table "{tableName}" for component "{callerName}"')
+				self.logInfo(f'Found a deprecated table "{tableName}" for component "{callerName}"')
 
 				try:
 					cursor.execute(f'DROP TABLE {tableName}')
 					database.commit()
 				except sqlite3.Error as e:
-					self._logger.error(f'[{self.name}] Failed dropping deprecated table "{tableName}" for component "{callerName}": {e}')
+					self.logError(f'Failed dropping deprecated table "{tableName}" for component "{callerName}": {e}')
 					continue
 
 		cursor.close()
@@ -136,7 +136,7 @@ class DatabaseManager(Manager):
 		return self.insert(tableName, query, callerName, values)
 
 
-	def insert(self, tableName: str, query: str, callerName: str, values: dict = None) -> int:
+	def insert(self, tableName: str, query: str = None, callerName: str = None, values: dict = None) -> int:
 		"""
 		Insert data in database
 		:param values:
@@ -146,7 +146,15 @@ class DatabaseManager(Manager):
 		:return: list
 		"""
 		if not values:
-			values = dict()
+			raise Exception('Cannot DB insert without values...')
+
+		if not callerName:
+			callerName = self.Commons.getFunctionCaller()
+
+		if not query:
+			cols = ', '.join(values.keys())
+			data = ', :'.join(values.keys())
+			query = f'INSERT INTO :__table__ ({cols}) VALUES (:{data})'
 
 		query = self.basicChecks(tableName, query, callerName, values)
 
@@ -161,10 +169,10 @@ class DatabaseManager(Manager):
 			cursor.execute(query, values)
 			insertId = cursor.lastrowid
 		except DbConnectionError as e:
-			self._logger.warning(f'[{self.name}] Error inserting data for component "{callerName}" in table "{tableName}": {e}')
+			self.logWarning(f'Error inserting data for component "{callerName}" in table "{tableName}": {e}')
 			raise
 		except sqlite3.Error as e:
-			self._logger.warning(f'[{self.name}] Error inserting data for component "{callerName}" in table "{tableName}": {e}')
+			self.logWarning(f'Error inserting data for component "{callerName}" in table "{tableName}": {e}')
 			database.rollback()
 			raise
 		else:
@@ -191,7 +199,7 @@ class DatabaseManager(Manager):
 			cursor = database.cursor()
 			cursor.execute(query, values)
 		except (DbConnectionError, sqlite3.Error) as e:
-			self._logger.warning(f'[{self.name}] Error updating data for component "{callerName}" in table "{tableName}": {e}')
+			self.logWarning(f'Error updating data for component "{callerName}" in table "{tableName}": {e}')
 			raise
 		else:
 			database.commit()
@@ -200,8 +208,10 @@ class DatabaseManager(Manager):
 			return True
 
 
-
-	def fetch(self, tableName: str, query: str, callerName: str, values: dict = None, method: str = 'one') -> typing.Iterable:
+	#TODO this not really right, right now it either returns a list of sqlite3.Row when the method is not 'one',
+	# a sqlite2.Row or None when it is None and when there is an exception or no query sqlite3.Row() is a broken syntax
+	# -> will throw an TypeError (should probably return a empty list or None instead)
+	def fetch(self, tableName: str, query: str, callerName: str, values: dict = None, method: str = 'one') -> sqlite3.Row:
 		"""
 		Fetch data from database
 		:param values:
@@ -216,7 +226,7 @@ class DatabaseManager(Manager):
 
 		query = self.basicChecks(tableName, query, callerName, values)
 		if not query:
-			return list()
+			return sqlite3.Row()
 
 		try:
 			database = self.getConnection()
@@ -229,8 +239,8 @@ class DatabaseManager(Manager):
 			else:
 				data = cursor.fetchall()
 		except (DbConnectionError, sqlite3.Error) as e:
-			self._logger.warning(f'[{self.name}] Error fetching data for component "{callerName}" in table "{tableName}": {e}')
-			return list()
+			self.logWarning(f'Error fetching data for component "{callerName}" in table "{tableName}": {e}')
+			return sqlite3.Row()
 		else:
 			cursor.close()
 			database.close()
@@ -256,9 +266,9 @@ class DatabaseManager(Manager):
 			database = self.getConnection()
 			database.execute(query, values)
 		except DbConnectionError as e:
-			self._logger.warning(f'[{self.name}] Error deleting from table "{tableName}" for component "{callerName}": {e}')
+			self.logWarning(f'Error deleting from table "{tableName}" for component "{callerName}": {e}')
 		except sqlite3.Error as e:
-			self._logger.warning(f'[{self.name}] Error deleting from table "{tableName}" for component "{callerName}": {e}')
+			self.logWarning(f'Error deleting from table "{tableName}" for component "{callerName}": {e}')
 			database.rollback()
 			database.close()
 		else:
@@ -285,9 +295,9 @@ class DatabaseManager(Manager):
 			database = self.getConnection()
 			database.execute(query)
 		except DbConnectionError as e:
-			self._logger.warning(f'[{self.name}] Error pruning table "{tableName}" for component "{callerName}": {e}')
+			self.logWarning(f'Error pruning table "{tableName}" for component "{callerName}": {e}')
 		except sqlite3.Error as e:
-			self._logger.warning(f'[{self.name}] Error pruning table "{tableName}" for component "{callerName}": {e}')
+			self.logWarning(f'Error pruning table "{tableName}" for component "{callerName}": {e}')
 			database.rollback()
 			database.close()
 		else:
@@ -297,13 +307,13 @@ class DatabaseManager(Manager):
 
 	def basicChecks(self, tableName: str, query: str, callerName: str, values: dict = None) -> typing.Optional[str]:
 		if ':__table__' not in query:
-			self._logger.warning(f'[{self.name}] The query must use \':__table__\' for the table name. Caller: {callerName}')
+			self.logWarning(f'The query must use \':__table__\' for the table name. Caller: {callerName}')
 			return None
 		elif tableName.startswith('sqlite_'):
-			self._logger.warning(f'[{self.name}] You cannot access system tables. Caller; {callerName}')
+			self.logWarning(f'You cannot access system tables. Caller; {callerName}')
 			return None
 		elif values and ':__table__' in values:
-			self._logger.warning(f"[{self.name}] Cannot use reserved sqlite keyword \":__table__\". Caller: {callerName}")
+			self.logWarning(f"Cannot use reserved sqlite keyword \":__table__\". Caller: {callerName}")
 			return None
 		else:
 			return query.replace(':__table__', callerName + '_' + tableName)

@@ -1,10 +1,10 @@
 from threading import Event
 
-from core.base.SuperManager import SuperManager
-from core.commons import constants, commons
+from core.base.model.ProjectAliceObject import ProjectAliceObject
+from core.commons import constants
 
 
-class AliceEvent(Event):
+class AliceEvent(Event, ProjectAliceObject):
 
 	def __init__(self, name: str, onSet: str = None, onClear: str = None):
 		super().__init__()
@@ -23,37 +23,48 @@ class AliceEvent(Event):
 			kwargs = dict()
 
 		if not self._onSet:
-			self.broadcast(state='set', **kwargs)
+			self.doBroadcast(state='set', **kwargs)
 		else:
-			SuperManager.getInstance().broadcast(
+			self.broadcast(
 				method=self._onSet,
 				exceptions=[constants.DUMMY],
 				propagateToModules=True,
-				silent=False,
 				**kwargs
 			)
 
 
 	def clear(self, **kwargs) -> None:
+		"""
+		Clears an event and calls the onClear method if any or builds a "onYourEventName" broadcast
+		:param kwargs:
+		:return:
+		"""
 		super().clear()
 
 		if kwargs:
 			self._kwargs = {**kwargs, **self._kwargs}
 
 		if not self._onClear:
-			self.broadcast(state='clear', **self._kwargs)
+			self.doBroadcast(state='clear', **self._kwargs)
 		else:
-			SuperManager.getInstance().broadcast(
+			self.broadcast(
 				method=self._onClear,
 				exceptions=[constants.DUMMY],
 				propagateToModules=True,
-				silent=False,
 				**self._kwargs
 			)
 
 
-	def broadcast(self, state: str, **kwargs):
-		SuperManager.getInstance().broadcast(
+	def cancel(self) -> None:
+		"""
+		Clears an event but doesn't call the onClear event
+		:return:
+		"""
+		super().clear()
+
+
+	def doBroadcast(self, state: str, **kwargs):
+		self.broadcast(
 			method=self.eventName(state),
 			exceptions=[constants.DUMMY],
 			propagateToModules=True,
@@ -68,4 +79,4 @@ class AliceEvent(Event):
 
 
 	def eventName(self, state: str) -> str:
-		return f'on{commons.toPascalCase(self.name)}{state.capitalize()}'
+		return f'on{self.Commons.toPascalCase(self.name)}{state.capitalize()}'

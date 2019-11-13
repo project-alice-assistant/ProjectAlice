@@ -1,7 +1,6 @@
 import subprocess
 
 from core.base.SuperManager import SuperManager
-from core.commons import commons
 from core.dialog.model.DialogSession import DialogSession
 from core.user.model.User import User
 from core.voice.model.TTS import TTS
@@ -90,7 +89,7 @@ class SnipsTTS(TTS):
 				'snips-makers-tts',
 				'--output',
 				self._cacheFile,
-				f'file://{commons.rootDir()}/var/voices/cmu_{SuperManager.getInstance().languageManager.activeCountryCode.lower()}_{self._voice}.flitevox',
+				f'file://{SuperManager.getInstance().commons.rootDir()}/var/voices/cmu_{SuperManager.getInstance().languageManager.activeCountryCode.lower()}_{self._voice}.flitevox',
 				self._text])
 
 		self._speak(file=self._cacheFile, session=session)

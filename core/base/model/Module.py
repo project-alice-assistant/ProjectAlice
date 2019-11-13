@@ -3,27 +3,25 @@ from __future__ import annotations
 import importlib
 import inspect
 import json
-import logging
-import re
-
-import typing
+import sqlite3
 from pathlib import Path
+from typing import Any, Callable, Dict, Iterable, List, Tuple
 
+import re
 from paho.mqtt import client as MQTTClient
-from paho.mqtt.client import MQTTMessage
 
 from core.ProjectAliceExceptions import AccessLevelTooLow, ModuleStartingFailed
-from core.base.SuperManager import SuperManager
 from core.base.model.Intent import Intent
-from core.commons import commons, constants
+from core.base.model.ProjectAliceObject import ProjectAliceObject
+from core.commons import constants
 from core.dialog.model.DialogSession import DialogSession
+from core.user.model.AccessLevels import AccessLevel
 
 
-class Module:
+class Module(ProjectAliceObject):
 
-	def __init__(self, supportedIntents: typing.Iterable, authOnlyIntents: dict = None, databaseSchema: dict = None):
-		self._logger = logging.getLogger('ProjectAlice')
-
+	def __init__(self, supportedIntents: Iterable = None, authOnlyIntents: dict = None, databaseSchema: dict = None):
+		super().__init__(logDepth=4)
 		try:
 			path = Path(inspect.getfile(self.__class__)).with_suffix('.install')
 			self._install = json.loads(path.read_text())
@@ -42,22 +40,57 @@ class Module:
 		self._databaseSchema = databaseSchema
 		self._widgets = dict()
 
-		if isinstance(supportedIntents, dict):
-			self._supportedIntents = supportedIntents
-		elif isinstance(supportedIntents, list):
-			self._supportedIntents = dict.fromkeys(supportedIntents)
+		if not supportedIntents:
+			supportedIntents = list()
 
-		self._authOnlyIntents = authOnlyIntents or dict()
+		self._myIntents: List[Intent] = list()
+		self._supportedIntents: Dict[str, Tuple[(str, Intent), Callable]] = dict()
+		for item in (*supportedIntents, *self.intentMethods()):
+			if isinstance(item, tuple):
+				self._supportedIntents[str(item[0])] = item
+				self._myIntents.append(item[0])
+			elif isinstance(item, Intent):
+				self._supportedIntents[str(item)] = (item, self.onMessage)
+				self._myIntents.append(item)
+			elif isinstance(item, str):
+				self._supportedIntents[item] = (item, self.onMessage)
 
+		self._authOnlyIntents: Dict[str, AccessLevel] = {str(intent): level.value for intent, level in authOnlyIntents.items()} if authOnlyIntents else dict()
 		self._utteranceSlotCleaner = re.compile('{(.+?):=>.+?}')
-
 		self.loadWidgets()
 
 
+	@classmethod
+	def decoratedIntentMethods(cls):
+		from core.util.Decorators import IntentHandler
+		for name in dir(cls):
+			method = getattr(cls, name)
+			while isinstance(method, IntentHandler.Wrapper):
+				yield method
+				method = method.decoratedMethod
+
+
+	@classmethod
+	def intentMethods(cls) -> list:
+		intents = dict()
+		for method in cls.decoratedIntentMethods():
+			if not method.requiredState:
+				intents[method.intentName] = (method.intent, method)
+				continue
+
+			if method.intentName not in intents:
+				intents[method.intentName] = method.intent
+
+			intents[method.intentName].addDialogMapping({method.requiredState: method})
+
+		return list(intents.values())
+
+
+	# noinspection SqlResolve
 	def loadWidgets(self):
 		fp = Path(self.getCurrentDir(), 'widgets')
 		if fp.exists():
-			self._logger.info(f"[{self.name}] Loading {len(list(fp.glob('*.py'))) - 1} widgets")
+			self.logInfo(f"Loading {len(list(fp.glob('*.py'))) - 1} widgets")
 
 			data = self.DatabaseManager.fetch(
 				tableName='widgets',
@@ -80,10 +113,10 @@ class Module:
 				if widgetName in data: # widget already exists in DB
 					self._widgets[widgetName] = klass(data[widgetName])
 					del data[widgetName]
-					self._logger.info(f'[{self.name}] Loaded widget "{widgetName}"')
+					self.logInfo(f'Loaded widget "{widgetName}"')
 
 				else: # widget is new
-					self._logger.info(f'[{self.name}] Adding widget "{widgetName}"')
+					self.logInfo(f'Adding widget "{widgetName}"')
 					widget = klass({
 						'name': widgetName,
 						'parent': self.name,
@@ -92,7 +125,7 @@ class Module:
 					widget.saveToDB()
 
 			for widgetName in data: # deprecated widgets
-				self._logger.info(f'[{self.name}] Widget "{widgetName}" is deprecated, removing')
+				self.logInfo(f'Widget "{widgetName}" is deprecated, removing')
 				self.DatabaseManager.delete(
 					tableName='widgets',
 					callerName=self.ModuleManager.name,
@@ -107,10 +140,12 @@ class Module:
 	def getUtterancesByIntent(self, intent: Intent, forceLowerCase: bool = True, cleanSlots: bool = False) -> list:
 		utterances = list()
 
-		if isinstance(intent, str):
-			check = intent.split('/')[-1].split(':')[-1]
-		else:
+		if isinstance(intent, tuple):
+			check = intent[0].justAction
+		elif isinstance(intent, Intent):
 			check = intent.justAction
+		else:
+			check = intent.split('/')[-1].split(':')[-1]
 
 		for dtIntentName, dtModuleName in self.SamkillaManager.dtIntentNameSkillMatching.items():
 			if dtIntentName == check and dtModuleName == self.name:
@@ -204,6 +239,11 @@ class Module:
 
 
 	@property
+	def myIntents(self) -> list:
+		return self._myIntents
+
+
+	@property
 	def delayed(self) -> bool:
 		return self._delayed
 
@@ -218,7 +258,7 @@ class Module:
 			try:
 				mqttClient.subscribe(str(intent))
 			except:
-				self._logger.error(f'Failed subscribing to intent "{str(intent)}"')
+				self.logError(f'Failed subscribing to intent "{str(intent)}"')
 
 
 	def notifyDevice(self, topic: str, uid: str = '', siteId: str = ''):
@@ -227,7 +267,7 @@ class Module:
 		elif siteId:
 			self.MqttManager.publish(topic=topic, payload={'siteId': siteId})
 		else:
-			self._logger.warning(f'[{self.name}] Tried to notify devices but no uid or site id specified')
+			self.logWarning('Tried to notify devices but no uid or site id specified')
 
 
 	def filterIntent(self, intent: str, session: DialogSession) -> bool:
@@ -236,7 +276,7 @@ class Module:
 			return False
 
 		# Return if previous intent is not supported by this module
-		if session.previousIntent and session.previousIntent not in self._supportedIntents:
+		if session.previousIntent and str(session.previousIntent) not in self._supportedIntents:
 			return False
 
 		# Return if this intent is not supported by this module
@@ -262,8 +302,22 @@ class Module:
 		return True
 
 
+	def dispatchMessage(self, intent: str, session: DialogSession) -> bool:
+		forMe = self.filterIntent(intent, session)
+		if not forMe:
+			return False
+
+		intentt = self._supportedIntents[intent][0]
+		if isinstance(intentt, Intent) and intentt.hasDialogMapping():
+			consumed = self._supportedIntents[intent][0].dialogMapping.onDialog(intent, session, self.name)
+			if consumed or consumed is None:
+				return True
+
+		return self._supportedIntents[intent][1](session=session, intent=intent)
+
+
 	def getResource(self, moduleName: str = '', resourcePathFile: str = '') -> str:
-		return str(Path(commons.rootDir(), 'modules', moduleName or self.name, resourcePathFile))
+		return str(Path(self.Commons.rootDir(), 'modules', moduleName or self.name, resourcePathFile))
 
 
 	def _initDB(self) -> bool:
@@ -272,27 +326,11 @@ class Module:
 		return True
 
 
-	def onHotword(self, siteId: str): pass
-	def onSay(self, session: DialogSession): pass
-	def onSayFinished(self, session: DialogSession): pass
-	def onHotwordToggleOn(self, siteId: str): pass
-	def onUserCancel(self, session: DialogSession): pass
-	def onSessionTimeout(self, session: DialogSession): pass
-	def onSessionError(self, session: DialogSession): pass
-	def onSessionEnded(self, session: DialogSession): pass
-	def onSessionStarted(self, session: DialogSession): pass
-	def onSessionQueued(self, session: DialogSession): pass
-	def onIntentNotRecognized(self, session: DialogSession): pass
-	def onStartListening(self, session: DialogSession): pass
-	def onCaptured(self, session: DialogSession): pass
-	def onIntentParsed(self, session: DialogSession): pass
-
-
 	def onStart(self) -> dict:
 		if not self._active:
-			self._logger.info(f'Module {self.name} is not active')
+			self.logInfo(f'Module {self.name} is not active')
 		else:
-			self._logger.info(f'Starting {self.name} module')
+			self.logInfo(f'Starting {self.name} module')
 
 		self._initDB()
 		self.MqttManager.subscribeModuleIntents(self.name)
@@ -305,7 +343,7 @@ class Module:
 				self.ThreadManager.doLater(interval=5, func=self.onBooted)
 				return False
 
-			self._logger.info(f'[{self.name}] Delayed start')
+			self.logInfo('Delayed start')
 			self.ThreadManager.doLater(interval=5, func=self.onStart)
 
 		return True
@@ -321,64 +359,8 @@ class Module:
 		#self.MqttManager.subscribeModuleIntents(self.name)
 
 
-	def onMessage(self, intent: str, session: DialogSession) -> bool:
-		if self._supportedIntents[intent] is None:
-			raise NotImplementedError(f'[{self.name}] onMessage must be implemented when no intent: function dict is provided"!')
-
-		try:
-			return self._supportedIntents[intent](intent=intent, session=session)
-		except KeyError:
-			raise NotImplementedError(f'[{self.name}] The intent: {intent} has no mapping!')
-		except NameError:
-			raise NotImplementedError(f'[{self.name}] The intent callback: {self._supportedIntents[intent]} must be implemented!')
-
-
-	def onSleep(self): pass
-	def onWakeup(self): pass
-	def onGoingBed(self): pass
-	def onLeavingHome(self): pass
-	def onReturningHome(self): pass
-	def onEating(self): pass
-	def onWatchingTV(self): pass
-	def onCooking(self): pass
-	def onMakeup(self): pass
-	def onContextSensitiveDelete(self, sessionId: str): pass
-	def onContextSensitiveEdit(self, sessionId: str): pass
-	def onStop(self): self._logger.info(f'[{self.name}] Stopping')
-	def onFullMinute(self): pass
-	def onFiveMinute(self): pass
-	def onQuarterHour(self): pass
-	def onFullHour(self): pass
-	def onCancel(self): pass
-	def onASRCaptured(self): pass
-	def onWakeword(self): pass
-	def onMotionDetected(self): pass
-	def onMotionStopped(self): pass
-	def onButtonPressed(self): pass
-	def onButtonReleased(self): pass
-	def onDeviceConnecting(self): pass
-	def onDeviceDisconnecting(self): pass
-	def onRaining(self): pass
-	def onWindy(self): pass
-	def onFreezing(self, deviceList: list): pass
-	def onTemperatureAlert(self, deviceList: list): pass
-	def onCO2Alert(self, deviceList: list): pass
-	def onHumidityAlert(self, deviceList: list): pass
-	def onNoiseAlert(self, deviceList: list): pass
-	def onPressureAlert(self, deviceList: list): pass
-	def onBroadcastingForNewDeviceStart(self, session: DialogSession): pass
-	def onBroadcastingForNewDeviceStop(self): pass
-	def onSnipsAssistantDownloaded(self, **kwargs): pass
-	def onSnipsAssistantDownloadFailed(self, **kwargs): pass
-	def onAuthenticated(self, session: DialogSession): pass
-	def onAuthenticationFailed(self, session: DialogSession): pass
-	def onAudioFrame(self, message: MQTTMessage): pass
-	def onSnipsAssistantInstalled(self, **kwargs): pass
-	def onSnipsAssistantFailedInstalling(self, **kwargs): pass
-
-
 	# HELPERS
-	def getConfig(self, key: str) -> typing.Any:
+	def getConfig(self, key: str) -> Any:
 		return self.ConfigManager.getModuleConfigByName(moduleName=self.name, configName=key)
 
 
@@ -391,15 +373,19 @@ class Module:
 			return {key: value for key, value in mySettings.items() if key not in infoSettings}
 
 
-	def updateConfig(self, key: str, value: typing.Any) -> typing.Any:
+	def getModuleConfigsTemplate(self) -> dict:
+		return self.ConfigManager.getModuleConfigsTemplate(self.name)
+
+
+	def updateConfig(self, key: str, value: Any):
 		self.ConfigManager.updateModuleConfigurationFile(moduleName=self.name, key=key, value=value)
 
 
-	def getAliceConfig(self, key: str) -> typing.Any:
+	def getAliceConfig(self, key: str) -> Any:
 		return self.ConfigManager.getAliceConfigByName(configName=key)
 
 
-	def updateAliceConfig(self, key: str, value: typing.Any) -> typing.Any:
+	def updateAliceConfig(self, key: str, value: Any):
 		self.ConfigManager.updateAliceConfiguration(key=key, value=value)
 
 
@@ -411,11 +397,11 @@ class Module:
 		return self.LanguageManager.defaultLanguage
 
 
-	def databaseFetch(self, tableName: str, query: str, values: dict = None, method: str = 'one') -> list:
+	def databaseFetch(self, tableName: str, query: str, values: dict = None, method: str = 'one') -> sqlite3.Row:
 		return self.DatabaseManager.fetch(tableName=tableName, query=query, values=values, callerName=self.name, method=method)
 
 
-	def databaseInsert(self, tableName: str, query: str, values: dict = None) -> int:
+	def databaseInsert(self, tableName: str, query: str = None, values: dict = None) -> int:
 		return self.DatabaseManager.insert(tableName=tableName, query=query, values=values, callerName=self.name)
 
 
@@ -436,12 +422,12 @@ class Module:
 		self.MqttManager.say(text=text, client=siteId, customData=customData, canBeEnqueued=canBeEnqueued)
 
 
-	def ask(self, text: str, siteId: str = constants.DEFAULT_SITE_ID, intentFilter: list = None, customData: dict = None, previousIntent: str = '', canBeEnqueued: bool = True):
-		self.MqttManager.ask(text=text, client=siteId, intentFilter=intentFilter, customData=customData, previousIntent=previousIntent, canBeEnqueued=canBeEnqueued)
+	def ask(self, text: str, siteId: str = constants.DEFAULT_SITE_ID, intentFilter: list = None, customData: dict = None, previousIntent: str = '', canBeEnqueued: bool = True, currentDialogState: str = ''):
+		self.MqttManager.ask(text=text, client=siteId, intentFilter=intentFilter, customData=customData, previousIntent=previousIntent, canBeEnqueued=canBeEnqueued, currentDialogState=currentDialogState)
 
 
-	def continueDialog(self, sessionId: str, text: str, customData: dict = None, intentFilter: list = None, previousIntent: str = '', slot: str = ''):
-		self.MqttManager.continueDialog(sessionId=sessionId, text=text, customData=customData, intentFilter=intentFilter, previousIntent=str(previousIntent), slot=slot)
+	def continueDialog(self, sessionId: str, text: str, customData: dict = None, intentFilter: list = None, previousIntent: str = '', slot: str = '', currentDialogState: str = ''):
+		self.MqttManager.continueDialog(sessionId=sessionId, text=text, customData=customData, intentFilter=intentFilter, previousIntent=str(previousIntent), slot=slot, currentDialogState=currentDialogState)
 
 
 	def endDialog(self, sessionId: str = '', text: str = '', siteId: str = ''):
@@ -460,115 +446,22 @@ class Module:
 		self.MqttManager.publish(topic=topic, payload=payload, qos=qos, retain=retain)
 
 
-	def broadcast(self, topic: str):
-		self.MqttManager.publish(topic=topic)
+	def decorate(self, msg: str, depth: int) -> str:
+		"""
+		overwrite Logger decoration method, since it should always
+		be the module name
+		"""
+		return f'[{self.name}] {msg}'
 
 
-	@property
-	def ConfigManager(self):
-		return SuperManager.getInstance().configManager
-
-
-	@property
-	def ModuleManager(self):
-		return SuperManager.getInstance().moduleManager
-
-
-	@property
-	def DeviceManager(self):
-		return SuperManager.getInstance().deviceManager
-
-
-	@property
-	def DialogSessionManager(self):
-		return SuperManager.getInstance().dialogSessionManager
-
-
-	@property
-	def MultiIntentManager(self):
-		return SuperManager.getInstance().multiIntentManager
-
-
-	@property
-	def ProtectedIntentManager(self):
-		return SuperManager.getInstance().protectedIntentManager
-
-
-	@property
-	def MqttManager(self):
-		return SuperManager.getInstance().mqttManager
-
-
-	@property
-	def SamkillaManager(self):
-		return SuperManager.getInstance().samkillaManager
-
-
-	@property
-	def SnipsConsoleManager(self):
-		return SuperManager.getInstance().snipsConsoleManager
-
-
-	@property
-	def SnipsServicesManager(self):
-		return SuperManager.getInstance().snipsServicesManager
-
-
-	@property
-	def UserManager(self):
-		return SuperManager.getInstance().userManager
-
-
-	@property
-	def DatabaseManager(self):
-		return SuperManager.getInstance().databaseManager
-
-
-	@property
-	def InternetManager(self):
-		return SuperManager.getInstance().internetManager
-
-
-	@property
-	def TelemetryManager(self):
-		return SuperManager.getInstance().telemetryManager
-
-
-	@property
-	def ThreadManager(self):
-		return SuperManager.getInstance().threadManager
-
-
-	@property
-	def TimeManager(self):
-		return SuperManager.getInstance().timeManager
-
-
-	@property
-	def ASRManager(self):
-		return SuperManager.getInstance().ASRManager
-
-
-	@property
-	def LanguageManager(self):
-		return SuperManager.getInstance().languageManager
-
-
-	@property
-	def TalkManager(self):
-		return SuperManager.getInstance().talkManager
-
-
-	@property
-	def TTSManager(self):
-		return SuperManager.getInstance().TTSManager
-
-
-	@property
-	def WakewordManager(self):
-		return SuperManager.getInstance().wakewordManager
-
-
-	@property
-	def WebInterfaceManager(self):
-		return SuperManager.getInstance().webInterfaceManager
+	def toJson(self) -> dict:
+		return {
+			'name': self._name,
+			'author': self._author,
+			'version': self._version,
+			'updateAvailable': self._updateAvailable,
+			'active': self._active,
+			'delayed': self._delayed,
+			'required': self._required,
+			'databaseSchema': self._databaseSchema
+		}
