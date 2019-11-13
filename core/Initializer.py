@@ -5,10 +5,10 @@ import socket
 import subprocess
 import time
 from pathlib import Path
-import configTemplate
 
 import yaml
 
+import configTemplate
 from core.base.model.ProjectAliceObject import ProjectAliceObject
 
 
@@ -81,9 +81,9 @@ network={
 			bootWpaSupplicant = Path('/boot/wpa_supplicant.conf')
 
 			wpaFile = self._WPA_FILE\
-				.replace('%wifiCountryCode%', initConfs['wifiCountryCode'])\
-				.replace('%wifiNetworkName%', initConfs['wifiNetworkName'])\
-				.replace('%wifiWPAPass%', initConfs['wifiWPAPass'])
+				.replace('%wifiCountryCode%', str(initConfs['wifiCountryCode']))\
+				.replace('%wifiNetworkName%', str(initConfs['wifiNetworkName']))\
+				.replace('%wifiWPAPass%', str(initConfs['wifiWPAPass']))
 
 			file = Path(self._rootDir, 'wifi.conf')
 			file.write_text(wpaFile)
