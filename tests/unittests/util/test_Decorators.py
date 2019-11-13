@@ -2,12 +2,12 @@ import unittest
 from unittest import mock
 from unittest.mock import MagicMock
 
-from core.util.Decorators import IntentHandler, Decorators
+from core.util.Decorators import IntentHandler, deprecated, Online, AnyExcept
 
 class TestDecorators(unittest.TestCase):
 
 	def test_deprecated(self):
-		@Decorators.deprecated
+		@deprecated
 		def legacy_function():
 			pass
 
@@ -23,23 +23,23 @@ class TestDecorators(unittest.TestCase):
 			def name(self):
 				return 'Module'
 
-			@Decorators.online
+			@Online
 			def offline(self, *args, **kwargs):
 				raise Exception
 
-			@Decorators.online(returnText=True)
+			@Online(returnText=True)
 			def offline_return(self, *args, **kwargs):
 				raise Exception
 
 			def offlineHandler(self, *args, **kwargs):
 				return self, args, kwargs
 
-			@Decorators.online(offlineHandler=offlineHandler)
+			@Online(offlineHandler=offlineHandler)
 			def catch_offlineHandler(self, *args, **kwargs):
 				raise Exception
 			
 			@staticmethod
-			@Decorators.online
+			@Online
 			def catch_staticMethod(*args, **kwargs):
 				raise Exception
 
@@ -147,27 +147,27 @@ class TestDecorators(unittest.TestCase):
 			def name(self):
 				return 'Module'
 
-			@Decorators.anyExcept
+			@AnyExcept
 			def catch_all(self, *args, **kwargs):
 				raise Exception
 
-			@Decorators.anyExcept(exceptions=KeyError)
+			@AnyExcept(exceptions=KeyError)
 			def catch_ValueError(self, *args, **kwargs):
 				raise Exception
 
-			@Decorators.anyExcept(returnText=True)
+			@AnyExcept(returnText=True)
 			def catch_returnText(self, *args, **kwargs):
 				raise Exception
 
 			def exceptHandler(self, *args, **kwargs):
 				return self, args, kwargs
 
-			@Decorators.anyExcept(exceptHandler=exceptHandler)
+			@AnyExcept(exceptHandler=exceptHandler)
 			def catch_exceptionHandler(self, *args, **kwargs):
 				raise Exception
 			
 			@staticmethod
-			@Decorators.anyExcept
+			@AnyExcept
 			def catch_staticMethod(*args, **kwargs):
 				raise Exception
 
