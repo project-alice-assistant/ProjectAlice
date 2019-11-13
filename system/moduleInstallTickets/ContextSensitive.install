@@ -1,13 +1,12 @@
 {
 	"name": "ContextSensitive",
-	"version": "1.0.7",
+	"version": "1.0.9",
 	"author": "ProjectAlice",
 	"maintainers": [
 		"Psycho",
-		"Jierka",
 		"maxbachmann"
 	],
-	"desc": "ContextSensitive is the official context sensitive module. It handle intents like \"Delete this\", \"Forget about that\"",
+	"desc": "ContextSensitive is the official context sensitive module. It handle intents like 'Delete this', 'Forget about that'",
 	"aliceMinVersion": "1.0.0-a3",
 	"systemRequirements": [],
 	"pipRequirements": [],
