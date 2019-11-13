@@ -1,4 +1,4 @@
-[![Maintainability](https://api.codeclimate.com/v1/badges/ab9aa78508dcccc85b12/maintainability)](https://codeclimate.com/github/project-alice-powered-by-snips/ProjectAlice/maintainability) [![Test Coverage](https://api.codeclimate.com/v1/badges/ab9aa78508dcccc85b12/test_coverage)](https://codeclimate.com/github/project-alice-powered-by-snips/ProjectAlice/test_coverage) [![Codacy Badge](https://api.codacy.com/project/badge/Grade/55399302e9614fb18a354fb9345dff29)](https://www.codacy.com/manual/Psychokiller1888/ProjectAlice?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=project-alice-powered-by-snips/ProjectAlice&amp;utm_campaign=Badge_Grade) ![GitHub](https://img.shields.io/github/license/Psychokiller1888/ProjectAlice) [![Documentation Status](https://readthedocs.org/projects/projectalice/badge/?version=latest)](https://projectalice.readthedocs.io/en/latest/?badge=latest)
+[![Maintainability](https://api.codeclimate.com/v1/badges/ab9aa78508dcccc85b12/maintainability)](https://codeclimate.com/github/project-alice-powered-by-snips/ProjectAlice/maintainability) [![Codacy Badge](https://api.codacy.com/project/badge/Grade/55399302e9614fb18a354fb9345dff29)](https://www.codacy.com/manual/Psychokiller1888/ProjectAlice?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=project-alice-powered-by-snips/ProjectAlice&amp;utm_campaign=Badge_Grade) ![GitHub language count](https://img.shields.io/github/languages/count/Psychokiller1888/ProjectAlice) ![GitHub top language](https://img.shields.io/github/languages/top/Psychokiller1888/ProjectAlice) ![GitHub](https://img.shields.io/github/license/Psychokiller1888/ProjectAlice) [![Documentation Status](https://readthedocs.org/projects/projectalice/badge/?version=latest)](https://projectalice.readthedocs.io/en/latest/?badge=latest) ![Open issues](https://img.shields.io/github/issues-raw/Psychokiller1888/ProjectAlice) ![GitHub contributors](https://img.shields.io/github/contributors/Psychokiller1888/ProjectAlice) ![Discord](https://img.shields.io/discord/579345007518154752)
 
 # ProjectAlice
 Project Alice is a smart voice home assistant completely based on [Snips](https://snips.ai) that is modular and extensible. Since Snips runs entirely offline and never sends or shares your voice interactions with anyone, Project Alice **guarantees** your privacy in your home or wherever you’re using Project Alice.
@@ -46,8 +46,12 @@ Hey, did you skip ahead and not read what I wrote a bit earlier? You have to! Ju
 Project Alice ships under GPLv3, it means you are free to use and redistribute our code but are not allowed to use any part of it under a closed license. Give the community back what you've been given!
 Regarding third party tools, scripts, material we use, I took care to mention original creators in files and respect their copyright. If something has slept under my supervision know that it was in no case intended and is the result of a mistake and I ask you to contact me directly to solve the issue asap.
 
-# Copyrights
+# Third party copyrights
 If you see or find a copyright breach, feel free to contact us immediately. It is not our intention to steal anyone else's work or plagiarize your work and is just the result of a missunderstanding that we will gladly fix immediately!
+
+
+# Special thanks and retired official devs
+-   May 2019 - November 2019: *Jierka* for the work provided on the core
 
 
 # Other repositories
