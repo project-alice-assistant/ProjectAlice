@@ -6,8 +6,8 @@ from core.base.model.ProjectAliceObject import ProjectAliceObject
 
 
 class User(ProjectAliceObject):
-	#TODO should probably by typing.Optional[dict]
-	def __init__(self, row: typing.Any):
+
+	def __init__(self, row: typing.Optional[dict]):
 		super().__init__(logDepth=3)
 
 		#TODO is it correct to init these values only when row exists?
@@ -176,7 +176,7 @@ class User(ProjectAliceObject):
 			self.logWarning('No pin defined for this user')
 			return False
 
-		return bcrypt.checkpw(str(password).encode(), self.pin.encode())
+		return bcrypt.checkpw(str(password).encode(), self.pin)
 
 	# Flask login reqs
 
