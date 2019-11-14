@@ -19,7 +19,8 @@ from core.base.model.ProjectAliceObject import ProjectAliceObject
 class initDict(dict, ProjectAliceObject):
 
 	def __init__(self, default: dict):
-		super().__init__(default, logDepth=3)
+		self._depth = 3
+		super().__init__(default, logDepth=self._depth)
 
 
 	def __getitem__(self, item):
