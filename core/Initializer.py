@@ -55,7 +55,7 @@ network={
 		self._confsFile = Path(self._rootDir, 'config.py')
 		self._confsSample = Path(self._rootDir, 'configTemplate.py')
 		self._initFile = Path('/boot/ProjectAlice.yaml')
-		self._latest = 1.07
+		self._latest = 1.08
 
 
 	def initProjectAlice(self) -> bool:
@@ -209,7 +209,7 @@ network={
 		confs['baseUnits'] = initConfs['baseUnits']
 		confs['enableDataStoring'] = bool(initConfs['enableDataStoring'])
 		confs['autoPruneStoredData'] = initConfs['autoPruneStoredData']
-		confs['probabilityTreshold'] = float(initConfs['probabilityTreshold'])
+		confs['probabilityThreshold'] = float(initConfs['probabilityThreshold'])
 		confs['shortReplies'] = bool(initConfs['shortReplies'])
 		confs['whisperWhenSleeping'] = bool(initConfs['whisperWhenSleeping'])
 		confs['ttsLanguage'] = initConfs['ttsLanguage']

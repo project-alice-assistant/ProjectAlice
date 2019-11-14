@@ -13,7 +13,7 @@
 #                                              #
 ################################################
 #            DON'T CHANGE ME                   #
-version: 1.06
+version: 1.08
 ################################################
 
 # If you place this file into /boot after a first initialization it won't overwrite your settings unless you set this to yes
@@ -97,7 +97,7 @@ enableDataStoring: yes
 autoPruneStoredData: 1000
 
 # If an intent returns less confidence score than this it will be considered as not understood
-probabilityTreshold: 0.5
+probabilityThreshold: 0.5
 
 # If set to yes Alice will only answer with shorter answers, when available
 shortReplies: no

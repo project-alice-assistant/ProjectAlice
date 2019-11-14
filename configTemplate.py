@@ -39,7 +39,7 @@ settings = {
 		'dataType': 'integer',
 		'decription': 'Set to max entries to keep, 0 to disable pruning'
 	},
-	'probabilityTreshold': {
+	'probabilityThreshold': {
 		'defaultValue': 0.45,
 		'dataType': 'float'
 	},
