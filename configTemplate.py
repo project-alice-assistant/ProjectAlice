@@ -22,6 +22,18 @@ settings = {
 		'defaultValue': 1883,
 		'dataType': 'integer'
 	},
+	'mqttUser': {
+		'defaultValue': '',
+		'dataType'    : 'string'
+	},
+	'mqttPassword': {
+		'defaultValue': '',
+		'dataType'    : 'password'
+	},
+	'mqttTLSFile': {
+		'defaultValue': '',
+		'dataType'    : 'string'
+	},
 	'micSampleRate': {
 		'defaultValue': 44100,
 		'dataType': 'integer'

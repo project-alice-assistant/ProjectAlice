@@ -34,6 +34,9 @@ soundPlaybackAndRecordEnabled: yes
 # Connection
 mqttHost: localhost
 mqttPort: 1883
+mqttUser:
+mqttPassword:
+mqttTLSFile:
 
 # Required to generate/train and download the assistant. We strongly suggest a new account
 snipsConsoleLogin:

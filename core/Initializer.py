@@ -196,7 +196,7 @@ network={
 
 		# Those that don't need checking
 		confs['ssid'] = initConfs['wifiNetworkName']
-		confs['wifipassword'] = initConfs['wifiWPAPass']
+		confs['wifipassword'] = str(initConfs['wifiWPAPass'])
 		confs['micSampleRate'] = int(initConfs['micSampleRate'])
 		confs['micChannels'] = int(initConfs['micChannels'])
 		confs['useSLC'] = bool(initConfs['useSLC'])
@@ -219,6 +219,9 @@ network={
 		confs['githubToken'] = initConfs['githubToken']
 		confs['ttsLanguage'] = initConfs['ttsLanguage']
 		confs['updateChannel'] = initConfs['updateChannel']
+		confs['mqttUser'] = str(initConfs['mqttUser'])
+		confs['mqttPassword'] = str(initConfs['mqttPassword'])
+		confs['mqttTLSFile'] = initConfs['mqttTLSFile']
 
 		if initConfs['snipsProjectId'] and confs['activeLanguage'] in confs['supportedLanguages']:
 			confs['supportedLanguages'][confs['activeLanguage']]['snipsProjectId'] = initConfs['snipsProjectId']
