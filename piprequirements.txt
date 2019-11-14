@@ -28,4 +28,3 @@ flask-classful
 flask-login
 googletrans
 bcrypt
-serial

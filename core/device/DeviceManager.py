@@ -8,10 +8,10 @@ from typing import Optional
 import esptool  # type: ignore
 import os
 import requests
+import serial  # type: ignore
 from esptool import ESPLoader  # type: ignore
 from paho.mqtt.client import MQTTMessage  # type: ignore
 from random import shuffle
-from serial import Serial  # type: ignore
 from serial.tools import list_ports  # type: ignore
 
 from core.base.model.Manager import Manager
@@ -234,10 +234,10 @@ class DeviceManager(Manager):
 				self.logError('Something went wrong getting tasmota configuration')
 				self.MqttManager.say(text=self.TalkManager.randomTalk('espFailed', module='AliceCore'), client=siteId)
 			else:
-				serial = Serial()
-				serial.baudrate = 115200
-				serial.port = port
-				serial.open()
+				ser = serial.Serial()
+				ser.baudrate = 115200
+				ser.port = port
+				ser.open()
 
 				try:
 					for group in confs:
@@ -255,13 +255,13 @@ class DeviceManager(Manager):
 							arr.append(f'{cmd}\r\n')
 
 						for piece in arr:
-							serial.write(piece.encode())
+							ser.write(piece.encode())
 							self.logInfo('Sent {}'.format(piece.replace('\r\n', '')))
 							time.sleep(0.5)
 
 						time.sleep(group['waitAfter'])
 
-					serial.close()
+					ser.close()
 					self.logInfo('Tasmota flashing and configuring done')
 					self.MqttManager.say(text=self.TalkManager.randomTalk('espFlashingDone', module='AliceCore'), client=siteId)
 					self.addNewDevice(espType, room, uid)
@@ -271,7 +271,7 @@ class DeviceManager(Manager):
 					self.logError(f'Something went wrong writting configuration to esp device: {e}')
 					self.MqttManager.say(text=self.TalkManager.randomTalk('espFailed', module='AliceCore'), client=siteId)
 					self._broadcastFlag.clear()
-					serial.close()
+					ser.close()
 		else:
 			self.MqttManager.say(text=self.TalkManager.randomTalk('espFailed', module='AliceCore'), client=siteId)
 			self._broadcastFlag.clear()
