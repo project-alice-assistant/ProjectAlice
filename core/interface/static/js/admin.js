@@ -55,7 +55,7 @@ $(function () {
 		}
 	});
 
-	$('.tab').on('click', function () {
+	$('.tab').on('click touchstart', function () {
 		let target = $(this).data('for');
 		$(this).addClass('activeTab');
 
@@ -73,17 +73,21 @@ $(function () {
 				$(this).hide();
 			}
 		});
+		return false;
 	});
 
-	$('#restart').on('click', function () {
+	$('#restart').on('click touchstart', function () {
 		handleUtilityClick($(this), 'restart', 5000);
+		return false;
 	});
 
-	$('#reboot').on('click', function () {
+	$('#reboot').on('click touchstart', function () {
 		handleUtilityClick($(this), 'reboot', 10000);
+		return false;
 	});
 
-	$('#trainAndDownload').on('click', function () {
+	$('#trainAndDownload').on('click touchstart', function () {
 		handleUtilityClick($(this), 'assistantDownload', 5000);
+		return false;
 	});
 });
