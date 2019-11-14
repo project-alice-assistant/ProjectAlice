@@ -68,7 +68,11 @@ network={
 
 		with self._initFile.open(mode='r') as f:
 			try:
-				initConfs = initDict(yaml.safe_load(f))
+				load = yaml.safe_load(f)
+				if not load:
+					raise  yaml.YAMLError
+
+				initConfs = initDict(load)
 			except yaml.YAMLError as e:
 				self.fatal(f'Failed loading init configurations: {e}')
 
@@ -204,7 +208,7 @@ network={
 		confs['webInterfaceActive'] = bool(initConfs['webInterfaceActive'])
 		confs['webInterfaceDevMode'] = bool(initConfs['webInterfaceDevMode'])
 		confs['newDeviceBroadcastPort'] = int(initConfs['newDeviceBroadcastPort'])
-		confs['activeLanguage'] = initConfs['activeLanguage']
+		confs['activeLanguage'] = initConfs['activeLanguage'] if initConfs['activeLanguage'] in ('en', 'de', 'fr') else 'en'
 		confs['activeCountryCode'] = initConfs['activeCountryCode']
 		confs['baseCurrency'] = initConfs['baseCurrency']
 		confs['baseUnits'] = initConfs['baseUnits']
