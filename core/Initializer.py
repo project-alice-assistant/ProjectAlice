@@ -185,8 +185,8 @@ network={
 			confs['awsAccessKey'] = ''
 			confs['awsSecretKey'] = ''
 		else:
-			confs['keepASROffline'] = bool(initConfs['keepASROffline']) or True
-			confs['keepTTSOffline'] = bool(initConfs['keepTTSOffline']) or True
+			confs['keepASROffline'] = bool(initConfs['keepASROffline'])
+			confs['keepTTSOffline'] = bool(initConfs['keepTTSOffline'])
 			confs['moduleAutoUpdate'] = bool(initConfs['moduleAutoUpdate']) or False
 			confs['asr'] = initConfs['asr'] if initConfs['asr'] in ('snips', 'google') else 'snips'
 			confs['tts'] = initConfs['tts'] if initConfs['tts'] in ('pico', 'snips', 'mycroft', 'amazon', 'google') else 'pico'
