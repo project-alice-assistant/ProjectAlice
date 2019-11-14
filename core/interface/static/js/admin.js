@@ -1,3 +1,5 @@
+$(document).tooltip();
+
 $(function () {
 
 	let locked = false;
