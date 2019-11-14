@@ -48,6 +48,7 @@ $(function () {
 				$button.parent().children('.moduleStoreModuleSelected').css('display', 'flex');
 				selectedModulesToDownload.push({'module': installer['name'], 'author': installer['author']});
 				$('#applyModuleStore').show();
+				return false;
 			});
 
 			$tile.append($button);
@@ -88,6 +89,7 @@ $(function () {
 				}, 10000);
 			});
 		});
+		return false;
 	});
 
 	$('[id^=toggle_]').on('click touchstart', function () {
@@ -100,6 +102,7 @@ $(function () {
 		}).done(function () {
 			location.reload();
 		});
+		return false;
 	});
 
 	$('[id^=config_for_]').dialog({
@@ -113,16 +116,19 @@ $(function () {
 
 	$('.moduleSettings').on('click touchstart', function () {
 		$('#config_for_' + $(this).attr('data-forModule')).dialog('open');
+		return false;
 	});
 
 	$('.moduleViewIntents').on('click touchstart', function () {
 		$(this).parent('.moduleDefaultView').css('display', 'none');
 		$(this).parent().parent().children('.moduleIntentsView').css('display', 'flex');
+		return false;
 	});
 
 	$('.moduleIntentsViewCloseButton').on('click touchstart', function () {
 		$(this).parent().parent().children('.moduleDefaultView').css('display', 'flex');
 		$(this).parent('.moduleIntentsView').css('display', 'none');
+		return false;
 	});
 
 	$('[id^=delete_]').on('click touchstart', function () {
@@ -135,6 +141,7 @@ $(function () {
 		}).done(function () {
 			location.reload();
 		});
+		return false;
 	});
 
 	$('#openModuleStore').on('click touchstart', function () {
@@ -143,10 +150,12 @@ $(function () {
 		$('#modulesStore').css('display', 'flex');
 		$('#openModuleStore').hide();
 		$('#closeModuleStore').show();
+		return false;
 	});
 
 	$('#closeModuleStore').on('click touchstart', function () {
 		location.reload();
+		return false;
 	});
 
 	$('#applyModuleStore').hide();

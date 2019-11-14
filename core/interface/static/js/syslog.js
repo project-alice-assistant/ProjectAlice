@@ -31,11 +31,13 @@ $(function () {
 	$('#checkedCheckbox').on('click touchstart', function () {
 		$(this).hide();
 		$('#emptyCheckbox').show();
+		return false;
 	});
 
 	$('#emptyCheckbox').on('click touchstart', function () {
 		$(this).hide();
 		$('#checkedCheckbox').show();
+		return false;
 	});
 
 	refreshData('refresh');

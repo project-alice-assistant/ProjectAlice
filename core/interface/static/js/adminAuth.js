@@ -23,14 +23,14 @@ $(function () {
 		})
 	}
 
-	$('.adminAuthKeyboardKey').on('touchstart', function () {
+	$('.adminAuthKeyboardKey').on('click touchstart', function () {
 		if (!keyboardAuthNotified) {
 			$.post('/adminAuth/keyboardAuth/');
 			keyboardAuthNotified = true;
 		}
 
 		if (code.length >= 4) {
-			return;
+			return false;
 		}
 
 		let key = $(this).html();
@@ -53,6 +53,7 @@ $(function () {
 				}
 			});
 		}
+		return false;
 	});
 
 	$('#adminAuthKeyboardContainer').hide();

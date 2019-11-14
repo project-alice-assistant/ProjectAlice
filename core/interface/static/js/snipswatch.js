@@ -21,11 +21,13 @@ $(function () {
 	$('#checkedCheckbox').on('click touchstart', function () {
 		$(this).hide();
 		$('#emptyCheckbox').show();
+		return false;
 	});
 
 	$('#emptyCheckbox').on('click touchstart', function () {
 		$(this).hide();
 		$('#checkedCheckbox').show();
+		return false;
 	});
 
 	$('[class^="fas fa-thermometer"]').on('click touchstart', function () {
@@ -38,6 +40,7 @@ $(function () {
 			},
 			type: 'POST'
 		});
+		return false;
 	});
 
 	setInterval(function () {

@@ -60,6 +60,7 @@ $(function () {
 		$('#widgetCheck').show();
 		$('#addWidget').hide();
 		$('#removeWidget').hide();
+		return false;
 	});
 
 	$('#widgetCheck').on('click touchstart', function () {
@@ -68,6 +69,7 @@ $(function () {
 		$('#addWidget').show();
 		$('#removeWidget').show();
 		location.reload();
+		return false;
 	});
 
 	$('.fa-minus-circle').on('click touchstart', function () {
@@ -81,10 +83,12 @@ $(function () {
 			});
 			$(this).parent().parent().remove();
 		}
+		return false;
 	});
 
 	$('.fa-plus-circle').on('click touchstart', function () {
 		$('#addWidgetDialog').dialog('open');
+		return false;
 	});
 
 	$('.addWidgetCheck').on('click touchstart', function () {
@@ -98,9 +102,10 @@ $(function () {
 			});
 			$(this).parent().remove();
 		}
+		return false;
 	});
 
 	$('[id^=widgetSettings_]').on('click touchstart', function () {
-
+		return false;
 	})
 });
