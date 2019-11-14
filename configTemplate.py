@@ -1,215 +1,220 @@
 settings = {
-	'notUnderstoodRetries': {
+	'autoReportModuleErrors': {
+		'defaultValue': False,
+		'dataType'    : 'boolean',
+		'description' : 'If true, an error thrown by a module will automatically post a github issue and ping the author'
+	},
+	'notUnderstoodRetries'  : {
 		'defaultValue': 3,
-		'dataType': 'integer',
-		'description': 'Defines how many times Alice will ask to repeat if not understood before she gives up'
+		'dataType'    : 'integer',
+		'description' : 'Defines how many times Alice will ask to repeat if not understood before she gives up'
 	},
-	'ssid': {
+	'ssid'                  : {
 		'defaultValue': '',
-		'dataType': 'string',
-		'decription': 'Your Wifi name'
+		'dataType'    : 'string',
+		'decription'  : 'Your Wifi name'
 	},
-	'wifipassword': {
+	'wifipassword'          : {
 		'defaultValue': '',
 		'dataType'    : 'password',
 		'descritption': 'Your Wifi password'
 	},
-	'mqttHost': {
+	'mqttHost'              : {
 		'defaultValue': 'localhost',
-		'dataType': 'string'
+		'dataType'    : 'string'
 	},
-	'mqttPort': {
+	'mqttPort'              : {
 		'defaultValue': 1883,
-		'dataType': 'integer'
+		'dataType'    : 'integer'
 	},
-	'mqttUser': {
+	'mqttUser'              : {
 		'defaultValue': '',
 		'dataType'    : 'string'
 	},
-	'mqttPassword': {
+	'mqttPassword'          : {
 		'defaultValue': '',
 		'dataType'    : 'password'
 	},
-	'mqttTLSFile': {
+	'mqttTLSFile'           : {
 		'defaultValue': '',
 		'dataType'    : 'string'
 	},
-	'micSampleRate': {
+	'micSampleRate'         : {
 		'defaultValue': 44100,
-		'dataType': 'integer'
+		'dataType'    : 'integer'
 	},
-	'micChannels': {
+	'micChannels'           : {
 		'defaultValue': 1,
-		'dataType': 'integer'
+		'dataType'    : 'integer'
 	},
-	'enableDataStoring': {
+	'enableDataStoring'     : {
 		'defaultValue': False,
-		'dataType': 'boolean'
+		'dataType'    : 'boolean'
 	},
-	'autoPruneStoredData': {
+	'autoPruneStoredData'   : {
 		'defaultValue': 0,
-		'dataType': 'integer',
-		'decription': 'Set to max entries to keep, 0 to disable pruning'
+		'dataType'    : 'integer',
+		'decription'  : 'Set to max entries to keep, 0 to disable pruning'
 	},
-	'probabilityThreshold': {
+	'probabilityThreshold'  : {
 		'defaultValue': 0.45,
-		'dataType': 'float'
+		'dataType'    : 'float'
 	},
-	'stayCompletlyOffline': {
+	'stayCompletlyOffline'  : {
 		'defaultValue': False,
-		'dataType': 'boolean'
+		'dataType'    : 'boolean'
 	},
-	'keepASROffline': {
+	'keepASROffline'        : {
 		'defaultValue': False,
-		'dataType': 'boolean'
+		'dataType'    : 'boolean'
 	},
-	'keepTTSOffline': {
+	'keepTTSOffline'        : {
 		'defaultValue': False,
-		'dataType': 'boolean'
+		'dataType'    : 'boolean'
 	},
-	'shortReplies': {
+	'shortReplies'          : {
 		'defaultValue': False,
-		'dataType': 'boolean'
+		'dataType'    : 'boolean'
 	},
-	'whisperWhenSleeping': {
+	'whisperWhenSleeping'   : {
 		'defaultValue': True,
-		'dataType': 'boolean'
+		'dataType'    : 'boolean'
 	},
 	'newDeviceBroadcastPort': {
 		'defaultValue': 12354,
-		'dataType': 'integer'
+		'dataType'    : 'integer'
 	},
-	'intentsOwner': {
+	'intentsOwner'          : {
 		'defaultValue': '',
-		'dataType': 'string'
+		'dataType'    : 'string'
 	},
-	'asr': {
+	'asr'                   : {
 		'defaultValue': 'snips',
-		'dataType': 'list',
-		'values': ['snips', 'google']
+		'dataType'    : 'list',
+		'values'      : ['snips', 'google']
 	},
-	'tts': {
+	'tts'                   : {
 		'defaultValue': 'pico',
-		'dataType': 'list',
-		'values': {'Pico': 'pico', 'Mycroft': 'mycroft', 'Amazon Polly': 'amazon', 'Google Wavenet': 'google', 'Snips Makers TTS': 'snips'}
+		'dataType'    : 'list',
+		'values'      : {'Pico': 'pico', 'Mycroft': 'mycroft', 'Amazon Polly': 'amazon', 'Google Wavenet': 'google', 'Snips Makers TTS': 'snips'}
 	},
-	'ttsLanguage': {
+	'ttsLanguage'           : {
 		'defaultValue': 'en-US',
-		'dataType': 'string'
+		'dataType'    : 'string'
 	},
-	'ttsType': {
+	'ttsType'               : {
 		'defaultValue': 'male',
-		'dataType': 'list',
-		'values': ['male', 'female']
+		'dataType'    : 'list',
+		'values'      : ['male', 'female']
 	},
-	'ttsVoice': {
+	'ttsVoice'              : {
 		'defaultValue': 'en-US',
-		'dataType': 'string'
+		'dataType'    : 'string'
 	},
-	'awsRegion': {
+	'awsRegion'             : {
 		'defaultValue': 'eu-central-1',
-		'dataType': 'list',
-		'values': ['eu-central-1', 'eu-west-1', ' eu-west-2', 'eu-west-3', 'eu-north-1', 'us-east-1', 'us-east-2', 'us-west-1', 'us-west-2']
+		'dataType'    : 'list',
+		'values'      : ['eu-central-1', 'eu-west-1', ' eu-west-2', 'eu-west-3', 'eu-north-1', 'us-east-1', 'us-east-2', 'us-west-1', 'us-west-2']
 	},
-	'awsAccessKey': {
+	'awsAccessKey'          : {
 		'defaultValue': '',
 		'dataType'    : 'password'
 	},
-	'awsSecretKey': {
+	'awsSecretKey'          : {
 		'defaultValue': '',
-		'dataType': 'password'
+		'dataType'    : 'password'
 	},
-	'useSLC': {
+	'useSLC'                : {
 		'defaultValue': False,
-		'dataType': 'boolean'
+		'dataType'    : 'boolean'
 	},
-	'activeLanguage': {
+	'activeLanguage'        : {
 		'defaultValue': 'en',
-		'dataType': 'list',
-		'values': ['en', 'fr', 'de', 'it', 'pt']
+		'dataType'    : 'list',
+		'values'      : ['en', 'fr', 'de', 'it', 'pt']
 	},
-	'activeCountryCode': {
+	'activeCountryCode'     : {
 		'defaultValue': 'US',
-		'dataType': 'string'
+		'dataType'    : 'string'
 	},
-	'moduleAutoUpdate': {
+	'moduleAutoUpdate'      : {
 		'defaultValue': False,
-		'dataType': 'boolean'
+		'dataType'    : 'boolean'
 	},
-	'githubUsername': {
+	'githubUsername'        : {
 		'defaultValue': '',
-		'dataType': 'string'
+		'dataType'    : 'string'
 	},
-	'githubToken': {
+	'githubToken'           : {
 		'defaultValue': '',
-		'dataType': 'password'
+		'dataType'    : 'password'
 	},
-	'updateChannel': {
+	'updateChannel'         : {
 		'defaultValue': 'master',
-		'dataType': 'list',
-		'values': {'Release': 'master', 'Release candidate': 'rc', 'Beta': 'beta', 'Alpha': 'alpha'}
+		'dataType'    : 'list',
+		'values'      : {'Release': 'master', 'Release candidate': 'rc', 'Beta': 'beta', 'Alpha': 'alpha'}
 	},
-	'supportedLanguages': {
+	'supportedLanguages'    : {
 		'en': {
-			'snipsProjectId' : '',
-			'default': True,
-			'countryCode': 'US'
+			'snipsProjectId': '',
+			'default'       : True,
+			'countryCode'   : 'US'
 		},
 		'fr': {
-			'snipsProjectId' : '',
-			'default': False,
-			'countryCode': 'FR'
+			'snipsProjectId': '',
+			'default'       : False,
+			'countryCode'   : 'FR'
 		},
 		'de': {
-			'snipsProjectId' : '',
-			'default': False,
-			'countryCode': 'DE'
+			'snipsProjectId': '',
+			'default'       : False,
+			'countryCode'   : 'DE'
 		}
 	},
 
-	'snipsConsoleLogin': {
+	'snipsConsoleLogin'     : {
 		'defaultValue': '',
-		'dataType': 'string'
+		'dataType'    : 'string'
 	},
-	'snipsConsolePassword': {
+	'snipsConsolePassword'  : {
 		'defaultValue': '',
-		'dataType': 'password'
+		'dataType'    : 'password'
 	},
 
-	'baseCurrency': {
+	'baseCurrency'          : {
 		'defaultValue': 'CHF',
-		'dataType': 'list',
-		'values': ['CHF', 'EUR', 'USD', 'GBP', 'AUD']
+		'dataType'    : 'list',
+		'values'      : ['CHF', 'EUR', 'USD', 'GBP', 'AUD']
 	},
 
-	'baseUnits'          : {
+	'baseUnits'             : {
 		'defaultValue': 'metric',
-		'dataType': 'list',
-		'values': ['metric', 'kelvin', 'imperial']
+		'dataType'    : 'list',
+		'values'      : ['metric', 'kelvin', 'imperial']
 	},
 
-	'onReboot'           : {
+	'onReboot'              : {
 		'defaultValue': '',
-		'dataType': 'string',
-		'display': 'hidden'
+		'dataType'    : 'string',
+		'display'     : 'hidden'
 	},
 
-	'webInterfaceActive' : {
+	'webInterfaceActive'    : {
 		'defaultValue': False,
-		'dataType': 'boolean'
+		'dataType'    : 'boolean'
 	},
-	'webInterfacePort'   : {
+	'webInterfacePort'      : {
 		'defaultValue': 5000,
-		'dataType': 'integer'
+		'dataType'    : 'integer'
 	},
-	'webInterfaceDevMode': {
+	'webInterfaceDevMode'   : {
 		'defaultValue': False,
-		'dataType': 'boolean'
+		'dataType'    : 'boolean'
 	},
 
-	#-----------------------
+	# -----------------------
 	# Modules
-	#-----------------------
+	# -----------------------
 
-	'modules'            : {}
+	'modules'               : {}
 }
