@@ -6,28 +6,31 @@ import subprocess
 import time
 from pathlib import Path
 
-import yaml
+try:
+	import yaml
+except:
+	subprocess.run(['./venv/bin/pip3', 'install', 'pyyaml'])
+	import yaml
 
 import configTemplate
 from core.base.model.ProjectAliceObject import ProjectAliceObject
 
 
-class initDict(dict, ProjectAliceObject):
+class initDict(dict):
 
 	def __init__(self, default: dict):
-		super().__init__(default, logDepth=3)
+		super().__init__(default)
 
 
 	def __getitem__(self, item):
 		try:
 			return super().__getitem__(item) or ''
 		except:
-			self.logWarning(f'Missing key "{item}" in provided yaml file. Are you using a deprecated yaml file version?')
+			print(f'[Initializer] Missing key "{item}" in provided yaml file. Are you using a deprecated yaml file version?')
 			return ''
 
 
 class Initializer(ProjectAliceObject):
-
 	NAME = 'ProjectAlice'
 
 	_WPA_FILE = '''country=%wifiCountryCode%
@@ -42,6 +45,7 @@ network={
 }
 	'''
 
+
 	def __init__(self):
 		super().__init__(logDepth=3)
 		self.logInfo('Starting Project Alice initializer')
@@ -51,7 +55,7 @@ network={
 		self._confsFile = Path(self._rootDir, 'config.py')
 		self._confsSample = Path(self._rootDir, 'configTemplate.py')
 		self._initFile = Path('/boot/ProjectAlice.yaml')
-		self._latest = 1.07
+		self._latest = 1.08
 
 
 	def initProjectAlice(self) -> bool:
@@ -63,7 +67,11 @@ network={
 
 		with self._initFile.open(mode='r') as f:
 			try:
-				initConfs = initDict(yaml.safe_load(f))
+				load = yaml.safe_load(f)
+				if not load:
+					raise  yaml.YAMLError
+
+				initConfs = initDict(load)
 			except yaml.YAMLError as e:
 				self.fatal(f'Failed loading init configurations: {e}')
 
@@ -80,9 +88,9 @@ network={
 
 			bootWpaSupplicant = Path('/boot/wpa_supplicant.conf')
 
-			wpaFile = self._WPA_FILE\
-				.replace('%wifiCountryCode%', str(initConfs['wifiCountryCode']))\
-				.replace('%wifiNetworkName%', str(initConfs['wifiNetworkName']))\
+			wpaFile = self._WPA_FILE \
+				.replace('%wifiCountryCode%', str(initConfs['wifiCountryCode'])) \
+				.replace('%wifiNetworkName%', str(initConfs['wifiNetworkName'])) \
 				.replace('%wifiWPAPass%', str(initConfs['wifiWPAPass']))
 
 			file = Path(self._rootDir, 'wifi.conf')
@@ -123,7 +131,7 @@ network={
 			self.warning('Config file found and force rewrite specified, let\'s restart all this!')
 			Path(self._rootDir, 'config.py').unlink()
 			confs = {configName: configData['defaultValue'] if 'defaultValue' in configData else configData for configName, configData in configTemplate.settings.items()}
-			Path('config.py').write_text(f"'settings = {json.dumps(confs, indent=4).replace('false', 'False').replace('true', 'True')}'")
+			Path('config.py').write_text(f"settings = {json.dumps(confs, indent=4).replace('false', 'False').replace('true', 'True')}")
 
 		config = importlib.import_module('config')
 		confs = config.settings.copy()
@@ -142,7 +150,7 @@ network={
 			subprocess.run(['./venv/bin/pip3', 'install', '-r', str(Path(self._rootDir, 'piprequirements.txt'))])
 
 			subprocess.run(['sudo', 'bash', '-c', 'echo "deb https://raspbian.snips.ai/$(lsb_release -cs) stable main" > /etc/apt/sources.list.d/snips.list'])
-			subprocess.run(['sudo', 'apt-key',  'adv', '--keyserver', 'gpg.mozilla.org', '--recv-keys', 'D4F50CDCA10A2849'])
+			subprocess.run(['sudo', 'apt-key', 'adv', '--keyserver', 'gpg.mozilla.org', '--recv-keys', 'D4F50CDCA10A2849'])
 			subprocess.run(['sudo', 'apt-get', 'update'])
 
 			reqs = [line.rstrip('\n') for line in open(Path(self._rootDir, 'sysrequirements.txt'))]
@@ -156,7 +164,6 @@ network={
 			subprocess.run(['sudo', 'systemctl', 'disable', 'snips-hotword'])
 			subprocess.run(['sudo', 'systemctl', 'disable', 'snips-audio-server'])
 			subprocess.run(['sudo', 'systemctl', 'disable', 'snips-tts'])
-
 
 		# Now let's dump some values to their respective places
 		# First those that need some checks and self filling in case unspecified
@@ -181,8 +188,8 @@ network={
 			confs['keepASROffline'] = bool(initConfs['keepASROffline'])
 			confs['keepTTSOffline'] = bool(initConfs['keepTTSOffline'])
 			confs['moduleAutoUpdate'] = bool(initConfs['moduleAutoUpdate'])
-			confs['asr'] = initConfs['asr']
-			confs['tts'] = initConfs['tts']
+			confs['asr'] = initConfs['asr'] if initConfs['asr'] in ('snips', 'google') else 'snips'
+			confs['tts'] = initConfs['tts'] if initConfs['tts'] in ('pico', 'snips', 'mycroft', 'amazon', 'google') else 'pico'
 			confs['awsRegion'] = initConfs['awsRegion']
 			confs['awsAccessKey'] = initConfs['awsAccessKey']
 			confs['awsSecretKey'] = initConfs['awsSecretKey']
@@ -192,30 +199,33 @@ network={
 				googleCreds.write_text(json.dumps(initConfs['googleServiceFile']))
 
 		# Those that don't need checking
-		confs['ssid'] = initConfs['wifiNetworkName']
-		confs['wifipassword'] = initConfs['wifiWPAPass']
-		confs['micSampleRate'] = int(initConfs['micSampleRate'])
-		confs['micChannels'] = int(initConfs['micChannels'])
+		confs['ssid'] = initConfs['wifiNetworkName'] or ''
+		confs['wifipassword'] = str(initConfs['wifiWPAPass']) or ''
+		confs['micSampleRate'] = int(initConfs['micSampleRate']) or 16000
+		confs['micChannels'] = int(initConfs['micChannels']) or 1
 		confs['useSLC'] = bool(initConfs['useSLC'])
 		confs['webInterfaceActive'] = bool(initConfs['webInterfaceActive'])
 		confs['webInterfaceDevMode'] = bool(initConfs['webInterfaceDevMode'])
-		confs['newDeviceBroadcastPort'] = int(initConfs['newDeviceBroadcastPort'])
-		confs['activeLanguage'] = initConfs['activeLanguage']
-		confs['activeCountryCode'] = initConfs['activeCountryCode']
-		confs['baseCurrency'] = initConfs['baseCurrency']
-		confs['baseUnits'] = initConfs['baseUnits']
+		confs['newDeviceBroadcastPort'] = int(initConfs['newDeviceBroadcastPort']) or 12354
+		confs['activeLanguage'] = initConfs['activeLanguage'] if initConfs['activeLanguage'] in ('en', 'de', 'fr') else 'en'
+		confs['activeCountryCode'] = initConfs['activeCountryCode'] or 'US'
+		confs['baseCurrency'] = initConfs['baseCurrency'] or 'USD'
+		confs['baseUnits'] = initConfs['baseUnits'] if initConfs['baseUnits'] in ('metric', 'kelvin', 'imperial') else 'metric'
 		confs['enableDataStoring'] = bool(initConfs['enableDataStoring'])
-		confs['autoPruneStoredData'] = initConfs['autoPruneStoredData']
-		confs['probabilityTreshold'] = float(initConfs['probabilityTreshold'])
+		confs['autoPruneStoredData'] = initConfs['autoPruneStoredData'] or 1000
+		confs['probabilityThreshold'] = float(initConfs['probabilityThreshold']) or 0.5
 		confs['shortReplies'] = bool(initConfs['shortReplies'])
 		confs['whisperWhenSleeping'] = bool(initConfs['whisperWhenSleeping'])
-		confs['ttsLanguage'] = initConfs['ttsLanguage']
-		confs['ttsType'] = initConfs['ttsType']
-		confs['ttsVoice'] = initConfs['ttsVoice']
-		confs['githubUsername'] = initConfs['githubUsername']
-		confs['githubToken'] = initConfs['githubToken']
-		confs['ttsLanguage'] = initConfs['ttsLanguage']
-		confs['updateChannel'] = initConfs['updateChannel']
+		confs['ttsLanguage'] = initConfs['ttsLanguage'] or confs['activeLanguage']
+		confs['ttsType'] = initConfs['ttsType'] if initConfs['ttsType'] in ('female', 'male') else 'female'
+		confs['ttsVoice'] = initConfs['ttsVoice'] or ''
+		confs['githubUsername'] = initConfs['githubUsername'] or ''
+		confs['githubToken'] = initConfs['githubToken'] or ''
+		confs['ttsLanguage'] = initConfs['ttsLanguage'] or ''
+		confs['updateChannel'] = initConfs['updateChannel'] if initConfs['updateChannel'] in ('master', 'rc', 'beta', 'alpha') else 'master'
+		confs['mqttUser'] = str(initConfs['mqttUser']) or ''
+		confs['mqttPassword'] = str(initConfs['mqttPassword']) or ''
+		confs['mqttTLSFile'] = initConfs['mqttTLSFile'] or ''
 
 		if initConfs['snipsProjectId'] and confs['activeLanguage'] in confs['supportedLanguages']:
 			confs['supportedLanguages'][confs['activeLanguage']]['snipsProjectId'] = initConfs['snipsProjectId']

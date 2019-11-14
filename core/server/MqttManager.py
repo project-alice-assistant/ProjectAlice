@@ -11,7 +11,7 @@ from core.base.model.Intent import Intent
 from core.base.model.Manager import Manager
 from core.commons import constants
 from core.dialog.model.DialogSession import DialogSession
-from core.util.Decorators import Decorators
+from core.util.Decorators import deprecated
 
 
 class MqttManager(Manager):
@@ -60,6 +60,13 @@ class MqttManager(Manager):
 		self._mqttClient.message_callback_add(constants.TOPIC_INTENT_NOT_RECOGNIZED, self.onSnipsIntentNotRecognized)
 
 		self._mqttClient.message_callback_add(constants.TOPIC_SESSION_QUEUED, self.onSnipsSessionQueued)
+
+		if self.ConfigManager.getAliceConfigByName('mqttUser') and self.ConfigManager.getAliceConfigByName('mqttPassword'):
+			self._mqttClient.username_pw_set(self.ConfigManager.getAliceConfigByName('mqttUser'), self.ConfigManager.getAliceConfigByName('mqttPassword'))
+
+		if self.ConfigManager.getAliceConfigByName('mqttTLSFile'):
+			self._mqttClient.tls_set(certfile=self.ConfigManager.getAliceConfigByName('mqttTLSFile'))
+			self._mqttClient.tls_insecure_set(False)
 
 		self._mqttClient.connect(self.ConfigManager.getAliceConfigByName('mqttHost'), int(self.ConfigManager.getAliceConfigByName('mqttPort')))
 
@@ -153,7 +160,7 @@ class MqttManager(Manager):
 				return
 
 			customData = session.customData
-			if 'intent' in payload and payload['intent']['confidenceScore'] < self.ConfigManager.getAliceConfigByName('probabilityTreshold'):
+			if 'intent' in payload and payload['intent']['confidenceScore'] < self.ConfigManager.getAliceConfigByName('probabilityThreshold'):
 				if session.notUnderstood < self.ConfigManager.getAliceConfigByName('notUnderstoodRetries'):
 					session.notUnderstood = session.notUnderstood + 1
 
@@ -582,7 +589,7 @@ class MqttManager(Manager):
 			self._speakOnSonos(text, constants.DEFAULT_SITE_ID)
 
 
-	@Decorators.deprecated
+	@deprecated
 	def endTalk(self, sessionId: str = '', text: str = '', client: str = ''):
 		return self.endDialog(sessionId, text, client)
 
@@ -689,7 +696,7 @@ class MqttManager(Manager):
 		return self._mqttClient
 
 
-	@Decorators.deprecated
+	@deprecated
 	def _speakOnSonos(self, text, client):
 		if text == '':
 			return

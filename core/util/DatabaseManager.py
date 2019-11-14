@@ -1,8 +1,8 @@
 import sqlite3
 import typing
 
-from core.base.model.Manager import Manager
 from core.ProjectAliceExceptions import DbConnectionError, InvalidQuery
+from core.base.model.Manager import Manager
 from core.commons import constants
 
 
@@ -47,7 +47,6 @@ class DatabaseManager(Manager):
 
 			fullTableName = f'{callerName}_{tableName}'
 			colsQuery = ', '.join(queries)
-			colName = ''
 
 			if colsQuery.count(' UNIQUE') > 1:
 				colsQuery = colsQuery.replace(' UNIQUE', '')

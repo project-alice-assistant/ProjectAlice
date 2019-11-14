@@ -6,32 +6,32 @@ from core.base.model.ProjectAliceObject import ProjectAliceObject
 
 
 class User(ProjectAliceObject):
-	#TODO should probably by typing.Optional[dict]
-	def __init__(self, row: typing.Any):
+
+	def __init__(self, row: typing.Optional[dict]):
 		super().__init__(logDepth=3)
 
 		#TODO is it correct to init these values only when row exists?
 		# -> will throw exception when property is called or should they be
 		# inited to None instead
 		if row:
-			self._id            = row['id']
-			self._name 			= row['username']
-			self._accessLevel 	= row['accessLevel']
-			self._state 		= row['state']
-			self._pin           = row['pin']
-			self._lang 			= row['lang']
-			self._tts 			= row['tts']
+			self._id			= row['id']
+			self._name			= row['username']
+			self._accessLevel	= row['accessLevel']
+			self._state			= row['state']
+			self._pin			= row['pin']
+			self._lang			= row['lang']
+			self._tts			= row['tts']
 			self._ttsLanguage	= row['ttsLanguage']
 			self._ttsType		= row['ttsType']
-			self._ttsVoice 		= row['ttsVoice']
+			self._ttsVoice		= row['ttsVoice']
 
-		self._home 			= False
-		self._goingBed 		= False
-		self._sleeping 		= False
-		self._cooking 		= False
-		self._makeUp 		= False
+		self._home			= False
+		self._goingBed		= False
+		self._sleeping		= False
+		self._cooking		= False
+		self._makeUp		= False
 		self._watchingTV	= False
-		self._eating 		= False
+		self._eating		= False
 
 		try:
 			exec(f"self._{self._state} = 'True'")
@@ -72,7 +72,7 @@ class User(ProjectAliceObject):
 		return self._accessLevel
 
 	@property
-	def pin(self) -> str:
+	def pin(self) -> bytes:
 		return self._pin
 
 	@property
@@ -136,7 +136,7 @@ class User(ProjectAliceObject):
 		self._accessLevel = value
 
 	@pin.setter
-	def pin(self, value: str):
+	def pin(self, value: bytes):
 		self._pin = value
 
 	@state.setter
@@ -176,7 +176,7 @@ class User(ProjectAliceObject):
 			self.logWarning('No pin defined for this user')
 			return False
 
-		return bcrypt.checkpw(str(password).encode(), self.pin.encode())
+		return bcrypt.checkpw(str(password).encode(), self.pin)
 
 	# Flask login reqs
 

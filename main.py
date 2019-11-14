@@ -18,7 +18,6 @@
 	inactive authors:       Jierka <https://github.com/jr-k>
 """
 import logging.handlers
-import os
 import signal
 import sys
 import traceback
@@ -37,7 +36,7 @@ date = int(datetime.now().strftime('%Y%m%d'))
 logsMountpoint = Path(Path(__file__).resolve().parent, 'var', 'logs')
 
 handler = logging.FileHandler(filename=f'{logsMountpoint}/logs.log', mode='w')
-rotatingHandler = logging.handlers.RotatingFileHandler(filename=f'{logsMountpoint}/{date}-logs.log', mode='a', maxBytes = 100000, backupCount = 20)
+rotatingHandler = logging.handlers.RotatingFileHandler(filename=f'{logsMountpoint}/{date}-logs.log', mode='a', maxBytes=100000, backupCount=20)
 streamHandler = logging.StreamHandler()
 
 handler.setFormatter(formatter)
@@ -47,11 +46,13 @@ _logger.addHandler(handler)
 _logger.addHandler(rotatingHandler)
 _logger.addHandler(streamHandler)
 
+
 def exceptionListener(*exc_info):
 	global _logger
 	_logger.error('An unhandled exception occured')
 	text = ''.join(traceback.format_exception(*exc_info))
 	_logger.error(f'- Traceback: {text}')
+
 
 sys.excepthook = exceptionListener
 

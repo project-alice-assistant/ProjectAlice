@@ -22,6 +22,18 @@ settings = {
 		'defaultValue': 1883,
 		'dataType': 'integer'
 	},
+	'mqttUser': {
+		'defaultValue': '',
+		'dataType'    : 'string'
+	},
+	'mqttPassword': {
+		'defaultValue': '',
+		'dataType'    : 'password'
+	},
+	'mqttTLSFile': {
+		'defaultValue': '',
+		'dataType'    : 'string'
+	},
 	'micSampleRate': {
 		'defaultValue': 44100,
 		'dataType': 'integer'
@@ -39,7 +51,7 @@ settings = {
 		'dataType': 'integer',
 		'decription': 'Set to max entries to keep, 0 to disable pruning'
 	},
-	'probabilityTreshold': {
+	'probabilityThreshold': {
 		'defaultValue': 0.45,
 		'dataType': 'float'
 	},

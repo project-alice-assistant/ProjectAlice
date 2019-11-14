@@ -1,7 +1,5 @@
 import inspect
 import json
-
-import re
 import socket
 import time
 from collections import defaultdict
@@ -9,16 +7,18 @@ from contextlib import contextmanager
 from ctypes import *
 from datetime import datetime
 from pathlib import Path
-from typing import Union, Optional, Match
+from typing import Match, Optional, Union
 
-from paho.mqtt.client import MQTTMessage
+import re
 from googletrans import Translator
+from paho.mqtt.client import MQTTMessage
 
 import core.commons.model.Slot as slotModel
 from core.base.model.Manager import Manager
 from core.commons import constants
 from core.commons.model.PartOfDay import PartOfDay
 from core.dialog.model.DialogSession import DialogSession
+
 
 class CommonsManager(Manager):
 
@@ -76,9 +76,9 @@ class CommonsManager(Manager):
 			payload = dict()
 		
 		if payload is True:
-			payload = {'true': 'true'}
+			payload = {'true': True}
 		elif payload is False:
-			payload = {'false': 'false'}
+			payload = {'false': False}
 		
 		return payload
 
