@@ -16,18 +16,17 @@ import configTemplate
 from core.base.model.ProjectAliceObject import ProjectAliceObject
 
 
-class initDict(dict, ProjectAliceObject):
+class initDict(dict):
 
 	def __init__(self, default: dict):
-		self._depth = 3
-		super().__init__(default, logDepth=self._depth)
+		super().__init__(default)
 
 
 	def __getitem__(self, item):
 		try:
 			return super().__getitem__(item) or ''
 		except:
-			self.logWarning(f'Missing key "{item}" in provided yaml file. Are you using a deprecated yaml file version?')
+			print(f'[Initializer] Missing key "{item}" in provided yaml file. Are you using a deprecated yaml file version?')
 			return ''
 
 
@@ -132,7 +131,7 @@ network={
 			self.warning('Config file found and force rewrite specified, let\'s restart all this!')
 			Path(self._rootDir, 'config.py').unlink()
 			confs = {configName: configData['defaultValue'] if 'defaultValue' in configData else configData for configName, configData in configTemplate.settings.items()}
-			Path('config.py').write_text(f"'settings = {json.dumps(confs, indent=4).replace('false', 'False').replace('true', 'True')}'")
+			Path('config.py').write_text(f"settings = {json.dumps(confs, indent=4).replace('false', 'False').replace('true', 'True')}")
 
 		config = importlib.import_module('config')
 		confs = config.settings.copy()
@@ -200,33 +199,33 @@ network={
 				googleCreds.write_text(json.dumps(initConfs['googleServiceFile']))
 
 		# Those that don't need checking
-		confs['ssid'] = initConfs['wifiNetworkName']
-		confs['wifipassword'] = str(initConfs['wifiWPAPass'])
-		confs['micSampleRate'] = int(initConfs['micSampleRate'])
-		confs['micChannels'] = int(initConfs['micChannels'])
-		confs['useSLC'] = bool(initConfs['useSLC'])
-		confs['webInterfaceActive'] = bool(initConfs['webInterfaceActive'])
-		confs['webInterfaceDevMode'] = bool(initConfs['webInterfaceDevMode'])
-		confs['newDeviceBroadcastPort'] = int(initConfs['newDeviceBroadcastPort'])
+		confs['ssid'] = initConfs['wifiNetworkName'] or ''
+		confs['wifipassword'] = str(initConfs['wifiWPAPass']) or ''
+		confs['micSampleRate'] = int(initConfs['micSampleRate']) or 16000
+		confs['micChannels'] = int(initConfs['micChannels']) or 1
+		confs['useSLC'] = bool(initConfs['useSLC']) or False
+		confs['webInterfaceActive'] = bool(initConfs['webInterfaceActive']) or True
+		confs['webInterfaceDevMode'] = bool(initConfs['webInterfaceDevMode']) or False
+		confs['newDeviceBroadcastPort'] = int(initConfs['newDeviceBroadcastPort']) or 12354
 		confs['activeLanguage'] = initConfs['activeLanguage'] if initConfs['activeLanguage'] in ('en', 'de', 'fr') else 'en'
-		confs['activeCountryCode'] = initConfs['activeCountryCode']
-		confs['baseCurrency'] = initConfs['baseCurrency']
-		confs['baseUnits'] = initConfs['baseUnits']
-		confs['enableDataStoring'] = bool(initConfs['enableDataStoring'])
-		confs['autoPruneStoredData'] = initConfs['autoPruneStoredData']
-		confs['probabilityThreshold'] = float(initConfs['probabilityThreshold'])
-		confs['shortReplies'] = bool(initConfs['shortReplies'])
-		confs['whisperWhenSleeping'] = bool(initConfs['whisperWhenSleeping'])
-		confs['ttsLanguage'] = initConfs['ttsLanguage']
-		confs['ttsType'] = initConfs['ttsType']
-		confs['ttsVoice'] = initConfs['ttsVoice']
-		confs['githubUsername'] = initConfs['githubUsername']
-		confs['githubToken'] = initConfs['githubToken']
-		confs['ttsLanguage'] = initConfs['ttsLanguage']
+		confs['activeCountryCode'] = initConfs['activeCountryCode'] or 'US'
+		confs['baseCurrency'] = initConfs['baseCurrency'] or 'USD'
+		confs['baseUnits'] = initConfs['baseUnits'] if initConfs['baseUnits'] in ('metric', 'kelvin', 'imperial') else 'metric'
+		confs['enableDataStoring'] = bool(initConfs['enableDataStoring']) or False
+		confs['autoPruneStoredData'] = initConfs['autoPruneStoredData'] or 1000
+		confs['probabilityThreshold'] = float(initConfs['probabilityThreshold']) or 0.5
+		confs['shortReplies'] = bool(initConfs['shortReplies']) or True
+		confs['whisperWhenSleeping'] = bool(initConfs['whisperWhenSleeping']) or False
+		confs['ttsLanguage'] = initConfs['ttsLanguage'] or ''
+		confs['ttsType'] = initConfs['ttsType'] or ''
+		confs['ttsVoice'] = initConfs['ttsVoice'] or ''
+		confs['githubUsername'] = initConfs['githubUsername'] or ''
+		confs['githubToken'] = initConfs['githubToken'] or ''
+		confs['ttsLanguage'] = initConfs['ttsLanguage'] or ''
 		confs['updateChannel'] = initConfs['updateChannel'] if initConfs['updateChannel'] in ('master', 'rc', 'beta', 'alpha') else 'master'
-		confs['mqttUser'] = str(initConfs['mqttUser'])
-		confs['mqttPassword'] = str(initConfs['mqttPassword'])
-		confs['mqttTLSFile'] = initConfs['mqttTLSFile']
+		confs['mqttUser'] = str(initConfs['mqttUser']) or ''
+		confs['mqttPassword'] = str(initConfs['mqttPassword']) or ''
+		confs['mqttTLSFile'] = initConfs['mqttTLSFile'] or ''
 
 		if initConfs['snipsProjectId'] and confs['activeLanguage'] in confs['supportedLanguages']:
 			confs['supportedLanguages'][confs['activeLanguage']]['snipsProjectId'] = initConfs['snipsProjectId']
