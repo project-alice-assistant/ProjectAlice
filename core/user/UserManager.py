@@ -50,7 +50,7 @@ class UserManager(Manager):
 
 
 	@staticmethod
-	def getHashedPassword(password: int, rounds: int = 12) -> str:
+	def getHashedPassword(password: int, rounds: int = 12) -> bytes:
 		return bcrypt.hashpw(str(password).encode(), bcrypt.gensalt(rounds=rounds))
 
 
