@@ -1,6 +1,8 @@
 import subprocess
+from pathlib import Path
 
-from flask import render_template, request, jsonify
+import shutil
+from flask import jsonify, render_template, request
 from flask_login import login_required
 
 from core.interface.model.View import View
@@ -74,6 +76,28 @@ class AdminView(View):
 			return jsonify(success=True)
 		except Exception as e:
 			self.logError(f'Failed downloading assistant: {e}')
+			return jsonify(success=False)
+
+
+	def wipeAll(self) -> dict:
+		try:
+			subprocess.run(['wget', 'http://modules.projectalice.ch/AliceCore', '-O', Path(self.Commons.rootDir(), f"system/moduleInstallTickets/AliceCore.install")])
+			subprocess.run(['wget', 'http://modules.projectalice.ch/ContextSensitive', '-O', Path(self.Commons.rootDir(), f"system/moduleInstallTickets/ContextSensitive.install")])
+			subprocess.run(['wget', 'http://modules.projectalice.ch/RedQueen', '-O', Path(self.Commons.rootDir(), f"system/moduleInstallTickets/RedQueen.install")])
+			subprocess.run(['wget', 'http://modules.projectalice.ch/Telemetry', '-O', Path(self.Commons.rootDir(), f"system/moduleInstallTickets/Telemetry.install")])
+			subprocess.run(['wget', 'http://modules.projectalice.ch/DateDayTimeYear', '-O', Path(self.Commons.rootDir(), f"system/moduleInstallTickets/DateDayTimeYear.install")])
+
+			shutil.rmtree(Path(self.Commons.rootDir(), 'var/assistants'))
+			shutil.rmtree(Path(self.Commons.rootDir(), 'trained/assistants'))
+			shutil.rmtree(Path(self.Commons.rootDir(), 'modules'))
+			Path(self.Commons.rootDir(), 'system/database/data.db')
+
+			Path(self.Commons.rootDir(), 'var/assistants').mkdir()
+			Path(self.Commons.rootDir(), 'trained/assistants').mkdir()
+			Path(self.Commons.rootDir(), 'modules').mkdir()
+			return self.restart()
+		except Exception as e:
+			self.logError(f'Failed wiping system: {e}')
 			return jsonify(success=False)
 
 

@@ -18,7 +18,8 @@
 	"followLogs": "Autoscroll",
 	"adminTabTitleSetting": "Parametres Alice",
 	"adminTabTitleUtilities": "Utilitaires",
-	"restartAlice": "Rlancer Alice",
+	"restartAlice": "Relancer Alice",
 	"reboot": "Reboot",
-	"trainAndDlAssistant": "Télécharger assistant"
+	"trainAndDlAssistant": "Télécharger assistant",
+	"wipeAll": "Tout supprimer"
 }

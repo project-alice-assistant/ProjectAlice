@@ -92,4 +92,9 @@ $(function () {
 		handleUtilityClick($(this), 'assistantDownload', 5000);
 		return false;
 	});
+
+	$('#wipeAll').on('click touchstart', function () {
+		handleUtilityClick($(this), 'wipeAll', 5000);
+		return false;
+	});
 });

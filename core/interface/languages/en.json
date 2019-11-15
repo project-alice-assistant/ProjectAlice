@@ -20,5 +20,6 @@
 	"adminTabTitleUtilities": "Utilities",
 	"restartAlice": "Restart Alice",
 	"reboot": "Reboot",
-	"trainAndDlAssistant": "Download assistant"
+	"trainAndDlAssistant": "Download assistant",
+	"wipeAll": "Wipe all"
 }
