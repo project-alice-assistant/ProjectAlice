@@ -11,7 +11,7 @@ class ProjectAlice(Singleton):
 
 	def __init__(self, restartHandler: callable):
 		Singleton.__init__(self, self.NAME)
-		self.logInfo('Starting up project Alice core')
+		self.logInfo('Starting up Project Alice')
 		with Stopwatch() as stopWatch:
 			self._restart = False
 			self._restartHandler = restartHandler
