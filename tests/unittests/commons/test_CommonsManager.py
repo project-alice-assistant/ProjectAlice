@@ -49,13 +49,13 @@ class TestCommonsManager(unittest.TestCase):
 			{'test': 2})
 		self.assertEqual(
 			CommonsManager.payload(MQTTMessage('true')),
-			{'true': 'true'})
+			{'true': True})
 		self.assertEqual(
 			CommonsManager.payload(MQTTMessage('false')),
-			{'false': 'false'})
+			{'false': False})
 		self.assertEqual(
 			CommonsManager.payload(MQTTMessage(b'true')),
-			{'true': 'true'})
+			{'true': True})
 
 
 	def test_parseSlotsToObjects(self):
