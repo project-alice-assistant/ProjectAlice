@@ -24,7 +24,7 @@ class ProjectAlice(Singleton):
 				subprocess.run(['sudo', 'systemctl', 'start', 'snipsledcontrol'])
 
 			self._superManager.onBooted()
-		self.logInfo(f'- Started Alice core within {stopWatch} seconds')
+		self.logInfo(f'- Started Project Alice in {stopWatch} seconds')
 
 
 	@property

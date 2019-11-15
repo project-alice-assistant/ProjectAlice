@@ -1,4 +1,5 @@
 import json
+import subprocess
 from pathlib import Path
 
 import requests
@@ -359,7 +360,8 @@ class ConfigManager(Manager):
 						self._modulesConfigurations[moduleName] = config
 						self.updateAliceConfiguration('modules', self._modulesConfigurations)
 					except Exception as e:
-						self.logError(f'Failed generating default config for required module {moduleName}: {e}')
+						self.logError(f'Failed generating default config for required module {moduleName}, scheduling download: {e}')
+						subprocess.run(['wget', f'http://modules.projectalice.ch/{moduleName}', '-O', Path(self.Commons.rootDir(), f'system/moduleInstallTickets/{moduleName}.install')])
 						continue
 
 			modulesConfigurations[moduleName] = config

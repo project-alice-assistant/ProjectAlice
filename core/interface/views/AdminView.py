@@ -81,11 +81,11 @@ class AdminView(View):
 
 	def wipeAll(self) -> dict:
 		try:
-			subprocess.run(['wget', 'http://modules.projectalice.ch/AliceCore', '-O', Path(self.Commons.rootDir(), f"system/moduleInstallTickets/AliceCore.install")])
-			subprocess.run(['wget', 'http://modules.projectalice.ch/ContextSensitive', '-O', Path(self.Commons.rootDir(), f"system/moduleInstallTickets/ContextSensitive.install")])
-			subprocess.run(['wget', 'http://modules.projectalice.ch/RedQueen', '-O', Path(self.Commons.rootDir(), f"system/moduleInstallTickets/RedQueen.install")])
-			subprocess.run(['wget', 'http://modules.projectalice.ch/Telemetry', '-O', Path(self.Commons.rootDir(), f"system/moduleInstallTickets/Telemetry.install")])
-			subprocess.run(['wget', 'http://modules.projectalice.ch/DateDayTimeYear', '-O', Path(self.Commons.rootDir(), f"system/moduleInstallTickets/DateDayTimeYear.install")])
+			subprocess.run(['wget', 'http://modules.projectalice.ch/AliceCore', '-O', Path(self.Commons.rootDir(), 'system/moduleInstallTickets/AliceCore.install')])
+			subprocess.run(['wget', 'http://modules.projectalice.ch/ContextSensitive', '-O', Path(self.Commons.rootDir(), 'system/moduleInstallTickets/ContextSensitive.install')])
+			subprocess.run(['wget', 'http://modules.projectalice.ch/RedQueen', '-O', Path(self.Commons.rootDir(), 'system/moduleInstallTickets/RedQueen.install')])
+			subprocess.run(['wget', 'http://modules.projectalice.ch/Telemetry', '-O', Path(self.Commons.rootDir(), 'system/moduleInstallTickets/Telemetry.install')])
+			subprocess.run(['wget', 'http://modules.projectalice.ch/DateDayTimeYear', '-O', Path(self.Commons.rootDir(), 'system/moduleInstallTickets/DateDayTimeYear.install')])
 
 			shutil.rmtree(Path(self.Commons.rootDir(), 'var/assistants'))
 			shutil.rmtree(Path(self.Commons.rootDir(), 'trained/assistants'))
