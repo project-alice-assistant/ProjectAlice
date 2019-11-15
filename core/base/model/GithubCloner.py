@@ -80,7 +80,7 @@ class GithubCloner(ProjectAliceObject):
 		filesToDelete = list()
 		directoriesToDelete = list()
 		for file in self._dest.iterdir():
-			if file.suffix == '.conf' or file.with_suffix('.template').exists():
+			if file.with_suffix('.template').exists() or file.with_suffix('.dist').exists():
 				continue
 
 			if (file.is_dir() and not file.name.startswith('_')) or file.name == '__pycache__':
