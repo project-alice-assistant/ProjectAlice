@@ -12,44 +12,52 @@ settings = {
 	'ssid'                  : {
 		'defaultValue': '',
 		'dataType'    : 'string',
-		'decription'  : 'Your Wifi name'
+		'description'  : 'Your Wifi name'
 	},
 	'wifipassword'          : {
 		'defaultValue': '',
 		'dataType'    : 'password',
-		'descritption': 'Your Wifi password'
+		'description': 'Your Wifi password'
 	},
 	'mqttHost'              : {
 		'defaultValue': 'localhost',
-		'dataType'    : 'string'
+		'dataType'    : 'string',
+		'description'  : 'Mqtt server ip adress'
 	},
 	'mqttPort'              : {
 		'defaultValue': 1883,
-		'dataType'    : 'integer'
+		'dataType'    : 'integer',
+		'description'  : 'Mqtt server port'
 	},
 	'mqttUser'              : {
 		'defaultValue': '',
-		'dataType'    : 'string'
+		'dataType'    : 'string',
+		'description'  : 'Mqtt user. Leave blank if not password protected'
 	},
 	'mqttPassword'          : {
 		'defaultValue': '',
-		'dataType'    : 'password'
+		'dataType'    : 'password',
+		'description'  : 'Mqtt password. Leave blank if not password protected'
 	},
 	'mqttTLSFile'           : {
 		'defaultValue': '',
-		'dataType'    : 'string'
+		'dataType'    : 'string',
+		'description'  : 'Mqtt TLS file path for SSL'
 	},
 	'micSampleRate'         : {
 		'defaultValue': 44100,
-		'dataType'    : 'integer'
+		'dataType'    : 'integer',
+		'description'  : 'Your microphone sample rate'
 	},
 	'micChannels'           : {
 		'defaultValue': 1,
-		'dataType'    : 'integer'
+		'dataType'    : 'integer',
+		'description'  : 'How many channel does your microphone support'
 	},
 	'enableDataStoring'     : {
 		'defaultValue': False,
-		'dataType'    : 'boolean'
+		'dataType'    : 'boolean',
+		'description'  : 'Enables local telemetry data storing'
 	},
 	'autoPruneStoredData'   : {
 		'defaultValue': 0,
@@ -58,101 +66,124 @@ settings = {
 	},
 	'probabilityThreshold'  : {
 		'defaultValue': 0.45,
-		'dataType'    : 'float'
+		'dataType'    : 'float',
+		'description'  : 'Capture intents with lower probability score than this settings will trigger Alice not understood'
 	},
 	'stayCompletlyOffline'  : {
 		'defaultValue': False,
-		'dataType'    : 'boolean'
+		'dataType'    : 'boolean',
+		'description'  : 'Nothing goes out! Well, that also means no module updates, no access to web APIs'
 	},
 	'keepASROffline'        : {
-		'defaultValue': False,
-		'dataType'    : 'boolean'
+		'defaultValue': True,
+		'dataType'    : 'boolean',
+		'description'  : 'Do not use any online ASR such as Google ASR'
 	},
 	'keepTTSOffline'        : {
-		'defaultValue': False,
-		'dataType'    : 'boolean'
+		'defaultValue': True,
+		'dataType'    : 'boolean',
+		'description'  : 'Do not use any online TTS such as Google Wavenet or Amazon Polly'
 	},
 	'shortReplies'          : {
 		'defaultValue': False,
-		'dataType'    : 'boolean'
+		'dataType'    : 'boolean',
+		'description'  : 'Use only short replies from Alice, when available'
 	},
 	'whisperWhenSleeping'   : {
 		'defaultValue': True,
-		'dataType'    : 'boolean'
+		'dataType'    : 'boolean',
+		'description'  : 'Only available with Amazon Polly'
 	},
 	'newDeviceBroadcastPort': {
 		'defaultValue': 12354,
-		'dataType'    : 'integer'
+		'dataType'    : 'integer',
+		'description'  : 'Should be left as default, this is the port used to find new devices'
 	},
 	'intentsOwner'          : {
 		'defaultValue': '',
-		'dataType'    : 'string'
+		'dataType'    : 'string',
+		'description'  : 'Your Snips account username'
 	},
 	'asr'                   : {
 		'defaultValue': 'snips',
 		'dataType'    : 'list',
-		'values'      : ['snips', 'google']
+		'values'      : ['snips', 'google'],
+		'description'  : 'The ASR to use. Can\'t use an online ASR if you have set keepASROffline to true!'
 	},
 	'tts'                   : {
 		'defaultValue': 'pico',
 		'dataType'    : 'list',
-		'values'      : {'Pico': 'pico', 'Mycroft': 'mycroft', 'Amazon Polly': 'amazon', 'Google Wavenet': 'google', 'Snips Makers TTS': 'snips'}
+		'values'      : {'Pico': 'pico', 'Mycroft': 'mycroft', 'Amazon Polly': 'amazon', 'Google Wavenet': 'google', 'Snips Makers TTS': 'snips'},
+		'description'  : 'The TTS to use. Can\'t use an online TTS if you have set keepTTSOffline!'
 	},
 	'ttsLanguage'           : {
 		'defaultValue': 'en-US',
-		'dataType'    : 'string'
+		'dataType'    : 'string',
+		'description'  : 'Language for the TTS to use'
 	},
 	'ttsType'               : {
 		'defaultValue': 'male',
 		'dataType'    : 'list',
-		'values'      : ['male', 'female']
+		'values'      : ['male', 'female'],
+		'description'  : 'Choose the voice gender you want'
 	},
 	'ttsVoice'              : {
 		'defaultValue': 'en-US',
-		'dataType'    : 'string'
+		'dataType'    : 'string',
+		'description'  : 'The voice the TTS should use. Find lists on respective TTS websites'
 	},
 	'awsRegion'             : {
 		'defaultValue': 'eu-central-1',
 		'dataType'    : 'list',
-		'values'      : ['eu-central-1', 'eu-west-1', ' eu-west-2', 'eu-west-3', 'eu-north-1', 'us-east-1', 'us-east-2', 'us-west-1', 'us-west-2']
+		'values'      : ['eu-central-1', 'eu-west-1', ' eu-west-2', 'eu-west-3', 'eu-north-1', 'us-east-1', 'us-east-2', 'us-west-1', 'us-west-2'],
+		'description'  : 'Region to use for Amazon Polly'
 	},
 	'awsAccessKey'          : {
 		'defaultValue': '',
-		'dataType'    : 'password'
+		'dataType'    : 'password',
+		'description'  : 'Your Amazon services access key'
 	},
 	'awsSecretKey'          : {
 		'defaultValue': '',
-		'dataType'    : 'password'
+		'dataType'    : 'password',
+		'description'  : 'Your Amazon services secret key'
 	},
 	'useSLC'                : {
 		'defaultValue': False,
-		'dataType'    : 'boolean'
+		'dataType'    : 'boolean',
+		'description'  : 'Enables Snips Led Control for visual feedback from your assistant'
 	},
 	'activeLanguage'        : {
 		'defaultValue': 'en',
 		'dataType'    : 'list',
-		'values'      : ['en', 'fr', 'de', 'it', 'pt']
+		'values'      : ['en', 'fr', 'de', 'it', 'pt'],
+		'description'  : 'Project Alice active language'
 	},
 	'activeCountryCode'     : {
 		'defaultValue': 'US',
-		'dataType'    : 'string'
+		'dataType'    : 'string',
+		'description'  : 'Project Alice active country code'
 	},
 	'moduleAutoUpdate'      : {
 		'defaultValue': False,
-		'dataType'    : 'boolean'
+		'dataType'    : 'boolean',
+		'description'  : 'Whether modules should auto update, checked every 15 minutes'
 	},
 	'githubUsername'        : {
 		'defaultValue': '',
-		'dataType'    : 'string'
+		'dataType'    : 'string',
+		'description'  : 'Not mendatory, your github username and token allows you to use Github API much more, such as checking for modules, updating them etc etc'
 	},
 	'githubToken'           : {
 		'defaultValue': '',
-		'dataType'    : 'password'
+		'dataType'    : 'password',
+		'description'  : 'Not mendatory, your github username and token allows you to use Github API much more, such as checking for modules, updating them etc etc'
 	},
 	'updateChannel'         : {
 		'defaultValue': 'master',
 		'dataType'    : 'list',
-		'values'      : {'Release': 'master', 'Release candidate': 'rc', 'Beta': 'beta', 'Alpha': 'alpha'}
+		'values'      : {'Release': 'master', 'Release candidate': 'rc', 'Beta': 'beta', 'Alpha': 'alpha'},
+		'description'  : 'Choose your update frequency. Release is the only supposedly safe option! But if you like to live on the edge, alpha will allow you to preview what\'s coming next!'
 	},
 	'supportedLanguages'    : {
 		'en': {
@@ -169,28 +200,32 @@ settings = {
 			'snipsProjectId': '',
 			'default'       : False,
 			'countryCode'   : 'DE'
-		}
+		},
+		'display': 'hidden'
 	},
-
 	'snipsConsoleLogin'     : {
 		'defaultValue': '',
-		'dataType'    : 'string'
+		'dataType'    : 'string',
+		'description'  : 'Your Snips Console login'
 	},
 	'snipsConsolePassword'  : {
 		'defaultValue': '',
-		'dataType'    : 'password'
+		'dataType'    : 'password',
+		'description'  : 'Your Snips Console password'
 	},
 
 	'baseCurrency'          : {
 		'defaultValue': 'CHF',
 		'dataType'    : 'list',
-		'values'      : ['CHF', 'EUR', 'USD', 'GBP', 'AUD']
+		'values'      : ['CHF', 'EUR', 'USD', 'GBP', 'AUD'],
+		'description'  : 'The currency used by Project Alice'
 	},
 
 	'baseUnits'             : {
 		'defaultValue': 'metric',
 		'dataType'    : 'list',
-		'values'      : ['metric', 'kelvin', 'imperial']
+		'values'      : ['metric', 'kelvin', 'imperial'],
+		'description'  : 'Units to use with Project Alice'
 	},
 
 	'onReboot'              : {
@@ -200,21 +235,24 @@ settings = {
 	},
 
 	'webInterfaceActive'    : {
-		'defaultValue': False,
-		'dataType'    : 'boolean'
+		'defaultValue': True,
+		'dataType'    : 'boolean',
+		'description'  : 'Activates the web interface to be reached by browsing to x.x.x.x:webInterfacePort, e.g. 192.168.1.2:5000'
 	},
 	'webInterfacePort'      : {
 		'defaultValue': 5000,
-		'dataType'    : 'integer'
+		'dataType'    : 'integer',
+		'description'  : 'Change the web interface port to be used'
 	},
 	'webInterfaceDevMode'   : {
 		'defaultValue': False,
-		'dataType'    : 'boolean'
+		'dataType'    : 'boolean',
+		'description'  : 'Activates the developer part of the interface, for module development'
 	},
 
 	# -----------------------
 	# Modules
 	# -----------------------
 
-	'modules'               : {}
+	'modules'         : {}
 }
