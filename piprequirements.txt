@@ -28,3 +28,4 @@ flask-classful
 flask-login
 googletrans
 bcrypt
+psutil

@@ -76,7 +76,6 @@ class WebInterfaceManager(Manager):
 			with langFile.open('r') as f:
 				self._langData = json.load(f)
 
-
 			for view in self._VIEWS:
 				try:
 					view.register(self.app)
