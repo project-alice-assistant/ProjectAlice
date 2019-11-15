@@ -59,8 +59,6 @@ network={
 
 
 	def initProjectAlice(self) -> bool:
-		# Make sure respeaker service is disabled
-		subprocess.run(['sudo', 'systemctl', 'disable', 'seeed-voicecard'])
 		if not self._initFile.exists() and not self._confsFile.exists():
 			self.fatal('Init file not found and there\'s no configuration file, aborting Project Alice start')
 		elif not self._initFile.exists():
