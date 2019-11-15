@@ -115,6 +115,18 @@ network={
 		if not initConfs['snipsConsoleLogin'] or not initConfs['snipsConsolePassword'] or not initConfs['intentsOwner']:
 			self.fatal('You must specify a Snips console login, password and intent owner')
 
+		# Update our system and sources
+		subprocess.run(['sudo', 'apt-get', 'update'])
+		subprocess.run(['sudo', 'apt-get', 'dist-upgrade', '-y'])
+		subprocess.run(['git', 'stash'])
+		subprocess.run(['git', 'checkout', initConfs['updateChannel']])
+		subprocess.run(['git', 'pull'])
+		subprocess.run(['git', 'stash', 'clear'])
+
+		time.sleep(1)
+
+		subprocess.run(['./venv/bin/pip3', 'uninstall', '-y', '-r', str(Path(self._rootDir, 'pipuninstalls.txt'))])
+
 		if not self._confsFile.exists() and not self._confsSample.exists():
 			self.fatal('No config and no config template found, can\'t continue')
 
@@ -136,15 +148,6 @@ network={
 		config = importlib.import_module('config')
 		confs = config.settings.copy()
 
-		# Update our system and sources
-		subprocess.run(['sudo', 'apt-get', 'update'])
-		subprocess.run(['sudo', 'apt-get', 'dist-upgrade', '-y'])
-		subprocess.run(['git', 'stash'])
-		subprocess.run(['git', 'checkout', initConfs['updateChannel']])
-		subprocess.run(['git', 'pull'])
-		subprocess.run(['git', 'stash', 'clear'])
-
-		subprocess.run(['./venv/bin/pip3', 'uninstall', '-r', str(Path(self._rootDir, 'pipuninstalls.txt')), '-y'])
 		# Do some installation if wanted by the user
 		if initConfs['doGroundInstall']:
 			subprocess.run(['./venv/bin/pip3', 'install', '-r', str(Path(self._rootDir, 'piprequirements.txt'))])
