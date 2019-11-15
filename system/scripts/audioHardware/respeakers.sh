@@ -14,6 +14,3 @@ chmod +x ./install.sh
 rm -rf seeed-voicecard
 
 sleep 1
-systemctl start seeed-voicecard
-sleep 1
-systemctl stop seeed-voicecard && systemctl disable seeed-voicecard
