@@ -59,6 +59,8 @@ network={
 
 
 	def initProjectAlice(self) -> bool:
+		# Make sure respeaker service is disabled
+		subprocess.run(['sudo', 'systemctl', 'disable', 'seeed-voicecard'])
 		if not self._initFile.exists() and not self._confsFile.exists():
 			self.fatal('Init file not found and there\'s no configuration file, aborting Project Alice start')
 		elif not self._initFile.exists():
@@ -144,7 +146,7 @@ network={
 		subprocess.run(['git', 'pull'])
 		subprocess.run(['git', 'stash', 'clear'])
 
-		subprocess.run(['./venv/bin/pip3', 'uninstall', '-r', str(Path(self._rootDir, 'pipuninstalls.txt'))])
+		subprocess.run(['./venv/bin/pip3', 'uninstall', '-r', str(Path(self._rootDir, 'pipuninstalls.txt')), '-y'])
 		# Do some installation if wanted by the user
 		if initConfs['doGroundInstall']:
 			subprocess.run(['./venv/bin/pip3', 'install', '-r', str(Path(self._rootDir, 'piprequirements.txt'))])
