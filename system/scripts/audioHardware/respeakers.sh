@@ -11,6 +11,6 @@ cd seeed-voicecard || exit
 chmod +x ./install.sh
 ./install.sh
 
-rm -rf seeed-voicecard
-
 sleep 1
+
+systemctl enable seeed-voicecard
