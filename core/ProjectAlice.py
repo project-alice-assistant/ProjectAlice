@@ -12,6 +12,7 @@ class ProjectAlice(Singleton):
 	def __init__(self, restartHandler: callable):
 		Singleton.__init__(self, self.NAME)
 		self.logInfo('Starting up Project Alice')
+		self._booted = False
 		with Stopwatch() as stopWatch:
 			self._restart = False
 			self._restartHandler = restartHandler
@@ -25,11 +26,17 @@ class ProjectAlice(Singleton):
 
 			self._superManager.onBooted()
 		self.logInfo(f'- Started Project Alice in {stopWatch} seconds')
+		self._booted = True
 
 
 	@property
 	def name(self) -> str:
 		return self.NAME
+
+
+	@property
+	def isBooted(self) -> bool:
+		return self._booted
 
 
 	@property

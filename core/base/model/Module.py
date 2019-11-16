@@ -316,8 +316,8 @@ class Module(ProjectAliceObject):
 		return self._supportedIntents[intent][1](session=session, intent=intent)
 
 
-	def getResource(self, moduleName: str = '', resourcePathFile: str = '') -> str:
-		return str(Path(self.Commons.rootDir(), 'modules', moduleName or self.name, resourcePathFile))
+	def getResource(self, moduleName: str = '', resourcePathFile: str = '') -> Path:
+		return Path(self.Commons.rootDir(), 'modules', moduleName or self.name, resourcePathFile)
 
 
 	def _initDB(self) -> bool:
