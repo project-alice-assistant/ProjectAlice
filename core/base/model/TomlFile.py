@@ -1,11 +1,15 @@
+from __future__ import annotations
+
 from pathlib import Path
 from textwrap import dedent
-from typing import Any, Dict, Union, ValuesView
+from typing import Any, Dict, ItemsView, Optional, Union, ValuesView
 
 import re
 
+from core.base.model.ProjectAliceObject import ProjectAliceObject
 
-class TomlFile:
+
+class TomlFile(ProjectAliceObject):
 
 	SECTION_PATTERN = re.compile('^\[(?P<sectionName>.+)\]$')
 	CONFIG_PATTERN = re.compile('^(#)?( )?(?P<configName>.+)?( )=?( )(?P<configValue>.*)')
@@ -15,13 +19,21 @@ class TomlFile:
 
 		self._path = path
 		self._data = dict()
-		self._load()
+
+
+	@classmethod
+	def loadToml(cls, path: Path, createIfNotExists: bool = False) -> Optional[TomlFile]:
+		if not path.exists() and not createIfNotExists:
+			return None
+		elif not path.exists():
+			path.touch()
+
+		instance = cls(path)
+		instance._load()
+		return instance
 
 
 	def _load(self):
-		if not self._path.exists():
-			self._path.touch()
-
 		with self._path.open() as f:
 			# noinspection PyTypeChecker
 			section: Section = None
@@ -39,6 +51,29 @@ class TomlFile:
 
 				if line.startswith('##') and section is not None:
 					section.addComment(Comment(line))
+
+
+	def dump(self, withComments: bool = True):
+		with self._path.open('w+') as f:
+			for i, (sectionName, section) in enumerate(self._data.items()):
+				if i > 0:
+					f.write('\n')
+
+				f.write(f'[{sectionName}]\n')
+
+				for dataName, data in section.items():
+					if isinstance(data, Comment):
+						if withComments:
+							f.write(f'{data}\n')
+					else:
+						if data.commented and not withComments:
+							continue
+
+						value = data.value
+						if isinstance(data.value, str):
+							value = f'"{value}"'
+
+						f.write(f'{"#" if data.commented else ""}{data.name} = {value}\n')
 
 
 	def __iter__(self):
@@ -67,11 +102,11 @@ class TomlFile:
 			raise ValueError
 
 		if key in self._data:
-			self._data[key] = value
-			return
+			section = self._data[key]
+		else:
+			section = Section(key)
+			self._data[section.name] = section
 
-		section = Section(key)
-		self._data[section.name] = section
 		for key, val in value.items():
 			section.addConfig(key=key, value=val, commented=False)
 
@@ -85,10 +120,26 @@ class TomlFile:
 		return item in self._data
 
 
+	def values(self) -> ValuesView:
+		return self._data.values()
+
+
+	def items(self) -> ItemsView:
+		return self._data.items()
+
+
 class Comment:
 
 	def __init__(self, comment: str):
 		self.comment = comment.strip()
+
+
+	def __repr__(self):
+		return self.comment
+
+
+	def __str__(self):
+		return self.comment
 
 
 class Section(dict):
@@ -142,6 +193,14 @@ class Section(dict):
 		return self.data.values()
 
 
+	def items(self) -> ItemsView:
+		return self.data.items()
+
+
+	def get(self, key):
+		return self.data.get(key, dict())
+
+
 	def addComment(self, comment: Comment):
 		self._comments += 1
 		self.data[f'comment_{self._comments}'] = comment
@@ -185,12 +244,3 @@ class Config:
 			return self.value[item]
 
 		return self.value
-
-
-if __name__ == '__main__':
-	t = TomlFile(Path('../../../system/snips/snips.toml'))
-
-
-	t['lol'] = {'rofl': 'lmfao'}
-
-	print(t)

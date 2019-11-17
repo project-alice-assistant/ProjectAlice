@@ -16,6 +16,10 @@ class ProjectAliceObject(Logger):
 		return json.dumps(self.__dict__)
 
 
+	def __str__(self):
+		return json.dumps(self.__dict__)
+
+
 	def broadcast(self, method: str, exceptions: list = None, manager = None, propagateToModules: bool = False, silent: bool = False, *args, **kwargs):
 		if not exceptions:
 			exceptions = list()
