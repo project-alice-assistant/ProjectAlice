@@ -53,8 +53,9 @@ class TomlFile(ProjectAliceObject):
 					section.addComment(Comment(line))
 
 
-	def dump(self, withComments: bool = True):
-		with self._path.open('w+') as f:
+	def dump(self, withComments: bool = True, otherPath: Path = None):
+		path = otherPath or self._path
+		with path.open('w+') as f:
 			for i, (sectionName, section) in enumerate(self._data.items()):
 				if i > 0:
 					f.write('\n')

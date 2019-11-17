@@ -6,7 +6,7 @@ import subprocess
 import time
 from pathlib import Path
 
-import toml
+from core.base.model.TomlFile import TomlFile
 
 try:
 	import yaml
@@ -57,7 +57,7 @@ network={
 		self._confsFile = Path(self._rootDir, 'config.py')
 		self._confsSample = Path(self._rootDir, 'configTemplate.py')
 		self._initFile = Path('/boot/ProjectAlice.yaml')
-		self._latest = 1.08
+		self._latest = 1.09
 
 
 	def initProjectAlice(self) -> bool:
@@ -228,22 +228,32 @@ network={
 		confs['githubToken'] = initConfs['githubToken'] or ''
 		confs['ttsLanguage'] = initConfs['ttsLanguage'] or ''
 		confs['updateChannel'] = initConfs['updateChannel'] if initConfs['updateChannel'] in ('master', 'rc', 'beta', 'alpha') else 'master'
-		confs['mqttUser'] = str(initConfs['mqttUser']) or ''
+		confs['mqtt_username'] = str(initConfs['mqttUser']) or ''
 		confs['mqttPassword'] = str(initConfs['mqttPassword']) or ''
 		confs['mqttTLSFile'] = initConfs['mqttTLSFile'] or ''
 
 		if initConfs['snipsProjectId'] and confs['activeLanguage'] in confs['supportedLanguages']:
 			confs['supportedLanguages'][confs['activeLanguage']]['snipsProjectId'] = initConfs['snipsProjectId']
 
-
-		#snipsDefaultConf
 		snipsConf = self.loadSnipsConfigurations()
-
+		if not snipsConf:
+			self.fatal('Error loading snips.toml')
 
 		if initConfs['deviceName'] != 'default':
-			subprocess.run(['sudo', 'sed', '-i', '-e', f's/\# bind = "default@mqtt"/bind = "{initConfs["deviceName"]}@mqtt"/', Path('/etc/snips.toml')])
-			subprocess.run(['sudo', 'sed', '-i', '-e', f's/bind = ".*@mqtt"/bind = "{initConfs["deviceName"]}@mqtt"/', Path('/etc/snips.toml')])
-			subprocess.run(['sudo', 'sed', '-i', '-e', f's/DEFAULT_SITE_ID = \'default\'/DEFAULT_SITE_ID = \'{initConfs["deviceName"]}\'/', Path(self._rootDir, 'core/commons/constants.py')])
+			snipsConf['snips-audio-server']['bind'] = f'{initConfs["deviceName"]}@mqtt'
+
+		if initConfs['mqttHost'] != 'localhost' or initConfs['mqttPort'] != 1883:
+			snipsConf['snips-common']['mqtt'] = f'{initConfs["mqttHost"]}:{initConfs["mqttPort"]}'
+
+		if initConfs['mqttUser']:
+			snipsConf['snips-common']['mqtt_username'] = initConfs['mqttUser']
+			snipsConf['snips-common']['mqtt_password'] = initConfs['mqttPassword']
+
+		snipsConf['snips-common']['assistant'] = f'/home/{getpass.getuser()}/ProjectAlice/assistant'
+		snipsConf['snips-dialog']['session_timeout'] = 30
+		snipsConf['snips-dialog']['lambda_timeout'] = 10
+		snipsConf['snips-dialog']['retry_count'] = 0
+		snipsConf['snips-hotword']['model'] = [f'/home/{getpass.getuser()}/ProjectAlice/trained/hotwords/snips_hotword=0.53']
 
 		serviceFilePath = Path('/etc/systemd/system/ProjectAlice.service')
 		if not serviceFilePath.exists():
@@ -299,7 +309,7 @@ network={
 			subprocess.run(['sudo', Path(self._rootDir, 'system/scripts/audioHardware/matrix.sh')])
 			subprocess.run(['sudo', 'cp', Path(self._rootDir, 'system', 'asounds', 'matrix.conf'), Path('/etc/asound.conf')])
 
-			subprocess.run(['sudo', 'sed', '-i', '-e', f's/\# mike = "Built-in Microphone"/mike = "MATRIXIO-SOUND: - (hw:2,0)"/', Path('/etc/snips.toml')])
+			snipsConf['snips-audio-server']['mike'] = 'MATRIXIO-SOUND: - (hw:2,0)'
 
 			if initConfs['useSLC']:
 				subprocess.run(['sudo', 'sed', '-i', '-e', f's/%HARDWARE%/{audioHardware.lower()}/', str(slcServiceFilePath)])
@@ -315,7 +325,6 @@ network={
 		subprocess.run(['sudo', 'systemctl', 'daemon-reload'])
 
 		sort = dict(sorted(confs.items()))
-		# pop modules key so it gets added in the back
 		sort['modules'] = sort.pop('modules')
 
 		try:
@@ -326,10 +335,16 @@ network={
 		else:
 			importlib.reload(config)
 
+		snipsConf.dump()
+
 		subprocess.run(['sudo', 'rm', '-rf', Path(self._rootDir, 'assistant')])
 		subprocess.run(['sudo', 'rm', '-rf', Path(self._rootDir, 'trained', 'assistants', f"assistant_{confs['activeLanguage']}")])
 		subprocess.run(['sudo', 'rm', '-rf', Path(self._rootDir, 'var', 'assistants', confs['activeLanguage'])])
-		subprocess.run(['sudo', 'mv', str(Path('/boot/ProjectAlice.yaml')), str(Path('/boot/ProjectAlice.yaml.bak'))])
+
+		if initConfs['keepYAMLBackup']:
+			subprocess.run(['sudo', 'mv', Path('/boot/ProjectAlice.yaml'), Path('/boot/ProjectAlice.yaml.bak')])
+		else:
+			subprocess.run(['sudo', 'rm', Path('/boot/ProjectAlice.yaml')])
 
 		self.warning('Initializer done with configuring')
 		time.sleep(2)
@@ -346,10 +361,11 @@ network={
 		self.logWarning(text)
 
 
-	def loadSnipsConfigurations(self) -> dict:
+	def loadSnipsConfigurations(self) -> TomlFile:
 		self.logInfo('Loading Snips configuration file')
 		snipsConfig = Path('/etc/snips.toml')
-		if snipsConfig.exists():
-			return toml.loads(snipsConfig.read_text())
-		else:
-			self.fatal('Snips configuration file not found')
+
+		if not snipsConfig.exists():
+			subprocess.run(['sudo', 'cp', Path(self._rootDir, 'system/snips/snips.toml'), Path('/etc/snips.toml')])
+
+		return TomlFile.loadToml(snipsConfig)
