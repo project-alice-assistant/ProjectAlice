@@ -6,6 +6,8 @@ import subprocess
 import time
 from pathlib import Path
 
+import toml
+
 try:
 	import yaml
 except:
@@ -233,6 +235,11 @@ network={
 		if initConfs['snipsProjectId'] and confs['activeLanguage'] in confs['supportedLanguages']:
 			confs['supportedLanguages'][confs['activeLanguage']]['snipsProjectId'] = initConfs['snipsProjectId']
 
+
+		#snipsDefaultConf
+		snipsConf = self.loadSnipsConfigurations()
+
+
 		if initConfs['deviceName'] != 'default':
 			subprocess.run(['sudo', 'sed', '-i', '-e', f's/\# bind = "default@mqtt"/bind = "{initConfs["deviceName"]}@mqtt"/', Path('/etc/snips.toml')])
 			subprocess.run(['sudo', 'sed', '-i', '-e', f's/bind = ".*@mqtt"/bind = "{initConfs["deviceName"]}@mqtt"/', Path('/etc/snips.toml')])
@@ -337,3 +344,12 @@ network={
 
 	def warning(self, text: str):
 		self.logWarning(text)
+
+
+	def loadSnipsConfigurations(self) -> dict:
+		self.logInfo('Loading Snips configuration file')
+		snipsConfig = Path('/etc/snips.toml')
+		if snipsConfig.exists():
+			return toml.loads(snipsConfig.read_text())
+		else:
+			self.fatal('Snips configuration file not found')

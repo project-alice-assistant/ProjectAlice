@@ -7,9 +7,8 @@ from contextlib import contextmanager
 from ctypes import *
 from datetime import datetime
 from pathlib import Path
-from typing import Match, Optional, Union
+from typing import Union
 
-import re
 from googletrans import Translator
 from paho.mqtt.client import MQTTMessage
 
@@ -23,7 +22,6 @@ from core.dialog.model.DialogSession import DialogSession
 class CommonsManager(Manager):
 
 	ERROR_HANDLER_FUNC = CFUNCTYPE(None, c_char_p, c_int, c_char_p, c_int, c_char_p)
-	VERSION_PARSER_REGEX = re.compile('(?P<mainVersion>\d+)\.(?P<updateVersion>\d+)(\.(?P<hotfix>\d+))?(-(?P<releaseType>a|b|rc)(?P<releaseNumber>\d+))?')
 	
 	def __init__(self):
 		super().__init__('Commons')
@@ -276,11 +274,6 @@ class CommonsManager(Manager):
 		if isinstance(text, str):
 			return Translator().translate(**kwargs).text
 		return [result.text for result in Translator().translate(**kwargs)]
-
-
-	@classmethod
-	def parseVersionNumber(cls, version: str) -> Optional[Match[str]]:
-		return cls.VERSION_PARSER_REGEX.search(str(version))
 
 
 # noinspection PyUnusedLocal
