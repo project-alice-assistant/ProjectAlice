@@ -3,7 +3,7 @@ import sqlite3
 import threading
 import time
 import uuid
-from typing import Optional
+from typing import List, Optional
 
 import esptool  # type: ignore
 import os
@@ -390,11 +390,11 @@ class DeviceManager(Manager):
 			self.broadcast(method='onDeviceDisconnecting', exceptions=[self.name], propagateToModules=True)
 
 
-	def getDevicesByRoom(self, room: str, connectedOnly: bool = False) -> list:
+	def getDevicesByRoom(self, room: str, connectedOnly: bool = False) -> List[Device]:
 		return [x for x in self._devices.values() if x.room.lower() == room.lower() and (not connectedOnly or x.connected)]
 
 
-	def getDevicesByType(self, deviceType: str, connectedOnly: bool = False) -> list:
+	def getDevicesByType(self, deviceType: str, connectedOnly: bool = False) -> List[Device]:
 		return [x for x in self._devices.values() if x.deviceType == deviceType and (not connectedOnly or x.connected)]
 
 

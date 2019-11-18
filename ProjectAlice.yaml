@@ -19,7 +19,7 @@ version: 1.09
 # If you place this file into /boot after a first initialization it won't overwrite your settings unless you set this to yes
 forceRewrite: no
 
-# By setting the next paramater to yes, ProjectAlice will also install all the required dependencies
+# By setting the next parameter to yes, ProjectAlice will also install all the required dependencies
 doGroundInstall: yes
 
 # After initialization is done, keep a copy of this yaml file in /boot. Be aware this can be a security risk, as /boot is accessible by anyone mounting your SD card!

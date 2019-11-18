@@ -101,7 +101,16 @@ class MqttManager(Manager):
 		]
 
 		for username in self.UserManager.getAllUserNames():
-			subscribedEvents.append((constants.TOPIC_WAKEWORD_DETECTED.replace('{user}', username), 0))
+			subscribedEvents.append((constants.TOPIC_WAKEWORD_DETECTED.format(username), 0))
+
+
+		subscribedEvents.append((constants.TOPIC_AUDIO_FRAME.format('default'), 0))
+		subscribedEvents.append((constants.TOPIC_VAD_UP.format('default'), 0))
+		subscribedEvents.append((constants.TOPIC_VAD_DOWN.format('default'), 0))
+		for device in self.DeviceManager.getDevicesByType('alicesatellite'):
+			subscribedEvents.append((constants.TOPIC_AUDIO_FRAME.format(device.room), 0))
+			subscribedEvents.append((constants.TOPIC_VAD_UP.format(device.room), 0))
+			subscribedEvents.append((constants.TOPIC_VAD_DOWN.format(device.room), 0))
 
 		self._mqttClient.subscribe(subscribedEvents)
 		self.subscribeModuleIntents()
