@@ -122,6 +122,7 @@ network={
 		# Update our system and sources
 		subprocess.run(['sudo', 'apt-get', 'update'])
 		subprocess.run(['sudo', 'apt-get', 'dist-upgrade', '-y'])
+		subprocess.run(['git', 'clean', '-df'])
 		subprocess.run(['git', 'stash'])
 		subprocess.run(['git', 'checkout', self.getUpdateSource(initConfs['updateChannel'])])
 		subprocess.run(['git', 'pull'])
@@ -256,6 +257,7 @@ network={
 		snipsConf['snips-dialog']['lambda_timeout'] = 10
 		snipsConf['snips-dialog']['retry_count'] = 0
 		snipsConf['snips-hotword']['model'] = [f'/home/{getpass.getuser()}/ProjectAlice/trained/hotwords/snips_hotword=0.53']
+		snipsConf['snips-hotword']['vad_messages'] = 'true'
 
 		serviceFilePath = Path('/etc/systemd/system/ProjectAlice.service')
 		if not serviceFilePath.exists():
