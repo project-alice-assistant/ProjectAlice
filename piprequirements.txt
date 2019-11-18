@@ -3,7 +3,6 @@ pyaudio
 python-dateutil
 paho-mqtt
 watchdog
-toml
 requests==2.21.0
 requests-jwt
 spidev

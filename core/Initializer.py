@@ -104,12 +104,11 @@ network={
 			subprocess.run(['/usr/bin/sudo', '/sbin/shutdown', '-r', 'now'])
 			exit(0)
 
-		connected = False
 		try:
 			socket.create_connection(('www.google.com', 80))
 			connected = True
 		except:
-			pass
+			connected = False
 
 		if not connected:
 			self.fatal('Your device needs internet access to continue, to download the updates and create the assistant')
