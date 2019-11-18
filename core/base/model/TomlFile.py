@@ -72,28 +72,29 @@ class TomlFile(ProjectAliceObject):
 		except Exception:
 			writePath = tempfile.TemporaryFile()
 
-		with writePath.open('w+') as f:
-			for sectionName, section in self._data.items():
+		f = writePath.open('w+')
+		for sectionName, section in self._data.items():
 
-				f.write(f'[{sectionName}]\n')
+			f.write(f'[{sectionName}]\n')
 
-				for dataName, data in section.items():
-					if isinstance(data, Comment):
-						if withComments:
-							f.write(f'{data}\n')
-					else:
-						if isinstance(data, Emptiness):
-							f.write('\n')
-							continue
+			for dataName, data in section.items():
+				if isinstance(data, Comment):
+					if withComments:
+						f.write(f'{data}\n')
+				else:
+					if isinstance(data, Emptiness):
+						f.write('\n')
+						continue
 
-						if isinstance(data, Config) and data.commented and not withComments:
-							continue
+					if isinstance(data, Config) and data.commented and not withComments:
+						continue
 
-						value = data.value
-						if isinstance(data.value, str):
-							value = f'"{value}"'
+					value = data.value
+					if isinstance(data.value, str):
+						value = f'"{value}"'
 
-						f.write(f'{"#" if data.commented else ""}{data.name} = {value}\n')
+					f.write(f'{"#" if data.commented else ""}{data.name} = {value}\n')
+		f.close()
 
 		if self._path != writePath:
 			subprocess.run(['sudo', 'mv', writePath, self._path])
