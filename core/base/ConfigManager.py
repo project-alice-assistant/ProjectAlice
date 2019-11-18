@@ -402,7 +402,7 @@ class ConfigManager(Manager):
 	def removeModule(self, moduleName: str):
 		if moduleName in self.aliceConfigurations['modules']:
 			modules = self.aliceConfigurations['modules']
-			modules.pop(moduleName)
+			del modules[moduleName]
 			self.aliceConfigurations['modules'] = modules
 			self.writeToAliceConfigurationFile(self._aliceConfigurations)
 

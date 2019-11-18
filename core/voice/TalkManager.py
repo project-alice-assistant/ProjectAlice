@@ -67,32 +67,29 @@ class TalkManager(Manager):
 
 	def chooseTalk(self, talk: str, module: str, activeLanguage: str, defaultLanguage: str, shortReplyMode: bool) -> str:
 		try:
-			# Try to find the string needed
-			if shortReplyMode:
-				return random.choice(self._langData[module][activeLanguage][talk]['short'])
-			else:
-				return random.choice(self._langData[module][activeLanguage][talk]['default'])
-		except:
-			try:
-				# Maybe there's only a default version?
-				return random.choice(self._langData[module][activeLanguage][talk]['default'])
-			except:
-				try:
-					# Maybe there's no short/long version?
-					return random.choice(self._langData[module][activeLanguage][talk])
-				except:
-					try:
-						# Fallback to default language then
-						if activeLanguage == defaultLanguage:
-							raise Exception
+			talkData = self._langData[module][activeLanguage][talk]
+			
+			# There's no short/long version?
+			if isinstance(talkData, list):
+				return random.choice(self._langData[module][activeLanguage][talk])
 
-						self.logError(f'Was asked to get "{talk}" from "{module}" module in "{activeLanguage}" but it doesn\'t exist, falling back to "{defaultLanguage}" version instead')
-						# call itself again with default language and then exit because activeLanguage == defaultLanguage
-						return self.chooseTalk(talk, module, defaultLanguage, defaultLanguage, shortReplyMode)
-					except:
-						# Give up, that text does not exist...
-						self.logError(f'Was asked to get "{talk}" from "{module}" module but language string doesn\'t exist')
-						return ''
+			if shortReplyMode:
+				try:
+					return random.choice(talkData['short'])
+				except KeyError:
+					return random.choice(talkData['default'])
+			else:
+				return random.choice(talkData['default'])
+		except KeyError:
+			# Fallback to default language then
+			if activeLanguage != defaultLanguage:
+				self.logError(f'Was asked to get "{talk}" from "{module}" module in "{activeLanguage}" but it doesn\'t exist, falling back to "{defaultLanguage}" version instead')
+				# call itself again with default language and then exit because activeLanguage == defaultLanguage
+				return self.chooseTalk(talk, module, defaultLanguage, defaultLanguage, shortReplyMode)
+
+			# Give up, that text does not exist...
+			self.logError(f'Was asked to get "{talk}" from "{module}" module but language string doesn\'t exist')
+			return ''
 
 
 	def randomTalk(self, talk: str, module: str = '', forceShortTalk: bool = False) -> str:
@@ -103,7 +100,7 @@ class TalkManager(Manager):
 		:param forceShortTalk:
 		:return:
 		"""
-		module = module or self.getFunctionCaller() or ''
+		module = module or self.getFunctionCaller()
 		if not module:
 			return ''
 

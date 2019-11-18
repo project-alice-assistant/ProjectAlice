@@ -183,7 +183,7 @@ class WakewordManager(Manager):
 
 
 	def removeSample(self):
-		self._wakeword.samples.pop()
+		del self._wakeword.samples[-1]
 
 
 	def isDefaultThreshold(self) -> bool:
@@ -256,7 +256,7 @@ class WakewordManager(Manager):
 		copy = models.copy()
 		for i, model in enumerate(copy):
 			if wakewordName in model:
-				models.pop(i)
+				del models[i]
 			elif '/snips_hotword=' in model:
 				addHeySnips = False
 

@@ -184,7 +184,8 @@ class SnipsConsoleManager(Manager):
 
 	def _logout(self):
 		self._req(url=f"/v1/user/{self._user.userId}/accesstoken/{self.ConfigManager.getSnipsConfiguration('project-alice', 'console_alias')}", method='get')
-		self._headers.pop('Authorization', None)
+		if 'Authorization' in self._headers:
+			del self._headers['Authorization']
 		self._connected = False
 
 		self.ConfigManager.updateSnipsConfiguration(parent='project-alice', key='console_token', value='')
@@ -213,7 +214,8 @@ class SnipsConsoleManager(Manager):
 		req = requests.request(method=method, url=f'https://external-gateway.snips.ai{url}', params=params, json=data, headers=self._headers, **kwargs)
 		if req.status_code == 401:
 			self.logWarning('Console token has expired, need to login')
-			self._headers.pop('Authorization', None)
+			if 'Authorization' in self._headers:
+				del self._headers['Authorization']
 			self._connected = False
 
 			self.ConfigManager.updateSnipsConfiguration(parent='project-alice', key='console_token', value='')

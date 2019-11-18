@@ -114,7 +114,7 @@ class TomlFile(ProjectAliceObject):
 
 	def __delitem__(self, key: str):
 		if key in self._data:
-			self._data.pop(key)
+			del self._data[key]
 
 
 	def __contains__(self, item) -> bool:
@@ -169,7 +169,7 @@ class Section(dict):
 
 
 	def __delitem__(self, key: str):
-		self.data.pop(key)
+		del self.data[key]
 
 
 	def __contains__(self, item) -> bool:
