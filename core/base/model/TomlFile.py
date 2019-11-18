@@ -6,6 +6,7 @@ from textwrap import dedent
 from typing import Any, Dict, ItemsView, Optional, Union, ValuesView
 
 import re
+import tempfile
 
 from core.base.model.ProjectAliceObject import ProjectAliceObject
 
@@ -63,10 +64,13 @@ class TomlFile(ProjectAliceObject):
 		path = otherPath or self._path
 		self._path = otherPath if otherPath and keepOtherPath else path
 
-		if not self.Commons.isWritable(self._path):
-			writePath = Path(self.Commons.rootDir(), self._path.stem)
-		else:
-			writePath = self._path
+		try:
+			if not self.Commons.isWritable(self._path):
+				writePath = Path(self.Commons.rootDir(), self._path.stem)
+			else:
+				writePath = self._path
+		except Exception:
+			writePath = Path(tempfile.TemporaryFile())
 
 		with writePath.open('w+') as f:
 			for sectionName, section in self._data.items():
