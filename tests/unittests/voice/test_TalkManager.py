@@ -70,8 +70,6 @@ class TestTalkManager(unittest.TestCase):
 		talkManager._langData = {}
 		self.assertEqual(talkManager.chooseTalk('talk', 'module', 'de', 'en', True), '')
 
-		self.assertFalse(True)
-
 
 if __name__ == "__main__":
 	unittest.main()

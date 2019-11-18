@@ -68,7 +68,7 @@ class TalkManager(Manager):
 	def chooseTalk(self, talk: str, module: str, activeLanguage: str, defaultLanguage: str, shortReplyMode: bool) -> str:
 		try:
 			talkData = self._langData[module][activeLanguage][talk]
-			
+
 			# There's no short/long version?
 			if isinstance(talkData, list):
 				return random.choice(self._langData[module][activeLanguage][talk])
