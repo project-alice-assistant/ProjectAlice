@@ -70,7 +70,7 @@ class TomlFile(ProjectAliceObject):
 			else:
 				writePath = self._path
 		except Exception:
-			writePath = Path(tempfile.TemporaryFile())
+			writePath = tempfile.TemporaryFile()
 
 		with writePath.open('w+') as f:
 			for sectionName, section in self._data.items():
