@@ -6,7 +6,6 @@ from textwrap import dedent
 from typing import Any, Dict, ItemsView, Optional, Union, ValuesView
 
 import re
-import tempfile
 
 from core.base.model.ProjectAliceObject import ProjectAliceObject
 
@@ -63,40 +62,36 @@ class TomlFile(ProjectAliceObject):
 	def dump(self, withComments: bool = True, otherPath: Path = None, keepOtherPath: bool = False) -> dict:
 		path = otherPath or self._path
 		self._path = otherPath if otherPath and keepOtherPath else path
+		writePath = self._path
 
 		try:
 			if not self.Commons.isWritable(self._path):
-				writePath = Path(self.Commons.rootDir(), self._path.stem)
-			else:
-				writePath = self._path
-
-			f = writePath.open('w+')
+				raise Exception
 		except Exception:
-			f = tempfile.TemporaryFile(mode='w+')
-			writePath = None
+			writePath = Path(writePath.stem).with_suffix('.toml')
 
-		for sectionName, section in self._data.items():
+		with writePath.open('w+') as f:
+			for sectionName, section in self._data.items():
 
-			f.write(f'[{sectionName}]\n')
+				f.write(f'[{sectionName}]\n')
 
-			for dataName, data in section.items():
-				if isinstance(data, Comment):
-					if withComments:
-						f.write(f'{data}\n')
-				else:
-					if isinstance(data, Emptiness):
-						f.write('\n')
-						continue
+				for dataName, data in section.items():
+					if isinstance(data, Comment):
+						if withComments:
+							f.write(f'{data}\n')
+					else:
+						if isinstance(data, Emptiness):
+							f.write('\n')
+							continue
 
-					if isinstance(data, Config) and data.commented and not withComments:
-						continue
+						if isinstance(data, Config) and data.commented and not withComments:
+							continue
 
-					value = data.value
-					if isinstance(data.value, str):
-						value = f'"{value}"'
+						value = data.value
+						if isinstance(data.value, str):
+							value = f'"{value}"'
 
-					f.write(f'{"#" if data.commented else ""}{data.name} = {value}\n')
-		f.close()
+						f.write(f'{"#" if data.commented else ""}{data.name} = {value}\n')
 
 		if self._path != writePath:
 			subprocess.run(['sudo', 'mv', writePath, self._path])

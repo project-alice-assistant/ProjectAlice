@@ -120,13 +120,13 @@ network={
 			self.fatal('You must specify a Snips console login, password and intent owner')
 
 		# Update our system and sources
-		subprocess.run(['sudo', 'apt-get', 'update'])
-		subprocess.run(['sudo', 'apt-get', 'dist-upgrade', '-y'])
-		subprocess.run(['git', 'clean', '-df'])
-		subprocess.run(['git', 'stash'])
-		subprocess.run(['git', 'checkout', self.getUpdateSource(initConfs['updateChannel'])])
-		subprocess.run(['git', 'pull'])
-		subprocess.run(['git', 'stash', 'clear'])
+		# subprocess.run(['sudo', 'apt-get', 'update'])
+		# subprocess.run(['sudo', 'apt-get', 'dist-upgrade', '-y'])
+		# subprocess.run(['git', 'clean', '-df'])
+		# subprocess.run(['git', 'stash'])
+		# subprocess.run(['git', 'checkout', self.getUpdateSource(initConfs['updateChannel'])])
+		# subprocess.run(['git', 'pull'])
+		# subprocess.run(['git', 'stash', 'clear'])
 
 		time.sleep(1)
 
@@ -341,19 +341,19 @@ network={
 
 		snipsConf.dump()
 
-		subprocess.run(['sudo', 'rm', '-rf', Path(self._rootDir, 'assistant')])
-		subprocess.run(['sudo', 'rm', '-rf', Path(self._rootDir, 'trained', 'assistants', f"assistant_{confs['activeLanguage']}")])
-		subprocess.run(['sudo', 'rm', '-rf', Path(self._rootDir, 'var', 'assistants', confs['activeLanguage'])])
+		# subprocess.run(['sudo', 'rm', '-rf', Path(self._rootDir, 'assistant')])
+		# subprocess.run(['sudo', 'rm', '-rf', Path(self._rootDir, 'trained', 'assistants', f"assistant_{confs['activeLanguage']}")])
+		# subprocess.run(['sudo', 'rm', '-rf', Path(self._rootDir, 'var', 'assistants', confs['activeLanguage'])])
+		#
+		# if initConfs['keepYAMLBackup']:
+		# 	subprocess.run(['sudo', 'mv', Path('/boot/ProjectAlice.yaml'), Path('/boot/ProjectAlice.yaml.bak')])
+		# else:
+		# 	subprocess.run(['sudo', 'rm', Path('/boot/ProjectAlice.yaml')])
 
-		if initConfs['keepYAMLBackup']:
-			subprocess.run(['sudo', 'mv', Path('/boot/ProjectAlice.yaml'), Path('/boot/ProjectAlice.yaml.bak')])
-		else:
-			subprocess.run(['sudo', 'rm', Path('/boot/ProjectAlice.yaml')])
-
-		self.warning('Initializer done with configuring')
-		time.sleep(2)
-		subprocess.run(['sudo', 'systemctl', 'enable', 'ProjectAlice'])
-		subprocess.run(['sudo', 'shutdown', '-r', 'now'])
+		self.fatal('Initializer done with configuring')
+		# time.sleep(2)
+		# subprocess.run(['sudo', 'systemctl', 'enable', 'ProjectAlice'])
+		# subprocess.run(['sudo', 'shutdown', '-r', 'now'])
 
 
 	def fatal(self, text: str):
