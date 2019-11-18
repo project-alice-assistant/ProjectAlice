@@ -53,7 +53,7 @@ class TomlFile(ProjectAliceObject):
 					section.addComment(Comment(line))
 
 
-	def dump(self, withComments: bool = True, otherPath: Path = None):
+	def dump(self, withComments: bool = True, otherPath: Path = None) -> dict:
 		path = otherPath or self._path
 		with path.open('w+') as f:
 			for i, (sectionName, section) in enumerate(self._data.items()):
@@ -75,6 +75,8 @@ class TomlFile(ProjectAliceObject):
 							value = f'"{value}"'
 
 						f.write(f'{"#" if data.commented else ""}{data.name} = {value}\n')
+
+		return self._data
 
 
 	def __iter__(self):
@@ -129,6 +131,10 @@ class TomlFile(ProjectAliceObject):
 		return self._data.items()
 
 
+	def get(self, key, default: Any) -> Any:
+		return self._data.get(key, default)
+
+
 class Comment:
 
 	def __init__(self, comment: str):
@@ -165,7 +171,12 @@ class Section(dict):
 
 
 	def __getitem__(self, key: str) -> Any:
-		return self.data[key]
+		if key in self.data:
+			return self.data[key]
+
+		conf = Config(key, '')
+		self.data[conf.name] = conf
+		return conf.value
 
 
 	def __delitem__(self, key: str):
@@ -198,8 +209,9 @@ class Section(dict):
 		return self.data.items()
 
 
-	def get(self, key):
-		return self.data.get(key, dict())
+	# noinspection PyMethodOverriding
+	def get(self, key, default: Any) -> Any:
+		return self.data.get(key, default)
 
 
 	def addComment(self, comment: Comment):
