@@ -230,7 +230,7 @@ class ConfigManager(Manager):
 		:param createIfNotExist: If that conf doesn't exist, create it
 		:return: config value
 		"""
-		if createIfNotExist and not key in self._snipsConfigurations[parent]:
+		if createIfNotExist and key not in self._snipsConfigurations[parent]:
 			conf = self._snipsConfigurations[parent][key] # TomlFile does auto create missing keys
 			self._snipsConfigurations.dump()
 			return conf
