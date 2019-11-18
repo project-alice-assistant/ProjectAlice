@@ -9,6 +9,7 @@ from datetime import datetime
 from pathlib import Path
 from typing import Union
 
+import tempfile
 from googletrans import Translator
 from paho.mqtt.client import MQTTMessage
 
@@ -245,6 +246,17 @@ class CommonsManager(Manager):
 			return string.index(sub)
 		except ValueError:
 			return -1
+
+
+	@staticmethod
+	def isWritable(path: Path):
+		try:
+			test = tempfile.TemporaryFile(dir=path)
+			test.close()
+		except:
+			return False
+
+		return True
 
 
 	def translate(self, text: Union[str, list], destLang: str, srcLang: str = None) -> Union[str, list]:

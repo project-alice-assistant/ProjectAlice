@@ -34,7 +34,7 @@ class GithubCloner(ProjectAliceObject):
 
 		try:
 			return self._doClone(f'https://api.github.com/{self._baseUrl}/{self._path}?ref={self.ConfigManager.getModulesUpdateSource()}')
-		except:
+		except Exception:
 			return False
 
 

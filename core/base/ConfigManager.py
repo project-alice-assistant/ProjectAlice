@@ -7,8 +7,8 @@ import shutil
 
 import configTemplate
 from core.base.ModuleManager import ModuleManager
-from core.base.SuperManager import SuperManager
 from core.base.model.GithubCloner import GithubCloner
+from core.base.model.TomlFile import TomlFile
 from core.base.model.Version import Version
 
 try:
@@ -21,7 +21,6 @@ except ModuleNotFoundError:
 import difflib
 import importlib
 import typing
-import toml
 from core.ProjectAliceExceptions import ConfigurationUpdateFailed, VitalConfigMissing
 from core.base.model.Manager import Manager
 from core.commons import constants
@@ -65,7 +64,7 @@ class ConfigManager(Manager):
 
 
 	def _setDefaultSiteId(self):
-		constants.DEFAULT_SITE_ID = self._snipsConfigurations.get('snips-audio-server', {'bind': 'default@mqtt'}).get('bind', 'default@mqtt').replace('@mqtt', '')
+		constants.DEFAULT_SITE_ID = self._snipsConfigurations['snips-audio-server']['bind'].replace('@mqtt', '')
 
 
 	def _loadCheckAndUpdateAliceConfigFile(self) -> dict:
@@ -189,14 +188,19 @@ class ConfigManager(Manager):
 		moduleConfigFile.write_text(json.dumps(confsCleaned, indent=4))
 
 
-	def loadSnipsConfigurations(self) -> dict:
+	def loadSnipsConfigurations(self) -> TomlFile:
 		self.logInfo('Loading Snips configuration file')
-		snipsConfig = Path('/etc/snips.toml')
-		if snipsConfig.exists():
-			return toml.loads(snipsConfig.read_text())
-		else:
-			self.logError('Failed retrieving Snips configs')
-			SuperManager.getInstance().onStop()
+
+		snipsConfigPath = Path('/etc/snips.toml')
+		snipsConfigTemplatePath = Path(self.Commons.rootDir(), 'system/snips/snips.toml')
+
+		if not snipsConfigPath.exists():
+			subprocess.run(['sudo', 'cp', snipsConfigTemplatePath, '/etc/snips.toml'])
+			snipsConfigPath = snipsConfigTemplatePath
+
+		snipsConfig = TomlFile.loadToml(snipsConfigPath)
+
+		return snipsConfig
 
 
 	def updateSnipsConfiguration(self, parent: str, key: str, value, restartSnips: bool = False, createIfNotExist: bool = True):
@@ -212,8 +216,7 @@ class ConfigManager(Manager):
 		config = self.getSnipsConfiguration(parent=parent, key=key, createIfNotExist=createIfNotExist)
 		if config is not None:
 			self._snipsConfigurations[parent][key] = value
-
-			Path('/etc/snips.toml').write_text(toml.dumps(self._snipsConfigurations))
+			self._snipsConfigurations.dump()
 
 			if restartSnips:
 				self.SnipsServicesManager.runCmd('restart')
@@ -227,11 +230,12 @@ class ConfigManager(Manager):
 		:param createIfNotExist: If that conf doesn't exist, create it
 		:return: config value
 		"""
-		if createIfNotExist:
-			self._snipsConfigurations[parent] = self._snipsConfigurations.get(parent, dict())
-			self._snipsConfigurations[parent][key] = self._snipsConfigurations[parent].get(key, '')
+		if createIfNotExist and key not in self._snipsConfigurations[parent]:
+			conf = self._snipsConfigurations[parent][key] # TomlFile does auto create missing keys
+			self._snipsConfigurations.dump()
+			return conf
 
-		config = self._snipsConfigurations.get(parent, dict()).get(key, None)
+		config = self._snipsConfigurations[parent].get(key, None)
 		if config is None:
 			self.logWarning(f'Tried to get "{parent}/{key}" in snips configuration but key was not found')
 
@@ -463,7 +467,7 @@ class ConfigManager(Manager):
 
 
 	@property
-	def snipsConfigurations(self) -> dict:
+	def snipsConfigurations(self) -> TomlFile:
 		return self._snipsConfigurations
 
 
