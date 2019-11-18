@@ -151,8 +151,8 @@ class DatabaseManager(Manager):
 			callerName = self.Commons.getFunctionCaller()
 
 		if not query:
-			cols = ', '.join(values.keys())
-			data = ', :'.join(values.keys())
+			cols = ', '.join(values)
+			data = ', :'.join(values)
 			query = f'INSERT INTO :__table__ ({cols}) VALUES (:{data})'
 
 		query = self.basicChecks(tableName, query, callerName, values)
