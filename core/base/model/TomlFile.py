@@ -69,10 +69,12 @@ class TomlFile(ProjectAliceObject):
 				writePath = Path(self.Commons.rootDir(), self._path.stem)
 			else:
 				writePath = self._path
-		except Exception:
-			writePath = tempfile.TemporaryFile()
 
-		f = writePath.open('w+')
+			f = writePath.open('w+')
+		except Exception:
+			f = tempfile.TemporaryFile(mode='w+')
+			writePath = None
+
 		for sectionName, section in self._data.items():
 
 			f.write(f'[{sectionName}]\n')
