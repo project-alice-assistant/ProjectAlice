@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import subprocess
 from pathlib import Path
 from textwrap import dedent
 from typing import Any, Dict, ItemsView, Optional, Union, ValuesView
@@ -19,6 +20,7 @@ class TomlFile(ProjectAliceObject):
 
 		self._path = path
 		self._data = dict()
+		self._loaded = False
 
 
 	@classmethod
@@ -52,13 +54,22 @@ class TomlFile(ProjectAliceObject):
 				if line.startswith('##') and section is not None:
 					section.addComment(Comment(line))
 
+				if not line.strip():
+					section.addEmptiness()
+		self._loaded = True
 
-	def dump(self, withComments: bool = True, otherPath: Path = None) -> dict:
+
+	def dump(self, withComments: bool = True, otherPath: Path = None, keepOtherPath: bool = False) -> dict:
 		path = otherPath or self._path
-		with path.open('w+') as f:
-			for i, (sectionName, section) in enumerate(self._data.items()):
-				if i > 0:
-					f.write('\n')
+		self._path = otherPath if otherPath and keepOtherPath else path
+
+		if not self.Commons.isWritable(self._path):
+			writePath = Path(self.Commons.rootDir(), self._path.stem)
+		else:
+			writePath = self._path
+
+		with writePath.open('w+') as f:
+			for sectionName, section in self._data.items():
 
 				f.write(f'[{sectionName}]\n')
 
@@ -67,7 +78,11 @@ class TomlFile(ProjectAliceObject):
 						if withComments:
 							f.write(f'{data}\n')
 					else:
-						if data.commented and not withComments:
+						if isinstance(data, Emptiness):
+							f.write('\n')
+							continue
+
+						if isinstance(data, Config) and data.commented and not withComments:
 							continue
 
 						value = data.value
@@ -75,6 +90,9 @@ class TomlFile(ProjectAliceObject):
 							value = f'"{value}"'
 
 						f.write(f'{"#" if data.commented else ""}{data.name} = {value}\n')
+
+		if self._path != writePath:
+			subprocess.run(['sudo', 'mv', writePath, self._path])
 
 		return self._data
 
@@ -95,6 +113,7 @@ class TomlFile(ProjectAliceObject):
 		if item in self._data:
 			return self._data[item]
 
+		self.addEmptinessIfNeeded()
 		section = Section(item)
 		self._data[section.name] = section
 		return section
@@ -107,11 +126,23 @@ class TomlFile(ProjectAliceObject):
 		if key in self._data:
 			section = self._data[key]
 		else:
+			self.addEmptinessIfNeeded()
 			section = Section(key)
 			self._data[section.name] = section
 
 		for key, val in value.items():
 			section.addConfig(key=key, value=val, commented=False)
+
+
+	def addEmptinessIfNeeded(self):
+		"""
+		Add a space between the last existing section and a new one
+		"""
+		if self._loaded:
+			try:
+				self._data[list(self._data.keys())[-1]].addEmptiness()
+			except:
+				pass
 
 
 	def __delitem__(self, key: str):
@@ -154,8 +185,9 @@ class Section(dict):
 	def __init__(self, name: str):
 		super().__init__()
 		self.name = name
-		self.data: Dict[str, Union[Comment, Config]] = dict()
+		self.data: Dict[str, Union[Comment, Config, Emptiness]] = dict()
 		self._comments = 0
+		self._whites = 0
 
 
 	def __len__(self) -> int:
@@ -167,12 +199,15 @@ class Section(dict):
 
 
 	def __setitem__(self, key: str, value: Any):
-		self.data[key] = Config(key, value)
+		if key in self.data:
+			self.data[key].value = value
+		else:
+			self.data[key] = Config(key, value)
 
 
 	def __getitem__(self, key: str) -> Any:
 		if key in self.data:
-			return self.data[key]
+			return self.data[key].value
 
 		conf = Config(key, '')
 		self.data[conf.name] = conf
@@ -224,6 +259,11 @@ class Section(dict):
 		self.data[config.name] = config
 
 
+	def addEmptiness(self):
+		self._whites += 1
+		self.data[f'whites_{self._whites}'] = Emptiness()
+
+
 class Config:
 
 	def __init__(self, key: str, value: Any, commented: bool = False):
@@ -252,8 +292,18 @@ class Config:
 		return self.value
 
 
-	def __getitem__(self, item):
+	def __getitem__(self, item) -> Any:
 		if isinstance(self.value, list) or isinstance(self.value, dict):
 			return self.value[item]
 
 		return self.value
+
+
+class Emptiness:
+
+	def __str__(self) -> str:
+		return '\n'
+
+
+	def __repr__(self) -> str:
+		return '\n'

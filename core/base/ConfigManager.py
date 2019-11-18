@@ -7,7 +7,6 @@ import shutil
 
 import configTemplate
 from core.base.ModuleManager import ModuleManager
-from core.base.SuperManager import SuperManager
 from core.base.model.GithubCloner import GithubCloner
 from core.base.model.TomlFile import TomlFile
 from core.base.model.Version import Version
@@ -191,12 +190,17 @@ class ConfigManager(Manager):
 
 	def loadSnipsConfigurations(self) -> TomlFile:
 		self.logInfo('Loading Snips configuration file')
-		snipsConfig = Path('/etc/snips.toml')
-		if snipsConfig.exists():
-			return TomlFile.loadToml(snipsConfig, False)
-		else:
-			self.logError('Failed retrieving Snips configs')
-			SuperManager.getInstance().onStop()
+
+		snipsConfigPath = Path('/etc/snips.toml')
+		snipsConfigTemplatePath = Path(self.Commons.rootDir(), 'system/snips/snips.toml')
+
+		if not snipsConfigPath.exists():
+			subprocess.run(['sudo', 'cp', snipsConfigTemplatePath, '/etc/snips.toml'])
+			snipsConfigPath = snipsConfigTemplatePath
+
+		snipsConfig = TomlFile.loadToml(snipsConfigPath)
+
+		return snipsConfig
 
 
 	def updateSnipsConfiguration(self, parent: str, key: str, value, restartSnips: bool = False, createIfNotExist: bool = True):
@@ -213,7 +217,6 @@ class ConfigManager(Manager):
 		if config is not None:
 			self._snipsConfigurations[parent][key] = value
 			self._snipsConfigurations.dump()
-			#Path('/etc/snips.toml').write_text(toml.dumps(self._snipsConfigurations))
 
 			if restartSnips:
 				self.SnipsServicesManager.runCmd('restart')
@@ -231,11 +234,7 @@ class ConfigManager(Manager):
 			conf = self._snipsConfigurations[parent][key] # TomlFile does auto create missing keys
 			self._snipsConfigurations.dump()
 			return conf
-			# self._snipsConfigurations[parent] = self._snipsConfigurations.get(parent, dict())
-			# self._snipsConfigurations[parent][key] = self._snipsConfigurations[parent].get(key, '')
 
-
-		#config = self._snipsConfigurations.get(parent, dict()).get(key, None)
 		config = self._snipsConfigurations[parent].get(key, None)
 		if config is None:
 			self.logWarning(f'Tried to get "{parent}/{key}" in snips configuration but key was not found')
