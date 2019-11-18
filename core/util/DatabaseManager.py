@@ -1,5 +1,5 @@
 import sqlite3
-import typing
+from typing import Optional, Union, List
 
 from core.ProjectAliceExceptions import DbConnectionError, InvalidQuery
 from core.base.model.Manager import Manager
@@ -207,10 +207,7 @@ class DatabaseManager(Manager):
 			return True
 
 
-	#TODO this not really right, right now it either returns a list of sqlite3.Row when the method is not 'one',
-	# a sqlite2.Row or None when it is None and when there is an exception or no query sqlite3.Row() is a broken syntax
-	# -> will throw an TypeError (should probably return a empty list or None instead)
-	def fetch(self, tableName: str, query: str, callerName: str, values: dict = None, method: str = 'one') -> sqlite3.Row:
+	def fetch(self, tableName: str, query: str, callerName: str, values: dict = None, method: str = 'one') -> List[sqlite3.Row]:
 		"""
 		Fetch data from database
 		:param values:
@@ -218,14 +215,14 @@ class DatabaseManager(Manager):
 		:param query:
 		:param callerName:
 		:param method: one or all
-		:return: list
+		:return: list of sqlite3.Row or sqlite3.Row
 		"""
 		if not values:
 			values = dict()
 
 		query = self.basicChecks(tableName, query, callerName, values)
 		if not query:
-			return sqlite3.Row()
+			return list()
 
 		try:
 			database = self.getConnection()
@@ -234,12 +231,12 @@ class DatabaseManager(Manager):
 			cursor.execute(query, values)
 
 			if method == 'one':
-				data = cursor.fetchone()
+				data = list(cursor.fetchone() or list())
 			else:
 				data = cursor.fetchall()
 		except (DbConnectionError, sqlite3.Error) as e:
 			self.logWarning(f'Error fetching data for component "{callerName}" in table "{tableName}": {e}')
-			return sqlite3.Row()
+			return list()
 		else:
 			cursor.close()
 			database.close()
@@ -304,7 +301,7 @@ class DatabaseManager(Manager):
 			database.close()
 
 
-	def basicChecks(self, tableName: str, query: str, callerName: str, values: dict = None) -> typing.Optional[str]:
+	def basicChecks(self, tableName: str, query: str, callerName: str, values: dict = None) -> Optional[str]:
 		if ':__table__' not in query:
 			self.logWarning(f'The query must use \':__table__\' for the table name. Caller: {callerName}')
 			return None

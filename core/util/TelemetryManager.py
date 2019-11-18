@@ -1,5 +1,6 @@
 import time
-from typing import Iterable
+from typing import List
+import sqlite3
 
 from core.base.model.Manager import Manager
 from core.util.model.TelemetryType import TelemetryType
@@ -113,7 +114,7 @@ class TelemetryManager(Manager):
 				break
 
 
-	def getData(self, ttype: TelemetryType, siteId: str, service: str = None) -> Iterable:
+	def getData(self, ttype: TelemetryType, siteId: str, service: str = None) -> List[sqlite3.Row]:
 		values = {'type': ttype.value, 'siteId': siteId}
 		if service:
 			values['service'] = service

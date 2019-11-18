@@ -1,4 +1,5 @@
-from typing import Optional
+from typing import Optional, List
+import sqlite3
 
 from core.base.SuperManager import SuperManager
 from core.base.model.ProjectAliceObject import ProjectAliceObject
@@ -55,7 +56,7 @@ class Manager(ProjectAliceObject):
 
 
 	# HELPERS
-	def databaseFetch(self, tableName: str, query: str = None, values: dict = None, method: str = 'one') -> list:
+	def databaseFetch(self, tableName: str, query: str = None, values: dict = None, method: str = 'one') -> List[sqlite3.Row]:
 		if not query:
 			query = 'SELECT * FROM :__table__'
 

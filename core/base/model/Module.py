@@ -397,7 +397,7 @@ class Module(ProjectAliceObject):
 		return self.LanguageManager.defaultLanguage
 
 
-	def databaseFetch(self, tableName: str, query: str, values: dict = None, method: str = 'one') -> sqlite3.Row:
+	def databaseFetch(self, tableName: str, query: str, values: dict = None, method: str = 'one') -> List[sqlite3.Row]:
 		return self.DatabaseManager.fetch(tableName=tableName, query=query, values=values, callerName=self.name, method=method)
 
 

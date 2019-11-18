@@ -1,4 +1,5 @@
 import typing
+import sqlite3
 
 import bcrypt
 
@@ -7,7 +8,7 @@ from core.base.model.ProjectAliceObject import ProjectAliceObject
 
 class User(ProjectAliceObject):
 
-	def __init__(self, row: typing.Optional[dict]):
+	def __init__(self, row: typing.Optional[sqlite3.Row]):
 		super().__init__(logDepth=3)
 
 		#TODO is it correct to init these values only when row exists?
