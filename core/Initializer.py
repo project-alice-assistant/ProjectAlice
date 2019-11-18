@@ -123,7 +123,7 @@ network={
 		subprocess.run(['sudo', 'apt-get', 'update'])
 		subprocess.run(['sudo', 'apt-get', 'dist-upgrade', '-y'])
 		subprocess.run(['git', 'stash'])
-		subprocess.run(['git', 'checkout', self.getUpdateSource()])
+		subprocess.run(['git', 'checkout', self.getUpdateSource(initConfs['updateChannel'])])
 		subprocess.run(['git', 'pull'])
 		subprocess.run(['git', 'stash', 'clear'])
 
