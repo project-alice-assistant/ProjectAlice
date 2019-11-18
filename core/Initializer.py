@@ -6,7 +6,10 @@ import subprocess
 import time
 from pathlib import Path
 
+import requests
+
 from core.base.model.TomlFile import TomlFile
+from core.base.model.Version import Version
 
 try:
 	import yaml
@@ -120,7 +123,7 @@ network={
 		subprocess.run(['sudo', 'apt-get', 'update'])
 		subprocess.run(['sudo', 'apt-get', 'dist-upgrade', '-y'])
 		subprocess.run(['git', 'stash'])
-		subprocess.run(['git', 'checkout', initConfs['updateChannel']])
+		subprocess.run(['git', 'checkout', self.getUpdateSource()])
 		subprocess.run(['git', 'pull'])
 		subprocess.run(['git', 'stash', 'clear'])
 
@@ -368,3 +371,33 @@ network={
 			subprocess.run(['sudo', 'cp', Path(self._rootDir, 'system/snips/snips.toml'), Path('/etc/snips.toml')])
 
 		return TomlFile.loadToml(snipsConfig)
+
+
+	@staticmethod
+	def getUpdateSource(definedSource: str) -> str:
+		updateSource = 'master'
+		if definedSource == 'master':
+			return updateSource
+
+		req = requests.get('https://api.github.com/repos/project-alice-powered-by-snips/ProjectAlice/branches')
+		result = req.json()
+		if result:
+			userUpdatePref = definedSource
+			versions = list()
+			for branch in result:
+				repoVersion = Version(branch['name'])
+				if not repoVersion.isVersionNumber:
+					continue
+
+				if userUpdatePref == 'alpha' and repoVersion.infos['releaseType'] in ('master', 'rc', 'b', 'a'):
+					versions.append(repoVersion)
+				elif userUpdatePref == 'beta' and repoVersion.infos['releaseType'] in ('master', 'rc', 'b'):
+					versions.append(repoVersion)
+				elif userUpdatePref == 'rc' and repoVersion.infos['releaseType'] in ('master', 'rc'):
+					versions.append(repoVersion)
+
+			if len(versions) > 0:
+				versions.sort(reverse=True)
+				updateSource = versions[0]
+
+		return updateSource

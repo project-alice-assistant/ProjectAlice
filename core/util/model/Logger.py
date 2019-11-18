@@ -1,5 +1,5 @@
-import logging
 import inspect
+import logging
 
 
 class Logger:
@@ -43,4 +43,7 @@ class Logger:
 
 	# noinspection PyMethodMayBeStatic
 	def decorate(self, msg: str, depth: int) -> str:
-		return f'[{inspect.getmodulename(inspect.stack()[depth][1])}] {msg}'
+		try:
+			return f'[{inspect.getmodulename(inspect.stack()[depth][1])}] {msg}'
+		except Exception:
+			return '[Unknown] {msg}'
