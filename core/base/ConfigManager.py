@@ -72,7 +72,7 @@ class ConfigManager(Manager):
 
 		if not configFileExist:
 			self.logInfo('Creating config file from config template')
-			confs = {configName: configData['defaultValue'] if 'defaultValue' in configData else configData['values'] if 'dataType' in configData and configData['dataType'] == 'list' else configData for configName, configData in configTemplate.settings.items()}
+			confs = {configName: configData['values'] if 'dataType' in configData and configData['dataType'] == 'list' else configData['defaultValue'] if 'defaultValue' in configData else configData for configName, configData in configTemplate.settings.items()}
 			Path('config.py').write_text(f'settings = {json.dumps(confs, indent=4)}')
 			aliceConfigs = importlib.import_module('config.py').settings.copy()
 		else:
