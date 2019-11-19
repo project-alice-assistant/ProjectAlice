@@ -84,16 +84,21 @@ class ConfigManager(Manager):
 				self.logInfo(f'- New configuration found: {setting}')
 				changes = True
 				aliceConfigs[setting] = definition['defaultValue']
-			elif 'defaultValue' in definition and not isinstance(aliceConfigs[setting], type(definition['defaultValue'])):
-				changes = True
-				try:
-					# First try to cast the seting we have to the new type
-					aliceConfigs[setting] = type(definition['defaultValue'])(aliceConfigs[setting])
-					self.logInfo(f'- Existing configuration type missmatch: {setting}, cast variable to template configuration type')
-				except Exception:
-					# If casting failed let's fall back to the new default value
-					self.logInfo(f'- Existing configuration type missmatch: {setting}, replaced with template configuration')
-					aliceConfigs[setting] = definition['defaultValue']
+			else:
+				if setting == 'modules':
+					continue
+
+				checkUpon = type(definition['defaultValue']) if definition['dataType'] != 'list' else type(definition['values'])
+				if not isinstance(aliceConfigs[setting], checkUpon):
+					changes = True
+					try:
+						# First try to cast the seting we have to the new type
+						aliceConfigs[setting] = type(definition['defaultValue'])(aliceConfigs[setting])
+						self.logInfo(f'- Existing configuration type missmatch: {setting}, cast variable to template configuration type')
+					except Exception:
+						# If casting failed let's fall back to the new default value
+						self.logInfo(f'- Existing configuration type missmatch: {setting}, replaced with template configuration')
+						aliceConfigs[setting] = definition['defaultValue']
 
 		temp = aliceConfigs.copy()
 

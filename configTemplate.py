@@ -186,22 +186,26 @@ settings = {
 		'description' : 'Choose your update frequency. Release is the only supposedly safe option! But if you like to live on the edge, alpha will allow you to preview what\'s coming next!'
 	},
 	'supportedLanguages'    : {
-		'en'     : {
-			'snipsProjectId': '',
-			'default'       : True,
-			'countryCode'   : 'US'
+		'defaultValue': 'en',
+		'dataType'    : 'list',
+		'values'      : {
+			'en': {
+				'snipsProjectId': '',
+				'default'       : True,
+				'countryCode'   : 'US'
+			},
+			'fr': {
+				'snipsProjectId': '',
+				'default'       : False,
+				'countryCode'   : 'FR'
+			},
+			'de': {
+				'snipsProjectId': '',
+				'default'       : False,
+				'countryCode'   : 'DE'
+			}
 		},
-		'fr'     : {
-			'snipsProjectId': '',
-			'default'       : False,
-			'countryCode'   : 'FR'
-		},
-		'de'     : {
-			'snipsProjectId': '',
-			'default'       : False,
-			'countryCode'   : 'DE'
-		},
-		'display': 'hidden'
+		'display'     : 'hidden'
 	},
 	'snipsConsoleLogin'     : {
 		'defaultValue': '',
@@ -244,7 +248,7 @@ settings = {
 		'dataType'    : 'integer',
 		'description' : 'Change the web interface port to be used'
 	},
-	'devMode'   : {
+	'devMode'               : {
 		'defaultValue': False,
 		'dataType'    : 'boolean',
 		'description' : 'Activates the developer part of the interface, for module development'
