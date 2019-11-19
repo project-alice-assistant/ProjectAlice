@@ -137,7 +137,7 @@ network={
 
 		elif not self._confsFile.exists() and self._confsSample.exists():
 			self.warning('No config file found, creating it from sample file')
-			confs = {configName: configData['defaultValue'] if 'defaultValue' in configData else configData for configName, configData in configTemplate.settings.items()}
+			confs = self.newConfs()
 			Path('config.py').write_text(f"settings = {json.dumps(confs, indent=4).replace('false', 'False').replace('true', 'True')}")
 
 		elif self._confsFile.exists() and not initConfs['forceRewrite']:
@@ -147,7 +147,7 @@ network={
 		elif self._confsFile.exists() and initConfs['forceRewrite']:
 			self.warning('Config file found and force rewrite specified, let\'s restart all this!')
 			Path(self._rootDir, 'config.py').unlink()
-			confs = {configName: configData['defaultValue'] if 'defaultValue' in configData else configData for configName, configData in configTemplate.settings.items()}
+			confs = self.newConfs()
 			Path('config.py').write_text(f"settings = {json.dumps(confs, indent=4).replace('false', 'False').replace('true', 'True')}")
 
 		config = importlib.import_module('config')
@@ -403,3 +403,8 @@ network={
 				updateSource = versions[0]
 
 		return updateSource
+
+
+	@staticmethod
+	def newConfs():
+		return {configName: configData['defaultValue'] if 'defaultValue' in configData else configData['values'] if 'dataType' in configData and 'dataType' == 'list' else configData for configName, configData in configTemplate.settings.items()}
