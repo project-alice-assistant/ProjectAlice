@@ -204,6 +204,7 @@ class Section(dict):
 	def __setitem__(self, key: str, value: Any):
 		if key in self.data:
 			self.data[key].value = value
+			self.data[key].uncomment()
 		else:
 			self.data[key] = Config(key, value)
 
@@ -232,7 +233,7 @@ class Section(dict):
 	def __str__(self):
 		response = f'* Section "{self.name}" with {len(self.data) - self._comments} configurations:\n'
 		for conf in self.data.values():
-			if isinstance(conf, Comment):
+			if isinstance(conf, Comment) or isinstance(conf, Emptiness):
 				continue
 
 			response += f' - {conf.name} = {conf.value} | Commented: {conf.commented}\n'
