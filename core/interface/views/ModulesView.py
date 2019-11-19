@@ -15,7 +15,7 @@ class ModulesView(View):
 
 
 	def index(self):
-		modules = self.ModuleManager.allModules
+		modules = {**self.ModuleManager.activeModules, **self.ModuleManager.deactivatedModules}
 		modules = {moduleName: module for moduleName, module in sorted(modules.items())}
 
 		return render_template(template_name_or_list='modules.html',
