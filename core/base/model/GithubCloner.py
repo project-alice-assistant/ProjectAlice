@@ -3,7 +3,7 @@ from pathlib import Path
 import requests
 import shutil
 
-from core.ProjectAliceExceptions import GithubRateLimit, GithubTokenFailed
+from core.ProjectAliceExceptions import GithubNotFound, GithubRateLimit, GithubTokenFailed
 from core.base.SuperManager import SuperManager
 from core.base.model.ProjectAliceObject import ProjectAliceObject
 
@@ -38,13 +38,15 @@ class GithubCloner(ProjectAliceObject):
 			return False
 
 
-	def _doClone(self, url: str) -> bool:
+	def _doClone(self, url: str):
 		try:
 			req = requests.get(url, auth=self.getGithubAuth())
 			if req.status_code == 401:
 				raise GithubTokenFailed
 			elif req.status_code == 403:
 				raise GithubRateLimit
+			elif req.status_code == 404:
+				raise GithubNotFound
 			elif req.status_code != 200:
 				raise Exception
 
@@ -61,15 +63,17 @@ class GithubCloner(ProjectAliceObject):
 					Path(self._dest / path).mkdir(parents=True)
 					self._doClone(url=item['url'])
 
-			return True
-
 		except GithubTokenFailed:
 			self.logError('Provided Github username / token invalid')
-			return False
+			raise
 
 		except GithubRateLimit:
 			self.logError('Github rate limit reached, cannot access updates for now. You should consider creating a token to avoid this problem')
-			return False
+			raise
+
+		except GithubNotFound:
+			self.logError('Requested module not found on servers')
+			raise
 
 		except Exception as e:
 			self.logError(f'Error downloading module: {e}')

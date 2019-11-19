@@ -103,6 +103,7 @@ class InvalidQuery(_ProjectAliceException): pass
 class AccessLevelTooLow(_ProjectAliceException): pass
 class GithubTokenFailed(_ProjectAliceException): pass
 class GithubRateLimit(_ProjectAliceException): pass
+class GithubNotFound(_ProjectAliceException): pass
 class LanguageManagerLangNotSupported(_ProjectAliceException): pass
 class ConfigurationUpdateFailed(_ProjectAliceException): pass
 

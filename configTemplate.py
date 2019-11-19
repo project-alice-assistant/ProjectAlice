@@ -244,7 +244,7 @@ settings = {
 		'dataType'    : 'integer',
 		'description' : 'Change the web interface port to be used'
 	},
-	'webInterfaceDevMode'   : {
+	'devMode'   : {
 		'defaultValue': False,
 		'dataType'    : 'boolean',
 		'description' : 'Activates the developer part of the interface, for module development'

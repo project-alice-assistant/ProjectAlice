@@ -18,7 +18,7 @@
 		<li class="mainMenuListItem" onclick="location.href='/syslog';">{{ langData.syslog }}</li>
 		<li class="mainMenuListItem" onclick="location.href='/snipswatch';">{{ langData.snipswatch }}</li>
 		<li class="mainMenuListItem" onclick="location.href='/admin';">{{ langData.admin }}</li>
-		{% if aliceSettings['webInterfaceDevMode'] is sameas true %}
+		{% if aliceSettings['devMode'] is sameas true %}
 			<li class="mainMenuListItem" onclick="location.href='/devmode/';">{{ langData.devMode }}</li>
 		{% endif %}
 	</ul>
