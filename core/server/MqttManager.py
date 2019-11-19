@@ -5,6 +5,7 @@ from pathlib import Path
 
 import paho.mqtt.client as mqtt
 import paho.mqtt.publish as publish
+import re
 
 from core.ProjectAliceExceptions import AccessLevelTooLow
 from core.base.model.Intent import Intent
@@ -25,6 +26,11 @@ class MqttManager(Manager):
 		self._wideAskingSessions    = list()
 		self._multiDetectionsHolder = list()
 
+		self._audioFrameRegex = re.compile(constants.TOPIC_AUDIO_FRAME.replace('{}', '(.*)'))
+		self._wakewordDetectedRegex = re.compile(constants.TOPIC_WAKEWORD_DETECTED.replace('{}', '(.*)'))
+		self._vadUpRegex = re.compile(constants.TOPIC_VAD_UP.replace('{}', '(.*)'))
+		self._vadDownRegex = re.compile(constants.TOPIC_VAD_DOWN.replace('{}', '(.*)'))
+
 
 	# noinspection PyUnusedLocal
 	def onLog(self, client, userdata, level, buf):
@@ -38,6 +44,7 @@ class MqttManager(Manager):
 		self._mqttClient.on_message = self.onMqttMessage
 		self._mqttClient.on_connect = self.onConnect
 		self._mqttClient.on_log = self.onLog
+
 
 		self._mqttClient.message_callback_add(constants.TOPIC_HOTWORD_DETECTED, self.onHotwordDetected)
 		for username in self.UserManager.getAllUserNames():
@@ -103,12 +110,9 @@ class MqttManager(Manager):
 		for username in self.UserManager.getAllUserNames():
 			subscribedEvents.append((constants.TOPIC_WAKEWORD_DETECTED.format(username), 0))
 
-
-		subscribedEvents.append((constants.TOPIC_AUDIO_FRAME.format('default'), 0))
 		subscribedEvents.append((constants.TOPIC_VAD_UP.format('default'), 0))
 		subscribedEvents.append((constants.TOPIC_VAD_DOWN.format('default'), 0))
 		for device in self.DeviceManager.getDevicesByType('alicesatellite'):
-			subscribedEvents.append((constants.TOPIC_AUDIO_FRAME.format(device.room), 0))
 			subscribedEvents.append((constants.TOPIC_VAD_UP.format(device.room), 0))
 			subscribedEvents.append((constants.TOPIC_VAD_DOWN.format(device.room), 0))
 
@@ -129,7 +133,7 @@ class MqttManager(Manager):
 	# noinspection PyUnusedLocal
 	def onMqttMessage(self, client, userdata, message: mqtt.MQTTMessage):
 		try:
-			if message.topic == constants.TOPIC_AUDIO_FRAME:
+			if self._audioFrameRegex.match(message.topic):
 				self.broadcast(
 					method='onAudioFrame',
 					exceptions=[self.name],
