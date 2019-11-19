@@ -13,7 +13,7 @@
 #                                              #
 ################################################
 #            DON'T CHANGE ME                   #
-version: 1.09
+version: 1.10
 ################################################
 
 # If you place this file into /boot after a first initialization it won't overwrite your settings unless you set this to yes
@@ -78,8 +78,8 @@ keepTTSOffline: yes
 moduleAutoUpdate: yes
 webInterfaceActive: yes
 
-# Use this to enable the module dev part on the interface
-webInterfaceDevMode: no
+# enabling dev mode unlocks features on the console as well as unpublished module loading
+devMode: no
 
 # You should leave this by default, but who knows
 newDeviceBroadcastPort: 12354

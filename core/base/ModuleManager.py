@@ -7,7 +7,7 @@ from typing import Optional
 import requests
 import shutil
 
-from core.ProjectAliceExceptions import ModuleNotConditionCompliant, ModuleStartDelayed, ModuleStartingFailed
+from core.ProjectAliceExceptions import GithubNotFound, GithubRateLimit, GithubTokenFailed, ModuleNotConditionCompliant, ModuleStartDelayed, ModuleStartingFailed
 from core.base.SuperManager import SuperManager
 from core.base.model import Intent
 from core.base.model.GithubCloner import GithubCloner
@@ -350,7 +350,10 @@ class ModuleManager(Manager):
 					continue
 	
 				req = requests.get(f'https://raw.githubusercontent.com/project-alice-powered-by-snips/ProjectAliceModules/{updateSource}/PublishedModules/{availableModules[moduleName]["author"]}/{moduleName}/{moduleName}.install')
-	
+
+				if req.status_code == 404:
+					raise GithubNotFound
+
 				remoteFile = req.json()
 				if not remoteFile:
 					raise Exception
@@ -371,9 +374,12 @@ class ModuleManager(Manager):
 							del self._failedModules[moduleName]
 				else:
 					self.logInfo(f'✔ {moduleName} - Version {availableModules[moduleName]["version"]} in {self.ConfigManager.getAliceConfigByName("updateChannel")}')
+
+			except GithubNotFound:
+				self.logInfo(f'❓ Module "{moduleName}" is not available on Github. Deprecated or is it a dev module?')
 						
 			except Exception as e:
-				self.logError(f'Error checking updates for module "{moduleName}": {e}')
+				self.logError(f'❗ Error checking updates for module "{moduleName}": {e}')
 
 		self.logInfo(f'Found {i} module update(s)')
 		return i > 0
@@ -475,54 +481,37 @@ class ModuleManager(Manager):
 
 				gitCloner = GithubCloner(baseUrl=self.GITHUB_API_BASE_URL, path=path, dest=directory)
 
-				if gitCloner.clone():
+				try:
+					gitCloner.clone()
 					self.logInfo('Module successfully downloaded')
-					try:
-						pipReqs = installFile.get('pipRequirements', list())
-						sysReqs = installFile.get('systemRequirements', list())
-						scriptReq = installFile.get('script')
-
-						for requirement in pipReqs:
-							subprocess.run(['./venv/bin/pip3', 'install', requirement])
-
-						for requirement in sysReqs:
-							subprocess.run(['sudo', 'apt-get', 'install', '-y', requirement])
-
-						if scriptReq:
-							subprocess.run(['sudo', 'chmod', '+x', str(directory / scriptReq)])
-							subprocess.run(['sudo', str(directory / scriptReq)])
-
-						node = {
-							'active': True,
-							'version': installFile['version'],
-							'author': installFile['author'],
-							'conditions': installFile['conditions']
-						}
-
-						self.ConfigManager.addModuleToAliceConfig(installFile['name'], node)
-						subprocess.run(['mv', res, directory])
-						modulesToBoot[moduleName] = {
-							'update': updating
-						}
-					except Exception as e:
-						self.logError(f'Failed installing module "{moduleName}": {e}')
-						res.unlink()
-						self.broadcast(
-							method='onModuleInstallFailed',
-							exceptions=self.name,
-							module=moduleName
-						)
-				else:
+					self._installModule(res)
+					modulesToBoot[moduleName] = {
+						'update': updating
+					}
+				except (GithubTokenFailed, GithubRateLimit):
 					self.logError('Failed cloning module')
-					res.unlink()
-					self.broadcast(
-						method='onModuleInstallFailed',
-						exceptions=self.name,
-						module=moduleName
-					)
+					raise
+				except GithubNotFound:
+					if self.ConfigManager.getAliceConfigByName('devMode'):
+						if not Path(f'{self.Commons.rootDir}/modules/{moduleName}').exists() or not \
+								Path(f'{self.Commons.rootDir}/modules/{moduleName}/{moduleName.py}').exists() or not \
+								Path(f'{self.Commons.rootDir}/modules/{moduleName}/dialogTemplate').exists() or not \
+								Path(f'{self.Commons.rootDir}/modules/{moduleName}/talks').exists():
+							self.logWarning(f'Module "{moduleName}" cannot be installed in dev mode due to missing base files')
+						else:
+							self._installModule(res)
+							modulesToBoot[moduleName] = {
+								'update': updating
+							}
+						continue
+					else:
+						self.logWarning(f'Module "{moduleName}" is not available on Github, cannot install')
+						raise
+				except Exception:
+					raise
 
 			except ModuleNotConditionCompliant as e:
-				self.logInfo(f'Module {moduleName} does not comply to "{e.condition}" condition, required "{e.conditionValue}"')
+				self.logInfo(f'Module "{moduleName}" does not comply to "{e.condition}" condition, required "{e.conditionValue}"')
 				res.unlink()
 				self.broadcast(
 					method='onModuleInstallFailed',
@@ -541,6 +530,37 @@ class ModuleManager(Manager):
 
 		self.MqttManager.mqttBroadcast(topic='hermes/leds/clear')
 		return modulesToBoot
+
+
+	def _installModule(self, res: Path):
+		try:
+			installFile = json.loads(res.read_text())
+			pipReqs = installFile.get('pipRequirements', list())
+			sysReqs = installFile.get('systemRequirements', list())
+			scriptReq = installFile.get('script')
+			directory = Path(self.Commons.rootDir()) / 'modules' / installFile['name']
+
+			for requirement in pipReqs:
+				subprocess.run(['./venv/bin/pip3', 'install', requirement])
+
+			for requirement in sysReqs:
+				subprocess.run(['sudo', 'apt-get', 'install', '-y', requirement])
+
+			if scriptReq:
+				subprocess.run(['sudo', 'chmod', '+x', str(directory / scriptReq)])
+				subprocess.run(['sudo', str(directory / scriptReq)])
+
+			node = {
+				'active'    : True,
+				'version'   : installFile['version'],
+				'author'    : installFile['author'],
+				'conditions': installFile['conditions']
+			}
+
+			self.ConfigManager.addModuleToAliceConfig(installFile['name'], node)
+			subprocess.run(['mv', res, directory])
+		except Exception:
+			raise
 
 
 	def checkModuleConditions(self, moduleName: str, conditions: dict, availableModules: dict) -> bool:
