@@ -9,6 +9,6 @@ mutation CreateAssistant($input: CreateAssistantInput!) {
 		  id
 		}
 	}
-} 
+}
 ${assistantFieldsFragment}
 ''', {'assistantFieldsFragment': assistantFieldsFragment})
