@@ -407,4 +407,4 @@ network={
 
 	@staticmethod
 	def newConfs():
-		return {configName: configData['defaultValue'] if 'defaultValue' in configData else configData['values'] if 'dataType' in configData and 'dataType' == 'list' else configData for configName, configData in configTemplate.settings.items()}
+		return {configName: configData['defaultValue'] if 'defaultValue' in configData else configData['values'] if 'dataType' in configData and configData['dataType'] == 'list' else configData for configName, configData in configTemplate.settings.items()}
