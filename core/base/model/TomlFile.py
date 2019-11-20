@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import json
 import subprocess
 from pathlib import Path
 from textwrap import dedent
@@ -91,7 +92,7 @@ class TomlFile(ProjectAliceObject):
 						if isinstance(data.value, str):
 							value = f'"{value}"'
 
-						f.write(f'{"#" if data.commented else ""}{data.name} = {value}\n')
+						f.write(f'{"#" if data.commented else ""}{data.name} = {json.dumps(value) if isinstance(value, list) else value}\n')
 
 		if self._path != writePath:
 			subprocess.run(['sudo', 'mv', writePath, self._path])
