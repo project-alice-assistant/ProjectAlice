@@ -91,6 +91,8 @@ class TomlFile(ProjectAliceObject):
 						value = data.value
 						if isinstance(data.value, str):
 							value = f'"{value}"'
+						elif isinstance(data.value, bool):
+							value = 'true' if data.value else 'false'
 
 						f.write(f'{"#" if data.commented else ""}{data.name} = {json.dumps(value) if isinstance(value, list) else value}\n')
 

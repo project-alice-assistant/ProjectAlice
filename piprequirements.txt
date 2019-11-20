@@ -1,5 +1,5 @@
 pyalsaaudio
-pyaudio
+
 python-dateutil
 paho-mqtt
 watchdog
