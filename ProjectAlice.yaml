@@ -13,7 +13,7 @@
 #                                              #
 ################################################
 #            DON'T CHANGE ME                   #
-version: 1.10
+version: 1.11
 ################################################
 
 # If you place this file into /boot after a first initialization it won't overwrite your settings unless you set this to yes
@@ -24,6 +24,9 @@ doGroundInstall: yes
 
 # After initialization is done, keep a copy of this yaml file in /boot. Be aware this can be a security risk, as /boot is accessible by anyone mounting your SD card!
 keepYAMLBackup: no
+
+# If you are installing on Raspbian Buster, set the following to yes
+installOnBuster: no
 
 # Base configs
 useWifi: yes
