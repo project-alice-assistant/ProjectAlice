@@ -85,19 +85,26 @@ class ConfigManager(Manager):
 				changes = True
 				aliceConfigs[setting] = definition['defaultValue']
 			else:
-				if setting == 'modules':
+				if setting == 'modules' or setting == 'supportedLanguages':
 					continue
 
-				checkUpon = type(definition['defaultValue']) if definition['dataType'] != 'list' else type(definition['values'])
-				if not isinstance(aliceConfigs[setting], checkUpon):
-					changes = True
-					try:
-						# First try to cast the seting we have to the new type
-						aliceConfigs[setting] = type(definition['defaultValue'])(aliceConfigs[setting])
-						self.logInfo(f'- Existing configuration type missmatch: {setting}, cast variable to template configuration type')
-					except Exception:
-						# If casting failed let's fall back to the new default value
-						self.logInfo(f'- Existing configuration type missmatch: {setting}, replaced with template configuration')
+				if definition['dataType'] != 'list':
+					if not isinstance(aliceConfigs[setting], type(definition['defaultValue'])):
+						changes = True
+						try:
+							# First try to cast the seting we have to the new type
+							aliceConfigs[setting] = type(definition['defaultValue'])(aliceConfigs[setting])
+							self.logInfo(f'- Existing configuration type missmatch: {setting}, cast variable to template configuration type')
+						except Exception:
+							# If casting failed let's fall back to the new default value
+							self.logInfo(f'- Existing configuration type missmatch: {setting}, replaced with template configuration')
+							aliceConfigs[setting] = definition['defaultValue']
+				else:
+					values = definition['values'].values() if isinstance(definition['values'], dict) else definition['values']
+
+					if aliceConfigs[setting] not in values:
+						changes = True
+						self.logInfo(f'- Selected value "{aliceConfigs[setting]}" for setting "{setting}" doesn\'t exist, reverted to default value "{definition["defaultValue"]}"')
 						aliceConfigs[setting] = definition['defaultValue']
 
 		temp = aliceConfigs.copy()
