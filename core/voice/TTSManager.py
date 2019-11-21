@@ -90,7 +90,7 @@ class TTSManager(Manager):
 			self._fallback.onSay(session)
 			return
 
-		if session.user != constants.UNKNOWN_USER:
+		if session and session.user != constants.UNKNOWN_USER:
 			user: User = self.UserManager.getUser(session.user)
 			if user and user.tts:
 				self._loadTTS(user.tts, user)
