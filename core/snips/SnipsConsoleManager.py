@@ -40,6 +40,7 @@ class SnipsConsoleManager(Manager):
 			})
 
 			self._connected = True
+
 		elif self.loginCredentialsAreConfigured():
 			self.logInfo('Snips console not authorized')
 			self._login()
