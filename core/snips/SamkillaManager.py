@@ -132,8 +132,11 @@ class SamkillaManager(Manager):
 				self.log('No changes detected during sync')
 				self.ModuleManager.onSnipsAssistantDownloaded(modulesInfos=moduleFilter)
 
-
 			self.stop()
+
+			if not Path(self.Commons.rootDir(), f'trained/assistants/assistant_{self.LanguageManager.activeLanguage}').exists():
+				self.SnipsConsoleManager.doDownload()
+
 		except AssistantNotFoundError:
 			self.log(f'Assistant project id \'{activeProjectId}\' for lang \'{activeLang}\' doesn\'t exist. Check your config.py')
 
