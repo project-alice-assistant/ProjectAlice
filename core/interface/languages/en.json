@@ -21,5 +21,7 @@
 	"restartAlice": "Restart Alice",
 	"reboot": "Reboot",
 	"trainAndDlAssistant": "Download assistant",
-	"wipeAll": "Wipe all"
+	"wipeAll": "Wipe all",
+	"devmodeNewModule": "Module creation",
+	"devmodeEditModule": "Module edition"
 }
