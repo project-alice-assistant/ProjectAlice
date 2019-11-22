@@ -61,8 +61,6 @@ class SamkillaManager(Manager):
 
 		if not Path(self.Commons.rootDir(), f'trained/assistants/assistant_{self.LanguageManager.activeLanguage}').exists():
 			self.sync()
-		elif not Path(self.Commons.rootDir(), '/assistant').exists():
-			self.SnipsConsoleManager.doDownload()
 
 
 	def _loadDialogTemplateMapsInConfigManager(self):
