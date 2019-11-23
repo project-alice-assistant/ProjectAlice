@@ -359,11 +359,12 @@ class ConfigManager(Manager):
 			else:
 				# For some reason we have a module not declared in alice configs... I think getting rid of it is best
 				if moduleName not in ModuleManager.NEEDED_MODULES:
-					self.logInfo(f'Module "{moduleName}" is not declared in config but files are existing, cleaning up')
+					self.logInfo('- Module not declared in config but files are existing, cleaning up')
 					shutil.rmtree(moduleDirectory, ignore_errors=True)
+					modulesConfigurations.pop(moduleName)
 					continue
 				else:
-					self.logInfo(f'Required module "{moduleName}" is missing definition in Alice config, generating them')
+					self.logInfo(f'- Module is required but is missing definition in Alice config, generating them')
 					try:
 						installFile = json.load(Path(modulesPath / moduleDirectory / f'{moduleName}.install').open())
 						node = {
@@ -376,11 +377,13 @@ class ConfigManager(Manager):
 						self._modulesConfigurations[moduleName] = config
 						self.updateAliceConfiguration('modules', self._modulesConfigurations)
 					except Exception as e:
-						self.logError(f'Failed generating default config for required module {moduleName}, scheduling download: {e}')
+						self.logError(f'- Failed generating default config, scheduling download: {e}')
 						subprocess.run(['wget', f'http://modules.projectalice.ch/{moduleName}', '-O', Path(self.Commons.rootDir(), f'system/moduleInstallTickets/{moduleName}.install')])
+						modulesConfigurations.pop(moduleName)
 						continue
 
-			modulesConfigurations[moduleName] = config
+			if config:
+				modulesConfigurations[moduleName] = config
 
 		self._modulesConfigurations = {**self._modulesConfigurations, **modulesConfigurations}
 
