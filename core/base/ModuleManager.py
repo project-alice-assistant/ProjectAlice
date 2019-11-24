@@ -1,11 +1,11 @@
 import importlib
 import json
-import subprocess
-from pathlib import Path
-from typing import Optional
 
 import requests
 import shutil
+import subprocess
+from pathlib import Path
+from typing import Optional
 
 from core.ProjectAliceExceptions import GithubNotFound, GithubRateLimit, GithubTokenFailed, ModuleNotConditionCompliant, ModuleStartDelayed, ModuleStartingFailed
 from core.base.SuperManager import SuperManager
@@ -407,6 +407,8 @@ class ModuleManager(Manager):
 			except Exception as e:
 				self._logger.error(f'Error installing module: {e}')
 			finally:
+				self.MqttManager.mqttBroadcast(topic='hermes/leds/clear')
+
 				if modulesToBoot:
 					for moduleName, info in modulesToBoot.items():
 						self._activeModules = self._loadModuleList(moduleToLoad=moduleName, isUpdate=info['update'])
@@ -528,7 +530,6 @@ class ModuleManager(Manager):
 					module=moduleName
 				)
 
-		self.MqttManager.mqttBroadcast(topic='hermes/leds/clear')
 		return modulesToBoot
 
 
