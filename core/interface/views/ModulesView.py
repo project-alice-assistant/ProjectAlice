@@ -1,8 +1,8 @@
 import json
-from pathlib import Path
 
 import requests
 from flask import jsonify, render_template, request
+from pathlib import Path
 
 from core.base.model.GithubCloner import GithubCloner
 from core.base.model.Version import Version
@@ -16,7 +16,7 @@ class ModulesView(View):
 
 	def index(self):
 		modules = {**self.ModuleManager.activeModules, **self.ModuleManager.deactivatedModules}
-		modules = {moduleName: module for moduleName, module in sorted(modules.items())}
+		modules = {moduleName: module for moduleName, module in sorted(modules.items()) if module is not None}
 
 		return render_template(template_name_or_list='modules.html',
 		                       modules=modules,

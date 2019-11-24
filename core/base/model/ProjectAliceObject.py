@@ -24,8 +24,8 @@ class ProjectAliceObject(Logger):
 		if not exceptions:
 			exceptions = list()
 
-		if isinstance(exceptions, list):
-			exceptions = eval(f'[{exceptions}]')
+		if isinstance(exceptions, str):
+			exceptions = [exceptions]
 
 		if not exceptions and not manager:
 			# Prevent infinite loop of broadcaster being broadcasted to re broadcasting
