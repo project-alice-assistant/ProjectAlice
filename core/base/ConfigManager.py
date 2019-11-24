@@ -395,6 +395,7 @@ class ConfigManager(Manager):
 
 		confs = {configName: configData['defaultValue'] if 'defaultValue' in configData else configData for configName, configData in template.items()}
 		self._modulesTemplateConfigurations[moduleName] = template
+		self._modulesConfigurations[moduleName] = confs
 		self._writeToModuleConfigurationFile(moduleName, confs)
 
 
