@@ -514,7 +514,9 @@ class ModuleManager(Manager):
 
 			except ModuleNotConditionCompliant as e:
 				self.logInfo(f'Module "{moduleName}" does not comply to "{e.condition}" condition, required "{e.conditionValue}"')
-				res.unlink()
+				if res.exists():
+					res.unlink()
+
 				self.broadcast(
 					method='onModuleInstallFailed',
 					exceptions=self.name,
@@ -523,12 +525,15 @@ class ModuleManager(Manager):
 
 			except Exception as e:
 				self.logError(f'Failed installing module "{moduleName}": {e}')
-				res.unlink()
+				if res.exists():
+					res.unlink()
+
 				self.broadcast(
 					method='onModuleInstallFailed',
 					exceptions=self.name,
 					module=moduleName
 				)
+				raise
 
 		return modulesToBoot
 
