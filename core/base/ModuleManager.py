@@ -563,8 +563,8 @@ class ModuleManager(Manager):
 				'conditions': installFile['conditions']
 			}
 
+			shutil.copy(str(res), str(directory))
 			self.ConfigManager.addModuleToAliceConfig(installFile['name'], node)
-			subprocess.run(['mv', res, directory])
 		except Exception:
 			raise
 
