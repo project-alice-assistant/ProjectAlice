@@ -654,7 +654,7 @@ class MqttManager(Manager):
 
 		if not location:
 			location = Path(self.Commons.rootDir()) / 'system' / 'sounds'
-		elif not str(location).startswith('/'):
+		elif not location.is_absolute():
 			location = Path(self.Commons.rootDir()) / location
 
 		if siteId == constants.DEFAULT_SITE_ID:
