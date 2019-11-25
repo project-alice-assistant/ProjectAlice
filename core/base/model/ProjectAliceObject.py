@@ -24,8 +24,8 @@ class ProjectAliceObject(Logger):
 		if not exceptions:
 			exceptions = list()
 
-		if isinstance(exceptions, list):
-			exceptions = eval(f'[{exceptions}]')
+		if isinstance(exceptions, str):
+			exceptions = [exceptions]
 
 		if not exceptions and not manager:
 			# Prevent infinite loop of broadcaster being broadcasted to re broadcasting
@@ -82,7 +82,11 @@ class ProjectAliceObject(Logger):
 	def onSay(self, session): pass
 	def onSayFinished(self, session): pass
 	def onSessionQueued(self, session): pass
-	def onMessage(self, intent: str, session): pass
+
+	def onMessage(self, intent: str, session) -> bool:
+		""" Do not consume the intent by default """
+		return False
+
 	def onSleep(self): pass
 	def onWakeup(self): pass
 	def onGoingBed(self): pass

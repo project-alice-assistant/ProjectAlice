@@ -1,11 +1,11 @@
 import importlib
 import json
-import subprocess
-from pathlib import Path
-from typing import Optional
 
 import requests
 import shutil
+import subprocess
+from pathlib import Path
+from typing import Optional
 
 from core.ProjectAliceExceptions import GithubNotFound, GithubRateLimit, GithubTokenFailed, ModuleNotConditionCompliant, ModuleStartDelayed, ModuleStartingFailed
 from core.base.SuperManager import SuperManager
@@ -407,6 +407,8 @@ class ModuleManager(Manager):
 			except Exception as e:
 				self._logger.error(f'Error installing module: {e}')
 			finally:
+				self.MqttManager.mqttBroadcast(topic='hermes/leds/clear')
+
 				if modulesToBoot:
 					for moduleName, info in modulesToBoot.items():
 						self._activeModules = self._loadModuleList(moduleToLoad=moduleName, isUpdate=info['update'])
@@ -512,7 +514,9 @@ class ModuleManager(Manager):
 
 			except ModuleNotConditionCompliant as e:
 				self.logInfo(f'Module "{moduleName}" does not comply to "{e.condition}" condition, required "{e.conditionValue}"')
-				res.unlink()
+				if res.exists():
+					res.unlink()
+
 				self.broadcast(
 					method='onModuleInstallFailed',
 					exceptions=self.name,
@@ -521,14 +525,16 @@ class ModuleManager(Manager):
 
 			except Exception as e:
 				self.logError(f'Failed installing module "{moduleName}": {e}')
-				res.unlink()
+				if res.exists():
+					res.unlink()
+
 				self.broadcast(
 					method='onModuleInstallFailed',
 					exceptions=self.name,
 					module=moduleName
 				)
+				raise
 
-		self.MqttManager.mqttBroadcast(topic='hermes/leds/clear')
 		return modulesToBoot
 
 
@@ -557,8 +563,8 @@ class ModuleManager(Manager):
 				'conditions': installFile['conditions']
 			}
 
+			shutil.copy(str(res), str(directory))
 			self.ConfigManager.addModuleToAliceConfig(installFile['name'], node)
-			subprocess.run(['mv', res, directory])
 		except Exception:
 			raise
 

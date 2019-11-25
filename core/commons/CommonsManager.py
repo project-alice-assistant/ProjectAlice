@@ -8,6 +8,7 @@ from ctypes import *
 from datetime import datetime
 from pathlib import Path
 from typing import Union
+from contextlib import suppress
 
 import tempfile
 from googletrans import Translator
@@ -87,7 +88,7 @@ class CommonsManager(Manager):
 		slots = defaultdict(list)
 		data = cls.payload(message)
 		for slotData in data.get('slots', dict()):
-			slot = slotModel.Slot(slotData)
+			slot = slotModel.Slot(**slotData)
 			slots[slot.slotName].append(slot)
 		return slots
 
@@ -170,7 +171,7 @@ class CommonsManager(Manager):
 		slots = session.slotsAsObjects
 		duration = 0
 		if 'Duration' in slots and slots['Duration'][0].entity == 'snips/duration':
-			try:
+			with suppress(TypeError, KeyError):
 				values = slots['Duration'][0].value
 				duration += values['seconds']
 				duration += values['minutes'] * 60
@@ -178,8 +179,6 @@ class CommonsManager(Manager):
 				duration += values['days'] * 24 * 60 * 60
 				duration += values['weeks'] * 7 * 24 * 60 * 60
 				duration += values['months'] * 4 * 7 * 24 * 60 * 60
-			except (TypeError, KeyError):
-				pass
 
 		return duration
 

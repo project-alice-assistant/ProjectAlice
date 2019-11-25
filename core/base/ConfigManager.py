@@ -1,9 +1,9 @@
 import json
-import subprocess
-from pathlib import Path
 
 import requests
 import shutil
+import subprocess
+from pathlib import Path
 
 import configTemplate
 from core.base.ModuleManager import ModuleManager
@@ -361,7 +361,8 @@ class ConfigManager(Manager):
 				if moduleName not in ModuleManager.NEEDED_MODULES:
 					self.logInfo('- Module not declared in config but files are existing, cleaning up')
 					shutil.rmtree(moduleDirectory, ignore_errors=True)
-					modulesConfigurations.pop(moduleName)
+					if moduleName in modulesConfigurations:
+						modulesConfigurations.pop(moduleName)
 					continue
 				else:
 					self.logInfo(f'- Module is required but is missing definition in Alice config, generating them')
@@ -379,7 +380,8 @@ class ConfigManager(Manager):
 					except Exception as e:
 						self.logError(f'- Failed generating default config, scheduling download: {e}')
 						subprocess.run(['wget', f'http://modules.projectalice.ch/{moduleName}', '-O', Path(self.Commons.rootDir(), f'system/moduleInstallTickets/{moduleName}.install')])
-						modulesConfigurations.pop(moduleName)
+						if moduleName in modulesConfigurations:
+							modulesConfigurations.pop(moduleName)
 						continue
 
 			if config:
