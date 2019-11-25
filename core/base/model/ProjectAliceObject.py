@@ -82,7 +82,11 @@ class ProjectAliceObject(Logger):
 	def onSay(self, session): pass
 	def onSayFinished(self, session): pass
 	def onSessionQueued(self, session): pass
-	def onMessage(self, intent: str, session): pass
+
+	def onMessage(self, intent: str, session) -> bool:
+		""" Do not consume the intent by default """
+		return False
+
 	def onSleep(self): pass
 	def onWakeup(self): pass
 	def onGoingBed(self): pass
