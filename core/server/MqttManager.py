@@ -427,7 +427,7 @@ class MqttManager(Manager):
 		:param customData: json object
 		"""
 
-		if client == 'all':
+		if client == constants.DEFAULT_SITE_ID:
 			deviceList = self.DeviceManager.getDevicesByType('AliceSatellite', connectedOnly=True)
 			deviceList.append(constants.DEFAULT_SITE_ID)
 
@@ -500,7 +500,7 @@ class MqttManager(Manager):
 		if currentDialogState:
 			preSession.currentState = currentDialogState
 
-		if client == 'all':
+		if client == constants.DEFAULT_SITE_ID:
 			if not customData:
 				customData = dict()
 
@@ -529,7 +529,7 @@ class MqttManager(Manager):
 		jsonDict['init'] = initDict
 
 		if self.ConfigManager.getAliceConfigByName('outputOnSonos') != '1' or (self.ConfigManager.getAliceConfigByName('outputOnSonos') == '1' or self.ModuleManager.getModuleInstance('Sonos') is None and not self.ModuleManager.getModuleInstance('Sonos').anyModuleHere(client)) or not self.ModuleManager.getModuleInstance('Sonos').active:
-			if client == 'all':
+			if client == constants.DEFAULT_SITE_ID:
 				deviceList = self.DeviceManager.getDevicesByType('AliceSatellite', connectedOnly=True)
 				deviceList.append(constants.DEFAULT_SITE_ID)
 
@@ -657,7 +657,7 @@ class MqttManager(Manager):
 		elif not str(location).startswith('/'):
 			location = Path(self.Commons.rootDir()) / location
 
-		if siteId == 'all':
+		if siteId == constants.DEFAULT_SITE_ID:
 			deviceList = self.DeviceManager.getDevicesByType('AliceSatellite', connectedOnly=True)
 			deviceList.append(constants.DEFAULT_SITE_ID)
 
