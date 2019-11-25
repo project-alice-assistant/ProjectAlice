@@ -88,7 +88,7 @@ class CommonsManager(Manager):
 		slots = defaultdict(list)
 		data = cls.payload(message)
 		for slotData in data.get('slots', dict()):
-			slot = slotModel.Slot(**slotData)
+			slot = slotModel.Slot(slotData)
 			slots[slot.slotName].append(slot)
 		return slots
 
