@@ -98,6 +98,7 @@ class ModuleNotConditionCompliant(_ProjectAliceException):
 		return self._conditionValue
 
 
+class OfflineError(_ProjectAliceException): pass
 class DbConnectionError(_ProjectAliceException): pass
 class InvalidQuery(_ProjectAliceException): pass
 class AccessLevelTooLow(_ProjectAliceException): pass
