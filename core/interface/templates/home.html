@@ -21,7 +21,7 @@
 {% endblock %}
 
 {% block content %}
-	<div class="toolbar">
+	<div class="toolBar">
 		<span class="toolbarButton" id="widgetCheck">
 			<i class="fas fa-check-circle"></i>
 		</span>
@@ -49,7 +49,7 @@
 			</div>
 		{% endfor %}
 	</div>
-	<div class="widgetsPane">
+	<div class="contentPane widgetsPane">
 		{% for parentName, widgetList in widgets.items() %}
 			{% for widgetName, widget in widgetList.items() %}
 				{% if (widget.state|int) == 1 %}

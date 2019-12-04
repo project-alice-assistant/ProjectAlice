@@ -12,29 +12,54 @@
 {% block loaders %}{% endblock %}
 
 <nav>
+	<div class ="projectalice">
+		Project Alice
+	</div>
+	<!-- <div class="pageTitle">
+		{% block pageTitle %}{% endblock %}
+	</div>
+	-->
 	<ul class="mainMenuList">
 		<li class="mainMenuListItem" onclick="location.href='/home';">{{ langData.home }}</li>
 		<li class="mainMenuListItem" onclick="location.href='/modules';">{{ langData.modules }}</li>
 		<li class="mainMenuListItem" onclick="location.href='/syslog';">{{ langData.syslog }}</li>
 		<li class="mainMenuListItem" onclick="location.href='/snipswatch';">{{ langData.snipswatch }}</li>
 		<li class="mainMenuListItem" onclick="location.href='/admin';">{{ langData.admin }}</li>
-		{% if aliceSettings['devMode'] is sameas true %}
+		{% if aliceSettings['webInterfaceDevMode'] is sameas true %}
 			<li class="mainMenuListItem" onclick="location.href='/devmode/';">{{ langData.devMode }}</li>
 		{% endif %}
 	</ul>
+	<div class="theme-switch-wrapper">
+		<label class="theme-switch" for="checkbox">
+			<input type="checkbox" id="checkbox" />
+			<div class="slider round"></div>
+	  </label>
+	  Darkmode
+	</div>
+	<script>
+		const toggleSwitch = document.querySelector('.theme-switch input[type="checkbox"]');
+
+		function switchTheme(e) {
+			if (e.target.checked) {
+				document.documentElement.setAttribute('data-theme', 'dark');
+			}
+			else {
+				document.documentElement.setAttribute('data-theme', 'light');
+			}    
+		}
+		toggleSwitch.addEventListener('change', switchTheme, false);
+	</script>
 </nav>
-<section class="page">
+<div class="page">
 	<header>
-		<div class="pageTitle">
-			{% block pageTitle %}{% endblock %}
-		</div>
+		
 		{% if aliceSettings['updateChannel'] != 'master' %}
 			<div class="updateChannelMarker">
 				{{ aliceSettings['updateChannel'] }}
 			</div>
 		{% endif %}
 	</header>
-	<section class="content">
+	<div class="content">
 		{% block content %}{% endblock %}
-	</section>
-</section>
+	</div>
+</div>

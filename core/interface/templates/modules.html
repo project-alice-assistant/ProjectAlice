@@ -68,7 +68,7 @@
 			</form>
 		</div>
 	{% endfor %}
-	<div class="toolbar">
+	<div class="toolBar">
 		<span class="toolbarButton" id="openModuleStore">
 			<i class="fas fa-download"></i>
 		</span>
@@ -82,7 +82,7 @@
 	<div class="modulesStore" id="modulesStore">
 		<div class="moduleStoreWait" id="moduleStoreWait"><i class="fas fa-spinner fa-spin"></i></div>
 	</div>
-	<div class="modulesPane" id="modulesPane">
+	<div class="contentPane modulesPane" id="modulesPane">
 	{% for moduleName, module in modules.items() %}
 		<div class="moduleTile" id="{{ moduleName }}-{{ module.author }}">
 			<div class="moduleTitle">
@@ -95,8 +95,11 @@
 				<div class="moduleVersion">
 					<i class="fas fa-code-branch fa-pull-left"></i> {{ module.version }}
 				</div>
-				<div class="moduleStatus {% if module.active is sameas true %}active{% else %}disabled{% endif %}">
-					{{ langData.status }}: {% if module.active is sameas true %}enabled{% else %}disabled{% endif %}
+				<div class="moduleStatus">
+					{{ langData.status }}: 
+					<div class="status {% if module.active is sameas true %}active{% else %}disabled{% endif %}">
+							{% if module.active is sameas true %}enabled{% else %}disabled{% endif %}
+					</div>
 				</div>
 				<div class="moduleViewIntents">
 					 {{ langData.viewIntents }} <i class="fas fa-eye"></i>
