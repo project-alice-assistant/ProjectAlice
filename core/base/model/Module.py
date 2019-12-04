@@ -11,6 +11,7 @@ import re
 from paho.mqtt import client as MQTTClient
 
 from core.ProjectAliceExceptions import AccessLevelTooLow, ModuleStartingFailed
+from core.base.model import Widget
 from core.base.model.Intent import Intent
 from core.base.model.ProjectAliceObject import ProjectAliceObject
 from core.commons import constants
@@ -111,7 +112,9 @@ class Module(ProjectAliceObject):
 				klass = getattr(widgetImport, widgetName)
 
 				if widgetName in data: # widget already exists in DB
-					self._widgets[widgetName] = klass(data[widgetName])
+					widget = klass(data[widgetName])
+					self._widgets[widgetName] = widget
+					widget.setParentModuleInstance(self)
 					del data[widgetName]
 					self.logInfo(f'Loaded widget "{widgetName}"')
 
@@ -122,6 +125,7 @@ class Module(ProjectAliceObject):
 						'parent': self.name,
 					})
 					self._widgets[widgetName] = widget
+					widget.setParentModuleInstance(self)
 					widget.saveToDB()
 
 			for widgetName in data: # deprecated widgets
@@ -135,6 +139,10 @@ class Module(ProjectAliceObject):
 						'name': widgetName
 					}
 				)
+
+
+	def getWidgetInstance(self, widgetName: str) -> Widget:
+		return self._widgets.get(widgetName, None)
 
 
 	def getUtterancesByIntent(self, intent: Intent, forceLowerCase: bool = True, cleanSlots: bool = False) -> list:

@@ -1,10 +1,9 @@
-from textwrap import dedent
 import inspect
 import json
 import sqlite3
-
 from pathlib import Path
-from typing import Optional, Dict
+from textwrap import dedent
+from typing import Dict, Optional
 
 from core.base.model.ProjectAliceObject import ProjectAliceObject
 
@@ -18,6 +17,7 @@ class Widget(ProjectAliceObject):
 		super().__init__()
 		self._name = data['name']
 		self._parent = data['parent']
+		self._myModule = None
 
 		# sqlite3.Row does not support .get like dicts
 		self._state = data['state'] if 'state' in data.keys() else 0
@@ -32,6 +32,10 @@ class Widget(ProjectAliceObject):
 
 		self._zindex = data['zindex'] if 'zindex' in data.keys() else 9999
 		self._language = self.loadLanguage()
+
+
+	def setParentModuleInstance(self, module):
+		self._myModule = module
 
 
 	def loadLanguage(self) -> Optional[Dict]:
@@ -160,6 +164,11 @@ class Widget(ProjectAliceObject):
 	@zindex.setter
 	def zindex(self, value: int):
 		self._zindex = value
+
+
+	@property
+	def myModule(self):
+		return self._myModule
 
 
 	def __repr__(self):

@@ -1,4 +1,6 @@
-from flask import render_template, request, send_from_directory, jsonify, redirect
+import json
+
+from flask import jsonify, redirect, render_template, request, send_from_directory
 from flask_classful import route
 
 from core.interface.model.View import View
@@ -75,3 +77,19 @@ class IndexView(View):
 		except Exception as e:
 			self.logWarning(f"[Widget] Couldn't add to home: {e}")
 			return jsonify(success=False)
+
+
+	@route('/home/widget/', methods=['POST'])
+	def widgetCall(self):
+		try:
+			data = request.json
+
+			if not data['param']:
+				data['param'] = '{}'
+
+			module = self.ModuleManager.getModuleInstance(moduleName=data['module'])
+			widget = module.getWidgetInstance(data['widget'])
+			func = getattr(widget, data['func'])
+			return func(**json.loads(data['param']))
+		except Exception as e:
+			self.logWarning(f"[Widget] Widget tried to call a core function but failed: {e}")
