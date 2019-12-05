@@ -1,11 +1,11 @@
 import importlib
 import json
-
-import requests
-import shutil
 import subprocess
 from pathlib import Path
 from typing import Optional
+
+import requests
+import shutil
 
 from core.ProjectAliceExceptions import GithubNotFound, GithubRateLimit, GithubTokenFailed, ModuleNotConditionCompliant, ModuleStartDelayed, ModuleStartingFailed
 from core.base.SuperManager import SuperManager
@@ -563,7 +563,7 @@ class ModuleManager(Manager):
 				'conditions': installFile['conditions']
 			}
 
-			shutil.copy(str(res), str(directory))
+			shutil.move(str(res), str(directory))
 			self.ConfigManager.addModuleToAliceConfig(installFile['name'], node)
 		except Exception:
 			raise
