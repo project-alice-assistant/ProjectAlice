@@ -422,7 +422,6 @@ class Module(ProjectAliceObject):
 		if replace:
 			talk = talk.format(*replace)
 		return talk
-		
 
 
 	def getModuleInstance(self, moduleName: str) -> Module:

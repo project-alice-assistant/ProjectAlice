@@ -89,7 +89,8 @@ class TalkManager(Manager):
 		return arr
 
 
-	def _selectSentence(self, talkData: dict, shortReplyMode: bool) -> Union[str, Callable]:
+	@staticmethod
+	def _selectSentence(talkData: dict, shortReplyMode: bool) -> Union[str, Callable]:
 		# when there is a mapping to a function add shortReplyMode as kwargs
 		if callable(talkData):
 			return partial(talkData, shortReplyMode=shortReplyMode)
