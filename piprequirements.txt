@@ -28,4 +28,3 @@ flask-login
 googletrans
 bcrypt
 psutil
-alice-sk
