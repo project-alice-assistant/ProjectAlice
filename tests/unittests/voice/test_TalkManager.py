@@ -8,7 +8,7 @@ class TestTalkManager(unittest.TestCase):
 		talkManager = TalkManager()
 
 		# when short and default version exist
-		talkManager._langData = {
+		talkManager.langData = {
 			'module': {
 				'de': {
 					'talk': {
@@ -23,7 +23,7 @@ class TestTalkManager(unittest.TestCase):
 
 
 		# when only default version exists
-		talkManager._langData = {
+		talkManager.langData = {
 			'module': {
 				'de': {
 					'talk': {
@@ -36,7 +36,7 @@ class TestTalkManager(unittest.TestCase):
 
 
 		# when list instead of dict is used
-		talkManager._langData = {
+		talkManager.langData = {
 			'module': {
 				'de': {
 					'talk': ['defaultString']
@@ -47,7 +47,7 @@ class TestTalkManager(unittest.TestCase):
 
 
 		# when only fallback language exists
-		talkManager._langData = {
+		talkManager.langData = {
 			'module': {
 				'en': {
 					'talk': ['defaultString']
@@ -58,16 +58,16 @@ class TestTalkManager(unittest.TestCase):
 
 
 		# when required keys do not exist in active and fallback language
-		talkManager._langData = {'module': {'en': {}}}
+		talkManager.langData = {'module': {'en': {}}}
 		self.assertEqual(talkManager.chooseTalk('talk', 'module', 'de', 'en', True), '')
 
-		talkManager._langData = {'module': {'de': {}}}
+		talkManager.langData = {'module': {'de': {}}}
 		self.assertEqual(talkManager.chooseTalk('talk', 'module', 'de', 'en', True), '')
 
-		talkManager._langData = {'module': {}}
+		talkManager.langData = {'module': {}}
 		self.assertEqual(talkManager.chooseTalk('talk', 'module', 'de', 'en', True), '')
 
-		talkManager._langData = {}
+		talkManager.langData = {}
 		self.assertEqual(talkManager.chooseTalk('talk', 'module', 'de', 'en', True), '')
 
 

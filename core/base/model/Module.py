@@ -413,13 +413,16 @@ class Module(ProjectAliceObject):
 		return self.DatabaseManager.insert(tableName=tableName, query=query, values=values, callerName=self.name)
 
 
-	def randomTalk(self, text: str, replace: list = None) -> str:
-		string = self.TalkManager.randomTalk(talk=text, module=self.name)
+	def randomTalk(self, text: str, replace: list = None, **kwargs) -> str:
+		talk = self.TalkManager.randomTalk(talk=text, module=self.name)
+
+		if Callable(talk):
+			talk(replace=replace, **kwargs)
 
 		if replace:
-			string = string.format(*replace)
-
-		return string
+			talk = talk.format(*replace)
+		return talk
+		
 
 
 	def getModuleInstance(self, moduleName: str) -> Module:

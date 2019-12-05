@@ -1,6 +1,11 @@
 import json
 import random
 from pathlib import Path
+from typing import Union, Callable
+from functools import partial
+import importlib
+from inspect import getmembers, isfunction
+
 
 from core.base.model.Manager import Manager
 
@@ -17,6 +22,11 @@ class TalkManager(Manager):
 	@property
 	def langData(self) -> dict:
 		return self._langData
+
+
+	@langData.setter
+	def langData(self, value: dict):
+		self._langData = value
 
 
 	def onStart(self):
@@ -44,17 +54,31 @@ class TalkManager(Manager):
 			if not langTalksMountpoint.exists():
 				continue
 
+			self._langData[moduleName] = dict()
 			for langTalkFile in langTalksMountpoint.iterdir():
 				lang = langTalkFile.stem
 				try:
-					self._langData.setdefault(moduleName, dict())[lang] = json.loads(langTalkFile.read_text())
+					if langTalkFile.suffix == '.py':
+						talkImport = importlib.import_module(f'modules.{moduleName}.talks.{lang}')
+						mappings = dict(getmembers(talkImport, isfunction))
+					else:
+						mapping = json.loads(langTalkFile.read_text())
+
+					# there can be mappings both from json and py
+					if lang in self._langData[moduleName]:
+						self._langData[moduleName][lang].update(mapping)
+					else:
+						self._langData[moduleName][lang] = mapping
+				except ImportError as e:
+					self.logError(f"Couldn't import talk functions {moduleName}.talks.{lang}: {e}")
+					continue
 				except FileNotFoundError:
 					continue
 				except ValueError:
 					continue
 
 
-	def getTexts(self, module, talk, strType='default') -> list:
+	def getTexts(self, module, talk, strType='default') -> Union[list, Callable]:
 		arr = list()
 		try:
 			module = self.Commons.toCamelCase(module)
@@ -65,21 +89,28 @@ class TalkManager(Manager):
 		return arr
 
 
-	def chooseTalk(self, talk: str, module: str, activeLanguage: str, defaultLanguage: str, shortReplyMode: bool) -> str:
+	def _selectSentence(self, talkData: dict, shortReplyMode: bool) -> Union[str, Callable]:
+		# when there is a mapping to a function add shortReplyMode as kwargs
+		if callable(talkData):
+			return partial(talkData, shortReplyMode=shortReplyMode)
+
+		# There's no short/long version
+		if isinstance(talkData, list):
+			return random.choice(talkData)
+
+		if shortReplyMode:
+			try:
+				return random.choice(talkData['short'])
+			except KeyError:
+				return random.choice(talkData['default'])
+		else:
+			return random.choice(talkData['default'])
+
+
+	def chooseTalk(self, talk: str, module: str, activeLanguage: str, defaultLanguage: str, shortReplyMode: bool) -> Union[str, Callable]:
 		try:
 			talkData = self._langData[module][activeLanguage][talk]
-
-			# There's no short/long version?
-			if isinstance(talkData, list):
-				return random.choice(self._langData[module][activeLanguage][talk])
-
-			if shortReplyMode:
-				try:
-					return random.choice(talkData['short'])
-				except KeyError:
-					return random.choice(talkData['default'])
-			else:
-				return random.choice(talkData['default'])
+			return self._selectSentence(talkData, shortReplyMode=shortReplyMode)
 		except KeyError:
 			# Fallback to default language then
 			if activeLanguage != defaultLanguage:
