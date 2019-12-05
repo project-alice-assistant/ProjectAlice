@@ -62,13 +62,13 @@ class TalkManager(Manager):
 						talkImport = importlib.import_module(f'modules.{moduleName}.talks.{lang}')
 						mappings = dict(getmembers(talkImport, isfunction))
 					else:
-						mapping = json.loads(langTalkFile.read_text())
+						mappings = json.loads(langTalkFile.read_text())
 
 					# there can be mappings both from json and py
 					if lang in self._langData[moduleName]:
-						self._langData[moduleName][lang].update(mapping)
+						self._langData[moduleName][lang].update(mappings)
 					else:
-						self._langData[moduleName][lang] = mapping
+						self._langData[moduleName][lang] = mappings
 				except ImportError as e:
 					self.logError(f"Couldn't import talk functions {moduleName}.talks.{lang}: {e}")
 					continue
