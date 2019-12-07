@@ -394,7 +394,7 @@ network={
 		if definedSource == 'master':
 			return updateSource
 
-		req = requests.get('https://api.github.com/repos/project-alice-powered-by-snips/ProjectAlice/branches')
+		req = requests.get('https://api.github.com/repos/project-alice-assistant/ProjectAlice/branches')
 		result = req.json()
 		if result:
 			userUpdatePref = definedSource

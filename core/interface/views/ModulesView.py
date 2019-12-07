@@ -1,8 +1,8 @@
 import json
+from pathlib import Path
 
 import requests
 from flask import jsonify, render_template, request
-from pathlib import Path
 
 from core.base.model.GithubCloner import GithubCloner
 from core.base.model.Version import Version
@@ -73,7 +73,7 @@ class ModulesView(View):
 
 			for module in modules:
 				self.WebInterfaceManager.newModuleInstallProcess(module['module'])
-				req = requests.get(f'https://raw.githubusercontent.com/project-alice-powered-by-snips/ProjectAliceModules/{self.ConfigManager.getModulesUpdateSource()}/PublishedModules/{module["author"]}/{module["module"]}/{module["module"]}.install')
+				req = requests.get(f'https://raw.githubusercontent.com/project-alice-assistant/ProjectAliceModules/{self.ConfigManager.getModulesUpdateSource()}/PublishedModules/{module["author"]}/{module["module"]}/{module["module"]}.install')
 				remoteFile = req.json()
 				if not remoteFile:
 					self.WebInterfaceManager.moduleInstallProcesses[module['module']]['status'] = 'failed'
@@ -98,7 +98,7 @@ class ModulesView(View):
 		installers = dict()
 		updateSource = self.ConfigManager.getModulesUpdateSource()
 		req = requests.get(
-			url='https://api.github.com/search/code?q=extension:install+repo:project-alice-powered-by-snips/ProjectAliceModules/',
+			url='https://api.github.com/search/code?q=extension:install+repo:project-alice-assistant/ProjectAliceModules/',
 			auth=GithubCloner.getGithubAuth())
 		results = req.json()
 		if results:

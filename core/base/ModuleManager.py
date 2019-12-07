@@ -27,7 +27,7 @@ class ModuleManager(Manager):
 		'RedQueen'
 	]
 
-	GITHUB_BARE_BASE_URL = 'https://raw.githubusercontent.com/project-alice-powered-by-snips/ProjectAliceModules/master/PublishedModules'
+	GITHUB_BARE_BASE_URL = 'https://raw.githubusercontent.com/project-alice-assistant/ProjectAliceModules/master/PublishedModules'
 	GITHUB_API_BASE_URL = 'repositories/193512918/contents/PublishedModules'
 
 	DATABASE = {
@@ -349,7 +349,7 @@ class ModuleManager(Manager):
 				if moduleName not in availableModules or (moduleToCheck is not None and moduleName != moduleToCheck):
 					continue
 	
-				req = requests.get(f'https://raw.githubusercontent.com/project-alice-powered-by-snips/ProjectAliceModules/{updateSource}/PublishedModules/{availableModules[moduleName]["author"]}/{moduleName}/{moduleName}.install')
+				req = requests.get(f'https://raw.githubusercontent.com/project-alice-assistant/ProjectAliceModules/{updateSource}/PublishedModules/{availableModules[moduleName]["author"]}/{moduleName}/{moduleName}.install')
 
 				if req.status_code == 404:
 					raise GithubNotFound

@@ -1,9 +1,9 @@
 import json
+import subprocess
+from pathlib import Path
 
 import requests
 import shutil
-import subprocess
-from pathlib import Path
 
 import configTemplate
 from core.base.ModuleManager import ModuleManager
@@ -460,7 +460,7 @@ class ConfigManager(Manager):
 		if self.getAliceConfigByName('updateChannel') == 'master':
 			return updateSource
 
-		req = requests.get('https://api.github.com/repos/project-alice-powered-by-snips/ProjectAliceModules/branches', auth=GithubCloner.getGithubAuth())
+		req = requests.get('https://api.github.com/repos/project-alice-assistant/ProjectAliceModules/branches', auth=GithubCloner.getGithubAuth())
 		result = req.json()
 		if result:
 			userUpdatePref = self.getAliceConfigByName('updateChannel')
