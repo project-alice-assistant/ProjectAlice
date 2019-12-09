@@ -1,6 +1,7 @@
 from typing import Callable, Dict
 
 from core.base.model.ProjectAliceObject import ProjectAliceObject
+from core.dialog.model.DialogSession import DialogSession
 from core.commons import constants
 
 
@@ -14,14 +15,14 @@ class DialogMapping(ProjectAliceObject):
 		self._state = constants.DEFAULT
 
 
-	def onDialog(self, intent, session, caller: str) -> bool:
+	def onDialog(self, session: DialogSession, caller: str) -> bool:
 		state = f'{caller}:{session.currentState}'
 
 		if state in self._mapping:
 			try:
-				return self._mapping[state](session=session, intent=intent)
+				return self._mapping[state](session=session)
 			except Exception as e:
-				self.logError(f"Can't continue dialog for intent {intent}, method to call for previous intent {session.previousIntent} not found: {e}")
+				self.logError(f"Can't continue dialog for intent {session.intentName}, method to call for previous intent {session.previousIntent} not found: {e}")
 
 		return False
 

@@ -278,7 +278,7 @@ class Module(ProjectAliceObject):
 			self.logWarning('Tried to notify devices but no uid or site id specified')
 
 
-	def filterIntent(self, intent: str, session: DialogSession) -> bool:
+	def filterIntent(self, session: DialogSession) -> bool:
 		# Return if the module isn't active
 		if not self.active:
 			return False
@@ -287,6 +287,7 @@ class Module(ProjectAliceObject):
 		if session.previousIntent and str(session.previousIntent) not in self._supportedIntents:
 			return False
 
+		intent = session.intentName
 		# Return if this intent is not supported by this module
 		if not intent in self._supportedIntents:
 			return False
@@ -310,18 +311,18 @@ class Module(ProjectAliceObject):
 		return True
 
 
-	def dispatchMessage(self, intent: str, session: DialogSession) -> bool:
-		forMe = self.filterIntent(intent, session)
+	def dispatchMessage(self, session: DialogSession) -> bool:
+		forMe = self.filterIntent(session)
 		if not forMe:
 			return False
 
-		intentt = self._supportedIntents[intent][0]
+		intentt = self._supportedIntents[session.intentName][0]
 		if isinstance(intentt, Intent) and intentt.hasDialogMapping():
-			consumed = self._supportedIntents[intent][0].dialogMapping.onDialog(intent, session, self.name)
+			consumed = intentt.dialogMapping.onDialog(session, self.name)
 			if consumed or consumed is None:
 				return True
 
-		return self._supportedIntents[intent][1](session=session, intent=intent)
+		return self._supportedIntents[session.intentName][1](session=session)
 
 
 	def getResource(self, moduleName: str = '', resourcePathFile: str = '') -> Path:
@@ -413,13 +414,15 @@ class Module(ProjectAliceObject):
 		return self.DatabaseManager.insert(tableName=tableName, query=query, values=values, callerName=self.name)
 
 
-	def randomTalk(self, text: str, replace: list = None) -> str:
-		string = self.TalkManager.randomTalk(talk=text, module=self.name)
+	def randomTalk(self, text: str, replace: list = None, **kwargs) -> str:
+		talk = self.TalkManager.randomTalk(talk=text, module=self.name)
+
+		if Callable(talk):
+			talk(replace=replace, **kwargs)
 
 		if replace:
-			string = string.format(*replace)
-
-		return string
+			talk = talk.format(*replace)
+		return talk
 
 
 	def getModuleInstance(self, moduleName: str) -> Module:

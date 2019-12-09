@@ -164,8 +164,8 @@ class MqttManager(Manager):
 
 			if not session: # It is a device trying to communicate with Alice
 				session = self.DeviceManager.deviceMessage(message)
-				self.broadcast(method='onMessage', exceptions=[self.name], args=[message.topic, session])
-				self.ModuleManager.moduleBroadcast(method='dispatchMessage', intent=message.topic, session=session)
+				self.broadcast(method='onMessage', exceptions=[self.name], session=session)
+				self.ModuleManager.moduleBroadcast(method='dispatchMessage', session=session)
 				return
 
 			redQueen = self.ModuleManager.getModuleInstance('RedQueen')
@@ -195,7 +195,7 @@ class MqttManager(Manager):
 
 			for modul in self.ModuleManager.activeModules.values():
 				try:
-					consumed = modul.dispatchMessage(message.topic, session)
+					consumed = modul.dispatchMessage(session)
 				except AccessLevelTooLow:
 					# The command was recognized but required higher access level
 					return
