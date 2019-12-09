@@ -414,11 +414,8 @@ class AliceSkill(ProjectAliceObject):
 		return self.DatabaseManager.insert(tableName=tableName, query=query, values=values, callerName=self.name)
 
 
-	def randomTalk(self, text: str, replace: list = None, **kwargs) -> str:
+	def randomTalk(self, text: str, replace: list = None) -> str:
 		talk = self.TalkManager.randomTalk(talk=text, skill=self.name)
-
-		if Callable(talk):
-			talk(replace=replace, **kwargs)
 
 		if replace:
 			talk = talk.format(*replace)
