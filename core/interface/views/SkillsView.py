@@ -33,7 +33,7 @@ class SkillsView(View):
 				self.SkillManager.activateSkill(skillName=skill, persistent=True)
 		except Exception as e:
 			self.logWarning(f'Failed toggling skill: {e}', printStack=True)
-		
+
 		return self.index()
 
 

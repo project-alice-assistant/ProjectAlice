@@ -361,7 +361,7 @@ class SkillManager(Manager):
 				if Version(availableSkills[skillName]['version']) < Version(remoteFile['version']):
 					i += 1
 					self.logInfo(f'❌ {skillName} - Version {availableSkills[skillName]["version"]} < {remoteFile["version"]} in {self.ConfigManager.getAliceConfigByName("updateChannel")}')
-	
+
 					if not self.ConfigManager.getAliceConfigByName('skillAutoUpdate'):
 						if skillName in self._activeSkills:
 							self._activeSkills[skillName].updateAvailable = True
@@ -377,7 +377,7 @@ class SkillManager(Manager):
 
 			except GithubNotFound:
 				self.logInfo(f'❓ Skill "{skillName}" is not available on Github. Deprecated or is it a dev skill?')
-						
+
 			except Exception as e:
 				self.logError(f'❗ Error checking updates for skill "{skillName}": {e}')
 
