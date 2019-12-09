@@ -45,14 +45,14 @@ class ModuleStartingFailed(_ProjectAliceException):
 		self._logger.logInfo(f'An error occured while starting a module: {error}')
 
 		if skillName:
-			SuperManager.getInstance().moduleManager.deactivateModule(skillName)
+			SuperManager.getInstance().skillManager.deactivateModule(skillName)
 
 
 class ModuleStartDelayed(_ProjectAliceException):
 	def __init__(self, skillName):
 		super().__init__(skillName)
 		self._logger.logWarning('Delaying module start')
-		SuperManager.getInstance().moduleManager.getModuleInstance(skillName).delayed = True
+		SuperManager.getInstance().skillManager.getModuleInstance(skillName).delayed = True
 
 
 class IntentError(_ProjectAliceException):

@@ -14,7 +14,7 @@ class IndexView(View):
 	@route('/index/', endpoint='index')
 	def index(self):
 		return render_template(template_name_or_list='home.html',
-		                       widgets=self.ModuleManager.widgets,
+		                       widgets=self.SkillManager.widgets,
 		                       langData=self._langData,
 		                       aliceSettings=self.ConfigManager.aliceConfigurations)
 
@@ -31,7 +31,7 @@ class IndexView(View):
 			data = request.get_json()
 			p, w = data['id'].split('_')
 
-			widget = self.ModuleManager.widgets[p][w]
+			widget = self.SkillManager.widgets[p][w]
 			widget.x = data['x']
 			widget.y = data['y']
 			widget.saveToDB()
@@ -39,7 +39,7 @@ class IndexView(View):
 			order = data['order']
 			for index, widget in enumerate(order, start=1):
 				widgetParent, widgetName = widget.split('_')
-				widget = self.ModuleManager.widgets[widgetParent][widgetName]
+				widget = self.SkillManager.widgets[widgetParent][widgetName]
 				widget.zindex = index
 				widget.saveToDB()
 
@@ -54,7 +54,7 @@ class IndexView(View):
 		try:
 			p, w = request.form.get('id').split('_')
 
-			widget = self.ModuleManager.widgets[p][w]
+			widget = self.SkillManager.widgets[p][w]
 			widget.state = 0
 			widget.saveToDB()
 
@@ -69,7 +69,7 @@ class IndexView(View):
 		try:
 			line, p, w = request.form.get('id').split('_')
 
-			widget = self.ModuleManager.widgets[p][w]
+			widget = self.SkillManager.widgets[p][w]
 			widget.state = 1
 			widget.saveToDB()
 
@@ -87,7 +87,7 @@ class IndexView(View):
 			if not data['param']:
 				data['param'] = '{}'
 
-			module = self.ModuleManager.getModuleInstance(skillName=data['module'])
+			module = self.SkillManager.getModuleInstance(skillName=data['module'])
 			widget = module.getWidgetInstance(data['widget'])
 			func = getattr(widget, data['func'])
 			return func(**json.loads(data['param']))

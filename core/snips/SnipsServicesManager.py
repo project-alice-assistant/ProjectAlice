@@ -74,7 +74,7 @@ class SnipsServicesManager(Manager):
 			self.broadcast(
 				method='onSnipsAssistantInstalled',
 				exceptions=[self.name],
-				propagateToModules=True,
+				propagateToSkills=True,
 				**kwargs
 			)
 		except Exception as e:
@@ -82,7 +82,7 @@ class SnipsServicesManager(Manager):
 			self.broadcast(
 				method='onSnipsAssistantFailedInstalling',
 				exceptions=[constants.DUMMY],
-				propagateToModules=True,
+				propagateToSkills=True,
 				**kwargs
 			)
 

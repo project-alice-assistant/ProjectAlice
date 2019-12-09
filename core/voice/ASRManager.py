@@ -76,7 +76,7 @@ class ASRManager(Manager):
 			result = self.LanguageManager.sanitizeNluQuery(result)
 			self.logDebug(f'{self._asr.__class__.__name__} output: "{result}"')
 
-			supportedIntents = session.intentFilter or self.ModuleManager.supportedIntents
+			supportedIntents = session.intentFilter or self.SkillManager.supportedIntents
 			intentFilter = [intent.justTopic for intent in supportedIntents if isinstance(intent, Intent) and not intent.protected]
 
 			# Add Global Intents

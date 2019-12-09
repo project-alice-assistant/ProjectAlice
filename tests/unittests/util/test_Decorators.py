@@ -252,7 +252,7 @@ class TestDecorators(unittest.TestCase):
 		exampleObject = Example()
 		mock_instance = MagicMock()
 		mock_superManager.getInstance.return_value = mock_instance
-		mock_instance.moduleManager.getModuleInstance.return_value = exampleObject
+		mock_instance.skillManager.getModuleInstance.return_value = exampleObject
 
 
 		# test whether the decorator works when a single intent is mapped
@@ -260,7 +260,7 @@ class TestDecorators(unittest.TestCase):
 		self.assertEqual(instance, exampleObject, "the object instance is not retrieved correctly")
 		self.assertEqual(args, ('arg1', 'arg2'), "unnamed arguments are passed in a wrong way")
 		self.assertEqual(kwargs, {'kwarg1': 'kwarg1', 'kwarg2': 'kwarg2'}, "named arguments are passed in a wrong way")
-		mock_instance.moduleManager.getModuleInstance.assert_called_once_with(Example.__name__)
+		mock_instance.skillManager.getModuleInstance.assert_called_once_with(Example.__name__)
 		mock_instance.reset_mock()
 
 
@@ -269,7 +269,7 @@ class TestDecorators(unittest.TestCase):
 		self.assertEqual(instance, exampleObject, "the object instance is not retrieved correctly")
 		self.assertEqual(args, ('arg1', 'arg2'), "unnamed arguments are passed in a wrong way")
 		self.assertEqual(kwargs, {'kwarg1': 'kwarg1', 'kwarg2': 'kwarg2'}, "named arguments are passed in a wrong way")
-		mock_instance.moduleManager.getModuleInstance.assert_called_once_with(Example.__name__)
+		mock_instance.skillManager.getModuleInstance.assert_called_once_with(Example.__name__)
 
 
 		# test whether the intents are created correctly

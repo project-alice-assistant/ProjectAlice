@@ -25,7 +25,7 @@ class AdminAuth(View):
 		if current_user.is_authenticated:
 			return redirect(self.__class__.nextPage)
 
-		self.ModuleManager.getModuleInstance('AliceCore').explainInterfaceAuth()
+		self.SkillManager.getModuleInstance('AliceCore').explainInterfaceAuth()
 		return render_template(template_name_or_list='adminAuth.html',
 		                       langData=self._langData,
 		                       aliceSettings=self.ConfigManager.aliceConfigurations)
@@ -56,7 +56,7 @@ class AdminAuth(View):
 
 
 	def keyboardAuth(self):
-		self.ModuleManager.getModuleInstance('AliceCore').authWithKeyboard()
+		self.SkillManager.getModuleInstance('AliceCore').authWithKeyboard()
 		if self.__class__.linkedSnipsSession is not None:
 			self.MqttManager.endSession(sessionId=self.__class__.linkedSnipsSession.sessionId)
 		return jsonify(success=True)

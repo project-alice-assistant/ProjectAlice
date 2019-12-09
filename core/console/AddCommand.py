@@ -3,7 +3,7 @@ import click
 import urllib.request
 import requests
 from terminaltables import DoubleTable # type: ignore
-from core.base.ModuleManager import ModuleManager
+from core.base.SkillManager import SkillManager
 
 @click.group()
 def Add():
@@ -22,7 +22,7 @@ def module(author_name: str, module_name: str):
 	click.secho(f'\n{table_instance.table}\n', fg='yellow')
 
 	try:
-		url = f'{ModuleManager.GITHUB_BARE_BASE_URL}/{author_name}/{module_name}/{module_name}.install'
+		url = f'{SkillManager.GITHUB_BARE_BASE_URL}/{author_name}/{module_name}/{module_name}.install'
 		req = requests.get(url)
 
 		if req.status_code // 100 == 4:

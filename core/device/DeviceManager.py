@@ -315,7 +315,7 @@ class DeviceManager(Manager):
 
 		self._broadcastTimer = self.ThreadManager.newTimer(interval=300, func=self.stopBroadcasting)
 
-		self.ModuleManager.moduleBroadcast(method='onBroadcastingForNewDeviceStart')
+		self.SkillManager.skillBroadcast(method='onBroadcastingForNewDeviceStart')
 		return True
 
 
@@ -327,7 +327,7 @@ class DeviceManager(Manager):
 			self._broadcastTimer.cancel()
 
 		self._broadcastRoom = ''
-		self.ModuleManager.moduleBroadcast(method='onBroadcastingForNewDeviceStop')
+		self.SkillManager.skillBroadcast(method='onBroadcastingForNewDeviceStop')
 
 
 	def startBroadcast(self, room: str, uid: str, replyOnSiteId: str):
@@ -376,7 +376,7 @@ class DeviceManager(Manager):
 
 		if not self._devices[uid].connected:
 			self._devices[uid].connected = True
-			self.broadcast(method='onDeviceConnecting', exceptions=[self.name], propagateToModules=True)
+			self.broadcast(method='onDeviceConnecting', exceptions=[self.name], propagateToSkills=True)
 
 		return self._devices[uid]
 
@@ -387,7 +387,7 @@ class DeviceManager(Manager):
 
 		if self._devices[uid].connected:
 			self._devices[uid].connected = False
-			self.broadcast(method='onDeviceDisconnecting', exceptions=[self.name], propagateToModules=True)
+			self.broadcast(method='onDeviceDisconnecting', exceptions=[self.name], propagateToSkills=True)
 
 
 	def getDevicesByRoom(self, room: str, connectedOnly: bool = False) -> List[Device]:

@@ -15,7 +15,7 @@ class ModulesView(View):
 
 
 	def index(self):
-		modules = {**self.ModuleManager.activeModules, **self.ModuleManager.deactivatedModules}
+		modules = {**self.SkillManager.activeModules, **self.SkillManager.deactivatedModules}
 		modules = {skillName: module for skillName, module in sorted(modules.items()) if module is not None}
 
 		return render_template(template_name_or_list='modules.html',
@@ -27,10 +27,10 @@ class ModulesView(View):
 	def toggleModule(self):
 		try:
 			_, module = request.form.get('id').split('_')
-			if self.ModuleManager.isModuleActive(module):
-				self.ModuleManager.deactivateModule(skillName=module, persistent=True)
+			if self.SkillManager.isModuleActive(module):
+				self.SkillManager.deactivateModule(skillName=module, persistent=True)
 			else:
-				self.ModuleManager.activateModule(skillName=module, persistent=True)
+				self.SkillManager.activateModule(skillName=module, persistent=True)
 		except Exception as e:
 			self.logWarning(f'Failed toggling module: {e}', printStack=True)
 		
@@ -40,7 +40,7 @@ class ModulesView(View):
 	def deleteModule(self):
 		try:
 			_, module = request.form.get('id').split('_')
-			self.ModuleManager.removeModule(module)
+			self.SkillManager.removeModule(module)
 		except Exception as e:
 			self.logWarning(f'Failed deleting module: {e}', printStack=True)
 
@@ -73,7 +73,7 @@ class ModulesView(View):
 
 			for module in modules:
 				self.WebInterfaceManager.newModuleInstallProcess(module['module'])
-				req = requests.get(f'https://raw.githubusercontent.com/project-alice-assistant/ProjectAliceModules/{self.ConfigManager.getModulesUpdateSource()}/PublishedModules/{module["author"]}/{module["module"]}/{module["module"]}.install')
+				req = requests.get(f'https://raw.githubusercontent.com/project-alice-assistant/ProjectAliceModules/{self.ConfigManager.getSkillsUpdateSource()}/PublishedModules/{module["author"]}/{module["module"]}/{module["module"]}.install')
 				remoteFile = req.json()
 				if not remoteFile:
 					self.WebInterfaceManager.moduleInstallProcesses[module['module']]['status'] = 'failed'
@@ -96,7 +96,7 @@ class ModulesView(View):
 
 	def loadStoreData(self):
 		installers = dict()
-		updateSource = self.ConfigManager.getModulesUpdateSource()
+		updateSource = self.ConfigManager.getSkillsUpdateSource()
 		req = requests.get(
 			url='https://api.github.com/search/code?q=extension:install+repo:project-alice-assistant/ProjectAliceModules/',
 			auth=GithubCloner.getGithubAuth())
@@ -119,5 +119,5 @@ class ModulesView(View):
 		actualVersion = Version(constants.VERSION)
 		return {
 			skillName: moduleInfo for skillName, moduleInfo in installers.items()
-			if self.ModuleManager.getModuleInstance(skillName=skillName, silent=True) is None and actualVersion >= Version(moduleInfo['aliceMinVersion'])
+			if self.SkillManager.getModuleInstance(skillName=skillName, silent=True) is None and actualVersion >= Version(moduleInfo['aliceMinVersion'])
 		}

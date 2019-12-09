@@ -6,7 +6,7 @@ import requests
 import shutil
 
 import configTemplate
-from core.base.ModuleManager import ModuleManager
+from core.base.SkillManager import SkillManager
 from core.base.model.GithubCloner import GithubCloner
 from core.base.model.TomlFile import TomlFile
 from core.base.model.Version import Version
@@ -358,7 +358,7 @@ class ConfigManager(Manager):
 				config = {**config, **self._aliceConfigurations['modules'][moduleName]}
 			else:
 				# For some reason we have a module not declared in alice configs... I think getting rid of it is best
-				if moduleName not in ModuleManager.NEEDED_MODULES:
+				if moduleName not in SkillManager.NEEDED_MODULES:
 					self.logInfo('- Module not declared in config but files are existing, cleaning up')
 					shutil.rmtree(moduleDirectory, ignore_errors=True)
 					if moduleName in modulesConfigurations:
@@ -455,7 +455,7 @@ class ConfigManager(Manager):
 			self._aliceTemplateConfigurations.get('display') == 'hidden'
 
 
-	def getModulesUpdateSource(self) -> str:
+	def getSkillsUpdateSource(self) -> str:
 		updateSource = 'master'
 		if self.getAliceConfigByName('updateChannel') == 'master':
 			return updateSource

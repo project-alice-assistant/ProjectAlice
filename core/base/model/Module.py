@@ -96,7 +96,7 @@ class Module(ProjectAliceObject):
 			data = self.DatabaseManager.fetch(
 				tableName='widgets',
 				query='SELECT * FROM :__table__ WHERE parent = :parent ORDER BY `zindex`',
-				callerName=self.ModuleManager.name,
+				callerName=self.SkillManager.name,
 				values={'parent': self.name},
 				method='all'
 			)
@@ -132,7 +132,7 @@ class Module(ProjectAliceObject):
 				self.logInfo(f'Widget "{widgetName}" is deprecated, removing')
 				self.DatabaseManager.delete(
 					tableName='widgets',
-					callerName=self.ModuleManager.name,
+					callerName=self.SkillManager.name,
 					query='DELETE FROM :__table__ WHERE parent = :parent AND name = :name',
 					values={
 						'parent': self.name,
@@ -155,8 +155,8 @@ class Module(ProjectAliceObject):
 		else:
 			check = intent.split('/')[-1].split(':')[-1]
 
-		for dtIntentName, dtModuleName in self.SamkillaManager.dtIntentNameSkillMatching.items():
-			if dtIntentName == check and dtModuleName == self.name:
+		for dtIntentName, dtSkillName in self.SamkillaManager.dtIntentNameSkillMatching.items():
+			if dtIntentName == check and dtSkillName == self.name:
 
 				for utterance in self.SamkillaManager.dtIntentsModulesValues[dtIntentName]['utterances']:
 					if cleanSlots:
@@ -426,7 +426,7 @@ class Module(ProjectAliceObject):
 
 
 	def getModuleInstance(self, skillName: str) -> Module:
-		return self.ModuleManager.getModuleInstance(skillName=skillName)
+		return self.SkillManager.getModuleInstance(skillName=skillName)
 
 
 	def say(self, text: str, siteId: str = constants.DEFAULT_SITE_ID, customData: dict = None, canBeEnqueued: bool = True):

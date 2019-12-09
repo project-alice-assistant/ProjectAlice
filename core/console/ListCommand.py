@@ -2,7 +2,7 @@ import random
 import click
 import requests
 from terminaltables import SingleTable # type: ignore
-from core.base.ModuleManager import ModuleManager
+from core.base.SkillManager import SkillManager
 from core.console.Helpers import OptionEatAll
 from core.base.SuperManager import SuperManager
 
@@ -20,7 +20,7 @@ def authors():
 	tableInstance = SingleTable(tableData, click.style('Authors', fg='yellow'))
 
 	try:
-		req = requests.get(f'https://api.github.com/{ModuleManager.GITHUB_API_BASE_URL}')
+		req = requests.get(f'https://api.github.com/{SkillManager.GITHUB_API_BASE_URL}')
 
 		if req.status_code == 403:
 			click.secho('Github API quota limitations reached\n', err=True, bg='red')
@@ -44,7 +44,7 @@ def modules(authorsList: list, full: bool):
 
 	if not authorsList:
 		authorsList = list()
-		req = requests.get(f'https://api.github.com/{ModuleManager.GITHUB_API_BASE_URL}')
+		req = requests.get(f'https://api.github.com/{SkillManager.GITHUB_API_BASE_URL}')
 
 		if req.status_code == 403:
 			click.secho('Github API quota limitations reached\n', err=True, bg='red')
@@ -61,7 +61,7 @@ def modules(authorsList: list, full: bool):
 		tableInstance = SingleTable(tableData, click.style(author, fg='yellow'))
 
 		try:
-			req = requests.get(f'https://api.github.com/{ModuleManager.GITHUB_API_BASE_URL}/{author}')
+			req = requests.get(f'https://api.github.com/{SkillManager.GITHUB_API_BASE_URL}/{author}')
 
 			if req.status_code == 403:
 				click.secho('Github API quota limitations reached\n', err=True, bg='red')
@@ -75,7 +75,7 @@ def modules(authorsList: list, full: bool):
 				return
 
 			for module in req.json():
-				moduleInstallFile = f"{ModuleManager.GITHUB_BARE_BASE_URL}/{author}/{module['name']}/{module['name']}.install"
+				moduleInstallFile = f"{SkillManager.GITHUB_BARE_BASE_URL}/{author}/{module['name']}/{module['name']}.install"
 
 				try:
 					moduleDetails = requests.get(moduleInstallFile).json()

@@ -20,7 +20,7 @@ class ProjectAliceObject(Logger):
 		return json.dumps(self.__dict__)
 
 
-	def broadcast(self, method: str, exceptions: list = None, manager = None, propagateToModules: bool = False, silent: bool = False, *args, **kwargs):
+	def broadcast(self, method: str, exceptions: list = None, manager = None, propagateToSkills: bool = False, silent: bool = False, *args, **kwargs):
 		if not exceptions:
 			exceptions = list()
 
@@ -54,8 +54,8 @@ class ProjectAliceObject(Logger):
 				# Do nothing, it's most prolly kwargs
 				pass
 
-		if propagateToModules:
-			self.ModuleManager.moduleBroadcast(method=method, silent=silent, *args, **kwargs)
+		if propagateToSkills:
+			self.SkillManager.skillBroadcast(method=method, silent=silent, *args, **kwargs)
 
 		for name in deadManagers:
 			del SM.SuperManager.getInstance().managers[name]
@@ -147,8 +147,8 @@ class ProjectAliceObject(Logger):
 
 
 	@property
-	def ModuleManager(self):
-		return SM.SuperManager.getInstance().moduleManager
+	def SkillManager(self):
+		return SM.SuperManager.getInstance().skillManager
 
 
 	@property

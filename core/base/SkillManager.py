@@ -17,9 +17,9 @@ from core.base.model.Version import Version
 from core.commons import constants
 
 
-class ModuleManager(Manager):
+class SkillManager(Manager):
 
-	NAME = 'ModuleManager'
+	NAME = 'SkillManager'
 
 	NEEDED_MODULES = [
 		'AliceCore',
@@ -135,7 +135,7 @@ class ModuleManager(Manager):
 
 
 	def onBooted(self):
-		self.moduleBroadcast('onBooted')
+		self.skillBroadcast('onBooted')
 		self._moduleInstallThread.start()
 
 
@@ -287,11 +287,11 @@ class ModuleManager(Manager):
 			return None
 
 
-	def moduleBroadcast(self, method: str, filterOut: list = None, silent: bool = False, *args, **kwargs):
+	def skillBroadcast(self, method: str, filterOut: list = None, silent: bool = False, *args, **kwargs):
 		"""
-		Broadcasts a call to the given method on every module
-		:param filterOut: array, module not to broadcast to
-		:param method: str, the method name to call on every module
+		Broadcasts a call to the given method on every skill
+		:param filterOut: array, skills not to broadcast to
+		:param method: str, the method name to call on every skill
 		:param args: arguments that should be passed
 		:param silent
 		:return:
@@ -341,7 +341,7 @@ class ModuleManager(Manager):
 			return False
 
 		availableModules = self.ConfigManager.modulesConfigurations
-		updateSource = self.ConfigManager.getModulesUpdateSource()
+		updateSource = self.ConfigManager.getSkillsUpdateSource()
 
 		i = 0
 		for skillName in self._allModules:

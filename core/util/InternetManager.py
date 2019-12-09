@@ -43,8 +43,8 @@ class InternetManager(Manager):
 		
 		if self._online and not online:
 			self._online = False
-			self.broadcast(method='onInternetLost', exceptions=[self.name], propagateToModules=True)
+			self.broadcast(method='onInternetLost', exceptions=[self.name], propagateToSkills=True)
 		elif not self._online and online:
 			self._online = True
-			self.broadcast(method='onInternetConnected', exceptions=[self.name], propagateToModules=True)
+			self.broadcast(method='onInternetConnected', exceptions=[self.name], propagateToSkills=True)
 		return online

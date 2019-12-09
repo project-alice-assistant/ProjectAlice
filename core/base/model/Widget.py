@@ -56,7 +56,7 @@ class Widget(ProjectAliceObject):
 		self.DatabaseManager.replace(
 			tableName='widgets',
 			query='REPLACE INTO :__table__ (parent, name, posx, posy, state, options, zindex) VALUES (:parent, :name, :posx, :posy, :state, :options, :zindex)',
-			callerName=self.ModuleManager.name,
+			callerName=self.SkillManager.name,
 			values={
 				'parent': self.parent,
 				'name': self.name,
