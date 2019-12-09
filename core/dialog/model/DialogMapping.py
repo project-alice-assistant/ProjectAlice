@@ -1,7 +1,6 @@
 from typing import Callable, Dict
 
 from core.base.model.ProjectAliceObject import ProjectAliceObject
-from core.dialog.model.DialogSession import DialogSession
 from core.commons import constants
 
 
@@ -15,7 +14,7 @@ class DialogMapping(ProjectAliceObject):
 		self._state = constants.DEFAULT
 
 
-	def onDialog(self, session: DialogSession, caller: str) -> bool:
+	def onDialog(self, session, caller: str) -> bool:
 		state = f'{caller}:{session.currentState}'
 
 		if state in self._mapping:
