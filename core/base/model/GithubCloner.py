@@ -72,11 +72,11 @@ class GithubCloner(ProjectAliceObject):
 			raise
 
 		except GithubNotFound:
-			self.logError('Requested module not found on servers')
+			self.logError('Requested skill not found on servers')
 			raise
 
 		except Exception as e:
-			self.logError(f'Error downloading module: {e}')
+			self.logError(f'Error downloading skill: {e}')
 			raise
 
 

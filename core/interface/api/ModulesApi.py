@@ -28,7 +28,7 @@ class ModulesApi(Api):
 
 
 	def get(self, skillName: str):
-		module = self.SkillManager.getModuleInstance(skillName=skillName, silent=True)
+		module = self.SkillManager.getSkillInstance(skillName=skillName, silent=True)
 		module = module.toJson() if module else dict()
 
 		return jsonify(data=module)
@@ -43,7 +43,7 @@ class ModulesApi(Api):
 			if skillName in self.SkillManager.neededModules:
 				return jsonify(success=False, reason='module cannot be deactivated')
 
-			self.SkillManager.deactivateModule(skillName=skillName, persistent=True)
+			self.SkillManager.deactivateSkill(skillName=skillName, persistent=True)
 		else:
 			self.SkillManager.activateModule(skillName=skillName, persistent=True)
 
@@ -73,7 +73,7 @@ class ModulesApi(Api):
 
 		if self.SkillManager.isModuleActive(skillName):
 			persistent = request.form.get('persistent') is not None and request.form.get('persistent') == 'true'
-			self.SkillManager.deactivateModule(skillName=skillName, persistent=persistent)
+			self.SkillManager.deactivateSkill(skillName=skillName, persistent=persistent)
 			return jsonify(success=True)
 		else:
 			return jsonify(success=False, reason='not active')

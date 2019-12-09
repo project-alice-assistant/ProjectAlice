@@ -10,7 +10,7 @@ from typing import Any, Callable, Dict, Iterable, List, Tuple
 import re
 from paho.mqtt import client as MQTTClient
 
-from core.ProjectAliceExceptions import AccessLevelTooLow, ModuleStartingFailed
+from core.ProjectAliceExceptions import AccessLevelTooLow, SkillStartingFailed
 from core.base.model import Widget
 from core.base.model.Intent import Intent
 from core.base.model.ProjectAliceObject import ProjectAliceObject
@@ -27,9 +27,9 @@ class Module(ProjectAliceObject):
 			path = Path(inspect.getfile(self.__class__)).with_suffix('.install')
 			self._install = json.loads(path.read_text())
 		except FileNotFoundError:
-			raise ModuleStartingFailed(error=f'[{type(self).__name__}] Cannot find install file')
+			raise SkillStartingFailed(error=f'[{type(self).__name__}] Cannot find install file')
 		except Exception as e:
-			raise ModuleStartingFailed(error=f'[{type(self).__name__}] Failed loading module: {e}')
+			raise SkillStartingFailed(error=f'[{type(self).__name__}] Failed loading module: {e}')
 
 		self._name = self._install['name']
 		self._author = self._install['author']
@@ -358,12 +358,12 @@ class Module(ProjectAliceObject):
 		return True
 
 
-	def onModuleInstalled(self):
+	def onSkillInstalled(self):
 		self._updateAvailable = False
 		#self.MqttManager.subscribeModuleIntents(self.name)
 
 
-	def onModuleUpdated(self):
+	def onSkillUpdated(self):
 		self._updateAvailable = False
 		#self.MqttManager.subscribeModuleIntents(self.name)
 
@@ -425,8 +425,8 @@ class Module(ProjectAliceObject):
 		return talk
 
 
-	def getModuleInstance(self, skillName: str) -> Module:
-		return self.SkillManager.getModuleInstance(skillName=skillName)
+	def getSkillInstance(self, skillName: str) -> Module:
+		return self.SkillManager.getSkillInstance(skillName=skillName)
 
 
 	def say(self, text: str, siteId: str = constants.DEFAULT_SITE_ID, customData: dict = None, canBeEnqueued: bool = True):

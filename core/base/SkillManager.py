@@ -7,7 +7,7 @@ from typing import Optional
 import requests
 import shutil
 
-from core.ProjectAliceExceptions import GithubNotFound, GithubRateLimit, GithubTokenFailed, ModuleNotConditionCompliant, ModuleStartDelayed, ModuleStartingFailed
+from core.ProjectAliceExceptions import GithubNotFound, GithubRateLimit, GithubTokenFailed, SkillNotConditionCompliant, SkillStartDelayed, SkillStartingFailed
 from core.base.SuperManager import SuperManager
 from core.base.model import Intent
 from core.base.model.GithubCloner import GithubCloner
@@ -21,7 +21,7 @@ class SkillManager(Manager):
 
 	NAME = 'SkillManager'
 
-	NEEDED_MODULES = [
+	NEEDED_SKILLS = [
 		'AliceCore',
 		'ContextSensitive',
 		'RedQueen'
@@ -80,7 +80,7 @@ class SkillManager(Manager):
 		for skillName, module in argv.items():
 			try:
 				self._startModule(moduleInstance=self._activeModules[skillName])
-			except ModuleStartDelayed:
+			except SkillStartDelayed:
 				self.logInfo(f'Module "{skillName}" start is delayed')
 			except KeyError as e:
 				self.logError(f'Module "{skillName} not found, skipping: {e}')
@@ -89,13 +89,13 @@ class SkillManager(Manager):
 			self._activeModules[skillName].onBooted()
 
 			self.broadcast(
-				method='onModuleUpdated' if module['update'] else 'onModuleInstalled',
+				method='onSkillUpdated' if module['update'] else 'onSkillInstalled',
 				exceptions=[constants.DUMMY],
 				module=skillName
 			)
 
 
-	def onModuleInstalled(self):
+	def onSkillInstalled(self):
 		pass
 
 
@@ -111,7 +111,7 @@ class SkillManager(Manager):
 
 	@property
 	def neededModules(self) -> list:
-		return self.NEEDED_MODULES
+		return self.NEEDED_SKILLS
 
 
 	@property
@@ -151,7 +151,7 @@ class SkillManager(Manager):
 
 			try:
 				if not module['active']:
-					if skillName in self.NEEDED_MODULES:
+					if skillName in self.NEEDED_SKILLS:
 						self.logInfo(f"Module {skillName} marked as disable but it shouldn't be")
 						self.ProjectAlice.onStop()
 						break
@@ -162,7 +162,7 @@ class SkillManager(Manager):
 						if moduleInstance:
 							moduleInstance.active = False
 
-							if skillName in self.NEEDED_MODULES:
+							if skillName in self.NEEDED_SKILLS:
 								moduleInstance.required = True
 
 							self._deactivatedModules[moduleInstance.name] = moduleInstance
@@ -176,17 +176,17 @@ class SkillManager(Manager):
 
 				if moduleInstance:
 
-					if skillName in self.NEEDED_MODULES:
+					if skillName in self.NEEDED_SKILLS:
 						moduleInstance.required = True
 
 					modules[moduleInstance.name] = moduleInstance
 				else:
 					self._failedModules[name] = None
 					
-			except ModuleStartingFailed as e:
+			except SkillStartingFailed as e:
 				self.logWarning(f'Failed loading module: {e}')
 				continue
-			except ModuleNotConditionCompliant as e:
+			except SkillNotConditionCompliant as e:
 				self.logInfo(f'Module {skillName} does not comply to "{e.condition}" condition, required "{e.conditionValue}"')
 				continue
 			except Exception as e:
@@ -239,9 +239,9 @@ class SkillManager(Manager):
 		for skillName, moduleItem in tmp.items():
 			try:
 				supportedIntents += self._startModule(moduleItem)
-			except ModuleStartingFailed:
+			except SkillStartingFailed:
 				continue
-			except ModuleStartDelayed:
+			except SkillStartDelayed:
 				self.logInfo(f'Module {skillName} start is delayed')
 
 		supportedIntents = list(set(supportedIntents))
@@ -262,7 +262,7 @@ class SkillManager(Manager):
 			if intents:
 				self.logInfo('- Started!')
 				return intents
-		except (ModuleStartingFailed, ModuleStartDelayed):
+		except (SkillStartingFailed, SkillStartDelayed):
 			raise
 		except Exception as e:
 			# noinspection PyUnboundLocalVariable
@@ -275,7 +275,7 @@ class SkillManager(Manager):
 		return skillName in self._activeModules
 
 
-	def getModuleInstance(self, skillName: str, silent: bool = False) -> Optional[Module]:
+	def getSkillInstance(self, skillName: str, silent: bool = False) -> Optional[Module]:
 		if skillName in self._activeModules:
 			return self._activeModules[skillName]
 		elif skillName in self._deactivatedModules:
@@ -314,10 +314,10 @@ class SkillManager(Manager):
 				pass
 
 
-	def deactivateModule(self, skillName: str, persistent: bool = False):
+	def deactivateSkill(self, skillName: str, persistent: bool = False):
 		if skillName in self._activeModules:
 			self._activeModules[skillName].active = False
-			self.ConfigManager.deactivateModule(skillName, persistent)
+			self.ConfigManager.deactivateSkill(skillName, persistent)
 			self.configureModuleIntents(skillName=skillName, state=False)
 			self._deactivatedModules[skillName] = self._activeModules.pop(skillName)
 
@@ -512,13 +512,13 @@ class SkillManager(Manager):
 				except Exception:
 					raise
 
-			except ModuleNotConditionCompliant as e:
+			except SkillNotConditionCompliant as e:
 				self.logInfo(f'Module "{skillName}" does not comply to "{e.condition}" condition, required "{e.conditionValue}"')
 				if res.exists():
 					res.unlink()
 
 				self.broadcast(
-					method='onModuleInstallFailed',
+					method='onSkillInstallFailed',
 					exceptions=self.name,
 					module=skillName
 				)
@@ -529,7 +529,7 @@ class SkillManager(Manager):
 					res.unlink()
 
 				self.broadcast(
-					method='onModuleInstallFailed',
+					method='onSkillInstallFailed',
 					exceptions=self.name,
 					module=skillName
 				)
@@ -572,22 +572,22 @@ class SkillManager(Manager):
 	def checkModuleConditions(self, skillName: str, conditions: dict, availableModules: dict) -> bool:
 
 		if 'aliceMinVersion' in conditions and Version(conditions['aliceMinVersion']) > Version(constants.VERSION):
-			raise ModuleNotConditionCompliant(message='Module is not compliant', skillName=skillName, condition='Alice minimum version', conditionValue=conditions['aliceMinVersion'])
+			raise SkillNotConditionCompliant(message='Module is not compliant', skillName=skillName, condition='Alice minimum version', conditionValue=conditions['aliceMinVersion'])
 
 		for conditionName, conditionValue in conditions.items():
 			if conditionName == 'lang' and self.LanguageManager.activeLanguage not in conditionValue:
-				raise ModuleNotConditionCompliant(message='Module is not compliant', skillName=skillName, condition=conditionName, conditionValue=conditionValue)
+				raise SkillNotConditionCompliant(message='Module is not compliant', skillName=skillName, condition=conditionName, conditionValue=conditionValue)
 
 			elif conditionName == 'online':
 				if conditionValue and self.ConfigManager.getAliceConfigByName('stayCompletlyOffline'):
-					raise ModuleNotConditionCompliant(message='Module is not compliant', skillName=skillName, condition=conditionName, conditionValue=conditionValue)
+					raise SkillNotConditionCompliant(message='Module is not compliant', skillName=skillName, condition=conditionName, conditionValue=conditionValue)
 				elif not conditionValue and not self.ConfigManager.getAliceConfigByName('stayCompletlyOffline'):
-					raise ModuleNotConditionCompliant(message='Module is not compliant', skillName=skillName, condition=conditionName, conditionValue=conditionValue)
+					raise SkillNotConditionCompliant(message='Module is not compliant', skillName=skillName, condition=conditionName, conditionValue=conditionValue)
 
 			elif conditionName == 'module':
 				for requiredModule in conditionValue:
 					if requiredModule['name'] in availableModules and not availableModules[requiredModule['name']]['active']:
-						raise ModuleNotConditionCompliant(message='Module is not compliant', skillName=skillName, condition=conditionName, conditionValue=conditionValue)
+						raise SkillNotConditionCompliant(message='Module is not compliant', skillName=skillName, condition=conditionName, conditionValue=conditionValue)
 					elif requiredModule['name'] not in availableModules:
 						self.logInfo(f'Module {skillName} has another module as dependency, adding download')
 						subprocess.run(['wget', requiredModule['url'], '-O', Path(self.Commons.rootDir(), f"system/moduleInstallTickets/{requiredModule['name']}.install")])
@@ -596,11 +596,11 @@ class SkillManager(Manager):
 				for excludedModule in conditionValue:
 					author, name = excludedModule.split('/')
 					if name in availableModules and availableModules[name]['author'] == author and availableModules[name]['active']:
-						raise ModuleNotConditionCompliant(message='Module is not compliant', skillName=skillName, condition=conditionName, conditionValue=conditionValue)
+						raise SkillNotConditionCompliant(message='Module is not compliant', skillName=skillName, condition=conditionName, conditionValue=conditionValue)
 
 			elif conditionName == 'asrArbitraryCapture':
 				if conditionValue and not self.ASRManager.asr.capableOfArbitraryCapture:
-					raise ModuleNotConditionCompliant(message='Module is not compliant', skillName=skillName, condition=conditionName, conditionValue=conditionValue)
+					raise SkillNotConditionCompliant(message='Module is not compliant', skillName=skillName, condition=conditionName, conditionValue=conditionValue)
 
 			elif conditionName == 'activeManager':
 				for manager in conditionValue:
@@ -608,7 +608,7 @@ class SkillManager(Manager):
 
 					man = SuperManager.getInstance().getManager(manager)
 					if not man or not man.isActive:
-						raise ModuleNotConditionCompliant(message='Module is not compliant', skillName=skillName, condition=conditionName, conditionValue=conditionValue)
+						raise SkillNotConditionCompliant(message='Module is not compliant', skillName=skillName, condition=conditionName, conditionValue=conditionValue)
 
 		return True
 

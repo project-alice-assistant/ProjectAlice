@@ -113,7 +113,7 @@ class WebInterfaceManager(Manager):
 		}
 
 
-	def onModuleInstalled(self, **kwargs):
+	def onSkillInstalled(self, **kwargs):
 		module = ''
 		try:
 			module = kwargs['module']
@@ -123,7 +123,7 @@ class WebInterfaceManager(Manager):
 			self.logError(f'Failed setting module "{module}" status to "installed": {e}')
 
 
-	def onModuleInstallFailed(self, **kwargs):
+	def onSkillInstallFailed(self, **kwargs):
 		module = ''
 		try:
 			module = kwargs['module']

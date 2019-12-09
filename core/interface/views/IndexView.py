@@ -87,7 +87,7 @@ class IndexView(View):
 			if not data['param']:
 				data['param'] = '{}'
 
-			module = self.SkillManager.getModuleInstance(skillName=data['module'])
+			module = self.SkillManager.getSkillInstance(skillName=data['module'])
 			widget = module.getWidgetInstance(data['widget'])
 			func = getattr(widget, data['func'])
 			return func(**json.loads(data['param']))

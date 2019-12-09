@@ -28,7 +28,7 @@ class ModulesView(View):
 		try:
 			_, module = request.form.get('id').split('_')
 			if self.SkillManager.isModuleActive(module):
-				self.SkillManager.deactivateModule(skillName=module, persistent=True)
+				self.SkillManager.deactivateSkill(skillName=module, persistent=True)
 			else:
 				self.SkillManager.activateModule(skillName=module, persistent=True)
 		except Exception as e:
@@ -119,5 +119,5 @@ class ModulesView(View):
 		actualVersion = Version(constants.VERSION)
 		return {
 			skillName: moduleInfo for skillName, moduleInfo in installers.items()
-			if self.SkillManager.getModuleInstance(skillName=skillName, silent=True) is None and actualVersion >= Version(moduleInfo['aliceMinVersion'])
+			if self.SkillManager.getSkillInstance(skillName=skillName, silent=True) is None and actualVersion >= Version(moduleInfo['aliceMinVersion'])
 		}

@@ -64,8 +64,8 @@ class ProjectAliceObject(Logger):
 	def onStart(self): pass
 	def onStop(self): pass
 	def onBooted(self): pass
-	def onModuleInstalled(self): pass
-	def onModuleUpdated(self): pass
+	def onSkillInstalled(self): pass
+	def onSkillUpdated(self): pass
 	def onInternetConnected(self): pass
 	def onInternetLost(self): pass
 	def onHotword(self, siteId: str, user: str = constants.UNKNOWN_USER): pass
@@ -133,7 +133,7 @@ class ProjectAliceObject(Logger):
 	def onAudioFrame(self, message): pass
 	def onSnipsAssistantInstalled(self, **kwargs): pass
 	def onSnipsAssistantFailedInstalling(self, **kwargs): pass
-	def onModuleInstallFailed(self, **kwargs): pass
+	def onSkillInstallFailed(self, **kwargs): pass
 
 
 	@property

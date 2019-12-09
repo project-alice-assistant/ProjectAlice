@@ -89,7 +89,7 @@ class IntentHandler:
 
 		def __call__(self, *args, **kwargs):
 			if self._owner:
-				return self.decoratedMethod(SuperManager.getInstance().skillManager.getModuleInstance(self._owner.__name__), *args, **kwargs)
+				return self.decoratedMethod(SuperManager.getInstance().skillManager.getSkillInstance(self._owner.__name__), *args, **kwargs)
 			return self.decoratedMethod(*args, **kwargs)
 
 		def __set_name__(self, owner, name):

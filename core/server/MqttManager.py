@@ -123,7 +123,7 @@ class MqttManager(Manager):
 
 	def subscribeModuleIntents(self, skillName: str = None):
 		if skillName:
-			self.SkillManager.getModuleInstance(skillName).subscribe(self._mqttClient)
+			self.SkillManager.getSkillInstance(skillName).subscribe(self._mqttClient)
 			return
 
 		for module in self.SkillManager.activeModules.values():
@@ -168,7 +168,7 @@ class MqttManager(Manager):
 				self.SkillManager.skillBroadcast(method='dispatchMessage', session=session)
 				return
 
-			redQueen = self.SkillManager.getModuleInstance('RedQueen')
+			redQueen = self.SkillManager.getSkillInstance('RedQueen')
 			if redQueen and not redQueen.inTheMood(session):
 				return
 
@@ -189,7 +189,7 @@ class MqttManager(Manager):
 					)
 				return
 
-			module = self.SkillManager.getModuleInstance('ContextSensitive')
+			module = self.SkillManager.getSkillInstance('ContextSensitive')
 			if module:
 				module.addToMessageHistory(session)
 
@@ -365,7 +365,7 @@ class MqttManager(Manager):
 			siteId = self.Commons.parseSiteId(msg)
 
 		if 'text' in payload:
-			module = self.SkillManager.getModuleInstance('ContextSensitive')
+			module = self.SkillManager.getSkillInstance('ContextSensitive')
 			if module:
 				module.addChat(text=payload['text'], siteId=siteId)
 
@@ -396,7 +396,7 @@ class MqttManager(Manager):
 				return
 
 			if session.customData and 'module' in session.customData and 'RandomWord' in session.slots:
-				module = self.SkillManager.getModuleInstance(session.customData['module'])
+				module = self.SkillManager.getSkillInstance(session.customData['module'])
 				if module:
 					module.onMessage(Intent('UserRandomAnswer'), session)
 					return
@@ -447,7 +447,7 @@ class MqttManager(Manager):
 			if ' ' in client:
 				client = client.replace(' ', '_')
 
-			if self.ConfigManager.getAliceConfigByName('outputOnSonos') != '1' or (self.ConfigManager.getAliceConfigByName('outputOnSonos') == '1' and self.SkillManager.getModuleInstance('Sonos') is None or not self.SkillManager.getModuleInstance('Sonos').anyModuleHere(client)) or not self.SkillManager.getModuleInstance('Sonos').active:
+			if self.ConfigManager.getAliceConfigByName('outputOnSonos') != '1' or (self.ConfigManager.getAliceConfigByName('outputOnSonos') == '1' and self.SkillManager.getSkillInstance('Sonos') is None or not self.SkillManager.getSkillInstance('Sonos').anyModuleHere(client)) or not self.SkillManager.getSkillInstance('Sonos').active:
 				self._mqttClient.publish(constants.TOPIC_START_SESSION, json.dumps({
 					'siteId'    : client,
 					'init'      : {
@@ -528,7 +528,7 @@ class MqttManager(Manager):
 
 		jsonDict['init'] = initDict
 
-		if self.ConfigManager.getAliceConfigByName('outputOnSonos') != '1' or (self.ConfigManager.getAliceConfigByName('outputOnSonos') == '1' or self.SkillManager.getModuleInstance('Sonos') is None and not self.SkillManager.getModuleInstance('Sonos').anyModuleHere(client)) or not self.SkillManager.getModuleInstance('Sonos').active:
+		if self.ConfigManager.getAliceConfigByName('outputOnSonos') != '1' or (self.ConfigManager.getAliceConfigByName('outputOnSonos') == '1' or self.SkillManager.getSkillInstance('Sonos') is None and not self.SkillManager.getSkillInstance('Sonos').anyModuleHere(client)) or not self.SkillManager.getSkillInstance('Sonos').active:
 			if client == constants.ALL:
 				deviceList = self.DeviceManager.getDevicesByType('AliceSatellite', connectedOnly=True)
 				deviceList.append(constants.DEFAULT_SITE_ID)
@@ -595,7 +595,7 @@ class MqttManager(Manager):
 		if currentDialogState:
 			session.currentState = currentDialogState
 
-		if self.ConfigManager.getAliceConfigByName('outputOnSonos') != '1' or (self.ConfigManager.getAliceConfigByName('outputOnSonos') == '1' and self.SkillManager.getModuleInstance('Sonos') is None or not self.SkillManager.getModuleInstance('Sonos').anyModuleHere(session.siteId)) or not self.SkillManager.getModuleInstance('Sonos').active:
+		if self.ConfigManager.getAliceConfigByName('outputOnSonos') != '1' or (self.ConfigManager.getAliceConfigByName('outputOnSonos') == '1' and self.SkillManager.getSkillInstance('Sonos') is None or not self.SkillManager.getSkillInstance('Sonos').anyModuleHere(session.siteId)) or not self.SkillManager.getSkillInstance('Sonos').active:
 			self._mqttClient.publish(constants.TOPIC_CONTINUE_SESSION, json.dumps(jsonDict))
 		else:
 			jsonDict['text'] = ''
@@ -620,7 +620,7 @@ class MqttManager(Manager):
 
 		client = client.replace(' ', '_')
 
-		if self.ConfigManager.getAliceConfigByName('outputOnSonos') != '1' or (self.ConfigManager.getAliceConfigByName('outputOnSonos') == '1' and self.SkillManager.getModuleInstance('Sonos') is None or not self.SkillManager.getModuleInstance('Sonos').anyModuleHere(client)) or not self.SkillManager.getModuleInstance('Sonos').active:
+		if self.ConfigManager.getAliceConfigByName('outputOnSonos') != '1' or (self.ConfigManager.getAliceConfigByName('outputOnSonos') == '1' and self.SkillManager.getSkillInstance('Sonos') is None or not self.SkillManager.getSkillInstance('Sonos').anyModuleHere(client)) or not self.SkillManager.getSkillInstance('Sonos').active:
 			if text:
 				self._mqttClient.publish(constants.TOPIC_END_SESSION, json.dumps({
 					'sessionId': sessionId,
@@ -715,9 +715,11 @@ class MqttManager(Manager):
 		if text == '':
 			return
 
-		subprocess.call(['sudo', Path(self.Commons.rootDir(), '/system/scripts/snipsSuperTTS.sh'), Path('/share/tmp.wav'), 'amazon', self.LanguageManager.activeLanguage, 'US', 'Joanna', 'FEMALE', text, '22050'])
+		subprocess.call(['sudo',
+			Path(self.Commons.rootDir(), '/system/scripts/snipsSuperTTS.sh'),
+			Path('/share/tmp.wav'), 'amazon', self.LanguageManager.activeLanguage, 'US', 'Joanna', 'FEMALE', text, '22050'])
 
-		sonosModule = self.SkillManager.getModuleInstance('Sonos')
+		sonosModule = self.SkillManager.getSkillInstance('Sonos')
 		if sonosModule:
 			sonosModule.aliceSpeak(client)
 		else:

@@ -121,10 +121,10 @@ class ConfigManager(Manager):
 		return aliceConfigs
 
 
-	def addModuleToAliceConfig(self, moduleName: str, data: dict):
-		self._modulesConfigurations[moduleName] = data
+	def addModuleToAliceConfig(self, skillName: str, data: dict):
+		self._modulesConfigurations[skillName] = data
 		self.updateAliceConfiguration('modules', self._modulesConfigurations)
-		self.loadCheckAndUpdateModuleConfigurations(moduleName)
+		self.loadCheckAndUpdateModuleConfigurations(skillName)
 
 
 	def updateAliceConfiguration(self, key: str, value: typing.Any):
@@ -144,17 +144,17 @@ class ConfigManager(Manager):
 		
 
 
-	def updateModuleConfigurationFile(self, moduleName: str, key: str, value: typing.Any):
-		if moduleName not in self._modulesConfigurations:
-			self.logWarning(f'Was asked to update {key} in module {moduleName} but module doesn\'t exist')
+	def updateModuleConfigurationFile(self, skillName: str, key: str, value: typing.Any):
+		if skillName not in self._modulesConfigurations:
+			self.logWarning(f'Was asked to update {key} in module {skillName} but module doesn\'t exist')
 			return
 
-		if key not in self._modulesConfigurations[moduleName]:
-			self.logWarning(f'Was asked to update {key} in module {moduleName} but key doesn\'t exist')
+		if key not in self._modulesConfigurations[skillName]:
+			self.logWarning(f'Was asked to update {key} in module {skillName} but key doesn\'t exist')
 			return
 
-		self._modulesConfigurations[moduleName][key] = value
-		self._writeToModuleConfigurationFile(moduleName, self._modulesConfigurations[moduleName])
+		self._modulesConfigurations[skillName][key] = value
+		self._writeToModuleConfigurationFile(skillName, self._modulesConfigurations[skillName])
 
 
 	def writeToAliceConfigurationFile(self, confs: dict):
@@ -171,9 +171,9 @@ class ConfigManager(Manager):
 		modules = sort.pop('modules')
 
 		sort['modules'] = dict()
-		for moduleName, setting in modules.items():
+		for skillName, setting in modules.items():
 			moduleCleaned = {key: value for key, value in setting.items() if key in misterProper}
-			sort['modules'][moduleName] = moduleCleaned
+			sort['modules'][skillName] = moduleCleaned
 
 		self._aliceConfigurations = sort
 
@@ -185,10 +185,10 @@ class ConfigManager(Manager):
 			raise ConfigurationUpdateFailed()
 
 
-	def _writeToModuleConfigurationFile(self, moduleName: str, confs: dict):
+	def _writeToModuleConfigurationFile(self, skillName: str, confs: dict):
 		"""
 		Saves the given configuration into config.py of the Module
-		:param moduleName: the targeted module
+		:param skillName: the targeted module
 		:param confs: the dict to save
 		"""
 
@@ -196,7 +196,7 @@ class ConfigManager(Manager):
 		misterProper = ['active', 'version', 'author', 'conditions']
 		confsCleaned = {key: value for key, value in confs.items() if key not in misterProper}
 
-		moduleConfigFile = Path(self.Commons.rootDir(), 'modules', moduleName, 'config.json')
+		moduleConfigFile = Path(self.Commons.rootDir(), 'modules', skillName, 'config.json')
 		moduleConfigFile.write_text(json.dumps(confsCleaned, indent=4))
 
 
@@ -258,8 +258,8 @@ class ConfigManager(Manager):
 		return configName in self._aliceConfigurations
 
 
-	def configModuleExists(self, configName: str, moduleName: str) -> bool:
-		return moduleName in self._modulesConfigurations and configName in self._modulesConfigurations[moduleName]
+	def configModuleExists(self, configName: str, skillName: str) -> bool:
+		return skillName in self._modulesConfigurations and configName in self._modulesConfigurations[skillName]
 
 
 	def getAliceConfigByName(self, configName: str, voiceControl: bool = False) -> typing.Any:
@@ -269,20 +269,20 @@ class ConfigManager(Manager):
 		)
 
 
-	def getModuleConfigByName(self, moduleName: str, configName: str) -> typing.Any:
-		return self._modulesConfigurations.get(moduleName, dict()).get(configName, None)
+	def getModuleConfigByName(self, skillName: str, configName: str) -> typing.Any:
+		return self._modulesConfigurations.get(skillName, dict()).get(configName, None)
 
 
-	def getModuleConfigs(self, moduleName: str) -> dict:
-		return self._modulesConfigurations.get(moduleName, dict())
+	def getModuleConfigs(self, skillName: str) -> dict:
+		return self._modulesConfigurations.get(skillName, dict())
 
 
-	def getModuleConfigsTemplateByName(self, moduleName: str, configName: str) -> typing.Any:
-		return self._modulesTemplateConfigurations.get(moduleName, dict()).get(configName, None)
+	def getModuleConfigsTemplateByName(self, skillName: str, configName: str) -> typing.Any:
+		return self._modulesTemplateConfigurations.get(skillName, dict()).get(configName, None)
 
 
-	def getModuleConfigsTemplate(self, moduleName: str) -> dict:
-		return self._modulesTemplateConfigurations.get(moduleName, dict())
+	def getModuleConfigsTemplate(self, skillName: str) -> dict:
+		return self._modulesTemplateConfigurations.get(skillName, dict())
 
 
 	def loadCheckAndUpdateModuleConfigurations(self, module: str = None):
@@ -297,28 +297,28 @@ class ConfigManager(Manager):
 
 			moduleConfigFile = Path(modulesPath / moduleDirectory / 'config.json')
 			moduleConfigTemplate = Path(modulesPath / moduleDirectory / 'config.json.template')
-			moduleName = moduleDirectory.stem
+			skillName = moduleDirectory.stem
 			config = dict()
 
 			if not moduleConfigFile.exists() and moduleConfigTemplate.exists():
-				self._newModuleConfigFile(moduleName, moduleConfigTemplate)
+				self._newModuleConfigFile(skillName, moduleConfigTemplate)
 
 			elif moduleConfigFile.exists() and not moduleConfigTemplate.exists():
-				self.logInfo(f'- Deprecated config file for module "{moduleName}", removing')
+				self.logInfo(f'- Deprecated config file for module "{skillName}", removing')
 				moduleConfigFile.unlink()
-				self._modulesTemplateConfigurations[moduleName] = dict()
-				modulesConfigurations[moduleName] = dict()
+				self._modulesTemplateConfigurations[skillName] = dict()
+				modulesConfigurations[skillName] = dict()
 
 			elif moduleConfigFile.exists() and moduleConfigTemplate.exists():
 				config = json.load(moduleConfigFile.open())
 				configSample = json.load(moduleConfigTemplate.open())
-				self._modulesTemplateConfigurations[moduleName] = configSample
+				self._modulesTemplateConfigurations[skillName] = configSample
 
 				try:
 					changes = False
 					for setting, definition in configSample.items():
 						if setting not in config:
-							self.logInfo(f'- New configuration found for module "{moduleName}": {setting}')
+							self.logInfo(f'- New configuration found for module "{skillName}": {setting}')
 							changes = True
 							config[setting] = definition['defaultValue']
 
@@ -327,47 +327,47 @@ class ConfigManager(Manager):
 							try:
 								# First try to cast the seting we have to the new type
 								config[setting] = type(definition['defaultValue'])(config[setting])
-								self.logInfo(f'- Existing configuration type missmatch for module "{moduleName}": {setting}, cast variable to template configuration type')
+								self.logInfo(f'- Existing configuration type missmatch for module "{skillName}": {setting}, cast variable to template configuration type')
 							except Exception:
 								# If casting failed let's fall back to the new default value
-								self.logInfo(f'- Existing configuration type missmatch for module "{moduleName}": {setting}, replaced with template configuration')
+								self.logInfo(f'- Existing configuration type missmatch for module "{skillName}": {setting}, replaced with template configuration')
 								config[setting] = definition['defaultValue']
 
 					temp = config.copy()
 					for k, v in temp.items():
 						if k not in configSample:
-							self.logInfo(f'- Deprecated configuration for module "{moduleName}": {k}')
+							self.logInfo(f'- Deprecated configuration for module "{skillName}": {k}')
 							changes = True
 							del config[k]
 
 					if changes:
-						self._writeToModuleConfigurationFile(moduleName, config)
+						self._writeToModuleConfigurationFile(skillName, config)
 				except Exception as e:
-					self.logWarning(f'- Failed updating existing module config file for module {moduleName}: {e}')
+					self.logWarning(f'- Failed updating existing module config file for module {skillName}: {e}')
 					moduleConfigFile.unlink()
 					if moduleConfigTemplate.exists():
-						self._newModuleConfigFile(moduleName, moduleConfigTemplate)
+						self._newModuleConfigFile(skillName, moduleConfigTemplate)
 					else:
 						self.logWarning(f'- Cannot create config, template not existing, skipping module')
 
 			else:
-				self._modulesTemplateConfigurations[moduleName] = dict()
-				modulesConfigurations[moduleName] = dict()
+				self._modulesTemplateConfigurations[skillName] = dict()
+				modulesConfigurations[skillName] = dict()
 
-			if moduleName in self._aliceConfigurations['modules']:
-				config = {**config, **self._aliceConfigurations['modules'][moduleName]}
+			if skillName in self._aliceConfigurations['modules']:
+				config = {**config, **self._aliceConfigurations['modules'][skillName]}
 			else:
 				# For some reason we have a module not declared in alice configs... I think getting rid of it is best
-				if moduleName not in SkillManager.NEEDED_MODULES:
+				if skillName not in SkillManager.NEEDED_SKILLS:
 					self.logInfo('- Module not declared in config but files are existing, cleaning up')
 					shutil.rmtree(moduleDirectory, ignore_errors=True)
-					if moduleName in modulesConfigurations:
-						modulesConfigurations.pop(moduleName)
+					if skillName in modulesConfigurations:
+						modulesConfigurations.pop(skillName)
 					continue
 				else:
 					self.logInfo(f'- Module is required but is missing definition in Alice config, generating them')
 					try:
-						installFile = json.load(Path(modulesPath / moduleDirectory / f'{moduleName}.install').open())
+						installFile = json.load(Path(modulesPath / moduleDirectory / f'{skillName}.install').open())
 						node = {
 							'active'    : True,
 							'version'   : installFile['version'],
@@ -375,56 +375,56 @@ class ConfigManager(Manager):
 							'conditions': installFile['conditions']
 						}
 						config = {**config, **node}
-						self._modulesConfigurations[moduleName] = config
+						self._modulesConfigurations[skillName] = config
 						self.updateAliceConfiguration('modules', self._modulesConfigurations)
 					except Exception as e:
 						self.logError(f'- Failed generating default config, scheduling download: {e}')
-						subprocess.run(['wget', f'http://modules.projectalice.ch/{moduleName}', '-O', Path(self.Commons.rootDir(), f'system/moduleInstallTickets/{moduleName}.install')])
-						if moduleName in modulesConfigurations:
-							modulesConfigurations.pop(moduleName)
+						subprocess.run(['wget', f'http://modules.projectalice.ch/{skillName}', '-O', Path(self.Commons.rootDir(), f'system/moduleInstallTickets/{skillName}.install')])
+						if skillName in modulesConfigurations:
+							modulesConfigurations.pop(skillName)
 						continue
 
 			if config:
-				modulesConfigurations[moduleName] = config
+				modulesConfigurations[skillName] = config
 
 		self._modulesConfigurations = {**self._modulesConfigurations, **modulesConfigurations}
 
 
-	def _newModuleConfigFile(self, moduleName: str, moduleConfigTemplate: Path):
-		self.logInfo(f'- New config file for module "{moduleName}", creating from template')
+	def _newModuleConfigFile(self, skillName: str, moduleConfigTemplate: Path):
+		self.logInfo(f'- New config file for module "{skillName}", creating from template')
 
 		template = json.load(moduleConfigTemplate.open())
 
 		confs = {configName: configData['defaultValue'] if 'defaultValue' in configData else configData for configName, configData in template.items()}
-		self._modulesTemplateConfigurations[moduleName] = template
-		self._modulesConfigurations[moduleName] = confs
-		self._writeToModuleConfigurationFile(moduleName, confs)
+		self._modulesTemplateConfigurations[skillName] = template
+		self._modulesConfigurations[skillName] = confs
+		self._writeToModuleConfigurationFile(skillName, confs)
 
 
-	def deactivateModule(self, moduleName: str, persistent: bool = False):
+	def deactivateSkill(self, skillName: str, persistent: bool = False):
 
-		if moduleName in self.aliceConfigurations['modules']:
-			self.logInfo(f"Deactivated module {moduleName} {'with' if persistent else 'without'} persistence")
-			self.aliceConfigurations['modules'][moduleName]['active'] = False
-
-			if persistent:
-				self.writeToAliceConfigurationFile(self._aliceConfigurations)
-
-
-	def activateModule(self, moduleName: str, persistent: bool = False):
-
-		if moduleName in self.aliceConfigurations['modules']:
-			self.logInfo(f"Activated module {moduleName} {'with' if persistent else 'without'} persistence")
-			self.aliceConfigurations['modules'][moduleName]['active'] = True
+		if skillName in self.aliceConfigurations['modules']:
+			self.logInfo(f"Deactivated skill {skillName} {'with' if persistent else 'without'} persistence")
+			self.aliceConfigurations['modules'][skillName]['active'] = False
 
 			if persistent:
 				self.writeToAliceConfigurationFile(self._aliceConfigurations)
 
 
-	def removeModule(self, moduleName: str):
-		if moduleName in self.aliceConfigurations['modules']:
+	def activateModule(self, skillName: str, persistent: bool = False):
+
+		if skillName in self.aliceConfigurations['modules']:
+			self.logInfo(f"Activated module {skillName} {'with' if persistent else 'without'} persistence")
+			self.aliceConfigurations['modules'][skillName]['active'] = True
+
+			if persistent:
+				self.writeToAliceConfigurationFile(self._aliceConfigurations)
+
+
+	def removeModule(self, skillName: str):
+		if skillName in self.aliceConfigurations['modules']:
 			modules = self.aliceConfigurations['modules']
-			del modules[moduleName]
+			del modules[skillName]
 			self.aliceConfigurations['modules'] = modules
 			self.writeToAliceConfigurationFile(self._aliceConfigurations)
 
