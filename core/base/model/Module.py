@@ -316,9 +316,9 @@ class Module(ProjectAliceObject):
 		if not forMe:
 			return False
 
-		intentt = self._supportedIntents[session.intentName][0]
-		if isinstance(intentt, Intent) and intentt.hasDialogMapping():
-			consumed = intentt.dialogMapping.onDialog(session, self.name)
+		intent = self._supportedIntents[session.intentName][0]
+		if isinstance(intent, Intent) and intent.hasDialogMapping():
+			consumed = intent.dialogMapping.onDialog(session, self.name)
 			if consumed or consumed is None:
 				return True
 
