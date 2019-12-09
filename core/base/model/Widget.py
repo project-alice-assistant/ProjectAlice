@@ -17,7 +17,7 @@ class Widget(ProjectAliceObject):
 		super().__init__()
 		self._name = data['name']
 		self._parent = data['parent']
-		self._myModule = None
+		self._skillInstance = None
 
 		# sqlite3.Row does not support .get like dicts
 		self._state = data['state'] if 'state' in data.keys() else 0
@@ -34,8 +34,8 @@ class Widget(ProjectAliceObject):
 		self._language = self.loadLanguage()
 
 
-	def setParentModuleInstance(self, module):
-		self._myModule = module
+	def setParentSkillInstance(self, skill):
+		self._skillInstance = skill
 
 
 	def loadLanguage(self) -> Optional[Dict]:
@@ -167,8 +167,8 @@ class Widget(ProjectAliceObject):
 
 
 	@property
-	def myModule(self):
-		return self._myModule
+	def skillInstance(self):
+		return self._skillInstance
 
 
 	def __repr__(self):

@@ -114,7 +114,7 @@ class AliceSkill(ProjectAliceObject):
 				if widgetName in data: # widget already exists in DB
 					widget = klass(data[widgetName])
 					self._widgets[widgetName] = widget
-					widget.setParentModuleInstance(self)
+					widget.setParentSkillInstance(self)
 					del data[widgetName]
 					self.logInfo(f'Loaded widget "{widgetName}"')
 
@@ -125,7 +125,7 @@ class AliceSkill(ProjectAliceObject):
 						'parent': self.name,
 					})
 					self._widgets[widgetName] = widget
-					widget.setParentModuleInstance(self)
+					widget.setParentSkillInstance(self)
 					widget.saveToDB()
 
 			for widgetName in data: # deprecated widgets
