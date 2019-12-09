@@ -128,8 +128,8 @@ def intents(module: str, full: bool):
 		tableInstance = SingleTable(tableData, click.style(module + ' intents', fg='yellow'))
 		tableInstance.justify_columns[1] = 'center'
 
-		for intentName, moduleName in _intentNameSkillMatching.items():
-			if moduleName == module:
+		for intentName, skillName in _intentNameSkillMatching.items():
+			if skillName == module:
 				found = True
 				description = _intentsModulesValues[intentName]['__otherattributes__']['description']
 				enabledByDefault = _intentsModulesValues[intentName]['__otherattributes__']['enabledByDefault']

@@ -36,18 +36,18 @@ class TalkManager(Manager):
 		# Module Talks
 		modules = self.ConfigManager.modulesConfigurations
 
-		for moduleName in modules:
-			if moduleToLoad and moduleToLoad != moduleName:
+		for skillName in modules:
+			if moduleToLoad and moduleToLoad != skillName:
 				continue
 
-			langTalksMountpoint = Path('modules', moduleName, 'talks')
+			langTalksMountpoint = Path('modules', skillName, 'talks')
 			if not langTalksMountpoint.exists():
 				continue
 
 			for langTalkFile in langTalksMountpoint.iterdir():
 				lang = langTalkFile.stem
 				try:
-					self._langData.setdefault(moduleName, dict())[lang] = json.loads(langTalkFile.read_text())
+					self._langData.setdefault(skillName, dict())[lang] = json.loads(langTalkFile.read_text())
 				except FileNotFoundError:
 					continue
 				except ValueError:

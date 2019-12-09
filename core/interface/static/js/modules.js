@@ -62,7 +62,7 @@ $(function () {
 			type: 'POST'
 		}).done(function (answer){
 			$('#moduleStoreWait').hide();
-			$.each(answer, function(moduleName, installer){
+			$.each(answer, function(skillName, installer){
 				addToStore(installer);
 			});
 		});

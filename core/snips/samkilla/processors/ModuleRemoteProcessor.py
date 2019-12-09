@@ -10,11 +10,11 @@ EnumSkillImageUrl = EnumSkillImageUrlClass()
 
 class ModuleRemoteProcessor:
 
-	def __init__(self, ctx: SamkillaManager, assistantId: str, module: dict, moduleName: str, moduleLanguage: str):
+	def __init__(self, ctx: SamkillaManager, assistantId: str, module: dict, skillName: str, moduleLanguage: str):
 		self._ctx = ctx
 		self._assistantId = assistantId
 		self._module = module
-		self._moduleName = moduleName
+		self._skillName = skillName
 		self._moduleLanguage = moduleLanguage
 		self._syncState = None
 		self._createdInstances = {
@@ -25,7 +25,7 @@ class ModuleRemoteProcessor:
 	def createNewSavedModule(self) -> dict:
 		return {
 			'skillId': None,
-			'name'   : self._moduleName
+			'name'   : self._skillName
 		}
 
 
@@ -47,22 +47,22 @@ class ModuleRemoteProcessor:
 		changes = False
 
 		if hashComputationOnly or (oldInstanceExists and oldHash == curHash):
-			self._ctx.log(f'Skill model {skillId} ({self._moduleName}) has no changes')
+			self._ctx.log(f'Skill model {skillId} ({self._skillName}) has no changes')
 		elif oldInstanceExists:
 			changes = True
-			self._ctx.log(f'Skill model {skillId} ({self._moduleName}) has been edited')
+			self._ctx.log(f'Skill model {skillId} ({self._skillName}) has been edited')
 			self._ctx.skill.edit(skillId, description=moduleDescription, imageKey=EnumSkillImageUrl.getResourceFileByAttr(moduleIcon))
 		else:
 			changes = True
 			skillId = self._ctx.skill.create(
 				assistantId=self._assistantId,
-				name=self._moduleName,
+				name=self._skillName,
 				description=moduleDescription,
 				language=self._moduleLanguage,
 				imageKey=EnumSkillImageUrl.getResourceFileByAttr(moduleIcon),
 				attachToAssistant=True
 			)
-			self._ctx.log(f'Skill model {skillId} ({self._moduleName}) has been created')
+			self._ctx.log(f'Skill model {skillId} ({self._skillName}) has been created')
 			self._createdInstances['skills'].append({'id': skillId, 'assistantId': self._assistantId})
 			curHash = self.skillValuesToHash(icon=moduleIcon, description=moduleDescription, skillId=skillId)
 
@@ -93,7 +93,7 @@ class ModuleRemoteProcessor:
 		skillData = self.syncSkill(self._module['description'], self._module['icon'], hashComputationOnly)
 		self._syncState['skillId'] = skillData['skillId']
 		self._syncState['hash'] = skillData['hash']
-		self._syncState['name'] = self._moduleName
+		self._syncState['name'] = self._skillName
 
 		return self._syncState, skillData['changes']
 

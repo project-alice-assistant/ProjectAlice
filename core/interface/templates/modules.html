@@ -16,9 +16,9 @@
 {% endblock %}
 
 {% block content %}
-	{% for moduleName, module in modules.items() %}
-		<div id="config_for_{{ moduleName }}" title="{{ langData.moduleSettings }}" class="configBox">
-			<form action="/modules/saveModuleSettings/" name="config_for_{{ moduleName }}" method="post" autocomplete="off" novalidate>
+	{% for skillName, module in modules.items() %}
+		<div id="config_for_{{ skillName }}" title="{{ langData.moduleSettings }}" class="configBox">
+			<form action="/modules/saveModuleSettings/" name="config_for_{{ skillName }}" method="post" autocomplete="off" novalidate>
 				{% for settingName, settingValue in module.getModuleConfigs().items() %}
 					{% if module.getModuleConfigsTemplate()[settingName]['display'] != 'hidden' %}
 						<div class="configLine">
@@ -63,7 +63,7 @@
 						</div>
 					{% endif %}
 				{% endfor %}
-				<input type="hidden" name="moduleName" value="{{ moduleName }}">
+				<input type="hidden" name="skillName" value="{{ skillName }}">
 				<input class="configSaveButton" type="submit" value="{{ langData.save }}">
 			</form>
 		</div>
@@ -83,10 +83,10 @@
 		<div class="moduleStoreWait" id="moduleStoreWait"><i class="fas fa-spinner fa-spin"></i></div>
 	</div>
 	<div class="modulesPane" id="modulesPane">
-	{% for moduleName, module in modules.items() %}
-		<div class="moduleTile" id="{{ moduleName }}-{{ module.author }}">
+	{% for skillName, module in modules.items() %}
+		<div class="moduleTile" id="{{ skillName }}-{{ module.author }}">
 			<div class="moduleTitle">
-				<div class="moduleName">{{ moduleName }}</div>
+				<div class="skillName">{{ skillName }}</div>
 			</div>
 			<div class="moduleContainer moduleDefaultView">
 				<div class="moduleAuthor">
@@ -102,23 +102,23 @@
 					 {{ langData.viewIntents }} <i class="fas fa-eye"></i>
 				</div>
 				{% if module.getModuleConfigs()|length %}
-					<div class="moduleSettings" data-forModule="{{ moduleName }}">
+					<div class="moduleSettings" data-forModule="{{ skillName }}">
 						{{ langData.moduleSettings }} <i class="fas fa-cog"></i>
 					</div>
 				{% endif %}
 				<div class="moduleActions">
-					<div class="moduleButton" {% if module.required is sameas true %} style="display: none;" {% endif %} id="toggle_{{ moduleName }}">
+					<div class="moduleButton" {% if module.required is sameas true %} style="display: none;" {% endif %} id="toggle_{{ skillName }}">
 						{% if module.active is sameas true %}
 							{{ langData.disable }}
 						{% else %}
 							{{ langData.enable }}
 						{% endif %}
 					</div>
-					<div class="moduleButton" {% if module.required is sameas true %} style="display: none;" {% endif %} id="delete_{{ moduleName }}">
+					<div class="moduleButton" {% if module.required is sameas true %} style="display: none;" {% endif %} id="delete_{{ skillName }}">
 						{{ langData.delete }}
 					</div>
 					{% if module.updateAvailable is sameas true %}
-						<div class="moduleButton" id="update_{{ moduleName }}">
+						<div class="moduleButton" id="update_{{ skillName }}">
 							{{ langData.updatee }}
 						</div>
 					{% endif %}

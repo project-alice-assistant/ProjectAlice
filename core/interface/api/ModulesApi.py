@@ -16,72 +16,72 @@ class ModulesApi(Api):
 		return jsonify(data=[module.toJson() for module in self.ModuleManager.allModules.values()])
 
 
-	def delete(self, moduleName: str):
-		if moduleName in self.ModuleManager.neededModules:
+	def delete(self, skillName: str):
+		if skillName in self.ModuleManager.neededModules:
 			return jsonify(success=False, reason='module cannot be deleted')
 
 		try:
-			self.ModuleManager.removeModule(moduleName)
+			self.ModuleManager.removeModule(skillName)
 			return jsonify(success=True)
 		except Exception as e:
 			return jsonify(success=False, reason=f'Failed deleting module: {e}')
 
 
-	def get(self, moduleName: str):
-		module = self.ModuleManager.getModuleInstance(moduleName=moduleName, silent=True)
+	def get(self, skillName: str):
+		module = self.ModuleManager.getModuleInstance(skillName=skillName, silent=True)
 		module = module.toJson() if module else dict()
 
 		return jsonify(data=module)
 
 
-	@route('/<moduleName>/toggleActiveState/')
-	def toggleActiveState(self, moduleName: str):
-		if moduleName not in self.ModuleManager.allModules:
+	@route('/<skillName>/toggleActiveState/')
+	def toggleActiveState(self, skillName: str):
+		if skillName not in self.ModuleManager.allModules:
 			return jsonify(success=False, reason='module not found')
 
-		if self.ModuleManager.isModuleActive(moduleName):
-			if moduleName in self.ModuleManager.neededModules:
+		if self.ModuleManager.isModuleActive(skillName):
+			if skillName in self.ModuleManager.neededModules:
 				return jsonify(success=False, reason='module cannot be deactivated')
 
-			self.ModuleManager.deactivateModule(moduleName=moduleName, persistent=True)
+			self.ModuleManager.deactivateModule(skillName=skillName, persistent=True)
 		else:
-			self.ModuleManager.activateModule(moduleName=moduleName, persistent=True)
+			self.ModuleManager.activateModule(skillName=skillName, persistent=True)
 
 		return jsonify(success=True)
 
 
-	@route('/<moduleName>/activate/', methods=['GET', 'POST'])
-	def activate(self, moduleName: str):
-		if moduleName not in self.ModuleManager.allModules:
+	@route('/<skillName>/activate/', methods=['GET', 'POST'])
+	def activate(self, skillName: str):
+		if skillName not in self.ModuleManager.allModules:
 			return jsonify(success=False, reason='module not found')
 
-		if self.ModuleManager.isModuleActive(moduleName):
+		if self.ModuleManager.isModuleActive(skillName):
 			return jsonify(success=False, reason='already active')
 		else:
 			persistent = request.form.get('persistent') is not None and request.form.get('persistent') == 'true'
-			self.ModuleManager.activateModule(moduleName=moduleName, persistent=persistent)
+			self.ModuleManager.activateModule(skillName=skillName, persistent=persistent)
 			return jsonify(success=True)
 
 
-	@route('/<moduleName>/deactivate/', methods=['GET', 'POST'])
-	def deactivate(self, moduleName: str):
-		if moduleName not in self.ModuleManager.allModules:
+	@route('/<skillName>/deactivate/', methods=['GET', 'POST'])
+	def deactivate(self, skillName: str):
+		if skillName not in self.ModuleManager.allModules:
 			return jsonify(success=False, reason='module not found')
 
-		if moduleName in self.ModuleManager.neededModules:
+		if skillName in self.ModuleManager.neededModules:
 			return jsonify(success=False, reason='module cannot be deactivated')
 
-		if self.ModuleManager.isModuleActive(moduleName):
+		if self.ModuleManager.isModuleActive(skillName):
 			persistent = request.form.get('persistent') is not None and request.form.get('persistent') == 'true'
-			self.ModuleManager.deactivateModule(moduleName=moduleName, persistent=persistent)
+			self.ModuleManager.deactivateModule(skillName=skillName, persistent=persistent)
 			return jsonify(success=True)
 		else:
 			return jsonify(success=False, reason='not active')
 
 
-	@route('/<moduleName>/checkUpdate/')
-	def checkUpdate(self, moduleName: str):
-		if moduleName not in self.ModuleManager.allModules:
+	@route('/<skillName>/checkUpdate/')
+	def checkUpdate(self, skillName: str):
+		if skillName not in self.ModuleManager.allModules:
 			return jsonify(success=False, reason='module not found')
 
-		return jsonify(success=self.ModuleManager.checkForModuleUpdates(moduleToCheck=moduleName))
+		return jsonify(success=self.ModuleManager.checkForModuleUpdates(moduleToCheck=skillName))

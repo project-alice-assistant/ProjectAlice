@@ -121,9 +121,9 @@ class MqttManager(Manager):
 		self.toggleFeedbackSounds()
 
 
-	def subscribeModuleIntents(self, moduleName: str = None):
-		if moduleName:
-			self.ModuleManager.getModuleInstance(moduleName).subscribe(self._mqttClient)
+	def subscribeModuleIntents(self, skillName: str = None):
+		if skillName:
+			self.ModuleManager.getModuleInstance(skillName).subscribe(self._mqttClient)
 			return
 
 		for module in self.ModuleManager.activeModules.values():

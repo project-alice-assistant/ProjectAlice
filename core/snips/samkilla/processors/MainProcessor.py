@@ -128,8 +128,8 @@ class MainProcessor:
 			self.initSavedIntents()
 
 
-	def syncRemoteToLocalModuleCache(self, assistantId: str, assistantLanguage: str, moduleName: str, syncState: str, persist: bool = False):
-		self._savedAssistants[assistantLanguage][assistantId]['modules'][moduleName] = syncState
+	def syncRemoteToLocalModuleCache(self, assistantId: str, assistantLanguage: str, skillName: str, syncState: str, persist: bool = False):
+		self._savedAssistants[assistantLanguage][assistantId]['modules'][skillName] = syncState
 
 		if persist:
 			self.persistToLocalAssistantCache(assistantId=assistantId, assistantLanguage=assistantLanguage)
@@ -171,8 +171,8 @@ class MainProcessor:
 			self._ctx.log(f'\nInconsistent file, "{moduleFile}" has a bad json format')
 			return
 
-	def getModuleSyncStateByLanguageAndAssistantId(self, moduleName: str, language: str, assistantId: str) -> str:
-		return self._savedAssistants.get(language, dict()).get(assistantId, dict()).get('modules', dict()).get(moduleName, None)
+	def getModuleSyncStateByLanguageAndAssistantId(self, skillName: str, language: str, assistantId: str) -> str:
+		return self._savedAssistants.get(language, dict()).get(assistantId, dict()).get('modules', dict()).get(skillName, None)
 
 
 	def getSlotTypeSyncStateByLanguageAndAssistantId(self, slotTypeName: str, language: str, assistantId: str) -> str:
@@ -610,12 +610,12 @@ class MainProcessor:
 
 		skillNameIdMatching = dict()
 
-		for moduleName, moduleSettings in self._modules.items():
+		for skillName, moduleSettings in self._modules.items():
 			if languageFilter not in moduleSettings:
 				continue
 
 			moduleSyncState = self.getModuleSyncStateByLanguageAndAssistantId(
-				moduleName=moduleName,
+				skillName=skillName,
 				language=languageFilter,
 				assistantId=runOnAssistantId
 			)
@@ -625,7 +625,7 @@ class MainProcessor:
 				ctx=self._ctx,
 				assistantId=runOnAssistantId,
 				module=moduleSettings[languageFilter],
-				moduleName=moduleName,
+				skillName=skillName,
 				moduleLanguage=languageFilter
 			)
 
@@ -637,28 +637,28 @@ class MainProcessor:
 
 			if changes: globalChanges = True
 
-			skillNameIdMatching[moduleName] = newModuleSyncState['skillId']
+			skillNameIdMatching[skillName] = newModuleSyncState['skillId']
 
 			self.syncRemoteToLocalModuleCache(
 				assistantId=runOnAssistantId,
 				assistantLanguage=languageFilter,
-				moduleName=moduleName,
+				skillName=skillName,
 				syncState=newModuleSyncState,
 				persist=True
 			)
 
-			modulesSynced[moduleName] = True
+			modulesSynced[skillName] = True
 
 		# Remove deprecated/renamed modules
 		hasDeprecatedModules = list()
 
-		for moduleName in self._savedAssistants[languageFilter][runOnAssistantId]['modules']:
-			if moduleFilter and moduleName not in moduleFilter:
+		for skillName in self._savedAssistants[languageFilter][runOnAssistantId]['modules']:
+			if moduleFilter and skillName not in moduleFilter:
 				continue
 
-			if moduleName not in modulesSynced:
-				self._ctx.log(f'Deprecated module {moduleName}')
-				moduleCacheData = self._savedAssistants[languageFilter][runOnAssistantId]['modules'][moduleName]
+			if skillName not in modulesSynced:
+				self._ctx.log(f'Deprecated module {skillName}')
+				moduleCacheData = self._savedAssistants[languageFilter][runOnAssistantId]['modules'][skillName]
 				skillId = moduleCacheData['skillId']
 
 				for slotTypeName in moduleCacheData.get('slotTypes', list()):
@@ -671,13 +671,13 @@ class MainProcessor:
 
 				self._ctx.skill.removeFromAssistant(assistantId=runOnAssistantId, skillId=skillId, deleteAfter=True)
 
-				hasDeprecatedModules.append(moduleName)
+				hasDeprecatedModules.append(skillName)
 
 		if hasDeprecatedModules:
 			globalChanges = True
 
-			for moduleName in hasDeprecatedModules:
-				del self._savedAssistants[languageFilter][runOnAssistantId]['modules'][moduleName]
+			for skillName in hasDeprecatedModules:
+				del self._savedAssistants[languageFilter][runOnAssistantId]['modules'][skillName]
 
 			self.persistToLocalAssistantCache(assistantId=runOnAssistantId, assistantLanguage=languageFilter)
 
@@ -726,13 +726,13 @@ class MainProcessor:
 		cachedIndexedSkills = self._ctx.skill.listSkillsByUserIdAndAssistantId(userId=self._ctx.userId, assistantId=runOnAssistantId, fromCache=True)
 
 		for skill in cachedIndexedSkills:
-			moduleName = SuperManager.getInstance().commons.toCamelCase(string=skill['name'], replaceSepCharacters=True, sepCharacters=('/', '-', '_'))
+			skillName = SuperManager.getInstance().commons.toCamelCase(string=skill['name'], replaceSepCharacters=True, sepCharacters=('/', '-', '_'))
 
-			if moduleFilter and moduleName not in moduleFilter:
+			if moduleFilter and skillName not in moduleFilter:
 				continue
 
-			modules[moduleName] = {
-				'module'     : moduleName,
+			modules[skillName] = {
+				'module'     : skillName,
 				'icon'       : EnumSkillImageUrl.urlToResourceKey(skill['imageUrl']),
 				'description': skill['description'],
 				'slotTypes'  : list(),
@@ -740,7 +740,7 @@ class MainProcessor:
 			}
 			moduleSyncState = {
 				'skillId'  : skill['id'],
-				'name'     : moduleName,
+				'name'     : skillName,
 				'slotTypes': dict(),
 				'intents'  : dict(),
 				'hash'     : ''
@@ -788,7 +788,7 @@ class MainProcessor:
 					entityName = SuperManager.getInstance().commons.toCamelCase(string=entity['name'], replaceSepCharacters=True, sepCharacters=('/', '-', '_'))
 					typeEntityMatching[entity['id']] = entityName
 
-					modules[moduleName]['slotTypes'].append({
+					modules[skillName]['slotTypes'].append({
 						'name'                   : entityName,
 						'matchingStrictness'     : entity['matchingStrictness'],
 						'automaticallyExtensible': entity['automaticallyExtensible'],
@@ -808,7 +808,7 @@ class MainProcessor:
 					'missingQuestion': slot['missingQuestion']
 				} for slot in intent['slots']]
 
-				modules[moduleName]['intents'].append({
+				modules[skillName]['intents'].append({
 					'name'            : intentName,
 					'description'     : intent['description'],
 					'enabledByDefault': intent['enabledByDefault'],
@@ -821,11 +821,11 @@ class MainProcessor:
 				}
 
 			# Persist module configuration
-			moduleConfig = modules[moduleName]
-			moduleIntentsMountpoint = Path(self.SAVED_MODULES_DIR, moduleName, 'dialogTemplate')
+			moduleConfig = modules[skillName]
+			moduleIntentsMountpoint = Path(self.SAVED_MODULES_DIR, skillName, 'dialogTemplate')
 			moduleIntentsMountpoint.mkdir(parents=True, exist_ok=True)
 
 			moduleIntentsOutputFile = moduleIntentsMountpoint / f'{languageFilter}.json'
 
 			moduleIntentsOutputFile.write_text(json.dumps(moduleConfig, indent=4, sort_keys=False, ensure_ascii=False))
-			self._ctx.log(f'Finished for module {moduleName}')
+			self._ctx.log(f'Finished for module {skillName}')

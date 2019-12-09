@@ -40,19 +40,19 @@ class FunctionNotImplemented(_ProjectAliceException):
 
 
 class ModuleStartingFailed(_ProjectAliceException):
-	def __init__(self, moduleName: str = '', error: str = ''):
+	def __init__(self, skillName: str = '', error: str = ''):
 		super().__init__(message=error)
 		self._logger.logInfo(f'An error occured while starting a module: {error}')
 
-		if moduleName:
-			SuperManager.getInstance().moduleManager.deactivateModule(moduleName)
+		if skillName:
+			SuperManager.getInstance().moduleManager.deactivateModule(skillName)
 
 
 class ModuleStartDelayed(_ProjectAliceException):
-	def __init__(self, moduleName):
-		super().__init__(moduleName)
+	def __init__(self, skillName):
+		super().__init__(skillName)
 		self._logger.logWarning('Delaying module start')
-		SuperManager.getInstance().moduleManager.getModuleInstance(moduleName).delayed = True
+		SuperManager.getInstance().moduleManager.getModuleInstance(skillName).delayed = True
 
 
 class IntentError(_ProjectAliceException):
@@ -76,16 +76,16 @@ class AssistantNotFoundError(_ProjectAliceException):
 
 
 class ModuleNotConditionCompliant(_ProjectAliceException):
-	def __init__(self, message: str, moduleName: str, condition: str, conditionValue: str):
-		self._moduleName = moduleName
+	def __init__(self, message: str, skillName: str, condition: str, conditionValue: str):
+		self._skillName = skillName
 		self._condition = condition
 		self._conditionValue = conditionValue
 		super().__init__(message)
 
 
 	@property
-	def moduleName(self) -> str:
-		return self._moduleName
+	def skillName(self) -> str:
+		return self._skillName
 
 
 	@property

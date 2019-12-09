@@ -361,7 +361,7 @@ class SamkillaManager(Manager):
 		return [{
 			'name': intentName,
 			'description': intentsModulesValues[intentName]['__otherattributes__']['description']
-		} for intentName, moduleName in intentNameSkillMatching.items() if moduleName == moduleFilter]
+		} for intentName, skillName in intentNameSkillMatching.items() if skillName == moduleFilter]
 
 
 	def getUtterancesByIntentName(self, runOnAssistantId: str, languageFilter: str, intentFilter: str = None) -> list:

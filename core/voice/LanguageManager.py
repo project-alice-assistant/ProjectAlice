@@ -54,13 +54,13 @@ class LanguageManager(Manager):
 		with open(Path('system/manager/LanguageManager/strings.json')) as jsonFile:
 			self._stringsData['system'] = json.load(jsonFile)
 
-		for moduleName in self.ConfigManager.modulesConfigurations:
-			if moduleToLoad and moduleName != moduleToLoad:
+		for skillName in self.ConfigManager.modulesConfigurations:
+			if moduleToLoad and skillName != moduleToLoad:
 				continue
 
 			try:
-				jsonFile = Path('modules', moduleName, 'strings.json')
-				self._stringsData[moduleName] = json.loads(jsonFile.read_text())
+				jsonFile = Path('modules', skillName, 'strings.json')
+				self._stringsData[skillName] = json.loads(jsonFile.read_text())
 			except FileNotFoundError:
 				continue
 			except ValueError:

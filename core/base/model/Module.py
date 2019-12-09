@@ -325,8 +325,8 @@ class Module(ProjectAliceObject):
 		return self._supportedIntents[session.intentName][1](session=session)
 
 
-	def getResource(self, moduleName: str = '', resourcePathFile: str = '') -> Path:
-		return Path(self.Commons.rootDir(), 'modules', moduleName or self.name, resourcePathFile)
+	def getResource(self, skillName: str = '', resourcePathFile: str = '') -> Path:
+		return Path(self.Commons.rootDir(), 'modules', skillName or self.name, resourcePathFile)
 
 
 	def _initDB(self) -> bool:
@@ -370,7 +370,7 @@ class Module(ProjectAliceObject):
 
 	# HELPERS
 	def getConfig(self, key: str) -> Any:
-		return self.ConfigManager.getModuleConfigByName(moduleName=self.name, configName=key)
+		return self.ConfigManager.getModuleConfigByName(skillName=self.name, configName=key)
 
 
 	def getModuleConfigs(self, withInfo: bool = False) -> dict:
@@ -387,7 +387,7 @@ class Module(ProjectAliceObject):
 
 
 	def updateConfig(self, key: str, value: Any):
-		self.ConfigManager.updateModuleConfigurationFile(moduleName=self.name, key=key, value=value)
+		self.ConfigManager.updateModuleConfigurationFile(skillName=self.name, key=key, value=value)
 
 
 	def getAliceConfig(self, key: str) -> Any:
@@ -425,8 +425,8 @@ class Module(ProjectAliceObject):
 		return talk
 
 
-	def getModuleInstance(self, moduleName: str) -> Module:
-		return self.ModuleManager.getModuleInstance(moduleName=moduleName)
+	def getModuleInstance(self, skillName: str) -> Module:
+		return self.ModuleManager.getModuleInstance(skillName=skillName)
 
 
 	def say(self, text: str, siteId: str = constants.DEFAULT_SITE_ID, customData: dict = None, canBeEnqueued: bool = True):

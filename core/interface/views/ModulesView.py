@@ -16,7 +16,7 @@ class ModulesView(View):
 
 	def index(self):
 		modules = {**self.ModuleManager.activeModules, **self.ModuleManager.deactivatedModules}
-		modules = {moduleName: module for moduleName, module in sorted(modules.items()) if module is not None}
+		modules = {skillName: module for skillName, module in sorted(modules.items()) if module is not None}
 
 		return render_template(template_name_or_list='modules.html',
 		                       modules=modules,
@@ -28,9 +28,9 @@ class ModulesView(View):
 		try:
 			_, module = request.form.get('id').split('_')
 			if self.ModuleManager.isModuleActive(module):
-				self.ModuleManager.deactivateModule(moduleName=module, persistent=True)
+				self.ModuleManager.deactivateModule(skillName=module, persistent=True)
 			else:
-				self.ModuleManager.activateModule(moduleName=module, persistent=True)
+				self.ModuleManager.activateModule(skillName=module, persistent=True)
 		except Exception as e:
 			self.logWarning(f'Failed toggling module: {e}', printStack=True)
 		
@@ -48,9 +48,9 @@ class ModulesView(View):
 
 
 	def saveModuleSettings(self):
-		moduleName = request.form['moduleName']
+		skillName = request.form['skillName']
 		for confName, confValue in request.form.items():
-			if confName == 'moduleName':
+			if confName == 'skillName':
 				continue
 
 			if confValue == 'on':
@@ -59,7 +59,7 @@ class ModulesView(View):
 				confValue = False
 
 			self.ConfigManager.updateModuleConfigurationFile(
-				moduleName=moduleName,
+				skillName=skillName,
 				key=confName,
 				value=confValue
 			)
@@ -118,6 +118,6 @@ class ModulesView(View):
 
 		actualVersion = Version(constants.VERSION)
 		return {
-			moduleName: moduleInfo for moduleName, moduleInfo in installers.items()
-			if self.ModuleManager.getModuleInstance(moduleName=moduleName, silent=True) is None and actualVersion >= Version(moduleInfo['aliceMinVersion'])
+			skillName: moduleInfo for skillName, moduleInfo in installers.items()
+			if self.ModuleManager.getModuleInstance(skillName=skillName, silent=True) is None and actualVersion >= Version(moduleInfo['aliceMinVersion'])
 		}
