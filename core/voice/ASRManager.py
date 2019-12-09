@@ -57,7 +57,7 @@ class ASRManager(Manager):
 			self.logInfo('Internet lost, switching to snips ASR')
 			self.SnipsServicesManager.runCmd('start', ['snips-asr'])
 			self._asr = SnipsASR()
-			self.ThreadManager.doLater(interval=3, func=self.MqttManager.say, args=[self.TalkManager.randomTalk('internetLost', module='AliceCore'), 'all'])
+			self.ThreadManager.doLater(interval=3, func=self.MqttManager.say, args=[self.TalkManager.randomTalk('internetLost', skill='AliceCore'), 'all'])
 
 
 	def onStartListening(self, session: DialogSession, *args, **kwargs):
@@ -76,7 +76,7 @@ class ASRManager(Manager):
 			result = self.LanguageManager.sanitizeNluQuery(result)
 			self.logDebug(f'{self._asr.__class__.__name__} output: "{result}"')
 
-			supportedIntents = session.intentFilter or self.ModuleManager.supportedIntents
+			supportedIntents = session.intentFilter or self.SkillManager.supportedIntents
 			intentFilter = [intent.justTopic for intent in supportedIntents if isinstance(intent, Intent) and not intent.protected]
 
 			# Add Global Intents

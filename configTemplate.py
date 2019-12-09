@@ -1,8 +1,8 @@
 settings = {
-	'autoReportModuleErrors': {
+	'autoReportSkillErrors': {
 		'defaultValue': False,
 		'dataType'    : 'boolean',
-		'description' : 'If true, an error thrown by a module will automatically post a github issue and ping the author'
+		'description' : 'If true, an error thrown by a skill will automatically post a github issue and ping the author'
 	},
 	'notUnderstoodRetries'  : {
 		'defaultValue': 3,
@@ -72,7 +72,7 @@ settings = {
 	'stayCompletlyOffline'  : {
 		'defaultValue': False,
 		'dataType'    : 'boolean',
-		'description' : 'Nothing goes out! Well, that also means no module updates, no access to web APIs'
+		'description' : 'Nothing goes out! Well, that also means no skill updates, no access to web APIs'
 	},
 	'keepASROffline'        : {
 		'defaultValue': True,
@@ -164,20 +164,20 @@ settings = {
 		'dataType'    : 'string',
 		'description' : 'Project Alice active country code'
 	},
-	'moduleAutoUpdate'      : {
+	'skillAutoUpdate'      : {
 		'defaultValue': False,
 		'dataType'    : 'boolean',
-		'description' : 'Whether modules should auto update, checked every 15 minutes'
+		'description' : 'Whether skills should auto update, checked every 15 minutes'
 	},
 	'githubUsername'        : {
 		'defaultValue': '',
 		'dataType'    : 'string',
-		'description' : 'Not mendatory, your github username and token allows you to use Github API much more, such as checking for modules, updating them etc etc'
+		'description' : 'Not mendatory, your github username and token allows you to use Github API much more, such as checking for skills, updating them etc etc'
 	},
 	'githubToken'           : {
 		'defaultValue': '',
 		'dataType'    : 'password',
-		'description' : 'Not mendatory, your github username and token allows you to use Github API much more, such as checking for modules, updating them etc etc'
+		'description' : 'Not mendatory, your github username and token allows you to use Github API much more, such as checking for skills, updating them etc etc'
 	},
 	'updateChannel'         : {
 		'defaultValue': 'master',
@@ -251,12 +251,12 @@ settings = {
 	'devMode'               : {
 		'defaultValue': False,
 		'dataType'    : 'boolean',
-		'description' : 'Activates the developer part of the interface, for module development'
+		'description' : 'Activates the developer part of the interface, for skill development'
 	},
 
 	# -----------------------
-	# Modules
+	# Skills
 	# -----------------------
 
-	'modules'               : {}
+	'skills'               : {}
 }

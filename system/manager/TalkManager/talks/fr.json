@@ -63,8 +63,8 @@
 	},
 	"maxOneAlicePerRoom": {
 		"default": [
-			"Je suis désolée mais il ne peut y avoir qu'un seul module Alice par pièce",
-			"Vraiment désolée mais il ne peut pas y avoir plus d'une module Alice par pièce"
+			"Je suis désolée mais il ne peut y avoir qu'un seul skill Alice par pièce",
+			"Vraiment désolée mais il ne peut pas y avoir plus d'une skill Alice par pièce"
 		]
 	},
 	"wakewordCaptured": [

@@ -39,20 +39,20 @@ class FunctionNotImplemented(_ProjectAliceException):
 		self._logger.logError(f'{funcName} must be implemented in {clazz}!')
 
 
-class ModuleStartingFailed(_ProjectAliceException):
-	def __init__(self, moduleName: str = '', error: str = ''):
+class SkillStartingFailed(_ProjectAliceException):
+	def __init__(self, skillName: str = '', error: str = ''):
 		super().__init__(message=error)
-		self._logger.logInfo(f'An error occured while starting a module: {error}')
+		self._logger.logInfo(f'An error occured while starting a skill: {error}')
 
-		if moduleName:
-			SuperManager.getInstance().moduleManager.deactivateModule(moduleName)
+		if skillName:
+			SuperManager.getInstance().skillManager.deactivateSkill(skillName)
 
 
-class ModuleStartDelayed(_ProjectAliceException):
-	def __init__(self, moduleName):
-		super().__init__(moduleName)
-		self._logger.logWarning('Delaying module start')
-		SuperManager.getInstance().moduleManager.getModuleInstance(moduleName).delayed = True
+class SkillStartDelayed(_ProjectAliceException):
+	def __init__(self, skillName):
+		super().__init__(skillName)
+		self._logger.logWarning('Delaying skill start')
+		SuperManager.getInstance().skillManager.getSkillInstance(skillName).delayed = True
 
 
 class IntentError(_ProjectAliceException):
@@ -75,17 +75,17 @@ class AssistantNotFoundError(_ProjectAliceException):
 		super().__init__(message, status, context)
 
 
-class ModuleNotConditionCompliant(_ProjectAliceException):
-	def __init__(self, message: str, moduleName: str, condition: str, conditionValue: str):
-		self._moduleName = moduleName
+class SkillNotConditionCompliant(_ProjectAliceException):
+	def __init__(self, message: str, skillName: str, condition: str, conditionValue: str):
+		self._skillName = skillName
 		self._condition = condition
 		self._conditionValue = conditionValue
 		super().__init__(message)
 
 
 	@property
-	def moduleName(self) -> str:
-		return self._moduleName
+	def skillName(self) -> str:
+		return self._skillName
 
 
 	@property

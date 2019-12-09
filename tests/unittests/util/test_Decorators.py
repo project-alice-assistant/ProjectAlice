@@ -18,10 +18,10 @@ class TestDecorators(unittest.TestCase):
 
 	@mock.patch('core.util.Decorators.SuperManager')
 	def test_online(self, mock_superManager):
-		class Module:
+		class AliceSkill:
 			@property
 			def name(self):
-				return 'Module'
+				return 'AliceSkill'
 
 			@Online
 			def offline(self, *args, **kwargs):
@@ -55,7 +55,7 @@ class TestDecorators(unittest.TestCase):
 
 
 
-		exampleObject = Module()
+		exampleObject = AliceSkill()
 
 		# mock Managers
 		mock_instance = MagicMock()
@@ -74,7 +74,7 @@ class TestDecorators(unittest.TestCase):
 
 		# when there is already no internet
 		self.assertEqual(exampleObject.offline(), 'offline')
-		mock_instance.talkManager.randomTalk.assert_called_once_with('offline', module='Module')
+		mock_instance.talkManager.randomTalk.assert_called_once_with('offline', skill='AliceSkill')
 		mock_instance.reset_mock()
 
 		# when Internet is lost
@@ -82,7 +82,7 @@ class TestDecorators(unittest.TestCase):
 		type(mock_instance).internetManager = mock_internetManager
 		
 		self.assertEqual(exampleObject.offline(), 'offline')
-		mock_instance.talkManager.randomTalk.assert_called_once_with('offline', module='Module')
+		mock_instance.talkManager.randomTalk.assert_called_once_with('offline', skill='AliceSkill')
 		
 		mock_internetManager = mock.PropertyMock(return_value=InternetManager(False))
 		type(mock_instance).internetManager = mock_internetManager
@@ -93,7 +93,7 @@ class TestDecorators(unittest.TestCase):
 		type(mock_instance.dialogSessionManager).sessions = mock_sessions
 
 		exampleObject.offline(session=mock_session)
-		mock_instance.talkManager.randomTalk.assert_called_once_with('offline', module='Module')
+		mock_instance.talkManager.randomTalk.assert_called_once_with('offline', skill='AliceSkill')
 		mock_instance.mqttManager.endDialog.assert_called_once_with(sessionId='sessionId', text='offline')
 		mock_instance.reset_mock()
 
@@ -102,7 +102,7 @@ class TestDecorators(unittest.TestCase):
 		type(mock_instance.dialogSessionManager).sessions = mock_sessions
 
 		exampleObject.offline(session=mock_session)
-		mock_instance.talkManager.randomTalk.assert_called_once_with('offline', module='Module')
+		mock_instance.talkManager.randomTalk.assert_called_once_with('offline', skill='AliceSkill')
 		mock_instance.mqttManager.say.assert_called_once_with(text='offline', client='siteId')
 		mock_instance.reset_mock()
 
@@ -120,8 +120,8 @@ class TestDecorators(unittest.TestCase):
 		mock_instance.talkManager.randomTalk.return_value = None
 		self.assertEqual(exampleObject.offline_return(), 'offline')
 		mock_instance.talkManager.randomTalk.assert_has_calls([
-			mock.call('offline', module='Module'),
-			mock.call('offline', module='system')],
+			mock.call('offline', skill='AliceSkill'),
+			mock.call('offline', skill='system')],
 			any_order=True
 		)
 		mock_instance.talkManager.randomTalk.return_value = 'offline'
@@ -136,16 +136,16 @@ class TestDecorators(unittest.TestCase):
 
 		# decorator works with staticmethod, but falls back to system
 		self.assertEqual(exampleObject.catch_staticMethod(), 'offline')
-		mock_instance.talkManager.randomTalk.assert_called_once_with('offline', module='system')
+		mock_instance.talkManager.randomTalk.assert_called_once_with('offline', skill='system')
 
 
 	@mock.patch('core.util.Decorators.Logger')
 	@mock.patch('core.util.Decorators.SuperManager')
 	def test_anyExcept(self, mock_superManager, mock_logger):
-		class Module:
+		class AliceSkill:
 			@property
 			def name(self):
-				return 'Module'
+				return 'AliceSkill'
 
 			@AnyExcept
 			def catch_all(self, *args, **kwargs):
@@ -171,7 +171,7 @@ class TestDecorators(unittest.TestCase):
 			def catch_staticMethod(*args, **kwargs):
 				raise Exception
 
-		exampleObject = Module()
+		exampleObject = AliceSkill()
 
 		# mock Managers
 		mock_instance = MagicMock()
@@ -187,7 +187,7 @@ class TestDecorators(unittest.TestCase):
 
 		# when no DialogSession is provided return text
 		self.assertEqual(exampleObject.catch_all(), 'error')
-		mock_instance.talkManager.randomTalk.assert_called_once_with('error', module='Module')
+		mock_instance.talkManager.randomTalk.assert_called_once_with('error', skill='AliceSkill')
 		mock_instance.reset_mock()
 
 		# when session is still active use endDialog
@@ -195,7 +195,7 @@ class TestDecorators(unittest.TestCase):
 		type(mock_instance.dialogSessionManager).sessions = mock_sessions
 
 		exampleObject.catch_all(session=mock_session)
-		mock_instance.talkManager.randomTalk.assert_called_once_with('error', module='Module')
+		mock_instance.talkManager.randomTalk.assert_called_once_with('error', skill='AliceSkill')
 		mock_instance.mqttManager.endDialog.assert_called_once_with(sessionId='sessionId', text='error')
 		mock_instance.reset_mock()
 
@@ -204,7 +204,7 @@ class TestDecorators(unittest.TestCase):
 		type(mock_instance.dialogSessionManager).sessions = mock_sessions
 
 		exampleObject.catch_all(session=mock_session)
-		mock_instance.talkManager.randomTalk.assert_called_once_with('error', module='Module')
+		mock_instance.talkManager.randomTalk.assert_called_once_with('error', skill='AliceSkill')
 		mock_instance.mqttManager.say.assert_called_once_with(text='error', client='siteId')
 		mock_instance.reset_mock()
 
@@ -216,8 +216,8 @@ class TestDecorators(unittest.TestCase):
 		mock_instance.talkManager.randomTalk.return_value = None
 		self.assertEqual(exampleObject.catch_returnText(), 'error')
 		mock_instance.talkManager.randomTalk.assert_has_calls([
-			mock.call('error', module='Module'),
-			mock.call('error', module='system')],
+			mock.call('error', skill='AliceSkill'),
+			mock.call('error', skill='system')],
 			any_order=True
 		)
 		mock_instance.talkManager.randomTalk.return_value = 'error'
@@ -232,7 +232,7 @@ class TestDecorators(unittest.TestCase):
 
 		# decorator works with staticmethod, but falls back to system
 		self.assertEqual(exampleObject.catch_staticMethod(), 'error')
-		mock_instance.talkManager.randomTalk.assert_called_once_with('error', module='system')
+		mock_instance.talkManager.randomTalk.assert_called_once_with('error', skill='system')
 
 
 
@@ -252,7 +252,7 @@ class TestDecorators(unittest.TestCase):
 		exampleObject = Example()
 		mock_instance = MagicMock()
 		mock_superManager.getInstance.return_value = mock_instance
-		mock_instance.moduleManager.getModuleInstance.return_value = exampleObject
+		mock_instance.skillManager.getSkillInstance.return_value = exampleObject
 
 
 		# test whether the decorator works when a single intent is mapped
@@ -260,7 +260,7 @@ class TestDecorators(unittest.TestCase):
 		self.assertEqual(instance, exampleObject, "the object instance is not retrieved correctly")
 		self.assertEqual(args, ('arg1', 'arg2'), "unnamed arguments are passed in a wrong way")
 		self.assertEqual(kwargs, {'kwarg1': 'kwarg1', 'kwarg2': 'kwarg2'}, "named arguments are passed in a wrong way")
-		mock_instance.moduleManager.getModuleInstance.assert_called_once_with(Example.__name__)
+		mock_instance.skillManager.getSkillInstance.assert_called_once_with(Example.__name__)
 		mock_instance.reset_mock()
 
 
@@ -269,7 +269,7 @@ class TestDecorators(unittest.TestCase):
 		self.assertEqual(instance, exampleObject, "the object instance is not retrieved correctly")
 		self.assertEqual(args, ('arg1', 'arg2'), "unnamed arguments are passed in a wrong way")
 		self.assertEqual(kwargs, {'kwarg1': 'kwarg1', 'kwarg2': 'kwarg2'}, "named arguments are passed in a wrong way")
-		mock_instance.moduleManager.getModuleInstance.assert_called_once_with(Example.__name__)
+		mock_instance.skillManager.getSkillInstance.assert_called_once_with(Example.__name__)
 
 
 		# test whether the intents are created correctly

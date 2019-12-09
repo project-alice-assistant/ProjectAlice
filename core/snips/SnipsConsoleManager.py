@@ -54,9 +54,9 @@ class SnipsConsoleManager(Manager):
 				self.isActive = False
 
 
-	def doDownload(self, modulesInfos: dict = None):
+	def doDownload(self, skillsInfos: dict = None):
 		self.logInfo('Starting Snips assistant training and download procedure')
-		self.ThreadManager.newEvent('SnipsAssistantDownload', onClearCallback='onSnipsAssistantDownloaded').set(modulesInfos=modulesInfos)
+		self.ThreadManager.newEvent('SnipsAssistantDownload', onClearCallback='onSnipsAssistantDownloaded').set(skillsInfos=skillsInfos)
 
 		projectId = self.LanguageManager.activeSnipsProjectId
 		self.ThreadManager.newThread(name='SnipsAssistantDownload', target=self.download, args=[projectId])
@@ -178,7 +178,7 @@ class SnipsConsoleManager(Manager):
 			return True
 		except Exception as e:
 			self.logError(f'Assistant download failed: {e}')
-			self.broadcast(method='onSnipsAssistantDownloadFailed', exceptions=[self.name], propagateToModules=True)
+			self.broadcast(method='onSnipsAssistantDownloadFailed', exceptions=[self.name], propagateToSkills=True)
 			self.ThreadManager.getEvent('SnipsAssistantDownload').cancel()
 			return False
 

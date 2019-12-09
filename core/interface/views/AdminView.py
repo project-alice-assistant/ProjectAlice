@@ -38,7 +38,7 @@ class AdminView(View):
 			# because HTTP data is type less.
 			confs = {key: False if value == 'off' else True if value == 'on' else int(value) if value.isdigit() else float(value) if self.isfloat(value) else value for key, value in request.form.items()}
 
-			confs['modules'] = self.ConfigManager.getAliceConfigByName('modules')
+			confs['skills'] = self.ConfigManager.getAliceConfigByName('skills')
 			confs['supportedLanguages'] = self.ConfigManager.getAliceConfigByName('supportedLanguages')
 
 			self.ConfigManager.writeToAliceConfigurationFile(confs=confs)
@@ -81,20 +81,20 @@ class AdminView(View):
 
 	def wipeAll(self) -> dict:
 		try:
-			subprocess.run(['wget', 'http://modules.projectalice.ch/AliceCore', '-O', Path(self.Commons.rootDir(), 'system/moduleInstallTickets/AliceCore.install')])
-			subprocess.run(['wget', 'http://modules.projectalice.ch/ContextSensitive', '-O', Path(self.Commons.rootDir(), 'system/moduleInstallTickets/ContextSensitive.install')])
-			subprocess.run(['wget', 'http://modules.projectalice.ch/RedQueen', '-O', Path(self.Commons.rootDir(), 'system/moduleInstallTickets/RedQueen.install')])
-			subprocess.run(['wget', 'http://modules.projectalice.ch/Telemetry', '-O', Path(self.Commons.rootDir(), 'system/moduleInstallTickets/Telemetry.install')])
-			subprocess.run(['wget', 'http://modules.projectalice.ch/DateDayTimeYear', '-O', Path(self.Commons.rootDir(), 'system/moduleInstallTickets/DateDayTimeYear.install')])
+			subprocess.run(['wget', 'http://modules.projectalice.ch/AliceCore', '-O', Path(self.Commons.rootDir(), 'system/skillInstallTickets/AliceCore.install')])
+			subprocess.run(['wget', 'http://modules.projectalice.ch/ContextSensitive', '-O', Path(self.Commons.rootDir(), 'system/skillInstallTickets/ContextSensitive.install')])
+			subprocess.run(['wget', 'http://modules.projectalice.ch/RedQueen', '-O', Path(self.Commons.rootDir(), 'system/skillInstallTickets/RedQueen.install')])
+			subprocess.run(['wget', 'http://modules.projectalice.ch/Telemetry', '-O', Path(self.Commons.rootDir(), 'system/skillInstallTickets/Telemetry.install')])
+			subprocess.run(['wget', 'http://modules.projectalice.ch/DateDayTimeYear', '-O', Path(self.Commons.rootDir(), 'system/skillInstallTickets/DateDayTimeYear.install')])
 
 			shutil.rmtree(Path(self.Commons.rootDir(), 'var/assistants'))
 			shutil.rmtree(Path(self.Commons.rootDir(), 'trained/assistants'))
-			shutil.rmtree(Path(self.Commons.rootDir(), 'modules'))
+			shutil.rmtree(Path(self.Commons.rootDir(), 'skills'))
 			Path(self.Commons.rootDir(), 'system/database/data.db')
 
 			Path(self.Commons.rootDir(), 'var/assistants').mkdir()
 			Path(self.Commons.rootDir(), 'trained/assistants').mkdir()
-			Path(self.Commons.rootDir(), 'modules').mkdir()
+			Path(self.Commons.rootDir(), 'skills').mkdir()
 			return self.restart()
 		except Exception as e:
 			self.logError(f'Failed wiping system: {e}')

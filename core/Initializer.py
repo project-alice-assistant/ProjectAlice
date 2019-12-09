@@ -199,7 +199,7 @@ network={
 		if initConfs['stayCompletlyOffline']:
 			confs['keepASROffline'] = True
 			confs['keepTTSOffline'] = True
-			confs['moduleAutoUpdate'] = False
+			confs['skillAutoUpdate'] = False
 			confs['asr'] = 'snips'
 			confs['tts'] = 'pico'
 			confs['awsRegion'] = ''
@@ -208,7 +208,7 @@ network={
 		else:
 			confs['keepASROffline'] = bool(initConfs['keepASROffline'])
 			confs['keepTTSOffline'] = bool(initConfs['keepTTSOffline'])
-			confs['moduleAutoUpdate'] = bool(initConfs['moduleAutoUpdate'])
+			confs['skillAutoUpdate'] = bool(initConfs['skillAutoUpdate'])
 			confs['asr'] = initConfs['asr'] if initConfs['asr'] in ('snips', 'google') else 'snips'
 			confs['tts'] = initConfs['tts'] if initConfs['tts'] in ('pico', 'snips', 'mycroft', 'amazon', 'google') else 'pico'
 			confs['awsRegion'] = initConfs['awsRegion']
@@ -342,7 +342,7 @@ network={
 		subprocess.run(['sudo', 'systemctl', 'daemon-reload'])
 
 		sort = dict(sorted(confs.items()))
-		sort['modules'] = sort.pop('modules')
+		sort['skills'] = sort.pop('skills')
 
 		try:
 			s = json.dumps(sort, indent=4).replace('false', 'False').replace('true', 'True')

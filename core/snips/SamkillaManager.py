@@ -42,8 +42,8 @@ class SamkillaManager(Manager):
 		self._intent        = None
 		self._entity        = None
 
-		self._dtSlotTypesModulesValues 		= dict()
-		self._dtIntentsModulesValues		= dict()
+		self._dtSlotTypesSkillsValues 		= dict()
+		self._dtIntentsSkillsValues		= dict()
 		self._dtIntentNameSkillMatching   	= dict()
 
 		self._mainProcessor = None
@@ -64,7 +64,7 @@ class SamkillaManager(Manager):
 
 
 	def _loadDialogTemplateMapsInConfigManager(self):
-		self._dtSlotTypesModulesValues, self._dtIntentsModulesValues, self._dtIntentNameSkillMatching = self.getDialogTemplatesMaps(
+		self._dtSlotTypesSkillsValues, self._dtIntentsSkillsValues, self._dtIntentNameSkillMatching = self.getDialogTemplatesMaps(
 			runOnAssistantId=self.LanguageManager.activeSnipsProjectId,
 			languageFilter=self.LanguageManager.activeLanguage
 		)
@@ -100,11 +100,11 @@ class SamkillaManager(Manager):
 		return self._userId
 
 
-	def sync(self, moduleFilter: dict = None, download: bool = True) -> bool:
-		if moduleFilter is None:
-			moduleFilter = dict()
+	def sync(self, skillFilter: dict = None, download: bool = True) -> bool:
+		if skillFilter is None:
+			skillFilter = dict()
 
-		self.log(f"Sync for module/s [{', '.join(moduleFilter) or '*'}]")
+		self.log(f"Sync for skill/s [{', '.join(skillFilter) or '*'}]")
 
 		if not self.start():
 			self.log('No credentials. Unable to synchronize assistant with remote console')
@@ -118,19 +118,19 @@ class SamkillaManager(Manager):
 			changes = self.syncLocalToRemote(
 				baseAssistantId=activeProjectId,
 				baseLanguageFilter=activeLang,
-				baseModuleFilter=list(moduleFilter),
+				baseSkillFilter=list(skillFilter),
 				newAssistantTitle=f"ProjectAlice_{datetime.today().strftime('%Y-%m-%d')}_{self.LanguageManager.activeLanguage}"
 			)
 
 			if changes:
 				if download:
 					self.log('Changes detected during sync, let\'s update the assistant...')
-					self.SnipsConsoleManager.doDownload(moduleFilter)
+					self.SnipsConsoleManager.doDownload(skillFilter)
 				else:
 					self.log('Changes detected during sync but not downloading yet')
 			else:
 				self.log('No changes detected during sync')
-				self.ModuleManager.onSnipsAssistantDownloaded(modulesInfos=moduleFilter)
+				self.SkillManager.onSnipsAssistantDownloaded(skillsInfos=skillFilter)
 
 			self.stop()
 
@@ -319,7 +319,7 @@ class SamkillaManager(Manager):
 		return runOnAssistantId
 
 
-	def syncLocalToRemote(self, baseAssistantId: str, baseModuleFilter: list, newAssistantTitle: str = '', baseLanguageFilter: str = 'en') -> bool:
+	def syncLocalToRemote(self, baseAssistantId: str, baseSkillFilter: list, newAssistantTitle: str = '', baseLanguageFilter: str = 'en') -> bool:
 		# RemoteFetch/LocalCheck/CreateIfNeeded: assistant
 
 		runOnAssistantId = self.findRunnableAssistant(
@@ -332,11 +332,11 @@ class SamkillaManager(Manager):
 		if self.LanguageManager.activeSnipsProjectId != runOnAssistantId:
 			self.LanguageManager.changeActiveSnipsProjectIdForLanguage(runOnAssistantId, baseLanguageFilter)
 
-		# From module intents files to dict then push to SnipsConsole
-		return self._mainProcessor.syncLocalToRemote(runOnAssistantId, moduleFilter=baseModuleFilter, languageFilter=baseLanguageFilter)
+		# From skill intents files to dict then push to SnipsConsole
+		return self._mainProcessor.syncLocalToRemote(runOnAssistantId, skillFilter=baseSkillFilter, languageFilter=baseLanguageFilter)
 
 
-	def syncRemoteToLocal(self, baseAssistantId: str, baseModuleFilter: str, baseLanguageFilter: str = 'en'):
+	def syncRemoteToLocal(self, baseAssistantId: str, baseSkillFilter: str, baseLanguageFilter: str = 'en'):
 		# RemoteFetch/LocalCheck/CreateIfNeeded: assistant
 		runOnAssistantId = self.findRunnableAssistant(
 			assistantId=baseAssistantId,
@@ -344,44 +344,44 @@ class SamkillaManager(Manager):
 			persistLocal=False
 		)
 
-		# From SnipsConsole objects to module intents files
-		self._mainProcessor.syncRemoteToLocal(runOnAssistantId, languageFilter=baseLanguageFilter, moduleFilter=baseModuleFilter)
+		# From SnipsConsole objects to skill intents files
+		self._mainProcessor.syncRemoteToLocal(runOnAssistantId, languageFilter=baseLanguageFilter, skillFilter=baseSkillFilter)
 
 
-	def getDialogTemplatesMaps(self, runOnAssistantId: str, languageFilter: str, moduleFilter: str = None) -> tuple:
-		return self._mainProcessor.buildMapsFromDialogTemplates(runOnAssistantId, languageFilter=languageFilter, moduleFilter=moduleFilter)
+	def getDialogTemplatesMaps(self, runOnAssistantId: str, languageFilter: str, skillFilter: str = None) -> tuple:
+		return self._mainProcessor.buildMapsFromDialogTemplates(runOnAssistantId, languageFilter=languageFilter, skillFilter=skillFilter)
 
 
-	def getIntentsByModuleName(self, runOnAssistantId: str, languageFilter: str, moduleFilter: str = None) -> list:
-		_, intentsModulesValues, intentNameSkillMatching = self.getDialogTemplatesMaps(
+	def getIntentsBySkillName(self, runOnAssistantId: str, languageFilter: str, skillFilter: str = None) -> list:
+		_, intentsSkillsValues, intentNameSkillMatching = self.getDialogTemplatesMaps(
 			runOnAssistantId=runOnAssistantId,
 			languageFilter=languageFilter
 		)
 
 		return [{
 			'name': intentName,
-			'description': intentsModulesValues[intentName]['__otherattributes__']['description']
-		} for intentName, moduleName in intentNameSkillMatching.items() if moduleName == moduleFilter]
+			'description': intentsSkillsValues[intentName]['__otherattributes__']['description']
+		} for intentName, skillName in intentNameSkillMatching.items() if skillName == skillFilter]
 
 
 	def getUtterancesByIntentName(self, runOnAssistantId: str, languageFilter: str, intentFilter: str = None) -> list:
-		_, intentsModulesValues, intentNameSkillMatching = self.getDialogTemplatesMaps(
+		_, intentsSkillsValues, intentNameSkillMatching = self.getDialogTemplatesMaps(
 			runOnAssistantId=runOnAssistantId,
 			languageFilter=languageFilter
 		)
 
 		return [{'sentence': utterance} for intent in intentNameSkillMatching if intent == intentFilter
-			for utterance in intentsModulesValues[intent]['utterances'].items()]
+			for utterance in intentsSkillsValues[intent]['utterances'].items()]
 
 
 	@property
-	def dtSlotTypesModulesValues(self) -> dict:
-		return self._dtSlotTypesModulesValues
+	def dtSlotTypesSkillsValues(self) -> dict:
+		return self._dtSlotTypesSkillsValues
 
 
 	@property
-	def dtIntentsModulesValues(self) -> dict:
-		return self._dtIntentsModulesValues
+	def dtIntentsSkillsValues(self) -> dict:
+		return self._dtIntentsSkillsValues
 
 
 	@property

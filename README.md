@@ -15,18 +15,18 @@ Join us on our [Discord server](https://discord.gg/Jfcj355)
 # Who made this?
 The original code base was started at the end 2015 and several rewrites made it what it is today. It was entirely written by me *Psycho* until recently, where I decided to make the code openly available to the world. 
 
-In of May 2019, *Jierka* joined the project to prepare Project Alice for a public release by providing quality code, fresh ideas and insights for the project. At the same time *maxbachmann* also joined the project, at first to translate to German for the release, but soon moved beyond his initial commitment and started contributing to the refactoring, rewrite and module production.
+In of May 2019, *Jierka* joined the project to prepare Project Alice for a public release by providing quality code, fresh ideas and insights for the project. At the same time *maxbachmann* also joined the project, at first to translate to German for the release, but soon moved beyond his initial commitment and started contributing to the refactoring, rewrite and skill production.
 
 If you want to use Project Alice in a non-commercial setting, I’m not asking you for any money, or a financial contribution, but as the license states, you should try to give back for what you've been given; please share your improvements and add-ons to the rest of us, in the form of pull requests.
 
 # How does it run? What's special about it?
-Glad you asked! It's been made very modular, in fact it runs using user developed skills. You won't have to use any console to train your assistant, we have made a way for the creators to share their modules with the language training included, the whole assistant part is automated.
+Glad you asked! It's been made very modular, in fact it runs using user developed skills. You won't have to use any console to train your assistant, we have made a way for the creators to share their skills with the language training included, the whole assistant part is automated.
 
-Adding new modules is as easy as using either our CLI or a ticketing system. Updates are automatic, so over time the modules will get better and better with the community input to improve utterances and adding more language support.
+Adding new skills is as easy as using either our CLI or a ticketing system. Updates are automatic, so over time the skills will get better and better with the community input to improve utterances and adding more language support.
 
-Project Alice goes far beyond just acting on your voice requests.  Project Alice is meant as an event driven automation system for your home.  Anything that triggers an event (a voice request or a sensor changing states are considered “events” by Project Alice) can be used by modules to drive further interactions.  For example, a sensor indicating "HighCO2" or "TemperatureTooCold" can be used by a module to create interactions (e.g. Alice announcing, “Warning high CO2 Level detected, move to fresh air immediately” or “It seems a bit chilly, would you like me to turn up the heat?”.  The only limits are your imagination!!
+Project Alice goes far beyond just acting on your voice requests.  Project Alice is meant as an event driven automation system for your home.  Anything that triggers an event (a voice request or a sensor changing states are considered “events” by Project Alice) can be used by skills to drive further interactions.  For example, a sensor indicating "HighCO2" or "TemperatureTooCold" can be used by a skill to create interactions (e.g. Alice announcing, “Warning high CO2 Level detected, move to fresh air immediately” or “It seems a bit chilly, would you like me to turn up the heat?”.  The only limits are your imagination!!
 
-Finally, Project Alice has her own mood (which can vary based on your interactions with her), can use different voices for different users, knows which user is talking to her, and even likes or dislikes people based on their interactions with her. She can also automate your home routines by using a customization module (e.g. turn on air conditioning and lights when a sensor indicates it is too hot and the sun has set).
+Finally, Project Alice has her own mood (which can vary based on your interactions with her), can use different voices for different users, knows which user is talking to her, and even likes or dislikes people based on their interactions with her. She can also automate your home routines by using a customization skill (e.g. turn on air conditioning and lights when a sensor indicates it is too hot and the sun has set).
 
 This is only scratching the surface of Project Alice can and will be able to do... If you want more, I highly suggest you give it a try.
 
@@ -41,7 +41,7 @@ Well, since it's written in Python, as of now on Linux architecture. This means 
 
 
 # Can we contribute?
-Hey, did you skip ahead and not read what I wrote a bit earlier? You have to! Just kidding, but yes, your contributions are more than welcome, be it core side or on the module side. You'll find more about the guidelines on our wiki.
+Hey, did you skip ahead and not read what I wrote a bit earlier? You have to! Just kidding, but yes, your contributions are more than welcome, be it core side or on the skill side. You'll find more about the guidelines on our wiki.
 
 # Copyright
 Project Alice ships under GPLv3, it means you are free to use and redistribute our code but are not allowed to use any part of it under a closed license. Give the community back what you've been given!
@@ -57,7 +57,7 @@ If you see or find a copyright breach, feel free to contact us immediately. It i
 
 
 # Other repositories
--   [Project Alice Modules](https://github.com/project-alice-assistant/ProjectAliceModules)
+-   [Project Alice Skills](https://github.com/project-alice-assistant/ProjectAliceModules)
 -   [Project Alice Amazon Polly and Google WaveNet cached TTS speeches](https://github.com/project-alice-assistant/ProjectAliceCachedSpeeches)
 
 -   [Donate](https://paypal.me/Psychokiller1888)

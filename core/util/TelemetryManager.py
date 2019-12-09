@@ -101,15 +101,15 @@ class TelemetryManager(Manager):
 		messages = self.TELEMETRY_MAPPINGS.get(ttype, dict())
 		for message, settings in messages.items():
 			if settings is None:
-				self.broadcast(method=message, exceptions=[self.name], propagateToModules=True, args=[service])
+				self.broadcast(method=message, exceptions=[self.name], propagateToSkills=True, args=[service])
 				break
 
-			#TODO check if Telemetry module available
-			threshold = float(self.ConfigManager.getModuleConfigByName('Telemetry', settings[1]) if isinstance(settings[1], str) else settings[1])
+			#TODO check if Telemetry skill available
+			threshold = float(self.ConfigManager.getSkillConfigByName('Telemetry', settings[1]) if isinstance(settings[1], str) else settings[1])
 			value = float(value)
 			if settings[0] == 'upperThreshold' and value > threshold or \
 				settings[0] == 'lowerThreshold' and value < threshold:
-				self.broadcast(method=message, exceptions=[self.name], propagateToModules=True, args=[service])
+				self.broadcast(method=message, exceptions=[self.name], propagateToSkills=True, args=[service])
 				break
 
 
