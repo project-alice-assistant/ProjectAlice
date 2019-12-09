@@ -18,6 +18,7 @@ class DialogSession(ProjectAliceObject):
 		self._slotsAsObjects = dict()
 		self._customData = dict()
 		self._payload = dict()
+		self._intentName = ''
 		self._intentHistory = list()
 		self._intentFilter = list()
 		self._notUnderstood = 0
@@ -29,11 +30,13 @@ class DialogSession(ProjectAliceObject):
 			self._sessionId = sessionId
 
 		self._message = message
+		self._intentName = message.topic
 		self._parseMessage()
 
 
 	def update(self, message: MQTTMessage):
 		self._message = message
+		self._intentName = message.topic
 		self._updateSessionData()
 
 
@@ -44,10 +47,11 @@ class DialogSession(ProjectAliceObject):
 		self._customData = session.customData
 		self._user = session.user
 		self._message = session.message
+		self._intentName = session.intentName
 		self._intentHistory = session.intentHistory
 		self._intentFilter = session.intentFilter
 		self._notUnderstood = session.notUnderstood
-		self._currentState = session.currentState
+		self._currentState = session.currentStat
 
 
 	def _parseMessage(self):
@@ -143,6 +147,10 @@ class DialogSession(ProjectAliceObject):
 	@message.setter
 	def message(self, message: MQTTMessage):
 		self._message = message
+
+	@property
+	def intentName(self) -> str:
+		return self._intentName
 
 
 	@property
