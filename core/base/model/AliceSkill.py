@@ -19,7 +19,7 @@ from core.dialog.model.DialogSession import DialogSession
 from core.user.model.AccessLevels import AccessLevel
 
 
-class Module(ProjectAliceObject):
+class AliceSkill(ProjectAliceObject):
 
 	def __init__(self, supportedIntents: Iterable = None, authOnlyIntents: dict = None, databaseSchema: dict = None):
 		super().__init__(logDepth=4)
@@ -29,7 +29,7 @@ class Module(ProjectAliceObject):
 		except FileNotFoundError:
 			raise SkillStartingFailed(error=f'[{type(self).__name__}] Cannot find install file')
 		except Exception as e:
-			raise SkillStartingFailed(error=f'[{type(self).__name__}] Failed loading module: {e}')
+			raise SkillStartingFailed(error=f'[{type(self).__name__}] Failed loading skill: {e}')
 
 		self._name = self._install['name']
 		self._author = self._install['author']
@@ -108,7 +108,7 @@ class Module(ProjectAliceObject):
 					continue
 
 				widgetName = Path(file).stem
-				widgetImport = importlib.import_module(f'modules.{self.name}.widgets.{widgetName}')
+				widgetImport = importlib.import_module(f'skills.{self.name}.widgets.{widgetName}')
 				klass = getattr(widgetImport, widgetName)
 
 				if widgetName in data: # widget already exists in DB
@@ -158,7 +158,7 @@ class Module(ProjectAliceObject):
 		for dtIntentName, dtSkillName in self.SamkillaManager.dtIntentNameSkillMatching.items():
 			if dtIntentName == check and dtSkillName == self.name:
 
-				for utterance in self.SamkillaManager.dtIntentsModulesValues[dtIntentName]['utterances']:
+				for utterance in self.SamkillaManager.dtIntentsSkillsValues[dtIntentName]['utterances']:
 					if cleanSlots:
 						utterance = re.sub(self._utteranceSlotCleaner, '\\1', utterance)
 
@@ -279,16 +279,16 @@ class Module(ProjectAliceObject):
 
 
 	def filterIntent(self, session: DialogSession) -> bool:
-		# Return if the module isn't active
+		# Return if the skill isn't active
 		if not self.active:
 			return False
 
-		# Return if previous intent is not supported by this module
+		# Return if previous intent is not supported by this skill
 		if session.previousIntent and str(session.previousIntent) not in self._supportedIntents:
 			return False
 
 		intent = session.intentName
-		# Return if this intent is not supported by this module
+		# Return if this intent is not supported by this skill
 		if not intent in self._supportedIntents:
 			return False
 
@@ -297,14 +297,14 @@ class Module(ProjectAliceObject):
 			if session.user == constants.UNKNOWN_USER:
 				self.endDialog(
 					sessionId=session.sessionId,
-					text=self.TalkManager.randomTalk(talk='unknowUser', module='system')
+					text=self.TalkManager.randomTalk(talk='unknowUser', skill='system')
 				)
 				raise AccessLevelTooLow()
 			# Return if intent is for auth users only and the user doesn't have the accesslevel for it
 			if not self.UserManager.hasAccessLevel(session.user, self._authOnlyIntents[intent]):
 				self.endDialog(
 					sessionId=session.sessionId,
-					text=self.TalkManager.randomTalk(talk='noAccess', module='system')
+					text=self.TalkManager.randomTalk(talk='noAccess', skill='system')
 				)
 				raise AccessLevelTooLow()
 
@@ -326,7 +326,7 @@ class Module(ProjectAliceObject):
 
 
 	def getResource(self, skillName: str = '', resourcePathFile: str = '') -> Path:
-		return Path(self.Commons.rootDir(), 'modules', skillName or self.name, resourcePathFile)
+		return Path(self.Commons.rootDir(), 'skills', skillName or self.name, resourcePathFile)
 
 
 	def _initDB(self) -> bool:
@@ -337,12 +337,12 @@ class Module(ProjectAliceObject):
 
 	def onStart(self) -> dict:
 		if not self._active:
-			self.logInfo(f'Module {self.name} is not active')
+			self.logInfo(f'Skill {self.name} is not active')
 		else:
-			self.logInfo(f'Starting {self.name} module')
+			self.logInfo(f'Starting {self.name} skill')
 
 		self._initDB()
-		self.MqttManager.subscribeModuleIntents(self.name)
+		self.MqttManager.subscribeSkillIntents(self.name)
 		return self._supportedIntents
 
 
@@ -360,34 +360,34 @@ class Module(ProjectAliceObject):
 
 	def onSkillInstalled(self):
 		self._updateAvailable = False
-		#self.MqttManager.subscribeModuleIntents(self.name)
+		#self.MqttManager.subscribeSkillIntents(self.name)
 
 
 	def onSkillUpdated(self):
 		self._updateAvailable = False
-		#self.MqttManager.subscribeModuleIntents(self.name)
+		#self.MqttManager.subscribeSkillIntents(self.name)
 
 
 	# HELPERS
 	def getConfig(self, key: str) -> Any:
-		return self.ConfigManager.getModuleConfigByName(skillName=self.name, configName=key)
+		return self.ConfigManager.getSkillConfigByName(skillName=self.name, configName=key)
 
 
-	def getModuleConfigs(self, withInfo: bool = False) -> dict:
+	def getSkillConfigs(self, withInfo: bool = False) -> dict:
 		if withInfo:
-			return self.ConfigManager.getModuleConfigs(self.name)
+			return self.ConfigManager.getSkillConfigs(self.name)
 		else:
-			mySettings = self.ConfigManager.getModuleConfigs(self.name)
-			infoSettings = self.ConfigManager.aliceModuleConfigurationKeys
+			mySettings = self.ConfigManager.getSkillConfigs(self.name)
+			infoSettings = self.ConfigManager.aliceSkillConfigurationKeys
 			return {key: value for key, value in mySettings.items() if key not in infoSettings}
 
 
-	def getModuleConfigsTemplate(self) -> dict:
-		return self.ConfigManager.getModuleConfigsTemplate(self.name)
+	def getSkillConfigsTemplate(self) -> dict:
+		return self.ConfigManager.getSkillConfigsTemplate(self.name)
 
 
 	def updateConfig(self, key: str, value: Any):
-		self.ConfigManager.updateModuleConfigurationFile(skillName=self.name, key=key, value=value)
+		self.ConfigManager.updateSkillConfigurationFile(skillName=self.name, key=key, value=value)
 
 
 	def getAliceConfig(self, key: str) -> Any:
@@ -415,7 +415,7 @@ class Module(ProjectAliceObject):
 
 
 	def randomTalk(self, text: str, replace: list = None, **kwargs) -> str:
-		talk = self.TalkManager.randomTalk(talk=text, module=self.name)
+		talk = self.TalkManager.randomTalk(talk=text, skill=self.name)
 
 		if Callable(talk):
 			talk(replace=replace, **kwargs)
@@ -425,7 +425,7 @@ class Module(ProjectAliceObject):
 		return talk
 
 
-	def getSkillInstance(self, skillName: str) -> Module:
+	def getSkillInstance(self, skillName: str) -> AliceSkill:
 		return self.SkillManager.getSkillInstance(skillName=skillName)
 
 
@@ -460,7 +460,7 @@ class Module(ProjectAliceObject):
 	def decorate(self, msg: str, depth: int) -> str:
 		"""
 		overwrite Logger decoration method, since it should always
-		be the module name
+		be the skill name
 		"""
 		return f'[{self.name}] {msg}'
 

@@ -57,7 +57,7 @@ class ASRManager(Manager):
 			self.logInfo('Internet lost, switching to snips ASR')
 			self.SnipsServicesManager.runCmd('start', ['snips-asr'])
 			self._asr = SnipsASR()
-			self.ThreadManager.doLater(interval=3, func=self.MqttManager.say, args=[self.TalkManager.randomTalk('internetLost', module='AliceCore'), 'all'])
+			self.ThreadManager.doLater(interval=3, func=self.MqttManager.say, args=[self.TalkManager.randomTalk('internetLost', skill='AliceCore'), 'all'])
 
 
 	def onStartListening(self, session: DialogSession, *args, **kwargs):

@@ -22,7 +22,7 @@ class IndexView(View):
 	@route('widget_static/<path:filename>')
 	def widget_static(self, filename: str):
 		parent, fileType, filename = filename.split('/')
-		return send_from_directory(f'{self.WebInterfaceManager.app.root_path}/../../modules/{parent}/widgets/{fileType}/', filename)
+		return send_from_directory(f'{self.WebInterfaceManager.app.root_path}/../../skills/{parent}/widgets/{fileType}/', filename)
 
 
 	@route('/home/saveWidgetPosition/', methods=['POST'])
@@ -87,8 +87,8 @@ class IndexView(View):
 			if not data['param']:
 				data['param'] = '{}'
 
-			module = self.SkillManager.getSkillInstance(skillName=data['module'])
-			widget = module.getWidgetInstance(data['widget'])
+			skill = self.SkillManager.getSkillInstance(skillName=data['skill'])
+			widget = skill.getWidgetInstance(data['widget'])
 			func = getattr(widget, data['func'])
 			return func(**json.loads(data['param']))
 		except Exception as e:

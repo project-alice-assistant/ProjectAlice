@@ -109,7 +109,7 @@ class DatabaseManager(Manager):
 					database.commit()
 
 			except sqlite3.Error as e:
-				self.logError(f'Something went wrong initializing database for module {callerName}: {e}')
+				self.logError(f'Something went wrong initializing database for skill {callerName}: {e}')
 				database.rollback()
 				return False
 

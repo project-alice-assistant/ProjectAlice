@@ -143,10 +143,10 @@ def Online(func: Callable = None, text: str = 'offline', offlineHandler: Callabl
 			return offlineHandler(*args, **kwargs)
 
 		caller = args[0] if args else None
-		module = getattr(caller, 'name', 'system')
-		newText = SuperManager.getInstance().talkManager.randomTalk(text, module=module)
-		if not newText and module != 'system':
-			newText = SuperManager.getInstance().talkManager.randomTalk(text, module='system') or text
+		skill = getattr(caller, 'name', 'system')
+		newText = SuperManager.getInstance().talkManager.randomTalk(text, skill=skill)
+		if not newText and skill != 'system':
+			newText = SuperManager.getInstance().talkManager.randomTalk(text, skill='system') or text
 
 		if returnText:
 			return newText
@@ -185,10 +185,10 @@ def AnyExcept(func: Callable = None, text: str = 'error', exceptions: Tuple[Base
 			return exceptHandler(*args, **kwargs)
 
 		caller = args[0] if args else None
-		module = getattr(caller, 'name', 'system')
-		newText = SuperManager.getInstance().talkManager.randomTalk(text, module=module)
-		if not newText and module != 'system':
-			newText = SuperManager.getInstance().talkManager.randomTalk(text, module='system') or text
+		skill = getattr(caller, 'name', 'system')
+		newText = SuperManager.getInstance().talkManager.randomTalk(text, skill=skill)
+		if not newText and skill != 'system':
+			newText = SuperManager.getInstance().talkManager.randomTalk(text, skill='system') or text
 
 		if returnText:
 			return newText

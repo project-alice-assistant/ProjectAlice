@@ -13,7 +13,7 @@ class DialogSessionManager(Manager):
 	wakeword model id that woke snips up. Since the topic for wakeword detection happens before a session is created we cannot
 	track the session id in traditional ways. But fortunately, only one session at a time is allowed per site id so we can
 	use this for pre tracking. Another one is to store the sessions data to avoid having to parse them again and again in
-	every module calls
+	every skill calls
 	"""
 
 	NAME = 'DialogSessionManager'

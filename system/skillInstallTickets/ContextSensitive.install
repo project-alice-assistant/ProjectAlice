@@ -1,12 +1,12 @@
 {
-	"name": "RedQueen",
-	"version": "1.0.10",
+	"name": "ContextSensitive",
+	"version": "1.0.9",
 	"author": "ProjectAlice",
 	"maintainers": [
 		"Psycho",
 		"maxbachmann"
 	],
-	"desc": "Red Queen is the official Project Alice personality module",
+	"desc": "ContextSensitive is the official context sensitive skill. It handle intents like 'Delete this', 'Forget about that'",
 	"aliceMinVersion": "1.0.0-a3",
 	"systemRequirements": [],
 	"pipRequirements": [],

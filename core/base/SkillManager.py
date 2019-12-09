@@ -12,7 +12,7 @@ from core.base.SuperManager import SuperManager
 from core.base.model import Intent
 from core.base.model.GithubCloner import GithubCloner
 from core.base.model.Manager import Manager
-from core.base.model.Module import Module
+from core.base.model.AliceSkill import AliceSkill
 from core.base.model.Version import Version
 from core.commons import constants
 
@@ -27,8 +27,8 @@ class SkillManager(Manager):
 		'RedQueen'
 	]
 
-	GITHUB_BARE_BASE_URL = 'https://raw.githubusercontent.com/project-alice-assistant/ProjectAliceModules/master/PublishedModules'
-	GITHUB_API_BASE_URL = 'repositories/193512918/contents/PublishedModules'
+	GITHUB_BARE_BASE_URL = 'https://raw.githubusercontent.com/project-alice-assistant/ProjectAliceModules/master/PublishedSkills'
+	GITHUB_API_BASE_URL = 'repositories/193512918/contents/PublishedSkills'
 
 	DATABASE = {
 		'widgets': [
@@ -47,51 +47,51 @@ class SkillManager(Manager):
 
 		self._busyInstalling        = None
 
-		self._moduleInstallThread   = None
+		self._skillInstallThread   = None
 		self._supportedIntents      = list()
-		self._allModules            = dict()
-		self._activeModules         = dict()
-		self._failedModules         = dict()
-		self._deactivatedModules    = dict()
+		self._allSkills            = dict()
+		self._activeSkills         = dict()
+		self._failedSkills        = dict()
+		self._deactivatedSkills    = dict()
 		self._widgets               = dict()
 
 
 	def onStart(self):
 		super().onStart()
 
-		self._busyInstalling = self.ThreadManager.newEvent('moduleInstallation')
-		self._moduleInstallThread = self.ThreadManager.newThread(name='ModuleInstallThread', target=self._checkForModuleInstall, autostart=False)
+		self._busyInstalling = self.ThreadManager.newEvent('skillInstallation')
+		self._skillInstallThread = self.ThreadManager.newThread(name='SkillInstallThread', target=self._checkForSkillInstall, autostart=False)
 
-		self._activeModules = self._loadModuleList()
-		self._allModules = {**self._activeModules, **self._deactivatedModules, **self._failedModules}
+		self._activeSkills = self._loadSkillList()
+		self._allSkills = {**self._activeSkills, **self._deactivatedSkills, **self._failedSkills}
 
-		for skillName in self._deactivatedModules:
-			self.configureModuleIntents(skillName=skillName, state=False)
+		for skillName in self._deactivatedSkills:
+			self.configureSkillIntents(skillName=skillName, state=False)
 
-		self.checkForModuleUpdates()
-		self.startAllModules()
+		self.checkForSkillUpdates()
+		self.startAllSkills()
 
 
 	def onSnipsAssistantDownloaded(self, **kwargs):
-		argv = kwargs.get('modulesInfos', dict())
+		argv = kwargs.get('skillsInfos', dict())
 		if not argv:
 			return
 
-		for skillName, module in argv.items():
+		for skillName, skill in argv.items():
 			try:
-				self._startModule(moduleInstance=self._activeModules[skillName])
+				self._startSkill(skillInstance=self._activeSkills[skillName])
 			except SkillStartDelayed:
-				self.logInfo(f'Module "{skillName}" start is delayed')
+				self.logInfo(f'Skill "{skillName}" start is delayed')
 			except KeyError as e:
-				self.logError(f'Module "{skillName} not found, skipping: {e}')
+				self.logError(f'Skill "{skillName} not found, skipping: {e}')
 				continue
 
-			self._activeModules[skillName].onBooted()
+			self._activeSkills[skillName].onBooted()
 
 			self.broadcast(
-				method='onSkillUpdated' if module['update'] else 'onSkillInstalled',
+				method='onSkillUpdated' if skill['update'] else 'onSkillInstalled',
 				exceptions=[constants.DUMMY],
-				module=skillName
+				skill=skillName
 			)
 
 
@@ -110,112 +110,112 @@ class SkillManager(Manager):
 
 
 	@property
-	def neededModules(self) -> list:
+	def neededSkills(self) -> list:
 		return self.NEEDED_SKILLS
 
 
 	@property
-	def activeModules(self) -> dict:
-		return self._activeModules
+	def activeSkills(self) -> dict:
+		return self._activeSkills
 
 
 	@property
-	def deactivatedModules(self) -> dict:
-		return self._deactivatedModules
+	def deactivatedSkills(self) -> dict:
+		return self._deactivatedSkills
 
 
 	@property
-	def allModules(self) -> dict:
-		return self._allModules
+	def allSkills(self) -> dict:
+		return self._allSkills
 
 
 	@property
-	def failedModules(self) -> dict:
-		return self._failedModules
+	def failedSkills(self) -> dict:
+		return self._failedSkills
 
 
 	def onBooted(self):
 		self.skillBroadcast('onBooted')
-		self._moduleInstallThread.start()
+		self._skillInstallThread.start()
 
 
-	def _loadModuleList(self, moduleToLoad: str = '', isUpdate: bool = False) -> dict:
-		modules = self._allModules.copy() if moduleToLoad else dict()
+	def _loadSkillList(self, skillToLoad: str = '', isUpdate: bool = False) -> dict:
+		skills = self._allSkills.copy() if skillToLoad else dict()
 
-		availableModules = self.ConfigManager.modulesConfigurations
-		availableModules = dict(sorted(availableModules.items()))
+		availableSkills = self.ConfigManager.skillsConfigurations
+		availableSkills = dict(sorted(availableSkills.items()))
 
-		for skillName, module in availableModules.items():
-			if moduleToLoad and skillName != moduleToLoad:
+		for skillName, skill in availableSkills.items():
+			if skillToLoad and skillName != skillToLoad:
 				continue
 
 			try:
-				if not module['active']:
+				if not skill['active']:
 					if skillName in self.NEEDED_SKILLS:
-						self.logInfo(f"Module {skillName} marked as disable but it shouldn't be")
+						self.logInfo(f"Skill {skillName} marked as disable but it shouldn't be")
 						self.ProjectAlice.onStop()
 						break
 					else:
-						self.logInfo(f'Module {skillName} is disabled')
+						self.logInfo(f'Skill {skillName} is disabled')
 
-						moduleInstance = self.importFromModule(skillName=skillName, isUpdate=False)
-						if moduleInstance:
-							moduleInstance.active = False
+						skillInstance = self.importFromSkill(skillName=skillName, isUpdate=False)
+						if skillInstance:
+							skillInstance.active = False
 
 							if skillName in self.NEEDED_SKILLS:
-								moduleInstance.required = True
+								skillInstance.required = True
 
-							self._deactivatedModules[moduleInstance.name] = moduleInstance
+							self._deactivatedSkills[skillInstance.name] = skillInstance
 						continue
 
-				self.checkModuleConditions(skillName, module['conditions'], availableModules)
+				self.checkSkillConditions(skillName, skill['conditions'], availableSkills)
 
 				name = self.Commons.toCamelCase(skillName) if ' ' in skillName else skillName
 
-				moduleInstance = self.importFromModule(skillName=name, isUpdate=isUpdate)
+				skillInstance = self.importFromSkill(skillName=name, isUpdate=isUpdate)
 
-				if moduleInstance:
+				if skillInstance:
 
 					if skillName in self.NEEDED_SKILLS:
-						moduleInstance.required = True
+						skillInstance.required = True
 
-					modules[moduleInstance.name] = moduleInstance
+					skills[skillInstance.name] = skillInstance
 				else:
-					self._failedModules[name] = None
+					self._failedSkills[name] = None
 					
 			except SkillStartingFailed as e:
-				self.logWarning(f'Failed loading module: {e}')
+				self.logWarning(f'Failed loading skill: {e}')
 				continue
 			except SkillNotConditionCompliant as e:
-				self.logInfo(f'Module {skillName} does not comply to "{e.condition}" condition, required "{e.conditionValue}"')
+				self.logInfo(f'Skill {skillName} does not comply to "{e.condition}" condition, required "{e.conditionValue}"')
 				continue
 			except Exception as e:
-				self.logWarning(f'Something went wrong loading module {skillName}: {e}')
+				self.logWarning(f'Something went wrong loading skill {skillName}: {e}')
 				continue
 
-		return dict(sorted(modules.items()))
+		return dict(sorted(skills.items()))
 
 
 	# noinspection PyTypeChecker
-	def importFromModule(self, skillName: str, moduleResource: str = '', isUpdate: bool = False) -> Module:
-		instance: Module = None
+	def importFromSkill(self, skillName: str, skillResource: str = '', isUpdate: bool = False) -> AliceSkill:
+		instance: AliceSkill = None
 
-		moduleResource = moduleResource or skillName
+		skillResource = skillResource or skillName
 
 		try:
-			moduleImport = importlib.import_module(f'modules.{skillName}.{moduleResource}')
+			skillImport = importlib.import_module(f'skills.{skillName}.{skillResource}')
 
 			if isUpdate:
-				moduleImport = importlib.reload(moduleImport)
+				skillImport = importlib.reload(skillImport)
 
-			klass = getattr(moduleImport, skillName)
-			instance: Module = klass()
+			klass = getattr(skillImport, skillName)
+			instance: AliceSkill = klass()
 		except ImportError as e:
-			self.logError(f"Couldn't import module {skillName}.{moduleResource}: {e}")
+			self.logError(f"Couldn't import skill {skillName}.{skillResource}: {e}")
 		except AttributeError as e:
-			self.logError(f"Couldn't find main class for module {skillName}.{moduleResource}: {e}")
+			self.logError(f"Couldn't find main class for skill {skillName}.{skillResource}: {e}")
 		except Exception as e:
-			self.logError(f"Couldn't instantiate module {skillName}.{moduleResource}: {e}")
+			self.logError(f"Couldn't instantiate skill {skillName}.{skillResource}: {e}")
 
 		return instance
 
@@ -223,41 +223,41 @@ class SkillManager(Manager):
 	def onStop(self):
 		super().onStop()
 
-		for moduleItem in self._activeModules.values():
-			moduleItem.onStop()
+		for skillItem in self._activeSkills.values():
+			skillItem.onStop()
 			self.logInfo(f"- Stopped!")
 
 
 	def onFullHour(self):
-		self.checkForModuleUpdates()
+		self.checkForSkillUpdates()
 
 
-	def startAllModules(self):
+	def startAllSkills(self):
 		supportedIntents = list()
 
-		tmp = self._activeModules.copy()
-		for skillName, moduleItem in tmp.items():
+		tmp = self._activeSkills.copy()
+		for skillName, skillItem in tmp.items():
 			try:
-				supportedIntents += self._startModule(moduleItem)
+				supportedIntents += self._startSkill(skillItem)
 			except SkillStartingFailed:
 				continue
 			except SkillStartDelayed:
-				self.logInfo(f'Module {skillName} start is delayed')
+				self.logInfo(f'Skill {skillName} start is delayed')
 
 		supportedIntents = list(set(supportedIntents))
 
 		self._supportedIntents = supportedIntents
 
-		self.logInfo(f'All modules started. {len(supportedIntents)} intents supported')
+		self.logInfo(f'All skills started. {len(supportedIntents)} intents supported')
 
 
-	def _startModule(self, moduleInstance: Module) -> dict:
+	def _startSkill(self, skillInstance: AliceSkill) -> dict:
 		try:
-			name = moduleInstance.name
-			intents = moduleInstance.onStart()
+			name = skillInstance.name
+			intents = skillInstance.onStart()
 
-			if moduleInstance.widgets:
-				self._widgets[name] = moduleInstance.widgets
+			if skillInstance.widgets:
+				self._widgets[name] = skillInstance.widgets
 
 			if intents:
 				self.logInfo('- Started!')
@@ -266,23 +266,23 @@ class SkillManager(Manager):
 			raise
 		except Exception as e:
 			# noinspection PyUnboundLocalVariable
-			self.logError(f'- Couldn\'t start module {name or "undefined"}. Did you forget to return the intents in onStart()? Error: {e}')
+			self.logError(f'- Couldn\'t start skill {name or "undefined"}. Did you forget to return the intents in onStart()? Error: {e}')
 
 		return dict()
 
 
-	def isModuleActive(self, skillName: str) -> bool:
-		return skillName in self._activeModules
+	def isSkillActive(self, skillName: str) -> bool:
+		return skillName in self._activeSkills
 
 
-	def getSkillInstance(self, skillName: str, silent: bool = False) -> Optional[Module]:
-		if skillName in self._activeModules:
-			return self._activeModules[skillName]
-		elif skillName in self._deactivatedModules:
-			return self._deactivatedModules[skillName]
+	def getSkillInstance(self, skillName: str, silent: bool = False) -> Optional[AliceSkill]:
+		if skillName in self._activeSkills:
+			return self._activeSkills[skillName]
+		elif skillName in self._deactivatedSkills:
+			return self._deactivatedSkills[skillName]
 		else:
 			if not silent:
-				self.logWarning(f'Module "{skillName}" is disabled or does not exist in modules manager')
+				self.logWarning(f'Skill "{skillName}" is disabled or does not exist in skills manager')
 
 			return None
 
@@ -297,59 +297,59 @@ class SkillManager(Manager):
 		:return:
 		"""
 
-		for moduleItem in self._activeModules.values():
+		for skillItem in self._activeSkills.values():
 
-			if filterOut and moduleItem.name in filterOut:
+			if filterOut and skillItem.name in filterOut:
 				continue
 
 			try:
-				func = getattr(moduleItem, method)
+				func = getattr(skillItem, method)
 				func(*args, **kwargs)
 
 			except AttributeError as e:
 				if not silent:
-					self.logWarning(f'Method "{method}" not found for module "{moduleItem.name}": {e}')
+					self.logWarning(f'Method "{method}" not found for skill "{skillItem.name}": {e}')
 			except TypeError:
 				# Do nothing, it's most prolly kwargs
 				pass
 
 
 	def deactivateSkill(self, skillName: str, persistent: bool = False):
-		if skillName in self._activeModules:
-			self._activeModules[skillName].active = False
+		if skillName in self._activeSkills:
+			self._activeSkills[skillName].active = False
 			self.ConfigManager.deactivateSkill(skillName, persistent)
-			self.configureModuleIntents(skillName=skillName, state=False)
-			self._deactivatedModules[skillName] = self._activeModules.pop(skillName)
+			self.configureSkillIntents(skillName=skillName, state=False)
+			self._deactivatedSkills[skillName] = self._activeSkills.pop(skillName)
 
 
-	def activateModule(self, skillName: str, persistent: bool = False):
-		if skillName in self._deactivatedModules:
-			self.ConfigManager.activateModule(skillName, persistent)
-			self.configureModuleIntents(skillName=skillName, state=True)
-			self._activeModules[skillName] = self._deactivatedModules.pop(skillName)
-			self._activeModules[skillName].active = True
-			self._activeModules[skillName].onStart()
+	def activateSkill(self, skillName: str, persistent: bool = False):
+		if skillName in self._deactivatedSkills:
+			self.ConfigManager.activateSkill(skillName, persistent)
+			self.configureSkillIntents(skillName=skillName, state=True)
+			self._activeSkills[skillName] = self._deactivatedSkills.pop(skillName)
+			self._activeSkills[skillName].active = True
+			self._activeSkills[skillName].onStart()
 
 
-	def checkForModuleUpdates(self, moduleToCheck: str = None) -> bool:
+	def checkForSkillUpdates(self, skillToCheck: str = None) -> bool:
 		if self.ConfigManager.getAliceConfigByName('stayCompletlyOffline'):
 			return False
 
-		self.logInfo('Checking for module updates')
+		self.logInfo('Checking for skill updates')
 		if not self.InternetManager.online:
 			self.logInfo('Not connected...')
 			return False
 
-		availableModules = self.ConfigManager.modulesConfigurations
+		availableSkills = self.ConfigManager.skillsConfigurations
 		updateSource = self.ConfigManager.getSkillsUpdateSource()
 
 		i = 0
-		for skillName in self._allModules:
+		for skillName in self._allSkills:
 			try:
-				if skillName not in availableModules or (moduleToCheck is not None and skillName != moduleToCheck):
+				if skillName not in availableSkills or (skillToCheck is not None and skillName != skillToCheck):
 					continue
 	
-				req = requests.get(f'https://raw.githubusercontent.com/project-alice-assistant/ProjectAliceModules/{updateSource}/PublishedModules/{availableModules[skillName]["author"]}/{skillName}/{skillName}.install')
+				req = requests.get(f'https://raw.githubusercontent.com/project-alice-assistant/ProjectAliceModules/{updateSource}/PublishedSkills/{availableSkills[skillName]["author"]}/{skillName}/{skillName}.install')
 
 				if req.status_code == 404:
 					raise GithubNotFound
@@ -358,37 +358,37 @@ class SkillManager(Manager):
 				if not remoteFile:
 					raise Exception
 
-				if Version(availableModules[skillName]['version']) < Version(remoteFile['version']):
+				if Version(availableSkills[skillName]['version']) < Version(remoteFile['version']):
 					i += 1
-					self.logInfo(f'❌ {skillName} - Version {availableModules[skillName]["version"]} < {remoteFile["version"]} in {self.ConfigManager.getAliceConfigByName("updateChannel")}')
+					self.logInfo(f'❌ {skillName} - Version {availableSkills[skillName]["version"]} < {remoteFile["version"]} in {self.ConfigManager.getAliceConfigByName("updateChannel")}')
 	
-					if not self.ConfigManager.getAliceConfigByName('moduleAutoUpdate'):
-						if skillName in self._activeModules:
-							self._activeModules[skillName].updateAvailable = True
-						elif skillName in self._deactivatedModules:
-							self._deactivatedModules[skillName].updateAvailable = True
+					if not self.ConfigManager.getAliceConfigByName('skillAutoUpdate'):
+						if skillName in self._activeSkills:
+							self._activeSkills[skillName].updateAvailable = True
+						elif skillName in self._deactivatedSkills:
+							self._deactivatedSkills[skillName].updateAvailable = True
 					else:
-						moduleFile = Path(self.Commons.rootDir(), 'system/moduleInstallTickets', skillName + '.install')
-						moduleFile.write_text(json.dumps(remoteFile))
-						if skillName in self._failedModules:
-							del self._failedModules[skillName]
+						skillFile = Path(self.Commons.rootDir(), 'system/skillInstallTickets', skillName + '.install')
+						skillFile.write_text(json.dumps(remoteFile))
+						if skillName in self._failedSkills:
+							del self._failedSkills[skillName]
 				else:
-					self.logInfo(f'✔ {skillName} - Version {availableModules[skillName]["version"]} in {self.ConfigManager.getAliceConfigByName("updateChannel")}')
+					self.logInfo(f'✔ {skillName} - Version {availableSkills[skillName]["version"]} in {self.ConfigManager.getAliceConfigByName("updateChannel")}')
 
 			except GithubNotFound:
-				self.logInfo(f'❓ Module "{skillName}" is not available on Github. Deprecated or is it a dev module?')
+				self.logInfo(f'❓ Skill "{skillName}" is not available on Github. Deprecated or is it a dev skill?')
 						
 			except Exception as e:
-				self.logError(f'❗ Error checking updates for module "{skillName}": {e}')
+				self.logError(f'❗ Error checking updates for skill "{skillName}": {e}')
 
-		self.logInfo(f'Found {i} module update(s)')
+		self.logInfo(f'Found {i} skill update(s)')
 		return i > 0
 
 
-	def _checkForModuleInstall(self):
-		self.ThreadManager.newTimer(interval=10, func=self._checkForModuleInstall, autoStart=True)
+	def _checkForSkillInstall(self):
+		self.ThreadManager.newTimer(interval=10, func=self._checkForSkillInstall, autoStart=True)
 
-		root = Path(self.Commons.rootDir(), 'system/moduleInstallTickets')
+		root = Path(self.Commons.rootDir(), 'system/skillInstallTickets')
 		files = [f for f in root.iterdir() if f.suffix == '.install']
 
 		if  self._busyInstalling.isSet() or \
@@ -401,26 +401,26 @@ class SkillManager(Manager):
 			self.logInfo(f'Found {len(files)} install ticket(s)')
 			self._busyInstalling.set()
 
-			modulesToBoot = dict()
+			skillsToBoot = dict()
 			try:
-				modulesToBoot = self._installModules(files)
+				skillsToBoot = self._installSkills(files)
 			except Exception as e:
-				self._logger.error(f'Error installing module: {e}')
+				self._logger.error(f'Error installing skill: {e}')
 			finally:
 				self.MqttManager.mqttBroadcast(topic='hermes/leds/clear')
 
-				if modulesToBoot:
-					for skillName, info in modulesToBoot.items():
-						self._activeModules = self._loadModuleList(moduleToLoad=skillName, isUpdate=info['update'])
-						self._allModules = {**self._allModules, **self._activeModules}
+				if skillsToBoot:
+					for skillName, info in skillsToBoot.items():
+						self._activeSkills = self._loadSkillList(skillToLoad=skillName, isUpdate=info['update'])
+						self._allSkills = {**self._allSkills, **self._activeSkills}
 
 						try:
-							self.LanguageManager.loadStrings(moduleToLoad=skillName)
-							self.TalkManager.loadTalks(moduleToLoad=skillName)
+							self.LanguageManager.loadStrings(skillToLoad=skillName)
+							self.TalkManager.loadTalks(skillToLoad=skillName)
 						except:
 							pass
 					try:
-						self.SamkillaManager.sync(moduleFilter=modulesToBoot)
+						self.SamkillaManager.sync(skillFilter=skillsToBoot)
 					except Exception as esamk:
 						self.logError(f'Failed syncing with remote snips console {esamk}')
 						raise
@@ -428,15 +428,15 @@ class SkillManager(Manager):
 				self._busyInstalling.clear()
 
 
-	def _installModules(self, modules: list) -> dict:
-		root = Path(self.Commons.rootDir(), 'system/moduleInstallTickets')
-		availableModules = self.ConfigManager.modulesConfigurations
-		modulesToBoot = dict()
+	def _installSkills(self, skills: list) -> dict:
+		root = Path(self.Commons.rootDir(), 'system/skillInstallTickets')
+		availableSkills = self.ConfigManager.skillsConfigurations
+		skillsToBoot = dict()
 		self.MqttManager.mqttBroadcast(topic='hermes/leds/systemUpdate', payload={'sticky': True})
-		for file in modules:
+		for file in skills:
 			skillName = Path(file).with_suffix('')
 
-			self.logInfo(f'Now taking care of module {skillName.stem}')
+			self.logInfo(f'Now taking care of skill {skillName.stem}')
 			res = root / file
 
 			try:
@@ -448,35 +448,35 @@ class SkillManager(Manager):
 				path = Path(installFile['author'], skillName)
 
 				if not skillName:
-					self.logError('Module name to install not found, aborting to avoid casualties!')
+					self.logError('Skill name to install not found, aborting to avoid casualties!')
 					continue
 
-				directory = Path(self.Commons.rootDir()) / 'modules' / skillName
+				directory = Path(self.Commons.rootDir()) / 'skills' / skillName
 
 				conditions = {
 					'aliceMinVersion': installFile['aliceMinVersion'],
 					**installFile.get('conditions', dict())
 				}
 
-				self.checkModuleConditions(skillName, conditions, availableModules)
+				self.checkSkillConditions(skillName, conditions, availableSkills)
 
-				if skillName in availableModules:
+				if skillName in availableSkills:
 					localVersionIsLatest: bool = \
 						directory.is_dir() and \
-						'version' in availableModules[skillName] and \
-						Version(availableModules[skillName]['version']) >= Version(installFile['version'])
+						'version' in availableSkills[skillName] and \
+						Version(availableSkills[skillName]['version']) >= Version(installFile['version'])
 
 					if localVersionIsLatest:
-						self.logWarning(f'Module "{skillName}" is already installed, skipping')
+						self.logWarning(f'Skill "{skillName}" is already installed, skipping')
 						subprocess.run(['sudo', 'rm', res])
 						continue
 					else:
-						self.logWarning(f'Module "{skillName}" needs updating')
+						self.logWarning(f'Skill "{skillName}" needs updating')
 						updating = True
 
-				if skillName in self._activeModules:
+				if skillName in self._activeSkills:
 					try:
-						self._activeModules[skillName].onStop()
+						self._activeSkills[skillName].onStop()
 					except Exception as e:
 						self.logError(f'Error stopping "{skillName}" for update: {e}')
 						raise
@@ -485,66 +485,66 @@ class SkillManager(Manager):
 
 				try:
 					gitCloner.clone()
-					self.logInfo('Module successfully downloaded')
-					self._installModule(res)
-					modulesToBoot[skillName] = {
+					self.logInfo('Skill successfully downloaded')
+					self._installSkill(res)
+					skillsToBoot[skillName] = {
 						'update': updating
 					}
 				except (GithubTokenFailed, GithubRateLimit):
-					self.logError('Failed cloning module')
+					self.logError('Failed cloning skill')
 					raise
 				except GithubNotFound:
 					if self.ConfigManager.getAliceConfigByName('devMode'):
-						if not Path(f'{self.Commons.rootDir}/modules/{skillName}').exists() or not \
-								Path(f'{self.Commons.rootDir}/modules/{skillName}/{skillName.py}').exists() or not \
-								Path(f'{self.Commons.rootDir}/modules/{skillName}/dialogTemplate').exists() or not \
-								Path(f'{self.Commons.rootDir}/modules/{skillName}/talks').exists():
-							self.logWarning(f'Module "{skillName}" cannot be installed in dev mode due to missing base files')
+						if not Path(f'{self.Commons.rootDir}/skills/{skillName}').exists() or not \
+								Path(f'{self.Commons.rootDir}/skills/{skillName}/{skillName.py}').exists() or not \
+								Path(f'{self.Commons.rootDir}/skills/{skillName}/dialogTemplate').exists() or not \
+								Path(f'{self.Commons.rootDir}/skills/{skillName}/talks').exists():
+							self.logWarning(f'Skill "{skillName}" cannot be installed in dev mode due to missing base files')
 						else:
-							self._installModule(res)
-							modulesToBoot[skillName] = {
+							self._installSkill(res)
+							skillsToBoot[skillName] = {
 								'update': updating
 							}
 						continue
 					else:
-						self.logWarning(f'Module "{skillName}" is not available on Github, cannot install')
+						self.logWarning(f'Skill "{skillName}" is not available on Github, cannot install')
 						raise
 				except Exception:
 					raise
 
 			except SkillNotConditionCompliant as e:
-				self.logInfo(f'Module "{skillName}" does not comply to "{e.condition}" condition, required "{e.conditionValue}"')
+				self.logInfo(f'Skill "{skillName}" does not comply to "{e.condition}" condition, required "{e.conditionValue}"')
 				if res.exists():
 					res.unlink()
 
 				self.broadcast(
 					method='onSkillInstallFailed',
 					exceptions=self.name,
-					module=skillName
+					skill=skillName
 				)
 
 			except Exception as e:
-				self.logError(f'Failed installing module "{skillName}": {e}')
+				self.logError(f'Failed installing skill "{skillName}": {e}')
 				if res.exists():
 					res.unlink()
 
 				self.broadcast(
 					method='onSkillInstallFailed',
 					exceptions=self.name,
-					module=skillName
+					skill=skillName
 				)
 				raise
 
-		return modulesToBoot
+		return skillsToBoot
 
 
-	def _installModule(self, res: Path):
+	def _installSkill(self, res: Path):
 		try:
 			installFile = json.loads(res.read_text())
 			pipReqs = installFile.get('pipRequirements', list())
 			sysReqs = installFile.get('systemRequirements', list())
 			scriptReq = installFile.get('script')
-			directory = Path(self.Commons.rootDir()) / 'modules' / installFile['name']
+			directory = Path(self.Commons.rootDir()) / 'skills' / installFile['name']
 
 			for requirement in pipReqs:
 				subprocess.run(['./venv/bin/pip3', 'install', requirement])
@@ -564,43 +564,43 @@ class SkillManager(Manager):
 			}
 
 			shutil.move(str(res), str(directory))
-			self.ConfigManager.addModuleToAliceConfig(installFile['name'], node)
+			self.ConfigManager.addSkillToAliceConfig(installFile['name'], node)
 		except Exception:
 			raise
 
 
-	def checkModuleConditions(self, skillName: str, conditions: dict, availableModules: dict) -> bool:
+	def checkSkillConditions(self, skillName: str, conditions: dict, availableSkills: dict) -> bool:
 
 		if 'aliceMinVersion' in conditions and Version(conditions['aliceMinVersion']) > Version(constants.VERSION):
-			raise SkillNotConditionCompliant(message='Module is not compliant', skillName=skillName, condition='Alice minimum version', conditionValue=conditions['aliceMinVersion'])
+			raise SkillNotConditionCompliant(message='Skill is not compliant', skillName=skillName, condition='Alice minimum version', conditionValue=conditions['aliceMinVersion'])
 
 		for conditionName, conditionValue in conditions.items():
 			if conditionName == 'lang' and self.LanguageManager.activeLanguage not in conditionValue:
-				raise SkillNotConditionCompliant(message='Module is not compliant', skillName=skillName, condition=conditionName, conditionValue=conditionValue)
+				raise SkillNotConditionCompliant(message='Skill is not compliant', skillName=skillName, condition=conditionName, conditionValue=conditionValue)
 
 			elif conditionName == 'online':
 				if conditionValue and self.ConfigManager.getAliceConfigByName('stayCompletlyOffline'):
-					raise SkillNotConditionCompliant(message='Module is not compliant', skillName=skillName, condition=conditionName, conditionValue=conditionValue)
+					raise SkillNotConditionCompliant(message='Skill is not compliant', skillName=skillName, condition=conditionName, conditionValue=conditionValue)
 				elif not conditionValue and not self.ConfigManager.getAliceConfigByName('stayCompletlyOffline'):
-					raise SkillNotConditionCompliant(message='Module is not compliant', skillName=skillName, condition=conditionName, conditionValue=conditionValue)
+					raise SkillNotConditionCompliant(message='Skill is not compliant', skillName=skillName, condition=conditionName, conditionValue=conditionValue)
 
-			elif conditionName == 'module':
-				for requiredModule in conditionValue:
-					if requiredModule['name'] in availableModules and not availableModules[requiredModule['name']]['active']:
-						raise SkillNotConditionCompliant(message='Module is not compliant', skillName=skillName, condition=conditionName, conditionValue=conditionValue)
-					elif requiredModule['name'] not in availableModules:
-						self.logInfo(f'Module {skillName} has another module as dependency, adding download')
-						subprocess.run(['wget', requiredModule['url'], '-O', Path(self.Commons.rootDir(), f"system/moduleInstallTickets/{requiredModule['name']}.install")])
+			elif conditionName == 'skill':
+				for requiredSkill in conditionValue:
+					if requiredSkill['name'] in availableSkills and not availableSkills[requiredSkill['name']]['active']:
+						raise SkillNotConditionCompliant(message='Skill is not compliant', skillName=skillName, condition=conditionName, conditionValue=conditionValue)
+					elif requiredSkill['name'] not in availableSkills:
+						self.logInfo(f'Skill {skillName} has another skill as dependency, adding download')
+						subprocess.run(['wget', requiredSkill['url'], '-O', Path(self.Commons.rootDir(), f"system/skillInstallTickets/{requiredSkill['name']}.install")])
 
-			elif conditionName == 'notModule':
-				for excludedModule in conditionValue:
-					author, name = excludedModule.split('/')
-					if name in availableModules and availableModules[name]['author'] == author and availableModules[name]['active']:
-						raise SkillNotConditionCompliant(message='Module is not compliant', skillName=skillName, condition=conditionName, conditionValue=conditionValue)
+			elif conditionName == 'notSkill':
+				for excludedSkill in conditionValue:
+					author, name = excludedSkill.split('/')
+					if name in availableSkills and availableSkills[name]['author'] == author and availableSkills[name]['active']:
+						raise SkillNotConditionCompliant(message='Skill is not compliant', skillName=skillName, condition=conditionName, conditionValue=conditionValue)
 
 			elif conditionName == 'asrArbitraryCapture':
 				if conditionValue and not self.ASRManager.asr.capableOfArbitraryCapture:
-					raise SkillNotConditionCompliant(message='Module is not compliant', skillName=skillName, condition=conditionName, conditionValue=conditionValue)
+					raise SkillNotConditionCompliant(message='Skill is not compliant', skillName=skillName, condition=conditionName, conditionValue=conditionValue)
 
 			elif conditionName == 'activeManager':
 				for manager in conditionValue:
@@ -608,18 +608,18 @@ class SkillManager(Manager):
 
 					man = SuperManager.getInstance().getManager(manager)
 					if not man or not man.isActive:
-						raise SkillNotConditionCompliant(message='Module is not compliant', skillName=skillName, condition=conditionName, conditionValue=conditionValue)
+						raise SkillNotConditionCompliant(message='Skill is not compliant', skillName=skillName, condition=conditionName, conditionValue=conditionValue)
 
 		return True
 
 
-	def configureModuleIntents(self, skillName: str, state: bool):
+	def configureSkillIntents(self, skillName: str, state: bool):
 		try:
-			module = self._activeModules.get(skillName, self._deactivatedModules.get(skillName))
+			skill = self._activeSkills.get(skillName, self._deactivatedSkills.get(skillName))
 			confs = [{
 				'intentId': intent.justTopic if hasattr(intent, 'justTopic') else intent,
 				'enable'  : state
-			} for intent in module.supportedIntents if not self.isIntentInUse(intent=intent, filtered=[skillName])]
+			} for intent in skill.supportedIntents if not self.isIntentInUse(intent=intent, filtered=[skillName])]
 
 			self.MqttManager.configureIntents(confs)
 		except Exception as e:
@@ -627,22 +627,22 @@ class SkillManager(Manager):
 
 
 	def isIntentInUse(self, intent: Intent, filtered: list) -> bool:
-		return any(intent in module.supportedIntents
-		           for name, module in self._activeModules.items() if name not in filtered)
+		return any(intent in skill.supportedIntents
+		           for name, skill in self._activeSkills.items() if name not in filtered)
 
 
-	def removeModule(self, skillName: str):
-		if skillName not in {**self._activeModules, **self._deactivatedModules, **self._failedModules}:
+	def removeSkill(self, skillName: str):
+		if skillName not in {**self._activeSkills, **self._deactivatedSkills, **self._failedSkills}:
 			return
 
-		self.configureModuleIntents(skillName, False)
-		self.ConfigManager.removeModule(skillName)
+		self.configureSkillIntents(skillName, False)
+		self.ConfigManager.removeSkill(skillName)
 
 		try:
-			del self._activeModules[skillName]
+			del self._activeSkills[skillName]
 		except KeyError:
-			del self._deactivatedModules[skillName]
+			del self._deactivatedSkills[skillName]
 
-		shutil.rmtree(Path(self.Commons.rootDir(), 'modules', skillName))
+		shutil.rmtree(Path(self.Commons.rootDir(), 'skills', skillName))
 		# TODO Samkilla cleaning
 		self.SnipsConsoleManager.doDownload()

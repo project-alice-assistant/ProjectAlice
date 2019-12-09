@@ -54,9 +54,9 @@ class SnipsConsoleManager(Manager):
 				self.isActive = False
 
 
-	def doDownload(self, modulesInfos: dict = None):
+	def doDownload(self, skillsInfos: dict = None):
 		self.logInfo('Starting Snips assistant training and download procedure')
-		self.ThreadManager.newEvent('SnipsAssistantDownload', onClearCallback='onSnipsAssistantDownloaded').set(modulesInfos=modulesInfos)
+		self.ThreadManager.newEvent('SnipsAssistantDownload', onClearCallback='onSnipsAssistantDownloaded').set(skillsInfos=skillsInfos)
 
 		projectId = self.LanguageManager.activeSnipsProjectId
 		self.ThreadManager.newThread(name='SnipsAssistantDownload', target=self.download, args=[projectId])

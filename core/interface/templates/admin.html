@@ -21,7 +21,7 @@
 		<div class="tabsContent">
 			<div id="AliceSettings" class="configBox">
 				<form action="/admin/saveAliceSettings/" name="config_for_{{ skillName }}" method="post" autocomplete="off" novalidate>
-					{% for settingName, settingValue in aliceSettings.items() if not settingName == 'modules' and not settingName == 'supportedLanguages' %}
+					{% for settingName, settingValue in aliceSettings.items() if not settingName == 'skills' and not settingName == 'supportedLanguages' %}
 						<div class="configLine">
 							<label class="configLabel" for="{{ settingName }}" title="{{ aliceSettingsTemplate[settingName]['description'] }}">{{ settingName }}</label>
 							<div class="configInput">

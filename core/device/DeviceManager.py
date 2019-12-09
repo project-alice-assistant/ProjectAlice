@@ -139,7 +139,7 @@ class DeviceManager(Manager):
 
 
 	def startTasmotaFlashingProcess(self, room: str, espType: str, session: DialogSession) -> bool:
-		self.ThreadManager.doLater(interval=0.5, func=self.MqttManager.endDialog, args=[session.sessionId, self.TalkManager.randomTalk('connectESPForFlashing', module='AliceCore')])
+		self.ThreadManager.doLater(interval=0.5, func=self.MqttManager.endDialog, args=[session.sessionId, self.TalkManager.randomTalk('connectESPForFlashing', skill='AliceCore')])
 
 		self._broadcastFlag.set()
 		if os.path.isfile('sonoff.bin'):
@@ -198,11 +198,11 @@ class DeviceManager(Manager):
 	def doFlashTasmota(self, room: str, espType: str, siteId: str):
 		port = self.findUSBPort(timeout=60)
 		if not port:
-			self.MqttManager.say(text=self.TalkManager.randomTalk('noESPFound', module='AliceCore'), client=siteId)
+			self.MqttManager.say(text=self.TalkManager.randomTalk('noESPFound', skill='AliceCore'), client=siteId)
 			self._broadcastFlag.clear()
 			return
 
-		self.MqttManager.say(text=self.TalkManager.randomTalk('usbDeviceFound', module='AliceCore'), client=siteId)
+		self.MqttManager.say(text=self.TalkManager.randomTalk('usbDeviceFound', skill='AliceCore'), client=siteId)
 		try:
 			mac = ESPLoader.detect_chip(port=port, baud=115200).read_mac()
 			mac = ':'.join([f'{x:02x}' for x in mac])
@@ -217,22 +217,22 @@ class DeviceManager(Manager):
 			esptool.main(cmd)
 		except Exception as e:
 			self.logError(f'Something went wrong flashing esp device: {e}')
-			self.MqttManager.say(text=self.TalkManager.randomTalk('espFailed', module='AliceCore'), client=siteId)
+			self.MqttManager.say(text=self.TalkManager.randomTalk('espFailed', skill='AliceCore'), client=siteId)
 			self._broadcastFlag.clear()
 			return
 
 		self.logInfo('Tasmota flash done')
-		self.MqttManager.say(text=self.TalkManager.randomTalk('espFlashedUnplugReplug', module='AliceCore'), client=siteId)
+		self.MqttManager.say(text=self.TalkManager.randomTalk('espFlashedUnplugReplug', skill='AliceCore'), client=siteId)
 		found = self.findUSBPort(timeout = 60)
 		if found:
-			self.MqttManager.say(text=self.TalkManager.randomTalk('espFoundReadyForConf', module='AliceCore'), client=siteId)
+			self.MqttManager.say(text=self.TalkManager.randomTalk('espFoundReadyForConf', skill='AliceCore'), client=siteId)
 			time.sleep(10)
 			uid = self._getFreeUID(mac)
 			tasmotaConfigs = TasmotaConfigs(deviceType=espType, uid=uid)
 			confs = tasmotaConfigs.getBacklogConfigs(room)
 			if not confs:
 				self.logError('Something went wrong getting tasmota configuration')
-				self.MqttManager.say(text=self.TalkManager.randomTalk('espFailed', module='AliceCore'), client=siteId)
+				self.MqttManager.say(text=self.TalkManager.randomTalk('espFailed', skill='AliceCore'), client=siteId)
 			else:
 				ser = serial.Serial()
 				ser.baudrate = 115200
@@ -263,17 +263,17 @@ class DeviceManager(Manager):
 
 					ser.close()
 					self.logInfo('Tasmota flashing and configuring done')
-					self.MqttManager.say(text=self.TalkManager.randomTalk('espFlashingDone', module='AliceCore'), client=siteId)
+					self.MqttManager.say(text=self.TalkManager.randomTalk('espFlashingDone', skill='AliceCore'), client=siteId)
 					self.addNewDevice(espType, room, uid)
 					self._broadcastFlag.clear()
 
 				except Exception as e:
 					self.logError(f'Something went wrong writting configuration to esp device: {e}')
-					self.MqttManager.say(text=self.TalkManager.randomTalk('espFailed', module='AliceCore'), client=siteId)
+					self.MqttManager.say(text=self.TalkManager.randomTalk('espFailed', skill='AliceCore'), client=siteId)
 					self._broadcastFlag.clear()
 					ser.close()
 		else:
-			self.MqttManager.say(text=self.TalkManager.randomTalk('espFailed', module='AliceCore'), client=siteId)
+			self.MqttManager.say(text=self.TalkManager.randomTalk('espFailed', skill='AliceCore'), client=siteId)
 			self._broadcastFlag.clear()
 			return
 
@@ -345,19 +345,19 @@ class DeviceManager(Manager):
 				if deviceType.lower() == 'alicesatellite':
 					for satellite in self.getDevicesByRoom(room):
 						if satellite.deviceType.lower() == 'alicesatellite':
-							self.logWarning('Cannot have more than one Alice module per room, aborting')
-							self.MqttManager.say(text = self.TalkManager.randomTalk('maxOneAlicePerRoom', module='system'), client=replyOnSiteId)
+							self.logWarning('Cannot have more than one Alice skill per room, aborting')
+							self.MqttManager.say(text = self.TalkManager.randomTalk('maxOneAlicePerRoom', skill='system'), client=replyOnSiteId)
 							answer = 'nok'
 							break
 
 				if answer != 'nok':
 					if self.addNewDevice(deviceType, room, uid):
 						self.logInfo(f'New device with uid {uid} successfully added')
-						self.MqttManager.say(text = self.TalkManager.randomTalk('newDeviceAdditionSuccess', module='system'), client=replyOnSiteId)
+						self.MqttManager.say(text = self.TalkManager.randomTalk('newDeviceAdditionSuccess', skill='system'), client=replyOnSiteId)
 						answer = 'ok'
 					else:
 						self.logInfo('Failed adding new device')
-						self.MqttManager.say(text = self.TalkManager.randomTalk('newDeviceAdditionFailed', module='system'), client=replyOnSiteId)
+						self.MqttManager.say(text = self.TalkManager.randomTalk('newDeviceAdditionFailed', skill='system'), client=replyOnSiteId)
 						answer = 'nok'
 
 					if deviceType.lower() == 'alicesatellite':
