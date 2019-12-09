@@ -11,6 +11,7 @@ from flask_login import LoginManager
 from core.base.model.Manager import Manager
 from core.interface.api.ModulesApi import ModulesApi
 from core.interface.api.UsersApi import UsersApi
+from core.interface.views import ScenarioView
 from core.interface.views.AdminAuth import AdminAuth
 from core.interface.views.AdminView import AdminView
 from core.interface.views.DevModeView import DevModeView
@@ -26,7 +27,7 @@ class WebInterfaceManager(Manager):
 	app = Flask(__name__)
 	app.config['SEND_FILE_MAX_AGE_DEFAULT'] = 0
 
-	_VIEWS = [AdminView, AdminAuth, IndexView, ModulesView, SnipswatchView, SyslogView, DevModeView]
+	_VIEWS = [AdminView, AdminAuth, IndexView, ModulesView, SnipswatchView, SyslogView, DevModeView, ScenarioView]
 	_APIS = [UsersApi, ModulesApi]
 
 	def __init__(self):

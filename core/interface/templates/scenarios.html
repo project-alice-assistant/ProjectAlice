@@ -1,0 +1,18 @@
+{% extends 'base.html' %}
+
+{% block title %}
+	{{ langData.admin }}
+{% endblock %}
+
+{% block loaders %}
+	<script src="{{ url_for('static', filename='js/scenarios.js') }}"></script>
+{% endblock %}
+
+{% block pageTitle %}
+	{{ langData.admin }}
+{% endblock %}
+
+{% block content %}
+	<div id="adminPageTabsContainer">
+	</div>
+{% endblock %}

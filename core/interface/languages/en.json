@@ -1,10 +1,11 @@
 {
 	"home": "home",
-	"modules" : "modules",
+	"skills" : "skills",
 	"syslog": "syslog",
 	"snipswatch": "snipswatch",
 	"admin": "admin",
 	"devMode": "devMode",
+	"scenarios": "scenarios",
 	"by": "by",
 	"status": "status",
 	"enable": "enable",
