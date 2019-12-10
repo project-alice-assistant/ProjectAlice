@@ -103,6 +103,9 @@ class SkillsView(View):
 		results = req.json()
 		if results:
 			for skill in results['items']:
+				if 'PublishedModules' in skill['url']:
+					skill['url'] = skill['url'].replace('PublishedModules', 'PublishedSkills')
+
 				try:
 					req = requests.get(
 						url=f"{skill['url'].split('?')[0]}?ref={updateSource}",
@@ -111,6 +114,8 @@ class SkillsView(View):
 					)
 					installer = req.json()
 					if installer:
+						if 'lang' not in installer['conditions']:
+							installer['conditions']['lang'] = constants.ALL
 						installers[installer['name']] = installer
 
 				except Exception:
@@ -119,5 +124,5 @@ class SkillsView(View):
 		actualVersion = Version(constants.VERSION)
 		return {
 			skillName: skillInfo for skillName, skillInfo in installers.items()
-			if self.SkillManager.getSkillInstance(skillName=skillName, silent=True) is None and actualVersion < Version(skillInfo['aliceMinVersion'])
+			if self.SkillManager.getSkillInstance(skillName=skillName, silent=True) is None and actualVersion >= Version(skillInfo['aliceMinVersion'] and (self.LanguageManager.activeLanguage.lower() in skillInfo['conditions']['lang'] or skillInfo['conditions']['lang'] == constants.ALL))
 		}

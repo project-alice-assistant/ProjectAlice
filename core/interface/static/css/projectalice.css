@@ -168,7 +168,7 @@ a:hover {
 	margin-top: 30px;
 }
 
-.skillStoreModuleTile {
+.skillStoreSkillTile {
 	font-family: 'marskeregular', Arial, sans-serif;
 	display: flex;
 	flex-wrap: wrap;
@@ -182,7 +182,7 @@ a:hover {
 	box-shadow: 0 0 20px 5px #141414;
 }
 
-.skillsStoreModuleTitle {
+.skillsStoreSkillTitle {
 	background-color: #343434;
 	height: 30px;
 	width: 100%;
@@ -193,15 +193,15 @@ a:hover {
 	box-sizing: border-box;
 }
 
-.skillsStoreModuleAuthor,
-.skillsStoreModuleVersion,
-.skillsStoreModuleCategory {
+.skillsStoreSkillAuthor,
+.skillsStoreSkillVersion,
+.skillsStoreSkillCategory {
 	width: 100%;
 	font-size: 1em;
 	margin: 5px;
 }
 
-.skillStoreModuleDescription {
+.skillStoreSkillDescription {
 	font-family: neogreyregular, sans-serif;
 	width: 100%;
 	font-size: 0.75em;
@@ -215,7 +215,7 @@ a:hover {
 	overflow-y: auto;
 }
 
-.skillStoreModuleDownload {
+.skillStoreSkillDownload {
 	height: 50px;
 	width: 50%;
 	margin: 10px auto auto auto;
@@ -227,13 +227,13 @@ a:hover {
 	font-size: 2em;
 }
 
-.skillStoreModuleDownload:hover {
+.skillStoreSkillDownload:hover {
 	cursor: pointer;
 	background-color: #636363;
 	color: yellow;
 }
 
-.skillStoreModuleButtonAnimation {
+.skillStoreSkillButtonAnimation {
 	display: none;
 	height: 50px;
 	width: 50%;
@@ -246,11 +246,11 @@ a:hover {
 	font-size: 2em;
 }
 
-.skillStoreModuleDownloadButton {
+.skillStoreSkillDownloadButton {
 	display: flex;
 }
 
-#closeModuleStore {
+#closeSkillStore {
 	display: none;
 }
 
