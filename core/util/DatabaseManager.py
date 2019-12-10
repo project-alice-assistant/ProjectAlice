@@ -1,5 +1,5 @@
 import sqlite3
-from typing import Optional, Union, List
+from typing import Optional, List
 
 from core.ProjectAliceExceptions import DbConnectionError, InvalidQuery
 from core.base.model.Manager import Manager
