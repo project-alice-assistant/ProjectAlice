@@ -73,7 +73,7 @@ class SkillsView(View):
 
 			for skill in skills:
 				self.WebInterfaceManager.newSkillInstallProcess(skill['skill'])
-				req = requests.get(f'https://raw.githubusercontent.com/project-alice-assistant/ProjectAliceModules/{self.ConfigManager.getSkillsUpdateSource()}/PublishedSkills/{skill["author"]}/{skill["skill"]}/{skill["skill"]}.install')
+				req = requests.get(f'https://raw.githubusercontent.com/project-alice-assistant/ProjectAliceSkills/{self.ConfigManager.getSkillsUpdateSource()}/PublishedSkills/{skill["author"]}/{skill["skill"]}/{skill["skill"]}.install')
 				remoteFile = req.json()
 				if not remoteFile:
 					self.WebInterfaceManager.skillInstallProcesses[skill['skill']]['status'] = 'failed'
@@ -98,7 +98,7 @@ class SkillsView(View):
 		installers = dict()
 		updateSource = self.ConfigManager.getSkillsUpdateSource()
 		req = requests.get(
-			url='https://api.github.com/search/code?q=extension:install+repo:project-alice-assistant/ProjectAliceModules/',
+			url='https://api.github.com/search/code?q=extension:install+repo:project-alice-assistant/ProjectAliceSkills/',
 			auth=GithubCloner.getGithubAuth())
 		results = req.json()
 		if results:

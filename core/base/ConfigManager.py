@@ -460,7 +460,7 @@ class ConfigManager(Manager):
 		if self.getAliceConfigByName('updateChannel') == 'master':
 			return updateSource
 
-		req = requests.get('https://api.github.com/repos/project-alice-assistant/ProjectAliceModules/branches', auth=GithubCloner.getGithubAuth())
+		req = requests.get('https://api.github.com/repos/project-alice-assistant/ProjectAliceSkills/branches', auth=GithubCloner.getGithubAuth())
 		result = req.json()
 		if result:
 			userUpdatePref = self.getAliceConfigByName('updateChannel')

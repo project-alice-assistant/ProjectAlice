@@ -10,9 +10,9 @@ import shutil
 from core.ProjectAliceExceptions import GithubNotFound, GithubRateLimit, GithubTokenFailed, SkillNotConditionCompliant, SkillStartDelayed, SkillStartingFailed
 from core.base.SuperManager import SuperManager
 from core.base.model import Intent
+from core.base.model.AliceSkill import AliceSkill
 from core.base.model.GithubCloner import GithubCloner
 from core.base.model.Manager import Manager
-from core.base.model.AliceSkill import AliceSkill
 from core.base.model.Version import Version
 from core.commons import constants
 
@@ -27,7 +27,7 @@ class SkillManager(Manager):
 		'RedQueen'
 	]
 
-	GITHUB_BARE_BASE_URL = 'https://raw.githubusercontent.com/project-alice-assistant/ProjectAliceModules/master/PublishedSkills'
+	GITHUB_BARE_BASE_URL = 'https://raw.githubusercontent.com/project-alice-assistant/ProjectAliceSkills/master/PublishedSkills'
 	GITHUB_API_BASE_URL = 'repositories/193512918/contents/PublishedSkills'
 
 	DATABASE = {
@@ -45,15 +45,15 @@ class SkillManager(Manager):
 	def __init__(self):
 		super().__init__(self.NAME, self.DATABASE)
 
-		self._busyInstalling        = None
+		self._busyInstalling = None
 
-		self._skillInstallThread   = None
-		self._supportedIntents      = list()
-		self._allSkills            = dict()
-		self._activeSkills         = dict()
-		self._failedSkills        = dict()
-		self._deactivatedSkills    = dict()
-		self._widgets               = dict()
+		self._skillInstallThread = None
+		self._supportedIntents = list()
+		self._allSkills = dict()
+		self._activeSkills = dict()
+		self._failedSkills = dict()
+		self._deactivatedSkills = dict()
+		self._widgets = dict()
 
 
 	def onStart(self):
@@ -349,7 +349,7 @@ class SkillManager(Manager):
 				if skillName not in availableSkills or (skillToCheck is not None and skillName != skillToCheck):
 					continue
 	
-				req = requests.get(f'https://raw.githubusercontent.com/project-alice-assistant/ProjectAliceModules/{updateSource}/PublishedSkills/{availableSkills[skillName]["author"]}/{skillName}/{skillName}.install')
+				req = requests.get(f'https://raw.githubusercontent.com/project-alice-assistant/ProjectAliceSkills/{updateSource}/PublishedSkills/{availableSkills[skillName]["author"]}/{skillName}/{skillName}.install')
 
 				if req.status_code == 404:
 					raise GithubNotFound
