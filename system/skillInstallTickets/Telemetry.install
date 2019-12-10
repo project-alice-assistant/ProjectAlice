@@ -1,10 +1,10 @@
 {
 	"name": "Telemetry",
-	"version": "1.0.2",
+	"version": "1.0.4",
 	"author": "ProjectAlice",
 	"maintainers": ["Psychokiller1888", "maxbachmann"],
 	"desc": "Access your stored telemetry data",
-	"aliceMinVersion": "1.0.0-a3",
+	"aliceMinVersion": "1.0.0-a4",
 	"pipRequirements": [],
 	"systemRequirements": [],
 	"conditions": {
