@@ -98,7 +98,7 @@ class SkillsView(View):
 		installers = dict()
 		updateSource = self.ConfigManager.getSkillsUpdateSource()
 		req = requests.get(
-			url='https://api.github.com/search/code?q=extension:install+repo:project-alice-assistant/ProjectAliceModules/',
+			url='https://api.github.com/search/code?q=extension:install+repo:project-alice-assistant/ProjectAliceSkills/',
 			auth=GithubCloner.getGithubAuth())
 		results = req.json()
 		if results:
