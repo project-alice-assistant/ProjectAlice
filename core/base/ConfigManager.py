@@ -379,7 +379,7 @@ class ConfigManager(Manager):
 						self.updateAliceConfiguration('skills', self._skillsConfigurations)
 					except Exception as e:
 						self.logError(f'- Failed generating default config, scheduling download: {e}')
-						subprocess.run(['wget', f'http://modules.projectalice.ch/{skillName}', '-O', Path(self.Commons.rootDir(), f'system/skillInstallTickets/{skillName}.install')])
+						subprocess.run(['wget', f'http://skills.projectalice.ch/{skillName}', '-O', Path(self.Commons.rootDir(), f'system/skillInstallTickets/{skillName}.install')])
 						if skillName in skillsConfigurations:
 							skillsConfigurations.pop(skillName)
 						continue
