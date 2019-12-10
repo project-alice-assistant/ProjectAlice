@@ -119,5 +119,5 @@ class SkillsView(View):
 		actualVersion = Version(constants.VERSION)
 		return {
 			skillName: skillInfo for skillName, skillInfo in installers.items()
-			if self.SkillManager.getSkillInstance(skillName=skillName, silent=True) is None and actualVersion >= Version(skillInfo['aliceMinVersion'])
+			if self.SkillManager.getSkillInstance(skillName=skillName, silent=True) is None and actualVersion < Version(skillInfo['aliceMinVersion'])
 		}
