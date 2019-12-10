@@ -83,7 +83,7 @@ class ConfigManager(Manager):
 			if setting not in aliceConfigs:
 				self.logInfo(f'- New configuration found: {setting}')
 				changes = True
-				aliceConfigs[setting] = definition['defaultValue']
+				aliceConfigs[setting] = definition.get('defaultValue', '')
 			else:
 				if setting == 'skills' or setting == 'supportedLanguages':
 					continue
@@ -169,6 +169,7 @@ class ConfigManager(Manager):
 
 		# pop skills key so it gets added in the back
 		skills = sort.pop('skills')
+		skills = dict() if not isinstance(skills, dict) else skills
 
 		sort['skills'] = dict()
 		for skillName, setting in skills.items():
