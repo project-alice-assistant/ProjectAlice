@@ -51,7 +51,7 @@ class DialogSession(ProjectAliceObject):
 		self._intentHistory = session.intentHistory
 		self._intentFilter = session.intentFilter
 		self._notUnderstood = session.notUnderstood
-		self._currentState = session.currentStat
+		self._currentState = session.currentState
 
 
 	def _parseMessage(self):
