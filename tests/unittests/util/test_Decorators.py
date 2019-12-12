@@ -2,7 +2,7 @@ import unittest
 from unittest import mock
 from unittest.mock import MagicMock
 
-from core.util.Decorators import IntentHandler, deprecated, Online, AnyExcept
+from core.util.Decorators import IntentHandler, deprecated, Online, AnyExcept, IntentMarker
 
 class TestDecorators(unittest.TestCase):
 
@@ -245,7 +245,7 @@ class TestDecorators(unittest.TestCase):
 				return self, args, kwargs
 
 			@IntentHandler(mock_intent('intent2'))
-			@IntentHandler('intent3', isProtected=True, userIntent=False)
+			@IntentHandler('intent3', isProtected=True)
 			def multiple_decorator(self, *args, **kwargs):
 				return self, args, kwargs
 
@@ -257,6 +257,8 @@ class TestDecorators(unittest.TestCase):
 
 		# test whether the decorator works when a single intent is mapped
 		instance, args, kwargs = exampleObject.single_decorator('arg1', 'arg2', kwarg1='kwarg1', kwarg2='kwarg2')
+		print(exampleObject)
+		print(instance)
 		self.assertEqual(instance, exampleObject, "the object instance is not retrieved correctly")
 		self.assertEqual(args, ('arg1', 'arg2'), "unnamed arguments are passed in a wrong way")
 		self.assertEqual(kwargs, {'kwarg1': 'kwarg1', 'kwarg2': 'kwarg2'}, "named arguments are passed in a wrong way")
@@ -275,14 +277,14 @@ class TestDecorators(unittest.TestCase):
 		# test whether the intents are created correctly
 		for name in dir(Example):
 			method = getattr(Example, name)
-			while isinstance(method, IntentHandler.Wrapper):
+			while isinstance(method, IntentMarker):
 				method.intent
 				method = method.decoratedMethod
 
 		mock_intent.assert_has_calls([
 			mock.call('intent1', isProtected=False, userIntent=True),
 			mock.call('intent2'),
-			mock.call('intent3', isProtected=True, userIntent=False)],
+			mock.call('intent3', isProtected=True, userIntent=True)],
 			any_order=True
 		)
 
@@ -292,7 +294,7 @@ class TestDecorators(unittest.TestCase):
 		for name in dir(Example):
 			originalMethod= getattr(Example, name)
 			method = originalMethod
-			while isinstance(method, IntentHandler.Wrapper):
+			while isinstance(method, IntentMarker):
 				mappings.append((method.intentName, originalMethod))
 				method = method.decoratedMethod
 

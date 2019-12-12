@@ -63,10 +63,10 @@ class AliceSkill(ProjectAliceObject):
 
 	@classmethod
 	def decoratedIntentMethods(cls):
-		from core.util.Decorators import IntentHandler
+		from core.util.Decorators import IntentHandler, IntentMarker
 		for name in dir(cls):
 			method = getattr(cls, name)
-			while isinstance(method, IntentHandler.Wrapper):
+			while isinstance(method, IntentMarker):
 				yield method
 				method = method.decoratedMethod
 
