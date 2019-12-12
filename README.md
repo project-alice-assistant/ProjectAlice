@@ -1,6 +1,6 @@
 [![Liberapay receiving](https://img.shields.io/liberapay/receives/Psycho)](https://liberapay.com/Psycho)
 
-[![Maintainability](https://api.codeclimate.com/v1/badges/ab9aa78508dcccc85b12/maintainability)](https://codeclimate.com/github/project-alice-powered-by-snips/ProjectAlice/maintainability) [![Codacy Badge](https://api.codacy.com/project/badge/Grade/55399302e9614fb18a354fb9345dff29)](https://www.codacy.com/manual/Psychokiller1888/ProjectAlice?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=project-alice-powered-by-snips/ProjectAlice&amp;utm_campaign=Badge_Grade) ![GitHub language count](https://img.shields.io/github/languages/count/Psychokiller1888/ProjectAlice) ![GitHub top language](https://img.shields.io/github/languages/top/Psychokiller1888/ProjectAlice) ![GitHub](https://img.shields.io/github/license/Psychokiller1888/ProjectAlice) [![Documentation Status](https://readthedocs.org/projects/projectalice/badge/?version=latest)](https://projectalice.readthedocs.io/en/latest/?badge=latest) ![Open issues](https://img.shields.io/github/issues-raw/Psychokiller1888/ProjectAlice) ![GitHub contributors](https://img.shields.io/github/contributors/Psychokiller1888/ProjectAlice) ![Discord](https://img.shields.io/discord/579345007518154752)
+[![Maintainability](https://api.codeclimate.com/v1/badges/ab9aa78508dcccc85b12/maintainability)](https://codeclimate.com/github/project-alice-assistant/ProjectAlice/maintainability) [![Codacy Badge](https://api.codacy.com/project/badge/Grade/55399302e9614fb18a354fb9345dff29)](https://www.codacy.com/manual/Psychokiller1888/ProjectAlice?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=project-alice-assistant/ProjectAlice&amp;utm_campaign=Badge_Grade) ![GitHub language count](https://img.shields.io/github/languages/count/Psychokiller1888/ProjectAlice) ![GitHub top language](https://img.shields.io/github/languages/top/Psychokiller1888/ProjectAlice) ![GitHub](https://img.shields.io/github/license/Psychokiller1888/ProjectAlice) [![Documentation Status](https://readthedocs.org/projects/projectalice/badge/?version=latest)](https://projectalice.readthedocs.io/en/latest/?badge=latest) ![Open issues](https://img.shields.io/github/issues-raw/Psychokiller1888/ProjectAlice) ![GitHub contributors](https://img.shields.io/github/contributors/Psychokiller1888/ProjectAlice) ![Discord](https://img.shields.io/discord/579345007518154752)
 
 # ProjectAlice
 Project Alice is a smart voice home assistant completely based on [Snips](https://snips.ai) that is modular and extensible. Since Snips runs entirely offline and never sends or shares your voice interactions with anyone, Project Alice **guarantees** your privacy in your home or wherever you’re using Project Alice.
@@ -8,7 +8,7 @@ Project Alice is a smart voice home assistant completely based on [Snips](https:
 However, as an option, since we've built Project Alice on top of Snips, Project Alice can be configured to use some online alternatives and fall backs (for example, using Amazon or Google’s Text to Speech engines), just like Snips. Since Snips (and the Project Alice team) strongly believe that decisions about your privacy should be made by you and you alone, these options are all disabled by default.
 
 # Installing
-Please follow the [wiki](https://github.com/project-alice-powered-by-snips/ProjectAlice/wiki/Installing)
+Please follow the [wiki](https://github.com/project-alice-assistant/ProjectAlice/wiki/Installing)
 
 # Chat with us and the community
 Join us on our [Discord server](https://discord.gg/Jfcj355)
@@ -58,7 +58,7 @@ If you see or find a copyright breach, feel free to contact us immediately. It i
 
 # Other repositories
 -   [Project Alice Installer](https://github.com/Psychokiller1888/ProjectAliceInstaller)
--   [Project Alice Modules](https://github.com/Psychokiller1888/ProjectAliceModules)
+-   [Project Alice Modules](https://github.com/Psychokiller1888/ProjectAliceSkills)
 -   [Project Alice Amazon Polly and Google WaveNet cached TTS speeches](https://github.com/Psychokiller1888/ProjectAliceCachedSpeeches/tree/Amazon-EnUs-Joanna)
 
 -   [Donate](https://paypal.me/Psychokiller1888)
