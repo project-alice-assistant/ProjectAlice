@@ -349,7 +349,7 @@ class ConfigManager(Manager):
 					if skillConfigTemplate.exists():
 						self._newSkillConfigFile(skillName, skillConfigTemplate)
 					else:
-						self.logWarning(f'- Cannot create config, template not existing, skipping skill')
+						self.logWarning(f'- Cannot create config, template not existing, skipping skill "{skillName}"')
 
 			else:
 				self._skillsTemplateConfigurations[skillName] = dict()
@@ -360,13 +360,13 @@ class ConfigManager(Manager):
 			else:
 				# For some reason we have a skill not declared in alice configs... I think getting rid of it is best
 				if skillName not in SkillManager.NEEDED_SKILLS:
-					self.logInfo('- Skill not declared in config but files are existing, cleaning up')
+					self.logInfo(f'- Skill "{skillName}"not declared in config but files are existing, cleaning up')
 					shutil.rmtree(skillDirectory, ignore_errors=True)
 					if skillName in skillsConfigurations:
 						skillsConfigurations.pop(skillName)
 					continue
 				else:
-					self.logInfo(f'- Skill is required but is missing definition in Alice config, generating them')
+					self.logInfo(f'- Skill "{skillName}" is required but is missing definition in Alice config, generating them')
 					try:
 						installFile = json.load(Path(skillsPath / skillDirectory / f'{skillName}.install').open())
 						node = {
@@ -379,7 +379,7 @@ class ConfigManager(Manager):
 						self._skillsConfigurations[skillName] = config
 						self.updateAliceConfiguration('skills', self._skillsConfigurations)
 					except Exception as e:
-						self.logError(f'- Failed generating default config, scheduling download: {e}')
+						self.logError(f'- Failed generating default config, scheduling download for skill "{skillName}": {e}')
 						subprocess.run(['wget', f'http://skills.projectalice.ch/{skillName}', '-O', Path(self.Commons.rootDir(), f'system/skillInstallTickets/{skillName}.install')])
 						if skillName in skillsConfigurations:
 							skillsConfigurations.pop(skillName)

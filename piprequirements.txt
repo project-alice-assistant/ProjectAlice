@@ -1,5 +1,4 @@
 pyalsaaudio
-
 python-dateutil
 paho-mqtt
 watchdog
@@ -22,6 +21,7 @@ click
 pyyaml
 boto3
 google-cloud-texttospeech
+google-cloud-speech
 flask
 flask-classful
 flask-login
