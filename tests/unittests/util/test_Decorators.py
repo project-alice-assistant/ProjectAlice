@@ -257,8 +257,6 @@ class TestDecorators(unittest.TestCase):
 
 		# test whether the decorator works when a single intent is mapped
 		instance, args, kwargs = exampleObject.single_decorator('arg1', 'arg2', kwarg1='kwarg1', kwarg2='kwarg2')
-		print(exampleObject)
-		print(instance)
 		self.assertEqual(instance, exampleObject, "the object instance is not retrieved correctly")
 		self.assertEqual(args, ('arg1', 'arg2'), "unnamed arguments are passed in a wrong way")
 		self.assertEqual(kwargs, {'kwarg1': 'kwarg1', 'kwarg2': 'kwarg2'}, "named arguments are passed in a wrong way")

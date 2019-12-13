@@ -65,24 +65,29 @@ class AliceSkill(ProjectAliceObject):
 	def decoratedIntentMethods(cls):
 		from core.util.Decorators import IntentHandler, IntentMarker
 		for name in dir(cls):
-			method = getattr(cls, name)
+			outerMethod = method = getattr(cls, name)
 			while isinstance(method, IntentMarker):
-				yield method
+				# __set_name__ is only called for the first decorator
+				# so only the first one retrieves the object instance,
+				# which has to be passed to the method
+				# -> outerMethod has to be used, while method holds
+				# informations on the intent that is mapped
+				yield outerMethod, method
 				method = method.decoratedMethod
 
 
 	@classmethod
 	def intentMethods(cls) -> list:
 		intents = dict()
-		for method in cls.decoratedIntentMethods():
+		for outerMethod, method in cls.decoratedIntentMethods():
 			if not method.requiredState:
-				intents[method.intentName] = (method.intent, method)
+				intents[method.intentName] = (method.intent, outerMethod)
 				continue
 
 			if method.intentName not in intents:
 				intents[method.intentName] = method.intent
 
-			intents[method.intentName].addDialogMapping({method.requiredState: method})
+			intents[method.intentName].addDialogMapping({method.requiredState: outerMethod})
 
 		return list(intents.values())
 

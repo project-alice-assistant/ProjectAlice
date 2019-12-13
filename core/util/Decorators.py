@@ -51,8 +51,11 @@ class IntentMarker:
 		return str(self._intent)
 
 	def __call__(self, *args, **kwargs):
+		print(self._owner, self.decoratedMethod, args)
 		if self._owner:
-			return self.decoratedMethod(SuperManager.getInstance().skillManager.getSkillInstance(self._owner.__name__), *args, **kwargs)
+			result = SuperManager.getInstance().skillManager.getSkillInstance(self._owner.__name__)
+			print(type(result))
+			return self.decoratedMethod(result, *args, **kwargs)
 		return self.decoratedMethod(*args, **kwargs)
 
 	def __set_name__(self, owner, name):
