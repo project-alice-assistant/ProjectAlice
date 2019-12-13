@@ -5,7 +5,7 @@ import inspect
 import json
 import sqlite3
 from pathlib import Path
-from typing import Any, Callable, Dict, Iterable, List, Tuple
+from typing import Any, Callable, Dict, Iterable, List, Tuple, Optional
 
 import re
 from paho.mqtt import client as MQTTClient
@@ -21,6 +21,8 @@ from core.user.model.AccessLevels import AccessLevel
 
 class AliceSkill(ProjectAliceObject):
 
+	#TODO: authOnly should be a parameter of the intents, so it can be e.g. passed along with the IntentHandler
+	# decorator
 	def __init__(self, supportedIntents: Iterable = None, authOnlyIntents: dict = None, databaseSchema: dict = None):
 		super().__init__(logDepth=4)
 		try:
@@ -146,8 +148,8 @@ class AliceSkill(ProjectAliceObject):
 				)
 
 
-	def getWidgetInstance(self, widgetName: str) -> Widget:
-		return self._widgets.get(widgetName, None)
+	def getWidgetInstance(self, widgetName: str) -> Optional[Widget]:
+		return self._widgets.get(widgetName)
 
 
 	def getUtterancesByIntent(self, intent: Intent, forceLowerCase: bool = True, cleanSlots: bool = False) -> list:
@@ -297,6 +299,9 @@ class AliceSkill(ProjectAliceObject):
 		if not intent in self._supportedIntents:
 			return False
 
+		# TODO: this only checks whether the intent is supported and an authOnlyIntent here,
+		# however it might a intent that uses dialogMappings and does not require the auth on
+		# the module the intent is ment for
 		if intent in self._authOnlyIntents:
 			# Return if intent is for auth users only but the user is unknown
 			if session.user == constants.UNKNOWN_USER:
@@ -351,7 +356,7 @@ class AliceSkill(ProjectAliceObject):
 		return self._supportedIntents
 
 
-	def onBooted(self):
+	def onBooted(self) -> bool:
 		if self.delayed:
 			if self.ThreadManager.getEvent('SnipsAssistantDownload').isSet():
 				self.ThreadManager.doLater(interval=5, func=self.onBooted)
