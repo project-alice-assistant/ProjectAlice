@@ -42,6 +42,7 @@ class InternetManager(Manager):
 			online = False
 
 		if silent:
+			self._online = online
 			return online
 
 		if self._online and not online:
@@ -50,4 +51,5 @@ class InternetManager(Manager):
 		elif not self._online and online:
 			self._online = True
 			self.broadcast(method='onInternetConnected', exceptions=[self.name], propagateToSkills=True)
+
 		return online
