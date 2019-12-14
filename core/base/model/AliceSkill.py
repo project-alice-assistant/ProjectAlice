@@ -384,12 +384,12 @@ class AliceSkill(ProjectAliceObject):
 
 
 	def getSkillConfigs(self, withInfo: bool = False) -> dict:
-		if withInfo:
-			return self.ConfigManager.getSkillConfigs(self.name)
-		else:
-			mySettings = self.ConfigManager.getSkillConfigs(self.name)
+		skillConfigs = self.ConfigManager.getSkillConfigs(self.name)
+		if not withInfo:
 			infoSettings = self.ConfigManager.aliceSkillConfigurationKeys
-			return {key: value for key, value in mySettings.items() if key not in infoSettings}
+			skillConfigs = {key: value for key, value in skillConfigs.items() if key not in infoSettings}
+
+		return skillConfigs
 
 
 	def getSkillConfigsTemplate(self) -> dict:
