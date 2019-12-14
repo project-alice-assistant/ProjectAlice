@@ -258,7 +258,7 @@ class CommonsManager(Manager):
 		return True
 
 
-	def translate(self, text: Union[str, list], destLang: str, srcLang: str = None) -> Union[str, list]:
+	def translate(self, text: Union[str, list], destLang: str = None, srcLang: str = None) -> Union[str, list]:
 		"""
 		Translates a string or a list of strings into a different language using
 		google translator. Especially helpful when a api is only available in one
