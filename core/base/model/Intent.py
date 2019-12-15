@@ -1,9 +1,7 @@
 from pathlib import Path
-from typing import Dict, Callable
+from typing import Dict, Callable, Optional
 
 from core.base.model.ProjectAliceObject import ProjectAliceObject
-from core.dialog.model.DialogMapping import DialogMapping
-
 
 class Intent(str, ProjectAliceObject):
 
@@ -13,11 +11,13 @@ class Intent(str, ProjectAliceObject):
 		return super().__new__(cls, value)
 
 
-	def __init__(self, _value: str, isProtected: bool = False, userIntent: bool = True):
+	def __init__(self, _value: str, isProtected: bool = False, userIntent: bool = True, authOnly = 0):
 		self._owner = self.ConfigManager.getAliceConfigByName('intentsOwner')
 		self._protected = isProtected
 		self._userIntent = userIntent
-		self._dialogMapping = None
+		self._authOnly = int(authOnly)
+		self._dialogMapping = dict()
+		self._fallbackFunction = None
 
 		if isProtected:
 			self.ProtectedIntentManager.protectIntent(self.decoratedSelf())
@@ -46,7 +46,7 @@ class Intent(str, ProjectAliceObject):
 
 
 	def hasDialogMapping(self) -> bool:
-		return self.dialogMapping is not None
+		return bool(self.dialogMapping)
 
 
 	@property
@@ -75,17 +75,38 @@ class Intent(str, ProjectAliceObject):
 
 
 	@property
-	def dialogMapping(self) -> DialogMapping:
+	def dialogMapping(self) -> dict:
 		return self._dialogMapping
 
 
 	@dialogMapping.setter
 	def dialogMapping(self, value: Dict[str, Callable]):
-		self._dialogMapping = DialogMapping(value)
+		self._dialogMapping = value
+
+
+	@property
+	def fallbackFunction(self) -> Callable:
+		return self._fallbackFunction
+
+
+	@fallbackFunction.setter
+	def fallbackFunction(self, value: Callable):
+		self._fallbackFunction = value
+
+
+	@property
+	def authOnly(self):
+		return self._authOnly
+
+
+	@authOnly.setter
+	def authOnly(self, value):
+		self._authOnly = int(value)
 
 
 	def addDialogMapping(self, value: Dict[str, Callable]):
-		if self._dialogMapping:
-			self._dialogMapping.addMappings(value)
-		else:
-			self._dialogMapping = DialogMapping(value)
+		self._dialogMapping.update(value)
+
+	
+	def getMapping(self, session) -> Optional[Callable]:
+		return self._dialogMapping.get(session.currentState, self._fallbackFunction)

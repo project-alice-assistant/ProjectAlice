@@ -43,55 +43,55 @@ class AliceSkill(ProjectAliceObject):
 		self._databaseSchema = databaseSchema
 		self._widgets = dict()
 
-		if not supportedIntents:
-			supportedIntents = list()
+		self._supportedIntents: Dict[str, Intent] = self.buildIntentList(
+			supportedIntents or list(),
+			authOnlyIntents or dict())
 
-		self._myIntents: List[Intent] = list()
-		self._supportedIntents: Dict[str, Tuple[(str, Intent), Callable]] = dict()
-		for item in (*supportedIntents, *self.intentMethods()):
-			if isinstance(item, tuple):
-				self._supportedIntents[str(item[0])] = item
-				self._myIntents.append(item[0])
-			elif isinstance(item, Intent):
-				self._supportedIntents[str(item)] = (item, self.onMessage)
-				self._myIntents.append(item)
-			elif isinstance(item, str):
-				self._supportedIntents[item] = (item, self.onMessage)
-
-		self._authOnlyIntents: Dict[str, AccessLevel] = {str(intent): level.value for intent, level in authOnlyIntents.items()} if authOnlyIntents else dict()
 		self._utteranceSlotCleaner = re.compile('{(.+?):=>.+?}')
 		self.loadWidgets()
 
 
+	def buildIntentList(self, supportedIntents, authOnlyIntents) -> dict:
+		intents: Dict[str, Intent] = self.findDecoratedIntents()
+		for item in supportedIntents:
+			if isinstance(item, tuple):
+				item[0].fallbackFunction = item[1]
+				item = item[0]
+			elif isinstance(item, str):
+				item = Intent(item, userIntent=False)
+
+			if str(item) in intents:
+				intents[str(item)].addDialogMapping(item.dialogMapping)
+				if item.fallbackFunction:
+					intents[str(item)].fallbackFunction = item.fallbackFunction
+			else:
+				intents[str(item)] = intent
+		
+		for intent, level in authOnlyIntents.items():
+			if str(intent) in intents:
+				intents[str(item)].authOnly = level
+		
+		return intents
+
+	
 	@classmethod
-	def decoratedIntentMethods(cls):
-		from core.util.Decorators import IntentHandler, IntentMarker
+	def findDecoratedIntents(cls) -> dict:
+		intentMappings = dict()
 		for name in dir(cls):
-			outerMethod = method = getattr(cls, name)
-			while isinstance(method, IntentMarker):
-				# __set_name__ is only called for the first decorator
-				# so only the first one retrieves the object instance,
-				# which has to be passed to the method
-				# -> outerMethod has to be used, while method holds
-				# informations on the intent that is mapped
-				yield outerMethod, method
-				method = method.decoratedMethod
+			function = getattr(cls, name)
+			intents = getattr(function, 'intents', list())
+			for intentMapping in intents:
+				intent = intentMapping['intent']
+				requiredState = intentMapping['requiredState']
+				if str(intent) not in intentMappings:
+					intentMappings[str(intent)] = intent
+				
+				if requiredState:
+					intentMappings[str(intent)].addDialogMapping({requiredState: function})
+				else:
+					intentMappings[str(intent)].fallbackFunction = function
 
-
-	@classmethod
-	def intentMethods(cls) -> list:
-		intents = dict()
-		for outerMethod, method in cls.decoratedIntentMethods():
-			if not method.requiredState:
-				intents[method.intentName] = (method.intent, outerMethod)
-				continue
-
-			if method.intentName not in intents:
-				intents[method.intentName] = method.intent
-
-			intents[method.intentName].addDialogMapping({method.requiredState: outerMethod})
-
-		return list(intents.values())
+		return intentMappings
 
 
 	# noinspection SqlResolve
@@ -254,11 +254,6 @@ class AliceSkill(ProjectAliceObject):
 
 
 	@property
-	def myIntents(self) -> list:
-		return self._myIntents
-
-
-	@property
 	def delayed(self) -> bool:
 		return self._delayed
 
@@ -285,54 +280,38 @@ class AliceSkill(ProjectAliceObject):
 			self.logWarning('Tried to notify devices but no uid or site id specified')
 
 
-	def filterIntent(self, session: DialogSession) -> bool:
-		# Return if the skill isn't active
-		if not self.active:
-			return False
-
-		# Return if previous intent is not supported by this skill
-		if session.previousIntent and str(session.previousIntent) not in self._supportedIntents:
-			return False
-
-		intent = session.intentName
-		# Return if this intent is not supported by this skill
-		if not intent in self._supportedIntents:
-			return False
-
-		# TODO: this only checks whether the intent is supported and an authOnlyIntent here,
-		# however it might a intent that uses dialogMappings and does not require the auth on
-		# the module the intent is ment for
-		if intent in self._authOnlyIntents:
-			# Return if intent is for auth users only but the user is unknown
-			if session.user == constants.UNKNOWN_USER:
-				self.endDialog(
-					sessionId=session.sessionId,
-					text=self.TalkManager.randomTalk(talk='unknowUser', skill='system')
-				)
-				raise AccessLevelTooLow()
-			# Return if intent is for auth users only and the user doesn't have the accesslevel for it
-			if not self.UserManager.hasAccessLevel(session.user, self._authOnlyIntents[intent]):
-				self.endDialog(
-					sessionId=session.sessionId,
-					text=self.TalkManager.randomTalk(talk='noAccess', skill='system')
-				)
-				raise AccessLevelTooLow()
-
-		return True
+	def authentifcateIntent(self, session: DialogSession):
+		intent = self._supportedIntents[session.intentName]
+		# Return if intent is for auth users only but the user is unknown
+		if session.user == constants.UNKNOWN_USER:
+			self.endDialog(
+				sessionId=session.sessionId,
+				text=self.TalkManager.randomTalk(talk='unknowUser', skill='system')
+			)
+			raise AccessLevelTooLow()
+		# Return if intent is for auth users only and the user doesn't have the accesslevel for it
+		if not self.UserManager.hasAccessLevel(session.user, intent.authOnly):
+			self.endDialog(
+				sessionId=session.sessionId,
+				text=self.TalkManager.randomTalk(talk='noAccess', skill='system')
+			)
+			raise AccessLevelTooLow()
 
 
 	def dispatchMessage(self, session: DialogSession) -> bool:
-		forMe = self.filterIntent(session)
-		if not forMe:
+		# Return if the skill isn't active
+		if not self.active:
 			return False
+		
+		if session.intentName not in self._supportedIntents:
+			return False
+		
+		intent = self._supportedIntents[session.intentName]
+		if intent.authOnly:
+			authentifcateIntent(session)
 
-		intent = self._supportedIntents[session.intentName][0]
-		if isinstance(intent, Intent) and intent.hasDialogMapping():
-			consumed = intent.dialogMapping.onDialog(session, self.name)
-			if consumed or consumed is None:
-				return True
-
-		return self._supportedIntents[session.intentName][1](session=session)
+		function = intent.getMapping(session) or self.onMessage
+		return function(session=session)
 
 
 	def getResource(self, skillName: str = '', resourcePathFile: str = '') -> Path:

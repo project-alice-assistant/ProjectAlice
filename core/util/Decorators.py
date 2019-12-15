@@ -30,122 +30,34 @@ def deprecated(func):
 	return new_func
 
 
-class IntentMarker:
-	def __init__(self, method: Callable, intent: Union[str, Intent], requiredState: str, isProtected: bool, userIntent: bool):
-		self.decoratedMethod = method
-		self.requiredState = requiredState
-		self._intent = intent
-		self._isProtected = isProtected
-		self._owner = None
-		self._userIntent = userIntent
-		functools.update_wrapper(self, method, updated=[])
+def IntentHandler(intent: Union[str, Intent], requiredState: str = None, isProtected: bool = False, authOnly = 0):
+	"""Decorator for adding a method as an intent handler."""
+	if isinstance(intent, str):
+		intent = Intent(intent, isProtected=isProtected, userIntent=True, authOnly=authOnly)
 
-	@property
-	def intent(self) -> Intent:
-		if isinstance(self._intent, str):
-			return Intent(self._intent, isProtected=self._isProtected, userIntent=self._userIntent)
-		return self._intent
+	def wrapper(func):
+		# store the intent in the function
+		if not hasattr(func, 'intents'):
+			func.intents = []
+		func.intents.append({'intent':intent, 'requiredState': requiredState})
+		return func
 
-	@property
-	def intentName(self) -> str:
-		return str(self._intent)
-
-	def __call__(self, *args, **kwargs):
-		if self._owner:
-			return self.decoratedMethod(
-				SuperManager.getInstance().skillManager.getSkillInstance(self._owner.__name__),
-				*args,
-				**kwargs)
-		return self.decoratedMethod(*args, **kwargs)
-
-	def __set_name__(self, owner, name):
-		self._owner = owner
+	return wrapper
 
 
-class IntentHandler:
-	"""
-	(return a) decorator to mark a function as an intent handler
+def MqttHandler(intent: Union[str, Intent], requiredState: str = None, isProtected: bool = False, authOnly = 0):
+	"""Decorator for adding a method as a mqtt handler."""
+	if isinstance(intent, str):
+		intent = Intent(intent, isProtected=isProtected, userIntent=False, authOnly=authOnly)
 
-	This decorator can be used to map a function to an intent.
+	def wrapper(func):
+		# store the intent in the function
+		if not hasattr(func, 'intents'):
+			func.intents = []
+		func.intents.append({'intent':intent, 'requiredState': requiredState})
+		return func
 
-	:param intent: intent to map (name of the intent or Intent object)
-	:param requiredState: dialog state that should be mapped
-	:param isProtected: should alice always call the intent or respond differently based on her mood
-	:return: return value of the decorated function
-	Examples:
-		An intent handler can be mapped to the intent 'intentName' the following way:
-
-		@IntentHandler('intentName')
-		def exampleIntent(self, session: DialogSession, **_kwargs):
-			request = requests.get('http://api.open-notify.org')
-			self.endDialog(sessionId=session.sessionId, text=request.text)
-
-		When the function should only be called when the current dialogState is 'currentState':
-
-		@IntentHandler('intentName', requiredState='currentState')
-		def exampleIntent(self, session: DialogSession, **_kwargs):
-			request = requests.get('http://api.open-notify.org')
-			self.endDialog(sessionId=session.sessionId, text=request.text)
-
-		Mapping multiple intents to the same function is possible aswell using
-		(make sure that the IntentHandler decorators are used in front of any other decorators):
-
-		@IntentHandler('intentName1')
-		@IntentHandler('intentName2')
-		def exampleIntent(self, session: DialogSession, **_kwargs):
-			request = requests.get('http://api.open-notify.org')
-			self.endDialog(sessionId=session.sessionId, text=request.text)
-	"""
-	def __init__(self, intent: Union[str, Intent], requiredState: str = None, isProtected: bool = False):
-		self._intent = intent
-		self._requiredState = requiredState
-		self._isProtected = isProtected
-
-	def __call__(self, func: Callable) -> IntentMarker:
-		return IntentMarker(func, self._intent, self._requiredState, self._isProtected, True)
-
-
-class MqttHandler:
-	"""
-	(return a) decorator to mark a function as an mqtt handler
-
-	This decorator can be used to map a function to a mqtt message.
-
-	:param topic: whole mqtt topic to map to the intent (only plain strings right now)
-	:param requiredState: dialog state that should be mapped
-	:param isProtected: should alice always call the intent or respond differently based on her mood
-	:return: return value of the decorated function
-	Examples:
-		A mqtt handler can be mapped to the mqtt topic '/example/topic' the following way:
-
-		@MqttHandler('/example/topic')
-		def exampleIntent(self, session: DialogSession, **_kwargs):
-			request = requests.get('http://api.open-notify.org')
-			self.endDialog(sessionId=session.sessionId, text=request.text)
-
-		When the function should only be called when the current dialogState is 'currentState':
-
-		@MqttHandler('/example/topic', requiredState='currentState')
-		def exampleIntent(self, session: DialogSession, **_kwargs):
-			request = requests.get('http://api.open-notify.org')
-			self.endDialog(sessionId=session.sessionId, text=request.text)
-
-		Mapping multiple mqtt topics to the same function is possible aswell using
-		(make sure that the MqttHandler decorators are used in front of any other decorators):
-
-		@MqttHandler('/example/topic1')
-		@MqttHandler('/example/topic2')
-		def exampleIntent(self, session: DialogSession, **_kwargs):
-			request = requests.get('http://api.open-notify.org')
-			self.endDialog(sessionId=session.sessionId, text=request.text)
-	"""
-	def __init__(self, topic: str, requiredState: str = None, isProtected: bool = False):
-		self._topic = topic
-		self._requiredState = requiredState
-		self._isProtected = isProtected
-
-	def __call__(self, func: Callable) -> IntentMarker:
-		return IntentMarker(func, self._topic, self._requiredState, self._isProtected, False)
+	return wrapper
 
 
 def Online(func: Callable = None, text: str = 'offline', offlineHandler: Callable = None, returnText: bool = False):
