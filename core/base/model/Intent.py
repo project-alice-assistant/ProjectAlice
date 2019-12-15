@@ -107,6 +107,6 @@ class Intent(str, ProjectAliceObject):
 	def addDialogMapping(self, value: Dict[str, Callable]):
 		self._dialogMapping.update(value)
 
-	
+
 	def getMapping(self, session) -> Optional[Callable]:
 		return self._dialogMapping.get(session.currentState, self._fallbackFunction)

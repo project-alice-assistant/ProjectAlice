@@ -37,7 +37,7 @@ class TestDecorators(unittest.TestCase):
 			@Online(offlineHandler=offlineHandler)
 			def catch_offlineHandler(self, *args, **kwargs):
 				raise Exception
-			
+
 			@staticmethod
 			@Online
 			def catch_staticMethod(*args, **kwargs):
@@ -109,9 +109,9 @@ class TestDecorators(unittest.TestCase):
 		# raise exception when it is not offline
 		mock_internetManager = mock.PropertyMock(return_value=InternetManager(True, True))
 		type(mock_instance).internetManager = mock_internetManager
-		
+
 		self.assertRaises(Exception, exampleObject.offline)
-		
+
 		mock_internetManager = mock.PropertyMock(return_value=InternetManager(False))
 		type(mock_instance).internetManager = mock_internetManager
 		mock_instance.reset_mock()
@@ -165,7 +165,7 @@ class TestDecorators(unittest.TestCase):
 			@AnyExcept(exceptHandler=exceptHandler)
 			def catch_exceptionHandler(self, *args, **kwargs):
 				raise Exception
-			
+
 			@staticmethod
 			@AnyExcept
 			def catch_staticMethod(*args, **kwargs):

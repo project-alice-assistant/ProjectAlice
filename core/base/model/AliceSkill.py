@@ -5,7 +5,7 @@ import inspect
 import json
 import sqlite3
 from pathlib import Path
-from typing import Any, Callable, Dict, Iterable, List, Tuple, Optional
+from typing import Any, Dict, Iterable, Optional
 
 import re
 from paho.mqtt import client as MQTTClient
@@ -16,7 +16,6 @@ from core.base.model.Intent import Intent
 from core.base.model.ProjectAliceObject import ProjectAliceObject
 from core.commons import constants
 from core.dialog.model.DialogSession import DialogSession
-from core.user.model.AccessLevels import AccessLevel
 
 
 class AliceSkill(ProjectAliceObject):
@@ -65,15 +64,15 @@ class AliceSkill(ProjectAliceObject):
 				if item.fallbackFunction:
 					intents[str(item)].fallbackFunction = item.fallbackFunction
 			else:
-				intents[str(item)] = intent
-		
+				intents[str(item)] = item
+
 		for intent, level in authOnlyIntents.items():
 			if str(intent) in intents:
 				intents[str(item)].authOnly = level
-		
+
 		return intents
 
-	
+
 	@classmethod
 	def findDecoratedIntents(cls) -> dict:
 		intentMappings = dict()
@@ -85,7 +84,7 @@ class AliceSkill(ProjectAliceObject):
 				requiredState = intentMapping['requiredState']
 				if str(intent) not in intentMappings:
 					intentMappings[str(intent)] = intent
-				
+
 				if requiredState:
 					intentMappings[str(intent)].addDialogMapping({requiredState: function})
 				else:
@@ -302,10 +301,10 @@ class AliceSkill(ProjectAliceObject):
 		# Return if the skill isn't active
 		if not self.active:
 			return False
-		
+
 		if session.intentName not in self._supportedIntents:
 			return False
-		
+
 		intent = self._supportedIntents[session.intentName]
 		if intent.authOnly:
 			authentifcateIntent(session)
