@@ -296,16 +296,24 @@ class AliceSkill(ProjectAliceObject):
 			)
 			raise AccessLevelTooLow()
 
-
-	def dispatchMessage(self, session: DialogSession) -> bool:
+	def filterIntent(self, session: DialogSession) -> Optional[Intent]:
 		# Return if the skill isn't active
 		if not self.active:
+			return None
+
+		for intent in self._supportedIntents:
+			if MQTTClient.topic_matches_sub(str(intent), session.intentName):
+				return intent
+
+		return None
+
+
+	def dispatchMessage(self, session: DialogSession) -> bool:
+
+		intent = self.filterIntent(session)
+		if not intent:
 			return False
 
-		if session.intentName not in self._supportedIntents:
-			return False
-
-		intent = self._supportedIntents[session.intentName]
 		if intent.authOnly:
 			authentifcateIntent(session)
 
