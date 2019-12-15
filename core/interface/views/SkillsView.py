@@ -4,7 +4,6 @@ from pathlib import Path
 import requests
 from flask import jsonify, render_template, request
 
-from core.base.model.GithubCloner import GithubCloner
 from core.base.model.Version import Version
 from core.commons import constants
 from core.interface.model.View import View
@@ -97,29 +96,16 @@ class SkillsView(View):
 	def loadStoreData(self):
 		installers = dict()
 		updateSource = self.ConfigManager.getSkillsUpdateSource()
-		req = requests.get(
-			url='https://api.github.com/search/code?q=extension:install+repo:project-alice-assistant/ProjectAliceSkills/',
-			auth=GithubCloner.getGithubAuth())
+		req = requests.get(url=f'https://alice.maxbachmann.de/assets/{updateSource}/store/store.json')
 		results = req.json()
-		if results:
-			for skill in results['items']:
-				if 'PublishedModules' in skill['url']:
-					skill['url'] = skill['url'].replace('PublishedModules', 'PublishedSkills')
 
-				try:
-					req = requests.get(
-						url=f"{skill['url'].split('?')[0]}?ref={updateSource}",
-						headers={'Accept': 'application/vnd.github.VERSION.raw'},
-						auth=GithubCloner.getGithubAuth()
-					)
-					installer = req.json()
-					if installer:
-						if 'lang' not in installer['conditions']:
-							installer['conditions']['lang'] = constants.ALL
-						installers[installer['name']] = installer
+		if not results:
+			return dict()
 
-				except Exception:
-					continue
+		for skill in results:
+			if 'lang' not in skill['conditions']:
+				skill['conditions']['lang'] = constants.ALL
+			installers[skill['name']] = skill
 
 		actualVersion = Version(constants.VERSION)
 		return {
