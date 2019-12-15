@@ -3,7 +3,7 @@ $(document).tooltip();
 $(function () {
 	let selectedSkillsToDownload = [];
 
-	function checkInstallStatus(skill) {
+	function skillStatus(skill) {
 		$.ajax({
 			url: '/skills/checkInstallStatus/',
 			data: {
@@ -11,22 +11,40 @@ $(function () {
 			},
 			type: 'POST'
 		}).done(function (status) {
-			status = JSON.stringify(status).trim();
-			if (status === JSON.stringify('installed')) {
-				$('#' + skill + 'InstallTile').remove();
-			} else if (status === JSON.stringify('failed') || status === JSON.stringify('unknown')) {
-				$('#' + skill + 'InstallTile').children('.skillStoreSkillWaitAnimation').hide();
-				$('#' + skill + 'InstallTile').children('.skillStoreSkillDownloadFail').css('display', 'flex');
-			} else {
-				setTimeout(function () {
-					checkInstallStatus(skill);
-				}, 5000);
-			}
+			return JSON.stringify(status).trim();
 		}).fail(function () {
+			return ''
+		});
+	}
+
+	function checkInstallStatus(skill) {
+		let status = skillStatus(skill);
+
+		if (status === JSON.stringify('installed')) {
+			$('#' + skill + 'InstallTile').remove();
+		} else if (status === JSON.stringify('failed') || status === JSON.stringify('unknown')) {
+			$('#' + skill + 'InstallTile').children('.skillStoreSkillWaitAnimation').hide();
+			$('#' + skill + 'InstallTile').children('.skillStoreSkillDownloadFail').css('display', 'flex');
+		} else {
 			setTimeout(function () {
 				checkInstallStatus(skill);
-			}, 1000);
-		});
+			}, 5000);
+		}
+	}
+
+	function checkUpdateStatus(skill, $skillContainer) {
+		let status = skillStatus(skill);
+
+		if (status === JSON.stringify('installed')) {
+			$('#' + skill + 'UpdateButton').remove();
+		} else if (status === JSON.stringify('failed') || status === JSON.stringify('unknown')) {
+			$('#' + $skillContainer.attr('id') + '_animation').hide();
+			$skillContainer.hide();
+		} else {
+			setTimeout(function () {
+				checkUpdateStatus(skill, $skillContainer);
+			}, 5000);
+		}
 	}
 
 	function addToStore(installer) {
@@ -112,6 +130,23 @@ $(function () {
 		height: 600,
 		modal: true,
 		resizable: false
+	});
+
+	$('[id^=update_]').on('click touchstart', function () {
+		$.ajax({
+			url: '/skills/updateSkill/',
+			data: {
+				id: $(this).attr('id')
+			},
+			type: 'POST'
+		}).done(function () {
+			$(this).hide();
+			$('#' + $(this).attr('id') + '_animation').show();
+			setTimeout(function () {
+				checkUpdateStatus($(this).attr('id').split('_')[2], $(this));
+			}, 10000);
+		});
+		return false;
 	});
 
 	$('.skillSettings').on('click touchstart', function () {

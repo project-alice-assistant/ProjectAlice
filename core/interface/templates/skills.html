@@ -118,7 +118,10 @@
 						{{ langData.delete }}
 					</div>
 					{% if skill.updateAvailable is sameas true %}
-						<div class="skillButton" id="update_{{ skillName }}">
+						<div class="skillUpdating" id="update_{{ skill.author }}_{{ skillName }}_animation">
+							<i class="fas fa-spinner fa-spin"></i>
+						</div>
+						<div class="skillButton" id="update_{{ skill.author }}_{{ skillName }}">
 							{{ langData.updatee }}
 						</div>
 					{% endif %}

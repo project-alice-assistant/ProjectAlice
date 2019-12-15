@@ -378,7 +378,8 @@ a:hover {
 	color: yellow;
 }
 
-.skillButton {
+.skillButton,
+.skillUpdating {
 	display: flex;
 	margin: 2px;
 	background-color: #343434;
@@ -388,6 +389,10 @@ a:hover {
 	align-items: center;
 	justify-content: center;
 	text-align: center;
+}
+
+.skillUpdating {
+	display: none;
 }
 
 .skillButton:hover {

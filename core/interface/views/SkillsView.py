@@ -66,6 +66,25 @@ class SkillsView(View):
 		return self.index()
 
 
+	def updateSkill(self):
+		try:
+			_, author, skill = request.form.get('id').split('_')
+
+			self.WebInterfaceManager.newSkillInstallProcess(skill)
+			req = requests.get(f'https://raw.githubusercontent.com/project-alice-assistant/ProjectAliceSkills/{self.ConfigManager.getSkillsUpdateSource()}/PublishedSkills/{author}/{skill}/{skill}.install')
+			remoteFile = req.json()
+			if not remoteFile:
+				self.WebInterfaceManager.skillInstallProcesses[skill['skill']]['status'] = 'failed'
+
+			skillFile = Path(self.Commons.rootDir(), f'system/skillInstallTickets/{skill}.install')
+			skillFile.write_text(json.dumps(remoteFile))
+
+			return jsonify(success=True)
+		except Exception as e:
+			self.logWarning(f'Failed updating skill: {e}', printStack=True)
+			return jsonify(success=False)
+
+
 	def installSkills(self):
 		try:
 			skills = request.json
