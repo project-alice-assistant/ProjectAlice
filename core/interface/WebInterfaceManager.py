@@ -113,6 +113,16 @@ class WebInterfaceManager(Manager):
 		}
 
 
+	def onSkillUpdated(self, **kwargs):
+		skill = ''
+		try:
+			skill = kwargs['skill']
+			if skill in self.skillInstallProcesses:
+				self.skillInstallProcesses[skill]['status'] = 'updated'
+		except KeyError as e:
+			self.logError(f'Failed setting skill "{skill}" status to "updated": {e}')
+
+
 	def onSkillInstalled(self, **kwargs):
 		skill = ''
 		try:

@@ -2,6 +2,7 @@ $(document).tooltip();
 
 $(function () {
 	let selectedSkillsToDownload = [];
+	let skillStatuses = {};
 
 	function skillStatus(skill) {
 		$.ajax({
@@ -11,18 +12,19 @@ $(function () {
 			},
 			type: 'POST'
 		}).done(function (status) {
-			return JSON.stringify(status).trim();
+			skillStatuses[skill] = JSON.stringify(status).trim();
 		}).fail(function () {
-			return ''
+			skillStatuses[skill] = 'failed';
 		});
 	}
 
 	function checkInstallStatus(skill) {
-		let status = skillStatus(skill);
+		skillStatus(skill);
 
-		if (status === JSON.stringify('installed')) {
+		let status = skillStatuses[skill];
+		if (status == JSON.stringify('installed')) {
 			$('#' + skill + 'InstallTile').remove();
-		} else if (status === JSON.stringify('failed') || status === JSON.stringify('unknown')) {
+		} else if (status == JSON.stringify('failed') || status == JSON.stringify('unknown')) {
 			$('#' + skill + 'InstallTile').children('.skillStoreSkillWaitAnimation').hide();
 			$('#' + skill + 'InstallTile').children('.skillStoreSkillDownloadFail').css('display', 'flex');
 		} else {
@@ -33,11 +35,13 @@ $(function () {
 	}
 
 	function checkUpdateStatus(skill, $skillContainer) {
-		let status = skillStatus(skill);
+		skillStatus(skill);
+		let status = skillStatuses[skill];
 
-		if (status === JSON.stringify('installed')) {
-			$('#' + skill + 'UpdateButton').remove();
-		} else if (status === JSON.stringify('failed') || status === JSON.stringify('unknown')) {
+		if (status == JSON.stringify('updated')) {
+			$skillContainer.hide();
+			$('#' + $skillContainer.attr('id') + '_animation').hide();
+		} else if (status == JSON.stringify('failed') || status == JSON.stringify('unknown')) {
 			$('#' + $skillContainer.attr('id') + '_animation').hide();
 			$skillContainer.hide();
 		} else {
@@ -133,6 +137,7 @@ $(function () {
 	});
 
 	$('[id^=update_]').on('click touchstart', function () {
+		let $self = $(this);
 		$.ajax({
 			url: '/skills/updateSkill/',
 			data: {
@@ -140,11 +145,11 @@ $(function () {
 			},
 			type: 'POST'
 		}).done(function () {
-			$(this).hide();
-			$('#' + $(this).attr('id') + '_animation').show();
+			$self.hide();
+			$('#' + $self.attr('id') + '_animation').show();
 			setTimeout(function () {
-				checkUpdateStatus($(this).attr('id').split('_')[2], $(this));
-			}, 10000);
+				checkUpdateStatus($self.attr('id').split('_')[2], $self);
+			}, 12000);
 		});
 		return false;
 	});

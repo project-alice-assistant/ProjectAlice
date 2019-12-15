@@ -387,12 +387,15 @@ a:hover {
 	flex-grow: 1;
 	height: 40px;
 	align-items: center;
+	align-content: center;
 	justify-content: center;
+	justify-items: center;
 	text-align: center;
 }
 
 .skillUpdating {
 	display: none;
+	font-size: 1.8em;
 }
 
 .skillButton:hover {
