@@ -335,6 +335,11 @@ class AliceSkill(ProjectAliceObject):
 		return self._supportedIntents[session.intentName][1](session=session)
 
 
+	def onMessage(self, session) -> bool:
+		""" Do not consume the intent by default """
+		return False
+
+
 	def getResource(self, skillName: str = '', resourcePathFile: str = '') -> Path:
 		return Path(self.Commons.rootDir(), 'skills', skillName or self.name, resourcePathFile)
 
