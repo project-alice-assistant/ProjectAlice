@@ -20,7 +20,8 @@ class ProjectAliceObject(Logger):
 		return json.dumps(self.__dict__)
 
 
-	def broadcast(self, method: str, exceptions: list = None, manager = None, propagateToSkills: bool = False, silent: bool = False, *args, **kwargs):
+	#TODO: this has args after named arguments, which will cause problems
+	def broadcast(self, method: str, exceptions: list = None, manager = None, propagateToSkills: bool = False, *args, **kwargs):
 		if not exceptions:
 			exceptions = list()
 
@@ -45,11 +46,10 @@ class ProjectAliceObject(Logger):
 				continue
 
 			try:
-				func = getattr(man, method)
-				func(*args, **kwargs)
-			except AttributeError as e:
-				if not silent:
-					self.logWarning(f"Couldn't find method {method} in manager {man.name}: {e}")
+				func = getattr(skillItem, method, None)
+				if func:
+					func(*args, **kwargs)
+
 			except TypeError:
 				# Do nothing, it's most prolly kwargs
 				pass

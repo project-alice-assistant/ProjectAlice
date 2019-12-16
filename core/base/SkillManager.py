@@ -287,7 +287,8 @@ class SkillManager(Manager):
 			return None
 
 
-	def skillBroadcast(self, method: str, filterOut: list = None, silent: bool = False, *args, **kwargs):
+	#TODO: this has args after named arguments, which will cause problems
+	def skillBroadcast(self, method: str, filterOut: list = None, *args, **kwargs):
 		"""
 		Broadcasts a call to the given method on every skill
 		:param filterOut: array, skills not to broadcast to
@@ -303,12 +304,10 @@ class SkillManager(Manager):
 				continue
 
 			try:
-				func = getattr(skillItem, method)
-				func(*args, **kwargs)
+				func = getattr(skillItem, method, None)
+				if func:
+					func(*args, **kwargs)
 
-			except AttributeError as e:
-				if not silent:
-					self.logWarning(f'Method "{method}" not found for skill "{skillItem.name}": {e}')
 			except TypeError:
 				# Do nothing, it's most prolly kwargs
 				pass
