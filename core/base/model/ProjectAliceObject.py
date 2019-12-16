@@ -46,7 +46,7 @@ class ProjectAliceObject(Logger):
 				continue
 
 			try:
-				func = getattr(skillItem, method, None)
+				func = getattr(man, method, None)
 				if func:
 					func(**kwargs)
 
@@ -55,7 +55,7 @@ class ProjectAliceObject(Logger):
 				pass
 
 		if propagateToSkills:
-			self.SkillManager.skillBroadcast(method=method, silent=silent, **kwargs)
+			self.SkillManager.skillBroadcast(method=method, **kwargs)
 
 		for name in deadManagers:
 			del SM.SuperManager.getInstance().managers[name]
