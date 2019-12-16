@@ -22,7 +22,7 @@ class Intent(str, ProjectAliceObject):
 		if isProtected:
 			self.ProtectedIntentManager.protectIntent(self.decoratedSelf())
 
-		super().__init__()
+		super().__init__(logDepth=5)
 
 
 	def __str__(self) -> str:
@@ -81,7 +81,8 @@ class Intent(str, ProjectAliceObject):
 
 	@dialogMapping.setter
 	def dialogMapping(self, value: Dict[str, Callable]):
-		self._dialogMapping = value
+		caller = self.Commons.getFunctionCaller()
+		self._dialogMapping = {f'{caller}:{state}': func for state, func in value.items()}
 
 
 	@property
@@ -105,7 +106,8 @@ class Intent(str, ProjectAliceObject):
 
 
 	def addDialogMapping(self, value: Dict[str, Callable]):
-		self._dialogMapping.update(value)
+		caller = self.Commons.getFunctionCaller()
+		self._dialogMapping.update({f'{caller}:{state}': func for state, func in value.items()})
 
 
 	def getMapping(self, session) -> Optional[Callable]:
