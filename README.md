@@ -2,7 +2,7 @@
 
 [![License](https://img.shields.io/github/license/project-alice-assistant/ProjectAlice)](LICENSE)
 [![Documentation Status](https://readthedocs.org/projects/projectalice/badge/?version=latest)](https://projectalice.readthedocs.io/en/latest/?badge=latest) 
-[![Discord](https://img.shields.io/discord/579345007518154752)](https://discord.gg/Jfcj355)
+[![Discord](https://img.shields.io/discord/579345007518154752?logo=discord)](https://discord.gg/Jfcj355)
 
 [![unit tests](https://github.com/project-alice-assistant/ProjectAlice/workflows/Unit%20Tests/badge.svg)](https://github.com/project-alice-assistant/ProjectAlice/actions)
 [![Coverage Status](https://coveralls.io/repos/github/project-alice-assistant/ProjectAlice/badge.svg?branch=HEAD)](https://coveralls.io/github/project-alice-assistant/ProjectAlice?branch=HEAD)
