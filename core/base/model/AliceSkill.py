@@ -22,7 +22,7 @@ class AliceSkill(ProjectAliceObject):
 
 	#TODO: authOnly should be a parameter of the intents, so it can be e.g. passed along with the IntentHandler
 	# decorator
-	def __init__(self, supportedIntents: Iterable = None, authOnlyIntents: dict = None, databaseSchema: dict = None):
+	def __init__(self, supportedIntents: Iterable = None, databaseSchema: dict = None):
 		super().__init__(logDepth=4)
 		try:
 			path = Path(inspect.getfile(self.__class__)).with_suffix('.install')
@@ -42,42 +42,45 @@ class AliceSkill(ProjectAliceObject):
 		self._databaseSchema = databaseSchema
 		self._widgets = dict()
 
-		self._supportedIntents: Dict[str, Intent] = self.buildIntentList(
-			supportedIntents or list(),
-			authOnlyIntents or dict())
+		self._supportedIntents: Dict[str, Intent] = self.buildIntentList(supportedIntents)
 
 		self._utteranceSlotCleaner = re.compile('{(.+?):=>.+?}')
 		self.loadWidgets()
 
 
-	def buildIntentList(self, supportedIntents, authOnlyIntents) -> dict:
+	def buildIntentList(self, supportedIntents) -> dict:
+		supportedIntents = supportedIntents or list()
 		intents: Dict[str, Intent] = self.findDecoratedIntents()
 		for item in supportedIntents:
 			if isinstance(item, tuple):
-				item[0].fallbackFunction = item[1]
-				item = item[0]
-			elif isinstance(item, str):
+				intent = item[0]
+				if isinstance(intent, str):
+					intent = Intent(intent, userIntent=False)
+
+				intent.fallbackFunction = item[1]
+				item = intent
+			elif not isinstance(item, Intent):
 				item = Intent(item, userIntent=False)
 
 			if str(item) in intents:
 				intents[str(item)].addDialogMapping(item.dialogMapping)
+
 				if item.fallbackFunction:
 					intents[str(item)].fallbackFunction = item.fallbackFunction
+				# always use the highes auth level specified
+				if item.authOnly > intents[str(item)].authOnly:
+					intents[str(item)].authOnly = item.authOnly
 			else:
 				intents[str(item)] = item
-
-		for intent, level in authOnlyIntents.items():
-			if str(intent) in intents:
-				intents[str(item)].authOnly = level
 
 		return intents
 
 
-	@classmethod
-	def findDecoratedIntents(cls) -> dict:
+	def findDecoratedIntents(self) -> dict:
 		intentMappings = dict()
-		for name in dir(cls):
-			function = getattr(cls, name)
+		functionNames = [name for name, func in self.__class__.__dict__.items() if callable(func)]
+		for name in functionNames:
+			function = getattr(self, name)
 			intents = getattr(function, 'intents', list())
 			for intentMapping in intents:
 				intent = intentMapping['intent']
@@ -89,6 +92,10 @@ class AliceSkill(ProjectAliceObject):
 					intentMappings[str(intent)].addDialogMapping({requiredState: function})
 				else:
 					intentMappings[str(intent)].fallbackFunction = function
+
+				# always use the highes auth level specified
+				if intent.authOnly > intentMappings[str(intent)].authOnly:
+					intentMappings[str(intent)].authOnly = intent.authOnly
 
 		return intentMappings
 
@@ -296,11 +303,13 @@ class AliceSkill(ProjectAliceObject):
 			)
 			raise AccessLevelTooLow()
 
+
 	def filterIntent(self, session: DialogSession) -> Optional[Intent]:
 		# Return if the skill isn't active
 		if not self.active:
 			return None
 
+		# search for intent that has a matching mqtt topic
 		for intent in self._supportedIntents:
 			if MQTTClient.topic_matches_sub(str(intent), session.intentName):
 				return intent
@@ -309,7 +318,6 @@ class AliceSkill(ProjectAliceObject):
 
 
 	def dispatchMessage(self, session: DialogSession) -> bool:
-
 		intent = self.filterIntent(session)
 		if not intent:
 			return False
