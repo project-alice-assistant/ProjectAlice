@@ -14,21 +14,21 @@ Project Alice is a smart voice home assistant that is completly modular and exte
 
 However, as an option, since we've built Project Alice on top of Snips, Project Alice can be configured to use some online alternatives and fall backs (for example, using Amazon or Google’s Text to Speech engines), just like Snips. Since Snips (and the Project Alice team) strongly believe that decisions about your privacy should be made by you and you alone, these options are all disabled by default.
 
-# Installing
+## Installing
 Please follow the [wiki](https://github.com/project-alice-assistant/ProjectAlice/wiki/Installing)
 
-# Chat with us and the community
+## Chat with us and the community
 Join us on our [Discord server](https://discord.gg/Jfcj355)
 
 
-# Who made this?
+## Who made this?
 The original code base was started at the end 2015 and several rewrites made it what it is today. It was entirely written by me *Psycho* until recently, where I decided to make the code openly available to the world. 
 
 In of May 2019, *Jierka* joined the project to prepare Project Alice for a public release by providing quality code, fresh ideas and insights for the project. At the same time *maxbachmann* also joined the project, at first to translate to German for the release, but soon moved beyond his initial commitment and started contributing to the refactoring, rewrite and skill production.
 
 If you want to use Project Alice in a non-commercial setting, I’m not asking you for any money, or a financial contribution, but as the license states, you should try to give back for what you've been given; please share your improvements and add-ons to the rest of us, in the form of pull requests.
 
-# How does it run? What's special about it?
+## How does it run? What's special about it?
 Glad you asked! It's been made very modular, in fact it runs using user developed skills. You won't have to use any console to train your assistant, we have made a way for the creators to share their skills with the language training included, the whole assistant part is automated.
 
 Adding new skills is as easy as using either our CLI or a ticketing system. Updates are automatic, so over time the skills will get better and better with the community input to improve utterances and adding more language support.
@@ -40,32 +40,38 @@ Finally, Project Alice has her own mood (which can vary based on your interactio
 This is only scratching the surface of Project Alice can and will be able to do... If you want more, I highly suggest you give it a try.
 
 
-# Project Alice, as in "Resident Evil", isn't that scary?
+## Project Alice, as in "Resident Evil", isn't that scary?
 Ok, yes, I do admit if you’re familiar with the game it may sound a bit scary, but you have my word no one will get hurt fighting against the Umbrella Corporation :). Bottom line, I just really like the Red Queen in that movie/game series so I decided to name the voice assistant Alice, and that naturally lead to me calling the project, Project Alice.
 
 
-# Where does it run?
+## Where does it run?
 Well, since it's written in Python, as of now on Linux architecture. This means a Raspberry Pi and some other platforms such as the respeaker core or the Matrix Creator are the best choices for a hardware platform. As for which Raspberry Pi, a raspberry 3, 3b, 3b+, 3A+ or 4 for the main unit are good choices. You cannot run Alice on a pi zero but pi zero is more than enough for satellites. A satellite runs a subset of the Alice platform, and sends and receives interactions to the main unit.
 Well, since it's written in Python, as of now on Linux architecture. This means a Raspberry Pi and some other platforms such as the respeaker core or the Matrix Creator are the best choices for a hardware platform. As for which Raspberry Pi, a raspberry 3, 3b, 3b+, 3A+ or 4 for the main unit are good choices. You cannot run Alice on a pi zero but pi zero is more than enough for satellites. A satellite runs a subset of the Alice platform, and sends and receives interactions to the main unit.
 
 
-# Can we contribute?
+## Can we contribute?
 Hey, did you skip ahead and not read what I wrote a bit earlier? You have to! Just kidding, but yes, your contributions are more than welcome, be it core side or on the skill side. You'll find more about the guidelines on our wiki.
 
-# Copyright
+## 📝 Feedback
+Please file an [Issue](https://github.com/project-alice-assistant/ProjectAlice/issues).
+
+## 🛣️ Roadmap
+See our [Roadmap](https://github.com/project-alice-assistant/ProjectAlice/milestones).
+
+## 📜 License
 Project Alice ships under GPLv3, it means you are free to use and redistribute our code but are not allowed to use any part of it under a closed license. Give the community back what you've been given!
 Regarding third party tools, scripts, material we use, I took care to mention original creators in files and respect their copyright. If something has slept under my supervision know that it was in no case intended and is the result of a mistake and I ask you to contact me directly to solve the issue asap.
 
-# Third party copyrights
+## Third party copyrights
 If you see or find a copyright breach, feel free to contact us immediately. It is not our intention to steal anyone else's work or plagiarize your work and is just the result of a missunderstanding that we will gladly fix immediately!
 
 
-# Special thanks and retired official devs
+## Special thanks and retired official devs
 -   December 2020 - *Snips* for the wonderful tool we could use for all these years! Sonos? You suck!
 -   May 2019 - November 2019: *Jierka* for the work provided on the core
 
 
-# Other repositories
+## Other repositories
 -   [Project Alice Skills](https://github.com/project-alice-assistant/ProjectAliceSkills)
 -   [Project Alice Amazon Polly and Google WaveNet cached TTS speeches](https://github.com/project-alice-assistant/ProjectAliceCachedSpeeches)
 
