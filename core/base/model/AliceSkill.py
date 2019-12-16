@@ -310,8 +310,8 @@ class AliceSkill(ProjectAliceObject):
 			return None
 
 		# search for intent that has a matching mqtt topic
-		for intent in self._supportedIntents:
-			if MQTTClient.topic_matches_sub(str(intent), session.intentName):
+		for intentName, intent in self._supportedIntents.items():
+			if MQTTClient.topic_matches_sub(intentName, session.intentName):
 				return intent
 
 		return None
