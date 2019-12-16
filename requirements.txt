@@ -1,5 +1,4 @@
 pyalsaaudio
-python-dateutil
 paho-mqtt
 watchdog
 requests==2.21.0
