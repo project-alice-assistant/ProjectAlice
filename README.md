@@ -1,6 +1,15 @@
-[![Maintainability](https://api.codeclimate.com/v1/badges/ab9aa78508dcccc85b12/maintainability)](https://codeclimate.com/github/project-alice-assistant/ProjectAlice/maintainability) [![Codacy Badge](https://api.codacy.com/project/badge/Grade/55399302e9614fb18a354fb9345dff29)](https://www.codacy.com/manual/Psychokiller1888/ProjectAlice?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=project-alice-assistant/ProjectAlice&amp;utm_campaign=Badge_Grade) ![GitHub language count](https://img.shields.io/github/languages/count/Psychokiller1888/ProjectAlice) ![GitHub top language](https://img.shields.io/github/languages/top/Psychokiller1888/ProjectAlice) ![GitHub](https://img.shields.io/github/license/Psychokiller1888/ProjectAlice) [![Documentation Status](https://readthedocs.org/projects/projectalice/badge/?version=latest)](https://projectalice.readthedocs.io/en/latest/?badge=latest) ![Open issues](https://img.shields.io/github/issues-raw/Psychokiller1888/ProjectAlice) ![GitHub contributors](https://img.shields.io/github/contributors/Psychokiller1888/ProjectAlice) ![Discord](https://img.shields.io/discord/579345007518154752)
+<a href="https://toolbox-bodensee.de"><img src="https://avatars1.githubusercontent.com/u/52176809?s=500&v=4" align="right" hspace="10" vspace="6"></a>
+
+[![License](https://img.shields.io/github/license/project-alice-assistant/ProjectAlice)](LICENSE)
+[![Documentation Status](https://readthedocs.org/projects/projectalice/badge/?version=latest)](https://projectalice.readthedocs.io/en/latest/?badge=latest) 
+[![Discord](https://img.shields.io/discord/579345007518154752)](https://discord.gg/Jfcj355)
+
+[![unit tests](https://github.com/project-alice-assistant/ProjectAlice/workflows/Unit%20Tests/badge.svg)](https://github.com/project-alice-assistant/ProjectAlice/actions)
+[![Coverage Status](https://coveralls.io/repos/github/project-alice-assistant/ProjectAlice/badge.svg?branch=HEAD)](https://coveralls.io/github/project-alice-assistant/ProjectAlice?branch=HEAD)
+[![Maintainability](https://api.codeclimate.com/v1/badges/ab9aa78508dcccc85b12/maintainability)](https://codeclimate.com/github/project-alice-assistant/ProjectAlice/maintainability) [![Codacy Badge](https://api.codacy.com/project/badge/Grade/55399302e9614fb18a354fb9345dff29)](https://www.codacy.com/manual/project-alice-assistant/ProjectAlice?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=project-alice-assistant/ProjectAlice&amp;utm_campaign=Badge_Grade) 
 
 # ProjectAlice
+
 Project Alice is a smart voice home assistant that is completly modular and extensible. It was first built around Snips therefore runs entirely offline and never sends or shares your voice interactions with anyone, Project Alice **guarantees** your privacy in your home or wherever you’re using Project Alice.
 
 However, as an option, since we've built Project Alice on top of Snips, Project Alice can be configured to use some online alternatives and fall backs (for example, using Amazon or Google’s Text to Speech engines), just like Snips. Since Snips (and the Project Alice team) strongly believe that decisions about your privacy should be made by you and you alone, these options are all disabled by default.
