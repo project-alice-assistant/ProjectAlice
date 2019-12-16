@@ -155,7 +155,7 @@ network={
 
 		# Do some installation if wanted by the user
 		if initConfs['doGroundInstall']:
-			subprocess.run(['./venv/bin/pip3', 'install', '-r', str(Path(self._rootDir, 'piprequirements.txt'))])
+			subprocess.run(['./venv/bin/pip3', 'install', '-r', str(Path(self._rootDir, 'requirements.txt'))])
 
 			if initConfs['installOnBuster']:
 				subprocess.run(['sudo', 'apt-get', 'install', '-y', 'dirmngr', 'apt-transport-https'])
