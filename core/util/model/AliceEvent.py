@@ -68,7 +68,6 @@ class AliceEvent(Event, ProjectAliceObject):
 			method=self.eventName(state),
 			exceptions=[constants.DUMMY],
 			propagateToSkills=True,
-			silent=True,
 			**kwargs
 		)
 

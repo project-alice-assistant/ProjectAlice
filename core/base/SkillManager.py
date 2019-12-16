@@ -288,7 +288,7 @@ class SkillManager(Manager):
 
 
 	#TODO: this has args after named arguments, which will cause problems
-	def skillBroadcast(self, method: str, filterOut: list = None, *args, **kwargs):
+	def skillBroadcast(self, method: str, filterOut: list = None, **kwargs):
 		"""
 		Broadcasts a call to the given method on every skill
 		:param filterOut: array, skills not to broadcast to
@@ -306,7 +306,7 @@ class SkillManager(Manager):
 			try:
 				func = getattr(skillItem, method, None)
 				if func:
-					func(*args, **kwargs)
+					func(**kwargs)
 
 			except TypeError:
 				# Do nothing, it's most prolly kwargs

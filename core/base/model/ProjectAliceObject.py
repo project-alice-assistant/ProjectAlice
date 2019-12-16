@@ -21,7 +21,7 @@ class ProjectAliceObject(Logger):
 
 
 	#TODO: this has args after named arguments, which will cause problems
-	def broadcast(self, method: str, exceptions: list = None, manager = None, propagateToSkills: bool = False, *args, **kwargs):
+	def broadcast(self, method: str, exceptions: list = None, manager = None, propagateToSkills: bool = False, **kwargs):
 		if not exceptions:
 			exceptions = list()
 
@@ -48,14 +48,14 @@ class ProjectAliceObject(Logger):
 			try:
 				func = getattr(skillItem, method, None)
 				if func:
-					func(*args, **kwargs)
+					func(**kwargs)
 
 			except TypeError:
 				# Do nothing, it's most prolly kwargs
 				pass
 
 		if propagateToSkills:
-			self.SkillManager.skillBroadcast(method=method, silent=silent, *args, **kwargs)
+			self.SkillManager.skillBroadcast(method=method, silent=silent, **kwargs)
 
 		for name in deadManagers:
 			del SM.SuperManager.getInstance().managers[name]
