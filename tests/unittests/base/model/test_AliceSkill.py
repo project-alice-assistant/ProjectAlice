@@ -10,10 +10,15 @@ from core.user.model.AccessLevels import AccessLevel
 class TestAliceSkill(unittest.TestCase):
 	@mock.patch('core.util.Decorators.Intent.ProtectedIntentManager', new_callable=PropertyMock)
 	@mock.patch('core.util.Decorators.Intent.ConfigManager', new_callable=PropertyMock)
-	def testFindDecoratedIntents(self, mock_config, mock_protected):
+	@mock.patch('core.util.Decorators.Intent.Commons', new_callable=PropertyMock)
+	def testFindDecoratedIntents(self, mock_commons, mock_config, mock_protected):
 		owner_mock = MagicMock()
 		owner_mock.getAliceConfigByName.return_value = 'unittest'
 		mock_config.return_value = owner_mock
+
+		caller_mock = MagicMock()
+		caller_mock.getFunctionCaller.return_value = 'ExampleSkill'
+		mock_commons.return_value = caller_mock
 
 		property_mock = MagicMock()
 		mock_protected.return_value = property_mock
@@ -56,8 +61,8 @@ class TestAliceSkill(unittest.TestCase):
 		self.assertEqual(intent2.fallbackFunction, None)
 		self.assertDictEqual(
 			intent2.dialogMapping,
-			{'exampleState': exampleSkill.multiple_decorator,
-			 'exampleState2': exampleSkill.mqtt_decorator})
+			{'ExampleSkill:exampleState': exampleSkill.multiple_decorator,
+			 'ExampleSkill:exampleState2': exampleSkill.mqtt_decorator})
 		self.assertEqual(str(intent2), 'hermes/intent/unittest:intent2')
 
 		self.assertTrue(intent3.protected)
@@ -69,11 +74,16 @@ class TestAliceSkill(unittest.TestCase):
 
 	@mock.patch('core.util.Decorators.Intent.ProtectedIntentManager', new_callable=PropertyMock)
 	@mock.patch('core.util.Decorators.Intent.ConfigManager', new_callable=PropertyMock)
+	@mock.patch('core.util.Decorators.Intent.Commons', new_callable=PropertyMock)
 	@mock.patch('core.base.model.AliceSkill.AliceSkill.findDecoratedIntents')
-	def testBuildIntentList(self, mock_decoratedFuncs, mock_config, mock_protected):
+	def testBuildIntentList(self, mock_decoratedFuncs, mock_commons, mock_config, mock_protected):
 		owner_mock = MagicMock()
 		owner_mock.getAliceConfigByName.return_value = 'unittest'
 		mock_config.return_value = owner_mock
+
+		caller_mock = MagicMock()
+		caller_mock.getFunctionCaller.return_value = 'ExampleSkill'
+		mock_commons.return_value = caller_mock
 
 		property_mock = MagicMock()
 		mock_protected.return_value = property_mock
