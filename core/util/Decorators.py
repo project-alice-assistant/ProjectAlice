@@ -45,7 +45,7 @@ def IntentHandler(intent: Union[str, Intent], requiredState: str = None, isProte
 	return wrapper
 
 
-def MqttHandler(intent: Union[str, Intent], requiredState: str = None, isProtected: bool = False, authOnly = 0):
+def MqttHandler(intent: Union[str, Intent], requiredState: str = None, isProtected: bool = True, authOnly = 0):
 	"""Decorator for adding a method as a mqtt handler."""
 	if isinstance(intent, str):
 		intent = Intent(intent, isProtected=isProtected, userIntent=False, authOnly=authOnly)
