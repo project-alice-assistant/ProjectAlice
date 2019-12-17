@@ -54,7 +54,7 @@ class AliceSkill(ProjectAliceObject):
 		for item in supportedIntents:
 			if isinstance(item, tuple):
 				intent = item[0]
-				if isinstance(intent, str):
+				if not isinstance(intent, Intent):
 					intent = Intent(intent, userIntent=False)
 
 				intent.fallbackFunction = item[1]
