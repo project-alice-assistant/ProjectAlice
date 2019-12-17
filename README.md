@@ -1,5 +1,5 @@
 <h1 align=center style="max-width: 100%;">
-  <a href="https://project-alice-assistant.github.io/docs/"><img width="800" alt="Project Alice Logo" src=".github/projectAlice.png"></a><br/>
+  <a href="https://project-alice-assistant.github.io/docs/"><img width="800" alt="Project Alice Logo" src="https://raw.githubusercontent.com/project-alice-assistant/docs/master/docs/.vuepress/public/projectalice.png"></a><br/>
   <a href="https://project-alice-assistant.github.io/docs/">@ProjectAlice/docs</a>
 </h1>
 
