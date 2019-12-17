@@ -3,46 +3,40 @@ from typing import Dict, Callable, Optional
 
 from core.base.model.ProjectAliceObject import ProjectAliceObject
 
-class Intent(str, ProjectAliceObject):
-
-	def __new__(cls, value: str, *args, **kwargs):
-		if kwargs.get('userIntent', True):
-			value = 'hermes/intent/{owner}:' + value
-		return super().__new__(cls, value)
-
+class Intent(ProjectAliceObject):
 
 	def __init__(self, _value: str, isProtected: bool = False, userIntent: bool = True, authOnly = 0):
 		self._owner = self.ConfigManager.getAliceConfigByName('intentsOwner')
+		self._topic = f'hermes/intent/{self._owner}:{_value}' if userIntent else _value
 		self._protected = isProtected
-		self._userIntent = userIntent
 		self._authOnly = int(authOnly)
 		self._dialogMapping = dict()
 		self._fallbackFunction = None
 
 		if isProtected:
-			self.ProtectedIntentManager.protectIntent(self.decoratedSelf())
+			self.ProtectedIntentManager.protectIntent(self._topic)
 
 		super().__init__(logDepth=5)
 
 
 	def __str__(self) -> str:
-		return self.decoratedSelf()
+		return self._topic
 
 
 	def __repr__(self) -> str:
-		return self.decoratedSelf()
+		return self._topic
 
 
 	def __eq__(self, other) -> bool:
-		return self.decoratedSelf() == other
+		return self._topic == other
 
 
 	def __hash__(self) -> int:
-		return hash(self.decoratedSelf())
+		return hash(self._topic)
 
 
 	def decoratedSelf(self) -> str:
-		return self.format(owner=self._owner) if self._userIntent else self.lower()
+		return self._topic.format(owner=self._owner)
 
 
 	def hasDialogMapping(self) -> bool:
@@ -59,19 +53,14 @@ class Intent(str, ProjectAliceObject):
 		return self._owner
 
 
-	@owner.setter
-	def owner(self, value: str):
-		self._owner = value
-
-
 	@property
 	def justTopic(self) -> str:
-		return Path(self.decoratedSelf()).name
+		return Path(self._topic).name
 
 
 	@property
 	def justAction(self) -> str:
-		return self.justTopic.split(':')[1] if self._userIntent else self.justTopic
+		return self.justTopic.split(':')[-1]
 
 
 	@property

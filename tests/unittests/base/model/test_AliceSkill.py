@@ -124,13 +124,13 @@ class TestAliceSkill(unittest.TestCase):
 		self.assertEqual(intent1.authOnly, AccessLevel.ADMIN)
 		self.assertEqual(intent1.fallbackFunction, None)
 		self.assertEqual(intent1.dialogMapping, dict())
-		self.assertEqual(str(intent1), 'hermes/intent/unittest:intent1')
+		self.assertEqual(str(intent1), 'hermes/intent/unittest:Intent1')
 
 		self.assertFalse(intent2.protected)
 		self.assertEqual(intent2.authOnly, 0)
 		self.assertEqual(intent2.fallbackFunction, None)
 		self.assertEqual(intent2.dialogMapping, dict())
-		self.assertEqual(str(intent2), 'hermes/intent/unittest:intent2')
+		self.assertEqual(str(intent2), 'hermes/intent/unittest:Intent2')
 
 		self.assertFalse(intent3.protected)
 		self.assertEqual(intent3.authOnly, 0)
