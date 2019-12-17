@@ -243,7 +243,13 @@ network={
 		confs['githubUsername'] = initConfs['githubUsername'] or ''
 		confs['githubToken'] = initConfs['githubToken'] or ''
 		confs['ttsLanguage'] = initConfs['ttsLanguage'] or ''
-		confs['updateChannel'] = initConfs['updateChannel'] if initConfs['updateChannel'] in ('master', 'rc', 'beta', 'alpha') else 'master'
+
+		updateChannel = initConfs['updateChannel']
+		if updateChannel not in ('master', 'rc', 'beta', 'alpha'):
+			self.logWarning(f'{updateChannel} is no supported updateChannel, only master, rc, beta and alpha are supported. Reseting to master')
+			confs['updateChannel'] = 'master'
+		else:
+			confs['updateChannel'] = updateChannel
 		confs['mqtt_username'] = str(initConfs['mqttUser']) or ''
 		confs['mqttPassword'] = str(initConfs['mqttPassword']) or ''
 		confs['mqttTLSFile'] = initConfs['mqttTLSFile'] or ''
