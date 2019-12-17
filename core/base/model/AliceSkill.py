@@ -323,17 +323,27 @@ class AliceSkill(ProjectAliceObject):
 			raise AccessLevelTooLow()
 
 
+	def intentNameMoreSpecific(intentName: str, oldIntentName: str) -> bool:
+		cleanedIntentName = intentName.rstrip('#').split('+')[0]
+		cleanedOldIntentName = oldIntentName.rstrip('#').split('+')[0]
+		return len(cleanedIntentName) > len(cleanedOldIntentName)
+
+
 	def filterIntent(self, session: DialogSession) -> Optional[Intent]:
 		# Return if the skill isn't active
 		if not self.active:
 			return None
 
 		# search for intent that has a matching mqtt topic
+		matchingIntent = None
+		oldIntentName = None
 		for intentName, intent in self._supportedIntents.items():
 			if MQTTClient.topic_matches_sub(intentName, session.intentName):
-				return intent
+				if not matchingIntent or self.intentNameMoreSpecific(intentName, oldIntentName)
+					matchingIntent = intent
+					oldIntentName = intentName
 
-		return None
+		return matchingIntent
 
 
 	def dispatchMessage(self, session: DialogSession) -> bool:
