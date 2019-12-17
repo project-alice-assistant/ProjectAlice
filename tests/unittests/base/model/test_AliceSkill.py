@@ -108,15 +108,15 @@ class TestAliceSkill(unittest.TestCase):
 
 		# no decorated functions
 		initIntents = [
-			Intent('intent1', authOnly=AccessLevel.ADMIN),
-			'hermes/intent/unittest:intent2',
+			Intent('Intent1', authOnly=AccessLevel.ADMIN),
+			'hermes/intent/unittest:Intent2',
 			(Intent('intent3'), exampleSkill.exampleFunc),
 			('hermes/intent/unittest:intent4', exampleSkill.exampleFunc)
 		]
 
 		mappings = exampleSkill.buildIntentList(initIntents)
-		intent1 =  mappings[str(Intent('intent1'))]
-		intent2 =  mappings[str(Intent('intent2'))]
+		intent1 =  mappings[str(Intent('Intent1'))]
+		intent2 =  mappings[str(Intent('Intent2'))]
 		intent3 =  mappings[str(Intent('intent3'))]
 		intent4 =  mappings[str(Intent('intent4'))]
 
