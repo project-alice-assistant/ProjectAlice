@@ -44,7 +44,7 @@ class TestAliceSkill(unittest.TestCase):
 		exampleSkill = ExampleSkill()
 
 		mappings = exampleSkill.findDecoratedIntents()
-		property_mock.protectIntent.assert_called_once()
+		self.assertEqual(property_mock.protectIntent.call_count, 2)
 
 		intent1 = mappings[str(Intent('intent1'))]
 		intent2 = mappings[str(Intent('intent2'))]

@@ -339,7 +339,7 @@ class AliceSkill(ProjectAliceObject):
 		oldIntentName = None
 		for intentName, intent in self._supportedIntents.items():
 			if MQTTClient.topic_matches_sub(intentName, session.intentName):
-				if not matchingIntent or self.intentNameMoreSpecific(intentName, oldIntentName)
+				if not matchingIntent or self.intentNameMoreSpecific(intentName, oldIntentName):
 					matchingIntent = intent
 					oldIntentName = intentName
 
