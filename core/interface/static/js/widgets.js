@@ -55,7 +55,7 @@ $(function () {
 		}
 	});
 
-	$('#removeWidget').on('click touchstart', function () {
+	$('#removeWidget > .fa-minus-circle').on('click touchstart', function () {
 		$('.widgetDelete').show();
 		$('#widgetCheck').show();
 		$('#addWidget').hide();
@@ -72,7 +72,7 @@ $(function () {
 		return false;
 	});
 
-	$('.fa-minus-circle').on('click touchstart', function () {
+	$('.widgetDelete > .fa-minus-circle').on('click touchstart', function () {
 		if ($(this).parents('.widget').length > 0) {
 			$.ajax({
 				url: '/home/removeWidget/',
