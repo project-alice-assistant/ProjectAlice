@@ -41,11 +41,35 @@ class AliceSkill(ProjectAliceObject):
 		self._required = False
 		self._databaseSchema = databaseSchema
 		self._widgets = dict()
+		self._intentsDefinitions = dict()
 
 		self._supportedIntents: Dict[str, Intent] = self.buildIntentList(supportedIntents)
+		self.loadIntentsDefinition()
 
 		self._utteranceSlotCleaner = re.compile('{(.+?):=>.+?}')
 		self.loadWidgets()
+
+
+	def loadIntentsDefinition(self):
+		dialogTemplate = Path(self.getCurrentDir(), 'dialogTemplate')
+
+		for lang in self.LanguageManager.supportedLanguages:
+			try:
+				path = dialogTemplate / f'{lang}.json'
+				if not path.exists():
+					continue
+
+				with path.open('r') as fp:
+					data = json.load(fp)
+
+					if not 'intents' in data:
+						continue
+
+					self._intentsDefinitions[lang] = dict()
+					for intent in data['intents']:
+						self._intentsDefinitions[lang][intent['name']] = intent['utterances']
+			except Exception as e:
+				self.logWarning(f'Something went wrong loading intent definition for skill {self._name}, language "{lang}": {e}')
 
 
 	def buildIntentList(self, supportedIntents) -> dict:
@@ -159,7 +183,9 @@ class AliceSkill(ProjectAliceObject):
 
 
 	def getUtterancesByIntent(self, intent: Intent, forceLowerCase: bool = True, cleanSlots: bool = False) -> list:
-		utterances = list()
+		lang = self.LanguageManager.activeLanguage
+		if not lang in self._intentsDefinitions:
+			return list()
 
 		if isinstance(intent, tuple):
 			check = intent[0].justAction
@@ -168,16 +194,10 @@ class AliceSkill(ProjectAliceObject):
 		else:
 			check = intent.split('/')[-1].split(':')[-1]
 
-		for dtIntentName, dtSkillName in self.SamkillaManager.dtIntentNameSkillMatching.items():
-			if dtIntentName == check and dtSkillName == self.name:
+		if not check in self._intentsDefinitions[lang]:
+			return list()
 
-				for utterance in self.SamkillaManager.dtIntentsSkillsValues[dtIntentName]['utterances']:
-					if cleanSlots:
-						utterance = re.sub(self._utteranceSlotCleaner, '\\1', utterance)
-
-					utterances.append(utterance.lower() if forceLowerCase else utterance)
-
-		return utterances
+		return [re.sub(self._utteranceSlotCleaner, '\\1', utterance.lower() if forceLowerCase else utterance) if cleanSlots else utterance for utterance in self._intentsDefinitions[lang][check]]
 
 
 	def getCurrentDir(self):
@@ -286,7 +306,7 @@ class AliceSkill(ProjectAliceObject):
 			self.logWarning('Tried to notify devices but no uid or site id specified')
 
 
-	def authentifcateIntent(self, session: DialogSession):
+	def authenticateIntent(self, session: DialogSession):
 		intent = self._supportedIntents[session.intentName]
 		# Return if intent is for auth users only but the user is unknown
 		if session.user == constants.UNKNOWN_USER:
@@ -323,7 +343,7 @@ class AliceSkill(ProjectAliceObject):
 			return False
 
 		if intent.authOnly:
-			authentifcateIntent(session)
+			self.authenticateIntent(session)
 
 		function = intent.getMapping(session) or self.onMessage
 		return function(session=session)

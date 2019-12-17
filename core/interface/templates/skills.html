@@ -132,7 +132,7 @@
 					<i class="fas fa-times-circle"></i>
 				</div>
 				<div class="skillsIntentsViewList">
-					{% for intent in skill.myIntents %}
+					{% for intent in skill.supportedIntents.values() %}
 						{% if not 'Dummy' in intent %}
 							<div class="intentTopic" title="{{ skill.getUtterancesByIntent(intent, true, true)|random }}">
 								{{ intent.justTopic }}
