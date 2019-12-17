@@ -42,7 +42,7 @@ class Intent(str, ProjectAliceObject):
 
 
 	def decoratedSelf(self) -> str:
-		return self.format(owner=self._owner)
+		return self.format(owner=self._owner) if self._userIntent else self.lower()
 
 
 	def hasDialogMapping(self) -> bool:
