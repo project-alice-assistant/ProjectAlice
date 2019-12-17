@@ -20,7 +20,6 @@ class ProjectAliceObject(Logger):
 		return json.dumps(self.__dict__)
 
 
-	#TODO: this has args after named arguments, which will cause problems
 	def broadcast(self, method: str, exceptions: list = None, manager = None, propagateToSkills: bool = False, **kwargs):
 		if not exceptions:
 			exceptions = list()

@@ -182,22 +182,16 @@ class User(ProjectAliceObject):
 
 	@property
 	def isAuthenticated(self) -> bool:
-		return self.is_authenticated()
+		return self._isAuthenticated
 
 	@isAuthenticated.setter
 	def isAuthenticated(self, value: bool):
 		self._isAuthenticated = value
 
-	#TODO this should probably be properties aswell
-	# (actually some are already and should probably just be removed)
-	def is_authenticated(self) -> bool:
-		return self._isAuthenticated
-
-	def is_active(self) -> bool:
+	@property
+	def isActive(self) -> bool:
 		return self._isActive
 
-	def is_anonymous(self) -> bool:
+	@property
+	def isAnonymous(self) -> bool:
 		return self._isAnonymous
-
-	def get_id(self) -> int:
-		return self._id

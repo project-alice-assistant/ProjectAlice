@@ -20,8 +20,7 @@ from core.dialog.model.DialogSession import DialogSession
 
 class AliceSkill(ProjectAliceObject):
 
-	#TODO: authOnly should be a parameter of the intents, so it can be e.g. passed along with the IntentHandler
-	# decorator
+
 	def __init__(self, supportedIntents: Iterable = None, databaseSchema: dict = None):
 		super().__init__(logDepth=4)
 		try:

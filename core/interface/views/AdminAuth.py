@@ -22,7 +22,7 @@ class AdminAuth(View):
 		except:
 			self.logWarning('No next page after auth success, falling back to index.html')
 
-		if current_user.is_authenticated:
+		if current_user.isAuthenticated:
 			return redirect(self.__class__.nextPage)
 
 		self.SkillManager.getSkillInstance('AliceCore').explainInterfaceAuth()

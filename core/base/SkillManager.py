@@ -287,7 +287,6 @@ class SkillManager(Manager):
 			return None
 
 
-	#TODO: this has args after named arguments, which will cause problems
 	def skillBroadcast(self, method: str, filterOut: list = None, **kwargs):
 		"""
 		Broadcasts a call to the given method on every skill
