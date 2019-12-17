@@ -133,7 +133,7 @@
 				</div>
 				<div class="skillsIntentsViewList">
 					{% for intent in skill.supportedIntents.values() %}
-						{% if not 'Dummy' in intent %}
+						{% if not 'Dummy' in intent|string %}
 							<div class="intentTopic" title="{{ skill.getUtterancesByIntent(intent, true, true)|random }}">
 								{{ intent.justTopic }}
 							</div>
