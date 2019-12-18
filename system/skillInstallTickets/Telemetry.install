@@ -1,6 +1,6 @@
 {
 	"name": "Telemetry",
-	"version": "1.0.4",
+	"version": "1.0.5",
 	"author": "ProjectAlice",
 	"maintainers": ["Psychokiller1888", "maxbachmann"],
 	"desc": "Access your stored telemetry data",

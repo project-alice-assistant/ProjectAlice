@@ -60,6 +60,11 @@ class SkillManager(Manager):
 		super().onStart()
 
 		self._busyInstalling = self.ThreadManager.newEvent('skillInstallation')
+
+		# If it's the first time we start, don't delay skill install and do it on main thread
+		if not self.ConfigManager.getAliceConfigByName('skills'):
+			self._checkForSkillInstall()
+
 		self._skillInstallThread = self.ThreadManager.newThread(name='SkillInstallThread', target=self._checkForSkillInstall, autostart=False)
 
 		self._activeSkills = self._loadSkillList()
@@ -384,12 +389,14 @@ class SkillManager(Manager):
 
 
 	def _checkForSkillInstall(self):
-		self.ThreadManager.newTimer(interval=10, func=self._checkForSkillInstall, autoStart=True)
+		# Don't start the install timer from the main thread in case it's the first start
+		if self._skillInstallThread is not None:
+			self.ThreadManager.newTimer(interval=10, func=self._checkForSkillInstall, autoStart=True)
 
 		root = Path(self.Commons.rootDir(), 'system/skillInstallTickets')
 		files = [f for f in root.iterdir() if f.suffix == '.install']
 
-		if  self._busyInstalling.isSet() or \
+		if self._busyInstalling.isSet() or \
 			not self.InternetManager.online or \
 			not files or \
 			self.ThreadManager.getEvent('SnipsAssistantDownload').isSet():
