@@ -153,6 +153,32 @@ class ConfigManager(Manager):
 			self.logWarning(f'Was asked to update {key} in skill {skillName} but key doesn\'t exist')
 			return
 
+		# Cast value to template defined type
+		vartype = self._skillsTemplateConfigurations[skillName][key]['dataType']
+		if vartype == 'boolean':
+			if value in ('on', 'yes', 'true', 'active'):
+				value = True
+			elif value in ('off', 'no', 'false', 'inactive'):
+				value = False
+		elif vartype == 'integer':
+			try:
+				value = int(value)
+			except:
+				self.logWarning(f'Value missmatch for config {key} in skill {skillName}')
+				value = 0
+		elif vartype == 'float':
+			try:
+				value = float(value)
+			except:
+				self.logWarning(f'Value missmatch for config {key} in skill {skillName}')
+				value = 0.0
+		elif vartype in ('string', 'email', 'password'):
+			try:
+				value = str(value)
+			except:
+				self.logWarning(f'Value missmatch for config {key} in skill {skillName}')
+				value = ''
+
 		self._skillsConfigurations[skillName][key] = value
 		self._writeToSkillConfigurationFile(skillName, self._skillsConfigurations[skillName])
 

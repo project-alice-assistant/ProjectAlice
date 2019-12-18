@@ -52,11 +52,6 @@ class SkillsView(View):
 			if confName == 'skillName':
 				continue
 
-			if confValue == 'on':
-				confValue = True
-			elif confValue == 'off':
-				confValue = False
-
 			self.ConfigManager.updateSkillConfigurationFile(
 				skillName=skillName,
 				key=confName,
