@@ -303,6 +303,7 @@ class ConfigManager(Manager):
 
 			if not skillConfigFile.exists() and skillConfigTemplate.exists():
 				self._newSkillConfigFile(skillName, skillConfigTemplate)
+				config = json.load(skillConfigFile.open())
 
 			elif skillConfigFile.exists() and not skillConfigTemplate.exists():
 				self.logInfo(f'- Deprecated config file for skill "{skillName}", removing')
@@ -360,7 +361,7 @@ class ConfigManager(Manager):
 			else:
 				# For some reason we have a skill not declared in alice configs... I think getting rid of it is best
 				if skillName not in SkillManager.NEEDED_SKILLS:
-					self.logInfo(f'- Skill "{skillName}"not declared in config but files are existing, cleaning up')
+					self.logInfo(f'- Skill "{skillName}" not declared in config but files are existing, cleaning up')
 					shutil.rmtree(skillDirectory, ignore_errors=True)
 					if skillName in skillsConfigurations:
 						skillsConfigurations.pop(skillName)
@@ -387,6 +388,7 @@ class ConfigManager(Manager):
 
 			if config:
 				skillsConfigurations[skillName] = config
+
 
 		self._skillsConfigurations = {**self._skillsConfigurations, **skillsConfigurations}
 
