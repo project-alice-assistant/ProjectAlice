@@ -1,6 +1,7 @@
 {
 	"home": "home",
 	"skills" : "skills",
+	"scenarios": "scenarios",
 	"syslog": "syslog",
 	"snipswatch": "snipswatch",
 	"admin": "admin",

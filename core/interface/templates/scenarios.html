@@ -1,0 +1,19 @@
+{% extends 'base.html' %}
+
+{% block title %}
+	Syslog
+{% endblock %}
+
+{% block loaders %}
+	<script src="{{ url_for('static', filename='js/jquery-3.4.1.min.js') }}"></script>
+	<script src="{{ url_for('static', filename='js/scenarios.js') }}"></script>
+{% endblock %}
+
+{% block pageTitle %}
+	{{ langData.scenarios }}
+{% endblock %}
+
+{% block content %}
+	<div>
+	</div>
+{% endblock %}
