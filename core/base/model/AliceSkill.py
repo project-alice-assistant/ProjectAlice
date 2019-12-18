@@ -191,7 +191,7 @@ class AliceSkill(ProjectAliceObject):
 		elif isinstance(intent, Intent):
 			check = intent.justAction
 		else:
-			check = intent.split('/')[-1].split(':')[-1]
+			check = str(intent).split('/')[-1].split(':')[-1]
 
 		if not check in self._intentsDefinitions[lang]:
 			return list()
