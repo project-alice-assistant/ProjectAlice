@@ -63,6 +63,7 @@ class SkillManager(Manager):
 
 		# If it's the first time we start, don't delay skill install and do it on main thread
 		if not self.ConfigManager.getAliceConfigByName('skills'):
+			self.logInfo('Looks like a fresh install or skills were nuked. Let\'s install the basic skills!')
 			self._checkForSkillInstall()
 
 		self._skillInstallThread = self.ThreadManager.newThread(name='SkillInstallThread', target=self._checkForSkillInstall, autostart=False)
