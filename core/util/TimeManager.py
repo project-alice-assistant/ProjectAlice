@@ -20,7 +20,7 @@ class TimeManager(Manager):
 
 	def timerSignal(self, minutes: int, signal: str, running: bool = False):
 		if running:
-			self.broadcast(signal, exceptions=[self.name], propagateToModules=True)
+			self.broadcast(signal, exceptions=[self.name], propagateToSkills=True)
 
 		minute = datetime.now().minute
 		second = datetime.now().second

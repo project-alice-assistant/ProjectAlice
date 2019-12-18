@@ -7,9 +7,10 @@ from contextlib import contextmanager
 from ctypes import *
 from datetime import datetime
 from pathlib import Path
-from typing import Match, Optional, Union
+from typing import Union
+from contextlib import suppress
 
-import re
+import tempfile
 from googletrans import Translator
 from paho.mqtt.client import MQTTMessage
 
@@ -23,7 +24,6 @@ from core.dialog.model.DialogSession import DialogSession
 class CommonsManager(Manager):
 
 	ERROR_HANDLER_FUNC = CFUNCTYPE(None, c_char_p, c_int, c_char_p, c_int, c_char_p)
-	VERSION_PARSER_REGEX = re.compile('(?P<mainVersion>\d+)\.(?P<updateVersion>\d+)(\.(?P<hotfix>\d+))?(-(?P<releaseType>a|b|rc)(?P<releaseNumber>\d+))?')
 	
 	def __init__(self):
 		super().__init__('Commons')
@@ -43,19 +43,19 @@ class CommonsManager(Manager):
 		return inspect.getmodulename(inspect.stack()[depth][1])
 
 
-	def isEqualTranslated(self, baseString: str, compareTo: str, module: str = 'system') -> bool:
+	def isEqualTranslated(self, baseString: str, compareTo: str, skill: str = 'system') -> bool:
 		"""
 		Compares the basestring to the compareTo string. compareTo string if the key in the strings file
 		If the string in LanguageManager contains more than one value, each value will be compared and True is
 		returned at first match
 
-		:param module: If empty takes the system strings json
+		:param skill: If empty takes the system strings json
 		:param baseString: the base string to compare
 		:param compareTo: the key of the string json to compare to
 		:return: bool
 		"""
 		baseString = baseString.strip().lower()
-		return any(x.strip().lower() == baseString for x in self.LanguageManager.getStrings(compareTo, module))
+		return any(x.strip().lower() == baseString for x in self.LanguageManager.getStrings(compareTo, skill))
 
 
 	@staticmethod
@@ -171,7 +171,7 @@ class CommonsManager(Manager):
 		slots = session.slotsAsObjects
 		duration = 0
 		if 'Duration' in slots and slots['Duration'][0].entity == 'snips/duration':
-			try:
+			with suppress(TypeError, KeyError):
 				values = slots['Duration'][0].value
 				duration += values['seconds']
 				duration += values['minutes'] * 60
@@ -179,8 +179,6 @@ class CommonsManager(Manager):
 				duration += values['days'] * 24 * 60 * 60
 				duration += values['weeks'] * 7 * 24 * 60 * 60
 				duration += values['months'] * 4 * 7 * 24 * 60 * 60
-			except (TypeError, KeyError):
-				pass
 
 		return duration
 
@@ -249,11 +247,22 @@ class CommonsManager(Manager):
 			return -1
 
 
-	def translate(self, text: Union[str, list], destLang: str, srcLang: str = None) -> Union[str, list]:
+	@staticmethod
+	def isWritable(path: Path):
+		try:
+			test = tempfile.TemporaryFile(dir=path)
+			test.close()
+		except:
+			return False
+
+		return True
+
+
+	def translate(self, text: Union[str, list], destLang: str = None, srcLang: str = None) -> Union[str, list]:
 		"""
 		Translates a string or a list of strings into a different language using
 		google translator. Especially helpful when a api is only available in one
-		language, but the module should support other languages aswell.
+		language, but the skill should support other languages aswell.
 
 		:param text: string or list of strings to translate
 		:param destLang: language to translate to (ISO639-1 code)
@@ -276,11 +285,6 @@ class CommonsManager(Manager):
 		if isinstance(text, str):
 			return Translator().translate(**kwargs).text
 		return [result.text for result in Translator().translate(**kwargs)]
-
-
-	@classmethod
-	def parseVersionNumber(cls, version: str) -> Optional[Match[str]]:
-		return cls.VERSION_PARSER_REGEX.search(str(version))
 
 
 # noinspection PyUnusedLocal

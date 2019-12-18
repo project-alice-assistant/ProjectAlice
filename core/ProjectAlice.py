@@ -2,6 +2,7 @@ import subprocess
 
 from core.base.SuperManager import SuperManager
 from core.commons.model.Singleton import Singleton
+from core.util.Stopwatch import Stopwatch
 
 
 class ProjectAlice(Singleton):
@@ -10,23 +11,32 @@ class ProjectAlice(Singleton):
 
 	def __init__(self, restartHandler: callable):
 		Singleton.__init__(self, self.NAME)
-		self.logInfo('Starting up project Alice core')
-		self._restart = False
-		self._restartHandler = restartHandler
-		self._superManager = SuperManager(self)
+		self.logInfo('Starting up Project Alice')
+		self._booted = False
+		with Stopwatch() as stopWatch:
+			self._restart = False
+			self._restartHandler = restartHandler
+			self._superManager = SuperManager(self)
 
-		self._superManager.initManagers()
-		self._superManager.onStart()
+			self._superManager.initManagers()
+			self._superManager.onStart()
 
-		if self._superManager.configManager.getAliceConfigByName('useSLC'):
-			subprocess.run(['sudo', 'systemctl', 'start', 'snipsledcontrol'])
+			if self._superManager.configManager.getAliceConfigByName('useSLC'):
+				subprocess.run(['sudo', 'systemctl', 'start', 'snipsledcontrol'])
 
-		self._superManager.onBooted()
+			self._superManager.onBooted()
+		self.logInfo(f'- Started Project Alice in {stopWatch} seconds')
+		self._booted = True
 
 
 	@property
 	def name(self) -> str:
 		return self.NAME
+
+
+	@property
+	def isBooted(self) -> bool:
+		return self._booted
 
 
 	@property

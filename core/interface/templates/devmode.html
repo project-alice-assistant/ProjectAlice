@@ -5,6 +5,7 @@
 {% endblock %}
 
 {% block loaders %}
+	<script src="{{ url_for('static', filename='js/devmode.js') }}"></script>
 {% endblock %}
 
 {% block pageTitle %}
@@ -12,5 +13,16 @@
 {% endblock %}
 
 {% block content %}
-
+	<div id="adminPageTabsContainer">
+		<ul>
+			<li class="tab" data-for="NewSkill">{{ langData.devmodeNewSkill }}</li>
+			<li class="tab" data-for="EditSkill">{{ langData.devmodeEditSkill }}</li>
+		</ul>
+		<div class="tabsContent">
+			<div id="NewSkill" class="configBox">
+			</div>
+			<div id="EditSkill" class="configBox">
+			</div>
+		</div>
+	</div>
 {% endblock %}

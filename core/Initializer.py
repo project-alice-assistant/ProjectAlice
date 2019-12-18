@@ -6,6 +6,11 @@ import subprocess
 import time
 from pathlib import Path
 
+import requests
+
+from core.base.model.TomlFile import TomlFile
+from core.base.model.Version import Version
+
 try:
 	import yaml
 except:
@@ -55,7 +60,7 @@ network={
 		self._confsFile = Path(self._rootDir, 'config.py')
 		self._confsSample = Path(self._rootDir, 'configTemplate.py')
 		self._initFile = Path('/boot/ProjectAlice.yaml')
-		self._latest = 1.08
+		self._latest = 1.11
 
 
 	def initProjectAlice(self) -> bool:
@@ -102,12 +107,11 @@ network={
 			subprocess.run(['/usr/bin/sudo', '/sbin/shutdown', '-r', 'now'])
 			exit(0)
 
-		connected = False
 		try:
 			socket.create_connection(('www.google.com', 80))
 			connected = True
 		except:
-			pass
+			connected = False
 
 		if not connected:
 			self.fatal('Your device needs internet access to continue, to download the updates and create the assistant')
@@ -118,8 +122,9 @@ network={
 		# Update our system and sources
 		subprocess.run(['sudo', 'apt-get', 'update'])
 		subprocess.run(['sudo', 'apt-get', 'dist-upgrade', '-y'])
+		subprocess.run(['git', 'clean', '-df'])
 		subprocess.run(['git', 'stash'])
-		subprocess.run(['git', 'checkout', initConfs['updateChannel']])
+		subprocess.run(['git', 'checkout', self.getUpdateSource(initConfs['updateChannel'])])
 		subprocess.run(['git', 'pull'])
 		subprocess.run(['git', 'stash', 'clear'])
 
@@ -132,7 +137,7 @@ network={
 
 		elif not self._confsFile.exists() and self._confsSample.exists():
 			self.warning('No config file found, creating it from sample file')
-			confs = {configName: configData['defaultValue'] if 'defaultValue' in configData else configData for configName, configData in configTemplate.settings.items()}
+			confs = self.newConfs()
 			Path('config.py').write_text(f"settings = {json.dumps(confs, indent=4).replace('false', 'False').replace('true', 'True')}")
 
 		elif self._confsFile.exists() and not initConfs['forceRewrite']:
@@ -142,7 +147,7 @@ network={
 		elif self._confsFile.exists() and initConfs['forceRewrite']:
 			self.warning('Config file found and force rewrite specified, let\'s restart all this!')
 			Path(self._rootDir, 'config.py').unlink()
-			confs = {configName: configData['defaultValue'] if 'defaultValue' in configData else configData for configName, configData in configTemplate.settings.items()}
+			confs = self.newConfs()
 			Path('config.py').write_text(f"settings = {json.dumps(confs, indent=4).replace('false', 'False').replace('true', 'True')}")
 
 		config = importlib.import_module('config')
@@ -150,11 +155,24 @@ network={
 
 		# Do some installation if wanted by the user
 		if initConfs['doGroundInstall']:
-			subprocess.run(['./venv/bin/pip3', 'install', '-r', str(Path(self._rootDir, 'piprequirements.txt'))])
+			subprocess.run(['./venv/bin/pip3', 'install', '-r', str(Path(self._rootDir, 'requirements.txt'))])
 
-			subprocess.run(['sudo', 'bash', '-c', 'echo "deb https://raspbian.snips.ai/$(lsb_release -cs) stable main" > /etc/apt/sources.list.d/snips.list'])
-			subprocess.run(['sudo', 'apt-key', 'adv', '--keyserver', 'gpg.mozilla.org', '--recv-keys', 'D4F50CDCA10A2849'])
-			subprocess.run(['sudo', 'apt-get', 'update'])
+			if initConfs['installOnBuster']:
+				subprocess.run(['sudo', 'apt-get', 'install', '-y', 'dirmngr', 'apt-transport-https'])
+				subprocess.run(['sudo', 'bash', '-c', 'echo "deb https://raspbian.snips.ai/$(lsb_release -cs) stable main" > /etc/apt/sources.list.d/snips.list'])
+				subprocess.run(['sudo', 'apt-key', 'adv', '--fetch-keys', 'https://debian.snips.ai/5FFCD0DEB5BA45CD.pub'])
+				subprocess.run(['wget', '-q', 'https://ftp-master.debian.org/keys/release-10.asc', '-O-', '|', 'sudo', 'apt-key', 'add', '-'])
+				subprocess.run(['echo', '"deb http://deb.debian.org/debian buster non-free"', '|', 'sudo', 'tee', '/etc/apt/sources.list.d/debian.list'])
+				subprocess.run(['sudo', 'apt-key', 'adv', '--keyserver', 'gpg.mozilla.org', '--recv-keys', 'D4F50CDCA10A2849'])
+				subprocess.run(['sudo', 'sh', '-c', '\'curl https://raspbian.snips.ai/531DD1A7B702B14D.pub | apt-key add -\''])
+				subprocess.run(['sudo', 'apt-get', 'install', '-y', 'libttspico0'])
+				subprocess.run(['sudo', 'apt-get', 'install', '-y', 'libttspico-utils'])
+				subprocess.run(['sudo', 'apt-get', 'install', '-y', 'libatlas3-base=3.10.3-8+rpi1'])
+				subprocess.run(['sudo', 'apt-get', 'install', '-y', 'libgfortran3'])
+			else:
+				subprocess.run(['sudo', 'bash', '-c', 'echo "deb https://raspbian.snips.ai/$(lsb_release -cs) stable main" > /etc/apt/sources.list.d/snips.list'])
+				subprocess.run(['sudo', 'apt-key', 'adv', '--keyserver', 'gpg.mozilla.org', '--recv-keys', 'D4F50CDCA10A2849'])
+				subprocess.run(['sudo', 'apt-get', 'update'])
 
 			reqs = [line.rstrip('\n') for line in open(Path(self._rootDir, 'sysrequirements.txt'))]
 			subprocess.run(['sudo', 'apt-get', 'install', '-y', '--allow-unauthenticated'] + reqs)
@@ -181,7 +199,7 @@ network={
 		if initConfs['stayCompletlyOffline']:
 			confs['keepASROffline'] = True
 			confs['keepTTSOffline'] = True
-			confs['moduleAutoUpdate'] = False
+			confs['skillAutoUpdate'] = False
 			confs['asr'] = 'snips'
 			confs['tts'] = 'pico'
 			confs['awsRegion'] = ''
@@ -190,7 +208,7 @@ network={
 		else:
 			confs['keepASROffline'] = bool(initConfs['keepASROffline'])
 			confs['keepTTSOffline'] = bool(initConfs['keepTTSOffline'])
-			confs['moduleAutoUpdate'] = bool(initConfs['moduleAutoUpdate'])
+			confs['skillAutoUpdate'] = bool(initConfs['skillAutoUpdate'])
 			confs['asr'] = initConfs['asr'] if initConfs['asr'] in ('snips', 'google') else 'snips'
 			confs['tts'] = initConfs['tts'] if initConfs['tts'] in ('pico', 'snips', 'mycroft', 'amazon', 'google') else 'pico'
 			confs['awsRegion'] = initConfs['awsRegion']
@@ -208,7 +226,7 @@ network={
 		confs['micChannels'] = int(initConfs['micChannels']) or 1
 		confs['useSLC'] = bool(initConfs['useSLC'])
 		confs['webInterfaceActive'] = bool(initConfs['webInterfaceActive'])
-		confs['webInterfaceDevMode'] = bool(initConfs['webInterfaceDevMode'])
+		confs['devMode'] = bool(initConfs['devMode'])
 		confs['newDeviceBroadcastPort'] = int(initConfs['newDeviceBroadcastPort']) or 12354
 		confs['activeLanguage'] = initConfs['activeLanguage'] if initConfs['activeLanguage'] in ('en', 'de', 'fr') else 'en'
 		confs['activeCountryCode'] = initConfs['activeCountryCode'] or 'US'
@@ -225,18 +243,40 @@ network={
 		confs['githubUsername'] = initConfs['githubUsername'] or ''
 		confs['githubToken'] = initConfs['githubToken'] or ''
 		confs['ttsLanguage'] = initConfs['ttsLanguage'] or ''
-		confs['updateChannel'] = initConfs['updateChannel'] if initConfs['updateChannel'] in ('master', 'rc', 'beta', 'alpha') else 'master'
-		confs['mqttUser'] = str(initConfs['mqttUser']) or ''
+
+		updateChannel = initConfs['updateChannel']
+		if updateChannel not in ('master', 'rc', 'beta', 'alpha'):
+			self.logWarning(f'{updateChannel} is no supported updateChannel, only master, rc, beta and alpha are supported. Reseting to master')
+			confs['updateChannel'] = 'master'
+		else:
+			confs['updateChannel'] = updateChannel
+		confs['mqtt_username'] = str(initConfs['mqttUser']) or ''
 		confs['mqttPassword'] = str(initConfs['mqttPassword']) or ''
 		confs['mqttTLSFile'] = initConfs['mqttTLSFile'] or ''
 
 		if initConfs['snipsProjectId'] and confs['activeLanguage'] in confs['supportedLanguages']:
 			confs['supportedLanguages'][confs['activeLanguage']]['snipsProjectId'] = initConfs['snipsProjectId']
 
+		snipsConf = self.loadSnipsConfigurations()
+		if not snipsConf:
+			self.fatal('Error loading snips.toml')
+
 		if initConfs['deviceName'] != 'default':
-			subprocess.run(['sudo', 'sed', '-i', '-e', f's/\# bind = "default@mqtt"/bind = "{initConfs["deviceName"]}@mqtt"/', Path('/etc/snips.toml')])
-			subprocess.run(['sudo', 'sed', '-i', '-e', f's/bind = ".*@mqtt"/bind = "{initConfs["deviceName"]}@mqtt"/', Path('/etc/snips.toml')])
-			subprocess.run(['sudo', 'sed', '-i', '-e', f's/DEFAULT_SITE_ID = \'default\'/DEFAULT_SITE_ID = \'{initConfs["deviceName"]}\'/', Path(self._rootDir, 'core/commons/constants.py')])
+			snipsConf['snips-audio-server']['bind'] = f'{initConfs["deviceName"]}@mqtt'
+
+		if initConfs['mqttHost'] != 'localhost' or initConfs['mqttPort'] != 1883:
+			snipsConf['snips-common']['mqtt'] = f'{initConfs["mqttHost"]}:{initConfs["mqttPort"]}'
+
+		if initConfs['mqttUser']:
+			snipsConf['snips-common']['mqtt_username'] = initConfs['mqttUser']
+			snipsConf['snips-common']['mqtt_password'] = initConfs['mqttPassword']
+
+		snipsConf['snips-common']['assistant'] = f'/home/{getpass.getuser()}/ProjectAlice/assistant'
+		snipsConf['snips-dialogue']['session_timeout'] = 30
+		snipsConf['snips-dialogue']['lambda_timeout'] = 10
+		snipsConf['snips-dialogue']['retry_count'] = 0
+		snipsConf['snips-hotword']['model'] = [f'/home/{getpass.getuser()}/ProjectAlice/trained/hotwords/snips_hotword=0.53']
+		snipsConf['snips-hotword']['vad_messages'] = True
 
 		serviceFilePath = Path('/etc/systemd/system/ProjectAlice.service')
 		if not serviceFilePath.exists():
@@ -292,7 +332,7 @@ network={
 			subprocess.run(['sudo', Path(self._rootDir, 'system/scripts/audioHardware/matrix.sh')])
 			subprocess.run(['sudo', 'cp', Path(self._rootDir, 'system', 'asounds', 'matrix.conf'), Path('/etc/asound.conf')])
 
-			subprocess.run(['sudo', 'sed', '-i', '-e', f's/\# mike = "Built-in Microphone"/mike = "MATRIXIO-SOUND: - (hw:2,0)"/', Path('/etc/snips.toml')])
+			snipsConf['snips-audio-server']['mike'] = 'MATRIXIO-SOUND: - (hw:2,0)'
 
 			if initConfs['useSLC']:
 				subprocess.run(['sudo', 'sed', '-i', '-e', f's/%HARDWARE%/{audioHardware.lower()}/', str(slcServiceFilePath)])
@@ -308,8 +348,7 @@ network={
 		subprocess.run(['sudo', 'systemctl', 'daemon-reload'])
 
 		sort = dict(sorted(confs.items()))
-		# pop modules key so it gets added in the back
-		sort['modules'] = sort.pop('modules')
+		sort['skills'] = sort.pop('skills')
 
 		try:
 			s = json.dumps(sort, indent=4).replace('false', 'False').replace('true', 'True')
@@ -319,10 +358,16 @@ network={
 		else:
 			importlib.reload(config)
 
+		snipsConf.dump()
+
 		subprocess.run(['sudo', 'rm', '-rf', Path(self._rootDir, 'assistant')])
 		subprocess.run(['sudo', 'rm', '-rf', Path(self._rootDir, 'trained', 'assistants', f"assistant_{confs['activeLanguage']}")])
 		subprocess.run(['sudo', 'rm', '-rf', Path(self._rootDir, 'var', 'assistants', confs['activeLanguage'])])
-		subprocess.run(['sudo', 'mv', str(Path('/boot/ProjectAlice.yaml')), str(Path('/boot/ProjectAlice.yaml.bak'))])
+
+		if initConfs['keepYAMLBackup']:
+			subprocess.run(['sudo', 'mv', Path('/boot/ProjectAlice.yaml'), Path('/boot/ProjectAlice.yaml.bak')])
+		else:
+			subprocess.run(['sudo', 'rm', Path('/boot/ProjectAlice.yaml')])
 
 		self.warning('Initializer done with configuring')
 		time.sleep(2)
@@ -337,3 +382,48 @@ network={
 
 	def warning(self, text: str):
 		self.logWarning(text)
+
+
+	def loadSnipsConfigurations(self) -> TomlFile:
+		self.logInfo('Loading Snips configuration file')
+		snipsConfig = Path('/etc/snips.toml')
+
+		if not snipsConfig.exists():
+			subprocess.run(['sudo', 'cp', Path(self._rootDir, 'system/snips/snips.toml'), Path('/etc/snips.toml')])
+
+		return TomlFile.loadToml(snipsConfig)
+
+
+	@staticmethod
+	def getUpdateSource(definedSource: str) -> str:
+		updateSource = 'master'
+		if definedSource == 'master':
+			return updateSource
+
+		req = requests.get('https://api.github.com/repos/project-alice-assistant/ProjectAlice/branches')
+		result = req.json()
+		if result:
+			userUpdatePref = definedSource
+			versions = list()
+			for branch in result:
+				repoVersion = Version(branch['name'])
+				if not repoVersion.isVersionNumber:
+					continue
+
+				if userUpdatePref == 'alpha' and repoVersion.infos['releaseType'] in ('master', 'rc', 'b', 'a'):
+					versions.append(repoVersion)
+				elif userUpdatePref == 'beta' and repoVersion.infos['releaseType'] in ('master', 'rc', 'b'):
+					versions.append(repoVersion)
+				elif userUpdatePref == 'rc' and repoVersion.infos['releaseType'] in ('master', 'rc'):
+					versions.append(repoVersion)
+
+			if len(versions) > 0:
+				versions.sort(reverse=True)
+				updateSource = versions[0]
+
+		return updateSource
+
+
+	@staticmethod
+	def newConfs():
+		return {configName: configData['values'] if 'dataType' in configData and configData['dataType'] == 'list' else configData['defaultValue'] if 'defaultValue' in configData else configData for configName, configData in configTemplate.settings.items()}

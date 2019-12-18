@@ -24,94 +24,91 @@ class TalkManager(Manager):
 		self.loadTalks()
 
 
-	def loadTalks(self, moduleToLoad: str = None):
+	def loadTalks(self, skillToLoad: str = None):
 		# Global System Talks
-		if not moduleToLoad:
+		if not skillToLoad:
 			systemLangTalksMountpoint = Path('system/manager/TalkManager/talks')
 
 			for systemLangTalkFile in systemLangTalksMountpoint.iterdir():
 				lang = systemLangTalkFile.stem
 				self._langData.setdefault('system', dict())[lang] = json.loads(systemLangTalkFile.read_text())
 
-		# Module Talks
-		modules = self.ConfigManager.modulesConfigurations
+		# Skill Talks
+		skills = self.ConfigManager.skillsConfigurations
 
-		for moduleName in modules:
-			if moduleToLoad and moduleToLoad != moduleName:
+		for skillName in skills:
+			if skillToLoad and skillToLoad != skillName:
 				continue
 
-			langTalksMountpoint = Path('modules', moduleName, 'talks')
+			langTalksMountpoint = Path('skills', skillName, 'talks')
 			if not langTalksMountpoint.exists():
 				continue
 
 			for langTalkFile in langTalksMountpoint.iterdir():
 				lang = langTalkFile.stem
 				try:
-					self._langData.setdefault(moduleName, dict())[lang] = json.loads(langTalkFile.read_text())
+					self._langData.setdefault(skillName, dict())[lang] = json.loads(langTalkFile.read_text())
 				except FileNotFoundError:
 					continue
 				except ValueError:
 					continue
 
 
-	def getTexts(self, module, talk, strType='default') -> list:
+	def getTexts(self, skill, talk, strType='default') -> list:
 		arr = list()
 		try:
-			module = self.Commons.toCamelCase(module)
-			arr = self._langData[module][self.LanguageManager.activeLanguage][talk][strType]
+			skill = self.Commons.toCamelCase(skill)
+			arr = self._langData[skill][self.LanguageManager.activeLanguage][talk][strType]
 		except KeyError:
-			self.logWarning(f'Was asked to return unexisting texts {talk} for module {module} with type {strType}')
+			self.logWarning(f'Was asked to return unexisting texts {talk} for skill {skill} with type {strType}')
 
 		return arr
 
 
-	def chooseTalk(self, talk: str, module: str, activeLanguage: str, defaultLanguage: str, shortReplyMode: bool) -> str:
+	def chooseTalk(self, talk: str, skill: str, activeLanguage: str, defaultLanguage: str, shortReplyMode: bool) -> str:
 		try:
-			# Try to find the string needed
+			talkData = self._langData[skill][activeLanguage][talk]
+
+			# There's no short/long version?
+			if isinstance(talkData, list):
+				return random.choice(self._langData[skill][activeLanguage][talk])
+
 			if shortReplyMode:
-				return random.choice(self._langData[module][activeLanguage][talk]['short'])
-			else:
-				return random.choice(self._langData[module][activeLanguage][talk]['default'])
-		except:
-			try:
-				# Maybe there's only a default version?
-				return random.choice(self._langData[module][activeLanguage][talk]['default'])
-			except:
 				try:
-					# Maybe there's no short/long version?
-					return random.choice(self._langData[module][activeLanguage][talk])
-				except:
-					try:
-						# Fallback to default language then
-						if activeLanguage == defaultLanguage:
-							raise Exception
+					return random.choice(talkData['short'])
+				except KeyError:
+					return random.choice(talkData['default'])
+			else:
+				return random.choice(talkData['default'])
+		except KeyError:
+			# Fallback to default language then
+			if activeLanguage != defaultLanguage:
+				self.logError(f'Was asked to get "{talk}" from "{skill}" skill in "{activeLanguage}" but it doesn\'t exist, falling back to "{defaultLanguage}" version instead')
+				# call itself again with default language and then exit because activeLanguage == defaultLanguage
+				return self.chooseTalk(talk, skill, defaultLanguage, defaultLanguage, shortReplyMode)
 
-						self.logError(f'Was asked to get "{talk}" from "{module}" module in "{activeLanguage}" but it doesn\'t exist, falling back to "{defaultLanguage}" version instead')
-						# call itself again with default language and then exit because activeLanguage == defaultLanguage
-						return self.chooseTalk(talk, module, defaultLanguage, defaultLanguage, shortReplyMode)
-					except:
-						# Give up, that text does not exist...
-						self.logError(f'Was asked to get "{talk}" from "{module}" module but language string doesn\'t exist')
-						return ''
+			# Give up, that text does not exist...
+			self.logError(f'Was asked to get "{talk}" from "{skill}" skill but language string doesn\'t exist')
+			return ''
 
 
-	def randomTalk(self, talk: str, module: str = '', forceShortTalk: bool = False) -> str:
+	def randomTalk(self, talk: str, skill: str = '', forceShortTalk: bool = False) -> str:
 		"""
-		Gets a random string to speak corresponding to talk string. If no module provided it will use the caller's name
+		Gets a random string to speak corresponding to talk string. If no skill provided it will use the caller's name
 		:param talk:
-		:param module:
+		:param skill:
 		:param forceShortTalk:
 		:return:
 		"""
-		module = module or self.getFunctionCaller() or ''
-		if not module:
+		skill = skill or self.getFunctionCaller()
+		if not skill:
 			return ''
 
 		shortReplyMode = forceShortTalk or self.UserManager.checkIfAllUser('sleeping') or self.ConfigManager.getAliceConfigByName('shortReplies')
 		activeLanguage = self.LanguageManager.activeLanguage
 		defaultLanguage = self.LanguageManager.defaultLanguage
 
-		string = self.chooseTalk(talk, module, activeLanguage, defaultLanguage, shortReplyMode)
+		string = self.chooseTalk(talk, skill, activeLanguage, defaultLanguage, shortReplyMode)
 		if not string:
 			return ''
 

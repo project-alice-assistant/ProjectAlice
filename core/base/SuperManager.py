@@ -39,7 +39,7 @@ class SuperManager(Logger):
 		self.dialogSessionManager      = None
 		self.multiIntentManager        = None
 		self.telemetryManager          = None
-		self.moduleManager             = None
+		self.skillManager              = None
 		self.deviceManager             = None
 		self.internetManager           = None
 		self.snipsConsoleManager       = None
@@ -74,7 +74,7 @@ class SuperManager(Logger):
 		languageManager.onStart()
 
 		talkManager = self._managers.pop('TalkManager')
-		moduleManager = self._managers.pop('ModuleManager')
+		skillManager = self._managers.pop('SkillManager')
 
 		samkillaManager = self._managers.pop('SamkillaManager')
 
@@ -83,7 +83,7 @@ class SuperManager(Logger):
 				manager.onStart()
 
 		talkManager.onStart()
-		moduleManager.onStart()
+		skillManager.onStart()
 		samkillaManager.onStart()
 
 		self._managers[configManager.name] = configManager
@@ -93,7 +93,7 @@ class SuperManager(Logger):
 		self._managers[databaseManager.name] = databaseManager
 		self._managers[userManager.name] = userManager
 		self._managers[mqttManager.name] = mqttManager
-		self._managers[moduleManager.name] = moduleManager
+		self._managers[skillManager.name] = skillManager
 		self._managers[samkillaManager.name] = samkillaManager
 
 
@@ -111,7 +111,7 @@ class SuperManager(Logger):
 	def initManagers(self):
 		from core.commons.CommonsManager        import CommonsManager
 		from core.base.ConfigManager            import ConfigManager
-		from core.base.ModuleManager            import ModuleManager
+		from core.base.SkillManager             import SkillManager
 		from core.device.DeviceManager          import DeviceManager
 		from core.dialog.DialogSessionManager   import DialogSessionManager
 		from core.dialog.MultiIntentManager     import MultiIntentManager
@@ -150,7 +150,7 @@ class SuperManager(Logger):
 		self.dialogSessionManager       = DialogSessionManager()
 		self.multiIntentManager         = MultiIntentManager()
 		self.telemetryManager           = TelemetryManager()
-		self.moduleManager              = ModuleManager()
+		self.skillManager               = SkillManager()
 		self.deviceManager              = DeviceManager()
 		self.internetManager            = InternetManager()
 		self.snipsConsoleManager        = SnipsConsoleManager()

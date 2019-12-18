@@ -1,0 +1,77 @@
+[snips-common]
+# bus = "mqtt"
+# mqtt = "localhost:1883"
+# audio = ["+@mqtt"]
+# assistant = "/usr/share/snips/assistant"
+# user_dir = "/var/lib/snips"
+
+## MQTT authentication
+# mqtt_username = ""
+# mqtt_password = ""
+
+## MQTT TLS configuration
+# mqtt_tls_hostname = ""
+# mqtt_tls_disable_root_store = false
+# mqtt_tls_cafile = ""
+# mqtt_tls_capath = ""
+# mqtt_tls_client_cert = ""
+# mqtt_tls_client_key = ""
+
+[snips-analytics]
+
+[snips-asr]
+# no_fst_map = true
+# beam_size = 8
+# model = "/usr/share/snips/asr"
+# audio = ["+@mqtt"]
+# partial = false
+# partial_period_ms = 250
+
+[snips-asr-google]
+# credentials = "/usr/share/snips/googlecredentials.json"
+# audio = ["+@mqtt"]
+
+[snips-audio-server]
+# frame = 256
+# bind = "default@mqtt"
+# mike = "Built-in Microphone"
+# disable_playback = false
+# disable_capture = false
+
+[snips-dialogue]
+# resources = "/usr/share/snips/dialogue"
+# session_timeout = 15
+# lambda_timeout = 5
+# retry_count = 3
+# sound_feedback_disabled_default = false
+
+[snips-hotword]
+# model = "/usr/share/snips/hotword"
+# hotword_id = "default"
+# sensitivity = "0.5"
+# audio = ["+@mqtt"]
+# no_vad_inhibitor = false
+# vad_messages = false
+
+[snips-injection]
+#asr_model = "/usr/share/snips/asr"
+#nlu_engine = "/usr/share/snips/nlu_engine"
+#keep_nfirst = 3
+
+[snips-nlu]
+
+[snips-tts]
+## Choose one tts provider (defaults to picotts)
+# provider = "picotts"
+# provider = "makerstts"
+# provider = "customtts"
+## customtts specific configuration (here configured to use picotts using the en-US language)
+## available placeholder variables : %%OUTPUT_FILE%%, %%LANG%%, %%TEXT%%
+# customtts = { command = ["pico2wave", "-w", "%%OUTPUT_FILE%%", "-l", "en-US", "%%TEXT%%"] }
+
+[snips-pegasus]
+# address = "0.0.0.0:8443"
+## Pegasus TLS configuration
+## Self signing certificates are generated with /usr/local/bin/snips-pegasus-tls-keygen.sh
+# tls_certificate_chain = "/var/lib/snips/pegasus/tls/server.fullchain"
+# tls_private_key = "/var/lib/snips/pegasus/tls/server.key"

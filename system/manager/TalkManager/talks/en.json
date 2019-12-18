@@ -64,8 +64,8 @@
 	},
 	"maxOneAlicePerRoom": {
 		"default": [
-			"I am sorry but you can't have more than one Alice module per room",
-			"I'm so sorry but I can only have one Alice module per room"
+			"I am sorry but you can't have more than one Alice skill per room",
+			"I'm so sorry but I can only have one Alice skill per room"
 		]
 	},
 	"wakewordCaptured": [

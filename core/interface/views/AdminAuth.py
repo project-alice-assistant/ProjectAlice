@@ -22,10 +22,10 @@ class AdminAuth(View):
 		except:
 			self.logWarning('No next page after auth success, falling back to index.html')
 
-		if current_user.is_authenticated:
+		if current_user.isAuthenticated:
 			return redirect(self.__class__.nextPage)
 
-		self.ModuleManager.getModuleInstance('AliceCore').explainInterfaceAuth()
+		self.SkillManager.getSkillInstance('AliceCore').explainInterfaceAuth()
 		return render_template(template_name_or_list='adminAuth.html',
 		                       langData=self._langData,
 		                       aliceSettings=self.ConfigManager.aliceConfigurations)
@@ -56,7 +56,7 @@ class AdminAuth(View):
 
 
 	def keyboardAuth(self):
-		self.ModuleManager.getModuleInstance('AliceCore').authWithKeyboard()
+		self.SkillManager.getSkillInstance('AliceCore').authWithKeyboard()
 		if self.__class__.linkedSnipsSession is not None:
 			self.MqttManager.endSession(sessionId=self.__class__.linkedSnipsSession.sessionId)
 		return jsonify(success=True)

@@ -1,6 +1,8 @@
 import subprocess
+from pathlib import Path
 
-from flask import render_template, request, jsonify
+import shutil
+from flask import jsonify, render_template, request
 from flask_login import login_required
 
 from core.interface.model.View import View
@@ -36,7 +38,7 @@ class AdminView(View):
 			# because HTTP data is type less.
 			confs = {key: False if value == 'off' else True if value == 'on' else int(value) if value.isdigit() else float(value) if self.isfloat(value) else value for key, value in request.form.items()}
 
-			confs['modules'] = self.ConfigManager.getAliceConfigByName('modules')
+			confs['skills'] = self.ConfigManager.getAliceConfigByName('skills')
 			confs['supportedLanguages'] = self.ConfigManager.getAliceConfigByName('supportedLanguages')
 
 			self.ConfigManager.writeToAliceConfigurationFile(confs=confs)
@@ -74,6 +76,28 @@ class AdminView(View):
 			return jsonify(success=True)
 		except Exception as e:
 			self.logError(f'Failed downloading assistant: {e}')
+			return jsonify(success=False)
+
+
+	def wipeAll(self) -> dict:
+		try:
+			subprocess.run(['wget', 'http://skills.projectalice.ch/AliceCore', '-O', Path(self.Commons.rootDir(), 'system/skillInstallTickets/AliceCore.install')])
+			subprocess.run(['wget', 'http://skills.projectalice.ch/ContextSensitive', '-O', Path(self.Commons.rootDir(), 'system/skillInstallTickets/ContextSensitive.install')])
+			subprocess.run(['wget', 'http://skills.projectalice.ch/RedQueen', '-O', Path(self.Commons.rootDir(), 'system/skillInstallTickets/RedQueen.install')])
+			subprocess.run(['wget', 'http://skills.projectalice.ch/Telemetry', '-O', Path(self.Commons.rootDir(), 'system/skillInstallTickets/Telemetry.install')])
+			subprocess.run(['wget', 'http://skills.projectalice.ch/DateDayTimeYear', '-O', Path(self.Commons.rootDir(), 'system/skillInstallTickets/DateDayTimeYear.install')])
+
+			shutil.rmtree(Path(self.Commons.rootDir(), 'var/assistants'))
+			shutil.rmtree(Path(self.Commons.rootDir(), 'trained/assistants'))
+			shutil.rmtree(Path(self.Commons.rootDir(), 'skills'))
+			Path(self.Commons.rootDir(), 'system/database/data.db')
+
+			Path(self.Commons.rootDir(), 'var/assistants').mkdir()
+			Path(self.Commons.rootDir(), 'trained/assistants').mkdir()
+			Path(self.Commons.rootDir(), 'skills').mkdir()
+			return self.restart()
+		except Exception as e:
+			self.logError(f'Failed wiping system: {e}')
 			return jsonify(success=False)
 
 

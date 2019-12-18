@@ -1,8 +1,8 @@
-from enum import Enum, unique
+from enum import IntEnum, unique
 
 
 @unique
-class AccessLevel(Enum):
+class AccessLevel(IntEnum):
 	ADMIN = 1
 	DEFAULT = 2
 	KID = 3

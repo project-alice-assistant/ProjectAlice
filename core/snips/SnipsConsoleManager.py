@@ -40,6 +40,7 @@ class SnipsConsoleManager(Manager):
 			})
 
 			self._connected = True
+
 		elif self.loginCredentialsAreConfigured():
 			self.logInfo('Snips console not authorized')
 			self._login()
@@ -53,9 +54,9 @@ class SnipsConsoleManager(Manager):
 				self.isActive = False
 
 
-	def doDownload(self, modulesInfos: dict = None):
+	def doDownload(self, skillsInfos: dict = None):
 		self.logInfo('Starting Snips assistant training and download procedure')
-		self.ThreadManager.newEvent('SnipsAssistantDownload', onClearCallback='onSnipsAssistantDownloaded').set(modulesInfos=modulesInfos)
+		self.ThreadManager.newEvent('SnipsAssistantDownload', onClearCallback='onSnipsAssistantDownloaded').set(skillsInfos=skillsInfos)
 
 		projectId = self.LanguageManager.activeSnipsProjectId
 		self.ThreadManager.newThread(name='SnipsAssistantDownload', target=self.download, args=[projectId])
@@ -124,7 +125,7 @@ class SnipsConsoleManager(Manager):
 
 
 	def _trainAssistant(self, assistantId: str, trainingType: SnipsTrainingType):
-		self._req(url=f'/v2/training/assistant/{assistantId}', data={'trainingType': trainingType.value}, method='post')
+		return self._req(url=f'/v2/training/assistant/{assistantId}', data={'trainingType': trainingType.value}, method='post')
 
 
 	def _trainingStatus(self, assistantId: str) -> TrainingStatusResponse:
@@ -151,13 +152,20 @@ class SnipsConsoleManager(Manager):
 				 not trainingStatus.nluStatus.inProgress and \
 				 not trainingStatus.asrStatus.inProgress:
 				self.logInfo('Training NLU')
-				self._trainAssistant(assistantId, SnipsTrainingType.NLU)
+				req = self._trainAssistant(assistantId, SnipsTrainingType.NLU)
+				if req.status_code == 400:
+					self.logInfo('There are no intents, so the assistant could not be trained')
+					trainingLock.clear()
 
 			elif not trainingStatus.nluStatus.inProgress and \
 				 trainingStatus.asrStatus.needTraining and \
 				 not trainingStatus.asrStatus.inProgress:
 				self.logInfo('Training ASR')
-				self._trainAssistant(assistantId, SnipsTrainingType.ASR)
+				req = self._trainAssistant(assistantId, SnipsTrainingType.ASR)
+				if req.status_code == 400:
+					self.logInfo('There are no intents, so the assistant could not be trained')
+					trainingLock.clear()
+
 			else:
 				raise Exception('Something went wrong while training the assistant')
 
@@ -177,14 +185,15 @@ class SnipsConsoleManager(Manager):
 			return True
 		except Exception as e:
 			self.logError(f'Assistant download failed: {e}')
-			self.broadcast(method='onSnipsAssistantDownloadFailed', exceptions=[self.name], propagateToModules=True)
+			self.broadcast(method='onSnipsAssistantDownloadFailed', exceptions=[self.name], propagateToSkills=True)
 			self.ThreadManager.getEvent('SnipsAssistantDownload').cancel()
 			return False
 
 
 	def _logout(self):
 		self._req(url=f"/v1/user/{self._user.userId}/accesstoken/{self.ConfigManager.getSnipsConfiguration('project-alice', 'console_alias')}", method='get')
-		self._headers.pop('Authorization', None)
+		if 'Authorization' in self._headers:
+			del self._headers['Authorization']
 		self._connected = False
 
 		self.ConfigManager.updateSnipsConfiguration(parent='project-alice', key='console_token', value='')
@@ -213,7 +222,8 @@ class SnipsConsoleManager(Manager):
 		req = requests.request(method=method, url=f'https://external-gateway.snips.ai{url}', params=params, json=data, headers=self._headers, **kwargs)
 		if req.status_code == 401:
 			self.logWarning('Console token has expired, need to login')
-			self._headers.pop('Authorization', None)
+			if 'Authorization' in self._headers:
+				del self._headers['Authorization']
 			self._connected = False
 
 			self.ConfigManager.updateSnipsConfiguration(parent='project-alice', key='console_token', value='')

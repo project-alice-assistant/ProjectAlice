@@ -1,12 +1,12 @@
 import time
 
+from core.base.model.Intent import Intent
 from core.base.model.Manager import Manager
 from core.commons import constants
 from core.dialog.model.DialogSession import DialogSession
 from core.voice.model import ASR
 from core.voice.model.SnipsASR import SnipsASR
 
-from core.base.model.Intent import Intent
 
 class ASRManager(Manager):
 
@@ -49,7 +49,6 @@ class ASRManager(Manager):
 					# noinspection PyUnresolvedReferences
 					from core.voice.model.GoogleASR import GoogleASR
 					self._asr = GoogleASR()
-				self.ThreadManager.doLater(interval=3, func=self.MqttManager.say, args=[self.TalkManager.randomTalk('internetBack', 'AliceCore'), 'all'])
 
 
 	def onInternetLost(self):
@@ -57,7 +56,6 @@ class ASRManager(Manager):
 			self.logInfo('Internet lost, switching to snips ASR')
 			self.SnipsServicesManager.runCmd('start', ['snips-asr'])
 			self._asr = SnipsASR()
-			self.ThreadManager.doLater(interval=3, func=self.MqttManager.say, args=[self.TalkManager.randomTalk('internetLost', module='AliceCore'), 'all'])
 
 
 	def onStartListening(self, session: DialogSession, *args, **kwargs):
@@ -76,7 +74,7 @@ class ASRManager(Manager):
 			result = self.LanguageManager.sanitizeNluQuery(result)
 			self.logDebug(f'{self._asr.__class__.__name__} output: "{result}"')
 
-			supportedIntents = session.intentFilter or self.ModuleManager.supportedIntents
+			supportedIntents = session.intentFilter or self.SkillManager.supportedIntents
 			intentFilter = [intent.justTopic for intent in supportedIntents if isinstance(intent, Intent) and not intent.protected]
 
 			# Add Global Intents

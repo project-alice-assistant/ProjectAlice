@@ -1,13 +1,14 @@
 {
 	"name": "AliceCore",
-	"version": "1.0.20",
+	"version": "1.0.22",
 	"author": "ProjectAlice",
 	"maintainers": [
 		"Psycho",
+		"Jierka",
 		"maxbachmann"
 	],
-	"desc": "AliceCore is the official module that handles all core intents",
-	"aliceMinVersion": "1.0.0-a3",
+	"desc": "AliceCore is the official skill that handles all core intents",
+	"aliceMinVersion": "1.0.0-a4",
 	"systemRequirements": [],
 	"pipRequirements": [],
 	"conditions": {

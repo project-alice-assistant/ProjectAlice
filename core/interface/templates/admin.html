@@ -20,10 +20,10 @@
 		</ul>
 		<div class="tabsContent">
 			<div id="AliceSettings" class="configBox">
-				<form action="/admin/saveAliceSettings/" name="config_for_{{ moduleName }}" method="post" autocomplete="off" novalidate>
-					{% for settingName, settingValue in aliceSettings.items() if not settingName == 'modules' and not settingName == 'supportedLanguages' %}
+				<form action="/admin/saveAliceSettings/" name="config_for_{{ skillName }}" method="post" autocomplete="off" novalidate>
+					{% for settingName, settingValue in aliceSettings.items() if not settingName == 'skills' and not settingName == 'supportedLanguages' %}
 						<div class="configLine">
-							<label class="configLabel" for="{{ settingName }}">{{ settingName }}</label>
+							<label class="configLabel" for="{{ settingName }}" title="{{ aliceSettingsTemplate[settingName]['description'] }}">{{ settingName }}</label>
 							<div class="configInput">
 								{% if aliceSettingsTemplate[settingName]['dataType'] == 'boolean' %}
 									<input type="checkbox" name="{{ settingName }}" value="on" id="{{ settingName }}" {% if settingValue is sameas true %}checked{% endif %}>
@@ -76,6 +76,12 @@
 						<i class="fas fa-arrow-circle-down"></i>
 					</div>
 					<div class="utilityText">{{ langData.trainAndDlAssistant }}</div>
+				</div>
+				<div id="wipeAll" class="utility">
+					<div class="utilityIcon">
+						<i class="fas fa-bomb"></i>
+					</div>
+					<div class="utilityText">{{ langData.wipeAll }}</div>
 				</div>
 			</div>
 		</div>

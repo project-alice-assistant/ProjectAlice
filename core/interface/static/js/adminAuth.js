@@ -30,7 +30,7 @@ $(function () {
 		}
 
 		if (code.length >= 4) {
-			return;
+			return false;
 		}
 
 		let key = $(this).html();
@@ -53,6 +53,7 @@ $(function () {
 				}
 			});
 		}
+		return false;
 	});
 
 	$('#adminAuthKeyboardContainer').hide();

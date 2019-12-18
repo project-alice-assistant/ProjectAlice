@@ -1,12 +1,13 @@
 {
 	"name": "DateDayTimeYear",
-	"version": "1.0.15",
+	"version": "1.0.20",
 	"author": "Psychokiller1888",
 	"maintainers": [
-		"maxbachmann"
+		"maxbachmann",
+		"SkyHyperV"
 	],
 	"desc": "Ask for the time, date, day and year",
-	"aliceMinVersion": "1.0.0-a3",
+	"aliceMinVersion": "1.0.0-a4",
 	"systemRequirements": [],
 	"pipRequirements": ["Babel"],
 	"conditions": {

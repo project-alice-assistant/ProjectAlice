@@ -14,19 +14,13 @@ class ProtectedIntentManager(Manager):
 		self._protectedIntents = list()
 
 
-	def protectIntent(self, intent: str):
-		intent = self._cleanIntentString(intent)
-		if intent not in self._protectedIntents:
-			self._protectedIntents.append(intent)
+	def protectIntent(self, intentName: str):
+		if intentName not in self._protectedIntents:
+			self._protectedIntents.append(intentName)
 
 
-	def isProtectedIntent(self, intent: str) -> bool:
-		return self._cleanIntentString(intent) in self._protectedIntents
-
-
-	@staticmethod
-	def _cleanIntentString(intent: str) -> str:
-		return os.path.split(intent)[-1] if '/' in intent else intent
+	def isProtectedIntent(self, intentName: str) -> bool:
+		return intentName in self._protectedIntents
 
 
 	@property

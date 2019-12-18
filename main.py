@@ -24,6 +24,9 @@ import traceback
 from datetime import datetime
 from pathlib import Path
 
+import os
+import psutil
+
 from core.Initializer import Initializer
 
 formatter = logging.Formatter('%(asctime)s [%(threadName)s] - [%(levelname)s] - %(message)s')
@@ -93,7 +96,15 @@ def main():
 		if projectAlice.restart:
 			time.sleep(3)
 			sys.stdout.flush()
-			main()
+			try:
+				p = psutil.Process(os.getpid())
+				for h in p.open_files() + p.connections():
+					os.close(h.fd)
+			except Exception as e:
+				_logger.error(f'Failed restarting ProjectAlice: {e}')
+
+			python = sys.executable
+			os.execl(python, python, *sys.argv)
 
 
 RUNNING = False

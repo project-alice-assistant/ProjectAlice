@@ -1,6 +1,6 @@
 {
 	"home": "home",
-	"modules" : "modulen",
+	"skills" : "skills",
 	"syslog": "syslog",
 	"snipswatch": "snipswatch",
 	"admin": "admin",
@@ -13,12 +13,15 @@
 	"updatee": "aktualisieren",
 	"addWidgetTitle": "Verfügbare Widgets",
 	"viewIntents": "Intents ansehen",
-	"moduleSettings": "Moduleinstellungen",
+	"skillSettings": "Skilleinstellungen",
 	"save": "Speichern",
 	"followLogs": "Autoscroll",
 	"adminTabTitleSetting": "Alice Einstellungen",
 	"adminTabTitleUtilities": "Utilities",
 	"restartAlice": "Alice neustarten",
 	"reboot": "Reboot",
-	"trainAndDlAssistant": "Assistant herunterladen"
+	"trainAndDlAssistant": "Assistant herunterladen",
+	"wipeAll": "Alles löschen",
+	"devmodeNewSkill": "Neuer Skill",
+	"devmodeEditSkill": "Skill editieren"
 }

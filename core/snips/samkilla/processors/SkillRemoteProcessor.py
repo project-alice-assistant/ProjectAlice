@@ -8,24 +8,24 @@ from core.snips.samkilla.models.EnumSkillImageUrl import EnumSkillImageUrl as En
 EnumSkillImageUrl = EnumSkillImageUrlClass()
 
 
-class ModuleRemoteProcessor:
+class SkillRemoteProcessor:
 
-	def __init__(self, ctx: SamkillaManager, assistantId: str, module: dict, moduleName: str, moduleLanguage: str):
+	def __init__(self, ctx: SamkillaManager, assistantId: str, skill: dict, skillName: str, skillLanguage: str):
 		self._ctx = ctx
 		self._assistantId = assistantId
-		self._module = module
-		self._moduleName = moduleName
-		self._moduleLanguage = moduleLanguage
+		self._skill = skill
+		self._skillName = skillName
+		self._skillLanguage = skillLanguage
 		self._syncState = None
 		self._createdInstances = {
 			'skills': list()
 		}
 
 
-	def createNewSavedModule(self) -> dict:
+	def createNewSavedSkill(self) -> dict:
 		return {
 			'skillId': None,
-			'name'   : self._moduleName
+			'name'   : self._skillName
 		}
 
 
@@ -39,32 +39,32 @@ class ModuleRemoteProcessor:
 		return 'hash' in self._syncState and str(self._syncState['skillId']).startswith('skill_')
 
 
-	def syncSkill(self, moduleDescription: str, moduleIcon: str, hashComputationOnly: bool = False):
+	def syncSkill(self, skillDescription: str, skillIcon: str, hashComputationOnly: bool = False):
 		oldInstanceExists = self.syncedSkillExists()
 		oldHash = self._syncState['hash'] if oldInstanceExists else ''
 		skillId = self._syncState['skillId'] if oldInstanceExists else ''
-		curHash = self.skillValuesToHash(icon=moduleIcon, description=moduleDescription, skillId=skillId)
+		curHash = self.skillValuesToHash(icon=skillIcon, description=skillDescription, skillId=skillId)
 		changes = False
 
 		if hashComputationOnly or (oldInstanceExists and oldHash == curHash):
-			self._ctx.log(f'Skill model {skillId} ({self._moduleName}) has no changes')
+			self._ctx.log(f'Skill model {skillId} ({self._skillName}) has no changes')
 		elif oldInstanceExists:
 			changes = True
-			self._ctx.log(f'Skill model {skillId} ({self._moduleName}) has been edited')
-			self._ctx.skill.edit(skillId, description=moduleDescription, imageKey=EnumSkillImageUrl.getResourceFileByAttr(moduleIcon))
+			self._ctx.log(f'Skill model {skillId} ({self._skillName}) has been edited')
+			self._ctx.skill.edit(skillId, description=skillDescription, imageKey=EnumSkillImageUrl.getResourceFileByAttr(skillIcon))
 		else:
 			changes = True
 			skillId = self._ctx.skill.create(
 				assistantId=self._assistantId,
-				name=self._moduleName,
-				description=moduleDescription,
-				language=self._moduleLanguage,
-				imageKey=EnumSkillImageUrl.getResourceFileByAttr(moduleIcon),
+				name=self._skillName,
+				description=skillDescription,
+				language=self._skillLanguage,
+				imageKey=EnumSkillImageUrl.getResourceFileByAttr(skillIcon),
 				attachToAssistant=True
 			)
-			self._ctx.log(f'Skill model {skillId} ({self._moduleName}) has been created')
+			self._ctx.log(f'Skill model {skillId} ({self._skillName}) has been created')
 			self._createdInstances['skills'].append({'id': skillId, 'assistantId': self._assistantId})
-			curHash = self.skillValuesToHash(icon=moduleIcon, description=moduleDescription, skillId=skillId)
+			curHash = self.skillValuesToHash(icon=skillIcon, description=skillDescription, skillId=skillId)
 
 		return {
 			'skillId': skillId,
@@ -73,9 +73,9 @@ class ModuleRemoteProcessor:
 		}
 
 
-	def syncModulesOnAssistantSafely(self, typeEntityMatching: dict, moduleSyncState: str = None, hashComputationOnly: bool = False):
+	def syncSkillsOnAssistantSafely(self, typeEntityMatching: dict, skillSyncState: str = None, hashComputationOnly: bool = False):
 		try:
-			return self.syncModulesOnAssistant(typeEntityMatching=typeEntityMatching, moduleSyncState=moduleSyncState, hashComputationOnly=hashComputationOnly)
+			return self.syncSkillsOnAssistant(typeEntityMatching=typeEntityMatching, skillSyncState=skillSyncState, hashComputationOnly=hashComputationOnly)
 		except:
 			e = sys.exc_info()[0]
 			self._ctx.log('Handle error gracefully')
@@ -85,15 +85,15 @@ class ModuleRemoteProcessor:
 
 
 	# noinspection PyUnusedLocal
-	def syncModulesOnAssistant(self, typeEntityMatching: dict = None, moduleSyncState: str = None, hashComputationOnly: bool = False) -> tuple:
-		#TODO this appears wrong moduleSyncState is a str according to typing while self.createNewSavedModule() returns a dict
+	def syncSkillsOnAssistant(self, typeEntityMatching: dict = None, skillSyncState: str = None, hashComputationOnly: bool = False) -> tuple:
+		#TODO this appears wrong skillSyncState is a str according to typing while self.createNewSavedSkill() returns a dict
 		# is is used as a dict aswell. Is the typing wrong?
-		self._syncState = moduleSyncState or self.createNewSavedModule()
+		self._syncState = skillSyncState or self.createNewSavedSkill()
 
-		skillData = self.syncSkill(self._module['description'], self._module['icon'], hashComputationOnly)
+		skillData = self.syncSkill(self._skill['description'], self._skill['icon'], hashComputationOnly)
 		self._syncState['skillId'] = skillData['skillId']
 		self._syncState['hash'] = skillData['hash']
-		self._syncState['name'] = self._moduleName
+		self._syncState['name'] = self._skillName
 
 		return self._syncState, skillData['changes']
 

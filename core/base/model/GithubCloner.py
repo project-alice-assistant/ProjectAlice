@@ -3,7 +3,7 @@ from pathlib import Path
 import requests
 import shutil
 
-from core.ProjectAliceExceptions import GithubRateLimit, GithubTokenFailed
+from core.ProjectAliceExceptions import GithubNotFound, GithubRateLimit, GithubTokenFailed
 from core.base.SuperManager import SuperManager
 from core.base.model.ProjectAliceObject import ProjectAliceObject
 
@@ -33,18 +33,20 @@ class GithubCloner(ProjectAliceObject):
 			self._dest.mkdir(parents=True)
 
 		try:
-			return self._doClone(f'https://api.github.com/{self._baseUrl}/{self._path}?ref={self.ConfigManager.getModulesUpdateSource()}')
-		except:
+			return self._doClone(f'https://api.github.com/{self._baseUrl}/{self._path}?ref={self.ConfigManager.getSkillsUpdateSource()}')
+		except Exception:
 			return False
 
 
-	def _doClone(self, url: str) -> bool:
+	def _doClone(self, url: str):
 		try:
 			req = requests.get(url, auth=self.getGithubAuth())
 			if req.status_code == 401:
 				raise GithubTokenFailed
 			elif req.status_code == 403:
 				raise GithubRateLimit
+			elif req.status_code == 404:
+				raise GithubNotFound
 			elif req.status_code != 200:
 				raise Exception
 
@@ -61,18 +63,20 @@ class GithubCloner(ProjectAliceObject):
 					Path(self._dest / path).mkdir(parents=True)
 					self._doClone(url=item['url'])
 
-			return True
-
 		except GithubTokenFailed:
 			self.logError('Provided Github username / token invalid')
-			return False
+			raise
 
 		except GithubRateLimit:
 			self.logError('Github rate limit reached, cannot access updates for now. You should consider creating a token to avoid this problem')
-			return False
+			raise
+
+		except GithubNotFound:
+			self.logError('Requested skill not found on servers')
+			raise
 
 		except Exception as e:
-			self.logError(f'Error downloading module: {e}')
+			self.logError(f'Error downloading skill: {e}')
 			raise
 
 
@@ -80,7 +84,7 @@ class GithubCloner(ProjectAliceObject):
 		filesToDelete = list()
 		directoriesToDelete = list()
 		for file in self._dest.iterdir():
-			if file.with_suffix('.template').exists() or file.with_suffix('.dist').exists():
+			if file.with_suffix(file.suffix + '.template').exists() or file.with_suffix(file.suffix + '.dist').exists() or file.suffix == '.conf':
 				continue
 
 			if (file.is_dir() and not file.name.startswith('_')) or file.name == '__pycache__':

@@ -1,12 +1,11 @@
 import json
-import struct
-
-import shutil
-import tempfile
 from enum import Enum
 from pathlib import Path
 
 import paho.mqtt.client as mqtt
+import shutil
+import struct
+import tempfile
 from pydub import AudioSegment
 
 from core.base.model.Manager import Manager
@@ -60,7 +59,9 @@ class WakewordManager(Manager):
 
 	def onCaptured(self, session: DialogSession):
 		if self.state == WakewordManagerState.RECORDING:
-			self.MqttManager.mqttClient.unsubscribe(constants.TOPIC_AUDIO_FRAME)
+			self.MqttManager.mqttClient.unsubscribe(constants.TOPIC_AUDIO_FRAME.format('default'))
+			for device in self.DeviceManager.getDevicesByType('alicesatellite'):
+				self.MqttManager.mqttClient.unsubscribe(constants.TOPIC_AUDIO_FRAME.format(device.room))
 			self._workAudioFile()
 
 
@@ -78,7 +79,10 @@ class WakewordManager(Manager):
 	def addASample(self):
 		self.wakeword.newSample()
 		self.state = WakewordManagerState.RECORDING
-		self.MqttManager.mqttClient.subscribe(constants.TOPIC_AUDIO_FRAME)
+
+		self.MqttManager.mqttClient.subscribe(constants.TOPIC_AUDIO_FRAME.format('default'))
+		for device in self.DeviceManager.getDevicesByType('alicesatellite'):
+			self.MqttManager.mqttClient.subscribe(constants.TOPIC_AUDIO_FRAME.format(device.room))
 
 
 	def onAudioFrame(self, message: mqtt.MQTTMessage):
@@ -183,7 +187,7 @@ class WakewordManager(Manager):
 
 
 	def removeSample(self):
-		self._wakeword.samples.pop()
+		del self._wakeword.samples[-1]
 
 
 	def isDefaultThreshold(self) -> bool:
@@ -256,7 +260,7 @@ class WakewordManager(Manager):
 		copy = models.copy()
 		for i, model in enumerate(copy):
 			if wakewordName in model:
-				models.pop(i)
+				del models[i]
 			elif '/snips_hotword=' in model:
 				addHeySnips = False
 

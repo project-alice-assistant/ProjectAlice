@@ -5,6 +5,7 @@ from pathlib import Path
 
 import paho.mqtt.client as mqtt
 import paho.mqtt.publish as publish
+import re
 
 from core.ProjectAliceExceptions import AccessLevelTooLow
 from core.base.model.Intent import Intent
@@ -25,6 +26,11 @@ class MqttManager(Manager):
 		self._wideAskingSessions    = list()
 		self._multiDetectionsHolder = list()
 
+		self._audioFrameRegex = re.compile(constants.TOPIC_AUDIO_FRAME.replace('{}', '(.*)'))
+		self._wakewordDetectedRegex = re.compile(constants.TOPIC_WAKEWORD_DETECTED.replace('{}', '(.*)'))
+		self._vadUpRegex = re.compile(constants.TOPIC_VAD_UP.replace('{}', '(.*)'))
+		self._vadDownRegex = re.compile(constants.TOPIC_VAD_DOWN.replace('{}', '(.*)'))
+
 
 	# noinspection PyUnusedLocal
 	def onLog(self, client, userdata, level, buf):
@@ -38,6 +44,7 @@ class MqttManager(Manager):
 		self._mqttClient.on_message = self.onMqttMessage
 		self._mqttClient.on_connect = self.onConnect
 		self._mqttClient.on_log = self.onLog
+
 
 		self._mqttClient.message_callback_add(constants.TOPIC_HOTWORD_DETECTED, self.onHotwordDetected)
 		for username in self.UserManager.getAllUserNames():
@@ -101,30 +108,36 @@ class MqttManager(Manager):
 		]
 
 		for username in self.UserManager.getAllUserNames():
-			subscribedEvents.append((constants.TOPIC_WAKEWORD_DETECTED.replace('{user}', username), 0))
+			subscribedEvents.append((constants.TOPIC_WAKEWORD_DETECTED.format(username), 0))
+
+		subscribedEvents.append((constants.TOPIC_VAD_UP.format('default'), 0))
+		subscribedEvents.append((constants.TOPIC_VAD_DOWN.format('default'), 0))
+		for device in self.DeviceManager.getDevicesByType('alicesatellite'):
+			subscribedEvents.append((constants.TOPIC_VAD_UP.format(device.room), 0))
+			subscribedEvents.append((constants.TOPIC_VAD_DOWN.format(device.room), 0))
 
 		self._mqttClient.subscribe(subscribedEvents)
-		self.subscribeModuleIntents()
+		self.subscribeSkillIntents()
 		self.toggleFeedbackSounds()
 
 
-	def subscribeModuleIntents(self, moduleName: str = None):
-		if moduleName:
-			self.ModuleManager.getModuleInstance(moduleName).subscribe(self._mqttClient)
+	def subscribeSkillIntents(self, skillName: str = None):
+		if skillName:
+			self.SkillManager.getSkillInstance(skillName).subscribe(self._mqttClient)
 			return
 
-		for module in self.ModuleManager.activeModules.values():
-			module.subscribe(self._mqttClient)
+		for skill in self.SkillManager.activeSkills.values():
+			skill.subscribe(self._mqttClient)
 
 
 	# noinspection PyUnusedLocal
 	def onMqttMessage(self, client, userdata, message: mqtt.MQTTMessage):
 		try:
-			if message.topic == constants.TOPIC_AUDIO_FRAME:
+			if self._audioFrameRegex.match(message.topic):
 				self.broadcast(
 					method='onAudioFrame',
 					exceptions=[self.name],
-					propagateToModules=True,
+					propagateToSkills=True,
 					message=message
 				)
 				return
@@ -151,11 +164,11 @@ class MqttManager(Manager):
 
 			if not session: # It is a device trying to communicate with Alice
 				session = self.DeviceManager.deviceMessage(message)
-				self.broadcast(method='onMessage', exceptions=[self.name], args=[message.topic, session])
-				self.ModuleManager.moduleBroadcast(method='dispatchMessage', intent=message.topic, session=session)
+				self.broadcast(method='onMessage', exceptions=[self.name], session=session)
+				self.SkillManager.skillBroadcast(method='dispatchMessage', session=session)
 				return
 
-			redQueen = self.ModuleManager.getModuleInstance('RedQueen')
+			redQueen = self.SkillManager.getSkillInstance('RedQueen')
 			if redQueen and not redQueen.inTheMood(session):
 				return
 
@@ -166,28 +179,28 @@ class MqttManager(Manager):
 
 					self.continueDialog(
 						sessionId=sessionId,
-						text=self.TalkManager.randomTalk('notUnderstood', module='system')
+						text=self.TalkManager.randomTalk('notUnderstood', skill='system')
 					)
 				else:
 					del session.notUnderstood
 					self.endDialog(
 						sessionId=sessionId,
-						text=self.TalkManager.randomTalk('notUnderstoodEnd', module='system')
+						text=self.TalkManager.randomTalk('notUnderstoodEnd', skill='system')
 					)
 				return
 
-			module = self.ModuleManager.getModuleInstance('ContextSensitive')
-			if module:
-				module.addToMessageHistory(session)
+			skill = self.SkillManager.getSkillInstance('ContextSensitive')
+			if skill:
+				skill.addToMessageHistory(session)
 
-			for modul in self.ModuleManager.activeModules.values():
+			for modul in self.SkillManager.activeSkills.values():
 				try:
-					consumed = modul.dispatchMessage(message.topic, session)
+					consumed = modul.dispatchMessage(session)
 				except AccessLevelTooLow:
 					# The command was recognized but required higher access level
 					return
 
-				# Authentication might end the session directly from a module
+				# Authentication might end the session directly from a skill
 				# if not self.DialogSessionManager.getSession(sessionId):
 				# 	return
 
@@ -196,22 +209,23 @@ class MqttManager(Manager):
 					return
 
 				elif consumed or consumed is None:
+					self.logInfo(f"The intent {message.topic.replace('hermes/intent/', '')} was consumed by {modul.__class__.__name__}")
 					return
 
-			self.logWarning(f"Intent \"{message.topic}\" wasn't consumed by any module")
+			self.logWarning(f"Intent \"{message.topic}\" wasn't consumed by any skill")
 			if session.notUnderstood < self.ConfigManager.getAliceConfigByName('notUnderstoodRetries'):
 				session.notUnderstood = session.notUnderstood + 1
 
 				self.continueDialog(
 					sessionId=sessionId,
-					text=self.TalkManager.randomTalk('notUnderstood', module='system')
+					text=self.TalkManager.randomTalk('notUnderstood', skill='system')
 				)
 				return
 			else:
 				del session.notUnderstood
 				self.endDialog(
 					sessionId=sessionId,
-					text=self.TalkManager.randomTalk('notUnderstoodEnd', module='system')
+					text=self.TalkManager.randomTalk('notUnderstoodEnd', skill='system')
 				)
 			return
 
@@ -239,9 +253,9 @@ class MqttManager(Manager):
 		self.DialogSessionManager.preSession(siteId, user)
 
 		if user == constants.UNKNOWN_USER:
-			self.broadcast(method='onHotword', exceptions=[self.name], propagateToModules=True, siteId=siteId, user=user)
+			self.broadcast(method='onHotword', exceptions=[self.name], propagateToSkills=True, siteId=siteId, user=user)
 		else:
-			self.broadcast(method='onWakeword', exceptions=[self.name], propagateToModules=True, siteId=siteId, user=user)
+			self.broadcast(method='onWakeword', exceptions=[self.name], propagateToSkills=True, siteId=siteId, user=user)
 
 
 	def handleMultiDetection(self):
@@ -264,7 +278,7 @@ class MqttManager(Manager):
 		session = self.DialogSessionManager.addSession(sessionId=sessionId, message=msg)
 
 		if session:
-			self.broadcast(method='onSessionStarted', exceptions=[self.name], propagateToModules=True, session=session)
+			self.broadcast(method='onSessionStarted', exceptions=[self.name], propagateToSkills=True, session=session)
 
 
 	# noinspection PyUnusedLocal
@@ -273,7 +287,7 @@ class MqttManager(Manager):
 		session = self.DialogSessionManager.addSession(sessionId=sessionId, message=msg)
 
 		if session:
-			self.broadcast(method='onSessionQueued', exceptions=[self.name], propagateToModules=True, session=session)
+			self.broadcast(method='onSessionQueued', exceptions=[self.name], propagateToSkills=True, session=session)
 
 
 	# noinspection PyUnusedLocal
@@ -282,7 +296,7 @@ class MqttManager(Manager):
 		session = self.DialogSessionManager.getSession(sessionId=sessionId)
 
 		if session:
-			self.broadcast(method='onStartListening', exceptions=[self.name], propagateToModules=True, session=session)
+			self.broadcast(method='onStartListening', exceptions=[self.name], propagateToSkills=True, session=session)
 
 
 	# noinspection PyUnusedLocal
@@ -291,7 +305,7 @@ class MqttManager(Manager):
 		session = self.DialogSessionManager.getSession(sessionId=sessionId)
 
 		if session:
-			self.broadcast(method='onCaptured', exceptions=[self.name], propagateToModules=True, session=session)
+			self.broadcast(method='onCaptured', exceptions=[self.name], propagateToSkills=True, session=session)
 
 
 	def onSnipsIntentParsed(self, client, data, msg: mqtt.MQTTMessage):
@@ -300,7 +314,7 @@ class MqttManager(Manager):
 
 		if session:
 			session.update(msg)
-			self.broadcast(method='onIntentParsed', exceptions=[self.name], propagateToModules=True, session=session)
+			self.broadcast(method='onIntentParsed', exceptions=[self.name], propagateToSkills=True, session=session)
 
 			if self.ConfigManager.getAliceConfigByName('asr').lower() != 'snips':
 				intent = Intent(session.payload['intent']['intentName'].split(':')[1])
@@ -323,18 +337,18 @@ class MqttManager(Manager):
 		reason = session.payload['termination']['reason']
 		if reason:
 			if reason == 'abortedByUser':
-				self.broadcast(method='onUserCancel', exceptions=[self.name], propagateToModules=True, session=session)
+				self.broadcast(method='onUserCancel', exceptions=[self.name], propagateToSkills=True, session=session)
 			elif reason == 'timeout':
-				self.broadcast(method='onSessionTimeout', exceptions=[self.name], propagateToModules=True, session=session)
+				self.broadcast(method='onSessionTimeout', exceptions=[self.name], propagateToSkills=True, session=session)
 			elif reason == 'intentNotRecognized':
 				# This should never trigger, as "sendIntentNotRecognized" is always set to True, but we never know
 				self.onSnipsIntentNotRecognized(None, data, msg)
 			elif reason == 'error':
-				self.broadcast(method='onSessionError', exceptions=[self.name], propagateToModules=True, session=session)
+				self.broadcast(method='onSessionError', exceptions=[self.name], propagateToSkills=True, session=session)
 			else:
-				self.broadcast(method='onSessionEnded', exceptions=[self.name], propagateToModules=True, session=session)
+				self.broadcast(method='onSessionEnded', exceptions=[self.name], propagateToSkills=True, session=session)
 
-		self.broadcast(method='onSessionEnded', exceptions=[self.name], propagateToModules=True, session=session)
+		self.broadcast(method='onSessionEnded', exceptions=[self.name], propagateToSkills=True, session=session)
 		self.DialogSessionManager.removeSession(sessionId=sessionId)
 
 
@@ -351,11 +365,11 @@ class MqttManager(Manager):
 			siteId = self.Commons.parseSiteId(msg)
 
 		if 'text' in payload:
-			module = self.ModuleManager.getModuleInstance('ContextSensitive')
-			if module:
-				module.addChat(text=payload['text'], siteId=siteId)
+			skill = self.SkillManager.getSkillInstance('ContextSensitive')
+			if skill:
+				skill.addChat(text=payload['text'], siteId=siteId)
 
-		self.broadcast(method='onSay', exceptions=[self.name], propagateToModules=True, session=session)
+		self.broadcast(method='onSay', exceptions=[self.name], propagateToSkills=True, session=session)
 
 
 	# noinspection PyUnusedLocal
@@ -367,7 +381,7 @@ class MqttManager(Manager):
 		if session:
 			session.payload = payload
 
-		self.broadcast(method='onSayFinished', exceptions=[self.name], propagateToModules=True, session=session)
+		self.broadcast(method='onSayFinished', exceptions=[self.name], propagateToSkills=True, session=session)
 
 
 	# noinspection PyUnusedLocal
@@ -376,25 +390,25 @@ class MqttManager(Manager):
 		session = self.DialogSessionManager.getSession(sessionId)
 
 		if not session:
-			self.ask(text=self.TalkManager.randomTalk('notUnderstood', module='system'), client=session.siteId)
+			self.ask(text=self.TalkManager.randomTalk('notUnderstood', skill='system'), client=session.siteId)
 		else:
 			if msg.topic == Intent('UserRandomAnswer'):
 				return
 
-			if session.customData and 'module' in session.customData and 'RandomWord' in session.slots:
-				module = self.ModuleManager.getModuleInstance(session.customData['module'])
-				if module:
-					module.onMessage(Intent('UserRandomAnswer'), session)
+			if session.customData and 'skill' in session.customData and 'RandomWord' in session.slots:
+				skill = self.SkillManager.getSkillInstance(session.customData['skill'])
+				if skill:
+					skill.onMessage(Intent('UserRandomAnswer'), session)
 					return
 
 			if session.notUnderstood < self.ConfigManager.getAliceConfigByName('notUnderstoodRetries'):
 				session.notUnderstood = session.notUnderstood + 1
-				self.reviveSession(session, self.TalkManager.randomTalk('notUnderstood', module='system'))
+				self.reviveSession(session, self.TalkManager.randomTalk('notUnderstood', skill='system'))
 			else:
 				del session.notUnderstood
-				self.endDialog(sessionId=sessionId, text=self.TalkManager.randomTalk('notUnderstoodEnd', module='system'))
+				self.endDialog(sessionId=sessionId, text=self.TalkManager.randomTalk('notUnderstoodEnd', skill='system'))
 
-		self.broadcast(method='onIntentNotRecognized', exceptions=[self.name], propagateToModules=True, session=session)
+		self.broadcast(method='onIntentNotRecognized', exceptions=[self.name], propagateToSkills=True, session=session)
 
 
 	def reviveSession(self, session: DialogSession, text: str):
@@ -413,7 +427,7 @@ class MqttManager(Manager):
 		:param customData: json object
 		"""
 
-		if client == 'all':
+		if client == constants.ALL:
 			deviceList = self.DeviceManager.getDevicesByType('AliceSatellite', connectedOnly=True)
 			deviceList.append(constants.DEFAULT_SITE_ID)
 
@@ -433,7 +447,7 @@ class MqttManager(Manager):
 			if ' ' in client:
 				client = client.replace(' ', '_')
 
-			if self.ConfigManager.getAliceConfigByName('outputOnSonos') != '1' or (self.ConfigManager.getAliceConfigByName('outputOnSonos') == '1' and self.ModuleManager.getModuleInstance('Sonos') is None or not self.ModuleManager.getModuleInstance('Sonos').anyModuleHere(client)) or not self.ModuleManager.getModuleInstance('Sonos').active:
+			if self.ConfigManager.getAliceConfigByName('outputOnSonos') != '1' or (self.ConfigManager.getAliceConfigByName('outputOnSonos') == '1' and self.SkillManager.getSkillInstance('Sonos') is None or not self.SkillManager.getSkillInstance('Sonos').anySkillHere(client)) or not self.SkillManager.getSkillInstance('Sonos').active:
 				self._mqttClient.publish(constants.TOPIC_START_SESSION, json.dumps({
 					'siteId'    : client,
 					'init'      : {
@@ -486,7 +500,7 @@ class MqttManager(Manager):
 		if currentDialogState:
 			preSession.currentState = currentDialogState
 
-		if client == 'all':
+		if client == constants.ALL:
 			if not customData:
 				customData = dict()
 
@@ -514,8 +528,8 @@ class MqttManager(Manager):
 
 		jsonDict['init'] = initDict
 
-		if self.ConfigManager.getAliceConfigByName('outputOnSonos') != '1' or (self.ConfigManager.getAliceConfigByName('outputOnSonos') == '1' or self.ModuleManager.getModuleInstance('Sonos') is None and not self.ModuleManager.getModuleInstance('Sonos').anyModuleHere(client)) or not self.ModuleManager.getModuleInstance('Sonos').active:
-			if client == 'all':
+		if self.ConfigManager.getAliceConfigByName('outputOnSonos') != '1' or (self.ConfigManager.getAliceConfigByName('outputOnSonos') == '1' or self.SkillManager.getSkillInstance('Sonos') is None and not self.SkillManager.getSkillInstance('Sonos').anySkillHere(client)) or not self.SkillManager.getSkillInstance('Sonos').active:
+			if client == constants.ALL:
 				deviceList = self.DeviceManager.getDevicesByType('AliceSatellite', connectedOnly=True)
 				deviceList.append(constants.DEFAULT_SITE_ID)
 
@@ -581,7 +595,7 @@ class MqttManager(Manager):
 		if currentDialogState:
 			session.currentState = currentDialogState
 
-		if self.ConfigManager.getAliceConfigByName('outputOnSonos') != '1' or (self.ConfigManager.getAliceConfigByName('outputOnSonos') == '1' and self.ModuleManager.getModuleInstance('Sonos') is None or not self.ModuleManager.getModuleInstance('Sonos').anyModuleHere(session.siteId)) or not self.ModuleManager.getModuleInstance('Sonos').active:
+		if self.ConfigManager.getAliceConfigByName('outputOnSonos') != '1' or (self.ConfigManager.getAliceConfigByName('outputOnSonos') == '1' and self.SkillManager.getSkillInstance('Sonos') is None or not self.SkillManager.getSkillInstance('Sonos').anySkillHere(session.siteId)) or not self.SkillManager.getSkillInstance('Sonos').active:
 			self._mqttClient.publish(constants.TOPIC_CONTINUE_SESSION, json.dumps(jsonDict))
 		else:
 			jsonDict['text'] = ''
@@ -606,7 +620,7 @@ class MqttManager(Manager):
 
 		client = client.replace(' ', '_')
 
-		if self.ConfigManager.getAliceConfigByName('outputOnSonos') != '1' or (self.ConfigManager.getAliceConfigByName('outputOnSonos') == '1' and self.ModuleManager.getModuleInstance('Sonos') is None or not self.ModuleManager.getModuleInstance('Sonos').anyModuleHere(client)) or not self.ModuleManager.getModuleInstance('Sonos').active:
+		if self.ConfigManager.getAliceConfigByName('outputOnSonos') != '1' or (self.ConfigManager.getAliceConfigByName('outputOnSonos') == '1' and self.SkillManager.getSkillInstance('Sonos') is None or not self.SkillManager.getSkillInstance('Sonos').anySkillHere(client)) or not self.SkillManager.getSkillInstance('Sonos').active:
 			if text:
 				self._mqttClient.publish(constants.TOPIC_END_SESSION, json.dumps({
 					'sessionId': sessionId,
@@ -640,10 +654,10 @@ class MqttManager(Manager):
 
 		if not location:
 			location = Path(self.Commons.rootDir()) / 'system' / 'sounds'
-		elif not str(location).startswith('/'):
+		elif not location.is_absolute():
 			location = Path(self.Commons.rootDir()) / location
 
-		if siteId == 'all':
+		if siteId == constants.ALL:
 			deviceList = self.DeviceManager.getDevicesByType('AliceSatellite', connectedOnly=True)
 			deviceList.append(constants.DEFAULT_SITE_ID)
 
@@ -701,13 +715,15 @@ class MqttManager(Manager):
 		if text == '':
 			return
 
-		subprocess.call(['sudo', Path(self.Commons.rootDir(), '/system/scripts/snipsSuperTTS.sh'), Path('/share/tmp.wav'), 'amazon', self.LanguageManager.activeLanguage, 'US', 'Joanna', 'FEMALE', text, '22050'])
+		subprocess.call(['sudo',
+			Path(self.Commons.rootDir(), '/system/scripts/snipsSuperTTS.sh'),
+			Path('/share/tmp.wav'), 'amazon', self.LanguageManager.activeLanguage, 'US', 'Joanna', 'FEMALE', text, '22050'])
 
-		sonosModule = self.ModuleManager.getModuleInstance('Sonos')
-		if sonosModule:
-			sonosModule.aliceSpeak(client)
+		sonosSkill = self.SkillManager.getSkillInstance('Sonos')
+		if sonosSkill:
+			sonosSkill.aliceSpeak(client)
 		else:
-			self.logError('Tried to speak on Sonos but Sonos module is disabled or missing')
+			self.logError('Tried to speak on Sonos but Sonos skill is disabled or missing')
 
 
 	def toggleFeedbackSounds(self, state='On'):

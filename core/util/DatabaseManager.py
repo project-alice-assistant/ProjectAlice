@@ -109,7 +109,7 @@ class DatabaseManager(Manager):
 					database.commit()
 
 			except sqlite3.Error as e:
-				self.logError(f'Something went wrong initializing database for module {callerName}: {e}')
+				self.logError(f'Something went wrong initializing database for skill {callerName}: {e}')
 				database.rollback()
 				return False
 
@@ -151,8 +151,8 @@ class DatabaseManager(Manager):
 			callerName = self.Commons.getFunctionCaller()
 
 		if not query:
-			cols = ', '.join(values.keys())
-			data = ', :'.join(values.keys())
+			cols = ', '.join(values)
+			data = ', :'.join(values)
 			query = f'INSERT INTO :__table__ ({cols}) VALUES (:{data})'
 
 		query = self.basicChecks(tableName, query, callerName, values)
