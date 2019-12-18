@@ -24,7 +24,7 @@ Join us on our [Discord server](https://discord.gg/Jfcj355)
 
 
 ## Who made this?
-The original code base was started at the end 2015 and several rewrites made it what it is today. It was entirely written by me *Psycho* until recently, where I decided to make the code openly available to the world. 
+The original code base was started at the end 2015 and several rewrites made it what it is today. It was entirely written by me *Psycho* until recently, where I decided to make the code openly available to the world.
 
 In of May 2019, *Jierka* joined the project to prepare Project Alice for a public release by providing quality code, fresh ideas and insights for the project. At the same time *maxbachmann* also joined the project, at first to translate to German for the release, but soon moved beyond his initial commitment and started contributing to the refactoring, rewrite and skill production.
 
