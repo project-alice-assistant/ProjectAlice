@@ -27,8 +27,8 @@ class WebInterfaceManager(Manager):
 	app = Flask(__name__)
 	app.config['SEND_FILE_MAX_AGE_DEFAULT'] = 0
 
-	_VIEWS = [AdminView, AdminAuth, IndexView, ModulesView, SnipswatchView, SyslogView, DevModeView, ScenarioView]
-	_APIS = [UsersApi, ModulesApi]
+	_VIEWS = [AdminView, AdminAuth, IndexView, SkillsView, SnipswatchView, SyslogView, DevModeView, ScenarioView]
+	_APIS = [UsersApi, SkillsApi]
 
 	def __init__(self):
 		super().__init__(self.NAME)
