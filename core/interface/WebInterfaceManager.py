@@ -11,11 +11,11 @@ from flask_login import LoginManager
 from core.base.model.Manager import Manager
 from core.interface.api.SkillsApi import SkillsApi
 from core.interface.api.UsersApi import UsersApi
-from core.interface.views import ScenarioView
 from core.interface.views.AdminAuth import AdminAuth
 from core.interface.views.AdminView import AdminView
 from core.interface.views.DevModeView import DevModeView
 from core.interface.views.IndexView import IndexView
+from core.interface.views.ScenarioView import ScenarioView
 from core.interface.views.SkillsView import SkillsView
 from core.interface.views.SnipswatchView import SnipswatchView
 from core.interface.views.SyslogView import SyslogView
