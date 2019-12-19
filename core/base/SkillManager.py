@@ -312,6 +312,10 @@ class SkillManager(Manager):
 				func = getattr(skillItem, method, None)
 				if func:
 					func(**kwargs)
+				
+				func = getattr(skillItem, 'onEvent', None)
+				if func:
+					func(event=method, **kwargs)
 
 			except TypeError:
 				# Do nothing, it's most prolly kwargs
