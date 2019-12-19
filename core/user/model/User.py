@@ -178,20 +178,21 @@ class User(ProjectAliceObject):
 
 		return bcrypt.checkpw(str(password).encode(), self.pin)
 
-	# Flask login reqs
 
+	# Flask login reqs
+	# Do not rename to our standards!!!
 	@property
-	def isAuthenticated(self) -> bool:
+	def is_authenticated(self) -> bool:
 		return self._isAuthenticated
 
-	@isAuthenticated.setter
-	def isAuthenticated(self, value: bool):
+	@is_authenticated.setter
+	def is_authenticated(self, value: bool):
 		self._isAuthenticated = value
 
 	@property
-	def isActive(self) -> bool:
+	def is_active(self) -> bool:
 		return self._isActive
 
 	@property
-	def isAnonymous(self) -> bool:
+	def is_anonymous(self) -> bool:
 		return self._isAnonymous
