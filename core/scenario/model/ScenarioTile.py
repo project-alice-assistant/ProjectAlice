@@ -8,7 +8,7 @@ class ScenarioTile(ProjectAliceObject):
 
 	def __init__(self):
 		super().__init__()
-		self.tileType: ScenarioTileType = ScenarioTileType.ACTION_TILE
+		self.tileType: ScenarioTileType = ScenarioTileType.ACTION
 		self.name: str = ''
 		self.description: str = ''
 		self.value: Any = ''

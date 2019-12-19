@@ -16,6 +16,7 @@ from core.base.model.Intent import Intent
 from core.base.model.ProjectAliceObject import ProjectAliceObject
 from core.commons import constants
 from core.dialog.model.DialogSession import DialogSession
+from core.scenario.model.ScenarioTileType import ScenarioTileType
 
 
 class AliceSkill(ProjectAliceObject):
@@ -41,12 +42,38 @@ class AliceSkill(ProjectAliceObject):
 		self._databaseSchema = databaseSchema
 		self._widgets = dict()
 		self._intentsDefinitions = dict()
+		self._scenarioTiles = dict()
 
 		self._supportedIntents: Dict[str, Intent] = self.buildIntentList(supportedIntents)
 		self.loadIntentsDefinition()
 
 		self._utteranceSlotCleaner = re.compile('{(.+?):=>.+?}')
 		self.loadWidgets()
+		self.loadScenarioTiles()
+
+
+	def loadScenarioTiles(self):
+		path = Path(self.getCurrentDir() / 'scenarioTiles')
+		if not path.exists():
+			return
+
+		for file in path.glob('*'):
+			if file.is_dir() or file.suffix != '.py' or file.stem.startswith('__'):
+				continue
+
+			imported = importlib.import_module(f'skills.{self.name}.scenarioTiles.{file.stem}')
+			clazz = getattr(imported, file.stem)
+			instance = clazz()
+			if instance.tileType == ScenarioTileType.EVENT:
+				self._scenarioTiles.get('events', dict())[instance.name] = instance
+			elif instance.tileType == ScenarioTileType.CONDITION_BLOCK:
+				self._scenarioTiles.get('conditions', dict())[instance.name] = instance
+			elif instance.tileType == ScenarioTileType.LOOP_BLOCK:
+				self._scenarioTiles.get('loops', dict())[instance.name] = instance
+			elif instance.tileType == ScenarioTileType.ACTION:
+				self._scenarioTiles.get('actions', dict())[instance.name] = instance
+			else:
+				self._scenarioTiles.get('vars', dict())[instance.name] = instance
 
 
 	def loadIntentsDefinition(self):
@@ -286,6 +313,11 @@ class AliceSkill(ProjectAliceObject):
 	@delayed.setter
 	def delayed(self, value: bool):
 		self._delayed = value
+
+
+	@property
+	def scenarioTiles(self) -> dict:
+		return self._scenarioTiles
 
 
 	def subscribe(self, mqttClient: MQTTClient):

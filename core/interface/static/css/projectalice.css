@@ -922,3 +922,9 @@ input:focus {
 	color: yellow;
 	background-color: #636363;
 }
+
+.scenariosTilesHolder {
+	width: 250px;
+	background-color: #343434;
+	min-height: 100%;
+}

@@ -652,3 +652,10 @@ class SkillManager(Manager):
 		shutil.rmtree(Path(self.Commons.rootDir(), 'skills', skillName))
 		# TODO Samkilla cleaning
 		self.SnipsConsoleManager.doDownload()
+
+
+	def allScenarioTiles(self) -> dict:
+		ret = dict()
+		for skill in self._activeSkills.values():
+			ret = {**ret, **skill.scenarioTiles}
+		return ret
