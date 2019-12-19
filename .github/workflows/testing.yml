@@ -1,4 +1,4 @@
-name: Python package
+name: Unit Tests
 
 on: [push]
 
@@ -9,7 +9,7 @@ jobs:
     strategy:
       max-parallel: 4
       matrix:
-        python-version: [3.7]
+        python-version: [3.7,3.8]
 
     steps:
     - uses: actions/checkout@v1
@@ -19,9 +19,13 @@ jobs:
         python-version: ${{ matrix.python-version }}
     - name: Install dependencies
       run: |
+        sudo apt-get update && sudo apt-get install libasound2-dev portaudio19-dev ffmpeg
         python -m pip install --upgrade pip
-        pip install paho-mqtt googletrans
+        pip install -r requirements.txt
+        pip install -r requirements_test.txt
     - name: Test with pytest
+      env:
+        COVERALLS_REPO_TOKEN: ${{ secrets.COVERALLS_REPO_TOKEN }}
       run: |
-        pip install pytest pytest-cov
         pytest tests/unittests/ --cov=core
+        coveralls

@@ -28,7 +28,7 @@ class AliceEvent(Event, ProjectAliceObject):
 			self.broadcast(
 				method=self._onSet,
 				exceptions=[constants.DUMMY],
-				propagateToModules=True,
+				propagateToSkills=True,
 				**kwargs
 			)
 
@@ -50,7 +50,7 @@ class AliceEvent(Event, ProjectAliceObject):
 			self.broadcast(
 				method=self._onClear,
 				exceptions=[constants.DUMMY],
-				propagateToModules=True,
+				propagateToSkills=True,
 				**self._kwargs
 			)
 
@@ -67,8 +67,7 @@ class AliceEvent(Event, ProjectAliceObject):
 		self.broadcast(
 			method=self.eventName(state),
 			exceptions=[constants.DUMMY],
-			propagateToModules=True,
-			silent=True,
+			propagateToSkills=True,
 			**kwargs
 		)
 

@@ -14,7 +14,7 @@
 	"updatee": "update",
 	"addWidgetTitle": "Available widgets",
 	"viewIntents": "View intents",
-	"moduleSettings": "Module settings",
+	"skillSettings": "Skill settings",
 	"save": "Save",
 	"followLogs": "Autoscroll",
 	"adminTabTitleSetting": "Alice Settings",
@@ -23,6 +23,6 @@
 	"reboot": "Reboot",
 	"trainAndDlAssistant": "Download assistant",
 	"wipeAll": "Wipe all",
-	"devmodeNewModule": "Module creation",
-	"devmodeEditModule": "Module edition"
+	"devmodeNewSkill": "Skill creation",
+	"devmodeEditSkill": "Skill edition"
 }

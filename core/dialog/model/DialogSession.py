@@ -1,5 +1,8 @@
 from __future__ import annotations
+
 from textwrap import dedent
+from typing import Any
+
 from paho.mqtt.client import MQTTMessage
 
 from core.base.model import Intent
@@ -51,7 +54,7 @@ class DialogSession(ProjectAliceObject):
 		self._intentHistory = session.intentHistory
 		self._intentFilter = session.intentFilter
 		self._notUnderstood = session.notUnderstood
-		self._currentState = session.currentStat
+		self._currentState = session.currentState
 
 
 	def _parseMessage(self):
@@ -82,14 +85,14 @@ class DialogSession(ProjectAliceObject):
 		return self._slotsAsObjects
 
 
-	def slotValue(self, slotName: str, index: int = 0) -> str:
+	def slotValue(self, slotName: str, index: int = 0, defaultValue: Any = None) -> Any:
 		"""
-		This returns the slot master value, not necesserly what was heard / captured
+		This returns the slot master value, not what was heard / captured
 		"""
 		if slotName in self._slotsAsObjects:
 			return self.slotsAsObjects[slotName][index].value['value']
 		else:
-			return ''
+			return defaultValue
 
 
 	def slotRawValue(self, slotName: str) -> str:

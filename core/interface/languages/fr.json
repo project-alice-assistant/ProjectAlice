@@ -14,7 +14,7 @@
 	"updatee": "mise à jour",
 	"addWidgetTitle": "Widgets disponibles",
 	"viewIntents": "Voir intents",
-	"moduleSettings": "Configuration",
+	"skillSettings": "Configuration",
 	"save": "Sauvegarder",
 	"followLogs": "Autoscroll",
 	"adminTabTitleSetting": "Parametres Alice",
@@ -23,6 +23,6 @@
 	"reboot": "Reboot",
 	"trainAndDlAssistant": "Télécharger assistant",
 	"wipeAll": "Tout supprimer",
-	"devmodeNewModule": "Nouveau module",
-	"devmodeEditModule": "Edition de module"
+	"devmodeNewSkill": "Nouveau skill",
+	"devmodeEditSkill": "Edition de skill"
 }

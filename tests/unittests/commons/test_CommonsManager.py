@@ -15,10 +15,10 @@ class TestCommonsManager(unittest.TestCase):
 	def test_isEqualTranslated(self, mock_LanguageManager):
 		commonsManager = CommonsManager()
 		mock_LanguageManager.getStrings.return_value = ['String1', ' strIng2']
-		self.assertTrue(commonsManager.isEqualTranslated('string1', 'compareTo', 'module'))
-		mock_LanguageManager.getStrings.called_once_with('compareTo', 'module')
-		self.assertTrue(commonsManager.isEqualTranslated('string2 ', 'compareTo', 'module'))
-		self.assertFalse(commonsManager.isEqualTranslated('string3', 'compareTo', 'module'))
+		self.assertTrue(commonsManager.isEqualTranslated('string1', 'compareTo', 'skill'))
+		mock_LanguageManager.getStrings.called_once_with('compareTo', 'skill')
+		self.assertTrue(commonsManager.isEqualTranslated('string2 ', 'compareTo', 'skill'))
+		self.assertFalse(commonsManager.isEqualTranslated('string3', 'compareTo', 'skill'))
 
 
 	def test_dictMaxValue(self):

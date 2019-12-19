@@ -30,80 +30,34 @@ def deprecated(func):
 	return new_func
 
 
-class IntentHandler:
-	"""
-	(return a) decorator to mark a function as an intent.
+def IntentHandler(intent: Union[str, Intent], requiredState: str = None, isProtected: bool = False, authOnly = 0):
+	"""Decorator for adding a method as an intent handler."""
+	if isinstance(intent, str):
+		intent = Intent(intent, isProtected=isProtected, userIntent=True, authOnly=authOnly)
 
-	This decorator can be used to map a function to a intent.
+	def wrapper(func):
+		# store the intent in the function
+		if not hasattr(func, 'intents'):
+			func.intents = []
+		func.intents.append({'intent':intent, 'requiredState': requiredState})
+		return func
 
-	:param requiredState:
-	:param isProtected:
-	:param userIntent:
-	:return: return value of the decorated function
-	Examples:
-		An intent handler can be mapped to the intent 'intentName' the following way:
-
-		@Intent('intentName')
-		def exampleIntent(self, session: DialogSession, **_kwargs):
-			request = requests.get('http://api.open-notify.org')
-			self.endDialog(sessionId=session.sessionId, text=request.text)
-
-		When the function should only be called when the current dialogState is 'currentState':
-
-		@Intent('intentName', requiredState='currentState')
-		def exampleIntent(self, session: DialogSession, **_kwargs):
-			request = requests.get('http://api.open-notify.org')
-			self.endDialog(sessionId=session.sessionId, text=request.text)
-
-		In the same way all other parameters supported by the Intent class can be used in the decorator.
+	return wrapper
 
 
-		Mapping multiple intents to the same function is possible aswell using
-		(make sure that the intent decorators are used in front of any other decorators):
+def MqttHandler(intent: Union[str, Intent], requiredState: str = None, isProtected: bool = True, authOnly = 0):
+	"""Decorator for adding a method as a mqtt handler."""
+	if isinstance(intent, str):
+		intent = Intent(intent, isProtected=isProtected, userIntent=False, authOnly=authOnly)
 
-		@Intent('intentName1')
-		@Intent('intentName2')
-		def exampleIntent(self, session: DialogSession, **_kwargs):
-			request = requests.get('http://api.open-notify.org')
-			self.endDialog(sessionId=session.sessionId, text=request.text)
-	"""
-	class Wrapper:
-		def __init__(self, method: Callable, intent: Union[str, Intent], requiredState: str, isProtected: bool, userIntent: bool):
-			self.decoratedMethod = method
-			self.requiredState = requiredState
-			self._intent = intent
-			self._isProtected = isProtected
-			self._userIntent = userIntent
-			self._owner = None
-			functools.update_wrapper(self, method, updated=[])
+	def wrapper(func):
+		# store the intent in the function
+		if not hasattr(func, 'intents'):
+			func.intents = []
+		func.intents.append({'intent':intent, 'requiredState': requiredState})
+		return func
 
-		@property
-		def intent(self) -> Intent:
-			if isinstance(self._intent, str):
-				return Intent(self._intent, isProtected=self._isProtected, userIntent=self._userIntent)
-			return self._intent
-
-		@property
-		def intentName(self) -> str:
-			return str(self._intent)
-
-		def __call__(self, *args, **kwargs):
-			if self._owner:
-				return self.decoratedMethod(SuperManager.getInstance().moduleManager.getModuleInstance(self._owner.__name__), *args, **kwargs)
-			return self.decoratedMethod(*args, **kwargs)
-
-		def __set_name__(self, owner, name):
-			self._owner = owner
-
-	def __init__(self, intent: Union[str, Intent], requiredState: str = None, isProtected: bool = False, userIntent: bool = True):
-		self._intent = intent
-		self._requiredState = requiredState
-		self._isProtected = isProtected
-		self._userIntent = userIntent
-
-	def __call__(self, func: Callable) -> IntentHandler.Wrapper:
-		return self.Wrapper(func, self._intent, self._requiredState, self._isProtected, self._userIntent)
-
+	return wrapper
 
 
 def Online(func: Callable = None, text: str = 'offline', offlineHandler: Callable = None, returnText: bool = False):
@@ -143,10 +97,10 @@ def Online(func: Callable = None, text: str = 'offline', offlineHandler: Callabl
 			return offlineHandler(*args, **kwargs)
 
 		caller = args[0] if args else None
-		module = getattr(caller, 'name', 'system')
-		newText = SuperManager.getInstance().talkManager.randomTalk(text, module=module)
-		if not newText and module != 'system':
-			newText = SuperManager.getInstance().talkManager.randomTalk(text, module='system') or text
+		skill = getattr(caller, 'name', 'system')
+		newText = SuperManager.getInstance().talkManager.randomTalk(text, skill=skill)
+		if not newText and skill != 'system':
+			newText = SuperManager.getInstance().talkManager.randomTalk(text, skill='system') or text
 
 		if returnText:
 			return newText
@@ -185,10 +139,10 @@ def AnyExcept(func: Callable = None, text: str = 'error', exceptions: Tuple[Base
 			return exceptHandler(*args, **kwargs)
 
 		caller = args[0] if args else None
-		module = getattr(caller, 'name', 'system')
-		newText = SuperManager.getInstance().talkManager.randomTalk(text, module=module)
-		if not newText and module != 'system':
-			newText = SuperManager.getInstance().talkManager.randomTalk(text, module='system') or text
+		skill = getattr(caller, 'name', 'system')
+		newText = SuperManager.getInstance().talkManager.randomTalk(text, skill=skill)
+		if not newText and skill != 'system':
+			newText = SuperManager.getInstance().talkManager.randomTalk(text, skill='system') or text
 
 		if returnText:
 			return newText

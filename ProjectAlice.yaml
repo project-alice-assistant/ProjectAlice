@@ -78,10 +78,10 @@ useSLC: yes
 stayCompletlyOffline: no
 keepASROffline: yes
 keepTTSOffline: yes
-moduleAutoUpdate: yes
+skillAutoUpdate: yes
 webInterfaceActive: yes
 
-# enabling dev mode unlocks features on the console as well as unpublished module loading
+# enabling dev mode unlocks features on the console as well as unpublished skill loading
 devMode: no
 
 # You should leave this by default, but who knows
@@ -131,7 +131,7 @@ awsAccessKey:
 awsSecretKey:
 
 # Github - Github limits the api calls to 60 per hour unless you create a token (free) for your account
-# Github is used to keep your modules up to date and install new ones as well as updating Project Alice
+# Github is used to keep your skills up to date and install new ones as well as updating Project Alice
 # This is not mendatory but strongly recommanded https://help.github.com/en/articles/creating-a-personal-access-token-for-the-command-line
 githubUsername:
 githubToken:

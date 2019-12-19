@@ -16,7 +16,7 @@ class InternetManager(Manager):
 	def onStart(self):
 		super().onStart()
 		if not self.ConfigManager.getAliceConfigByName('stayCompletlyOffline'):
-			self.checkOnlineState()
+			self.checkOnlineState(silent=True)
 		else:
 			self.logInfo('Configurations set to stay completly offline')
 
@@ -35,16 +35,21 @@ class InternetManager(Manager):
 			self.checkOnlineState()
 
 
-	def checkOnlineState(self, addr: str = 'http://clients3.google.com/generate_204') -> bool:
+	def checkOnlineState(self, addr: str = 'http://clients3.google.com/generate_204', silent: bool = False) -> bool:
 		try:
 			online = requests.get(addr).status_code == 204
 		except RequestException:
 			online = False
-		
+
+		if silent:
+			self._online = online
+			return online
+
 		if self._online and not online:
 			self._online = False
-			self.broadcast(method='onInternetLost', exceptions=[self.name], propagateToModules=True)
+			self.broadcast(method='onInternetLost', exceptions=[self.name], propagateToSkills=True)
 		elif not self._online and online:
 			self._online = True
-			self.broadcast(method='onInternetConnected', exceptions=[self.name], propagateToModules=True)
+			self.broadcast(method='onInternetConnected', exceptions=[self.name], propagateToSkills=True)
+
 		return online

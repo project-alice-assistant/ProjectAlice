@@ -50,41 +50,41 @@ class LanguageManager(Manager):
 		return query
 
 
-	def loadStrings(self, moduleToLoad: str = ''):
+	def loadStrings(self, skillToLoad: str = ''):
 		with open(Path('system/manager/LanguageManager/strings.json')) as jsonFile:
 			self._stringsData['system'] = json.load(jsonFile)
 
-		for moduleName in self.ConfigManager.modulesConfigurations:
-			if moduleToLoad and moduleName != moduleToLoad:
+		for skillName in self.ConfigManager.skillsConfigurations:
+			if skillToLoad and skillName != skillToLoad:
 				continue
 
 			try:
-				jsonFile = Path('modules', moduleName, 'strings.json')
-				self._stringsData[moduleName] = json.loads(jsonFile.read_text())
+				jsonFile = Path('skills', skillName, 'strings.json')
+				self._stringsData[skillName] = json.loads(jsonFile.read_text())
 			except FileNotFoundError:
 				continue
 			except ValueError:
 				continue
 
 
-	def getTranslations(self, module: str, key: str, toLang: str = '') -> Optional[list]:
+	def getTranslations(self, skill: str, key: str, toLang: str = '') -> Optional[list]:
 		if not toLang:
 			toLang = self.activeLanguage
-		if not module in self._stringsData:
-			self.logError(f'Asked to get translation from module "{module}" but does not exist')
+		if not skill in self._stringsData:
+			self.logError(f'Asked to get translation from skill "{skill}" but does not exist')
 			return list()
-		elif key not in self._stringsData[module]:
-			self.logError(f'Asked to get translation for "{key}" from module "{module}" but does not exist')
+		elif key not in self._stringsData[skill]:
+			self.logError(f'Asked to get translation for "{key}" from skill "{skill}" but does not exist')
 			return list()
-		elif toLang not in self._stringsData[module][key]:
-			self.logError(f'Asked to get "{toLang}" translation for "{key}" from module "{module}" but does not exist')
+		elif toLang not in self._stringsData[skill][key]:
+			self.logError(f'Asked to get "{toLang}" translation for "{key}" from skill "{skill}" but does not exist')
 			return list()
 		else:
-			return self._stringsData[module][key][toLang]
+			return self._stringsData[skill][key][toLang]
 
 
-	def getStrings(self, key: str, module: str = 'system') -> list:
-		return self.getTranslations(module, key, self._activeLanguage)
+	def getStrings(self, key: str, skill: str = 'system') -> list:
+		return self.getTranslations(skill, key, self._activeLanguage)
 
 
 	def _loadSupportedLanguages(self):
@@ -190,3 +190,8 @@ class LanguageManager(Manager):
 	@property
 	def activeLanguageAndCountryCode(self) -> str:
 		return f'{self._activeLanguage}-{self._activeCountryCode}'
+	
+
+	@property
+	def supportedLanguages(self) -> list:
+		return self._supportedLanguages

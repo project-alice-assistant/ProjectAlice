@@ -9,14 +9,14 @@ from flask import Flask, send_from_directory
 from flask_login import LoginManager
 
 from core.base.model.Manager import Manager
-from core.interface.api.ModulesApi import ModulesApi
+from core.interface.api.SkillsApi import SkillsApi
 from core.interface.api.UsersApi import UsersApi
 from core.interface.views import ScenarioView
 from core.interface.views.AdminAuth import AdminAuth
 from core.interface.views.AdminView import AdminView
 from core.interface.views.DevModeView import DevModeView
 from core.interface.views.IndexView import IndexView
-from core.interface.views.ModulesView import ModulesView
+from core.interface.views.SkillsView import SkillsView
 from core.interface.views.SnipswatchView import SnipswatchView
 from core.interface.views.SyslogView import SyslogView
 
@@ -35,7 +35,7 @@ class WebInterfaceManager(Manager):
 		log = logging.getLogger('werkzeug')
 		log.setLevel(logging.ERROR)
 		self._langData = dict()
-		self._moduleInstallProcesses = dict()
+		self._skillInstallProcesses = dict()
 		self._flaskLoginManager = None
 
 
@@ -107,36 +107,46 @@ class WebInterfaceManager(Manager):
 		self.ThreadManager.terminateThread('WebInterface')
 
 
-	def newModuleInstallProcess(self, module):
-		self._moduleInstallProcesses[module] = {
+	def newSkillInstallProcess(self, skill):
+		self._skillInstallProcesses[skill] = {
 			'startedAt': time.time(),
 			'status'   : 'installing'
 		}
 
 
-	def onModuleInstalled(self, **kwargs):
-		module = ''
+	def onSkillUpdated(self, **kwargs):
+		skill = ''
 		try:
-			module = kwargs['module']
-			if module in self.moduleInstallProcesses:
-				self.moduleInstallProcesses[module]['status'] = 'installed'
+			skill = kwargs['skill']
+			if skill in self.skillInstallProcesses:
+				self.skillInstallProcesses[skill]['status'] = 'updated'
 		except KeyError as e:
-			self.logError(f'Failed setting module "{module}" status to "installed": {e}')
+			self.logError(f'Failed setting skill "{skill}" status to "updated": {e}')
 
 
-	def onModuleInstallFailed(self, **kwargs):
-		module = ''
+	def onSkillInstalled(self, **kwargs):
+		skill = ''
 		try:
-			module = kwargs['module']
-			if module in self.moduleInstallProcesses:
-				self.moduleInstallProcesses[module]['status'] = 'failed'
+			skill = kwargs['skill']
+			if skill in self.skillInstallProcesses:
+				self.skillInstallProcesses[skill]['status'] = 'installed'
 		except KeyError as e:
-			self.logError(f'Failed setting module "{module}" status to "failed": {e}')
+			self.logError(f'Failed setting skill "{skill}" status to "installed": {e}')
+
+
+	def onSkillInstallFailed(self, **kwargs):
+		skill = ''
+		try:
+			skill = kwargs['skill']
+			if skill in self.skillInstallProcesses:
+				self.skillInstallProcesses[skill]['status'] = 'failed'
+		except KeyError as e:
+			self.logError(f'Failed setting skill "{skill}" status to "failed": {e}')
 
 
 	@property
-	def moduleInstallProcesses(self) -> dict:
-		return self._moduleInstallProcesses
+	def skillInstallProcesses(self) -> dict:
+		return self._skillInstallProcesses
 
 
 	@property

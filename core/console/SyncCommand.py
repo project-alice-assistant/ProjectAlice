@@ -10,7 +10,7 @@ def Sync():
 @Sync.command()
 @click.option('--download', '-d', is_flag=True, help='Download the assistant after syncing')
 def assistant(download: bool):
-	"""Sync dialog templates for all modules"""
+	"""Sync dialog templates for all skills"""
 
 	_logger = logging.getLogger('ProjectAlice')
 	_logger.setLevel(logging.INFO)

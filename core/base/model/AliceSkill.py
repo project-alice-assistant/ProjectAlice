@@ -5,31 +5,31 @@ import inspect
 import json
 import sqlite3
 from pathlib import Path
-from typing import Any, Callable, Dict, Iterable, List, Tuple
+from typing import Any, Dict, Iterable, Optional
 
 import re
 from paho.mqtt import client as MQTTClient
 
-from core.ProjectAliceExceptions import AccessLevelTooLow, ModuleStartingFailed
+from core.ProjectAliceExceptions import AccessLevelTooLow, SkillStartingFailed
 from core.base.model import Widget
 from core.base.model.Intent import Intent
 from core.base.model.ProjectAliceObject import ProjectAliceObject
 from core.commons import constants
 from core.dialog.model.DialogSession import DialogSession
-from core.user.model.AccessLevels import AccessLevel
 
 
-class Module(ProjectAliceObject):
+class AliceSkill(ProjectAliceObject):
 
-	def __init__(self, supportedIntents: Iterable = None, authOnlyIntents: dict = None, databaseSchema: dict = None):
+
+	def __init__(self, supportedIntents: Iterable = None, databaseSchema: dict = None):
 		super().__init__(logDepth=4)
 		try:
 			path = Path(inspect.getfile(self.__class__)).with_suffix('.install')
 			self._install = json.loads(path.read_text())
 		except FileNotFoundError:
-			raise ModuleStartingFailed(error=f'[{type(self).__name__}] Cannot find install file')
+			raise SkillStartingFailed(error=f'[{type(self).__name__}] Cannot find install file')
 		except Exception as e:
-			raise ModuleStartingFailed(error=f'[{type(self).__name__}] Failed loading module: {e}')
+			raise SkillStartingFailed(error=f'[{type(self).__name__}] Failed loading skill: {e}')
 
 		self._name = self._install['name']
 		self._author = self._install['author']
@@ -40,51 +40,87 @@ class Module(ProjectAliceObject):
 		self._required = False
 		self._databaseSchema = databaseSchema
 		self._widgets = dict()
+		self._intentsDefinitions = dict()
 
-		if not supportedIntents:
-			supportedIntents = list()
+		self._supportedIntents: Dict[str, Intent] = self.buildIntentList(supportedIntents)
+		self.loadIntentsDefinition()
 
-		self._myIntents: List[Intent] = list()
-		self._supportedIntents: Dict[str, Tuple[(str, Intent), Callable]] = dict()
-		for item in (*supportedIntents, *self.intentMethods()):
-			if isinstance(item, tuple):
-				self._supportedIntents[str(item[0])] = item
-				self._myIntents.append(item[0])
-			elif isinstance(item, Intent):
-				self._supportedIntents[str(item)] = (item, self.onMessage)
-				self._myIntents.append(item)
-			elif isinstance(item, str):
-				self._supportedIntents[item] = (item, self.onMessage)
-
-		self._authOnlyIntents: Dict[str, AccessLevel] = {str(intent): level.value for intent, level in authOnlyIntents.items()} if authOnlyIntents else dict()
 		self._utteranceSlotCleaner = re.compile('{(.+?):=>.+?}')
 		self.loadWidgets()
 
 
-	@classmethod
-	def decoratedIntentMethods(cls):
-		from core.util.Decorators import IntentHandler
-		for name in dir(cls):
-			method = getattr(cls, name)
-			while isinstance(method, IntentHandler.Wrapper):
-				yield method
-				method = method.decoratedMethod
+	def loadIntentsDefinition(self):
+		dialogTemplate = Path(self.getCurrentDir(), 'dialogTemplate')
+
+		for lang in self.LanguageManager.supportedLanguages:
+			try:
+				path = dialogTemplate / f'{lang}.json'
+				if not path.exists():
+					continue
+
+				with path.open('r') as fp:
+					data = json.load(fp)
+
+					if not 'intents' in data:
+						continue
+
+					self._intentsDefinitions[lang] = dict()
+					for intent in data['intents']:
+						self._intentsDefinitions[lang][intent['name']] = intent['utterances']
+			except Exception as e:
+				self.logWarning(f'Something went wrong loading intent definition for skill {self._name}, language "{lang}": {e}')
 
 
-	@classmethod
-	def intentMethods(cls) -> list:
-		intents = dict()
-		for method in cls.decoratedIntentMethods():
-			if not method.requiredState:
-				intents[method.intentName] = (method.intent, method)
-				continue
+	def buildIntentList(self, supportedIntents) -> dict:
+		supportedIntents = supportedIntents or list()
+		intents: Dict[str, Intent] = self.findDecoratedIntents()
+		for item in supportedIntents:
+			if isinstance(item, tuple):
+				intent = item[0]
+				if not isinstance(intent, Intent):
+					intent = Intent(intent, userIntent=False)
 
-			if method.intentName not in intents:
-				intents[method.intentName] = method.intent
+				intent.fallbackFunction = item[1]
+				item = intent
+			elif not isinstance(item, Intent):
+				item = Intent(item, userIntent=False)
 
-			intents[method.intentName].addDialogMapping({method.requiredState: method})
+			if str(item) in intents:
+				intents[str(item)].addDialogMapping(item.dialogMapping)
 
-		return list(intents.values())
+				if item.fallbackFunction:
+					intents[str(item)].fallbackFunction = item.fallbackFunction
+				# always use the highes auth level specified
+				if item.authOnly > intents[str(item)].authOnly:
+					intents[str(item)].authOnly = item.authOnly
+			else:
+				intents[str(item)] = item
+
+		return intents
+
+
+	def findDecoratedIntents(self) -> dict:
+		intentMappings = dict()
+		functionNames = [name for name, func in self.__class__.__dict__.items() if callable(func)]
+		for name in functionNames:
+			function = getattr(self, name)
+			intents = getattr(function, 'intents', list())
+			for intentMapping in intents:
+				intent = intentMapping['intent']
+				requiredState = intentMapping['requiredState']
+				if str(intent) not in intentMappings:
+					intentMappings[str(intent)] = intent
+
+				if requiredState:
+					intentMappings[str(intent)].addDialogMapping({requiredState: function})
+				else:
+					intentMappings[str(intent)].fallbackFunction = function
+
+				# always use the highes auth level specified
+				if intent.authOnly > intentMappings[str(intent)].authOnly:
+					intentMappings[str(intent)].authOnly = intent.authOnly
+
+		return intentMappings
 
 
 	# noinspection SqlResolve
@@ -96,7 +132,7 @@ class Module(ProjectAliceObject):
 			data = self.DatabaseManager.fetch(
 				tableName='widgets',
 				query='SELECT * FROM :__table__ WHERE parent = :parent ORDER BY `zindex`',
-				callerName=self.ModuleManager.name,
+				callerName=self.SkillManager.name,
 				values={'parent': self.name},
 				method='all'
 			)
@@ -108,13 +144,13 @@ class Module(ProjectAliceObject):
 					continue
 
 				widgetName = Path(file).stem
-				widgetImport = importlib.import_module(f'modules.{self.name}.widgets.{widgetName}')
+				widgetImport = importlib.import_module(f'skills.{self.name}.widgets.{widgetName}')
 				klass = getattr(widgetImport, widgetName)
 
 				if widgetName in data: # widget already exists in DB
 					widget = klass(data[widgetName])
 					self._widgets[widgetName] = widget
-					widget.setParentModuleInstance(self)
+					widget.setParentSkillInstance(self)
 					del data[widgetName]
 					self.logInfo(f'Loaded widget "{widgetName}"')
 
@@ -125,14 +161,14 @@ class Module(ProjectAliceObject):
 						'parent': self.name,
 					})
 					self._widgets[widgetName] = widget
-					widget.setParentModuleInstance(self)
+					widget.setParentSkillInstance(self)
 					widget.saveToDB()
 
 			for widgetName in data: # deprecated widgets
 				self.logInfo(f'Widget "{widgetName}" is deprecated, removing')
 				self.DatabaseManager.delete(
 					tableName='widgets',
-					callerName=self.ModuleManager.name,
+					callerName=self.SkillManager.name,
 					query='DELETE FROM :__table__ WHERE parent = :parent AND name = :name',
 					values={
 						'parent': self.name,
@@ -141,30 +177,26 @@ class Module(ProjectAliceObject):
 				)
 
 
-	def getWidgetInstance(self, widgetName: str) -> Widget:
-		return self._widgets.get(widgetName, None)
+	def getWidgetInstance(self, widgetName: str) -> Optional[Widget]:
+		return self._widgets.get(widgetName)
 
 
 	def getUtterancesByIntent(self, intent: Intent, forceLowerCase: bool = True, cleanSlots: bool = False) -> list:
-		utterances = list()
+		lang = self.LanguageManager.activeLanguage
+		if not lang in self._intentsDefinitions:
+			return list()
 
 		if isinstance(intent, tuple):
 			check = intent[0].justAction
 		elif isinstance(intent, Intent):
 			check = intent.justAction
 		else:
-			check = intent.split('/')[-1].split(':')[-1]
+			check = str(intent).split('/')[-1].split(':')[-1]
 
-		for dtIntentName, dtModuleName in self.SamkillaManager.dtIntentNameSkillMatching.items():
-			if dtIntentName == check and dtModuleName == self.name:
+		if not check in self._intentsDefinitions[lang]:
+			return list()
 
-				for utterance in self.SamkillaManager.dtIntentsModulesValues[dtIntentName]['utterances']:
-					if cleanSlots:
-						utterance = re.sub(self._utteranceSlotCleaner, '\\1', utterance)
-
-					utterances.append(utterance.lower() if forceLowerCase else utterance)
-
-		return utterances
+		return [re.sub(self._utteranceSlotCleaner, '\\1', utterance.lower() if forceLowerCase else utterance) if cleanSlots else utterance for utterance in self._intentsDefinitions[lang][check]]
 
 
 	def getCurrentDir(self):
@@ -247,11 +279,6 @@ class Module(ProjectAliceObject):
 
 
 	@property
-	def myIntents(self) -> list:
-		return self._myIntents
-
-
-	@property
 	def delayed(self) -> bool:
 		return self._delayed
 
@@ -278,55 +305,61 @@ class Module(ProjectAliceObject):
 			self.logWarning('Tried to notify devices but no uid or site id specified')
 
 
-	def filterIntent(self, session: DialogSession) -> bool:
-		# Return if the module isn't active
+	def authenticateIntent(self, session: DialogSession):
+		intent = self._supportedIntents[session.intentName]
+		# Return if intent is for auth users only but the user is unknown
+		if session.user == constants.UNKNOWN_USER:
+			self.endDialog(
+				sessionId=session.sessionId,
+				text=self.TalkManager.randomTalk(talk='unknowUser', skill='system')
+			)
+			raise AccessLevelTooLow()
+		# Return if intent is for auth users only and the user doesn't have the accesslevel for it
+		if not self.UserManager.hasAccessLevel(session.user, intent.authOnly):
+			self.endDialog(
+				sessionId=session.sessionId,
+				text=self.TalkManager.randomTalk(talk='noAccess', skill='system')
+			)
+			raise AccessLevelTooLow()
+
+
+	def intentNameMoreSpecific(intentName: str, oldIntentName: str) -> bool:
+		cleanedIntentName = intentName.rstrip('#').split('+')[0]
+		cleanedOldIntentName = oldIntentName.rstrip('#').split('+')[0]
+		return len(cleanedIntentName) > len(cleanedOldIntentName)
+
+
+	def filterIntent(self, session: DialogSession) -> Optional[Intent]:
+		# Return if the skill isn't active
 		if not self.active:
-			return False
+			return None
 
-		# Return if previous intent is not supported by this module
-		if session.previousIntent and str(session.previousIntent) not in self._supportedIntents:
-			return False
+		# search for intent that has a matching mqtt topic
+		matchingIntent = None
+		oldIntentName = None
+		for intentName, intent in self._supportedIntents.items():
+			if MQTTClient.topic_matches_sub(intentName, session.intentName):
+				if not matchingIntent or self.intentNameMoreSpecific(intentName, oldIntentName):
+					matchingIntent = intent
+					oldIntentName = intentName
 
-		intent = session.intentName
-		# Return if this intent is not supported by this module
-		if not intent in self._supportedIntents:
-			return False
-
-		if intent in self._authOnlyIntents:
-			# Return if intent is for auth users only but the user is unknown
-			if session.user == constants.UNKNOWN_USER:
-				self.endDialog(
-					sessionId=session.sessionId,
-					text=self.TalkManager.randomTalk(talk='unknowUser', module='system')
-				)
-				raise AccessLevelTooLow()
-			# Return if intent is for auth users only and the user doesn't have the accesslevel for it
-			if not self.UserManager.hasAccessLevel(session.user, self._authOnlyIntents[intent]):
-				self.endDialog(
-					sessionId=session.sessionId,
-					text=self.TalkManager.randomTalk(talk='noAccess', module='system')
-				)
-				raise AccessLevelTooLow()
-
-		return True
+		return matchingIntent
 
 
 	def dispatchMessage(self, session: DialogSession) -> bool:
-		forMe = self.filterIntent(session)
-		if not forMe:
+		intent = self.filterIntent(session)
+		if not intent:
 			return False
 
-		intent = self._supportedIntents[session.intentName][0]
-		if isinstance(intent, Intent) and intent.hasDialogMapping():
-			consumed = intent.dialogMapping.onDialog(session, self.name)
-			if consumed or consumed is None:
-				return True
+		if intent.authOnly:
+			self.authenticateIntent(session)
 
-		return self._supportedIntents[session.intentName][1](session=session)
+		function = intent.getMapping(session) or self.onMessage
+		return function(session=session)
 
 
-	def getResource(self, moduleName: str = '', resourcePathFile: str = '') -> Path:
-		return Path(self.Commons.rootDir(), 'modules', moduleName or self.name, resourcePathFile)
+	def getResource(self, skillName: str = '', resourcePathFile: str = '') -> Path:
+		return Path(self.Commons.rootDir(), 'skills', skillName or self.name, resourcePathFile)
 
 
 	def _initDB(self) -> bool:
@@ -337,16 +370,16 @@ class Module(ProjectAliceObject):
 
 	def onStart(self) -> dict:
 		if not self._active:
-			self.logInfo(f'Module {self.name} is not active')
+			self.logInfo(f'Skill {self.name} is not active')
 		else:
-			self.logInfo(f'Starting {self.name} module')
+			self.logInfo(f'Starting {self.name} skill')
 
 		self._initDB()
-		self.MqttManager.subscribeModuleIntents(self.name)
+		self.MqttManager.subscribeSkillIntents(self.name)
 		return self._supportedIntents
 
 
-	def onBooted(self):
+	def onBooted(self) -> bool:
 		if self.delayed:
 			if self.ThreadManager.getEvent('SnipsAssistantDownload').isSet():
 				self.ThreadManager.doLater(interval=5, func=self.onBooted)
@@ -358,36 +391,36 @@ class Module(ProjectAliceObject):
 		return True
 
 
-	def onModuleInstalled(self):
+	def onSkillInstalled(self):
 		self._updateAvailable = False
-		#self.MqttManager.subscribeModuleIntents(self.name)
+		#self.MqttManager.subscribeSkillIntents(self.name)
 
 
-	def onModuleUpdated(self):
+	def onSkillUpdated(self):
 		self._updateAvailable = False
-		#self.MqttManager.subscribeModuleIntents(self.name)
+		#self.MqttManager.subscribeSkillIntents(self.name)
 
 
 	# HELPERS
 	def getConfig(self, key: str) -> Any:
-		return self.ConfigManager.getModuleConfigByName(moduleName=self.name, configName=key)
+		return self.ConfigManager.getSkillConfigByName(skillName=self.name, configName=key)
 
 
-	def getModuleConfigs(self, withInfo: bool = False) -> dict:
-		if withInfo:
-			return self.ConfigManager.getModuleConfigs(self.name)
-		else:
-			mySettings = self.ConfigManager.getModuleConfigs(self.name)
-			infoSettings = self.ConfigManager.aliceModuleConfigurationKeys
-			return {key: value for key, value in mySettings.items() if key not in infoSettings}
+	def getSkillConfigs(self, withInfo: bool = False) -> dict:
+		skillConfigs = self.ConfigManager.getSkillConfigs(self.name)
+		if not withInfo:
+			infoSettings = self.ConfigManager.aliceSkillConfigurationKeys
+			skillConfigs = {key: value for key, value in skillConfigs.items() if key not in infoSettings}
+
+		return skillConfigs
 
 
-	def getModuleConfigsTemplate(self) -> dict:
-		return self.ConfigManager.getModuleConfigsTemplate(self.name)
+	def getSkillConfigsTemplate(self) -> dict:
+		return self.ConfigManager.getSkillConfigsTemplate(self.name)
 
 
 	def updateConfig(self, key: str, value: Any):
-		self.ConfigManager.updateModuleConfigurationFile(moduleName=self.name, key=key, value=value)
+		self.ConfigManager.updateSkillConfigurationFile(skillName=self.name, key=key, value=value)
 
 
 	def getAliceConfig(self, key: str) -> Any:
@@ -414,19 +447,16 @@ class Module(ProjectAliceObject):
 		return self.DatabaseManager.insert(tableName=tableName, query=query, values=values, callerName=self.name)
 
 
-	def randomTalk(self, text: str, replace: list = None, **kwargs) -> str:
-		talk = self.TalkManager.randomTalk(talk=text, module=self.name)
-
-		if Callable(talk):
-			talk(replace=replace, **kwargs)
+	def randomTalk(self, text: str, replace: list = None) -> str:
+		talk = self.TalkManager.randomTalk(talk=text, skill=self.name)
 
 		if replace:
 			talk = talk.format(*replace)
 		return talk
 
 
-	def getModuleInstance(self, moduleName: str) -> Module:
-		return self.ModuleManager.getModuleInstance(moduleName=moduleName)
+	def getSkillInstance(self, skillName: str) -> AliceSkill:
+		return self.SkillManager.getSkillInstance(skillName=skillName)
 
 
 	def say(self, text: str, siteId: str = constants.DEFAULT_SITE_ID, customData: dict = None, canBeEnqueued: bool = True):
@@ -460,7 +490,7 @@ class Module(ProjectAliceObject):
 	def decorate(self, msg: str, depth: int) -> str:
 		"""
 		overwrite Logger decoration method, since it should always
-		be the module name
+		be the skill name
 		"""
 		return f'[{self.name}] {msg}'
 

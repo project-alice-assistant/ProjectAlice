@@ -155,7 +155,7 @@ network={
 
 		# Do some installation if wanted by the user
 		if initConfs['doGroundInstall']:
-			subprocess.run(['./venv/bin/pip3', 'install', '-r', str(Path(self._rootDir, 'piprequirements.txt'))])
+			subprocess.run(['./venv/bin/pip3', 'install', '-r', str(Path(self._rootDir, 'requirements.txt'))])
 
 			if initConfs['installOnBuster']:
 				subprocess.run(['sudo', 'apt-get', 'install', '-y', 'dirmngr', 'apt-transport-https'])
@@ -199,7 +199,7 @@ network={
 		if initConfs['stayCompletlyOffline']:
 			confs['keepASROffline'] = True
 			confs['keepTTSOffline'] = True
-			confs['moduleAutoUpdate'] = False
+			confs['skillAutoUpdate'] = False
 			confs['asr'] = 'snips'
 			confs['tts'] = 'pico'
 			confs['awsRegion'] = ''
@@ -208,7 +208,7 @@ network={
 		else:
 			confs['keepASROffline'] = bool(initConfs['keepASROffline'])
 			confs['keepTTSOffline'] = bool(initConfs['keepTTSOffline'])
-			confs['moduleAutoUpdate'] = bool(initConfs['moduleAutoUpdate'])
+			confs['skillAutoUpdate'] = bool(initConfs['skillAutoUpdate'])
 			confs['asr'] = initConfs['asr'] if initConfs['asr'] in ('snips', 'google') else 'snips'
 			confs['tts'] = initConfs['tts'] if initConfs['tts'] in ('pico', 'snips', 'mycroft', 'amazon', 'google') else 'pico'
 			confs['awsRegion'] = initConfs['awsRegion']
@@ -243,7 +243,13 @@ network={
 		confs['githubUsername'] = initConfs['githubUsername'] or ''
 		confs['githubToken'] = initConfs['githubToken'] or ''
 		confs['ttsLanguage'] = initConfs['ttsLanguage'] or ''
-		confs['updateChannel'] = initConfs['updateChannel'] if initConfs['updateChannel'] in ('master', 'rc', 'beta', 'alpha') else 'master'
+
+		updateChannel = initConfs['updateChannel']
+		if updateChannel not in ('master', 'rc', 'beta', 'alpha'):
+			self.logWarning(f'{updateChannel} is no supported updateChannel, only master, rc, beta and alpha are supported. Reseting to master')
+			confs['updateChannel'] = 'master'
+		else:
+			confs['updateChannel'] = updateChannel
 		confs['mqtt_username'] = str(initConfs['mqttUser']) or ''
 		confs['mqttPassword'] = str(initConfs['mqttPassword']) or ''
 		confs['mqttTLSFile'] = initConfs['mqttTLSFile'] or ''
@@ -342,7 +348,7 @@ network={
 		subprocess.run(['sudo', 'systemctl', 'daemon-reload'])
 
 		sort = dict(sorted(confs.items()))
-		sort['modules'] = sort.pop('modules')
+		sort['skills'] = sort.pop('skills')
 
 		try:
 			s = json.dumps(sort, indent=4).replace('false', 'False').replace('true', 'True')

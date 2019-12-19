@@ -7,7 +7,7 @@ from core.base.SuperManager import SuperManager
 from core.snips import SamkillaManager
 from core.snips.samkilla.models.EnumSkillImageUrl import EnumSkillImageUrl as EnumSkillImageUrlClass
 from core.snips.samkilla.processors.IntentRemoteProcessor import IntentRemoteProcessor
-from core.snips.samkilla.processors.ModuleRemoteProcessor import ModuleRemoteProcessor
+from core.snips.samkilla.processors.SkillRemoteProcessor import SkillRemoteProcessor
 from core.snips.samkilla.processors.SlotTypeRemoteProcessor import SlotTypeRemoteProcessor
 
 EnumSkillImageUrl = EnumSkillImageUrlClass()
@@ -15,12 +15,12 @@ EnumSkillImageUrl = EnumSkillImageUrlClass()
 
 class MainProcessor:
 	SAVED_ASSISTANTS_DIR = Path('var', 'assistants')
-	SAVED_MODULES_DIR = 'modules'
+	SAVED_MODULES_DIR = 'skills'
 
 
 	def __init__(self, ctx: SamkillaManager):
 		self._ctx = ctx
-		self._modules = dict()
+		self._skills = dict()
 		self._savedAssistants = dict()
 		self._savedSlots = dict()
 		self._savedIntents = dict()
@@ -89,7 +89,7 @@ class MainProcessor:
 
 
 	def safeBaseDicts(self, assistantId: str, assistantLanguage: str):
-		baseDicts = ['modules', 'slotTypes', 'intents']
+		baseDicts = ['skills', 'slotTypes', 'intents']
 
 		for baseDict in baseDicts:
 			self._savedAssistants[assistantLanguage][assistantId].setdefault(baseDict, dict())
@@ -114,7 +114,7 @@ class MainProcessor:
 				'id'       : assistantId,
 				'name'     : assistantTitle,
 				'language' : assistantLanguage,
-				'modules'  : dict(),
+				'skills'  : dict(),
 				'slotTypes': dict(),
 				'intents'  : dict()
 			}
@@ -128,8 +128,8 @@ class MainProcessor:
 			self.initSavedIntents()
 
 
-	def syncRemoteToLocalModuleCache(self, assistantId: str, assistantLanguage: str, moduleName: str, syncState: str, persist: bool = False):
-		self._savedAssistants[assistantLanguage][assistantId]['modules'][moduleName] = syncState
+	def syncRemoteToLocalSkillCache(self, assistantId: str, assistantLanguage: str, skillName: str, syncState: str, persist: bool = False):
+		self._savedAssistants[assistantLanguage][assistantId]['skills'][skillName] = syncState
 
 		if persist:
 			self.persistToLocalAssistantCache(assistantId=assistantId, assistantLanguage=assistantLanguage)
@@ -149,30 +149,30 @@ class MainProcessor:
 			self.persistToLocalAssistantCache(assistantId=assistantId, assistantLanguage=assistantLanguage)
 
 
-	def getModuleFromFile(self, moduleFile: Path, moduleLanguage: str) -> typing.Optional[dict]:
+	def getSkillFromFile(self, skillFile: Path, skillLanguage: str) -> typing.Optional[dict]:
 		try:
-			module = json.loads(Path(moduleFile).read_text())
+			skill = json.loads(Path(skillFile).read_text())
 
-			if 'module' not in module:
-				self._ctx.log(f"File \"{moduleFile}\" has no 'module' name definition")
+			if 'skill' not in skill:
+				self._ctx.log(f"File \"{skillFile}\" has no 'skill' name definition")
 				return
 
-			module['language'] = moduleLanguage
+			skill['language'] = skillLanguage
 
-			if module['module'] not in self._modules:
-				self._ctx.log(f"Module \"{module['module']}\" has a name different from its directory")
+			if skill['skill'] not in self._skills:
+				self._ctx.log(f"Skill \"{skill['skill']}\" has a name different from its directory")
 				return
 
-			self._modules[module['module']][moduleLanguage] = module
-			self._ctx.log(f"Loading module {module['module']}")
-			return module
+			self._skills[skill['skill']][skillLanguage] = skill
+			self._ctx.log(f"Loading skill {skill['skill']}")
+			return skill
 
 		except json.decoder.JSONDecodeError:
-			self._ctx.log(f'\nInconsistent file, "{moduleFile}" has a bad json format')
+			self._ctx.log(f'\nInconsistent file, "{skillFile}" has a bad json format')
 			return
 
-	def getModuleSyncStateByLanguageAndAssistantId(self, moduleName: str, language: str, assistantId: str) -> str:
-		return self._savedAssistants.get(language, dict()).get(assistantId, dict()).get('modules', dict()).get(moduleName, None)
+	def getSkillSyncStateByLanguageAndAssistantId(self, skillName: str, language: str, assistantId: str) -> str:
+		return self._savedAssistants.get(language, dict()).get(assistantId, dict()).get('skills', dict()).get(skillName, None)
 
 
 	def getSlotTypeSyncStateByLanguageAndAssistantId(self, slotTypeName: str, language: str, assistantId: str) -> str:
@@ -225,11 +225,11 @@ class MainProcessor:
 			self.persistToGlobalAssistantIntents(assistantId=assistantId, assistantLanguage=assistantLanguage, intentNameFilter=intentName)
 
 
-	def mergeModuleSlotTypes(self, slotTypesModulesValues: dict, assistantId: str, slotLanguage: str = None):
+	def mergeSkillSlotTypes(self, slotTypesSkillsValues: dict, assistantId: str, slotLanguage: str = None):
 		mergedSlotTypes = dict()
 		slotTypesGlobalValues = dict()
 
-		for slotName in slotTypesModulesValues:
+		for slotName in slotTypesSkillsValues:
 			if slotName in self._savedSlots[slotLanguage][assistantId]:
 				savedSlotType = self._savedSlots[slotLanguage][assistantId][slotName]
 
@@ -250,7 +250,7 @@ class MainProcessor:
 								if not synonym: continue
 								slotTypesGlobalValues[savedSlotType['name']][savedSlotValue['value']].setdefault(synonym, True)
 
-		for slotName, slotValue in slotTypesModulesValues.items():
+		for slotName, slotValue in slotTypesSkillsValues.items():
 			slotTypeCatalogValues = slotTypesGlobalValues.get(slotName, slotValue)
 
 			mergedSlotTypes[slotName] = slotTypeCatalogValues.pop('__otherattributes__')
@@ -267,11 +267,11 @@ class MainProcessor:
 		return mergedSlotTypes
 
 
-	def mergeModuleIntents(self, intentsModulesValues: dict, assistantId: str, intentLanguage: str = None) -> dict:
+	def mergeSkillIntents(self, intentsSkillsValues: dict, assistantId: str, intentLanguage: str = None) -> dict:
 		mergedIntents = dict()
 		intentsGlobalValues = dict()
 
-		for intentName in intentsModulesValues:
+		for intentName in intentsSkillsValues:
 			if intentName in self._savedIntents[intentLanguage][assistantId]:
 				savedIntent = self._savedIntents[intentLanguage][assistantId][intentName]
 
@@ -290,10 +290,10 @@ class MainProcessor:
 				for savedUtterance in savedIntent['utterances']:
 					intentsGlobalValues[savedIntent['name']]['utterances'].setdefault(savedUtterance, True)
 
-				for moduleSlot in savedIntent['slots']:
-					intentsGlobalValues[savedIntent['name']]['slots'].setdefault(moduleSlot['name'], moduleSlot)
+				for skillSlot in savedIntent['slots']:
+					intentsGlobalValues[savedIntent['name']]['slots'].setdefault(skillSlot['name'], skillSlot)
 
-		for intentName, intentValue in intentsModulesValues.items():
+		for intentName, intentValue in intentsSkillsValues.items():
 			intentCatalogValues = intentsGlobalValues.get(intentName, intentValue)
 
 			mergedIntents[intentName] = intentCatalogValues['__otherattributes__']
@@ -312,65 +312,65 @@ class MainProcessor:
 
 
 	# noinspection PyUnusedLocal
-	def buildMapsFromDialogTemplates(self, runOnAssistantId: str = None, moduleFilter: list = None, languageFilter: str = None) -> tuple:
-		if moduleFilter is None:
-			moduleFilter = list()
+	def buildMapsFromDialogTemplates(self, runOnAssistantId: str = None, skillFilter: list = None, languageFilter: str = None) -> tuple:
+		if skillFilter is None:
+			skillFilter = list()
 
-		self._modules = dict()
+		self._skills = dict()
 
-		rootDir = Path('modules')
+		rootDir = Path('skills')
 		rootDir.mkdir(exist_ok=True)
 
-		slotTypesModulesValues = dict()
-		intentsModulesValues = dict()
+		slotTypesSkillsValues = dict()
+		intentsSkillsValues = dict()
 		intentNameSkillMatching = dict()
 
-		for modulePath in rootDir.iterdir():
-			intentsPath = modulePath / 'dialogTemplate'
+		for skillPath in rootDir.iterdir():
+			intentsPath = skillPath / 'dialogTemplate'
 
 			if not intentsPath.is_dir(): continue
 
-			self._modules[modulePath.name] = dict()
+			self._skills[skillPath.name] = dict()
 
 			for languageFile in intentsPath.iterdir():
 				language = languageFile.stem
 				if languageFilter and languageFilter != language: continue
 
-				module = self.getModuleFromFile(moduleFile=languageFile, moduleLanguage=language)
-				if not module:
+				skill = self.getSkillFromFile(skillFile=languageFile, skillLanguage=language)
+				if not skill:
 					return None, None, None
 
-				# We need all slotTypes values of all modules, even if there is a module filter
-				for moduleSlotType in module['slotTypes']:
-					if moduleSlotType['name'] not in slotTypesModulesValues:
-						slotTypesModulesValues[moduleSlotType['name']] = {
+				# We need all slotTypes values of all skills, even if there is a skill filter
+				for skillSlotType in skill['slotTypes']:
+					if skillSlotType['name'] not in slotTypesSkillsValues:
+						slotTypesSkillsValues[skillSlotType['name']] = {
 							'__otherattributes__': {
-								'name'                   : moduleSlotType['name'],
-								'matchingStrictness'     : moduleSlotType['matchingStrictness'],
-								'automaticallyExtensible': moduleSlotType['automaticallyExtensible'],
-								'useSynonyms'            : moduleSlotType['useSynonyms'],
+								'name'                   : skillSlotType['name'],
+								'matchingStrictness'     : skillSlotType['matchingStrictness'],
+								'automaticallyExtensible': skillSlotType['automaticallyExtensible'],
+								'useSynonyms'            : skillSlotType['useSynonyms'],
 								'values'                 : list()
 							}
 						}
 
-					for moduleSlotValue in moduleSlotType['values']:
-						if moduleSlotValue['value'] not in slotTypesModulesValues[moduleSlotType['name']]:
-							slotTypesModulesValues[moduleSlotType['name']][moduleSlotValue['value']] = dict()
+					for skillSlotValue in skillSlotType['values']:
+						if skillSlotValue['value'] not in slotTypesSkillsValues[skillSlotType['name']]:
+							slotTypesSkillsValues[skillSlotType['name']][skillSlotValue['value']] = dict()
 
-							for synonym in moduleSlotValue.get('synonyms', list()):
+							for synonym in skillSlotValue.get('synonyms', list()):
 								if not synonym: continue
-								slotTypesModulesValues[moduleSlotType['name']][moduleSlotValue['value']][synonym] = True
+								slotTypesSkillsValues[skillSlotType['name']][skillSlotValue['value']][synonym] = True
 
-				# We need all intents values of all modules, even if there is a module filters
-				for moduleIntent in module['intents']:
-					if moduleIntent['name'] not in intentsModulesValues:
-						intentNameSkillMatching[moduleIntent['name']] = modulePath.name
+				# We need all intents values of all skills, even if there is a skill filters
+				for skillIntent in skill['intents']:
+					if skillIntent['name'] not in intentsSkillsValues:
+						intentNameSkillMatching[skillIntent['name']] = skillPath.name
 
-						intentsModulesValues[moduleIntent['name']] = {
+						intentsSkillsValues[skillIntent['name']] = {
 							'__otherattributes__': {
-								'name'            : moduleIntent['name'],
-								'description'     : moduleIntent['description'],
-								'enabledByDefault': moduleIntent['enabledByDefault'],
+								'name'            : skillIntent['name'],
+								'description'     : skillIntent['description'],
+								'enabledByDefault': skillIntent['enabledByDefault'],
 								'utterances'      : list(),
 								'slots'           : list()
 							},
@@ -378,65 +378,65 @@ class MainProcessor:
 							'slots'              : dict()
 						}
 
-					for moduleUtterance in moduleIntent.get('utterances', list()):
-						intentsModulesValues[moduleIntent['name']]['utterances'].setdefault(moduleUtterance, True)
+					for skillUtterance in skillIntent.get('utterances', list()):
+						intentsSkillsValues[skillIntent['name']]['utterances'].setdefault(skillUtterance, True)
 
-					for moduleSlot in moduleIntent.get('slots', list()):
-						intentsModulesValues[moduleIntent['name']]['slots'].setdefault(moduleSlot['name'], moduleSlot)
+					for skillSlot in skillIntent.get('slots', list()):
+						intentsSkillsValues[skillIntent['name']]['slots'].setdefault(skillSlot['name'], skillSlot)
 
-				if moduleFilter and modulePath.name not in moduleFilter:
-					del self._modules[module['module']]
+				if skillFilter and skillPath.name not in skillFilter:
+					del self._skills[skill['skill']]
 
-		return slotTypesModulesValues, intentsModulesValues, intentNameSkillMatching
+		return slotTypesSkillsValues, intentsSkillsValues, intentNameSkillMatching
 
 
 	# TODO to refacto in different method of a new Processor
-	def syncLocalToRemote(self, runOnAssistantId: str, moduleFilter: list = None, languageFilter: str = None) -> bool:
+	def syncLocalToRemote(self, runOnAssistantId: str, skillFilter: list = None, languageFilter: str = None) -> bool:
 
-		slotTypesModulesValues, intentsModulesValues, intentNameSkillMatching = self.buildMapsFromDialogTemplates(
+		slotTypesSkillsValues, intentsSkillsValues, intentNameSkillMatching = self.buildMapsFromDialogTemplates(
 			runOnAssistantId=runOnAssistantId,
-			moduleFilter=moduleFilter,
+			skillFilter=skillFilter,
 			languageFilter=languageFilter
 		)
 
-		if not slotTypesModulesValues or not intentsModulesValues or not intentNameSkillMatching:
+		if not slotTypesSkillsValues or not intentsSkillsValues or not intentNameSkillMatching:
 			return False
 
 		# Get a dict with all slotTypes
 		typeEntityMatching, globalChangesSlotTypes = self.syncLocalToRemoteSlotTypes(
-			slotTypesModulesValues,
+			slotTypesSkillsValues,
 			runOnAssistantId,
 			languageFilter,
-			moduleFilter
+			skillFilter
 		)
 
-		skillNameIdMatching, globalChangesModules = self.syncLocalToRemoteModules(
+		skillNameIdMatching, globalChangesSkills = self.syncLocalToRemoteSkills(
 			typeEntityMatching,
 			runOnAssistantId,
 			languageFilter,
-			moduleFilter
+			skillFilter
 		)
 
 		globalChangesIntents = self.syncLocalToRemoteIntents(
 			skillNameIdMatching,
 			intentNameSkillMatching,
 			typeEntityMatching,
-			intentsModulesValues,
+			intentsSkillsValues,
 			runOnAssistantId,
 			languageFilter,
-			moduleFilter
+			skillFilter
 		)
 
-		return globalChangesSlotTypes or globalChangesModules or globalChangesIntents
+		return globalChangesSlotTypes or globalChangesSkills or globalChangesIntents
 
 
 	# noinspection PyUnusedLocal
-	def syncLocalToRemoteSlotTypes(self, slotTypesModulesValues: dict, runOnAssistantId: str, languageFilter: str = None, moduleFilter: list = None) -> tuple:
+	def syncLocalToRemoteSlotTypes(self, slotTypesSkillsValues: dict, runOnAssistantId: str, languageFilter: str = None, skillFilter: list = None) -> tuple:
 		slotTypesSynced = dict()
 		globalChanges = False
 
-		mergedSlotTypes = self.mergeModuleSlotTypes(
-			slotTypesModulesValues=slotTypesModulesValues,
+		mergedSlotTypes = self.mergeSkillSlotTypes(
+			slotTypesSkillsValues=slotTypesSkillsValues,
 			assistantId=runOnAssistantId,
 			slotLanguage=languageFilter
 		)
@@ -510,14 +510,14 @@ class MainProcessor:
 
 
 	# noinspection PyUnusedLocal
-	def syncLocalToRemoteIntents(self, skillNameIdMatching: dict, intentNameSkillMatching: dict, typeEntityMatching: dict, intentsModulesValues: dict,
-	                             runOnAssistantId: str, languageFilter: str = None, moduleFilter: list = None) -> bool:
+	def syncLocalToRemoteIntents(self, skillNameIdMatching: dict, intentNameSkillMatching: dict, typeEntityMatching: dict, intentsSkillsValues: dict,
+	                             runOnAssistantId: str, languageFilter: str = None, skillFilter: list = None) -> bool:
 
 		intentsSynced = dict()
 		globalChanges = False
 
-		mergedIntents = self.mergeModuleIntents(
-			intentsModulesValues=intentsModulesValues,
+		mergedIntents = self.mergeSkillIntents(
+			intentsSkillsValues=intentsSkillsValues,
 			assistantId=runOnAssistantId,
 			intentLanguage=languageFilter
 		)
@@ -604,80 +604,80 @@ class MainProcessor:
 		return globalChanges
 
 
-	def syncLocalToRemoteModules(self, typeEntityMatching: dict, runOnAssistantId: str, languageFilter: str = None, moduleFilter: list = None):
-		modulesSynced = dict()
+	def syncLocalToRemoteSkills(self, typeEntityMatching: dict, runOnAssistantId: str, languageFilter: str = None, skillFilter: list = None):
+		skillsSynced = dict()
 		globalChanges = False
 
 		skillNameIdMatching = dict()
 
-		for moduleName, moduleSettings in self._modules.items():
-			if languageFilter not in moduleSettings:
+		for skillName, skillSettings in self._skills.items():
+			if languageFilter not in skillSettings:
 				continue
 
-			moduleSyncState = self.getModuleSyncStateByLanguageAndAssistantId(
-				moduleName=moduleName,
+			skillSyncState = self.getSkillSyncStateByLanguageAndAssistantId(
+				skillName=skillName,
 				language=languageFilter,
 				assistantId=runOnAssistantId
 			)
 
-			# Start a ModuleRemoteProcessor tasker for each module(a.k.a module)
-			moduleRemoteProcessor = ModuleRemoteProcessor(
+			# Start a SkillRemoteProcessor tasker for each skill(a.k.a skill)
+			skillRemoteProcessor = SkillRemoteProcessor(
 				ctx=self._ctx,
 				assistantId=runOnAssistantId,
-				module=moduleSettings[languageFilter],
-				moduleName=moduleName,
-				moduleLanguage=languageFilter
+				skill=skillSettings[languageFilter],
+				skillName=skillName,
+				skillLanguage=languageFilter
 			)
 
-			newModuleSyncState, changes = moduleRemoteProcessor.syncModulesOnAssistantSafely(
+			newSkillSyncState, changes = skillRemoteProcessor.syncSkillsOnAssistantSafely(
 				typeEntityMatching=typeEntityMatching,
-				moduleSyncState=moduleSyncState,
+				skillSyncState=skillSyncState,
 				hashComputationOnly=False
 			)
 
 			if changes: globalChanges = True
 
-			skillNameIdMatching[moduleName] = newModuleSyncState['skillId']
+			skillNameIdMatching[skillName] = newSkillSyncState['skillId']
 
-			self.syncRemoteToLocalModuleCache(
+			self.syncRemoteToLocalSkillCache(
 				assistantId=runOnAssistantId,
 				assistantLanguage=languageFilter,
-				moduleName=moduleName,
-				syncState=newModuleSyncState,
+				skillName=skillName,
+				syncState=newSkillSyncState,
 				persist=True
 			)
 
-			modulesSynced[moduleName] = True
+			skillsSynced[skillName] = True
 
-		# Remove deprecated/renamed modules
-		hasDeprecatedModules = list()
+		# Remove deprecated/renamed skills
+		hasDeprecatedSkills = list()
 
-		for moduleName in self._savedAssistants[languageFilter][runOnAssistantId]['modules']:
-			if moduleFilter and moduleName not in moduleFilter:
+		for skillName in self._savedAssistants[languageFilter][runOnAssistantId]['skills']:
+			if skillFilter and skillName not in skillFilter:
 				continue
 
-			if moduleName not in modulesSynced:
-				self._ctx.log(f'Deprecated module {moduleName}')
-				moduleCacheData = self._savedAssistants[languageFilter][runOnAssistantId]['modules'][moduleName]
-				skillId = moduleCacheData['skillId']
+			if skillName not in skillsSynced:
+				self._ctx.log(f'Deprecated skill {skillName}')
+				skillCacheData = self._savedAssistants[languageFilter][runOnAssistantId]['skills'][skillName]
+				skillId = skillCacheData['skillId']
 
-				for slotTypeName in moduleCacheData.get('slotTypes', list()):
-					entityId = moduleCacheData['slotTypes'][slotTypeName]['entityId']
+				for slotTypeName in skillCacheData.get('slotTypes', list()):
+					entityId = skillCacheData['slotTypes'][slotTypeName]['entityId']
 					self._ctx.entity.delete(entityId=entityId, language=languageFilter)
 
-				for intentName in moduleCacheData.get('intents', list()):
-					intentId = moduleCacheData['intents'][intentName]['intentId']
+				for intentName in skillCacheData.get('intents', list()):
+					intentId = skillCacheData['intents'][intentName]['intentId']
 					self._ctx.intent.removeFromSkill(userId=self._ctx.userId, skillId=skillId, intentId=intentId, deleteAfter=True)
 
 				self._ctx.skill.removeFromAssistant(assistantId=runOnAssistantId, skillId=skillId, deleteAfter=True)
 
-				hasDeprecatedModules.append(moduleName)
+				hasDeprecatedSkills.append(skillName)
 
-		if hasDeprecatedModules:
+		if hasDeprecatedSkills:
 			globalChanges = True
 
-			for moduleName in hasDeprecatedModules:
-				del self._savedAssistants[languageFilter][runOnAssistantId]['modules'][moduleName]
+			for skillName in hasDeprecatedSkills:
+				del self._savedAssistants[languageFilter][runOnAssistantId]['skills'][skillName]
 
 			self.persistToLocalAssistantCache(assistantId=runOnAssistantId, assistantLanguage=languageFilter)
 
@@ -685,7 +685,7 @@ class MainProcessor:
 
 
 	# TODO to refacto in different method of a new Processor
-	def syncRemoteToLocal(self, runOnAssistantId: str, moduleFilter: list = None, languageFilter: str = None):
+	def syncRemoteToLocal(self, runOnAssistantId: str, skillFilter: list = None, languageFilter: str = None):
 
 		# Build cache
 		self._ctx.entity.listEntitiesByUserEmail(userEmail=self._ctx.userEmail, returnAllCacheIndexedBy='id')
@@ -720,27 +720,27 @@ class MainProcessor:
 			self._ctx.intent.listIntentsByUserId(userId=self._ctx.userId)
 			self._ctx.skill.listSkillsByUserId(userId=self._ctx.userId)
 
-		# Build each module configuration
-		modules = dict()
+		# Build each skill configuration
+		skills = dict()
 
 		cachedIndexedSkills = self._ctx.skill.listSkillsByUserIdAndAssistantId(userId=self._ctx.userId, assistantId=runOnAssistantId, fromCache=True)
 
 		for skill in cachedIndexedSkills:
-			moduleName = SuperManager.getInstance().commons.toCamelCase(string=skill['name'], replaceSepCharacters=True, sepCharacters=('/', '-', '_'))
+			skillName = SuperManager.getInstance().commons.toCamelCase(string=skill['name'], replaceSepCharacters=True, sepCharacters=('/', '-', '_'))
 
-			if moduleFilter and moduleName not in moduleFilter:
+			if skillFilter and skillName not in skillFilter:
 				continue
 
-			modules[moduleName] = {
-				'module'     : moduleName,
+			skills[skillName] = {
+				'skill'     : skillName,
 				'icon'       : EnumSkillImageUrl.urlToResourceKey(skill['imageUrl']),
 				'description': skill['description'],
 				'slotTypes'  : list(),
 				'intents'    : list()
 			}
-			moduleSyncState = {
+			skillSyncState = {
 				'skillId'  : skill['id'],
-				'name'     : moduleName,
+				'name'     : skillName,
 				'slotTypes': dict(),
 				'intents'  : dict(),
 				'hash'     : ''
@@ -788,14 +788,14 @@ class MainProcessor:
 					entityName = SuperManager.getInstance().commons.toCamelCase(string=entity['name'], replaceSepCharacters=True, sepCharacters=('/', '-', '_'))
 					typeEntityMatching[entity['id']] = entityName
 
-					modules[moduleName]['slotTypes'].append({
+					skills[skillName]['slotTypes'].append({
 						'name'                   : entityName,
 						'matchingStrictness'     : entity['matchingStrictness'],
 						'automaticallyExtensible': entity['automaticallyExtensible'],
 						'useSynonyms'            : entity['useSynonyms'],
 						'values'                 : values
 					})
-					moduleSyncState['slotTypes'][entityName] = {
+					skillSyncState['slotTypes'][entityName] = {
 						'entityId': entity['id'],
 						'hash'    : ''
 					}
@@ -808,24 +808,24 @@ class MainProcessor:
 					'missingQuestion': slot['missingQuestion']
 				} for slot in intent['slots']]
 
-				modules[moduleName]['intents'].append({
+				skills[skillName]['intents'].append({
 					'name'            : intentName,
 					'description'     : intent['description'],
 					'enabledByDefault': intent['enabledByDefault'],
 					'utterances'      : utterances,
 					'slots'           : slots
 				})
-				moduleSyncState['intents'][intentName] = {
+				skillSyncState['intents'][intentName] = {
 					'intentId': intent['id'],
 					'hash'    : ''
 				}
 
-			# Persist module configuration
-			moduleConfig = modules[moduleName]
-			moduleIntentsMountpoint = Path(self.SAVED_MODULES_DIR, moduleName, 'dialogTemplate')
-			moduleIntentsMountpoint.mkdir(parents=True, exist_ok=True)
+			# Persist skill configuration
+			skillConfig = skills[skillName]
+			skillIntentsMountpoint = Path(self.SAVED_MODULES_DIR, skillName, 'dialogTemplate')
+			skillIntentsMountpoint.mkdir(parents=True, exist_ok=True)
 
-			moduleIntentsOutputFile = moduleIntentsMountpoint / f'{languageFilter}.json'
+			skillIntentsOutputFile = skillIntentsMountpoint / f'{languageFilter}.json'
 
-			moduleIntentsOutputFile.write_text(json.dumps(moduleConfig, indent=4, sort_keys=False, ensure_ascii=False))
-			self._ctx.log(f'Finished for module {moduleName}')
+			skillIntentsOutputFile.write_text(json.dumps(skillConfig, indent=4, sort_keys=False, ensure_ascii=False))
+			self._ctx.log(f'Finished for skill {skillName}')

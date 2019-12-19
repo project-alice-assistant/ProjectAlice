@@ -1,52 +1,46 @@
 from pathlib import Path
-from typing import Dict, Callable
+from typing import Dict, Callable, Optional
 
 from core.base.model.ProjectAliceObject import ProjectAliceObject
-from core.dialog.model.DialogMapping import DialogMapping
 
+class Intent(ProjectAliceObject):
 
-class Intent(str, ProjectAliceObject):
-
-	def __new__(cls, value: str, *args, **kwargs):
-		if kwargs.get('userIntent', True):
-			value = 'hermes/intent/{owner}:' + value
-		return super().__new__(cls, value)
-
-
-	def __init__(self, _value: str, isProtected: bool = False, userIntent: bool = True):
+	def __init__(self, _value: str, isProtected: bool = False, userIntent: bool = True, authOnly = 0):
 		self._owner = self.ConfigManager.getAliceConfigByName('intentsOwner')
+		self._topic = f'hermes/intent/{self._owner}:{_value}' if userIntent else _value
 		self._protected = isProtected
-		self._userIntent = userIntent
-		self._dialogMapping = None
+		self._authOnly = int(authOnly)
+		self._dialogMapping = dict()
+		self._fallbackFunction = None
 
 		if isProtected:
-			self.ProtectedIntentManager.protectIntent(self.decoratedSelf())
+			self.ProtectedIntentManager.protectIntent(self._topic)
 
 		super().__init__()
 
 
 	def __str__(self) -> str:
-		return self.decoratedSelf()
+		return self._topic
 
 
 	def __repr__(self) -> str:
-		return self.decoratedSelf()
+		return self._topic
 
 
 	def __eq__(self, other) -> bool:
-		return self.decoratedSelf() == other
+		return self._topic == other
 
 
 	def __hash__(self) -> int:
-		return hash(self.decoratedSelf())
+		return hash(self._topic)
 
 
 	def decoratedSelf(self) -> str:
-		return self.format(owner=self._owner) if self._userIntent else self.lower()
+		return self._topic.format(owner=self._owner)
 
 
 	def hasDialogMapping(self) -> bool:
-		return self.dialogMapping is not None
+		return bool(self.dialogMapping)
 
 
 	@property
@@ -59,33 +53,49 @@ class Intent(str, ProjectAliceObject):
 		return self._owner
 
 
-	@owner.setter
-	def owner(self, value: str):
-		self._owner = value
-
-
 	@property
 	def justTopic(self) -> str:
-		return Path(self.decoratedSelf()).name
+		return Path(self._topic).name
 
 
 	@property
 	def justAction(self) -> str:
-		return self.justTopic.split(':')[1] if self._userIntent else self.justTopic
+		return self.justTopic.split(':')[-1]
 
 
 	@property
-	def dialogMapping(self) -> DialogMapping:
+	def dialogMapping(self) -> dict:
 		return self._dialogMapping
 
 
 	@dialogMapping.setter
 	def dialogMapping(self, value: Dict[str, Callable]):
-		self._dialogMapping = DialogMapping(value)
+		self._dialogMapping = value
+
+
+	@property
+	def fallbackFunction(self) -> Callable:
+		return self._fallbackFunction
+
+
+	@fallbackFunction.setter
+	def fallbackFunction(self, value: Callable):
+		self._fallbackFunction = value
+
+
+	@property
+	def authOnly(self):
+		return self._authOnly
+
+
+	@authOnly.setter
+	def authOnly(self, value):
+		self._authOnly = int(value)
 
 
 	def addDialogMapping(self, value: Dict[str, Callable]):
-		if self._dialogMapping:
-			self._dialogMapping.addMappings(value)
-		else:
-			self._dialogMapping = DialogMapping(value)
+		self._dialogMapping.update(value)
+
+
+	def getMapping(self, session) -> Optional[Callable]:
+		return self._dialogMapping.get(session.currentState, self._fallbackFunction)

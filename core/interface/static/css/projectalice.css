@@ -146,7 +146,7 @@ a:hover {
 	cursor: pointer;
 }
 
-.modulesStore {
+.skillsStore {
 	position: fixed;
 	top: 96px;
 	left: 154px;
@@ -160,7 +160,7 @@ a:hover {
 	align-content: flex-start;
 }
 
-.moduleStoreWait {
+.skillStoreWait {
 	width: 100%;
 	color: #d1d1d1;
 	font-size: 10em;
@@ -168,7 +168,7 @@ a:hover {
 	margin-top: 30px;
 }
 
-.moduleStoreModuleTile {
+.skillStoreSkillTile {
 	font-family: 'marskeregular', Arial, sans-serif;
 	display: flex;
 	flex-wrap: wrap;
@@ -182,7 +182,7 @@ a:hover {
 	box-shadow: 0 0 20px 5px #141414;
 }
 
-.modulesStoreModuleTitle {
+.skillsStoreSkillTitle {
 	background-color: #343434;
 	height: 30px;
 	width: 100%;
@@ -193,15 +193,15 @@ a:hover {
 	box-sizing: border-box;
 }
 
-.modulesStoreModuleAuthor,
-.modulesStoreModuleVersion,
-.modulesStoreModuleCategory {
+.skillsStoreSkillAuthor,
+.skillsStoreSkillVersion,
+.skillsStoreSkillCategory {
 	width: 100%;
 	font-size: 1em;
 	margin: 5px;
 }
 
-.moduleStoreModuleDescription {
+.skillStoreSkillDescription {
 	font-family: neogreyregular, sans-serif;
 	width: 100%;
 	font-size: 0.75em;
@@ -215,7 +215,7 @@ a:hover {
 	overflow-y: auto;
 }
 
-.moduleStoreModuleDownload {
+.skillStoreSkillDownload {
 	height: 50px;
 	width: 50%;
 	margin: 10px auto auto auto;
@@ -227,13 +227,13 @@ a:hover {
 	font-size: 2em;
 }
 
-.moduleStoreModuleDownload:hover {
+.skillStoreSkillDownload:hover {
 	cursor: pointer;
 	background-color: #636363;
 	color: yellow;
 }
 
-.moduleStoreModuleButtonAnimation {
+.skillStoreSkillButtonAnimation {
 	display: none;
 	height: 50px;
 	width: 50%;
@@ -246,15 +246,15 @@ a:hover {
 	font-size: 2em;
 }
 
-.moduleStoreModuleDownloadButton {
+.skillStoreSkillDownloadButton {
 	display: flex;
 }
 
-#closeModuleStore {
+#closeSkillStore {
 	display: none;
 }
 
-.modulesPane {
+.skillsPane {
 	position: fixed;
 	top: 96px;
 	left: 154px;
@@ -268,7 +268,7 @@ a:hover {
 	align-content: flex-start;
 }
 
-.moduleTile {
+.skillTile {
 	font-family: 'marskeregular', Arial, sans-serif;
 	display: flex;
 	flex-wrap: wrap;
@@ -282,7 +282,7 @@ a:hover {
 	box-shadow: 0 0 20px 5px #141414;
 }
 
-.moduleContainer {
+.skillContainer {
 	position: relative;
 	display: flex;
 	flex-wrap: wrap;
@@ -293,17 +293,17 @@ a:hover {
 	background-color: #636363;
 }
 
-.moduleDefaultView {
+.skillDefaultView {
 	display: flex;
 }
 
-.moduleIntentsView {
+.skillIntentsView {
 	display: none;
 	overflow-x: hidden;
 	overflow-y: auto;
 }
 
-.moduleTitle {
+.skillTitle {
 	height: 25px;
 	width: 100%;
 	display: flex;
@@ -314,7 +314,7 @@ a:hover {
 	background-color: #343434;
 }
 
-.moduleStatus {
+.skillStatus {
 	width: 100%;
 	margin-top: 10px;
 	margin-left: 4px;
@@ -328,17 +328,17 @@ a:hover {
 	color: red;
 }
 
-.moduleName {
+.skillName {
 	overflow: hidden;
 	font-size: 1.25em;
 }
 
-.moduleAuthor {
+.skillAuthor {
 	margin-top: 5px;
 	margin-left: 4px;
 }
 
-.moduleVersion {
+.skillVersion {
 	display: flex;
 	flex-grow: 1;
 	text-align: right;
@@ -347,7 +347,7 @@ a:hover {
 	justify-content: flex-end;
 }
 
-.moduleActions {
+.skillActions {
 	display: flex;
 	width: 100%;
 	height: 69px;
@@ -357,28 +357,29 @@ a:hover {
 	bottom: -10px;
 }
 
-.moduleIntents {
+.skillIntents {
 	display: none;
 	width: 100%;
 	height: 125px;
 	align-items: flex-start;
 }
 
-.moduleViewIntents,
-.moduleSettings {
+.skillViewIntents,
+.skillSettings {
 	width: 100%;
 	margin-top: 10px;
 	margin-right: 4px;
 	text-align: right;
 }
 
-.moduleViewIntents:hover,
-.moduleSettings:hover {
+.skillViewIntents:hover,
+.skillSettings:hover {
 	cursor: pointer;
 	color: yellow;
 }
 
-.moduleButton {
+.skillButton,
+.skillUpdating {
 	display: flex;
 	margin: 2px;
 	background-color: #343434;
@@ -386,29 +387,36 @@ a:hover {
 	flex-grow: 1;
 	height: 40px;
 	align-items: center;
+	align-content: center;
 	justify-content: center;
+	justify-items: center;
 	text-align: center;
 }
 
-.moduleButton:hover {
+.skillUpdating {
+	display: none;
+	font-size: 1.8em;
+}
+
+.skillButton:hover {
 	cursor: pointer;
 	background-color: #636363;
 	color: yellow;
 }
 
-.moduleIntentsViewCloseButton {
+.skillIntentsViewCloseButton {
 	width: 100%;
 	text-align: right;
 	margin-top: 5px;
 	margin-right: 5px;
 }
 
-.moduleIntentsViewCloseButton:hover {
+.skillIntentsViewCloseButton:hover {
 	cursor: pointer;
 	color: yellow;
 }
 
-.modulesIntentsViewList {
+.skillsIntentsViewList {
 	width: 100%;
 	margin: 3px 5px 0 5px;
 }

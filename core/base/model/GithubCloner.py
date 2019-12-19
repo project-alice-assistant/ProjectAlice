@@ -33,7 +33,7 @@ class GithubCloner(ProjectAliceObject):
 			self._dest.mkdir(parents=True)
 
 		try:
-			return self._doClone(f'https://api.github.com/{self._baseUrl}/{self._path}?ref={self.ConfigManager.getModulesUpdateSource()}')
+			return self._doClone(f'https://api.github.com/{self._baseUrl}/{self._path}?ref={self.ConfigManager.getSkillsUpdateSource()}')
 		except Exception:
 			return False
 
@@ -72,11 +72,11 @@ class GithubCloner(ProjectAliceObject):
 			raise
 
 		except GithubNotFound:
-			self.logError('Requested module not found on servers')
+			self.logError('Requested skill not found on servers')
 			raise
 
 		except Exception as e:
-			self.logError(f'Error downloading module: {e}')
+			self.logError(f'Error downloading skill: {e}')
 			raise
 
 

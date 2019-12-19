@@ -43,19 +43,19 @@ class CommonsManager(Manager):
 		return inspect.getmodulename(inspect.stack()[depth][1])
 
 
-	def isEqualTranslated(self, baseString: str, compareTo: str, module: str = 'system') -> bool:
+	def isEqualTranslated(self, baseString: str, compareTo: str, skill: str = 'system') -> bool:
 		"""
 		Compares the basestring to the compareTo string. compareTo string if the key in the strings file
 		If the string in LanguageManager contains more than one value, each value will be compared and True is
 		returned at first match
 
-		:param module: If empty takes the system strings json
+		:param skill: If empty takes the system strings json
 		:param baseString: the base string to compare
 		:param compareTo: the key of the string json to compare to
 		:return: bool
 		"""
 		baseString = baseString.strip().lower()
-		return any(x.strip().lower() == baseString for x in self.LanguageManager.getStrings(compareTo, module))
+		return any(x.strip().lower() == baseString for x in self.LanguageManager.getStrings(compareTo, skill))
 
 
 	@staticmethod
@@ -258,11 +258,11 @@ class CommonsManager(Manager):
 		return True
 
 
-	def translate(self, text: Union[str, list], destLang: str, srcLang: str = None) -> Union[str, list]:
+	def translate(self, text: Union[str, list], destLang: str = None, srcLang: str = None) -> Union[str, list]:
 		"""
 		Translates a string or a list of strings into a different language using
 		google translator. Especially helpful when a api is only available in one
-		language, but the module should support other languages aswell.
+		language, but the skill should support other languages aswell.
 
 		:param text: string or list of strings to translate
 		:param destLang: language to translate to (ISO639-1 code)

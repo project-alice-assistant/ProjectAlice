@@ -20,7 +20,7 @@ class ProjectAliceObject(Logger):
 		return json.dumps(self.__dict__)
 
 
-	def broadcast(self, method: str, exceptions: list = None, manager = None, propagateToModules: bool = False, silent: bool = False, *args, **kwargs):
+	def broadcast(self, method: str, exceptions: list = None, manager = None, propagateToSkills: bool = False, **kwargs):
 		if not exceptions:
 			exceptions = list()
 
@@ -45,17 +45,16 @@ class ProjectAliceObject(Logger):
 				continue
 
 			try:
-				func = getattr(man, method)
-				func(*args, **kwargs)
-			except AttributeError as e:
-				if not silent:
-					self.logWarning(f"Couldn't find method {method} in manager {man.name}: {e}")
+				func = getattr(man, method, None)
+				if func:
+					func(**kwargs)
+
 			except TypeError:
 				# Do nothing, it's most prolly kwargs
 				pass
 
-		if propagateToModules:
-			self.ModuleManager.moduleBroadcast(method=method, silent=silent, *args, **kwargs)
+		if propagateToSkills:
+			self.SkillManager.skillBroadcast(method=method, **kwargs)
 
 		for name in deadManagers:
 			del SM.SuperManager.getInstance().managers[name]
@@ -64,8 +63,8 @@ class ProjectAliceObject(Logger):
 	def onStart(self): pass
 	def onStop(self): pass
 	def onBooted(self): pass
-	def onModuleInstalled(self): pass
-	def onModuleUpdated(self): pass
+	def onSkillInstalled(self): pass
+	def onSkillUpdated(self): pass
 	def onInternetConnected(self): pass
 	def onInternetLost(self): pass
 	def onHotword(self, siteId: str, user: str = constants.UNKNOWN_USER): pass
@@ -133,7 +132,7 @@ class ProjectAliceObject(Logger):
 	def onAudioFrame(self, message): pass
 	def onSnipsAssistantInstalled(self, **kwargs): pass
 	def onSnipsAssistantFailedInstalling(self, **kwargs): pass
-	def onModuleInstallFailed(self, **kwargs): pass
+	def onSkillInstallFailed(self, **kwargs): pass
 
 
 	@property
@@ -147,8 +146,8 @@ class ProjectAliceObject(Logger):
 
 
 	@property
-	def ModuleManager(self):
-		return SM.SuperManager.getInstance().moduleManager
+	def SkillManager(self):
+		return SM.SuperManager.getInstance().skillManager
 
 
 	@property
