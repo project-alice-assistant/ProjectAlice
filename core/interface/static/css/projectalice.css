@@ -925,6 +925,28 @@ input:focus {
 
 .scenariosTilesHolder {
 	width: 250px;
-	background-color: #343434;
+	color: #d1d1d1;
 	min-height: 100%;
+	margin-top: 5px;
+	margin-left: 5px;
+	border-right: 2px solid black;
+	overflow-x: hidden;
+	overflow-y: auto;
+}
+
+.scenariosTilesHolder > dt {
+	font-family: marskeregular, sans-serif;
+	font-size: 1.5em;
+	height: 30px;
+	display: flex;
+	align-items: center;
+}
+
+.scenariosTilesHolder > dd {
+	font-family: neogreyregular, sans-serif;
+	font-size: 0.75em;
+	margin-left: 10px;
+	margin-top: 10px;
+	margin-bottom: 10px;
+	cursor: pointer;
 }

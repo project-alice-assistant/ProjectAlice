@@ -13,7 +13,36 @@
 {% endblock %}
 
 {% block content %}
-	<div class="scenariosTilesHolder">
-
-	</div>
+	<dl class="scenariosTilesHolder">
+	<dt>Events</dt>
+	{% for tile in tiles['events'].values() %}
+		<dd>
+			{{ tile.name }}
+		</dd>
+	{% endfor %}
+	<dt>Actions</dt>
+	{% for tile in tiles['actions'].values() %}
+		<dd>
+			{{ tile.name }}
+		</dd>
+	{% endfor %}
+	<dt>Conditions</dt>
+	{% for tile in tiles['conditions'].values() %}
+		<dd>
+			{{ tile.name }}
+		</dd>
+	{% endfor %}
+	<dt>Loops</dt>
+	{% for tile in tiles['loops'].values() %}
+		<dd>
+			{{ tile.name }}
+		</dd>
+	{% endfor %}
+	<dt>Vars</dt>
+	{% for tile in tiles['vars'].values() %}
+		<dd>
+			{{ tile.name }}
+		</dd>
+	{% endfor %}
+	</dl>
 {% endblock %}

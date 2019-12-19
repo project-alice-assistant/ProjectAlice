@@ -56,6 +56,11 @@ class AliceSkill(ProjectAliceObject):
 		path = Path(self.getCurrentDir() / 'scenarioTiles')
 		if not path.exists():
 			return
+		self._scenarioTiles['events'] = dict()
+		self._scenarioTiles['conditions'] = dict()
+		self._scenarioTiles['loops'] = dict()
+		self._scenarioTiles['actions'] = dict()
+		self._scenarioTiles['vars'] = dict()
 
 		for file in path.glob('*'):
 			if file.is_dir() or file.suffix != '.py' or file.stem.startswith('__'):
@@ -65,15 +70,15 @@ class AliceSkill(ProjectAliceObject):
 			clazz = getattr(imported, file.stem)
 			instance = clazz()
 			if instance.tileType == ScenarioTileType.EVENT:
-				self._scenarioTiles.get('events', dict())[instance.name] = instance
+				self._scenarioTiles['events'][instance.name] = instance
 			elif instance.tileType == ScenarioTileType.CONDITION_BLOCK:
-				self._scenarioTiles.get('conditions', dict())[instance.name] = instance
+				self._scenarioTiles['conditions'][instance.name] = instance
 			elif instance.tileType == ScenarioTileType.LOOP_BLOCK:
-				self._scenarioTiles.get('loops', dict())[instance.name] = instance
+				self._scenarioTiles['loops'][instance.name] = instance
 			elif instance.tileType == ScenarioTileType.ACTION:
-				self._scenarioTiles.get('actions', dict())[instance.name] = instance
+				self._scenarioTiles['actions'][instance.name] = instance
 			else:
-				self._scenarioTiles.get('vars', dict())[instance.name] = instance
+				self._scenarioTiles['vars'][instance.name] = instance
 
 
 	def loadIntentsDefinition(self):
