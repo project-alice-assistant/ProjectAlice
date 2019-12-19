@@ -355,6 +355,7 @@ class AliceSkill(ProjectAliceObject):
 			raise AccessLevelTooLow()
 
 
+	@staticmethod
 	def intentNameMoreSpecific(intentName: str, oldIntentName: str) -> bool:
 		cleanedIntentName = intentName.rstrip('#').split('+')[0]
 		cleanedOldIntentName = oldIntentName.rstrip('#').split('+')[0]
