@@ -1,7 +1,7 @@
 import json
-import re
 from pathlib import Path
-from typing import Optional
+
+import re
 
 from core.ProjectAliceExceptions import LanguageManagerLangNotSupported
 from core.base.model.Manager import Manager
@@ -67,9 +67,10 @@ class LanguageManager(Manager):
 				continue
 
 
-	def getTranslations(self, skill: str, key: str, toLang: str = '') -> Optional[list]:
+	def getTranslations(self, skill: str, key: str, toLang: str = '') -> list:
 		if not toLang:
 			toLang = self.activeLanguage
+
 		if not skill in self._stringsData:
 			self.logError(f'Asked to get translation from skill "{skill}" but does not exist')
 			return list()
