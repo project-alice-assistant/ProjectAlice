@@ -24,5 +24,6 @@
 	"trainAndDlAssistant": "Assistant herunterladen",
 	"wipeAll": "Alles löschen",
 	"devmodeNewSkill": "Neuer Skill",
-	"devmodeEditSkill": "Skill editieren"
+	"devmodeEditSkill": "Skill editieren",
+	"reload": "Neu laden"
 }

@@ -184,6 +184,19 @@ $(function () {
 		return false;
 	});
 
+	$('[id^=reload_]').on('click touchstart', function () {
+		$.ajax({
+			url: '/skills/reloadSkill/',
+			data: {
+				id: $(this).attr('id')
+			},
+			type: 'POST'
+		}).done(function () {
+			location.reload();
+		});
+		return false;
+	});
+
 	$('#openSkillStore').on('click touchstart', function () {
 		loadStoreData();
 		$('#skillsPane').hide();

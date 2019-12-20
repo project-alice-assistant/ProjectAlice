@@ -125,6 +125,11 @@
 							{{ langData.updatee }}
 						</div>
 					{% endif %}
+					{% if aliceSettings['devMode'] is sameas true %}
+						<div class="skillButton" id="reload_{{ skillName }}">
+							{{ langData.reload }}
+						</div>
+					{% endif %}
 				</div>
 			</div>
 			<div class="skillContainer skillIntentsView">

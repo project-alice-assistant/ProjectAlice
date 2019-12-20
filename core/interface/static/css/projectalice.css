@@ -391,6 +391,7 @@ a:hover {
 	justify-content: center;
 	justify-items: center;
 	text-align: center;
+	overflow: hidden;
 }
 
 .skillUpdating {

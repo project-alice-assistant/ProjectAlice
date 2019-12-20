@@ -46,6 +46,17 @@ class SkillsView(View):
 		return self.index()
 
 
+	def reloadSkill(self):
+		try:
+			_, skill = request.form.get('id').split('_')
+			self.logInfo(f'Reloading skill "{skill}"')
+			self.SkillManager.reloadSkill(skill)
+		except Exception as e:
+			self.logWarning(f'Failed reloading skill: {e}', printStack=True)
+
+		return self.index()
+
+
 	def saveSkillSettings(self):
 		skillName = request.form['skillName']
 		for confName, confValue in request.form.items():
