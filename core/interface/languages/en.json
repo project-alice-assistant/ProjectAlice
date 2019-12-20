@@ -24,5 +24,6 @@
 	"trainAndDlAssistant": "Download assistant",
 	"wipeAll": "Wipe all",
 	"devmodeNewSkill": "Skill creation",
-	"devmodeEditSkill": "Skill edition"
+	"devmodeEditSkill": "Skill edition",
+	"reload": "Reload"
 }

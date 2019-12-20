@@ -638,7 +638,7 @@ class SkillManager(Manager):
 
 
 	def removeSkill(self, skillName: str):
-		if skillName not in {**self._activeSkills, **self._deactivatedSkills, **self._failedSkills}:
+		if skillName not in self._allSkills:
 			return
 
 		self.configureSkillIntents(skillName, False)
@@ -652,6 +652,14 @@ class SkillManager(Manager):
 		shutil.rmtree(Path(self.Commons.rootDir(), 'skills', skillName))
 		# TODO Samkilla cleaning
 		self.SnipsConsoleManager.doDownload()
+
+
+	def reloadSkill(self, skillName: str):
+		if skillName not in self._allSkills:
+			return
+
+		self._loadSkillList(skillToLoad=skillName, isUpdate=True)
+		self._startSkill(self._allSkills[skillName])
 
 
 	def allScenarioTiles(self) -> dict:

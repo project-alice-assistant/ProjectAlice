@@ -391,6 +391,7 @@ a:hover {
 	justify-content: center;
 	justify-items: center;
 	text-align: center;
+	overflow: hidden;
 }
 
 .skillUpdating {
@@ -946,7 +947,11 @@ input:focus {
 	font-family: neogreyregular, sans-serif;
 	font-size: 0.75em;
 	margin-left: 10px;
-	margin-top: 10px;
+	margin-top: 5px;
 	margin-bottom: 10px;
+	height: 25px;
+	display: flex;
+	align-items: center;
 	cursor: pointer;
+	background-color: #5c5c5c;
 }
