@@ -159,7 +159,7 @@ network={
 
 			if initConfs['installOnBuster']:
 				subprocess.run(['sudo', 'apt-get', 'install', '-y', 'dirmngr', 'apt-transport-https'])
-				subprocess.run(['sudo', 'bash', '-c', 'echo "deb https://raspbian.snips.ai/$(lsb_release -cs) stable main" > /etc/apt/sources.list.d/snips.list'])
+				subprocess.run(['sudo', 'bash', '-c', 'echo "deb https://raspbian.snips.ai/stretch stable main" > /etc/apt/sources.list.d/snips.list'])
 				subprocess.run(['sudo', 'apt-key', 'adv', '--fetch-keys', 'https://debian.snips.ai/5FFCD0DEB5BA45CD.pub'])
 				subprocess.run(['wget', '-q', 'https://ftp-master.debian.org/keys/release-10.asc', '-O-', '|', 'sudo', 'apt-key', 'add', '-'])
 				subprocess.run(['echo', '"deb http://deb.debian.org/debian buster non-free"', '|', 'sudo', 'tee', '/etc/apt/sources.list.d/debian.list'])
