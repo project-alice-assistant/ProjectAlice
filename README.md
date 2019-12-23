@@ -8,7 +8,7 @@
   <a href="https://discord.gg/Jfcj355" target="_blank"><img alt="Discord" src="https://img.shields.io/discord/579345007518154752?logo=discord"></a><br/>
   <a href="https://github.com/project-alice-assistant/ProjectAlice/actions" target="_blank"><img alt="unit tests" src="https://github.com/project-alice-assistant/ProjectAlice/workflows/Unit%20Tests/badge.svg"></a>
   <a href="https://coveralls.io/github/project-alice-assistant/ProjectAlice?branch=HEAD" target="_blank"><img alt="Coverage Status" src="https://coveralls.io/repos/github/project-alice-assistant/ProjectAlice/badge.svg?branch=HEAD"></a>
-  <a href="https://codeclimate.com/github/project-alice-assistant/ProjectAlice/maintainability" target="_blank"><img alt="Maintainability" src="https://api.codeclimate.com/v1/badges/ab9aa78508dcccc85b12/maintainability"></a>
+  <a href="https://codeclimate.com/github/project-alice-assistant/ProjectAlice/maintainability" target="_blank"><img alt="Maintainability" src="https://api.codeclimate.com/v1/badges/b54aaa4f575f66b4f485/maintainability"></a>
   <a href="https://www.codacy.com/manual/project-alice-assistant/ProjectAlice?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=project-alice-assistant/ProjectAlice&amp;utm_campaign=Badge_Grade" target="_blank"><img alt="Codacy Badge" src="https://api.codacy.com/project/badge/Grade/55399302e9614fb18a354fb9345dff29"></a>
 </p>
 
