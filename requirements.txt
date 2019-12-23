@@ -15,8 +15,6 @@ pyserial
 selenium
 pydub
 terminaltables
-PyInquirer
-prompt_toolkit==1.0.14
 click
 pyyaml
 boto3
