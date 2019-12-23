@@ -282,10 +282,8 @@ class SkillManager(Manager):
 
 
 	def getSkillInstance(self, skillName: str, silent: bool = False) -> Optional[AliceSkill]:
-		if skillName in self._activeSkills:
-			return self._activeSkills[skillName]
-		elif skillName in self._deactivatedSkills:
-			return self._deactivatedSkills[skillName]
+		if skillName in self._allSkills:
+			return self._allSkills[skillName]
 		else:
 			if not silent:
 				self.logWarning(f'Skill "{skillName}" is disabled or does not exist in skills manager')
@@ -298,8 +296,6 @@ class SkillManager(Manager):
 		Broadcasts a call to the given method on every skill
 		:param filterOut: array, skills not to broadcast to
 		:param method: str, the method name to call on every skill
-		:param args: arguments that should be passed
-		:param silent
 		:return:
 		"""
 
@@ -656,11 +652,11 @@ class SkillManager(Manager):
 		shutil.rmtree(Path(self.Commons.rootDir(), 'skills', skillName))
 		# TODO Samkilla cleaning
 		self.SnipsConsoleManager.doDownload()
+
+
 	def reloadSkill(self, skillName: str):
 		if skillName not in self._allSkills:
 			return
 
 		self._loadSkillList(skillToLoad=skillName, isUpdate=True)
 		self._startSkill(self._allSkills[skillName])
-
-		return ret
