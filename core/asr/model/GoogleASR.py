@@ -1,11 +1,11 @@
-import os
 from pathlib import Path
 
+import os
 from google.cloud import speech
 from google.cloud.speech import enums, types
 
+from core.asr.model.ASR import ASR
 from core.base.SuperManager import SuperManager
-from core.voice.model.ASR import ASR
 from core.voice.model.MicrophoneStream import MicrophoneStream
 
 

@@ -116,27 +116,27 @@ class SuperManager(Logger):
 		from core.dialog.DialogSessionManager   import DialogSessionManager
 		from core.dialog.MultiIntentManager     import MultiIntentManager
 		from core.dialog.ProtectedIntentManager import ProtectedIntentManager
-		from core.server.MqttManager            import MqttManager
-		from core.snips.SamkillaManager         import SamkillaManager
-		from core.snips.SnipsConsoleManager     import SnipsConsoleManager
-		from core.snips.SnipsServicesManager    import SnipsServicesManager
-		from core.user.UserManager              import UserManager
-		from core.util.DatabaseManager          import DatabaseManager
-		from core.util.InternetManager          import InternetManager
-		from core.util.TelemetryManager         import TelemetryManager
-		from core.util.ThreadManager            import ThreadManager
-		from core.util.TimeManager              import TimeManager
-		from core.voice.ASRManager              import ASRManager
-		from core.voice.LanguageManager         import LanguageManager
-		from core.voice.TalkManager             import TalkManager
-		from core.voice.TTSManager              import TTSManager
-		from core.voice.WakewordManager         import WakewordManager
+		from core.server.MqttManager import MqttManager
+		from core.snips.SamkillaManager import SamkillaManager
+		from core.snips.SnipsConsoleManager import SnipsConsoleManager
+		from core.snips.SnipsServicesManager import SnipsServicesManager
+		from core.user.UserManager import UserManager
+		from core.util.DatabaseManager import DatabaseManager
+		from core.util.InternetManager import InternetManager
+		from core.util.TelemetryManager import TelemetryManager
+		from core.util.ThreadManager import ThreadManager
+		from core.util.TimeManager import TimeManager
+		from core.asr.ASRManager import ASRManager
+		from core.voice.LanguageManager import LanguageManager
+		from core.voice.TalkManager import TalkManager
+		from core.voice.TTSManager import TTSManager
+		from core.voice.WakewordManager import WakewordManager
 		from core.interface.WebInterfaceManager import WebInterfaceManager
-		from core.snips.SnipsWatchManager       import SnipsWatchManager
+		from core.snips.SnipsWatchManager import SnipsWatchManager
 
-		self.commonsManager             = CommonsManager()
-		self.commons                    = self.commonsManager
-		self.configManager              = ConfigManager()
+		self.commonsManager = CommonsManager()
+		self.commons = self.commonsManager
+		self.configManager = ConfigManager()
 		self.databaseManager            = DatabaseManager()
 		self.languageManager            = LanguageManager()
 		self.snipsServicesManager       = SnipsServicesManager()
