@@ -972,13 +972,46 @@ input:focus {
 
 .scenariosTile {
 	display: flex;
-	height: 36px;
+	height: 50px;
 	background-color: #5c5c5c;
 	padding-left: 10px;
 	padding-right: 10px;
 	align-items: center;
 	align-content: center;
+	text-align: center;
 	cursor: pointer;
 	border: 2px solid #343434;
 	color: #d1d1d1;
+	z-index: 1;
+}
+
+.scenarioOutputConnector {
+	width: 20px;
+	height: 20px;
+	border: 2px solid #343434;
+	display: inline-block;
+	background-color: #5c5c5c;
+	position: relative;
+	left: 35px;
+	text-align: center;
+	font-weight: bold;
+	z-index: 2;
+}
+
+.scenarioInputConnector {
+	width: 20px;
+	height: 20px;
+	border: 2px solid #343434;
+	display: inline-block;
+	background-color: #5c5c5c;
+	position: absolute;
+	left: -25px;
+	text-align: center;
+	font-weight: bold;
+	z-index: 2;
+}
+
+.scenarioInputConnector:hover,
+.scenarioOutputConnector:hover {
+	color: yellow;
 }
