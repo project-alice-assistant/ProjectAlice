@@ -2,7 +2,7 @@ from textwrap import dedent
 import click
 import urllib.request
 import requests
-from terminaltables import DoubleTable # type: ignore
+from terminaltables import DoubleTable  # type: ignore
 from core.base.SkillManager import SkillManager
 
 @click.group()

@@ -208,7 +208,7 @@ class DeviceManager(Manager):
 			mac = ':'.join([f'{x:02x}' for x in mac])
 			cmd = [
 				'--port', port,
-				'--baud','115200',
+				'--baud', '115200',
 				'--after', 'no_reset', 'write_flash',
 				'--flash_mode', 'dout', '0x00000', 'sonoff.bin',
 				'--erase-all'
@@ -223,7 +223,7 @@ class DeviceManager(Manager):
 
 		self.logInfo('Tasmota flash done')
 		self.MqttManager.say(text=self.TalkManager.randomTalk('espFlashedUnplugReplug', skill='AliceCore'), client=siteId)
-		found = self.findUSBPort(timeout = 60)
+		found = self.findUSBPort(timeout=60)
 		if found:
 			self.MqttManager.say(text=self.TalkManager.randomTalk('espFoundReadyForConf', skill='AliceCore'), client=siteId)
 			time.sleep(10)
@@ -346,18 +346,18 @@ class DeviceManager(Manager):
 					for satellite in self.getDevicesByRoom(room):
 						if satellite.deviceType.lower() == 'alicesatellite':
 							self.logWarning('Cannot have more than one Alice skill per room, aborting')
-							self.MqttManager.say(text = self.TalkManager.randomTalk('maxOneAlicePerRoom', skill='system'), client=replyOnSiteId)
+							self.MqttManager.say(text=self.TalkManager.randomTalk('maxOneAlicePerRoom', skill='system'), client=replyOnSiteId)
 							answer = 'nok'
 							break
 
 				if answer != 'nok':
 					if self.addNewDevice(deviceType, room, uid):
 						self.logInfo(f'New device with uid {uid} successfully added')
-						self.MqttManager.say(text = self.TalkManager.randomTalk('newDeviceAdditionSuccess', skill='system'), client=replyOnSiteId)
+						self.MqttManager.say(text=self.TalkManager.randomTalk('newDeviceAdditionSuccess', skill='system'), client=replyOnSiteId)
 						answer = 'ok'
 					else:
 						self.logInfo('Failed adding new device')
-						self.MqttManager.say(text = self.TalkManager.randomTalk('newDeviceAdditionFailed', skill='system'), client=replyOnSiteId)
+						self.MqttManager.say(text=self.TalkManager.randomTalk('newDeviceAdditionFailed', skill='system'), client=replyOnSiteId)
 						answer = 'nok'
 
 					if deviceType.lower() == 'alicesatellite':

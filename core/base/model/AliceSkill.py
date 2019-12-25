@@ -164,14 +164,14 @@ class AliceSkill(ProjectAliceObject):
 				widgetImport = importlib.import_module(f'skills.{self.name}.widgets.{widgetName}')
 				klass = getattr(widgetImport, widgetName)
 
-				if widgetName in data: # widget already exists in DB
+				if widgetName in data:  # widget already exists in DB
 					widget = klass(data[widgetName])
 					self._widgets[widgetName] = widget
 					widget.setParentSkillInstance(self)
 					del data[widgetName]
 					self.logInfo(f'Loaded widget "{widgetName}"')
 
-				else: # widget is new
+				else:  # widget is new
 					self.logInfo(f'Adding widget "{widgetName}"')
 					widget = klass({
 						'name': widgetName,
@@ -181,7 +181,7 @@ class AliceSkill(ProjectAliceObject):
 					widget.setParentSkillInstance(self)
 					widget.saveToDB()
 
-			for widgetName in data: # deprecated widgets
+			for widgetName in data:  # deprecated widgets
 				self.logInfo(f'Widget "{widgetName}" is deprecated, removing')
 				self.DatabaseManager.delete(
 					tableName='widgets',

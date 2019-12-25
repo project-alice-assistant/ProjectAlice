@@ -188,7 +188,7 @@ class SkillManager(Manager):
 					skills[skillInstance.name] = skillInstance
 				else:
 					self._failedSkills[name] = None
-					
+
 			except SkillStartingFailed as e:
 				self.logWarning(f'Failed loading skill: {e}')
 				continue
@@ -308,7 +308,7 @@ class SkillManager(Manager):
 				func = getattr(skillItem, method, None)
 				if func:
 					func(**kwargs)
-				
+
 				func = getattr(skillItem, 'onEvent', None)
 				if func:
 					func(event=method, **kwargs)
@@ -352,7 +352,7 @@ class SkillManager(Manager):
 			try:
 				if skillName not in availableSkills or (skillToCheck is not None and skillName != skillToCheck):
 					continue
-	
+
 				req = requests.get(f'https://raw.githubusercontent.com/project-alice-assistant/ProjectAliceSkills/{updateSource}/PublishedSkills/{availableSkills[skillName]["author"]}/{skillName}/{skillName}.install')
 
 				if req.status_code == 404:

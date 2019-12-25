@@ -30,7 +30,7 @@ def deprecated(func):
 	return new_func
 
 
-def IntentHandler(intent: Union[str, Intent], requiredState: str = None, isProtected: bool = False, authOnly = 0):
+def IntentHandler(intent: Union[str, Intent], requiredState: str = None, isProtected: bool = False, authOnly=0):
 	"""Decorator for adding a method as an intent handler."""
 	if isinstance(intent, str):
 		intent = Intent(intent, isProtected=isProtected, userIntent=True, authOnly=authOnly)
@@ -39,13 +39,13 @@ def IntentHandler(intent: Union[str, Intent], requiredState: str = None, isProte
 		# store the intent in the function
 		if not hasattr(func, 'intents'):
 			func.intents = []
-		func.intents.append({'intent':intent, 'requiredState': requiredState})
+		func.intents.append({'intent': intent, 'requiredState': requiredState})
 		return func
 
 	return wrapper
 
 
-def MqttHandler(intent: Union[str, Intent], requiredState: str = None, isProtected: bool = True, authOnly = 0):
+def MqttHandler(intent: Union[str, Intent], requiredState: str = None, isProtected: bool = True, authOnly=0):
 	"""Decorator for adding a method as a mqtt handler."""
 	if isinstance(intent, str):
 		intent = Intent(intent, isProtected=isProtected, userIntent=False, authOnly=authOnly)
@@ -54,7 +54,7 @@ def MqttHandler(intent: Union[str, Intent], requiredState: str = None, isProtect
 		# store the intent in the function
 		if not hasattr(func, 'intents'):
 			func.intents = []
-		func.intents.append({'intent':intent, 'requiredState': requiredState})
+		func.intents.append({'intent': intent, 'requiredState': requiredState})
 		return func
 
 	return wrapper

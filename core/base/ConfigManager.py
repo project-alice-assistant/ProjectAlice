@@ -131,7 +131,7 @@ class ConfigManager(Manager):
 		if key not in self._aliceConfigurations:
 			self.logWarning(f'Was asked to update {key} but key doesn\'t exist')
 			raise ConfigurationUpdateFailed()
-		
+
 		try:
 			# Remove skill configurations
 			if key == 'skills':
@@ -141,7 +141,7 @@ class ConfigManager(Manager):
 
 		self._aliceConfigurations[key] = value
 		self.writeToAliceConfigurationFile(self.aliceConfigurations)
-		
+
 
 
 	def updateSkillConfigurationFile(self, skillName: str, key: str, value: typing.Any):
@@ -270,7 +270,7 @@ class ConfigManager(Manager):
 		:return: config value
 		"""
 		if createIfNotExist and key not in self._snipsConfigurations[parent]:
-			conf = self._snipsConfigurations[parent][key] # TomlFile does auto create missing keys
+			conf = self._snipsConfigurations[parent][key]  # TomlFile does auto create missing keys
 			self._snipsConfigurations.dump()
 			return conf
 

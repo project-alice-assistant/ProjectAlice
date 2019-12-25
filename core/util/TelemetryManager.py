@@ -86,7 +86,7 @@ class TelemetryManager(Manager):
 
 
 	# noinspection SqlResolve
-	def storeData(self, ttype: TelemetryType, value: str, service: str, siteId: str, timestamp = None):
+	def storeData(self, ttype: TelemetryType, value: str, service: str, siteId: str, timestamp=None):
 		if not self.isActive:
 			return
 

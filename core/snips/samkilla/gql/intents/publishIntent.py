@@ -18,7 +18,7 @@ publishIntentLight = gql('''
 mutation publishIntent($intentId: ID, $input: PublishIntentInput!) {
   publishIntent(intentId: $intentId, input: $input) {
 	{
-		
+
 	}
 	customIntentData {
 	  ...IntentsCustomDataFragment

@@ -82,7 +82,7 @@ class TestAliceSkill(unittest.TestCase):
 			#ignore all stuff that would happen in the AliceSkill init
 			def __init__(self):
 				pass
-			
+
 			def exampleFunc(self):
 				pass
 

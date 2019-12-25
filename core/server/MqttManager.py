@@ -162,7 +162,7 @@ class MqttManager(Manager):
 				self.broadcast(method='onHotwordToggleOn', exceptions=[constants.DUMMY], siteId=siteId)
 				return
 
-			if not session: # It is a device trying to communicate with Alice
+			if not session:  # It is a device trying to communicate with Alice
 				session = self.DeviceManager.deviceMessage(message)
 				self.broadcast(method='onMessage', exceptions=[self.name], session=session)
 				self.SkillManager.skillBroadcast(method='dispatchMessage', session=session)

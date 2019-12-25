@@ -5,7 +5,7 @@ from core.base.model.ProjectAliceObject import ProjectAliceObject
 
 class Intent(ProjectAliceObject):
 
-	def __init__(self, _value: str, isProtected: bool = False, userIntent: bool = True, authOnly = 0):
+	def __init__(self, _value: str, isProtected: bool = False, userIntent: bool = True, authOnly=0):
 		self._owner = self.ConfigManager.getAliceConfigByName('intentsOwner')
 		self._topic = f'hermes/intent/{self._owner}:{_value}' if userIntent else _value
 		self._protected = isProtected

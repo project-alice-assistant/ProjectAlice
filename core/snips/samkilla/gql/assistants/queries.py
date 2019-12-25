@@ -60,7 +60,6 @@ assistantWithSkillsQuery = gql('''
 })
 
 
-
 assistantTrainingStatusQuery = gql('''
   query AssistantTrainingStatusQuery($assistantId: ID!) {
     assistant(assistantId: $assistantId) {
@@ -77,4 +76,4 @@ assistantTrainingStatusQuery = gql('''
     }
   }
   ${trainingStatusFieldsFragment}
-''',{'trainingStatusFieldsFragment': trainingStatusFieldsFragment})
+''', {'trainingStatusFieldsFragment': trainingStatusFieldsFragment})

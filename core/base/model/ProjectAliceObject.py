@@ -20,7 +20,7 @@ class ProjectAliceObject(Logger):
 		return json.dumps(self.__dict__)
 
 
-	def broadcast(self, method: str, exceptions: list = None, manager = None, propagateToSkills: bool = False, **kwargs):
+	def broadcast(self, method: str, exceptions: list = None, manager=None, propagateToSkills: bool = False, **kwargs):
 		if not exceptions:
 			exceptions = list()
 

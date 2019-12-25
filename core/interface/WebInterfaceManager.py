@@ -42,7 +42,7 @@ class WebInterfaceManager(Manager):
 	# noinspection PyMethodParameters
 	@app.route('/favicon.ico')
 	def favicon():
-		return send_from_directory('static/','favicon.ico', mimetype='image/vnd.microsoft.icon')
+		return send_from_directory('static/', 'favicon.ico', mimetype='image/vnd.microsoft.icon')
 
 	@app.route('/base/<path:filename>')
 	def base_static(self, filename):

@@ -24,7 +24,7 @@ from core.dialog.model.DialogSession import DialogSession
 class CommonsManager(Manager):
 
 	ERROR_HANDLER_FUNC = CFUNCTYPE(None, c_char_p, c_int, c_char_p, c_int, c_char_p)
-	
+
 	def __init__(self):
 		super().__init__('Commons')
 
@@ -74,12 +74,12 @@ class CommonsManager(Manager):
 			payload = json.loads(message.payload)
 		except (ValueError, TypeError):
 			payload = dict()
-		
+
 		if payload is True:
 			payload = {'true': True}
 		elif payload is False:
 			payload = {'false': False}
-		
+
 		return payload
 
 

@@ -1,5 +1,3 @@
-import os
-
 from core.base.model.Manager import Manager
 
 

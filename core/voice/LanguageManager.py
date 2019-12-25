@@ -191,7 +191,7 @@ class LanguageManager(Manager):
 	@property
 	def activeLanguageAndCountryCode(self) -> str:
 		return f'{self._activeLanguage}-{self._activeCountryCode}'
-	
+
 
 	@property
 	def supportedLanguages(self) -> list:

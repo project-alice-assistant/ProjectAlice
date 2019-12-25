@@ -76,4 +76,3 @@ class EnumSkillImageUrl(Singleton):
 	@staticmethod
 	def urlToResourceKey(url: str) -> str:
 		return os.path.basename(url).replace('.svg', '').replace('bundle', '').replace('-', '')
-

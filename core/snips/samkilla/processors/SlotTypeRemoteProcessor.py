@@ -41,7 +41,7 @@ class SlotTypeRemoteProcessor:
 		return 'hash' in self._syncState and 'entityId' in self._syncState
 
 
-	def syncSlotType(self, hashComputationOnly = False) -> dict:
+	def syncSlotType(self, hashComputationOnly=False) -> dict:
 		slotType = self._slotType
 
 		oldInstanceExists = self.syncedSlotTypeExists()
