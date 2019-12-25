@@ -5,12 +5,12 @@ $(function () {
 
 	function checkAuth() {
 		$.post('/adminAuth/checkAuthState/', function (response) {
+			console.log(response);
 			if (response.hasOwnProperty('success') && !response.success) {
 				setTimeout(function () {
 					checkAuth();
 				}, 250);
-			}
-			else if (response.hasOwnProperty('username')) {
+			} else if (response.hasOwnProperty('username')) {
 				$('#username').text(response.username);
 				$('#adminAuthKeyboardContainer').slideDown(250);
 				setTimeout(function () {

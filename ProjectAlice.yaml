@@ -13,7 +13,7 @@
 #                                              #
 ################################################
 #            DON'T CHANGE ME                   #
-version: 1.11
+version: 1.12
 ################################################
 
 # If you place this file into /boot after a first initialization it won't overwrite your settings unless you set this to yes

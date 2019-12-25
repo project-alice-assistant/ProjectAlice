@@ -121,7 +121,7 @@ class SkillsView(View):
 	def loadStoreData(self):
 		installers = dict()
 		updateSource = self.ConfigManager.getSkillsUpdateSource()
-		req = requests.get(url=f'https://alice.maxbachmann.de/assets/{updateSource}/store/store.json')
+		req = requests.get(url=f'https://skills.projectalice.io/assets/{updateSource}/store/store.json')
 		results = req.json()
 
 		if not results:

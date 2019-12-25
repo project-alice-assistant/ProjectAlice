@@ -1,15 +1,14 @@
 import time
 
+from core.asr.model import ASR
+from core.asr.model.SnipsASR import SnipsASR
 from core.base.model.Intent import Intent
 from core.base.model.Manager import Manager
 from core.commons import constants
 from core.dialog.model.DialogSession import DialogSession
-from core.voice.model import ASR
-from core.voice.model.SnipsASR import SnipsASR
 
 
 class ASRManager(Manager):
-
 	NAME = 'ASRManager'
 
 	def __init__(self):
@@ -22,7 +21,7 @@ class ASRManager(Manager):
 
 		if self.ConfigManager.getAliceConfigByName(configName='asr').lower() == 'google' and not self.ConfigManager.getAliceConfigByName('keepASROffline') and not self.ConfigManager.getAliceConfigByName('stayCompletlyOffline'):
 			# noinspection PyUnresolvedReferences
-			from core.voice.model.GoogleASR import GoogleASR
+			from core.asr.model.GoogleASR import GoogleASR
 
 			self._asr = GoogleASR()
 			self.SnipsServicesManager.runCmd('stop', ['snips-asr'])
@@ -47,7 +46,8 @@ class ASRManager(Manager):
 				if asr == 'google':
 					# TODO needs better handling. A header import with some checks if needed or not
 					# noinspection PyUnresolvedReferences
-					from core.voice.model.GoogleASR import GoogleASR
+					from core.asr.model.GoogleASR import GoogleASR
+
 					self._asr = GoogleASR()
 
 

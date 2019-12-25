@@ -1,4 +1,4 @@
-from core.voice.model.ASR import ASR
+from core.asr.model.ASR import ASR
 
 
 class SnipsASR(ASR):

@@ -6,9 +6,9 @@ from zipfile import ZipFile
 
 import tempfile
 
+from core.asr.model.SnipsASR import SnipsASR
 from core.base.model.Manager import Manager
 from core.commons import constants
-from core.voice.model.SnipsASR import SnipsASR
 from core.voice.model.SnipsTTS import SnipsTTS
 
 

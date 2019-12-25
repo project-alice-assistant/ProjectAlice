@@ -5,9 +5,8 @@ from core.util.model.Logger import Logger
 
 
 class SuperManager(Logger):
-
-	NAME        = 'SuperManager'
-	_INSTANCE   = None
+	NAME = 'SuperManager'
+	_INSTANCE = None
 
 
 	def __new__(cls, *args, **kwargs):
@@ -20,35 +19,36 @@ class SuperManager(Logger):
 	def __init__(self, mainClass):
 		super().__init__(depth=3)
 
-		SuperManager._INSTANCE         = self
-		self._managers                 = dict()
+		SuperManager._INSTANCE = self
+		self._managers = dict()
 
-		self.projectAlice              = mainClass
-		self.commons                   = None
-		self.commonsManager            = None
-		self.configManager             = None
-		self.databaseManager           = None
-		self.languageManager           = None
-		self.snipsServicesManager      = None
-		self.asrManager                = None
-		self.ttsManager                = None
-		self.protectedIntentManager    = None
-		self.threadManager             = None
-		self.mqttManager               = None
-		self.timeManager               = None
-		self.dialogSessionManager      = None
-		self.multiIntentManager        = None
-		self.telemetryManager          = None
-		self.skillManager              = None
-		self.deviceManager             = None
-		self.internetManager           = None
-		self.snipsConsoleManager       = None
-		self.samkillaManager           = None
-		self.wakewordManager           = None
-		self.userManager               = None
-		self.talkManager               = None
-		self.webInterfaceManager       = None
-		self.snipsWatchManager         = None
+		self.projectAlice = mainClass
+		self.commons = None
+		self.commonsManager = None
+		self.configManager = None
+		self.databaseManager = None
+		self.languageManager = None
+		self.snipsServicesManager = None
+		self.asrManager = None
+		self.ttsManager = None
+		self.protectedIntentManager = None
+		self.threadManager = None
+		self.mqttManager = None
+		self.timeManager = None
+		self.dialogSessionManager = None
+		self.multiIntentManager = None
+		self.telemetryManager = None
+		self.skillManager = None
+		self.deviceManager = None
+		self.internetManager = None
+		self.snipsConsoleManager = None
+		self.samkillaManager = None
+		self.wakewordManager = None
+		self.userManager = None
+		self.talkManager = None
+		self.webInterfaceManager = None
+		self.snipsWatchManager = None
+		self.nodeRedManager = None
 
 
 	def onStart(self):
@@ -109,56 +109,58 @@ class SuperManager(Logger):
 
 
 	def initManagers(self):
-		from core.commons.CommonsManager        import CommonsManager
-		from core.base.ConfigManager            import ConfigManager
-		from core.base.SkillManager             import SkillManager
-		from core.device.DeviceManager          import DeviceManager
-		from core.dialog.DialogSessionManager   import DialogSessionManager
-		from core.dialog.MultiIntentManager     import MultiIntentManager
+		from core.commons.CommonsManager import CommonsManager
+		from core.base.ConfigManager import ConfigManager
+		from core.base.SkillManager import SkillManager
+		from core.device.DeviceManager import DeviceManager
+		from core.dialog.DialogSessionManager import DialogSessionManager
+		from core.dialog.MultiIntentManager import MultiIntentManager
 		from core.dialog.ProtectedIntentManager import ProtectedIntentManager
-		from core.server.MqttManager            import MqttManager
-		from core.snips.SamkillaManager         import SamkillaManager
-		from core.snips.SnipsConsoleManager     import SnipsConsoleManager
-		from core.snips.SnipsServicesManager    import SnipsServicesManager
-		from core.user.UserManager              import UserManager
-		from core.util.DatabaseManager          import DatabaseManager
-		from core.util.InternetManager          import InternetManager
-		from core.util.TelemetryManager         import TelemetryManager
-		from core.util.ThreadManager            import ThreadManager
-		from core.util.TimeManager              import TimeManager
-		from core.voice.ASRManager              import ASRManager
-		from core.voice.LanguageManager         import LanguageManager
-		from core.voice.TalkManager             import TalkManager
-		from core.voice.TTSManager              import TTSManager
-		from core.voice.WakewordManager         import WakewordManager
+		from core.server.MqttManager import MqttManager
+		from core.snips.SamkillaManager import SamkillaManager
+		from core.snips.SnipsConsoleManager import SnipsConsoleManager
+		from core.snips.SnipsServicesManager import SnipsServicesManager
+		from core.user.UserManager import UserManager
+		from core.util.DatabaseManager import DatabaseManager
+		from core.util.InternetManager import InternetManager
+		from core.util.TelemetryManager import TelemetryManager
+		from core.util.ThreadManager import ThreadManager
+		from core.util.TimeManager import TimeManager
+		from core.asr.ASRManager import ASRManager
+		from core.voice.LanguageManager import LanguageManager
+		from core.voice.TalkManager import TalkManager
+		from core.voice.TTSManager import TTSManager
+		from core.voice.WakewordManager import WakewordManager
 		from core.interface.WebInterfaceManager import WebInterfaceManager
-		from core.snips.SnipsWatchManager       import SnipsWatchManager
+		from core.snips.SnipsWatchManager import SnipsWatchManager
+		from core.interface.NodeRedManager import NodeRedManager
 
-		self.commonsManager             = CommonsManager()
-		self.commons                    = self.commonsManager
-		self.configManager              = ConfigManager()
-		self.databaseManager            = DatabaseManager()
-		self.languageManager            = LanguageManager()
-		self.snipsServicesManager       = SnipsServicesManager()
-		self.asrManager                 = ASRManager()
-		self.ttsManager                 = TTSManager()
-		self.threadManager              = ThreadManager()
-		self.protectedIntentManager     = ProtectedIntentManager()
-		self.mqttManager                = MqttManager()
-		self.timeManager                = TimeManager()
-		self.userManager                = UserManager()
-		self.dialogSessionManager       = DialogSessionManager()
-		self.multiIntentManager         = MultiIntentManager()
-		self.telemetryManager           = TelemetryManager()
-		self.skillManager               = SkillManager()
-		self.deviceManager              = DeviceManager()
-		self.internetManager            = InternetManager()
-		self.snipsConsoleManager        = SnipsConsoleManager()
-		self.samkillaManager            = SamkillaManager()
-		self.wakewordManager            = WakewordManager()
-		self.talkManager                = TalkManager()
-		self.webInterfaceManager        = WebInterfaceManager()
-		self.snipsWatchManager          = SnipsWatchManager()
+		self.commonsManager = CommonsManager()
+		self.commons = self.commonsManager
+		self.configManager = ConfigManager()
+		self.databaseManager = DatabaseManager()
+		self.languageManager = LanguageManager()
+		self.snipsServicesManager = SnipsServicesManager()
+		self.asrManager = ASRManager()
+		self.ttsManager = TTSManager()
+		self.threadManager = ThreadManager()
+		self.protectedIntentManager = ProtectedIntentManager()
+		self.mqttManager = MqttManager()
+		self.timeManager = TimeManager()
+		self.userManager = UserManager()
+		self.dialogSessionManager = DialogSessionManager()
+		self.multiIntentManager = MultiIntentManager()
+		self.telemetryManager = TelemetryManager()
+		self.skillManager = SkillManager()
+		self.deviceManager = DeviceManager()
+		self.internetManager = InternetManager()
+		self.snipsConsoleManager = SnipsConsoleManager()
+		self.samkillaManager = SamkillaManager()
+		self.wakewordManager = WakewordManager()
+		self.talkManager = TalkManager()
+		self.webInterfaceManager = WebInterfaceManager()
+		self.snipsWatchManager = SnipsWatchManager()
+		self.nodeRedManager = NodeRedManager()
 
 		self._managers = {name[0].upper() + name[1:]: manager for name, manager in self.__dict__.items() if name.endswith('Manager')}
 

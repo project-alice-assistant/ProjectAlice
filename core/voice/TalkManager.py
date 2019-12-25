@@ -50,7 +50,8 @@ class TalkManager(Manager):
 					self._langData.setdefault(skillName, dict())[lang] = json.loads(langTalkFile.read_text())
 				except FileNotFoundError:
 					continue
-				except ValueError:
+				except ValueError as e:
+					self.logError(e)
 					continue
 
 
