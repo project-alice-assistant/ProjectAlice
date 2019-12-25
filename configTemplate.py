@@ -232,6 +232,13 @@ settings = {
 		'description' : 'Units to use with Project Alice'
 	},
 
+	'nluEngine'             : {
+		'defaultValue': 'snips',
+		'dataType'    : 'list',
+		'values'      : ['snips'],
+		'description' : 'Natural Language Understanding engine to use'
+	},
+
 	'onReboot'              : {
 		'defaultValue': '',
 		'dataType'    : 'string',

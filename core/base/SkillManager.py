@@ -660,10 +660,3 @@ class SkillManager(Manager):
 
 		self._loadSkillList(skillToLoad=skillName, isUpdate=True)
 		self._startSkill(self._allSkills[skillName])
-
-
-	def allScenarioTiles(self) -> dict:
-		ret = dict()
-		for skill in self._activeSkills.values():
-			ret = {**ret, **skill.scenarioTiles}
-		return ret
