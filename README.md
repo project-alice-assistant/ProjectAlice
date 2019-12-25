@@ -48,7 +48,6 @@ Ok, yes, I do admit if you’re familiar with the game it may sound a bit scary,
 
 ## Where does it run?
 Well, since it's written in Python, as of now on Linux architecture. This means a Raspberry Pi and some other platforms such as the respeaker core or the Matrix Creator are the best choices for a hardware platform. As for which Raspberry Pi, a raspberry 3, 3b, 3b+, 3A+ or 4 for the main unit are good choices. You cannot run Alice on a pi zero but pi zero is more than enough for satellites. A satellite runs a subset of the Alice platform, and sends and receives interactions to the main unit.
-Well, since it's written in Python, as of now on Linux architecture. This means a Raspberry Pi and some other platforms such as the respeaker core or the Matrix Creator are the best choices for a hardware platform. As for which Raspberry Pi, a raspberry 3, 3b, 3b+, 3A+ or 4 for the main unit are good choices. You cannot run Alice on a pi zero but pi zero is more than enough for satellites. A satellite runs a subset of the Alice platform, and sends and receives interactions to the main unit.
 
 
 ## Can we contribute?
