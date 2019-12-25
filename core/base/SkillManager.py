@@ -2,7 +2,7 @@ import importlib
 import json
 import subprocess
 from pathlib import Path
-from typing import Optional
+from typing import Dict, Optional
 
 import requests
 import shutil
@@ -662,11 +662,14 @@ class SkillManager(Manager):
 		self._startSkill(self._allSkills[skillName])
 
 
-	def allScenarioNodes(self, includeInactive: bool = False) -> dict:
+	def allScenarioNodes(self, includeInactive: bool = False) -> Dict[str, tuple]:
 		skills = self._activeSkills if not includeInactive else self._allSkills
 
 		ret = dict()
 		for skill in skills.values():
-			ret = {**ret, **skill.scenarioNodes}
+			if not skill.hasScenarioNodes():
+				continue
+
+			ret[skill.name] = (skill.scenarioNodeName, skill.scenarioNodeVersion, Path(skill.getCurrentDir(), 'scenariosNodes'))
 
 		return ret

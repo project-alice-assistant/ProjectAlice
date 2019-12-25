@@ -14,6 +14,7 @@ from core.ProjectAliceExceptions import AccessLevelTooLow, SkillStartingFailed
 from core.base.model import Widget
 from core.base.model.Intent import Intent
 from core.base.model.ProjectAliceObject import ProjectAliceObject
+from core.base.model.Version import Version
 from core.commons import constants
 from core.dialog.model.DialogSession import DialogSession
 
@@ -41,7 +42,8 @@ class AliceSkill(ProjectAliceObject):
 		self._databaseSchema = databaseSchema
 		self._widgets = dict()
 		self._intentsDefinitions = dict()
-		self._scenarioNodes = dict()
+		self._scenarioNodeName = ''
+		self._scenarioNodeVersion = Version('0.0.0')
 
 		self._supportedIntents: Dict[str, Intent] = self.buildIntentList(supportedIntents)
 		self.loadIntentsDefinition()
@@ -56,14 +58,13 @@ class AliceSkill(ProjectAliceObject):
 		if not path.exists():
 			return
 
-		with path.open('r') as fp:
-			data = json.load(fp)
-			try:
-				nodes: dict = data['node-red']['nodes']
-				for nodeName, nodeScript in nodes.items():
-					self._scenarioNodes[f'{self._name}_{nodeName}'] = Path(path)
-			except Exception as e:
-				self.logWarning(f'Found scenario nodes, but it seems corrupted: {e}')
+		try:
+			with path.open('r') as fp:
+				data = json.load(fp)
+				self._scenarioNodeName = data['name']
+				self._scenarioNodeVersion = Version(data['version'])
+		except Exception as e:
+			self.logWarning(f'Failed to load scenario nodes: {e}')
 
 
 	def loadIntentsDefinition(self):
@@ -306,8 +307,17 @@ class AliceSkill(ProjectAliceObject):
 
 
 	@property
-	def scenarioNodes(self) -> dict:
-		return self._scenarioNodes
+	def scenarioNodeName(self) -> str:
+		return self._scenarioNodeName
+
+
+	@property
+	def scenarioNodeVersion(self) -> Version:
+		return self._scenarioNodeVersion
+
+
+	def hasScenarioNodes(self) -> bool:
+		return self._scenarioNodeName != ''
 
 
 	def subscribe(self, mqttClient: MQTTClient):
