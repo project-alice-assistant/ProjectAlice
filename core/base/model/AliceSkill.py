@@ -41,12 +41,29 @@ class AliceSkill(ProjectAliceObject):
 		self._databaseSchema = databaseSchema
 		self._widgets = dict()
 		self._intentsDefinitions = dict()
+		self._scenarioNodes = dict()
 
 		self._supportedIntents: Dict[str, Intent] = self.buildIntentList(supportedIntents)
 		self.loadIntentsDefinition()
 
 		self._utteranceSlotCleaner = re.compile('{(.+?):=>.+?}')
 		self.loadWidgets()
+		self.loadScenarioNodes()
+
+
+	def loadScenarioNodes(self):
+		path = Path(self.getCurrentDir() / 'scenarioNodes/package.json')
+		if not path.exists():
+			return
+
+		with path.open('r') as fp:
+			data = json.load(fp)
+			try:
+				nodes: dict = data['node-red']['nodes']
+				for nodeName, nodeScript in nodes.items():
+					self._scenarioNodes[f'{self._name}_{nodeName}'] = Path(path)
+			except Exception as e:
+				self.logWarning(f'Found scenario nodes, but it seems corrupted: {e}')
 
 
 	def loadIntentsDefinition(self):
@@ -286,6 +303,11 @@ class AliceSkill(ProjectAliceObject):
 	@delayed.setter
 	def delayed(self, value: bool):
 		self._delayed = value
+
+
+	@property
+	def scenarioNodes(self) -> dict:
+		return self._scenarioNodes
 
 
 	def subscribe(self, mqttClient: MQTTClient):

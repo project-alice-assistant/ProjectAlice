@@ -75,6 +75,7 @@ class SuperManager(Logger):
 
 		talkManager = self._managers.pop('TalkManager')
 		skillManager = self._managers.pop('SkillManager')
+		nodeRedManager = self._managers.pop('NodeRedManager')
 
 		samkillaManager = self._managers.pop('SamkillaManager')
 
@@ -84,6 +85,7 @@ class SuperManager(Logger):
 
 		talkManager.onStart()
 		skillManager.onStart()
+		nodeRedManager.onStart()
 		samkillaManager.onStart()
 
 		self._managers[configManager.name] = configManager
@@ -94,6 +96,7 @@ class SuperManager(Logger):
 		self._managers[userManager.name] = userManager
 		self._managers[mqttManager.name] = mqttManager
 		self._managers[skillManager.name] = skillManager
+		self._managers[nodeRedManager.name] = nodeRedManager
 		self._managers[samkillaManager.name] = samkillaManager
 
 

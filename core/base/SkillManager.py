@@ -660,3 +660,13 @@ class SkillManager(Manager):
 
 		self._loadSkillList(skillToLoad=skillName, isUpdate=True)
 		self._startSkill(self._allSkills[skillName])
+
+
+	def allScenarioNodes(self, includeInactive: bool = False) -> dict:
+		skills = self._activeSkills if not includeInactive else self._allSkills
+
+		ret = dict()
+		for skill in skills.values():
+			ret = {**ret, **skill.scenarioNodes}
+
+		return ret
