@@ -110,7 +110,7 @@ class WebInterfaceManager(Manager):
 	def newSkillInstallProcess(self, skill):
 		self._skillInstallProcesses[skill] = {
 			'startedAt': time.time(),
-			'status'   : 'installing'
+			'status': 'installing'
 		}
 
 

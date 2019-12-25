@@ -105,10 +105,10 @@ class TestAliceSkill(unittest.TestCase):
 		]
 
 		mappings = exampleSkill.buildIntentList(initIntents)
-		intent1 =  mappings[str(Intent('Intent1'))]
-		intent2 =  mappings[str(Intent('Intent2'))]
-		intent3 =  mappings[str(Intent('intent3'))]
-		intent4 =  mappings[str(Intent('intent4'))]
+		intent1 = mappings[str(Intent('Intent1'))]
+		intent2 = mappings[str(Intent('Intent2'))]
+		intent3 = mappings[str(Intent('intent3'))]
+		intent4 = mappings[str(Intent('intent4'))]
 
 		self.assertFalse(intent1.protected)
 		self.assertEqual(intent1.authOnly, AccessLevel.ADMIN)
@@ -147,7 +147,7 @@ class TestAliceSkill(unittest.TestCase):
 		]
 
 		mappings = exampleSkill.buildIntentList(initIntents)
-		intent1 =  mappings[str(Intent('intent1'))]
+		intent1 = mappings[str(Intent('intent1'))]
 
 		self.assertFalse(intent1.protected)
 		self.assertEqual(intent1.authOnly, AccessLevel.ADMIN)

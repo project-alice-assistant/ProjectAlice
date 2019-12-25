@@ -78,7 +78,7 @@ class AliceSkill(ProjectAliceObject):
 				with path.open('r') as fp:
 					data = json.load(fp)
 
-					if not 'intents' in data:
+					if 'intents' not in data:
 						continue
 
 					self._intentsDefinitions[lang] = dict()
@@ -200,7 +200,7 @@ class AliceSkill(ProjectAliceObject):
 
 	def getUtterancesByIntent(self, intent: Intent, forceLowerCase: bool = True, cleanSlots: bool = False) -> list:
 		lang = self.LanguageManager.activeLanguage
-		if not lang in self._intentsDefinitions:
+		if lang not in self._intentsDefinitions:
 			return list()
 
 		if isinstance(intent, tuple):
@@ -210,7 +210,7 @@ class AliceSkill(ProjectAliceObject):
 		else:
 			check = str(intent).split('/')[-1].split(':')[-1]
 
-		if not check in self._intentsDefinitions[lang]:
+		if check not in self._intentsDefinitions[lang]:
 			return list()
 
 		return [re.sub(self._utteranceSlotCleaner, '\\1', utterance.lower() if forceLowerCase else utterance) if cleanSlots else utterance for utterance in self._intentsDefinitions[lang][check]]

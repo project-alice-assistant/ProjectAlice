@@ -71,7 +71,7 @@ class LanguageManager(Manager):
 		if not toLang:
 			toLang = self.activeLanguage
 
-		if not skill in self._stringsData:
+		if skill not in self._stringsData:
 			self.logError(f'Asked to get translation from skill "{skill}" but does not exist')
 			return list()
 		elif key not in self._stringsData[skill]:

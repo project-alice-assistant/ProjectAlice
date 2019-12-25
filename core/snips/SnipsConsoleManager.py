@@ -76,7 +76,7 @@ class SnipsConsoleManager(Manager):
 
 		self.logInfo(f"Connecting to Snips console using account {self.ConfigManager.getAliceConfigByName('snipsConsoleLogin')}")
 		payload = {
-			'email'   : self.ConfigManager.getAliceConfigByName('snipsConsoleLogin'),
+			'email': self.ConfigManager.getAliceConfigByName('snipsConsoleLogin'),
 			'password': self.ConfigManager.getAliceConfigByName('snipsConsolePassword')
 		}
 

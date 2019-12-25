@@ -17,16 +17,16 @@ class Assistant:
 	def create(self, title: str, language: str, platformType: str = 'raspberrypi', asrType: str = 'snips', hotwordId: str = 'hey_snips', rawResponse: bool = False) -> str:
 		gqlRequest = [{
 			'operationName': 'CreateAssistant',
-			'variables'    : {
+			'variables': {
 				'input': {
-					'title'    : title,
-					'platform' : {'type': platformType},
-					'asr'      : {'type': asrType},
-					'language' : language,
+					'title': title,
+					'platform': {'type': platformType},
+					'asr': {'type': asrType},
+					'language': language,
 					'hotwordId': hotwordId
 				}
 			},
-			'query'        : createAssistant
+			'query': createAssistant
 		}]
 		response = self._ctx.postGQLBrowserly(gqlRequest)
 
@@ -43,11 +43,11 @@ class Assistant:
 
 		gqlRequest = [{
 			'operationName': 'PatchAssistant',
-			'variables'    : {
+			'variables': {
 				'assistantId': assistantId,
-				'input'      : inputt
+				'input': inputt
 			},
-			'query'        : patchAssistant
+			'query': patchAssistant
 		}]
 		self._ctx.postGQLBrowserly(gqlRequest)
 
@@ -55,8 +55,8 @@ class Assistant:
 	def delete(self, assistantId: str) -> requests.Response:
 		gqlRequest = [{
 			'operationName': 'DeleteAssistant',
-			'variables'    : {'assistantId': assistantId},
-			'query'        : deleteAssistant
+			'variables': {'assistantId': assistantId},
+			'query': deleteAssistant
 		}]
 		return self._ctx.postGQLBrowserly(gqlRequest)
 
@@ -64,8 +64,8 @@ class Assistant:
 	def list(self, rawResponse: bool = False, parseWithAttribute: str = 'id') -> list:
 		gqlRequest = [{
 			'operationName': 'AssistantsQuery',
-			'variables'    : dict(),
-			'query'        : allAssistantsQuery
+			'variables': dict(),
+			'query': allAssistantsQuery
 		}]
 		response = self._ctx.postGQLBrowserly(gqlRequest)
 		if rawResponse: return response
@@ -104,8 +104,8 @@ class Assistant:
 	def forkAssistantSkill(self, assistantId: str, sourceSkillId: str) -> str:
 		gqlRequest = [{
 			'operationName': 'forkAssistantSkill',
-			'variables'    : {'assistantId': assistantId, 'skillId': sourceSkillId},
-			'query'        : forkAssistantSkill
+			'variables': {'assistantId': assistantId, 'skillId': sourceSkillId},
+			'query': forkAssistantSkill
 		}]
 		response = self._ctx.postGQLBrowserly(gqlRequest)
 

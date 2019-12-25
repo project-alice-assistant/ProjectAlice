@@ -31,8 +31,8 @@ class Entity:
 
 		gqlRequest = [{
 			'operationName': 'customEntitiesWithUsageQuery',
-			'variables'    : variables,
-			'query'        : customEntitiesWithUsageQuery
+			'variables': variables,
+			'query': customEntitiesWithUsageQuery
 		}]
 		response = self._ctx.postGQLBrowserly(gqlRequest)
 
@@ -80,8 +80,8 @@ class Entity:
 
 		gqlRequest = [{
 			'operationName': 'FullCustomEntityQuery',
-			'variables'    : variables,
-			'query'        : fullCustomEntityQuery
+			'variables': variables,
+			'query': fullCustomEntityQuery
 		}]
 		response = self._ctx.postGQLBrowserly(gqlRequest)
 
@@ -91,8 +91,8 @@ class Entity:
 	@staticmethod
 	def formatSlotValues(slotValues: list) -> list:
 		return [{
-			'value'        : slotValue['value'],
-			'synonyms'     : slotValue.get('synonyms', list()),
+			'value': slotValue['value'],
+			'synonyms': slotValue.get('synonyms', list()),
 			'fromWikilists': None
 		} for slotValue in slotValues]
 
@@ -110,18 +110,18 @@ class Entity:
 
 		gqlRequest = [{
 			'operationName': 'createIntentEntity',
-			'variables'    : {
+			'variables': {
 				'input': {
-					'author'                 : self._ctx.userEmail,
+					'author': self._ctx.userEmail,
 					'automaticallyExtensible': automaticallyExtensible,
-					'data'                   : formattedSlotValues,
-					'language'               : language,
-					'name'                   : name,
-					'private'                : True,
-					'useSynonyms'            : useSynonyms
+					'data': formattedSlotValues,
+					'language': language,
+					'name': name,
+					'private': True,
+					'useSynonyms': useSynonyms
 				}
 			},
-			'query'        : createIntentEntity
+			'query': createIntentEntity
 		}]
 		response = self._ctx.postGQLBrowserly(gqlRequest)
 		createdEntityId = response['createIntentEntity']['id']
@@ -146,11 +146,11 @@ class Entity:
 
 		gqlRequest = [{
 			'operationName': 'patchIntentEntity',
-			'variables'    : {
+			'variables': {
 				'intentEntityId': entityId,
-				'input'         : inputt
+				'input': inputt
 			},
-			'query'        : patchIntentEntity
+			'query': patchIntentEntity
 		}]
 		self._ctx.postGQLBrowserly(gqlRequest, rawResponse=True)
 
@@ -159,11 +159,11 @@ class Entity:
 	def delete(self, entityId: str, language: str = None):
 		gqlRequest = [{
 			'operationName': 'deleteIntentEntity',
-			'variables'    : {
+			'variables': {
 				'email': self._ctx.userEmail,
-				'id'   : entityId
+				'id': entityId
 				# 'lang': language # seems it's not mandatory
 			},
-			'query'        : deleteIntentEntity
+			'query': deleteIntentEntity
 		}]
 		self._ctx.postGQLBrowserly(gqlRequest, rawResponse=True)

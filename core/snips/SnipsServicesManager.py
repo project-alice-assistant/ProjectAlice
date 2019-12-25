@@ -34,7 +34,7 @@ class SnipsServicesManager(Manager):
 		if withASR:
 			return self._snipsServices
 		else:
-			return [x for x in self._snipsServices if not 'asr' in x]
+			return [x for x in self._snipsServices if 'asr' not in x]
 
 
 	def onStart(self):

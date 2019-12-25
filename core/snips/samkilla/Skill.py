@@ -42,8 +42,8 @@ class Skill:
 		variables = {
 			'userId': userId,
 			'offset': (page - 1) * 50,
-			'limit' : 50,
-			'sort'  : 'lastUpdated'
+			'limit': 50,
+			'sort': 'lastUpdated'
 		}
 
 		# 50 is the max limit server side
@@ -52,8 +52,8 @@ class Skill:
 
 		gqlRequest = [{
 			'operationName': 'SkillsWithUsageQuery',
-			'variables'    : variables,
-			'query'        : skillsWithUsageQuery
+			'variables': variables,
+			'query': skillsWithUsageQuery
 		}]
 		response = self._ctx.postGQLBrowserly(gqlRequest)
 
@@ -109,17 +109,17 @@ class Skill:
 
 		gqlRequest = [{
 			'operationName': 'createSkill',
-			'variables'    : {
+			'variables': {
 				'input': {
 					'description': description,
-					'imageUrl'   : EnumSkillImageUrl.getImageUrl(self._ctx.ROOT_URL, imageKey),
-					'intents'    : intents or list(),
-					'language'   : language,
-					'name'       : name,
-					'private'    : True
+					'imageUrl': EnumSkillImageUrl.getImageUrl(self._ctx.ROOT_URL, imageKey),
+					'intents': intents or list(),
+					'language': language,
+					'name': name,
+					'private': True
 				}
 			},
-			'query'        : createSkill
+			'query': createSkill
 		}]
 		resp = self._ctx.postGQLBrowserly(gqlRequest)
 
@@ -140,13 +140,13 @@ class Skill:
 
 		gqlRequest = [{
 			'operationName': 'PatchAssistantSkills',
-			'variables'    : {
+			'variables': {
 				'assistantId': assistantId,
-				'input'      : {
+				'input': {
 					'skills': variablesSkills
 				}
 			},
-			'query'        : patchAssistantSkills
+			'query': patchAssistantSkills
 		}]
 		self._ctx.postGQLBrowserly(gqlRequest, rawResponse=True)
 
@@ -163,10 +163,10 @@ class Skill:
 
 		gqlRequest = [{
 			'operationName': 'editSkill',
-			'variables'    : {
+			'variables': {
 				'input': inputt
 			},
-			'query'        : editSkill
+			'query': editSkill
 		}]
 		self._ctx.postGQLBrowserly(gqlRequest, rawResponse=True)
 
@@ -174,8 +174,8 @@ class Skill:
 	def delete(self, skillId: str, reload: bool = True):
 		gqlRequest = [{
 			'operationName': 'deleteSkill',
-			'variables'    : {'skillId': skillId},
-			'query'        : deleteSkill
+			'variables': {'skillId': skillId},
+			'query': deleteSkill
 		}]
 		self._ctx.postGQLBrowserly(gqlRequest)
 
@@ -190,13 +190,13 @@ class Skill:
 
 		gqlRequest = [{
 			'operationName': 'PatchAssistantSkills',
-			'variables'    : {
+			'variables': {
 				'assistantId': assistantId,
-				'input'      : {
+				'input': {
 					'skills': variablesSkills
 				}
 			},
-			'query'        : patchAssistantSkills
+			'query': patchAssistantSkills
 		}]
 		self._ctx.postGQLBrowserly(gqlRequest, rawResponse=True)
 
@@ -210,8 +210,8 @@ class Skill:
 	def forkSkillIntent(self, skillId: str, sourceIntentId: str, userId: str, newIntentName: str = None) -> str:
 		gqlRequest = [{
 			'operationName': 'forkSkillIntent',
-			'variables'    : {'skillId': skillId, 'intentId': sourceIntentId, 'newIntentName': newIntentName},
-			'query'        : forkSkillIntent
+			'variables': {'skillId': skillId, 'intentId': sourceIntentId, 'newIntentName': newIntentName},
+			'query': forkSkillIntent
 		}]
 
 		try:

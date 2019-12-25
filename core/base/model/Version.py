@@ -25,20 +25,20 @@ class Version(str, ProjectAliceObject):
 			else:
 				self._isVersionNumber = True
 				self._infos = {
-					'mainVersion'  : int(matches.group('mainVersion')),
+					'mainVersion': int(matches.group('mainVersion')),
 					'updateVersion': int(matches.group('updateVersion')),
-					'hotfix'       : -1 if not matches.group('hotfix') else int(matches.group('hotfix')),
-					'releaseType'  : matches.group('releaseType') or 'master',
+					'hotfix': -1 if not matches.group('hotfix') else int(matches.group('hotfix')),
+					'releaseType': matches.group('releaseType') or 'master',
 					'releaseNumber': 1 if not matches.group('releaseNumber') else int(matches.group('releaseNumber'))
 				}
 				self.isOldVersioning()
 		except TypeError:
 			self._isVersionNumber = False
 			self._infos = {
-				'mainVersion'  : 0,
+				'mainVersion': 0,
 				'updateVersion': 0,
-				'hotfix'       : 0,
-				'releaseType'  : '',
+				'hotfix': 0,
+				'releaseType': '',
 				'releaseNumber': 0
 			}
 

@@ -38,8 +38,8 @@ class Intent:
 
 		gqlRequest = [{
 			'operationName': 'IntentsByUserIdWithUsageQuery',
-			'variables'    : variables,
-			'query'        : intentsByUserIdWithUsageQuery
+			'variables': variables,
+			'query': intentsByUserIdWithUsageQuery
 		}]
 		response = self._ctx.postGQLBrowserly(gqlRequest)
 
@@ -87,8 +87,8 @@ class Intent:
 
 		gqlRequest = [{
 			'operationName': 'FullIntentQuery',
-			'variables'    : variables,
-			'query'        : fullIntentQuery
+			'variables': variables,
+			'query': fullIntentQuery
 		}]
 		response = self._ctx.postGQLBrowserly(gqlRequest)
 
@@ -109,28 +109,28 @@ class Intent:
 
 		gqlRequest = [{
 			'operationName': 'publishIntent',
-			'variables'    : {
+			'variables': {
 				'input': {
-					'config' : {
-						'author'          : self._ctx.userEmail,
-						'description'     : description,
-						'displayName'     : name,
+					'config': {
+						'author': self._ctx.userEmail,
+						'description': description,
+						'displayName': name,
 						'enabledByDefault': enabledByDefault,
-						'exampleQueries'  : exempleQueries,
-						'language'        : language,
-						'name'            : name,
-						'private'         : True,
-						'slots'           : structuredSlots,
-						'version'         : '0'
+						'exampleQueries': exempleQueries,
+						'language': language,
+						'name': name,
+						'private': True,
+						'slots': structuredSlots,
+						'version': '0'
 					},
 					'dataset': {
-						'entities'  : entities,
-						'language'  : language,
+						'entities': entities,
+						'language': language,
 						'utterances': finalStructuredUtterances
 					}
 				}
 			},
-			'query'        : publishIntent
+			'query': publishIntent
 		}]
 
 		try:
@@ -168,13 +168,13 @@ class Intent:
 
 		gqlRequest = [{
 			'operationName': 'patchSkillIntents',
-			'variables'    : {
+			'variables': {
 				'input': {
-					'id'     : skillId,
+					'id': skillId,
 					'intents': variablesIntents
 				}
 			},
-			'query'        : patchSkillIntents
+			'query': patchSkillIntents
 		}]
 		self._ctx.postGQLBrowserly(gqlRequest, rawResponse=True)
 
@@ -186,13 +186,13 @@ class Intent:
 
 		gqlRequest = [{
 			'operationName': 'patchSkillIntents',
-			'variables'    : {
+			'variables': {
 				'input': {
-					'id'     : skillId,
+					'id': skillId,
 					'intents': variablesIntents
 				}
 			},
-			'query'        : patchSkillIntents
+			'query': patchSkillIntents
 		}]
 		self._ctx.postGQLBrowserly(gqlRequest, rawResponse=True)
 
@@ -203,8 +203,8 @@ class Intent:
 	def delete(self, intentId: str):
 		gqlRequest = [{
 			'operationName': 'deleteIntent',
-			'variables'    : {'intentId': intentId},
-			'query'        : deleteIntent
+			'variables': {'intentId': intentId},
+			'query': deleteIntent
 		}]
 		return self._ctx.postGQLBrowserly(gqlRequest, rawResponse=True)
 
@@ -225,29 +225,29 @@ class Intent:
 
 		gqlRequest = [{
 			'operationName': 'publishIntent',
-			'variables'    : {
+			'variables': {
 				'intentId': intentId,
-				'input'   : {
-					'config' : {
-						'author'          : intent['author'],
-						'description'     : intent['description'],
-						'displayName'     : intent['displayName'],
+				'input': {
+					'config': {
+						'author': intent['author'],
+						'description': intent['description'],
+						'displayName': intent['displayName'],
 						'enabledByDefault': intent['enabledByDefault'],
-						'language'        : intent['language'],
-						'exampleQueries'  : exempleQueries,
-						'slots'           : structuredSlots,
-						'version'         : intent['version'],
-						'name'            : intent['name'],
-						'private'         : True,
+						'language': intent['language'],
+						'exampleQueries': exempleQueries,
+						'slots': structuredSlots,
+						'version': intent['version'],
+						'name': intent['name'],
+						'private': True,
 					},
 					'dataset': {
-						'entities'  : entities,
-						'language'  : intent['language'],
+						'entities': entities,
+						'language': intent['language'],
 						'utterances': structuredUtterances
 					}
 				}
 			},
-			'query'        : publishIntent
+			'query': publishIntent
 		}]
 
 		try:
@@ -274,13 +274,13 @@ class Intent:
 			entities.append({'id': slotEntityId, 'name': slotEntityId if snipsSpecialSlot else slot['type']})
 
 			structuredSlots.append({
-				'entityId'       : slotEntityId,
-				'id'             : self.hashSlotName(slotName=slot['name']),
+				'entityId': slotEntityId,
+				'id': self.hashSlotName(slotName=slot['name']),
 				'missingQuestion': slot['missingQuestion'],
-				'name'           : slot['name'],
-				'description'    : slot['description'],
-				'required'       : slot['required'],
-				'parameters'     : None
+				'name': slot['name'],
+				'description': slot['description'],
+				'required': slot['required'],
+				'parameters': None
 			})
 
 		return structuredSlots, entities
@@ -335,7 +335,7 @@ class Intent:
 				counterItems += 1
 
 				data.append({'slot_id': self.hashSlotName(slotName=wordSlotName), 'slot_name': wordSlotName, 'text': wordExemple,
-							 'range'  : {'start': formattedWordSlotIndexStart, 'end': formattedWordSlotIndexEnd}})
+							 'range': {'start': formattedWordSlotIndexStart, 'end': formattedWordSlotIndexEnd}})
 
 				if counterItems == maxItems and lastPieceIndex < lenCleanTextUtterance:
 					endText = formattedTextUtterance[lastPieceIndex:lenCleanTextUtterance]

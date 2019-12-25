@@ -111,15 +111,15 @@ class MainProcessor:
 	def syncRemoteToLocalAssistant(self, assistantId: str, assistantLanguage: str, assistantTitle: str):
 		if not self.hasLocalAssistantByIdAndLanguage(assistantId=assistantId, assistantLanguage=assistantLanguage):
 			newState = {
-				'id'       : assistantId,
-				'name'     : assistantTitle,
-				'language' : assistantLanguage,
-				'skills'  : dict(),
+				'id': assistantId,
+				'name': assistantTitle,
+				'language': assistantLanguage,
+				'skills': dict(),
 				'slotTypes': dict(),
-				'intents'  : dict()
+				'intents': dict()
 			}
 
-			if not assistantLanguage in self._savedAssistants:
+			if assistantLanguage not in self._savedAssistants:
 				self._savedAssistants[assistantLanguage] = dict()
 
 			self._savedAssistants[assistantLanguage][assistantId] = newState
@@ -234,11 +234,11 @@ class MainProcessor:
 				savedSlotType = self._savedSlots[slotLanguage][assistantId][slotName]
 
 				slotTypesGlobalValues[savedSlotType['name']] = {'__otherattributes__': {
-					'name'                   : savedSlotType['name'],
-					'matchingStrictness'     : savedSlotType['matchingStrictness'],
+					'name': savedSlotType['name'],
+					'matchingStrictness': savedSlotType['matchingStrictness'],
 					'automaticallyExtensible': savedSlotType['automaticallyExtensible'],
-					'useSynonyms'            : savedSlotType['useSynonyms'],
-					'values'                 : list()
+					'useSynonyms': savedSlotType['useSynonyms'],
+					'values': list()
 				}}
 
 				for savedSlotValue in savedSlotType['values']:
@@ -277,14 +277,14 @@ class MainProcessor:
 
 				intentsGlobalValues[savedIntent['name']] = {
 					'__otherattributes__': {
-						'name'            : savedIntent['name'],
-						'description'     : savedIntent['description'],
+						'name': savedIntent['name'],
+						'description': savedIntent['description'],
 						'enabledByDefault': savedIntent['enabledByDefault'],
-						'utterances'      : list(),
-						'slots'           : list()
+						'utterances': list(),
+						'slots': list()
 					},
-					'utterances'         : dict(),
-					'slots'              : dict()
+					'utterances': dict(),
+					'slots': dict()
 				}
 
 				for savedUtterance in savedIntent['utterances']:
@@ -345,11 +345,11 @@ class MainProcessor:
 					if skillSlotType['name'] not in slotTypesSkillsValues:
 						slotTypesSkillsValues[skillSlotType['name']] = {
 							'__otherattributes__': {
-								'name'                   : skillSlotType['name'],
-								'matchingStrictness'     : skillSlotType['matchingStrictness'],
+								'name': skillSlotType['name'],
+								'matchingStrictness': skillSlotType['matchingStrictness'],
 								'automaticallyExtensible': skillSlotType['automaticallyExtensible'],
-								'useSynonyms'            : skillSlotType['useSynonyms'],
-								'values'                 : list()
+								'useSynonyms': skillSlotType['useSynonyms'],
+								'values': list()
 							}
 						}
 
@@ -368,14 +368,14 @@ class MainProcessor:
 
 						intentsSkillsValues[skillIntent['name']] = {
 							'__otherattributes__': {
-								'name'            : skillIntent['name'],
-								'description'     : skillIntent['description'],
+								'name': skillIntent['name'],
+								'description': skillIntent['description'],
 								'enabledByDefault': skillIntent['enabledByDefault'],
-								'utterances'      : list(),
-								'slots'           : list()
+								'utterances': list(),
+								'slots': list()
 							},
-							'utterances'         : dict(),
-							'slots'              : dict()
+							'utterances': dict(),
+							'slots': dict()
 						}
 
 					for skillUtterance in skillIntent.get('utterances', list()):
@@ -732,18 +732,18 @@ class MainProcessor:
 				continue
 
 			skills[skillName] = {
-				'skill'     : skillName,
-				'icon'       : EnumSkillImageUrl.urlToResourceKey(skill['imageUrl']),
+				'skill': skillName,
+				'icon': EnumSkillImageUrl.urlToResourceKey(skill['imageUrl']),
 				'description': skill['description'],
-				'slotTypes'  : list(),
-				'intents'    : list()
+				'slotTypes': list(),
+				'intents': list()
 			}
 			skillSyncState = {
-				'skillId'  : skill['id'],
-				'name'     : skillName,
+				'skillId': skill['id'],
+				'name': skillName,
 				'slotTypes': dict(),
-				'intents'  : dict(),
-				'hash'     : ''
+				'intents': dict(),
+				'hash': ''
 			}
 
 			cachedIndexedIntents = self._ctx.intent.listIntentsByUserIdAndSkillId(userId=self._ctx.userId, skillId=skill['id'], fromCache=True)
@@ -789,35 +789,35 @@ class MainProcessor:
 					typeEntityMatching[entity['id']] = entityName
 
 					skills[skillName]['slotTypes'].append({
-						'name'                   : entityName,
-						'matchingStrictness'     : entity['matchingStrictness'],
+						'name': entityName,
+						'matchingStrictness': entity['matchingStrictness'],
 						'automaticallyExtensible': entity['automaticallyExtensible'],
-						'useSynonyms'            : entity['useSynonyms'],
-						'values'                 : values
+						'useSynonyms': entity['useSynonyms'],
+						'values': values
 					})
 					skillSyncState['slotTypes'][entityName] = {
 						'entityId': entity['id'],
-						'hash'    : ''
+						'hash': ''
 					}
 
 				slots = [{
-					'name'           : SuperManager.getInstance().commons.toCamelCase(string=slot['name'], replaceSepCharacters=True, sepCharacters=('/', '-', '_')),
-					'description'    : slot['description'],
-					'required'       : slot['required'],
-					'type'           : slot['entityId'] if slot['entityId'].startswith('snips/') else typeEntityMatching[slot['entityId']],
+					'name': SuperManager.getInstance().commons.toCamelCase(string=slot['name'], replaceSepCharacters=True, sepCharacters=('/', '-', '_')),
+					'description': slot['description'],
+					'required': slot['required'],
+					'type': slot['entityId'] if slot['entityId'].startswith('snips/') else typeEntityMatching[slot['entityId']],
 					'missingQuestion': slot['missingQuestion']
 				} for slot in intent['slots']]
 
 				skills[skillName]['intents'].append({
-					'name'            : intentName,
-					'description'     : intent['description'],
+					'name': intentName,
+					'description': intent['description'],
 					'enabledByDefault': intent['enabledByDefault'],
-					'utterances'      : utterances,
-					'slots'           : slots
+					'utterances': utterances,
+					'slots': slots
 				})
 				skillSyncState['intents'][intentName] = {
 					'intentId': intent['id'],
-					'hash'    : ''
+					'hash': ''
 				}
 
 			# Persist skill configuration

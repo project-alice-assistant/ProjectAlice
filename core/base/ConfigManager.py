@@ -400,9 +400,9 @@ class ConfigManager(Manager):
 				try:
 					installFile = json.load(Path(skillsPath / skillDirectory / f'{skillName}.install').open())
 					node = {
-						'active'    : True,
-						'version'   : installFile['version'],
-						'author'    : installFile['author'],
+						'active': True,
+						'version': installFile['version'],
+						'author': installFile['author'],
 						'conditions': installFile['conditions']
 					}
 					config = {**config, **node}

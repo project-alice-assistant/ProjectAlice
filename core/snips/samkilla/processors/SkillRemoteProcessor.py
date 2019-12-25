@@ -25,7 +25,7 @@ class SkillRemoteProcessor:
 	def createNewSavedSkill(self) -> dict:
 		return {
 			'skillId': None,
-			'name'   : self._skillName
+			'name': self._skillName
 		}
 
 
@@ -68,7 +68,7 @@ class SkillRemoteProcessor:
 
 		return {
 			'skillId': skillId,
-			'hash'   : curHash,
+			'hash': curHash,
 			'changes': changes
 		}
 

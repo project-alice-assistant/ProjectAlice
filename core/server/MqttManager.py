@@ -449,21 +449,21 @@ class MqttManager(Manager):
 
 			if self.ConfigManager.getAliceConfigByName('outputOnSonos') != '1' or (self.ConfigManager.getAliceConfigByName('outputOnSonos') == '1' and self.SkillManager.getSkillInstance('Sonos') is None or not self.SkillManager.getSkillInstance('Sonos').anySkillHere(client)) or not self.SkillManager.getSkillInstance('Sonos').active:
 				self._mqttClient.publish(constants.TOPIC_START_SESSION, json.dumps({
-					'siteId'    : client,
-					'init'      : {
-						'type'                   : 'notification',
-						'text'                   : text,
+					'siteId': client,
+					'init': {
+						'type': 'notification',
+						'text': text,
 						'sendIntentNotRecognized': True,
-						'canBeEnqueued' 		 : canBeEnqueued
+						'canBeEnqueued': canBeEnqueued
 					},
 					'customData': customData
 				}))
 			else:
 				self._speakOnSonos(text, client)
 				self._mqttClient.publish(constants.TOPIC_START_SESSION, json.dumps({
-					'siteId'    : client,
-					'init'      : {
-						'type'                   : 'notification',
+					'siteId': client,
+					'init': {
+						'type': 'notification',
 						'sendIntentNotRecognized': True
 					},
 					'customData': customData
@@ -515,9 +515,9 @@ class MqttManager(Manager):
 			jsonDict['customData'] = json.dumps(customData)
 
 		initDict = {
-			'type'                   : 'action',
-			'text'                   : text,
-			'canBeEnqueued'          : canBeEnqueued,
+			'type': 'action',
+			'text': text,
+			'canBeEnqueued': canBeEnqueued,
 			'sendIntentNotRecognized': True
 		}
 
@@ -561,8 +561,8 @@ class MqttManager(Manager):
 			self.DialogSessionManager.addPreviousIntent(sessionId=sessionId, previousIntent=previousIntent)
 
 		jsonDict = {
-			'sessionId'              : sessionId,
-			'text'                   : text,
+			'sessionId': sessionId,
+			'text': text,
 			'sendIntentNotRecognized': True,
 		}
 
@@ -624,7 +624,7 @@ class MqttManager(Manager):
 			if text:
 				self._mqttClient.publish(constants.TOPIC_END_SESSION, json.dumps({
 					'sessionId': sessionId,
-					'text'     : text
+					'text': text
 				}))
 			else:
 				self._mqttClient.publish(constants.TOPIC_END_SESSION, json.dumps({

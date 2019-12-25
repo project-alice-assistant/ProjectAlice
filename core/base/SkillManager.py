@@ -563,9 +563,9 @@ class SkillManager(Manager):
 				subprocess.run(['sudo', str(directory / scriptReq)])
 
 			node = {
-				'active'    : True,
-				'version'   : installFile['version'],
-				'author'    : installFile['author'],
+				'active': True,
+				'version': installFile['version'],
+				'author': installFile['author'],
 				'conditions': installFile['conditions']
 			}
 
@@ -624,7 +624,7 @@ class SkillManager(Manager):
 			skill = self._activeSkills.get(skillName, self._deactivatedSkills.get(skillName))
 			confs = [{
 				'intentId': intent.justTopic if hasattr(intent, 'justTopic') else intent,
-				'enable'  : state
+				'enable': state
 			} for intent in skill.supportedIntents if not self.isIntentInUse(intent=intent, filtered=[skillName])]
 
 			self.MqttManager.configureIntents(confs)
