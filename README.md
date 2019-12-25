@@ -9,7 +9,7 @@
   <a href="https://github.com/project-alice-assistant/ProjectAlice/actions" target="_blank"><img alt="unit tests" src="https://github.com/project-alice-assistant/ProjectAlice/workflows/Unit%20Tests/badge.svg"></a>
   <a href="https://coveralls.io/github/project-alice-assistant/ProjectAlice?branch=HEAD" target="_blank"><img alt="Coverage Status" src="https://coveralls.io/repos/github/project-alice-assistant/ProjectAlice/badge.svg?branch=HEAD"></a>
   <a href="https://codeclimate.com/github/project-alice-assistant/ProjectAlice/maintainability" target="_blank"><img alt="Maintainability" src="https://api.codeclimate.com/v1/badges/b54aaa4f575f66b4f485/maintainability"></a>
-  <a href="https://www.codacy.com/manual/project-alice-assistant/ProjectAlice?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=project-alice-assistant/ProjectAlice&amp;utm_campaign=Badge_Grade" target="_blank"><img alt="Codacy Badge" src="https://api.codacy.com/project/badge/Grade/55399302e9614fb18a354fb9345dff29"></a>
+  <a href="https://app.codacy.com/manual/ProjectAlice/ProjectAlice" target="_blank"><img alt="Codacy Badge" src="https://api.codacy.com/project/badge/Grade/55399302e9614fb18a354fb9345dff29"></a>
 </p>
 
 Project Alice is a smart voice home assistant that is completly modular and extensible. It was first built around Snips therefore runs entirely offline and never sends or shares your voice interactions with anyone, Project Alice **guarantees** your privacy in your home or wherever you’re using Project Alice.
