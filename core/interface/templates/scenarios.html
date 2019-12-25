@@ -1,7 +1,7 @@
 {% extends 'base.html' %}
 
 {% block title %}
-	Syslog
+	{{ langData.scenarios }}
 {% endblock %}
 
 {% block loaders %}
@@ -14,6 +14,7 @@
 {% endblock %}
 
 {% block content %}
-	<div>
+	<div class="scenariosContainer">
+		<iframe id="nodered" width="100%" height="100%" src="http://192.168.1.168:1880"></iframe>
 	</div>
 {% endblock %}

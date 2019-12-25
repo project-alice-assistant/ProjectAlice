@@ -386,26 +386,33 @@ class ConfigManager(Manager):
 				config = {**config, **self._aliceConfigurations['skills'][skillName]}
 			else:
 				# For some reason we have a skill not declared in alice configs... I think getting rid of it is best
-				if skillName not in SkillManager.NEEDED_SKILLS:
+				if skillName not in SkillManager.NEEDED_SKILLS and not self.getAliceConfigByName('devMode'):
 					self.logInfo(f'- Skill "{skillName}" not declared in config but files are existing, cleaning up')
 					shutil.rmtree(skillDirectory, ignore_errors=True)
 					if skillName in skillsConfigurations:
 						skillsConfigurations.pop(skillName)
 					continue
-				else:
+				elif skillName in SkillManager.NEEDED_SKILLS:
 					self.logInfo(f'- Skill "{skillName}" is required but is missing definition in Alice config, generating them')
-					try:
-						installFile = json.load(Path(skillsPath / skillDirectory / f'{skillName}.install').open())
-						node = {
-							'active'    : True,
-							'version'   : installFile['version'],
-							'author'    : installFile['author'],
-							'conditions': installFile['conditions']
-						}
-						config = {**config, **node}
-						self._skillsConfigurations[skillName] = config
-						self.updateAliceConfiguration('skills', self._skillsConfigurations)
-					except Exception as e:
+				elif self.getAliceConfigByName('devMode'):
+					self.logInfo(f'- Dev mode is on, "{skillName}" is missing definition in Alice config, generating them')
+
+				try:
+					installFile = json.load(Path(skillsPath / skillDirectory / f'{skillName}.install').open())
+					node = {
+						'active'    : True,
+						'version'   : installFile['version'],
+						'author'    : installFile['author'],
+						'conditions': installFile['conditions']
+					}
+					config = {**config, **node}
+					self._skillsConfigurations[skillName] = config
+					self.updateAliceConfiguration('skills', self._skillsConfigurations)
+				except Exception as e:
+					if self.getAliceConfigByName('devMode'):
+						self.logInfo(f'- Failed generating default config. Please check your config template for skill "{skillName}"')
+						continue
+					else:
 						self.logError(f'- Failed generating default config, scheduling download for skill "{skillName}": {e}')
 						subprocess.run(['wget', f'http://skills.projectalice.ch/{skillName}', '-O', Path(self.Commons.rootDir(), f'system/skillInstallTickets/{skillName}.install')])
 						if skillName in skillsConfigurations:

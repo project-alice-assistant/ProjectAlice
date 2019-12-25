@@ -46,4 +46,4 @@ class Logger:
 		try:
 			return f'[{inspect.getmodulename(inspect.stack()[depth][1])}] {msg}'
 		except Exception:
-			return '[Unknown] {msg}'
+			return f'[Unknown] {msg}'
