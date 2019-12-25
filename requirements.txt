@@ -1,15 +1,7 @@
 pyalsaaudio
 python-dateutil==2.8.0
 paho-mqtt
-watchdog
 requests==2.21.0
-requests-jwt
-spidev
-gpiozero
-langdetect
-slugify
-google-api-python-client
-oauth2client
 esptool
 pyserial
 selenium
