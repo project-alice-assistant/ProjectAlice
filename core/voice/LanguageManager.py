@@ -13,18 +13,18 @@ class LanguageManager(Manager):
 
 	def __init__(self):
 		super().__init__(self.NAME)
-		self._supportedLanguages 		= list()
-		self._activeLanguage 			= ''
-		self._activeCountryCode 		= ''
-		self._defaultLanguage 			= ''
-		self._defaultCountryCode 		= ''
-		self._activeSnipsProjectId 		= ''
+		self._supportedLanguages = list()
+		self._activeLanguage = ''
+		self._activeCountryCode = ''
+		self._defaultLanguage = ''
+		self._defaultCountryCode = ''
+		self._activeSnipsProjectId = ''
 
-		self._stringsData 				= dict()
-		self._locals 					= list()
+		self._stringsData = dict()
+		self._locals = list()
 
-		self._floatExpressionPattern 	= re.compile(r'([0-9]+\.[0-9]+)')
-		self._mathSigns                 = ('+', '-', '/', '*', '%')
+		self._floatExpressionPattern = re.compile(r'([0-9]+\.[0-9]+)')
+		self._mathSigns = ('+', '-', '/', '*', '%')
 
 
 	def onStart(self):

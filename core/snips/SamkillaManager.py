@@ -30,21 +30,21 @@ class SamkillaManager(Manager):
 	def __init__(self, devMode: bool = True):
 		super().__init__(self.NAME)
 
-		self._currentUrl    = ''
-		self._browser       = None
-		self._devMode       = devMode
-		self._cookie        = ''
-		self._userId        = ''
-		self._userEmail     = ''
-		self._userPassword  = ''
-		self._assistant     = None
-		self._skill         = None
-		self._intent        = None
-		self._entity        = None
+		self._currentUrl = ''
+		self._browser = None
+		self._devMode = devMode
+		self._cookie = ''
+		self._userId = ''
+		self._userEmail = ''
+		self._userPassword = ''
+		self._assistant = None
+		self._skill = None
+		self._intent = None
+		self._entity = None
 
-		self._dtSlotTypesSkillsValues 		= dict()
-		self._dtIntentsSkillsValues		= dict()
-		self._dtIntentNameSkillMatching   	= dict()
+		self._dtSlotTypesSkillsValues = dict()
+		self._dtIntentsSkillsValues = dict()
+		self._dtIntentNameSkillMatching = dict()
 
 		self._mainProcessor = None
 

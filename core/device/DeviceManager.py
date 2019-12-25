@@ -38,22 +38,22 @@ class DeviceManager(Manager):
 	def __init__(self):
 		super().__init__(self.NAME, self.DATABASE)
 
-		self._devices           = dict()
-		self._broadcastRoom     = ''
-		self._broadcastFlag     = threading.Event()
+		self._devices = dict()
+		self._broadcastRoom = ''
+		self._broadcastFlag = threading.Event()
 
-		self._broadcastPort     = None
-		self._broadcastTimer    = None
+		self._broadcastPort = None
+		self._broadcastTimer = None
 
-		self._flashThread       = None
+		self._flashThread = None
 
-		self._listenPort        = None
+		self._listenPort = None
 
-		self._broadcastSocket   = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+		self._broadcastSocket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 		self._broadcastSocket.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
 		self._broadcastSocket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
 
-		self._listenSocket      = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+		self._listenSocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 		self._listenSocket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
 		self._listenSocket.settimeout(2)
 

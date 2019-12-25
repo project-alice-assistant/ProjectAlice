@@ -17,11 +17,11 @@ class SnipsConsoleManager(Manager):
 	def __init__(self):
 		super().__init__(self.NAME)
 
-		self._connected     = False
-		self._tries         = 0
-		self._user          = None
+		self._connected = False
+		self._tries = 0
+		self._user = None
 
-		self._headers       = {
+		self._headers = {
 			'Accept'    	: 'application/json',
 			'Content-Type' 	: 'application/json'
 		}

@@ -34,10 +34,10 @@ class WakewordManager(Manager):
 	def __init__(self):
 		super().__init__(self.NAME)
 
-		self._state     = WakewordManagerState.IDLE
+		self._state = WakewordManagerState.IDLE
 
-		self._audio     = None
-		self._wakeword  = None
+		self._audio = None
+		self._wakeword = None
 		self._threshold = 0
 		self._wakewordUploadThreads = list()
 		self._sampleRate = self.ConfigManager.getAliceConfigByName('micSampleRate')

@@ -13685,9 +13685,9 @@ var widgetsSelectable = $.widget( "ui.selectable", $.ui.mouse, {
 				return;
 			}
 
-			offset.left   = selectee.left   + that.elementPos.left;
-			offset.right  = selectee.right  + that.elementPos.left;
-			offset.top    = selectee.top    + that.elementPos.top;
+			offset.left = selectee.left   + that.elementPos.left;
+			offset.right = selectee.right  + that.elementPos.left;
+			offset.top = selectee.top    + that.elementPos.top;
 			offset.bottom = selectee.bottom + that.elementPos.top;
 
 			if ( options.tolerance === "touch" ) {

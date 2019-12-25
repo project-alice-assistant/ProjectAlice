@@ -21,9 +21,9 @@ class MqttManager(Manager):
 	def __init__(self):
 		super().__init__(self.NAME)
 
-		self._mqttClient            = mqtt.Client()
-		self._thanked               = False
-		self._wideAskingSessions    = list()
+		self._mqttClient = mqtt.Client()
+		self._thanked = False
+		self._wideAskingSessions = list()
 		self._multiDetectionsHolder = list()
 
 		self._audioFrameRegex = re.compile(constants.TOPIC_AUDIO_FRAME.replace('{}', '(.*)'))
@@ -172,7 +172,6 @@ class MqttManager(Manager):
 			if redQueen and not redQueen.inTheMood(session):
 				return
 
-			customData = session.customData
 			if 'intent' in payload and payload['intent']['confidenceScore'] < self.ConfigManager.getAliceConfigByName('probabilityThreshold'):
 				if session.notUnderstood < self.ConfigManager.getAliceConfigByName('notUnderstoodRetries'):
 					session.notUnderstood = session.notUnderstood + 1

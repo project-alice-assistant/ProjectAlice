@@ -1,9 +1,9 @@
 class ThreadTimer:
 	def __init__(self, callback: str, args: list, kwargs: dict):
-		self._timer 	= None
-		self._callback 	= callback
-		self._args 		= args
-		self._kwargs 	= kwargs
+		self._timer = None
+		self._callback = callback
+		self._args = args
+		self._kwargs = kwargs
 
 	@property
 	def timer(self):

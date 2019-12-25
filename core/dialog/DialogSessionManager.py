@@ -21,10 +21,10 @@ class DialogSessionManager(Manager):
 	def __init__(self):
 		super().__init__(self.NAME)
 
-		self._preSessions: Dict[str, DialogSession]             = dict()
-		self._sessions: Dict[str, DialogSession]                = dict()
-		self._terminatedSessions: Dict[str, DialogSession]      = dict()
-		self._revivePendingSessions: Dict[str, DialogSession]   = dict()
+		self._preSessions: Dict[str, DialogSession] = dict()
+		self._sessions: Dict[str, DialogSession] = dict()
+		self._terminatedSessions: Dict[str, DialogSession] = dict()
+		self._revivePendingSessions: Dict[str, DialogSession] = dict()
 
 
 	@property

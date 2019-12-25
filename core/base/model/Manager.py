@@ -9,9 +9,9 @@ class Manager(ProjectAliceObject):
 	def __init__(self, name: str, databaseSchema: dict = None):
 		super().__init__(logDepth=3)
 
-		self._name              = name
-		self._databaseSchema    = databaseSchema
-		self._isActive          = True
+		self._name = name
+		self._databaseSchema = databaseSchema
+		self._isActive = True
 
 		self.logInfo(f'Initializing {name}')
 

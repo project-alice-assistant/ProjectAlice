@@ -74,7 +74,7 @@ network={
 			try:
 				load = yaml.safe_load(f)
 				if not load:
-					raise  yaml.YAMLError
+					raise yaml.YAMLError
 
 				initConfs = initDict(load)
 			except yaml.YAMLError as e:

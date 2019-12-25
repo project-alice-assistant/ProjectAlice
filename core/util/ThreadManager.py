@@ -13,9 +13,9 @@ class ThreadManager(Manager):
 	def __init__(self):
 		super().__init__(self.NAME)
 
-		self._timers	= list()
-		self._threads 	= dict()
-		self._events 	= dict()
+		self._timers = list()
+		self._threads = dict()
+		self._events = dict()
 
 
 	def onStop(self):

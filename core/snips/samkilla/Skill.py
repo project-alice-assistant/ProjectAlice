@@ -1,4 +1,5 @@
 import typing
+import re
 
 from core.ProjectAliceExceptions import HttpError
 from core.snips import SamkillaManager
@@ -11,8 +12,6 @@ from core.snips.samkilla.gql.skills.queries import skillsWithUsageQuery
 from core.snips.samkilla.models.EnumSkillImageUrl import EnumSkillImageUrl as EnumSkillImageUrlClass
 
 EnumSkillImageUrl = EnumSkillImageUrlClass()
-
-import re
 
 intent_regex = re.compile(r'intent_([a-zA-Z0-9]+)')
 

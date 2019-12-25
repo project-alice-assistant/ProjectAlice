@@ -23,6 +23,7 @@ import sys
 import traceback
 from datetime import datetime
 from pathlib import Path
+import time
 
 import os
 import psutil
@@ -61,7 +62,6 @@ sys.excepthook = exceptionListener
 
 from core.ProjectAlice import ProjectAlice
 import subprocess
-import time
 
 
 # noinspection PyUnusedLocal
