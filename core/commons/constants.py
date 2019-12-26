@@ -9,6 +9,7 @@ EVERYWHERE = 'everywhere'
 ALL = 'all'
 DUMMY = 'dummy'
 DATABASE_FILE = 'system/database/data.db'
+SKILL_INSTALL_TICKET_PATH = 'system/skillInstallTickets'
 
 TOPIC_AUDIO_FRAME = 'hermes/audioServer/{}/audioFrame'
 TOPIC_HOTWORD_DETECTED = 'hermes/hotword/default/detected'

@@ -368,7 +368,7 @@ class SkillManager(Manager):
 						elif skillName in self._deactivatedSkills:
 							self._deactivatedSkills[skillName].updateAvailable = True
 					else:
-						skillFile = Path(self.Commons.rootDir(), 'system/skillInstallTickets', skillName + '.install')
+						skillFile = Path(self.Commons.rootDir(), constants.SKILL_INSTALL_TICKET_PATH, skillName + '.install')
 						skillFile.write_text(json.dumps(remoteFile))
 						if skillName in self._failedSkills:
 							del self._failedSkills[skillName]
@@ -390,13 +390,13 @@ class SkillManager(Manager):
 		if self._skillInstallThread is not None:
 			self.ThreadManager.newTimer(interval=10, func=self._checkForSkillInstall, autoStart=True)
 
-		root = Path(self.Commons.rootDir(), 'system/skillInstallTickets')
+		root = Path(self.Commons.rootDir(), constants.SKILL_INSTALL_TICKET_PATH)
 		files = [f for f in root.iterdir() if f.suffix == '.install']
 
 		if self._busyInstalling.isSet() or \
-			not self.InternetManager.online or \
-			not files or \
-			self.ThreadManager.getEvent('SnipsAssistantDownload').isSet():
+				not self.InternetManager.online or \
+				not files or \
+				self.ThreadManager.getEvent('SnipsAssistantDownload').isSet():
 			return
 
 		if files:
@@ -431,7 +431,7 @@ class SkillManager(Manager):
 
 
 	def _installSkills(self, skills: list) -> dict:
-		root = Path(self.Commons.rootDir(), 'system/skillInstallTickets')
+		root = Path(self.Commons.rootDir(), constants.SKILL_INSTALL_TICKET_PATH)
 		availableSkills = self.ConfigManager.skillsConfigurations
 		skillsToBoot = dict()
 		self.MqttManager.mqttBroadcast(topic='hermes/leds/systemUpdate', payload={'sticky': True})
@@ -511,8 +511,6 @@ class SkillManager(Manager):
 					else:
 						self.logWarning(f'Skill "{skillName}" is not available on Github, cannot install')
 						raise
-				except Exception:
-					raise
 
 			except SkillNotConditionCompliant as e:
 				self.logInfo(f'Skill "{skillName}" does not comply to "{e.condition}" condition, required "{e.conditionValue}"')
@@ -521,7 +519,7 @@ class SkillManager(Manager):
 
 				self.broadcast(
 					method='onSkillInstallFailed',
-					exceptions=self.name,
+					exceptions=self._name,
 					skill=skillName
 				)
 
@@ -573,35 +571,37 @@ class SkillManager(Manager):
 
 	def checkSkillConditions(self, skillName: str, conditions: dict, availableSkills: dict) -> bool:
 
+		notCompliant = SkillNotConditionCompliant(message='Skill is not compliant', skillName=skillName, condition='Alice minimum version', conditionValue=conditions['aliceMinVersion'])
+
 		if 'aliceMinVersion' in conditions and Version(conditions['aliceMinVersion']) > Version(constants.VERSION):
-			raise SkillNotConditionCompliant(message='Skill is not compliant', skillName=skillName, condition='Alice minimum version', conditionValue=conditions['aliceMinVersion'])
+			raise notCompliant
 
 		for conditionName, conditionValue in conditions.items():
 			if conditionName == 'lang' and self.LanguageManager.activeLanguage not in conditionValue:
-				raise SkillNotConditionCompliant(message='Skill is not compliant', skillName=skillName, condition=conditionName, conditionValue=conditionValue)
+				raise notCompliant
 
 			elif conditionName == 'online':
 				if conditionValue and self.ConfigManager.getAliceConfigByName('stayCompletlyOffline') \
-					or not conditionValue and not self.ConfigManager.getAliceConfigByName('stayCompletlyOffline'):
-					raise SkillNotConditionCompliant(message='Skill is not compliant', skillName=skillName, condition=conditionName, conditionValue=conditionValue)
+						or not conditionValue and not self.ConfigManager.getAliceConfigByName('stayCompletlyOffline'):
+					raise notCompliant
 
 			elif conditionName == 'skill':
 				for requiredSkill in conditionValue:
 					if requiredSkill['name'] in availableSkills and not availableSkills[requiredSkill['name']]['active']:
-						raise SkillNotConditionCompliant(message='Skill is not compliant', skillName=skillName, condition=conditionName, conditionValue=conditionValue)
+						raise notCompliant
 					elif requiredSkill['name'] not in availableSkills:
 						self.logInfo(f'Skill {skillName} has another skill as dependency, adding download')
-						subprocess.run(['wget', requiredSkill['url'], '-O', Path(self.Commons.rootDir(), f"system/skillInstallTickets/{requiredSkill['name']}.install")])
+						subprocess.run(['wget', requiredSkill['url'], '-O', Path(self.Commons.rootDir(), f"{constants.SKILL_INSTALL_TICKET_PATH}/{requiredSkill['name']}.install")])
 
 			elif conditionName == 'notSkill':
 				for excludedSkill in conditionValue:
 					author, name = excludedSkill.split('/')
 					if name in availableSkills and availableSkills[name]['author'] == author and availableSkills[name]['active']:
-						raise SkillNotConditionCompliant(message='Skill is not compliant', skillName=skillName, condition=conditionName, conditionValue=conditionValue)
+						raise notCompliant
 
 			elif conditionName == 'asrArbitraryCapture':
 				if conditionValue and not self.ASRManager.asr.capableOfArbitraryCapture:
-					raise SkillNotConditionCompliant(message='Skill is not compliant', skillName=skillName, condition=conditionName, conditionValue=conditionValue)
+					raise notCompliant
 
 			elif conditionName == 'activeManager':
 				for manager in conditionValue:
@@ -609,7 +609,7 @@ class SkillManager(Manager):
 
 					man = SuperManager.getInstance().getManager(manager)
 					if not man or not man.isActive:
-						raise SkillNotConditionCompliant(message='Skill is not compliant', skillName=skillName, condition=conditionName, conditionValue=conditionValue)
+						raise notCompliant
 
 		return True
 
