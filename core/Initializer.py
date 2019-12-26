@@ -242,7 +242,6 @@ network={
 		confs['ttsVoice'] = initConfs['ttsVoice'] or ''
 		confs['githubUsername'] = initConfs['githubUsername'] or ''
 		confs['githubToken'] = initConfs['githubToken'] or ''
-		confs['ttsLanguage'] = initConfs['ttsLanguage'] or ''
 
 		updateChannel = initConfs['updateChannel']
 		if updateChannel not in ('master', 'rc', 'beta', 'alpha'):
