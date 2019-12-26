@@ -5,6 +5,7 @@ from typing import Dict, Optional
 
 import requests
 import shutil
+import cachetools
 
 from core.ProjectAliceExceptions import GithubNotFound, GithubRateLimit, GithubTokenFailed, SkillNotConditionCompliant, SkillStartDelayed, SkillStartingFailed
 from core.base.SuperManager import SuperManager
@@ -51,6 +52,7 @@ class SkillManager(Manager):
 		self._failedSkills = dict()
 		self._deactivatedSkills = dict()
 		self._widgets = dict()
+		self._skillStoreSkills = dict()
 
 
 	def onStart(self):
@@ -131,6 +133,11 @@ class SkillManager(Manager):
 	@property
 	def failedSkills(self) -> dict:
 		return self._failedSkills
+
+
+	@property
+	def skillStoreSkills(self) -> dict:
+		return self._skillStoreSkills
 
 
 	def onBooted(self):
@@ -328,13 +335,44 @@ class SkillManager(Manager):
 			self._activeSkills[skillName].onStart()
 
 
+	def _updateSkillStore(self) -> bool:
+		self.logInfo('Updating Skill Store')
+
+		installers = dict()
+		updateSource = self.ConfigManager.getSkillsUpdateSource()
+		req = requests.get(url=f'https://skills.projectalice.io/assets/{updateSource}/store/store.json')
+		results = req.json()
+
+		if not results:
+			return False
+
+		for skill in results:
+			if 'lang' not in skill['conditions']:
+				skill['conditions']['lang'] = constants.ALL
+			installers[skill['name']] = skill
+
+		aliceVersion = Version(constants.VERSION)
+		activeLanguage = self.LanguageManager.activeLanguage.lower()
+		self._skillStoreSkills = {
+			skillName: skillInfo for skillName, skillInfo in installers.items()
+			if aliceVersion >= Version(skillInfo['aliceMinVersion'])
+			  and (activeLanguage in skillInfo['conditions']['lang'] or skillInfo['conditions']['lang'] == constants.ALL)
+		}
+		return True
+
+
 	def checkForSkillUpdates(self, skillToCheck: str = None) -> bool:
 		if self.ConfigManager.getAliceConfigByName('stayCompletlyOffline'):
 			return False
 
 		self.logInfo('Checking for skill updates')
+
 		if not self.InternetManager.online:
 			self.logInfo('Not connected...')
+			return False
+
+		if not self._updateSkillStore():
+			self.logInfo('Failed retrieving updates for the skill store')
 			return False
 
 		availableSkills = self.ConfigManager.skillsConfigurations
@@ -346,14 +384,10 @@ class SkillManager(Manager):
 				if skillName not in availableSkills or (skillToCheck is not None and skillName != skillToCheck):
 					continue
 
-				req = requests.get(f'https://raw.githubusercontent.com/project-alice-assistant/ProjectAliceSkills/{updateSource}/PublishedSkills/{availableSkills[skillName]["author"]}/{skillName}/{skillName}.install')
-
-				if req.status_code == 404:
-					raise GithubNotFound
-
-				remoteFile = req.json()
+				remoteFile = self._skillStoreSkills.get(skillName)
 				if not remoteFile:
-					raise Exception
+					self.logInfo(f'❓ Skill "{skillName}" is not available in the skill store. Deprecated or is it a dev skill?')
+					continue
 
 				if Version(availableSkills[skillName]['version']) < Version(remoteFile['version']):
 					updateCount += 1
@@ -371,9 +405,6 @@ class SkillManager(Manager):
 							del self._failedSkills[skillName]
 				else:
 					self.logInfo(f'✔ {skillName} - Version {availableSkills[skillName]["version"]} in {self.ConfigManager.getAliceConfigByName("updateChannel")}')
-
-			except GithubNotFound:
-				self.logInfo(f'❓ Skill "{skillName}" is not available on Github. Deprecated or is it a dev skill?')
 
 			except Exception as e:
 				self.logError(f'❗ Error checking updates for skill "{skillName}": {e}')
