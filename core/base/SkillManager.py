@@ -226,7 +226,7 @@ class SkillManager(Manager):
 
 		for skillItem in self._activeSkills.values():
 			skillItem.onStop()
-			self.logInfo(f"- Stopped!")
+			self.logInfo(f'- {skillItem.name} stopped!')
 
 
 	def onFullHour(self):
