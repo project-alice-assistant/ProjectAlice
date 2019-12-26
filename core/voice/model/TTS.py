@@ -83,7 +83,7 @@ class TTS(Logger):
 			if not Path(SuperManager.getInstance().commons.rootDir(), 'system/voices', voiceFile).exists():
 				self.logInfo(f'Using "{self.TTS.value}" as TTS with voice "{self._voice}" but voice file not found. Downloading...')
 
-				process = SuperManager.getInstance().commonsManager.runRootSystemCommand([
+				process = SuperManager.getInstance().commonsManager.runSystemCommand([
 					'wget', f'https://github.com/MycroftAI/mimic1/blob/development/voices/{voiceFile}.flitevox?raw=true',
 					'-O', Path(SuperManager.getInstance().commons.rootDir(), f'var/voices/{voiceFile}.flitevox')
 				])
@@ -149,7 +149,7 @@ class TTS(Logger):
 
 	@staticmethod
 	def _mp3ToWave(src: Path, dest: Path):
-		SuperManager.getInstance().commonsManager.runRootSystemCommand(['mpg123', '-q', '-w', str(dest), str(src)])
+		SuperManager.getInstance().commonsManager.runSystemCommand(['mpg123', '-q', '-w', str(dest), str(src)])
 
 
 	def _hash(self, text: str) -> str:
