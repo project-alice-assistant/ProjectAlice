@@ -26,7 +26,7 @@ class CommonsManager(Manager):
 	ERROR_HANDLER_FUNC = CFUNCTYPE(None, c_char_p, c_int, c_char_p, c_int, c_char_p)
 
 	def __init__(self):
-		super().__init__('Commons')
+		super().__init__(name='Commons')
 
 
 	@staticmethod
@@ -287,10 +287,10 @@ class CommonsManager(Manager):
 		return [result.text for result in Translator().translate(**kwargs)]
 
 
-	@staticmethod
-	def runRootSystemCommand(commands: list, stdout = subprocess.PIPE, stderr = subprocess.PIPE):
-		commands.insert(0, 'sudo')
-		return subprocess.run(commands, shell=False, stdout=stdout, stderr=stderr)
+	def runRootSystemCommand(self, commands: list, shell: bool = False, stdout = subprocess.PIPE, stderr = subprocess.PIPE):
+		if commands[0] != 'sudo':
+			commands.insert(0, 'sudo')
+		return self.runSystemCommand(commands, shell=shell, stdout=stdout, stderr=stderr)
 
 
 	@staticmethod
