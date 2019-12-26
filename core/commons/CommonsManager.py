@@ -1,14 +1,14 @@
 import inspect
 import json
 import socket
+import subprocess
 import time
 from collections import defaultdict
-from contextlib import contextmanager
+from contextlib import contextmanager, suppress
 from ctypes import *
 from datetime import datetime
 from pathlib import Path
 from typing import Union
-from contextlib import suppress
 
 import tempfile
 from googletrans import Translator
@@ -285,6 +285,14 @@ class CommonsManager(Manager):
 		if isinstance(text, str):
 			return Translator().translate(**kwargs).text
 		return [result.text for result in Translator().translate(**kwargs)]
+
+
+	@staticmethod
+	def runSystemCommand(commands: list, isSudo: bool = True, shell: bool = False, stdout = subprocess.PIPE, stderr = subprocess.PIPE):
+		if isSudo and not shell:
+			commands.insert(0, 'sudo')
+
+		return subprocess.run(commands, shell=shell, stdout=stdout, stderr=stderr)
 
 
 # noinspection PyUnusedLocal

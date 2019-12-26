@@ -1,6 +1,5 @@
 import importlib
 import json
-import subprocess
 from pathlib import Path
 from typing import Dict, Optional
 
@@ -470,7 +469,7 @@ class SkillManager(Manager):
 
 					if localVersionIsLatest:
 						self.logWarning(f'Skill "{skillName}" is already installed, skipping')
-						subprocess.run(['sudo', 'rm', res])
+						self.Commons.runSystemCommand(['rm', res])
 						continue
 					else:
 						self.logWarning(f'Skill "{skillName}" needs updating')
@@ -547,14 +546,14 @@ class SkillManager(Manager):
 			directory = Path(self.Commons.rootDir()) / 'skills' / installFile['name']
 
 			for requirement in pipReqs:
-				subprocess.run(['./venv/bin/pip3', 'install', requirement])
+				self.Commons.runSystemCommand(['./venv/bin/pip3', 'install', requirement], False)
 
 			for requirement in sysReqs:
-				subprocess.run(['sudo', 'apt-get', 'install', '-y', requirement])
+				self.Commons.runSystemCommand(['apt-get', 'install', '-y', requirement])
 
 			if scriptReq:
-				subprocess.run(['sudo', 'chmod', '+x', str(directory / scriptReq)])
-				subprocess.run(['sudo', str(directory / scriptReq)])
+				self.Commons.runSystemCommand(['chmod', '+x', str(directory / scriptReq)])
+				self.Commons.runSystemCommand([str(directory / scriptReq)])
 
 			node = {
 				'active': True,
@@ -571,37 +570,37 @@ class SkillManager(Manager):
 
 	def checkSkillConditions(self, skillName: str, conditions: dict, availableSkills: dict) -> bool:
 
-		notCompliant = SkillNotConditionCompliant(message='Skill is not compliant', skillName=skillName, condition='Alice minimum version', conditionValue=conditions['aliceMinVersion'])
+		notCompliant = 'Skill is not compliant'
 
 		if 'aliceMinVersion' in conditions and Version(conditions['aliceMinVersion']) > Version(constants.VERSION):
-			raise notCompliant
+			raise SkillNotConditionCompliant(message=notCompliant, skillName=skillName, condition='Alice minimum version', conditionValue=conditions['aliceMinVersion'])
 
 		for conditionName, conditionValue in conditions.items():
 			if conditionName == 'lang' and self.LanguageManager.activeLanguage not in conditionValue:
-				raise notCompliant
+				raise SkillNotConditionCompliant(message=notCompliant, skillName=skillName, condition=conditionName, conditionValue=conditionValue)
 
 			elif conditionName == 'online':
 				if conditionValue and self.ConfigManager.getAliceConfigByName('stayCompletlyOffline') \
 						or not conditionValue and not self.ConfigManager.getAliceConfigByName('stayCompletlyOffline'):
-					raise notCompliant
+					raise SkillNotConditionCompliant(message=notCompliant, skillName=skillName, condition=conditionName, conditionValue=conditionValue)
 
 			elif conditionName == 'skill':
 				for requiredSkill in conditionValue:
 					if requiredSkill['name'] in availableSkills and not availableSkills[requiredSkill['name']]['active']:
-						raise notCompliant
+						raise SkillNotConditionCompliant(message=notCompliant, skillName=skillName, condition=conditionName, conditionValue=conditionValue)
 					elif requiredSkill['name'] not in availableSkills:
 						self.logInfo(f'Skill {skillName} has another skill as dependency, adding download')
-						subprocess.run(['wget', requiredSkill['url'], '-O', Path(self.Commons.rootDir(), f"{constants.SKILL_INSTALL_TICKET_PATH}/{requiredSkill['name']}.install")])
+						self.Commons.runSystemCommand(['wget', requiredSkill['url'], '-O', Path(self.Commons.rootDir(), f"system/skillInstallTickets/{requiredSkill['name']}.install")], False)
 
 			elif conditionName == 'notSkill':
 				for excludedSkill in conditionValue:
 					author, name = excludedSkill.split('/')
 					if name in availableSkills and availableSkills[name]['author'] == author and availableSkills[name]['active']:
-						raise notCompliant
+						raise SkillNotConditionCompliant(message=notCompliant, skillName=skillName, condition=conditionName, conditionValue=conditionValue)
 
 			elif conditionName == 'asrArbitraryCapture':
 				if conditionValue and not self.ASRManager.asr.capableOfArbitraryCapture:
-					raise notCompliant
+					raise SkillNotConditionCompliant(message=notCompliant, skillName=skillName, condition=conditionName, conditionValue=conditionValue)
 
 			elif conditionName == 'activeManager':
 				for manager in conditionValue:
@@ -609,7 +608,7 @@ class SkillManager(Manager):
 
 					man = SuperManager.getInstance().getManager(manager)
 					if not man or not man.isActive:
-						raise notCompliant
+						raise SkillNotConditionCompliant(message=notCompliant, skillName=skillName, condition=conditionName, conditionValue=conditionValue)
 
 		return True
 

@@ -1,5 +1,4 @@
 import json
-import subprocess
 import uuid
 from pathlib import Path
 
@@ -714,9 +713,10 @@ class MqttManager(Manager):
 		if text == '':
 			return
 
-		subprocess.call(['sudo',
+		self.Commons.runSystemCommand([
 			Path(self.Commons.rootDir(), '/system/scripts/snipsSuperTTS.sh'),
-			Path('/share/tmp.wav'), 'amazon', self.LanguageManager.activeLanguage, 'US', 'Joanna', 'FEMALE', text, '22050'])
+			Path('/share/tmp.wav'), 'amazon', self.LanguageManager.activeLanguage, 'US', 'Joanna', 'FEMALE', text, '22050'
+		])
 
 		sonosSkill = self.SkillManager.getSkillInstance('Sonos')
 		if sonosSkill:

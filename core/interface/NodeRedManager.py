@@ -1,5 +1,4 @@
 import json
-import subprocess
 from pathlib import Path
 
 from core.base.model.Manager import Manager
@@ -17,17 +16,16 @@ class NodeRedManager(Manager):
 	def onStart(self):
 		super().onStart()
 		self.injectSkillNodes()
-		subprocess.run(['sudo', 'systemctl', 'start', 'nodered'])
+		self.Commons.runSystemCommand(['systemctl', 'start', 'nodered'])
 
 
 	def onStop(self):
 		super().onStop()
-		subprocess.run(['sudo', 'systemctl', 'stop', 'nodered'])
+		self.Commons.runSystemCommand(['systemctl', 'stop', 'nodered'])
 
 
-	@staticmethod
-	def reloadServer():
-		subprocess.run(['sudo', 'systemctl', 'restart', 'nodered'])
+	def reloadServer(self):
+		self.Commons.runSystemCommand(['systemctl', 'restart', 'nodered'])
 
 
 	def injectSkillNodes(self):
@@ -41,7 +39,7 @@ class NodeRedManager(Manager):
 			path = Path('../.node-red/node_modules', tup[0], 'package.json')
 			if not path.exists():
 				self.logInfo('New scenario node found')
-				subprocess.run(f'cd ~/.node-red && npm install {tup[2]}', shell=True)
+				self.Commons.runSystemCommand(f'cd ~/.node-red && npm install {tup[2]}', shell=True)
 				continue
 
 			with path.open('r') as fp:
@@ -50,4 +48,4 @@ class NodeRedManager(Manager):
 
 				if version < tup[1]:
 					self.logInfo('New scenario node update found')
-					subprocess.run(f'cd ~/.node-red && npm install {tup[2]}', shell=True)
+					self.Commons.runSystemCommand(f'cd ~/.node-red && npm install {tup[2]}', shell=True)

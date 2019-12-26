@@ -1,5 +1,4 @@
 import json
-import subprocess
 from pathlib import Path
 
 import requests
@@ -234,7 +233,7 @@ class ConfigManager(Manager):
 		snipsConfigTemplatePath = Path(self.Commons.rootDir(), 'system/snips/snips.toml')
 
 		if not snipsConfigPath.exists():
-			subprocess.run(['sudo', 'cp', snipsConfigTemplatePath, '/etc/snips.toml'])
+			self.Commons.runSystemCommand(['cp', snipsConfigTemplatePath, '/etc/snips.toml'])
 			snipsConfigPath = snipsConfigTemplatePath
 
 		snipsConfig = TomlFile.loadToml(snipsConfigPath)
@@ -414,7 +413,7 @@ class ConfigManager(Manager):
 						continue
 					else:
 						self.logError(f'- Failed generating default config, scheduling download for skill "{skillName}": {e}')
-						subprocess.run(['wget', f'https://skills.projectalice.ch/{skillName}', '-O', Path(self.Commons.rootDir(), f'system/skillInstallTickets/{skillName}.install')])
+						self.Commons.runSystemCommand(['wget', f'https://skills.projectalice.ch/{skillName}', '-O', Path(self.Commons.rootDir(), f'system/skillInstallTickets/{skillName}.install')], False)
 						if skillName in skillsConfigurations:
 							skillsConfigurations.pop(skillName)
 						continue

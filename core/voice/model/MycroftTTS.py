@@ -1,7 +1,7 @@
 import getpass
-import re
-import subprocess
 from pathlib import Path
+
+import re
 
 from core.base.SuperManager import SuperManager
 from core.dialog.model.DialogSession import DialogSession
@@ -94,8 +94,7 @@ class MycroftTTS(TTS):
 			if not Path(self._mimicDirectory, 'voices', self._voice + '.flitevox').exists():
 				htsvoice = Path(self._mimicDirectory, 'voices', self._voice + '.htsvoice')
 				if htsvoice.exists():
-					subprocess.run([
-						'sudo',
+					SuperManager.getInstance().commonsManager.runSystemCommand([
 						'-u', getpass.getuser(),
 						self._mimicDirectory,
 						'-t', self._text,
@@ -103,8 +102,7 @@ class MycroftTTS(TTS):
 						'-voice', htsvoice
 					])
 				else:
-					subprocess.run([
-						'sudo',
+					SuperManager.getInstance().commonsManager.runSystemCommand([
 						'-u', getpass.getuser(),
 						self._mimicDirectory,
 						'-t', self._text,
@@ -112,8 +110,7 @@ class MycroftTTS(TTS):
 						'-voice', 'slt'
 					])
 			else:
-				subprocess.run([
-					'sudo',
+				SuperManager.getInstance().commonsManager.runSystemCommand([
 					'-u', getpass.getuser(),
 					self._mimicDirectory,
 					'-t', self._text,

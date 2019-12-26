@@ -101,10 +101,10 @@ network={
 			file = Path(self._rootDir, 'wifi.conf')
 			file.write_text(wpaFile)
 
-			subprocess.run(['sudo', 'mv', str(file), bootWpaSupplicant])
+			self.Commons.runSystemCommand(['mv', str(file), bootWpaSupplicant])
 			self.logInfo('Successfully initialized wpa_supplicant.conf')
 			time.sleep(1)
-			subprocess.run(['/usr/bin/sudo', '/sbin/shutdown', '-r', 'now'])
+			self.Commons.runSystemCommand(['shutdown', '-r', 'now'])
 			exit(0)
 
 		try:
@@ -120,17 +120,17 @@ network={
 			self.fatal('You must specify a Snips console login, password and intent owner')
 
 		# Update our system and sources
-		subprocess.run(['sudo', 'apt-get', 'update'])
-		subprocess.run(['sudo', 'apt-get', 'dist-upgrade', '-y'])
-		subprocess.run(['git', 'clean', '-df'])
-		subprocess.run(['git', 'stash'])
-		subprocess.run(['git', 'checkout', self.getUpdateSource(initConfs['updateChannel'])])
-		subprocess.run(['git', 'pull'])
-		subprocess.run(['git', 'stash', 'clear'])
+		self.Commons.runSystemCommand(['apt-get', 'update'])
+		self.Commons.runSystemCommand(['apt-get', 'dist-upgrade', '-y'])
+		self.Commons.runSystemCommand(['git', 'clean', '-df'], False)
+		self.Commons.runSystemCommand(['git', 'stash'], False)
+		self.Commons.runSystemCommand(['git', 'checkout', self.getUpdateSource(initConfs['updateChannel'])], False)
+		self.Commons.runSystemCommand(['git', 'pull'], False)
+		self.Commons.runSystemCommand(['git', 'stash', 'clear'], False)
 
 		time.sleep(1)
 
-		subprocess.run(['./venv/bin/pip3', 'uninstall', '-y', '-r', str(Path(self._rootDir, 'pipuninstalls.txt'))])
+		self.Commons.runSystemCommand(['./venv/bin/pip3', 'uninstall', '-y', '-r', str(Path(self._rootDir, 'pipuninstalls.txt'))], False)
 
 		if not self._confsFile.exists() and not self._confsSample.exists():
 			self.fatal('No config and no config template found, can\'t continue')
@@ -155,36 +155,36 @@ network={
 
 		# Do some installation if wanted by the user
 		if initConfs['doGroundInstall']:
-			subprocess.run(['./venv/bin/pip3', 'install', '-r', str(Path(self._rootDir, 'requirements.txt'))])
+			self.Commons.runSystemCommand(['./venv/bin/pip3', 'install', '-r', str(Path(self._rootDir, 'requirements.txt'))], False)
 
 			if initConfs['installOnBuster']:
-				subprocess.run(['sudo', 'apt-get', 'install', '-y', 'dirmngr', 'apt-transport-https'])
-				subprocess.run(['sudo', 'bash', '-c', 'echo "deb https://raspbian.snips.ai/$(lsb_release -cs) stable main" > /etc/apt/sources.list.d/snips.list'])
-				subprocess.run(['sudo', 'apt-key', 'adv', '--fetch-keys', 'https://debian.snips.ai/5FFCD0DEB5BA45CD.pub'])
-				subprocess.run(['wget', '-q', 'https://ftp-master.debian.org/keys/release-10.asc', '-O-', '|', 'sudo', 'apt-key', 'add', '-'])
-				subprocess.run(['echo', '"deb http://deb.debian.org/debian buster non-free"', '|', 'sudo', 'tee', '/etc/apt/sources.list.d/debian.list'])
-				subprocess.run(['sudo', 'apt-key', 'adv', '--keyserver', 'gpg.mozilla.org', '--recv-keys', 'D4F50CDCA10A2849'])
-				subprocess.run(['sudo', 'sh', '-c', '\'curl https://raspbian.snips.ai/531DD1A7B702B14D.pub | apt-key add -\''])
-				subprocess.run(['sudo', 'apt-get', 'install', '-y', 'libttspico0'])
-				subprocess.run(['sudo', 'apt-get', 'install', '-y', 'libttspico-utils'])
-				subprocess.run(['sudo', 'apt-get', 'install', '-y', 'libatlas3-base=3.10.3-8+rpi1'])
-				subprocess.run(['sudo', 'apt-get', 'install', '-y', 'libgfortran3'])
+				self.Commons.runSystemCommand(['apt-get', 'install', '-y', 'dirmngr', 'apt-transport-https'])
+				self.Commons.runSystemCommand(['bash', '-c', 'echo "deb https://raspbian.snips.ai/$(lsb_release -cs) stable main" > /etc/apt/sources.list.d/snips.list'])
+				self.Commons.runSystemCommand(['apt-key', 'adv', '--fetch-keys', 'https://debian.snips.ai/5FFCD0DEB5BA45CD.pub'])
+				self.Commons.runSystemCommand(['wget', '-q', 'https://ftp-master.debian.org/keys/release-10.asc', '-O-', '|', 'sudo', 'apt-key', 'add', '-'], False)
+				self.Commons.runSystemCommand(['echo', '"deb http://deb.debian.org/debian buster non-free"', '|', 'sudo', 'tee', '/etc/apt/sources.list.d/debian.list'], False)
+				self.Commons.runSystemCommand(['apt-key', 'adv', '--keyserver', 'gpg.mozilla.org', '--recv-keys', 'D4F50CDCA10A2849'])
+				self.Commons.runSystemCommand(['sh', '-c', '\'curl https://raspbian.snips.ai/531DD1A7B702B14D.pub | apt-key add -\''])
+				self.Commons.runSystemCommand(['apt-get', 'install', '-y', 'libttspico0'])
+				self.Commons.runSystemCommand(['apt-get', 'install', '-y', 'libttspico-utils'])
+				self.Commons.runSystemCommand(['apt-get', 'install', '-y', 'libatlas3-base=3.10.3-8+rpi1'])
+				self.Commons.runSystemCommand(['apt-get', 'install', '-y', 'libgfortran3'])
 			else:
-				subprocess.run(['sudo', 'bash', '-c', 'echo "deb https://raspbian.snips.ai/$(lsb_release -cs) stable main" > /etc/apt/sources.list.d/snips.list'])
-				subprocess.run(['sudo', 'apt-key', 'adv', '--keyserver', 'gpg.mozilla.org', '--recv-keys', 'D4F50CDCA10A2849'])
-				subprocess.run(['sudo', 'apt-get', 'update'])
+				self.Commons.runSystemCommand(['bash', '-c', 'echo "deb https://raspbian.snips.ai/$(lsb_release -cs) stable main" > /etc/apt/sources.list.d/snips.list'])
+				self.Commons.runSystemCommand(['apt-key', 'adv', '--keyserver', 'gpg.mozilla.org', '--recv-keys', 'D4F50CDCA10A2849'])
+				self.Commons.runSystemCommand(['apt-get', 'update'])
 
 			reqs = [line.rstrip('\n') for line in open(Path(self._rootDir, 'sysrequirements.txt'))]
-			subprocess.run(['sudo', 'apt-get', 'install', '-y', '--allow-unauthenticated'] + reqs)
+			self.Commons.runSystemCommand(['apt-get', 'install', '-y', '--allow-unauthenticated'] + reqs)
 
-			subprocess.run(['sudo', 'systemctl', 'stop', 'snips-*'])
-			subprocess.run(['sudo', 'systemctl', 'disable', 'snips-asr'])
-			subprocess.run(['sudo', 'systemctl', 'disable', 'snips-nlu'])
-			subprocess.run(['sudo', 'systemctl', 'disable', 'snips-dialogue'])
-			subprocess.run(['sudo', 'systemctl', 'disable', 'snips-injection'])
-			subprocess.run(['sudo', 'systemctl', 'disable', 'snips-hotword'])
-			subprocess.run(['sudo', 'systemctl', 'disable', 'snips-audio-server'])
-			subprocess.run(['sudo', 'systemctl', 'disable', 'snips-tts'])
+			self.Commons.runSystemCommand(['systemctl', 'stop', 'snips-*'])
+			self.Commons.runSystemCommand(['systemctl', 'disable', 'snips-asr'])
+			self.Commons.runSystemCommand(['systemctl', 'disable', 'snips-nlu'])
+			self.Commons.runSystemCommand(['systemctl', 'disable', 'snips-dialogue'])
+			self.Commons.runSystemCommand(['systemctl', 'disable', 'snips-injection'])
+			self.Commons.runSystemCommand(['systemctl', 'disable', 'snips-hotword'])
+			self.Commons.runSystemCommand(['systemctl', 'disable', 'snips-audio-server'])
+			self.Commons.runSystemCommand(['systemctl', 'disable', 'snips-tts'])
 
 		# Now let's dump some values to their respective places
 		# First those that need some checks and self filling in case unspecified
@@ -279,11 +279,11 @@ network={
 
 		serviceFilePath = Path('/etc/systemd/system/ProjectAlice.service')
 		if not serviceFilePath.exists():
-			subprocess.run(['sudo', 'cp', 'ProjectAlice.service', serviceFilePath])
+			self.Commons.runSystemCommand(['cp', 'ProjectAlice.service', serviceFilePath])
 
-		subprocess.run(['sudo', 'sed', '-i', '-e', f's/\#WORKINGDIR/WorkingDirectory=\/home\/{getpass.getuser()}\/ProjectAlice/', str(serviceFilePath)])
-		subprocess.run(['sudo', 'sed', '-i', '-e', f's/\#EXECSTART/ExecStart=\/home\/{getpass.getuser()}\/ProjectAlice\/venv\/bin\/python3 main.py/', str(serviceFilePath)])
-		subprocess.run(['sudo', 'sed', '-i', '-e', f's/\#USER/User={getpass.getuser()}/', str(serviceFilePath)])
+		self.Commons.runSystemCommand(['sed', '-i', '-e', f's/\#WORKINGDIR/WorkingDirectory=\/home\/{getpass.getuser()}\/ProjectAlice/', str(serviceFilePath)])
+		self.Commons.runSystemCommand(['sed', '-i', '-e', f's/\#EXECSTART/ExecStart=\/home\/{getpass.getuser()}\/ProjectAlice\/venv\/bin\/python3 main.py/', str(serviceFilePath)])
+		self.Commons.runSystemCommand(['sed', '-i', '-e', f's/\#USER/User={getpass.getuser()}/', str(serviceFilePath)])
 
 		self.logInfo('Installing audio hardware')
 		audioHardware = ''
@@ -296,55 +296,55 @@ network={
 		if initConfs['useSLC']:
 
 			if not Path('/home', getpass.getuser(), 'snipsLedControl'):
-				subprocess.run(['git', 'clone', 'https://github.com/Psychokiller1888/snipsLedControl.git', str(Path('/home', getpass.getuser(), 'snipsLedControl'))])
+				self.Commons.runSystemCommand(['git', 'clone', 'https://github.com/Psychokiller1888/snipsLedControl.git', str(Path('/home', getpass.getuser(), 'snipsLedControl'))], False)
 			else:
-				subprocess.run(['git', '-C', str(Path('/home', getpass.getuser(), 'snipsLedControl')), 'stash'])
-				subprocess.run(['git', '-C', str(Path('/home', getpass.getuser(), 'snipsLedControl')), 'pull'])
-				subprocess.run(['git', '-C', str(Path('/home', getpass.getuser(), 'snipsLedControl')), 'stash', 'clear'])
+				self.Commons.runSystemCommand(['git', '-C', str(Path('/home', getpass.getuser(), 'snipsLedControl')), 'stash'], False)
+				self.Commons.runSystemCommand(['git', '-C', str(Path('/home', getpass.getuser(), 'snipsLedControl')), 'pull'], False)
+				self.Commons.runSystemCommand(['git', '-C', str(Path('/home', getpass.getuser(), 'snipsLedControl')), 'stash', 'clear'], False)
 
 			if not slcServiceFilePath.exists():
-				subprocess.run(['sudo', 'cp', f'/home/{getpass.getuser()}/snipsLedControl/snipsledcontrol.service', str(slcServiceFilePath)])
+				self.Commons.runSystemCommand(['cp', f'/home/{getpass.getuser()}/snipsLedControl/snipsledcontrol.service', str(slcServiceFilePath)])
 
-			subprocess.run(['sudo', 'sed', '-i', '-e', f's/%WORKING_DIR%/\/home\/{getpass.getuser()}\/snipsLedControl/', str(slcServiceFilePath)])
-			subprocess.run(['sudo', 'sed', '-i', '-e', f's/%EXECSTART%/\/home\/{getpass.getuser()}\/snipsLedControl\/venv\/bin\/python3 main.py --hardware=%HARDWARE% --pattern=projectalice/', str(slcServiceFilePath)])
-			subprocess.run(['sudo', 'sed', '-i', '-e', f's/%USER%/{getpass.getuser()}/', str(slcServiceFilePath)])
+			self.Commons.runSystemCommand(['sed', '-i', '-e', f's/%WORKING_DIR%/\/home\/{getpass.getuser()}\/snipsLedControl/', str(slcServiceFilePath)])
+			self.Commons.runSystemCommand(['sed', '-i', '-e', f's/%EXECSTART%/\/home\/{getpass.getuser()}\/snipsLedControl\/venv\/bin\/python3 main.py --hardware=%HARDWARE% --pattern=projectalice/', str(slcServiceFilePath)])
+			self.Commons.runSystemCommand(['sed', '-i', '-e', f's/%USER%/{getpass.getuser()}/', str(slcServiceFilePath)])
 
 		if audioHardware in {'respeaker2', 'respeaker4', 'respeaker6MicArray'}:
-			subprocess.run(['sudo', Path(self._rootDir, 'system/scripts/audioHardware/respeakers.sh')])
+			self.Commons.runSystemCommand([Path(self._rootDir, 'system/scripts/audioHardware/respeakers.sh')])
 			if initConfs['useSLC']:
-				subprocess.run(['sudo', 'sed', '-i', '-e', f's/%HARDWARE%/{audioHardware}/', str(slcServiceFilePath)])
+				self.Commons.runSystemCommand(['sed', '-i', '-e', f's/%HARDWARE%/{audioHardware}/', str(slcServiceFilePath)])
 
 			if audioHardware == 'respeaker6MicArray':
-				subprocess.run(['sudo', 'cp', Path(self._rootDir, 'system', 'asounds', 'respeaker6micarray.conf'), Path('/etc/asound.conf')])
+				self.Commons.runSystemCommand(['cp', Path(self._rootDir, 'system', 'asounds', 'respeaker6micarray.conf'), Path('/etc/asound.conf')])
 
 		elif audioHardware == 'respeaker7':
-			subprocess.run(['sudo', Path(self._rootDir, 'system/scripts/audioHardware/respeaker7.sh')])
+			self.Commons.runSystemCommand([Path(self._rootDir, 'system/scripts/audioHardware/respeaker7.sh')])
 			if initConfs['useSLC']:
-				subprocess.run(['sudo', 'sed', '-i', '-e', 's/%HARDWARE%/respeaker7MicArray/', str(slcServiceFilePath)])
+				self.Commons.runSystemCommand(['sed', '-i', '-e', 's/%HARDWARE%/respeaker7MicArray/', str(slcServiceFilePath)])
 
 		elif audioHardware == 'respeakerCoreV2':
-			subprocess.run(['sudo', Path(self._rootDir, 'system/scripts/audioHardware/respeakerCoreV2.sh')])
+			self.Commons.runSystemCommand([Path(self._rootDir, 'system/scripts/audioHardware/respeakerCoreV2.sh')])
 			if initConfs['useSLC']:
-				subprocess.run(['sudo', 'sed', '-i', '-e', f's/%HARDWARE%/{audioHardware}/', str(slcServiceFilePath)])
+				self.Commons.runSystemCommand(['sed', '-i', '-e', f's/%HARDWARE%/{audioHardware}/', str(slcServiceFilePath)])
 
 		elif audioHardware in {'matrixCreator', 'matrixVoice'}:
-			subprocess.run(['sudo', Path(self._rootDir, 'system/scripts/audioHardware/matrix.sh')])
-			subprocess.run(['sudo', 'cp', Path(self._rootDir, 'system', 'asounds', 'matrix.conf'), Path('/etc/asound.conf')])
+			self.Commons.runSystemCommand([Path(self._rootDir, 'system/scripts/audioHardware/matrix.sh')])
+			self.Commons.runSystemCommand(['cp', Path(self._rootDir, 'system', 'asounds', 'matrix.conf'), Path('/etc/asound.conf')])
 
 			snipsConf['snips-audio-server']['mike'] = 'MATRIXIO-SOUND: - (hw:2,0)'
 
 			if initConfs['useSLC']:
-				subprocess.run(['sudo', 'sed', '-i', '-e', f's/%HARDWARE%/{audioHardware.lower()}/', str(slcServiceFilePath)])
+				self.Commons.runSystemCommand(['sed', '-i', '-e', f's/%HARDWARE%/{audioHardware.lower()}/', str(slcServiceFilePath)])
 
 		elif audioHardware == 'googleAIY':
-			subprocess.run(['sudo', Path(self._rootDir, 'system/scripts/audioHardware/aiy.sh')])
+			self.Commons.runSystemCommand([Path(self._rootDir, 'system/scripts/audioHardware/aiy.sh')])
 			if initConfs['useSLC']:
-				subprocess.run(['sudo', 'sed', '-i', '-e', 's/%HARDWARE%/googleAIY/', str(slcServiceFilePath)])
+				self.Commons.runSystemCommand(['sed', '-i', '-e', 's/%HARDWARE%/googleAIY/', str(slcServiceFilePath)])
 
 		elif audioHardware == 'usbMic':
-			subprocess.run(['sudo', 'cp', Path(self._rootDir, 'system', 'asounds', 'usbmic.conf'), Path('/etc/asound.conf')])
+			self.Commons.runSystemCommand(['cp', Path(self._rootDir, 'system', 'asounds', 'usbmic.conf'), Path('/etc/asound.conf')])
 
-		subprocess.run(['sudo', 'systemctl', 'daemon-reload'])
+		self.Commons.runSystemCommand(['systemctl', 'daemon-reload'])
 
 		sort = dict(sorted(confs.items()))
 		sort['skills'] = sort.pop('skills')
@@ -359,19 +359,19 @@ network={
 
 		snipsConf.dump()
 
-		subprocess.run(['sudo', 'rm', '-rf', Path(self._rootDir, 'assistant')])
-		subprocess.run(['sudo', 'rm', '-rf', Path(self._rootDir, 'trained', 'assistants', f"assistant_{confs['activeLanguage']}")])
-		subprocess.run(['sudo', 'rm', '-rf', Path(self._rootDir, 'var', 'assistants', confs['activeLanguage'])])
+		self.Commons.runSystemCommand(['rm', '-rf', Path(self._rootDir, 'assistant')])
+		self.Commons.runSystemCommand(['rm', '-rf', Path(self._rootDir, 'trained', 'assistants', f"assistant_{confs['activeLanguage']}")])
+		self.Commons.runSystemCommand(['rm', '-rf', Path(self._rootDir, 'var', 'assistants', confs['activeLanguage'])])
 
 		if initConfs['keepYAMLBackup']:
-			subprocess.run(['sudo', 'mv', Path('/boot/ProjectAlice.yaml'), Path('/boot/ProjectAlice.yaml.bak')])
+			self.Commons.runSystemCommand(['mv', Path('/boot/ProjectAlice.yaml'), Path('/boot/ProjectAlice.yaml.bak')])
 		else:
-			subprocess.run(['sudo', 'rm', Path('/boot/ProjectAlice.yaml')])
+			self.Commons.runSystemCommand(['rm', Path('/boot/ProjectAlice.yaml')])
 
 		self.warning('Initializer done with configuring')
 		time.sleep(2)
-		subprocess.run(['sudo', 'systemctl', 'enable', 'ProjectAlice'])
-		subprocess.run(['sudo', 'shutdown', '-r', 'now'])
+		self.Commons.runSystemCommand(['systemctl', 'enable', 'ProjectAlice'])
+		self.Commons.runSystemCommand(['shutdown', '-r', 'now'])
 
 
 	def fatal(self, text: str):
@@ -388,7 +388,7 @@ network={
 		snipsConfig = Path('/etc/snips.toml')
 
 		if not snipsConfig.exists():
-			subprocess.run(['sudo', 'cp', Path(self._rootDir, 'system/snips/snips.toml'), Path('/etc/snips.toml')])
+			self.Commons.runSystemCommand(['cp', Path(self._rootDir, 'system/snips/snips.toml'), Path('/etc/snips.toml')])
 
 		return TomlFile.loadToml(snipsConfig)
 

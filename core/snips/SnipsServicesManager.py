@@ -1,5 +1,4 @@
 import getpass
-import subprocess
 import time
 from pathlib import Path
 from zipfile import ZipFile
@@ -56,17 +55,17 @@ class SnipsServicesManager(Manager):
 			with ZipFile(filepath) as zipfile:
 				zipfile.extractall(tempfile.gettempdir())
 
-			subprocess.run(['sudo', 'rm', '-rf', self.Commons.rootDir() + f'/trained/assistants/assistant_{self.LanguageManager.activeLanguage}'])
-			subprocess.run(['sudo', 'rm', '-rf', self.Commons.rootDir() + '/assistant'])
-			subprocess.run(['sudo', 'cp', '-R', str(filepath).replace('.zip', ''), self.Commons.rootDir() + f'/trained/assistants/assistant_{self.LanguageManager.activeLanguage}'])
+			self.Commons.runSystemCommand(['rm', '-rf', self.Commons.rootDir() + f'/trained/assistants/assistant_{self.LanguageManager.activeLanguage}'])
+			self.Commons.runSystemCommand(['rm', '-rf', self.Commons.rootDir() + '/assistant'])
+			self.Commons.runSystemCommand(['cp', '-R', str(filepath).replace('.zip', ''), self.Commons.rootDir() + f'/trained/assistants/assistant_{self.LanguageManager.activeLanguage}'])
 
 			time.sleep(0.5)
 
-			subprocess.run(['sudo', 'chown', '-R', getpass.getuser(), self.Commons.rootDir() + f'/trained/assistants/assistant_{self.LanguageManager.activeLanguage}'])
-			subprocess.run(['sudo', 'ln', '-sfn', self.Commons.rootDir() + f'/trained/assistants/assistant_{self.LanguageManager.activeLanguage}', self.Commons.rootDir() + '/assistant'])
-			subprocess.run(['sudo', 'ln', '-sfn', self.Commons.rootDir() + f'/system/sounds/{self.LanguageManager.activeLanguage}/start_of_input.wav', self.Commons.rootDir() + '/assistant/custom_dialogue/sound/start_of_input.wav'])
-			subprocess.run(['sudo', 'ln', '-sfn', self.Commons.rootDir() + f'/system/sounds/{self.LanguageManager.activeLanguage}/end_of_input.wav', self.Commons.rootDir() + '/assistant/custom_dialogue/sound/end_of_input.wav'])
-			subprocess.run(['sudo', 'ln', '-sfn', self.Commons.rootDir() + f'/system/sounds/{self.LanguageManager.activeLanguage}/error.wav', self.Commons.rootDir() + '/assistant/custom_dialogue/sound/error.wav'])
+			self.Commons.runSystemCommand(['chown', '-R', getpass.getuser(), self.Commons.rootDir() + f'/trained/assistants/assistant_{self.LanguageManager.activeLanguage}'])
+			self.Commons.runSystemCommand(['ln', '-sfn', self.Commons.rootDir() + f'/trained/assistants/assistant_{self.LanguageManager.activeLanguage}', self.Commons.rootDir() + '/assistant'])
+			self.Commons.runSystemCommand(['ln', '-sfn', self.Commons.rootDir() + f'/system/sounds/{self.LanguageManager.activeLanguage}/start_of_input.wav', self.Commons.rootDir() + '/assistant/custom_dialogue/sound/start_of_input.wav'])
+			self.Commons.runSystemCommand(['ln', '-sfn', self.Commons.rootDir() + f'/system/sounds/{self.LanguageManager.activeLanguage}/end_of_input.wav', self.Commons.rootDir() + '/assistant/custom_dialogue/sound/end_of_input.wav'])
+			self.Commons.runSystemCommand(['ln', '-sfn', self.Commons.rootDir() + f'/system/sounds/{self.LanguageManager.activeLanguage}/error.wav', self.Commons.rootDir() + '/assistant/custom_dialogue/sound/error.wav'])
 
 			time.sleep(0.5)
 			self.onSnipsAssistantInstalled()
@@ -99,7 +98,7 @@ class SnipsServicesManager(Manager):
 			if (service == 'snips-asr' and not isinstance(self.ASRManager.asr, SnipsASR)) or (service == 'snips-tts' and not isinstance(self.TTSManager.tts, SnipsTTS)):
 				continue
 
-			result = subprocess.run(['sudo', 'systemctl', cmd, service], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+			result = self.Commons.runSystemCommand(['systemctl', cmd, service])
 			if result.returncode == 0:
 				self.logInfo(f"Service {service} {cmd}'ed")
 			elif result.returncode == 5:

@@ -1,4 +1,3 @@
-import subprocess
 from pathlib import Path
 
 import shutil
@@ -62,7 +61,7 @@ class AdminView(View):
 		try:
 			self.__class__.setWaitType('reboot')
 			self.ProjectAlice.onStop()
-			self.ThreadManager.doLater(interval=2, func=subprocess.run, args=[['sudo', 'shutdown', '-r', 'now']])
+			self.ThreadManager.doLater(interval=2, func=self.Commons.runSystemCommand, args=[['shutdown', '-r', 'now']])
 			return jsonify(success=True)
 		except Exception as e:
 			self.logError(f'Failed rebooting device: {e}')
@@ -81,11 +80,11 @@ class AdminView(View):
 
 	def wipeAll(self) -> dict:
 		try:
-			subprocess.run(['wget', 'http://skills.projectalice.ch/AliceCore', '-O', Path(self.Commons.rootDir(), 'system/skillInstallTickets/AliceCore.install')])
-			subprocess.run(['wget', 'http://skills.projectalice.ch/ContextSensitive', '-O', Path(self.Commons.rootDir(), 'system/skillInstallTickets/ContextSensitive.install')])
-			subprocess.run(['wget', 'http://skills.projectalice.ch/RedQueen', '-O', Path(self.Commons.rootDir(), 'system/skillInstallTickets/RedQueen.install')])
-			subprocess.run(['wget', 'http://skills.projectalice.ch/Telemetry', '-O', Path(self.Commons.rootDir(), 'system/skillInstallTickets/Telemetry.install')])
-			subprocess.run(['wget', 'http://skills.projectalice.ch/DateDayTimeYear', '-O', Path(self.Commons.rootDir(), 'system/skillInstallTickets/DateDayTimeYear.install')])
+			self.Commons.runSystemCommand(['wget', 'http://skills.projectalice.ch/AliceCore', '-O', Path(self.Commons.rootDir(), 'system/skillInstallTickets/AliceCore.install')], False)
+			self.Commons.runSystemCommand(['wget', 'http://skills.projectalice.ch/ContextSensitive', '-O', Path(self.Commons.rootDir(), 'system/skillInstallTickets/ContextSensitive.install')], False)
+			self.Commons.runSystemCommand(['wget', 'http://skills.projectalice.ch/RedQueen', '-O', Path(self.Commons.rootDir(), 'system/skillInstallTickets/RedQueen.install')], False)
+			self.Commons.runSystemCommand(['wget', 'http://skills.projectalice.ch/Telemetry', '-O', Path(self.Commons.rootDir(), 'system/skillInstallTickets/Telemetry.install')], False)
+			self.Commons.runSystemCommand(['wget', 'http://skills.projectalice.ch/DateDayTimeYear', '-O', Path(self.Commons.rootDir(), 'system/skillInstallTickets/DateDayTimeYear.install')], False)
 
 			shutil.rmtree(Path(self.Commons.rootDir(), 'var/assistants'))
 			shutil.rmtree(Path(self.Commons.rootDir(), 'trained/assistants'))
