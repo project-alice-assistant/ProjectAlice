@@ -664,6 +664,6 @@ class SkillManager(Manager):
 			if not skill.hasScenarioNodes():
 				continue
 
-			ret[skill.name] = (skill.scenarioNodeName, skill.scenarioNodeVersion, Path(skill.getCurrentDir(), 'scenariosNodes'))
+			ret[skill.name] = (skill.scenarioNodeName, skill.scenarioNodeVersion, Path(skill.getCurrentDir(), 'scenarioNodes'))
 
 		return ret
