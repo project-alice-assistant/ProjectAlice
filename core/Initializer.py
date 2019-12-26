@@ -21,7 +21,7 @@ import configTemplate
 from core.base.model.ProjectAliceObject import ProjectAliceObject
 
 
-class initDict(dict):
+class InitDict(dict):
 
 	def __init__(self, default: dict):
 		super().__init__(default)
@@ -76,7 +76,7 @@ network={
 				if not load:
 					raise yaml.YAMLError
 
-				initConfs = initDict(load)
+				initConfs = InitDict(load)
 			except yaml.YAMLError as e:
 				self.fatal(f'Failed loading init configurations: {e}')
 
@@ -138,7 +138,7 @@ network={
 		elif not self._confsFile.exists() and self._confsSample.exists():
 			self.warning('No config file found, creating it from sample file')
 			confs = self.newConfs()
-			Path('config.py').write_text(f"settings = {json.dumps(confs, indent=4).replace('false', 'False').replace('true', 'True')}")
+			self._confsFile.write_text(f"settings = {json.dumps(confs, indent=4).replace('false', 'False').replace('true', 'True')}")
 
 		elif self._confsFile.exists() and not initConfs['forceRewrite']:
 			self.warning('Config file already existing and user not wanting to rewrite, aborting')
@@ -146,9 +146,9 @@ network={
 
 		elif self._confsFile.exists() and initConfs['forceRewrite']:
 			self.warning('Config file found and force rewrite specified, let\'s restart all this!')
-			Path(self._rootDir, 'config.py').unlink()
+			self._confsFile.unlink()
 			confs = self.newConfs()
-			Path('config.py').write_text(f"settings = {json.dumps(confs, indent=4).replace('false', 'False').replace('true', 'True')}")
+			self._confsFile.write_text(f"settings = {json.dumps(confs, indent=4).replace('false', 'False').replace('true', 'True')}")
 
 		config = importlib.import_module('config')
 		confs = config.settings.copy()
