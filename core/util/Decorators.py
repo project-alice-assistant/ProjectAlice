@@ -60,6 +60,29 @@ def MqttHandler(intent: Union[str, Intent], requiredState: str = None, isProtect
 	return wrapper
 
 
+def _exceptHandler(*args, text: str, exceptHandler: Callable, returnText: bool, **kwargs):
+	if exceptHandler:
+		return exceptHandler(*args, **kwargs)
+
+	caller = args[0] if args else None
+	skill = getattr(caller, 'name', 'system')
+	newText = SuperManager.getInstance().talkManager.randomTalk(text, skill=skill)
+	if not newText and skill != 'system':
+		newText = SuperManager.getInstance().talkManager.randomTalk(text, skill='system') or text
+
+	if returnText:
+		return newText
+
+	session = kwargs.get('session')
+	try:
+		if session.sessionId in SuperManager.getInstance().dialogSessionManager.sessions:
+			SuperManager.getInstance().mqttManager.endDialog(sessionId=session.sessionId, text=newText)
+		else:
+			SuperManager.getInstance().mqttManager.say(text=newText, client=session.siteId)
+	except AttributeError:
+		return newText
+
+
 def Online(func: Callable = None, text: str = 'offline', offlineHandler: Callable = None, returnText: bool = False):
 	"""
 	(return a) decorator to mark a function that requires ethernet.
@@ -92,28 +115,6 @@ def Online(func: Callable = None, text: str = 'offline', offlineHandler: Callabl
 			request = requests.get('http://api.open-notify.org')
 			self.endDialog(sessionId=session.sessionId, text=request.text)
 	"""
-	def _offlineHandler(*args, **kwargs):
-		if offlineHandler:
-			return offlineHandler(*args, **kwargs)
-
-		caller = args[0] if args else None
-		skill = getattr(caller, 'name', 'system')
-		newText = SuperManager.getInstance().talkManager.randomTalk(text, skill=skill)
-		if not newText and skill != 'system':
-			newText = SuperManager.getInstance().talkManager.randomTalk(text, skill='system') or text
-
-		if returnText:
-			return newText
-
-		session = kwargs.get('session')
-		try:
-			if session.sessionId in SuperManager.getInstance().dialogSessionManager.sessions:
-				SuperManager.getInstance().mqttManager.endDialog(sessionId=session.sessionId, text=newText)
-			else:
-				SuperManager.getInstance().mqttManager.say(text=newText, client=session.siteId)
-		except AttributeError:
-			return newText
-
 	def argumentWrapper(func):
 		@functools.wraps(func)
 		def offlineDecorator(*args, **kwargs):
@@ -125,7 +126,7 @@ def Online(func: Callable = None, text: str = 'offline', offlineHandler: Callabl
 					if internetManager.checkOnlineState():
 						raise
 
-			return _offlineHandler(*args, **kwargs)
+			return _exceptHandler(*args, text=text, exceptHandler=offlineHandler, returnText=returnText, **kwargs)
 
 		return offlineDecorator
 
@@ -133,29 +134,6 @@ def Online(func: Callable = None, text: str = 'offline', offlineHandler: Callabl
 
 
 def AnyExcept(func: Callable = None, text: str = 'error', exceptions: Tuple[BaseException, ...] = None, exceptHandler: Callable = None, returnText: bool = False, printStack: bool = False):
-
-	def _exceptHandler(*args, **kwargs):
-		if exceptHandler:
-			return exceptHandler(*args, **kwargs)
-
-		caller = args[0] if args else None
-		skill = getattr(caller, 'name', 'system')
-		newText = SuperManager.getInstance().talkManager.randomTalk(text, skill=skill)
-		if not newText and skill != 'system':
-			newText = SuperManager.getInstance().talkManager.randomTalk(text, skill='system') or text
-
-		if returnText:
-			return newText
-
-		session = kwargs.get('session')
-		try:
-			if session.sessionId in SuperManager.getInstance().dialogSessionManager.sessions:
-				SuperManager.getInstance().mqttManager.endDialog(sessionId=session.sessionId, text=newText)
-			else:
-				SuperManager.getInstance().mqttManager.say(text=newText, client=session.siteId)
-		except AttributeError:
-			return newText
-
 	def argumentWrapper(func):
 		@functools.wraps(func)
 		def exceptionDecorator(*args, **kwargs):
@@ -163,7 +141,7 @@ def AnyExcept(func: Callable = None, text: str = 'error', exceptions: Tuple[Base
 				return func(*args, **kwargs)
 			except exceptions as e:
 				Logger(depth=6).logWarning(msg=e, printStack=printStack)
-				return _exceptHandler(*args, **kwargs)
+				return _exceptHandler(*args, text=text, exceptHandler=exceptHandler, returnText=returnText, **kwargs)
 
 		return exceptionDecorator
 
