@@ -2,6 +2,8 @@ from pathlib import Path
 
 import requests
 import shutil
+from zipfile import ZipFile
+from io import BytesIO
 
 from core.ProjectAliceExceptions import GithubNotFound, GithubRateLimit, GithubTokenFailed
 from core.base.SuperManager import SuperManager
@@ -12,72 +14,30 @@ class GithubCloner(ProjectAliceObject):
 
 	NAME = 'GithubCloner'
 
-	def __init__(self, baseUrl: str, path: Path, dest: Path):
+	def __init__(self, skillName: str, dest: Path):
 		super().__init__(logDepth=3)
-		self._baseUrl = baseUrl
-		self._path = path
+		self._skillName = skillName
 		self._dest = dest
-
-
-	@classmethod
-	def getGithubAuth(cls) -> tuple:
-		username = SuperManager.getInstance().configManager.getAliceConfigByName('githubUsername')
-		token = SuperManager.getInstance().configManager.getAliceConfigByName('githubToken')
-		return (username, token) if (username and token) else None
 
 
 	def clone(self) -> bool:
 		if self._dest.exists():
 			self._cleanDestDir()
-		else:
-			self._dest.mkdir(parents=True)
+
+		updateSource = self.ConfigManager.getSkillsUpdateSource()
+		skillUrl = f'https://skills.projectalice.io/assets/{updateSource}/skills/{self._skillName}.zip'
 
 		try:
-			return self._doClone(f'https://api.github.com/{self._baseUrl}/{self._path}?ref={self.ConfigManager.getSkillsUpdateSource()}')
-		except Exception:
-			return False
-
-
-	def _doClone(self, url: str):
-		try:
-			req = requests.get(url, auth=self.getGithubAuth())
-			if req.status_code == 401:
-				raise GithubTokenFailed
-			elif req.status_code == 403:
-				raise GithubRateLimit
-			elif req.status_code == 404:
-				raise GithubNotFound
-			elif req.status_code != 200:
-				raise Exception
-
-			data = req.json()
-			for item in data:
-				path = Path(*Path(item['path']).parts[3:])
-				if item['type'] == 'file':
-					if path.suffix == '.install':
-						continue
-
-					fileStream = requests.get(url=item['download_url'], auth=self.getGithubAuth())
-					Path(self._dest / path).write_bytes(fileStream.content)
-				else:
-					Path(self._dest / path).mkdir(parents=True)
-					self._doClone(url=item['url'])
-
-		except GithubTokenFailed:
-			self.logError('Provided Github username / token invalid')
-			raise
-
-		except GithubRateLimit:
-			self.logError('Github rate limit reached, cannot access updates for now. You should consider creating a token to avoid this problem')
-			raise
-
-		except GithubNotFound:
-			self.logError('Requested skill not found on servers')
-			raise
-
-		except Exception as e:
+			zipDownload = requests.get(skillUrl)
+			zipDownload.raise_for_status()
+			
+		except requests.exceptions.RequestException as e:
 			self.logError(f'Error downloading skill: {e}')
-			raise
+			return False
+		
+		zipFile = ZipFile(BytesIO(zipDownload.content))
+	    zipFile.extractall(dest)
+		return True
 
 
 	def _cleanDestDir(self):
