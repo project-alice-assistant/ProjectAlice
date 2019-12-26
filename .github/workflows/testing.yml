@@ -27,6 +27,5 @@ jobs:
       env:
         COVERALLS_REPO_TOKEN: ${{ secrets.COVERALLS_REPO_TOKEN }}
       run: |
-        flake8 . --count --select=W293,F401,E231,E261,E251,E222,E713,E203,E223,E225,F841,E271,E402 --show-source --statistics
         pytest tests/unittests/ --cov=core
         coveralls
