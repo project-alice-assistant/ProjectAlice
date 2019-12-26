@@ -65,22 +65,21 @@ class Version(str, ProjectAliceObject):
 			# 2.1.1 > 2.1.0
 			return True
 
-		else:
-			if self._infos['releaseType'] in ('a', 'b', 'rc') and other.infos['releaseType'] == 'master':
-				# 2.1.1-a < 2.1.1
-				return False
-			elif self._infos['releaseType'] == 'b' and other.infos['releaseType'] == 'a':
-				# 2.1.1-b > 2.1.1-a
-				return True
-			elif self._infos['releaseType'] == 'rc' and other.infos['releaseType'] in ('a', 'b'):
-				# 2.1.1-rc > 2.1.1-b
-				return True
-			elif self._infos['releaseType'] == 'master' and other.infos['releaseType'] in ('a', 'b', 'rc'):
-				# 2.1.1 > 2.1.1-b
-				return True
-			elif self._infos['releaseType'] == other.infos['releaseType']:
-				# 2.1.1-b2 > 2.1.1-b1
-				return self._infos['releaseNumber'] > other.infos['releaseNumber']
+		elif self._infos['releaseType'] in ('a', 'b', 'rc') and other.infos['releaseType'] == 'master':
+			# 2.1.1-a < 2.1.1
+			return False
+		elif self._infos['releaseType'] == 'b' and other.infos['releaseType'] == 'a':
+			# 2.1.1-b > 2.1.1-a
+			return True
+		elif self._infos['releaseType'] == 'rc' and other.infos['releaseType'] in ('a', 'b'):
+			# 2.1.1-rc > 2.1.1-b
+			return True
+		elif self._infos['releaseType'] == 'master' and other.infos['releaseType'] in ('a', 'b', 'rc'):
+			# 2.1.1 > 2.1.1-b
+			return True
+		elif self._infos['releaseType'] == other.infos['releaseType']:
+			# 2.1.1-b2 > 2.1.1-b1
+			return self._infos['releaseNumber'] > other.infos['releaseNumber']
 
 		return False
 

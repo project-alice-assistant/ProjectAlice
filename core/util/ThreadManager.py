@@ -33,12 +33,12 @@ class ThreadManager(Manager):
 				event.clear()
 
 	def onQuarterHour(self):
-		i = 0
+		deadTimers = 0
 		for threadTimer in self._timers:
 			if not threadTimer.timer.isAlive():
 				self._timers.remove(threadTimer)
-				i += 1
-		self.logInfo(f'Cleaned {i} dead timers')
+				deadTimers += 1
+		self.logInfo(f'Cleaned {deadTimers} dead timers')
 
 
 	def newTimer(self, interval: float, func: str, autoStart: bool = True, args: list = None, kwargs: dict = None) -> threading.Timer:

@@ -40,10 +40,7 @@ class TTSManager(Manager):
 		except:
 			tts = TTSEnum.SNIPS
 
-		if tts == TTSEnum.SNIPS:
-			from core.voice.model.SnipsTTS import SnipsTTS
-			self._tts = SnipsTTS(user)
-		elif tts == TTSEnum.PICO:
+		if tts == TTSEnum.PICO:
 			self._tts = PicoTTS(user)
 		elif tts == TTSEnum.MYCROFT:
 			if not Path(Path(self.Commons.rootDir()).parent, 'mimic/voices').is_dir():

@@ -205,8 +205,8 @@ class ConfigManager(Manager):
 		self._aliceConfigurations = sort
 
 		try:
-			s = json.dumps(sort, indent=4).replace('false', 'False').replace('true', 'True')
-			Path('config.py').write_text(f'settings = {s}')
+			confString = json.dumps(sort, indent=4).replace('false', 'False').replace('true', 'True')
+			Path('config.py').write_text(f'settings = {confString}')
 			importlib.reload(config)
 		except Exception:
 			raise ConfigurationUpdateFailed()
@@ -498,24 +498,25 @@ class ConfigManager(Manager):
 
 		req = requests.get('https://api.github.com/repos/project-alice-assistant/ProjectAliceSkills/branches', auth=GithubCloner.getGithubAuth())
 		result = req.json()
-		if result:
-			userUpdatePref = self.getAliceConfigByName('updateChannel')
-			versions = list()
-			for branch in result:
-				repoVersion = Version(branch['name'])
-				if not repoVersion.isVersionNumber:
-					continue
+		if not result:
+			return updateSource
 
-				if userUpdatePref == 'alpha' and repoVersion.infos['releaseType'] in ('master', 'rc', 'b', 'a'):
-					versions.append(repoVersion)
-				elif userUpdatePref == 'beta' and repoVersion.infos['releaseType'] in ('master', 'rc', 'b'):
-					versions.append(repoVersion)
-				elif userUpdatePref == 'rc' and repoVersion.infos['releaseType'] in ('master', 'rc'):
-					versions.append(repoVersion)
+		userUpdatePref = self.getAliceConfigByName('updateChannel')
+		versions = list()
+		for branch in result:
+			repoVersion = Version(branch['name'])
+			if not repoVersion.isVersionNumber:
+				continue
 
-			if len(versions) > 0:
-				versions.sort(reverse=True)
-				updateSource = versions[0]
+			releaseType = repoVersion.infos['releaseType']
+			if userUpdatePref == 'alpha' and releaseType in ('master', 'rc', 'b', 'a') \
+				or userUpdatePref == 'beta' and releaseType in ('master', 'rc', 'b') \
+				or userUpdatePref == 'rc' and releaseType in ('master', 'rc'):
+				versions.append(repoVersion)
+
+		if len(versions) > 0:
+			versions.sort(reverse=True)
+			updateSource = versions[0]
 
 		return updateSource
 

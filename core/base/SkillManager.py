@@ -347,7 +347,7 @@ class SkillManager(Manager):
 		availableSkills = self.ConfigManager.skillsConfigurations
 		updateSource = self.ConfigManager.getSkillsUpdateSource()
 
-		i = 0
+		updateCount = 0
 		for skillName in self._allSkills:
 			try:
 				if skillName not in availableSkills or (skillToCheck is not None and skillName != skillToCheck):
@@ -363,7 +363,7 @@ class SkillManager(Manager):
 					raise Exception
 
 				if Version(availableSkills[skillName]['version']) < Version(remoteFile['version']):
-					i += 1
+					updateCount += 1
 					self.logInfo(f'❌ {skillName} - Version {availableSkills[skillName]["version"]} < {remoteFile["version"]} in {self.ConfigManager.getAliceConfigByName("updateChannel")}')
 
 					if not self.ConfigManager.getAliceConfigByName('skillAutoUpdate'):
@@ -385,8 +385,8 @@ class SkillManager(Manager):
 			except Exception as e:
 				self.logError(f'❗ Error checking updates for skill "{skillName}": {e}')
 
-		self.logInfo(f'Found {i} skill update(s)')
-		return i > 0
+		self.logInfo(f'Found {updateCount} skill update(s)')
+		return updateCount > 0
 
 
 	def _checkForSkillInstall(self):
@@ -585,9 +585,8 @@ class SkillManager(Manager):
 				raise SkillNotConditionCompliant(message='Skill is not compliant', skillName=skillName, condition=conditionName, conditionValue=conditionValue)
 
 			elif conditionName == 'online':
-				if conditionValue and self.ConfigManager.getAliceConfigByName('stayCompletlyOffline'):
-					raise SkillNotConditionCompliant(message='Skill is not compliant', skillName=skillName, condition=conditionName, conditionValue=conditionValue)
-				elif not conditionValue and not self.ConfigManager.getAliceConfigByName('stayCompletlyOffline'):
+				if conditionValue and self.ConfigManager.getAliceConfigByName('stayCompletlyOffline') \
+					or not conditionValue and not self.ConfigManager.getAliceConfigByName('stayCompletlyOffline'):
 					raise SkillNotConditionCompliant(message='Skill is not compliant', skillName=skillName, condition=conditionName, conditionValue=conditionValue)
 
 			elif conditionName == 'skill':

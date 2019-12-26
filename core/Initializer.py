@@ -351,8 +351,8 @@ network={
 		sort['skills'] = sort.pop('skills')
 
 		try:
-			s = json.dumps(sort, indent=4).replace('false', 'False').replace('true', 'True')
-			self._confsFile.write_text(f'settings = {s}')
+			confString = json.dumps(sort, indent=4).replace('false', 'False').replace('true', 'True')
+			self._confsFile.write_text(f'settings = {confString}')
 		except Exception as e:
 			self.fatal(f'An error occured while writting final configuration file: {e}')
 		else:
@@ -402,24 +402,25 @@ network={
 
 		req = requests.get('https://api.github.com/repos/project-alice-assistant/ProjectAlice/branches')
 		result = req.json()
-		if result:
-			userUpdatePref = definedSource
-			versions = list()
-			for branch in result:
-				repoVersion = Version(branch['name'])
-				if not repoVersion.isVersionNumber:
-					continue
+		if not result:
+			return updateSource
 
-				if userUpdatePref == 'alpha' and repoVersion.infos['releaseType'] in ('master', 'rc', 'b', 'a'):
-					versions.append(repoVersion)
-				elif userUpdatePref == 'beta' and repoVersion.infos['releaseType'] in ('master', 'rc', 'b'):
-					versions.append(repoVersion)
-				elif userUpdatePref == 'rc' and repoVersion.infos['releaseType'] in ('master', 'rc'):
-					versions.append(repoVersion)
+		userUpdatePref = definedSource
+		versions = list()
+		for branch in result:
+			repoVersion = Version(branch['name'])
+			if not repoVersion.isVersionNumber:
+				continue
 
-			if len(versions) > 0:
-				versions.sort(reverse=True)
-				updateSource = versions[0]
+			releaseType = repoVersion.infos['releaseType']
+			if userUpdatePref == 'alpha' and releaseType in ('master', 'rc', 'b', 'a') \
+				or userUpdatePref == 'beta' and releaseType in ('master', 'rc', 'b') \
+				or userUpdatePref == 'rc' and releaseType in ('master', 'rc'):
+				versions.append(repoVersion)
+
+		if versions:
+			versions.sort(reverse=True)
+			updateSource = versions[0]
 
 		return updateSource
 

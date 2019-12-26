@@ -1,0 +1,25 @@
+language: python
+dist: xenial
+python:
+  - "3.7"
+
+git:
+  depth: false
+
+addons:
+  sonarcloud:
+    organization: "project-alice-assistant"
+    token:
+      secure: $SONAR_TOKEN
+
+before_install:
+  - sudo apt-get update
+  - sudo apt-get -y install libasound2-dev portaudio19-dev ffmpeg
+
+script:
+  - python -m pip install --upgrade pip
+  - pip install -r requirements.txt
+  - pip install -r requirements_test.txt
+  - pytest tests/unittests/ --cov=core   --cov-report xml:../result.xml
+  # the following command line builds the project, runs the tests with coverage and then execute the SonarCloud analysis
+  - sonar-scanner

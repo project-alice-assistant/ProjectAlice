@@ -108,7 +108,7 @@ class AliceSkill(ProjectAliceObject):
 
 				if item.fallbackFunction:
 					intents[str(item)].fallbackFunction = item.fallbackFunction
-				# always use the highes auth level specified
+				# always use the highest auth level specified
 				if item.authOnly > intents[str(item)].authOnly:
 					intents[str(item)].authOnly = item.authOnly
 			else:
@@ -371,10 +371,10 @@ class AliceSkill(ProjectAliceObject):
 		matchingIntent = None
 		oldIntentName = None
 		for intentName, intent in self._supportedIntents.items():
-			if MQTTClient.topic_matches_sub(intentName, session.intentName):
-				if not matchingIntent or self.intentNameMoreSpecific(intentName, oldIntentName):
-					matchingIntent = intent
-					oldIntentName = intentName
+			if MQTTClient.topic_matches_sub(intentName, session.intentName) \
+				and (not matchingIntent or self.intentNameMoreSpecific(intentName, oldIntentName)):
+				matchingIntent = intent
+				oldIntentName = intentName
 
 		return matchingIntent
 
