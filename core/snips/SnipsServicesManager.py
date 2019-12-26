@@ -13,10 +13,9 @@ from core.voice.model.SnipsTTS import SnipsTTS
 
 class SnipsServicesManager(Manager):
 
-	NAME = 'SnipsServicesManager'
 
 	def __init__(self):
-		super().__init__(self.NAME)
+		super().__init__()
 
 		self._snipsServices = [
 			'snips-hotword',

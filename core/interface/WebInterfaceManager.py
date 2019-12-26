@@ -23,7 +23,6 @@ from core.interface.views.SyslogView import SyslogView
 
 class WebInterfaceManager(Manager):
 
-	NAME = 'WebInterfaceManager'
 	app = Flask(__name__)
 	app.config['SEND_FILE_MAX_AGE_DEFAULT'] = 0
 
@@ -31,7 +30,7 @@ class WebInterfaceManager(Manager):
 	_APIS = [UsersApi, SkillsApi]
 
 	def __init__(self):
-		super().__init__(self.NAME)
+		super().__init__()
 		log = logging.getLogger('werkzeug')
 		log.setLevel(logging.ERROR)
 		self._langData = dict()

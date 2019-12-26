@@ -25,14 +25,13 @@ class WakewordManagerState(Enum):
 
 
 class WakewordManager(Manager):
-	NAME = 'WakewordManager'
 
 	RECORD_SECONDS = 2.5
 	THRESHOLD = -40.0
 
 
 	def __init__(self):
-		super().__init__(self.NAME)
+		super().__init__()
 
 		self._state = WakewordManagerState.IDLE
 

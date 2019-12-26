@@ -18,8 +18,6 @@ from core.commons import constants
 
 class SkillManager(Manager):
 
-	NAME = 'SkillManager'
-
 	NEEDED_SKILLS = [
 		'AliceCore',
 		'ContextSensitive',
@@ -42,7 +40,7 @@ class SkillManager(Manager):
 	}
 
 	def __init__(self):
-		super().__init__(self.NAME, self.DATABASE)
+		super().__init__(databaseSchema=self.DATABASE)
 
 		self._busyInstalling = None
 

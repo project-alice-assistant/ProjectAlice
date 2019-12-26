@@ -22,7 +22,7 @@ class Stopwatch:
 		self._startTime = time.time()
 
 
-	def lap(self) -> int:
+	def lap(self) -> float:
 		currentTime = time.time()
 		startTime = self._startTime
 		self._startTime = currentTime

@@ -22,8 +22,6 @@ from core.dialog.model.DialogSession import DialogSession
 
 class DeviceManager(Manager):
 
-	NAME = 'DeviceManager'
-
 	DATABASE = {
 		'devices': [
 			'id INTEGER PRIMARY KEY',
@@ -36,7 +34,7 @@ class DeviceManager(Manager):
 
 
 	def __init__(self):
-		super().__init__(self.NAME, self.DATABASE)
+		super().__init__(databaseSchema=self.DATABASE)
 
 		self._devices = dict()
 		self._broadcastRoom = ''

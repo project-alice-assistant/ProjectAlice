@@ -6,7 +6,6 @@ from core.util.model.TelemetryType import TelemetryType
 
 
 class TelemetryManager(Manager):
-	NAME = 'TelemetryManager'
 
 	DATABASE = {
 		'telemetry': [
@@ -55,7 +54,7 @@ class TelemetryManager(Manager):
 
 
 	def __init__(self):
-		super().__init__(self.NAME, self.DATABASE)
+		super().__init__(databaseSchema=self.DATABASE)
 		self._data = list()
 
 

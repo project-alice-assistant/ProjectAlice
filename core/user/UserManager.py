@@ -9,8 +9,6 @@ from core.user.model.User import User
 
 class UserManager(Manager):
 
-	NAME = 'UserManager'
-
 	DATABASE = {
 		'users': [
 			'id INTEGER PRIMARY KEY',
@@ -28,7 +26,7 @@ class UserManager(Manager):
 
 
 	def __init__(self):
-		super().__init__(self.NAME, self.DATABASE)
+		super().__init__(databaseSchema=self.DATABASE)
 		self._users = dict()
 
 

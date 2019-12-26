@@ -24,11 +24,10 @@ from core.base.model.Manager import Manager
 
 class SamkillaManager(Manager):
 
-	NAME = 'SamkillaManager'
 	ROOT_URL = "https://console.snips.ai"
 
 	def __init__(self, devMode: bool = True):
-		super().__init__(self.NAME)
+		super().__init__()
 
 		self._currentUrl = ''
 		self._browser = None

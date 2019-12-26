@@ -27,10 +27,8 @@ from core.commons import constants
 
 class ConfigManager(Manager):
 
-	NAME = 'ConfigManager'
-
 	def __init__(self):
-		super().__init__(self.NAME)
+		super().__init__()
 
 		self._aliceSkillConfigurationKeys = [
 			'active',

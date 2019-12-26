@@ -10,10 +10,9 @@ from core.voice.model.TTSEnum import TTSEnum
 
 
 class TTSManager(Manager):
-	NAME = 'TTSManager'
 
 	def __init__(self):
-		super().__init__(self.NAME)
+		super().__init__()
 
 		self._fallback = None
 		self._tts = None

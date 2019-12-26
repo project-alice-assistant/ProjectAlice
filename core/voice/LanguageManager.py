@@ -9,10 +9,8 @@ from core.base.model.Manager import Manager
 
 class LanguageManager(Manager):
 
-	NAME = 'LanguageManager'
-
 	def __init__(self):
-		super().__init__(self.NAME)
+		super().__init__()
 		self._supportedLanguages = list()
 		self._activeLanguage = ''
 		self._activeCountryCode = ''
@@ -35,8 +33,8 @@ class LanguageManager(Manager):
 
 	def onBooted(self):
 		data = self.TalkManager.langData
-		if self.NAME in data:
-			self._locals = data[self.NAME]
+		if self._name in data:
+			self._locals = data[self._name]
 
 
 	def sanitizeNluQuery(self, query: str = '') -> str:

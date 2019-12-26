@@ -7,10 +7,8 @@ from core.base.model.Version import Version
 
 class NodeRedManager(Manager):
 
-	NAME = 'NodeRedManager'
-
 	def __init__(self):
-		super().__init__(self.NAME)
+		super().__init__()
 
 
 	def onStart(self):

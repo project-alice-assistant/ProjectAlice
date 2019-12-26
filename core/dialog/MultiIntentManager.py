@@ -8,10 +8,8 @@ from core.dialog.model.MultiIntent import MultiIntent
 
 class MultiIntentManager(Manager):
 
-	NAME = 'MultiIntentManager'
-
 	def __init__(self):
-		super().__init__(self.NAME)
+		super().__init__()
 		self._multiIntents = dict()
 
 

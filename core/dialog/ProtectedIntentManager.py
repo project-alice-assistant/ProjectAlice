@@ -3,10 +3,8 @@ from core.base.model.Manager import Manager
 
 class ProtectedIntentManager(Manager):
 
-	NAME = 'ProtectedIntentManager'
-
 	def __init__(self):
-		super().__init__(self.NAME)
+		super().__init__()
 
 		# Protected intents cannot be randomly rejected by Alice
 		self._protectedIntents = list()

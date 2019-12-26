@@ -12,18 +12,16 @@ from core.snips.model.SnipsTrainingStatus import SnipsTrainingType, TrainingStat
 
 class SnipsConsoleManager(Manager):
 
-	NAME = 'SnipsConsoleManager'
-
 	def __init__(self):
-		super().__init__(self.NAME)
+		super().__init__()
 
 		self._connected = False
 		self._tries = 0
 		self._user = None
 
 		self._headers = {
-			'Accept'    	: 'application/json',
-			'Content-Type' 	: 'application/json'
+			'Accept'      : 'application/json',
+			'Content-Type': 'application/json'
 		}
 
 

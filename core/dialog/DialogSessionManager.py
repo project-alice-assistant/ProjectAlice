@@ -16,10 +16,8 @@ class DialogSessionManager(Manager):
 	every skill calls
 	"""
 
-	NAME = 'DialogSessionManager'
-
 	def __init__(self):
-		super().__init__(self.NAME)
+		super().__init__()
 
 		self._preSessions: Dict[str, DialogSession] = dict()
 		self._sessions: Dict[str, DialogSession] = dict()

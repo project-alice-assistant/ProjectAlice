@@ -15,10 +15,9 @@ from core.util.Decorators import deprecated
 
 
 class MqttManager(Manager):
-	NAME = 'MqttManager'
 
 	def __init__(self):
-		super().__init__(self.NAME)
+		super().__init__()
 
 		self._mqttClient = mqtt.Client()
 		self._thanked = False
@@ -77,7 +76,6 @@ class MqttManager(Manager):
 		self._mqttClient.connect(self.ConfigManager.getAliceConfigByName('mqttHost'), int(self.ConfigManager.getAliceConfigByName('mqttPort')))
 
 		self._mqttClient.loop_start()
-		self.logInfo(f'Started {self.NAME}')
 
 
 	def onBooted(self):

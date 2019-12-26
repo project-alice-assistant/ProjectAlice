@@ -6,10 +6,8 @@ from core.base.model.Manager import Manager
 
 class InternetManager(Manager):
 
-	NAME = 'InternetManager'
-
 	def __init__(self):
-		super().__init__(self.NAME)
+		super().__init__()
 		self._online = False
 
 

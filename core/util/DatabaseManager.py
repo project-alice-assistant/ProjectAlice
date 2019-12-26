@@ -8,10 +8,8 @@ from core.commons import constants
 
 class DatabaseManager(Manager):
 
-	NAME = 'DatabaseManager'
-
 	def __init__(self):
-		super().__init__(self.NAME)
+		super().__init__()
 		self._tables = list()
 
 

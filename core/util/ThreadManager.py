@@ -8,10 +8,8 @@ from core.util.model.ThreadTimer import ThreadTimer
 
 class ThreadManager(Manager):
 
-	NAME = 'ThreadManager'
-
 	def __init__(self):
-		super().__init__(self.NAME)
+		super().__init__()
 
 		self._timers = list()
 		self._threads = dict()

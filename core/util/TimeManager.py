@@ -5,10 +5,8 @@ from core.base.model.Manager import Manager
 
 class TimeManager(Manager):
 
-	NAME = 'TimeManager'
-
 	def __init__(self):
-		super().__init__(self.NAME)
+		super().__init__()
 
 
 	def onBooted(self):
