@@ -18,3 +18,6 @@ flask-login
 googletrans
 bcrypt
 psutil
+numpy
+setuptools-rust
+snips-nlu
