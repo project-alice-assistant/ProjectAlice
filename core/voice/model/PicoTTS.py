@@ -73,6 +73,6 @@ class PicoTTS(TTS):
 			return
 
 		if not self._cacheFile.exists():
-			SuperManager.getInstance().commonsManager.runSystemCommand(['pico2wave', '-l', self._lang, '-w', self._cacheFile, self._text])
+			SuperManager.getInstance().commonsManager.runRootSystemCommand(['pico2wave', '-l', self._lang, '-w', self._cacheFile, self._text])
 
 		self._speak(file=self._cacheFile, session=session)

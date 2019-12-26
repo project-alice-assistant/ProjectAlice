@@ -288,10 +288,13 @@ class CommonsManager(Manager):
 
 
 	@staticmethod
-	def runSystemCommand(commands: list, isSudo: bool = True, shell: bool = False, stdout = subprocess.PIPE, stderr = subprocess.PIPE):
-		if isSudo and not shell:
-			commands.insert(0, 'sudo')
+	def runRootSystemCommand(commands: list, stdout = subprocess.PIPE, stderr = subprocess.PIPE):
+		commands.insert(0, 'sudo')
+		return subprocess.run(commands, shell=False, stdout=stdout, stderr=stderr)
 
+
+	@staticmethod
+	def runSystemCommand(commands: list, shell: bool = False, stdout = subprocess.PIPE, stderr = subprocess.PIPE):
 		return subprocess.run(commands, shell=shell, stdout=stdout, stderr=stderr)
 
 

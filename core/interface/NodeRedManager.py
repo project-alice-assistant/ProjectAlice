@@ -16,16 +16,16 @@ class NodeRedManager(Manager):
 	def onStart(self):
 		super().onStart()
 		self.injectSkillNodes()
-		self.Commons.runSystemCommand(['systemctl', 'start', 'nodered'])
+		self.Commons.runRootSystemCommand(['systemctl', 'start', 'nodered'])
 
 
 	def onStop(self):
 		super().onStop()
-		self.Commons.runSystemCommand(['systemctl', 'stop', 'nodered'])
+		self.Commons.runRootSystemCommand(['systemctl', 'stop', 'nodered'])
 
 
 	def reloadServer(self):
-		self.Commons.runSystemCommand(['systemctl', 'restart', 'nodered'])
+		self.Commons.runRootSystemCommand(['systemctl', 'restart', 'nodered'])
 
 
 	def injectSkillNodes(self):

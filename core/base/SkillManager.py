@@ -469,7 +469,7 @@ class SkillManager(Manager):
 
 					if localVersionIsLatest:
 						self.logWarning(f'Skill "{skillName}" is already installed, skipping')
-						self.Commons.runSystemCommand(['rm', res])
+						self.Commons.runRootSystemCommand(['rm', res])
 						continue
 					else:
 						self.logWarning(f'Skill "{skillName}" needs updating')
@@ -546,14 +546,14 @@ class SkillManager(Manager):
 			directory = Path(self.Commons.rootDir()) / 'skills' / installFile['name']
 
 			for requirement in pipReqs:
-				self.Commons.runSystemCommand(['./venv/bin/pip3', 'install', requirement], False)
+				self.Commons.runSystemCommand(['./venv/bin/pip3', 'install', requirement])
 
 			for requirement in sysReqs:
-				self.Commons.runSystemCommand(['apt-get', 'install', '-y', requirement])
+				self.Commons.runRootSystemCommand(['apt-get', 'install', '-y', requirement])
 
 			if scriptReq:
-				self.Commons.runSystemCommand(['chmod', '+x', str(directory / scriptReq)])
-				self.Commons.runSystemCommand([str(directory / scriptReq)])
+				self.Commons.runRootSystemCommand(['chmod', '+x', str(directory / scriptReq)])
+				self.Commons.runRootSystemCommand([str(directory / scriptReq)])
 
 			node = {
 				'active': True,
@@ -590,7 +590,7 @@ class SkillManager(Manager):
 						raise SkillNotConditionCompliant(message=notCompliant, skillName=skillName, condition=conditionName, conditionValue=conditionValue)
 					elif requiredSkill['name'] not in availableSkills:
 						self.logInfo(f'Skill {skillName} has another skill as dependency, adding download')
-						self.Commons.runSystemCommand(['wget', requiredSkill['url'], '-O', Path(self.Commons.rootDir(), f"system/skillInstallTickets/{requiredSkill['name']}.install")], False)
+						self.Commons.runSystemCommand(['wget', requiredSkill['url'], '-O', Path(self.Commons.rootDir(), f"system/skillInstallTickets/{requiredSkill['name']}.install")])
 
 			elif conditionName == 'notSkill':
 				for excludedSkill in conditionValue:

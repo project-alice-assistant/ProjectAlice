@@ -75,20 +75,18 @@ class TTS(Logger):
 			self.logWarning(f'Voice "{voice}" not found for the language and type, falling back to "{self._voice}"')
 
 		if not self.TEMP_ROOT.is_dir():
-			SuperManager.getInstance().commonsManager.runSystemCommand(['mkdir', str(self.TEMP_ROOT)])
-			SuperManager.getInstance().commonsManager.runSystemCommand(['chown', 'pi', str(self.TEMP_ROOT)])
+			SuperManager.getInstance().commonsManager.runRootSystemCommand(['mkdir', str(self.TEMP_ROOT)])
+			SuperManager.getInstance().commonsManager.runRootSystemCommand(['chown', 'pi', str(self.TEMP_ROOT)])
 
 		if self.TTS == TTSEnum.SNIPS:
 			voiceFile = f'cmu_{SuperManager.getInstance().languageManager.activeCountryCode.lower()}_{self._voice}'
 			if not Path(SuperManager.getInstance().commons.rootDir(), 'system/voices', voiceFile).exists():
 				self.logInfo(f'Using "{self.TTS.value}" as TTS with voice "{self._voice}" but voice file not found. Downloading...')
 
-				process = SuperManager.getInstance().commonsManager.runSystemCommand([
+				process = SuperManager.getInstance().commonsManager.runRootSystemCommand([
 					'wget', f'https://github.com/MycroftAI/mimic1/blob/development/voices/{voiceFile}.flitevox?raw=true',
 					'-O', Path(SuperManager.getInstance().commons.rootDir(), f'var/voices/{voiceFile}.flitevox')
-				],
-					False
-				)
+				])
 
 				if process.returncode > 0:
 					self.logError('Failed downloading voice file, falling back to slt')
@@ -151,7 +149,7 @@ class TTS(Logger):
 
 	@staticmethod
 	def _mp3ToWave(src: Path, dest: Path):
-		SuperManager.getInstance().commonsManager.runSystemCommand(['mpg123', '-q', '-w', str(dest), str(src)], False)
+		SuperManager.getInstance().commonsManager.runRootSystemCommand(['mpg123', '-q', '-w', str(dest), str(src)])
 
 
 	def _hash(self, text: str) -> str:

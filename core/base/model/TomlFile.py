@@ -96,7 +96,7 @@ class TomlFile(ProjectAliceObject):
 						f.write(f'{"#" if data.commented else ""}{data.name} = {json.dumps(value) if isinstance(value, list) else value}\n')
 
 		if self._path != writePath:
-			self.Commons.runSystemCommand(['mv', writePath, self._path])
+			self.Commons.runRootSystemCommand(['mv', writePath, self._path])
 
 		return self._data
 

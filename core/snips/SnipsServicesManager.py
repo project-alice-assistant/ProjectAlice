@@ -55,17 +55,17 @@ class SnipsServicesManager(Manager):
 			with ZipFile(filepath) as zipfile:
 				zipfile.extractall(tempfile.gettempdir())
 
-			self.Commons.runSystemCommand(['rm', '-rf', self.Commons.rootDir() + f'/trained/assistants/assistant_{self.LanguageManager.activeLanguage}'])
-			self.Commons.runSystemCommand(['rm', '-rf', self.Commons.rootDir() + '/assistant'])
-			self.Commons.runSystemCommand(['cp', '-R', str(filepath).replace('.zip', ''), self.Commons.rootDir() + f'/trained/assistants/assistant_{self.LanguageManager.activeLanguage}'])
+			self.Commons.runRootSystemCommand(['rm', '-rf', self.Commons.rootDir() + f'/trained/assistants/assistant_{self.LanguageManager.activeLanguage}'])
+			self.Commons.runRootSystemCommand(['rm', '-rf', self.Commons.rootDir() + '/assistant'])
+			self.Commons.runRootSystemCommand(['cp', '-R', str(filepath).replace('.zip', ''), self.Commons.rootDir() + f'/trained/assistants/assistant_{self.LanguageManager.activeLanguage}'])
 
 			time.sleep(0.5)
 
-			self.Commons.runSystemCommand(['chown', '-R', getpass.getuser(), self.Commons.rootDir() + f'/trained/assistants/assistant_{self.LanguageManager.activeLanguage}'])
-			self.Commons.runSystemCommand(['ln', '-sfn', self.Commons.rootDir() + f'/trained/assistants/assistant_{self.LanguageManager.activeLanguage}', self.Commons.rootDir() + '/assistant'])
-			self.Commons.runSystemCommand(['ln', '-sfn', self.Commons.rootDir() + f'/system/sounds/{self.LanguageManager.activeLanguage}/start_of_input.wav', self.Commons.rootDir() + '/assistant/custom_dialogue/sound/start_of_input.wav'])
-			self.Commons.runSystemCommand(['ln', '-sfn', self.Commons.rootDir() + f'/system/sounds/{self.LanguageManager.activeLanguage}/end_of_input.wav', self.Commons.rootDir() + '/assistant/custom_dialogue/sound/end_of_input.wav'])
-			self.Commons.runSystemCommand(['ln', '-sfn', self.Commons.rootDir() + f'/system/sounds/{self.LanguageManager.activeLanguage}/error.wav', self.Commons.rootDir() + '/assistant/custom_dialogue/sound/error.wav'])
+			self.Commons.runRootSystemCommand(['chown', '-R', getpass.getuser(), self.Commons.rootDir() + f'/trained/assistants/assistant_{self.LanguageManager.activeLanguage}'])
+			self.Commons.runRootSystemCommand(['ln', '-sfn', self.Commons.rootDir() + f'/trained/assistants/assistant_{self.LanguageManager.activeLanguage}', self.Commons.rootDir() + '/assistant'])
+			self.Commons.runRootSystemCommand(['ln', '-sfn', self.Commons.rootDir() + f'/system/sounds/{self.LanguageManager.activeLanguage}/start_of_input.wav', self.Commons.rootDir() + '/assistant/custom_dialogue/sound/start_of_input.wav'])
+			self.Commons.runRootSystemCommand(['ln', '-sfn', self.Commons.rootDir() + f'/system/sounds/{self.LanguageManager.activeLanguage}/end_of_input.wav', self.Commons.rootDir() + '/assistant/custom_dialogue/sound/end_of_input.wav'])
+			self.Commons.runRootSystemCommand(['ln', '-sfn', self.Commons.rootDir() + f'/system/sounds/{self.LanguageManager.activeLanguage}/error.wav', self.Commons.rootDir() + '/assistant/custom_dialogue/sound/error.wav'])
 
 			time.sleep(0.5)
 			self.onSnipsAssistantInstalled()
@@ -98,7 +98,7 @@ class SnipsServicesManager(Manager):
 			if (service == 'snips-asr' and not isinstance(self.ASRManager.asr, SnipsASR)) or (service == 'snips-tts' and not isinstance(self.TTSManager.tts, SnipsTTS)):
 				continue
 
-			result = self.Commons.runSystemCommand(['systemctl', cmd, service])
+			result = self.Commons.runRootSystemCommand(['systemctl', cmd, service])
 			if result.returncode == 0:
 				self.logInfo(f"Service {service} {cmd}'ed")
 			elif result.returncode == 5:

@@ -713,7 +713,7 @@ class MqttManager(Manager):
 		if text == '':
 			return
 
-		self.Commons.runSystemCommand([
+		self.Commons.runRootSystemCommand([
 			Path(self.Commons.rootDir(), '/system/scripts/snipsSuperTTS.sh'),
 			Path('/share/tmp.wav'), 'amazon', self.LanguageManager.activeLanguage, 'US', 'Joanna', 'FEMALE', text, '22050'
 		])

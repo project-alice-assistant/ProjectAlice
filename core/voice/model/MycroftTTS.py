@@ -94,7 +94,7 @@ class MycroftTTS(TTS):
 			if not Path(self._mimicDirectory, 'voices', self._voice + '.flitevox').exists():
 				htsvoice = Path(self._mimicDirectory, 'voices', self._voice + '.htsvoice')
 				if htsvoice.exists():
-					SuperManager.getInstance().commonsManager.runSystemCommand([
+					SuperManager.getInstance().commonsManager.runRootSystemCommand([
 						'-u', getpass.getuser(),
 						self._mimicDirectory,
 						'-t', self._text,
@@ -102,7 +102,7 @@ class MycroftTTS(TTS):
 						'-voice', htsvoice
 					])
 				else:
-					SuperManager.getInstance().commonsManager.runSystemCommand([
+					SuperManager.getInstance().commonsManager.runRootSystemCommand([
 						'-u', getpass.getuser(),
 						self._mimicDirectory,
 						'-t', self._text,
@@ -110,7 +110,7 @@ class MycroftTTS(TTS):
 						'-voice', 'slt'
 					])
 			else:
-				SuperManager.getInstance().commonsManager.runSystemCommand([
+				SuperManager.getInstance().commonsManager.runRootSystemCommand([
 					'-u', getpass.getuser(),
 					self._mimicDirectory,
 					'-t', self._text,
