@@ -101,10 +101,6 @@ class SkillManager(Manager):
 			)
 
 
-	def onSkillInstalled(self):
-		pass
-
-
 	@property
 	def widgets(self) -> dict:
 		return self._widgets
