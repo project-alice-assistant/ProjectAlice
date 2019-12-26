@@ -48,8 +48,8 @@ class GoogleASR(ASR):
 		micSampleRate = SuperManager.getInstance().configManager.getAliceConfigByName('micSampleRate')
 
 		with MicrophoneStream(int(micSampleRate), int(micSampleRate / 10)) as stream:
-			audio_generator = stream.generator()
-			requests = (types.StreamingRecognizeRequest(audio_content=content) for content in audio_generator)
+			audioGenerator = stream.generator()
+			requests = (types.StreamingRecognizeRequest(audio_content=content) for content in audioGenerator)
 			responses = self._client.streaming_recognize(self._streamingConfig, requests)
 			result = self._listen(responses)
 
