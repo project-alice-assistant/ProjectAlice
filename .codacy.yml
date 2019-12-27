@@ -1,4 +1,0 @@
-engines:
- prospector:
-   enabled: false
-   python_version: 3
