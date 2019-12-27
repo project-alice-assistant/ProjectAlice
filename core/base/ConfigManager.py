@@ -6,7 +6,6 @@ import shutil
 
 import configTemplate
 from core.base.SkillManager import SkillManager
-from core.base.model.GithubCloner import GithubCloner
 from core.base.model.TomlFile import TomlFile
 from core.base.model.Version import Version
 
@@ -493,7 +492,7 @@ class ConfigManager(Manager):
 		if self.getAliceConfigByName('updateChannel') == 'master':
 			return updateSource
 
-		req = requests.get('https://api.github.com/repos/project-alice-assistant/ProjectAliceSkills/branches', auth=GithubCloner.getGithubAuth())
+		req = requests.get('https://api.github.com/repos/project-alice-assistant/ProjectAliceSkills/branches')
 		result = req.json()
 		if not result:
 			return updateSource
