@@ -10,6 +10,7 @@ from datetime import datetime
 from pathlib import Path
 from typing import Union
 
+import requests
 import tempfile
 from googletrans import Translator
 from paho.mqtt.client import MQTTMessage
@@ -296,6 +297,17 @@ class CommonsManager(Manager):
 	@staticmethod
 	def runSystemCommand(commands: list, shell: bool = False, stdout = subprocess.PIPE, stderr = subprocess.PIPE):
 		return subprocess.run(commands, shell=shell, stdout=stdout, stderr=stderr)
+
+
+	def downloadFile(self, url: str, dest: str) -> bool:
+		try:
+			with Path(self.Commons.rootDir(), dest).open('wb') as fp:
+				fp.write(requests.get(url).content)
+
+			return True
+		except Exception as e:
+			self.logWarning(f'Failed downloading file: {e}')
+			return False
 
 
 # noinspection PyUnusedLocal

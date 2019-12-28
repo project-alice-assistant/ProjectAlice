@@ -80,11 +80,16 @@ class AdminView(View):
 
 	def wipeAll(self) -> dict:
 		try:
-			self.Commons.runSystemCommand(['wget', 'http://skills.projectalice.ch/AliceCore', '-O', Path(self.Commons.rootDir(), 'system/skillInstallTickets/AliceCore.install')], False)
-			self.Commons.runSystemCommand(['wget', 'http://skills.projectalice.ch/ContextSensitive', '-O', Path(self.Commons.rootDir(), 'system/skillInstallTickets/ContextSensitive.install')], False)
-			self.Commons.runSystemCommand(['wget', 'http://skills.projectalice.ch/RedQueen', '-O', Path(self.Commons.rootDir(), 'system/skillInstallTickets/RedQueen.install')], False)
-			self.Commons.runSystemCommand(['wget', 'http://skills.projectalice.ch/Telemetry', '-O', Path(self.Commons.rootDir(), 'system/skillInstallTickets/Telemetry.install')], False)
-			self.Commons.runSystemCommand(['wget', 'http://skills.projectalice.ch/DateDayTimeYear', '-O', Path(self.Commons.rootDir(), 'system/skillInstallTickets/DateDayTimeYear.install')], False)
+			tickets = [
+				'http://skills.projectalice.ch/AliceCore',
+				'http://skills.projectalice.ch/ContextSensitive',
+				'http://skills.projectalice.ch/RedQueen',
+				'http://skills.projectalice.ch/Telemetry',
+				'http://skills.projectalice.ch/DateDayTimeYear'
+			]
+
+			for link in tickets:
+				self.Commons.downloadFile(link, f'system/skillInstallTickets/{link.rsplit("/")[-1]}.install')
 
 			shutil.rmtree(Path(self.Commons.rootDir(), 'var/assistants'))
 			shutil.rmtree(Path(self.Commons.rootDir(), 'trained/assistants'))

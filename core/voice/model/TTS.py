@@ -83,12 +83,10 @@ class TTS(Logger):
 			if not Path(SuperManager.getInstance().commons.rootDir(), 'system/voices', voiceFile).exists():
 				self.logInfo(f'Using "{self.TTS.value}" as TTS with voice "{self._voice}" but voice file not found. Downloading...')
 
-				process = SuperManager.getInstance().commonsManager.runSystemCommand([
-					'wget', f'https://github.com/MycroftAI/mimic1/blob/development/voices/{voiceFile}.flitevox?raw=true',
-					'-O', Path(SuperManager.getInstance().commons.rootDir(), f'var/voices/{voiceFile}.flitevox')
-				])
+				if not SuperManager.getInstance().commons.downloadFile(
+						url=f'https://github.com/MycroftAI/mimic1/blob/development/voices/{voiceFile}.flitevox?raw=true',
+						dest=Path(SuperManager.getInstance().commons.rootDir(), f'var/voices/{voiceFile}.flitevox')):
 
-				if process.returncode > 0:
 					self.logError('Failed downloading voice file, falling back to slt')
 					self._voice = next(iter(self._supportedLangAndVoices[self._lang][self._type]))
 

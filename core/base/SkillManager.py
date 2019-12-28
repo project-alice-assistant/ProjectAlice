@@ -588,7 +588,8 @@ class SkillManager(Manager):
 						raise SkillNotConditionCompliant(message=notCompliant, skillName=skillName, condition=conditionName, conditionValue=conditionValue)
 					elif requiredSkill['name'] not in availableSkills:
 						self.logInfo(f'Skill {skillName} has another skill as dependency, adding download')
-						self.Commons.runSystemCommand(['wget', requiredSkill['url'], '-O', Path(self.Commons.rootDir(), f"system/skillInstallTickets/{requiredSkill['name']}.install")])
+						if not self.Commons.downloadFile(requiredSkill['url'], Path(self.Commons.rootDir(), f"system/skillInstallTickets/{requiredSkill['name']}.install")):
+							raise SkillNotConditionCompliant(message=notCompliant, skillName=skillName, condition=conditionName, conditionValue=conditionValue)
 
 			elif conditionName == 'notSkill':
 				for excludedSkill in conditionValue:
