@@ -227,7 +227,8 @@ a:hover {
 	font-size: 2em;
 }
 
-.skillStoreSkillDownload:hover {
+.skillStoreSkillDownload:hover,
+.skillStoreSkillSelected:hover {
 	cursor: pointer;
 	background-color: #636363;
 	color: yellow;

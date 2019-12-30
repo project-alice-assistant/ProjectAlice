@@ -59,21 +59,41 @@ $(function () {
 				'<div class="skillsStoreSkillVersion"><i class="fas fa-code-branch" style="margin-right: 3px;"></i> ' + installer['version'] + '</div>' +
 				'<div class="skillsStoreSkillCategory"><i class="fas fa-tags"></i> ' + installer['category'] + '</div>' +
 				'<div class="skillStoreSkillDescription">' + installer['desc'] + '</div>' +
-				'<div class="skillStoreSkillSelected skillStoreSkillButtonAnimation"><i class="fas fa-shopping-cart"></i></div>' +
-				'<div class="skillStoreSkillWaitAnimation skillStoreSkillButtonAnimation"><i class="fas fa-spinner fa-spin"></i></div>' +
-				'<div class="skillStoreSkillDownloadFail skillStoreSkillButtonAnimation"><i class="fas fa-exclamation-triangle"></i></div>' +
 				'</div>');
 
-			let $button = $('<div class="skillStoreSkillDownload skillStoreSkillDownloadButton"><i class="fas fa-download"></i></div>');
+			let $button = $('<div class="skillStoreSkillSelected skillStoreSkillButtonAnimation"><i class="fas fa-shopping-cart"></i></div>');
 			$button.on('click touchstart', function () {
-				$button.hide();
-				$button.parent().children('.skillStoreSkillSelected').css('display', 'flex');
+				$(this).hide();
+				$(this).parent().children('.skillStoreSkillDownloadButton').show();
+				for (let i = 0; i < selectedSkillsToDownload.length; i++) {
+					if (selectedSkillsToDownload[i]['skill'] == installer['name']) {
+						selectedSkillsToDownload.splice(i, 1);
+						break;
+					}
+				}
+				if (selectedSkillsToDownload.length <= 0) {
+					$('#applySkillStore').hide();
+				}
+				return false;
+			});
+			$tile.append($button);
+
+			$button = $('<div class="skillStoreSkillDownload skillStoreSkillDownloadButton"><i class="fas fa-download"></i></div>');
+			$button.on('click touchstart', function () {
+				$(this).hide();
+				$(this).parent().children('.skillStoreSkillSelected').css('display', 'flex');
 				selectedSkillsToDownload.push({'skill': installer['name'], 'author': installer['author']});
 				$('#applySkillStore').show();
 				return false;
 			});
-
 			$tile.append($button);
+
+			$button = $('<div class="skillStoreSkillWaitAnimation skillStoreSkillButtonAnimation"><i class="fas fa-spinner fa-spin"></i></div>');
+			$tile.append($button);
+
+			$button = $('<div class="skillStoreSkillDownloadFail skillStoreSkillButtonAnimation"><i class="fas fa-exclamation-triangle"></i></div>');
+			$tile.append($button);
+
 			$('#skillsStore').append($tile);
 		}
 	}
