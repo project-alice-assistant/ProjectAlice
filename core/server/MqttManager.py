@@ -132,7 +132,7 @@ class MqttManager(Manager):
 		try:
 			if self._audioFrameRegex.match(message.topic):
 				self.broadcast(
-					method='onAudioFrame',
+					method=constants.EVENT_AUDIO_FRAME,
 					exceptions=[self.name],
 					propagateToSkills=True,
 					message=message
@@ -156,12 +156,12 @@ class MqttManager(Manager):
 				return
 
 			elif message.topic == constants.TOPIC_HOTWORD_TOGGLE_ON:
-				self.broadcast(method='onHotwordToggleOn', exceptions=[constants.DUMMY], siteId=siteId)
+				self.broadcast(method=constants.EVENT_HOTWORD_TOGGLE_ON, exceptions=[constants.DUMMY], siteId=siteId)
 				return
 
 			if not session:  # It is a device trying to communicate with Alice
 				session = self.DeviceManager.deviceMessage(message)
-				self.broadcast(method='onMessage', exceptions=[self.name], session=session)
+				self.broadcast(method=constants.EVENT_MESSAGE, exceptions=[self.name], session=session)
 				self.SkillManager.skillBroadcast(method='dispatchMessage', session=session)
 				return
 
@@ -249,9 +249,9 @@ class MqttManager(Manager):
 		self.DialogSessionManager.preSession(siteId, user)
 
 		if user == constants.UNKNOWN_USER:
-			self.broadcast(method='onHotword', exceptions=[self.name], propagateToSkills=True, siteId=siteId, user=user)
+			self.broadcast(method=constants.EVENT_HOTWORD, exceptions=[self.name], propagateToSkills=True, siteId=siteId, user=user)
 		else:
-			self.broadcast(method='onWakeword', exceptions=[self.name], propagateToSkills=True, siteId=siteId, user=user)
+			self.broadcast(method=constants.EVENT_WAKEWORD, exceptions=[self.name], propagateToSkills=True, siteId=siteId, user=user)
 
 
 	def handleMultiDetection(self):
@@ -274,7 +274,7 @@ class MqttManager(Manager):
 		session = self.DialogSessionManager.addSession(sessionId=sessionId, message=msg)
 
 		if session:
-			self.broadcast(method='onSessionStarted', exceptions=[self.name], propagateToSkills=True, session=session)
+			self.broadcast(method=constants.EVENT_SESSION_STARTED, exceptions=[self.name], propagateToSkills=True, session=session)
 
 
 	# noinspection PyUnusedLocal
@@ -283,7 +283,7 @@ class MqttManager(Manager):
 		session = self.DialogSessionManager.addSession(sessionId=sessionId, message=msg)
 
 		if session:
-			self.broadcast(method='onSessionQueued', exceptions=[self.name], propagateToSkills=True, session=session)
+			self.broadcast(method=constants.EVENT_SESSION_QUEUED, exceptions=[self.name], propagateToSkills=True, session=session)
 
 
 	# noinspection PyUnusedLocal
@@ -292,7 +292,7 @@ class MqttManager(Manager):
 		session = self.DialogSessionManager.getSession(sessionId=sessionId)
 
 		if session:
-			self.broadcast(method='onStartListening', exceptions=[self.name], propagateToSkills=True, session=session)
+			self.broadcast(method=constants.EVENT_START_LISTENING, exceptions=[self.name], propagateToSkills=True, session=session)
 
 
 	# noinspection PyUnusedLocal
@@ -301,7 +301,7 @@ class MqttManager(Manager):
 		session = self.DialogSessionManager.getSession(sessionId=sessionId)
 
 		if session:
-			self.broadcast(method='onCaptured', exceptions=[self.name], propagateToSkills=True, session=session)
+			self.broadcast(method=constants.EVENT_CAPTURED, exceptions=[self.name], propagateToSkills=True, session=session)
 
 
 	def onSnipsIntentParsed(self, client, data, msg: mqtt.MQTTMessage):
@@ -310,7 +310,7 @@ class MqttManager(Manager):
 
 		if session:
 			session.update(msg)
-			self.broadcast(method='onIntentParsed', exceptions=[self.name], propagateToSkills=True, session=session)
+			self.broadcast(method=constants.EVENT_INTENT_PARSED, exceptions=[self.name], propagateToSkills=True, session=session)
 
 			if self.ConfigManager.getAliceConfigByName('asr').lower() != 'snips':
 				intent = Intent(session.payload['intent']['intentName'].split(':')[1])
@@ -327,24 +327,24 @@ class MqttManager(Manager):
 		if session:
 			session.update(msg)
 		else:
-			self.broadcast(method='onSessionEnded', exceptions=[self.name])
+			self.broadcast(method=constants.EVENT_SESSION_ENDED, exceptions=[self.name])
 			return
 
 		reason = session.payload['termination']['reason']
 		if reason:
 			if reason == 'abortedByUser':
-				self.broadcast(method='onUserCancel', exceptions=[self.name], propagateToSkills=True, session=session)
+				self.broadcast(method=constants.EVENT_USER_CANCEL, exceptions=[self.name], propagateToSkills=True, session=session)
 			elif reason == 'timeout':
-				self.broadcast(method='onSessionTimeout', exceptions=[self.name], propagateToSkills=True, session=session)
+				self.broadcast(method=constants.EVENT_SESSION_TIMEOUT, exceptions=[self.name], propagateToSkills=True, session=session)
 			elif reason == 'intentNotRecognized':
 				# This should never trigger, as "sendIntentNotRecognized" is always set to True, but we never know
 				self.onSnipsIntentNotRecognized(None, data, msg)
 			elif reason == 'error':
-				self.broadcast(method='onSessionError', exceptions=[self.name], propagateToSkills=True, session=session)
+				self.broadcast(method=constants.EVENT_SESSION_ERROR, exceptions=[self.name], propagateToSkills=True, session=session)
 			else:
-				self.broadcast(method='onSessionEnded', exceptions=[self.name], propagateToSkills=True, session=session)
+				self.broadcast(method=constants.EVENT_SESSION_ENDED, exceptions=[self.name], propagateToSkills=True, session=session)
 
-		self.broadcast(method='onSessionEnded', exceptions=[self.name], propagateToSkills=True, session=session)
+		self.broadcast(method=constants.EVENT_SESSION_ENDED, exceptions=[self.name], propagateToSkills=True, session=session)
 		self.DialogSessionManager.removeSession(sessionId=sessionId)
 
 
@@ -365,7 +365,7 @@ class MqttManager(Manager):
 			if skill:
 				skill.addChat(text=payload['text'], siteId=siteId)
 
-		self.broadcast(method='onSay', exceptions=[self.name], propagateToSkills=True, session=session)
+		self.broadcast(method=constants.EVENT_SAY, exceptions=[self.name], propagateToSkills=True, session=session)
 
 
 	# noinspection PyUnusedLocal
@@ -377,7 +377,7 @@ class MqttManager(Manager):
 		if session:
 			session.payload = payload
 
-		self.broadcast(method='onSayFinished', exceptions=[self.name], propagateToSkills=True, session=session)
+		self.broadcast(method=constants.EVENT_SAY_FINISHED, exceptions=[self.name], propagateToSkills=True, session=session)
 
 
 	# noinspection PyUnusedLocal
@@ -404,7 +404,7 @@ class MqttManager(Manager):
 				del session.notUnderstood
 				self.endDialog(sessionId=sessionId, text=self.TalkManager.randomTalk('notUnderstoodEnd', skill='system'))
 
-		self.broadcast(method='onIntentNotRecognized', exceptions=[self.name], propagateToSkills=True, session=session)
+		self.broadcast(method=constants.EVENT_INTENT_NOT_RECOGNIZED, exceptions=[self.name], propagateToSkills=True, session=session)
 
 
 	def reviveSession(self, session: DialogSession, text: str):

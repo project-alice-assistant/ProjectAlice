@@ -6,6 +6,7 @@ import requests
 import tempfile
 
 from core.base.model.Manager import Manager
+from core.commons import constants
 from core.snips.model.SnipsConsoleUser import SnipsConsoleUser
 from core.snips.model.SnipsTrainingStatus import SnipsTrainingType, TrainingStatusResponse
 
@@ -183,7 +184,7 @@ class SnipsConsoleManager(Manager):
 			return True
 		except Exception as e:
 			self.logError(f'Assistant download failed: {e}')
-			self.broadcast(method='onSnipsAssistantDownloadFailed', exceptions=[self.name], propagateToSkills=True)
+			self.broadcast(method=constants.EVENT_SNIPS_ASSISTANT_DOWNLOAD_FAILED, exceptions=[self.name], propagateToSkills=True)
 			self.ThreadManager.getEvent('SnipsAssistantDownload').cancel()
 			return False
 

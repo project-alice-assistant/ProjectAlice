@@ -35,6 +35,9 @@ class ProjectAliceObject(Logger):
 		if 'ProjectAlice' not in exceptions:
 			exceptions.append('ProjectAlice')
 
+		if not method.startswith('on'):
+			method = f'on{self.Commons.toPascalCase(method)}'
+
 		deadManagers = list()
 		for name, man in SM.SuperManager.getInstance().managers.items():
 			if not man:

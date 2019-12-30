@@ -92,7 +92,7 @@ class SkillManager(Manager):
 			self._activeSkills[skillName].onBooted()
 
 			self.broadcast(
-				method='onSkillUpdated' if skill['update'] else 'onSkillInstalled',
+				method=constants.EVENT_SKILL_UPDATED if skill['update'] else constants.EVENT_SKILL_INSTALLED,
 				exceptions=[constants.DUMMY],
 				skill=skillName
 			)
@@ -134,7 +134,7 @@ class SkillManager(Manager):
 
 
 	def onBooted(self):
-		self.skillBroadcast('onBooted')
+		self.skillBroadcast(constants.EVENT_BOOTED)
 		self._skillInstallThread.start()
 
 
@@ -292,6 +292,9 @@ class SkillManager(Manager):
 		:return:
 		"""
 
+		if not method.startswith('on'):
+			method = f'on{self.Commons.toPascalCase(method)}'
+
 		for skillItem in self._activeSkills.values():
 
 			if filterOut and skillItem.name in filterOut:
@@ -302,7 +305,7 @@ class SkillManager(Manager):
 				if func:
 					func(**kwargs)
 
-				func = getattr(skillItem, 'onEvent', None)
+				func = getattr(skillItem, constants.EVENT, None)
 				if func:
 					func(event=method, **kwargs)
 
@@ -515,7 +518,7 @@ class SkillManager(Manager):
 					res.unlink()
 
 				self.broadcast(
-					method='onSkillInstallFailed',
+					method=constants.EVENT_SKILL_INSTALL_FAILED,
 					exceptions=self._name,
 					skill=skillName
 				)
@@ -526,7 +529,7 @@ class SkillManager(Manager):
 					res.unlink()
 
 				self.broadcast(
-					method='onSkillInstallFailed',
+					method=constants.EVENT_SKILL_INSTALL_FAILED,
 					exceptions=self.name,
 					skill=skillName
 				)

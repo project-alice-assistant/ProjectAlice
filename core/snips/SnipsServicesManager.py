@@ -70,7 +70,7 @@ class SnipsServicesManager(Manager):
 			self.onSnipsAssistantInstalled()
 
 			self.broadcast(
-				method='onSnipsAssistantInstalled',
+				method=constants.EVENT_SNIPS_ASSISTANT_INSTALLED,
 				exceptions=[self.name],
 				propagateToSkills=True,
 				**kwargs
@@ -78,7 +78,7 @@ class SnipsServicesManager(Manager):
 		except Exception as e:
 			self.logError(f'Failed installing Snips Assistant: {e}')
 			self.broadcast(
-				method='onSnipsAssistantFailedInstalling',
+				method=constants.EVENT_SNIPS_ASSISTANT_INSTALL_FAILED,
 				exceptions=[constants.DUMMY],
 				propagateToSkills=True,
 				**kwargs

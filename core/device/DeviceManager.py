@@ -15,6 +15,7 @@ from random import shuffle
 from serial.tools import list_ports  # type: ignore
 
 from core.base.model.Manager import Manager
+from core.commons import constants
 from core.device.model.Device import Device
 from core.device.model.TasmotaConfigs import TasmotaConfigs
 from core.dialog.model.DialogSession import DialogSession
@@ -313,7 +314,7 @@ class DeviceManager(Manager):
 
 		self._broadcastTimer = self.ThreadManager.newTimer(interval=300, func=self.stopBroadcasting)
 
-		self.SkillManager.skillBroadcast(method='onBroadcastingForNewDeviceStart')
+		self.broadcast(method=constants.EVENT_BROADCASTING_FOR_NEW_DEVICE, exceptions=[self.name], propagateToSkills=True)
 		return True
 
 
@@ -325,7 +326,7 @@ class DeviceManager(Manager):
 			self._broadcastTimer.cancel()
 
 		self._broadcastRoom = ''
-		self.SkillManager.skillBroadcast(method='onBroadcastingForNewDeviceStop')
+		self.broadcast(method=constants.EVENT_STOP_BROADCASTING_FOR_NEW_DEVICE, exceptions=[self.name], propagateToSkills=True)
 
 
 	def startBroadcast(self, room: str, uid: str, replyOnSiteId: str):
@@ -374,7 +375,7 @@ class DeviceManager(Manager):
 
 		if not self._devices[uid].connected:
 			self._devices[uid].connected = True
-			self.broadcast(method='onDeviceConnecting', exceptions=[self.name], propagateToSkills=True)
+			self.broadcast(method=constants.EVENT_DEVICE_CONNECTING, exceptions=[self.name], propagateToSkills=True)
 
 		return self._devices[uid]
 
@@ -385,7 +386,7 @@ class DeviceManager(Manager):
 
 		if self._devices[uid].connected:
 			self._devices[uid].connected = False
-			self.broadcast(method='onDeviceDisconnecting', exceptions=[self.name], propagateToSkills=True)
+			self.broadcast(method=constants.EVENT_DEVICE_DISCONNECTING, exceptions=[self.name], propagateToSkills=True)
 
 
 	def getDevicesByRoom(self, room: str, connectedOnly: bool = False) -> List[Device]:

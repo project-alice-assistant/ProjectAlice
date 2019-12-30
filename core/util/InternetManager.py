@@ -2,6 +2,7 @@ import requests
 from requests.exceptions import RequestException
 
 from core.base.model.Manager import Manager
+from core.commons import constants
 
 
 class InternetManager(Manager):
@@ -45,9 +46,9 @@ class InternetManager(Manager):
 
 		if self._online and not online:
 			self._online = False
-			self.broadcast(method='onInternetLost', exceptions=[self.name], propagateToSkills=True)
+			self.broadcast(method=constants.EVENT_INTERNET_LOST, exceptions=[self.name], propagateToSkills=True)
 		elif not self._online and online:
 			self._online = True
-			self.broadcast(method='onInternetConnected', exceptions=[self.name], propagateToSkills=True)
+			self.broadcast(method=constants.EVENT_INTERNET_CONNECTED, exceptions=[self.name], propagateToSkills=True)
 
 		return online

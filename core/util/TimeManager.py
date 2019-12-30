@@ -1,6 +1,7 @@
 from datetime import datetime
 
 from core.base.model.Manager import Manager
+from core.commons import constants
 
 
 class TimeManager(Manager):
@@ -10,10 +11,10 @@ class TimeManager(Manager):
 
 
 	def onBooted(self):
-		self.timerSignal(1, 'onFullMinute')
-		self.timerSignal(5, 'onFiveMinute')
-		self.timerSignal(15, 'onQuarterHour')
-		self.timerSignal(60, 'onFullHour')
+		self.timerSignal(1, constants.EVENT_FULL_MINUTE)
+		self.timerSignal(5, constants.EVENT_FIVE_MINUTE)
+		self.timerSignal(15, constants.EVENT_QUARTER_HOUR)
+		self.timerSignal(60, constants.EVENT_FULL_HOUR)
 
 
 	def timerSignal(self, minutes: int, signal: str, running: bool = False):
