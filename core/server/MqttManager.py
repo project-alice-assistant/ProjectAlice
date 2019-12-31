@@ -189,9 +189,9 @@ class MqttManager(Manager):
 			if skill:
 				skill.addToMessageHistory(session)
 
-			for modul in self.SkillManager.activeSkills.values():
+			for skill in self.SkillManager.activeSkills.values():
 				try:
-					consumed = modul.onDispatchMessage(session)
+					consumed = skill.onDispatchMessage(session)
 				except AccessLevelTooLow:
 					# The command was recognized but required higher access level
 					return
@@ -205,7 +205,7 @@ class MqttManager(Manager):
 					return
 
 				elif consumed or consumed is None:
-					self.logInfo(f"The intent {message.topic.replace('hermes/intent/', '')} was consumed by {modul.__class__.__name__}")
+					self.logInfo(f"The intent {message.topic.replace('hermes/intent/', '')} was consumed by {skill.__class__.__name__}")
 					return
 
 			self.logWarning(f"Intent \"{message.topic}\" wasn't consumed by any skill")
