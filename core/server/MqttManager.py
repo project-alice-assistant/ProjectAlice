@@ -191,7 +191,7 @@ class MqttManager(Manager):
 
 			for modul in self.SkillManager.activeSkills.values():
 				try:
-					consumed = modul.dispatchMessage(session)
+					consumed = modul.onDispatchMessage(session)
 				except AccessLevelTooLow:
 					# The command was recognized but required higher access level
 					return
