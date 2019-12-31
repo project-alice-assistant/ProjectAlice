@@ -372,14 +372,14 @@ class AliceSkill(ProjectAliceObject):
 		oldIntentName = None
 		for intentName, intent in self._supportedIntents.items():
 			if MQTTClient.topic_matches_sub(intentName, session.intentName) \
-				and (not matchingIntent or self.intentNameMoreSpecific(intentName, oldIntentName)):
+					and (not matchingIntent or self.intentNameMoreSpecific(intentName, oldIntentName)):
 				matchingIntent = intent
 				oldIntentName = intentName
 
 		return matchingIntent
 
 
-	def dispatchMessage(self, session: DialogSession) -> bool:
+	def onDispatchMessage(self, session: DialogSession) -> bool:
 		intent = self.filterIntent(session)
 		if not intent:
 			return False
