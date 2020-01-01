@@ -46,6 +46,7 @@ class ConfigManager(Manager):
 		self._aliceConfigurations: typing.Dict[str, typing.Any] = self._loadCheckAndUpdateAliceConfigFile()
 		self._aliceTemplateConfigurations: typing.Dict[str, dict] = configTemplate.settings
 		self._snipsConfigurations = self.loadSnipsConfigurations()
+		self._updateSource = self.getSkillsUpdateSource()
 		self._setDefaultSiteId()
 
 		self._skillsConfigurations = dict()
@@ -488,6 +489,10 @@ class ConfigManager(Manager):
 
 
 	def getSkillsUpdateSource(self) -> str:
+		# If we already fetched this, don't do it again
+		if self._updateSource:
+			return self._updateSource
+
 		updateSource = 'master'
 		if self.getAliceConfigByName('updateChannel') == 'master':
 			return updateSource
