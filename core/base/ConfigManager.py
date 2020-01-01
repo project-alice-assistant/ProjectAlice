@@ -3,6 +3,7 @@ from pathlib import Path
 
 import requests
 import shutil
+from functools import lru_cache
 
 import configTemplate
 from core.base.SkillManager import SkillManager
@@ -489,12 +490,14 @@ class ConfigManager(Manager):
 
 
 	def getSkillsUpdateSource(self) -> str:
-		# If we already fetched this, don't do it again
-		if self._updateSource:
-			return self._updateSource
+		branch = self.getAliceConfigByName('updateChannel')
+		return self._branchToSkillUpdateSource(branch)
 
+
+	@lru_cache(maxsize=3)
+	def _branchToSkillUpdateSource(self, branch: str) -> str:
 		updateSource = 'master'
-		if self.getAliceConfigByName('updateChannel') == 'master':
+		if branch == 'master':
 			return updateSource
 
 		req = requests.get('https://api.github.com/repos/project-alice-assistant/ProjectAliceSkills/branches', auth=GithubCloner.getGithubAuth())
@@ -502,7 +505,7 @@ class ConfigManager(Manager):
 		if not result:
 			return updateSource
 
-		userUpdatePref = self.getAliceConfigByName('updateChannel')
+		userUpdatePref = branch
 		versions = list()
 		for branch in result:
 			repoVersion = Version(branch['name'])
