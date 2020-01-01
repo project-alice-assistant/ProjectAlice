@@ -490,22 +490,20 @@ class ConfigManager(Manager):
 
 
 	def getSkillsUpdateSource(self) -> str:
-		branch = self.getAliceConfigByName('updateChannel')
-		return self._branchToSkillUpdateSource(branch)
+		userUpdatePref = self.getAliceConfigByName('updateChannel')
+		return self._updatePrefToBranchName(userUpdatePref)
 
 
 	@lru_cache(maxsize=3)
-	def _branchToSkillUpdateSource(self, branch: str) -> str:
-		updateSource = 'master'
-		if branch == 'master':
-			return updateSource
+	def _updatePrefToBranchName(self, userUpdatePref: str) -> str:
+		if userUpdatePref == 'master':
+			return 'master'
 
 		req = requests.get('https://api.github.com/repos/project-alice-assistant/ProjectAliceSkills/branches', auth=GithubCloner.getGithubAuth())
 		result = req.json()
 		if not result:
-			return updateSource
+			return 'master'
 
-		userUpdatePref = branch
 		versions = list()
 		for branch in result:
 			repoVersion = Version(branch['name'])
@@ -518,11 +516,11 @@ class ConfigManager(Manager):
 				or userUpdatePref == 'rc' and releaseType in ('master', 'rc'):
 				versions.append(repoVersion)
 
-		if len(versions) > 0:
-			versions.sort(reverse=True)
-			updateSource = versions[0]
-
-		return updateSource
+		if not versions:
+			return 'master'
+		
+		versions.sort(reverse=True)
+		return versions[0]
 
 
 	@property
