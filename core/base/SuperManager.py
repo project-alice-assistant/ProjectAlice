@@ -105,6 +105,8 @@ class SuperManager(Logger):
 			if manager:
 				manager.onBooted()
 
+		self.mqttManager.playSound(soundFilename='boot')
+
 
 	@staticmethod
 	def getInstance() -> SuperManager:

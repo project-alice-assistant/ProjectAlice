@@ -44,10 +44,10 @@ class ConfigManager(Manager):
 			'snipsConsolePassword'
 		]
 
+		self._updateSource = ''
 		self._aliceConfigurations: typing.Dict[str, typing.Any] = self._loadCheckAndUpdateAliceConfigFile()
 		self._aliceTemplateConfigurations: typing.Dict[str, dict] = configTemplate.settings
 		self._snipsConfigurations = self.loadSnipsConfigurations()
-		self._updateSource = self.getSkillsUpdateSource()
 		self._setDefaultSiteId()
 
 		self._skillsConfigurations = dict()
@@ -60,6 +60,7 @@ class ConfigManager(Manager):
 		for conf in self._vitalConfigs:
 			if conf not in self._aliceConfigurations or self._aliceConfigurations[conf] == '':
 				raise VitalConfigMissing(conf)
+		self._updateSource = self.getSkillsUpdateSource()
 
 
 	def _setDefaultSiteId(self):
@@ -142,7 +143,6 @@ class ConfigManager(Manager):
 		self.writeToAliceConfigurationFile(self.aliceConfigurations)
 
 
-
 	def updateSkillConfigurationFile(self, skillName: str, key: str, value: typing.Any):
 		if skillName not in self._skillsConfigurations:
 			self.logWarning(f'Was asked to update {key} in skill {skillName} but skill doesn\'t exist')
@@ -155,9 +155,9 @@ class ConfigManager(Manager):
 		# Cast value to template defined type
 		vartype = self._skillsTemplateConfigurations[skillName][key]['dataType']
 		if vartype == 'boolean':
-			if value in ('on', 'yes', 'true', 'active'):
+			if value.lower() in ('on', 'yes', 'true', 'active'):
 				value = True
-			elif value in ('off', 'no', 'false', 'inactive'):
+			elif value.lower() in ('off', 'no', 'false', 'inactive'):
 				value = False
 		elif vartype == 'integer':
 			try:
@@ -486,7 +486,28 @@ class ConfigManager(Manager):
 
 	def isAliceConfHidden(self, confName: str) -> bool:
 		return confName in self._aliceTemplateConfigurations and \
-			self._aliceTemplateConfigurations.get('display') == 'hidden'
+		       self._aliceTemplateConfigurations.get('display') == 'hidden'
+
+
+	def getAliceConfUpdatePostProcessing(self, confName: str) -> str:
+		# Some config need some post processing if updated while Alice is running
+		return self._aliceTemplateConfigurations.get(confName, dict()).get('onUpdate', None)
+
+
+	def doConfigUpdatePostProcessing(self, functions: list):
+		# Call alice config post processing functions. This will call methods that are needed after a certain setting was
+		# updated while Project Alice was running
+		for func in functions:
+			try:
+				f = getattr(self, func)
+				f()
+			except:
+				self.logWarning(f'Configuration post processing method "{func}" does not exist')
+				continue
+
+
+	def reconnectMqtt(self):
+		self.MqttManager.reconnect()
 
 
 	def getSkillsUpdateSource(self) -> str:

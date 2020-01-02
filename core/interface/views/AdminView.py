@@ -34,8 +34,17 @@ class AdminView(View):
 	def saveAliceSettings(self):
 		try:
 			# Create the conf dict. on and off values are translated to True and False and we try to cast to int
-			# because HTTP data is type less.
+			# or float because HTTP data is type less.
 			confs = {key: False if value == 'off' else True if value == 'on' else int(value) if value.isdigit() else float(value) if self.isfloat(value) else value for key, value in request.form.items()}
+
+			postProcessing = list()
+			for conf, value in confs.items():
+				if value == self.ConfigManager.getAliceConfigByName(conf):
+					continue
+
+				pp = self.ConfigManager.getAliceConfUpdatePostProcessing(conf)
+				if pp and not pp in postProcessing:
+					postProcessing.append(pp)
 
 			confs['skills'] = self.ConfigManager.getAliceConfigByName('skills')
 			confs['supportedLanguages'] = self.ConfigManager.getAliceConfigByName('supportedLanguages')

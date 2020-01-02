@@ -21,28 +21,33 @@ settings = {
 	},
 	'mqttHost': {
 		'defaultValue': 'localhost',
-		'dataType': 'string',
-		'description': 'Mqtt server ip adress'
+		'dataType'    : 'string',
+		'description' : 'Mqtt server ip adress',
+		'onUpdate'    : 'reconnectMqtt'
 	},
 	'mqttPort': {
 		'defaultValue': 1883,
-		'dataType': 'integer',
-		'description': 'Mqtt server port'
+		'dataType'    : 'integer',
+		'description' : 'Mqtt server port',
+		'onUpdate'    : 'reconnectMqtt'
 	},
 	'mqttUser': {
 		'defaultValue': '',
-		'dataType': 'string',
-		'description': 'Mqtt user. Leave blank if not password protected'
+		'dataType'    : 'string',
+		'description' : 'Mqtt user. Leave blank if not password protected',
+		'onUpdate'    : 'reconnectMqtt'
 	},
 	'mqttPassword': {
 		'defaultValue': '',
-		'dataType': 'password',
-		'description': 'Mqtt password. Leave blank if not password protected'
+		'dataType'    : 'password',
+		'description' : 'Mqtt password. Leave blank if not password protected',
+		'onUpdate'    : 'reconnectMqtt'
 	},
 	'mqttTLSFile': {
 		'defaultValue': '',
-		'dataType': 'string',
-		'description': 'Mqtt TLS file path for SSL'
+		'dataType'    : 'string',
+		'description' : 'Mqtt TLS file path for SSL',
+		'onUpdate'    : 'reconnectMqtt'
 	},
 	'micSampleRate': {
 		'defaultValue': 44100,
