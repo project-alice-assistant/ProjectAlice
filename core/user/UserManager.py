@@ -20,7 +20,8 @@ class UserManager(Manager):
 			'tts TEXT',
 			'ttsLanguage TEXT',
 			'ttsType TEXT',
-			'ttsVoice TEXT'
+			'ttsVoice TEXT',
+			'token TEXT'
 		]
 	}
 
