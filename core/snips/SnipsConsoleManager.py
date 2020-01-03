@@ -155,6 +155,7 @@ class SnipsConsoleManager(Manager):
 				if req.status_code == 400:
 					self.logInfo('There are no intents, so the assistant could not be trained')
 					trainingLock.clear()
+					raise Exception('Something went wrong while training the assistant')
 
 			elif not trainingStatus.nluStatus.inProgress and \
 				 trainingStatus.asrStatus.needTraining and \
@@ -164,6 +165,7 @@ class SnipsConsoleManager(Manager):
 				if req.status_code == 400:
 					self.logInfo('There are no intents, so the assistant could not be trained')
 					trainingLock.clear()
+					raise Exception('Something went wrong while training the assistant')
 
 			else:
 				raise Exception('Something went wrong while training the assistant')
