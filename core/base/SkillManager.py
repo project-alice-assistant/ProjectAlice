@@ -654,7 +654,12 @@ class SkillManager(Manager):
 		if skillName not in self._allSkills:
 			return
 
-		self._allSkills[skillName].onStop()
+		try:
+			self._allSkills[skillName].onStop()
+		except:
+			# Do nothing, it's maybe because the skill crashed while running
+			pass
+
 		self._loadSkillList(skillToLoad=skillName, isUpdate=True)
 		self._startSkill(self._allSkills[skillName])
 
