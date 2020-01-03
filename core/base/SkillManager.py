@@ -654,6 +654,7 @@ class SkillManager(Manager):
 		if skillName not in self._allSkills:
 			return
 
+		self._allSkills[skillName].onStop()
 		self._loadSkillList(skillToLoad=skillName, isUpdate=True)
 		self._startSkill(self._allSkills[skillName])
 
