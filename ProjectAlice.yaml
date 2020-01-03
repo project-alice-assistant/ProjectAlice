@@ -16,6 +16,9 @@
 version: 1.12
 ################################################
 
+# How to prevent frequent errors:
+# Always add a space after the ":" (e.g. deviceName: default instead of deviceName:default)
+
 # If you place this file into /boot after a first initialization it won't overwrite your settings unless you set this to yes
 forceRewrite: no
 
@@ -29,11 +32,14 @@ keepYAMLBackup: no
 installOnBuster: no
 
 # Base configs
+# Enter Wifi credentials for automatic adding of tasmota/zigbee/netatmo devices even when Alice has wired access
 useWifi: yes
 wifiNetworkName:
 wifiWPAPass:
 wifiCountryCode:
 
+# The name of the device to set up
+# Caution: The main device should be named default! This will be changed later.
 deviceName: default
 soundPlaybackAndRecordEnabled: yes
 
