@@ -4,6 +4,7 @@ from typing import Callable, Tuple, Union
 
 import functools
 import warnings
+from flask import jsonify, request
 
 from core.base.SuperManager import SuperManager
 from core.base.model.Intent import Intent
@@ -143,7 +144,21 @@ def AnyExcept(func: Callable = None, text: str = 'error', exceptions: Tuple[Base
 				Logger(depth=6).logWarning(msg=e, printStack=printStack)
 				return _exceptHandler(*args, text=text, exceptHandler=exceptHandler, returnText=returnText, **kwargs)
 
+
 		return exceptionDecorator
+
 
 	exceptions = exceptions or Exception
 	return argumentWrapper(func) if func else argumentWrapper
+
+
+def ApiAuthenticated(func: Callable):
+	@functools.wraps(func)
+	def wrapper(*args, **kwargs):
+		if SuperManager.getInstance().userManager.apiTokenValid(request.headers.get('auth', '')):
+			return func(*args, **kwargs)
+		else:
+			return jsonify(message='ERROR: Unauthorized')
+
+
+	return wrapper

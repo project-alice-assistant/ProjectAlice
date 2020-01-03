@@ -24,7 +24,7 @@ class User(ProjectAliceObject):
 			self._ttsLanguage = row['ttsLanguage']
 			self._ttsType = row['ttsType']
 			self._ttsVoice = row['ttsVoice']
-			self._token = row['token']
+			self._apiToken = row['apiToken']
 
 		self._home = False
 		self._goingBed = False
@@ -110,13 +110,13 @@ class User(ProjectAliceObject):
 
 
 	@property
-	def token(self) -> str:
-		return self._token
+	def apiToken(self) -> str:
+		return self._apiToken
 
 
-	@token.setter
-	def token(self, val: str):
-		self._token = val
+	@apiToken.setter
+	def apiToken(self, val: str):
+		self._apiToken = val
 
 
 	@property

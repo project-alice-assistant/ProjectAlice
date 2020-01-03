@@ -2,11 +2,12 @@ from flask import jsonify, request
 from flask_classful import route
 
 from core.interface.model.Api import Api
+from core.util.Decorators import ApiAuthenticated
 
 
 class SkillsApi(Api):
-
 	route_base = f'/api/{Api.version()}/skills/'
+
 
 	def __init__(self):
 		super().__init__()
@@ -16,6 +17,7 @@ class SkillsApi(Api):
 		return jsonify(data=[skill.toJson() for skill in self.SkillManager.allSkills.values()])
 
 
+	@ApiAuthenticated
 	def delete(self, skillName: str):
 		if skillName in self.SkillManager.neededSkills:
 			return jsonify(success=False, reason='skill cannot be deleted')
@@ -35,6 +37,7 @@ class SkillsApi(Api):
 
 
 	@route('/<skillName>/toggleActiveState/')
+	@ApiAuthenticated
 	def toggleActiveState(self, skillName: str):
 		if skillName not in self.SkillManager.allSkills:
 			return jsonify(success=False, reason='skill not found')
@@ -51,6 +54,7 @@ class SkillsApi(Api):
 
 
 	@route('/<skillName>/activate/', methods=['GET', 'POST'])
+	@ApiAuthenticated
 	def activate(self, skillName: str):
 		if skillName not in self.SkillManager.allSkills:
 			return jsonify(success=False, reason='skill not found')
@@ -64,6 +68,7 @@ class SkillsApi(Api):
 
 
 	@route('/<skillName>/deactivate/', methods=['GET', 'POST'])
+	@ApiAuthenticated
 	def deactivate(self, skillName: str):
 		if skillName not in self.SkillManager.allSkills:
 			return jsonify(success=False, reason='skill not found')

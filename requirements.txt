@@ -21,3 +21,4 @@ psutil
 numpy
 setuptools-rust
 snips-nlu
+pyjwt
