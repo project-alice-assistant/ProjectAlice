@@ -387,8 +387,10 @@ network={
 		self.logInfo('Loading Snips configuration file')
 		snipsConfig = Path('/etc/snips.toml')
 
-		if not snipsConfig.exists():
-			self.Commons.runSystemCommand(['cp', Path(self._rootDir, 'system/snips/snips.toml'), Path('/etc/snips.toml')])
+		if snipsConfig.exists():
+			self.Commons.runRootSystemCommand(['rm', Path(self._rootDir, 'system/snips/snips.toml')])
+
+		self.Commons.runRootSystemCommand(['cp', Path(self._rootDir, 'system/snips/snips.toml'), Path('/etc/snips.toml')])
 
 		return TomlFile.loadToml(snipsConfig)
 
