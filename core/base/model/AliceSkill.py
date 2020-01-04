@@ -104,7 +104,7 @@ class AliceSkill(ProjectAliceObject):
 				item = Intent(item, userIntent=False)
 
 			if str(item) in intents:
-				intents[str(item)].addDialogMapping(item.dialogMapping)
+				intents[str(item)].addDialogMapping(item.dialogMapping, skillName=self.name)
 
 				if item.fallbackFunction:
 					intents[str(item)].fallbackFunction = item.fallbackFunction
@@ -130,7 +130,7 @@ class AliceSkill(ProjectAliceObject):
 					intentMappings[str(intent)] = intent
 
 				if requiredState:
-					intentMappings[str(intent)].addDialogMapping({requiredState: function})
+					intentMappings[str(intent)].addDialogMapping({requiredState: function}, skillName=self.name)
 				else:
 					intentMappings[str(intent)].fallbackFunction = function
 
@@ -387,7 +387,7 @@ class AliceSkill(ProjectAliceObject):
 		if intent.authOnly:
 			self.authenticateIntent(session)
 
-		function = intent.getMapping(session) or self.onMessage
+		function = intent.getMapping(session, self.name) or self.onMessage
 		return function(session=session)
 
 
@@ -501,6 +501,8 @@ class AliceSkill(ProjectAliceObject):
 
 
 	def continueDialog(self, sessionId: str, text: str, customData: dict = None, intentFilter: list = None, previousIntent: str = '', slot: str = '', currentDialogState: str = ''):
+		if currentDialogState:
+			currentDialogState = f'{self.name}:{currentDialogState}'
 		self.MqttManager.continueDialog(sessionId=sessionId, text=text, customData=customData, intentFilter=intentFilter, previousIntent=str(previousIntent), slot=slot, currentDialogState=currentDialogState)
 
 

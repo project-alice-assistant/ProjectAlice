@@ -70,7 +70,11 @@ class Intent(ProjectAliceObject):
 
 	@dialogMapping.setter
 	def dialogMapping(self, value: Dict[str, Callable]):
-		self._dialogMapping = value
+		dialogMapping = dict()
+		skillName = self.Commons.getFunctionCaller(depth=2)
+		for dialogState, func in value.items():
+			self._dialogMapping[f'{skillName}:{dialogState}'] = func
+		self._dialogMapping = dialogMapping
 
 
 	@property
@@ -93,9 +97,10 @@ class Intent(ProjectAliceObject):
 		self._authOnly = int(value)
 
 
-	def addDialogMapping(self, value: Dict[str, Callable]):
-		self._dialogMapping.update(value)
+	def addDialogMapping(self, value: Dict[str, Callable], skillName: str):
+		for dialogState, func in value.items():
+			self._dialogMapping[f'{skillName}:{dialogState}'] = func
 
 
-	def getMapping(self, session) -> Optional[Callable]:
-		return self._dialogMapping.get(session.currentState, self._fallbackFunction)
+	def getMapping(self, session, skillName: str) -> Optional[Callable]:
+		return self._dialogMapping.get(f'{skillName}:{session.currentState}', self._fallbackFunction)
