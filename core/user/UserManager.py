@@ -107,7 +107,8 @@ class UserManager(Manager):
 				'tts'        : '',
 				'ttsLanguage': '',
 				'ttsType'    : '',
-				'ttsVoice'   : ''
+				'ttsVoice'   : '',
+				'apiToken'   : ''
 			})
 			self.createApiToken(user)
 			self._users[name] = user

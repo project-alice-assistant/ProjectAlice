@@ -28,3 +28,4 @@ snips-makers-tts
 snips-hotword-model-heysnipsv4
 libatlas-base-dev
 gfortran
+ffmpeg
