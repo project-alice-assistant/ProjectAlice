@@ -5,7 +5,6 @@ from typing import Dict, Optional
 
 import requests
 import shutil
-
 from core.ProjectAliceExceptions import GithubNotFound, GithubRateLimit, GithubTokenFailed, SkillNotConditionCompliant, SkillStartDelayed, SkillStartingFailed
 from core.base.SuperManager import SuperManager
 from core.base.model import Intent
@@ -293,7 +292,7 @@ class SkillManager(Manager):
 		"""
 
 		if not method.startswith('on'):
-			method = f'on{self.Commons.toPascalCase(method)}'
+			method = f'on{method[0].capitalize() + method[1:]}'
 
 		for skillItem in self._activeSkills.values():
 
