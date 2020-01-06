@@ -84,6 +84,22 @@ class SkillsApi(Api):
 			return jsonify(success=False, reason='not active')
 
 
+	@route('/<skillName>/reload/', methods=['GET', 'POST'])
+	@ApiAuthenticated
+	def reload(self, skillName: str):
+		if skillName not in self.SkillManager.allSkills:
+			return jsonify(success=False, reason='skill not found')
+
+		try:
+			self.logInfo(f'Reloading skill "{skillName}"')
+			self.SkillManager.reloadSkill(skillName)
+		except Exception as e:
+			self.logWarning(f'Failed reloading skill: {e}', printStack=True)
+			return jsonify(success=False)
+
+		return jsonify(success=True)
+
+
 	@route('/<skillName>/checkUpdate/')
 	def checkUpdate(self, skillName: str):
 		if skillName not in self.SkillManager.allSkills:

@@ -70,7 +70,7 @@ class AdminView(View):
 		try:
 			self.__class__.setWaitType('reboot')
 			self.ProjectAlice.onStop()
-			self.ThreadManager.doLater(interval=2, func=self.Commons.runSystemCommand, args=[['shutdown', '-r', 'now']])
+			self.ThreadManager.doLater(interval=2, func=self.Commons.runRootSystemCommand, args=[['shutdown', '-r', 'now']])
 			return jsonify(success=True)
 		except Exception as e:
 			self.logError(f'Failed rebooting device: {e}')
