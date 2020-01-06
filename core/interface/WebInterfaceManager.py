@@ -9,6 +9,7 @@ from flask import Flask, send_from_directory
 from flask_login import LoginManager
 
 from core.base.model.Manager import Manager
+from core.interface.api.LoginApi import LoginApi
 from core.interface.api.SkillsApi import SkillsApi
 from core.interface.api.UsersApi import UsersApi
 from core.interface.views.AdminAuth import AdminAuth
@@ -22,12 +23,12 @@ from core.interface.views.SyslogView import SyslogView
 
 
 class WebInterfaceManager(Manager):
-
 	app = Flask(__name__)
 	app.config['SEND_FILE_MAX_AGE_DEFAULT'] = 0
 
 	_VIEWS = [AdminView, AdminAuth, IndexView, SkillsView, SnipswatchView, SyslogView, DevModeView, ScenarioView]
-	_APIS = [UsersApi, SkillsApi]
+	_APIS = [LoginApi, UsersApi, SkillsApi]
+
 
 	def __init__(self):
 		super().__init__()
