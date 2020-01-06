@@ -50,7 +50,7 @@ class TalkManager(Manager):
 				except FileNotFoundError:
 					continue
 				except ValueError as e:
-					self.logError(e)
+					self.logError(f'{e}')
 					continue
 
 
