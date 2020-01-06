@@ -147,7 +147,6 @@ def AnyExcept(func: Callable = None, text: str = 'error', exceptions: Tuple[Base
 
 		return exceptionDecorator
 
-
 	exceptions = exceptions or Exception
 	return argumentWrapper(func) if func else argumentWrapper
 
@@ -159,7 +158,6 @@ def ApiAuthenticated(func: Callable):
 			return func(*args, **kwargs)
 		else:
 			return jsonify(message='ERROR: Unauthorized')
-
 
 	return wrapper
 
@@ -180,4 +178,4 @@ def IfSetting(func: Callable, settingName: str, settingValue: Any, inverted: boo
 		return None
 
 
-	return wrapper()
+	return wrapper
