@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Callable, Tuple, Union
+from typing import Any, Callable, Tuple, Union
 
 import functools
 import warnings
@@ -162,3 +162,22 @@ def ApiAuthenticated(func: Callable):
 
 
 	return wrapper
+
+
+def IfSetting(func: Callable, settingName: str, settingValue: Any, inverted: bool = False, skillSetting: bool = True):
+	@functools.wraps(func)
+	def wrapper(*args, **kwargs):
+		value = SuperManager.getInstance().configManager.getSkillConfigByName(settingName) if skillSetting else SuperManager.getInstance().configManager.getAliceConfigByName(settingName)
+
+		if value is None:
+			return None
+
+		if not inverted and value == settingValue:
+			return func(*args, **kwargs)
+		elif inverted and value != settingValue:
+			return func(*args, **kwargs)
+
+		return None
+
+
+	return wrapper()
