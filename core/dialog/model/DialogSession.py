@@ -26,6 +26,7 @@ class DialogSession(ProjectAliceObject):
 		self._intentFilter = list()
 		self._notUnderstood = 0
 		self._currentState = constants.DEFAULT
+		self._isAPIGenerated = False
 
 
 	def extend(self, message: MQTTMessage, sessionId: str = None):
@@ -206,6 +207,16 @@ class DialogSession(ProjectAliceObject):
 		self._currentState = value
 
 
+	@property
+	def isAPIGenerated(self) -> bool:
+		return self._isAPIGenerated
+
+
+	@isAPIGenerated.setter
+	def isAPIGenerated(self, value: bool):
+		self._isAPIGenerated = value
+
+
 	def __repr__(self) -> str:
 		return dedent(f'''\
 			[{self.__class__.__name__}] -> [
@@ -220,6 +231,7 @@ class DialogSession(ProjectAliceObject):
 				previousIntent: "{self.previousIntent}",
 				intentHistory: "{self._intentHistory}",
 				intentFilter: "{self._intentFilter}",
-				notUnderstood: "{self._notUnderstood}"
+				notUnderstood: "{self._notUnderstood}",
+				apiGenerated: "{self._isAPIGenerated}"
 			]
 		''')

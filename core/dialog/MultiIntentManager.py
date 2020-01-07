@@ -53,14 +53,14 @@ class MultiIntentManager(Manager):
 		if not intent:
 			return False
 
-		self._queryNLU(multiIntent.session, string=intent)
+		self.queryNLU(multiIntent.session, string=intent)
 		return True
 
 
-	def _queryNLU(self, session: DialogSession, string: str):
+	def queryNLU(self, session: DialogSession, string: str):
 		self.MqttManager.publish(topic=constants.TOPIC_NLU_QUERY, payload={
-			'input': string,
-			'sessionId': session.sessionId,
+			'input'       : string,
+			'sessionId'   : session.sessionId,
 			'intentFilter': session.intentFilter
 		})
 

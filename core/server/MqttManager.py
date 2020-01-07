@@ -321,7 +321,7 @@ class MqttManager(Manager):
 			session.update(msg)
 			self.broadcast(method=constants.EVENT_INTENT_PARSED, exceptions=[self.name], propagateToSkills=True, session=session)
 
-			if self.ConfigManager.getAliceConfigByName('asr').lower() != 'snips':
+			if self.ConfigManager.getAliceConfigByName('asr').lower() != 'snips' or session.isAPIGenerated:
 				intent = Intent(session.payload['intent']['intentName'].split(':')[1])
 				message = mqtt.MQTTMessage(topic=str.encode(str(intent)))
 				message.payload = json.dumps(session.payload)
@@ -623,13 +623,17 @@ class MqttManager(Manager):
 		if not sessionId:
 			return
 
+		session = self.DialogSessionManager.getSession(sessionId)
+		if session and session.isAPIGenerated:
+			return self.say(text=text, client=session.siteId)
+
 		client = client.replace(' ', '_')
 
 		if self.ConfigManager.getAliceConfigByName('outputOnSonos') != '1' or (self.ConfigManager.getAliceConfigByName('outputOnSonos') == '1' and self.SkillManager.getSkillInstance('Sonos') is None or not self.SkillManager.getSkillInstance('Sonos').anySkillHere(client)) or not self.SkillManager.getSkillInstance('Sonos').active:
 			if text:
 				self._mqttClient.publish(constants.TOPIC_END_SESSION, json.dumps({
 					'sessionId': sessionId,
-					'text': text
+					'text'     : text
 				}))
 			else:
 				self._mqttClient.publish(constants.TOPIC_END_SESSION, json.dumps({
