@@ -223,3 +223,11 @@ class UserManager(Manager):
 
 	def apiTokenValid(self, token: str) -> bool:
 		return token != '' and token in self._validtokens
+
+
+	def apiTokenLevel(self, token: str) -> AccessLevel:
+		return self._validtokens['token'].accessLevel
+
+
+	def getUserByAPIToken(self, token: str) -> Optional[User]:
+		return self._validtokens.get(token, None)
