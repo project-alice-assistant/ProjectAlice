@@ -25,7 +25,7 @@ class TestInternetManager(unittest.TestCase):
 
 		internetManager.checkOnlineState()
 		mock_requests.get.assert_called_once_with('http://clients3.google.com/generate_204')
-		mock_broadcast.assert_called_once_with(method='onInternetConnected', exceptions=['InternetManager'], propagateToSkills=True)
+		mock_broadcast.assert_called_once_with(method='internetConnected', exceptions=['InternetManager'], propagateToSkills=True)
 		self.assertEqual(internetManager.online, True)
 		mock_broadcast.reset_mock()
 		mock_requests.reset_mock()
@@ -49,7 +49,7 @@ class TestInternetManager(unittest.TestCase):
 		# when wrong status code is returned (and currently online)
 		internetManager.checkOnlineState()
 		mock_requests.get.assert_called_once_with('http://clients3.google.com/generate_204')
-		mock_broadcast.assert_called_once_with(method='onInternetLost', exceptions=['InternetManager'], propagateToSkills=True)
+		mock_broadcast.assert_called_once_with(method='internetLost', exceptions=['InternetManager'], propagateToSkills=True)
 		self.assertEqual(internetManager.online, False)
 		mock_broadcast.reset_mock()
 		mock_requests.reset_mock()
@@ -77,7 +77,7 @@ class TestInternetManager(unittest.TestCase):
 		mock_requests.get.side_effect = RequestException
 		internetManager.checkOnlineState()
 		mock_requests.get.assert_called_once_with('http://clients3.google.com/generate_204')
-		mock_broadcast.assert_called_once_with(method='onInternetLost', exceptions=['InternetManager'], propagateToSkills=True)
+		mock_broadcast.assert_called_once_with(method='internetLost', exceptions=['InternetManager'], propagateToSkills=True)
 		self.assertEqual(internetManager.online, False)
 
 
