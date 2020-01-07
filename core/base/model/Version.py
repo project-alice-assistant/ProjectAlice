@@ -30,13 +30,13 @@ class Version(str, ProjectAliceObject):
 		except AttributeError:
 			self._isVersionNumber = False
 			self._infos = {
-				'mainVersion': 0,
+				'mainVersion'  : 0,
 				'updateVersion': 0,
-				'hotfix': 0,
-				'releaseType': '',
+				'hotfix'       : 0,
+				'releaseType'  : '',
 				'releaseNumber': 0
 			}
-		self._version = f'{self.mainVersion}.{self.updateVersion}.{self.hotfix}'
+		self._version = f'{self._infos["mainVersion"]}.{self._infos["updateVersion"]}.{self._infos["hotfix"]}'
 
 
 	def __gt__(self, other: Version) -> bool:
