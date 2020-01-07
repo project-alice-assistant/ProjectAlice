@@ -21,7 +21,7 @@ class TestAliceSkill(unittest.TestCase):
 		class ExampleSkill(AliceSkill):
 			#ignore all stuff that would happen in the AliceSkill init
 			def __init__(self):
-				pass
+				self._name = 'ExampleSkill'
 
 			@IntentHandler('intent1', authOnly=AccessLevel.ADMIN)
 			def single_decorator(self, *args, **kwargs):
@@ -56,8 +56,8 @@ class TestAliceSkill(unittest.TestCase):
 		self.assertEqual(intent2.fallbackFunction, None)
 		self.assertDictEqual(
 			intent2.dialogMapping,
-			{'exampleState': exampleSkill.multiple_decorator,
-			 'exampleState2': exampleSkill.mqtt_decorator})
+			{'ExampleSkill:exampleState': exampleSkill.multiple_decorator,
+			 'ExampleSkill:exampleState2': exampleSkill.mqtt_decorator})
 		self.assertEqual(str(intent2), 'hermes/intent/unittest:intent2')
 
 		self.assertTrue(intent3.protected)
@@ -81,7 +81,7 @@ class TestAliceSkill(unittest.TestCase):
 		class ExampleSkill(AliceSkill):
 			#ignore all stuff that would happen in the AliceSkill init
 			def __init__(self):
-				pass
+				self._name = 'ExampleSkill'
 
 			def exampleFunc(self):
 				pass
