@@ -17,6 +17,8 @@ class LoginApi(Api):
 			if not self.UserManager.checkPinCode(self.UserManager.getUser(username), request.form.get('pin')):
 				raise Exception
 
-			return jsonify({'apiToken': self.UserManager.getUser(username).apiToken})
+			token = self.UserManager.getUser(username).apiToken or self.UserManager.createApiToken(self.UserManager.getUser(username))
+
+			return jsonify({'apiToken': token})
 		except:
 			return jsonify(message='ERROR: Unauthorized')

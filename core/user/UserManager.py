@@ -37,7 +37,6 @@ class UserManager(Manager):
 	def onStart(self):
 		super().onStart()
 		self._loadUsers()
-		self._checkApiTokens()
 		self.logInfo(f'- Loaded {len(self._users)} users')
 
 
@@ -47,12 +46,6 @@ class UserManager(Manager):
 			user = User(row)
 			self._users[user.name] = user
 			self._validtokens[user.apiToken] = user
-
-
-	def _checkApiTokens(self):
-		for user in self._users.values():
-			if not user.apiToken:
-				self.createApiToken(user)
 
 
 	def createApiToken(self, user: User, save: bool = True) -> str:
@@ -98,7 +91,7 @@ class UserManager(Manager):
 				'lang'       : self.LanguageManager.activeLanguageAndCountryCode
 			})
 		if insertId > -1:
-			user = User({
+			self._users[name] = User({
 				'id'         : insertId,
 				'username'   : name.title(),
 				'accessLevel': access,
@@ -111,8 +104,6 @@ class UserManager(Manager):
 				'ttsVoice'   : '',
 				'apiToken'   : ''
 			})
-			self.createApiToken(user)
-			self._users[name] = user
 
 
 	def addUserPinCode(self, name: str, pinCode: int):
