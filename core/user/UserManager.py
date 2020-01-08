@@ -1,3 +1,4 @@
+from pathlib import Path
 from time import time
 from typing import Any, Dict, Optional
 
@@ -122,6 +123,25 @@ class UserManager(Manager):
 			row=('username', name))
 
 
+	# noinspection SqlResolve
+	def deleteUser(self, username: str, keepWakeword: bool = False):
+		self.DatabaseManager.delete(
+			tableName='users',
+			callerName=self.name,
+			query='DELETE FROM :__table__ WHERE username = :username',
+			values={
+				'username': username
+			}
+		)
+
+		self._users.pop(username)
+
+		if not keepWakeword:
+			path = Path(self.Commons.rootDir(), 'trained/hotwords', username)
+			if path.exists():
+				path.unlink()
+
+
 	def getUserAccessLevel(self, username: str) -> Optional[Any]:
 		if username not in self._users:
 			return None
@@ -226,7 +246,7 @@ class UserManager(Manager):
 
 
 	def apiTokenLevel(self, token: str) -> AccessLevel:
-		return self._validtokens['token'].accessLevel
+		return self._validtokens[token].accessLevel
 
 
 	def getUserByAPIToken(self, token: str) -> Optional[User]:

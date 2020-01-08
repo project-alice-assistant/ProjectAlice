@@ -26,8 +26,8 @@ class UsersApi(Api):
 	@ApiAuthenticated
 	def put(self):
 		try:
-			username = request.form.get('username')
-			pin = request.form.get('pin')
+			username = request.form.get('username', '').lower()
+			pin = int(request.form.get('pin'))
 			access = request.form.get('access')
 
 			if not username or not pin or not access:
@@ -43,4 +43,24 @@ class UsersApi(Api):
 			return jsonify(success=True)
 		except Exception as e:
 			self.logError(f'Failed adding new user: {e}')
+			return jsonify(success=False)
+
+
+	@ApiAuthenticated
+	def delete(self):
+		try:
+			if not self.UserManager.hasAccessLevel(self.UserManager.getUserByAPIToken(request.headers.get('auth')).name, AccessLevel.ADMIN):
+				return jsonify(message='ERROR: You need admin access to delete a user')
+
+			username = request.form.get('username', '').lower()
+			keepWakeword = request.form.get('keepWakeword', False)
+			keepWakeword = False if keepWakeword in (False, 'no', '0', 'false', 'False') else True
+
+			if not self.UserManager.getUser(username):
+				return jsonify(message=f"ERROR: User '{username}' does not exist")
+
+			self.UserManager.deleteUser(username=username, keepWakeword=keepWakeword)
+			return jsonify(success=True)
+		except Exception as e:
+			self.logError(f'Failed deleting user: {e}')
 			return jsonify(success=False)
