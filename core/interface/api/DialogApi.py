@@ -33,6 +33,21 @@ class DialogApi(Api):
 			return jsonify(success=False)
 
 
+	@route('/ask/', methods=['POST'])
+	@ApiAuthenticated
+	def ask(self):
+		try:
+			siteId = request.form.get('siteId') if request.form.get('siteId', None) is not None else constants.DEFAULT_SITE_ID
+			self.MqttManager.ask(
+				text=request.form.get('text'),
+				client=siteId
+			)
+			return jsonify(success=True)
+		except Exception as e:
+			self.logError(f'Failed asking: {e}')
+			return jsonify(success=False)
+
+
 	@route('/process/', methods=['POST'])
 	@ApiAuthenticated
 	def process(self):
