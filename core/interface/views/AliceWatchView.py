@@ -1,14 +1,13 @@
 from pathlib import Path
 
 import tempfile
-
 from flask import jsonify, render_template, request
 
 from core.interface.model.View import View
 
 
-class SnipswatchView(View):
-	route_base = '/snipswatch/'
+class AliceWatchView(View):
+	route_base = '/alicewatch/'
 
 
 	def __init__(self):
@@ -21,7 +20,7 @@ class SnipswatchView(View):
 
 	def index(self):
 		self.SnipsWatchManager.startWatching()
-		return render_template(template_name_or_list='snipswatch.html',
+		return render_template(template_name_or_list='alicewatch.html',
 		                       langData=self._langData,
 		                       aliceSettings=self.ConfigManager.aliceConfigurations)
 

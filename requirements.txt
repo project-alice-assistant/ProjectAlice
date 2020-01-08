@@ -15,6 +15,7 @@ google-cloud-speech
 flask
 flask-classful
 flask-login
+flask-socketio
 googletrans
 bcrypt
 psutil

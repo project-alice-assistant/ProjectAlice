@@ -16,11 +16,11 @@ from core.interface.api.UsersApi import UsersApi
 from core.interface.api.UtilsApi import UtilsApi
 from core.interface.views.AdminAuth import AdminAuth
 from core.interface.views.AdminView import AdminView
+from core.interface.views.AliceWatchView import AliceWatchView
 from core.interface.views.DevModeView import DevModeView
 from core.interface.views.IndexView import IndexView
 from core.interface.views.ScenarioView import ScenarioView
 from core.interface.views.SkillsView import SkillsView
-from core.interface.views.SnipswatchView import SnipswatchView
 from core.interface.views.SyslogView import SyslogView
 
 
@@ -28,7 +28,7 @@ class WebInterfaceManager(Manager):
 	app = Flask(__name__)
 	app.config['SEND_FILE_MAX_AGE_DEFAULT'] = 0
 
-	_VIEWS = [AdminView, AdminAuth, IndexView, SkillsView, SnipswatchView, SyslogView, DevModeView, ScenarioView]
+	_VIEWS = [AdminView, AdminAuth, IndexView, SkillsView, AliceWatchView, SyslogView, DevModeView, ScenarioView]
 	_APIS = [UtilsApi, LoginApi, UsersApi, SkillsApi, DialogApi]
 
 
