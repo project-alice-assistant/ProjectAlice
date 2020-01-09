@@ -12,6 +12,7 @@ from core.base.model.Manager import Manager
 from core.interface.api.DialogApi import DialogApi
 from core.interface.api.LoginApi import LoginApi
 from core.interface.api.SkillsApi import SkillsApi
+from core.interface.api.TelemetryApi import TelemetryApi
 from core.interface.api.UsersApi import UsersApi
 from core.interface.api.UtilsApi import UtilsApi
 from core.interface.views.AdminAuth import AdminAuth
@@ -29,7 +30,7 @@ class WebInterfaceManager(Manager):
 	app.config['SEND_FILE_MAX_AGE_DEFAULT'] = 0
 
 	_VIEWS = [AdminView, AdminAuth, IndexView, SkillsView, AliceWatchView, SyslogView, DevModeView, ScenarioView]
-	_APIS = [UtilsApi, LoginApi, UsersApi, SkillsApi, DialogApi]
+	_APIS = [UtilsApi, LoginApi, UsersApi, SkillsApi, DialogApi, TelemetryApi]
 
 
 	def __init__(self):
