@@ -102,5 +102,5 @@ class Intent(ProjectAliceObject):
 			self._dialogMapping[f'{skillName}:{dialogState}'] = func
 
 
-	def getMapping(self, session, skillName: str) -> Optional[Callable]:
+	def getMapping(self, session) -> Optional[Callable]:
 		return self._dialogMapping.get(session.currentState, self._fallbackFunction)

@@ -387,7 +387,7 @@ class AliceSkill(ProjectAliceObject):
 		if intent.authOnly:
 			self.authenticateIntent(session)
 
-		function = intent.getMapping(session, self.name) or self.onMessage
+		function = intent.getMapping(session) or self.onMessage
 		return function(session=session)
 
 
