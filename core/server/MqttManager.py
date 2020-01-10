@@ -5,6 +5,7 @@ from pathlib import Path
 import paho.mqtt.client as mqtt
 import paho.mqtt.publish as publish
 import re
+from random import random
 
 from core.ProjectAliceExceptions import AccessLevelTooLow
 from core.base.model.Intent import Intent
@@ -432,13 +433,19 @@ class MqttManager(Manager):
 		:param customData: json object
 		"""
 
-		if client == constants.ALL:
-			deviceList = self.DeviceManager.getDevicesByType('AliceSatellite', connectedOnly=True)
+		if client == constants.ALL or client == constants.RANDOM:
+			deviceList = [device.room for device in self.DeviceManager.getDevicesByType('AliceSatellite', connectedOnly=True) if device]
 			deviceList.append(constants.DEFAULT_SITE_ID)
 
-			for device in deviceList:
-				device = device.replace('@mqtt', '')
-				self.say(text=text, client=device, customData=customData)
+			if client == constants.ALL:
+				for device in deviceList:
+					device = device.replace('@mqtt', '')
+					if not device:
+						continue
+
+					self.say(text=text, client=device, customData=customData)
+			else:
+				self.say(text=text, client=random.choice(deviceList), customData=customData)
 		else:
 			if customData is not None:
 				if isinstance(customData, dict):
