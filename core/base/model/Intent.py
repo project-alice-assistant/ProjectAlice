@@ -70,11 +70,10 @@ class Intent(ProjectAliceObject):
 
 	@dialogMapping.setter
 	def dialogMapping(self, value: Dict[str, Callable]):
-		dialogMapping = dict()
 		skillName = self.Commons.getFunctionCaller(depth=2)
-		for dialogState, func in value.items():
-			self._dialogMapping[f'{skillName}:{dialogState}'] = func
-		self._dialogMapping = dialogMapping
+		self._dialogMapping = {
+			f'{skillName}:{dialogState}': func for dialogState, func in value.items()
+		}
 
 
 	@property
