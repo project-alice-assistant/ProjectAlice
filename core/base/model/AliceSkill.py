@@ -480,8 +480,8 @@ class AliceSkill(ProjectAliceObject):
 		return self.DatabaseManager.insert(tableName=tableName, query=query, values=values, callerName=self.name)
 
 
-	def randomTalk(self, text: str, replace: list = None) -> str:
-		talk = self.TalkManager.randomTalk(talk=text, skill=self.name)
+	def randomTalk(self, text: str, replace: list = None, skill: str = None) -> str:
+		talk = self.TalkManager.randomTalk(talk=text, skill=skill or self.name)
 
 		if replace:
 			talk = talk.format(*replace)
