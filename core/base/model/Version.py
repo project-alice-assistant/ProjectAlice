@@ -2,10 +2,7 @@ from __future__ import annotations
 
 import re
 
-from core.base.model.ProjectAliceObject import ProjectAliceObject
-
-
-class Version(str, ProjectAliceObject):
+class Version(str):
 
 	VERSION_PARSER_REGEX = re.compile('(?P<mainVersion>\d+)\.(?P<updateVersion>\d+)(\.(?P<hotfix>\d+))?(-(?P<releaseType>a|b|rc)(?P<releaseNumber>\d+)?)?')
 
@@ -22,9 +19,9 @@ class Version(str, ProjectAliceObject):
 			self._infos = {
 				'mainVersion': int(matches.group('mainVersion')),
 				'updateVersion': int(matches.group('updateVersion')),
-				'hotfix': 0 if not matches.group('hotfix') else int(matches.group('hotfix')),
+				'hotfix': int(matches.group('hotfix')) if matches.group('hotfix') else 0,
 				'releaseType': matches.group('releaseType') or 'master',
-				'releaseNumber': 1 if not matches.group('releaseNumber') else int(matches.group('releaseNumber'))
+				'releaseNumber': int(matches.group('releaseNumber')) if matches.group('releaseNumber') else 1
 			}
 			self._isVersionNumber = True
 		except AttributeError:
@@ -36,24 +33,14 @@ class Version(str, ProjectAliceObject):
 				'releaseType'  : '',
 				'releaseNumber': 0
 			}
-		self._version = f'{self._infos["mainVersion"]}.{self._infos["updateVersion"]}.{self._infos["hotfix"]}'
+		
+		# master gets z so it has a higher value than any other release type
+		releaseMathing = 'z' if self._infos['releaseType'] == 'master' else self._infos['releaseType']
+		self.versionMatching = f'{self._infos["mainVersion"]}{self._infos["updateVersion"]}{self._infos["hotfix"]}{releaseMathing}{self._infos["releaseNumber"]}'
 
 
 	def __gt__(self, other: Version) -> bool:
-		if self.__eq__(other):
-			return False
-
-		# 2.1.1 > 1.2.1 > 1.1.2
-		if self._version != other._version:
-			return self._version > other._version
-
-		# 2.1.1 > 2.1.1-rc > 2.1.1-b > 2.1.1-a
-		if self._infos['releaseType'] != other.infos['releaseType']:
-			return self._infos['releaseType'] == 'master' \
-				or self._infos['releaseType'] > other.infos['releaseType']
-
-		# 2.1.1-b2 > 2.1.1-b1
-		return self._infos['releaseNumber'] > other.infos['releaseNumber']
+		return self.versionMatching > other.versionMatching
 
 
 	def __lt__(self, other: Version) -> bool:
@@ -61,7 +48,7 @@ class Version(str, ProjectAliceObject):
 
 
 	def __eq__(self, other: Version) -> bool:
-		return self._infos == other.infos
+		return self.versionMatching == other.versionMatching
 
 
 	def __ne__(self, other: Version) -> bool:
