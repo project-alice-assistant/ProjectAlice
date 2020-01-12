@@ -162,20 +162,26 @@ def ApiAuthenticated(func: Callable):
 	return wrapper
 
 
-def IfSetting(func: Callable, settingName: str, settingValue: Any, inverted: bool = False, skillSetting: bool = True):
-	@functools.wraps(func)
-	def wrapper(*args, **kwargs):
-		value = SuperManager.getInstance().configManager.getSkillConfigByName(settingName) if skillSetting else SuperManager.getInstance().configManager.getAliceConfigByName(settingName)
+def IfSetting(func: Callable = None, settingName: str = None, settingValue: Any = None, inverted: bool = False, skillSetting: bool = True):
+	def argumentWrapper(func: Callable):
+		@functools.wraps(func)
+		def settingDecorator(*args, **kwargs):
+			if not settingName:
+				Logger(depth=6).logWarning(msg='Cannot use IfSetting decorator without settingName')
+				return None
 
-		if value is None:
-			return None
+			value = SuperManager.getInstance().configManager.getSkillConfigByName(settingName) if skillSetting else SuperManager.getInstance().configManager.getAliceConfigByName(settingName)
 
-		if not inverted and value == settingValue:
-			return func(*args, **kwargs)
-		elif inverted and value != settingValue:
-			return func(*args, **kwargs)
+			if value is None:
+				return None
 
-		return None
+			if not inverted and value == settingValue:
+				return func(*args, **kwargs)
+			elif inverted and value != settingValue:
+				return func(*args, **kwargs)
 
 
-	return wrapper
+		return settingDecorator
+
+
+	return argumentWrapper(func) if func else argumentWrapper
