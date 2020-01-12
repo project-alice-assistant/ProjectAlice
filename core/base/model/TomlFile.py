@@ -1,11 +1,13 @@
 from __future__ import annotations
 
 import json
+import subprocess
 from pathlib import Path
 from textwrap import dedent
 from typing import Any, Dict, ItemsView, Optional, Union, ValuesView
 
 import re
+import tempfile
 
 from core.base.model.ProjectAliceObject import ProjectAliceObject
 
@@ -65,8 +67,8 @@ class TomlFile(ProjectAliceObject):
 		writePath = self._path
 
 		try:
-			if not self.Commons.isWritable(self._path):
-				raise Exception
+			test = tempfile.TemporaryFile(dir=path)
+			test.close()
 		except Exception:
 			writePath = Path(writePath.stem).with_suffix('.toml')
 
@@ -96,7 +98,7 @@ class TomlFile(ProjectAliceObject):
 						f.write(f'{"#" if data.commented else ""}{data.name} = {json.dumps(value) if isinstance(value, list) else value}\n')
 
 		if self._path != writePath:
-			self.Commons.runRootSystemCommand(['mv', writePath, self._path])
+			subprocess.run(['sudo', 'mv', writePath, self._path])
 
 		return self._data
 
