@@ -9,10 +9,12 @@ import re
 from re import Match
 
 from core.base.model.ProjectAliceObject import ProjectAliceObject
+from core.base.model.widgetSizes import WidgetSizes
 
 
 class Widget(ProjectAliceObject):
-	SIZE = 'w'
+	SIZE = WidgetSizes.w
+
 	OPTIONS = dict()
 
 
@@ -26,7 +28,7 @@ class Widget(ProjectAliceObject):
 		self._state = data['state'] if 'state' in data.keys() else 0
 		self._x = data['posx'] if 'posx' in data.keys() else 0
 		self._y = data['posy'] if 'posy' in data.keys() else 0
-		self._size = data['size'] if 'size' in data.keys() else self.SIZE
+		self._size = self.SIZE.value
 		options = json.loads(data['options']) if 'options' in data.keys() else self.OPTIONS
 		if options:
 			self._options = {**self.OPTIONS, **options}
