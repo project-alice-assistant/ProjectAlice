@@ -5,13 +5,16 @@ from pathlib import Path
 from textwrap import dedent
 from typing import Dict, Optional
 
+import re
+from re import Match
+
 from core.base.model.ProjectAliceObject import ProjectAliceObject
 
 
 class Widget(ProjectAliceObject):
-
 	SIZE = 'w'
 	OPTIONS = dict()
+
 
 	def __init__(self, data: sqlite3.Row):
 		super().__init__()
@@ -76,14 +79,23 @@ class Widget(ProjectAliceObject):
 	def html(self) -> str:
 		try:
 			file = self.getCurrentDir() / f'templates/{self.name}.html'
-			return file.open().read()
+			fp = file.open()
+			content = fp.read()
+			# noinspection PyTypeChecker
+			content = re.sub(r'{{ lang\.([\w]*) }}', self.langReplace, content)
+
+			return content
 		except:
 			self.logWarning(f"Widget doesn't have html file")
 			return ''
 
 
+	def langReplace(self, match: Match):
+		return self.getLanguageString(match.group(1))
+
+
 	def getLanguageString(self, key: str) -> str:
-		return self._language.get(key, 'Missing string')
+		return self._language.get(self.LanguageManager.activeLanguage, dict()).get(key, 'Missing string')
 
 
 	@property
