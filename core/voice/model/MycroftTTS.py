@@ -81,7 +81,7 @@ class MycroftTTS(TTS):
 	@staticmethod
 	def _checkText(session: DialogSession) -> str:
 		text = session.payload['text']
-		return re.sub('<.*?>', '', text)
+		return ' '.join(re.sub('<.*?>', ' ', text).split())
 
 
 	def onSay(self, session: DialogSession):
