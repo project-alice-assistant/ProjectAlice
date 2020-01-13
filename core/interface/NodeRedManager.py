@@ -33,10 +33,11 @@ class NodeRedManager(Manager):
 			return
 
 		for skillName, tup in self.SkillManager.allScenarioNodes().items():
-			path = Path('../.node-red/node_modules', tup[0], 'package.json')
+			scenarioNodeName, scenarioNodeVersion, scenarioNodePath = tup
+			path = Path('../.node-red/node_modules', scenarioNodeName, 'package.json')
 			if not path.exists():
 				self.logInfo('New scenario node found')
-				install = self.Commons.runSystemCommand(f'cd ~/.node-red && npm install {tup[2]}', shell=True)
+				install = self.Commons.runSystemCommand(f'cd ~/.node-red && npm install {scenarioNodePath}', shell=True)
 				if install.returncode == 1:
 					self.logWarning(f'Something went wrong installing new node: {install.stderr}')
 
@@ -44,10 +45,10 @@ class NodeRedManager(Manager):
 
 			with path.open('r') as fp:
 				data = json.load(fp)
-				version = Version(data['version'])
+				version = Version.fromString(data['version']).version
 
-				if version < tup[1]:
+				if version < scenarioNodeVersion.version:
 					self.logInfo('New scenario node update found')
-					install = self.Commons.runSystemCommand(f'cd ~/.node-red && npm install {tup[2]}', shell=True)
+					install = self.Commons.runSystemCommand(f'cd ~/.node-red && npm install {scenarioNodePath}', shell=True)
 					if install.returncode == 1:
 						self.logWarning(f'Something went wrong updating node: {install.stderr}')

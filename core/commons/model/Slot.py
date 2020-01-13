@@ -1,27 +1,17 @@
+import attr
+
+@attr.s(slots=True, frozen=True)
 class Slot:
-	def __init__(self, data):
-		self._slotName = data['slotName']
-		self._entity = data['entity']
-		self._rawValue = data['rawValue']
-		self._value = data['value']
-		self._range = data['range']
+	data = attr.ib()
+	slotName = attr.ib(init=False)
+	entity = attr.ib(init=False)
+	rawValue = attr.ib(init=False)
+	value = attr.ib(init=False)
+	range = attr.ib(init=False)
 
-	@property
-	def slotName(self):
-		return self._slotName
-
-	@property
-	def entity(self):
-		return self._entity
-
-	@property
-	def rawValue(self):
-		return self._rawValue
-
-	@property
-	def value(self):
-		return self._value
-
-	@property
-	def range(self):
-		return self._range
+	def __attrs_post_init__(self):
+		super().__setattr__('slotName', self.data['slotName'])
+		super().__setattr__('entity', self.data['entity'])
+		super().__setattr__('rawValue', self.data['rawValue'])
+		super().__setattr__('value', self.data['value'])
+		super().__setattr__('range', self.data['range'])

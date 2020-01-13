@@ -409,11 +409,11 @@ network={
 		userUpdatePref = definedSource
 		versions = list()
 		for branch in result:
-			repoVersion = Version(branch['name'])
+			repoVersion = Version.fromString(branch['name'])
 			if not repoVersion.isVersionNumber:
 				continue
 
-			releaseType = repoVersion.infos['releaseType']
+			releaseType = repoVersion.releaseType
 			if userUpdatePref == 'alpha' and releaseType in ('master', 'rc', 'b', 'a') \
 				or userUpdatePref == 'beta' and releaseType in ('master', 'rc', 'b') \
 				or userUpdatePref == 'rc' and releaseType in ('master', 'rc'):
