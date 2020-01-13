@@ -188,7 +188,7 @@ class MqttManager(Manager):
 						text=self.TalkManager.randomTalk('notUnderstood', skill='system')
 					)
 				else:
-					del session.notUnderstood
+					session.notUnderstood = 0
 					self.endDialog(
 						sessionId=sessionId,
 						text=self.TalkManager.randomTalk('notUnderstoodEnd', skill='system')
@@ -228,7 +228,7 @@ class MqttManager(Manager):
 				)
 				return
 			else:
-				del session.notUnderstood
+				session.notUnderstood = 0
 				self.endDialog(
 					sessionId=sessionId,
 					text=self.TalkManager.randomTalk('notUnderstoodEnd', skill='system')
@@ -411,7 +411,7 @@ class MqttManager(Manager):
 				session.notUnderstood = session.notUnderstood + 1
 				self.reviveSession(session, self.TalkManager.randomTalk('notUnderstood', skill='system'))
 			else:
-				del session.notUnderstood
+				session.notUnderstood = 0
 				self.endDialog(sessionId=sessionId, text=self.TalkManager.randomTalk('notUnderstoodEnd', skill='system'))
 
 		self.broadcast(method=constants.EVENT_INTENT_NOT_RECOGNIZED, exceptions=[self.name], propagateToSkills=True, session=session)

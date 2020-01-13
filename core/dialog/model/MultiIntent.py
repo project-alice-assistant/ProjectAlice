@@ -1,23 +1,23 @@
+import attr
+from typing import Deque
+from collections import deque
+
 from core.dialog.model import DialogSession
 
-
+@attr.s(slots=True, auto_attribs=True)
 class MultiIntent:
-	def __init__(self, session: DialogSession, string: str):
-		self._originalString = session['payload']['input']
-		self._processedString = string
-		self._session = session
+	session: DialogSession
+	processedString: str
+	originalString: str = attr.ib(init=False)
+	@originalString.default
+	def _combineVersions(self):
+		return self.session['payload']['input']
 
-		self._intents = list()
-
+	intents: Deque[str] = attr.ib(init=False, default=attr.Factory(deque))
 
 	def addIntent(self, string: str):
-		self._intents.append(string)
+		self.intents.append(string)
 
 
 	def getNextIntent(self) -> str:
-		return self._intents.pop(0) if self._intents else ''
-
-
-	@property
-	def session(self) -> DialogSession:
-		return self._session
+		return self.intents.popleft() if self.intents else ''

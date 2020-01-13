@@ -43,7 +43,7 @@ class AliceSkill(ProjectAliceObject):
 		self._widgets = dict()
 		self._intentsDefinitions = dict()
 		self._scenarioNodeName = ''
-		self._scenarioNodeVersion = Version('0.0.0')
+		self._scenarioNodeVersion = Version(mainVersion=0, updateVersion=0, hotfix=0)
 
 		self._supportedIntents: Dict[str, Intent] = self.buildIntentList(supportedIntents)
 		self.loadIntentsDefinition()
@@ -62,7 +62,7 @@ class AliceSkill(ProjectAliceObject):
 			with path.open('r') as fp:
 				data = json.load(fp)
 				self._scenarioNodeName = data['name']
-				self._scenarioNodeVersion = Version(data['version'])
+				self._scenarioNodeVersion = Version.fromString(data['version'])
 		except Exception as e:
 			self.logWarning(f'Failed to load scenario nodes: {e}')
 
@@ -338,7 +338,7 @@ class AliceSkill(ProjectAliceObject):
 
 
 	def authenticateIntent(self, session: DialogSession):
-		intent = self._supportedIntents[session.intentName]
+		intent = self._supportedIntents[session.message.topic]
 		# Return if intent is for auth users only but the user is unknown
 		if session.user == constants.UNKNOWN_USER:
 			self.endDialog(
@@ -371,7 +371,7 @@ class AliceSkill(ProjectAliceObject):
 		matchingIntent = None
 		oldIntentName = None
 		for intentName, intent in self._supportedIntents.items():
-			if MQTTClient.topic_matches_sub(intentName, session.intentName) \
+			if MQTTClient.topic_matches_sub(intentName, session.message.topic) \
 					and (not matchingIntent or self.intentNameMoreSpecific(intentName, oldIntentName)):
 				matchingIntent = intent
 				oldIntentName = intentName
@@ -401,7 +401,7 @@ class AliceSkill(ProjectAliceObject):
 		return True
 
 
-	def onStart(self) -> dict:
+	def onStart(self):
 		if not self._active:
 			self.logInfo(f'Skill {self.name} is not active')
 		else:
@@ -409,7 +409,6 @@ class AliceSkill(ProjectAliceObject):
 
 		self._initDB()
 		self.MqttManager.subscribeSkillIntents(self.name)
-		return self._supportedIntents
 
 
 	def onBooted(self) -> bool:

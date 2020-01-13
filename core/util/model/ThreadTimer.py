@@ -1,26 +1,9 @@
+import attr
+from threading import Timer
+
+@attr.s(slots=True, auto_attribs=True)
 class ThreadTimer:
-	def __init__(self, callback: str, args: list, kwargs: dict):
-		self._timer = None
-		self._callback = callback
-		self._args = args
-		self._kwargs = kwargs
-
-	@property
-	def timer(self):
-		return self._timer
-
-	@timer.setter
-	def timer(self, t):
-		self._timer = t
-
-	@property
-	def callback(self):
-		return self._callback
-
-	@property
-	def args(self):
-		return self._args
-
-	@property
-	def kwargs(self):
-		return self._kwargs
+	callback: str
+	args: list = attr.ib(default=attr.Factory(list))
+	kwargs: dict = attr.ib(default=attr.Factory(dict))
+	timer: Timer = None

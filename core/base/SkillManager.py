@@ -252,7 +252,8 @@ class SkillManager(Manager):
 	def _startSkill(self, skillInstance: AliceSkill) -> dict:
 		try:
 			name = skillInstance.name
-			intents = skillInstance.onStart()
+			skillInstance.onStart()
+			intents = skillInstance.supportedIntents
 
 			if skillInstance.widgets:
 				self._widgets[name] = skillInstance.widgets
@@ -357,7 +358,9 @@ class SkillManager(Manager):
 				if not remoteFile:
 					raise Exception
 
-				if Version(availableSkills[skillName]['version']) < Version(remoteFile['version']):
+				localVersion = Version.fromString(availableSkills[skillName]['version']).version
+				remoteVersion = Version.fromString(remoteFile['version']).version
+				if localVersion < remoteVersion:
 					updateCount += 1
 					self.logInfo(f'❌ {skillName} - Version {availableSkills[skillName]["version"]} < {remoteFile["version"]} in {self.ConfigManager.getAliceConfigByName("updateChannel")}')
 
@@ -462,10 +465,12 @@ class SkillManager(Manager):
 				self.checkSkillConditions(skillName, conditions, availableSkills)
 
 				if skillName in availableSkills:
+					installedVersion = Version.fromString(availableSkills[skillName]['version']).version
+					remoteVersion = Version.fromString(installFile['version']).version
 					localVersionIsLatest: bool = \
 						directory.is_dir() and \
 						'version' in availableSkills[skillName] and \
-						Version(availableSkills[skillName]['version']) >= Version(installFile['version'])
+						installedVersion >= remoteVersion
 
 					if localVersionIsLatest:
 						self.logWarning(f'Skill "{skillName}" is already installed, skipping')
@@ -572,7 +577,9 @@ class SkillManager(Manager):
 
 		notCompliant = 'Skill is not compliant'
 
-		if 'aliceMinVersion' in conditions and Version(conditions['aliceMinVersion']) > Version(constants.VERSION):
+		aliceVersion = Version.fromString(constants.VERSION).version
+		requiredVersion = Version.fromString(conditions['aliceMinVersion']).version
+		if 'aliceMinVersion' in conditions and requiredVersion > aliceVersion:
 			raise SkillNotConditionCompliant(message=notCompliant, skillName=skillName, condition='Alice minimum version', conditionValue=conditions['aliceMinVersion'])
 
 		for conditionName, conditionValue in conditions.items():
