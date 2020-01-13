@@ -1,4 +1,3 @@
-import re
 import subprocess
 from pathlib import Path
 
@@ -128,7 +127,7 @@ class GoogleTTS(TTS):
 	def _checkText(session: DialogSession) -> str:
 		text = session.payload['text']
 
-		if not re.search('<speak>', text):
+		if not '<speak>' in text:
 			text = f'<speak>{text}</speak>'
 
 		return text
