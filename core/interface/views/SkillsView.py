@@ -132,12 +132,11 @@ class SkillsView(View):
 				skill['conditions']['lang'] = constants.ALL
 			installers[skill['name']] = skill
 
-		aliceVersion = Version.fromString(constants.VERSION).version
-		requiredVersion = Version.fromString(skillInfo['aliceMinVersion']).version
+		aliceVersion = Version.fromString(constants.VERSION).version 
 		activeLanguage = self.LanguageManager.activeLanguage.lower()
 		return {
 			skillName: skillInfo for skillName, skillInfo in installers.items()
 			if self.SkillManager.getSkillInstance(skillName=skillName, silent=True) is None
-				and aliceVersion >= requiredVersion
+				and aliceVersion >= Version.fromString(skillInfo['aliceMinVersion']).version
 				and (activeLanguage in skillInfo['conditions']['lang'] or skillInfo['conditions']['lang'] == constants.ALL)
 		}
