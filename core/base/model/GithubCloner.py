@@ -26,19 +26,45 @@ class GithubCloner(ProjectAliceObject):
 		return (username, token) if (username and token) else None
 
 
-	def clone(self) -> bool:
-		if self._dest.exists():
+	def clone(self, api: bool = False) -> bool:
+		if not self._dest.exists():
+			self._dest.mkdir(parents=True)
+		elif api:
 			self._cleanDestDir()
 		else:
-			self._dest.mkdir(parents=True)
+			if Path(self._dest / '.git').exists():
+				self.Commons.runSystemCommand(['git', '-C', str(self._dest), 'stash'])
+			else:
+				shutil.rmtree(str(self._dest))
+				self._dest.mkdir(parents=True)
 
 		try:
-			return self._doClone(f'https://api.github.com/{self._baseUrl}/{self._path}?ref={self.ConfigManager.getSkillsUpdateSource()}')
+			if api:
+				return self._doApiClone(f'https://api.github.com/{self._baseUrl}/{self._path}?ref={self.ConfigManager.getSkillsUpdateSource()}')
+			else:
+				return self._doClone()
+
 		except Exception:
 			return False
 
 
-	def _doClone(self, url: str):
+	def _doClone(self) -> bool:
+		try:
+			if not Path(self._dest / '.git').exists():
+				self.Commons.runSystemCommand(['git', '-C', str(self._dest), 'init'])
+				self.Commons.runSystemCommand(['git', '-C', str(self._dest), 'remote', 'add', 'origin', self._baseUrl])
+				self.Commons.runSystemCommand(['git', '-C', str(self._dest), 'pull', 'origin', str(self.ConfigManager.getSkillsUpdateSource())])
+			else:
+				self.Commons.runSystemCommand(['git', '-C', str(self._dest), 'pull', 'origin', str(self.ConfigManager.getSkillsUpdateSource())])
+				self.Commons.runSystemCommand(['git', '-C', str(self._dest), 'stash', 'clear'])
+
+			return True
+		except Exception as e:
+			self.logWarning(f'Something went wrong cloning github repo: {e}')
+			return False
+
+
+	def _doApiClone(self, url: str):
 		try:
 			req = requests.get(url, auth=self.getGithubAuth())
 			if req.status_code == 401:
@@ -61,7 +87,7 @@ class GithubCloner(ProjectAliceObject):
 					Path(self._dest / path).write_bytes(fileStream.content)
 				else:
 					Path(self._dest / path).mkdir(parents=True)
-					self._doClone(url=item['url'])
+					self._doApiClone(url=item['url'])
 
 		except GithubTokenFailed:
 			self.logError('Provided Github username / token invalid')

@@ -5,6 +5,7 @@ from typing import Dict, Optional
 
 import requests
 import shutil
+
 from core.ProjectAliceExceptions import GithubNotFound, GithubRateLimit, GithubTokenFailed, SkillNotConditionCompliant, SkillStartDelayed, SkillStartingFailed
 from core.base.SuperManager import SuperManager
 from core.base.model import Intent
@@ -25,6 +26,8 @@ class SkillManager(Manager):
 
 	GITHUB_BARE_BASE_URL = 'https://raw.githubusercontent.com/project-alice-assistant/ProjectAliceSkills/master/PublishedSkills'
 	GITHUB_API_BASE_URL = 'repositories/193512918/contents/PublishedSkills'
+
+	GITHUB_BASE_URL = 'https://github.com/project-alice-assistant/skill_{}.git'
 
 	DATABASE = {
 		'widgets': [
@@ -487,10 +490,10 @@ class SkillManager(Manager):
 						self.logError(f'Error stopping "{skillName}" for update: {e}')
 						raise
 
-				gitCloner = GithubCloner(baseUrl=self.GITHUB_API_BASE_URL, path=path, dest=directory)
+				gitCloner = GithubCloner(baseUrl=self.GITHUB_BASE_URL.format(skillName), path=path, dest=directory)
 
 				try:
-					gitCloner.clone()
+					gitCloner.clone(api=False)
 					self.logInfo('Skill successfully downloaded')
 					self._installSkill(res)
 					skillsToBoot[skillName] = {

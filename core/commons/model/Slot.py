@@ -1,5 +1,6 @@
 import attr
 
+
 @attr.s(slots=True, frozen=True)
 class Slot:
 	data = attr.ib()
@@ -8,6 +9,7 @@ class Slot:
 	rawValue = attr.ib(init=False)
 	value = attr.ib(init=False)
 	range = attr.ib(init=False)
+
 
 	def __attrs_post_init__(self):
 		super().__setattr__('slotName', self.data['slotName'])
