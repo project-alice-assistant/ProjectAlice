@@ -534,15 +534,15 @@ class ConfigManager(Manager):
 
 			releaseType = repoVersion.releaseType
 			if userUpdatePref == 'alpha' and releaseType in ('release', 'rc', 'b', 'a') \
-				or userUpdatePref == 'beta' and releaseType in ('release', 'rc', 'b') \
-				or userUpdatePref == 'rc' and releaseType in ('release', 'rc'):
+					or userUpdatePref == 'beta' and releaseType in ('release', 'rc', 'b') \
+					or userUpdatePref == 'rc' and releaseType in ('release', 'rc'):
 				versions.append(repoVersion)
 
 		if not versions:
 			return 'master'
-		
+
 		versions.sort(reverse=True)
-		return versions[0]
+		return str(versions[0])
 
 
 	@property

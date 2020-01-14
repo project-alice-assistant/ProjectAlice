@@ -564,13 +564,13 @@ class SkillManager(Manager):
 				self.Commons.runRootSystemCommand([str(directory / scriptReq)])
 
 			node = {
-				'active': True,
-				'version': installFile['version'],
-				'author': installFile['author'],
+				'active'    : True,
+				'version'   : installFile['version'],
+				'author'    : installFile['author'],
 				'conditions': installFile['conditions']
 			}
 
-			shutil.move(str(res), str(directory))
+			# shutil.move(str(res), str(directory))
 			self.ConfigManager.addSkillToAliceConfig(installFile['name'], node)
 		except Exception:
 			raise
