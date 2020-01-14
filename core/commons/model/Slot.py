@@ -1,5 +1,5 @@
 import attr
-from typing import Dict, Union
+from typing import Dict, Union, Optional
 
 @attr.s(slots=True, frozen=True, auto_attribs=True)
 class Slot:
@@ -8,3 +8,5 @@ class Slot:
 	rawValue: str
 	value: Dict[str, Union[str, int]]
 	range: Dict[str, int]
+	alternatives: list = attr.Factory(list)
+	confidenceScore: Optional[float] = None
