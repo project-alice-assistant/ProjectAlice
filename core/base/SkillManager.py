@@ -577,9 +577,8 @@ class SkillManager(Manager):
 
 		notCompliant = 'Skill is not compliant'
 
-		aliceVersion = Version.fromString(constants.VERSION).version
-		requiredVersion = Version.fromString(conditions['aliceMinVersion']).version
-		if 'aliceMinVersion' in conditions and requiredVersion > aliceVersion:
+		if 'aliceMinVersion' in conditions and \
+				Version.fromString(conditions['aliceMinVersion']).version > Version.fromString(constants.VERSION).version:
 			raise SkillNotConditionCompliant(message=notCompliant, skillName=skillName, condition='Alice minimum version', conditionValue=conditions['aliceMinVersion'])
 
 		for conditionName, conditionValue in conditions.items():
