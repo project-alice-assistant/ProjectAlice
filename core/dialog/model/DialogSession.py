@@ -18,12 +18,12 @@ class DialogSession:
 	user: str = constants.UNKNOWN_USER
 	message: MQTTMessage = None
 	intentName: str = ''
-	slots: dict = attr.ib(default=attr.Factory(dict))
-	slotsAsObjects: dict = attr.ib(default=attr.Factory(dict))
-	customData: dict = attr.ib(default=attr.Factory(dict))
-	payload: dict = attr.ib(default=attr.Factory(dict))
-	intentHistory: list = attr.ib(default=attr.Factory(list))
-	intentFilter: list = attr.ib(default=attr.Factory(list))
+	slots: dict = attr.Factory(dict))
+	slotsAsObjects: dict = attr.Factory(dict)
+	customData: dict = attr.Factory(dict)
+	payload: dict = attr.Factory(dict)
+	intentHistory: list = attr.Factory(list)
+	intentFilter: list = attr.Factory(list)
 	notUnderstood: int = 0
 	currentState: str = constants.DEFAULT
 	isAPIGenerated: bool = False

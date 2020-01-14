@@ -8,12 +8,11 @@ from core.dialog.model import DialogSession
 class MultiIntent:
 	session: DialogSession
 	processedString: str
+	intents: Deque[str] = attr.Factory(deque)
 	originalString: str = attr.ib(init=False)
 	@originalString.default
 	def _combineVersions(self):
 		return self.session['payload']['input']
-
-	intents: Deque[str] = attr.ib(init=False, default=attr.Factory(deque))
 
 	def addIntent(self, string: str):
 		self.intents.append(string)
