@@ -1,18 +1,18 @@
-import attr
+from dataclasses import dataclass, field
 
-@attr.s(slots=True, auto_attribs=True)
+@dataclass
 class Device:
 	data: dict
 	connected: bool = False
 	name: str = ''
 	lastContact: int = 0
 
-	id: int = attr.ib(init=False)
-	deviceType: str = attr.ib(init=False)
-	uid: str = attr.ib(init=False)
-	room: str = attr.ib(init=False)
+	id: int = field(init=False)
+	deviceType: str = field(init=False)
+	uid: str = field(init=False)
+	room: str = field(init=False)
 
-	def __attrs_post_init__(self):
+	def __post_init__(self):
 		self.id = self.data['id']
 		self.deviceType = self.data['type']
 		self.uid = self.data['uid']

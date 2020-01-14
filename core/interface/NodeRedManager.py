@@ -45,9 +45,9 @@ class NodeRedManager(Manager):
 
 			with path.open('r') as fp:
 				data = json.load(fp)
-				version = Version.fromString(data['version']).version
+				version = Version.fromString(data['version'])
 
-				if version < scenarioNodeVersion.version:
+				if version < scenarioNodeVersion:
 					self.logInfo('New scenario node update found')
 					install = self.Commons.runSystemCommand(f'cd ~/.node-red && npm install {scenarioNodePath}', shell=True)
 					if install.returncode == 1:

@@ -1,14 +1,14 @@
-import attr
+from dataclasses import dataclass, field
 from typing import Deque
 from collections import deque
 
 from core.dialog.model import DialogSession
 
-@attr.s(slots=True, auto_attribs=True)
+@dataclass
 class MultiIntent:
 	session: DialogSession
 	processedString: str
-	intents: Deque[str] = attr.Factory(deque)
+	intents: Deque[str] = field(default_factory=deque)
 
 	@property
 	def originalString(self) -> str:

@@ -1,9 +1,9 @@
-import attr
+from dataclasses import dataclass, field
 from threading import Timer
 
-@attr.s(slots=True, auto_attribs=True)
+@dataclass
 class ThreadTimer:
 	callback: str
-	args: list = attr.Factory(list)
-	kwargs: dict = attr.Factory(dict)
+	args: list = field(default_factory=list)
+	kwargs: dict = field(default_factory=dict)
 	timer: Timer = None

@@ -1,9 +1,9 @@
 from __future__ import annotations
 
+from dataclasses import dataclass, field
 from typing import Optional, Any
 
 from paho.mqtt.client import MQTTMessage
-import attr
 
 from core.base.model import Intent
 from core.commons import constants
@@ -11,19 +11,19 @@ from core.commons import constants
 
 #TODO: improve typing information for dicts and lists using typing.List
 # and typing.Dict
-@attr.s(slots=True, auto_attribs=True)
+@dataclass
 class DialogSession:
 	siteId: str
 	sessionId: str = ''
 	user: str = constants.UNKNOWN_USER
 	message: MQTTMessage = None
 	intentName: str = ''
-	slots: dict = attr.Factory(dict)
-	slotsAsObjects: dict = attr.Factory(dict)
-	customData: dict = attr.Factory(dict)
-	payload: dict = attr.Factory(dict)
-	intentHistory: list = attr.Factory(list)
-	intentFilter: list = attr.Factory(list)
+	slots: dict = field(default_factory=dict)
+	slotsAsObjects: dict = field(default_factory=dict)
+	customData: dict = field(default_factory=dict)
+	payload: dict = field(default_factory=dict)
+	intentHistory: list = field(default_factory=list)
+	intentFilter: list = field(default_factory=list)
 	notUnderstood: int = 0
 	currentState: str = constants.DEFAULT
 	isAPIGenerated: bool = False

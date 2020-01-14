@@ -1,8 +1,8 @@
 from __future__ import annotations
-import attr
+from dataclasses import dataclass
 import re
 
-@attr.s(slots=True, frozen=True, auto_attribs=True)
+@dataclass(order=True)
 class Version:
 	mainVersion: int = 0
 	updateVersion: int = 0
@@ -11,19 +11,16 @@ class Version:
 	releaseType: str = 'release'
 	releaseNumber: int  = 1
 
-
-	@property
-	def version(self):
-		return f'{self.mainVersion}.{self.updateVersion}.{self.hotfix}-{self.releaseType}{self.releaseNumber}'
-
-
 	@property
 	def isVersionNumber(self):
-		return self.version != '0.0.0-0'
+		return self > Version(0, 0, 0, '', 0)
 
 
 	def __str__(self):
-		return self.version.rstrip('-release1')
+		if self.releaseType == 'release':
+			return f'{self.mainVersion}.{self.updateVersion}.{self.hotfix}'
+		else:
+			return f'{self.mainVersion}.{self.updateVersion}.{self.hotfix}-{self.releaseType}{self.releaseNumber}'
 
 
 	@classmethod

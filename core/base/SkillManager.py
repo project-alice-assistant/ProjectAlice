@@ -361,8 +361,8 @@ class SkillManager(Manager):
 				if not remoteFile:
 					raise Exception
 
-				localVersion = Version.fromString(availableSkills[skillName]['version']).version
-				remoteVersion = Version.fromString(remoteFile['version']).version
+				localVersion = Version.fromString(availableSkills[skillName]['version'])
+				remoteVersion = Version.fromString(remoteFile['version'])
 				if localVersion < remoteVersion:
 					updateCount += 1
 					self.logInfo(f'❌ {skillName} - Version {availableSkills[skillName]["version"]} < {remoteFile["version"]} in {self.ConfigManager.getAliceConfigByName("updateChannel")}')
@@ -468,8 +468,8 @@ class SkillManager(Manager):
 				self.checkSkillConditions(skillName, conditions, availableSkills)
 
 				if skillName in availableSkills:
-					installedVersion = Version.fromString(availableSkills[skillName]['version']).version
-					remoteVersion = Version.fromString(installFile['version']).version
+					installedVersion = Version.fromString(availableSkills[skillName]['version'])
+					remoteVersion = Version.fromString(installFile['version'])
 					localVersionIsLatest: bool = \
 						directory.is_dir() and \
 						'version' in availableSkills[skillName] and \
@@ -581,7 +581,7 @@ class SkillManager(Manager):
 		notCompliant = 'Skill is not compliant'
 
 		if 'aliceMinVersion' in conditions and \
-				Version.fromString(conditions['aliceMinVersion']).version > Version.fromString(constants.VERSION).version:
+				Version.fromString(conditions['aliceMinVersion']) > Version.fromString(constants.VERSION):
 			raise SkillNotConditionCompliant(message=notCompliant, skillName=skillName, condition='Alice minimum version', conditionValue=conditions['aliceMinVersion'])
 
 		for conditionName, conditionValue in conditions.items():
