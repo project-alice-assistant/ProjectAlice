@@ -12,15 +12,13 @@ class Version:
 	releaseNumber: int  = 1
 
 
-	version: str = attr.ib(init=False)
-	@version.default
-	def _combineVersions(self):
+	@property
+	def version(self):
 		return f'{self.mainVersion}.{self.updateVersion}.{self.hotfix}-{self.releaseType}{self.releaseNumber}'
 
 
-	isVersionNumber: bool = attr.ib(init=False)
-	@isVersionNumber.default
-	def _isVersionNumber(self):
+	@property
+	def isVersionNumber(self):
 		return self.version != '0.0.0-0'
 
 
@@ -34,6 +32,7 @@ class Version:
 			'(?P<mainVersion>\d+)\.(?P<updateVersion>\d+)(?:\.(?P<hotfix>\d+))?(?:-(?P<releaseType>a|b|rc)(?P<releaseNumber>\d+)?)?',
 			str(versionString))
 
+		# when the string is no version set the version to the lowest possible value
 		if not versionMatch:
 			return cls(0, 0, 0, '', 0)
 

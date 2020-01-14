@@ -11,6 +11,7 @@ class Device:
 	deviceType: str = attr.ib(init=False)
 	uid: str = attr.ib(init=False)
 	room: str = attr.ib(init=False)
+
 	def __attrs_post_init__(self):
 		self.id = self.data['id']
 		self.deviceType = self.data['type']

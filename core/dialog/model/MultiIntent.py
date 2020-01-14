@@ -9,10 +9,11 @@ class MultiIntent:
 	session: DialogSession
 	processedString: str
 	intents: Deque[str] = attr.Factory(deque)
-	originalString: str = attr.ib(init=False)
-	@originalString.default
-	def _combineVersions(self):
+
+	@property
+	def originalString(self) -> str:
 		return self.session['payload']['input']
+
 
 	def addIntent(self, string: str):
 		self.intents.append(string)
