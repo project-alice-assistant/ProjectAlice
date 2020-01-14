@@ -16,6 +16,3 @@ class Device:
 		self.deviceType = self.data['type']
 		self.uid = self.data['uid']
 		self.room = self.data['room']
-		self._name = ''
-		self._connected = connected
-		self._lastContact = 0
