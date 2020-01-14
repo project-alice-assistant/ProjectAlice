@@ -18,7 +18,7 @@ class DialogSession:
 	user: str = constants.UNKNOWN_USER
 	message: MQTTMessage = None
 	intentName: str = ''
-	slots: dict = attr.Factory(dict))
+	slots: dict = attr.Factory(dict)
 	slotsAsObjects: dict = attr.Factory(dict)
 	customData: dict = attr.Factory(dict)
 	payload: dict = attr.Factory(dict)
