@@ -1,28 +1,24 @@
 from __future__ import annotations
-
 import attr
 import re
 
-
-@attr.s(slots=True, frozen=True)
+@attr.s(slots=True, frozen=True, auto_attribs=True)
 class Version:
-	mainVersion = attr.ib(default=0, converter=int)
-	updateVersion = attr.ib(default=0, converter=int)
-	hotfix = attr.ib(default=0, converter=int)
+	mainVersion: int = 0
+	updateVersion: int = 0
+	hotfix: int = 0
 	# use of release instead of master since release > rc > b > a
-	releaseType = attr.ib(default='release', converter=attr.converters.default_if_none('release'))
-	releaseNumber = attr.ib(default=1, converter=lambda x: int(x) if x else 1)
+	releaseType: str = 'release'
+	releaseNumber: int  = 1
+
+
 	version: str = attr.ib(init=False)
-
-
 	@version.default
 	def _combineVersions(self):
 		return f'{self.mainVersion}.{self.updateVersion}.{self.hotfix}-{self.releaseType}{self.releaseNumber}'
 
 
 	isVersionNumber: bool = attr.ib(init=False)
-
-
 	@isVersionNumber.default
 	def _isVersionNumber(self):
 		return self.version != '0.0.0-0'
@@ -37,4 +33,13 @@ class Version:
 		versionMatch = re.search(
 			'(?P<mainVersion>\d+)\.(?P<updateVersion>\d+)(?:\.(?P<hotfix>\d+))?(?:-(?P<releaseType>a|b|rc)(?P<releaseNumber>\d+)?)?',
 			str(versionString))
-		return cls(*versionMatch.groups()) if versionMatch else cls(0, 0, 0, '', 0)
+
+		if not versionMatch:
+			return cls(0, 0, 0, '', 0)
+
+		return cls(
+			int(versionMatch.group('mainVersion')),
+			int(versionMatch.group('updateVersion')),
+			int(versionMatch.group('hotfix') or 0),
+			versionMatch.group('releaseType') or 'release',
+			int(versionMatch.group('releaseNumber') or 1))
