@@ -146,7 +146,7 @@ class TomlFile(ProjectAliceObject):
 		"""
 		if self._loaded:
 			try:
-				self._data[list(self._data.keys())[-1]].addEmptiness()
+				self._data[list(self._data)[-1]].addEmptiness()
 			except Exception:
 				# No need to add new emptiness
 				pass

@@ -17,7 +17,6 @@ class Widget(ProjectAliceObject):
 
 	OPTIONS = dict()
 
-
 	def __init__(self, data: sqlite3.Row):
 		super().__init__()
 		self._name = data['name']
@@ -29,11 +28,10 @@ class Widget(ProjectAliceObject):
 		self._x = data['posx'] if 'posx' in data.keys() else 0
 		self._y = data['posy'] if 'posy' in data.keys() else 0
 		self._size = self.SIZE.value
-		options = json.loads(data['options']) if 'options' in data.keys() else self.OPTIONS
-		if options:
-			self._options = {**self.OPTIONS, **options}
-		else:
-			self._options = self.OPTIONS
+
+		self._options = self.OPTIONS
+		if 'options' in data.keys():
+			self._options.update(json.loads(data['options']))
 
 		self._zindex = data['zindex'] if 'zindex' in data.keys() else 9999
 		self._language = self.loadLanguage()
@@ -97,7 +95,10 @@ class Widget(ProjectAliceObject):
 
 
 	def getLanguageString(self, key: str) -> str:
-		return self._language.get(self.LanguageManager.activeLanguage, dict()).get(key, 'Missing string')
+		try:
+			return self._language[self.LanguageManager.activeLanguage][key]
+		except KeyError:
+			return 'Missing string'
 
 
 	@property

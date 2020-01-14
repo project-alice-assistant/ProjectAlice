@@ -37,8 +37,7 @@ class DialogSessionManager(Manager):
 		:param siteId: int
 		:param user: string
 		"""
-		session = DialogSession(siteId)
-		session.user = user
+		session = DialogSession(siteId=siteId, user=user)
 		self._preSessions[siteId] = session
 		return session
 

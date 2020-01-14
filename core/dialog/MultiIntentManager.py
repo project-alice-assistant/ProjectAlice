@@ -1,4 +1,5 @@
 from paho.mqtt.client import MQTTMessage
+from collections import deque
 
 from core.base.model.Manager import Manager
 from core.commons import constants
@@ -34,17 +35,14 @@ class MultiIntentManager(Manager):
 				userInput.replace(separator, GLUE_SPLITTER)
 
 			if GLUE_SPLITTER in userInput:
-				multiIntent = MultiIntent(session, userInput)
+				self._multiIntents[session.sessionId] = MultiIntent(
+					session=session,
+					processedString=userInput,
+					intents=deque(userInput.split(GLUE_SPLITTER)))
 
-				for string in userInput.split(GLUE_SPLITTER):
-					multiIntent.addIntent(string)
-
-				self._multiIntents[session.sessionId] = multiIntent
 				return self.processNextIntent(session.sessionId)
-			else:
-				return False
-		else:
-			return False
+
+		return False
 
 
 	def processNextIntent(self, sessionId: str) -> bool:
