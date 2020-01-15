@@ -220,28 +220,28 @@ network={
 				googleCreds.write_text(json.dumps(initConfs['googleServiceFile']))
 
 		# Those that don't need checking
-		confs['ssid'] = initConfs['wifiNetworkName'] or ''
-		confs['wifipassword'] = str(initConfs['wifiWPAPass']) or ''
-		confs['micSampleRate'] = int(initConfs['micSampleRate']) or 16000
-		confs['micChannels'] = int(initConfs['micChannels']) or 1
+		confs['ssid'] = initConfs['wifiNetworkName']
+		confs['wifipassword'] = str(initConfs['wifiWPAPass'])
+		confs['micSampleRate'] = int(initConfs['micSampleRate'] or 16000)
+		confs['micChannels'] = int(initConfs['micChannels'] or 1)
 		confs['useSLC'] = bool(initConfs['useSLC'])
 		confs['webInterfaceActive'] = bool(initConfs['webInterfaceActive'])
 		confs['devMode'] = bool(initConfs['devMode'])
-		confs['newDeviceBroadcastPort'] = int(initConfs['newDeviceBroadcastPort']) or 12354
+		confs['newDeviceBroadcastPort'] = int(initConfs['newDeviceBroadcastPort'] or 12354)
 		confs['activeLanguage'] = initConfs['activeLanguage'] if initConfs['activeLanguage'] in ('en', 'de', 'fr') else 'en'
 		confs['activeCountryCode'] = initConfs['activeCountryCode'] or 'US'
 		confs['baseCurrency'] = initConfs['baseCurrency'] or 'USD'
 		confs['baseUnits'] = initConfs['baseUnits'] if initConfs['baseUnits'] in ('metric', 'kelvin', 'imperial') else 'metric'
 		confs['enableDataStoring'] = bool(initConfs['enableDataStoring'])
 		confs['autoPruneStoredData'] = initConfs['autoPruneStoredData'] or 1000
-		confs['probabilityThreshold'] = float(initConfs['probabilityThreshold']) or 0.5
+		confs['probabilityThreshold'] = float(initConfs['probabilityThreshold'] or 0.5)
 		confs['shortReplies'] = bool(initConfs['shortReplies'])
 		confs['whisperWhenSleeping'] = bool(initConfs['whisperWhenSleeping'])
 		confs['ttsLanguage'] = initConfs['ttsLanguage'] or confs['activeLanguage']
 		confs['ttsType'] = initConfs['ttsType'] if initConfs['ttsType'] in ('female', 'male') else 'female'
-		confs['ttsVoice'] = initConfs['ttsVoice'] or ''
-		confs['githubUsername'] = initConfs['githubUsername'] or ''
-		confs['githubToken'] = initConfs['githubToken'] or ''
+		confs['ttsVoice'] = initConfs['ttsVoice']
+		confs['githubUsername'] = initConfs['githubUsername']
+		confs['githubToken'] = initConfs['githubToken']
 
 		updateChannel = initConfs['updateChannel']
 		if updateChannel not in ('master', 'rc', 'beta', 'alpha'):
@@ -249,9 +249,9 @@ network={
 			confs['updateChannel'] = 'master'
 		else:
 			confs['updateChannel'] = updateChannel
-		confs['mqtt_username'] = str(initConfs['mqttUser']) or ''
-		confs['mqttPassword'] = str(initConfs['mqttPassword']) or ''
-		confs['mqttTLSFile'] = initConfs['mqttTLSFile'] or ''
+		confs['mqtt_username'] = str(initConfs['mqttUser'])
+		confs['mqttPassword'] = str(initConfs['mqttPassword'])
+		confs['mqttTLSFile'] = initConfs['mqttTLSFile']
 
 		if initConfs['snipsProjectId'] and confs['activeLanguage'] in confs['supportedLanguages']:
 			confs['supportedLanguages'][confs['activeLanguage']]['snipsProjectId'] = initConfs['snipsProjectId']
