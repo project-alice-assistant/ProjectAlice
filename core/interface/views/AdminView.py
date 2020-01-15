@@ -1,4 +1,5 @@
 from pathlib import Path
+from typing import Any
 
 import shutil
 from flask import jsonify, render_template, request
@@ -35,16 +36,16 @@ class AdminView(View):
 		try:
 			# Create the conf dict. on and off values are translated to True and False and we try to cast to int
 			# or float because HTTP data is type less.
-			confs = {key: False if value == 'off' else True if value == 'on' else int(value) if value.isdigit() else float(value) if self.isfloat(value) else value for key, value in request.form.items()}
+			confs = {key: self.retrieveValue(value) for key, value in request.form.items()}
 
-			postProcessing = list()
+			postProcessing = set()
 			for conf, value in confs.items():
 				if value == self.ConfigManager.getAliceConfigByName(conf):
 					continue
 
 				pp = self.ConfigManager.getAliceConfUpdatePostProcessing(conf)
-				if pp and not pp in postProcessing:
-					postProcessing.append(pp)
+				if pp:
+					postProcessing.add(pp)
 
 			confs['skills'] = self.ConfigManager.getAliceConfigByName('skills')
 			confs['supportedLanguages'] = self.ConfigManager.getAliceConfigByName('supportedLanguages')
@@ -123,8 +124,21 @@ class AdminView(View):
 			return False
 
 
-	# noinspection PyMethodMayBeStatic,PyUnusedLocal
-	def isfloat(self, value: str) -> bool:
+	@classmethod
+	def retrieveValue(cls, value: str) -> Any:
+		if value == 'off':
+			return False
+		if value == 'on':
+			return True
+		if value.isdigit():
+			return int(value)
+		if cls.isfloat(value):
+			return float(value)
+		return value
+
+
+	@staticmethod
+	def isfloat(value: str) -> bool:
 		try:
 			value = float(value)
 			return True

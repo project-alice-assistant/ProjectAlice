@@ -204,6 +204,7 @@ class AliceSkill(ProjectAliceObject):
 		if lang not in self._intentsDefinitions:
 			return list()
 
+		#TODO: either typing in function definition is wrong, or it is always a Intent
 		if isinstance(intent, tuple):
 			check = intent[0].justAction
 		elif isinstance(intent, Intent):
@@ -214,7 +215,11 @@ class AliceSkill(ProjectAliceObject):
 		if check not in self._intentsDefinitions[lang]:
 			return list()
 
-		return [re.sub(self._utteranceSlotCleaner, '\\1', utterance.lower() if forceLowerCase else utterance) if cleanSlots else utterance for utterance in self._intentsDefinitions[lang][check]]
+		if not cleanSlots:
+			return list(self._intentsDefinitions[lang][check])
+
+		return [re.sub(self._utteranceSlotCleaner, '\\1', utterance.lower() if forceLowerCase else utterance)
+			for utterance in self._intentsDefinitions[lang][check]]
 
 
 	def getCurrentDir(self):
@@ -359,7 +364,7 @@ class AliceSkill(ProjectAliceObject):
 	def intentNameMoreSpecific(intentName: str, oldIntentName: str) -> bool:
 		cleanedIntentName = intentName.rstrip('#').split('+')[0]
 		cleanedOldIntentName = oldIntentName.rstrip('#').split('+')[0]
-		return len(cleanedIntentName) > len(cleanedOldIntentName)
+		return cleanedIntentName > cleanedOldIntentName
 
 
 	def filterIntent(self, session: DialogSession) -> Optional[Intent]:

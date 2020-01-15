@@ -482,7 +482,7 @@ class ConfigManager(Manager):
 
 	def getAliceConfigType(self, confName: str) -> typing.Optional[str]:
 		# noinspection PyTypeChecker
-		return self._aliceConfigurations.get(confName['dataType'], None)
+		return self._aliceConfigurations.get(confName['dataType'])
 
 
 	def isAliceConfHidden(self, confName: str) -> bool:
@@ -490,20 +490,20 @@ class ConfigManager(Manager):
 		       self._aliceTemplateConfigurations.get('display') == 'hidden'
 
 
-	def getAliceConfUpdatePostProcessing(self, confName: str) -> str:
+	def getAliceConfUpdatePostProcessing(self, confName: str) -> typing.Optional[str]:
 		# Some config need some post processing if updated while Alice is running
-		return self._aliceTemplateConfigurations.get(confName, dict()).get('onUpdate', None)
+		return self._aliceTemplateConfigurations.get(confName, dict()).get('onUpdate')
 
 
 	def doConfigUpdatePostProcessing(self, functions: list):
 		# Call alice config post processing functions. This will call methods that are needed after a certain setting was
 		# updated while Project Alice was running
-		for func in functions:
+		for function in functions:
 			try:
-				f = getattr(self, func)
-				f()
+				func = getattr(self, function)
+				func()
 			except:
-				self.logWarning(f'Configuration post processing method "{func}" does not exist')
+				self.logWarning(f'Configuration post processing method "{function}" does not exist')
 				continue
 
 
