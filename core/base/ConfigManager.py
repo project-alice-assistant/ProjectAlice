@@ -60,7 +60,6 @@ class ConfigManager(Manager):
 		for conf in self._vitalConfigs:
 			if conf not in self._aliceConfigurations or self._aliceConfigurations[conf] == '':
 				raise VitalConfigMissing(conf)
-		self._updateSource = self.getSkillsUpdateSource()
 
 
 	def _setDefaultSiteId(self):
@@ -511,17 +510,17 @@ class ConfigManager(Manager):
 		self.MqttManager.reconnect()
 
 
-	def getSkillsUpdateSource(self) -> str:
+	def getSkillsUpdateSource(self, skill: str) -> str:
 		userUpdatePref = self.getAliceConfigByName('updateChannel')
-		return self._updatePrefToBranchName(userUpdatePref)
+		return self._updatePrefToBranchName(userUpdatePref, skill)
 
 
 	@lru_cache(maxsize=3)
-	def _updatePrefToBranchName(self, userUpdatePref: str) -> str:
+	def _updatePrefToBranchName(self, userUpdatePref: str, skill: str) -> str:
 		if userUpdatePref == 'master':
 			return 'master'
 
-		req = requests.get('https://api.github.com/repos/project-alice-assistant/ProjectAliceSkills/branches', auth=GithubCloner.getGithubAuth())
+		req = requests.get(f'https://api.github.com/repos/project-alice-assistant/skill_{skill}/branches', auth=GithubCloner.getGithubAuth())
 		result = req.json()
 		if not result:
 			return 'master'

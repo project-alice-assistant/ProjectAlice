@@ -344,7 +344,6 @@ class SkillManager(Manager):
 			return False
 
 		availableSkills = self.ConfigManager.skillsConfigurations
-		updateSource = self.ConfigManager.getSkillsUpdateSource()
 
 		updateCount = 0
 		for skillName in self._allSkills:
@@ -352,7 +351,8 @@ class SkillManager(Manager):
 				if skillName not in availableSkills or (skillToCheck is not None and skillName != skillToCheck):
 					continue
 
-				req = requests.get(f'https://raw.githubusercontent.com/project-alice-assistant/ProjectAliceSkills/{updateSource}/PublishedSkills/{availableSkills[skillName]["author"]}/{skillName}/{skillName}.install')
+				updateSource = self.ConfigManager.getSkillsUpdateSource(skillName)
+				req = requests.get(f'https://raw.githubusercontent.com/project-alice-assistant/skill_{skillName}/{updateSource}/{skillName}.install')
 
 				if req.status_code == 404:
 					raise GithubNotFound
