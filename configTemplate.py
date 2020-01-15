@@ -176,24 +176,30 @@ settings = {
 	},
 	'githubUsername': {
 		'defaultValue': '',
-		'dataType': 'string',
-		'description': 'Not mendatory, your github username and token allows you to use Github API much more, such as checking for skills, updating them etc etc'
+		'dataType'    : 'string',
+		'description' : 'Not mendatory, your github username and token allows you to use Github API much more, such as checking for skills, updating them etc etc'
 	},
-	'githubToken': {
+	'githubToken'      : {
 		'defaultValue': '',
-		'dataType': 'password',
-		'description': 'Not mendatory, your github username and token allows you to use Github API much more, such as checking for skills, updating them etc etc'
+		'dataType'    : 'password',
+		'description' : 'Not mendatory, your github username and token allows you to use Github API much more, such as checking for skills, updating them etc etc'
 	},
-	'updateChannel': {
+	'updateChannel'    : {
 		'defaultValue': 'master',
-		'dataType': 'list',
-		'values': {'Release': 'master', 'Release candidate': 'rc', 'Beta': 'beta', 'Alpha': 'alpha'},
-		'description': 'Choose your update frequency. Release is the only supposedly safe option! But if you like to live on the edge, alpha will allow you to preview what\'s coming next!'
+		'dataType'    : 'list',
+		'values'      : {'Release': 'master', 'Release candidate': 'rc', 'Beta': 'beta', 'Alpha': 'alpha'},
+		'description' : 'Choose your update frequency. Release is the only supposedly safe option! But if you like to live on the edge, alpha will allow you to preview what\'s coming next!'
+	},
+	'skillsUpdateChannel': {
+		'defaultValue': 'master',
+		'dataType'    : 'list',
+		'values'      : {'Release': 'master', 'Release candidate': 'rc', 'Beta': 'beta', 'Alpha': 'alpha'},
+		'description' : 'Choose your skill update frequency. Release is the only supposedly safe option! But if you like to live on the edge, alpha will allow you to preview what\'s coming next!'
 	},
 	'supportedLanguages': {
 		'defaultValue': 'en',
-		'dataType': 'list',
-		'values': {
+		'dataType'    : 'list',
+		'values'      : {
 			'en': {
 				'snipsProjectId': '',
 				'default': True,

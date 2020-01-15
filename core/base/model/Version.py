@@ -1,6 +1,9 @@
 from __future__ import annotations
+
 from dataclasses import dataclass
+
 import re
+
 
 @dataclass(order=True)
 class Version:
@@ -9,7 +12,8 @@ class Version:
 	hotfix: int = 0
 	# use of release instead of master since release > rc > b > a
 	releaseType: str = 'release'
-	releaseNumber: int  = 1
+	releaseNumber: int = 1
+
 
 	@property
 	def isVersionNumber(self):
