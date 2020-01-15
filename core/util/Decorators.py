@@ -170,7 +170,8 @@ def IfSetting(func: Callable = None, settingName: str = None, settingValue: Any 
 				Logger(depth=6).logWarning(msg='Cannot use IfSetting decorator without settingName')
 				return None
 
-			value = SuperManager.getInstance().configManager.getSkillConfigByName(settingName) if skillSetting else SuperManager.getInstance().configManager.getAliceConfigByName(settingName)
+			configManager = SuperManager.getInstance().configManager
+			value = configManager.getSkillConfigByName(settingName) if skillSetting else configManager.getAliceConfigByName(settingName)
 
 			if value is None:
 				return None
