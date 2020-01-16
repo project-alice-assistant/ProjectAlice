@@ -12,7 +12,7 @@
   <a href="https://sonarcloud.io/dashboard?id=project-alice-assistant_ProjectAlice" target="_blank"><img alt="Code Smells" src="https://sonarcloud.io/api/project_badges/measure?project=project-alice-assistant_ProjectAlice&metric=code_smells"></a>
 </p>
 
-Project Alice is a smart voice home assistant that is completly modular and extensible. It was first built around Snips therefore runs entirely offline and never sends or shares your voice interactions with anyone, Project Alice **guarantees** your privacy in your home or wherever you’re using Project Alice.
+Project Alice is a smart voice home assistant that is completely modular and extensible. It was first built around Snips therefore runs entirely offline and never sends or shares your voice interactions with anyone, Project Alice **guarantees** your privacy in your home or wherever you’re using Project Alice.
 
 However, as an option, since we've built Project Alice on top of Snips, Project Alice can be configured to use some online alternatives and fall backs (for example, using Amazon or Google’s Text to Speech engines), just like Snips. Since Snips (and the Project Alice team) strongly believe that decisions about your privacy should be made by you and you alone, these options are all disabled by default.
 
@@ -28,10 +28,10 @@ The original code base was started at the end 2015 and several rewrites made it 
 
 In of May 2019, *Jierka* joined the project to prepare Project Alice for a public release by providing quality code, fresh ideas and insights for the project. At the same time *maxbachmann* also joined the project, at first to translate to German for the release, but soon moved beyond his initial commitment and started contributing to the refactoring, rewrite and skill production.
 
-If you want to use Project Alice in a non-commercial setting, I’m not asking you for any money, or a financial contribution, but as the license states, you should try to give back for what you've been given; please share your improvements and add-ons to the rest of us, in the form of pull requests.
+If you want to use Project Alice in a non-commercial setting, I’m not asking you for any money, or a financial contribution, but as the license states, you should try to give back for what you've been given; please share your improvements and add-ons with the rest of us, in the form of pull requests.
 
 ## How does it run? What's special about it?
-Glad you asked! It's been made very modular, in fact it runs using user developed skills. You won't have to use any console to train your assistant, we have made a way for the creators to share their skills with the language training included, the whole assistant part is automated.
+Glad you asked! It's been made very modular, in fact it runs using user-developed skills. You won't have to use any console to train your assistant, we have made a way for the creators to share their skills with the language training included, the whole assistant part is automated.
 
 Adding new skills is as easy as using either our CLI or a ticketing system. Updates are automatic, so over time the skills will get better and better with the community input to improve utterances and adding more language support.
 
@@ -64,7 +64,7 @@ Project Alice ships under GPLv3, it means you are free to use and redistribute o
 Regarding third party tools, scripts, material we use, I took care to mention original creators in files and respect their copyright. If something has slept under my supervision know that it was in no case intended and is the result of a mistake and I ask you to contact me directly to solve the issue asap.
 
 ## Third party copyrights
-If you see or find a copyright breach, feel free to contact us immediately. It is not our intention to steal anyone else's work or plagiarize your work and is just the result of a missunderstanding that we will gladly fix immediately!
+If you see or find a copyright breach, feel free to contact us immediately. It is not our intention to steal anyone else's work or plagiarize your work and is just the result of a misunderstanding that we will gladly fix immediately!
 
 
 ## Special thanks and retired official devs
