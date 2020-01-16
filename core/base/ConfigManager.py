@@ -509,11 +509,11 @@ class ConfigManager(Manager):
 		self.MqttManager.reconnect()
 
 
-	def getSkillsUpdateBranch(self, skill: str) -> str:
+	def getSkillsUpdateTag(self, skill: str) -> str:
 		userUpdatePref = self.getAliceConfigByName('skillsUpdateChannel')
 		aliceVersion = Version.fromString(constants.VERSION)
 
-		req = requests.get(f'https://api.github.com/repos/project-alice-assistant/skill_{skill}/branches', auth=GithubCloner.getGithubAuth())
+		req = requests.get(f'https://api.github.com/repos/project-alice-assistant/skill_{skill}/tags', auth=GithubCloner.getGithubAuth())
 		result = req.json()
 		if req.status_code == 401:
 			raise GithubTokenFailed
@@ -526,8 +526,14 @@ class ConfigManager(Manager):
 
 		versions = list()
 		for branch in result:
-			repoVersion = Version.fromString(branch['name'])
-			if not repoVersion.isVersionNumber or repoVersion > aliceVersion:
+			if '-' not in branch['name']:
+				continue
+
+			tagName = branch['name'].split('>=')
+			repoVersion = Version.fromString(tagName[0])
+			aliceMinVersion = Version.fromString(tagName[1])
+
+			if not repoVersion.isVersionNumber or not aliceMinVersion.isVersionNumber or aliceMinVersion > aliceVersion:
 				continue
 
 			releaseType = repoVersion.releaseType

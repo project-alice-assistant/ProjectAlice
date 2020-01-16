@@ -77,7 +77,7 @@ class SkillsView(View):
 			_, author, skill = request.form.get('id').split('_')
 
 			self.WebInterfaceManager.newSkillInstallProcess(skill)
-			req = requests.get(f'https://raw.githubusercontent.com/project-alice-assistant/skill_{skill["skill"]}/{self.ConfigManager.getSkillsUpdateBranch(skill["skill"])}/{skill["skill"]}.install')
+			req = requests.get(f'https://raw.githubusercontent.com/project-alice-assistant/skill_{skill["skill"]}/{self.ConfigManager.getSkillsUpdateTag(skill["skill"])}/{skill["skill"]}.install')
 			remoteFile = req.json()
 			if not remoteFile:
 				self.WebInterfaceManager.skillInstallProcesses[skill['skill']]['status'] = 'failed'
@@ -98,7 +98,7 @@ class SkillsView(View):
 			for skill in skills:
 				self.WebInterfaceManager.newSkillInstallProcess(skill['skill'])
 
-				req = requests.get(f'https://raw.githubusercontent.com/project-alice-assistant/skill_{skill["skill"]}/{self.ConfigManager.getSkillsUpdateBranch(skill["skill"])}/{skill["skill"]}.install')
+				req = requests.get(f'https://raw.githubusercontent.com/project-alice-assistant/skill_{skill["skill"]}/{self.ConfigManager.getSkillsUpdateTag(skill["skill"])}/{skill["skill"]}.install')
 				remoteFile = req.json()
 				if not remoteFile:
 					self.WebInterfaceManager.skillInstallProcesses[skill['skill']]['status'] = 'failed'

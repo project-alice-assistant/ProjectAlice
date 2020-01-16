@@ -40,7 +40,7 @@ class GithubCloner(ProjectAliceObject):
 
 		try:
 			if api:
-				return self._doApiClone(f'https://api.github.com/{self._baseUrl}/{self._path}?ref={self.ConfigManager.getSkillsUpdateBranch(skillName)}')
+				return self._doApiClone(f'https://api.github.com/{self._baseUrl}/{self._path}?ref={self.ConfigManager.getSkillsUpdateTag(skillName)}')
 			else:
 				return self._doClone(skillName)
 
@@ -53,10 +53,11 @@ class GithubCloner(ProjectAliceObject):
 			if not Path(self._dest / '.git').exists():
 				self.Commons.runSystemCommand(['git', '-C', str(self._dest), 'init'])
 				self.Commons.runSystemCommand(['git', '-C', str(self._dest), 'remote', 'add', 'origin', self._baseUrl])
-				self.Commons.runSystemCommand(['git', '-C', str(self._dest), 'pull', 'origin', str(self.ConfigManager.getSkillsUpdateBranch(skillName))])
+				self.Commons.runSystemCommand(['git', '-C', str(self._dest), 'pull'])
+				self.Commons.runSystemCommand(['git', '-C', str(self._dest), 'checkout', str(self.ConfigManager.getSkillsUpdateTag(skillName))])
 			else:
-				self.Commons.runSystemCommand(['git', '-C', str(self._dest), 'checkout', str(self.ConfigManager.getSkillsUpdateBranch(skillName))])
-				self.Commons.runSystemCommand(['git', '-C', str(self._dest), 'pull', 'origin', str(self.ConfigManager.getSkillsUpdateBranch(skillName))])
+				self.Commons.runSystemCommand(['git', '-C', str(self._dest), 'pull'])
+				self.Commons.runSystemCommand(['git', '-C', str(self._dest), 'checkout', str(self.ConfigManager.getSkillsUpdateTag(skillName))])
 				self.Commons.runSystemCommand(['git', '-C', str(self._dest), 'stash', 'clear'])
 
 			return True

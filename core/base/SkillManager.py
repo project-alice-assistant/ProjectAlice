@@ -351,7 +351,7 @@ class SkillManager(Manager):
 				if skillToCheck and skillName != skillToCheck:
 					continue
 
-				updateSource = self.ConfigManager.getSkillsUpdateBranch(skillName)
+				updateSource = self.ConfigManager.getSkillsUpdateTag(skillName)
 
 				req = requests.get(f'https://raw.githubusercontent.com/project-alice-assistant/skill_{skillName}/{updateSource}/{skillName}.install')
 
