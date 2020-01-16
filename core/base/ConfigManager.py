@@ -544,7 +544,7 @@ class ConfigManager(Manager):
 			raise GithubNotFound
 
 		versionsSorted = sorted(versions.items(), key=lambda x: x[1], reverse=True)
-		return next(iter(versionsSorted))
+		return list(versionsSorted)[0]
 
 
 	@property
