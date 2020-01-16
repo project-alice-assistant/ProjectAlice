@@ -540,8 +540,7 @@ class ConfigManager(Manager):
 		if not versions:
 			raise GithubNotFound
 
-		versions.sort(reverse=True)
-		return str(versions[0])
+		return str(max(versions))
 
 
 	@property
