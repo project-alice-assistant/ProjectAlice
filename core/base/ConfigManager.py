@@ -526,9 +526,6 @@ class ConfigManager(Manager):
 
 		versions = list()
 		for branch in result:
-			if '-' not in branch['name']:
-				continue
-
 			tagName = branch['name'].split('>=')
 			repoVersion = Version.fromString(tagName[0])
 			aliceMinVersion = Version.fromString(tagName[1])
