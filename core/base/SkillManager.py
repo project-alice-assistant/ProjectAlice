@@ -344,14 +344,15 @@ class SkillManager(Manager):
 			return False
 
 		availableSkills = self.ConfigManager.skillsConfigurations
-
 		updateCount = 0
+
 		for skillName in self._allSkills:
 			try:
-				if skillName not in availableSkills or (skillToCheck is not None and skillName != skillToCheck):
+				if skillToCheck and skillName != skillToCheck:
 					continue
 
-				updateSource = self.ConfigManager.getSkillsUpdateSource(skillName)
+				updateSource = self.ConfigManager.getSkillsUpdateBranch(skillName)
+
 				req = requests.get(f'https://raw.githubusercontent.com/project-alice-assistant/skill_{skillName}/{updateSource}/{skillName}.install')
 
 				if req.status_code == 404:
@@ -365,7 +366,7 @@ class SkillManager(Manager):
 				remoteVersion = Version.fromString(remoteFile['version'])
 				if localVersion < remoteVersion:
 					updateCount += 1
-					self.logInfo(f'❌ {skillName} - Version {availableSkills[skillName]["version"]} < {remoteFile["version"]} in {self.ConfigManager.getAliceConfigByName("updateChannel")}')
+					self.logInfo(f'❌ {skillName} - Version {availableSkills[skillName]["version"]} < {remoteFile["version"]} in {self.ConfigManager.getAliceConfigByName("skillsUpdateChannel")}')
 
 					if not self.ConfigManager.getAliceConfigByName('skillAutoUpdate'):
 						if skillName in self._activeSkills:
@@ -493,7 +494,7 @@ class SkillManager(Manager):
 				gitCloner = GithubCloner(baseUrl=self.GITHUB_BASE_URL.format(skillName), path=path, dest=directory)
 
 				try:
-					gitCloner.clone(api=False)
+					gitCloner.clone(skillName=skillName, api=False)
 					self.logInfo('Skill successfully downloaded')
 					self._installSkill(res)
 					skillsToBoot[skillName] = {

@@ -3,7 +3,6 @@ from pathlib import Path
 
 import requests
 import shutil
-from functools import lru_cache
 
 import configTemplate
 from core.base.SkillManager import SkillManager
@@ -21,7 +20,7 @@ except ModuleNotFoundError:
 import difflib
 import importlib
 import typing
-from core.ProjectAliceExceptions import ConfigurationUpdateFailed, VitalConfigMissing
+from core.ProjectAliceExceptions import ConfigurationUpdateFailed, VitalConfigMissing, GithubNotFound, GithubTokenFailed, GithubRateLimit
 from core.base.model.Manager import Manager
 from core.commons import constants
 
@@ -510,35 +509,36 @@ class ConfigManager(Manager):
 		self.MqttManager.reconnect()
 
 
-	def getSkillsUpdateSource(self, skill: str) -> str:
-		userUpdatePref = self.getAliceConfigByName('updateChannel')
-		return self._updatePrefToBranchName(userUpdatePref, skill)
-
-
-	@lru_cache(maxsize=3)
-	def _updatePrefToBranchName(self, userUpdatePref: str, skill: str) -> str:
-		if userUpdatePref == 'master':
-			return 'master'
+	def getSkillsUpdateBranch(self, skill: str) -> str:
+		userUpdatePref = self.getAliceConfigByName('skillsUpdateChannel')
+		aliceVersion = Version.fromString(constants.VERSION)
 
 		req = requests.get(f'https://api.github.com/repos/project-alice-assistant/skill_{skill}/branches', auth=GithubCloner.getGithubAuth())
 		result = req.json()
-		if not result:
-			return 'master'
+		if req.status_code == 401:
+			raise GithubTokenFailed
+		elif req.status_code == 403:
+			raise GithubRateLimit
+		elif req.status_code == 404:
+			raise GithubNotFound
+		elif req.status_code != 200:
+			raise Exception
 
 		versions = list()
 		for branch in result:
 			repoVersion = Version.fromString(branch['name'])
-			if not repoVersion.isVersionNumber:
+			if not repoVersion.isVersionNumber or repoVersion > aliceVersion:
 				continue
 
 			releaseType = repoVersion.releaseType
 			if userUpdatePref == 'alpha' and releaseType in ('release', 'rc', 'b', 'a') \
 					or userUpdatePref == 'beta' and releaseType in ('release', 'rc', 'b') \
-					or userUpdatePref == 'rc' and releaseType in ('release', 'rc'):
+					or userUpdatePref == 'rc' and releaseType in ('release', 'rc') \
+					or userUpdatePref == 'master' and releaseType == 'release':
 				versions.append(repoVersion)
 
 		if not versions:
-			return 'master'
+			raise GithubNotFound
 
 		versions.sort(reverse=True)
 		return str(versions[0])
