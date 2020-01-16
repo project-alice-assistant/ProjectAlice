@@ -538,7 +538,7 @@ class ConfigManager(Manager):
 					or userUpdatePref == 'beta' and releaseType in ('release', 'rc', 'b') \
 					or userUpdatePref == 'rc' and releaseType in ('release', 'rc') \
 					or userUpdatePref == 'master' and releaseType == 'release':
-				versions.append(repoVersion)
+				versions.append(branch['name'])
 
 		if not versions:
 			raise GithubNotFound
