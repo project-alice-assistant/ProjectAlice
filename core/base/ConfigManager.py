@@ -524,7 +524,8 @@ class ConfigManager(Manager):
 		elif req.status_code != 200:
 			raise Exception
 
-		versions = dict()
+		skillUpdateVersion = Version(0, 0, '', 0, 0)
+		skillUpdateTag = None
 		for branch in result:
 			tagName = branch['name'].split('>=')
 			repoVersion = Version.fromString(tagName[0])
@@ -534,17 +535,19 @@ class ConfigManager(Manager):
 				continue
 
 			releaseType = repoVersion.releaseType
-			if userUpdatePref == 'alpha' and releaseType in ('release', 'rc', 'b', 'a') \
-					or userUpdatePref == 'beta' and releaseType in ('release', 'rc', 'b') \
-					or userUpdatePref == 'rc' and releaseType in ('release', 'rc') \
-					or userUpdatePref == 'master' and releaseType == 'release':
-				versions[branch['name']] = repoVersion
+			if userUpdatePref == 'master' and releaseType in ('rc', 'b', 'a') \
+					or userUpdatePref == 'rc' and releaseType in ( 'b', 'a') \
+					or userUpdatePref == 'beta' and releaseType in ('a'):
+				continue
 
-		if not versions:
+			if repoVersion > skillUpdateVersion:
+				skillUpdateVersion = repoVersion
+				skillUpdateTag = tagName
+
+		if not skillUpdateTag:
 			raise GithubNotFound
 
-		versionsSorted = sorted(versions.items(), key=lambda x: x[1], reverse=True)
-		return list(versionsSorted)[0]
+		return skillUpdateTag
 
 
 	@property
