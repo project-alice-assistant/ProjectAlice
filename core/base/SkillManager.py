@@ -379,7 +379,7 @@ class SkillManager(Manager):
 						if skillName in self._failedSkills:
 							del self._failedSkills[skillName]
 				else:
-					self.logInfo(f'✔ {skillName} - Version {availableSkills[skillName]["version"]} in {self.ConfigManager.getAliceConfigByName("updateChannel")}')
+					self.logInfo(f'✔ {skillName} - Version {availableSkills[skillName]["version"]} in {self.ConfigManager.getAliceConfigByName("skillsUpdateChannel")}')
 
 			except GithubNotFound:
 				self.logInfo(f'❓ Skill "{skillName}" is not available on Github. Deprecated or is it a dev skill?')

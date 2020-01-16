@@ -6,7 +6,7 @@
 
 {% block loaders %}
 	<script type="text/javascript">
-		updateChannel = '{{ aliceSettings['+updateChannel+'] }}';
+		updateChannel = '{{ aliceSettings['+skillsUpdateChannel+'] }}';
 	</script>
 	<script src="{{ url_for('static', filename='js/skills.js') }}"></script>
 {% endblock %}
