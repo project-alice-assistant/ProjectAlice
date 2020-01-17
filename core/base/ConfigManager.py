@@ -525,8 +525,8 @@ class ConfigManager(Manager):
 			raise Exception
 
 		versions = dict()
-		for branch in result:
-			tagName = branch['name'].split('>=')
+		for tag in result:
+			tagName = tag['name'].split('>=')
 			repoVersion = Version.fromString(tagName[0])
 			aliceMinVersion = Version.fromString(tagName[1])
 
@@ -538,7 +538,7 @@ class ConfigManager(Manager):
 					or userUpdatePref == 'beta' and releaseType in ('release', 'rc', 'b') \
 					or userUpdatePref == 'rc' and releaseType in ('release', 'rc') \
 					or userUpdatePref == 'master' and releaseType == 'release':
-				versions[branch['name']] = repoVersion
+				versions[tag['name']] = repoVersion
 
 		if not versions:
 			raise GithubNotFound
