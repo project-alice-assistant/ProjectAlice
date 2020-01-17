@@ -53,12 +53,9 @@ class GithubCloner(ProjectAliceObject):
 			if not Path(self._dest / '.git').exists():
 				self.Commons.runSystemCommand(['git', '-C', str(self._dest), 'init'])
 				self.Commons.runSystemCommand(['git', '-C', str(self._dest), 'remote', 'add', 'origin', self._baseUrl])
-				self.Commons.runSystemCommand(['git', '-C', str(self._dest), 'pull'])
-				self.Commons.runSystemCommand(['git', '-C', str(self._dest), 'checkout', str(self.ConfigManager.getSkillsUpdateTag(skillName))])
-			else:
-				self.Commons.runSystemCommand(['git', '-C', str(self._dest), 'pull'])
-				self.Commons.runSystemCommand(['git', '-C', str(self._dest), 'checkout', str(self.ConfigManager.getSkillsUpdateTag(skillName))])
-				self.Commons.runSystemCommand(['git', '-C', str(self._dest), 'stash', 'clear'])
+
+			self.Commons.runSystemCommand(['git', '-C', str(self._dest), 'pull'])
+			self.Commons.runSystemCommand(['git', '-C', str(self._dest), 'checkout', str(self.ConfigManager.getSkillsUpdateTag(skillName))])
 
 			return True
 		except Exception as e:
