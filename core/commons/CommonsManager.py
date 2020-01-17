@@ -8,7 +8,7 @@ from contextlib import contextmanager, suppress
 from ctypes import *
 from datetime import datetime
 from pathlib import Path
-from typing import Union
+from typing import Any, Union
 
 import requests
 import tempfile
@@ -60,7 +60,7 @@ class CommonsManager(Manager):
 
 
 	@staticmethod
-	def dictMaxValue(d: dict) -> str:
+	def dictMaxValue(d: dict) -> Any:
 		return max(d, key=d.get)
 
 

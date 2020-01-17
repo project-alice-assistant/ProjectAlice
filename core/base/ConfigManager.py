@@ -543,8 +543,7 @@ class ConfigManager(Manager):
 		if not versions:
 			raise GithubNotFound
 
-		versionsSorted = sorted(versions.items(), key=lambda x: x[1], reverse=True)
-		return list(versionsSorted)[0]
+		return self.Commons.dictMaxValue(versions)
 
 
 	@property
