@@ -1,4 +1,3 @@
-import json
 from typing import Optional
 
 import requests
@@ -40,7 +39,7 @@ class SkillStoreManager(Manager):
 		if req.status_code not in {200, 304}:
 			return
 
-		self._data = json.loads(req.content)
+		self._data = req.json()
 
 
 	def getSkillUpdateVersion(self, skillName: str) -> Optional[tuple]:
