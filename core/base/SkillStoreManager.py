@@ -27,7 +27,7 @@ class SkillStoreManager(Manager):
 		self.refreshStoreData()
 
 
-	@Online(returnText=True)
+	@Online(catchOnly=True)
 	def onQuarterHour(self):
 		self.refreshStoreData()
 
