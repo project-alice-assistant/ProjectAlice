@@ -65,7 +65,7 @@ class SkillStoreManager(Manager):
 				continue
 
 			if repoVersion > skillUpdateVersion[0]:
-				skillUpdateVersion = (repoVersion, str(aliceMinVersion))
+				skillUpdateVersion = (repoVersion, f'{str(repoVersion)}>={str(aliceMinVersion)}')
 
 		if not skillUpdateVersion[0].isVersionNumber:
 			raise GithubNotFound
