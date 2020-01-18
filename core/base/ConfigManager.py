@@ -524,7 +524,7 @@ class ConfigManager(Manager):
 		elif req.status_code != 200:
 			raise Exception
 
-		skillUpdateVersion = Version(0, 0, '', 0, 0)
+		skillUpdateVersion = Version(0, 0, 0, '', 0)
 		skillUpdateTag = None
 		for tag in result:
 			tagName = tag['name'].split('>=')
@@ -536,8 +536,8 @@ class ConfigManager(Manager):
 
 			releaseType = repoVersion.releaseType
 			if userUpdatePref == 'master' and releaseType in ('rc', 'b', 'a') \
-					or userUpdatePref == 'rc' and releaseType in ( 'b', 'a') \
-					or userUpdatePref == 'beta' and releaseType in ('a'):
+					or userUpdatePref == 'rc' and releaseType in ('b', 'a') \
+					or userUpdatePref == 'beta' and releaseType == 'a':
 				continue
 
 			if repoVersion > skillUpdateVersion:
