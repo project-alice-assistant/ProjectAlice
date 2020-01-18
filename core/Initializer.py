@@ -209,8 +209,8 @@ network={
 			confs['keepASROffline'] = bool(initConfs['keepASROffline'])
 			confs['keepTTSOffline'] = bool(initConfs['keepTTSOffline'])
 			confs['skillAutoUpdate'] = bool(initConfs['skillAutoUpdate'])
-			confs['asr'] = initConfs['asr'] if initConfs['asr'] in ('snips', 'google') else 'snips'
-			confs['tts'] = initConfs['tts'] if initConfs['tts'] in ('pico', 'snips', 'mycroft', 'amazon', 'google') else 'pico'
+			confs['asr'] = initConfs['asr'] if initConfs['asr'] in {'snips', 'google'} else 'snips'
+			confs['tts'] = initConfs['tts'] if initConfs['tts'] in {'pico', 'snips', 'mycroft', 'amazon', 'google'} else 'pico'
 			confs['awsRegion'] = initConfs['awsRegion']
 			confs['awsAccessKey'] = initConfs['awsAccessKey']
 			confs['awsSecretKey'] = initConfs['awsSecretKey']
@@ -228,23 +228,23 @@ network={
 		confs['webInterfaceActive'] = bool(initConfs['webInterfaceActive'])
 		confs['devMode'] = bool(initConfs['devMode'])
 		confs['newDeviceBroadcastPort'] = int(initConfs['newDeviceBroadcastPort'] or 12354)
-		confs['activeLanguage'] = initConfs['activeLanguage'] if initConfs['activeLanguage'] in ('en', 'de', 'fr') else 'en'
+		confs['activeLanguage'] = initConfs['activeLanguage'] if initConfs['activeLanguage'] in {'en', 'de', 'fr'} else 'en'
 		confs['activeCountryCode'] = initConfs['activeCountryCode'] or 'US'
 		confs['baseCurrency'] = initConfs['baseCurrency'] or 'USD'
-		confs['baseUnits'] = initConfs['baseUnits'] if initConfs['baseUnits'] in ('metric', 'kelvin', 'imperial') else 'metric'
+		confs['baseUnits'] = initConfs['baseUnits'] if initConfs['baseUnits'] in {'metric', 'kelvin', 'imperial')} else 'metric'
 		confs['enableDataStoring'] = bool(initConfs['enableDataStoring'])
 		confs['autoPruneStoredData'] = initConfs['autoPruneStoredData'] or 1000
 		confs['probabilityThreshold'] = float(initConfs['probabilityThreshold'] or 0.5)
 		confs['shortReplies'] = bool(initConfs['shortReplies'])
 		confs['whisperWhenSleeping'] = bool(initConfs['whisperWhenSleeping'])
 		confs['ttsLanguage'] = initConfs['ttsLanguage'] or confs['activeLanguage']
-		confs['ttsType'] = initConfs['ttsType'] if initConfs['ttsType'] in ('female', 'male') else 'female'
+		confs['ttsType'] = initConfs['ttsType'] if initConfs['ttsType'] in {'female', 'male'} else 'female'
 		confs['ttsVoice'] = initConfs['ttsVoice']
 		confs['githubUsername'] = initConfs['githubUsername']
 		confs['githubToken'] = initConfs['githubToken']
 
 		updateChannel = initConfs['updateChannel']
-		if updateChannel not in ('master', 'rc', 'beta', 'alpha'):
+		if updateChannel not in {'master', 'rc', 'beta', 'alpha'}:
 			self.logWarning(f'{updateChannel} is no supported updateChannel, only master, rc, beta and alpha are supported. Reseting to master')
 			confs['updateChannel'] = 'master'
 		else:
@@ -414,9 +414,9 @@ network={
 				continue
 
 			releaseType = repoVersion.releaseType
-			if userUpdatePref == 'alpha' and releaseType in ('master', 'rc', 'b', 'a') \
-				or userUpdatePref == 'beta' and releaseType in ('master', 'rc', 'b') \
-				or userUpdatePref == 'rc' and releaseType in ('master', 'rc'):
+			if userUpdatePref == 'alpha' and releaseType in {'master', 'rc', 'b', 'a'} \
+				or userUpdatePref == 'beta' and releaseType in {'master', 'rc', 'b'} \
+				or userUpdatePref == 'rc' and releaseType in {'master', 'rc'}:
 				versions.append(repoVersion)
 
 		if versions:

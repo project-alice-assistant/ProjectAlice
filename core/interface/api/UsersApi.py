@@ -54,7 +54,7 @@ class UsersApi(Api):
 
 			username = request.form.get('username', '').lower()
 			keepWakeword = request.form.get('keepWakeword', False)
-			keepWakeword = False if keepWakeword in (False, 'no', '0', 'false', 'False') else True
+			keepWakeword = False if keepWakeword in {False, 'no', '0', 'false', 'False'} else True
 
 			if not self.UserManager.getUser(username):
 				return jsonify(message=f"ERROR: User '{username}' does not exist")

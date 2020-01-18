@@ -154,9 +154,9 @@ class ConfigManager(Manager):
 		# Cast value to template defined type
 		vartype = self._skillsTemplateConfigurations[skillName][key]['dataType']
 		if vartype == 'boolean':
-			if value.lower() in ('on', 'yes', 'true', 'active'):
+			if value.lower() in {'on', 'yes', 'true', 'active'}:
 				value = True
-			elif value.lower() in ('off', 'no', 'false', 'inactive'):
+			elif value.lower() in {'off', 'no', 'false', 'inactive'}:
 				value = False
 		elif vartype == 'integer':
 			try:
@@ -170,7 +170,7 @@ class ConfigManager(Manager):
 			except:
 				self.logWarning(f'Value missmatch for config {key} in skill {skillName}')
 				value = 0.0
-		elif vartype in ('string', 'email', 'password'):
+		elif vartype in {'string', 'email', 'password'}:
 			try:
 				value = str(value)
 			except:
@@ -535,8 +535,8 @@ class ConfigManager(Manager):
 				continue
 
 			releaseType = repoVersion.releaseType
-			if userUpdatePref == 'master' and releaseType in ('rc', 'b', 'a') \
-					or userUpdatePref == 'rc' and releaseType in ('b', 'a') \
+			if userUpdatePref == 'master' and releaseType in {'rc', 'b', 'a'} \
+					or userUpdatePref == 'rc' and releaseType in {'b', 'a'} \
 					or userUpdatePref == 'beta' and releaseType == 'a':
 				continue
 
