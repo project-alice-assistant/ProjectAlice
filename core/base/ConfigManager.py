@@ -509,6 +509,10 @@ class ConfigManager(Manager):
 		self.MqttManager.reconnect()
 
 
+	def refreshStoreData(self):
+		self.SkillStoreManager.refreshStoreData()
+
+
 	def getSkillsUpdateTag(self, skill: str) -> str:
 		userUpdatePref = self.getAliceConfigByName('skillsUpdateChannel')
 		aliceVersion = Version.fromString(constants.VERSION)

@@ -194,7 +194,8 @@ settings = {
 		'defaultValue': 'master',
 		'dataType'    : 'list',
 		'values'      : {'Release': 'master', 'Release candidate': 'rc', 'Beta': 'beta', 'Alpha': 'alpha'},
-		'description' : 'Choose your skill update frequency. Release is the only supposedly safe option! But if you like to live on the edge, alpha will allow you to preview what\'s coming next!'
+		'description' : 'Choose your skill update frequency. Release is the only supposedly safe option! But if you like to live on the edge, alpha will allow you to preview what\'s coming next!',
+		'onUpdate'    : 'refreshStoreData'
 	},
 	'supportedLanguages': {
 		'defaultValue': 'en',

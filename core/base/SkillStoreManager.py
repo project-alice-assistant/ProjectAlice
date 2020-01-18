@@ -12,40 +12,39 @@ from core.util.Decorators import Online
 
 class SkillStoreManager(Manager):
 	STORE_URLS = {
-		'master': ['http://skills.projectalice.io/assets/store/master.json', dict()],
-		'rc'    : ['http://skills.projectalice.io/assets/store/rc.json', dict()],
-		'beta'  : ['http://skills.projectalice.io/assets/store/beta.json', dict()],
-		'alpha' : ['http://skills.projectalice.io/assets/store/alpha.json', dict()]
+		'master': 'http://skills.projectalice.io/assets/store/master.json',
+		'rc'    : 'http://skills.projectalice.io/assets/store/rc.json',
+		'beta'  : 'http://skills.projectalice.io/assets/store/beta.json',
+		'alpha' : 'http://skills.projectalice.io/assets/store/alpha.json'
 	}
 
 
+	def __init__(self):
+		super().__init__()
+		self._data = dict()
+
+
 	def onStart(self):
-		self._refreshStoreData()
+		self.refreshStoreData()
 
 
-	@Online
+	@Online(returnText=True)
 	def onQuarterHour(self):
-		self._refreshStoreData()
+		self.refreshStoreData()
 
 
-	def _refreshStoreData(self):
-		for releaseType, data in self.STORE_URLS.items():
-			url = data[0]
+	def refreshStoreData(self):
+		updateChannel = self.ConfigManager.getAliceConfigByName('skillsUpdateChannel')
+		url = self.STORE_URLS[updateChannel]
+		req = requests.get(url)
+		if req.status_code not in {200, 304}:
+			return
 
-			req = requests.get(url)
-			if req.status_code not in {200, 304}:
-				return
-
-			self.STORE_URLS[releaseType][1] = json.loads(req.content)
-
-
-	def getStoreData(self, releaseType: str) -> dict:
-		return self.STORE_URLS[releaseType][1]
+		self._data = json.loads(req.content)
 
 
-	def getSkillUpdateVersion(self, skillName: str, releaseType: str = None) -> Optional[tuple]:
-		releaseType = releaseType or self.ConfigManager.getAliceConfigByName('skillsUpdateChannel')
-		versionMapping = self.getStoreData(releaseType).get(skillName, dict()).get('versionMapping', dict)
+	def getSkillUpdateVersion(self, skillName: str) -> Optional[tuple]:
+		versionMapping = self._data.get(skillName, dict()).get('versionMapping', dict)
 
 		userUpdatePref = self.ConfigManager.getAliceConfigByName('skillsUpdateChannel')
 		skillUpdateVersion = (Version(0, 0, 0, '', 0), 'master')
@@ -74,5 +73,4 @@ class SkillStoreManager(Manager):
 
 
 	def getSkillData(self, skillName: str, releaseType: str) -> dict:
-		releaseType = releaseType or self.ConfigManager.getAliceConfigByName('skillsUpdateChannel')
-		return self.getStoreData(releaseType).get(skillName, dict())
+		return self._data.get(skillName, dict())
