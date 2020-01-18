@@ -84,7 +84,7 @@ def _exceptHandler(*args, text: str, exceptHandler: Callable, returnText: bool, 
 		return newText
 
 
-def Online(func: Callable = None, text: str = 'offline', offlineHandler: Callable = None, returnText: bool = False):
+def Online(func: Callable = None, text: str = 'offline', offlineHandler: Callable = None, returnText: bool = False, catchOnly: bool = False):
 	"""
 	(return a) decorator to mark a function that requires ethernet.
 
@@ -126,6 +126,9 @@ def Online(func: Callable = None, text: str = 'offline', offlineHandler: Callabl
 				except:
 					if internetManager.checkOnlineState():
 						raise
+
+			if catchOnly:
+				return
 
 			return _exceptHandler(*args, text=text, exceptHandler=offlineHandler, returnText=returnText, **kwargs)
 
