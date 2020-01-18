@@ -524,7 +524,7 @@ class ConfigManager(Manager):
 		elif req.status_code != 200:
 			raise Exception
 
-		skillUpdateVersion = Version(0, 0, '', 0, 0)
+		skillUpdateVersion = Version(0, 0, 0, '', 0)
 		skillUpdateTag = None
 		for tag in result:
 			tagName = tag['name'].split('>=')
