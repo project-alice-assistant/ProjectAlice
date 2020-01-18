@@ -351,22 +351,11 @@ class SkillManager(Manager):
 				if skillToCheck and skillName != skillToCheck:
 					continue
 
-				updateSource = self.ConfigManager.getSkillsUpdateTag(skillName)
-
-				req = requests.get(f'https://raw.githubusercontent.com/project-alice-assistant/skill_{skillName}/{updateSource}/{skillName}.install')
-
-				if req.status_code == 404:
-					raise GithubNotFound
-
-				remoteFile = req.json()
-				if not remoteFile:
-					raise Exception
-
+				remoteVersion, updateSource = self.SkillStoreManager.getSkillUpdateVersion(skillName)
 				localVersion = Version.fromString(availableSkills[skillName]['version'])
-				remoteVersion = Version.fromString(remoteFile['version'])
 				if localVersion < remoteVersion:
 					updateCount += 1
-					self.logInfo(f'❌ {skillName} - Version {availableSkills[skillName]["version"]} < {remoteFile["version"]} in {self.ConfigManager.getAliceConfigByName("skillsUpdateChannel")}')
+					self.logInfo(f'❌ {skillName} - Version {availableSkills[skillName]["version"]} < {str(remoteVersion)} in {self.ConfigManager.getAliceConfigByName("skillsUpdateChannel")}')
 
 					if not self.ConfigManager.getAliceConfigByName('skillAutoUpdate'):
 						if skillName in self._activeSkills:
@@ -374,6 +363,16 @@ class SkillManager(Manager):
 						elif skillName in self._deactivatedSkills:
 							self._deactivatedSkills[skillName].updateAvailable = True
 					else:
+
+						req = requests.get(f'https://raw.githubusercontent.com/project-alice-assistant/skill_{skillName}/{updateSource}/{skillName}.install')
+
+						if req.status_code == 404:
+							raise GithubNotFound
+
+						remoteFile = req.json()
+						if not remoteFile:
+							raise Exception
+
 						skillFile = Path(self.Commons.rootDir(), constants.SKILL_INSTALL_TICKET_PATH, skillName + '.install')
 						skillFile.write_text(json.dumps(remoteFile))
 						if skillName in self._failedSkills:

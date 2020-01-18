@@ -259,3 +259,8 @@ class ProjectAliceObject(Logger):
 	@property
 	def SnipsWatchManager(self):
 		return SM.SuperManager.getInstance().snipsWatchManager
+
+
+	@property
+	def SkillStoreManager(self):
+		return SM.SuperManager.getInstance().skillStoreManager
