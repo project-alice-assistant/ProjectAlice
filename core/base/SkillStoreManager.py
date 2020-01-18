@@ -42,7 +42,7 @@ class SkillStoreManager(Manager):
 		self._data = req.json()
 
 
-	def getSkillUpdateVersion(self, skillName: str) -> Optional[tuple]:
+	def _getSkillUpdateVersion(self, skillName: str) -> Optional[tuple]:
 		versionMapping = self._data.get(skillName, dict()).get('versionMapping', dict)
 
 		userUpdatePref = self.ConfigManager.getAliceConfigByName('skillsUpdateChannel')
@@ -69,6 +69,14 @@ class SkillStoreManager(Manager):
 			raise GithubNotFound
 
 		return skillUpdateVersion
+
+
+	def getSkillUpdateTag(self, skillName: str) -> str:
+		return self._getSkillUpdateVersion(skillName)[1]
+
+
+	def getSkillUpdateVersion(self, skillName: str) -> Version:
+		return self._getSkillUpdateVersion(skillName)[0]
 
 
 	def getSkillData(self, skillName: str, releaseType: str) -> dict:

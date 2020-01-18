@@ -127,8 +127,10 @@ class SamkillaManager(Manager):
 					self.SnipsConsoleManager.doDownload(skillFilter)
 				else:
 					self.log('Changes detected during sync but not downloading yet')
+					self.MqttManager.mqttBroadcast(topic='hermes/leds/clear')
 			else:
 				self.log('No changes detected during sync')
+				self.MqttManager.mqttBroadcast(topic='hermes/leds/clear')
 
 				if not Path(self.Commons.rootDir(), f'trained/assistants/assistant_{self.LanguageManager.activeLanguage}').exists():
 					self.SnipsConsoleManager.doDownload()

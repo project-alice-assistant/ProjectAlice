@@ -1,14 +1,11 @@
 import json
 from pathlib import Path
 
-import requests
 import shutil
 
 import configTemplate
 from core.base.SkillManager import SkillManager
-from core.base.model.GithubCloner import GithubCloner
 from core.base.model.TomlFile import TomlFile
-from core.base.model.Version import Version
 
 try:
 	# noinspection PyUnresolvedReferences,PyPackageRequirements
@@ -20,7 +17,7 @@ except ModuleNotFoundError:
 import difflib
 import importlib
 import typing
-from core.ProjectAliceExceptions import ConfigurationUpdateFailed, VitalConfigMissing, GithubNotFound, GithubTokenFailed, GithubRateLimit
+from core.ProjectAliceExceptions import ConfigurationUpdateFailed, VitalConfigMissing
 from core.base.model.Manager import Manager
 from core.commons import constants
 
@@ -511,47 +508,6 @@ class ConfigManager(Manager):
 
 	def refreshStoreData(self):
 		self.SkillStoreManager.refreshStoreData()
-
-
-	def getSkillsUpdateTag(self, skill: str) -> str:
-		userUpdatePref = self.getAliceConfigByName('skillsUpdateChannel')
-		aliceVersion = Version.fromString(constants.VERSION)
-
-		req = requests.get(f'https://api.github.com/repos/project-alice-assistant/skill_{skill}/tags', auth=GithubCloner.getGithubAuth())
-		result = req.json()
-		if req.status_code == 401:
-			raise GithubTokenFailed
-		elif req.status_code == 403:
-			raise GithubRateLimit
-		elif req.status_code == 404:
-			raise GithubNotFound
-		elif req.status_code != 200:
-			raise Exception
-
-		skillUpdateVersion = Version(0, 0, 0, '', 0)
-		skillUpdateTag = None
-		for tag in result:
-			tagName = tag['name'].split('>=')
-			repoVersion = Version.fromString(tagName[0])
-			aliceMinVersion = Version.fromString(tagName[1])
-
-			if not repoVersion.isVersionNumber or not aliceMinVersion.isVersionNumber or aliceMinVersion > aliceVersion:
-				continue
-
-			releaseType = repoVersion.releaseType
-			if userUpdatePref == 'master' and releaseType in {'rc', 'b', 'a'} \
-					or userUpdatePref == 'rc' and releaseType in {'b', 'a'} \
-					or userUpdatePref == 'beta' and releaseType == 'a':
-				continue
-
-			if repoVersion > skillUpdateVersion:
-				skillUpdateVersion = repoVersion
-				skillUpdateTag = tag['name']
-
-		if not skillUpdateTag:
-			raise GithubNotFound
-
-		return skillUpdateTag
 
 
 	@property

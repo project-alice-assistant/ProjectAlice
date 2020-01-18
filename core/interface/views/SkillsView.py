@@ -77,7 +77,7 @@ class SkillsView(View):
 			_, author, skill = request.form.get('id').split('_')
 
 			self.WebInterfaceManager.newSkillInstallProcess(skill)
-			req = requests.get(f'https://raw.githubusercontent.com/project-alice-assistant/skill_{skill["skill"]}/{self.ConfigManager.getSkillsUpdateTag(skill["skill"])}/{skill["skill"]}.install')
+			req = requests.get(f'https://raw.githubusercontent.com/project-alice-assistant/skill_{skill["skill"]}/{self.SkillStoreManager.getSkillUpdateTag(skill["skill"])}/{skill["skill"]}.install')
 			remoteFile = req.json()
 			if not remoteFile:
 				self.WebInterfaceManager.skillInstallProcesses[skill['skill']]['status'] = 'failed'
@@ -98,7 +98,7 @@ class SkillsView(View):
 			for skill in skills:
 				self.WebInterfaceManager.newSkillInstallProcess(skill['skill'])
 
-				req = requests.get(f'https://raw.githubusercontent.com/project-alice-assistant/skill_{skill["skill"]}/{self.ConfigManager.getSkillsUpdateTag(skill["skill"])}/{skill["skill"]}.install')
+				req = requests.get(f'https://raw.githubusercontent.com/project-alice-assistant/skill_{skill["skill"]}/{self.SkillStoreManager.getSkillUpdateTag(skill["skill"])}/{skill["skill"]}.install')
 				remoteFile = req.json()
 				if not remoteFile:
 					self.WebInterfaceManager.skillInstallProcesses[skill['skill']]['status'] = 'failed'
@@ -122,24 +122,21 @@ class SkillsView(View):
 	def loadStoreData(self):
 		installers = dict()
 		updateSource = self.ConfigManager.getAliceConfigByName('skillsUpdateChannel')
-		# req = requests.get(url=f'https://skills.projectalice.io/assets/{updateSource}/store/store.json')
-		# TODO removeme!
-		req = requests.get(url=f'https://skills.projectalice.io/assets/master/store/store.json')
+		req = requests.get(url=f'https://skills.projectalice.io/assets/store/{updateSource}.json')
 		results = req.json()
 
 		if not results:
 			return dict()
 
-		for skill in results:
+		for skill in results.values():
 			if 'lang' not in skill['conditions']:
 				skill['conditions']['lang'] = constants.ALL
 			installers[skill['name']] = skill
 
-		aliceVersion = Version.fromString(constants.VERSION) 
+		aliceVersion = Version.fromString(constants.VERSION)
 		activeLanguage = self.LanguageManager.activeLanguage.lower()
 		return {
 			skillName: skillInfo for skillName, skillInfo in installers.items()
 			if self.SkillManager.getSkillInstance(skillName=skillName, silent=True) is None
-				and aliceVersion >= Version.fromString(skillInfo['aliceMinVersion'])
-				and (activeLanguage in skillInfo['conditions']['lang'] or skillInfo['conditions']['lang'] == constants.ALL)
+			   and (activeLanguage in skillInfo['conditions']['lang'] or skillInfo['conditions']['lang'] == constants.ALL)
 		}
