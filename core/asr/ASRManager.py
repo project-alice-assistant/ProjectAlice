@@ -75,7 +75,7 @@ class ASRManager(Manager):
 			self.logDebug(f'{self._asr.__class__.__name__} output: "{result}"')
 
 			supportedIntents = session.intentFilter or self.SkillManager.supportedIntents
-			intentFilter = [intent.justTopic for intent in supportedIntents if isinstance(intent, Intent) and not intent.protected]
+			intentFilter = [intent.justTopic for intent in supportedIntents if isinstance(intent, Intent) and not intent.isProtected]
 
 			# Add Global Intents
 			intentFilter.append(Intent('GlobalStop').justTopic)
