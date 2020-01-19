@@ -501,6 +501,8 @@ class AliceSkill(ProjectAliceObject):
 
 
 	def ask(self, text: str, siteId: str = constants.DEFAULT_SITE_ID, intentFilter: list = None, customData: dict = None, previousIntent: str = '', canBeEnqueued: bool = True, currentDialogState: str = ''):
+		if currentDialogState:
+			currentDialogState = f'{self.name}:{currentDialogState}'
 		self.MqttManager.ask(text=text, client=siteId, intentFilter=intentFilter, customData=customData, previousIntent=previousIntent, canBeEnqueued=canBeEnqueued, currentDialogState=currentDialogState)
 
 
