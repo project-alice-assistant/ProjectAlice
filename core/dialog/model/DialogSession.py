@@ -76,7 +76,7 @@ class DialogSession:
 		"""
 		try:
 			return self.slotsAsObjects[slotName][index].value['value']
-		except KeyError:
+		except (KeyError, IndexError):
 			return defaultValue
 
 
