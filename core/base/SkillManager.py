@@ -496,7 +496,7 @@ class SkillManager(Manager):
 				gitCloner = GithubCloner(baseUrl=self.GITHUB_BASE_URL.format(skillName), path=path, dest=directory)
 
 				try:
-					gitCloner.clone(skillName=skillName, api=False)
+					gitCloner.clone(skillName=skillName)
 					self.logInfo('Skill successfully downloaded')
 					self._installSkill(res)
 					skillsToBoot[skillName] = {
