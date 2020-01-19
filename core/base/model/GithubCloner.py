@@ -40,7 +40,7 @@ class GithubCloner(ProjectAliceObject):
 
 		try:
 			if api:
-				return self._doApiClone(f'https://api.github.com/{self._baseUrl}/{self._path}?ref={self.ConfigManager.getSkillsUpdateTag(skillName)}')
+				return self._doApiClone(f'https://api.github.com/{self._baseUrl}/{self._path}?ref={self.SkillStoreManager.getSkillUpdateTag(skillName)}')
 			else:
 				return self._doClone(skillName)
 
@@ -55,7 +55,7 @@ class GithubCloner(ProjectAliceObject):
 				self.Commons.runSystemCommand(['git', '-C', str(self._dest), 'remote', 'add', 'origin', self._baseUrl])
 
 			self.Commons.runSystemCommand(['git', '-C', str(self._dest), 'pull'])
-			self.Commons.runSystemCommand(['git', '-C', str(self._dest), 'checkout', str(self.ConfigManager.getSkillsUpdateTag(skillName))])
+			self.Commons.runSystemCommand(['git', '-C', str(self._dest), 'checkout', self.SkillStoreManager.getSkillUpdateTag(skillName)])
 
 			return True
 		except Exception as e:

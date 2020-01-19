@@ -3,6 +3,7 @@ import json
 from pathlib import Path
 from typing import Dict, Optional
 
+import os
 import requests
 import shutil
 
@@ -78,6 +79,8 @@ class SkillManager(Manager):
 
 
 	def onSnipsAssistantDownloaded(self, **kwargs):
+		self.MqttManager.mqttBroadcast(topic='hermes/leds/clear')
+
 		argv = kwargs.get('skillsInfos', dict())
 		if not argv:
 			return
@@ -351,7 +354,7 @@ class SkillManager(Manager):
 				if skillToCheck and skillName != skillToCheck:
 					continue
 
-				remoteVersion, updateSource = self.SkillStoreManager.getSkillUpdateVersion(skillName)
+				remoteVersion = self.SkillStoreManager.getSkillUpdateVersion(skillName)
 				localVersion = Version.fromString(availableSkills[skillName]['version'])
 				if localVersion < remoteVersion:
 					updateCount += 1
@@ -364,7 +367,7 @@ class SkillManager(Manager):
 							self._deactivatedSkills[skillName].updateAvailable = True
 					else:
 
-						req = requests.get(f'https://raw.githubusercontent.com/project-alice-assistant/skill_{skillName}/{updateSource}/{skillName}.install')
+						req = requests.get(f'https://raw.githubusercontent.com/project-alice-assistant/skill_{skillName}/{self.SkillStoreManager.getSkillUpdateTag(skillName)}/{skillName}.install')
 
 						if req.status_code == 404:
 							raise GithubNotFound
@@ -570,7 +573,7 @@ class SkillManager(Manager):
 				'conditions': installFile['conditions']
 			}
 
-			# shutil.move(str(res), str(directory))
+			os.unlink(str(res))
 			self.ConfigManager.addSkillToAliceConfig(installFile['name'], node)
 		except Exception:
 			raise
