@@ -10,17 +10,15 @@ from core.util.Decorators import Online
 
 
 class SkillStoreManager(Manager):
-	STORE_URLS = {
-		'master': 'http://skills.projectalice.io/assets/store/master.json',
-		'rc'    : 'http://skills.projectalice.io/assets/store/rc.json',
-		'beta'  : 'http://skills.projectalice.io/assets/store/beta.json',
-		'alpha' : 'http://skills.projectalice.io/assets/store/alpha.json'
-	}
-
 
 	def __init__(self):
 		super().__init__()
-		self._data = dict()
+		self._skillStoreData = dict()
+
+
+	@property
+	def skillStoreData(self) -> dict:
+		return self._skillStoreData
 
 
 	def onStart(self):
@@ -34,16 +32,15 @@ class SkillStoreManager(Manager):
 
 	def refreshStoreData(self):
 		updateChannel = self.ConfigManager.getAliceConfigByName('skillsUpdateChannel')
-		url = self.STORE_URLS[updateChannel]
-		req = requests.get(url)
+		req = requests.get(url=f'https://skills.projectalice.io/assets/store/{updateChannel}.json')
 		if req.status_code not in {200, 304}:
 			return
 
-		self._data = req.json()
+		self._skillStoreData = req.json()
 
 
 	def _getSkillUpdateVersion(self, skillName: str) -> Optional[tuple]:
-		versionMapping = self._data.get(skillName, dict()).get('versionMapping', dict)
+		versionMapping = self._skillStoreData.get(skillName, dict()).get('versionMapping', dict)
 
 		userUpdatePref = self.ConfigManager.getAliceConfigByName('skillsUpdateChannel')
 		skillUpdateVersion = (Version(), 'master')
@@ -80,4 +77,4 @@ class SkillStoreManager(Manager):
 
 
 	def getSkillData(self, skillName: str, releaseType: str) -> dict:
-		return self._data.get(skillName, dict())
+		return self._skillStoreData.get(skillName, dict())

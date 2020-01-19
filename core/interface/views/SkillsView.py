@@ -120,25 +120,15 @@ class SkillsView(View):
 
 
 	def loadStoreData(self):
-		installers = dict()
-		updateSource = self.ConfigManager.getAliceConfigByName('skillsUpdateChannel')
-		req = requests.get(url=f'https://skills.projectalice.io/assets/store/{updateSource}.json')
-		results = req.json()
-
-		if not results:
-			return dict()
-
-		for skill in results.values():
-			if 'lang' not in skill['conditions']:
-				skill['conditions']['lang'] = constants.ALL
-			installers[skill['name']] = skill
-
+		self.SkillStoreManager.refreshStoreData()
+		skillStoreData = self.SkillStoreManager.skillStoreData
 		activeLanguage = self.LanguageManager.activeLanguage.lower()
 		aliceVersion = Version.fromString(constants.VERSION)
-		data = dict()
+		supportedSkillStoreData = dict()
 
-		for skillName, skillInfo in installers.items():
-			if self.SkillManager.getSkillInstance(skillName=skillName, silent=True) or (activeLanguage not in skillInfo['conditions']['lang'] and skillInfo['conditions']['lang'] != constants.ALL):
+		for skillName, skillInfo in skillStoreData.items():
+			if self.SkillManager.getSkillInstance(skillName=skillName, silent=True) \
+					or ('lang' in skillInfo['conditions'] and activeLanguage not in skillInfo['conditions']['lang']):
 				continue
 
 			version = Version()
@@ -152,6 +142,6 @@ class SkillsView(View):
 					version = skillRepoVersion
 
 			skillInfo['version'] = str(version)
-			data[skillName] = skillInfo
+			supportedSkillStoreData[skillName] = skillInfo
 
-		return data
+		return supportedSkillStoreData
