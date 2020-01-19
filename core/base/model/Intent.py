@@ -13,7 +13,7 @@ class Intent:
 	userIntent: bool = True
 	authOnly: AccessLevel = AccessLevel.ZERO
 	fallbackFunction: Optional[Callable] = None
-	dialogMapping: dict
+	dialogMapping: dict = field(default_factory=dict)
 	_dialogMapping: dict = field(init=False, repr=False)
 
 
@@ -50,7 +50,7 @@ class Intent:
 
 	@property
 	def justTopic(self) -> str:
-		return f'{self._owner}:{self._action}' if self.userIntent else self.action
+		return f'{self.owner}:{self.action}' if self.userIntent else self.action
 
 
 	def addDialogMapping(self, value: Dict[str, Callable], skillName: str):
