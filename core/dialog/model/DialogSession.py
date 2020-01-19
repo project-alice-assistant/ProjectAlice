@@ -63,7 +63,6 @@ class DialogSession:
 		self.customData = session.customData
 		self.user = session.user
 		self.message = session.message
-		self.intentName = message.topic
 		self.intentName = session.intentName
 		self.intentHistory = session.intentHistory
 		self.intentFilter = session.intentFilter
