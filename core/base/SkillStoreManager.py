@@ -46,7 +46,7 @@ class SkillStoreManager(Manager):
 		versionMapping = self._data.get(skillName, dict()).get('versionMapping', dict)
 
 		userUpdatePref = self.ConfigManager.getAliceConfigByName('skillsUpdateChannel')
-		skillUpdateVersion = (Version(0, 0, 0, '', 0), 'master')
+		skillUpdateVersion = (Version(), 'master')
 
 		aliceVersion = Version.fromString(constants.VERSION)
 		for aliceMinVersion, repoVersion in versionMapping.items():
