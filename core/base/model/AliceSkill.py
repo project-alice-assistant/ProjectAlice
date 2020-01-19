@@ -108,8 +108,8 @@ class AliceSkill(ProjectAliceObject):
 
 				if item.fallbackFunction:
 					intents[str(item)].fallbackFunction = item.fallbackFunction
-				# always use the highest auth level specified
-				if item.authOnly > intents[str(item)].authOnly:
+				# always use the highest auth level specified (low values mean a higher auth level)
+				if item.authOnly < intents[str(item)].authOnly:
 					intents[str(item)].authOnly = item.authOnly
 			else:
 				intents[str(item)] = item
@@ -134,8 +134,8 @@ class AliceSkill(ProjectAliceObject):
 				else:
 					intentMappings[str(intent)].fallbackFunction = function
 
-				# always use the highes auth level specified
-				if intent.authOnly > intentMappings[str(intent)].authOnly:
+				# always use the highest auth level specified (low values mean a higher auth level)
+				if intent.authOnly < intentMappings[str(intent)].authOnly:
 					intentMappings[str(intent)].authOnly = intent.authOnly
 
 		return intentMappings
@@ -206,9 +206,9 @@ class AliceSkill(ProjectAliceObject):
 
 		#TODO: either typing in function definition is wrong, or it is always a Intent
 		if isinstance(intent, tuple):
-			check = intent[0].justAction
+			check = intent[0].action
 		elif isinstance(intent, Intent):
-			check = intent.justAction
+			check = intent.action
 		else:
 			check = str(intent).split('/')[-1].split(':')[-1]
 
