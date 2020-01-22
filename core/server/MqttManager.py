@@ -694,7 +694,7 @@ class MqttManager(Manager):
 
 
 	def publish(self, topic: str, payload: (dict, str) = None, qos: int = 0, retain: bool = False):
-		if payload and isinstance(payload, dict):
+		if isinstance(payload, dict):
 			payload = json.dumps(payload)
 
 		self._mqttClient.publish(topic, payload, qos, retain)
