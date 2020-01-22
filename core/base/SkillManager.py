@@ -311,7 +311,7 @@ class SkillManager(Manager):
 				if func:
 					func(**kwargs)
 
-				func = getattr(skillItem, constants.EVENT, None)
+				func = getattr(skillItem, 'onEvent', None)
 				if func:
 					func(event=method, **kwargs)
 
@@ -655,8 +655,6 @@ class SkillManager(Manager):
 			del self._activeSkills[skillName]
 		except KeyError:
 			del self._deactivatedSkills[skillName]
-		finally:
-			del self._allSkills[skillName]
 
 		shutil.rmtree(Path(self.Commons.rootDir(), 'skills', skillName))
 		# TODO Samkilla cleaning
