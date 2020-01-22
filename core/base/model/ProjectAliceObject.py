@@ -193,6 +193,7 @@ class ProjectAliceObject(Logger):
 	def SkillStoreManager(self):
 		return SM.SuperManager.getInstance().skillStoreManager
 
+	# add empty event handlers for auto completion and type checking purposes
 	if TYPE_CHECKING:
 		def onStart(self): pass
 		def onStop(self): pass
