@@ -52,7 +52,7 @@ class ProjectAliceObject(Logger):
 				if func:
 					func(**kwargs)
 
-			except TypeError:
+			except TypeError as e:
 				self.logWarning(f'- Failed to broadcast event {method}: {e}')
 
 		if propagateToSkills:

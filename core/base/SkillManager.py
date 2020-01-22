@@ -315,7 +315,7 @@ class SkillManager(Manager):
 				if func:
 					func(event=method, **kwargs)
 
-			except TypeError:
+			except TypeError as e:
 				self.logWarning(f'- Failed to broadcast event {method}: {e}')
 
 
