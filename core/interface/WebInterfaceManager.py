@@ -127,20 +127,16 @@ class WebInterfaceManager(Manager):
 			self.logError(f'Failed setting skill "{skill}" status to "updated": {e}')
 
 
-	def onSkillInstalled(self, **kwargs):
-		skill = ''
+	def onSkillInstalled(self, skill: str):
 		try:
-			skill = kwargs['skill']
 			if skill in self.skillInstallProcesses:
 				self.skillInstallProcesses[skill]['status'] = 'installed'
 		except KeyError as e:
 			self.logError(f'Failed setting skill "{skill}" status to "installed": {e}')
 
 
-	def onSkillInstallFailed(self, **kwargs):
-		skill = ''
+	def onSkillInstallFailed(self, skill: str):
 		try:
-			skill = kwargs['skill']
 			if skill in self.skillInstallProcesses:
 				self.skillInstallProcesses[skill]['status'] = 'failed'
 		except KeyError as e:
