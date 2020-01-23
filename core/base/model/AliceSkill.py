@@ -384,11 +384,6 @@ class AliceSkill(ProjectAliceObject):
 		return matchingIntent
 
 
-	def onMessage(self, session) -> bool:
-		""" Do not consume the intent by default """
-		return False
-
-
 	def onDispatchMessage(self, session: DialogSession) -> bool:
 		intent = self.filterIntent(session)
 		if not intent:
