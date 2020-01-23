@@ -316,7 +316,7 @@ class SkillManager(Manager):
 					func(event=method, **kwargs)
 
 			except TypeError as e:
-				self.logWarning(f'- Failed to broadcast event {method}: {e}')
+				self.logWarning(f'- Failed to broadcast event {method} to {skillItem.name}: {e}')
 
 
 	def deactivateSkill(self, skillName: str, persistent: bool = False):
