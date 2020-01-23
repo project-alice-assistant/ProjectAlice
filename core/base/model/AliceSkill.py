@@ -433,7 +433,7 @@ class AliceSkill(ProjectAliceObject):
 		return True
 
 
-	def onSkillInstalled(self):
+	def onSkillInstalled(self, **kwargs):
 		self._updateAvailable = False
 		#self.MqttManager.subscribeSkillIntents(self.name)
 
