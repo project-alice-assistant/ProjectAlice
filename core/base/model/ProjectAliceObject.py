@@ -62,21 +62,64 @@ class ProjectAliceObject(Logger):
 			del SM.SuperManager.getInstance().managers[name]
 
 
-	def onStart(self): pass
-	def onStop(self): pass
-	def onBooted(self): pass
-	def onSkillInstalled(self, skill: str): pass
-	def onSkillUpdated(self): pass
-	def onInternetConnected(self): pass
-	def onInternetLost(self): pass
-	def onHotword(self, siteId: str, user: str = constants.UNKNOWN_USER): pass
-	def onHotwordToggleOn(self, siteId: str): pass
-	def onSessionStarted(self, session): pass
-	def onStartListening(self, session): pass
-	def onCaptured(self, session): pass
-	def onIntentParsed(self, session): pass
-	def onUserCancel(self, session): pass
-	def onSessionTimeout(self, session): pass
+	def onStart(self):
+		pass
+
+
+	def onStop(self):
+		pass
+
+
+	def onBooted(self):
+		pass
+
+
+	def onSkillInstalled(self, skill: str):
+		pass
+
+
+	def onSkillUpdated(self, skill: str):
+		pass
+
+
+	def onInternetConnected(self):
+		pass
+
+
+	def onInternetLost(self):
+		pass
+
+
+	def onHotword(self, siteId: str, user: str = constants.UNKNOWN_USER):
+		pass
+
+
+	def onHotwordToggleOn(self, siteId: str):
+		pass
+
+
+	def onSessionStarted(self, session):
+		pass
+
+
+	def onStartListening(self, session):
+		pass
+
+
+	def onCaptured(self, session):
+		pass
+
+
+	def onIntentParsed(self, session):
+		pass
+
+
+	def onUserCancel(self, session):
+		pass
+
+
+	def onSessionTimeout(self, session):
+		pass
 	def onIntentNotRecognized(self, session): pass
 	def onSessionError(self, session): pass
 	def onSessionEnded(self, session): pass
