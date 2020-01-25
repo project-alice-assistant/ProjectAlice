@@ -23,11 +23,11 @@
 				<form action="/admin/saveAliceSettings/" name="config_for_{{ skillName }}" method="post"
 					  autocomplete="off" novalidate>
 					{% for settingName, settingValue in aliceSettings.items() if not settingName == 'skills' and not settingName == 'supportedLanguages' %}
-						<div class="configLine">
-							<label class="configLabel" for="{{ settingName }}"
-								   title="{{ aliceSettingsTemplate[settingName]['description'] }}">{{ settingName }}</label>
-							<div class="configInput">
-								{% if aliceSettingsTemplate[settingName]['display'] != 'hidden' %}
+						{% if aliceSettingsTemplate[settingName]['display'] != 'hidden' %}
+							<div class="configLine">
+								<label class="configLabel" for="{{ settingName }}"
+									   title="{{ aliceSettingsTemplate[settingName]['description'] }}">{{ settingName }}</label>
+								<div class="configInput">
 									{% if aliceSettingsTemplate[settingName]['dataType'] == 'boolean' %}
 										<input type="checkbox" name="{{ settingName }}" value="on"
 											   id="{{ settingName }}"
@@ -63,9 +63,10 @@
 										<input type="text" name="{{ settingName }}" value="{{ settingValue }}"
 											   id="{{ settingName }}">
 									{% endif %}
-								{% endif %}
+
+								</div>
 							</div>
-						</div>
+						{% endif %}
 					{% endfor %}
 					<input class="configSaveButton" type="submit" value="{{ langData.save }}">
 				</form>
