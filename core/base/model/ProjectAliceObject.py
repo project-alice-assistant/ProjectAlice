@@ -20,7 +20,7 @@ class ProjectAliceObject(Logger):
 		return json.dumps(self.__dict__)
 
 
-	def broadcast(self, method: str, exceptions: list = None, manager=None, propagateToSkills: bool = False, **kwargs):
+	def broadcast(self, method: str, exceptions: list = None, manager = None, propagateToSkills: bool = False, **kwargs):
 		if not exceptions:
 			exceptions = list()
 
@@ -120,62 +120,215 @@ class ProjectAliceObject(Logger):
 
 	def onSessionTimeout(self, session):
 		pass
-	def onIntentNotRecognized(self, session): pass
-	def onSessionError(self, session): pass
-	def onSessionEnded(self, session): pass
-	def onSay(self, session): pass
-	def onSayFinished(self, session): pass
-	def onSessionQueued(self, session): pass
+
+
+	def onIntentNotRecognized(self, session):
+		pass
+
+
+	def onSessionError(self, session):
+		pass
+
+
+	def onSessionEnded(self, session):
+		pass
+
+
+	def onSay(self, session):
+		pass
+
+
+	def onSayFinished(self, session):
+		pass
+
+
+	def onSessionQueued(self, session):
+		pass
+
 
 	def onMessage(self, session) -> bool:
 		""" Do not consume the intent by default """
 		return False
 
-	def onSleep(self): pass
-	def onWakeup(self): pass
-	def onGoingBed(self): pass
-	def onLeavingHome(self): pass
-	def onReturningHome(self): pass
-	def onEating(self): pass
-	def onWatchingTV(self): pass
-	def onCooking(self): pass
-	def onMakeup(self): pass
-	def onContextSensitiveDelete(self, sessionId: str): pass
-	def onContextSensitiveEdit(self, sessionId: str): pass
-	def onFullMinute(self): pass
-	def onFiveMinute(self): pass
-	def onQuarterHour(self): pass
-	def onFullHour(self): pass
-	def onWakeword(self, siteId: str, user: str = constants.UNKNOWN_USER): pass
-	def onMotionDetected(self): pass
-	def onMotionStopped(self): pass
-	def onButtonPressed(self): pass
-	def onButtonReleased(self): pass
-	def onDeviceConnecting(self): pass
-	def onDeviceDisconnecting(self): pass
-	def onUVIndexAlert(self, deviceList: list): pass
-	def onRaining(self, deviceList: list): pass
-	def onTooMuchRain(self, deviceList: list): pass
-	def onWindy(self, deviceList: list): pass
-	def onFreezing(self, deviceList: list): pass
-	def onTemperatureHighAlert(self, deviceList: list): pass
-	def onTemperatureLowAlert(self, deviceList: list): pass
-	def onCO2Alert(self, deviceList: list): pass
-	def onHumidityHighAlert(self, deviceList: list): pass
-	def onHumidityLowAlert(self, deviceList: list): pass
-	def onNoiseAlert(self, deviceList: list): pass
-	def onPressureHighAlert(self, deviceList: list): pass
-	def onPressureLowAlert(self, deviceList: list): pass
-	def onBroadcastingForNewDeviceStart(self, session): pass
-	def onBroadcastingForNewDeviceStop(self): pass
-	def onSnipsAssistantDownloaded(self, **kwargs): pass
-	def onSnipsAssistantDownloadFailed(self, **kwargs): pass
-	def onAuthenticated(self, session): pass
-	def onAuthenticationFailed(self, session): pass
-	def onAudioFrame(self, message): pass
-	def onSnipsAssistantInstalled(self, **kwargs): pass
-	def onSnipsAssistantFailedInstalling(self, **kwargs): pass
-	def onSkillInstallFailed(self, skill: str): pass
+
+	def onSleep(self):
+		pass
+
+
+	def onWakeup(self):
+		pass
+
+
+	def onGoingBed(self):
+		pass
+
+
+	def onLeavingHome(self):
+		pass
+
+
+	def onReturningHome(self):
+		pass
+
+
+	def onEating(self):
+		pass
+
+
+	def onWatchingTV(self):
+		pass
+
+
+	def onCooking(self):
+		pass
+
+
+	def onMakeup(self):
+		pass
+
+
+	def onContextSensitiveDelete(self, sessionId: str):
+		pass
+
+
+	def onContextSensitiveEdit(self, sessionId: str):
+		pass
+
+
+	def onFullMinute(self):
+		pass
+
+
+	def onFiveMinute(self):
+		pass
+
+
+	def onQuarterHour(self):
+		pass
+
+
+	def onFullHour(self):
+		pass
+
+
+	def onWakeword(self, siteId: str, user: str = constants.UNKNOWN_USER):
+		pass
+
+
+	def onMotionDetected(self):
+		pass
+
+
+	def onMotionStopped(self):
+		pass
+
+
+	def onButtonPressed(self):
+		pass
+
+
+	def onButtonReleased(self):
+		pass
+
+
+	def onDeviceConnecting(self):
+		pass
+
+
+	def onDeviceDisconnecting(self):
+		pass
+
+
+	def onUVIndexAlert(self, *args, **kwargs):
+		pass
+
+
+	def onRaining(self, *args, **kwargs):
+		pass
+
+
+	def onTooMuchRain(self, *args, **kwargs):
+		pass
+
+
+	def onWindy(self, *args, **kwargs):
+		pass
+
+
+	def onFreezing(self, *args, **kwargs):
+		pass
+
+
+	def onTemperatureHighAlert(self, *args, **kwargs):
+		pass
+
+
+	def onTemperatureLowAlert(self, *args, **kwargs):
+		pass
+
+
+	def onCO2Alert(self, *args, **kwargs):
+		pass
+
+
+	def onHumidityHighAlert(self, *args, **kwargs):
+		pass
+
+
+	def onHumidityLowAlert(self, *args, **kwargs):
+		pass
+
+
+	def onNoiseAlert(self, *args, **kwargs):
+		pass
+
+
+	def onPressureHighAlert(self, *args, **kwargs):
+		pass
+
+
+	def onPressureLowAlert(self, *args, **kwargs):
+		pass
+
+
+	def onBroadcastingForNewDeviceStart(self, session):
+		pass
+
+
+	def onBroadcastingForNewDeviceStop(self):
+		pass
+
+
+	def onSnipsAssistantDownloaded(self, **kwargs):
+		pass
+
+
+	def onSnipsAssistantDownloadFailed(self, **kwargs):
+		pass
+
+
+	def onAuthenticated(self, session):
+		pass
+
+
+	def onAuthenticationFailed(self, session):
+		pass
+
+
+	def onAudioFrame(self, message):
+		pass
+
+
+	def onSnipsAssistantInstalled(self, **kwargs):
+		pass
+
+
+	def onSnipsAssistantFailedInstalling(self, **kwargs):
+		pass
+
+
+	def onSkillInstallFailed(self, skill: str):
+		pass
 
 
 	@property
