@@ -51,10 +51,16 @@ class TTSManager(Manager):
 				self._tts = MycroftTTS(user)
 		elif tts == TTSEnum.AMAZON:
 			from core.voice.model.AmazonTTS import AmazonTTS
+
 			self._tts = AmazonTTS(user)
 		elif tts == TTSEnum.GOOGLE:
-			from core.voice.model.GoogleTTS import GoogleTTS
-			self._tts = GoogleTTS(user)
+			if not Path(self.Commons.rootDir(), 'credentials/googlecredentials.json').exists():
+				self.logWarning('No Google credentials found for Google Wavenet, falling back to pico')
+				self._tts = PicoTTS(user)
+			else:
+				from core.voice.model.GoogleTTS import GoogleTTS
+
+				self._tts = GoogleTTS(user)
 		else:
 			from core.voice.model.SnipsTTS import SnipsTTS
 			self._tts = SnipsTTS(user)
