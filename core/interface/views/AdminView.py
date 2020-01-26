@@ -88,6 +88,16 @@ class AdminView(View):
 			return jsonify(success=False)
 
 
+	def updatee(self) -> dict:
+		try:
+			self.__class__.setWaitType('update')
+			self.ProjectAlice.updateProjectAlice()
+			return jsonify(success=True)
+		except Exception as e:
+			self.logError(f'Failed updating Project Alice: {e}')
+			return jsonify(success=False)
+
+
 	def wipeAll(self) -> dict:
 		try:
 			tickets = [

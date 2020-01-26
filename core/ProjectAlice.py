@@ -1,11 +1,17 @@
+from pathlib import Path
+
+import requests
+
 from core.base.SuperManager import SuperManager
+from core.base.model.Version import Version
+from core.commons import constants
 from core.commons.model.Singleton import Singleton
 from core.util.Stopwatch import Stopwatch
 
 
 class ProjectAlice(Singleton):
-
 	NAME = 'ProjectAlice'
+
 
 	def __init__(self, restartHandler: callable):
 		Singleton.__init__(self, self.NAME)
@@ -60,3 +66,39 @@ class ProjectAlice(Singleton):
 
 		self.INSTANCE = None
 		self._restartHandler()
+
+
+	def updateProjectAlice(self):
+		self.logInfo('Checking Project Alice updates')
+		req = requests.get(url='https://api.github.com/repos/project-alice-assistant/ProjectAlice/branches', auth=SuperManager.getInstance().configManager.getGithubAuth())
+		if req.status_code != 200:
+			self.logWarning('Failed checking for updates')
+			return
+
+		userUpdatePref = SuperManager.getInstance().configManager.getAliceConfigByName('aliceUpdateChannel')
+
+		if userUpdatePref == 'master':
+			candidate = 'master'
+		else:
+			candidate = Version.fromString(constants.VERSION)
+			for branch in req.json():
+				repoVersion = Version.fromString(branch['name'])
+				if not repoVersion.isVersionNumber:
+					continue
+
+				releaseType = repoVersion.releaseType
+				if userUpdatePref == 'rc' and releaseType in {'b', 'a'} or userUpdatePref == 'beta' and releaseType == 'a':
+					continue
+
+				if repoVersion > candidate:
+					candidate = repoVersion
+
+		self.logInfo(f'Checking on "{str(candidate)}" update channel')
+		commons = SuperManager.getInstance().commons
+		commons.runSystemCommand(['git', '-C', commons.rootDir(), 'stash'])
+		commons.runSystemCommand(['git', '-C', commons.rootDir(), 'clean', '-df'])
+		commons.runSystemCommand(['git', '-C', commons.rootDir(), 'checkout', str(candidate)])
+		commons.runSystemCommand(['git', '-C', commons.rootDir(), 'pull'])
+
+		# Remove install tickets
+		[file.unlink() for file in Path(commons.rootDir(), 'system/skillInstallTickets').glob('*') if file.is_file()]

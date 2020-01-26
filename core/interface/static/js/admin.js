@@ -97,4 +97,9 @@ $(function () {
 		handleUtilityClick($(this), 'wipeAll', 5000);
 		return false;
 	});
+
+	$('#update').on('click touchstart', function () {
+		handleUtilityClick($(this), 'updatee', 5000);
+		return false;
+	});
 });
