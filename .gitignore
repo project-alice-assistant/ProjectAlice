@@ -144,3 +144,5 @@ trained/assistants/*
 
 var/assistants/*
 !var/assistants/.gitkeep
+
+skills/*
