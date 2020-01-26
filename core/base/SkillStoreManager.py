@@ -40,7 +40,7 @@ class SkillStoreManager(Manager):
 
 
 	def _getSkillUpdateVersion(self, skillName: str) -> Optional[tuple]:
-		versionMapping = self._skillStoreData.get(skillName, dict()).get('versionMapping', dict)
+		versionMapping = self._skillStoreData.get(skillName, dict()).get('versionMapping', dict())
 
 		userUpdatePref = self.ConfigManager.getAliceConfigByName('skillsUpdateChannel')
 		skillUpdateVersion = (Version(), 'master')

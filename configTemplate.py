@@ -160,40 +160,45 @@ settings = {
 	},
 	'activeLanguage': {
 		'defaultValue': 'en',
-		'dataType': 'list',
-		'values': ['en', 'fr', 'de', 'it', 'pt'],
-		'description': 'Project Alice active language'
+		'dataType'    : 'list',
+		'values'      : ['en', 'fr', 'de', 'it', 'pt'],
+		'description' : 'Project Alice active language'
 	},
 	'activeCountryCode': {
 		'defaultValue': 'US',
-		'dataType': 'string',
-		'description': 'Project Alice active country code'
+		'dataType'    : 'string',
+		'description' : 'Project Alice active country code'
+	},
+	'aliceAutoUpdate': {
+		'defaultValue': False,
+		'dataType'    : 'boolean',
+		'description' : 'Whether Alice should auto update, checked every hour'
 	},
 	'skillAutoUpdate': {
 		'defaultValue': False,
-		'dataType': 'boolean',
-		'description': 'Whether skills should auto update, checked every 15 minutes'
+		'dataType'    : 'boolean',
+		'description' : 'Whether skills should auto update, checked every 15 minutes'
 	},
 	'githubUsername': {
 		'defaultValue': '',
 		'dataType'    : 'string',
 		'description' : 'Not mendatory, your github username and token allows you to use Github API much more, such as checking for skills, updating them etc etc'
 	},
-	'githubToken'      : {
+	'githubToken': {
 		'defaultValue': '',
 		'dataType'    : 'password',
 		'description' : 'Not mendatory, your github username and token allows you to use Github API much more, such as checking for skills, updating them etc etc'
 	},
-	'updateChannel'    : {
+	'aliceUpdateChannel': {
 		'defaultValue': 'master',
 		'dataType'    : 'list',
-		'values'      : {'Release': 'master', 'Release candidate': 'rc', 'Beta': 'beta', 'Alpha': 'alpha'},
+		'values'      : {'Stable': 'master', 'Release candidate': 'rc', 'Beta': 'beta', 'Alpha': 'alpha'},
 		'description' : 'Choose your update frequency. Release is the only supposedly safe option! But if you like to live on the edge, alpha will allow you to preview what\'s coming next!'
 	},
 	'skillsUpdateChannel': {
 		'defaultValue': 'master',
 		'dataType'    : 'list',
-		'values'      : {'Release': 'master', 'Release candidate': 'rc', 'Beta': 'beta', 'Alpha': 'alpha'},
+		'values'      : {'Stable': 'master', 'Release candidate': 'rc', 'Beta': 'beta', 'Alpha': 'alpha'},
 		'description' : 'Choose your skill update frequency. Release is the only supposedly safe option! But if you like to live on the edge, alpha will allow you to preview what\'s coming next!',
 		'onUpdate'    : 'refreshStoreData'
 	},

@@ -165,7 +165,21 @@ def ApiAuthenticated(func: Callable):
 	return wrapper
 
 
-def IfSetting(func: Callable = None, settingName: str = None, settingValue: Any = None, inverted: bool = False, skillSetting: bool = True):
+def IfSetting(func: Callable = None, settingName: str = None, settingValue: Any = None, inverted: bool = False, skillName: str = None):
+	"""
+	Checks wheter a setting is equal to the given value before executing the wrapped method
+	If the setting is not equal to the given value, the wrapped method is not called
+	By providing a skill name the wrapper searches for a skill setting, otherwise for a system setting
+	By setting inverted to True one can check for "not equal to", in other words, if the settingName is not equal to the settingValue
+	:param func:
+	:param settingName:
+	:param settingValue:
+	:param inverted:
+	:param skillName:
+	:return:
+	"""
+
+
 	def argumentWrapper(func: Callable):
 		@functools.wraps(func)
 		def settingDecorator(*args, **kwargs):
@@ -174,7 +188,7 @@ def IfSetting(func: Callable = None, settingName: str = None, settingValue: Any 
 				return None
 
 			configManager = SuperManager.getInstance().configManager
-			value = configManager.getSkillConfigByName(settingName) if skillSetting else configManager.getAliceConfigByName(settingName)
+			value = configManager.getSkillConfigByName(skillName, settingName) if skillName else configManager.getAliceConfigByName(settingName)
 
 			if value is None:
 				return None

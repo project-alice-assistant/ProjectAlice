@@ -246,9 +246,9 @@ network={
 		updateChannel = initConfs['updateChannel']
 		if updateChannel not in {'master', 'rc', 'beta', 'alpha'}:
 			self.logWarning(f'{updateChannel} is no supported updateChannel, only master, rc, beta and alpha are supported. Reseting to master')
-			confs['updateChannel'] = 'master'
+			confs['aliceUpdateChannel'] = 'master'
 		else:
-			confs['updateChannel'] = updateChannel
+			confs['aliceUpdateChannel'] = updateChannel
 		confs['mqtt_username'] = str(initConfs['mqttUser'])
 		confs['mqttPassword'] = str(initConfs['mqttPassword'])
 		confs['mqttTLSFile'] = initConfs['mqttTLSFile']

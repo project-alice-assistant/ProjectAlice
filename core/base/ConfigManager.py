@@ -40,7 +40,6 @@ class ConfigManager(Manager):
 			'snipsConsolePassword'
 		]
 
-		self._updateSource = ''
 		self._aliceConfigurations: typing.Dict[str, typing.Any] = self._loadCheckAndUpdateAliceConfigFile()
 		self._aliceTemplateConfigurations: typing.Dict[str, dict] = configTemplate.settings
 		self._snipsConfigurations = self.loadSnipsConfigurations()
@@ -508,6 +507,12 @@ class ConfigManager(Manager):
 
 	def refreshStoreData(self):
 		self.SkillStoreManager.refreshStoreData()
+
+
+	def getGithubAuth(self) -> tuple:
+		username = self.getAliceConfigByName('githubUsername')
+		token = self.getAliceConfigByName('githubToken')
+		return (username, token) if (username and token) else None
 
 
 	@property

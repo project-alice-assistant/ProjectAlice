@@ -29,9 +29,9 @@
 		<div class="pageTitle">
 			{% block pageTitle %}{% endblock %}
 		</div>
-		{% if aliceSettings['updateChannel'] != 'master' %}
+		{% if aliceSettings['aliceUpdateChannel'] != 'master' %}
 			<div class="updateChannelMarker">
-				{{ aliceSettings['updateChannel'] }}
+				{{ aliceSettings['aliceUpdateChannel'] }}
 			</div>
 		{% endif %}
 	</header>
