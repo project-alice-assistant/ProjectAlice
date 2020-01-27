@@ -1,3 +1,7 @@
+import json
+from pathlib import Path
+
+import requests
 from flask import jsonify, request
 from flask_classful import route
 
@@ -95,6 +99,28 @@ class SkillsApi(Api):
 			self.SkillManager.reloadSkill(skillName)
 		except Exception as e:
 			self.logWarning(f'Failed reloading skill: {e}', printStack=True)
+			return jsonify(success=False)
+
+		return jsonify(success=True)
+
+
+	@ApiAuthenticated
+	def put(self, skillName: str):
+		if not self.SkillStoreManager.skillExists(skillName):
+			return jsonify(success=False, reason='skill not found')
+		elif self.SkillManager.getSkillInstance(skillName, True) is not None:
+			return jsonify(success=False, reason='skill already installed')
+
+		try:
+			req = requests.get(f'https://raw.githubusercontent.com/project-alice-assistant/skill_{skillName}/{self.SkillStoreManager.getSkillUpdateTag(skillName)}/{skillName}.install')
+			remoteFile = req.json()
+			if not remoteFile:
+				return jsonify(success=False, reason='skill not found')
+
+			skillFile = Path(self.Commons.rootDir(), f'system/skillInstallTickets/{skillName}.install')
+			skillFile.write_text(json.dumps(remoteFile))
+		except Exception as e:
+			self.logWarning(f'Failed installing skill: {e}', printStack=True)
 			return jsonify(success=False)
 
 		return jsonify(success=True)

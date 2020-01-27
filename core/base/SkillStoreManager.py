@@ -76,5 +76,9 @@ class SkillStoreManager(Manager):
 		return self._getSkillUpdateVersion(skillName)[0]
 
 
-	def getSkillData(self, skillName: str, releaseType: str) -> dict:
+	def getSkillData(self, skillName: str) -> dict:
 		return self._skillStoreData.get(skillName, dict())
+
+
+	def skillExists(self, skillName: str) -> bool:
+		return skillName in self._skillStoreData

@@ -3,10 +3,9 @@ import json
 import sqlite3
 from pathlib import Path
 from textwrap import dedent
-from typing import Dict, Optional
+from typing import Dict, Match, Optional
 
 import re
-from re import Match
 
 from core.base.model.ProjectAliceObject import ProjectAliceObject
 from core.base.model.widgetSizes import WidgetSizes
@@ -152,7 +151,7 @@ class Widget(ProjectAliceObject):
 
 
 	@property
-	def size(self) -> str:
+	def size(self) -> WidgetSizes:
 		return self._size
 
 
