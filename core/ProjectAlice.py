@@ -26,7 +26,7 @@ class ProjectAlice(Singleton):
 			self._superManager.onStart()
 
 			if self._superManager.configManager.getAliceConfigByName('useSLC'):
-				self._superManager.commons.runRootSystemCommand(['systemctl', 'start', 'snipsledcontrol'])
+				self._superManager.commons.runRootSystemCommand(['systemctl', 'start', 'hermesledcontrol'])
 
 			self._superManager.onBooted()
 		self.logInfo(f'- Started Project Alice in {stopWatch} seconds')
@@ -62,7 +62,7 @@ class ProjectAlice(Singleton):
 		self.logInfo('Shutting down Project Alice')
 		self._superManager.onStop()
 		if self._superManager.configManager.getAliceConfigByName('useSLC'):
-			self._superManager.commons.runRootSystemCommand(['systemctl', 'stop', 'snipsledcontrol'])
+			self._superManager.commons.runRootSystemCommand(['systemctl', 'stop', 'hermesledcontrol'])
 
 		self.INSTANCE = None
 		self._restartHandler()

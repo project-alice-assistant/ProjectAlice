@@ -78,8 +78,8 @@ micSampleRate: 44100
 micChannels: 1
 
 # System
-# Whether to install Snips Led Control or not. SLC is the best way to manage your device leds if you have any
-useSLC: yes
+# Whether to install Hermes Led Control or not. HLC is the best way to manage your device leds if you have any
+useHLC: yes
 
 stayCompletlyOffline: no
 keepASROffline: yes
