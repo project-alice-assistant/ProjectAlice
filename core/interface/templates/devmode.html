@@ -24,24 +24,27 @@
 					<label class="configLabel" for="skillname">{{ langData.skillName }}</label>
 					<div class="configInput">
 						<input type="text" size="50" name="skillname" value="" id="skillname" required>
+						<i class="fas fa-check" id="skillNameOk" aria-hidden="true" style="display: none;"></i>
+						<i class="fas fa-times" id="skillNameKo" aria-hidden="true"></i>
 					</div>
 				</div>
 				<div class="configLine">
 					<label class="configLabel" for="skilldesc">{{ langData.skillDesc }}</label>
 					<div class="configInput">
 						<input type="text" size="50" name="skilldesc" value="" id="skilldesc" required>
+						<i class="fas fa-check" id="skillDescOk" aria-hidden="true" style="display: none;"></i>
+						<i class="fas fa-times" id="skillDescKo" aria-hidden="true"></i>
 					</div>
 				</div>
 				<div class="configLine">
 					<label class="configLabel">{{ langData.skillLanguage }}</label>
 					<div class="configInput">
-						<input type="checkbox" name="lang[]" value="en" id="en" checked="checked"
-							   disabled="disabled"><label for="en">{{ langData.english }}</label>
-						<input type="hidden" name="lang[]" value="on"><br>
-						<input type="checkbox" name="lang[]" value="fr" id="fr"><label
-							for="fr">{{ langData.french }}</label><br>
-						<input type="checkbox" name="lang[]" value="de" id="de"><label
-							for="de">{{ langData.german }}</label>
+						<input type="checkbox" name="lang" value="en" id="en" checked="checked" disabled="disabled">
+						<label for="en">{{ langData.english }}</label><br>
+						<input type="checkbox" name="lang" value="fr" id="fr">
+						<label for="fr">{{ langData.french }}</label><br>
+						<input type="checkbox" name="lang" value="de" id="de">
+						<label for="de">{{ langData.german }}</label>
 					</div>
 				</div>
 				<div class="configLine">
@@ -61,19 +64,19 @@
 				<div class="configLine">
 					<label class="configLabel">{{ langData.conditions }}</label>
 					<div class="configInput">
-						<input type="checkbox" name="conditionOnline" id="conditionOnline"><label
-							for="conditionOnline">{{ langData.conditionOnline }}</label><br><br>
-						<input type="checkbox" name="conditionASRArbitrary" id="conditionASRArbitrary"><label
-							for="conditionASRArbitrary">{{ langData.conditionASRArbitrary }}</label><br><br>
+						<input type="checkbox" name="conditionOnline" id="conditionOnline">
+						<label for="conditionOnline">{{ langData.conditionOnline }}</label><br><br>
+						<input type="checkbox" name="conditionASRArbitrary" id="conditionASRArbitrary">
+						<label for="conditionASRArbitrary">{{ langData.conditionASRArbitrary }}</label><br><br>
 						<input type="text" size="50" name="conditionSkill" id="conditionSkill"
-							   placeholder="{{ langData.commaSeparatedExplanation }}"><label
-							for="conditionSkill">{{ langData.conditionSkill }}</label><br><br>
+							   placeholder="{{ langData.commaSeparatedExplanation }}">
+						<label for="conditionSkill">{{ langData.conditionSkill }}</label><br><br>
 						<input type="text" size="50" name="conditionNotSkill" id="conditionNotSkill"
-							   placeholder="{{ langData.commaSeparatedExplanation }}"><label
-							for="conditionNotSkill">{{ langData.conditionNotSkill }}</label><br><br>
+							   placeholder="{{ langData.commaSeparatedExplanation }}">
+						<label for="conditionNotSkill">{{ langData.conditionNotSkill }}</label><br><br>
 						<input type="text" size="50" name="conditionActiveManager" id="conditionActiveManager"
-							   placeholder="{{ langData.commaSeparatedExplanation }}"><label
-							for="conditionActiveManager">{{ langData.conditionActiveManager }}</label>
+							   placeholder="{{ langData.commaSeparatedExplanation }}">
+						<label for="conditionActiveManager">{{ langData.conditionActiveManager }}</label>
 					</div>
 				</div>
 				<div class="configLine">
@@ -82,6 +85,10 @@
 						<input type="text" size="50" name="widgets" value="" id="widgets"
 							   placeholder="{{ langData.commaSeparatedExplanation }}">
 					</div>
+				</div>
+				<div class="configLine">
+					<input type="submit" id="createSkillButton" value="{{ langData.createSkill }}" style="display: none;">
+					<input type="submit" id="uploadSkillButton" value="{{ langData.uploadSkillToGithub }}" style="display: none;">
 				</div>
 			</div>
 			<div id="EditSkill" class="configBox">
