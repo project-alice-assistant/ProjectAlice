@@ -685,3 +685,8 @@ class SkillManager(Manager):
 			ret[skill.name] = (skill.scenarioNodeName, skill.scenarioNodeVersion, Path(skill.getCurrentDir(), 'scenarioNodes'))
 
 		return ret
+
+
+	def createNewSkill(self, skillDefinition: dict) -> bool:
+		print(skillDefinition)
+		return True
