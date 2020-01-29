@@ -688,5 +688,65 @@ class SkillManager(Manager):
 
 
 	def createNewSkill(self, skillDefinition: dict) -> bool:
-		print(skillDefinition)
+		self.logInfo(f'Creating new skill "{skillDefinition["name"]}"')
+
+		rootDir = Path(self.Commons.rootDir(), '/skills/')
+		skillTemplateDir = Path(rootDir, '/skill_DefaultTemplate/')
+
+		if skillTemplateDir.exists():
+			self.Commons.runSystemCommand(['git', '-C', str(rootDir), 'stash'])
+			self.Commons.runSystemCommand(['git', '-C', str(rootDir), 'clear', '-dfx'])
+			self.Commons.runSystemCommand(['git', '-C', str(rootDir), 'pull'])
+		else:
+			self.Commons.runSystemCommand(['git', '-C', str(rootDir), 'clone', 'https://github.com/project-alice-assistant/skill_DefaultTemplate.git'])
+
+		skillName = skillDefinition['name'][0].upper() + skillDefinition['name'][1:]
+		skillDir = Path(rootDir, skillName)
+
+		skillTemplateDir.rename(skillDir)
+
+		installFile = Path(skillDir, f'{skillDefinition["name"]}.install')
+		Path(skillDir / 'DefaultTemplate.install').rename(installFile)
+		supportedLanguages = [
+			'en'
+		]
+		if skillDefinition['fr'] == 'yes':
+			supportedLanguages.append('fr')
+		if skillDefinition['de'] == 'yes':
+			supportedLanguages.append('de')
+
+		conditions = {
+			'lang': supportedLanguages
+		}
+
+		if skillDefinition['conditionOnline']:
+			conditions['online'] = True
+
+		if skillDefinition['conditionASRArbitrary']:
+			conditions['asrArbitraryCapture'] = True
+
+		if skillDefinition['conditionSkill']:
+			conditions['skill'] = [skill.strip() for skill in skillDefinition['conditionSkill'].split(',')]
+
+		if skillDefinition['conditionSkill']:
+			conditions['notSkill'] = [skill.strip() for skill in skillDefinition['conditionNotSkill'].split(',')]
+
+		if skillDefinition['conditionActiveManager']:
+			conditions['activeManager'] = [manager.strip() for manager in skillDefinition['conditionActiveManager'].split(',')]
+
+		installContent = {
+			'name'              : skillName,
+			'version'           : '0.0.1',
+			'author'            : self.ConfigManager.getAliceConfigByName('githubUsername'),
+			'maintainers'       : [],
+			'desc'              : skillDefinition['description'].capitalize(),
+			'aliceMinVersion'   : constants.VERSION,
+			'systemRequirements': [req.strip() for req in skillDefinition['sysreq'].split(',')],
+			'pipRequirements'   : [req.strip() for req in skillDefinition['pipreq'].split(',')],
+			'conditions'        : conditions
+		}
+
+		with installFile.open('w') as f:
+			f.write(json.dumps(installContent, indent=4))
+
 		return True

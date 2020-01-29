@@ -27,10 +27,11 @@ class DevModeView(View):
 	def put(self, skillName: str):
 		try:
 			newSkill = {
+				'name'                  : skillName,
 				'description'           : request.form.get('description', 'Missing description'),
 				'fr'                    : request.form.get('fr', False),
 				'de'                    : request.form.get('de', False),
-				'pipreq'                : request.form.get('pireq', ''),
+				'pipreq'                : request.form.get('pipreq', ''),
 				'sysreq'                : request.form.get('sysreq', ''),
 				'conditionOnline'       : request.form.get('sysreq', False),
 				'conditionASRArbitrary' : request.form.get('conditionASRArbitrary', False),
@@ -38,7 +39,10 @@ class DevModeView(View):
 				'conditionNotSkill'     : request.form.get('conditionNotSkill', ''),
 				'conditionActiveManager': request.form.get('conditionActiveManager', '')
 			}
-			return jsonify(success=True) if self.SkillManager.createNewSkill(newSkill) else jsonify(success=False)
+			if not self.SkillManager.createNewSkill(newSkill):
+				raise Exception('Unhandled skill creation exception')
+
+			return jsonify(success=True)
 
 		except Exception as e:
 			self.logError(f'Something went wrong creating a new skill: {e}')
