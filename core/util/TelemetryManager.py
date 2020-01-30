@@ -103,7 +103,9 @@ class TelemetryManager(Manager):
 				self.broadcast(method=message, exceptions=[self.name], propagateToSkills=True, service=service)
 				break
 
-			#TODO check if Telemetry skill available
+			if not self.SkillManager.getSkillInstance('Telemetry'):
+				continue
+
 			threshold = float(self.ConfigManager.getSkillConfigByName('Telemetry', settings[1]) if isinstance(settings[1], str) else settings[1])
 			value = float(value)
 			if settings[0] == 'upperThreshold' and value > threshold or \
