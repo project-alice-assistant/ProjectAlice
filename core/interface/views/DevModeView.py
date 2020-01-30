@@ -31,13 +31,14 @@ class DevModeView(View):
 				'description'           : request.form.get('description', 'Missing description'),
 				'fr'                    : request.form.get('fr', False),
 				'de'                    : request.form.get('de', False),
-				'pipreq'                : request.form.get('pipreq', ''),
-				'sysreq'                : request.form.get('sysreq', ''),
+				'pipreq'                : request.form.get('pipreq', list()),
+				'sysreq'                : request.form.get('sysreq', list()),
 				'conditionOnline'       : request.form.get('sysreq', False),
 				'conditionASRArbitrary' : request.form.get('conditionASRArbitrary', False),
-				'conditionSkill'        : request.form.get('conditionSkill', ''),
-				'conditionNotSkill'     : request.form.get('conditionNotSkill', ''),
-				'conditionActiveManager': request.form.get('conditionActiveManager', '')
+				'conditionSkill'        : request.form.get('conditionSkill', list()),
+				'conditionNotSkill'     : request.form.get('conditionNotSkill', list()),
+				'conditionActiveManager': request.form.get('conditionActiveManager', list()),
+				'widgets'               : request.form.get('widgets', list())
 			}
 			if not self.SkillManager.createNewSkill(newSkill):
 				raise Exception('Unhandled skill creation exception')

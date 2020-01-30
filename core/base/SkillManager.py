@@ -656,7 +656,6 @@ class SkillManager(Manager):
 			del self._deactivatedSkills[skillName]
 
 		shutil.rmtree(Path(self.Commons.rootDir(), 'skills', skillName))
-		# TODO Samkilla cleaning
 		self.SnipsConsoleManager.doDownload()
 
 
@@ -688,65 +687,157 @@ class SkillManager(Manager):
 
 
 	def createNewSkill(self, skillDefinition: dict) -> bool:
-		self.logInfo(f'Creating new skill "{skillDefinition["name"]}"')
+		try:
+			self.logInfo(f'Creating new skill "{skillDefinition["name"]}"')
 
-		rootDir = Path(self.Commons.rootDir(), '/skills/')
-		skillTemplateDir = Path(rootDir, '/skill_DefaultTemplate/')
+			rootDir = Path(self.Commons.rootDir()) / 'skills'
+			skillTemplateDir = rootDir / 'skill_DefaultTemplate'
 
-		if skillTemplateDir.exists():
-			self.Commons.runSystemCommand(['git', '-C', str(rootDir), 'stash'])
-			self.Commons.runSystemCommand(['git', '-C', str(rootDir), 'clear', '-dfx'])
-			self.Commons.runSystemCommand(['git', '-C', str(rootDir), 'pull'])
-		else:
-			self.Commons.runSystemCommand(['git', '-C', str(rootDir), 'clone', 'https://github.com/project-alice-assistant/skill_DefaultTemplate.git'])
+			if skillTemplateDir.exists():
+				self.Commons.runSystemCommand(['git', '-C', str(rootDir), 'stash'])
+				self.Commons.runSystemCommand(['git', '-C', str(rootDir), 'clear', '-dfx'])
+				self.Commons.runSystemCommand(['git', '-C', str(rootDir), 'pull'])
+			else:
+				self.Commons.runSystemCommand(['git', '-C', str(rootDir), 'clone', 'https://github.com/project-alice-assistant/skill_DefaultTemplate.git'])
 
-		skillName = skillDefinition['name'][0].upper() + skillDefinition['name'][1:]
-		skillDir = Path(rootDir, skillName)
+			skillName = skillDefinition['name'][0].upper() + skillDefinition['name'][1:]
+			skillDir = rootDir / skillName
 
-		skillTemplateDir.rename(skillDir)
+			skillTemplateDir.rename(skillDir)
 
-		installFile = Path(skillDir, f'{skillDefinition["name"]}.install')
-		Path(skillDir / 'DefaultTemplate.install').rename(installFile)
-		supportedLanguages = [
-			'en'
-		]
-		if skillDefinition['fr'] == 'yes':
-			supportedLanguages.append('fr')
-		if skillDefinition['de'] == 'yes':
-			supportedLanguages.append('de')
+			installFile = skillDir / f'{skillDefinition["name"]}.install'
+			Path(skillDir, 'DefaultTemplate.install').rename(installFile)
+			supportedLanguages = [
+				'en'
+			]
+			if skillDefinition['fr'] == 'yes':
+				supportedLanguages.append('fr')
+			if skillDefinition['de'] == 'yes':
+				supportedLanguages.append('de')
 
-		conditions = {
-			'lang': supportedLanguages
-		}
+			conditions = {
+				'lang': supportedLanguages
+			}
 
-		if skillDefinition['conditionOnline']:
-			conditions['online'] = True
+			readmeConditions = ''
+			readmeReqs = ''
+			readmeWidgets = ''
 
-		if skillDefinition['conditionASRArbitrary']:
-			conditions['asrArbitraryCapture'] = True
+			if skillDefinition['conditionOnline']:
+				conditions['online'] = True
+				readmeConditions += '    Online\n'
 
-		if skillDefinition['conditionSkill']:
-			conditions['skill'] = [skill.strip() for skill in skillDefinition['conditionSkill'].split(',')]
+			if skillDefinition['conditionASRArbitrary']:
+				conditions['asrArbitraryCapture'] = True
+				readmeConditions += '    Arbitrary capture\n'
 
-		if skillDefinition['conditionSkill']:
-			conditions['notSkill'] = [skill.strip() for skill in skillDefinition['conditionNotSkill'].split(',')]
+			if skillDefinition['conditionSkill']:
+				conditions['skill'] = [skill.strip() for skill in skillDefinition['conditionSkill'].split(',')]
+				readmeConditions += f'    Required skills: {str(conditions["skill"])}\n'
 
-		if skillDefinition['conditionActiveManager']:
-			conditions['activeManager'] = [manager.strip() for manager in skillDefinition['conditionActiveManager'].split(',')]
+			if skillDefinition['conditionNotSkill']:
+				conditions['notSkill'] = [skill.strip() for skill in skillDefinition['conditionNotSkill'].split(',')]
+				readmeConditions += f'    Conflicting skills: {str(conditions["notSkill"])}\n'
 
-		installContent = {
-			'name'              : skillName,
-			'version'           : '0.0.1',
-			'author'            : self.ConfigManager.getAliceConfigByName('githubUsername'),
-			'maintainers'       : [],
-			'desc'              : skillDefinition['description'].capitalize(),
-			'aliceMinVersion'   : constants.VERSION,
-			'systemRequirements': [req.strip() for req in skillDefinition['sysreq'].split(',')],
-			'pipRequirements'   : [req.strip() for req in skillDefinition['pipreq'].split(',')],
-			'conditions'        : conditions
-		}
+			if skillDefinition['conditionActiveManager']:
+				conditions['activeManager'] = [manager.strip() for manager in skillDefinition['conditionActiveManager'].split(',')]
+				readmeConditions += f'    Active managers: {str(conditions["activeManager"])}\n'
 
-		with installFile.open('w') as f:
-			f.write(json.dumps(installContent, indent=4))
+			installContent = {
+				'name'              : skillName,
+				'version'           : '0.0.1',
+				'author'            : self.ConfigManager.getAliceConfigByName('githubUsername'),
+				'maintainers'       : [],
+				'desc'              : skillDefinition['description'].capitalize(),
+				'aliceMinVersion'   : constants.VERSION,
+				'systemRequirements': [req.strip() for req in skillDefinition['sysreq'].split(',')],
+				'pipRequirements'   : [req.strip() for req in skillDefinition['pipreq'].split(',')],
+				'conditions'        : conditions
+			}
 
-		return True
+			readmeReqs += f'    PIP: {str(installContent["pipRequirements"])}\n'
+			readmeReqs += f'    System: {str(installContent["systemRequirements"])}\n'
+
+			# Install file
+			with installFile.open('w') as fp:
+				fp.write(json.dumps(installContent, indent=4))
+
+			# Dialog templates and talks
+			dialogTemplateTemplate = skillDir / 'dialogTemplate/default.json'
+			with dialogTemplateTemplate.open() as fp:
+				dialogTemplate = json.load(fp)
+				dialogTemplate['skill'] = skillName
+				dialogTemplate['description'] = skillDefinition['description'].capitalize()
+
+			for lang in supportedLanguages:
+				with Path(skillDir, f'dialogTemplate/{lang}.json').open('w+') as fp:
+					fp.write(json.dumps(dialogTemplate, indent=4))
+
+				with Path(skillDir, f'talks/{lang}.json').open('w+') as fp:
+					fp.write(json.dumps(dict()))
+
+			dialogTemplateTemplate.unlink()
+
+			# Widgets
+			if skillDefinition['widgets']:
+				widgetRootDir = skillDir / 'widgets'
+				css = widgetRootDir / 'css/widget.css'
+				js = widgetRootDir / 'js/widget.js'
+				lang = widgetRootDir / 'lang/widget.json'
+				html = widgetRootDir / 'templates/widget.html'
+				python = widgetRootDir / 'widget.py'
+
+				for widget in skillDefinition['widgets'].split(','):
+					widgetName = widget.strip()
+					widgetName = widgetName[0].upper() + widgetName[1:]
+					readmeWidgets += f'    {widgetName}\n'
+
+					with css.open() as fp:
+						content = fp.read().replace('%widgetname%', widgetName)
+
+					with Path(widgetRootDir, f'css/{widgetName}.css').open('w+') as fp:
+						fp.write(content)
+
+					shutil.copy(str(js), str(js).replace('widget.js', f'{widgetName}.js'))
+					shutil.copy(str(lang), str(lang).replace('widget.json', f'{widgetName}.json'))
+
+					with html.open() as fp:
+						content = fp.read().replace('%widgetname%', widgetName)
+
+					with Path(widgetRootDir, f'templates/{widgetName}.html').open('w+') as fp:
+						fp.write(content)
+
+					with python.open() as fp:
+						content = fp.read().replace('Template(Widget)', f'{widgetName}(Widget)')
+
+					with Path(widgetRootDir, f'{widgetName}.py').open('w+') as fp:
+						fp.write(content)
+
+				css.unlink()
+				js.unlink()
+				lang.unlink()
+				html.unlink()
+				python.unlink()
+
+			else:
+				shutil.rmtree(str(Path(skillDir, 'widgets')))
+
+			# Readme file
+			# For some reason r+ mode appends at the end instead of overwritting
+			with Path(skillDir, 'README.md').open() as fp:
+				content = fp.read().replace('%skillname%', skillName) \
+					.replace('%author%', self.ConfigManager.getAliceConfigByName('githubUsername')) \
+					.replace('%description%', skillDefinition['description'].capitalize()) \
+					.replace('%conditions%', readmeConditions) \
+					.replace('%requirements%', readmeReqs) \
+					.replace('%widgets%', readmeWidgets)
+
+			with Path(skillDir, 'README.md').open('w') as fp:
+				fp.write(content)
+
+			self.logInfo(f'Created "{skillDefinition["name"]}" skill')
+
+			return True
+		except Exception as e:
+			self.logError(f'Error creating new skill: {e}')
+			return False

@@ -92,7 +92,8 @@ $(function () {
 				'conditionASRArbitrary': ($('#conditionASRArbitrary').is(':checked')) ? 'yes' : 'no',
 				'conditionSkill': $('#conditionSkill').val(),
 				'conditionNotSkill': $('#conditionNotSkill').val(),
-				'conditionActiveManager': $('#conditionActiveManager').val()
+				'conditionActiveManager': $('#conditionActiveManager').val(),
+				'widgets': $('#widgets').val()
 			}
 		}).done(function (status) {
 		});

@@ -1,22 +1,27 @@
 from pathlib import Path
 
-import requests
 import shutil
 
-from core.ProjectAliceExceptions import GithubNotFound, GithubRateLimit, GithubTokenFailed
 from core.base.SuperManager import SuperManager
 from core.base.model.ProjectAliceObject import ProjectAliceObject
 
 
 class GithubCloner(ProjectAliceObject):
-
 	NAME = 'GithubCloner'
+
 
 	def __init__(self, baseUrl: str, path: Path, dest: Path):
 		super().__init__(logDepth=3)
 		self._baseUrl = baseUrl
 		self._path = path
 		self._dest = dest
+
+
+	@classmethod
+	def getGithubAuth(cls) -> tuple:
+		username = SuperManager.getInstance().configManager.getAliceConfigByName('githubUsername')
+		token = SuperManager.getInstance().configManager.getAliceConfigByName('githubToken')
+		return (username, token) if (username and token) else None
 
 
 	def clone(self, skillName: str) -> bool:
