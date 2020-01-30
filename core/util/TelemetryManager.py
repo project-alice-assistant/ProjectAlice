@@ -97,13 +97,14 @@ class TelemetryManager(Manager):
 			values={'type': ttype.value, 'value': value, 'service': service, 'siteId': siteId, 'timestamp': round(timestamp)}
 		)
 
+		telemetrySkill = self.SkillManager.getSkillInstance('Telemetry')
 		messages = self.TELEMETRY_MAPPINGS.get(ttype, dict())
 		for message, settings in messages.items():
 			if settings is None:
 				self.broadcast(method=message, exceptions=[self.name], propagateToSkills=True, service=service)
 				break
 
-			if not self.SkillManager.getSkillInstance('Telemetry'):
+			if not telemetrySkill:
 				continue
 
 			threshold = float(self.ConfigManager.getSkillConfigByName('Telemetry', settings[1]) if isinstance(settings[1], str) else settings[1])
