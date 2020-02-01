@@ -9,7 +9,7 @@ class NluManager(Manager):
 	def __init__(self):
 		super().__init__()
 		self._nluEngine = None
-		self._pathToCache = Path(self.Commons.rootDir(), 'var/cache/nlu')
+		self._pathToCache = Path(self.Commons.rootDir(), 'var/cache/nlu/checksums.json')
 
 
 	def onStart(self):
@@ -58,5 +58,6 @@ class NluManager(Manager):
 			for file in pathToResources.glob('*.json'):
 				cached[skillName][file.stem] = self.Commons.fileChecksum(file)
 
-		with Path(self._pathToCache, 'checksums.json').open('w') as fp:
-			fp.write(json.dumps(cached, ident=4))
+		print(cached)
+		with self._pathToCache.open('w') as fp:
+			fp.write(json.dumps(cached, indent=4, sort_keys=True))
