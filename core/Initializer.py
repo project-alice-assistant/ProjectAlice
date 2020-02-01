@@ -403,21 +403,18 @@ network={
 
 		req = requests.get('https://api.github.com/repos/project-alice-assistant/ProjectAlice/branches')
 		result = req.json()
-		if not result:
-			return updateSource
 
-		userUpdatePref = definedSource
 		versions = list()
 		for branch in result:
 			repoVersion = Version.fromString(branch['name'])
-			if not repoVersion.isVersionNumber:
-				continue
 
 			releaseType = repoVersion.releaseType
-			if userUpdatePref == 'alpha' and releaseType in {'master', 'rc', 'b', 'a'} \
-				or userUpdatePref == 'beta' and releaseType in {'master', 'rc', 'b'} \
-				or userUpdatePref == 'rc' and releaseType in {'master', 'rc'}:
-				versions.append(repoVersion)
+			if not repoVersion.isVersionNumber \
+					or definedSource == 'rc' and releaseType in {'b', 'a'} \
+					or definedSource == 'beta' and releaseType == 'a':
+				continue
+
+			versions.append(repoVersion)
 
 		if versions:
 			versions.sort(reverse=True)
@@ -428,4 +425,5 @@ network={
 
 	@staticmethod
 	def newConfs():
+		#TODO: this should not be done as a dictionary comprehension since it is super hard to read
 		return {configName: configData['values'] if 'dataType' in configData and configData['dataType'] == 'list' else configData['defaultValue'] if 'defaultValue' in configData else configData for configName, configData in configTemplate.settings.items()}
