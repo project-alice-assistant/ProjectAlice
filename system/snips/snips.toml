@@ -4,6 +4,7 @@
 # audio = ["+@mqtt"]
 # assistant = "/usr/share/snips/assistant"
 # user_dir = "/var/lib/snips"
+# verbose = "info"
 
 ## MQTT authentication
 # mqtt_username = ""
@@ -29,7 +30,6 @@
 
 [snips-asr-google]
 # credentials = "/usr/share/snips/googlecredentials.json"
-# audio = ["+@mqtt"]
 
 [snips-audio-server]
 # frame = 256
@@ -37,6 +37,13 @@
 # mike = "Built-in Microphone"
 # disable_playback = false
 # disable_capture = false
+# alsa-capture = "ALSA"
+# alsa-playback = "ALSA"
+# hijack = false
+# mike = "Built-in"
+# no-mike = false
+# portaudio_capture = "ALSA"
+# portaudio_playback = "ALSA"
 
 [snips-dialogue]
 # resources = "/usr/share/snips/dialogue"
@@ -44,6 +51,12 @@
 # lambda_timeout = 5
 # retry_count = 3
 # sound_feedback_disabled_default = false
+# default_site_id = "default"
+# hotword_coalescing_duration = 1
+# site_group = ""
+# sites_in_same_group_default = false
+# sound_feedback_disabled_default = false
+
 
 [snips-hotword]
 # model = "/usr/share/snips/hotword"
@@ -59,6 +72,9 @@
 #keep_nfirst = 3
 
 [snips-nlu]
+#model = "/usr/share/snips/nlu"
+#num_intent_alternatives = 2
+#num_slot_alternatives = 2
 
 [snips-tts]
 ## Choose one tts provider (defaults to picotts)
