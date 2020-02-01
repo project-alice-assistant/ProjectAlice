@@ -67,6 +67,8 @@ class MqttManager(Manager):
 
 		self._mqttClient.message_callback_add(constants.TOPIC_SESSION_QUEUED, self.onSnipsSessionQueued)
 
+		self._mqttClient.message_callback_add(constants.TOPIC_NLU_QUERY, self.onTopicNluQuery)
+
 		self.connect()
 
 
@@ -88,7 +90,8 @@ class MqttManager(Manager):
 			(constants.TOPIC_ASR_START_LISTENING, 0),
 			(constants.TOPIC_TTS_SAY, 0),
 			(constants.TOPIC_TEXT_CAPTURED, 0),
-			(constants.TOPIC_HOTWORD_TOGGLE_ON, 0)
+			(constants.TOPIC_HOTWORD_TOGGLE_ON, 0),
+			(constants.TOPIC_NLU_QUERY, 0)
 		]
 
 		for username in self.UserManager.getAllUserNames():
@@ -294,6 +297,15 @@ class MqttManager(Manager):
 
 		if session:
 			self.broadcast(method=constants.EVENT_SESSION_QUEUED, exceptions=[self.name], propagateToSkills=True, session=session)
+
+
+	# noinspection PyUnusedLocal
+	def onTopicNluQuery(self, client, data, msg: mqtt.MQTTMessage):
+		sessionId = self.Commons.parseSessionId(msg)
+		session = self.DialogSessionManager.addSession(sessionId=sessionId, message=msg)
+
+		if session:
+			self.broadcast(method=constants.EVENT_NLU_QUERY, exceptions=[self.name], propagateToSkills=True, session=session)
 
 
 	# noinspection PyUnusedLocal

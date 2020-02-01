@@ -110,6 +110,10 @@ class ProjectAliceObject(Logger):
 		pass
 
 
+	def onNluQuery(self, session):
+		pass
+
+
 	def onIntentParsed(self, session):
 		pass
 
