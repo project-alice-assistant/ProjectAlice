@@ -5,14 +5,22 @@ $(function () {
 	let $defaultTab = $('#devmodeTabsContainer ul li:first');
 	$defaultTab.addClass('activeTab');
 
-	function toggleCreateAndUploadButtons() {
+	function toggleCreateButton() {
 		if ($('#skillNameOk').is(':visible') && $('#skillDescOk').is(':visible')) {
 			$('#createSkillButton').show();
-			$('#uploadSkillButton').show();
 		} else {
 			$('#createSkillButton').hide();
 			$('#uploadSkillButton').hide();
 		}
+	}
+
+	function resetSkillPage() {
+		$('#newSkillForm')[0].reset();
+		$('#skillNameOk').hide();
+		$('#skillNameKo').show();
+		$('#skillDescOk').hide();
+		$('#skillDescKo').show();
+		$('#uploadSkillButton').hide()
 	}
 
 
@@ -48,7 +56,7 @@ $(function () {
 		if ($(this).val().length < 8) {
 			$('#skillNameOk').hide();
 			$('#skillNameKo').show();
-			toggleCreateAndUploadButtons();
+			toggleCreateButton();
 			return;
 		}
 
@@ -63,7 +71,7 @@ $(function () {
 				$('#skillNameOk').hide();
 				$('#skillNameKo').show();
 			}
-			toggleCreateAndUploadButtons();
+			toggleCreateButton();
 		});
 	});
 
@@ -75,7 +83,7 @@ $(function () {
 			$('#skillDescKo').show();
 			$('#skillDescOk').hide();
 		}
-		toggleCreateAndUploadButtons();
+		toggleCreateButton();
 	});
 
 	$('#createSkillButton').on('click touchstart', function () {
@@ -96,6 +104,28 @@ $(function () {
 				'widgets': $('#widgets').val()
 			}
 		}).done(function (status) {
+			$('#newSkillForm :input').prop('disabled', true);
+			$('#uploadSkillButton').show();
+			$('#createSkillButton').hide();
 		});
 	});
+
+	$('#uploadSkillButton').on('click touchstart', function () {
+		$.ajax({
+			url: '/devmode/uploadToGithub/',
+			type: 'POST',
+			contentType: 'application/json',
+			dataType: 'json',
+			data: {
+				'skillName': $('#skillname').val(),
+				'skillDesc': $('#skilldesc').val()
+			}
+		}).done(function (status) {
+			$('#uploadSkillButton').hide();
+		});
+	});
+
+	$('#resetSkillButton').on('click touchstart', function () {
+		resetSkillPage();
+	})
 });
