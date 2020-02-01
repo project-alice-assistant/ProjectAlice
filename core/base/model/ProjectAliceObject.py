@@ -372,16 +372,6 @@ class ProjectAliceObject(Logger):
 
 
 	@property
-	def SamkillaManager(self):
-		return SM.SuperManager.getInstance().samkillaManager
-
-
-	@property
-	def SnipsConsoleManager(self):
-		return SM.SuperManager.getInstance().snipsConsoleManager
-
-
-	@property
 	def SnipsServicesManager(self):
 		return SM.SuperManager.getInstance().snipsServicesManager
 

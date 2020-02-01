@@ -41,8 +41,6 @@ class SuperManager(Logger):
 		self.skillManager = None
 		self.deviceManager = None
 		self.internetManager = None
-		self.snipsConsoleManager = None
-		self.samkillaManager = None
 		self.wakewordManager = None
 		self.userManager = None
 		self.talkManager = None
@@ -78,7 +76,6 @@ class SuperManager(Logger):
 		skillManager = self._managers.pop('SkillManager')
 		nodeRedManager = self._managers.pop('NodeRedManager')
 
-		samkillaManager = self._managers.pop('SamkillaManager')
 
 		for manager in self._managers.values():
 			if manager:
@@ -87,7 +84,6 @@ class SuperManager(Logger):
 		talkManager.onStart()
 		skillManager.onStart()
 		nodeRedManager.onStart()
-		samkillaManager.onStart()
 
 		self._managers[configManager.name] = configManager
 		self._managers[languageManager.name] = languageManager
@@ -98,7 +94,6 @@ class SuperManager(Logger):
 		self._managers[mqttManager.name] = mqttManager
 		self._managers[skillManager.name] = skillManager
 		self._managers[nodeRedManager.name] = nodeRedManager
-		self._managers[samkillaManager.name] = samkillaManager
 
 
 	def onBooted(self):
@@ -123,8 +118,6 @@ class SuperManager(Logger):
 		from core.dialog.MultiIntentManager import MultiIntentManager
 		from core.dialog.ProtectedIntentManager import ProtectedIntentManager
 		from core.server.MqttManager import MqttManager
-		from core.snips.SamkillaManager import SamkillaManager
-		from core.snips.SnipsConsoleManager import SnipsConsoleManager
 		from core.snips.SnipsServicesManager import SnipsServicesManager
 		from core.user.UserManager import UserManager
 		from core.util.DatabaseManager import DatabaseManager
@@ -161,8 +154,6 @@ class SuperManager(Logger):
 		self.skillManager = SkillManager()
 		self.deviceManager = DeviceManager()
 		self.internetManager = InternetManager()
-		self.snipsConsoleManager = SnipsConsoleManager()
-		self.samkillaManager = SamkillaManager()
 		self.wakewordManager = WakewordManager()
 		self.talkManager = TalkManager()
 		self.webInterfaceManager = WebInterfaceManager()
