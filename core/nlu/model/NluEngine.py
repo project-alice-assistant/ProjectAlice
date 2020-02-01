@@ -1,3 +1,5 @@
+from pathlib import Path
+
 from core.base.model.ProjectAliceObject import ProjectAliceObject
 
 
@@ -19,3 +21,7 @@ class NluEngine(ProjectAliceObject):
 
 	def train(self):
 		self.logInfo(f'Training {self.NAME}')
+
+
+	def convertDialogTemplate(self, file: Path):
+		self.logFatal(f'NLU Engine {self.NAME} is missing implementation of "convertDialogTemplate"')
