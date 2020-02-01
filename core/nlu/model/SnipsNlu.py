@@ -46,4 +46,4 @@ class SnipsNlu(NluEngine):
 				nluTrainingSample['entities'][entity['name']]['data'] = values
 
 			with Path(self.Commons.rootDir(), f'var/cache/nlu/trainingData/{dialogTemplate["skill"]}_{file.stem}').open('w') as fpp:
-				fpp.write_text(json.dumps(nluTrainingSample, indent=4, sort_keys=True))
+				fpp.write(json.dumps(nluTrainingSample, indent=4, sort_keys=True))
