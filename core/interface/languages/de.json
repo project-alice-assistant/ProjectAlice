@@ -43,5 +43,7 @@
 	"widgets": "Widgets",
 	"commaSeparatedExplanation": "Einzelne Elemente mit einem Komma trennen, zum Beispiel 'foo, bar, baz'",
 	"createSkill": "Erstelle den Skill",
-	"uploadSkillToGithub": "Den Skill auf Github hochladen"
+	"uploadSkillToGithub": "Den Skill auf Github hochladen",
+	"resetSkill": "Reset",
+	"actions": "Actions"
 }
