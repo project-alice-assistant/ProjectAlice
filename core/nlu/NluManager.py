@@ -12,6 +12,11 @@ class NluManager(Manager):
 		self.selectNluEngine()
 
 
+	def onStop(self):
+		if self._nluEngine:
+			self._nluEngine.stop()
+
+
 	def selectNluEngine(self):
 		if self._nluEngine:
 			self._nluEngine.stop()

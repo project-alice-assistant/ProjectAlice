@@ -20,7 +20,6 @@ class SnipsServicesManager(Manager):
 		self._snipsServices = [
 			'snips-hotword',
 			'snips-dialogue',
-			'snips-injection',
 			'snips-audio-server',
 			'snips-asr',
 			'snips-tts'

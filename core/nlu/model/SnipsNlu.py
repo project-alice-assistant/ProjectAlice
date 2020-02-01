@@ -1,4 +1,4 @@
-from core.dialog.model.DialogSession import DialogSession
+from core.base.SuperManager import SuperManager
 from core.nlu.model.NluEngine import NluEngine
 
 
@@ -10,5 +10,11 @@ class SnipsNlu(NluEngine):
 		super().__init__()
 
 
-	def onNluQuery(self, session: DialogSession):
-		pass
+	def start(self):
+		super().start()
+		SuperManager.getInstance().snipsServicesManager.runCmd(cmd='start', services=['snips-nlu'])
+
+
+	def stop(self):
+		super().stop()
+		SuperManager.getInstance().snipsServicesManager.runCmd(cmd='stop', services=['snips-nlu'])
