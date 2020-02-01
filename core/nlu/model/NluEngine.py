@@ -15,3 +15,7 @@ class NluEngine(ProjectAliceObject):
 
 	def stop(self):
 		self.logInfo(f'Stopping {self.NAME}')
+
+
+	def train(self):
+		self.logInfo(f'Training {self.NAME}')

@@ -10,6 +10,7 @@ from datetime import datetime
 from pathlib import Path
 from typing import Any, Union
 
+import hashlib
 import requests
 import tempfile
 from googletrans import Translator
@@ -310,8 +311,14 @@ class CommonsManager(Manager):
 			return False
 
 
+	@staticmethod
+	def fileChecksum(file: Path) -> str:
+		return hashlib.blake2b(file.read_bytes()).hexdigest()
+
+
 # noinspection PyUnusedLocal
 def py_error_handler(filename, line, function, err, fmt):
 	pass
+
 
 c_error_handler = CommonsManager.ERROR_HANDLER_FUNC(py_error_handler)
