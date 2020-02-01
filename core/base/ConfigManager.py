@@ -35,9 +35,7 @@ class ConfigManager(Manager):
 		]
 
 		self._vitalConfigs = [
-			'intentsOwner',
-			'snipsConsoleLogin',
-			'snipsConsolePassword'
+			'intentsOwner'
 		]
 
 		self._aliceConfigurations: typing.Dict[str, typing.Any] = self._loadCheckAndUpdateAliceConfigFile()

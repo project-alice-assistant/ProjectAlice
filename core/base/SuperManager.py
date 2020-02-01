@@ -48,6 +48,7 @@ class SuperManager(Logger):
 		self.snipsWatchManager = None
 		self.nodeRedManager = None
 		self.skillStoreManager = None
+		self.nluManager = None
 
 
 	def onStart(self):
@@ -134,6 +135,7 @@ class SuperManager(Logger):
 		from core.snips.SnipsWatchManager import SnipsWatchManager
 		from core.interface.NodeRedManager import NodeRedManager
 		from core.base.SkillStoreManager import SkillStoreManager
+		from core.nlu.NluManager import NluManager
 
 		self.commonsManager = CommonsManager()
 		self.commons = self.commonsManager
@@ -160,6 +162,7 @@ class SuperManager(Logger):
 		self.snipsWatchManager = SnipsWatchManager()
 		self.nodeRedManager = NodeRedManager()
 		self.skillStoreManager = SkillStoreManager()
+		self.nluManager = NluManager()
 
 		self._managers = {name[0].upper() + name[1:]: manager for name, manager in self.__dict__.items() if name.endswith('Manager')}
 
