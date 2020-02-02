@@ -110,6 +110,10 @@ class ProjectAliceObject(Logger):
 		pass
 
 
+	def onNluQuery(self, session):
+		pass
+
+
 	def onIntentParsed(self, session):
 		pass
 
@@ -331,6 +335,10 @@ class ProjectAliceObject(Logger):
 		pass
 
 
+	def onNluTrained(self, **kwargs):
+		pass
+
+
 	@property
 	def ProjectAlice(self):
 		return SM.SuperManager.getInstance().projectAlice
@@ -369,16 +377,6 @@ class ProjectAliceObject(Logger):
 	@property
 	def MqttManager(self):
 		return SM.SuperManager.getInstance().mqttManager
-
-
-	@property
-	def SamkillaManager(self):
-		return SM.SuperManager.getInstance().samkillaManager
-
-
-	@property
-	def SnipsConsoleManager(self):
-		return SM.SuperManager.getInstance().snipsConsoleManager
 
 
 	@property
@@ -459,3 +457,8 @@ class ProjectAliceObject(Logger):
 	@property
 	def SkillStoreManager(self):
 		return SM.SuperManager.getInstance().skillStoreManager
+
+
+	@property
+	def NluManager(self):
+		return SM.SuperManager.getInstance().nluManager

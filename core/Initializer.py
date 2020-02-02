@@ -116,8 +116,8 @@ network={
 		if not connected:
 			self.fatal('Your device needs internet access to continue, to download the updates and create the assistant')
 
-		if not initConfs['snipsConsoleLogin'] or not initConfs['snipsConsolePassword'] or not initConfs['intentsOwner']:
-			self.fatal('You must specify a Snips console login, password and intent owner')
+		if not initConfs['intentsOwner']:
+			self.fatal('You must specify an intent owner')
 
 		# Update our system and sources
 		subprocess.run(['sudo', 'apt-get', 'update'])
@@ -191,8 +191,6 @@ network={
 		confs['mqttHost'] = str(initConfs['mqttHost']) or 'localhost'
 		confs['mqttPort'] = initConfs['mqttPort'] or 1883
 
-		confs['snipsConsoleLogin'] = initConfs['snipsConsoleLogin']
-		confs['snipsConsolePassword'] = initConfs['snipsConsolePassword']
 		confs['intentsOwner'] = initConfs['intentsOwner']
 
 		confs['stayCompletlyOffline'] = bool(initConfs['stayCompletlyOffline'])

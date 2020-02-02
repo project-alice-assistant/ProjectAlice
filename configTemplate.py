@@ -207,32 +207,19 @@ settings = {
 		'dataType'    : 'list',
 		'values'      : {
 			'en': {
-				'snipsProjectId': '',
 				'default': True,
 				'countryCode': 'US'
 			},
 			'fr': {
-				'snipsProjectId': '',
 				'default': False,
 				'countryCode': 'FR'
 			},
 			'de': {
-				'snipsProjectId': '',
 				'default': False,
 				'countryCode': 'DE'
 			}
 		},
 		'display': 'hidden'
-	},
-	'snipsConsoleLogin': {
-		'defaultValue': '',
-		'dataType': 'string',
-		'description': 'Your Snips Console login'
-	},
-	'snipsConsolePassword': {
-		'defaultValue': '',
-		'dataType': 'password',
-		'description': 'Your Snips Console password'
 	},
 
 	'baseCurrency': {

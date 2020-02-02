@@ -428,11 +428,8 @@ class SkillManager(Manager):
 							self.TalkManager.loadTalks(skillToLoad=skillName)
 						except:
 							pass
-					try:
-						self.SamkillaManager.sync(skillFilter=skillsToBoot)
-					except Exception as esamk:
-						self.logError(f'Failed syncing with remote snips console {esamk}')
-						raise
+
+					self.NluManager.afterNewSkillInstall()
 
 				self._busyInstalling.clear()
 
@@ -656,7 +653,6 @@ class SkillManager(Manager):
 			del self._deactivatedSkills[skillName]
 
 		shutil.rmtree(Path(self.Commons.rootDir(), 'skills', skillName))
-		self.SnipsConsoleManager.doDownload()
 
 
 	def reloadSkill(self, skillName: str):

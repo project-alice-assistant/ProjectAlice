@@ -50,14 +50,7 @@ mqttUser:
 mqttPassword:
 mqttTLSFile:
 
-# Required to generate/train and download the assistant. We strongly suggest a new account
-snipsConsoleLogin:
-snipsConsolePassword:
-
-# Leave empty if this is the first time you use ProjectAlice
-snipsProjectId:
-
-# Your Snips registered nickname
+# Please use your own name or nickname
 intentsOwner:
 
 # hardware - Turn only one to yes!
