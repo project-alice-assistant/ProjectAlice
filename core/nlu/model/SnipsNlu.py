@@ -24,6 +24,7 @@ class SnipsNlu(NluEngine):
 
 
 	def convertDialogTemplate(self, file: Path):
+		print(f'Converting {str(file)}')
 		with file.open() as fp:
 			dialogTemplate = json.load(fp)
 
