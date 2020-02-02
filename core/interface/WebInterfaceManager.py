@@ -60,15 +60,15 @@ class WebInterfaceManager(Manager):
 	def onStart(self):
 		super().onStart()
 		if not self.ConfigManager.getAliceConfigByName('webInterfaceActive'):
-			self.log.info('Web interface is disabled by settings')
+			self.logInfo('Web interface is disabled by settings')
 		else:
 			langFile = Path(self.Commons.rootDir(), f'core/interface/languages/{self.LanguageManager.activeLanguage.lower()}.json')
 
 			if not langFile.exists():
-				self.log.warning(f'Lang "{self.LanguageManager.activeLanguage.lower()}" not found, falling back to "en"')
+				self.logWarning(f'Lang "{self.LanguageManager.activeLanguage.lower()}" not found, falling back to "en"')
 				langFile = Path(self.Commons.rootDir(), 'core/interface/languages/en.json')
 			else:
-				self.log.info(f'Loaded interface in "{self.LanguageManager.activeLanguage.lower()}"')
+				self.logInfo(f'Loaded interface in "{self.LanguageManager.activeLanguage.lower()}"')
 
 			key = ''.join([random.choice(string.ascii_letters + string.digits + string.punctuation) for _ in range(20)])
 			self.app.secret_key = key.encode()
@@ -84,14 +84,14 @@ class WebInterfaceManager(Manager):
 				try:
 					view.register(self.app)
 				except Exception as e:
-					self.log.info(f'Exception while registering view: {e}')
+					self.logInfo(f'Exception while registering view: {e}')
 					continue
 
 			for api in self._APIS:
 				try:
 					api.register(self.app)
 				except Exception as e:
-					self.log.info(f'Exception while registering api endpoint: {e}')
+					self.logInfo(f'Exception while registering api endpoint: {e}')
 					continue
 
 			self.ThreadManager.newThread(
@@ -124,7 +124,7 @@ class WebInterfaceManager(Manager):
 			if skill in self.skillInstallProcesses:
 				self.skillInstallProcesses[skill]['status'] = 'updated'
 		except KeyError as e:
-			self.log.error(f'Failed setting skill "{skill}" status to "updated": {e}')
+			self.logError(f'Failed setting skill "{skill}" status to "updated": {e}')
 
 
 	def onSkillInstalled(self, skill: str):
@@ -132,7 +132,7 @@ class WebInterfaceManager(Manager):
 			if skill in self.skillInstallProcesses:
 				self.skillInstallProcesses[skill]['status'] = 'installed'
 		except KeyError as e:
-			self.log.error(f'Failed setting skill "{skill}" status to "installed": {e}')
+			self.logError(f'Failed setting skill "{skill}" status to "installed": {e}')
 
 
 	def onSkillInstallFailed(self, skill: str):
@@ -140,7 +140,7 @@ class WebInterfaceManager(Manager):
 			if skill in self.skillInstallProcesses:
 				self.skillInstallProcesses[skill]['status'] = 'failed'
 		except KeyError as e:
-			self.log.error(f'Failed setting skill "{skill}" status to "failed": {e}')
+			self.logError(f'Failed setting skill "{skill}" status to "failed": {e}')
 
 
 	@property

@@ -47,10 +47,10 @@ class SkillRemoteProcessor:
 		changes = False
 
 		if hashComputationOnly or (oldInstanceExists and oldHash == curHash):
-			self._ctx.log.info(f'Skill model {skillId} ({self._skillName}) has no changes')
+			self._ctx.log(f'Skill model {skillId} ({self._skillName}) has no changes')
 		elif oldInstanceExists:
 			changes = True
-			self._ctx.log.info(f'Skill model {skillId} ({self._skillName}) has been edited')
+			self._ctx.log(f'Skill model {skillId} ({self._skillName}) has been edited')
 			self._ctx.skill.edit(skillId, description=skillDescription, imageKey=EnumSkillImageUrl.getResourceFileByAttr(skillIcon))
 		else:
 			changes = True
@@ -62,7 +62,7 @@ class SkillRemoteProcessor:
 				imageKey=EnumSkillImageUrl.getResourceFileByAttr(skillIcon),
 				attachToAssistant=True
 			)
-			self._ctx.log.info(f'Skill model {skillId} ({self._skillName}) has been created')
+			self._ctx.log(f'Skill model {skillId} ({self._skillName}) has been created')
 			self._createdInstances['skills'].append({'id': skillId, 'assistantId': self._assistantId})
 			curHash = self.skillValuesToHash(icon=skillIcon, description=skillDescription, skillId=skillId)
 
@@ -78,9 +78,9 @@ class SkillRemoteProcessor:
 			return self.syncSkillsOnAssistant(typeEntityMatching=typeEntityMatching, skillSyncState=skillSyncState, hashComputationOnly=hashComputationOnly)
 		except:
 			e = sys.exc_info()[0]
-			self._ctx.log.info('Handle error gracefully')
-			self._ctx.log.info(e)
-			self._ctx.log.info(traceback.format_exc())
+			self._ctx.log('Handle error gracefully')
+			self._ctx.log(e)
+			self._ctx.log(traceback.format_exc())
 			sys.exit(-1)
 
 
@@ -99,7 +99,7 @@ class SkillRemoteProcessor:
 
 
 	def cleanCreatedInstances(self):
-		self._ctx.log.info(f"[Cleanup] Deleting {len(self._createdInstances['skills'])} skills")
+		self._ctx.log(f"[Cleanup] Deleting {len(self._createdInstances['skills'])} skills")
 		for skill in self._createdInstances['skills']:
 			self._ctx.skill.removeFromAssistant(assistantId=skill['assistantId'], skillId=skill['id'], deleteAfter=True)
 		self._createdInstances['skills'] = list()

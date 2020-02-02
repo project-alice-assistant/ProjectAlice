@@ -76,7 +76,7 @@ class SnipsServicesManager(Manager):
 				**kwargs
 			)
 		except Exception as e:
-			self.log.error(f'Failed installing Snips Assistant: {e}')
+			self.logError(f'Failed installing Snips Assistant: {e}')
 			self.broadcast(
 				method=constants.EVENT_SNIPS_ASSISTANT_INSTALL_FAILED,
 				exceptions=[constants.DUMMY],
@@ -87,7 +87,7 @@ class SnipsServicesManager(Manager):
 
 	def runCmd(self, cmd: str, services: list = None):
 		if not Path(self.Commons.rootDir() + '/assistant').exists():
-			self.log.warning('Assistant not yet existing, shouldn\'t handle Snips for now')
+			self.logWarning('Assistant not yet existing, shouldn\'t handle Snips for now')
 			return
 
 		if not services:
@@ -99,11 +99,11 @@ class SnipsServicesManager(Manager):
 
 			result = self.Commons.runRootSystemCommand(['systemctl', cmd, service])
 			if result.returncode == 0:
-				self.log.info(f"Service {service} {cmd}'ed")
+				self.logInfo(f"Service {service} {cmd}'ed")
 			elif result.returncode == 5:
 				pass
 			else:
-				self.log.info(f"Tried to {cmd} the {service} service but it returned with return code {result.returncode}")
+				self.logInfo(f"Tried to {cmd} the {service} service but it returned with return code {result.returncode}")
 
 
 	def toggleFeedbackSound(self, state: str, siteId: str = constants.ALL):

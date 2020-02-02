@@ -7,13 +7,18 @@ from core.base.model.ProjectAliceObject import ProjectAliceObject
 class Manager(ProjectAliceObject):
 
 	def __init__(self, name: str = '', databaseSchema: dict = None):
+		super().__init__(logDepth=3)
 
-		name = name or self.Commons.getFunctionCaller(depth=2)
-		super().__init__(name=name)
+		self._name = self.Commons.getFunctionCaller(depth=2) if not name else name
 		self._databaseSchema = databaseSchema
 		self._isActive = True
 
-		self.log.info(f'Initializing {self.name}')
+		self.logInfo(f'Initializing {self._name}')
+
+
+	@property
+	def name(self):
+		return self._name
 
 
 	@property
@@ -30,17 +35,17 @@ class Manager(ProjectAliceObject):
 		try:
 			return self.Commons.getFunctionCaller()
 		except Exception as e:
-			self.log.error(f'Something went wrong retrieving function caller: {e}')
+			self.logError(f'Something went wrong retrieving function caller: {e}')
 			return None
 
 
 	def onStart(self):
-		self.log.info(f'Starting {self.name}')
+		self.logInfo(f'Starting {self.name}')
 		return self._initDB()
 
 
 	def onStop(self):
-		self.log.info(f'Stopping {self.name}')
+		self.logInfo(f'Stopping {self.name}')
 
 
 	def _initDB(self):

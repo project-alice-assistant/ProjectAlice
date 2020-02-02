@@ -95,10 +95,10 @@ class SkillsApi(Api):
 			return jsonify(success=False, reason='skill not found')
 
 		try:
-			self.log.info(f'Reloading skill "{skillName}"')
+			self.logInfo(f'Reloading skill "{skillName}"')
 			self.SkillManager.reloadSkill(skillName)
 		except Exception as e:
-			self.log.warning(f'Failed reloading skill: {e}', printStack=True)
+			self.logWarning(f'Failed reloading skill: {e}', printStack=True)
 			return jsonify(success=False)
 
 		return jsonify(success=True)
@@ -120,7 +120,7 @@ class SkillsApi(Api):
 			skillFile = Path(self.Commons.rootDir(), f'system/skillInstallTickets/{skillName}.install')
 			skillFile.write_text(json.dumps(remoteFile))
 		except Exception as e:
-			self.log.warning(f'Failed installing skill: {e}', printStack=True)
+			self.logWarning(f'Failed installing skill: {e}', printStack=True)
 			return jsonify(success=False)
 
 		return jsonify(success=True)

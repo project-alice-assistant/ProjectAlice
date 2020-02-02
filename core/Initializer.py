@@ -52,8 +52,8 @@ network={
 
 
 	def __init__(self):
-		super().__init__(name=self.NAME)
-		self.log.info('Starting Project Alice initializer')
+		super().__init__(logDepth=3)
+		self.logInfo('Starting Project Alice initializer')
 
 		self._rootDir = Path(__file__).resolve().parent.parent
 
@@ -67,7 +67,7 @@ network={
 		if not self._initFile.exists() and not self._confsFile.exists():
 			self.fatal('Init file not found and there\'s no configuration file, aborting Project Alice start')
 		elif not self._initFile.exists():
-			self.log.info('No initialization needed')
+			self.logInfo('No initialization needed')
 			return False
 
 		with self._initFile.open(mode='r') as f:
@@ -86,7 +86,7 @@ network={
 
 		wpaSupplicant = Path('/etc/wpa_supplicant/wpa_supplicant.conf')
 		if not wpaSupplicant.exists() and initConfs['useWifi']:
-			self.log.info('Setting up wifi')
+			self.logInfo('Setting up wifi')
 
 			if not initConfs['wifiCountryCode'] or not initConfs['wifiNetworkName'] or not initConfs['wifiWPAPass']:
 				self.fatal('You must specify the wifi parameters')
@@ -102,7 +102,7 @@ network={
 			file.write_text(wpaFile)
 
 			subprocess.run(['sudo', 'mv', str(file), bootWpaSupplicant])
-			self.log.info('Successfully initialized wpa_supplicant.conf')
+			self.logInfo('Successfully initialized wpa_supplicant.conf')
 			time.sleep(1)
 			subprocess.run(['sudo', 'shutdown', '-r', 'now'])
 			exit(0)
@@ -245,7 +245,7 @@ network={
 
 		updateChannel = initConfs['updateChannel']
 		if updateChannel not in {'master', 'rc', 'beta', 'alpha'}:
-			self.log.warning(f'{updateChannel} is no supported updateChannel, only master, rc, beta and alpha are supported. Reseting to master')
+			self.logWarning(f'{updateChannel} is no supported updateChannel, only master, rc, beta and alpha are supported. Reseting to master')
 			confs['aliceUpdateChannel'] = 'master'
 		else:
 			confs['aliceUpdateChannel'] = updateChannel
@@ -285,7 +285,7 @@ network={
 		subprocess.run(['sudo', 'sed', '-i', '-e', f's/\#EXECSTART/ExecStart=\/home\/{getpass.getuser()}\/ProjectAlice\/venv\/bin\/python3 main.py/', str(serviceFilePath)])
 		subprocess.run(['sudo', 'sed', '-i', '-e', f's/\#USER/User={getpass.getuser()}/', str(serviceFilePath)])
 
-		self.log.info('Installing audio hardware')
+		self.logInfo('Installing audio hardware')
 		audioHardware = ''
 		for hardware in initConfs['audioHardware']:
 			if initConfs['audioHardware'][hardware]:
@@ -375,16 +375,16 @@ network={
 
 
 	def fatal(self, text: str):
-		self.log.fatal(text)
+		self.logFatal(text)
 		exit()
 
 
 	def warning(self, text: str):
-		self.log.warning(text)
+		self.logWarning(text)
 
 
 	def loadSnipsConfigurations(self) -> TomlFile:
-		self.log.info('Loading Snips configuration file')
+		self.logInfo('Loading Snips configuration file')
 		snipsConfig = Path('/etc/snips.toml')
 
 		if snipsConfig.exists():
@@ -403,21 +403,18 @@ network={
 
 		req = requests.get('https://api.github.com/repos/project-alice-assistant/ProjectAlice/branches')
 		result = req.json()
-		if not result:
-			return updateSource
 
-		userUpdatePref = definedSource
 		versions = list()
 		for branch in result:
 			repoVersion = Version.fromString(branch['name'])
-			if not repoVersion.isVersionNumber:
-				continue
 
 			releaseType = repoVersion.releaseType
-			if userUpdatePref == 'alpha' and releaseType in {'master', 'rc', 'b', 'a'} \
-				or userUpdatePref == 'beta' and releaseType in {'master', 'rc', 'b'} \
-				or userUpdatePref == 'rc' and releaseType in {'master', 'rc'}:
-				versions.append(repoVersion)
+			if not repoVersion.isVersionNumber \
+					or definedSource == 'rc' and releaseType in {'b', 'a'} \
+					or definedSource == 'beta' and releaseType == 'a':
+				continue
+
+			versions.append(repoVersion)
 
 		if versions:
 			versions.sort(reverse=True)
@@ -428,4 +425,5 @@ network={
 
 	@staticmethod
 	def newConfs():
+		#TODO: this should not be done as a dictionary comprehension since it is super hard to read
 		return {configName: configData['values'] if 'dataType' in configData and configData['dataType'] == 'list' else configData['defaultValue'] if 'defaultValue' in configData else configData for configName, configData in configTemplate.settings.items()}

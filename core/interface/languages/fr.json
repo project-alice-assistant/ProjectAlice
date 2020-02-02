@@ -43,5 +43,7 @@
 	"widgets": "Widgets",
 	"commaSeparatedExplanation": "Une liste séparée par des virgules, exemple 'foo, bar, baz'",
 	"createSkill": "Créer le skill",
-	"uploadSkillToGithub": "Uploader le skill sur Github"
+	"uploadSkillToGithub": "Uploader le skill sur Github",
+	"resetSkill": "Reset",
+	"actions": "Actions"
 }

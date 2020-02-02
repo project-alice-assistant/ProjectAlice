@@ -81,7 +81,7 @@ class DialogSessionManager(Manager):
 
 	def getUser(self, sessionId: str) -> str:
 		if sessionId not in self._sessions:
-			self.log.warning(f"Trying to get user from a session that doesn't exist")
+			self.logWarning(f"Trying to get user from a session that doesn't exist")
 			return constants.UNKNOWN_USER
 
 		return self._sessions[sessionId].user
@@ -89,7 +89,7 @@ class DialogSessionManager(Manager):
 
 	def addPreviousIntent(self, sessionId: str, previousIntent: str):
 		if sessionId not in self._sessions:
-			self.log.warning('Was asked to add a previous intent but session was not found')
+			self.logWarning('Was asked to add a previous intent but session was not found')
 			return
 
 		session = self._sessions[sessionId]

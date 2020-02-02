@@ -25,11 +25,11 @@ class ASRManager(Manager):
 
 			self._asr = GoogleASR()
 			self.SnipsServicesManager.runCmd('stop', ['snips-asr'])
-			self.log.info('Turned Snips ASR off')
+			self.logInfo('Turned Snips ASR off')
 		else:
 			self._asr = SnipsASR()
 			self.SnipsServicesManager.runCmd('start', ['snips-asr'])
-			self.log.info('Started Snips ASR')
+			self.logInfo('Started Snips ASR')
 
 
 	@property
@@ -41,7 +41,7 @@ class ASRManager(Manager):
 		if not self.ConfigManager.getAliceConfigByName('keepASROffline'):
 			asr = self.ConfigManager.getAliceConfigByName('asr').lower()
 			if asr != 'snips' and not self.ConfigManager.getAliceConfigByName('keepASROffline') and not self.ConfigManager.getAliceConfigByName('stayCompletlyOffline'):
-				self.log.info('Connected to internet, switching ASR')
+				self.logInfo('Connected to internet, switching ASR')
 				self.SnipsServicesManager.runCmd('stop', ['snips-asr'])
 				if asr == 'google':
 					# TODO needs better handling. A header import with some checks if needed or not
@@ -53,7 +53,7 @@ class ASRManager(Manager):
 
 	def onInternetLost(self):
 		if not isinstance(self._asr, SnipsASR):
-			self.log.info('Internet lost, switching to snips ASR')
+			self.logInfo('Internet lost, switching to snips ASR')
 			self.SnipsServicesManager.runCmd('start', ['snips-asr'])
 			self._asr = SnipsASR()
 
@@ -72,7 +72,7 @@ class ASRManager(Manager):
 			self.MqttManager.publish(topic=constants.TOPIC_STOP_LISTENING, payload={'sessionId': session.sessionId, 'siteId': session.siteId})
 
 			result = self.LanguageManager.sanitizeNluQuery(result)
-			self.log.debug(f'{self._asr.__class__.__name__} output: "{result}"')
+			self.logDebug(f'{self._asr.__class__.__name__} output: "{result}"')
 
 			supportedIntents = session.intentFilter or self.SkillManager.supportedIntents
 			intentFilter = [intent.justTopic for intent in supportedIntents if isinstance(intent, Intent) and not intent.isProtected]

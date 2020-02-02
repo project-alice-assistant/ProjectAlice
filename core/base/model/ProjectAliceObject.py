@@ -7,9 +7,9 @@ from core.util.model.Logger import Logger
 
 class ProjectAliceObject(Logger):
 
-	def __init__(self, name: str = ''):
-		self.name = name
-		self.log = Logger(owner=name)
+	def __init__(self, logDepth: int = 3, *args, **kwargs):
+		self._depth = logDepth
+		super().__init__(depth=self._depth)
 
 
 	def __repr__(self):
@@ -29,7 +29,7 @@ class ProjectAliceObject(Logger):
 
 		if not exceptions and not manager:
 			# Prevent infinite loop of broadcaster being broadcasted to re broadcasting
-			self.log.warning('Cannot broadcast to itself, the calling method has to be put in exceptions')
+			self.logWarning('Cannot broadcast to itself, the calling method has to be put in exceptions')
 			return
 
 		if 'ProjectAlice' not in exceptions:
@@ -53,7 +53,7 @@ class ProjectAliceObject(Logger):
 					func(**kwargs)
 
 			except TypeError as e:
-				self.log.warning(f'- Failed to broadcast event {method} to {man.name}: {e}')
+				self.logWarning(f'- Failed to broadcast event {method} to {man.name}: {e}')
 
 		if propagateToSkills:
 			self.SkillManager.skillBroadcast(method=method, **kwargs)

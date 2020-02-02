@@ -7,9 +7,8 @@ from core.commons import constants
 class AliceEvent(Event, ProjectAliceObject):
 
 	def __init__(self, name: str, onSet: str = None, onClear: str = None):
-		#Logger does not require the name since it is not used
 		super().__init__()
-		self.name = name
+		self._name = name
 		self._onSet = onSet
 		self._onClear = onClear
 		self._kwargs = dict()
@@ -71,6 +70,11 @@ class AliceEvent(Event, ProjectAliceObject):
 			propagateToSkills=True,
 			**kwargs
 		)
+
+
+	@property
+	def name(self) -> str:
+		return self._name
 
 
 	def eventName(self, state: str) -> str:

@@ -106,7 +106,7 @@ class MainProcessor:
 		assistantFile.write_text(json.dumps(state, indent=4, sort_keys=False, ensure_ascii=False))
 
 
-	# self._ctx.log.info(f'\n[Persist] local assistant {assistantId} in {assistantLanguage}')
+	# self._ctx.log(f'\n[Persist] local assistant {assistantId} in {assistantLanguage}')
 
 	def syncRemoteToLocalAssistant(self, assistantId: str, assistantLanguage: str, assistantTitle: str):
 		if not self.hasLocalAssistantByIdAndLanguage(assistantId=assistantId, assistantLanguage=assistantLanguage):
@@ -154,21 +154,21 @@ class MainProcessor:
 			skill = json.loads(Path(skillFile).read_text())
 
 			if 'skill' not in skill:
-				self._ctx.log.info(f"File \"{skillFile}\" has no 'skill' name definition")
+				self._ctx.log(f"File \"{skillFile}\" has no 'skill' name definition")
 				return
 
 			skill['language'] = skillLanguage
 
 			if skill['skill'] not in self._skills:
-				self._ctx.log.info(f"Skill \"{skill['skill']}\" has a name different from its directory")
+				self._ctx.log(f"Skill \"{skill['skill']}\" has a name different from its directory")
 				return
 
 			self._skills[skill['skill']][skillLanguage] = skill
-			self._ctx.log.info(f"Loading skill {skill['skill']}")
+			self._ctx.log(f"Loading skill {skill['skill']}")
 			return skill
 
 		except json.decoder.JSONDecodeError:
-			self._ctx.log.info(f'\nInconsistent file, "{skillFile}" has a bad json format')
+			self._ctx.log(f'\nInconsistent file, "{skillFile}" has a bad json format')
 			return
 
 	def getSkillSyncStateByLanguageAndAssistantId(self, skillName: str, language: str, assistantId: str) -> str:
@@ -194,7 +194,7 @@ class MainProcessor:
 
 			slotFile = assistantSlotsMountpoint / f'{key}.json'
 			slotFile.write_text(json.dumps(value, indent=4, sort_keys=False, ensure_ascii=False))
-		# self._ctx.log.info(f'Global slot {key}')
+		# self._ctx.log(f'Global slot {key}')
 
 
 	def persistToGlobalAssistantIntents(self, assistantId: str, assistantLanguage: str, intentNameFilter: str = None):
@@ -208,7 +208,7 @@ class MainProcessor:
 
 			intentFile = assistantSlotsMountpoint / f'{key}.json'
 			intentFile.write_text(json.dumps(value, indent=4, sort_keys=False, ensure_ascii=False))
-		# self._ctx.log.info(f'Global slot {key}')
+		# self._ctx.log(f'Global slot {key}')
 
 
 	def syncGlobalSlotType(self, assistantId: str, assistantLanguage: str, slotTypeName: str, slotDefinition: str, persist: bool = False):
@@ -482,7 +482,7 @@ class MainProcessor:
 
 		for slotTypeName in self._savedAssistants[languageFilter][runOnAssistantId]['slotTypes']:
 			if slotTypeName not in slotTypesSynced:
-				self._ctx.log.info(f'Deprecated slotType {slotTypeName}')
+				self._ctx.log(f'Deprecated slotType {slotTypeName}')
 				slotTypeCacheData = self._savedAssistants[languageFilter][runOnAssistantId]['slotTypes'][slotTypeName]
 
 				entityId = slotTypeCacheData['entityId']
@@ -567,7 +567,7 @@ class MainProcessor:
 
 		for intentName in self._savedAssistants[languageFilter][runOnAssistantId]['intents']:
 			if intentName not in intentsSynced:
-				self._ctx.log.info(f'Deprecated intent {intentName}')
+				self._ctx.log(f'Deprecated intent {intentName}')
 				intentCacheData = self._savedAssistants[languageFilter][runOnAssistantId]['intents'][intentName]
 
 				intentId = intentCacheData['intentId']
@@ -657,7 +657,7 @@ class MainProcessor:
 				continue
 
 			if skillName not in skillsSynced:
-				self._ctx.log.info(f'Deprecated skill {skillName}')
+				self._ctx.log(f'Deprecated skill {skillName}')
 				skillCacheData = self._savedAssistants[languageFilter][runOnAssistantId]['skills'][skillName]
 				skillId = skillCacheData['skillId']
 
@@ -703,7 +703,7 @@ class MainProcessor:
 
 				if skillId not in remoteIndexedSkills:
 					skillId = self._ctx.assistant.forkAssistantSkill(assistantId=runOnAssistantId, sourceSkillId=skillId)
-					self._ctx.log.info(f"[Forked] Skill from {skill['id']} to {skillId}")
+					self._ctx.log(f"[Forked] Skill from {skill['id']} to {skillId}")
 					hasFork = True
 
 				for intent in skill['intents']:
@@ -711,7 +711,7 @@ class MainProcessor:
 
 					if intentId not in remoteIndexedIntents:
 						intentId = self._ctx.skill.forkSkillIntent(skillId=skillId, sourceIntentId=intentId, userId=self._ctx.userId)
-						self._ctx.log.info(f"[Forked] Intent from {skill['id']} to {intentId} used in skill {skillId}")
+						self._ctx.log(f"[Forked] Intent from {skill['id']} to {intentId} used in skill {skillId}")
 						hasFork = True
 
 		if hasFork:
@@ -828,4 +828,4 @@ class MainProcessor:
 			skillIntentsOutputFile = skillIntentsMountpoint / f'{languageFilter}.json'
 
 			skillIntentsOutputFile.write_text(json.dumps(skillConfig, indent=4, sort_keys=False, ensure_ascii=False))
-			self._ctx.log.info(f'Finished for skill {skillName}')
+			self._ctx.log(f'Finished for skill {skillName}')

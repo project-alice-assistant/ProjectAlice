@@ -20,5 +20,5 @@ class TelemetryApi(Api):
 
 			return jsonify(message='Not implemented')
 		except Exception as e:
-			self.log.error(f'Failed getting telemetry data: {e}')
+			self.logError(f'Failed getting telemetry data: {e}')
 			return jsonify(success=False)

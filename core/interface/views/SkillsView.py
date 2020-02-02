@@ -31,7 +31,7 @@ class SkillsView(View):
 			else:
 				self.SkillManager.activateSkill(skillName=skill, persistent=True)
 		except Exception as e:
-			self.log.warning(f'Failed toggling skill: {e}', printStack=True)
+			self.logWarning(f'Failed toggling skill: {e}', printStack=True)
 
 		return self.index()
 
@@ -41,7 +41,7 @@ class SkillsView(View):
 			_, skill = request.form.get('id').split('_')
 			self.SkillManager.removeSkill(skill)
 		except Exception as e:
-			self.log.warning(f'Failed deleting skill: {e}', printStack=True)
+			self.logWarning(f'Failed deleting skill: {e}', printStack=True)
 
 		return self.index()
 
@@ -49,10 +49,10 @@ class SkillsView(View):
 	def reloadSkill(self):
 		try:
 			_, skill = request.form.get('id').split('_')
-			self.log.info(f'Reloading skill "{skill}"')
+			self.logInfo(f'Reloading skill "{skill}"')
 			self.SkillManager.reloadSkill(skill)
 		except Exception as e:
-			self.log.warning(f'Failed reloading skill: {e}', printStack=True)
+			self.logWarning(f'Failed reloading skill: {e}', printStack=True)
 
 		return self.index()
 
@@ -87,7 +87,7 @@ class SkillsView(View):
 
 			return jsonify(success=True)
 		except Exception as e:
-			self.log.warning(f'Failed updating skill: {e}', printStack=True)
+			self.logWarning(f'Failed updating skill: {e}', printStack=True)
 			return jsonify(success=False)
 
 
@@ -109,7 +109,7 @@ class SkillsView(View):
 
 			return jsonify(success=True)
 		except Exception as e:
-			self.log.warning(f'Failed installing skill: {e}', printStack=True)
+			self.logWarning(f'Failed installing skill: {e}', printStack=True)
 			return jsonify(success=False)
 
 

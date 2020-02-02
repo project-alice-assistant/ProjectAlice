@@ -221,7 +221,7 @@ class Skill:
 			if len(items) == 1:
 				oldIntentId = f'intent_{items[0]}'
 				intentDuplicate = self._ctx.intent.getIntentByUserIdAndIntentId(userId, oldIntentId)
-				self._ctx.log.info(f"Duplicate intent with id, name {oldIntentId}, {intentDuplicate['name']}")
+				self._ctx.log(f"Duplicate intent with id, name {oldIntentId}, {intentDuplicate['name']}")
 
 				for skillItem in intentDuplicate.get('usedIn') or list():
 					self._ctx.intent.removeFromSkill(intentId=intentDuplicate['id'], skillId=skillItem['skillId'], userId=userId, deleteAfter=False)

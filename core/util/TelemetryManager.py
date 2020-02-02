@@ -62,7 +62,7 @@ class TelemetryManager(Manager):
 		super().onStart()
 		if not self.ConfigManager.getAliceConfigByName('enableDataStoring'):
 			self._isActive = False
-			self.log.info('Data storing is disabled')
+			self.logInfo('Data storing is disabled')
 		else:
 			self.loadData()
 

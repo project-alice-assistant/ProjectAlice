@@ -17,7 +17,8 @@ class Widget(ProjectAliceObject):
 	OPTIONS = dict()
 
 	def __init__(self, data: sqlite3.Row):
-		super().__init__(name=data['name'])
+		super().__init__()
+		self._name = data['name']
 		self._parent = data['parent']
 		self._skillInstance = None
 
@@ -45,10 +46,10 @@ class Widget(ProjectAliceObject):
 			with file.open() as fp:
 				return json.load(fp)
 		except FileNotFoundError:
-			self.log.warning(f'Missing language file for widget {self.name}')
+			self.logWarning(f'Missing language file for widget {self.name}')
 			return None
 		except Exception:
-			self.log.warning(f"Couldn't import language file for widget {self.name}")
+			self.logWarning(f"Couldn't import language file for widget {self.name}")
 			return None
 
 
@@ -84,7 +85,7 @@ class Widget(ProjectAliceObject):
 
 			return content
 		except:
-			self.log.warning(f"Widget doesn't have html file")
+			self.logWarning(f"Widget doesn't have html file")
 			return ''
 
 
@@ -107,6 +108,16 @@ class Widget(ProjectAliceObject):
 	@parent.setter
 	def parent(self, value: str):
 		self._parent = value
+
+
+	@property
+	def name(self) -> str:
+		return self._name
+
+
+	@name.setter
+	def name(self, value: str):
+		self._name = value
 
 
 	@property

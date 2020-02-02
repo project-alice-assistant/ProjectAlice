@@ -29,17 +29,17 @@ class NodeRedManager(Manager):
 	def injectSkillNodes(self):
 		package = Path('../.node-red/package.json')
 		if not package.exists():
-			self.log.warning('Package json file for Node Red is missing. Is Node Red even installed?')
+			self.logWarning('Package json file for Node Red is missing. Is Node Red even installed?')
 			return
 
 		for skillName, tup in self.SkillManager.allScenarioNodes().items():
 			scenarioNodeName, scenarioNodeVersion, scenarioNodePath = tup
 			path = Path('../.node-red/node_modules', scenarioNodeName, 'package.json')
 			if not path.exists():
-				self.log.info('New scenario node found')
+				self.logInfo('New scenario node found')
 				install = self.Commons.runSystemCommand(f'cd ~/.node-red && npm install {scenarioNodePath}', shell=True)
 				if install.returncode == 1:
-					self.log.warning(f'Something went wrong installing new node: {install.stderr}')
+					self.logWarning(f'Something went wrong installing new node: {install.stderr}')
 
 				continue
 
@@ -48,7 +48,7 @@ class NodeRedManager(Manager):
 				version = Version.fromString(data['version'])
 
 				if version < scenarioNodeVersion:
-					self.log.info('New scenario node update found')
+					self.logInfo('New scenario node update found')
 					install = self.Commons.runSystemCommand(f'cd ~/.node-red && npm install {scenarioNodePath}', shell=True)
 					if install.returncode == 1:
-						self.log.warning(f'Something went wrong updating node: {install.stderr}')
+						self.logWarning(f'Something went wrong updating node: {install.stderr}')

@@ -1,5 +1,9 @@
+import json
+
+import requests as requests
 from flask import jsonify, render_template, request
 
+from core.base.model.GithubCloner import GithubCloner
 from core.interface.model.View import View
 
 
@@ -15,6 +19,33 @@ class DevModeView(View):
 		return render_template(template_name_or_list='devmode.html',
 		                       langData=self._langData,
 		                       aliceSettings=self.ConfigManager.aliceConfigurations)
+
+
+	def uploadToGithub(self):
+		try:
+			skillName = request.form.get('skillName', '')
+			skillDesc = request.form.get('skillDesc', '')
+
+			if not skillName:
+				raise Exception
+
+			skillName = skillName[0].upper() + skillName[1:]
+			data = {
+				'name'       : skillName,
+				'description': skillDesc,
+				'has-issues' : True,
+				'has-wiki'   : False
+			}
+			req = requests.post('https://api.github.com/user/repos', data=json.dumps(data), auth=GithubCloner.getGithubAuth())
+
+			if req.status_code == 201:
+				return jsonify(success=True)
+			else:
+				raise Exception
+
+		except Exception as e:
+			self.logError(f'Failed uploading to github: {e}')
+			return jsonify(success=False)
 
 
 	def get(self, skillName: str):
@@ -46,5 +77,5 @@ class DevModeView(View):
 			return jsonify(success=True)
 
 		except Exception as e:
-			self.log.error(f'Something went wrong creating a new skill: {e}')
+			self.logError(f'Something went wrong creating a new skill: {e}')
 			return jsonify(success=False)

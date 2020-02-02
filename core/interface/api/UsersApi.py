@@ -42,7 +42,7 @@ class UsersApi(Api):
 			self.UserManager.addNewUser(name=username, access=access, pinCode=pin)
 			return jsonify(success=True)
 		except Exception as e:
-			self.log.error(f'Failed adding new user: {e}')
+			self.logError(f'Failed adding new user: {e}')
 			return jsonify(success=False)
 
 
@@ -62,5 +62,5 @@ class UsersApi(Api):
 			self.UserManager.deleteUser(username=username, keepWakeword=keepWakeword)
 			return jsonify(success=True)
 		except Exception as e:
-			self.log.error(f'Failed deleting user: {e}')
+			self.logError(f'Failed deleting user: {e}')
 			return jsonify(success=False)
