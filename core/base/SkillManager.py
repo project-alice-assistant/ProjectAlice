@@ -652,6 +652,8 @@ class SkillManager(Manager):
 		except KeyError:
 			del self._deactivatedSkills[skillName]
 
+		self.NluManager.cleanCache(skillName)
+
 		shutil.rmtree(Path(self.Commons.rootDir(), 'skills', skillName))
 
 

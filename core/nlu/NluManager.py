@@ -10,7 +10,8 @@ class NluManager(Manager):
 	def __init__(self):
 		super().__init__()
 		self._nluEngine = None
-		self._pathToChecksums = Path(self.Commons.rootDir(), 'var/cache/nlu/checksums.json')
+		self._pathToCache = Path(self.Commons.rootDir(), 'var/cache/nlu/')
+		self._pathToChecksums = self._pathToCache / 'checksums.json'
 
 
 	def onStart(self):
@@ -114,3 +115,16 @@ class NluManager(Manager):
 
 	def trainNLU(self):
 		self._nluEngine.train()
+
+
+	def cleanCache(self, skillName: str):
+		for file in Path(self._pathToCache, 'trainingData').glob('*.json'):
+			if file.stem.startswith(f'{skillName}_'):
+				file.unlink()
+
+		with self._pathToChecksums.open('w') as fp:
+			checksums = json.load(fp)
+			if skillName in checksums:
+				del checksums[skillName]
+
+			fp.write(json.dumps(checksums))
