@@ -56,8 +56,9 @@ class SnipsNlu(NluEngine):
 
 			nluTrainingSample['intents'] = dict()
 			for intent in dialogTemplate['intents']:
+				intentName = f'{self.ConfigManager.getAliceConfigByName("intentsOwner")}:{intent["name"]}'
 				slots = self.loadSlots(intent)
-				nluTrainingSample['intents'].setdefault(intent['name'], dict()).setdefault('utterances', list())
+				nluTrainingSample['intents'].setdefault(intentName, dict()).setdefault('utterances', list())
 
 				for utterance in intent['utterances']:
 					data = list()
@@ -90,7 +91,7 @@ class SnipsNlu(NluEngine):
 									})
 
 					# noinspection PyTypeChecker
-					nluTrainingSample['intents'][intent['name']]['utterances'].append({'data': data})
+					nluTrainingSample['intents'][intentName]['utterances'].append({'data': data})
 
 			with Path(self._cachePath, f'{dialogTemplate["skill"]}_{file.stem}.json').open('w') as fpp:
 				fpp.write(json.dumps(nluTrainingSample, indent=4))
