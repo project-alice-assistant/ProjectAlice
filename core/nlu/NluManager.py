@@ -122,9 +122,9 @@ class NluManager(Manager):
 			if file.stem.startswith(f'{skillName}_'):
 				file.unlink()
 
-		with self._pathToChecksums.open('w') as fp:
+		with self._pathToChecksums.open() as fp:
 			checksums = json.load(fp)
-			if skillName in checksums:
-				del checksums[skillName]
+			checksums.pop(skillName, None)
 
-			fp.write(json.dumps(checksums))
+		with self._pathToChecksums.open('w') as fp:
+			fp.write(json.dumps(checksums, indent=4, sort_keys=True))

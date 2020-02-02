@@ -647,10 +647,9 @@ class SkillManager(Manager):
 		self.configureSkillIntents(skillName, False)
 		self.ConfigManager.removeSkill(skillName)
 
-		try:
-			del self._activeSkills[skillName]
-		except KeyError:
-			del self._deactivatedSkills[skillName]
+		self._activeSkills.pop(skillName, None)
+		self._deactivatedSkills.pop(skillName, None)
+		self._allSkills.pop(skillName, None)
 
 		self.NluManager.cleanCache(skillName)
 
