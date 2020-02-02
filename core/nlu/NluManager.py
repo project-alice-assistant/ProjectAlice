@@ -15,8 +15,6 @@ class NluManager(Manager):
 
 	def onStart(self):
 		self.selectNluEngine()
-		# if not self._pathToChecksums.exists() or True:
-		#	self.buildCache()
 
 		changes = self.checkCache()
 		if not changes:
@@ -30,6 +28,13 @@ class NluManager(Manager):
 	def onStop(self):
 		if self._nluEngine:
 			self._nluEngine.stop()
+
+
+	def afterNewSkillInstall(self):
+		changes = self.checkCache()
+		self.buildTrainingData(changes)
+		self.buildCache()
+		self.trainNLU()
 
 
 	def selectNluEngine(self):

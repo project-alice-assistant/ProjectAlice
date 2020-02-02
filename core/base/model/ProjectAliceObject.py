@@ -457,3 +457,8 @@ class ProjectAliceObject(Logger):
 	@property
 	def SkillStoreManager(self):
 		return SM.SuperManager.getInstance().skillStoreManager
+
+
+	@property
+	def NluManager(self):
+		return SM.SuperManager.getInstance().nluManager

@@ -428,13 +428,8 @@ class SkillManager(Manager):
 							self.TalkManager.loadTalks(skillToLoad=skillName)
 						except:
 							pass
-					try:
-						# TODO
-						pass
-					# self.SamkillaManager.sync(skillFilter=skillsToBoot)
-					except Exception as esamk:
-						self.logError(f'Failed syncing with remote snips console {esamk}')
-						raise
+
+					self.NluManager.afterNewSkillInstall()
 
 				self._busyInstalling.clear()
 
