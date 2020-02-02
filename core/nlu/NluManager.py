@@ -54,6 +54,9 @@ class NluManager(Manager):
 		changes = dict()
 
 		for skillName, skillInstance in self.SkillManager.allSkills.items():
+			if not skillInstance:
+				continue
+
 			self.logInfo(f'Checking data for skill "{skillName}"')
 			if skillName not in checksums:
 				self.logInfo(f'Skill "{skillName}" is new')
