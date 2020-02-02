@@ -17,13 +17,13 @@ class NluManager(Manager):
 		self.selectNluEngine()
 		if not self._pathToChecksums.exists():
 			self.buildCache()
-			self.trainNLU()
+			self.buildTrainingData()
 
 		changes = self.checkCache()
 		if not changes:
 			self.logInfo('Cache uptodate')
 		else:
-			self.trainNLU(changes)
+			self.buildTrainingData(changes)
 
 
 	def onStop(self):
@@ -58,7 +58,6 @@ class NluManager(Manager):
 			if skillName not in checksums:
 				self.logInfo(f'Skill "{skillName}" is new')
 				changes[skillName] = list()
-				continue
 
 			pathToResources = skillInstance.getResource(resourcePathFile='dialogTemplate')
 			for file in pathToResources.glob('*.json'):
@@ -92,5 +91,9 @@ class NluManager(Manager):
 			fp.write(json.dumps(cached, indent=4, sort_keys=True))
 
 
-	def trainNLU(self, changes: dict = None):
-		pass
+	def buildTrainingData(self, changes: dict = None):
+		for changedSkill, changedLanguages in changes.items():
+			pathToSkillResources = Path(self.Commons.rootDir(), f'/skills/{changedSkill}/dialogTemplate')
+
+			for lang in changedLanguages:
+				self._nluEngine.convertDialogTemplate(pathToSkillResources / f'{lang}.json')
