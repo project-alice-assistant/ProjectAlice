@@ -100,7 +100,7 @@ class NluManager(Manager):
 
 	def buildTrainingData(self, changes: dict):
 		for changedSkill, changedLanguages in changes.items():
-			pathToSkillResources = Path(self.Commons.rootDir(), f'/skills/{changedSkill}/dialogTemplate')
+			pathToSkillResources = Path(self.Commons.rootDir(), f'skills/{changedSkill}/dialogTemplate')
 
 			for lang in changedLanguages:
 				self._nluEngine.convertDialogTemplate(pathToSkillResources / f'{lang}.json')

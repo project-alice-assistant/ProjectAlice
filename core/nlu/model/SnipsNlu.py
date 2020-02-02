@@ -42,9 +42,9 @@ class SnipsNlu(NluEngine):
 				for value in entity['values']:
 					values.append({
 						'value'   : value['value'],
-						'synonyms': value['synonyms']
+						'synonyms': value['synonyms'] if 'synonyms' in value else []
 					})
 				nluTrainingSample['entities'][entity['name']]['data'] = values
 
-			with Path(self.Commons.rootDir(), f'var/cache/nlu/trainingData/{dialogTemplate["skill"]}_{file.stem}').open('w') as fpp:
-				fpp.write(json.dumps(nluTrainingSample, indent=4, sort_keys=True))
+			with Path(self.Commons.rootDir(), f'var/cache/nlu/trainingData/{dialogTemplate["skill"]}_{file.stem}.json').open('w') as fpp:
+				fpp.write(json.dumps(nluTrainingSample, indent=4))
