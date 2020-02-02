@@ -81,6 +81,9 @@ class NluManager(Manager):
 		cached = dict()
 
 		for skillName, skillInstance in self.SkillManager.allSkills.items():
+			if not skillInstance:
+				continue
+
 			pathToResources = skillInstance.getResource(resourcePathFile='dialogTemplate')
 
 			cached[skillName] = dict()
