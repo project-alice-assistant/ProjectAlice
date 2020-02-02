@@ -24,6 +24,7 @@ class NluManager(Manager):
 		else:
 			self.buildTrainingData(changes)
 			self.buildCache()
+			self.trainNLU()
 
 
 	def onStop(self):
@@ -104,3 +105,7 @@ class NluManager(Manager):
 
 			for lang in changedLanguages:
 				self._nluEngine.convertDialogTemplate(pathToSkillResources / f'{lang}.json')
+
+
+	def trainNLU(self):
+		self._nluEngine.train()
