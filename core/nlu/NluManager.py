@@ -93,11 +93,14 @@ class NluManager(Manager):
 			for file in pathToResources.glob('*.json'):
 				cached[skillName][file.stem] = self.Commons.fileChecksum(file)
 
-		with self._pathToChecksums.open('w') as fp:
-			fp.write(json.dumps(cached, indent=4, sort_keys=True))
+
+	# with self._pathToChecksums.open('w') as fp:
+	#	fp.write(json.dumps(cached, indent=4, sort_keys=True))
 
 
 	def buildTrainingData(self, changes: dict = None):
+		changes = changes or {skillName: dict() for skillName in self.SkillManager.allSkills.items()}
+
 		for changedSkill, changedLanguages in changes.items():
 			pathToSkillResources = Path(self.Commons.rootDir(), f'/skills/{changedSkill}/dialogTemplate')
 
