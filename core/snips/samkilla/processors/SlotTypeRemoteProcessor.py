@@ -51,10 +51,10 @@ class SlotTypeRemoteProcessor:
 		changes = False
 
 		if hashComputationOnly or (oldInstanceExists and oldHash == curHash):
-			self._ctx.log(f"[Sync] Entity|SlotType model {entityId} = {slotType['name']} has no changes")
+			self._ctx.log.info(f"[Sync] Entity|SlotType model {entityId} = {slotType['name']} has no changes")
 		elif oldInstanceExists:
 			changes = True
-			self._ctx.log(f"[Sync] Entity|SlotType model {entityId} = {slotType['name']} has been edited")
+			self._ctx.log.info(f"[Sync] Entity|SlotType model {entityId} = {slotType['name']} has been edited")
 			self._ctx.entity.edit(
 				entityId,
 				name=slotType['name'],
@@ -73,7 +73,7 @@ class SlotTypeRemoteProcessor:
 				useSynonyms=slotType['useSynonyms'],
 				slotValues=slotType['values']
 			)
-			self._ctx.log(f"[Sync] Entity|SlotType model {entityId} = {slotType['name']} has been created")
+			self._ctx.log.info(f"[Sync] Entity|SlotType model {entityId} = {slotType['name']} has been created")
 			self._createdInstances['entities'].append({'id': entityId})
 			curHash = self.slotTypeValuesToHash(entityId=entityId)
 
@@ -85,9 +85,9 @@ class SlotTypeRemoteProcessor:
 			return self.syncSlotTypesOnAssistant(slotTypeSyncState=slotTypeSyncState, hashComputationOnly=hashComputationOnly)
 		except:
 			e = sys.exc_info()[0]
-			self._ctx.log('Handle error gracefully')
-			self._ctx.log(e)
-			self._ctx.log(traceback.format_exc())
+			self._ctx.log.info('Handle error gracefully')
+			self._ctx.log.info(e)
+			self._ctx.log.info(traceback.format_exc())
 			sys.exit(-1)
 
 
@@ -102,7 +102,7 @@ class SlotTypeRemoteProcessor:
 
 
 	def cleanCreatedInstances(self):
-		self._ctx.log(f"[Cleanup] Deleting {len(self._createdInstances['entities'])} entities")
+		self._ctx.log.info(f"[Cleanup] Deleting {len(self._createdInstances['entities'])} entities")
 		for entity in self._createdInstances['entities']:
 			self._ctx.entity.delete(entityId=entity['id'])
 		self._createdInstances['entities'] = list()

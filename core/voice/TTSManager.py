@@ -26,9 +26,9 @@ class TTSManager(Manager):
 
 		if (self.ConfigManager.getAliceConfigByName('stayCompletlyOffline') or self.ConfigManager.getAliceConfigByName('keepTTSOffline')) and self._tts.online:
 			self._tts = PicoTTS()
-			self.logInfo('Started "Pico" TTS')
+			self.log.info('Started "Pico" TTS')
 		else:
-			self.logInfo(f'Started "{tts.value}" TTS')
+			self.log.info(f'Started "{tts.value}" TTS')
 
 		self._tts.onStart()
 
@@ -43,7 +43,7 @@ class TTSManager(Manager):
 			self._tts = PicoTTS(user)
 		elif tts == TTSEnum.MYCROFT:
 			if not Path(Path(self.Commons.rootDir()).parent, 'mimic/voices').is_dir():
-				self.logWarning('Trying to use Mycroft as TTS but files not available, falling back to picotts')
+				self.log.warning('Trying to use Mycroft as TTS but files not available, falling back to picotts')
 				self._tts = PicoTTS(user)
 				tts = TTSEnum.PICO
 			else:
@@ -55,7 +55,7 @@ class TTSManager(Manager):
 			self._tts = AmazonTTS(user)
 		elif tts == TTSEnum.GOOGLE:
 			if not Path(self.Commons.rootDir(), 'credentials/googlecredentials.json').exists():
-				self.logWarning('No Google credentials found for Google Wavenet, falling back to pico')
+				self.log.warning('No Google credentials found for Google Wavenet, falling back to pico')
 				self._tts = PicoTTS(user)
 			else:
 				from core.voice.model.GoogleTTS import GoogleTTS

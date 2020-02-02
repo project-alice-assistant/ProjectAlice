@@ -63,7 +63,7 @@ class SkillManager(Manager):
 
 		# If it's the first time we start, don't delay skill install and do it on main thread
 		if not self.ConfigManager.getAliceConfigByName('skills'):
-			self.logInfo('Looks like a fresh install or skills were nuked. Let\'s install the basic skills!')
+			self.log.info('Looks like a fresh install or skills were nuked. Let\'s install the basic skills!')
 			self._checkForSkillInstall()
 
 		self._skillInstallThread = self.ThreadManager.newThread(name='SkillInstallThread', target=self._checkForSkillInstall, autostart=False)
@@ -89,9 +89,9 @@ class SkillManager(Manager):
 			try:
 				self._startSkill(skillInstance=self._activeSkills[skillName])
 			except SkillStartDelayed:
-				self.logInfo(f'Skill "{skillName}" start is delayed')
+				self.log.info(f'Skill "{skillName}" start is delayed')
 			except KeyError as e:
-				self.logError(f'Skill "{skillName} not found, skipping: {e}')
+				self.log.error(f'Skill "{skillName} not found, skipping: {e}')
 				continue
 
 			self._activeSkills[skillName].onBooted()
@@ -156,11 +156,11 @@ class SkillManager(Manager):
 			try:
 				if not skill['active']:
 					if skillName in self.NEEDED_SKILLS:
-						self.logInfo(f"Skill {skillName} marked as disable but it shouldn't be")
+						self.log.info(f"Skill {skillName} marked as disable but it shouldn't be")
 						self.ProjectAlice.onStop()
 						break
 					else:
-						self.logInfo(f'Skill {skillName} is disabled')
+						self.log.info(f'Skill {skillName} is disabled')
 
 						skillInstance = self.importFromSkill(skillName=skillName, isUpdate=False)
 						if skillInstance:
@@ -188,13 +188,13 @@ class SkillManager(Manager):
 					self._failedSkills[name] = None
 
 			except SkillStartingFailed as e:
-				self.logWarning(f'Failed loading skill: {e}')
+				self.log.warning(f'Failed loading skill: {e}')
 				continue
 			except SkillNotConditionCompliant as e:
-				self.logInfo(f'Skill {skillName} does not comply to "{e.condition}" condition, required "{e.conditionValue}"')
+				self.log.info(f'Skill {skillName} does not comply to "{e.condition}" condition, required "{e.conditionValue}"')
 				continue
 			except Exception as e:
-				self.logWarning(f'Something went wrong loading skill {skillName}: {e}')
+				self.log.warning(f'Something went wrong loading skill {skillName}: {e}')
 				continue
 
 		return dict(sorted(skills.items()))
@@ -215,11 +215,11 @@ class SkillManager(Manager):
 			klass = getattr(skillImport, skillName)
 			instance: AliceSkill = klass()
 		except ImportError as e:
-			self.logError(f"Couldn't import skill {skillName}.{skillResource}: {e}")
+			self.log.error(f"Couldn't import skill {skillName}.{skillResource}: {e}")
 		except AttributeError as e:
-			self.logError(f"Couldn't find main class for skill {skillName}.{skillResource}: {e}")
+			self.log.error(f"Couldn't find main class for skill {skillName}.{skillResource}: {e}")
 		except Exception as e:
-			self.logError(f"Couldn't instantiate skill {skillName}.{skillResource}: {e}")
+			self.log.error(f"Couldn't instantiate skill {skillName}.{skillResource}: {e}")
 
 		return instance
 
@@ -229,7 +229,7 @@ class SkillManager(Manager):
 
 		for skillItem in self._activeSkills.values():
 			skillItem.onStop()
-			self.logInfo(f'- {skillItem.name} stopped!')
+			self.log.info(f'- {skillItem.name} stopped!')
 
 
 	def onFullHour(self):
@@ -246,13 +246,13 @@ class SkillManager(Manager):
 			except SkillStartingFailed:
 				continue
 			except SkillStartDelayed:
-				self.logInfo(f'Skill {skillName} start is delayed')
+				self.log.info(f'Skill {skillName} start is delayed')
 
 		supportedIntents = list(set(supportedIntents))
 
 		self._supportedIntents = supportedIntents
 
-		self.logInfo(f'All skills started. {len(supportedIntents)} intents supported')
+		self.log.info(f'All skills started. {len(supportedIntents)} intents supported')
 
 
 	def _startSkill(self, skillInstance: AliceSkill) -> dict:
@@ -265,13 +265,13 @@ class SkillManager(Manager):
 				self._widgets[name] = skillInstance.widgets
 
 			if intents:
-				self.logInfo('- Started!')
+				self.log.info('- Started!')
 				return intents
 		except (SkillStartingFailed, SkillStartDelayed):
 			raise
 		except Exception as e:
 			# noinspection PyUnboundLocalVariable
-			self.logError(f'- Couldn\'t start skill {name or "undefined"}. Did you forget to return the intents in onStart()? Error: {e}')
+			self.log.error(f'- Couldn\'t start skill {name or "undefined"}. Did you forget to return the intents in onStart()? Error: {e}')
 
 		return dict()
 
@@ -285,7 +285,7 @@ class SkillManager(Manager):
 			return self._allSkills[skillName]
 		else:
 			if not silent:
-				self.logWarning(f'Skill "{skillName}" is disabled or does not exist in skills manager')
+				self.log.warning(f'Skill "{skillName}" is disabled or does not exist in skills manager')
 
 			return None
 
@@ -316,7 +316,7 @@ class SkillManager(Manager):
 					func(event=method, **kwargs)
 
 			except TypeError as e:
-				self.logWarning(f'- Failed to broadcast event {method} to {skillItem.name}: {e}')
+				self.log.warning(f'- Failed to broadcast event {method} to {skillItem.name}: {e}')
 
 
 	def deactivateSkill(self, skillName: str, persistent: bool = False):
@@ -340,9 +340,9 @@ class SkillManager(Manager):
 		if self.ConfigManager.getAliceConfigByName('stayCompletlyOffline'):
 			return False
 
-		self.logInfo('Checking for skill updates')
+		self.log.info('Checking for skill updates')
 		if not self.InternetManager.online:
-			self.logInfo('Not connected...')
+			self.log.info('Not connected...')
 			return False
 
 		availableSkills = self.ConfigManager.skillsConfigurations
@@ -357,7 +357,7 @@ class SkillManager(Manager):
 				localVersion = Version.fromString(availableSkills[skillName]['version'])
 				if localVersion < remoteVersion:
 					updateCount += 1
-					self.logInfo(f'❌ {skillName} - Version {availableSkills[skillName]["version"]} < {str(remoteVersion)} in {self.ConfigManager.getAliceConfigByName("skillsUpdateChannel")}')
+					self.log.info(f'❌ {skillName} - Version {availableSkills[skillName]["version"]} < {str(remoteVersion)} in {self.ConfigManager.getAliceConfigByName("skillsUpdateChannel")}')
 
 					if not self.ConfigManager.getAliceConfigByName('skillAutoUpdate'):
 						if skillName in self._activeSkills:
@@ -380,15 +380,15 @@ class SkillManager(Manager):
 						if skillName in self._failedSkills:
 							del self._failedSkills[skillName]
 				else:
-					self.logInfo(f'✔ {skillName} - Version {availableSkills[skillName]["version"]} in {self.ConfigManager.getAliceConfigByName("skillsUpdateChannel")}')
+					self.log.info(f'✔ {skillName} - Version {availableSkills[skillName]["version"]} in {self.ConfigManager.getAliceConfigByName("skillsUpdateChannel")}')
 
 			except GithubNotFound:
-				self.logInfo(f'❓ Skill "{skillName}" is not available on Github. Deprecated or is it a dev skill?')
+				self.log.info(f'❓ Skill "{skillName}" is not available on Github. Deprecated or is it a dev skill?')
 
 			except Exception as e:
-				self.logError(f'❗ Error checking updates for skill "{skillName}": {e}')
+				self.log.error(f'❗ Error checking updates for skill "{skillName}": {e}')
 
-		self.logInfo(f'Found {updateCount} skill update(s)')
+		self.log.info(f'Found {updateCount} skill update(s)')
 		return updateCount > 0
 
 
@@ -407,7 +407,7 @@ class SkillManager(Manager):
 			return
 
 		if files:
-			self.logInfo(f'Found {len(files)} install ticket(s)')
+			self.log.info(f'Found {len(files)} install ticket(s)')
 			self._busyInstalling.set()
 
 			skillsToBoot = dict()
@@ -431,7 +431,7 @@ class SkillManager(Manager):
 					try:
 						self.SamkillaManager.sync(skillFilter=skillsToBoot)
 					except Exception as esamk:
-						self.logError(f'Failed syncing with remote snips console {esamk}')
+						self.log.error(f'Failed syncing with remote snips console {esamk}')
 						raise
 
 				self._busyInstalling.clear()
@@ -445,7 +445,7 @@ class SkillManager(Manager):
 		for file in skills:
 			skillName = Path(file).with_suffix('')
 
-			self.logInfo(f'Now taking care of skill {skillName.stem}')
+			self.log.info(f'Now taking care of skill {skillName.stem}')
 			res = root / file
 
 			try:
@@ -457,7 +457,7 @@ class SkillManager(Manager):
 				path = Path(installFile['author'], skillName)
 
 				if not skillName:
-					self.logError('Skill name to install not found, aborting to avoid casualties!')
+					self.log.error('Skill name to install not found, aborting to avoid casualties!')
 					continue
 
 				directory = Path(self.Commons.rootDir()) / 'skills' / skillName
@@ -478,31 +478,31 @@ class SkillManager(Manager):
 						installedVersion >= remoteVersion
 
 					if localVersionIsLatest:
-						self.logWarning(f'Skill "{skillName}" is already installed, skipping')
+						self.log.warning(f'Skill "{skillName}" is already installed, skipping')
 						self.Commons.runRootSystemCommand(['rm', res])
 						continue
 					else:
-						self.logWarning(f'Skill "{skillName}" needs updating')
+						self.log.warning(f'Skill "{skillName}" needs updating')
 						updating = True
 
 				if skillName in self._activeSkills:
 					try:
 						self._activeSkills[skillName].onStop()
 					except Exception as e:
-						self.logError(f'Error stopping "{skillName}" for update: {e}')
+						self.log.error(f'Error stopping "{skillName}" for update: {e}')
 						raise
 
 				gitCloner = GithubCloner(baseUrl=self.GITHUB_BASE_URL.format(skillName), path=path, dest=directory)
 
 				try:
 					gitCloner.clone(skillName=skillName)
-					self.logInfo('Skill successfully downloaded')
+					self.log.info('Skill successfully downloaded')
 					self._installSkill(res)
 					skillsToBoot[skillName] = {
 						'update': updating
 					}
 				except (GithubTokenFailed, GithubRateLimit):
-					self.logError('Failed cloning skill')
+					self.log.error('Failed cloning skill')
 					raise
 				except GithubNotFound:
 					if self.ConfigManager.getAliceConfigByName('devMode'):
@@ -510,7 +510,7 @@ class SkillManager(Manager):
 								Path(f'{self.Commons.rootDir}/skills/{skillName}/{skillName.py}').exists() or not \
 								Path(f'{self.Commons.rootDir}/skills/{skillName}/dialogTemplate').exists() or not \
 								Path(f'{self.Commons.rootDir}/skills/{skillName}/talks').exists():
-							self.logWarning(f'Skill "{skillName}" cannot be installed in dev mode due to missing base files')
+							self.log.warning(f'Skill "{skillName}" cannot be installed in dev mode due to missing base files')
 						else:
 							self._installSkill(res)
 							skillsToBoot[skillName] = {
@@ -518,22 +518,22 @@ class SkillManager(Manager):
 							}
 						continue
 					else:
-						self.logWarning(f'Skill "{skillName}" is not available on Github, cannot install')
+						self.log.warning(f'Skill "{skillName}" is not available on Github, cannot install')
 						raise
 
 			except SkillNotConditionCompliant as e:
-				self.logInfo(f'Skill "{skillName}" does not comply to "{e.condition}" condition, required "{e.conditionValue}"')
+				self.log.info(f'Skill "{skillName}" does not comply to "{e.condition}" condition, required "{e.conditionValue}"')
 				if res.exists():
 					res.unlink()
 
 				self.broadcast(
 					method=constants.EVENT_SKILL_INSTALL_FAILED,
-					exceptions=self._name,
+					exceptions=self.name,
 					skill=skillName
 				)
 
 			except Exception as e:
-				self.logError(f'Failed installing skill "{skillName}": {e}')
+				self.log.error(f'Failed installing skill "{skillName}": {e}')
 				if res.exists():
 					res.unlink()
 
@@ -600,7 +600,7 @@ class SkillManager(Manager):
 					if requiredSkill['name'] in availableSkills and not availableSkills[requiredSkill['name']]['active']:
 						raise SkillNotConditionCompliant(message=notCompliant, skillName=skillName, condition=conditionName, conditionValue=conditionValue)
 					elif requiredSkill['name'] not in availableSkills:
-						self.logInfo(f'Skill {skillName} has another skill as dependency, adding download')
+						self.log.info(f'Skill {skillName} has another skill as dependency, adding download')
 						if not self.Commons.downloadFile(requiredSkill['url'], Path(self.Commons.rootDir(), f"system/skillInstallTickets/{requiredSkill['name']}.install")):
 							raise SkillNotConditionCompliant(message=notCompliant, skillName=skillName, condition=conditionName, conditionValue=conditionValue)
 
@@ -635,7 +635,7 @@ class SkillManager(Manager):
 
 			self.MqttManager.configureIntents(confs)
 		except Exception as e:
-			self.logWarning(f'Intent configuration failed: {e}')
+			self.log.warning(f'Intent configuration failed: {e}')
 
 
 	def isIntentInUse(self, intent: Intent, filtered: list) -> bool:
@@ -688,7 +688,7 @@ class SkillManager(Manager):
 
 	def createNewSkill(self, skillDefinition: dict) -> bool:
 		try:
-			self.logInfo(f'Creating new skill "{skillDefinition["name"]}"')
+			self.log.info(f'Creating new skill "{skillDefinition["name"]}"')
 
 			rootDir = Path(self.Commons.rootDir()) / 'skills'
 			skillTemplateDir = rootDir / 'skill_DefaultTemplate'
@@ -835,9 +835,9 @@ class SkillManager(Manager):
 			with Path(skillDir, 'README.md').open('w') as fp:
 				fp.write(content)
 
-			self.logInfo(f'Created "{skillDefinition["name"]}" skill')
+			self.log.info(f'Created "{skillDefinition["name"]}" skill')
 
 			return True
 		except Exception as e:
-			self.logError(f'Error creating new skill: {e}')
+			self.log.error(f'Error creating new skill: {e}')
 			return False

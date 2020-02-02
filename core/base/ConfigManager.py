@@ -63,10 +63,10 @@ class ConfigManager(Manager):
 
 
 	def _loadCheckAndUpdateAliceConfigFile(self) -> dict:
-		self.logInfo('Checking Alice configuration file')
+		self.log.info('Checking Alice configuration file')
 
 		if not configFileExist:
-			self.logInfo('Creating config file from config template')
+			self.log.info('Creating config file from config template')
 			confs = {configName: configData['values'] if 'dataType' in configData and configData['dataType'] == 'list' else configData['defaultValue'] if 'defaultValue' in configData else configData for configName, configData in configTemplate.settings.items()}
 			Path('config.py').write_text(f'settings = {json.dumps(confs, indent=4)}')
 			aliceConfigs = importlib.import_module('config.py').settings.copy()
@@ -76,7 +76,7 @@ class ConfigManager(Manager):
 		changes = False
 		for setting, definition in configTemplate.settings.items():
 			if setting not in aliceConfigs:
-				self.logInfo(f'- New configuration found: {setting}')
+				self.log.info(f'- New configuration found: {setting}')
 				changes = True
 				aliceConfigs[setting] = definition.get('defaultValue', '')
 			else:
@@ -89,24 +89,24 @@ class ConfigManager(Manager):
 						try:
 							# First try to cast the seting we have to the new type
 							aliceConfigs[setting] = type(definition['defaultValue'])(aliceConfigs[setting])
-							self.logInfo(f'- Existing configuration type missmatch: {setting}, cast variable to template configuration type')
+							self.log.info(f'- Existing configuration type missmatch: {setting}, cast variable to template configuration type')
 						except Exception:
 							# If casting failed let's fall back to the new default value
-							self.logInfo(f'- Existing configuration type missmatch: {setting}, replaced with template configuration')
+							self.log.info(f'- Existing configuration type missmatch: {setting}, replaced with template configuration')
 							aliceConfigs[setting] = definition['defaultValue']
 				else:
 					values = definition['values'].values() if isinstance(definition['values'], dict) else definition['values']
 
 					if aliceConfigs[setting] not in values:
 						changes = True
-						self.logInfo(f'- Selected value "{aliceConfigs[setting]}" for setting "{setting}" doesn\'t exist, reverted to default value "{definition["defaultValue"]}"')
+						self.log.info(f'- Selected value "{aliceConfigs[setting]}" for setting "{setting}" doesn\'t exist, reverted to default value "{definition["defaultValue"]}"')
 						aliceConfigs[setting] = definition['defaultValue']
 
 		temp = aliceConfigs.copy()
 
 		for k, v in temp.items():
 			if k not in configTemplate.settings:
-				self.logInfo(f'- Deprecated configuration: {k}')
+				self.log.info(f'- Deprecated configuration: {k}')
 				changes = True
 				del aliceConfigs[k]
 
@@ -124,7 +124,7 @@ class ConfigManager(Manager):
 
 	def updateAliceConfiguration(self, key: str, value: typing.Any):
 		if key not in self._aliceConfigurations:
-			self.logWarning(f'Was asked to update {key} but key doesn\'t exist')
+			self.log.warning(f'Was asked to update {key} but key doesn\'t exist')
 			raise ConfigurationUpdateFailed()
 
 		try:
@@ -140,11 +140,11 @@ class ConfigManager(Manager):
 
 	def updateSkillConfigurationFile(self, skillName: str, key: str, value: typing.Any):
 		if skillName not in self._skillsConfigurations:
-			self.logWarning(f'Was asked to update {key} in skill {skillName} but skill doesn\'t exist')
+			self.log.warning(f'Was asked to update {key} in skill {skillName} but skill doesn\'t exist')
 			return
 
 		if key not in self._skillsConfigurations[skillName]:
-			self.logWarning(f'Was asked to update {key} in skill {skillName} but key doesn\'t exist')
+			self.log.warning(f'Was asked to update {key} in skill {skillName} but key doesn\'t exist')
 			return
 
 		# Cast value to template defined type
@@ -158,19 +158,19 @@ class ConfigManager(Manager):
 			try:
 				value = int(value)
 			except:
-				self.logWarning(f'Value missmatch for config {key} in skill {skillName}')
+				self.log.warning(f'Value missmatch for config {key} in skill {skillName}')
 				value = 0
 		elif vartype == 'float':
 			try:
 				value = float(value)
 			except:
-				self.logWarning(f'Value missmatch for config {key} in skill {skillName}')
+				self.log.warning(f'Value missmatch for config {key} in skill {skillName}')
 				value = 0.0
 		elif vartype in {'string', 'email', 'password'}:
 			try:
 				value = str(value)
 			except:
-				self.logWarning(f'Value missmatch for config {key} in skill {skillName}')
+				self.log.warning(f'Value missmatch for config {key} in skill {skillName}')
 				value = ''
 
 		self._skillsConfigurations[skillName][key] = value
@@ -222,7 +222,7 @@ class ConfigManager(Manager):
 
 
 	def loadSnipsConfigurations(self) -> TomlFile:
-		self.logInfo('Loading Snips configuration file')
+		self.log.info('Loading Snips configuration file')
 
 		snipsConfigPath = Path('/etc/snips.toml')
 		snipsConfigTemplatePath = Path(self.Commons.rootDir(), 'system/snips/snips.toml')
@@ -270,7 +270,7 @@ class ConfigManager(Manager):
 
 		config = self._snipsConfigurations[parent].get(key, None)
 		if config is None:
-			self.logWarning(f'Tried to get "{parent}/{key}" in snips configuration but key was not found')
+			self.log.warning(f'Tried to get "{parent}/{key}" in snips configuration but key was not found')
 
 		return config
 
@@ -314,7 +314,7 @@ class ConfigManager(Manager):
 			if not skillDirectory.is_dir() or (skill is not None and skillDirectory.stem != skill) or skillDirectory.stem.startswith('_'):
 				continue
 
-			self.logInfo(f'Checking configuration for skill {skillDirectory.stem}')
+			self.log.info(f'Checking configuration for skill {skillDirectory.stem}')
 
 			skillConfigFile = Path(skillsPath / skillDirectory / 'config.json')
 			skillConfigTemplate = Path(skillsPath / skillDirectory / 'config.json.template')
@@ -326,7 +326,7 @@ class ConfigManager(Manager):
 				config = json.load(skillConfigFile.open())
 
 			elif skillConfigFile.exists() and not skillConfigTemplate.exists():
-				self.logInfo(f'- Deprecated config file for skill "{skillName}", removing')
+				self.log.info(f'- Deprecated config file for skill "{skillName}", removing')
 				skillConfigFile.unlink()
 				self._skillsTemplateConfigurations[skillName] = dict()
 				skillsConfigurations[skillName] = dict()
@@ -340,7 +340,7 @@ class ConfigManager(Manager):
 					changes = False
 					for setting, definition in configSample.items():
 						if setting not in config:
-							self.logInfo(f'- New configuration found for skill "{skillName}": {setting}')
+							self.log.info(f'- New configuration found for skill "{skillName}": {setting}')
 							changes = True
 							config[setting] = definition['defaultValue']
 
@@ -349,28 +349,28 @@ class ConfigManager(Manager):
 							try:
 								# First try to cast the seting we have to the new type
 								config[setting] = type(definition['defaultValue'])(config[setting])
-								self.logInfo(f'- Existing configuration type missmatch for skill "{skillName}": {setting}, cast variable to template configuration type')
+								self.log.info(f'- Existing configuration type missmatch for skill "{skillName}": {setting}, cast variable to template configuration type')
 							except Exception:
 								# If casting failed let's fall back to the new default value
-								self.logInfo(f'- Existing configuration type missmatch for skill "{skillName}": {setting}, replaced with template configuration')
+								self.log.info(f'- Existing configuration type missmatch for skill "{skillName}": {setting}, replaced with template configuration')
 								config[setting] = definition['defaultValue']
 
 					temp = config.copy()
 					for k, v in temp.items():
 						if k not in configSample:
-							self.logInfo(f'- Deprecated configuration for skill "{skillName}": {k}')
+							self.log.info(f'- Deprecated configuration for skill "{skillName}": {k}')
 							changes = True
 							del config[k]
 
 					if changes:
 						self._writeToSkillConfigurationFile(skillName, config)
 				except Exception as e:
-					self.logWarning(f'- Failed updating existing skill config file for skill {skillName}: {e}')
+					self.log.warning(f'- Failed updating existing skill config file for skill {skillName}: {e}')
 					skillConfigFile.unlink()
 					if skillConfigTemplate.exists():
 						self._newSkillConfigFile(skillName, skillConfigTemplate)
 					else:
-						self.logWarning(f'- Cannot create config, template not existing, skipping skill "{skillName}"')
+						self.log.warning(f'- Cannot create config, template not existing, skipping skill "{skillName}"')
 
 			else:
 				self._skillsTemplateConfigurations[skillName] = dict()
@@ -381,15 +381,15 @@ class ConfigManager(Manager):
 			else:
 				# For some reason we have a skill not declared in alice configs... I think getting rid of it is best
 				if skillName not in SkillManager.NEEDED_SKILLS and not self.getAliceConfigByName('devMode'):
-					self.logInfo(f'- Skill "{skillName}" not declared in config but files are existing, cleaning up')
+					self.log.info(f'- Skill "{skillName}" not declared in config but files are existing, cleaning up')
 					shutil.rmtree(skillDirectory, ignore_errors=True)
 					if skillName in skillsConfigurations:
 						skillsConfigurations.pop(skillName)
 					continue
 				elif skillName in SkillManager.NEEDED_SKILLS:
-					self.logInfo(f'- Skill "{skillName}" is required but is missing definition in Alice config, generating them')
+					self.log.info(f'- Skill "{skillName}" is required but is missing definition in Alice config, generating them')
 				elif self.getAliceConfigByName('devMode'):
-					self.logInfo(f'- Dev mode is on, "{skillName}" is missing definition in Alice config, generating them')
+					self.log.info(f'- Dev mode is on, "{skillName}" is missing definition in Alice config, generating them')
 
 				try:
 					installFile = json.load(Path(skillsPath / skillDirectory / f'{skillName}.install').open())
@@ -404,10 +404,10 @@ class ConfigManager(Manager):
 					self.updateAliceConfiguration('skills', self._skillsConfigurations)
 				except Exception as e:
 					if self.getAliceConfigByName('devMode'):
-						self.logInfo(f'- Failed generating default config. Please check your config template for skill "{skillName}"')
+						self.log.info(f'- Failed generating default config. Please check your config template for skill "{skillName}"')
 						continue
 					else:
-						self.logError(f'- Failed generating default config, scheduling download for skill "{skillName}": {e}')
+						self.log.error(f'- Failed generating default config, scheduling download for skill "{skillName}": {e}')
 						self.Commons.downloadFile(f'https://skills.projectalice.ch/{skillName}', f'system/skillInstallTickets/{skillName}.install')
 						if skillName in skillsConfigurations:
 							skillsConfigurations.pop(skillName)
@@ -420,7 +420,7 @@ class ConfigManager(Manager):
 
 
 	def _newSkillConfigFile(self, skillName: str, skillConfigTemplate: Path):
-		self.logInfo(f'- New config file for skill "{skillName}", creating from template')
+		self.log.info(f'- New config file for skill "{skillName}", creating from template')
 
 		template = json.load(skillConfigTemplate.open())
 
@@ -433,7 +433,7 @@ class ConfigManager(Manager):
 	def deactivateSkill(self, skillName: str, persistent: bool = False):
 
 		if skillName in self.aliceConfigurations['skills']:
-			self.logInfo(f"Deactivated skill {skillName} {'with' if persistent else 'without'} persistence")
+			self.log.info(f"Deactivated skill {skillName} {'with' if persistent else 'without'} persistence")
 			self.aliceConfigurations['skills'][skillName]['active'] = False
 
 			if persistent:
@@ -443,7 +443,7 @@ class ConfigManager(Manager):
 	def activateSkill(self, skillName: str, persistent: bool = False):
 
 		if skillName in self.aliceConfigurations['skills']:
-			self.logInfo(f"Activated skill {skillName} {'with' if persistent else 'without'} persistence")
+			self.log.info(f"Activated skill {skillName} {'with' if persistent else 'without'} persistence")
 			self.aliceConfigurations['skills'][skillName]['active'] = True
 
 			if persistent:
@@ -497,7 +497,7 @@ class ConfigManager(Manager):
 				func = getattr(self, function)
 				func()
 			except:
-				self.logWarning(f'Configuration post processing method "{function}" does not exist')
+				self.log.warning(f'Configuration post processing method "{function}" does not exist')
 				continue
 
 

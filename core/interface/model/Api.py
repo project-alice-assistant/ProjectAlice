@@ -9,7 +9,7 @@ class Api(FlaskView, ProjectAliceObject):
 
 
 	def __init__(self):
-		super().__init__(logDepth=6)
+		super().__init__(name=self.Commons.getFunctionCaller(depth=2))
 
 
 	@classmethod

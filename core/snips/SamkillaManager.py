@@ -26,12 +26,11 @@ class SamkillaManager(Manager):
 
 	ROOT_URL = "https://console.snips.ai"
 
-	def __init__(self, devMode: bool = True):
+	def __init__(self):
 		super().__init__()
 
 		self._currentUrl = ''
 		self._browser = None
-		self._devMode = devMode
 		self._cookie = ''
 		self._userId = ''
 		self._userEmail = ''
@@ -103,10 +102,10 @@ class SamkillaManager(Manager):
 		if skillFilter is None:
 			skillFilter = dict()
 
-		self.log(f"Sync for skill/s [{', '.join(skillFilter) or '*'}]")
+		self.log.info(f"Sync for skill/s [{', '.join(skillFilter) or '*'}]")
 
 		if not self.start():
-			self.log('No credentials. Unable to synchronize assistant with remote console')
+			self.log.info('No credentials. Unable to synchronize assistant with remote console')
 			return False
 
 		activeLang: str = self.LanguageManager.activeLanguage
@@ -123,13 +122,13 @@ class SamkillaManager(Manager):
 
 			if changes:
 				if download:
-					self.log('Changes detected during sync, let\'s update the assistant...')
+					self.log.info('Changes detected during sync, let\'s update the assistant...')
 					self.SnipsConsoleManager.doDownload(skillFilter)
 				else:
-					self.log('Changes detected during sync but not downloading yet')
+					self.log.info('Changes detected during sync but not downloading yet')
 					self.MqttManager.mqttBroadcast(topic='hermes/leds/clear')
 			else:
-				self.log('No changes detected during sync')
+				self.log.info('No changes detected during sync')
 				self.MqttManager.mqttBroadcast(topic='hermes/leds/clear')
 
 				if not Path(self.Commons.rootDir(), f'trained/assistants/assistant_{self.LanguageManager.activeLanguage}').exists():
@@ -140,14 +139,9 @@ class SamkillaManager(Manager):
 			self.stop()
 
 		except AssistantNotFoundError:
-			self.log(f'Assistant project id \'{activeProjectId}\' for lang \'{activeLang}\' doesn\'t exist. Check your config.py')
+			self.log.info(f'Assistant project id \'{activeProjectId}\' for lang \'{activeLang}\' doesn\'t exist. Check your config.py')
 
 		return changes
-
-
-	def log(self, msg: str):
-		if self._devMode:
-			self.logInfo(msg)
 
 
 	def start(self):
@@ -191,7 +185,7 @@ class SamkillaManager(Manager):
 		self._currentUrl = url
 		self._browser.get(url)
 		time.sleep(0.1)
-		# self.log("[Browser] " + self._browser.title +' - ' + self._browser.current_url)
+		# self.log.info("[Browser] " + self._browser.title +' - ' + self._browser.current_url)
 
 
 	def login(self, url: str):
@@ -214,9 +208,9 @@ class SamkillaManager(Manager):
 
 		injectedPayload = injectedPayload.replace("'", "__SINGLE_QUOTES__").replace("\\n", ' ')
 
-		# self.log(injectedPayload)
-		# self._browser.execute_script('console.log(\'' + injectedPayload + '\')')
-		# self._browser.execute_script('console.log(\'' + injectedPayload + '\'.replace(/__SINGLE_QUOTES__/g,"\'").replace(/__QUOTES__/g,\'\\\\"\'))')
+		# self.log.info(injectedPayload)
+		# self._browser.execute_script('console.log.info(\'' + injectedPayload + '\')')
+		# self._browser.execute_script('console.log.info(\'' + injectedPayload + '\'.replace(/__SINGLE_QUOTES__/g,"\'").replace(/__QUOTES__/g,\'\\\\"\'))')
 
 		self._browser.execute_script("document.title = 'loading'")
 		self._browser.execute_script('fetch("/gql", {method: "POST", headers:{"accept":"*/*","content-type":"application/json"}, credentials: "same-origin", body:\'' + injectedPayload + '\'.replace(/__SINGLE_QUOTES__/g,"\'").replace(/__QUOTES__/g,\'\\\\"\')}).then((data) => { data.text().then((text) => { document.title = text; }); })')
@@ -225,7 +219,7 @@ class SamkillaManager(Manager):
 		response = self._browser.execute_script('return document.title')
 		self._browser.execute_script("document.title = 'idle'")
 
-		# self.log(response)
+		# self.log.info(response)
 
 		jsonResponse = json.loads(response)
 
@@ -295,7 +289,7 @@ class SamkillaManager(Manager):
 				raise AssistantNotFoundError(4001, f'Assistant with id {assistantId} not found', ['assistant'])
 			# If found remotely, just use it
 			runOnAssistantId = assistantId
-			self.log(f'Using provided assistantId: {runOnAssistantId}')
+			self.log.info(f'Using provided assistantId: {runOnAssistantId}')
 
 
 		if not runOnAssistantId:
@@ -305,11 +299,11 @@ class SamkillaManager(Manager):
 			if not localFirstAssistantId or not self._assistant.exists(localFirstAssistantId):
 				# If not found remotely, create a new one
 				runOnAssistantId = self._assistant.create(title=newAssistantTitle, language=assistantLanguage)
-				self.log(f'Using new assistantId: {runOnAssistantId}')
+				self.log.info(f'Using new assistantId: {runOnAssistantId}')
 			else:
 				# If found remotely, just use it
 				runOnAssistantId = localFirstAssistantId
-				self.log(f'Using first local assistantId: {runOnAssistantId}')
+				self.log.info(f'Using first local assistantId: {runOnAssistantId}')
 
 		# Add assistant in cache locally if it isn't the case
 		self._mainProcessor.syncRemoteToLocalAssistant(

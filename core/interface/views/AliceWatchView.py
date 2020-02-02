@@ -38,7 +38,7 @@ class AliceWatchView(View):
 			self.SnipsWatchManager.setVerbosity(verbosity)
 			return self.refreshConsole()
 		except Exception as e:
-			self.logError(f'Error setting verbosity: {e}')
+			self.log.error(f'Error setting verbosity: {e}')
 			return jsonify(success=False)
 
 

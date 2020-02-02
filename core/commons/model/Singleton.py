@@ -6,10 +6,10 @@ class Singleton(Logger):
 	INSTANCE = None
 
 	def __init__(self, name):
-		super().__init__()
+		self.log = Logger(owner=name)
 
 		if self.INSTANCE:
-			self.logError(f'Trying to instanciate {name} but instance already exists')
+			self.log.error(f'Trying to instanciate {name} but instance already exists')
 			raise KeyboardInterrupt
 		else:
 			self.INSTANCE = self

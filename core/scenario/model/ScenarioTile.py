@@ -7,9 +7,8 @@ from core.scenario.model.ScenarioTileType import ScenarioTileType
 class ScenarioTile(ProjectAliceObject):
 
 	def __init__(self):
-		super().__init__()
+		super().__init__(name='')
 		self.tileType: ScenarioTileType = ScenarioTileType.ACTION
-		self.name: str = ''
 		self.description: str = ''
 		self.value: Any = ''
 
