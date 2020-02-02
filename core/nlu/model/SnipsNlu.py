@@ -2,9 +2,12 @@ import json
 from pathlib import Path
 
 import re
+import shutil
 
 from core.base.SuperManager import SuperManager
+from core.commons import constants
 from core.nlu.model.NluEngine import NluEngine
+from core.util.Stopwatch import Stopwatch
 
 
 class SnipsNlu(NluEngine):
@@ -60,29 +63,31 @@ class SnipsNlu(NluEngine):
 					data = list()
 					result = re.findall(self.UTTERANCE_REGEX, utterance)
 					if not result:
-						continue
+						data.append({
+							'text': utterance
+						})
+					else:
+						for dataset in result:
+							for match in dataset:
+								if not match:
+									continue
 
-					for dataset in result:
-						for match in dataset:
-							if not match:
-								continue
+								if not ':=>' in match:
+									data.append({
+										'text': match
+									})
+								else:
+									slotName = match.split(':=>')[1]
+									entity = slots[slotName] if slotName in slots else 'Unknown'
 
-							if not ':=>' in match:
-								data.append({
-									'text': match
-								})
-							else:
-								slotName = match.split(':=>')[1]
-								entity = slots[slotName] if slotName in slots else 'Unknown'
+									if entity.startswith('snips/'):
+										nluTrainingSample['entities'][entity] = dict()
 
-								if entity.startswith('snips/'):
-									nluTrainingSample['entities'][entity] = dict()
-
-								data.append({
-									'entity'   : entity,
-									'slot_name': slotName,
-									'text'     : match.split(':=>')[0]
-								})
+									data.append({
+										'entity'   : entity,
+										'slot_name': slotName,
+										'text'     : match.split(':=>')[0]
+									})
 
 					# noinspection PyTypeChecker
 					nluTrainingSample['intents'][intent['name']]['utterances'].append({'data': data})
@@ -109,13 +114,37 @@ class SnipsNlu(NluEngine):
 				dataset['intents'].update(trainingData['intents'])
 
 		datasetFile = Path('/tmp/snipsNluDataset.json')
+
 		with datasetFile.open('w') as fp:
 			fp.write(json.dumps(dataset, indent=4))
 
 		self.logInfo('Generated dataset for training')
-		self.logInfo('Begin training...')
-		self.Commons.runSystemCommand([f'./venv/bin/snips-nlu', 'train', str(datasetFile), 'trainedNlu'])
-		self.logInfo('Training done!')
+
+		# Now that we have generated the dataset, let's train in the background
+		self.ThreadManager.newThread(name='NLUTraining', target=self.nluTrainingThread, args=[datasetFile])
+
+
+	def nluTrainingThread(self, datasetFile: Path):
+		with Stopwatch() as stopWatch:
+			self.logInfo('Begin training...')
+
+			tempTrainingData = Path('/tmp/snipsNLU')
+
+			if tempTrainingData.exists():
+				shutil.rmtree(tempTrainingData)
+
+			self.Commons.runSystemCommand([f'./venv/bin/snips-nlu', 'train', str(datasetFile), str(tempTrainingData)])
+
+			assistantPath = Path(self.Commons.rootDir(), f'trained/assistants/assistant_{self.LanguageManager.activeLanguage}/nlu_engine')
+			if assistantPath.exists():
+				shutil.rmtree(assistantPath)
+
+			tempTrainingData.rename(assistantPath)
+
+			self.broadcast(method=constants.EVENT_NLU_TRAINED, exceptions=[constants.DUMMY], propagateToSkills=True)
+			self.SnipsServicesManager.runCmd(cmd='restart', services=['snips-nlu'])
+
+		self.logInfo(f'Snips NLU trained in {stopWatch} seconds')
 
 
 	@staticmethod

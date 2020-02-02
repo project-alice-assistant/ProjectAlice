@@ -335,6 +335,10 @@ class ProjectAliceObject(Logger):
 		pass
 
 
+	def onNluTrained(self, **kwargs):
+		pass
+
+
 	@property
 	def ProjectAlice(self):
 		return SM.SuperManager.getInstance().projectAlice
