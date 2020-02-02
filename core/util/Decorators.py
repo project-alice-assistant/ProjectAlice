@@ -144,8 +144,7 @@ def AnyExcept(func: Callable = None, text: str = 'error', exceptions: Tuple[Base
 			try:
 				return func(*args, **kwargs)
 			except exceptions as e:
-				owner = SuperManager.getInstance().commons.getFunctionCaller(depth=2)
-				Logger(owner=owner).warning(msg=e, printStack=printStack)
+				Logger(depth=6).logWarning(msg=e, printStack=printStack)
 				return _exceptHandler(*args, text=text, exceptHandler=exceptHandler, returnText=returnText, **kwargs)
 
 
@@ -185,8 +184,7 @@ def IfSetting(func: Callable = None, settingName: str = None, settingValue: Any 
 		@functools.wraps(func)
 		def settingDecorator(*args, **kwargs):
 			if not settingName:
-				owner = SuperManager.getInstance().commons.getFunctionCaller(depth=2)
-				Logger(owner=owner).warning(msg='Cannot use IfSetting decorator without settingName')
+				Logger(depth=6).logWarning(msg='Cannot use IfSetting decorator without settingName')
 				return None
 
 			configManager = SuperManager.getInstance().configManager

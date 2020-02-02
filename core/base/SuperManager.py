@@ -4,7 +4,7 @@ from core.commons import constants
 from core.util.model.Logger import Logger
 
 
-class SuperManager:
+class SuperManager(Logger):
 	NAME = 'SuperManager'
 	_INSTANCE = None
 
@@ -17,7 +17,7 @@ class SuperManager:
 
 
 	def __init__(self, mainClass):
-		self.log = Logger(owner=self.NAME)
+		super().__init__(depth=3)
 
 		SuperManager._INSTANCE = self
 		self._managers = dict()
@@ -179,7 +179,7 @@ class SuperManager:
 			for managerName, manager in self._managers.items():
 				manager.onStop()
 		except Exception as e:
-			self.log.error(f'Error while shutting down manager "{managerName}": {e}')
+			self.logError(f'Error while shutting down manager "{managerName}": {e}')
 
 
 	def getManager(self, managerName: str):

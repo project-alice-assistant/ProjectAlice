@@ -36,13 +36,13 @@ class SamkillaException(_ProjectAliceException):
 
 class FunctionNotImplemented(_ProjectAliceException):
 	def __init__(self, clazz: str, funcName: str):
-		self._logger.error(f'{funcName} must be implemented in {clazz}!')
+		self._logger.logError(f'{funcName} must be implemented in {clazz}!')
 
 
 class SkillStartingFailed(_ProjectAliceException):
 	def __init__(self, skillName: str = '', error: str = ''):
 		super().__init__(message=error)
-		self._logger.info(f'An error occured while starting a skill: {error}')
+		self._logger.logInfo(f'An error occured while starting a skill: {error}')
 
 		if skillName:
 			SuperManager.getInstance().skillManager.deactivateSkill(skillName)
@@ -51,7 +51,7 @@ class SkillStartingFailed(_ProjectAliceException):
 class SkillStartDelayed(_ProjectAliceException):
 	def __init__(self, skillName):
 		super().__init__(skillName)
-		self._logger.warning('Delaying skill start')
+		self._logger.logWarning('Delaying skill start')
 		SuperManager.getInstance().skillManager.getSkillInstance(skillName).delayed = True
 
 
@@ -111,5 +111,5 @@ class ConfigurationUpdateFailed(_ProjectAliceException): pass
 class VitalConfigMissing(_ProjectAliceException):
 	def __init__(self, message: str = None):
 		super().__init__(message)
-		self._logger.warning(f'A vital configuration ("{message}") is missing. Make sure the following configurations are set: {" / ".join(SuperManager.getInstance().configManager.vitalConfigs)}')
+		self._logger.logWarning(f'A vital configuration ("{message}") is missing. Make sure the following configurations are set: {" / ".join(SuperManager.getInstance().configManager.vitalConfigs)}')
 		SuperManager.getInstance().projectAlice.onStop()

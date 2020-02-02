@@ -8,14 +8,14 @@ from core.base.model.ProjectAliceObject import ProjectAliceObject
 class User(ProjectAliceObject):
 
 	def __init__(self, row: typing.Optional[dict]):
+		super().__init__(logDepth=3)
 
 		# TODO is it correct to init these values only when row exists?
 		# -> will throw exception when property is called or should they be
 		# inited to None instead
-		name = None
 		if row:
 			self._id = row['id']
-			name = row['username']
+			self._name = row['username']
 			self._accessLevel = row['accessLevel']
 			self._state = row['state']
 			self._pin = row['pin']
@@ -25,8 +25,6 @@ class User(ProjectAliceObject):
 			self._ttsType = row['ttsType']
 			self._ttsVoice = row['ttsVoice']
 			self._apiToken = row['apiToken']
-
-		super().__init__(name=name)
 
 		self._home = False
 		self._goingBed = False
@@ -39,7 +37,7 @@ class User(ProjectAliceObject):
 		try:
 			exec(f"self._{self._state} = 'True'")
 		except:
-			self.log.error(f"Invalid state \"{row['state']}\" for user \"{self.name}\"")
+			self.logError(f"Invalid state \"{row['state']}\" for user \"{self._name}\"")
 
 		# flask login reqs
 		self._isAuthenticated = False
@@ -50,7 +48,7 @@ class User(ProjectAliceObject):
 	def toJson(self) -> dict:
 		return {
 			'id'         : self._id,
-			'name'       : self.name,
+			'name'       : self._name,
 			'accessLevel': self._accessLevel,
 			'state'      : self._state,
 			'lang'       : self._lang,
@@ -64,6 +62,11 @@ class User(ProjectAliceObject):
 	@property
 	def id(self) -> int:
 		return self._id
+
+
+	@property
+	def name(self) -> str:
+		return self._name
 
 
 	@property
@@ -151,6 +154,11 @@ class User(ProjectAliceObject):
 		return self._eating
 
 
+	@name.setter
+	def name(self, value: str):
+		self._name = value
+
+
 	@accessLevel.setter
 	def accessLevel(self, value: str):
 		self._accessLevel = value
@@ -203,7 +211,7 @@ class User(ProjectAliceObject):
 
 	def checkPassword(self, password: str) -> bool:
 		if self.pin is None:
-			self.log.warning('No pin defined for this user')
+			self.logWarning('No pin defined for this user')
 			return False
 
 		return bcrypt.checkpw(str(password).encode(), self.pin)

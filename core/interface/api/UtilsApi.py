@@ -20,7 +20,7 @@ class UtilsApi(Api):
 			self.ThreadManager.doLater(interval=2, func=self.ProjectAlice.doRestart)
 			return jsonify(success=True)
 		except Exception as e:
-			self.log.error(f'Failed restarting Alice: {e}')
+			self.logError(f'Failed restarting Alice: {e}')
 			return jsonify(success=False)
 
 
@@ -31,5 +31,5 @@ class UtilsApi(Api):
 			self.ThreadManager.doLater(interval=2, func=self.Commons.runRootSystemCommand, args=[['shutdown', '-r', 'now']])
 			return jsonify(success=True)
 		except Exception as e:
-			self.log.error(f'Failed rebooting device: {e}')
+			self.logError(f'Failed rebooting device: {e}')
 			return jsonify(success=False)

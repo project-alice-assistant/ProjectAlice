@@ -18,7 +18,7 @@ class TomlFile(ProjectAliceObject):
 	CONFIG_PATTERN = re.compile('^(#)?( )?(?P<configName>.+)?( )=?( )(?P<configValue>.*)')
 
 	def __init__(self, path: Path):
-		super().__init__(name=self.__class__.__name__)
+		super().__init__()
 
 		self._path = path
 		self._data = dict()

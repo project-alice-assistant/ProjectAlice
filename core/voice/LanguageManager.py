@@ -33,8 +33,8 @@ class LanguageManager(Manager):
 
 	def onBooted(self):
 		data = self.TalkManager.langData
-		if self.name in data:
-			self._locals = data[self.name]
+		if self._name in data:
+			self._locals = data[self._name]
 
 
 	def sanitizeNluQuery(self, query: str = '') -> str:
@@ -70,13 +70,13 @@ class LanguageManager(Manager):
 			toLang = self.activeLanguage
 
 		if skill not in self._stringsData:
-			self.log.error(f'Asked to get translation from skill "{skill}" but does not exist')
+			self.logError(f'Asked to get translation from skill "{skill}" but does not exist')
 			return list()
 		elif key not in self._stringsData[skill]:
-			self.log.error(f'Asked to get translation for "{key}" from skill "{skill}" but does not exist')
+			self.logError(f'Asked to get translation for "{key}" from skill "{skill}" but does not exist')
 			return list()
 		elif toLang not in self._stringsData[skill][key]:
-			self.log.error(f'Asked to get "{toLang}" translation for "{key}" from skill "{skill}" but does not exist')
+			self.logError(f'Asked to get "{toLang}" translation for "{key}" from skill "{skill}" but does not exist')
 			return list()
 		else:
 			return self._stringsData[skill][key][toLang]
@@ -102,27 +102,27 @@ class LanguageManager(Manager):
 				self._activeSnipsProjectId = settings['snipsProjectId']
 
 		if not self._activeLanguage and self._defaultLanguage:
-			self.log.warning(f'No active language defined, falling back to {self._defaultLanguage}')
+			self.logWarning(f'No active language defined, falling back to {self._defaultLanguage}')
 			self._activeLanguage = self._defaultLanguage
 			self._activeCountryCode = self._defaultCountryCode
 
 		elif self._activeLanguage and not self._defaultLanguage:
-			self.log.warning(f'No default language defined, falling back to {self._activeLanguage}')
+			self.logWarning(f'No default language defined, falling back to {self._activeLanguage}')
 			self._defaultLanguage = self._activeLanguage
 			self._defaultCountryCode = self._activeCountryCode
 
 		elif self._activeLanguage and self._defaultLanguage:
-			self.log.info(f'Active language set to "{self.activeLanguageAndCountryCode}"')
-			self.log.info(f'Default language set to "{self.defaultLanguage}-{self.defaultCountryCode}"')
+			self.logInfo(f'Active language set to "{self.activeLanguageAndCountryCode}"')
+			self.logInfo(f'Default language set to "{self.defaultLanguage}-{self.defaultCountryCode}"')
 
 		else:
-			self.log.warning('No active language or default language defined, falling back to "en"')
+			self.logWarning('No active language or default language defined, falling back to "en"')
 			self._activeLanguage = self._defaultLanguage = 'en'
 			self._activeCountryCode = self._defaultCountryCode = 'US'
 
 
 		if not self._activeSnipsProjectId:
-			self.log.info('No active snips project id set')
+			self.logInfo('No active snips project id set')
 
 
 	def localize(self, string: str) -> str:

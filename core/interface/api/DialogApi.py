@@ -29,7 +29,7 @@ class DialogApi(Api):
 			)
 			return jsonify(success=True)
 		except Exception as e:
-			self.log.error(f'Failed speaking: {e}')
+			self.logError(f'Failed speaking: {e}')
 			return jsonify(success=False)
 
 
@@ -44,7 +44,7 @@ class DialogApi(Api):
 			)
 			return jsonify(success=True)
 		except Exception as e:
-			self.log.error(f'Failed asking: {e}')
+			self.logError(f'Failed asking: {e}')
 			return jsonify(success=False)
 
 
@@ -66,5 +66,5 @@ class DialogApi(Api):
 			})
 			return jsonify(success=True)
 		except Exception as e:
-			self.log.error(f'Failed processing: {e}')
+			self.logError(f'Failed processing: {e}')
 			return jsonify(success=False)

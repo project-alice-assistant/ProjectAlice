@@ -53,7 +53,7 @@ class AdminView(View):
 			self.ConfigManager.writeToAliceConfigurationFile(confs=confs)
 			return self.index()
 		except Exception as e:
-			self.log.error(f'Failed saving Alice config: {e}')
+			self.logError(f'Failed saving Alice config: {e}')
 			return self.index()
 
 
@@ -63,7 +63,7 @@ class AdminView(View):
 			self.ThreadManager.doLater(interval=2, func=self.ProjectAlice.doRestart)
 			return jsonify(success=True)
 		except Exception as e:
-			self.log.error(f'Failed restarting Alice: {e}')
+			self.logError(f'Failed restarting Alice: {e}')
 			return jsonify(success=False)
 
 
@@ -74,7 +74,7 @@ class AdminView(View):
 			self.ThreadManager.doLater(interval=2, func=self.Commons.runRootSystemCommand, args=[['shutdown', '-r', 'now']])
 			return jsonify(success=True)
 		except Exception as e:
-			self.log.error(f'Failed rebooting device: {e}')
+			self.logError(f'Failed rebooting device: {e}')
 			return jsonify(success=False)
 
 
@@ -84,7 +84,7 @@ class AdminView(View):
 			self.SnipsConsoleManager.doDownload()
 			return jsonify(success=True)
 		except Exception as e:
-			self.log.error(f'Failed downloading assistant: {e}')
+			self.logError(f'Failed downloading assistant: {e}')
 			return jsonify(success=False)
 
 
@@ -94,7 +94,7 @@ class AdminView(View):
 			self.ProjectAlice.updateProjectAlice()
 			return jsonify(success=True)
 		except Exception as e:
-			self.log.error(f'Failed updating Project Alice: {e}')
+			self.logError(f'Failed updating Project Alice: {e}')
 			return jsonify(success=False)
 
 
@@ -121,7 +121,7 @@ class AdminView(View):
 			Path(self.Commons.rootDir(), 'skills').mkdir()
 			return self.restart()
 		except Exception as e:
-			self.log.error(f'Failed wiping system: {e}')
+			self.logError(f'Failed wiping system: {e}')
 			return jsonify(success=False)
 
 

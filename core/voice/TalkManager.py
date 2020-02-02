@@ -50,7 +50,7 @@ class TalkManager(Manager):
 				except FileNotFoundError:
 					continue
 				except ValueError as e:
-					self.log.error(f'{e}')
+					self.logError(f'{e}')
 					continue
 
 
@@ -60,7 +60,7 @@ class TalkManager(Manager):
 			skill = self.Commons.toCamelCase(skill)
 			arr = self._langData[skill][self.LanguageManager.activeLanguage][talk][strType]
 		except KeyError:
-			self.log.warning(f'Was asked to return unexisting texts {talk} for skill {skill} with type {strType}')
+			self.logWarning(f'Was asked to return unexisting texts {talk} for skill {skill} with type {strType}')
 
 		return arr
 
@@ -83,12 +83,12 @@ class TalkManager(Manager):
 		except KeyError:
 			# Fallback to default language then
 			if activeLanguage != defaultLanguage:
-				self.log.error(f'Was asked to get "{talk}" from "{skill}" skill in "{activeLanguage}" but it doesn\'t exist, falling back to "{defaultLanguage}" version instead')
+				self.logError(f'Was asked to get "{talk}" from "{skill}" skill in "{activeLanguage}" but it doesn\'t exist, falling back to "{defaultLanguage}" version instead')
 				# call itself again with default language and then exit because activeLanguage == defaultLanguage
 				return self.chooseTalk(talk, skill, defaultLanguage, defaultLanguage, shortReplyMode)
 
 			# Give up, that text does not exist...
-			self.log.error(f'Was asked to get "{talk}" from "{skill}" skill but language string doesn\'t exist')
+			self.logError(f'Was asked to get "{talk}" from "{skill}" skill but language string doesn\'t exist')
 			return ''
 
 

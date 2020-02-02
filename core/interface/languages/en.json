@@ -43,5 +43,7 @@
 	"widgets": "Widgets",
 	"commaSeparatedExplanation": "Enter a list separated by comma, example 'foo, bar, baz'",
 	"createSkill": "Create the skill",
-	"uploadSkillToGithub": "Upload the skill to Github"
+	"uploadSkillToGithub": "Upload the skill to Github",
+	"resetSkill": "Reset",
+	"actions": "Actions"
 }
