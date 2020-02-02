@@ -655,9 +655,6 @@ class SkillManager(Manager):
 		shutil.rmtree(Path(self.Commons.rootDir(), 'skills', skillName))
 
 
-	# self.SnipsConsoleManager.doDownload()
-
-
 	def reloadSkill(self, skillName: str):
 		if skillName not in self._allSkills:
 			return
