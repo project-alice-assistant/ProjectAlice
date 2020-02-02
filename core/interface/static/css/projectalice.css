@@ -454,11 +454,12 @@ a:hover {
 .configInput {
 	display: table-cell;
 	padding-left: 20px;
+	width: 80%;
 	text-align: left;
 	vertical-align: middle;
 }
 
-.button {
+.configSaveButton {
 	margin-top: 25px;
 	width: 100%;
 	background-color: #636363;

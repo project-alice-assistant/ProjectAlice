@@ -60,10 +60,10 @@ class IntentRemoteProcessor:
 		fullIntentName = intent['name']
 
 		if hashComputationOnly or (oldInstanceExists and oldHash == curHash):
-			self._ctx.log(f'Intent model {intentId} ({fullIntentName}) has no changes')
+			self._ctx.log.info(f'Intent model {intentId} ({fullIntentName}) has no changes')
 		elif oldInstanceExists:
 			changes = True
-			self._ctx.log(f'Intent model {intentId} ({fullIntentName}) has been edited')
+			self._ctx.log.info(f'Intent model {intentId} ({fullIntentName}) has been edited')
 			self._ctx.intent.edit(
 				userId=self._ctx.userId,
 				intentId=intentId,
@@ -91,7 +91,7 @@ class IntentRemoteProcessor:
 				slotsDefinition=intent['slots'],
 				utterancesDefinition=intent['utterances']
 			)
-			self._ctx.log(f'Intent model {intentId} ({fullIntentName}) has been created')
+			self._ctx.log.info(f'Intent model {intentId} ({fullIntentName}) has been created')
 			self._createdInstances['intents'].append({'id': intentId})
 			curHash = self.intentValuesToHash(typeEntityMatching=typeEntityMatching, intentId=intentId, skillId=skillId)
 
@@ -102,13 +102,13 @@ class IntentRemoteProcessor:
 		try:
 			return self.syncIntentsOnAssistant(typeEntityMatching=typeEntityMatching, skillId=skillId, intentSyncState=intentSyncState, hashComputationOnly=hashComputationOnly)
 		except IntentError as ie:
-			self._ctx.log('Handle error gracefully')
-			self._ctx.log(ie.message)
+			self._ctx.log.info('Handle error gracefully')
+			self._ctx.log.info(ie.message)
 		except:
 			e = sys.exc_info()[0]
-			self._ctx.log('Handle error gracefully')
-			self._ctx.log(e)
-			self._ctx.log(traceback.format_exc())
+			self._ctx.log.info('Handle error gracefully')
+			self._ctx.log.info(e)
+			self._ctx.log.info(traceback.format_exc())
 			sys.exit(-1)
 
 
@@ -124,7 +124,7 @@ class IntentRemoteProcessor:
 
 
 	def cleanCreatedInstances(self):
-		self._ctx.log(f"[Cleanup] Deleting {len(self._createdInstances['intents'])} intents")
+		self._ctx.log.info(f"[Cleanup] Deleting {len(self._createdInstances['intents'])} intents")
 		for intent in self._createdInstances['intents']:
 			self._ctx.entity.delete(intentId=intent['id'])
 		self._createdInstances['intents'] = list()

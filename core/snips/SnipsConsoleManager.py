@@ -30,7 +30,7 @@ class SnipsConsoleManager(Manager):
 		super().onStart()
 
 		if self.ConfigManager.getSnipsConfiguration('project-alice', 'console_token'):
-			self.logInfo('Snips console authorized')
+			self.log.info('Snips console authorized')
 			self._headers['Authorization'] = f"JWT {self.ConfigManager.getSnipsConfiguration('project-alice', 'console_token')}"
 
 			self._user = SnipsConsoleUser({
@@ -41,20 +41,20 @@ class SnipsConsoleManager(Manager):
 			self._connected = True
 
 		elif self.loginCredentialsAreConfigured():
-			self.logInfo('Snips console not authorized')
+			self.log.info('Snips console not authorized')
 			self._login()
 		else:
-			self.logWarning('Snips console credentials not found')
+			self.log.warning('Snips console credentials not found')
 			if not Path(self.Commons.rootDir(), '/assistant').exists():
-				self.logError('No assistant found, cannot start')
+				self.log.error('No assistant found, cannot start')
 				self.ProjectAlice.onStop()
 			else:
-				self.logWarning('Assistant is existing, allowing to boot but functions will be restricted!')
+				self.log.warning('Assistant is existing, allowing to boot but functions will be restricted!')
 				self.isActive = False
 
 
 	def doDownload(self, skillsInfos: dict = None):
-		self.logInfo('Starting Snips assistant training and download procedure')
+		self.log.info('Starting Snips assistant training and download procedure')
 		self.ThreadManager.newEvent('SnipsAssistantDownload', onClearCallback='onSnipsAssistantDownloaded').set(skillsInfos=skillsInfos)
 
 		projectId = self.LanguageManager.activeSnipsProjectId
@@ -69,11 +69,11 @@ class SnipsConsoleManager(Manager):
 	def _login(self):
 		self._tries += 1
 		if self._tries > 3:
-			self.logInfo(f'Tried to login {self._tries} times, giving up now')
+			self.log.info(f'Tried to login {self._tries} times, giving up now')
 			self._tries = 0
 			return
 
-		self.logInfo(f"Connecting to Snips console using account {self.ConfigManager.getAliceConfigByName('snipsConsoleLogin')}")
+		self.log.info(f"Connecting to Snips console using account {self.ConfigManager.getAliceConfigByName('snipsConsoleLogin')}")
 		payload = {
 			'email': self.ConfigManager.getAliceConfigByName('snipsConsoleLogin'),
 			'password': self.ConfigManager.getAliceConfigByName('snipsConsolePassword')
@@ -81,14 +81,14 @@ class SnipsConsoleManager(Manager):
 
 		req = self._req(url='/v1/user/auth', data=payload)
 		if req.status_code == 200:
-			self.logInfo('Connected to Snips console. Fetching and saving access token')
+			self.log.info('Connected to Snips console. Fetching and saving access token')
 			try:
 				token = req.headers['authorization']
 				self._user = SnipsConsoleUser(req.json()['user'])
 
 				accessToken = self._getAccessToken(token)
 				if accessToken:
-					self.logInfo('Saving console access token')
+					self.log.info('Saving console access token')
 					self.ConfigManager.updateSnipsConfiguration(parent='project-alice', key='console_token', value=accessToken['token'])
 					self.ConfigManager.updateSnipsConfiguration(parent='project-alice', key='console_alias', value=accessToken['alias'])
 					self.ConfigManager.updateSnipsConfiguration(parent='project-alice', key='console_user_id', value=self._user.userId)
@@ -101,11 +101,11 @@ class SnipsConsoleManager(Manager):
 				else:
 					raise Exception('Error fetching JWT console token')
 			except Exception as e:
-				self.logError(f"Couldn't retrieve snips console token: {e}")
+				self.log.error(f"Couldn't retrieve snips console token: {e}")
 				self._connected = False
 				return
 		else:
-			self.logError(f"Couldn't connect to Snips console: {req.status_code}")
+			self.log.error(f"Couldn't connect to Snips console: {req.status_code}")
 			self._connected = False
 
 
@@ -150,20 +150,20 @@ class SnipsConsoleManager(Manager):
 			elif trainingStatus.nluStatus.needTraining and \
 				 not trainingStatus.nluStatus.inProgress and \
 				 not trainingStatus.asrStatus.inProgress:
-				self.logInfo('Training NLU')
+				self.log.info('Training NLU')
 				req = self._trainAssistant(assistantId, SnipsTrainingType.NLU)
 				if req.status_code == 400:
-					self.logInfo('There are no intents, so the assistant could not be trained')
+					self.log.info('There are no intents, so the assistant could not be trained')
 					trainingLock.clear()
 					raise Exception('Something went wrong while training the assistant')
 
 			elif not trainingStatus.nluStatus.inProgress and \
 				 trainingStatus.asrStatus.needTraining and \
 				 not trainingStatus.asrStatus.inProgress:
-				self.logInfo('Training ASR')
+				self.log.info('Training ASR')
 				req = self._trainAssistant(assistantId, SnipsTrainingType.ASR)
 				if req.status_code == 400:
-					self.logInfo('There are no intents, so the assistant could not be trained')
+					self.log.info('There are no intents, so the assistant could not be trained')
 					trainingLock.clear()
 					raise Exception('Something went wrong while training the assistant')
 
@@ -176,16 +176,16 @@ class SnipsConsoleManager(Manager):
 	def download(self, assistantId: str) -> bool:
 		try:
 			self._handleTraining(assistantId)
-			self.logInfo('Downloading assistant...')
+			self.log.info('Downloading assistant...')
 			req = self._req(url=f'/v3/assistant/{assistantId}/download', method='get')
 
 			Path(tempfile.gettempdir(), 'assistant.zip').write_bytes(req.content)
 
-			self.logInfo(f'Assistant {assistantId} trained and downloaded')
+			self.log.info(f'Assistant {assistantId} trained and downloaded')
 			self.ThreadManager.getEvent('SnipsAssistantDownload').clear()
 			return True
 		except Exception as e:
-			self.logError(f'Assistant download failed: {e}')
+			self.log.error(f'Assistant download failed: {e}')
 			self.broadcast(method=constants.EVENT_SNIPS_ASSISTANT_DOWNLOAD_FAILED, exceptions=[self.name], propagateToSkills=True)
 			self.ThreadManager.getEvent('SnipsAssistantDownload').cancel()
 			return False
@@ -205,7 +205,7 @@ class SnipsConsoleManager(Manager):
 
 	def login(self):
 		if self._connected:
-			self.logError('SnipsConsole: cannot login, already logged in')
+			self.log.error('SnipsConsole: cannot login, already logged in')
 		else:
 			self._login()
 
@@ -222,7 +222,7 @@ class SnipsConsoleManager(Manager):
 		"""
 		req = requests.request(method=method, url=f'https://external-gateway.snips.ai{url}', params=params, json=data, headers=self._headers, **kwargs)
 		if req.status_code == 401:
-			self.logWarning('Console token has expired, need to login')
+			self.log.warning('Console token has expired, need to login')
 			if 'Authorization' in self._headers:
 				del self._headers['Authorization']
 			self._connected = False

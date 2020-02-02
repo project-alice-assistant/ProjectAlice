@@ -139,7 +139,7 @@ class Intent:
 			raise ValueError(f'Inconsistent intent, "{iwuse.message}" is using unknown Slots')
 		except HttpError as he:
 			if he.status == 409:
-				self._ctx.log(f'Duplicate intent with name {name}')
+				self._ctx.log.info(f'Duplicate intent with name {name}')
 				intentDuplicate = self.getIntentByUserIdAndIntentName(userId, name)
 
 				if intentDuplicate:
@@ -257,7 +257,7 @@ class Intent:
 				self.attachToSkill(userId=userId, skillId=skillId, intentId=intentId, languageFilter=language)
 
 		except IntentWithUnknownSlotError as iwuse:
-			self._ctx.log(f'Inconsistent intent, "{iwuse.message}" is using unknown Slots')
+			self._ctx.log.info(f'Inconsistent intent, "{iwuse.message}" is using unknown Slots')
 
 	def formatSlotsAndEntities(self, typeEntityMatching: dict, slotsDefinition: dict) -> tuple:
 		entities = list()

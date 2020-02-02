@@ -23,7 +23,6 @@ class AliceSkill(ProjectAliceObject):
 
 
 	def __init__(self, supportedIntents: Iterable = None, databaseSchema: dict = None):
-		super().__init__(logDepth=4)
 		try:
 			path = Path(inspect.getfile(self.__class__)).with_suffix('.install')
 			self._install = json.loads(path.read_text())
@@ -32,7 +31,8 @@ class AliceSkill(ProjectAliceObject):
 		except Exception as e:
 			raise SkillStartingFailed(error=f'[{type(self).__name__}] Failed loading skill: {e}')
 
-		self._name = self._install['name']
+		super().__init__(name=self._install['name'])
+
 		self._author = self._install['author']
 		self._version = self._install['version']
 		self._updateAvailable = False
@@ -64,7 +64,7 @@ class AliceSkill(ProjectAliceObject):
 				self._scenarioNodeName = data['name']
 				self._scenarioNodeVersion = Version.fromString(data['version'])
 		except Exception as e:
-			self.logWarning(f'Failed to load scenario nodes: {e}')
+			self.log.warning(f'Failed to load scenario nodes: {e}')
 
 
 	def loadIntentsDefinition(self):
@@ -86,7 +86,7 @@ class AliceSkill(ProjectAliceObject):
 					for intent in data['intents']:
 						self._intentsDefinitions[lang][intent['name']] = intent['utterances']
 			except Exception as e:
-				self.logWarning(f'Something went wrong loading intent definition for skill {self._name}, language "{lang}": {e}')
+				self.log.warning(f'Something went wrong loading intent definition for skill {self.name}, language "{lang}": {e}')
 
 
 	def buildIntentList(self, supportedIntents) -> dict:
@@ -145,7 +145,7 @@ class AliceSkill(ProjectAliceObject):
 	def loadWidgets(self):
 		fp = Path(self.getCurrentDir(), 'widgets')
 		if fp.exists():
-			self.logInfo(f"Loading {len(list(fp.glob('*.py'))) - 1} widgets")
+			self.log.info(f"Loading {len(list(fp.glob('*.py'))) - 1} widgets")
 
 			data = self.DatabaseManager.fetch(
 				tableName='widgets',
@@ -170,10 +170,10 @@ class AliceSkill(ProjectAliceObject):
 					self._widgets[widgetName] = widget
 					widget.setParentSkillInstance(self)
 					del data[widgetName]
-					self.logInfo(f'Loaded widget "{widgetName}"')
+					self.log.info(f'Loaded widget "{widgetName}"')
 
 				else:  # widget is new
-					self.logInfo(f'Adding widget "{widgetName}"')
+					self.log.info(f'Adding widget "{widgetName}"')
 					widget = klass({
 						'name': widgetName,
 						'parent': self.name,
@@ -183,7 +183,7 @@ class AliceSkill(ProjectAliceObject):
 					widget.saveToDB()
 
 			for widgetName in data:  # deprecated widgets
-				self.logInfo(f'Widget "{widgetName}" is deprecated, removing')
+				self.log.info(f'Widget "{widgetName}" is deprecated, removing')
 				self.DatabaseManager.delete(
 					tableName='widgets',
 					callerName=self.SkillManager.name,
@@ -239,16 +239,6 @@ class AliceSkill(ProjectAliceObject):
 	@active.setter
 	def active(self, value: bool):
 		self._active = value
-
-
-	@property
-	def name(self) -> str:
-		return self._name
-
-
-	@name.setter
-	def name(self, value: str):
-		self._name = value
 
 
 	@property
@@ -330,7 +320,7 @@ class AliceSkill(ProjectAliceObject):
 			try:
 				mqttClient.subscribe(str(intent))
 			except:
-				self.logError(f'Failed subscribing to intent "{str(intent)}"')
+				self.log.error(f'Failed subscribing to intent "{str(intent)}"')
 
 
 	def notifyDevice(self, topic: str, uid: str = '', siteId: str = ''):
@@ -339,7 +329,7 @@ class AliceSkill(ProjectAliceObject):
 		elif siteId:
 			self.MqttManager.publish(topic=topic, payload={'siteId': siteId})
 		else:
-			self.logWarning('Tried to notify devices but no uid or site id specified')
+			self.log.warning('Tried to notify devices but no uid or site id specified')
 
 
 	def authenticateIntent(self, session: DialogSession):
@@ -408,9 +398,9 @@ class AliceSkill(ProjectAliceObject):
 
 	def onStart(self):
 		if not self._active:
-			self.logInfo(f'Skill {self.name} is not active')
+			self.log.info(f'Skill {self.name} is not active')
 		else:
-			self.logInfo(f'Starting {self.name} skill')
+			self.log.info(f'Starting {self.name} skill')
 
 		self._initDB()
 		self.MqttManager.subscribeSkillIntents(self.name)
@@ -422,7 +412,7 @@ class AliceSkill(ProjectAliceObject):
 				self.ThreadManager.doLater(interval=5, func=self.onBooted)
 				return False
 
-			self.logInfo('Delayed start')
+			self.log.info('Delayed start')
 			self.ThreadManager.doLater(interval=5, func=self.onStart)
 
 		return True
@@ -528,17 +518,9 @@ class AliceSkill(ProjectAliceObject):
 		self.MqttManager.publish(topic=topic, payload=payload, qos=qos, retain=retain)
 
 
-	def decorate(self, msg: str, depth: int) -> str:
-		"""
-		overwrite Logger decoration method, since it should always
-		be the skill name
-		"""
-		return f'[{self.name}] {msg}'
-
-
 	def toJson(self) -> dict:
 		return {
-			'name': self._name,
+			'name': self.name,
 			'author': self._author,
 			'version': self._version,
 			'updateAvailable': self._updateAvailable,

@@ -306,7 +306,7 @@ class CommonsManager(Manager):
 
 			return True
 		except Exception as e:
-			self.logWarning(f'Failed downloading file: {e}')
+			self.log.warning(f'Failed downloading file: {e}')
 			return False
 
 

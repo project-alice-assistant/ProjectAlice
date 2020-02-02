@@ -11,7 +11,7 @@ class GithubCloner(ProjectAliceObject):
 
 
 	def __init__(self, baseUrl: str, path: Path, dest: Path):
-		super().__init__(logDepth=3)
+		super().__init__(name=self.NAME)
 		self._baseUrl = baseUrl
 		self._path = path
 		self._dest = dest
@@ -48,5 +48,5 @@ class GithubCloner(ProjectAliceObject):
 
 			return True
 		except Exception as e:
-			self.logWarning(f'Something went wrong cloning github repo: {e}')
+			self.log.warning(f'Something went wrong cloning github repo: {e}')
 			return False

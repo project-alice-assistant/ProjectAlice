@@ -4,8 +4,7 @@ from core.base.model.ProjectAliceObject import ProjectAliceObject
 class TasmotaConfigs(ProjectAliceObject):
 
 	def __init__(self, deviceType: str, uid: str):
-		super().__init__()
-		self._name = 'TasmotaConfigs'
+		super().__init__(name=self.__class__.__name__)
 
 		self._deviceType = deviceType
 		self._uid = uid
@@ -23,11 +22,11 @@ class TasmotaConfigs(ProjectAliceObject):
 
 	def getConfigs(self, deviceBrand: str, room: str) -> list:
 		if deviceBrand not in self.CONFIGS:
-			self.logError(f'[{self._name}] Devices brand "{deviceBrand}" unknown')
+			self.log.error(f'Devices brand "{deviceBrand}" unknown')
 			return list()
 
 		elif self._deviceType not in self.CONFIGS[deviceBrand]:
-			self.logError(f'[{self._name}] Devices type "{self._deviceType}" unknown')
+			self.log.error(f'Devices type "{self._deviceType}" unknown')
 			return list()
 
 		else:

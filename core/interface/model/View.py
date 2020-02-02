@@ -8,5 +8,5 @@ class View(FlaskView, ProjectAliceObject):
 	default_methods = ['POST']
 
 	def __init__(self):
-		super().__init__(logDepth=6)
+		super().__init__(name=self.Commons.getFunctionCaller(depth=2))
 		self._langData = self.WebInterfaceManager.langData

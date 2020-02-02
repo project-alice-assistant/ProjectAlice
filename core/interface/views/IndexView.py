@@ -45,7 +45,7 @@ class IndexView(View):
 
 			return jsonify(success=True)
 		except Exception as e:
-			self.logWarning(f"[Widget] Couldn't save position: {e}")
+			self.log.warning(f"[Widget] Couldn't save position: {e}")
 			return jsonify(success=False)
 
 
@@ -60,7 +60,7 @@ class IndexView(View):
 
 			return jsonify(success=True)
 		except Exception as e:
-			self.logWarning(f"[Widget] Couldn't remove from home: {e}")
+			self.log.warning(f"[Widget] Couldn't remove from home: {e}")
 			return jsonify(success=False)
 
 
@@ -75,7 +75,7 @@ class IndexView(View):
 
 			return redirect('home.html')
 		except Exception as e:
-			self.logWarning(f"[Widget] Couldn't add to home: {e}")
+			self.log.warning(f"[Widget] Couldn't add to home: {e}")
 			return jsonify(success=False)
 
 
@@ -92,4 +92,4 @@ class IndexView(View):
 			func = getattr(widget, data['func'])
 			return func(**json.loads(data['param']))
 		except Exception as e:
-			self.logWarning(f"[Widget] Widget tried to call a core function but failed: {e}")
+			self.log.warning(f"[Widget] Widget tried to call a core function but failed: {e}")

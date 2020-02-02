@@ -20,7 +20,7 @@ class AdminAuth(View):
 		try:
 			self.__class__.setNextPage(request.args.get('next'))
 		except:
-			self.logWarning('No next page after auth success, falling back to index.html')
+			self.log.warning('No next page after auth success, falling back to index.html')
 
 		if current_user.is_authenticated:
 			return redirect(self.__class__.nextPage)
@@ -50,7 +50,7 @@ class AdminAuth(View):
 				return jsonify(success=True)
 
 		except Exception as e:
-			self.logError(f'Failed auth trial: {e}')
+			self.log.error(f'Failed auth trial: {e}')
 
 		return jsonify(success=False)
 
