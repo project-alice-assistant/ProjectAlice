@@ -551,6 +551,7 @@ class SkillManager(Manager):
 			sysReqs = installFile.get('systemRequirements', list())
 			scriptReq = installFile.get('script')
 			directory = Path(self.Commons.rootDir()) / 'skills' / installFile['name']
+			installedInstallFile = Path(self.Commons.rootDir()) / 'skills' / installFile['name'] / f'{installFile["name"]}.install'
 
 			for requirement in pipReqs:
 				self.Commons.runSystemCommand(['./venv/bin/pip3', 'install', requirement])
@@ -562,12 +563,16 @@ class SkillManager(Manager):
 				self.Commons.runRootSystemCommand(['chmod', '+x', str(directory / scriptReq)])
 				self.Commons.runRootSystemCommand([str(directory / scriptReq)])
 
-			node = {
-				'active'    : True,
-				'version'   : installFile['version'],
-				'author'    : installFile['author'],
-				'conditions': installFile['conditions']
-			}
+			# Grab the info of the skill we just installed, we can trust the installer file was up to date with the correct version number
+			with installedInstallFile.open() as fp:
+				data = json.load(fp)
+
+				node = {
+					'active'    : True,
+					'version'   : data['version'],
+					'author'    : data['author'],
+					'conditions': data['conditions']
+				}
 
 			os.unlink(str(res))
 			self.ConfigManager.addSkillToAliceConfig(installFile['name'], node)
