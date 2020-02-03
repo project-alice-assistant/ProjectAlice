@@ -36,65 +36,66 @@ class SnipsNlu(NluEngine):
 		with file.open() as fp:
 			dialogTemplate = json.load(fp)
 
-			nluTrainingSample = dict()
-			nluTrainingSample['language'] = file.stem
-			nluTrainingSample['entities'] = dict()
-			nluTrainingSample['intents'] = dict()
+		nluTrainingSample = dict()
+		nluTrainingSample['language'] = file.stem
+		nluTrainingSample['entities'] = dict()
 
-			for entity in dialogTemplate['slotTypes']:
-				nluTrainingSample['entities'].setdefault(entity['name'], dict())['automatically_extensible'] = entity['automaticallyExtensible']
-				nluTrainingSample['entities'][entity['name']]['matching_strictness'] = 1.0 if not entity['matchingStrictness'] else entity['matchingStrictness']
-				nluTrainingSample['entities'][entity['name']]['use_synonyms'] = entity['useSynonyms']
+		for entity in dialogTemplate['slotTypes']:
+			nluTrainingSampleEntity = nluTrainingSample['entities'].setdefault(entity['name'], dict())
 
-				values = list()
-				for value in entity['values']:
-					values.append({
-						'value'   : value['value'],
-						'synonyms': value['synonyms'] if 'synonyms' in value else list()
+			nluTrainingSampleEntity['automatically_extensible'] = entity['automaticallyExtensible']
+			nluTrainingSampleEntity['matching_strictness'] = entity['matchingStrictness'] or 1.0
+			nluTrainingSampleEntity['use_synonyms'] = entity['useSynonyms']
+
+			nluTrainingSampleEntity['data'] = [{
+					'value'   : value['value'],
+					'synonyms': value.get('synonyms', list())
+				} for value in entity['values']
+			]
+
+		nluTrainingSample['intents'] = dict()
+		for intent in dialogTemplate['intents']:
+			intentName = f'{self.ConfigManager.getAliceConfigByName("intentsOwner")}:{intent["name"]}'
+			slots = self.loadSlots(intent)
+			nluTrainingSample['intents'].setdefault(intentName, {'utterances': list()})
+
+			for utterance in intent['utterances']:
+				data = list()
+				result = re.findall(self.UTTERANCE_REGEX, utterance)
+				if not result:
+					data.append({
+						'text': utterance
 					})
-				nluTrainingSample['entities'][entity['name']]['data'] = values
+					continue
+				else:
+					for dataset in result:
+						for match in dataset:
+							if not match:
+								continue
 
-			nluTrainingSample['intents'] = dict()
-			for intent in dialogTemplate['intents']:
-				intentName = f'{self.ConfigManager.getAliceConfigByName("intentsOwner")}:{intent["name"]}'
-				slots = self.loadSlots(intent)
-				nluTrainingSample['intents'].setdefault(intentName, dict()).setdefault('utterances', list())
+							if ':=>' not in match:
+								data.append({
+									'text': match
+								})
+								continue
+							
+							text, slotName = match.split(':=>')
+							entity = slots.get(slotName, 'Unknown')
 
-				for utterance in intent['utterances']:
-					data = list()
-					result = re.findall(self.UTTERANCE_REGEX, utterance)
-					if not result:
-						data.append({
-							'text': utterance
-						})
-					else:
-						for dataset in result:
-							for match in dataset:
-								if not match:
-									continue
+							if entity.startswith('snips/'):
+								nluTrainingSample['entities'][entity] = dict()
 
-								if not ':=>' in match:
-									data.append({
-										'text': match
-									})
-								else:
-									slotName = match.split(':=>')[1]
-									entity = slots[slotName] if slotName in slots else 'Unknown'
+							data.append({
+								'entity'   : entity,
+								'slot_name': slotName,
+								'text'     : text
+							})
 
-									if entity.startswith('snips/'):
-										nluTrainingSample['entities'][entity] = dict()
+				# noinspection PyTypeChecker
+				nluTrainingSample['intents'][intentName]['utterances'].append({'data': data})
 
-									data.append({
-										'entity'   : entity,
-										'slot_name': slotName,
-										'text'     : match.split(':=>')[0]
-									})
-
-					# noinspection PyTypeChecker
-					nluTrainingSample['intents'][intentName]['utterances'].append({'data': data})
-
-			with Path(self._cachePath, f'{dialogTemplate["skill"]}_{file.stem}.json').open('w') as fpp:
-				fpp.write(json.dumps(nluTrainingSample, indent=4))
+			with Path(self._cachePath, f'{dialogTemplate["skill"]}_{file.stem}.json').open('w') as fp:
+				json.dump(nluTrainingSample, fp, ensure_ascii=False, indent=4)
 
 
 	def train(self):
@@ -105,9 +106,7 @@ class SnipsNlu(NluEngine):
 			'language': self.LanguageManager.activeLanguage,
 		}
 
-		for file in self._cachePath.glob('*.json'):
-			if not f'_{self.LanguageManager.activeLanguage}' in file.stem:
-				continue
+		for file in self._cachePath.glob(f'*_{self.LanguageManager.activeLanguage}.json'):
 
 			with file.open() as fp:
 				trainingData = json.load(fp)
@@ -117,7 +116,7 @@ class SnipsNlu(NluEngine):
 		datasetFile = Path('/tmp/snipsNluDataset.json')
 
 		with datasetFile.open('w') as fp:
-			fp.write(json.dumps(dataset, indent=4))
+			json.dump(dataset, fp, ensure_ascii=False, indent=4))
 
 		self.logInfo('Generated dataset for training')
 
@@ -153,8 +152,7 @@ class SnipsNlu(NluEngine):
 
 	@staticmethod
 	def loadSlots(intent: dict) -> dict:
-		result = dict()
-		for slot in intent['slots']:
-			result[slot['name']] = slot['type']
-
-		return result
+		return {
+			slot['name']: slot['type']
+			for slot in intent['slots']
+		}
