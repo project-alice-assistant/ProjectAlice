@@ -121,8 +121,11 @@ class SnipsNlu(NluEngine):
 
 		self.logInfo('Generated dataset for training')
 
-		# Now that we have generated the dataset, let's train in the background
-		self.ThreadManager.newThread(name='NLUTraining', target=self.nluTrainingThread, args=[datasetFile])
+		# Now that we have generated the dataset, let's train in the background if we are already booted, else do it directly
+		if self.ProjectAlice.isBooted:
+			self.ThreadManager.newThread(name='NLUTraining', target=self.nluTrainingThread, args=[datasetFile])
+		else:
+			self.nluTrainingThread(datasetFile)
 
 
 	def nluTrainingThread(self, datasetFile: Path):
