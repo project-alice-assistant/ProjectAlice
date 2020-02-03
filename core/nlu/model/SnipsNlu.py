@@ -95,8 +95,7 @@ class SnipsNlu(NluEngine):
 				nluTrainingSample['intents'][intentName]['utterances'].append({'data': data})
 
 			with Path(self._cachePath, f'{dialogTemplate["skill"]}_{file.stem}.json').open('w') as fp:
-				#TODO: this will not allow ascii like Ä in german so this should probably include ensure_ascii=False
-				json.dump(nluTrainingSample, fp, indent=4)
+				json.dump(nluTrainingSample, fp, ensure_ascii=False, indent=4)
 
 
 	def train(self):
@@ -107,11 +106,7 @@ class SnipsNlu(NluEngine):
 			'language': self.LanguageManager.activeLanguage,
 		}
 
-		#TODO: I suppose this could be
-		# for file in self._cachePath.glob(f'*_{self.LanguageManager.activeLanguage}.json')
-		for file in self._cachePath.glob('*.json'):
-			if f'_{self.LanguageManager.activeLanguage}' not in file.stem:
-				continue
+		for file in self._cachePath.glob(f'*_{self.LanguageManager.activeLanguage}.json'):
 
 			with file.open() as fp:
 				trainingData = json.load(fp)
@@ -121,8 +116,7 @@ class SnipsNlu(NluEngine):
 		datasetFile = Path('/tmp/snipsNluDataset.json')
 
 		with datasetFile.open('w') as fp:
-			#TODO: this will not allow ascii like Ä in german so this should probably include ensure_ascii=False
-			json.dump(dataset, fp, indent=4))
+			json.dump(dataset, fp, ensure_ascii=False, indent=4))
 
 		self.logInfo('Generated dataset for training')
 
