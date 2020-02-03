@@ -12,11 +12,10 @@ class NluManager(Manager):
 		self._nluEngine = None
 		self._pathToCache = Path(self.Commons.rootDir(), 'var/cache/nlu/')
 		self._pathToChecksums = self._pathToCache / 'checksums.json'
+		self.selectNluEngine()
 
 
 	def onStart(self):
-		self.selectNluEngine()
-
 		changes = self.checkCache()
 		if not changes:
 			self.logInfo('Cache uptodate')
