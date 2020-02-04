@@ -116,7 +116,7 @@ class SnipsNlu(NluEngine):
 		datasetFile = Path('/tmp/snipsNluDataset.json')
 
 		with datasetFile.open('w') as fp:
-			json.dump(dataset, fp, ensure_ascii=False, indent=4))
+			json.dump(dataset, fp, ensure_ascii=False, indent=4)
 
 		self.logInfo('Generated dataset for training')
 
