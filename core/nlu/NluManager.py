@@ -57,8 +57,8 @@ class NluManager(Manager):
 		with self._pathToChecksums.open() as fp:
 			checksums = json.load(fp)
 
+		# First check upon the skills that are installed
 		changes = dict()
-
 		for skillName, skillInstance in self.SkillManager.allSkills.items():
 			if not skillInstance:
 				continue
@@ -81,6 +81,18 @@ class NluManager(Manager):
 					self.logInfo(f'Skill "{skillName}" has changes in language "{filename}"')
 					changes.setdefault(skillName, list()).append(filename)
 					continue
+
+		# Now check that what we have in cache in actually existing and wasn't manually deleted
+		for skillName, languages in checksums.items():
+			if not Path(self.Commons.rootDir(), f'skills/{skillName}/').exists():
+				self.logInfo(f'Skill "{skillName}" was removed')
+				changes[f'--{skillName}'] = []
+				continue
+
+			for lang in languages:
+				if not Path(self.Commons.rootDir(), f'skills/{skillName}/dialogTemplate/{lang}.json').exists():
+					self.logInfo(f'Skill "{skillName}" has dropped language "{lang}"')
+					changes.get(f'--{skillName}', list()).append(lang)
 
 		return changes
 
@@ -106,10 +118,27 @@ class NluManager(Manager):
 
 	def buildTrainingData(self, changes: dict):
 		for changedSkill, changedLanguages in changes.items():
-			pathToSkillResources = Path(self.Commons.rootDir(), f'skills/{changedSkill}/dialogTemplate')
+			if not changedSkill.startswith('--'):
+				pathToSkillResources = Path(self.Commons.rootDir(), f'skills/{changedSkill}/dialogTemplate')
 
-			for lang in changedLanguages:
-				self._nluEngine.convertDialogTemplate(pathToSkillResources / f'{lang}.json')
+				for lang in changedLanguages:
+					self._nluEngine.convertDialogTemplate(pathToSkillResources / f'{lang}.json')
+			else:
+				skillName = changedSkill.replace('--', '')
+
+				with self._pathToChecksums.open() as fp:
+					checksums = json.load(fp)
+
+				if not changedLanguages:
+					checksums.pop(skillName, None)
+					for file in Path(self.Commons.rootDir(), '/var/cache/nlu/trainingData/').glob(f'{skillName}_'):
+						file.unlink()
+				else:
+					for lang in changedLanguages:
+						checksums.get(skillName, list()).pop(lang, None)
+						langFile = Path(self.Commons.rootDir(), f'/var/cache/nlu/trainingData/{skillName}_{lang}.json')
+						if langFile.exists():
+							langFile.unlink()
 
 
 	def trainNLU(self):
