@@ -66,7 +66,6 @@ class SnipsNlu(NluEngine):
 					data.append({
 						'text': utterance
 					})
-					continue
 				else:
 					for dataset in result:
 						for match in dataset:
@@ -107,7 +106,6 @@ class SnipsNlu(NluEngine):
 		}
 
 		for file in self._cachePath.glob(f'*_{self.LanguageManager.activeLanguage}.json'):
-
 			with file.open() as fp:
 				trainingData = json.load(fp)
 				dataset['entities'].update(trainingData['entities'])
@@ -141,6 +139,10 @@ class SnipsNlu(NluEngine):
 			assistantPath = Path(self.Commons.rootDir(), f'trained/assistants/assistant_{self.LanguageManager.activeLanguage}/nlu_engine')
 			if assistantPath.exists():
 				shutil.rmtree(assistantPath)
+
+			if not tempTrainingData.exists():
+				self.logError('Snips NLU training failed')
+				return
 
 			tempTrainingData.rename(assistantPath)
 
