@@ -86,13 +86,13 @@ class NluManager(Manager):
 		for skillName, languages in checksums.items():
 			if not Path(self.Commons.rootDir(), f'skills/{skillName}/').exists():
 				self.logInfo(f'Skill "{skillName}" was removed')
-				changes[f'--{skillName}'] = []
+				changes[f'--{skillName}'] = list()
 				continue
 
 			for lang in languages:
 				if not Path(self.Commons.rootDir(), f'skills/{skillName}/dialogTemplate/{lang}.json').exists():
 					self.logInfo(f'Skill "{skillName}" has dropped language "{lang}"')
-					changes.get(f'--{skillName}', list()).append(lang)
+					changes.setdefault(f'--{skillName}', list()).append(lang)
 
 		return changes
 
