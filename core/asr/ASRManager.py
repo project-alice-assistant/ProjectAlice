@@ -25,7 +25,6 @@ class ASRManager(Manager):
 			self._asr = GoogleASR()
 		else:
 			from core.asr.model.PocketSphinxASR import PocketSphinxASR
-
 			self._asr = PocketSphinxASR()
 			self.logInfo('Started PocketSphinx ASR')
 
@@ -56,16 +55,13 @@ class ASRManager(Manager):
 			self._asr = SnipsASR()
 
 
-	def onAudioFrame(self, message):
-		pass
-
-
 	def onStartListening(self, session: DialogSession, *args, **kwargs):
 		if isinstance(self._asr, SnipsASR):
 			return
 
 		with Stopwatch() as processingTime:
 			result = self._asr.onListen()
+			print(result)
 
 		if result:
 			# Stop listener as fast as possible
