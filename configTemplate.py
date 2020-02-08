@@ -110,10 +110,10 @@ settings = {
 		'description': 'Your Snips account username'
 	},
 	'asr': {
-		'defaultValue': 'snips',
-		'dataType': 'list',
-		'values': ['snips', 'google'],
-		'description': 'The ASR to use. Can\'t use an online ASR if you have set keepASROffline to true!'
+		'defaultValue': 'pocketsphinx',
+		'dataType'    : 'list',
+		'values'      : ['pocketsphinx', 'google'],
+		'description' : 'The ASR to use. Can\'t use an online ASR if you have set keepASROffline to true!'
 	},
 	'tts': {
 		'defaultValue': 'pico',

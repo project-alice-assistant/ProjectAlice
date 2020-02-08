@@ -1,11 +1,10 @@
-import time
-
 from core.asr.model import ASR
 from core.asr.model.SnipsASR import SnipsASR
 from core.base.model.Intent import Intent
 from core.base.model.Manager import Manager
 from core.commons import constants
 from core.dialog.model.DialogSession import DialogSession
+from core.util.Stopwatch import Stopwatch
 
 
 class ASRManager(Manager):
@@ -24,12 +23,11 @@ class ASRManager(Manager):
 			from core.asr.model.GoogleASR import GoogleASR
 
 			self._asr = GoogleASR()
-			self.SnipsServicesManager.runCmd('stop', ['snips-asr'])
-			self.logInfo('Turned Snips ASR off')
 		else:
-			self._asr = SnipsASR()
-			self.SnipsServicesManager.runCmd('start', ['snips-asr'])
-			self.logInfo('Started Snips ASR')
+			from core.asr.model.PocketSphinxASR import PocketSphinxASR
+
+			self._asr = PocketSphinxASR()
+			self.logInfo('Started PocketSphinx ASR')
 
 
 	@property
@@ -53,19 +51,21 @@ class ASRManager(Manager):
 
 	def onInternetLost(self):
 		if not isinstance(self._asr, SnipsASR):
-			self.logInfo('Internet lost, switching to snips ASR')
+			self.logInfo('Internet lost, switching to offline ASR')
 			self.SnipsServicesManager.runCmd('start', ['snips-asr'])
 			self._asr = SnipsASR()
+
+
+	def onAudioFrame(self, message):
+		pass
 
 
 	def onStartListening(self, session: DialogSession, *args, **kwargs):
 		if isinstance(self._asr, SnipsASR):
 			return
 
-		start = time.time()
-		result = self._asr.onListen()
-		end = time.time()
-		processing = float(end - start)
+		with Stopwatch() as processingTime:
+			result = self._asr.onListen()
 
 		if result:
 			# Stop listener as fast as possible
@@ -77,10 +77,7 @@ class ASRManager(Manager):
 			supportedIntents = session.intentFilter or self.SkillManager.supportedIntents
 			intentFilter = [intent.justTopic for intent in supportedIntents if isinstance(intent, Intent) and not intent.isProtected]
 
-			# Add Global Intents
-			intentFilter.append(Intent('GlobalStop').justTopic)
-
-			self.MqttManager.publish(topic=constants.TOPIC_TEXT_CAPTURED, payload={'sessionId': session.sessionId, 'text': result, 'siteId': session.siteId, 'likelihood': 1, 'seconds': processing})
+			self.MqttManager.publish(topic=constants.TOPIC_TEXT_CAPTURED, payload={'sessionId': session.sessionId, 'text': result, 'siteId': session.siteId, 'likelihood': 1, 'seconds': processingTime})
 
 			self.MqttManager.publish(topic=constants.TOPIC_NLU_QUERY, payload={'id': session.sessionId, 'input': result, 'intentFilter': intentFilter, 'sessionId': session.sessionId})
 		else:

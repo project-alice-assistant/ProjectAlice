@@ -105,7 +105,8 @@ $(function () {
 			}
 		}).done(function (status) {
 			$('#newSkillForm :input').prop('disabled', true);
-			$('#uploadSkillButton').show();
+			$('#uploadSkillButton').prop('disabled', false).show();
+			$('#resetSkillButton').prop('disabled', false);
 			$('#createSkillButton').hide();
 		});
 	});
@@ -114,8 +115,6 @@ $(function () {
 		$.ajax({
 			url: '/devmode/uploadToGithub/',
 			type: 'POST',
-			contentType: 'application/json',
-			dataType: 'json',
 			data: {
 				'skillName': $('#skillname').val(),
 				'skillDesc': $('#skilldesc').val()
