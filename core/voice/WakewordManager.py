@@ -1,11 +1,11 @@
 import json
-from enum import Enum
 from pathlib import Path
 
 import paho.mqtt.client as mqtt
 import shutil
 import struct
 import tempfile
+from enum import Enum
 from pydub import AudioSegment
 
 from core.base.model.Manager import Manager
@@ -85,6 +85,9 @@ class WakewordManager(Manager):
 
 
 	def onAudioFrame(self, message: mqtt.MQTTMessage):
+		if self.state != WakewordManagerState.RECORDING:
+			return
+
 		# @author DasBasti
 		# https://gist.github.com/DasBasti/050bf6c3232d4bb54c741a1f057459d3
 

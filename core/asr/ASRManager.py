@@ -60,7 +60,7 @@ class ASRManager(Manager):
 			return
 
 		with Stopwatch() as processingTime:
-			result = self._asr.onListen()
+			result = self._asr.onListen(session.siteId)
 			print(result)
 
 		if result:
@@ -83,3 +83,10 @@ class ASRManager(Manager):
 				location='assistant/custom_dialogue/sound',
 				siteId=session.siteId
 			)
+
+
+	def onAudioFrame(self, message):
+		if not self._asr.isListening:
+			return
+
+		self._asr.onAudioFrame(message)

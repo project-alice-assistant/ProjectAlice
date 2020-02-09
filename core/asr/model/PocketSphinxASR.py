@@ -1,8 +1,10 @@
 import typing
 
-from pocketsphinx import Ad, Decoder, Pocketsphinx
+import paho.mqtt.client as mqtt
+import struct
 
 from core.asr.model.ASR import ASR
+from core.commons import constants
 
 
 class PocketSphinxASR(ASR):
@@ -10,22 +12,45 @@ class PocketSphinxASR(ASR):
 	def __init__(self):
 		super().__init__()
 		self._capableOfArbitraryCapture = True
-		self._decoder: typing.Optional[Decoder] = None
-		self._buffer = bytearray(2048)
-		self._pocketsphinx = Pocketsphinx()
-		self._ad = Ad()
+		self._listening = False
+		self._streams: typing.Dict[str: bytearray] = dict()
 
 
 	def onStart(self):
 		pass
 
 
-	def onListen(self) -> str:
-		with self._ad:
-			with self._pocketsphinx.start_utterance():
-				while self._ad.readinto(self._buffer) >= 0:
-					print('buffer processing')
-					self._pocketsphinx.process_raw(self._buffer, True, False)
-					if not self._pocketsphinx.get_in_speech() and self._pocketsphinx.hyp():
-						with self._pocketsphinx.end_utterance():
-							return self._pocketsphinx.hyp().hypstr.strip()
+	def onAudioFrame(self, message: mqtt.MQTTMessage):
+		try:
+			riff, size, fformat = struct.unpack('<4sI4s', message.payload[:12])
+
+			if riff != b'RIFF':
+				self.logError('Frame capture error')
+				return
+
+			if fformat != b'WAVE':
+				self.logError('Frame format error')
+				return
+
+			chunkOffset = 52
+			while chunkOffset < size:
+				subChunk2Id, subChunk2Size = struct.unpack('<4sI', message.payload[chunkOffset:chunkOffset + 8])
+				chunkOffset += 8
+				if subChunk2Id == b'data':
+					self._streams[self.Commons.parseSiteId(message)] += message.payload[chunkOffset:chunkOffset + subChunk2Size]
+
+				chunkOffset = chunkOffset + subChunk2Size + 8
+
+		except Exception as e:
+			self.logError(f'Error capturing audio frame: {e}')
+
+
+	def onListen(self, siteId: str):
+		self._listening = True
+		self._streams[siteId] = bytearray(2048)
+		self.MqttManager.mqttClient.unsubscribe(constants.TOPIC_AUDIO_FRAME.format(siteId))
+
+
+	@property
+	def isListening(self) -> bool:
+		return self._listening
