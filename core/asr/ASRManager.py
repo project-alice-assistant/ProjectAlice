@@ -80,7 +80,7 @@ class ASRManager(Manager):
 			self.MqttManager.publish(topic=constants.TOPIC_INTENT_NOT_RECOGNIZED)
 			self.MqttManager.playSound(
 				soundFilename='error',
-				location='assistant/custom_dialogue/sound',
+				location=Path('assistant/custom_dialogue/sound'),
 				siteId=session.siteId
 			)
 
