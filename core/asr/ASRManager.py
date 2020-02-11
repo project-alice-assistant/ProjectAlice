@@ -1,3 +1,5 @@
+from pathlib import Path
+
 from core.asr.model import ASR
 from core.asr.model.SnipsASR import SnipsASR
 from core.base.model.Intent import Intent
