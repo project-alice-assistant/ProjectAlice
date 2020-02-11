@@ -50,6 +50,9 @@ class PocketSphinxASR(ASR):
 		self._streams[siteId] = bytearray(2048)
 		self.MqttManager.mqttClient.unsubscribe(constants.TOPIC_AUDIO_FRAME.format(siteId))
 
+		while self._listening:
+			pass
+
 
 	@property
 	def isListening(self) -> bool:
