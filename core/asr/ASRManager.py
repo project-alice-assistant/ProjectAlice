@@ -40,9 +40,8 @@ class ASRManager(Manager):
 
 			self._asr = PocketSphinxASR()
 
-		if self._asr.isOnlineASR:
-			if not online or keepASROffline or stayOffline:
-				self._asr = None
+		if self._asr.isOnlineASR and (not online or keepASROffline or stayOffline):
+			self._asr = None
 
 		if self._asr is None:
 			from core.asr.model.PocketSphinxASR import PocketSphinxASR
