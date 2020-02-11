@@ -8,10 +8,13 @@ from core.commons import constants
 
 
 class PocketSphinxASR(ASR):
+	NAME = 'Pocketsphinx ASR'
+
 
 	def __init__(self):
 		super().__init__()
 		self._capableOfArbitraryCapture = True
+		self._isOnlineASR = False
 		self._listening = False
 		self._streams: typing.Dict[str: bytearray] = dict()
 

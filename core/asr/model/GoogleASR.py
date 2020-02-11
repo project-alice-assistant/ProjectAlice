@@ -11,6 +11,8 @@ from core.voice.model.MicrophoneStream import MicrophoneStream
 
 # noinspection PyUnresolvedReferences
 class GoogleASR(ASR):
+	NAME = 'Google ASR'
+
 
 	def __init__(self):
 		super().__init__()
@@ -24,6 +26,7 @@ class GoogleASR(ASR):
 			language_code=SuperManager.getInstance().languageManager.activeLanguageAndCountryCode
 		)
 		self._capableOfArbitraryCapture = True
+		self._isOnlineASR = True
 		self._streamingConfig = types.StreamingRecognitionConfig(config=self._config, single_utterance=True, interim_results=False)
 
 

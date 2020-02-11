@@ -12,6 +12,7 @@ from core.util.Stopwatch import Stopwatch
 class ASRManager(Manager):
 	NAME = 'ASRManager'
 
+
 	def __init__(self):
 		super().__init__(self.NAME)
 		self._asr = None
@@ -19,16 +20,36 @@ class ASRManager(Manager):
 
 	def onStart(self):
 		super().onStart()
+		self._startASREngine()
 
-		if self.ConfigManager.getAliceConfigByName(configName='asr').lower() == 'google' and not self.ConfigManager.getAliceConfigByName('keepASROffline') and not self.ConfigManager.getAliceConfigByName('stayCompletlyOffline'):
-			# noinspection PyUnresolvedReferences
+
+	def _startASREngine(self):
+		userASR = self.ConfigManager.getAliceConfigByName(configName='asr').lower()
+		keepASROffline = self.ConfigManager.getAliceConfigByName('keepASROffline')
+		stayOffline = self.ConfigManager.getAliceConfigByName('stayCompletlyOffline')
+		online = self.InternetManager.online
+
+		self._asr = None
+
+		if userASR == 'google':
 			from core.asr.model.GoogleASR import GoogleASR
 
 			self._asr = GoogleASR()
-		else:
+		elif userASR == 'pocketsphinx':
 			from core.asr.model.PocketSphinxASR import PocketSphinxASR
+
 			self._asr = PocketSphinxASR()
-			self.logInfo('Started PocketSphinx ASR')
+
+		if self._asr.isOnlineASR:
+			if not online or keepASROffline or stayOffline:
+				self._asr = None
+
+		if self._asr is None:
+			from core.asr.model.PocketSphinxASR import PocketSphinxASR
+
+			self._asr = PocketSphinxASR()
+
+		self._asr.onStart()
 
 
 	@property
@@ -37,24 +58,26 @@ class ASRManager(Manager):
 
 
 	def onInternetConnected(self):
-		if not self.ConfigManager.getAliceConfigByName('keepASROffline'):
-			asr = self.ConfigManager.getAliceConfigByName('asr').lower()
-			if asr != 'snips' and not self.ConfigManager.getAliceConfigByName('keepASROffline') and not self.ConfigManager.getAliceConfigByName('stayCompletlyOffline'):
-				self.logInfo('Connected to internet, switching ASR')
-				self.SnipsServicesManager.runCmd('stop', ['snips-asr'])
-				if asr == 'google':
-					# TODO needs better handling. A header import with some checks if needed or not
-					# noinspection PyUnresolvedReferences
-					from core.asr.model.GoogleASR import GoogleASR
+		if self.ConfigManager.getAliceConfigByName('stayCompletlyOffline') or self.ConfigManager.getAliceConfigByName('keepASROffline'):
+			return
 
-					self._asr = GoogleASR()
+		if not self._asr.isOnlineASR:
+			self.logInfo('Connected to internet, switching ASR')
+			self._asr.onStop()
+			if self.ConfigManager.getAliceConfigByName(configName='asr').lower() == 'google':
+				# noinspection PyUnresolvedReferences
+				from core.asr.model.GoogleASR import GoogleASR
+
+				self._asr = GoogleASR()
+
+			self._asr.onStart()
 
 
 	def onInternetLost(self):
-		if not isinstance(self._asr, SnipsASR):
+		if self._asr.isOnlineASR:
 			self.logInfo('Internet lost, switching to offline ASR')
-			self.SnipsServicesManager.runCmd('start', ['snips-asr'])
-			self._asr = SnipsASR()
+			self._asr.onStop()
+			self._startASREngine()
 
 
 	def onStartListening(self, session: DialogSession, *args, **kwargs):
