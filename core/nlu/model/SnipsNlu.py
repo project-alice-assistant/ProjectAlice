@@ -154,7 +154,7 @@ class SnipsNlu(NluEngine):
 
 	@staticmethod
 	def loadSlots(intent: dict) -> dict:
-		return {
+		return dict() if 'slots' not in intent else {
 			slot['name']: slot['type']
 			for slot in intent['slots']
 		}
