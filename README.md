@@ -68,6 +68,7 @@ If you see or find a copyright breach, feel free to contact us immediately. It i
 
 
 ## Special thanks and retired official devs
+-   June 2019 - February 2020: @Maxbachmann for the work provided on cleaning up and building external solutions
 -   December 2020 - *Snips* for the wonderful tool we could use for all these years! Sonos? You suck!
 -   May 2019 - November 2019: *Jierka* for the work provided on the core
 
