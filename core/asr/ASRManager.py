@@ -1,6 +1,8 @@
 from pathlib import Path
+from typing import Dict
 
 from core.asr.model import ASR
+from core.asr.model.Recorder import Recorder
 from core.asr.model.SnipsASR import SnipsASR
 from core.base.model.Intent import Intent
 from core.base.model.Manager import Manager
@@ -16,6 +18,7 @@ class ASRManager(Manager):
 	def __init__(self):
 		super().__init__(self.NAME)
 		self._asr = None
+		self._streams: Dict[str, Recorder] = dict()
 
 
 	def onStart(self):
@@ -83,9 +86,30 @@ class ASRManager(Manager):
 		if isinstance(self._asr, SnipsASR):
 			return
 
+		recorder = Recorder()
+		self._streams[session.siteId] = recorder
+		recorder.onStartListening(session)
+
+
+	def onAudioFrame(self, message):
+		if not self._asr.isListening:
+			return
+
+		self._asr.onAudioFrame(message)
+
+
+	def onCaptured(self, session: DialogSession):
+		if session.siteId not in self._streams:
+			self.logInfo(f'Text was captured on site id "{session.siteId}" but there is not recorder associated')
+			return
+
+		recorder = self._streams[session.siteId]
+		recorder.onCaptured(session)
+
 		with Stopwatch() as processingTime:
-			result = self._asr.onListen(session.siteId)
-			print(result)
+			result = self._asr.decode(recorder.getSamplePath())
+
+		print(result)
 
 		if result:
 			# Stop listener as fast as possible
@@ -108,9 +132,4 @@ class ASRManager(Manager):
 				siteId=session.siteId
 			)
 
-
-	def onAudioFrame(self, message):
-		if not self._asr.isListening:
-			return
-
-		self._asr.onAudioFrame(message)
+		self._streams.pop(session.siteId, None)

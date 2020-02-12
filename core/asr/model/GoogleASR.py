@@ -6,7 +6,6 @@ from google.cloud.speech import enums, types
 
 from core.asr.model.ASR import ASR
 from core.base.SuperManager import SuperManager
-from core.voice.model.MicrophoneStream import MicrophoneStream
 
 
 # noinspection PyUnresolvedReferences
@@ -27,33 +26,3 @@ class GoogleASR(ASR):
 		)
 		self._capableOfArbitraryCapture = True
 		self._isOnlineASR = True
-		self._streamingConfig = types.StreamingRecognitionConfig(config=self._config, single_utterance=True, interim_results=False)
-
-
-	@staticmethod
-	def _listen(responses):
-		for response in responses:
-			if not response.results:
-				continue
-
-			result = response.results[0]
-			if not result.alternatives:
-				continue
-
-			# Display the transcription of the top alternative.
-			transcript = result.alternatives[0].transcript
-
-			if result.is_final:
-				return transcript
-
-
-	def onListen(self) -> str:
-		micSampleRate = SuperManager.getInstance().configManager.getAliceConfigByName('micSampleRate')
-
-		with MicrophoneStream(int(micSampleRate), int(micSampleRate / 10)) as stream:
-			audioGenerator = stream.generator()
-			requests = (types.StreamingRecognizeRequest(audio_content=content) for content in audioGenerator)
-			responses = self._client.streaming_recognize(self._streamingConfig, requests)
-			result = self._listen(responses)
-
-		return result

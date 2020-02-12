@@ -1,10 +1,9 @@
-import typing
+from pathlib import Path
+from typing import Optional
 
-import paho.mqtt.client as mqtt
-import struct
+from pocketsphinx import Decoder
 
 from core.asr.model.ASR import ASR
-from core.commons import constants
 
 
 class PocketSphinxASR(ASR):
@@ -15,48 +14,25 @@ class PocketSphinxASR(ASR):
 		super().__init__()
 		self._capableOfArbitraryCapture = True
 		self._isOnlineASR = False
-		self._listening = False
-		self._streams: typing.Dict[str: bytearray] = dict()
+		self._decoder: Optional[Decoder] = None
 
 
 	def onStart(self):
-		pass
+		config = Decoder.default_config()
+		config.set_string('-hmm', f'{self.Commons.rootDir()}/venv/lib/python3.7/site-packages/pocketsphinx/model/en-us')
+		config.set_string('-lm', f'{self.Commons.rootDir()}/venv/lib/python3.7/site-packages/pocketsphinx/model/en-us.lm.bin')
+		config.set_string('-dict', f'{self.Commons.rootDir()}/venv/lib/python3.7/site-packages/pocketsphinx/model/cmudict-en-us.dict')
+		self._decoder = Decoder(config)
 
 
-	def onAudioFrame(self, message: mqtt.MQTTMessage):
-		try:
-			riff, size, fformat = struct.unpack('<4sI4s', message.payload[:12])
+	def decode(self, filepath: Path) -> str:
+		self._decoder.start_utt()
+		stream = filepath.open('rb')
+		while True:
+			buf = stream.read(1024)
+			if not buf:
+				break
 
-			if riff != b'RIFF':
-				self.logError('Frame capture error')
-				return
-
-			if fformat != b'WAVE':
-				self.logError('Frame format error')
-				return
-
-			chunkOffset = 52
-			while chunkOffset < size:
-				subChunk2Id, subChunk2Size = struct.unpack('<4sI', message.payload[chunkOffset:chunkOffset + 8])
-				chunkOffset += 8
-				if subChunk2Id == b'data':
-					self._streams[self.Commons.parseSiteId(message)] += message.payload[chunkOffset:chunkOffset + subChunk2Size]
-
-				chunkOffset = chunkOffset + subChunk2Size + 8
-
-		except Exception as e:
-			self.logError(f'Error capturing audio frame: {e}')
-
-
-	def onListen(self, siteId: str):
-		self._listening = True
-		self._streams[siteId] = bytearray(2048)
-		self.MqttManager.mqttClient.unsubscribe(constants.TOPIC_AUDIO_FRAME.format(siteId))
-
-		while self._listening:
-			pass
-
-
-	@property
-	def isListening(self) -> bool:
-		return self._listening
+			self._decoder.process_raw(buf, True, False)
+		self._decoder.end_utt()
+		return self._decoder.hyp().hypstr.strip()
