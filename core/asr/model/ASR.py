@@ -46,5 +46,5 @@ class ASR(ProjectAliceObject):
 		self._listening = False
 
 
-	def decode(self, filepath: Path):
+	def decode(self, filepath: Path, session: DialogSession):
 		pass

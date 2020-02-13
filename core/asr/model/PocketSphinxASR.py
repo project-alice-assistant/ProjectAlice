@@ -4,6 +4,9 @@ from typing import Optional
 from pocketsphinx import Decoder
 
 from core.asr.model.ASR import ASR
+from core.asr.model.ASRResult import ASRResult
+from core.dialog.model.DialogSession import DialogSession
+from core.util.Stopwatch import Stopwatch
 
 
 class PocketSphinxASR(ASR):
@@ -25,14 +28,21 @@ class PocketSphinxASR(ASR):
 		self._decoder = Decoder(config)
 
 
-	def decode(self, filepath: Path) -> str:
-		self._decoder.start_utt()
-		stream = filepath.open('rb')
-		while True:
-			buf = stream.read(1024)
-			if not buf:
-				break
+	def decode(self, filepath: Path, session: DialogSession) -> ASRResult:
+		with Stopwatch() as processingTime:
+			self._decoder.start_utt()
+			stream = filepath.open('rb')
+			while True:
+				buf = stream.read(1024)
+				if not buf:
+					break
 
-			self._decoder.process_raw(buf, True, False)
-		self._decoder.end_utt()
-		return self._decoder.hyp().hypstr.strip()
+				self._decoder.process_raw(buf, True, False)
+			self._decoder.end_utt()
+
+		return ASRResult(
+			text=self._decoder.hyp().hypstr.strip(),
+			session=session,
+			likelihood=1,
+			processingTime=processingTime
+		)

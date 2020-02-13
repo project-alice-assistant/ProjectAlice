@@ -8,7 +8,6 @@ from core.base.model.Intent import Intent
 from core.base.model.Manager import Manager
 from core.commons import constants
 from core.dialog.model.DialogSession import DialogSession
-from core.util.Stopwatch import Stopwatch
 
 
 class ASRManager(Manager):
@@ -106,8 +105,7 @@ class ASRManager(Manager):
 		recorder = self._streams[session.siteId]
 		recorder.onCaptured(session)
 
-		with Stopwatch() as processingTime:
-			result = self._asr.decode(recorder.getSamplePath())
+		result = self._asr.decode(recorder.getSamplePath())
 
 		print(result)
 
