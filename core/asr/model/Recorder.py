@@ -2,6 +2,7 @@ import uuid
 import wave
 from pathlib import Path
 
+import paho.mqtt.client as mqtt
 import struct
 
 from core.base.model.ProjectAliceObject import ProjectAliceObject
@@ -13,21 +14,38 @@ class Recorder(ProjectAliceObject):
 
 	def __init__(self):
 		super().__init__()
-		self._filepath = Path(f'{uuid.uuid4()}.wav')
+		self._filepath = Path(f'/tmp/{uuid.uuid4()}.wav')
 		self._file = None
+		self._listening = False
+
+
+	@property
+	def isListening(self) -> bool:
+		return self._listening
 
 
 	def onStartListening(self, session: DialogSession):
+		self._listening = True
 		self._file = wave.open(str(self._filepath), 'wb')
 		self.MqttManager.mqttClient.subscribe(constants.TOPIC_AUDIO_FRAME.format(session.siteId))
 
 
 	def onCaptured(self, session: DialogSession):
-		self.MqttManager.mqttClient.unsubscribe(constants.TOPIC_AUDIO_FRAME.format(session.siteId))
+		self.stopRecording(session.siteId)
+
+
+	def onSessionError(self, session: DialogSession):
+		self.stopRecording(session.siteId)
+		self.clean()
+
+
+	def stopRecording(self, siteId: str):
+		self._listening = False
+		self.MqttManager.mqttClient.unsubscribe(constants.TOPIC_AUDIO_FRAME.format(siteId))
 		self._file.close()
 
 
-	def onAudioFrame(self, message):
+	def onAudioFrame(self, message: mqtt.MQTTMessage):
 		try:
 			riff, size, fformat = struct.unpack('<4sI4s', message.payload[:12])
 
@@ -72,3 +90,7 @@ class Recorder(ProjectAliceObject):
 
 	def getSample(self) -> wave.Wave_write:
 		return self._file
+
+
+	def clean(self):
+		self._filepath.unlink()

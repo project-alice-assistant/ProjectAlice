@@ -148,7 +148,8 @@ class MqttManager(Manager):
 					method=constants.EVENT_AUDIO_FRAME,
 					exceptions=[self.name],
 					propagateToSkills=True,
-					message=message
+					message=message,
+					siteId=message.topic.replace('hermes/audioServer/', '').replace('/audioFrame', '')
 				)
 				return
 

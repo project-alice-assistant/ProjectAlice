@@ -41,7 +41,7 @@ class LanguageManager(Manager):
 		for sign, langsValues in self._stringsData['system'].items():
 			if sign in self._mathSigns:
 				if sign == '-':
-					query = query.replace(' ' + sign + ' ', langsValues[self.activeLanguage][0])
+					query = query.replace(f' {sign} ', langsValues[self.activeLanguage][0])
 				else:
 					query = query.replace(sign, langsValues[self.activeLanguage][0])
 

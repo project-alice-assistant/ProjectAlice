@@ -319,7 +319,7 @@ class ProjectAliceObject(Logger):
 		pass
 
 
-	def onAudioFrame(self, message):
+	def onAudioFrame(self, **kwargs):
 		pass
 
 

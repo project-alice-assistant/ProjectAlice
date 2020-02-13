@@ -84,7 +84,7 @@ class WakewordManager(Manager):
 			self.MqttManager.mqttClient.subscribe(constants.TOPIC_AUDIO_FRAME.format(device.room))
 
 
-	def onAudioFrame(self, message: mqtt.MQTTMessage):
+	def onAudioFrame(self, message: mqtt.MQTTMessage, siteId: str):
 		if self.state != WakewordManagerState.RECORDING:
 			return
 
