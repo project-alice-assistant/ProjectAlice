@@ -1,9 +1,9 @@
 import uuid
-import wave
 from pathlib import Path
 
 import paho.mqtt.client as mqtt
 import struct
+from pydub import AudioSegment
 
 from core.base.model.ProjectAliceObject import ProjectAliceObject
 from core.commons import constants
@@ -12,12 +12,17 @@ from core.dialog.model.DialogSession import DialogSession
 
 class Recorder(ProjectAliceObject):
 
-	def __init__(self):
+	def __init__(self, session: DialogSession):
 		super().__init__()
-		self._filepath = Path(f'/tmp/{uuid.uuid4()}.wav')
-		self._file = None
+		self._session = session
+		self._filepath = Path(f'/tmp/done-{uuid.uuid4()}.wav')
+		self._audio: AudioSegment = AudioSegment.empty()
 		self._listening = False
-
+		self._minDB = None
+		self._maxDB = None
+		self._speechDetected = False
+		self._recorded = False
+		self._silenceCount = 0
 
 	@property
 	def isListening(self) -> bool:
@@ -26,12 +31,14 @@ class Recorder(ProjectAliceObject):
 
 	def onStartListening(self, session: DialogSession):
 		self._listening = True
-		self._file = wave.open(str(self._filepath), 'wb')
+		# self._audio = wave.open(str(self._filepath), 'wb')
 		self.MqttManager.mqttClient.subscribe(constants.TOPIC_AUDIO_FRAME.format(session.siteId))
 
 
-	def onCaptured(self, session: DialogSession):
-		self.stopRecording(session.siteId)
+	def captured(self):
+		print('stopped')
+		self.stopRecording(self._session.siteId)
+		self.broadcast(method='captured', exceptions=[constants.DUMMY], propagateToSkills=True, session=self._session)
 
 
 	def onSessionError(self, session: DialogSession):
@@ -42,7 +49,7 @@ class Recorder(ProjectAliceObject):
 	def stopRecording(self, siteId: str):
 		self._listening = False
 		self.MqttManager.mqttClient.unsubscribe(constants.TOPIC_AUDIO_FRAME.format(siteId))
-		self._file.close()
+		self._audio.export(str(self._filepath), format='wav')
 
 
 	def onAudioFrame(self, message: mqtt.MQTTMessage):
@@ -65,20 +72,38 @@ class Recorder(ProjectAliceObject):
 			if subChunkId == b'fmt ':
 				aFormat, channels, samplerate, byterate, blockAlign, bps = struct.unpack('HHIIHH', message.payload[20:36])
 
-			# noinspection PyProtectedMember
-			if not self._file._datawritten:
-				self._file.setframerate(samplerate)
-				self._file.setnchannels(channels)
-				self._file.setsampwidth(2)
-
 			chunkOffset = 52
 			while chunkOffset < size:
 				subChunk2Id, subChunk2Size = struct.unpack('<4sI', message.payload[chunkOffset:chunkOffset + 8])
 				chunkOffset += 8
 				if subChunk2Id == b'data':
-					self._file.writeframes(message.payload[chunkOffset:chunkOffset + subChunk2Size])
+					sound = AudioSegment(
+						data=message.payload[chunkOffset:chunkOffset + subChunk2Size],
+						sample_width=4,
+						frame_rate=samplerate,
+						channels=channels
+					)
+					self._audio += sound
+
+					if self._minDB is None:
+						self._minDB = sound.dBFS
+						self._maxDB = sound.dBFS
+					else:
+						if sound.dBFS > self._maxDB:
+							self._maxDB = sound.dBFS
+
+						if self._maxDB > self._minDB + 15:
+							self._speechDetected = True
+
+						if self._speechDetected and sound.dBFS <= self._minDB + 2:
+							self._silenceCount += 1
+							if self._silenceCount > 50:
+								self._recorded = True
 
 				chunkOffset = chunkOffset + subChunk2Size + 8
+
+			if self._recorded:
+				self.captured()
 
 		except Exception as e:
 			self.logError(f'Error capturing user speech: {e}')
@@ -86,10 +111,6 @@ class Recorder(ProjectAliceObject):
 
 	def getSamplePath(self) -> Path:
 		return self._filepath
-
-
-	def getSample(self) -> wave.Wave_write:
-		return self._file
 
 
 	def clean(self):

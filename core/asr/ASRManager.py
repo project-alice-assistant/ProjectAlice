@@ -88,7 +88,7 @@ class ASRManager(Manager):
 		if isinstance(self._asr, SnipsASR):
 			return
 
-		recorder = Recorder()
+		recorder = Recorder(session)
 		self._streams[session.siteId] = recorder
 		recorder.onStartListening(session)
 
@@ -112,24 +112,21 @@ class ASRManager(Manager):
 			self.logInfo(f'Text was captured on site id "{session.siteId}" but there is not recorder associated')
 			return
 
-		recorder = self._streams[session.siteId]
-		recorder.onCaptured(session)
+		# Stop listener as fast as possible
+		self.MqttManager.publish(topic=constants.TOPIC_STOP_LISTENING, payload={'sessionId': session.sessionId, 'siteId': session.siteId})
 
-		result: ASRResult = self._asr.decode(recorder.getSamplePath())
-		print(result.text)
+		recorder = self._streams[session.siteId]
+		result: ASRResult = self._asr.decode(recorder.getSamplePath(), session)
+		print(f'my result: {result.text}')
 
 		if result:
-			# Stop listener as fast as possible
-			self.MqttManager.publish(topic=constants.TOPIC_STOP_LISTENING, payload={'sessionId': session.sessionId, 'siteId': session.siteId})
-
-			result = self.LanguageManager.sanitizeNluQuery(result)
+			text = self.LanguageManager.sanitizeNluQuery(result.text)
 
 			supportedIntents = session.intentFilter or self.SkillManager.supportedIntents
 			intentFilter = [intent.justTopic for intent in supportedIntents if isinstance(intent, Intent) and not intent.isProtected]
 
-			self.MqttManager.publish(topic=constants.TOPIC_TEXT_CAPTURED, payload={'sessionId': session.sessionId, 'text': result.text, 'siteId': session.siteId, 'likelihood': result.likelihood, 'seconds': result.processingTime})
-
-			self.MqttManager.publish(topic=constants.TOPIC_NLU_QUERY, payload={'id': session.sessionId, 'input': result.text, 'intentFilter': intentFilter, 'sessionId': session.sessionId})
+			self.MqttManager.publish(topic=constants.TOPIC_TEXT_CAPTURED, payload={'sessionId': session.sessionId, 'text': text, 'siteId': session.siteId, 'likelihood': result.likelihood, 'seconds': result.processingTime})
+			self.MqttManager.publish(topic=constants.TOPIC_NLU_QUERY, payload={'id': session.sessionId, 'input': text, 'intentFilter': intentFilter, 'sessionId': session.sessionId})
 		else:
 			self.MqttManager.publish(topic=constants.TOPIC_INTENT_NOT_RECOGNIZED)
 			self.MqttManager.playSound(

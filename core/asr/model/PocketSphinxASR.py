@@ -43,6 +43,6 @@ class PocketSphinxASR(ASR):
 		return ASRResult(
 			text=self._decoder.hyp().hypstr.strip(),
 			session=session,
-			likelihood=1,
-			processingTime=processingTime
+			likelihood=self._decoder.get_logmath().exp(self._decoder.hyp().prob),
+			processingTime=processingTime.time
 		)
