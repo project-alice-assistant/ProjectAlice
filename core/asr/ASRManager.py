@@ -1,5 +1,5 @@
 from pathlib import Path
-from typing import Dict
+from typing import Dict, List
 
 import paho.mqtt.client as mqtt
 
@@ -21,11 +21,13 @@ class ASRManager(Manager):
 		super().__init__(self.NAME)
 		self._asr = None
 		self._streams: Dict[str, Recorder] = dict()
-
+		self._thresholds: Dict[str, List[float]] = dict()
+		self._thresholdRecorder = Recorder()
 
 	def onStart(self):
 		super().onStart()
 		self._startASREngine()
+		self.MqttManager.mqttClient.subscribe(constants.TOPIC_AUDIO_FRAME.format('+'))
 
 
 	def _startASREngine(self):
@@ -94,10 +96,12 @@ class ASRManager(Manager):
 
 
 	def onAudioFrame(self, message: mqtt.MQTTMessage, siteId: str):
+		# If we are not trying to capture what a user is saying, we update the noise level threshold, constantly.
+		# This allows for dynamic threshold even in noisy environements
 		if siteId not in self._streams or not self._streams[siteId].isListening:
-			return
-
-		self._streams[siteId].onAudioFrame(message)
+			self._thresholdRecorder.onAudioFrame(message)
+		else:
+			self._streams[siteId].onAudioFrame(message)
 
 
 	def onSessionError(self, session: DialogSession):
@@ -107,19 +111,18 @@ class ASRManager(Manager):
 		self._streams[session.siteId].onSessionError(session)
 
 
-	def onCaptured(self, session: DialogSession):
+	def onRecorded(self, session: DialogSession):
 		if session.siteId not in self._streams:
 			self.logInfo(f'Text was captured on site id "{session.siteId}" but there is not recorder associated')
 			return
 
-		# Stop listener as fast as possible
 		self.MqttManager.publish(topic=constants.TOPIC_STOP_LISTENING, payload={'sessionId': session.sessionId, 'siteId': session.siteId})
 
 		recorder = self._streams[session.siteId]
 		result: ASRResult = self._asr.decode(recorder.getSamplePath(), session)
-		print(f'my result: {result.text}')
 
 		if result:
+			self.logInfo(f'ASR capture: {result.text}')
 			text = self.LanguageManager.sanitizeNluQuery(result.text)
 
 			supportedIntents = session.intentFilter or self.SkillManager.supportedIntents

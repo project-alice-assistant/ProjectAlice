@@ -9,7 +9,6 @@ from enum import Enum
 from pydub import AudioSegment
 
 from core.base.model.Manager import Manager
-from core.commons import constants
 from core.dialog.model.DialogSession import DialogSession
 from core.voice.model.Wakeword import Wakeword
 from core.voice.model.WakewordUploadThread import WakewordUploadThread
@@ -58,9 +57,9 @@ class WakewordManager(Manager):
 
 	def onCaptured(self, session: DialogSession):
 		if self.state == WakewordManagerState.RECORDING:
-			self.MqttManager.mqttClient.unsubscribe(constants.TOPIC_AUDIO_FRAME.format('default'))
-			for device in self.DeviceManager.getDevicesByType('alicesatellite'):
-				self.MqttManager.mqttClient.unsubscribe(constants.TOPIC_AUDIO_FRAME.format(device.room))
+			# self.MqttManager.mqttClient.unsubscribe(constants.TOPIC_AUDIO_FRAME.format('default'))
+			# for device in self.DeviceManager.getDevicesByType('alicesatellite'):
+			# 	self.MqttManager.mqttClient.unsubscribe(constants.TOPIC_AUDIO_FRAME.format(device.room))
 			self._workAudioFile()
 
 
@@ -79,9 +78,10 @@ class WakewordManager(Manager):
 		self.wakeword.newSample()
 		self.state = WakewordManagerState.RECORDING
 
-		self.MqttManager.mqttClient.subscribe(constants.TOPIC_AUDIO_FRAME.format('default'))
-		for device in self.DeviceManager.getDevicesByType('alicesatellite'):
-			self.MqttManager.mqttClient.subscribe(constants.TOPIC_AUDIO_FRAME.format(device.room))
+
+	# self.MqttManager.mqttClient.subscribe(constants.TOPIC_AUDIO_FRAME.format('default'))
+	# for device in self.DeviceManager.getDevicesByType('alicesatellite'):
+	# 	self.MqttManager.mqttClient.subscribe(constants.TOPIC_AUDIO_FRAME.format(device.room))
 
 
 	def onAudioFrame(self, message: mqtt.MQTTMessage, siteId: str):

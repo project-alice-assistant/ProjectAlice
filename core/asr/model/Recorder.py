@@ -1,18 +1,18 @@
 import uuid
 from pathlib import Path
+from typing import Optional
 
 import paho.mqtt.client as mqtt
 import struct
 from pydub import AudioSegment
 
 from core.base.model.ProjectAliceObject import ProjectAliceObject
-from core.commons import constants
 from core.dialog.model.DialogSession import DialogSession
 
 
 class Recorder(ProjectAliceObject):
 
-	def __init__(self, session: DialogSession):
+	def __init__(self, session: DialogSession = None):
 		super().__init__()
 		self._session = session
 		self._filepath = Path(f'/tmp/done-{uuid.uuid4()}.wav')
@@ -24,6 +24,7 @@ class Recorder(ProjectAliceObject):
 		self._recorded = False
 		self._silenceCount = 0
 
+
 	@property
 	def isListening(self) -> bool:
 		return self._listening
@@ -31,14 +32,15 @@ class Recorder(ProjectAliceObject):
 
 	def onStartListening(self, session: DialogSession):
 		self._listening = True
-		# self._audio = wave.open(str(self._filepath), 'wb')
-		self.MqttManager.mqttClient.subscribe(constants.TOPIC_AUDIO_FRAME.format(session.siteId))
+
+
+	# self._audio = wave.open(str(self._filepath), 'wb')
+	# self.MqttManager.mqttClient.subscribe(constants.TOPIC_AUDIO_FRAME.format(session.siteId))
 
 
 	def captured(self):
-		print('stopped')
 		self.stopRecording(self._session.siteId)
-		self.broadcast(method='captured', exceptions=[constants.DUMMY], propagateToSkills=True, session=self._session)
+		self.ASRManager.onRecorded(self._session)
 
 
 	def onSessionError(self, session: DialogSession):
@@ -48,11 +50,15 @@ class Recorder(ProjectAliceObject):
 
 	def stopRecording(self, siteId: str):
 		self._listening = False
-		self.MqttManager.mqttClient.unsubscribe(constants.TOPIC_AUDIO_FRAME.format(siteId))
+		# self.MqttManager.mqttClient.unsubscribe(constants.TOPIC_AUDIO_FRAME.format(siteId))
 		self._audio.export(str(self._filepath), format='wav')
 
 
 	def onAudioFrame(self, message: mqtt.MQTTMessage):
+		self.getAudioSegment(message)
+
+
+	def getAudioSegment(self, message: mqtt.MQTTMessage) -> Optional[AudioSegment]:
 		try:
 			riff, size, fformat = struct.unpack('<4sI4s', message.payload[:12])
 
@@ -107,6 +113,7 @@ class Recorder(ProjectAliceObject):
 
 		except Exception as e:
 			self.logError(f'Error capturing user speech: {e}')
+			return None
 
 
 	def getSamplePath(self) -> Path:
