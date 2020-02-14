@@ -90,9 +90,12 @@ class ASRManager(Manager):
 		if isinstance(self._asr, SnipsASR):
 			return
 
-		recorder = Recorder(session)
-		self._streams[session.siteId] = recorder
-		recorder.onStartListening(session)
+		with Recorder(session) as recorder:
+			recorder.onStartListening(session)
+			self._streams[session.siteId] = recorder
+
+			result = self._asr.decodeStream(recorder)
+			print(result.hypstr.strip())
 
 
 	def onAudioFrame(self, message: mqtt.MQTTMessage, siteId: str):
@@ -103,14 +106,16 @@ class ASRManager(Manager):
 		# else:
 		# 	self._streams[siteId].onAudioFrame(message)
 
-		if siteId not in self._streams or not self._streams[siteId].isListening:
+		if siteId not in self._streams or not self._streams[siteId].isRecording:
 			return
+
+		print('here')
 
 		self._streams[siteId].onAudioFrame(message)
 
 
 	def onSessionError(self, session: DialogSession):
-		if session.siteId not in self._streams or not self._streams[session.siteId].isListening:
+		if session.siteId not in self._streams or not self._streams[session.siteId].isRecording:
 			return
 
 		self._streams[session.siteId].onSessionError(session)

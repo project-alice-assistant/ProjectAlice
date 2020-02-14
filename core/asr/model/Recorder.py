@@ -16,22 +16,25 @@ class Recorder(ProjectAliceObject):
 		self._session = session
 		self._filepath = Path(f'/tmp/done-{uuid.uuid4()}.wav')
 		self._audio: AudioSegment = AudioSegment.empty()
-		self._listening = False
-		self._minDB = None
-		self._maxDB = None
-		self._speechDetected = False
-		self._recorded = False
-		self._silenceCount = 0
-		self._buffer = bytearray()
+		self._recording = False
+		self._buffer = list()
+
+
+	def __enter__(self):
+		return self
+
+
+	def __exit__(self, exc_type, exc_val, exc_tb):
+		return True
 
 
 	@property
-	def isListening(self) -> bool:
-		return self._listening
+	def isRecording(self) -> bool:
+		return self._recording
 
 
 	def onStartListening(self, session: DialogSession):
-		self._listening = True
+		self._recording = True
 
 
 	# self._audio = wave.open(str(self._filepath), 'wb')
@@ -39,35 +42,32 @@ class Recorder(ProjectAliceObject):
 
 
 	def captured(self):
-		self.stopRecording(self._session.siteId)
+		self.stopRecording()
 		self.ASRManager.onRecorded(self._session)
 
 
 	def onSessionError(self, session: DialogSession):
-		self.stopRecording(session.siteId)
+		self.stopRecording()
 		self.clean()
 
 
-	def stopRecording(self, siteId: str):
-		self._listening = False
+	def stopRecording(self):
+		self._recording = False
+
+
+	def getChunk(self, index: int = 0) -> bytes:
+		try:
+			return self._buffer[index]
+		except:
+			return b''
 
 
 	# self.MqttManager.mqttClient.unsubscribe(constants.TOPIC_AUDIO_FRAME.format(siteId))
 	# self._audio.export(str(self._filepath), format='wav')
 
 
-	def decodeStream(self):
-		i = 0
-		self
-		while True:
-			buf = self._buffer[i:512]
-			if not buf:
-				continue
-
-			i += 512
-
-
 	def onAudioFrame(self, message: mqtt.MQTTMessage):
+		print('frame')
 		try:
 			riff, size, fformat = struct.unpack('<4sI4s', message.payload[:12])
 
@@ -122,7 +122,7 @@ class Recorder(ProjectAliceObject):
 		# 	self.captured()
 
 		except Exception as e:
-			self.logError(f'Error capturing user speech: {e}')
+			self.logError(f'Error recording user speech: {e}')
 
 
 	def getSamplePath(self) -> Path:
