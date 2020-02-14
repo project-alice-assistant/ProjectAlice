@@ -98,10 +98,15 @@ class ASRManager(Manager):
 	def onAudioFrame(self, message: mqtt.MQTTMessage, siteId: str):
 		# If we are not trying to capture what a user is saying, we update the noise level threshold, constantly.
 		# This allows for dynamic threshold even in noisy environements
+		# if siteId not in self._streams or not self._streams[siteId].isListening:
+		# 	self._thresholdRecorder.onAudioFrame(message)
+		# else:
+		# 	self._streams[siteId].onAudioFrame(message)
+
 		if siteId not in self._streams or not self._streams[siteId].isListening:
-			self._thresholdRecorder.onAudioFrame(message)
-		else:
-			self._streams[siteId].onAudioFrame(message)
+			return
+
+		self._streams[siteId].onAudioFrame(message)
 
 
 	def onSessionError(self, session: DialogSession):

@@ -1,6 +1,5 @@
 import uuid
 from pathlib import Path
-from typing import Optional
 
 import paho.mqtt.client as mqtt
 import struct
@@ -23,6 +22,7 @@ class Recorder(ProjectAliceObject):
 		self._speechDetected = False
 		self._recorded = False
 		self._silenceCount = 0
+		self._buffer = bytearray()
 
 
 	@property
@@ -50,15 +50,24 @@ class Recorder(ProjectAliceObject):
 
 	def stopRecording(self, siteId: str):
 		self._listening = False
-		# self.MqttManager.mqttClient.unsubscribe(constants.TOPIC_AUDIO_FRAME.format(siteId))
-		self._audio.export(str(self._filepath), format='wav')
+
+
+	# self.MqttManager.mqttClient.unsubscribe(constants.TOPIC_AUDIO_FRAME.format(siteId))
+	# self._audio.export(str(self._filepath), format='wav')
+
+
+	def decodeStream(self):
+		i = 0
+		self
+		while True:
+			buf = self._buffer[i:512]
+			if not buf:
+				continue
+
+			i += 512
 
 
 	def onAudioFrame(self, message: mqtt.MQTTMessage):
-		self.getAudioSegment(message)
-
-
-	def getAudioSegment(self, message: mqtt.MQTTMessage) -> Optional[AudioSegment]:
 		try:
 			riff, size, fformat = struct.unpack('<4sI4s', message.payload[:12])
 
@@ -83,37 +92,37 @@ class Recorder(ProjectAliceObject):
 				subChunk2Id, subChunk2Size = struct.unpack('<4sI', message.payload[chunkOffset:chunkOffset + 8])
 				chunkOffset += 8
 				if subChunk2Id == b'data':
-					sound = AudioSegment(
-						data=message.payload[chunkOffset:chunkOffset + subChunk2Size],
-						sample_width=4,
-						frame_rate=samplerate,
-						channels=channels
-					)
-					self._audio += sound
-
-					if self._minDB is None:
-						self._minDB = sound.dBFS
-						self._maxDB = sound.dBFS
-					else:
-						if sound.dBFS > self._maxDB:
-							self._maxDB = sound.dBFS
-
-						if self._maxDB > self._minDB + 15:
-							self._speechDetected = True
-
-						if self._speechDetected and sound.dBFS <= self._minDB + 2:
-							self._silenceCount += 1
-							if self._silenceCount > 50:
-								self._recorded = True
+					self._buffer.append(message.payload[chunkOffset:chunkOffset + subChunk2Size])
+				# sound = AudioSegment(
+				# 	data=message.payload[chunkOffset:chunkOffset + subChunk2Size],
+				# 	sample_width=4,
+				# 	frame_rate=samplerate,
+				# 	channels=channels
+				# )
+				# self._audio += sound
+				#
+				# if self._minDB is None:
+				# 	self._minDB = sound.dBFS
+				# 	self._maxDB = sound.dBFS
+				# else:
+				# 	if sound.dBFS > self._maxDB:
+				# 		self._maxDB = sound.dBFS
+				#
+				# 	if self._maxDB > self._minDB + 15:
+				# 		self._speechDetected = True
+				#
+				# 	if self._speechDetected and sound.dBFS <= self._minDB + 2:
+				# 		self._silenceCount += 1
+				# 		if self._silenceCount > 50:
+				# 			self._recorded = True
 
 				chunkOffset = chunkOffset + subChunk2Size + 8
 
-			if self._recorded:
-				self.captured()
+		# if self._recorded:
+		# 	self.captured()
 
 		except Exception as e:
 			self.logError(f'Error capturing user speech: {e}')
-			return None
 
 
 	def getSamplePath(self) -> Path:
