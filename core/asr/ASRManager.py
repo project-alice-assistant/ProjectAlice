@@ -6,7 +6,6 @@ import paho.mqtt.client as mqtt
 from core.asr.model import ASR
 from core.asr.model.ASRResult import ASRResult
 from core.asr.model.Recorder import Recorder
-from core.asr.model.SnipsASR import SnipsASR
 from core.base.model.Intent import Intent
 from core.base.model.Manager import Manager
 from core.commons import constants
@@ -81,9 +80,6 @@ class ASRManager(Manager):
 
 
 	def onStartListening(self, session: DialogSession, *args, **kwargs):
-		if isinstance(self._asr, SnipsASR):
-			return
-
 		with Recorder(session) as recorder:
 			recorder.onStartListening(session)
 			self._streams[session.siteId] = recorder

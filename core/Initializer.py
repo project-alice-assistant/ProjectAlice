@@ -373,7 +373,6 @@ network={
 
 	def fatal(self, text: str):
 		self.logFatal(text)
-		exit()
 
 
 	def warning(self, text: str):

@@ -23,6 +23,12 @@ class Logger:
 
 	def logFatal(self, msg: str):
 		self.doLog(function='fatal', msg=msg)
+		try:
+			from core.base.SuperManager import SuperManager
+
+			SuperManager.getInstance().projectAlice.onStop()
+		except:
+			exit()
 
 
 	def logWarning(self, msg: str, printStack: bool = False):

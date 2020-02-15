@@ -59,17 +59,19 @@ class NluManager(Manager):
 
 		# First check upon the skills that are installed
 		changes = dict()
-		for skillName, skillInstance in self.SkillManager.allSkills.items():
-			if not skillInstance:
-				continue
-
+		for skill in Path(self.Commons.rootDir(), 'skills/').glob('*/'):
+			skillName = skill.stem
 			self.logInfo(f'Checking data for skill "{skillName}"')
 			if skillName not in checksums:
 				self.logInfo(f'Skill "{skillName}" is new')
 				checksums[skillName] = list()
 				changes[skillName] = list()
 
-			pathToResources = skillInstance.getResource(resourcePathFile='dialogTemplate')
+			pathToResources = skill / 'dialogTemplate'
+			if not pathToResources.exists():
+				self.logWarning(f'{skillName} has no dialog template defined')
+				continue
+
 			for file in pathToResources.glob('*.json'):
 				filename = file.stem
 				if filename not in checksums[skillName]:
@@ -102,11 +104,13 @@ class NluManager(Manager):
 
 		cached = dict()
 
-		for skillName, skillInstance in self.SkillManager.allSkills.items():
-			if not skillInstance:
-				continue
+		for skill in Path(self.Commons.rootDir(), 'skills/').glob('*/'):
+			skillName = skill.stem
 
-			pathToResources = skillInstance.getResource(resourcePathFile='dialogTemplate')
+			pathToResources = skill / 'dialogTemplate'
+			if not pathToResources.exists():
+				self.logWarning(f'{skillName} has no dialog template defined to build cache')
+				continue
 
 			cached[skillName] = dict()
 			for file in pathToResources.glob('*.json'):

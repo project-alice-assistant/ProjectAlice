@@ -142,7 +142,6 @@ class SnipsNlu(NluEngine):
 				self.logError('Snips NLU training failed')
 				if not assistantPath.exists():
 					self.logFatal('No NLU engine found, cannot start')
-					self.ProjectAlice.onStop()
 				return
 
 			if assistantPath.exists():
