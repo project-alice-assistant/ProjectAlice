@@ -13,17 +13,18 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>
 
     authors: 	            Psycho <https://github.com/Psychokiller1888>
-							maxbachmann <https://github.com/maxbachmann>
+
 	retired or
 	inactive authors:       Jierka <https://github.com/jr-k>
+							maxbachmann <https://github.com/maxbachmann>
 """
 import logging.handlers
 import signal
 import sys
+import time
 import traceback
 from datetime import datetime
 from pathlib import Path
-import time
 
 import os
 import psutil
