@@ -5,7 +5,6 @@ from zipfile import ZipFile
 
 import tempfile
 
-from core.asr.model.SnipsASR import SnipsASR
 from core.base.model.Manager import Manager
 from core.commons import constants
 from core.voice.model.SnipsTTS import SnipsTTS
@@ -21,20 +20,16 @@ class SnipsServicesManager(Manager):
 			'snips-hotword',
 			'snips-dialogue',
 			'snips-audio-server',
-			'snips-asr',
 			'snips-tts'
 		]
 
 
-	def snipsServices(self, withASR: bool = True) -> list:
-		if withASR:
-			return self._snipsServices
-		else:
-			return [x for x in self._snipsServices if 'asr' not in x]
+	def snipsServices(self) -> list:
+		return self._snipsServices
 
 
 	def onStart(self):
-		self.runCmd(cmd='start', services=self.snipsServices(withASR=False))
+		self.runCmd(cmd='start', services=self.snipsServices())
 
 
 	def onStop(self):
@@ -92,7 +87,7 @@ class SnipsServicesManager(Manager):
 			services = self._snipsServices
 
 		for service in services:
-			if (service == 'snips-asr' and not isinstance(self.ASRManager.asr, SnipsASR)) or (service == 'snips-tts' and not isinstance(self.TTSManager.tts, SnipsTTS)):
+			if service == 'snips-tts' and not isinstance(self.TTSManager.tts, SnipsTTS):
 				continue
 
 			result = self.Commons.runRootSystemCommand(['systemctl', cmd, service])
