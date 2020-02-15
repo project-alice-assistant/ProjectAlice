@@ -137,12 +137,16 @@ class SnipsNlu(NluEngine):
 			self.Commons.runSystemCommand([f'./venv/bin/snips-nlu', 'train', str(datasetFile), str(tempTrainingData)])
 
 			assistantPath = Path(self.Commons.rootDir(), f'trained/assistants/assistant_{self.LanguageManager.activeLanguage}/nlu_engine')
-			if assistantPath.exists():
-				shutil.rmtree(assistantPath)
 
 			if not tempTrainingData.exists():
 				self.logError('Snips NLU training failed')
+				if not assistantPath.exists():
+					self.logFatal('No NLU engine found, cannot start')
+					self.ProjectAlice.onStop()
 				return
+
+			if assistantPath.exists():
+				shutil.rmtree(assistantPath)
 
 			tempTrainingData.rename(assistantPath)
 
