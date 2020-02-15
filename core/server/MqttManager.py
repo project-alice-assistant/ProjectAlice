@@ -409,7 +409,7 @@ class MqttManager(Manager):
 		session = self.DialogSessionManager.getSession(sessionId)
 
 		if not session:
-			self.ask(text=self.TalkManager.randomTalk('notUnderstood', skill='system'), client=session.siteId)
+			self.ask(text=self.TalkManager.randomTalk('notUnderstood', skill='system'), client='default')
 		else:
 			if msg.topic == Intent('UserRandomAnswer'):
 				return
