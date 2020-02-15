@@ -34,10 +34,10 @@ class PocketSphinxASR(ASR):
 	def decodeStream(self, recorder: Recorder):
 		self._timeoutFlag.clear()
 		self.ThreadManager.doLater(interval=15, func=self.timeout)
+
 		i = 0
 		self._decoder.start_utt()
 		inSpeech = False
-
 		while recorder.isRecording:
 			if self._timeoutFlag.isSet():
 				break
@@ -49,7 +49,6 @@ class PocketSphinxASR(ASR):
 			i += 1
 
 			self._decoder.process_raw(chunk, False, False)
-			print(self._decoder.get_in_speech())
 			if self._decoder.get_in_speech() != inSpeech:
 				inSpeech = self._decoder.get_in_speech()
 				if not inSpeech:
@@ -59,7 +58,6 @@ class PocketSphinxASR(ASR):
 
 
 	def timeout(self):
-		print('timeout')
 		self._timeoutFlag.set()
 
 

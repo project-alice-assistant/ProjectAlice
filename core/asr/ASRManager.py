@@ -24,10 +24,10 @@ class ASRManager(Manager):
 		self._thresholds: Dict[str, List[float]] = dict()
 		self._thresholdRecorder = Recorder()
 
+
 	def onStart(self):
 		super().onStart()
 		self._startASREngine()
-		self.MqttManager.mqttClient.subscribe(constants.TOPIC_AUDIO_FRAME.format('+'))
 
 
 	def _startASREngine(self):
@@ -94,22 +94,17 @@ class ASRManager(Manager):
 			recorder.onStartListening(session)
 			self._streams[session.siteId] = recorder
 
-			result = self._asr.decodeStream(recorder)
-			print(result.hypstr.strip())
+		self.ThreadManager.newThread(name=f'streamdecode_{session.siteId}', target=self.decodeStream, args=[recorder])
+
+
+	def decodeStream(self, recorder: Recorder):
+		result = self._asr.decodeStream(recorder)
+		print(result.hypstr.strip())
 
 
 	def onAudioFrame(self, message: mqtt.MQTTMessage, siteId: str):
-		# If we are not trying to capture what a user is saying, we update the noise level threshold, constantly.
-		# This allows for dynamic threshold even in noisy environements
-		# if siteId not in self._streams or not self._streams[siteId].isListening:
-		# 	self._thresholdRecorder.onAudioFrame(message)
-		# else:
-		# 	self._streams[siteId].onAudioFrame(message)
-
 		if siteId not in self._streams or not self._streams[siteId].isRecording:
 			return
-
-		print('here')
 
 		self._streams[siteId].onAudioFrame(message)
 
