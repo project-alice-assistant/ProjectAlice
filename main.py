@@ -98,6 +98,7 @@ def main():
 			time.sleep(3)
 			sys.stdout.flush()
 			try:
+				# Close everything related to ProjectAlice, allows restart without component failing
 				p = psutil.Process(os.getpid())
 				for h in p.open_files() + p.connections():
 					os.close(h.fd)
