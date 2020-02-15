@@ -1,5 +1,3 @@
-from pathlib import Path
-from threading import Event
 from typing import Optional
 
 from pocketsphinx import Decoder
@@ -7,7 +5,6 @@ from pocketsphinx import Decoder
 from core.asr.model.ASR import ASR
 from core.asr.model.ASRResult import ASRResult
 from core.asr.model.Recorder import Recorder
-from core.dialog.model.DialogSession import DialogSession
 from core.util.Stopwatch import Stopwatch
 
 
@@ -20,7 +17,6 @@ class PocketSphinxASR(ASR):
 		self._capableOfArbitraryCapture = True
 		self._isOnlineASR = False
 		self._decoder: Optional[Decoder] = None
-		self._timeoutFlag = Event()
 
 
 	def onStart(self):
@@ -31,51 +27,34 @@ class PocketSphinxASR(ASR):
 		self._decoder = Decoder(config)
 
 
-	def decodeStream(self, recorder: Recorder):
-		self._timeoutFlag.clear()
-		self.ThreadManager.doLater(interval=15, func=self.timeout)
+	def decodeStream(self, recorder: Recorder) -> ASRResult:
+		super().decodeStream(recorder)
 
 		i = 0
 		self._decoder.start_utt()
 		inSpeech = False
-		while recorder.isRecording:
-			if self._timeoutFlag.isSet():
-				break
-
-			chunk = recorder.getChunk(i)
-			if not chunk:
-				continue
-
-			i += 1
-
-			self._decoder.process_raw(chunk, False, False)
-			if self._decoder.get_in_speech() != inSpeech:
-				inSpeech = self._decoder.get_in_speech()
-				if not inSpeech:
-					self._decoder.end_utt()
-					recorder.stopRecording()
-					return self._decoder.hyp()
-
-
-	def timeout(self):
-		self._timeoutFlag.set()
-
-
-	def decodeFile(self, filepath: Path, session: DialogSession) -> ASRResult:
 		with Stopwatch() as processingTime:
-			self._decoder.start_utt()
-			stream = filepath.open('rb')
-			while True:
-				buf = stream.read(1024)
-				if not buf:
+			while recorder.isRecording:
+				if self._timeout.isSet():
 					break
 
-				self._decoder.process_raw(buf, True, False)
-			self._decoder.end_utt()
+				frame = recorder.getFrame(i)
+				if not frame:
+					continue
+
+				i += 1
+
+				self._decoder.process_raw(frame, False, False)
+				if self._decoder.get_in_speech() != inSpeech:
+					inSpeech = self._decoder.get_in_speech()
+					if not inSpeech:
+						self._decoder.end_utt()
+						recorder.stopRecording()
+						result = self._decoder.hyp() if self._decoder.hyp() else None
 
 		return ASRResult(
-			text=self._decoder.hyp().hypstr.strip(),
-			session=session,
-			likelihood=self._decoder.get_logmath().exp(self._decoder.hyp().prob),
+			text=result.hypstr.strip(),
+			session=recorder.session,
+			likelihood=result.get_logmath().exp(self._decoder.hyp().prob),
 			processingTime=processingTime.time
-		)
+		) if result else None

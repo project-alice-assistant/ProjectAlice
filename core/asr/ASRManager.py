@@ -70,13 +70,7 @@ class ASRManager(Manager):
 		if not self._asr.isOnlineASR:
 			self.logInfo('Connected to internet, switching ASR')
 			self._asr.onStop()
-			if self.ConfigManager.getAliceConfigByName(configName='asr').lower() == 'google':
-				# noinspection PyUnresolvedReferences
-				from core.asr.model.GoogleASR import GoogleASR
-
-				self._asr = GoogleASR()
-
-			self._asr.onStart()
+			self._startASREngine()
 
 
 	def onInternetLost(self):
@@ -98,8 +92,28 @@ class ASRManager(Manager):
 
 
 	def decodeStream(self, recorder: Recorder):
-		result = self._asr.decodeStream(recorder)
-		print(result.hypstr.strip())
+		result: ASRResult = self._asr.decodeStream(recorder)
+		if result:
+			session = result.session
+			self.MqttManager.publish(topic=constants.TOPIC_STOP_LISTENING, payload={'sessionId': session.sessionId, 'siteId': session.siteId})
+			self.logDebug(f'ASR captured: {result.text}')
+			text = self.LanguageManager.sanitizeNluQuery(result.text)
+
+			supportedIntents = result.session.intentFilter or self.SkillManager.supportedIntents
+			intentFilter = [intent.justTopic for intent in supportedIntents if isinstance(intent, Intent) and not intent.isProtected]
+
+			self.MqttManager.publish(topic=constants.TOPIC_TEXT_CAPTURED, payload={'sessionId': session.sessionId, 'text': text, 'siteId': session.siteId, 'likelihood': result.likelihood, 'seconds': result.processingTime})
+			self.MqttManager.publish(topic=constants.TOPIC_NLU_QUERY, payload={'id': session.sessionId, 'input': text, 'intentFilter': intentFilter, 'sessionId': session.sessionId})
+		else:
+			self.MqttManager.publish(topic=constants.TOPIC_INTENT_NOT_RECOGNIZED)
+			self.MqttManager.playSound(
+				soundFilename='error',
+				location=Path('assistant/custom_dialogue/sound'),
+				siteId=recorder.session.siteId
+			)
+
+		self._streams.pop(recorder.session.siteId, None)
+
 
 
 	def onAudioFrame(self, message: mqtt.MQTTMessage, siteId: str):
@@ -114,33 +128,3 @@ class ASRManager(Manager):
 			return
 
 		self._streams[session.siteId].onSessionError(session)
-
-
-	def onRecorded(self, session: DialogSession):
-		if session.siteId not in self._streams:
-			self.logInfo(f'Text was captured on site id "{session.siteId}" but there is not recorder associated')
-			return
-
-		self.MqttManager.publish(topic=constants.TOPIC_STOP_LISTENING, payload={'sessionId': session.sessionId, 'siteId': session.siteId})
-
-		recorder = self._streams[session.siteId]
-		result: ASRResult = self._asr.decode(recorder.getSamplePath(), session)
-
-		if result:
-			self.logInfo(f'ASR capture: {result.text}')
-			text = self.LanguageManager.sanitizeNluQuery(result.text)
-
-			supportedIntents = session.intentFilter or self.SkillManager.supportedIntents
-			intentFilter = [intent.justTopic for intent in supportedIntents if isinstance(intent, Intent) and not intent.isProtected]
-
-			self.MqttManager.publish(topic=constants.TOPIC_TEXT_CAPTURED, payload={'sessionId': session.sessionId, 'text': text, 'siteId': session.siteId, 'likelihood': result.likelihood, 'seconds': result.processingTime})
-			self.MqttManager.publish(topic=constants.TOPIC_NLU_QUERY, payload={'id': session.sessionId, 'input': text, 'intentFilter': intentFilter, 'sessionId': session.sessionId})
-		else:
-			self.MqttManager.publish(topic=constants.TOPIC_INTENT_NOT_RECOGNIZED)
-			self.MqttManager.playSound(
-				soundFilename='error',
-				location=Path('assistant/custom_dialogue/sound'),
-				siteId=session.siteId
-			)
-
-		self._streams.pop(session.siteId, None)

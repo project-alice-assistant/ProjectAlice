@@ -1,9 +1,5 @@
-import uuid
-from pathlib import Path
-
 import paho.mqtt.client as mqtt
 import struct
-from pydub import AudioSegment
 
 from core.base.model.ProjectAliceObject import ProjectAliceObject
 from core.commons import constants
@@ -15,10 +11,9 @@ class Recorder(ProjectAliceObject):
 	def __init__(self, session: DialogSession = None):
 		super().__init__()
 		self._session = session
-		self._filepath = Path(f'/tmp/done-{uuid.uuid4()}.wav')
-		self._audio: AudioSegment = AudioSegment.empty()
 		self._recording = False
 		self._buffer = list()
+		self._n = 0
 
 
 	def __enter__(self):
@@ -27,6 +22,11 @@ class Recorder(ProjectAliceObject):
 
 	def __exit__(self, exc_type, exc_val, exc_tb):
 		return True
+
+
+	@property
+	def session(self) -> DialogSession:
+		return self._session
 
 
 	@property
@@ -39,14 +39,8 @@ class Recorder(ProjectAliceObject):
 		self._recording = True
 
 
-	def captured(self):
-		self.stopRecording()
-		self.ASRManager.onRecorded(self._session)
-
-
 	def onSessionError(self, session: DialogSession):
 		self.stopRecording()
-		self.clean()
 
 
 	def stopRecording(self):
@@ -54,7 +48,7 @@ class Recorder(ProjectAliceObject):
 		self.MqttManager.mqttClient.unsubscribe(constants.TOPIC_AUDIO_FRAME.format(self._session.siteId))
 
 
-	def getChunk(self, index: int = 0) -> bytes:
+	def getFrame(self, index: int = 0) -> bytes:
 		try:
 			return self._buffer[index]
 		except:
@@ -84,11 +78,3 @@ class Recorder(ProjectAliceObject):
 
 		except Exception as e:
 			self.logError(f'Error recording user speech: {e}')
-
-
-	def getSamplePath(self) -> Path:
-		return self._filepath
-
-
-	def clean(self):
-		self._filepath.unlink()
