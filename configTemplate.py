@@ -4,34 +4,39 @@ settings = {
 		'dataType': 'boolean',
 		'description': 'If true, an error thrown by a skill will automatically post a github issue and ping the author'
 	},
-	'notUnderstoodRetries': {
+	'notUnderstoodRetries' : {
 		'defaultValue': 3,
-		'dataType': 'integer',
-		'description': 'Defines how many times Alice will ask to repeat if not understood before she gives up'
+		'dataType'    : 'integer',
+		'description' : 'Defines how many times Alice will ask to repeat if not understood before she gives up'
 	},
-	'ssid': {
+	'ssid'                 : {
 		'defaultValue': '',
-		'dataType': 'string',
-		'description': 'Your Wifi name'
+		'dataType'    : 'string',
+		'description' : 'Your Wifi name'
 	},
-	'wifipassword': {
+	'debug'                : {
+		'defaultValue': False,
+		'dataType'    : 'boolean',
+		'description' : 'If true debug logs will show'
+	},
+	'wifipassword'         : {
 		'defaultValue': '',
-		'dataType': 'password',
-		'description': 'Your Wifi password'
+		'dataType'    : 'password',
+		'description' : 'Your Wifi password'
 	},
-	'mqttHost': {
+	'mqttHost'             : {
 		'defaultValue': 'localhost',
 		'dataType'    : 'string',
 		'description' : 'Mqtt server ip adress',
 		'onUpdate'    : 'reconnectMqtt'
 	},
-	'mqttPort': {
+	'mqttPort'             : {
 		'defaultValue': 1883,
 		'dataType'    : 'integer',
 		'description' : 'Mqtt server port',
 		'onUpdate'    : 'reconnectMqtt'
 	},
-	'mqttUser': {
+	'mqttUser'             : {
 		'defaultValue': '',
 		'dataType'    : 'string',
 		'description' : 'Mqtt user. Leave blank if not password protected',
@@ -132,44 +137,44 @@ settings = {
 		'values': ['male', 'female'],
 		'description': 'Choose the voice gender you want'
 	},
-	'ttsVoice': {
+	'ttsVoice'             : {
 		'defaultValue': 'en-US',
 		'dataType': 'string',
 		'description': 'The voice the TTS should use. Find lists on respective TTS websites'
 	},
-	'awsRegion': {
+	'awsRegion'            : {
 		'defaultValue': 'eu-central-1',
 		'dataType': 'list',
 		'values': ['eu-central-1', 'eu-west-1', ' eu-west-2', 'eu-west-3', 'eu-north-1', 'us-east-1', 'us-east-2', 'us-west-1', 'us-west-2'],
 		'description': 'Region to use for Amazon Polly'
 	},
-	'awsAccessKey': {
+	'awsAccessKey'         : {
 		'defaultValue': '',
-		'dataType': 'password',
-		'description': 'Your Amazon services access key'
+		'dataType'    : 'password',
+		'description' : 'Your Amazon services access key'
 	},
-	'awsSecretKey': {
+	'awsSecretKey'         : {
 		'defaultValue': '',
-		'dataType': 'password',
-		'description': 'Your Amazon services secret key'
+		'dataType'    : 'password',
+		'description' : 'Your Amazon services secret key'
 	},
-	'useSLC': {
+	'useHLC'               : {
 		'defaultValue': False,
-		'dataType': 'boolean',
-		'description': 'Enables Snips Led Control for visual feedback from your assistant'
+		'dataType'    : 'boolean',
+		'description' : 'Enables Hermes Led Control for visual feedback from your assistant'
 	},
-	'activeLanguage': {
+	'activeLanguage'       : {
 		'defaultValue': 'en',
 		'dataType'    : 'list',
 		'values'      : ['en', 'fr', 'de', 'it', 'pt'],
 		'description' : 'Project Alice active language'
 	},
-	'activeCountryCode': {
+	'activeCountryCode'    : {
 		'defaultValue': 'US',
 		'dataType'    : 'string',
 		'description' : 'Project Alice active country code'
 	},
-	'aliceAutoUpdate': {
+	'aliceAutoUpdate'      : {
 		'defaultValue': False,
 		'dataType'    : 'boolean',
 		'description' : 'Whether Alice should auto update, checked every hour'

@@ -1,4 +1,5 @@
 import json
+import logging
 from pathlib import Path
 
 import shutil
@@ -99,6 +100,10 @@ class ConfigManager(Manager):
 						changes = True
 						self.logInfo(f'- Selected value "{aliceConfigs[setting]}" for setting "{setting}" doesn\'t exist, reverted to default value "{definition["defaultValue"]}"')
 						aliceConfigs[setting] = definition['defaultValue']
+
+		# Setting logger level immediately
+		if aliceConfigs['debug']:
+			logging.getLogger('ProjectAlice').setLevel(logging.DEBUG)
 
 		temp = aliceConfigs.copy()
 
