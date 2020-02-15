@@ -1,5 +1,7 @@
+import threading
 from pathlib import Path
 from threading import Event
+from typing import Optional
 
 from core.asr.model.Recorder import Recorder
 from core.base.model.ProjectAliceObject import ProjectAliceObject
@@ -14,8 +16,8 @@ class ASR(ProjectAliceObject):
 	def __init__(self):
 		self._capableOfArbitraryCapture = False
 		self._isOnlineASR = False
-		self._listening = False
 		self._timeout = Event()
+		self._timeoutTimer: Optional[threading.Timer] = None
 		super().__init__()
 
 
@@ -37,26 +39,18 @@ class ASR(ProjectAliceObject):
 		self.logInfo(f'Stopped {self.NAME}')
 
 
-	def onStartListening(self, session: DialogSession):
-		self._listening = True
-
-
-	@property
-	def isListening(self) -> bool:
-		return self._listening
-
-
-	def onCaptured(self, session: DialogSession):
-		self._listening = False
-
-
 	def decodeFile(self, filepath: Path, session: DialogSession):
 		pass
 
 
 	def decodeStream(self, recorder: Recorder):
 		self._timeout.clear()
-		self.ThreadManager.doLater(interval=self.TIMEOUT, func=self.timeout)
+		self._timeoutTimer = self.ThreadManager.newTimer(interval=self.TIMEOUT, func=self.timeout)
+
+
+	def end(self):
+		if self._timeoutTimer and self._timeoutTimer.is_alive():
+			self._timeoutTimer.cancel()
 
 
 	def timeout(self):

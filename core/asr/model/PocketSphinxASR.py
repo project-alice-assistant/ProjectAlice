@@ -51,10 +51,11 @@ class PocketSphinxASR(ASR):
 						self._decoder.end_utt()
 						recorder.stopRecording()
 						result = self._decoder.hyp() if self._decoder.hyp() else None
+			self.end()
 
 		return ASRResult(
 			text=result.hypstr.strip(),
 			session=recorder.session,
-			likelihood=result.get_logmath().exp(self._decoder.hyp().prob),
+			likelihood=self._decoder.hyp().prob,
 			processingTime=processingTime.time
 		) if result else None
