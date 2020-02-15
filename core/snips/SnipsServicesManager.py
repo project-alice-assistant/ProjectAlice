@@ -7,6 +7,7 @@ import tempfile
 
 from core.base.model.Manager import Manager
 from core.commons import constants
+from core.util.Decorators import deprecated
 from core.voice.model.SnipsTTS import SnipsTTS
 
 
@@ -41,6 +42,7 @@ class SnipsServicesManager(Manager):
 		time.sleep(1)
 
 
+	@deprecated
 	def onSnipsAssistantDownloaded(self, **kwargs):
 		try:
 			filepath = Path(tempfile.gettempdir(), 'assistant.zip')

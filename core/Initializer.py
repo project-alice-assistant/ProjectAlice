@@ -114,7 +114,7 @@ network={
 			connected = False
 
 		if not connected:
-			self.fatal('Your device needs internet access to continue, to download the updates and create the assistant')
+			self.fatal('Your device needs internet access to continue')
 
 		if not initConfs['intentsOwner']:
 			self.fatal('You must specify an intent owner')
@@ -178,7 +178,6 @@ network={
 			subprocess.run(['sudo', 'apt-get', 'install', '-y', '--allow-unauthenticated'] + reqs)
 
 			subprocess.run(['sudo', 'systemctl', 'stop', 'snips-*'])
-			subprocess.run(['sudo', 'systemctl', 'disable', 'snips-asr'])
 			subprocess.run(['sudo', 'systemctl', 'disable', 'snips-nlu'])
 			subprocess.run(['sudo', 'systemctl', 'disable', 'snips-dialogue'])
 			subprocess.run(['sudo', 'systemctl', 'disable', 'snips-injection'])
@@ -198,7 +197,7 @@ network={
 			confs['keepASROffline'] = True
 			confs['keepTTSOffline'] = True
 			confs['skillAutoUpdate'] = False
-			confs['asr'] = 'snips'
+			confs['asr'] = 'pocketsphinx'
 			confs['tts'] = 'pico'
 			confs['awsRegion'] = ''
 			confs['awsAccessKey'] = ''
@@ -207,7 +206,7 @@ network={
 			confs['keepASROffline'] = bool(initConfs['keepASROffline'])
 			confs['keepTTSOffline'] = bool(initConfs['keepTTSOffline'])
 			confs['skillAutoUpdate'] = bool(initConfs['skillAutoUpdate'])
-			confs['asr'] = initConfs['asr'] if initConfs['asr'] in {'snips', 'google'} else 'snips'
+			confs['asr'] = initConfs['asr'] if initConfs['asr'] in {'pocketsphinx', 'google'} else 'pocketsphinx'
 			confs['tts'] = initConfs['tts'] if initConfs['tts'] in {'pico', 'snips', 'mycroft', 'amazon', 'google'} else 'pico'
 			confs['awsRegion'] = initConfs['awsRegion']
 			confs['awsAccessKey'] = initConfs['awsAccessKey']
@@ -243,7 +242,7 @@ network={
 
 		updateChannel = initConfs['updateChannel']
 		if updateChannel not in {'master', 'rc', 'beta', 'alpha'}:
-			self.logWarning(f'{updateChannel} is no supported updateChannel, only master, rc, beta and alpha are supported. Reseting to master')
+			self.logWarning(f'{updateChannel} is not a supported updateChannel, only master, rc, beta and alpha are supported. Reseting to master')
 			confs['aliceUpdateChannel'] = 'master'
 		else:
 			confs['aliceUpdateChannel'] = updateChannel
@@ -423,5 +422,4 @@ network={
 
 	@staticmethod
 	def newConfs():
-		#TODO: this should not be done as a dictionary comprehension since it is super hard to read
 		return {configName: configData['values'] if 'dataType' in configData and configData['dataType'] == 'list' else configData['defaultValue'] if 'defaultValue' in configData else configData for configName, configData in configTemplate.settings.items()}
