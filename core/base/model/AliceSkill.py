@@ -3,11 +3,11 @@ from __future__ import annotations
 import importlib
 import inspect
 import json
+import re
 import sqlite3
 from pathlib import Path
 from typing import Any, Dict, Iterable, Optional
 
-import re
 from paho.mqtt import client as MQTTClient
 
 from core.ProjectAliceExceptions import AccessLevelTooLow, SkillStartingFailed
@@ -17,6 +17,7 @@ from core.base.model.ProjectAliceObject import ProjectAliceObject
 from core.base.model.Version import Version
 from core.commons import constants
 from core.dialog.model.DialogSession import DialogSession
+from core.user.model.AccessLevels import AccessLevel
 
 
 class AliceSkill(ProjectAliceObject):
@@ -109,8 +110,8 @@ class AliceSkill(ProjectAliceObject):
 				if item.fallbackFunction:
 					intents[str(item)].fallbackFunction = item.fallbackFunction
 				# always use the highest auth level specified (low values mean a higher auth level)
-				if item.authOnly < intents[str(item)].authOnly:
-					intents[str(item)].authOnly = item.authOnly
+				if item.authLevel < intents[str(item)].authLevel:
+					intents[str(item)].authLevel = item.authLevel
 			else:
 				intents[str(item)] = item
 
@@ -135,8 +136,8 @@ class AliceSkill(ProjectAliceObject):
 					intentMappings[str(intent)].fallbackFunction = function
 
 				# always use the highest auth level specified (low values mean a higher auth level)
-				if intent.authOnly < intentMappings[str(intent)].authOnly:
-					intentMappings[str(intent)].authOnly = intent.authOnly
+				if intent.authLevel < intentMappings[str(intent)].authLevel:
+					intentMappings[str(intent)].authLevel = intent.authLevel
 
 		return intentMappings
 
@@ -352,7 +353,7 @@ class AliceSkill(ProjectAliceObject):
 			)
 			raise AccessLevelTooLow()
 		# Return if intent is for auth users only and the user doesn't have the accesslevel for it
-		if not self.UserManager.hasAccessLevel(session.user, intent.authOnly):
+		if not self.UserManager.hasAccessLevel(session.user, intent.authLevel):
 			self.endDialog(
 				sessionId=session.sessionId,
 				text=self.TalkManager.randomTalk(talk='noAccess', skill='system')
@@ -389,7 +390,7 @@ class AliceSkill(ProjectAliceObject):
 		if not intent:
 			return False
 
-		if intent.authOnly:
+		if intent.authLevel != AccessLevel.ZERO:
 			self.authenticateIntent(session)
 
 		function = intent.getMapping(session) or self.onMessage
@@ -433,7 +434,7 @@ class AliceSkill(ProjectAliceObject):
 		#self.MqttManager.subscribeSkillIntents(self.name)
 
 
-	def onSkillUpdated(self):
+	def onSkillUpdated(self, skill: str):
 		self._updateAvailable = False
 		#self.MqttManager.subscribeSkillIntents(self.name)
 

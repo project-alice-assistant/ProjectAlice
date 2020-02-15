@@ -1,8 +1,9 @@
 from dataclasses import dataclass, field
-from typing import Dict, Callable, Optional, Union
+from typing import Callable, Dict, Optional, Union
 
 import core.base.SuperManager as SM
 from core.user.model.AccessLevels import AccessLevel
+
 
 @dataclass
 class Intent:
@@ -11,7 +12,7 @@ class Intent:
 	owner: str = field(init=False, repr=False)
 	isProtected: bool = False
 	userIntent: bool = True
-	authOnly: AccessLevel = AccessLevel.ZERO
+	authLevel: AccessLevel = AccessLevel.ZERO
 	fallbackFunction: Optional[Callable] = None
 	dialogMapping: dict = field(default_factory=dict)
 	_dialogMapping: dict = field(init=False, repr=False)

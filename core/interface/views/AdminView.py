@@ -1,7 +1,7 @@
+import shutil
 from pathlib import Path
 from typing import Any
 
-import shutil
 from flask import jsonify, render_template, request
 from flask_login import login_required
 
@@ -150,7 +150,7 @@ class AdminView(View):
 	@staticmethod
 	def isfloat(value: str) -> bool:
 		try:
-			value = float(value)
+			_ = float(value)
 			return True
 		except:
 			return False

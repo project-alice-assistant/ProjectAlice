@@ -1,13 +1,14 @@
 from __future__ import annotations
 
-from typing import Any, Callable, Tuple, Union
-
 import functools
 import warnings
+from typing import Any, Callable, Tuple, Union
+
 from flask import jsonify, request
 
 from core.base.SuperManager import SuperManager
 from core.base.model.Intent import Intent
+from core.user.model.AccessLevels import AccessLevel
 from core.util.model.Logger import Logger
 
 
@@ -31,10 +32,10 @@ def deprecated(func):
 	return new_func
 
 
-def IntentHandler(intent: Union[str, Intent], requiredState: str = None, isProtected: bool = False, authOnly=0):
+def IntentHandler(intent: Union[str, Intent], requiredState: str = None, isProtected: bool = False, authLevel: AccessLevel = AccessLevel.ZERO):
 	"""Decorator for adding a method as an intent handler."""
 	if isinstance(intent, str):
-		intent = Intent(intent, isProtected=isProtected, userIntent=True, authOnly=authOnly)
+		intent = Intent(intent, isProtected=isProtected, userIntent=True, authLevel=authLevel)
 
 	def wrapper(func):
 		# store the intent in the function
@@ -46,10 +47,10 @@ def IntentHandler(intent: Union[str, Intent], requiredState: str = None, isProte
 	return wrapper
 
 
-def MqttHandler(intent: Union[str, Intent], requiredState: str = None, isProtected: bool = True, authOnly=0):
+def MqttHandler(intent: Union[str, Intent], requiredState: str = None, isProtected: bool = True, authLevel: AccessLevel = AccessLevel.ZERO):
 	"""Decorator for adding a method as a mqtt handler."""
 	if isinstance(intent, str):
-		intent = Intent(intent, isProtected=isProtected, userIntent=False, authOnly=authOnly)
+		intent = Intent(intent, isProtected=isProtected, userIntent=False, authLevel=authLevel)
 
 	def wrapper(func):
 		# store the intent in the function
@@ -103,6 +104,7 @@ def Online(func: Callable = None, text: str = 'offline', offlineHandler: Callabl
 	the decorator will return the text instead. This behaviour can be enforced aswell using:
 		@online(returnText=True)
 
+	:param catchOnly: If catch only, do not raise anything
 	:param func:
 	:param text:
 	:param offlineHandler:

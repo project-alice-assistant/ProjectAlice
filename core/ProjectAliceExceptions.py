@@ -108,9 +108,6 @@ class GithubNotFound(_ProjectAliceException): pass
 class LanguageManagerLangNotSupported(_ProjectAliceException): pass
 class ConfigurationUpdateFailed(_ProjectAliceException): pass
 
-
-class ConfigurationUpdateFailed(_ProjectAliceException): pass
-
 class VitalConfigMissing(_ProjectAliceException):
 	def __init__(self, message: str = None):
 		super().__init__(message)
