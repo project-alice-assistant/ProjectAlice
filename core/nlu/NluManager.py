@@ -59,7 +59,10 @@ class NluManager(Manager):
 
 		# First check upon the skills that are installed
 		changes = dict()
-		for skill in Path(self.Commons.rootDir(), 'skills/').glob('*/'):
+		for skill in Path(self.Commons.rootDir(), 'skills/').glob('*'):
+			if skill.is_file():
+				continue
+
 			skillName = skill.stem
 			self.logInfo(f'Checking data for skill "{skillName}"')
 			if skillName not in checksums:
@@ -104,9 +107,11 @@ class NluManager(Manager):
 
 		cached = dict()
 
-		for skill in Path(self.Commons.rootDir(), 'skills/').glob('*/'):
-			skillName = skill.stem
+		for skill in Path(self.Commons.rootDir(), 'skills/').glob('*'):
+			if skill.is_file():
+				continue
 
+			skillName = skill.stem
 			pathToResources = skill / 'dialogTemplate'
 			if not pathToResources.exists():
 				self.logWarning(f'{skillName} has no dialog template defined to build cache')
