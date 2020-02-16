@@ -56,6 +56,9 @@ class SuperManager:
 		configManager = self._managers.pop('ConfigManager')
 		configManager.onStart()
 
+		internetManager = self._managers.pop('InternetManager')
+		internetManager.onStart()
+
 		snipsServicesManager = self._managers.pop('SnipsServicesManager')
 		snipsServicesManager.onStart()
 
@@ -94,6 +97,7 @@ class SuperManager:
 		self._managers[mqttManager.name] = mqttManager
 		self._managers[skillManager.name] = skillManager
 		self._managers[nluManager.name] = nluManager
+		self._managers[internetManager.name] = internetManager
 		self._managers[nodeRedManager.name] = nodeRedManager
 
 

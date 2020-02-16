@@ -4,7 +4,6 @@ from typing import Optional
 import paho.mqtt.client as mqtt
 import struct
 
-import core.asr.model.ASR as ASR
 from core.base.model.ProjectAliceObject import ProjectAliceObject
 from core.commons import constants
 from core.dialog.model.DialogSession import DialogSession
@@ -87,7 +86,7 @@ class Recorder(ProjectAliceObject):
 		data = list()
 		while self._recording:
 
-			chunk = self._buffer.get(timeout=ASR.ASR.TIMEOUT)
+			chunk = self._buffer.get()
 			if not chunk:
 				return
 

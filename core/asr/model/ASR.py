@@ -32,11 +32,11 @@ class ASR(ProjectAliceObject):
 
 
 	def onStart(self):
-		self.logInfo(f'Started {self.NAME}')
+		self.logInfo(f'Starting {self.NAME}')
 
 
 	def onStop(self):
-		self.logInfo(f'Stopped {self.NAME}')
+		self.logInfo(f'Stopping {self.NAME}')
 
 
 	def decodeFile(self, filepath: Path, session: DialogSession):

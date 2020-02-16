@@ -50,6 +50,7 @@ class ASRManager(Manager):
 			self._asr = None
 
 		if self._asr is None:
+			self.logWarning('ASR did not satisfy the user settings, falling back to pocketsphinx')
 			from core.asr.model.PocketSphinxASR import PocketSphinxASR
 
 			self._asr = PocketSphinxASR()

@@ -20,6 +20,7 @@ class PocketSphinxASR(ASR):
 
 
 	def onStart(self):
+		super().onStart()
 		config = Decoder.default_config()
 		config.set_string('-hmm', f'{self.Commons.rootDir()}/venv/lib/python3.7/site-packages/pocketsphinx/model/en-us')
 		config.set_string('-lm', f'{self.Commons.rootDir()}/venv/lib/python3.7/site-packages/pocketsphinx/model/en-us.lm.bin')
