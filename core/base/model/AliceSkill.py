@@ -3,11 +3,11 @@ from __future__ import annotations
 import importlib
 import inspect
 import json
-import re
 import sqlite3
 from pathlib import Path
 from typing import Any, Dict, Iterable, Optional
 
+import re
 from paho.mqtt import client as MQTTClient
 
 from core.ProjectAliceExceptions import AccessLevelTooLow, SkillStartingFailed
@@ -434,7 +434,7 @@ class AliceSkill(ProjectAliceObject):
 		self.MqttManager.subscribeSkillIntents(self.name)
 
 
-	def onSkillUpdated(self, skill: str):
+	def onSkillUpdated(self, **kwargs):
 		self._updateAvailable = False
 		self.MqttManager.subscribeSkillIntents(self.name)
 
