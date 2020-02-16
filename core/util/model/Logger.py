@@ -25,7 +25,6 @@ class Logger:
 		self.doLog(function='fatal', msg=msg)
 		try:
 			from core.base.SuperManager import SuperManager
-
 			SuperManager.getInstance().projectAlice.onStop()
 		except:
 			exit()

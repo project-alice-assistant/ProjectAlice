@@ -6,16 +6,17 @@ import tempfile
 from pydub import AudioSegment
 
 from core.base.SuperManager import SuperManager
+from core.base.model.ProjectAliceObject import ProjectAliceObject
 from core.commons import constants
 from core.dialog.model.DialogSession import DialogSession
 from core.user.model.User import User
-from core.util.model.Logger import Logger
 from core.voice.model.TTSEnum import TTSEnum
 
 
-class TTS(Logger):
+class TTS(ProjectAliceObject):
 	TEMP_ROOT = Path(tempfile.gettempdir(), '/tempTTS')
 	TTS = None
+
 
 	def __init__(self, user: User = None, *args, **kwargs):
 		super().__init__(*args, **kwargs)

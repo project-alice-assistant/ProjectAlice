@@ -7,6 +7,7 @@ from core.base.model.Version import Version
 from core.commons import constants
 from core.commons.model.Singleton import Singleton
 from core.util.Stopwatch import Stopwatch
+from core.util.model.Logger import Logger
 
 
 class ProjectAlice(Singleton):
@@ -15,7 +16,8 @@ class ProjectAlice(Singleton):
 
 	def __init__(self, restartHandler: callable):
 		Singleton.__init__(self, self.NAME)
-		self.logInfo('Starting up Project Alice')
+		self._logger = Logger()
+		self._logger.logInfo('Starting up Project Alice')
 		self._booted = False
 		with Stopwatch() as stopWatch:
 			self._restart = False
@@ -29,7 +31,7 @@ class ProjectAlice(Singleton):
 				self._superManager.commons.runRootSystemCommand(['systemctl', 'start', 'hermesledcontrol'])
 
 			self._superManager.onBooted()
-		self.logInfo(f'- Started Project Alice in {stopWatch} seconds')
+		self._logger.logInfo(f'- Started Project Alice in {stopWatch} seconds')
 		self._booted = True
 
 
@@ -59,7 +61,7 @@ class ProjectAlice(Singleton):
 
 
 	def onStop(self):
-		self.logInfo('Shutting down Project Alice')
+		self._logger.logInfo('Shutting down Project Alice')
 		self._superManager.onStop()
 		if self._superManager.configManager.getAliceConfigByName('useHLC'):
 			self._superManager.commons.runRootSystemCommand(['systemctl', 'stop', 'hermesledcontrol'])
@@ -69,10 +71,10 @@ class ProjectAlice(Singleton):
 
 
 	def updateProjectAlice(self):
-		self.logInfo('Checking Project Alice updates')
+		self._logger.logInfo('Checking Project Alice updates')
 		req = requests.get(url='https://api.github.com/repos/project-alice-assistant/ProjectAlice/branches', auth=SuperManager.getInstance().configManager.getGithubAuth())
 		if req.status_code != 200:
-			self.logWarning('Failed checking for updates')
+			self._logger.logWarning('Failed checking for updates')
 			return
 
 		userUpdatePref = SuperManager.getInstance().configManager.getAliceConfigByName('aliceUpdateChannel')
@@ -93,7 +95,7 @@ class ProjectAlice(Singleton):
 				if repoVersion > candidate:
 					candidate = repoVersion
 
-		self.logInfo(f'Checking on "{str(candidate)}" update channel')
+		self._logger.logInfo(f'Checking on "{str(candidate)}" update channel')
 		commons = SuperManager.getInstance().commons
 		commons.runSystemCommand(['git', '-C', commons.rootDir(), 'stash'])
 		commons.runSystemCommand(['git', '-C', commons.rootDir(), 'clean', '-df'])
