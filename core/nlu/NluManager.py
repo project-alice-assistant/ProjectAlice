@@ -60,7 +60,7 @@ class NluManager(Manager):
 		# First check upon the skills that are installed
 		changes = dict()
 		for skill in Path(self.Commons.rootDir(), 'skills/').glob('*'):
-			if skill.is_file():
+			if skill.is_file() or skill.stem.startswith('_'):
 				continue
 
 			skillName = skill.stem
@@ -108,7 +108,7 @@ class NluManager(Manager):
 		cached = dict()
 
 		for skill in Path(self.Commons.rootDir(), 'skills/').glob('*'):
-			if skill.is_file():
+			if skill.is_file() or skill.stem.startswith('_'):
 				continue
 
 			skillName = skill.stem
