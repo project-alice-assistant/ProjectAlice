@@ -59,6 +59,7 @@ class NluManager(Manager):
 
 		# First check upon the skills that are installed
 		changes = dict()
+		language = self.LanguageManager.activeLanguage
 		for skill in Path(self.Commons.rootDir(), 'skills/').glob('*'):
 			if skill.is_file() or skill.stem.startswith('_'):
 				continue
@@ -78,13 +79,17 @@ class NluManager(Manager):
 			for file in pathToResources.glob('*.json'):
 				filename = file.stem
 				if filename not in checksums[skillName]:
-					self.logInfo(f'Skill "{skillName}" has new language support "{filename}"')
-					changes.setdefault(skillName, list()).append(filename)
+					# Trigger a change only if the change concerns the language in use
+					if filename == language:
+						self.logInfo(f'Skill "{skillName}" has new language support "{filename}"')
+						changes.setdefault(skillName, list()).append(filename)
 					continue
 
 				if self.Commons.fileChecksum(file) != checksums[skillName][filename]:
-					self.logInfo(f'Skill "{skillName}" has changes in language "{filename}"')
-					changes.setdefault(skillName, list()).append(filename)
+					# Trigger a change only if the change concerns the language in use
+					if filename == language:
+						self.logInfo(f'Skill "{skillName}" has changes in language "{filename}"')
+						changes.setdefault(skillName, list()).append(filename)
 					continue
 
 		# Now check that what we have in cache in actually existing and wasn't manually deleted
@@ -95,7 +100,7 @@ class NluManager(Manager):
 				continue
 
 			for lang in languages:
-				if not Path(self.Commons.rootDir(), f'skills/{skillName}/dialogTemplate/{lang}.json').exists():
+				if not Path(self.Commons.rootDir(), f'skills/{skillName}/dialogTemplate/{lang}.json').exists() and lang == language:
 					self.logInfo(f'Skill "{skillName}" has dropped language "{lang}"')
 					changes.setdefault(f'--{skillName}', list()).append(lang)
 
