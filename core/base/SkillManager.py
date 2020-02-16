@@ -1,11 +1,11 @@
 import importlib
 import json
+import os
+import shutil
 from pathlib import Path
 from typing import Dict, Optional
 
-import os
 import requests
-import shutil
 
 from core.ProjectAliceExceptions import GithubNotFound, GithubRateLimit, GithubTokenFailed, SkillNotConditionCompliant, SkillStartDelayed, SkillStartingFailed
 from core.base.SuperManager import SuperManager
@@ -15,6 +15,7 @@ from core.base.model.GithubCloner import GithubCloner
 from core.base.model.Manager import Manager
 from core.base.model.Version import Version
 from core.commons import constants
+from core.util.Decorators import IfSetting, Online
 
 
 class SkillManager(Manager):
@@ -24,11 +25,6 @@ class SkillManager(Manager):
 		'ContextSensitive',
 		'RedQueen'
 	]
-
-	GITHUB_BARE_BASE_URL = 'https://raw.githubusercontent.com/project-alice-assistant/ProjectAliceSkills/master/PublishedSkills'
-	GITHUB_API_BASE_URL = 'repositories/193512918/contents/PublishedSkills'
-
-	GITHUB_BASE_URL = 'https://github.com/project-alice-assistant/skill_{}.git'
 
 	DATABASE = {
 		'widgets': [
@@ -60,13 +56,15 @@ class SkillManager(Manager):
 		super().onStart()
 
 		self._busyInstalling = self.ThreadManager.newEvent('skillInstallation')
+		self._skillInstallThread = self.ThreadManager.newThread(name='SkillInstallThread', target=self._checkForSkillInstall, autostart=False)
 
 		# If it's the first time we start, don't delay skill install and do it on main thread
 		if not self.ConfigManager.getAliceConfigByName('skills'):
 			self.logInfo('Looks like a fresh install or skills were nuked. Let\'s install the basic skills!')
 			self._checkForSkillInstall()
-
-		self._skillInstallThread = self.ThreadManager.newThread(name='SkillInstallThread', target=self._checkForSkillInstall, autostart=False)
+		else:
+			if self.checkForSkillUpdates():
+				self._checkForSkillInstall()
 
 		self._activeSkills = self._loadSkillList()
 		self._allSkills = {**self._activeSkills, **self._deactivatedSkills, **self._failedSkills}
@@ -74,7 +72,6 @@ class SkillManager(Manager):
 		for skillName in self._deactivatedSkills:
 			self.configureSkillIntents(skillName=skillName, state=False)
 
-		self.checkForSkillUpdates()
 		self.startAllSkills()
 
 
@@ -335,19 +332,15 @@ class SkillManager(Manager):
 			self._activeSkills[skillName].onStart()
 
 
+	@Online(catchOnly=True)
+	@IfSetting(settingName='stayCompletlyOffline', settingValue=False)
 	def checkForSkillUpdates(self, skillToCheck: str = None) -> bool:
-		if self.ConfigManager.getAliceConfigByName('stayCompletlyOffline'):
-			return False
-
 		self.logInfo('Checking for skill updates')
-		if not self.InternetManager.online:
-			self.logInfo('Not connected...')
-			return False
 
 		availableSkills = self.ConfigManager.skillsConfigurations
 		updateCount = 0
 
-		for skillName in self._allSkills:
+		for skillName in availableSkills:
 			try:
 				if skillToCheck and skillName != skillToCheck:
 					continue
@@ -364,9 +357,7 @@ class SkillManager(Manager):
 						elif skillName in self._deactivatedSkills:
 							self._deactivatedSkills[skillName].updateAvailable = True
 					else:
-
-						req = requests.get(f'https://raw.githubusercontent.com/project-alice-assistant/skill_{skillName}/{self.SkillStoreManager.getSkillUpdateTag(skillName)}/{skillName}.install')
-
+						req = requests.get(f'{constants.GITHUB_RAW_URL}/skill_{skillName}/{self.SkillStoreManager.getSkillUpdateTag(skillName)}/{skillName}.install')
 						if req.status_code == 404:
 							raise GithubNotFound
 
@@ -391,6 +382,7 @@ class SkillManager(Manager):
 		return updateCount > 0
 
 
+	@Online(catchOnly=True)
 	def _checkForSkillInstall(self):
 		# Don't start the install timer from the main thread in case it's the first start
 		if self._skillInstallThread is not None:
@@ -399,38 +391,39 @@ class SkillManager(Manager):
 		root = Path(self.Commons.rootDir(), constants.SKILL_INSTALL_TICKET_PATH)
 		files = [f for f in root.iterdir() if f.suffix == '.install']
 
-		if self._busyInstalling.isSet() or \
-				not self.InternetManager.online or \
-				not files or \
-				self.ThreadManager.getEvent('SnipsAssistantDownload').isSet():
+		if self._busyInstalling.isSet() or not files:
 			return
 
-		if files:
-			self.logInfo(f'Found {len(files)} install ticket(s)')
-			self._busyInstalling.set()
+		self.logInfo(f'Found {len(files)} install ticket(s)')
+		self._busyInstalling.set()
 
-			skillsToBoot = dict()
-			try:
-				skillsToBoot = self._installSkills(files)
-			except Exception as e:
-				self._logger.error(f'Error installing skill: {e}')
-			finally:
-				self.MqttManager.mqttBroadcast(topic='hermes/leds/clear')
+		skillsToBoot = dict()
+		try:
+			skillsToBoot = self._installSkills(files)
+		except Exception as e:
+			self._logger.error(f'Error installing skill: {e}')
+		finally:
+			self.MqttManager.mqttBroadcast(topic='hermes/leds/clear')
 
-				if skillsToBoot:
-					for skillName, info in skillsToBoot.items():
-						self._activeSkills = self._loadSkillList(skillToLoad=skillName, isUpdate=info['update'])
-						self._allSkills = {**self._allSkills, **self._activeSkills}
+			if skillsToBoot:
+				for skillName, info in skillsToBoot.items():
+					self._activeSkills = self._loadSkillList(skillToLoad=skillName, isUpdate=info['update'])
+					self._allSkills = {**self._allSkills, **self._activeSkills}
 
-						try:
-							self.LanguageManager.loadStrings(skillToLoad=skillName)
-							self.TalkManager.loadTalks(skillToLoad=skillName)
-						except:
-							pass
+					if info['update']:
+						self._allSkills[skillName].onSkillUpdated()
+					else:
+						self._allSkills[skillName].onSkillInstalled()
 
-					self.NluManager.afterNewSkillInstall()
+					try:
+						self.LanguageManager.loadStrings(skillToLoad=skillName)
+						self.TalkManager.loadTalks(skillToLoad=skillName)
+					except:
+						pass
 
-				self._busyInstalling.clear()
+				self.NluManager.afterNewSkillInstall()
+
+			self._busyInstalling.clear()
 
 
 	def _installSkills(self, skills: list) -> dict:
@@ -488,7 +481,7 @@ class SkillManager(Manager):
 						self.logError(f'Error stopping "{skillName}" for update: {e}')
 						raise
 
-				gitCloner = GithubCloner(baseUrl=self.GITHUB_BASE_URL.format(skillName), path=path, dest=directory)
+				gitCloner = GithubCloner(baseUrl=f'{constants.GITHUB_URL}/skill_{skillName}.git', path=path, dest=directory)
 
 				try:
 					gitCloner.clone(skillName=skillName)
@@ -699,7 +692,7 @@ class SkillManager(Manager):
 				self.Commons.runSystemCommand(['git', '-C', str(rootDir), 'clear', '-dfx'])
 				self.Commons.runSystemCommand(['git', '-C', str(rootDir), 'pull'])
 			else:
-				self.Commons.runSystemCommand(['git', '-C', str(rootDir), 'clone', 'https://github.com/project-alice-assistant/skill_DefaultTemplate.git'])
+				self.Commons.runSystemCommand(['git', '-C', str(rootDir), 'clone', f'{constants.GITHUB_URL}/skill_DefaultTemplate.git'])
 
 			skillName = skillDefinition['name'][0].upper() + skillDefinition['name'][1:]
 			skillDir = rootDir / skillName

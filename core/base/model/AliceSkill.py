@@ -417,12 +417,12 @@ class AliceSkill(ProjectAliceObject):
 		self.MqttManager.subscribeSkillIntents(self.name)
 
 
+	def onStop(self):
+		self.SkillManager.configureSkillIntents(self._name, False)
+
+
 	def onBooted(self) -> bool:
 		if self.delayed:
-			if self.ThreadManager.getEvent('SnipsAssistantDownload').isSet():
-				self.ThreadManager.doLater(interval=5, func=self.onBooted)
-				return False
-
 			self.logInfo('Delayed start')
 			self.ThreadManager.doLater(interval=5, func=self.onStart)
 
@@ -431,12 +431,12 @@ class AliceSkill(ProjectAliceObject):
 
 	def onSkillInstalled(self, **kwargs):
 		self._updateAvailable = False
-		#self.MqttManager.subscribeSkillIntents(self.name)
+		self.MqttManager.subscribeSkillIntents(self.name)
 
 
 	def onSkillUpdated(self, skill: str):
 		self._updateAvailable = False
-		#self.MqttManager.subscribeSkillIntents(self.name)
+		self.MqttManager.subscribeSkillIntents(self.name)
 
 
 	# HELPERS

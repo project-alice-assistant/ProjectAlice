@@ -11,6 +11,9 @@ RANDOM = 'random'
 DUMMY = 'dummy'
 DATABASE_FILE = 'system/database/data.db'
 SKILL_INSTALL_TICKET_PATH = 'system/skillInstallTickets'
+GITHUB_URL = 'https://github.com/project-alice-assistant'
+GITHUB_RAW_URL = 'https://raw.githubusercontent.com/project-alice-assistant'
+GITHUB_REPOSITORY_ID = 193512918
 
 TOPIC_AUDIO_FRAME = 'hermes/audioServer/{}/audioFrame'
 TOPIC_HOTWORD_DETECTED = 'hermes/hotword/default/detected'
