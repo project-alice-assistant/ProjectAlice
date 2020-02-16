@@ -1,6 +1,10 @@
+import queue
+from typing import Optional
+
 import paho.mqtt.client as mqtt
 import struct
 
+import core.asr.model.ASR as ASR
 from core.base.model.ProjectAliceObject import ProjectAliceObject
 from core.commons import constants
 from core.dialog.model.DialogSession import DialogSession
@@ -12,8 +16,7 @@ class Recorder(ProjectAliceObject):
 		super().__init__()
 		self._session = session
 		self._recording = False
-		self._buffer = list()
-		self._n = 0
+		self._buffer = queue.Queue()
 
 
 	def __enter__(self):
@@ -48,9 +51,9 @@ class Recorder(ProjectAliceObject):
 		self.MqttManager.mqttClient.unsubscribe(constants.TOPIC_AUDIO_FRAME.format(self._session.siteId))
 
 
-	def getFrame(self, index: int = 0) -> bytes:
+	def getChunk(self) -> bytes:
 		try:
-			return self._buffer[index]
+			return self._buffer.get()
 		except:
 			return b''
 
@@ -72,9 +75,32 @@ class Recorder(ProjectAliceObject):
 				subChunk2Id, subChunk2Size = struct.unpack('<4sI', message.payload[chunkOffset:chunkOffset + 8])
 				chunkOffset += 8
 				if subChunk2Id == b'data':
-					self._buffer.append(message.payload[chunkOffset:chunkOffset + subChunk2Size])
+					self._buffer.put(message.payload[chunkOffset:chunkOffset + subChunk2Size])
 
 				chunkOffset = chunkOffset + subChunk2Size + 8
 
 		except Exception as e:
 			self.logError(f'Error recording user speech: {e}')
+
+
+	def generator(self) -> Optional[bytes]:
+		data = list()
+		while self._recording:
+
+			chunk = self._buffer.get(timeout=ASR.ASR.TIMEOUT)
+			if not chunk:
+				return
+
+			data.append(chunk)
+
+			while True:
+				try:
+					chunk = self._buffer.get(block=False)
+					if not chunk:
+						return
+
+					data.append(chunk)
+				except queue.Empty:
+					break
+
+			yield b''.join(data)

@@ -48,7 +48,8 @@ class ASR(ProjectAliceObject):
 		self._timeoutTimer = self.ThreadManager.newTimer(interval=self.TIMEOUT, func=self.timeout)
 
 
-	def end(self):
+	def end(self, recorder: Recorder):
+		recorder.stopRecording()
 		if self._timeoutTimer and self._timeoutTimer.is_alive():
 			self._timeoutTimer.cancel()
 

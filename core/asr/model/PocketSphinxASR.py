@@ -30,28 +30,24 @@ class PocketSphinxASR(ASR):
 	def decodeStream(self, recorder: Recorder) -> ASRResult:
 		super().decodeStream(recorder)
 
-		i = 0
 		self._decoder.start_utt()
 		inSpeech = False
+		result = None
+
 		with Stopwatch() as processingTime:
-			while recorder.isRecording:
-				if self._timeout.isSet():
+			for chunk in recorder.generator():
+				if self._timeout.isSet() or not chunk:
 					break
 
-				frame = recorder.getFrame(i)
-				if not frame:
-					continue
-
-				i += 1
-
-				self._decoder.process_raw(frame, False, False)
+				self._decoder.process_raw(chunk, False, False)
 				if self._decoder.get_in_speech() != inSpeech:
 					inSpeech = self._decoder.get_in_speech()
 					if not inSpeech:
 						self._decoder.end_utt()
-						recorder.stopRecording()
 						result = self._decoder.hyp() if self._decoder.hyp() else None
-			self.end()
+						break
+
+			self.end(recorder)
 
 		return ASRResult(
 			text=result.hypstr.strip(),
