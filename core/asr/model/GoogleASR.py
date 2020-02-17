@@ -6,7 +6,7 @@ import os
 from core.asr.model.ASR import ASR
 from core.asr.model.ASRResult import ASRResult
 from core.asr.model.Recorder import Recorder
-from core.util.Stopwatch import Stopwatch
+from core.dialog.model.DialogSession import DialogSession
 
 try:
 	from google.cloud.speech import SpeechClient, enums, types
@@ -34,6 +34,7 @@ class GoogleASR(ASR):
 		super().onStart()
 		os.environ['GOOGLE_APPLICATION_CREDENTIALS'] = str(Path(self.Commons.rootDir(), 'credentials/googlecredentials.json'))
 
+		self._client = SpeechClient()
 		# noinspection PyUnresolvedReferences
 		config = types.RecognitionConfig(
 			encoding=enums.RecognitionConfig.AudioEncoding.LINEAR16,
@@ -41,7 +42,7 @@ class GoogleASR(ASR):
 			language_code=self.LanguageManager.activeLanguageAndCountryCode
 		)
 
-		self._streamingConfig = types.StreamingRecognitionConfig(config=config)
+		self._streamingConfig = types.StreamingRecognitionConfig(config=config, single_utterance=True, interim_results=False)
 
 
 	def install(self) -> bool:
@@ -49,36 +50,23 @@ class GoogleASR(ASR):
 			return False
 
 
-	def decodeStream(self, recorder: Recorder) -> ASRResult:
-		super().decodeStream(recorder)
+	def decodeStream(self, session: DialogSession) -> ASRResult:
+		super().decodeStream(session)
+		with Recorder(self._timeout) as recorder:
+			self.ASRManager.addRecorder(session.siteId, recorder)
 
-		responses = None
-		with Stopwatch() as processingTime:
-			self._client = SpeechClient()
+			audioGenerator = recorder.audioStream()
+			requests = (types.StreamingRecognizeRequest(audio_content=content) for content in audioGenerator)
+			responses = self._client.streaming_recognize(self._streamingConfig, requests)
+			result = self._checkResponses(responses)
 
-			while recorder.isRecording:
-				# noinspection PyUnresolvedReferences
-				for chunk in recorder:
-					if self._timeout.isSet():
-						break
-
-					requests = types.StreamingRecognizeRequest(audio_content=chunk)
-
-				try:
-					responses = self._client.streaming_recognize(self._streamingConfig, requests)
-				except RuntimeError as e:
-					self.logWarning(f'Decoding failed: {e}')
-					break
-
-			self.end(recorder)
-
-		result = self._checkResponses(responses)
+		self.end(recorder)
 
 		return ASRResult(
 			text=result[0],
-			session=recorder.session,
+			session=session,
 			likelihood=result[1],
-			processingTime=processingTime.time
+			processingTime=10
 		) if result else None
 
 
@@ -96,8 +84,6 @@ class GoogleASR(ASR):
 				continue
 
 			if result.is_final:
-				transcript = result.alternatives[0].transcript
-				confidence = result.alternatives[0].confidence
-				return transcript, confidence
+				return result.alternatives[0].transcript, result.alternatives[0].confidence
 
 		return None

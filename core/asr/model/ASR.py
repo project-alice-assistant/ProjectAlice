@@ -68,7 +68,7 @@ class ASR(ProjectAliceObject):
 		pass
 
 
-	def decodeStream(self, recorder: Recorder):
+	def decodeStream(self, session: DialogSession):
 		self._timeout.clear()
 		self._timeoutTimer = self.ThreadManager.newTimer(interval=self.TIMEOUT, func=self.timeout)
 

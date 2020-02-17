@@ -134,6 +134,10 @@ class ProjectAliceObject:
 		pass
 
 
+	def onStopListening(self, session):
+		pass
+
+
 	def onCaptured(self, session):
 		pass
 

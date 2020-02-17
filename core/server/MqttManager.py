@@ -44,7 +44,6 @@ class MqttManager(Manager):
 		self._mqttClient.on_connect = self.onConnect
 		self._mqttClient.on_log = self.onLog
 
-
 		self._mqttClient.message_callback_add(constants.TOPIC_HOTWORD_DETECTED, self.onHotwordDetected)
 		for username in self.UserManager.getAllUserNames():
 			self._mqttClient.message_callback_add(constants.TOPIC_WAKEWORD_DETECTED.replace('{user}', username), self.onHotwordDetected)
@@ -52,6 +51,8 @@ class MqttManager(Manager):
 		self._mqttClient.message_callback_add(constants.TOPIC_SESSION_STARTED, self.onSnipsSessionStarted)
 
 		self._mqttClient.message_callback_add(constants.TOPIC_ASR_START_LISTENING, self.onSnipsStartListening)
+
+		self._mqttClient.message_callback_add(constants.TOPIC_ASR_STOP_LISTENING, self.onSnipsStopListening)
 
 		self._mqttClient.message_callback_add(constants.TOPIC_INTENT_PARSED, self.onSnipsIntentParsed)
 
@@ -316,6 +317,15 @@ class MqttManager(Manager):
 
 		if session:
 			self.broadcast(method=constants.EVENT_START_LISTENING, exceptions=[self.name], propagateToSkills=True, session=session)
+
+
+	# noinspection PyUnusedLocal
+	def onSnipsStopListening(self, client, data, msg: mqtt.MQTTMessage):
+		sessionId = self.Commons.parseSessionId(msg)
+		session = self.DialogSessionManager.getSession(sessionId=sessionId)
+
+		if session:
+			self.broadcast(method=constants.EVENT_STOP_LISTENING, exceptions=[self.name], propagateToSkills=True, session=session)
 
 
 	# noinspection PyUnusedLocal

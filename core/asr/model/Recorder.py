@@ -1,19 +1,20 @@
 import queue
+import threading
+from typing import Optional
 
 import paho.mqtt.client as mqtt
 import struct
 
 from core.base.model.ProjectAliceObject import ProjectAliceObject
-from core.commons import constants
 from core.dialog.model.DialogSession import DialogSession
 
 
 class Recorder(ProjectAliceObject):
 
-	def __init__(self, session: DialogSession = None):
+	def __init__(self, timeoutFlag: threading.Event):
 		super().__init__()
-		self._session = session
 		self._recording = False
+		self._timeoutFlag = timeoutFlag
 		self._buffer = queue.Queue()
 
 
@@ -28,26 +29,19 @@ class Recorder(ProjectAliceObject):
 
 
 	@property
-	def session(self) -> DialogSession:
-		return self._session
-
-
-	@property
 	def isRecording(self) -> bool:
 		return self._recording
-
-
-	def startRecording(self):
-		self.MqttManager.mqttClient.subscribe(constants.TOPIC_AUDIO_FRAME.format(self._session.siteId))
-		self._recording = True
 
 
 	def onSessionError(self, session: DialogSession):
 		self.stopRecording()
 
 
+	def startRecording(self):
+		self._recording = True
+
+
 	def stopRecording(self):
-		self.MqttManager.mqttClient.unsubscribe(constants.TOPIC_AUDIO_FRAME.format(self._session.siteId))
 		self._recording = False
 
 		with self._buffer.mutex:
@@ -81,4 +75,30 @@ class Recorder(ProjectAliceObject):
 
 	def __iter__(self):
 		while self._recording:
-			yield self._buffer.get(timeout=20)
+			yield self._buffer.get()
+
+
+	def audioStream(self) -> Optional[bytes]:
+		while self._recording:
+			if self._timeoutFlag.isSet():
+				return
+
+			data = list()
+
+			chunk = self._buffer.get()
+			if not chunk:
+				return
+
+			data.append(chunk)
+
+			while True:
+				try:
+					chunk = self._buffer.get(block=False)
+					if not chunk:
+						return
+
+					data.append(chunk)
+				except queue.Empty:
+					break
+
+			yield b''.join(data)

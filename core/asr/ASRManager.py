@@ -1,5 +1,5 @@
 from pathlib import Path
-from typing import Dict, List
+from typing import Dict
 
 import paho.mqtt.client as mqtt
 
@@ -20,8 +20,6 @@ class ASRManager(Manager):
 		super().__init__(self.NAME)
 		self._asr = None
 		self._streams: Dict[str, Recorder] = dict()
-		self._thresholds: Dict[str, List[float]] = dict()
-		self._thresholdRecorder = Recorder()
 
 
 	def onStart(self):
@@ -84,17 +82,20 @@ class ASRManager(Manager):
 			self._startASREngine()
 
 
-	def onStartListening(self, session: DialogSession, *args, **kwargs):
+	def onStartListening(self, session: DialogSession):
+		self.MqttManager.mqttClient.subscribe(constants.TOPIC_AUDIO_FRAME.format(session.siteId))
 		self.ThreadManager.newThread(name=f'streamdecode_{session.siteId}', target=self.decodeStream, args=[session])
 
 
+	def onStopListening(self, session: DialogSession):
+		self.MqttManager.mqttClient.unsubscribe(constants.TOPIC_AUDIO_FRAME.format(session.siteId))
+
+
 	def decodeStream(self, session: DialogSession):
-		with Recorder(session) as recorder:
-			self._streams[session.siteId] = recorder
-			result: ASRResult = self._asr.decodeStream(recorder)
+		result: ASRResult = self._asr.decodeStream(session)
 
 		if result and result.text:
-			self.MqttManager.publish(topic=constants.TOPIC_STOP_LISTENING, payload={'sessionId': session.sessionId, 'siteId': session.siteId})
+			self.MqttManager.publish(topic=constants.TOPIC_ASR_STOP_LISTENING, payload={'sessionId': session.sessionId, 'siteId': session.siteId})
 			self.logDebug(f'ASR captured: {result.text}')
 			text = self.LanguageManager.sanitizeNluQuery(result.text)
 
@@ -108,11 +109,10 @@ class ASRManager(Manager):
 			self.MqttManager.playSound(
 				soundFilename='error',
 				location=Path('assistant/custom_dialogue/sound'),
-				siteId=recorder.session.siteId
+				siteId=session.siteId
 			)
 
-		self._streams.pop(recorder.session.siteId, None)
-
+		self._streams.pop(session.siteId, None)
 
 
 	def onAudioFrame(self, message: mqtt.MQTTMessage, siteId: str):
@@ -127,3 +127,7 @@ class ASRManager(Manager):
 			return
 
 		self._streams[session.siteId].onSessionError(session)
+
+
+	def addRecorder(self, siteId: str, recorder: Recorder):
+		self._streams[siteId] = recorder

@@ -3,6 +3,7 @@ from typing import Optional
 from core.asr.model.ASR import ASR
 from core.asr.model.ASRResult import ASRResult
 from core.asr.model.Recorder import Recorder
+from core.dialog.model.DialogSession import DialogSession
 from core.util.Stopwatch import Stopwatch
 
 try:
@@ -40,31 +41,33 @@ class PocketSphinxASR(ASR):
 			return False
 
 
-	def decodeStream(self, recorder: Recorder) -> ASRResult:
-		super().decodeStream(recorder)
+	def decodeStream(self, session: DialogSession) -> ASRResult:
+		super().decodeStream(session)
 
-		self._decoder.start_utt()
-		inSpeech = False
 		result = None
-
 		with Stopwatch() as processingTime:
-			for chunk in recorder:
-				if self._timeout.isSet() or not chunk:
-					break
+			with Recorder(self._timeout) as recorder:
+				self._decoder.start_utt()
+				inSpeech = False
 
-				self._decoder.process_raw(chunk, False, False)
-				if self._decoder.get_in_speech() != inSpeech:
-					inSpeech = self._decoder.get_in_speech()
-					if not inSpeech:
-						self._decoder.end_utt()
-						result = self._decoder.hyp() if self._decoder.hyp() else None
+				self.ASRManager.addRecorder(session.siteId, recorder)
+				for chunk in recorder:
+					if self._timeout.isSet():
 						break
 
-			self.end(recorder)
+					self._decoder.process_raw(chunk, False, False)
+					if self._decoder.get_in_speech() != inSpeech:
+						inSpeech = self._decoder.get_in_speech()
+						if not inSpeech:
+							self._decoder.end_utt()
+							result = self._decoder.hyp() if self._decoder.hyp() else None
+							break
+
+				self.end(recorder)
 
 		return ASRResult(
 			text=result.hypstr.strip(),
-			session=recorder.session,
+			session=session,
 			likelihood=self._decoder.hyp().prob,
 			processingTime=processingTime.time
 		) if result else None
