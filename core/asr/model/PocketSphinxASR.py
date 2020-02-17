@@ -48,7 +48,7 @@ class PocketSphinxASR(ASR):
 		result = None
 
 		with Stopwatch() as processingTime:
-			for chunk in recorder.generator():
+			for chunk in recorder:
 				if self._timeout.isSet() or not chunk:
 					break
 

@@ -1,8 +1,7 @@
 import queue
-import struct
-from typing import Optional
 
 import paho.mqtt.client as mqtt
+import struct
 
 from core.base.model.ProjectAliceObject import ProjectAliceObject
 from core.commons import constants
@@ -80,24 +79,6 @@ class Recorder(ProjectAliceObject):
 			self.logError(f'Error recording user speech: {e}')
 
 
-	def generator(self) -> Optional[bytes]:
+	def __iter__(self):
 		while self._recording:
-			data = list()
-
-			chunk = self._buffer.get()
-			if not chunk:
-				return
-
-			data.append(chunk)
-
-			while True:
-				try:
-					chunk = self._buffer.get(block=False)
-					if not chunk:
-						return
-
-					data.append(chunk)
-				except queue.Empty:
-					break
-
-			yield b''.join(data)
+			yield self._buffer.get(timeout=20)

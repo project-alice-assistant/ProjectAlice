@@ -58,7 +58,7 @@ class GoogleASR(ASR):
 
 			while recorder.isRecording:
 				# noinspection PyUnresolvedReferences
-				for chunk in recorder.generator():
+				for chunk in recorder:
 					if self._timeout.isSet():
 						break
 
