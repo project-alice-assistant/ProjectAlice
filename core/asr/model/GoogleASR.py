@@ -71,7 +71,7 @@ class GoogleASR(ASR):
 
 
 	@staticmethod
-	def _checkResponses(responses: dict) -> Optional[tuple]:
+	def _checkResponses(responses) -> Optional[tuple]:
 		if responses is None:
 			return None
 
