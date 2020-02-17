@@ -81,17 +81,15 @@ class ASRManager(Manager):
 
 
 	def onStartListening(self, session: DialogSession, *args, **kwargs):
+		self.ThreadManager.newThread(name=f'streamdecode_{session.siteId}', target=self.decodeStream, args=[session])
+
+
+	def decodeStream(self, session: DialogSession):
 		with Recorder(session) as recorder:
-			recorder.onStartListening(session)
 			self._streams[session.siteId] = recorder
+			result: ASRResult = self._asr.decodeStream(recorder)
 
-		self.ThreadManager.newThread(name=f'streamdecode_{session.siteId}', target=self.decodeStream, args=[recorder])
-
-
-	def decodeStream(self, recorder: Recorder):
-		result: ASRResult = self._asr.decodeStream(recorder)
 		if result and result.text:
-			session = result.session
 			self.MqttManager.publish(topic=constants.TOPIC_STOP_LISTENING, payload={'sessionId': session.sessionId, 'siteId': session.siteId})
 			self.logDebug(f'ASR captured: {result.text}')
 			text = self.LanguageManager.sanitizeNluQuery(result.text)

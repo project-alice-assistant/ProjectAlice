@@ -19,10 +19,12 @@ class Recorder(ProjectAliceObject):
 
 
 	def __enter__(self):
+		self.startRecording()
 		return self
 
 
 	def __exit__(self, exc_type, exc_val, exc_tb):
+		self.stopRecording()
 		return True
 
 
@@ -36,8 +38,8 @@ class Recorder(ProjectAliceObject):
 		return self._recording
 
 
-	def onStartListening(self, session: DialogSession):
-		self.MqttManager.mqttClient.subscribe(constants.TOPIC_AUDIO_FRAME.format(session.siteId))
+	def startRecording(self):
+		self.MqttManager.mqttClient.subscribe(constants.TOPIC_AUDIO_FRAME.format(self._session.siteId))
 		self._recording = True
 
 
@@ -46,15 +48,11 @@ class Recorder(ProjectAliceObject):
 
 
 	def stopRecording(self):
-		self._recording = False
 		self.MqttManager.mqttClient.unsubscribe(constants.TOPIC_AUDIO_FRAME.format(self._session.siteId))
+		self._recording = False
 
-
-	def getChunk(self) -> bytes:
-		try:
-			return self._buffer.get()
-		except:
-			return b''
+		with self._buffer.mutex:
+			self._buffer.queue.clear()
 
 
 	def onAudioFrame(self, message: mqtt.MQTTMessage):
