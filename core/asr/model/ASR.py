@@ -3,6 +3,8 @@ from pathlib import Path
 from threading import Event
 from typing import Optional
 
+import pkg_resources
+
 from core.asr.model.Recorder import Recorder
 from core.base.model.ProjectAliceObject import ProjectAliceObject
 from core.dialog.model.DialogSession import DialogSession
@@ -11,6 +13,7 @@ from core.dialog.model.DialogSession import DialogSession
 class ASR(ProjectAliceObject):
 	NAME = 'Generic ASR'
 	TIMEOUT = 20
+	DEPENDENCIES = list()
 
 
 	def __init__(self):
@@ -29,6 +32,28 @@ class ASR(ProjectAliceObject):
 	@property
 	def isOnlineASR(self) -> bool:
 		return self._isOnlineASR
+
+
+	def checkDependencies(self) -> bool:
+		self.logInfo('Checking dependencies')
+		try:
+			pkg_resources.require(self.DEPENDENCIES)
+			return True
+		except:
+			self.logInfo('Found missing dependencies')
+			return False
+
+
+	def install(self) -> bool:
+		self.logInfo('Installing dependencies')
+
+		try:
+			for dep in self.DEPENDENCIES:
+				self.Commons.runSystemCommand([f'./{self.Commons.rootDir()}/venv/bin/pip', 'install', '-y', dep])
+			return True
+		except Exception as e:
+			self.logError(f'Installing dependencies failed: {e}')
+			return False
 
 
 	def onStart(self):

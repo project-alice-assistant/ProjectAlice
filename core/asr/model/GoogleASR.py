@@ -2,16 +2,23 @@ from pathlib import Path
 from typing import Optional
 
 import os
-from google.cloud.speech import SpeechClient, enums, types
 
 from core.asr.model.ASR import ASR
 from core.asr.model.ASRResult import ASRResult
 from core.asr.model.Recorder import Recorder
 from core.util.Stopwatch import Stopwatch
 
+try:
+	from google.cloud.speech import SpeechClient, enums, types
+except:
+	pass
+
 
 class GoogleASR(ASR):
 	NAME = 'Google ASR'
+	DEPENDENCIES = [
+		'google-cloud-speech==1.3.1'
+	]
 
 
 	def __init__(self):
@@ -34,8 +41,12 @@ class GoogleASR(ASR):
 			language_code=self.LanguageManager.activeLanguageAndCountryCode
 		)
 
-		self._client = SpeechClient()
 		self._streamingConfig = types.StreamingRecognitionConfig(config=config)
+
+
+	def install(self) -> bool:
+		if not super().install():
+			return False
 
 
 	def decodeStream(self, recorder: Recorder) -> ASRResult:
@@ -43,6 +54,8 @@ class GoogleASR(ASR):
 
 		responses = None
 		with Stopwatch() as processingTime:
+			self._client = SpeechClient()
+
 			while recorder.isRecording:
 				# noinspection PyUnresolvedReferences
 				for chunk in recorder.generator():

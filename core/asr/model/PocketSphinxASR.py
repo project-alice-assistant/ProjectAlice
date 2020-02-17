@@ -1,15 +1,21 @@
 from typing import Optional
 
-from pocketsphinx import Decoder
-
 from core.asr.model.ASR import ASR
 from core.asr.model.ASRResult import ASRResult
 from core.asr.model.Recorder import Recorder
 from core.util.Stopwatch import Stopwatch
 
+try:
+	from pocketsphinx import Decoder
+except:
+	pass
+
 
 class PocketSphinxASR(ASR):
 	NAME = 'Pocketsphinx ASR'
+	DEPENDENCIES = [
+		'pocketsphinx==0.1.15'
+	]
 
 
 	def __init__(self):
@@ -17,15 +23,21 @@ class PocketSphinxASR(ASR):
 		self._capableOfArbitraryCapture = True
 		self._isOnlineASR = False
 		self._decoder: Optional[Decoder] = None
+		self._config = None
 
 
 	def onStart(self):
 		super().onStart()
-		config = Decoder.default_config()
-		config.set_string('-hmm', f'{self.Commons.rootDir()}/venv/lib/python3.7/site-packages/pocketsphinx/model/en-us')
-		config.set_string('-lm', f'{self.Commons.rootDir()}/venv/lib/python3.7/site-packages/pocketsphinx/model/en-us.lm.bin')
-		config.set_string('-dict', f'{self.Commons.rootDir()}/venv/lib/python3.7/site-packages/pocketsphinx/model/cmudict-en-us.dict')
-		self._decoder = Decoder(config)
+		self._config = Decoder.default_config()
+		self._config.set_string('-hmm', f'{self.Commons.rootDir()}/venv/lib/python3.7/site-packages/pocketsphinx/model/en-us')
+		self._config.set_string('-lm', f'{self.Commons.rootDir()}/venv/lib/python3.7/site-packages/pocketsphinx/model/en-us.lm.bin')
+		self._config.set_string('-dict', f'{self.Commons.rootDir()}/venv/lib/python3.7/site-packages/pocketsphinx/model/cmudict-en-us.dict')
+		self._decoder = Decoder(self._config)
+
+
+	def install(self) -> bool:
+		if not super().install():
+			return False
 
 
 	def decodeStream(self, recorder: Recorder) -> ASRResult:

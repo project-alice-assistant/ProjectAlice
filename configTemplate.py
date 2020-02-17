@@ -118,7 +118,8 @@ settings = {
 		'defaultValue': 'pocketsphinx',
 		'dataType'    : 'list',
 		'values'      : ['pocketsphinx', 'google'],
-		'description' : 'The ASR to use. Can\'t use an online ASR if you have set keepASROffline to true!'
+		'description' : 'The ASR to use. Can\'t use an online ASR if you have set keepASROffline to true!',
+		'onUpdate'    : 'reloadASR'
 	},
 	'tts': {
 		'defaultValue': 'pico',

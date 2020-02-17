@@ -1,8 +1,7 @@
 import json
 import logging
-from pathlib import Path
-
 import shutil
+from pathlib import Path
 
 import configTemplate
 from core.base.SkillManager import SkillManager
@@ -506,6 +505,11 @@ class ConfigManager(Manager):
 
 	def reconnectMqtt(self):
 		self.MqttManager.reconnect()
+
+
+	def reloadASR(self):
+		self.ASRManager.onStop()
+		self.ASRManager.onStart()
 
 
 	def refreshStoreData(self):

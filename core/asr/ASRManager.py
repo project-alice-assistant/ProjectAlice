@@ -49,6 +49,10 @@ class ASRManager(Manager):
 		if self._asr.isOnlineASR and (not online or keepASROffline or stayOffline):
 			self._asr = None
 
+		if not self._asr.checkDependencies():
+			if not self._asr.install():
+				self._asr = None
+
 		if self._asr is None:
 			self.logWarning('ASR did not satisfy the user settings, falling back to pocketsphinx')
 			from core.asr.model.PocketSphinxASR import PocketSphinxASR
