@@ -25,7 +25,6 @@ class Recorder(ProjectAliceObject):
 
 	def __exit__(self, exc_type, exc_val, exc_tb):
 		self.stopRecording()
-		return True
 
 
 	@property
@@ -43,9 +42,7 @@ class Recorder(ProjectAliceObject):
 
 	def stopRecording(self):
 		self._recording = False
-
-		with self._buffer.mutex:
-			self._buffer.queue.clear()
+		self._buffer.put(None)
 
 
 	def onAudioFrame(self, message: mqtt.MQTTMessage):
@@ -83,13 +80,11 @@ class Recorder(ProjectAliceObject):
 			if self._timeoutFlag.isSet():
 				return
 
-			data = list()
-
 			chunk = self._buffer.get()
 			if not chunk:
 				return
 
-			data.append(chunk)
+			data = [chunk]
 
 			while True:
 				try:

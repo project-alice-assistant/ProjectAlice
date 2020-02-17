@@ -63,7 +63,7 @@ class PocketSphinxASR(ASR):
 							result = self._decoder.hyp() if self._decoder.hyp() else None
 							break
 
-				self.end(recorder)
+				self.end(recorder, session)
 
 		return ASRResult(
 			text=result.hypstr.strip(),

@@ -7,6 +7,7 @@ import pkg_resources
 
 from core.asr.model.Recorder import Recorder
 from core.base.model.ProjectAliceObject import ProjectAliceObject
+from core.commons import constants
 from core.dialog.model.DialogSession import DialogSession
 
 
@@ -62,6 +63,11 @@ class ASR(ProjectAliceObject):
 
 	def onStop(self):
 		self.logInfo(f'Stopping {self.NAME}')
+		self._timeout.set()
+
+
+	def onStartListening(self, session):
+		self.MqttManager.mqttClient.subscribe(constants.TOPIC_AUDIO_FRAME.format(session.siteId))
 
 
 	def decodeFile(self, filepath: Path, session: DialogSession):
@@ -73,7 +79,8 @@ class ASR(ProjectAliceObject):
 		self._timeoutTimer = self.ThreadManager.newTimer(interval=self.TIMEOUT, func=self.timeout)
 
 
-	def end(self, recorder: Recorder):
+	def end(self, recorder: Recorder, session: DialogSession):
+		self.MqttManager.mqttClient.unsubscribe(constants.TOPIC_AUDIO_FRAME.format(session.siteId))
 		recorder.stopRecording()
 		if self._timeoutTimer and self._timeoutTimer.is_alive():
 			self._timeoutTimer.cancel()

@@ -27,6 +27,11 @@ class ASRManager(Manager):
 		self._startASREngine()
 
 
+	def onStop(self):
+		if self._asr:
+			self._asr.onStop()
+
+
 	def _startASREngine(self):
 		userASR = self.ConfigManager.getAliceConfigByName(configName='asr').lower()
 		keepASROffline = self.ConfigManager.getAliceConfigByName('keepASROffline')
@@ -83,12 +88,7 @@ class ASRManager(Manager):
 
 
 	def onStartListening(self, session: DialogSession):
-		self.MqttManager.mqttClient.subscribe(constants.TOPIC_AUDIO_FRAME.format(session.siteId))
 		self.ThreadManager.newThread(name=f'streamdecode_{session.siteId}', target=self.decodeStream, args=[session])
-
-
-	def onStopListening(self, session: DialogSession):
-		self.MqttManager.mqttClient.unsubscribe(constants.TOPIC_AUDIO_FRAME.format(session.siteId))
 
 
 	def decodeStream(self, session: DialogSession):

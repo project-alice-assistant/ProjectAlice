@@ -52,15 +52,15 @@ class GoogleASR(ASR):
 
 	def decodeStream(self, session: DialogSession) -> ASRResult:
 		super().decodeStream(session)
-		with Recorder(self._timeout) as recorder:
-			self.ASRManager.addRecorder(session.siteId, recorder)
-
-			audioGenerator = recorder.audioStream()
-			requests = (types.StreamingRecognizeRequest(audio_content=content) for content in audioGenerator)
+		recorder = Recorder(self._timeout)
+		self.ASRManager.addRecorder(session.siteId, recorder)
+		with recorder as stream:
+			audioStream = stream.audioStream()
+			requests = (types.StreamingRecognizeRequest(audio_content=content) for content in audioStream)
 			responses = self._client.streaming_recognize(self._streamingConfig, requests)
 			result = self._checkResponses(responses)
 
-		self.end(recorder)
+		self.end(recorder, session)
 
 		return ASRResult(
 			text=result[0],
