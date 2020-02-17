@@ -1,8 +1,8 @@
 import queue
+import struct
 from typing import Optional
 
 import paho.mqtt.client as mqtt
-import struct
 
 from core.base.model.ProjectAliceObject import ProjectAliceObject
 from core.commons import constants
@@ -81,8 +81,8 @@ class Recorder(ProjectAliceObject):
 
 
 	def generator(self) -> Optional[bytes]:
-		data = list()
 		while self._recording:
+			data = list()
 
 			chunk = self._buffer.get()
 			if not chunk:
