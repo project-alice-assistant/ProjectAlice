@@ -50,7 +50,7 @@ class GoogleASR(ASR):
 			return False
 
 
-	def decodeStream(self, session: DialogSession) -> ASRResult:
+	def decodeStream(self, session: DialogSession) -> Optional[ASRResult]:
 		super().decodeStream(session)
 		recorder = Recorder(self._timeout)
 		self.ASRManager.addRecorder(session.siteId, recorder)

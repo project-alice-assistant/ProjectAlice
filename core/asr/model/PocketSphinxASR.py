@@ -41,7 +41,7 @@ class PocketSphinxASR(ASR):
 			return False
 
 
-	def decodeStream(self, session: DialogSession) -> ASRResult:
+	def decodeStream(self, session: DialogSession) -> Optional[ASRResult]:
 		super().decodeStream(session)
 
 		result = None
