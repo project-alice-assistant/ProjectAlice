@@ -345,7 +345,7 @@ class MqttManager(Manager):
 			session.update(msg)
 			self.broadcast(method=constants.EVENT_INTENT_PARSED, exceptions=[self.name], propagateToSkills=True, session=session)
 
-			if self.ConfigManager.getAliceConfigByName('asr').lower() != 'snips' or session.isAPIGenerated:
+			if session.isAPIGenerated:
 				intent = Intent(session.payload['intent']['intentName'].split(':')[1])
 				message = mqtt.MQTTMessage(topic=str.encode(str(intent)))
 				message.payload = json.dumps(session.payload)

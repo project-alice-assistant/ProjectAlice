@@ -47,10 +47,9 @@ class PocketSphinxASR(ASR):
 		result = None
 		with Stopwatch() as processingTime:
 			with Recorder(self._timeout) as recorder:
+				self.ASRManager.addRecorder(session.siteId, recorder)
 				self._decoder.start_utt()
 				inSpeech = False
-
-				self.ASRManager.addRecorder(session.siteId, recorder)
 				for chunk in recorder:
 					if self._timeout.isSet():
 						break

@@ -42,7 +42,7 @@ class GoogleASR(ASR):
 			language_code=self.LanguageManager.activeLanguageAndCountryCode
 		)
 
-		self._streamingConfig = types.StreamingRecognitionConfig(config=config, single_utterance=True, interim_results=False)
+		self._streamingConfig = types.StreamingRecognitionConfig(config=config)
 
 
 	def install(self) -> bool:
@@ -79,7 +79,7 @@ class GoogleASR(ASR):
 			if not response.results:
 				continue
 
-			result = response.result[0]
+			result = response.results[0]
 			if not result.alternatives:
 				continue
 

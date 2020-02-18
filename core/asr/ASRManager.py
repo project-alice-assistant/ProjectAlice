@@ -88,6 +88,7 @@ class ASRManager(Manager):
 
 
 	def onStartListening(self, session: DialogSession):
+		self._asr.onStartListening(session)
 		self.ThreadManager.newThread(name=f'streamdecode_{session.siteId}', target=self.decodeStream, args=[session])
 
 
