@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from typing import Optional, Any
+from typing import Any, Optional
 
 from paho.mqtt.client import MQTTMessage
 
@@ -9,8 +9,6 @@ from core.base.model import Intent
 from core.commons import constants
 
 
-#TODO: improve typing information for dicts and lists using typing.List
-# and typing.Dict
 @dataclass
 class DialogSession:
 	siteId: str
@@ -18,15 +16,15 @@ class DialogSession:
 	user: str = constants.UNKNOWN_USER
 	message: MQTTMessage = None
 	intentName: str = ''
+	notUnderstood: int = 0
+	currentState: str = constants.DEFAULT
+	isAPIGenerated: bool = False
 	slots: dict = field(default_factory=dict)
 	slotsAsObjects: dict = field(default_factory=dict)
 	customData: dict = field(default_factory=dict)
 	payload: dict = field(default_factory=dict)
 	intentHistory: list = field(default_factory=list)
 	intentFilter: list = field(default_factory=list)
-	notUnderstood: int = 0
-	currentState: str = constants.DEFAULT
-	isAPIGenerated: bool = False
 
 
 	def extend(self, message: MQTTMessage, sessionId: str = None):
@@ -68,6 +66,7 @@ class DialogSession:
 		self.intentFilter = session.intentFilter
 		self.notUnderstood = session.notUnderstood
 		self.currentState = session.currentState
+		self.isAPIGenerated = session.isAPIGenerated
 
 
 	def slotValue(self, slotName: str, index: int = 0, defaultValue: Any = None) -> Any:

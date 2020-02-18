@@ -304,7 +304,10 @@ class MqttManager(Manager):
 	# noinspection PyUnusedLocal
 	def onTopicNluQuery(self, client, data, msg: mqtt.MQTTMessage):
 		sessionId = self.Commons.parseSessionId(msg)
-		session = self.DialogSessionManager.addSession(sessionId=sessionId, message=msg)
+
+		session = self.DialogSessionManager.getSession(sessionId)
+		if not session:
+			session = self.DialogSessionManager.addSession(sessionId=sessionId, message=msg)
 
 		if session:
 			self.broadcast(method=constants.EVENT_NLU_QUERY, exceptions=[self.name], propagateToSkills=True, session=session)
