@@ -92,6 +92,10 @@ class ASRManager(Manager):
 		self.ThreadManager.newThread(name=f'streamdecode_{session.siteId}', target=self.decodeStream, args=[session])
 
 
+	def onAsrIntermediateResult(self, result: str):
+		self.logDebug(result)
+
+
 	def decodeStream(self, session: DialogSession):
 		result: ASRResult = self._asr.decodeStream(session)
 

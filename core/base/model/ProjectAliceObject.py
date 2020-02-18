@@ -371,6 +371,10 @@ class ProjectAliceObject:
 		pass
 
 
+	def onAsrIntermediateResult(self, result: str):
+		pass
+
+
 	@property
 	def ProjectAlice(self):
 		return SM.SuperManager.getInstance().projectAlice

@@ -6,6 +6,7 @@ import os
 from core.asr.model.ASR import ASR
 from core.asr.model.ASRResult import ASRResult
 from core.asr.model.Recorder import Recorder
+from core.commons import constants
 from core.dialog.model.DialogSession import DialogSession
 
 try:
@@ -42,7 +43,7 @@ class GoogleASR(ASR):
 			language_code=self.LanguageManager.activeLanguageAndCountryCode
 		)
 
-		self._streamingConfig = types.StreamingRecognitionConfig(config=config)
+		self._streamingConfig = types.StreamingRecognitionConfig(config=config, interim_results=True)
 
 
 	def install(self) -> bool:
@@ -70,8 +71,7 @@ class GoogleASR(ASR):
 		) if result else None
 
 
-	@staticmethod
-	def _checkResponses(responses) -> Optional[tuple]:
+	def _checkResponses(self, responses) -> Optional[tuple]:
 		if responses is None:
 			return None
 
@@ -85,5 +85,7 @@ class GoogleASR(ASR):
 
 			if result.is_final:
 				return result.alternatives[0].transcript, result.alternatives[0].confidence
+			else:
+				self.broadcast(method=constants.EVENT_ASR_INTERMEDIATE_RESULT, exceptions=[constants.DUMMY], propagateToSkills=True, result=result.alternatives[0].transcript)
 
 		return None
