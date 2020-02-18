@@ -1,3 +1,4 @@
+import getpass
 from pathlib import Path
 from typing import Optional
 
@@ -77,7 +78,7 @@ class TTS(ProjectAliceObject):
 
 		if not self.TEMP_ROOT.is_dir():
 			SuperManager.getInstance().commonsManager.runRootSystemCommand(['mkdir', str(self.TEMP_ROOT)])
-			SuperManager.getInstance().commonsManager.runRootSystemCommand(['chown', 'pi', str(self.TEMP_ROOT)])
+			SuperManager.getInstance().commonsManager.runRootSystemCommand(['chown', getpass.getuser(), str(self.TEMP_ROOT)])
 
 		if self.TTS == TTSEnum.SNIPS:
 			voiceFile = f'cmu_{SuperManager.getInstance().languageManager.activeCountryCode.lower()}_{self._voice}'
