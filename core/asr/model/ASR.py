@@ -50,7 +50,7 @@ class ASR(ProjectAliceObject):
 
 		try:
 			for dep in self.DEPENDENCIES:
-				self.Commons.runSystemCommand([f'./{self.Commons.rootDir()}/venv/bin/pip', 'install', '-y', dep])
+				self.Commons.runSystemCommand(['./venv/bin/pip', 'install', dep])
 			return True
 		except Exception as e:
 			self.logError(f'Installing dependencies failed: {e}')
