@@ -255,9 +255,6 @@ network={
 		confs['mqttPassword'] = str(initConfs['mqttPassword'])
 		confs['mqttTLSFile'] = initConfs['mqttTLSFile']
 
-		if initConfs['snipsProjectId'] and confs['activeLanguage'] in confs['supportedLanguages']:
-			confs['supportedLanguages'][confs['activeLanguage']]['snipsProjectId'] = initConfs['snipsProjectId']
-
 		snipsConf = self.loadSnipsConfigurations()
 		if not snipsConf:
 			self.fatal('Error loading snips.toml')

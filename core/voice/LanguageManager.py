@@ -16,7 +16,6 @@ class LanguageManager(Manager):
 		self._activeCountryCode = ''
 		self._defaultLanguage = ''
 		self._defaultCountryCode = ''
-		self._activeSnipsProjectId = ''
 
 		self._stringsData = dict()
 		self._locals = list()
@@ -99,7 +98,6 @@ class LanguageManager(Manager):
 			if langCode == activeLangDef:
 				self._activeLanguage = langCode
 				self._activeCountryCode = settings['countryCode']
-				self._activeSnipsProjectId = settings['snipsProjectId']
 
 		if not self._activeLanguage and self._defaultLanguage:
 			self.logWarning(f'No active language defined, falling back to {self._defaultLanguage}')
@@ -119,10 +117,6 @@ class LanguageManager(Manager):
 			self.logWarning('No active language or default language defined, falling back to "en"')
 			self._activeLanguage = self._defaultLanguage = 'en'
 			self._activeCountryCode = self._defaultCountryCode = 'US'
-
-
-		if not self._activeSnipsProjectId:
-			self.logInfo('No active snips project id set')
 
 
 	def localize(self, string: str) -> str:
@@ -149,21 +143,6 @@ class LanguageManager(Manager):
 
 		self.ConfigManager.changeActiveLanguage(toLang)
 		self._loadSupportedLanguages()
-
-
-	def changeActiveSnipsProjectIdForLanguage(self, projectId: str, forLang: str):
-		forLang = forLang.lower()
-
-		if forLang not in self._supportedLanguages:
-			raise LanguageManagerLangNotSupported
-
-		self.ConfigManager.changeActiveSnipsProjectIdForLanguage(projectId, forLang)
-		self._loadSupportedLanguages()
-
-
-	@property
-	def activeSnipsProjectId(self) -> str:
-		return self._activeSnipsProjectId
 
 
 	@property

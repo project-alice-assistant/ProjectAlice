@@ -1,7 +1,8 @@
 import json
 import logging
-import shutil
 from pathlib import Path
+
+import shutil
 
 import configTemplate
 from core.base.SkillManager import SkillManager
@@ -10,6 +11,7 @@ from core.base.model.TomlFile import TomlFile
 try:
 	# noinspection PyUnresolvedReferences,PyPackageRequirements
 	import config
+
 	configFileExist = True
 except ModuleNotFoundError:
 	configFileNotExist = False
@@ -465,15 +467,6 @@ class ConfigManager(Manager):
 			self.updateAliceConfiguration('activeLanguage', toLang)
 			return True
 		return False
-
-
-	def changeActiveSnipsProjectIdForLanguage(self, projectId: str, forLang: str):
-		langConfig = self.getAliceConfigByName('supportedLanguages').copy()
-
-		if forLang in langConfig:
-			langConfig[forLang]['snipsProjectId'] = projectId
-
-		self.updateAliceConfiguration('supportedLanguages', langConfig)
 
 
 	def getAliceConfigType(self, confName: str) -> typing.Optional[str]:
