@@ -14,10 +14,7 @@ class NluManager(Manager):
 
 	def onStart(self):
 		super().onStart()
-
-		if self.DialogTemplateManager.hasChanges:
-			self.buildTrainingData(self.DialogTemplateManager.updatedData)
-			self.trainNLU()
+		self.isTrainingNeeded()
 
 
 	def onStop(self):
@@ -28,7 +25,13 @@ class NluManager(Manager):
 
 
 	def afterNewSkillInstall(self):
-		self.onStart()
+		self.isTrainingNeeded()
+
+
+	def isTrainingNeeded(self):
+		if self.DialogTemplateManager.hasChanges:
+			self.buildTrainingData(self.DialogTemplateManager.updatedData)
+			self.trainNLU()
 
 
 	def selectNluEngine(self):
