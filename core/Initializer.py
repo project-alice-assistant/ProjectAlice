@@ -60,7 +60,7 @@ network={
 		self._confsFile = Path(self._rootDir, 'config.py')
 		self._confsSample = Path(self._rootDir, 'configTemplate.py')
 		self._initFile = Path('/boot/ProjectAlice.yaml')
-		self._latest = 1.13
+		self._latest = 1.14
 
 
 	def initProjectAlice(self) -> bool:
@@ -116,15 +116,12 @@ network={
 		if not connected:
 			self.fatal('Your device needs internet access to continue')
 
-		if not initConfs['intentsOwner']:
-			self.fatal('You must specify an intent owner')
-
 		# Update our system and sources
 		subprocess.run(['sudo', 'apt-get', 'update'])
 		subprocess.run(['sudo', 'dist-upgrade', '-y'])
 		subprocess.run(['git', 'clean', '-df'])
 		subprocess.run(['git', 'stash'])
-		subprocess.run(['git', 'checkout', self.getUpdateSource(initConfs['updateChannel'])])
+		subprocess.run(['git', 'checkout', self.getUpdateSource(initConfs['aliceUpdateChannel'])])
 		subprocess.run(['git', 'pull'])
 		subprocess.run(['git', 'stash', 'clear'])
 
@@ -240,12 +237,20 @@ network={
 		confs['githubUsername'] = initConfs['githubUsername']
 		confs['githubToken'] = initConfs['githubToken']
 
-		updateChannel = initConfs['updateChannel']
-		if updateChannel not in {'master', 'rc', 'beta', 'alpha'}:
-			self.logWarning(f'{updateChannel} is not a supported updateChannel, only master, rc, beta and alpha are supported. Reseting to master')
+		aliceUpdateChannel = initConfs['aliceUpdateChannel']
+		if aliceUpdateChannel not in {'master', 'rc', 'beta', 'alpha'}:
+			self.logWarning(f'{aliceUpdateChannel} is not a supported updateChannel, only master, rc, beta and alpha are supported. Reseting to master')
 			confs['aliceUpdateChannel'] = 'master'
 		else:
-			confs['aliceUpdateChannel'] = updateChannel
+			confs['aliceUpdateChannel'] = aliceUpdateChannel
+
+		skillsUpdateChannel = initConfs['skillsUpdateChannel']
+		if skillsUpdateChannel not in {'master', 'rc', 'beta', 'alpha'}:
+			self.logWarning(f'{skillsUpdateChannel} is not a supported updateChannel, only master, rc, beta and alpha are supported. Reseting to master')
+			confs['skillsUpdateChannel'] = 'master'
+		else:
+			confs['skillsUpdateChannel'] = skillsUpdateChannel
+
 		confs['mqtt_username'] = str(initConfs['mqttUser'])
 		confs['mqttPassword'] = str(initConfs['mqttPassword'])
 		confs['mqttTLSFile'] = initConfs['mqttTLSFile']

@@ -13,7 +13,7 @@
 #                                              #
 ################################################
 #            DON'T CHANGE ME                   #
-version: 1.13
+version: 1.14
 ################################################
 
 # How to prevent frequent errors:
@@ -29,7 +29,7 @@ doGroundInstall: yes
 keepYAMLBackup: no
 
 # If you are installing on Raspbian Buster, set the following to yes
-installOnBuster: no
+installOnBuster: yes
 
 # Base configs
 # Enter Wifi credentials for automatic adding of tasmota/zigbee/netatmo devices even when Alice has wired access
@@ -50,9 +50,6 @@ mqttUser:
 mqttPassword:
 mqttTLSFile:
 
-# Please use your own name or nickname
-intentsOwner:
-
 # hardware - Turn only one to yes!
 audioHardware:
     usbMic:             no
@@ -67,7 +64,7 @@ audioHardware:
     matrixVoice:        no
 
 # Capture
-micSampleRate: 44100
+micSampleRate: 16000
 micChannels: 1
 
 # System
@@ -113,8 +110,8 @@ shortReplies: no
 # If set to yes Alice will whisper instead of using short answers when you are sleeping. Currently only available with Amazon TTS
 whisperWhenSleeping: no
 
-# Either 'snips' or 'google'
-asr: snips
+# Either 'pocketsphinx' or 'google'
+asr: pocketsphinx
 
 # Either 'pico', 'snips', 'mycroft', 'amazon' or 'google'
 tts: pico
@@ -137,7 +134,9 @@ githubToken:
 
 # !WARNING! You know what you are doing by changing the following to anything else than "master"!
 # This allows to init ProjectAlice on any branches, even unstable ones
-updateChannel: master
+# Available: master / alpha / beta / rc
+aliceUpdateChannel: master
+skillsUpdateChannel: master
 
 # Google
 # If you are using Google as ASR and/or TTS you need to create an account on their console and activate the API
