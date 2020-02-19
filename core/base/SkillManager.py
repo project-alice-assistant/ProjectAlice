@@ -1,11 +1,11 @@
 import importlib
 import json
-import os
-import shutil
 from pathlib import Path
 from typing import Dict, Optional
 
+import os
 import requests
+import shutil
 
 from core.ProjectAliceExceptions import GithubNotFound, GithubRateLimit, GithubTokenFailed, SkillNotConditionCompliant, SkillStartDelayed, SkillStartingFailed
 from core.base.SuperManager import SuperManager
@@ -421,6 +421,7 @@ class SkillManager(Manager):
 					except:
 						pass
 
+				self.DialogTemplateManager.checkCache()
 				self.NluManager.afterNewSkillInstall()
 
 			self._busyInstalling.clear()
@@ -648,7 +649,8 @@ class SkillManager(Manager):
 		self._deactivatedSkills.pop(skillName, None)
 		self._allSkills.pop(skillName, None)
 
-		self.NluManager.cleanCache(skillName)
+		self.DialogTemplateManager.checkCache()
+		self.NluManager.afterNewSkillInstall()
 
 		shutil.rmtree(Path(self.Commons.rootDir(), 'skills', skillName))
 

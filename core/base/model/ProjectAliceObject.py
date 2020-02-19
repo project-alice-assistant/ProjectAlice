@@ -498,3 +498,8 @@ class ProjectAliceObject:
 	@property
 	def NluManager(self):
 		return SM.SuperManager.getInstance().nluManager
+
+
+	@property
+	def DialogTemplateManager(self):
+		return SM.SuperManager.getInstance().dialogTemplateManager

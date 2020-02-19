@@ -30,10 +30,12 @@ class SnipsServicesManager(Manager):
 
 
 	def onStart(self):
+		super().onStart()
 		self.runCmd(cmd='start', services=self.snipsServices())
 
 
 	def onStop(self):
+		super().onStop()
 		self.runCmd(cmd='stop', services=self.snipsServices())
 
 
