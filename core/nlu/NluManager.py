@@ -32,9 +32,10 @@ class NluManager(Manager):
 
 	def afterNewSkillInstall(self):
 		changes = self.checkCache()
-		self.buildTrainingData(changes)
-		self.buildCache()
-		self.trainNLU()
+		if changes:
+			self.buildTrainingData(changes)
+			self.buildCache()
+			self.trainNLU()
 
 
 	def selectNluEngine(self):
