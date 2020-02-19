@@ -309,8 +309,7 @@ class MqttManager(Manager):
 		if not session:
 			session = self.DialogSessionManager.addSession(sessionId=sessionId, message=msg)
 
-		if session:
-			self.broadcast(method=constants.EVENT_NLU_QUERY, exceptions=[self.name], propagateToSkills=True, session=session)
+		self.broadcast(method=constants.EVENT_NLU_QUERY, exceptions=[self.name], propagateToSkills=True, session=session)
 
 
 	# noinspection PyUnusedLocal

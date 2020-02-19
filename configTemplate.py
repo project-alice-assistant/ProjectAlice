@@ -109,11 +109,6 @@ settings = {
 		'dataType': 'integer',
 		'description': 'Should be left as default, this is the port used to find new devices'
 	},
-	'intentsOwner': {
-		'defaultValue': '',
-		'dataType': 'string',
-		'description': 'Your Snips account username'
-	},
 	'asr': {
 		'defaultValue': 'pocketsphinx',
 		'dataType'    : 'list',
