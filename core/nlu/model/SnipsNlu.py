@@ -55,7 +55,7 @@ class SnipsNlu(NluEngine):
 
 		nluTrainingSample['intents'] = dict()
 		for intent in dialogTemplate['intents']:
-			intentName = f'{self.ConfigManager.getAliceConfigByName("intentsOwner")}:{intent["name"]}'
+			intentName = intent['name']
 			slots = self.loadSlots(intent)
 			nluTrainingSample['intents'].setdefault(intentName, {'utterances': list()})
 

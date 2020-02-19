@@ -9,7 +9,6 @@ from core.user.model.AccessLevels import AccessLevel
 class Intent:
 	topic: str = field(init=False)
 	action: str = field(repr=False)
-	owner: str = field(init=False, repr=False)
 	isProtected: bool = False
 	userIntent: bool = True
 	authLevel: AccessLevel = AccessLevel.ZERO
@@ -19,8 +18,7 @@ class Intent:
 
 
 	def __post_init__(self):
-		self.owner = SM.SuperManager.getInstance().configManager.getAliceConfigByName('intentsOwner')
-		self.topic = f'hermes/intent/{self.owner}:{self.action}' if self.userIntent else self.action
+		self.topic = f'hermes/intent/{self.action}' if self.userIntent else self.action
 		if self.isProtected:
 			SM.SuperManager.getInstance().protectedIntentManager.protectIntent(self.topic)
 
@@ -51,7 +49,7 @@ class Intent:
 
 	@property
 	def justTopic(self) -> str:
-		return f'{self.owner}:{self.action}' if self.userIntent else self.action
+		return self.action
 
 
 	def addDialogMapping(self, value: Dict[str, Callable], skillName: str):

@@ -11,7 +11,6 @@ from core.base.model.TomlFile import TomlFile
 try:
 	# noinspection PyUnresolvedReferences,PyPackageRequirements
 	import config
-
 	configFileExist = True
 except ModuleNotFoundError:
 	configFileNotExist = False
@@ -36,9 +35,7 @@ class ConfigManager(Manager):
 			'conditions'
 		]
 
-		self._vitalConfigs = [
-			'intentsOwner'
-		]
+		self._vitalConfigs = list()
 
 		self._aliceConfigurations: typing.Dict[str, typing.Any] = self._loadCheckAndUpdateAliceConfigFile()
 		self._aliceTemplateConfigurations: typing.Dict[str, dict] = configTemplate.settings

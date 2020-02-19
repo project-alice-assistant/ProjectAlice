@@ -187,8 +187,6 @@ network={
 		confs['mqttHost'] = str(initConfs['mqttHost']) or 'localhost'
 		confs['mqttPort'] = initConfs['mqttPort'] or 1883
 
-		confs['intentsOwner'] = initConfs['intentsOwner']
-
 		confs['stayCompletlyOffline'] = bool(initConfs['stayCompletlyOffline'])
 		if initConfs['stayCompletlyOffline']:
 			confs['keepASROffline'] = True
