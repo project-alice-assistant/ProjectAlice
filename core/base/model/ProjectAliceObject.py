@@ -503,3 +503,8 @@ class ProjectAliceObject:
 	@property
 	def DialogTemplateManager(self):
 		return SM.SuperManager.getInstance().dialogTemplateManager
+
+
+	@property
+	def SnipsAssistantManager(self):
+		return SM.SuperManager.getInstance().snipsAssistantManager

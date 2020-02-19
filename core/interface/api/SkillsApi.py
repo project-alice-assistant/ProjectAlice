@@ -5,6 +5,7 @@ import requests
 from flask import jsonify, request
 from flask_classful import route
 
+from core.commons import constants
 from core.interface.model.Api import Api
 from core.util.Decorators import ApiAuthenticated
 
@@ -112,7 +113,7 @@ class SkillsApi(Api):
 			return jsonify(success=False, reason='skill already installed')
 
 		try:
-			req = requests.get(f'https://raw.githubusercontent.com/project-alice-assistant/skill_{skillName}/{self.SkillStoreManager.getSkillUpdateTag(skillName)}/{skillName}.install')
+			req = requests.get(f'{constants.GITHUB_RAW_URL}/skill_{skillName}/{self.SkillStoreManager.getSkillUpdateTag(skillName)}/{skillName}.install')
 			remoteFile = req.json()
 			if not remoteFile:
 				return jsonify(success=False, reason='skill not found')

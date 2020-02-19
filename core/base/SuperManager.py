@@ -79,6 +79,7 @@ class SuperManager:
 		talkManager = self._managers.pop('TalkManager')
 		skillManager = self._managers.pop('SkillManager')
 		dialogTemplateManager = self._managers.pop('DialogTemplateManager')
+		snipsAssistantManager = self._managers.pop('SnipsAssistantManager')
 		nluManager = self._managers.pop('NluManager')
 		nodeRedManager = self._managers.pop('NodeRedManager')
 
@@ -89,6 +90,7 @@ class SuperManager:
 		talkManager.onStart()
 		skillManager.onStart()
 		dialogTemplateManager.onStart()
+		snipsAssistantManager.onStart()
 		nluManager.onStart()
 		nodeRedManager.onStart()
 
@@ -101,6 +103,7 @@ class SuperManager:
 		self._managers[mqttManager.name] = mqttManager
 		self._managers[skillManager.name] = skillManager
 		self._managers[dialogTemplateManager.name] = dialogTemplateManager
+		self._managers[snipsAssistantManager.name] = snipsAssistantManager
 		self._managers[nluManager.name] = nluManager
 		self._managers[internetManager.name] = internetManager
 		self._managers[nodeRedManager.name] = nodeRedManager
@@ -145,6 +148,7 @@ class SuperManager:
 		from core.interface.NodeRedManager import NodeRedManager
 		from core.base.SkillStoreManager import SkillStoreManager
 		from core.dialog.DialogTemplateManager import DialogTemplateManager
+		from core.snips.SnipsAssistantManager import SnipsAssistantManager
 		from core.nlu.NluManager import NluManager
 
 		self.commonsManager = CommonsManager()
@@ -173,6 +177,7 @@ class SuperManager:
 		self.nodeRedManager = NodeRedManager()
 		self.skillStoreManager = SkillStoreManager()
 		self.dialogTemplateManager = DialogTemplateManager()
+		self.snipsAssistantManager = SnipsAssistantManager()
 		self.nluManager = NluManager()
 
 		self._managers = {name[0].upper() + name[1:]: manager for name, manager in self.__dict__.items() if name.endswith('Manager')}

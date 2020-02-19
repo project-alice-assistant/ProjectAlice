@@ -72,7 +72,7 @@ class ProjectAlice(Singleton):
 
 	def updateProjectAlice(self):
 		self._logger.logInfo('Checking Project Alice updates')
-		req = requests.get(url='https://api.github.com/repos/project-alice-assistant/ProjectAlice/branches', auth=SuperManager.getInstance().configManager.getGithubAuth())
+		req = requests.get(url=f'{constants.GITHUB_URL}/ProjectAlice/branches', auth=SuperManager.getInstance().configManager.getGithubAuth())
 		if req.status_code != 200:
 			self._logger.logWarning('Failed checking for updates')
 			return
