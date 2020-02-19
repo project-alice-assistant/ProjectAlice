@@ -13,7 +13,6 @@ from core.util.Stopwatch import Stopwatch
 class SnipsNlu(NluEngine):
 	NAME = 'Snips NLU'
 	UTTERANCE_REGEX = re.compile('(.*?){(.+?:=>.+?)}(.*?)')
-	demo = "how much is {115:=>Left} {+:=>Function} {996:=>Right}"
 
 
 	def __init__(self):
