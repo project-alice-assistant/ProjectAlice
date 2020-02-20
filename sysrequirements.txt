@@ -19,7 +19,6 @@ mosquitto-clients
 libxml2-dev
 libxslt-dev
 flac
-chromium-driver
 libttspico-utils
 libav-tools
 snips-platform-voice
