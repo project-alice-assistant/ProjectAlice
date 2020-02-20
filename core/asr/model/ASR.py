@@ -95,3 +95,11 @@ class ASR(ProjectAliceObject):
 	def timeout(self):
 		self._timeout.set()
 		self.logWarning('ASR timed out')
+
+
+	def checkLanguage(self) -> bool:
+		return True
+
+
+	def downloadLanguage(self) -> bool:
+		return False
