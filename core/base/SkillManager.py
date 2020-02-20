@@ -422,7 +422,7 @@ class SkillManager(Manager):
 						pass
 
 				self.SnipsAssistantManager.train()
-				self.DialogTemplateManager.checkCache()
+				self.DialogTemplateManager.afterNewSkillInstall()
 				self.NluManager.afterNewSkillInstall()
 
 			self._busyInstalling.clear()
@@ -653,7 +653,7 @@ class SkillManager(Manager):
 		shutil.rmtree(Path(self.Commons.rootDir(), 'skills', skillName))
 
 		self.SnipsAssistantManager.checkAssistant()
-		self.DialogTemplateManager.checkCache()
+		self.DialogTemplateManager.afterNewSkillInstall()
 		self.NluManager.afterNewSkillInstall()
 
 

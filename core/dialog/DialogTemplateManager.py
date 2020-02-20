@@ -36,6 +36,11 @@ class DialogTemplateManager(Manager):
 			self.buildCache()
 
 
+	def afterNewSkillInstall(self):
+		if self.checkCache():
+			self.buildCache()
+
+
 	def checkCache(self) -> Dict[str, list]:
 		self._hasChanges = False
 
