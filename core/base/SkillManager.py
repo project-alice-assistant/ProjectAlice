@@ -321,6 +321,7 @@ class SkillManager(Manager):
 			self.ConfigManager.deactivateSkill(skillName, persistent)
 			self.configureSkillIntents(skillName=skillName, state=False)
 			self._deactivatedSkills[skillName] = self._activeSkills.pop(skillName)
+			self._deactivatedSkills[skillName].active = False
 
 
 	def activateSkill(self, skillName: str, persistent: bool = False):
