@@ -287,19 +287,6 @@ network={
 		subprocess.run(['sudo', 'sed', '-i', '-e', f's/\#EXECSTART/ExecStart=\/home\/{getpass.getuser()}\/ProjectAlice\/venv\/bin\/python3 main.py/', str(serviceFilePath)])
 		subprocess.run(['sudo', 'sed', '-i', '-e', f's/\#USER/User={getpass.getuser()}/', str(serviceFilePath)])
 
-		if confs['asr'] == 'google':
-			import core.asr.model.GoogleASR as asr
-		else:
-			import core.asr.model.PocketSphinxASR as asr
-
-		for dep in asr.ASR.DEPENDENCIES['system']:
-			subprocess.run(['sudo', 'apt-get', 'install', '-y', dep])
-			self.logInfo(f'Installed "{dep}"')
-
-		for dep in asr.ASR.DEPENDENCIES['pip']:
-			subprocess.run(['./venv/bin/pip', 'install', dep])
-			self.logInfo(f'Installed "{dep}"')
-
 		self.logInfo('Installing audio hardware')
 		audioHardware = ''
 		for hardware in initConfs['audioHardware']:
