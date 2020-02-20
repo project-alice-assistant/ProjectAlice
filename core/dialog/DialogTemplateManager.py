@@ -135,3 +135,15 @@ class DialogTemplateManager(Manager):
 
 		with self._pathToChecksums.open('w') as fp:
 			fp.write(json.dumps(checksums, indent=4, sort_keys=True))
+
+
+	def skillResource(self) -> Path:
+		for skillPath in Path(self.Commons.rootDir(), 'skills/').glob('*/'):
+			if skillPath.is_file() or skillPath.stem.startswith('_'):
+				continue
+
+			resource = skillPath / f'dialogTemplate/{self.LanguageManager.activeLanguage}.json'
+			if not resource.exists():
+				continue
+
+			yield resource

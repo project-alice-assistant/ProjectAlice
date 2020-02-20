@@ -26,6 +26,47 @@ class SnipsAssistantManager(Manager):
 			self.train()
 		else:
 			self.logInfo('Assistant existing, check consistency')
+			if not self.checkConsistency():
+				self.logInfo('Assistant is not consistent, needs training')
+				self.train()
+
+
+	def checkConsistency(self) -> bool:
+		if not self._assistantPath.exists():
+			return False
+
+		existingIntents = set()
+		existingSlots = set()
+
+		for skillResource in self.DialogTemplateManager.skillResource():
+
+			with skillResource.open() as resource:
+				data = json.load(resource)
+
+			if 'intents' not in data:
+				continue
+
+			for intent in data['intents']:
+				existingIntents.add(intent['name'])
+
+				if not intent['slots']:
+					continue
+
+				for slot in intent['slots']:
+					existingSlots.add(slot['name'])
+
+		with self._assistantPath.open() as fp:
+			data = json.load(fp)
+			for intent in data['intents']:
+				if intent['name'] not in existingIntents:
+					return False
+
+				for slot in intent['slots']:
+					if slot['name'] not in existingSlots:
+						return False
+
+		self.logInfo('Assistant seems consistent')
+		return True
 
 
 	def train(self):
@@ -36,20 +77,13 @@ class SnipsAssistantManager(Manager):
 			intents = dict()
 			slots = dict()
 
-			for skillPath in Path(self.Commons.rootDir(), 'skills/').glob('*/'):
-				if skillPath.is_file() or skillPath.stem.startswith('_'):
-					continue
+			for skillResource in self.DialogTemplateManager.skillResource():
 
-				resource = skillPath / f'dialogTemplate/{self.LanguageManager.activeLanguage}.json'
-				if not resource.exists():
-					self.logWarning(f'Skill "{skillPath.stem}" is missing dialogTemplate for lang "{self.LanguageManager.activeLanguage}')
-					continue
-
-				with resource.open() as fp:
+				with skillResource.open() as fp:
 					data = json.load(fp)
 
 				if 'intents' not in data:
-					self.logDebug(f'Skill "{skillPath.stem}" has no intent')
+					self.logDebug(f'Skill "{skillResource["skill"]}" has no intent')
 					continue
 
 				for intent in data['intents']:
