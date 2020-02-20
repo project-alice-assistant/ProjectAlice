@@ -17,9 +17,12 @@ except:
 
 class GoogleASR(ASR):
 	NAME = 'Google ASR'
-	DEPENDENCIES = [
-		'google-cloud-speech==1.3.1'
-	]
+	DEPENDENCIES = {
+		'system': [],
+		'pip'   : {
+			'google-cloud-speech==1.3.1'
+		}
+	}
 
 
 	def __init__(self):

@@ -201,15 +201,20 @@ network={
 			confs['keepASROffline'] = bool(initConfs['keepASROffline'])
 			confs['keepTTSOffline'] = bool(initConfs['keepTTSOffline'])
 			confs['skillAutoUpdate'] = bool(initConfs['skillAutoUpdate'])
-			confs['asr'] = initConfs['asr'] if initConfs['asr'] in {'pocketsphinx', 'google'} else 'pocketsphinx'
 			confs['tts'] = initConfs['tts'] if initConfs['tts'] in {'pico', 'snips', 'mycroft', 'amazon', 'google'} else 'pico'
 			confs['awsRegion'] = initConfs['awsRegion']
 			confs['awsAccessKey'] = initConfs['awsAccessKey']
 			confs['awsSecretKey'] = initConfs['awsSecretKey']
 
+			confs['asr'] = initConfs['asr'] if initConfs['asr'] in {'pocketsphinx', 'google'} else 'pocketsphinx'
+			if confs['asr'] == 'google' and not initConfs['googleServiceFile']:
+				self.logInfo('You cannot use Google ASR without a google service file, falling back to pocket sphinx')
+				confs['asr'] = 'pocketsphinx'
+
 			if initConfs['googleServiceFile']:
 				googleCreds = Path(self._rootDir, 'credentials/googlecredentials.json')
 				googleCreds.write_text(json.dumps(initConfs['googleServiceFile']))
+
 
 		# Those that don't need checking
 		confs['ssid'] = initConfs['wifiNetworkName']
@@ -281,6 +286,21 @@ network={
 		subprocess.run(['sudo', 'sed', '-i', '-e', f's/\#WORKINGDIR/WorkingDirectory=\/home\/{getpass.getuser()}\/ProjectAlice/', str(serviceFilePath)])
 		subprocess.run(['sudo', 'sed', '-i', '-e', f's/\#EXECSTART/ExecStart=\/home\/{getpass.getuser()}\/ProjectAlice\/venv\/bin\/python3 main.py/', str(serviceFilePath)])
 		subprocess.run(['sudo', 'sed', '-i', '-e', f's/\#USER/User={getpass.getuser()}/', str(serviceFilePath)])
+
+		if confs['asr'] == 'google':
+			import core.asr.model.GoogleASR as asr
+		else:
+			import core.asr.model.PocketSphinxASR as asr
+
+		for deps in asr.ASR.DEPENDENCIES['system']:
+			for dep in deps:
+				subprocess.run(['sudo', 'apt-get', 'install', '-y', dep])
+				self.logInfo(f'Installed "{dep}"')
+
+		for deps in asr.ASR.DEPENDENCIES['pip']:
+			for dep in deps:
+				subprocess.run(['./venv/bin/pip', 'install', dep])
+				self.logInfo(f'Installed "{dep}"')
 
 		self.logInfo('Installing audio hardware')
 		audioHardware = ''

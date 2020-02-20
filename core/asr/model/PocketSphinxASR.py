@@ -14,9 +14,15 @@ except:
 
 class PocketSphinxASR(ASR):
 	NAME = 'Pocketsphinx ASR'
-	DEPENDENCIES = [
-		'pocketsphinx==0.1.15'
-	]
+	DEPENDENCIES = {
+		'system': [
+			'swig',
+			'libpulse-dev'
+		],
+		'pip'   : [
+			'pocketsphinx==0.1.15'
+		]
+	}
 
 
 	def __init__(self):

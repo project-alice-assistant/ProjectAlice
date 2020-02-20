@@ -14,7 +14,7 @@ from core.dialog.model.DialogSession import DialogSession
 class ASR(ProjectAliceObject):
 	NAME = 'Generic ASR'
 	TIMEOUT = 20
-	DEPENDENCIES = list()
+	DEPENDENCIES = dict()
 
 
 	def __init__(self):
@@ -38,7 +38,7 @@ class ASR(ProjectAliceObject):
 	def checkDependencies(self) -> bool:
 		self.logInfo('Checking dependencies')
 		try:
-			pkg_resources.require(self.DEPENDENCIES)
+			pkg_resources.require(self.DEPENDENCIES['pip'])
 			return True
 		except:
 			self.logInfo('Found missing dependencies')
@@ -49,8 +49,16 @@ class ASR(ProjectAliceObject):
 		self.logInfo('Installing dependencies')
 
 		try:
-			for dep in self.DEPENDENCIES:
-				self.Commons.runSystemCommand(['./venv/bin/pip', 'install', dep])
+			for deps in self.DEPENDENCIES['system']:
+				for dep in deps:
+					self.Commons.runRootSystemCommand(['apt-get', 'install', '-y', dep])
+					self.logInfo(f'Installed "{dep}"')
+
+			for deps in self.DEPENDENCIES['pip']:
+				for dep in deps:
+					self.Commons.runSystemCommand(['./venv/bin/pip', 'install', dep])
+					self.logInfo(f'Installed "{dep}"')
+
 			return True
 		except Exception as e:
 			self.logError(f'Installing dependencies failed: {e}')
