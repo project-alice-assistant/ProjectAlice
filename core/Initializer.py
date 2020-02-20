@@ -292,15 +292,13 @@ network={
 		else:
 			import core.asr.model.PocketSphinxASR as asr
 
-		for deps in asr.ASR.DEPENDENCIES['system']:
-			for dep in deps:
-				subprocess.run(['sudo', 'apt-get', 'install', '-y', dep])
-				self.logInfo(f'Installed "{dep}"')
+		for dep in asr.ASR.DEPENDENCIES['system']:
+			subprocess.run(['sudo', 'apt-get', 'install', '-y', dep])
+			self.logInfo(f'Installed "{dep}"')
 
-		for deps in asr.ASR.DEPENDENCIES['pip']:
-			for dep in deps:
-				subprocess.run(['./venv/bin/pip', 'install', dep])
-				self.logInfo(f'Installed "{dep}"')
+		for dep in asr.ASR.DEPENDENCIES['pip']:
+			subprocess.run(['./venv/bin/pip', 'install', dep])
+			self.logInfo(f'Installed "{dep}"')
 
 		self.logInfo('Installing audio hardware')
 		audioHardware = ''

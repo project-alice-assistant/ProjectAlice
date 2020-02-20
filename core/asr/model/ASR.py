@@ -49,15 +49,13 @@ class ASR(ProjectAliceObject):
 		self.logInfo('Installing dependencies')
 
 		try:
-			for deps in self.DEPENDENCIES['system']:
-				for dep in deps:
-					self.Commons.runRootSystemCommand(['apt-get', 'install', '-y', dep])
-					self.logInfo(f'Installed "{dep}"')
+			for dep in self.DEPENDENCIES['system']:
+				self.Commons.runRootSystemCommand(['apt-get', 'install', '-y', dep])
+				self.logInfo(f'Installed "{dep}"')
 
-			for deps in self.DEPENDENCIES['pip']:
-				for dep in deps:
-					self.Commons.runSystemCommand(['./venv/bin/pip', 'install', dep])
-					self.logInfo(f'Installed "{dep}"')
+			for dep in self.DEPENDENCIES['pip']:
+				self.Commons.runSystemCommand(['./venv/bin/pip', 'install', dep])
+				self.logInfo(f'Installed "{dep}"')
 
 			return True
 		except Exception as e:
