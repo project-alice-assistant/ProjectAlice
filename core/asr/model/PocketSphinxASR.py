@@ -42,11 +42,6 @@ class PocketSphinxASR(ASR):
 		self._decoder = Decoder(self._config)
 
 
-	def install(self) -> bool:
-		if not super().install():
-			return False
-
-
 	def decodeStream(self, session: DialogSession) -> Optional[ASRResult]:
 		super().decodeStream(session)
 

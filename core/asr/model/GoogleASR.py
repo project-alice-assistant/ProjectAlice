@@ -49,11 +49,6 @@ class GoogleASR(ASR):
 		self._streamingConfig = types.StreamingRecognitionConfig(config=config, interim_results=True)
 
 
-	def install(self) -> bool:
-		if not super().install():
-			return False
-
-
 	def decodeStream(self, session: DialogSession) -> Optional[ASRResult]:
 		super().decodeStream(session)
 		recorder = Recorder(self._timeout)

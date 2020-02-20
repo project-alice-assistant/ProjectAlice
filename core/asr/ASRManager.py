@@ -1,3 +1,4 @@
+from importlib import import_module, reload
 from pathlib import Path
 from typing import Dict
 
@@ -41,20 +42,28 @@ class ASRManager(Manager):
 		self._asr = None
 
 		if userASR == 'google':
-			from core.asr.model.GoogleASR import GoogleASR
+			package = 'core.asr.model.GoogleASR'
+		else:
+			package = 'core.asr.model.PocketSphinxASR'
 
-			self._asr = GoogleASR()
-		elif userASR == 'pocketsphinx':
-			from core.asr.model.PocketSphinxASR import PocketSphinxASR
-
-			self._asr = PocketSphinxASR()
-
-		if self._asr.isOnlineASR and (not online or keepASROffline or stayOffline):
-			self._asr = None
+		module = import_module(package)
+		asr = getattr(module, package.rsplit('.', 1)[-1])
+		self._asr = asr()
 
 		if not self._asr.checkDependencies():
 			if not self._asr.install():
 				self._asr = None
+			else:
+				module = reload(module)
+				asr = getattr(module, package.rsplit('.', 1)[-1])
+				self._asr = asr()
+
+		if self._asr is None:
+			self.logFatal("Couldn't install ASR, going down")
+			return
+
+		if self._asr.isOnlineASR and (not online or keepASROffline or stayOffline):
+			self._asr = None
 
 		if self._asr is None:
 			self.logWarning('ASR did not satisfy the user settings, falling back to pocketsphinx')
