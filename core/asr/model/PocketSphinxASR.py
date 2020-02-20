@@ -1,3 +1,4 @@
+from pathlib import Path
 from typing import Optional
 
 from core.asr.model.ASR import ASR
@@ -35,6 +36,10 @@ class PocketSphinxASR(ASR):
 
 	def onStart(self):
 		super().onStart()
+
+		if not Path(self.Commons.rootDir(), f'venv/lib/python3.7/site-packages/pocketsphinx/model/{self.LanguageManager.activeLanguageAndCountryCode.lower()}').exists():
+			self.logInfo('Missing models, downloading')
+
 		self._config = Decoder.default_config()
 		self._config.set_string('-hmm', f'{self.Commons.rootDir()}/venv/lib/python3.7/site-packages/pocketsphinx/model/en-us')
 		self._config.set_string('-lm', f'{self.Commons.rootDir()}/venv/lib/python3.7/site-packages/pocketsphinx/model/en-us.lm.bin')
