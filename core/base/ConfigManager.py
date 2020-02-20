@@ -481,7 +481,7 @@ class ConfigManager(Manager):
 		return self._aliceTemplateConfigurations.get(confName, dict()).get('onUpdate')
 
 
-	def doConfigUpdatePostProcessing(self, functions: list):
+	def doConfigUpdatePostProcessing(self, functions: set):
 		# Call alice config post processing functions. This will call methods that are needed after a certain setting was
 		# updated while Project Alice was running
 		for function in functions:

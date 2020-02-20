@@ -1,7 +1,7 @@
-import shutil
 from pathlib import Path
 from typing import Any
 
+import shutil
 from flask import jsonify, render_template, request
 from flask_login import login_required
 
@@ -51,6 +51,7 @@ class AdminView(View):
 			confs['supportedLanguages'] = self.ConfigManager.getAliceConfigByName('supportedLanguages')
 
 			self.ConfigManager.writeToAliceConfigurationFile(confs=confs)
+			self.ConfigManager.doConfigUpdatePostProcessing(postProcessing)
 			return self.index()
 		except Exception as e:
 			self.logError(f'Failed saving Alice config: {e}')
