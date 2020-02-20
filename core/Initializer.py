@@ -276,6 +276,12 @@ network={
 			subprocess.run(['./venv/bin/pip3', 'install', 'snips_nlu_utils-0.9.1-cp37-cp37m-linux_armv7l.whl'])
 			subprocess.run(['./venv/bin/pip3', 'install', 'snips_nlu_parsers-0.4.3-cp37-cp37m-linux_armv7l.whl'])
 			subprocess.run(['./venv/bin/pip3', 'install', 'snips_nlu-0.20.2-py3-none-any.whl'])
+			time.sleep(1)
+			subprocess.run(['rm', 'scipy-1.3.3-cp37-cp37m-linux_armv7l.whl'])
+			subprocess.run(['rm', 'scikit_learn-0.22.1-cp37-cp37m-linux_armv7l.whl'])
+			subprocess.run(['rm', 'snips_nlu_utils-0.9.1-cp37-cp37m-linux_armv7l.whl'])
+			subprocess.run(['rm', 'snips_nlu_parsers-0.4.3-cp37-cp37m-linux_armv7l.whl'])
+			subprocess.run(['rm', 'snips_nlu-0.20.2-py3-none-any.whl'])
 			subprocess.run(['./venv/bin/snips-nlu', 'download', confs['activeLanguage']])
 
 		snipsConf = self.loadSnipsConfigurations()
