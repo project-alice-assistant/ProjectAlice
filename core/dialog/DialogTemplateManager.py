@@ -45,7 +45,7 @@ class DialogTemplateManager(Manager):
 		# First check upon the skills that are installed
 		changes = dict()
 		language = self.LanguageManager.activeLanguage
-		for skill in Path(self.Commons.rootDir(), 'skills/').glob('*'):
+		for skill in Path(self.Commons.rootDir(), 'skills/').glob('*/'):
 			if skill.is_file() or skill.stem.startswith('_'):
 				continue
 

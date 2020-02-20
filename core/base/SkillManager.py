@@ -650,10 +650,11 @@ class SkillManager(Manager):
 		self._deactivatedSkills.pop(skillName, None)
 		self._allSkills.pop(skillName, None)
 
+		shutil.rmtree(Path(self.Commons.rootDir(), 'skills', skillName))
+
+		self.SnipsAssistantManager.checkAssistant()
 		self.DialogTemplateManager.checkCache()
 		self.NluManager.afterNewSkillInstall()
-
-		shutil.rmtree(Path(self.Commons.rootDir(), 'skills', skillName))
 
 
 	def reloadSkill(self, skillName: str):

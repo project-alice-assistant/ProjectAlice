@@ -25,7 +25,7 @@ class SnipsAssistantManager(Manager):
 			self.logInfo('Assistant not found, generating')
 			self.train()
 		else:
-			self.logInfo('Assistant existing')
+			self.logInfo('Assistant existing, check consistency')
 
 
 	def train(self):
