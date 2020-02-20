@@ -6,6 +6,7 @@ import subprocess
 import time
 from pathlib import Path
 
+import pkg_resources
 import requests
 
 from core.base.model.TomlFile import TomlFile
@@ -182,6 +183,7 @@ network={
 			subprocess.run(['sudo', 'systemctl', 'disable', 'snips-audio-server'])
 			subprocess.run(['sudo', 'systemctl', 'disable', 'snips-tts'])
 
+
 		# Now let's dump some values to their respective places
 		# First those that need some checks and self filling in case unspecified
 		confs['mqttHost'] = str(initConfs['mqttHost']) or 'localhost'
@@ -257,6 +259,24 @@ network={
 		confs['mqtt_username'] = str(initConfs['mqttUser'])
 		confs['mqttPassword'] = str(initConfs['mqttPassword'])
 		confs['mqttTLSFile'] = initConfs['mqttTLSFile']
+
+		try:
+			pkg_resources.require('snips-nlu')
+		except:
+			self.logInfo("Snips NLU not installed, let's do this")
+			subprocess.run(['sudo', 'apt-get', 'install', 'libatlas3-base', 'libgfortran5'])
+			subprocess.run(['wget', '--content-disposition https://github.com/jr-k/snips-nlu-rebirth/blob/master/wheels/scipy-1.3.3-cp37-cp37m-linux_armv7l.whl?raw=true'])
+			subprocess.run(['wget', '--content-disposition https://github.com/jr-k/snips-nlu-rebirth/blob/master/wheels/scikit_learn-0.22.1-cp37-cp37m-linux_armv7l.whl?raw=true'])
+			subprocess.run(['wget', '--content-disposition https://github.com/jr-k/snips-nlu-rebirth/blob/master/wheels/snips_nlu_utils-0.9.1-cp37-cp37m-linux_armv7l.whl?raw=true'])
+			subprocess.run(['wget', '--content-disposition https://github.com/jr-k/snips-nlu-rebirth/blob/master/wheels/snips_nlu_parsers-0.4.3-cp37-cp37m-linux_armv7l.whl?raw=true'])
+			subprocess.run(['wget', '--content-disposition https://github.com/jr-k/snips-nlu-rebirth/blob/master/wheels/snips_nlu-0.20.2-py3-none-any.whl?raw=true'])
+			time.sleep(1)
+			subprocess.run(['./venv/bin/pip3', 'install', 'scipy-1.3.3-cp37-cp37m-linux_armv7l.whl'])
+			subprocess.run(['./venv/bin/pip3', 'install', 'scikit_learn-0.22.1-cp37-cp37m-linux_armv7l.whl'])
+			subprocess.run(['./venv/bin/pip3', 'install', 'snips_nlu_utils-0.9.1-cp37-cp37m-linux_armv7l.whl'])
+			subprocess.run(['./venv/bin/pip3', 'install', 'snips_nlu_parsers-0.4.3-cp37-cp37m-linux_armv7l.whl'])
+			subprocess.run(['./venv/bin/pip3', 'install', 'snips_nlu-0.20.2-py3-none-any.whl'])
+			subprocess.run(['./venv/bin/snips-nlu', 'download', confs['activeLanguage']])
 
 		snipsConf = self.loadSnipsConfigurations()
 		if not snipsConf:
