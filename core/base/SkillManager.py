@@ -75,7 +75,7 @@ class SkillManager(Manager):
 		self.startAllSkills()
 
 
-	def onSnipsAssistantDownloaded(self, **kwargs):
+	def onSnipsAssistantInstalled(self, **kwargs):
 		self.MqttManager.mqttBroadcast(topic='hermes/leds/clear')
 
 		argv = kwargs.get('skillsInfos', dict())
@@ -421,6 +421,7 @@ class SkillManager(Manager):
 					except:
 						pass
 
+				self.SnipsAssistantManager.train()
 				self.DialogTemplateManager.checkCache()
 				self.NluManager.afterNewSkillInstall()
 

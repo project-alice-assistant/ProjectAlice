@@ -335,14 +335,6 @@ class ProjectAliceObject:
 		pass
 
 
-	def onSnipsAssistantDownloaded(self, **kwargs):
-		pass
-
-
-	def onSnipsAssistantDownloadFailed(self, **kwargs):
-		pass
-
-
 	def onAuthenticated(self, session):
 		pass
 
@@ -359,7 +351,7 @@ class ProjectAliceObject:
 		pass
 
 
-	def onSnipsAssistantFailedInstalling(self, **kwargs):
+	def onSnipsAssistantFailedTraining(self, **kwargs):
 		pass
 
 

@@ -1,6 +1,7 @@
 import inspect
 import json
 import socket
+import string
 import subprocess
 import time
 from collections import defaultdict
@@ -11,6 +12,7 @@ from pathlib import Path
 from typing import Any, Union
 
 import hashlib
+import random
 import requests
 import tempfile
 from googletrans import Translator
@@ -314,6 +316,12 @@ class CommonsManager(Manager):
 	@staticmethod
 	def fileChecksum(file: Path) -> str:
 		return hashlib.blake2b(file.read_bytes()).hexdigest()
+
+
+	@staticmethod
+	def randomString(length: int) -> str:
+		chars = string.ascii_letters + string.digits
+		return ''.join(random.choice(chars) for i in range(length))
 
 
 # noinspection PyUnusedLocal

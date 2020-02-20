@@ -139,8 +139,6 @@ system/database/*
 
 test.py
 
-trained/assistants/*
-!trained/assistants/.gitkeep
 
 var/assistants/*
 !var/assistants/.gitkeep

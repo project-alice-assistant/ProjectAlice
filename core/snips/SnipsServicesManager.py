@@ -1,13 +1,8 @@
-import getpass
 import time
 from pathlib import Path
-from zipfile import ZipFile
-
-import tempfile
 
 from core.base.model.Manager import Manager
 from core.commons import constants
-from core.util.Decorators import deprecated
 from core.voice.model.SnipsTTS import SnipsTTS
 
 
@@ -42,44 +37,6 @@ class SnipsServicesManager(Manager):
 	def onSnipsAssistantInstalled(self, **kwargs):
 		self.runCmd(cmd='restart')
 		time.sleep(1)
-
-
-	@deprecated
-	def onSnipsAssistantDownloaded(self, **kwargs):
-		try:
-			filepath = Path(tempfile.gettempdir(), 'assistant.zip')
-			with ZipFile(filepath) as zipfile:
-				zipfile.extractall(tempfile.gettempdir())
-
-			self.Commons.runRootSystemCommand(['rm', '-rf', self.Commons.rootDir() + f'/trained/assistants/assistant_{self.LanguageManager.activeLanguage}'])
-			self.Commons.runRootSystemCommand(['rm', '-rf', self.Commons.rootDir() + '/assistant'])
-			self.Commons.runRootSystemCommand(['cp', '-R', str(filepath).replace('.zip', ''), self.Commons.rootDir() + f'/trained/assistants/assistant_{self.LanguageManager.activeLanguage}'])
-
-			time.sleep(0.5)
-
-			self.Commons.runRootSystemCommand(['chown', '-R', getpass.getuser(), self.Commons.rootDir() + f'/trained/assistants/assistant_{self.LanguageManager.activeLanguage}'])
-			self.Commons.runRootSystemCommand(['ln', '-sfn', self.Commons.rootDir() + f'/trained/assistants/assistant_{self.LanguageManager.activeLanguage}', self.Commons.rootDir() + '/assistant'])
-			self.Commons.runRootSystemCommand(['ln', '-sfn', self.Commons.rootDir() + f'/system/sounds/{self.LanguageManager.activeLanguage}/start_of_input.wav', self.Commons.rootDir() + '/assistant/custom_dialogue/sound/start_of_input.wav'])
-			self.Commons.runRootSystemCommand(['ln', '-sfn', self.Commons.rootDir() + f'/system/sounds/{self.LanguageManager.activeLanguage}/end_of_input.wav', self.Commons.rootDir() + '/assistant/custom_dialogue/sound/end_of_input.wav'])
-			self.Commons.runRootSystemCommand(['ln', '-sfn', self.Commons.rootDir() + f'/system/sounds/{self.LanguageManager.activeLanguage}/error.wav', self.Commons.rootDir() + '/assistant/custom_dialogue/sound/error.wav'])
-
-			time.sleep(0.5)
-			self.onSnipsAssistantInstalled()
-
-			self.broadcast(
-				method=constants.EVENT_SNIPS_ASSISTANT_INSTALLED,
-				exceptions=[self.name],
-				propagateToSkills=True,
-				**kwargs
-			)
-		except Exception as e:
-			self.logError(f'Failed installing Snips Assistant: {e}')
-			self.broadcast(
-				method=constants.EVENT_SNIPS_ASSISTANT_INSTALL_FAILED,
-				exceptions=[constants.DUMMY],
-				propagateToSkills=True,
-				**kwargs
-			)
 
 
 	def runCmd(self, cmd: str, services: list = None):
