@@ -9,7 +9,7 @@ class SnipsAssistantManager(Manager):
 
 	def __init__(self):
 		super().__init__()
-		self._assistantPath = Path(self.Commons.rootDir(), f'trained/assistants/assistant_{self.LanguageManager.activeLanguage}/assistant.json')
+		self._assistantPath = Path(self.Commons.rootDir(), f'assistant/assistant.json')
 
 
 	def onStart(self):
@@ -124,8 +124,15 @@ class SnipsAssistantManager(Manager):
 						intents[intent['name']]['slots'].append(intentSlot)
 
 			assistant['intents'] = [intent for intent in intents.values()]
+
+			self.Commons.runRootSystemCommand(['ln', '-sfn', self.Commons.rootDir() + f'/trained/assistants/assistant_{self.LanguageManager.activeLanguage}', self.Commons.rootDir() + '/assistant'])
+
 			with self._assistantPath.open('w') as fp:
 				fp.write(json.dumps(assistant, ensure_ascii=False, indent=4, sort_keys=True))
+
+			self.Commons.runRootSystemCommand(['ln', '-sfn', self.Commons.rootDir() + f'/system/sounds/{self.LanguageManager.activeLanguage}/start_of_input.wav', self.Commons.rootDir() + '/assistant/custom_dialogue/sound/start_of_input.wav'])
+			self.Commons.runRootSystemCommand(['ln', '-sfn', self.Commons.rootDir() + f'/system/sounds/{self.LanguageManager.activeLanguage}/end_of_input.wav', self.Commons.rootDir() + '/assistant/custom_dialogue/sound/end_of_input.wav'])
+			self.Commons.runRootSystemCommand(['ln', '-sfn', self.Commons.rootDir() + f'/system/sounds/{self.LanguageManager.activeLanguage}/error.wav', self.Commons.rootDir() + '/assistant/custom_dialogue/sound/error.wav'])
 
 			self.broadcast(method='snipsAssistantInstalled', exceptions=[self.name], propagateToSkills=True)
 			self.logInfo(f'Assistant trained with {len(intents)} intents with a total of {len(slots)} slots')

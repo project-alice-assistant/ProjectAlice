@@ -389,8 +389,6 @@ network={
 		snipsConf.dump()
 
 		subprocess.run(['sudo', 'rm', '-rf', Path(self._rootDir, 'assistant')])
-		subprocess.run(['sudo', 'rm', '-rf', Path(self._rootDir, 'trained', 'assistants', f"assistant_{confs['activeLanguage']}")])
-		subprocess.run(['sudo', 'rm', '-rf', Path(self._rootDir, 'var', 'assistants', confs['activeLanguage'])])
 
 		if initConfs['keepYAMLBackup']:
 			subprocess.run(['sudo', 'mv', Path('/boot/ProjectAlice.yaml'), Path('/boot/ProjectAlice.yaml.bak')])

@@ -1,4 +1,3 @@
-import time
 from pathlib import Path
 
 from core.base.model.Manager import Manager
@@ -36,7 +35,6 @@ class SnipsServicesManager(Manager):
 
 	def onSnipsAssistantInstalled(self, **kwargs):
 		self.runCmd(cmd='restart')
-		time.sleep(1)
 
 
 	def runCmd(self, cmd: str, services: list = None):
