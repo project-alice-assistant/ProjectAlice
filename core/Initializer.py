@@ -119,7 +119,7 @@ network={
 
 		# Update our system and sources
 		subprocess.run(['sudo', 'apt-get', 'update'])
-		subprocess.run(['sudo', 'dist-upgrade', '-y'])
+		subprocess.run(['sudo', 'apt-get', 'dist-upgrade', '-y'])
 		subprocess.run(['git', 'clean', '-df'])
 		subprocess.run(['git', 'stash'])
 		subprocess.run(['git', 'checkout', self.getUpdateSource(initConfs['aliceUpdateChannel'])])
@@ -265,11 +265,11 @@ network={
 		except:
 			self.logInfo("Snips NLU not installed, let's do this")
 			subprocess.run(['sudo', 'apt-get', 'install', 'libatlas3-base', 'libgfortran5'])
-			subprocess.run(['wget', '--content-disposition https://github.com/jr-k/snips-nlu-rebirth/blob/master/wheels/scipy-1.3.3-cp37-cp37m-linux_armv7l.whl?raw=true'])
-			subprocess.run(['wget', '--content-disposition https://github.com/jr-k/snips-nlu-rebirth/blob/master/wheels/scikit_learn-0.22.1-cp37-cp37m-linux_armv7l.whl?raw=true'])
-			subprocess.run(['wget', '--content-disposition https://github.com/jr-k/snips-nlu-rebirth/blob/master/wheels/snips_nlu_utils-0.9.1-cp37-cp37m-linux_armv7l.whl?raw=true'])
-			subprocess.run(['wget', '--content-disposition https://github.com/jr-k/snips-nlu-rebirth/blob/master/wheels/snips_nlu_parsers-0.4.3-cp37-cp37m-linux_armv7l.whl?raw=true'])
-			subprocess.run(['wget', '--content-disposition https://github.com/jr-k/snips-nlu-rebirth/blob/master/wheels/snips_nlu-0.20.2-py3-none-any.whl?raw=true'])
+			subprocess.run(['wget', '--content-disposition', 'https://github.com/jr-k/snips-nlu-rebirth/blob/master/wheels/scipy-1.3.3-cp37-cp37m-linux_armv7l.whl?raw=true'])
+			subprocess.run(['wget', '--content-disposition', 'https://github.com/jr-k/snips-nlu-rebirth/blob/master/wheels/scikit_learn-0.22.1-cp37-cp37m-linux_armv7l.whl?raw=true'])
+			subprocess.run(['wget', '--content-disposition', 'https://github.com/jr-k/snips-nlu-rebirth/blob/master/wheels/snips_nlu_utils-0.9.1-cp37-cp37m-linux_armv7l.whl?raw=true'])
+			subprocess.run(['wget', '--content-disposition', 'https://github.com/jr-k/snips-nlu-rebirth/blob/master/wheels/snips_nlu_parsers-0.4.3-cp37-cp37m-linux_armv7l.whl?raw=true'])
+			subprocess.run(['wget', '--content-disposition', 'https://github.com/jr-k/snips-nlu-rebirth/blob/master/wheels/snips_nlu-0.20.2-py3-none-any.whl?raw=true'])
 			time.sleep(1)
 			subprocess.run(['./venv/bin/pip3', 'install', 'scipy-1.3.3-cp37-cp37m-linux_armv7l.whl'])
 			subprocess.run(['./venv/bin/pip3', 'install', 'scikit_learn-0.22.1-cp37-cp37m-linux_armv7l.whl'])
@@ -323,7 +323,7 @@ network={
 		hlcServiceFilePath = Path('/etc/systemd/system/hermesledcontrol.service')
 		if initConfs['useHLC']:
 
-			if not Path('/home', getpass.getuser(), 'hermesLedControl'):
+			if not Path('/home', getpass.getuser(), 'hermesLedControl').exists():
 				subprocess.run(['git', 'clone', 'https://github.com/project-alice-assistant/hermesLedControl.git', str(Path('/home', getpass.getuser(), 'hermesLedControl'))])
 			else:
 				subprocess.run(['git', '-C', str(Path('/home', getpass.getuser(), 'hermesLedControl')), 'stash'])
@@ -415,7 +415,7 @@ network={
 		snipsConfig = Path('/etc/snips.toml')
 
 		if snipsConfig.exists():
-			subprocess.run(['sudo', 'rm', Path(self._rootDir, 'system/snips/snips.toml')])
+			subprocess.run(['sudo', 'rm', '/etc/snips.toml'])
 
 		subprocess.run(['sudo', 'cp', Path(self._rootDir, 'system/snips/snips.toml'), Path('/etc/snips.toml')])
 
@@ -447,7 +447,7 @@ network={
 			versions.sort(reverse=True)
 			updateSource = versions[0]
 
-		return updateSource
+		return str(updateSource)
 
 
 	@staticmethod
