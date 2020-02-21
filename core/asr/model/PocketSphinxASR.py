@@ -30,14 +30,14 @@ class PocketSphinxASR(ASR):
 
 	LANGUAGE_PACKS = {
 		'fr': {
-			'cmusphinx-fr-ptm-8khz-5.2': 'https://sourceforge.net/projects/cmusphinx/files/Acoustic%20and%20Language%20Models/French/cmusphinx-fr-ptm-8khz-5.2.tar.gz/download',
-			'cmudict-fr-fr.dict'       : 'https://sourceforge.net/projects/cmusphinx/files/Acoustic%20and%20Language%20Models/French/fr.dict/download',
-			'fr-fr.lm.bin'             : 'https://sourceforge.net/projects/cmusphinx/files/Acoustic%20and%20Language%20Models/French/fr-small.lm.bin/download'
+			'cmusphinx-fr-ptm-8khz-5.2.tar.gz': 'https://sourceforge.net/projects/cmusphinx/files/Acoustic%20and%20Language%20Models/French/cmusphinx-fr-ptm-8khz-5.2.tar.gz/download',
+			'cmudict-fr-fr.dict'              : 'https://sourceforge.net/projects/cmusphinx/files/Acoustic%20and%20Language%20Models/French/fr.dict/download',
+			'fr-fr.lm.bin'                    : 'https://sourceforge.net/projects/cmusphinx/files/Acoustic%20and%20Language%20Models/French/fr-small.lm.bin/download'
 		},
 		'de': {
-			'cmusphinx-de-voxforge-5.2': 'https://sourceforge.net/projects/cmusphinx/files/Acoustic%20and%20Language%20Models/German/cmusphinx-de-voxforge-5.2.tar.gz/download',
-			'cmudict-de-de.dict'       : 'https://sourceforge.net/projects/cmusphinx/files/Acoustic%20and%20Language%20Models/German/cmusphinx-voxforge-de.dic/download',
-			'de-de.lm.bin'             : 'https://sourceforge.net/projects/cmusphinx/files/Acoustic%20and%20Language%20Models/German/cmusphinx-voxforge-de.lm.bin/download',
+			'cmusphinx-de-voxforge-5.2.tar.gz': 'https://sourceforge.net/projects/cmusphinx/files/Acoustic%20and%20Language%20Models/German/cmusphinx-de-voxforge-5.2.tar.gz/download',
+			'cmudict-de-de.dict'              : 'https://sourceforge.net/projects/cmusphinx/files/Acoustic%20and%20Language%20Models/German/cmusphinx-voxforge-de.dic/download',
+			'de-de.lm.bin'                    : 'https://sourceforge.net/projects/cmusphinx/files/Acoustic%20and%20Language%20Models/German/cmusphinx-voxforge-de.lm.bin/download',
 		}
 	}
 
@@ -72,7 +72,7 @@ class PocketSphinxASR(ASR):
 
 
 	def downloadLanguage(self) -> bool:
-		self.logInfo(f'Downloading language model for {self.LanguageManager.activeLanguage}')
+		self.logInfo(f'Downloading language model for "{self.LanguageManager.activeLanguage}"')
 
 		venv = Path(self.Commons.rootDir(), 'venv/lib/python3.7/site-packages/pocketsphinx/')
 		for filename, url in self.LANGUAGE_PACKS[self.LanguageManager.activeLanguage].items():
@@ -85,10 +85,12 @@ class PocketSphinxASR(ASR):
 				if dest.exists():
 					shutil.rmtree(dest)
 
+				dirName = filename.replace('.tar.gz', '')
 				tar = tarfile.open(str(download))
 				tar.extractall(str(download).replace('.tar.gz', ''))
-
-		# Path(venv, 'model', filename).rename(dest)
+				Path(venv, 'model', dirName, dirName).rename(str(Path(venv, 'model', self.LanguageManager.activeLanguageAndCountryCode.lower())))
+				shutil.rmtree(Path(venv, 'model', dirName))
+				download.unlink()
 
 		self.logInfo('Downloaded and installed')
 		return True
