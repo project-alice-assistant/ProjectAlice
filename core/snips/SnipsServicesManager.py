@@ -33,10 +33,6 @@ class SnipsServicesManager(Manager):
 		self.runCmd(cmd='stop', services=self.snipsServices())
 
 
-	def onSnipsAssistantInstalled(self, **kwargs):
-		self.runCmd(cmd='restart')
-
-
 	def runCmd(self, cmd: str, services: list = None):
 		if not Path(self.Commons.rootDir() + '/assistant').exists():
 			self.logWarning('Assistant not yet existing, shouldn\'t handle Snips for now')
