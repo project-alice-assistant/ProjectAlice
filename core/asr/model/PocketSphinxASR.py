@@ -2,6 +2,7 @@ from pathlib import Path
 from typing import Optional
 
 import shutil
+import tarfile
 
 from core.asr.model.ASR import ASR
 from core.asr.model.ASRResult import ASRResult
@@ -29,14 +30,14 @@ class PocketSphinxASR(ASR):
 
 	LANGUAGE_PACKS = {
 		'fr': {
-			'fr-fr.tar.gz'      : 'https://sourceforge.net/projects/cmusphinx/files/Acoustic%20and%20Language%20Models/French/cmusphinx-fr-ptm-8khz-5.2.tar.gz/download',
-			'cmudict-fr-fr.dict': 'https://sourceforge.net/projects/cmusphinx/files/Acoustic%20and%20Language%20Models/French/fr.dict/download',
-			'fr-fr.lm.bin'      : 'https://sourceforge.net/projects/cmusphinx/files/Acoustic%20and%20Language%20Models/French/fr-small.lm.bin/download'
+			'cmusphinx-fr-ptm-8khz-5.2': 'https://sourceforge.net/projects/cmusphinx/files/Acoustic%20and%20Language%20Models/French/cmusphinx-fr-ptm-8khz-5.2.tar.gz/download',
+			'cmudict-fr-fr.dict'       : 'https://sourceforge.net/projects/cmusphinx/files/Acoustic%20and%20Language%20Models/French/fr.dict/download',
+			'fr-fr.lm.bin'             : 'https://sourceforge.net/projects/cmusphinx/files/Acoustic%20and%20Language%20Models/French/fr-small.lm.bin/download'
 		},
 		'de': {
-			'de-de.tar.gz'      : 'https://sourceforge.net/projects/cmusphinx/files/Acoustic%20and%20Language%20Models/German/cmusphinx-de-voxforge-5.2.tar.gz/download',
-			'cmudict-de-de.dict': 'https://sourceforge.net/projects/cmusphinx/files/Acoustic%20and%20Language%20Models/German/cmusphinx-voxforge-de.dic/download',
-			'de-de.lm.bin'      : 'https://sourceforge.net/projects/cmusphinx/files/Acoustic%20and%20Language%20Models/German/cmusphinx-voxforge-de.lm.bin/download',
+			'cmusphinx-de-voxforge-5.2': 'https://sourceforge.net/projects/cmusphinx/files/Acoustic%20and%20Language%20Models/German/cmusphinx-de-voxforge-5.2.tar.gz/download',
+			'cmudict-de-de.dict'       : 'https://sourceforge.net/projects/cmusphinx/files/Acoustic%20and%20Language%20Models/German/cmusphinx-voxforge-de.dic/download',
+			'de-de.lm.bin'             : 'https://sourceforge.net/projects/cmusphinx/files/Acoustic%20and%20Language%20Models/German/cmusphinx-voxforge-de.lm.bin/download',
 		}
 	}
 
@@ -75,14 +76,19 @@ class PocketSphinxASR(ASR):
 
 		venv = Path(self.Commons.rootDir(), 'venv/lib/python3.7/site-packages/pocketsphinx/')
 		for filename, url in self.LANGUAGE_PACKS[self.LanguageManager.activeLanguage].items():
-			self.Commons.downloadFile(url=url, dest=str(venv / 'model' / filename))
+			download = Path(venv, 'model', filename)
+			self.Commons.downloadFile(url=url, dest=str(download))
+
 			if filename.endswith('.tar.gz'):
 				dest = Path(venv, 'model', self.LanguageManager.activeLanguageAndCountryCode.lower())
+
 				if dest.exists():
 					shutil.rmtree(dest)
 
-				self.Commons.runSystemCommand(['tar', '-xvzf', str(venv / 'model' / filename)])
-				Path(venv, 'model', filename).rename(dest)
+				tar = tarfile.open(str(download))
+				tar.extractall(str(download).replace('.tar.gz', ''))
+
+		# Path(venv, 'model', filename).rename(dest)
 
 		self.logInfo('Downloaded and installed')
 		return True
