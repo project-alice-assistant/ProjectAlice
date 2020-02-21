@@ -262,6 +262,7 @@ network={
 
 		try:
 			pkg_resources.require('snips-nlu')
+			subprocess.run(['./venv/bin/snips-nlu', 'download', confs['activeLanguage']])
 		except:
 			self.logInfo("Snips NLU not installed, let's do this")
 			subprocess.run(['sudo', 'apt-get', 'install', 'libatlas3-base', 'libgfortran5'])
