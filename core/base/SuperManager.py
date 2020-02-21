@@ -58,6 +58,9 @@ class SuperManager:
 		configManager = self._managers.pop('ConfigManager')
 		configManager.onStart()
 
+		languageManager = self._managers.pop('LanguageManager')
+		languageManager.onStart()
+
 		internetManager = self._managers.pop('InternetManager')
 		internetManager.onStart()
 
@@ -72,9 +75,6 @@ class SuperManager:
 
 		mqttManager = self._managers.pop('MqttManager')
 		mqttManager.onStart()
-
-		languageManager = self._managers.pop('LanguageManager')
-		languageManager.onStart()
 
 		talkManager = self._managers.pop('TalkManager')
 		skillManager = self._managers.pop('SkillManager')

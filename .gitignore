@@ -129,7 +129,7 @@ trained/hotwords/*
 var/cache/*
 var/logs/*
 !var/cache/nlu/trainingData/.gitkeep
-!var/cache/dialogTemplates/.gitkeep
+!var/cache/dialogTemplates/checksums.json
 !var/logs/.gitkeep
 
 /deviceshotwords/*

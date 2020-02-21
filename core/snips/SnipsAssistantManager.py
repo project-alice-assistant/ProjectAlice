@@ -1,7 +1,6 @@
 import json
 from datetime import datetime
 from pathlib import Path
-from typing import Optional
 
 from core.base.model.Manager import Manager
 
@@ -10,12 +9,11 @@ class SnipsAssistantManager(Manager):
 
 	def __init__(self):
 		super().__init__()
-		self._assistantPath: Optional[Path] = None
+		self._assistantPath = Path(self.Commons.rootDir(), f'trained/assistants/assistant_{self.LanguageManager.activeLanguage}/assistant.json')
 
 
 	def onStart(self):
 		super().onStart()
-		self._assistantPath = Path(self.Commons.rootDir(), f'trained/assistants/assistant_{self.LanguageManager.activeLanguage}/assistant.json')
 		self.checkAssistant()
 
 
