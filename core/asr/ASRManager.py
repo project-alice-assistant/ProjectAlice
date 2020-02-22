@@ -7,7 +7,6 @@ import paho.mqtt.client as mqtt
 from core.asr.model import ASR
 from core.asr.model.ASRResult import ASRResult
 from core.asr.model.Recorder import Recorder
-from core.base.model.Intent import Intent
 from core.base.model.Manager import Manager
 from core.commons import constants
 from core.dialog.model.DialogSession import DialogSession
@@ -113,8 +112,8 @@ class ASRManager(Manager):
 			self.logDebug(f'ASR captured: {result.text}')
 			text = self.LanguageManager.sanitizeNluQuery(result.text)
 
-			supportedIntents = result.session.intentFilter or self.SkillManager.supportedIntents
-			intentFilter = [intent.justTopic if isinstance(intent, Intent) else intent for intent in supportedIntents]
+			# supportedIntents = result.session.intentFilter or self.SkillManager.supportedIntents
+			# intentFilter = [intent.justTopic if isinstance(intent, Intent) else intent for intent in supportedIntents]
 
 			self.MqttManager.publish(topic=constants.TOPIC_TEXT_CAPTURED, payload={'sessionId': session.sessionId, 'text': text, 'siteId': session.siteId, 'likelihood': result.likelihood, 'seconds': result.processingTime})
 		# self.MqttManager.publish(topic=constants.TOPIC_NLU_QUERY, payload={'input': text, 'intentFilter': intentFilter, 'sessionId': session.sessionId})
