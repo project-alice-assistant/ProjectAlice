@@ -1,5 +1,5 @@
 on: push
-name: Main Workflow
+name: SonarCloud analysis
 jobs:
   sonarCloudTrigger:
     name: SonarCloud Trigger
