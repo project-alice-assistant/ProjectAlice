@@ -74,6 +74,7 @@ class SnipsAssistantManager(Manager):
 			assistant = self.generateAssistant()
 			intents = dict()
 			slots = dict()
+			randoms = set()
 
 			for skillResource in self.DialogTemplateManager.skillResource():
 
@@ -103,11 +104,21 @@ class SnipsAssistantManager(Manager):
 						continue
 
 					for slot in intent['slots']:
+						rand9 = self.Commons.randomString(9)
+						while rand9 in randoms:
+							rand9 = self.Commons.randomString(9)
+						randoms.add(rand9)
+
+						rand11 = self.Commons.randomString(11)
+						while rand11 in randoms:
+							rand11 = self.Commons.randomString(11)
+						randoms.add(rand11)
+
 						if slot['type'] not in slots:
 							intentSlot = {
 								'name'           : slot['name'],
-								'id'             : self.Commons.randomString(9),
-								'entityId'       : f'entity_{self.Commons.randomString(11)}',
+								'id'             : rand9,
+								'entityId'       : f'entity_{rand11}',
 								'missingQuestion': slot['missingQuestion'],
 								'required'       : slot['required']
 							}
@@ -115,7 +126,7 @@ class SnipsAssistantManager(Manager):
 						else:
 							intentSlot = {
 								'name'           : slot['name'],
-								'id'             : self.Commons.randomString(9),
+								'id'             : rand9,
 								'entityId'       : slots[slot['type']]['entityId'],
 								'missingQuestion': slot['missingQuestion'],
 								'required'       : slot['required']
