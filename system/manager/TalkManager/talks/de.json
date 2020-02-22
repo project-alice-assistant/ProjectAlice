@@ -1,7 +1,7 @@
 {
 	"noAccess": {
 		"default": [
-			"Entschuldigung, dafür fehlt dir die Berechtigung",
+			"Entschuldigung, dafür fehlt dir die Berechtigung.",
 			"Aktion nicht möglich, du bist hierfür nicht Authorisiert."
 		],
 		"short":[
@@ -10,7 +10,7 @@
 	},
 	"unknowUser": {
 		"default": [
-			"Entschuldigung aber ich weiß nicht wer du bist",
+			"Entschuldigung, aber ich weiß nicht wer du bist",
 			"Entschuldigung, ich kann nicht. Ich weiß nicht wer du bist",
 			"Du solltest mich beim Namen nennen, nur dann kenne ich auch deinen Namen!"
 		],

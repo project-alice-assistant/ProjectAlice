@@ -1,0 +1,13 @@
+on: push
+name: SonarCloud analysis
+jobs:
+  sonarCloudTrigger:
+    name: SonarCloud Trigger
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@master
+    - name: SonarCloud Scan
+      uses: sonarsource/sonarcloud-github-action@master
+      env:
+        GITHUB_TOKEN: ${{ secrets.COVERALLS_REPO_TOKEN }}
+        SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
