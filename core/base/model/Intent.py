@@ -13,7 +13,7 @@ class Intent:
 	userIntent: bool = True
 	authLevel: AccessLevel = AccessLevel.ZERO
 	fallbackFunction: Optional[Callable] = None
-	_dialogMapping: dict = field(init=False, repr=False)
+	_dialogMapping: dict = field(default_factory=dict)
 
 
 	def __post_init__(self):
