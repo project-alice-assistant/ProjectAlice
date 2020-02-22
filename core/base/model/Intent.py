@@ -13,7 +13,6 @@ class Intent:
 	userIntent: bool = True
 	authLevel: AccessLevel = AccessLevel.ZERO
 	fallbackFunction: Optional[Callable] = None
-	dialogMapping: dict = field(default_factory=dict)
 	_dialogMapping: dict = field(init=False, repr=False)
 
 
@@ -24,6 +23,10 @@ class Intent:
 
 
 	def __str__(self) -> str:
+		return self.topic
+
+
+	def __repr__(self) -> str:
 		return self.topic
 
 
