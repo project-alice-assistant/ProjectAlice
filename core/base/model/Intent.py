@@ -34,11 +34,11 @@ class Intent:
 		return hash(self.topic)
 
 
-	def __eq__(self, other: str):
+	def __eq__(self, other: str) -> bool:
 		return self.topic == other
 
 
-	def __ne__(self, other):
+	def __ne__(self, other) -> bool:
 		return self.topic != other
 
 
