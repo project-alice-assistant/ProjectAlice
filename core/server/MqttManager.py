@@ -561,7 +561,6 @@ class MqttManager(Manager):
 		if intentFilter:
 			intentList = [str(x).replace('hermes/intent/', '') for x in intentFilter]
 			initDict['intentFilter'] = intentList
-			initDict['intentFilter'].append(Intent('GlobalStop').justTopic)
 
 		jsonDict['init'] = initDict
 
@@ -615,8 +614,6 @@ class MqttManager(Manager):
 		if intentFilter:
 			intentList = [str(x).replace('hermes/intent/', '') for x in intentFilter]
 			jsonDict['intentFilter'] = intentList
-			if not slot:
-				jsonDict['intentFilter'].append(Intent('GlobalStop').justTopic)
 
 		if slot:
 			if intentFilter and len(intentList) > 1:
