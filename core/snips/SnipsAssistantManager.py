@@ -76,6 +76,10 @@ class SnipsAssistantManager(Manager):
 			slots = dict()
 			randoms = set()
 
+			# When slots of the same entity id (type) wear the same name, their id is identical, so we need to
+			# keep a track about entity ids, names and type
+			entityVSType = dict()
+
 			for skillResource in self.DialogTemplateManager.skillResource():
 
 				with skillResource.open() as fp:
@@ -123,10 +127,15 @@ class SnipsAssistantManager(Manager):
 								'required'       : slot['required']
 							}
 							slots[slot['type']] = intentSlot
+							entityVSType[f'{slot["type"]}_{slot["name"]}'] = f'{rand9}'
 						else:
+
+							# Check if a slot with same type and name already exist and use it's id, else use the new random
+							slotId = entityVSType.get(f'{slot["type"]}_{slot["name"]}', rand9)
+
 							intentSlot = {
 								'name'           : slot['name'],
-								'id'             : rand9,
+								'id'             : slotId,
 								'entityId'       : slots[slot['type']]['entityId'],
 								'missingQuestion': slot['missingQuestion'],
 								'required'       : slot['required']
