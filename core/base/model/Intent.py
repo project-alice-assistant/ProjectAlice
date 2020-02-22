@@ -34,6 +34,14 @@ class Intent:
 		return hash(self.topic)
 
 
+	def __eq__(self, other: str):
+		return self.topic == other
+
+
+	def __ne__(self, other):
+		return self.topic != other
+
+
 	@property
 	def dialogMapping(self) -> dict:
 		return self._dialogMapping
