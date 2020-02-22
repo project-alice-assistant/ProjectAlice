@@ -114,10 +114,10 @@ class ASRManager(Manager):
 			text = self.LanguageManager.sanitizeNluQuery(result.text)
 
 			supportedIntents = result.session.intentFilter or self.SkillManager.supportedIntents
-			intentFilter = [intent.justTopic for intent in supportedIntents if isinstance(intent, Intent) and not intent.isProtected]
+			intentFilter = [intent.justTopic if isinstance(intent, Intent) else intent for intent in supportedIntents]
 
 			self.MqttManager.publish(topic=constants.TOPIC_TEXT_CAPTURED, payload={'sessionId': session.sessionId, 'text': text, 'siteId': session.siteId, 'likelihood': result.likelihood, 'seconds': result.processingTime})
-			self.MqttManager.publish(topic=constants.TOPIC_NLU_QUERY, payload={'id': session.sessionId, 'input': text, 'intentFilter': intentFilter, 'sessionId': session.sessionId})
+		# self.MqttManager.publish(topic=constants.TOPIC_NLU_QUERY, payload={'input': text, 'intentFilter': intentFilter, 'sessionId': session.sessionId})
 		else:
 			self.MqttManager.publish(topic=constants.TOPIC_INTENT_NOT_RECOGNIZED)
 			self.MqttManager.playSound(
