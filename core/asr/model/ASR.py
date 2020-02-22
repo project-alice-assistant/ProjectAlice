@@ -13,7 +13,6 @@ from core.dialog.model.DialogSession import DialogSession
 
 class ASR(ProjectAliceObject):
 	NAME = 'Generic ASR'
-	TIMEOUT = 20
 	DEPENDENCIES = dict()
 
 
@@ -82,7 +81,7 @@ class ASR(ProjectAliceObject):
 
 	def decodeStream(self, session: DialogSession):
 		self._timeout.clear()
-		self._timeoutTimer = self.ThreadManager.newTimer(interval=self.TIMEOUT, func=self.timeout)
+		self._timeoutTimer = self.ThreadManager.newTimer(interval=self.ConfigManager.getSnipsConfiguration('snips-dialogue', 'session_timeout') or 30, func=self.timeout)
 
 
 	def end(self, recorder: Recorder, session: DialogSession):
