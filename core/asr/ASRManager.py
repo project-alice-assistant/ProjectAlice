@@ -100,8 +100,8 @@ class ASRManager(Manager):
 		self.ThreadManager.newThread(name=f'streamdecode_{session.siteId}', target=self.decodeStream, args=[session])
 
 
-	def onAsrIntermediateResult(self, result: str):
-		self.logDebug(result)
+	def onPartialTextCaptured(self, session: DialogSession, text: str, likelihood: float, seconds: float):
+		self.logDebug(f'Captured {text} with a likelihood of {likelihood}')
 
 
 	def decodeStream(self, session: DialogSession):

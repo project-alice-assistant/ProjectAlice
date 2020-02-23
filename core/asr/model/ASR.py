@@ -102,3 +102,7 @@ class ASR(ProjectAliceObject):
 
 	def downloadLanguage(self) -> bool:
 		return False
+
+
+	def partialTextCaptured(self, session: DialogSession, text: str, likelihood: float, seconds: float):
+		self.MqttManager.partialTextCaptured(session, text, likelihood, seconds)
