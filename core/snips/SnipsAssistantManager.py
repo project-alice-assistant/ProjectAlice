@@ -161,7 +161,7 @@ class SnipsAssistantManager(Manager):
 		except Exception as e:
 			self.broadcast(method='snipsAssistantFailedTraining', exceptions=[self.name], propagateToSkills=True)
 			if not self._assistantPath.exists():
-				self.logFatal('Assistant failed training and no assistant existing, stopping here, sorry....')
+				self.logFatal(f'Assistant failed training and no assistant existing, stopping here, sorry.... What happened? {e}')
 
 
 	def generateAssistant(self) -> dict:
