@@ -47,7 +47,7 @@ class SnipsAssistantManager(Manager):
 			for intent in data['intents']:
 				existingIntents.add(intent['name'])
 
-				if not intent['slots']:
+				if 'slots' not in intent or not intent['slots']:
 					continue
 
 				for slot in intent['slots']:
