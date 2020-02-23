@@ -1,12 +1,10 @@
-from pathlib import Path
-from typing import Optional
-
 import os
+from pathlib import Path
+from typing import Generator, Optional
 
 from core.asr.model.ASR import ASR
 from core.asr.model.ASRResult import ASRResult
 from core.asr.model.Recorder import Recorder
-from core.commons import constants
 from core.dialog.model.DialogSession import DialogSession
 
 try:
@@ -57,7 +55,7 @@ class GoogleASR(ASR):
 			audioStream = stream.audioStream()
 			requests = (types.StreamingRecognizeRequest(audio_content=content) for content in audioStream)
 			responses = self._client.streaming_recognize(self._streamingConfig, requests)
-			result = self._checkResponses(responses)
+			result = self._checkResponses(session, responses)
 
 		self.end(recorder, session)
 
@@ -69,7 +67,7 @@ class GoogleASR(ASR):
 		) if result else None
 
 
-	def _checkResponses(self, responses) -> Optional[tuple]:
+	def _checkResponses(self, session: DialogSession, responses: Generator) -> Optional[tuple]:
 		if responses is None:
 			return None
 
@@ -84,6 +82,6 @@ class GoogleASR(ASR):
 			if result.is_final:
 				return result.alternatives[0].transcript, result.alternatives[0].confidence
 			else:
-				self.broadcast(method=constants.EVENT_ASR_INTERMEDIATE_RESULT, exceptions=[constants.DUMMY], propagateToSkills=True, result=result.alternatives[0].transcript)
+				self.partialTextCaptured(session=session, text=result.alternatives[0].transcript, likelihood=result.alternatives[0].confidence, seconds=0)
 
 		return None

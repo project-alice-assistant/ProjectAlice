@@ -1,11 +1,11 @@
 import json
+import random
+import re
 import uuid
 from pathlib import Path
 
 import paho.mqtt.client as mqtt
 import paho.mqtt.publish as publish
-import random
-import re
 
 from core.ProjectAliceExceptions import AccessLevelTooLow
 from core.base.model.Intent import Intent
@@ -69,6 +69,8 @@ class MqttManager(Manager):
 		self._mqttClient.message_callback_add(constants.TOPIC_SESSION_QUEUED, self.onSnipsSessionQueued)
 
 		self._mqttClient.message_callback_add(constants.TOPIC_NLU_QUERY, self.onTopicNluQuery)
+
+		self._mqttClient.message_callback_add(constants.TOPIC_PARTIAL_TEXT_CAPTURED, self.onNluPartialCapture)
 
 		self.connect()
 
@@ -442,6 +444,15 @@ class MqttManager(Manager):
 		self.broadcast(method=constants.EVENT_INTENT_NOT_RECOGNIZED, exceptions=[self.name], propagateToSkills=True, session=session)
 
 
+	def onNluPartialCapture(self, client, data, msg: mqtt.MQTTMessage):
+		sessionId = self.Commons.parseSessionId(msg)
+		session = self.DialogSessionManager.getSession(sessionId)
+
+		if session:
+			payload = self.Commons.payload(msg)
+			self.broadcast(method=constants.EVENT_PARTIAL_TEXT_CAPTURED, exceptions=[self.name], propagateToSkills=True, session=session, text=payload['text'], likelihood=payload['likelihood'], seconds=payload['seconds'])
+
+
 	def reviveSession(self, session: DialogSession, text: str):
 		self.endSession(session.sessionId)
 		self.DialogSessionManager.planSessionRevival(session)
@@ -679,6 +690,16 @@ class MqttManager(Manager):
 	def endSession(self, sessionId):
 		self._mqttClient.publish(constants.TOPIC_END_SESSION, json.dumps({
 			'sessionId': sessionId
+		}))
+
+
+	def partialTextCaptured(self, session: DialogSession, text: str, likelihood: float, seconds: float):
+		self._mqttClient.publish(constants.TOPIC_PARTIAL_TEXT_CAPTURED, json.dumps({
+			'text': text,
+			'likelihood': likelihood,
+			'seconds': seconds,
+			'siteId': session.siteId,
+			'sessionId': session.sessionId
 		}))
 
 

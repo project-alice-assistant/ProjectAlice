@@ -7,6 +7,7 @@ import tarfile
 from core.asr.model.ASR import ASR
 from core.asr.model.ASRResult import ASRResult
 from core.asr.model.Recorder import Recorder
+from core.commons import constants
 from core.dialog.model.DialogSession import DialogSession
 from core.util.Stopwatch import Stopwatch
 
@@ -29,16 +30,21 @@ class PocketSphinxASR(ASR):
 	}
 
 	LANGUAGE_PACKS = {
-		'fr': {
-			'cmusphinx-fr-ptm-8khz-5.2.tar.gz': 'https://sourceforge.net/projects/cmusphinx/files/Acoustic%20and%20Language%20Models/French/cmusphinx-fr-ptm-8khz-5.2.tar.gz/download',
-			'cmudict-fr-fr.dict'              : 'https://sourceforge.net/projects/cmusphinx/files/Acoustic%20and%20Language%20Models/French/fr.dict/download',
-			'fr-fr.lm.bin'                    : 'https://sourceforge.net/projects/cmusphinx/files/Acoustic%20and%20Language%20Models/French/fr-small.lm.bin/download'
-		},
-		'de': {
-			'cmusphinx-de-voxforge-5.2.tar.gz': 'https://sourceforge.net/projects/cmusphinx/files/Acoustic%20and%20Language%20Models/German/cmusphinx-de-voxforge-5.2.tar.gz/download',
-			'cmudict-de-de.dict'              : 'https://sourceforge.net/projects/cmusphinx/files/Acoustic%20and%20Language%20Models/German/cmusphinx-voxforge-de.dic/download',
-			'de-de.lm.bin'                    : 'https://sourceforge.net/projects/cmusphinx/files/Acoustic%20and%20Language%20Models/German/cmusphinx-voxforge-de.lm.bin/download',
-		}
+		'en': [
+			f'{constants.GITHUB_URL}/cmusphinx-models/blob/master/en-us/en-us.tar',
+			f'{constants.GITHUB_URL}/cmusphinx-models/blob/master/en-us/en-us.lm.bin',
+			f'{constants.GITHUB_URL}/cmusphinx-models/blob/master/en-us/cmudict-en-us.dict'
+		],
+		'fr': [
+			f'{constants.GITHUB_URL}/cmusphinx-models/blob/master/fr-fr/fr-fr.tar',
+			f'{constants.GITHUB_URL}/cmusphinx-models/blob/master/fr-fr/fr-fr.lm.bin',
+			f'{constants.GITHUB_URL}/cmusphinx-models/blob/master/fr-fr/cmudict-fr-fr.dict'
+		],
+		'de': [
+			f'{constants.GITHUB_URL}/cmusphinx-models/blob/master/de-de/de-de.tar',
+			f'{constants.GITHUB_URL}/cmusphinx-models/blob/master/de-de/de-de.lm.bin',
+			f'{constants.GITHUB_URL}/cmusphinx-models/blob/master/de-de/cmudict-de-de.dict'
+		]
 	}
 
 
@@ -71,25 +77,33 @@ class PocketSphinxASR(ASR):
 		return True
 
 
+	def timeout(self):
+		super().timeout()
+		try:
+			self._decoder.end_utt()
+		except:
+			# If this fails we don't care, at least we tried to close the utterance
+			pass
+
+
 	def downloadLanguage(self) -> bool:
 		self.logInfo(f'Downloading language model for "{self.LanguageManager.activeLanguage}"')
 
 		venv = Path(self.Commons.rootDir(), 'venv/lib/python3.7/site-packages/pocketsphinx/')
-		for filename, url in self.LANGUAGE_PACKS[self.LanguageManager.activeLanguage].items():
+		for url in self.LANGUAGE_PACKS[self.LanguageManager.activeLanguage]:
+			filename = Path(url).name
 			download = Path(venv, 'model', filename)
-			self.Commons.downloadFile(url=url, dest=str(download))
+			self.Commons.downloadFile(url=f'{url}?raw=true', dest=str(download))
 
-			if filename.endswith('.tar.gz'):
+			if download.suffix == '.tar':
 				dest = Path(venv, 'model', self.LanguageManager.activeLanguageAndCountryCode.lower())
 
 				if dest.exists():
 					shutil.rmtree(dest)
 
-				dirName = filename.replace('.tar.gz', '')
 				tar = tarfile.open(str(download))
-				tar.extractall(str(download).replace('.tar.gz', ''))
-				Path(venv, 'model', dirName, dirName).rename(str(Path(venv, 'model', self.LanguageManager.activeLanguageAndCountryCode.lower())))
-				shutil.rmtree(Path(venv, 'model', dirName))
+				tar.extractall(str(dest))
+
 				download.unlink()
 
 		self.logInfo('Downloaded and installed')

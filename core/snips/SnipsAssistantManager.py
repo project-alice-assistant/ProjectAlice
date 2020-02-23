@@ -47,7 +47,7 @@ class SnipsAssistantManager(Manager):
 			for intent in data['intents']:
 				existingIntents.add(intent['name'])
 
-				if not intent['slots']:
+				if 'slots' not in intent or not intent['slots']:
 					continue
 
 				for slot in intent['slots']:
@@ -130,7 +130,7 @@ class SnipsAssistantManager(Manager):
 							entityVSType[f'{slot["type"]}_{slot["name"]}'] = f'{rand9}'
 						else:
 
-							# Check if a slot with same type and name already exist and use it's id, else use the new random
+							# Check if a slot with same type and name already exists and use its id else use the new random
 							slotId = entityVSType.get(f'{slot["type"]}_{slot["name"]}', rand9)
 
 							intentSlot = {
@@ -161,7 +161,7 @@ class SnipsAssistantManager(Manager):
 		except Exception as e:
 			self.broadcast(method='snipsAssistantFailedTraining', exceptions=[self.name], propagateToSkills=True)
 			if not self._assistantPath.exists():
-				self.logFatal('Assistant failed training and no assistant existing, stopping here, sorry....')
+				self.logFatal(f'Assistant failed training and no assistant existing, stopping here, sorry.... What happened? {e}')
 
 
 	def generateAssistant(self) -> dict:

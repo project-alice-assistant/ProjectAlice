@@ -363,7 +363,7 @@ class ProjectAliceObject:
 		pass
 
 
-	def onAsrIntermediateResult(self, result: str):
+	def onPartialTextCaptured(self, session, text: str, likelihood: float, seconds: float):
 		pass
 
 
