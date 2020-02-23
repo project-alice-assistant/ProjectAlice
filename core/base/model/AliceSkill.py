@@ -14,8 +14,10 @@ from core.ProjectAliceExceptions import AccessLevelTooLow, SkillStartingFailed
 from core.base.model import Widget
 from core.base.model.Intent import Intent
 from core.base.model.ProjectAliceObject import ProjectAliceObject
+from core.base.model.Version import Version
 from core.commons import constants
 from core.dialog.model.DialogSession import DialogSession
+from core.user.model.AccessLevels import AccessLevel
 
 
 class AliceSkill(ProjectAliceObject):
@@ -41,12 +43,29 @@ class AliceSkill(ProjectAliceObject):
 		self._databaseSchema = databaseSchema
 		self._widgets = dict()
 		self._intentsDefinitions = dict()
+		self._scenarioNodeName = ''
+		self._scenarioNodeVersion = Version(mainVersion=0, updateVersion=0, hotfix=0)
 
 		self._supportedIntents: Dict[str, Intent] = self.buildIntentList(supportedIntents)
 		self.loadIntentsDefinition()
 
 		self._utteranceSlotCleaner = re.compile('{(.+?):=>.+?}')
 		self.loadWidgets()
+		self.loadScenarioNodes()
+
+
+	def loadScenarioNodes(self):
+		path = Path(self.getCurrentDir() / 'scenarioNodes/package.json')
+		if not path.exists():
+			return
+
+		try:
+			with path.open('r') as fp:
+				data = json.load(fp)
+				self._scenarioNodeName = data['name']
+				self._scenarioNodeVersion = Version.fromString(data['version'])
+		except Exception as e:
+			self.logWarning(f'Failed to load scenario nodes: {e}')
 
 
 	def loadIntentsDefinition(self):
@@ -61,7 +80,7 @@ class AliceSkill(ProjectAliceObject):
 				with path.open('r') as fp:
 					data = json.load(fp)
 
-					if not 'intents' in data:
+					if 'intents' not in data:
 						continue
 
 					self._intentsDefinitions[lang] = dict()
@@ -86,13 +105,13 @@ class AliceSkill(ProjectAliceObject):
 				item = Intent(item, userIntent=False)
 
 			if str(item) in intents:
-				intents[str(item)].addDialogMapping(item.dialogMapping)
+				intents[str(item)].addDialogMapping(item.dialogMapping, skillName=self.name)
 
 				if item.fallbackFunction:
 					intents[str(item)].fallbackFunction = item.fallbackFunction
-				# always use the highes auth level specified
-				if item.authOnly > intents[str(item)].authOnly:
-					intents[str(item)].authOnly = item.authOnly
+				# always use the highest auth level specified (low values mean a higher auth level)
+				if item.authLevel < intents[str(item)].authLevel:
+					intents[str(item)].authLevel = item.authLevel
 			else:
 				intents[str(item)] = item
 
@@ -112,13 +131,13 @@ class AliceSkill(ProjectAliceObject):
 					intentMappings[str(intent)] = intent
 
 				if requiredState:
-					intentMappings[str(intent)].addDialogMapping({requiredState: function})
+					intentMappings[str(intent)].addDialogMapping({requiredState: function}, skillName=self.name)
 				else:
 					intentMappings[str(intent)].fallbackFunction = function
 
-				# always use the highes auth level specified
-				if intent.authOnly > intentMappings[str(intent)].authOnly:
-					intentMappings[str(intent)].authOnly = intent.authOnly
+				# always use the highest auth level specified (low values mean a higher auth level)
+				if intent.authLevel < intentMappings[str(intent)].authLevel:
+					intentMappings[str(intent)].authLevel = intent.authLevel
 
 		return intentMappings
 
@@ -147,14 +166,14 @@ class AliceSkill(ProjectAliceObject):
 				widgetImport = importlib.import_module(f'skills.{self.name}.widgets.{widgetName}')
 				klass = getattr(widgetImport, widgetName)
 
-				if widgetName in data: # widget already exists in DB
+				if widgetName in data:  # widget already exists in DB
 					widget = klass(data[widgetName])
 					self._widgets[widgetName] = widget
 					widget.setParentSkillInstance(self)
 					del data[widgetName]
 					self.logInfo(f'Loaded widget "{widgetName}"')
 
-				else: # widget is new
+				else:  # widget is new
 					self.logInfo(f'Adding widget "{widgetName}"')
 					widget = klass({
 						'name': widgetName,
@@ -164,7 +183,7 @@ class AliceSkill(ProjectAliceObject):
 					widget.setParentSkillInstance(self)
 					widget.saveToDB()
 
-			for widgetName in data: # deprecated widgets
+			for widgetName in data:  # deprecated widgets
 				self.logInfo(f'Widget "{widgetName}" is deprecated, removing')
 				self.DatabaseManager.delete(
 					tableName='widgets',
@@ -183,20 +202,25 @@ class AliceSkill(ProjectAliceObject):
 
 	def getUtterancesByIntent(self, intent: Intent, forceLowerCase: bool = True, cleanSlots: bool = False) -> list:
 		lang = self.LanguageManager.activeLanguage
-		if not lang in self._intentsDefinitions:
+		if lang not in self._intentsDefinitions:
 			return list()
 
+		#TODO: either typing in function definition is wrong, or it is always a Intent
 		if isinstance(intent, tuple):
-			check = intent[0].justAction
+			check = intent[0].action
 		elif isinstance(intent, Intent):
-			check = intent.justAction
+			check = intent.action
 		else:
 			check = str(intent).split('/')[-1].split(':')[-1]
 
-		if not check in self._intentsDefinitions[lang]:
+		if check not in self._intentsDefinitions[lang]:
 			return list()
 
-		return [re.sub(self._utteranceSlotCleaner, '\\1', utterance.lower() if forceLowerCase else utterance) if cleanSlots else utterance for utterance in self._intentsDefinitions[lang][check]]
+		if not cleanSlots:
+			return list(self._intentsDefinitions[lang][check])
+
+		return [re.sub(self._utteranceSlotCleaner, '\\1', utterance.lower() if forceLowerCase else utterance)
+			for utterance in self._intentsDefinitions[lang][check]]
 
 
 	def getCurrentDir(self):
@@ -288,6 +312,20 @@ class AliceSkill(ProjectAliceObject):
 		self._delayed = value
 
 
+	@property
+	def scenarioNodeName(self) -> str:
+		return self._scenarioNodeName
+
+
+	@property
+	def scenarioNodeVersion(self) -> Version:
+		return self._scenarioNodeVersion
+
+
+	def hasScenarioNodes(self) -> bool:
+		return self._scenarioNodeName != ''
+
+
 	def subscribe(self, mqttClient: MQTTClient):
 		for intent in self._supportedIntents:
 			try:
@@ -306,7 +344,7 @@ class AliceSkill(ProjectAliceObject):
 
 
 	def authenticateIntent(self, session: DialogSession):
-		intent = self._supportedIntents[session.intentName]
+		intent = self._supportedIntents[session.message.topic]
 		# Return if intent is for auth users only but the user is unknown
 		if session.user == constants.UNKNOWN_USER:
 			self.endDialog(
@@ -315,7 +353,7 @@ class AliceSkill(ProjectAliceObject):
 			)
 			raise AccessLevelTooLow()
 		# Return if intent is for auth users only and the user doesn't have the accesslevel for it
-		if not self.UserManager.hasAccessLevel(session.user, intent.authOnly):
+		if not self.UserManager.hasAccessLevel(session.user, intent.authLevel):
 			self.endDialog(
 				sessionId=session.sessionId,
 				text=self.TalkManager.randomTalk(talk='noAccess', skill='system')
@@ -323,10 +361,11 @@ class AliceSkill(ProjectAliceObject):
 			raise AccessLevelTooLow()
 
 
+	@staticmethod
 	def intentNameMoreSpecific(intentName: str, oldIntentName: str) -> bool:
 		cleanedIntentName = intentName.rstrip('#').split('+')[0]
 		cleanedOldIntentName = oldIntentName.rstrip('#').split('+')[0]
-		return len(cleanedIntentName) > len(cleanedOldIntentName)
+		return cleanedIntentName > cleanedOldIntentName
 
 
 	def filterIntent(self, session: DialogSession) -> Optional[Intent]:
@@ -338,20 +377,20 @@ class AliceSkill(ProjectAliceObject):
 		matchingIntent = None
 		oldIntentName = None
 		for intentName, intent in self._supportedIntents.items():
-			if MQTTClient.topic_matches_sub(intentName, session.intentName):
-				if not matchingIntent or self.intentNameMoreSpecific(intentName, oldIntentName):
-					matchingIntent = intent
-					oldIntentName = intentName
+			if MQTTClient.topic_matches_sub(intentName, session.message.topic) \
+					and (not matchingIntent or self.intentNameMoreSpecific(intentName, oldIntentName)):
+				matchingIntent = intent
+				oldIntentName = intentName
 
 		return matchingIntent
 
 
-	def dispatchMessage(self, session: DialogSession) -> bool:
+	def onDispatchMessage(self, session: DialogSession) -> bool:
 		intent = self.filterIntent(session)
 		if not intent:
 			return False
 
-		if intent.authOnly:
+		if intent.authLevel != AccessLevel.ZERO:
 			self.authenticateIntent(session)
 
 		function = intent.getMapping(session) or self.onMessage
@@ -368,7 +407,7 @@ class AliceSkill(ProjectAliceObject):
 		return True
 
 
-	def onStart(self) -> dict:
+	def onStart(self):
 		if not self._active:
 			self.logInfo(f'Skill {self.name} is not active')
 		else:
@@ -376,29 +415,28 @@ class AliceSkill(ProjectAliceObject):
 
 		self._initDB()
 		self.MqttManager.subscribeSkillIntents(self.name)
-		return self._supportedIntents
+
+
+	def onStop(self):
+		self.SkillManager.configureSkillIntents(self._name, False)
 
 
 	def onBooted(self) -> bool:
 		if self.delayed:
-			if self.ThreadManager.getEvent('SnipsAssistantDownload').isSet():
-				self.ThreadManager.doLater(interval=5, func=self.onBooted)
-				return False
-
 			self.logInfo('Delayed start')
 			self.ThreadManager.doLater(interval=5, func=self.onStart)
 
 		return True
 
 
-	def onSkillInstalled(self):
+	def onSkillInstalled(self, **kwargs):
 		self._updateAvailable = False
-		#self.MqttManager.subscribeSkillIntents(self.name)
+		self.MqttManager.subscribeSkillIntents(self.name)
 
 
-	def onSkillUpdated(self):
+	def onSkillUpdated(self, **kwargs):
 		self._updateAvailable = False
-		#self.MqttManager.subscribeSkillIntents(self.name)
+		self.MqttManager.subscribeSkillIntents(self.name)
 
 
 	# HELPERS
@@ -447,8 +485,8 @@ class AliceSkill(ProjectAliceObject):
 		return self.DatabaseManager.insert(tableName=tableName, query=query, values=values, callerName=self.name)
 
 
-	def randomTalk(self, text: str, replace: list = None) -> str:
-		talk = self.TalkManager.randomTalk(talk=text, skill=self.name)
+	def randomTalk(self, text: str, replace: list = None, skill: str = None) -> str:
+		talk = self.TalkManager.randomTalk(talk=text, skill=skill or self.name)
 
 		if replace:
 			talk = talk.format(*replace)
@@ -464,10 +502,14 @@ class AliceSkill(ProjectAliceObject):
 
 
 	def ask(self, text: str, siteId: str = constants.DEFAULT_SITE_ID, intentFilter: list = None, customData: dict = None, previousIntent: str = '', canBeEnqueued: bool = True, currentDialogState: str = ''):
+		if currentDialogState:
+			currentDialogState = f'{self.name}:{currentDialogState}'
 		self.MqttManager.ask(text=text, client=siteId, intentFilter=intentFilter, customData=customData, previousIntent=previousIntent, canBeEnqueued=canBeEnqueued, currentDialogState=currentDialogState)
 
 
 	def continueDialog(self, sessionId: str, text: str, customData: dict = None, intentFilter: list = None, previousIntent: str = '', slot: str = '', currentDialogState: str = ''):
+		if currentDialogState:
+			currentDialogState = f'{self.name}:{currentDialogState}'
 		self.MqttManager.continueDialog(sessionId=sessionId, text=text, customData=customData, intentFilter=intentFilter, previousIntent=str(previousIntent), slot=slot, currentDialogState=currentDialogState)
 
 

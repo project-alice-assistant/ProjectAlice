@@ -1,5 +1,5 @@
-import subprocess
 from pathlib import Path
+from typing import Any
 
 import shutil
 from flask import jsonify, render_template, request
@@ -35,13 +35,23 @@ class AdminView(View):
 	def saveAliceSettings(self):
 		try:
 			# Create the conf dict. on and off values are translated to True and False and we try to cast to int
-			# because HTTP data is type less.
-			confs = {key: False if value == 'off' else True if value == 'on' else int(value) if value.isdigit() else float(value) if self.isfloat(value) else value for key, value in request.form.items()}
+			# or float because HTTP data is type less.
+			confs = {key: self.retrieveValue(value) for key, value in request.form.items()}
+
+			postProcessing = set()
+			for conf, value in confs.items():
+				if value == self.ConfigManager.getAliceConfigByName(conf):
+					continue
+
+				pp = self.ConfigManager.getAliceConfUpdatePostProcessing(conf)
+				if pp:
+					postProcessing.add(pp)
 
 			confs['skills'] = self.ConfigManager.getAliceConfigByName('skills')
 			confs['supportedLanguages'] = self.ConfigManager.getAliceConfigByName('supportedLanguages')
 
 			self.ConfigManager.writeToAliceConfigurationFile(confs=confs)
+			self.ConfigManager.doConfigUpdatePostProcessing(postProcessing)
 			return self.index()
 		except Exception as e:
 			self.logError(f'Failed saving Alice config: {e}')
@@ -62,7 +72,7 @@ class AdminView(View):
 		try:
 			self.__class__.setWaitType('reboot')
 			self.ProjectAlice.onStop()
-			self.ThreadManager.doLater(interval=2, func=subprocess.run, args=[['sudo', 'shutdown', '-r', 'now']])
+			self.ThreadManager.doLater(interval=2, func=self.Commons.runRootSystemCommand, args=[['shutdown', '-r', 'now']])
 			return jsonify(success=True)
 		except Exception as e:
 			self.logError(f'Failed rebooting device: {e}')
@@ -79,13 +89,28 @@ class AdminView(View):
 			return jsonify(success=False)
 
 
+	def updatee(self) -> dict:
+		try:
+			self.__class__.setWaitType('update')
+			self.ProjectAlice.updateProjectAlice()
+			return jsonify(success=True)
+		except Exception as e:
+			self.logError(f'Failed updating Project Alice: {e}')
+			return jsonify(success=False)
+
+
 	def wipeAll(self) -> dict:
 		try:
-			subprocess.run(['wget', 'http://skills.projectalice.ch/AliceCore', '-O', Path(self.Commons.rootDir(), 'system/skillInstallTickets/AliceCore.install')])
-			subprocess.run(['wget', 'http://skills.projectalice.ch/ContextSensitive', '-O', Path(self.Commons.rootDir(), 'system/skillInstallTickets/ContextSensitive.install')])
-			subprocess.run(['wget', 'http://skills.projectalice.ch/RedQueen', '-O', Path(self.Commons.rootDir(), 'system/skillInstallTickets/RedQueen.install')])
-			subprocess.run(['wget', 'http://skills.projectalice.ch/Telemetry', '-O', Path(self.Commons.rootDir(), 'system/skillInstallTickets/Telemetry.install')])
-			subprocess.run(['wget', 'http://skills.projectalice.ch/DateDayTimeYear', '-O', Path(self.Commons.rootDir(), 'system/skillInstallTickets/DateDayTimeYear.install')])
+			tickets = [
+				'http://skills.projectalice.ch/AliceCore',
+				'http://skills.projectalice.ch/ContextSensitive',
+				'http://skills.projectalice.ch/RedQueen',
+				'http://skills.projectalice.ch/Telemetry',
+				'http://skills.projectalice.ch/DateDayTimeYear'
+			]
+
+			for link in tickets:
+				self.Commons.downloadFile(link, f'system/skillInstallTickets/{link.rsplit("/")[-1]}.install')
 
 			shutil.rmtree(Path(self.Commons.rootDir(), 'var/assistants'))
 			shutil.rmtree(Path(self.Commons.rootDir(), 'trained/assistants'))
@@ -110,10 +135,23 @@ class AdminView(View):
 			return False
 
 
-	# noinspection PyMethodMayBeStatic,PyUnusedLocal
-	def isfloat(self, value: str) -> bool:
+	@classmethod
+	def retrieveValue(cls, value: str) -> Any:
+		if value == 'off':
+			return False
+		if value == 'on':
+			return True
+		if value.isdigit():
+			return int(value)
+		if cls.isfloat(value):
+			return float(value)
+		return value
+
+
+	@staticmethod
+	def isfloat(value: str) -> bool:
 		try:
-			value = float(value)
+			_ = float(value)
 			return True
 		except:
 			return False

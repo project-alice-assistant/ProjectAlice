@@ -9,29 +9,32 @@ from flask import Flask, send_from_directory
 from flask_login import LoginManager
 
 from core.base.model.Manager import Manager
+from core.interface.api.DialogApi import DialogApi
+from core.interface.api.LoginApi import LoginApi
 from core.interface.api.SkillsApi import SkillsApi
+from core.interface.api.TelemetryApi import TelemetryApi
 from core.interface.api.UsersApi import UsersApi
-from core.interface.views import ScenarioView
+from core.interface.api.UtilsApi import UtilsApi
 from core.interface.views.AdminAuth import AdminAuth
 from core.interface.views.AdminView import AdminView
+from core.interface.views.AliceWatchView import AliceWatchView
 from core.interface.views.DevModeView import DevModeView
 from core.interface.views.IndexView import IndexView
+from core.interface.views.ScenarioView import ScenarioView
 from core.interface.views.SkillsView import SkillsView
-from core.interface.views.SnipswatchView import SnipswatchView
 from core.interface.views.SyslogView import SyslogView
 
 
 class WebInterfaceManager(Manager):
-
-	NAME = 'WebInterfaceManager'
 	app = Flask(__name__)
 	app.config['SEND_FILE_MAX_AGE_DEFAULT'] = 0
 
-	_VIEWS = [AdminView, AdminAuth, IndexView, SkillsView, SnipswatchView, SyslogView, DevModeView, ScenarioView]
-	_APIS = [UsersApi, SkillsApi]
+	_VIEWS = [AdminView, AdminAuth, IndexView, SkillsView, AliceWatchView, SyslogView, DevModeView, ScenarioView]
+	_APIS = [UtilsApi, LoginApi, UsersApi, SkillsApi, DialogApi, TelemetryApi]
+
 
 	def __init__(self):
-		super().__init__(self.NAME)
+		super().__init__()
 		log = logging.getLogger('werkzeug')
 		log.setLevel(logging.ERROR)
 		self._langData = dict()
@@ -42,7 +45,7 @@ class WebInterfaceManager(Manager):
 	# noinspection PyMethodParameters
 	@app.route('/favicon.ico')
 	def favicon():
-		return send_from_directory('static/','favicon.ico', mimetype='image/vnd.microsoft.icon')
+		return send_from_directory('static/', 'favicon.ico', mimetype='image/vnd.microsoft.icon')
 
 	@app.route('/base/<path:filename>')
 	def base_static(self, filename):
@@ -110,7 +113,7 @@ class WebInterfaceManager(Manager):
 	def newSkillInstallProcess(self, skill):
 		self._skillInstallProcesses[skill] = {
 			'startedAt': time.time(),
-			'status'   : 'installing'
+			'status': 'installing'
 		}
 
 
@@ -124,20 +127,16 @@ class WebInterfaceManager(Manager):
 			self.logError(f'Failed setting skill "{skill}" status to "updated": {e}')
 
 
-	def onSkillInstalled(self, **kwargs):
-		skill = ''
+	def onSkillInstalled(self, skill: str):
 		try:
-			skill = kwargs['skill']
 			if skill in self.skillInstallProcesses:
 				self.skillInstallProcesses[skill]['status'] = 'installed'
 		except KeyError as e:
 			self.logError(f'Failed setting skill "{skill}" status to "installed": {e}')
 
 
-	def onSkillInstallFailed(self, **kwargs):
-		skill = ''
+	def onSkillInstallFailed(self, skill: str):
 		try:
-			skill = kwargs['skill']
 			if skill in self.skillInstallProcesses:
 				self.skillInstallProcesses[skill]['status'] = 'failed'
 		except KeyError as e:

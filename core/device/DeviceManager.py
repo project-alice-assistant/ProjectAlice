@@ -15,14 +15,13 @@ from random import shuffle
 from serial.tools import list_ports  # type: ignore
 
 from core.base.model.Manager import Manager
+from core.commons import constants
 from core.device.model.Device import Device
 from core.device.model.TasmotaConfigs import TasmotaConfigs
 from core.dialog.model.DialogSession import DialogSession
 
 
 class DeviceManager(Manager):
-
-	NAME = 'DeviceManager'
 
 	DATABASE = {
 		'devices': [
@@ -36,24 +35,24 @@ class DeviceManager(Manager):
 
 
 	def __init__(self):
-		super().__init__(self.NAME, self.DATABASE)
+		super().__init__(databaseSchema=self.DATABASE)
 
-		self._devices           = dict()
-		self._broadcastRoom     = ''
-		self._broadcastFlag     = threading.Event()
+		self._devices = dict()
+		self._broadcastRoom = ''
+		self._broadcastFlag = threading.Event()
 
-		self._broadcastPort     = None
-		self._broadcastTimer    = None
+		self._broadcastPort = None
+		self._broadcastTimer = None
 
-		self._flashThread       = None
+		self._flashThread = None
 
-		self._listenPort        = None
+		self._listenPort = None
 
-		self._broadcastSocket   = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+		self._broadcastSocket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 		self._broadcastSocket.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
 		self._broadcastSocket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
 
-		self._listenSocket      = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+		self._listenSocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 		self._listenSocket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
 		self._listenSocket.settimeout(2)
 
@@ -208,7 +207,7 @@ class DeviceManager(Manager):
 			mac = ':'.join([f'{x:02x}' for x in mac])
 			cmd = [
 				'--port', port,
-				'--baud','115200',
+				'--baud', '115200',
 				'--after', 'no_reset', 'write_flash',
 				'--flash_mode', 'dout', '0x00000', 'sonoff.bin',
 				'--erase-all'
@@ -223,7 +222,7 @@ class DeviceManager(Manager):
 
 		self.logInfo('Tasmota flash done')
 		self.MqttManager.say(text=self.TalkManager.randomTalk('espFlashedUnplugReplug', skill='AliceCore'), client=siteId)
-		found = self.findUSBPort(timeout = 60)
+		found = self.findUSBPort(timeout=60)
 		if found:
 			self.MqttManager.say(text=self.TalkManager.randomTalk('espFoundReadyForConf', skill='AliceCore'), client=siteId)
 			time.sleep(10)
@@ -315,7 +314,7 @@ class DeviceManager(Manager):
 
 		self._broadcastTimer = self.ThreadManager.newTimer(interval=300, func=self.stopBroadcasting)
 
-		self.SkillManager.skillBroadcast(method='onBroadcastingForNewDeviceStart')
+		self.broadcast(method=constants.EVENT_BROADCASTING_FOR_NEW_DEVICE, exceptions=[self.name], propagateToSkills=True)
 		return True
 
 
@@ -327,7 +326,7 @@ class DeviceManager(Manager):
 			self._broadcastTimer.cancel()
 
 		self._broadcastRoom = ''
-		self.SkillManager.skillBroadcast(method='onBroadcastingForNewDeviceStop')
+		self.broadcast(method=constants.EVENT_STOP_BROADCASTING_FOR_NEW_DEVICE, exceptions=[self.name], propagateToSkills=True)
 
 
 	def startBroadcast(self, room: str, uid: str, replyOnSiteId: str):
@@ -346,18 +345,18 @@ class DeviceManager(Manager):
 					for satellite in self.getDevicesByRoom(room):
 						if satellite.deviceType.lower() == 'alicesatellite':
 							self.logWarning('Cannot have more than one Alice skill per room, aborting')
-							self.MqttManager.say(text = self.TalkManager.randomTalk('maxOneAlicePerRoom', skill='system'), client=replyOnSiteId)
+							self.MqttManager.say(text=self.TalkManager.randomTalk('maxOneAlicePerRoom', skill='system'), client=replyOnSiteId)
 							answer = 'nok'
 							break
 
 				if answer != 'nok':
 					if self.addNewDevice(deviceType, room, uid):
 						self.logInfo(f'New device with uid {uid} successfully added')
-						self.MqttManager.say(text = self.TalkManager.randomTalk('newDeviceAdditionSuccess', skill='system'), client=replyOnSiteId)
+						self.MqttManager.say(text=self.TalkManager.randomTalk('newDeviceAdditionSuccess', skill='system'), client=replyOnSiteId)
 						answer = 'ok'
 					else:
 						self.logInfo('Failed adding new device')
-						self.MqttManager.say(text = self.TalkManager.randomTalk('newDeviceAdditionFailed', skill='system'), client=replyOnSiteId)
+						self.MqttManager.say(text=self.TalkManager.randomTalk('newDeviceAdditionFailed', skill='system'), client=replyOnSiteId)
 						answer = 'nok'
 
 					if deviceType.lower() == 'alicesatellite':
@@ -376,7 +375,7 @@ class DeviceManager(Manager):
 
 		if not self._devices[uid].connected:
 			self._devices[uid].connected = True
-			self.broadcast(method='onDeviceConnecting', exceptions=[self.name], propagateToSkills=True)
+			self.broadcast(method=constants.EVENT_DEVICE_CONNECTING, exceptions=[self.name], propagateToSkills=True)
 
 		return self._devices[uid]
 
@@ -387,7 +386,7 @@ class DeviceManager(Manager):
 
 		if self._devices[uid].connected:
 			self._devices[uid].connected = False
-			self.broadcast(method='onDeviceDisconnecting', exceptions=[self.name], propagateToSkills=True)
+			self.broadcast(method=constants.EVENT_DEVICE_DISCONNECTING, exceptions=[self.name], propagateToSkills=True)
 
 
 	def getDevicesByRoom(self, room: str, connectedOnly: bool = False) -> List[Device]:

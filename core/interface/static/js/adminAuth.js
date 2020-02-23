@@ -9,8 +9,7 @@ $(function () {
 				setTimeout(function () {
 					checkAuth();
 				}, 250);
-			}
-			else if (response.hasOwnProperty('username')) {
+			} else if (response.hasOwnProperty('username')) {
 				$('#username').text(response.username);
 				$('#adminAuthKeyboardContainer').slideDown(250);
 				setTimeout(function () {

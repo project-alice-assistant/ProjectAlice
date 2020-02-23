@@ -1,23 +1,23 @@
+from dataclasses import dataclass, field
+from typing import Deque
+from collections import deque
+
 from core.dialog.model import DialogSession
 
-
+@dataclass
 class MultiIntent:
-	def __init__(self, session: DialogSession, string: str):
-		self._originalString = session['payload']['input']
-		self._processedString = string
-		self._session = session
+	session: DialogSession
+	processedString: str
+	intents: Deque[str] = field(default_factory=deque)
 
-		self._intents = list()
+	@property
+	def originalString(self) -> str:
+		return self.session['payload']['input']
 
 
 	def addIntent(self, string: str):
-		self._intents.append(string)
+		self.intents.append(string)
 
 
 	def getNextIntent(self) -> str:
-		return self._intents.pop(0) if self._intents else ''
-
-
-	@property
-	def session(self) -> DialogSession:
-		return self._session
+		return self.intents.popleft() if self.intents else ''

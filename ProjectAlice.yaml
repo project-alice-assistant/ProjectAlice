@@ -13,8 +13,11 @@
 #                                              #
 ################################################
 #            DON'T CHANGE ME                   #
-version: 1.11
+version: 1.14
 ################################################
+
+# How to prevent frequent errors:
+# Always add a space after the ":" (e.g. deviceName: default instead of deviceName:default)
 
 # If you place this file into /boot after a first initialization it won't overwrite your settings unless you set this to yes
 forceRewrite: no
@@ -26,14 +29,17 @@ doGroundInstall: yes
 keepYAMLBackup: no
 
 # If you are installing on Raspbian Buster, set the following to yes
-installOnBuster: no
+installOnBuster: yes
 
 # Base configs
+# Enter Wifi credentials for automatic adding of tasmota/zigbee/netatmo devices even when Alice has wired access
 useWifi: yes
 wifiNetworkName:
 wifiWPAPass:
 wifiCountryCode:
 
+# The name of the device to set up
+# Caution: The main device should be named default! This will be changed later.
 deviceName: default
 soundPlaybackAndRecordEnabled: yes
 
@@ -43,16 +49,6 @@ mqttPort: 1883
 mqttUser:
 mqttPassword:
 mqttTLSFile:
-
-# Required to generate/train and download the assistant. We strongly suggest a new account
-snipsConsoleLogin:
-snipsConsolePassword:
-
-# Leave empty if this is the first time you use ProjectAlice
-snipsProjectId:
-
-# Your Snips registered nickname
-intentsOwner:
 
 # hardware - Turn only one to yes!
 audioHardware:
@@ -68,12 +64,12 @@ audioHardware:
     matrixVoice:        no
 
 # Capture
-micSampleRate: 44100
+micSampleRate: 16000
 micChannels: 1
 
 # System
-# Whether to install Snips Led Control or not. SLC is the best way to manage your device leds if you have any
-useSLC: yes
+# Whether to install Hermes Led Control or not. HLC is the best way to manage your device leds if you have any
+useHLC: yes
 
 stayCompletlyOffline: no
 keepASROffline: yes
@@ -114,8 +110,8 @@ shortReplies: no
 # If set to yes Alice will whisper instead of using short answers when you are sleeping. Currently only available with Amazon TTS
 whisperWhenSleeping: no
 
-# Either 'snips' or 'google'
-asr: snips
+# Either 'pocketsphinx' or 'google'
+asr: pocketsphinx
 
 # Either 'pico', 'snips', 'mycroft', 'amazon' or 'google'
 tts: pico
@@ -138,7 +134,9 @@ githubToken:
 
 # !WARNING! You know what you are doing by changing the following to anything else than "master"!
 # This allows to init ProjectAlice on any branches, even unstable ones
-updateChannel: master
+# Available: master / alpha / beta / rc
+aliceUpdateChannel: master
+skillsUpdateChannel: master
 
 # Google
 # If you are using Google as ASR and/or TTS you need to create an account on their console and activate the API

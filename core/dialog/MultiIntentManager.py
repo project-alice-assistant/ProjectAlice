@@ -1,4 +1,5 @@
 from paho.mqtt.client import MQTTMessage
+from collections import deque
 
 from core.base.model.Manager import Manager
 from core.commons import constants
@@ -8,10 +9,8 @@ from core.dialog.model.MultiIntent import MultiIntent
 
 class MultiIntentManager(Manager):
 
-	NAME = 'MultiIntentManager'
-
 	def __init__(self):
-		super().__init__(self.NAME)
+		super().__init__()
 		self._multiIntents = dict()
 
 
@@ -36,17 +35,14 @@ class MultiIntentManager(Manager):
 				userInput.replace(separator, GLUE_SPLITTER)
 
 			if GLUE_SPLITTER in userInput:
-				multiIntent = MultiIntent(session, userInput)
+				self._multiIntents[session.sessionId] = MultiIntent(
+					session=session,
+					processedString=userInput,
+					intents=deque(userInput.split(GLUE_SPLITTER)))
 
-				for string in userInput.split(GLUE_SPLITTER):
-					multiIntent.addIntent(string)
-
-				self._multiIntents[session.sessionId] = multiIntent
 				return self.processNextIntent(session.sessionId)
-			else:
-				return False
-		else:
-			return False
+
+		return False
 
 
 	def processNextIntent(self, sessionId: str) -> bool:
@@ -55,14 +51,14 @@ class MultiIntentManager(Manager):
 		if not intent:
 			return False
 
-		self._queryNLU(multiIntent.session, string=intent)
+		self.queryNLU(multiIntent.session, string=intent)
 		return True
 
 
-	def _queryNLU(self, session: DialogSession, string: str):
+	def queryNLU(self, session: DialogSession, string: str):
 		self.MqttManager.publish(topic=constants.TOPIC_NLU_QUERY, payload={
-			'input': string,
-			'sessionId': session.sessionId,
+			'input'       : string,
+			'sessionId'   : session.sessionId,
 			'intentFilter': session.intentFilter
 		})
 

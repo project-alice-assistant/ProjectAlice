@@ -1,5 +1,3 @@
-import subprocess
-
 from core.base.SuperManager import SuperManager
 from core.dialog.model.DialogSession import DialogSession
 from core.user.model.User import User
@@ -85,11 +83,12 @@ class SnipsTTS(TTS):
 			return
 
 		if not self._cacheFile.exists():
-			subprocess.run([
+			SuperManager.getInstance().commonsManager.runSystemCommand([
 				'snips-makers-tts',
 				'--output',
 				self._cacheFile,
 				f'file://{SuperManager.getInstance().commons.rootDir()}/var/voices/cmu_{SuperManager.getInstance().languageManager.activeCountryCode.lower()}_{self._voice}.flitevox',
-				self._text])
+				self._text
+			])
 
 		self._speak(file=self._cacheFile, session=session)

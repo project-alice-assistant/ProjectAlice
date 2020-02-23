@@ -1,134 +1,45 @@
 from __future__ import annotations
 
+from dataclasses import dataclass
+
 import re
 
-from core.base.model.ProjectAliceObject import ProjectAliceObject
+
+@dataclass(order=True)
+class Version:
+	mainVersion: int = 0
+	updateVersion: int = 0
+	hotfix: int = 0
+	# use of release instead of master since release > rc > b > a
+	releaseType: str = 'release'
+	releaseNumber: int = 1
 
 
-class Version(str, ProjectAliceObject):
-
-	VERSION_PARSER_REGEX = re.compile('(?P<mainVersion>\d+)\.(?P<updateVersion>\d+)(\.(?P<hotfix>\d+))?(-(?P<releaseType>a|b|rc)(?P<releaseNumber>\d+)?)?')
-
-	def __new__(cls, value, *args, **kwargs):
-		return super().__new__(cls, value)
+	@property
+	def isVersionNumber(self):
+		return self > Version(0, 0, 0, '', 0)
 
 
-	def __init__(self, versionString: str):
-		super().__init__()
-		self._string = versionString
-
-		try:
-			matches = self.VERSION_PARSER_REGEX.search(str(versionString))
-
-			if not matches:
-				raise TypeError
-			else:
-				self._isVersionNumber = True
-				self._infos = {
-					'mainVersion'  : int(matches.group('mainVersion')),
-					'updateVersion': int(matches.group('updateVersion')),
-					'hotfix'       : -1 if not matches.group('hotfix') else int(matches.group('hotfix')),
-					'releaseType'  : matches.group('releaseType') or 'master',
-					'releaseNumber': 1 if not matches.group('releaseNumber') else int(matches.group('releaseNumber'))
-				}
-				self.isOldVersioning()
-		except TypeError:
-			self._isVersionNumber = False
-			self._infos = {
-				'mainVersion'  : 0,
-				'updateVersion': 0,
-				'hotfix'       : 0,
-				'releaseType'  : '',
-				'releaseNumber': 0
-			}
-
-
-	def __gt__(self, other: Version) -> bool:
-		if self.__eq__(other) or self.isOldVersioning():
-			return False
-
-		if other.isOldVersioning():
-			return True
-
-		if self._infos['mainVersion'] > other.infos['mainVersion']:
-			# 2.0.0 > 1.0.0
-			return True
-
-		elif self._infos['mainVersion'] == other.infos['mainVersion'] and \
-				self._infos['updateVersion'] > other.infos['updateVersion']:
-			# 2.1.0 > 2.0.0
-			return True
-
-		elif self._infos['mainVersion'] == other.infos['mainVersion'] and \
-				self._infos['updateVersion'] == other.infos['updateVersion'] and \
-				self._infos['hotfix'] > other.infos['hotfix']:
-			# 2.1.1 > 2.1.0
-			return True
-
+	def __str__(self):
+		if self.releaseType == 'release':
+			return f'{self.mainVersion}.{self.updateVersion}.{self.hotfix}'
 		else:
-			if self._infos['releaseType'] in ('a', 'b', 'rc') and other.infos['releaseType'] == 'master':
-				# 2.1.1-a < 2.1.1
-				return False
-			elif self._infos['releaseType'] == 'b' and other.infos['releaseType'] == 'a':
-				# 2.1.1-b > 2.1.1-a
-				return True
-			elif self._infos['releaseType'] == 'rc' and other.infos['releaseType'] in ('a', 'b'):
-				# 2.1.1-rc > 2.1.1-b
-				return True
-			elif self._infos['releaseType'] == 'master' and other.infos['releaseType'] in ('a', 'b', 'rc'):
-				# 2.1.1 > 2.1.1-b
-				return True
-			elif self._infos['releaseType'] == other.infos['releaseType']:
-				# 2.1.1-b2 > 2.1.1-b1
-				return self._infos['releaseNumber'] > other.infos['releaseNumber']
-
-		return False
+			return f'{self.mainVersion}.{self.updateVersion}.{self.hotfix}-{self.releaseType}{self.releaseNumber}'
 
 
-	def __lt__(self, other: Version) -> bool:
-		if self.__eq__(other):
-			return False
+	@classmethod
+	def fromString(cls, versionString: str) -> Version:
+		versionMatch = re.search(
+			'(?P<mainVersion>\d+)\.(?P<updateVersion>\d+)(?:\.(?P<hotfix>\d+))?(?:-(?P<releaseType>a|b|rc)(?P<releaseNumber>\d+)?)?',
+			str(versionString))
 
-		return not self.__gt__(other)
+		# when the string is no version set the version to the lowest possible value
+		if not versionMatch:
+			return cls(0, 0, 0, '', 0)
 
-
-	def __eq__(self, other: Version) -> bool:
-		return self._infos == other.infos
-
-
-	def __ne__(self, other: Version) -> bool:
-		return not self.__eq__(other)
-
-
-	def __ge__(self, other: Version) -> bool:
-		return self.__eq__(other) or self.__gt__(other)
-
-
-	def __le__(self, other: Version) -> bool:
-		return self.__eq__(other) or not self.__gt__(other)
-
-
-	def __repr__(self):
-		return self._string
-
-
-	def isOldVersioning(self) -> bool:
-		if self._infos['hotfix'] == -1:
-			self.logWarning(f'Use of deprecated version number: {self._string}. Please use 3 digits format: x.x.x(-[a/b/rc]x)')
-			return True
-		return False
-
-
-	@property
-	def string(self) -> str:
-		return self._string
-
-
-	@property
-	def infos(self) -> dict:
-		return self._infos
-
-
-	@property
-	def isVersionNumber(self) -> bool:
-		return self._isVersionNumber
+		return cls(
+			int(versionMatch.group('mainVersion')),
+			int(versionMatch.group('updateVersion')),
+			int(versionMatch.group('hotfix') or 0),
+			versionMatch.group('releaseType') or 'release',
+			int(versionMatch.group('releaseNumber') or 1))

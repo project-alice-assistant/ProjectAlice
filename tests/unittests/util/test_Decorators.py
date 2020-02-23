@@ -80,10 +80,10 @@ class TestDecorators(unittest.TestCase):
 		# when Internet is lost
 		mock_internetManager = mock.PropertyMock(return_value=InternetManager(True))
 		type(mock_instance).internetManager = mock_internetManager
-		
+
 		self.assertEqual(exampleObject.offline(), 'offline')
 		mock_instance.talkManager.randomTalk.assert_called_once_with('offline', skill='AliceSkill')
-		
+
 		mock_internetManager = mock.PropertyMock(return_value=InternetManager(False))
 		type(mock_instance).internetManager = mock_internetManager
 		mock_instance.reset_mock()

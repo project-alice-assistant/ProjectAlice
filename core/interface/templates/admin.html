@@ -20,66 +20,85 @@
 		</ul>
 		<div class="tabsContent">
 			<div id="AliceSettings" class="configBox">
-				<form action="/admin/saveAliceSettings/" name="config_for_{{ skillName }}" method="post" autocomplete="off" novalidate>
+				<form action="/admin/saveAliceSettings/" name="config_for_{{ skillName }}" method="post"
+					  autocomplete="off" novalidate>
 					{% for settingName, settingValue in aliceSettings.items() if not settingName == 'skills' and not settingName == 'supportedLanguages' %}
-						<div class="configLine">
-							<label class="configLabel" for="{{ settingName }}" title="{{ aliceSettingsTemplate[settingName]['description'] }}">{{ settingName }}</label>
-							<div class="configInput">
-								{% if aliceSettingsTemplate[settingName]['dataType'] == 'boolean' %}
-									<input type="checkbox" name="{{ settingName }}" value="on" id="{{ settingName }}" {% if settingValue is sameas true %}checked{% endif %}>
-									<!-- Make sure unchecked chexboxes send off data -->
-									<input type="hidden" name="{{ settingName }}" value="off">
-								{% elif aliceSettingsTemplate[settingName]['dataType'] == 'integer' %}
-									<input type="number" name="{{ settingName }}" value="{{ settingValue }}" id="{{ settingName }}">
-								{% elif aliceSettingsTemplate[settingName]['dataType'] == 'password' %}
-									<input type="password" name="{{ settingName }}" value="{{ settingValue }}" id="{{ settingName }}">
-								{% elif aliceSettingsTemplate[settingName]['dataType'] == 'string' %}
-									<input type="text" name="{{ settingName }}" value="{{ settingValue }}" id="{{ settingName }}">
-								{% elif aliceSettingsTemplate[settingName]['dataType'] == 'list' %}
-									{% if aliceSettingsTemplate[settingName]['values'] is mapping %}
-										<select name="{{ settingName }}" id="{{ settingName }}">
-											{% for optionName, optionValue in aliceSettingsTemplate[settingName]['values'].items() %}
-												<option value="{{ optionValue }}" {% if optionValue == settingValue %}selected{% endif %}>{{ optionName }}</option>
-											{% endfor %}
-										</select>
+						{% if aliceSettingsTemplate[settingName]['display'] != 'hidden' %}
+							<div class="configLine">
+								<label class="configLabel" for="{{ settingName }}"
+									   title="{{ aliceSettingsTemplate[settingName]['description'] }}">{{ settingName }}</label>
+								<div class="configInput">
+									{% if aliceSettingsTemplate[settingName]['dataType'] == 'boolean' %}
+										<input type="checkbox" name="{{ settingName }}" value="on"
+											   id="{{ settingName }}"
+											   {% if settingValue is sameas true %}checked{% endif %}>
+										<!-- Make sure unchecked chexboxes send off data -->
+										<input type="hidden" name="{{ settingName }}" value="off">
+									{% elif aliceSettingsTemplate[settingName]['dataType'] == 'integer' %}
+										<input type="number" name="{{ settingName }}" value="{{ settingValue }}"
+											   id="{{ settingName }}">
+									{% elif aliceSettingsTemplate[settingName]['dataType'] == 'password' %}
+										<input type="password" name="{{ settingName }}" value="{{ settingValue }}"
+											   id="{{ settingName }}">
+									{% elif aliceSettingsTemplate[settingName]['dataType'] == 'string' %}
+										<input type="text" name="{{ settingName }}" value="{{ settingValue }}"
+											   id="{{ settingName }}">
+									{% elif aliceSettingsTemplate[settingName]['dataType'] == 'list' %}
+										{% if aliceSettingsTemplate[settingName]['values'] is mapping %}
+											<select name="{{ settingName }}" id="{{ settingName }}">
+												{% for optionName, optionValue in aliceSettingsTemplate[settingName]['values'].items() %}
+													<option value="{{ optionValue }}"
+															{% if optionValue == settingValue %}selected{% endif %}>{{ optionName }}</option>
+												{% endfor %}
+											</select>
+										{% else %}
+											<select name="{{ settingName }}" id="{{ settingName }}">
+												{% for optionValue in aliceSettingsTemplate[settingName]['values'] %}
+													<option value="{{ optionValue }}"
+															{% if optionValue == settingValue %}selected{% endif %}>{{ optionValue }}</option>
+												{% endfor %}
+											</select>
+										{% endif %}
 									{% else %}
-										<select name="{{ settingName }}" id="{{ settingName }}">
-											{% for optionValue in aliceSettingsTemplate[settingName]['values'] %}
-												<option value="{{ optionValue }}" {% if optionValue == settingValue %}selected{% endif %}>{{ optionValue }}</option>
-											{% endfor %}
-										</select>
+										<input type="text" name="{{ settingName }}" value="{{ settingValue }}"
+											   id="{{ settingName }}">
 									{% endif %}
-								{% else %}
-									<input type="text" name="{{ settingName }}" value="{{ settingValue }}" id="{{ settingName }}">
-								{% endif %}
+
+								</div>
 							</div>
-						</div>
+						{% endif %}
 					{% endfor %}
-					<input class="configSaveButton" type="submit" value="{{ langData.save }}">
+					<input class="button" type="submit" value="{{ langData.save }}">
 				</form>
 			</div>
 			<div id="Utilities" class="utilitiesBox">
 				<div id="restart" class="utility">
 					<div class="utilityIcon">
-						<i class="fas fa-redo-alt"></i>
+						<i class="fas fa-redo-alt" aria-hidden="true"></i>
 					</div>
 					<div class="utilityText">{{ langData.restartAlice }}</div>
 				</div>
 				<div id="reboot" class="utility">
 					<div class="utilityIcon">
-						<i class="fas fa-power-off"></i>
+						<i class="fas fa-power-off" aria-hidden="true"></i>
 					</div>
 					<div class="utilityText">{{ langData.reboot }}</div>
 				</div>
 				<div id="trainAndDownload" class="utility">
 					<div class="utilityIcon">
-						<i class="fas fa-arrow-circle-down"></i>
+						<i class="fas fa-arrow-circle-down" aria-hidden="true"></i>
 					</div>
 					<div class="utilityText">{{ langData.trainAndDlAssistant }}</div>
 				</div>
+				<div id="update" class="utility">
+					<div class="utilityIcon">
+						<i class="fas fa-sync-alt" aria-hidden="true"></i>
+					</div>
+					<div class="utilityText">{{ langData.updatee }}</div>
+				</div>
 				<div id="wipeAll" class="utility">
 					<div class="utilityIcon">
-						<i class="fas fa-bomb"></i>
+						<i class="fas fa-bomb" aria-hidden="true"></i>
 					</div>
 					<div class="utilityText">{{ langData.wipeAll }}</div>
 				</div>

@@ -1,12 +1,14 @@
 from __future__ import annotations
 
-from typing import Callable, Tuple, Union
-
 import functools
 import warnings
+from typing import Any, Callable, Tuple, Union
+
+from flask import jsonify, request
 
 from core.base.SuperManager import SuperManager
 from core.base.model.Intent import Intent
+from core.user.model.AccessLevels import AccessLevel
 from core.util.model.Logger import Logger
 
 
@@ -30,37 +32,60 @@ def deprecated(func):
 	return new_func
 
 
-def IntentHandler(intent: Union[str, Intent], requiredState: str = None, isProtected: bool = False, authOnly = 0):
+def IntentHandler(intent: Union[str, Intent], requiredState: str = None, isProtected: bool = False, authLevel: AccessLevel = AccessLevel.ZERO):
 	"""Decorator for adding a method as an intent handler."""
 	if isinstance(intent, str):
-		intent = Intent(intent, isProtected=isProtected, userIntent=True, authOnly=authOnly)
+		intent = Intent(intent, isProtected=isProtected, userIntent=True, authLevel=authLevel)
 
 	def wrapper(func):
 		# store the intent in the function
 		if not hasattr(func, 'intents'):
 			func.intents = []
-		func.intents.append({'intent':intent, 'requiredState': requiredState})
+		func.intents.append({'intent': intent, 'requiredState': requiredState})
 		return func
 
 	return wrapper
 
 
-def MqttHandler(intent: Union[str, Intent], requiredState: str = None, isProtected: bool = True, authOnly = 0):
+def MqttHandler(intent: Union[str, Intent], requiredState: str = None, isProtected: bool = True, authLevel: AccessLevel = AccessLevel.ZERO):
 	"""Decorator for adding a method as a mqtt handler."""
 	if isinstance(intent, str):
-		intent = Intent(intent, isProtected=isProtected, userIntent=False, authOnly=authOnly)
+		intent = Intent(intent, isProtected=isProtected, userIntent=False, authLevel=authLevel)
 
 	def wrapper(func):
 		# store the intent in the function
 		if not hasattr(func, 'intents'):
 			func.intents = []
-		func.intents.append({'intent':intent, 'requiredState': requiredState})
+		func.intents.append({'intent': intent, 'requiredState': requiredState})
 		return func
 
 	return wrapper
 
 
-def Online(func: Callable = None, text: str = 'offline', offlineHandler: Callable = None, returnText: bool = False):
+def _exceptHandler(*args, text: str, exceptHandler: Callable, returnText: bool, **kwargs):
+	if exceptHandler:
+		return exceptHandler(*args, **kwargs)
+
+	caller = args[0] if args else None
+	skill = getattr(caller, 'name', 'system')
+	newText = SuperManager.getInstance().talkManager.randomTalk(text, skill=skill)
+	if not newText and skill != 'system':
+		newText = SuperManager.getInstance().talkManager.randomTalk(text, skill='system') or text
+
+	if returnText:
+		return newText
+
+	session = kwargs.get('session')
+	try:
+		if session.sessionId in SuperManager.getInstance().dialogSessionManager.sessions:
+			SuperManager.getInstance().mqttManager.endDialog(sessionId=session.sessionId, text=newText)
+		else:
+			SuperManager.getInstance().mqttManager.say(text=newText, client=session.siteId)
+	except AttributeError:
+		return newText
+
+
+def Online(func: Callable = None, text: str = 'offline', offlineHandler: Callable = None, returnText: bool = False, catchOnly: bool = False):
 	"""
 	(return a) decorator to mark a function that requires ethernet.
 
@@ -79,6 +104,7 @@ def Online(func: Callable = None, text: str = 'offline', offlineHandler: Callabl
 	the decorator will return the text instead. This behaviour can be enforced aswell using:
 		@online(returnText=True)
 
+	:param catchOnly: If catch only, do not raise anything
 	:param func:
 	:param text:
 	:param offlineHandler:
@@ -92,28 +118,6 @@ def Online(func: Callable = None, text: str = 'offline', offlineHandler: Callabl
 			request = requests.get('http://api.open-notify.org')
 			self.endDialog(sessionId=session.sessionId, text=request.text)
 	"""
-	def _offlineHandler(*args, **kwargs):
-		if offlineHandler:
-			return offlineHandler(*args, **kwargs)
-
-		caller = args[0] if args else None
-		skill = getattr(caller, 'name', 'system')
-		newText = SuperManager.getInstance().talkManager.randomTalk(text, skill=skill)
-		if not newText and skill != 'system':
-			newText = SuperManager.getInstance().talkManager.randomTalk(text, skill='system') or text
-
-		if returnText:
-			return newText
-
-		session = kwargs.get('session')
-		try:
-			if session.sessionId in SuperManager.getInstance().dialogSessionManager.sessions:
-				SuperManager.getInstance().mqttManager.endDialog(sessionId=session.sessionId, text=newText)
-			else:
-				SuperManager.getInstance().mqttManager.say(text=newText, client=session.siteId)
-		except AttributeError:
-			return newText
-
 	def argumentWrapper(func):
 		@functools.wraps(func)
 		def offlineDecorator(*args, **kwargs):
@@ -125,7 +129,10 @@ def Online(func: Callable = None, text: str = 'offline', offlineHandler: Callabl
 					if internetManager.checkOnlineState():
 						raise
 
-			return _offlineHandler(*args, **kwargs)
+			if catchOnly:
+				return
+
+			return _exceptHandler(*args, text=text, exceptHandler=offlineHandler, returnText=returnText, **kwargs)
 
 		return offlineDecorator
 
@@ -133,29 +140,6 @@ def Online(func: Callable = None, text: str = 'offline', offlineHandler: Callabl
 
 
 def AnyExcept(func: Callable = None, text: str = 'error', exceptions: Tuple[BaseException, ...] = None, exceptHandler: Callable = None, returnText: bool = False, printStack: bool = False):
-
-	def _exceptHandler(*args, **kwargs):
-		if exceptHandler:
-			return exceptHandler(*args, **kwargs)
-
-		caller = args[0] if args else None
-		skill = getattr(caller, 'name', 'system')
-		newText = SuperManager.getInstance().talkManager.randomTalk(text, skill=skill)
-		if not newText and skill != 'system':
-			newText = SuperManager.getInstance().talkManager.randomTalk(text, skill='system') or text
-
-		if returnText:
-			return newText
-
-		session = kwargs.get('session')
-		try:
-			if session.sessionId in SuperManager.getInstance().dialogSessionManager.sessions:
-				SuperManager.getInstance().mqttManager.endDialog(sessionId=session.sessionId, text=newText)
-			else:
-				SuperManager.getInstance().mqttManager.say(text=newText, client=session.siteId)
-		except AttributeError:
-			return newText
-
 	def argumentWrapper(func):
 		@functools.wraps(func)
 		def exceptionDecorator(*args, **kwargs):
@@ -163,9 +147,61 @@ def AnyExcept(func: Callable = None, text: str = 'error', exceptions: Tuple[Base
 				return func(*args, **kwargs)
 			except exceptions as e:
 				Logger(depth=6).logWarning(msg=e, printStack=printStack)
-				return _exceptHandler(*args, **kwargs)
+				return _exceptHandler(*args, text=text, exceptHandler=exceptHandler, returnText=returnText, **kwargs)
+
 
 		return exceptionDecorator
 
 	exceptions = exceptions or Exception
+	return argumentWrapper(func) if func else argumentWrapper
+
+
+def ApiAuthenticated(func: Callable):
+	@functools.wraps(func)
+	def wrapper(*args, **kwargs):
+		if SuperManager.getInstance().userManager.apiTokenValid(request.headers.get('auth', '')):
+			return func(*args, **kwargs)
+		else:
+			return jsonify(message='ERROR: Unauthorized')
+
+	return wrapper
+
+
+def IfSetting(func: Callable = None, settingName: str = None, settingValue: Any = None, inverted: bool = False, skillName: str = None):
+	"""
+	Checks wheter a setting is equal to the given value before executing the wrapped method
+	If the setting is not equal to the given value, the wrapped method is not called
+	By providing a skill name the wrapper searches for a skill setting, otherwise for a system setting
+	By setting inverted to True one can check for "not equal to", in other words, if the settingName is not equal to the settingValue
+	:param func:
+	:param settingName:
+	:param settingValue:
+	:param inverted:
+	:param skillName:
+	:return:
+	"""
+
+
+	def argumentWrapper(func: Callable):
+		@functools.wraps(func)
+		def settingDecorator(*args, **kwargs):
+			if not settingName:
+				Logger(depth=6).logWarning(msg='Cannot use IfSetting decorator without settingName')
+				return None
+
+			configManager = SuperManager.getInstance().configManager
+			value = configManager.getSkillConfigByName(skillName, settingName) if skillName else configManager.getAliceConfigByName(settingName)
+
+			if value is None:
+				return None
+
+			if not inverted and value == settingValue:
+				return func(*args, **kwargs)
+			elif inverted and value != settingValue:
+				return func(*args, **kwargs)
+
+
+		return settingDecorator
+
+
 	return argumentWrapper(func) if func else argumentWrapper

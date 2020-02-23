@@ -1,6 +1,9 @@
-from typing import Any, Optional
+from pathlib import Path
+from time import time
+from typing import Any, Dict, Optional
 
 import bcrypt
+import jwt
 
 from core.base.model.Manager import Manager
 from core.user.model.AccessLevels import AccessLevel
@@ -8,9 +11,6 @@ from core.user.model.User import User
 
 
 class UserManager(Manager):
-
-	NAME = 'UserManager'
-
 	DATABASE = {
 		'users': [
 			'id INTEGER PRIMARY KEY',
@@ -22,14 +22,16 @@ class UserManager(Manager):
 			'tts TEXT',
 			'ttsLanguage TEXT',
 			'ttsType TEXT',
-			'ttsVoice TEXT'
+			'ttsVoice TEXT',
+			'apiToken TEXT'
 		]
 	}
 
 
 	def __init__(self):
-		super().__init__(self.NAME, self.DATABASE)
-		self._users = dict()
+		super().__init__(databaseSchema=self.DATABASE)
+		self._users: Dict[str: User] = dict()
+		self._validtokens: Dict[str: User] = dict()
 
 
 	def onStart(self):
@@ -41,7 +43,24 @@ class UserManager(Manager):
 	def _loadUsers(self):
 		rows = self.databaseFetch(tableName='users', query='SELECT * FROM :__table__', method='all')
 		for row in rows:
-			self._users[row['username']] = User(row)
+			user = User(row)
+			self._users[user.name] = user
+			self._validtokens[user.apiToken] = user
+
+
+	def createApiToken(self, user: User, save: bool = True) -> str:
+		token = jwt.encode({'user': user.name, 'birth': time()}, 'projectalice', algorithm='HS256').decode()
+		self._validtokens[token] = user
+
+		if save:
+			user.apiToken = token
+			self.DatabaseManager.update(
+				tableName='users',
+				callerName=self.name,
+				values={'apiToken': token},
+				row=('username', user.name))
+
+		return token
 
 
 	@property
@@ -65,24 +84,25 @@ class UserManager(Manager):
 		insertId = self.databaseInsert(
 			tableName='users',
 			values={
-				'username': name.lower(),
+				'username'   : name.lower(),
 				'accessLevel': access,
-				'state': state,
-				'pin': hashedPassword,
-				'lang': self.LanguageManager.activeLanguageAndCountryCode
+				'state'      : state,
+				'pin'        : hashedPassword,
+				'lang'       : self.LanguageManager.activeLanguageAndCountryCode
 			})
 		if insertId > -1:
 			self._users[name] = User({
-				'id': insertId,
-				'username': name.title(),
+				'id'         : insertId,
+				'username'   : name.title(),
 				'accessLevel': access,
-				'state': state,
-				'pin': hashedPassword,
-				'lang': self.LanguageManager.activeLanguageAndCountryCode,
-				'tts': '',
+				'state'      : state,
+				'pin'        : hashedPassword,
+				'lang'       : self.LanguageManager.activeLanguageAndCountryCode,
+				'tts'        : '',
 				'ttsLanguage': '',
-				'ttsType': '',
-				'ttsVoice': ''
+				'ttsType'    : '',
+				'ttsVoice'   : '',
+				'apiToken'   : ''
 			})
 
 
@@ -92,6 +112,25 @@ class UserManager(Manager):
 			callerName=self.name,
 			values={'pin': self.getHashedPassword(pinCode)},
 			row=('username', name))
+
+
+	# noinspection SqlResolve
+	def deleteUser(self, username: str, keepWakeword: bool = False):
+		self.DatabaseManager.delete(
+			tableName='users',
+			callerName=self.name,
+			query='DELETE FROM :__table__ WHERE username = :username',
+			values={
+				'username': username
+			}
+		)
+
+		self._users.pop(username)
+
+		if not keepWakeword:
+			path = Path(self.Commons.rootDir(), 'trained/hotwords', username)
+			if path.exists():
+				path.unlink()
 
 
 	def getUserAccessLevel(self, username: str) -> Optional[Any]:
@@ -191,3 +230,15 @@ class UserManager(Manager):
 			requiredAccessLevel = requiredAccessLevel.value
 
 		return user.lower() in self._users and AccessLevel[self._users[user.lower()].accessLevel.upper()].value <= requiredAccessLevel
+
+
+	def apiTokenValid(self, token: str) -> bool:
+		return token != '' and token in self._validtokens
+
+
+	def apiTokenLevel(self, token: str) -> AccessLevel:
+		return self._validtokens[token].accessLevel
+
+
+	def getUserByAPIToken(self, token: str) -> Optional[User]:
+		return self._validtokens.get(token, None)

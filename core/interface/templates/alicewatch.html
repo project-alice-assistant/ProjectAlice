@@ -1,0 +1,33 @@
+{% extends 'base.html' %}
+
+{% block title %}
+	Snips Watch
+{% endblock %}
+
+{% block loaders %}
+	<script src="{{ url_for('static', filename='js/jquery-3.4.1.min.js') }}"></script>
+	<script src="{{ url_for('static', filename='js/alicewatch.js') }}"></script>
+{% endblock %}
+
+{% block pageTitle %}
+	Snips Watch
+{% endblock %}
+
+{% block content %}
+	<div class="toolBar">
+		<div class="autoscrollButton">
+			<i id="emptyCheckbox" class="far fa-square fa-pull-left" aria-hidden="true"></i><i id="checkedCheckbox"
+																							   class="far fa-check-square fa-pull-left"
+																							   aria-hidden="true"></i> {{ langData.followLogs }}
+		</div>
+		<div class="verbosityButtons">
+			<i class="fas fa-thermometer-empty snipswatchActiveVerbosity" data-verbosity="0" aria-hidden="true"></i>
+			<i class="fas fa-thermometer-quarter" data-verbosity="1" aria-hidden="true"></i>
+			<i class="fas fa-thermometer-half" data-verbosity="2" aria-hidden="true"></i>
+			<i class="fas fa-thermometer-three-quarters" data-verbosity="3" aria-hidden="true"></i>
+			<i class="fas fa-thermometer-full" data-verbosity="4" aria-hidden="true"></i>
+		</div>
+	</div>
+	<div class="console" id="console">
+	</div>
+{% endblock %}

@@ -1,22 +1,23 @@
-import hashlib
-import subprocess
-import tempfile
+import getpass
 from pathlib import Path
 from typing import Optional
 
+import hashlib
+import tempfile
 from pydub import AudioSegment
 
 from core.base.SuperManager import SuperManager
+from core.base.model.ProjectAliceObject import ProjectAliceObject
 from core.commons import constants
 from core.dialog.model.DialogSession import DialogSession
 from core.user.model.User import User
-from core.util.model.Logger import Logger
 from core.voice.model.TTSEnum import TTSEnum
 
 
-class TTS(Logger):
+class TTS(ProjectAliceObject):
 	TEMP_ROOT = Path(tempfile.gettempdir(), '/tempTTS')
 	TTS = None
+
 
 	def __init__(self, user: User = None, *args, **kwargs):
 		super().__init__(*args, **kwargs)
@@ -76,21 +77,18 @@ class TTS(Logger):
 			self.logWarning(f'Voice "{voice}" not found for the language and type, falling back to "{self._voice}"')
 
 		if not self.TEMP_ROOT.is_dir():
-			subprocess.run(['sudo', 'mkdir', str(self.TEMP_ROOT)])
-			subprocess.run(['sudo', 'chown', 'pi', str(self.TEMP_ROOT)])
+			SuperManager.getInstance().commonsManager.runRootSystemCommand(['mkdir', str(self.TEMP_ROOT)])
+			SuperManager.getInstance().commonsManager.runRootSystemCommand(['chown', getpass.getuser(), str(self.TEMP_ROOT)])
 
 		if self.TTS == TTSEnum.SNIPS:
 			voiceFile = f'cmu_{SuperManager.getInstance().languageManager.activeCountryCode.lower()}_{self._voice}'
 			if not Path(SuperManager.getInstance().commons.rootDir(), 'system/voices', voiceFile).exists():
 				self.logInfo(f'Using "{self.TTS.value}" as TTS with voice "{self._voice}" but voice file not found. Downloading...')
 
-				process = subprocess.run([
-					'wget', f'https://github.com/MycroftAI/mimic1/blob/development/voices/{voiceFile}.flitevox?raw=true',
-					'-O', Path(SuperManager.getInstance().commons.rootDir(), f'var/voices/{voiceFile}.flitevox')
-				],
-				stdout=subprocess.PIPE)
+				if not SuperManager.getInstance().commons.downloadFile(
+						url=f'https://github.com/MycroftAI/mimic1/blob/development/voices/{voiceFile}.flitevox?raw=true',
+						dest=Path(SuperManager.getInstance().commons.rootDir(), f'var/voices/{voiceFile}.flitevox')):
 
-				if process.returncode > 0:
 					self.logError('Failed downloading voice file, falling back to slt')
 					self._voice = next(iter(self._supportedLangAndVoices[self._lang][self._type]))
 
@@ -151,7 +149,7 @@ class TTS(Logger):
 
 	@staticmethod
 	def _mp3ToWave(src: Path, dest: Path):
-		subprocess.run(['mpg123', '-q', '-w', str(dest), str(src)])
+		SuperManager.getInstance().commonsManager.runSystemCommand(['mpg123', '-q', '-w', str(dest), str(src)])
 
 
 	def _hash(self, text: str) -> str:

@@ -32,9 +32,8 @@
 	"notUnderstoodEnd": {
 		"default": [
 			"Tut mir leid, ich konnte deine Frage nicht verstehen",
-			"Es tut mir leid, ich habe deine Frage nicht verstanden",
-			"Sorry, aber ich konnte dich nicht verstehen.",
-			"Ok, stop. Ich verstehe es einfach nicht"
+			"Sorry, aber ich konnte es nicht verstehen",
+			"Ok, stop, ich verstehe es einfach nicht"
 		],
 		"short": [
 			"Stop... Ich verstehe es nicht"

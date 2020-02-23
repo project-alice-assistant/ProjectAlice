@@ -1,6 +1,6 @@
 import re
-import subprocess
 
+from core.base.SuperManager import SuperManager
 from core.dialog.model.DialogSession import DialogSession
 from core.user.model.User import User
 from core.voice.model.TTS import TTS
@@ -63,7 +63,7 @@ class PicoTTS(TTS):
 	@staticmethod
 	def _checkText(session: DialogSession) -> str:
 		text = session.payload['text']
-		return re.sub('<.*?>', '', text)
+		return ' '.join(re.sub('<.*?>', ' ', text).split())
 
 
 	def onSay(self, session: DialogSession):
@@ -73,6 +73,6 @@ class PicoTTS(TTS):
 			return
 
 		if not self._cacheFile.exists():
-			subprocess.run(['pico2wave', '-l', self._lang, '-w', self._cacheFile, self._text])
+			SuperManager.getInstance().commonsManager.runRootSystemCommand(['pico2wave', '-l', self._lang, '-w', self._cacheFile, self._text])
 
 		self._speak(file=self._cacheFile, session=session)

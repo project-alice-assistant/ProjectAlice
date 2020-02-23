@@ -10,12 +10,12 @@
 {% endblock %}
 
 {% block pageTitle %}
-	Syslog
+	{{ langData.syslog }}
 {% endblock %}
 
 {% block content %}
 	<div class="toolBar">
-		<i id="emptyCheckbox" class="far fa-square fa-pull-left"></i><i id="checkedCheckbox" class="far fa-check-square fa-pull-left"></i> {{ langData.followLogs }}
+		<i id="emptyCheckbox" class="far fa-square fa-pull-left" aria-hidden="true"></i><i id="checkedCheckbox" class="far fa-check-square fa-pull-left" aria-hidden="true"></i> {{ langData.followLogs }}
 	</div>
 	<div class="console" id="console">
 	</div>

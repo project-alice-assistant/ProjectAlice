@@ -1,225 +1,95 @@
 from __future__ import annotations
 
-from textwrap import dedent
-from typing import Any
+from dataclasses import dataclass, field
+from typing import Any, Optional
 
 from paho.mqtt.client import MQTTMessage
 
 from core.base.model import Intent
-from core.base.model.ProjectAliceObject import ProjectAliceObject
 from core.commons import constants
 
 
-class DialogSession(ProjectAliceObject):
-	def __init__(self, siteId):
-		super().__init__(logDepth=5)
-		self._siteId = siteId
-		self._sessionId = ''
-		self._user = constants.UNKNOWN_USER
-		self._message = None
-		self._slots = dict()
-		self._slotsAsObjects = dict()
-		self._customData = dict()
-		self._payload = dict()
-		self._intentName = ''
-		self._intentHistory = list()
-		self._intentFilter = list()
-		self._notUnderstood = 0
-		self._currentState = constants.DEFAULT
+@dataclass
+class DialogSession:
+	siteId: str
+	sessionId: str = ''
+	user: str = constants.UNKNOWN_USER
+	message: MQTTMessage = None
+	intentName: str = ''
+	notUnderstood: int = 0
+	currentState: str = constants.DEFAULT
+	isAPIGenerated: bool = False
+	slots: dict = field(default_factory=dict)
+	slotsAsObjects: dict = field(default_factory=dict)
+	customData: dict = field(default_factory=dict)
+	payload: dict = field(default_factory=dict)
+	intentHistory: list = field(default_factory=list)
+	intentFilter: list = field(default_factory=list)
 
 
 	def extend(self, message: MQTTMessage, sessionId: str = None):
 		if sessionId:
-			self._sessionId = sessionId
+			self.sessionId = sessionId
 
-		self._message = message
-		self._intentName = message.topic
-		self._parseMessage()
+		from core.commons.CommonsManager import CommonsManager
+		self.message = message
+		self.intentName = message.topic
+		self.payload = CommonsManager.payload(message)
+		self.slots = CommonsManager.parseSlots(message)
+		self.slotsAsObjects = CommonsManager.parseSlotsToObjects(message)
+		self.customData = CommonsManager.parseCustomData(message)
 
 
 	def update(self, message: MQTTMessage):
-		self._message = message
-		self._intentName = message.topic
-		self._updateSessionData()
+		from core.commons.CommonsManager import CommonsManager
+		self.message = message
+		self.intentName = message.topic
+		self.payload = CommonsManager.payload(message)
+		self.slots.update(CommonsManager.parseSlots(message))
+		self.slotsAsObjects.update(CommonsManager.parseSlotsToObjects(message))
+		self.customData.update(CommonsManager.parseCustomData(message))
 
 
 	def reviveOldSession(self, session: DialogSession):
-		self._payload = session.payload
-		self._slots = session.slots
-		self._slotsAsObjects = session.slotsAsObjects
-		self._customData = session.customData
-		self._user = session.user
-		self._message = session.message
-		self._intentName = session.intentName
-		self._intentHistory = session.intentHistory
-		self._intentFilter = session.intentFilter
-		self._notUnderstood = session.notUnderstood
-		self._currentState = session.currentState
-
-
-	def _parseMessage(self):
-		self._payload = self.Commons.payload(self._message)
-		self._slots = self.Commons.parseSlots(self._message)
-		self._slotsAsObjects = self.Commons.parseSlotsToObjects(self._message)
-		self._customData = self.Commons.parseCustomData(self._message)
-
-
-	def _updateSessionData(self):
-		self._payload = self.Commons.payload(self._message)
-		self._slots = {**self._slots, **self.Commons.parseSlots(self._message)}
-		self._slotsAsObjects = {**self._slotsAsObjects, **self.Commons.parseSlotsToObjects(self._message)}
-		self._customData = {**self._customData, **self.Commons.parseCustomData(self._message)}
-
-
-	def addToHistory(self, intent: Intent):
-		self._intentHistory.append(intent)
-
-
-	@property
-	def slots(self) -> dict:
-		return self._slots
-
-
-	@property
-	def slotsAsObjects(self) -> dict:
-		return self._slotsAsObjects
+		"""
+		Revives old session keeping siteId, sessionId and isAPIGenerated from the
+		new session
+		"""
+		self.payload = session.payload
+		self.slots = session.slots
+		self.slotsAsObjects = session.slotsAsObjects
+		self.customData = session.customData
+		self.user = session.user
+		self.message = session.message
+		self.intentName = session.intentName
+		self.intentHistory = session.intentHistory
+		self.intentFilter = session.intentFilter
+		self.notUnderstood = session.notUnderstood
+		self.currentState = session.currentState
+		self.isAPIGenerated = session.isAPIGenerated
 
 
 	def slotValue(self, slotName: str, index: int = 0, defaultValue: Any = None) -> Any:
 		"""
 		This returns the slot master value, not what was heard / captured
 		"""
-		if slotName in self._slotsAsObjects:
+		try:
 			return self.slotsAsObjects[slotName][index].value['value']
-		else:
+		except (KeyError, IndexError):
 			return defaultValue
 
 
 	def slotRawValue(self, slotName: str) -> str:
 		"""
-		This returns the slot raw value, what whas really heard / captured, so it can be a synonym per exemple
+		This returns the slot raw value, what whas really heard / captured, so it can be a synonym for example
 		"""
-		return self._slots.get(slotName, '')
+		return self.slots.get(slotName, '')
+
+
+	def addToHistory(self, intent: Intent):
+		self.intentHistory.append(intent)
 
 
 	@property
-	def customData(self) -> dict:
-		return self._customData
-
-
-	@property
-	def payload(self) -> dict:
-		return self._payload
-
-
-	@payload.setter
-	def payload(self, value: dict):
-		self._payload = value
-
-
-	@property
-	def siteId(self) -> str:
-		return self._siteId
-
-
-	@property
-	def sessionId(self) -> str:
-		return self._sessionId
-
-
-	@property
-	def user(self) -> str:
-		return self._user
-
-
-	@user.setter
-	def user(self, user: str):
-		self._user = user
-
-
-	@sessionId.setter
-	def sessionId(self, sessionId: str):
-		self._sessionId = sessionId
-
-
-	@property
-	def message(self) -> MQTTMessage:
-		return self._message
-
-
-	@message.setter
-	def message(self, message: MQTTMessage):
-		self._message = message
-
-	@property
-	def intentName(self) -> str:
-		return self._intentName
-
-
-	@property
-	def intentHistory(self) -> list:
-		return self._intentHistory
-
-
-	@intentHistory.setter
-	def intentHistory(self, value: list):
-		self._intentHistory = value.copy()
-
-
-	@property
-	def previousIntent(self) -> Intent:
-		return self._intentHistory[-1] if self._intentHistory else None
-
-
-	@property
-	def intentFilter(self) -> list:
-		return self._intentFilter
-
-
-	@intentFilter.setter
-	def intentFilter(self, value: list):
-		self._intentFilter = value
-
-
-	@property
-	def notUnderstood(self) -> int:
-		return self._notUnderstood
-
-
-	@notUnderstood.setter
-	def notUnderstood(self, value: int):
-		self._notUnderstood = value
-
-
-	@notUnderstood.deleter
-	def notUnderstood(self):
-		self._notUnderstood = 0
-
-
-	@property
-	def currentState(self) -> str:
-		return self._currentState
-
-
-	@currentState.setter
-	def currentState(self, value: str):
-		self._currentState = value
-
-
-	def __repr__(self) -> str:
-		return dedent(f'''\
-			[{self.__class__.__name__}] -> [
-				siteId: "{self.siteId}",
-				sessionId: "{self._sessionId}",
-				user: "{self._user}",
-				message: "{self._message.topic}",
-				slots: "{self._slots}",
-				slotsAsObject: "{self._slotsAsObjects}",
-				customData: "{self._customData}",
-				payload: "{self._payload}",
-				previousIntent: "{self.previousIntent}",
-				intentHistory: "{self._intentHistory}",
-				intentFilter: "{self._intentFilter}",
-				notUnderstood: "{self._notUnderstood}"
-			]
-		''')
+	def previousIntent(self) -> Optional[Intent]:
+		return self.intentHistory[-1] if self.intentHistory else None

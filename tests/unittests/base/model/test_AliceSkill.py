@@ -21,7 +21,7 @@ class TestAliceSkill(unittest.TestCase):
 		class ExampleSkill(AliceSkill):
 			#ignore all stuff that would happen in the AliceSkill init
 			def __init__(self):
-				pass
+				self._name = 'ExampleSkill'
 
 			@IntentHandler('intent1', authOnly=AccessLevel.ADMIN)
 			def single_decorator(self, *args, **kwargs):
@@ -56,8 +56,8 @@ class TestAliceSkill(unittest.TestCase):
 		self.assertEqual(intent2.fallbackFunction, None)
 		self.assertDictEqual(
 			intent2.dialogMapping,
-			{'exampleState': exampleSkill.multiple_decorator,
-			 'exampleState2': exampleSkill.mqtt_decorator})
+			{'ExampleSkill:exampleState': exampleSkill.multiple_decorator,
+			 'ExampleSkill:exampleState2': exampleSkill.mqtt_decorator})
 		self.assertEqual(str(intent2), 'hermes/intent/unittest:intent2')
 
 		self.assertTrue(intent3.protected)
@@ -81,8 +81,8 @@ class TestAliceSkill(unittest.TestCase):
 		class ExampleSkill(AliceSkill):
 			#ignore all stuff that would happen in the AliceSkill init
 			def __init__(self):
-				pass
-			
+				self._name = 'ExampleSkill'
+
 			def exampleFunc(self):
 				pass
 
@@ -105,10 +105,10 @@ class TestAliceSkill(unittest.TestCase):
 		]
 
 		mappings = exampleSkill.buildIntentList(initIntents)
-		intent1 =  mappings[str(Intent('Intent1'))]
-		intent2 =  mappings[str(Intent('Intent2'))]
-		intent3 =  mappings[str(Intent('intent3'))]
-		intent4 =  mappings[str(Intent('intent4'))]
+		intent1 = mappings[str(Intent('Intent1'))]
+		intent2 = mappings[str(Intent('Intent2'))]
+		intent3 = mappings[str(Intent('intent3'))]
+		intent4 = mappings[str(Intent('intent4'))]
 
 		self.assertFalse(intent1.protected)
 		self.assertEqual(intent1.authOnly, AccessLevel.ADMIN)
@@ -147,7 +147,7 @@ class TestAliceSkill(unittest.TestCase):
 		]
 
 		mappings = exampleSkill.buildIntentList(initIntents)
-		intent1 =  mappings[str(Intent('intent1'))]
+		intent1 = mappings[str(Intent('intent1'))]
 
 		self.assertFalse(intent1.protected)
 		self.assertEqual(intent1.authOnly, AccessLevel.ADMIN)

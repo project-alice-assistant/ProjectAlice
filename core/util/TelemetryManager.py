@@ -6,7 +6,6 @@ from core.util.model.TelemetryType import TelemetryType
 
 
 class TelemetryManager(Manager):
-	NAME = 'TelemetryManager'
 
 	DATABASE = {
 		'telemetry': [
@@ -55,7 +54,7 @@ class TelemetryManager(Manager):
 
 
 	def __init__(self):
-		super().__init__(self.NAME, self.DATABASE)
+		super().__init__(databaseSchema=self.DATABASE)
 		self._data = list()
 
 
@@ -86,7 +85,7 @@ class TelemetryManager(Manager):
 
 
 	# noinspection SqlResolve
-	def storeData(self, ttype: TelemetryType, value: str, service: str, siteId: str, timestamp = None):
+	def storeData(self, ttype: TelemetryType, value: str, service: str, siteId: str, timestamp=None):
 		if not self.isActive:
 			return
 
@@ -98,18 +97,21 @@ class TelemetryManager(Manager):
 			values={'type': ttype.value, 'value': value, 'service': service, 'siteId': siteId, 'timestamp': round(timestamp)}
 		)
 
+		telemetrySkill = self.SkillManager.getSkillInstance('Telemetry')
 		messages = self.TELEMETRY_MAPPINGS.get(ttype, dict())
 		for message, settings in messages.items():
 			if settings is None:
-				self.broadcast(method=message, exceptions=[self.name], propagateToSkills=True, args=[service])
+				self.broadcast(method=message, exceptions=[self.name], propagateToSkills=True, service=service)
 				break
 
-			#TODO check if Telemetry skill available
+			if not telemetrySkill:
+				continue
+
 			threshold = float(self.ConfigManager.getSkillConfigByName('Telemetry', settings[1]) if isinstance(settings[1], str) else settings[1])
 			value = float(value)
 			if settings[0] == 'upperThreshold' and value > threshold or \
-				settings[0] == 'lowerThreshold' and value < threshold:
-				self.broadcast(method=message, exceptions=[self.name], propagateToSkills=True, args=[service])
+					settings[0] == 'lowerThreshold' and value < threshold:
+				self.broadcast(method=message, exceptions=[self.name], propagateToSkills=True, service=service)
 				break
 
 

@@ -6,6 +6,7 @@ import subprocess
 import time
 from pathlib import Path
 
+import pkg_resources
 import requests
 
 from core.base.model.TomlFile import TomlFile
@@ -21,7 +22,7 @@ import configTemplate
 from core.base.model.ProjectAliceObject import ProjectAliceObject
 
 
-class initDict(dict):
+class InitDict(dict):
 
 	def __init__(self, default: dict):
 		super().__init__(default)
@@ -60,7 +61,7 @@ network={
 		self._confsFile = Path(self._rootDir, 'config.py')
 		self._confsSample = Path(self._rootDir, 'configTemplate.py')
 		self._initFile = Path('/boot/ProjectAlice.yaml')
-		self._latest = 1.11
+		self._latest = 1.14
 
 
 	def initProjectAlice(self) -> bool:
@@ -74,9 +75,9 @@ network={
 			try:
 				load = yaml.safe_load(f)
 				if not load:
-					raise  yaml.YAMLError
+					raise yaml.YAMLError
 
-				initConfs = initDict(load)
+				initConfs = InitDict(load)
 			except yaml.YAMLError as e:
 				self.fatal(f'Failed loading init configurations: {e}')
 
@@ -104,7 +105,7 @@ network={
 			subprocess.run(['sudo', 'mv', str(file), bootWpaSupplicant])
 			self.logInfo('Successfully initialized wpa_supplicant.conf')
 			time.sleep(1)
-			subprocess.run(['/usr/bin/sudo', '/sbin/shutdown', '-r', 'now'])
+			subprocess.run(['sudo', 'shutdown', '-r', 'now'])
 			exit(0)
 
 		try:
@@ -114,17 +115,14 @@ network={
 			connected = False
 
 		if not connected:
-			self.fatal('Your device needs internet access to continue, to download the updates and create the assistant')
-
-		if not initConfs['snipsConsoleLogin'] or not initConfs['snipsConsolePassword'] or not initConfs['intentsOwner']:
-			self.fatal('You must specify a Snips console login, password and intent owner')
+			self.fatal('Your device needs internet access to continue')
 
 		# Update our system and sources
 		subprocess.run(['sudo', 'apt-get', 'update'])
 		subprocess.run(['sudo', 'apt-get', 'dist-upgrade', '-y'])
 		subprocess.run(['git', 'clean', '-df'])
 		subprocess.run(['git', 'stash'])
-		subprocess.run(['git', 'checkout', self.getUpdateSource(initConfs['updateChannel'])])
+		subprocess.run(['git', 'checkout', self.getUpdateSource(initConfs['aliceUpdateChannel'])])
 		subprocess.run(['git', 'pull'])
 		subprocess.run(['git', 'stash', 'clear'])
 
@@ -138,7 +136,7 @@ network={
 		elif not self._confsFile.exists() and self._confsSample.exists():
 			self.warning('No config file found, creating it from sample file')
 			confs = self.newConfs()
-			Path('config.py').write_text(f"settings = {json.dumps(confs, indent=4).replace('false', 'False').replace('true', 'True')}")
+			self._confsFile.write_text(f"settings = {json.dumps(confs, indent=4).replace('false', 'False').replace('true', 'True')}")
 
 		elif self._confsFile.exists() and not initConfs['forceRewrite']:
 			self.warning('Config file already existing and user not wanting to rewrite, aborting')
@@ -146,9 +144,9 @@ network={
 
 		elif self._confsFile.exists() and initConfs['forceRewrite']:
 			self.warning('Config file found and force rewrite specified, let\'s restart all this!')
-			Path(self._rootDir, 'config.py').unlink()
+			self._confsFile.unlink()
 			confs = self.newConfs()
-			Path('config.py').write_text(f"settings = {json.dumps(confs, indent=4).replace('false', 'False').replace('true', 'True')}")
+			self._confsFile.write_text(f"settings = {json.dumps(confs, indent=4).replace('false', 'False').replace('true', 'True')}")
 
 		config = importlib.import_module('config')
 		confs = config.settings.copy()
@@ -178,7 +176,6 @@ network={
 			subprocess.run(['sudo', 'apt-get', 'install', '-y', '--allow-unauthenticated'] + reqs)
 
 			subprocess.run(['sudo', 'systemctl', 'stop', 'snips-*'])
-			subprocess.run(['sudo', 'systemctl', 'disable', 'snips-asr'])
 			subprocess.run(['sudo', 'systemctl', 'disable', 'snips-nlu'])
 			subprocess.run(['sudo', 'systemctl', 'disable', 'snips-dialogue'])
 			subprocess.run(['sudo', 'systemctl', 'disable', 'snips-injection'])
@@ -186,21 +183,18 @@ network={
 			subprocess.run(['sudo', 'systemctl', 'disable', 'snips-audio-server'])
 			subprocess.run(['sudo', 'systemctl', 'disable', 'snips-tts'])
 
+
 		# Now let's dump some values to their respective places
 		# First those that need some checks and self filling in case unspecified
 		confs['mqttHost'] = str(initConfs['mqttHost']) or 'localhost'
 		confs['mqttPort'] = initConfs['mqttPort'] or 1883
-
-		confs['snipsConsoleLogin'] = initConfs['snipsConsoleLogin']
-		confs['snipsConsolePassword'] = initConfs['snipsConsolePassword']
-		confs['intentsOwner'] = initConfs['intentsOwner']
 
 		confs['stayCompletlyOffline'] = bool(initConfs['stayCompletlyOffline'])
 		if initConfs['stayCompletlyOffline']:
 			confs['keepASROffline'] = True
 			confs['keepTTSOffline'] = True
 			confs['skillAutoUpdate'] = False
-			confs['asr'] = 'snips'
+			confs['asr'] = 'pocketsphinx'
 			confs['tts'] = 'pico'
 			confs['awsRegion'] = ''
 			confs['awsAccessKey'] = ''
@@ -209,53 +203,87 @@ network={
 			confs['keepASROffline'] = bool(initConfs['keepASROffline'])
 			confs['keepTTSOffline'] = bool(initConfs['keepTTSOffline'])
 			confs['skillAutoUpdate'] = bool(initConfs['skillAutoUpdate'])
-			confs['asr'] = initConfs['asr'] if initConfs['asr'] in ('snips', 'google') else 'snips'
-			confs['tts'] = initConfs['tts'] if initConfs['tts'] in ('pico', 'snips', 'mycroft', 'amazon', 'google') else 'pico'
+			confs['tts'] = initConfs['tts'] if initConfs['tts'] in {'pico', 'snips', 'mycroft', 'amazon', 'google'} else 'pico'
 			confs['awsRegion'] = initConfs['awsRegion']
 			confs['awsAccessKey'] = initConfs['awsAccessKey']
 			confs['awsSecretKey'] = initConfs['awsSecretKey']
+
+			confs['asr'] = initConfs['asr'] if initConfs['asr'] in {'pocketsphinx', 'google'} else 'pocketsphinx'
+			if confs['asr'] == 'google' and not initConfs['googleServiceFile']:
+				self.logInfo('You cannot use Google ASR without a google service file, falling back to pocket sphinx')
+				confs['asr'] = 'pocketsphinx'
 
 			if initConfs['googleServiceFile']:
 				googleCreds = Path(self._rootDir, 'credentials/googlecredentials.json')
 				googleCreds.write_text(json.dumps(initConfs['googleServiceFile']))
 
+
 		# Those that don't need checking
-		confs['ssid'] = initConfs['wifiNetworkName'] or ''
-		confs['wifipassword'] = str(initConfs['wifiWPAPass']) or ''
-		confs['micSampleRate'] = int(initConfs['micSampleRate']) or 16000
-		confs['micChannels'] = int(initConfs['micChannels']) or 1
-		confs['useSLC'] = bool(initConfs['useSLC'])
+		confs['ssid'] = initConfs['wifiNetworkName']
+		confs['wifipassword'] = str(initConfs['wifiWPAPass'])
+		confs['micSampleRate'] = int(initConfs['micSampleRate'] or 16000)
+		confs['micChannels'] = int(initConfs['micChannels'] or 1)
+		confs['useHLC'] = bool(initConfs['useHLC'])
 		confs['webInterfaceActive'] = bool(initConfs['webInterfaceActive'])
 		confs['devMode'] = bool(initConfs['devMode'])
-		confs['newDeviceBroadcastPort'] = int(initConfs['newDeviceBroadcastPort']) or 12354
-		confs['activeLanguage'] = initConfs['activeLanguage'] if initConfs['activeLanguage'] in ('en', 'de', 'fr') else 'en'
+		confs['newDeviceBroadcastPort'] = int(initConfs['newDeviceBroadcastPort'] or 12354)
+		confs['activeLanguage'] = initConfs['activeLanguage'] if initConfs['activeLanguage'] in {'en', 'de', 'fr'} else 'en'
 		confs['activeCountryCode'] = initConfs['activeCountryCode'] or 'US'
 		confs['baseCurrency'] = initConfs['baseCurrency'] or 'USD'
-		confs['baseUnits'] = initConfs['baseUnits'] if initConfs['baseUnits'] in ('metric', 'kelvin', 'imperial') else 'metric'
+		confs['baseUnits'] = initConfs['baseUnits'] if initConfs['baseUnits'] in {'metric', 'kelvin', 'imperial'} else 'metric'
 		confs['enableDataStoring'] = bool(initConfs['enableDataStoring'])
 		confs['autoPruneStoredData'] = initConfs['autoPruneStoredData'] or 1000
-		confs['probabilityThreshold'] = float(initConfs['probabilityThreshold']) or 0.5
+		confs['probabilityThreshold'] = float(initConfs['probabilityThreshold'] or 0.5)
 		confs['shortReplies'] = bool(initConfs['shortReplies'])
 		confs['whisperWhenSleeping'] = bool(initConfs['whisperWhenSleeping'])
 		confs['ttsLanguage'] = initConfs['ttsLanguage'] or confs['activeLanguage']
-		confs['ttsType'] = initConfs['ttsType'] if initConfs['ttsType'] in ('female', 'male') else 'female'
-		confs['ttsVoice'] = initConfs['ttsVoice'] or ''
-		confs['githubUsername'] = initConfs['githubUsername'] or ''
-		confs['githubToken'] = initConfs['githubToken'] or ''
-		confs['ttsLanguage'] = initConfs['ttsLanguage'] or ''
+		confs['ttsType'] = initConfs['ttsType'] if initConfs['ttsType'] in {'female', 'male'} else 'female'
+		confs['ttsVoice'] = initConfs['ttsVoice']
+		confs['githubUsername'] = initConfs['githubUsername']
+		confs['githubToken'] = initConfs['githubToken']
 
-		updateChannel = initConfs['updateChannel']
-		if updateChannel not in ('master', 'rc', 'beta', 'alpha'):
-			self.logWarning(f'{updateChannel} is no supported updateChannel, only master, rc, beta and alpha are supported. Reseting to master')
-			confs['updateChannel'] = 'master'
+		aliceUpdateChannel = initConfs['aliceUpdateChannel']
+		if aliceUpdateChannel not in {'master', 'rc', 'beta', 'alpha'}:
+			self.logWarning(f'{aliceUpdateChannel} is not a supported updateChannel, only master, rc, beta and alpha are supported. Reseting to master')
+			confs['aliceUpdateChannel'] = 'master'
 		else:
-			confs['updateChannel'] = updateChannel
-		confs['mqtt_username'] = str(initConfs['mqttUser']) or ''
-		confs['mqttPassword'] = str(initConfs['mqttPassword']) or ''
-		confs['mqttTLSFile'] = initConfs['mqttTLSFile'] or ''
+			confs['aliceUpdateChannel'] = aliceUpdateChannel
 
-		if initConfs['snipsProjectId'] and confs['activeLanguage'] in confs['supportedLanguages']:
-			confs['supportedLanguages'][confs['activeLanguage']]['snipsProjectId'] = initConfs['snipsProjectId']
+		skillsUpdateChannel = initConfs['skillsUpdateChannel']
+		if skillsUpdateChannel not in {'master', 'rc', 'beta', 'alpha'}:
+			self.logWarning(f'{skillsUpdateChannel} is not a supported updateChannel, only master, rc, beta and alpha are supported. Reseting to master')
+			confs['skillsUpdateChannel'] = 'master'
+		else:
+			confs['skillsUpdateChannel'] = skillsUpdateChannel
+
+		confs['mqtt_username'] = str(initConfs['mqttUser'])
+		confs['mqttPassword'] = str(initConfs['mqttPassword'])
+		confs['mqttTLSFile'] = initConfs['mqttTLSFile']
+
+		try:
+			pkg_resources.require('snips-nlu')
+			subprocess.run(['./venv/bin/snips-nlu', 'download', confs['activeLanguage']])
+		except:
+			self.logInfo("Snips NLU not installed, let's do this")
+			subprocess.run(['sudo', 'apt-get', 'install', 'libatlas3-base', 'libgfortran5'])
+			subprocess.run(['wget', '--content-disposition', 'https://github.com/project-alice-assistant/snips-nlu-rebirth/blob/master/wheels/scikit_learn-0.22.1-cp37-cp37m-linux_armv7l.whl?raw=true'])
+			subprocess.run(['wget', '--content-disposition', 'https://github.com/project-alice-assistant/snips-nlu-rebirth/blob/master/wheels/scikit_learn-0.22.1-cp37-cp37m-linux_armv7l.whl?raw=true'])
+			subprocess.run(['wget', '--content-disposition', 'https://github.com/project-alice-assistant/snips-nlu-rebirth/blob/master/wheels/snips_nlu_utils-0.9.1-cp37-cp37m-linux_armv7l.whl?raw=true'])
+			subprocess.run(['wget', '--content-disposition', 'https://github.com/project-alice-assistant/snips-nlu-rebirth/blob/master/wheels/snips_nlu_parsers-0.4.3-cp37-cp37m-linux_armv7l.whl?raw=true'])
+			subprocess.run(['wget', '--content-disposition', 'https://github.com/project-alice-assistant/snips-nlu-rebirth/blob/master/wheels/snips_nlu-0.20.2-py3-none-any.whl?raw=true'])
+			time.sleep(1)
+			subprocess.run(['./venv/bin/pip3', 'install', 'scipy-1.3.3-cp37-cp37m-linux_armv7l.whl'])
+			subprocess.run(['./venv/bin/pip3', 'install', 'scikit_learn-0.22.1-cp37-cp37m-linux_armv7l.whl'])
+			subprocess.run(['./venv/bin/pip3', 'install', 'snips_nlu_utils-0.9.1-cp37-cp37m-linux_armv7l.whl'])
+			subprocess.run(['./venv/bin/pip3', 'install', 'snips_nlu_parsers-0.4.3-cp37-cp37m-linux_armv7l.whl'])
+			subprocess.run(['./venv/bin/pip3', 'install', 'snips_nlu-0.20.2-py3-none-any.whl'])
+			time.sleep(1)
+			subprocess.run(['rm', 'scipy-1.3.3-cp37-cp37m-linux_armv7l.whl'])
+			subprocess.run(['rm', 'scikit_learn-0.22.1-cp37-cp37m-linux_armv7l.whl'])
+			subprocess.run(['rm', 'snips_nlu_utils-0.9.1-cp37-cp37m-linux_armv7l.whl'])
+			subprocess.run(['rm', 'snips_nlu_parsers-0.4.3-cp37-cp37m-linux_armv7l.whl'])
+			subprocess.run(['rm', 'snips_nlu-0.20.2-py3-none-any.whl'])
+			subprocess.run(['./venv/bin/snips-nlu', 'download', confs['activeLanguage']])
 
 		snipsConf = self.loadSnipsConfigurations()
 		if not snipsConf:
@@ -293,40 +321,40 @@ network={
 				audioHardware = hardware
 				break
 
-		slcServiceFilePath = Path('/etc/systemd/system/snipsledcontrol.service')
-		if initConfs['useSLC']:
+		hlcServiceFilePath = Path('/etc/systemd/system/hermesledcontrol.service')
+		if initConfs['useHLC']:
 
-			if not Path('/home', getpass.getuser(), 'snipsLedControl'):
-				subprocess.run(['git', 'clone', 'https://github.com/Psychokiller1888/snipsLedControl.git', str(Path('/home', getpass.getuser(), 'snipsLedControl'))])
+			if not Path('/home', getpass.getuser(), 'hermesLedControl').exists():
+				subprocess.run(['git', 'clone', 'https://github.com/project-alice-assistant/hermesLedControl.git', str(Path('/home', getpass.getuser(), 'hermesLedControl'))])
 			else:
-				subprocess.run(['git', '-C', str(Path('/home', getpass.getuser(), 'snipsLedControl')), 'stash'])
-				subprocess.run(['git', '-C', str(Path('/home', getpass.getuser(), 'snipsLedControl')), 'pull'])
-				subprocess.run(['git', '-C', str(Path('/home', getpass.getuser(), 'snipsLedControl')), 'stash', 'clear'])
+				subprocess.run(['git', '-C', str(Path('/home', getpass.getuser(), 'hermesLedControl')), 'stash'])
+				subprocess.run(['git', '-C', str(Path('/home', getpass.getuser(), 'hermesLedControl')), 'pull'])
+				subprocess.run(['git', '-C', str(Path('/home', getpass.getuser(), 'hermesLedControl')), 'stash', 'clear'])
 
-			if not slcServiceFilePath.exists():
-				subprocess.run(['sudo', 'cp', f'/home/{getpass.getuser()}/snipsLedControl/snipsledcontrol.service', str(slcServiceFilePath)])
+			if not hlcServiceFilePath.exists():
+				subprocess.run(['sudo', 'cp', f'/home/{getpass.getuser()}/hermesLedControl/hermesledcontrol.service', str(hlcServiceFilePath)])
 
-			subprocess.run(['sudo', 'sed', '-i', '-e', f's/%WORKING_DIR%/\/home\/{getpass.getuser()}\/snipsLedControl/', str(slcServiceFilePath)])
-			subprocess.run(['sudo', 'sed', '-i', '-e', f's/%EXECSTART%/\/home\/{getpass.getuser()}\/snipsLedControl\/venv\/bin\/python3 main.py --hardware=%HARDWARE% --pattern=projectalice/', str(slcServiceFilePath)])
-			subprocess.run(['sudo', 'sed', '-i', '-e', f's/%USER%/{getpass.getuser()}/', str(slcServiceFilePath)])
+			subprocess.run(['sudo', 'sed', '-i', '-e', f's/%WORKING_DIR%/\/home\/{getpass.getuser()}\/hermesLedControl/', str(hlcServiceFilePath)])
+			subprocess.run(['sudo', 'sed', '-i', '-e', f's/%EXECSTART%/\/home\/{getpass.getuser()}\/hermesLedControl\/venv\/bin\/python3 main.py --hardware=%HARDWARE% --pattern=projectalice/', str(hlcServiceFilePath)])
+			subprocess.run(['sudo', 'sed', '-i', '-e', f's/%USER%/{getpass.getuser()}/', str(hlcServiceFilePath)])
 
 		if audioHardware in {'respeaker2', 'respeaker4', 'respeaker6MicArray'}:
 			subprocess.run(['sudo', Path(self._rootDir, 'system/scripts/audioHardware/respeakers.sh')])
-			if initConfs['useSLC']:
-				subprocess.run(['sudo', 'sed', '-i', '-e', f's/%HARDWARE%/{audioHardware}/', str(slcServiceFilePath)])
+			if initConfs['useHLC']:
+				subprocess.run(['sudo', 'sed', '-i', '-e', f's/%HARDWARE%/{audioHardware}/', str(hlcServiceFilePath)])
 
 			if audioHardware == 'respeaker6MicArray':
 				subprocess.run(['sudo', 'cp', Path(self._rootDir, 'system', 'asounds', 'respeaker6micarray.conf'), Path('/etc/asound.conf')])
 
 		elif audioHardware == 'respeaker7':
 			subprocess.run(['sudo', Path(self._rootDir, 'system/scripts/audioHardware/respeaker7.sh')])
-			if initConfs['useSLC']:
-				subprocess.run(['sudo', 'sed', '-i', '-e', 's/%HARDWARE%/respeaker7MicArray/', str(slcServiceFilePath)])
+			if initConfs['useHLC']:
+				subprocess.run(['sudo', 'sed', '-i', '-e', 's/%HARDWARE%/respeaker7MicArray/', str(hlcServiceFilePath)])
 
 		elif audioHardware == 'respeakerCoreV2':
 			subprocess.run(['sudo', Path(self._rootDir, 'system/scripts/audioHardware/respeakerCoreV2.sh')])
-			if initConfs['useSLC']:
-				subprocess.run(['sudo', 'sed', '-i', '-e', f's/%HARDWARE%/{audioHardware}/', str(slcServiceFilePath)])
+			if initConfs['useHLC']:
+				subprocess.run(['sudo', 'sed', '-i', '-e', f's/%HARDWARE%/{audioHardware}/', str(hlcServiceFilePath)])
 
 		elif audioHardware in {'matrixCreator', 'matrixVoice'}:
 			subprocess.run(['sudo', Path(self._rootDir, 'system/scripts/audioHardware/matrix.sh')])
@@ -334,13 +362,13 @@ network={
 
 			snipsConf['snips-audio-server']['mike'] = 'MATRIXIO-SOUND: - (hw:2,0)'
 
-			if initConfs['useSLC']:
-				subprocess.run(['sudo', 'sed', '-i', '-e', f's/%HARDWARE%/{audioHardware.lower()}/', str(slcServiceFilePath)])
+			if initConfs['useHLC']:
+				subprocess.run(['sudo', 'sed', '-i', '-e', f's/%HARDWARE%/{audioHardware.lower()}/', str(hlcServiceFilePath)])
 
 		elif audioHardware == 'googleAIY':
 			subprocess.run(['sudo', Path(self._rootDir, 'system/scripts/audioHardware/aiy.sh')])
-			if initConfs['useSLC']:
-				subprocess.run(['sudo', 'sed', '-i', '-e', 's/%HARDWARE%/googleAIY/', str(slcServiceFilePath)])
+			if initConfs['useHLC']:
+				subprocess.run(['sudo', 'sed', '-i', '-e', 's/%HARDWARE%/googleAIY/', str(hlcServiceFilePath)])
 
 		elif audioHardware == 'usbMic':
 			subprocess.run(['sudo', 'cp', Path(self._rootDir, 'system', 'asounds', 'usbmic.conf'), Path('/etc/asound.conf')])
@@ -351,8 +379,8 @@ network={
 		sort['skills'] = sort.pop('skills')
 
 		try:
-			s = json.dumps(sort, indent=4).replace('false', 'False').replace('true', 'True')
-			self._confsFile.write_text(f'settings = {s}')
+			confString = json.dumps(sort, indent=4).replace('false', 'False').replace('true', 'True')
+			self._confsFile.write_text(f'settings = {confString}')
 		except Exception as e:
 			self.fatal(f'An error occured while writting final configuration file: {e}')
 		else:
@@ -361,8 +389,6 @@ network={
 		snipsConf.dump()
 
 		subprocess.run(['sudo', 'rm', '-rf', Path(self._rootDir, 'assistant')])
-		subprocess.run(['sudo', 'rm', '-rf', Path(self._rootDir, 'trained', 'assistants', f"assistant_{confs['activeLanguage']}")])
-		subprocess.run(['sudo', 'rm', '-rf', Path(self._rootDir, 'var', 'assistants', confs['activeLanguage'])])
 
 		if initConfs['keepYAMLBackup']:
 			subprocess.run(['sudo', 'mv', Path('/boot/ProjectAlice.yaml'), Path('/boot/ProjectAlice.yaml.bak')])
@@ -377,7 +403,6 @@ network={
 
 	def fatal(self, text: str):
 		self.logFatal(text)
-		exit()
 
 
 	def warning(self, text: str):
@@ -388,8 +413,10 @@ network={
 		self.logInfo('Loading Snips configuration file')
 		snipsConfig = Path('/etc/snips.toml')
 
-		if not snipsConfig.exists():
-			subprocess.run(['sudo', 'cp', Path(self._rootDir, 'system/snips/snips.toml'), Path('/etc/snips.toml')])
+		if snipsConfig.exists():
+			subprocess.run(['sudo', 'rm', '/etc/snips.toml'])
+
+		subprocess.run(['sudo', 'cp', Path(self._rootDir, 'system/snips/snips.toml'), Path('/etc/snips.toml')])
 
 		return TomlFile.loadToml(snipsConfig)
 
@@ -402,26 +429,24 @@ network={
 
 		req = requests.get('https://api.github.com/repos/project-alice-assistant/ProjectAlice/branches')
 		result = req.json()
-		if result:
-			userUpdatePref = definedSource
-			versions = list()
-			for branch in result:
-				repoVersion = Version(branch['name'])
-				if not repoVersion.isVersionNumber:
-					continue
 
-				if userUpdatePref == 'alpha' and repoVersion.infos['releaseType'] in ('master', 'rc', 'b', 'a'):
-					versions.append(repoVersion)
-				elif userUpdatePref == 'beta' and repoVersion.infos['releaseType'] in ('master', 'rc', 'b'):
-					versions.append(repoVersion)
-				elif userUpdatePref == 'rc' and repoVersion.infos['releaseType'] in ('master', 'rc'):
-					versions.append(repoVersion)
+		versions = list()
+		for branch in result:
+			repoVersion = Version.fromString(branch['name'])
 
-			if len(versions) > 0:
-				versions.sort(reverse=True)
-				updateSource = versions[0]
+			releaseType = repoVersion.releaseType
+			if not repoVersion.isVersionNumber \
+					or definedSource == 'rc' and releaseType in {'b', 'a'} \
+					or definedSource == 'beta' and releaseType == 'a':
+				continue
 
-		return updateSource
+			versions.append(repoVersion)
+
+		if versions:
+			versions.sort(reverse=True)
+			updateSource = versions[0]
+
+		return str(updateSource)
 
 
 	@staticmethod

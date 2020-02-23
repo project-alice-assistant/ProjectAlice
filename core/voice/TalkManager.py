@@ -1,16 +1,15 @@
 import json
-import random
 from pathlib import Path
+
+import random
 
 from core.base.model.Manager import Manager
 
 
 class TalkManager(Manager):
 
-	NAME = 'TalkManager'
-
 	def __init__(self):
-		super().__init__(self.NAME)
+		super().__init__()
 		self._langData = dict()
 
 
@@ -50,7 +49,8 @@ class TalkManager(Manager):
 					self._langData.setdefault(skillName, dict())[lang] = json.loads(langTalkFile.read_text())
 				except FileNotFoundError:
 					continue
-				except ValueError:
+				except ValueError as e:
+					self.logError(f'{e}')
 					continue
 
 

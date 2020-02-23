@@ -227,7 +227,8 @@ a:hover {
 	font-size: 2em;
 }
 
-.skillStoreSkillDownload:hover {
+.skillStoreSkillDownload:hover,
+.skillStoreSkillSelected:hover {
 	cursor: pointer;
 	background-color: #636363;
 	color: yellow;
@@ -391,6 +392,7 @@ a:hover {
 	justify-content: center;
 	justify-items: center;
 	text-align: center;
+	overflow: hidden;
 }
 
 .skillUpdating {
@@ -446,17 +448,17 @@ a:hover {
 	text-align: left;
 	vertical-align: middle;
 	cursor: pointer;
+	width: 20%
 }
 
 .configInput {
 	display: table-cell;
 	padding-left: 20px;
-	width: 100%;
 	text-align: left;
 	vertical-align: middle;
 }
 
-.configSaveButton {
+.button {
 	margin-top: 25px;
 	width: 100%;
 	background-color: #636363;
@@ -484,7 +486,7 @@ input:hover {
 }
 
 input[type='text'], input[type='password'], input[type='number'], select {
-	width: 95%;
+	width: auto;
 }
 
 input:focus {
@@ -792,7 +794,8 @@ input:focus {
 	height: 700px;
 }
 
-#adminPageTabsContainer {
+#adminPageTabsContainer,
+#devmodeTabsContainer {
 	display: flex;
 	height: 95%;
 	color: #d1d1d1;
@@ -803,7 +806,8 @@ input:focus {
 	padding-bottom: 5px;
 }
 
-#adminPageTabsContainer ul {
+#adminPageTabsContainer ul,
+#devmodeTabsContainer ul {
 	display: flex;
 	align-content: flex-start;
 	height: 50px;
@@ -812,7 +816,8 @@ input:focus {
 	padding-left: 5px;
 }
 
-#adminPageTabsContainer li {
+#adminPageTabsContainer li,
+#devmodeTabsContainer li {
 	font-family: 'marskeregular', Arial, sans-serif;
 	display: inline-flex;
 	align-items: center;
@@ -830,13 +835,15 @@ input:focus {
 	font-size: 1.25em;
 }
 
-#adminPageTabsContainer li:hover {
+#adminPageTabsContainer li:hover,
+#devmodeTabsContainer li:hover {
 	background-color: #1e1e1e;
 	cursor: pointer;
 	color: yellow;
 }
 
-#adminPageTabsContainer .activeTab {
+#adminPageTabsContainer .activeTab,
+#devmodeTabsContainer .activeTab {
 	background-color: #1e1e1e;
 }
 
@@ -921,4 +928,12 @@ input:focus {
 .adminAuthKeyboardKey:hover {
 	color: yellow;
 	background-color: #636363;
+}
+
+.scenariosContainer {
+	width: 100%;
+	height: 100%;
+	min-height: 100%;
+	display: flex;
+	align-items: stretch;
 }

@@ -1,10 +1,17 @@
 import unittest
+from unittest import mock
+from unittest.mock import MagicMock, PropertyMock
 
 from core.voice.TalkManager import TalkManager
 
 class TestTalkManager(unittest.TestCase):
 
-	def test_chooseTalk(self):
+	@mock.patch('core.voice.TalkManager.TalkManager.Commons', new_callable=PropertyMock)
+	def test_chooseTalk(self, mock_commons):
+		common_mock = MagicMock()
+		common_mock.getFunctionCaller.return_value = 'TalkManager'
+		mock_commons.return_value = common_mock
+
 		talkManager = TalkManager()
 
 		# when short and default version exist

@@ -1,7 +1,7 @@
 import json
-import re
 from pathlib import Path
-from typing import Optional
+
+import re
 
 from core.ProjectAliceExceptions import LanguageManagerLangNotSupported
 from core.base.model.Manager import Manager
@@ -9,22 +9,19 @@ from core.base.model.Manager import Manager
 
 class LanguageManager(Manager):
 
-	NAME = 'LanguageManager'
-
 	def __init__(self):
-		super().__init__(self.NAME)
-		self._supportedLanguages 		= list()
-		self._activeLanguage 			= ''
-		self._activeCountryCode 		= ''
-		self._defaultLanguage 			= ''
-		self._defaultCountryCode 		= ''
-		self._activeSnipsProjectId 		= ''
+		super().__init__()
+		self._supportedLanguages = list()
+		self._activeLanguage = ''
+		self._activeCountryCode = ''
+		self._defaultLanguage = ''
+		self._defaultCountryCode = ''
 
-		self._stringsData 				= dict()
-		self._locals 					= list()
+		self._stringsData = dict()
+		self._locals = list()
 
-		self._floatExpressionPattern 	= re.compile(r'([0-9]+\.[0-9]+)')
-		self._mathSigns                 = ('+', '-', '/', '*', '%')
+		self._floatExpressionPattern = re.compile(r'([0-9]+\.[0-9]+)')
+		self._mathSigns = ('+', '-', '/', '*', '%')
 
 
 	def onStart(self):
@@ -35,15 +32,15 @@ class LanguageManager(Manager):
 
 	def onBooted(self):
 		data = self.TalkManager.langData
-		if self.NAME in data:
-			self._locals = data[self.NAME]
+		if self._name in data:
+			self._locals = data[self._name]
 
 
 	def sanitizeNluQuery(self, query: str = '') -> str:
 		for sign, langsValues in self._stringsData['system'].items():
 			if sign in self._mathSigns:
 				if sign == '-':
-					query = query.replace(' ' + sign + ' ', langsValues[self.activeLanguage][0])
+					query = query.replace(f' {sign} ', langsValues[self.activeLanguage][0])
 				else:
 					query = query.replace(sign, langsValues[self.activeLanguage][0])
 
@@ -67,10 +64,11 @@ class LanguageManager(Manager):
 				continue
 
 
-	def getTranslations(self, skill: str, key: str, toLang: str = '') -> Optional[list]:
+	def getTranslations(self, skill: str, key: str, toLang: str = '') -> list:
 		if not toLang:
 			toLang = self.activeLanguage
-		if not skill in self._stringsData:
+
+		if skill not in self._stringsData:
 			self.logError(f'Asked to get translation from skill "{skill}" but does not exist')
 			return list()
 		elif key not in self._stringsData[skill]:
@@ -100,7 +98,6 @@ class LanguageManager(Manager):
 			if langCode == activeLangDef:
 				self._activeLanguage = langCode
 				self._activeCountryCode = settings['countryCode']
-				self._activeSnipsProjectId = settings['snipsProjectId']
 
 		if not self._activeLanguage and self._defaultLanguage:
 			self.logWarning(f'No active language defined, falling back to {self._defaultLanguage}')
@@ -120,10 +117,6 @@ class LanguageManager(Manager):
 			self.logWarning('No active language or default language defined, falling back to "en"')
 			self._activeLanguage = self._defaultLanguage = 'en'
 			self._activeCountryCode = self._defaultCountryCode = 'US'
-
-
-		if not self._activeSnipsProjectId:
-			self.logInfo('No active snips project id set')
 
 
 	def localize(self, string: str) -> str:
@@ -152,21 +145,6 @@ class LanguageManager(Manager):
 		self._loadSupportedLanguages()
 
 
-	def changeActiveSnipsProjectIdForLanguage(self, projectId: str, forLang: str):
-		forLang = forLang.lower()
-
-		if forLang not in self._supportedLanguages:
-			raise LanguageManagerLangNotSupported
-
-		self.ConfigManager.changeActiveSnipsProjectIdForLanguage(projectId, forLang)
-		self._loadSupportedLanguages()
-
-
-	@property
-	def activeSnipsProjectId(self) -> str:
-		return self._activeSnipsProjectId
-
-
 	@property
 	def activeLanguage(self) -> str:
 		return self._activeLanguage
@@ -190,7 +168,7 @@ class LanguageManager(Manager):
 	@property
 	def activeLanguageAndCountryCode(self) -> str:
 		return f'{self._activeLanguage}-{self._activeCountryCode}'
-	
+
 
 	@property
 	def supportedLanguages(self) -> list:

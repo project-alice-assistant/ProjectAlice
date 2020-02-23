@@ -4,7 +4,7 @@ from enum import Enum
 class NLUTrainingStatus:
 
 	def __init__(self, data: dict):
-		if not 'nluStatus' in data:
+		if 'nluStatus' not in data:
 			raise Exception('NLU status missing in Snips answer')
 
 		data = data['nluStatus']
@@ -32,7 +32,7 @@ class NLUTrainingStatus:
 class ASRTrainingStatus:
 
 	def __init__(self, data: dict):
-		if not 'nluStatus' in data:
+		if 'nluStatus' not in data:
 			raise Exception('ASR status missing in Snips answer')
 
 		data = data['asrStatus']

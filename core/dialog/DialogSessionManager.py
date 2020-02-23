@@ -16,15 +16,13 @@ class DialogSessionManager(Manager):
 	every skill calls
 	"""
 
-	NAME = 'DialogSessionManager'
-
 	def __init__(self):
-		super().__init__(self.NAME)
+		super().__init__()
 
-		self._preSessions: Dict[str, DialogSession]             = dict()
-		self._sessions: Dict[str, DialogSession]                = dict()
-		self._terminatedSessions: Dict[str, DialogSession]      = dict()
-		self._revivePendingSessions: Dict[str, DialogSession]   = dict()
+		self._preSessions: Dict[str, DialogSession] = dict()
+		self._sessions: Dict[str, DialogSession] = dict()
+		self._terminatedSessions: Dict[str, DialogSession] = dict()
+		self._revivePendingSessions: Dict[str, DialogSession] = dict()
 
 
 	@property
@@ -39,8 +37,7 @@ class DialogSessionManager(Manager):
 		:param siteId: int
 		:param user: string
 		"""
-		session = DialogSession(siteId)
-		session.user = user
+		session = DialogSession(siteId=siteId, user=user)
 		self._preSessions[siteId] = session
 		return session
 

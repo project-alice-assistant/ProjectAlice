@@ -10,10 +10,9 @@ from core.voice.model.TTSEnum import TTSEnum
 
 
 class TTSManager(Manager):
-	NAME = 'TTSManager'
 
 	def __init__(self):
-		super().__init__(self.NAME)
+		super().__init__()
 
 		self._fallback = None
 		self._tts = None
@@ -40,10 +39,7 @@ class TTSManager(Manager):
 		except:
 			tts = TTSEnum.SNIPS
 
-		if tts == TTSEnum.SNIPS:
-			from core.voice.model.SnipsTTS import SnipsTTS
-			self._tts = SnipsTTS(user)
-		elif tts == TTSEnum.PICO:
+		if tts == TTSEnum.PICO:
 			self._tts = PicoTTS(user)
 		elif tts == TTSEnum.MYCROFT:
 			if not Path(Path(self.Commons.rootDir()).parent, 'mimic/voices').is_dir():
@@ -55,10 +51,16 @@ class TTSManager(Manager):
 				self._tts = MycroftTTS(user)
 		elif tts == TTSEnum.AMAZON:
 			from core.voice.model.AmazonTTS import AmazonTTS
+
 			self._tts = AmazonTTS(user)
 		elif tts == TTSEnum.GOOGLE:
-			from core.voice.model.GoogleTTS import GoogleTTS
-			self._tts = GoogleTTS(user)
+			if not Path(self.Commons.rootDir(), 'credentials/googlecredentials.json').exists():
+				self.logWarning('No Google credentials found for Google Wavenet, falling back to pico')
+				self._tts = PicoTTS(user)
+			else:
+				from core.voice.model.GoogleTTS import GoogleTTS
+
+				self._tts = GoogleTTS(user)
 		else:
 			from core.voice.model.SnipsTTS import SnipsTTS
 			self._tts = SnipsTTS(user)

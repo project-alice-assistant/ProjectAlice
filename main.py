@@ -13,13 +13,15 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>
 
     authors: 	            Psycho <https://github.com/Psychokiller1888>
-							maxbachmann <https://github.com/maxbachmann>
+
 	retired or
 	inactive authors:       Jierka <https://github.com/jr-k>
+							maxbachmann <https://github.com/maxbachmann>
 """
 import logging.handlers
 import signal
 import sys
+import time
 import traceback
 from datetime import datetime
 from pathlib import Path
@@ -61,7 +63,6 @@ sys.excepthook = exceptionListener
 
 from core.ProjectAlice import ProjectAlice
 import subprocess
-import time
 
 
 # noinspection PyUnusedLocal
@@ -97,6 +98,7 @@ def main():
 			time.sleep(3)
 			sys.stdout.flush()
 			try:
+				# Close everything related to ProjectAlice, allows restart without component failing
 				p = psutil.Process(os.getpid())
 				for h in p.open_files() + p.connections():
 					os.close(h.fd)

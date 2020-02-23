@@ -3,14 +3,17 @@ import json
 import sqlite3
 from pathlib import Path
 from textwrap import dedent
-from typing import Dict, Optional
+from typing import Dict, Match, Optional
+
+import re
 
 from core.base.model.ProjectAliceObject import ProjectAliceObject
+from core.base.model.widgetSizes import WidgetSizes
 
 
 class Widget(ProjectAliceObject):
+	SIZE = WidgetSizes.w
 
-	SIZE = 'w'
 	OPTIONS = dict()
 
 	def __init__(self, data: sqlite3.Row):
@@ -23,12 +26,11 @@ class Widget(ProjectAliceObject):
 		self._state = data['state'] if 'state' in data.keys() else 0
 		self._x = data['posx'] if 'posx' in data.keys() else 0
 		self._y = data['posy'] if 'posy' in data.keys() else 0
-		self._size = data['size'] if 'size' in data.keys() else self.SIZE
-		options = json.loads(data['options']) if 'options' in data.keys() else self.OPTIONS
-		if options:
-			self._options = {**self.OPTIONS, **options}
-		else:
-			self._options = self.OPTIONS
+		self._size = self.SIZE.value
+
+		self._options = self.OPTIONS
+		if 'options' in data.keys():
+			self._options.update(json.loads(data['options']))
 
 		self._zindex = data['zindex'] if 'zindex' in data.keys() else 9999
 		self._language = self.loadLanguage()
@@ -76,14 +78,26 @@ class Widget(ProjectAliceObject):
 	def html(self) -> str:
 		try:
 			file = self.getCurrentDir() / f'templates/{self.name}.html'
-			return file.open().read()
+			fp = file.open()
+			content = fp.read()
+			# noinspection PyTypeChecker
+			content = re.sub(r'{{ lang\.([\w]*) }}', self.langReplace, content)
+
+			return content
 		except:
 			self.logWarning(f"Widget doesn't have html file")
 			return ''
 
 
+	def langReplace(self, match: Match):
+		return self.getLanguageString(match.group(1))
+
+
 	def getLanguageString(self, key: str) -> str:
-		return self._language.get(key, 'Missing string')
+		try:
+			return self._language[self.LanguageManager.activeLanguage][key]
+		except KeyError:
+			return 'Missing string'
 
 
 	@property
@@ -137,7 +151,7 @@ class Widget(ProjectAliceObject):
 
 
 	@property
-	def size(self) -> str:
+	def size(self) -> WidgetSizes:
 		return self._size
 
 

@@ -19,10 +19,12 @@ mosquitto-clients
 libxml2-dev
 libxslt-dev
 flac
-chromium-driver
 libttspico-utils
 libav-tools
 snips-platform-voice
 snips-watch
 snips-makers-tts
 snips-hotword-model-heysnipsv4
+libatlas-base-dev
+gfortran
+ffmpeg

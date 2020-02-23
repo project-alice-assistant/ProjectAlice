@@ -1,12 +1,11 @@
 import unittest
 from unittest import mock
-from unittest.mock import MagicMock
 
 from core.commons.CommonsManager import CommonsManager
 from core.commons import constants
 
 class TestCommonsManager(unittest.TestCase):
-	
+
 	def test_getFunctionCaller(self):
 		self.assertEqual(CommonsManager.getFunctionCaller(1), 'test_CommonsManager')
 

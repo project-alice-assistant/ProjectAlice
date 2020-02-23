@@ -51,7 +51,7 @@ class AdminAuth(View):
 
 		except Exception as e:
 			self.logError(f'Failed auth trial: {e}')
-		
+
 		return jsonify(success=False)
 
 

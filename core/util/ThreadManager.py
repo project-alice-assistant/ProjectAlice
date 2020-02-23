@@ -8,14 +8,12 @@ from core.util.model.ThreadTimer import ThreadTimer
 
 class ThreadManager(Manager):
 
-	NAME = 'ThreadManager'
-
 	def __init__(self):
-		super().__init__(self.NAME)
+		super().__init__()
 
-		self._timers	= list()
-		self._threads 	= dict()
-		self._events 	= dict()
+		self._timers = list()
+		self._threads = dict()
+		self._events = dict()
 
 
 	def onStop(self):
@@ -33,15 +31,15 @@ class ThreadManager(Manager):
 				event.clear()
 
 	def onQuarterHour(self):
-		i = 0
+		deadTimers = 0
 		for threadTimer in self._timers:
 			if not threadTimer.timer.isAlive():
 				self._timers.remove(threadTimer)
-				i += 1
-		self.logInfo(f'Cleaned {i} dead timers')
+				deadTimers += 1
+		self.logInfo(f'Cleaned {deadTimers} dead timers')
 
 
-	def newTimer(self, interval: float, func: str, autoStart: bool = True, args: list = None, kwargs: dict = None) -> threading.Timer:
+	def newTimer(self, interval: float, func: Callable, autoStart: bool = True, args: list = None, kwargs: dict = None) -> threading.Timer:
 		args = args or list()
 		kwargs = kwargs or dict()
 
@@ -57,7 +55,7 @@ class ThreadManager(Manager):
 		return t
 
 
-	def doLater(self, interval: float, func: str, args: list = None, kwargs: dict = None):
+	def doLater(self, interval: float, func: Callable, args: list = None, kwargs: dict = None):
 		self.newTimer(interval=interval, func=func, args=args, kwargs=kwargs)
 
 
@@ -67,7 +65,7 @@ class ThreadManager(Manager):
 
 
 	def removeTimer(self, t: ThreadTimer):
-		if t.timer.isAlive():
+		if t.timer.is_alive():
 			t.timer.cancel()
 
 		if t in self._timers:
@@ -98,13 +96,13 @@ class ThreadManager(Manager):
 				if t.name == name:
 					thread = t
 
-		if thread and thread.isAlive():
+		if thread and thread.is_alive():
 			thread.join(timeout=1)
 
 
 	def isThreadAlive(self, name: str) -> bool:
 		if name not in self._threads:
-			return any(t.name == name and t.isAlive() for t in threading.enumerate())
+			return any(t.name == name and t.is_alive() for t in threading.enumerate())
 
 		return self._threads[name].isAlive()
 

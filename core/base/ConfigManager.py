@@ -1,15 +1,12 @@
 import json
-import subprocess
+import logging
 from pathlib import Path
 
-import requests
 import shutil
 
 import configTemplate
 from core.base.SkillManager import SkillManager
-from core.base.model.GithubCloner import GithubCloner
 from core.base.model.TomlFile import TomlFile
-from core.base.model.Version import Version
 
 try:
 	# noinspection PyUnresolvedReferences,PyPackageRequirements
@@ -28,10 +25,8 @@ from core.commons import constants
 
 class ConfigManager(Manager):
 
-	NAME = 'ConfigManager'
-
 	def __init__(self):
-		super().__init__(self.NAME)
+		super().__init__()
 
 		self._aliceSkillConfigurationKeys = [
 			'active',
@@ -40,11 +35,7 @@ class ConfigManager(Manager):
 			'conditions'
 		]
 
-		self._vitalConfigs = [
-			'intentsOwner',
-			'snipsConsoleLogin',
-			'snipsConsolePassword'
-		]
+		self._vitalConfigs = list()
 
 		self._aliceConfigurations: typing.Dict[str, typing.Any] = self._loadCheckAndUpdateAliceConfigFile()
 		self._aliceTemplateConfigurations: typing.Dict[str, dict] = configTemplate.settings
@@ -64,7 +55,8 @@ class ConfigManager(Manager):
 
 
 	def _setDefaultSiteId(self):
-		constants.DEFAULT_SITE_ID = self._snipsConfigurations['snips-audio-server']['bind'].replace('@mqtt', '')
+		if self._snipsConfigurations['snips-audio-server']['bind']:
+			constants.DEFAULT_SITE_ID = self._snipsConfigurations['snips-audio-server']['bind'].replace('@mqtt', '')
 
 
 	def _loadCheckAndUpdateAliceConfigFile(self) -> dict:
@@ -107,6 +99,10 @@ class ConfigManager(Manager):
 						self.logInfo(f'- Selected value "{aliceConfigs[setting]}" for setting "{setting}" doesn\'t exist, reverted to default value "{definition["defaultValue"]}"')
 						aliceConfigs[setting] = definition['defaultValue']
 
+		# Setting logger level immediately
+		if aliceConfigs['debug']:
+			logging.getLogger('ProjectAlice').setLevel(logging.DEBUG)
+
 		temp = aliceConfigs.copy()
 
 		for k, v in temp.items():
@@ -131,7 +127,7 @@ class ConfigManager(Manager):
 		if key not in self._aliceConfigurations:
 			self.logWarning(f'Was asked to update {key} but key doesn\'t exist')
 			raise ConfigurationUpdateFailed()
-		
+
 		try:
 			# Remove skill configurations
 			if key == 'skills':
@@ -141,7 +137,6 @@ class ConfigManager(Manager):
 
 		self._aliceConfigurations[key] = value
 		self.writeToAliceConfigurationFile(self.aliceConfigurations)
-		
 
 
 	def updateSkillConfigurationFile(self, skillName: str, key: str, value: typing.Any):
@@ -156,9 +151,9 @@ class ConfigManager(Manager):
 		# Cast value to template defined type
 		vartype = self._skillsTemplateConfigurations[skillName][key]['dataType']
 		if vartype == 'boolean':
-			if value in ('on', 'yes', 'true', 'active'):
+			if value.lower() in {'on', 'yes', 'true', 'active'}:
 				value = True
-			elif value in ('off', 'no', 'false', 'inactive'):
+			elif value.lower() in {'off', 'no', 'false', 'inactive'}:
 				value = False
 		elif vartype == 'integer':
 			try:
@@ -172,7 +167,7 @@ class ConfigManager(Manager):
 			except:
 				self.logWarning(f'Value missmatch for config {key} in skill {skillName}')
 				value = 0.0
-		elif vartype in ('string', 'email', 'password'):
+		elif vartype in {'string', 'email', 'password'}:
 			try:
 				value = str(value)
 			except:
@@ -205,8 +200,8 @@ class ConfigManager(Manager):
 		self._aliceConfigurations = sort
 
 		try:
-			s = json.dumps(sort, indent=4).replace('false', 'False').replace('true', 'True')
-			Path('config.py').write_text(f'settings = {s}')
+			confString = json.dumps(sort, indent=4).replace('false', 'False').replace('true', 'True')
+			Path('config.py').write_text(f'settings = {confString}')
 			importlib.reload(config)
 		except Exception:
 			raise ConfigurationUpdateFailed()
@@ -234,7 +229,7 @@ class ConfigManager(Manager):
 		snipsConfigTemplatePath = Path(self.Commons.rootDir(), 'system/snips/snips.toml')
 
 		if not snipsConfigPath.exists():
-			subprocess.run(['sudo', 'cp', snipsConfigTemplatePath, '/etc/snips.toml'])
+			self.Commons.runRootSystemCommand(['cp', snipsConfigTemplatePath, '/etc/snips.toml'])
 			snipsConfigPath = snipsConfigTemplatePath
 
 		snipsConfig = TomlFile.loadToml(snipsConfigPath)
@@ -270,7 +265,7 @@ class ConfigManager(Manager):
 		:return: config value
 		"""
 		if createIfNotExist and key not in self._snipsConfigurations[parent]:
-			conf = self._snipsConfigurations[parent][key] # TomlFile does auto create missing keys
+			conf = self._snipsConfigurations[parent][key]  # TomlFile does auto create missing keys
 			self._snipsConfigurations.dump()
 			return conf
 
@@ -400,9 +395,9 @@ class ConfigManager(Manager):
 				try:
 					installFile = json.load(Path(skillsPath / skillDirectory / f'{skillName}.install').open())
 					node = {
-						'active'    : True,
-						'version'   : installFile['version'],
-						'author'    : installFile['author'],
+						'active': True,
+						'version': installFile['version'],
+						'author': installFile['author'],
 						'conditions': installFile['conditions']
 					}
 					config = {**config, **node}
@@ -414,14 +409,13 @@ class ConfigManager(Manager):
 						continue
 					else:
 						self.logError(f'- Failed generating default config, scheduling download for skill "{skillName}": {e}')
-						subprocess.run(['wget', f'http://skills.projectalice.ch/{skillName}', '-O', Path(self.Commons.rootDir(), f'system/skillInstallTickets/{skillName}.install')])
+						self.Commons.downloadFile(f'https://skills.projectalice.ch/{skillName}', f'system/skillInstallTickets/{skillName}.install')
 						if skillName in skillsConfigurations:
 							skillsConfigurations.pop(skillName)
 						continue
 
 			if config:
 				skillsConfigurations[skillName] = config
-
 
 		self._skillsConfigurations = {**self._skillsConfigurations, **skillsConfigurations}
 
@@ -472,52 +466,50 @@ class ConfigManager(Manager):
 		return False
 
 
-	def changeActiveSnipsProjectIdForLanguage(self, projectId: str, forLang: str):
-		langConfig = self.getAliceConfigByName('supportedLanguages').copy()
-
-		if forLang in langConfig:
-			langConfig[forLang]['snipsProjectId'] = projectId
-
-		self.updateAliceConfiguration('supportedLanguages', langConfig)
-
-
 	def getAliceConfigType(self, confName: str) -> typing.Optional[str]:
 		# noinspection PyTypeChecker
-		return self._aliceConfigurations.get(confName['dataType'], None)
+		return self._aliceConfigurations.get(confName['dataType'])
 
 
 	def isAliceConfHidden(self, confName: str) -> bool:
 		return confName in self._aliceTemplateConfigurations and \
-			self._aliceTemplateConfigurations.get('display') == 'hidden'
+		       self._aliceTemplateConfigurations.get('display') == 'hidden'
 
 
-	def getSkillsUpdateSource(self) -> str:
-		updateSource = 'master'
-		if self.getAliceConfigByName('updateChannel') == 'master':
-			return updateSource
+	def getAliceConfUpdatePostProcessing(self, confName: str) -> typing.Optional[str]:
+		# Some config need some post processing if updated while Alice is running
+		return self._aliceTemplateConfigurations.get(confName, dict()).get('onUpdate')
 
-		req = requests.get('https://api.github.com/repos/project-alice-assistant/ProjectAliceSkills/branches', auth=GithubCloner.getGithubAuth())
-		result = req.json()
-		if result:
-			userUpdatePref = self.getAliceConfigByName('updateChannel')
-			versions = list()
-			for branch in result:
-				repoVersion = Version(branch['name'])
-				if not repoVersion.isVersionNumber:
-					continue
 
-				if userUpdatePref == 'alpha' and repoVersion.infos['releaseType'] in ('master', 'rc', 'b', 'a'):
-					versions.append(repoVersion)
-				elif userUpdatePref == 'beta' and repoVersion.infos['releaseType'] in ('master', 'rc', 'b'):
-					versions.append(repoVersion)
-				elif userUpdatePref == 'rc' and repoVersion.infos['releaseType'] in ('master', 'rc'):
-					versions.append(repoVersion)
+	def doConfigUpdatePostProcessing(self, functions: set):
+		# Call alice config post processing functions. This will call methods that are needed after a certain setting was
+		# updated while Project Alice was running
+		for function in functions:
+			try:
+				func = getattr(self, function)
+				func()
+			except:
+				self.logWarning(f'Configuration post processing method "{function}" does not exist')
+				continue
 
-			if len(versions) > 0:
-				versions.sort(reverse=True)
-				updateSource = versions[0]
 
-		return updateSource
+	def reconnectMqtt(self):
+		self.MqttManager.reconnect()
+
+
+	def reloadASR(self):
+		self.ASRManager.onStop()
+		self.ASRManager.onStart()
+
+
+	def refreshStoreData(self):
+		self.SkillStoreManager.refreshStoreData()
+
+
+	def getGithubAuth(self) -> tuple:
+		username = self.getAliceConfigByName('githubUsername')
+		token = self.getAliceConfigByName('githubToken')
+		return (username, token) if (username and token) else None
 
 
 	@property

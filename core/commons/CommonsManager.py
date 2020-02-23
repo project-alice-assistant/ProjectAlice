@@ -1,15 +1,19 @@
 import inspect
 import json
 import socket
+import string
+import subprocess
 import time
 from collections import defaultdict
-from contextlib import contextmanager
+from contextlib import contextmanager, suppress
 from ctypes import *
 from datetime import datetime
 from pathlib import Path
-from typing import Union
-from contextlib import suppress
+from typing import Any, Union
 
+import hashlib
+import random
+import requests
 import tempfile
 from googletrans import Translator
 from paho.mqtt.client import MQTTMessage
@@ -24,9 +28,9 @@ from core.dialog.model.DialogSession import DialogSession
 class CommonsManager(Manager):
 
 	ERROR_HANDLER_FUNC = CFUNCTYPE(None, c_char_p, c_int, c_char_p, c_int, c_char_p)
-	
+
 	def __init__(self):
-		super().__init__('Commons')
+		super().__init__(name='Commons')
 
 
 	@staticmethod
@@ -59,7 +63,7 @@ class CommonsManager(Manager):
 
 
 	@staticmethod
-	def dictMaxValue(d: dict) -> str:
+	def dictMaxValue(d: dict) -> Any:
 		return max(d, key=d.get)
 
 
@@ -74,12 +78,12 @@ class CommonsManager(Manager):
 			payload = json.loads(message.payload)
 		except (ValueError, TypeError):
 			payload = dict()
-		
+
 		if payload is True:
 			payload = {'true': True}
 		elif payload is False:
 			payload = {'false': False}
-		
+
 		return payload
 
 
@@ -88,7 +92,7 @@ class CommonsManager(Manager):
 		slots = defaultdict(list)
 		data = cls.payload(message)
 		for slotData in data.get('slots', dict()):
-			slot = slotModel.Slot(slotData)
+			slot = slotModel.Slot(**slotData)
 			slots[slot.slotName].append(slot)
 		return slots
 
@@ -287,8 +291,42 @@ class CommonsManager(Manager):
 		return [result.text for result in Translator().translate(**kwargs)]
 
 
+	def runRootSystemCommand(self, commands: list, shell: bool = False, stdout = subprocess.PIPE, stderr = subprocess.PIPE):
+		if commands[0] != 'sudo':
+			commands.insert(0, 'sudo')
+		return self.runSystemCommand(commands, shell=shell, stdout=stdout, stderr=stderr)
+
+
+	@staticmethod
+	def runSystemCommand(commands: list, shell: bool = False, stdout = subprocess.PIPE, stderr = subprocess.PIPE):
+		return subprocess.run(commands, shell=shell, stdout=stdout, stderr=stderr)
+
+
+	def downloadFile(self, url: str, dest: str) -> bool:
+		try:
+			with Path(self.Commons.rootDir(), dest).open('wb') as fp:
+				fp.write(requests.get(url).content)
+
+			return True
+		except Exception as e:
+			self.logWarning(f'Failed downloading file: {e}')
+			return False
+
+
+	@staticmethod
+	def fileChecksum(file: Path) -> str:
+		return hashlib.blake2b(file.read_bytes()).hexdigest()
+
+
+	@staticmethod
+	def randomString(length: int) -> str:
+		chars = string.ascii_letters + string.digits
+		return ''.join(random.choice(chars) for i in range(length))
+
+
 # noinspection PyUnusedLocal
 def py_error_handler(filename, line, function, err, fmt):
 	pass
+
 
 c_error_handler = CommonsManager.ERROR_HANDLER_FUNC(py_error_handler)

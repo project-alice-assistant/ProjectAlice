@@ -1,15 +1,14 @@
 import json
-from enum import Enum
 from pathlib import Path
 
 import paho.mqtt.client as mqtt
 import shutil
 import struct
 import tempfile
+from enum import Enum
 from pydub import AudioSegment
 
 from core.base.model.Manager import Manager
-from core.commons import constants
 from core.dialog.model.DialogSession import DialogSession
 from core.voice.model.Wakeword import Wakeword
 from core.voice.model.WakewordUploadThread import WakewordUploadThread
@@ -25,19 +24,18 @@ class WakewordManagerState(Enum):
 
 
 class WakewordManager(Manager):
-	NAME = 'WakewordManager'
 
 	RECORD_SECONDS = 2.5
 	THRESHOLD = -40.0
 
 
 	def __init__(self):
-		super().__init__(self.NAME)
+		super().__init__()
 
-		self._state     = WakewordManagerState.IDLE
+		self._state = WakewordManagerState.IDLE
 
-		self._audio     = None
-		self._wakeword  = None
+		self._audio = None
+		self._wakeword = None
 		self._threshold = 0
 		self._wakewordUploadThreads = list()
 		self._sampleRate = self.ConfigManager.getAliceConfigByName('micSampleRate')
@@ -59,9 +57,9 @@ class WakewordManager(Manager):
 
 	def onCaptured(self, session: DialogSession):
 		if self.state == WakewordManagerState.RECORDING:
-			self.MqttManager.mqttClient.unsubscribe(constants.TOPIC_AUDIO_FRAME.format('default'))
-			for device in self.DeviceManager.getDevicesByType('alicesatellite'):
-				self.MqttManager.mqttClient.unsubscribe(constants.TOPIC_AUDIO_FRAME.format(device.room))
+			# self.MqttManager.mqttClient.unsubscribe(constants.TOPIC_AUDIO_FRAME.format('default'))
+			# for device in self.DeviceManager.getDevicesByType('alicesatellite'):
+			# 	self.MqttManager.mqttClient.unsubscribe(constants.TOPIC_AUDIO_FRAME.format(device.room))
 			self._workAudioFile()
 
 
@@ -80,12 +78,16 @@ class WakewordManager(Manager):
 		self.wakeword.newSample()
 		self.state = WakewordManagerState.RECORDING
 
-		self.MqttManager.mqttClient.subscribe(constants.TOPIC_AUDIO_FRAME.format('default'))
-		for device in self.DeviceManager.getDevicesByType('alicesatellite'):
-			self.MqttManager.mqttClient.subscribe(constants.TOPIC_AUDIO_FRAME.format(device.room))
+
+	# self.MqttManager.mqttClient.subscribe(constants.TOPIC_AUDIO_FRAME.format('default'))
+	# for device in self.DeviceManager.getDevicesByType('alicesatellite'):
+	# 	self.MqttManager.mqttClient.subscribe(constants.TOPIC_AUDIO_FRAME.format(device.room))
 
 
-	def onAudioFrame(self, message: mqtt.MQTTMessage):
+	def onAudioFrame(self, message: mqtt.MQTTMessage, siteId: str):
+		if self.state != WakewordManagerState.RECORDING:
+			return
+
 		# @author DasBasti
 		# https://gist.github.com/DasBasti/050bf6c3232d4bb54c741a1f057459d3
 
@@ -155,7 +157,7 @@ class WakewordManager(Manager):
 		startTrim = self.detectLeadingSilence(sound)
 		endTrim = self.detectLeadingSilence(sound.reverse())
 		duration = len(sound)
-		trimmed = sound[startTrim : duration - endTrim]
+		trimmed = sound[startTrim: duration - endTrim]
 		reworked = trimmed.set_frame_rate(16000)
 		reworked = reworked.set_channels(1)
 
@@ -175,7 +177,7 @@ class WakewordManager(Manager):
 
 	def detectLeadingSilence(self, sound):
 		trim = 0
-		while sound[trim : trim + 10].dBFS < self._threshold and trim < len(sound):
+		while sound[trim: trim + 10].dBFS < self._threshold and trim < len(sound):
 			trim += 10
 		return trim
 
@@ -205,28 +207,28 @@ class WakewordManager(Manager):
 		self._state = WakewordManagerState.FINALIZING
 
 		config = {
-			'hotword_key'            : self._wakeword.username.lower(),
-			'kind'                   : 'personal',
-			'dtw_ref'                : 0.22,
-			'from_mfcc'              : 1,
-			'to_mfcc'                : 13,
-			'band_radius'            : 10,
-			'shift'                  : 10,
-			'window_size'            : 10,
-			'sample_rate'            : 16000,
-			'frame_length_ms'        : 25.0,
-			'frame_shift_ms'         : 10.0,
-			'num_mfcc'               : 13,
-			'num_mel_bins'           : 13,
-			'mel_low_freq'           : 20,
-			'cepstral_lifter'        : 22.0,
-			'dither'                 : 0.0,
-			'window_type'            : 'povey',
-			'use_energy'             : False,
-			'energy_floor'           : 0.0,
-			'raw_energy'             : True,
+			'hotword_key': self._wakeword.username.lower(),
+			'kind': 'personal',
+			'dtw_ref': 0.22,
+			'from_mfcc': 1,
+			'to_mfcc': 13,
+			'band_radius': 10,
+			'shift': 10,
+			'window_size': 10,
+			'sample_rate': 16000,
+			'frame_length_ms': 25.0,
+			'frame_shift_ms': 10.0,
+			'num_mfcc': 13,
+			'num_mel_bins': 13,
+			'mel_low_freq': 20,
+			'cepstral_lifter': 22.0,
+			'dither': 0.0,
+			'window_type': 'povey',
+			'use_energy': False,
+			'energy_floor': 0.0,
+			'raw_energy': True,
 			'preemphasis_coefficient': 0.97,
-			'model_version'          : 1
+			'model_version': 1
 		}
 
 		path = Path(self.Commons.rootDir(), 'trained/hotwords', self.wakeword.username.lower())

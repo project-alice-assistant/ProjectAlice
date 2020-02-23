@@ -46,6 +46,17 @@ class SkillsView(View):
 		return self.index()
 
 
+	def reloadSkill(self):
+		try:
+			_, skill = request.form.get('id').split('_')
+			self.logInfo(f'Reloading skill "{skill}"')
+			self.SkillManager.reloadSkill(skill)
+		except Exception as e:
+			self.logWarning(f'Failed reloading skill: {e}', printStack=True)
+
+		return self.index()
+
+
 	def saveSkillSettings(self):
 		skillName = request.form['skillName']
 		for confName, confValue in request.form.items():
@@ -66,7 +77,7 @@ class SkillsView(View):
 			_, author, skill = request.form.get('id').split('_')
 
 			self.WebInterfaceManager.newSkillInstallProcess(skill)
-			req = requests.get(f'https://raw.githubusercontent.com/project-alice-assistant/ProjectAliceSkills/{self.ConfigManager.getSkillsUpdateSource()}/PublishedSkills/{author}/{skill}/{skill}.install')
+			req = requests.get(f'{constants.GITHUB_RAW_URL}/skill_{skill["skill"]}/{self.SkillStoreManager.getSkillUpdateTag(skill["skill"])}/{skill["skill"]}.install')
 			remoteFile = req.json()
 			if not remoteFile:
 				self.WebInterfaceManager.skillInstallProcesses[skill['skill']]['status'] = 'failed'
@@ -86,7 +97,8 @@ class SkillsView(View):
 
 			for skill in skills:
 				self.WebInterfaceManager.newSkillInstallProcess(skill['skill'])
-				req = requests.get(f'https://raw.githubusercontent.com/project-alice-assistant/ProjectAliceSkills/{self.ConfigManager.getSkillsUpdateSource()}/PublishedSkills/{skill["author"]}/{skill["skill"]}/{skill["skill"]}.install')
+
+				req = requests.get(f'{constants.GITHUB_RAW_URL}/skill_{skill["skill"]}/{self.SkillStoreManager.getSkillUpdateTag(skill["skill"])}/{skill["skill"]}.install')
 				remoteFile = req.json()
 				if not remoteFile:
 					self.WebInterfaceManager.skillInstallProcesses[skill['skill']]['status'] = 'failed'
@@ -108,24 +120,28 @@ class SkillsView(View):
 
 
 	def loadStoreData(self):
-		installers = dict()
-		updateSource = self.ConfigManager.getSkillsUpdateSource()
-		req = requests.get(url=f'https://alice.maxbachmann.de/assets/{updateSource}/store/store.json')
-		results = req.json()
-
-		if not results:
-			return dict()
-
-		for skill in results:
-			if 'lang' not in skill['conditions']:
-				skill['conditions']['lang'] = constants.ALL
-			installers[skill['name']] = skill
-
-		aliceVersion = Version(constants.VERSION)
+		self.SkillStoreManager.refreshStoreData()
+		skillStoreData = self.SkillStoreManager.skillStoreData
 		activeLanguage = self.LanguageManager.activeLanguage.lower()
-		return {
-			skillName: skillInfo for skillName, skillInfo in installers.items()
-			if self.SkillManager.getSkillInstance(skillName=skillName, silent=True) is None
-				and aliceVersion >= Version(skillInfo['aliceMinVersion'])
-				and (activeLanguage in skillInfo['conditions']['lang'] or skillInfo['conditions']['lang'] == constants.ALL)
-		}
+		aliceVersion = Version.fromString(constants.VERSION)
+		supportedSkillStoreData = dict()
+
+		for skillName, skillInfo in skillStoreData.items():
+			if self.SkillManager.getSkillInstance(skillName=skillName, silent=True) \
+					or ('lang' in skillInfo['conditions'] and activeLanguage not in skillInfo['conditions']['lang']):
+				continue
+
+			version = Version()
+			for aliceMinVersion, skillVersion in skillInfo['versionMapping'].items():
+				if Version.fromString(aliceMinVersion) > aliceVersion:
+					continue
+
+				skillRepoVersion = Version.fromString(skillVersion)
+
+				if skillRepoVersion > version:
+					version = skillRepoVersion
+
+			skillInfo['version'] = str(version)
+			supportedSkillStoreData[skillName] = skillInfo
+
+		return supportedSkillStoreData

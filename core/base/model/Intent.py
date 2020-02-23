@@ -1,66 +1,45 @@
-from pathlib import Path
-from typing import Dict, Callable, Optional
+from dataclasses import dataclass, field
+from typing import Callable, Dict, Optional, Union
 
-from core.base.model.ProjectAliceObject import ProjectAliceObject
+import core.base.SuperManager as SM
+from core.user.model.AccessLevels import AccessLevel
 
-class Intent(ProjectAliceObject):
 
-	def __init__(self, _value: str, isProtected: bool = False, userIntent: bool = True, authOnly = 0):
-		self._owner = self.ConfigManager.getAliceConfigByName('intentsOwner')
-		self._topic = f'hermes/intent/{self._owner}:{_value}' if userIntent else _value
-		self._protected = isProtected
-		self._authOnly = int(authOnly)
-		self._dialogMapping = dict()
-		self._fallbackFunction = None
+@dataclass
+class Intent:
+	topic: str = field(init=False)
+	action: str = field(repr=False)
+	isProtected: bool = False
+	userIntent: bool = True
+	authLevel: AccessLevel = AccessLevel.ZERO
+	fallbackFunction: Optional[Callable] = None
+	_dialogMapping: dict = field(default_factory=dict)
 
-		if isProtected:
-			self.ProtectedIntentManager.protectIntent(self._topic)
 
-		super().__init__()
+	def __post_init__(self):
+		self.topic = f'hermes/intent/{self.action}' if self.userIntent else self.action
+		if self.isProtected:
+			SM.SuperManager.getInstance().protectedIntentManager.protectIntent(self.topic)
 
 
 	def __str__(self) -> str:
-		return self._topic
+		return self.topic
 
 
 	def __repr__(self) -> str:
-		return self._topic
-
-
-	def __eq__(self, other) -> bool:
-		return self._topic == other
+		return self.topic
 
 
 	def __hash__(self) -> int:
-		return hash(self._topic)
+		return hash(self.topic)
 
 
-	def decoratedSelf(self) -> str:
-		return self._topic.format(owner=self._owner)
+	def __eq__(self, other: str) -> bool:
+		return self.topic == other
 
 
-	def hasDialogMapping(self) -> bool:
-		return bool(self.dialogMapping)
-
-
-	@property
-	def protected(self) -> bool:
-		return self._protected
-
-
-	@property
-	def owner(self) -> str:
-		return self._owner
-
-
-	@property
-	def justTopic(self) -> str:
-		return Path(self._topic).name
-
-
-	@property
-	def justAction(self) -> str:
-		return self.justTopic.split(':')[-1]
+	def __ne__(self, other) -> bool:
+		return self.topic != other
 
 
 	@property
@@ -69,33 +48,25 @@ class Intent(ProjectAliceObject):
 
 
 	@dialogMapping.setter
-	def dialogMapping(self, value: Dict[str, Callable]):
-		self._dialogMapping = value
+	def dialogMapping(self, value: Union[Dict[str, Callable], property]):
+		skillName = SM.SuperManager.getInstance().commonsManager.getFunctionCaller(depth=2)
+		if isinstance(value, property):
+			self._dialogMapping = dict()
+		else:
+			self._dialogMapping = {
+				f'{skillName}:{dialogState}': func for dialogState, func in value.items()
+			}
 
 
 	@property
-	def fallbackFunction(self) -> Callable:
-		return self._fallbackFunction
+	def justTopic(self) -> str:
+		return self.action
 
 
-	@fallbackFunction.setter
-	def fallbackFunction(self, value: Callable):
-		self._fallbackFunction = value
-
-
-	@property
-	def authOnly(self):
-		return self._authOnly
-
-
-	@authOnly.setter
-	def authOnly(self, value):
-		self._authOnly = int(value)
-
-
-	def addDialogMapping(self, value: Dict[str, Callable]):
-		self._dialogMapping.update(value)
+	def addDialogMapping(self, value: Dict[str, Callable], skillName: str):
+		for dialogState, func in value.items():
+			self.dialogMapping[f'{skillName}:{dialogState}'] = func
 
 
 	def getMapping(self, session) -> Optional[Callable]:
-		return self._dialogMapping.get(session.currentState, self._fallbackFunction)
+		return self.dialogMapping.get(session.currentState, self.fallbackFunction)

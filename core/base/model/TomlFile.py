@@ -7,6 +7,7 @@ from textwrap import dedent
 from typing import Any, Dict, ItemsView, Optional, Union, ValuesView
 
 import re
+import tempfile
 
 from core.base.model.ProjectAliceObject import ProjectAliceObject
 
@@ -66,8 +67,8 @@ class TomlFile(ProjectAliceObject):
 		writePath = self._path
 
 		try:
-			if not self.Commons.isWritable(self._path):
-				raise Exception
+			test = tempfile.TemporaryFile(dir=path)
+			test.close()
 		except Exception:
 			writePath = Path(writePath.stem).with_suffix('.toml')
 
@@ -145,7 +146,7 @@ class TomlFile(ProjectAliceObject):
 		"""
 		if self._loaded:
 			try:
-				self._data[list(self._data.keys())[-1]].addEmptiness()
+				self._data[list(self._data)[-1]].addEmptiness()
 			except Exception:
 				# No need to add new emptiness
 				pass

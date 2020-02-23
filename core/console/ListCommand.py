@@ -1,7 +1,7 @@
 import random
 import click
 import requests
-from terminaltables import SingleTable # type: ignore
+from terminaltables import SingleTable  # type: ignore
 from core.base.SkillManager import SkillManager
 from core.console.Helpers import OptionEatAll
 from core.base.SuperManager import SuperManager

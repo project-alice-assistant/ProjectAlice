@@ -6,14 +6,14 @@ from core.base.model.ProjectAliceObject import ProjectAliceObject
 
 class Manager(ProjectAliceObject):
 
-	def __init__(self, name: str, databaseSchema: dict = None):
+	def __init__(self, name: str = '', databaseSchema: dict = None):
 		super().__init__(logDepth=3)
 
-		self._name              = name
-		self._databaseSchema    = databaseSchema
-		self._isActive          = True
+		self._name = self.Commons.getFunctionCaller(depth=2) if not name else name
+		self._databaseSchema = databaseSchema
+		self._isActive = True
 
-		self.logInfo(f'Initializing {name}')
+		self.logInfo(f'Initializing {self._name}')
 
 
 	@property

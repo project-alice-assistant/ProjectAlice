@@ -1,22 +1,17 @@
-import os
-
 from core.base.model.Manager import Manager
 
 
 class ProtectedIntentManager(Manager):
 
-	NAME = 'ProtectedIntentManager'
-
 	def __init__(self):
-		super().__init__(self.NAME)
+		super().__init__()
 
 		# Protected intents cannot be randomly rejected by Alice
-		self._protectedIntents = list()
+		self._protectedIntents = set()
 
 
 	def protectIntent(self, intentName: str):
-		if intentName not in self._protectedIntents:
-			self._protectedIntents.append(intentName)
+		self._protectedIntents.add(intentName)
 
 
 	def isProtectedIntent(self, intentName: str) -> bool:
@@ -24,5 +19,5 @@ class ProtectedIntentManager(Manager):
 
 
 	@property
-	def protectedIntents(self) -> list:
+	def protectedIntents(self) -> set:
 		return self._protectedIntents

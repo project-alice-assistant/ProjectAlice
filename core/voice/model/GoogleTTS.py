@@ -1,4 +1,3 @@
-import re
 import subprocess
 from pathlib import Path
 
@@ -53,32 +52,32 @@ class GoogleTTS(TTS):
 					'en-US-Standard-C': {
 						'neural': False
 					},
-					'en-US-Standard-E' : {
+					'en-US-Standard-E': {
 						'neural': False
 					},
 					'en-US-Wavenet-C': {
 						'neural': True
 					},
-					'en-US-Wavenet-E' : {
+					'en-US-Wavenet-E': {
 						'neural': True
 					},
-					'en-US-Wavenet-F' : {
+					'en-US-Wavenet-F': {
 						'neural': True
 					}
 				}
 			},
 			'fr-FR': {
-				'male'  : {
+				'male': {
 					'fr-FR-Standard-B': {
 						'neural': False
 					},
 					'fr-FR-Standard-D': {
 						'neural': False
 					},
-					'fr-FR-Wavenet-B' : {
+					'fr-FR-Wavenet-B': {
 						'neural': True
 					},
-					'fr-FR-Wavenet-D' : {
+					'fr-FR-Wavenet-D': {
 						'neural': True
 					}
 				},
@@ -89,23 +88,23 @@ class GoogleTTS(TTS):
 					'fr-FR-Standard-C': {
 						'neural': False
 					},
-					'fr-FR-Wavenet-A' : {
+					'fr-FR-Wavenet-A': {
 						'neural': True
 					},
-					'fr-FR-Wavenet-C' : {
+					'fr-FR-Wavenet-C': {
 						'neural': True
 					}
 				}
 			},
 			'de-DE': {
-				'male'  : {
+				'male': {
 					'de-DE-Standard-B': {
 						'neural': False
 					},
-					'de-DE-Wavenet-B' : {
+					'de-DE-Wavenet-B': {
 						'neural': True
 					},
-					'de-DE-Wavenet-D' : {
+					'de-DE-Wavenet-D': {
 						'neural': True
 					}
 				},
@@ -113,10 +112,10 @@ class GoogleTTS(TTS):
 					'de-DE-Standard-A': {
 						'neural': False
 					},
-					'de-DE-Wavenet-A' : {
+					'de-DE-Wavenet-A': {
 						'neural': True
 					},
-					'de-DE-Wavenet-C' : {
+					'de-DE-Wavenet-C': {
 						'neural': True
 					}
 				}
@@ -128,7 +127,7 @@ class GoogleTTS(TTS):
 	def _checkText(session: DialogSession) -> str:
 		text = session.payload['text']
 
-		if not re.search('<speak>', text):
+		if not '<speak>' in text:
 			text = f'<speak>{text}</speak>'
 
 		return text

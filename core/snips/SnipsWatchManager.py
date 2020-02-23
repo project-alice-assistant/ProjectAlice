@@ -1,11 +1,11 @@
-import re
 import subprocess
-import tempfile
 import time
 from pathlib import Path
 
+import re
+import tempfile
 # noinspection PyUnresolvedReferences
-from fcntl import fcntl, F_GETFL, F_SETFL
+from fcntl import F_GETFL, F_SETFL, fcntl
 # noinspection PyUnresolvedReferences
 from os import O_NONBLOCK
 
@@ -14,10 +14,8 @@ from core.base.model.Manager import Manager
 
 class SnipsWatchManager(Manager):
 
-	NAME = 'SnipsWatchManager'
-
 	def __init__(self):
-		super().__init__(self.NAME)
+		super().__init__()
 		self._counter = 0
 		self._thread = None
 		self._file = Path(tempfile.gettempdir(), 'snipswatch')

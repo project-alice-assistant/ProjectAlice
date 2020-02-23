@@ -7,7 +7,7 @@ from core.console.ListCommand import List
 from core.console.SyncCommand import Sync
 from core.console.UpdateCommand import Update
 
-@click.group(context_settings={'help_option_names':['--help', '-h']})
+@click.group(context_settings={'help_option_names': ['--help', '-h']})
 def cli():
 		"""
 		This is the Command Line Interface of Project Alice.

@@ -6,7 +6,7 @@
 
 {% block loaders %}
 	<script type="text/javascript">
-		updateChannel = '{{ aliceSettings['+updateChannel+'] }}';
+		updateChannel = '{{ aliceSettings['+skillsUpdateChannel+'] }}';
 	</script>
 	<script src="{{ url_for('static', filename='js/skills.js') }}"></script>
 {% endblock %}
@@ -64,23 +64,23 @@
 					{% endif %}
 				{% endfor %}
 				<input type="hidden" name="skillName" value="{{ skillName }}">
-				<input class="configSaveButton" type="submit" value="{{ langData.save }}">
+				<input class="button" type="submit" value="{{ langData.save }}">
 			</form>
 		</div>
 	{% endfor %}
 	<div class="toolbar">
 		<span class="toolbarButton" id="openSkillStore">
-			<i class="fas fa-download"></i>
+			<i class="fas fa-download" aria-hidden="true"></i>
 		</span>
 		<span class="toolbarButton" id="applySkillStore">
-			<i class="fas fa-cloud-download-alt"></i>
+			<i class="fas fa-cloud-download-alt" aria-hidden="true"></i>
 		</span>
 		<span class="toolbarButton" id="closeSkillStore">
-			<i class="fas fa-times-circle"></i>
+			<i class="fas fa-times-circle" aria-hidden="true"></i>
 		</span>
 	</div>
 	<div class="skillsStore" id="skillsStore">
-		<div class="skillStoreWait" id="skillStoreWait"><i class="fas fa-spinner fa-spin"></i></div>
+		<div class="skillStoreWait" id="skillStoreWait"><i class="fas fa-spinner fa-spin" aria-hidden="true"></i></div>
 	</div>
 	<div class="skillsPane" id="skillsPane">
 	{% for skillName, skill in skills.items() %}
@@ -90,20 +90,20 @@
 			</div>
 			<div class="skillContainer skillDefaultView">
 				<div class="skillAuthor">
-					<i class="fas fa-user-cog fa-pull-left"></i> {{ skill.author }}
+					<i class="fas fa-user-cog fa-pull-left" aria-hidden="true"></i> {{ skill.author }}
 				</div>
 				<div class="skillVersion">
-					<i class="fas fa-code-branch fa-pull-left"></i> {{ skill.version }}
+					<i class="fas fa-code-branch fa-pull-left" aria-hidden="true"></i> {{ skill.version }}
 				</div>
 				<div class="skillStatus {% if skill.active is sameas true %}active{% else %}disabled{% endif %}">
 					{{ langData.status }}: {% if skill.active is sameas true %}enabled{% else %}disabled{% endif %}
 				</div>
 				<div class="skillViewIntents">
-					 {{ langData.viewIntents }} <i class="fas fa-eye"></i>
+					 {{ langData.viewIntents }} <i class="fas fa-eye" aria-hidden="true"></i>
 				</div>
 				{% if skill.getSkillConfigs()|length %}
 					<div class="skillSettings" data-forSkill="{{ skillName }}">
-						{{ langData.skillSettings }} <i class="fas fa-cog"></i>
+						{{ langData.skillSettings }} <i class="fas fa-cog" aria-hidden="true"></i>
 					</div>
 				{% endif %}
 				<div class="skillActions">
@@ -119,17 +119,22 @@
 					</div>
 					{% if skill.updateAvailable is sameas true %}
 						<div class="skillUpdating" id="update_{{ skill.author }}_{{ skillName }}_animation">
-							<i class="fas fa-spinner fa-spin"></i>
+							<i class="fas fa-spinner fa-spin" aria-hidden="true"></i>
 						</div>
 						<div class="skillButton" id="update_{{ skill.author }}_{{ skillName }}">
 							{{ langData.updatee }}
+						</div>
+					{% endif %}
+					{% if aliceSettings['devMode'] is sameas true %}
+						<div class="skillButton" id="reload_{{ skillName }}">
+							{{ langData.reload }}
 						</div>
 					{% endif %}
 				</div>
 			</div>
 			<div class="skillContainer skillIntentsView">
 				<div class="skillIntentsViewCloseButton">
-					<i class="fas fa-times-circle"></i>
+					<i class="fas fa-times-circle" aria-hidden="true"></i>
 				</div>
 				<div class="skillsIntentsViewList">
 					{% for intent in skill.supportedIntents.values() %}
