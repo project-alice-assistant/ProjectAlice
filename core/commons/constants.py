@@ -1,4 +1,4 @@
-VERSION = '1.0.0-a5'
+VERSION = '1.0.0-a6'
 DEFAULT_SITE_ID = 'default'
 DEFAULT = 'default'
 UNKNOWN_WORD = 'unknownword'
