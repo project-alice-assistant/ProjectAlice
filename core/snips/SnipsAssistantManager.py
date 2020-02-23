@@ -130,7 +130,7 @@ class SnipsAssistantManager(Manager):
 							entityVSType[f'{slot["type"]}_{slot["name"]}'] = f'{rand9}'
 						else:
 
-							# Check if a slot with same type and name already exist and use it's id, else use the new random
+							# Check if a slot with same type and name already exists and use its id else use the new random
 							slotId = entityVSType.get(f'{slot["type"]}_{slot["name"]}', rand9)
 
 							intentSlot = {
