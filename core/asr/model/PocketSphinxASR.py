@@ -77,6 +77,15 @@ class PocketSphinxASR(ASR):
 		return True
 
 
+	def timeout(self):
+		super().timeout()
+		try:
+			self._decoder.end_utt()
+		except:
+			# If this fails we don't care, at least we tried to close the utterance
+			pass
+
+
 	def downloadLanguage(self) -> bool:
 		self.logInfo(f'Downloading language model for "{self.LanguageManager.activeLanguage}"')
 
