@@ -45,12 +45,16 @@ class DevModeView(View):
 
 			url = f'https://github.com/{self.ConfigManager.getAliceConfigByName("githubUsername")}/{skillName}.git'
 
-			shutil.rmtree(Path(self.Commons.rootDir(), f'skills/skill_{skillName}/.git'))
-			self.Commons.runSystemCmd(['git', 'init'])
-			self.Commons.runSystemCmd(['git', 'remote', 'add', 'origin', url])
-			self.Commons.runSystemCmd(['git', 'add', '--all'])
-			self.Commons.runSystemCmd(['git', 'commit', '-am', '"Initial upload"'])
-			self.Commons.runSystemCmd(['git', 'push', '--set-upstream', 'origin', 'master'])
+			localDirectory = Path(self.Commons.rootDir(), f'skills/skill_{skillName}')
+			shutil.rmtree(Path(localDirectory, '.git'))
+
+			self.Commons.runSystemCmd(['git', '-C', str(localDirectory), 'config', 'user.name', f'"{self.ConfigManager.getAliceConfigByName("githubUsername")}"'])
+			self.Commons.runSystemCmd(['git', '-C', str(localDirectory), 'config', 'user.password', f'"{self.ConfigManager.getAliceConfigByName("githubToken")}"'])
+			self.Commons.runSystemCmd(['git', '-C', str(localDirectory), 'init'])
+			self.Commons.runSystemCmd(['git', '-C', str(localDirectory), 'remote', 'add', 'origin', url])
+			self.Commons.runSystemCmd(['git', '-C', str(localDirectory), 'add', '--all'])
+			self.Commons.runSystemCmd(['git', '-C', str(localDirectory), 'commit', '-am', '"Initial upload"'])
+			self.Commons.runSystemCmd(['git', '-C', str(localDirectory), 'push', '--set-upstream', 'origin', 'master'])
 
 			return jsonify(success=True, url=url)
 
