@@ -120,11 +120,18 @@ $(function () {
 				'skillDesc': $('#skilldesc').val()
 			}
 		}).done(function (status) {
-			$('#uploadSkillButton').hide();
+			if (status['success']) {
+				$('#uploadSkillButton').hide();
+				$('#goGithubButton').text(status['url']).show();
+			}
 		});
 	});
 
 	$('#resetSkillButton').on('click touchstart', function () {
 		resetSkillPage();
-	})
+	});
+
+	$('#goGithubButton').on('click touchstart', function () {
+		window.open($(this).text());
+	});
 });

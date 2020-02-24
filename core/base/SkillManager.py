@@ -1,11 +1,11 @@
 import importlib
 import json
+import os
+import shutil
 from pathlib import Path
 from typing import Dict, Optional
 
-import os
 import requests
-import shutil
 
 from core.ProjectAliceExceptions import GithubNotFound, GithubRateLimit, GithubTokenFailed, SkillNotConditionCompliant, SkillStartDelayed, SkillStartingFailed
 from core.base.SuperManager import SuperManager
@@ -693,11 +693,9 @@ class SkillManager(Manager):
 			skillTemplateDir = rootDir / 'skill_DefaultTemplate'
 
 			if skillTemplateDir.exists():
-				self.Commons.runSystemCommand(['git', '-C', str(rootDir), 'stash'])
-				self.Commons.runSystemCommand(['git', '-C', str(rootDir), 'clear', '-dfx'])
-				self.Commons.runSystemCommand(['git', '-C', str(rootDir), 'pull'])
-			else:
-				self.Commons.runSystemCommand(['git', '-C', str(rootDir), 'clone', f'{constants.GITHUB_URL}/skill_DefaultTemplate.git'])
+				shutil.rmtree(skillTemplateDir)
+
+			self.Commons.runSystemCommand(['git', '-C', str(rootDir), 'clone', f'{constants.GITHUB_URL}/skill_DefaultTemplate.git'])
 
 			skillName = skillDefinition['name'][0].upper() + skillDefinition['name'][1:]
 			skillDir = rootDir / skillName

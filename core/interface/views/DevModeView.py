@@ -1,4 +1,6 @@
 import json
+import shutil
+from pathlib import Path
 
 import requests as requests
 from flask import jsonify, render_template, request
@@ -38,10 +40,19 @@ class DevModeView(View):
 			}
 			req = requests.post('https://api.github.com/user/repos', data=json.dumps(data), auth=GithubCloner.getGithubAuth())
 
-			if req.status_code == 201:
-				return jsonify(success=True)
-			else:
+			if req.status_code != 201:
 				raise Exception
+
+			url = f'https://github.com/{self.ConfigManager.getAliceConfigByName("githubUsername")}/{skillName}.git'
+
+			shutil.rmtree(Path(self.Commons.rootDir(), f'skills/skill_{skillName}/.git'))
+			self.Commons.runSystemCmd(['git', 'init'])
+			self.Commons.runSystemCmd(['git', 'remote', 'add', 'origin', url])
+			self.Commons.runSystemCmd(['git', 'add', '--all'])
+			self.Commons.runSystemCmd(['git', 'commit', '-am', '"Initial upload"'])
+			self.Commons.runSystemCmd(['git', 'push', '--set-upstream', 'origin', 'master'])
+
+			return jsonify(success=True, url=url)
 
 		except Exception as e:
 			self.logError(f'Failed uploading to github: {e}')
