@@ -26,7 +26,7 @@ class DevModeView(View):
 				raise Exception
 
 			if self.SkillManager.uploadSkillToGithub(skillName, skillDesc):
-				return jsonify(success=True, url=f'https://github.com/{self.ConfigManager.getAliceConfigByName("githubUsername")}/{skillName}.git')
+				return jsonify(success=True, url=f'https://github.com/{self.ConfigManager.getAliceConfigByName("githubUsername")}/skill_{skillName}.git')
 
 			return jsonify(success=False)
 		except Exception as e:

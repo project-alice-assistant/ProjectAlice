@@ -20,7 +20,8 @@ $(function () {
 		$('#skillNameKo').show();
 		$('#skillDescOk').hide();
 		$('#skillDescKo').show();
-		$('#uploadSkillButton').hide()
+		$('#uploadSkillButton').hide();
+		$('#goGithubButton').hide();
 	}
 
 
@@ -122,7 +123,7 @@ $(function () {
 		}).done(function (status) {
 			if (status['success']) {
 				$('#uploadSkillButton').hide();
-				$('#goGithubButton').text(status['url']).show();
+				$('#goGithubButton').text(status['url']).prop('disabled', false).show();
 			}
 		});
 	});

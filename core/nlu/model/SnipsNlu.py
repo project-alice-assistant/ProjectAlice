@@ -1,6 +1,7 @@
 import json
 from pathlib import Path
 
+import random
 import re
 import shutil
 
@@ -18,6 +19,7 @@ class SnipsNlu(NluEngine):
 	def __init__(self):
 		super().__init__()
 		self._cachePath = Path(self.Commons.rootDir(), f'var/cache/nlu/trainingData')
+		self._timer = None
 
 
 	def start(self):
@@ -127,6 +129,7 @@ class SnipsNlu(NluEngine):
 	def nluTrainingThread(self, datasetFile: Path):
 		with Stopwatch() as stopWatch:
 			self.logInfo('Begin training...')
+			self._timer = self.ThreadManager.newTimer(interval=10, func=self.trainingStatus)
 
 			tempTrainingData = Path('/tmp/snipsNLU')
 
@@ -141,6 +144,8 @@ class SnipsNlu(NluEngine):
 				self.logError('Snips NLU training failed')
 				if not assistantPath.exists():
 					self.logFatal('No NLU engine found, cannot start')
+
+				self._timer.cancel()
 				return
 
 			if assistantPath.exists():
@@ -151,7 +156,13 @@ class SnipsNlu(NluEngine):
 			self.broadcast(method=constants.EVENT_NLU_TRAINED, exceptions=[constants.DUMMY], propagateToSkills=True)
 			self.SnipsServicesManager.runCmd(cmd='restart', services=['snips-nlu'])
 
+		self._timer.cancel()
 		self.logInfo(f'Snips NLU trained in {stopWatch} seconds')
+
+
+	def trainingStatus(self):
+		self.logInfo(random.choice(['Still training...', "Don't worry, I'm still training", 'Still on it', 'Takes time, I know', 'Working...', 'Working as fast as I can!']))
+		self._timer = self.ThreadManager.newTimer(interval=10, func=self.trainingStatus)
 
 
 	@staticmethod

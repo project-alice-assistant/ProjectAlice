@@ -1,3 +1,4 @@
+import getpass
 import importlib
 import json
 from pathlib import Path
@@ -842,9 +843,16 @@ class SkillManager(Manager):
 
 	def uploadSkillToGithub(self, skillName: str, skillDesc: str) -> bool:
 		try:
+			self.logInfo(f'Uploading {skillName} to Github')
+
 			skillName = skillName[0].upper() + skillName[1:]
+
+			localDirectory = Path('/home', getpass.getuser(), f'ProjectAlice/skills/{skillName}')
+			if not localDirectory.exists():
+				raise Exception("Local skill doesn't exist")
+
 			data = {
-				'name'       : skillName,
+				'name'       : f'skill_{skillName}',
 				'description': skillDesc,
 				'has-issues' : True,
 				'has-wiki'   : False
@@ -852,18 +860,19 @@ class SkillManager(Manager):
 			req = requests.post('https://api.github.com/user/repos', data=json.dumps(data), auth=GithubCloner.getGithubAuth())
 
 			if req.status_code != 201:
-				raise Exception
+				raise Exception("Couldn't create the repository on Github")
 
-			localDirectory = Path(self.Commons.rootDir(), f'skills/skill_{skillName}')
+			url = f'https://github.com/{self.ConfigManager.getAliceConfigByName("githubUsername")}/skill_{skillName}.git'
 			self.Commons.runSystemCommand(['rm', '-rf', f'{str(localDirectory)}/.git'])
-			self.Commons.runSystemCommand(['git', '-C', str(localDirectory), 'config', 'user.name', f'"{self.ConfigManager.getAliceConfigByName("githubUsername")}"'])
-			self.Commons.runSystemCommand(['git', '-C', str(localDirectory), 'config', 'user.password', f'"{self.ConfigManager.getAliceConfigByName("githubToken")}"'])
 			self.Commons.runSystemCommand(['git', '-C', str(localDirectory), 'init'])
-			self.Commons.runSystemCommand(['git', '-C', str(localDirectory), 'remote', 'add', 'origin', f'https://github.com/{self.ConfigManager.getAliceConfigByName("githubUsername")}/{skillName}.git'])
+			# self.Commons.runSystemCommand(['git', '-C', str(localDirectory), 'config', 'user.name', f'"{self.ConfigManager.getAliceConfigByName("githubUsername")}"'])
+			# self.Commons.runSystemCommand(['git', '-C', str(localDirectory), 'config', 'user.password', f'"{self.ConfigManager.getAliceConfigByName("githubToken")}"'])
+			self.Commons.runSystemCommand(['git', '-C', str(localDirectory), 'remote', 'add', 'origin', url])
 			self.Commons.runSystemCommand(['git', '-C', str(localDirectory), 'add', '--all'])
-			self.Commons.runSystemCommand(['git', '-C', str(localDirectory), 'commit', '-am', '"Initial upload"'])
-			self.Commons.runSystemCommand(['git', '-C', str(localDirectory), 'push', '--set-upstream', 'origin', 'master'])
+			self.Commons.runSystemCommand(['git', '-C', str(localDirectory), 'commit', '-m', '"Initial upload"'])
+			self.Commons.runSystemCommand(['git', '-C', str(localDirectory), 'push', f'https://{self.ConfigManager.getAliceConfigByName("githubUsername")}:{self.ConfigManager.getAliceConfigByName("githubToken")}@github.com/{self.ConfigManager.getAliceConfigByName("githubUsername")}/skill_{skillName}.git', '--set-upstream', 'origin', 'master'])
 
+			self.logInfo(f'Skill uploaded! You can find it on {url}')
 			return True
 		except Exception as e:
 			self.logWarning(f'Something went wrong uploading skill to Github: {e}')
