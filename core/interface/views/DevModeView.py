@@ -1,11 +1,5 @@
-import json
-import shutil
-from pathlib import Path
-
-import requests as requests
 from flask import jsonify, render_template, request
 
-from core.base.model.GithubCloner import GithubCloner
 from core.interface.model.View import View
 
 
@@ -31,33 +25,10 @@ class DevModeView(View):
 			if not skillName:
 				raise Exception
 
-			skillName = skillName[0].upper() + skillName[1:]
-			data = {
-				'name'       : skillName,
-				'description': skillDesc,
-				'has-issues' : True,
-				'has-wiki'   : False
-			}
-			req = requests.post('https://api.github.com/user/repos', data=json.dumps(data), auth=GithubCloner.getGithubAuth())
+			if self.SkillManager.uploadSkillToGithub(skillName, skillDesc):
+				return jsonify(success=True, url=f'https://github.com/{self.ConfigManager.getAliceConfigByName("githubUsername")}/{skillName}.git')
 
-			if req.status_code != 201:
-				raise Exception
-
-			url = f'https://github.com/{self.ConfigManager.getAliceConfigByName("githubUsername")}/{skillName}.git'
-
-			localDirectory = Path(self.Commons.rootDir(), f'skills/skill_{skillName}')
-			shutil.rmtree(Path(localDirectory, '.git'))
-
-			self.Commons.runSystemCmd(['git', '-C', str(localDirectory), 'config', 'user.name', f'"{self.ConfigManager.getAliceConfigByName("githubUsername")}"'])
-			self.Commons.runSystemCmd(['git', '-C', str(localDirectory), 'config', 'user.password', f'"{self.ConfigManager.getAliceConfigByName("githubToken")}"'])
-			self.Commons.runSystemCmd(['git', '-C', str(localDirectory), 'init'])
-			self.Commons.runSystemCmd(['git', '-C', str(localDirectory), 'remote', 'add', 'origin', url])
-			self.Commons.runSystemCmd(['git', '-C', str(localDirectory), 'add', '--all'])
-			self.Commons.runSystemCmd(['git', '-C', str(localDirectory), 'commit', '-am', '"Initial upload"'])
-			self.Commons.runSystemCmd(['git', '-C', str(localDirectory), 'push', '--set-upstream', 'origin', 'master'])
-
-			return jsonify(success=True, url=url)
-
+			return jsonify(success=False)
 		except Exception as e:
 			self.logError(f'Failed uploading to github: {e}')
 			return jsonify(success=False)
