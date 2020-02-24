@@ -145,7 +145,7 @@ class SnipsAssistantManager(Manager):
 
 			assistant['intents'] = [intent for intent in intents.values()]
 
-			self.Commons.runRootSystemCommand(['ln', '-sfn', self.Commons.rootDir() + f'/trained/assistants/assistant_{self.LanguageManager.activeLanguage}', self.Commons.rootDir() + '/assistant'])
+			self.linkAssistant()
 
 			with self._assistantPath.open('w') as fp:
 				fp.write(json.dumps(assistant, ensure_ascii=False, indent=4, sort_keys=True))
@@ -162,6 +162,10 @@ class SnipsAssistantManager(Manager):
 			self.broadcast(method='snipsAssistantFailedTraining', exceptions=[self.name], propagateToSkills=True)
 			if not self._assistantPath.exists():
 				self.logFatal(f'Assistant failed training and no assistant existing, stopping here, sorry.... What happened? {e}')
+
+
+	def linkAssistant(self):
+		self.Commons.runRootSystemCommand(['ln', '-sfn', self.Commons.rootDir() + f'/trained/assistants/assistant_{self.LanguageManager.activeLanguage}', self.Commons.rootDir() + '/assistant'])
 
 
 	def generateAssistant(self) -> dict:

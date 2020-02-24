@@ -29,6 +29,13 @@ class NluManager(Manager):
 
 
 	def isTrainingNeeded(self):
+		if not Path(self.Commons.rootDir(), f'assistant/nlu_engine').exists():
+			if Path(self.Commons.rootDir(), f'trained/assistants/assistant_{self.LanguageManager.activeLanguage}/nlu_engine').exists():
+				self.SnipsAssistantManager.linkAssistant()
+			else:
+				self.logWarning('NLU Engine is not existing but the assistant and the dialog templates are ok, this is not normal, did you stop me while I was training?')
+				self.DialogTemplateManager.clearCache()
+
 		if self.DialogTemplateManager.hasChanges:
 			self.buildTrainingData(self.DialogTemplateManager.updatedData)
 			self.trainNLU()
