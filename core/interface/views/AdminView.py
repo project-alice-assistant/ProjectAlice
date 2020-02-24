@@ -102,11 +102,11 @@ class AdminView(View):
 	def wipeAll(self) -> dict:
 		try:
 			tickets = [
-				'http://skills.projectalice.ch/AliceCore',
-				'http://skills.projectalice.ch/ContextSensitive',
-				'http://skills.projectalice.ch/RedQueen',
-				'http://skills.projectalice.ch/Telemetry',
-				'http://skills.projectalice.ch/DateDayTimeYear'
+				'https://skills.projectalice.ch/AliceCore',
+				'https://skills.projectalice.ch/ContextSensitive',
+				'https://skills.projectalice.ch/RedQueen',
+				'https://skills.projectalice.ch/Telemetry',
+				'https://skills.projectalice.ch/DateDayTimeYear'
 			]
 
 			for link in tickets:
