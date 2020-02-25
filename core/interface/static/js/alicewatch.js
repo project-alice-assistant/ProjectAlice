@@ -2,7 +2,7 @@ $(function () {
 	function refreshData() {
 		let container = $('#console');
 		$.ajax({
-			url: '/snipswatch/refreshConsole/',
+			url: '/alicewatch/refreshConsole/',
 			dataType: 'json',
 			type: 'POST'
 		}).done(function (response) {
@@ -31,10 +31,10 @@ $(function () {
 	});
 
 	$('[class^="fas fa-thermometer"]').on('click touchstart', function () {
-		$('[class^="fas fa-thermometer"]').removeClass('snipswatchActiveVerbosity');
-		$(this).addClass('snipswatchActiveVerbosity');
+		$('[class^="fas fa-thermometer"]').removeClass('alicewatchActiveVerbosity');
+		$(this).addClass('alicewatchActiveVerbosity');
 		$.ajax({
-			url: '/snipswatch/verbosity/',
+			url: '/alicewatch/verbosity/',
 			data: {
 				verbosity: $(this).data('verbosity')
 			},
