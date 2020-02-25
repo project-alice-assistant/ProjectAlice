@@ -21,7 +21,7 @@
 	"adminTabTitleUtilities": "Utilities",
 	"restartAlice": "Restart Alice",
 	"reboot": "Reboot",
-	"trainAndDlAssistant": "Download assistant",
+	"trainAssistant": "Train assistant",
 	"wipeAll": "Wipe all",
 	"devmodeNewSkill": "Skill creation",
 	"devmodeEditSkill": "Skill edition",

@@ -88,8 +88,8 @@ $(function () {
 		return false;
 	});
 
-	$('#trainAndDownload').on('click touchstart', function () {
-		handleUtilityClick($(this), 'assistantDownload', 5000);
+	$('#trainAssistant').on('click touchstart', function () {
+		handleUtilityClick($(this), 'trainAssistant', 5000);
 		return false;
 	});
 

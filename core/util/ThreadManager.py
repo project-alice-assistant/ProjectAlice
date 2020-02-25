@@ -60,11 +60,17 @@ class ThreadManager(Manager):
 
 
 	def onTimerEnd(self, t: ThreadTimer):
+		if not t or not t.callback:
+			return
+
 		t.callback(*t.args, **t.kwargs)
 		self.removeTimer(t)
 
 
 	def removeTimer(self, t: ThreadTimer):
+		if not t or not t.callback:
+			return
+
 		if t.timer.is_alive():
 			t.timer.cancel()
 

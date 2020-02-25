@@ -79,13 +79,17 @@ class AdminView(View):
 			return jsonify(success=False)
 
 
-	def assistantDownload(self) -> dict:
+	def trainAssistant(self) -> dict:
 		try:
-			self.__class__.setWaitType('snipsdownload')
+			self.__class__.setWaitType('trainAssistant')
+			self.ThreadManager.newEvent('TrainAssistant').set()
+			self.DialogTemplateManager.clearCache()
+			self.SnipsAssistantManager.retrain()
+			self.ThreadManager.doLater(interval=1, func=self.NluManager.trainNLU())
 
 			return jsonify(success=True)
 		except Exception as e:
-			self.logError(f'Failed downloading assistant: {e}')
+			self.logError(f'Failed training assistant: {e}')
 			return jsonify(success=False)
 
 
@@ -129,10 +133,10 @@ class AdminView(View):
 	def areYouReady(self) -> bool:
 		if not self.__class__.getWaitType() or self.__class__.getWaitType() in ['restart', 'reboot']:
 			return jsonify(success=False) if self.ProjectAlice.restart else jsonify(success=True)
-		elif self.__class__.getWaitType() == 'snipsdownload':
-			return jsonify(success=False) if self.ThreadManager.getEvent('SnipsAssistantDownload').isSet() else jsonify(success=True)
+		elif self.__class__.getWaitType() == 'trainAssistant':
+			return jsonify(success=False) if self.ThreadManager.getEvent('TrainAssistant').isSet() else jsonify(success=True)
 		else:
-			return False
+			return jsonify(success=False)
 
 
 	@classmethod

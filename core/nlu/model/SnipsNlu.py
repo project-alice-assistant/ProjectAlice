@@ -157,6 +157,7 @@ class SnipsNlu(NluEngine):
 			self.SnipsServicesManager.runCmd(cmd='restart', services=['snips-nlu'])
 
 		self._timer.cancel()
+		self.ThreadManager.getEvent('TrainAssistant').clear()
 		self.logInfo(f'Snips NLU trained in {stopWatch} seconds')
 
 

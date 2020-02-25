@@ -29,6 +29,12 @@ class SnipsAssistantManager(Manager):
 				self.train()
 
 
+	def retrain(self):
+		self._assistantPath.unlink()
+		self.logInfo('Retraining assistant')
+		self.train()
+
+
 	def checkConsistency(self) -> bool:
 		if not self._assistantPath.exists():
 			return False
