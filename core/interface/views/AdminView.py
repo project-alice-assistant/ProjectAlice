@@ -82,7 +82,7 @@ class AdminView(View):
 	def assistantDownload(self) -> dict:
 		try:
 			self.__class__.setWaitType('snipsdownload')
-			self.SnipsConsoleManager.doDownload()
+
 			return jsonify(success=True)
 		except Exception as e:
 			self.logError(f'Failed downloading assistant: {e}')
