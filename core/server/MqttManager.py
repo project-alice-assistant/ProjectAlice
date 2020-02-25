@@ -1,11 +1,11 @@
 import json
-import random
-import re
 import uuid
 from pathlib import Path
 
 import paho.mqtt.client as mqtt
 import paho.mqtt.publish as publish
+import random
+import re
 
 from core.ProjectAliceExceptions import AccessLevelTooLow
 from core.base.model.Intent import Intent
@@ -350,7 +350,7 @@ class MqttManager(Manager):
 			self.broadcast(method=constants.EVENT_INTENT_PARSED, exceptions=[self.name], propagateToSkills=True, session=session)
 
 			if session.isAPIGenerated:
-				intent = Intent(session.payload['intent']['intentName'].split(':')[1])
+				intent = Intent(session.payload['intent']['intentName'])
 				message = mqtt.MQTTMessage(topic=str.encode(str(intent)))
 				message.payload = json.dumps(session.payload)
 				self.onMqttMessage(client=client, userdata=data, message=message)
