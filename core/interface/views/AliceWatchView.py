@@ -1,6 +1,6 @@
+import tempfile
 from pathlib import Path
 
-import tempfile
 from flask import jsonify, render_template, request
 
 from core.interface.model.View import View
@@ -14,7 +14,7 @@ class AliceWatchView(View):
 		super().__init__()
 		self._counter = 0
 		self._thread = None
-		self._file = Path(tempfile.gettempdir(), 'snipswatch')
+		self._file = Path(tempfile.gettempdir(), 'alicewatch')
 		self._process = None
 
 
