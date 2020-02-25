@@ -54,7 +54,7 @@ $(function () {
 	});
 
 	$('#skillname').on('input', function () {
-		if ($(this).val().length < 8) {
+		if ($(this).val().length < 5) {
 			$('#skillNameOk').hide();
 			$('#skillNameKo').show();
 			toggleCreateButton();
