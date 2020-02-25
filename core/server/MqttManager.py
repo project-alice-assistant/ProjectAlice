@@ -362,6 +362,7 @@ class MqttManager(Manager):
 		session = self.DialogSessionManager.getSession(sessionId)
 
 		if session:
+			session.hasEnded = True
 			session.update(msg)
 		else:
 			self.broadcast(method=constants.EVENT_SESSION_ENDED, exceptions=[self.name])

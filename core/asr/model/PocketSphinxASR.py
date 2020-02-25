@@ -117,6 +117,7 @@ class PocketSphinxASR(ASR):
 		with Stopwatch() as processingTime:
 			with Recorder(self._timeout) as recorder:
 				self.ASRManager.addRecorder(session.siteId, recorder)
+				self._recorder = recorder
 				self._decoder.start_utt()
 				inSpeech = False
 				for chunk in recorder:
@@ -131,7 +132,7 @@ class PocketSphinxASR(ASR):
 							result = self._decoder.hyp() if self._decoder.hyp() else None
 							break
 
-				self.end(recorder, session)
+				self.end(session)
 
 		return ASRResult(
 			text=result.hypstr.strip(),

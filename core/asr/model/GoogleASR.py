@@ -1,6 +1,7 @@
-import os
 from pathlib import Path
 from typing import Generator, Optional
+
+import os
 
 from core.asr.model.ASR import ASR
 from core.asr.model.ASRResult import ASRResult
@@ -51,13 +52,14 @@ class GoogleASR(ASR):
 		super().decodeStream(session)
 		recorder = Recorder(self._timeout)
 		self.ASRManager.addRecorder(session.siteId, recorder)
+		self._recorder = recorder
 		with recorder as stream:
 			audioStream = stream.audioStream()
 			requests = (types.StreamingRecognizeRequest(audio_content=content) for content in audioStream)
 			responses = self._client.streaming_recognize(self._streamingConfig, requests)
 			result = self._checkResponses(session, responses)
 
-		self.end(recorder, session)
+		self.end(session)
 
 		return ASRResult(
 			text=result[0],

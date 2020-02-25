@@ -109,15 +109,18 @@ class ASRManager(Manager):
 
 		if result and result.text:
 			self.MqttManager.publish(topic=constants.TOPIC_ASR_STOP_LISTENING, payload={'sessionId': session.sessionId, 'siteId': session.siteId})
+
+			if session.hasEnded:
+				return
+
 			self.logDebug(f'ASR captured: {result.text}')
 			text = self.LanguageManager.sanitizeNluQuery(result.text)
 
-			# supportedIntents = result.session.intentFilter or self.SkillManager.supportedIntents
-			# intentFilter = [intent.justTopic if isinstance(intent, Intent) else intent for intent in supportedIntents]
-
 			self.MqttManager.publish(topic=constants.TOPIC_TEXT_CAPTURED, payload={'sessionId': session.sessionId, 'text': text, 'siteId': session.siteId, 'likelihood': result.likelihood, 'seconds': result.processingTime})
-		# self.MqttManager.publish(topic=constants.TOPIC_NLU_QUERY, payload={'input': text, 'intentFilter': intentFilter, 'sessionId': session.sessionId})
 		else:
+			if session.hasEnded:
+				return
+
 			self.MqttManager.publish(topic=constants.TOPIC_INTENT_NOT_RECOGNIZED)
 			self.MqttManager.playSound(
 				soundFilename='error',
@@ -140,6 +143,15 @@ class ASRManager(Manager):
 			return
 
 		self._streams[session.siteId].onSessionError(session)
+		self._streams.pop(session.siteId, None)
+
+
+	def onSessionEnded(self, session: DialogSession):
+		if not self._asr or session.siteId not in self._streams or not self._streams[session.siteId].isRecording:
+			return
+
+		self._asr.end(session)
+		self._streams.pop(session.siteId, None)
 
 
 	def addRecorder(self, siteId: str, recorder: Recorder):

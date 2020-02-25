@@ -19,6 +19,7 @@ class DialogSession:
 	notUnderstood: int = 0
 	currentState: str = constants.DEFAULT
 	isAPIGenerated: bool = False
+	hasEnded: bool = False
 	slots: dict = field(default_factory=dict)
 	slotsAsObjects: dict = field(default_factory=dict)
 	customData: dict = field(default_factory=dict)
