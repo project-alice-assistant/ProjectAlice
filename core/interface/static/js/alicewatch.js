@@ -11,7 +11,7 @@ $(function () {
 					'<span class="logLine">' + response.data[i] + '</span>'
 				);
 			}
-		}).always(function (data) {
+		}).always(function () {
 			if ($('#checkedCheckbox').is(':visible')) {
 				container.scrollTop(container.prop('scrollHeight'));
 			}
