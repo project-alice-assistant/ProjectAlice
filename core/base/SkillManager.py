@@ -723,23 +723,23 @@ class SkillManager(Manager):
 
 			if skillDefinition['conditionOnline']:
 				conditions['online'] = True
-				readmeConditions += '    Online\n'
+				readmeConditions += '   - Online\n\n'
 
 			if skillDefinition['conditionASRArbitrary']:
 				conditions['asrArbitraryCapture'] = True
-				readmeConditions += '    Arbitrary capture\n'
+				readmeConditions += '   - Arbitrary capture\n\n'
 
 			if skillDefinition['conditionSkill']:
 				conditions['skill'] = [skill.strip() for skill in skillDefinition['conditionSkill'].split(',')]
-				readmeConditions += f'    Required skills: {str(conditions["skill"])}\n'
+				readmeConditions += f'   - Required skills: {str(conditions["skill"])}\n\n'
 
 			if skillDefinition['conditionNotSkill']:
 				conditions['notSkill'] = [skill.strip() for skill in skillDefinition['conditionNotSkill'].split(',')]
-				readmeConditions += f'    Conflicting skills: {str(conditions["notSkill"])}\n'
+				readmeConditions += f'   - Conflicting skills: {str(conditions["notSkill"])}\n\n'
 
 			if skillDefinition['conditionActiveManager']:
 				conditions['activeManager'] = [manager.strip() for manager in skillDefinition['conditionActiveManager'].split(',')]
-				readmeConditions += f'    Active managers: {str(conditions["activeManager"])}\n'
+				readmeConditions += f'   - Active managers: {str(conditions["activeManager"])}\n\n'
 
 			installContent = {
 				'name'              : skillName,
@@ -753,8 +753,8 @@ class SkillManager(Manager):
 				'conditions'        : conditions
 			}
 
-			readmeReqs += f'    PIP: {str(installContent["pipRequirements"])}\n'
-			readmeReqs += f'    System: {str(installContent["systemRequirements"])}\n'
+			readmeReqs += f'   - PIP: {str(installContent["pipRequirements"])}\n\n'
+			readmeReqs += f'   - System: {str(installContent["systemRequirements"])}\n\n'
 
 			# Install file
 			with installFile.open('w') as fp:
@@ -862,16 +862,20 @@ class SkillManager(Manager):
 			if req.status_code != 201:
 				raise Exception("Couldn't create the repository on Github")
 
-			url = f'https://github.com/{self.ConfigManager.getAliceConfigByName("githubUsername")}/skill_{skillName}.git'
 			self.Commons.runSystemCommand(['rm', '-rf', f'{str(localDirectory)}/.git'])
 			self.Commons.runSystemCommand(['git', '-C', str(localDirectory), 'init'])
-			# self.Commons.runSystemCommand(['git', '-C', str(localDirectory), 'config', 'user.name', f'"{self.ConfigManager.getAliceConfigByName("githubUsername")}"'])
-			# self.Commons.runSystemCommand(['git', '-C', str(localDirectory), 'config', 'user.password', f'"{self.ConfigManager.getAliceConfigByName("githubToken")}"'])
-			self.Commons.runSystemCommand(['git', '-C', str(localDirectory), 'remote', 'add', 'origin', url])
+
+			self.Commons.runSystemCommand(['git', 'config', '--global', 'user.email', 'githubbot@projectalice.io'])
+			self.Commons.runSystemCommand(['git', 'config', '--global', 'user.name', 'githubbot@projectalice.io'])
+
+			remote = f'https://{self.ConfigManager.getAliceConfigByName("githubUsername")}:{self.ConfigManager.getAliceConfigByName("githubToken")}@github.com/{self.ConfigManager.getAliceConfigByName("githubUsername")}/skill_{skillName}.git'
+			self.Commons.runSystemCommand(['git', '-C', str(localDirectory), 'remote', 'add', 'origin', remote])
+
 			self.Commons.runSystemCommand(['git', '-C', str(localDirectory), 'add', '--all'])
 			self.Commons.runSystemCommand(['git', '-C', str(localDirectory), 'commit', '-m', '"Initial upload"'])
-			self.Commons.runSystemCommand(['git', '-C', str(localDirectory), 'push', f'https://{self.ConfigManager.getAliceConfigByName("githubUsername")}:{self.ConfigManager.getAliceConfigByName("githubToken")}@github.com/{self.ConfigManager.getAliceConfigByName("githubUsername")}/skill_{skillName}.git', '--set-upstream', 'origin', 'master'])
+			self.Commons.runSystemCommand(['git', '-C', str(localDirectory), 'push', '--set-upstream', 'origin', 'master'])
 
+			url = f'https://github.com/{self.ConfigManager.getAliceConfigByName("githubUsername")}/skill_{skillName}.git'
 			self.logInfo(f'Skill uploaded! You can find it on {url}')
 			return True
 		except Exception as e:
