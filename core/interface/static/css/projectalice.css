@@ -182,6 +182,25 @@ a:hover {
 	box-shadow: 0 0 20px 5px #141414;
 }
 
+.skillsStoreSkillInfoContainer {
+	margin-top: 5px;
+	display: flex;
+	width: 100%;
+}
+
+.skillsStoreSkillLeft {
+	width: 50%;
+}
+
+.skillsStoreSkillRight {
+	display: flex;
+	width: 50%;
+	margin-right: 5px;
+	align-items: center;
+	justify-content: flex-end;
+	font-size: 3.5em;
+}
+
 .skillsStoreSkillTitle {
 	background-color: #343434;
 	height: 30px;
