@@ -13,7 +13,7 @@ from core.util.Stopwatch import Stopwatch
 
 class SnipsNlu(NluEngine):
 	NAME = 'Snips NLU'
-	UTTERANCE_REGEX = re.compile('(.*?){(.+?:=>.+?)}(.*?)')
+	UTTERANCE_REGEX = re.compile('{(.+?:=>.+?)}')
 
 
 	def __init__(self):
@@ -62,34 +62,30 @@ class SnipsNlu(NluEngine):
 
 			for utterance in intent['utterances']:
 				data = list()
-				result = re.findall(self.UTTERANCE_REGEX, utterance)
+				result = self.UTTERANCE_REGEX.split(utterance)
 				if not result:
 					data.append({
 						'text': utterance
 					})
 				else:
-					for dataset in result:
-						for match in dataset:
-							if not match:
-								continue
-
-							if ':=>' not in match:
-								data.append({
-									'text': match
-								})
-								continue
-							
-							text, slotName = match.split(':=>')
-							entity = slots.get(slotName, 'Unknown')
-
-							if entity.startswith('snips/'):
-								nluTrainingSample['entities'][entity] = dict()
-
+					for match in result:
+						if ':=>' not in match:
 							data.append({
-								'entity'   : entity,
-								'slot_name': slotName,
-								'text'     : text
+								'text': match
 							})
+							continue
+
+						text, slotName = match.split(':=>')
+						entity = slots.get(slotName, 'Unknown')
+
+						if entity.startswith('snips/'):
+							nluTrainingSample['entities'][entity] = dict()
+
+						data.append({
+							'entity'   : entity,
+							'slot_name': slotName,
+							'text'     : text
+						})
 
 				# noinspection PyTypeChecker
 				nluTrainingSample['intents'][intentName]['utterances'].append({'data': data})
