@@ -744,7 +744,7 @@ class SkillManager(Manager):
 			installContent = {
 				'name'              : skillName,
 				'version'           : '0.0.1',
-				'icon'              : 'battle-net',
+				'icon'              : 'fab fa-battle-net',
 				'author'            : self.ConfigManager.getAliceConfigByName('githubUsername'),
 				'maintainers'       : [],
 				'desc'              : skillDefinition['description'].capitalize(),

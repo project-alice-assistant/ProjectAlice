@@ -62,7 +62,7 @@ $(function () {
 				'<div class="skillsStoreSkillCategory"><i class="fas fa-tags"></i> ' + installer['category'] + '</div>' +
 				'</div>' +
 				'<div class="skillsStoreSkillRight">' +
-				'<i class="fas fa-' + installer['icon'] + '" aria-hidden="true"></i>' +
+				'<i class="' + installer['icon'] + '" aria-hidden="true"></i>' +
 				'</div>' +
 				'</div>' +
 				'<div class="skillStoreSkillDescription">' + installer['desc'] + '</div>' +
