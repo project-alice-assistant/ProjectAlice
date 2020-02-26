@@ -790,24 +790,18 @@ class SkillManager(Manager):
 					widgetName = widgetName[0].upper() + widgetName[1:]
 					readmeWidgets += f'    {widgetName}\n'
 
-					with css.open() as fp:
-						content = fp.read().replace('%widgetname%', widgetName)
-
+					content = css.read_text().replace('%widgetname%', widgetName)
 					with Path(widgetRootDir, f'css/{widgetName}.css').open('w+') as fp:
 						fp.write(content)
 
 					shutil.copy(str(js), str(js).replace('widget.js', f'{widgetName}.js'))
 					shutil.copy(str(lang), str(lang).replace('widget.json', f'{widgetName}.json'))
 
-					with html.open() as fp:
-						content = fp.read().replace('%widgetname%', widgetName)
-
+					content = html.read_text().replace('%widgetname%', widgetName)
 					with Path(widgetRootDir, f'templates/{widgetName}.html').open('w+') as fp:
 						fp.write(content)
 
-					with python.open() as fp:
-						content = fp.read().replace('Template(Widget)', f'{widgetName}(Widget)')
-
+					content = python.read_text().replace('Template(Widget)', f'{widgetName}(Widget)')
 					with Path(widgetRootDir, f'{widgetName}.py').open('w+') as fp:
 						fp.write(content)
 
@@ -821,16 +815,25 @@ class SkillManager(Manager):
 				shutil.rmtree(str(Path(skillDir, 'widgets')))
 
 			# Readme file
-			# For some reason r+ mode appends at the end instead of overwritting
-			with Path(skillDir, 'README.md').open() as fp:
-				content = fp.read().replace('%skillname%', skillName) \
-					.replace('%author%', self.ConfigManager.getAliceConfigByName('githubUsername')) \
-					.replace('%description%', skillDefinition['description'].capitalize()) \
-					.replace('%conditions%', readmeConditions) \
-					.replace('%requirements%', readmeReqs) \
-					.replace('%widgets%', readmeWidgets)
+			content = Path(skillDir, 'README.md').read_text().replace('%skillname%', skillName) \
+				.replace('%author%', self.ConfigManager.getAliceConfigByName('githubUsername')) \
+				.replace('%description%', skillDefinition['description'].capitalize()) \
+				.replace('%conditions%', readmeConditions) \
+				.replace('%requirements%', readmeReqs) \
+				.replace('%widgets%', readmeWidgets)
 
 			with Path(skillDir, 'README.md').open('w') as fp:
+				fp.write(content)
+
+			# Main class
+			classFile = skillDir / f'{skillDefinition["name"]}.py'
+			Path(skillDir, 'DefaultTemplate.py').rename(classFile)
+
+			content = classFile.read_text().replace('%skillname%', skillName) \
+				.replace('%author%', self.ConfigManager.getAliceConfigByName('githubUsername')) \
+				.replace('%description%', skillDefinition['description'].capitalize())
+
+			with classFile.open('w') as fp:
 				fp.write(content)
 
 			self.logInfo(f'Created "{skillDefinition["name"]}" skill')
