@@ -135,4 +135,10 @@ $(function () {
 	$('#goGithubButton').on('click touchstart', function () {
 		window.open($(this).text());
 	});
+
+	$('#skillname').on('keydown', function (e) {
+		if (e.key == ' ') {
+			return false;
+		}
+	});
 });
