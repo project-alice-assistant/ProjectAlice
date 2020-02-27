@@ -35,7 +35,7 @@ $(function () {
 				'username': $username.html()
 			},
 			type: 'POST'
-		})
+		});
 	});
 
 	$('.adminAuthKeyboardKey').not('.erase').not('.backspace').on('click touchstart', function () {
