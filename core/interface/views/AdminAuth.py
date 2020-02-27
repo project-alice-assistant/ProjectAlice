@@ -1,7 +1,7 @@
 import datetime
 
-from flask import render_template, request, jsonify, redirect
-from flask_login import login_user, current_user
+from flask import jsonify, redirect, render_template, request
+from flask_login import current_user, login_user
 
 from core.dialog.model.DialogSession import DialogSession
 from core.interface.model.View import View
@@ -39,6 +39,24 @@ class AdminAuth(View):
 			else:
 				return jsonify(username=self.__class__.user.name)
 		else:
+			return jsonify(success=False)
+
+
+	def login(self):
+		try:
+			username = request.form.get('username', None)
+			if not username:
+				return jsonify(success=False)
+
+			user = self.UserManager.getUser(username)
+			if not user:
+				return jsonify(success=False)
+
+			self.setUser(user)
+
+			return jsonify(success=True)
+		except:
+			self.logError('Failed login via keyboard')
 			return jsonify(success=False)
 
 

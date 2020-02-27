@@ -21,6 +21,23 @@ $(function () {
 		})
 	}
 
+	$(document).on('keyup', function (e) {
+		let $username = $('#username');
+		if (e.key == 'Backspace') {
+			$username.html($username.html().slice(0, -1));
+		} else if (e.key.length === 1) {
+			$username.append(e.key);
+		}
+
+		$.ajax({
+			url: '/adminAuth/login/',
+			data: {
+				'username': $username.html()
+			},
+			type: 'POST'
+		})
+	});
+
 	$('.adminAuthKeyboardKey').not('.erase').not('.backspace').on('click touchstart', function () {
 		if (!keyboardAuthNotified) {
 			$.post('/adminAuth/keyboardAuth/');
