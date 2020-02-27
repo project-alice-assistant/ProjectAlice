@@ -403,7 +403,7 @@ class SkillManager(Manager):
 		try:
 			skillsToBoot = self._installSkills(files)
 		except Exception as e:
-			self._logger.error(f'Error installing skill: {e}')
+			self._logger.logError(f'Error installing skill: {e}')
 		finally:
 			self.MqttManager.mqttBroadcast(topic='hermes/leds/clear')
 
