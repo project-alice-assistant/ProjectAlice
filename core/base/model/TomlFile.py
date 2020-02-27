@@ -91,6 +91,8 @@ class TomlFile(ProjectAliceObject):
 
 						value = data.value
 						if isinstance(data.value, str):
+							if not value:
+								data.commented = True
 							value = f'"{value}"'
 						elif isinstance(data.value, bool):
 							value = 'true' if data.value else 'false'
