@@ -99,7 +99,14 @@
 				</form>
 			</div>
 			<div id="EditSkill" class="configBox">
-
+				<div id="editSkillSelectContainer" class="editSkillsPane">
+					{% for skillName, skill in skills.items() %}
+						<div id="editSkill_{{ skillName }}" class="editSkillTile">
+							{{ skillName }}
+							<i class="{{ skill.icon }}" aria-hidden="true"></i>
+						</div>
+					{% endfor %}
+				</div>
 			</div>
 		</div>
 	</div>

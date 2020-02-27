@@ -956,3 +956,34 @@ input:focus {
 	display: flex;
 	align-items: stretch;
 }
+
+.editSkillsPane {
+	position: fixed;
+	top: 105px;
+	left: 154px;
+	right: 0;
+	bottom: 0;
+	margin: 5px;
+	overflow-y: auto;
+	overflow-x: hidden;
+	display: flex;
+	flex-wrap: wrap;
+	align-content: flex-start;
+}
+
+.editSkillTile {
+	font-family: 'marskeregular', Arial, sans-serif;
+	display: flex;
+	flex-wrap: wrap;
+	align-items: flex-start;
+	background-color: #636363;
+	margin: 10px;
+	width: 200px;
+	height: 150px;
+	color: #d1d1d1;
+	align-content: flex-start;
+	cursor: pointer;
+	justify-content: center;
+	font-size: 1.5em;
+	padding-top: 5px;
+}

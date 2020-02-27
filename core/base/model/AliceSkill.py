@@ -36,6 +36,7 @@ class AliceSkill(ProjectAliceObject):
 		self._name = self._install['name']
 		self._author = self._install['author']
 		self._version = self._install['version']
+		self._icon = self._install['icon']
 		self._updateAvailable = False
 		self._active = True
 		self._delayed = False
@@ -320,6 +321,11 @@ class AliceSkill(ProjectAliceObject):
 	@property
 	def scenarioNodeVersion(self) -> Version:
 		return self._scenarioNodeVersion
+
+
+	@property
+	def icon(self) -> str:
+		return self._icon
 
 
 	def hasScenarioNodes(self) -> bool:
