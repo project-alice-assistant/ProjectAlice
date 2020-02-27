@@ -90,8 +90,8 @@ class SnipsNlu(NluEngine):
 				# noinspection PyTypeChecker
 				nluTrainingSample['intents'][intentName]['utterances'].append({'data': data})
 
-			with Path(self._cachePath, f'{dialogTemplate["skill"]}_{file.stem}.json').open('w') as fp:
-				json.dump(nluTrainingSample, fp, ensure_ascii=False, indent=4)
+		with Path(self._cachePath, f'{dialogTemplate["skill"]}_{file.stem}.json').open('w') as fp:
+			json.dump(nluTrainingSample, fp, ensure_ascii=False, indent=4)
 
 
 	def train(self):
