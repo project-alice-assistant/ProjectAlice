@@ -1,7 +1,5 @@
-from pathlib import Path
 from typing import Any
 
-import shutil
 from flask import jsonify, render_template, request
 from flask_login import login_required
 
@@ -61,7 +59,7 @@ class AdminView(View):
 	def restart(self) -> dict:
 		try:
 			self.__class__.setWaitType('restart')
-			self.ThreadManager.doLater(interval=2, func=self.ProjectAlice.doRestart)
+			self.ThreadManager.doLater(interval=1, func=self.ProjectAlice.doRestart)
 			return jsonify(success=True)
 		except Exception as e:
 			self.logError(f'Failed restarting Alice: {e}')
@@ -105,25 +103,7 @@ class AdminView(View):
 
 	def wipeAll(self) -> dict:
 		try:
-			tickets = [
-				'https://skills.projectalice.ch/AliceCore',
-				'https://skills.projectalice.ch/ContextSensitive',
-				'https://skills.projectalice.ch/RedQueen',
-				'https://skills.projectalice.ch/Telemetry',
-				'https://skills.projectalice.ch/DateDayTimeYear'
-			]
-
-			for link in tickets:
-				self.Commons.downloadFile(link, f'system/skillInstallTickets/{link.rsplit("/")[-1]}.install')
-
-			shutil.rmtree(Path(self.Commons.rootDir(), 'var/assistants'))
-			shutil.rmtree(Path(self.Commons.rootDir(), 'trained/assistants'))
-			shutil.rmtree(Path(self.Commons.rootDir(), 'skills'))
-			Path(self.Commons.rootDir(), 'system/database/data.db')
-
-			Path(self.Commons.rootDir(), 'var/assistants').mkdir()
-			Path(self.Commons.rootDir(), 'trained/assistants').mkdir()
-			Path(self.Commons.rootDir(), 'skills').mkdir()
+			self.ProjectAlice.wipeAll()
 			return self.restart()
 		except Exception as e:
 			self.logError(f'Failed wiping system: {e}')

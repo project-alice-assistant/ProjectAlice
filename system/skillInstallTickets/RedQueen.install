@@ -1,13 +1,14 @@
 {
 	"name": "RedQueen",
-	"version": "1.0.14",
+	"version": "1.0.19",
+	"icon": "fab fa-battle-net",
 	"author": "ProjectAlice",
 	"maintainers": [
 		"Psycho",
 		"maxbachmann"
 	],
 	"desc": "Red Queen is the official Project Alice personality skill",
-	"aliceMinVersion": "1.0.0-a4",
+	"aliceMinVersion": "1.0.0-a5",
 	"systemRequirements": [],
 	"pipRequirements": [],
 	"conditions": {

@@ -17,6 +17,12 @@ class SnipsAssistantManager(Manager):
 		self.checkAssistant()
 
 
+	def clearData(self):
+		Path(self.Commons.rootDir(), 'trained/assistants/assistant_de/assistant.jon').unlink()
+		Path(self.Commons.rootDir(), 'trained/assistants/assistant_fr/assistant.jon').unlink()
+		Path(self.Commons.rootDir(), 'trained/assistants/assistant_en/assistant.jon').unlink()
+
+
 	def checkAssistant(self):
 		self.logInfo('Checking assistant')
 		if not self._assistantPath.exists():

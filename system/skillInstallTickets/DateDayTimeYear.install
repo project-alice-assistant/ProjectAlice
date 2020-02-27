@@ -1,6 +1,7 @@
 {
 	"name": "DateDayTimeYear",
-	"version": "1.0.20",
+	"version": "1.0.21",
+	"icon": "fab fa-battle-net",
 	"author": "Psychokiller1888",
 	"maintainers": [
 		"maxbachmann",
@@ -9,7 +10,9 @@
 	"desc": "Ask for the time, date, day and year",
 	"aliceMinVersion": "1.0.0-a4",
 	"systemRequirements": [],
-	"pipRequirements": ["Babel"],
+	"pipRequirements": [
+		"Babel"
+	],
 	"conditions": {
 		"lang": [
 			"en",

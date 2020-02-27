@@ -137,14 +137,15 @@ class DialogTemplateManager(Manager):
 			fp.write(json.dumps(checksums, indent=4, sort_keys=True))
 
 
-	def clearCache(self):
+	def clearCache(self, rebuild: bool = True):
 		if self._pathToChecksums.exists():
 			with self._pathToChecksums.open('w') as fp:
 				fp.write(json.dumps(dict()))
 				self.logInfo('Cache cleared')
 
-		self.checkCache()
-		self.buildCache()
+		if rebuild:
+			self.checkCache()
+			self.buildCache()
 
 
 	def skillResource(self) -> Path:

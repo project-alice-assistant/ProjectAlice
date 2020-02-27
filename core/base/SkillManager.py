@@ -393,7 +393,7 @@ class SkillManager(Manager):
 		root = Path(self.Commons.rootDir(), constants.SKILL_INSTALL_TICKET_PATH)
 		files = [f for f in root.iterdir() if f.suffix == '.install']
 
-		if self._busyInstalling.isSet() or not files:
+		if self._busyInstalling.isSet() or not files or self.ProjectAlice.restart:
 			return
 
 		self.logInfo(f'Found {len(files)} install ticket(s)')
@@ -684,6 +684,23 @@ class SkillManager(Manager):
 			ret[skill.name] = (skill.scenarioNodeName, skill.scenarioNodeVersion, Path(skill.getCurrentDir(), 'scenarioNodes'))
 
 		return ret
+
+
+	def wipeSkills(self, addDefaults: bool = True):
+		shutil.rmtree(Path(self.Commons.rootDir(), 'skills'))
+		Path(self.Commons.rootDir(), 'skills').mkdir()
+		self.ConfigManager.updateAliceConfiguration(key='skills', value=dict())
+
+		if addDefaults:
+			tickets = [
+				'https://skills.projectalice.ch/AliceCore',
+				'https://skills.projectalice.ch/ContextSensitive',
+				'https://skills.projectalice.ch/RedQueen',
+				'https://skills.projectalice.ch/Telemetry',
+				'https://skills.projectalice.ch/DateDayTimeYear'
+			]
+			for link in tickets:
+				self.Commons.downloadFile(link, f'system/skillInstallTickets/{link.rsplit("/")[-1]}.install')
 
 
 	def createNewSkill(self, skillDefinition: dict) -> bool:

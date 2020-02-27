@@ -1,10 +1,14 @@
 {
 	"name": "Telemetry",
-	"version": "1.0.5",
+	"version": "1.1.0",
+	"icon": "fab fa-battle-net",
 	"author": "ProjectAlice",
-	"maintainers": ["Psychokiller1888", "maxbachmann"],
+	"maintainers": [
+		"Psychokiller1888",
+		"maxbachmann"
+	],
 	"desc": "Access your stored telemetry data",
-	"aliceMinVersion": "1.0.0-a4",
+	"aliceMinVersion": "1.0.0-a5",
 	"pipRequirements": [],
 	"systemRequirements": [],
 	"conditions": {
@@ -12,6 +16,8 @@
 			"en",
 			"de"
 		],
-		"activeManager": ["TelemetryManager"]
+		"activeManager": [
+			"TelemetryManager"
+		]
 	}
 }
