@@ -91,8 +91,6 @@ class TomlFile(ProjectAliceObject):
 
 						value = data.value
 						if isinstance(data.value, str):
-							if not value:
-								data.commented = True
 							value = f'"{value}"'
 						elif isinstance(data.value, bool):
 							value = 'true' if data.value else 'false'
@@ -219,9 +217,7 @@ class Section(dict):
 		if key in self.data:
 			return self.data[key].value
 
-		conf = Config(key, '')
-		self.data[conf.name] = conf
-		return conf.value
+		return ''
 
 
 	def __delitem__(self, key: str):
