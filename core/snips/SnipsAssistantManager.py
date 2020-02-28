@@ -18,9 +18,12 @@ class SnipsAssistantManager(Manager):
 
 
 	def clearData(self):
-		Path(self.Commons.rootDir(), 'trained/assistants/assistant_de/assistant.json').unlink()
-		Path(self.Commons.rootDir(), 'trained/assistants/assistant_fr/assistant.json').unlink()
-		Path(self.Commons.rootDir(), 'trained/assistants/assistant_en/assistant.json').unlink()
+		for lang in self.LanguageManager.supportedLanguages:
+			try:
+				Path(self.Commons.rootDir(), f'trained/assistants/assistant_{lang}/assistant.json').unlink()
+			except:
+				# Language assistant doesn't exist on user's setup, ignore
+				pass
 
 
 	def checkAssistant(self):
