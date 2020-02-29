@@ -1,0 +1,147 @@
+---
+################################################
+#                                              #
+#       Project Alice quick install file       #
+#           For advanced users only            #
+# Edit the content of  this file to your needs #
+# and   place   it in  /boot/ProjectAlice.yaml #
+# after   flashing  your  sd  card   with  our #
+# Project Alice image.                         #
+#                                              #
+# Upon  first  boot  Alice  will perform  some #
+# updates and configure according to this file #
+#                                              #
+################################################
+#            DON'T CHANGE ME                   #
+version: 1.15
+################################################
+
+# How to prevent frequent errors:
+# Always add a space after the ":" (e.g. deviceName: default instead of deviceName:default)
+
+# If you place this file into /boot after a first initialization it won't overwrite your settings unless you set this to yes
+forceRewrite: no
+
+# By setting the next parameter to yes, ProjectAlice will also install all the required dependencies
+doGroundInstall: yes
+
+# After initialization is done, keep a copy of this yaml file in /boot. Be aware this can be a security risk, as /boot is accessible by anyone mounting your SD card!
+keepYAMLBackup: no
+
+# If you are installing on Raspbian Buster, set the following to yes
+installOnBuster: yes
+
+# Base configs
+# Enter Wifi credentials for automatic adding of tasmota/zigbee/netatmo devices even when Alice has wired access
+useWifi: yes
+wifiNetworkName:
+wifiWPAPass:
+wifiCountryCode:
+
+# The name of the device to set up
+# Caution: The main device should be named default! This will be changed later.
+deviceName: default
+soundPlaybackAndRecordEnabled: yes
+
+# Connection
+mqttHost: localhost
+mqttPort: 1883
+mqttUser:
+mqttPassword:
+mqttTLSFile:
+
+# hardware - Turn only one to yes!
+audioHardware:
+    usbMic:             no
+    respeaker2:         no
+    respeaker4:         no
+    respeaker6MicArray: no
+    respeaker7:         no
+    respeakerCoreV2:    no
+    googleAIY:          no
+    googleAIY2:         no
+    matrixCreator:      no
+    matrixVoice:        no
+
+# Capture
+micSampleRate: 16000
+micChannels: 1
+
+# System
+# Whether to install Hermes Led Control or not. HLC is the best way to manage your device leds if you have any
+useHLC: yes
+
+stayCompletlyOffline: no
+keepASROffline: yes
+keepTTSOffline: yes
+skillAutoUpdate: yes
+webInterfaceActive: yes
+
+# enabling dev mode unlocks features on the console as well as unpublished skill loading
+devMode: no
+
+# You should leave this by default, but who knows
+newDeviceBroadcastPort: 12354
+
+# Project Alice
+# 'en', 'fr' or 'de'. For more, we seek helpers ;-)
+activeLanguage: en
+
+# The language country code
+activeCountryCode: US
+
+baseCurrency: CHF
+
+# Either 'metric', 'kelvin' or 'imperial'
+baseUnits: metric
+
+# Telemetry data, such as temperature, pressure, humidity and others depending on your sensors can be kept in your internal database for forecast or AI use
+enableDataStoring: yes
+
+# Set to max entries to keep, 0 to disable pruning
+autoPruneStoredData: 1000
+
+# If an intent returns less confidence score than this it will be considered as not understood
+probabilityThreshold: 0.5
+
+# If set to yes Alice will only answer with shorter answers, when available
+shortReplies: no
+
+# If set to yes Alice will whisper instead of using short answers when you are sleeping. Currently only available with Amazon TTS
+whisperWhenSleeping: no
+
+# Either 'pocketsphinx' or 'google'
+asr: pocketsphinx
+
+# Either 'pico', 'snips', 'mycroft', 'amazon' or 'google'
+tts: pico
+
+ttsType: female
+ttsVoice: Joanna
+ttsLanguage: en-US
+
+# Amazon Polly
+# https://docs.aws.amazon.com/en_us/general/latest/gr/rande.html
+awsRegion: eu-central-1
+awsAccessKey:
+awsSecretKey:
+
+# Github - Github limits the api calls to 60 per hour unless you create a token (free) for your account
+# Github is used to keep your skills up to date and install new ones as well as updating Project Alice
+# This is not mendatory but strongly recommanded https://help.github.com/en/articles/creating-a-personal-access-token-for-the-command-line
+githubUsername:
+githubToken:
+
+# !WARNING! You know what you are doing by changing the following to anything else than "master"!
+# This allows to init ProjectAlice on any branches, even unstable ones
+# Available: master / alpha / beta / rc
+aliceUpdateChannel: master
+skillsUpdateChannel: master
+
+# Google
+# If you are using Google as ASR and/or TTS you need to create an account on their console and activate the API
+# for speech recognition and/or text to speech. Once activated, choose to create a service account and paste the
+# content of the file here
+googleServiceFile: {}
+
+...

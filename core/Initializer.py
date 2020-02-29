@@ -61,7 +61,7 @@ network={
 		self._confsFile = Path(self._rootDir, 'config.py')
 		self._confsSample = Path(self._rootDir, 'configTemplate.py')
 		self._initFile = Path('/boot/ProjectAlice.yaml')
-		self._latest = 1.14
+		self._latest = 1.15
 
 
 	def initProjectAlice(self) -> bool:
@@ -122,13 +122,16 @@ network={
 		subprocess.run(['sudo', 'apt-get', 'dist-upgrade', '-y'])
 		subprocess.run(['git', 'clean', '-df'])
 		subprocess.run(['git', 'stash'])
-		subprocess.run(['git', 'checkout', self.getUpdateSource(initConfs['aliceUpdateChannel'])])
+		subprocess.run(['git', 'checkout', 'master'])
 		subprocess.run(['git', 'pull'])
 		subprocess.run(['git', 'stash', 'clear'])
 
 		time.sleep(1)
 
 		subprocess.run(['./venv/bin/pip3', 'uninstall', '-y', '-r', str(Path(self._rootDir, 'pipuninstalls.txt'))])
+
+		if 'forceRewrite' not in initConfs:
+			initConfs['forceRewrite'] = True
 
 		if not self._confsFile.exists() and not self._confsSample.exists():
 			self.fatal('No config and no config template found, can\'t continue')
@@ -152,10 +155,10 @@ network={
 		confs = config.settings.copy()
 
 		# Do some installation if wanted by the user
-		if initConfs['doGroundInstall']:
+		if 'doGroundInstall' not in initConfs or initConfs['doGroundInstall']:
 			subprocess.run(['./venv/bin/pip3', 'install', '-r', str(Path(self._rootDir, 'requirements.txt'))])
 
-			if initConfs['installOnBuster']:
+			if 'installOnBuster' not in initConfs or initConfs['installOnBuster']:
 				subprocess.run(['sudo', 'apt-get', 'install', '-y', 'dirmngr', 'apt-transport-https'])
 				subprocess.run(['sudo', 'bash', '-c', 'echo "deb https://raspbian.snips.ai/stretch stable main" > /etc/apt/sources.list.d/snips.list'])
 				subprocess.run(['sudo', 'apt-key', 'adv', '--fetch-keys', 'https://debian.snips.ai/5FFCD0DEB5BA45CD.pub'])

@@ -33,7 +33,7 @@ class SnipsNlu(NluEngine):
 
 
 	def convertDialogTemplate(self, file: Path):
-		self.logInfo(f'Preparing NLU training file for {file}')
+		self.logInfo(f'Preparing NLU training file for {file.parent.parent.stem}')
 		with file.open() as fp:
 			dialogTemplate = json.load(fp)
 
