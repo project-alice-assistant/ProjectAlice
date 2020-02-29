@@ -493,6 +493,14 @@ class ConfigManager(Manager):
 				continue
 
 
+	def updateMqttSettings(self):
+		self.ConfigManager.updateSnipsConfiguration('snips-common', 'mqtt', f'{self.getAliceConfigByName("mqttHost")}:{self.getAliceConfigByName("mqttPort"):}', False, False)
+		self.ConfigManager.updateSnipsConfiguration('snips-common', 'mqtt_username', self.getAliceConfigByName('mqttHost'), False, False)
+		self.ConfigManager.updateSnipsConfiguration('snips-common', 'mqtt_password', self.getAliceConfigByName('mqttHost'), False, False)
+		self.ConfigManager.updateSnipsConfiguration('snips-common', 'mqtt_tls_cafile', self.getAliceConfigByName('mqttHost'), True, False)
+		self.reconnectMqtt()
+
+
 	def reconnectMqtt(self):
 		self.MqttManager.reconnect()
 
