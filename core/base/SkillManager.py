@@ -167,6 +167,7 @@ class SkillManager(Manager):
 							if skillName in self.NEEDED_SKILLS:
 								skillInstance.required = True
 
+							self._deactivatedSkills.pop(skillInstance.name, None)
 							self._deactivatedSkills[skillInstance.name] = skillInstance
 						continue
 
@@ -181,6 +182,7 @@ class SkillManager(Manager):
 					if skillName in self.NEEDED_SKILLS:
 						skillInstance.required = True
 
+					skills.pop(skillInstance.name, None)
 					skills[skillInstance.name] = skillInstance
 				else:
 					self._failedSkills[name] = None
