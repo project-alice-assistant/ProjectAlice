@@ -8,6 +8,9 @@
 		],
 		"de": [
 			"draussen"
+		],
+		"it": [
+			"fuori"
 		]
 	},
 	"intentSeparator": {
@@ -19,6 +22,9 @@
 		],
 		"de": [
 			" und auch "
+		],
+		"it": [
+			"ed anche"
 		]
 	},
 	"inThe": {
@@ -39,6 +45,14 @@
 			"in dem ",
 			"in Raum ",
 			"in "
+		],
+		"it": [
+			"nella",
+			"nello",
+			"nel",
+			"nei",
+			"dentro",
+			"in",
 		]
 	},
 	"everywhere": {
@@ -50,6 +64,10 @@
 		],
 		"de": [
 			"überall"
+		],
+		"it": [
+			"dappertutto",
+			"ovunque"
 		]
 	},
 	"+": {
@@ -61,6 +79,9 @@
 		],
 		"de": [
 			"plus"
+		],
+		"it": [
+			"più"
 		]
 	},
 	"-": {
@@ -72,6 +93,9 @@
 		],
 		"de": [
 			"minus"
+		],
+		"it": [
+			"meno"
 		]
 	},
 	"*": {
@@ -83,6 +107,9 @@
 		],
 		"de": [
 			"mal"
+		],
+		"it": [
+			"per"
 		]
 	},
 	"/": {
@@ -94,6 +121,9 @@
 		],
 		"de": [
 			"geteilt durch"
+		],
+		"it": [
+			"diviso"
 		]
 	},
 	"%": {
@@ -104,6 +134,9 @@
 			"modulo"
 		],
 		"de": [
+			"modulo"
+		],
+		"it": [
 			"modulo"
 		]
 	}
