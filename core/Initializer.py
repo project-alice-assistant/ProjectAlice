@@ -61,7 +61,7 @@ network={
 		self._confsFile = Path(self._rootDir, 'config.py')
 		self._confsSample = Path(self._rootDir, 'configTemplate.py')
 		self._initFile = Path('/boot/ProjectAlice.yaml')
-		self._latest = 1.15
+		self._latest = 1.16
 
 
 	def initProjectAlice(self) -> bool:
@@ -375,6 +375,14 @@ network={
 
 		elif audioHardware == 'usbMic':
 			subprocess.run(['sudo', 'cp', Path(self._rootDir, 'system', 'asounds', 'usbmic.conf'), Path('/etc/asound.conf')])
+
+		elif audioHardware == 'ps3eye':
+			subprocess.run(['sudo', 'cp', Path(self._rootDir, 'system', 'asounds', 'ps3eye.conf'), Path('/etc/asound.conf')])
+			asoundrc = f'/home/{getpass.getuser()}/.asoundrc'
+			subprocess.run(['echo', 'pcm.dsp0 {', '>', asoundrc])
+			subprocess.run(['echo', '    type plug', '>>', asoundrc])
+			subprocess.run(['echo', '    slave.pcm "dmix"', '>>', asoundrc])
+			subprocess.run(['echo', '}', '>>', asoundrc])
 
 		subprocess.run(['sudo', 'systemctl', 'daemon-reload'])
 

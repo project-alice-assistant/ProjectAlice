@@ -13,7 +13,7 @@
 #                                              #
 ################################################
 #            DON'T CHANGE ME                   #
-version: 1.15
+version: 1.16
 ################################################
 
 # How to prevent frequent errors:
@@ -62,6 +62,7 @@ audioHardware:
     googleAIY2:         no
     matrixCreator:      no
     matrixVoice:        no
+    ps3eye:             no
 
 # Capture
 micSampleRate: 16000

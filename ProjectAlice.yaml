@@ -13,7 +13,7 @@
 #                                              #
 ################################################
 #            DON'T CHANGE ME                   #
-version: 1.15
+version: 1.16
 ################################################
 
 # How to prevent frequent errors:
@@ -38,6 +38,7 @@ audioHardware:
     googleAIY2:         no
     matrixCreator:      no
     matrixVoice:        no
+    ps3eye:             no
 
 # System
 # Whether to install Hermes Led Control or not. HLC is the best way to manage your device leds if you have any
