@@ -20,7 +20,7 @@ However, as an option, since we've built Project Alice on top of Snips, Project 
 Please follow the [documentation](https://docs.projectalice.io/set-up/)
 
 ## Chat with us and the community
-Join us on our [Discord server](https://discord.gg/Jfcj355)
+Join us on our [Discord server](https://discord.gg/C6HNtzV)
 
 
 ## Who made this?
