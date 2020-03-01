@@ -208,48 +208,47 @@ settings = {
 		'dataType'    : 'list',
 		'values'      : {
 			'en': {
-				'default': True,
+				'default'    : True,
 				'countryCode': 'US'
 			},
 			'fr': {
-				'default': False,
+				'default'    : False,
 				'countryCode': 'FR'
 			},
 			'de': {
-				'default': False,
+				'default'    : False,
 				'countryCode': 'DE'
+			},
+			'it': {
+				'default'    : False,
+				'countryCode': 'IT'
 			}
 		},
 		'display': 'hidden'
 	},
-
 	'baseCurrency': {
 		'defaultValue': 'CHF',
 		'dataType': 'list',
 		'values': ['CHF', 'EUR', 'USD', 'GBP', 'AUD'],
 		'description': 'The currency used by Project Alice'
 	},
-
 	'baseUnits': {
 		'defaultValue': 'metric',
 		'dataType': 'list',
 		'values': ['metric', 'kelvin', 'imperial'],
 		'description': 'Units to use with Project Alice'
 	},
-
 	'nluEngine': {
 		'defaultValue': 'snips',
 		'dataType': 'list',
 		'values': ['snips'],
 		'description': 'Natural Language Understanding engine to use'
 	},
-
 	'onReboot': {
 		'defaultValue': '',
 		'dataType': 'string',
 		'display': 'hidden'
 	},
-
 	'webInterfaceActive': {
 		'defaultValue': True,
 		'dataType': 'boolean',
