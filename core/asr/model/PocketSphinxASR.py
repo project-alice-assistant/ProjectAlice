@@ -114,6 +114,7 @@ class PocketSphinxASR(ASR):
 		super().decodeStream(session)
 
 		result = None
+		counter = 0
 		with Stopwatch() as processingTime:
 			with Recorder(self._timeout) as recorder:
 				self.ASRManager.addRecorder(session.siteId, recorder)
@@ -125,6 +126,12 @@ class PocketSphinxASR(ASR):
 						break
 
 					self._decoder.process_raw(chunk, False, False)
+					hypothesis = self._decoder.hyp()
+					if hypothesis:
+						counter += 1
+						if counter == 10:
+							self.partialTextCaptured(session, hypothesis.hypstr, hypothesis.prob, processingTime.time)
+							counter = 0
 					if self._decoder.get_in_speech() != inSpeech:
 						inSpeech = self._decoder.get_in_speech()
 						if not inSpeech:
