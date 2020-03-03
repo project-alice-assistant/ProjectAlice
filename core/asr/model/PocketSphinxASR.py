@@ -29,22 +29,10 @@ class PocketSphinxASR(ASR):
 		]
 	}
 
-	LANGUAGE_PACKS = {
-		'en': [
-			f'{constants.GITHUB_URL}/cmusphinx-models/blob/master/en-us/en-us.tar',
-			f'{constants.GITHUB_URL}/cmusphinx-models/blob/master/en-us/en-us.lm.bin',
-			f'{constants.GITHUB_URL}/cmusphinx-models/blob/master/en-us/cmudict-en-us.dict'
-		],
-		'fr': [
-			f'{constants.GITHUB_URL}/cmusphinx-models/blob/master/fr-fr/fr-fr.tar',
-			f'{constants.GITHUB_URL}/cmusphinx-models/blob/master/fr-fr/fr-fr.lm.bin',
-			f'{constants.GITHUB_URL}/cmusphinx-models/blob/master/fr-fr/cmudict-fr-fr.dict'
-		],
-		'de': [
-			f'{constants.GITHUB_URL}/cmusphinx-models/blob/master/de-de/de-de.tar',
-			f'{constants.GITHUB_URL}/cmusphinx-models/blob/master/de-de/de-de.lm.bin',
-			f'{constants.GITHUB_URL}/cmusphinx-models/blob/master/de-de/cmudict-de-de.dict'
-		]
+	LANGUAGE_PACK = {
+		f'{constants.GITHUB_URL}/cmusphinx-models/blob/master/%lang%/%lang%.tar',
+		f'{constants.GITHUB_URL}/cmusphinx-models/blob/master/%lang%/%lang%.lm.bin',
+		f'{constants.GITHUB_URL}/cmusphinx-models/blob/master/%lang%/cmudict-%lang%.dict'
 	}
 
 
@@ -90,7 +78,8 @@ class PocketSphinxASR(ASR):
 		self.logInfo(f'Downloading language model for "{self.LanguageManager.activeLanguage}"')
 
 		venv = Path(self.Commons.rootDir(), 'venv/lib/python3.7/site-packages/pocketsphinx/')
-		for url in self.LANGUAGE_PACKS[self.LanguageManager.activeLanguage]:
+		for url in self.LANGUAGE_PACK:
+			url = url.replace('%lang%', self.LanguageManager.activeLanguageAndCountryCode.lower())
 			filename = Path(url).name
 			download = Path(venv, 'model', filename)
 			self.Commons.downloadFile(url=f'{url}?raw=true', dest=str(download))
