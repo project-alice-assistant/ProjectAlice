@@ -5,6 +5,7 @@ from typing import Any, Optional
 
 from paho.mqtt.client import MQTTMessage
 
+from core.base.SuperManager import SuperManager
 from core.base.model import Intent
 from core.commons import constants
 
@@ -20,6 +21,7 @@ class DialogSession:
 	currentState: str = constants.DEFAULT
 	isAPIGenerated: bool = False
 	hasEnded: bool = False
+	probabilityThreshold: float = 0.5
 	slots: dict = field(default_factory=dict)
 	slotsAsObjects: dict = field(default_factory=dict)
 	customData: dict = field(default_factory=dict)
@@ -28,27 +30,31 @@ class DialogSession:
 	intentFilter: list = field(default_factory=list)
 
 
+	def __post_init__(self):
+		self.probabilityThreshold = SuperManager.getInstance().configManager.getAliceConfigByName('probabilityThreshold')
+
+
 	def extend(self, message: MQTTMessage, sessionId: str = None):
 		if sessionId:
 			self.sessionId = sessionId
 
-		from core.commons.CommonsManager import CommonsManager
+		commonsManager = SuperManager.getInstance().commonsManager
 		self.message = message
 		self.intentName = message.topic
-		self.payload = CommonsManager.payload(message)
-		self.slots = CommonsManager.parseSlots(message)
-		self.slotsAsObjects = CommonsManager.parseSlotsToObjects(message)
-		self.customData = CommonsManager.parseCustomData(message)
+		self.payload = commonsManager.payload(message)
+		self.slots = commonsManager.parseSlots(message)
+		self.slotsAsObjects = commonsManager.parseSlotsToObjects(message)
+		self.customData = commonsManager.parseCustomData(message)
 
 
 	def update(self, message: MQTTMessage):
-		from core.commons.CommonsManager import CommonsManager
+		commonsManager = SuperManager.getInstance().commonsManager
 		self.message = message
 		self.intentName = message.topic
-		self.payload = CommonsManager.payload(message)
-		self.slots.update(CommonsManager.parseSlots(message))
-		self.slotsAsObjects.update(CommonsManager.parseSlotsToObjects(message))
-		self.customData.update(CommonsManager.parseCustomData(message))
+		self.payload = commonsManager.payload(message)
+		self.slots.update(commonsManager.parseSlots(message))
+		self.slotsAsObjects.update(commonsManager.parseSlotsToObjects(message))
+		self.customData.update(commonsManager.parseCustomData(message))
 
 
 	def reviveOldSession(self, session: DialogSession):
@@ -68,6 +74,7 @@ class DialogSession:
 		self.notUnderstood = session.notUnderstood
 		self.currentState = session.currentState
 		self.isAPIGenerated = session.isAPIGenerated
+		self.probabilityThreshold = session.probabilityThreshold
 
 
 	def slotValue(self, slotName: str, index: int = 0, defaultValue: Any = None) -> Any:

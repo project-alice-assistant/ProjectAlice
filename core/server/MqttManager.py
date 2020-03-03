@@ -186,13 +186,16 @@ class MqttManager(Manager):
 			if redQueen and not redQueen.inTheMood(session):
 				return
 
-			if 'intent' in payload and payload['intent']['confidenceScore'] < self.ConfigManager.getAliceConfigByName('probabilityThreshold'):
+			self.logDebug(f'Using probability threshold of {session.probabilityThreshold}')
+
+			if 'intent' in payload and float(payload['intent']['confidenceScore']) < session.probabilityThreshold:
 				if session.notUnderstood < self.ConfigManager.getAliceConfigByName('notUnderstoodRetries'):
 					session.notUnderstood = session.notUnderstood + 1
 
 					self.continueDialog(
 						sessionId=sessionId,
-						text=self.TalkManager.randomTalk('notUnderstood', skill='system')
+						text=self.TalkManager.randomTalk('notUnderstood', skill='system'),
+						probabilityThreshold=session.probabilityThreshold
 					)
 				else:
 					session.notUnderstood = 0
@@ -213,10 +216,6 @@ class MqttManager(Manager):
 					# The command was recognized but required higher access level
 					return
 
-				# Authentication might end the session directly from a skill
-				# if not self.DialogSessionManager.getSession(sessionId):
-				# 	return
-
 				if self.MultiIntentManager.isProcessing(sessionId):
 					self.MultiIntentManager.processNextIntent(sessionId)
 					return
@@ -233,7 +232,6 @@ class MqttManager(Manager):
 					sessionId=sessionId,
 					text=self.TalkManager.randomTalk('notUnderstood', skill='system')
 				)
-				return
 			else:
 				session.notUnderstood = 0
 				self.endDialog(
@@ -510,18 +508,19 @@ class MqttManager(Manager):
 			else:
 				self._speakOnSonos(text, client)
 				self._mqttClient.publish(constants.TOPIC_START_SESSION, json.dumps({
-					'siteId': client,
-					'init': {
-						'type': 'notification',
+					'siteId'    : client,
+					'init'      : {
+						'type'                   : 'notification',
 						'sendIntentNotRecognized': True
 					},
 					'customData': customData
 				}))
 
 
-	def ask(self, text: str, client: str = constants.DEFAULT_SITE_ID, intentFilter: list = None, customData: dict = None, previousIntent: str = '', canBeEnqueued: bool = True, currentDialogState: str = ''):
+	def ask(self, text: str, client: str = constants.DEFAULT_SITE_ID, intentFilter: list = None, customData: dict = None, previousIntent: str = '', canBeEnqueued: bool = True, currentDialogState: str = '', probabilityThreshold: float = None):
 		"""
 		Initiates a new session by asking something and waiting on user answer
+		:param probabilityThreshold: The override threshold for the user's answer to this question
 		:param currentDialogState: a str representing a state in the dialog, usefull for multiturn dialogs
 		:param canBeEnqueued: wheter or not this can be played later if the dialog manager is busy
 		:param previousIntent: the previous intent that triggered the method, if available
@@ -548,6 +547,9 @@ class MqttManager(Manager):
 
 		if currentDialogState:
 			preSession.currentState = currentDialogState
+
+		if probabilityThreshold is not None:
+			preSession.probabilityThreshold = probabilityThreshold
 
 		if client == constants.ALL:
 			if not customData:
@@ -593,9 +595,10 @@ class MqttManager(Manager):
 			self._speakOnSonos(text, client)
 
 
-	def continueDialog(self, sessionId: str, text: str, customData: dict = None, intentFilter: list = None, previousIntent: str = '', slot: str = '', currentDialogState: str = ''):
+	def continueDialog(self, sessionId: str, text: str, customData: dict = None, intentFilter: list = None, previousIntent: str = '', slot: str = '', currentDialogState: str = '', probabilityThreshold: float = None):
 		"""
 		Continues a dialog
+		:param probabilityThreshold: The probability threshold override for the user's answer to this coming conversation round
 		:param currentDialogState: a str representing a state in the dialog, usefull for multiturn dialogs
 		:param sessionId: int session id to continue
 		:param customData: json str
@@ -637,6 +640,8 @@ class MqttManager(Manager):
 
 		session = self.DialogSessionManager.getSession(sessionId=sessionId)
 		session.intentFilter = intentFilter
+		if probabilityThreshold is not None:
+			session.probabilityThreshold = probabilityThreshold
 
 		if currentDialogState:
 			session.currentState = currentDialogState
