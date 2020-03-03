@@ -764,6 +764,7 @@ class SkillManager(Manager):
 				'name'              : skillName,
 				'version'           : '0.0.1',
 				'icon'              : 'fab fa-battle-net',
+				'category'          : 'undefined',
 				'author'            : self.ConfigManager.getAliceConfigByName('githubUsername'),
 				'maintainers'       : [],
 				'desc'              : skillDefinition['description'].capitalize(),
