@@ -7,6 +7,7 @@ from core.asr.model.ASR import ASR
 from core.asr.model.ASRResult import ASRResult
 from core.asr.model.Recorder import Recorder
 from core.dialog.model.DialogSession import DialogSession
+from core.util.Stopwatch import Stopwatch
 
 try:
 	from google.cloud.speech import SpeechClient, enums, types
@@ -53,19 +54,20 @@ class GoogleASR(ASR):
 		recorder = Recorder(self._timeout)
 		self.ASRManager.addRecorder(session.siteId, recorder)
 		self._recorder = recorder
-		with recorder as stream:
-			audioStream = stream.audioStream()
-			requests = (types.StreamingRecognizeRequest(audio_content=content) for content in audioStream)
-			responses = self._client.streaming_recognize(self._streamingConfig, requests)
-			result = self._checkResponses(session, responses)
+		with Stopwatch() as processingTime:
+			with recorder as stream:
+				audioStream = stream.audioStream()
+				requests = (types.StreamingRecognizeRequest(audio_content=content) for content in audioStream)
+				responses = self._client.streaming_recognize(self._streamingConfig, requests)
+				result = self._checkResponses(session, responses)
 
-		self.end(session)
+			self.end(session)
 
 		return ASRResult(
 			text=result[0],
 			session=session,
 			likelihood=result[1],
-			processingTime=10
+			processingTime=processingTime.time
 		) if result else None
 
 

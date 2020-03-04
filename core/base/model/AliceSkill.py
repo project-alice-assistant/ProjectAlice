@@ -37,6 +37,7 @@ class AliceSkill(ProjectAliceObject):
 		self._author = self._install['author']
 		self._version = self._install['version']
 		self._icon = self._install['icon']
+		self._category = self._install['category'] if 'category' in self._install else 'undefined'
 		self._updateAvailable = False
 		self._active = True
 		self._delayed = False

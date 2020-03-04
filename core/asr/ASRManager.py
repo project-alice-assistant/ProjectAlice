@@ -42,6 +42,8 @@ class ASRManager(Manager):
 
 		if userASR == 'google':
 			package = 'core.asr.model.GoogleASR'
+		elif userASR == 'deepspeech':
+			package = 'core.asr.model.DeepSpeechASR'
 		else:
 			package = 'core.asr.model.PocketSphinxASR'
 
