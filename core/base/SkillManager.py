@@ -802,7 +802,7 @@ class SkillManager(Manager):
 				widgetRootDir = skillDir / 'widgets'
 				css = widgetRootDir / 'css/widget.css'
 				js = widgetRootDir / 'js/widget.js'
-				lang = widgetRootDir / 'lang/widget.json'
+				lang = widgetRootDir / 'lang/widget.lang.json'
 				html = widgetRootDir / 'templates/widget.html'
 				python = widgetRootDir / 'widget.py'
 
@@ -816,7 +816,7 @@ class SkillManager(Manager):
 						fp.write(content)
 
 					shutil.copy(str(js), str(js).replace('widget.js', f'{widgetName}.js'))
-					shutil.copy(str(lang), str(lang).replace('widget.json', f'{widgetName}.json'))
+					shutil.copy(str(lang), str(lang).replace('widget.lang.json', f'{widgetName}.lang.json'))
 
 					content = html.read_text().replace('%widgetname%', widgetName)
 					with Path(widgetRootDir, f'templates/{widgetName}.html').open('w+') as fp:
