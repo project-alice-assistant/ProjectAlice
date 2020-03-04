@@ -414,16 +414,16 @@ class SkillManager(Manager):
 					self._activeSkills = self._loadSkillList(skillToLoad=skillName, isUpdate=info['update'])
 					self._allSkills = {**self._allSkills, **self._activeSkills}
 
-					if info['update']:
-						self._allSkills[skillName].onSkillUpdated()
-					else:
-						self._allSkills[skillName].onSkillInstalled()
-
 					try:
 						self.LanguageManager.loadStrings(skillToLoad=skillName)
 						self.TalkManager.loadTalks(skillToLoad=skillName)
 					except:
 						pass
+
+					if info['update']:
+						self._allSkills[skillName].onSkillUpdated()
+					else:
+						self._allSkills[skillName].onSkillInstalled()
 
 				self.SnipsAssistantManager.train()
 				self.DialogTemplateManager.afterNewSkillInstall()
