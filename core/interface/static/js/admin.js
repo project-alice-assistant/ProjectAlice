@@ -102,4 +102,14 @@ $(function () {
 		handleUtilityClick($(this), 'updatee', 5000);
 		return false;
 	});
+
+	$('#addUser').on('click touchstart', function () {
+		handleUtilityClick($(this), 'addUser', 1000);
+		return false;
+	});
+
+	$('#addWakeword').on('click touchstart', function () {
+		handleUtilityClick($(this), 'addWakeword', 1000);
+		return false;
+	});
 });

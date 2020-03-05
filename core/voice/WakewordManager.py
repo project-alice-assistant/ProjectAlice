@@ -166,7 +166,7 @@ class WakewordManager(Manager):
 
 
 	def trimMore(self):
-		self._threshold += 2
+		self._threshold += 3
 		self._workAudioFile()
 
 

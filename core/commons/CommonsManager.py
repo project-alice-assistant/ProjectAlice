@@ -188,29 +188,29 @@ class CommonsManager(Manager):
 
 
 	@classmethod
-	def toCamelCase(cls, string: str, replaceSepCharacters: bool = False, sepCharacters: tuple = None) -> str:
-		join = cls.toPascalCase(string, replaceSepCharacters, sepCharacters)
+	def toCamelCase(cls, theString: str, replaceSepCharacters: bool = False, sepCharacters: tuple = None) -> str:
+		join = cls.toPascalCase(theString, replaceSepCharacters, sepCharacters)
 		return join[0].lower() + join[1:]
 
 
 	@staticmethod
-	def toPascalCase(string: str, replaceSepCharacters: bool = False, sepCharacters: tuple = None) -> str:
+	def toPascalCase(theString: str, replaceSepCharacters: bool = False, sepCharacters: tuple = None) -> str:
 		if replaceSepCharacters:
 			for char in sepCharacters or ('-', '_'):
-				string = string.replace(char, ' ')
+				theString = theString.replace(char, ' ')
 
-		return ''.join(x.capitalize() for x in string.split(' '))
+		return ''.join(x.capitalize() for x in theString.split(' '))
 
 
 	@staticmethod
-	def isSpelledWord(string: str) -> bool:
+	def isSpelledWord(theString: str) -> bool:
 		"""
 		Empirical way to check if a string is something spelled by the user by counting the theoretical length of the string against
 		its theoretical spelled length
-		:param string: string to check
+		:param theString: string to check
 		:return: bool
 		"""
-		return len(string) == (len(string.replace(' ', '').strip()) * 2) - 1
+		return len(theString) == (len(theString.replace(' ', '').strip()) * 2) - 1
 
 
 	def cleanRoomNameToSiteId(self, roomName: str) -> str:
@@ -244,9 +244,9 @@ class CommonsManager(Manager):
 
 
 	@staticmethod
-	def indexOf(sub: str, string: str) -> int:
+	def indexOf(sub: str, theString: str) -> int:
 		try:
-			return string.index(sub)
+			return theString.index(sub)
 		except ValueError:
 			return -1
 
@@ -321,8 +321,13 @@ class CommonsManager(Manager):
 	@staticmethod
 	def randomString(length: int) -> str:
 		chars = string.ascii_letters + string.digits
-		return ''.join(random.choice(chars) for i in range(length))
+		return ''.join(random.choice(chars) for _ in range(length))
 
+
+	def randomNumber(self, length: int) -> int:
+		digits = string.digits
+		number = ''.join(random.choice(digits) for _ in range(length))
+		return int(number) if not number.startswith('0') else self.randomNumber(length)
 
 # noinspection PyUnusedLocal
 def py_error_handler(filename, line, function, err, fmt):

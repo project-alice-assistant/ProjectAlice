@@ -45,5 +45,7 @@
 	"createSkill": "Erstelle den Skill",
 	"uploadSkillToGithub": "Den Skill auf Github hochladen",
 	"resetSkill": "Reset",
-	"actions": "Actions"
+	"actions": "Actions",
+	"addUser": "Neue Benutzer",
+	"addWakeword": "Neue Wakeword"
 }

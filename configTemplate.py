@@ -1,4 +1,11 @@
 settings = {
+	'adminPinCode': {
+		'defaultValue': '',
+		'dataType'    : 'password',
+		'description' : 'Admin pin code, only numbers, 4 digits',
+		'beforeUpdate': 'checkNewAdminPinCode',
+		'onUpdate'    : 'updateAdminPinCode'
+	},
 	'autoReportSkillErrors': {
 		'defaultValue': False,
 		'dataType': 'boolean',

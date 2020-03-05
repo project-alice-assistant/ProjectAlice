@@ -192,6 +192,16 @@ network={
 		confs['mqttHost'] = str(initConfs['mqttHost']) or 'localhost'
 		confs['mqttPort'] = initConfs['mqttPort'] or 1883
 
+		pinCode = initConfs['adminPinCode']
+		try:
+			pin = int(pinCode)
+			if len(str(pin)) != 4:
+				raise
+		except:
+			self.logFatal('Pin code must be 4 digits')
+
+		confs['adminPinCode'] = pinCode
+
 		confs['stayCompletlyOffline'] = bool(initConfs['stayCompletlyOffline'])
 		if initConfs['stayCompletlyOffline']:
 			confs['keepASROffline'] = True

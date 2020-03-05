@@ -20,6 +20,9 @@ version: 1.16
 # Always add a space after the ":" (e.g. deviceName: default instead of deviceName:default)
 
 # Base configs
+# Set the admin pin code. This code will allow you to access the interface. Only numbers, 4 digits
+adminPinCode: 1234
+
 # Enter Wifi credentials for automatic adding of tasmota/zigbee/netatmo devices even when Alice has wired access
 useWifi: yes
 wifiNetworkName:

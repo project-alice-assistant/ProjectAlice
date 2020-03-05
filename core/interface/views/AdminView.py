@@ -41,6 +41,11 @@ class AdminView(View):
 				if value == self.ConfigManager.getAliceConfigByName(conf):
 					continue
 
+				pre = self.ConfigManager.getAliceConfUpdatePreProcessing(conf)
+				if pre:
+					if not self.ConfigManager.doConfigUpdatePreProcessing(pre, value):
+						continue
+
 				pp = self.ConfigManager.getAliceConfUpdatePostProcessing(conf)
 				if pp:
 					postProcessing.add(pp)
@@ -98,6 +103,24 @@ class AdminView(View):
 			return jsonify(success=True)
 		except Exception as e:
 			self.logError(f'Failed updating Project Alice: {e}')
+			return jsonify(success=False)
+
+
+	def addUser(self) -> dict:
+		try:
+			self.SkillManager.getSkillInstance('AliceCore').addNewUser()
+			return jsonify(success=True)
+		except Exception as e:
+			self.logError(f'Failed adding new user: {e}')
+			return jsonify(success=False)
+
+
+	def addWakeword(self) -> dict:
+		try:
+			self.SkillManager.getSkillInstance('AliceCore').addNewWakeword()
+			return jsonify(success=True)
+		except Exception as e:
+			self.logError(f'Failed adding new wakeword: {e}')
 			return jsonify(success=False)
 
 
