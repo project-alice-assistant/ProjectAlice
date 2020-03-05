@@ -35,6 +35,7 @@ class DeepSpeechASR(ASR):
 
 		self._model: Optional[deepspeech.Model] = None
 		self._vad: Optional[webrtcvad.Vad] = None
+		self._triggerFlag = self.ThreadManager.newEvent('asrTriggerFlag')
 
 
 	def onStart(self):
@@ -58,6 +59,16 @@ class DeepSpeechASR(ASR):
 			return False
 
 
+	def onVadUp(self):
+		if not self._triggerFlag.is_set():
+			self._triggerFlag.set()
+
+
+	def onVadDown(self):
+		if self._triggerFlag.is_set():
+			self._triggerFlag.clear()
+
+
 	def decodeStream(self, session: DialogSession) -> Optional[ASRResult]:
 		super().decodeStream(session)
 		with Stopwatch() as processingTime:
@@ -65,8 +76,7 @@ class DeepSpeechASR(ASR):
 				self.ASRManager.addRecorder(session.siteId, recorder)
 				self._recorder = recorder
 				streamContext = self._model.createStream()
-				i = 0
-				prevResult = ''
+				triggered = False
 				for chunk in recorder:
 					if self._timeout.isSet():
 						break
@@ -76,14 +86,11 @@ class DeepSpeechASR(ASR):
 					result = self._model.intermediateDecode(streamContext)
 					self.partialTextCaptured(session=session, text=result, likelihood=1, seconds=0)
 
-					# TODO implement VAD instead of this
-					if result and result == prevResult:
-						i += 1
-						if i > 25:
-							break
-					else:
-						prevResult = result
-						i = 0
+					if not triggered and self._triggerFlag.is_set():
+						triggered = True
+
+					if triggered and not self._triggerFlag.is_set():
+						recorder.stopRecording()
 
 				text = self._model.finishStream(streamContext)
 				self.end(session)

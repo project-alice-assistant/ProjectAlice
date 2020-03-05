@@ -363,6 +363,14 @@ class ProjectAliceObject:
 		pass
 
 
+	def onVadUp(self, **kwargs):
+		pass
+
+
+	def onVadDown(self, **kwargs):
+		pass
+
+
 	def onPartialTextCaptured(self, session, text: str, likelihood: float, seconds: float):
 		pass
 

@@ -156,5 +156,19 @@ class ASRManager(Manager):
 		self._streams.pop(session.siteId, None)
 
 
+	def onVadUp(self, siteId: str):
+		if not self._asr or siteId not in self._streams or not self._streams[siteId].isRecording:
+			return
+
+		self._asr.onVadUp()
+
+
+	def onVadDown(self, siteId: str):
+		if not self._asr or siteId not in self._streams or not self._streams[siteId].isRecording:
+			return
+
+		self._asr.onVadDown()
+
+
 	def addRecorder(self, siteId: str, recorder: Recorder):
 		self._streams[siteId] = recorder

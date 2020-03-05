@@ -1,5 +1,6 @@
 import json
 import uuid
+from datetime import datetime
 from pathlib import Path
 
 import paho.mqtt.client as mqtt
@@ -24,6 +25,7 @@ class MqttManager(Manager):
 		self._thanked = False
 		self._wideAskingSessions = list()
 		self._multiDetectionsHolder = list()
+		self._vadTemporisation = 0
 
 		self._audioFrameRegex = re.compile(constants.TOPIC_AUDIO_FRAME.replace('{}', '(.*)'))
 		self._wakewordDetectedRegex = re.compile(constants.TOPIC_WAKEWORD_DETECTED.replace('{}', '(.*)'))
@@ -47,6 +49,12 @@ class MqttManager(Manager):
 		self._mqttClient.message_callback_add(constants.TOPIC_HOTWORD_DETECTED, self.onHotwordDetected)
 		for username in self.UserManager.getAllUserNames():
 			self._mqttClient.message_callback_add(constants.TOPIC_WAKEWORD_DETECTED.replace('{user}', username), self.onHotwordDetected)
+
+		self._mqttClient.message_callback_add(constants.TOPIC_VAD_UP.format(constants.DEFAULT_SITE_ID), self.onVADUp)
+		self._mqttClient.message_callback_add(constants.TOPIC_VAD_DOWN.format(constants.DEFAULT_SITE_ID), self.onVADDown)
+		for device in self.DeviceManager.getDevicesByType('alicesatellite'):
+			self._mqttClient.message_callback_add(constants.TOPIC_VAD_UP.replace(device.room), self.onVADUp)
+			self._mqttClient.message_callback_add(constants.TOPIC_VAD_DOWN.replace(device.room), self.onVADDown)
 
 		self._mqttClient.message_callback_add(constants.TOPIC_SESSION_STARTED, self.onSnipsSessionStarted)
 
@@ -100,8 +108,8 @@ class MqttManager(Manager):
 		for username in self.UserManager.getAllUserNames():
 			subscribedEvents.append((constants.TOPIC_WAKEWORD_DETECTED.format(username), 0))
 
-		subscribedEvents.append((constants.TOPIC_VAD_UP.format('default'), 0))
-		subscribedEvents.append((constants.TOPIC_VAD_DOWN.format('default'), 0))
+		subscribedEvents.append((constants.TOPIC_VAD_UP.format(constants.DEFAULT_SITE_ID), 0))
+		subscribedEvents.append((constants.TOPIC_VAD_DOWN.format(constants.DEFAULT_SITE_ID), 0))
 		for device in self.DeviceManager.getDevicesByType('alicesatellite'):
 			subscribedEvents.append((constants.TOPIC_VAD_UP.format(device.room), 0))
 			subscribedEvents.append((constants.TOPIC_VAD_DOWN.format(device.room), 0))
@@ -450,6 +458,18 @@ class MqttManager(Manager):
 		if session:
 			payload = self.Commons.payload(msg)
 			self.broadcast(method=constants.EVENT_PARTIAL_TEXT_CAPTURED, exceptions=[self.name], propagateToSkills=True, session=session, text=payload['text'], likelihood=payload['likelihood'], seconds=payload['seconds'])
+
+
+	def onVADUp(self, client, data, msg: mqtt.MQTTMessage):
+		self._vadTemporisation = datetime.now().microsecond
+		siteId = self.Commons.parseSiteId(msg)
+		self.broadcast(method=constants.EVENT_VAD_UP, exceptions=[self.name], propagateToSkills=True, siteId=siteId)
+
+
+	def onVADDown(self, client, data, msg: mqtt.MQTTMessage):
+		if datetime.now().microsecond - 500 > self._vadTemporisation:
+			siteId = self.Commons.parseSiteId(msg)
+			self.broadcast(method=constants.EVENT_VAD_DOWN, exceptions=[self.name], propagateToSkills=True, siteId=siteId)
 
 
 	def reviveSession(self, session: DialogSession, text: str):
