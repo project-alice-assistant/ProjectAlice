@@ -93,3 +93,11 @@ class IndexView(View):
 			return func(**json.loads(data['param']))
 		except Exception as e:
 			self.logWarning(f"[Widget] Widget tried to call a core function but failed: {e}")
+
+
+	@route('/home/getMqttConfig/', methods=['POST'])
+	def getMqttConfig(self):
+		return jsonify(
+			host=self.ConfigManager.getAliceConfigByName('mqttHost'),
+			port=int(self.ConfigManager.getAliceConfigByName('mqttPort')) + 1
+		)
