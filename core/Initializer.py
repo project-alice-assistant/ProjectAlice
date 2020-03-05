@@ -188,7 +188,7 @@ network={
 
 		confPath = Path('/etc/mosquitto/conf.d/websockets.conf')
 		if not confPath.exists():
-			subprocess.run(['sudo', 'cp', 'skills/SpeechVisualizer/websockets.conf', str(confPath)])
+			subprocess.run(['sudo', 'cp', str(Path(self._rootDir, 'system/websockets.conf')), str(confPath)])
 			subprocess.run(['sudo', 'systemctl', 'restart', 'mosquitto'])
 
 		# Now let's dump some values to their respective places
