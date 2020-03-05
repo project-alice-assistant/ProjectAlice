@@ -186,6 +186,10 @@ network={
 			subprocess.run(['sudo', 'systemctl', 'disable', 'snips-audio-server'])
 			subprocess.run(['sudo', 'systemctl', 'disable', 'snips-tts'])
 
+		confPath = Path('/etc/mosquitto/conf.d/websockets.conf')
+		if not confPath.exists():
+			subprocess.run(['sudo', 'cp', 'skills/SpeechVisualizer/websockets.conf', str(confPath)])
+			subprocess.run(['sudo', 'systemctl', 'restart', 'mosquitto'])
 
 		# Now let's dump some values to their respective places
 		# First those that need some checks and self filling in case unspecified
