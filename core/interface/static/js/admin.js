@@ -112,4 +112,9 @@ $(function () {
 		handleUtilityClick($(this), 'addWakeword', 1000);
 		return false;
 	});
+
+	$('#tuneWakeword').on('click touchstart', function () {
+		handleUtilityClick($(this), 'tuneWakeword', 1000);
+		return false;
+	});
 });

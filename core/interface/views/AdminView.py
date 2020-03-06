@@ -124,6 +124,15 @@ class AdminView(View):
 			return jsonify(success=False)
 
 
+	def tuneWakeword(self) -> dict:
+		try:
+			self.SkillManager.getSkillInstance('AliceCore').tuneWakeword()
+			return jsonify(success=True)
+		except Exception as e:
+			self.logError(f'Failed tuning wakeword: {e}')
+			return jsonify(success=False)
+
+
 	def wipeAll(self) -> dict:
 		try:
 			self.ProjectAlice.wipeAll()

@@ -47,5 +47,6 @@
 	"resetSkill": "Reset",
 	"actions": "Actions",
 	"addUser": "Neue Benutzer",
-	"addWakeword": "Neue Wakeword"
+	"addWakeword": "Neue Wakeword",
+	"tuneWakeword": "Tune wakeword"
 }
