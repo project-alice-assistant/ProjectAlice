@@ -45,8 +45,8 @@ class DeepSpeechASR(ASR):
 		if not self.checkLanguage():
 			self.downloadLanguage()
 
-		self._model = deepspeech.Model('/home/pi/deepspeech-0.6.1-models/output_graph.tflite', 500)
-		self._model.enableDecoderWithLM('/home/pi/deepspeech-0.6.1-models/lm.binary', '/home/pi/deepspeech-0.6.1-models/trie', 0.75, 1.85)
+		self._model = deepspeech.Model(f'{self._langPath}/deepspeech-0.6.1-models/output_graph.tflite', 500)
+		self._model.enableDecoderWithLM(f'{self._langPath}/deepspeech-0.6.1-models/lm.binary', f'{self._langPath}/deepspeech-0.6.1-models/trie', 0.75, 1.85)
 
 
 	def install(self) -> bool:
