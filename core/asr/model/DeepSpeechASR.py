@@ -32,6 +32,8 @@ class DeepSpeechASR(ASR):
 		self._capableOfArbitraryCapture = True
 		self._isOnlineASR = False
 
+		self._langPath = Path(self.Commons.rootDir(), f'trained/asr/deepspeech/{self.LanguageManager.activeLanguage}')
+
 		self._model: Optional[deepspeech.Model] = None
 		self._triggerFlag = self.ThreadManager.newEvent('asrTriggerFlag')
 		self._vadTemporisation: Optional[threading.Timer] = None
@@ -39,20 +41,45 @@ class DeepSpeechASR(ASR):
 
 	def onStart(self):
 		super().onStart()
+
+		if not self.checkLanguage():
+			self.downloadLanguage()
+
 		self._model = deepspeech.Model('/home/pi/deepspeech-0.6.1-models/output_graph.tflite', 500)
 		self._model.enableDecoderWithLM('/home/pi/deepspeech-0.6.1-models/lm.binary', '/home/pi/deepspeech-0.6.1-models/trie', 0.75, 1.85)
 
 
 	def install(self) -> bool:
 		super().install()
+		if not self.checkLanguage():
+			return self.downloadLanguage()
+		return True
+
+
+	def checkLanguage(self) -> bool:
+		if not self._langPath.exists():
+			self._langPath.mkdir(parents=True)
+			return False
+
+		if not (self._langPath / 'deepspeech-0.6.1-models/output_graph.tflite').exists():
+			return False
+
+
+	def downloadLanguage(self) -> bool:
 		try:
+			self.logInfo(f'Downloading language model for {self.LanguageManager.activeLanguage}, hold on, this is going to take some time!')
 			url = 'https://github.com/mozilla/DeepSpeech/releases/download/v0.6.1/deepspeech-0.6.1-models.tar.gz'
-			self.Commons.downloadFile(url, str(Path(self.Commons.rootDir(), 'var/voices', url.rsplit('/')[-1])))
-			tar = tarfile.open(str(Path(self.Commons.rootDir(), url.rsplit('/')[-1])))
+
+			downloadPath = (self._langPath / url.rsplit('/')[-1])
+			self.Commons.downloadFile(url, str(downloadPath))
+
+			self.logInfo(f'Language model for {self.LanguageManager.activeLanguage} downloaded, now extracting...')
+			tar = tarfile.open(downloadPath)
 			tar.extractall()
+			downloadPath.unlink()
 			return True
 		except Exception as e:
-			self.logError(f'Error installing dependencies: {e}')
+			self.logError(f'Error installing language model: {e}')
 			return False
 
 
