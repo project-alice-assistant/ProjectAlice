@@ -66,20 +66,22 @@ class DeepSpeechASR(ASR):
 
 
 	def downloadLanguage(self) -> bool:
-		try:
-			self.logInfo(f'Downloading language model for {self.LanguageManager.activeLanguage}, hold on, this is going to take some time!')
-			url = 'https://github.com/mozilla/DeepSpeech/releases/download/v0.6.1/deepspeech-0.6.1-models.tar.gz'
+		self.logInfo(f'Downloading language model for "{self.LanguageManager.activeLanguage}", hold on, this is going to take some time!')
+		url = 'https://github.com/mozilla/DeepSpeech/releases/download/v0.6.1/deepspeech-0.6.1-models.tar.gz'
 
-			downloadPath = (self._langPath / url.rsplit('/')[-1])
+		downloadPath = (self._langPath / url.rsplit('/')[-1])
+		try:
 			self.Commons.downloadFile(url, str(downloadPath))
 
-			self.logInfo(f'Language model for {self.LanguageManager.activeLanguage} downloaded, now extracting...')
+			self.logInfo(f'Language model for "{self.LanguageManager.activeLanguage}" downloaded, now extracting...')
 			tar = tarfile.open(downloadPath)
 			tar.extractall()
+
 			downloadPath.unlink()
 			return True
 		except Exception as e:
 			self.logError(f'Error installing language model: {e}')
+			downloadPath.unlink()
 			return False
 
 

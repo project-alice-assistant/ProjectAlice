@@ -303,10 +303,16 @@ class CommonsManager(Manager):
 
 
 	def downloadFile(self, url: str, dest: str) -> bool:
-		try:
-			with Path(self.Commons.rootDir(), dest).open('wb') as fp:
-				fp.write(requests.get(url).content)
+		if not self.Commons.rootDir() in dest:
+			dest = self.Commons.rootDir() + dest
 
+		try:
+			with requests.get(url, stream=True) as r:
+				r.raise_for_status()
+				with Path(dest).open('wb') as fp:
+					for chunk in r.iter_content(chunk_size=8192):
+						if chunk:
+							fp.write(chunk)
 			return True
 		except Exception as e:
 			self.logWarning(f'Failed downloading file: {e}')
