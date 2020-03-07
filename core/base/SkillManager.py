@@ -1,12 +1,13 @@
 import getpass
 import importlib
 import json
+import os
+import shutil
+import threading
 from pathlib import Path
 from typing import Dict, Optional
 
-import os
 import requests
-import shutil
 
 from core.ProjectAliceExceptions import GithubNotFound, GithubRateLimit, GithubTokenFailed, SkillNotConditionCompliant, SkillStartDelayed, SkillStartingFailed
 from core.base.SuperManager import SuperManager
@@ -44,7 +45,7 @@ class SkillManager(Manager):
 
 		self._busyInstalling = None
 
-		self._skillInstallThread = None
+		self._skillInstallThread: Optional[threading.Thread]= None
 		self._supportedIntents = list()
 		self._allSkills = dict()
 		self._activeSkills = dict()
@@ -57,7 +58,6 @@ class SkillManager(Manager):
 		super().onStart()
 
 		self._busyInstalling = self.ThreadManager.newEvent('skillInstallation')
-		self._skillInstallThread = self.ThreadManager.newThread(name='SkillInstallThread', target=self._checkForSkillInstall, autostart=False)
 
 		# If it's the first time we start, don't delay skill install and do it on main thread
 		if not self.ConfigManager.getAliceConfigByName('skills'):
@@ -66,6 +66,8 @@ class SkillManager(Manager):
 		else:
 			if self.checkForSkillUpdates():
 				self._checkForSkillInstall()
+
+		self._skillInstallThread = self.ThreadManager.newThread(name='SkillInstallThread', target=self._checkForSkillInstall, autostart=False)
 
 		self._activeSkills = self._loadSkillList()
 		self._allSkills = {**self._activeSkills, **self._deactivatedSkills, **self._failedSkills}
@@ -138,7 +140,9 @@ class SkillManager(Manager):
 
 	def onBooted(self):
 		self.skillBroadcast(constants.EVENT_BOOTED)
-		self._skillInstallThread.start()
+
+		if self._skillInstallThread:
+			self._skillInstallThread.start()
 
 
 	def _loadSkillList(self, skillToLoad: str = '', isUpdate: bool = False) -> dict:
@@ -389,7 +393,7 @@ class SkillManager(Manager):
 	@Online(catchOnly=True)
 	def _checkForSkillInstall(self):
 		# Don't start the install timer from the main thread in case it's the first start
-		if self._skillInstallThread is not None:
+		if self._skillInstallThread:
 			self.ThreadManager.newTimer(interval=10, func=self._checkForSkillInstall, autoStart=True)
 
 		root = Path(self.Commons.rootDir(), constants.SKILL_INSTALL_TICKET_PATH)
