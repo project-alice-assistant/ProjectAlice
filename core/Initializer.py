@@ -211,7 +211,7 @@ network={
 			confs['keepASROffline'] = True
 			confs['keepTTSOffline'] = True
 			confs['skillAutoUpdate'] = False
-			confs['asr'] = 'pocketsphinx'
+			confs['asr'] = 'deepspeech'
 			confs['tts'] = 'pico'
 			confs['awsRegion'] = ''
 			confs['awsAccessKey'] = ''
@@ -225,10 +225,10 @@ network={
 			confs['awsAccessKey'] = initConfs['awsAccessKey']
 			confs['awsSecretKey'] = initConfs['awsSecretKey']
 
-			confs['asr'] = initConfs['asr'] if initConfs['asr'] in {'pocketsphinx', 'google'} else 'pocketsphinx'
+			confs['asr'] = initConfs['asr'] if initConfs['asr'] in {'pocketsphinx', 'google', 'deepspeech'} else 'deepspeech'
 			if confs['asr'] == 'google' and not initConfs['googleServiceFile']:
-				self.logInfo('You cannot use Google ASR without a google service file, falling back to pocket sphinx')
-				confs['asr'] = 'pocketsphinx'
+				self.logInfo('You cannot use Google ASR without a google service file, falling back to Deepspeech')
+				confs['asr'] = 'deepspeech'
 
 			if initConfs['googleServiceFile']:
 				googleCreds = Path(self._rootDir, 'credentials/googlecredentials.json')

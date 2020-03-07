@@ -117,7 +117,7 @@ settings = {
 		'description': 'Should be left as default, this is the port used to find new devices'
 	},
 	'asr': {
-		'defaultValue': 'pocketsphinx',
+		'defaultValue': 'deepspeech',
 		'dataType'    : 'list',
 		'values'      : ['deepspeech', 'pocketsphinx', 'google'],
 		'description' : 'The ASR to use. Can\'t use an online ASR if you have set keepASROffline to true!',
