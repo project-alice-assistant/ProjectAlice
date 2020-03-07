@@ -1,9 +1,9 @@
+import tarfile
 import threading
 from pathlib import Path
 from typing import Generator, Optional
 
 import numpy as np
-import tarfile
 
 from core.asr.model.ASR import ASR
 from core.asr.model.ASRResult import ASRResult
@@ -79,15 +79,14 @@ class DeepSpeechASR(ASR):
 
 	def decodeStream(self, session: DialogSession) -> Optional[ASRResult]:
 		super().decodeStream(session)
+		result = None
+
 		with Stopwatch() as processingTime:
 			with Recorder(self._timeout) as recorder:
 				self.ASRManager.addRecorder(session.siteId, recorder)
 				self._recorder = recorder
 				streamContext = self._model.createStream()
 				for chunk in recorder:
-					if self._timeout.isSet():
-						break
-
 					self._model.feedAudioContent(streamContext, np.frombuffer(chunk, np.int16))
 
 					result = self._model.intermediateDecode(streamContext)

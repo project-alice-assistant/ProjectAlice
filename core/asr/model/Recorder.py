@@ -1,9 +1,9 @@
 import queue
+import struct
 import threading
 from typing import Optional
 
 import paho.mqtt.client as mqtt
-import struct
 
 from core.base.model.ProjectAliceObject import ProjectAliceObject
 from core.dialog.model.DialogSession import DialogSession
@@ -46,9 +46,6 @@ class Recorder(ProjectAliceObject):
 
 
 	def onAudioFrame(self, message: mqtt.MQTTMessage):
-		if not self._recording:
-			return
-
 		try:
 			riff, size, fformat = struct.unpack('<4sI4s', message.payload[:12])
 
