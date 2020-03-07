@@ -62,6 +62,7 @@ class DeepSpeechASR(ASR):
 
 		if not (self._langPath / 'deepspeech-0.6.1-models/output_graph.tflite').exists():
 			return False
+		return True
 
 
 	def downloadLanguage(self) -> bool:
