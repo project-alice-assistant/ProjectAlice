@@ -46,6 +46,9 @@ class Recorder(ProjectAliceObject):
 
 
 	def onAudioFrame(self, message: mqtt.MQTTMessage):
+		if not self._recording:
+			return
+
 		try:
 			riff, size, fformat = struct.unpack('<4sI4s', message.payload[:12])
 
@@ -71,12 +74,12 @@ class Recorder(ProjectAliceObject):
 
 
 	def __iter__(self):
-		while self._recording:
+		while not self._buffer.empty():
 			yield self._buffer.get()
 
 
 	def audioStream(self) -> Optional[bytes]:
-		while self._recording:
+		while not self._buffer.empty():
 			if self._timeoutFlag.isSet():
 				return
 

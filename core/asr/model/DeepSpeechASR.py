@@ -1,3 +1,4 @@
+import threading
 from pathlib import Path
 from typing import Generator, Optional
 
@@ -33,6 +34,7 @@ class DeepSpeechASR(ASR):
 
 		self._model: Optional[deepspeech.Model] = None
 		self._triggerFlag = self.ThreadManager.newEvent('asrTriggerFlag')
+		self._vadTemporisation: Optional[threading.Timer] = None
 
 
 	def onStart(self):
@@ -55,15 +57,24 @@ class DeepSpeechASR(ASR):
 
 
 	def onVadUp(self):
-		if not self._triggerFlag.is_set():
-			print('up')
-			self._triggerFlag.set()
+		if self._vadTemporisation and self._vadTemporisation.is_alive():
+			self._vadTemporisation.cancel()
+
+		self._triggerFlag.set()
 
 
 	def onVadDown(self):
+		if not self._triggerFlag.is_set():
+			return
+
+		if not self._vadTemporisation or not self._vadTemporisation.is_alive():
+			self._vadTemporisation = self.ThreadManager.newTimer(interval=2, func=self.vadDown, autoStart=False)
+
+
+	def vadDown(self):
 		if self._triggerFlag.is_set():
-			print('down')
 			self._triggerFlag.clear()
+			self._recorder.stopRecording()
 
 
 	def decodeStream(self, session: DialogSession) -> Optional[ASRResult]:
@@ -73,7 +84,6 @@ class DeepSpeechASR(ASR):
 				self.ASRManager.addRecorder(session.siteId, recorder)
 				self._recorder = recorder
 				streamContext = self._model.createStream()
-				triggered = False
 				for chunk in recorder:
 					if self._timeout.isSet():
 						break
@@ -82,12 +92,6 @@ class DeepSpeechASR(ASR):
 
 					result = self._model.intermediateDecode(streamContext)
 					self.partialTextCaptured(session=session, text=result, likelihood=1, seconds=0)
-
-					if not triggered and self._triggerFlag.is_set():
-						triggered = True
-
-					if result and triggered and not self._triggerFlag.is_set():
-						self._recorder.stopRecording()
 
 			text = self._model.finishStream(streamContext)
 			self.end(session)
