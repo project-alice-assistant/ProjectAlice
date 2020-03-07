@@ -1,9 +1,9 @@
-import tarfile
 import threading
 from pathlib import Path
 from typing import Generator, Optional
 
 import numpy as np
+import tarfile
 
 from core.asr.model.ASR import ASR
 from core.asr.model.ASRResult import ASRResult
@@ -68,7 +68,7 @@ class DeepSpeechASR(ASR):
 			return
 
 		if not self._vadTemporisation or not self._vadTemporisation.is_alive():
-			self._vadTemporisation = self.ThreadManager.newTimer(interval=2, func=self.vadDown, autoStart=False)
+			self._vadTemporisation = self.ThreadManager.newTimer(interval=1, func=self.vadDown)
 
 
 	def vadDown(self):
@@ -87,6 +87,9 @@ class DeepSpeechASR(ASR):
 				self._recorder = recorder
 				streamContext = self._model.createStream()
 				for chunk in recorder:
+					if not chunk:
+						break
+
 					self._model.feedAudioContent(streamContext, np.frombuffer(chunk, np.int16))
 
 					result = self._model.intermediateDecode(streamContext)

@@ -1,9 +1,9 @@
 import queue
-import struct
 import threading
 from typing import Optional
 
 import paho.mqtt.client as mqtt
+import struct
 
 from core.base.model.ProjectAliceObject import ProjectAliceObject
 from core.dialog.model.DialogSession import DialogSession
@@ -71,8 +71,24 @@ class Recorder(ProjectAliceObject):
 
 
 	def __iter__(self):
-		while not self._buffer.empty() or self._recording:
-			yield self._buffer.get()
+		while self._recording:
+			chunk = self._buffer.get()
+
+			if not chunk:
+				break
+
+			yield chunk
+
+		# Empty the buffer
+		data = list()
+		while not self._buffer.empty():
+			chunk = self._buffer.get(block=False)
+			if not chunk:
+				break
+
+			data.append(chunk)
+
+		yield b''.join(data)
 
 
 	def audioStream(self) -> Optional[bytes]:
