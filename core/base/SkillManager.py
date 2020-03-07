@@ -1,13 +1,13 @@
 import getpass
 import importlib
 import json
-import os
-import shutil
 import threading
 from pathlib import Path
 from typing import Dict, Optional
 
+import os
 import requests
+import shutil
 
 from core.ProjectAliceExceptions import GithubNotFound, GithubRateLimit, GithubTokenFailed, SkillNotConditionCompliant, SkillStartDelayed, SkillStartingFailed
 from core.base.SuperManager import SuperManager
@@ -842,6 +842,7 @@ class SkillManager(Manager):
 			# Readme file
 			content = Path(skillDir, 'README.md').read_text().replace('%skillname%', skillName) \
 				.replace('%author%', self.ConfigManager.getAliceConfigByName('githubUsername')) \
+				.replace('%minVersion%', constants.VERSION) \
 				.replace('%description%', skillDefinition['description'].capitalize()) \
 				.replace('%conditions%', readmeConditions) \
 				.replace('%requirements%', readmeReqs) \
