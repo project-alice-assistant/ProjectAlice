@@ -3,7 +3,6 @@ from pathlib import Path
 from typing import Generator, Optional
 
 import numpy as np
-import tarfile
 
 from core.asr.model.ASR import ASR
 from core.asr.model.ASRResult import ASRResult
@@ -74,8 +73,7 @@ class DeepSpeechASR(ASR):
 			self.Commons.downloadFile(url, str(downloadPath))
 
 			self.logInfo(f'Language model for "{self.LanguageManager.activeLanguage}" downloaded, now extracting...')
-			tar = tarfile.open(downloadPath)
-			tar.extractall()
+			self.Commons.runSystemCommand(['tar', '-C', f'{str(downloadPath.parent)}', '-zxvf', str(downloadPath)])
 
 			downloadPath.unlink()
 			return True
