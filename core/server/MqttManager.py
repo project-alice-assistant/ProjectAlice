@@ -1,6 +1,5 @@
 import json
 import uuid
-from datetime import datetime
 from pathlib import Path
 
 import paho.mqtt.client as mqtt
@@ -25,18 +24,11 @@ class MqttManager(Manager):
 		self._thanked = False
 		self._wideAskingSessions = list()
 		self._multiDetectionsHolder = list()
-		self._vadTemporisation = 0
 
 		self._audioFrameRegex = re.compile(constants.TOPIC_AUDIO_FRAME.replace('{}', '(.*)'))
 		self._wakewordDetectedRegex = re.compile(constants.TOPIC_WAKEWORD_DETECTED.replace('{}', '(.*)'))
 		self._vadUpRegex = re.compile(constants.TOPIC_VAD_UP.replace('{}', '(.*)'))
 		self._vadDownRegex = re.compile(constants.TOPIC_VAD_DOWN.replace('{}', '(.*)'))
-
-
-	# noinspection PyUnusedLocal
-	def onLog(self, client, userdata, level, buf):
-		if level != 16:
-			self.logError(buf)
 
 
 	def onStart(self):
@@ -86,6 +78,12 @@ class MqttManager(Manager):
 	def onStop(self):
 		super().onStop()
 		self.disconnect()
+
+
+	# noinspection PyUnusedLocal
+	def onLog(self, client, userdata, level, buf):
+		if level != 16:
+			self.logError(buf)
 
 
 	# noinspection PyUnusedLocal
@@ -451,6 +449,7 @@ class MqttManager(Manager):
 		self.broadcast(method=constants.EVENT_INTENT_NOT_RECOGNIZED, exceptions=[self.name], propagateToSkills=True, session=session)
 
 
+	# noinspection PyUnusedLocal
 	def onNluPartialCapture(self, client, data, msg: mqtt.MQTTMessage):
 		sessionId = self.Commons.parseSessionId(msg)
 		session = self.DialogSessionManager.getSession(sessionId)
@@ -460,16 +459,16 @@ class MqttManager(Manager):
 			self.broadcast(method=constants.EVENT_PARTIAL_TEXT_CAPTURED, exceptions=[self.name], propagateToSkills=True, session=session, text=payload['text'], likelihood=payload['likelihood'], seconds=payload['seconds'])
 
 
+	# noinspection PyUnusedLocal
 	def onVADUp(self, client, data, msg: mqtt.MQTTMessage):
-		self._vadTemporisation = datetime.now().microsecond
 		siteId = self.Commons.parseSiteId(msg)
 		self.broadcast(method=constants.EVENT_VAD_UP, exceptions=[self.name], propagateToSkills=True, siteId=siteId)
 
 
+	# noinspection PyUnusedLocal
 	def onVADDown(self, client, data, msg: mqtt.MQTTMessage):
-		if datetime.now().microsecond - 500 > self._vadTemporisation:
-			siteId = self.Commons.parseSiteId(msg)
-			self.broadcast(method=constants.EVENT_VAD_DOWN, exceptions=[self.name], propagateToSkills=True, siteId=siteId)
+		siteId = self.Commons.parseSiteId(msg)
+		self.broadcast(method=constants.EVENT_VAD_DOWN, exceptions=[self.name], propagateToSkills=True, siteId=siteId)
 
 
 	def reviveSession(self, session: DialogSession, text: str):

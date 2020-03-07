@@ -12,7 +12,6 @@ from core.util.Stopwatch import Stopwatch
 
 try:
 	import deepspeech
-	import webrtcvad
 except:
 	pass
 
@@ -22,8 +21,7 @@ class DeepSpeechASR(ASR):
 	DEPENDENCIES = {
 		'system': [],
 		'pip'   : {
-			'deepspeech==0.6.1',
-			'webrtcvad==2.0.10'
+			'deepspeech==0.6.1'
 		}
 	}
 
@@ -34,7 +32,6 @@ class DeepSpeechASR(ASR):
 		self._isOnlineASR = False
 
 		self._model: Optional[deepspeech.Model] = None
-		self._vad: Optional[webrtcvad.Vad] = None
 		self._triggerFlag = self.ThreadManager.newEvent('asrTriggerFlag')
 
 
@@ -42,8 +39,6 @@ class DeepSpeechASR(ASR):
 		super().onStart()
 		self._model = deepspeech.Model('/home/pi/deepspeech-0.6.1-models/output_graph.tflite', 500)
 		self._model.enableDecoderWithLM('/home/pi/deepspeech-0.6.1-models/lm.binary', '/home/pi/deepspeech-0.6.1-models/trie', 0.75, 1.85)
-		self._vad = webrtcvad.Vad()
-		self._vad.set_mode(1)
 
 
 	def install(self) -> bool:
@@ -61,11 +56,13 @@ class DeepSpeechASR(ASR):
 
 	def onVadUp(self):
 		if not self._triggerFlag.is_set():
+			print('up')
 			self._triggerFlag.set()
 
 
 	def onVadDown(self):
 		if self._triggerFlag.is_set():
+			print('down')
 			self._triggerFlag.clear()
 
 
@@ -89,11 +86,11 @@ class DeepSpeechASR(ASR):
 					if not triggered and self._triggerFlag.is_set():
 						triggered = True
 
-					if triggered and not self._triggerFlag.is_set():
-						recorder.stopRecording()
+					if result and triggered and not self._triggerFlag.is_set():
+						self._recorder.stopRecording()
 
-				text = self._model.finishStream(streamContext)
-				self.end(session)
+			text = self._model.finishStream(streamContext)
+			self.end(session)
 
 		return ASRResult(
 			text=text,
