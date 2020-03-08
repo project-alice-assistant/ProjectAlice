@@ -35,14 +35,21 @@
 										<!-- Make sure unchecked chexboxes send off data -->
 										<input type="hidden" name="{{ settingName }}" value="off">
 									{% elif aliceSettingsTemplate[settingName]['dataType'] == 'integer' %}
-										<input type="number" name="{{ settingName }}" value="{{ settingValue }}"
-											   id="{{ settingName }}">
-									{% elif aliceSettingsTemplate[settingName]['dataType'] == 'password' %}
-										<input type="password" name="{{ settingName }}" value="{{ settingValue }}"
-											   id="{{ settingName }}">
+										{% if aliceSettingsTemplate[settingName]['isSensitive'] %}
+											<input type="password" name="{{ settingName }}" value="{{ settingValue }}"
+												   id="{{ settingName }}">
+										{% else %}
+											<input type="number" name="{{ settingName }}" value="{{ settingValue }}"
+												   id="{{ settingName }}">
+										{% endif %}
 									{% elif aliceSettingsTemplate[settingName]['dataType'] == 'string' %}
-										<input type="text" name="{{ settingName }}" value="{{ settingValue }}"
-											   id="{{ settingName }}">
+										{% if aliceSettingsTemplate[settingName]['isSensitive'] %}
+											<input type="password" name="{{ settingName }}" value="{{ settingValue }}"
+												   id="{{ settingName }}">
+										{% else %}
+											<input type="text" name="{{ settingName }}" value="{{ settingValue }}"
+												   id="{{ settingName }}">
+										{% endif %}
 									{% elif aliceSettingsTemplate[settingName]['dataType'] == 'list' %}
 										{% if aliceSettingsTemplate[settingName]['values'] is mapping %}
 											<select name="{{ settingName }}" id="{{ settingName }}">
