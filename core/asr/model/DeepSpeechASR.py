@@ -50,9 +50,7 @@ class DeepSpeechASR(ASR):
 
 	def install(self) -> bool:
 		super().install()
-		if not self.checkLanguage():
-			return self.downloadLanguage()
-		return True
+		return self.downloadLanguage() if not self.checkLanguage() else True
 
 
 	def checkLanguage(self) -> bool:
@@ -60,9 +58,7 @@ class DeepSpeechASR(ASR):
 			self._langPath.mkdir(parents=True)
 			return False
 
-		if not (self._langPath / 'deepspeech-0.6.1-models/output_graph.tflite').exists():
-			return False
-		return True
+		return False if not (self._langPath / 'deepspeech-0.6.1-models/output_graph.tflite').exists() else True
 
 
 	def downloadLanguage(self) -> bool:
