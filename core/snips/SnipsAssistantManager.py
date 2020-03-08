@@ -81,8 +81,8 @@ class SnipsAssistantManager(Manager):
 					passed = False
 
 				for slot in intent['slots']:
-					declaredSlots.setdefault(intent['name'], dict)
-					declaredSlots[intent['name']] = slot
+					declaredSlots.setdefault(intent['name'], dict())
+					declaredSlots[intent['name']][slot['name']] = slot
 
 					if intent['name'] not in existingSlots or slot['name'] not in existingSlots[intent['name']]:
 						passed = False
@@ -96,7 +96,11 @@ class SnipsAssistantManager(Manager):
 				continue
 
 			for slot in intent['slots']:
-				if intentName not in declaredSlots or slot['type'] not in declaredSlots[intentName]:
+				if intentName not in declaredSlots:
+					passed = False
+					break
+
+				if slot['name'] not in declaredSlots[intentName]:
 					passed = False
 					break
 
