@@ -1,6 +1,7 @@
 import json
 from datetime import datetime
 from pathlib import Path
+from typing import Dict
 
 from core.base.model.Manager import Manager
 
@@ -48,11 +49,10 @@ class SnipsAssistantManager(Manager):
 		if not self._assistantPath.exists():
 			return False
 
-		existingIntents = set()
-		existingSlots = set()
+		existingIntents: Dict[str, dict] = dict()
+		existingSlots: Dict[str, set] = dict()
 
 		for skillResource in self.DialogTemplateManager.skillResource():
-
 			with skillResource.open() as resource:
 				data = json.load(resource)
 
@@ -60,26 +60,52 @@ class SnipsAssistantManager(Manager):
 				continue
 
 			for intent in data['intents']:
-				existingIntents.add(intent['name'])
+				existingIntents[intent['name']] = intent
 
 				if 'slots' not in intent or not intent['slots']:
 					continue
 
 				for slot in intent['slots']:
-					existingSlots.add(slot['name'])
+					existingSlots.setdefault(intent['name'], set())
+					existingSlots[intent['name']].add(slot['name'])
 
+		declaredIntents = dict()
+		declaredSlots = dict()
+		passed = True
 		with self._assistantPath.open() as fp:
 			data = json.load(fp)
 			for intent in data['intents']:
+				declaredIntents[intent['name']] = intent
+
 				if intent['name'] not in existingIntents:
-					return False
+					passed = False
 
 				for slot in intent['slots']:
-					if slot['name'] not in existingSlots:
-						return False
+					declaredSlots.setdefault(intent['name'], dict)
+					declaredSlots[intent['name']] = slot
 
-		self.logInfo('Assistant seems consistent')
-		return True
+					if intent['name'] not in existingSlots or slot['name'] not in existingSlots[intent['name']]:
+						passed = False
+
+		for intentName, intent in existingIntents.items():
+			if intentName not in declaredIntents:
+				passed = False
+				break
+
+			if 'slots' not in intent or not intent['slots']:
+				continue
+
+			for slot in intent['slots']:
+				if intentName not in declaredSlots or slot['type'] not in declaredSlots[intentName]:
+					passed = False
+					break
+
+		if passed:
+			self.logInfo('Assistant seems consistent')
+		else:
+			self.logInfo('Found some inconsistencies in assistant')
+
+		return passed
 
 
 	def train(self):
