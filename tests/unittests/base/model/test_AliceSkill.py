@@ -3,11 +3,13 @@ from unittest import mock
 from unittest.mock import MagicMock, PropertyMock
 
 from core.base.model.AliceSkill import AliceSkill
-from core.util.Decorators import IntentHandler, MqttHandler
 from core.base.model.Intent import Intent
 from core.user.model.AccessLevels import AccessLevel
+from core.util.Decorators import IntentHandler, MqttHandler
+
 
 class TestAliceSkill(unittest.TestCase):
+
 	@mock.patch('core.util.Decorators.Intent.ProtectedIntentManager', new_callable=PropertyMock)
 	@mock.patch('core.util.Decorators.Intent.ConfigManager', new_callable=PropertyMock)
 	def testFindDecoratedIntents(self, mock_config, mock_protected):
@@ -19,18 +21,22 @@ class TestAliceSkill(unittest.TestCase):
 		mock_protected.return_value = property_mock
 
 		class ExampleSkill(AliceSkill):
-			#ignore all stuff that would happen in the AliceSkill init
+
+			# ignore all stuff that would happen in the AliceSkill init
 			def __init__(self):
 				self._name = 'ExampleSkill'
 
-			@IntentHandler('intent1', authOnly=AccessLevel.ADMIN)
+
+			@IntentHandler('intent1', authLevel=AccessLevel.ADMIN)
 			def single_decorator(self, *args, **kwargs):
 				return self, args, kwargs
+
 
 			@IntentHandler('intent2', requiredState='exampleState')
 			@IntentHandler('intent3', isProtected=True)
 			def multiple_decorator(self, *args, **kwargs):
 				return self, args, kwargs
+
 
 			@MqttHandler('hermes/intent/unittest:intent2', requiredState='exampleState2')
 			def mqtt_decorator(self, *args, **kwargs):
@@ -98,7 +104,7 @@ class TestAliceSkill(unittest.TestCase):
 
 		# no decorated functions
 		initIntents = [
-			Intent('Intent1', authOnly=AccessLevel.ADMIN),
+			Intent('Intent1', authLevel=AccessLevel.ADMIN),
 			'hermes/intent/unittest:Intent2',
 			(Intent('intent3'), exampleSkill.exampleFunc),
 			('hermes/intent/unittest:intent4', exampleSkill.exampleFunc)
@@ -143,7 +149,7 @@ class TestAliceSkill(unittest.TestCase):
 		}
 
 		initIntents = [
-			Intent('intent1', authOnly=AccessLevel.ADMIN)
+			Intent('intent1', authLevel=AccessLevel.ADMIN)
 		]
 
 		mappings = exampleSkill.buildIntentList(initIntents)
