@@ -38,6 +38,8 @@ class DialogSession:
 		if sessionId:
 			self.sessionId = sessionId
 
+		self.addToHistory(self.intentName)
+
 		commonsManager = SuperManager.getInstance().commonsManager
 		self.message = message
 		self.intentName = message.topic
@@ -48,6 +50,8 @@ class DialogSession:
 
 
 	def update(self, message: MQTTMessage):
+		self.addToHistory(self.intentName)
+
 		commonsManager = SuperManager.getInstance().commonsManager
 		self.message = message
 		self.intentName = message.topic
@@ -62,6 +66,8 @@ class DialogSession:
 		Revives old session keeping siteId, sessionId and isAPIGenerated from the
 		new session
 		"""
+		self.addToHistory(self.intentName)
+
 		self.payload = session.payload
 		self.slots = session.slots
 		self.slotsAsObjects = session.slotsAsObjects

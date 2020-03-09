@@ -223,11 +223,11 @@ class ProjectAliceObject:
 		pass
 
 
-	def onContextSensitiveDelete(self, sessionId: str):
+	def onContextSensitiveDelete(self, session):
 		pass
 
 
-	def onContextSensitiveEdit(self, sessionId: str):
+	def onContextSensitiveEdit(self, session):
 		pass
 
 
