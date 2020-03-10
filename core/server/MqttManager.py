@@ -72,6 +72,10 @@ class MqttManager(Manager):
 
 		self._mqttClient.message_callback_add(constants.TOPIC_PARTIAL_TEXT_CAPTURED, self.onNluPartialCapture)
 
+		self._mqttClient.message_callback_add(constants.TOPIC_HOTWORD_TOGGLE_ON, self.onSnipsHotwordToggleOn)
+
+		self._mqttClient.message_callback_add(constants.TOPIC_HOTWORD_TOGGLE_OFF, self.onSnipsHotwordToggleOff)
+
 		self.connect()
 
 
@@ -100,6 +104,7 @@ class MqttManager(Manager):
 			(constants.TOPIC_TTS_SAY, 0),
 			(constants.TOPIC_TEXT_CAPTURED, 0),
 			(constants.TOPIC_HOTWORD_TOGGLE_ON, 0),
+			(constants.TOPIC_HOTWORD_TOGGLE_OFF, 0),
 			(constants.TOPIC_NLU_QUERY, 0)
 		]
 
@@ -176,10 +181,6 @@ class MqttManager(Manager):
 					return
 
 			if message.topic == constants.TOPIC_TEXT_CAPTURED and session:
-				return
-
-			elif message.topic == constants.TOPIC_HOTWORD_TOGGLE_ON:
-				self.broadcast(method=constants.EVENT_HOTWORD_TOGGLE_ON, exceptions=[constants.DUMMY], siteId=siteId)
 				return
 
 			if not session:  # It is a device trying to communicate with Alice
@@ -287,6 +288,18 @@ class MqttManager(Manager):
 				self.endSession(sessionId=sessionId)
 
 		self._multiDetectionsHolder = list()
+
+
+	# noinspection PyUnusedLocal
+	def onSnipsHotwordToggleOn(self, client, data, msg: mqtt.MQTTMessage):
+		siteId = self.Commons.parseSiteId(msg)
+		self.broadcast(method=constants.EVENT_HOTWORD_TOGGLE_ON, exceptions=[constants.DUMMY], propagateToSkills=True, siteId=siteId)
+
+
+	# noinspection PyUnusedLocal
+	def onSnipsHotwordToggleOff(self, client, data, msg: mqtt.MQTTMessage):
+		siteId = self.Commons.parseSiteId(msg)
+		self.broadcast(method=constants.EVENT_HOTWORD_TOGGLE_OFF, exceptions=[constants.DUMMY], propagateToSkills=True, siteId=siteId)
 
 
 	# noinspection PyUnusedLocal

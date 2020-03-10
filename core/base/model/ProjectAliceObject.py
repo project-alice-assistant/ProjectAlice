@@ -126,6 +126,10 @@ class ProjectAliceObject:
 		pass
 
 
+	def onHotwordToggleOff(self, siteId: str):
+		pass
+
+
 	def onSessionStarted(self, session):
 		pass
 
