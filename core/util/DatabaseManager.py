@@ -288,7 +288,7 @@ class DatabaseManager(Manager):
 		:return:
 		"""
 
-		query = f"DELETE FROM :__table__ WHERE id in (SELECT id FROM :__table__ ORDER BY id LIMIT {self.ConfigManager.getAliceConfigByName('autoPruneStoredData')})"
+		query = f"DELETE FROM :__table__ WHERE id not in (SELECT id FROM :__table__ ORDER BY id DESC LIMIT {self.ConfigManager.getAliceConfigByName('autoPruneStoredData')})"
 		query = self.basicChecks(tableName, query, callerName)
 		if not query:
 			return
