@@ -228,7 +228,7 @@ class MqttManager(Manager):
 					return
 
 				elif consumed or consumed is None:
-					self.logInfo(f"The intent {message.topic.replace('hermes/intent/', '')} was consumed by {skill.__class__.__name__}")
+					self.logDebug(f"The intent {message.topic.replace('hermes/intent/', '')} was consumed by {skill.name}")
 					return
 
 			self.logWarning(f"Intent \"{message.topic}\" wasn't consumed by any skill")

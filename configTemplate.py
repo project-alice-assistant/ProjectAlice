@@ -146,6 +146,12 @@ settings = {
 		'description' : 'The ASR to use. Can\'t use an online ASR if you have set keepASROffline to true!',
 		'onUpdate'    : 'reloadASR'
 	},
+	'asrTimeout'            : {
+		'defaultValue': 10,
+		'dataType'    : 'integer',
+		'isSensitve'  : False,
+		'description' : 'Defines after how many seconds the ASR times out',
+	},
 	'tts'                   : {
 		'defaultValue': 'pico',
 		'dataType'    : 'list',

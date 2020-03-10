@@ -84,7 +84,7 @@ class ASR(ProjectAliceObject):
 
 	def decodeStream(self, session: DialogSession):
 		self._timeout.clear()
-		self._timeoutTimer = self.ThreadManager.newTimer(interval=int(self.ConfigManager.getSnipsConfiguration('snips-dialogue', 'session_timeout').value) or 30, func=self.timeout)
+		self._timeoutTimer = self.ThreadManager.newTimer(interval=int(self.ConfigManager.getAliceConfigByName('asrTimeout')), func=self.timeout)
 
 
 	def end(self, session: DialogSession):
