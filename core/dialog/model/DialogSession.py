@@ -58,7 +58,11 @@ class DialogSession:
 		self.payload = commonsManager.payload(message)
 		self.slots.update(commonsManager.parseSlots(message))
 		self.slotsAsObjects.update(commonsManager.parseSlotsToObjects(message))
-		self.customData.update(commonsManager.parseCustomData(message))
+
+		if self.customData:
+			self.customData.update(commonsManager.parseCustomData(message))
+		else:
+			self.customData = dict()
 
 
 	def reviveOldSession(self, session: DialogSession):

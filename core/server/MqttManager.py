@@ -11,6 +11,7 @@ from core.ProjectAliceExceptions import AccessLevelTooLow
 from core.base.model.Intent import Intent
 from core.base.model.Manager import Manager
 from core.commons import constants
+from core.commons.model.Slot import Slot
 from core.dialog.model.DialogSession import DialogSession
 from core.util.Decorators import deprecated
 
@@ -29,6 +30,8 @@ class MqttManager(Manager):
 		self._wakewordDetectedRegex = re.compile(constants.TOPIC_WAKEWORD_DETECTED.replace('{}', '(.*)'))
 		self._vadUpRegex = re.compile(constants.TOPIC_VAD_UP.replace('{}', '(.*)'))
 		self._vadDownRegex = re.compile(constants.TOPIC_VAD_DOWN.replace('{}', '(.*)'))
+
+		self._INTENT_RANDOM_ANSWER = Intent('UserRandomAnswer', isProtected=True)
 
 
 	def onStart(self):
@@ -443,14 +446,41 @@ class MqttManager(Manager):
 		if not session:
 			self.ask(text=self.TalkManager.randomTalk('notUnderstood', skill='system'), client='default')
 		else:
-			if msg.topic == Intent('UserRandomAnswer'):
+			if not str(self._INTENT_RANDOM_ANSWER) in session.intentFilter:
 				return
 
-			if session.customData and 'skill' in session.customData and 'RandomWord' in session.slots:
-				skill = self.SkillManager.getSkillInstance(session.customData['skill'])
-				if skill:
-					skill.onMessage(Intent('UserRandomAnswer'), session)
-					return
+			payload = self.Commons.payload(msg)
+			# Trick the session into thinking it got RandomAnswer
+			session.intentName = str(self._INTENT_RANDOM_ANSWER)
+			session.message.topic = str(self._INTENT_RANDOM_ANSWER).encode('utf-8')
+
+			# Forge the slot for total transparancy for skill devs
+			slot = {
+				'rawValue'    : payload['input'],
+				'value'       : {
+					'kind' : 'Custom',
+					'value': payload['input']
+				},
+				'alternatives': [],
+				'range'       : {
+					'start': 0,
+					'end'  : len(payload['input']) - 1
+				},
+				'entity'      : 'Alice/RandomWords',
+				'slotName'    : 'RandomWord'
+			}
+
+			session.slots['RandomWord'] = payload['input']
+			session.slotsAsObjects.get('RandomWord', list()).append(Slot(**slot))
+
+			consumed = False
+			for skill in self.SkillManager.activeSkills.values():
+				if skill.onDispatchMessage(session):
+					consumed = True
+					break
+
+			if consumed:
+				return
 
 			if session.notUnderstood < self.ConfigManager.getAliceConfigByName('notUnderstoodRetries'):
 				session.notUnderstood = session.notUnderstood + 1
@@ -677,6 +707,8 @@ class MqttManager(Manager):
 
 		if currentDialogState:
 			session.currentState = currentDialogState
+
+		session.customData = customData
 
 		if self.ConfigManager.getAliceConfigByName('outputOnSonos') != '1' or (self.ConfigManager.getAliceConfigByName('outputOnSonos') == '1' and self.SkillManager.getSkillInstance('Sonos') is None or not self.SkillManager.getSkillInstance('Sonos').anySkillHere(session.siteId)) or not self.SkillManager.getSkillInstance('Sonos').active:
 			self._mqttClient.publish(constants.TOPIC_CONTINUE_SESSION, json.dumps(jsonDict))
