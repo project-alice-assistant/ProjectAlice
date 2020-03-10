@@ -716,6 +716,7 @@ input:focus {
 	background-color: #343434;
 	box-shadow: 0 0 20px 5px #141414;
 	cursor: pointer;
+	overflow: hidden;
 }
 
 .widgetIcons {
