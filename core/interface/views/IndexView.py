@@ -98,6 +98,7 @@ class IndexView(View):
 	@route('/home/getMqttConfig/', methods=['POST'])
 	def getMqttConfig(self):
 		return jsonify(
+			success=True,
 			host=self.ConfigManager.getAliceConfigByName('mqttHost'),
 			port=int(self.ConfigManager.getAliceConfigByName('mqttPort')) + 1
 		)
