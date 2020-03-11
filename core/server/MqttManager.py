@@ -446,7 +446,7 @@ class MqttManager(Manager):
 		if not session:
 			self.ask(text=self.TalkManager.randomTalk('notUnderstood', skill='system'), client='default')
 		else:
-			if not str(self._INTENT_RANDOM_ANSWER) in session.intentFilter:
+			if session.intentFilter and not str(self._INTENT_RANDOM_ANSWER) in session.intentFilter:
 				return
 
 			payload = self.Commons.payload(msg)

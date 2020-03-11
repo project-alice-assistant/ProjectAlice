@@ -72,6 +72,9 @@ class Recorder(ProjectAliceObject):
 
 	def __iter__(self):
 		while self._recording:
+			if self._timeoutFlag.isSet():
+				return
+
 			chunk = self._buffer.get()
 
 			if not chunk:
