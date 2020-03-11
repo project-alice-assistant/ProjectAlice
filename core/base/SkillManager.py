@@ -275,7 +275,7 @@ class SkillManager(Manager):
 			raise
 		except Exception as e:
 			# noinspection PyUnboundLocalVariable
-			self.logError(f'- Couldn\'t start skill {name or "undefined"}. Did you forget to return the intents in onStart()? Error: {e}')
+			self.logError(f'- Couldn\'t start skill {name or "undefined"}. Error: {e}')
 
 		return dict()
 
