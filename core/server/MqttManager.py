@@ -450,34 +450,35 @@ class MqttManager(Manager):
 				return
 
 			payload = self.Commons.payload(msg)
-			# Trick the session into thinking it got RandomAnswer
-			session.intentName = str(self._INTENT_RANDOM_ANSWER)
-			session.message.topic = str(self._INTENT_RANDOM_ANSWER).encode('utf-8')
+			if 'input' in payload:
+				# Trick the session into thinking it got RandomAnswer
+				session.intentName = str(self._INTENT_RANDOM_ANSWER)
+				session.message.topic = str(self._INTENT_RANDOM_ANSWER).encode('utf-8')
 
-			# Forge the slot for total transparancy for skill devs
-			slot = {
-				'rawValue'    : payload['input'],
-				'value'       : {
-					'kind' : 'Custom',
-					'value': payload['input']
-				},
-				'alternatives': [],
-				'range'       : {
-					'start': 0,
-					'end'  : len(payload['input']) - 1
-				},
-				'entity'      : 'Alice/RandomWords',
-				'slotName'    : 'RandomWord'
-			}
+				# Forge the slot for total transparancy for skill devs
+				slot = {
+					'rawValue'    : payload['input'],
+					'value'       : {
+						'kind' : 'Custom',
+						'value': payload['input']
+					},
+					'alternatives': [],
+					'range'       : {
+						'start': 0,
+						'end'  : len(payload['input']) - 1
+					},
+					'entity'      : 'Alice/RandomWords',
+					'slotName'    : 'RandomWord'
+				}
 
-			session.slots['RandomWord'] = payload['input']
-			session.slotsAsObjects.get('RandomWord', list()).append(Slot(**slot))
+				session.slots['RandomWord'] = payload['input']
+				session.slotsAsObjects.get('RandomWord', list()).append(Slot(**slot))
 
-			consumed = False
-			for skill in self.SkillManager.activeSkills.values():
-				if skill.onDispatchMessage(session):
-					consumed = True
-					break
+				consumed = False
+				for skill in self.SkillManager.activeSkills.values():
+					if skill.onDispatchMessage(session):
+						consumed = True
+						break
 
 			if consumed:
 				return
