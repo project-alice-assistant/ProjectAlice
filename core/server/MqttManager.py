@@ -480,8 +480,8 @@ class MqttManager(Manager):
 						consumed = True
 						break
 
-			if consumed:
-				return
+				if consumed:
+					return
 
 			if session.notUnderstood < self.ConfigManager.getAliceConfigByName('notUnderstoodRetries'):
 				session.notUnderstood = session.notUnderstood + 1
