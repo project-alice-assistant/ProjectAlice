@@ -31,7 +31,7 @@
 									<!-- Make sure unchecked checkboxes send off data -->
 									<input type="hidden" name="{{ settingName }}" value="off">
 								{% elif skill.getSkillConfigsTemplate()[settingName]['dataType'] == 'integer' %}
-									{% if skill.getSkillConfigsTemplate()[settingName]['isSensitive'] %}
+									{% if skill.getSkillConfigsTemplate()[settingName]['isSensitive'] is sameas true %}
 										<input type="password" name="{{ settingName }}" value="{{ settingValue }}"
 											   id="{{ settingName }}">
 									{% else %}
@@ -39,7 +39,7 @@
 											   id="{{ settingName }}">
 									{% endif %}
 								{% elif skill.getSkillConfigsTemplate()[settingName]['dataType'] == 'string' %}
-									{% if skill.getSkillConfigsTemplate()[settingName]['isSensitive'] %}
+									{% if skill.getSkillConfigsTemplate()[settingName]['isSensitive'] is sameas true %}
 										<input type="password" name="{{ settingName }}" value="{{ settingValue }}"
 											   id="{{ settingName }}">
 									{% else %}

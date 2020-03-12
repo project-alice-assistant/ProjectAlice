@@ -35,7 +35,7 @@
 										<!-- Make sure unchecked chexboxes send off data -->
 										<input type="hidden" name="{{ settingName }}" value="off">
 									{% elif aliceSettingsTemplate[settingName]['dataType'] == 'integer' %}
-										{% if aliceSettingsTemplate[settingName]['isSensitive'] %}
+										{% if aliceSettingsTemplate[settingName]['isSensitive'] is sameas true %}
 											<input type="password" name="{{ settingName }}" value="{{ settingValue }}"
 												   id="{{ settingName }}">
 										{% else %}
@@ -43,7 +43,7 @@
 												   id="{{ settingName }}">
 										{% endif %}
 									{% elif aliceSettingsTemplate[settingName]['dataType'] == 'string' %}
-										{% if aliceSettingsTemplate[settingName]['isSensitive'] %}
+										{% if aliceSettingsTemplate[settingName]['isSensitive'] is sameas true %}
 											<input type="password" name="{{ settingName }}" value="{{ settingValue }}"
 												   id="{{ settingName }}">
 										{% else %}
