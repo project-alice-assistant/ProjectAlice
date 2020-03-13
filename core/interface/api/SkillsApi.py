@@ -1,11 +1,6 @@
-import json
-from pathlib import Path
-
-import requests
 from flask import jsonify, request
 from flask_classful import route
 
-from core.commons import constants
 from core.interface.model.Api import Api
 from core.util.Decorators import ApiAuthenticated
 
@@ -113,13 +108,8 @@ class SkillsApi(Api):
 			return jsonify(success=False, reason='skill already installed')
 
 		try:
-			req = requests.get(f'{constants.GITHUB_RAW_URL}/skill_{skillName}/{self.SkillStoreManager.getSkillUpdateTag(skillName)}/{skillName}.install')
-			remoteFile = req.json()
-			if not remoteFile:
+			if not self.SkillManager.downloadInstallTicket(skillName):
 				return jsonify(success=False, reason='skill not found')
-
-			skillFile = Path(self.Commons.rootDir(), f'system/skillInstallTickets/{skillName}.install')
-			skillFile.write_text(json.dumps(remoteFile))
 		except Exception as e:
 			self.logWarning(f'Failed installing skill: {e}', printStack=True)
 			return jsonify(success=False)

@@ -1,13 +1,13 @@
 import getpass
 import importlib
 import json
+import os
+import shutil
 import threading
 from pathlib import Path
 from typing import Dict, Optional
 
-import os
 import requests
-import shutil
 
 from core.ProjectAliceExceptions import GithubNotFound, GithubRateLimit, GithubTokenFailed, SkillNotConditionCompliant, SkillStartDelayed, SkillStartingFailed
 from core.base.SuperManager import SuperManager
@@ -365,16 +365,9 @@ class SkillManager(Manager):
 						elif skillName in self._deactivatedSkills:
 							self._deactivatedSkills[skillName].updateAvailable = True
 					else:
-						req = requests.get(f'{constants.GITHUB_RAW_URL}/skill_{skillName}/{self.SkillStoreManager.getSkillUpdateTag(skillName)}/{skillName}.install')
-						if req.status_code == 404:
-							raise GithubNotFound
-
-						remoteFile = req.json()
-						if not remoteFile:
+						if not self.downloadInstallTicket(skillName):
 							raise Exception
 
-						skillFile = Path(self.Commons.rootDir(), constants.SKILL_INSTALL_TICKET_PATH, skillName + '.install')
-						skillFile.write_text(json.dumps(remoteFile))
 						if skillName in self._failedSkills:
 							del self._failedSkills[skillName]
 				else:
@@ -605,7 +598,7 @@ class SkillManager(Manager):
 						raise SkillNotConditionCompliant(message=notCompliant, skillName=skillName, condition=conditionName, conditionValue=conditionValue)
 					elif requiredSkill['name'] not in availableSkills:
 						self.logInfo(f'Skill {skillName} has another skill as dependency, adding download')
-						if not self.Commons.downloadFile(requiredSkill['url'], Path(self.Commons.rootDir(), f"system/skillInstallTickets/{requiredSkill['name']}.install")):
+						if not self.downloadInstallTicket(requiredSkill['name']):
 							raise SkillNotConditionCompliant(message=notCompliant, skillName=skillName, condition=conditionName, conditionValue=conditionValue)
 
 			elif conditionName == 'notSkill':
@@ -706,7 +699,7 @@ class SkillManager(Manager):
 				'https://skills.projectalice.ch/DateDayTimeYear'
 			]
 			for link in tickets:
-				self.Commons.downloadFile(link, f'system/skillInstallTickets/{link.rsplit("/")[-1]}.install')
+				self.downloadInstallTicket(link.rsplit('/')[-1])
 
 
 	def createNewSkill(self, skillDefinition: dict) -> bool:
@@ -909,4 +902,19 @@ class SkillManager(Manager):
 			return True
 		except Exception as e:
 			self.logWarning(f'Something went wrong uploading skill to Github: {e}')
+			return False
+
+
+	def downloadInstallTicket(self, skillName: str) -> bool:
+		try:
+			tmpFile = Path(self.Commons.rootDir(), f'system/skillInstallTickets/{skillName}.install')
+			if not self.Commons.downloadFile(
+					url=f'{constants.GITHUB_RAW_URL}/skill_{skillName}/{self.SkillStoreManager.getSkillUpdateTag(skillName)}/{skillName}.install',
+					destination=str(tmpFile.with_suffix('.tmp'))
+			):
+				raise
+
+			shutil.move(tmpFile.with_suffix('.tmp'), tmpFile)
+			return True
+		except:
 			return False
