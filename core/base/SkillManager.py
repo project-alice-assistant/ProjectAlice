@@ -594,11 +594,11 @@ class SkillManager(Manager):
 
 			elif conditionName == 'skill':
 				for requiredSkill in conditionValue:
-					if requiredSkill['name'] in availableSkills and not availableSkills[requiredSkill['name']]['active']:
+					if requiredSkill in availableSkills and not availableSkills[requiredSkill]['active']:
 						raise SkillNotConditionCompliant(message=notCompliant, skillName=skillName, condition=conditionName, conditionValue=conditionValue)
-					elif requiredSkill['name'] not in availableSkills:
+					elif requiredSkill not in availableSkills:
 						self.logInfo(f'Skill {skillName} has another skill as dependency, adding download')
-						if not self.downloadInstallTicket(requiredSkill['name']):
+						if not self.downloadInstallTicket(requiredSkill):
 							raise SkillNotConditionCompliant(message=notCompliant, skillName=skillName, condition=conditionName, conditionValue=conditionValue)
 
 			elif conditionName == 'notSkill':
