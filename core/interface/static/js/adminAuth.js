@@ -25,7 +25,7 @@ $(function () {
 		$.ajax({
 			url: '/adminAuth/login/',
 			data: {
-				'username': $(self).val()
+				'username': $(this).val()
 			},
 			type: 'POST'
 		});
