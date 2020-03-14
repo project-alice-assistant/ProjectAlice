@@ -79,6 +79,10 @@ class SnipsNlu(NluEngine):
 						text, slotName = match.split(':=>')
 						entity = slots.get(slotName, 'Unknown')
 
+						if entity == 'Unknown':
+							self.logWarning(f'Slot named "{slotName}" with text "{text}" in utterance "{utterance}" doesn\'t have any matching slot definition, skipping to avoid NLU training failure')
+							continue
+
 						if entity.startswith('snips/'):
 							nluTrainingSample['entities'][entity] = dict()
 
