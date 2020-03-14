@@ -1,5 +1,6 @@
 import json
 from pathlib import Path
+from subprocess import CompletedProcess
 
 import random
 import re
@@ -132,7 +133,9 @@ class SnipsNlu(NluEngine):
 			if tempTrainingData.exists():
 				shutil.rmtree(tempTrainingData)
 
-			self.Commons.runSystemCommand([f'./venv/bin/snips-nlu', 'train', str(datasetFile), str(tempTrainingData)])
+			training: CompletedProcess = self.Commons.runSystemCommand([f'./venv/bin/snips-nlu', 'train', str(datasetFile), str(tempTrainingData)])
+			if training.returncode != 0:
+				self.logError(f'Error while training Snips NLU: {training.stderr.decode()}')
 
 			assistantPath = Path(self.Commons.rootDir(), f'trained/assistants/assistant_{self.LanguageManager.activeLanguage}/nlu_engine')
 
