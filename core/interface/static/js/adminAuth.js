@@ -10,7 +10,7 @@ $(function () {
 					checkAuth();
 				}, 250);
 			} else if (response.hasOwnProperty('username')) {
-				$('#username').text(response.username);
+				$('#username').val(response.username).prop('disabled', true);
 				$('#adminAuthKeyboardContainer').slideDown(250);
 				setTimeout(function () {
 					checkAuth();
@@ -21,18 +21,11 @@ $(function () {
 		})
 	}
 
-	$(document).on('keyup', function (e) {
-		let $username = $('#username');
-		if (e.key == 'Backspace') {
-			$username.html($username.html().slice(0, -1));
-		} else if (e.key.length === 1) {
-			$username.append(e.key);
-		}
-
+	$('#username').on('keyup', function (e) {
 		$.ajax({
 			url: '/adminAuth/login/',
 			data: {
-				'username': $username.html()
+				'username': $(self).val()
 			},
 			type: 'POST'
 		});
