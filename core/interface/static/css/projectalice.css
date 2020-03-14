@@ -885,6 +885,13 @@ input:focus {
 	color: green;
 }
 
+.centered {
+	display: flex;
+	width: 100%;
+	align-items: center;
+	justify-content: center;
+}
+
 .adminAuthDisplayUser {
 	display: flex;
 	margin-top: 25px;
@@ -895,6 +902,7 @@ input:focus {
 	font-size: 2em;
 	align-items: center;
 	justify-content: center;
+	text-align: center;
 }
 
 .adminAuthKeyContainer {
