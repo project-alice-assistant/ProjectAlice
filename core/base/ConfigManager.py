@@ -537,7 +537,7 @@ class ConfigManager(Manager):
 
 
 	def updateAdminPinCode(self):
-		self.UserManager.addUserPinCode('admin', int(self.getAliceConfigByName('adminPinCode')))
+		self.UserManager.addUserPinCode('admin', self.getAliceConfigByName('adminPinCode'))
 
 
 	def refreshStoreData(self):

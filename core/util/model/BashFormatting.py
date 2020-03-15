@@ -27,6 +27,8 @@ class Formatter(logging.Formatter):
 	UNDERLINED = re.compile(r'__(.+?)__')
 	COLOR = re.compile(r'(?i)!\[(red|green|yellow|blue|gray)\]\((.+?)\)')
 
+	GLUED_CODES = re.compile(r'\\033\[([0-9]+?)m+')
+
 	COLORS = {
 		'WARNING' : BashStringFormatCode.YELLOW.value,
 		'INFO'    : BashStringFormatCode.DEFAULT.value,
@@ -43,19 +45,23 @@ class Formatter(logging.Formatter):
 
 	def format(self, record: logging.LogRecord) -> str:
 		level = record.levelname
+		msg = record.msg
+
 		if level in self.COLORS:
-			record.msg = f'\033[{self.COLORS[level]}m{record.msg}'
-		return logging.Formatter.format(self, record)
+			msg = f'\033[{self.COLORS[level]}m{record.msg}'
 
-
-	@classmethod
-	def formatString(cls, string: str) -> str:
-		string = cls.BOLD.sub(r'{}{}{}\1{}'.format(
+		# Replace markdown to bash code
+		msg = self.BOLD.sub(r'{}{}{}\1{}'.format(
 			BashStringFormatCode.PREFIX.value,
 			BashStringFormatCode.BOLD.value,
 			BashStringFormatCode.SUFFIX.value,
 			BashStringFormatCode.RESET.value
-		), string)
-		print(string)
+		), msg)
 
-		return string
+		# Let's find starting codes that are together and merge them
+		# matches = self.GLUED_CODES.finditer(msg)
+
+
+
+		record.msg = msg
+		return logging.Formatter.format(self, record)
