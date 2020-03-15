@@ -31,7 +31,7 @@ class ProjectAlice(Singleton):
 				self._superManager.commons.runRootSystemCommand(['systemctl', 'start', 'hermesledcontrol'])
 
 			self._superManager.onBooted()
-		self._logger.logInfo(f'- Started --Project Alice-- in __{stopWatch} seconds__')
+		self._logger.logInfo(f'- Started Project Alice in {stopWatch} seconds')
 		self._booted = True
 
 

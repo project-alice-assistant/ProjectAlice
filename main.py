@@ -33,6 +33,8 @@ from core.Initializer import Initializer
 
 formatter = logging.Formatter('%(asctime)s [%(threadName)s] - [%(levelname)s] - %(message)s')
 
+# formatter = BashFormatting.Formatter()
+
 _logger = logging.getLogger('ProjectAlice')
 _logger.setLevel(logging.INFO)
 
