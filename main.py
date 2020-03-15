@@ -30,10 +30,10 @@ import os
 import psutil
 
 from core.Initializer import Initializer
+from core.util.model import BashFormatting
 
 formatter = logging.Formatter('%(asctime)s [%(threadName)s] - [%(levelname)s] - %(message)s')
-
-# formatter = BashFormatting.Formatter()
+colorFormatter = BashFormatting.Formatter()
 
 _logger = logging.getLogger('ProjectAlice')
 _logger.setLevel(logging.INFO)
@@ -48,6 +48,7 @@ streamHandler = logging.StreamHandler()
 
 handler.setFormatter(formatter)
 rotatingHandler.setFormatter(formatter)
+streamHandler.setFormatter(colorFormatter)
 
 _logger.addHandler(handler)
 _logger.addHandler(rotatingHandler)

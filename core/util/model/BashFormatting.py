@@ -22,8 +22,6 @@ class BashStringFormatCode(Enum):
 
 
 class Formatter(logging.Formatter):
-	PREPEND = '%(asctime)s [%(threadName)s] - [%(levelname)s] - %(message)s'
-
 	BOLD = re.compile(r'\*\*(.+?)\*\*')
 	DIM = re.compile(r'--(.+?)--')
 	UNDERLINED = re.compile(r'__(.+?)__')
@@ -38,14 +36,15 @@ class Formatter(logging.Formatter):
 	}
 
 
-	def __init__(self, msg: str):
-		super().__init__(msg)
+	def __init__(self):
+		mask = '%(message)s'
+		super().__init__(mask)
 
 
 	def format(self, record: logging.LogRecord) -> str:
 		level = record.levelname
 		if level in self.COLORS:
-			record.levelname = f'{BashStringFormatCode.PREFIX}{self.COLORS[level]}{level}{BashStringFormatCode.RESET}'
+			record.msg = f'\033[{self.COLORS[level]}m{record.msg}'
 		return logging.Formatter.format(self, record)
 
 
@@ -59,4 +58,4 @@ class Formatter(logging.Formatter):
 		), string)
 		print(string)
 
-		return f'{cls.PREPEND} {string}'
+		return string
