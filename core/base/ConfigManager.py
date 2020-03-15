@@ -1,8 +1,7 @@
 import json
 import logging
-from pathlib import Path
-
 import shutil
+from pathlib import Path
 
 import configTemplate
 from core.base.SkillManager import SkillManager
@@ -538,7 +537,7 @@ class ConfigManager(Manager):
 
 
 	def updateAdminPinCode(self):
-		self.UserManager.addUserPinCode('admin', self.getAliceConfigByName('adminPinCode'))
+		self.UserManager.addUserPinCode('admin', int(self.getAliceConfigByName('adminPinCode')))
 
 
 	def refreshStoreData(self):
