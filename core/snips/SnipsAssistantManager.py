@@ -149,7 +149,7 @@ class SnipsAssistantManager(Manager):
 						'enabledByDefault': intent['enabledByDefault']
 					}
 
-					if not intent['slots']:
+					if 'slots' not in intent or not intent['slots']:
 						continue
 
 					for slot in intent['slots']:
