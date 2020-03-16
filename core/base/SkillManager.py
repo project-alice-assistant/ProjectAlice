@@ -1,13 +1,13 @@
 import getpass
 import importlib
 import json
-import os
-import shutil
 import threading
 from pathlib import Path
 from typing import Dict, Optional
 
+import os
 import requests
+import shutil
 
 from core.ProjectAliceExceptions import GithubNotFound, GithubRateLimit, GithubTokenFailed, SkillNotConditionCompliant, SkillStartDelayed, SkillStartingFailed
 from core.base.SuperManager import SuperManager
@@ -910,11 +910,12 @@ class SkillManager(Manager):
 			tmpFile = Path(self.Commons.rootDir(), f'system/skillInstallTickets/{skillName}.install')
 			if not self.Commons.downloadFile(
 					url=f'{constants.GITHUB_RAW_URL}/skill_{skillName}/{self.SkillStoreManager.getSkillUpdateTag(skillName)}/{skillName}.install',
-					destination=str(tmpFile.with_suffix('.tmp'))
+					dest=str(tmpFile.with_suffix('.tmp'))
 			):
 				raise
 
 			shutil.move(tmpFile.with_suffix('.tmp'), tmpFile)
 			return True
-		except:
+		except Exception as e:
+			self.logError(f'Error downloading install ticket for skill "{skillName}": {e}')
 			return False
