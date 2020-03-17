@@ -12,10 +12,15 @@ import requests
 from core.base.model.TomlFile import TomlFile
 from core.base.model.Version import Version
 
+PIP = './venv/bin/pip'
+YAML = '/boot/ProjectAlice.yaml'
+ASOUND = '/etc/asound.conf'
+SNIPS_TOML = '/etc/snips.toml'
+
 try:
 	import yaml
 except:
-	subprocess.run(['./venv/bin/pip3', 'install', 'pyyaml'])
+	subprocess.run([PIP, 'install', 'pyyaml'])
 	import yaml
 
 import configTemplate
@@ -60,7 +65,7 @@ network={
 
 		self._confsFile = Path(self._rootDir, 'config.py')
 		self._confsSample = Path(self._rootDir, 'configTemplate.py')
-		self._initFile = Path('/boot/ProjectAlice.yaml')
+		self._initFile = Path(YAML)
 		self._latest = 1.16
 
 
@@ -128,7 +133,7 @@ network={
 
 		time.sleep(1)
 
-		subprocess.run(['./venv/bin/pip3', 'uninstall', '-y', '-r', str(Path(self._rootDir, 'pipuninstalls.txt'))])
+		subprocess.run([PIP, 'uninstall', '-y', '-r', str(Path(self._rootDir, 'pipuninstalls.txt'))])
 
 		if 'forceRewrite' not in initConfs:
 			initConfs['forceRewrite'] = True
@@ -156,7 +161,7 @@ network={
 
 		# Do some installation if wanted by the user
 		if 'doGroundInstall' not in initConfs or initConfs['doGroundInstall']:
-			subprocess.run(['./venv/bin/pip3', 'install', '-r', str(Path(self._rootDir, 'requirements.txt'))])
+			subprocess.run([PIP, 'install', '-r', str(Path(self._rootDir, 'requirements.txt'))])
 
 			if 'installOnBuster' not in initConfs or initConfs['installOnBuster']:
 				subprocess.run(['sudo', 'apt-get', 'install', '-y', 'dirmngr', 'apt-transport-https'])
@@ -289,11 +294,11 @@ network={
 			subprocess.run(['wget', '--content-disposition', 'https://github.com/project-alice-assistant/snips-nlu-rebirth/blob/master/wheels/snips_nlu_parsers-0.4.3-cp37-cp37m-linux_armv7l.whl?raw=true'])
 			subprocess.run(['wget', '--content-disposition', 'https://github.com/project-alice-assistant/snips-nlu-rebirth/blob/master/wheels/snips_nlu-0.20.2-py3-none-any.whl?raw=true'])
 			time.sleep(1)
-			subprocess.run(['./venv/bin/pip3', 'install', 'scipy-1.3.3-cp37-cp37m-linux_armv7l.whl'])
-			subprocess.run(['./venv/bin/pip3', 'install', 'scikit_learn-0.22.1-cp37-cp37m-linux_armv7l.whl'])
-			subprocess.run(['./venv/bin/pip3', 'install', 'snips_nlu_utils-0.9.1-cp37-cp37m-linux_armv7l.whl'])
-			subprocess.run(['./venv/bin/pip3', 'install', 'snips_nlu_parsers-0.4.3-cp37-cp37m-linux_armv7l.whl'])
-			subprocess.run(['./venv/bin/pip3', 'install', 'snips_nlu-0.20.2-py3-none-any.whl'])
+			subprocess.run([PIP, 'install', 'scipy-1.3.3-cp37-cp37m-linux_armv7l.whl'])
+			subprocess.run([PIP, 'install', 'scikit_learn-0.22.1-cp37-cp37m-linux_armv7l.whl'])
+			subprocess.run([PIP, 'install', 'snips_nlu_utils-0.9.1-cp37-cp37m-linux_armv7l.whl'])
+			subprocess.run([PIP, 'install', 'snips_nlu_parsers-0.4.3-cp37-cp37m-linux_armv7l.whl'])
+			subprocess.run([PIP, 'install', 'snips_nlu-0.20.2-py3-none-any.whl'])
 			time.sleep(1)
 			subprocess.run(['rm', 'scipy-1.3.3-cp37-cp37m-linux_armv7l.whl'])
 			subprocess.run(['rm', 'scikit_learn-0.22.1-cp37-cp37m-linux_armv7l.whl'])
@@ -361,7 +366,7 @@ network={
 				subprocess.run(['sudo', 'sed', '-i', '-e', f's/%HARDWARE%/{audioHardware}/', str(hlcServiceFilePath)])
 
 			if audioHardware == 'respeaker6MicArray':
-				subprocess.run(['sudo', 'cp', Path(self._rootDir, 'system', 'asounds', 'respeaker6micarray.conf'), Path('/etc/asound.conf')])
+				subprocess.run(['sudo', 'cp', Path(self._rootDir, 'system', 'asounds', 'respeaker6micarray.conf'), Path(ASOUND)])
 
 		elif audioHardware == 'respeaker7':
 			subprocess.run(['sudo', Path(self._rootDir, 'system/scripts/audioHardware/respeaker7.sh')])
@@ -375,7 +380,7 @@ network={
 
 		elif audioHardware in {'matrixCreator', 'matrixVoice'}:
 			subprocess.run(['sudo', Path(self._rootDir, 'system/scripts/audioHardware/matrix.sh')])
-			subprocess.run(['sudo', 'cp', Path(self._rootDir, 'system', 'asounds', 'matrix.conf'), Path('/etc/asound.conf')])
+			subprocess.run(['sudo', 'cp', Path(self._rootDir, 'system', 'asounds', 'matrix.conf'), Path(ASOUND)])
 
 			snipsConf['snips-audio-server']['mike'] = 'MATRIXIO-SOUND: - (hw:2,0)'
 
@@ -388,10 +393,10 @@ network={
 				subprocess.run(['sudo', 'sed', '-i', '-e', 's/%HARDWARE%/googleAIY/', str(hlcServiceFilePath)])
 
 		elif audioHardware == 'usbMic':
-			subprocess.run(['sudo', 'cp', Path(self._rootDir, 'system', 'asounds', 'usbmic.conf'), Path('/etc/asound.conf')])
+			subprocess.run(['sudo', 'cp', Path(self._rootDir, 'system', 'asounds', 'usbmic.conf'), Path(ASOUND)])
 
 		elif audioHardware == 'ps3eye':
-			subprocess.run(['sudo', 'cp', Path(self._rootDir, 'system', 'asounds', 'ps3eye.conf'), Path('/etc/asound.conf')])
+			subprocess.run(['sudo', 'cp', Path(self._rootDir, 'system', 'asounds', 'ps3eye.conf'), Path(ASOUND)])
 			asoundrc = f'/home/{getpass.getuser()}/.asoundrc'
 			subprocess.run(['echo', 'pcm.dsp0 {', '>', asoundrc])
 			subprocess.run(['echo', '    type plug', '>>', asoundrc])
@@ -416,9 +421,9 @@ network={
 		subprocess.run(['sudo', 'rm', '-rf', Path(self._rootDir, 'assistant')])
 
 		if initConfs['keepYAMLBackup']:
-			subprocess.run(['sudo', 'mv', Path('/boot/ProjectAlice.yaml'), Path('/boot/ProjectAlice.yaml.bak')])
+			subprocess.run(['sudo', 'mv', Path(YAML), Path('/boot/ProjectAlice.yaml.bak')])
 		else:
-			subprocess.run(['sudo', 'rm', Path('/boot/ProjectAlice.yaml')])
+			subprocess.run(['sudo', 'rm', Path(YAML)])
 
 		self.warning('Initializer done with configuring')
 		time.sleep(2)
@@ -436,12 +441,12 @@ network={
 
 	def loadSnipsConfigurations(self) -> TomlFile:
 		self.logInfo('Loading Snips configuration file')
-		snipsConfig = Path('/etc/snips.toml')
+		snipsConfig = Path(SNIPS_TOML)
 
 		if snipsConfig.exists():
-			subprocess.run(['sudo', 'rm', '/etc/snips.toml'])
+			subprocess.run(['sudo', 'rm', SNIPS_TOML])
 
-		subprocess.run(['sudo', 'cp', Path(self._rootDir, 'system/snips/snips.toml'), Path('/etc/snips.toml')])
+		subprocess.run(['sudo', 'cp', Path(self._rootDir, 'system/snips/snips.toml'), Path(SNIPS_TOML)])
 
 		return TomlFile.loadToml(snipsConfig)
 
