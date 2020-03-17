@@ -1,6 +1,7 @@
 import logging
 
 import re
+from copy import copy
 from enum import Enum
 
 
@@ -46,13 +47,12 @@ class Formatter(logging.Formatter):
 
 	def format(self, record: logging.LogRecord) -> str:
 		level = record.levelname
-		msg = record.msg
+		rec = copy(record)
 
 		if level in self.COLORS:
-			msg = f'\033[{self.COLORS[level]}m{record.msg}\033[0m'
+			rec.msg = f'\033[{self.COLORS[level]}m{record.msg}\033[0m'
 
-		record.msg = msg
-		return logging.Formatter.format(self, record)
+		return logging.Formatter.format(self, rec)
 
 		# Replace markdown to bash code
 		msg = self.BOLD.sub(r'{}\1{}'.format(
