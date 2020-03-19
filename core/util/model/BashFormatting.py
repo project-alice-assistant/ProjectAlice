@@ -6,8 +6,7 @@ from enum import Enum
 
 
 class BashStringFormatCode(Enum):
-	# SEQUENCE = '\\\\033[{}m'
-	SEQUENCE = '#033[{}m'
+	SEQUENCE = '\\\\033[{}m'
 
 	RESET = 0
 	BOLD = 1
@@ -19,7 +18,7 @@ class BashStringFormatCode(Enum):
 	GREEN = '32'
 	YELLOW = '33'
 	BLUE = '94'
-	GRAY = '90'
+	GREY = '90'
 
 
 class Formatter(logging.Formatter):

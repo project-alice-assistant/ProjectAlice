@@ -52,6 +52,42 @@ nav {
 	size: 1em;
 }
 
+.logBold {
+	font-weight: bold;
+}
+
+.logDim {
+	font-weight: lighter;
+}
+
+.logUnderlined {
+	text-decoration: underline;
+}
+
+.logDefault {
+	color: #d1d1d1;
+}
+
+.logRed {
+	color: red;
+}
+
+.logGreen {
+	color: green;
+}
+
+.logYellow {
+	color: yellow;
+}
+
+.logBlue {
+	color: blue;
+}
+
+.logGrey {
+	color: grey;
+}
+
 .mainMenuList {
 	list-style-type: none;
 	margin: 0;

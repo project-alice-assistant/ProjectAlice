@@ -1,5 +1,4 @@
 $(function () {
-
 	function getLogColor(line) {
 		if (line.includes('[INFO]')) {
 			return 'logInfo';
@@ -12,20 +11,15 @@ $(function () {
 		}
 	}
 
-	function refreshData(type) {
+	function onMessage(msg) {
 		let container = $('#console');
+		let json = JSON.parse(msg.payloadString);
 
-		$.post('/syslog/' + type + '/', function (data) {
-			for (let i = 0; i < data.data.length; i++) {
-				container.append(
-					'<span class="logLine ' + getLogColor(data.data[i]) + '">' + data.data[i] + '</span>'
-				);
-			}
-		}).always(function (data) {
-			if ($('#checkedCheckbox').is(':visible')) {
-				container.scrollTop(container.prop('scrollHeight'));
-			}
-		});
+		container.append(json['msg']);
+
+		if ($('#checkedCheckbox').is(':visible')) {
+			container.scrollTop(container.prop('scrollHeight'));
+		}
 	}
 
 	$('#checkedCheckbox').on('click touchstart', function () {
@@ -40,9 +34,10 @@ $(function () {
 		return false;
 	});
 
-	refreshData('refresh');
+	function onConnect() {
+		MQTT.subscribe('projectalice/logging/syslog');
+	}
 
-	setInterval(function () {
-		refreshData('update');
-	}, 500);
+	mqttRegisterSelf(onConnect, 'onConnect');
+	mqttRegisterSelf(onMessage, 'onMessage');
 });
