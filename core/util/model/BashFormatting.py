@@ -1,4 +1,5 @@
 import logging
+from typing import Match
 
 import re
 from copy import copy
@@ -6,19 +7,19 @@ from enum import Enum
 
 
 class BashStringFormatCode(Enum):
-	SEQUENCE = '\\\\033[{}m'
+	SEQUENCE = '\033[{}m{}\033[{}m'
 
 	RESET = 0
 	BOLD = 1
 	DIM = 2
 	UNDERLINED = 4
 
-	DEFAULT = '39'
-	RED = '31'
-	GREEN = '32'
-	YELLOW = '33'
-	BLUE = '94'
-	GREY = '90'
+	DEFAULT = 39
+	RED = 31
+	GREEN = 32
+	YELLOW = 33
+	BLUE = 94
+	GREY = 90
 
 
 class Formatter(logging.Formatter):
@@ -44,19 +45,38 @@ class Formatter(logging.Formatter):
 		super().__init__(mask)
 
 
-	# TODO implement mardown support for stdout
+	# TODO implement markdown support for stdout
 	def format(self, record: logging.LogRecord) -> str:
 		level = record.levelname
 		rec = copy(record)
 		msg = rec.msg
 
 		if level in self.COLORS:
-			msg = f'\033[{self.COLORS[level]}m{record.msg}\033[0m'
+			msg = BashStringFormatCode.SEQUENCE.value.format(self.COLORS[level], msg, BashStringFormatCode.RESET.value)
 
-		msg = self.BOLD.sub(r'\1', msg)
-		msg = self.DIM.sub(r'\1', msg)
-		msg = self.UNDERLINED.sub(r'\1', msg)
-		msg = self.COLOR.sub(r'\2', msg)
+		msg = self.BOLD.sub(BashStringFormatCode.SEQUENCE.value.format(BashStringFormatCode.BOLD.value, r'\1', 2), msg)
+		msg = self.DIM.sub(BashStringFormatCode.SEQUENCE.value.format(BashStringFormatCode.DIM.value, r'\1', BashStringFormatCode.DIM.value + 20), msg)
+		msg = self.UNDERLINED.sub(BashStringFormatCode.SEQUENCE.value.format(BashStringFormatCode.UNDERLINED.value, r'\1', BashStringFormatCode.UNDERLINED.value + 20), msg)
+		# msg = self.COLOR.sub(self.colorFormat, msg)
 
-		rec.msg = msg
-		return logging.Formatter.format(self, rec)
+		return msg
+
+
+	@staticmethod
+	def colorFormat(m: Match) -> str:
+		color = m.group(1).title()
+
+		if color == 'red':
+			code = BashStringFormatCode.RED.value
+		elif color == 'green':
+			code = BashStringFormatCode.GREEN.value
+		elif color == 'yellow':
+			code = BashStringFormatCode.YELLOW.value
+		elif color == 'blue':
+			code = BashStringFormatCode.BLUE.value
+		elif color == 'grey':
+			code = BashStringFormatCode.GREY.value
+		else:
+			code = BashStringFormatCode.DEFAULT.value
+
+		return BashStringFormatCode.SEQUENCE.value.format(code, m.group(2), BashStringFormatCode.DEFAULT)
