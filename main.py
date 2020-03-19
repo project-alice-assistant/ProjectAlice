@@ -30,13 +30,13 @@ import os
 import psutil
 
 from core.Initializer import Initializer
-from core.util.model import BashFormatting, HtmlFormatting
+from core.util.model import BashFormatting, FileFormatting, HtmlFormatting
 from core.util.model.MqttLoggingHandler import MqttLoggingHandler
 
 _logger = logging.getLogger('ProjectAlice')
 _logger.setLevel(logging.INFO)
 
-logFileFormatter = logging.Formatter('%(asctime)s [%(threadName)s] - [%(levelname)s] - %(message)s')
+logFileFormatter = FileFormatting.Formatter()
 bashFormatter = BashFormatting.Formatter()
 htmlFormatter = HtmlFormatting.Formatter()
 

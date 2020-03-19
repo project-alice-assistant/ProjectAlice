@@ -15,6 +15,7 @@ class MqttLoggingHandler(logging.Handler):
 		record.msg = self.format(record)
 
 		if not SuperManager.getInstance() or not SuperManager.getInstance().mqttManager:
+			# cache the logs until mqtt manager is started
 			self._buffer.put(record.msg)
 			return
 

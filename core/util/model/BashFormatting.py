@@ -44,37 +44,19 @@ class Formatter(logging.Formatter):
 		super().__init__(mask)
 
 
+	# TODO implement mardown support for stdout
 	def format(self, record: logging.LogRecord) -> str:
 		level = record.levelname
 		rec = copy(record)
+		msg = rec.msg
 
 		if level in self.COLORS:
-			rec.msg = f'\033[{self.COLORS[level]}m{record.msg}\033[0m'
+			msg = f'\033[{self.COLORS[level]}m{record.msg}\033[0m'
 
+		msg = self.BOLD.sub(r'\1', msg)
+		msg = self.DIM.sub(r'\1', msg)
+		msg = self.UNDERLINED.sub(r'\1', msg)
+		msg = self.COLOR.sub(r'\2', msg)
+
+		rec.msg = msg
 		return logging.Formatter.format(self, rec)
-
-		# Replace markdown to bash code
-		msg = self.BOLD.sub(r'{}\1{}'.format(
-			BashStringFormatCode.SEQUENCE.value.format(BashStringFormatCode.BOLD.value),
-			BashStringFormatCode.SEQUENCE.value.format(str(BashStringFormatCode.BOLD.value + 20))
-		), msg)
-
-		msg = self.DIM.sub(r'{}\1{}'.format(
-			BashStringFormatCode.SEQUENCE.value.format(BashStringFormatCode.DIM.value),
-			BashStringFormatCode.SEQUENCE.value.format(str(BashStringFormatCode.DIM.value + 20))
-		), msg)
-
-		msg = self.UNDERLINED.sub(r'{}\1{}'.format(
-			BashStringFormatCode.SEQUENCE.value.format(BashStringFormatCode.UNDERLINED.value),
-			BashStringFormatCode.SEQUENCE.value.format(str(BashStringFormatCode.UNDERLINED.value + 20))
-		), msg)
-
-		# Find reset codes that are together at the end and merge them
-		msg = self.GLUED_RESETS.sub(BashStringFormatCode.SEQUENCE.value.format(BashStringFormatCode.RESET.value), msg)
-
-		# Let's find starting codes that are together and merge them
-		# matches = self.GLUED_CODES.finditer(msg)
-
-
-		record.msg = msg
-		return logging.Formatter.format(self, record)

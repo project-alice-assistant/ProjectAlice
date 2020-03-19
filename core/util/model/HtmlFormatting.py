@@ -1,11 +1,13 @@
 import logging
+from typing import Match
 
 import re
 from enum import Enum
 
 
 class HtmlFormatting(Enum):
-	SEQUENCE = '<span class="logLine {}">{}</span>'
+	LOG = '<span class="logLine {}">{}</span>'
+	INLINE = '<span class="{}">{}</span>'
 
 	BOLD = 'logBold'
 	DIM = 'logDim'
@@ -23,10 +25,7 @@ class Formatter(logging.Formatter):
 	BOLD = re.compile(r'\*\*(.+?)\*\*')
 	DIM = re.compile(r'--(.+?)--')
 	UNDERLINED = re.compile(r'__(.+?)__')
-	COLOR = re.compile(r'(?i)!\[(red|green|yellow|blue|gray)\]\((.+?)\)')
-
-	GLUED_RESETS = re.compile(r'(?:\\033\[(?:0|2[1-8])m){2,}$')
-	GLUED_CODES = re.compile(r'\\033\[([0-9]+?)m+')
+	COLOR = re.compile(r'(?i)!\[(red|green|yellow|blue|grey)\]\((.+?)\)')
 
 	COLORS = {
 		'WARNING' : HtmlFormatting.YELLOW.value,
@@ -47,6 +46,17 @@ class Formatter(logging.Formatter):
 		msg = record.getMessage()
 
 		if level in self.COLORS:
-			msg = HtmlFormatting.SEQUENCE.value.format(self.COLORS[level], msg)
+			msg = HtmlFormatting.LOG.value.format(self.COLORS[level], msg)
+
+		msg = self.BOLD.sub(HtmlFormatting.INLINE.value.format(HtmlFormatting.BOLD.value, r'\1'), msg)
+		msg = self.UNDERLINED.sub(HtmlFormatting.INLINE.value.format(HtmlFormatting.UNDERLINED.value, r'\1'), msg)
+		msg = self.DIM.sub(HtmlFormatting.INLINE.value.format(HtmlFormatting.DIM.value, r'\1'), msg)
+		msg = self.COLOR.sub(self.colorFormat, msg)
 
 		return msg
+
+
+	@staticmethod
+	def colorFormat(m: Match) -> str:
+		color = m.group(1).title()
+		return HtmlFormatting.INLINE.value.format(f'log{color}', m.group(2))
