@@ -1,22 +1,10 @@
 $(function () {
-	function getLogColor(line) {
-		if (line.includes('[INFO]')) {
-			return 'logInfo';
-		} else if (line.includes('[WARNING]')) {
-			return 'logWarning';
-		} else if (line.includes('[ERROR]')) {
-			return 'logError';
-		} else {
-			return 'logInfo';
-		}
-	}
 
 	function onMessage(msg) {
 		let container = $('#console');
 		let json = JSON.parse(msg.payloadString);
 
 		container.append(json['msg']);
-
 		if ($('#checkedCheckbox').is(':visible')) {
 			container.scrollTop(container.prop('scrollHeight'));
 		}
@@ -36,6 +24,11 @@ $(function () {
 
 	function onConnect() {
 		MQTT.subscribe('projectalice/logging/syslog');
+
+		$.ajax({
+			url: '/syslog/connected/',
+			type: 'POST'
+		})
 	}
 
 	mqttRegisterSelf(onConnect, 'onConnect');

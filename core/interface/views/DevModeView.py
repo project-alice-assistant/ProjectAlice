@@ -6,11 +6,6 @@ from core.interface.model.View import View
 class DevModeView(View):
 	route_base = '/devmode/'
 
-
-	def __init__(self):
-		super().__init__()
-
-
 	def index(self):
 		skills = {**self.SkillManager.activeSkills, **self.SkillManager.deactivatedSkills}
 		skills = {skillName: skill for skillName, skill in sorted(skills.items()) if skill is not None}
