@@ -379,6 +379,10 @@ class ProjectAliceObject:
 		pass
 
 
+	def onEndSession(self, session):
+		pass
+
+
 	@property
 	def ProjectAlice(self):
 		return SM.SuperManager.getInstance().projectAlice

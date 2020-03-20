@@ -37,6 +37,51 @@ class AliceWatchManager(Manager):
 		})
 
 
+	def onSessionStarted(self, session: DialogSession):
+		if self._verbosity < 1:
+			return
+
+		self.publish(payload={
+			'text': f'[Dialogue] Session with id "**{session.sessionId}**" was started on site **office**'
+		})
+
+
+	def onCaptured(self, session: DialogSession):
+		if self._verbosity < 1:
+			return
+
+		self.publish(payload={
+			'text': f'[ASR] Captured text "![Yellow]({session.payload["text"]})" in {round(session.payload["seconds"], 1)}s'
+		})
+
+
+	def onEndSession(self, session: DialogSession):
+		if self._verbosity < 1:
+			return
+
+		self.publish(payload={
+			'text': f'[Dialogue] Was asked to end session with id "**{session.sessionId}**" by saying "{session.payload["text"]}"'
+		})
+
+
+	def onSay(self, session: DialogSession):
+		if self._verbosity < 1:
+			return
+
+		self.publish(payload={
+			'text': f'[TTS] Was asked to say "![Yellow]({session.payload["text"]})"'
+		})
+
+
+	def onSessionEnded(self, session: DialogSession):
+		if self._verbosity < 1:
+			return
+
+		self.publish(payload={
+			'text': f'[Dialogue] Session with id "**{session.sessionId}**" was ended on site **{session.siteId}**. The session ended as expected'
+		})
+
+
 	def publish(self, payload: dict = None):
 		topic = f'projectalice/logging/alicewatch'
 		payload['text'] = f'![Orange]([{datetime.strftime(datetime.now(), "%H:%M:%S")}]) {payload["text"]}'

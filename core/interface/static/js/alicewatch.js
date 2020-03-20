@@ -1,7 +1,8 @@
 $(function () {
 
+	let $console = $('#console');
+
 	function onMessage(msg) {
-		let container = $('#console');
 		let payload = JSON.parse(msg.payloadString);
 
 		let pattern = /!\[(Red|Green|Yellow|Orange|Blue|Grey)\]\((.*?)\)/gi;
@@ -16,16 +17,22 @@ $(function () {
 		pattern = /--(.*?)--/gi;
 		text = text.replace(pattern, '<span class="logDim">$1</span>');
 
-		container.append(
+		$console.append(
 			'<span class="logLine">' + text + '</span>'
 		);
 
 		if ($('#checkedCheckbox').is(':visible')) {
-			container.scrollTop(container.prop('scrollHeight'));
+			$console.scrollTop($console.prop('scrollHeight'));
 		}
 	}
 
 	function onConnect() {
+		let date = new Date();
+		let time = ('0' + date.getHours()).slice(-2) + ':' + ('0' + date.getMinutes()).slice(-2) + ':' + ('0' + date.getSeconds()).slice(-2);
+		$console.append(
+			'<span class="logLine"><span class="logOrange">[' + time + ']</span> [AliceWatch] Watching on ' + MQTT_HOST + ':' + MQTT_PORT + ' (MQTT)</span>'
+		);
+
 		MQTT.subscribe('projectalice/logging/alicewatch')
 	}
 

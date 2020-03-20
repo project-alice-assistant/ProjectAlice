@@ -1,5 +1,7 @@
 let MQTT;
 let mqttSubscribers = {};
+let MQTT_HOST;
+let MQTT_PORT;
 
 function mqttRegisterSelf(target, method) {
 	if (!mqttSubscribers.hasOwnProperty(method)) {
@@ -39,17 +41,18 @@ $(function () {
 			type: 'POST'
 		}).done(function (response) {
 			if (response.success) {
-				let host = response.host;
-				if (host === 'localhost') {
-					host = window.location.hostname;
-					MQTT = new Paho.MQTT.Client(host, Number(response.port), 'ProjectAliceInterface');
-					MQTT.onMessageArrived = onMessage;
-					MQTT.connect({
-						onSuccess: onConnect,
-						onFailure: onFailure,
-						timeout: 5
-					});
+				MQTT_HOST = response.host;
+				MQTT_PORT = Number(response.port);
+				if (MQTT_HOST === 'localhost') {
+					MQTT_HOST = window.location.hostname;
 				}
+				MQTT = new Paho.MQTT.Client(MQTT_HOST, MQTT_PORT, 'ProjectAliceInterface');
+				MQTT.onMessageArrived = onMessage;
+				MQTT.connect({
+					onSuccess: onConnect,
+					onFailure: onFailure,
+					timeout: 5
+				});
 			} else {
 				console.log('Failed fetching MQTT settings')
 			}

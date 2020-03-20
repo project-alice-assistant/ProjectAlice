@@ -79,6 +79,8 @@ class MqttManager(Manager):
 
 		self._mqttClient.message_callback_add(constants.TOPIC_HOTWORD_TOGGLE_OFF, self.onSnipsHotwordToggleOff)
 
+		self._mqttClient.message_callback_add(constants.TOPIC_END_SESSION, self.onEventEndSession)
+
 		self.connect()
 
 
@@ -108,7 +110,8 @@ class MqttManager(Manager):
 			(constants.TOPIC_TEXT_CAPTURED, 0),
 			(constants.TOPIC_HOTWORD_TOGGLE_ON, 0),
 			(constants.TOPIC_HOTWORD_TOGGLE_OFF, 0),
-			(constants.TOPIC_NLU_QUERY, 0)
+			(constants.TOPIC_NLU_QUERY, 0),
+			(constants.TOPIC_END_SESSION, 0)
 		]
 
 		for username in self.UserManager.getAllUserNames():
@@ -311,6 +314,7 @@ class MqttManager(Manager):
 		session = self.DialogSessionManager.addSession(sessionId=sessionId, message=msg)
 
 		if session:
+			session.update(msg)
 			self.broadcast(method=constants.EVENT_SESSION_STARTED, exceptions=[self.name], propagateToSkills=True, session=session)
 
 
@@ -320,6 +324,7 @@ class MqttManager(Manager):
 		session = self.DialogSessionManager.addSession(sessionId=sessionId, message=msg)
 
 		if session:
+			session.update(msg)
 			self.broadcast(method=constants.EVENT_SESSION_QUEUED, exceptions=[self.name], propagateToSkills=True, session=session)
 
 
@@ -330,6 +335,8 @@ class MqttManager(Manager):
 		session = self.DialogSessionManager.getSession(sessionId)
 		if not session:
 			session = self.DialogSessionManager.addSession(sessionId=sessionId, message=msg)
+		else:
+			session.update(msg)
 
 		self.broadcast(method=constants.EVENT_NLU_QUERY, exceptions=[self.name], propagateToSkills=True, session=session)
 
@@ -340,6 +347,7 @@ class MqttManager(Manager):
 		session = self.DialogSessionManager.getSession(sessionId=sessionId)
 
 		if session:
+			session.update(msg)
 			self.broadcast(method=constants.EVENT_START_LISTENING, exceptions=[self.name], propagateToSkills=True, session=session)
 
 
@@ -349,6 +357,7 @@ class MqttManager(Manager):
 		session = self.DialogSessionManager.getSession(sessionId=sessionId)
 
 		if session:
+			session.update(msg)
 			self.broadcast(method=constants.EVENT_STOP_LISTENING, exceptions=[self.name], propagateToSkills=True, session=session)
 
 
@@ -358,6 +367,7 @@ class MqttManager(Manager):
 		session = self.DialogSessionManager.getSession(sessionId=sessionId)
 
 		if session:
+			session.update(msg)
 			self.broadcast(method=constants.EVENT_CAPTURED, exceptions=[self.name], propagateToSkills=True, session=session)
 
 
@@ -413,7 +423,7 @@ class MqttManager(Manager):
 
 		session = self.DialogSessionManager.getSession(sessionId)
 		if session:
-			session.payload = payload
+			session.update(msg)
 			siteId = session.siteId
 		else:
 			siteId = self.Commons.parseSiteId(msg)
@@ -433,7 +443,7 @@ class MqttManager(Manager):
 
 		session = self.DialogSessionManager.getSession(sessionId)
 		if session:
-			session.payload = payload
+			session.update(msg)
 
 		self.broadcast(method=constants.EVENT_SAY_FINISHED, exceptions=[self.name], propagateToSkills=True, session=session)
 
@@ -444,6 +454,7 @@ class MqttManager(Manager):
 		session = self.DialogSessionManager.getSession(sessionId)
 
 		if not session:
+			session.update(msg)
 			self.ask(text=self.TalkManager.randomTalk('notUnderstood', skill='system'), client='default')
 		else:
 			if session.intentFilter and not str(self._INTENT_RANDOM_ANSWER) in session.intentFilter:
@@ -499,6 +510,7 @@ class MqttManager(Manager):
 		session = self.DialogSessionManager.getSession(sessionId)
 
 		if session:
+			session.update(msg)
 			payload = self.Commons.payload(msg)
 			self.broadcast(method=constants.EVENT_PARTIAL_TEXT_CAPTURED, exceptions=[self.name], propagateToSkills=True, session=session, text=payload['text'], likelihood=payload['likelihood'], seconds=payload['seconds'])
 
@@ -513,6 +525,15 @@ class MqttManager(Manager):
 	def onVADDown(self, client, data, msg: mqtt.MQTTMessage):
 		siteId = self.Commons.parseSiteId(msg)
 		self.broadcast(method=constants.EVENT_VAD_DOWN, exceptions=[self.name], propagateToSkills=True, siteId=siteId)
+
+
+	# noinspection PyUnusedLocal
+	def onEventEndSession(self, client, data, msg: mqtt.MQTTMessage):
+		sessionId = self.Commons.parseSessionId(msg)
+		session = self.DialogSessionManager.getSession(sessionId)
+		if session:
+			session.update(msg)
+			self.broadcast(method=constants.EVENT_END_SESSION, exceptions=[self.name], propagateToSkills=True, session=session)
 
 
 	def reviveSession(self, session: DialogSession, text: str):
