@@ -1,5 +1,5 @@
 VERSION = '1.0.0-a6'
-DEFAULT_SITE_ID = 'default'
+DEFAULT_SITE_ID = 'office'
 DEFAULT = 'default'
 UNKNOWN_WORD = 'unknownword'
 UNKNOWN_USER = 'unknownUser'

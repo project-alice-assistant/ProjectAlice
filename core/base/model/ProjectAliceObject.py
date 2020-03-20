@@ -512,3 +512,8 @@ class ProjectAliceObject:
 	@property
 	def SnipsAssistantManager(self):
 		return SM.SuperManager.getInstance().snipsAssistantManager
+
+
+	@property
+	def AliceWatchManager(self):
+		return SM.SuperManager.getInstance().aliceWatchManager

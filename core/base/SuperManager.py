@@ -49,6 +49,7 @@ class SuperManager:
 		self.nluManager = None
 		self.snipsAssistantManager = None
 		self.dialogTemplateManager = None
+		self.aliceWatchManager = None
 
 
 	def onStart(self):
@@ -144,12 +145,12 @@ class SuperManager:
 		from core.voice.TTSManager import TTSManager
 		from core.voice.WakewordManager import WakewordManager
 		from core.interface.WebInterfaceManager import WebInterfaceManager
-		from core.snips.SnipsWatchManager import SnipsWatchManager
 		from core.interface.NodeRedManager import NodeRedManager
 		from core.base.SkillStoreManager import SkillStoreManager
 		from core.dialog.DialogTemplateManager import DialogTemplateManager
 		from core.snips.SnipsAssistantManager import SnipsAssistantManager
 		from core.nlu.NluManager import NluManager
+		from core.util.AliceWatchManager import AliceWatchManager
 
 		self.commonsManager = CommonsManager()
 		self.commons = self.commonsManager
@@ -173,12 +174,12 @@ class SuperManager:
 		self.wakewordManager = WakewordManager()
 		self.talkManager = TalkManager()
 		self.webInterfaceManager = WebInterfaceManager()
-		self.snipsWatchManager = SnipsWatchManager()
 		self.nodeRedManager = NodeRedManager()
 		self.skillStoreManager = SkillStoreManager()
 		self.dialogTemplateManager = DialogTemplateManager()
 		self.snipsAssistantManager = SnipsAssistantManager()
 		self.nluManager = NluManager()
+		self.aliceWatchManager = AliceWatchManager()
 
 		self._managers = {name[0].upper() + name[1:]: manager for name, manager in self.__dict__.items() if name.endswith('Manager')}
 

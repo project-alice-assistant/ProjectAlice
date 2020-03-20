@@ -22,7 +22,6 @@ flac
 libttspico-utils
 libav-tools
 snips-platform-voice
-snips-watch
 snips-makers-tts
 snips-hotword-model-heysnipsv4
 libatlas-base-dev

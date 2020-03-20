@@ -1,21 +1,32 @@
 $(function () {
-	function refreshData() {
+
+	function onMessage(msg) {
 		let container = $('#console');
-		$.ajax({
-			url: '/alicewatch/refreshConsole/',
-			dataType: 'json',
-			type: 'POST'
-		}).done(function (response) {
-			for (let i = 0; i < response.data.length; i++) {
-				container.append(
-					'<span class="logLine">' + response.data[i] + '</span>'
-				);
-			}
-		}).always(function () {
-			if ($('#checkedCheckbox').is(':visible')) {
-				container.scrollTop(container.prop('scrollHeight'));
-			}
-		});
+		let payload = JSON.parse(msg.payloadString);
+
+		let pattern = /!\[(Red|Green|Yellow|Orange|Blue|Grey)\]\((.*?)\)/gi;
+		let text = payload['text'].replace(pattern, '<span class="log$1">$2</span>');
+
+		pattern = /\*\*(.*?)\*\*/gi;
+		text = text.replace(pattern, '<span class="logBold">$1</span>');
+
+		pattern = /__(.*?)__/gi;
+		text = text.replace(pattern, '<span class="logUnderlined">$1</span>');
+
+		pattern = /--(.*?)--/gi;
+		text = text.replace(pattern, '<span class="logDim">$1</span>');
+
+		container.append(
+			'<span class="logLine">' + text + '</span>'
+		);
+
+		if ($('#checkedCheckbox').is(':visible')) {
+			container.scrollTop(container.prop('scrollHeight'));
+		}
+	}
+
+	function onConnect() {
+		MQTT.subscribe('projectalice/logging/alicewatch')
 	}
 
 	$('#checkedCheckbox').on('click touchstart', function () {
@@ -43,7 +54,6 @@ $(function () {
 		return false;
 	});
 
-	setInterval(function () {
-		refreshData();
-	}, 500);
+	mqttRegisterSelf(onConnect, 'onConnect');
+	mqttRegisterSelf(onMessage, 'onMessage');
 });

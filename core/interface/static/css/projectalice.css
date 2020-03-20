@@ -53,11 +53,11 @@ nav {
 }
 
 .logBold {
-	font-weight: bold;
+	font-weight: bolder;
 }
 
 .logDim {
-	font-weight: lighter;
+	color: #919191;
 }
 
 .logUnderlined {
@@ -86,6 +86,10 @@ nav {
 
 .logGrey {
 	color: grey;
+}
+
+.logOrange {
+	color: orange;
 }
 
 .mainMenuList {
