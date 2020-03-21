@@ -93,12 +93,20 @@
 							<button type="button" id="createSkillButton" style="display: none;">{{ langData.createSkill }}</button>
 							<button type="button" id="uploadSkillButton" style="display: none;">{{ langData.uploadSkillToGithub }}</button>
 							<button type="button" id="resetSkillButton">{{ langData.resetSkill }}</button>
+							<button type="button" id="goGithubButton" style="display: none;"></button>
 						</div>
 					</div>
 				</form>
 			</div>
 			<div id="EditSkill" class="configBox">
-
+				<div id="editSkillSelectContainer" class="editSkillsPane">
+					{% for skillName, skill in skills.items() %}
+						<div id="editSkill_{{ skillName }}" class="editSkillTile">
+							{{ skillName }}
+							<i class="{{ skill.icon }}" aria-hidden="true"></i>
+						</div>
+					{% endfor %}
+				</div>
 			</div>
 		</div>
 	</div>

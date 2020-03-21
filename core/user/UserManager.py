@@ -141,7 +141,7 @@ class UserManager(Manager):
 
 
 	def getUser(self, username: str) -> Optional[User]:
-		return self._users.get(username, None)
+		return self._users.get(username.lower(), None)
 
 
 	def getUserById(self, userId: int) -> Optional[User]:

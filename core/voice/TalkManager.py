@@ -28,7 +28,7 @@ class TalkManager(Manager):
 		if not skillToLoad:
 			systemLangTalksMountpoint = Path('system/manager/TalkManager/talks')
 
-			for systemLangTalkFile in systemLangTalksMountpoint.iterdir():
+			for systemLangTalkFile in systemLangTalksMountpoint.glob('*.json'):
 				lang = systemLangTalkFile.stem
 				self._langData.setdefault('system', dict())[lang] = json.loads(systemLangTalkFile.read_text())
 
@@ -43,7 +43,7 @@ class TalkManager(Manager):
 			if not langTalksMountpoint.exists():
 				continue
 
-			for langTalkFile in langTalksMountpoint.iterdir():
+			for langTalkFile in langTalksMountpoint.glob('*.json'):
 				lang = langTalkFile.stem
 				try:
 					self._langData.setdefault(skillName, dict())[lang] = json.loads(langTalkFile.read_text())

@@ -55,9 +55,16 @@ $(function () {
 		if ($('#skillsPane').find('#' + installer['name'] + '-' + installer['author']).length === 0) {
 			let $tile = $('<div class="skillStoreSkillTile" id="' + installer['name'] + 'InstallTile">' +
 				'<div class="skillsStoreSkillTitle">' + installer['name'] + '</div>' +
+				'<div class="skillsStoreSkillInfoContainer">' +
+				'<div class="skillsStoreSkillLeft">' +
 				'<div class="skillsStoreSkillAuthor"><i class="fas user-cog"></i> ' + installer['author'] + '</div>' +
 				'<div class="skillsStoreSkillVersion"><i class="fas fa-code-branch" style="margin-right: 3px;"></i> ' + installer['version'] + '</div>' +
 				'<div class="skillsStoreSkillCategory"><i class="fas fa-tags"></i> ' + installer['category'] + '</div>' +
+				'</div>' +
+				'<div class="skillsStoreSkillRight">' +
+				'<i class="' + installer['icon'] + '" aria-hidden="true"></i>' +
+				'</div>' +
+				'</div>' +
 				'<div class="skillStoreSkillDescription">' + installer['desc'] + '</div>' +
 				'</div>');
 

@@ -1,7 +1,9 @@
 import json
 from pathlib import Path
+from typing import Optional
 
 import paho.mqtt.client as mqtt
+import re
 import shutil
 import struct
 import tempfile
@@ -57,9 +59,6 @@ class WakewordManager(Manager):
 
 	def onCaptured(self, session: DialogSession):
 		if self.state == WakewordManagerState.RECORDING:
-			# self.MqttManager.mqttClient.unsubscribe(constants.TOPIC_AUDIO_FRAME.format('default'))
-			# for device in self.DeviceManager.getDevicesByType('alicesatellite'):
-			# 	self.MqttManager.mqttClient.unsubscribe(constants.TOPIC_AUDIO_FRAME.format(device.room))
 			self._workAudioFile()
 
 
@@ -77,11 +76,6 @@ class WakewordManager(Manager):
 	def addASample(self):
 		self.wakeword.newSample()
 		self.state = WakewordManagerState.RECORDING
-
-
-	# self.MqttManager.mqttClient.subscribe(constants.TOPIC_AUDIO_FRAME.format('default'))
-	# for device in self.DeviceManager.getDevicesByType('alicesatellite'):
-	# 	self.MqttManager.mqttClient.subscribe(constants.TOPIC_AUDIO_FRAME.format(device.room))
 
 
 	def onAudioFrame(self, message: mqtt.MQTTMessage, siteId: str):
@@ -166,7 +160,7 @@ class WakewordManager(Manager):
 
 
 	def trimMore(self):
-		self._threshold += 2
+		self._threshold += 3
 		self._workAudioFile()
 
 
@@ -316,6 +310,55 @@ class WakewordManager(Manager):
 		shutil.make_archive(base_name=zipPath.with_suffix(''), format='zip', root_dir=str(path))
 
 		return wakewordName, zipPath
+
+
+	def getUserWakeword(self, username: str) -> Optional[str]:
+		wakewords = self.ConfigManager.getSnipsConfiguration(parent='snips-hotword', key='model', createIfNotExist=False)
+
+		usernameMatch = re.compile(f'.*/{username}=[0-9.]+$')
+		for wakeword in wakewords:
+			match = re.search(usernameMatch, wakeword)
+			if match:
+				return wakeword
+		return None
+
+
+	def getUserWakewordSensitivity(self, username: str) -> Optional[float]:
+		wakeword = self.getUserWakeword(username)
+		if wakeword is None:
+			return None
+
+		sensitivity = re.findall('[0-9.]+$', wakeword)
+		return round(float(sensitivity[0]), 2) if sensitivity else None
+
+
+	def setUserWakewordSensitivity(self, username: str, sensitivity: float) -> bool:
+		wakewords = self.ConfigManager.getSnipsConfiguration(parent='snips-hotword', key='model', createIfNotExist=False)
+		rebuild = list()
+
+		if sensitivity > 1:
+			sensitivity = 1
+		elif sensitivity < 0:
+			sensitivity = 0
+
+		usernameMatch = re.compile(f'.*/{username}=[0-9.]+$')
+		sensitivitySub = re.compile('=[0-9.]+$')
+		update = False
+		for wakeword in wakewords:
+			match = re.search(usernameMatch, wakeword)
+			if not match:
+				rebuild.append(wakeword)
+				continue
+
+			update = True
+			updated = re.sub(sensitivitySub, f'={round(float(sensitivity), 2)}', wakeword)
+			rebuild.append(updated)
+
+		if update:
+			self.ConfigManager.updateSnipsConfiguration(parent='snips-hotword', key='model', value=rebuild, restartSnips=False, createIfNotExist=False)
+			self.SnipsServicesManager.runCmd('restart', 'snips-hotword')
+
+		return update
 
 
 	@property

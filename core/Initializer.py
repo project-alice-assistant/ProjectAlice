@@ -12,10 +12,15 @@ import requests
 from core.base.model.TomlFile import TomlFile
 from core.base.model.Version import Version
 
+PIP = './venv/bin/pip'
+YAML = '/boot/ProjectAlice.yaml'
+ASOUND = '/etc/asound.conf'
+SNIPS_TOML = '/etc/snips.toml'
+
 try:
 	import yaml
 except:
-	subprocess.run(['./venv/bin/pip3', 'install', 'pyyaml'])
+	subprocess.run([PIP, 'install', 'pyyaml'])
 	import yaml
 
 import configTemplate
@@ -32,7 +37,7 @@ class InitDict(dict):
 		try:
 			return super().__getitem__(item) or ''
 		except:
-			print(f'[Initializer] Missing key "{item}" in provided yaml file. Are you using a deprecated yaml file version?')
+			print(f'[Initializer] Missing key "{item}" in provided yaml file.')
 			return ''
 
 
@@ -60,8 +65,8 @@ network={
 
 		self._confsFile = Path(self._rootDir, 'config.py')
 		self._confsSample = Path(self._rootDir, 'configTemplate.py')
-		self._initFile = Path('/boot/ProjectAlice.yaml')
-		self._latest = 1.14
+		self._initFile = Path(YAML)
+		self._latest = 1.16
 
 
 	def initProjectAlice(self) -> bool:
@@ -117,18 +122,23 @@ network={
 		if not connected:
 			self.fatal('Your device needs internet access to continue')
 
+		updateChannel = initConfs['aliceUpdateChannel'] if 'aliceUpdateChannel' in initConfs else 'master'
+		updateSource = self.getUpdateSource(updateChannel)
 		# Update our system and sources
 		subprocess.run(['sudo', 'apt-get', 'update'])
 		subprocess.run(['sudo', 'apt-get', 'dist-upgrade', '-y'])
 		subprocess.run(['git', 'clean', '-df'])
 		subprocess.run(['git', 'stash'])
-		subprocess.run(['git', 'checkout', self.getUpdateSource(initConfs['aliceUpdateChannel'])])
+		subprocess.run(['git', 'checkout', updateSource])
 		subprocess.run(['git', 'pull'])
 		subprocess.run(['git', 'stash', 'clear'])
 
 		time.sleep(1)
 
-		subprocess.run(['./venv/bin/pip3', 'uninstall', '-y', '-r', str(Path(self._rootDir, 'pipuninstalls.txt'))])
+		subprocess.run([PIP, 'uninstall', '-y', '-r', str(Path(self._rootDir, 'pipuninstalls.txt'))])
+
+		if 'forceRewrite' not in initConfs:
+			initConfs['forceRewrite'] = True
 
 		if not self._confsFile.exists() and not self._confsSample.exists():
 			self.fatal('No config and no config template found, can\'t continue')
@@ -152,10 +162,10 @@ network={
 		confs = config.settings.copy()
 
 		# Do some installation if wanted by the user
-		if initConfs['doGroundInstall']:
-			subprocess.run(['./venv/bin/pip3', 'install', '-r', str(Path(self._rootDir, 'requirements.txt'))])
+		if 'doGroundInstall' not in initConfs or initConfs['doGroundInstall']:
+			subprocess.run([PIP, 'install', '-r', str(Path(self._rootDir, 'requirements.txt'))])
 
-			if initConfs['installOnBuster']:
+			if 'installOnBuster' not in initConfs or initConfs['installOnBuster']:
 				subprocess.run(['sudo', 'apt-get', 'install', '-y', 'dirmngr', 'apt-transport-https'])
 				subprocess.run(['sudo', 'bash', '-c', 'echo "deb https://raspbian.snips.ai/stretch stable main" > /etc/apt/sources.list.d/snips.list'])
 				subprocess.run(['sudo', 'apt-key', 'adv', '--fetch-keys', 'https://debian.snips.ai/5FFCD0DEB5BA45CD.pub'])
@@ -183,18 +193,32 @@ network={
 			subprocess.run(['sudo', 'systemctl', 'disable', 'snips-audio-server'])
 			subprocess.run(['sudo', 'systemctl', 'disable', 'snips-tts'])
 
+		confPath = Path('/etc/mosquitto/conf.d/websockets.conf')
+		if not confPath.exists():
+			subprocess.run(['sudo', 'cp', str(Path(self._rootDir, 'system/websockets.conf')), str(confPath)])
+			subprocess.run(['sudo', 'systemctl', 'restart', 'mosquitto'])
 
 		# Now let's dump some values to their respective places
 		# First those that need some checks and self filling in case unspecified
 		confs['mqttHost'] = str(initConfs['mqttHost']) or 'localhost'
 		confs['mqttPort'] = initConfs['mqttPort'] or 1883
 
+		pinCode = initConfs['adminPinCode']
+		try:
+			pin = int(pinCode)
+			if len(str(pin)) != 4:
+				raise
+		except:
+			self.logFatal('Pin code must be 4 digits')
+
+		confs['adminPinCode'] = int(pinCode)
+
 		confs['stayCompletlyOffline'] = bool(initConfs['stayCompletlyOffline'])
 		if initConfs['stayCompletlyOffline']:
 			confs['keepASROffline'] = True
 			confs['keepTTSOffline'] = True
 			confs['skillAutoUpdate'] = False
-			confs['asr'] = 'pocketsphinx'
+			confs['asr'] = 'deepspeech'
 			confs['tts'] = 'pico'
 			confs['awsRegion'] = ''
 			confs['awsAccessKey'] = ''
@@ -208,10 +232,10 @@ network={
 			confs['awsAccessKey'] = initConfs['awsAccessKey']
 			confs['awsSecretKey'] = initConfs['awsSecretKey']
 
-			confs['asr'] = initConfs['asr'] if initConfs['asr'] in {'pocketsphinx', 'google'} else 'pocketsphinx'
+			confs['asr'] = initConfs['asr'] if initConfs['asr'] in {'pocketsphinx', 'google', 'deepspeech'} else 'deepspeech'
 			if confs['asr'] == 'google' and not initConfs['googleServiceFile']:
-				self.logInfo('You cannot use Google ASR without a google service file, falling back to pocket sphinx')
-				confs['asr'] = 'pocketsphinx'
+				self.logInfo('You cannot use Google ASR without a google service file, falling back to Deepspeech')
+				confs['asr'] = 'deepspeech'
 
 			if initConfs['googleServiceFile']:
 				googleCreds = Path(self._rootDir, 'credentials/googlecredentials.json')
@@ -249,7 +273,7 @@ network={
 		else:
 			confs['aliceUpdateChannel'] = aliceUpdateChannel
 
-		skillsUpdateChannel = initConfs['skillsUpdateChannel']
+		skillsUpdateChannel = initConfs['skillsUpdateChannel'] if 'skillsUpdateChannel' in initConfs else 'master'
 		if skillsUpdateChannel not in {'master', 'rc', 'beta', 'alpha'}:
 			self.logWarning(f'{skillsUpdateChannel} is not a supported updateChannel, only master, rc, beta and alpha are supported. Reseting to master')
 			confs['skillsUpdateChannel'] = 'master'
@@ -272,11 +296,11 @@ network={
 			subprocess.run(['wget', '--content-disposition', 'https://github.com/project-alice-assistant/snips-nlu-rebirth/blob/master/wheels/snips_nlu_parsers-0.4.3-cp37-cp37m-linux_armv7l.whl?raw=true'])
 			subprocess.run(['wget', '--content-disposition', 'https://github.com/project-alice-assistant/snips-nlu-rebirth/blob/master/wheels/snips_nlu-0.20.2-py3-none-any.whl?raw=true'])
 			time.sleep(1)
-			subprocess.run(['./venv/bin/pip3', 'install', 'scipy-1.3.3-cp37-cp37m-linux_armv7l.whl'])
-			subprocess.run(['./venv/bin/pip3', 'install', 'scikit_learn-0.22.1-cp37-cp37m-linux_armv7l.whl'])
-			subprocess.run(['./venv/bin/pip3', 'install', 'snips_nlu_utils-0.9.1-cp37-cp37m-linux_armv7l.whl'])
-			subprocess.run(['./venv/bin/pip3', 'install', 'snips_nlu_parsers-0.4.3-cp37-cp37m-linux_armv7l.whl'])
-			subprocess.run(['./venv/bin/pip3', 'install', 'snips_nlu-0.20.2-py3-none-any.whl'])
+			subprocess.run([PIP, 'install', 'scipy-1.3.3-cp37-cp37m-linux_armv7l.whl'])
+			subprocess.run([PIP, 'install', 'scikit_learn-0.22.1-cp37-cp37m-linux_armv7l.whl'])
+			subprocess.run([PIP, 'install', 'snips_nlu_utils-0.9.1-cp37-cp37m-linux_armv7l.whl'])
+			subprocess.run([PIP, 'install', 'snips_nlu_parsers-0.4.3-cp37-cp37m-linux_armv7l.whl'])
+			subprocess.run([PIP, 'install', 'snips_nlu-0.20.2-py3-none-any.whl'])
 			time.sleep(1)
 			subprocess.run(['rm', 'scipy-1.3.3-cp37-cp37m-linux_armv7l.whl'])
 			subprocess.run(['rm', 'scikit_learn-0.22.1-cp37-cp37m-linux_armv7l.whl'])
@@ -344,7 +368,7 @@ network={
 				subprocess.run(['sudo', 'sed', '-i', '-e', f's/%HARDWARE%/{audioHardware}/', str(hlcServiceFilePath)])
 
 			if audioHardware == 'respeaker6MicArray':
-				subprocess.run(['sudo', 'cp', Path(self._rootDir, 'system', 'asounds', 'respeaker6micarray.conf'), Path('/etc/asound.conf')])
+				subprocess.run(['sudo', 'cp', Path(self._rootDir, 'system', 'asounds', 'respeaker6micarray.conf'), Path(ASOUND)])
 
 		elif audioHardware == 'respeaker7':
 			subprocess.run(['sudo', Path(self._rootDir, 'system/scripts/audioHardware/respeaker7.sh')])
@@ -358,7 +382,7 @@ network={
 
 		elif audioHardware in {'matrixCreator', 'matrixVoice'}:
 			subprocess.run(['sudo', Path(self._rootDir, 'system/scripts/audioHardware/matrix.sh')])
-			subprocess.run(['sudo', 'cp', Path(self._rootDir, 'system', 'asounds', 'matrix.conf'), Path('/etc/asound.conf')])
+			subprocess.run(['sudo', 'cp', Path(self._rootDir, 'system', 'asounds', 'matrix.conf'), Path(ASOUND)])
 
 			snipsConf['snips-audio-server']['mike'] = 'MATRIXIO-SOUND: - (hw:2,0)'
 
@@ -371,7 +395,15 @@ network={
 				subprocess.run(['sudo', 'sed', '-i', '-e', 's/%HARDWARE%/googleAIY/', str(hlcServiceFilePath)])
 
 		elif audioHardware == 'usbMic':
-			subprocess.run(['sudo', 'cp', Path(self._rootDir, 'system', 'asounds', 'usbmic.conf'), Path('/etc/asound.conf')])
+			subprocess.run(['sudo', 'cp', Path(self._rootDir, 'system', 'asounds', 'usbmic.conf'), Path(ASOUND)])
+
+		elif audioHardware == 'ps3eye':
+			subprocess.run(['sudo', 'cp', Path(self._rootDir, 'system', 'asounds', 'ps3eye.conf'), Path(ASOUND)])
+			asoundrc = f'/home/{getpass.getuser()}/.asoundrc'
+			subprocess.run(['echo', 'pcm.dsp0 {', '>', asoundrc])
+			subprocess.run(['echo', '    type plug', '>>', asoundrc])
+			subprocess.run(['echo', '    slave.pcm "dmix"', '>>', asoundrc])
+			subprocess.run(['echo', '}', '>>', asoundrc])
 
 		subprocess.run(['sudo', 'systemctl', 'daemon-reload'])
 
@@ -391,9 +423,9 @@ network={
 		subprocess.run(['sudo', 'rm', '-rf', Path(self._rootDir, 'assistant')])
 
 		if initConfs['keepYAMLBackup']:
-			subprocess.run(['sudo', 'mv', Path('/boot/ProjectAlice.yaml'), Path('/boot/ProjectAlice.yaml.bak')])
+			subprocess.run(['sudo', 'mv', Path(YAML), Path('/boot/ProjectAlice.yaml.bak')])
 		else:
-			subprocess.run(['sudo', 'rm', Path('/boot/ProjectAlice.yaml')])
+			subprocess.run(['sudo', 'rm', Path(YAML)])
 
 		self.warning('Initializer done with configuring')
 		time.sleep(2)
@@ -411,12 +443,12 @@ network={
 
 	def loadSnipsConfigurations(self) -> TomlFile:
 		self.logInfo('Loading Snips configuration file')
-		snipsConfig = Path('/etc/snips.toml')
+		snipsConfig = Path(SNIPS_TOML)
 
 		if snipsConfig.exists():
-			subprocess.run(['sudo', 'rm', '/etc/snips.toml'])
+			subprocess.run(['sudo', 'rm', SNIPS_TOML])
 
-		subprocess.run(['sudo', 'cp', Path(self._rootDir, 'system/snips/snips.toml'), Path('/etc/snips.toml')])
+		subprocess.run(['sudo', 'cp', Path(self._rootDir, 'system/snips/snips.toml'), Path(SNIPS_TOML)])
 
 		return TomlFile.loadToml(snipsConfig)
 

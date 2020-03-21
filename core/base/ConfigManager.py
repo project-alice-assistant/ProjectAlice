@@ -1,8 +1,7 @@
 import json
 import logging
-from pathlib import Path
-
 import shutil
+from pathlib import Path
 
 import configTemplate
 from core.base.SkillManager import SkillManager
@@ -476,9 +475,24 @@ class ConfigManager(Manager):
 		       self._aliceTemplateConfigurations.get('display') == 'hidden'
 
 
+	def getAliceConfUpdatePreProcessing(self, confName: str) -> typing.Optional[str]:
+		# Some config need some pre processing to run some checks before saving
+		return self._aliceTemplateConfigurations.get(confName, dict()).get('beforeUpdate')
+
+
 	def getAliceConfUpdatePostProcessing(self, confName: str) -> typing.Optional[str]:
 		# Some config need some post processing if updated while Alice is running
 		return self._aliceTemplateConfigurations.get(confName, dict()).get('onUpdate')
+
+
+	def doConfigUpdatePreProcessing(self, function: str, value: typing.Any) -> bool:
+		# Call alice config pre processing functions.
+		try:
+			func = getattr(self, function)
+			return func(value)
+		except:
+			self.logWarning(f'Configuration pre processing method "{function}" does not exist')
+			return False
 
 
 	def doConfigUpdatePostProcessing(self, functions: set):
@@ -493,6 +507,14 @@ class ConfigManager(Manager):
 				continue
 
 
+	def updateMqttSettings(self):
+		self.ConfigManager.updateSnipsConfiguration('snips-common', 'mqtt', f'{self.getAliceConfigByName("mqttHost")}:{self.getAliceConfigByName("mqttPort"):}', False, False)
+		self.ConfigManager.updateSnipsConfiguration('snips-common', 'mqtt_username', self.getAliceConfigByName('mqttHost'), False, False)
+		self.ConfigManager.updateSnipsConfiguration('snips-common', 'mqtt_password', self.getAliceConfigByName('mqttHost'), False, False)
+		self.ConfigManager.updateSnipsConfiguration('snips-common', 'mqtt_tls_cafile', self.getAliceConfigByName('mqttHost'), True, False)
+		self.reconnectMqtt()
+
+
 	def reconnectMqtt(self):
 		self.MqttManager.reconnect()
 
@@ -500,6 +522,22 @@ class ConfigManager(Manager):
 	def reloadASR(self):
 		self.ASRManager.onStop()
 		self.ASRManager.onStart()
+
+
+	def checkNewAdminPinCode(self, pinCode: str) -> bool:
+		try:
+			pin = int(pinCode)
+			if len(str(pin)) != 4:
+				raise
+
+			return True
+		except:
+			self.logWarning('Pin code must be 4 digits')
+			return False
+
+
+	def updateAdminPinCode(self):
+		self.UserManager.addUserPinCode('admin', self.getAliceConfigByName('adminPinCode'))
 
 
 	def refreshStoreData(self):

@@ -1,4 +1,5 @@
 from pathlib import Path
+from typing import Union
 
 from core.base.model.Manager import Manager
 from core.commons import constants
@@ -33,13 +34,16 @@ class SnipsServicesManager(Manager):
 		self.runCmd(cmd='stop', services=self.snipsServices())
 
 
-	def runCmd(self, cmd: str, services: list = None):
+	def runCmd(self, cmd: str, services: Union[str, list] = None):
 		if not Path(self.Commons.rootDir() + '/assistant').exists():
 			self.logWarning('Assistant not yet existing, shouldn\'t handle Snips for now')
 			return
 
 		if not services:
 			services = self._snipsServices
+
+		if isinstance(services, str):
+			services = [services]
 
 		for service in services:
 			if service == 'snips-tts' and not isinstance(self.TTSManager.tts, SnipsTTS):

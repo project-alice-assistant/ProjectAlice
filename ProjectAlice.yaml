@@ -2,7 +2,7 @@
 ################################################
 #                                              #
 #       Project Alice quick install file       #
-#                                              #
+#           For advanced users only            #
 # Edit the content of  this file to your needs #
 # and   place   it in  /boot/ProjectAlice.yaml #
 # after   flashing  your  sd  card   with  our #
@@ -13,7 +13,7 @@
 #                                              #
 ################################################
 #            DON'T CHANGE ME                   #
-version: 1.14
+version: 1.16
 ################################################
 
 # How to prevent frequent errors:
@@ -32,6 +32,9 @@ keepYAMLBackup: no
 installOnBuster: yes
 
 # Base configs
+# Set the admin pin code. This code will allow you to access the interface. Only numbers, 4 digits
+adminPinCode: 1234
+
 # Enter Wifi credentials for automatic adding of tasmota/zigbee/netatmo devices even when Alice has wired access
 useWifi: yes
 wifiNetworkName:
@@ -62,6 +65,7 @@ audioHardware:
     googleAIY2:         no
     matrixCreator:      no
     matrixVoice:        no
+    ps3eye:             no
 
 # Capture
 micSampleRate: 16000
@@ -110,14 +114,14 @@ shortReplies: no
 # If set to yes Alice will whisper instead of using short answers when you are sleeping. Currently only available with Amazon TTS
 whisperWhenSleeping: no
 
-# Either 'pocketsphinx' or 'google'
+# Either 'pocketsphinx', 'deepspeech' or 'google'
 asr: pocketsphinx
 
 # Either 'pico', 'snips', 'mycroft', 'amazon' or 'google'
 tts: pico
 
-ttsType: female
-ttsVoice: Joanna
+ttsType: male
+ttsVoice: en-US
 ttsLanguage: en-US
 
 # Amazon Polly

@@ -52,6 +52,46 @@ nav {
 	size: 1em;
 }
 
+.logBold {
+	font-weight: bolder;
+}
+
+.logDim {
+	color: #919191;
+}
+
+.logUnderlined {
+	text-decoration: underline;
+}
+
+.logDefault {
+	color: #d1d1d1;
+}
+
+.logRed {
+	color: red;
+}
+
+.logGreen {
+	color: green;
+}
+
+.logYellow {
+	color: yellow;
+}
+
+.logBlue {
+	color: blue;
+}
+
+.logGrey {
+	color: grey;
+}
+
+.logOrange {
+	color: orange;
+}
+
 .mainMenuList {
 	list-style-type: none;
 	margin: 0;
@@ -180,6 +220,25 @@ a:hover {
 	color: #d1d1d1;
 	align-content: flex-start;
 	box-shadow: 0 0 20px 5px #141414;
+}
+
+.skillsStoreSkillInfoContainer {
+	margin-top: 5px;
+	display: flex;
+	width: 100%;
+}
+
+.skillsStoreSkillLeft {
+	width: 50%;
+}
+
+.skillsStoreSkillRight {
+	display: flex;
+	width: 50%;
+	margin-right: 5px;
+	align-items: center;
+	justify-content: flex-end;
+	font-size: 3.5em;
 }
 
 .skillsStoreSkillTitle {
@@ -559,7 +618,7 @@ input:focus {
 	margin-right: 20px;
 }
 
-.snipswatchActiveVerbosity {
+.alicewatchActiveVerbosity {
 	color: yellow;
 }
 
@@ -628,9 +687,9 @@ input:focus {
 .widgetDelete {
 	display: none;
 	position: absolute;
-	z-index: 50;
-	top: -15px;
-	left: -15px;
+	z-index: 9999;
+	top: 5px;
+	left: 5px;
 	width: 50px;
 	height: 50px;
 	border-radius: 25px;
@@ -697,6 +756,7 @@ input:focus {
 	background-color: #343434;
 	box-shadow: 0 0 20px 5px #141414;
 	cursor: pointer;
+	overflow: hidden;
 }
 
 .widgetIcons {
@@ -865,6 +925,13 @@ input:focus {
 	color: green;
 }
 
+.centered {
+	display: flex;
+	width: 100%;
+	align-items: center;
+	justify-content: center;
+}
+
 .adminAuthDisplayUser {
 	display: flex;
 	margin-top: 25px;
@@ -875,6 +942,7 @@ input:focus {
 	font-size: 2em;
 	align-items: center;
 	justify-content: center;
+	text-align: center;
 }
 
 .adminAuthKeyContainer {
@@ -936,4 +1004,35 @@ input:focus {
 	min-height: 100%;
 	display: flex;
 	align-items: stretch;
+}
+
+.editSkillsPane {
+	position: fixed;
+	top: 105px;
+	left: 154px;
+	right: 0;
+	bottom: 0;
+	margin: 5px;
+	overflow-y: auto;
+	overflow-x: hidden;
+	display: flex;
+	flex-wrap: wrap;
+	align-content: flex-start;
+}
+
+.editSkillTile {
+	font-family: 'marskeregular', Arial, sans-serif;
+	display: flex;
+	flex-wrap: wrap;
+	align-items: flex-start;
+	background-color: #636363;
+	margin: 10px;
+	width: 200px;
+	height: 150px;
+	color: #d1d1d1;
+	align-content: flex-start;
+	cursor: pointer;
+	justify-content: center;
+	font-size: 1.5em;
+	padding-top: 5px;
 }

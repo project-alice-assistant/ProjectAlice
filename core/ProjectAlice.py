@@ -70,9 +70,20 @@ class ProjectAlice(Singleton):
 		self._restartHandler()
 
 
+	def wipeAll(self):
+		# Set as restarting so skills don't install / update
+		self._restart = True
+
+		self._superManager.skillManager.wipeSkills()
+		self._superManager.databaseManager.clearDB()
+		self._superManager.dialogTemplateManager.clearCache(False)
+		self._superManager.nluManager.clearCache()
+		self._superManager.snipsAssistantManager.clearData()
+
+
 	def updateProjectAlice(self):
 		self._logger.logInfo('Checking Project Alice updates')
-		req = requests.get(url=f'{constants.GITHUB_URL}/ProjectAlice/branches', auth=SuperManager.getInstance().configManager.getGithubAuth())
+		req = requests.get(url=f'{constants.GITHUB_API_URL}/ProjectAlice/branches', auth=SuperManager.getInstance().configManager.getGithubAuth())
 		if req.status_code != 200:
 			self._logger.logWarning('Failed checking for updates')
 			return

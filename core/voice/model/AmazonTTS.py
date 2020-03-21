@@ -219,5 +219,6 @@ class AmazonTTS(TTS):
 			tmpFile.write_bytes(response['AudioStream'].read())
 
 			self._mp3ToWave(src=tmpFile, dest=self._cacheFile)
+			tmpFile.unlink()
 
 		self._speak(self._cacheFile, session)

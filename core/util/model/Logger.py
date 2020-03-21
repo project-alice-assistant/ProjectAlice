@@ -4,7 +4,7 @@ import logging
 
 class Logger:
 
-	def __init__(self, depth: int = 4, *args, **kwargs):
+	def __init__(self, depth: int = 4, *_args, **_kwargs):
 		self._logger = logging.getLogger('ProjectAlice')
 		self._depth = depth
 

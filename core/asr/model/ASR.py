@@ -21,6 +21,7 @@ class ASR(ProjectAliceObject):
 		self._isOnlineASR = False
 		self._timeout = Event()
 		self._timeoutTimer: Optional[threading.Timer] = None
+		self._recorder: Optional[Recorder] = None
 		super().__init__()
 
 
@@ -83,12 +84,12 @@ class ASR(ProjectAliceObject):
 
 	def decodeStream(self, session: DialogSession):
 		self._timeout.clear()
-		self._timeoutTimer = self.ThreadManager.newTimer(interval=int(self.ConfigManager.getSnipsConfiguration('snips-dialogue', 'session_timeout').value) or 30, func=self.timeout)
+		self._timeoutTimer = self.ThreadManager.newTimer(interval=int(self.ConfigManager.getAliceConfigByName('asrTimeout')), func=self.timeout)
 
 
-	def end(self, recorder: Recorder, session: DialogSession):
+	def end(self, session: DialogSession):
 		self.MqttManager.mqttClient.unsubscribe(constants.TOPIC_AUDIO_FRAME.format(session.siteId))
-		recorder.stopRecording()
+		self._recorder.stopRecording()
 		if self._timeoutTimer and self._timeoutTimer.is_alive():
 			self._timeoutTimer.cancel()
 

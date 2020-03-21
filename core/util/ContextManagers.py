@@ -1,7 +1,7 @@
 from contextlib import contextmanager
 
-from core.base.SuperManager import SuperManager
 from core.ProjectAliceExceptions import OfflineError
+from core.base.SuperManager import SuperManager
 
 
 @contextmanager
@@ -11,6 +11,9 @@ def Online():
 		try:
 			yield
 		except:
-			if internetManager.checkOnlineState():
+			if not internetManager.checkOnlineState():
 				raise
+			else:
+				yield
+
 	raise OfflineError

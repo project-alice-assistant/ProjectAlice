@@ -1,7 +1,5 @@
-from pathlib import Path
 from typing import Any
 
-import shutil
 from flask import jsonify, render_template, request
 from flask_login import login_required
 
@@ -43,6 +41,11 @@ class AdminView(View):
 				if value == self.ConfigManager.getAliceConfigByName(conf):
 					continue
 
+				pre = self.ConfigManager.getAliceConfUpdatePreProcessing(conf)
+				if pre:
+					if not self.ConfigManager.doConfigUpdatePreProcessing(pre, value):
+						continue
+
 				pp = self.ConfigManager.getAliceConfUpdatePostProcessing(conf)
 				if pp:
 					postProcessing.add(pp)
@@ -61,7 +64,7 @@ class AdminView(View):
 	def restart(self) -> dict:
 		try:
 			self.__class__.setWaitType('restart')
-			self.ThreadManager.doLater(interval=2, func=self.ProjectAlice.doRestart)
+			self.ThreadManager.doLater(interval=1, func=self.ProjectAlice.doRestart)
 			return jsonify(success=True)
 		except Exception as e:
 			self.logError(f'Failed restarting Alice: {e}')
@@ -79,13 +82,17 @@ class AdminView(View):
 			return jsonify(success=False)
 
 
-	def assistantDownload(self) -> dict:
+	def trainAssistant(self) -> dict:
 		try:
-			self.__class__.setWaitType('snipsdownload')
-			self.SnipsConsoleManager.doDownload()
+			self.__class__.setWaitType('trainAssistant')
+			self.ThreadManager.newEvent('TrainAssistant').set()
+			self.DialogTemplateManager.clearCache()
+			self.SnipsAssistantManager.retrain()
+			self.ThreadManager.doLater(interval=1, func=self.NluManager.trainNLU())
+
 			return jsonify(success=True)
 		except Exception as e:
-			self.logError(f'Failed downloading assistant: {e}')
+			self.logError(f'Failed training assistant: {e}')
 			return jsonify(success=False)
 
 
@@ -99,27 +106,36 @@ class AdminView(View):
 			return jsonify(success=False)
 
 
+	def addUser(self) -> dict:
+		try:
+			self.SkillManager.getSkillInstance('AliceCore').addNewUser()
+			return jsonify(success=True)
+		except Exception as e:
+			self.logError(f'Failed adding new user: {e}')
+			return jsonify(success=False)
+
+
+	def addWakeword(self) -> dict:
+		try:
+			self.SkillManager.getSkillInstance('AliceCore').addNewWakeword()
+			return jsonify(success=True)
+		except Exception as e:
+			self.logError(f'Failed adding new wakeword: {e}')
+			return jsonify(success=False)
+
+
+	def tuneWakeword(self) -> dict:
+		try:
+			self.SkillManager.getSkillInstance('AliceCore').tuneWakeword()
+			return jsonify(success=True)
+		except Exception as e:
+			self.logError(f'Failed tuning wakeword: {e}')
+			return jsonify(success=False)
+
+
 	def wipeAll(self) -> dict:
 		try:
-			tickets = [
-				'http://skills.projectalice.ch/AliceCore',
-				'http://skills.projectalice.ch/ContextSensitive',
-				'http://skills.projectalice.ch/RedQueen',
-				'http://skills.projectalice.ch/Telemetry',
-				'http://skills.projectalice.ch/DateDayTimeYear'
-			]
-
-			for link in tickets:
-				self.Commons.downloadFile(link, f'system/skillInstallTickets/{link.rsplit("/")[-1]}.install')
-
-			shutil.rmtree(Path(self.Commons.rootDir(), 'var/assistants'))
-			shutil.rmtree(Path(self.Commons.rootDir(), 'trained/assistants'))
-			shutil.rmtree(Path(self.Commons.rootDir(), 'skills'))
-			Path(self.Commons.rootDir(), 'system/database/data.db')
-
-			Path(self.Commons.rootDir(), 'var/assistants').mkdir()
-			Path(self.Commons.rootDir(), 'trained/assistants').mkdir()
-			Path(self.Commons.rootDir(), 'skills').mkdir()
+			self.ProjectAlice.wipeAll()
 			return self.restart()
 		except Exception as e:
 			self.logError(f'Failed wiping system: {e}')
@@ -129,10 +145,10 @@ class AdminView(View):
 	def areYouReady(self) -> bool:
 		if not self.__class__.getWaitType() or self.__class__.getWaitType() in ['restart', 'reboot']:
 			return jsonify(success=False) if self.ProjectAlice.restart else jsonify(success=True)
-		elif self.__class__.getWaitType() == 'snipsdownload':
-			return jsonify(success=False) if self.ThreadManager.getEvent('SnipsAssistantDownload').isSet() else jsonify(success=True)
+		elif self.__class__.getWaitType() == 'trainAssistant':
+			return jsonify(success=False) if self.ThreadManager.getEvent('TrainAssistant').isSet() else jsonify(success=True)
 		else:
-			return False
+			return jsonify(success=False)
 
 
 	@classmethod

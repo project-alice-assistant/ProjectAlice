@@ -89,7 +89,7 @@ class DeviceManager(Manager):
 		# if not 'projectalice/devices/' in message.topic:
 		# 	return None
 
-		return self.DialogSessionManager.addTempSession(sessionId=uuid.uuid4(), message=message)
+		return self.DialogSessionManager.addTempSession(sessionId=str(uuid.uuid4()), message=message)
 
 
 	def loadDevices(self):

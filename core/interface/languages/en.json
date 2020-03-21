@@ -11,7 +11,7 @@
 	"enable": "enable",
 	"disable": "disable",
 	"delete": "delete",
-	"updatee": "update",
+	"updatee": "Update",
 	"addWidgetTitle": "Available widgets",
 	"viewIntents": "View intents",
 	"skillSettings": "Skill settings",
@@ -21,7 +21,7 @@
 	"adminTabTitleUtilities": "Utilities",
 	"restartAlice": "Restart Alice",
 	"reboot": "Reboot",
-	"trainAndDlAssistant": "Download assistant",
+	"trainAssistant": "Train assistant",
 	"wipeAll": "Wipe all",
 	"devmodeNewSkill": "Skill creation",
 	"devmodeEditSkill": "Skill edition",
@@ -45,5 +45,8 @@
 	"createSkill": "Create the skill",
 	"uploadSkillToGithub": "Upload the skill to Github",
 	"resetSkill": "Reset",
-	"actions": "Actions"
+	"actions": "Actions",
+	"addUser": "Add user",
+	"addWakeword": "Add wakeword",
+	"tuneWakeword": "Tune wakeword"
 }

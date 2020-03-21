@@ -126,6 +126,10 @@ class ProjectAliceObject:
 		pass
 
 
+	def onHotwordToggleOff(self, siteId: str):
+		pass
+
+
 	def onSessionStarted(self, session):
 		pass
 
@@ -223,11 +227,11 @@ class ProjectAliceObject:
 		pass
 
 
-	def onContextSensitiveDelete(self, sessionId: str):
+	def onContextSensitiveDelete(self, session):
 		pass
 
 
-	def onContextSensitiveEdit(self, sessionId: str):
+	def onContextSensitiveEdit(self, session):
 		pass
 
 
@@ -363,7 +367,19 @@ class ProjectAliceObject:
 		pass
 
 
+	def onVadUp(self, **kwargs):
+		pass
+
+
+	def onVadDown(self, **kwargs):
+		pass
+
+
 	def onPartialTextCaptured(self, session, text: str, likelihood: float, seconds: float):
+		pass
+
+
+	def onEndSession(self, session):
 		pass
 
 
@@ -500,3 +516,8 @@ class ProjectAliceObject:
 	@property
 	def SnipsAssistantManager(self):
 		return SM.SuperManager.getInstance().snipsAssistantManager
+
+
+	@property
+	def AliceWatchManager(self):
+		return SM.SuperManager.getInstance().aliceWatchManager
