@@ -1,4 +1,4 @@
-VERSION = '1.0.0-a6'
+VERSION = '1.0.0-b1'
 DEFAULT_SITE_ID = 'office'
 DEFAULT = 'default'
 UNKNOWN_WORD = 'unknownword'
