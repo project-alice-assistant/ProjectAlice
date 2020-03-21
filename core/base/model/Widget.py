@@ -26,6 +26,8 @@ class Widget(ProjectAliceObject):
 		self._state = data['state'] if 'state' in data.keys() else 0
 		self._x = data['posx'] if 'posx' in data.keys() else 0
 		self._y = data['posy'] if 'posy' in data.keys() else 0
+		self._height = data['height'] if 'height' in data.keys() else 0
+		self._width = data['width'] if 'width' in data.keys() else 0
 		self._size = self.SIZE.value
 
 		self._options = self.OPTIONS
@@ -57,13 +59,15 @@ class Widget(ProjectAliceObject):
 	def saveToDB(self):
 		self.DatabaseManager.replace(
 			tableName='widgets',
-			query='REPLACE INTO :__table__ (parent, name, posx, posy, state, options, zindex) VALUES (:parent, :name, :posx, :posy, :state, :options, :zindex)',
+			query='REPLACE INTO :__table__ (parent, name, posx, posy, height, width, state, options, zindex) VALUES (:parent, :name, :posx, :posy, :height, :width, :state, :options, :zindex)',
 			callerName=self.SkillManager.name,
 			values={
 				'parent': self.parent,
 				'name': self.name,
 				'posx': self.x,
 				'posy': self.y,
+				'height': self.height,
+				'width': self.width,
 				'state': self.state,
 				'options': json.dumps(self.options),
 				'zindex': self.zindex
@@ -161,6 +165,26 @@ class Widget(ProjectAliceObject):
 
 
 	@property
+	def height(self) -> int:
+		return self._height
+
+
+	@height.setter
+	def height(self, value: int):
+		self._height = value
+
+
+	@property
+	def width(self) -> int:
+		return self._width
+
+
+	@width.setter
+	def width(self, value: int):
+		self._width = value
+
+
+	@property
 	def options(self) -> dict:
 		return self._options
 
@@ -191,6 +215,7 @@ class Widget(ProjectAliceObject):
 			 Parent: {self.parent}
 			 Name: {self.name}
 			 Size: {self.size}
+			 CustomSize: {self.height}/{self.width}
 			 State: {self.state}
 			 PosX: {self.x}
 			 PosY: {self.y}
