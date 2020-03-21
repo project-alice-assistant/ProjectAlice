@@ -120,8 +120,8 @@ asr: pocketsphinx
 # Either 'pico', 'snips', 'mycroft', 'amazon' or 'google'
 tts: pico
 
-ttsType: female
-ttsVoice: Joanna
+ttsType: male
+ttsVoice: en-US
 ttsLanguage: en-US
 
 # Amazon Polly
