@@ -114,7 +114,7 @@ shortReplies: no
 # If set to yes Alice will whisper instead of using short answers when you are sleeping. Currently only available with Amazon TTS
 whisperWhenSleeping: no
 
-# Either 'pocketsphinx' or 'google'
+# Either 'pocketsphinx', 'deepspeech' or 'google'
 asr: pocketsphinx
 
 # Either 'pico', 'snips', 'mycroft', 'amazon' or 'google'

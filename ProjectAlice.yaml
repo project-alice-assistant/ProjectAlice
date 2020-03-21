@@ -63,7 +63,7 @@ baseCurrency: USD
 # Either 'metric', 'kelvin' or 'imperial'
 baseUnits: metric
 
-# Either 'pocketsphinx' or 'google'
+# Either 'pocketsphinx', 'deepspeech' or 'google'
 asr: pocketsphinx
 
 # Either 'pico', 'snips', 'mycroft', 'amazon' or 'google'
