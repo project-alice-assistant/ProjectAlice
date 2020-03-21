@@ -37,7 +37,7 @@ class InitDict(dict):
 		try:
 			return super().__getitem__(item) or ''
 		except:
-			print(f'[Initializer] Missing key "{item}" in provided yaml file. Are you using a deprecated yaml file version?')
+			print(f'[Initializer] Missing key "{item}" in provided yaml file.')
 			return ''
 
 
@@ -122,12 +122,14 @@ network={
 		if not connected:
 			self.fatal('Your device needs internet access to continue')
 
+		updateChannel = initConfs['aliceUpdateChannel'] if 'aliceUpdateChannel' in initConfs else 'master'
+		updateSource = self.getUpdateSource(updateChannel)
 		# Update our system and sources
 		subprocess.run(['sudo', 'apt-get', 'update'])
 		subprocess.run(['sudo', 'apt-get', 'dist-upgrade', '-y'])
 		subprocess.run(['git', 'clean', '-df'])
 		subprocess.run(['git', 'stash'])
-		subprocess.run(['git', 'checkout', 'master'])
+		subprocess.run(['git', 'checkout', updateSource])
 		subprocess.run(['git', 'pull'])
 		subprocess.run(['git', 'stash', 'clear'])
 
@@ -209,7 +211,7 @@ network={
 		except:
 			self.logFatal('Pin code must be 4 digits')
 
-		confs['adminPinCode'] = pinCode
+		confs['adminPinCode'] = int(pinCode)
 
 		confs['stayCompletlyOffline'] = bool(initConfs['stayCompletlyOffline'])
 		if initConfs['stayCompletlyOffline']:
@@ -271,7 +273,7 @@ network={
 		else:
 			confs['aliceUpdateChannel'] = aliceUpdateChannel
 
-		skillsUpdateChannel = initConfs['skillsUpdateChannel']
+		skillsUpdateChannel = initConfs['skillsUpdateChannel'] if 'skillsUpdateChannel' in initConfs else 'master'
 		if skillsUpdateChannel not in {'master', 'rc', 'beta', 'alpha'}:
 			self.logWarning(f'{skillsUpdateChannel} is not a supported updateChannel, only master, rc, beta and alpha are supported. Reseting to master')
 			confs['skillsUpdateChannel'] = 'master'
