@@ -1,21 +1,23 @@
 {
 	"name": "ContextSensitive",
-	"version": "1.0.14",
-	"icon": "fab fa-battle-net",
+	"version": "1.0.17",
+	"icon": "fas fa-brain",
+	"category": "alice",
 	"author": "ProjectAlice",
 	"maintainers": [
 		"Psycho",
 		"maxbachmann"
 	],
-	"desc": "ContextSensitive is the official context sensitive skill. It handle intents like 'Delete this', 'Forget about that'",
-	"aliceMinVersion": "1.0.0-a5",
+	"desc": "ContextSensitive is the official context sensitive skill. It handles intents like 'Delete this', 'Change that', 'Please repeat",
+	"aliceMinVersion": "1.0.0-a6",
 	"systemRequirements": [],
 	"pipRequirements": [],
 	"conditions": {
 		"lang": [
 			"en",
 			"fr",
-			"de"
+			"de",
+			"it"
 		]
 	}
 }

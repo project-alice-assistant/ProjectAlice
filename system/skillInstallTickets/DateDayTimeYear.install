@@ -1,14 +1,15 @@
 {
 	"name": "DateDayTimeYear",
-	"version": "1.0.21",
-	"icon": "fab fa-battle-net",
+	"version": "1.0.24",
+	"icon": "far fa-clock",
+	"category": "assistance",
 	"author": "Psychokiller1888",
 	"maintainers": [
 		"maxbachmann",
 		"SkyHyperV"
 	],
 	"desc": "Ask for the time, date, day and year",
-	"aliceMinVersion": "1.0.0-a4",
+	"aliceMinVersion": "1.0.0-a6",
 	"systemRequirements": [],
 	"pipRequirements": [
 		"Babel"
@@ -17,7 +18,8 @@
 		"lang": [
 			"en",
 			"fr",
-			"de"
+			"de",
+			"it"
 		]
 	}
 }
