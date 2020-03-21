@@ -43,7 +43,6 @@ class SuperManager:
 		self.userManager = None
 		self.talkManager = None
 		self.webInterfaceManager = None
-		self.snipsWatchManager = None
 		self.nodeRedManager = None
 		self.skillStoreManager = None
 		self.nluManager = None
