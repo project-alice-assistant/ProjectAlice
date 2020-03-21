@@ -49,6 +49,23 @@ class IndexView(View):
 			return jsonify(success=False)
 
 
+	@route('/home/saveWidgetSize/', methods=['POST'])
+	def saveWidgetSize(self):
+		try:
+			data = request.get_json()
+			p, w = data['id'].split('_')
+
+			widget = self.SkillManager.widgets[p][w]
+			widget.width = data['w']
+			widget.height = data['h']
+			widget.saveToDB()
+
+			return jsonify(success=True)
+		except Exception as e:
+			self.logWarning(f"[Widget] Couldn't save size: {e}")
+			return jsonify(success=False)
+
+
 	@route('/home/removeWidget/', methods=['POST'])
 	def removeWidget(self):
 		try:

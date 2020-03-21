@@ -19,6 +19,22 @@ $(function () {
 		}
 	}).css('position', 'absolute');
 
+	$('.widget').resizable({
+      	grid: 10,
+		stop : function(event,ui) {
+      		$.ajax({
+				contentType: 'application/json',
+				url: '/home/saveWidgetSize/',
+				data: JSON.stringify({
+					id: $(this).attr('id'),
+					w: $(this).outerWidth(),
+					h: $(this).outerHeight(),
+				}),
+				type: 'POST'
+			});
+		}
+    });
+
 
 	$('.widgetsPane').droppable({
 		drop: function (event, ui) {
