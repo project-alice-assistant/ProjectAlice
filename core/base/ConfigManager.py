@@ -51,6 +51,8 @@ class ConfigManager(Manager):
 	def _setDefaultSiteId(self):
 		if self._snipsConfigurations['snips-audio-server']['bind']:
 			constants.DEFAULT_SITE_ID = self._snipsConfigurations['snips-audio-server']['bind'].replace('@mqtt', '')
+		else:
+			constants.DEFAULT_SITE_ID = constants.DEFAULT
 
 
 	def _loadCheckAndUpdateAliceConfigFile(self) -> dict:
