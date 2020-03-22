@@ -531,14 +531,22 @@ class AliceSkill(ProjectAliceObject):
 		self.MqttManager.publish(topic=topic, payload=payload, qos=qos, retain=retain)
 
 
+	def __repr__(self) -> str:
+		return json.dumps(self.toJson())
+
+
+	def __str__(self) -> str:
+		return self.__repr__()
+
+
 	def toJson(self) -> dict:
 		return {
-			'name': self._name,
-			'author': self._author,
-			'version': self._version,
+			'name'           : self._name,
+			'author'         : self._author,
+			'version'        : self._version,
 			'updateAvailable': self._updateAvailable,
-			'active': self._active,
-			'delayed': self._delayed,
-			'required': self._required,
+			'active'         : self._active,
+			'delayed'        : self._delayed,
+			'required'       : self._required,
 			'databaseSchema': self._databaseSchema
 		}

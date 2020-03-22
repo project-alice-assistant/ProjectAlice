@@ -1,5 +1,7 @@
 import json
 
+from copy import copy
+
 import core.base.SuperManager as SM
 from core.commons import constants
 from core.util.model.Logger import Logger
@@ -12,12 +14,14 @@ class ProjectAliceObject:
 		self._logger = Logger(logDepth)
 
 
-	def __repr__(self):
-		return json.dumps(self.__dict__)
+	def __repr__(self) -> str:
+		ret = copy(self.__dict__)
+		ret.pop('_logger')
+		return json.dumps(ret)
 
 
-	def __str__(self):
-		return json.dumps(self.__dict__)
+	def __str__(self) -> str:
+		return self.__repr__()
 
 
 	def broadcast(self, method: str, exceptions: list = None, manager = None, propagateToSkills: bool = False, **kwargs):
