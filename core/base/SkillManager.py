@@ -727,34 +727,27 @@ class SkillManager(Manager):
 				supportedLanguages.append('fr')
 			if skillDefinition['de'] == 'yes':
 				supportedLanguages.append('de')
+			if skillDefinition['it'] == 'yes':
+				supportedLanguages.append('it')
 
 			conditions = {
 				'lang': supportedLanguages
 			}
 
-			readmeConditions = ''
-			readmeReqs = ''
-			readmeWidgets = ''
-
 			if skillDefinition['conditionOnline']:
 				conditions['online'] = True
-				readmeConditions += '   - Online\n\n'
 
 			if skillDefinition['conditionASRArbitrary']:
 				conditions['asrArbitraryCapture'] = True
-				readmeConditions += '   - Arbitrary capture\n\n'
 
 			if skillDefinition['conditionSkill']:
 				conditions['skill'] = [skill.strip() for skill in skillDefinition['conditionSkill'].split(',')]
-				readmeConditions += f'   - Required skills: {str(conditions["skill"])}\n\n'
 
 			if skillDefinition['conditionNotSkill']:
 				conditions['notSkill'] = [skill.strip() for skill in skillDefinition['conditionNotSkill'].split(',')]
-				readmeConditions += f'   - Conflicting skills: {str(conditions["notSkill"])}\n\n'
 
 			if skillDefinition['conditionActiveManager']:
 				conditions['activeManager'] = [manager.strip() for manager in skillDefinition['conditionActiveManager'].split(',')]
-				readmeConditions += f'   - Active managers: {str(conditions["activeManager"])}\n\n'
 
 			installContent = {
 				'name'              : skillName,
@@ -769,9 +762,6 @@ class SkillManager(Manager):
 				'pipRequirements'   : [req.strip() for req in skillDefinition['pipreq'].split(',')],
 				'conditions'        : conditions
 			}
-
-			readmeReqs += f'   - PIP: {str(installContent["pipRequirements"])}\n\n'
-			readmeReqs += f'   - System: {str(installContent["systemRequirements"])}\n\n'
 
 			# Install file
 			with installFile.open('w') as fp:
@@ -805,7 +795,6 @@ class SkillManager(Manager):
 				for widget in skillDefinition['widgets'].split(','):
 					widgetName = widget.strip()
 					widgetName = widgetName[0].upper() + widgetName[1:]
-					readmeWidgets += f'    {widgetName}\n'
 
 					content = css.read_text().replace('%widgetname%', widgetName)
 					with Path(widgetRootDir, f'css/{widgetName}.css').open('w+') as fp:
@@ -831,14 +820,16 @@ class SkillManager(Manager):
 			else:
 				shutil.rmtree(str(Path(skillDir, 'widgets')))
 
+			languages = ''
+			for lang in supportedLanguages:
+				languages += f'    {lang}\n'
+
 			# Readme file
 			content = Path(skillDir, 'README.md').read_text().replace('%skillname%', skillName) \
 				.replace('%author%', self.ConfigManager.getAliceConfigByName('githubUsername')) \
 				.replace('%minVersion%', constants.VERSION) \
 				.replace('%description%', skillDefinition['description'].capitalize()) \
-				.replace('%conditions%', readmeConditions) \
-				.replace('%requirements%', readmeReqs) \
-				.replace('%widgets%', readmeWidgets)
+				.replace('%languages%', languages)
 
 			with Path(skillDir, 'README.md').open('w') as fp:
 				fp.write(content)
