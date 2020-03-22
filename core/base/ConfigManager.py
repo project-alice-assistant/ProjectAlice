@@ -1,7 +1,8 @@
 import json
 import logging
-import shutil
 from pathlib import Path
+
+import shutil
 
 import configTemplate
 from core.base.SkillManager import SkillManager
@@ -10,6 +11,7 @@ from core.base.model.TomlFile import TomlFile
 try:
 	# noinspection PyUnresolvedReferences,PyPackageRequirements
 	import config
+
 	configFileExist = True
 except ModuleNotFoundError:
 	configFileNotExist = False
@@ -26,13 +28,6 @@ class ConfigManager(Manager):
 
 	def __init__(self):
 		super().__init__()
-
-		self._aliceSkillConfigurationKeys = [
-			'active',
-			'version',
-			'author',
-			'conditions'
-		]
 
 		self._vitalConfigs = list()
 
@@ -116,8 +111,8 @@ class ConfigManager(Manager):
 		return aliceConfigs
 
 
-	def addSkillToAliceConfig(self, skillName: str, data: dict):
-		self._skillsConfigurations[skillName] = data
+	def addSkillToAliceConfig(self, skillName: str, active: bool = True):
+		self._skillsConfigurations[skillName] = {'active': active}
 		self.updateAliceConfiguration('skills', self._skillsConfigurations)
 		self.loadCheckAndUpdateSkillConfigurations(skillName)
 
@@ -130,7 +125,7 @@ class ConfigManager(Manager):
 		try:
 			# Remove skill configurations
 			if key == 'skills':
-				value = {k: v for k, v in value.items() if k not in self._aliceSkillConfigurationKeys}
+				value = {k: v for k, v in value.items() if k == 'active'}
 		except AttributeError:
 			raise ConfigurationUpdateFailed()
 
@@ -309,7 +304,7 @@ class ConfigManager(Manager):
 	def loadCheckAndUpdateSkillConfigurations(self, skill: str = None):
 		skillsConfigurations = dict()
 
-		skillsPath = Path(self.Commons.rootDir() + '/skills')
+		skillsPath = Path(self.Commons.rootDir(), 'skills')
 		for skillDirectory in skillsPath.glob('*'):
 			if not skillDirectory.is_dir() or (skill is not None and skillDirectory.stem != skill) or skillDirectory.stem.startswith('_'):
 				continue
@@ -392,26 +387,12 @@ class ConfigManager(Manager):
 					self.logInfo(f'- Dev mode is on, "{skillName}" is missing definition in Alice config, generating them')
 
 				try:
-					installFile = json.load(Path(skillsPath / skillDirectory / f'{skillName}.install').open())
-					node = {
-						'active': True,
-						'version': installFile['version'],
-						'author': installFile['author'],
-						'conditions': installFile['conditions']
-					}
-					config = {**config, **node}
-					self._skillsConfigurations[skillName] = config
+					self._skillsConfigurations[skillName] = {'active': True}
 					self.updateAliceConfiguration('skills', self._skillsConfigurations)
 				except Exception as e:
-					if self.getAliceConfigByName('devMode'):
-						self.logInfo(f'- Failed generating default config. Please check your config template for skill "{skillName}"')
-						continue
-					else:
-						self.logError(f'- Failed generating default config, scheduling download for skill "{skillName}": {e}')
-						self.Commons.downloadFile(f'https://skills.projectalice.ch/{skillName}', f'system/skillInstallTickets/{skillName}.install')
-						if skillName in skillsConfigurations:
-							skillsConfigurations.pop(skillName)
-						continue
+					self.logError(f'- Failed generating skill entry in Alice config for skill "{skillName}": {e}')
+					skillsConfigurations.pop(skillName)
+					continue
 
 			if config:
 				skillsConfigurations[skillName] = config
@@ -568,11 +549,6 @@ class ConfigManager(Manager):
 	@property
 	def vitalConfigs(self) -> list:
 		return self._vitalConfigs
-
-
-	@property
-	def aliceSkillConfigurationKeys(self) -> list:
-		return self._aliceSkillConfigurationKeys
 
 
 	@property

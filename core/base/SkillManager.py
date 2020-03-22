@@ -58,6 +58,7 @@ class SkillManager(Manager):
 		super().onStart()
 
 		self._busyInstalling = self.ThreadManager.newEvent('skillInstallation')
+		self._allSkills = self._loadSkillList()
 
 		# If it's the first time we start, don't delay skill install and do it on main thread
 		if not self.ConfigManager.getAliceConfigByName('skills'):
@@ -148,34 +149,36 @@ class SkillManager(Manager):
 	def _loadSkillList(self, skillToLoad: str = '', isUpdate: bool = False) -> dict:
 		skills = self._allSkills.copy() if skillToLoad else dict()
 
-		availableSkills = self.ConfigManager.skillsConfigurations
+		availableSkills = {file.stem: file for file in Path(self.Commons.rootDir(), 'skills').glob('**/*.install')}
 		availableSkills = dict(sorted(availableSkills.items()))
+		configuredSkills = self.ConfigManager.skillsConfigurations
 
-		for skillName, skill in availableSkills.items():
-			if skillToLoad and skillName != skillToLoad:
+		for skillName, skillInstallFile in availableSkills.items():
+			if skillToLoad and skillName != skillToLoad or skillName not in configuredSkills:
 				continue
 
 			try:
-				if not skill['active']:
+				if not configuredSkills[skillName]['active']:
 					if skillName in self.NEEDED_SKILLS:
 						self.logInfo(f"Skill {skillName} marked as disable but it shouldn't be")
 						self.ProjectAlice.onStop()
 						break
 					else:
 						self.logInfo(f'Skill {skillName} is disabled')
+						self._activeSkills.pop(skillName, None)
 
 						skillInstance = self.importFromSkill(skillName=skillName, isUpdate=False)
 						if skillInstance:
 							skillInstance.active = False
 
-							if skillName in self.NEEDED_SKILLS:
-								skillInstance.required = True
-
 							self._deactivatedSkills.pop(skillInstance.name, None)
 							self._deactivatedSkills[skillInstance.name] = skillInstance
 						continue
 
-				self.checkSkillConditions(skillName, skill['conditions'], availableSkills)
+				with skillInstallFile.open() as fp:
+					data = json.load(fp)
+
+				self.checkSkillConditions(skillName, data['conditions'], availableSkills)
 
 				name = self.Commons.toCamelCase(skillName) if ' ' in skillName else skillName
 
@@ -350,14 +353,14 @@ class SkillManager(Manager):
 
 		for skillName in availableSkills:
 			try:
-				if skillToCheck and skillName != skillToCheck:
+				if skillToCheck and skillName != skillToCheck or skillName not in self._allSkills:
 					continue
 
 				remoteVersion = self.SkillStoreManager.getSkillUpdateVersion(skillName)
-				localVersion = Version.fromString(availableSkills[skillName]['version'])
+				localVersion = Version.fromString(self._allSkills[skillName].version)
 				if localVersion < remoteVersion:
 					updateCount += 1
-					self.logInfo(f'❌ {skillName} - Version {availableSkills[skillName]["version"]} < {str(remoteVersion)} in {self.ConfigManager.getAliceConfigByName("skillsUpdateChannel")}')
+					self.logInfo(f'❌ {skillName} - Version {self._allSkills[skillName].version} < {str(remoteVersion)} in {self.ConfigManager.getAliceConfigByName("skillsUpdateChannel")}')
 
 					if not self.ConfigManager.getAliceConfigByName('skillAutoUpdate'):
 						if skillName in self._activeSkills:
@@ -371,7 +374,7 @@ class SkillManager(Manager):
 						if skillName in self._failedSkills:
 							del self._failedSkills[skillName]
 				else:
-					self.logInfo(f'✔ {skillName} - Version {availableSkills[skillName]["version"]} in {self.ConfigManager.getAliceConfigByName("skillsUpdateChannel")}')
+					self.logInfo(f'✔ {skillName} - Version {self._allSkills[skillName].version} in {self.ConfigManager.getAliceConfigByName("skillsUpdateChannel")}')
 
 			except GithubNotFound:
 				self.logInfo(f'❓ Skill "{skillName}" is not available on Github. Deprecated or is it a dev skill?')
@@ -546,7 +549,6 @@ class SkillManager(Manager):
 			sysReqs = installFile.get('systemRequirements', list())
 			scriptReq = installFile.get('script')
 			directory = Path(self.Commons.rootDir()) / 'skills' / installFile['name']
-			installedInstallFile = Path(self.Commons.rootDir()) / 'skills' / installFile['name'] / f'{installFile["name"]}.install'
 
 			for requirement in pipReqs:
 				self.Commons.runSystemCommand(['./venv/bin/pip3', 'install', requirement])
@@ -558,19 +560,8 @@ class SkillManager(Manager):
 				self.Commons.runRootSystemCommand(['chmod', '+x', str(directory / scriptReq)])
 				self.Commons.runRootSystemCommand([str(directory / scriptReq)])
 
-			# Grab the info of the skill we just installed, we can trust the installer file was up to date with the correct version number
-			with installedInstallFile.open() as fp:
-				data = json.load(fp)
-
-				node = {
-					'active'    : True,
-					'version'   : data['version'],
-					'author'    : data['author'],
-					'conditions': data['conditions']
-				}
-
 			os.unlink(str(res))
-			self.ConfigManager.addSkillToAliceConfig(installFile['name'], node)
+			self.ConfigManager.addSkillToAliceConfig(installFile['name'])
 		except Exception:
 			raise
 

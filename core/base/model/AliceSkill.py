@@ -452,12 +452,7 @@ class AliceSkill(ProjectAliceObject):
 
 
 	def getSkillConfigs(self, withInfo: bool = False) -> dict:
-		skillConfigs = self.ConfigManager.getSkillConfigs(self.name)
-		if not withInfo:
-			infoSettings = self.ConfigManager.aliceSkillConfigurationKeys
-			skillConfigs = {key: value for key, value in skillConfigs.items() if key not in infoSettings}
-
-		return skillConfigs
+		return self.ConfigManager.getSkillConfigs(self.name)
 
 
 	def getSkillConfigsTemplate(self) -> dict:
@@ -534,14 +529,6 @@ class AliceSkill(ProjectAliceObject):
 
 	def publish(self, topic: str, payload: dict = None, qos: int = 0, retain: bool = False):
 		self.MqttManager.publish(topic=topic, payload=payload, qos=qos, retain=retain)
-
-
-	def decorate(self, msg: str, depth: int) -> str:
-		"""
-		overwrite Logger decoration method, since it should always
-		be the skill name
-		"""
-		return f'[{self.name}] {msg}'
 
 
 	def toJson(self) -> dict:
