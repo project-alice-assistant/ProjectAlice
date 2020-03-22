@@ -8,6 +8,7 @@ from pathlib import Path
 from typing import Any, Dict, Iterable, Optional
 
 import re
+from copy import copy
 from paho.mqtt import client as MQTTClient
 
 from core.ProjectAliceExceptions import AccessLevelTooLow, SkillStartingFailed
@@ -451,8 +452,10 @@ class AliceSkill(ProjectAliceObject):
 		return self.ConfigManager.getSkillConfigByName(skillName=self.name, configName=key)
 
 
-	def getSkillConfigs(self, withInfo: bool = False) -> dict:
-		return self.ConfigManager.getSkillConfigs(self.name)
+	def getSkillConfigs(self) -> dict:
+		ret = copy(self.ConfigManager.getSkillConfigs(self.name))
+		ret.pop('active', None)
+		return ret
 
 
 	def getSkillConfigsTemplate(self) -> dict:
@@ -548,5 +551,5 @@ class AliceSkill(ProjectAliceObject):
 			'active'         : self._active,
 			'delayed'        : self._delayed,
 			'required'       : self._required,
-			'databaseSchema': self._databaseSchema
+			'databaseSchema' : self._databaseSchema
 		}

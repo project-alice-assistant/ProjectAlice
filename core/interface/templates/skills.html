@@ -22,11 +22,11 @@
 				{% for settingName, settingValue in skill.getSkillConfigs().items() %}
 					{% if skill.getSkillConfigsTemplate()[settingName]['display'] != 'hidden' %}
 						<div class="configLine">
-							<label class="configLabel" for="{{ settingName }}"
-								   title="{{ skill.getSkillConfigsTemplate()['description'] }}">{{ settingName }}</label>
+							<label class="configLabel" for="{{ settingName }}" title="{{ skill.getSkillConfigsTemplate()['description'] }}">{{ settingName }}</label>
 							<div class="configInput">
 								{% if skill.getSkillConfigsTemplate()[settingName]['dataType'] == 'boolean' %}
-									<input type="checkbox" name="{{ settingName }}" value="on" id="{{ settingName }}" {% if settingValue is sameas true %}checked{% endif %}>
+									<input type="checkbox" name="{{ settingName }}" value="on" id="{{ settingName }}"
+										   {% if settingValue is sameas true %}checked{% endif %}>
 									<!-- Make sure unchecked checkboxes send off data -->
 									<input type="hidden" name="{{ settingName }}" value="off">
 								{% elif skill.getSkillConfigsTemplate()[settingName]['dataType'] == 'integer' %}

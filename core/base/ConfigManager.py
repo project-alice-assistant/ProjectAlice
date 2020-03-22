@@ -135,11 +135,11 @@ class ConfigManager(Manager):
 
 	def updateSkillConfigurationFile(self, skillName: str, key: str, value: typing.Any):
 		if skillName not in self._skillsConfigurations:
-			self.logWarning(f'Was asked to update {key} in skill {skillName} but skill doesn\'t exist')
+			self.logWarning(f'Was asked to update **{key}** in skill **{skillName}** but skill doesn\'t exist')
 			return
 
 		if key not in self._skillsConfigurations[skillName]:
-			self.logWarning(f'Was asked to update {key} in skill {skillName} but key doesn\'t exist')
+			self.logWarning(f'Was asked to update **{key}** in skill **{skillName}** but key doesn\'t exist')
 			return
 
 		# Cast value to template defined type
@@ -153,19 +153,19 @@ class ConfigManager(Manager):
 			try:
 				value = int(value)
 			except:
-				self.logWarning(f'Value missmatch for config {key} in skill {skillName}')
+				self.logWarning(f'Value missmatch for config **{key}** in skill **{skillName}**')
 				value = 0
 		elif vartype == 'float':
 			try:
 				value = float(value)
 			except:
-				self.logWarning(f'Value missmatch for config {key} in skill {skillName}')
+				self.logWarning(f'Value missmatch for config **{key}** in skill **{skillName}**')
 				value = 0.0
 		elif vartype in {'string', 'email', 'password'}:
 			try:
 				value = str(value)
 			except:
-				self.logWarning(f'Value missmatch for config {key} in skill {skillName}')
+				self.logWarning(f'Value missmatch for config **{key}** in skill **{skillName}**')
 				value = ''
 
 		self._skillsConfigurations[skillName][key] = value
@@ -179,8 +179,8 @@ class ConfigManager(Manager):
 		"""
 		sort = dict(sorted(confs.items()))
 
-		# Only store "active", "version", "author", "conditions" value for skill config
-		misterProper = ['active', 'version', 'author', 'conditions']
+		# Only store "active" value for skill config
+		misterProper = ['active']
 
 		# pop skills key so it gets added in the back
 		skills = sort.pop('skills')
