@@ -11,7 +11,6 @@ from core.ProjectAliceExceptions import AccessLevelTooLow
 from core.base.model.Intent import Intent
 from core.base.model.Manager import Manager
 from core.commons import constants
-from core.commons.model.Slot import Slot
 from core.dialog.model.DialogSession import DialogSession
 from core.util.Decorators import deprecated
 
@@ -456,43 +455,44 @@ class MqttManager(Manager):
 		if not session:
 			self.ask(text=self.TalkManager.randomTalk('notUnderstood', skill='system'), client='default')
 		else:
-			session.update(msg)
-			if session.intentFilter and not str(self._INTENT_RANDOM_ANSWER) in session.intentFilter:
-				return
-
-			payload = self.Commons.payload(msg)
-			if 'input' in payload:
-				# Trick the session into thinking it got RandomAnswer
-				session.intentName = str(self._INTENT_RANDOM_ANSWER)
-				session.message.topic = str(self._INTENT_RANDOM_ANSWER).encode('utf-8')
-
-				# Forge the slot for total transparancy for skill devs
-				slot = {
-					'rawValue'    : payload['input'],
-					'value'       : {
-						'kind' : 'Custom',
-						'value': payload['input']
-					},
-					'alternatives': [],
-					'range'       : {
-						'start': 0,
-						'end'  : len(payload['input']) - 1
-					},
-					'entity'      : 'Alice/RandomWords',
-					'slotName'    : 'RandomWord'
-				}
-
-				session.slots['RandomWord'] = payload['input']
-				session.slotsAsObjects.get('RandomWord', list()).append(Slot(**slot))
-
-				consumed = False
-				for skill in self.SkillManager.activeSkills.values():
-					if skill.onDispatchMessage(session):
-						consumed = True
-						break
-
-				if consumed:
-					return
+			# session.update(msg)
+			# if session.intentFilter and not str(self._INTENT_RANDOM_ANSWER) in session.intentFilter:
+			# 	print('returned')
+			# 	return
+			#
+			# payload = self.Commons.payload(msg)
+			# if 'input' in payload:
+			# 	# Trick the session into thinking it got RandomAnswer
+			# 	session.intentName = str(self._INTENT_RANDOM_ANSWER)
+			# 	session.message.topic = str(self._INTENT_RANDOM_ANSWER).encode('utf-8')
+			#
+			# 	# Forge the slot for total transparancy for skill devs
+			# 	slot = {
+			# 		'rawValue'    : payload['input'],
+			# 		'value'       : {
+			# 			'kind' : 'Custom',
+			# 			'value': payload['input']
+			# 		},
+			# 		'alternatives': [],
+			# 		'range'       : {
+			# 			'start': 0,
+			# 			'end'  : len(payload['input']) - 1
+			# 		},
+			# 		'entity'      : 'Alice/RandomWords',
+			# 		'slotName'    : 'RandomWord'
+			# 	}
+			#
+			# 	session.slots['RandomWord'] = payload['input']
+			# 	session.slotsAsObjects.get('RandomWord', list()).append(Slot(**slot))
+			#
+			# 	consumed = False
+			# 	for skill in self.SkillManager.activeSkills.values():
+			# 		if skill.onDispatchMessage(session):
+			# 			consumed = True
+			# 			break
+			#
+			# 	if consumed:
+			# 		return
 
 			if session.notUnderstood < self.ConfigManager.getAliceConfigByName('notUnderstoodRetries'):
 				session.notUnderstood = session.notUnderstood + 1
