@@ -707,6 +707,8 @@ class MqttManager(Manager):
 				jsonDict['customData'] = customData
 			else:
 				self.logWarning(f'ContinueDialog was provided customdata of unsupported type: {customData}')
+		else:
+			customData = dict()
 
 		intentList = list()
 		if intentFilter:
@@ -729,7 +731,7 @@ class MqttManager(Manager):
 		if currentDialogState:
 			session.currentState = currentDialogState
 
-		session.customData = customData
+		session.customData = {**session.customData, **customData}
 
 		if self.ConfigManager.getAliceConfigByName('outputOnSonos') != '1' or (self.ConfigManager.getAliceConfigByName('outputOnSonos') == '1' and self.SkillManager.getSkillInstance('Sonos') is None or not self.SkillManager.getSkillInstance('Sonos').anySkillHere(session.siteId)) or not self.SkillManager.getSkillInstance('Sonos').active:
 			self._mqttClient.publish(constants.TOPIC_CONTINUE_SESSION, json.dumps(jsonDict))
