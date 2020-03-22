@@ -341,6 +341,10 @@ class SkillManager(Manager):
 			self._activeSkills[skillName] = self._deactivatedSkills.pop(skillName)
 			self._activeSkills[skillName].active = True
 			self._activeSkills[skillName].onStart()
+			self.SnipsAssistantManager.checkAssistant()
+
+			self.DialogTemplateManager.afterSkillChange()
+			self.NluManager.afterSkillChange()
 
 
 	@Online(catchOnly=True)
@@ -426,8 +430,8 @@ class SkillManager(Manager):
 						self._allSkills[skillName].onSkillInstalled()
 
 				self.SnipsAssistantManager.train()
-				self.DialogTemplateManager.afterNewSkillInstall()
-				self.NluManager.afterNewSkillInstall()
+				self.DialogTemplateManager.afterSkillChange()
+				self.NluManager.afterSkillChange()
 
 			self._busyInstalling.clear()
 
@@ -645,8 +649,8 @@ class SkillManager(Manager):
 		shutil.rmtree(Path(self.Commons.rootDir(), 'skills', skillName))
 
 		self.SnipsAssistantManager.checkAssistant()
-		self.DialogTemplateManager.afterNewSkillInstall()
-		self.NluManager.afterNewSkillInstall()
+		self.DialogTemplateManager.afterSkillChange()
+		self.NluManager.afterSkillChange()
 
 
 	def reloadSkill(self, skillName: str):
@@ -660,6 +664,10 @@ class SkillManager(Manager):
 			pass
 
 		self._loadSkillList(skillToLoad=skillName, isUpdate=True)
+
+		self.DialogTemplateManager.afterSkillChange()
+		self.NluManager.afterSkillChange()
+
 		self._startSkill(self._allSkills[skillName])
 
 
