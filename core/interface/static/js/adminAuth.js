@@ -10,19 +10,28 @@ $(function () {
 					checkAuth();
 				}, 250);
 			} else if (response.hasOwnProperty('username')) {
-				$('#username').text(response.username);
+				$('#username').val(response.username).prop('disabled', true);
 				$('#adminAuthKeyboardContainer').slideDown(250);
 				setTimeout(function () {
 					checkAuth();
 				}, 250);
-			}
-			else if (response.hasOwnProperty('nextPage')) {
+			} else if (response.hasOwnProperty('nextPage')) {
 				window.location.replace(response.nextPage);
 			}
 		})
 	}
 
-	$('.adminAuthKeyboardKey').on('click touchstart', function () {
+	$('#username').on('keyup', function (e) {
+		$.ajax({
+			url: '/adminAuth/login/',
+			data: {
+				'username': $(this).val()
+			},
+			type: 'POST'
+		});
+	});
+
+	$('.adminAuthKeyboardKey').not('.erase').not('.backspace').on('click touchstart', function () {
 		if (!keyboardAuthNotified) {
 			$.post('/adminAuth/keyboardAuth/');
 			keyboardAuthNotified = true;
@@ -53,6 +62,18 @@ $(function () {
 			});
 		}
 		return false;
+	});
+
+	$('.erase').on('click touchstart', function () {
+		code = '';
+		$('#codeContainer').children('.adminAuthDisplayDigit').each(function () {
+			$(this).removeClass('adminAuthDigitFilled');
+		});
+	});
+
+	$('.backspace').on('click touchstart', function () {
+		code = code.slice(0, -1);
+		$('#codeContainer').children('.adminAuthDigitFilled').last().removeClass('adminAuthDigitFilled')
 	});
 
 	$('#adminAuthKeyboardContainer').hide();

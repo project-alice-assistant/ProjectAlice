@@ -1,5 +1,7 @@
 from pathlib import Path
 
+import shutil
+
 from core.base.model.Manager import Manager
 
 
@@ -8,12 +10,15 @@ class NluManager(Manager):
 	def __init__(self):
 		super().__init__()
 		self._nluEngine = None
-		self._pathToCache = Path(self.Commons.rootDir(), 'var/cache/nlu/')
+		self._pathToCache = Path(self.Commons.rootDir(), 'var/cache/nlu/trainingData')
 		self.selectNluEngine()
 
 
 	def onStart(self):
 		super().onStart()
+		if not self._pathToCache.exists():
+			self._pathToCache.mkdir(parents=True)
+
 		self.isTrainingNeeded()
 
 
@@ -29,6 +34,12 @@ class NluManager(Manager):
 
 
 	def isTrainingNeeded(self):
+		if not Path(self.Commons.rootDir(), f'assistant/nlu_engine').exists():
+			if Path(self.Commons.rootDir(), f'trained/assistants/assistant_{self.LanguageManager.activeLanguage}/nlu_engine').exists():
+				self.SnipsAssistantManager.linkAssistant()
+			else:
+				self.DialogTemplateManager.clearCache()
+
 		if self.DialogTemplateManager.hasChanges:
 			self.buildTrainingData(self.DialogTemplateManager.updatedData)
 			self.trainNLU()
@@ -72,3 +83,8 @@ class NluManager(Manager):
 
 	def trainNLU(self):
 		self._nluEngine.train()
+
+
+	def clearCache(self):
+		shutil.rmtree(self._pathToCache)
+		self._pathToCache.mkdir()

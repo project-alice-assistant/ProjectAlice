@@ -7,6 +7,10 @@
 {% block loaders %}
 	<script src="{{ url_for('static', filename='js/jquery-3.4.1.min.js') }}"></script>
 	<script src="{{ url_for('static', filename='js/scenarios.js') }}"></script>
+	<script src="{{ url_for('static', filename='blockly/blockly_compressed.js') }}"></script>
+	<script src="{{ url_for('static', filename='blockly/blocks_compressed.js') }}"></script>
+	<script src="{{ url_for('static', filename='javascript_compressed.js') }}"></script>
+	<script src="{{ url_for('static', filename='blockly/msg/js/en.js') }}"></script>
 {% endblock %}
 
 {% block pageTitle %}
@@ -14,7 +18,46 @@
 {% endblock %}
 
 {% block content %}
-	<div class="scenariosContainer">
-		<iframe id="nodered" title="nodered" width="100%" height="100%" src="http://{{ myIp }}:1880"></iframe>
+	<xml id="toolbox" style="display: none">
+		<category name="Control">
+			<block type="controls_if"></block>
+			<block type="controls_whileUntil"></block>
+			<block type="controls_for">
+		</category>
+		<category name="Logic">
+			<block type="logic_compare"></block>
+			<block type="logic_operation"></block>
+			<block type="logic_boolean"></block>
+		</category>
+	</xml>
+	<div id="blocklyArea" class="scenariosContainer">
+		<!--<iframe id="nodered" title="nodered" width="100%" height="100%" src="http://{{ myIp }}:1880"></iframe>-->
+		<div id="blocklyDiv" style="height: 480px; width: 600px;"></div>
 	</div>
+	<script>
+		let blocklyArea = document.getElementById('blocklyArea');
+		let blocklyDiv = document.getElementById('blocklyDiv');
+		let workspace = Blockly.inject(blocklyDiv,
+			{toolbox: document.getElementById('toolbox')});
+		let onresize = function (e) {
+			// Compute the absolute coordinates and dimensions of blocklyArea.
+			let element = blocklyArea;
+			let x = 0;
+			let y = 0;
+			do {
+				x += element.offsetLeft;
+				y += element.offsetTop;
+				element = element.offsetParent;
+			} while (element);
+			// Position blocklyDiv over blocklyArea.
+			blocklyDiv.style.left = x + 'px';
+			blocklyDiv.style.top = y + 'px';
+			blocklyDiv.style.width = blocklyArea.offsetWidth + 'px';
+			blocklyDiv.style.height = blocklyArea.offsetHeight + 'px';
+			Blockly.svgResize(workspace);
+		};
+		window.addEventListener('resize', onresize, false);
+		onresize();
+		Blockly.svgResize(workspace);
+	</script>
 {% endblock %}

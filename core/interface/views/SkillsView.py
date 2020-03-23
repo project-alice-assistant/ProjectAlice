@@ -1,7 +1,3 @@
-import json
-from pathlib import Path
-
-import requests
 from flask import jsonify, render_template, request
 
 from core.base.model.Version import Version
@@ -73,21 +69,14 @@ class SkillsView(View):
 
 
 	def updateSkill(self):
+		_, author, skill = request.form.get('id').split('_')
+
 		try:
-			_, author, skill = request.form.get('id').split('_')
-
 			self.WebInterfaceManager.newSkillInstallProcess(skill)
-			req = requests.get(f'{constants.GITHUB_RAW_URL}/skill_{skill["skill"]}/{self.SkillStoreManager.getSkillUpdateTag(skill["skill"])}/{skill["skill"]}.install')
-			remoteFile = req.json()
-			if not remoteFile:
-				self.WebInterfaceManager.skillInstallProcesses[skill['skill']]['status'] = 'failed'
-
-			skillFile = Path(self.Commons.rootDir(), f'system/skillInstallTickets/{skill}.install')
-			skillFile.write_text(json.dumps(remoteFile))
-
 			return jsonify(success=True)
 		except Exception as e:
 			self.logWarning(f'Failed updating skill: {e}', printStack=True)
+			self.WebInterfaceManager.skillInstallProcesses[skill['skill']]['status'] = 'failed'
 			return jsonify(success=False)
 
 
@@ -97,15 +86,9 @@ class SkillsView(View):
 
 			for skill in skills:
 				self.WebInterfaceManager.newSkillInstallProcess(skill['skill'])
-
-				req = requests.get(f'{constants.GITHUB_RAW_URL}/skill_{skill["skill"]}/{self.SkillStoreManager.getSkillUpdateTag(skill["skill"])}/{skill["skill"]}.install')
-				remoteFile = req.json()
-				if not remoteFile:
+				if not self.SkillManager.downloadInstallTicket(skill['skill']):
 					self.WebInterfaceManager.skillInstallProcesses[skill['skill']]['status'] = 'failed'
 					continue
-
-				skillFile = Path(self.Commons.rootDir(), f'system/skillInstallTickets/{skill["skill"]}.install')
-				skillFile.write_text(json.dumps(remoteFile))
 
 			return jsonify(success=True)
 		except Exception as e:

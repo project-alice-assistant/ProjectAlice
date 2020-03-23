@@ -88,8 +88,8 @@ $(function () {
 		return false;
 	});
 
-	$('#trainAndDownload').on('click touchstart', function () {
-		handleUtilityClick($(this), 'assistantDownload', 5000);
+	$('#trainAssistant').on('click touchstart', function () {
+		handleUtilityClick($(this), 'trainAssistant', 5000);
 		return false;
 	});
 
@@ -100,6 +100,21 @@ $(function () {
 
 	$('#update').on('click touchstart', function () {
 		handleUtilityClick($(this), 'updatee', 5000);
+		return false;
+	});
+
+	$('#addUser').on('click touchstart', function () {
+		handleUtilityClick($(this), 'addUser', 1000);
+		return false;
+	});
+
+	$('#addWakeword').on('click touchstart', function () {
+		handleUtilityClick($(this), 'addWakeword', 1000);
+		return false;
+	});
+
+	$('#tuneWakeword').on('click touchstart', function () {
+		handleUtilityClick($(this), 'tuneWakeword', 1000);
 		return false;
 	});
 });

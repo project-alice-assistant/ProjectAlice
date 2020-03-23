@@ -20,7 +20,8 @@ $(function () {
 		$('#skillNameKo').show();
 		$('#skillDescOk').hide();
 		$('#skillDescKo').show();
-		$('#uploadSkillButton').hide()
+		$('#uploadSkillButton').hide();
+		$('#goGithubButton').hide();
 	}
 
 
@@ -53,7 +54,7 @@ $(function () {
 	});
 
 	$('#skillname').on('input', function () {
-		if ($(this).val().length < 8) {
+		if ($(this).val().length < 5) {
 			$('#skillNameOk').hide();
 			$('#skillNameKo').show();
 			toggleCreateButton();
@@ -120,11 +121,24 @@ $(function () {
 				'skillDesc': $('#skilldesc').val()
 			}
 		}).done(function (status) {
-			$('#uploadSkillButton').hide();
+			if (status['success']) {
+				$('#uploadSkillButton').hide();
+				$('#goGithubButton').text(status['url']).prop('disabled', false).show();
+			}
 		});
 	});
 
 	$('#resetSkillButton').on('click touchstart', function () {
 		resetSkillPage();
-	})
+	});
+
+	$('#goGithubButton').on('click touchstart', function () {
+		window.open($(this).text());
+	});
+
+	$('#skillname').on('keydown', function (e) {
+		if (e.key == ' ') {
+			return false;
+		}
+	});
 });

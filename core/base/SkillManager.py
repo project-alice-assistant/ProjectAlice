@@ -1,5 +1,7 @@
+import getpass
 import importlib
 import json
+import threading
 from pathlib import Path
 from typing import Dict, Optional
 
@@ -43,7 +45,7 @@ class SkillManager(Manager):
 
 		self._busyInstalling = None
 
-		self._skillInstallThread = None
+		self._skillInstallThread: Optional[threading.Thread]= None
 		self._supportedIntents = list()
 		self._allSkills = dict()
 		self._activeSkills = dict()
@@ -56,7 +58,6 @@ class SkillManager(Manager):
 		super().onStart()
 
 		self._busyInstalling = self.ThreadManager.newEvent('skillInstallation')
-		self._skillInstallThread = self.ThreadManager.newThread(name='SkillInstallThread', target=self._checkForSkillInstall, autostart=False)
 
 		# If it's the first time we start, don't delay skill install and do it on main thread
 		if not self.ConfigManager.getAliceConfigByName('skills'):
@@ -65,6 +66,8 @@ class SkillManager(Manager):
 		else:
 			if self.checkForSkillUpdates():
 				self._checkForSkillInstall()
+
+		self._skillInstallThread = self.ThreadManager.newThread(name='SkillInstallThread', target=self._checkForSkillInstall, autostart=False)
 
 		self._activeSkills = self._loadSkillList()
 		self._allSkills = {**self._activeSkills, **self._deactivatedSkills, **self._failedSkills}
@@ -137,7 +140,9 @@ class SkillManager(Manager):
 
 	def onBooted(self):
 		self.skillBroadcast(constants.EVENT_BOOTED)
-		self._skillInstallThread.start()
+
+		if self._skillInstallThread:
+			self._skillInstallThread.start()
 
 
 	def _loadSkillList(self, skillToLoad: str = '', isUpdate: bool = False) -> dict:
@@ -166,6 +171,7 @@ class SkillManager(Manager):
 							if skillName in self.NEEDED_SKILLS:
 								skillInstance.required = True
 
+							self._deactivatedSkills.pop(skillInstance.name, None)
 							self._deactivatedSkills[skillInstance.name] = skillInstance
 						continue
 
@@ -180,6 +186,7 @@ class SkillManager(Manager):
 					if skillName in self.NEEDED_SKILLS:
 						skillInstance.required = True
 
+					skills.pop(skillInstance.name, None)
 					skills[skillInstance.name] = skillInstance
 				else:
 					self._failedSkills[name] = None
@@ -268,7 +275,7 @@ class SkillManager(Manager):
 			raise
 		except Exception as e:
 			# noinspection PyUnboundLocalVariable
-			self.logError(f'- Couldn\'t start skill {name or "undefined"}. Did you forget to return the intents in onStart()? Error: {e}')
+			self.logError(f'- Couldn\'t start skill {name or "undefined"}. Error: {e}')
 
 		return dict()
 
@@ -358,16 +365,9 @@ class SkillManager(Manager):
 						elif skillName in self._deactivatedSkills:
 							self._deactivatedSkills[skillName].updateAvailable = True
 					else:
-						req = requests.get(f'{constants.GITHUB_RAW_URL}/skill_{skillName}/{self.SkillStoreManager.getSkillUpdateTag(skillName)}/{skillName}.install')
-						if req.status_code == 404:
-							raise GithubNotFound
-
-						remoteFile = req.json()
-						if not remoteFile:
+						if not self.downloadInstallTicket(skillName):
 							raise Exception
 
-						skillFile = Path(self.Commons.rootDir(), constants.SKILL_INSTALL_TICKET_PATH, skillName + '.install')
-						skillFile.write_text(json.dumps(remoteFile))
 						if skillName in self._failedSkills:
 							del self._failedSkills[skillName]
 				else:
@@ -386,13 +386,13 @@ class SkillManager(Manager):
 	@Online(catchOnly=True)
 	def _checkForSkillInstall(self):
 		# Don't start the install timer from the main thread in case it's the first start
-		if self._skillInstallThread is not None:
+		if self._skillInstallThread:
 			self.ThreadManager.newTimer(interval=10, func=self._checkForSkillInstall, autoStart=True)
 
 		root = Path(self.Commons.rootDir(), constants.SKILL_INSTALL_TICKET_PATH)
 		files = [f for f in root.iterdir() if f.suffix == '.install']
 
-		if self._busyInstalling.isSet() or not files:
+		if self._busyInstalling.isSet() or not files or self.ProjectAlice.restart:
 			return
 
 		self.logInfo(f'Found {len(files)} install ticket(s)')
@@ -402,7 +402,7 @@ class SkillManager(Manager):
 		try:
 			skillsToBoot = self._installSkills(files)
 		except Exception as e:
-			self._logger.error(f'Error installing skill: {e}')
+			self._logger.logError(f'Error installing skill: {e}')
 		finally:
 			self.MqttManager.mqttBroadcast(topic='hermes/leds/clear')
 
@@ -411,16 +411,16 @@ class SkillManager(Manager):
 					self._activeSkills = self._loadSkillList(skillToLoad=skillName, isUpdate=info['update'])
 					self._allSkills = {**self._allSkills, **self._activeSkills}
 
-					if info['update']:
-						self._allSkills[skillName].onSkillUpdated()
-					else:
-						self._allSkills[skillName].onSkillInstalled()
-
 					try:
 						self.LanguageManager.loadStrings(skillToLoad=skillName)
 						self.TalkManager.loadTalks(skillToLoad=skillName)
 					except:
 						pass
+
+					if info['update']:
+						self._allSkills[skillName].onSkillUpdated()
+					else:
+						self._allSkills[skillName].onSkillInstalled()
 
 				self.SnipsAssistantManager.train()
 				self.DialogTemplateManager.afterNewSkillInstall()
@@ -594,11 +594,11 @@ class SkillManager(Manager):
 
 			elif conditionName == 'skill':
 				for requiredSkill in conditionValue:
-					if requiredSkill['name'] in availableSkills and not availableSkills[requiredSkill['name']]['active']:
+					if requiredSkill in availableSkills and not availableSkills[requiredSkill]['active']:
 						raise SkillNotConditionCompliant(message=notCompliant, skillName=skillName, condition=conditionName, conditionValue=conditionValue)
-					elif requiredSkill['name'] not in availableSkills:
+					elif requiredSkill not in availableSkills:
 						self.logInfo(f'Skill {skillName} has another skill as dependency, adding download')
-						if not self.Commons.downloadFile(requiredSkill['url'], Path(self.Commons.rootDir(), f"system/skillInstallTickets/{requiredSkill['name']}.install")):
+						if not self.downloadInstallTicket(requiredSkill):
 							raise SkillNotConditionCompliant(message=notCompliant, skillName=skillName, condition=conditionName, conditionValue=conditionValue)
 
 			elif conditionName == 'notSkill':
@@ -685,6 +685,23 @@ class SkillManager(Manager):
 		return ret
 
 
+	def wipeSkills(self, addDefaults: bool = True):
+		shutil.rmtree(Path(self.Commons.rootDir(), 'skills'))
+		Path(self.Commons.rootDir(), 'skills').mkdir()
+		self.ConfigManager.updateAliceConfiguration(key='skills', value=dict())
+
+		if addDefaults:
+			tickets = [
+				'https://skills.projectalice.ch/AliceCore',
+				'https://skills.projectalice.ch/ContextSensitive',
+				'https://skills.projectalice.ch/RedQueen',
+				'https://skills.projectalice.ch/Telemetry',
+				'https://skills.projectalice.ch/DateDayTimeYear'
+			]
+			for link in tickets:
+				self.downloadInstallTicket(link.rsplit('/')[-1])
+
+
 	def createNewSkill(self, skillDefinition: dict) -> bool:
 		try:
 			self.logInfo(f'Creating new skill "{skillDefinition["name"]}"')
@@ -693,11 +710,9 @@ class SkillManager(Manager):
 			skillTemplateDir = rootDir / 'skill_DefaultTemplate'
 
 			if skillTemplateDir.exists():
-				self.Commons.runSystemCommand(['git', '-C', str(rootDir), 'stash'])
-				self.Commons.runSystemCommand(['git', '-C', str(rootDir), 'clear', '-dfx'])
-				self.Commons.runSystemCommand(['git', '-C', str(rootDir), 'pull'])
-			else:
-				self.Commons.runSystemCommand(['git', '-C', str(rootDir), 'clone', f'{constants.GITHUB_URL}/skill_DefaultTemplate.git'])
+				shutil.rmtree(skillTemplateDir)
+
+			self.Commons.runSystemCommand(['git', '-C', str(rootDir), 'clone', f'{constants.GITHUB_URL}/skill_DefaultTemplate.git'])
 
 			skillName = skillDefinition['name'][0].upper() + skillDefinition['name'][1:]
 			skillDir = rootDir / skillName
@@ -724,27 +739,29 @@ class SkillManager(Manager):
 
 			if skillDefinition['conditionOnline']:
 				conditions['online'] = True
-				readmeConditions += '    Online\n'
+				readmeConditions += '   - Online\n\n'
 
 			if skillDefinition['conditionASRArbitrary']:
 				conditions['asrArbitraryCapture'] = True
-				readmeConditions += '    Arbitrary capture\n'
+				readmeConditions += '   - Arbitrary capture\n\n'
 
 			if skillDefinition['conditionSkill']:
 				conditions['skill'] = [skill.strip() for skill in skillDefinition['conditionSkill'].split(',')]
-				readmeConditions += f'    Required skills: {str(conditions["skill"])}\n'
+				readmeConditions += f'   - Required skills: {str(conditions["skill"])}\n\n'
 
 			if skillDefinition['conditionNotSkill']:
 				conditions['notSkill'] = [skill.strip() for skill in skillDefinition['conditionNotSkill'].split(',')]
-				readmeConditions += f'    Conflicting skills: {str(conditions["notSkill"])}\n'
+				readmeConditions += f'   - Conflicting skills: {str(conditions["notSkill"])}\n\n'
 
 			if skillDefinition['conditionActiveManager']:
 				conditions['activeManager'] = [manager.strip() for manager in skillDefinition['conditionActiveManager'].split(',')]
-				readmeConditions += f'    Active managers: {str(conditions["activeManager"])}\n'
+				readmeConditions += f'   - Active managers: {str(conditions["activeManager"])}\n\n'
 
 			installContent = {
 				'name'              : skillName,
 				'version'           : '0.0.1',
+				'icon'              : 'fab fa-battle-net',
+				'category'          : 'undefined',
 				'author'            : self.ConfigManager.getAliceConfigByName('githubUsername'),
 				'maintainers'       : [],
 				'desc'              : skillDefinition['description'].capitalize(),
@@ -754,8 +771,8 @@ class SkillManager(Manager):
 				'conditions'        : conditions
 			}
 
-			readmeReqs += f'    PIP: {str(installContent["pipRequirements"])}\n'
-			readmeReqs += f'    System: {str(installContent["systemRequirements"])}\n'
+			readmeReqs += f'   - PIP: {str(installContent["pipRequirements"])}\n\n'
+			readmeReqs += f'   - System: {str(installContent["systemRequirements"])}\n\n'
 
 			# Install file
 			with installFile.open('w') as fp:
@@ -782,7 +799,7 @@ class SkillManager(Manager):
 				widgetRootDir = skillDir / 'widgets'
 				css = widgetRootDir / 'css/widget.css'
 				js = widgetRootDir / 'js/widget.js'
-				lang = widgetRootDir / 'lang/widget.json'
+				lang = widgetRootDir / 'lang/widget.lang.json'
 				html = widgetRootDir / 'templates/widget.html'
 				python = widgetRootDir / 'widget.py'
 
@@ -791,24 +808,18 @@ class SkillManager(Manager):
 					widgetName = widgetName[0].upper() + widgetName[1:]
 					readmeWidgets += f'    {widgetName}\n'
 
-					with css.open() as fp:
-						content = fp.read().replace('%widgetname%', widgetName)
-
+					content = css.read_text().replace('%widgetname%', widgetName)
 					with Path(widgetRootDir, f'css/{widgetName}.css').open('w+') as fp:
 						fp.write(content)
 
 					shutil.copy(str(js), str(js).replace('widget.js', f'{widgetName}.js'))
-					shutil.copy(str(lang), str(lang).replace('widget.json', f'{widgetName}.json'))
+					shutil.copy(str(lang), str(lang).replace('widget.lang.json', f'{widgetName}.lang.json'))
 
-					with html.open() as fp:
-						content = fp.read().replace('%widgetname%', widgetName)
-
+					content = html.read_text().replace('%widgetname%', widgetName)
 					with Path(widgetRootDir, f'templates/{widgetName}.html').open('w+') as fp:
 						fp.write(content)
 
-					with python.open() as fp:
-						content = fp.read().replace('Template(Widget)', f'{widgetName}(Widget)')
-
+					content = python.read_text().replace('Template(Widget)', f'{widgetName}(Widget)')
 					with Path(widgetRootDir, f'{widgetName}.py').open('w+') as fp:
 						fp.write(content)
 
@@ -822,16 +833,26 @@ class SkillManager(Manager):
 				shutil.rmtree(str(Path(skillDir, 'widgets')))
 
 			# Readme file
-			# For some reason r+ mode appends at the end instead of overwritting
-			with Path(skillDir, 'README.md').open() as fp:
-				content = fp.read().replace('%skillname%', skillName) \
-					.replace('%author%', self.ConfigManager.getAliceConfigByName('githubUsername')) \
-					.replace('%description%', skillDefinition['description'].capitalize()) \
-					.replace('%conditions%', readmeConditions) \
-					.replace('%requirements%', readmeReqs) \
-					.replace('%widgets%', readmeWidgets)
+			content = Path(skillDir, 'README.md').read_text().replace('%skillname%', skillName) \
+				.replace('%author%', self.ConfigManager.getAliceConfigByName('githubUsername')) \
+				.replace('%minVersion%', constants.VERSION) \
+				.replace('%description%', skillDefinition['description'].capitalize()) \
+				.replace('%conditions%', readmeConditions) \
+				.replace('%requirements%', readmeReqs) \
+				.replace('%widgets%', readmeWidgets)
 
 			with Path(skillDir, 'README.md').open('w') as fp:
+				fp.write(content)
+
+			# Main class
+			classFile = skillDir / f'{skillDefinition["name"]}.py'
+			Path(skillDir, 'DefaultTemplate.py').rename(classFile)
+
+			content = classFile.read_text().replace('%skillname%', skillName) \
+				.replace('%author%', self.ConfigManager.getAliceConfigByName('githubUsername')) \
+				.replace('%description%', skillDefinition['description'].capitalize())
+
+			with classFile.open('w') as fp:
 				fp.write(content)
 
 			self.logInfo(f'Created "{skillDefinition["name"]}" skill')
@@ -839,4 +860,62 @@ class SkillManager(Manager):
 			return True
 		except Exception as e:
 			self.logError(f'Error creating new skill: {e}')
+			return False
+
+
+	def uploadSkillToGithub(self, skillName: str, skillDesc: str) -> bool:
+		try:
+			self.logInfo(f'Uploading {skillName} to Github')
+
+			skillName = skillName[0].upper() + skillName[1:]
+
+			localDirectory = Path('/home', getpass.getuser(), f'ProjectAlice/skills/{skillName}')
+			if not localDirectory.exists():
+				raise Exception("Local skill doesn't exist")
+
+			data = {
+				'name'       : f'skill_{skillName}',
+				'description': skillDesc,
+				'has-issues' : True,
+				'has-wiki'   : False
+			}
+			req = requests.post('https://api.github.com/user/repos', data=json.dumps(data), auth=GithubCloner.getGithubAuth())
+
+			if req.status_code != 201:
+				raise Exception("Couldn't create the repository on Github")
+
+			self.Commons.runSystemCommand(['rm', '-rf', f'{str(localDirectory)}/.git'])
+			self.Commons.runSystemCommand(['git', '-C', str(localDirectory), 'init'])
+
+			self.Commons.runSystemCommand(['git', 'config', '--global', 'user.email', 'githubbot@projectalice.io'])
+			self.Commons.runSystemCommand(['git', 'config', '--global', 'user.name', 'githubbot@projectalice.io'])
+
+			remote = f'https://{self.ConfigManager.getAliceConfigByName("githubUsername")}:{self.ConfigManager.getAliceConfigByName("githubToken")}@github.com/{self.ConfigManager.getAliceConfigByName("githubUsername")}/skill_{skillName}.git'
+			self.Commons.runSystemCommand(['git', '-C', str(localDirectory), 'remote', 'add', 'origin', remote])
+
+			self.Commons.runSystemCommand(['git', '-C', str(localDirectory), 'add', '--all'])
+			self.Commons.runSystemCommand(['git', '-C', str(localDirectory), 'commit', '-m', '"Initial upload"'])
+			self.Commons.runSystemCommand(['git', '-C', str(localDirectory), 'push', '--set-upstream', 'origin', 'master'])
+
+			url = f'https://github.com/{self.ConfigManager.getAliceConfigByName("githubUsername")}/skill_{skillName}.git'
+			self.logInfo(f'Skill uploaded! You can find it on {url}')
+			return True
+		except Exception as e:
+			self.logWarning(f'Something went wrong uploading skill to Github: {e}')
+			return False
+
+
+	def downloadInstallTicket(self, skillName: str) -> bool:
+		try:
+			tmpFile = Path(self.Commons.rootDir(), f'system/skillInstallTickets/{skillName}.install')
+			if not self.Commons.downloadFile(
+					url=f'{constants.GITHUB_RAW_URL}/skill_{skillName}/{self.SkillStoreManager.getSkillUpdateTag(skillName)}/{skillName}.install',
+					dest=str(tmpFile.with_suffix('.tmp'))
+			):
+				raise
+
+			shutil.move(tmpFile.with_suffix('.tmp'), tmpFile)
+			return True
+		except Exception as e:
+			self.logError(f'Error downloading install ticket for skill "{skillName}": {e}')
 			return False

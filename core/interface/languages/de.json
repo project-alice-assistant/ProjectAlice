@@ -21,7 +21,7 @@
 	"adminTabTitleUtilities": "Utilities",
 	"restartAlice": "Alice neustarten",
 	"reboot": "Reboot",
-	"trainAndDlAssistant": "Assistant herunterladen",
+	"trainAssistant": "Assistant trainieren",
 	"wipeAll": "Alles löschen",
 	"devmodeNewSkill": "Neuer Skill",
 	"devmodeEditSkill": "Skill editieren",
@@ -45,5 +45,8 @@
 	"createSkill": "Erstelle den Skill",
 	"uploadSkillToGithub": "Den Skill auf Github hochladen",
 	"resetSkill": "Reset",
-	"actions": "Actions"
+	"actions": "Actions",
+	"addUser": "Neue Benutzer",
+	"addWakeword": "Neue Wakeword",
+	"tuneWakeword": "Tune wakeword"
 }

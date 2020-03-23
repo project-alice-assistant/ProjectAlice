@@ -1,5 +1,6 @@
 import sqlite3
 import typing
+from pathlib import Path
 
 from core.ProjectAliceExceptions import DbConnectionError, InvalidQuery
 from core.base.model.Manager import Manager
@@ -25,6 +26,10 @@ class DatabaseManager(Manager):
 		except sqlite3.Error as e:
 			self.logError(f'Something went wrong fetching database tables: {e}')
 			return False
+
+
+	def clearDB(self):
+		Path(self.Commons.rootDir(), 'system/database/data.db').unlink()
 
 
 	def getConnection(self) -> sqlite3.Connection:
@@ -283,7 +288,7 @@ class DatabaseManager(Manager):
 		:return:
 		"""
 
-		query = f"DELETE FROM :__table__ WHERE id in (SELECT id FROM :__table__ ORDER BY id LIMIT {self.ConfigManager.getAliceConfigByName('autoPruneStoredData')})"
+		query = f"DELETE FROM :__table__ WHERE id not in (SELECT id FROM :__table__ ORDER BY id DESC LIMIT {self.ConfigManager.getAliceConfigByName('autoPruneStoredData')})"
 		query = self.basicChecks(tableName, query, callerName)
 		if not query:
 			return

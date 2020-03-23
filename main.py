@@ -30,26 +30,33 @@ import os
 import psutil
 
 from core.Initializer import Initializer
-
-formatter = logging.Formatter('%(asctime)s [%(threadName)s] - [%(levelname)s] - %(message)s')
+from core.util.model import BashFormatting, FileFormatting, HtmlFormatting
+from core.util.model.MqttLoggingHandler import MqttLoggingHandler
 
 _logger = logging.getLogger('ProjectAlice')
 _logger.setLevel(logging.INFO)
 
-date = int(datetime.now().strftime('%Y%m%d'))
+logFileFormatter = FileFormatting.Formatter()
+bashFormatter = BashFormatting.Formatter()
+htmlFormatter = HtmlFormatting.Formatter()
 
+date = int(datetime.now().strftime('%Y%m%d'))
 logsMountpoint = Path(Path(__file__).resolve().parent, 'var', 'logs')
 
-handler = logging.FileHandler(filename=f'{logsMountpoint}/logs.log', mode='w')
+logFileHandler = logging.FileHandler(filename=f'{logsMountpoint}/logs.log', mode='w')
 rotatingHandler = logging.handlers.RotatingFileHandler(filename=f'{logsMountpoint}/{date}-logs.log', mode='a', maxBytes=100000, backupCount=20)
 streamHandler = logging.StreamHandler()
+mqttHandler = MqttLoggingHandler()
 
-handler.setFormatter(formatter)
-rotatingHandler.setFormatter(formatter)
+logFileHandler.setFormatter(logFileFormatter)
+rotatingHandler.setFormatter(logFileFormatter)
+mqttHandler.setFormatter(htmlFormatter)
+streamHandler.setFormatter(bashFormatter)
 
-_logger.addHandler(handler)
+_logger.addHandler(logFileHandler)
 _logger.addHandler(rotatingHandler)
 _logger.addHandler(streamHandler)
+_logger.addHandler(mqttHandler)
 
 
 def exceptionListener(*exc_info):

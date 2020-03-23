@@ -6,14 +6,16 @@
 
 {% block loaders %}
 	<script src="{{ url_for('static', filename='js/widgets.js') }}"></script>
-
-	{% for widgetList in widgets.values() %}
+	{% for widgetName, widgetList in widgets.items() %}
+		<link rel="stylesheet" href="{{ url_for('IndexView:widget_static', filename=widgetName + '/css/common.css') }}">
 		{% for widget in widgetList.values() %}
-			<script src="{{ url_for('IndexView:widget_static', filename=widget.parent + '/js/' + widget.name + '.js') }}"></script>
-			<link rel="stylesheet" href="{{ url_for('IndexView:widget_static', filename=widget.parent + '/css/common.css') }}">
-			<link rel="stylesheet" href="{{ url_for('IndexView:widget_static', filename=widget.parent + '/css/' + widget.name + '.css') }}">
+			{% if (widget.state|int) == 1 %}
+				<script src="{{ url_for('IndexView:widget_static', filename=widget.parent + '/js/' + widget.name + '.js') }}"></script>
+				<link rel="stylesheet" href="{{ url_for('IndexView:widget_static', filename=widget.parent + '/css/' + widget.name + '.css') }}">
+			{% endif %}
 		{% endfor %}
 	{% endfor %}
+	{{ total }}
 {% endblock %}
 
 {% block pageTitle %}

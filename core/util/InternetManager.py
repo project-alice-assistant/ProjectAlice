@@ -34,7 +34,7 @@ class InternetManager(Manager):
 			self.checkOnlineState()
 
 
-	def checkOnlineState(self, addr: str = 'http://clients3.google.com/generate_204', silent: bool = False) -> bool:
+	def checkOnlineState(self, addr: str = 'https://clients3.google.com/generate_204', silent: bool = False) -> bool:
 		try:
 			online = requests.get(addr).status_code == 204
 		except RequestException:

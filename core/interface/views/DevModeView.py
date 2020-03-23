@@ -1,22 +1,17 @@
-import json
-
-import requests as requests
 from flask import jsonify, render_template, request
 
-from core.base.model.GithubCloner import GithubCloner
 from core.interface.model.View import View
 
 
 class DevModeView(View):
 	route_base = '/devmode/'
 
-
-	def __init__(self):
-		super().__init__()
-
-
 	def index(self):
+		skills = {**self.SkillManager.activeSkills, **self.SkillManager.deactivatedSkills}
+		skills = {skillName: skill for skillName, skill in sorted(skills.items()) if skill is not None}
+
 		return render_template(template_name_or_list='devmode.html',
+		                       skills=skills,
 		                       langData=self._langData,
 		                       aliceSettings=self.ConfigManager.aliceConfigurations)
 
@@ -29,20 +24,10 @@ class DevModeView(View):
 			if not skillName:
 				raise Exception
 
-			skillName = skillName[0].upper() + skillName[1:]
-			data = {
-				'name'       : skillName,
-				'description': skillDesc,
-				'has-issues' : True,
-				'has-wiki'   : False
-			}
-			req = requests.post('https://api.github.com/user/repos', data=json.dumps(data), auth=GithubCloner.getGithubAuth())
+			if self.SkillManager.uploadSkillToGithub(skillName, skillDesc):
+				return jsonify(success=True, url=f'https://github.com/{self.ConfigManager.getAliceConfigByName("githubUsername")}/skill_{skillName}.git')
 
-			if req.status_code == 201:
-				return jsonify(success=True)
-			else:
-				raise Exception
-
+			return jsonify(success=False)
 		except Exception as e:
 			self.logError(f'Failed uploading to github: {e}')
 			return jsonify(success=False)

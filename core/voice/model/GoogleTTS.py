@@ -159,5 +159,6 @@ class GoogleTTS(TTS):
 			tmpFile.write_bytes(response.audio_content)
 
 			self._mp3ToWave(src=tmpFile, dest=self._cacheFile)
+			tmpFile.unlink()
 
 		self._speak(self._cacheFile, session)

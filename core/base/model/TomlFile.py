@@ -90,10 +90,10 @@ class TomlFile(ProjectAliceObject):
 							continue
 
 						value = data.value
-						if isinstance(data.value, str):
+						if isinstance(value, str):
 							value = f'"{value}"'
-						elif isinstance(data.value, bool):
-							value = 'true' if data.value else 'false'
+						elif isinstance(value, bool):
+							value = 'true' if value else 'false'
 
 						f.write(f'{"#" if data.commented else ""}{data.name} = {json.dumps(value) if isinstance(value, list) else value}\n')
 
@@ -217,9 +217,7 @@ class Section(dict):
 		if key in self.data:
 			return self.data[key].value
 
-		conf = Config(key, '')
-		self.data[conf.name] = conf
-		return conf.value
+		return ''
 
 
 	def __delitem__(self, key: str):
@@ -293,7 +291,7 @@ class Config:
 
 
 	def __str__(self) -> str:
-		return str(self.value)
+		return self.value
 
 
 	def __repr__(self) -> str:

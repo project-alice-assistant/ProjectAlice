@@ -30,6 +30,7 @@ class GithubCloner(ProjectAliceObject):
 		else:
 			if Path(self._dest / '.git').exists():
 				self.Commons.runSystemCommand(['git', '-C', str(self._dest), 'stash'])
+				self.Commons.runSystemCommand(['git', '-C', str(self._dest), 'clean', '-df'])
 			else:
 				shutil.rmtree(str(self._dest))
 				self._dest.mkdir(parents=True)
@@ -43,7 +44,7 @@ class GithubCloner(ProjectAliceObject):
 				self.Commons.runSystemCommand(['git', '-C', str(self._dest), 'init'])
 				self.Commons.runSystemCommand(['git', '-C', str(self._dest), 'remote', 'add', 'origin', self._baseUrl])
 
-			self.Commons.runSystemCommand(['git', '-C', str(self._dest), 'pull'])
+			self.Commons.runSystemCommand(['git', '-C', str(self._dest), 'pull', 'origin', 'master'])
 			self.Commons.runSystemCommand(['git', '-C', str(self._dest), 'checkout', self.SkillStoreManager.getSkillUpdateTag(skillName)])
 
 			return True

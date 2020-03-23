@@ -72,11 +72,30 @@ class Recorder(ProjectAliceObject):
 
 	def __iter__(self):
 		while self._recording:
-			yield self._buffer.get()
+			if self._timeoutFlag.isSet():
+				return
+
+			chunk = self._buffer.get()
+
+			if not chunk:
+				break
+
+			yield chunk
+
+		# Empty the buffer
+		data = list()
+		while not self._buffer.empty():
+			chunk = self._buffer.get(block=False)
+			if not chunk:
+				break
+
+			data.append(chunk)
+
+		yield b''.join(data)
 
 
 	def audioStream(self) -> Optional[bytes]:
-		while self._recording:
+		while not self._buffer.empty() or self._recording:
 			if self._timeoutFlag.isSet():
 				return
 

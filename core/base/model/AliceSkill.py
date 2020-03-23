@@ -36,6 +36,8 @@ class AliceSkill(ProjectAliceObject):
 		self._name = self._install['name']
 		self._author = self._install['author']
 		self._version = self._install['version']
+		self._icon = self._install['icon']
+		self._category = self._install['category'] if 'category' in self._install else 'undefined'
 		self._updateAvailable = False
 		self._active = True
 		self._delayed = False
@@ -322,6 +324,11 @@ class AliceSkill(ProjectAliceObject):
 		return self._scenarioNodeVersion
 
 
+	@property
+	def icon(self) -> str:
+		return self._icon
+
+
 	def hasScenarioNodes(self) -> bool:
 		return self._scenarioNodeName != ''
 
@@ -501,16 +508,16 @@ class AliceSkill(ProjectAliceObject):
 		self.MqttManager.say(text=text, client=siteId, customData=customData, canBeEnqueued=canBeEnqueued)
 
 
-	def ask(self, text: str, siteId: str = constants.DEFAULT_SITE_ID, intentFilter: list = None, customData: dict = None, previousIntent: str = '', canBeEnqueued: bool = True, currentDialogState: str = ''):
+	def ask(self, text: str, siteId: str = constants.DEFAULT_SITE_ID, intentFilter: list = None, customData: dict = None, previousIntent: str = '', canBeEnqueued: bool = True, currentDialogState: str = '', probabilityThreshold: float = None):
 		if currentDialogState:
 			currentDialogState = f'{self.name}:{currentDialogState}'
-		self.MqttManager.ask(text=text, client=siteId, intentFilter=intentFilter, customData=customData, previousIntent=previousIntent, canBeEnqueued=canBeEnqueued, currentDialogState=currentDialogState)
+		self.MqttManager.ask(text=text, client=siteId, intentFilter=intentFilter, customData=customData, previousIntent=previousIntent, canBeEnqueued=canBeEnqueued, currentDialogState=currentDialogState, probabilityThreshold=probabilityThreshold)
 
 
-	def continueDialog(self, sessionId: str, text: str, customData: dict = None, intentFilter: list = None, previousIntent: str = '', slot: str = '', currentDialogState: str = ''):
+	def continueDialog(self, sessionId: str, text: str, customData: dict = None, intentFilter: list = None, previousIntent: str = '', slot: str = '', currentDialogState: str = '', probabilityThreshold: float = None):
 		if currentDialogState:
 			currentDialogState = f'{self.name}:{currentDialogState}'
-		self.MqttManager.continueDialog(sessionId=sessionId, text=text, customData=customData, intentFilter=intentFilter, previousIntent=str(previousIntent), slot=slot, currentDialogState=currentDialogState)
+		self.MqttManager.continueDialog(sessionId=sessionId, text=text, customData=customData, intentFilter=intentFilter, previousIntent=str(previousIntent), slot=slot, currentDialogState=currentDialogState, probabilityThreshold=probabilityThreshold)
 
 
 	def endDialog(self, sessionId: str = '', text: str = '', siteId: str = ''):

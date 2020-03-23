@@ -1,6 +1,8 @@
 import json
 from pathlib import Path
+from subprocess import CompletedProcess
 
+import random
 import re
 import shutil
 
@@ -12,12 +14,13 @@ from core.util.Stopwatch import Stopwatch
 
 class SnipsNlu(NluEngine):
 	NAME = 'Snips NLU'
-	UTTERANCE_REGEX = re.compile('(.*?){(.+?:=>.+?)}(.*?)')
+	UTTERANCE_REGEX = re.compile('{(.+?:=>.+?)}')
 
 
 	def __init__(self):
 		super().__init__()
 		self._cachePath = Path(self.Commons.rootDir(), f'var/cache/nlu/trainingData')
+		self._timer = None
 
 
 	def start(self):
@@ -31,7 +34,7 @@ class SnipsNlu(NluEngine):
 
 
 	def convertDialogTemplate(self, file: Path):
-		self.logInfo(f'Preparing NLU training file for {file}')
+		self.logInfo(f'Preparing NLU training file for {file.parent.parent.stem}')
 		with file.open() as fp:
 			dialogTemplate = json.load(fp)
 
@@ -60,40 +63,40 @@ class SnipsNlu(NluEngine):
 
 			for utterance in intent['utterances']:
 				data = list()
-				result = re.findall(self.UTTERANCE_REGEX, utterance)
+				result = self.UTTERANCE_REGEX.split(utterance)
 				if not result:
 					data.append({
 						'text': utterance
 					})
 				else:
-					for dataset in result:
-						for match in dataset:
-							if not match:
-								continue
-
-							if ':=>' not in match:
-								data.append({
-									'text': match
-								})
-								continue
-							
-							text, slotName = match.split(':=>')
-							entity = slots.get(slotName, 'Unknown')
-
-							if entity.startswith('snips/'):
-								nluTrainingSample['entities'][entity] = dict()
-
+					for match in result:
+						if ':=>' not in match:
 							data.append({
-								'entity'   : entity,
-								'slot_name': slotName,
-								'text'     : text
+								'text': match
 							})
+							continue
+
+						text, slotName = match.split(':=>')
+						entity = slots.get(slotName, 'Unknown')
+
+						if entity == 'Unknown':
+							self.logWarning(f'Slot named "{slotName}" with text "{text}" in utterance "{utterance}" doesn\'t have any matching slot definition, skipping to avoid NLU training failure')
+							continue
+
+						if entity.startswith('snips/'):
+							nluTrainingSample['entities'][entity] = dict()
+
+						data.append({
+							'entity'   : entity,
+							'slot_name': slotName,
+							'text'     : text
+						})
 
 				# noinspection PyTypeChecker
 				nluTrainingSample['intents'][intentName]['utterances'].append({'data': data})
 
-			with Path(self._cachePath, f'{dialogTemplate["skill"]}_{file.stem}.json').open('w') as fp:
-				json.dump(nluTrainingSample, fp, ensure_ascii=False, indent=4)
+		with Path(self._cachePath, f'{dialogTemplate["skill"]}_{file.stem}.json').open('w') as fp:
+			json.dump(nluTrainingSample, fp, ensure_ascii=False, indent=4)
 
 
 	def train(self):
@@ -127,13 +130,16 @@ class SnipsNlu(NluEngine):
 	def nluTrainingThread(self, datasetFile: Path):
 		with Stopwatch() as stopWatch:
 			self.logInfo('Begin training...')
+			self._timer = self.ThreadManager.newTimer(interval=10, func=self.trainingStatus)
 
 			tempTrainingData = Path('/tmp/snipsNLU')
 
 			if tempTrainingData.exists():
 				shutil.rmtree(tempTrainingData)
 
-			self.Commons.runSystemCommand([f'./venv/bin/snips-nlu', 'train', str(datasetFile), str(tempTrainingData)])
+			training: CompletedProcess = self.Commons.runSystemCommand([f'./venv/bin/snips-nlu', 'train', str(datasetFile), str(tempTrainingData)])
+			if training.returncode != 0:
+				self.logError(f'Error while training Snips NLU: {training.stderr.decode()}')
 
 			assistantPath = Path(self.Commons.rootDir(), f'trained/assistants/assistant_{self.LanguageManager.activeLanguage}/nlu_engine')
 
@@ -141,6 +147,8 @@ class SnipsNlu(NluEngine):
 				self.logError('Snips NLU training failed')
 				if not assistantPath.exists():
 					self.logFatal('No NLU engine found, cannot start')
+
+				self._timer.cancel()
 				return
 
 			if assistantPath.exists():
@@ -151,7 +159,14 @@ class SnipsNlu(NluEngine):
 			self.broadcast(method=constants.EVENT_NLU_TRAINED, exceptions=[constants.DUMMY], propagateToSkills=True)
 			self.SnipsServicesManager.runCmd(cmd='restart', services=['snips-nlu'])
 
+		self._timer.cancel()
+		self.ThreadManager.getEvent('TrainAssistant').clear()
 		self.logInfo(f'Snips NLU trained in {stopWatch} seconds')
+
+
+	def trainingStatus(self):
+		self.logInfo(random.choice(['Still training...', "Don't worry, I'm still training", 'Still on it', 'Takes time, I know', 'Working...', 'Working as fast as I can!']))
+		self._timer = self.ThreadManager.newTimer(interval=10, func=self.trainingStatus)
 
 
 	@staticmethod
