@@ -42,7 +42,7 @@ class AliceWatchManager(Manager):
 			return
 
 		self.publish(payload={
-			'text': f'[Dialogue] Session with id "**{session.sessionId}**" was started on site **office**'
+			'text': f'[Dialogue] Session with id "**{session.sessionId}**" was started on site **{session.siteId}**'
 		})
 
 

@@ -1,7 +1,7 @@
 {% extends 'base.html' %}
 
 {% block title %}
-	{{ langData.admin }}
+	{{ langData.devMode }}
 {% endblock %}
 
 {% block loaders %}
@@ -103,9 +103,8 @@
 			<div id="EditSkill" class="configBox">
 				<div id="editSkillSelectContainer" class="editSkillsPane">
 					{% for skillName, skill in skills.items() %}
-						<div id="editSkill_{{ skillName }}" class="editSkillTile">
-							{{ skillName }}
-							<i class="{{ skill.icon }}" aria-hidden="true"></i>
+						<div id="editSkill_{{ skillName }}" class="editSkillTile" data-skill="{{ skillName }}">
+							<div class="skillName">{{ skillName }}</div>
 						</div>
 					{% endfor %}
 				</div>

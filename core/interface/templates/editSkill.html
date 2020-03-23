@@ -1,0 +1,17 @@
+{% extends 'base.html' %}
+
+{% block title %}
+	{{ langData.devMode }}
+{% endblock %}
+
+{% block loaders %}
+	<script src="{{ url_for('static', filename='js/editskill.js') }}"></script>
+{% endblock %}
+
+{% block pageTitle %}
+	{{ langData.devMode }}
+{% endblock %}
+
+{% block content %}
+	<div class="editSkillSkillName">{{ skill.name }}</div>
+{% endblock %}
