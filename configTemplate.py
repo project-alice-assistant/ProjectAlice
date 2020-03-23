@@ -1,6 +1,6 @@
 settings = {
 	'adminPinCode'          : {
-		'defaultValue': '',
+		'defaultValue': 1234,
 		'dataType'    : 'integer',
 		'isSensitive' : True,
 		'description' : 'Admin pin code, only numbers, 4 digits',

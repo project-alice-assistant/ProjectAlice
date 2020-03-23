@@ -8,6 +8,7 @@ from pathlib import Path
 from typing import Any, Dict, Iterable, Optional
 
 import re
+from copy import copy
 from paho.mqtt import client as MQTTClient
 
 from core.ProjectAliceExceptions import AccessLevelTooLow, SkillStartingFailed
@@ -451,13 +452,10 @@ class AliceSkill(ProjectAliceObject):
 		return self.ConfigManager.getSkillConfigByName(skillName=self.name, configName=key)
 
 
-	def getSkillConfigs(self, withInfo: bool = False) -> dict:
-		skillConfigs = self.ConfigManager.getSkillConfigs(self.name)
-		if not withInfo:
-			infoSettings = self.ConfigManager.aliceSkillConfigurationKeys
-			skillConfigs = {key: value for key, value in skillConfigs.items() if key not in infoSettings}
-
-		return skillConfigs
+	def getSkillConfigs(self) -> dict:
+		ret = copy(self.ConfigManager.getSkillConfigs(self.name))
+		ret.pop('active', None)
+		return ret
 
 
 	def getSkillConfigsTemplate(self) -> dict:
@@ -536,22 +534,22 @@ class AliceSkill(ProjectAliceObject):
 		self.MqttManager.publish(topic=topic, payload=payload, qos=qos, retain=retain)
 
 
-	def decorate(self, msg: str, depth: int) -> str:
-		"""
-		overwrite Logger decoration method, since it should always
-		be the skill name
-		"""
-		return f'[{self.name}] {msg}'
+	def __repr__(self) -> str:
+		return json.dumps(self.toJson())
+
+
+	def __str__(self) -> str:
+		return self.__repr__()
 
 
 	def toJson(self) -> dict:
 		return {
-			'name': self._name,
-			'author': self._author,
-			'version': self._version,
+			'name'           : self._name,
+			'author'         : self._author,
+			'version'        : self._version,
 			'updateAvailable': self._updateAvailable,
-			'active': self._active,
-			'delayed': self._delayed,
-			'required': self._required,
-			'databaseSchema': self._databaseSchema
+			'active'         : self._active,
+			'delayed'        : self._delayed,
+			'required'       : self._required,
+			'databaseSchema' : self._databaseSchema
 		}

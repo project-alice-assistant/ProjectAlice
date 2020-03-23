@@ -36,7 +36,7 @@ class DialogTemplateManager(Manager):
 			self.buildCache()
 
 
-	def afterNewSkillInstall(self):
+	def afterSkillChange(self):
 		if self.checkCache():
 			self.buildCache()
 

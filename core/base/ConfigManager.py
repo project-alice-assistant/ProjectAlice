@@ -1,7 +1,8 @@
 import json
 import logging
-import shutil
 from pathlib import Path
+
+import shutil
 
 import configTemplate
 from core.base.SkillManager import SkillManager
@@ -10,6 +11,7 @@ from core.base.model.TomlFile import TomlFile
 try:
 	# noinspection PyUnresolvedReferences,PyPackageRequirements
 	import config
+
 	configFileExist = True
 except ModuleNotFoundError:
 	configFileNotExist = False
@@ -26,13 +28,6 @@ class ConfigManager(Manager):
 
 	def __init__(self):
 		super().__init__()
-
-		self._aliceSkillConfigurationKeys = [
-			'active',
-			'version',
-			'author',
-			'conditions'
-		]
 
 		self._vitalConfigs = list()
 
@@ -56,6 +51,8 @@ class ConfigManager(Manager):
 	def _setDefaultSiteId(self):
 		if self._snipsConfigurations['snips-audio-server']['bind']:
 			constants.DEFAULT_SITE_ID = self._snipsConfigurations['snips-audio-server']['bind'].replace('@mqtt', '')
+		else:
+			constants.DEFAULT_SITE_ID = constants.DEFAULT
 
 
 	def _loadCheckAndUpdateAliceConfigFile(self) -> dict:
@@ -116,8 +113,8 @@ class ConfigManager(Manager):
 		return aliceConfigs
 
 
-	def addSkillToAliceConfig(self, skillName: str, data: dict):
-		self._skillsConfigurations[skillName] = data
+	def addSkillToAliceConfig(self, skillName: str, active: bool = True):
+		self._skillsConfigurations[skillName] = {'active': active}
 		self.updateAliceConfiguration('skills', self._skillsConfigurations)
 		self.loadCheckAndUpdateSkillConfigurations(skillName)
 
@@ -130,7 +127,7 @@ class ConfigManager(Manager):
 		try:
 			# Remove skill configurations
 			if key == 'skills':
-				value = {k: v for k, v in value.items() if k not in self._aliceSkillConfigurationKeys}
+				value = {k: v for k, v in value.items() if k == 'active'}
 		except AttributeError:
 			raise ConfigurationUpdateFailed()
 
@@ -140,11 +137,11 @@ class ConfigManager(Manager):
 
 	def updateSkillConfigurationFile(self, skillName: str, key: str, value: typing.Any):
 		if skillName not in self._skillsConfigurations:
-			self.logWarning(f'Was asked to update {key} in skill {skillName} but skill doesn\'t exist')
+			self.logWarning(f'Was asked to update **{key}** in skill **{skillName}** but skill doesn\'t exist')
 			return
 
 		if key not in self._skillsConfigurations[skillName]:
-			self.logWarning(f'Was asked to update {key} in skill {skillName} but key doesn\'t exist')
+			self.logWarning(f'Was asked to update **{key}** in skill **{skillName}** but key doesn\'t exist')
 			return
 
 		# Cast value to template defined type
@@ -158,19 +155,19 @@ class ConfigManager(Manager):
 			try:
 				value = int(value)
 			except:
-				self.logWarning(f'Value missmatch for config {key} in skill {skillName}')
+				self.logWarning(f'Value missmatch for config **{key}** in skill **{skillName}**')
 				value = 0
 		elif vartype == 'float':
 			try:
 				value = float(value)
 			except:
-				self.logWarning(f'Value missmatch for config {key} in skill {skillName}')
+				self.logWarning(f'Value missmatch for config **{key}** in skill **{skillName}**')
 				value = 0.0
 		elif vartype in {'string', 'email', 'password'}:
 			try:
 				value = str(value)
 			except:
-				self.logWarning(f'Value missmatch for config {key} in skill {skillName}')
+				self.logWarning(f'Value missmatch for config **{key}** in skill **{skillName}**')
 				value = ''
 
 		self._skillsConfigurations[skillName][key] = value
@@ -184,8 +181,8 @@ class ConfigManager(Manager):
 		"""
 		sort = dict(sorted(confs.items()))
 
-		# Only store "active", "version", "author", "conditions" value for skill config
-		misterProper = ['active', 'version', 'author', 'conditions']
+		# Only store "active" value for skill config
+		misterProper = ['active']
 
 		# pop skills key so it gets added in the back
 		skills = sort.pop('skills')
@@ -309,7 +306,7 @@ class ConfigManager(Manager):
 	def loadCheckAndUpdateSkillConfigurations(self, skill: str = None):
 		skillsConfigurations = dict()
 
-		skillsPath = Path(self.Commons.rootDir() + '/skills')
+		skillsPath = Path(self.Commons.rootDir(), 'skills')
 		for skillDirectory in skillsPath.glob('*'):
 			if not skillDirectory.is_dir() or (skill is not None and skillDirectory.stem != skill) or skillDirectory.stem.startswith('_'):
 				continue
@@ -392,26 +389,12 @@ class ConfigManager(Manager):
 					self.logInfo(f'- Dev mode is on, "{skillName}" is missing definition in Alice config, generating them')
 
 				try:
-					installFile = json.load(Path(skillsPath / skillDirectory / f'{skillName}.install').open())
-					node = {
-						'active': True,
-						'version': installFile['version'],
-						'author': installFile['author'],
-						'conditions': installFile['conditions']
-					}
-					config = {**config, **node}
-					self._skillsConfigurations[skillName] = config
+					self._skillsConfigurations[skillName] = {'active': True}
 					self.updateAliceConfiguration('skills', self._skillsConfigurations)
 				except Exception as e:
-					if self.getAliceConfigByName('devMode'):
-						self.logInfo(f'- Failed generating default config. Please check your config template for skill "{skillName}"')
-						continue
-					else:
-						self.logError(f'- Failed generating default config, scheduling download for skill "{skillName}": {e}')
-						self.Commons.downloadFile(f'https://skills.projectalice.ch/{skillName}', f'system/skillInstallTickets/{skillName}.install')
-						if skillName in skillsConfigurations:
-							skillsConfigurations.pop(skillName)
-						continue
+					self.logError(f'- Failed generating skill entry in Alice config for skill "{skillName}": {e}')
+					skillsConfigurations.pop(skillName)
+					continue
 
 			if config:
 				skillsConfigurations[skillName] = config
@@ -568,11 +551,6 @@ class ConfigManager(Manager):
 	@property
 	def vitalConfigs(self) -> list:
 		return self._vitalConfigs
-
-
-	@property
-	def aliceSkillConfigurationKeys(self) -> list:
-		return self._aliceSkillConfigurationKeys
 
 
 	@property

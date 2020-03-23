@@ -47,6 +47,7 @@ class DevModeView(View):
 				'description'           : request.form.get('description', 'Missing description'),
 				'fr'                    : request.form.get('fr', False),
 				'de'                    : request.form.get('de', False),
+				'it'                    : request.form.get('it', False),
 				'pipreq'                : request.form.get('pipreq', list()),
 				'sysreq'                : request.form.get('sysreq', list()),
 				'conditionOnline'       : request.form.get('sysreq', False),
