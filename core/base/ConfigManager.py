@@ -38,6 +38,7 @@ class ConfigManager(Manager):
 
 		self._skillsConfigurations = dict()
 		self._skillsTemplateConfigurations: typing.Dict[str, dict] = dict()
+
 		self.loadCheckAndUpdateSkillConfigurations()
 
 
@@ -73,7 +74,7 @@ class ConfigManager(Manager):
 				changes = True
 				aliceConfigs[setting] = definition.get('defaultValue', '')
 			else:
-				if setting == 'skills' or setting == 'supportedLanguages':
+				if setting == 'supportedLanguages':
 					continue
 
 				if definition['dataType'] != 'list':
@@ -113,22 +114,9 @@ class ConfigManager(Manager):
 		return aliceConfigs
 
 
-	def addSkillToAliceConfig(self, skillName: str, active: bool = True):
-		self._skillsConfigurations[skillName] = {'active': active}
-		self.updateAliceConfiguration('skills', self._skillsConfigurations)
-		self.loadCheckAndUpdateSkillConfigurations(skillName)
-
-
 	def updateAliceConfiguration(self, key: str, value: typing.Any):
 		if key not in self._aliceConfigurations:
 			self.logWarning(f'Was asked to update {key} but key doesn\'t exist')
-			raise ConfigurationUpdateFailed()
-
-		try:
-			# Remove skill configurations
-			if key == 'skills':
-				value = {k: v for k, v in value.items() if k == 'active'}
-		except AttributeError:
 			raise ConfigurationUpdateFailed()
 
 		self._aliceConfigurations[key] = value
@@ -180,19 +168,6 @@ class ConfigManager(Manager):
 		:param confs: the dict to save
 		"""
 		sort = dict(sorted(confs.items()))
-
-		# Only store "active" value for skill config
-		misterProper = ['active']
-
-		# pop skills key so it gets added in the back
-		skills = sort.pop('skills')
-		skills = dict() if not isinstance(skills, dict) else skills
-
-		sort['skills'] = dict()
-		for skillName, setting in skills.items():
-			skillCleaned = {key: value for key, value in setting.items() if key in misterProper}
-			sort['skills'][skillName] = skillCleaned
-
 		self._aliceConfigurations = sort
 
 		try:
@@ -411,34 +386,6 @@ class ConfigManager(Manager):
 		self._skillsTemplateConfigurations[skillName] = template
 		self._skillsConfigurations[skillName] = confs
 		self._writeToSkillConfigurationFile(skillName, confs)
-
-
-	def deactivateSkill(self, skillName: str, persistent: bool = False):
-
-		if skillName in self.aliceConfigurations['skills']:
-			self.logInfo(f"Deactivated skill {skillName} {'with' if persistent else 'without'} persistence")
-			self.aliceConfigurations['skills'][skillName]['active'] = False
-
-			if persistent:
-				self.writeToAliceConfigurationFile(self._aliceConfigurations)
-
-
-	def activateSkill(self, skillName: str, persistent: bool = False):
-
-		if skillName in self.aliceConfigurations['skills']:
-			self.logInfo(f"Activated skill {skillName} {'with' if persistent else 'without'} persistence")
-			self.aliceConfigurations['skills'][skillName]['active'] = True
-
-			if persistent:
-				self.writeToAliceConfigurationFile(self._aliceConfigurations)
-
-
-	def removeSkill(self, skillName: str):
-		if skillName in self.aliceConfigurations['skills']:
-			skills = self.aliceConfigurations['skills']
-			del skills[skillName]
-			self.aliceConfigurations['skills'] = skills
-			self.writeToAliceConfigurationFile(self._aliceConfigurations)
 
 
 	def changeActiveLanguage(self, toLang: str):

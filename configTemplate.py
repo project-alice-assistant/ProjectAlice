@@ -342,11 +342,5 @@ settings = {
 		'dataType'    : 'boolean',
 		'isSensitive' : False,
 		'description' : 'Activates the developer part of the interface, for skill development'
-	},
-
-	# -----------------------
-	# Skills
-	# -----------------------
-
-	'skills'                : {}
+	}
 }
