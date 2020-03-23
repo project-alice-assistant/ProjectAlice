@@ -141,4 +141,8 @@ $(function () {
 			return false;
 		}
 	});
+
+	$('[id*=editSkill_]').on('click touchstart', function () {
+		window.location.href = '/devmode/editskill/' + $(this).data('skill');
+	})
 });

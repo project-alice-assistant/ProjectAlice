@@ -1,0 +1,5 @@
+$(document).tooltip();
+
+$(function () {
+
+});

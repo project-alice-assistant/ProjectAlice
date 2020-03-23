@@ -38,6 +38,7 @@ class AliceSkill(ProjectAliceObject):
 		self._author = self._install['author']
 		self._version = self._install['version']
 		self._icon = self._install['icon']
+		self._description = self._install['desc']
 		self._category = self._install['category'] if 'category' in self._install else 'undefined'
 		self._updateAvailable = False
 		self._active = True
@@ -263,6 +264,16 @@ class AliceSkill(ProjectAliceObject):
 	@author.setter
 	def author(self, value: str):
 		self._author = value
+
+
+	@property
+	def description(self) -> str:
+		return self._description
+
+
+	@description.setter
+	def description(self, value: str):
+		self._description = value
 
 
 	@property

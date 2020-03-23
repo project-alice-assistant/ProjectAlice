@@ -1,4 +1,5 @@
 from flask import jsonify, render_template, request
+from flask_classful import route
 
 from core.interface.model.View import View
 
@@ -65,3 +66,15 @@ class DevModeView(View):
 		except Exception as e:
 			self.logError(f'Something went wrong creating a new skill: {e}')
 			return jsonify(success=False)
+
+
+	@route('/editskill/<skillName>')
+	def editSkill(self, skillName: str):
+		skill = self.SkillManager.getSkillInstance(skillName)
+		if not skill:
+			return jsonify(success=False)
+
+		return render_template(template_name_or_list='editSkill.html',
+		                       skill=skill,
+		                       langData=self._langData,
+		                       aliceSettings=self.ConfigManager.aliceConfigurations)

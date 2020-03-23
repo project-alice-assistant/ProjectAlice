@@ -1036,3 +1036,10 @@ input:focus {
 	font-size: 1.5em;
 	padding-top: 5px;
 }
+
+.editSkillSkillName {
+	font-family: 'marskeregular', Arial, sans-serif;
+	padding: 10px;
+	color: #d1d1d1;
+	font-size: 2em;
+}
