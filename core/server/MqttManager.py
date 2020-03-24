@@ -159,6 +159,15 @@ class MqttManager(Manager):
 			skill.subscribe(self._mqttClient)
 
 
+	def unsubscribeSkillIntents(self, skillName: str = None):
+		if skillName:
+			self.SkillManager.getSkillInstance(skillName).unsubscribe(self._mqttClient)
+			return
+
+		for skill in self.SkillManager.activeSkills.values():
+			skill.unsubscribe(self._mqttClient)
+
+
 	# noinspection PyUnusedLocal
 	def onMqttMessage(self, client, userdata, message: mqtt.MQTTMessage):
 		try:

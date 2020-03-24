@@ -39,7 +39,8 @@ class ConfigManager(Manager):
 		self._skillsConfigurations = dict()
 		self._skillsTemplateConfigurations: typing.Dict[str, dict] = dict()
 
-		self.loadCheckAndUpdateSkillConfigurations()
+
+	# self.loadCheckAndUpdateSkillConfigurations()
 
 
 	def onStart(self):

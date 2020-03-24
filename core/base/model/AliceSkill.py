@@ -353,6 +353,14 @@ class AliceSkill(ProjectAliceObject):
 				self.logError(f'Failed subscribing to intent "{str(intent)}"')
 
 
+	def unsubscribe(self, mqttClient: MQTTClient):
+		for intent in self._supportedIntents:
+			try:
+				mqttClient.unsubscribe(str(intent))
+			except:
+				self.logError(f'Failed unsubscribing to intent "{str(intent)}"')
+
+
 	def notifyDevice(self, topic: str, uid: str = '', siteId: str = ''):
 		if uid:
 			self.MqttManager.publish(topic=topic, payload={'uid': uid})
@@ -427,17 +435,18 @@ class AliceSkill(ProjectAliceObject):
 
 
 	def onStart(self):
-		if not self._active:
-			self.logInfo(f'Skill {self.name} is not active')
-		else:
-			self.logInfo(f'Starting {self.name} skill')
+		self.logInfo(f'Starting {self.name} skill')
+		self._active = True
 
 		self._initDB()
-		self.MqttManager.subscribeSkillIntents(self.name)
+		self.SkillManager.configureSkillIntents(self._name, True)
+		self.logInfo(f'- Started!')
 
 
 	def onStop(self):
+		self._active = False
 		self.SkillManager.configureSkillIntents(self._name, False)
+		self.logInfo(f'- {self._name} stopped!')
 
 
 	def onBooted(self) -> bool:
