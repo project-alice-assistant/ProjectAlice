@@ -343,8 +343,13 @@ class SkillManager(Manager):
 			raise
 		except Exception as e:
 			self.logError(f'- Couldn\'t start skill "{skillName}". Error: {e}')
-			self._activeSkills.pop(skillName, None)
-			self._deactivatedSkills.pop(skillName, None)
+
+			try:
+				self.deactivateSkill(skillName=skillName)
+			except:
+				self._activeSkills.pop(skillName, None)
+				self._deactivatedSkills.pop(skillName, None)
+
 			self._failedSkills[skillName] = self._skillList[skillName]['installer']
 
 		if skillInstance.widgets:
