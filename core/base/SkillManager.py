@@ -245,7 +245,7 @@ class SkillManager(Manager):
 				return True
 
 			elif consumed or consumed is None:
-				self.logDebug(f'The intent "{session.intentName}" was consumed by {skillName}')
+				self.logDebug(f'The intent "{session.intentName.split("/")[-1]}" was consumed by {skillName}')
 				return True
 
 		return False
