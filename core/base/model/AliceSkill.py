@@ -43,7 +43,7 @@ class AliceSkill(ProjectAliceObject):
 		self._category = self._installer['category'] if 'category' in self._installer else 'undefined'
 		self._conditions = self._installer['conditions']
 		self._updateAvailable = False
-		self._active = True
+		self._active = False
 		self._delayed = False
 		self._required = False
 		self._databaseSchema = databaseSchema
@@ -351,20 +351,12 @@ class AliceSkill(ProjectAliceObject):
 		return self._scenarioNodeName != ''
 
 
-	def subscribe(self, mqttClient: MQTTClient):
-		for intent in self._supportedIntents:
-			try:
-				mqttClient.subscribe(str(intent))
-			except:
-				self.logError(f'Failed subscribing to intent "{str(intent)}"')
+	def subscribeIntents(self):
+		self.MqttManager.subscribeSkillIntents(self._supportedIntents)
 
 
-	def unsubscribe(self, mqttClient: MQTTClient):
-		for intent in self._supportedIntents:
-			try:
-				mqttClient.unsubscribe(str(intent))
-			except:
-				self.logError(f'Failed unsubscribing to intent "{str(intent)}"')
+	def unsubscribeIntents(self):
+		self.MqttManager.unsubscribeSkillIntents(self._supportedIntents)
 
 
 	def notifyDevice(self, topic: str, uid: str = '', siteId: str = ''):
@@ -418,13 +410,16 @@ class AliceSkill(ProjectAliceObject):
 		return matchingIntent
 
 
-	def onDispatchMessage(self, session: DialogSession) -> bool:
+	def onMessageDispatch(self, session: DialogSession) -> bool:
 		intent = self.filterIntent(session)
 		if not intent:
 			return False
 
 		if intent.authLevel != AccessLevel.ZERO:
-			self.authenticateIntent(session)
+			try:
+				self.authenticateIntent(session)
+			except AccessLevelTooLow:
+				raise
 
 		function = intent.getMapping(session) or self.onMessage
 		return function(session=session)

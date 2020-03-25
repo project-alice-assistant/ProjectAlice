@@ -10,7 +10,7 @@ import os
 import requests
 import shutil
 
-from core.ProjectAliceExceptions import GithubNotFound, GithubRateLimit, GithubTokenFailed, SkillNotConditionCompliant, SkillStartDelayed, SkillStartingFailed
+from core.ProjectAliceExceptions import AccessLevelTooLow, GithubNotFound, GithubRateLimit, GithubTokenFailed, SkillNotConditionCompliant, SkillStartDelayed, SkillStartingFailed
 from core.base.SuperManager import SuperManager
 from core.base.model import Intent
 from core.base.model.AliceSkill import AliceSkill
@@ -18,6 +18,7 @@ from core.base.model.GithubCloner import GithubCloner
 from core.base.model.Manager import Manager
 from core.base.model.Version import Version
 from core.commons import constants
+from core.dialog.model.DialogSession import DialogSession
 from core.util.Decorators import IfSetting, Online
 
 
@@ -58,7 +59,7 @@ class SkillManager(Manager):
 
 		# These are dict of the skills, with name: skill instance
 		self._activeSkills: Dict[str, AliceSkill] = dict()
-		self._deactivatedSkills: Dict[str, dict] = dict()
+		self._deactivatedSkills: Dict[str, AliceSkill] = dict()
 		self._failedSkills: Dict[str, dict] = dict()
 
 		self._widgets = dict()
@@ -210,7 +211,7 @@ class SkillManager(Manager):
 
 
 	@property
-	def deactivatedSkills(self) -> Dict[str, dict]:
+	def deactivatedSkills(self) -> Dict[str, AliceSkill]:
 		return self._deactivatedSkills
 
 
@@ -231,6 +232,27 @@ class SkillManager(Manager):
 			self._skillInstallThread.start()
 
 
+	def dispatchMessage(self, session: DialogSession) -> bool:
+		print('1')
+		for skillName, skillInstance in self._activeSkills.items():
+			print(skillName)
+			try:
+				consumed = skillInstance.onMessageDispatch(session)
+			except AccessLevelTooLow:
+				# The command was recognized but required higher access level
+				return False
+
+			if self.MultiIntentManager.isProcessing(session.sessionId):
+				self.MultiIntentManager.processNextIntent(session.sessionId)
+				return True
+
+			elif consumed or consumed is None:
+				self.logDebug(f"The intent ![Yellow]({session.intentName}) was consumed by {skillName}")
+				return True
+
+		return False
+
+
 	def _initSkills(self, loadOnly: str = '', reload: bool = False):
 		for skillName, data in self._skillList.items():
 			if loadOnly and skillName != loadOnly:
@@ -246,19 +268,21 @@ class SkillManager(Manager):
 						self.logInfo(f"Skill {skillName} marked as disabled but it shouldn't be")
 						self.ProjectAlice.onStop()
 						break
-					else:
-						self.logInfo(f'Skill {skillName} is disabled')
-						self._deactivatedSkills[skillName] = data['installer']
-						continue
 
-				self.checkSkillConditions(skillName)
+					self.logInfo(f'Skill {skillName} is disabled')
+
+				if data['active']:
+					self.checkSkillConditions(skillName)
 
 				skillInstance = self.instanciateSkill(skillName=skillName, reload=reload)
 				if skillInstance:
 					if skillName in self.NEEDED_SKILLS:
 						skillInstance.required = True
 
-					self._activeSkills[skillInstance.name] = skillInstance
+					if data['active']:
+						self._activeSkills[skillInstance.name] = skillInstance
+					else:
+						self._deactivatedSkills[skillName] = skillInstance
 				else:
 					self._failedSkills[skillName] = data['installer']
 
@@ -716,9 +740,9 @@ class SkillManager(Manager):
 			self.MqttManager.configureIntents(confs)
 
 			if state:
-				self.MqttManager.subscribeSkillIntents(skillName)
+				self._activeSkills[skillName].subscribeIntents()
 			else:
-				self.MqttManager.unsubscribeSkillIntents(skillName)
+				self._activeSkills[skillName].unsubscribeIntents()
 
 		except Exception as e:
 			self.logWarning(f'Intent configuration failed: {e}')

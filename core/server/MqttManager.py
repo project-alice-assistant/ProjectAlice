@@ -7,7 +7,6 @@ import paho.mqtt.publish as publish
 import random
 import re
 
-from core.ProjectAliceExceptions import AccessLevelTooLow
 from core.base.model.Intent import Intent
 from core.base.model.Manager import Manager
 from core.commons import constants
@@ -123,7 +122,6 @@ class MqttManager(Manager):
 			subscribedEvents.append((constants.TOPIC_VAD_DOWN.format(device.room), 0))
 
 		self._mqttClient.subscribe(subscribedEvents)
-		self.subscribeSkillIntents()
 		self.toggleFeedbackSounds()
 
 
@@ -150,22 +148,14 @@ class MqttManager(Manager):
 		self.connect()
 
 
-	def subscribeSkillIntents(self, skillName: str = None):
-		if skillName:
-			self.SkillManager.getSkillInstance(skillName).subscribe(self._mqttClient)
-			return
-
-		for skill in self.SkillManager.activeSkills.values():
-			skill.subscribe(self._mqttClient)
+	def subscribeSkillIntents(self, intents: list):
+		for intent in intents:
+			self.mqttClient.subscribe(str(intent))
 
 
-	def unsubscribeSkillIntents(self, skillName: str = None):
-		if skillName:
-			self.SkillManager.getSkillInstance(skillName).unsubscribe(self._mqttClient)
-			return
-
-		for skill in self.SkillManager.activeSkills.values():
-			skill.unsubscribe(self._mqttClient)
+	def unsubscribeSkillIntents(self, intents: list):
+		for intent in intents:
+			self.mqttClient.unsubscribe(str(intent))
 
 
 	# noinspection PyUnusedLocal
@@ -230,20 +220,8 @@ class MqttManager(Manager):
 			if skill:
 				skill.addToMessageHistory(session)
 
-			for skill in self.SkillManager.activeSkills.values():
-				try:
-					consumed = skill.onDispatchMessage(session)
-				except AccessLevelTooLow:
-					# The command was recognized but required higher access level
-					return
-
-				if self.MultiIntentManager.isProcessing(sessionId):
-					self.MultiIntentManager.processNextIntent(sessionId)
-					return
-
-				elif consumed or consumed is None:
-					self.logDebug(f"The intent {message.topic.replace('hermes/intent/', '')} was consumed by {skill.name}")
-					return
+			if self.SkillManager.dispatchMessage(session=session):
+				return
 
 			self.logWarning(f"Intent \"{message.topic}\" wasn't consumed by any skill")
 			if session.notUnderstood < self.ConfigManager.getAliceConfigByName('notUnderstoodRetries'):
@@ -842,7 +820,6 @@ class MqttManager(Manager):
 	def publish(self, topic: str, payload: (dict, str) = None, qos: int = 0, retain: bool = False):
 		if isinstance(payload, dict):
 			payload = json.dumps(payload)
-
 		self._mqttClient.publish(topic, payload, qos, retain)
 
 
