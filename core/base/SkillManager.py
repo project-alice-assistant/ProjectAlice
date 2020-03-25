@@ -233,9 +233,7 @@ class SkillManager(Manager):
 
 
 	def dispatchMessage(self, session: DialogSession) -> bool:
-		print('1')
 		for skillName, skillInstance in self._activeSkills.items():
-			print(skillName)
 			try:
 				consumed = skillInstance.onMessageDispatch(session)
 			except AccessLevelTooLow:
@@ -247,7 +245,7 @@ class SkillManager(Manager):
 				return True
 
 			elif consumed or consumed is None:
-				self.logDebug(f"The intent ![Yellow]({session.intentName}) was consumed by {skillName}")
+				self.logDebug(f'The intent "{session.intentName}" was consumed by {skillName}')
 				return True
 
 		return False

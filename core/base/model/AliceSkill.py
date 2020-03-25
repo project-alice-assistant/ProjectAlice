@@ -441,6 +441,8 @@ class AliceSkill(ProjectAliceObject):
 
 		self._initDB()
 		self.SkillManager.configureSkillIntents(self._name, True)
+		self.LanguageManager.loadSkillStrings(self.name)
+		self.TalkManager.loadSkillTalks(self.name)
 
 		self.loadWidgets()
 		self.loadScenarioNodes()

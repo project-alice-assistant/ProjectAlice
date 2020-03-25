@@ -462,11 +462,6 @@ class ConfigManager(Manager):
 
 
 	@property
-	def skillsConfigurations(self) -> dict:
-		return self._skillsConfigurations
-
-
-	@property
 	def vitalConfigs(self) -> list:
 		return self._vitalConfigs
 
