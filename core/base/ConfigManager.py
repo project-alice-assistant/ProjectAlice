@@ -2,10 +2,7 @@ import json
 import logging
 from pathlib import Path
 
-import shutil
-
 import configTemplate
-from core.base.SkillManager import SkillManager
 from core.base.model.TomlFile import TomlFile
 
 try:
@@ -38,9 +35,6 @@ class ConfigManager(Manager):
 
 		self._skillsConfigurations = dict()
 		self._skillsTemplateConfigurations: typing.Dict[str, dict] = dict()
-
-
-	# self.loadCheckAndUpdateSkillConfigurations()
 
 
 	def onStart(self):
@@ -279,19 +273,18 @@ class ConfigManager(Manager):
 		return self._skillsTemplateConfigurations.get(skillName, dict())
 
 
-	def loadCheckAndUpdateSkillConfigurations(self, skill: str = None):
+	def loadCheckAndUpdateSkillConfigurations(self, skillToLoad: str = None):
 		skillsConfigurations = dict()
 
-		skillsPath = Path(self.Commons.rootDir(), 'skills')
-		for skillDirectory in skillsPath.glob('*'):
-			if not skillDirectory.is_dir() or (skill is not None and skillDirectory.stem != skill) or skillDirectory.stem.startswith('_'):
+		for skillName, skillInstance in self.SkillManager.activeSkills.items():
+
+			if skillToLoad and skillName != skillToLoad:
 				continue
 
-			self.logInfo(f'Checking configuration for skill {skillDirectory.stem}')
+			self.logInfo(f'Checking configuration for skill "{skillName}"')
 
-			skillConfigFile = Path(skillsPath / skillDirectory / 'config.json')
-			skillConfigTemplate = Path(skillsPath / skillDirectory / 'config.json.template')
-			skillName = skillDirectory.stem
+			skillConfigFile = skillInstance.getResource('config.json')
+			skillConfigTemplate = skillInstance.getResource('config.json.template')
 			config = dict()
 
 			if not skillConfigFile.exists() and skillConfigTemplate.exists():
@@ -320,7 +313,7 @@ class ConfigManager(Manager):
 						elif 'defaultValue' in definition and not isinstance(config[setting], type(definition['defaultValue'])):
 							changes = True
 							try:
-								# First try to cast the seting we have to the new type
+								# First try to cast the setting we have to the new type
 								config[setting] = type(definition['defaultValue'])(config[setting])
 								self.logInfo(f'- Existing configuration type missmatch for skill "{skillName}": {setting}, cast variable to template configuration type')
 							except Exception:
@@ -348,29 +341,6 @@ class ConfigManager(Manager):
 			else:
 				self._skillsTemplateConfigurations[skillName] = dict()
 				skillsConfigurations[skillName] = dict()
-
-			if skillName in self._aliceConfigurations['skills']:
-				config = {**config, **self._aliceConfigurations['skills'][skillName]}
-			else:
-				# For some reason we have a skill not declared in alice configs... I think getting rid of it is best
-				if skillName not in SkillManager.NEEDED_SKILLS and not self.getAliceConfigByName('devMode'):
-					self.logInfo(f'- Skill "{skillName}" not declared in config but files are existing, cleaning up')
-					shutil.rmtree(skillDirectory, ignore_errors=True)
-					if skillName in skillsConfigurations:
-						skillsConfigurations.pop(skillName)
-					continue
-				elif skillName in SkillManager.NEEDED_SKILLS:
-					self.logInfo(f'- Skill "{skillName}" is required but is missing definition in Alice config, generating them')
-				elif self.getAliceConfigByName('devMode'):
-					self.logInfo(f'- Dev mode is on, "{skillName}" is missing definition in Alice config, generating them')
-
-				try:
-					self._skillsConfigurations[skillName] = {'active': True}
-					self.updateAliceConfiguration('skills', self._skillsConfigurations)
-				except Exception as e:
-					self.logError(f'- Failed generating skill entry in Alice config for skill "{skillName}": {e}')
-					skillsConfigurations.pop(skillName)
-					continue
 
 			if config:
 				skillsConfigurations[skillName] = config

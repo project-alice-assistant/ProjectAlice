@@ -27,19 +27,21 @@ class AliceSkill(ProjectAliceObject):
 	def __init__(self, supportedIntents: Iterable = None, databaseSchema: dict = None):
 		super().__init__(logDepth=4)
 		try:
-			path = Path(inspect.getfile(self.__class__)).with_suffix('.install')
-			self._install = json.loads(path.read_text())
+			self._skillPath = Path(inspect.getfile(self.__class__)).parent
+			self._installFile = Path(inspect.getfile(self.__class__)).with_suffix('.install')
+			self._installer = json.loads(self._installFile.read_text())
 		except FileNotFoundError:
 			raise SkillStartingFailed(error=f'[{type(self).__name__}] Cannot find install file')
 		except Exception as e:
 			raise SkillStartingFailed(error=f'[{type(self).__name__}] Failed loading skill: {e}')
 
-		self._name = self._install['name']
-		self._author = self._install['author']
-		self._version = self._install['version']
-		self._icon = self._install['icon']
-		self._description = self._install['desc']
-		self._category = self._install['category'] if 'category' in self._install else 'undefined'
+		self._name = self._installer['name']
+		self._author = self._installer['author']
+		self._version = self._installer['version']
+		self._icon = self._installer['icon']
+		self._description = self._installer['desc']
+		self._category = self._installer['category'] if 'category' in self._installer else 'undefined'
+		self._conditions = self._installer['conditions']
 		self._updateAvailable = False
 		self._active = True
 		self._delayed = False
@@ -54,12 +56,10 @@ class AliceSkill(ProjectAliceObject):
 		self.loadIntentsDefinition()
 
 		self._utteranceSlotCleaner = re.compile('{(.+?):=>.+?}')
-		self.loadWidgets()
-		self.loadScenarioNodes()
 
 
 	def loadScenarioNodes(self):
-		path = Path(self.getCurrentDir() / 'scenarioNodes/package.json')
+		path = self.getResource('scenarioNodes/package.json')
 		if not path.exists():
 			return
 
@@ -73,7 +73,7 @@ class AliceSkill(ProjectAliceObject):
 
 
 	def loadIntentsDefinition(self):
-		dialogTemplate = Path(self.getCurrentDir(), 'dialogTemplate')
+		dialogTemplate = self.getResource('dialogTemplate')
 
 		for lang in self.LanguageManager.supportedLanguages:
 			try:
@@ -148,7 +148,7 @@ class AliceSkill(ProjectAliceObject):
 
 	# noinspection SqlResolve
 	def loadWidgets(self):
-		fp = Path(self.getCurrentDir(), 'widgets')
+		fp = self.getResource('widgets')
 		if fp.exists():
 			self.logInfo(f"Loading {len(list(fp.glob('*.py'))) - 1} widgets")
 
@@ -225,10 +225,6 @@ class AliceSkill(ProjectAliceObject):
 
 		return [re.sub(self._utteranceSlotCleaner, '\\1', utterance.lower() if forceLowerCase else utterance)
 			for utterance in self._intentsDefinitions[lang][check]]
-
-
-	def getCurrentDir(self):
-		return Path(inspect.getfile(self.__class__)).parent
 
 
 	@property
@@ -341,6 +337,16 @@ class AliceSkill(ProjectAliceObject):
 		return self._icon
 
 
+	@property
+	def installFile(self) -> Path:
+		return self._installFile
+
+
+	@property
+	def skillPath(self) -> Path:
+		return self._skillPath
+
+
 	def hasScenarioNodes(self) -> bool:
 		return self._scenarioNodeName != ''
 
@@ -424,8 +430,8 @@ class AliceSkill(ProjectAliceObject):
 		return function(session=session)
 
 
-	def getResource(self, skillName: str = '', resourcePathFile: str = '') -> Path:
-		return Path(self.Commons.rootDir(), 'skills', skillName or self.name, resourcePathFile)
+	def getResource(self, resourcePathFile: str = '') -> Path:
+		return self.skillPath / resourcePathFile
 
 
 	def _initDB(self) -> bool:
@@ -440,6 +446,10 @@ class AliceSkill(ProjectAliceObject):
 
 		self._initDB()
 		self.SkillManager.configureSkillIntents(self._name, True)
+
+		self.loadWidgets()
+		self.loadScenarioNodes()
+
 		self.logInfo(f'- Started!')
 
 

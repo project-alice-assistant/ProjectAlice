@@ -47,23 +47,21 @@ class DialogTemplateManager(Manager):
 		with self._pathToChecksums.open() as fp:
 			checksums = json.load(fp)
 
-		# First check upon the skills that are installed
+		# First check upon the skills that are installed and active
 		changes = dict()
 		language = self.LanguageManager.activeLanguage
-		for skill in Path(self.Commons.rootDir(), 'skills/').glob('*/'):
-			if skill.is_file() or skill.stem.startswith('_'):
-				continue
+		for skillName, skillInstance in self.SkillManager.activeSkills.items():
 
-			skillName = skill.stem
 			self.logInfo(f'Checking data for skill "{skillName}"')
 			if skillName not in checksums:
 				self.logInfo(f'Skill "{skillName}" is new')
 				checksums[skillName] = list()
 				changes[skillName] = list()
 
-			pathToResources = skill / 'dialogTemplate'
+			pathToResources = skillInstance.getResource('dialogTemplate')
 			if not pathToResources.exists():
 				self.logWarning(f'{skillName} has no dialog template defined')
+				changes.pop(skillName, None)
 				continue
 
 			for file in pathToResources.glob('*.json'):

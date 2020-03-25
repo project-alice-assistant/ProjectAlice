@@ -2,6 +2,7 @@ import getpass
 import importlib
 import json
 import threading
+import traceback
 from pathlib import Path
 from typing import Dict, Optional
 
@@ -56,9 +57,9 @@ class SkillManager(Manager):
 		self._skillList = dict()
 
 		# These are dict of the skills, with name: skill instance
-		self._activeSkills = dict()
-		self._deactivatedSkills = dict()
-		self._failedSkills = dict()
+		self._activeSkills: Dict[str, AliceSkill] = dict()
+		self._deactivatedSkills: Dict[str, dict] = dict()
+		self._failedSkills: Dict[str, dict] = dict()
 
 		self._widgets = dict()
 
@@ -83,6 +84,8 @@ class SkillManager(Manager):
 
 		for skillName in self._deactivatedSkills:
 			self.configureSkillIntents(skillName=skillName, state=False)
+
+		self.ConfigManager.loadCheckAndUpdateSkillConfigurations()
 
 		self.startAllSkills()
 
@@ -202,12 +205,12 @@ class SkillManager(Manager):
 
 
 	@property
-	def activeSkills(self) -> dict:
+	def activeSkills(self) -> Dict[str, AliceSkill]:
 		return self._activeSkills
 
 
 	@property
-	def deactivatedSkills(self) -> dict:
+	def deactivatedSkills(self) -> Dict[str, dict]:
 		return self._deactivatedSkills
 
 
@@ -291,7 +294,7 @@ class SkillManager(Manager):
 		except AttributeError as e:
 			self.logError(f"Couldn't find main class for skill {skillName}.{skillResource}: {e}")
 		except Exception as e:
-			self.logError(f"Couldn't instanciate skill {skillName}.{skillResource}: {e}")
+			self.logError(f"Couldn't instanciate skill {skillName}.{skillResource}: {e} {traceback.print_exc()}")
 
 		return instance
 
@@ -756,15 +759,13 @@ class SkillManager(Manager):
 		self._startSkill(skillName=skillName)
 
 
-	def allScenarioNodes(self, includeInactive: bool = False) -> Dict[str, tuple]:
-		skills = self._activeSkills if not includeInactive else self._allSkills
-
+	def allScenarioNodes(self) -> Dict[str, tuple]:
 		ret = dict()
-		for skill in skills.values():
-			if not skill.hasScenarioNodes():
+		for skillName, skillInstance in self._activeSkills.items():
+			if not skillInstance.hasScenarioNodes():
 				continue
 
-			ret[skill.name] = (skill.scenarioNodeName, skill.scenarioNodeVersion, Path(skill.getCurrentDir(), 'scenarioNodes'))
+			ret[skillName] = (skillInstance.scenarioNodeName, skillInstance.scenarioNodeVersion, skillInstance.getResource('scenarioNodes'))
 
 		return ret
 
