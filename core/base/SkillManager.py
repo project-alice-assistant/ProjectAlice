@@ -354,8 +354,19 @@ class SkillManager(Manager):
 	def _startSkill(self, skillName: str) -> dict:
 		if skillName in self._activeSkills:
 			skillInstance = self._activeSkills[skillName]
-		elif skillName in self._deactivatedSkills or skillName in self._failedSkills:
+		elif skillName in self._deactivatedSkills:
+			self._deactivatedSkills.pop(skillName, None)
 			skillInstance = self.instanciateSkill(skillName=skillName)
+			if skillInstance:
+				self.activeSkills[skillName] = skillInstance
+			else:
+				return dict()
+		elif skillName in self._failedSkills:
+			skillInstance = self.instanciateSkill(skillName=skillName)
+			if skillInstance:
+				self.activeSkills[skillName] = skillInstance
+			else:
+				return dict()
 		else:
 			self.logWarning(f'Skill "{skillName}" is unknown')
 			return dict()
@@ -445,7 +456,7 @@ class SkillManager(Manager):
 
 
 	def activateSkill(self, skillName: str, persistent: bool = False):
-		if skillName not in self._failedSkills and skillName not in self._deactivatedSkills:
+		if skillName not in self._deactivatedSkills and skillName not in self._failedSkills:
 			self.logWarning(f'Skill "{skillName} is not deactivated or failed')
 			return
 
@@ -460,6 +471,13 @@ class SkillManager(Manager):
 		except:
 			self.logError(f'Failed activating skill "{skillName}"')
 			return
+
+
+	def toggleSkillState(self, skillName: str, persistent: bool = False):
+		if self.isSkillActive(skillName):
+			self.deactivateSkill(skillName=skillName, persistent=persistent)
+		else:
+			self.activateSkill(skillName=skillName, persistent=persistent)
 
 
 	@Online(catchOnly=True)
@@ -770,6 +788,8 @@ class SkillManager(Manager):
 
 
 	def reloadSkill(self, skillName: str):
+		self.logInfo(f'Reloading skill "{skillName}"')
+
 		if skillName in self._activeSkills:
 			self._activeSkills[skillName].onStop()
 

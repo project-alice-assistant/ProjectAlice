@@ -22,10 +22,7 @@ class SkillsView(View):
 	def toggleSkill(self):
 		try:
 			_, skill = request.form.get('id').split('_')
-			if self.SkillManager.isSkillActive(skill):
-				self.SkillManager.deactivateSkill(skillName=skill, persistent=True)
-			else:
-				self.SkillManager.activateSkill(skillName=skill, persistent=True)
+			self.SkillManager.toggleSkillState(skillName=skill, persistent=True)
 		except Exception as e:
 			self.logWarning(f'Failed toggling skill: {e}', printStack=True)
 
@@ -45,7 +42,6 @@ class SkillsView(View):
 	def reloadSkill(self):
 		try:
 			_, skill = request.form.get('id').split('_')
-			self.logInfo(f'Reloading skill "{skill}"')
 			self.SkillManager.reloadSkill(skill)
 		except Exception as e:
 			self.logWarning(f'Failed reloading skill: {e}', printStack=True)
