@@ -50,33 +50,19 @@ class MqttManager(Manager):
 			self._mqttClient.message_callback_add(constants.TOPIC_VAD_DOWN.replace(device.room), self.onVADDown)
 
 		self._mqttClient.message_callback_add(constants.TOPIC_SESSION_STARTED, self.onSnipsSessionStarted)
-
 		self._mqttClient.message_callback_add(constants.TOPIC_ASR_START_LISTENING, self.onSnipsStartListening)
-
 		self._mqttClient.message_callback_add(constants.TOPIC_ASR_STOP_LISTENING, self.onSnipsStopListening)
-
 		self._mqttClient.message_callback_add(constants.TOPIC_INTENT_PARSED, self.onSnipsIntentParsed)
-
 		self._mqttClient.message_callback_add(constants.TOPIC_TEXT_CAPTURED, self.onSnipsCaptured)
-
 		self._mqttClient.message_callback_add(constants.TOPIC_TTS_SAY, self.onSnipsSay)
-
 		self._mqttClient.message_callback_add(constants.TOPIC_TTS_FINISHED, self.onSnipsSayFinished)
-
 		self._mqttClient.message_callback_add(constants.TOPIC_SESSION_ENDED, self.onSnipsSessionEnded)
-
 		self._mqttClient.message_callback_add(constants.TOPIC_INTENT_NOT_RECOGNIZED, self.onSnipsIntentNotRecognized)
-
 		self._mqttClient.message_callback_add(constants.TOPIC_SESSION_QUEUED, self.onSnipsSessionQueued)
-
 		self._mqttClient.message_callback_add(constants.TOPIC_NLU_QUERY, self.onTopicNluQuery)
-
 		self._mqttClient.message_callback_add(constants.TOPIC_PARTIAL_TEXT_CAPTURED, self.onNluPartialCapture)
-
 		self._mqttClient.message_callback_add(constants.TOPIC_HOTWORD_TOGGLE_ON, self.onSnipsHotwordToggleOn)
-
 		self._mqttClient.message_callback_add(constants.TOPIC_HOTWORD_TOGGLE_OFF, self.onSnipsHotwordToggleOff)
-
 		self._mqttClient.message_callback_add(constants.TOPIC_END_SESSION, self.onEventEndSession)
 
 		self.connect()
@@ -149,11 +135,13 @@ class MqttManager(Manager):
 
 
 	def subscribeSkillIntents(self, intents: list):
+		# Have to send them one at a time, as intents is a list of Intent objects and mqtt doesn't want that
 		for intent in intents:
 			self.mqttClient.subscribe(str(intent))
 
 
 	def unsubscribeSkillIntents(self, intents: list):
+		# Have to send them one at a time, as intents is a list of Intent objects and mqtt doesn't want that
 		for intent in intents:
 			self.mqttClient.unsubscribe(str(intent))
 
@@ -389,11 +377,13 @@ class MqttManager(Manager):
 			if reason == 'abortedByUser':
 				self.broadcast(method=constants.EVENT_USER_CANCEL, exceptions=[self.name], propagateToSkills=True, session=session)
 			elif reason == 'timeout':
+				self.logWarning(f'Session "{session.sessionId}" ended after timing out')
 				self.broadcast(method=constants.EVENT_SESSION_TIMEOUT, exceptions=[self.name], propagateToSkills=True, session=session)
 			elif reason == 'intentNotRecognized':
 				# This should never trigger, as "sendIntentNotRecognized" is always set to True, but we never know
 				self.onSnipsIntentNotRecognized(None, data, msg)
 			elif reason == 'error':
+				self.logError(f'Session "{session.sessionId}" ended with an unrecoverable error: {session.payload["termination"]["error"]}')
 				self.broadcast(method=constants.EVENT_SESSION_ERROR, exceptions=[self.name], propagateToSkills=True, session=session)
 			else:
 				self.broadcast(method=constants.EVENT_SESSION_ENDED, exceptions=[self.name], propagateToSkills=True, session=session)
@@ -567,12 +557,12 @@ class MqttManager(Manager):
 
 			if self.ConfigManager.getAliceConfigByName('outputOnSonos') != '1' or (self.ConfigManager.getAliceConfigByName('outputOnSonos') == '1' and self.SkillManager.getSkillInstance('Sonos') is None or not self.SkillManager.getSkillInstance('Sonos').anySkillHere(client)) or not self.SkillManager.getSkillInstance('Sonos').active:
 				self._mqttClient.publish(constants.TOPIC_START_SESSION, json.dumps({
-					'siteId': client,
-					'init': {
-						'type': 'notification',
-						'text': text,
+					'siteId'    : client,
+					'init'      : {
+						'type'                   : 'notification',
+						'text'                   : text,
 						'sendIntentNotRecognized': True,
-						'canBeEnqueued': canBeEnqueued
+						'canBeEnqueued'          : canBeEnqueued
 					},
 					'customData': customData
 				}))
@@ -637,9 +627,9 @@ class MqttManager(Manager):
 			jsonDict['customData'] = json.dumps(customData)
 
 		initDict = {
-			'type': 'action',
-			'text': text,
-			'canBeEnqueued': canBeEnqueued,
+			'type'                   : 'action',
+			'text'                   : text,
+			'canBeEnqueued'          : canBeEnqueued,
 			'sendIntentNotRecognized': True
 		}
 
@@ -683,8 +673,8 @@ class MqttManager(Manager):
 			self.DialogSessionManager.addPreviousIntent(sessionId=sessionId, previousIntent=previousIntent)
 
 		jsonDict = {
-			'sessionId': sessionId,
-			'text': text,
+			'sessionId'              : sessionId,
+			'text'                   : text,
 			'sendIntentNotRecognized': True,
 		}
 
@@ -776,11 +766,11 @@ class MqttManager(Manager):
 
 	def partialTextCaptured(self, session: DialogSession, text: str, likelihood: float, seconds: float):
 		self._mqttClient.publish(constants.TOPIC_PARTIAL_TEXT_CAPTURED, json.dumps({
-			'text': text,
+			'text'      : text,
 			'likelihood': likelihood,
-			'seconds': seconds,
-			'siteId': session.siteId,
-			'sessionId': session.sessionId
+			'seconds'   : seconds,
+			'siteId'    : session.siteId,
+			'sessionId' : session.sessionId
 		}))
 
 
@@ -866,7 +856,7 @@ class MqttManager(Manager):
 			self.logError('Tried to speak on Sonos but Sonos skill is disabled or missing')
 
 
-	def toggleFeedbackSounds(self, state='On'):
+	def toggleFeedbackSounds(self, state = 'On'):
 		"""
 		Activates or disables the feedback sounds, on all devices
 		:param state: str On or off

@@ -412,9 +412,9 @@ class SkillManager(Manager):
 		if not method.startswith('on'):
 			method = f'on{method[0].capitalize() + method[1:]}'
 
-		for skillInstance in self._activeSkills.values():
+		for skillName, skillInstance in self._activeSkills.items():
 
-			if filterOut and skillInstance.name in filterOut:
+			if filterOut and skillName in filterOut:
 				continue
 
 			try:
@@ -427,7 +427,7 @@ class SkillManager(Manager):
 					func(event=method, **kwargs)
 
 			except TypeError as e:
-				self.logWarning(f'- Failed to broadcast event {method} to {skillInstance.name}: {e}')
+				self.logWarning(f'- Failed to broadcast event {method} to {skillName}: {e}')
 
 
 	def deactivateSkill(self, skillName: str, persistent: bool = False):
