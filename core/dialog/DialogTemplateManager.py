@@ -139,7 +139,7 @@ class DialogTemplateManager(Manager):
 
 
 	def skillResource(self) -> Path:
-		for skillName, skillInstance in self.SkillManager.activeSkills.items():
+		for skillName, skillInstance in {**self.SkillManager.activeSkills, **self.SkillManager.deactivatedSkills}.items():
 			resource = skillInstance.getResource(f'dialogTemplate/{self.LanguageManager.activeLanguage}.json')
 			if not resource.exists():
 				continue
