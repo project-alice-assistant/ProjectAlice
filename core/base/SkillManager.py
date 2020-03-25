@@ -431,8 +431,8 @@ class SkillManager(Manager):
 	def deactivateSkill(self, skillName: str, persistent: bool = False):
 		if skillName in self._activeSkills:
 			self._activeSkills[skillName].onStop()
-			self._activeSkills.pop(skillName)
-			self._deactivatedSkills[skillName] = self._skillList[skillName]['installer']
+			instance = self._activeSkills.pop(skillName)
+			self._deactivatedSkills[skillName] = instance
 
 			if persistent:
 				self.changeSkillStateInDB(skillName=skillName, newState=False)
