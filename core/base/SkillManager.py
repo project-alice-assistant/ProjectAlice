@@ -163,7 +163,10 @@ class SkillManager(Manager):
 				tableName='widgets',
 				callerName=self.name,
 				values={
-					'state': 0
+					'state' : 0,
+					'posx'  : 0,
+					'posy'  : 0,
+					'zindex': 9999
 				},
 				row=('parent', skillName)
 			)
