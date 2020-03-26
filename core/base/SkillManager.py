@@ -451,6 +451,7 @@ class SkillManager(Manager):
 			else:
 				self.logInfo(f'Deactivated skill "{skillName}" without persistence')
 
+			self.SnipsServicesManager.runCmd('restart', services=['snips-dialogue'])
 		else:
 			self.logWarning(f'Skill "{skillName} is not active')
 
@@ -468,6 +469,8 @@ class SkillManager(Manager):
 				self.logInfo(f'Activated skill "{skillName}" with persistence')
 			else:
 				self.logInfo(f'Activated skill "{skillName}" without persistence')
+
+			self.SnipsServicesManager.runCmd('restart', services=['snips-dialogue'])
 		except:
 			self.logError(f'Failed activating skill "{skillName}"')
 			return
@@ -758,6 +761,8 @@ class SkillManager(Manager):
 
 			if state:
 				skills[skillName].subscribeIntents()
+			else:
+				skills[skillName].unsubscribeIntents()
 		except Exception as e:
 			self.logWarning(f'Intent configuration failed: {e} {traceback.print_exc()}')
 
@@ -785,6 +790,7 @@ class SkillManager(Manager):
 		self.NluManager.afterSkillChange()
 
 
+	# TODO
 	def reloadSkill(self, skillName: str):
 		self.logInfo(f'Reloading skill "{skillName}"')
 
@@ -829,6 +835,7 @@ class SkillManager(Manager):
 		self._deactivatedSkills = dict()
 		self._failedSkills = dict()
 		self._loadSkills()
+		self.SnipsServicesManager.runCmd('restart', 'snips-dialogue')
 
 
 	def createNewSkill(self, skillDefinition: dict) -> bool:

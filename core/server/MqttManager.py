@@ -20,9 +20,8 @@ class MqttManager(Manager):
 		super().__init__()
 
 		self._mqttClient = mqtt.Client()
-		self._thanked = False
-		self._wideAskingSessions = list()
 		self._multiDetectionsHolder = list()
+		self._deactivatedIntents = list()
 
 		self._audioFrameRegex = re.compile(constants.TOPIC_AUDIO_FRAME.replace('{}', '(.*)'))
 		self._wakewordDetectedRegex = re.compile(constants.TOPIC_WAKEWORD_DETECTED.replace('{}', '(.*)'))
@@ -352,13 +351,38 @@ class MqttManager(Manager):
 
 		if session:
 			session.update(msg)
-			self.broadcast(method=constants.EVENT_INTENT_PARSED, exceptions=[self.name], propagateToSkills=True, session=session)
 
-			if session.isAPIGenerated:
-				intent = Intent(session.payload['intent']['intentName'])
+			intent = Intent(session.payload["intent"]["intentName"])
+			if str(intent) in self._deactivatedIntents:
+				# If the intent was deactivated, let's try the next possible alternative, if any
+				alternative = dict()
+
+				if 'alternatives' in session.payload:
+					for alt in session.payload['alternatives']:
+						if str(Intent(alt["intentName"])) in self._deactivatedIntents or alt['confidenceScore'] < self.ConfigManager.getAliceConfigByName('probabilityThreshold'):
+							continue
+						alternative = alt
+						break
+
+				if alternative:
+					self.broadcast(method=constants.EVENT_INTENT_PARSED, exceptions=[self.name], propagateToSkills=True, session=session)
+					intent = Intent(alternative['intentName'])
+					payload = session.payload
+					payload['slots'] = alternative['slots']
+				else:
+					payload = session.payload
+
 				message = mqtt.MQTTMessage(topic=str.encode(str(intent)))
-				message.payload = json.dumps(session.payload)
+				message.payload = json.dumps(payload)
 				self.onMqttMessage(client=client, userdata=data, message=message)
+			else:
+				self.broadcast(method=constants.EVENT_INTENT_PARSED, exceptions=[self.name], propagateToSkills=True, session=session)
+
+				if session.isAPIGenerated:
+					intent = Intent(session.payload['intent']['intentName'])
+					message = mqtt.MQTTMessage(topic=str.encode(str(intent)))
+					message.payload = json.dumps(session.payload)
+					self.onMqttMessage(client=client, userdata=data, message=message)
 
 
 	# noinspection PyUnusedLocal
@@ -827,6 +851,13 @@ class MqttManager(Manager):
 
 
 	def configureIntents(self, intents: list):
+		# Keep a track of the deactivated intents to make use of alternatives
+		for intent in intents:
+			if intent['enable'] and intent['intentId'] in self._deactivatedIntents:
+				self._deactivatedIntents.remove(intent['intentId'])
+			elif not intent['enable'] and intent['intentId'] not in self._deactivatedIntents:
+				self._deactivatedIntents.append(intent['intentId'])
+
 		self.publish(
 			topic=constants.TOPIC_DIALOGUE_MANAGER_CONFIGURE,
 			payload={
