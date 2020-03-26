@@ -244,7 +244,7 @@ class SkillManager(Manager):
 				self.MultiIntentManager.processNextIntent(session.sessionId)
 				return True
 
-			elif consumed or consumed is None:
+			elif consumed:
 				self.logDebug(f'The intent "{session.intentName.split("/")[-1]}" was consumed by {skillName}')
 				return True
 
@@ -757,8 +757,6 @@ class SkillManager(Manager):
 
 			if state:
 				self._activeSkills[skillName].subscribeIntents()
-			else:
-				self._activeSkills[skillName].unsubscribeIntents()
 
 		except Exception as e:
 			self.logWarning(f'Intent configuration failed: {e}')

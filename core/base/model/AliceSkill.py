@@ -422,7 +422,8 @@ class AliceSkill(ProjectAliceObject):
 				raise
 
 		function = intent.getMapping(session) or self.onMessage
-		return function(session=session)
+		ret = function(session=session)
+		return True if ret is None or ret == True else False
 
 
 	def getResource(self, resourcePathFile: str = '') -> Path:

@@ -208,7 +208,8 @@ class MqttManager(Manager):
 			if skill:
 				skill.addToMessageHistory(session)
 
-			if self.SkillManager.dispatchMessage(session=session):
+			consumed = self.SkillManager.dispatchMessage(session=session)
+			if consumed:
 				return
 
 			self.logWarning(f"Intent \"{message.topic}\" wasn't consumed by any skill")
