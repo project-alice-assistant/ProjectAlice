@@ -148,6 +148,7 @@ class SkillManager(Manager):
 
 
 	def changeSkillStateInDB(self, skillName: str, newState: bool):
+		# Changes the state of a skill in db and also deactivates widgets if state is False
 		self.DatabaseManager.update(
 			tableName='skills',
 			callerName=self.name,
@@ -156,6 +157,16 @@ class SkillManager(Manager):
 			},
 			row=('skillName', skillName)
 		)
+
+		if not newState:
+			self.DatabaseManager.update(
+				tableName='widgets',
+				callerName=self.name,
+				values={
+					'state': 0
+				},
+				row=('parent', skillName)
+			)
 
 
 	def addSkillToDB(self, skillName: str, active: int = 1):
@@ -444,6 +455,7 @@ class SkillManager(Manager):
 			skillInstance = self._activeSkills.pop(skillName)
 			self._deactivatedSkills[skillName] = skillInstance
 			skillInstance.onStop()
+			self._widgets.pop(skillName, None)
 
 			if persistent:
 				self.changeSkillStateInDB(skillName=skillName, newState=False)
