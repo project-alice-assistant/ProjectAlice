@@ -441,9 +441,9 @@ class SkillManager(Manager):
 
 	def deactivateSkill(self, skillName: str, persistent: bool = False):
 		if skillName in self._activeSkills:
-			self._activeSkills[skillName].onStop()
-			instance = self._activeSkills.pop(skillName)
-			self._deactivatedSkills[skillName] = instance
+			skillInstance = self._activeSkills.pop(skillName)
+			self._deactivatedSkills[skillName] = skillInstance
+			skillInstance.onStop()
 
 			if persistent:
 				self.changeSkillStateInDB(skillName=skillName, newState=False)
@@ -748,23 +748,23 @@ class SkillManager(Manager):
 
 	def configureSkillIntents(self, skillName: str, state: bool):
 		try:
+			skills = {**self._activeSkills, **self._deactivatedSkills}
 			confs = [{
 				'intentId': intent.justTopic if hasattr(intent, 'justTopic') else intent,
 				'enable'  : state
-			} for intent in self._activeSkills[skillName].supportedIntents if not self.isIntentInUse(intent=intent, filtered=[skillName])]
+			} for intent in skills[skillName].supportedIntents if not self.isIntentInUse(intent=intent, filtered=[skillName])]
 
 			self.MqttManager.configureIntents(confs)
 
 			if state:
-				self._activeSkills[skillName].subscribeIntents()
-
+				skills[skillName].subscribeIntents()
 		except Exception as e:
-			self.logWarning(f'Intent configuration failed: {e}')
+			self.logWarning(f'Intent configuration failed: {e} {traceback.print_exc()}')
 
 
 	def isIntentInUse(self, intent: Intent, filtered: list) -> bool:
-		return any(intent in skill.supportedIntents
-		           for name, skill in self._activeSkills.items() if name not in filtered)
+		skills = {**self._activeSkills, **self._deactivatedSkills}
+		return any(intent in skill.supportedIntents for name, skill in skills.items() if name not in filtered)
 
 
 	def removeSkill(self, skillName: str):
