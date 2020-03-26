@@ -2,7 +2,6 @@ import json
 from pathlib import Path
 from subprocess import CompletedProcess
 
-import random
 import re
 import shutil
 
@@ -130,7 +129,7 @@ class SnipsNlu(NluEngine):
 	def nluTrainingThread(self, datasetFile: Path):
 		with Stopwatch() as stopWatch:
 			self.logInfo('Begin training...')
-			self._timer = self.ThreadManager.newTimer(interval=10, func=self.trainingStatus)
+			self._timer = self.ThreadManager.newTimer(interval=0.25, func=self.trainingStatus)
 
 			tempTrainingData = Path('/tmp/snipsNLU')
 
@@ -145,6 +144,7 @@ class SnipsNlu(NluEngine):
 
 			if not tempTrainingData.exists():
 				self.logError('Snips NLU training failed')
+				self.MqttManager.publish(constants.TOPIC_NLU_TRAINING_STATUS, payload={'status': 'failed'})
 				if not assistantPath.exists():
 					self.logFatal('No NLU engine found, cannot start')
 
@@ -160,13 +160,14 @@ class SnipsNlu(NluEngine):
 			self.SnipsServicesManager.runCmd(cmd='restart', services=['snips-nlu'])
 
 		self._timer.cancel()
+		self.MqttManager.publish(constants.TOPIC_NLU_TRAINING_STATUS, payload={'status': 'done'})
 		self.ThreadManager.getEvent('TrainAssistant').clear()
 		self.logInfo(f'Snips NLU trained in {stopWatch} seconds')
 
 
 	def trainingStatus(self):
-		self.logInfo(random.choice(['Still training...', "Don't worry, I'm still training", 'Still on it', 'Takes time, I know', 'Working...', 'Working as fast as I can!']))
-		self._timer = self.ThreadManager.newTimer(interval=10, func=self.trainingStatus)
+		self.MqttManager.publish(constants.TOPIC_NLU_TRAINING_STATUS, payload={'status': 'training'})
+		self._timer = self.ThreadManager.newTimer(interval=0.25, func=self.trainingStatus)
 
 
 	@staticmethod

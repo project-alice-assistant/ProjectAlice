@@ -1,5 +1,6 @@
 import inspect
 import logging
+import traceback
 
 
 class Logger:
@@ -15,6 +16,7 @@ class Logger:
 
 	def logError(self, msg: str):
 		self.doLog(function='error', msg=msg)
+		self.printTraceback()
 
 
 	def logDebug(self, msg: str):
@@ -23,8 +25,10 @@ class Logger:
 
 	def logFatal(self, msg: str):
 		self.doLog(function='fatal', msg=msg)
+		self.printTraceback()
 		try:
 			from core.base.SuperManager import SuperManager
+
 			SuperManager.getInstance().projectAlice.onStop()
 		except:
 			exit()
@@ -32,10 +36,12 @@ class Logger:
 
 	def logWarning(self, msg: str, printStack: bool = False):
 		self.doLog(function='warning', msg=msg, printStack=printStack)
+		self.printTraceback()
 
 
 	def logCritical(self, msg: str):
 		self.doLog(function='critical', msg=msg)
+		self.printTraceback()
 
 
 	def doLog(self, function: callable, msg: str, printStack=True, depth: int = None):
@@ -52,3 +58,11 @@ class Logger:
 			return f'[{inspect.getmodulename(inspect.stack()[depth][1])}] {msg}'
 		except Exception:
 			return f'[Unknown] {msg}'
+
+
+	@staticmethod
+	def printTraceback():
+		from core.base.SuperManager import SuperManager
+
+		if SuperManager.getInstance().configManager.getAliceConfigByName('debug'):
+			traceback.print_exc()

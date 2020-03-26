@@ -14,6 +14,7 @@ from core.ProjectAliceExceptions import AccessLevelTooLow, GithubNotFound, Githu
 from core.base.SuperManager import SuperManager
 from core.base.model import Intent
 from core.base.model.AliceSkill import AliceSkill
+from core.base.model.FailedAliceSkill import FailedAliceSkill
 from core.base.model.GithubCloner import GithubCloner
 from core.base.model.Manager import Manager
 from core.base.model.Version import Version
@@ -60,7 +61,7 @@ class SkillManager(Manager):
 		# These are dict of the skills, with name: skill instance
 		self._activeSkills: Dict[str, AliceSkill] = dict()
 		self._deactivatedSkills: Dict[str, AliceSkill] = dict()
-		self._failedSkills: Dict[str, dict] = dict()
+		self._failedSkills: Dict[str, FailedAliceSkill] = dict()
 
 		self._widgets = dict()
 
@@ -121,7 +122,7 @@ class SkillManager(Manager):
 				self.DatabaseManager.delete(
 					tableName='widgets',
 					callerName=self.name,
-					query='DELETE FROM :__table__ WHERE parentName = :skill',
+					query='DELETE FROM :__table__ WHERE parent = :skill',
 					values={'skill': skill}
 				)
 
@@ -179,6 +180,23 @@ class SkillManager(Manager):
 		)
 
 
+	# noinspection SqlResolve
+	def removeSkillFromDB(self, skillName: str):
+		self.DatabaseManager.delete(
+			tableName='skills',
+			callerName=self.name,
+			query='DELETE FROM :__table__ WHERE skillName = :skill',
+			values={'skill': skillName}
+		)
+
+		self.DatabaseManager.delete(
+			tableName='widgets',
+			callerName=self.name,
+			query='DELETE FROM :__table__ WHERE parent = :skill',
+			values={'skill': skillName}
+		)
+
+
 	def onSnipsAssistantInstalled(self, **kwargs):
 		self.MqttManager.mqttBroadcast(topic='hermes/leds/clear')
 
@@ -230,13 +248,18 @@ class SkillManager(Manager):
 
 
 	@property
+	def failedSkills(self) -> dict:
+		return self._failedSkills
+
+
+	@property
 	def allSkills(self) -> dict:
 		return {**self._activeSkills, **self._deactivatedSkills, **self._failedSkills}
 
 
 	@property
-	def failedSkills(self) -> dict:
-		return self._failedSkills
+	def allWorkingSkills(self) -> dict:
+		return {**self._activeSkills, **self._deactivatedSkills}
 
 
 	def onBooted(self):
@@ -284,7 +307,7 @@ class SkillManager(Manager):
 					self.logInfo(f'Skill {skillName} is disabled')
 
 				if data['active']:
-					self.checkSkillConditions(skillName)
+					self.checkSkillConditions(self._skillList[skillName]['installer'])
 
 				skillInstance = self.instanciateSkill(skillName=skillName, reload=reload)
 				if skillInstance:
@@ -296,19 +319,19 @@ class SkillManager(Manager):
 					else:
 						self._deactivatedSkills[skillName] = skillInstance
 				else:
-					self._failedSkills[skillName] = data['installer']
+					self._failedSkills[skillName] = FailedAliceSkill(data['installer'])
 
 			except SkillStartingFailed as e:
 				self.logWarning(f'Failed loading skill: {e}')
-				self._failedSkills[skillName] = data['installer']
+				self._failedSkills[skillName] = FailedAliceSkill(data['installer'])
 				continue
 			except SkillNotConditionCompliant as e:
 				self.logInfo(f'Skill {skillName} does not comply to "{e.condition}" condition, required "{e.conditionValue}"')
-				self._failedSkills[skillName] = data['installer']
+				self._failedSkills[skillName] = FailedAliceSkill(data['installer'])
 				continue
 			except Exception as e:
 				self.logWarning(f'Something went wrong loading skill {skillName}: {e}')
-				self._failedSkills[skillName] = data['installer']
+				self._failedSkills[skillName] = FailedAliceSkill(data['installer'])
 				continue
 
 
@@ -388,7 +411,7 @@ class SkillManager(Manager):
 		try:
 			skillInstance.onStart()
 		except SkillStartingFailed:
-			self._failedSkills[skillName] = self._skillList[skillName]['installer']
+			self._failedSkills[skillName] = FailedAliceSkill(self._skillList[skillName]['installer'])
 		except SkillStartDelayed:
 			raise
 		except Exception as e:
@@ -400,7 +423,7 @@ class SkillManager(Manager):
 				self._activeSkills.pop(skillName, None)
 				self._deactivatedSkills.pop(skillName, None)
 
-			self._failedSkills[skillName] = self._skillList[skillName]['installer']
+			self._failedSkills[skillName] = FailedAliceSkill(self._skillList[skillName]['installer'])
 
 		if skillInstance.widgets:
 			self._widgets[skillName] = skillInstance.widgets
@@ -502,7 +525,6 @@ class SkillManager(Manager):
 	@IfSetting(settingName='stayCompletlyOffline', settingValue=False)
 	def checkForSkillUpdates(self, skillToCheck: str = None) -> bool:
 		self.logInfo('Checking for skill updates')
-
 		updateCount = 0
 
 		for skillName, data in self._skillList.items():
@@ -564,18 +586,12 @@ class SkillManager(Manager):
 			if skillsToBoot:
 				for skillName, info in skillsToBoot.items():
 					self._initSkills(loadOnly=skillName, reload=info['update'])
-					self._allSkills = {**self._allSkills, **self._activeSkills}
-
-					try:
-						self.LanguageManager.loadStrings(skillToLoad=skillName)
-						self.TalkManager.loadTalks(skillToLoad=skillName)
-					except:
-						pass
+					self._startSkill(skillName)
 
 					if info['update']:
-						self._allSkills[skillName].onSkillUpdated()
+						self.allSkills[skillName].onSkillUpdated()
 					else:
-						self._allSkills[skillName].onSkillInstalled()
+						self.allSkills[skillName].onSkillInstalled()
 
 				self.SnipsAssistantManager.train()
 				self.DialogTemplateManager.afterSkillChange()
@@ -620,7 +636,7 @@ class SkillManager(Manager):
 				else:
 					updating = False
 
-				self.checkSkillConditions(skillName)
+				self.checkSkillConditions(installFile)
 
 				if skillName in self._activeSkills:
 					try:
@@ -669,8 +685,8 @@ class SkillManager(Manager):
 					skill=skillName
 				)
 
-			except Exception as e:
-				self.logError(f'Failed installing skill "{skillName}": {e}')
+			except Exception:
+				self.logError(f'Failed installing skill "{skillName}"')
 				if res.exists():
 					res.unlink()
 
@@ -713,45 +729,45 @@ class SkillManager(Manager):
 			raise
 
 
-	def checkSkillConditions(self, skillName: str) -> bool:
+	def checkSkillConditions(self, installer: dict = None) -> bool:
 		conditions = {
-			'aliceMinVersion': self._skillList[skillName]['installer']['aliceMinVersion'],
-			**self._skillList[skillName]['installer'].get('conditions', dict())
+			'aliceMinVersion': installer['aliceMinVersion'],
+			**installer.get('conditions', dict())
 		}
 
 		notCompliant = 'Skill is not compliant'
 
 		if 'aliceMinVersion' in conditions and \
 				Version.fromString(conditions['aliceMinVersion']) > Version.fromString(constants.VERSION):
-			raise SkillNotConditionCompliant(message=notCompliant, skillName=skillName, condition='Alice minimum version', conditionValue=conditions['aliceMinVersion'])
+			raise SkillNotConditionCompliant(message=notCompliant, skillName=installer['name'], condition='Alice minimum version', conditionValue=conditions['aliceMinVersion'])
 
 		for conditionName, conditionValue in conditions.items():
 			if conditionName == 'lang' and self.LanguageManager.activeLanguage not in conditionValue:
-				raise SkillNotConditionCompliant(message=notCompliant, skillName=skillName, condition=conditionName, conditionValue=conditionValue)
+				raise SkillNotConditionCompliant(message=notCompliant, skillName=installer['name'], condition=conditionName, conditionValue=conditionValue)
 
 			elif conditionName == 'online':
 				if conditionValue and self.ConfigManager.getAliceConfigByName('stayCompletlyOffline') \
 						or not conditionValue and not self.ConfigManager.getAliceConfigByName('stayCompletlyOffline'):
-					raise SkillNotConditionCompliant(message=notCompliant, skillName=skillName, condition=conditionName, conditionValue=conditionValue)
+					raise SkillNotConditionCompliant(message=notCompliant, skillName=installer['name'], condition=conditionName, conditionValue=conditionValue)
 
 			elif conditionName == 'skill':
 				for requiredSkill in conditionValue:
 					if requiredSkill in self._skillList and not self._skillList[requiredSkill]['active']:
-						raise SkillNotConditionCompliant(message=notCompliant, skillName=skillName, condition=conditionName, conditionValue=conditionValue)
+						raise SkillNotConditionCompliant(message=notCompliant, skillName=installer['name'], condition=conditionName, conditionValue=conditionValue)
 					elif requiredSkill not in self._skillList:
-						self.logInfo(f'Skill {skillName} has another skill as dependency, adding download')
+						self.logInfo(f'Skill {installer["name"]} has another skill as dependency, adding download')
 						if not self.downloadInstallTicket(requiredSkill):
-							raise SkillNotConditionCompliant(message=notCompliant, skillName=skillName, condition=conditionName, conditionValue=conditionValue)
+							raise SkillNotConditionCompliant(message=notCompliant, skillName=installer['name'], condition=conditionName, conditionValue=conditionValue)
 
 			elif conditionName == 'notSkill':
 				for excludedSkill in conditionValue:
 					author, name = excludedSkill.split('/')
 					if name in self._skillList and self._skillList[name]['active']:
-						raise SkillNotConditionCompliant(message=notCompliant, skillName=skillName, condition=conditionName, conditionValue=conditionValue)
+						raise SkillNotConditionCompliant(message=notCompliant, skillName=installer['name'], condition=conditionName, conditionValue=conditionValue)
 
 			elif conditionName == 'asrArbitraryCapture':
 				if conditionValue and not self.ASRManager.asr.capableOfArbitraryCapture:
-					raise SkillNotConditionCompliant(message=notCompliant, skillName=skillName, condition=conditionName, conditionValue=conditionValue)
+					raise SkillNotConditionCompliant(message=notCompliant, skillName=installer['name'], condition=conditionName, conditionValue=conditionValue)
 
 			elif conditionName == 'activeManager':
 				for manager in conditionValue:
@@ -759,14 +775,14 @@ class SkillManager(Manager):
 
 					man = SuperManager.getInstance().getManager(manager)
 					if not man or not man.isActive:
-						raise SkillNotConditionCompliant(message=notCompliant, skillName=skillName, condition=conditionName, conditionValue=conditionValue)
+						raise SkillNotConditionCompliant(message=notCompliant, skillName=installer['name'], condition=conditionName, conditionValue=conditionValue)
 
 		return True
 
 
 	def configureSkillIntents(self, skillName: str, state: bool):
 		try:
-			skills = {**self._activeSkills, **self._deactivatedSkills}
+			skills = self.allWorkingSkills
 			confs = [{
 				'intentId': intent.justTopic if hasattr(intent, 'justTopic') else intent,
 				'enable'  : state
@@ -783,21 +799,23 @@ class SkillManager(Manager):
 
 
 	def isIntentInUse(self, intent: Intent, filtered: list) -> bool:
-		skills = {**self._activeSkills, **self._deactivatedSkills}
+		skills = self.allWorkingSkills
 		return any(intent in skill.supportedIntents for name, skill in skills.items() if name not in filtered)
 
 
 	def removeSkill(self, skillName: str):
-		if skillName not in self._allSkills:
+		if skillName not in self.allSkills:
 			return
 
 		if skillName in self._activeSkills:
 			self._activeSkills[skillName].onStop()
 
+		self._skillList.pop(skillName, None)
 		self._activeSkills.pop(skillName, None)
 		self._deactivatedSkills.pop(skillName, None)
 		self._failedSkills.pop(skillName, None)
 
+		self.removeSkillFromDB(skillName=skillName)
 		shutil.rmtree(Path(self.Commons.rootDir(), 'skills', skillName))
 
 		self.SnipsAssistantManager.checkAssistant()
@@ -805,7 +823,6 @@ class SkillManager(Manager):
 		self.NluManager.afterSkillChange()
 
 
-	# TODO
 	def reloadSkill(self, skillName: str):
 		self.logInfo(f'Reloading skill "{skillName}"')
 

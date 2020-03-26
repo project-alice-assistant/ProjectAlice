@@ -11,6 +11,7 @@ function mqttRegisterSelf(target, method) {
 }
 
 $(function () {
+
 	function onFailure(msg) {
 		console.log('Mqtt connection failed');
 	}
@@ -60,6 +61,34 @@ $(function () {
 			console.log("Coulnd't connect to MQTT")
 		});
 	}
+
+	function onConnected() {
+		MQTT.subscribe('projectalice/nlu/trainingStatus');
+	}
+
+	function onMessageIn(msg) {
+		let payload = JSON.parse(msg.payloadString);
+		let $container = $('#aliceStatus');
+		if (payload.status == 'training') {
+			if ($container.text().length <= 0) {
+				$container.text('Nlu training');
+			} else {
+				let count = ($container.text().match(/\./g) || []).length;
+				if (count < 10) {
+					$container.text($container.text() + '.');
+				} else {
+					$container.text('Nlu training.');
+				}
+			}
+		} else if (payload.status == 'failed') {
+			$container.text('Nlu training failed...');
+		} else if (payload.status == 'done') {
+			$container.text('Nlu training done!');
+		}
+	}
+
+	mqttRegisterSelf(onConnected, 'onConnect');
+	mqttRegisterSelf(onMessageIn, 'onMessage');
 
 	connectMqtt();
 

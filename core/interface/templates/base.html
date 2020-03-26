@@ -29,7 +29,8 @@
 <section class="page">
 	<header>
 		<div class="pageTitle">
-			{% block pageTitle %}{% endblock %}
+			<div>{% block pageTitle %}{% endblock %}</div>
+			<div id="aliceStatus" class="aliceStatus"></div>
 		</div>
 		{% if aliceSettings['aliceUpdateChannel'] != 'master' %}
 			<div class="updateChannelMarker">

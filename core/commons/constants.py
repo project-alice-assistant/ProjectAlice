@@ -44,6 +44,8 @@ TOPIC_NLU_QUERY = 'hermes/nlu/query'
 TOPIC_VAD_UP = 'hermes/voiceActivity/{}/vadUp'
 TOPIC_VAD_DOWN = 'hermes/voiceActivity/{}/vadDown'
 
+TOPIC_NLU_TRAINING_STATUS = 'projectalice/nlu/trainingStatus'
+
 EVENT_FULL_MINUTE = 'fullMinute'
 EVENT_FIVE_MINUTE = 'fiveMinute'
 EVENT_QUARTER_HOUR = 'quarterHour'
