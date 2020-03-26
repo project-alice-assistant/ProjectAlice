@@ -586,6 +586,7 @@ class SkillManager(Manager):
 			if skillsToBoot:
 				for skillName, info in skillsToBoot.items():
 					self._initSkills(loadOnly=skillName, reload=info['update'])
+					self.ConfigManager.loadCheckAndUpdateSkillConfigurations(skillToLoad=skillName)
 					self._startSkill(skillName)
 
 					if info['update']:
