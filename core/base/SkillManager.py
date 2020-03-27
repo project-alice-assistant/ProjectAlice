@@ -785,7 +785,7 @@ class SkillManager(Manager):
 		try:
 			skills = self.allWorkingSkills
 			confs = [{
-				'intentId': intent.justTopic if hasattr(intent, 'justTopic') else intent,
+				'intentId': intent.justTopic if isinstance(intent, Intent.Intent) else intent.split('/')[-1],
 				'enable'  : state
 			} for intent in skills[skillName].supportedIntents if not self.isIntentInUse(intent=intent, filtered=[skillName])]
 
