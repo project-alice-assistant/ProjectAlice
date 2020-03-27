@@ -7,7 +7,6 @@ import paho.mqtt.publish as publish
 import random
 import re
 
-from core.ProjectAliceExceptions import AccessLevelTooLow
 from core.base.model.Intent import Intent
 from core.base.model.Manager import Manager
 from core.commons import constants
@@ -21,9 +20,8 @@ class MqttManager(Manager):
 		super().__init__()
 
 		self._mqttClient = mqtt.Client()
-		self._thanked = False
-		self._wideAskingSessions = list()
 		self._multiDetectionsHolder = list()
+		self._deactivatedIntents = list()
 
 		self._audioFrameRegex = re.compile(constants.TOPIC_AUDIO_FRAME.replace('{}', '(.*)'))
 		self._wakewordDetectedRegex = re.compile(constants.TOPIC_WAKEWORD_DETECTED.replace('{}', '(.*)'))
@@ -51,33 +49,19 @@ class MqttManager(Manager):
 			self._mqttClient.message_callback_add(constants.TOPIC_VAD_DOWN.replace(device.room), self.onVADDown)
 
 		self._mqttClient.message_callback_add(constants.TOPIC_SESSION_STARTED, self.onSnipsSessionStarted)
-
 		self._mqttClient.message_callback_add(constants.TOPIC_ASR_START_LISTENING, self.onSnipsStartListening)
-
 		self._mqttClient.message_callback_add(constants.TOPIC_ASR_STOP_LISTENING, self.onSnipsStopListening)
-
 		self._mqttClient.message_callback_add(constants.TOPIC_INTENT_PARSED, self.onSnipsIntentParsed)
-
 		self._mqttClient.message_callback_add(constants.TOPIC_TEXT_CAPTURED, self.onSnipsCaptured)
-
 		self._mqttClient.message_callback_add(constants.TOPIC_TTS_SAY, self.onSnipsSay)
-
 		self._mqttClient.message_callback_add(constants.TOPIC_TTS_FINISHED, self.onSnipsSayFinished)
-
 		self._mqttClient.message_callback_add(constants.TOPIC_SESSION_ENDED, self.onSnipsSessionEnded)
-
 		self._mqttClient.message_callback_add(constants.TOPIC_INTENT_NOT_RECOGNIZED, self.onSnipsIntentNotRecognized)
-
 		self._mqttClient.message_callback_add(constants.TOPIC_SESSION_QUEUED, self.onSnipsSessionQueued)
-
 		self._mqttClient.message_callback_add(constants.TOPIC_NLU_QUERY, self.onTopicNluQuery)
-
 		self._mqttClient.message_callback_add(constants.TOPIC_PARTIAL_TEXT_CAPTURED, self.onNluPartialCapture)
-
 		self._mqttClient.message_callback_add(constants.TOPIC_HOTWORD_TOGGLE_ON, self.onSnipsHotwordToggleOn)
-
 		self._mqttClient.message_callback_add(constants.TOPIC_HOTWORD_TOGGLE_OFF, self.onSnipsHotwordToggleOff)
-
 		self._mqttClient.message_callback_add(constants.TOPIC_END_SESSION, self.onEventEndSession)
 
 		self.connect()
@@ -123,7 +107,6 @@ class MqttManager(Manager):
 			subscribedEvents.append((constants.TOPIC_VAD_DOWN.format(device.room), 0))
 
 		self._mqttClient.subscribe(subscribedEvents)
-		self.subscribeSkillIntents()
 		self.toggleFeedbackSounds()
 
 
@@ -150,13 +133,16 @@ class MqttManager(Manager):
 		self.connect()
 
 
-	def subscribeSkillIntents(self, skillName: str = None):
-		if skillName:
-			self.SkillManager.getSkillInstance(skillName).subscribe(self._mqttClient)
-			return
+	def subscribeSkillIntents(self, intents: list):
+		# Have to send them one at a time, as intents is a list of Intent objects and mqtt doesn't want that
+		for intent in intents:
+			self.mqttClient.subscribe(str(intent))
 
-		for skill in self.SkillManager.activeSkills.values():
-			skill.subscribe(self._mqttClient)
+
+	def unsubscribeSkillIntents(self, intents: list):
+		# Have to send them one at a time, as intents is a list of Intent objects and mqtt doesn't want that
+		for intent in intents:
+			self.mqttClient.unsubscribe(str(intent))
 
 
 	# noinspection PyUnusedLocal
@@ -221,20 +207,9 @@ class MqttManager(Manager):
 			if skill:
 				skill.addToMessageHistory(session)
 
-			for skill in self.SkillManager.activeSkills.values():
-				try:
-					consumed = skill.onDispatchMessage(session)
-				except AccessLevelTooLow:
-					# The command was recognized but required higher access level
-					return
-
-				if self.MultiIntentManager.isProcessing(sessionId):
-					self.MultiIntentManager.processNextIntent(sessionId)
-					return
-
-				elif consumed or consumed is None:
-					self.logDebug(f"The intent {message.topic.replace('hermes/intent/', '')} was consumed by {skill.name}")
-					return
+			consumed = self.SkillManager.dispatchMessage(session=session)
+			if consumed:
+				return
 
 			self.logWarning(f"Intent \"{message.topic}\" wasn't consumed by any skill")
 			if session.notUnderstood < self.ConfigManager.getAliceConfigByName('notUnderstoodRetries'):
@@ -376,13 +351,38 @@ class MqttManager(Manager):
 
 		if session:
 			session.update(msg)
-			self.broadcast(method=constants.EVENT_INTENT_PARSED, exceptions=[self.name], propagateToSkills=True, session=session)
 
-			if session.isAPIGenerated:
-				intent = Intent(session.payload['intent']['intentName'])
+			intent = Intent(session.payload["intent"]["intentName"])
+			if str(intent) in self._deactivatedIntents:
+				# If the intent was deactivated, let's try the next possible alternative, if any
+				alternative = dict()
+
+				if 'alternatives' in session.payload:
+					for alt in session.payload['alternatives']:
+						if str(Intent(alt["intentName"])) in self._deactivatedIntents or alt['confidenceScore'] < self.ConfigManager.getAliceConfigByName('probabilityThreshold'):
+							continue
+						alternative = alt
+						break
+
+				if alternative:
+					self.broadcast(method=constants.EVENT_INTENT_PARSED, exceptions=[self.name], propagateToSkills=True, session=session)
+					intent = Intent(alternative['intentName'])
+					payload = session.payload
+					payload['slots'] = alternative['slots']
+				else:
+					payload = session.payload
+
 				message = mqtt.MQTTMessage(topic=str.encode(str(intent)))
-				message.payload = json.dumps(session.payload)
+				message.payload = json.dumps(payload)
 				self.onMqttMessage(client=client, userdata=data, message=message)
+			else:
+				self.broadcast(method=constants.EVENT_INTENT_PARSED, exceptions=[self.name], propagateToSkills=True, session=session)
+
+				if session.isAPIGenerated:
+					intent = Intent(session.payload['intent']['intentName'])
+					message = mqtt.MQTTMessage(topic=str.encode(str(intent)))
+					message.payload = json.dumps(session.payload)
+					self.onMqttMessage(client=client, userdata=data, message=message)
 
 
 	# noinspection PyUnusedLocal
@@ -402,11 +402,13 @@ class MqttManager(Manager):
 			if reason == 'abortedByUser':
 				self.broadcast(method=constants.EVENT_USER_CANCEL, exceptions=[self.name], propagateToSkills=True, session=session)
 			elif reason == 'timeout':
+				self.logWarning(f'Session "{session.sessionId}" ended after timing out')
 				self.broadcast(method=constants.EVENT_SESSION_TIMEOUT, exceptions=[self.name], propagateToSkills=True, session=session)
 			elif reason == 'intentNotRecognized':
 				# This should never trigger, as "sendIntentNotRecognized" is always set to True, but we never know
 				self.onSnipsIntentNotRecognized(None, data, msg)
 			elif reason == 'error':
+				self.logError(f'Session "{session.sessionId}" ended with an unrecoverable error: {session.payload["termination"]["error"]}')
 				self.broadcast(method=constants.EVENT_SESSION_ERROR, exceptions=[self.name], propagateToSkills=True, session=session)
 			else:
 				self.broadcast(method=constants.EVENT_SESSION_ENDED, exceptions=[self.name], propagateToSkills=True, session=session)
@@ -580,12 +582,12 @@ class MqttManager(Manager):
 
 			if self.ConfigManager.getAliceConfigByName('outputOnSonos') != '1' or (self.ConfigManager.getAliceConfigByName('outputOnSonos') == '1' and self.SkillManager.getSkillInstance('Sonos') is None or not self.SkillManager.getSkillInstance('Sonos').anySkillHere(client)) or not self.SkillManager.getSkillInstance('Sonos').active:
 				self._mqttClient.publish(constants.TOPIC_START_SESSION, json.dumps({
-					'siteId': client,
-					'init': {
-						'type': 'notification',
-						'text': text,
+					'siteId'    : client,
+					'init'      : {
+						'type'                   : 'notification',
+						'text'                   : text,
 						'sendIntentNotRecognized': True,
-						'canBeEnqueued': canBeEnqueued
+						'canBeEnqueued'          : canBeEnqueued
 					},
 					'customData': customData
 				}))
@@ -650,9 +652,9 @@ class MqttManager(Manager):
 			jsonDict['customData'] = json.dumps(customData)
 
 		initDict = {
-			'type': 'action',
-			'text': text,
-			'canBeEnqueued': canBeEnqueued,
+			'type'                   : 'action',
+			'text'                   : text,
+			'canBeEnqueued'          : canBeEnqueued,
 			'sendIntentNotRecognized': True
 		}
 
@@ -696,8 +698,8 @@ class MqttManager(Manager):
 			self.DialogSessionManager.addPreviousIntent(sessionId=sessionId, previousIntent=previousIntent)
 
 		jsonDict = {
-			'sessionId': sessionId,
-			'text': text,
+			'sessionId'              : sessionId,
+			'text'                   : text,
 			'sendIntentNotRecognized': True,
 		}
 
@@ -789,11 +791,11 @@ class MqttManager(Manager):
 
 	def partialTextCaptured(self, session: DialogSession, text: str, likelihood: float, seconds: float):
 		self._mqttClient.publish(constants.TOPIC_PARTIAL_TEXT_CAPTURED, json.dumps({
-			'text': text,
+			'text'      : text,
 			'likelihood': likelihood,
-			'seconds': seconds,
-			'siteId': session.siteId,
-			'sessionId': session.sessionId
+			'seconds'   : seconds,
+			'siteId'    : session.siteId,
+			'sessionId' : session.sessionId
 		}))
 
 
@@ -833,7 +835,6 @@ class MqttManager(Manager):
 	def publish(self, topic: str, payload: (dict, str) = None, qos: int = 0, retain: bool = False):
 		if isinstance(payload, dict):
 			payload = json.dumps(payload)
-
 		self._mqttClient.publish(topic, payload, qos, retain)
 
 
@@ -850,6 +851,13 @@ class MqttManager(Manager):
 
 
 	def configureIntents(self, intents: list):
+		# Keep a track of the deactivated intents to make use of alternatives
+		for intent in intents:
+			if intent['enable'] and intent['intentId'] in self._deactivatedIntents:
+				self._deactivatedIntents.remove(intent['intentId'])
+			elif not intent['enable'] and intent['intentId'] not in self._deactivatedIntents:
+				self._deactivatedIntents.append(intent['intentId'])
+
 		self.publish(
 			topic=constants.TOPIC_DIALOGUE_MANAGER_CONFIGURE,
 			payload={
@@ -880,7 +888,7 @@ class MqttManager(Manager):
 			self.logError('Tried to speak on Sonos but Sonos skill is disabled or missing')
 
 
-	def toggleFeedbackSounds(self, state='On'):
+	def toggleFeedbackSounds(self, state = 'On'):
 		"""
 		Activates or disables the feedback sounds, on all devices
 		:param state: str On or off

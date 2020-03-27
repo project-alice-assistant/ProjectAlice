@@ -2,10 +2,7 @@ import json
 import logging
 from pathlib import Path
 
-import shutil
-
 import configTemplate
-from core.base.SkillManager import SkillManager
 from core.base.model.TomlFile import TomlFile
 
 try:
@@ -38,7 +35,6 @@ class ConfigManager(Manager):
 
 		self._skillsConfigurations = dict()
 		self._skillsTemplateConfigurations: typing.Dict[str, dict] = dict()
-		self.loadCheckAndUpdateSkillConfigurations()
 
 
 	def onStart(self):
@@ -73,7 +69,7 @@ class ConfigManager(Manager):
 				changes = True
 				aliceConfigs[setting] = definition.get('defaultValue', '')
 			else:
-				if setting == 'skills' or setting == 'supportedLanguages':
+				if setting == 'supportedLanguages':
 					continue
 
 				if definition['dataType'] != 'list':
@@ -113,22 +109,9 @@ class ConfigManager(Manager):
 		return aliceConfigs
 
 
-	def addSkillToAliceConfig(self, skillName: str, active: bool = True):
-		self._skillsConfigurations[skillName] = {'active': active}
-		self.updateAliceConfiguration('skills', self._skillsConfigurations)
-		self.loadCheckAndUpdateSkillConfigurations(skillName)
-
-
 	def updateAliceConfiguration(self, key: str, value: typing.Any):
 		if key not in self._aliceConfigurations:
 			self.logWarning(f'Was asked to update {key} but key doesn\'t exist')
-			raise ConfigurationUpdateFailed()
-
-		try:
-			# Remove skill configurations
-			if key == 'skills':
-				value = {k: v for k, v in value.items() if k == 'active'}
-		except AttributeError:
 			raise ConfigurationUpdateFailed()
 
 		self._aliceConfigurations[key] = value
@@ -180,19 +163,6 @@ class ConfigManager(Manager):
 		:param confs: the dict to save
 		"""
 		sort = dict(sorted(confs.items()))
-
-		# Only store "active" value for skill config
-		misterProper = ['active']
-
-		# pop skills key so it gets added in the back
-		skills = sort.pop('skills')
-		skills = dict() if not isinstance(skills, dict) else skills
-
-		sort['skills'] = dict()
-		for skillName, setting in skills.items():
-			skillCleaned = {key: value for key, value in setting.items() if key in misterProper}
-			sort['skills'][skillName] = skillCleaned
-
 		self._aliceConfigurations = sort
 
 		try:
@@ -303,19 +273,18 @@ class ConfigManager(Manager):
 		return self._skillsTemplateConfigurations.get(skillName, dict())
 
 
-	def loadCheckAndUpdateSkillConfigurations(self, skill: str = None):
+	def loadCheckAndUpdateSkillConfigurations(self, skillToLoad: str = None):
 		skillsConfigurations = dict()
 
-		skillsPath = Path(self.Commons.rootDir(), 'skills')
-		for skillDirectory in skillsPath.glob('*'):
-			if not skillDirectory.is_dir() or (skill is not None and skillDirectory.stem != skill) or skillDirectory.stem.startswith('_'):
+		for skillName, skillInstance in self.SkillManager.activeSkills.items():
+
+			if skillToLoad and skillName != skillToLoad:
 				continue
 
-			self.logInfo(f'Checking configuration for skill {skillDirectory.stem}')
+			self.logInfo(f'Checking configuration for skill "{skillName}"')
 
-			skillConfigFile = Path(skillsPath / skillDirectory / 'config.json')
-			skillConfigTemplate = Path(skillsPath / skillDirectory / 'config.json.template')
-			skillName = skillDirectory.stem
+			skillConfigFile = skillInstance.getResource('config.json')
+			skillConfigTemplate = skillInstance.getResource('config.json.template')
 			config = dict()
 
 			if not skillConfigFile.exists() and skillConfigTemplate.exists():
@@ -344,7 +313,7 @@ class ConfigManager(Manager):
 						elif 'defaultValue' in definition and not isinstance(config[setting], type(definition['defaultValue'])):
 							changes = True
 							try:
-								# First try to cast the seting we have to the new type
+								# First try to cast the setting we have to the new type
 								config[setting] = type(definition['defaultValue'])(config[setting])
 								self.logInfo(f'- Existing configuration type missmatch for skill "{skillName}": {setting}, cast variable to template configuration type')
 							except Exception:
@@ -373,29 +342,6 @@ class ConfigManager(Manager):
 				self._skillsTemplateConfigurations[skillName] = dict()
 				skillsConfigurations[skillName] = dict()
 
-			if skillName in self._aliceConfigurations['skills']:
-				config = {**config, **self._aliceConfigurations['skills'][skillName]}
-			else:
-				# For some reason we have a skill not declared in alice configs... I think getting rid of it is best
-				if skillName not in SkillManager.NEEDED_SKILLS and not self.getAliceConfigByName('devMode'):
-					self.logInfo(f'- Skill "{skillName}" not declared in config but files are existing, cleaning up')
-					shutil.rmtree(skillDirectory, ignore_errors=True)
-					if skillName in skillsConfigurations:
-						skillsConfigurations.pop(skillName)
-					continue
-				elif skillName in SkillManager.NEEDED_SKILLS:
-					self.logInfo(f'- Skill "{skillName}" is required but is missing definition in Alice config, generating them')
-				elif self.getAliceConfigByName('devMode'):
-					self.logInfo(f'- Dev mode is on, "{skillName}" is missing definition in Alice config, generating them')
-
-				try:
-					self._skillsConfigurations[skillName] = {'active': True}
-					self.updateAliceConfiguration('skills', self._skillsConfigurations)
-				except Exception as e:
-					self.logError(f'- Failed generating skill entry in Alice config for skill "{skillName}": {e}')
-					skillsConfigurations.pop(skillName)
-					continue
-
 			if config:
 				skillsConfigurations[skillName] = config
 
@@ -411,34 +357,6 @@ class ConfigManager(Manager):
 		self._skillsTemplateConfigurations[skillName] = template
 		self._skillsConfigurations[skillName] = confs
 		self._writeToSkillConfigurationFile(skillName, confs)
-
-
-	def deactivateSkill(self, skillName: str, persistent: bool = False):
-
-		if skillName in self.aliceConfigurations['skills']:
-			self.logInfo(f"Deactivated skill {skillName} {'with' if persistent else 'without'} persistence")
-			self.aliceConfigurations['skills'][skillName]['active'] = False
-
-			if persistent:
-				self.writeToAliceConfigurationFile(self._aliceConfigurations)
-
-
-	def activateSkill(self, skillName: str, persistent: bool = False):
-
-		if skillName in self.aliceConfigurations['skills']:
-			self.logInfo(f"Activated skill {skillName} {'with' if persistent else 'without'} persistence")
-			self.aliceConfigurations['skills'][skillName]['active'] = True
-
-			if persistent:
-				self.writeToAliceConfigurationFile(self._aliceConfigurations)
-
-
-	def removeSkill(self, skillName: str):
-		if skillName in self.aliceConfigurations['skills']:
-			skills = self.aliceConfigurations['skills']
-			del skills[skillName]
-			self.aliceConfigurations['skills'] = skills
-			self.writeToAliceConfigurationFile(self._aliceConfigurations)
 
 
 	def changeActiveLanguage(self, toLang: str):
@@ -541,11 +459,6 @@ class ConfigManager(Manager):
 	@property
 	def aliceConfigurations(self) -> dict:
 		return self._aliceConfigurations
-
-
-	@property
-	def skillsConfigurations(self) -> dict:
-		return self._skillsConfigurations
 
 
 	@property

@@ -64,9 +64,6 @@ class SuperManager:
 		internetManager = self._managers.pop('InternetManager')
 		internetManager.onStart()
 
-		snipsServicesManager = self._managers.pop('SnipsServicesManager')
-		snipsServicesManager.onStart()
-
 		databaseManager = self._managers.pop('DatabaseManager')
 		databaseManager.onStart()
 
@@ -82,6 +79,7 @@ class SuperManager:
 		snipsAssistantManager = self._managers.pop('SnipsAssistantManager')
 		nluManager = self._managers.pop('NluManager')
 		nodeRedManager = self._managers.pop('NodeRedManager')
+		snipsServicesManager = self._managers.pop('SnipsServicesManager')
 
 		for manager in self._managers.values():
 			if manager:
@@ -91,6 +89,7 @@ class SuperManager:
 		skillManager.onStart()
 		dialogTemplateManager.onStart()
 		snipsAssistantManager.onStart()
+		snipsServicesManager.onStart()
 		nluManager.onStart()
 		nodeRedManager.onStart()
 
@@ -114,7 +113,7 @@ class SuperManager:
 			if manager:
 				manager.onBooted()
 
-		self.mqttManager.playSound(soundFilename='boot')
+		self.threadManager.doLater(interval=0.5, func=self.mqttManager.playSound, kwargs={'soundFilename': 'boot'})
 
 
 	@staticmethod

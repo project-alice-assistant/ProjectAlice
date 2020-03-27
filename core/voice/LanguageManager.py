@@ -27,7 +27,7 @@ class LanguageManager(Manager):
 	def onStart(self):
 		super().onStart()
 		self._loadSupportedLanguages()
-		self.loadStrings()
+		self.loadSystemStrings()
 
 
 	def onBooted(self):
@@ -47,21 +47,25 @@ class LanguageManager(Manager):
 		return query
 
 
-	def loadStrings(self, skillToLoad: str = ''):
+	def loadSystemStrings(self):
 		with open(Path('system/manager/LanguageManager/strings.json')) as jsonFile:
 			self._stringsData['system'] = json.load(jsonFile)
 
-		for skillName in self.ConfigManager.skillsConfigurations:
-			if skillToLoad and skillName != skillToLoad:
-				continue
 
-			try:
-				jsonFile = Path('skills', skillName, 'strings.json')
-				self._stringsData[skillName] = json.loads(jsonFile.read_text())
-			except FileNotFoundError:
-				continue
-			except ValueError:
-				continue
+	def loadSkillStrings(self, skillName: str):
+		skillInstance = self.SkillManager.getSkillInstance(skillName)
+		if not skillInstance:
+			self.logError(f'Loading strings for skill "{skillName}" failed')
+
+		jsonFile = skillInstance.getResource('strings.json')
+		if not jsonFile.exists():
+			# Not all skills come with one
+			return
+
+		try:
+			self._stringsData[skillName] = json.loads(jsonFile.read_text())
+		except ValueError:
+			self.logError(f'String file for skill "{skillName}" is corrupted')
 
 
 	def getTranslations(self, skill: str, key: str, toLang: str = '') -> list:
@@ -69,7 +73,7 @@ class LanguageManager(Manager):
 			toLang = self.activeLanguage
 
 		if skill not in self._stringsData:
-			self.logError(f'Asked to get translation from skill "{skill}" but does not exist')
+			self.logError(f'Asked to get translation for "{key}" from skill "{skill}" but skill does not exist')
 			return list()
 		elif key not in self._stringsData[skill]:
 			self.logError(f'Asked to get translation for "{key}" from skill "{skill}" but does not exist')

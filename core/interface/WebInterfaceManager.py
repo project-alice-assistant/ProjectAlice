@@ -113,14 +113,12 @@ class WebInterfaceManager(Manager):
 	def newSkillInstallProcess(self, skill):
 		self._skillInstallProcesses[skill] = {
 			'startedAt': time.time(),
-			'status': 'installing'
+			'status'   : 'installing'
 		}
 
 
-	def onSkillUpdated(self, **kwargs):
-		skill = ''
+	def onSkillUpdated(self, skill: str):
 		try:
-			skill = kwargs['skill']
 			if skill in self.skillInstallProcesses:
 				self.skillInstallProcesses[skill]['status'] = 'updated'
 		except KeyError as e:

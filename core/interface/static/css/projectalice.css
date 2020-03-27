@@ -143,6 +143,13 @@ a:hover {
 	flex-grow: 1;
 }
 
+.aliceStatus {
+	margin-left: 150px;
+	font-size: 0.6em;
+	font-family: 'marskeregular', Arial, sans-serif;
+	font-style: italic;
+}
+
 .updateChannelMarker {
 	font-family: 'marskeregular', Arial, sans-serif;
 	margin-left: 15px;

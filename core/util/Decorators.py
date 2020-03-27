@@ -1,9 +1,9 @@
 from __future__ import annotations
 
-import functools
-import warnings
 from typing import Any, Callable, Tuple, Union
 
+import functools
+import warnings
 from flask import jsonify, request
 
 from core.base.SuperManager import SuperManager
@@ -35,7 +35,7 @@ def deprecated(func):
 def IntentHandler(intent: Union[str, Intent], requiredState: str = None, isProtected: bool = False, authLevel: AccessLevel = AccessLevel.ZERO):
 	"""Decorator for adding a method as an intent handler."""
 	if isinstance(intent, str):
-		intent = Intent(intent, isProtected=isProtected, userIntent=True, authLevel=authLevel)
+		intent = Intent(intent, isProtected=isProtected, authLevel=authLevel)
 
 	def wrapper(func):
 		# store the intent in the function
