@@ -23,16 +23,34 @@
 {% endblock %}
 
 {% block content %}
-	<div class="toolbar">
-		<span class="toolbarButton" id="widgetCheck">
-			<i class="fas fa-check-circle" aria-hidden="true"></i>
-		</span>
-		<span class="toolbarButton" id="addWidget">
-			<i class="fas fa-plus-circle" aria-hidden="true"></i>
-		</span>
-		<span class="toolbarButton" id="removeWidget">
-			<i class="fas fa-minus-circle" aria-hidden="true"></i>
-		</span>
+	<div class="tools">
+		<div class="toolbar" id="toolbar_full" style="display:none;">
+			<span class="toolbarButton" id="cinemaToggle">
+				<i class="fas fa-person-booth" aria-hidden="true"></i>
+			</span>
+			<span class="toolbarButton" id="configToggle">
+				<i class="fas fa-cog" aria-hidden="true"></i>
+			</span>
+			<span class="toolbarButton" id="addWidget">
+				<i class="fas fa-plus-circle" aria-hidden="true"></i>
+			</span>
+			<span class="toolbarButton" id="removeWidget">
+				<i class="fas fa-minus-circle" aria-hidden="true"></i>
+			</span>
+			<span class="toolbarButton" id="toolbarToggleHide">
+				<i class="fas fa-pen-square" aria-hidden="true"></i>
+			</span>
+		</div>
+		<div class="toolbar" id="toolbar_checkmark" style="display:none;">
+			<span class="toolbarButton" id="widgetCheck">
+				<i class="fas fa-check-circle" aria-hidden="true"></i>
+			</span>
+		</div>
+		<div class="toolbar" id="toolbar_toggle" style="display:block;">
+			<span class="toolbarButton" id="toolbarToggleShow">
+				<i class="fas fa-pen-square" aria-hidden="true"></i>
+			</span>
+		</div>
 	</div>
 	<div id="addWidgetDialog" title="{{ langData.addWidgetTitle }}">
 		{% for parentName, widgetList in widgets.items() %}
@@ -55,14 +73,17 @@
 		{% for parentName, widgetList in widgets.items() %}
 			{% for widgetName, widget in widgetList.items() %}
 				{% if (widget.state|int) == 1 %}
-					<div class="widget {{ widget.size }}" id="{{ widget.parent }}_{{ widget.name }}" style="position: absolute; top: {{ widget.y }}px; left: {{ widget.x }}px; width: {{widget.width}}px; height:{{widget.height}}px; z-index: {{ widget.zindex }}">
+					<div class="widget {{ widget.size }}" id="{{ widget.parent }}_{{ widget.name }}" style="position: relative;  top: {{ widget.y }}px; left: {{ widget.x }}px; width: {{widget.width}}px; height:{{widget.height}}px; z-index: {{ widget.zindex }}">
 						{{ widget.html()|safe }}
 						<div class="widgetDelete">
 							<i class="fas fa-minus-circle" aria-hidden="true"></i>
 						</div>
+						<div class="widgetConfig">
+							<i class="fas fa-cog" aria-hidden="true"></i>
+						</div>
 					</div>
 					{%  if widget.options|length  %}
-						<div class="widgetOptions">
+						<div id="widgetOptions">asdfasdf
 						</div>
 					{% endif %}
 				{% endif %}

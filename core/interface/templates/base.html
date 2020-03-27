@@ -13,6 +13,17 @@
 
 {% block loaders %}{% endblock %}
 
+<header>
+	<div class="pageTitle">
+		{% block pageTitle %}{% endblock %}
+	</div>
+	{% if aliceSettings['aliceUpdateChannel'] != 'master' %}
+		<div class="updateChannelMarker">
+			{{ aliceSettings['aliceUpdateChannel'] }}
+		</div>
+	{% endif %}
+</header>
+<div class="page">
 <nav>
 	<ul class="mainMenuList">
 		<li class="mainMenuListItem" onclick="location.href='/home/';">{{ langData.home }}</li>
@@ -26,18 +37,7 @@
 		{% endif %}
 	</ul>
 </nav>
-<section class="page">
-	<header>
-		<div class="pageTitle">
-			{% block pageTitle %}{% endblock %}
-		</div>
-		{% if aliceSettings['aliceUpdateChannel'] != 'master' %}
-			<div class="updateChannelMarker">
-				{{ aliceSettings['aliceUpdateChannel'] }}
-			</div>
-		{% endif %}
-	</header>
-	<section class="content">
+	<main class="content">
 		{% block content %}{% endblock %}
-	</section>
-</section>
+	</main>
+</div>

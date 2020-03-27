@@ -1,6 +1,20 @@
 $(function () {
 
-	$('.widgetOptions').dialog({
+	$('#toolbarToggleShow').on('click touchstart', function(){
+		$('#toolbar_full').show();
+		$('#toolbar_toggle').hide();
+		$('.widget').draggable('enable');
+		$('.widget').resizable('enable');
+	});
+
+	$('#toolbarToggleHide').on('click touchstart', function(){
+		$('#toolbar_full').hide();
+		$('#toolbar_toggle').show();
+		$('.widget').draggable('disable');
+		$('.widget').resizable('disable');
+	});
+
+	$('#widgetOptions').dialog({
 		autoOpen: false,
 		draggable: false,
 		width: 600,
@@ -13,6 +27,7 @@ $(function () {
 		containment: '.widgetsPane',
 		snap: '.widget',
 		grid: [10, 10],
+		disabled: true,
 		start: function (event, ui) {
 			$(this).parent().append($(this));
 			$(this).css('z-index', $('.widgetsPane').children().length);
@@ -21,6 +36,7 @@ $(function () {
 
 	$('.widget').resizable({
       	grid: 10,
+		disabled: true,
 		stop : function(event,ui) {
       		$.ajax({
 				contentType: 'application/json',
@@ -71,19 +87,24 @@ $(function () {
 		}
 	});
 
-	$('#removeWidget > .fa-minus-circle').on('click touchstart', function () {
+	$('#removeWidget').on('click touchstart', function () {
 		$('.widgetDelete').show();
-		$('#widgetCheck').show();
-		$('#addWidget').hide();
-		$('#removeWidget').hide();
+		$('#toolbar_checkmark').show();
+		$('#toolbar_full').hide();
+		return false;
+	});
+
+	$('#configToggle').on('click touchstart', function () {
+		$('.widgetConfig').show();
+		$('#toolbar_checkmark').show();
+		$('#toolbar_full').hide();
 		return false;
 	});
 
 	$('#widgetCheck').on('click touchstart', function () {
+		$('#toolbar_checkmark').hide();
 		$('.widgetDelete').hide();
-		$('#widgetCheck').hide();
-		$('#addWidget').show();
-		$('#removeWidget').show();
+		$('.widgetConfig').hide();
 		location.reload();
 		return false;
 	});
@@ -121,7 +142,23 @@ $(function () {
 		return false;
 	});
 
-	$('[id^=widgetSettings_]').on('click touchstart', function () {
+	$('.widgetConfig').on('click touchstart', function () {
+		if ($(this).parents('.widget').length > 0) {
+			$('#widgetOptions').html(loadConfig($(this).parent().attr('id')));
+			$('#widgetOptions').dialog( "open" );
+		}
 		return false;
-	})
+	});
+
+	function loadConfig(skill) {
+		return skill
+	}
+
+	$('#cinemaToggle').on('click touchstart', function () {
+		$('nav').toggle();
+		$('#toolbar_full').hide();
+		$('header').toggle();
+		$('.widget').draggable('disable');
+		$('.widget').resizable('disable');
+	});
 });
