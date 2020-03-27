@@ -53,8 +53,7 @@ class SnipsAssistantManager(Manager):
 		existingSlots: Dict[str, set] = dict()
 
 		for skillResource in self.DialogTemplateManager.skillResource():
-			with skillResource.open() as resource:
-				data = json.load(resource)
+			data = json.loads(skillResource.read_text())
 
 			if 'intents' not in data:
 				continue

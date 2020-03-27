@@ -50,7 +50,7 @@ class DialogTemplateManager(Manager):
 		# First check upon the skills that are installed and active
 		changes = dict()
 		language = self.LanguageManager.activeLanguage
-		for skillName, skillInstance in self.SkillManager.activeSkills.items():
+		for skillName, skillInstance in self.SkillManager.allWorkingSkills.items():
 
 			self.logInfo(f'Checking data for skill "{skillName}"')
 			if skillName not in checksums:
@@ -104,7 +104,7 @@ class DialogTemplateManager(Manager):
 
 		cached = dict()
 
-		for skillName, skillInstance in self.SkillManager.activeSkills.items():
+		for skillName, skillInstance in self.SkillManager.allWorkingSkills.items():
 			pathToResources = skillInstance.getResource('dialogTemplate')
 			if not pathToResources.exists():
 				self.logWarning(f'{skillName} has no dialog template defined to build cache')
@@ -139,7 +139,7 @@ class DialogTemplateManager(Manager):
 
 
 	def skillResource(self) -> Path:
-		for skillName, skillInstance in {**self.SkillManager.activeSkills, **self.SkillManager.deactivatedSkills}.items():
+		for skillName, skillInstance in self.SkillManager.allWorkingSkills.items():
 			resource = skillInstance.getResource(f'dialogTemplate/{self.LanguageManager.activeLanguage}.json')
 			if not resource.exists():
 				continue

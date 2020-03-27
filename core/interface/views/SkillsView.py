@@ -10,8 +10,7 @@ class SkillsView(View):
 
 
 	def index(self):
-		skills = {**self.SkillManager.activeSkills, **self.SkillManager.deactivatedSkills}
-		skills = {skillName: skill for skillName, skill in sorted(skills.items()) if skill is not None}
+		skills = {skillName: skill for skillName, skill in sorted(self.SkillManager.allWorkingSkills.items()) if skill is not None}
 
 		return render_template(template_name_or_list='skills.html',
 		                       skills=skills,
