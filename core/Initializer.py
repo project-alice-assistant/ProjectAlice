@@ -58,7 +58,7 @@ network={
 
 
 	def __init__(self):
-		super().__init__(prepend='[Initializer]')
+		super().__init__()
 		self.logInfo('Starting Project Alice initialization')
 
 		self._rootDir = Path(__file__).resolve().parent.parent
