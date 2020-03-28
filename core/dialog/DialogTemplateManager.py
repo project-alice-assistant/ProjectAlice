@@ -130,7 +130,7 @@ class DialogTemplateManager(Manager):
 
 	def clearCache(self, rebuild: bool = True):
 		if self._pathToChecksums.exists():
-			self._pathToChecksums.write(json.dumps(dict()))
+			self._pathToChecksums.write_text(json.dumps(dict()))
 			self.logInfo('Cache cleared')
 
 		if rebuild:
