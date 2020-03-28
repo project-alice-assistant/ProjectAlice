@@ -91,17 +91,23 @@ class LanguageManager(Manager):
 
 	def _loadSupportedLanguages(self):
 		activeLangDef: str = self.ConfigManager.getAliceConfigByName('activeLanguage')
+		activeCountryCode = self.ConfigManager.getAliceConfigByName('activeCountryCode')
 		langDef: dict = self.ConfigManager.getAliceConfigByName('supportedLanguages')
 
 		for langCode, settings in langDef.items():
 			self._supportedLanguages.append(langCode)
 			if settings['default']:
 				self._defaultLanguage = langCode
-				self._defaultCountryCode = settings['countryCode']
+				self._defaultCountryCode = settings['defaultCountryCode']
 
 			if langCode == activeLangDef:
 				self._activeLanguage = langCode
-				self._activeCountryCode = settings['countryCode']
+
+				if activeCountryCode in settings['countryCodes']:
+					self._activeCountryCode = activeCountryCode
+				else:
+					self.logWarning(f'Country code **{activeCountryCode}** is not supported, falling back to **{self._defaultCountryCode}**')
+					self._activeCountryCode = self._defaultCountryCode
 
 		if not self._activeLanguage and self._defaultLanguage:
 			self.logWarning(f'No active language defined, falling back to {self._defaultLanguage}')

@@ -37,7 +37,10 @@ class TalkManager(Manager):
 			self.logError(f'Loading talks for skill "{skillName}" failed')
 
 		try:
-			skillTalks = skillInstance.getResource(f'talks/{self.LanguageManager.activeLanguage}.json')
+			skillTalks = skillInstance.getResource(f'talks/{self.LanguageManager.activeLanguageAndCountryCode}.json')
+			if not skillTalks.exists():
+				skillTalks = skillInstance.getResource(f'talks/{self.LanguageManager.activeLanguage}.json')
+
 			self._langData.setdefault(skillName, dict())[self.LanguageManager.activeLanguage] = json.loads(skillTalks.read_text())
 		except FileNotFoundError:
 			self.logDebug(f'Talk file for skill "{skillName}" does not exist')

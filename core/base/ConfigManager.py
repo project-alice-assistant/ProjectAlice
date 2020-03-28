@@ -67,7 +67,10 @@ class ConfigManager(Manager):
 			if setting not in aliceConfigs:
 				self.logInfo(f'- New configuration found: {setting}')
 				changes = True
-				aliceConfigs[setting] = definition.get('defaultValue', '')
+				if definition.get('dataType', '') == 'list':
+					aliceConfigs[setting] = definition.get('values', list())
+				else:
+					aliceConfigs[setting] = definition.get('defaultValue', '')
 			else:
 				if setting == 'supportedLanguages':
 					continue

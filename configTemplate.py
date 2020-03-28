@@ -280,20 +280,24 @@ settings = {
 		'isSensitive' : False,
 		'values'      : {
 			'en': {
-				'default'    : True,
-				'countryCode': 'US'
+				'default'           : True,
+				'defaultCountryCode': 'US',
+				'countryCodes'      : ['US', 'GB']
 			},
 			'fr': {
-				'default'    : False,
-				'countryCode': 'FR'
+				'default'           : False,
+				'defaultCountryCode': 'FR',
+				'countryCodes'      : ['FR']
 			},
 			'de': {
-				'default'    : False,
-				'countryCode': 'DE'
+				'default'           : False,
+				'defaultCountryCode': 'DE',
+				'countryCodes'      : ['DE']
 			},
 			'it': {
-				'default'    : False,
-				'countryCode': 'IT'
+				'default'           : False,
+				'defaultCountryCode': 'IT',
+				'countryCodes'      : ['IT']
 			}
 		},
 		'display'     : 'hidden'
