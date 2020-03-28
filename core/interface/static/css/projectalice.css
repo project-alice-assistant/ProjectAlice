@@ -1,243 +1,104 @@
-@import "fonts.css";
-@import "skillstore.css";
 @import "widgetsize.css";
-@import "adminPage.css";
 
-/* ========================= GENERAL TAGS ======================== */
-html, body { background-color: black;color: #d1d1d1;
-	width: 100%; height: 100%; overflow: hidden; margin: 0;
-	display: flex; flex-flow: column;}
-
-header { font-family: 'marskeregular', Arial, sans-serif; background-color: #1e1e1e; color: #d1d1d1;
-	width:100%; height: 3em; margin: .125em;
-	display: flex; flex-shrink: 0; }
-
-nav { background-color: #1e1e1e; width: 9.4em; flex-shrink: 0; margin-left: .125em; }
-
-main { background-color: #1e1e1e; flex-grow: 1; position: relative;	margin-left: 2px;  flex-flow: column; }
-
-a:link, a:visited, a:active { text-decoration: none; color: #d1d1d1; }
-a:hover {color: yellow; }
-
-input, select { background-color: #1e1e1e; color: #d1d1d1;
-	border: 1px dotted #636363; outline: none;
-	width: auto;
-	padding: 5px; margin-left: 20px; margin-right: 20px;
-	box-sizing:content-box;
+/* ========================== VARIABLES ========================== */
+/* Not used in for example in .console*/
+:root {
+/* COLOR */
+  --hover: yellow;
+  --mainBG: #1e1e1e;
+  --windowBG: #636363;
+  --secondary: #343434;
+  --accent: black;
+  --text: #d1d1d1;
+/* TEXT */
+  --short: 'marskeregular', Arial, sans-serif;
+  --long:'neogreyregular', Arial, sans-serif;
 }
+/* ============================ FONTS ============================ */
+@font-face {font-family: 'marskeregular';font-weight: normal;font-style: normal;
+	src: url('../webfonts/marske-webfont.woff2') format('woff2'),url('../webfonts/marske-webfont.woff') format('woff');}
+
+@font-face {font-family: 'neogreyregular';font-weight: normal;font-style: normal;
+	src: url('../webfonts/neogreyregular-webfont.woff2') format('woff2'),url('../webfonts/neogreyregular-webfont.woff') format('woff');}
+
+/* ========================= BUILT IN TAGS ======================== */
+html, body { background-color: var(--accent);color: var(--text);font-family: var(--short);
+	width: 100%; height: 100%; overflow: hidden; margin: 0;display: flex; flex-flow: column;}
+header { background-color: var(--mainBG);width:100%; height: 3em; margin: .125em;display: flex; flex-shrink: 0; }
+nav { background-color: var(--mainBG); width: 9.4em; flex-shrink: 0; margin-left: .125em; }
+main { background-color: var(--mainBG); flex-grow: 1; position: relative;	margin-left: 2px;  flex-flow: column; }
+a:link, a:visited, a:active { text-decoration: none; color: var(--text); }
+a:hover {color: var(--hover); }
+input, select { background-color: var(--mainBG); color: var(--text);border: 1px dotted #636363; outline: none; box-sizing:content-box;
+	width: auto; padding: 5px; margin-left: 20px; margin-right: 20px;}
 input:hover { border: dotted 1px; }
 input[type='text'], input[type='password'], input[type='number'], select { width: auto; }
 input:focus { border: yellow dotted 1px;}
 
 /* ======================= COLOR MARKINGS ======================== */
-.red { color: red; }
+.red, .disabled, .warning { color: red; }
 .green { color: green; }
+.yellow, .active { color: yellow; }
+
 /*logscreen*/
 .logInfo { color: #d1d1d1; }
 .logWarning { color: orange; }
 .logError { color: red; }
 .logYellow { color: yellow; }
 
+/* =========================== GENERAL =========================== */
+.initialHidden {display: none;}
+.stick-top-right{ position: absolute; top: 0; right: 0; z-index: 99; }
+
+.link-hover:hover{cursor: pointer;color: var(--hover);}
+.button-hover:hover {cursor: pointer;color: var(--hover);background-color: #636363;}
+.tabsContainer li:hover { cursor: pointer; color: var(--hover); background-color: #1e1e1e;}
+
 /* ========================== NAVIGATION ========================= */
 .mainMenuList {	list-style-type: none; margin: 0; padding: 0; }
-.mainMenuListItem { font-family: 'marskeregular', Arial, sans-serif; font-size: 1.5em; background-color: #343434;
-	height: 50px; width: 130px; margin: 5px; padding-left: 10px;
-	display: flex; align-items: center;  }
-.mainMenuListItem:hover { cursor: pointer; background-color: #636363; color: yellow; }
+.mainMenuListItem { font-size: 1.5em; background-color: #343434;
+	height: 50px; width: 130px; margin: 5px; padding-left: 10px;display: flex; align-items: center;  }
 
-.pageTitle { font-family: 'marskeregular', Arial, sans-serif; font-size: 2em;
-	margin-left: 1em; align-items: center;
-	display: flex; flex-grow: 1;}
-
-.updateChannelMarker { font-family: 'marskeregular', Arial, sans-serif; font-style: italic; font-size: 1em; color: red;
-	margin-right: 15px;	margin-left: 15px; align-items: center; height: 100%;
-	display: flex; flex-grow: 1; justify-content: flex-end; }
+.pageTitle { font-size: 2em;margin-left: 1em; align-items: center;display: flex; flex-grow: 1;}
+.updateChannelMarker { font-style: italic;margin: 0 .9em; align-items: center;display: flex; }
 
 .page {	flex: 1 100%; flex-flow: row nowrap; display: flex; }
 
-.stick-top-right{ position: absolute; top: 0; right: 0; z-index: 99; }
-
-.toolbar { background: #1e1e1e;
-	padding-top: .2em; padding-left: 1em; margin: 0 0 .4em .4em;
-	display: flex; float: right;
-	border-bottom-left-radius: 1.5em;
-	border: solid 2px;
-    border-top: none;
-    border-color: black;}
-
+.toolbar { background: var(--mainBG);display: flex; float: right;padding-top: .2em; padding-left: 1em;
+	border: solid 2px; border-bottom-left-radius: 1.5em; border-top: none;border-color: var(--accent);}
 .toolbarButton { font-size: 2em; padding-right: .5em; min-width: .9em; text-align: center;}
-.toolbarButton:hover { color: yellow; cursor: pointer; }
 
-.active { color: yellow; }
-.disabled {	color: red; }
+.button {background-color: var(--secondary);font-size: 1.3em;
+	width: 80%;min-height: 30px;margin-top: 25px;border: none;cursor: pointer;}
 
-.button {
-	background-color: #636363;
-	color: #d1d1d1;
-	font-size: 1.3em;
-	margin-top: 25px;
-	width: 80%;
-	min-height: 30px;
-	border: none;
-	cursor: pointer;
-}
+.utility {width: 12em;height: 12em;background-color: var(--windowBG);margin-left: 1.5em;margin-top: 1.5em;padding: .4em;}
+.utilityIcon {text-align: center;font-size: 5em;margin-top: .2em;}
+.utilityText {font-size: 1.25em;margin: .3em;text-align: center;}
 
-.utility {
-	width: 150px;
-	height: 150px;
-	background-color: #343434;
-	color: #d1d1d1;
-	display: flex;
-	align-items: center;
-	flex-direction: column;
-	margin-left: 20px;
-	margin-top: 20px;
-}
-
-.utility:hover {
-	cursor: pointer;
-	background-color: #636363;
-	color: yellow;
-}
-
-.utilityIcon {
-	width: 100%;
-	text-align: center;
-	font-size: 5em;
-	margin-top: 15px;
-}
-
-.utilityText {
-	font-size: 1.25em;
-	margin-top: 7px;
-	text-align: center;
-}
-
-.autoscrollButton {
-	display: flex;
-	height: 40px;
-	text-align: left;
-	align-items: center;
-}
-
-.verbosityButtons {
-	display: flex;
-	height: 40px;
-	flex-grow: 1;
-	justify-content: flex-end;
-	align-items: center;
-	margin-right: 20px;
-}
-
-.alicewatchActiveVerbosity { color: yellow; }
-
-.console {
-	margin: 20px;
-	height: 85%;
-	background-color: black;
-	color: #d1d1d1;
-	overflow-y: scroll;
-	overflow-x: hidden;
-	padding: 10px;
-}
-
+/* console and logging */
+/* using color markings as defined above */
+.console {height: 85%;margin: 1em;padding: 1em;background-color: black;color: #d1d1d1;overflow-y: scroll;overflow-x: hidden;}
 .logLine { display: block; }
 
-::-webkit-scrollbar {
-	width: 8px;
-	background-color: black;
-}
+::-webkit-scrollbar {width: 8px; background-color: var(--accent);}
+::-webkit-scrollbar-thumb {background-color: var(--secondary);}
 
-::-webkit-scrollbar-thumb {
-	background-color: #343434;
-}
+.widgetsPane {height: 100%;width: 100%;margin: 5px;}
+
+.widgetDelete, .widgetConfig {position: absolute;z-index: 97;font-size: 3em;background-color: #1e1e1e;
+    top: .1em;left: .1em;width: 1.1em;height: 1.1em;border-radius: 10em;text-align: center;padding: .08em .02em .02em;}
+
+.addWidgetCategory {width: 100%;background-color: var(--windowBG); font-family: var(--short)}
+.addWidgetCategoryTitle {height: 1.7em;padding-left: 15px;
+	background-color: var(--secondary);color: var(--text);font-size: 1.6em;display: flex;align-items: center;}
+.addWidgetLine {height: 1.2em;margin-top: .3em;font-size: 1.2em;display: flex;align-items: center;}
+.addWidgetName {float: left;margin-left: 1em;}
+.addWidgetCheck {float: right;color: var(--text);margin-right: .4em;}
 
 
-.widgetsPane {
-	color: white;
-	height: 100%;
-	width: 100%;
-	margin: 5px;
-}
-
-.widgetDelete, .widgetConfig {
-	display: none;
-	position: absolute;
-	z-index: 9999;
-	top: 5px;
-	left: 5px;
-	width: 50px;
-	height: 50px;
-	border-radius: 25px;
-	color: #d1d1d1;
-	font-size: 3em;
-	background-color: #1e1e1e;
-	text-align: center;
-	padding: 0 1px 2px;
-}
-.widgetDelete:hover, .widgetConfig:hover { color: yellow; cursor: pointer; }
-
-.addWidgetCategory {
-	width: 100%;
-	background-color: #343434;
-}
-
-.addWidgetCategoryTitle {
-	font-family: 'marskeregular', Arial, sans-serif;
-	height: 50px;
-	background-color: #1e1e1e;
-	color: #d1d1d1;
-	font-size: 1.6em;
-	display: flex;
-	align-items: center;
-	padding-left: 15px;
-}
-
-.addWidgetLine {
-	font-family: 'marskeregular', Arial, sans-serif;
-	height: 25px;
-	color: #d1d1d1;
-	font-size: 1.2em;
-	display: flex;
-	align-items: center;
-	margin-top: 5px;
-}
-
-.addWidgetName {
-	float: left;
-	width: 400px;
-	margin-left: 25px;
-}
-
-.addWidgetCheck {
-	float: right;
-	color: #d1d1d1;
-	margin-right: 15px;
-}
-
-.addWidgetCheck:hover {
-	color: yellow;
-	cursor: pointer;
-}
-
-.widget {
-	display: block;
-	box-shadow: 0 0 20px 5px #141414;
-	background-color: #636363;
-	cursor: pointer;
-	overflow: hidden;
-}
-
-.widgetIcons {
-	font-size: 1.5em;
-	display: flex;
-	align-items: flex-start;
-}
-
-.widgetIcon {
-	display: flex;
-	flex-grow: 1;
-}
+.widget {display: block;box-shadow: 0 0 20px 5px #141414;background-color: var(--windowBG);cursor: pointer;overflow: hidden;}
+.widgetIcons {font-size: 1.5em;display: flex;align-items: flex-start;}
+.widgetIcon {display: flex;flex-grow: 1;}
 
 .widget .widgetIcon:nth-child(2) {
 	display: none;
@@ -245,12 +106,11 @@ input:focus { border: yellow dotted 1px;}
 	justify-content: flex-end;
 }
 
-.widgetOptions {
-}
+.widgetOptions {}
 
 .tabsContent {
 	display: flex;
-	font-family: 'neogreyregular', Arial, sans-serif;
+	font-family: var(--long);
 	font-size: 0.8em;
 	color: #d1d1d1;
 	padding-left: 10px;
@@ -303,7 +163,6 @@ input:focus { border: yellow dotted 1px;}
 }
 
 .tabsContainer li {
-	font-family: 'marskeregular', Arial, sans-serif;
 	display: inline-flex;
 	align-items: center;
 	box-sizing: border-box;
@@ -320,11 +179,6 @@ input:focus { border: yellow dotted 1px;}
 	font-size: 1.25em;
 }
 
-.tabsContainer li:hover {
-	background-color: #1e1e1e;
-	cursor: pointer;
-	color: yellow;
-}
 
 .tabsContainer .activeTab {
 	background-color: #1e1e1e;
@@ -333,5 +187,191 @@ input:focus { border: yellow dotted 1px;}
 .fill-vertical {
 	align-self: stretch;
 	flex-basis: auto;
-	height: calc(100vh - 5em);
+	height: calc(100vh - 4em);
 }
+
+.skillsStore {
+	margin: 5px;
+	overflow-y: auto;
+	overflow-x: hidden;
+	display: none;
+	flex-wrap: wrap;
+	align-content: flex-start;
+}
+
+.skillStoreWait {
+	width: 100%;
+	font-size: 10em;
+	text-align: center;
+	margin-top: 30px;
+}
+
+.skillStoreSkillTile {
+	display: flex;
+	flex-wrap: wrap;
+	align-content: flex-start;
+	align-items: flex-start;
+	background-color: var(--windowBG);
+	margin: 10px;
+	width: 300px;
+	height: 300px;
+	box-shadow: 0 0 20px 5px #141414;
+}
+
+.skillsStoreSkillInfoContainer {
+	margin-top: 5px;
+	display: flex;
+	width: 100%;
+}
+
+.skillsStoreSkillLeft {width: 50%;}
+
+.skillsStoreSkillRight {
+	display: flex;
+	width: 50%;
+	margin-right: 5px;
+	align-items: center;
+	justify-content: flex-end;
+	font-size: 3.5em;
+}
+
+.skillsStoreSkillTitle {
+	background-color: var(--secondary);
+	height: 1.4em;
+	width: 100%;
+	display: flex;
+	align-items: center;
+	padding: .3em;
+	font-size: 1.25em;
+	box-sizing: border-box;
+}
+
+.skillsStoreSkillAuthor,.skillsStoreSkillVersion,.skillsStoreSkillCategory,.skillVersion
+.spaced{margin: .3em;}
+
+.skillStoreSkillDescription {
+	font-family: var(--long);
+	width: 100%;
+	font-size: 0.75em;
+	margin: 5px;
+	background-color: var(--secondary);
+	height: 110px;
+	box-sizing: border-box;
+	padding: 5px;
+	overflow-x: hidden;
+	overflow-y: auto;
+}
+
+.skillStoreSkillDownload {
+	height: 50px;
+	width: 50%;
+	margin: 10px auto auto auto;
+	background-color: #343434;
+	align-content: center;
+	align-items: center;
+	justify-items: center;
+	justify-content: center;
+	font-size: 2em;
+}
+
+
+.skillStoreSkillButtonAnimation {
+	display: none;
+	height: 50px;
+	width: 50%;
+	margin: 10px auto auto auto;
+	background-color: #343434;
+	align-content: center;
+	align-items: center;
+	justify-items: center;
+	justify-content: center;
+	font-size: 2em;
+}
+
+.skillStoreSkillDownloadButton {display: flex;}
+
+
+.skillsPane {
+	margin: 5px;
+	overflow-y: auto;
+	overflow-x: hidden;
+	display: flex;
+	flex-wrap: wrap;
+	align-content: flex-start;
+}
+
+.skillTile {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: flex-start;
+	background-color: var(--windowBG);
+	margin: 10px;
+	width: 300px;
+	height: 200px;
+	align-content: flex-start;
+	box-shadow: 0 0 20px 5px #141414;
+}
+
+.skillContainer {position: relative;flex-wrap: wrap;align-items: flex-start;align-content: flex-start;height: 165px;}
+.skillDefaultView {display: flex;}
+.skillIntentsView {width:100%;overflow-x: hidden;overflow-y: auto;}
+
+.skillTitle {
+    height: 1.5em;
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 .4em;
+    background-color: var(--secondary);
+}
+
+.skillStatus {width: 100%;margin-top: 10px;margin-left: 4px;}
+.skillName {overflow: hidden;font-size: 1.25em;}
+.skillActions {display: flex;width: 100%;position: absolute;bottom: -10px;}
+
+/*.skillIntents {width: 100%;height: 125px;align-items: flex-start;}*/
+
+.skillViewIntents,
+.skillSettings {width: 100%;margin-top: 10px;margin-right: 4px;text-align: right;}
+
+.skillButton,
+.skillUpdating {
+	display: flex;
+	margin: 2px;
+	background-color: #343434;
+	flex-basis: 0;
+	flex-grow: 1;
+	height: 40px;
+	align-items: center;
+	align-content: center;
+	justify-content: center;
+	justify-items: center;
+	text-align: center;
+	overflow: hidden;
+}
+
+.skillUpdating {display: none;font-size: 1.8em;}
+.skillIntentsViewCloseButton {width: 100%;text-align: right;margin-top: 5px;margin-right: 5px;}
+.skillsIntentsViewList {width: 100%;margin: 3px 5px 0 5px;}
+.configBox {width: 100%;display: table;}
+.configLine {width: 100%;display: table-row;height: 40px;}
+
+.configLabel {display: table-cell;text-align: left;vertical-align: middle;overflow: hidden;cursor: pointer;width: 20%}
+.configInput {display: table-cell;padding-left: 20px;text-align: left;vertical-align: middle;}
+
+.adminAuthDisplayUser {margin: 1em;height: 1.5em;font-family: var(--short);font-size: 2em;text-align: center;}
+.adminAuthKeyContainer {margin-top: 25px;width: 100%;display: flex;justify-content: center;}
+.adminAuthDisplayDigit {background-color: var(--secondary);color: var(--secondary);font-size: 4em;
+    width: 1.5em;height: 1.5em;margin: 0.5em;
+    display: flex;align-items: center;justify-content: center;}
+.adminAuthDigitFilled {color: var(--text);background-color: var(--windowBG);}
+.adminAuthKeyboardContainer {background-color: var(--windowBG);
+    display: flex;flex-wrap: wrap;
+    width: 20em;height: 27em;margin: 2em auto;}
+.adminAuthKeyboardKey {
+	display: flex;align-items: center;
+    width: 2.5em;height: 2.5em;margin: .41em;
+    background-color: var(--secondary);
+    justify-content: center;
+    font-size: 2em;}

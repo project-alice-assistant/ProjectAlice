@@ -25,29 +25,29 @@
 {% block content %}
 	<div class="stick-top-right">
 		<div class="toolbar" id="toolbar_full" style="display:none;">
-			<span class="toolbarButton" id="cinemaToggle">
+			<span class="toolbarButton link-hover" id="cinemaToggle">
 				<i class="fas fa-person-booth" aria-hidden="true"></i>
 			</span>
-			<span class="toolbarButton" id="configToggle">
+			<span class="toolbarButton link-hover" id="configToggle">
 				<i class="fas fa-cog" aria-hidden="true"></i>
 			</span>
-			<span class="toolbarButton" id="addWidget">
+			<span class="toolbarButton link-hover" id="addWidget">
 				<i class="fas fa-plus-circle" aria-hidden="true"></i>
 			</span>
-			<span class="toolbarButton" id="removeWidget">
+			<span class="toolbarButton link-hover" id="removeWidget">
 				<i class="fas fa-minus-circle" aria-hidden="true"></i>
 			</span>
-			<span class="toolbarButton" id="toolbarToggleHide">
+			<span class="toolbarButton link-hover" id="toolbarToggleHide">
 				<i class="fas fa-pen-square" aria-hidden="true"></i>
 			</span>
 		</div>
 		<div class="toolbar" id="toolbar_checkmark" style="display:none;">
-			<span class="toolbarButton" id="widgetCheck">
+			<span class="toolbarButton link-hover" id="widgetCheck">
 				<i class="fas fa-check-circle" aria-hidden="true"></i>
 			</span>
 		</div>
 		<div class="toolbar" id="toolbar_toggle" style="display:block;">
-			<span class="toolbarButton" id="toolbarToggleShow">
+			<span class="toolbarButton link-hover" id="toolbarToggleShow">
 				<i class="fas fa-pen-square" aria-hidden="true"></i>
 			</span>
 		</div>
@@ -62,7 +62,7 @@
 					{% for widgetName, widget in widgetList.items() %}
 						<div class="addWidgetLine" id="addWidgetLine_{{ widget.parent }}_{{ widget.name }}" {% if (widget.state|int) == 0 %}style="display: block;" {% else %} style="display: none;"{% endif %}>
 							<div class="addWidgetName">{{ widgetName }}</div>
-							<div class="addWidgetCheck"><i class="fas fa-check-circle" aria-hidden="true"></i></div>
+							<div class="addWidgetCheck link-hover"><i class="fas fa-check-circle" aria-hidden="true"></i></div>
 						</div>
 					{% endfor %}
 				</div>
@@ -75,10 +75,10 @@
 				{% if (widget.state|int) == 1 %}
 					<div class="widget {{ widget.size }}" id="{{ widget.parent }}_{{ widget.name }}" style="position: relative;  top: {{ widget.y }}px; left: {{ widget.x }}px; width: {{widget.width}}px; height:{{widget.height}}px; z-index: {{ widget.zindex }}">
 						{{ widget.html()|safe }}
-						<div class="widgetDelete">
+						<div class="widgetDelete link-hover initialHidden">
 							<i class="fas fa-minus-circle" aria-hidden="true"></i>
 						</div>
-						<div class="widgetConfig">
+						<div class="widgetConfig link-hover initialHidden">
 							<i class="fas fa-cog" aria-hidden="true"></i>
 						</div>
 					</div>

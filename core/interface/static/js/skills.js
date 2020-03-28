@@ -68,7 +68,7 @@ $(function () {
 				'<div class="skillStoreSkillDescription">' + installer['desc'] + '</div>' +
 				'</div>');
 
-			let $button = $('<div class="skillStoreSkillSelected skillStoreSkillButtonAnimation"><i class="fas fa-shopping-cart"></i></div>');
+			let $button = $('<div class="skillStoreSkillSelected skillStoreSkillButtonAnimation button-hover"><i class="fas fa-shopping-cart"></i></div>');
 			$button.on('click touchstart', function () {
 				$(this).hide();
 				$(this).parent().children('.skillStoreSkillDownloadButton').show();
@@ -85,7 +85,7 @@ $(function () {
 			});
 			$tile.append($button);
 
-			$button = $('<div class="skillStoreSkillDownload skillStoreSkillDownloadButton"><i class="fas fa-download"></i></div>');
+			$button = $('<div class="skillStoreSkillDownload skillStoreSkillDownloadButton button-hover"><i class="fas fa-download"></i></div>');
 			$button.on('click touchstart', function () {
 				$(this).hide();
 				$(this).parent().children('.skillStoreSkillSelected').css('display', 'flex');

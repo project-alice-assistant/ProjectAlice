@@ -49,8 +49,8 @@ $(function () {
 	});
 
 	$('[class^="fas fa-thermometer"]').on('click touchstart', function () {
-		$('[class^="fas fa-thermometer"]').removeClass('alicewatchActiveVerbosity');
-		$(this).addClass('alicewatchActiveVerbosity');
+		$('[class^="fas fa-thermometer"]').removeClass('active');
+		$(this).addClass('active');
 		$.ajax({
 			url: '/alicewatch/verbosity/',
 			data: {
