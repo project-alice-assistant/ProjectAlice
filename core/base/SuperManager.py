@@ -49,6 +49,7 @@ class SuperManager:
 		self.snipsAssistantManager = None
 		self.dialogTemplateManager = None
 		self.aliceWatchManager = None
+		self.vadManager = None
 
 
 	def onStart(self):
@@ -149,6 +150,7 @@ class SuperManager:
 		from core.snips.SnipsAssistantManager import SnipsAssistantManager
 		from core.nlu.NluManager import NluManager
 		from core.util.AliceWatchManager import AliceWatchManager
+		from core.voice.model.VadManager import VadManager
 
 		self.commonsManager = CommonsManager()
 		self.commons = self.commonsManager
@@ -178,6 +180,7 @@ class SuperManager:
 		self.snipsAssistantManager = SnipsAssistantManager()
 		self.nluManager = NluManager()
 		self.aliceWatchManager = AliceWatchManager()
+		self.vadManager = VadManager()
 
 		self._managers = {name[0].upper() + name[1:]: manager for name, manager in self.__dict__.items() if name.endswith('Manager')}
 

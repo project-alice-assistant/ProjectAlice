@@ -498,11 +498,6 @@ class ProjectAliceObject:
 
 
 	@property
-	def SnipsWatchManager(self):
-		return SM.SuperManager.getInstance().snipsWatchManager
-
-
-	@property
 	def SkillStoreManager(self):
 		return SM.SuperManager.getInstance().skillStoreManager
 
@@ -525,3 +520,8 @@ class ProjectAliceObject:
 	@property
 	def AliceWatchManager(self):
 		return SM.SuperManager.getInstance().aliceWatchManager
+
+
+	@property
+	def VadManager(self):
+		return SM.SuperManager.getInstance().vadManager
