@@ -14,18 +14,31 @@
 {% endblock %}
 
 {% block content %}
-	<div class="toolBar">
-		<div class="autoscrollButton">
-			<i id="emptyCheckbox" class="far fa-square fa-pull-left" aria-hidden="true"></i><i id="checkedCheckbox"
-																							   class="far fa-check-square fa-pull-left"
-																							   aria-hidden="true"></i> {{ langData.followLogs }}
-		</div>
-		<div class="verbosityButtons">
-			<i class="fas fa-thermometer-empty alicewatchActiveVerbosity" data-verbosity="0" aria-hidden="true"></i>
-			<i class="fas fa-thermometer-quarter" data-verbosity="1" aria-hidden="true"></i>
-			<i class="fas fa-thermometer-half" data-verbosity="2" aria-hidden="true"></i>
-			<i class="fas fa-thermometer-three-quarters" data-verbosity="3" aria-hidden="true"></i>
-			<i class="fas fa-thermometer-full" data-verbosity="4" aria-hidden="true"></i>
+	<div class="stick-top-right">
+		<div class="toolbar">
+			<div class="toolbarButton" id="stopScroll">
+				<i class="fas fa-pause-circle"></i>
+			</div>
+			<div class="toolbarButton" id="startScroll" style="display:none">
+				<i class="fas fa-play-circle"></i>
+			</div>
+			<div class="verbosityButtons">
+			<div class="toolbarButton">
+				<i class="fas fa-thermometer-empty alicewatchActiveVerbosity" data-verbosity="0" aria-hidden="true"></i>
+			</div>
+			<div class="toolbarButton">
+				<i class="fas fa-thermometer-quarter" data-verbosity="1" aria-hidden="true"></i>
+			</div>
+			<div class="toolbarButton">
+				<i class="fas fa-thermometer-half" data-verbosity="2" aria-hidden="true"></i>
+			</div>
+			<div class="toolbarButton">
+				<i class="fas fa-thermometer-three-quarters" data-verbosity="3" aria-hidden="true"></i>
+			</div>
+			<div class="toolbarButton">
+				<i class="fas fa-thermometer-full" data-verbosity="4" aria-hidden="true"></i>
+			</div>
+			</div>
 		</div>
 	</div>
 	<div class="console" id="console">

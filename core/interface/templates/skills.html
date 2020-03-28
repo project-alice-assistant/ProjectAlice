@@ -93,7 +93,7 @@
 		{% for skillName, skill in skills.items() %}
 			<div class="skillTile" id="{{ skillName }}-{{ skill.author }}">
 				<div class="skillTitle">
-					<div class="skillName">{{ skillName }}</div>
+					<div class="skillName">{{ skillName }}</div><i class="{{ skill.icon }}" aria-hidden="true"></i>
 				</div>
 				<div class="skillContainer skillDefaultView">
 					<div class="skillAuthor">

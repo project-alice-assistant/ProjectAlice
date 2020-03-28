@@ -1,0 +1,19 @@
+.w_tiny { width: 50px; height: 50px; }
+.w_tiny_wide { width: 100px; height: 50px; }
+.w_tiny_tall { width: 50px; height: 100px; }
+
+.w_small { width: 100px; height: 100px; }
+.w_small_wide { width: 200px; height: 100px; }
+.w_small_tall { width: 100px; height: 200px; }
+
+.w { width: 200px; height: 200px; }
+.w_wide { width: 300px; height: 200px; }
+.w_tall { width: 200px; height: 300px; }
+
+.w_large { width: 300px; height: 300px; }
+.w_large_wide { width: 400px; height: 300px; }
+.w_large_tall { width: 300px; height: 400px; }
+
+.w_extralarge { width: 500px; height: 500px; }
+.w_extralarge_wide { width: 700px; height: 500px; }
+.w_extralarge_tall { width: 500px; height: 700px; }

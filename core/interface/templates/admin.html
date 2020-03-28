@@ -13,7 +13,7 @@
 {% endblock %}
 
 {% block content %}
-	<div id="adminPageTabsContainer">
+	<div id="adminPageTabsContainer" class="tabsContainer fill-vertical">
 		<ul>
 			<li class="tab" data-for="AliceSettings">{{ langData.adminTabTitleSetting }}</li>
 			<li class="tab" data-for="Utilities">{{ langData.adminTabTitleUtilities }}</li>
@@ -78,7 +78,7 @@
 					<input class="button" type="submit" value="{{ langData.save }}">
 				</form>
 			</div>
-			<div id="Utilities" class="utilitiesBox">
+			<div id="Utilities" class="flex-row">
 				<div id="restart" class="utility">
 					<div class="utilityIcon">
 						<i class="fas fa-redo-alt" aria-hidden="true"></i>

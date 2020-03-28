@@ -14,8 +14,15 @@
 {% endblock %}
 
 {% block content %}
-	<div class="toolBar">
-		<i id="emptyCheckbox" class="far fa-square fa-pull-left" aria-hidden="true"></i><i id="checkedCheckbox" class="far fa-check-square fa-pull-left" aria-hidden="true"></i> {{ langData.followLogs }}
+	<div class="stick-top-right">
+		<div class="toolbar">
+			<div class="toolbarButton" id="stopScroll">
+				<i class="fas fa-pause-circle"></i>
+			</div>
+			<div class="toolbarButton" id="startScroll" style="display:none">
+				<i class="fas fa-play-circle"></i>
+			</div>
+		</div>
 	</div>
 	<div class="console" id="console">
 	</div>

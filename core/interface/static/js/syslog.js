@@ -5,20 +5,20 @@ $(function () {
 		let json = JSON.parse(msg.payloadString);
 
 		container.append(json['msg']);
-		if ($('#checkedCheckbox').is(':visible')) {
+		if ($('#stopScroll').is(':visible')) {
 			container.scrollTop(container.prop('scrollHeight'));
 		}
 	}
 
-	$('#checkedCheckbox').on('click touchstart', function () {
+	$('#stopScroll').on('click touchstart', function () {
 		$(this).hide();
-		$('#emptyCheckbox').show();
+		$('#startScroll').show();
 		return false;
 	});
 
-	$('#emptyCheckbox').on('click touchstart', function () {
+	$('#startScroll').on('click touchstart', function () {
 		$(this).hide();
-		$('#checkedCheckbox').show();
+		$('#stopScroll').show();
 		return false;
 	});
 

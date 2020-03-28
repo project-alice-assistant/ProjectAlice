@@ -1,0 +1,323 @@
+.skillsStore {
+	position: fixed;
+	top: 96px;
+	left: 154px;
+	right: 0;
+	bottom: 0;
+	margin: 5px;
+	overflow-y: auto;
+	overflow-x: hidden;
+	display: none;
+	flex-wrap: wrap;
+	align-content: flex-start;
+}
+
+.skillStoreWait {
+	width: 100%;
+	color: #d1d1d1;
+	font-size: 10em;
+	text-align: center;
+	margin-top: 30px;
+}
+
+.skillStoreSkillTile {
+	font-family: 'marskeregular', Arial, sans-serif;
+	display: flex;
+	flex-wrap: wrap;
+	align-items: flex-start;
+	background-color: #636363;
+	margin: 10px;
+	width: 300px;
+	height: 300px;
+	color: #d1d1d1;
+	align-content: flex-start;
+	box-shadow: 0 0 20px 5px #141414;
+}
+
+.skillsStoreSkillInfoContainer {
+	margin-top: 5px;
+	display: flex;
+	width: 100%;
+}
+
+.skillsStoreSkillLeft {
+	width: 50%;
+}
+
+.skillsStoreSkillRight {
+	display: flex;
+	width: 50%;
+	margin-right: 5px;
+	align-items: center;
+	justify-content: flex-end;
+	font-size: 3.5em;
+}
+
+.skillsStoreSkillTitle {
+	background-color: #343434;
+	height: 30px;
+	width: 100%;
+	display: flex;
+	align-items: center;
+	padding-left: 5px;
+	font-size: 1.25em;
+	box-sizing: border-box;
+}
+
+.skillsStoreSkillAuthor,
+.skillsStoreSkillVersion,
+.skillsStoreSkillCategory {
+	width: 100%;
+	font-size: 1em;
+	margin: 5px;
+}
+
+.skillStoreSkillDescription {
+	font-family: neogreyregular, sans-serif;
+	width: 100%;
+	font-size: 0.75em;
+	margin: 5px;
+	background-color: #343434;
+	height: 110px;
+	min-height: 110px;
+	box-sizing: border-box;
+	padding: 5px;
+	overflow-x: hidden;
+	overflow-y: auto;
+}
+
+.skillStoreSkillDownload {
+	height: 50px;
+	width: 50%;
+	margin: 10px auto auto auto;
+	background-color: #343434;
+	align-content: center;
+	align-items: center;
+	justify-items: center;
+	justify-content: center;
+	font-size: 2em;
+}
+
+.skillStoreSkillDownload:hover,
+.skillStoreSkillSelected:hover {
+	cursor: pointer;
+	background-color: #636363;
+	color: yellow;
+}
+
+.skillStoreSkillButtonAnimation {
+	display: none;
+	height: 50px;
+	width: 50%;
+	margin: 10px auto auto auto;
+	background-color: #343434;
+	align-content: center;
+	align-items: center;
+	justify-items: center;
+	justify-content: center;
+	font-size: 2em;
+}
+
+.skillStoreSkillDownloadButton {
+	display: flex;
+}
+
+#closeSkillStore {
+	display: none;
+}
+
+.skillsPane {
+	position: fixed;
+	top: 96px;
+	left: 154px;
+	right: 0;
+	bottom: 0;
+	margin: 5px;
+	overflow-y: auto;
+	overflow-x: hidden;
+	display: flex;
+	flex-wrap: wrap;
+	align-content: flex-start;
+}
+
+.skillTile {
+	font-family: 'marskeregular', Arial, sans-serif;
+	display: flex;
+	flex-wrap: wrap;
+	align-items: flex-start;
+	background-color: #636363;
+	margin: 10px;
+	width: 300px;
+	height: 200px;
+	color: #d1d1d1;
+	align-content: flex-start;
+	box-shadow: 0 0 20px 5px #141414;
+}
+
+.skillContainer {
+	position: relative;
+	display: flex;
+	flex-wrap: wrap;
+	align-items: flex-start;
+	width: 300px;
+	height: 165px;
+	align-content: flex-start;
+	background-color: #636363;
+}
+
+.skillDefaultView {
+	display: flex;
+}
+
+.skillIntentsView {
+	display: none;
+	overflow-x: hidden;
+	overflow-y: auto;
+}
+
+.skillTitle {
+	height: 25px;
+	width: 100%;
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	padding-left: 5px;
+	padding-right: 5px;
+	background-color: #343434;
+}
+
+.skillStatus {
+	width: 100%;
+	margin-top: 10px;
+	margin-left: 4px;
+}
+
+
+.skillName {
+	overflow: hidden;
+	font-size: 1.25em;
+}
+
+.skillAuthor {
+	margin-top: 5px;
+	margin-left: 4px;
+}
+
+.skillVersion {
+	display: flex;
+	flex-grow: 1;
+	text-align: right;
+	margin-top: 5px;
+	margin-right: 4px;
+	justify-content: flex-end;
+}
+
+.skillActions {
+	display: flex;
+	width: 100%;
+	height: 69px;
+	justify-content: space-between;
+	align-items: flex-end;
+	position: absolute;
+	bottom: -10px;
+}
+
+.skillIntents {
+	display: none;
+	width: 100%;
+	height: 125px;
+	align-items: flex-start;
+}
+
+.skillViewIntents,
+.skillSettings {
+	width: 100%;
+	margin-top: 10px;
+	margin-right: 4px;
+	text-align: right;
+}
+
+.skillViewIntents:hover,
+.skillSettings:hover {
+	cursor: pointer;
+	color: yellow;
+}
+
+.skillButton,
+.skillUpdating {
+	display: flex;
+	margin: 2px;
+	background-color: #343434;
+	flex-basis: 0;
+	flex-grow: 1;
+	height: 40px;
+	align-items: center;
+	align-content: center;
+	justify-content: center;
+	justify-items: center;
+	text-align: center;
+	overflow: hidden;
+}
+
+.skillUpdating {
+	display: none;
+	font-size: 1.8em;
+}
+
+.skillButton:hover {
+	cursor: pointer;
+	background-color: #636363;
+	color: yellow;
+}
+
+.skillIntentsViewCloseButton {
+	width: 100%;
+	text-align: right;
+	margin-top: 5px;
+	margin-right: 5px;
+}
+
+.skillIntentsViewCloseButton:hover {
+	cursor: pointer;
+	color: yellow;
+}
+
+.skillsIntentsViewList {
+	width: 100%;
+	margin: 3px 5px 0 5px;
+}
+
+.intentTopic {
+	cursor: pointer;
+}
+
+.intentTopic:hover {
+	color: yellow;
+}
+
+.configBox {
+	width: 100%;
+	display: table;
+}
+
+.configLine {
+	width: 100%;
+	display: table-row;
+	height: 40px;
+}
+
+.configLabel {
+	display: table-cell;
+	overflow: hidden;
+	text-align: left;
+	vertical-align: middle;
+	cursor: pointer;
+	width: 20%
+}
+
+.configInput {
+	display: table-cell;
+	padding-left: 20px;
+	text-align: left;
+	vertical-align: middle;
+}

@@ -23,7 +23,7 @@
 {% endblock %}
 
 {% block content %}
-	<div class="tools">
+	<div class="stick-top-right">
 		<div class="toolbar" id="toolbar_full" style="display:none;">
 			<span class="toolbarButton" id="cinemaToggle">
 				<i class="fas fa-person-booth" aria-hidden="true"></i>
@@ -83,7 +83,24 @@
 						</div>
 					</div>
 					{%  if widget.options|length  %}
-						<div id="widgetOptions">asdfasdf
+						<div id="widgetOptions">
+							<div class="tabsContainer" id="widgetConfTabContainer">
+								<ul>
+									<li class="tab activeTab" data-for="WidgetSettings">Widget Einstellungen</li>
+									<li class="tab" data-for="GraphicSettings">Anzeige Einstellungen</li>
+								</ul>
+								<div class="tabsContent">
+									<div class="configBox" id="WidgetSettings">
+										<div class="configLine">test</div>
+									</div>
+									<div class="configBox" id="GraphicSettings">
+										<div class="configLine">
+											<div class="configLabel">Hintergrund</div>
+											<div class="configInput">123</div>
+										</div>
+									</div>
+								</div>
+							</div>
 						</div>
 					{% endif %}
 				{% endif %}

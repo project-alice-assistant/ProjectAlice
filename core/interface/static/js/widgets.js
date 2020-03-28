@@ -1,26 +1,27 @@
 $(function () {
 
-	$('#toolbarToggleShow').on('click touchstart', function(){
-		$('#toolbar_full').show();
-		$('#toolbar_toggle').hide();
-		$('.widget').draggable('enable');
-		$('.widget').resizable('enable');
-	});
+/* Edit Position and Size of Widgets */
+	$('.widgetsPane').droppable({
+		drop: function (event, ui) {
+			let arr = [];
 
-	$('#toolbarToggleHide').on('click touchstart', function(){
-		$('#toolbar_full').hide();
-		$('#toolbar_toggle').show();
-		$('.widget').draggable('disable');
-		$('.widget').resizable('disable');
-	});
+			$('.widgetsPane').children().each(function () {
+				arr.push($(this).attr('id'));
+			});
 
-	$('#widgetOptions').dialog({
-		autoOpen: false,
-		draggable: false,
-		width: 600,
-		height: 600,
-		modal: true,
-		resizable: false
+			$.ajax({
+				contentType: 'application/json',
+				url: '/home/saveWidgetPosition/',
+				data: JSON.stringify({
+					id: $(ui.draggable).attr('id'),
+					x: $(ui.draggable).position().left,
+					y: $(ui.draggable).position().top,
+					index: $('.widget').length,
+					order: arr
+				}),
+				type: 'POST'
+			});
+		}
 	});
 
 	$('.widget').draggable({
@@ -51,28 +52,28 @@ $(function () {
 		}
     });
 
+/* Toolbar Functions */
+	$('#toolbarToggleShow').on('click touchstart', function(){
+		$('#toolbar_full').show();
+		$('#toolbar_toggle').hide();
+		$('.widget').draggable('enable');
+		$('.widget').resizable('enable');
+	});
 
-	$('.widgetsPane').droppable({
-		drop: function (event, ui) {
-			let arr = [];
+	$('#toolbarToggleHide').on('click touchstart', function(){
+		$('#toolbar_full').hide();
+		$('#toolbar_toggle').show();
+		$('.widget').draggable('disable');
+		$('.widget').resizable('disable');
+	});
 
-			$('.widgetsPane').children().each(function () {
-				arr.push($(this).attr('id'));
-			});
-
-			$.ajax({
-				contentType: 'application/json',
-				url: '/home/saveWidgetPosition/',
-				data: JSON.stringify({
-					id: $(ui.draggable).attr('id'),
-					x: $(ui.draggable).position().left,
-					y: $(ui.draggable).position().top,
-					index: $('.widget').length,
-					order: arr
-				}),
-				type: 'POST'
-			});
-		}
+	$('#widgetOptions').dialog({
+		autoOpen: false,
+		draggable: false,
+		width: 600,
+		height: 600,
+		modal: true,
+		resizable: false
 	});
 
 	$('#addWidgetDialog').dialog({
@@ -87,10 +88,16 @@ $(function () {
 		}
 	});
 
+
 	$('#removeWidget').on('click touchstart', function () {
 		$('.widgetDelete').show();
 		$('#toolbar_checkmark').show();
 		$('#toolbar_full').hide();
+		return false;
+	});
+
+	$('#addWidget').on('click touchstart', function () {
+		$('#addWidgetDialog').dialog('open');
 		return false;
 	});
 
@@ -101,6 +108,14 @@ $(function () {
 		return false;
 	});
 
+	$('#cinemaToggle').on('click touchstart', function () {
+		$('nav').toggle();
+		$('#toolbar_full').hide();
+		$('header').toggle();
+		$('.widget').draggable('disable');
+		$('.widget').resizable('disable');
+	});
+
 	$('#widgetCheck').on('click touchstart', function () {
 		$('#toolbar_checkmark').hide();
 		$('.widgetDelete').hide();
@@ -109,7 +124,8 @@ $(function () {
 		return false;
 	});
 
-	$('.widgetDelete > .fa-minus-circle').on('click touchstart', function () {
+	/* Functions for the single widgets */
+	$('.widgetDelete').on('click touchstart', function () {
 		if ($(this).parents('.widget').length > 0) {
 			$.ajax({
 				url: '/home/removeWidget/',
@@ -123,8 +139,11 @@ $(function () {
 		return false;
 	});
 
-	$('.fa-plus-circle').on('click touchstart', function () {
-		$('#addWidgetDialog').dialog('open');
+	$('.widgetConfig').on('click touchstart', function () {
+		if ($(this).parents('.widget').length > 0) {
+			//$('#widgetOptions').html(loadConfig($(this).parent().attr('id')));
+			$('#widgetOptions').dialog( "open" );
+		}
 		return false;
 	});
 
@@ -142,23 +161,40 @@ $(function () {
 		return false;
 	});
 
-	$('.widgetConfig').on('click touchstart', function () {
-		if ($(this).parents('.widget').length > 0) {
-			$('#widgetOptions').html(loadConfig($(this).parent().attr('id')));
-			$('#widgetOptions').dialog( "open" );
-		}
-		return false;
-	});
-
 	function loadConfig(skill) {
 		return skill
 	}
 
-	$('#cinemaToggle').on('click touchstart', function () {
-		$('nav').toggle();
-		$('#toolbar_full').hide();
-		$('header').toggle();
-		$('.widget').draggable('disable');
-		$('.widget').resizable('disable');
+
+	/*TODO duplicate from admin.js*/
+	let $defaultTab = $('#widgetConfTabContainer ul li:first');
+		$('.tabsContent').children().each(function () {
+		if ($(this).attr('id') == $defaultTab.data('for')) {
+			$(this).show();
+		}
+		else {
+			$(this).hide();
+		}
+	});
+
+	$('.tab').on('click touchstart', function () {
+		let target = $(this).data('for');
+		$(this).addClass('activeTab');
+
+		$('#widgetConfTabContainer ul li').each(function () {
+			if ($(this).data('for') != target) {
+				$(this).removeClass('activeTab');
+			}
+		});
+
+		$('.tabsContent').children().each(function () {
+			if ($(this).attr('id') == target) {
+				$(this).show();
+			}
+			else {
+				$(this).hide();
+			}
+		});
+		return false;
 	});
 });
