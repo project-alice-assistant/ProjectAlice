@@ -63,5 +63,9 @@ class Logger:
 	def printTraceback():
 		from core.base.SuperManager import SuperManager
 
-		if SuperManager.getInstance().configManager.getAliceConfigByName('debug'):
-			traceback.print_exc()
+		try:
+			if SuperManager.getInstance().configManager.getAliceConfigByName('debug'):
+				traceback.print_exc()
+		except:
+			# Would mean that warning was triggered before configManager was even loaded
+			pass

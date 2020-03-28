@@ -7,7 +7,7 @@ from enum import Enum
 
 
 class BashStringFormatCode(Enum):
-	SEQUENCE = '\033[{}m{}\033[{}m'
+	SEQUENCE = '\033[{}m{}'
 
 	RESET = 0
 	BOLD = 1
@@ -51,12 +51,15 @@ class Formatter(logging.Formatter):
 		rec = copy(record)
 		msg = rec.msg
 
+		color = BashStringFormatCode.DEFAULT.value
 		if level in self.COLORS:
-			msg = BashStringFormatCode.SEQUENCE.value.format(self.COLORS[level], msg, BashStringFormatCode.RESET.value)
+			msg = f'\033[{self.COLORS[level]}m{msg}\033[0m'
+			color = self.COLORS[level]
 
-		msg = self.BOLD.sub(BashStringFormatCode.SEQUENCE.value.format(BashStringFormatCode.BOLD.value, r'\1', 2), msg)
-		msg = self.DIM.sub(BashStringFormatCode.SEQUENCE.value.format(BashStringFormatCode.DIM.value, r'\1', BashStringFormatCode.DIM.value + 20), msg)
-		msg = self.UNDERLINED.sub(BashStringFormatCode.SEQUENCE.value.format(BashStringFormatCode.UNDERLINED.value, r'\1', BashStringFormatCode.UNDERLINED.value + 20), msg)
+		msg = self.BOLD.sub(f'\033[{BashStringFormatCode.BOLD.value}m' + r'\1' + f'\033[{BashStringFormatCode.RESET.value};{color}m', msg)
+		msg = self.DIM.sub(f'\033[{BashStringFormatCode.DIM.value}m' + r'\1' + f'\033[{BashStringFormatCode.RESET.value};{color}m', msg)
+		msg = self.UNDERLINED.sub(f'\033[{BashStringFormatCode.UNDERLINED.value}m' + r'\1' + f'\033[{BashStringFormatCode.RESET.value};{color}m', msg)
+		# msg = self.COLOR.sub(f'\033[{getattr(BashStringFormatCode, "RED")}m' + r'\2' + f'\033[{BashStringFormatCode.RESET.value};{color}m', msg)
 		# msg = self.COLOR.sub(self.colorFormat, msg)
 
 		return msg
