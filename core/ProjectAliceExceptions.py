@@ -37,7 +37,7 @@ class FunctionNotImplemented(_ProjectAliceException):
 class SkillStartingFailed(_ProjectAliceException):
 	def __init__(self, skillName: str = '', error: str = ''):
 		super().__init__(message=error)
-		self._logger.logInfo(f'❗ Error starting skill: {error}')
+		self._logger.logInfo(f'[{skillName}] ❗ Error starting skill: {error}')
 
 		if skillName:
 			SuperManager.getInstance().skillManager.deactivateSkill(skillName)
@@ -46,7 +46,7 @@ class SkillStartingFailed(_ProjectAliceException):
 class SkillStartDelayed(_ProjectAliceException):
 	def __init__(self, skillName):
 		super().__init__(skillName)
-		self._logger.logWarning('⌛ Delaying skill start')
+		self._logger.logWarning(f'[{skillName}] ⌛ Delaying skill start')
 		SuperManager.getInstance().skillManager.getSkillInstance(skillName).delayed = True
 
 
