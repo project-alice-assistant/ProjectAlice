@@ -338,7 +338,7 @@ class ProjectAliceObject:
 		pass
 
 
-	def onBroadcastingForNewDeviceStart(self, session):
+	def onBroadcastingForNewDeviceStart(self):
 		pass
 
 
