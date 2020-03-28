@@ -98,9 +98,9 @@ class WebInterfaceManager(Manager):
 				name='WebInterface',
 				target=self.app.run,
 				kwargs={
-					'debug': True,
-					'port': int(self.ConfigManager.getAliceConfigByName('webInterfacePort')),
-					'host': self.Commons.getLocalIp(),
+					'debug'       : self.ConfigManager.getAliceConfigByName('debug'),
+					'port'        : int(self.ConfigManager.getAliceConfigByName('webInterfacePort')),
+					'host'        : self.Commons.getLocalIp(),
 					'use_reloader': False
 				}
 			)

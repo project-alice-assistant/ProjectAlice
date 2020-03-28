@@ -37,7 +37,7 @@ class InitDict(dict):
 		try:
 			return super().__getitem__(item) or ''
 		except:
-			print(f'[Initializer] Missing key "{item}" in provided yaml file.')
+			print(f'Missing key "{item}" in provided yaml file.')
 			return ''
 
 
@@ -58,8 +58,8 @@ network={
 
 
 	def __init__(self):
-		super().__init__(logDepth=3)
-		self.logInfo('Starting Project Alice initializer')
+		super().__init__(prepend='[Initializer]')
+		self.logInfo('Starting Project Alice initialization')
 
 		self._rootDir = Path(__file__).resolve().parent.parent
 
@@ -71,7 +71,7 @@ network={
 
 	def initProjectAlice(self) -> bool:
 		if not self._initFile.exists() and not self._confsFile.exists():
-			self.fatal('Init file not found and there\'s no configuration file, aborting Project Alice start')
+			self.logFatal('Init file not found and there\'s no configuration file, aborting Project Alice start')
 		elif not self._initFile.exists():
 			self.logInfo('No initialization needed')
 			return False
@@ -84,18 +84,18 @@ network={
 
 				initConfs = InitDict(load)
 			except yaml.YAMLError as e:
-				self.fatal(f'Failed loading init configurations: {e}')
+				self.logFatal(f'Failed loading init configurations: {e}')
 
 		# Check that we are running using the latest yaml
 		if float(initConfs['version']) < self._latest:
-			self.fatal('The yaml file you are using is deprecated. Please update it before trying again')
+			self.logFatal('The yaml file you are using is deprecated. Please update it before trying again')
 
 		wpaSupplicant = Path('/etc/wpa_supplicant/wpa_supplicant.conf')
 		if not wpaSupplicant.exists() and initConfs['useWifi']:
 			self.logInfo('Setting up wifi')
 
 			if not initConfs['wifiCountryCode'] or not initConfs['wifiNetworkName'] or not initConfs['wifiWPAPass']:
-				self.fatal('You must specify the wifi parameters')
+				self.logFatal('You must specify the wifi parameters')
 
 			bootWpaSupplicant = Path('/boot/wpa_supplicant.conf')
 
@@ -120,7 +120,7 @@ network={
 			connected = False
 
 		if not connected:
-			self.fatal('Your device needs internet access to continue')
+			self.logFatal('Your device needs internet access to continue')
 
 		updateChannel = initConfs['aliceUpdateChannel'] if 'aliceUpdateChannel' in initConfs else 'master'
 		updateSource = self.getUpdateSource(updateChannel)
@@ -141,19 +141,19 @@ network={
 			initConfs['forceRewrite'] = True
 
 		if not self._confsFile.exists() and not self._confsSample.exists():
-			self.fatal('No config and no config template found, can\'t continue')
+			self.logFatal('No config and no config template found, can\'t continue')
 
 		elif not self._confsFile.exists() and self._confsSample.exists():
-			self.warning('No config file found, creating it from sample file')
+			self.logWarning('No config file found, creating it from sample file')
 			confs = self.newConfs()
 			self._confsFile.write_text(f"settings = {json.dumps(confs, indent=4).replace('false', 'False').replace('true', 'True')}")
 
 		elif self._confsFile.exists() and not initConfs['forceRewrite']:
-			self.warning('Config file already existing and user not wanting to rewrite, aborting')
+			self.logWarning('Config file already existing and user not wanting to rewrite, aborting')
 			return False
 
 		elif self._confsFile.exists() and initConfs['forceRewrite']:
-			self.warning('Config file found and force rewrite specified, let\'s restart all this!')
+			self.logWarning('Config file found and force rewrite specified, let\'s restart all this!')
 			self._confsFile.unlink()
 			confs = self.newConfs()
 			self._confsFile.write_text(f"settings = {json.dumps(confs, indent=4).replace('false', 'False').replace('true', 'True')}")
@@ -311,7 +311,7 @@ network={
 
 		snipsConf = self.loadSnipsConfigurations()
 		if not snipsConf:
-			self.fatal('Error loading snips.toml')
+			self.logFatal('Error loading snips.toml')
 
 		if initConfs['deviceName'] != 'default':
 			snipsConf['snips-audio-server']['bind'] = f'{initConfs["deviceName"]}@mqtt'
@@ -414,7 +414,7 @@ network={
 			confString = json.dumps(sort, indent=4).replace('false', 'False').replace('true', 'True')
 			self._confsFile.write_text(f'settings = {confString}')
 		except Exception as e:
-			self.fatal(f'An error occured while writting final configuration file: {e}')
+			self.logFatal(f'An error occured while writting final configuration file: {e}')
 		else:
 			importlib.reload(config)
 
@@ -427,18 +427,10 @@ network={
 		else:
 			subprocess.run(['sudo', 'rm', Path(YAML)])
 
-		self.warning('Initializer done with configuring')
+		self.logWarning('Initializer done with configuring')
 		time.sleep(2)
 		subprocess.run(['sudo', 'systemctl', 'enable', 'ProjectAlice'])
 		subprocess.run(['sudo', 'shutdown', '-r', 'now'])
-
-
-	def fatal(self, text: str):
-		self.logFatal(text)
-
-
-	def warning(self, text: str):
-		self.logWarning(text)
 
 
 	def loadSnipsConfigurations(self) -> TomlFile:

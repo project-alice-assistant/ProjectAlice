@@ -1,13 +1,14 @@
-import inspect
 import logging
 import traceback
+
+import re
 
 
 class Logger:
 
-	def __init__(self, depth: int = 4, *_args, **_kwargs):
+	def __init__(self, prepend: str = None):
+		self._prepend = prepend
 		self._logger = logging.getLogger('ProjectAlice')
-		self._depth = depth
 
 
 	def logInfo(self, msg: str):
@@ -44,20 +45,18 @@ class Logger:
 		self.printTraceback()
 
 
-	def doLog(self, function: callable, msg: str, printStack=True, depth: int = None):
-		if depth is None:
-			depth = self._depth
+	def doLog(self, function: callable, msg: str, printStack = True):
+		if self._prepend:
+			msg = f'{self._prepend} {msg}'
+
+		match = re.match(r'^(\[[\w ]+\])(.*)$', msg)
+		if match:
+			tag, log = match.groups()
+			space = ''.join([' ' for _ in range(25 - len(tag))])
+			msg = f'{tag}{space}{log}'
 
 		func = getattr(self._logger, function)
-		func(self.decorate(msg, depth), exc_info=printStack)
-
-
-	# noinspection PyMethodMayBeStatic
-	def decorate(self, msg: str, depth: int) -> str:
-		try:
-			return f'[{inspect.getmodulename(inspect.stack()[depth][1])}] {msg}'
-		except Exception:
-			return f'[Unknown] {msg}'
+		func(msg, exc_info=printStack)
 
 
 	@staticmethod

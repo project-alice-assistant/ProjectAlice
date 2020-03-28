@@ -9,9 +9,8 @@ from core.util.model.Logger import Logger
 
 class ProjectAliceObject:
 
-	def __init__(self, logDepth: int = 3, *args, **kwargs):
-		self._depth = logDepth
-		self._logger = Logger(logDepth)
+	def __init__(self, *args, **kwargs):
+		self._logger = Logger(*args, **kwargs)
 
 
 	def __repr__(self) -> str:
@@ -67,19 +66,19 @@ class ProjectAliceObject:
 
 
 	def logInfo(self, msg: str):
-		self._logger.doLog(function='info', msg=msg, printStack=False)
+		self._logger.doLog(function='info', msg=self.decorateLogs(msg), printStack=False)
 
 
 	def logError(self, msg: str):
-		self._logger.doLog(function='error', msg=msg)
+		self._logger.doLog(function='error', msg=self.decorateLogs(msg))
 
 
 	def logDebug(self, msg: str):
-		self._logger.doLog(function='debug', msg=msg, printStack=False)
+		self._logger.doLog(function='debug', msg=self.decorateLogs(msg), printStack=False)
 
 
 	def logFatal(self, msg: str):
-		self._logger.doLog(function='fatal', msg=msg)
+		self._logger.doLog(function='fatal', msg=self.decorateLogs(msg))
 		try:
 			self.ProjectAlice.onStop()
 		except:
@@ -87,11 +86,15 @@ class ProjectAliceObject:
 
 
 	def logWarning(self, msg: str, printStack: bool = False):
-		self._logger.doLog(function='warning', msg=msg, printStack=printStack)
+		self._logger.doLog(function='warning', msg=self.decorateLogs(msg), printStack=printStack)
 
 
 	def logCritical(self, msg: str):
-		self._logger.doLog(function='critical', msg=msg)
+		self._logger.doLog(function='critical', msg=self.decorateLogs(msg))
+
+
+	def decorateLogs(self, text: str) -> str:
+		return f'[{self.__class__.__name__}] {text}'
 
 
 	def onStart(self):

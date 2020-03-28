@@ -25,7 +25,7 @@ class AliceSkill(ProjectAliceObject):
 
 
 	def __init__(self, supportedIntents: Iterable = None, databaseSchema: dict = None):
-		super().__init__(logDepth=4)
+		super().__init__()
 		try:
 			self._skillPath = Path(inspect.getfile(self.__class__)).parent
 			self._installFile = Path(inspect.getfile(self.__class__)).with_suffix('.install')
@@ -437,7 +437,7 @@ class AliceSkill(ProjectAliceObject):
 
 
 	def onStart(self):
-		self.logInfo(f'Starting {self.name} skill')
+		self.logInfo(f'Starting')
 		self._active = True
 
 		self._initDB()
@@ -448,13 +448,13 @@ class AliceSkill(ProjectAliceObject):
 		self.loadWidgets()
 		self.loadScenarioNodes()
 
-		self.logInfo(f'- Started!')
+		self.logInfo(f'✔ Started!')
 
 
 	def onStop(self):
 		self._active = False
 		self.SkillManager.configureSkillIntents(self._name, False)
-		self.logInfo(f'- {self._name} stopped!')
+		self.logInfo(f'✔ Stopped')
 
 
 	def onBooted(self) -> bool:

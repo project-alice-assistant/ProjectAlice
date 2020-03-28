@@ -29,11 +29,6 @@ class _ProjectAliceException(Exception):
 		return self._context
 
 
-class SamkillaException(_ProjectAliceException):
-	def __init__(self, status: int, message: str, context: list):
-		super().__init__(message, status, context)
-
-
 class FunctionNotImplemented(_ProjectAliceException):
 	def __init__(self, clazz: str, funcName: str):
 		self._logger.logError(f'{funcName} must be implemented in {clazz}!')
@@ -42,7 +37,7 @@ class FunctionNotImplemented(_ProjectAliceException):
 class SkillStartingFailed(_ProjectAliceException):
 	def __init__(self, skillName: str = '', error: str = ''):
 		super().__init__(message=error)
-		self._logger.logInfo(f'An error occured while starting a skill: {error}')
+		self._logger.logInfo(f'❗ Error starting skill: {error}')
 
 		if skillName:
 			SuperManager.getInstance().skillManager.deactivateSkill(skillName)
@@ -51,7 +46,7 @@ class SkillStartingFailed(_ProjectAliceException):
 class SkillStartDelayed(_ProjectAliceException):
 	def __init__(self, skillName):
 		super().__init__(skillName)
-		self._logger.logWarning('Delaying skill start')
+		self._logger.logWarning('⌛ Delaying skill start')
 		SuperManager.getInstance().skillManager.getSkillInstance(skillName).delayed = True
 
 
