@@ -174,10 +174,14 @@ class SkillManager(Manager):
 
 
 	def addSkillToDB(self, skillName: str, active: int = 1):
-		self.databaseInsert(
-			tableName='skills',
-			values={'skillName': skillName, 'active': active}
-		)
+	    	skills = self.loadSkillsFromDB()
+		skills = [skill['skillName'] for skill in skills]
+		
+		if skillName not in skills:
+			self.databaseInsert(
+				tableName='skills',
+				values={'skillName': skillName, 'active': active}
+			)
 
 
 	# noinspection SqlResolve
