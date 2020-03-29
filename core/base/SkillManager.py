@@ -174,7 +174,7 @@ class SkillManager(Manager):
 
 
 	def addSkillToDB(self, skillName: str, active: int = 1):
-		self.databaseInsert(
+		self.DatabaseManager.replace(
 			tableName='skills',
 			values={'skillName': skillName, 'active': active}
 		)
