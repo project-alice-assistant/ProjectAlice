@@ -4,7 +4,10 @@ $(function () {
 		let container = $('#console');
 		let json = JSON.parse(msg.payloadString);
 
-		container.append(json['msg']);
+		let pattern = /(\[.*])[ ]+/gi;
+		let text = json['msg'].replace(pattern, '<span style="display: inline-block; width: 200px;">$1</span>');
+
+		container.append(text);
 		if ($('#checkedCheckbox').is(':visible')) {
 			container.scrollTop(container.prop('scrollHeight'));
 		}
