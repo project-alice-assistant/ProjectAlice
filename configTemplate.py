@@ -235,13 +235,25 @@ settings = {
 		'isSensitive' : False,
 		'description' : 'Project Alice active country code'
 	},
-	'aliceAutoUpdate'       : {
+	'nonNativeSupportLanguage': {
+		'defaultValue': '',
+		'dataType'    : 'string',
+		'isSensitive' : False,
+		'description' : 'If you want to use a non natively supported language, set it here.'
+	},
+	'nonNativeSupportCountry': {
+		'defaultValue': '',
+		'dataType'    : 'string',
+		'isSensitive' : False,
+		'description' : 'If you want to use a non natively supported country, set it here.'
+	},
+	'aliceAutoUpdate': {
 		'defaultValue': False,
 		'dataType'    : 'boolean',
 		'isSensitive' : False,
 		'description' : 'Whether Alice should auto update, checked every hour'
 	},
-	'skillAutoUpdate'       : {
+	'skillAutoUpdate': {
 		'defaultValue': False,
 		'dataType'    : 'boolean',
 		'isSensitive' : False,

@@ -65,7 +65,7 @@ class ConfigManager(Manager):
 		changes = False
 		for setting, definition in configTemplate.settings.items():
 			if setting not in aliceConfigs:
-				self.logInfo(f'- New configuration found: {setting}')
+				self.logInfo(f'New configuration found: **{setting}**')
 				changes = True
 				if definition.get('dataType', '') == 'list':
 					aliceConfigs[setting] = definition.get('values', list())
@@ -81,17 +81,17 @@ class ConfigManager(Manager):
 						try:
 							# First try to cast the seting we have to the new type
 							aliceConfigs[setting] = type(definition['defaultValue'])(aliceConfigs[setting])
-							self.logInfo(f'- Existing configuration type missmatch: {setting}, cast variable to template configuration type')
+							self.logWarning(f'Existing configuration type missmatch: **{setting}**, cast variable to template configuration type')
 						except Exception:
 							# If casting failed let's fall back to the new default value
-							self.logInfo(f'- Existing configuration type missmatch: {setting}, replaced with template configuration')
+							self.logWarning(f'Existing configuration type missmatch: **{setting}**, replaced with template configuration')
 							aliceConfigs[setting] = definition['defaultValue']
 				else:
 					values = definition['values'].values() if isinstance(definition['values'], dict) else definition['values']
 
 					if aliceConfigs[setting] not in values:
 						changes = True
-						self.logInfo(f'- Selected value **{aliceConfigs[setting]}** for setting **{setting}** doesn\'t exist, reverted to default value --{definition["defaultValue"]}--')
+						self.logWarning(f'Selected value **{aliceConfigs[setting]}** for setting **{setting}** doesn\'t exist, reverted to default value --{definition["defaultValue"]}--')
 						aliceConfigs[setting] = definition['defaultValue']
 
 		# Setting logger level immediately
@@ -102,7 +102,7 @@ class ConfigManager(Manager):
 
 		for k, v in temp.items():
 			if k not in configTemplate.settings:
-				self.logInfo(f'- Deprecated configuration: {k}')
+				self.logInfo(f'Deprecated configuration: **{k}**')
 				changes = True
 				del aliceConfigs[k]
 
@@ -114,7 +114,7 @@ class ConfigManager(Manager):
 
 	def updateAliceConfiguration(self, key: str, value: typing.Any):
 		if key not in self._aliceConfigurations:
-			self.logWarning(f'Was asked to update {key} but key doesn\'t exist')
+			self.logWarning(f'Was asked to update **{key}** but key doesn\'t exist')
 			raise ConfigurationUpdateFailed()
 
 		self._aliceConfigurations[key] = value

@@ -16,6 +16,8 @@ class LanguageManager(Manager):
 		self._activeCountryCode = ''
 		self._defaultLanguage = ''
 		self._defaultCountryCode = ''
+		self._overrideLanguage = ''
+		self._overrideCountryCode = ''
 
 		self._stringsData = dict()
 		self._locals = list()
@@ -94,6 +96,16 @@ class LanguageManager(Manager):
 		activeCountryCode = self.ConfigManager.getAliceConfigByName('activeCountryCode')
 		langDef: dict = self.ConfigManager.getAliceConfigByName('supportedLanguages')
 
+		if self.ConfigManager.getAliceConfigByName('nonNativeSupportLanguage'):
+			self.logWarning(f'You are using a non natively supported language **{self.ConfigManager.getAliceConfigByName("nonNativeSupportLanguage")}**')
+			self._activeLanguage = 'en'
+			self._activeCountryCode = 'US'
+			self._defaultLanguage = 'en'
+			self._defaultCountryCode = 'US'
+			self._overrideLanguage = self.ConfigManager.getAliceConfigByName('nonNativeSupportLanguage')
+			self._overrideCountryCode = self.ConfigManager.getAliceConfigByName('nonNativeSupportCountry')
+			return
+
 		for langCode, settings in langDef.items():
 			self._supportedLanguages.append(langCode)
 			if settings['default']:
@@ -161,6 +173,11 @@ class LanguageManager(Manager):
 
 
 	@property
+	def overrideLanguage(self) -> str:
+		return self._overrideLanguage
+
+
+	@property
 	def defaultLanguage(self) -> str:
 		return self._defaultLanguage
 
@@ -171,6 +188,11 @@ class LanguageManager(Manager):
 
 
 	@property
+	def overrideCountryCode(self) -> str:
+		return self._overrideCountryCode
+
+
+	@property
 	def defaultCountryCode(self) -> str:
 		return self._defaultCountryCode
 
@@ -178,6 +200,15 @@ class LanguageManager(Manager):
 	@property
 	def activeLanguageAndCountryCode(self) -> str:
 		return f'{self._activeLanguage}-{self._activeCountryCode}'
+
+
+	@property
+	def overrideLanguageAndCountryCode(self) -> str:
+		return f'{self._overrideLanguage}-{self._overrideCountryCode}'
+
+
+	def getLanguageAndCountryCode(self, allowOverride: bool = True) -> str:
+		return self.overrideLanguageAndCountryCode if allowOverride else self.activeLanguageAndCountryCode
 
 
 	@property

@@ -3,6 +3,7 @@ from pathlib import Path
 from typing import Dict
 
 import paho.mqtt.client as mqtt
+from googletrans import Translator
 
 from core.asr.model import ASR
 from core.asr.model.ASRResult import ASRResult
@@ -20,6 +21,7 @@ class ASRManager(Manager):
 		super().__init__(self.NAME)
 		self._asr = None
 		self._streams: Dict[str, Recorder] = dict()
+		self._translator = Translator()
 
 
 	def onStart(self):
@@ -116,7 +118,12 @@ class ASRManager(Manager):
 				return
 
 			self.logDebug(f'ASR captured: {result.text}')
-			text = self.LanguageManager.sanitizeNluQuery(result.text)
+			# text = self.LanguageManager.sanitizeNluQuery(result.text)
+			overrideLanguage = self.LanguageManager.overrideLanguage
+			text = result.text
+			if overrideLanguage:
+				text = self._translator.translate(text=text, src=overrideLanguage, dest='en').text
+				self.logDebug(f'ASR translated to: {text}')
 
 			self.MqttManager.publish(topic=constants.TOPIC_TEXT_CAPTURED, payload={'sessionId': session.sessionId, 'text': text, 'siteId': session.siteId, 'likelihood': result.likelihood, 'seconds': result.processingTime})
 		else:
