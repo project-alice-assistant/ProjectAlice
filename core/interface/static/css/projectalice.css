@@ -47,11 +47,10 @@ input:focus { border: yellow dotted 1px;}
 .logYellow { color: yellow; }
 
 /* =========================== GENERAL =========================== */
-.initialHidden {display: none;}
 .stick-top-right{ position: absolute; top: 0; right: 0; z-index: 99; }
 
 .link-hover:hover{cursor: pointer;color: var(--hover);}
-.button-hover:hover {cursor: pointer;color: var(--hover);background-color: #636363;}
+.button-hover:hover, .button:hover {cursor: pointer;color: var(--hover);background-color: #636363;}
 .tabsContainer li:hover { cursor: pointer; color: var(--hover); background-color: #1e1e1e;}
 
 /* ========================== NAVIGATION ========================= */
@@ -68,9 +67,7 @@ input:focus { border: yellow dotted 1px;}
 	border: solid 2px; border-bottom-left-radius: 1.5em; border-top: none;border-color: var(--accent);}
 .toolbarButton { font-size: 2em; padding-right: .5em; min-width: .9em; text-align: center;}
 
-.button {background-color: var(--secondary);font-size: 1.3em;
-	width: 80%;min-height: 30px;margin-top: 25px;border: none;cursor: pointer;}
-
+/* Utility screen for administration */
 .utility {width: 12em;height: 12em;background-color: var(--windowBG);margin-left: 1.5em;margin-top: 1.5em;padding: .4em;}
 .utilityIcon {text-align: center;font-size: 5em;margin-top: .2em;}
 .utilityText {font-size: 1.25em;margin: .3em;text-align: center;}
@@ -83,18 +80,16 @@ input:focus { border: yellow dotted 1px;}
 ::-webkit-scrollbar {width: 8px; background-color: var(--accent);}
 ::-webkit-scrollbar-thumb {background-color: var(--secondary);}
 
+/*Home-Screen and Widget*/
 .widgetsPane {height: 100%;width: 100%;margin: 5px;}
-
 .widgetDelete, .widgetConfig {position: absolute;z-index: 97;font-size: 3em;background-color: #1e1e1e;
     top: .1em;left: .1em;width: 1.1em;height: 1.1em;border-radius: 10em;text-align: center;padding: .08em .02em .02em;}
-
 .addWidgetCategory {width: 100%;background-color: var(--windowBG); font-family: var(--short)}
 .addWidgetCategoryTitle {height: 1.7em;padding-left: 15px;
 	background-color: var(--secondary);color: var(--text);font-size: 1.6em;display: flex;align-items: center;}
 .addWidgetLine {height: 1.2em;margin-top: .3em;font-size: 1.2em;display: flex;align-items: center;}
 .addWidgetName {float: left;margin-left: 1em;}
 .addWidgetCheck {float: right;color: var(--text);margin-right: .4em;}
-
 
 .widget {display: block;box-shadow: 0 0 20px 5px #141414;background-color: var(--windowBG);cursor: pointer;overflow: hidden;}
 .widgetIcons {font-size: 1.5em;display: flex;align-items: flex-start;}
@@ -118,29 +113,8 @@ input:focus { border: yellow dotted 1px;}
 	overflow-x: hidden;
 }
 
-
-.centered {
-	display: flex;
-	width: 100%;
-	align-items: center;
-	justify-content: center;
-}
-
-.full-stretch {
-	width: 100%;
-	height: 100%;
-	min-height: 100%;
-	display: flex;
-	align-items: stretch;
-}
-
-.flex-row {
-	overflow-y: auto;
-	overflow-x: hidden;
-	display: flex;
-	flex-wrap: wrap;
-	align-content: flex-start;
-}
+.centered {width: 100%;display: flex;align-items: center;justify-content: center;}
+.full-stretch {width: 100%;height: 100%;min-height: 100%;display: flex;align-items: stretch;}
 
 .tabsContainer {
 	color: #d1d1d1;
@@ -180,52 +154,19 @@ input:focus { border: yellow dotted 1px;}
 }
 
 
-.tabsContainer .activeTab {
-	background-color: #1e1e1e;
-}
+.tabsContainer .activeTab {	background-color: var(--mainBG);}
 
-.fill-vertical {
-	align-self: stretch;
-	flex-basis: auto;
-	height: calc(100vh - 4em);
-}
+.fill-vertical {align-self: stretch;flex-basis: auto;height: calc(100vh - 4em);}
 
-.skillsStore {
-	margin: 5px;
-	overflow-y: auto;
-	overflow-x: hidden;
-	display: none;
-	flex-wrap: wrap;
-	align-content: flex-start;
-}
+.skillsStore {margin: .1em;overflow-y: auto;overflow-x: hidden;display: none;flex-wrap: wrap;align-content: flex-start;}
 
-.skillStoreWait {
-	width: 100%;
-	font-size: 10em;
-	text-align: center;
-	margin-top: 30px;
-}
+.contentLoadingAnimation {width: 100%;font-size: 10em;text-align: center;margin-top: 1em;}
 
-.skillStoreSkillTile {
-	display: flex;
-	flex-wrap: wrap;
-	align-content: flex-start;
-	align-items: flex-start;
-	background-color: var(--windowBG);
-	margin: 10px;
-	width: 300px;
-	height: 300px;
-	box-shadow: 0 0 20px 5px #141414;
-}
+.skillStoreSkillTile {background-color: var(--windowBG);width: 18.75em;height: 18.75em;margin: .6em;
+	display: flex;flex-wrap: wrap;align-content: flex-start;position: relative;}
 
-.skillsStoreSkillInfoContainer {
-	margin-top: 5px;
-	display: flex;
-	width: 100%;
-}
-
+.skillsStoreSkillInfoContainer {margin-top: .4em;display: flex;width: 100%;}
 .skillsStoreSkillLeft {width: 50%;}
-
 .skillsStoreSkillRight {
 	display: flex;
 	width: 50%;
@@ -246,132 +187,54 @@ input:focus { border: yellow dotted 1px;}
 	box-sizing: border-box;
 }
 
-.skillsStoreSkillAuthor,.skillsStoreSkillVersion,.skillsStoreSkillCategory,.skillVersion
-.spaced{margin: .3em;}
+.skillsPane {margin: .2em;overflow-y: auto;overflow-x: hidden;display: flex;flex-wrap: wrap;align-content: flex-start;}
+.skillsStoreSkillAuthor,.skillsStoreSkillVersion,.skillsStoreSkillCategory,.skillVersion,
+.spaced{margin: .2em;}
 
-.skillStoreSkillDescription {
-	font-family: var(--long);
-	width: 100%;
-	font-size: 0.75em;
-	margin: 5px;
-	background-color: var(--secondary);
-	height: 110px;
-	box-sizing: border-box;
-	padding: 5px;
-	overflow-x: hidden;
-	overflow-y: auto;
-}
+.skillTile {background-color: var(--windowBG);width: 18.75em;height: 13em;margin: .6em;
+	display: flex;flex-wrap: wrap;align-content: flex-start;box-shadow: 0 0 20px 5px #141414;}
 
-.skillStoreSkillDownload {
-	height: 50px;
-	width: 50%;
-	margin: 10px auto auto auto;
-	background-color: #343434;
-	align-content: center;
-	align-items: center;
-	justify-items: center;
-	justify-content: center;
-	font-size: 2em;
-}
-
-
-.skillStoreSkillButtonAnimation {
-	display: none;
-	height: 50px;
-	width: 50%;
-	margin: 10px auto auto auto;
-	background-color: #343434;
-	align-content: center;
-	align-items: center;
-	justify-items: center;
-	justify-content: center;
-	font-size: 2em;
-}
-
-.skillStoreSkillDownloadButton {display: flex;}
-
-
-.skillsPane {
-	margin: 5px;
-	overflow-y: auto;
-	overflow-x: hidden;
-	display: flex;
-	flex-wrap: wrap;
-	align-content: flex-start;
-}
-
-.skillTile {
-	display: flex;
-	flex-wrap: wrap;
-	align-items: flex-start;
-	background-color: var(--windowBG);
-	margin: 10px;
-	width: 300px;
-	height: 200px;
-	align-content: flex-start;
-	box-shadow: 0 0 20px 5px #141414;
-}
-
-.skillContainer {position: relative;flex-wrap: wrap;align-items: flex-start;align-content: flex-start;height: 165px;}
+.skillStoreSkillDescription {background-color: var(--secondary);font-family: var(--long);font-size: 0.75em;
+	width: 100%;height: 10em;margin: .5em;padding: .5em;box-sizing: border-box;overflow-x: hidden;	overflow-y: auto;}
+/*.skillStoreSkillButton{background-color: var(--secondary);font-size: 2em;
+	display: flex;height: 1.5em;width: 50%;margin: .2em auto auto auto;align-items: center;justify-content: center;}
+*/
+.skillContainer {position: relative;flex-wrap: wrap;align-content: flex-start;height: 11.3em;margin: .2em;}
 .skillDefaultView {display: flex;}
 .skillIntentsView {width:100%;overflow-x: hidden;overflow-y: auto;}
 
-.skillTitle {
-    height: 1.5em;
-    width: 100%;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 0 .4em;
-    background-color: var(--secondary);
-}
-
+.skillTitle {background-color: var(--secondary);height: 1.5em;width: 100%;padding: 0 .4em;display: flex;align-items: center;justify-content: space-between;overflow: hidden;}
 .skillStatus {width: 100%;margin-top: 10px;margin-left: 4px;}
 .skillName {overflow: hidden;font-size: 1.25em;}
-.skillActions {display: flex;width: 100%;position: absolute;bottom: -10px;}
-
-/*.skillIntents {width: 100%;height: 125px;align-items: flex-start;}*/
+.skillActions {display: flex;width: 100%;position: absolute;bottom: .1em;}
 
 .skillViewIntents,
-.skillSettings {width: 100%;margin-top: 10px;margin-right: 4px;text-align: right;}
+.skillSettings {width: 100%;margin: .2em;text-align: right;}
 
-.skillButton,
-.skillUpdating {
-	display: flex;
-	margin: 2px;
-	background-color: #343434;
-	flex-basis: 0;
-	flex-grow: 1;
-	height: 40px;
-	align-items: center;
-	align-content: center;
-	justify-content: center;
-	justify-items: center;
-	text-align: center;
-	overflow: hidden;
-}
+.button,
+.skillButton {background-color: var(--secondary);color: var(--text);height: 2.5em;margin: .1em;overflow: hidden;
+	display: flex;flex-basis: 0;flex-grow: 1;align-items: center;justify-content: center;text-align: center;}
+.skillButtonIconOnly {font-size: 1.8em;}
 
-.skillUpdating {display: none;font-size: 1.8em;}
 .skillIntentsViewCloseButton {width: 100%;text-align: right;margin-top: 5px;margin-right: 5px;}
 .skillsIntentsViewList {width: 100%;margin: 3px 5px 0 5px;}
+
 .configBox {width: 100%;display: table;}
 .configLine {width: 100%;display: table-row;height: 40px;}
 
 .configLabel {display: table-cell;text-align: left;vertical-align: middle;overflow: hidden;cursor: pointer;width: 20%}
 .configInput {display: table-cell;padding-left: 20px;text-align: left;vertical-align: middle;}
+.buttonLine {display:flex;width:100%;}
 
+/* Admin Auth */
 .adminAuthDisplayUser {margin: 1em;height: 1.5em;font-family: var(--short);font-size: 2em;text-align: center;}
 .adminAuthKeyContainer {margin-top: 25px;width: 100%;display: flex;justify-content: center;}
 .adminAuthDisplayDigit {background-color: var(--secondary);color: var(--secondary);font-size: 4em;
-    width: 1.5em;height: 1.5em;margin: 0.5em;
-    display: flex;align-items: center;justify-content: center;}
+    width: 1.5em;height: 1.5em;margin: 0.5em;display: flex;align-items: center;justify-content: center;}
 .adminAuthDigitFilled {color: var(--text);background-color: var(--windowBG);}
-.adminAuthKeyboardContainer {background-color: var(--windowBG);
-    display: flex;flex-wrap: wrap;
-    width: 20em;height: 27em;margin: 2em auto;}
-.adminAuthKeyboardKey {
-	display: flex;align-items: center;
-    width: 2.5em;height: 2.5em;margin: .41em;
-    background-color: var(--secondary);
-    justify-content: center;
-    font-size: 2em;}
+.adminAuthKeyboardContainer {background-color: var(--windowBG);width: 20em;height: 27em;margin: 2em auto;display: flex;flex-wrap: wrap;}
+.adminAuthKeyboardKey {background-color: var(--secondary);font-size: 2em;width: 2.5em;height: 2.5em;margin: .41em;display: flex;align-items: center;justify-content: center;}
+
+/*======================== TECHNICAL OVERWRITES================== */
+.initialHidden {display: none;}
+.flex-row { overflow-y: auto;overflow-x: hidden;display: flex;flex-wrap: wrap;align-content: flex-start;}

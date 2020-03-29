@@ -87,7 +87,7 @@
 		</span>
 	</div>
 	<div class="skillsStore fill-vertical" id="skillsStore">
-		<div class="skillStoreWait" id="skillStoreWait"><i class="fas fa-spinner fa-spin" aria-hidden="true"></i></div>
+		<div class="contentLoadingAnimation" id="skillStoreWait"><i class="fas fa-spinner fa-spin" aria-hidden="true"></i></div>
 	</div>
 	<div class="skillsPane fill-vertical" id="skillsPane">
 		{% for skillName, skill in skills.items() %}
@@ -96,7 +96,7 @@
 					<div class="skillName">{{ skillName }}</div><i class="{{ skill.icon }}" aria-hidden="true"></i>
 				</div>
 				<div class="skillContainer skillDefaultView">
-					<div class="skillAuthor">
+					<div class="skillAuthor spaced">
 						<i class="fas fa-user-cog fa-pull-left" aria-hidden="true"></i> {{ skill.author }}
 					</div>
 					<div class="skillVersion stick-top-right">
@@ -127,8 +127,8 @@
 							{{ langData.delete }}
 						</div>
 						{% if skill.updateAvailable is sameas true %}
-							<div class="skillUpdating" id="update_{{ skill.author }}_{{ skillName }}_animation">
-								<i class="fas fa-spinner fa-spin" aria-hidden="true"></i>
+							<div class="skillButton button-hover" id="update_{{ skill.author }}_{{ skillName }}_animation">
+								<i class="fas fa-spinner fa-spin skillButtonIconOnly" aria-hidden="true"></i>
 							</div>
 							<div class="skillButton button-hover" id="update_{{ skill.author }}_{{ skillName }}">
 								{{ langData.updatee }}
