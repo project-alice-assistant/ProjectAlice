@@ -195,7 +195,7 @@ class SuperManager:
 
 			mqttManager.onStop()
 		except Exception as e:
-			Logger().logError(f'Error while shutting down manager "{managerName}": {e}')
+			Logger().logError(f'Error while shutting down manager **{managerName}**: {e}')
 
 
 	def getManager(self, managerName: str):

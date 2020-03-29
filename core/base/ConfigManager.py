@@ -91,7 +91,7 @@ class ConfigManager(Manager):
 
 					if aliceConfigs[setting] not in values:
 						changes = True
-						self.logInfo(f'- Selected value "{aliceConfigs[setting]}" for setting "{setting}" doesn\'t exist, reverted to default value "{definition["defaultValue"]}"')
+						self.logInfo(f'- Selected value **{aliceConfigs[setting]}** for setting **{setting}** doesn\'t exist, reverted to default value --{definition["defaultValue"]}--')
 						aliceConfigs[setting] = definition['defaultValue']
 
 		# Setting logger level immediately
@@ -240,7 +240,7 @@ class ConfigManager(Manager):
 
 		config = self._snipsConfigurations[parent].get(key, None)
 		if config is None:
-			self.logWarning(f'Tried to get "{parent}/{key}" in snips configuration but key was not found')
+			self.logWarning(f'Tried to get **{parent}/{key}** in snips configuration but key was not found')
 
 		return config
 
@@ -284,7 +284,7 @@ class ConfigManager(Manager):
 			if skillToLoad and skillName != skillToLoad:
 				continue
 
-			self.logInfo(f'Checking configuration for skill "{skillName}"')
+			self.logInfo(f'Checking configuration for skill **{skillName}**')
 
 			skillConfigFile = skillInstance.getResource('config.json')
 			skillConfigTemplate = skillInstance.getResource('config.json.template')
@@ -295,7 +295,7 @@ class ConfigManager(Manager):
 				config = json.load(skillConfigFile.open())
 
 			elif skillConfigFile.exists() and not skillConfigTemplate.exists():
-				self.logInfo(f'- Deprecated config file for skill "{skillName}", removing')
+				self.logInfo(f'- Deprecated config file for skill **{skillName}**, removing')
 				skillConfigFile.unlink()
 				self._skillsTemplateConfigurations[skillName] = dict()
 				skillsConfigurations[skillName] = dict()
@@ -309,7 +309,7 @@ class ConfigManager(Manager):
 					changes = False
 					for setting, definition in configSample.items():
 						if setting not in config:
-							self.logInfo(f'- New configuration found for skill "{skillName}": {setting}')
+							self.logInfo(f'- New configuration found for skill **{skillName}**: {setting}')
 							changes = True
 							config[setting] = definition['defaultValue']
 
@@ -318,28 +318,28 @@ class ConfigManager(Manager):
 							try:
 								# First try to cast the setting we have to the new type
 								config[setting] = type(definition['defaultValue'])(config[setting])
-								self.logInfo(f'- Existing configuration type missmatch for skill "{skillName}": {setting}, cast variable to template configuration type')
+								self.logInfo(f'- Existing configuration type missmatch for skill **{skillName}**: {setting}, cast variable to template configuration type')
 							except Exception:
 								# If casting failed let's fall back to the new default value
-								self.logInfo(f'- Existing configuration type missmatch for skill "{skillName}": {setting}, replaced with template configuration')
+								self.logInfo(f'- Existing configuration type missmatch for skill **{skillName}**: {setting}, replaced with template configuration')
 								config[setting] = definition['defaultValue']
 
 					temp = config.copy()
 					for k, v in temp.items():
 						if k not in configSample:
-							self.logInfo(f'- Deprecated configuration for skill "{skillName}": {k}')
+							self.logInfo(f'- Deprecated configuration for skill **{skillName}**: {k}')
 							changes = True
 							del config[k]
 
 					if changes:
 						self._writeToSkillConfigurationFile(skillName, config)
 				except Exception as e:
-					self.logWarning(f'- Failed updating existing skill config file for skill {skillName}: {e}')
+					self.logWarning(f'- Failed updating existing skill config file for skill **{skillName}**: {e}')
 					skillConfigFile.unlink()
 					if skillConfigTemplate.exists():
 						self._newSkillConfigFile(skillName, skillConfigTemplate)
 					else:
-						self.logWarning(f'- Cannot create config, template not existing, skipping skill "{skillName}"')
+						self.logWarning(f'- Cannot create config, template not existing, skipping skill **{skillName}**')
 
 			else:
 				self._skillsTemplateConfigurations[skillName] = dict()
@@ -352,7 +352,7 @@ class ConfigManager(Manager):
 
 
 	def _newSkillConfigFile(self, skillName: str, skillConfigTemplate: Path):
-		self.logInfo(f'- New config file for skill "{skillName}", creating from template')
+		self.logInfo(f'- New config file for skill **{skillName}**, creating from template')
 
 		template = json.load(skillConfigTemplate.open())
 
@@ -395,7 +395,7 @@ class ConfigManager(Manager):
 			func = getattr(self, function)
 			return func(value)
 		except:
-			self.logWarning(f'Configuration pre processing method "{function}" does not exist')
+			self.logWarning(f'Configuration pre processing method **{function}** does not exist')
 			return False
 
 
@@ -407,7 +407,7 @@ class ConfigManager(Manager):
 				func = getattr(self, function)
 				func()
 			except:
-				self.logWarning(f'Configuration post processing method "{function}" does not exist')
+				self.logWarning(f'Configuration post processing method **{function}** does not exist')
 				continue
 
 

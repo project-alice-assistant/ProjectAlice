@@ -37,7 +37,7 @@ class InitDict(dict):
 		try:
 			return super().__getitem__(item) or ''
 		except:
-			print(f'Missing key "{item}" in provided yaml file.')
+			print(f'Missing key **{item}** in provided yaml file.')
 			return ''
 
 

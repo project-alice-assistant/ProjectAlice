@@ -52,7 +52,7 @@ class DialogTemplateManager(Manager):
 		language = self.LanguageManager.activeLanguage
 		for skillName, skillInstance in self.SkillManager.allWorkingSkills.items():
 
-			self.logInfo(f'Checking data for skill "{skillName}"')
+			self.logInfo(f'Checking data for skill **{skillName}**')
 			if skillName not in checksums:
 				self.logInfo(f'Skill "{skillName}" is new')
 				checksums[skillName] = list()
@@ -60,7 +60,7 @@ class DialogTemplateManager(Manager):
 
 			pathToResources = skillInstance.getResource('dialogTemplate')
 			if not pathToResources.exists():
-				self.logWarning(f'{skillName} has no dialog template defined')
+				self.logWarning(f'**{skillName}** has no dialog template defined')
 				changes.pop(skillName, None)
 				continue
 
@@ -69,27 +69,27 @@ class DialogTemplateManager(Manager):
 				if filename not in checksums[skillName]:
 					# Trigger a change only if the change concerns the language in use
 					if filename == language:
-						self.logInfo(f'Skill "{skillName}" has new language support "{filename}"')
+						self.logInfo(f'Skill **{skillName}** has new language support "{filename}"')
 						changes.setdefault(skillName, list()).append(filename)
 					continue
 
 				if self.Commons.fileChecksum(file) != checksums[skillName][filename]:
 					# Trigger a change only if the change concerns the language in use
 					if filename == language:
-						self.logInfo(f'Skill "{skillName}" has changes in language "{filename}"')
+						self.logInfo(f'Skill **{skillName}** has changes in language "{filename}"')
 						changes.setdefault(skillName, list()).append(filename)
 					continue
 
 		# Now check that what we have in cache in actually existing and wasn't manually deleted
 		for skillName, languages in checksums.items():
 			if not Path(self.Commons.rootDir(), f'skills/{skillName}/').exists():
-				self.logInfo(f'Skill "{skillName}" was removed')
+				self.logInfo(f'Skill **{skillName}** was removed')
 				changes[f'--{skillName}'] = list()
 				continue
 
 			for lang in languages:
 				if not Path(self.Commons.rootDir(), f'skills/{skillName}/dialogTemplate/{lang}.json').exists() and lang == language:
-					self.logInfo(f'Skill "{skillName}" has dropped language "{lang}"')
+					self.logInfo(f'Skill **{skillName}** has dropped language "{lang}"')
 					changes.setdefault(f'--{skillName}', list()).append(lang)
 
 		if changes:
@@ -107,7 +107,7 @@ class DialogTemplateManager(Manager):
 		for skillName, skillInstance in self.SkillManager.allWorkingSkills.items():
 			pathToResources = skillInstance.getResource('dialogTemplate')
 			if not pathToResources.exists():
-				self.logWarning(f'{skillName} has no dialog template defined to build cache')
+				self.logWarning(f'**{skillName}** has no dialog template defined to build cache')
 				continue
 
 			cached[skillName] = dict()

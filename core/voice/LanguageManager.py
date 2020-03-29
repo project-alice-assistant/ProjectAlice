@@ -55,7 +55,7 @@ class LanguageManager(Manager):
 	def loadSkillStrings(self, skillName: str):
 		skillInstance = self.SkillManager.getSkillInstance(skillName)
 		if not skillInstance:
-			self.logError(f'Loading strings for skill "{skillName}" failed')
+			self.logError(f'Loading strings for skill **{skillName}** failed')
 
 		jsonFile = skillInstance.getResource('strings.json')
 		if not jsonFile.exists():
@@ -65,7 +65,7 @@ class LanguageManager(Manager):
 		try:
 			self._stringsData[skillName] = json.loads(jsonFile.read_text())
 		except ValueError:
-			self.logError(f'String file for skill "{skillName}" is corrupted')
+			self.logError(f'String file for skill **{skillName}** is corrupted')
 
 
 	def getTranslations(self, skill: str, key: str, toLang: str = '') -> list:
@@ -73,7 +73,7 @@ class LanguageManager(Manager):
 			toLang = self.activeLanguage
 
 		if skill not in self._stringsData:
-			self.logError(f'Asked to get translation for "{key}" from skill "{skill}" but skill does not exist')
+			self.logError(f'Asked to get translation for **{key}** from skill **{skill}** but skill does not exist')
 			return list()
 		elif key not in self._stringsData[skill]:
 			self.logError(f'Asked to get translation for "{key}" from skill "{skill}" but does not exist')

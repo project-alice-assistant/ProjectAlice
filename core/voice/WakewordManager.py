@@ -142,7 +142,7 @@ class WakewordManager(Manager):
 
 		filepath = self.wakeword.getSamplePath()
 		if not filepath.exists():
-			self.logError(f'Raw wakeword "{len(self.wakeword.samples)}" wasn\'t found')
+			self.logError(f'Raw wakeword **{len(self.wakeword.samples)}** wasn\'t found')
 			self._state = WakewordManagerState.IDLE
 			return
 

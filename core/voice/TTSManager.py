@@ -28,7 +28,7 @@ class TTSManager(Manager):
 			self._tts = PicoTTS()
 			self.logInfo('Started "Pico" TTS')
 		else:
-			self.logInfo(f'Started "{tts.value}" TTS')
+			self.logInfo(f'Started **{tts.value}** TTS')
 
 		self._tts.onStart()
 

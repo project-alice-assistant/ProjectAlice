@@ -91,7 +91,7 @@ class AliceSkill(ProjectAliceObject):
 					for intent in data['intents']:
 						self._intentsDefinitions[lang][intent['name']] = intent['utterances']
 			except Exception as e:
-				self.logWarning(f'Something went wrong loading intent definition for skill {self._name}, language "{lang}": {e}')
+				self.logWarning(f'Something went wrong loading intent definition for skill **{self._name}**, language **{lang}**: {e}')
 
 
 	def buildIntentList(self, supportedIntents) -> dict:
@@ -150,7 +150,7 @@ class AliceSkill(ProjectAliceObject):
 	def loadWidgets(self):
 		fp = self.getResource('widgets')
 		if fp.exists():
-			self.logInfo(f"Loading {len(list(fp.glob('*.py'))) - 1} widgets")
+			self.logInfo(f"Loading **{len(list(fp.glob('*.py'))) - 1}** widgets")
 
 			data = self.DatabaseManager.fetch(
 				tableName='widgets',
@@ -175,12 +175,12 @@ class AliceSkill(ProjectAliceObject):
 					self._widgets[widgetName] = widget
 					widget.setParentSkillInstance(self)
 					del data[widgetName]
-					self.logInfo(f'Loaded widget "{widgetName}"')
+					self.logInfo(f'Loaded widget **{widgetName}**')
 
 				else:  # widget is new
-					self.logInfo(f'Adding widget "{widgetName}"')
+					self.logInfo(f'Adding widget **{widgetName}**')
 					widget = klass({
-						'name': widgetName,
+						'name'  : widgetName,
 						'parent': self.name,
 					})
 					self._widgets[widgetName] = widget
@@ -188,14 +188,14 @@ class AliceSkill(ProjectAliceObject):
 					widget.saveToDB()
 
 			for widgetName in data:  # deprecated widgets
-				self.logInfo(f'Widget "{widgetName}" is deprecated, removing')
+				self.logInfo(f'Widget **{widgetName}** is deprecated, removing')
 				self.DatabaseManager.delete(
 					tableName='widgets',
 					callerName=self.SkillManager.name,
 					query='DELETE FROM :__table__ WHERE parent = :parent AND name = :name',
 					values={
 						'parent': self.name,
-						'name': widgetName
+						'name'  : widgetName
 					}
 				)
 
