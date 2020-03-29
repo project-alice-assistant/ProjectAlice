@@ -208,7 +208,7 @@ class LanguageManager(Manager):
 
 
 	def getLanguageAndCountryCode(self, allowOverride: bool = True) -> str:
-		return self.overrideLanguageAndCountryCode if allowOverride else self.activeLanguageAndCountryCode
+		return self.overrideLanguageAndCountryCode if allowOverride and self.overrideLanguage else self.activeLanguageAndCountryCode
 
 
 	@property
