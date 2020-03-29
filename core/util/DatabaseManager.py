@@ -135,7 +135,12 @@ class DatabaseManager(Manager):
 		return True
 
 
-	def replace(self, tableName: str, query: str, callerName: str, values: dict = None) -> int:
+	def replace(self, tableName: str, query: str = None, callerName: str = None, values: dict = None) -> int:
+		if not query:
+			cols = ', '.join(values)
+			data = ', :'.join(values)
+			query = f'REPLACE INTO :__table__ ({cols}) VALUES (:{data})'
+
 		return self.insert(tableName, query, callerName, values)
 
 
