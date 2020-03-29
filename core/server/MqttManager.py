@@ -580,27 +580,16 @@ class MqttManager(Manager):
 			if ' ' in client:
 				client = client.replace(' ', '_')
 
-			if self.ConfigManager.getAliceConfigByName('outputOnSonos') != '1' or (self.ConfigManager.getAliceConfigByName('outputOnSonos') == '1' and self.SkillManager.getSkillInstance('Sonos') is None or not self.SkillManager.getSkillInstance('Sonos').anySkillHere(client)) or not self.SkillManager.getSkillInstance('Sonos').active:
-				self._mqttClient.publish(constants.TOPIC_START_SESSION, json.dumps({
-					'siteId'    : client,
-					'init'      : {
-						'type'                   : 'notification',
-						'text'                   : text,
-						'sendIntentNotRecognized': True,
-						'canBeEnqueued'          : canBeEnqueued
-					},
-					'customData': customData
-				}))
-			else:
-				self._speakOnSonos(text, client)
-				self._mqttClient.publish(constants.TOPIC_START_SESSION, json.dumps({
-					'siteId'    : client,
-					'init'      : {
-						'type'                   : 'notification',
-						'sendIntentNotRecognized': True
-					},
-					'customData': customData
-				}))
+			self._mqttClient.publish(constants.TOPIC_START_SESSION, json.dumps({
+				'siteId'    : client,
+				'init'      : {
+					'type'                   : 'notification',
+					'text'                   : text,
+					'sendIntentNotRecognized': True,
+					'canBeEnqueued'          : canBeEnqueued
+				},
+				'customData': customData
+			}))
 
 
 	def ask(self, text: str, client: str = constants.DEFAULT_SITE_ID, intentFilter: list = None, customData: dict = None, previousIntent: str = '', canBeEnqueued: bool = True, currentDialogState: str = '', probabilityThreshold: float = None):
@@ -664,21 +653,15 @@ class MqttManager(Manager):
 
 		jsonDict['init'] = initDict
 
-		if self.ConfigManager.getAliceConfigByName('outputOnSonos') != '1' or (self.ConfigManager.getAliceConfigByName('outputOnSonos') == '1' or self.SkillManager.getSkillInstance('Sonos') is None and not self.SkillManager.getSkillInstance('Sonos').anySkillHere(client)) or not self.SkillManager.getSkillInstance('Sonos').active:
-			if client == constants.ALL:
-				deviceList = self.DeviceManager.getDevicesByType('AliceSatellite', connectedOnly=True)
-				deviceList.append(constants.DEFAULT_SITE_ID)
+		if client == constants.ALL:
+			deviceList = self.DeviceManager.getDevicesByType('AliceSatellite', connectedOnly=True)
+			deviceList.append(constants.DEFAULT_SITE_ID)
 
-				for device in deviceList:
-					device = device.replace('@mqtt', '')
-					self.ask(text=text, client=device, intentFilter=intentFilter, customData=customData)
-			else:
-				self._mqttClient.publish(constants.TOPIC_START_SESSION, json.dumps(jsonDict))
+			for device in deviceList:
+				device = device.replace('@mqtt', '')
+				self.ask(text=text, client=device, intentFilter=intentFilter, customData=customData)
 		else:
-			jsonDict['init']['text'] = ''
 			self._mqttClient.publish(constants.TOPIC_START_SESSION, json.dumps(jsonDict))
-
-			self._speakOnSonos(text, client)
 
 
 	def continueDialog(self, sessionId: str, text: str, customData: dict = None, intentFilter: list = None, previousIntent: str = '', slot: str = '', currentDialogState: str = '', probabilityThreshold: float = None):
@@ -736,12 +719,7 @@ class MqttManager(Manager):
 
 		session.customData = {**session.customData, **customData}
 
-		if self.ConfigManager.getAliceConfigByName('outputOnSonos') != '1' or (self.ConfigManager.getAliceConfigByName('outputOnSonos') == '1' and self.SkillManager.getSkillInstance('Sonos') is None or not self.SkillManager.getSkillInstance('Sonos').anySkillHere(session.siteId)) or not self.SkillManager.getSkillInstance('Sonos').active:
-			self._mqttClient.publish(constants.TOPIC_CONTINUE_SESSION, json.dumps(jsonDict))
-		else:
-			jsonDict['text'] = ''
-			self._mqttClient.publish(constants.TOPIC_CONTINUE_SESSION, json.dumps(jsonDict))
-			self._speakOnSonos(text, constants.DEFAULT_SITE_ID)
+		self._mqttClient.publish(constants.TOPIC_CONTINUE_SESSION, json.dumps(jsonDict))
 
 
 	@deprecated
@@ -754,7 +732,7 @@ class MqttManager(Manager):
 		Ends a session by speaking the given text
 		:param sessionId: int session id to terminate
 		:param text: str Text to speak
-		:param client: int Where to speak
+		:param client: str Where to speak
 		"""
 		if not sessionId:
 			return
@@ -763,24 +741,15 @@ class MqttManager(Manager):
 		if session and session.isAPIGenerated:
 			return self.say(text=text, client=session.siteId)
 
-		client = client.replace(' ', '_')
-
-		if self.ConfigManager.getAliceConfigByName('outputOnSonos') != '1' or (self.ConfigManager.getAliceConfigByName('outputOnSonos') == '1' and self.SkillManager.getSkillInstance('Sonos') is None or not self.SkillManager.getSkillInstance('Sonos').anySkillHere(client)) or not self.SkillManager.getSkillInstance('Sonos').active:
-			if text:
-				self._mqttClient.publish(constants.TOPIC_END_SESSION, json.dumps({
-					'sessionId': sessionId,
-					'text'     : text
-				}))
-			else:
-				self._mqttClient.publish(constants.TOPIC_END_SESSION, json.dumps({
-					'sessionId': sessionId
-				}))
+		if text:
+			self._mqttClient.publish(constants.TOPIC_END_SESSION, json.dumps({
+				'sessionId': sessionId,
+				'text'     : text
+			}))
 		else:
 			self._mqttClient.publish(constants.TOPIC_END_SESSION, json.dumps({
 				'sessionId': sessionId
 			}))
-			if text:
-				self._speakOnSonos(text, client)
 
 
 	def endSession(self, sessionId):
@@ -869,23 +838,6 @@ class MqttManager(Manager):
 	@property
 	def mqttClient(self) -> mqtt.Client:
 		return self._mqttClient
-
-
-	@deprecated
-	def _speakOnSonos(self, text, client):
-		if text == '':
-			return
-
-		self.Commons.runRootSystemCommand([
-			Path(self.Commons.rootDir(), '/system/scripts/snipsSuperTTS.sh'),
-			Path('/share/tmp.wav'), 'amazon', self.LanguageManager.activeLanguage, 'US', 'Joanna', 'FEMALE', text, '22050'
-		])
-
-		sonosSkill = self.SkillManager.getSkillInstance('Sonos')
-		if sonosSkill:
-			sonosSkill.aliceSpeak(client)
-		else:
-			self.logError('Tried to speak on Sonos but Sonos skill is disabled or missing')
 
 
 	def toggleFeedbackSounds(self, state = 'On'):

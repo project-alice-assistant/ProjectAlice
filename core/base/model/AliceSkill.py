@@ -31,9 +31,9 @@ class AliceSkill(ProjectAliceObject):
 			self._installFile = Path(inspect.getfile(self.__class__)).with_suffix('.install')
 			self._installer = json.loads(self._installFile.read_text())
 		except FileNotFoundError:
-			raise SkillStartingFailed(error=f'[{type(self).__name__}] Cannot find install file')
+			raise SkillStartingFailed(skillName=constants.UNKNOWN, error=f'[{type(self).__name__}] Cannot find install file')
 		except Exception as e:
-			raise SkillStartingFailed(error=f'[{type(self).__name__}] Failed loading skill: {e}')
+			raise SkillStartingFailed(skillName=constants.UNKNOWN, error=f'[{type(self).__name__}] Failed loading skill: {e}')
 
 		self._name = self._installer['name']
 		self._author = self._installer['author']

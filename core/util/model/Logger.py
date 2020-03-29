@@ -61,6 +61,8 @@ class Logger:
 
 	@staticmethod
 	def printTraceback():
+		return
+
 		from core.base.SuperManager import SuperManager
 
 		try:
