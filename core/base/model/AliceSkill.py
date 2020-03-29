@@ -448,13 +448,13 @@ class AliceSkill(ProjectAliceObject):
 		self.loadWidgets()
 		self.loadScenarioNodes()
 
-		self.logInfo(f'✔ Started!')
+		self.logInfo(f'![green](✔ Started!)')
 
 
 	def onStop(self):
 		self._active = False
 		self.SkillManager.configureSkillIntents(self._name, False)
-		self.logInfo(f'✔ Stopped')
+		self.logInfo(f'![green](✔ Stopped)')
 
 
 	def onBooted(self) -> bool:
