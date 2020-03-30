@@ -26,14 +26,14 @@
 <div class="page">
 <nav>
 	<ul class="mainMenuList">
-		<li class="mainMenuListItem button-hover" onclick="location.href='/home/';">{{ langData.home }}</li>
-		<li class="mainMenuListItem button-hover" onclick="location.href='/skills/';">{{ langData.skills }}</li>
-		<li class="mainMenuListItem button-hover" onclick="location.href='/scenarios/';">{{ langData.scenarios }}</li>
-		<li class="mainMenuListItem button-hover" onclick="location.href='/syslog/';">{{ langData.syslog }}</li>
-		<li class="mainMenuListItem button-hover" onclick="location.href='/alicewatch/';">{{ langData.alicewatch }}</li>
-		<li class="mainMenuListItem button-hover" onclick="location.href='/admin/';">{{ langData.admin }}</li>
+		<li class="mainMenuListItem button" onclick="location.href='/home/';">{{ langData.home }}</li>
+		<li class="mainMenuListItem button" onclick="location.href='/skills/';">{{ langData.skills }}</li>
+		<li class="mainMenuListItem button" onclick="location.href='/scenarios/';">{{ langData.scenarios }}</li>
+		<li class="mainMenuListItem button" onclick="location.href='/syslog/';">{{ langData.syslog }}</li>
+		<li class="mainMenuListItem button" onclick="location.href='/alicewatch/';">{{ langData.alicewatch }}</li>
+		<li class="mainMenuListItem button" onclick="location.href='/admin/';">{{ langData.admin }}</li>
 		{% if aliceSettings['devMode'] is sameas true %}
-			<li class="mainMenuListItem button-hover" onclick="location.href='/devmode/';">{{ langData.devMode }}</li>
+			<li class="mainMenuListItem button" onclick="location.href='/devmode/';">{{ langData.devMode }}</li>
 		{% endif %}
 	</ul>
 </nav>

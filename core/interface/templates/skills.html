@@ -86,12 +86,12 @@
 			<i class="fas fa-times-circle" aria-hidden="true"></i>
 		</span>
 	</div>
-	<div class="skillsStore fill-vertical" id="skillsStore">
+	<div class="skillStore tileContainer fill-vertical initialHidden" id="skillStore">
 		<div class="contentLoadingAnimation" id="skillStoreWait"><i class="fas fa-spinner fa-spin" aria-hidden="true"></i></div>
 	</div>
-	<div class="skillsPane fill-vertical" id="skillsPane">
+	<div class="skillsPane tileContainer fill-vertical" id="skillsPane">
 		{% for skillName, skill in skills.items() %}
-			<div class="skillTile" id="{{ skillName }}-{{ skill.author }}">
+			<div class="tile skillTile" id="{{ skillName }}-{{ skill.author }}">
 				<div class="skillTitle">
 					<div class="skillName">{{ skillName }}</div><i class="{{ skill.icon }}" aria-hidden="true"></i>
 				</div>
@@ -113,8 +113,8 @@
 							{{ langData.skillSettings }} <i class="fas fa-cog" aria-hidden="true"></i>
 						</div>
 					{% endif %}
-					<div class="skillActions">
-						<div class="skillButton button-hover"
+					<div class="buttonLine">
+						<div class="button"
 								{% if skill.required is sameas true %} style="display: none;" {% endif %} id="toggle_{{ skillName }}">
 							{% if skill.active is sameas true %}
 								{{ langData.disable }}
@@ -122,30 +122,30 @@
 								{{ langData.enable }}
 							{% endif %}
 						</div>
-						<div class="skillButton button-hover"
+						<div class="button"
 								{% if skill.required is sameas true %} style="display: none;" {% endif %} id="delete_{{ skillName }}">
 							{{ langData.delete }}
 						</div>
 						{% if skill.updateAvailable is sameas true %}
-							<div class="skillButton button-hover" id="update_{{ skill.author }}_{{ skillName }}_animation">
-								<i class="fas fa-spinner fa-spin skillButtonIconOnly" aria-hidden="true"></i>
+							<div class="button" id="update_{{ skill.author }}_{{ skillName }}_animation">
+								<i class="fas fa-spinner fa-spin buttonIconOnly" aria-hidden="true"></i>
 							</div>
-							<div class="skillButton button-hover" id="update_{{ skill.author }}_{{ skillName }}">
+							<div class="button" id="update_{{ skill.author }}_{{ skillName }}">
 								{{ langData.updatee }}
 							</div>
 						{% endif %}
 						{% if aliceSettings['devMode'] is sameas true %}
-							<div class="skillButton button-hover" id="reload_{{ skillName }}">
+							<div class="button" id="reload_{{ skillName }}">
 								{{ langData.reload }}
 							</div>
 						{% endif %}
 					</div>
 				</div>
 				<div class="skillContainer skillIntentsView initialHidden">
-					<div class="skillIntentsViewCloseButton link-hover">
+					<div class="stick-top-right spaced link-hover">
 						<i class="fas fa-times-circle" aria-hidden="true"></i>
 					</div>
-					<div class="skillsIntentsViewList">
+					<div class="skillsIntentsViewList spaced">
 						{% for intent in skill.supportedIntents.values() %}
 							{% if not 'Dummy' in intent|string %}
 								<div class="intentTopic link-hover" title="{{ skill.getUtterancesByIntent(intent, true, true)|random }}">

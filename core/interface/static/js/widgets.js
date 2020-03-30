@@ -67,7 +67,7 @@ $(function () {
 		$('.widget').resizable('disable');
 	});
 
-	$('#widgetOptions').dialog({
+	$('.widgetOptions').dialog({
 		autoOpen: false,
 		draggable: false,
 		width: 600,
@@ -142,7 +142,7 @@ $(function () {
 	$('.widgetConfig').on('click touchstart', function () {
 		if ($(this).parents('.widget').length > 0) {
 			//$('#widgetOptions').html(loadConfig($(this).parent().attr('id')));
-			$('#widgetOptions').dialog( "open" );
+			$(this).parent().children('.widgetOptions').dialog( "open" );
 		}
 		return false;
 	});

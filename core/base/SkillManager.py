@@ -30,6 +30,7 @@ class SkillManager(Manager):
 
 	DATABASE = {
 		'widgets': [
+			'uuid'
 			'parent TEXT NOT NULL UNIQUE',
 			'name TEXT NOT NULL UNIQUE',
 			'posx INTEGER NOT NULL',

@@ -53,24 +53,24 @@ $(function () {
 
 	function addToStore(installer) {
 		if ($('#skillsPane').find('#' + installer['name'] + '-' + installer['author']).length === 0) {
-			let $tile = $('<div class="skillStoreSkillTile" id="' + installer['name'] + 'InstallTile">' +
-				'<div class="skillsStoreSkillTitle">' + installer['name'] + '</div>' +
-				'<div class="skillsStoreSkillInfoContainer">' +
-				'<div class="skillsStoreSkillLeft">' +
-				'<div class="skillsStoreSkillAuthor"><i class="fas user-cog"></i> ' + installer['author'] + '</div>' +
-				'<div class="skillsStoreSkillVersion"><i class="fas fa-code-branch" style="margin-right: 3px;"></i> ' + installer['version'] + '</div>' +
-				'<div class="skillsStoreSkillCategory"><i class="fas fa-tags"></i> ' + installer['category'] + '</div>' +
+			let $tile = $('<div class="tile skillStoreSkillTile" id="' + installer['name'] + 'InstallTile">' +
+				'<div class="skillTitle"><div class="skillName">' + installer['name'] + '</div></div>' +
+				'<div class="skillStoreSkillInfoContainer">' +
+				'<div class="skillStoreSkillLeft">' +
+				'<div class="skillStoreSkillAuthor spaced"><i class="fas fa-user-cog fa-pull-left" aria-hidden="true"></i> ' + installer['author'] + '</div>' +
+				'<div class="skillStoreSkillVersion spaced"><i class="fas fa-code-branch" style="margin-right: 3px;"></i> ' + installer['version'] + '</div>' +
+				'<div class="skillStoreSkillCategory spaced"><i class="fas fa-tags"></i> ' + installer['category'] + '</div>' +
 				'</div>' +
-				'<div class="skillsStoreSkillRight">' +
+				'<div class="skillStoreSkillRight">' +
 				'<i class="' + installer['icon'] + '" aria-hidden="true"></i>' +
 				'</div>' +
 				'</div>' +
 				'<div class="skillStoreSkillDescription">' + installer['desc'] + '</div>' +
 				'</div>');
 
-			let $actions = $('<div class="skillActions"></div>');
+			let $actions = $('<div class="buttonLine"></div>');
 
-			let $button = $('<div class="skillStoreSkillSelected skillButton button-hover initialHidden"><i class="fas fa-shopping-cart skillButtonIconOnly"></i></div>');
+			let $button = $('<div class="skillStoreSkillSelected button initialHidden"><i class="fas fa-shopping-cart buttonIconOnly"></i></div>');
 			$button.on('click touchstart', function () {
 				$(this).hide();
 				$(this).parent().children('.skillStoreSkillDownloadButton').css('display', 'flex');
@@ -87,7 +87,7 @@ $(function () {
 			});
 			$actions.append($button);
 
-			$button = $('<div class="skillStoreSkillDownloadButton skillButton button-hover "><i class="fas fa-download skillButtonIconOnly"></i></div>');
+			$button = $('<div class="skillStoreSkillDownloadButton button"><i class="fas fa-download buttonIconOnly"></i></div>');
 			$button.on('click touchstart', function () {
 				$(this).hide();
 				$(this).parent().children('.skillStoreSkillSelected').css('display', 'flex');
@@ -97,15 +97,15 @@ $(function () {
 			});
 			$actions.append($button);
 
-			$button = $('<div class="skillStoreSkillWaitAnimation skillButton initialHidden"><i class="fas fa-spinner fa-spin skillButtonIconOnly"></i></div>');
+			$button = $('<div class="skillStoreSkillWaitAnimation button initialHidden"><i class="fas fa-spinner fa-spin buttonIconOnly"></i></div>');
 			$actions.append($button);
 
-			$button = $('<div class="skillStoreSkillDownloadFail skillButton initialHidden"><i class="fas fa-exclamation-triangle skillButtonIconOnly"></i></div>');
+			$button = $('<div class="skillStoreSkillDownloadFail button initialHidden"><i class="fas fa-exclamation-triangle buttonIconOnly"></i></div>');
 			$actions.append($button);
 
 			$tile.append($actions)
 
-			$('#skillsStore').append($tile);
+			$('#skillStore').append($tile);
 		}
 	}
 
@@ -231,7 +231,7 @@ $(function () {
 	$('#openSkillStore').on('click touchstart', function () {
 		loadStoreData();
 		$('#skillsPane').hide();
-		$('#skillsStore').css('display', 'flex');
+		$('#skillStore').css('display', 'flex');
 		$('#openSkillStore').hide();
 		$('#closeSkillStore').show();
 		return false;
