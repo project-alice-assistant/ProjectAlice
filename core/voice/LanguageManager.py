@@ -97,14 +97,17 @@ class LanguageManager(Manager):
 		langDef: dict = self.ConfigManager.getAliceConfigByName('supportedLanguages')
 
 		if self.ConfigManager.getAliceConfigByName('nonNativeSupportLanguage'):
-			self.logWarning(f'You are using a non natively supported language **{self.ConfigManager.getAliceConfigByName("nonNativeSupportLanguage")}**')
-			self._activeLanguage = 'en'
-			self._activeCountryCode = 'US'
-			self._defaultLanguage = 'en'
-			self._defaultCountryCode = 'US'
-			self._overrideLanguage = self.ConfigManager.getAliceConfigByName('nonNativeSupportLanguage')
-			self._overrideCountryCode = self.ConfigManager.getAliceConfigByName('nonNativeSupportCountry')
-			return
+			if self.ConfigManager.getAliceConfigByName('stayCompletlyOffline'):
+				self.logWarning(f'You cannot use a non natively support language if you have chosen to stay completly offline.')
+			else:
+				self.logWarning(f'You are using a non natively supported language **{self.ConfigManager.getAliceConfigByName("nonNativeSupportLanguage")}**')
+				self._activeLanguage = 'en'
+				self._activeCountryCode = 'US'
+				self._defaultLanguage = 'en'
+				self._defaultCountryCode = 'US'
+				self._overrideLanguage = self.ConfigManager.getAliceConfigByName('nonNativeSupportLanguage')
+				self._overrideCountryCode = self.ConfigManager.getAliceConfigByName('nonNativeSupportCountry')
+				return
 
 		for langCode, settings in langDef.items():
 			self._supportedLanguages.append(langCode)
