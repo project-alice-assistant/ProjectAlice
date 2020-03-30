@@ -63,13 +63,13 @@
 	},
 	"maxOneAlicePerRoom": {
 		"default": [
-			"Je suis désolée mais il ne peut y avoir qu'un seul skill Alice par pièce",
-			"Vraiment désolée mais il ne peut pas y avoir plus d'une skill Alice par pièce"
+			"Je suis désolée mais il ne peut y avoir qu'un seul satellite Alice par pièce",
+			"Vraiment désolée mais il ne peut pas y avoir plus d'un satellite Alice par pièce"
 		]
 	},
 	"wakewordCaptured": [
 		"J'ai capturé ton wake word et l'ai coupé, vérifions ça!",
-		"Ok, j'ai capturé, je te joue le résoltat pour vérifier"
+		"Ok, j'ai capturé, je te joue le résultat pour vérifier"
 	],
 	"isWakewordSampleOk": [
 		"Tu penses que c'était bon? Je peux le couper plus ou moin si besoin"

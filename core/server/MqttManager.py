@@ -177,7 +177,7 @@ class MqttManager(Manager):
 			if not session:  # It is a device trying to communicate with Alice
 				session = self.DeviceManager.deviceMessage(message)
 				self.broadcast(method=constants.EVENT_MESSAGE, exceptions=[self.name], session=session)
-				self.SkillManager.skillBroadcast(method='dispatchMessage', session=session)
+				self.SkillManager.dispatchMessage(session=session)
 				return
 
 			redQueen = self.SkillManager.getSkillInstance('RedQueen')

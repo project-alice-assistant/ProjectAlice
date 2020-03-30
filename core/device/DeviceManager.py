@@ -1,3 +1,4 @@
+import json
 import socket
 import sqlite3
 import threading
@@ -385,6 +386,7 @@ class DeviceManager(Manager):
 			return
 
 		if self._devices[uid].connected:
+			self.logInfo(f'Device with uid **{uid}** disconnected')
 			self._devices[uid].connected = False
 			self.broadcast(method=constants.EVENT_DEVICE_DISCONNECTING, exceptions=[self.name], propagateToSkills=True)
 
@@ -399,3 +401,26 @@ class DeviceManager(Manager):
 
 	def getDeviceByUID(self, uid: str) -> Optional[Device]:
 		return self._devices.get(uid, None)
+
+
+	def broadcastToDevices(self, topic: str, payload: dict = None, deviceType: str = None, room: str = None, connectedOnly: bool = True):
+		if not payload:
+			payload = dict()
+
+		for device in self._devices:
+			if deviceType and device.deviceType.lower() != deviceType.lower():
+				continue
+
+			if room and device.room.lower() != room.lower():
+				continue
+
+			if connectedOnly and not device.connected:
+				continue
+
+			payload.setdefault('uid', device.uid)
+			payload.setdefault('siteId', device.room)
+
+			self.MqttManager.publish(
+				topic=topic,
+				payload=json.dumps(payload)
+			)
