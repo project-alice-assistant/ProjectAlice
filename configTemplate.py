@@ -294,7 +294,7 @@ settings = {
 			'en': {
 				'default'           : True,
 				'defaultCountryCode': 'US',
-				'countryCodes'      : ['US', 'GB']
+				'countryCodes'      : ['US', 'GB', 'AU']
 			},
 			'fr': {
 				'default'           : False,
