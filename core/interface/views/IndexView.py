@@ -112,6 +112,24 @@ class IndexView(View):
 			self.logWarning(f"[Widget] Widget tried to call a core function but failed: {e}")
 
 
+	@route('/home/saveWidgetConfig/', methods=['POST'])
+	def saveWidgetConfig(self):
+		p, w = request.form.get('id').split('_')
+		skill = self.SkillManager.getSkillInstance(skillName=p)
+		widget = skill.getWidgetInstance(w)
+		widget.options = request.json
+		#TODO check for completeness and sanity
+		widget.saveToDB()
+		return jsonify(success=True)
+
+
+	@route('/home/readWidgetConfig/', methods=['POST'])
+	def readWidgetConfig(self):
+		p, w = request.form.get('id').split('_')
+		skill = self.SkillManager.getSkillInstance(skillName=p)
+		widget = skill.getWidgetInstance(w)
+		return jsonify(widget.options)
+
 	@route('/home/getMqttConfig/', methods=['POST'])
 	def getMqttConfig(self):
 		return jsonify(

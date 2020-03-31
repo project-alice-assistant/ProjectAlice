@@ -155,7 +155,9 @@ button.button{font-size: 1.6em;height: 2em;}
 
 /* JQUERY POPUP */
 .ui-widget-content {background: var(--mainBG);}
-.ui-widget { padding: 0;}
+.ui-widget { padding: 0;border-radius: 0;}
+.ui-widget.ui-widget-content{border: 2px solid var(--accent);}
+.ui-dialog-titlebar{ border-radius: 0;border: solid 2px var(--accent);margin: -2px;}
 /*======================== TECHNICAL OVERWRITES================== */
 .flex-row { overflow-y: auto;overflow-x: hidden;display: flex;flex-wrap: wrap;align-content: flex-start;}
 .initialHidden {display: none;}

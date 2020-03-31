@@ -23,8 +23,9 @@ $(function () {
 			});
 		}
 	});
+	let widget = $('.widget');
 
-	$('.widget').draggable({
+	widget.draggable({
 		containment: '.widgetsPane',
 		snap: '.widget',
 		grid: [10, 10],
@@ -35,7 +36,7 @@ $(function () {
 		}
 	}).css('position', 'absolute');
 
-	$('.widget').resizable({
+	widget.resizable({
       	grid: 10,
 		disabled: true,
 		stop : function(event,ui) {
@@ -45,7 +46,7 @@ $(function () {
 				data: JSON.stringify({
 					id: $(this).attr('id'),
 					w: $(this).outerWidth(),
-					h: $(this).outerHeight(),
+					h: $(this).outerHeight()
 				}),
 				type: 'POST'
 			});
@@ -56,15 +57,17 @@ $(function () {
 	$('#toolbarToggleShow').on('click touchstart', function(){
 		$('#toolbar_full').show();
 		$('#toolbar_toggle').hide();
-		$('.widget').draggable('enable');
-		$('.widget').resizable('enable');
+		let widget = $('.widget');
+		widget.draggable('enable');
+		widget.resizable('enable');
 	});
 
 	$('#toolbarToggleHide').on('click touchstart', function(){
 		$('#toolbar_full').hide();
 		$('#toolbar_toggle').show();
-		$('.widget').draggable('disable');
-		$('.widget').resizable('disable');
+		let widget = $('.widget');
+		widget.draggable('disable');
+		widget.resizable('disable');
 	});
 
 	$('.widgetOptions').dialog({
@@ -73,7 +76,12 @@ $(function () {
 		width: 600,
 		height: 600,
 		modal: true,
-		resizable: false
+		resizable: false,
+		close: function() {
+			let tab = $('#config_tabs');
+			tab.find('#WidgetSettings').html("");
+			tab.find('#GraphicSettings').html("");
+    	}
 	});
 
 	$('#addWidgetDialog').dialog({
@@ -112,8 +120,9 @@ $(function () {
 		$('nav').toggle();
 		$('#toolbar_full').hide();
 		$('header').toggle();
-		$('.widget').draggable('disable');
-		$('.widget').resizable('disable');
+		let widget = $('.widget');
+		widget.draggable('disable');
+		widget.resizable('disable');
 	});
 
 	$('#widgetCheck').on('click touchstart', function () {
@@ -130,7 +139,7 @@ $(function () {
 			$.ajax({
 				url: '/home/removeWidget/',
 				data: {
-					id: $(this).parent().parent().attr('id')
+					id: $(this).parent().attr('id')
 				},
 				type: 'POST'
 			});
@@ -141,8 +150,25 @@ $(function () {
 
 	$('.widgetConfig').on('click touchstart', function () {
 		if ($(this).parents('.widget').length > 0) {
-			//$('#widgetOptions').html(loadConfig($(this).parent().attr('id')));
-			$(this).parent().children('.widgetOptions').dialog( "open" );
+			$.ajax({
+				url: '/home/readWidgetConfig/',
+				data: {
+					id: $(this).parent().attr('id')
+				},
+				type: 'POST',
+				success: (data) => {
+					console.log(data);
+					let newForm = "<form action='/home/saveWidgetConfig/' name='config_for_{{ skillName }}' method='post' autocomplete='off' novalidate>";
+					newForm += "<input type='hidden' name='id' value='" + $(this).parent().attr('id') + "'/>";
+					jQuery.each(data, function (i, val) {
+						newForm += "<div class='configLine'><label class='configLabel'>" + i + "</label><input class='configInput' id='i' value='" + val + "'/></div>";
+					});
+					newForm += "<div class='buttonLine'><input class='button' type='submit' value='Save'></div>";
+					let tab = $('#config_tabs');
+					tab.find('#WidgetSettings').html(newForm);
+					tab.dialog("open");
+				}
+			});
 		}
 		return false;
 	});
@@ -152,7 +178,7 @@ $(function () {
 			$.ajax({
 				url: '/home/addWidget/',
 				data: {
-					id: $(this).parent().attr('id')
+					id: $(this).parent().parent().attr('id')
 				},
 				type: 'POST'
 			});
