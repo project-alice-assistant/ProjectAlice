@@ -4,7 +4,7 @@ import sqlite3
 import threading
 import time
 import uuid
-from typing import List, Optional
+from typing import Dict, List, Optional
 
 import esptool  # type: ignore
 import os
@@ -38,7 +38,7 @@ class DeviceManager(Manager):
 	def __init__(self):
 		super().__init__(databaseSchema=self.DATABASE)
 
-		self._devices = dict()
+		self._devices: Dict[str, Device] = dict()
 		self._broadcastRoom = ''
 		self._broadcastFlag = threading.Event()
 
@@ -56,6 +56,9 @@ class DeviceManager(Manager):
 		self._listenSocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 		self._listenSocket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
 		self._listenSocket.settimeout(2)
+
+		self._heartbeats = dict()
+		self._heartbeatsTimer = None
 
 
 	def onStart(self):
@@ -77,6 +80,9 @@ class DeviceManager(Manager):
 
 	def onBooted(self):
 		self.MqttManager.publish(topic='projectalice/devices/coreReconnection')
+
+		if self._devices:
+			self._heartbeatsTimer = self.ThreadManager.newTimer(interval=3, func=self.checkHeartbeats)
 
 
 	def onStop(self):
@@ -378,10 +384,16 @@ class DeviceManager(Manager):
 			self._devices[uid].connected = True
 			self.broadcast(method=constants.EVENT_DEVICE_CONNECTING, exceptions=[self.name], propagateToSkills=True)
 
+		self._heartbeats[uid] = time.time()
+		if not self._heartbeatsTimer:
+			self._heartbeatsTimer = self.ThreadManager.newTimer(interval=3, func=self.checkHeartbeats)
+
 		return self._devices[uid]
 
 
 	def deviceDisconnecting(self, uid: str):
+		self._heartbeats.pop(uid, None)
+
 		if uid not in self._devices:
 			return
 
@@ -407,7 +419,7 @@ class DeviceManager(Manager):
 		if not payload:
 			payload = dict()
 
-		for device in self._devices:
+		for device in self._devices.values():
 			if deviceType and device.deviceType.lower() != deviceType.lower():
 				continue
 
@@ -424,3 +436,29 @@ class DeviceManager(Manager):
 				topic=topic,
 				payload=json.dumps(payload)
 			)
+
+
+	def onDeviceHeartbeat(self, uid: str, siteId: str = None):
+		device = self.getDeviceByUID(uid=uid)
+		if not device:
+			self.logWarning(f'Device with uid **{uid}** does not exist')
+			return
+
+		if siteId and siteId.lower() != device.room:
+			self.logWarning(f'Device with uid **{uid}** is not matching its defined room (received **{siteId}** but required **{device.room}**')
+			return
+
+		self._heartbeats[uid] = time.time()
+
+
+	def checkHeartbeats(self):
+		now = time.time()
+		for uid, lastTime in self._heartbeats.copy().items():
+			if now - 5 > lastTime:
+				self.logWarning(f'Device with uid **{uid}** has not given a signal since 5 seconds or more')
+				self._heartbeats.pop(uid)
+				device = self._devices[uid]
+				if device:
+					device.connected = False
+
+		self._heartbeatsTimer = self.ThreadManager.newTimer(interval=3, func=self.checkHeartbeats)

@@ -46,6 +46,7 @@ TOPIC_VAD_DOWN = 'hermes/voiceActivity/{}/vadDown'
 
 TOPIC_NLU_TRAINING_STATUS = 'projectalice/nlu/trainingStatus'
 TOPIC_NEW_HOTWORD = 'projectalice/devices/alice/newHotword'
+TOPIC_DEVICE_HEARTBEAT = 'projectalice/devices/heartbeat'
 
 EVENT_FULL_MINUTE = 'fullMinute'
 EVENT_FIVE_MINUTE = 'fiveMinute'
@@ -93,3 +94,4 @@ EVENT_VAD_UP = 'vadUp'
 EVENT_VAD_DOWN = 'vadDown'
 EVENT_CONTEXT_SENSITIVE_DELETE = 'contextSensitiveDelete'
 EVENT_CONTEXT_SENSITIVE_EDIT = 'contextSensitiveEdit'
+EVENT_DEVICE_HEARTBEAT = 'deviceHeartbeat'

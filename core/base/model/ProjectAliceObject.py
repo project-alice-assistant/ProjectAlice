@@ -390,6 +390,10 @@ class ProjectAliceObject:
 		pass
 
 
+	def onDeviceHeartbeat(self, uid: str, siteId: str = None):
+		pass
+
+
 	@property
 	def ProjectAlice(self):
 		return SM.SuperManager.getInstance().projectAlice

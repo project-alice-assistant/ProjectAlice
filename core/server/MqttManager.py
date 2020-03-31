@@ -63,6 +63,7 @@ class MqttManager(Manager):
 		self._mqttClient.message_callback_add(constants.TOPIC_HOTWORD_TOGGLE_ON, self.onSnipsHotwordToggleOn)
 		self._mqttClient.message_callback_add(constants.TOPIC_HOTWORD_TOGGLE_OFF, self.onSnipsHotwordToggleOff)
 		self._mqttClient.message_callback_add(constants.TOPIC_END_SESSION, self.onEventEndSession)
+		self._mqttClient.message_callback_add(constants.TOPIC_DEVICE_HEARTBEAT, self.deviceHeartbeat)
 
 		self.connect()
 
@@ -94,7 +95,8 @@ class MqttManager(Manager):
 			(constants.TOPIC_HOTWORD_TOGGLE_ON, 0),
 			(constants.TOPIC_HOTWORD_TOGGLE_OFF, 0),
 			(constants.TOPIC_NLU_QUERY, 0),
-			(constants.TOPIC_END_SESSION, 0)
+			(constants.TOPIC_END_SESSION, 0),
+			(constants.TOPIC_DEVICE_HEARTBEAT, 0)
 		]
 
 		for username in self.UserManager.getAllUserNames():
@@ -536,6 +538,18 @@ class MqttManager(Manager):
 		if session:
 			session.update(msg)
 			self.broadcast(method=constants.EVENT_END_SESSION, exceptions=[self.name], propagateToSkills=True, session=session)
+
+
+	# noinspection PyUnusedLocal
+	def deviceHeartbeat(self, client, data, msg: mqtt.MQTTMessage):
+		payload = self.Commons.payload(msg)
+		uid = payload.get('uid', None)
+		if not uid:
+			self.logWarning('Received a device heartbeat without uid')
+			return
+
+		siteId = self.Commons.parseSiteId(msg)
+		self.broadcast(method=constants.EVENT_DEVICE_HEARTBEAT, exceptions=[self.name], propagateToSkills=True, uid=uid, siteId=siteId)
 
 
 	def reviveSession(self, session: DialogSession, text: str):
