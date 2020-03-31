@@ -66,7 +66,7 @@ network={
 		self._confsFile = Path(self._rootDir, 'config.py')
 		self._confsSample = Path(self._rootDir, 'configTemplate.py')
 		self._initFile = Path(YAML)
-		self._latest = 1.16
+		self._latest = 1.17
 
 
 	def initProjectAlice(self) -> bool:
@@ -404,6 +404,9 @@ network={
 			subprocess.run(['echo', '    type plug', '>>', asoundrc])
 			subprocess.run(['echo', '    slave.pcm "dmix"', '>>', asoundrc])
 			subprocess.run(['echo', '}', '>>', asoundrc])
+
+		elif audioHardware == 'jabra410':
+			subprocess.run(['sudo', 'cp', Path(self._rootDir, 'system', 'asounds', 'jabra410.conf'), Path(ASOUND)])
 
 		subprocess.run(['sudo', 'systemctl', 'daemon-reload'])
 
