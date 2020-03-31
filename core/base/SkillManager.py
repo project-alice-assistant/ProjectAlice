@@ -275,7 +275,7 @@ class SkillManager(Manager):
 				consumed = skillInstance.onMessageDispatch(session)
 			except AccessLevelTooLow:
 				# The command was recognized but required higher access level
-				return False
+				return True
 
 			if self.MultiIntentManager.isProcessing(session.sessionId):
 				self.MultiIntentManager.processNextIntent(session.sessionId)

@@ -342,7 +342,7 @@ class ProjectAliceObject:
 		pass
 
 
-	def onBroadcastingForNewDeviceStop(self):
+	def onBroadcastingForNewDeviceStop(self, *args):
 		pass
 
 
