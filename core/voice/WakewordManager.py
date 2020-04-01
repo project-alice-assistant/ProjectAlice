@@ -280,7 +280,10 @@ class WakewordManager(Manager):
 	def _upload(self, path: Path, uid: str = ''):
 		wakewordName, zipPath = self._prepareHotword(path)
 
-		for _ in self.DeviceManager.getDevicesByType(deviceType='AliceSatellite', connectedOnly=False):
+		for device in self.DeviceManager.getDevicesByType(deviceType='AliceSatellite', connectedOnly=False):
+			if uid and device.uid != uid:
+				continue
+
 			port = 8080 + len(self._wakewordUploadThreads)
 
 			payload = {
