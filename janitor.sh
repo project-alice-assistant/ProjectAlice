@@ -19,6 +19,8 @@ sudo -u "$(logname)" bash <<EOF
   mv /home/"$(logname)"/venv /home/"$(logname)"/hermesLedControl/venv
 EOF
 
+apt-get update
+apt-get dist-upgrade
 apt-get clean
 apt-get autoclean
 apt-get autoremove -y
