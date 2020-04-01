@@ -47,6 +47,7 @@ TOPIC_VAD_DOWN = 'hermes/voiceActivity/{}/vadDown'
 TOPIC_NLU_TRAINING_STATUS = 'projectalice/nlu/trainingStatus'
 TOPIC_NEW_HOTWORD = 'projectalice/devices/alice/newHotword'
 TOPIC_DEVICE_HEARTBEAT = 'projectalice/devices/heartbeat'
+TOPIC_CORE_HEARTBEAT = 'projectalice/devices/coreHeartbeat'
 
 EVENT_FULL_MINUTE = 'fullMinute'
 EVENT_FIVE_MINUTE = 'fiveMinute'

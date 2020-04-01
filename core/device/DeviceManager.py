@@ -6,14 +6,14 @@ import time
 import uuid
 from typing import Dict, List, Optional
 
-import esptool  # type: ignore
+import esptool
 import os
 import requests
-import serial  # type: ignore
-from esptool import ESPLoader  # type: ignore
-from paho.mqtt.client import MQTTMessage  # type: ignore
+import serial
+from esptool import ESPLoader
+from paho.mqtt.client import MQTTMessage
 from random import shuffle
-from serial.tools import list_ports  # type: ignore
+from serial.tools import list_ports
 
 from core.base.model.Manager import Manager
 from core.commons import constants
@@ -58,7 +58,8 @@ class DeviceManager(Manager):
 		self._listenSocket.settimeout(2)
 
 		self._heartbeats = dict()
-		self._heartbeatsTimer = None
+		self._heartbeatsCheckTimer = None
+		self._heartbeatTimer = None
 
 
 	def onStart(self):
@@ -82,7 +83,8 @@ class DeviceManager(Manager):
 		self.MqttManager.publish(topic='projectalice/devices/coreReconnection')
 
 		if self._devices:
-			self._heartbeatsTimer = self.ThreadManager.newTimer(interval=3, func=self.checkHeartbeats)
+			self._heartbeatsCheckTimer = self.ThreadManager.newTimer(interval=3, func=self.checkHeartbeats)
+			self._heartbeatTimer = self.ThreadManager.newTimer(interval=3, func=self.sendHeartbeat)
 
 
 	def onStop(self):
@@ -385,8 +387,8 @@ class DeviceManager(Manager):
 			self.broadcast(method=constants.EVENT_DEVICE_CONNECTING, exceptions=[self.name], propagateToSkills=True)
 
 		self._heartbeats[uid] = time.time()
-		if not self._heartbeatsTimer:
-			self._heartbeatsTimer = self.ThreadManager.newTimer(interval=3, func=self.checkHeartbeats)
+		if not self._heartbeatsCheckTimer:
+			self._heartbeatsCheckTimer = self.ThreadManager.newTimer(interval=3, func=self.checkHeartbeats)
 
 		return self._devices[uid]
 
@@ -461,4 +463,10 @@ class DeviceManager(Manager):
 				if device:
 					device.connected = False
 
-		self._heartbeatsTimer = self.ThreadManager.newTimer(interval=3, func=self.checkHeartbeats)
+		self._heartbeatsCheckTimer = self.ThreadManager.newTimer(interval=3, func=self.checkHeartbeats)
+
+
+	def sendHeartbeat(self):
+		self.MqttManager.publish(
+			topic=constants.TOPIC_CORE_HEARTBEAT
+		)
