@@ -379,14 +379,14 @@ class DeviceManager(Manager):
 
 	def deviceConnecting(self, uid: str) -> Optional[Device]:
 		if uid not in self._devices:
-			self.logWarning(f'A device with uid {uid} tried to connect but is unknown')
+			self.logWarning(f'A device with uid **{uid}** tried to connect but is unknown')
 			return None
 
 		if not self._devices[uid].connected:
 			self._devices[uid].connected = True
 			self.broadcast(method=constants.EVENT_DEVICE_CONNECTING, exceptions=[self.name], propagateToSkills=True)
 
-		self._heartbeats[uid] = time.time()
+		self._heartbeats[uid] = time.time() + 5
 		if not self._heartbeatsCheckTimer:
 			self._heartbeatsCheckTimer = self.ThreadManager.newTimer(interval=3, func=self.checkHeartbeats)
 
