@@ -11,6 +11,10 @@ sudo -u "$(logname)" bash <<EOF
   git -C /home/"$(logname)"/ProjectAlice checkout master
   git -C /home/"$(logname)"/ProjectAlice pull
   mv /home/"$(logname)"/venv /home/"$(logname)"/ProjectAlice/venv
+
+  git -C /home/"$(logname)"/hermesLedControl clean -dfx
+  git -C /home/"$(logname)"/hermesLedControl checkout master
+  git -C /home/"$(logname)"/hermesLedControl pull
 EOF
 
 apt-get clean
@@ -23,6 +27,10 @@ cp /home/"$(logname)"/ProjectAlice/ProjectAliceSatellite.yaml /boot/ProjectAlice
 rm /etc/wpa_supplicant/wpa_supplicant.conf
 rm /etc/snips.toml
 cp /home/"$(logname)"/ProjectAlice/system/snips/snips.toml /etc/snips.toml
+rm /etc/systemd/system/hermesledcontrol.service
+cp /home/"$(logname)"/hermesLedControl/hermesledcontrol.service /etc/systemd/system/hermesledcontrol.service
+systemctl daemon-reload
+systemctl enable ProjectAlice
 
 sudo -u "$(logname)" bash <<EOF
   history -c
