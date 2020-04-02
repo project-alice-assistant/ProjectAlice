@@ -10,8 +10,7 @@ class SkillsView(View):
 
 
 	def index(self):
-		skills = {**self.SkillManager.activeSkills, **self.SkillManager.deactivatedSkills}
-		skills = {skillName: skill for skillName, skill in sorted(skills.items()) if skill is not None}
+		skills = {skillName: skill for skillName, skill in sorted(self.SkillManager.allWorkingSkills.items()) if skill is not None}
 
 		return render_template(template_name_or_list='skills.html',
 		                       skills=skills,
@@ -22,10 +21,7 @@ class SkillsView(View):
 	def toggleSkill(self):
 		try:
 			_, skill = request.form.get('id').split('_')
-			if self.SkillManager.isSkillActive(skill):
-				self.SkillManager.deactivateSkill(skillName=skill, persistent=True)
-			else:
-				self.SkillManager.activateSkill(skillName=skill, persistent=True)
+			self.SkillManager.toggleSkillState(skillName=skill, persistent=True)
 		except Exception as e:
 			self.logWarning(f'Failed toggling skill: {e}', printStack=True)
 
@@ -45,7 +41,6 @@ class SkillsView(View):
 	def reloadSkill(self):
 		try:
 			_, skill = request.form.get('id').split('_')
-			self.logInfo(f'Reloading skill "{skill}"')
 			self.SkillManager.reloadSkill(skill)
 		except Exception as e:
 			self.logWarning(f'Failed reloading skill: {e}', printStack=True)

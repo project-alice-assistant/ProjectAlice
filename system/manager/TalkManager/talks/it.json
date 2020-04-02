@@ -64,8 +64,8 @@
 	},
 	"maxOneAlicePerRoom": {
 		"default": [
-			"Mi dispiace ma non puoi avere più di una skill di Alice per stanza",
-			"Mi disipace molto, ma posso solo avere una skill di Alice per stanza"
+			"Mi dispiace ma non puoi avere più di una Alice satellite per stanza",
+			"Mi disipace molto, ma posso solo avere una Alice satellite per stanza"
 		]
 	},
 	"wakewordCaptured": [

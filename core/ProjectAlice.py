@@ -16,8 +16,8 @@ class ProjectAlice(Singleton):
 
 	def __init__(self, restartHandler: callable):
 		Singleton.__init__(self, self.NAME)
-		self._logger = Logger()
-		self._logger.logInfo('Starting up Project Alice')
+		self._logger = Logger(prepend='[Project Alice]')
+		self._logger.logInfo('Starting Alice main unit')
 		self._booted = False
 		with Stopwatch() as stopWatch:
 			self._restart = False
@@ -31,7 +31,8 @@ class ProjectAlice(Singleton):
 				self._superManager.commons.runRootSystemCommand(['systemctl', 'start', 'hermesledcontrol'])
 
 			self._superManager.onBooted()
-		self._logger.logInfo(f'- Started Project Alice in {stopWatch} seconds')
+
+		self._logger.logInfo(f'Started in {stopWatch} seconds')
 		self._booted = True
 
 
@@ -61,7 +62,7 @@ class ProjectAlice(Singleton):
 
 
 	def onStop(self):
-		self._logger.logInfo('Shutting down Project Alice')
+		self._logger.logInfo('Shutting down')
 		self._superManager.onStop()
 		if self._superManager.configManager.getAliceConfigByName('useHLC'):
 			self._superManager.commons.runRootSystemCommand(['systemctl', 'stop', 'hermesledcontrol'])
@@ -82,7 +83,7 @@ class ProjectAlice(Singleton):
 
 
 	def updateProjectAlice(self):
-		self._logger.logInfo('Checking Project Alice updates')
+		self._logger.logInfo('Checking for core updates')
 		req = requests.get(url=f'{constants.GITHUB_API_URL}/ProjectAlice/branches', auth=SuperManager.getInstance().configManager.getGithubAuth())
 		if req.status_code != 200:
 			self._logger.logWarning('Failed checking for updates')

@@ -36,7 +36,7 @@ class DialogTemplateManager(Manager):
 			self.buildCache()
 
 
-	def afterNewSkillInstall(self):
+	def afterSkillChange(self):
 		if self.checkCache():
 			self.buildCache()
 
@@ -47,23 +47,21 @@ class DialogTemplateManager(Manager):
 		with self._pathToChecksums.open() as fp:
 			checksums = json.load(fp)
 
-		# First check upon the skills that are installed
+		# First check upon the skills that are installed and active
 		changes = dict()
 		language = self.LanguageManager.activeLanguage
-		for skill in Path(self.Commons.rootDir(), 'skills/').glob('*/'):
-			if skill.is_file() or skill.stem.startswith('_'):
-				continue
+		for skillName, skillInstance in self.SkillManager.allWorkingSkills.items():
 
-			skillName = skill.stem
-			self.logInfo(f'Checking data for skill "{skillName}"')
+			self.logInfo(f'Checking data for skill **{skillName}**')
 			if skillName not in checksums:
 				self.logInfo(f'Skill "{skillName}" is new')
 				checksums[skillName] = list()
 				changes[skillName] = list()
 
-			pathToResources = skill / 'dialogTemplate'
+			pathToResources = skillInstance.getResource('dialogTemplate')
 			if not pathToResources.exists():
-				self.logWarning(f'{skillName} has no dialog template defined')
+				self.logWarning(f'**{skillName}** has no dialog template defined')
+				changes.pop(skillName, None)
 				continue
 
 			for file in pathToResources.glob('*.json'):
@@ -71,27 +69,27 @@ class DialogTemplateManager(Manager):
 				if filename not in checksums[skillName]:
 					# Trigger a change only if the change concerns the language in use
 					if filename == language:
-						self.logInfo(f'Skill "{skillName}" has new language support "{filename}"')
+						self.logInfo(f'Skill **{skillName}** has new language support "{filename}"')
 						changes.setdefault(skillName, list()).append(filename)
 					continue
 
 				if self.Commons.fileChecksum(file) != checksums[skillName][filename]:
 					# Trigger a change only if the change concerns the language in use
 					if filename == language:
-						self.logInfo(f'Skill "{skillName}" has changes in language "{filename}"')
+						self.logInfo(f'Skill **{skillName}** has changes in language "{filename}"')
 						changes.setdefault(skillName, list()).append(filename)
 					continue
 
 		# Now check that what we have in cache in actually existing and wasn't manually deleted
 		for skillName, languages in checksums.items():
 			if not Path(self.Commons.rootDir(), f'skills/{skillName}/').exists():
-				self.logInfo(f'Skill "{skillName}" was removed')
+				self.logInfo(f'Skill **{skillName}** was removed')
 				changes[f'--{skillName}'] = list()
 				continue
 
 			for lang in languages:
 				if not Path(self.Commons.rootDir(), f'skills/{skillName}/dialogTemplate/{lang}.json').exists() and lang == language:
-					self.logInfo(f'Skill "{skillName}" has dropped language "{lang}"')
+					self.logInfo(f'Skill **{skillName}** has dropped language "{lang}"')
 					changes.setdefault(f'--{skillName}', list()).append(lang)
 
 		if changes:
@@ -106,22 +104,17 @@ class DialogTemplateManager(Manager):
 
 		cached = dict()
 
-		for skill in Path(self.Commons.rootDir(), 'skills/').glob('*'):
-			if skill.is_file() or skill.stem.startswith('_'):
-				continue
-
-			skillName = skill.stem
-			pathToResources = skill / 'dialogTemplate'
+		for skillName, skillInstance in self.SkillManager.allWorkingSkills.items():
+			pathToResources = skillInstance.getResource('dialogTemplate')
 			if not pathToResources.exists():
-				self.logWarning(f'{skillName} has no dialog template defined to build cache')
+				self.logWarning(f'**{skillName}** has no dialog template defined to build cache')
 				continue
 
 			cached[skillName] = dict()
 			for file in pathToResources.glob('*.json'):
 				cached[skillName][file.stem] = self.Commons.fileChecksum(file)
 
-		with self._pathToChecksums.open('w') as fp:
-			fp.write(json.dumps(cached, indent=4, sort_keys=True))
+		self._pathToChecksums.write_text(json.dumps(cached, indent=4, sort_keys=True))
 
 
 	def cleanCache(self, skillName: str):
@@ -129,19 +122,16 @@ class DialogTemplateManager(Manager):
 			if file.stem.startswith(f'{skillName}_'):
 				file.unlink()
 
-		with self._pathToChecksums.open() as fp:
-			checksums = json.load(fp)
-			checksums.pop(skillName, None)
+		checksums = json.load(self._pathToChecksums.read_text())
+		checksums.pop(skillName, None)
 
-		with self._pathToChecksums.open('w') as fp:
-			fp.write(json.dumps(checksums, indent=4, sort_keys=True))
+		self._pathToChecksums.write_text(json.dumps(checksums, indent=4, sort_keys=True))
 
 
 	def clearCache(self, rebuild: bool = True):
 		if self._pathToChecksums.exists():
-			with self._pathToChecksums.open('w') as fp:
-				fp.write(json.dumps(dict()))
-				self.logInfo('Cache cleared')
+			self._pathToChecksums.write_text(json.dumps(dict()))
+			self.logInfo('Cache cleared')
 
 		if rebuild:
 			self.checkCache()
@@ -149,11 +139,8 @@ class DialogTemplateManager(Manager):
 
 
 	def skillResource(self) -> Path:
-		for skillPath in Path(self.Commons.rootDir(), 'skills/').glob('*/'):
-			if skillPath.is_file() or skillPath.stem.startswith('_'):
-				continue
-
-			resource = skillPath / f'dialogTemplate/{self.LanguageManager.activeLanguage}.json'
+		for skillName, skillInstance in self.SkillManager.allWorkingSkills.items():
+			resource = skillInstance.getResource(f'dialogTemplate/{self.LanguageManager.activeLanguage}.json')
 			if not resource.exists():
 				continue
 

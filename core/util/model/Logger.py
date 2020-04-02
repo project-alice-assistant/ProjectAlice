@@ -1,12 +1,14 @@
-import inspect
 import logging
+import traceback
+
+import re
 
 
 class Logger:
 
-	def __init__(self, depth: int = 4, *_args, **_kwargs):
+	def __init__(self, prepend: str = None):
+		self._prepend = prepend
 		self._logger = logging.getLogger('ProjectAlice')
-		self._depth = depth
 
 
 	def logInfo(self, msg: str):
@@ -15,6 +17,7 @@ class Logger:
 
 	def logError(self, msg: str):
 		self.doLog(function='error', msg=msg)
+		self.printTraceback()
 
 
 	def logDebug(self, msg: str):
@@ -23,8 +26,10 @@ class Logger:
 
 	def logFatal(self, msg: str):
 		self.doLog(function='fatal', msg=msg)
+		self.printTraceback()
 		try:
 			from core.base.SuperManager import SuperManager
+
 			SuperManager.getInstance().projectAlice.onStop()
 		except:
 			exit()
@@ -32,23 +37,37 @@ class Logger:
 
 	def logWarning(self, msg: str, printStack: bool = False):
 		self.doLog(function='warning', msg=msg, printStack=printStack)
+		self.printTraceback()
 
 
 	def logCritical(self, msg: str):
 		self.doLog(function='critical', msg=msg)
+		self.printTraceback()
 
 
-	def doLog(self, function: callable, msg: str, printStack=True, depth: int = None):
-		if depth is None:
-			depth = self._depth
+	def doLog(self, function: callable, msg: str, printStack = True):
+		if self._prepend:
+			msg = f'{self._prepend} {msg}'
+
+		match = re.match(r'^(\[[\w ]+\])(.*)$', msg)
+		if match:
+			tag, log = match.groups()
+			space = ''.join([' ' for _ in range(25 - len(tag))])
+			msg = f'{tag}{space}{log}'
 
 		func = getattr(self._logger, function)
-		func(self.decorate(msg, depth), exc_info=printStack)
+		func(msg, exc_info=printStack)
 
 
-	# noinspection PyMethodMayBeStatic
-	def decorate(self, msg: str, depth: int) -> str:
+	@staticmethod
+	def printTraceback():
+		return
+
+		from core.base.SuperManager import SuperManager
+
 		try:
-			return f'[{inspect.getmodulename(inspect.stack()[depth][1])}] {msg}'
-		except Exception:
-			return f'[Unknown] {msg}'
+			if SuperManager.getInstance().configManager.getAliceConfigByName('debug'):
+				traceback.print_exc()
+		except:
+			# Would mean that warning was triggered before configManager was even loaded
+			pass

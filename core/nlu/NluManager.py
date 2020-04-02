@@ -29,7 +29,7 @@ class NluManager(Manager):
 			self._nluEngine.stop()
 
 
-	def afterNewSkillInstall(self):
+	def afterSkillChange(self):
 		self.isTrainingNeeded()
 
 

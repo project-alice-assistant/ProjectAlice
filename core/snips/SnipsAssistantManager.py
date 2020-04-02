@@ -53,8 +53,7 @@ class SnipsAssistantManager(Manager):
 		existingSlots: Dict[str, set] = dict()
 
 		for skillResource in self.DialogTemplateManager.skillResource():
-			with skillResource.open() as resource:
-				data = json.load(resource)
+			data = json.loads(skillResource.read_text())
 
 			if 'intents' not in data:
 				continue
@@ -190,19 +189,11 @@ class SnipsAssistantManager(Manager):
 
 			assistant['intents'] = [intent for intent in intents.values()]
 
+			self._assistantPath.write_text(json.dumps(assistant, ensure_ascii=False, indent=4, sort_keys=True))
 			self.linkAssistant()
 
-			with self._assistantPath.open('w') as fp:
-				fp.write(json.dumps(assistant, ensure_ascii=False, indent=4, sort_keys=True))
-
-			self.Commons.runRootSystemCommand(['ln', '-sfn', self.Commons.rootDir() + f'/system/sounds/{self.LanguageManager.activeLanguage}/start_of_input.wav', self.Commons.rootDir() + '/assistant/custom_dialogue/sound/start_of_input.wav'])
-			self.Commons.runRootSystemCommand(['ln', '-sfn', self.Commons.rootDir() + f'/system/sounds/{self.LanguageManager.activeLanguage}/end_of_input.wav', self.Commons.rootDir() + '/assistant/custom_dialogue/sound/end_of_input.wav'])
-			self.Commons.runRootSystemCommand(['ln', '-sfn', self.Commons.rootDir() + f'/system/sounds/{self.LanguageManager.activeLanguage}/error.wav', self.Commons.rootDir() + '/assistant/custom_dialogue/sound/error.wav'])
-
-			self.SnipsServicesManager.runCmd('restart')
-
 			self.broadcast(method='snipsAssistantInstalled', exceptions=[self.name], propagateToSkills=True)
-			self.logInfo(f'Assistant trained with {len(intents)} intents with a total of {len(slots)} slots')
+			self.logInfo(f'Assistant trained with {len(intents)} intents and a total of {len(slots)} slots')
 		except Exception as e:
 			self.broadcast(method='snipsAssistantFailedTraining', exceptions=[self.name], propagateToSkills=True)
 			if not self._assistantPath.exists():
@@ -211,6 +202,10 @@ class SnipsAssistantManager(Manager):
 
 	def linkAssistant(self):
 		self.Commons.runRootSystemCommand(['ln', '-sfn', self.Commons.rootDir() + f'/trained/assistants/assistant_{self.LanguageManager.activeLanguage}', self.Commons.rootDir() + '/assistant'])
+		self.Commons.runRootSystemCommand(['ln', '-sfn', self.Commons.rootDir() + f'/system/sounds/{self.LanguageManager.activeLanguage}/start_of_input.wav', self.Commons.rootDir() + '/assistant/custom_dialogue/sound/start_of_input.wav'])
+		self.Commons.runRootSystemCommand(['ln', '-sfn', self.Commons.rootDir() + f'/system/sounds/{self.LanguageManager.activeLanguage}/end_of_input.wav', self.Commons.rootDir() + '/assistant/custom_dialogue/sound/end_of_input.wav'])
+		self.Commons.runRootSystemCommand(['ln', '-sfn', self.Commons.rootDir() + f'/system/sounds/{self.LanguageManager.activeLanguage}/error.wav', self.Commons.rootDir() + '/assistant/custom_dialogue/sound/error.wav'])
+		self.SnipsServicesManager.runCmd('restart')
 
 
 	def generateAssistant(self) -> dict:

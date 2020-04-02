@@ -1,7 +1,7 @@
 {% extends 'base.html' %}
 
 {% block title %}
-	{{ langData.admin }}
+	{{ langData.devMode }}
 {% endblock %}
 
 {% block loaders %}
@@ -46,6 +46,8 @@
 							<label for="fr">{{ langData.french }}</label><br>
 							<input type="checkbox" name="lang" value="de" id="de">
 							<label for="de">{{ langData.german }}</label>
+							<input type="checkbox" name="lang" value="it" id="it">
+							<label for="de">{{ langData.italian }}</label>
 						</div>
 					</div>
 					<div class="configLine">
@@ -102,9 +104,8 @@
 				{% for skillName, skill in skills.items() %}
 					<div id="editSkill_{{ skillName }}" class="tile skillTile">
 						<div class="skillTitle">
-							<div class="skillName">{{ skillName }}</div><i class="{{ skill.icon }}" aria-hidden="true"></i>
+              <div class="skillName">{{ skillName }}</div><i class="{{ skill.icon }}" aria-hidden="true"></i>
 						</div>
-
 					</div>
 				{% endfor %}
 		</div>

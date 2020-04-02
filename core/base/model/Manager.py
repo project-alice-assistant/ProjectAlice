@@ -7,13 +7,13 @@ from core.base.model.ProjectAliceObject import ProjectAliceObject
 class Manager(ProjectAliceObject):
 
 	def __init__(self, name: str = '', databaseSchema: dict = None):
-		super().__init__(logDepth=3)
+		super().__init__()
 
 		self._name = self.Commons.getFunctionCaller(depth=2) if not name else name
 		self._databaseSchema = databaseSchema
 		self._isActive = True
 
-		self.logInfo(f'Initializing {self._name}')
+		self.logInfo(f'Initializing')
 
 
 	@property
@@ -40,12 +40,12 @@ class Manager(ProjectAliceObject):
 
 
 	def onStart(self):
-		self.logInfo(f'Starting {self.name}')
+		self.logInfo(f'Starting')
 		return self._initDB()
 
 
 	def onStop(self):
-		self.logInfo(f'Stopping {self.name}')
+		self.logInfo(f'Stopping')
 
 
 	def _initDB(self):

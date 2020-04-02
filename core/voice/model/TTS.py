@@ -40,41 +40,41 @@ class TTS(ProjectAliceObject):
 	def onStart(self):
 		if self._user and self._user.ttsLanguage:
 			self._lang = self._user.ttsLanguage
-			self.logInfo(f'Language from user settings: "{self._lang}"')
+			self.logInfo(f'Language from user settings: **{self._lang}**')
 		elif SuperManager.getInstance().configManager.getAliceConfigByName('ttsLanguage'):
 			self._lang = SuperManager.getInstance().configManager.getAliceConfigByName('ttsLanguage')
-			self.logInfo(f'Language from config: "{self._lang}"')
+			self.logInfo(f'Language from config: **{self._lang}**')
 		else:
 			self._lang = SuperManager.getInstance().languageManager.activeLanguageAndCountryCode
-			self.logInfo(f'Language from active language: "{self._lang}"')
+			self.logInfo(f'Language from active language: **{self._lang}**')
 
 		if self._user and self._user.ttsType:
 			self._type = self._user.ttsType
-			self.logInfo(f'Type from user settings: "{self._type}"')
+			self.logInfo(f'Type from user settings: **{self._type}**')
 		else:
 			self._type = SuperManager.getInstance().configManager.getAliceConfigByName('ttsType')
-			self.logInfo(f'Type from config: "{self._type}"')
+			self.logInfo(f'Type from config: **{self._type}**')
 
 		if self._user and self._user.ttsVoice:
 			self._voice = self._user.ttsVoice
-			self.logInfo(f'Voice from user settings: "{self._voice}"')
+			self.logInfo(f'Voice from user settings: **{self._voice}**')
 		else:
 			self._voice = SuperManager.getInstance().configManager.getAliceConfigByName('ttsVoice')
-			self.logInfo(f'Voice from config: "{self._voice}"')
+			self.logInfo(f'Voice from config: **{self._voice}**')
 
 		if self._lang not in self._supportedLangAndVoices:
-			self.logWarning(f'Language "{self._lang}" not found, falling back to "en-US"')
+			self.logWarning(f'Language **{self._lang}** not found, falling back to "en-US"')
 			self._lang = 'en-US'
 
 		if self._type not in self._supportedLangAndVoices[self._lang]:
 			tts_type = self._type
 			self._type = next(iter(self._supportedLangAndVoices[self._lang]))
-			self.logWarning(f'Type "{tts_type}" not found for the language, falling back to "{self._type}"')
+			self.logWarning(f'Type **{tts_type}** not found for the language, falling back to **{self._type}**')
 
 		if self._voice not in self._supportedLangAndVoices[self._lang][self._type]:
 			voice = self._voice
 			self._voice = next(iter(self._supportedLangAndVoices[self._lang][self._type]))
-			self.logWarning(f'Voice "{voice}" not found for the language and type, falling back to "{self._voice}"')
+			self.logWarning(f'Voice **{voice}** not found for the language and type, falling back to **{self._voice}**')
 
 		if not self.TEMP_ROOT.is_dir():
 			SuperManager.getInstance().commonsManager.runRootSystemCommand(['mkdir', str(self.TEMP_ROOT)])
@@ -83,7 +83,7 @@ class TTS(ProjectAliceObject):
 		if self.TTS == TTSEnum.SNIPS:
 			voiceFile = f'cmu_{SuperManager.getInstance().languageManager.activeCountryCode.lower()}_{self._voice}'
 			if not Path(SuperManager.getInstance().commons.rootDir(), 'system/voices', voiceFile).exists():
-				self.logInfo(f'Using "{self.TTS.value}" as TTS with voice "{self._voice}" but voice file not found. Downloading...')
+				self.logInfo(f'Using **{self.TTS.value}** as TTS with voice **{self._voice}** but voice file not found. Downloading...')
 
 				if not SuperManager.getInstance().commons.downloadFile(
 						url=f'https://github.com/MycroftAI/mimic1/blob/development/voices/{voiceFile}.flitevox?raw=true',

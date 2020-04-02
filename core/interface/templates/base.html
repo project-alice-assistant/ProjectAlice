@@ -17,6 +17,7 @@
 	<div class="pageTitle">
 		{% block pageTitle %}{% endblock %}
 	</div>
+  <div id="aliceStatus" class="aliceStatus"></div>
 	{% if aliceSettings['aliceUpdateChannel'] != 'master' %}
 		<div class="updateChannelMarker warning">
 			{{ aliceSettings['aliceUpdateChannel'] }}
@@ -37,7 +38,7 @@
 		{% endif %}
 	</ul>
 </nav>
-	<main>
+  <main>
 		{% block content %}{% endblock %}
 	</main>
 </div>

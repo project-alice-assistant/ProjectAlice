@@ -1,5 +1,7 @@
 import json
 
+from copy import copy
+
 import core.base.SuperManager as SM
 from core.commons import constants
 from core.util.model.Logger import Logger
@@ -7,17 +9,18 @@ from core.util.model.Logger import Logger
 
 class ProjectAliceObject:
 
-	def __init__(self, logDepth: int = 3, *args, **kwargs):
-		self._depth = logDepth
-		self._logger = Logger(logDepth)
+	def __init__(self, *args, **kwargs):
+		self._logger = Logger(*args, **kwargs)
 
 
-	def __repr__(self):
-		return json.dumps(self.__dict__)
+	def __repr__(self) -> str:
+		ret = copy(self.__dict__)
+		ret.pop('_logger')
+		return json.dumps(ret)
 
 
-	def __str__(self):
-		return json.dumps(self.__dict__)
+	def __str__(self) -> str:
+		return self.__repr__()
 
 
 	def broadcast(self, method: str, exceptions: list = None, manager = None, propagateToSkills: bool = False, **kwargs):
@@ -63,19 +66,19 @@ class ProjectAliceObject:
 
 
 	def logInfo(self, msg: str):
-		self._logger.doLog(function='info', msg=msg, printStack=False)
+		self._logger.doLog(function='info', msg=self.decorateLogs(msg), printStack=False)
 
 
 	def logError(self, msg: str):
-		self._logger.doLog(function='error', msg=msg)
+		self._logger.doLog(function='error', msg=self.decorateLogs(msg))
 
 
 	def logDebug(self, msg: str):
-		self._logger.doLog(function='debug', msg=msg, printStack=False)
+		self._logger.doLog(function='debug', msg=self.decorateLogs(msg), printStack=False)
 
 
 	def logFatal(self, msg: str):
-		self._logger.doLog(function='fatal', msg=msg)
+		self._logger.doLog(function='fatal', msg=self.decorateLogs(msg))
 		try:
 			self.ProjectAlice.onStop()
 		except:
@@ -83,11 +86,15 @@ class ProjectAliceObject:
 
 
 	def logWarning(self, msg: str, printStack: bool = False):
-		self._logger.doLog(function='warning', msg=msg, printStack=printStack)
+		self._logger.doLog(function='warning', msg=self.decorateLogs(msg), printStack=printStack)
 
 
 	def logCritical(self, msg: str):
-		self._logger.doLog(function='critical', msg=msg)
+		self._logger.doLog(function='critical', msg=self.decorateLogs(msg))
+
+
+	def decorateLogs(self, text: str) -> str:
+		return f'[{self.__class__.__name__}] {text}'
 
 
 	def onStart(self):
@@ -331,11 +338,11 @@ class ProjectAliceObject:
 		pass
 
 
-	def onBroadcastingForNewDeviceStart(self, session):
+	def onBroadcastingForNewDeviceStart(self):
 		pass
 
 
-	def onBroadcastingForNewDeviceStop(self):
+	def onBroadcastingForNewDeviceStop(self, *args):
 		pass
 
 
@@ -380,6 +387,10 @@ class ProjectAliceObject:
 
 
 	def onEndSession(self, session):
+		pass
+
+
+	def onDeviceHeartbeat(self, uid: str, siteId: str = None):
 		pass
 
 
@@ -494,11 +505,6 @@ class ProjectAliceObject:
 
 
 	@property
-	def SnipsWatchManager(self):
-		return SM.SuperManager.getInstance().snipsWatchManager
-
-
-	@property
 	def SkillStoreManager(self):
 		return SM.SuperManager.getInstance().skillStoreManager
 
@@ -521,3 +527,8 @@ class ProjectAliceObject:
 	@property
 	def AliceWatchManager(self):
 		return SM.SuperManager.getInstance().aliceWatchManager
+
+
+	@property
+	def VadManager(self):
+		return SM.SuperManager.getInstance().vadManager

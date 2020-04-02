@@ -43,7 +43,7 @@ class GoogleASR(ASR):
 		config = types.RecognitionConfig(
 			encoding=enums.RecognitionConfig.AudioEncoding.LINEAR16,
 			sample_rate_hertz=self.ConfigManager.getAliceConfigByName('micSampleRate'),
-			language_code=self.LanguageManager.activeLanguageAndCountryCode
+			language_code=self.LanguageManager.getLanguageAndCountryCode()
 		)
 
 		self._streamingConfig = types.StreamingRecognitionConfig(config=config, interim_results=True)

@@ -49,6 +49,7 @@ class SuperManager:
 		self.snipsAssistantManager = None
 		self.dialogTemplateManager = None
 		self.aliceWatchManager = None
+		self.vadManager = None
 
 
 	def onStart(self):
@@ -63,9 +64,6 @@ class SuperManager:
 
 		internetManager = self._managers.pop('InternetManager')
 		internetManager.onStart()
-
-		snipsServicesManager = self._managers.pop('SnipsServicesManager')
-		snipsServicesManager.onStart()
 
 		databaseManager = self._managers.pop('DatabaseManager')
 		databaseManager.onStart()
@@ -82,6 +80,7 @@ class SuperManager:
 		snipsAssistantManager = self._managers.pop('SnipsAssistantManager')
 		nluManager = self._managers.pop('NluManager')
 		nodeRedManager = self._managers.pop('NodeRedManager')
+		snipsServicesManager = self._managers.pop('SnipsServicesManager')
 
 		for manager in self._managers.values():
 			if manager:
@@ -91,6 +90,7 @@ class SuperManager:
 		skillManager.onStart()
 		dialogTemplateManager.onStart()
 		snipsAssistantManager.onStart()
+		snipsServicesManager.onStart()
 		nluManager.onStart()
 		nodeRedManager.onStart()
 
@@ -114,7 +114,7 @@ class SuperManager:
 			if manager:
 				manager.onBooted()
 
-		self.mqttManager.playSound(soundFilename='boot')
+		self.threadManager.doLater(interval=0.5, func=self.mqttManager.playSound, kwargs={'soundFilename': 'boot'})
 
 
 	@staticmethod
@@ -150,6 +150,7 @@ class SuperManager:
 		from core.snips.SnipsAssistantManager import SnipsAssistantManager
 		from core.nlu.NluManager import NluManager
 		from core.util.AliceWatchManager import AliceWatchManager
+		from core.voice.model.VadManager import VadManager
 
 		self.commonsManager = CommonsManager()
 		self.commons = self.commonsManager
@@ -179,6 +180,7 @@ class SuperManager:
 		self.snipsAssistantManager = SnipsAssistantManager()
 		self.nluManager = NluManager()
 		self.aliceWatchManager = AliceWatchManager()
+		self.vadManager = VadManager()
 
 		self._managers = {name[0].upper() + name[1:]: manager for name, manager in self.__dict__.items() if name.endswith('Manager')}
 
@@ -193,7 +195,7 @@ class SuperManager:
 
 			mqttManager.onStop()
 		except Exception as e:
-			Logger().logError(f'Error while shutting down manager "{managerName}": {e}')
+			Logger().logError(f'Error while shutting down manager **{managerName}**: {e}')
 
 
 	def getManager(self, managerName: str):

@@ -16,6 +16,8 @@ class LanguageManager(Manager):
 		self._activeCountryCode = ''
 		self._defaultLanguage = ''
 		self._defaultCountryCode = ''
+		self._overrideLanguage = ''
+		self._overrideCountryCode = ''
 
 		self._stringsData = dict()
 		self._locals = list()
@@ -27,7 +29,7 @@ class LanguageManager(Manager):
 	def onStart(self):
 		super().onStart()
 		self._loadSupportedLanguages()
-		self.loadStrings()
+		self.loadSystemStrings()
 
 
 	def onBooted(self):
@@ -47,21 +49,25 @@ class LanguageManager(Manager):
 		return query
 
 
-	def loadStrings(self, skillToLoad: str = ''):
+	def loadSystemStrings(self):
 		with open(Path('system/manager/LanguageManager/strings.json')) as jsonFile:
 			self._stringsData['system'] = json.load(jsonFile)
 
-		for skillName in self.ConfigManager.skillsConfigurations:
-			if skillToLoad and skillName != skillToLoad:
-				continue
 
-			try:
-				jsonFile = Path('skills', skillName, 'strings.json')
-				self._stringsData[skillName] = json.loads(jsonFile.read_text())
-			except FileNotFoundError:
-				continue
-			except ValueError:
-				continue
+	def loadSkillStrings(self, skillName: str):
+		skillInstance = self.SkillManager.getSkillInstance(skillName)
+		if not skillInstance:
+			self.logError(f'Loading strings for skill **{skillName}** failed')
+
+		jsonFile = skillInstance.getResource('strings.json')
+		if not jsonFile.exists():
+			# Not all skills come with one
+			return
+
+		try:
+			self._stringsData[skillName] = json.loads(jsonFile.read_text())
+		except ValueError:
+			self.logError(f'String file for skill **{skillName}** is corrupted')
 
 
 	def getTranslations(self, skill: str, key: str, toLang: str = '') -> list:
@@ -69,7 +75,7 @@ class LanguageManager(Manager):
 			toLang = self.activeLanguage
 
 		if skill not in self._stringsData:
-			self.logError(f'Asked to get translation from skill "{skill}" but does not exist')
+			self.logError(f'Asked to get translation for **{key}** from skill **{skill}** but skill does not exist')
 			return list()
 		elif key not in self._stringsData[skill]:
 			self.logError(f'Asked to get translation for "{key}" from skill "{skill}" but does not exist')
@@ -87,17 +93,36 @@ class LanguageManager(Manager):
 
 	def _loadSupportedLanguages(self):
 		activeLangDef: str = self.ConfigManager.getAliceConfigByName('activeLanguage')
+		activeCountryCode = self.ConfigManager.getAliceConfigByName('activeCountryCode')
 		langDef: dict = self.ConfigManager.getAliceConfigByName('supportedLanguages')
+
+		if self.ConfigManager.getAliceConfigByName('nonNativeSupportLanguage'):
+			if self.ConfigManager.getAliceConfigByName('stayCompletlyOffline'):
+				self.logWarning(f'You cannot use a non natively support language if you have chosen to stay completly offline.')
+			else:
+				self.logWarning(f'You are using a non natively supported language **{self.ConfigManager.getAliceConfigByName("nonNativeSupportLanguage")}**')
+				self._activeLanguage = 'en'
+				self._activeCountryCode = 'US'
+				self._defaultLanguage = 'en'
+				self._defaultCountryCode = 'US'
+				self._overrideLanguage = self.ConfigManager.getAliceConfigByName('nonNativeSupportLanguage')
+				self._overrideCountryCode = self.ConfigManager.getAliceConfigByName('nonNativeSupportCountry')
+				return
 
 		for langCode, settings in langDef.items():
 			self._supportedLanguages.append(langCode)
 			if settings['default']:
 				self._defaultLanguage = langCode
-				self._defaultCountryCode = settings['countryCode']
+				self._defaultCountryCode = settings['defaultCountryCode']
 
 			if langCode == activeLangDef:
 				self._activeLanguage = langCode
-				self._activeCountryCode = settings['countryCode']
+
+				if activeCountryCode in settings['countryCodes']:
+					self._activeCountryCode = activeCountryCode
+				else:
+					self.logWarning(f'Country code **{activeCountryCode}** is not supported, falling back to **{self._defaultCountryCode}**')
+					self._activeCountryCode = self._defaultCountryCode
 
 		if not self._activeLanguage and self._defaultLanguage:
 			self.logWarning(f'No active language defined, falling back to {self._defaultLanguage}')
@@ -151,6 +176,11 @@ class LanguageManager(Manager):
 
 
 	@property
+	def overrideLanguage(self) -> str:
+		return self._overrideLanguage
+
+
+	@property
 	def defaultLanguage(self) -> str:
 		return self._defaultLanguage
 
@@ -161,6 +191,11 @@ class LanguageManager(Manager):
 
 
 	@property
+	def overrideCountryCode(self) -> str:
+		return self._overrideCountryCode
+
+
+	@property
 	def defaultCountryCode(self) -> str:
 		return self._defaultCountryCode
 
@@ -168,6 +203,15 @@ class LanguageManager(Manager):
 	@property
 	def activeLanguageAndCountryCode(self) -> str:
 		return f'{self._activeLanguage}-{self._activeCountryCode}'
+
+
+	@property
+	def overrideLanguageAndCountryCode(self) -> str:
+		return f'{self._overrideLanguage}-{self._overrideCountryCode}'
+
+
+	def getLanguageAndCountryCode(self, allowOverride: bool = True) -> str:
+		return self.overrideLanguageAndCountryCode if allowOverride and self.overrideLanguage else self.activeLanguageAndCountryCode
 
 
 	@property
