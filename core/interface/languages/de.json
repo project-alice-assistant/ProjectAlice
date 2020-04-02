@@ -46,7 +46,9 @@
 	"uploadSkillToGithub": "Den Skill auf Github hochladen",
 	"resetSkill": "Reset",
 	"actions": "Actions",
-	"addUser": "Neue Benutzer",
-	"addWakeword": "Neue Wakeword",
-	"tuneWakeword": "Tune wakeword"
+	"addUser": "Neuer Benutzer",
+	"addWakeword": "Neues Wakeword",
+	"tuneWakeword": "Tune wakeword",
+	"widgetCustStyleTitle": "Anzeige Einstellungen",
+	"widgetConfigTitle": "Widget Einstellungen"
 }

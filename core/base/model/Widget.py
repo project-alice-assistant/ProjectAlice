@@ -40,12 +40,10 @@ class Widget(ProjectAliceObject):
 		if 'options' in data.keys():
 			self._options.update(json.loads(data['options']))
 
-		self._custStyle = self.CUSTSTYLE
+		self._custStyle = self.CUSTSTYLE.copy()
 		if 'custStyle' in data.keys():
 			if data['custStyle']:
 				self._custStyle.update(json.loads(data['custStyle']))
-			else:
-				self._custStale = dict()
 
 		self._zindex = data['zindex'] if 'zindex' in data.keys() else 9999
 		self._language = self.loadLanguage()

@@ -25,7 +25,6 @@ $(function () {
 
 	widget.draggable({
 		containment: '.widgetsPane',
-		snap: '.widget',
 		grid: [10, 10],
 		disabled: true,
 		start: function (event, ui) {
@@ -51,6 +50,7 @@ $(function () {
 		$('#toolbar_full').show();
 		$('#toolbar_toggle').hide();
 		let widget = $('.widget');
+		widget.css('outline', "2px var(--accent) dotted");
 		widget.draggable('enable');
 		widget.resizable('enable');
 	});
@@ -59,6 +59,7 @@ $(function () {
 		$('#toolbar_full').hide();
 		$('#toolbar_toggle').show();
 		let widget = $('.widget');
+		widget.css('outline', "none");
 		widget.draggable('disable');
 		widget.resizable('disable');
 	});
@@ -205,10 +206,6 @@ $(function () {
 		}
 		return false;
 	});
-
-	function loadConfig(skill) {
-		return skill
-	}
 
 
 	/*TODO duplicate from admin.js*/

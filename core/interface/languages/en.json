@@ -48,5 +48,7 @@
 	"actions": "Actions",
 	"addUser": "Add user",
 	"addWakeword": "Add wakeword",
-	"tuneWakeword": "Tune wakeword"
+	"tuneWakeword": "Tune wakeword",
+	"widgetCustStyleTitle": "Display Options",
+	"widgetConfigTitle": "Widget Options"
 }

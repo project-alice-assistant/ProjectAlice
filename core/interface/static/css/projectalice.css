@@ -95,9 +95,9 @@ button.button{font-size: 1.6em;height: 2em;}
 /* To use with custom Widgets! */
 .widget {display: block;box-shadow: 0 0 20px 5px #141414;background-color: var(--windowBG);cursor: pointer;overflow: hidden;}
 .widgetIcons {font-size: 1.5em;display: flex;align-items: flex-start;}
+.widgetIconsHidden .widgetIcons { display:none;}
 .widgetIcon {display: flex;flex-grow: 1;}
 .widget .widgetIcon:nth-child(2) {display: none;flex-grow: 1;justify-content: flex-end;}
-.widgetOptions {}
 
 .centered {width: 100%;display: flex;align-items: center;justify-content: center;}
 .full-stretch {width: 100%;height: 100%;min-height: 100%;display: flex;align-items: stretch;}
@@ -169,3 +169,4 @@ button.button{font-size: 1.6em;height: 2em;}
 .saveFailed { background: red !important; }
 .saved { background: green !important; }
 .saveing { background: yellow !important; }
+

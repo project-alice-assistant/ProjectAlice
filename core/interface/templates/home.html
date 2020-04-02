@@ -73,7 +73,11 @@
 		{% for parentName, widgetList in widgets.items() %}
 			{% for widgetName, widget in widgetList.items() %}
 				{% if (widget.state|int) == 1 %}
-					<div class="widget {{ widget.size }}" id="{{ widget.parent }}_{{ widget.name }}"
+					<div class="widget {{ widget.size }}
+						{% if widget.custStyle.get('titlebar') == "False" %}
+						widgetIconsHidden
+						{% endif %}
+						" id="{{ widget.parent }}_{{ widget.name }}"
 						 style="position: relative;  top: {{ widget.y }}px; left: {{ widget.x }}px;
 							{% if widget.width > 0 %}width: {{widget.width}}px;{% endif %}
 							{%  if widget.height > 0 %} height:{{widget.height}}px;{% endif %}
@@ -99,14 +103,15 @@
 	<div id="config_tabs" class="widgetOptions">
 		<div class="tabsContainer" id="widgetConfTabContainer">
 			<ul>
-				<li class="tab activeTab" data-for="WidgetConfig">Widget Einstellungen</li>
-				<li class="tab" data-for="WidgetCustStyle">Anzeige Einstellungen</li>
+				<li class="tab activeTab" data-for="WidgetConfig">{{ langData.widgetConfigTitle }}</li>
+				<li class="tab" data-for="WidgetCustStyle">{{ langData.widgetCustStyleTitle }}</li>
 			</ul>
 			<div class="tabsContent">
 				<div class="tabPage" id="WidgetConfig">
+					loading...
 				</div>
 				<div class="tabPage" id="WidgetCustStyle">
-					Coming soon!
+					loading...
 				</div>
 			</div>
 		</div>
