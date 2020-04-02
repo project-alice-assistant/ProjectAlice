@@ -587,12 +587,17 @@ class SkillManager(Manager):
 				for skillName, info in skillsToBoot.items():
 					self._initSkills(loadOnly=skillName, reload=info['update'])
 					self.ConfigManager.loadCheckAndUpdateSkillConfigurations(skillToLoad=skillName)
-					self._startSkill(skillName)
 
-					if info['update']:
-						self.allSkills[skillName].onSkillUpdated()
-					else:
-						self.allSkills[skillName].onSkillInstalled()
+					try:
+						self._startSkill(skillName)
+					except SkillStartDelayed:
+						# The skill start was delayed
+						pass
+
+						if info['update']:
+							self.allSkills[skillName].onSkillUpdated()
+						else:
+							self.allSkills[skillName].onSkillInstalled()
 
 				self.SnipsAssistantManager.train()
 				self.DialogTemplateManager.afterSkillChange()
