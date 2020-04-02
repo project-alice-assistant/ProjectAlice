@@ -276,6 +276,13 @@ class SkillManager(Manager):
 			except AccessLevelTooLow:
 				# The command was recognized but required higher access level
 				return True
+			except Exception as e:
+				self.logError(f'Error dispatching message to {skillInstance.name}: {e}')
+				self.MqttManager.endDialog(
+					sessionId=session.sessionId,
+					text=self.TalkManager.randomTalk(talk='error', skill='system')
+				)
+				return True
 
 			if self.MultiIntentManager.isProcessing(session.sessionId):
 				self.MultiIntentManager.processNextIntent(session.sessionId)
