@@ -9,20 +9,18 @@ $(function () {
 				arr.push($(this).attr('id'));
 			});
 
-			$.ajax({
-				contentType: 'application/json',
-				url: '/home/saveWidgetPosition/',
-				data: JSON.stringify({
-					id: $(ui.draggable).attr('id'),
-					x: $(ui.draggable).position().left,
-					y: $(ui.draggable).position().top,
-					index: $('.widget').length,
-					order: arr
-				}),
-				type: 'POST'
-			});
+			$.post('/home/saveWidgetPosition/',
+					{
+						id: $(ui.draggable).attr('id'),
+						x: $(ui.draggable).position().left,
+						y: $(ui.draggable).position().top,
+						index: $('.widget').length,
+						order: arr
+					}
+			);
 		}
 	});
+
 	let widget = $('.widget');
 
 	widget.draggable({
@@ -40,17 +38,12 @@ $(function () {
       	grid: 10,
 		disabled: true,
 		stop : function(event,ui) {
-      		$.ajax({
-				contentType: 'application/json',
-				url: '/home/saveWidgetSize/',
-				data: JSON.stringify({
+      		$.post('/home/saveWidgetSize/',{
 					id: $(this).attr('id'),
 					w: $(this).outerWidth(),
 					h: $(this).outerHeight()
-				}),
-				type: 'POST'
-			});
-		}
+				});
+      		}
     });
 
 /* Toolbar Functions */
@@ -133,55 +126,81 @@ $(function () {
 		return false;
 	});
 
-	/* Functions for the single widgets */
+/*=================== Functions for the single widgets ======================*/
+	/* Remove the selected widget */
 	$('.widgetDelete').on('click touchstart', function () {
 		if ($(this).parents('.widget').length > 0) {
-			$.ajax({
-				url: '/home/removeWidget/',
-				data: {
-					id: $(this).parent().attr('id')
-				},
-				type: 'POST'
-			});
-			$(this).parent().parent().remove();
+			$.post('/home/removeWidget/',{ id: $(this).parent().attr('id')});
+			$(this).parent().remove();
 		}
 		return false;
 	});
 
+	function prepareConfigTab(parent, tab){
+		$.post('/home/read'+tab+'/',  { id: parent.attr('id') } )
+			.done(function(data){
+				let dialogContainer = $('#config_tabs');
+				// No configuration exists
+				if(jQuery.isEmptyObject(data) == true ){
+					dialogContainer.find('#'+tab).html("No config for this widget!");
+					dialogContainer.dialog("open");
+					return;
+				}
+
+				// build configuration
+				let newForm = "<form action='/home/save"+tab+"/' id='"+tab+"Form' method='post' autocomplete='off' novalidate target=''>";
+				newForm += "<input type='hidden' name='id' value='" + parent.attr('id') + "'/>";
+				jQuery.each(data, function (i, val) {
+					newForm += "<div class='configLine'><label class='configLabel'>" + i + "</label><input class='configInput widgetConfigInput' name='"+i+"' value='" + val + "'/></div>";
+				});
+				newForm += "<div class='buttonLine'><input id='submitConfig' class='button' type='submit' value='Save'></div>";
+				dialogContainer.find('#'+tab).html(newForm);
+
+				// perform submit/save of the form without switching page
+				let form = $('#'+tab+'Form');
+				let saveButton = form.find('#submitConfig');
+				form.submit(function( event ) {
+					saveButton.val("Saveing");
+					saveButton.addClass("saveing");
+					$.post(form.attr("action"),
+							form.serialize()).done(function() {
+								saveButton.val("Saved");
+								saveButton.addClass("saved");
+							  })
+							  .fail(function() {
+								saveButton.val("Save failed");
+								saveButton.addClass("saveFailed");
+							  }).always(
+								function () {
+									saveButton.removeClass("saveing");
+								});
+					event.preventDefault();
+				});
+
+				// change button back to save if something was changed
+				$('.widgetConfigInput').change(function() {
+					saveButton.val("Save");
+					saveButton.removeClass("saved");
+					saveButton.removeClass("saveFailed");
+				});
+			dialogContainer.dialog("open");
+		});
+	}
+	/* Opening of widget specific settings */
 	$('.widgetConfig').on('click touchstart', function () {
 		if ($(this).parents('.widget').length > 0) {
-			$.ajax({
-				url: '/home/readWidgetConfig/',
-				data: {
-					id: $(this).parent().attr('id')
-				},
-				type: 'POST',
-				success: (data) => {
-					console.log(data);
-					let newForm = "<form action='/home/saveWidgetConfig/' name='config_for_{{ skillName }}' method='post' autocomplete='off' novalidate>";
-					newForm += "<input type='hidden' name='id' value='" + $(this).parent().attr('id') + "'/>";
-					jQuery.each(data, function (i, val) {
-						newForm += "<div class='configLine'><label class='configLabel'>" + i + "</label><input class='configInput' id='i' value='" + val + "'/></div>";
-					});
-					newForm += "<div class='buttonLine'><input class='button' type='submit' value='Save'></div>";
-					let tab = $('#config_tabs');
-					tab.find('#WidgetSettings').html(newForm);
-					tab.dialog("open");
-				}
-			});
+			let parent = $(this).parent();
+			prepareConfigTab(parent,'WidgetConfig');
+			prepareConfigTab(parent,'WidgetCustStyle');
 		}
 		return false;
 	});
+
+
 
 	$('.addWidgetCheck').on('click touchstart', function () {
 		if ($(this).parents('.addWidgetLine').length > 0) {
-			$.ajax({
-				url: '/home/addWidget/',
-				data: {
-					id: $(this).parent().parent().attr('id')
-				},
-				type: 'POST'
-			});
+			$.post('/home/addWidget/', { id: $(this).parent().attr('id')});
 			$(this).parent().remove();
 		}
 		return false;

@@ -28,15 +28,14 @@ class IndexView(View):
 	@route('/home/saveWidgetPosition/', methods=['POST'])
 	def saveWidgetPosition(self):
 		try:
-			data = request.get_json()
-			p, w = data['id'].split('_')
+			p, w = request.form['id'].split('_')
 
 			widget = self.SkillManager.widgets[p][w]
-			widget.x = data['x']
-			widget.y = data['y']
+			widget.x = request.form['x']
+			widget.y = request.form['y']
 			widget.saveToDB()
 
-			order = data['order']
+			order = request.form['order']
 			for index, widget in enumerate(order, start=1):
 				widgetParent, widgetName = widget.split('_')
 				widget = self.SkillManager.widgets[widgetParent][widgetName]
@@ -52,12 +51,12 @@ class IndexView(View):
 	@route('/home/saveWidgetSize/', methods=['POST'])
 	def saveWidgetSize(self):
 		try:
-			data = request.get_json()
-			p, w = data['id'].split('_')
+			self.logInfo(request)
+			p, w = request.form['id'].split('_')
 
 			widget = self.SkillManager.widgets[p][w]
-			widget.width = data['w']
-			widget.height = data['h']
+			widget.width = int(request.form['w'])
+			widget.height = int(request.form['h'])
 			widget.saveToDB()
 
 			return jsonify(success=True)
@@ -117,8 +116,9 @@ class IndexView(View):
 		p, w = request.form.get('id').split('_')
 		skill = self.SkillManager.getSkillInstance(skillName=p)
 		widget = skill.getWidgetInstance(w)
-		widget.options = request.json
-		#TODO check for completeness and sanity
+		widget.options.update(request.form)
+		# 'id' would mess up the complete form anyways, must not be used!
+		widget.options.pop('id', None)
 		widget.saveToDB()
 		return jsonify(success=True)
 
@@ -129,6 +129,27 @@ class IndexView(View):
 		skill = self.SkillManager.getSkillInstance(skillName=p)
 		widget = skill.getWidgetInstance(w)
 		return jsonify(widget.options)
+
+
+	@route('/home/saveWidgetCustStyle/', methods=['POST'])
+	def saveWidgetCustStyle(self):
+		p, w = request.form.get('id').split('_')
+		skill = self.SkillManager.getSkillInstance(skillName=p)
+		widget = skill.getWidgetInstance(w)
+		widget.custStyle.update(request.form)
+		# 'id' would mess up the complete form anyways, must not be used!
+		widget.custStyle.pop('id', None)
+		widget.saveToDB()
+		return jsonify(success=True)
+
+
+	@route('/home/readWidgetCustStyle/', methods=['POST'])
+	def readWidgetCustStyle(self):
+		p, w = request.form.get('id').split('_')
+		skill = self.SkillManager.getSkillInstance(skillName=p)
+		widget = skill.getWidgetInstance(w)
+		return jsonify(widget.custStyle)
+
 
 	@route('/home/getMqttConfig/', methods=['POST'])
 	def getMqttConfig(self):

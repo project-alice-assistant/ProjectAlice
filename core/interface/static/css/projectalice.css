@@ -30,9 +30,9 @@ input[type='text'], input[type='password'], input[type='number'], select { width
 input:focus { border: yellow dotted 1px;}
 
 /* ======================= COLOR MARKINGS ======================== */
-.red, .disabled, .warning { color: red; }
-.green { color: green; }
-.yellow, .active { color: yellow; }
+.red, .disabled, .warning, saveFailed { color: red; }
+.green, .saved { color: green; }
+.yellow, .active, .saveing { color: yellow; }
 
 /*logscreen*/
 .logInfo { color: var(--text); }
@@ -163,4 +163,9 @@ button.button{font-size: 1.6em;height: 2em;}
 .initialHidden {display: none;}
 .stick-top-right{ position: absolute; top: 0; right: 0; z-index: 99; }
 
+.installed{display:none;}
+.notInstalled{display:block;}
 
+.saveFailed { background: red !important; }
+.saved { background: green !important; }
+.saveing { background: yellow !important; }

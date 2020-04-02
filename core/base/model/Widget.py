@@ -15,6 +15,12 @@ class Widget(ProjectAliceObject):
 	SIZE = WidgetSizes.w
 
 	OPTIONS = dict()
+	CUSTSTYLE = {
+		'background': '',
+		'color': '',
+		'font-size': '',
+		'titlebar': 'True'
+	}
 
 	def __init__(self, data: sqlite3.Row):
 		super().__init__()
@@ -33,6 +39,13 @@ class Widget(ProjectAliceObject):
 		self._options = self.OPTIONS
 		if 'options' in data.keys():
 			self._options.update(json.loads(data['options']))
+
+		self._custStyle = self.CUSTSTYLE
+		if 'custStyle' in data.keys():
+			if data['custStyle']:
+				self._custStyle.update(json.loads(data['custStyle']))
+			else:
+				self._custStale = dict()
 
 		self._zindex = data['zindex'] if 'zindex' in data.keys() else 9999
 		self._language = self.loadLanguage()
@@ -59,7 +72,7 @@ class Widget(ProjectAliceObject):
 	def saveToDB(self):
 		self.DatabaseManager.replace(
 			tableName='widgets',
-			query='REPLACE INTO :__table__ (parent, name, posx, posy, height, width, state, options, zindex) VALUES (:parent, :name, :posx, :posy, :height, :width, :state, :options, :zindex)',
+			query='REPLACE INTO :__table__ (parent, name, posx, posy, height, width, state, options, custStyle, zindex) VALUES (:parent, :name, :posx, :posy, :height, :width, :state, :options, :custStyle, :zindex)',
 			callerName=self.SkillManager.name,
 			values={
 				'parent': self.parent,
@@ -70,6 +83,7 @@ class Widget(ProjectAliceObject):
 				'width': self.width,
 				'state': self.state,
 				'options': json.dumps(self.options),
+				'custStyle': json.dumps(self.custStyle),
 				'zindex': self.zindex
 			}
 		)
@@ -192,6 +206,16 @@ class Widget(ProjectAliceObject):
 	@options.setter
 	def options(self, value: str):
 		self._options = value
+
+
+	@property
+	def custStyle(self) -> dict:
+		return self._custStyle
+
+
+	@custStyle.setter
+	def custStyle(self, value: str):
+		self._custStyle = value
 
 
 	@property

@@ -38,6 +38,7 @@ class SkillManager(Manager):
 			'width INTEGER NOT NULL',
 			'state TEXT NOT NULL',
 			'options TEXT NOT NULL',
+			'custStyle TEXT NOT NULL',
 			'zindex INTEGER'
 		]
 	}

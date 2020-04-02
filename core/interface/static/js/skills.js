@@ -125,7 +125,7 @@ $(function () {
 		$('.skillStoreSkillSelected').hide();
 		$(this).hide();
 		$.each(selectedSkillsToDownload, function (index, skill) {
-			$('#' + skill['skill'] + 'InstallTile').children('.skillStoreSkillWaitAnimation').css('display', 'flex');
+			$('#' + skill['skill'] + 'InstallTile').find('.skillStoreSkillWaitAnimation').css('display', 'flex');
 		});
 
 		$.ajax({
