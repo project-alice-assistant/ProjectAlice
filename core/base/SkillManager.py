@@ -606,6 +606,9 @@ class SkillManager(Manager):
 						else:
 							self.allSkills[skillName].onSkillInstalled()
 
+						if self.ProjectAlice.isBooted:
+							self.allSkills[skillName].onBooted()
+
 				self.SnipsAssistantManager.train()
 				self.DialogTemplateManager.afterSkillChange()
 				self.NluManager.afterSkillChange()
