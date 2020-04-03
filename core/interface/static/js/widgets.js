@@ -156,6 +156,8 @@ $(function () {
 					let input = '<input class="configInput widgetConfigInput" type="text" name="' + i + '" value="' + val + '"/></div>';
 					if (i === 'background' || i === 'color') {
 						input = '<input class="configInput widgetConfigInput" type="color" name="' + i + '" value="' + val + '"/></div>';
+					} else if (i === 'background-opacity') {
+						input = '<input class="configInput widgetConfigInput" type="number" step="0.1" min="0.0" max="1" name="' + i + '" value="' + val + '"/></div>';
 					} else if (i === 'font-size') {
 						input = '<input class="configInput widgetConfigInput" type="number" step="0.1" min="0.1" max="5" name="' + i + '" value="' + val + '"/></div>';
 					} else if (i === 'titlebar') {

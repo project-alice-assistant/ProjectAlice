@@ -147,8 +147,8 @@ button.button{font-size: 1.6em;height: 2em;}
 .configBox {width: 100%;display: table;font-family:var(--long);font-size: .8em;}
 .configLine {width: 100%;display: table-row;height: 40px;}
 
-.configLabel {display: table-cell;text-align: left;vertical-align: middle;overflow: hidden;cursor: pointer;width: 20%}
-.configInput {display: table-cell;padding-left: 20px;text-align: left;vertical-align: middle;}
+.configLabel {display: table-cell;text-align: left;vertical-align: middle;overflow: hidden;cursor: pointer;min-width: 20%}
+.configInput {display: table-cell;padding-left: 20px;text-align: left;vertical-align: middle;min-width: 50%}
 
 /* Admin Auth */
 .adminAuthDisplayUser {margin: 1em;height: 1.5em;font-family: var(--short);font-size: 2em;text-align: center;}
