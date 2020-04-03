@@ -18,8 +18,32 @@
 @font-face {font-family: 'neogreyregular';font-weight: normal;font-style: normal;src: url('../webfonts/neogreyregular-webfont.woff2') format('woff2'),url('../webfonts/neogreyregular-webfont.woff') format('woff');}
 
 /* ========================= BUILT IN TAGS ======================== */
-html, body { background-color: var(--accent);color: var(--text);font-family: var(--short);width: 100%; height: 100%; overflow: hidden; margin: 0;display: flex; flex-flow: column;}
-header { background-color: var(--mainBG);width:100%; height: 3em; margin: .125em;display: flex; flex-shrink: 0; }
+html, body {
+  background-color: var(--accent);
+  color: var(--text);
+  font-family: var(--short);
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  margin: 0;
+  display: flex;
+  flex-flow: column;
+  -moz-user-select: none;
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+  -khtml-user-select: none;
+}
+
+header {
+  background-color: var(--mainBG);
+  width: 100%;
+  height: 3em;
+  margin: .125em;
+  display: flex;
+  flex-shrink: 0;
+}
 nav { background-color: var(--mainBG); width: 9.4em; flex-shrink: 0; margin-left: .125em; }
 main { background-color: var(--mainBG); flex-grow: 1; position: relative;	margin-left: 2px;  flex-flow: column; padding: .3em;}
 a:link, a:visited, a:active { text-decoration: none; color: var(--text); }
