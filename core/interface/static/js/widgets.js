@@ -10,13 +10,13 @@ $(function () {
 			});
 
 			$.post('/home/saveWidgetPosition/',
-					{
-						id: $(ui.draggable).attr('id'),
-						x: $(ui.draggable).position().left,
-						y: $(ui.draggable).position().top,
-						index: $('.widget').length,
-						order: arr
-					}
+				{
+					id: $(ui.draggable).attr('id'),
+					x: $(ui.draggable).position().left,
+					y: $(ui.draggable).position().top,
+					index: $('.widget').length,
+					order: JSON.stringify(arr)
+				}
 			);
 		}
 	});
