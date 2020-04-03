@@ -23,16 +23,34 @@
 {% endblock %}
 
 {% block content %}
-	<div class="toolbar">
-		<span class="toolbarButton" id="widgetCheck">
-			<i class="fas fa-check-circle" aria-hidden="true"></i>
-		</span>
-		<span class="toolbarButton" id="addWidget">
-			<i class="fas fa-plus-circle" aria-hidden="true"></i>
-		</span>
-		<span class="toolbarButton" id="removeWidget">
-			<i class="fas fa-minus-circle" aria-hidden="true"></i>
-		</span>
+	<div class="stick-top-right">
+		<div class="toolbar" id="toolbar_full" style="display:none;">
+			<span class="toolbarButton link-hover" id="cinemaToggle">
+				<i class="fas fa-person-booth" aria-hidden="true"></i>
+			</span>
+			<span class="toolbarButton link-hover" id="configToggle">
+				<i class="fas fa-cog" aria-hidden="true"></i>
+			</span>
+			<span class="toolbarButton link-hover" id="addWidget">
+				<i class="fas fa-plus-circle" aria-hidden="true"></i>
+			</span>
+			<span class="toolbarButton link-hover" id="removeWidget">
+				<i class="fas fa-minus-circle" aria-hidden="true"></i>
+			</span>
+			<span class="toolbarButton link-hover" id="toolbarToggleHide">
+				<i class="fas fa-pen-square" aria-hidden="true"></i>
+			</span>
+		</div>
+		<div class="toolbar" id="toolbar_checkmark" style="display:none;">
+			<span class="toolbarButton link-hover" id="widgetCheck">
+				<i class="fas fa-check-circle" aria-hidden="true"></i>
+			</span>
+		</div>
+		<div class="toolbar" id="toolbar_toggle" style="display:block;">
+			<span class="toolbarButton link-hover" id="toolbarToggleShow">
+				<i class="fas fa-pen-square" aria-hidden="true"></i>
+			</span>
+		</div>
 	</div>
 	<div id="addWidgetDialog" title="{{ langData.addWidgetTitle }}">
 		{% for parentName, widgetList in widgets.items() %}
@@ -42,9 +60,9 @@
 				</div>
 				<div class="addWidgetList">
 					{% for widgetName, widget in widgetList.items() %}
-						<div class="addWidgetLine" id="addWidgetLine_{{ widget.parent }}_{{ widget.name }}" {% if (widget.state|int) == 0 %}style="display: block;" {% else %} style="display: none;"{% endif %}>
+						<div class="addWidgetLine {% if (widget.state|int) == 0 %}notInstalled{% else %}installed{% endif %}" id="addWidgetLine_{{ widget.parent }}_{{ widget.name }}">
 							<div class="addWidgetName">{{ widgetName }}</div>
-							<div class="addWidgetCheck"><i class="fas fa-check-circle" aria-hidden="true"></i></div>
+							<div class="addWidgetCheck link-hover"><i class="fas fa-check-circle" aria-hidden="true"></i></div>
 						</div>
 					{% endfor %}
 				</div>
@@ -55,18 +73,47 @@
 		{% for parentName, widgetList in widgets.items() %}
 			{% for widgetName, widget in widgetList.items() %}
 				{% if (widget.state|int) == 1 %}
-					<div class="widget {{ widget.size }}" id="{{ widget.parent }}_{{ widget.name }}" style="position: absolute; top: {{ widget.y }}px; left: {{ widget.x }}px;z-index: {{ widget.zindex }}">
+					<div class="widget {{ widget.size }}
+						{% if widget.custStyle.get('titlebar') == "False" %}
+						widgetIconsHidden
+						{% endif %}
+						" id="{{ widget.parent }}_{{ widget.name }}"
+						 style="position: relative;  top: {{ widget.y }}px; left: {{ widget.x }}px;
+							{% if widget.width > 0 %}width: {{widget.width}}px;{% endif %}
+							{%  if widget.height > 0 %} height:{{widget.height}}px;{% endif %}
+							z-index: {{ widget.zindex }};
+						 	{% if widget.custStyle.get('background') != "" %}background: {{ widget.custStyle.get('background') }};
+						 		{% if widget.custStyle.get('background') == "transparent" %}box-shadow: none;{% endif %}
+							{% endif %}
+							{% if widget.custStyle.get('color') != "" %}color: {{ widget.custStyle.get('color') }};{% endif %}
+						 	{% if widget.custStyle.get('font-size') != "" %}font-size: {{ widget.custStyle.get('font-size') }};{% endif %}
+								 ">
 						{{ widget.html()|safe }}
-						<div class="widgetDelete">
+						<div class="widgetDelete widgetButton button initialHidden">
 							<i class="fas fa-minus-circle" aria-hidden="true"></i>
 						</div>
-					</div>
-					{%  if widget.options|length  %}
-						<div class="widgetOptions">
+						<div class="widgetConfig widgetButton button initialHidden">
+							<i class="fas fa-cog" aria-hidden="true"></i>
 						</div>
-					{% endif %}
+					</div>
 				{% endif %}
 			{% endfor %}
 		{% endfor %}
+	</div>
+	<div id="config_tabs" class="widgetOptions">
+		<div class="tabsContainer" id="widgetConfTabContainer">
+			<ul>
+				<li class="tab activeTab" data-for="WidgetConfig">{{ langData.widgetConfigTitle }}</li>
+				<li class="tab" data-for="WidgetCustStyle">{{ langData.widgetCustStyleTitle }}</li>
+			</ul>
+			<div class="tabsContent">
+				<div class="tabPage" id="WidgetConfig">
+					loading...
+				</div>
+				<div class="tabPage" id="WidgetCustStyle">
+					loading...
+				</div>
+			</div>
+		</div>
 	</div>
 {% endblock %}

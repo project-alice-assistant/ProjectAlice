@@ -24,7 +24,7 @@ $(function () {
 			'<span class="logLine">' + text + '</span>'
 		);
 
-		if ($('#checkedCheckbox').is(':visible')) {
+		if ($('#stopScroll').is(':visible')) {
 			$console.scrollTop($console.prop('scrollHeight'));
 		}
 	}
@@ -39,21 +39,21 @@ $(function () {
 		MQTT.subscribe('projectalice/logging/alicewatch')
 	}
 
-	$('#checkedCheckbox').on('click touchstart', function () {
+	$('#stopScroll').on('click touchstart', function () {
 		$(this).hide();
-		$('#emptyCheckbox').show();
+		$('#startScroll').show();
 		return false;
 	});
 
-	$('#emptyCheckbox').on('click touchstart', function () {
+	$('#startScroll').on('click touchstart', function () {
 		$(this).hide();
-		$('#checkedCheckbox').show();
+		$('#stopScroll').show();
 		return false;
 	});
 
 	$('[class^="fas fa-thermometer"]').on('click touchstart', function () {
-		$('[class^="fas fa-thermometer"]').removeClass('alicewatchActiveVerbosity');
-		$(this).addClass('alicewatchActiveVerbosity');
+		$('[class^="fas fa-thermometer"]').removeClass('active');
+		$(this).addClass('active');
 		$.ajax({
 			url: '/alicewatch/verbosity/',
 			data: {

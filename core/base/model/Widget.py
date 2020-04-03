@@ -15,6 +15,12 @@ class Widget(ProjectAliceObject):
 	SIZE = WidgetSizes.w
 
 	OPTIONS = dict()
+	CUSTSTYLE = {
+		'background': '',
+		'color': '',
+		'font-size': '',
+		'titlebar': 'True'
+	}
 
 	def __init__(self, data: sqlite3.Row):
 		super().__init__()
@@ -26,11 +32,18 @@ class Widget(ProjectAliceObject):
 		self._state = data['state'] if 'state' in data.keys() else 0
 		self._x = data['posx'] if 'posx' in data.keys() else 0
 		self._y = data['posy'] if 'posy' in data.keys() else 0
+		self._height = data['height'] if 'height' in data.keys() else 0
+		self._width = data['width'] if 'width' in data.keys() else 0
 		self._size = self.SIZE.value
 
 		self._options = self.OPTIONS
 		if 'options' in data.keys():
 			self._options.update(json.loads(data['options']))
+
+		self._custStyle = self.CUSTSTYLE.copy()
+		if 'custStyle' in data.keys():
+			if data['custStyle']:
+				self._custStyle.update(json.loads(data['custStyle']))
 
 		self._zindex = data['zindex'] if 'zindex' in data.keys() else 9999
 		self._language = self.loadLanguage()
@@ -57,15 +70,18 @@ class Widget(ProjectAliceObject):
 	def saveToDB(self):
 		self.DatabaseManager.replace(
 			tableName='widgets',
-			query='REPLACE INTO :__table__ (parent, name, posx, posy, state, options, zindex) VALUES (:parent, :name, :posx, :posy, :state, :options, :zindex)',
+			query='REPLACE INTO :__table__ (parent, name, posx, posy, height, width, state, options, custStyle, zindex) VALUES (:parent, :name, :posx, :posy, :height, :width, :state, :options, :custStyle, :zindex)',
 			callerName=self.SkillManager.name,
 			values={
 				'parent': self.parent,
 				'name': self.name,
 				'posx': self.x,
 				'posy': self.y,
+				'height': self.height,
+				'width': self.width,
 				'state': self.state,
 				'options': json.dumps(self.options),
+				'custStyle': json.dumps(self.custStyle),
 				'zindex': self.zindex
 			}
 		)
@@ -161,6 +177,26 @@ class Widget(ProjectAliceObject):
 
 
 	@property
+	def height(self) -> int:
+		return self._height
+
+
+	@height.setter
+	def height(self, value: int):
+		self._height = value
+
+
+	@property
+	def width(self) -> int:
+		return self._width
+
+
+	@width.setter
+	def width(self, value: int):
+		self._width = value
+
+
+	@property
 	def options(self) -> dict:
 		return self._options
 
@@ -168,6 +204,16 @@ class Widget(ProjectAliceObject):
 	@options.setter
 	def options(self, value: str):
 		self._options = value
+
+
+	@property
+	def custStyle(self) -> dict:
+		return self._custStyle
+
+
+	@custStyle.setter
+	def custStyle(self, value: str):
+		self._custStyle = value
 
 
 	@property
@@ -191,6 +237,7 @@ class Widget(ProjectAliceObject):
 			 Parent: {self.parent}
 			 Name: {self.name}
 			 Size: {self.size}
+			 CustomSize: {self.height}/{self.width}
 			 State: {self.state}
 			 PosX: {self.x}
 			 PosY: {self.y}

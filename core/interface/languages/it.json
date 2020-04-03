@@ -48,6 +48,8 @@
 	"resetSkill": "Resetta",
 	"actions": "Azioni",
 	"addUser": "Nuovo utente",
-	"addWakeword": "Add wakeword",
-	"tuneWakeword": "Tune wakeword"
+	"addWakeword": "Aggiungi wakeword",
+	"tuneWakeword": "Regola wakeword",
+	"widgetCustStyleTitle": "Opzioni dello schermo",
+	"widgetConfigTitle": "Opzioni dei widget"
 }

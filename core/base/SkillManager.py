@@ -41,8 +41,11 @@ class SkillManager(Manager):
 			'name TEXT NOT NULL UNIQUE',
 			'posx INTEGER NOT NULL',
 			'posy INTEGER NOT NULL',
+			'height INTEGER NOT NULL',
+			'width INTEGER NOT NULL',
 			'state TEXT NOT NULL',
 			'options TEXT NOT NULL',
+			'custStyle TEXT NOT NULL',
 			'zindex INTEGER'
 		]
 	}

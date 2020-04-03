@@ -8,20 +8,20 @@ $(function () {
 		let text = json['msg'].replace(pattern, '<span style="display: inline-block; width: 200px;">$1</span>');
 
 		container.append(text);
-		if ($('#checkedCheckbox').is(':visible')) {
+		if ($('#stopScroll').is(':visible')) {
 			container.scrollTop(container.prop('scrollHeight'));
 		}
 	}
 
-	$('#checkedCheckbox').on('click touchstart', function () {
+	$('#stopScroll').on('click touchstart', function () {
 		$(this).hide();
-		$('#emptyCheckbox').show();
+		$('#startScroll').show();
 		return false;
 	});
 
-	$('#emptyCheckbox').on('click touchstart', function () {
+	$('#startScroll').on('click touchstart', function () {
 		$(this).hide();
-		$('#checkedCheckbox').show();
+		$('#stopScroll').show();
 		return false;
 	});
 
