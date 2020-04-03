@@ -29,11 +29,38 @@ class Widget(ProjectAliceObject):
 		self._skillInstance = None
 
 		# sqlite3.Row does not support .get like dicts
-		self._state = data['state'] if 'state' in data.keys() else 0
-		self._x = data['posx'] if 'posx' in data.keys() else 0
-		self._y = data['posy'] if 'posy' in data.keys() else 0
-		self._height = data['height'] if 'height' in data.keys() else 0
-		self._width = data['width'] if 'width' in data.keys() else 0
+		# Many checks here because of NOT NULL DB constraints
+		updateWidget = False
+		if 'state' in data.keys() and data['state']:
+			self._state = data['state']
+		else:
+			self._state = 0
+			updateWidget = True
+
+		if 'posx' in data.keys() and data['posx']:
+			self._x = data['posx']
+		else:
+			self._x = 0
+			updateWidget = True
+
+		if 'posy' in data.keys() and data['posy']:
+			self._y = data['posy']
+		else:
+			self._y = 0
+			updateWidget = True
+
+		if 'height' in data.keys() and data['height']:
+			self._height = data['height']
+		else:
+			self._height = 0
+			updateWidget = True
+
+		if 'width' in data.keys() and data['width']:
+			self._width = data['width']
+		else:
+			self._width = 0
+			updateWidget = True
+
 		self._size = self.SIZE.value
 
 		self._options = self.OPTIONS
@@ -41,11 +68,21 @@ class Widget(ProjectAliceObject):
 			self._options.update(json.loads(data['options']))
 
 		self._custStyle = self.CUSTSTYLE.copy()
-		if 'custStyle' in data.keys():
+		if 'custStyle' in data.keys() and data['custStyle']:
 			if data['custStyle']:
 				self._custStyle.update(json.loads(data['custStyle']))
+		else:
+			updateWidget = True
 
-		self._zindex = data['zindex'] if 'zindex' in data.keys() else 9999
+		if 'zindex' in data.keys() and data['zindex'] is not None:
+			self._zindex = data['zindex']
+		else:
+			self._zindex = 99999
+			updateWidget = True
+
+		if updateWidget:
+			self.saveToDB()
+
 		self._language = self.loadLanguage()
 
 
