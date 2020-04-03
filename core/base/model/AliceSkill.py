@@ -5,7 +5,7 @@ import inspect
 import json
 import sqlite3
 from pathlib import Path
-from typing import Any, Dict, Iterable, Optional
+from typing import Any, Dict, Iterable, Optional, Union
 
 import re
 from copy import copy
@@ -113,6 +113,7 @@ class AliceSkill(ProjectAliceObject):
 
 				if item.fallbackFunction:
 					intents[str(item)].fallbackFunction = item.fallbackFunction
+
 				# always use the highest auth level specified (low values mean a higher auth level)
 				if item.authLevel < intents[str(item)].authLevel:
 					intents[str(item)].authLevel = item.authLevel
@@ -204,12 +205,11 @@ class AliceSkill(ProjectAliceObject):
 		return self._widgets.get(widgetName)
 
 
-	def getUtterancesByIntent(self, intent: Intent, forceLowerCase: bool = True, cleanSlots: bool = False) -> list:
+	def getUtterancesByIntent(self, intent: Union[Intent, tuple, str], forceLowerCase: bool = True, cleanSlots: bool = False) -> list:
 		lang = self.LanguageManager.activeLanguage
 		if lang not in self._intentsDefinitions:
 			return list()
 
-		#TODO: either typing in function definition is wrong, or it is always a Intent
 		if isinstance(intent, tuple):
 			check = intent[0].action
 		elif isinstance(intent, Intent):

@@ -139,7 +139,7 @@ $(function () {
 	});
 
 	function prepareConfigTab(parent, tab){
-		$.post('/home/read'+tab+'/',  { id: parent.attr('id') } )
+		$.post('/home/read' + tab + '/',  { id: parent.attr('id') } )
 			.done(function(data){
 				let dialogContainer = $('#config_tabs');
 				// No configuration exists
@@ -153,7 +153,18 @@ $(function () {
 				let newForm = "<form action='/home/save"+tab+"/' id='"+tab+"Form' method='post' autocomplete='off' novalidate target=''>";
 				newForm += "<input type='hidden' name='id' value='" + parent.attr('id') + "'/>";
 				jQuery.each(data, function (i, val) {
-					newForm += "<div class='configLine'><label class='configLabel'>" + i + "</label><input class='configInput widgetConfigInput' name='"+i+"' value='" + val + "'/></div>";
+					let input = '<input class="configInput widgetConfigInput" type="text" name="' + i + '" value="' + val + '"/></div>';
+					if (i === 'background' || i === 'color') {
+						input = '<input class="configInput widgetConfigInput" type="color" name="' + i + '" value="' + val + '"/></div>';
+					} else if (i === 'font-size') {
+						input = '<input class="configInput widgetConfigInput" type="number" step="0.1" min="0.1" max="5" name="' + i + '" value="' + val + '"/></div>';
+					} else if (i === 'titlebar') {
+						let checked = ' checked' ? val === 'True' : '';
+						input = '<input class="configInput widgetConfigInput" type="checkbox" name="' + i + '" value="True"' + checked + '/></div>';
+						/* Make sure unticked check boxes send off data too */
+						input += '<input type="hidden" name="' + i + '" value="False"/></div>';
+					}
+					newForm += "<div class='configLine'><label class='configLabel'>" + i + "</label>" + input;
 				});
 				newForm += "<div class='buttonLine'><input id='submitConfig' class='button' type='submit' value='Save'></div>";
 				dialogContainer.find('#'+tab).html(newForm);
