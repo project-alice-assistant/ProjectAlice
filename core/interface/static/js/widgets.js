@@ -115,6 +115,7 @@ $(function () {
 		$('#toolbar_full').hide();
 		$('header').toggle();
 		let widget = $('.widget');
+		widget.css('outline', 'none');
 		widget.draggable('disable');
 		widget.resizable('disable');
 	});
