@@ -395,6 +395,7 @@ network={
 				subprocess.run(['sudo', 'sed', '-i', '-e', 's/%HARDWARE%/googleAIY/', str(hlcServiceFilePath)])
 
 		elif audioHardware == 'usbMic':
+			subprocess.run(['sudo', Path(self._rootDir, 'system/scripts/audioHardware/usbmic.sh')])
 			subprocess.run(['sudo', 'cp', Path(self._rootDir, 'system', 'asounds', 'usbmic.conf'), Path(ASOUND)])
 
 		elif audioHardware == 'ps3eye':
