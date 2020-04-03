@@ -30,8 +30,13 @@ input[type='text'], input[type='password'], input[type='number'], select { width
 input:focus { border: yellow dotted 1px;}
 
 /* ======================= COLOR MARKINGS ======================== */
-.red, .disabled, .warning, saveFailed { color: red; }
-.green, .saved { color: green; }
+.red, .disabled, .warning, .saveFailed {
+  color: red;
+}
+
+.green, .saved {
+  color: green;
+}
 .yellow, .active, .saveing { color: yellow; }
 
 /*logscreen*/
