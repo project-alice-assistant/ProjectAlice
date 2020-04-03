@@ -30,8 +30,6 @@ class IndexView(View):
 		try:
 			p, w = request.form['id'].split('_')
 
-			print(request.form)
-
 			widget = self.SkillManager.widgets[p][w]
 			widget.x = request.form['x']
 			widget.y = request.form['y']

@@ -82,10 +82,22 @@
 							{% if widget.width > 0 %}width: {{widget.width}}px;{% endif %}
 							{%  if widget.height > 0 %} height:{{widget.height}}px;{% endif %}
 							z-index: {{ widget.zindex }};
-						 	{% if widget.custStyle.get('background') != "" %}background: {{ widget.custStyle.get('background') }};
-						 		{% if widget.custStyle.get('background-opacity') != '1.0' %}box-shadow: none;{% endif %}
+
+						 	{% if widget.custStyle.get('background-opactiy')|float < 1.0 %}
+								{% if widget.custStyle.get('background') != "" %}
+									background: rgba({{ widget.backgroundRGBA }});
+								{% else %}
+									background: var(--windowBG);
+								{% endif %}
+								box-shadow: none;
+							{% else %}
+								{% if widget.custStyle.get('background') != "" %}
+									background: {{ widget.custStyle.get('background') }};
+								{% else %}
+									background: var(--windowBG);
+								{% endif %}
 							{% endif %}
-						 	{% if widget.custStyle.get('background-opactiy') != '1.0' %}opacity: {{ widget.custStyle.get('background-opacity') }};{% endif %}
+
 							{% if widget.custStyle.get('color') != "" %}color: {{ widget.custStyle.get('color') }};{% endif %}
 						 	{% if widget.custStyle.get('font-size') != "" %}font-size: {{ widget.custStyle.get('font-size') }}em;{% endif %}
 								 ">

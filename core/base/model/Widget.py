@@ -254,6 +254,14 @@ class Widget(ProjectAliceObject):
 
 
 	@property
+	def backgroundRGBA(self) -> str:
+		color = self._custStyle['background'].lstrip('#')
+		rgb = list(int(color[i:i + 2], 16) for i in (0, 2, 4))
+		rgb.append(self._custStyle['background-opacity'])
+		return ', '.join(str(i) for i in rgb)
+
+
+	@property
 	def zindex(self) -> int:
 		return self._zindex
 
