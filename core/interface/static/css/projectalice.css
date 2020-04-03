@@ -11,11 +11,13 @@
   --text: #d1d1d1;
 /* TEXT */
   --short: 'marskeregular', Arial, sans-serif;
-  --long:'neogreyregular', Arial, sans-serif;
+  --long: 'neogreyregular', Arial, sans-serif;
+  --readable: 'White Rabbit', Arial, sans-serif;
 }
 /* ============================ FONTS ============================ */
 @font-face { font-family: 'marskeregular'; font-weight: normal; font-style: normal; src: url('../webfonts/marske-webfont.woff2') format('woff2'),url('../webfonts/marske-webfont.woff') format('woff'); }
 @font-face { font-family: 'neogreyregular'; font-weight: normal; font-style: normal; src: url('../webfonts/neogreyregular-webfont.woff2') format('woff2'),url('../webfonts/neogreyregular-webfont.woff') format('woff'); }
+@font-face { font-family: 'White Rabbit'; font-weight: normal; font-style: normal; src: url('../webfonts/WhiteRabbit.eot'); src: url('../webfonts/WhiteRabbit.eot?#iefix') format('embedded-opentype'), url('../webfonts/WhiteRabbit.woff2') format('woff2'), url('../webfonts/WhiteRabbit.woff') format('woff'), url('../webfonts/WhiteRabbit.ttf') format('truetype'), url('../webfonts/WhiteRabbit.svg#WhiteRabbit') format('svg'); }
 
 /* ========================= BUILT IN TAGS ======================== */
 html, body { background-color: var(--accent); color: var(--text); font-family: var(--short); width: 100%; height: 100%; overflow: hidden; margin: 0; display: flex; flex-flow: column; -moz-user-select: none; -webkit-touch-callout: none; -webkit-user-select: none; -ms-user-select: none; user-select: none; -khtml-user-select: none; }
@@ -85,7 +87,7 @@ button.button{ font-size: 1.6em; height: 2em; }
 
 /* console and logging */
 /* using color markings as defined above */
-.console { position: absolute; top: 20px; bottom: 40px; left: 20px; right: 20px; padding: 1em; background-color: black; color: var(--text); overflow-y: scroll; overflow-x: hidden; font-family: var(--long); }
+.console { position: absolute; top: 20px; bottom: 40px; left: 20px; right: 20px; padding: 1em; background-color: black; color: var(--text); overflow-y: scroll; overflow-x: hidden; font-family: var(--readable); }
 .logLine { display: block; }
 
 /*Home-Screen and Widget*/
