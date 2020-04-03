@@ -154,7 +154,15 @@ $(function () {
 				newForm += "<input type='hidden' name='id' value='" + parent.attr('id') + "'/>";
 				jQuery.each(data, function (i, val) {
 					let input = '<input class="configInput widgetConfigInput" type="text" name="' + i + '" value="' + val + '"/></div>';
-					if (i === 'background' || i === 'color') {
+					if (i === 'background') {
+						if (!val) {
+							val = getComputedStyle(document.documentElement).getPropertyValue('--windowBG').trim();
+						}
+						input = '<input class="configInput widgetConfigInput" type="color" name="' + i + '" value="' + val + '"/></div>';
+					} else if (i === 'color') {
+						if (!val) {
+							val = getComputedStyle(document.documentElement).getPropertyValue('--text').trim();
+						}
 						input = '<input class="configInput widgetConfigInput" type="color" name="' + i + '" value="' + val + '"/></div>';
 					} else if (i === 'background-opacity') {
 						input = '<input class="configInput widgetConfigInput" type="number" step="0.1" min="0.0" max="1" name="' + i + '" value="' + val + '"/></div>';
