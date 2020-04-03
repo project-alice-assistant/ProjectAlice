@@ -446,7 +446,7 @@ class DeviceManager(Manager):
 			self.logWarning(f'Device with uid **{uid}** does not exist')
 			return
 
-		if siteId.lower() and siteId.lower() != device.room:
+		if siteId and siteId.lower() != device.room.lower():
 			self.logWarning(f'Device with uid **{uid}** is not matching its defined room (received **{siteId}** but required **{device.room}**')
 			return
 
