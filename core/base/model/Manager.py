@@ -13,7 +13,7 @@ class Manager(ProjectAliceObject):
 		self._databaseSchema = databaseSchema
 		self._isActive = True
 
-		self.logInfo(f'Initializing')
+		self.logInfo(f'--Initializing--')
 
 
 	@property

@@ -1,12 +1,15 @@
 $(function () {
 
 	function onMessage(msg) {
-		let container = $('#console');
 		let json = JSON.parse(msg.payloadString);
+		addToLogs(json['msg'])
+	}
 
+	function addToLogs(msg) {
 		let pattern = /(\[.*])[ ]+/gi;
-		let text = json['msg'].replace(pattern, '<span style="display: inline-block; width: 200px;">$1</span>');
+		let text = msg.replace(pattern, '<span style="display: inline-block; width: 230px;">$1</span>');
 
+		let container = $('#console');
 		container.append(text);
 		if ($('#stopScroll').is(':visible')) {
 			container.scrollTop(container.prop('scrollHeight'));
@@ -32,6 +35,10 @@ $(function () {
 			url: '/syslog/connected/',
 			type: 'POST'
 		})
+	}
+
+	for(let i; i + 1; i < logHistory.length) {
+		addToLogs(logHistory[i]);
 	}
 
 	mqttRegisterSelf(onConnect, 'onConnect');

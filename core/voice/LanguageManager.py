@@ -125,21 +125,21 @@ class LanguageManager(Manager):
 					self._activeCountryCode = self._defaultCountryCode
 
 		if not self._activeLanguage and self._defaultLanguage:
-			self.logWarning(f'No active language defined, falling back to {self._defaultLanguage}')
+			self.logWarning(f'No active language defined, falling back to **{self._defaultLanguage}**')
 			self._activeLanguage = self._defaultLanguage
 			self._activeCountryCode = self._defaultCountryCode
 
 		elif self._activeLanguage and not self._defaultLanguage:
-			self.logWarning(f'No default language defined, falling back to {self._activeLanguage}')
+			self.logWarning(f'No default language defined, falling back to **{self._activeLanguage}**')
 			self._defaultLanguage = self._activeLanguage
 			self._defaultCountryCode = self._activeCountryCode
 
 		elif self._activeLanguage and self._defaultLanguage:
-			self.logInfo(f'Active language set to "{self.activeLanguageAndCountryCode}"')
-			self.logInfo(f'Default language set to "{self.defaultLanguage}-{self.defaultCountryCode}"')
+			self.logInfo(f'Active language set to **{self.activeLanguageAndCountryCode}**')
+			self.logInfo(f'Default language set to **{self.defaultLanguage}-{self.defaultCountryCode}**')
 
 		else:
-			self.logWarning('No active language or default language defined, falling back to "en"')
+			self.logWarning('No active language or default language defined, falling back to **en-US**')
 			self._activeLanguage = self._defaultLanguage = 'en'
 			self._activeCountryCode = self._defaultCountryCode = 'US'
 
