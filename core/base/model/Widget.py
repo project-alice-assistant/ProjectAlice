@@ -40,13 +40,13 @@ class Widget(ProjectAliceObject):
 		if 'posx' in data.keys() and data['posx']:
 			self._x = data['posx']
 		else:
-			self._x = 0
+			self._x = 10
 			updateWidget = True
 
 		if 'posy' in data.keys() and data['posy']:
 			self._y = data['posy']
 		else:
-			self._y = 0
+			self._y = 10
 			updateWidget = True
 
 		if 'height' in data.keys() and data['height']:
