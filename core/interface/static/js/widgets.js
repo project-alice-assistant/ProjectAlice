@@ -162,7 +162,7 @@ $(function () {
 						input = '<input class="configInput widgetConfigInput" type="number" step="0.1" min="0.1" max="5" name="' + i + '" value="' + val + '"/></div>';
 					} else if (i === 'titlebar') {
 						let checked = ' checked' ? val === 'True' : '';
-						input = '<input class="configInput widgetConfigInput" type="checkbox" name="' + i + '" value="True"' + checked + '/></div>';
+						input = '<input class="configInput widgetConfigInput" type="checkbox" name="' + i + '" value="True"' + checked + '/></div><span class="slider round"></span>';
 						/* Make sure unticked check boxes send off data too */
 						input += '<input type="hidden" name="' + i + '" value="False"/></div>';
 					}
@@ -170,6 +170,8 @@ $(function () {
 				});
 				newForm += "<div class='buttonLine'><input id='submitConfig' class='button' type='submit' value='Save'></div>";
 				dialogContainer.find('#'+tab).html(newForm);
+
+				$(":checkbox").checkToggler();
 
 				// perform submit/save of the form without switching page
 				let form = $('#'+tab+'Form');
