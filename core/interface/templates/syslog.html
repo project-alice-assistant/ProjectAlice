@@ -15,7 +15,7 @@
 
 {% block content %}
 	<script>
-		let logHistory = '{{ history }}';
+		let logHistory = {{ history|safe }};
 	</script>
 	<div class="stick-top-right">
 		<div class="toolbar">

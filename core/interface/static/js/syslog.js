@@ -37,7 +37,7 @@ $(function () {
 		})
 	}
 
-	for(let i; i + 1; i < logHistory.length) {
+	for(let i = 0; i < logHistory.length; i++) {
 		addToLogs(logHistory[i]);
 	}
 

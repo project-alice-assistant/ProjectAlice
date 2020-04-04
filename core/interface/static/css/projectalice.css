@@ -12,12 +12,12 @@
 /* TEXT */
   --short: 'marskeregular', Arial, sans-serif;
   --long: 'neogreyregular', Arial, sans-serif;
-  --readable: 'White Rabbit', Arial, sans-serif;
+  --readable: 'Roboto', Arial, sans-serif;
 }
 /* ============================ FONTS ============================ */
 @font-face { font-family: 'marskeregular'; font-weight: normal; font-style: normal; src: url('../webfonts/marske-webfont.woff2') format('woff2'),url('../webfonts/marske-webfont.woff') format('woff'); }
 @font-face { font-family: 'neogreyregular'; font-weight: normal; font-style: normal; src: url('../webfonts/neogreyregular-webfont.woff2') format('woff2'),url('../webfonts/neogreyregular-webfont.woff') format('woff'); }
-@font-face { font-family: 'White Rabbit'; font-weight: normal; font-style: normal; src: url('../webfonts/WhiteRabbit.eot'); src: url('../webfonts/WhiteRabbit.eot?#iefix') format('embedded-opentype'), url('../webfonts/WhiteRabbit.woff2') format('woff2'), url('../webfonts/WhiteRabbit.woff') format('woff'), url('../webfonts/WhiteRabbit.ttf') format('truetype'), url('../webfonts/WhiteRabbit.svg#WhiteRabbit') format('svg'); }
+@font-face { font-family: 'Roboto'; font-weight: normal; font-style: normal; src: url('../webfonts/Roboto-Regular.eot'); src: url('../webfonts/Roboto-Regular.eot?#iefix') format('embedded-opentype'), url('../webfonts/Roboto-Regular.woff2') format('woff2'), url('../webfonts/Roboto-Regular.woff') format('woff'), url('../webfonts/Roboto-Regular.ttf') format('truetype'), url('../webfonts/Roboto-Regular.svg#Roboto-Regular') format('svg'); }
 
 /* ========================= BUILT IN TAGS ======================== */
 html, body { background-color: var(--accent); color: var(--text); font-family: var(--short); width: 100%; height: 100%; overflow: hidden; margin: 0; display: flex; flex-flow: column; -moz-user-select: none; -webkit-touch-callout: none; -webkit-user-select: none; -ms-user-select: none; user-select: none; -khtml-user-select: none; }
@@ -46,6 +46,13 @@ input:focus { border: yellow dotted 1px; }
 .logWarning { color: orange; }
 .logError { color: red; }
 .logYellow { color: yellow; }
+.logGreen { color: green; }
+.logBlue { color: blue; }
+.logGrey { color: grey; }
+.logDefault { color: var(--text); }
+.logBold { font-weight: 900; }
+.logDim { font-weight: lighter; font-style: italic; }
+.logUnderlined { text-decoration: underline; }
 
 /* =========================== GENERAL =========================== */
 .link-hover:hover{ cursor: pointer; color: var(--hover); }
@@ -88,7 +95,7 @@ button.button{ font-size: 1.6em; height: 2em; }
 /* console and logging */
 /* using color markings as defined above */
 .console { position: absolute; top: 20px; bottom: 40px; left: 20px; right: 20px; padding: 1em; background-color: black; color: var(--text); overflow-y: scroll; overflow-x: hidden; font-family: var(--readable); }
-.logLine { display: block; }
+.logLine { display: block; font-family: var(--readable); font-size: 0.9em; margin: 2px 0 2px 0; }
 
 /*Home-Screen and Widget*/
 .widgetsPane { height: 100%; width: 100%; margin: 5px; }
