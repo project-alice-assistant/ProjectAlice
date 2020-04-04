@@ -837,7 +837,7 @@ class SkillManager(Manager):
 		self.removeSkillFromDB(skillName=skillName)
 		shutil.rmtree(Path(self.Commons.rootDir(), 'skills', skillName))
 
-		self.SnipsAssistantManager.checkAssistant()
+		self.SnipsAssistantManager.train()
 		self.DialogTemplateManager.afterSkillChange()
 		self.NluManager.afterSkillChange()
 
@@ -850,6 +850,7 @@ class SkillManager(Manager):
 
 		self._initSkills(loadOnly=skillName, reload=True)
 
+		self.SnipsAssistantManager.checkAssistant()
 		self.DialogTemplateManager.afterSkillChange()
 		self.NluManager.afterSkillChange()
 

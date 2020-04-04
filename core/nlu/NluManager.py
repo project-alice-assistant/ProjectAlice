@@ -30,7 +30,20 @@ class NluManager(Manager):
 
 
 	def afterSkillChange(self):
-		self.isTrainingNeeded()
+		if not self.checkCachedData():
+			self.isTrainingNeeded()
+
+
+	def checkCachedData(self) -> bool:
+		skills = self.SkillManager.allSkills
+		changes = False
+
+		for file in self._pathToCache.glob('*.json'):
+			if file.stem.split('_')[0] not in skills:
+				file.unlink()
+				changes = True
+
+		return changes
 
 
 	def isTrainingNeeded(self):
