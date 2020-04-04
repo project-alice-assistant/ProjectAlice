@@ -49,6 +49,7 @@ input:focus { border: yellow dotted 1px; }
 .logGreen { color: green; }
 .logBlue { color: blue; }
 .logGrey { color: grey; }
+.logOrange { color: orange; }
 .logDefault { color: var(--text); }
 .logBold { font-weight: 900; }
 .logDim { font-weight: lighter; font-style: italic; }
