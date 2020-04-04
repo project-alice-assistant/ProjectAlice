@@ -11,7 +11,6 @@ from core.base.model.Intent import Intent
 from core.base.model.Manager import Manager
 from core.commons import constants
 from core.dialog.model.DialogSession import DialogSession
-from core.util.Decorators import deprecated
 
 
 class MqttManager(Manager):
@@ -396,7 +395,7 @@ class MqttManager(Manager):
 			session.hasEnded = True
 			session.update(msg)
 		else:
-			self.broadcast(method=constants.EVENT_SESSION_ENDED, exceptions=[self.name])
+			self.broadcast(method=constants.EVENT_SESSION_ENDED, exceptions=[self.name], propagateToSkills=True)
 			return
 
 		reason = session.payload['termination']['reason']
@@ -414,6 +413,7 @@ class MqttManager(Manager):
 				self.broadcast(method=constants.EVENT_SESSION_ERROR, exceptions=[self.name], propagateToSkills=True, session=session)
 			else:
 				self.broadcast(method=constants.EVENT_SESSION_ENDED, exceptions=[self.name], propagateToSkills=True, session=session)
+				return
 
 		self.broadcast(method=constants.EVENT_SESSION_ENDED, exceptions=[self.name], propagateToSkills=True, session=session)
 		self.DialogSessionManager.removeSession(sessionId=sessionId)
@@ -734,11 +734,6 @@ class MqttManager(Manager):
 		session.customData = {**session.customData, **customData}
 
 		self._mqttClient.publish(constants.TOPIC_CONTINUE_SESSION, json.dumps(jsonDict))
-
-
-	@deprecated
-	def endTalk(self, sessionId: str = '', text: str = '', client: str = ''):
-		return self.endDialog(sessionId, text, client)
 
 
 	def endDialog(self, sessionId: str = '', text: str = '', client: str = ''):
