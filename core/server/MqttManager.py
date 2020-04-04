@@ -55,6 +55,7 @@ class MqttManager(Manager):
 		self._mqttClient.message_callback_add(constants.TOPIC_TTS_SAY, self.onSnipsSay)
 		self._mqttClient.message_callback_add(constants.TOPIC_TTS_FINISHED, self.onSnipsSayFinished)
 		self._mqttClient.message_callback_add(constants.TOPIC_SESSION_ENDED, self.onSnipsSessionEnded)
+		self._mqttClient.message_callback_add(constants.TOPIC_CONTINUE_SESSION, self.onSnipsContinueSession)
 		self._mqttClient.message_callback_add(constants.TOPIC_INTENT_NOT_RECOGNIZED, self.onSnipsIntentNotRecognized)
 		self._mqttClient.message_callback_add(constants.TOPIC_SESSION_QUEUED, self.onSnipsSessionQueued)
 		self._mqttClient.message_callback_add(constants.TOPIC_NLU_QUERY, self.onTopicNluQuery)
@@ -89,11 +90,14 @@ class MqttManager(Manager):
 			(constants.TOPIC_INTENT_PARSED, 0),
 			(constants.TOPIC_TTS_FINISHED, 0),
 			(constants.TOPIC_ASR_START_LISTENING, 0),
+			(constants.TOPIC_ASR_STOP_LISTENING, 0),
 			(constants.TOPIC_TTS_SAY, 0),
 			(constants.TOPIC_TEXT_CAPTURED, 0),
+			(constants.TOPIC_PARTIAL_TEXT_CAPTURED, 0),
 			(constants.TOPIC_HOTWORD_TOGGLE_ON, 0),
 			(constants.TOPIC_HOTWORD_TOGGLE_OFF, 0),
 			(constants.TOPIC_NLU_QUERY, 0),
+			(constants.TOPIC_CONTINUE_SESSION, 0),
 			(constants.TOPIC_END_SESSION, 0),
 			(constants.TOPIC_DEVICE_HEARTBEAT, 0)
 		]
@@ -186,6 +190,8 @@ class MqttManager(Manager):
 				return
 
 			self.logDebug(f'Using probability threshold of {session.probabilityThreshold}')
+
+			self.broadcast(method=constants.EVENT_INTENT, exceptions=[self.name], propagateToSkills=True, session=session)
 
 			if 'intent' in payload and float(payload['intent']['confidenceScore']) < session.probabilityThreshold:
 				if session.notUnderstood < self.ConfigManager.getAliceConfigByName('notUnderstoodRetries'):
@@ -384,6 +390,16 @@ class MqttManager(Manager):
 					message = mqtt.MQTTMessage(topic=str.encode(str(intent)))
 					message.payload = json.dumps(session.payload)
 					self.onMqttMessage(client=client, userdata=data, message=message)
+
+
+	# noinspection PyUnusedLocal
+	def onSnipsContinueSession(self, client, data, msg: mqtt.MQTTMessage):
+		sessionId = self.Commons.parseSessionId(msg)
+		session = self.DialogSessionManager.getSession(sessionId)
+		if session:
+			session.update(msg)
+
+		self.broadcast(method=constants.EVENT_CONTINUE_SESSION, exceptions=[self.name], propagateToSkills=True, session=session)
 
 
 	# noinspection PyUnusedLocal
@@ -767,16 +783,6 @@ class MqttManager(Manager):
 		}))
 
 
-	def partialTextCaptured(self, session: DialogSession, text: str, likelihood: float, seconds: float):
-		self._mqttClient.publish(constants.TOPIC_PARTIAL_TEXT_CAPTURED, json.dumps({
-			'text'      : text,
-			'likelihood': likelihood,
-			'seconds'   : seconds,
-			'siteId'    : session.siteId,
-			'sessionId' : session.sessionId
-		}))
-
-
 	def playSound(self, soundFilename: str, location: Path = None, sessionId: str = '', siteId: str = constants.DEFAULT_SITE_ID, uid: str = '', suffix: str = '.wav'):
 
 		if not sessionId:
@@ -842,6 +848,8 @@ class MqttManager(Manager):
 				'intents': intents
 			}
 		)
+
+		self.broadcast(method=constants.EVENT_CONFIGURE_INTENT, exceptions=[self.name], propagateToSkills=True, intents=intents)
 
 
 	@property

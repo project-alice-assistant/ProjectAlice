@@ -31,14 +31,33 @@ class AliceWatchManager(Manager):
 		})
 
 
-	def onIntentParsed(self, session: DialogSession):
+	def onIntent(self, session: DialogSession):
 		text = f'[Dialogue] New intent detected ![Yellow]({session.payload["intent"]["intentName"]}) with confidence ![Yellow]({round(session.payload["intent"]["confidenceScore"], 3)})'
 
 		if session.slots:
-			text = f'{text}\n**Slots**'
+			text = f'{text}\n**__Slots__**'
 
 			for slot in session.slots:
 				text = f'{text}\n![Blue]({slot}) ![Yellow](->) {session.slotValue(slotName=slot, defaultValue="")}'
+			text = f'{text}\n '
+
+		self.publish(payload={
+			'text': text
+		})
+
+
+	def onIntentParsed(self, session: DialogSession):
+		if self._verbosity < 1:
+			return
+
+		text = f'[Nlu] Intent detected ![Yellow]({session.payload["intent"]["intentName"]}) with confidence **{round(session.payload["intent"]["confidenceScore"], 3)}** for input "![Yellow]({session.payload.get("input", "")})"'
+
+		if session.slots:
+			text = f'{text}\n**__Slots__**'
+
+			for slot in session.slots:
+				text = f'{text}\n![Blue]({slot}) ![Yellow](->) {session.slotValue(slotName=slot, defaultValue="")}'
+			text = f'{text}\n '
 
 		self.publish(payload={
 			'text': text
@@ -59,7 +78,61 @@ class AliceWatchManager(Manager):
 			return
 
 		self.publish(payload={
-			'text': f'[ASR] Captured text "![Yellow]({session.payload["text"]})" in {round(session.payload["seconds"], 1)}s'
+			'text': f'[Asr] Captured text "![Yellow]({session.payload["text"]})" in {round(session.payload["seconds"], 1)}s'
+		})
+
+
+	def onPartialTextCaptured(self, session, text: str, likelihood: float, seconds: float):
+		if self._verbosity < 2:
+			return
+
+		self.publish(payload={
+			'text': f'[Asr] Capturing text: "![Yellow]({text})"'
+		})
+
+
+	def onHotwordToggleOn(self, siteId: str):
+		if self._verbosity < 2:
+			return
+
+		self.publish(payload={
+			'text': f'[Hotword] Was asked to toggle itself **on** on site **{siteId}**'
+		})
+
+
+	def onHotwordToggleOff(self, siteId: str):
+		if self._verbosity < 2:
+			return
+
+		self.publish(payload={
+			'text': f'[Hotword] Was asked to toggle itself **off** on site **{siteId}**'
+		})
+
+
+	def onStartListening(self, session):
+		if self._verbosity < 2:
+			return
+
+		self.publish(payload={
+			'text': f'[Asr] Was asked to start listening on site **{session.siteId}**'
+		})
+
+
+	def onStopListening(self, session):
+		if self._verbosity < 2:
+			return
+
+		self.publish(payload={
+			'text': f'[Asr] Was asked to stop listening on site **{session.siteId}**'
+		})
+
+
+	def onContinueSession(self, session):
+		if self._verbosity < 1:
+			return
+
+		self.publish(payload={
+			'text': f'[Dialogue] Was asked to continue session with id "**{session.sessionId}**" by saying "![Yellow]({session.text})"'
 		})
 
 
@@ -68,7 +141,7 @@ class AliceWatchManager(Manager):
 			return
 
 		self.publish(payload={
-			'text': f'[Dialogue] Was asked to end session with id "**{session.sessionId}**" by saying "{session.payload["text"]}"'
+			'text': f'[Dialogue] Was asked to end session with id "**{session.sessionId}**" by saying "![Yellow]({session.payload["text"]})"'
 		})
 
 
@@ -77,7 +150,7 @@ class AliceWatchManager(Manager):
 			return
 
 		self.publish(payload={
-			'text': f'[TTS] Was asked to say "![Yellow]({session.payload["text"]})"'
+			'text': f'[Tts] Was asked to say "![Yellow]({session.payload["text"]})"'
 		})
 
 
@@ -105,6 +178,31 @@ class AliceWatchManager(Manager):
 
 		self.publish(payload={
 			'text': f'[VoiceActivity] Down on site **{siteId}**'
+		})
+
+
+	# TODO Should support site configuration
+	def onConfigureIntent(self, intents: list):
+		if self._verbosity < 1:
+			return
+
+		text = f'[Dialogue] Was asked to configure all sites:'
+		for intent in intents:
+			text = f'{text}\n{"![Green](enable)" if intent["enable"] else "![Red](disable)"} {intent["intentId"]}'
+
+		text = f'{text}\n '
+
+		self.publish(payload={
+			'text': text
+		})
+
+
+	def onNluQuery(self, session):
+		if self._verbosity < 2:
+			return
+
+		self.publish(payload={
+			'text': f'[Nlu] Was asekd to parse input "![Yellow]({session.payload.get("input", "")})'
 		})
 
 

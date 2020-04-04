@@ -105,7 +105,7 @@ class ASRManager(Manager):
 
 
 	def onPartialTextCaptured(self, session: DialogSession, text: str, likelihood: float, seconds: float):
-		self.logDebug(f'Captured {text} with a likelihood of {likelihood}')
+		self.logDebug(f'Capturing {text}')
 
 
 	def decodeStream(self, session: DialogSession):

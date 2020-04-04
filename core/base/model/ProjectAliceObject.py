@@ -141,6 +141,10 @@ class ProjectAliceObject:
 		pass
 
 
+	def onContinueSession(self, session):
+		pass
+
+
 	def onStartListening(self, session):
 		pass
 
@@ -158,6 +162,14 @@ class ProjectAliceObject:
 
 
 	def onIntentParsed(self, session):
+		pass
+
+
+	def onIntent(self, session):
+		pass
+
+
+	def onConfigureIntent(self, intents: list):
 		pass
 
 

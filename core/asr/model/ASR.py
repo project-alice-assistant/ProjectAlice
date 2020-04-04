@@ -1,3 +1,4 @@
+import json
 import threading
 from pathlib import Path
 from threading import Event
@@ -135,4 +136,10 @@ class ASR(ProjectAliceObject):
 
 
 	def partialTextCaptured(self, session: DialogSession, text: str, likelihood: float, seconds: float):
-		self.MqttManager.partialTextCaptured(session, text, likelihood, seconds)
+		self.MqttManager.publish(constants.TOPIC_PARTIAL_TEXT_CAPTURED, json.dumps({
+			'text'      : text,
+			'likelihood': likelihood,
+			'seconds'   : seconds,
+			'siteId'    : session.siteId,
+			'sessionId' : session.sessionId
+		}))
