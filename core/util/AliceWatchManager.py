@@ -32,8 +32,16 @@ class AliceWatchManager(Manager):
 
 
 	def onIntentParsed(self, session: DialogSession):
+		text = f'[Dialogue] New intent detected ![Yellow]({session.payload["intent"]["intentName"]}) with confidence ![Yellow]({round(session.payload["intent"]["confidenceScore"], 3)})'
+
+		if session.slots:
+			text = f'{text}\n**Slots**'
+
+			for slot in session.slots:
+				text = f'{text}\n![Blue]({slot}) ![Yellow](->) {session.slotValue(slotName=slot, defaultValue="")}'
+
 		self.publish(payload={
-			'text': f'[Dialogue] New intent detected ![Yellow]({session.payload["intent"]["intentName"]}) with confidence ![Yellow]({round(session.payload["intent"]["confidenceScore"], 3)})'
+			'text': text
 		})
 
 
@@ -82,8 +90,26 @@ class AliceWatchManager(Manager):
 		})
 
 
+	def onVadUp(self, siteId: str):
+		if self._verbosity < 2:
+			return
+
+		self.publish(payload={
+			'text': f'[VoiceActivity] Up on site **{siteId}**'
+		})
+
+
+	def onVadDown(self, siteId: str):
+		if self._verbosity < 2:
+			return
+
+		self.publish(payload={
+			'text': f'[VoiceActivity] Down on site **{siteId}**'
+		})
+
+
 	def publish(self, payload: dict = None):
 		topic = f'projectalice/logging/alicewatch'
-		payload['text'] = f'![Orange]([{datetime.strftime(datetime.now(), "%H:%M:%S")}]) {payload["text"]}'
+		payload['text'] = f'![Yellow]([{datetime.strftime(datetime.now(), "%H:%M:%S")}]) {payload["text"]}'
 
 		self.MqttManager.publish(topic=topic, payload=payload)

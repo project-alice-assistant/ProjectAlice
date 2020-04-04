@@ -457,7 +457,7 @@ class MqttManager(Manager):
 		session = self.DialogSessionManager.getSession(sessionId)
 
 		if not session:
-			self.ask(text=self.TalkManager.randomTalk('notUnderstood', skill='system'), client='default')
+			self.ask(text=self.TalkManager.randomTalk('notUnderstood', skill='system'))
 		else:
 			# session.update(msg)
 			# if session.intentFilter and not str(self._INTENT_RANDOM_ANSWER) in session.intentFilter:

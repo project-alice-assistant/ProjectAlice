@@ -96,7 +96,7 @@ button.button{ font-size: 1.6em; height: 2em; }
 /* console and logging */
 /* using color markings as defined above */
 .console { position: absolute; top: 20px; bottom: 40px; left: 20px; right: 20px; padding: 1em; background-color: black; color: var(--text); overflow-y: scroll; overflow-x: hidden; font-family: var(--readable); }
-.logLine { display: block; font-family: var(--readable); font-size: 0.9em; margin: 2px 0 2px 0; }
+.logLine { display: flex; font-family: var(--readable); font-size: 0.9em; margin: 2px 0 2px 0; align-items: flex-start; }
 
 /*Home-Screen and Widget*/
 .widgetsPane { height: 100%; width: 100%; margin: 5px; }

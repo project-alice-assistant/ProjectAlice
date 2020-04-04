@@ -17,8 +17,11 @@ $(function () {
 		pattern = /--(.*?)--/gi;
 		text = text.replace(pattern, '<span class="logDim">$1</span>');
 
-		pattern = /(<span class=".*">\[.*]<\/span> \[.*])[ ]+/gi;
-		text = text.replace(pattern, '<span style="display: inline-block; width: 270px;">$1</span>');
+		pattern = /\n/gi;
+		text = text.replace(pattern, '<br>');
+
+		pattern = /(<span class=".*">\[.*]<\/span> \[.*])[ ]+(.*)/gi;
+		text = text.replace(pattern, '<span style="display: inline-block; width: 270px;">$1</span><span style="display: inline-block">$2</span>');
 
 		$console.append(
 			'<span class="logLine">' + text + '</span>'
@@ -33,7 +36,7 @@ $(function () {
 		let date = new Date();
 		let time = ('0' + date.getHours()).slice(-2) + ':' + ('0' + date.getMinutes()).slice(-2) + ':' + ('0' + date.getSeconds()).slice(-2);
 		$console.append(
-			'<span class="logLine"><span style="display: inline-block; width: 270px;"><span class="logOrange">[' + time + ']</span> [AliceWatch]</span>Watching on ' + MQTT_HOST + ':' + MQTT_PORT + ' (MQTT)</span>'
+			'<span class="logLine"><span style="display: inline-block; width: 270px;"><span class="logYellow">[' + time + ']</span> [AliceWatch]</span>Watching on ' + MQTT_HOST + ':' + MQTT_PORT + ' (MQTT)</span>'
 		);
 
 		MQTT.subscribe('projectalice/logging/alicewatch')
