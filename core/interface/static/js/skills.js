@@ -103,7 +103,7 @@ $(function () {
 			$button = $('<div class="skillStoreSkillDownloadFail button initialHidden"><i class="fas fa-exclamation-triangle buttonIconOnly"></i></div>');
 			$actions.append($button);
 
-			$tile.append($actions)
+			$tile.append($actions);
 
 			$('#skillStore').append($tile);
 		}

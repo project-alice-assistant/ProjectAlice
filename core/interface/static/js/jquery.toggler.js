@@ -57,8 +57,6 @@
             else {
                 this.$uiToggle.addClass('off').removeClass('on');
             }
-
-            console.log('onChange: ' + this.$element.prop('checked'));
         }
     };
 
