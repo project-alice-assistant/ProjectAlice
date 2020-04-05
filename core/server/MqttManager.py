@@ -411,7 +411,6 @@ class MqttManager(Manager):
 			session.hasEnded = True
 			session.update(msg)
 		else:
-			self.broadcast(method=constants.EVENT_SESSION_ENDED, exceptions=[self.name], propagateToSkills=True)
 			return
 
 		reason = session.payload['termination']['reason']
