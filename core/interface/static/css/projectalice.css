@@ -21,7 +21,7 @@
 
 /* ========================= BUILT IN TAGS ======================== */
 html, body { background-color: var(--accent); color: var(--text); font-family: var(--short); width: 100%; height: 100%; overflow: hidden; margin: 0; display: flex; flex-flow: column; -moz-user-select: none; -webkit-touch-callout: none; -webkit-user-select: none; -ms-user-select: none; user-select: none; -khtml-user-select: none; }
-header { background-color: var(--mainBG); width: 100%; height: 3em; margin: .125em; display: flex; flex-shrink: 0; }
+header { background-color: var(--mainBG); width: 100%; height: 3em; margin: .125em; display: flex; flex-shrink: 0; align-items: center;}
 nav { background-color: var(--mainBG); width: 9.4em; flex-shrink: 0; margin-left: .125em; }
 main { background-color: var(--mainBG); flex-grow: 1; position: relative; margin-left: 2px;  flex-flow: column; padding: .3em; }
 a:link, a:visited, a:active { text-decoration: none; color: var(--text); }
@@ -81,7 +81,8 @@ button.button{ font-size: 1.6em; height: 2em; }
 .mainMenuList {	list-style-type: none; margin: 0; padding: 0; }
 .mainMenuListItem { font-size: 1.5em; height: 2em; margin: .2em; padding-left: .4em; justify-content: flex-start; }
 
-.pageTitle { font-size: 2em; margin-left: 1em; align-items: center; display: flex; flex-grow: 1; }
+.pageTitle { font-size: 2em; margin-left: 1em; align-items: center; display: flex; width: 7.4em;}
+.aliceStatus { flex-grow: 1; }
 .updateChannelMarker { font-style: italic; margin: 0 .9em; align-items: center; display: flex; }
 
 .page {	flex: 1 100%; flex-flow: row nowrap; display: flex; }
