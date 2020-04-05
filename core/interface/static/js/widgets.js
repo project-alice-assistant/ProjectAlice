@@ -174,6 +174,7 @@ $(function () {
 						/* Make sure unticked check boxes send off data too */
 						input += '<input type="hidden" name="' + i + '" value="False"/></div>';
 					}
+
 					newForm += "<div class='configLine'><label class='configLabel'>" + i + "</label>" + input;
 				});
 				newForm += "<div class='buttonLine'><input id='submitConfig' class='button' type='submit' value='Save'></div>";
