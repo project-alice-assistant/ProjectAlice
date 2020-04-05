@@ -39,7 +39,7 @@ class AliceWatchManager(Manager):
 
 			for slot in session.slots:
 				text = f'{text}\n![Blue]({slot}) ![Yellow](->) {session.slotValue(slotName=slot, defaultValue="")}'
-			text = f'{text}\n '
+			text = f'{text}'
 
 		self.publish(payload={
 			'text': text
@@ -57,7 +57,7 @@ class AliceWatchManager(Manager):
 
 			for slot in session.slots:
 				text = f'{text}\n![Blue]({slot}) ![Yellow](->) {session.slotValue(slotName=slot, defaultValue="")}'
-			text = f'{text}\n '
+			text = f'{text}'
 
 		self.publish(payload={
 			'text': text
@@ -154,12 +154,36 @@ class AliceWatchManager(Manager):
 		})
 
 
-	def onSessionEnded(self, session: DialogSession):
+	def onIntentNotRecognized(self, session: DialogSession):
 		if self._verbosity < 1:
 			return
 
 		self.publish(payload={
-			'text': f'[Dialogue] Session with id "**{session.sessionId}**" was ended on site **{session.siteId}**. The session ended as expected'
+			'text': f'[NLU] ![Red](Intent not recognized) for "![Yellow]({session.text})"'
+		})
+
+
+	def onSessionEnded(self, session: DialogSession):
+		if self._verbosity < 1:
+			return
+
+		text = f'[Dialogue] Session with id "**{session.sessionId}**" was ended on site **{session.siteId}**.'
+
+		reason = session.payload['termination']['reason']
+		if reason:
+			if reason == 'abortedByUser':
+				text = f'{text} The session was aborted by the user.'
+			elif reason == 'timeout':
+				text = f'{text} The session timed out because the ASR component did not respond in a timely manner. Please ensure that the Asr is started and running correctly.'
+			elif reason == 'intentNotRecognized':
+				text = f'{text} The session was ended because the platform didn\'t understand the user.'
+			elif reason == 'error':
+				text = f'{text} The session was ended because there was a platform error.'
+			else:
+				text = f'{text} The session ended as expected.'
+
+		self.publish(payload={
+			'text': text
 		})
 
 
@@ -190,7 +214,7 @@ class AliceWatchManager(Manager):
 		for intent in intents:
 			text = f'{text}\n{"![Green](enable)" if intent["enable"] else "![Red](disable)"} {intent["intentId"]}'
 
-		text = f'{text}\n '
+		text = f'{text}'
 
 		self.publish(payload={
 			'text': text
