@@ -40,7 +40,8 @@ class SnipsAssistantManager(Manager):
 
 
 	def retrain(self):
-		self._assistantPath.unlink()
+		if self._assistantPath.exists():
+			self._assistantPath.unlink()
 		self.logInfo('Retraining assistant')
 		self.train()
 
