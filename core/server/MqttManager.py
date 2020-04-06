@@ -1,11 +1,11 @@
 import json
+import random
+import re
 import uuid
 from pathlib import Path
 
 import paho.mqtt.client as mqtt
 import paho.mqtt.publish as publish
-import random
-import re
 
 from core.base.model.Intent import Intent
 from core.base.model.Manager import Manager
@@ -857,15 +857,14 @@ class MqttManager(Manager):
 		return self._mqttClient
 
 
-	def toggleFeedbackSounds(self, state = 'On'):
+	def toggleFeedbackSounds(self, state='On'):
 		"""
 		Activates or disables the feedback sounds, on all devices
 		:param state: str On or off
 		"""
 
-		deviceList = self.DeviceManager.getDevicesByType('AliceSatellite', connectedOnly=True)
+		deviceList = [device.name.replace('@mqtt', '') for device in self.DeviceManager.getDevicesByType('AliceSatellite', connectedOnly=True)]
 		deviceList.append(constants.DEFAULT_SITE_ID)
 
-		for device in deviceList:
-			device = device.name.replace('@mqtt', '')
-			publish.single(constants.TOPIC_TOGGLE_FEEDBACK.format(state.title()), payload=json.dumps({'siteId': device.name}))
+		for siteId in deviceList:
+			publish.single(constants.TOPIC_TOGGLE_FEEDBACK.format(state.title()), payload=json.dumps({'siteId': siteId}))
