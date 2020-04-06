@@ -1,5 +1,6 @@
 import logging
 import traceback
+from typing import Match
 
 import re
 
@@ -11,21 +12,21 @@ class Logger:
 		self._logger = logging.getLogger('ProjectAlice')
 
 
-	def logInfo(self, msg: str):
-		self.doLog(function='info', msg=msg, printStack=False)
+	def logInfo(self, msg: str, plural: str = None):
+		self.doLog(function='info', msg=msg, printStack=False, plural=plural)
 
 
-	def logError(self, msg: str):
-		self.doLog(function='error', msg=msg)
+	def logError(self, msg: str, plural: str = None):
+		self.doLog(function='error', msg=msg, plural=plural)
 		self.printTraceback()
 
 
-	def logDebug(self, msg: str):
-		self.doLog(function='debug', msg=msg, printStack=False)
+	def logDebug(self, msg: str, plural: str = None):
+		self.doLog(function='debug', msg=msg, printStack=False, plural=plural)
 
 
-	def logFatal(self, msg: str):
-		self.doLog(function='fatal', msg=msg)
+	def logFatal(self, msg: str, plural: str = None):
+		self.doLog(function='fatal', msg=msg, plural=plural)
 		self.printTraceback()
 		try:
 			from core.base.SuperManager import SuperManager
@@ -35,17 +36,20 @@ class Logger:
 			exit()
 
 
-	def logWarning(self, msg: str, printStack: bool = False):
-		self.doLog(function='warning', msg=msg, printStack=printStack)
+	def logWarning(self, msg: str, printStack: bool = False, plural: str = None):
+		self.doLog(function='warning', msg=msg, printStack=printStack, plural=plural)
 		self.printTraceback()
 
 
-	def logCritical(self, msg: str):
-		self.doLog(function='critical', msg=msg)
+	def logCritical(self, msg: str, plural: str = None):
+		self.doLog(function='critical', msg=msg, plural=plural)
 		self.printTraceback()
 
 
-	def doLog(self, function: callable, msg: str, printStack = True):
+	def doLog(self, function: callable, msg: str, printStack = True, plural: str = None):
+		if plural:
+			msg = self.doPlural(string=msg, word=plural)
+
 		if self._prepend:
 			msg = f'{self._prepend} {msg}'
 
@@ -57,6 +61,17 @@ class Logger:
 
 		func = getattr(self._logger, function)
 		func(msg, exc_info=printStack)
+
+
+	@staticmethod
+	def doPlural(string: str, word: str) -> str:
+		def plural(match: Match) -> str:
+			matched = match.group()
+			if int(match.group(1)) > 1:
+				return matched + 's'
+			return matched
+
+		return re.sub(r'([\d]+)(.*?)({})'.format(word), plural, string)
 
 
 	@staticmethod

@@ -54,7 +54,7 @@ class DialogTemplateManager(Manager):
 
 			self.logInfo(f'Checking data for skill **{skillName}**')
 			if skillName not in checksums:
-				self.logInfo(f'Skill "{skillName}" is new')
+				self.logInfo(f'Skill **{skillName}** is new')
 				checksums[skillName] = list()
 				changes[skillName] = list()
 
@@ -69,14 +69,14 @@ class DialogTemplateManager(Manager):
 				if filename not in checksums[skillName]:
 					# Trigger a change only if the change concerns the language in use
 					if filename == language:
-						self.logInfo(f'Skill **{skillName}** has new language support "{filename}"')
+						self.logInfo(f'Skill **{skillName}** has new language support **{filename}**')
 						changes.setdefault(skillName, list()).append(filename)
 					continue
 
 				if self.Commons.fileChecksum(file) != checksums[skillName][filename]:
 					# Trigger a change only if the change concerns the language in use
 					if filename == language:
-						self.logInfo(f'Skill **{skillName}** has changes in language "{filename}"')
+						self.logInfo(f'Skill **{skillName}** has changes in language **{filename}**')
 						changes.setdefault(skillName, list()).append(filename)
 					continue
 
@@ -89,7 +89,7 @@ class DialogTemplateManager(Manager):
 
 			for lang in languages:
 				if not Path(self.Commons.rootDir(), f'skills/{skillName}/dialogTemplate/{lang}.json').exists() and lang == language:
-					self.logInfo(f'Skill **{skillName}** has dropped language "{lang}"')
+					self.logInfo(f'Skill **{skillName}** has dropped language **{lang}**')
 					changes.setdefault(f'--{skillName}', list()).append(lang)
 
 		if changes:

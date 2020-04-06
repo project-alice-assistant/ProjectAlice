@@ -151,7 +151,7 @@ class AliceSkill(ProjectAliceObject):
 	def loadWidgets(self):
 		fp = self.getResource('widgets')
 		if fp.exists():
-			self.logInfo(f"Loading **{len(list(fp.glob('*.py'))) - 1}** widgets")
+			self.logInfo(f"Loading **{len(list(fp.glob('*.py'))) - 1}** widget", plural='widget')
 
 			data = self.DatabaseManager.fetch(
 				tableName='widgets',

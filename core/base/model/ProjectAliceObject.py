@@ -65,32 +65,32 @@ class ProjectAliceObject:
 			del SM.SuperManager.getInstance().managers[name]
 
 
-	def logInfo(self, msg: str):
-		self._logger.doLog(function='info', msg=self.decorateLogs(msg), printStack=False)
+	def logInfo(self, msg: str, plural: str = None):
+		self._logger.doLog(function='info', msg=self.decorateLogs(msg), printStack=False, plural=plural)
 
 
-	def logError(self, msg: str):
-		self._logger.doLog(function='error', msg=self.decorateLogs(msg))
+	def logError(self, msg: str, plural: str = None):
+		self._logger.doLog(function='error', msg=self.decorateLogs(msg), plural=plural)
 
 
-	def logDebug(self, msg: str):
-		self._logger.doLog(function='debug', msg=self.decorateLogs(msg), printStack=False)
+	def logDebug(self, msg: str, plural: str = None):
+		self._logger.doLog(function='debug', msg=self.decorateLogs(msg), printStack=False, plural=plural)
 
 
-	def logFatal(self, msg: str):
-		self._logger.doLog(function='fatal', msg=self.decorateLogs(msg))
+	def logFatal(self, msg: str, plural: str = None):
+		self._logger.doLog(function='fatal', msg=self.decorateLogs(msg), plural=plural)
 		try:
 			self.ProjectAlice.onStop()
 		except:
 			exit()
 
 
-	def logWarning(self, msg: str, printStack: bool = False):
-		self._logger.doLog(function='warning', msg=self.decorateLogs(msg), printStack=printStack)
+	def logWarning(self, msg: str, printStack: bool = False, plural: str = None):
+		self._logger.doLog(function='warning', msg=self.decorateLogs(msg), printStack=printStack, plural=plural)
 
 
-	def logCritical(self, msg: str):
-		self._logger.doLog(function='critical', msg=self.decorateLogs(msg))
+	def logCritical(self, msg: str, plural: str = None):
+		self._logger.doLog(function='critical', msg=self.decorateLogs(msg), plural=plural)
 
 
 	def decorateLogs(self, text: str) -> str:

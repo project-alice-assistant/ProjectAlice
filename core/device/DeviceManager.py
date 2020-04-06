@@ -71,7 +71,7 @@ class DeviceManager(Manager):
 		self._listenSocket.bind(('', self._listenPort))
 
 		self.loadDevices()
-		self.logInfo(f'Loaded **{len(self._devices)}** devices')
+		self.logInfo(f'Loaded **{len(self._devices)}** device', plural='device')
 
 
 	@property
