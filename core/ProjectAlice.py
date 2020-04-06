@@ -68,6 +68,7 @@ class ProjectAlice(Singleton):
 		if self._superManager.configManager.getAliceConfigByName('useHLC'):
 			self._superManager.commons.runRootSystemCommand(['systemctl', 'stop', 'hermesledcontrol'])
 
+		self._booted = False
 		self.INSTANCE = None
 
 		if withReboot:

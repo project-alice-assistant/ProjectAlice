@@ -98,7 +98,10 @@ def main():
 			time.sleep(0.1)
 	except KeyboardInterrupt:
 		_logger.info('[Project Alice]           Interruption detected, preparing shutdown')
-		projectAlice.onStop()
+
+	finally:
+		if projectAlice.isBooted:
+			projectAlice.onStop()
 
 	_logger.info('[Project Alice]           Shutdown completed, see you soon!')
 	if projectAlice.restart:
