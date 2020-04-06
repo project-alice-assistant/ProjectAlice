@@ -867,5 +867,5 @@ class MqttManager(Manager):
 		deviceList.append(constants.DEFAULT_SITE_ID)
 
 		for device in deviceList:
-			device = device.replace('@mqtt', '')
-			publish.single(constants.TOPIC_TOGGLE_FEEDBACK.format(state.title()), payload=json.dumps({'siteId': device}))
+			device = device.name.replace('@mqtt', '')
+			publish.single(constants.TOPIC_TOGGLE_FEEDBACK.format(state.title()), payload=json.dumps({'siteId': device.name}))
