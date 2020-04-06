@@ -98,22 +98,22 @@ def main():
 			time.sleep(0.1)
 	except KeyboardInterrupt:
 		_logger.info('[Project Alice]           Interruption detected, preparing shutdown')
-	finally:
 		projectAlice.onStop()
-		_logger.info('[Project Alice]           Shutdown completed, see you soon!')
-		if projectAlice.restart:
-			time.sleep(3)
-			sys.stdout.flush()
-			try:
-				# Close everything related to ProjectAlice, allows restart without component failing
-				p = psutil.Process(os.getpid())
-				for h in p.open_files() + p.connections():
-					os.close(h.fd)
-			except Exception as e:
-				_logger.error(f'[Project Alice]           Failed restarting: {e}')
 
-			python = sys.executable
-			os.execl(python, python, *sys.argv)
+	_logger.info('[Project Alice]           Shutdown completed, see you soon!')
+	if projectAlice.restart:
+		time.sleep(3)
+		sys.stdout.flush()
+		try:
+			# Close everything related to ProjectAlice, allows restart without component failing
+			p = psutil.Process(os.getpid())
+			for h in p.open_files() + p.connections():
+				os.close(h.fd)
+		except Exception as e:
+			_logger.error(f'[Project Alice]           Failed restarting: {e}')
+
+		python = sys.executable
+		os.execl(python, python, *sys.argv)
 
 
 RUNNING = False

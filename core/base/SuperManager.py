@@ -187,12 +187,12 @@ class SuperManager:
 
 	def onStop(self):
 		managerName = constants.UNKNOWN_MANAGER
+		mqttManager = self._managers.pop('MqttManager')
 		try:
-			mqttManager = self._managers.pop('MqttManager')
-
 			for managerName, manager in self._managers.items():
 				manager.onStop()
 
+			managerName = mqttManager.name
 			mqttManager.onStop()
 		except Exception as e:
 			Logger().logError(f'Error while shutting down manager **{managerName}**: {e}')

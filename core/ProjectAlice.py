@@ -1,3 +1,4 @@
+import subprocess
 from pathlib import Path
 
 import requests
@@ -61,14 +62,18 @@ class ProjectAlice(Singleton):
 		self.onStop()
 
 
-	def onStop(self):
+	def onStop(self, withReboot: bool = False):
 		self._logger.logInfo('Shutting down')
 		self._superManager.onStop()
 		if self._superManager.configManager.getAliceConfigByName('useHLC'):
 			self._superManager.commons.runRootSystemCommand(['systemctl', 'stop', 'hermesledcontrol'])
 
 		self.INSTANCE = None
-		self._restartHandler()
+
+		if withReboot:
+			subprocess.run(['sudo', 'shutdown', '-r', 'now'])
+		else:
+			self._restartHandler()
 
 
 	def wipeAll(self):
