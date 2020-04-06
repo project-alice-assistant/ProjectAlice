@@ -1,11 +1,11 @@
 import json
+import random
+import re
 import uuid
 from pathlib import Path
 
 import paho.mqtt.client as mqtt
 import paho.mqtt.publish as publish
-import random
-import re
 
 from core.ProjectAliceExceptions import AccessLevelTooLow
 from core.base.model.Intent import Intent
@@ -884,9 +884,8 @@ class MqttManager(Manager):
 		:param state: str On or off
 		"""
 
-		deviceList = self.DeviceManager.getDevicesByType('AliceSatellite', connectedOnly=True)
+		deviceList = [device.name.replace('@mqtt', '') for device in self.DeviceManager.getDevicesByType('AliceSatellite', connectedOnly=True)]
 		deviceList.append(constants.DEFAULT_SITE_ID)
 
-		for device in deviceList:
-			device = device.replace('@mqtt', '')
-			publish.single(constants.TOPIC_TOGGLE_FEEDBACK.format(state.title()), payload=json.dumps({'siteId': device}))
+		for siteId in deviceList:
+			publish.single(constants.TOPIC_TOGGLE_FEEDBACK.format(state.title()), payload=json.dumps({'siteId': siteId}))
