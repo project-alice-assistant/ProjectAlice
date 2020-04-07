@@ -115,10 +115,19 @@ class ProjectAlice(Singleton):
 
 		self._logger.logInfo(f'Checking on "{str(candidate)}" update channel')
 		commons = SuperManager.getInstance().commons
+
+		currentHash = subprocess.check_output(['git', 'rev-parse', '--short HEAD'])
+
 		commons.runSystemCommand(['git', '-C', commons.rootDir(), 'stash'])
 		commons.runSystemCommand(['git', '-C', commons.rootDir(), 'clean', '-df'])
 		commons.runSystemCommand(['git', '-C', commons.rootDir(), 'checkout', str(candidate)])
 		commons.runSystemCommand(['git', '-C', commons.rootDir(), 'pull'])
 
+		newHash = subprocess.check_output(['git', 'rev-parse', '--short HEAD'])
+
 		# Remove install tickets
 		[file.unlink() for file in Path(commons.rootDir(), 'system/skillInstallTickets').glob('*') if file.is_file()]
+
+		if currentHash != newHash:
+			self._logger.logWarning('New Alice version installed, need to restart...')
+			self.doRestart()
