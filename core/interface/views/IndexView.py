@@ -109,6 +109,7 @@ class IndexView(View):
 			return func(**json.loads(data['param']))
 		except Exception as e:
 			self.logWarning(f"[Widget] Widget tried to call a core function but failed: {e}")
+			return jsonify(success=False)
 
 
 	@route('/home/saveWidgetConfig/', methods=['POST'])
