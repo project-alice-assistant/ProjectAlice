@@ -406,7 +406,8 @@ class DeviceManager(Manager):
 
 
 	def getDevicesByRoom(self, room: str, connectedOnly: bool = False) -> List[Device]:
-		return [x for x in self._devices.values() if x.room.lower() == room.lower() and (not connectedOnly or x.connected)]
+		room = room.lower().replace(' ', '_')
+		return [x for x in self._devices.values() if x.room.lower() == room and (not connectedOnly or x.connected)]
 
 
 	def getDevicesByType(self, deviceType: str, connectedOnly: bool = False) -> List[Device]:
