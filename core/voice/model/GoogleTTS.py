@@ -119,6 +119,36 @@ class GoogleTTS(TTS):
 						'neural': True
 					}
 				}
+			},
+			'it-IT': {
+				'male'  : {
+					'it-IT-Standard-C': {
+						'neural': False
+					},
+					'it-IT-Standard-D' : {
+						'neural': False
+					},
+					'it-IT-Wavenet-C' : {
+						'neural': True
+					},
+					'it-IT-Wavenet-D': {
+						'neural': True
+					}
+				},
+				'female': {
+					'it-IT-Standard-A': {
+						'neural': False
+					},
+					'it-IT-Standard-B' : {
+						'neural': False
+					},
+					'it-IT-Wavenet-A' : {
+						'neural': True
+					},
+					'it-IT-Wavenet-B': {
+						'neural': True
+					}
+				}
 			}
 		}
 
