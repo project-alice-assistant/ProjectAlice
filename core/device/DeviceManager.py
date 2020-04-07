@@ -341,7 +341,7 @@ class DeviceManager(Manager):
 	def startBroadcast(self, room: str, uid: str, replyOnSiteId: str):
 		self._broadcastFlag.set()
 		while self._broadcastFlag.isSet():
-			self._broadcastSocket.sendto(bytes(f'{self.Commons.getLocalIp()}:{self._listenPort}:{room}:{uid}', encoding='utf8'), ('<broadcast>', self._broadcastPort))
+			self._broadcastSocket.sendto(bytes(f'{self.Commons.getLocalIp()}:{self._listenPort}:{room.replace(" ", "_")}:{uid}', encoding='utf8'), ('<broadcast>', self._broadcastPort))
 			try:
 				sock, address = self._listenSocket.accept()
 				sock.settimeout(None)
@@ -446,8 +446,8 @@ class DeviceManager(Manager):
 			self.logWarning(f'Device with uid **{uid}** does not exist')
 			return
 
-		if siteId and siteId.lower() != device.room.lower():
-			self.logWarning(f'Device with uid **{uid}** is not matching its defined room (received **{siteId}** but required **{device.room}**')
+		if siteId and siteId.replace(' ', '_').lower() != device.room.lower():
+			self.logWarning(f'Device with uid **{uid}** is not matching its defined room (received **{siteId.replace(" ", "_").lower()}** but required **{device.room}**')
 			return
 
 		self._heartbeats[uid] = time.time()
