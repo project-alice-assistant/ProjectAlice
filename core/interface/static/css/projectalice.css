@@ -32,25 +32,16 @@ input[type='text'], input[type='password'], input[type='number'], select { width
 input:focus { border: yellow dotted 1px; }
 
 /* ======================= COLOR MARKINGS ======================== */
-.red, .disabled, .warning, .saveFailed {
-  color: red;
-}
-
-.green, .saved {
-  color: green;
-}
-.yellow, .active, .saveing { color: yellow; }
+.red, .disabled, .warning, .saveFailed, .logError, .logRed { color: red; }
+.green, .saved, .logGreen { color: green; }
+.yellow, .active, .saveing, .logYellow { color: yellow; }
 
 /*logscreen*/
 .logInfo { color: var(--text); }
 .logWarning { color: orange; }
-.logError { color: red; }
-.logYellow { color: yellow; }
-.logGreen { color: green; }
 .logBlue { color: blue; }
 .logGrey { color: grey; }
 .logOrange { color: orange; }
-.logRed { color: red; }
 .logDefault { color: var(--text); }
 .logBold { font-weight: 900; }
 .logDim { font-weight: lighter; font-style: italic; }

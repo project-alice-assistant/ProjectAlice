@@ -1,3 +1,4 @@
+import json
 from dataclasses import dataclass, field
 
 @dataclass
@@ -17,3 +18,15 @@ class Device:
 		self.deviceType = self.data['type']
 		self.uid = self.data['uid']
 		self.room = self.data['room']
+
+
+	def toJson(self) -> str:
+		return json.dumps({
+			'id': self.id,
+			'deviceType': self.deviceType,
+			'name': self.name,
+			'uid': self.uid,
+			'room': self.room,
+			'lastContact': self.lastContact,
+			'connected': self.connected
+		})
