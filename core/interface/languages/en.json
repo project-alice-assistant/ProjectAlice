@@ -26,6 +26,7 @@
 	"devmodeNewSkill": "Skill creation",
 	"devmodeEditSkill": "Skill edition",
 	"reload": "Reload",
+	"loading": "Loading...",
 	"skillName": "Skill name",
 	"skillDesc": "Skill description",
 	"skillLanguage": "Skill language",
@@ -51,5 +52,9 @@
 	"addWakeword": "Add wakeword",
 	"tuneWakeword": "Tune wakeword",
 	"widgetCustStyleTitle": "Display Options",
-	"widgetConfigTitle": "Widget Options"
+	"widgetConfigTitle": "Widget Options",
+	"widgetsNoConfs": "No config for this widget!",
+	"widgetConfSaving": "Saving",
+	"widgetConfSaved": "Saved",
+	"widgetConfSaveFailed": "Save failed"
 }

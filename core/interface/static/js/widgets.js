@@ -144,7 +144,7 @@ $(function () {
 				let dialogContainer = $('#config_tabs');
 				// No configuration exists
 				if(jQuery.isEmptyObject(data) == true ){
-					dialogContainer.find('#'+tab).html("No config for this widget!");
+					dialogContainer.find('#'+tab).html($('#langNoConf').text());
 					dialogContainer.dialog("open");
 					return;
 				}
@@ -154,21 +154,21 @@ $(function () {
 				newForm += "<input type='hidden' name='id' value='" + parent.attr('id') + "'/>";
 				jQuery.each(data, function (i, val) {
 					let input = '<input class="configInput widgetConfigInput" type="text" name="' + i + '" value="' + val + '"/></div>';
-					if (i === 'background') {
+					if (i == 'background') {
 						if (!val) {
 							val = getComputedStyle(document.documentElement).getPropertyValue('--windowBG').trim();
 						}
 						input = '<input class="configInput widgetConfigInput" type="color" name="' + i + '" value="' + val + '"/></div>';
-					} else if (i === 'color') {
+					} else if (i == 'color') {
 						if (!val) {
 							val = getComputedStyle(document.documentElement).getPropertyValue('--text').trim();
 						}
 						input = '<input class="configInput widgetConfigInput" type="color" name="' + i + '" value="' + val + '"/></div>';
-					} else if (i === 'background-opacity') {
+					} else if (i == 'background-opacity') {
 						input = '<input class="configInput widgetConfigInput" type="number" step="0.1" min="0.0" max="1" name="' + i + '" value="' + val + '"/></div>';
-					} else if (i === 'font-size') {
+					} else if (i == 'font-size') {
 						input = '<input class="configInput widgetConfigInput" type="number" step="0.1" min="0.1" max="5" name="' + i + '" value="' + val + '"/></div>';
-					} else if (i === 'titlebar') {
+					} else if (i == 'titlebar') {
 						let checked = val === 'True' ? ' checked' : '';
 						input = '<input class="configInput widgetConfigInput" type="checkbox" name="' + i + '" value="True"' + checked + '/></div><span class="slider round"></span>';
 						/* Make sure unticked check boxes send off data too */
@@ -177,7 +177,7 @@ $(function () {
 
 					newForm += "<div class='configLine'><label class='configLabel'>" + i + "</label>" + input;
 				});
-				newForm += "<div class='buttonLine'><input id='submitConfig' class='button' type='submit' value='Save'></div>";
+				newForm += "<div class='buttonLine'><input id='submitConfig' class='button' type='submit' value='" + $('#langConfSave').text() + "'></div>";
 				dialogContainer.find('#'+tab).html(newForm);
 
 				$(":checkbox").checkToggler();
@@ -186,26 +186,26 @@ $(function () {
 				let form = $('#'+tab+'Form');
 				let saveButton = form.find('#submitConfig');
 				form.submit(function( event ) {
-					saveButton.val("Saveing");
-					saveButton.addClass("saveing");
+					saveButton.val($('#langConfSaving').text());
+					saveButton.addClass("saving");
 					$.post(form.attr("action"),
 							form.serialize()).done(function() {
-								saveButton.val("Saved");
+								saveButton.val($('#langConfSaved').text());
 								saveButton.addClass("saved");
 							  })
 							  .fail(function() {
-								saveButton.val("Save failed");
+								saveButton.val($('#langConfSaveFailed').text());
 								saveButton.addClass("saveFailed");
 							  }).always(
 								function () {
-									saveButton.removeClass("saveing");
+									saveButton.removeClass("saving");
 								});
 					event.preventDefault();
 				});
 
 				// change button back to save if something was changed
 				$('.widgetConfigInput').change(function() {
-					saveButton.val("Save");
+					saveButton.val($('#langConfSave').text());
 					saveButton.removeClass("saved");
 					saveButton.removeClass("saveFailed");
 				});

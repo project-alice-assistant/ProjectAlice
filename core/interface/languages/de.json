@@ -21,6 +21,7 @@
 	"adminTabTitleUtilities": "Utilities",
 	"restartAlice": "Alice neustarten",
 	"reboot": "Reboot",
+	"loading": "Laden...",
 	"trainAssistant": "Assistant trainieren",
 	"wipeAll": "Alles löschen",
 	"devmodeNewSkill": "Neuer Skill",
@@ -51,5 +52,9 @@
 	"addWakeword": "Neues Wakeword",
 	"tuneWakeword": "Tune wakeword",
 	"widgetCustStyleTitle": "Anzeige Einstellungen",
-	"widgetConfigTitle": "Widget Einstellungen"
+	"widgetConfigTitle": "Widget Einstellungen",
+	"widgetsNoConfs": "Keine Einstellungen",
+	"widgetConfSaving": "Speichern",
+	"widgetConfSaved": "Gespeichert",
+	"widgetConfSaveFailed": "Save failed"
 }

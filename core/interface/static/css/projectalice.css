@@ -48,6 +48,8 @@ input:focus { border: yellow dotted 1px; }
 .logUnderlined { text-decoration: underline; }
 
 /* =========================== GENERAL =========================== */
+.hidden { display: none; }
+
 .link-hover:hover{ cursor: pointer; color: var(--hover); }
 .button:hover,
 .tabsContainer li:hover { cursor: pointer; color: var(--hover); background-color: var(--mainBG); }
@@ -176,4 +178,4 @@ button.button{ font-size: 1.6em; height: 2em; }
 
 .saveFailed { background: red !important; }
 .saved { background: green !important; }
-.saveing { background: yellow !important; }
+.saving { background: yellow !important; }

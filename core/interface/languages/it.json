@@ -26,6 +26,7 @@
 	"devmodeNewSkill": "Crea skill",
 	"devmodeEditSkill": "Modifica skill",
 	"reload": "Ricarica",
+	"loading": "Caricamento...",
 	"skillName": "nome Skill",
 	"skillDesc": "descrizione skill",
 	"skillLanguage": "Lingua skill",
@@ -51,5 +52,9 @@
 	"addWakeword": "Aggiungi wakeword",
 	"tuneWakeword": "Regola wakeword",
 	"widgetCustStyleTitle": "Opzioni dello schermo",
-	"widgetConfigTitle": "Opzioni dei widget"
+	"widgetConfigTitle": "Opzioni dei widget",
+	"widgetsNoConfs": "Nessuna configurazione per questo widget!",
+    "widgetConfSaving": "Salvataggio in corso",
+    "widgetConfSaved": "Salvato",
+    "widgetConfSaveFailed": "Salvataggio fallito"
 }
