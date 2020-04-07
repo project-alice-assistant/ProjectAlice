@@ -1,5 +1,6 @@
-import re
 import subprocess
+
+import re
 
 from core.base.SuperManager import SuperManager
 from core.dialog.model.DialogSession import DialogSession
@@ -172,6 +173,21 @@ class AmazonTTS(TTS):
 						'neural': False
 					},
 					'Vicki': {
+						'neural': False
+					}
+				}
+			},
+			'it-IT': {
+				'male'  : {
+					'Giorgio': {
+						'neural': False
+					}
+				},
+				'female': {
+					'Bianca': {
+						'neural': False
+					},
+					'Carla'  : {
 						'neural': False
 					}
 				}
