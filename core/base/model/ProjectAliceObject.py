@@ -101,7 +101,7 @@ class ProjectAliceObject:
 		pass
 
 
-	def onStop(self, withReboot: bool = False):
+	def onStop(self, **kwargs):
 		pass
 
 

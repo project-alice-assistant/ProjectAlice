@@ -549,7 +549,7 @@ class SkillManager(Manager):
 				localVersion = Version.fromString(self._skillList[skillName]['installer']['version'])
 				if localVersion < remoteVersion:
 					updateCount += 1
-					self.logInfo(f'❌ {skillName} - Version {self._skillList[skillName]["installer"]["version"]} < {str(remoteVersion)} in {self.ConfigManager.getAliceConfigByName("skillsUpdateChannel")}')
+					self.logInfo(f'![yellow]({skillName}) - Version {self._skillList[skillName]["installer"]["version"]} < {str(remoteVersion)} in {self.ConfigManager.getAliceConfigByName("skillsUpdateChannel")}')
 
 					if not self.ConfigManager.getAliceConfigByName('skillAutoUpdate'):
 						if skillName in self._activeSkills:
@@ -558,13 +558,13 @@ class SkillManager(Manager):
 						if not self.downloadInstallTicket(skillName):
 							raise Exception
 				else:
-					self.logInfo(f'✔ {skillName} - Version {self._skillList[skillName]["installer"]["version"]} in {self.ConfigManager.getAliceConfigByName("skillsUpdateChannel")}')
+					self.logInfo(f'![green]({skillName}) - Version {self._skillList[skillName]["installer"]["version"]} in {self.ConfigManager.getAliceConfigByName("skillsUpdateChannel")}')
 
 			except GithubNotFound:
-				self.logInfo(f'❓ Skill "{skillName}" is not available on Github. Deprecated or is it a dev skill?')
+				self.logInfo(f'![red](Skill "{skillName}") is not available on Github. Deprecated or is it a dev skill?')
 
 			except Exception as e:
-				self.logError(f'❗ Error checking updates for skill "{skillName}": {e}')
+				self.logError(f'Error checking updates for skill "{skillName}": {e}')
 
 		self.logInfo(f'Found {updateCount} skill update(s)')
 		return updateCount > 0
