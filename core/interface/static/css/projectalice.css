@@ -34,7 +34,7 @@ input:focus { border: yellow dotted 1px; }
 /* ======================= COLOR MARKINGS ======================== */
 .red, .disabled, .warning, .saveFailed, .logError, .logRed { color: red; }
 .green, .saved, .logGreen { color: green; }
-.yellow, .active, .saveing, .logYellow { color: yellow; }
+.yellow, .active, .saving, .logYellow { color: yellow; }
 
 /*logscreen*/
 .logInfo { color: var(--text); }
