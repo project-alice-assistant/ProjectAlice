@@ -561,10 +561,10 @@ class SkillManager(Manager):
 					self.logInfo(f'![green]({skillName}) - Version {self._skillList[skillName]["installer"]["version"]} in {self.ConfigManager.getAliceConfigByName("skillsUpdateChannel")}')
 
 			except GithubNotFound:
-				self.logInfo(f'![red](Skill "{skillName}") is not available on Github. Deprecated or is it a dev skill?')
+				self.logInfo(f'![red](Skill **{skillName}**) is not available on Github. Deprecated or is it a dev skill?')
 
 			except Exception as e:
-				self.logError(f'Error checking updates for skill "{skillName}": {e}')
+				self.logError(f'Error checking updates for skill **{skillName}**: {e}')
 
 		self.logInfo(f'Found {updateCount} skill update(s)')
 		return updateCount > 0
