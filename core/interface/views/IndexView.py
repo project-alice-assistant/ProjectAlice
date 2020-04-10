@@ -106,7 +106,10 @@ class IndexView(View):
 			skill = self.SkillManager.getSkillInstance(skillName=data['skill'])
 			widget = skill.getWidgetInstance(data['widget'])
 			func = getattr(widget, data['func'])
-			return func(**json.loads(data['param']))
+			ret = func(**json.loads(data['param']))
+			if not ret:
+				return jsonify(success=True)
+			return ret
 		except Exception as e:
 			self.logWarning(f"[Widget] Widget tried to call a core function but failed: {e}")
 			return jsonify(success=False)

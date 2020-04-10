@@ -51,6 +51,7 @@ TOPIC_DEVICE_HEARTBEAT = 'projectalice/devices/heartbeat'
 TOPIC_CORE_HEARTBEAT = 'projectalice/devices/coreHeartbeat'
 TOPIC_DND = 'projectalice/devices/stopListen'
 TOPIC_STOP_DND = 'projectalice/devices/startListen'
+TOPIC_TOGGLE_DND = 'projectalice/devices/toggleListen'
 
 EVENT_FULL_MINUTE = 'fullMinute'
 EVENT_FIVE_MINUTE = 'fiveMinute'
