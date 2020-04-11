@@ -40,7 +40,7 @@ class TomlFile(ProjectAliceObject):
 	def _load(self):
 		with self._path.open() as f:
 			# noinspection PyTypeChecker
-			section: Section = None
+			section: Optional[Section] = None
 			for line in f:
 				match = re.match(self.SECTION_PATTERN, line)
 				if match:
@@ -56,7 +56,7 @@ class TomlFile(ProjectAliceObject):
 				if line.startswith('##') and section is not None:
 					section.addComment(Comment(line))
 
-				if not line.strip():
+				if not line.strip() and section is not None:
 					section.addEmptiness()
 		self._loaded = True
 
@@ -221,7 +221,7 @@ class Section(dict):
 
 
 	def __delitem__(self, key: str):
-		del self.data[key]
+		self.data[key].commentOut()
 
 
 	def __contains__(self, item) -> bool:

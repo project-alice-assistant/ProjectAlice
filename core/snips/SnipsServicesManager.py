@@ -26,12 +26,12 @@ class SnipsServicesManager(Manager):
 
 	def onStart(self):
 		super().onStart()
-		self.runCmd(cmd='start', services=self.snipsServices())
+		self.runCmd(cmd='start')
 
 
 	def onStop(self):
 		super().onStop()
-		self.runCmd(cmd='stop', services=self.snipsServices())
+		self.runCmd(cmd='stop')
 
 
 	def runCmd(self, cmd: str, services: Union[str, list] = None):
@@ -40,7 +40,9 @@ class SnipsServicesManager(Manager):
 			return
 
 		if not services:
-			services = self._snipsServices
+			services = self._snipsServices.copy()
+			if self.ConfigManager.getAliceConfigByName('disableSoundAndMic') and 'snips-hotword' in services:
+				services.remove('snips-hotword')
 
 		if isinstance(services, str):
 			services = [services]

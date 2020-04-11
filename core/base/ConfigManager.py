@@ -44,6 +44,7 @@ class ConfigManager(Manager):
 				raise VitalConfigMissing(conf)
 
 
+	# TODO
 	def _setDefaultSiteId(self):
 		if self._snipsConfigurations['snips-audio-server']['bind']:
 			constants.DEFAULT_SITE_ID = self._snipsConfigurations['snips-audio-server']['bind'].replace('@mqtt', '')
@@ -241,6 +242,7 @@ class ConfigManager(Manager):
 		config = self._snipsConfigurations[parent].get(key, None)
 		if config is None:
 			self.logWarning(f'Tried to get **{parent}/{key}** in snips configuration but key was not found')
+			return config
 
 		return config
 
@@ -393,10 +395,15 @@ class ConfigManager(Manager):
 		# Call alice config pre processing functions.
 		try:
 			func = getattr(self, function)
-			return func(value)
-		except:
+		except AttributeError:
 			self.logWarning(f'Configuration pre processing method **{function}** does not exist')
 			return False
+		else:
+			try:
+				return func(value)
+			except Exception as e:
+				self.logError(f'Configuration pre processing method **{function}** failed: {e}')
+				return False
 
 
 	def doConfigUpdatePostProcessing(self, functions: set):
@@ -405,10 +412,15 @@ class ConfigManager(Manager):
 		for function in functions:
 			try:
 				func = getattr(self, function)
-				func()
-			except:
+			except AttributeError:
 				self.logWarning(f'Configuration post processing method **{function}** does not exist')
 				continue
+			else:
+				try:
+					func()
+				except Exception as e:
+					self.logError(f'Configuration post processing method **{function}** failed: {e}')
+					continue
 
 
 	def updateMqttSettings(self):
@@ -442,6 +454,18 @@ class ConfigManager(Manager):
 
 	def updateAdminPinCode(self):
 		self.UserManager.addUserPinCode('admin', self.getAliceConfigByName('adminPinCode'))
+
+
+	def enableDisableSoundInSnips(self):
+		if self.getAliceConfigByName('disableSoundAndMic'):
+			self.SnipsServicesManager.runCmd(cmd='stop', services=['snips-hotword'])
+			self.updateSnipsConfiguration(parent='snips-audio-server', key='disable_playback', value=True)
+			self.updateSnipsConfiguration(parent='snips-audio-server', key='disable_capture', value=True, restartSnips=True)
+		else:
+			del self._snipsConfigurations['snips-audio-server']['disable_playback']
+			del self._snipsConfigurations['snips-audio-server']['disable_capture']
+			self._snipsConfigurations.dump()
+			self.SnipsServicesManager.runCmd('restart')
 
 
 	def refreshStoreData(self):

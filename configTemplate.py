@@ -13,6 +13,13 @@ settings = {
 		'isSensitive' : False,
 		'description' : 'If true, an error thrown by a skill will automatically post a github issue and ping the author'
 	},
+	'disableSoundAndMic'    : {
+		'defaultValue': False,
+		'dataType'    : 'boolean',
+		'isSensitive' : False,
+		'description' : 'If this device is a server without sound and mic, turn this to True',
+		'onUpdate'    : 'enableDisableSoundInSnips'
+	},
 	'notUnderstoodRetries'  : {
 		'defaultValue': 3,
 		'dataType'    : 'integer',
