@@ -150,7 +150,7 @@ class SuperManager:
 		from core.snips.SnipsAssistantManager import SnipsAssistantManager
 		from core.nlu.NluManager import NluManager
 		from core.util.AliceWatchManager import AliceWatchManager
-		from core.voice.model.VadManager import VadManager
+		from core.voice.VadManager import VadManager
 
 		self.commonsManager = CommonsManager()
 		self.commons = self.commonsManager
