@@ -66,7 +66,7 @@ network={
 		self._confsFile = Path(self._rootDir, 'config.py')
 		self._confsSample = Path(self._rootDir, 'configTemplate.py')
 		self._initFile = Path(YAML)
-		self._latest = 1.17
+		self._latest = 1.18
 
 
 	def initProjectAlice(self) -> bool:
