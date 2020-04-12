@@ -122,7 +122,7 @@ class DialogTemplateManager(Manager):
 			if file.stem.startswith(f'{skillName}_'):
 				file.unlink()
 
-		checksums = json.load(self._pathToChecksums.read_text())
+		checksums = json.load(self._pathToChecksums)
 		checksums.pop(skillName, None)
 
 		self._pathToChecksums.write_text(json.dumps(checksums, indent=4, sort_keys=True))
