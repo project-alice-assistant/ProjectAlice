@@ -7,6 +7,11 @@ $(function () {
 	let paintingMode = false;
 	let selectedTexture = '';
 
+	function loadHouse() {
+		let $data = JSON.parse($('#houseData').text());
+		console.log($data[0]['name']);
+	}
+
 	function onClickZone($element) {
 		if (buildingMode) {
 			let $newWall = $('<div class="floorPlan-Zone-Wall"></div>');
@@ -21,7 +26,30 @@ $(function () {
 		} else if (paintingMode) {
 			$element.attr('class', 'floorPlan-Zone');
 			$element.addClass(selectedTexture);
+			$element.attr('data-texture', selectedTexture);
 		}
+	}
+
+	function saveHouse() {
+		let data = {};
+		$floorPlan.children('.floorPlan-Zone').each(function(index) {
+			data[index] = {
+				'name': $(this).data('name'),
+				'x': $(this).position().left,
+				'y': $(this).position().top,
+				'width': $(this).width(),
+				'height': $(this).height(),
+				'texture': $(this).data('texture')
+			};
+		});
+
+		$.ajax({
+			url: '/myhome/',
+			type: 'PUT',
+			data: {
+				'data': JSON.stringify(data)
+			}
+		});
 	}
 
 	$('#toolbarToggleShow').on('click touchstart', function() {
@@ -44,8 +72,10 @@ $(function () {
 		$floorPlan.removeClass('floorPlanEditMode');
 		$floorPlan.removeClass('floorPlanEditMode-AddingRoom');
 
-		$('.floorPlan-Zone').resizable('destroy').draggable('destroy');
-		$('.floorPlan-Zone-Wall').resizable('destroy').draggable('destroy');
+		/*$('.floorPlan-Zone').resizable('destroy').draggable('destroy');
+		$('.floorPlan-Zone-Wall').resizable('destroy').draggable('destroy');*/
+
+		saveHouse();
 	});
 
 	$('#addZone').on('click touchstart', function() {
@@ -59,7 +89,7 @@ $(function () {
 
 		let zoneName = prompt('Please name the new zone');
 		if (zoneName != null && zoneName != '') {
-			let $newZone = $('<div class="floorPlan-Zone">' + zoneName + '</div>');
+			let $newZone = $('<div class="floorPlan-Zone" data-name="' + zoneName + '" data-texture="">' + zoneName + '</div>');
 			let posx = $(this).offset().left;
 			let posy = $(this).offset().top;
 			$newZone.offset({left: e.pageX - posx, top: e.pageY - posy});
@@ -129,4 +159,6 @@ $(function () {
 
 		$('#painterTiles').append($tile);
 	}
+
+	loadHouse();
 });

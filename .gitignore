@@ -141,4 +141,7 @@ var/logs/*
 system/database/*
 !system/database/.gitkeep
 
+system/myHouse/*
+!system/myHouse/.gitkeep
+
 test.py
