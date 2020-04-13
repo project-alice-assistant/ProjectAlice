@@ -1,4 +1,5 @@
 import queue
+import wave
 
 import struct
 import webrtcvad
@@ -13,14 +14,24 @@ class VadManager(Manager):
 	def __init__(self):
 		super().__init__()
 		self._buffer = queue.Queue()
-		self._vad = webrtcvad.Vad(2)
+		self._vad = webrtcvad.Vad(3)
 		self._buff = b''
+		self._wf = wave.open('/home/pi/ProjectAlice/test.wav', 'wb')
+		self._wf.setnchannels(1)
+		self._wf.setframerate(16000)
+		self._wf.setsampwidth(2)
 
 
 	def onBooted(self):
 		return
 		self.MqttManager.mqttClient.subscribe(constants.TOPIC_AUDIO_FRAME.format('office'))
 		self.ThreadManager.newThread(name='vadDetector', target=self.vadDetector)
+
+
+	def onStop(self):
+		self.MqttManager.mqttClient.unsubscribe(constants.TOPIC_AUDIO_FRAME.format('office'))
+		self._buff = b''
+		self._wf.close()
 
 
 	def onAudioFrame(self, message: MQTTMessage, siteId: str):
@@ -42,6 +53,7 @@ class VadManager(Manager):
 				#frame = self.resample(message.payload[chunkOffset:chunkOffset + subChunk2Size])
 				#self._buffer.put(frame)
 				self._buff += message.payload[chunkOffset:chunkOffset + subChunk2Size]
+				self._wf.writeframes(message.payload[chunkOffset:chunkOffset + subChunk2Size])
 
 			chunkOffset = chunkOffset + subChunk2Size + 8
 
