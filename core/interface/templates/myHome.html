@@ -1,0 +1,42 @@
+{% extends 'base.html' %}
+
+{% block title %}
+	{{ langData.myHome }}
+{% endblock %}
+
+{% block loaders %}
+	<script src="{{ url_for('static', filename='js/myHome.js') }}"></script>
+{% endblock %}
+
+{% block pageTitle %}
+	{{ langData.home }}
+{% endblock %}
+
+{% block content %}
+	<div class="stick-top-right">
+		<div class="toolbar initialHidden" id="toolbar_full">
+			<span class="toolbarButton link-hover" id="painter">
+				<i class="fas fa-paint-roller" aria-hidden="true"></i>
+			</span>
+			<span class="toolbarButton link-hover" id="builder">
+				<i class="fas fa-hard-hat" aria-hidden="true"></i>
+			</span>
+			<span class="toolbarButton link-hover" id="decorator">
+				<i class="fas fa-couch" aria-hidden="true"></i>
+			</span>
+			<span class="toolbarButton link-hover" id="addZone">
+				<i class="fas fa-plus-circle" aria-hidden="true"></i>
+			</span>
+			<span class="toolbarButton link-hover" id="toolbarToggleHide">
+				<i class="fas fa-pen-square" aria-hidden="true"></i>
+			</span>
+		</div>
+		<div class="toolbar" id="toolbar_toggle" style="display: block;">
+			<span class="toolbarButton link-hover" id="toolbarToggleShow">
+				<i class="fas fa-pen-square" aria-hidden="true"></i>
+			</span>
+		</div>
+	</div>
+	<div class="tileContainer initialHidden" id="painterTiles"></div>
+	<div class="floorPlan" id="floorPlan"></div>
+{% endblock %}

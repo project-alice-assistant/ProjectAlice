@@ -1,4 +1,5 @@
-@import "widgetsize.css";
+@import 'widgetsize.css';
+@import 'myHome.css';
 /* ========================== VARIABLES ========================== */
 /* Not used in for example in .console*/
 :root {
@@ -163,11 +164,17 @@ button.button{ font-size: 1.6em; height: 2em; }
 .adminAuthKeyboardContainer { background-color: var(--windowBG); width: 20em; height: 27em; margin: 2em auto; display: flex; flex-wrap: wrap; }
 .adminAuthKeyboardKey { font-size: 2em; margin: .41em; flex-basis: 2.5em; }
 
+/* My home */
+.floorPlan { position: absolute; top: 100px; bottom: 25px; left: 5px; right: 5px; background: var(--secondary); }
+.floorPlanEditMode { background: var(--secondary) url('./images/grid.png'); }
+.floorPlanEditMode-AddingRoom { cursor: cell; }
+
 /* JQUERY POPUP */
 .ui-widget-content { background: var(--mainBG); }
 .ui-widget { padding: 0; border-radius: 0; }
 .ui-widget.ui-widget-content{ border: 2px solid var(--accent); }
 .ui-dialog-titlebar{ border-radius: 0; border: solid 2px var(--accent); margin: -2px; }
+
 /*======================== TECHNICAL OVERWRITES================== */
 .flex-row { overflow-y: auto; overflow-x: hidden; display: flex; flex-wrap: wrap; align-content: flex-start; }
 .initialHidden { display: none; }

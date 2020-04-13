@@ -1,0 +1,10 @@
+.floorPlan-Zone { background-color: var(--text); resize: both; width: 100px; height: 100px; color: var(--windowBG); display: block; text-align: center; vertical-align: center; line-height: 100px; }
+.floorPlan-Zone-Wall { height: 10px; width: 35px; background-color: black; }
+
+#painterTiles { width: 100%; }
+.floorPlan-Zone-tile { width: 50px; height: 50px; box-sizing: border-box; }
+.selected { border: 2px solid var(--text) }
+
+/* Textures */
+.floor-1 { background: url('./images/myHome/floor-1.png'); }
+.floor-2 { background: url('./images/myHome/floor-2.png'); }
