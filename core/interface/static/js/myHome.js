@@ -3,8 +3,13 @@ $(document).tooltip();
 $(function () {
 
 	let $floorPlan = $('#floorPlan');
+	let editMode = false;
+
+	let moveMode = false;
+	let zoneMode = false;
 	let buildingMode = false;
 	let paintingMode = false;
+
 	let selectedTexture = '';
 
 	function loadHouse() {
@@ -13,16 +18,20 @@ $(function () {
 			type: 'GET'
 		}).done(function(response) {
 			let $data = JSON.parse(response);
-			$.each($data, function (i, element) {
-				newZone(element);
+			$.each($data, function (i, zone) {
+				let $zone = newZone(zone);
+				$.each(zone['walls'], function(ii, wall) {
+					newWall($zone, wall);
+				});
 			})
 		});
 	}
 
 	function saveHouse() {
 		let data = {};
-		$floorPlan.children('.floorPlan-Zone').each(function (index) {
-			data[index] = {
+		$floorPlan.children('.floorPlan-Zone').each(function () {
+			let zoneName = $(this).data('name');
+			data[zoneName] = {
 				'name'   : $(this).data('name'),
 				'x'      : $(this).position().left,
 				'y'      : $(this).position().top,
@@ -30,6 +39,16 @@ $(function () {
 				'height' : $(this).height(),
 				'texture': $(this).data('texture')
 			};
+
+			data[zoneName]['walls'] = [];
+			$(this).children('.floorPlan-Wall').each(function() {
+				data[zoneName]['walls'].push({
+					'x'      : $(this).position().left,
+					'y'      : $(this).position().top,
+					'width'  : $(this).width(),
+					'height' : $(this).height()
+				})
+			});
 		});
 
 		$.ajax({
@@ -42,69 +61,141 @@ $(function () {
 	}
 
 	function newZone(data) {
-		let $newZone = $('<div class="floorPlan-Zone ' + data["texture"] + '" data-name="' + data["name"] + '" data-texture="' + data["texture"] + '" style="width: ' + data["width"] + 'px; height: ' + data["height"] + 'px;">' + data["name"] + '</div>');
-		$newZone.offset({left: data['x'], top: data['y']});
-		$newZone.resizable().draggable({containment: 'parent'});
+		let left = data['x'] - data['x'] % 5;
+		let top = data['y'] - data['y'] % 5;
+		let $newZone = $('<div class="floorPlan-Zone ' + data["texture"] + '" ' +
+			'data-name="' + data["name"] + '" ' +
+			'data-texture="' + data["texture"] + '" ' +
+			'style="width: ' + data["width"] + 'px; height: ' + data["height"] + 'px; position: absolute; ">' +
+			'<div>' + data["name"] + '</div>' +
+			'</div>');
+
+		$newZone.offset({left: left, top: top});
+		$newZone.resizable({
+			containment: 'parent',
+			grid: [5, 5]
+		}).draggable({
+			containment: 'parent',
+			cursor: 'move',
+			distance: 10,
+			grid: [5, 5],
+			snap: true,
+			snapTolerance: 5,
+			zIndex: 9999
+		});
+
+		$newZone.resizable('disable').draggable('disable');
 
 		$newZone.on('click touchstart', function () {
-			onClickZone($(this));
-		})
+			if (buildingMode) {
+				let wallData = {
+					'x': 50,
+					'y': 50,
+					'width': 25,
+					'height': 75
+				}
+				let wall = newWall($newZone, wallData);
+				wall.resizable('enable').draggable('enable');
+			} else if (paintingMode) {
+				$newZone.attr('class', 'floorPlan-Zone');
+				$newZone.addClass(selectedTexture);
+				$newZone.attr('data-texture', selectedTexture);
+			}
+		});
+
+		$newZone.on('contextmenu', function () {
+			if (moveMode) {
+				let result = confirm('Do you really want to delete this zone?');
+				if (result == true) {
+					$(this).remove();
+				}
+				return false;
+			}
+		});
 
 		$floorPlan.append($newZone);
+		return $newZone;
 	}
 
+	function newWall($element, data) {
+		let $newWall = $('<div class="floorPlan-Wall" ' +
+			'style="width: ' + data["width"] + 'px; height: ' + data["height"] + 'px; position: absolute; z-index: auto;">' +
+			'</div>');
 
-	function onClickZone($element) {
-		if (buildingMode) {
-			let $newWall = $('<div class="floorPlan-Zone-Wall"></div>');
-			$newWall.resizable({containment: 'parent'}).draggable({containment: 'parent'});
+		$newWall.offset({left: data['x'], top: data['y']});
 
-			$newWall.on('click touchstart', function (e) {
-				e.preventDefault();
-				$('.floorPlan-Zone-Wall').resizable({containment: 'parent'}).draggable({containment: 'parent'});
-			})
+		$newWall.resizable({
+			containment: 'parent',
+			grid       : [5, 5]
+		}).draggable({
+			containment: 'parent',
+			cursor: 'move',
+			distance: 10,
+			grid: [5, 5],
+			snap: true,
+			snapTolerance: 5,
+			zIndex: 9999
+		});
 
-			$element.append($newWall);
-		} else if (paintingMode) {
-			$element.attr('class', 'floorPlan-Zone');
-			$element.addClass(selectedTexture);
-			$element.attr('data-texture', selectedTexture);
-		}
+		$newWall.resizable('disable').draggable('disable');
+
+		$newWall.on('click touchstart', function () {
+			return false;
+		});
+
+		$newWall.on('contextmenu', function () {
+			if (buildingMode) {
+				$(this).remove();
+				return false;
+			}
+		});
+
+		$element.append($newWall);
+		return $newWall;
 	}
-
 
 	$('#toolbarToggleShow').on('click touchstart', function () {
 		$('#toolbar_full').show();
 		$('#toolbar_toggle').hide();
 		$floorPlan.addClass('floorPlanEditMode');
-		$floorPlan.removeClass('floorPlanEditMode-AddingRoom');
+		editMode = true;
+		zoneMode = false;
 		buildingMode = false;
 		paintingMode = false;
 		$('#painterTiles').hide();
-
-		$('.floorPlan-Zone').resizable().draggable({containment: 'parent'});
 	});
 
 	$('#toolbarToggleHide').on('click touchstart', function () {
 		$('#toolbar_full').hide();
 		$('#toolbar_toggle').show();
+		editMode = false;
+		zoneMode = false;
 		buildingMode = false;
 		paintingMode = false;
 		$floorPlan.removeClass('floorPlanEditMode');
-		$floorPlan.removeClass('floorPlanEditMode-AddingRoom');
+		$floorPlan.removeClass('floorPlanEditMode-AddingZone');
 
-		/*$('.floorPlan-Zone').resizable('destroy').draggable('destroy');
-		$('.floorPlan-Zone-Wall').resizable('destroy').draggable('destroy');*/
+		$('.floorPlan-Zone').draggable('disable').resizable('disable');
+		$('.floorPlan-Wall').draggable('disable').resizable('disable');
 
+		markSelectedTool(null);
 		saveHouse();
 	});
 
 	$('#addZone').on('click touchstart', function () {
-		$('#floorPlan').addClass('floorPlanEditMode-AddingRoom');
-	})
+		if (!editMode) {
+			return;
+		}
+		zoneMode = true;
+		buildingMode = false;
+		moveMode = false;
+		paintingMode = false;
+		markSelectedTool($(this));
+		$('#floorPlan').addClass('floorPlanEditMode-AddingZone');
+	});
 
 	$floorPlan.on('click touchstart', function (e) {
-		if (!$(this).hasClass('floorPlanEditMode-AddingRoom')) {
+		if (!zoneMode) {
 			return;
 		}
 
@@ -118,50 +209,78 @@ $(function () {
 				'height'  : 100,
 				'texture' : ''
 			}
-			newZone(data);
+			let $zone = newZone(data);
+			$zone.resizable('enable').draggable('enable');
 		}
 
-		$(this).removeClass('floorPlanEditMode-AddingRoom');
-	})
+		zoneMode = false;
+		markSelectedTool(null);
+		$(this).removeClass('floorPlanEditMode-AddingZone');
+	});
+
+	function markSelectedTool($element) {
+		$('.selectedTool').removeClass('selectedTool');
+
+		if ($element != null) {
+			$element.addClass('selectedTool');
+		}
+	}
 
 	$('#builder').on('click touchstart', function () {
 		paintingMode = false;
+		moveMode = false
+		zoneMode = false;
 		$('#painterTiles').hide();
+
+		markSelectedTool($(this));
+
 		if (!buildingMode) {
 			buildingMode = true;
+			$floorPlan.removeClass('floorPlanEditMode-AddingZone');
 
-			$floorPlan.removeClass('floorPlanEditMode');
-			$floorPlan.removeClass('floorPlanEditMode-AddingRoom');
-			$('.floorPlan-Zone').resizable('destroy').draggable('destroy');
-			$('.floorPlan-Zone-Wall').resizable({containment: 'parent'}).draggable({containment: 'parent'});
+			$('.floorPlan-Wall').resizable('enable').draggable('enable');
 		} else {
 			buildingMode = false;
-			$('.floorPlan-Zone-Wall').resizable('destroy').draggable('destroy');
+			$('.floorPlan-Zone').draggable('enable').resizable('enable');
+			$('.floorPlan-Wall').resizable('disable').draggable('disable');
 		}
-	})
+	});
 
 	$('#painter').on('click touchstart', function () {
 		buildingMode = false;
+		moveMode = false;
+		zoneMode = false;
+
+		markSelectedTool($(this));
+
 		if (!paintingMode) {
 			paintingMode = true;
+			$floorPlan.removeClass('floorPlanEditMode-AddingZone');
+			$('.floorPlan-Zone').draggable('disable').resizable('disable');
 			$('#painterTiles').css('display', 'flex');
-
-			$('.floorPlan-Zone').resizable('destroy').draggable('destroy');
-			$('.floorPlan-Zone-Wall').resizable('destroy').draggable('destroy');
 		} else {
 			paintingMode = false;
 			$('#painterTiles').hide();
+			$('.floorPlan-Zone').draggable('enable').resizable('enable');
 		}
-	})
+	});
 
-	$('.floorPlan-Zone').on('click touchstart', function () {
-		onClickZone($(this));
-	})
+	$('#mover').on('click touchstart', function () {
+		buildingMode = false;
+		paintingMode = false;
+		zoneMode = false;
+		$('#painterTiles').hide();
 
-	$('.floorPlan-Zone-Wall').on('click touchstart', function (e) {
-		e.preventDefault();
-		$('.floorPlan-Zone-Wall').resizable({containment: 'parent'}).draggable({containment: 'parent'});
-	})
+		markSelectedTool($(this));
+
+		if (!moveMode) {
+			moveMode = true;
+			$('.floorPlan-Zone').draggable('enable').resizable('enable');
+		} else {
+			moveMode = false;
+			$('.floorPlan-Zone').draggable('disable').resizable('disable');
+		}
+	});
 
 	for (let i = 1; i <= 2; i++) {
 		let $tile = $('<div class="floorPlan-Zone-tile floor-' + i + '"></div>')
