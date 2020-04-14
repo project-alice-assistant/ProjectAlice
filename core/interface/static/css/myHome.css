@@ -2,7 +2,7 @@
 .floorPlan-Wall { background-color: var(--accent); }
 .floorPlan-Deco { }
 
-.floorPlan-tile { width: 50px; height: 50px; box-sizing: border-box; margin-right: 5px; }
+.floorPlan-tile { width: 50px; height: 50px; box-sizing: border-box; margin-right: 5px; background-position: center center; background-size: 50px 50px; }
 .floorPlan-tile-background { width: 50px; height: 50px; box-sizing: border-box; margin-right: 5px; background-color: var(--windowBG); }
 .selected { border: 2px solid var(--text) }
 
@@ -12,4 +12,8 @@
 .floor-1 { background: url('./images/myHome/floor-1.png'); }
 .floor-2 { background: url('./images/myHome/floor-2.png'); }
 
-.deco-1 { background: url('./images/myHome/door-left.png') no-repeat center center / cover; height: 50px; width: 50px; }
+.deco-1 { background: url('./images/myHome/door-left.png') no-repeat center center / contain; }
+.deco-2 { background: url('./images/myHome/door-right.png') no-repeat center center / contain; }
+.deco-3 { background: url('./images/myHome/double-window.png') no-repeat center center / contain; }
+.deco-4 { background: url('./images/myHome/stairs-90.png') no-repeat center center / contain; }
+.deco-5 { background: url('./images/myHome/stairs-straight.png') no-repeat center center / contain; }

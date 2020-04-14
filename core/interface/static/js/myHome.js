@@ -392,8 +392,8 @@ $(function () {
 		$('#painterTiles').append($tile);
 	}
 
-	for (let i = 1; i <= 1; i++) {
-		let $tile = $('<div class="floorPlan-tile-background"><div class="deco-' + i + '"></div></div>');
+	for (let i = 1; i <= 5; i++) {
+		let $tile = $('<div class="floorPlan-tile-background"><div class="deco-' + i + ' floorPlan-tile"></div></div>');
 
 		$tile.on('click touchstart', function () {
 			if (!$(this).hasClass('selected')) {
