@@ -2,6 +2,7 @@ import json
 from pathlib import Path
 
 from flask import jsonify, render_template, request
+from flask_classful import route
 
 from core.interface.model.View import View
 
@@ -10,16 +11,19 @@ class MyHomeView(View):
 	route_base = '/myhome/'
 
 	def index(self):
-		data = dict()
+		return render_template(template_name_or_list='myHome.html',
+		                       langData=self._langData,
+		                       aliceSettings=self.ConfigManager.aliceConfigurations)
+
+
+	@route('/load/')
+	def load(self) -> str:
+		data = ''
 		file = Path(self.Commons.rootDir(), 'system/myHouse/myhouse.json')
 		if file.exists():
 			data = file.read_text()
 
-		return render_template(template_name_or_list='myHome.html',
-		                       langData=self._langData,
-		                       houseData=data,
-		                       aliceSettings=self.ConfigManager.aliceConfigurations)
-
+		return data
 
 
 	def put(self):
