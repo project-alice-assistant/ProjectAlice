@@ -60,18 +60,8 @@ $(function () {
 		});
 	}
 
-	function newZone(data) {
-		let left = data['x'] - data['x'] % 5;
-		let top = data['y'] - data['y'] % 5;
-		let $newZone = $('<div class="floorPlan-Zone ' + data["texture"] + '" ' +
-			'data-name="' + data["name"] + '" ' +
-			'data-texture="' + data["texture"] + '" ' +
-			'style="width: ' + data["width"] + 'px; height: ' + data["height"] + 'px; position: absolute; ">' +
-			'<div>' + data["name"] + '</div>' +
-			'</div>');
-
-		$newZone.offset({left: left, top: top});
-		$newZone.resizable({
+	function makeResizableAndDraggable($element) {
+		$element.resizable({
 			containment: 'parent',
 			grid: [5, 5]
 		}).draggable({
@@ -83,9 +73,23 @@ $(function () {
 			snapTolerance: 5,
 			zIndex: 9999
 		});
+	}
 
-		$newZone.resizable('disable').draggable('disable');
+	function removeResizableAndDraggable($element) {
+		$element.resizable('destroy').draggable('destroy');
+	}
 
+	function newZone(data) {
+		let left = data['x'] - data['x'] % 5;
+		let top = data['y'] - data['y'] % 5;
+		let $newZone = $('<div class="floorPlan-Zone ' + data["texture"] + '" ' +
+			'data-name="' + data["name"] + '" ' +
+			'data-texture="' + data["texture"] + '" ' +
+			'style="width: ' + data["width"] + 'px; height: ' + data["height"] + 'px; position: absolute; ">' +
+			'<div>' + data["name"] + '</div>' +
+			'</div>');
+
+		$newZone.offset({left: left, top: top});
 		$newZone.on('click touchstart', function () {
 			if (buildingMode) {
 				let wallData = {
@@ -95,7 +99,7 @@ $(function () {
 					'height': 75
 				}
 				let wall = newWall($newZone, wallData);
-				wall.resizable('enable').draggable('enable');
+				makeResizableAndDraggable(wall);
 			} else if (paintingMode) {
 				$newZone.attr('class', 'floorPlan-Zone');
 				$newZone.addClass(selectedTexture);
@@ -123,22 +127,6 @@ $(function () {
 			'</div>');
 
 		$newWall.offset({left: data['x'], top: data['y']});
-
-		$newWall.resizable({
-			containment: 'parent',
-			grid       : [5, 5]
-		}).draggable({
-			containment: 'parent',
-			cursor: 'move',
-			distance: 10,
-			grid: [5, 5],
-			snap: true,
-			snapTolerance: 5,
-			zIndex: 9999
-		});
-
-		$newWall.resizable('disable').draggable('disable');
-
 		$newWall.on('click touchstart', function () {
 			return false;
 		});
@@ -175,8 +163,8 @@ $(function () {
 		$floorPlan.removeClass('floorPlanEditMode');
 		$floorPlan.removeClass('floorPlanEditMode-AddingZone');
 
-		$('.floorPlan-Zone').draggable('disable').resizable('disable');
-		$('.floorPlan-Wall').draggable('disable').resizable('disable');
+		removeResizableAndDraggable($('.floorPlan-Zone'));
+		removeResizableAndDraggable($('.floorPlan-Wall'));
 
 		markSelectedTool(null);
 		saveHouse();
@@ -210,7 +198,7 @@ $(function () {
 				'texture' : ''
 			}
 			let $zone = newZone(data);
-			$zone.resizable('enable').draggable('enable');
+			makeResizableAndDraggable($zone)
 		}
 
 		zoneMode = false;
@@ -238,11 +226,11 @@ $(function () {
 			buildingMode = true;
 			$floorPlan.removeClass('floorPlanEditMode-AddingZone');
 
-			$('.floorPlan-Wall').resizable('enable').draggable('enable');
+			removeResizableAndDraggable($('.floorPlan-Zone'));
+			makeResizableAndDraggable($('.floorPlan-Wall'));
 		} else {
 			buildingMode = false;
-			$('.floorPlan-Zone').draggable('enable').resizable('enable');
-			$('.floorPlan-Wall').resizable('disable').draggable('disable');
+			removeResizableAndDraggable($('.floorPlan-Wall'));
 		}
 	});
 
@@ -255,13 +243,13 @@ $(function () {
 
 		if (!paintingMode) {
 			paintingMode = true;
-			$floorPlan.removeClass('floorPlanEditMode-AddingZone');
-			$('.floorPlan-Zone').draggable('disable').resizable('disable');
 			$('#painterTiles').css('display', 'flex');
+			$floorPlan.removeClass('floorPlanEditMode-AddingZone');
+			removeResizableAndDraggable($('.floorPlan-Zone'));
+			removeResizableAndDraggable($('.floorPlan-Wall'));
 		} else {
 			paintingMode = false;
 			$('#painterTiles').hide();
-			$('.floorPlan-Zone').draggable('enable').resizable('enable');
 		}
 	});
 
@@ -275,10 +263,11 @@ $(function () {
 
 		if (!moveMode) {
 			moveMode = true;
-			$('.floorPlan-Zone').draggable('enable').resizable('enable');
+			makeResizableAndDraggable($('.floorPlan-Zone'));
+			removeResizableAndDraggable($('.floorPlan-Wall'));
 		} else {
 			moveMode = false;
-			$('.floorPlan-Zone').draggable('disable').resizable('disable');
+			removeResizableAndDraggable($('.floorPlan-Zone'));
 		}
 	});
 
