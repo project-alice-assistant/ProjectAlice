@@ -18,14 +18,14 @@ $(function () {
 		$.ajax({
 			url : '/myhome/load/',
 			type: 'GET'
-		}).done(function(response) {
+		}).done(function (response) {
 			let $data = JSON.parse(response);
 			$.each($data, function (i, zone) {
 				let $zone = newZone(zone);
-				$.each(zone['walls'], function(ii, wall) {
+				$.each(zone['walls'], function (ii, wall) {
 					newWall($zone, wall);
 				});
-				$.each(zone['deco'], function(iii, deco) {
+				$.each(zone['deco'], function (iii, deco) {
 					newDeco($zone, deco);
 				});
 			})
@@ -37,32 +37,35 @@ $(function () {
 		$floorPlan.children('.floorPlan-Zone').each(function () {
 			let zoneName = $(this).data('name');
 			data[zoneName] = {
-				'name'   : $(this).data('name'),
-				'x'      : $(this).position().left,
-				'y'      : $(this).position().top,
-				'width'  : $(this).width(),
-				'height' : $(this).height(),
-				'texture': $(this).data('texture')
+				'name'    : $(this).data('name'),
+				'x'       : $(this).position().left,
+				'y'       : $(this).position().top,
+				'rotation': $(this).css('transform'),
+				'width'   : $(this).width(),
+				'height'  : $(this).height(),
+				'texture' : $(this).data('texture')
 			};
 
 			data[zoneName]['walls'] = [];
-			$(this).children('.floorPlan-Wall').each(function() {
+			$(this).children('.floorPlan-Wall').each(function () {
 				data[zoneName]['walls'].push({
-					'x'      : $(this).position().left,
-					'y'      : $(this).position().top,
-					'width'  : $(this).width(),
-					'height' : $(this).height()
+					'x'       : $(this).position().left,
+					'y'       : $(this).position().top,
+					'rotation': $(this).css('transform'),
+					'width'   : $(this).width(),
+					'height'  : $(this).height()
 				})
 			});
 
 			data[zoneName]['deco'] = [];
-			$(this).children('.floorPlan-Deco').each(function() {
+			$(this).children('.floorPlan-Deco').each(function () {
 				data[zoneName]['deco'].push({
-					'x'      : $(this).position().left,
-					'y'      : $(this).position().top,
-					'width'  : $(this).width(),
-					'height' : $(this).height(),
-					'texture': $(this).data('texture')
+					'x'       : $(this).position().left,
+					'y'       : $(this).position().top,
+					'rotation': $(this).css('transform'),
+					'width'   : $(this).width(),
+					'height'  : $(this).height(),
+					'texture' : $(this).data('texture')
 				})
 			});
 		});
@@ -76,25 +79,28 @@ $(function () {
 		});
 	}
 
-	function makeResizableAndDraggable($element) {
+	function makeResizableRotatableAndDraggable($element) {
 		$element.resizable({
 			containment: 'parent',
-			grid: [5, 5]
+			grid       : [5, 5]
+		}).rotatable({
+			snap: 5
 		}).draggable({
-			containment: 'parent',
-			cursor: 'move',
-			distance: 10,
-			grid: [5, 5],
-			snap: true,
+			containment  : 'parent',
+			cursor       : 'move',
+			distance     : 10,
+			grid         : [5, 5],
+			snap         : true,
 			snapTolerance: 5,
-			zIndex: 9999
+			zIndex       : 9999
 		});
 	}
 
-	function removeResizableAndDraggable($element) {
+	function removeResizableRotatableAndDraggable($element) {
 		try {
-			$element.resizable('destroy').draggable('destroy');
-		} catch(err) {}
+			$element.resizable('destroy').rotatable('destroy').draggable('destroy');
+		} catch (err) {
+		}
 	}
 
 	function newZone(data) {
@@ -103,7 +109,7 @@ $(function () {
 		let $newZone = $('<div class="floorPlan-Zone ' + data["texture"] + '" ' +
 			'data-name="' + data["name"] + '" ' +
 			'data-texture="' + data["texture"] + '" ' +
-			'style="width: ' + data["width"] + 'px; height: ' + data["height"] + 'px; position: absolute; ">' +
+			'style="width: ' + data["width"] + 'px; height: ' + data["height"] + 'px; position: absolute; transform:' + data["rotation"] + ';">' +
 			'<div>' + data["name"] + '</div>' +
 			'</div>');
 
@@ -112,13 +118,14 @@ $(function () {
 		$newZone.on('click touchstart', function () {
 			if (buildingMode) {
 				let wallData = {
-					'x': 50,
-					'y': 50,
-					'width': 25,
-					'height': 75
+					'x'     : 50,
+					'y'     : 50,
+					'width' : 25,
+					'height': 75,
+					'rotation': 0
 				}
 				let wall = newWall($newZone, wallData);
-				makeResizableAndDraggable(wall);
+				makeResizableRotatableAndDraggable(wall);
 			} else if (paintingMode) {
 				$newZone.attr('class', 'floorPlan-Zone');
 				$newZone.addClass(selectedTexture);
@@ -129,14 +136,16 @@ $(function () {
 				}
 
 				let decoData = {
-					'x': 25,
-					'y': 25,
-					'width': 50,
-					'height': 50,
+					'x'      : 25,
+					'y'      : 25,
+					'width'  : 50,
+					'height' : 50,
+					'rotation': 0,
 					'texture': selectedDeco
 				}
-				let deco = newDeco($newZone, decoData);
-				makeResizableAndDraggable(deco);
+
+				let $deco = newDeco($newZone, decoData);
+				makeResizableRotatableAndDraggable($deco);
 			}
 		});
 
@@ -156,7 +165,7 @@ $(function () {
 
 	function newWall($element, data) {
 		let $newWall = $('<div class="floorPlan-Wall" ' +
-			'style="width: ' + data["width"] + 'px; height: ' + data["height"] + 'px; position: absolute; z-index: auto;">' +
+			'style="width: ' + data["width"] + 'px; height: ' + data["height"] + 'px; position: absolute; z-index: auto; transform: ' + data["rotation"] + ';">' +
 			'</div>');
 
 		$newWall.offset({left: data['x'], top: data['y']});
@@ -178,7 +187,7 @@ $(function () {
 
 	function newDeco($element, data) {
 		let $newDeco = $('<div class="floorPlan-Deco ' + data["texture"] + '" ' +
-			'style="width: ' + data["width"] + 'px; height: ' + data["height"] + 'px; position: absolute; z-index: auto;" ' +
+			'style="width: ' + data["width"] + 'px; height: ' + data["height"] + 'px; position: absolute; z-index: auto; transform: rotate(' + data["rotation"] + 'deg);" ' +
 			'data-texture="' + data["texture"] + '">' +
 			'</div>');
 
@@ -207,6 +216,7 @@ $(function () {
 		buildingMode = false;
 		paintingMode = false;
 		decoratorMode = false;
+		moveMode = false;
 
 		$('#painterTiles').hide();
 		$('#decoTiles').hide();
@@ -220,12 +230,13 @@ $(function () {
 		buildingMode = false;
 		paintingMode = false;
 		decoratorMode = false;
+		moveMode = false;
 		$floorPlan.removeClass('floorPlanEditMode');
 		$floorPlan.removeClass('floorPlanEditMode-AddingZone');
 
-		removeResizableAndDraggable($('.floorPlan-Zone'));
-		removeResizableAndDraggable($('.floorPlan-Wall'));
-		removeResizableAndDraggable($('.floorPlan-Deco'));
+		removeResizableRotatableAndDraggable($('.floorPlan-Zone'));
+		removeResizableRotatableAndDraggable($('.floorPlan-Wall'));
+		removeResizableRotatableAndDraggable($('.floorPlan-Deco'));
 
 		$('#painterTiles').hide();
 		$('#decoTiles').hide();
@@ -259,19 +270,19 @@ $(function () {
 		let zoneName = prompt('Please name this new zone');
 		if (zoneName != null && zoneName != '') {
 			let data = {
-				'name': zoneName,
-				'x'    : e.pageX - $(this).offset().left,
-				'y'    : e.pageY - $(this).offset().top,
-				'width'   : 100,
-				'height'  : 100,
-				'texture' : ''
+				'name'   : zoneName,
+				'x'      : e.pageX - $(this).offset().left,
+				'y'      : e.pageY - $(this).offset().top,
+				'width'  : 100,
+				'height' : 100,
+				'texture': ''
 			}
 			let $zone = newZone(data);
-			makeResizableAndDraggable($zone)
+			makeResizableRotatableAndDraggable($zone)
 		}
 
 		zoneMode = false;
-		markSelectedTool(null);
+		markSelectedTool($('#mover'));
 		$(this).removeClass('floorPlanEditMode-AddingZone');
 	});
 
@@ -298,12 +309,13 @@ $(function () {
 			buildingMode = true;
 			$floorPlan.removeClass('floorPlanEditMode-AddingZone');
 
-			removeResizableAndDraggable($('.floorPlan-Zone'));
-			removeResizableAndDraggable($('.floorPlan-Deco'));
-			makeResizableAndDraggable($('.floorPlan-Wall'));
+			removeResizableRotatableAndDraggable($('.floorPlan-Zone'));
+			removeResizableRotatableAndDraggable($('.floorPlan-Deco'));
+			makeResizableRotatableAndDraggable($('.floorPlan-Wall'));
 		} else {
 			buildingMode = false;
-			removeResizableAndDraggable($('.floorPlan-Wall'));
+			removeResizableRotatableAndDraggable($('.floorPlan-Wall'));
+			markSelectedTool(null);
 		}
 	});
 
@@ -321,12 +333,13 @@ $(function () {
 			paintingMode = true;
 			$('#painterTiles').css('display', 'flex');
 			$floorPlan.removeClass('floorPlanEditMode-AddingZone');
-			removeResizableAndDraggable($('.floorPlan-Zone'));
-			removeResizableAndDraggable($('.floorPlan-Wall'));
-			removeResizableAndDraggable($('.floorPlan-Deco'));
+			removeResizableRotatableAndDraggable($('.floorPlan-Zone'));
+			removeResizableRotatableAndDraggable($('.floorPlan-Wall'));
+			removeResizableRotatableAndDraggable($('.floorPlan-Deco'));
 		} else {
 			paintingMode = false;
 			$('#painterTiles').hide();
+			markSelectedTool(null);
 		}
 	});
 
@@ -343,12 +356,13 @@ $(function () {
 
 		if (!moveMode) {
 			moveMode = true;
-			makeResizableAndDraggable($('.floorPlan-Zone'));
-			removeResizableAndDraggable($('.floorPlan-Wall'));
-			removeResizableAndDraggable($('.floorPlan-Deco'));
+			makeResizableRotatableAndDraggable($('.floorPlan-Zone'));
+			removeResizableRotatableAndDraggable($('.floorPlan-Wall'));
+			removeResizableRotatableAndDraggable($('.floorPlan-Deco'));
 		} else {
 			moveMode = false;
-			removeResizableAndDraggable($('.floorPlan-Zone'));
+			removeResizableRotatableAndDraggable($('.floorPlan-Zone'));
+			markSelectedTool(null);
 		}
 	});
 
@@ -366,13 +380,14 @@ $(function () {
 			decoratorMode = true;
 			$('#decoTiles').css('display', 'flex');
 			$floorPlan.removeClass('floorPlanEditMode-AddingZone');
-			removeResizableAndDraggable($('.floorPlan-Zone'));
-			removeResizableAndDraggable($('.floorPlan-Wall'));
-			makeResizableAndDraggable($('.floorPlan-Deco'));
+			removeResizableRotatableAndDraggable($('.floorPlan-Zone'));
+			removeResizableRotatableAndDraggable($('.floorPlan-Wall'));
+			makeResizableRotatableAndDraggable($('.floorPlan-Deco'));
 		} else {
 			decoratorMode = false;
-			removeResizableAndDraggable($('.floorPlan-Deco'));
+			removeResizableRotatableAndDraggable($('.floorPlan-Deco'));
 			$('#decoTiles').hide();
+			markSelectedTool(null);
 		}
 	});
 
