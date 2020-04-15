@@ -38,8 +38,8 @@ $(function () {
 			let zoneName = $(this).data('name');
 			data[zoneName] = {
 				'name'    : $(this).data('name'),
-				'x'       : $(this).css('left'),
-				'y'       : $(this).css('top'),
+				'x'       : $(this).css('left').replace('px', ''),
+				'y'       : $(this).css('top').replace('px', ''),
 				'rotation': matrixToAngle($(this).css('transform')),
 				'width'   : $(this).width(),
 				'height'  : $(this).height(),
@@ -106,24 +106,15 @@ $(function () {
 	}
 
 
-	function makeResizableRotatableAndDraggable($element) {
+	function makeResizableRotatableAndDraggable($element, rotatable = false) {
 		$element.resizable({
 			containment: 'parent',
 			grid       : [5, 5]
 		}).rotatable({
 			snap: true,
 			step: 15,
-			stop: function() {
-				let newPos = snapPosition({
-					'x': $(this).position().left,
-					'y': $(this).position().top
-				});
-
-				/*$(this).css('left', newPos['x']);
-				$(this).css('top', newPos['y']);*/
-			}
+			degrees: matrixToAngle($element.css('transform'))
 		}).draggable({
-			containment  : 'parent',
 			cursor       : 'move',
 			distance     : 10,
 			grid         : [5, 5],
@@ -135,7 +126,7 @@ $(function () {
 
 	function removeResizableRotatableAndDraggable($element) {
 		try {
-			$element.resizable('destroy').rotatable('destroy').draggable('destroy');
+			$element.resizable('destroy').draggable('destroy').rotatable('destroy');
 		} catch (err) {
 		}
 	}
@@ -146,11 +137,9 @@ $(function () {
 		let $newZone = $('<div class="floorPlan-Zone ' + data["texture"] + '" ' +
 			'data-name="' + data["name"] + '" ' +
 			'data-texture="' + data["texture"] + '" ' +
-			'style="width: ' + data["width"] + 'px; height: ' + data["height"] + 'px; position: absolute; transform: rotate(' + data["rotation"] + 'deg);">' +
+			'style="left: ' + data["x"] + 'px; top: ' + data["y"] + 'px; width: ' + data["width"] + 'px; height: ' + data["height"] + 'px; position: absolute; transform: rotate(' + data["rotation"] + 'deg);">' +
 			'<div>' + data["name"] + '</div>' +
 			'</div>');
-
-		$newZone.offset({left: data['x'], top: data['y']});
 
 		$newZone.on('click touchstart', function () {
 			if (buildingMode) {
@@ -162,7 +151,7 @@ $(function () {
 					'rotation': 0
 				}
 				let wall = newWall($newZone, wallData);
-				makeResizableRotatableAndDraggable(wall);
+				makeResizableRotatableAndDraggable(wall, true);
 			} else if (paintingMode) {
 				$newZone.attr('class', 'floorPlan-Zone');
 				$newZone.addClass(selectedTexture);
@@ -182,7 +171,7 @@ $(function () {
 				}
 
 				let $deco = newDeco($newZone, decoData);
-				makeResizableRotatableAndDraggable($deco);
+				makeResizableRotatableAndDraggable($deco, true);
 			}
 		});
 
@@ -201,11 +190,11 @@ $(function () {
 	}
 
 	function newWall($element, data) {
+		data = snapPosition(data)
+		data = snapAngle(data);
 		let $newWall = $('<div class="floorPlan-Wall" ' +
-			'style="width: ' + data["width"] + 'px; height: ' + data["height"] + 'px; position: absolute; z-index: auto; transform: rotate(' + data["rotation"] + 'deg);">' +
+			'style="left: ' + data["x"] + 'px; top: ' + data["y"] + 'px; width: ' + data["width"] + 'px; height: ' + data["height"] + 'px; position: absolute; z-index: auto; transform: rotate(' + data["rotation"] + 'deg);">' +
 			'</div>');
-
-		$newWall.offset({left: data['x'], top: data['y']});
 
 		$newWall.on('click touchstart', function () {
 			return false;
@@ -223,12 +212,13 @@ $(function () {
 	}
 
 	function newDeco($element, data) {
+		data = snapPosition(data)
+		data = snapAngle(data);
 		let $newDeco = $('<div class="floorPlan-Deco ' + data["texture"] + '" ' +
-			'style="width: ' + data["width"] + 'px; height: ' + data["height"] + 'px; position: absolute; z-index: auto; transform: rotate(' + data["rotation"] + 'deg);" ' +
+			'style="left: ' + data["x"] + 'px; top: ' + data["y"] + 'px; width: ' + data["width"] + 'px; height: ' + data["height"] + 'px; position: absolute; z-index: auto; transform: rotate(' + data["rotation"] + 'deg);" ' +
 			'data-texture="' + data["texture"] + '">' +
 			'</div>');
 
-		$newDeco.offset({left: data['x'], top: data['y']});
 		$newDeco.on('click touchstart', function () {
 			return false;
 		});
@@ -348,7 +338,7 @@ $(function () {
 
 			removeResizableRotatableAndDraggable($('.floorPlan-Zone'));
 			removeResizableRotatableAndDraggable($('.floorPlan-Deco'));
-			makeResizableRotatableAndDraggable($('.floorPlan-Wall'));
+			makeResizableRotatableAndDraggable($('.floorPlan-Wall'), true);
 		} else {
 			buildingMode = false;
 			removeResizableRotatableAndDraggable($('.floorPlan-Wall'));
@@ -419,7 +409,7 @@ $(function () {
 			$floorPlan.removeClass('floorPlanEditMode-AddingZone');
 			removeResizableRotatableAndDraggable($('.floorPlan-Zone'));
 			removeResizableRotatableAndDraggable($('.floorPlan-Wall'));
-			makeResizableRotatableAndDraggable($('.floorPlan-Deco'));
+			makeResizableRotatableAndDraggable($('.floorPlan-Deco', true));
 		} else {
 			decoratorMode = false;
 			removeResizableRotatableAndDraggable($('.floorPlan-Deco'));
@@ -428,7 +418,7 @@ $(function () {
 		}
 	});
 
-	for (let i = 1; i <= 2; i++) {
+	for (let i = 1; i <= 79; i++) {
 		let $tile = $('<div class="floorPlan-tile floor-' + i + '"></div>');
 
 		$tile.on('click touchstart', function () {

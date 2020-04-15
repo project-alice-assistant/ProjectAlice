@@ -164,7 +164,7 @@ button.button{ font-size: 1.6em; height: 2em; }
 .adminAuthKeyboardKey { font-size: 2em; margin: .41em; flex-basis: 2.5em; }
 
 /* My home */
-.floorPlan { position: absolute; top: 100px; bottom: 25px; left: 5px; right: 5px; background: var(--secondary); }
+.floorPlan { position: absolute; top: 100px; bottom: 25px; left: 5px; right: 5px; background: var(--secondary); overflow: hidden; }
 .floorPlanEditMode { background: var(--secondary) url('./images/grid.png'); }
 .floorPlanEditMode-AddingZone { cursor: cell; }
 
