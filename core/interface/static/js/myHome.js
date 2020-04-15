@@ -38,9 +38,9 @@ $(function () {
 			let zoneName = $(this).data('name');
 			data[zoneName] = {
 				'name'    : $(this).data('name'),
-				'x'       : $(this).position().left,
-				'y'       : $(this).position().top,
-				'rotation': $(this).css('transform'),
+				'x'       : $(this).css('left'),
+				'y'       : $(this).css('top'),
+				'rotation': matrixToAngle($(this).css('transform')),
 				'width'   : $(this).width(),
 				'height'  : $(this).height(),
 				'texture' : $(this).data('texture')
@@ -49,9 +49,9 @@ $(function () {
 			data[zoneName]['walls'] = [];
 			$(this).children('.floorPlan-Wall').each(function () {
 				data[zoneName]['walls'].push({
-					'x'       : $(this).position().left,
-					'y'       : $(this).position().top,
-					'rotation': $(this).css('transform'),
+					'x'       : $(this).css('left'),
+					'y'       : $(this).css('top'),
+					'rotation': matrixToAngle($(this).css('transform')),
 					'width'   : $(this).width(),
 					'height'  : $(this).height()
 				})
@@ -60,9 +60,9 @@ $(function () {
 			data[zoneName]['deco'] = [];
 			$(this).children('.floorPlan-Deco').each(function () {
 				data[zoneName]['deco'].push({
-					'x'       : $(this).position().left,
-					'y'       : $(this).position().top,
-					'rotation': $(this).css('transform'),
+					'x'       : $(this).css('left'),
+					'y'       : $(this).css('top'),
+					'rotation': matrixToAngle($(this).css('transform')),
 					'width'   : $(this).width(),
 					'height'  : $(this).height(),
 					'texture' : $(this).data('texture')
@@ -79,12 +79,49 @@ $(function () {
 		});
 	}
 
+	function matrixToAngle(matrix) {
+		if (matrix == 'none' || matrix == null) {
+			return 0;
+		}
+
+		let values = matrix.split('(')[1].split(')')[0].split(',');
+		let a = parseFloat(values[0]);
+        let b = parseFloat(values[1]);
+        let angle = Math.round(Math.atan2(b, a) * (180/Math.PI));
+		angle = (angle < 0) ? angle + 360 : angle;
+		return snapAngle({'rotation': angle})['rotation'];
+	}
+
+	function snapAngle(data) {
+		if (data['rotation'] != 0) {
+			data['rotation'] -= data['rotation'] % 15;
+		}
+		return data;
+	}
+
+	function snapPosition(data) {
+		data['x'] -= data['x'] % 5;
+		data['y'] -= data['y'] % 5;
+		return data;
+	}
+
+
 	function makeResizableRotatableAndDraggable($element) {
 		$element.resizable({
 			containment: 'parent',
 			grid       : [5, 5]
 		}).rotatable({
-			snap: 5
+			snap: true,
+			step: 15,
+			stop: function() {
+				let newPos = snapPosition({
+					'x': $(this).position().left,
+					'y': $(this).position().top
+				});
+
+				/*$(this).css('left', newPos['x']);
+				$(this).css('top', newPos['y']);*/
+			}
 		}).draggable({
 			containment  : 'parent',
 			cursor       : 'move',
@@ -104,16 +141,16 @@ $(function () {
 	}
 
 	function newZone(data) {
-		let left = data['x'] - data['x'] % 5;
-		let top = data['y'] - data['y'] % 5;
+		data = snapPosition(data)
+		data = snapAngle(data);
 		let $newZone = $('<div class="floorPlan-Zone ' + data["texture"] + '" ' +
 			'data-name="' + data["name"] + '" ' +
 			'data-texture="' + data["texture"] + '" ' +
-			'style="width: ' + data["width"] + 'px; height: ' + data["height"] + 'px; position: absolute; transform:' + data["rotation"] + ';">' +
+			'style="width: ' + data["width"] + 'px; height: ' + data["height"] + 'px; position: absolute; transform: rotate(' + data["rotation"] + 'deg);">' +
 			'<div>' + data["name"] + '</div>' +
 			'</div>');
 
-		$newZone.offset({left: left, top: top});
+		$newZone.offset({left: data['x'], top: data['y']});
 
 		$newZone.on('click touchstart', function () {
 			if (buildingMode) {
@@ -165,7 +202,7 @@ $(function () {
 
 	function newWall($element, data) {
 		let $newWall = $('<div class="floorPlan-Wall" ' +
-			'style="width: ' + data["width"] + 'px; height: ' + data["height"] + 'px; position: absolute; z-index: auto; transform: ' + data["rotation"] + ';">' +
+			'style="width: ' + data["width"] + 'px; height: ' + data["height"] + 'px; position: absolute; z-index: auto; transform: rotate(' + data["rotation"] + 'deg);">' +
 			'</div>');
 
 		$newWall.offset({left: data['x'], top: data['y']});
