@@ -106,7 +106,7 @@ $(function () {
 	}
 
 
-	function makeResizableRotatableAndDraggable($element, rotatable = false) {
+	function makeResizableRotatableAndDraggable($element) {
 		$element.resizable({
 			containment: 'parent',
 			grid       : [5, 5]
@@ -151,7 +151,7 @@ $(function () {
 					'rotation': 0
 				}
 				let wall = newWall($newZone, wallData);
-				makeResizableRotatableAndDraggable(wall, true);
+				makeResizableRotatableAndDraggable(wall);
 			} else if (paintingMode) {
 				$newZone.attr('class', 'floorPlan-Zone');
 				$newZone.addClass(selectedTexture);
@@ -171,7 +171,7 @@ $(function () {
 				}
 
 				let $deco = newDeco($newZone, decoData);
-				makeResizableRotatableAndDraggable($deco, true);
+				makeResizableRotatableAndDraggable($deco);
 			}
 		});
 
@@ -258,6 +258,7 @@ $(function () {
 		paintingMode = false;
 		decoratorMode = false;
 		moveMode = false;
+
 		$floorPlan.removeClass('floorPlanEditMode');
 		$floorPlan.removeClass('floorPlanEditMode-AddingZone');
 
@@ -316,6 +317,12 @@ $(function () {
 	function markSelectedTool($element) {
 		$('.selectedTool').removeClass('selectedTool');
 
+		selectedTexture = '';
+		selectedDeco = '';
+
+		$('.floorPlan-tile').removeClass('selected');
+		$('.floorPlan-tile-background').removeClass('selected');
+
 		if ($element != null) {
 			$element.addClass('selectedTool');
 		}
@@ -338,7 +345,7 @@ $(function () {
 
 			removeResizableRotatableAndDraggable($('.floorPlan-Zone'));
 			removeResizableRotatableAndDraggable($('.floorPlan-Deco'));
-			makeResizableRotatableAndDraggable($('.floorPlan-Wall'), true);
+			makeResizableRotatableAndDraggable($('.floorPlan-Wall'));
 		} else {
 			buildingMode = false;
 			removeResizableRotatableAndDraggable($('.floorPlan-Wall'));
@@ -409,7 +416,7 @@ $(function () {
 			$floorPlan.removeClass('floorPlanEditMode-AddingZone');
 			removeResizableRotatableAndDraggable($('.floorPlan-Zone'));
 			removeResizableRotatableAndDraggable($('.floorPlan-Wall'));
-			makeResizableRotatableAndDraggable($('.floorPlan-Deco', true));
+			makeResizableRotatableAndDraggable($('.floorPlan-Deco'));
 		} else {
 			decoratorMode = false;
 			removeResizableRotatableAndDraggable($('.floorPlan-Deco'));
@@ -420,7 +427,6 @@ $(function () {
 
 	for (let i = 1; i <= 79; i++) {
 		let $tile = $('<div class="floorPlan-tile floor-' + i + '"></div>');
-
 		$tile.on('click touchstart', function () {
 			if (!$(this).hasClass('selected')) {
 				$('.floorPlan-tile').removeClass('selected');
@@ -429,24 +435,22 @@ $(function () {
 			} else {
 				$(this).removeClass('selected');
 			}
-		})
+		});
 
 		$('#painterTiles').append($tile);
 	}
 
 	for (let i = 1; i <= 5; i++) {
-		let $tile = $('<div class="floorPlan-tile-background"><div class="deco-' + i + ' floorPlan-tile"></div></div>');
-
+		let $tile = $('<div class="floorPlan-tile-background"><div class="floorPlan-tile deco-' + i + '"></div></div>');
 		$tile.on('click touchstart', function () {
 			if (!$(this).hasClass('selected')) {
-				$('.floorPlan-tile').removeClass('selected');
+				$('.floorPlan-tile-background').removeClass('selected');
 				$(this).addClass('selected');
 				selectedDeco = 'deco-' + i;
 			} else {
 				$(this).removeClass('selected');
 			}
-		})
-
+		});
 		$('#decoTiles').append($tile);
 	}
 
