@@ -40,6 +40,7 @@ $(function () {
 				'name'    : $(this).data('name'),
 				'x'       : $(this).css('left').replace('px', ''),
 				'y'       : $(this).css('top').replace('px', ''),
+				'z-index' : $(this).css('z-index'),
 				'rotation': matrixToAngle($(this).css('transform')),
 				'width'   : $(this).width(),
 				'height'  : $(this).height(),
@@ -105,7 +106,6 @@ $(function () {
 		return data;
 	}
 
-
 	function makeResizableRotatableAndDraggable($element) {
 		$element.resizable({
 			containment: 'parent',
@@ -119,8 +119,33 @@ $(function () {
 			distance     : 10,
 			grid         : [5, 5],
 			snap         : true,
-			snapTolerance: 5,
-			zIndex       : 9999
+			snapTolerance: 5
+		});
+	}
+
+	function initZoneIndexers($element) {
+		let indexer = $element.children('.zindexer');
+
+		indexer.children('.zindexer-up').on('click touchscreen', function() {
+			let zone = $(this).parent().parent();
+			let index = $element.css('z-index');
+			if (index == null || index == 'auto') {
+				index = 0;
+			} else {
+				index = parseInt(index);
+			}
+			zone.css('z-index', index + 1);
+		});
+
+		indexer.children('.zindexer-down').on('click touchscreen', function() {
+			let zone = $(this).parent().parent();
+			let index = zone.css('z-index');
+			if (index == null || index == 'auto' || parseInt(index) <= 1) {
+				index = 1;
+			} else {
+				index = parseInt(index);
+			}
+			zone.css('z-index', index - 1);
 		});
 	}
 
@@ -137,9 +162,15 @@ $(function () {
 		let $newZone = $('<div class="floorPlan-Zone ' + data["texture"] + '" ' +
 			'data-name="' + data["name"] + '" ' +
 			'data-texture="' + data["texture"] + '" ' +
-			'style="left: ' + data["x"] + 'px; top: ' + data["y"] + 'px; width: ' + data["width"] + 'px; height: ' + data["height"] + 'px; position: absolute; transform: rotate(' + data["rotation"] + 'deg);">' +
+			'style="left: ' + data["x"] + 'px; top: ' + data["y"] + 'px; width: ' + data["width"] + 'px; height: ' + data["height"] + 'px; position: absolute; transform: rotate(' + data["rotation"] + 'deg); z-index: ' + data["z-index"] + '">' +
 			'<div class="inputOrText">' + data["name"] + '</div>' +
+			'<div class="zindexer initialHidden">' +
+				'<div class="zindexer-up"><i class="fas fa-level-up-alt" aria-hidden="true"></i></div>' +
+				'<div class="zindexer-down"><i class="fas fa-level-down-alt" aria-hidden="true"></i></div>' +
+			'</div>' +
 			'</div>');
+
+		initZoneIndexers($newZone);
 
 		$newZone.on('click touchstart', function () {
 			if (buildingMode) {
@@ -336,6 +367,7 @@ $(function () {
 
 		$('.floorPlan-tile').removeClass('selected');
 		$('.floorPlan-tile-background').removeClass('selected');
+		$('.zindexer').hide();
 
 		if ($element != null) {
 			$element.addClass('selectedTool');
@@ -404,6 +436,7 @@ $(function () {
 
 		if (!moveMode) {
 			moveMode = true;
+			$('.zindexer').show();
 			makeResizableRotatableAndDraggable($('.floorPlan-Zone'));
 			removeResizableRotatableAndDraggable($('.floorPlan-Wall'));
 			removeResizableRotatableAndDraggable($('.floorPlan-Deco'));
