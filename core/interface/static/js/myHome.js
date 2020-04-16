@@ -11,7 +11,7 @@ $(function () {
 	let paintingMode = false;
 	let decoratorMode = false;
 
-	let selectedTexture = '';
+	let selectedFloor = '';
 	let selectedDeco = '';
 
 	function loadHouse() {
@@ -138,7 +138,7 @@ $(function () {
 			'data-name="' + data["name"] + '" ' +
 			'data-texture="' + data["texture"] + '" ' +
 			'style="left: ' + data["x"] + 'px; top: ' + data["y"] + 'px; width: ' + data["width"] + 'px; height: ' + data["height"] + 'px; position: absolute; transform: rotate(' + data["rotation"] + 'deg);">' +
-			'<div>' + data["name"] + '</div>' +
+			'<div class="inputOrText">' + data["name"] + '</div>' +
 			'</div>');
 
 		$newZone.on('click touchstart', function () {
@@ -154,8 +154,8 @@ $(function () {
 				makeResizableRotatableAndDraggable(wall);
 			} else if (paintingMode) {
 				$newZone.attr('class', 'floorPlan-Zone');
-				$newZone.addClass(selectedTexture);
-				$newZone.attr('data-texture', selectedTexture);
+				$newZone.addClass(selectedFloor);
+				$newZone.attr('data-texture', selectedFloor);
 			} else if (decoratorMode) {
 				if (selectedDeco == null) {
 					return;
@@ -247,6 +247,12 @@ $(function () {
 
 		$('#painterTiles').hide();
 		$('#decoTiles').hide();
+
+		$('.inputOrText').each(function() {
+			let name = $(this).text();
+			$(this).empty();
+			$(this).html('<input type="text" value="' + name + '">');
+		})
 	});
 
 	$('#toolbarToggleHide').on('click touchstart', function () {
@@ -270,6 +276,14 @@ $(function () {
 		$('#decoTiles').hide();
 
 		markSelectedTool(null);
+
+		$('.inputOrText').each(function() {
+			let name = $(this).children('input').val();
+			$(this).parent().attr('data-name', name);
+			$(this).remove('input');
+			$(this).text(name);
+		})
+
 		saveHouse();
 	});
 
@@ -317,7 +331,7 @@ $(function () {
 	function markSelectedTool($element) {
 		$('.selectedTool').removeClass('selectedTool');
 
-		selectedTexture = '';
+		selectedFloor = '';
 		selectedDeco = '';
 
 		$('.floorPlan-tile').removeClass('selected');
@@ -431,7 +445,7 @@ $(function () {
 			if (!$(this).hasClass('selected')) {
 				$('.floorPlan-tile').removeClass('selected');
 				$(this).addClass('selected');
-				selectedTexture = 'floor-' + i;
+				selectedFloor = 'floor-' + i;
 			} else {
 				$(this).removeClass('selected');
 			}
