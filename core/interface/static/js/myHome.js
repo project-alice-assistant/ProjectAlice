@@ -50,8 +50,8 @@ $(function () {
 			data[zoneName]['walls'] = [];
 			$(this).children('.floorPlan-Wall').each(function () {
 				data[zoneName]['walls'].push({
-					'x'       : $(this).css('left'),
-					'y'       : $(this).css('top'),
+					'x'       : $(this).css('left').replace('px', ''),
+					'y'       : $(this).css('top').replace('px', ''),
 					'rotation': matrixToAngle($(this).css('transform')),
 					'width'   : $(this).width(),
 					'height'  : $(this).height()
@@ -61,8 +61,8 @@ $(function () {
 			data[zoneName]['deco'] = [];
 			$(this).children('.floorPlan-Deco').each(function () {
 				data[zoneName]['deco'].push({
-					'x'       : $(this).css('left'),
-					'y'       : $(this).css('top'),
+					'x'       : $(this).css('left').replace('px', ''),
+					'y'       : $(this).css('top').replace('px', ''),
 					'rotation': matrixToAngle($(this).css('transform')),
 					'width'   : $(this).width(),
 					'height'  : $(this).height(),
@@ -487,7 +487,7 @@ $(function () {
 		$('#painterTiles').append($tile);
 	}
 
-	for (let i = 1; i <= 5; i++) {
+	for (let i = 1; i <= 11; i++) {
 		let $tile = $('<div class="floorPlan-tile-background"><div class="floorPlan-tile deco-' + i + '"></div></div>');
 		$tile.on('click touchstart', function () {
 			if (!$(this).hasClass('selected')) {

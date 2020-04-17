@@ -94,9 +94,16 @@
 .floor-78 { background: url('./images/myHome/floors/floor-78.png'); }
 .floor-79 { background: url('./images/myHome/floors/floor-79.png'); color: var(--accent); font-weight: bold; }
 
-.deco-1 { background: url('./images/myHome/door-left.png') no-repeat center center / contain; }
-.deco-2 { background: url('./images/myHome/door-right.png') no-repeat center center / contain; }
-.deco-3 { background: url('./images/myHome/double-window.png') no-repeat center center / contain; }
-.deco-4 { background: url('./images/myHome/stairs-90.png') no-repeat center center / contain; }
-.deco-5 { background: url('./images/myHome/stairs-straight.png') no-repeat center center / contain; }
+.deco-1 { background: url('./images/myHome/deco/door-left.png') no-repeat center center / contain; }
+.deco-2 { background: url('./images/myHome/deco/door-right.png') no-repeat center center / contain; }
+.deco-3 { background: url('./images/myHome/deco/door-double.png') no-repeat center center / contain; }
+.deco-4 { background: url('./images/myHome/deco/fold-door-left.png') no-repeat center center / contain; }
+.deco-5 { background: url('./images/myHome/deco/fold-door-right.png') no-repeat center center / contain; }
+.deco-6 { background: url('./images/myHome/deco/stair-piece.png') no-repeat center center / contain; }
+.deco-7 { background: url('./images/myHome/deco/stair-90-left.png') no-repeat center center / contain; }
+.deco-8 { background: url('./images/myHome/deco/stair-90-right.png') no-repeat center center / contain; }
+.deco-9 { background: url('./images/myHome/deco/window-double.png') no-repeat center center / contain; }
+.deco-10 { background: url('./images/myHome/deco/window-left.png') no-repeat center center / contain; }
+.deco-11 { background: url('./images/myHome/deco/window-right.png') no-repeat center center / contain; }
+
 
