@@ -5,14 +5,14 @@
 .floorPlan-Wall { background-color: var(--accent); }
 .floorPlan-Deco { }
 
-.floorPlan-tile { width: 50px; height: 50px; box-sizing: border-box; margin-right: 5px; margin-bottom: 5px; background-position: center center; background-size: contain; cursor: pointer; }
+.floorPlan-tile { width: 50px; height: 50px; box-sizing: border-box; margin: 3px; background-position: center center; background-size: contain; cursor: pointer; }
 .floorPlan-tile:hover { border: 2px solid var(--hover); }
 .floorPlan-tile-background { width: 50px; height: 50px; box-sizing: border-box; margin-right: 5px; background-color: var(--windowBG); }
 .selected { border: 2px solid var(--hover) }
 
-.tileholder { position: relative; height: 80px; width: 50em; overflow-x: hidden; }
+.tileholder { position: relative; height: 80px; width: 50em; overflow: hidden; }
 
-.tileholder:hover { height: auto; z-index: 9999; }
+.tileholder:hover { height: auto; z-index: 9999; background: url('images/transparent.png'); }
 
 .selectedTool { color: var(--hover); }
 
