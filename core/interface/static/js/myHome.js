@@ -107,7 +107,7 @@ $(function () {
 	}
 
 	function makeResizableRotatableAndDraggable($element) {
-		$element.resizable({
+		$element.each().resizable({
 			containment: 'parent',
 			grid       : [5, 5]
 		}).rotatable({
@@ -188,7 +188,7 @@ $(function () {
 				$newZone.addClass(selectedFloor);
 				$newZone.attr('data-texture', selectedFloor);
 			} else if (decoratorMode) {
-				if (selectedDeco == null) {
+				if (selectedDeco == null || selectedDeco == '') {
 					return;
 				}
 
