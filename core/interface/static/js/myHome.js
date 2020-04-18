@@ -107,7 +107,7 @@ $(function () {
 	}
 
 	function makeResizableRotatableAndDraggable($element) {
-		$element.each().resizable({
+		$element.resizable({
 			containment: 'parent',
 			grid       : [5, 5]
 		}).rotatable({
@@ -356,6 +356,7 @@ $(function () {
 
 		zoneMode = false;
 		markSelectedTool($('#mover'));
+		$('.zindexer').show();
 		$(this).removeClass('floorPlanEditMode-AddingZone');
 	});
 
@@ -389,12 +390,19 @@ $(function () {
 			buildingMode = true;
 			$floorPlan.removeClass('floorPlanEditMode-AddingZone');
 
-			removeResizableRotatableAndDraggable($('.floorPlan-Zone'));
-			removeResizableRotatableAndDraggable($('.floorPlan-Deco'));
-			makeResizableRotatableAndDraggable($('.floorPlan-Wall'));
+			$('.floorPlan-Zone, .floorPlan-Deco').each(function() {
+				removeResizableRotatableAndDraggable($(this));
+			});
+			$('.floorPlan-Wall').each(function() {
+				makeResizableRotatableAndDraggable($(this));
+			});
 		} else {
 			buildingMode = false;
-			removeResizableRotatableAndDraggable($('.floorPlan-Wall'));
+
+			$('.floorPlan-Wall').each(function() {
+				removeResizableRotatableAndDraggable($(this));
+			});
+
 			markSelectedTool(null);
 		}
 	});
@@ -413,9 +421,10 @@ $(function () {
 			paintingMode = true;
 			$('#painterTiles').css('display', 'flex');
 			$floorPlan.removeClass('floorPlanEditMode-AddingZone');
-			removeResizableRotatableAndDraggable($('.floorPlan-Zone'));
-			removeResizableRotatableAndDraggable($('.floorPlan-Wall'));
-			removeResizableRotatableAndDraggable($('.floorPlan-Deco'));
+
+			$('.floorPlan-Zone, .floorPlan-Deco, .floorPlan-Wall').each(function() {
+				removeResizableRotatableAndDraggable($(this));
+			});
 		} else {
 			paintingMode = false;
 			$('#painterTiles').hide();
@@ -437,12 +446,19 @@ $(function () {
 		if (!moveMode) {
 			moveMode = true;
 			$('.zindexer').show();
-			makeResizableRotatableAndDraggable($('.floorPlan-Zone'));
-			removeResizableRotatableAndDraggable($('.floorPlan-Wall'));
-			removeResizableRotatableAndDraggable($('.floorPlan-Deco'));
+
+			$('.floorPlan-Zone').each(function() {
+				makeResizableRotatableAndDraggable($(this));
+			});
+
+			$('.floorPlan-Deco, .floorPlan-Wall').each(function() {
+				removeResizableRotatableAndDraggable($(this));
+			});
 		} else {
 			moveMode = false;
-			removeResizableRotatableAndDraggable($('.floorPlan-Zone'));
+			$('.floorPlan-Zone').each(function() {
+				removeResizableRotatableAndDraggable($(this));
+			});
 			markSelectedTool(null);
 		}
 	});
@@ -461,12 +477,19 @@ $(function () {
 			decoratorMode = true;
 			$('#decoTiles').css('display', 'flex');
 			$floorPlan.removeClass('floorPlanEditMode-AddingZone');
-			removeResizableRotatableAndDraggable($('.floorPlan-Zone'));
-			removeResizableRotatableAndDraggable($('.floorPlan-Wall'));
-			makeResizableRotatableAndDraggable($('.floorPlan-Deco'));
+
+			$('.floorPlan-Deco').each(function() {
+				makeResizableRotatableAndDraggable($(this));
+			});
+
+			$('.floorPlan-Zone, .floorPlan-Wall').each(function() {
+				removeResizableRotatableAndDraggable($(this));
+			});
 		} else {
 			decoratorMode = false;
-			removeResizableRotatableAndDraggable($('.floorPlan-Deco'));
+			$('.floorPlan-Deco').each(function() {
+				removeResizableRotatableAndDraggable($(this));
+			});
 			$('#decoTiles').hide();
 			markSelectedTool(null);
 		}
