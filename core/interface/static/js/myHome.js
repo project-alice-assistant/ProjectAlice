@@ -510,11 +510,11 @@ $(function () {
 		$('#painterTiles').append($tile);
 	}
 
-	for (let i = 1; i <= 11; i++) {
-		let $tile = $('<div class="floorPlan-tile-background"><div class="floorPlan-tile deco-' + i + '"></div></div>');
+	for (let i = 1; i <= 118; i++) {
+		let $tile = $('<div class="floorPlan-tile deco-' + i + '"></div>');
 		$tile.on('click touchstart', function () {
 			if (!$(this).hasClass('selected')) {
-				$('.floorPlan-tile-background').removeClass('selected');
+				$('.floorPlan-tile').removeClass('selected');
 				$(this).addClass('selected');
 				selectedDeco = 'deco-' + i;
 			} else {
