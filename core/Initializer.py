@@ -370,6 +370,7 @@ network={
 			Path('/tmp/service').write_text(serviceFile)
 			subprocess.run(['sudo', 'mv', 'service', serviceFilePath])
 
+
 		if audioHardware in {'respeaker2', 'respeaker4', 'respeaker6MicArray'}:
 			subprocess.run(['sudo', Path(self._rootDir, 'system/scripts/audioHardware/respeakers.sh')])
 			if initConfs['useHLC']:
