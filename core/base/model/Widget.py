@@ -33,7 +33,7 @@ class Widget(ProjectAliceObject):
 		# Many checks here because of NOT NULL DB constraints
 		updateWidget = False
 		if 'state' in data.keys() and data['state']:
-			self._state = data['state']
+			self._state = int(data['state'])
 		else:
 			self._state = 0
 			updateWidget = True
@@ -77,7 +77,7 @@ class Widget(ProjectAliceObject):
 		if 'zindex' in data.keys() and data['zindex'] is not None:
 			self._zindex = data['zindex']
 		else:
-			self._zindex = 99999
+			self._zindex = 999
 			updateWidget = True
 
 		if updateWidget:

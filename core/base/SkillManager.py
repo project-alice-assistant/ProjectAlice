@@ -233,6 +233,11 @@ class SkillManager(Manager):
 
 		counter = 0
 		for i in sorted(widgets.keys()):
+			if widgets[i].state == 0:
+				widgets[i].zindex = -1
+				widgets[i].saveToDB()
+				continue
+
 			widgets[i].zindex = counter
 			counter += 1
 			widgets[i].saveToDB()

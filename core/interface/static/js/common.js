@@ -14,25 +14,43 @@ function initIndexers($element) {
 	let indexer = $element.children('.zindexer');
 
 	indexer.children('.zindexer-up').on('click touchscreen', function () {
-		let parent = $(this).parent().parent();
-		let index = $element.css('z-index');
-		if (index == null || index == 'auto') {
-			index = 0;
+		let $parent = $(this).parent().parent();
+		let actualIndex = $element.css('z-index');
+		if (actualIndex == null || actualIndex == 'auto') {
+			actualIndex = 0;
 		} else {
-			index = parseInt(index);
+			actualIndex = parseInt(actualIndex);
 		}
-		parent.css('z-index', index + 1);
+
+		let baseClass = $parent.attr('class').split(/\s+/)[0];
+		$('.' + baseClass).each(function() {
+			let thisIndex = $(this).css('z-index');
+			if (thisIndex != null && thisIndex != 'auto' && parseInt(thisIndex) == actualIndex + 1) {
+				$(this).css('z-index', actualIndex);
+				$parent.css('z-index', actualIndex + 1);
+				return false;
+			}
+		});
 	});
 
 	indexer.children('.zindexer-down').on('click touchscreen', function () {
-		let parent = $(this).parent().parent();
-		let index = parent.css('z-index');
-		if (index == null || index == 'auto' || parseInt(index) <= 1) {
-			index = 1;
+		let $parent = $(this).parent().parent();
+		let actualIndex = $element.css('z-index');
+		if (actualIndex == null || actualIndex == 'auto' || parseInt(actualIndex) <= 0) {
+			actualIndex = 0;
 		} else {
-			index = parseInt(index);
+			actualIndex = parseInt(actualIndex);
 		}
-		parent.css('z-index', index - 1);
+
+		let baseClass = $parent.attr('class').split(/\s+/)[0];
+		$('.' + baseClass).each(function() {
+			let thisIndex = $(this).css('z-index');
+			if (thisIndex != null && thisIndex != 'auto' && parseInt(thisIndex) == actualIndex -1) {
+				$(this).css('z-index', actualIndex);
+				$parent.css('z-index', actualIndex - 1);
+				return false;
+			}
+		});
 	});
 }
 

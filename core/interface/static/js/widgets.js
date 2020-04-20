@@ -11,14 +11,7 @@ $(function () {
 
 	widget.resizable({
       	grid: 10,
-		disabled: true,
-		stop : function(event,ui) {
-      		$.post('/home/saveWidgetSize/',{
-					id: $(this).attr('id'),
-					w: $(this).outerWidth(),
-					h: $(this).outerHeight()
-				});
-      		}
+		disabled: true
     });
 
 	widget.each(function() {
@@ -45,14 +38,24 @@ $(function () {
 		widget.resizable('disable');
 		$('.zindexer').hide();
 
-
+		let data = {};
 		widget.each(function() {
-			$.post('/home/saveWidgetPosition/', {
+			data[$(this).attr('id')] = {
 				id: $(this).attr('id'),
 				x: $(this).position().left,
 				y: $(this).position().top,
-				index: $(this).css('z-index')
-			});
+				w: $(this).outerWidth(),
+				h: $(this).outerHeight(),
+				zindex: $(this).css('z-index')
+			}
+		});
+
+		$.ajax({
+			url        : '/home/saveWidgets/',
+			data       : JSON.stringify(data),
+			contentType: 'application/json',
+			dataType   : 'json',
+			type       : 'POST'
 		});
 	});
 

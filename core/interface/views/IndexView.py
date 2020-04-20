@@ -25,39 +25,25 @@ class IndexView(View):
 		return send_from_directory(f'{self.WebInterfaceManager.app.root_path}/../../skills/{parent}/widgets/{fileType}/', filename)
 
 
-	@route('/home/saveWidgetPosition/', methods=['POST'])
-	def saveWidgetPosition(self):
+	@route('/home/saveWidgets/', methods=['POST'])
+	def saveWidgets(self):
 		try:
-			p, w = request.form['id'].split('_')
+			data = request.json
 
-			widget = self.SkillManager.widgets[p][w]
-			widget.x = request.form['x']
-			widget.y = request.form['y']
-			widget.zindex = request.form['index']
-			widget.saveToDB()
+			for identifier, widgetData in data.items():
+				p, w = identifier.split('_')
 
-			self.SkillManager.sortWidgetZIndexes()
+				widget = self.SkillManager.widgets[p][w]
+				widget.x = widgetData['x']
+				widget.y = widgetData['y']
+				widget.zindex = widgetData['zindex']
+				widget.width = int(widgetData['w'])
+				widget.height = int(widgetData['h'])
+				widget.saveToDB()
 
 			return jsonify(success=True)
 		except Exception as e:
-			self.logWarning(f"[Widget] Couldn't save position: {e}")
-			return jsonify(success=False)
-
-
-	@route('/home/saveWidgetSize/', methods=['POST'])
-	def saveWidgetSize(self):
-		try:
-			self.logInfo(request)
-			p, w = request.form['id'].split('_')
-
-			widget = self.SkillManager.widgets[p][w]
-			widget.width = int(request.form['w'])
-			widget.height = int(request.form['h'])
-			widget.saveToDB()
-
-			return jsonify(success=True)
-		except Exception as e:
-			self.logWarning(f"[Widget] Couldn't save size: {e}")
+			self.logWarning(f"[Widget] Couldn't save widget: {e}")
 			return jsonify(success=False)
 
 
@@ -69,6 +55,7 @@ class IndexView(View):
 			widget = self.SkillManager.widgets[p][w]
 			widget.state = 0
 			widget.saveToDB()
+			self.SkillManager.sortWidgetZIndexes()
 
 			return jsonify(success=True)
 		except Exception as e:
@@ -84,6 +71,7 @@ class IndexView(View):
 			widget = self.SkillManager.widgets[p][w]
 			widget.state = 1
 			widget.saveToDB()
+			self.SkillManager.sortWidgetZIndexes()
 
 			return redirect('home.html')
 		except Exception as e:
