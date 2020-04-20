@@ -444,7 +444,7 @@ class ConfigManager(Manager):
 		try:
 			pin = int(pinCode)
 			if len(str(pin)) != 4:
-				raise
+				raise Exception
 
 			return True
 		except:

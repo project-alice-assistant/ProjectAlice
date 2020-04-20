@@ -1109,7 +1109,7 @@ class SkillManager(Manager):
 					url=f'{constants.GITHUB_RAW_URL}/skill_{skillName}/{self.SkillStoreManager.getSkillUpdateTag(skillName)}/{skillName}.install',
 					dest=str(tmpFile.with_suffix('.tmp'))
 			):
-				raise
+				raise Exception
 
 			shutil.move(tmpFile.with_suffix('.tmp'), tmpFile)
 			return True

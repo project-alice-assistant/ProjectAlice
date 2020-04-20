@@ -207,7 +207,7 @@ network={
 		try:
 			pin = int(pinCode)
 			if len(str(pin)) != 4:
-				raise
+				raise Exception
 		except:
 			self.logFatal('Pin code must be 4 digits')
 
