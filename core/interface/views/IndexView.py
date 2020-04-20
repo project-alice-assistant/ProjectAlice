@@ -33,14 +33,10 @@ class IndexView(View):
 			widget = self.SkillManager.widgets[p][w]
 			widget.x = request.form['x']
 			widget.y = request.form['y']
+			widget.zindex = request.form['index']
 			widget.saveToDB()
 
-			order = json.loads(request.form['order'])
-			for index, widget in enumerate(order, start=1):
-				widgetParent, widgetName = widget.split('_')
-				widget = self.SkillManager.widgets[widgetParent][widgetName]
-				widget.zindex = index
-				widget.saveToDB()
+			self.SkillManager.sortWidgetZIndexes()
 
 			return jsonify(success=True)
 		except Exception as e:

@@ -225,6 +225,19 @@ class SkillManager(Manager):
 			)
 
 
+	def sortWidgetZIndexes(self):
+		widgets = dict()
+		for skillName, widgetList in self._widgets.items():
+			for widget in widgetList.values():
+				widgets[int(widget.zindex)] = widget
+
+		counter = 0
+		for i in sorted(widgets.keys()):
+			widgets[i].zindex = counter
+			counter += 1
+			widgets[i].saveToDB()
+
+
 	@property
 	def widgets(self) -> dict:
 		return self._widgets

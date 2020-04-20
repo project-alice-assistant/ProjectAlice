@@ -10,29 +10,29 @@ function mqttRegisterSelf(target, method) {
 	mqttSubscribers[method].push(target);
 }
 
-function initZoneIndexers($element) {
+function initIndexers($element) {
 	let indexer = $element.children('.zindexer');
 
 	indexer.children('.zindexer-up').on('click touchscreen', function () {
-		let zone = $(this).parent().parent();
+		let parent = $(this).parent().parent();
 		let index = $element.css('z-index');
 		if (index == null || index == 'auto') {
 			index = 0;
 		} else {
 			index = parseInt(index);
 		}
-		zone.css('z-index', index + 1);
+		parent.css('z-index', index + 1);
 	});
 
 	indexer.children('.zindexer-down').on('click touchscreen', function () {
-		let zone = $(this).parent().parent();
-		let index = zone.css('z-index');
+		let parent = $(this).parent().parent();
+		let index = parent.css('z-index');
 		if (index == null || index == 'auto' || parseInt(index) <= 1) {
 			index = 1;
 		} else {
 			index = parseInt(index);
 		}
-		zone.css('z-index', index - 1);
+		parent.css('z-index', index - 1);
 	});
 }
 

@@ -162,7 +162,7 @@ $(function () {
 			'</div>' +
 			'</div>');
 
-		initZoneIndexers($newZone);
+		initIndexers($newZone);
 
 		$newZone.on('click touchstart', function () {
 			if (buildingMode) {

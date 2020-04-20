@@ -1,36 +1,12 @@
 $(function () {
 
 /* Edit Position and Size of Widgets */
-	$('.widgetsPane').droppable({
-		drop: function (event, ui) {
-			let arr = [];
-
-			$('.widgetsPane').children().each(function () {
-				arr.push($(this).attr('id'));
-			});
-
-			$.post('/home/saveWidgetPosition/',
-				{
-					id: $(ui.draggable).attr('id'),
-					x: $(ui.draggable).position().left,
-					y: $(ui.draggable).position().top,
-					index: $('.widget').length,
-					order: JSON.stringify(arr)
-				}
-			);
-		}
-	});
-
 	let widget = $('.widget');
 
 	widget.draggable({
 		containment: '.widgetsPane',
 		grid: [10, 10],
-		disabled: true,
-		start: function (event, ui) {
-			$(this).parent().append($(this));
-			$(this).css('z-index', $('.widgetsPane').children().length);
-		}
+		disabled: true
 	}).css('position', 'absolute');
 
 	widget.resizable({
@@ -45,6 +21,10 @@ $(function () {
       		}
     });
 
+	widget.each(function() {
+		initIndexers($(this));
+	});
+
 /* Toolbar Functions */
 	$('#toolbarToggleShow').on('click touchstart', function(){
 		$('#toolbar_full').show();
@@ -53,6 +33,7 @@ $(function () {
 		widget.css('outline', "2px var(--accent) dotted");
 		widget.draggable('enable');
 		widget.resizable('enable');
+		$('.zindexer').show();
 	});
 
 	$('#toolbarToggleHide').on('click touchstart', function(){
@@ -62,6 +43,17 @@ $(function () {
 		widget.css('outline', "none");
 		widget.draggable('disable');
 		widget.resizable('disable');
+		$('.zindexer').hide();
+
+
+		widget.each(function() {
+			$.post('/home/saveWidgetPosition/', {
+				id: $(this).attr('id'),
+				x: $(this).position().left,
+				y: $(this).position().top,
+				index: $(this).css('z-index')
+			});
+		});
 	});
 
 	$('.widgetOptions').dialog({
