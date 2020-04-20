@@ -331,12 +331,16 @@ network={
 		snipsConf['snips-hotword']['vad_messages'] = True
 
 		serviceFilePath = Path('/etc/systemd/system/ProjectAlice.service')
-		if not serviceFilePath.exists():
-			subprocess.run(['sudo', 'cp', 'ProjectAlice.service', serviceFilePath])
+		if serviceFilePath.exists():
+			subprocess.run(['sudo', 'rm', serviceFilePath])
 
-		subprocess.run(['sudo', 'sed', '-i', '-e', f's/\#WORKINGDIR/WorkingDirectory=\/home\/{getpass.getuser()}\/ProjectAlice/', str(serviceFilePath)])
-		subprocess.run(['sudo', 'sed', '-i', '-e', f's/\#EXECSTART/ExecStart=\/home\/{getpass.getuser()}\/ProjectAlice\/venv\/bin\/python3 main.py/', str(serviceFilePath)])
-		subprocess.run(['sudo', 'sed', '-i', '-e', f's/\#USER/User={getpass.getuser()}/', str(serviceFilePath)])
+		serviceFile = Path('ProjectAlice.service').read_text()
+		serviceFile.replace('#WORKINGDIR', f'WorkingDirectory=/home/{getpass.getuser()}/ProjectAlice')
+		serviceFile.replace('#EXECSTART', f'ExecStart=/home/{getpass.getuser()}/ProjectAlice/venv/bin/python main.py')
+		serviceFile.replace('#USER', f'User={getpass.getuser()}')
+
+		Path('/tmp/service').write_text(serviceFile)
+		subprocess.run(['sudo', 'mv', 'service', serviceFilePath])
 
 		self.logInfo('Installing audio hardware')
 		audioHardware = ''
@@ -355,12 +359,16 @@ network={
 				subprocess.run(['git', '-C', str(Path('/home', getpass.getuser(), 'hermesLedControl')), 'pull'])
 				subprocess.run(['git', '-C', str(Path('/home', getpass.getuser(), 'hermesLedControl')), 'stash', 'clear'])
 
-			if not hlcServiceFilePath.exists():
-				subprocess.run(['sudo', 'cp', f'/home/{getpass.getuser()}/hermesLedControl/hermesledcontrol.service', str(hlcServiceFilePath)])
+			if hlcServiceFilePath.exists():
+				subprocess.run(['sudo', 'rm', hlcServiceFilePath])
 
-			subprocess.run(['sudo', 'sed', '-i', '-e', f's/%WORKING_DIR%/\/home\/{getpass.getuser()}\/hermesLedControl/', str(hlcServiceFilePath)])
-			subprocess.run(['sudo', 'sed', '-i', '-e', f's/%EXECSTART%/\/home\/{getpass.getuser()}\/hermesLedControl\/venv\/bin\/python3 main.py --hardware=%HARDWARE% --pattern=projectalice/', str(hlcServiceFilePath)])
-			subprocess.run(['sudo', 'sed', '-i', '-e', f's/%USER%/{getpass.getuser()}/', str(hlcServiceFilePath)])
+			serviceFile = Path(f'/home/{getpass.getuser()}/hermesLedControl/hermesledcontrol.service').read_text()
+			serviceFile.replace('%WORKING_DIR%', f'/home/{getpass.getuser()}/hermesLedControl')
+			serviceFile.replace('%EXECSTART%', f'/home/{getpass.getuser()}/hermesLedControl/venv/bin/python main.py --hardware=%HARDWARE% --pattern=projectalice')
+			serviceFile.replace('%USER%', f'{getpass.getuser()}')
+
+			Path('/tmp/service').write_text(serviceFile)
+			subprocess.run(['sudo', 'mv', 'service', serviceFilePath])
 
 		if audioHardware in {'respeaker2', 'respeaker4', 'respeaker6MicArray'}:
 			subprocess.run(['sudo', Path(self._rootDir, 'system/scripts/audioHardware/respeakers.sh')])

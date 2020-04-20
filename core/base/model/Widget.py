@@ -133,7 +133,6 @@ class Widget(ProjectAliceObject):
 			file = self.getCurrentDir() / f'templates/{self.name}.html'
 			fp = file.open()
 			content = fp.read()
-			# noinspection PyTypeChecker
 			content = re.sub(r'{{ lang\.([\w]*) }}', self.langReplace, content)
 
 			return content
