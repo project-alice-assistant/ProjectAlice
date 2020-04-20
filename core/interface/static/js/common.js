@@ -10,9 +10,37 @@ function mqttRegisterSelf(target, method) {
 	mqttSubscribers[method].push(target);
 }
 
+function initZoneIndexers($element) {
+	let indexer = $element.children('.zindexer');
+
+	indexer.children('.zindexer-up').on('click touchscreen', function () {
+		let zone = $(this).parent().parent();
+		let index = $element.css('z-index');
+		if (index == null || index == 'auto') {
+			index = 0;
+		} else {
+			index = parseInt(index);
+		}
+		zone.css('z-index', index + 1);
+	});
+
+	indexer.children('.zindexer-down').on('click touchscreen', function () {
+		let zone = $(this).parent().parent();
+		let index = zone.css('z-index');
+		if (index == null || index == 'auto' || parseInt(index) <= 1) {
+			index = 1;
+		} else {
+			index = parseInt(index);
+		}
+		zone.css('z-index', index - 1);
+	});
+}
+
+$(document).tooltip();
+
 $(function () {
 
-	function onFailure(msg) {
+	function onFailure(_msg) {
 		console.log('Mqtt connection failed');
 	}
 
@@ -38,7 +66,7 @@ $(function () {
 	function connectMqtt() {
 		console.log('Connecting to Mqtt server');
 		$.ajax({
-			url: '/home/getMqttConfig/',
+			url : '/home/getMqttConfig/',
 			type: 'POST'
 		}).done(function (response) {
 			if (response.success) {
@@ -52,7 +80,7 @@ $(function () {
 				MQTT.connect({
 					onSuccess: onConnect,
 					onFailure: onFailure,
-					timeout: 5
+					timeout  : 5
 				});
 			} else {
 				console.log('Failed fetching MQTT settings')

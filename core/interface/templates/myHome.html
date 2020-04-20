@@ -6,10 +6,7 @@
 
 {% block loaders %}
 	<link rel="stylesheet" href="{{ url_for('static', filename='css/myHome.css') }}">
-	<link rel="stylesheet" href="{{ url_for('static', filename='css/jquery.ui.rotatable.css') }}">
 	<script src="{{ url_for('static', filename='js/myHome.js') }}"></script>
-	<script src="{{ url_for('static', filename='js/jquery.ui.touch-punch.min.js') }}"></script>
-	<script src="{{ url_for('static', filename='js/jquery.ui.rotatable.min.js') }}"></script>
 {% endblock %}
 
 {% block pageTitle %}
@@ -44,6 +41,7 @@
 			</span>
 		</div>
 	</div>
+	<div class="tileContainer initialHidden tileholder" id="constructionTiles"></div>
 	<div class="tileContainer initialHidden tileholder" id="painterTiles"></div>
 	<div class="tileContainer initialHidden tileholder" id="decoTiles"></div>
 	<div class="floorPlan" id="floorPlan"></div>

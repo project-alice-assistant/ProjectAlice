@@ -83,6 +83,9 @@ button.button{ font-size: 1.6em; height: 2em; }
 .toolbar { background: var(--mainBG); display: flex; float: right; padding-top: .2em; padding-left: 1em; border: solid 2px; border-bottom-left-radius: 1.5em; border-top: none; border-color: var(--accent); }
 .toolbarButton { font-size: 2em; padding-right: .5em; min-width: .9em; text-align: center; }
 
+.zindexer { position: absolute; top: 15px; right: 15px; color: var(--accent); font-weight: bold; font-size: 1.3em; z-index: 999; cursor: pointer; }
+[class^="zindexer-"]:hover { color: var(--hover); }
+
 /* Utility screen for administration */
 .utility { width: 12em; height: 12em; flex-flow: column; align-items: center; }
 .utilityIcon { text-align: center; font-size: 5em; margin-top: .4em; width: 100%; }

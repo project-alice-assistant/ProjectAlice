@@ -1,5 +1,3 @@
-$(document).tooltip();
-
 $(function () {
 
 	let $defaultTab = $('#devmodeTabsContainer ul li:first');

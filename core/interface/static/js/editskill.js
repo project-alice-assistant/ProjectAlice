@@ -1,5 +1,3 @@
-$(document).tooltip();
-
 $(function () {
 
 });
