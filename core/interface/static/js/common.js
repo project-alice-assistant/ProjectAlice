@@ -133,6 +133,38 @@ $(function () {
 		}
 	}
 
+	let $defaultTab = $('.tabsContainer ul li:first');
+	$('.tabsContent').children().each(function () {
+		if ($(this).attr('id') == $defaultTab.data('for')) {
+			$(this).show();
+		}
+		else {
+			$(this).hide();
+		}
+	});
+
+	$('.tab').on('click touchstart', function () {
+		let target = $(this).data('for');
+		$(this).addClass('activeTab');
+
+		$('.tabsContainer ul li').each(function () {
+			if ($(this).data('for') != target) {
+				$(this).removeClass('activeTab');
+			}
+		});
+
+		$('.tabsContent').children().each(function () {
+			if ($(this).attr('id') == target) {
+				$(this).show();
+			}
+			else {
+				$(this).hide();
+			}
+		});
+		return false;
+	});
+
+
 	mqttRegisterSelf(onConnected, 'onConnect');
 	mqttRegisterSelf(onMessageIn, 'onMessage');
 
