@@ -1,20 +1,19 @@
 $(function () {
 
+	let $widgets = $('.widget');
 	/* Edit Position and Size of Widgets */
-	let widget = $('.widget');
-
-	widget.draggable({
+	$widgets.draggable({
 		containment: '.widgetsPane',
 		grid       : [10, 10],
 		disabled   : true
 	}).css('position', 'absolute');
 
-	widget.resizable({
+	$widgets.resizable({
 		grid    : 10,
 		disabled: true
 	});
 
-	widget.each(function () {
+	$widgets.each(function () {
 		initIndexers($(this));
 	});
 
@@ -33,7 +32,7 @@ $(function () {
 		$('#toolbar_full').hide();
 		$('#toolbar_toggle').show();
 		let widget = $('.widget');
-		widget.css('outline', "none");
+		widget.css('outline', 'none');
 		widget.draggable('disable');
 		widget.resizable('disable');
 		$('.zindexer').hide();
@@ -140,7 +139,7 @@ $(function () {
 				// No configuration exists
 				if (jQuery.isEmptyObject(data) == true) {
 					dialogContainer.find('#' + tab).html($('#langNoConf').text());
-					dialogContainer.dialog("open");
+					dialogContainer.dialog('open');
 					return;
 				}
 
@@ -180,31 +179,32 @@ $(function () {
 				// perform submit/save of the form without switching page
 				let form = $('#' + tab + 'Form');
 				let saveButton = form.find('#submitConfig');
+				// noinspection JSDeprecatedSymbols
 				form.submit(function (event) {
 					saveButton.val($('#langConfSaving').text());
-					saveButton.addClass("saving");
-					$.post(form.attr("action"),
+					saveButton.addClass('saving');
+					$.post(form.attr('action'),
 						form.serialize()).done(function () {
 						saveButton.val($('#langConfSaved').text());
-						saveButton.addClass("saved");
+						saveButton.addClass('saved');
 					})
 						.fail(function () {
 							saveButton.val($('#langConfSaveFailed').text());
-							saveButton.addClass("saveFailed");
+							saveButton.addClass('saveFailed');
 						}).always(
 						function () {
-							saveButton.removeClass("saving");
+							saveButton.removeClass('saving');
 						});
 					event.preventDefault();
 				});
 
 				// change button back to save if something was changed
-				$('.widgetConfigInput').change(function () {
+				$('.widgetConfigInput').on('change', function () {
 					saveButton.val($('#langConfSave').text());
-					saveButton.removeClass("saved");
-					saveButton.removeClass("saveFailed");
+					saveButton.removeClass('saved');
+					saveButton.removeClass('saveFailed');
 				});
-				dialogContainer.dialog("open");
+				dialogContainer.dialog('open');
 			});
 	}
 

@@ -118,7 +118,7 @@ class ASRManager(Manager):
 				return
 
 			self.logDebug(f'ASR captured: {result.text}')
-			# text = self.LanguageManager.sanitizeNluQuery(result.text)
+
 			overrideLanguage = self.LanguageManager.overrideLanguage
 			text = result.text
 			if overrideLanguage:
