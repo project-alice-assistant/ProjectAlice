@@ -622,13 +622,13 @@ class SkillManager(Manager):
 						# The skill start was delayed
 						pass
 
-						if info['update']:
-							self.allSkills[skillName].onSkillUpdated()
-						else:
-							self.allSkills[skillName].onSkillInstalled()
+					if info['update']:
+						self.allSkills[skillName].onSkillUpdated()
+					else:
+						self.allSkills[skillName].onSkillInstalled()
 
-						if self.ProjectAlice.isBooted:
-							self.allSkills[skillName].onBooted()
+					if self.ProjectAlice.isBooted:
+						self.allSkills[skillName].onBooted()
 
 				self.SnipsAssistantManager.train()
 				self.DialogTemplateManager.afterSkillChange()

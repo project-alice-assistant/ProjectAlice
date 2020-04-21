@@ -5,7 +5,7 @@ from typing import Dict
 import paho.mqtt.client as mqtt
 from googletrans import Translator
 
-from core.asr.model import ASR
+from core.asr.model import Asr
 from core.asr.model.ASRResult import ASRResult
 from core.asr.model.Recorder import Recorder
 from core.base.model.Manager import Manager
@@ -78,7 +78,7 @@ class ASRManager(Manager):
 
 
 	@property
-	def asr(self) -> ASR:
+	def asr(self) -> Asr:
 		return self._asr
 
 

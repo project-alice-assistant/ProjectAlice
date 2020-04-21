@@ -61,6 +61,6 @@ class Formatter(logging.Formatter):
 		return msg
 
 
-	def colorFormat(self, m: Match) -> str:
-		color = getattr(BashStringFormatCode, m.group(1).upper()).value
-		return f'\033[{color}m{m.group(2)}\033[{BashStringFormatCode.RESET.value};{self._baseColor}m'
+	def colorFormat(self, matching: Match) -> str:
+		color = getattr(BashStringFormatCode, matching.group(1).upper()).value
+		return f'\033[{color}m{matching.group(2)}\033[{BashStringFormatCode.RESET.value};{self._baseColor}m'

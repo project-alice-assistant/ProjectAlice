@@ -5,8 +5,8 @@ from core.commons import constants
 from core.dialog.model.DialogSession import DialogSession
 from core.user.model.User import User
 from core.voice.model.PicoTTS import PicoTTS
-from core.voice.model.TTS import TTS
 from core.voice.model.TTSEnum import TTSEnum
+from core.voice.model.Tts import TTS
 
 
 class TTSManager(Manager):

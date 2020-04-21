@@ -31,9 +31,9 @@ class IndexView(View):
 			data = request.json
 
 			for identifier, widgetData in data.items():
-				p, w = identifier.split('_')
+				parent, widgetName = identifier.split('_')
 
-				widget = self.SkillManager.widgets[p][w]
+				widget = self.SkillManager.widgets[parent][widgetName]
 				widget.x = widgetData['x']
 				widget.y = widgetData['y']
 				widget.zindex = widgetData['zindex']
@@ -50,9 +50,9 @@ class IndexView(View):
 	@route('/home/removeWidget/', methods=['POST'])
 	def removeWidget(self):
 		try:
-			p, w = request.form.get('id').split('_')
+			parent, widgetName = request.form.get('id').split('_')
 
-			widget = self.SkillManager.widgets[p][w]
+			widget = self.SkillManager.widgets[parent][widgetName]
 			widget.state = 0
 			widget.saveToDB()
 			self.SkillManager.sortWidgetZIndexes()
@@ -66,9 +66,9 @@ class IndexView(View):
 	@route('/home/addWidget/', methods=['POST'])
 	def addWidget(self):
 		try:
-			line, p, w = request.form.get('id').split('_')
+			line, parent, widgetName = request.form.get('id').split('_')
 
-			widget = self.SkillManager.widgets[p][w]
+			widget = self.SkillManager.widgets[parent][widgetName]
 			widget.state = 1
 			widget.saveToDB()
 			self.SkillManager.sortWidgetZIndexes()
@@ -101,9 +101,8 @@ class IndexView(View):
 
 	@route('/home/saveWidgetConfig/', methods=['POST'])
 	def saveWidgetConfig(self):
-		p, w = request.form.get('id').split('_')
-		skill = self.SkillManager.getSkillInstance(skillName=p)
-		widget = skill.getWidgetInstance(w)
+		parent, widgetName = request.form.get('id').split('_')
+		widget = self.SkillManager.widgets[parent][widgetName]
 		widget.options.update(request.form)
 		# 'id' would mess up the complete form anyways, must not be used!
 		widget.options.pop('id', None)
@@ -113,17 +112,15 @@ class IndexView(View):
 
 	@route('/home/readWidgetConfig/', methods=['POST'])
 	def readWidgetConfig(self):
-		p, w = request.form.get('id').split('_')
-		skill = self.SkillManager.getSkillInstance(skillName=p)
-		widget = skill.getWidgetInstance(w)
+		parent, widgetName = request.form.get('id').split('_')
+		widget = self.SkillManager.widgets[parent][widgetName]
 		return jsonify(widget.options)
 
 
 	@route('/home/saveWidgetCustStyle/', methods=['POST'])
 	def saveWidgetCustStyle(self):
-		p, w = request.form.get('id').split('_')
-		skill = self.SkillManager.getSkillInstance(skillName=p)
-		widget = skill.getWidgetInstance(w)
+		parent, widgetName = request.form.get('id').split('_')
+		widget = self.SkillManager.widgets[parent][widgetName]
 		widget.custStyle.update(request.form)
 		# 'id' would mess up the complete form anyways, must not be used!
 		widget.custStyle.pop('id', None)
@@ -133,9 +130,8 @@ class IndexView(View):
 
 	@route('/home/readWidgetCustStyle/', methods=['POST'])
 	def readWidgetCustStyle(self):
-		p, w = request.form.get('id').split('_')
-		skill = self.SkillManager.getSkillInstance(skillName=p)
-		widget = skill.getWidgetInstance(w)
+		parent, widegetName = request.form.get('id').split('_')
+		widget = self.SkillManager.widgets[parent][widegetName]
 		return jsonify(widget.custStyle)
 
 

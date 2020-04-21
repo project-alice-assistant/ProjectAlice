@@ -4,8 +4,8 @@ from typing import Optional
 import shutil
 import tarfile
 
-from core.asr.model.ASR import ASR
 from core.asr.model.ASRResult import ASRResult
+from core.asr.model.Asr import ASR
 from core.asr.model.Recorder import Recorder
 from core.commons import constants
 from core.dialog.model.DialogSession import DialogSession

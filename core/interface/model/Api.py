@@ -7,11 +7,6 @@ class Api(FlaskView, ProjectAliceObject):
 	default_methods = ['GET', 'POST', 'PUT', 'PATCH', 'DELETE']
 	_version = '1.0.1'
 
-
-	def __init__(self):
-		super().__init__()
-
-
 	@classmethod
 	def version(cls) -> str:
 		return f'v{cls._version}'
