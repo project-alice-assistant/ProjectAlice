@@ -80,9 +80,8 @@ class SkillManager(Manager):
 		if not self._skillList:
 			self.logInfo('Looks like a fresh install or skills were nuked. Let\'s install the basic skills!')
 			self._checkForSkillInstall()
-		else:
-			if self.checkForSkillUpdates():
-				self._checkForSkillInstall()
+		elif self.checkForSkillUpdates():
+			self._checkForSkillInstall()
 
 		self._skillInstallThread = self.ThreadManager.newThread(name='SkillInstallThread', target=self._checkForSkillInstall, autostart=False)
 		self._initSkills()
