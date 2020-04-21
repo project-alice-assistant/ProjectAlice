@@ -166,7 +166,6 @@ class MqttManager(Manager):
 			if message.topic == constants.TOPIC_INTENT_PARSED:
 				return
 
-			siteId = self.Commons.parseSiteId(message)
 			payload = self.Commons.payload(message)
 			sessionId = self.Commons.parseSessionId(message)
 

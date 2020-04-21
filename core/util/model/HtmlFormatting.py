@@ -57,6 +57,6 @@ class Formatter(logging.Formatter):
 
 
 	@staticmethod
-	def colorFormat(m: Match) -> str:
-		color = m.group(1).title()
-		return HtmlFormatting.INLINE.value.format(f'log{color}', m.group(2))
+	def colorFormat(matching: Match) -> str:
+		color = matching.group(1).title()
+		return HtmlFormatting.INLINE.value.format(f'log{color}', matching.group(2))

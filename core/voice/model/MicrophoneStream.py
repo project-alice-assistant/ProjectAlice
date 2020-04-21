@@ -36,9 +36,9 @@ class MicrophoneStream:
 
 	def __enter__(self):
 		with SuperManager.getInstance().commons.shutUpAlsaFFS():
-			self._audio_interface = pyaudio.PyAudio()
+			self.audioInterface = pyaudio.PyAudio()
 
-		self._audio_stream = self._audio_interface.open(
+		self._audioStream = self.audioInterface.open(
 			format=pyaudio.paInt16,
 			# The API currently only supports 1-channel (mono) audio
 			# https://goo.gl/z757pE
@@ -47,7 +47,7 @@ class MicrophoneStream:
 			# Run the audio stream asynchronously to fill the buffer object.
 			# This is necessary so that the input device's buffer doesn't
 			# overflow while the calling thread makes network requests, etc.
-			stream_callback=self._fill_buffer,
+			stream_callback=self._fillBuffer,
 		)
 
 		self.closed = False
@@ -56,17 +56,17 @@ class MicrophoneStream:
 
 
 	def __exit__(self, typ, value, traceback):
-		self._audio_stream.stop_stream()
-		self._audio_stream.close()
+		self._audioStream.stop_stream()
+		self._audioStream.close()
 		self.closed = True
 		# Signal the generator to terminate so that the client's
 		# streaming_recognize method will not block the process termination.
 		self._buff.put(None)
-		self._audio_interface.terminate()
+		self.audioInterface.terminate()
 
 
 	# noinspection PyUnusedLocal
-	def _fill_buffer(self, in_data, frame_count, time_info, status_flags):
+	def _fillBuffer(self, in_data, frame_count, time_info, status_flags):
 		"""Continuously collect data from the audio stream, into the buffer."""
 		self._buff.put(in_data)
 		return None, pyaudio.paContinue

@@ -10,6 +10,8 @@ from core.commons import constants
 # noinspection SqlResolve
 class DatabaseManager(Manager):
 
+	TABLE_TAG = ':__table__'
+
 	def __init__(self):
 		super().__init__()
 		self._tables = list()
@@ -314,14 +316,14 @@ class DatabaseManager(Manager):
 
 
 	def basicChecks(self, tableName: str, query: str, callerName: str, values: dict = None) -> typing.Optional[str]:
-		if ':__table__' not in query:
+		if self.TABLE_TAG not in query:
 			self.logWarning(f'The query must use \':__table__\' for the table name. Caller: {callerName}')
 			return None
 		elif tableName.startswith('sqlite_'):
 			self.logWarning(f'You cannot access system tables. Caller; {callerName}')
 			return None
-		elif values and ':__table__' in values:
+		elif values and self.TABLE_TAG in values:
 			self.logWarning(f"Cannot use reserved sqlite keyword \":__table__\". Caller: {callerName}")
 			return None
 		else:
-			return query.replace(':__table__', callerName + '_' + tableName)
+			return query.replace(self.TABLE_TAG, callerName + '_' + tableName)

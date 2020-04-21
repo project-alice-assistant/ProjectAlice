@@ -42,9 +42,8 @@ class AdminView(View):
 					continue
 
 				pre = self.ConfigManager.getAliceConfUpdatePreProcessing(conf)
-				if pre:
-					if not self.ConfigManager.doConfigUpdatePreProcessing(pre, value):
-						continue
+				if pre and not self.ConfigManager.doConfigUpdatePreProcessing(pre, value):
+					continue
 
 				pp = self.ConfigManager.getAliceConfUpdatePostProcessing(conf)
 				if pp:

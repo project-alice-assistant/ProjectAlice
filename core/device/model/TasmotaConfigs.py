@@ -119,76 +119,76 @@ class TasmotaConfigs(ProjectAliceObject):
 		}
 	]
 
-	BASE_TOPIC = 'projectalice/devices/tasmota/cmd'
+	BASE_TOPIC = 'projectalice/devices/tasmota/cmd/{identifier}'
 
 	CONFIGS = {
 		'wemos': {
 			'switch': [
 				[
 					{
-						'topic'  : BASE_TOPIC + '/{identifier}/Module',
+						'topic'  : BASE_TOPIC + '/Module',
 						'payload': '18'
 					}
 				],
 				[
 					{
-						'topic'  : BASE_TOPIC + '/{identifier}/MqttClient',
+						'topic'  : BASE_TOPIC + '/MqttClient',
 						'payload': 'switch_{room}'
 					},
 					{
-						'topic'  : BASE_TOPIC + '/{identifier}/Gpio0',
+						'topic'  : BASE_TOPIC + '/Gpio0',
 						'payload': '9'
 					},
 					{
-						'topic'  : BASE_TOPIC + '/{identifier}/Gpio12',
+						'topic'  : BASE_TOPIC + '/Gpio12',
 						'payload': '21'
 					},
 					{
-						'topic'  : BASE_TOPIC + '/{identifier}/Prefix1',
+						'topic'  : BASE_TOPIC + '/Prefix1',
 						'payload': 'cmd'
 					},
 					{
-						'topic'  : BASE_TOPIC + '/{identifier}/Prefix2',
+						'topic'  : BASE_TOPIC + '/Prefix2',
 						'payload': 'feedback'
 					},
 					{
-						'topic'  : BASE_TOPIC + '/{identifier}/Prefix3',
+						'topic'  : BASE_TOPIC + '/Prefix3',
 						'payload': 'feedback'
 					},
 					{
-						'topic'  : BASE_TOPIC + '/{identifier}/GroupTopic',
+						'topic'  : BASE_TOPIC + '/GroupTopic',
 						'payload': 'all'
 					},
 					{
-						'topic'  : BASE_TOPIC + '/{identifier}/TelePeriod',
+						'topic'  : BASE_TOPIC + '/TelePeriod',
 						'payload': '0'
 					},
 					{
-						'topic'  : BASE_TOPIC + '/{identifier}/FriendlyName',
+						'topic'  : BASE_TOPIC + '/FriendlyName',
 						'payload': 'Switch - {room}'
 					},
 					{
-						'topic'  : BASE_TOPIC + '/{identifier}/SwitchMode',
+						'topic'  : BASE_TOPIC + '/SwitchMode',
 						'payload': '2'
 					},
 					{
-						'topic'  : BASE_TOPIC + '/{identifier}/SwitchTopic',
+						'topic'  : BASE_TOPIC + '/SwitchTopic',
 						'payload': '0'
 					},
 					{
-						'topic'  : BASE_TOPIC + '/{identifier}/Topic',
+						'topic'  : BASE_TOPIC + '/Topic',
 						'payload': '0'
 					},
 					{
-						'topic'  : BASE_TOPIC + '/{identifier}/rule1',
+						'topic'  : BASE_TOPIC + '/rule1',
 						'payload': 'on switch1#state do publish projectalice/devices/tasmota/feedback/{identifier} {{"siteId":"{room}","deviceType":"{type}","feedback":%value%,"uid":"{identifier}"}} endon'
 					},
 					{
-						'topic'  : BASE_TOPIC + '/{identifier}/rule1',
+						'topic'  : BASE_TOPIC + '/rule1',
 						'payload': '1'
 					},
 					{
-						'topic'  : BASE_TOPIC + '/{identifier}/Restart',
+						'topic'  : BASE_TOPIC + '/Restart',
 						'payload': '1'
 					}
 				]
@@ -196,45 +196,45 @@ class TasmotaConfigs(ProjectAliceObject):
 			'pir'   : [
 				[
 					{
-						'topic'  : BASE_TOPIC + '/{identifier}/Module',
+						'topic'  : BASE_TOPIC + '/Module',
 						'payload': '18'
 					}
 				],
 				[
 					{
-						'topic'  : BASE_TOPIC + '/{identifier}/MqttClient',
+						'topic'  : BASE_TOPIC + '/MqttClient',
 						'payload': 'PIR_{room}'
 					},
 					{
-						'topic'  : BASE_TOPIC + '/{identifier}/Gpio0',
+						'topic'  : BASE_TOPIC + '/Gpio0',
 						'payload': '9'
 					},
 					{
-						'topic'  : BASE_TOPIC + '/{identifier}/Gpio12',
+						'topic'  : BASE_TOPIC + '/Gpio12',
 						'payload': '21'
 					},
 					{
-						'topic'  : BASE_TOPIC + '/{identifier}/FriendlyName',
+						'topic'  : BASE_TOPIC + '/FriendlyName',
 						'payload': 'PIR - {room}'
 					},
 					{
-						'topic'  : BASE_TOPIC + '/{identifier}/SwitchMode',
+						'topic'  : BASE_TOPIC + '/SwitchMode',
 						'payload': '1'
 					},
 					{
-						'topic'  : BASE_TOPIC + '/{identifier}/SwitchTopic',
+						'topic'  : BASE_TOPIC + '/SwitchTopic',
 						'payload': '0'
 					},
 					{
-						'topic'  : BASE_TOPIC + '/{identifier}/rule1',
+						'topic'  : BASE_TOPIC + '/rule1',
 						'payload': 'on switch1#state do publish projectalice/devices/tasmota/feedback/{identifier} {{"siteId":"{room}","deviceType":"{type}","feedback":%value%,"uid":"{identifier}"}} endon'
 					},
 					{
-						'topic'  : BASE_TOPIC + '/{identifier}/rule1',
+						'topic'  : BASE_TOPIC + '/rule1',
 						'payload': '1'
 					},
 					{
-						'topic'  : BASE_TOPIC + '/{identifier}/Restart',
+						'topic'  : BASE_TOPIC + '/Restart',
 						'payload': '1'
 					}
 				]

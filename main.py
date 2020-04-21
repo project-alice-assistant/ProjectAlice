@@ -109,9 +109,9 @@ def main():
 		sys.stdout.flush()
 		try:
 			# Close everything related to ProjectAlice, allows restart without component failing
-			p = psutil.Process(os.getpid())
-			for h in p.open_files() + p.connections():
-				os.close(h.fd)
+			process = psutil.Process(os.getpid())
+			for handler in process.open_files() + process.connections():
+				os.close(handler.fd)
 		except Exception as e:
 			_logger.error(f'[Project Alice]           Failed restarting: {e}')
 

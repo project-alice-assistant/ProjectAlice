@@ -149,8 +149,8 @@ class LanguageManager(Manager):
 
 		if self._activeLanguage == 'fr':
 			for match in re.findall(self._floatExpressionPattern, string):
-				m = match.replace('.', ',')
-				string = string.replace(match, m)
+				matching = match.replace('.', ',')
+				string = string.replace(match, matching)
 
 		for key in self._locals:
 			if key in string:
