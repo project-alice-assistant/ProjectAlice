@@ -761,7 +761,7 @@ class MqttManager(Manager):
 		if session and session.isAPIGenerated:
 			return self.say(text=text, client=session.siteId)
 
-		if session and session.siteId != client and text:
+		if session and client and text and session.siteId != client:
 			self._mqttClient.publish(constants.TOPIC_END_SESSION, json.dumps({
 				'sessionId': sessionId
 			}))
