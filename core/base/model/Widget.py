@@ -15,7 +15,7 @@ class Widget(ProjectAliceObject):
 	SIZE = WidgetSizes.w
 
 	OPTIONS = dict()
-	CUSTSTYLE = {
+	CUSTOM_STYLE = {
 		'background': '',
 		'background-opacity': '1.0',
 		'color': '',
@@ -68,7 +68,7 @@ class Widget(ProjectAliceObject):
 		if 'options' in data.keys():
 			self._options.update(json.loads(data['options']))
 
-		self._custStyle = self.CUSTSTYLE.copy()
+		self._custStyle = self.CUSTOM_STYLE.copy()
 		if 'custStyle' in data.keys() and data['custStyle']:
 			self._custStyle.update(json.loads(data['custStyle']))
 		else:
