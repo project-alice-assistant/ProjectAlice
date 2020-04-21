@@ -14,8 +14,8 @@ from core.base.model.ProjectAliceObject import ProjectAliceObject
 
 class TomlFile(ProjectAliceObject):
 
-	SECTION_PATTERN = re.compile('^\[(?P<sectionName>.+)\]$')
-	CONFIG_PATTERN = re.compile('^(#)?( )?(?P<configName>.+)?( )=?( )(?P<configValue>.*)')
+	SECTION_PATTERN = re.compile(r'^\[(?P<sectionName>.+)\]$')
+	CONFIG_PATTERN = re.compile(r'^(#)?( )?(?P<configName>.+)?( )=?( )(?P<configValue>.*)')
 
 	def __init__(self, path: Path):
 		super().__init__()

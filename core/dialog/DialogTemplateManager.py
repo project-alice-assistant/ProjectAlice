@@ -78,7 +78,6 @@ class DialogTemplateManager(Manager):
 					if filename == language:
 						self.logInfo(f'Skill **{skillName}** has changes in language **{filename}**')
 						changes.setdefault(skillName, list()).append(filename)
-					continue
 
 		# Now check that what we have in cache in actually existing and wasn't manually deleted
 		for skillName, languages in checksums.items():

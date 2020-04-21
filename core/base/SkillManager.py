@@ -807,7 +807,8 @@ class SkillManager(Manager):
 
 			elif conditionName == 'activeManager':
 				for manager in conditionValue:
-					if not manager: continue
+					if not manager:
+						continue
 
 					man = SuperManager.getInstance().getManager(manager)
 					if not man or not man.isActive:

@@ -1,11 +1,11 @@
 import json
-import random
-import re
 import uuid
 from pathlib import Path
 
 import paho.mqtt.client as mqtt
 import paho.mqtt.publish as publish
+import random
+import re
 
 from core.base.model.Intent import Intent
 from core.base.model.Manager import Manager
@@ -454,10 +454,8 @@ class MqttManager(Manager):
 		self.broadcast(method=constants.EVENT_SAY, exceptions=[self.name], propagateToSkills=True, session=session)
 
 
-	# noinspection PyUnusedLocal
-	def onSnipsSayFinished(self, client, data, msg: mqtt.MQTTMessage):
+	def onSnipsSayFinished(self, _client, _data, msg: mqtt.MQTTMessage):
 		sessionId = self.Commons.parseSessionId(msg)
-		payload = self.Commons.payload(msg)
 
 		session = self.DialogSessionManager.getSession(sessionId)
 		if session:
@@ -601,9 +599,7 @@ class MqttManager(Manager):
 			if customData is not None:
 				if isinstance(customData, dict):
 					customData = json.dumps(customData)
-				elif isinstance(customData, str):
-					pass
-				else:
+				elif not isinstance(customData, str):
 					self.logWarning(f'Ask was provided customdata of unsupported type: {customData}')
 					customData = ''
 
@@ -658,7 +654,7 @@ class MqttManager(Manager):
 
 		if client == constants.ALL:
 			if not customData:
-				customData = dict()
+				customData = '{}'
 
 			customData = json.loads(customData)
 			customData['wideAskingSession'] = True
@@ -752,12 +748,12 @@ class MqttManager(Manager):
 		self._mqttClient.publish(constants.TOPIC_CONTINUE_SESSION, json.dumps(jsonDict))
 
 
-	def endDialog(self, sessionId: str = '', text: str = '', client: str = ''):
+	def endDialog(self, sessionId: str = '', text: str = '', _client: str = ''):
 		"""
 		Ends a session by speaking the given text
 		:param sessionId: int session id to terminate
 		:param text: str Text to speak
-		:param client: str Where to speak
+		:param _client: str Where to speak
 		"""
 		if not sessionId:
 			return

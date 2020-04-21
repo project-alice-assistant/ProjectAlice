@@ -24,8 +24,6 @@ class VadManager(Manager):
 
 	def onBooted(self):
 		return
-		self.MqttManager.mqttClient.subscribe(constants.TOPIC_AUDIO_FRAME.format('office'))
-		self.ThreadManager.newThread(name='vadDetector', target=self.vadDetector)
 
 
 	def onStop(self):

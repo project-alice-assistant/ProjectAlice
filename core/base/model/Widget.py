@@ -8,13 +8,13 @@ from typing import Dict, Match, Optional
 import re
 
 from core.base.model.ProjectAliceObject import ProjectAliceObject
-from core.base.model.widgetSizes import WidgetSizes
+from core.base.model.WidgetSizes import WidgetSizes
 
 
 class Widget(ProjectAliceObject):
-	SIZE = WidgetSizes.w
+	DEFAULT_SIZE = WidgetSizes.w
 
-	OPTIONS = dict()
+	DEFAULT_OPTIONS = dict()
 	CUSTOM_STYLE = {
 		'background': '',
 		'background-opacity': '1.0',
@@ -62,9 +62,9 @@ class Widget(ProjectAliceObject):
 			self._width = 0
 			updateWidget = True
 
-		self._size = self.SIZE.value
+		self._size = self.DEFAULT_SIZE.value
 
-		self._options = self.OPTIONS
+		self._options = self.DEFAULT_OPTIONS
 		if 'options' in data.keys():
 			self._options.update(json.loads(data['options']))
 

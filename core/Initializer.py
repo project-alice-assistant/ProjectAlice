@@ -352,12 +352,14 @@ network={
 		hlcServiceFilePath = Path('/etc/systemd/system/hermesledcontrol.service')
 		if initConfs['useHLC']:
 
-			if not Path('/home', getpass.getuser(), 'hermesLedControl').exists():
+			hlcDir = Path('/home', getpass.getuser(), 'hermesLedControl')
+
+			if not hlcDir.exists():
 				subprocess.run(['git', 'clone', 'https://github.com/project-alice-assistant/hermesLedControl.git', str(Path('/home', getpass.getuser(), 'hermesLedControl'))])
 			else:
-				subprocess.run(['git', '-C', str(Path('/home', getpass.getuser(), 'hermesLedControl')), 'stash'])
-				subprocess.run(['git', '-C', str(Path('/home', getpass.getuser(), 'hermesLedControl')), 'pull'])
-				subprocess.run(['git', '-C', str(Path('/home', getpass.getuser(), 'hermesLedControl')), 'stash', 'clear'])
+				subprocess.run(['git', '-C', hlcDir, 'stash'])
+				subprocess.run(['git', '-C', hlcDir, 'pull'])
+				subprocess.run(['git', '-C', hlcDir, 'stash', 'clear'])
 
 			if hlcServiceFilePath.exists():
 				subprocess.run(['sudo', 'rm', hlcServiceFilePath])

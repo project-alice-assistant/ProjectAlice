@@ -44,13 +44,13 @@ class TasmotaConfigs(ProjectAliceObject):
 		for cmdGroup in self.BACKLOG_CONFIGS:
 			group = dict()
 			group['cmds'] = [cmd.format(
-					mqtthost=self.Commons.getLocalIp(),
-					identifier=self._uid,
-					room=room,
-					type=self._deviceType,
-					ssid=self.ConfigManager.getAliceConfigByName('ssid'),
-					wifipass=self.ConfigManager.getAliceConfigByName('wifipassword')
-				) for cmd in cmdGroup['cmds']]
+				mqtthost=self.Commons.getLocalIp(),
+				identifier=self._uid,
+				room=room,
+				type=self._deviceType,
+				ssid=self.ConfigManager.getAliceConfigByName('ssid'),
+				wifipass=self.ConfigManager.getAliceConfigByName('wifipassword')
+			) for cmd in cmdGroup['cmds']]
 
 			group['waitAfter'] = cmdGroup['waitAfter']
 			cmds.append(group)
@@ -60,44 +60,44 @@ class TasmotaConfigs(ProjectAliceObject):
 
 	BACKLOG_CONFIGS = [
 		{
-			'cmds': [
+			'cmds'     : [
 				'ssid1 {ssid}',
 				'password1 {wifipass}'
 			],
 			'waitAfter': 15
 		},
 		{
-			'cmds': [
+			'cmds'     : [
 				'MqttHost {mqtthost}',
 				'MqttClient {type}_{room}',
 				'TelePeriod 0',
-				#TODO should this be renamed?
+				# TODO should this be renamed?
 				'module 18'
 			],
 			'waitAfter': 8
 		},
 		{
-			'cmds': [
+			'cmds'     : [
 				'gpio0 9',
 				'gpio12 21'
 			],
 			'waitAfter': 8
 		},
 		{
-			'cmds': [
+			'cmds'     : [
 				'friendlyname {type} - {room}'
 			],
 			'waitAfter': 8
 		},
 		{
-			'cmds': [
+			'cmds'     : [
 				'switchmode 2',
 				'switchtopic 0'
 			],
 			'waitAfter': 8
 		},
 		{
-			'cmds': [
+			'cmds'     : [
 				'topic {identifier}',
 				'grouptopic all',
 				'fulltopic projectalice/devices/tasmota/%prefix%/%topic%/',
@@ -108,7 +108,7 @@ class TasmotaConfigs(ProjectAliceObject):
 			'waitAfter': 8
 		},
 		{
-			'cmds': [
+			'cmds'     : [
 				'rule1 on System#Boot do publish projectalice/devices/tasmota/feedback/hello/{identifier} {{"siteId":"{room}","deviceType":"{type}","uid":"{identifier}"}} endon',
 				'rule1 1',
 				'rule2 on switch1#state do publish projectalice/devices/tasmota/feedback/{identifier} {{"siteId":"{room}","deviceType":"{type}","feedback":%value%,"uid":"{identifier}"}} endon',
@@ -119,120 +119,122 @@ class TasmotaConfigs(ProjectAliceObject):
 		}
 	]
 
+	BASE_TOPIC = 'projectalice/devices/tasmota/cmd'
+
 	CONFIGS = {
 		'wemos': {
 			'switch': [
 				[
 					{
-						'topic': 'projectalice/devices/tasmota/cmd/{identifier}/Module',
+						'topic'  : BASE_TOPIC + '/{identifier}/Module',
 						'payload': '18'
 					}
 				],
 				[
 					{
-						'topic': 'projectalice/devices/tasmota/cmd/{identifier}/MqttClient',
+						'topic'  : BASE_TOPIC + '/{identifier}/MqttClient',
 						'payload': 'switch_{room}'
 					},
 					{
-						'topic': 'projectalice/devices/tasmota/cmd/{identifier}/Gpio0',
+						'topic'  : BASE_TOPIC + '/{identifier}/Gpio0',
 						'payload': '9'
 					},
 					{
-						'topic': 'projectalice/devices/tasmota/cmd/{identifier}/Gpio12',
+						'topic'  : BASE_TOPIC + '/{identifier}/Gpio12',
 						'payload': '21'
 					},
 					{
-						'topic': 'projectalice/devices/tasmota/cmd/{identifier}/Prefix1',
+						'topic'  : BASE_TOPIC + '/{identifier}/Prefix1',
 						'payload': 'cmd'
 					},
 					{
-						'topic': 'projectalice/devices/tasmota/cmd/{identifier}/Prefix2',
+						'topic'  : BASE_TOPIC + '/{identifier}/Prefix2',
 						'payload': 'feedback'
 					},
 					{
-						'topic': 'projectalice/devices/tasmota/cmd/{identifier}/Prefix3',
+						'topic'  : BASE_TOPIC + '/{identifier}/Prefix3',
 						'payload': 'feedback'
 					},
 					{
-						'topic': 'projectalice/devices/tasmota/cmd/{identifier}/GroupTopic',
+						'topic'  : BASE_TOPIC + '/{identifier}/GroupTopic',
 						'payload': 'all'
 					},
 					{
-						'topic': 'projectalice/devices/tasmota/cmd/{identifier}/TelePeriod',
+						'topic'  : BASE_TOPIC + '/{identifier}/TelePeriod',
 						'payload': '0'
 					},
 					{
-						'topic': 'projectalice/devices/tasmota/cmd/{identifier}/FriendlyName',
+						'topic'  : BASE_TOPIC + '/{identifier}/FriendlyName',
 						'payload': 'Switch - {room}'
 					},
 					{
-						'topic': 'projectalice/devices/tasmota/cmd/{identifier}/SwitchMode',
+						'topic'  : BASE_TOPIC + '/{identifier}/SwitchMode',
 						'payload': '2'
 					},
 					{
-						'topic': 'projectalice/devices/tasmota/cmd/{identifier}/SwitchTopic',
+						'topic'  : BASE_TOPIC + '/{identifier}/SwitchTopic',
 						'payload': '0'
 					},
 					{
-						'topic': 'projectalice/devices/tasmota/cmd/{identifier}/Topic',
+						'topic'  : BASE_TOPIC + '/{identifier}/Topic',
 						'payload': '0'
 					},
 					{
-						'topic': 'projectalice/devices/tasmota/cmd/{identifier}/rule1',
+						'topic'  : BASE_TOPIC + '/{identifier}/rule1',
 						'payload': 'on switch1#state do publish projectalice/devices/tasmota/feedback/{identifier} {{"siteId":"{room}","deviceType":"{type}","feedback":%value%,"uid":"{identifier}"}} endon'
 					},
 					{
-						'topic': 'projectalice/devices/tasmota/cmd/{identifier}/rule1',
+						'topic'  : BASE_TOPIC + '/{identifier}/rule1',
 						'payload': '1'
 					},
 					{
-						'topic': 'projectalice/devices/tasmota/cmd/{identifier}/Restart',
+						'topic'  : BASE_TOPIC + '/{identifier}/Restart',
 						'payload': '1'
 					}
 				]
 			],
-			'pir': [
+			'pir'   : [
 				[
 					{
-						'topic': 'projectalice/devices/tasmota/cmd/{identifier}/Module',
+						'topic'  : BASE_TOPIC + '/{identifier}/Module',
 						'payload': '18'
 					}
 				],
 				[
 					{
-						'topic': 'projectalice/devices/tasmota/cmd/{identifier}/MqttClient',
+						'topic'  : BASE_TOPIC + '/{identifier}/MqttClient',
 						'payload': 'PIR_{room}'
 					},
 					{
-						'topic': 'projectalice/devices/tasmota/cmd/{identifier}/Gpio0',
+						'topic'  : BASE_TOPIC + '/{identifier}/Gpio0',
 						'payload': '9'
 					},
 					{
-						'topic': 'projectalice/devices/tasmota/cmd/{identifier}/Gpio12',
+						'topic'  : BASE_TOPIC + '/{identifier}/Gpio12',
 						'payload': '21'
 					},
 					{
-						'topic': 'projectalice/devices/tasmota/cmd/{identifier}/FriendlyName',
+						'topic'  : BASE_TOPIC + '/{identifier}/FriendlyName',
 						'payload': 'PIR - {room}'
 					},
 					{
-						'topic': 'projectalice/devices/tasmota/cmd/{identifier}/SwitchMode',
+						'topic'  : BASE_TOPIC + '/{identifier}/SwitchMode',
 						'payload': '1'
 					},
 					{
-						'topic': 'projectalice/devices/tasmota/cmd/{identifier}/SwitchTopic',
+						'topic'  : BASE_TOPIC + '/{identifier}/SwitchTopic',
 						'payload': '0'
 					},
 					{
-						'topic': 'projectalice/devices/tasmota/cmd/{identifier}/rule1',
+						'topic'  : BASE_TOPIC + '/{identifier}/rule1',
 						'payload': 'on switch1#state do publish projectalice/devices/tasmota/feedback/{identifier} {{"siteId":"{room}","deviceType":"{type}","feedback":%value%,"uid":"{identifier}"}} endon'
 					},
 					{
-						'topic': 'projectalice/devices/tasmota/cmd/{identifier}/rule1',
+						'topic'  : BASE_TOPIC + '/{identifier}/rule1',
 						'payload': '1'
 					},
 					{
-						'topic': 'projectalice/devices/tasmota/cmd/{identifier}/Restart',
+						'topic'  : BASE_TOPIC + '/{identifier}/Restart',
 						'payload': '1'
 					}
 				]

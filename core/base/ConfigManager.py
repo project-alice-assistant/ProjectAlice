@@ -23,6 +23,8 @@ from core.commons import constants
 
 class ConfigManager(Manager):
 
+	CONFIG_FILE = 'config.py'
+
 	def __init__(self):
 		super().__init__()
 
@@ -58,8 +60,8 @@ class ConfigManager(Manager):
 		if not configFileExist:
 			self.logInfo('Creating config file from config template')
 			confs = {configName: configData['values'] if 'dataType' in configData and configData['dataType'] == 'list' else configData['defaultValue'] if 'defaultValue' in configData else configData for configName, configData in configTemplate.settings.items()}
-			Path('config.py').write_text(f'settings = {json.dumps(confs, indent=4)}')
-			aliceConfigs = importlib.import_module('config.py').settings.copy()
+			Path(self.CONFIG_FILE).write_text(f'settings = {json.dumps(confs, indent=4)}')
+			aliceConfigs = importlib.import_module(self.CONFIG_FILE).settings.copy()
 		else:
 			aliceConfigs = config.settings.copy()
 
@@ -171,7 +173,7 @@ class ConfigManager(Manager):
 
 		try:
 			confString = json.dumps(sort, indent=4).replace('false', 'False').replace('true', 'True')
-			Path('config.py').write_text(f'settings = {confString}')
+			Path(self.CONFIG_FILE).write_text(f'settings = {confString}')
 			importlib.reload(config)
 		except Exception:
 			raise ConfigurationUpdateFailed()

@@ -4,10 +4,10 @@ import sqlite3
 import threading
 import time
 import uuid
+from pathlib import Path
 from typing import Dict, List, Optional
 
 import esptool
-import os
 import requests
 import serial
 from esptool import ESPLoader
@@ -95,9 +95,6 @@ class DeviceManager(Manager):
 
 
 	def deviceMessage(self, message: MQTTMessage) -> Optional[DialogSession]:
-		# if not 'projectalice/devices/' in message.topic:
-		# 	return None
-
 		return self.DialogSessionManager.addTempSession(sessionId=str(uuid.uuid4()), message=message)
 
 
@@ -150,16 +147,18 @@ class DeviceManager(Manager):
 		self.ThreadManager.doLater(interval=0.5, func=self.MqttManager.endDialog, args=[session.sessionId, self.TalkManager.randomTalk('connectESPForFlashing', skill='AliceCore')])
 
 		self._broadcastFlag.set()
-		if os.path.isfile('sonoff.bin'):
-			os.remove('sonoff.bin')
+
+		binFile = Path('tasmota.bin')
+		if binFile.exists():
+			binFile.unlink()
 
 		try:
-			req = requests.get('https://github.com/arendst/Sonoff-Tasmota/releases/download/v6.5.0/sonoff.bin')
-			with open('sonoff.bin', 'wb') as file:
+			req = requests.get(f'https://github.com/arendst/Tasmota/releases/download/v8.2.0/tasmota.bin')
+			with binFile.open('wb') as file:
 				file.write(req.content)
-				self.logInfo('Downloaded sonoff.bin')
+				self.logInfo('Downloaded tasmota.bin')
 		except Exception as e:
-			self.logError(f'Something went wrong downloading sonoff.bin: {e}')
+			self.logError(f'Something went wrong downloading tasmota.bin: {e}')
 			self._broadcastFlag.clear()
 			return False
 
@@ -218,7 +217,7 @@ class DeviceManager(Manager):
 				'--port', port,
 				'--baud', '115200',
 				'--after', 'no_reset', 'write_flash',
-				'--flash_mode', 'dout', '0x00000', 'sonoff.bin',
+				'--flash_mode', 'dout', '0x00000', 'tasmota.bin',
 				'--erase-all'
 			]
 
@@ -283,7 +282,6 @@ class DeviceManager(Manager):
 		else:
 			self.MqttManager.say(text=self.TalkManager.randomTalk('espFailed', skill='AliceCore'), client=siteId)
 			self._broadcastFlag.clear()
-			return
 
 
 	def _getFreeUID(self, base: str = '') -> str:
@@ -301,9 +299,9 @@ class DeviceManager(Manager):
 			if not base:
 				uid = str(uuid.uuid4())
 			else:
-				l = list(base)
-				shuffle(l)
-				uid = ''.join(l)
+				aList = list(base)
+				shuffle(aList)
+				uid = ''.join(aList)
 
 		return uid
 

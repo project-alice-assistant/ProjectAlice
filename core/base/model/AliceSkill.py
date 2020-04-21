@@ -466,8 +466,7 @@ class AliceSkill(ProjectAliceObject):
 
 
 	def onSkillInstalled(self, **kwargs):
-		self._updateAvailable = False
-		self.MqttManager.subscribeSkillIntents(self.name)
+		self.onSkillUpdated(**kwargs)
 
 
 	def onSkillUpdated(self, **kwargs):

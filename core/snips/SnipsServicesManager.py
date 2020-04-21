@@ -54,9 +54,7 @@ class SnipsServicesManager(Manager):
 			result = self.Commons.runRootSystemCommand(['systemctl', cmd, service])
 			if result.returncode == 0:
 				self.logInfo(f"{cmd.title()} service {service} ok")
-			elif result.returncode == 5:
-				pass
-			else:
+			elif result.returncode != 5:
 				self.logInfo(f"Tried to {cmd} the {service} service but it returned with return code {result.returncode}")
 
 
