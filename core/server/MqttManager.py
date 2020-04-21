@@ -747,12 +747,12 @@ class MqttManager(Manager):
 		self._mqttClient.publish(constants.TOPIC_CONTINUE_SESSION, json.dumps(jsonDict))
 
 
-	def endDialog(self, sessionId: str = '', text: str = '', _client: str = ''):
+	def endDialog(self, sessionId: str = '', text: str = '', client: str = ''):
 		"""
 		Ends a session by speaking the given text
 		:param sessionId: int session id to terminate
 		:param text: str Text to speak
-		:param _client: str Where to speak
+		:param client: str Where to speak
 		"""
 		if not sessionId:
 			return
@@ -760,6 +760,18 @@ class MqttManager(Manager):
 		session = self.DialogSessionManager.getSession(sessionId)
 		if session and session.isAPIGenerated:
 			return self.say(text=text, client=session.siteId)
+
+		if session and session.siteId != client and text:
+			self._mqttClient.publish(constants.TOPIC_END_SESSION, json.dumps({
+				'sessionId': sessionId
+			}))
+
+			self.say(
+				text=text,
+				client=client
+			)
+			return
+
 
 		if text:
 			self._mqttClient.publish(constants.TOPIC_END_SESSION, json.dumps({
