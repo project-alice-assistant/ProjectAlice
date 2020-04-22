@@ -540,7 +540,6 @@ class ProjectAliceObject:
 	def AliceWatchManager(self):
 		return SM.SuperManager.getInstance().aliceWatchManager
 
-
 	@property
-	def VadManager(self):
-		return SM.SuperManager.getInstance().vadManager
+	def AudioServer(self):
+		return SM.SuperManager.getInstance().audioServer
