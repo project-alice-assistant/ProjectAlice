@@ -20,6 +20,7 @@ class ProjectAlice(Singleton):
 		self._logger = Logger(prepend='[Project Alice]')
 		self._logger.logInfo('Starting Alice main unit')
 		self._booted = False
+		self._isUpdating = False
 		with Stopwatch() as stopWatch:
 			self._restart = False
 			self._restartHandler = restartHandler
@@ -90,6 +91,7 @@ class ProjectAlice(Singleton):
 
 	def updateProjectAlice(self):
 		self._logger.logInfo('Checking for core updates')
+		self._isUpdating = True
 		req = requests.get(url=f'{constants.GITHUB_API_URL}/ProjectAlice/branches', auth=SuperManager.getInstance().configManager.getGithubAuth())
 		if req.status_code != 200:
 			self._logger.logWarning('Failed checking for updates')
@@ -131,3 +133,10 @@ class ProjectAlice(Singleton):
 		if currentHash != newHash:
 			self._logger.logWarning('New Alice version installed, need to restart...')
 			self.doRestart()
+
+		self._isUpdating = False
+
+
+	@property
+	def updating(self) -> bool:
+		return self._isUpdating

@@ -596,7 +596,7 @@ class SkillManager(Manager):
 		root = Path(self.Commons.rootDir(), constants.SKILL_INSTALL_TICKET_PATH)
 		files = [f for f in root.iterdir() if f.suffix == '.install']
 
-		if self._busyInstalling.isSet() or not files or self.ProjectAlice.restart:
+		if self._busyInstalling.isSet() or not files or self.ProjectAlice.restart or self.ProjectAlice.updating:
 			return
 
 		self.logInfo(f'Found {len(files)} install ticket(s)')
