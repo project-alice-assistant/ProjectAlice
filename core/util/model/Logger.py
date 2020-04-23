@@ -1,4 +1,5 @@
 import logging
+import traceback
 from typing import Match
 
 import re
@@ -75,5 +76,6 @@ class Logger:
 
 	@staticmethod
 	def printTraceback():
-		# TODO implement
-		return
+		from core.base.SuperManager import SuperManager
+		if SuperManager.getInstance().configManager.getAliceConfigByName('debug'):
+			traceback.print_exc()

@@ -394,6 +394,14 @@ class ProjectAliceObject:
 		pass
 
 
+	def onPlayBytes(self, **kwargs):
+		pass
+
+
+	def onPlayBytesFinished(self, **kwargs):
+		pass
+
+
 	def onPartialTextCaptured(self, session, text: str, likelihood: float, seconds: float):
 		pass
 
@@ -542,4 +550,4 @@ class ProjectAliceObject:
 
 	@property
 	def AudioServer(self):
-		return SM.SuperManager.getInstance().audioServer
+		return SM.SuperManager.getInstance().audioManager

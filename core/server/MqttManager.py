@@ -44,8 +44,8 @@ class MqttManager(Manager):
 		self._mqttClient.message_callback_add(constants.TOPIC_VAD_UP.format(constants.DEFAULT_SITE_ID), self.onVADUp)
 		self._mqttClient.message_callback_add(constants.TOPIC_VAD_DOWN.format(constants.DEFAULT_SITE_ID), self.onVADDown)
 		for device in self.DeviceManager.getDevicesByType('alicesatellite'):
-			self._mqttClient.message_callback_add(constants.TOPIC_VAD_UP.replace(device.room), self.onVADUp)
-			self._mqttClient.message_callback_add(constants.TOPIC_VAD_DOWN.replace(device.room), self.onVADDown)
+			self._mqttClient.message_callback_add(constants.TOPIC_VAD_UP.format(device.room), self.onVADUp)
+			self._mqttClient.message_callback_add(constants.TOPIC_VAD_DOWN.format(device.room), self.onVADDown)
 
 		self._mqttClient.message_callback_add(constants.TOPIC_SESSION_STARTED, self.onSnipsSessionStarted)
 		self._mqttClient.message_callback_add(constants.TOPIC_ASR_START_LISTENING, self.onSnipsStartListening)
@@ -64,6 +64,13 @@ class MqttManager(Manager):
 		self._mqttClient.message_callback_add(constants.TOPIC_HOTWORD_TOGGLE_OFF, self.onSnipsHotwordToggleOff)
 		self._mqttClient.message_callback_add(constants.TOPIC_END_SESSION, self.onEventEndSession)
 		self._mqttClient.message_callback_add(constants.TOPIC_DEVICE_HEARTBEAT, self.deviceHeartbeat)
+
+		self._mqttClient.message_callback_add(constants.TOPIC_PLAY_BYTES.format(constants.DEFAULT_SITE_ID), self.topicPlayBytes)
+		self._mqttClient.message_callback_add(constants.TOPIC_PLAY_BYTES_FINISHED.format(constants.DEFAULT_SITE_ID), self.topicPlayBytesFinished)
+
+		for device in self.DeviceManager.getDevicesByType('alicesatellite'):
+			self._mqttClient.message_callback_add(constants.TOPIC_PLAY_BYTES.format(device.room), self.topicPlayBytes)
+			self._mqttClient.message_callback_add(constants.TOPIC_PLAY_BYTES_FINISHED.format(device.room), self.topicPlayBytesFinished)
 
 		self.connect()
 
@@ -110,6 +117,12 @@ class MqttManager(Manager):
 		for device in self.DeviceManager.getDevicesByType('alicesatellite'):
 			subscribedEvents.append((constants.TOPIC_VAD_UP.format(device.room), 0))
 			subscribedEvents.append((constants.TOPIC_VAD_DOWN.format(device.room), 0))
+
+		subscribedEvents.append((constants.TOPIC_PLAY_BYTES.format(constants.DEFAULT_SITE_ID), 0))
+		subscribedEvents.append((constants.TOPIC_PLAY_BYTES_FINISHED.format(constants.DEFAULT_SITE_ID), 0))
+		for device in self.DeviceManager.getDevicesByType('alicesatellite'):
+			subscribedEvents.append((constants.TOPIC_PLAY_BYTES.format(device.room), 0))
+			subscribedEvents.append((constants.TOPIC_PLAY_BYTES_FINISHED.format(device.room), 0))
 
 		self._mqttClient.subscribe(subscribedEvents)
 		self.toggleFeedbackSounds()
@@ -553,6 +566,18 @@ class MqttManager(Manager):
 			self.broadcast(method=constants.EVENT_END_SESSION, exceptions=[self.name], propagateToSkills=True, session=session)
 
 
+	def topicPlayBytes(self, _client, _data, msg: mqtt.MQTTMessage):
+		requestId = msg.topic.rsplit('/')[-1]
+		siteId = self.Commons.parseSiteId(msg)
+		self.broadcast(method=constants.EVENT_PLAY_BYTES, exceptions=self.name, propagateToSkills=True, requestId=requestId, payload=msg.payload, siteId=siteId)
+
+
+	def topicPlayBytesFinished(self, _client, _data, msg: mqtt.MQTTMessage):
+		requestId = msg.topic.rsplit('/')[-1]
+		siteId = self.Commons.parseSiteId(msg)
+		self.broadcast(method=constants.EVENT_PLAY_BYTES_FINISHED, exceptions=self.name, propagateToSkills=True, requestId=requestId, siteId=siteId)
+
+
 	# noinspection PyUnusedLocal
 	def deviceHeartbeat(self, client, data, msg: mqtt.MQTTMessage):
 		payload = self.Commons.payload(msg)
@@ -820,7 +845,7 @@ class MqttManager(Manager):
 				self.logError(f"Sound file {soundFile} doesn't exist")
 				return
 
-			self._mqttClient.publish(constants.TOPIC_PLAY_BYTES.format(siteId, uid), payload=bytearray(soundFile.read_bytes()))
+			self._mqttClient.publish(constants.TOPIC_PLAY_BYTES.format(siteId).replace('+', uid), payload=bytearray(soundFile.read_bytes()))
 
 
 	def publish(self, topic: str, payload: (dict, str) = None, qos: int = 0, retain: bool = False):
