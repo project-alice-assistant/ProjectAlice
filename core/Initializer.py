@@ -423,7 +423,6 @@ network={
 		subprocess.run(['sudo', 'systemctl', 'daemon-reload'])
 
 		sort = dict(sorted(confs.items()))
-		sort['skills'] = sort.pop('skills')
 
 		try:
 			confString = json.dumps(sort, indent=4).replace('false', 'False').replace('true', 'True')
