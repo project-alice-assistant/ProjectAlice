@@ -7,7 +7,7 @@ from enum import Enum
 
 class HtmlFormatting(Enum):
 	LOG = '<span class="logLine {}">{}</span>'
-	INLINE = '<span class="{}">{}</span>'
+	INLINE = '<span class="log {}">{}</span>'
 
 	BOLD = 'logBold'
 	DIM = 'logDim'
@@ -26,6 +26,7 @@ class Formatter(logging.Formatter):
 	DIM = re.compile(r'--(.+?)--')
 	UNDERLINED = re.compile(r'__(.+?)__')
 	COLOR = re.compile(r'(?i)!\[(red|green|yellow|blue|grey)\]\((.+?)\)')
+	THE_REST = re.compile(r'</span>(.+?)<span')
 
 	COLORS = {
 		'WARNING' : HtmlFormatting.YELLOW.value,
@@ -45,13 +46,14 @@ class Formatter(logging.Formatter):
 		level = record.levelname
 		msg = record.getMessage()
 
-		if level in self.COLORS:
-			msg = HtmlFormatting.LOG.value.format(self.COLORS[level], msg)
-
+		msg = f'<span class="log">{msg}</span>'
 		msg = self.BOLD.sub(HtmlFormatting.INLINE.value.format(HtmlFormatting.BOLD.value, r'\1'), msg)
 		msg = self.UNDERLINED.sub(HtmlFormatting.INLINE.value.format(HtmlFormatting.UNDERLINED.value, r'\1'), msg)
 		msg = self.DIM.sub(HtmlFormatting.INLINE.value.format(HtmlFormatting.DIM.value, r'\1'), msg)
 		msg = self.COLOR.sub(self.colorFormat, msg)
+
+		if level in self.COLORS:
+			msg = HtmlFormatting.LOG.value.format(self.COLORS[level], msg)
 
 		return msg
 
