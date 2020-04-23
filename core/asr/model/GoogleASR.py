@@ -15,7 +15,9 @@ except:
 	pass
 
 
+# noinspection PyAbstractClass
 class GoogleASR(ASR):
+
 	NAME = 'Google ASR'
 	DEPENDENCIES = {
 		'system': [],

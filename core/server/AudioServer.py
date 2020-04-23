@@ -38,7 +38,7 @@ class AudioManager(Manager):
 
 		self.logInfo(f'Using **{self._audioInput["name"]}** for audio input')
 
-		self._vad = Vad(0)
+		self._vad = Vad(2)
 
 
 	def onStart(self):
@@ -58,21 +58,30 @@ class AudioManager(Manager):
 
 		speech = False
 		silence = 16000 / 320
+		speechFrames = 0
+		minSpeechFrames = round(silence / 3)
 
 		while True:
 			frames = audioStream.read(num_frames=320, exception_on_overflow=False)
 			if self._vad.is_speech(frames, 16000):
-				if not speech:
+				if not speech and speechFrames < minSpeechFrames:
+					speechFrames += 1
+				elif speechFrames >= minSpeechFrames:
+					self.logDebug('In speech')
 					speech = True
 					self.MqttManager.publish(topic=constants.EVENT_VAD_UP.format(constants.DEFAULT_SITE_ID))
 					silence = 16000 / 320
+					speechFrames = 0
 			else:
 				if speech:
 					if silence > 0:
 						silence -= 1
 					else:
+						self.logDebug('Speech ended')
 						speech = False
 						self.MqttManager.publish(topic=constants.EVENT_VAD_DOWN.format(constants.DEFAULT_SITE_ID))
+				else:
+					speechFrames = 0
 
 			self.publishAudioFrames(frames)
 
@@ -87,7 +96,6 @@ class AudioManager(Manager):
 
 			audioFrames = buffer.getvalue()
 			self.MqttManager.publish(topic=constants.TOPIC_AUDIO_FRAME.format(constants.DEFAULT_SITE_ID), payload=audioFrames)
-
 
 
 	def onPlayBytes(self, requestId: str, siteId: str, payload: bytes):
