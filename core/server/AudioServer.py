@@ -1,13 +1,16 @@
-import io
 import wave
 
+import io
 import pyaudio
+from webrtcvad import Vad
 
 from core.base.model.Manager import Manager
 from core.commons import constants
 
 
 class AudioManager(Manager):
+
+	# Inspired by https://github.com/koenvervloesem/hermes-audio-server
 
 	def __init__(self):
 		super().__init__()
@@ -35,6 +38,57 @@ class AudioManager(Manager):
 
 		self.logInfo(f'Using **{self._audioInput["name"]}** for audio input')
 
+		self._vad = Vad(0)
+
+
+	def onStart(self):
+		super().onStart()
+		self.ThreadManager.newThread(name='audioPublisher', target=self.publishAudio)
+
+
+	def publishAudio(self):
+		self.logInfo('Starting audio publisher')
+		audioStream = self._audio.open(
+			format=pyaudio.paInt16,
+			channels=1,
+			rate=16000,
+			frames_per_buffer=320,
+			input=True
+		)
+
+		speech = False
+		silence = 16000 / 320
+
+		while True:
+			frames = audioStream.read(num_frames=320, exception_on_overflow=False)
+			if self._vad.is_speech(frames, 16000):
+				if not speech:
+					speech = True
+					self.MqttManager.publish(topic=constants.EVENT_VAD_UP.format(constants.DEFAULT_SITE_ID))
+					silence = 16000 / 320
+			else:
+				if speech:
+					if silence > 0:
+						silence -= 1
+					else:
+						speech = False
+						self.MqttManager.publish(topic=constants.EVENT_VAD_DOWN.format(constants.DEFAULT_SITE_ID))
+
+			self.publishAudioFrames(frames)
+
+
+	def publishAudioFrames(self, frames: bytes):
+		with io.BytesIO() as buffer:
+			with wave.open(buffer, 'wb') as wav:
+				wav.setnchannels(1)
+				wav.setsampwidth(2)
+				wav.setframerate(16000)
+				wav.writeframes(frames)
+
+			audioFrames = buffer.getvalue()
+			self.MqttManager.publish(topic=constants.TOPIC_AUDIO_FRAME.format(constants.DEFAULT_SITE_ID), payload=audioFrames)
+
+
 
 	def onPlayBytes(self, requestId: str, siteId: str, payload: bytes):
 		if siteId != constants.DEFAULT_SITE_ID:
@@ -57,10 +111,10 @@ class AudioManager(Manager):
 
 					self.logDebug(f'Playing wav stream using **{self._audioOutput["name"]}** on site id **{siteId}**')
 
-					frame = wav.readframes(256)
+					frame = wav.readframes(512)
 					while frame:
 						audioStream.write(frame)
-						frame = wav.readframes(256)
+						frame = wav.readframes(512)
 
 					audioStream.stop_stream()
 					audioStream.close()
