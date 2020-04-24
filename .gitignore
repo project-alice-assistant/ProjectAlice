@@ -118,30 +118,19 @@ config.py
 
 # Project Alice
 
-!*.gitkeep
-
 credentials/*
-!credentials/.gitkeep
 
 assistant
 
 trained/*
 !trained/hotwords/snips_hotword/
-!trained/hotwords/.gitkeep
 
 skills/*
-
 var/cache/*
-!var/cache/nlu/trainingData/.gitkeep
-!var/cache/dialogTemplates/checksums.json
-
 var/logs/*
-!var/logs/.gitkeep
-
 system/database/*
-!system/database/.gitkeep
-
 system/myHouse/*
-!system/myHouse/.gitkeep
 
 test.py
+
+!*.gitkeep
