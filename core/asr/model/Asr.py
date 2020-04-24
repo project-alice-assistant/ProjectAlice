@@ -107,7 +107,8 @@ class ASR(ProjectAliceObject):
 
 
 	def decodeFile(self, filepath: Path, session: DialogSession):
-		raise NotImplementedError
+		# We do not yet use decode file, but might at one point
+		pass
 
 
 	def decodeStream(self, session: DialogSession):

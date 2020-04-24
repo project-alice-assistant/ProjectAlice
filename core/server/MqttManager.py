@@ -80,14 +80,12 @@ class MqttManager(Manager):
 		self.disconnect()
 
 
-	# noinspection PyUnusedLocal
-	def onLog(self, client, userdata, level, buf):
+	def onLog(self, _client, _userdata, level, buf):
 		if level != 16:
 			self.logError(buf)
 
 
-	# noinspection PyUnusedLocal
-	def onConnect(self, client, userdata, flags, rc):
+	def onConnect(self, _client, _userdata, _flags, _rc):
 
 		subscribedEvents = [
 			(constants.TOPIC_SESSION_ENDED, 0),
@@ -163,8 +161,7 @@ class MqttManager(Manager):
 			self.mqttClient.unsubscribe(str(intent))
 
 
-	# noinspection PyUnusedLocal
-	def onMqttMessage(self, client, userdata, message: mqtt.MQTTMessage):
+	def onMqttMessage(self, _client, _userdata, message: mqtt.MQTTMessage):
 		try:
 			if self._audioFrameRegex.match(message.topic):
 				self.broadcast(
@@ -250,8 +247,7 @@ class MqttManager(Manager):
 			self.logError(f'Error in onMessage: {e}')
 
 
-	# noinspection PyUnusedLocal
-	def onHotwordDetected(self, client, data, msg):
+	def onHotwordDetected(self, _client, _data, msg):
 		siteId = self.Commons.parseSiteId(msg)
 		payload = self.Commons.payload(msg)
 
@@ -289,20 +285,17 @@ class MqttManager(Manager):
 		self._multiDetectionsHolder = list()
 
 
-	# noinspection PyUnusedLocal
-	def onSnipsHotwordToggleOn(self, client, data, msg: mqtt.MQTTMessage):
+	def onSnipsHotwordToggleOn(self, _client, _data, msg: mqtt.MQTTMessage):
 		siteId = self.Commons.parseSiteId(msg)
 		self.broadcast(method=constants.EVENT_HOTWORD_TOGGLE_ON, exceptions=[constants.DUMMY], propagateToSkills=True, siteId=siteId)
 
 
-	# noinspection PyUnusedLocal
-	def onSnipsHotwordToggleOff(self, client, data, msg: mqtt.MQTTMessage):
+	def onSnipsHotwordToggleOff(self, _client, _data, msg: mqtt.MQTTMessage):
 		siteId = self.Commons.parseSiteId(msg)
 		self.broadcast(method=constants.EVENT_HOTWORD_TOGGLE_OFF, exceptions=[constants.DUMMY], propagateToSkills=True, siteId=siteId)
 
 
-	# noinspection PyUnusedLocal
-	def onSnipsSessionStarted(self, client, data, msg: mqtt.MQTTMessage):
+	def onSnipsSessionStarted(self, _client, _data, msg: mqtt.MQTTMessage):
 		sessionId = self.Commons.parseSessionId(msg)
 		session = self.DialogSessionManager.addSession(sessionId=sessionId, message=msg)
 
@@ -311,8 +304,7 @@ class MqttManager(Manager):
 			self.broadcast(method=constants.EVENT_SESSION_STARTED, exceptions=[self.name], propagateToSkills=True, session=session)
 
 
-	# noinspection PyUnusedLocal
-	def onSnipsSessionQueued(self, client, data, msg: mqtt.MQTTMessage):
+	def onSnipsSessionQueued(self, _client, _data, msg: mqtt.MQTTMessage):
 		sessionId = self.Commons.parseSessionId(msg)
 		session = self.DialogSessionManager.addSession(sessionId=sessionId, message=msg)
 
@@ -321,8 +313,7 @@ class MqttManager(Manager):
 			self.broadcast(method=constants.EVENT_SESSION_QUEUED, exceptions=[self.name], propagateToSkills=True, session=session)
 
 
-	# noinspection PyUnusedLocal
-	def onTopicNluQuery(self, client, data, msg: mqtt.MQTTMessage):
+	def onTopicNluQuery(self, _client, _data, msg: mqtt.MQTTMessage):
 		sessionId = self.Commons.parseSessionId(msg)
 
 		session = self.DialogSessionManager.getSession(sessionId)
@@ -334,8 +325,7 @@ class MqttManager(Manager):
 		self.broadcast(method=constants.EVENT_NLU_QUERY, exceptions=[self.name], propagateToSkills=True, session=session)
 
 
-	# noinspection PyUnusedLocal
-	def onSnipsStartListening(self, client, data, msg: mqtt.MQTTMessage):
+	def onSnipsStartListening(self, _client, _data, msg: mqtt.MQTTMessage):
 		sessionId = self.Commons.parseSessionId(msg)
 		session = self.DialogSessionManager.getSession(sessionId=sessionId)
 
@@ -344,8 +334,7 @@ class MqttManager(Manager):
 			self.broadcast(method=constants.EVENT_START_LISTENING, exceptions=[self.name], propagateToSkills=True, session=session)
 
 
-	# noinspection PyUnusedLocal
-	def onSnipsStopListening(self, client, data, msg: mqtt.MQTTMessage):
+	def onSnipsStopListening(self, _client, _data, msg: mqtt.MQTTMessage):
 		sessionId = self.Commons.parseSessionId(msg)
 		session = self.DialogSessionManager.getSession(sessionId=sessionId)
 
@@ -354,8 +343,7 @@ class MqttManager(Manager):
 			self.broadcast(method=constants.EVENT_STOP_LISTENING, exceptions=[self.name], propagateToSkills=True, session=session)
 
 
-	# noinspection PyUnusedLocal
-	def onSnipsCaptured(self, client, data, msg: mqtt.MQTTMessage):
+	def onSnipsCaptured(self, _client, _data, msg: mqtt.MQTTMessage):
 		sessionId = self.Commons.parseSessionId(msg)
 		session = self.DialogSessionManager.getSession(sessionId=sessionId)
 
@@ -393,7 +381,7 @@ class MqttManager(Manager):
 
 				message = mqtt.MQTTMessage(topic=str.encode(str(intent)))
 				message.payload = json.dumps(payload)
-				self.onMqttMessage(client=client, userdata=data, message=message)
+				self.onMqttMessage(_client=client, _userdata=data, message=message)
 			else:
 				self.broadcast(method=constants.EVENT_INTENT_PARSED, exceptions=[self.name], propagateToSkills=True, session=session)
 
@@ -401,11 +389,10 @@ class MqttManager(Manager):
 					intent = Intent(session.payload['intent']['intentName'])
 					message = mqtt.MQTTMessage(topic=str.encode(str(intent)))
 					message.payload = json.dumps(session.payload)
-					self.onMqttMessage(client=client, userdata=data, message=message)
+					self.onMqttMessage(_client=client, _userdata=data, message=message)
 
 
-	# noinspection PyUnusedLocal
-	def onSnipsContinueSession(self, client, data, msg: mqtt.MQTTMessage):
+	def onSnipsContinueSession(self, _client, _data, msg: mqtt.MQTTMessage):
 		sessionId = self.Commons.parseSessionId(msg)
 		session = self.DialogSessionManager.getSession(sessionId)
 		if session:
@@ -414,8 +401,7 @@ class MqttManager(Manager):
 		self.broadcast(method=constants.EVENT_CONTINUE_SESSION, exceptions=[self.name], propagateToSkills=True, session=session)
 
 
-	# noinspection PyUnusedLocal
-	def onSnipsSessionEnded(self, client, data, msg: mqtt.MQTTMessage):
+	def onSnipsSessionEnded(self, _client, data, msg: mqtt.MQTTMessage):
 		sessionId = self.Commons.parseSessionId(msg)
 		session = self.DialogSessionManager.getSession(sessionId)
 
@@ -446,8 +432,7 @@ class MqttManager(Manager):
 		self.DialogSessionManager.removeSession(sessionId=sessionId)
 
 
-	# noinspection PyUnusedLocal
-	def onSnipsSay(self, client, data, msg: mqtt.MQTTMessage):
+	def onSnipsSay(self, _client, _data, msg: mqtt.MQTTMessage):
 		sessionId = self.Commons.parseSessionId(msg)
 		payload = self.Commons.payload(msg)
 
@@ -476,8 +461,7 @@ class MqttManager(Manager):
 		self.broadcast(method=constants.EVENT_SAY_FINISHED, exceptions=[self.name], propagateToSkills=True, session=session)
 
 
-	# noinspection PyUnusedLocal
-	def onSnipsIntentNotRecognized(self, client, data, msg: mqtt.MQTTMessage):
+	def onSnipsIntentNotRecognized(self, _client, _data, msg: mqtt.MQTTMessage):
 		sessionId = self.Commons.parseSessionId(msg)
 		session = self.DialogSessionManager.getSession(sessionId)
 
@@ -534,8 +518,7 @@ class MqttManager(Manager):
 			self.broadcast(method=constants.EVENT_INTENT_NOT_RECOGNIZED, exceptions=[self.name], propagateToSkills=True, session=session)
 
 
-	# noinspection PyUnusedLocal
-	def onNluPartialCapture(self, client, data, msg: mqtt.MQTTMessage):
+	def onNluPartialCapture(self, _client, _data, msg: mqtt.MQTTMessage):
 		sessionId = self.Commons.parseSessionId(msg)
 		session = self.DialogSessionManager.getSession(sessionId)
 
@@ -545,20 +528,17 @@ class MqttManager(Manager):
 			self.broadcast(method=constants.EVENT_PARTIAL_TEXT_CAPTURED, exceptions=[self.name], propagateToSkills=True, session=session, text=payload['text'], likelihood=payload['likelihood'], seconds=payload['seconds'])
 
 
-	# noinspection PyUnusedLocal
-	def onVADUp(self, client, data, msg: mqtt.MQTTMessage):
+	def onVADUp(self, _client, _data, msg: mqtt.MQTTMessage):
 		siteId = self.Commons.parseSiteId(msg)
 		self.broadcast(method=constants.EVENT_VAD_UP, exceptions=[self.name], propagateToSkills=True, siteId=siteId)
 
 
-	# noinspection PyUnusedLocal
-	def onVADDown(self, client, data, msg: mqtt.MQTTMessage):
+	def onVADDown(self, _client, _data, msg: mqtt.MQTTMessage):
 		siteId = self.Commons.parseSiteId(msg)
 		self.broadcast(method=constants.EVENT_VAD_DOWN, exceptions=[self.name], propagateToSkills=True, siteId=siteId)
 
 
-	# noinspection PyUnusedLocal
-	def onEventEndSession(self, client, data, msg: mqtt.MQTTMessage):
+	def onEventEndSession(self, _client, _data, msg: mqtt.MQTTMessage):
 		sessionId = self.Commons.parseSessionId(msg)
 		session = self.DialogSessionManager.getSession(sessionId)
 		if session:
@@ -578,8 +558,7 @@ class MqttManager(Manager):
 		self.broadcast(method=constants.EVENT_PLAY_BYTES_FINISHED, exceptions=self.name, propagateToSkills=True, requestId=requestId, siteId=siteId)
 
 
-	# noinspection PyUnusedLocal
-	def deviceHeartbeat(self, client, data, msg: mqtt.MQTTMessage):
+	def deviceHeartbeat(self, _client, _data, msg: mqtt.MQTTMessage):
 		payload = self.Commons.payload(msg)
 		uid = payload.get('uid', None)
 		if not uid:
@@ -851,6 +830,7 @@ class MqttManager(Manager):
 	def publish(self, topic: str, payload: (dict, str) = None, qos: int = 0, retain: bool = False):
 		if isinstance(payload, dict):
 			payload = json.dumps(payload)
+
 		self._mqttClient.publish(topic, payload, qos, retain)
 
 
@@ -880,7 +860,6 @@ class MqttManager(Manager):
 				'intents': intents
 			}
 		)
-
 		self.broadcast(method=constants.EVENT_CONFIGURE_INTENT, exceptions=[self.name], propagateToSkills=True, intents=intents)
 
 

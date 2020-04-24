@@ -122,7 +122,7 @@ class CommonsManager(Manager):
 	def parseSiteId(cls, message: MQTTMessage) -> str:
 		data = cls.payload(message)
 		if 'siteId' in data:
-			return data['siteId'].replace('_', ' ')  # WTF!! This is highly no no no!!!
+			return data['siteId'].replace('_', ' ')
 		else:
 			return data.get('IPAddress', constants.DEFAULT_SITE_ID)
 

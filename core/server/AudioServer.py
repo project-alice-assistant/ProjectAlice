@@ -51,7 +51,7 @@ class AudioManager(Manager):
 		audioStream = self._audio.open(
 			format=pyaudio.paInt16,
 			channels=1,
-			rate=16000,
+			rate=self.ConfigManager.getAliceConfigByName('micSampleRate'),
 			frames_per_buffer=320,
 			input=True
 		)
@@ -67,9 +67,12 @@ class AudioManager(Manager):
 				if not speech and speechFrames < minSpeechFrames:
 					speechFrames += 1
 				elif speechFrames >= minSpeechFrames:
-					self.logDebug('In speech')
 					speech = True
-					self.MqttManager.publish(topic=constants.EVENT_VAD_UP.format(constants.DEFAULT_SITE_ID))
+					self.MqttManager.publish(
+						topic=constants.TOPIC_VAD_UP.format(constants.DEFAULT_SITE_ID),
+						payload={
+							'siteId': constants.DEFAULT_SITE_ID
+						})
 					silence = 16000 / 320
 					speechFrames = 0
 			else:
@@ -77,9 +80,12 @@ class AudioManager(Manager):
 					if silence > 0:
 						silence -= 1
 					else:
-						self.logDebug('Speech ended')
 						speech = False
-						self.MqttManager.publish(topic=constants.EVENT_VAD_DOWN.format(constants.DEFAULT_SITE_ID))
+						self.MqttManager.publish(
+							topic=constants.TOPIC_VAD_DOWN.format(constants.DEFAULT_SITE_ID),
+							payload={
+								'siteId': constants.DEFAULT_SITE_ID
+							})
 				else:
 					speechFrames = 0
 
