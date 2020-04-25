@@ -65,6 +65,13 @@ class AudioManager(Manager):
 			self._sample.setframerate(self.ConfigManager.getAliceConfigByName('micSampleRate'))
 			self._sample.setnchannels(self.ConfigManager.getAliceConfigByName('micChannels'))
 
+		self.MqttManager.publish(
+			topic=constants.TOPIC_ASR_TOGGLE_ON,
+			payload={
+				'siteId': siteId
+			}
+		)
+
 
 	def publishAudio(self):
 		self.logInfo('Starting audio publisher')

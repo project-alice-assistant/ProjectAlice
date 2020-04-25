@@ -50,6 +50,8 @@ class MqttManager(Manager):
 		self._mqttClient.message_callback_add(constants.TOPIC_SESSION_STARTED, self.onSnipsSessionStarted)
 		self._mqttClient.message_callback_add(constants.TOPIC_ASR_START_LISTENING, self.onSnipsStartListening)
 		self._mqttClient.message_callback_add(constants.TOPIC_ASR_STOP_LISTENING, self.onSnipsStopListening)
+		self._mqttClient.message_callback_add(constants.TOPIC_ASR_TOGGLE_ON, self.onHermesAsrToggleOn)
+		self._mqttClient.message_callback_add(constants.TOPIC_ASR_TOGGLE_OFF, self.onHermesAsrToggleOff)
 		self._mqttClient.message_callback_add(constants.TOPIC_INTENT_PARSED, self.onSnipsIntentParsed)
 		self._mqttClient.message_callback_add(constants.TOPIC_TEXT_CAPTURED, self.onSnipsCaptured)
 		self._mqttClient.message_callback_add(constants.TOPIC_TTS_SAY, self.onSnipsSay)
@@ -104,7 +106,9 @@ class MqttManager(Manager):
 			(constants.TOPIC_NLU_QUERY, 0),
 			(constants.TOPIC_CONTINUE_SESSION, 0),
 			(constants.TOPIC_END_SESSION, 0),
-			(constants.TOPIC_DEVICE_HEARTBEAT, 0)
+			(constants.TOPIC_DEVICE_HEARTBEAT, 0),
+			(constants.TOPIC_ASR_TOGGLE_ON, 0),
+			(constants.TOPIC_ASR_TOGGLE_OFF, 0)
 		]
 
 		for username in self.UserManager.getAllUserNames():
@@ -323,6 +327,14 @@ class MqttManager(Manager):
 			session.update(msg)
 
 		self.broadcast(method=constants.EVENT_NLU_QUERY, exceptions=[self.name], propagateToSkills=True, session=session)
+
+
+	def onHermesAsrToggleOn(self, _client, _data, msg: mqtt.MQTTMessage):
+		self.broadcast(method=constants.EVENT_ASR_TOGGLE_ON, exceptions=[self.name], propagateToSkills=True, siteId=self.Commons.parseSiteId(msg))
+
+
+	def onHermesAsrToggleOff(self, _client, _data, msg: mqtt.MQTTMessage):
+		self.broadcast(method=constants.EVENT_ASR_TOGGLE_OFF, exceptions=[self.name], propagateToSkills=True, siteId=self.Commons.parseSiteId(msg))
 
 
 	def onSnipsStartListening(self, _client, _data, msg: mqtt.MQTTMessage):

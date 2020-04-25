@@ -145,6 +145,14 @@ class ProjectAliceObject:
 		pass
 
 
+	def onAsrToggleOn(self, siteId: str):
+		pass
+
+
+	def onAsrToggleOff(self, siteId: str):
+		pass
+
+
 	def onStartListening(self, session):
 		pass
 
