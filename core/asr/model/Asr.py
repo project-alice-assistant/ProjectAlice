@@ -102,10 +102,6 @@ class ASR(ProjectAliceObject):
 		self._timeout.set()
 
 
-	def onStartListening(self, session):
-		self.MqttManager.mqttClient.subscribe(constants.TOPIC_AUDIO_FRAME.format(session.siteId))
-
-
 	def decodeFile(self, filepath: Path, session: DialogSession):
 		# We do not yet use decode file, but might at one point
 		pass
@@ -117,7 +113,6 @@ class ASR(ProjectAliceObject):
 
 
 	def end(self, session: DialogSession):
-		self.MqttManager.mqttClient.unsubscribe(constants.TOPIC_AUDIO_FRAME.format(session.siteId))
 		self._recorder.stopRecording()
 		if self._timeoutTimer and self._timeoutTimer.is_alive():
 			self._timeoutTimer.cancel()
