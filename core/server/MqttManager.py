@@ -54,20 +54,22 @@ class MqttManager(Manager):
 		self._mqttClient.message_callback_add(constants.TOPIC_ASR_TOGGLE_OFF, self.onHermesAsrToggleOff)
 		self._mqttClient.message_callback_add(constants.TOPIC_INTENT_PARSED, self.intentParsed)
 		self._mqttClient.message_callback_add(constants.TOPIC_TEXT_CAPTURED, self.captured)
-		self._mqttClient.message_callback_add(constants.TOPIC_TTS_SAY, self.onSnipsSay)
+		self._mqttClient.message_callback_add(constants.TOPIC_TTS_SAY, self.intentSay)
 		self._mqttClient.message_callback_add(constants.TOPIC_TTS_FINISHED, self.onSnipsSayFinished)
 		self._mqttClient.message_callback_add(constants.TOPIC_SESSION_ENDED, self.sessionEnded)
 		self._mqttClient.message_callback_add(constants.TOPIC_CONTINUE_SESSION, self.onSnipsContinueSession)
 		self._mqttClient.message_callback_add(constants.TOPIC_INTENT_NOT_RECOGNIZED, self.intentNotRecognized)
 		self._mqttClient.message_callback_add(constants.TOPIC_SESSION_QUEUED, self.onSnipsSessionQueued)
 		self._mqttClient.message_callback_add(constants.TOPIC_NLU_QUERY, self.onTopicNluQuery)
-		self._mqttClient.message_callback_add(constants.TOPIC_PARTIAL_TEXT_CAPTURED, self.onNluPartialCapture)
+		self._mqttClient.message_callback_add(constants.TOPIC_PARTIAL_TEXT_CAPTURED, self.nluPartialCapture)
 		self._mqttClient.message_callback_add(constants.TOPIC_HOTWORD_TOGGLE_ON, self.hotwordToggleOn)
 		self._mqttClient.message_callback_add(constants.TOPIC_HOTWORD_TOGGLE_OFF, self.hotwordToggleOff)
 		self._mqttClient.message_callback_add(constants.TOPIC_END_SESSION, self.onEventEndSession)
+		self._mqttClient.message_callback_add(constants.TOPIC_START_SESSION, self.startSession)
 		self._mqttClient.message_callback_add(constants.TOPIC_DEVICE_HEARTBEAT, self.deviceHeartbeat)
 		self._mqttClient.message_callback_add(constants.TOPIC_TOGGLE_FEEDBACK_ON, self.toggleFeedback)
 		self._mqttClient.message_callback_add(constants.TOPIC_TOGGLE_FEEDBACK_OFF, self.toggleFeedback)
+		self._mqttClient.message_callback_add(constants.TOPIC_NLU_INTENT_NOT_RECOGNIZED, self.nluIntentNotRecognized)
 
 		self._mqttClient.message_callback_add(constants.TOPIC_PLAY_BYTES.format(constants.DEFAULT_SITE_ID), self.topicPlayBytes)
 		self._mqttClient.message_callback_add(constants.TOPIC_PLAY_BYTES_FINISHED.format(constants.DEFAULT_SITE_ID), self.topicPlayBytesFinished)
@@ -112,7 +114,9 @@ class MqttManager(Manager):
 			(constants.TOPIC_ASR_TOGGLE_ON, 0),
 			(constants.TOPIC_ASR_TOGGLE_OFF, 0),
 			(constants.TOPIC_TOGGLE_FEEDBACK_ON, 0),
-			(constants.TOPIC_TOGGLE_FEEDBACK_OFF, 0)
+			(constants.TOPIC_TOGGLE_FEEDBACK_OFF, 0),
+			(constants.TOPIC_NLU_INTENT_NOT_RECOGNIZED, 0),
+			(constants.TOPIC_START_SESSION, 0)
 		]
 
 		for username in self.UserManager.getAllUserNames():
@@ -444,14 +448,13 @@ class MqttManager(Manager):
 				return
 
 		self.broadcast(method=constants.EVENT_SESSION_ENDED, exceptions=[self.name], propagateToSkills=True, session=session)
-		self.DialogManager.removeSession(sessionId=sessionId)
 
 
-	def onSnipsSay(self, _client, _data, msg: mqtt.MQTTMessage):
+	def intentSay(self, _client, _data, msg: mqtt.MQTTMessage):
 		sessionId = self.Commons.parseSessionId(msg)
 		payload = self.Commons.payload(msg)
 
-		session = self.DialogSessionManager.getSession(sessionId)
+		session = self.DialogManager.getSession(sessionId)
 		if session:
 			session.update(msg)
 			siteId = session.siteId
@@ -478,7 +481,7 @@ class MqttManager(Manager):
 
 	def intentNotRecognized(self, _client, _data, msg: mqtt.MQTTMessage):
 		sessionId = self.Commons.parseSessionId(msg)
-		session = self.DialogSessionManager.getSession(sessionId)
+		session = self.DialogManager.getSession(sessionId)
 
 		if not session:
 			self.ask(text=self.TalkManager.randomTalk('notUnderstood', skill='system'))
@@ -525,7 +528,8 @@ class MqttManager(Manager):
 
 			if session.notUnderstood < self.ConfigManager.getAliceConfigByName('notUnderstoodRetries'):
 				session.notUnderstood = session.notUnderstood + 1
-				self.reviveSession(session, self.TalkManager.randomTalk('notUnderstood', skill='system'))
+				#self.reviveSession(session, self.TalkManager.randomTalk('notUnderstood', skill='system'))
+				self.ask(text=self.TalkManager.randomTalk('notUnderstood', skill='system'))
 			else:
 				session.notUnderstood = 0
 				self.endDialog(sessionId=sessionId, text=self.TalkManager.randomTalk('notUnderstoodEnd', skill='system'))
@@ -533,9 +537,8 @@ class MqttManager(Manager):
 			self.broadcast(method=constants.EVENT_INTENT_NOT_RECOGNIZED, exceptions=[self.name], propagateToSkills=True, session=session)
 
 
-	def onNluPartialCapture(self, _client, _data, msg: mqtt.MQTTMessage):
-		sessionId = self.Commons.parseSessionId(msg)
-		session = self.DialogSessionManager.getSession(sessionId)
+	def nluPartialCapture(self, _client, _data, msg: mqtt.MQTTMessage):
+		session = self.DialogManager.getSession(self.Commons.parseSessionId(msg))
 
 		if session:
 			session.update(msg)
@@ -543,9 +546,34 @@ class MqttManager(Manager):
 			self.broadcast(method=constants.EVENT_PARTIAL_TEXT_CAPTURED, exceptions=[self.name], propagateToSkills=True, session=session, text=payload['text'], likelihood=payload['likelihood'], seconds=payload['seconds'])
 
 
+	def nluIntentNotRecognized(self, _client, _data, msg: mqtt.MQTTMessage):
+		session = self.DialogManager.getSession(self.Commons.parseSessionId(msg))
+
+		if session:
+			session.update(msg)
+			self.broadcast(method=constants.EVENT_NLU_INTENT_NOT_RECOGNIZED, exceptions=[self.name], propagateToSkills=True, session=session)
+
+
+	def startSession(self, _client, _data, msg: mqtt.MQTTMessage):
+		payload = self.Commons.payload(msg)
+		self.broadcast(
+			method=constants.EVENT_START_SESSION,
+			exceptions=[self.name],
+			propagateToSkills=True,
+			siteId=self.Commons.parseSiteId(msg),
+			init=payload['init'],
+			customData=payload.get('customData', dict())
+		)
+
+
 	def onVADUp(self, _client, _data, msg: mqtt.MQTTMessage):
 		siteId = self.Commons.parseSiteId(msg)
-		self.broadcast(method=constants.EVENT_VAD_UP, exceptions=[self.name], propagateToSkills=True, siteId=siteId)
+		self.broadcast(
+			method=constants.EVENT_VAD_UP,
+			exceptions=[self.name],
+			propagateToSkills=True,
+			siteId=siteId
+		)
 
 
 	def onVADDown(self, _client, _data, msg: mqtt.MQTTMessage):

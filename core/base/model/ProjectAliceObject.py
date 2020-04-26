@@ -206,7 +206,15 @@ class ProjectAliceObject:
 		pass
 
 
+	def onNluIntentNotRecognized(self, session):
+		pass
+
+
 	def onSessionError(self, session):
+		pass
+
+
+	def onStartSession(self, siteId: str, init: dict, customData: dict):
 		pass
 
 

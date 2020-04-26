@@ -9,7 +9,6 @@ from core.dialog.model.DialogSession import DialogSession
 
 
 class DialogManager(Manager):
-
 	"""
 	onHotword is the real starting point. It creates a new session that will be held throughout the entire dialogue
 
@@ -18,26 +17,28 @@ class DialogManager(Manager):
 	This contains a hack to make sure sessions are started only when the chime has finished playing
 	"""
 
+
 	def __init__(self):
 		super().__init__()
-		self._sessions: Dict[str: DialogSession] = dict()
-		self._terminatedSessions: Dict[str: DialogSession] = dict()
+		self._sessionsById: Dict[str: DialogSession] = dict()
+		self._sessionsBySites: Dict[str: DialogSession] = dict()
 		self._endedSessions: Dict[str: DialogSession] = dict()
 		self._feedbackSounds: Dict[str: bool] = dict()
 		self._sessionTimeouts: Dict[str, Timer] = dict()
 
 
 	def onHotword(self, siteId: str, user: str = constants.UNKNOWN_USER):
-		self._endedSessions[siteId] = self._sessions.pop(siteId, None)
+		self._endedSessions[siteId] = self._sessionsById.pop(siteId, None)
 
 		session = DialogSession(siteId=siteId, user=user, sessionId=str(uuid.uuid4()))
-		self._sessions[session.sessionId] = session
+		self._sessionsById[session.sessionId] = session
+		self._sessionsBySites[siteId] = session
 
 		# Turn off the wakeword component
 		self.MqttManager.publish(
 			topic=constants.TOPIC_HOTWORD_TOGGLE_OFF,
 			payload={
-				'siteId': siteId,
+				'siteId'   : siteId,
 				'sessionId': session.sessionId
 			}
 		)
@@ -67,16 +68,19 @@ class DialogManager(Manager):
 		if not sessionId:
 			return
 
-		self.MqttManager.publish(
-			topic=constants.TOPIC_SESSION_STARTED,
-			payload={
-				'siteId': siteId,
-				'sessionId': sessionId,
-				'customData': dict()
-			}
+		session = self._sessionsById.get(sessionId, None)
+
+		if not session:
+			return
+
+		self.onStartSession(
+			siteId=siteId,
+			init=dict(),
+			customData=dict()
 		)
 
-		# Schedule timeout for this session
+
+	def startSessionTimeout(self, sessionId: str):
 		self._sessionTimeouts[sessionId] = self.ThreadManager.newTimer(
 			interval=self.ConfigManager.getAliceConfigByName('sessionTimeout'),
 			func=self.sessionTimeout,
@@ -99,14 +103,15 @@ class DialogManager(Manager):
 		self.MqttManager.publish(
 			topic=constants.TOPIC_SESSION_ENDED,
 			payload={
-				'siteId'    : session.siteId,
-				'sessionId' : sessionId,
-				'customData': session.customData,
+				'siteId'     : session.siteId,
+				'sessionId'  : sessionId,
+				'customData' : session.customData,
 				'termination': {
 					'reason': 'timeout'
 				}
 			}
 		)
+
 
 	def onSessionStarted(self, session: DialogSession):
 		"""
@@ -121,7 +126,7 @@ class DialogManager(Manager):
 		self.MqttManager.publish(
 			topic=constants.TOPIC_ASR_START_LISTENING,
 			payload={
-				'siteId': session.siteId,
+				'siteId'   : session.siteId,
 				'sessionId': session.sessionId
 			}
 		)
@@ -136,7 +141,7 @@ class DialogManager(Manager):
 		self.MqttManager.publish(
 			topic=constants.TOPIC_ASR_STOP_LISTENING,
 			payload={
-				'siteId': session.siteId,
+				'siteId'   : session.siteId,
 				'sessionId': session.sessionId
 			}
 		)
@@ -144,9 +149,9 @@ class DialogManager(Manager):
 		self.MqttManager.publish(
 			topic=constants.TOPIC_NLU_QUERY,
 			payload={
-				'input': session.payload['text'],
+				'input'       : session.payload['text'],
 				'intentFilter': session.intentFilter,
-				'sessionId': session.sessionId
+				'sessionId'   : session.sessionId
 			}
 		)
 
@@ -160,27 +165,64 @@ class DialogManager(Manager):
 		self.MqttManager.publish(
 			topic=f'hermes/intent/',
 			payload={
-				'input': session.payload['text'],
+				'input'       : session.payload['text'],
 				'intentFilter': session.intentFilter,
-				'sessionId': session.sessionId
+				'sessionId'   : session.sessionId
 			}
 		)
 
 
-	def onIntentNotRecognized(self, session):
+	def onNluIntentNotRecognized(self, session: DialogSession):
 		"""
 		NLU did not recognize any intent
 		:param session:
 		:return:
 		"""
 		self.MqttManager.publish(
-			topic=f'hermes/intent/',
+			topic=constants.TOPIC_INTENT_NOT_RECOGNIZED,
 			payload={
-				'input': session.payload['text'],
-				'intentFilter': session.intentFilter,
-				'sessionId': session.sessionId
+				'siteId'    : session.siteId,
+				'customData': session.customData,
+				'sessionId' : session.sessionId,
+				'input'     : session.payload['input']
 			}
 		)
+
+
+	def onStartSession(self, siteId: str, init: dict, customData: dict):
+		"""
+		Starts a new session
+		:param siteId:
+		:param init:
+		:param customData:
+		:return:
+		"""
+		session = self._sessionsBySites.get(siteId, None)
+		if not session:
+			return
+
+		self.MqttManager.publish(
+			topic=constants.TOPIC_SESSION_STARTED,
+			payload={
+				'siteId'    : siteId,
+				'sessionId' : session.sessionId,
+				'customData': dict()
+			}
+		)
+
+		if not init:
+			self.startSessionTimeout(sessionId=session.sessionId)
+		else:
+			if init['type'] == 'notification':
+				self.MqttManager.publish(
+					topic=constants.TOPIC_TTS_SAY,
+					payload={
+						'text'     : init['text'],
+						'lang'     : self.LanguageManager.activeLanguageAndCountryCode,
+						'siteId'   : siteId,
+						'sessionId': session.sessionId
+					}
+				)
 
 
 	def onSessionEnded(self, session: DialogSession):
@@ -192,7 +234,7 @@ class DialogManager(Manager):
 		self.MqttManager.publish(
 			topic=constants.TOPIC_HOTWORD_TOGGLE_ON,
 			payload={
-				'siteId': session.siteId,
+				'siteId'   : session.siteId,
 				'sessionId': session.sessionId
 			}
 		)
@@ -201,6 +243,7 @@ class DialogManager(Manager):
 			topic=constants.TOPIC_ASR_TOGGLE_OFF
 		)
 
+		self.removeSession(sessionId=session.sessionId)
 		self.onContinueSession(session=session)
 
 
@@ -221,9 +264,13 @@ class DialogManager(Manager):
 
 
 	def getSession(self, sessionId: str) -> Optional[DialogSession]:
-		return self._sessions.get(sessionId, None)
+		return self._sessionsById.get(sessionId, None)
 
 
 	def removeSession(self, sessionId: str):
-		if sessionId in self._sessions:
-			self._terminatedSessions[sessionId] = self._sessions.pop(sessionId)
+		session = self._sessionsById.pop(sessionId, None)
+		if not session:
+			return
+
+		self._endedSessions[sessionId] = session
+		self._sessionsBySites.pop(session.siteId)
