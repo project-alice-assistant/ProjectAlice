@@ -38,8 +38,21 @@ class ProjectAliceObject:
 		if 'ProjectAlice' not in exceptions:
 			exceptions.append('ProjectAlice')
 
+		if 'DialogManager' not in exceptions:
+			exceptions.append('DialogManager')
+
 		if not method.startswith('on'):
 			method = f'on{method[0].capitalize() + method[1:]}'
+
+		# Give absolute priority to DialogManager
+		try:
+			func = getattr(SM.SuperManager.getInstance().getManager('DialogManager'), method, None)
+			if func:
+				func(**kwargs)
+
+		except TypeError as e:
+			self.logWarning(f'- Failed to broadcast event {method} to DialogManager: {e}')
+
 
 		deadManagers = list()
 		for name, man in SM.SuperManager.getInstance().managers.items():
@@ -129,11 +142,11 @@ class ProjectAliceObject:
 		pass
 
 
-	def onHotwordToggleOn(self, siteId: str):
+	def onHotwordToggleOn(self, siteId: str, session):
 		pass
 
 
-	def onHotwordToggleOff(self, siteId: str):
+	def onHotwordToggleOff(self, siteId: str, session):
 		pass
 
 
@@ -402,11 +415,19 @@ class ProjectAliceObject:
 		pass
 
 
-	def onPlayBytes(self, **kwargs):
+	def onPlayBytes(self, requestId: str, payload: bytearray, siteId: str, sessionId: str = None):
 		pass
 
 
-	def onPlayBytesFinished(self, **kwargs):
+	def onPlayBytesFinished(self, requestId: str, siteId: str, sessionId: str = None):
+		pass
+
+
+	def onToggleFeedbackOn(self, siteId: str):
+		pass
+
+
+	def onToggleFeedbackOff(self, siteId: str):
 		pass
 
 
@@ -556,6 +577,12 @@ class ProjectAliceObject:
 	def AliceWatchManager(self):
 		return SM.SuperManager.getInstance().aliceWatchManager
 
+
 	@property
 	def AudioServer(self):
 		return SM.SuperManager.getInstance().audioManager
+
+
+	@property
+	def DialogManager(self):
+		return SM.SuperManager.getInstance().dialogManager

@@ -116,10 +116,10 @@ class AudioManager(Manager):
 				wav.writeframes(frames)
 
 			audioFrames = buffer.getvalue()
-			self.MqttManager.publish(topic=constants.TOPIC_AUDIO_FRAME.format(constants.DEFAULT_SITE_ID), payload=audioFrames)
+			self.MqttManager.publish(topic=constants.TOPIC_AUDIO_FRAME.format(constants.DEFAULT_SITE_ID), payload=bytearray(audioFrames))
 
 
-	def onPlayBytes(self, requestId: str, siteId: str, payload: bytes):
+	def onPlayBytes(self, requestId: str, payload: bytearray, siteId: str, sessionId: str = None):
 		if siteId != constants.DEFAULT_SITE_ID:
 			return
 
@@ -151,9 +151,11 @@ class AudioManager(Manager):
 			except Exception as e:
 				self.logError(f'Playing wav failed with error: {e}')
 
+		# Session id support is not Hermes protocol official
 		self.MqttManager.publish(
 			topic=constants.TOPIC_PLAY_BYTES_FINISHED.format(siteId),
 			payload={
-				'id': requestId
+				'id': requestId,
+				'sessionId': sessionId
 			}
 		)

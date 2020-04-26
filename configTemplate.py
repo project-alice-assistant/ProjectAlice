@@ -1,4 +1,10 @@
 settings = {
+	'sessionTimeout': {
+		'defaultValue': 10,
+		'dataType'    : 'integer',
+		'isSensitive' : False,
+		'description' : 'Defines the number of seconds before a session timesout for inactivity'
+	},
 	'adminPinCode'          : {
 		'defaultValue': 1234,
 		'dataType'    : 'integer',

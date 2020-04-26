@@ -50,6 +50,7 @@ class SuperManager:
 		self.dialogTemplateManager = None
 		self.aliceWatchManager = None
 		self.audioManager = None
+		self.dialogManager = None
 
 
 	def onStart(self):
@@ -151,6 +152,7 @@ class SuperManager:
 		from core.nlu.NluManager import NluManager
 		from core.util.AliceWatchManager import AliceWatchManager
 		from core.server.AudioServer import AudioManager
+		from core.dialog.DialogManager import DialogManager
 
 		self.commonsManager = CommonsManager()
 		self.commons = self.commonsManager
@@ -181,6 +183,7 @@ class SuperManager:
 		self.nluManager = NluManager()
 		self.aliceWatchManager = AliceWatchManager()
 		self.audioManager = AudioManager()
+		self.dialogManager = DialogManager()
 
 		self._managers = {name[0].upper() + name[1:]: manager for name, manager in self.__dict__.items() if name.endswith('Manager')}
 

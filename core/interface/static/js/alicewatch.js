@@ -21,7 +21,7 @@ $(function () {
 		text = text.replace(pattern, '<br>');
 
 		pattern = /(<span class=".*">\[.*]<\/span> \[.*])[ ]+(.*)/gi;
-		text = text.replace(pattern, '<span style="display: inline-block; width: 270px;">$1</span><span style="display: inline-block">$2</span>');
+		text = text.replace(pattern, '<span style="display: inline-block; min-width: 270px;">$1</span><span style="display: inline-block">$2</span>');
 
 		$console.append(
 			'<span class="logLine">' + text + '</span>'

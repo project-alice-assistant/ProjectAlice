@@ -91,7 +91,7 @@ class AliceWatchManager(Manager):
 		})
 
 
-	def onHotwordToggleOn(self, siteId: str):
+	def onHotwordToggleOn(self, siteId: str, session: DialogSession):
 		if self._verbosity < 2:
 			return
 
@@ -100,7 +100,7 @@ class AliceWatchManager(Manager):
 		})
 
 
-	def onHotwordToggleOff(self, siteId: str):
+	def onHotwordToggleOff(self, siteId: str, session: DialogSession):
 		if self._verbosity < 2:
 			return
 
@@ -226,7 +226,7 @@ class AliceWatchManager(Manager):
 			return
 
 		self.publish(payload={
-			'text': f'[Nlu] Was asekd to parse input "![Yellow]({session.payload.get("input", "")})'
+			'text': f'[Nlu] Was asked to parse input "![Yellow]({session.payload.get("input", "")}")'
 		})
 
 
