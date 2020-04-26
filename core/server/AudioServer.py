@@ -1,5 +1,4 @@
 import wave
-from pathlib import Path
 
 import io
 import pyaudio
@@ -40,7 +39,6 @@ class AudioManager(Manager):
 		self.logInfo(f'Using **{self._audioInput["name"]}** for audio input')
 
 		self._vad = Vad(2)
-		self._sample = None
 
 
 	def onStart(self):
@@ -55,16 +53,6 @@ class AudioManager(Manager):
 
 
 	def onHotword(self, siteId: str, user: str = constants.UNKNOWN_USER):
-		if not self._sample:
-			sample = Path('sample.wav')
-			if sample.exists():
-				sample.unlink()
-
-			self._sample = wave.open('sample.wav', 'wb')
-			self._sample.setsampwidth(2)
-			self._sample.setframerate(self.ConfigManager.getAliceConfigByName('micSampleRate'))
-			self._sample.setnchannels(self.ConfigManager.getAliceConfigByName('micChannels'))
-
 		self.MqttManager.publish(
 			topic=constants.TOPIC_ASR_TOGGLE_ON,
 			payload={
@@ -129,30 +117,6 @@ class AudioManager(Manager):
 
 			audioFrames = buffer.getvalue()
 			self.MqttManager.publish(topic=constants.TOPIC_AUDIO_FRAME.format(constants.DEFAULT_SITE_ID), payload=audioFrames)
-
-
-	def onAudioFrame(self, message, siteId: str):
-		if self._sample:
-			with io.BytesIO(message.payload) as buffer:
-				try:
-					with wave.open(buffer, 'rb') as wav:
-						frame = wav.readframes(512)
-						while frame:
-							self._sample.writeframes(frame)
-							frame = wav.readframes(512)
-
-				except Exception as e:
-					self.logError(f'Playing wav failed with error: {e}')
-
-
-	def onCaptured(self, session):
-		self._sample.close()
-		self._sample = None
-
-
-	def onSessionTimeout(self, session):
-		self._sample.close()
-		self._sample = None
 
 
 	def onPlayBytes(self, requestId: str, siteId: str, payload: bytes):
