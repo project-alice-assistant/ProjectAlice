@@ -17,6 +17,11 @@ class SkillsApi(Api):
 		return jsonify(data=[skill.toJson() for skill in self.SkillManager.allSkills.values()])
 
 
+	# noinspection PyMethodMayBeStatic
+	def skillNotFound(self):
+		return jsonify(success=False, reason='skill not found')
+
+
 	@ApiAuthenticated
 	def delete(self, skillName: str):
 		if skillName in self.SkillManager.neededSkills:
@@ -40,7 +45,7 @@ class SkillsApi(Api):
 	@ApiAuthenticated
 	def toggleActiveState(self, skillName: str):
 		if skillName not in self.SkillManager.allSkills:
-			return jsonify(success=False, reason='skill not found')
+			return self.skillNotFound()
 
 		if self.SkillManager.isSkillActive(skillName):
 			if skillName in self.SkillManager.neededSkills:
@@ -57,7 +62,7 @@ class SkillsApi(Api):
 	@ApiAuthenticated
 	def activate(self, skillName: str):
 		if skillName not in self.SkillManager.allSkills:
-			return jsonify(success=False, reason='skill not found')
+			return self.skillNotFound()
 
 		if self.SkillManager.isSkillActive(skillName):
 			return jsonify(success=False, reason='already active')
@@ -71,7 +76,7 @@ class SkillsApi(Api):
 	@ApiAuthenticated
 	def deactivate(self, skillName: str):
 		if skillName not in self.SkillManager.allSkills:
-			return jsonify(success=False, reason='skill not found')
+			return self.skillNotFound()
 
 		if skillName in self.SkillManager.neededSkills:
 			return jsonify(success=False, reason='skill cannot be deactivated')
@@ -88,7 +93,7 @@ class SkillsApi(Api):
 	@ApiAuthenticated
 	def reload(self, skillName: str):
 		if skillName not in self.SkillManager.allSkills:
-			return jsonify(success=False, reason='skill not found')
+			return self.skillNotFound()
 
 		try:
 			self.logInfo(f'Reloading skill "{skillName}"')
@@ -103,7 +108,7 @@ class SkillsApi(Api):
 	@ApiAuthenticated
 	def put(self, skillName: str):
 		if not self.SkillStoreManager.skillExists(skillName):
-			return jsonify(success=False, reason='skill not found')
+			return self.skillNotFound()
 		elif self.SkillManager.getSkillInstance(skillName, True) is not None:
 			return jsonify(success=False, reason='skill already installed')
 
@@ -120,6 +125,6 @@ class SkillsApi(Api):
 	@route('/<skillName>/checkUpdate/')
 	def checkUpdate(self, skillName: str):
 		if skillName not in self.SkillManager.allSkills:
-			return jsonify(success=False, reason='skill not found')
+			return self.skillNotFound()
 
 		return jsonify(success=self.SkillManager.checkForSkillUpdates(skillToCheck=skillName))

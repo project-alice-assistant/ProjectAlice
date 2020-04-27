@@ -11,6 +11,7 @@ from enum import Enum
 from pydub import AudioSegment
 
 from core.base.model.Manager import Manager
+from core.commons import constants
 from core.dialog.model.DialogSession import DialogSession
 from core.voice.model.Wakeword import Wakeword
 from core.voice.model.WakewordUploadThread import WakewordUploadThread
@@ -142,7 +143,7 @@ class WakewordManager(Manager):
 
 		filepath = self.wakeword.getSamplePath()
 		if not filepath.exists():
-			self.logError(f'Raw wakeword "{len(self.wakeword.samples)}" wasn\'t found')
+			self.logError(f'Raw wakeword **{len(self.wakeword.samples)}** wasn\'t found')
 			self._state = WakewordManagerState.IDLE
 			return
 
@@ -279,12 +280,14 @@ class WakewordManager(Manager):
 	def _upload(self, path: Path, uid: str = ''):
 		wakewordName, zipPath = self._prepareHotword(path)
 
-		l = len(self.DeviceManager.getDevicesByType(deviceType='AliceSatellite', connectedOnly=False)) if uid else 1
-		for _ in range(0, l):
+		for device in self.DeviceManager.getDevicesByType(deviceType='AliceSatellite', connectedOnly=False):
+			if uid and device.uid != uid:
+				continue
+
 			port = 8080 + len(self._wakewordUploadThreads)
 
 			payload = {
-				'ip': self.Commons.getLocalIp(),
+				'ip'  : self.Commons.getLocalIp(),
 				'port': port,
 				'name': wakewordName
 			}
@@ -292,7 +295,7 @@ class WakewordManager(Manager):
 			if uid:
 				payload['uid'] = uid
 
-			self.MqttManager.publish(topic='projectalice/devices/alice/newhotword', payload=payload)
+			self.MqttManager.publish(topic=constants.TOPIC_NEW_HOTWORD, payload=payload)
 			thread = WakewordUploadThread(host=self.Commons.getLocalIp(), zipPath=zipPath, port=port)
 			self._wakewordUploadThreads.append(thread)
 			thread.start()

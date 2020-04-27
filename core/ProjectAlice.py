@@ -1,3 +1,4 @@
+import subprocess
 from pathlib import Path
 
 import requests
@@ -16,9 +17,10 @@ class ProjectAlice(Singleton):
 
 	def __init__(self, restartHandler: callable):
 		Singleton.__init__(self, self.NAME)
-		self._logger = Logger()
-		self._logger.logInfo('Starting up Project Alice')
+		self._logger = Logger(prepend='[Project Alice]')
+		self._logger.logInfo('Starting Alice main unit')
 		self._booted = False
+		self._isUpdating = False
 		with Stopwatch() as stopWatch:
 			self._restart = False
 			self._restartHandler = restartHandler
@@ -31,7 +33,8 @@ class ProjectAlice(Singleton):
 				self._superManager.commons.runRootSystemCommand(['systemctl', 'start', 'hermesledcontrol'])
 
 			self._superManager.onBooted()
-		self._logger.logInfo(f'- Started Project Alice in {stopWatch} seconds')
+
+		self._logger.logInfo(f'Started in {stopWatch} seconds')
 		self._booted = True
 
 
@@ -60,14 +63,19 @@ class ProjectAlice(Singleton):
 		self.onStop()
 
 
-	def onStop(self):
-		self._logger.logInfo('Shutting down Project Alice')
+	def onStop(self, withReboot: bool = False):
+		self._logger.logInfo('Shutting down')
 		self._superManager.onStop()
 		if self._superManager.configManager.getAliceConfigByName('useHLC'):
 			self._superManager.commons.runRootSystemCommand(['systemctl', 'stop', 'hermesledcontrol'])
 
+		self._booted = False
 		self.INSTANCE = None
-		self._restartHandler()
+
+		if withReboot:
+			subprocess.run(['sudo', 'shutdown', '-r', 'now'])
+		else:
+			self._restartHandler()
 
 
 	def wipeAll(self):
@@ -82,7 +90,8 @@ class ProjectAlice(Singleton):
 
 
 	def updateProjectAlice(self):
-		self._logger.logInfo('Checking Project Alice updates')
+		self._logger.logInfo('Checking for core updates')
+		self._isUpdating = True
 		req = requests.get(url=f'{constants.GITHUB_API_URL}/ProjectAlice/branches', auth=SuperManager.getInstance().configManager.getGithubAuth())
 		if req.status_code != 200:
 			self._logger.logWarning('Failed checking for updates')
@@ -108,10 +117,26 @@ class ProjectAlice(Singleton):
 
 		self._logger.logInfo(f'Checking on "{str(candidate)}" update channel')
 		commons = SuperManager.getInstance().commons
+
+		currentHash = subprocess.check_output(['git', 'rev-parse', '--short HEAD'])
+
 		commons.runSystemCommand(['git', '-C', commons.rootDir(), 'stash'])
 		commons.runSystemCommand(['git', '-C', commons.rootDir(), 'clean', '-df'])
 		commons.runSystemCommand(['git', '-C', commons.rootDir(), 'checkout', str(candidate)])
 		commons.runSystemCommand(['git', '-C', commons.rootDir(), 'pull'])
 
+		newHash = subprocess.check_output(['git', 'rev-parse', '--short HEAD'])
+
 		# Remove install tickets
 		[file.unlink() for file in Path(commons.rootDir(), 'system/skillInstallTickets').glob('*') if file.is_file()]
+
+		if currentHash != newHash:
+			self._logger.logWarning('New Alice version installed, need to restart...')
+			self.doRestart()
+
+		self._isUpdating = False
+
+
+	@property
+	def updating(self) -> bool:
+		return self._isUpdating

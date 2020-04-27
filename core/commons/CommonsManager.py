@@ -63,8 +63,8 @@ class CommonsManager(Manager):
 
 
 	@staticmethod
-	def dictMaxValue(d: dict) -> Any:
-		return max(d, key=d.get)
+	def dictMaxValue(dictionary: dict) -> Any:
+		return max(dictionary, key=dictionary.get)
 
 
 	@staticmethod
@@ -135,8 +135,8 @@ class CommonsManager(Manager):
 
 
 	@staticmethod
-	def clamp(x: float, minimum: float, maximum: float) -> float:
-		return max(minimum, min(x, maximum))
+	def clamp(number: float, minimum: float, maximum: float) -> float:
+		return max(minimum, min(number, maximum))
 
 
 	@staticmethod
@@ -337,6 +337,7 @@ class CommonsManager(Manager):
 
 # noinspection PyUnusedLocal
 def py_error_handler(filename, line, function, err, fmt):
+	# Errors are handled by our loggers
 	pass
 
 

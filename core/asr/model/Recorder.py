@@ -23,7 +23,7 @@ class Recorder(ProjectAliceObject):
 		return self
 
 
-	def __exit__(self, exc_type, exc_val, exc_tb):
+	def __exit__(self, excType, excVal, excTb):
 		self.stopRecording()
 
 

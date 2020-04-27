@@ -1,6 +1,7 @@
 {
 	"home": "home",
 	"skills": "skills",
+	"myHome": "my home",
 	"scenarios": "scenarios",
 	"syslog": "syslog",
 	"alicewatch": "alicewatch",
@@ -26,6 +27,7 @@
 	"devmodeNewSkill": "Skill creation",
 	"devmodeEditSkill": "Skill edition",
 	"reload": "Reload",
+	"loading": "Loading...",
 	"skillName": "Skill name",
 	"skillDesc": "Skill description",
 	"skillLanguage": "Skill language",
@@ -49,5 +51,11 @@
 	"actions": "Actions",
 	"addUser": "Add user",
 	"addWakeword": "Add wakeword",
-	"tuneWakeword": "Tune wakeword"
+	"tuneWakeword": "Tune wakeword",
+	"widgetCustStyleTitle": "Display Options",
+	"widgetConfigTitle": "Widget Options",
+	"widgetsNoConfs": "No config for this widget!",
+	"widgetConfSaving": "Saving",
+	"widgetConfSaved": "Saved",
+	"widgetConfSaveFailed": "Save failed"
 }

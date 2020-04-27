@@ -42,9 +42,8 @@ class AdminView(View):
 					continue
 
 				pre = self.ConfigManager.getAliceConfUpdatePreProcessing(conf)
-				if pre:
-					if not self.ConfigManager.doConfigUpdatePreProcessing(pre, value):
-						continue
+				if pre and not self.ConfigManager.doConfigUpdatePreProcessing(pre, value):
+					continue
 
 				pp = self.ConfigManager.getAliceConfUpdatePostProcessing(conf)
 				if pp:
@@ -74,8 +73,7 @@ class AdminView(View):
 	def reboot(self) -> dict:
 		try:
 			self.__class__.setWaitType('reboot')
-			self.ProjectAlice.onStop()
-			self.ThreadManager.doLater(interval=2, func=self.Commons.runRootSystemCommand, args=[['shutdown', '-r', 'now']])
+			self.ProjectAlice.onStop(withReboot=True)
 			return jsonify(success=True)
 		except Exception as e:
 			self.logError(f'Failed rebooting device: {e}')

@@ -22,6 +22,7 @@ class DialogSession:
 	isAPIGenerated: bool = False
 	hasEnded: bool = False
 	probabilityThreshold: float = 0.5
+	text: str = ''
 	slots: dict = field(default_factory=dict)
 	slotsAsObjects: dict = field(default_factory=dict)
 	customData: dict = field(default_factory=dict)
@@ -58,6 +59,7 @@ class DialogSession:
 		self.payload = commonsManager.payload(message)
 		self.slots.update(commonsManager.parseSlots(message))
 		self.slotsAsObjects.update(commonsManager.parseSlotsToObjects(message))
+		self.text = self.payload.get('text', '')
 
 		if self.customData:
 			self.customData.update(commonsManager.parseCustomData(message))

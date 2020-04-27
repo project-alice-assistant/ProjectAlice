@@ -9,9 +9,8 @@ from core.util.model.Logger import Logger
 
 class ProjectAliceObject:
 
-	def __init__(self, logDepth: int = 3, *args, **kwargs):
-		self._depth = logDepth
-		self._logger = Logger(logDepth)
+	def __init__(self, *args, **kwargs):
+		self._logger = Logger(*args, **kwargs)
 
 
 	def __repr__(self) -> str:
@@ -66,39 +65,43 @@ class ProjectAliceObject:
 			del SM.SuperManager.getInstance().managers[name]
 
 
-	def logInfo(self, msg: str):
-		self._logger.doLog(function='info', msg=msg, printStack=False)
+	def logInfo(self, msg: str, plural: str = None):
+		self._logger.doLog(function='info', msg=self.decorateLogs(msg), printStack=False, plural=plural)
 
 
-	def logError(self, msg: str):
-		self._logger.doLog(function='error', msg=msg)
+	def logError(self, msg: str, plural: str = None):
+		self._logger.doLog(function='error', msg=self.decorateLogs(msg), plural=plural)
 
 
-	def logDebug(self, msg: str):
-		self._logger.doLog(function='debug', msg=msg, printStack=False)
+	def logDebug(self, msg: str, plural: str = None):
+		self._logger.doLog(function='debug', msg=self.decorateLogs(msg), printStack=False, plural=plural)
 
 
-	def logFatal(self, msg: str):
-		self._logger.doLog(function='fatal', msg=msg)
+	def logFatal(self, msg: str, plural: str = None):
+		self._logger.doLog(function='fatal', msg=self.decorateLogs(msg), plural=plural)
 		try:
 			self.ProjectAlice.onStop()
 		except:
 			exit()
 
 
-	def logWarning(self, msg: str, printStack: bool = False):
-		self._logger.doLog(function='warning', msg=msg, printStack=printStack)
+	def logWarning(self, msg: str, printStack: bool = False, plural: str = None):
+		self._logger.doLog(function='warning', msg=self.decorateLogs(msg), printStack=printStack, plural=plural)
 
 
-	def logCritical(self, msg: str):
-		self._logger.doLog(function='critical', msg=msg)
+	def logCritical(self, msg: str, plural: str = None):
+		self._logger.doLog(function='critical', msg=self.decorateLogs(msg), plural=plural)
+
+
+	def decorateLogs(self, text: str) -> str:
+		return f'[{self.__class__.__name__}] {text}'
 
 
 	def onStart(self):
 		pass
 
 
-	def onStop(self):
+	def onStop(self, **kwargs):
 		pass
 
 
@@ -138,6 +141,10 @@ class ProjectAliceObject:
 		pass
 
 
+	def onContinueSession(self, session):
+		pass
+
+
 	def onStartListening(self, session):
 		pass
 
@@ -155,6 +162,14 @@ class ProjectAliceObject:
 
 
 	def onIntentParsed(self, session):
+		pass
+
+
+	def onIntent(self, session):
+		pass
+
+
+	def onConfigureIntent(self, intents: list):
 		pass
 
 
@@ -335,11 +350,11 @@ class ProjectAliceObject:
 		pass
 
 
-	def onBroadcastingForNewDeviceStart(self, session):
+	def onBroadcastingForNewDeviceStart(self):
 		pass
 
 
-	def onBroadcastingForNewDeviceStop(self):
+	def onBroadcastingForNewDeviceStop(self, *args):
 		pass
 
 
@@ -384,6 +399,10 @@ class ProjectAliceObject:
 
 
 	def onEndSession(self, session):
+		pass
+
+
+	def onDeviceHeartbeat(self, uid: str, siteId: str = None):
 		pass
 
 
@@ -498,11 +517,6 @@ class ProjectAliceObject:
 
 
 	@property
-	def SnipsWatchManager(self):
-		return SM.SuperManager.getInstance().snipsWatchManager
-
-
-	@property
 	def SkillStoreManager(self):
 		return SM.SuperManager.getInstance().skillStoreManager
 
@@ -525,3 +539,7 @@ class ProjectAliceObject:
 	@property
 	def AliceWatchManager(self):
 		return SM.SuperManager.getInstance().aliceWatchManager
+
+	@property
+	def AudioServer(self):
+		return SM.SuperManager.getInstance().audioServer

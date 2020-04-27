@@ -61,7 +61,7 @@ _logger.addHandler(mqttHandler)
 
 def exceptionListener(*exc_info):
 	global _logger
-	_logger.error('An unhandled exception occured')
+	_logger.error('[Project Alice]           An unhandled exception occured')
 	text = ''.join(traceback.format_exception(*exc_info))
 	_logger.error(f'- Traceback: {text}')
 
@@ -97,23 +97,26 @@ def main():
 		while RUNNING:
 			time.sleep(0.1)
 	except KeyboardInterrupt:
-		_logger.info('Interruption detected')
-	finally:
-		projectAlice.onStop()
-		_logger.info('Project Alice stopped, see you soon!')
-		if projectAlice.restart:
-			time.sleep(3)
-			sys.stdout.flush()
-			try:
-				# Close everything related to ProjectAlice, allows restart without component failing
-				p = psutil.Process(os.getpid())
-				for h in p.open_files() + p.connections():
-					os.close(h.fd)
-			except Exception as e:
-				_logger.error(f'Failed restarting ProjectAlice: {e}')
+		_logger.info('[Project Alice]           Interruption detected, preparing shutdown')
 
-			python = sys.executable
-			os.execl(python, python, *sys.argv)
+	finally:
+		if projectAlice.isBooted:
+			projectAlice.onStop()
+
+	_logger.info('[Project Alice]           Shutdown completed, see you soon!')
+	if projectAlice.restart:
+		time.sleep(3)
+		sys.stdout.flush()
+		try:
+			# Close everything related to ProjectAlice, allows restart without component failing
+			process = psutil.Process(os.getpid())
+			for handler in process.open_files() + process.connections():
+				os.close(handler.fd)
+		except Exception as e:
+			_logger.error(f'[Project Alice]           Failed restarting: {e}')
+
+		python = sys.executable
+		os.execl(python, python, *sys.argv)
 
 
 RUNNING = False

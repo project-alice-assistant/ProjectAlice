@@ -1,6 +1,7 @@
 {
 	"home": "home",
 	"skills": "skills",
+	"myHome": "casa mia",
 	"scenarios": "scene",
 	"syslog": "syslog",
 	"alicewatch": "alicewatch",
@@ -26,6 +27,7 @@
 	"devmodeNewSkill": "Crea skill",
 	"devmodeEditSkill": "Modifica skill",
 	"reload": "Ricarica",
+	"loading": "Caricamento...",
 	"skillName": "nome Skill",
 	"skillDesc": "descrizione skill",
 	"skillLanguage": "Lingua skill",
@@ -48,6 +50,12 @@
 	"resetSkill": "Resetta",
 	"actions": "Azioni",
 	"addUser": "Nuovo utente",
-	"addWakeword": "Add wakeword",
-	"tuneWakeword": "Tune wakeword"
+	"addWakeword": "Aggiungi wakeword",
+	"tuneWakeword": "Regola wakeword",
+	"widgetCustStyleTitle": "Opzioni dello schermo",
+	"widgetConfigTitle": "Opzioni dei widget",
+	"widgetsNoConfs": "Nessuna configurazione per questo widget!",
+    "widgetConfSaving": "Salvataggio in corso",
+    "widgetConfSaved": "Salvato",
+    "widgetConfSaveFailed": "Salvataggio fallito"
 }

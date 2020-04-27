@@ -13,7 +13,7 @@
 #                                              #
 ################################################
 #            DON'T CHANGE ME                   #
-version: 1.16
+version: 1.18
 ################################################
 
 # How to prevent frequent errors:
@@ -41,10 +41,8 @@ wifiNetworkName:
 wifiWPAPass:
 wifiCountryCode:
 
-# The name of the device to set up
-# Caution: The main device should be named default! This will be changed later.
+# The name of the device to set up. Do use a room name to name the device!
 deviceName: default
-soundPlaybackAndRecordEnabled: yes
 
 # Connection
 mqttHost: localhost
@@ -66,6 +64,7 @@ audioHardware:
     matrixCreator:      no
     matrixVoice:        no
     ps3eye:             no
+    jabra410:           no
 
 # Capture
 micSampleRate: 16000

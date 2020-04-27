@@ -103,6 +103,7 @@ venv.bak/
 # mypy
 .mypy_cache/
 
+# Pycharm
 .idea
 
 #vs code stuff
@@ -115,33 +116,21 @@ config.py
 *Config.h
 
 
+# Project Alice
+
 credentials/*
-!credentials/.gitkeep
 
 assistant
 
-system/data/data.db
-
-trained/hotwords/*
+trained/*
 !trained/hotwords/snips_hotword/
-!trained/hotwords/.gitkeep
 
+skills/*
 var/cache/*
 var/logs/*
-!var/cache/nlu/trainingData/.gitkeep
-!var/cache/dialogTemplates/checksums.json
-!var/logs/.gitkeep
-
-/deviceshotwords/*
-!/deviceshotwords/.gitkeep
-
 system/database/*
-!system/database/.gitkeep
+system/myHouse/*
 
 test.py
 
-
-var/assistants/*
-!var/assistants/.gitkeep
-
-skills/*
+!*.gitkeep

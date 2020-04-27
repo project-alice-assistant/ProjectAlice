@@ -1,24 +1,30 @@
 $(function () {
 
 	function onMessage(msg) {
-		let container = $('#console');
 		let json = JSON.parse(msg.payloadString);
+		addToLogs(json['msg'])
+	}
 
-		container.append(json['msg']);
-		if ($('#checkedCheckbox').is(':visible')) {
+	function addToLogs(msg) {
+		let pattern = /(\[.*])[ ]+/gi;
+		let text = msg.replace(pattern, '<span style="display: inline-block; width: 230px;">$1</span>');
+
+		let container = $('#console');
+		container.append(text);
+		if ($('#stopScroll').is(':visible')) {
 			container.scrollTop(container.prop('scrollHeight'));
 		}
 	}
 
-	$('#checkedCheckbox').on('click touchstart', function () {
+	$('#stopScroll').on('click touchstart', function () {
 		$(this).hide();
-		$('#emptyCheckbox').show();
+		$('#startScroll').show();
 		return false;
 	});
 
-	$('#emptyCheckbox').on('click touchstart', function () {
+	$('#startScroll').on('click touchstart', function () {
 		$(this).hide();
-		$('#checkedCheckbox').show();
+		$('#stopScroll').show();
 		return false;
 	});
 
@@ -29,6 +35,10 @@ $(function () {
 			url: '/syslog/connected/',
 			type: 'POST'
 		})
+	}
+
+	for(let i = 0; i < logHistory.length; i++) {
+		addToLogs(logHistory[i]);
 	}
 
 	mqttRegisterSelf(onConnect, 'onConnect');

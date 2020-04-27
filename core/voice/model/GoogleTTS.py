@@ -6,8 +6,8 @@ from google.oauth2.service_account import Credentials
 from core.base.SuperManager import SuperManager
 from core.dialog.model.DialogSession import DialogSession
 from core.user.model.User import User
-from core.voice.model.TTS import TTS
 from core.voice.model.TTSEnum import TTSEnum
+from core.voice.model.Tts import TTS
 
 try:
 	from google.cloud import texttospeech
@@ -116,6 +116,36 @@ class GoogleTTS(TTS):
 						'neural': True
 					},
 					'de-DE-Wavenet-C': {
+						'neural': True
+					}
+				}
+			},
+			'it-IT': {
+				'male'  : {
+					'it-IT-Standard-C': {
+						'neural': False
+					},
+					'it-IT-Standard-D' : {
+						'neural': False
+					},
+					'it-IT-Wavenet-C' : {
+						'neural': True
+					},
+					'it-IT-Wavenet-D': {
+						'neural': True
+					}
+				},
+				'female': {
+					'it-IT-Standard-A': {
+						'neural': False
+					},
+					'it-IT-Standard-B' : {
+						'neural': False
+					},
+					'it-IT-Wavenet-A' : {
+						'neural': True
+					},
+					'it-IT-Wavenet-B': {
 						'neural': True
 					}
 				}

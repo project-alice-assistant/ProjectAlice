@@ -26,12 +26,12 @@ class SnipsServicesManager(Manager):
 
 	def onStart(self):
 		super().onStart()
-		self.runCmd(cmd='start', services=self.snipsServices())
+		self.runCmd(cmd='start')
 
 
 	def onStop(self):
 		super().onStop()
-		self.runCmd(cmd='stop', services=self.snipsServices())
+		self.runCmd(cmd='stop')
 
 
 	def runCmd(self, cmd: str, services: Union[str, list] = None):
@@ -40,7 +40,9 @@ class SnipsServicesManager(Manager):
 			return
 
 		if not services:
-			services = self._snipsServices
+			services = self._snipsServices.copy()
+			if self.ConfigManager.getAliceConfigByName('disableSoundAndMic') and 'snips-hotword' in services:
+				services.remove('snips-hotword')
 
 		if isinstance(services, str):
 			services = [services]
@@ -51,10 +53,8 @@ class SnipsServicesManager(Manager):
 
 			result = self.Commons.runRootSystemCommand(['systemctl', cmd, service])
 			if result.returncode == 0:
-				self.logInfo(f"Service {service} {cmd}'ed")
-			elif result.returncode == 5:
-				pass
-			else:
+				self.logInfo(f"{cmd.title()} service {service} ok")
+			elif result.returncode != 5:
 				self.logInfo(f"Tried to {cmd} the {service} service but it returned with return code {result.returncode}")
 
 

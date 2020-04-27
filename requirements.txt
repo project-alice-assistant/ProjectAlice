@@ -18,3 +18,4 @@ bcrypt==3.1.7
 psutil==5.6.7
 numpy==1.16.2
 pyjwt==1.7.1
+importlib_metadata==1.6.0

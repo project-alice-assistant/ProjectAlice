@@ -1,5 +1,3 @@
-$(document).tooltip();
-
 $(function () {
 
 	let $defaultTab = $('#devmodeTabsContainer ul li:first');
@@ -144,5 +142,7 @@ $(function () {
 
 	$('[id*=editSkill_]').on('click touchstart', function () {
 		window.location.href = '/devmode/editskill/' + $(this).data('skill');
-	})
+	});
+
+	$(":checkbox").checkToggler();
 });

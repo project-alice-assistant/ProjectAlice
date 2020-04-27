@@ -13,6 +13,13 @@ settings = {
 		'isSensitive' : False,
 		'description' : 'If true, an error thrown by a skill will automatically post a github issue and ping the author'
 	},
+	'disableSoundAndMic'    : {
+		'defaultValue': False,
+		'dataType'    : 'boolean',
+		'isSensitive' : False,
+		'description' : 'If this device is a server without sound and mic, turn this to True',
+		'onUpdate'    : 'enableDisableSoundInSnips'
+	},
 	'notUnderstoodRetries'  : {
 		'defaultValue': 3,
 		'dataType'    : 'integer',
@@ -235,13 +242,25 @@ settings = {
 		'isSensitive' : False,
 		'description' : 'Project Alice active country code'
 	},
-	'aliceAutoUpdate'       : {
+	'nonNativeSupportLanguage': {
+		'defaultValue': '',
+		'dataType'    : 'string',
+		'isSensitive' : False,
+		'description' : 'If you want to use a non natively supported language, set it here.'
+	},
+	'nonNativeSupportCountry': {
+		'defaultValue': '',
+		'dataType'    : 'string',
+		'isSensitive' : False,
+		'description' : 'If you want to use a non natively supported country, set it here.'
+	},
+	'aliceAutoUpdate': {
 		'defaultValue': False,
 		'dataType'    : 'boolean',
 		'isSensitive' : False,
 		'description' : 'Whether Alice should auto update, checked every hour'
 	},
-	'skillAutoUpdate'       : {
+	'skillAutoUpdate': {
 		'defaultValue': False,
 		'dataType'    : 'boolean',
 		'isSensitive' : False,
@@ -280,20 +299,24 @@ settings = {
 		'isSensitive' : False,
 		'values'      : {
 			'en': {
-				'default'    : True,
-				'countryCode': 'US'
+				'default'           : True,
+				'defaultCountryCode': 'US',
+				'countryCodes'      : ['US', 'GB', 'AU']
 			},
 			'fr': {
-				'default'    : False,
-				'countryCode': 'FR'
+				'default'           : False,
+				'defaultCountryCode': 'FR',
+				'countryCodes'      : ['FR']
 			},
 			'de': {
-				'default'    : False,
-				'countryCode': 'DE'
+				'default'           : False,
+				'defaultCountryCode': 'DE',
+				'countryCodes'      : ['DE']
 			},
 			'it': {
-				'default'    : False,
-				'countryCode': 'IT'
+				'default'           : False,
+				'defaultCountryCode': 'IT',
+				'countryCodes'      : ['IT']
 			}
 		},
 		'display'     : 'hidden'
@@ -342,11 +365,5 @@ settings = {
 		'dataType'    : 'boolean',
 		'isSensitive' : False,
 		'description' : 'Activates the developer part of the interface, for skill development'
-	},
-
-	# -----------------------
-	# Skills
-	# -----------------------
-
-	'skills'                : {}
+	}
 }

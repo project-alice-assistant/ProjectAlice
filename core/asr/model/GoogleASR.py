@@ -3,8 +3,8 @@ from typing import Generator, Optional
 
 import os
 
-from core.asr.model.ASR import ASR
 from core.asr.model.ASRResult import ASRResult
+from core.asr.model.Asr import ASR
 from core.asr.model.Recorder import Recorder
 from core.dialog.model.DialogSession import DialogSession
 from core.util.Stopwatch import Stopwatch
@@ -43,7 +43,7 @@ class GoogleASR(ASR):
 		config = types.RecognitionConfig(
 			encoding=enums.RecognitionConfig.AudioEncoding.LINEAR16,
 			sample_rate_hertz=self.ConfigManager.getAliceConfigByName('micSampleRate'),
-			language_code=self.LanguageManager.activeLanguageAndCountryCode
+			language_code=self.LanguageManager.getLanguageAndCountryCode()
 		)
 
 		self._streamingConfig = types.StreamingRecognitionConfig(config=config, interim_results=True)

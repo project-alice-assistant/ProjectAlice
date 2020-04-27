@@ -4,8 +4,8 @@ from typing import Generator, Optional
 
 import numpy as np
 
-from core.asr.model.ASR import ASR
 from core.asr.model.ASRResult import ASRResult
+from core.asr.model.Asr import ASR
 from core.asr.model.Recorder import Recorder
 from core.dialog.model.DialogSession import DialogSession
 from core.util.Stopwatch import Stopwatch

@@ -1,9 +1,9 @@
 from __future__ import annotations
 
-import functools
-import warnings
 from typing import Any, Callable, Tuple, Union
 
+import functools
+import warnings
 from flask import jsonify, request
 
 from core.base.SuperManager import SuperManager
@@ -21,7 +21,7 @@ def deprecated(func):
 	"""
 
 	@functools.wraps(func)
-	def new_func(*args, **kwargs):
+	def wrapper(*args, **kwargs):
 		warnings.simplefilter('always', DeprecationWarning)  # turn off filter
 		warnings.warn(f'Call to deprecated function {func.__name__}.',
 			category=DeprecationWarning,
@@ -29,13 +29,13 @@ def deprecated(func):
 		warnings.simplefilter('default', DeprecationWarning)  # reset filter
 		return func(*args, **kwargs)
 
-	return new_func
+	return wrapper
 
 
 def IntentHandler(intent: Union[str, Intent], requiredState: str = None, isProtected: bool = False, authLevel: AccessLevel = AccessLevel.ZERO):
 	"""Decorator for adding a method as an intent handler."""
 	if isinstance(intent, str):
-		intent = Intent(intent, isProtected=isProtected, userIntent=True, authLevel=authLevel)
+		intent = Intent(intent, isProtected=isProtected, authLevel=authLevel)
 
 	def wrapper(func):
 		# store the intent in the function
@@ -146,7 +146,7 @@ def AnyExcept(func: Callable = None, text: str = 'error', exceptions: Tuple[Base
 			try:
 				return func(*args, **kwargs)
 			except exceptions as e:
-				Logger(depth=6).logWarning(msg=e, printStack=printStack)
+				Logger().logWarning(msg=e, printStack=printStack)
 				return _exceptHandler(*args, text=text, exceptHandler=exceptHandler, returnText=returnText, **kwargs)
 
 
@@ -186,7 +186,7 @@ def IfSetting(func: Callable = None, settingName: str = None, settingValue: Any 
 		@functools.wraps(func)
 		def settingDecorator(*args, **kwargs):
 			if not settingName:
-				Logger(depth=6).logWarning(msg='Cannot use IfSetting decorator without settingName')
+				Logger().logWarning(msg='Cannot use IfSetting decorator without settingName')
 				return None
 
 			configManager = SuperManager.getInstance().configManager
@@ -195,11 +195,9 @@ def IfSetting(func: Callable = None, settingName: str = None, settingValue: Any 
 			if value is None:
 				return None
 
-			if not inverted and value == settingValue:
+			if (not inverted and value == settingValue) or \
+				(inverted and value != settingValue):
 				return func(*args, **kwargs)
-			elif inverted and value != settingValue:
-				return func(*args, **kwargs)
-
 
 		return settingDecorator
 

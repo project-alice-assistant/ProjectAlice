@@ -61,7 +61,7 @@ $(function () {
 				}
 			});
 		}
-		return false;
+		return true;
 	});
 
 	$('.erase').on('click touchstart', function () {

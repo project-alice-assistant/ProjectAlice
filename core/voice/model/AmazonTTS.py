@@ -1,11 +1,12 @@
-import re
 import subprocess
+
+import re
 
 from core.base.SuperManager import SuperManager
 from core.dialog.model.DialogSession import DialogSession
 from core.user.model.User import User
-from core.voice.model.TTS import TTS
 from core.voice.model.TTSEnum import TTSEnum
+from core.voice.model.Tts import TTS
 
 try:
 	import boto3
@@ -172,6 +173,21 @@ class AmazonTTS(TTS):
 						'neural': False
 					},
 					'Vicki': {
+						'neural': False
+					}
+				}
+			},
+			'it-IT': {
+				'male'  : {
+					'Giorgio': {
+						'neural': False
+					}
+				},
+				'female': {
+					'Bianca': {
+						'neural': False
+					},
+					'Carla'  : {
 						'neural': False
 					}
 				}

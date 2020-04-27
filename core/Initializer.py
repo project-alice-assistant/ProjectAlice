@@ -37,7 +37,7 @@ class InitDict(dict):
 		try:
 			return super().__getitem__(item) or ''
 		except:
-			print(f'[Initializer] Missing key "{item}" in provided yaml file.')
+			print(f'Missing key **{item}** in provided yaml file.')
 			return ''
 
 
@@ -58,20 +58,20 @@ network={
 
 
 	def __init__(self):
-		super().__init__(logDepth=3)
-		self.logInfo('Starting Project Alice initializer')
+		super().__init__()
+		self.logInfo('Starting Project Alice initialization')
 
 		self._rootDir = Path(__file__).resolve().parent.parent
 
 		self._confsFile = Path(self._rootDir, 'config.py')
 		self._confsSample = Path(self._rootDir, 'configTemplate.py')
 		self._initFile = Path(YAML)
-		self._latest = 1.16
+		self._latest = 1.18
 
 
 	def initProjectAlice(self) -> bool:
 		if not self._initFile.exists() and not self._confsFile.exists():
-			self.fatal('Init file not found and there\'s no configuration file, aborting Project Alice start')
+			self.logFatal('Init file not found and there\'s no configuration file, aborting Project Alice start')
 		elif not self._initFile.exists():
 			self.logInfo('No initialization needed')
 			return False
@@ -84,18 +84,18 @@ network={
 
 				initConfs = InitDict(load)
 			except yaml.YAMLError as e:
-				self.fatal(f'Failed loading init configurations: {e}')
+				self.logFatal(f'Failed loading init configurations: {e}')
 
 		# Check that we are running using the latest yaml
 		if float(initConfs['version']) < self._latest:
-			self.fatal('The yaml file you are using is deprecated. Please update it before trying again')
+			self.logFatal('The yaml file you are using is deprecated. Please update it before trying again')
 
 		wpaSupplicant = Path('/etc/wpa_supplicant/wpa_supplicant.conf')
 		if not wpaSupplicant.exists() and initConfs['useWifi']:
 			self.logInfo('Setting up wifi')
 
 			if not initConfs['wifiCountryCode'] or not initConfs['wifiNetworkName'] or not initConfs['wifiWPAPass']:
-				self.fatal('You must specify the wifi parameters')
+				self.logFatal('You must specify the wifi parameters')
 
 			bootWpaSupplicant = Path('/boot/wpa_supplicant.conf')
 
@@ -120,7 +120,7 @@ network={
 			connected = False
 
 		if not connected:
-			self.fatal('Your device needs internet access to continue')
+			self.logFatal('Your device needs internet access to continue')
 
 		updateChannel = initConfs['aliceUpdateChannel'] if 'aliceUpdateChannel' in initConfs else 'master'
 		updateSource = self.getUpdateSource(updateChannel)
@@ -141,19 +141,19 @@ network={
 			initConfs['forceRewrite'] = True
 
 		if not self._confsFile.exists() and not self._confsSample.exists():
-			self.fatal('No config and no config template found, can\'t continue')
+			self.logFatal('No config and no config template found, can\'t continue')
 
 		elif not self._confsFile.exists() and self._confsSample.exists():
-			self.warning('No config file found, creating it from sample file')
+			self.logWarning('No config file found, creating it from sample file')
 			confs = self.newConfs()
 			self._confsFile.write_text(f"settings = {json.dumps(confs, indent=4).replace('false', 'False').replace('true', 'True')}")
 
 		elif self._confsFile.exists() and not initConfs['forceRewrite']:
-			self.warning('Config file already existing and user not wanting to rewrite, aborting')
+			self.logWarning('Config file already existing and user not wanting to rewrite, aborting')
 			return False
 
 		elif self._confsFile.exists() and initConfs['forceRewrite']:
-			self.warning('Config file found and force rewrite specified, let\'s restart all this!')
+			self.logWarning('Config file found and force rewrite specified, let\'s restart all this!')
 			self._confsFile.unlink()
 			confs = self.newConfs()
 			self._confsFile.write_text(f"settings = {json.dumps(confs, indent=4).replace('false', 'False').replace('true', 'True')}")
@@ -207,7 +207,7 @@ network={
 		try:
 			pin = int(pinCode)
 			if len(str(pin)) != 4:
-				raise
+				raise Exception
 		except:
 			self.logFatal('Pin code must be 4 digits')
 
@@ -291,7 +291,7 @@ network={
 			self.logInfo("Snips NLU not installed, let's do this")
 			subprocess.run(['sudo', 'apt-get', 'install', 'libatlas3-base', 'libgfortran5'])
 			subprocess.run(['wget', '--content-disposition', 'https://github.com/project-alice-assistant/snips-nlu-rebirth/blob/master/wheels/scikit_learn-0.22.1-cp37-cp37m-linux_armv7l.whl?raw=true'])
-			subprocess.run(['wget', '--content-disposition', 'https://github.com/project-alice-assistant/snips-nlu-rebirth/blob/master/wheels/scikit_learn-0.22.1-cp37-cp37m-linux_armv7l.whl?raw=true'])
+			subprocess.run(['wget', '--content-disposition', 'https://github.com/project-alice-assistant/snips-nlu-rebirth/blob/master/wheels/scipy-1.3.3-cp37-cp37m-linux_armv7l.whl?raw=true'])
 			subprocess.run(['wget', '--content-disposition', 'https://github.com/project-alice-assistant/snips-nlu-rebirth/blob/master/wheels/snips_nlu_utils-0.9.1-cp37-cp37m-linux_armv7l.whl?raw=true'])
 			subprocess.run(['wget', '--content-disposition', 'https://github.com/project-alice-assistant/snips-nlu-rebirth/blob/master/wheels/snips_nlu_parsers-0.4.3-cp37-cp37m-linux_armv7l.whl?raw=true'])
 			subprocess.run(['wget', '--content-disposition', 'https://github.com/project-alice-assistant/snips-nlu-rebirth/blob/master/wheels/snips_nlu-0.20.2-py3-none-any.whl?raw=true'])
@@ -311,7 +311,7 @@ network={
 
 		snipsConf = self.loadSnipsConfigurations()
 		if not snipsConf:
-			self.fatal('Error loading snips.toml')
+			self.logFatal('Error loading snips.toml')
 
 		if initConfs['deviceName'] != 'default':
 			snipsConf['snips-audio-server']['bind'] = f'{initConfs["deviceName"]}@mqtt'
@@ -331,12 +331,16 @@ network={
 		snipsConf['snips-hotword']['vad_messages'] = True
 
 		serviceFilePath = Path('/etc/systemd/system/ProjectAlice.service')
-		if not serviceFilePath.exists():
-			subprocess.run(['sudo', 'cp', 'ProjectAlice.service', serviceFilePath])
+		if serviceFilePath.exists():
+			subprocess.run(['sudo', 'rm', serviceFilePath])
 
-		subprocess.run(['sudo', 'sed', '-i', '-e', f's/\#WORKINGDIR/WorkingDirectory=\/home\/{getpass.getuser()}\/ProjectAlice/', str(serviceFilePath)])
-		subprocess.run(['sudo', 'sed', '-i', '-e', f's/\#EXECSTART/ExecStart=\/home\/{getpass.getuser()}\/ProjectAlice\/venv\/bin\/python3 main.py/', str(serviceFilePath)])
-		subprocess.run(['sudo', 'sed', '-i', '-e', f's/\#USER/User={getpass.getuser()}/', str(serviceFilePath)])
+		serviceFile = Path('ProjectAlice.service').read_text()
+		serviceFile.replace('#WORKINGDIR', f'WorkingDirectory=/home/{getpass.getuser()}/ProjectAlice')
+		serviceFile.replace('#EXECSTART', f'ExecStart=/home/{getpass.getuser()}/ProjectAlice/venv/bin/python main.py')
+		serviceFile.replace('#USER', f'User={getpass.getuser()}')
+
+		Path('/tmp/service').write_text(serviceFile)
+		subprocess.run(['sudo', 'mv', 'service', serviceFilePath])
 
 		self.logInfo('Installing audio hardware')
 		audioHardware = ''
@@ -348,19 +352,26 @@ network={
 		hlcServiceFilePath = Path('/etc/systemd/system/hermesledcontrol.service')
 		if initConfs['useHLC']:
 
-			if not Path('/home', getpass.getuser(), 'hermesLedControl').exists():
+			hlcDir = Path('/home', getpass.getuser(), 'hermesLedControl')
+
+			if not hlcDir.exists():
 				subprocess.run(['git', 'clone', 'https://github.com/project-alice-assistant/hermesLedControl.git', str(Path('/home', getpass.getuser(), 'hermesLedControl'))])
 			else:
-				subprocess.run(['git', '-C', str(Path('/home', getpass.getuser(), 'hermesLedControl')), 'stash'])
-				subprocess.run(['git', '-C', str(Path('/home', getpass.getuser(), 'hermesLedControl')), 'pull'])
-				subprocess.run(['git', '-C', str(Path('/home', getpass.getuser(), 'hermesLedControl')), 'stash', 'clear'])
+				subprocess.run(['git', '-C', hlcDir, 'stash'])
+				subprocess.run(['git', '-C', hlcDir, 'pull'])
+				subprocess.run(['git', '-C', hlcDir, 'stash', 'clear'])
 
-			if not hlcServiceFilePath.exists():
-				subprocess.run(['sudo', 'cp', f'/home/{getpass.getuser()}/hermesLedControl/hermesledcontrol.service', str(hlcServiceFilePath)])
+			if hlcServiceFilePath.exists():
+				subprocess.run(['sudo', 'rm', hlcServiceFilePath])
 
-			subprocess.run(['sudo', 'sed', '-i', '-e', f's/%WORKING_DIR%/\/home\/{getpass.getuser()}\/hermesLedControl/', str(hlcServiceFilePath)])
-			subprocess.run(['sudo', 'sed', '-i', '-e', f's/%EXECSTART%/\/home\/{getpass.getuser()}\/hermesLedControl\/venv\/bin\/python3 main.py --hardware=%HARDWARE% --pattern=projectalice/', str(hlcServiceFilePath)])
-			subprocess.run(['sudo', 'sed', '-i', '-e', f's/%USER%/{getpass.getuser()}/', str(hlcServiceFilePath)])
+			serviceFile = Path(f'/home/{getpass.getuser()}/hermesLedControl/hermesledcontrol.service').read_text()
+			serviceFile.replace('%WORKING_DIR%', f'/home/{getpass.getuser()}/hermesLedControl')
+			serviceFile.replace('%EXECSTART%', f'/home/{getpass.getuser()}/hermesLedControl/venv/bin/python main.py --hardware=%HARDWARE% --pattern=projectalice')
+			serviceFile.replace('%USER%', f'{getpass.getuser()}')
+
+			Path('/tmp/service').write_text(serviceFile)
+			subprocess.run(['sudo', 'mv', 'service', serviceFilePath])
+
 
 		if audioHardware in {'respeaker2', 'respeaker4', 'respeaker6MicArray'}:
 			subprocess.run(['sudo', Path(self._rootDir, 'system/scripts/audioHardware/respeakers.sh')])
@@ -395,6 +406,7 @@ network={
 				subprocess.run(['sudo', 'sed', '-i', '-e', 's/%HARDWARE%/googleAIY/', str(hlcServiceFilePath)])
 
 		elif audioHardware == 'usbMic':
+			subprocess.run(['sudo', Path(self._rootDir, 'system/scripts/audioHardware/usbmic.sh')])
 			subprocess.run(['sudo', 'cp', Path(self._rootDir, 'system', 'asounds', 'usbmic.conf'), Path(ASOUND)])
 
 		elif audioHardware == 'ps3eye':
@@ -405,16 +417,18 @@ network={
 			subprocess.run(['echo', '    slave.pcm "dmix"', '>>', asoundrc])
 			subprocess.run(['echo', '}', '>>', asoundrc])
 
+		elif audioHardware == 'jabra410':
+			subprocess.run(['sudo', 'cp', Path(self._rootDir, 'system', 'asounds', 'jabra410.conf'), Path(ASOUND)])
+
 		subprocess.run(['sudo', 'systemctl', 'daemon-reload'])
 
 		sort = dict(sorted(confs.items()))
-		sort['skills'] = sort.pop('skills')
 
 		try:
 			confString = json.dumps(sort, indent=4).replace('false', 'False').replace('true', 'True')
 			self._confsFile.write_text(f'settings = {confString}')
 		except Exception as e:
-			self.fatal(f'An error occured while writting final configuration file: {e}')
+			self.logFatal(f'An error occured while writting final configuration file: {e}')
 		else:
 			importlib.reload(config)
 
@@ -427,18 +441,10 @@ network={
 		else:
 			subprocess.run(['sudo', 'rm', Path(YAML)])
 
-		self.warning('Initializer done with configuring')
+		self.logWarning('Initializer done with configuring')
 		time.sleep(2)
 		subprocess.run(['sudo', 'systemctl', 'enable', 'ProjectAlice'])
 		subprocess.run(['sudo', 'shutdown', '-r', 'now'])
-
-
-	def fatal(self, text: str):
-		self.logFatal(text)
-
-
-	def warning(self, text: str):
-		self.logWarning(text)
 
 
 	def loadSnipsConfigurations(self) -> TomlFile:

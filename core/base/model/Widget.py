@@ -8,13 +8,20 @@ from typing import Dict, Match, Optional
 import re
 
 from core.base.model.ProjectAliceObject import ProjectAliceObject
-from core.base.model.widgetSizes import WidgetSizes
+from core.base.model.WidgetSizes import WidgetSizes
 
 
 class Widget(ProjectAliceObject):
-	SIZE = WidgetSizes.w
+	DEFAULT_SIZE = WidgetSizes.w
 
-	OPTIONS = dict()
+	DEFAULT_OPTIONS = dict()
+	CUSTOM_STYLE = {
+		'background': '',
+		'background-opacity': '1.0',
+		'color': '',
+		'font-size': '1.0',
+		'titlebar': 'True'
+	}
 
 	def __init__(self, data: sqlite3.Row):
 		super().__init__()
@@ -23,16 +30,59 @@ class Widget(ProjectAliceObject):
 		self._skillInstance = None
 
 		# sqlite3.Row does not support .get like dicts
-		self._state = data['state'] if 'state' in data.keys() else 0
-		self._x = data['posx'] if 'posx' in data.keys() else 0
-		self._y = data['posy'] if 'posy' in data.keys() else 0
-		self._size = self.SIZE.value
+		# Many checks here because of NOT NULL DB constraints
+		updateWidget = False
+		if 'state' in data.keys() and data['state']:
+			self._state = int(data['state'])
+		else:
+			self._state = 0
+			updateWidget = True
 
-		self._options = self.OPTIONS
+		if 'posx' in data.keys() and data['posx']:
+			self._x = data['posx']
+		else:
+			self._x = 10
+			updateWidget = True
+
+		if 'posy' in data.keys() and data['posy']:
+			self._y = data['posy']
+		else:
+			self._y = 10
+			updateWidget = True
+
+		if 'height' in data.keys() and data['height']:
+			self._height = data['height']
+		else:
+			self._height = 0
+			updateWidget = True
+
+		if 'width' in data.keys() and data['width']:
+			self._width = data['width']
+		else:
+			self._width = 0
+			updateWidget = True
+
+		self._size = self.DEFAULT_SIZE.value
+
+		self._options = self.DEFAULT_OPTIONS
 		if 'options' in data.keys():
 			self._options.update(json.loads(data['options']))
 
-		self._zindex = data['zindex'] if 'zindex' in data.keys() else 9999
+		self._custStyle = self.CUSTOM_STYLE.copy()
+		if 'custStyle' in data.keys() and data['custStyle']:
+			self._custStyle.update(json.loads(data['custStyle']))
+		else:
+			updateWidget = True
+
+		if 'zindex' in data.keys() and data['zindex'] is not None:
+			self._zindex = data['zindex']
+		else:
+			self._zindex = 999
+			updateWidget = True
+
+		if updateWidget:
+			self.saveToDB()
+
 		self._language = self.loadLanguage()
 
 
@@ -57,15 +107,18 @@ class Widget(ProjectAliceObject):
 	def saveToDB(self):
 		self.DatabaseManager.replace(
 			tableName='widgets',
-			query='REPLACE INTO :__table__ (parent, name, posx, posy, state, options, zindex) VALUES (:parent, :name, :posx, :posy, :state, :options, :zindex)',
+			query='REPLACE INTO :__table__ (parent, name, posx, posy, height, width, state, options, custStyle, zindex) VALUES (:parent, :name, :posx, :posy, :height, :width, :state, :options, :custStyle, :zindex)',
 			callerName=self.SkillManager.name,
 			values={
 				'parent': self.parent,
 				'name': self.name,
 				'posx': self.x,
 				'posy': self.y,
+				'height': self.height,
+				'width': self.width,
 				'state': self.state,
 				'options': json.dumps(self.options),
+				'custStyle': json.dumps(self.custStyle),
 				'zindex': self.zindex
 			}
 		)
@@ -80,7 +133,6 @@ class Widget(ProjectAliceObject):
 			file = self.getCurrentDir() / f'templates/{self.name}.html'
 			fp = file.open()
 			content = fp.read()
-			# noinspection PyTypeChecker
 			content = re.sub(r'{{ lang\.([\w]*) }}', self.langReplace, content)
 
 			return content
@@ -161,6 +213,26 @@ class Widget(ProjectAliceObject):
 
 
 	@property
+	def height(self) -> int:
+		return self._height
+
+
+	@height.setter
+	def height(self, value: int):
+		self._height = value
+
+
+	@property
+	def width(self) -> int:
+		return self._width
+
+
+	@width.setter
+	def width(self, value: int):
+		self._width = value
+
+
+	@property
 	def options(self) -> dict:
 		return self._options
 
@@ -168,6 +240,24 @@ class Widget(ProjectAliceObject):
 	@options.setter
 	def options(self, value: str):
 		self._options = value
+
+
+	@property
+	def custStyle(self) -> dict:
+		return self._custStyle
+
+
+	@custStyle.setter
+	def custStyle(self, value: str):
+		self._custStyle = value
+
+
+	@property
+	def backgroundRGBA(self) -> str:
+		color = self._custStyle['background'].lstrip('#')
+		rgb = list(int(color[i:i + 2], 16) for i in (0, 2, 4))
+		rgb.append(self._custStyle['background-opacity'])
+		return ', '.join(str(i) for i in rgb)
 
 
 	@property
@@ -191,6 +281,7 @@ class Widget(ProjectAliceObject):
 			 Parent: {self.parent}
 			 Name: {self.name}
 			 Size: {self.size}
+			 CustomSize: {self.height}/{self.width}
 			 State: {self.state}
 			 PosX: {self.x}
 			 PosY: {self.y}
