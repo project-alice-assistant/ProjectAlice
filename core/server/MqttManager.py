@@ -57,7 +57,7 @@ class MqttManager(Manager):
 		self._mqttClient.message_callback_add(constants.TOPIC_TTS_SAY, self.intentSay)
 		self._mqttClient.message_callback_add(constants.TOPIC_TTS_FINISHED, self.onSnipsSayFinished)
 		self._mqttClient.message_callback_add(constants.TOPIC_SESSION_ENDED, self.sessionEnded)
-		self._mqttClient.message_callback_add(constants.TOPIC_CONTINUE_SESSION, self.onSnipsContinueSession)
+		self._mqttClient.message_callback_add(constants.TOPIC_CONTINUE_SESSION, self.continueSession)
 		self._mqttClient.message_callback_add(constants.TOPIC_INTENT_NOT_RECOGNIZED, self.intentNotRecognized)
 		self._mqttClient.message_callback_add(constants.TOPIC_SESSION_QUEUED, self.onSnipsSessionQueued)
 		self._mqttClient.message_callback_add(constants.TOPIC_NLU_QUERY, self.onTopicNluQuery)
@@ -411,13 +411,14 @@ class MqttManager(Manager):
 					self.onMqttMessage(_client=client, _userdata=data, message=message)
 
 
-	def onSnipsContinueSession(self, _client, _data, msg: mqtt.MQTTMessage):
+	def continueSession(self, _client, _data, msg: mqtt.MQTTMessage):
 		sessionId = self.Commons.parseSessionId(msg)
-		session = self.DialogSessionManager.getSession(sessionId)
+		session = self.DialogManager.getSession(sessionId)
 		if session:
 			session.update(msg)
-
-		self.broadcast(method=constants.EVENT_CONTINUE_SESSION, exceptions=[self.name], propagateToSkills=True, session=session)
+			self.broadcast(method=constants.EVENT_CONTINUE_SESSION, exceptions=[self.name], propagateToSkills=True, session=session)
+		else:
+			self.logWarning(f'Was asked to continue session with id **{sessionId}** but session does not exist')
 
 
 	def sessionEnded(self, _client, data, msg: mqtt.MQTTMessage):
@@ -529,7 +530,10 @@ class MqttManager(Manager):
 			if session.notUnderstood < self.ConfigManager.getAliceConfigByName('notUnderstoodRetries'):
 				session.notUnderstood = session.notUnderstood + 1
 				#self.reviveSession(session, self.TalkManager.randomTalk('notUnderstood', skill='system'))
-				self.ask(text=self.TalkManager.randomTalk('notUnderstood', skill='system'))
+				self.continueDialog(
+					sessionId=sessionId,
+					text=self.TalkManager.randomTalk('notUnderstood', skill='system')
+				)
 			else:
 				session.notUnderstood = 0
 				self.endDialog(sessionId=sessionId, text=self.TalkManager.randomTalk('notUnderstoodEnd', skill='system'))
@@ -802,7 +806,7 @@ class MqttManager(Manager):
 			else:
 				jsonDict['slot'] = slot
 
-		session = self.DialogSessionManager.getSession(sessionId=sessionId)
+		session = self.DialogManager.getSession(sessionId=sessionId)
 		session.intentFilter = intentFilter
 		if probabilityThreshold is not None:
 			session.probabilityThreshold = probabilityThreshold

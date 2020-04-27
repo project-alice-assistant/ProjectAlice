@@ -174,7 +174,7 @@ class GoogleTTS(TTS):
 			imput = texttospeech.types.module.SynthesisInput(ssml=self._text)
 			audio = texttospeech.types.module.AudioConfig(
 				audio_encoding=texttospeech.enums.AudioEncoding.MP3,
-				sample_rate_hertz=22050
+				sample_rate_hertz=16000
 			)
 			voice = texttospeech.types.module.VoiceSelectionParams(
 				language_code=self._lang,

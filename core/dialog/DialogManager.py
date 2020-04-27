@@ -81,6 +81,8 @@ class DialogManager(Manager):
 
 
 	def startSessionTimeout(self, sessionId: str):
+		self.cancelSessionTimeout(sessionId=sessionId)
+
 		self._sessionTimeouts[sessionId] = self.ThreadManager.newTimer(
 			interval=self.ConfigManager.getAliceConfigByName('sessionTimeout'),
 			func=self.sessionTimeout,
@@ -88,6 +90,12 @@ class DialogManager(Manager):
 				'sessionId': sessionId
 			}
 		)
+
+
+	def cancelSessionTimeout(self, sessionId: str):
+		timer = self._sessionTimeouts.pop(sessionId, None)
+		if timer:
+			timer.cancel()
 
 
 	def sessionTimeout(self, sessionId: str):
@@ -225,6 +233,19 @@ class DialogManager(Manager):
 				)
 
 
+	def onContinueSession(self, session: DialogSession):
+		self.startSessionTimeout(sessionId=session.sessionId)
+		self.MqttManager.publish(
+			topic=constants.TOPIC_TTS_SAY,
+			payload={
+				'text'     : session.payload['text'],
+				'lang'     : self.LanguageManager.activeLanguageAndCountryCode,
+				'siteId'   : session.siteId,
+				'sessionId': session.sessionId
+			}
+		)
+
+
 	def onSessionEnded(self, session: DialogSession):
 		"""
 		Session has ended, enable hotword capture and disable ASR
@@ -244,15 +265,6 @@ class DialogManager(Manager):
 		)
 
 		self.removeSession(sessionId=session.sessionId)
-		self.onContinueSession(session=session)
-
-
-	def onContinueSession(self, session: DialogSession):
-		if session.sessionId not in self._sessionTimeouts:
-			return
-
-		timer = self._sessionTimeouts[session.sessionId]
-		timer.cancel()
 
 
 	def onToggleFeedbackOn(self, siteId: str):
@@ -268,6 +280,8 @@ class DialogManager(Manager):
 
 
 	def removeSession(self, sessionId: str):
+		self.cancelSessionTimeout(sessionId=sessionId)
+
 		session = self._sessionsById.pop(sessionId, None)
 		if not session:
 			return
