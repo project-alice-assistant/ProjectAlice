@@ -1,3 +1,4 @@
+import time
 import wave
 
 import io
@@ -37,7 +38,6 @@ class AudioManager(Manager):
 			return
 
 		self.logInfo(f'Using **{self._audioInput["name"]}** for audio input')
-
 		self._vad = Vad(2)
 
 
@@ -131,23 +131,25 @@ class AudioManager(Manager):
 					channels = wav.getnchannels()
 					framerate = wav.getframerate()
 
+					def streamCallback(inData, frameCount, imeInfo, status) -> tuple:
+						data = wav.readframes(frameCount)
+						return data, pyaudio.paContinue
+
 					audioStream = self._audio.open(
 						format=nFormat,
 						channels=channels,
 						rate=framerate,
-						output=True
+						output=True,
+						stream_callback=streamCallback
 					)
 
 					self.logDebug(f'Playing wav stream using **{self._audioOutput["name"]}** on site id **{siteId}**')
-
-					frame = wav.readframes(512)
-					while frame:
-						audioStream.write(frame)
-						frame = wav.readframes(512)
+					audioStream.start_stream()
+					while audioStream.is_active():
+						time.sleep(0.1)
 
 					audioStream.stop_stream()
 					audioStream.close()
-
 			except Exception as e:
 				self.logError(f'Playing wav failed with error: {e}')
 
