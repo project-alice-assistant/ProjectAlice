@@ -1,7 +1,7 @@
 import uuid
 from pathlib import Path
 from threading import Timer
-from typing import Dict, Optional
+from typing import Dict, List, Optional
 
 from core.base.model.Manager import Manager
 from core.commons import constants
@@ -25,6 +25,7 @@ class DialogManager(Manager):
 		self._endedSessions: Dict[str: DialogSession] = dict()
 		self._feedbackSounds: Dict[str: bool] = dict()
 		self._sessionTimeouts: Dict[str, Timer] = dict()
+		self._says: List[str] = list()
 
 
 	def onHotword(self, siteId: str, user: str = constants.UNKNOWN_USER):
@@ -48,9 +49,21 @@ class DialogManager(Manager):
 		# Play chime if needed
 		if self._feedbackSounds.get('siteId', True):
 			# Adding the session id is custom!
+			# self.MqttManager.publish(
+			# 	topic=constants.TOPIC_PLAY_BYTES.format(siteId).replace('#', f'{session.sessionId}/{requestId}'),
+			# 	payload=bytearray(Path('assistant/custom_dialogue/sound/start_of_input.wav').read_bytes())
+			# )
+			uid = str(uuid.uuid4())
+			self.addSayUuid(uid)
 			self.MqttManager.publish(
-				topic=constants.TOPIC_PLAY_BYTES.format(siteId).replace('#', f'{session.sessionId}/{requestId}'),
-				payload=bytearray(Path('assistant/custom_dialogue/sound/start_of_input.wav').read_bytes())
+				topic=constants.TOPIC_TTS_SAY,
+				payload={
+					'text'     : 'yes?',
+					'lang'     : self.LanguageManager.activeLanguageAndCountryCode,
+					'siteId'   : siteId,
+					'sessionId': session.sessionId,
+					'uid'      : uid
+				}
 			)
 		else:
 			self.onPlayBytesFinished(requestId=requestId, siteId=siteId, sessionId=session.sessionId)
@@ -70,7 +83,8 @@ class DialogManager(Manager):
 
 		session = self._sessionsById.get(sessionId, None)
 
-		if not session:
+		if not session or requestId in self._says:
+			print('not a say')
 			return
 
 		if not session.inDialog:
@@ -86,11 +100,22 @@ class DialogManager(Manager):
 	def onSayFinished(self, session: DialogSession):
 		"""
 		Triggers when a TTS say has finished playing.
-		If the session is currently in dialog, we start listening again
+		If the session has not yet ended and is currently in dialog, we start listening again
 		:param session:
 		:return:
 		"""
-		if session.inDialog:
+		print('say finished')
+
+		if session.hasEnded:
+			return
+
+		if not session.inDialog:
+			self.onStartSession(
+				siteId=session.siteId,
+				init=dict(),
+				customData=dict()
+			)
+		else:
 			self.onSessionStarted(session=session)
 
 
@@ -243,13 +268,17 @@ class DialogManager(Manager):
 
 		if init:
 			if init['type'] == 'notification':
+				uid = str(uuid.uuid4())
+				self.addSayUuid(uid)
+
 				self.MqttManager.publish(
 					topic=constants.TOPIC_TTS_SAY,
 					payload={
 						'text'     : init['text'],
 						'lang'     : self.LanguageManager.activeLanguageAndCountryCode,
 						'siteId'   : siteId,
-						'sessionId': session.sessionId
+						'sessionId': session.sessionId,
+						'uid'      : uid
 					}
 				)
 
@@ -286,6 +315,10 @@ class DialogManager(Manager):
 		)
 
 		self.removeSession(sessionId=session.sessionId)
+
+
+	def addSayUuid(self, uid: str):
+		self._says.append(uid)
 
 
 	def onToggleFeedbackOn(self, siteId: str):

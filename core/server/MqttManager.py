@@ -55,7 +55,7 @@ class MqttManager(Manager):
 		self._mqttClient.message_callback_add(constants.TOPIC_INTENT_PARSED, self.intentParsed)
 		self._mqttClient.message_callback_add(constants.TOPIC_TEXT_CAPTURED, self.captured)
 		self._mqttClient.message_callback_add(constants.TOPIC_TTS_SAY, self.intentSay)
-		self._mqttClient.message_callback_add(constants.TOPIC_TTS_FINISHED, self.onSnipsSayFinished)
+		self._mqttClient.message_callback_add(constants.TOPIC_TTS_FINISHED, self.sayFinished)
 		self._mqttClient.message_callback_add(constants.TOPIC_SESSION_ENDED, self.sessionEnded)
 		self._mqttClient.message_callback_add(constants.TOPIC_CONTINUE_SESSION, self.continueSession)
 		self._mqttClient.message_callback_add(constants.TOPIC_INTENT_NOT_RECOGNIZED, self.intentNotRecognized)
@@ -471,10 +471,11 @@ class MqttManager(Manager):
 		self.broadcast(method=constants.EVENT_SAY, exceptions=[self.name], propagateToSkills=True, session=session)
 
 
-	def onSnipsSayFinished(self, _client, _data, msg: mqtt.MQTTMessage):
+	def sayFinished(self, _client, _data, msg: mqtt.MQTTMessage):
 		sessionId = self.Commons.parseSessionId(msg)
+		print('mqtt say finished')
 
-		session = self.DialogSessionManager.getSession(sessionId)
+		session = self.DialogManager.getSession(sessionId)
 		if session:
 			session.update(msg)
 

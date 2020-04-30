@@ -1,4 +1,5 @@
 import getpass
+import uuid
 from pathlib import Path
 from typing import Optional
 
@@ -158,11 +159,14 @@ class TTS(ProjectAliceObject):
 
 
 	def _speak(self, file: Path, session: DialogSession):
+		uid = str(uuid.uuid4())
+		self.DialogManager.addSayUuid(uid)
 		SuperManager.getInstance().mqttManager.playSound(
 			soundFilename=file.stem,
 			location=file.parent,
 			sessionId=session.sessionId,
-			siteId=session.siteId
+			siteId=session.siteId,
+			uid=uid
 		)
 
 		duration = round(len(AudioSegment.from_file(file)) / 1000, 2)
