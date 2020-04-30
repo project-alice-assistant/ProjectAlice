@@ -73,11 +73,25 @@ class DialogManager(Manager):
 		if not session:
 			return
 
-		self.onStartSession(
-			siteId=siteId,
-			init=dict(),
-			customData=dict()
-		)
+		if not session.inDialog:
+			self.onStartSession(
+				siteId=siteId,
+				init=dict(),
+				customData=dict()
+			)
+		else:
+			self.onSessionStarted(session=session)
+
+
+	def onSayFinished(self, session: DialogSession):
+		"""
+		Triggers when a TTS say has finished playing.
+		If the session is currently in dialog, we start listening again
+		:param session:
+		:return:
+		"""
+		if session.inDialog:
+			self.onSessionStarted(session=session)
 
 
 	def startSessionTimeout(self, sessionId: str):
@@ -127,6 +141,8 @@ class DialogManager(Manager):
 		:param session:
 		:return:
 		"""
+		self.startSessionTimeout(sessionId=session.sessionId)
+
 		self.MqttManager.publish(
 			topic=constants.TOPIC_ASR_TOGGLE_ON
 		)
@@ -146,6 +162,8 @@ class DialogManager(Manager):
 		:param session:
 		:return:
 		"""
+		self.cancelSessionTimeout(sessionId=session.sessionId)
+
 		self.MqttManager.publish(
 			topic=constants.TOPIC_ASR_STOP_LISTENING,
 			payload={
@@ -161,6 +179,11 @@ class DialogManager(Manager):
 				'intentFilter': session.intentFilter,
 				'sessionId'   : session.sessionId
 			}
+		)
+
+		self.MqttManager.publish(
+			topic=constants.TOPIC_PLAY_BYTES.format(session.siteId).replace('#', f'{uuid.uuid4()}'),
+			payload=bytearray(Path('assistant/custom_dialogue/sound/end_of_input.wav').read_bytes())
 		)
 
 
@@ -218,9 +241,7 @@ class DialogManager(Manager):
 			}
 		)
 
-		if not init:
-			self.startSessionTimeout(sessionId=session.sessionId)
-		else:
+		if init:
 			if init['type'] == 'notification':
 				self.MqttManager.publish(
 					topic=constants.TOPIC_TTS_SAY,
@@ -234,7 +255,7 @@ class DialogManager(Manager):
 
 
 	def onContinueSession(self, session: DialogSession):
-		self.startSessionTimeout(sessionId=session.sessionId)
+		print('im here')
 		self.MqttManager.publish(
 			topic=constants.TOPIC_TTS_SAY,
 			payload={
@@ -253,15 +274,15 @@ class DialogManager(Manager):
 		:return:
 		"""
 		self.MqttManager.publish(
+			topic=constants.TOPIC_ASR_TOGGLE_OFF
+		)
+
+		self.MqttManager.publish(
 			topic=constants.TOPIC_HOTWORD_TOGGLE_ON,
 			payload={
 				'siteId'   : session.siteId,
 				'sessionId': session.sessionId
 			}
-		)
-
-		self.MqttManager.publish(
-			topic=constants.TOPIC_ASR_TOGGLE_OFF
 		)
 
 		self.removeSession(sessionId=session.sessionId)

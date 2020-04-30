@@ -101,7 +101,15 @@ class ASRManager(Manager):
 
 	def onStartListening(self, session: DialogSession):
 		self._asr.onStartListening(session)
+		print('start listening')
 		self.ThreadManager.newThread(name=f'streamdecode_{session.siteId}', target=self.decodeStream, args=[session])
+
+
+	def onStopListening(self, session: DialogSession):
+		if session.siteId not in self._streams:
+			return
+
+		self._streams[session.siteId].stopRecording()
 
 
 	def onPartialTextCaptured(self, session: DialogSession, text: str, likelihood: float, seconds: float):
@@ -112,8 +120,6 @@ class ASRManager(Manager):
 		result: ASRResult = self._asr.decodeStream(session)
 
 		if result and result.text:
-			self.MqttManager.publish(topic=constants.TOPIC_ASR_STOP_LISTENING, payload={'sessionId': session.sessionId, 'siteId': session.siteId})
-
 			if session.hasEnded:
 				return
 
@@ -127,17 +133,12 @@ class ASRManager(Manager):
 
 			self.MqttManager.publish(topic=constants.TOPIC_TEXT_CAPTURED, payload={'sessionId': session.sessionId, 'text': text, 'siteId': session.siteId, 'likelihood': result.likelihood, 'seconds': result.processingTime})
 		else:
-			if session.hasEnded:
-				return
-
-			self.MqttManager.publish(topic=constants.TOPIC_INTENT_NOT_RECOGNIZED)
 			self.MqttManager.playSound(
 				soundFilename='error',
 				location=Path('assistant/custom_dialogue/sound'),
-				siteId=session.siteId
+				siteId=session.siteId,
+				sessionId=session.sessionId
 			)
-
-		self._streams.pop(session.siteId, None)
 
 
 	def onAudioFrame(self, message: mqtt.MQTTMessage, siteId: str):

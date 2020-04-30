@@ -416,6 +416,7 @@ class MqttManager(Manager):
 		session = self.DialogManager.getSession(sessionId)
 		if session:
 			session.update(msg)
+			print('ici')
 			self.broadcast(method=constants.EVENT_CONTINUE_SESSION, exceptions=[self.name], propagateToSkills=True, session=session)
 		else:
 			self.logWarning(f'Was asked to continue session with id **{sessionId}** but session does not exist')
@@ -530,6 +531,7 @@ class MqttManager(Manager):
 			if session.notUnderstood < self.ConfigManager.getAliceConfigByName('notUnderstoodRetries'):
 				session.notUnderstood = session.notUnderstood + 1
 				#self.reviveSession(session, self.TalkManager.randomTalk('notUnderstood', skill='system'))
+				print('here')
 				self.continueDialog(
 					sessionId=sessionId,
 					text=self.TalkManager.randomTalk('notUnderstood', skill='system')
@@ -808,6 +810,7 @@ class MqttManager(Manager):
 
 		session = self.DialogManager.getSession(sessionId=sessionId)
 		session.intentFilter = intentFilter
+		session.inDialog = True
 		if probabilityThreshold is not None:
 			session.probabilityThreshold = probabilityThreshold
 

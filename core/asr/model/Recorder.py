@@ -75,7 +75,7 @@ class Recorder(ProjectAliceObject):
 		data = list()
 		while not self._buffer.empty():
 			chunk = self._buffer.get(block=False)
-			if not chunk:
+			if not chunk or not self._recording:
 				break
 
 			data.append(chunk)
@@ -97,7 +97,7 @@ class Recorder(ProjectAliceObject):
 			while True:
 				try:
 					chunk = self._buffer.get(block=False)
-					if not chunk:
+					if not chunk or not self._recording:
 						return
 
 					data.append(chunk)

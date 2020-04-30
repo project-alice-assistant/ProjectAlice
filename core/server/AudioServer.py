@@ -50,6 +50,7 @@ class AudioManager(Manager):
 	def onStop(self):
 		super().onStop()
 		self.MqttManager.mqttClient.unsubscribe(constants.TOPIC_AUDIO_FRAME.format(constants.DEFAULT_SITE_ID))
+		self._audio.terminate()
 
 
 	def onHotword(self, siteId: str, user: str = constants.UNKNOWN_USER):
@@ -77,34 +78,40 @@ class AudioManager(Manager):
 		minSpeechFrames = round(silence / 3)
 
 		while True:
-			frames = audioStream.read(num_frames=320, exception_on_overflow=False)
-			if self._vad.is_speech(frames, 16000):
-				if not speech and speechFrames < minSpeechFrames:
-					speechFrames += 1
-				elif speechFrames >= minSpeechFrames:
-					speech = True
-					self.MqttManager.publish(
-						topic=constants.TOPIC_VAD_UP.format(constants.DEFAULT_SITE_ID),
-						payload={
-							'siteId': constants.DEFAULT_SITE_ID
-						})
-					silence = 16000 / 320
-					speechFrames = 0
-			else:
-				if speech:
-					if silence > 0:
-						silence -= 1
-					else:
-						speech = False
+			if self.ProjectAlice.shuttingDown:
+				break
+
+			try:
+				frames = audioStream.read(num_frames=320, exception_on_overflow=False)
+				if self._vad.is_speech(frames, 16000):
+					if not speech and speechFrames < minSpeechFrames:
+						speechFrames += 1
+					elif speechFrames >= minSpeechFrames:
+						speech = True
 						self.MqttManager.publish(
-							topic=constants.TOPIC_VAD_DOWN.format(constants.DEFAULT_SITE_ID),
+							topic=constants.TOPIC_VAD_UP.format(constants.DEFAULT_SITE_ID),
 							payload={
 								'siteId': constants.DEFAULT_SITE_ID
 							})
+						silence = 16000 / 320
+						speechFrames = 0
 				else:
-					speechFrames = 0
+					if speech:
+						if silence > 0:
+							silence -= 1
+						else:
+							speech = False
+							self.MqttManager.publish(
+								topic=constants.TOPIC_VAD_DOWN.format(constants.DEFAULT_SITE_ID),
+								payload={
+									'siteId': constants.DEFAULT_SITE_ID
+								})
+					else:
+						speechFrames = 0
 
-			self.publishAudioFrames(frames)
+				self.publishAudioFrames(frames)
+			except Exception as e:
+				self.logDebug(f'Error publishing frame: {e}')
 
 
 	def publishAudioFrames(self, frames: bytes):
@@ -131,7 +138,7 @@ class AudioManager(Manager):
 					channels = wav.getnchannels()
 					framerate = wav.getframerate()
 
-					def streamCallback(inData, frameCount, imeInfo, status) -> tuple:
+					def streamCallback(_inData, frameCount, _timeInfo, _status) -> tuple:
 						data = wav.readframes(frameCount)
 						return data, pyaudio.paContinue
 
