@@ -226,7 +226,7 @@ class ProjectAliceObject:
 		pass
 
 
-	def onSayFinished(self, session):
+	def onSayFinished(self, session, uid: str = None):
 		pass
 
 

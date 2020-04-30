@@ -170,18 +170,15 @@ class TTS(ProjectAliceObject):
 		)
 
 		duration = round(len(AudioSegment.from_file(file)) / 1000, 2)
-		SuperManager.getInstance().threadManager.doLater(interval=duration + 0.1, func=self._sayFinished, args=[session])
+		SuperManager.getInstance().threadManager.doLater(interval=duration + 0.1, func=self._sayFinished, args=[session, uid])
 
 
 	@staticmethod
-	def _sayFinished(session: DialogSession):
-		if 'id' not in session.payload:
-			return
-
+	def _sayFinished(session: DialogSession, uid: str):
 		SuperManager.getInstance().mqttManager.publish(
 			topic=constants.TOPIC_TTS_FINISHED,
 			payload={
-				'id': session.payload['id'],
+				'id': uid,
 				'sessionId': session.sessionId
 			}
 		)

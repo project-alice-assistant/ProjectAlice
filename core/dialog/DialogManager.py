@@ -84,7 +84,6 @@ class DialogManager(Manager):
 		session = self._sessionsById.get(sessionId, None)
 
 		if not session or requestId in self._says:
-			print('not a say')
 			return
 
 		if not session.inDialog:
@@ -97,17 +96,19 @@ class DialogManager(Manager):
 			self.onSessionStarted(session=session)
 
 
-	def onSayFinished(self, session: DialogSession):
+	def onSayFinished(self, session: DialogSession, uid: str = None):
 		"""
 		Triggers when a TTS say has finished playing.
 		If the session has not yet ended and is currently in dialog, we start listening again
+		:param uid:
 		:param session:
 		:return:
 		"""
-		print('say finished')
 
-		if session.hasEnded:
+		if session.hasEnded or not uid or not uid in self._says:
 			return
+
+		self._says.remove(uid)
 
 		if not session.inDialog:
 			self.onStartSession(
@@ -219,11 +220,17 @@ class DialogManager(Manager):
 		:return:
 		"""
 		self.MqttManager.publish(
-			topic=f'hermes/intent/',
+			topic=f'hermes/intent/{session.payload["intent"]["intentName"]}',
 			payload={
-				'input'       : session.payload['text'],
-				'intentFilter': session.intentFilter,
-				'sessionId'   : session.sessionId
+				'sessionId': session.sessionId,
+				'customData': session.customData,
+				'siteId': session.siteId,
+				'input'       : session.payload['input'],
+				'intent': session.payload['intent'],
+				'slots': session.payload['slots'],
+				'asrTokens': [],
+				'asrConfidence': session.payload['intent']['confidenceScore'],
+				'alternatives': session.payload['alternatives']
 			}
 		)
 
@@ -284,7 +291,6 @@ class DialogManager(Manager):
 
 
 	def onContinueSession(self, session: DialogSession):
-		print('im here')
 		self.MqttManager.publish(
 			topic=constants.TOPIC_TTS_SAY,
 			payload={

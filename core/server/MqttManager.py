@@ -416,7 +416,6 @@ class MqttManager(Manager):
 		session = self.DialogManager.getSession(sessionId)
 		if session:
 			session.update(msg)
-			print('ici')
 			self.broadcast(method=constants.EVENT_CONTINUE_SESSION, exceptions=[self.name], propagateToSkills=True, session=session)
 		else:
 			self.logWarning(f'Was asked to continue session with id **{sessionId}** but session does not exist')
@@ -473,13 +472,13 @@ class MqttManager(Manager):
 
 	def sayFinished(self, _client, _data, msg: mqtt.MQTTMessage):
 		sessionId = self.Commons.parseSessionId(msg)
-		print('mqtt say finished')
-
+		uid = ''
 		session = self.DialogManager.getSession(sessionId)
 		if session:
 			session.update(msg)
+			uid = session.payload['id']
 
-		self.broadcast(method=constants.EVENT_SAY_FINISHED, exceptions=[self.name], propagateToSkills=True, session=session)
+		self.broadcast(method=constants.EVENT_SAY_FINISHED, exceptions=[self.name], propagateToSkills=True, session=session, uid=uid)
 
 
 	def intentNotRecognized(self, _client, _data, msg: mqtt.MQTTMessage):
@@ -532,7 +531,6 @@ class MqttManager(Manager):
 			if session.notUnderstood < self.ConfigManager.getAliceConfigByName('notUnderstoodRetries'):
 				session.notUnderstood = session.notUnderstood + 1
 				#self.reviveSession(session, self.TalkManager.randomTalk('notUnderstood', skill='system'))
-				print('here')
 				self.continueDialog(
 					sessionId=sessionId,
 					text=self.TalkManager.randomTalk('notUnderstood', skill='system')
