@@ -25,6 +25,7 @@ class DialogManager(Manager):
 		self._endedSessions: Dict[str: DialogSession] = dict()
 		self._feedbackSounds: Dict[str: bool] = dict()
 		self._sessionTimeouts: Dict[str, Timer] = dict()
+		self._revivePendingSessions: Dict[str, DialogSession] = dict()
 		self._says: List[str] = list()
 
 
@@ -49,12 +50,9 @@ class DialogManager(Manager):
 		# Play chime if needed
 		if self._feedbackSounds.get('siteId', True):
 			# Adding the session id is custom!
-			# self.MqttManager.publish(
-			# 	topic=constants.TOPIC_PLAY_BYTES.format(siteId).replace('#', f'{session.sessionId}/{requestId}'),
-			# 	payload=bytearray(Path('assistant/custom_dialogue/sound/start_of_input.wav').read_bytes())
-			# )
 			uid = str(uuid.uuid4())
 			self.addSayUuid(uid)
+			# TODO unhardcode
 			self.MqttManager.publish(
 				topic=constants.TOPIC_TTS_SAY,
 				payload={
@@ -66,34 +64,7 @@ class DialogManager(Manager):
 				}
 			)
 		else:
-			self.onPlayBytesFinished(requestId=requestId, siteId=siteId, sessionId=session.sessionId)
-
-
-	def onPlayBytesFinished(self, requestId: str, siteId: str, sessionId: str = None):
-		"""
-		This is totally a hack, we report the session has started only when the sound has finished playing
-		:param sessionId: str
-		:param requestId: str
-		:param siteId: str
-		:return: none
-		"""
-
-		if not sessionId:
-			return
-
-		session = self._sessionsById.get(sessionId, None)
-
-		if not session or requestId in self._says:
-			return
-
-		if not session.inDialog:
-			self.onStartSession(
-				siteId=siteId,
-				init=dict(),
-				customData=dict()
-			)
-		else:
-			self.onSessionStarted(session=session)
+			self.onSayFinished(session=session, uid=requestId)
 
 
 	def onSayFinished(self, session: DialogSession, uid: str = None):
@@ -110,14 +81,27 @@ class DialogManager(Manager):
 
 		self._says.remove(uid)
 
-		if not session.inDialog:
-			self.onStartSession(
-				siteId=session.siteId,
-				init=dict(),
-				customData=dict()
+		if session.isEnding:
+			self.MqttManager.publish(
+				topic=constants.TOPIC_SESSION_ENDED,
+				payload={
+					'siteId'     : session.siteId,
+					'sessionId'  : session.sessionId,
+					'customData' : session.customData,
+					'termination': {
+						'reason': 'nominal'
+					}
+				}
 			)
 		else:
-			self.onSessionStarted(session=session)
+			if not session.inDialog:
+				self.onStartSession(
+					siteId=session.siteId,
+					init=dict(),
+					customData=dict()
+				)
+			else:
+				self.onSessionStarted(session=session)
 
 
 	def startSessionTimeout(self, sessionId: str):
@@ -302,12 +286,45 @@ class DialogManager(Manager):
 		)
 
 
+	def onEndSession(self, session: DialogSession):
+		text = session.payload['text']
+
+		if text:
+			session.isEnding = True
+			self.cancelSessionTimeout(sessionId=session.sessionId)
+
+			self.MqttManager.publish(
+				topic=constants.TOPIC_TTS_SAY,
+				payload={
+					'text'     : session.payload['text'],
+					'lang'     : self.LanguageManager.activeLanguageAndCountryCode,
+					'siteId'   : session.siteId,
+					'sessionId': session.sessionId
+				}
+			)
+		else:
+			self.MqttManager.publish(
+				topic=constants.TOPIC_SESSION_ENDED,
+				payload={
+					'siteId'     : session.siteId,
+					'sessionId'  : session.sessionId,
+					'customData' : session.customData,
+					'termination': {
+						'reason': 'nominal'
+					}
+				}
+			)
+
+
+
 	def onSessionEnded(self, session: DialogSession):
 		"""
 		Session has ended, enable hotword capture and disable ASR
 		:param session:
 		:return:
 		"""
+		session.hasEnded = True
+
 		self.MqttManager.publish(
 			topic=constants.TOPIC_ASR_TOGGLE_OFF
 		)
@@ -348,3 +365,21 @@ class DialogManager(Manager):
 
 		self._endedSessions[sessionId] = session
 		self._sessionsBySites.pop(session.siteId)
+
+
+	def addPreviousIntent(self, sessionId: str, previousIntent: str):
+		if sessionId not in self._sessionsById:
+			self.logWarning('Was asked to add a previous intent but session was not found')
+			return
+
+		session = self._sessionsById[sessionId]
+		session.addToHistory(previousIntent)
+
+
+	def planSessionRevival(self, session: DialogSession):
+		self._revivePendingSessions[session.siteId] = session
+
+
+	@property
+	def sessions(self) -> Dict[str, DialogSession]:
+		return self._sessionsById

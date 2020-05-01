@@ -64,7 +64,7 @@ class MqttManager(Manager):
 		self._mqttClient.message_callback_add(constants.TOPIC_PARTIAL_TEXT_CAPTURED, self.nluPartialCapture)
 		self._mqttClient.message_callback_add(constants.TOPIC_HOTWORD_TOGGLE_ON, self.hotwordToggleOn)
 		self._mqttClient.message_callback_add(constants.TOPIC_HOTWORD_TOGGLE_OFF, self.hotwordToggleOff)
-		self._mqttClient.message_callback_add(constants.TOPIC_END_SESSION, self.onEventEndSession)
+		self._mqttClient.message_callback_add(constants.TOPIC_END_SESSION, self.eventEndSession)
 		self._mqttClient.message_callback_add(constants.TOPIC_START_SESSION, self.startSession)
 		self._mqttClient.message_callback_add(constants.TOPIC_DEVICE_HEARTBEAT, self.deviceHeartbeat)
 		self._mqttClient.message_callback_add(constants.TOPIC_TOGGLE_FEEDBACK_ON, self.toggleFeedback)
@@ -191,7 +191,7 @@ class MqttManager(Manager):
 			payload = self.Commons.payload(message)
 			sessionId = self.Commons.parseSessionId(message)
 
-			session = self.DialogSessionManager.getSession(sessionId)
+			session = self.DialogManager.getSession(sessionId)
 			if session:
 				session.update(message)
 				if self.MultiIntentManager.processMessage(message):
@@ -286,7 +286,7 @@ class MqttManager(Manager):
 			self._multiDetectionsHolder = list()
 			return
 
-		sessions = self.DialogSessionManager.sessions
+		sessions = self.DialogManager.sessions
 		for sessionId in sessions:
 			payload = self.Commons.payload(sessions[sessionId].message)
 			if payload['siteId'] != self._multiDetectionsHolder[0]:
@@ -586,9 +586,9 @@ class MqttManager(Manager):
 		self.broadcast(method=constants.EVENT_VAD_DOWN, exceptions=[self.name], propagateToSkills=True, siteId=siteId)
 
 
-	def onEventEndSession(self, _client, _data, msg: mqtt.MQTTMessage):
+	def eventEndSession(self, _client, _data, msg: mqtt.MQTTMessage):
 		sessionId = self.Commons.parseSessionId(msg)
-		session = self.DialogSessionManager.getSession(sessionId)
+		session = self.DialogManager.getSession(sessionId)
 		if session:
 			session.update(msg)
 			self.broadcast(method=constants.EVENT_END_SESSION, exceptions=[self.name], propagateToSkills=True, session=session)
@@ -640,7 +640,7 @@ class MqttManager(Manager):
 
 	def reviveSession(self, session: DialogSession, text: str):
 		self.endSession(session.sessionId)
-		self.DialogSessionManager.planSessionRevival(session)
+		self.DialogManager.planSessionRevival(session)
 		previousIntent = session.previousIntent[-1] if session.previousIntent else None
 		self.ask(text=text, customData=session.customData, previousIntent=previousIntent, intentFilter=session.intentFilter, client=session.siteId)
 
@@ -776,7 +776,7 @@ class MqttManager(Manager):
 		"""
 
 		if previousIntent:
-			self.DialogSessionManager.addPreviousIntent(sessionId=sessionId, previousIntent=previousIntent)
+			self.DialogManager.addPreviousIntent(sessionId=sessionId, previousIntent=previousIntent)
 
 		jsonDict = {
 			'sessionId'              : sessionId,
@@ -831,7 +831,7 @@ class MqttManager(Manager):
 		if not sessionId:
 			return
 
-		session = self.DialogSessionManager.getSession(sessionId)
+		session = self.DialogManager.getSession(sessionId)
 		if session and session.isAPIGenerated:
 			return self.say(text=text, client=session.siteId)
 

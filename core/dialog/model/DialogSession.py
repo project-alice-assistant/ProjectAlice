@@ -21,6 +21,7 @@ class DialogSession:
 	currentState: str = constants.DEFAULT
 	isAPIGenerated: bool = False
 	hasEnded: bool = False
+	isEnding: bool = False
 	inDialog = False
 	probabilityThreshold: float = 0.5
 	text: str = ''
