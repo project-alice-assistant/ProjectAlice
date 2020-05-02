@@ -78,5 +78,9 @@
 	],
 	"offline": [
 		"Mi dispiace, ma non posso farlo se sono offline"
+	],
+	"notification": [
+		"si?",
+		"pronto?"
 	]
 }

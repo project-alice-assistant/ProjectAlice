@@ -139,6 +139,33 @@
 		"it": [
 			"modulo"
 		]
+	},
+	"cancelIntent": {
+		"en": [
+			"cancel",
+			"stop",
+			"shut up",
+			"silence"
+		],
+		"fr": [
+			"annule",
+			"annuler",
+			"stop",
+			"tais-toi",
+			"ta gueule"
+		],
+		"de": [
+			"abbrechen",
+			"annulieren",
+			"annuliere",
+			"ruhe",
+			"klappe zu"
+		],
+		"it": [
+			"annulla",
+			"sta 'zitto",
+			"silenzio"
+		]
 	}
 }
 

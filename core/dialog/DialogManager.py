@@ -52,11 +52,13 @@ class DialogManager(Manager):
 			# Adding the session id is custom!
 			uid = str(uuid.uuid4())
 			self.addSayUuid(uid)
-			# TODO unhardcode
 			self.MqttManager.publish(
 				topic=constants.TOPIC_TTS_SAY,
 				payload={
-					'text'     : 'yes?',
+					'text'     : self.TalkManager.randomTalk(
+						talk='notification',
+						skill='system'
+					),
 					'lang'     : self.LanguageManager.activeLanguageAndCountryCode,
 					'siteId'   : siteId,
 					'sessionId': session.sessionId,
@@ -181,6 +183,25 @@ class DialogManager(Manager):
 				'sessionId': session.sessionId
 			}
 		)
+
+		cancel = self.LanguageManager.getStrings(
+			skill='system',
+			key='cancelIntent'
+		)
+
+		if session.payload['text'].lower() in cancel:
+			self.MqttManager.publish(
+				topic=constants.TOPIC_SESSION_ENDED,
+				payload={
+					'siteId'     : session.siteId,
+					'sessionId'  : session.sessionId,
+					'customData' : session.customData,
+					'termination': {
+						'reason': 'abortedByUser'
+					}
+				}
+			)
+			return
 
 		self.MqttManager.publish(
 			topic=constants.TOPIC_NLU_QUERY,
