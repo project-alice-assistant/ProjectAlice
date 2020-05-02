@@ -714,8 +714,6 @@ class MqttManager(Manager):
 		if previousIntent:
 			session.intentHistory.append(previousIntent)
 
-		session.intentFilter = intentFilter
-
 		if currentDialogState:
 			session.currentState = currentDialogState
 
@@ -743,11 +741,13 @@ class MqttManager(Manager):
 			'sendIntentNotRecognized': True
 		}
 
+		intentList = list()
 		if intentFilter:
-			intentList = [str(x).replace('hermes/intent/', '') for x in intentFilter]
+			intentList = [x.replace('hermes/intent/', '') if isinstance(x, str) else x.justTopic for x in intentFilter]
 			initDict['intentFilter'] = intentList
 
 		jsonDict['init'] = initDict
+		session.intentFilter = intentList
 
 		if client == constants.ALL:
 			deviceList = self.DeviceManager.getDevicesByType('AliceSatellite', connectedOnly=True)
@@ -755,7 +755,7 @@ class MqttManager(Manager):
 
 			for device in deviceList:
 				device = device.replace('@mqtt', '')
-				self.ask(text=text, client=device, intentFilter=intentFilter, customData=customData)
+				self.ask(text=text, client=device, intentFilter=intentList, customData=customData)
 		else:
 			self._mqttClient.publish(constants.TOPIC_START_SESSION, json.dumps(jsonDict))
 
@@ -794,7 +794,7 @@ class MqttManager(Manager):
 
 		intentList = list()
 		if intentFilter:
-			intentList = [str(x).replace('hermes/intent/', '') for x in intentFilter]
+			intentList = [x.replace('hermes/intent/', '') if isinstance(x, str) else x.justTopic for x in intentFilter]
 			jsonDict['intentFilter'] = intentList
 
 		if slot:
@@ -806,7 +806,7 @@ class MqttManager(Manager):
 				jsonDict['slot'] = slot
 
 		session = self.DialogManager.getSession(sessionId=sessionId)
-		session.intentFilter = intentFilter
+		session.intentFilter = intentList
 		session.inDialog = True
 		if probabilityThreshold is not None:
 			session.probabilityThreshold = probabilityThreshold

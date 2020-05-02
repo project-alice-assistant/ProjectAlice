@@ -1,5 +1,4 @@
 import logging
-import traceback
 from typing import Match
 
 import re
@@ -18,7 +17,6 @@ class Logger:
 
 	def logError(self, msg: str, plural: str = None):
 		self.doLog(function='error', msg=msg, plural=plural)
-		self.printTraceback()
 
 
 	def logDebug(self, msg: str, plural: str = None):
@@ -27,7 +25,6 @@ class Logger:
 
 	def logFatal(self, msg: str, plural: str = None):
 		self.doLog(function='fatal', msg=msg, plural=plural)
-		self.printTraceback()
 		try:
 			from core.base.SuperManager import SuperManager
 
@@ -37,13 +34,15 @@ class Logger:
 
 
 	def logWarning(self, msg: str, printStack: bool = False, plural: str = None):
-		self.doLog(function='warning', msg=msg, printStack=printStack, plural=plural)
-		self.printTraceback()
+		from core.base.SuperManager import SuperManager
+		if SuperManager.getInstance().configManager.getAliceConfigByName('debug'):
+			self.doLog(function='warning', msg=msg, printStack=True, plural=plural)
+		else:
+			self.doLog(function='warning', msg=msg, printStack=printStack, plural=plural)
 
 
 	def logCritical(self, msg: str, plural: str = None):
 		self.doLog(function='critical', msg=msg, plural=plural)
-		self.printTraceback()
 
 
 	def doLog(self, function: callable, msg: str, printStack = True, plural: str = None):
@@ -72,10 +71,3 @@ class Logger:
 			return matched
 
 		return re.sub(r'([\d]+)(.*?)({})'.format(word), plural, string)
-
-
-	@staticmethod
-	def printTraceback():
-		from core.base.SuperManager import SuperManager
-		if SuperManager.getInstance().configManager.getAliceConfigByName('debug'):
-			traceback.print_exc()
