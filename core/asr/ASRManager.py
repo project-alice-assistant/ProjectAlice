@@ -4,6 +4,7 @@ from typing import Dict
 
 import paho.mqtt.client as mqtt
 from googletrans import Translator
+from langdetect import detect
 
 from core.asr.model import Asr
 from core.asr.model.ASRResult import ASRResult
@@ -124,11 +125,12 @@ class ASRManager(Manager):
 
 			self.logDebug(f'ASR captured: {result.text}')
 
-			overrideLanguage = self.LanguageManager.overrideLanguage
 			text = result.text
-			if overrideLanguage:
-				text = self._translator.translate(text=text, src=overrideLanguage, dest='en').text
-				self.logDebug(f'ASR translated to: {text}')
+			if self.LanguageManager.overrideLanguage and not self.ConfigManager.getAliceConfigByName('stayCompletlyOffline') and not self.ConfigManager.getAliceConfigByName('keepASROffline'):
+				language = detect(text)
+				if language != 'en':
+					text = self._translator.translate(text=text, src=language, dest='en').text
+					self.logDebug(f'ASR translated to: {text}')
 
 			self.MqttManager.publish(topic=constants.TOPIC_TEXT_CAPTURED, payload={'sessionId': session.sessionId, 'text': text, 'siteId': session.siteId, 'likelihood': result.likelihood, 'seconds': result.processingTime})
 		else:
