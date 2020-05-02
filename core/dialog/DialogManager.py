@@ -29,12 +29,17 @@ class DialogManager(Manager):
 		self._says: List[str] = list()
 
 
-	def onHotword(self, siteId: str, user: str = constants.UNKNOWN_USER):
-		self._endedSessions[siteId] = self._sessionsById.pop(siteId, None)
-
+	def newSession(self, siteId: str, user: str = constants.UNKNOWN_USER) -> DialogSession:
 		session = DialogSession(siteId=siteId, user=user, sessionId=str(uuid.uuid4()))
 		self._sessionsById[session.sessionId] = session
 		self._sessionsBySites[siteId] = session
+		return session
+
+
+	def onHotword(self, siteId: str, user: str = constants.UNKNOWN_USER):
+		self._endedSessions[siteId] = self._sessionsById.pop(siteId, None)
+
+		session = self.newSession(siteId=siteId, user=user)
 
 		# Turn off the wakeword component
 		self.MqttManager.publish(
@@ -99,8 +104,7 @@ class DialogManager(Manager):
 			if not session.inDialog:
 				self.onStartSession(
 					siteId=session.siteId,
-					init=dict(),
-					customData=dict()
+					payload=dict()
 				)
 			else:
 				self.onSessionStarted(session=session)
@@ -204,17 +208,17 @@ class DialogManager(Manager):
 			return
 
 		self.MqttManager.publish(
-			topic=constants.TOPIC_NLU_QUERY,
-			payload={
-				'input'       : session.payload['text'],
-				'intentFilter': session.intentFilter,
-				'sessionId'   : session.sessionId
-			}
+			topic=constants.TOPIC_PLAY_BYTES.format(session.siteId).replace('#', f'{uuid.uuid4()}'),
+			payload=bytearray(Path('assistant/custom_dialogue/sound/end_of_input.wav').read_bytes())
 		)
 
 		self.MqttManager.publish(
-			topic=constants.TOPIC_PLAY_BYTES.format(session.siteId).replace('#', f'{uuid.uuid4()}'),
-			payload=bytearray(Path('assistant/custom_dialogue/sound/end_of_input.wav').read_bytes())
+			topic=constants.TOPIC_NLU_QUERY,
+			payload={
+				'input'       : session.payload['text'],
+				'intentFilter': session.intentFilter if session.intentFilter else None,
+				'sessionId'   : session.sessionId
+			}
 		)
 
 
@@ -257,17 +261,17 @@ class DialogManager(Manager):
 		)
 
 
-	def onStartSession(self, siteId: str, init: dict, customData: dict):
+	def onStartSession(self, siteId: str, payload: dict):
 		"""
 		Starts a new session
 		:param siteId:
-		:param init:
-		:param customData:
+		:param payload:
 		:return:
 		"""
 		session = self._sessionsBySites.get(siteId, None)
 		if not session:
-			return
+			# The session was started programmatically, we need to create one
+			session = self.newSession(siteId=siteId)
 
 		self.MqttManager.publish(
 			topic=constants.TOPIC_SESSION_STARTED,
@@ -278,21 +282,22 @@ class DialogManager(Manager):
 			}
 		)
 
-		if init:
-			if init['type'] == 'notification':
-				uid = str(uuid.uuid4())
-				self.addSayUuid(uid)
+		if 'init' in payload:
+			if payload['init']['type'] == 'notification':
+				session.isEnding = True
 
-				self.MqttManager.publish(
-					topic=constants.TOPIC_TTS_SAY,
-					payload={
-						'text'     : init['text'],
-						'lang'     : self.LanguageManager.activeLanguageAndCountryCode,
-						'siteId'   : siteId,
-						'sessionId': session.sessionId,
-						'uid'      : uid
-					}
-				)
+			uid = str(uuid.uuid4())
+			self.addSayUuid(uid)
+			self.MqttManager.publish(
+				topic=constants.TOPIC_TTS_SAY,
+				payload={
+					'text'     : payload['init']['text'],
+					'lang'     : self.LanguageManager.activeLanguageAndCountryCode,
+					'siteId'   : siteId,
+					'sessionId': session.sessionId,
+					'uid'      : uid
+				}
+			)
 
 
 	def onContinueSession(self, session: DialogSession):

@@ -50,8 +50,8 @@ class MqttManager(Manager):
 		self._mqttClient.message_callback_add(constants.TOPIC_SESSION_STARTED, self.sessionStarted)
 		self._mqttClient.message_callback_add(constants.TOPIC_ASR_START_LISTENING, self.startListening)
 		self._mqttClient.message_callback_add(constants.TOPIC_ASR_STOP_LISTENING, self.stopListening)
-		self._mqttClient.message_callback_add(constants.TOPIC_ASR_TOGGLE_ON, self.onHermesAsrToggleOn)
-		self._mqttClient.message_callback_add(constants.TOPIC_ASR_TOGGLE_OFF, self.onHermesAsrToggleOff)
+		self._mqttClient.message_callback_add(constants.TOPIC_ASR_TOGGLE_ON, self.asrToggleOn)
+		self._mqttClient.message_callback_add(constants.TOPIC_ASR_TOGGLE_OFF, self.asrToggleOff)
 		self._mqttClient.message_callback_add(constants.TOPIC_INTENT_PARSED, self.intentParsed)
 		self._mqttClient.message_callback_add(constants.TOPIC_TEXT_CAPTURED, self.captured)
 		self._mqttClient.message_callback_add(constants.TOPIC_TTS_SAY, self.intentSay)
@@ -59,8 +59,8 @@ class MqttManager(Manager):
 		self._mqttClient.message_callback_add(constants.TOPIC_SESSION_ENDED, self.sessionEnded)
 		self._mqttClient.message_callback_add(constants.TOPIC_CONTINUE_SESSION, self.continueSession)
 		self._mqttClient.message_callback_add(constants.TOPIC_INTENT_NOT_RECOGNIZED, self.intentNotRecognized)
-		self._mqttClient.message_callback_add(constants.TOPIC_SESSION_QUEUED, self.onSnipsSessionQueued)
-		self._mqttClient.message_callback_add(constants.TOPIC_NLU_QUERY, self.onTopicNluQuery)
+		self._mqttClient.message_callback_add(constants.TOPIC_SESSION_QUEUED, self.sessionQueued)
+		self._mqttClient.message_callback_add(constants.TOPIC_NLU_QUERY, self.nluQuery)
 		self._mqttClient.message_callback_add(constants.TOPIC_PARTIAL_TEXT_CAPTURED, self.nluPartialCapture)
 		self._mqttClient.message_callback_add(constants.TOPIC_HOTWORD_TOGGLE_ON, self.hotwordToggleOn)
 		self._mqttClient.message_callback_add(constants.TOPIC_HOTWORD_TOGGLE_OFF, self.hotwordToggleOff)
@@ -315,16 +315,16 @@ class MqttManager(Manager):
 			self.broadcast(method=constants.EVENT_SESSION_STARTED, exceptions=[self.name], propagateToSkills=True, session=session)
 
 
-	def onSnipsSessionQueued(self, _client, _data, msg: mqtt.MQTTMessage):
+	def sessionQueued(self, _client, _data, msg: mqtt.MQTTMessage):
 		sessionId = self.Commons.parseSessionId(msg)
-		session = self.DialogSessionManager.addSession(sessionId=sessionId, message=msg)
+		session = self.DialogManager.addSession(sessionId=sessionId, message=msg)
 
 		if session:
 			session.update(msg)
 			self.broadcast(method=constants.EVENT_SESSION_QUEUED, exceptions=[self.name], propagateToSkills=True, session=session)
 
 
-	def onTopicNluQuery(self, _client, _data, msg: mqtt.MQTTMessage):
+	def nluQuery(self, _client, _data, msg: mqtt.MQTTMessage):
 		sessionId = self.Commons.parseSessionId(msg)
 
 		session = self.DialogManager.getSession(sessionId)
@@ -336,11 +336,11 @@ class MqttManager(Manager):
 		self.broadcast(method=constants.EVENT_NLU_QUERY, exceptions=[self.name], propagateToSkills=True, session=session)
 
 
-	def onHermesAsrToggleOn(self, _client, _data, msg: mqtt.MQTTMessage):
+	def asrToggleOn(self, _client, _data, msg: mqtt.MQTTMessage):
 		self.broadcast(method=constants.EVENT_ASR_TOGGLE_ON, exceptions=[self.name], propagateToSkills=True, siteId=self.Commons.parseSiteId(msg))
 
 
-	def onHermesAsrToggleOff(self, _client, _data, msg: mqtt.MQTTMessage):
+	def asrToggleOff(self, _client, _data, msg: mqtt.MQTTMessage):
 		self.broadcast(method=constants.EVENT_ASR_TOGGLE_OFF, exceptions=[self.name], propagateToSkills=True, siteId=self.Commons.parseSiteId(msg))
 
 
@@ -560,14 +560,12 @@ class MqttManager(Manager):
 
 
 	def startSession(self, _client, _data, msg: mqtt.MQTTMessage):
-		payload = self.Commons.payload(msg)
 		self.broadcast(
 			method=constants.EVENT_START_SESSION,
 			exceptions=[self.name],
 			propagateToSkills=True,
 			siteId=self.Commons.parseSiteId(msg),
-			init=payload['init'],
-			customData=payload.get('customData', dict())
+			payload=self.Commons.payload(msg)
 		)
 
 
@@ -712,17 +710,17 @@ class MqttManager(Manager):
 			customData = dict()
 
 		user = customData.get('user', constants.UNKNOWN_USER) if customData else constants.UNKNOWN_USER
-		preSession = self.DialogSessionManager.preSession(client, user)
+		session = self.DialogManager.newSession(client, user)
 		if previousIntent:
-			preSession.intentHistory.append(previousIntent)
+			session.intentHistory.append(previousIntent)
 
-		preSession.intentFilter = intentFilter
+		session.intentFilter = intentFilter
 
 		if currentDialogState:
-			preSession.currentState = currentDialogState
+			session.currentState = currentDialogState
 
 		if probabilityThreshold is not None:
-			preSession.probabilityThreshold = probabilityThreshold
+			session.probabilityThreshold = probabilityThreshold
 
 		if client == constants.ALL:
 			if not customData:

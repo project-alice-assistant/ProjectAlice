@@ -214,7 +214,7 @@ class ProjectAliceObject:
 		pass
 
 
-	def onStartSession(self, siteId: str, init: dict, customData: dict):
+	def onStartSession(self, siteId: str, payload: dict):
 		pass
 
 
