@@ -235,6 +235,11 @@ class DialogManager(Manager):
 			payload=bytearray(Path('assistant/custom_dialogue/sound/end_of_input.wav').read_bytes())
 		)
 
+		# If we've set the filter to a random answer, forge the session and publish an intent captured as UserRandomAnswer
+		if session.intentFilter and session.intentFilter[-1] == 'UserRandomAnswer':
+			self.forgeUserRandomAnswer(session=session)
+			return
+
 		self.MqttManager.publish(
 			topic=constants.TOPIC_NLU_QUERY,
 			payload={
@@ -245,12 +250,28 @@ class DialogManager(Manager):
 		)
 
 
+	def forgeUserRandomAnswer(self, session: DialogSession):
+		"""
+		Forges a session and sends an onIntentParsed as if an intent was captured
+		:param session:
+		:return:
+		"""
+		session.payload['input'] = session.payload['text']
+		session.payload.setdefault('intent', dict())
+		session.payload['intent']['intentName'] = 'UserRandomAnswer'
+		session.payload['intent']['confidenceScore'] = 1.0
+		session.payload['alternatives'] = list()
+		session.payload['slots'] = list()
+		self.onIntentParsed(session)
+
+
 	def onIntentParsed(self, session: DialogSession):
 		"""
 		The NLU has parsed an intent, send that intent
 		:param session:
 		:return:
 		"""
+
 		self.MqttManager.publish(
 			topic=f'hermes/intent/{session.payload["intent"]["intentName"]}',
 			payload={
@@ -273,6 +294,11 @@ class DialogManager(Manager):
 		:param session:
 		:return:
 		"""
+		# If we've set the filter to a random answer, forge the session and publish an intent captured as UserRandomAnswer
+		if session.intentFilter and session.intentFilter[-1] == 'UserRandomAnswer':
+			self.forgeUserRandomAnswer(session=session)
+			return
+
 		self.MqttManager.publish(
 			topic=constants.TOPIC_INTENT_NOT_RECOGNIZED,
 			payload={

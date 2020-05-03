@@ -109,3 +109,8 @@ class DialogSession:
 	def addToHistory(self, intent: Intent):
 		if str(intent).startswith('hermes/intent'):
 			self.intentHistory.append(intent)
+
+
+	@property
+	def previousIntent(self) -> str:
+		return str(self.intentHistory[-1])

@@ -222,7 +222,8 @@ class MqttManager(Manager):
 					self.continueDialog(
 						sessionId=sessionId,
 						text=self.TalkManager.randomTalk('notUnderstood', skill='system'),
-						probabilityThreshold=session.probabilityThreshold
+						probabilityThreshold=session.probabilityThreshold,
+						intentFilter=session.intentFilter
 					)
 				else:
 					session.notUnderstood = 0
@@ -246,7 +247,8 @@ class MqttManager(Manager):
 
 				self.continueDialog(
 					sessionId=sessionId,
-					text=self.TalkManager.randomTalk('notUnderstood', skill='system')
+					text=self.TalkManager.randomTalk('notUnderstood', skill='system'),
+					intentFilter=session.intentFilter
 				)
 			else:
 				session.notUnderstood = 0
@@ -484,51 +486,15 @@ class MqttManager(Manager):
 		if not session:
 			self.ask(text=self.TalkManager.randomTalk('notUnderstood', skill='system'))
 		else:
-			# session.update(msg)
-			# if session.intentFilter and not str(self._INTENT_RANDOM_ANSWER) in session.intentFilter:
-			# 	print('returned')
-			# 	return
-			#
-			# payload = self.Commons.payload(msg)
-			# if 'input' in payload:
-			# 	# Trick the session into thinking it got RandomAnswer
-			# 	session.intentName = str(self._INTENT_RANDOM_ANSWER)
-			# 	session.message.topic = str(self._INTENT_RANDOM_ANSWER).encode('utf-8')
-			#
-			# 	# Forge the slot for total transparancy for skill devs
-			# 	slot = {
-			# 		'rawValue'    : payload['input'],
-			# 		'value'       : {
-			# 			'kind' : 'Custom',
-			# 			'value': payload['input']
-			# 		},
-			# 		'alternatives': [],
-			# 		'range'       : {
-			# 			'start': 0,
-			# 			'end'  : len(payload['input']) - 1
-			# 		},
-			# 		'entity'      : 'Alice/RandomWords',
-			# 		'slotName'    : 'RandomWord'
-			# 	}
-			#
-			# 	session.slots['RandomWord'] = payload['input']
-			# 	session.slotsAsObjects.get('RandomWord', list()).append(Slot(**slot))
-			#
-			# 	consumed = False
-			# 	for skill in self.SkillManager.activeSkills.values():
-			# 		if skill.onDispatchMessage(session):
-			# 			consumed = True
-			# 			break
-			#
-			# 	if consumed:
-			# 		return
+			intentFilter = session.intentFilter
 			session.update(msg)
 
 			if session.notUnderstood <= self.ConfigManager.getAliceConfigByName('notUnderstoodRetries'):
 				session.notUnderstood = session.notUnderstood + 1
 				self.continueDialog(
 					sessionId=sessionId,
-					text=self.TalkManager.randomTalk('notUnderstood', skill='system')
+					text=self.TalkManager.randomTalk('notUnderstood', skill='system'),
+					intentFilter=intentFilter
 				)
 			else:
 				session.notUnderstood = 0
