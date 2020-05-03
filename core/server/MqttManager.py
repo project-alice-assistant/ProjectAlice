@@ -10,10 +10,11 @@ import re
 from core.base.model.Intent import Intent
 from core.base.model.Manager import Manager
 from core.commons import constants
-from core.dialog.model.DialogSession import DialogSession
 
 
 class MqttManager(Manager):
+
+	DEFAULT_CLIENT_EXTENSION = '@mqtt'
 
 	def __init__(self):
 		super().__init__()
@@ -215,7 +216,7 @@ class MqttManager(Manager):
 			self.broadcast(method=constants.EVENT_INTENT, exceptions=[self.name], propagateToSkills=True, session=session)
 
 			if 'intent' in payload and float(payload['intent']['confidenceScore']) < session.probabilityThreshold:
-				if session.notUnderstood < self.ConfigManager.getAliceConfigByName('notUnderstoodRetries'):
+				if session.notUnderstood <= self.ConfigManager.getAliceConfigByName('notUnderstoodRetries'):
 					session.notUnderstood = session.notUnderstood + 1
 
 					self.continueDialog(
@@ -239,8 +240,8 @@ class MqttManager(Manager):
 			if consumed:
 				return
 
-			self.logWarning(f"Intent \"{message.topic}\" wasn't consumed by any skill")
-			if session.notUnderstood < self.ConfigManager.getAliceConfigByName('notUnderstoodRetries'):
+			self.logWarning(f"Intent **{message.topic}** wasn't consumed by any skill")
+			if session.notUnderstood <= self.ConfigManager.getAliceConfigByName('notUnderstoodRetries'):
 				session.notUnderstood = session.notUnderstood + 1
 
 				self.continueDialog(
@@ -326,10 +327,11 @@ class MqttManager(Manager):
 
 	def nluQuery(self, _client, _data, msg: mqtt.MQTTMessage):
 		sessionId = self.Commons.parseSessionId(msg)
+		siteId = self.Commons.parseSiteId(msg)
 
 		session = self.DialogManager.getSession(sessionId)
 		if not session:
-			session = self.DialogSessionManager.addSession(sessionId=sessionId, message=msg)
+			session = self.DialogManager.newSession(siteId=siteId)
 		else:
 			session.update(msg)
 
@@ -528,9 +530,8 @@ class MqttManager(Manager):
 			# 		return
 			session.update(msg)
 
-			if session.notUnderstood < self.ConfigManager.getAliceConfigByName('notUnderstoodRetries'):
+			if session.notUnderstood <= self.ConfigManager.getAliceConfigByName('notUnderstoodRetries'):
 				session.notUnderstood = session.notUnderstood + 1
-				#self.reviveSession(session, self.TalkManager.randomTalk('notUnderstood', skill='system'))
 				self.continueDialog(
 					sessionId=sessionId,
 					text=self.TalkManager.randomTalk('notUnderstood', skill='system')
@@ -636,13 +637,6 @@ class MqttManager(Manager):
 		self.broadcast(method=method, exceptions=[self.name], propagateToSkills=True, siteId=siteId)
 
 
-	def reviveSession(self, session: DialogSession, text: str):
-		self.endSession(session.sessionId)
-		self.DialogManager.planSessionRevival(session)
-		previousIntent = session.previousIntent[-1] if session.previousIntent else None
-		self.ask(text=text, customData=session.customData, previousIntent=previousIntent, intentFilter=session.intentFilter, client=session.siteId)
-
-
 	def say(self, text, client: str = constants.DEFAULT_SITE_ID, customData: dict = None, canBeEnqueued: bool = True):
 		"""
 		Initiate a notification session which is termniated once the text is spoken
@@ -658,7 +652,7 @@ class MqttManager(Manager):
 
 			if client == constants.ALL:
 				for device in deviceList:
-					device = device.replace('@mqtt', '')
+					device = device.replace(self.DEFAULT_CLIENT_EXTENSION, '')
 					if not device:
 						continue
 
@@ -688,13 +682,12 @@ class MqttManager(Manager):
 			}))
 
 
-	def ask(self, text: str, client: str = constants.DEFAULT_SITE_ID, intentFilter: list = None, customData: dict = None, previousIntent: str = '', canBeEnqueued: bool = True, currentDialogState: str = '', probabilityThreshold: float = None):
+	def ask(self, text: str, client: str = constants.DEFAULT_SITE_ID, intentFilter: list = None, customData: dict = None, canBeEnqueued: bool = True, currentDialogState: str = '', probabilityThreshold: float = None):
 		"""
 		Initiates a new session by asking something and waiting on user answer
 		:param probabilityThreshold: The override threshold for the user's answer to this question
 		:param currentDialogState: a str representing a state in the dialog, usefull for multiturn dialogs
 		:param canBeEnqueued: wheter or not this can be played later if the dialog manager is busy
-		:param previousIntent: the previous intent that triggered the method, if available
 		:param text: str The text to speak
 		:param client: int Where to ask
 		:param intentFilter: array Filter to force user intents
@@ -711,8 +704,6 @@ class MqttManager(Manager):
 
 		user = customData.get('user', constants.UNKNOWN_USER) if customData else constants.UNKNOWN_USER
 		session = self.DialogManager.newSession(client, user)
-		if previousIntent:
-			session.intentHistory.append(previousIntent)
 
 		if currentDialogState:
 			session.currentState = currentDialogState
@@ -754,13 +745,13 @@ class MqttManager(Manager):
 			deviceList.append(constants.DEFAULT_SITE_ID)
 
 			for device in deviceList:
-				device = device.replace('@mqtt', '')
+				device = device.replace(self.DEFAULT_CLIENT_EXTENSION, '')
 				self.ask(text=text, client=device, intentFilter=intentList, customData=customData)
 		else:
 			self._mqttClient.publish(constants.TOPIC_START_SESSION, json.dumps(jsonDict))
 
 
-	def continueDialog(self, sessionId: str, text: str, customData: dict = None, intentFilter: list = None, previousIntent: str = '', slot: str = '', currentDialogState: str = '', probabilityThreshold: float = None):
+	def continueDialog(self, sessionId: str, text: str, customData: dict = None, intentFilter: list = None, slot: str = '', currentDialogState: str = '', probabilityThreshold: float = None):
 		"""
 		Continues a dialog
 		:param probabilityThreshold: The probability threshold override for the user's answer to this coming conversation round
@@ -769,12 +760,8 @@ class MqttManager(Manager):
 		:param customData: json str
 		:param text: str text spoken
 		:param intentFilter: array intent filter for user randomTalk
-		:param previousIntent: the previous intent that started the dialog continuation
 		:param slot: Optional String, requires intentFilter to contain a single value - If set, the dialogue engine will not run the the intent classification on the user response and go straight to slot filling, assuming the intent is the one passed in the intentFilter, and searching the value of the given slot
 		"""
-
-		if previousIntent:
-			self.DialogManager.addPreviousIntent(sessionId=sessionId, previousIntent=previousIntent)
 
 		jsonDict = {
 			'sessionId'              : sessionId,
@@ -880,7 +867,7 @@ class MqttManager(Manager):
 			deviceList.append(constants.DEFAULT_SITE_ID)
 
 			for device in deviceList:
-				device = device.replace('@mqtt', '')
+				device = device.replace(self.DEFAULT_CLIENT_EXTENSION, '')
 				self.playSound(soundFilename, location, sessionId, device, uid)
 		else:
 			if ' ' in siteId:
@@ -942,7 +929,7 @@ class MqttManager(Manager):
 		:param state: str On or off
 		"""
 
-		deviceList = [device.name.replace('@mqtt', '') for device in self.DeviceManager.getDevicesByType('AliceSatellite', connectedOnly=True)]
+		deviceList = [device.name.replace(self.DEFAULT_CLIENT_EXTENSION, '') for device in self.DeviceManager.getDevicesByType('AliceSatellite', connectedOnly=True)]
 		deviceList.append(constants.DEFAULT_SITE_ID)
 
 		for siteId in deviceList:

@@ -14,7 +14,7 @@ class DialogManager(Manager):
 
 	This handles the hermes protocol but adds none standard payload informations that were not originally thought by the Snips team
 
-	This contains a hack to make sure sessions are started only when the chime has finished playing
+	This contains a hack to make sure sessions are started only when the notification has finished playing
 	"""
 
 
@@ -52,7 +52,7 @@ class DialogManager(Manager):
 
 		requestId = str(uuid.uuid4())
 
-		# Play chime if needed
+		# Play notification if needed
 		if self._feedbackSounds.get('siteId', True):
 			# Adding the session id is custom!
 			uid = str(uuid.uuid4())
@@ -231,15 +231,15 @@ class DialogManager(Manager):
 		self.MqttManager.publish(
 			topic=f'hermes/intent/{session.payload["intent"]["intentName"]}',
 			payload={
-				'sessionId': session.sessionId,
-				'customData': session.customData,
-				'siteId': session.siteId,
-				'input'       : session.payload['input'],
-				'intent': session.payload['intent'],
-				'slots': session.payload['slots'],
-				'asrTokens': [],
+				'sessionId'    : session.sessionId,
+				'customData'   : session.customData,
+				'siteId'       : session.siteId,
+				'input'        : session.payload['input'],
+				'intent'       : session.payload['intent'],
+				'slots'        : session.payload['slots'],
+				'asrTokens'    : [],
 				'asrConfidence': session.payload['intent']['confidenceScore'],
-				'alternatives': session.payload['alternatives']
+				'alternatives' : session.payload['alternatives']
 			}
 		)
 
@@ -301,6 +301,7 @@ class DialogManager(Manager):
 
 
 	def onContinueSession(self, session: DialogSession):
+		self.startSessionTimeout(sessionId=session.sessionId)
 		self.MqttManager.publish(
 			topic=constants.TOPIC_TTS_SAY,
 			payload={
@@ -340,7 +341,6 @@ class DialogManager(Manager):
 					}
 				}
 			)
-
 
 
 	def onSessionEnded(self, session: DialogSession):
@@ -391,19 +391,6 @@ class DialogManager(Manager):
 
 		self._endedSessions[sessionId] = session
 		self._sessionsBySites.pop(session.siteId)
-
-
-	def addPreviousIntent(self, sessionId: str, previousIntent: str):
-		if sessionId not in self._sessionsById:
-			self.logWarning('Was asked to add a previous intent but session was not found')
-			return
-
-		session = self._sessionsById[sessionId]
-		session.addToHistory(previousIntent)
-
-
-	def planSessionRevival(self, session: DialogSession):
-		self._revivePendingSessions[session.siteId] = session
 
 
 	@property

@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from typing import Any, Optional
+from typing import Any
 
 from paho.mqtt.client import MQTTMessage
 
@@ -53,7 +53,8 @@ class DialogSession:
 
 
 	def update(self, message: MQTTMessage):
-		self.addToHistory(self.intentName)
+		if self.intentName.startswith('hermes/intent'):
+			self.addToHistory(self.intentName)
 
 		commonsManager = SuperManager.getInstance().commonsManager
 		self.message = message
@@ -110,8 +111,3 @@ class DialogSession:
 
 	def addToHistory(self, intent: Intent):
 		self.intentHistory.append(intent)
-
-
-	@property
-	def previousIntent(self) -> Optional[Intent]:
-		return self.intentHistory[-1] if self.intentHistory else None

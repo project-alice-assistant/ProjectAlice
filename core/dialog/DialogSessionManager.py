@@ -30,18 +30,6 @@ class DialogSessionManager(Manager):
 		return self._sessions
 
 
-	def preSession(self, siteId: str, user: str) -> DialogSession:
-		"""
-		Pre sessions hold the speaker based on the site id. They are deleted as soon as a session id
-		is attributed to the related dialog
-		:param siteId: int
-		:param user: string
-		"""
-		session = DialogSession(siteId=siteId, user=user)
-		self._preSessions[siteId] = session
-		return session
-
-
 	def addSession(self, sessionId: str, message: MQTTMessage) -> DialogSession:
 		"""
 		Adds a session from an existing pre session. If the pre session doesn't exist
@@ -85,15 +73,6 @@ class DialogSessionManager(Manager):
 			return constants.UNKNOWN_USER
 
 		return self._sessions[sessionId].user
-
-
-	def addPreviousIntent(self, sessionId: str, previousIntent: str):
-		if sessionId not in self._sessions:
-			self.logWarning('Was asked to add a previous intent but session was not found')
-			return
-
-		session = self._sessions[sessionId]
-		session.addToHistory(previousIntent)
 
 
 	def planSessionRevival(self, session: DialogSession):
