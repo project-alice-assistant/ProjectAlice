@@ -57,7 +57,7 @@ class DialogApi(Api):
 			session = self.DialogManager.newSession(siteId=siteId, user=user.name)
 
 			message = MQTTMessage()
-			message.payload = json.dumps({'sessionId': session.sessionId, 'siteId': siteId})
+			message.payload = json.dumps({'sessionId': session.sessionId, 'siteId': siteId, 'text': request.form.get('query')})
 			session.extend(message=message)
 
 			self.MqttManager.publish(topic=constants.TOPIC_NLU_QUERY, payload={
