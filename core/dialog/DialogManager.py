@@ -30,6 +30,9 @@ class DialogManager(Manager):
 		self._revivePendingSessions: Dict[str, DialogSession] = dict()
 		self._says: List[str] = list()
 
+		self._disabledByDefaultIntents = set()
+		self._enabledByDefaultIntents = set()
+
 
 	def newSession(self, siteId: str, user: str = constants.UNKNOWN_USER, message: MQTTMessage = None) -> DialogSession:
 		session = DialogSession(siteId=siteId, user=user, sessionId=str(uuid.uuid4()))
@@ -236,7 +239,7 @@ class DialogManager(Manager):
 			topic=constants.TOPIC_NLU_QUERY,
 			payload={
 				'input'       : session.payload['text'],
-				'intentFilter': session.intentFilter if session.intentFilter else None,
+				'intentFilter': session.intentFilter if session.intentFilter else list(self._enabledByDefaultIntents),
 				'sessionId'   : session.sessionId
 			}
 		)
@@ -416,3 +419,14 @@ class DialogManager(Manager):
 	@property
 	def sessions(self) -> Dict[str, DialogSession]:
 		return self._sessionsById
+
+
+	def addDisabledByDefaultIntent(self, intent: str):
+		self._disabledByDefaultIntents.add(intent)
+		# Remove it from enabled intents in case it exists
+		if intent in self._enabledByDefaultIntents:
+			self._enabledByDefaultIntents.remove(intent)
+
+
+	def addEnabledByDefaultIntent(self, intent: str):
+		self._enabledByDefaultIntents.add(intent)

@@ -41,8 +41,7 @@ class DialogSession:
 		if sessionId:
 			self.sessionId = sessionId
 
-		if self.intentName.startswith('hermes/intent'):
-			self.addToHistory(self.intentName)
+		self.addToHistory(self.intentName)
 
 		commonsManager = SuperManager.getInstance().commonsManager
 		self.message = message
@@ -54,8 +53,7 @@ class DialogSession:
 
 
 	def update(self, message: MQTTMessage):
-		if self.intentName.startswith('hermes/intent'):
-			self.addToHistory(self.intentName)
+		self.addToHistory(self.intentName)
 
 		commonsManager = SuperManager.getInstance().commonsManager
 		self.message = message
@@ -76,8 +74,7 @@ class DialogSession:
 		Revives old session keeping siteId, sessionId and isAPIGenerated from the
 		new session
 		"""
-		if self.intentName.startswith('hermes/intent'):
-			self.addToHistory(self.intentName)
+		self.addToHistory(self.intentName)
 
 		self.payload = session.payload
 		self.slots = session.slots
@@ -112,4 +109,5 @@ class DialogSession:
 
 
 	def addToHistory(self, intent: Intent):
-		self.intentHistory.append(intent)
+		if str(intent).startswith('hermes/intent'):
+			self.intentHistory.append(intent)
