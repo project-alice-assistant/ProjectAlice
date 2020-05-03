@@ -41,7 +41,8 @@ class DialogSession:
 		if sessionId:
 			self.sessionId = sessionId
 
-		self.addToHistory(self.intentName)
+		if self.intentName.startswith('hermes/intent'):
+			self.addToHistory(self.intentName)
 
 		commonsManager = SuperManager.getInstance().commonsManager
 		self.message = message
@@ -75,7 +76,8 @@ class DialogSession:
 		Revives old session keeping siteId, sessionId and isAPIGenerated from the
 		new session
 		"""
-		self.addToHistory(self.intentName)
+		if self.intentName.startswith('hermes/intent'):
+			self.addToHistory(self.intentName)
 
 		self.payload = session.payload
 		self.slots = session.slots

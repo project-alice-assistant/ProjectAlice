@@ -1,5 +1,4 @@
 import json
-import uuid
 
 from flask import jsonify, request
 from flask_classful import route
@@ -54,15 +53,14 @@ class DialogApi(Api):
 		try:
 			siteId = request.form.get('siteId') if request.form.get('siteId', None) is not None else constants.DEFAULT_SITE_ID
 
-			sessionId = str(uuid.uuid4())
-			message = MQTTMessage()
-			message.payload = json.dumps({'sessionId': sessionId, 'siteId': siteId})
-
 			user = self.UserManager.getUserByAPIToken(request.headers.get('auth', ''))
+			session = self.DialogManager.newSession(siteId=siteId, user=user)
 
-			session = self.DialogSessionManager.addSession(sessionId=sessionId, message=message)
+			message = MQTTMessage()
+			message.payload = json.dumps({'sessionId': session.sessionId, 'siteId': siteId})
+			session.extend(message=message)
+
 			session.isAPIGenerated = True
-			session.user = user.name
 			self.MqttManager.publish(topic=constants.TOPIC_NLU_QUERY, payload={
 				'input'    : request.form.get('query'),
 				'sessionId': session.sessionId

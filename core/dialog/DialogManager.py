@@ -3,6 +3,8 @@ from pathlib import Path
 from threading import Timer
 from typing import Dict, List, Optional
 
+from paho.mqtt.client import MQTTMessage
+
 from core.base.model.Manager import Manager
 from core.commons import constants
 from core.dialog.model.DialogSession import DialogSession
@@ -29,10 +31,21 @@ class DialogManager(Manager):
 		self._says: List[str] = list()
 
 
-	def newSession(self, siteId: str, user: str = constants.UNKNOWN_USER) -> DialogSession:
+	def newSession(self, siteId: str, user: str = constants.UNKNOWN_USER, message: MQTTMessage = None) -> DialogSession:
 		session = DialogSession(siteId=siteId, user=user, sessionId=str(uuid.uuid4()))
+
+		if message:
+			session.update(message)
+
 		self._sessionsById[session.sessionId] = session
 		self._sessionsBySites[siteId] = session
+		return session
+
+
+	def newTempSession(self, message: MQTTMessage = None) -> DialogSession:
+		siteId = self.Commons.parseSiteId(message)
+		session = self.newSession(siteId=siteId, message=message)
+		self.startSessionTimeout(sessionId=session.sessionId, tempSession=True)
 		return session
 
 
@@ -110,14 +123,15 @@ class DialogManager(Manager):
 				self.onSessionStarted(session=session)
 
 
-	def startSessionTimeout(self, sessionId: str):
+	def startSessionTimeout(self, sessionId: str, tempSession: bool = False):
 		self.cancelSessionTimeout(sessionId=sessionId)
 
 		self._sessionTimeouts[sessionId] = self.ThreadManager.newTimer(
 			interval=self.ConfigManager.getAliceConfigByName('sessionTimeout'),
 			func=self.sessionTimeout,
 			kwargs={
-				'sessionId': sessionId
+				'sessionId': sessionId,
+				'tempSession': tempSession
 			}
 		)
 
@@ -128,15 +142,21 @@ class DialogManager(Manager):
 			timer.cancel()
 
 
-	def sessionTimeout(self, sessionId: str):
+	def sessionTimeout(self, sessionId: str, tempSession: bool = False):
 		"""
 		Session has timed out
+		:param tempSession:
 		:param sessionId:
 		:return:
 		"""
 		session = self.getSession(sessionId)
 		if not session:
 			return
+
+		if tempSession:
+			self.removeSession(sessionId=sessionId)
+			return
+
 
 		self.MqttManager.publish(
 			topic=constants.TOPIC_SESSION_ENDED,

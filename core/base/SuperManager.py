@@ -33,7 +33,6 @@ class SuperManager:
 		self.threadManager = None
 		self.mqttManager = None
 		self.timeManager = None
-		self.dialogSessionManager = None
 		self.multiIntentManager = None
 		self.telemetryManager = None
 		self.skillManager = None
@@ -128,7 +127,6 @@ class SuperManager:
 		from core.base.ConfigManager import ConfigManager
 		from core.base.SkillManager import SkillManager
 		from core.device.DeviceManager import DeviceManager
-		from core.dialog.DialogSessionManager import DialogSessionManager
 		from core.dialog.MultiIntentManager import MultiIntentManager
 		from core.dialog.ProtectedIntentManager import ProtectedIntentManager
 		from core.server.MqttManager import MqttManager
@@ -167,7 +165,6 @@ class SuperManager:
 		self.mqttManager = MqttManager()
 		self.timeManager = TimeManager()
 		self.userManager = UserManager()
-		self.dialogSessionManager = DialogSessionManager()
 		self.multiIntentManager = MultiIntentManager()
 		self.telemetryManager = TelemetryManager()
 		self.skillManager = SkillManager()

@@ -94,8 +94,8 @@ class DeviceManager(Manager):
 		self.MqttManager.publish(topic='projectalice/devices/coreDisconnection')
 
 
-	def deviceMessage(self, message: MQTTMessage) -> Optional[DialogSession]:
-		return self.DialogSessionManager.addTempSession(sessionId=str(uuid.uuid4()), message=message)
+	def deviceMessage(self, message: MQTTMessage) -> DialogSession:
+		return self.DialogManager.newTempSession(message=message)
 
 
 	def loadDevices(self):

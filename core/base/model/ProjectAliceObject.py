@@ -472,11 +472,6 @@ class ProjectAliceObject:
 
 
 	@property
-	def DialogSessionManager(self):
-		return SM.SuperManager.getInstance().dialogSessionManager
-
-
-	@property
 	def MultiIntentManager(self):
 		return SM.SuperManager.getInstance().multiIntentManager
 
