@@ -406,12 +406,6 @@ class MqttManager(Manager):
 			else:
 				self.broadcast(method=constants.EVENT_INTENT_PARSED, exceptions=[self.name], propagateToSkills=True, session=session)
 
-				if session.isAPIGenerated:
-					intent = Intent(session.payload['intent']['intentName'])
-					message = mqtt.MQTTMessage(topic=str.encode(str(intent)))
-					message.payload = json.dumps(session.payload)
-					self.onMqttMessage(_client=client, _userdata=data, message=message)
-
 
 	def continueSession(self, _client, _data, msg: mqtt.MQTTMessage):
 		sessionId = self.Commons.parseSessionId(msg)
@@ -817,9 +811,6 @@ class MqttManager(Manager):
 			return
 
 		session = self.DialogManager.getSession(sessionId)
-		if session and session.isAPIGenerated:
-			return self.say(text=text, client=session.siteId)
-
 		if session and client and text and session.siteId != client:
 			self._mqttClient.publish(constants.TOPIC_END_SESSION, json.dumps({
 				'sessionId': sessionId

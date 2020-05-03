@@ -19,7 +19,6 @@ class DialogSession:
 	intentName: str = ''
 	notUnderstood: int = 0
 	currentState: str = constants.DEFAULT
-	isAPIGenerated: bool = False
 	hasEnded: bool = False
 	isEnding: bool = False
 	inDialog = False
@@ -71,7 +70,7 @@ class DialogSession:
 
 	def reviveOldSession(self, session: DialogSession):
 		"""
-		Revives old session keeping siteId, sessionId and isAPIGenerated from the
+		Revives old session keeping siteId, sessionId from the
 		new session
 		"""
 		self.addToHistory(self.intentName)
@@ -87,7 +86,6 @@ class DialogSession:
 		self.intentFilter = session.intentFilter
 		self.notUnderstood = session.notUnderstood
 		self.currentState = session.currentState
-		self.isAPIGenerated = session.isAPIGenerated
 		self.probabilityThreshold = session.probabilityThreshold
 
 
