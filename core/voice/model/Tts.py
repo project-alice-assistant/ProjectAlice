@@ -36,6 +36,7 @@ class TTS(ProjectAliceObject):
 
 		self._cacheFile: Path = Path()
 		self._text = ''
+		self._speaking = False
 
 
 	def onStart(self):
@@ -159,6 +160,7 @@ class TTS(ProjectAliceObject):
 
 
 	def _speak(self, file: Path, session: DialogSession):
+		self._speaking = True
 		uid = str(uuid.uuid4())
 		self.DialogManager.addSayUuid(uid)
 		SuperManager.getInstance().mqttManager.playSound(
@@ -173,8 +175,8 @@ class TTS(ProjectAliceObject):
 		SuperManager.getInstance().threadManager.doLater(interval=duration + 0.1, func=self._sayFinished, args=[session, uid])
 
 
-	@staticmethod
-	def _sayFinished(session: DialogSession, uid: str):
+	def _sayFinished(self, session: DialogSession, uid: str):
+		self._speaking = False
 		SuperManager.getInstance().mqttManager.publish(
 			topic=constants.TOPIC_TTS_FINISHED,
 			payload={
