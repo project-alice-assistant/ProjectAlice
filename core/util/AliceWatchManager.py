@@ -211,7 +211,7 @@ class AliceWatchManager(Manager):
 			return
 
 		text = f'[Dialogue] Was asked to configure all sites:'
-		for intent in intents:
+		for intent in intents: #NOSONAR
 			text = f'{text}\n{"![Green](enable)" if intent["enable"] else "![Red](disable)"} {intent["intentId"]}'
 
 		text = f'{text}'
