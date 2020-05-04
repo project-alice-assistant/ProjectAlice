@@ -4,7 +4,7 @@ from typing import Generator, Optional
 import os
 
 from core.asr.model.ASRResult import ASRResult
-from core.asr.model.Asr import ASR
+from core.asr.model.Asr import Asr
 from core.asr.model.Recorder import Recorder
 from core.dialog.model.DialogSession import DialogSession
 from core.util.Stopwatch import Stopwatch
@@ -16,9 +16,9 @@ except:
 
 
 # noinspection PyAbstractClass
-class GoogleASR(ASR):
+class GoogleAsr(Asr):
 
-	NAME = 'Google ASR'
+	NAME = 'Google Asr'
 	DEPENDENCIES = {
 		'system': [],
 		'pip'   : {
@@ -64,7 +64,7 @@ class GoogleASR(ASR):
 				responses = self._client.streaming_recognize(self._streamingConfig, requests)
 				result = self._checkResponses(session, responses)
 
-			self.end(session)
+			self.end()
 
 		return ASRResult(
 			text=result[0],

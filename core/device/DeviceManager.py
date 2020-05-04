@@ -140,7 +140,7 @@ class DeviceManager(Manager):
 
 
 	def addZigBeeDevice(self):
-		pass
+		pass # Should be implemented or deleted
 
 
 	def startTasmotaFlashingProcess(self, room: str, espType: str, session: DialogSession) -> bool:

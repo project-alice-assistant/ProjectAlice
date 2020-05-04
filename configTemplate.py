@@ -125,7 +125,7 @@ settings = {
 		'defaultValue': True,
 		'dataType'    : 'boolean',
 		'isSensitive' : False,
-		'description' : 'Do not use any online ASR such as Google ASR'
+		'description' : 'Do not use any online Asr such as Google Asr'
 	},
 	'keepTTSOffline'        : {
 		'defaultValue': True,
@@ -156,14 +156,14 @@ settings = {
 		'dataType'    : 'list',
 		'isSensitive' : False,
 		'values'      : ['deepspeech', 'pocketsphinx', 'google'],
-		'description' : 'The ASR to use. Can\'t use an online ASR if you have set keepASROffline to true!',
+		'description' : 'The Asr to use. Can\'t use an online Asr if you have set keepASROffline to true!',
 		'onUpdate'    : 'reloadASR'
 	},
 	'asrTimeout'            : {
 		'defaultValue': 10,
 		'dataType'    : 'integer',
 		'isSensitive' : False,
-		'description' : 'Defines after how many seconds the ASR times out',
+		'description' : 'Defines after how many seconds the Asr times out',
 	},
 	'tts'                   : {
 		'defaultValue': 'pico',

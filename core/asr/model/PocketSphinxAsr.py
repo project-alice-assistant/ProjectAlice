@@ -5,7 +5,7 @@ import shutil
 import tarfile
 
 from core.asr.model.ASRResult import ASRResult
-from core.asr.model.Asr import ASR
+from core.asr.model.Asr import Asr
 from core.asr.model.Recorder import Recorder
 from core.commons import constants
 from core.dialog.model.DialogSession import DialogSession
@@ -17,8 +17,8 @@ except:
 	pass
 
 
-class PocketSphinxASR(ASR):
-	NAME = 'Pocketsphinx ASR'
+class PocketSphinxAsr(Asr):
+	NAME = 'Pocketsphinx Asr'
 	DEPENDENCIES = {
 		'system': [
 			'swig',
@@ -128,7 +128,7 @@ class PocketSphinxASR(ASR):
 							result = self._decoder.hyp() if self._decoder.hyp() else None
 							break
 
-				self.end(session)
+				self.end()
 
 		return ASRResult(
 			text=result.hypstr.strip(),

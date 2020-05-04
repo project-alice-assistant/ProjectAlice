@@ -176,7 +176,7 @@ class DialogManager(Manager):
 
 	def onSessionStarted(self, session: DialogSession):
 		"""
-		Session has started, enable ASR and tell it to listen
+		Session has started, enable Asr and tell it to listen
 		:param session:
 		:return:
 		"""
@@ -197,7 +197,7 @@ class DialogManager(Manager):
 
 	def onCaptured(self, session: DialogSession):
 		"""
-		ASR has captured text, tell it to stop listening
+		Asr has captured text, tell it to stop listening
 		:param session:
 		:return:
 		"""
@@ -394,7 +394,7 @@ class DialogManager(Manager):
 
 	def onSessionEnded(self, session: DialogSession):
 		"""
-		Session has ended, enable hotword capture and disable ASR
+		Session has ended, enable hotword capture and disable Asr
 		:param session:
 		:return:
 		"""

@@ -32,7 +32,7 @@ class DialogSession:
 	intentFilter: list = field(default_factory=list)
 
 
-	def __post_init__(self):
+	def __post_init__(self): #NOSONAR
 		self.probabilityThreshold = SuperManager.getInstance().configManager.getAliceConfigByName('probabilityThreshold')
 
 

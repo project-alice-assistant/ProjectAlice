@@ -234,7 +234,7 @@ network={
 
 			confs['asr'] = initConfs['asr'] if initConfs['asr'] in {'pocketsphinx', 'google', 'deepspeech'} else 'deepspeech'
 			if confs['asr'] == 'google' and not initConfs['googleServiceFile']:
-				self.logInfo('You cannot use Google ASR without a google service file, falling back to Deepspeech')
+				self.logInfo('You cannot use Google Asr without a google service file, falling back to Deepspeech')
 				confs['asr'] = 'deepspeech'
 
 			if initConfs['googleServiceFile']:

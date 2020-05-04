@@ -13,7 +13,7 @@ class Device:
 	uid: str = field(init=False)
 	room: str = field(init=False)
 
-	def __post_init__(self):
+	def __post_init__(self): #NOSONAR
 		self.id = self.data['id']
 		self.deviceType = self.data['type']
 		self.uid = self.data['uid']

@@ -44,11 +44,11 @@ class ASRManager(Manager):
 		self._asr = None
 
 		if userASR == 'google':
-			package = 'core.asr.model.GoogleASR'
+			package = 'core.asr.model.GoogleAsr'
 		elif userASR == 'deepspeech':
-			package = 'core.asr.model.DeepSpeechASR'
+			package = 'core.asr.model.DeepSpeechAsr'
 		else:
-			package = 'core.asr.model.PocketSphinxASR'
+			package = 'core.asr.model.PocketSphinxAsr'
 
 		module = import_module(package)
 		asr = getattr(module, package.rsplit('.', 1)[-1])
@@ -63,17 +63,17 @@ class ASRManager(Manager):
 				self._asr = asr()
 
 		if self._asr is None:
-			self.logFatal("Couldn't install ASR, going down")
+			self.logFatal("Couldn't install Asr, going down")
 			return
 
 		if self._asr.isOnlineASR and (not online or keepASROffline or stayOffline):
 			self._asr = None
 
 		if self._asr is None:
-			self.logWarning('ASR did not satisfy the user settings, falling back to Deepspeech')
-			from core.asr.model.DeepSpeechASR import DeepSpeechASR
+			self.logWarning('Asr did not satisfy the user settings, falling back to Deepspeech')
+			from core.asr.model.DeepSpeechAsr import DeepSpeechAsr
 
-			self._asr = DeepSpeechASR()
+			self._asr = DeepSpeechAsr()
 
 		self._asr.onStart()
 
@@ -88,14 +88,14 @@ class ASRManager(Manager):
 			return
 
 		if not self._asr.isOnlineASR:
-			self.logInfo('Connected to internet, switching ASR')
+			self.logInfo('Connected to internet, switching Asr')
 			self._asr.onStop()
 			self._startASREngine()
 
 
 	def onInternetLost(self):
 		if self._asr.isOnlineASR:
-			self.logInfo('Internet lost, switching to offline ASR')
+			self.logInfo('Internet lost, switching to offline Asr')
 			self._asr.onStop()
 			self._startASREngine()
 
@@ -123,14 +123,14 @@ class ASRManager(Manager):
 			if session.hasEnded:
 				return
 
-			self.logDebug(f'ASR captured: {result.text}')
+			self.logDebug(f'Asr captured: {result.text}')
 
 			text = result.text
 			if self.LanguageManager.overrideLanguage and not self.ConfigManager.getAliceConfigByName('stayCompletlyOffline') and not self.ConfigManager.getAliceConfigByName('keepASROffline'):
 				language = detect(text)
 				if language != 'en':
 					text = self._translator.translate(text=text, src=language, dest='en').text
-					self.logDebug(f'ASR translated to: {text}')
+					self.logDebug(f'Asr translated to: {text}')
 
 			self.MqttManager.publish(topic=constants.TOPIC_TEXT_CAPTURED, payload={'sessionId': session.sessionId, 'text': text, 'siteId': session.siteId, 'likelihood': result.likelihood, 'seconds': result.processingTime})
 		else:
@@ -161,7 +161,7 @@ class ASRManager(Manager):
 		if not self._asr or session.siteId not in self._streams or not self._streams[session.siteId].isRecording:
 			return
 
-		self._asr.end(session)
+		self._asr.end()
 		self._streams.pop(session.siteId, None)
 
 

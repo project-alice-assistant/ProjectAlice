@@ -5,7 +5,7 @@ from typing import Generator, Optional
 import numpy as np
 
 from core.asr.model.ASRResult import ASRResult
-from core.asr.model.Asr import ASR
+from core.asr.model.Asr import Asr
 from core.asr.model.Recorder import Recorder
 from core.dialog.model.DialogSession import DialogSession
 from core.util.Stopwatch import Stopwatch
@@ -16,8 +16,8 @@ except:
 	pass
 
 
-class DeepSpeechASR(ASR):
-	NAME = 'DeepSpeech ASR'
+class DeepSpeechAsr(Asr):
+	NAME = 'DeepSpeech Asr'
 	DEPENDENCIES = {
 		'system': [],
 		'pip'   : {
@@ -120,7 +120,7 @@ class DeepSpeechASR(ASR):
 					self.partialTextCaptured(session=session, text=result, likelihood=1, seconds=0)
 
 			text = self._model.finishStream(streamContext)
-			self.end(session)
+			self.end()
 
 		return ASRResult(
 			text=text,
