@@ -77,7 +77,7 @@ def _exceptHandler(*args, text: str, exceptHandler: Callable, returnText: bool, 
 
 	session = kwargs.get('session')
 	try:
-		if session.sessionId in SuperManager.getInstance().dialogSessionManager.sessions:
+		if session.sessionId in SuperManager.getInstance().dialogManager.sessions:
 			SuperManager.getInstance().mqttManager.endDialog(sessionId=session.sessionId, text=newText)
 		else:
 			SuperManager.getInstance().mqttManager.say(text=newText, client=session.siteId)

@@ -533,16 +533,16 @@ class AliceSkill(ProjectAliceObject):
 		self.MqttManager.say(text=text, client=siteId, customData=customData, canBeEnqueued=canBeEnqueued)
 
 
-	def ask(self, text: str, siteId: str = constants.DEFAULT_SITE_ID, intentFilter: list = None, customData: dict = None, previousIntent: str = '', canBeEnqueued: bool = True, currentDialogState: str = '', probabilityThreshold: float = None):
+	def ask(self, text: str, siteId: str = constants.DEFAULT_SITE_ID, intentFilter: list = None, customData: dict = None, canBeEnqueued: bool = True, currentDialogState: str = '', probabilityThreshold: float = None):
 		if currentDialogState:
 			currentDialogState = f'{self.name}:{currentDialogState}'
-		self.MqttManager.ask(text=text, client=siteId, intentFilter=intentFilter, customData=customData, previousIntent=previousIntent, canBeEnqueued=canBeEnqueued, currentDialogState=currentDialogState, probabilityThreshold=probabilityThreshold)
+		self.MqttManager.ask(text=text, client=siteId, intentFilter=intentFilter, customData=customData, canBeEnqueued=canBeEnqueued, currentDialogState=currentDialogState, probabilityThreshold=probabilityThreshold)
 
 
-	def continueDialog(self, sessionId: str, text: str, customData: dict = None, intentFilter: list = None, previousIntent: str = '', slot: str = '', currentDialogState: str = '', probabilityThreshold: float = None):
+	def continueDialog(self, sessionId: str, text: str, customData: dict = None, intentFilter: list = None, slot: str = '', currentDialogState: str = '', probabilityThreshold: float = None):
 		if currentDialogState:
 			currentDialogState = f'{self.name}:{currentDialogState}'
-		self.MqttManager.continueDialog(sessionId=sessionId, text=text, customData=customData, intentFilter=intentFilter, previousIntent=str(previousIntent), slot=slot, currentDialogState=currentDialogState, probabilityThreshold=probabilityThreshold)
+		self.MqttManager.continueDialog(sessionId=sessionId, text=text, customData=customData, intentFilter=intentFilter, slot=slot, currentDialogState=currentDialogState, probabilityThreshold=probabilityThreshold)
 
 
 	def endDialog(self, sessionId: str = '', text: str = '', siteId: str = ''):

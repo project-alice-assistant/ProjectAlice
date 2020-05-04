@@ -62,6 +62,11 @@ class SnipsAssistantManager(Manager):
 			for intent in data['intents']:
 				existingIntents[intent['name']] = intent
 
+				if not intent['enabledByDefault']:
+					self.DialogManager.addDisabledByDefaultIntent(intent['name'])
+				else:
+					self.DialogManager.addEnabledByDefaultIntent(intent['name'])
+
 				if 'slots' not in intent or not intent['slots']:
 					continue
 
@@ -138,6 +143,11 @@ class SnipsAssistantManager(Manager):
 					if intent['name'] in intents:
 						self.logWarning(f'Intent "{intent["name"]}" is duplicated')
 						continue
+
+					if not intent['enabledByDefault']:
+						self.DialogManager.addDisabledByDefaultIntent(intent['name'])
+					else:
+						self.DialogManager.addEnabledByDefaultIntent(intent['name'])
 
 					intents[intent['name']] = {
 						'id'              : intent['name'],

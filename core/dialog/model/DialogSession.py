@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from typing import Any, Optional
+from typing import Any
 
 from paho.mqtt.client import MQTTMessage
 
@@ -19,8 +19,9 @@ class DialogSession:
 	intentName: str = ''
 	notUnderstood: int = 0
 	currentState: str = constants.DEFAULT
-	isAPIGenerated: bool = False
 	hasEnded: bool = False
+	isEnding: bool = False
+	inDialog = False
 	probabilityThreshold: float = 0.5
 	text: str = ''
 	slots: dict = field(default_factory=dict)
@@ -69,7 +70,7 @@ class DialogSession:
 
 	def reviveOldSession(self, session: DialogSession):
 		"""
-		Revives old session keeping siteId, sessionId and isAPIGenerated from the
+		Revives old session keeping siteId, sessionId from the
 		new session
 		"""
 		self.addToHistory(self.intentName)
@@ -85,7 +86,6 @@ class DialogSession:
 		self.intentFilter = session.intentFilter
 		self.notUnderstood = session.notUnderstood
 		self.currentState = session.currentState
-		self.isAPIGenerated = session.isAPIGenerated
 		self.probabilityThreshold = session.probabilityThreshold
 
 
@@ -107,9 +107,10 @@ class DialogSession:
 
 
 	def addToHistory(self, intent: Intent):
-		self.intentHistory.append(intent)
+		if str(intent).startswith('hermes/intent'):
+			self.intentHistory.append(intent)
 
 
 	@property
-	def previousIntent(self) -> Optional[Intent]:
-		return self.intentHistory[-1] if self.intentHistory else None
+	def previousIntent(self) -> str:
+		return str(self.intentHistory[-1])

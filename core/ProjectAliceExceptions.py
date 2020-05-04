@@ -49,7 +49,7 @@ class SkillStartDelayed(_ProjectAliceException):
 
 	def __init__(self, skillName):
 		super().__init__(skillName)
-		self._logger.logWarning(f'[{skillName}] ⌛ Delaying skill start')
+		self._logger.logWarning(f'[{skillName}] Delaying skill start')
 		SuperManager.getInstance().skillManager.getSkillInstance(skillName).delayed = True
 
 

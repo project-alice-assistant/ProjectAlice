@@ -2,7 +2,8 @@ import unittest
 from unittest import mock
 from unittest.mock import MagicMock
 
-from core.util.Decorators import IntentHandler, deprecated, Online, AnyExcept
+from core.util.Decorators import AnyExcept, IntentHandler, Online, deprecated
+
 
 class TestDecorators(unittest.TestCase):
 
@@ -90,7 +91,7 @@ class TestDecorators(unittest.TestCase):
 
 		# when session is still active use endDialog
 		mock_sessions = mock.PropertyMock(return_value=['sessionId'])
-		type(mock_instance.dialogSessionManager).sessions = mock_sessions
+		type(mock_instance.dialogManager).sessions = mock_sessions
 
 		exampleObject.offline(session=mock_session)
 		mock_instance.talkManager.randomTalk.assert_called_once_with('offline', skill='AliceSkill')
@@ -99,7 +100,7 @@ class TestDecorators(unittest.TestCase):
 
 		# when session is finished use say
 		mock_sessions = mock.PropertyMock(return_value=[])
-		type(mock_instance.dialogSessionManager).sessions = mock_sessions
+		type(mock_instance.dialogManager).sessions = mock_sessions
 
 		exampleObject.offline(session=mock_session)
 		mock_instance.talkManager.randomTalk.assert_called_once_with('offline', skill='AliceSkill')
@@ -192,7 +193,7 @@ class TestDecorators(unittest.TestCase):
 
 		# when session is still active use endDialog
 		mock_sessions = mock.PropertyMock(return_value=['sessionId'])
-		type(mock_instance.dialogSessionManager).sessions = mock_sessions
+		type(mock_instance.dialogManager).sessions = mock_sessions
 
 		exampleObject.catch_all(session=mock_session)
 		mock_instance.talkManager.randomTalk.assert_called_once_with('error', skill='AliceSkill')
@@ -201,7 +202,7 @@ class TestDecorators(unittest.TestCase):
 
 		# when session is finished use say
 		mock_sessions = mock.PropertyMock(return_value=[])
-		type(mock_instance.dialogSessionManager).sessions = mock_sessions
+		type(mock_instance.dialogManager).sessions = mock_sessions
 
 		exampleObject.catch_all(session=mock_session)
 		mock_instance.talkManager.randomTalk.assert_called_once_with('error', skill='AliceSkill')

@@ -15,7 +15,9 @@ except:
 	pass
 
 
+# noinspection PyAbstractClass
 class GoogleASR(ASR):
+
 	NAME = 'Google ASR'
 	DEPENDENCIES = {
 		'system': [],
@@ -51,6 +53,7 @@ class GoogleASR(ASR):
 
 	def decodeStream(self, session: DialogSession) -> Optional[ASRResult]:
 		super().decodeStream(session)
+
 		recorder = Recorder(self._timeout)
 		self.ASRManager.addRecorder(session.siteId, recorder)
 		self._recorder = recorder
