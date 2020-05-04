@@ -183,6 +183,9 @@ class DialogManager(Manager):
 		"""
 		self.startSessionTimeout(sessionId=session.sessionId)
 
+		if session.isNotification:
+			return
+
 		self.MqttManager.publish(
 			topic=constants.TOPIC_ASR_TOGGLE_ON
 		)
@@ -327,6 +330,8 @@ class DialogManager(Manager):
 				self.ThreadManager.doLater(interval=1, func=self.onStartSession, kwargs={'siteId': siteId, 'payload': payload})
 			return
 
+		if 'init' in payload and payload['init']['type'] == 'notification':
+			session.isNotification = True
 
 		self.MqttManager.publish(
 			topic=constants.TOPIC_SESSION_STARTED,
@@ -337,10 +342,7 @@ class DialogManager(Manager):
 			}
 		)
 
-		if 'init' in payload:
-			if payload['init']['type'] == 'notification':
-				session.isNotification = True
-
+		if session.isNotification:
 			uid = str(uuid.uuid4())
 			self.addSayUuid(uid)
 			self.MqttManager.publish(
