@@ -57,7 +57,6 @@ class MultiIntentManager(Manager):
 
 
 	def queryNLU(self, session: DialogSession, string: str):
-		return
 		self.MqttManager.publish(topic=constants.TOPIC_NLU_QUERY, payload={
 			'input'       : string,
 			'sessionId'   : session.sessionId,
