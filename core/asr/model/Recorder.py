@@ -94,7 +94,7 @@ class Recorder(ProjectAliceObject):
 
 			data = [chunk]
 
-			while True:
+			while self._recording:
 				try:
 					chunk = self._buffer.get(block=False)
 					if not chunk or not self._recording:

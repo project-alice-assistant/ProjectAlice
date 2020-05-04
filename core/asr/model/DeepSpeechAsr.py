@@ -81,9 +81,6 @@ class DeepSpeechAsr(Asr):
 
 
 	def onVadUp(self):
-		if self._vadTemporisation and self._vadTemporisation.is_alive():
-			self._vadTemporisation.cancel()
-
 		self._triggerFlag.set()
 
 
@@ -91,19 +88,13 @@ class DeepSpeechAsr(Asr):
 		if not self._triggerFlag.is_set():
 			return
 
-		if not self._vadTemporisation or not self._vadTemporisation.is_alive():
-			self._vadTemporisation = self.ThreadManager.newTimer(interval=1, func=self.vadDown)
-
-
-	def vadDown(self):
-		if self._triggerFlag.is_set():
-			self._triggerFlag.clear()
-			self._recorder.stopRecording()
+		self._recorder.stopRecording()
 
 
 	def decodeStream(self, session: DialogSession) -> Optional[ASRResult]:
 		super().decodeStream(session)
 		result = None
+		previous = ''
 
 		with Stopwatch() as processingTime:
 			with Recorder(self._timeout) as recorder:
@@ -117,9 +108,12 @@ class DeepSpeechAsr(Asr):
 					self._model.feedAudioContent(streamContext, np.frombuffer(chunk, np.int16))
 
 					result = self._model.intermediateDecode(streamContext)
-					self.partialTextCaptured(session=session, text=result, likelihood=1, seconds=0)
+					if result and result != previous:
+						previous = result
+						self.partialTextCaptured(session=session, text=result, likelihood=1, seconds=0)
 
 			text = self._model.finishStream(streamContext)
+			self._triggerFlag.clear()
 			self.end()
 
 		return ASRResult(
