@@ -56,6 +56,7 @@ class DialogManager(Manager):
 		self._endedSessions[siteId] = self._sessionsById.pop(siteId, None)
 
 		session = self.newSession(siteId=siteId, user=user)
+		session.hotworded = True
 
 		# Turn off the wakeword component
 		self.MqttManager.publish(
@@ -104,7 +105,7 @@ class DialogManager(Manager):
 
 		self._says.remove(uid)
 
-		if session.isEnding:
+		if session.isEnding or session.isNotification:
 			self.MqttManager.publish(
 				topic=constants.TOPIC_SESSION_ENDED,
 				payload={
@@ -321,6 +322,11 @@ class DialogManager(Manager):
 		if not session:
 			# The session was started programmatically, we need to create one
 			session = self.newSession(siteId=siteId)
+		elif not session.hotworded:
+			if 'init' in payload and payload['init'].get('canBeEnqueued', False):
+				self.ThreadManager.doLater(interval=1, func=self.onStartSession, kwargs={'siteId': siteId, 'payload': payload})
+			return
+
 
 		self.MqttManager.publish(
 			topic=constants.TOPIC_SESSION_STARTED,
@@ -333,7 +339,7 @@ class DialogManager(Manager):
 
 		if 'init' in payload:
 			if payload['init']['type'] == 'notification':
-				session.isEnding = True
+				session.isNotification = True
 
 			uid = str(uuid.uuid4())
 			self.addSayUuid(uid)

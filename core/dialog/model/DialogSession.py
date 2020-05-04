@@ -24,6 +24,8 @@ class DialogSession:
 	inDialog = False
 	probabilityThreshold: float = 0.5
 	text: str = ''
+	isNotification: bool = False
+	hotworded: bool = False
 	slots: dict = field(default_factory=dict)
 	slotsAsObjects: dict = field(default_factory=dict)
 	customData: dict = field(default_factory=dict)
@@ -66,27 +68,6 @@ class DialogSession:
 			self.customData.update(commonsManager.parseCustomData(message))
 		else:
 			self.customData = dict()
-
-
-	def reviveOldSession(self, session: DialogSession):
-		"""
-		Revives old session keeping siteId, sessionId from the
-		new session
-		"""
-		self.addToHistory(self.intentName)
-
-		self.payload = session.payload
-		self.slots = session.slots
-		self.slotsAsObjects = session.slotsAsObjects
-		self.customData = session.customData
-		self.user = session.user
-		self.message = session.message
-		self.intentName = session.intentName
-		self.intentHistory = session.intentHistory
-		self.intentFilter = session.intentFilter
-		self.notUnderstood = session.notUnderstood
-		self.currentState = session.currentState
-		self.probabilityThreshold = session.probabilityThreshold
 
 
 	def slotValue(self, slotName: str, index: int = 0, defaultValue: Any = None) -> Any:
