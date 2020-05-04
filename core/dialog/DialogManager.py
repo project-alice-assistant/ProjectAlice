@@ -323,7 +323,7 @@ class DialogManager(Manager):
 			# The session was started programmatically, we need to create one
 			session = self.newSession(siteId=siteId)
 		elif not session.hotworded:
-			if 'init' in payload and payload['init'].get('canBeEnqueued', False):
+			if 'init' in payload and payload['init'].get('canBeEnqueued', True):
 				self.ThreadManager.doLater(interval=1, func=self.onStartSession, kwargs={'siteId': siteId, 'payload': payload})
 			return
 

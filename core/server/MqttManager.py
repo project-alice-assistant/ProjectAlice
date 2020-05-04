@@ -456,14 +456,13 @@ class MqttManager(Manager):
 		session = self.DialogManager.getSession(sessionId)
 		if session:
 			session.update(msg)
-			siteId = session.siteId
 		else:
-			siteId = self.Commons.parseSiteId(msg)
+			session = self.DialogManager.newSession(siteId=self.Commons.parseSiteId(msg), message=msg)
 
 		if 'text' in payload:
 			skill = self.SkillManager.getSkillInstance('ContextSensitive')
 			if skill:
-				skill.addChat(text=payload['text'], siteId=siteId)
+				skill.addChat(text=payload['text'], siteId=session.siteId)
 
 		self.broadcast(method=constants.EVENT_SAY, exceptions=[self.name], propagateToSkills=True, session=session)
 
