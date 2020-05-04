@@ -409,7 +409,7 @@ class DeviceManager(Manager):
 
 
 	def getDevicesByType(self, deviceType: str, connectedOnly: bool = False) -> List[Device]:
-		return [x for x in self._devices.values() if x.deviceType == deviceType and (not connectedOnly or x.connected)]
+		return [x for x in self._devices.values() if x.deviceType == deviceType.lower() and (not connectedOnly or x.connected)]
 
 
 	def getDeviceByUID(self, uid: str) -> Optional[Device]:
