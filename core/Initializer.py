@@ -324,11 +324,7 @@ network={
 			snipsConf['snips-common']['mqtt_password'] = initConfs['mqttPassword']
 
 		snipsConf['snips-common']['assistant'] = f'/home/{getpass.getuser()}/ProjectAlice/assistant'
-		snipsConf['snips-dialogue']['session_timeout'] = 30
-		snipsConf['snips-dialogue']['lambda_timeout'] = 10
-		snipsConf['snips-dialogue']['retry_count'] = 0
 		snipsConf['snips-hotword']['model'] = [f'/home/{getpass.getuser()}/ProjectAlice/trained/hotwords/snips_hotword=0.53']
-		snipsConf['snips-hotword']['vad_messages'] = True
 
 		serviceFilePath = Path('/etc/systemd/system/ProjectAlice.service')
 		if serviceFilePath.exists():
