@@ -112,6 +112,7 @@ $(function () {
 		widget.css('outline', 'none');
 		widget.draggable('disable');
 		widget.resizable('disable');
+		$('.zindexer').hide();
 	});
 
 	$('#widgetCheck').on('click touchstart', function () {

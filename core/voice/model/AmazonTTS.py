@@ -222,7 +222,7 @@ class AmazonTTS(TTS):
 				Engine='standard',
 				LanguageCode=self._lang,
 				OutputFormat='mp3',
-				SampleRate='22050',
+				SampleRate='16000',
 				Text=self._text,
 				TextType='ssml',
 				VoiceId=self._voice.title()

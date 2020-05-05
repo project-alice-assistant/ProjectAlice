@@ -32,7 +32,7 @@ def deprecated(func):
 	return wrapper
 
 
-def IntentHandler(intent: Union[str, Intent], requiredState: str = None, isProtected: bool = False, authLevel: AccessLevel = AccessLevel.ZERO):
+def IntentHandler(intent: Union[str, Intent], requiredState: str = None, isProtected: bool = False, authLevel: AccessLevel = AccessLevel.ZERO): #NOSONAR
 	"""Decorator for adding a method as an intent handler."""
 	if isinstance(intent, str):
 		intent = Intent(intent, isProtected=isProtected, authLevel=authLevel)
@@ -47,7 +47,7 @@ def IntentHandler(intent: Union[str, Intent], requiredState: str = None, isProte
 	return wrapper
 
 
-def MqttHandler(intent: Union[str, Intent], requiredState: str = None, isProtected: bool = True, authLevel: AccessLevel = AccessLevel.ZERO):
+def MqttHandler(intent: Union[str, Intent], requiredState: str = None, isProtected: bool = True, authLevel: AccessLevel = AccessLevel.ZERO): #NOSONAR
 	"""Decorator for adding a method as a mqtt handler."""
 	if isinstance(intent, str):
 		intent = Intent(intent, isProtected=isProtected, userIntent=False, authLevel=authLevel)
@@ -77,7 +77,7 @@ def _exceptHandler(*args, text: str, exceptHandler: Callable, returnText: bool, 
 
 	session = kwargs.get('session')
 	try:
-		if session.sessionId in SuperManager.getInstance().dialogSessionManager.sessions:
+		if session.sessionId in SuperManager.getInstance().dialogManager.sessions:
 			SuperManager.getInstance().mqttManager.endDialog(sessionId=session.sessionId, text=newText)
 		else:
 			SuperManager.getInstance().mqttManager.say(text=newText, client=session.siteId)
@@ -85,7 +85,7 @@ def _exceptHandler(*args, text: str, exceptHandler: Callable, returnText: bool, 
 		return newText
 
 
-def Online(func: Callable = None, text: str = 'offline', offlineHandler: Callable = None, returnText: bool = False, catchOnly: bool = False):
+def Online(func: Callable = None, text: str = 'offline', offlineHandler: Callable = None, returnText: bool = False, catchOnly: bool = False): #NOSONAR
 	"""
 	(return a) decorator to mark a function that requires ethernet.
 
@@ -118,6 +118,9 @@ def Online(func: Callable = None, text: str = 'offline', offlineHandler: Callabl
 			request = requests.get('http://api.open-notify.org')
 			self.endDialog(sessionId=session.sessionId, text=request.text)
 	"""
+
+
+	# noinspection PyShadowingNames
 	def argumentWrapper(func):
 		@functools.wraps(func)
 		def offlineDecorator(*args, **kwargs):
@@ -139,7 +142,8 @@ def Online(func: Callable = None, text: str = 'offline', offlineHandler: Callabl
 	return argumentWrapper(func) if func else argumentWrapper
 
 
-def AnyExcept(func: Callable = None, text: str = 'error', exceptions: Tuple[BaseException, ...] = None, exceptHandler: Callable = None, returnText: bool = False, printStack: bool = False):
+def AnyExcept(func: Callable = None, text: str = 'error', exceptions: Tuple[BaseException, ...] = None, exceptHandler: Callable = None, returnText: bool = False, printStack: bool = False): #NOSONAR
+	# noinspection PyShadowingNames
 	def argumentWrapper(func):
 		@functools.wraps(func)
 		def exceptionDecorator(*args, **kwargs):
@@ -156,7 +160,7 @@ def AnyExcept(func: Callable = None, text: str = 'error', exceptions: Tuple[Base
 	return argumentWrapper(func) if func else argumentWrapper
 
 
-def ApiAuthenticated(func: Callable):
+def ApiAuthenticated(func: Callable): #NOSONAR
 	@functools.wraps(func)
 	def wrapper(*args, **kwargs):
 		if SuperManager.getInstance().userManager.apiTokenValid(request.headers.get('auth', '')):
@@ -167,7 +171,7 @@ def ApiAuthenticated(func: Callable):
 	return wrapper
 
 
-def IfSetting(func: Callable = None, settingName: str = None, settingValue: Any = None, inverted: bool = False, skillName: str = None):
+def IfSetting(func: Callable = None, settingName: str = None, settingValue: Any = None, inverted: bool = False, skillName: str = None): #NOSONAR
 	"""
 	Checks wheter a setting is equal to the given value before executing the wrapped method
 	If the setting is not equal to the given value, the wrapped method is not called
@@ -182,6 +186,7 @@ def IfSetting(func: Callable = None, settingName: str = None, settingValue: Any 
 	"""
 
 
+	# noinspection PyShadowingNames
 	def argumentWrapper(func: Callable):
 		@functools.wraps(func)
 		def settingDecorator(*args, **kwargs):

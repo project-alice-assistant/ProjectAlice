@@ -10,10 +10,11 @@ import re
 from core.base.model.Intent import Intent
 from core.base.model.Manager import Manager
 from core.commons import constants
-from core.dialog.model.DialogSession import DialogSession
 
 
 class MqttManager(Manager):
+
+	DEFAULT_CLIENT_EXTENSION = '@mqtt'
 
 	def __init__(self):
 		super().__init__()
@@ -44,26 +45,39 @@ class MqttManager(Manager):
 		self._mqttClient.message_callback_add(constants.TOPIC_VAD_UP.format(constants.DEFAULT_SITE_ID), self.onVADUp)
 		self._mqttClient.message_callback_add(constants.TOPIC_VAD_DOWN.format(constants.DEFAULT_SITE_ID), self.onVADDown)
 		for device in self.DeviceManager.getDevicesByType('alicesatellite'):
-			self._mqttClient.message_callback_add(constants.TOPIC_VAD_UP.replace(device.room), self.onVADUp)
-			self._mqttClient.message_callback_add(constants.TOPIC_VAD_DOWN.replace(device.room), self.onVADDown)
+			self._mqttClient.message_callback_add(constants.TOPIC_VAD_UP.format(device.room), self.onVADUp)
+			self._mqttClient.message_callback_add(constants.TOPIC_VAD_DOWN.format(device.room), self.onVADDown)
 
-		self._mqttClient.message_callback_add(constants.TOPIC_SESSION_STARTED, self.onSnipsSessionStarted)
-		self._mqttClient.message_callback_add(constants.TOPIC_ASR_START_LISTENING, self.onSnipsStartListening)
-		self._mqttClient.message_callback_add(constants.TOPIC_ASR_STOP_LISTENING, self.onSnipsStopListening)
-		self._mqttClient.message_callback_add(constants.TOPIC_INTENT_PARSED, self.onSnipsIntentParsed)
-		self._mqttClient.message_callback_add(constants.TOPIC_TEXT_CAPTURED, self.onSnipsCaptured)
-		self._mqttClient.message_callback_add(constants.TOPIC_TTS_SAY, self.onSnipsSay)
-		self._mqttClient.message_callback_add(constants.TOPIC_TTS_FINISHED, self.onSnipsSayFinished)
-		self._mqttClient.message_callback_add(constants.TOPIC_SESSION_ENDED, self.onSnipsSessionEnded)
-		self._mqttClient.message_callback_add(constants.TOPIC_CONTINUE_SESSION, self.onSnipsContinueSession)
-		self._mqttClient.message_callback_add(constants.TOPIC_INTENT_NOT_RECOGNIZED, self.onSnipsIntentNotRecognized)
-		self._mqttClient.message_callback_add(constants.TOPIC_SESSION_QUEUED, self.onSnipsSessionQueued)
-		self._mqttClient.message_callback_add(constants.TOPIC_NLU_QUERY, self.onTopicNluQuery)
-		self._mqttClient.message_callback_add(constants.TOPIC_PARTIAL_TEXT_CAPTURED, self.onNluPartialCapture)
-		self._mqttClient.message_callback_add(constants.TOPIC_HOTWORD_TOGGLE_ON, self.onSnipsHotwordToggleOn)
-		self._mqttClient.message_callback_add(constants.TOPIC_HOTWORD_TOGGLE_OFF, self.onSnipsHotwordToggleOff)
-		self._mqttClient.message_callback_add(constants.TOPIC_END_SESSION, self.onEventEndSession)
+		self._mqttClient.message_callback_add(constants.TOPIC_SESSION_STARTED, self.sessionStarted)
+		self._mqttClient.message_callback_add(constants.TOPIC_ASR_START_LISTENING, self.startListening)
+		self._mqttClient.message_callback_add(constants.TOPIC_ASR_STOP_LISTENING, self.stopListening)
+		self._mqttClient.message_callback_add(constants.TOPIC_ASR_TOGGLE_ON, self.asrToggleOn)
+		self._mqttClient.message_callback_add(constants.TOPIC_ASR_TOGGLE_OFF, self.asrToggleOff)
+		self._mqttClient.message_callback_add(constants.TOPIC_INTENT_PARSED, self.intentParsed)
+		self._mqttClient.message_callback_add(constants.TOPIC_TEXT_CAPTURED, self.captured)
+		self._mqttClient.message_callback_add(constants.TOPIC_TTS_SAY, self.intentSay)
+		self._mqttClient.message_callback_add(constants.TOPIC_TTS_FINISHED, self.sayFinished)
+		self._mqttClient.message_callback_add(constants.TOPIC_SESSION_ENDED, self.sessionEnded)
+		self._mqttClient.message_callback_add(constants.TOPIC_CONTINUE_SESSION, self.continueSession)
+		self._mqttClient.message_callback_add(constants.TOPIC_INTENT_NOT_RECOGNIZED, self.intentNotRecognized)
+		self._mqttClient.message_callback_add(constants.TOPIC_SESSION_QUEUED, self.sessionQueued)
+		self._mqttClient.message_callback_add(constants.TOPIC_NLU_QUERY, self.nluQuery)
+		self._mqttClient.message_callback_add(constants.TOPIC_PARTIAL_TEXT_CAPTURED, self.nluPartialCapture)
+		self._mqttClient.message_callback_add(constants.TOPIC_HOTWORD_TOGGLE_ON, self.hotwordToggleOn)
+		self._mqttClient.message_callback_add(constants.TOPIC_HOTWORD_TOGGLE_OFF, self.hotwordToggleOff)
+		self._mqttClient.message_callback_add(constants.TOPIC_END_SESSION, self.eventEndSession)
+		self._mqttClient.message_callback_add(constants.TOPIC_START_SESSION, self.startSession)
 		self._mqttClient.message_callback_add(constants.TOPIC_DEVICE_HEARTBEAT, self.deviceHeartbeat)
+		self._mqttClient.message_callback_add(constants.TOPIC_TOGGLE_FEEDBACK_ON, self.toggleFeedback)
+		self._mqttClient.message_callback_add(constants.TOPIC_TOGGLE_FEEDBACK_OFF, self.toggleFeedback)
+		self._mqttClient.message_callback_add(constants.TOPIC_NLU_INTENT_NOT_RECOGNIZED, self.nluIntentNotRecognized)
+
+		self._mqttClient.message_callback_add(constants.TOPIC_PLAY_BYTES.format(constants.DEFAULT_SITE_ID), self.topicPlayBytes)
+		self._mqttClient.message_callback_add(constants.TOPIC_PLAY_BYTES_FINISHED.format(constants.DEFAULT_SITE_ID), self.topicPlayBytesFinished)
+
+		for device in self.DeviceManager.getDevicesByType('alicesatellite'):
+			self._mqttClient.message_callback_add(constants.TOPIC_PLAY_BYTES.format(device.room), self.topicPlayBytes)
+			self._mqttClient.message_callback_add(constants.TOPIC_PLAY_BYTES_FINISHED.format(device.room), self.topicPlayBytesFinished)
 
 		self.connect()
 
@@ -73,14 +87,12 @@ class MqttManager(Manager):
 		self.disconnect()
 
 
-	# noinspection PyUnusedLocal
-	def onLog(self, client, userdata, level, buf):
+	def onLog(self, _client, _userdata, level, buf):
 		if level != 16:
 			self.logError(buf)
 
 
-	# noinspection PyUnusedLocal
-	def onConnect(self, client, userdata, flags, rc):
+	def onConnect(self, _client, _userdata, _flags, _rc):
 
 		subscribedEvents = [
 			(constants.TOPIC_SESSION_ENDED, 0),
@@ -99,7 +111,13 @@ class MqttManager(Manager):
 			(constants.TOPIC_NLU_QUERY, 0),
 			(constants.TOPIC_CONTINUE_SESSION, 0),
 			(constants.TOPIC_END_SESSION, 0),
-			(constants.TOPIC_DEVICE_HEARTBEAT, 0)
+			(constants.TOPIC_DEVICE_HEARTBEAT, 0),
+			(constants.TOPIC_ASR_TOGGLE_ON, 0),
+			(constants.TOPIC_ASR_TOGGLE_OFF, 0),
+			(constants.TOPIC_TOGGLE_FEEDBACK_ON, 0),
+			(constants.TOPIC_TOGGLE_FEEDBACK_OFF, 0),
+			(constants.TOPIC_NLU_INTENT_NOT_RECOGNIZED, 0),
+			(constants.TOPIC_START_SESSION, 0)
 		]
 
 		for username in self.UserManager.getAllUserNames():
@@ -110,6 +128,12 @@ class MqttManager(Manager):
 		for device in self.DeviceManager.getDevicesByType('alicesatellite'):
 			subscribedEvents.append((constants.TOPIC_VAD_UP.format(device.room), 0))
 			subscribedEvents.append((constants.TOPIC_VAD_DOWN.format(device.room), 0))
+
+		subscribedEvents.append((constants.TOPIC_PLAY_BYTES.format(constants.DEFAULT_SITE_ID), 0))
+		subscribedEvents.append((constants.TOPIC_PLAY_BYTES_FINISHED.format(constants.DEFAULT_SITE_ID), 0))
+		for device in self.DeviceManager.getDevicesByType('alicesatellite'):
+			subscribedEvents.append((constants.TOPIC_PLAY_BYTES.format(device.room), 0))
+			subscribedEvents.append((constants.TOPIC_PLAY_BYTES_FINISHED.format(device.room), 0))
 
 		self._mqttClient.subscribe(subscribedEvents)
 		self.toggleFeedbackSounds()
@@ -150,8 +174,7 @@ class MqttManager(Manager):
 			self.mqttClient.unsubscribe(str(intent))
 
 
-	# noinspection PyUnusedLocal
-	def onMqttMessage(self, client, userdata, message: mqtt.MQTTMessage):
+	def onMqttMessage(self, _client, _userdata, message: mqtt.MQTTMessage):
 		try:
 			if self._audioFrameRegex.match(message.topic):
 				self.broadcast(
@@ -169,7 +192,7 @@ class MqttManager(Manager):
 			payload = self.Commons.payload(message)
 			sessionId = self.Commons.parseSessionId(message)
 
-			session = self.DialogSessionManager.getSession(sessionId)
+			session = self.DialogManager.getSession(sessionId)
 			if session:
 				session.update(message)
 				if self.MultiIntentManager.processMessage(message):
@@ -193,13 +216,14 @@ class MqttManager(Manager):
 			self.broadcast(method=constants.EVENT_INTENT, exceptions=[self.name], propagateToSkills=True, session=session)
 
 			if 'intent' in payload and float(payload['intent']['confidenceScore']) < session.probabilityThreshold:
-				if session.notUnderstood < self.ConfigManager.getAliceConfigByName('notUnderstoodRetries'):
+				if session.notUnderstood <= self.ConfigManager.getAliceConfigByName('notUnderstoodRetries'):
 					session.notUnderstood = session.notUnderstood + 1
 
 					self.continueDialog(
 						sessionId=sessionId,
 						text=self.TalkManager.randomTalk('notUnderstood', skill='system'),
-						probabilityThreshold=session.probabilityThreshold
+						probabilityThreshold=session.probabilityThreshold,
+						intentFilter=session.intentFilter
 					)
 				else:
 					session.notUnderstood = 0
@@ -217,13 +241,14 @@ class MqttManager(Manager):
 			if consumed:
 				return
 
-			self.logWarning(f"Intent \"{message.topic}\" wasn't consumed by any skill")
-			if session.notUnderstood < self.ConfigManager.getAliceConfigByName('notUnderstoodRetries'):
+			self.logWarning(f"Intent **{message.topic}** wasn't consumed by any skill")
+			if session.notUnderstood <= self.ConfigManager.getAliceConfigByName('notUnderstoodRetries'):
 				session.notUnderstood = session.notUnderstood + 1
 
 				self.continueDialog(
 					sessionId=sessionId,
-					text=self.TalkManager.randomTalk('notUnderstood', skill='system')
+					text=self.TalkManager.randomTalk('notUnderstood', skill='system'),
+					intentFilter=session.intentFilter
 				)
 			else:
 				session.notUnderstood = 0
@@ -237,8 +262,7 @@ class MqttManager(Manager):
 			self.logError(f'Error in onMessage: {e}')
 
 
-	# noinspection PyUnusedLocal
-	def onHotwordDetected(self, client, data, msg):
+	def onHotwordDetected(self, _client, _data, msg):
 		siteId = self.Commons.parseSiteId(msg)
 		payload = self.Commons.payload(msg)
 
@@ -254,8 +278,6 @@ class MqttManager(Manager):
 			if speaker in users:
 				user = users[speaker].name
 
-		self.DialogSessionManager.preSession(siteId, user)
-
 		if user == constants.UNKNOWN_USER:
 			self.broadcast(method=constants.EVENT_HOTWORD, exceptions=[self.name], propagateToSkills=True, siteId=siteId, user=user)
 		else:
@@ -267,7 +289,7 @@ class MqttManager(Manager):
 			self._multiDetectionsHolder = list()
 			return
 
-		sessions = self.DialogSessionManager.sessions
+		sessions = self.DialogManager.sessions
 		for sessionId in sessions:
 			payload = self.Commons.payload(sessions[sessionId].message)
 			if payload['siteId'] != self._multiDetectionsHolder[0]:
@@ -276,89 +298,91 @@ class MqttManager(Manager):
 		self._multiDetectionsHolder = list()
 
 
-	# noinspection PyUnusedLocal
-	def onSnipsHotwordToggleOn(self, client, data, msg: mqtt.MQTTMessage):
+	def hotwordToggleOn(self, _client, _data, msg: mqtt.MQTTMessage):
 		siteId = self.Commons.parseSiteId(msg)
-		self.broadcast(method=constants.EVENT_HOTWORD_TOGGLE_ON, exceptions=[constants.DUMMY], propagateToSkills=True, siteId=siteId)
+		session = self.DialogManager.getSession(self.Commons.parseSessionId(msg))
+		self.broadcast(method=constants.EVENT_HOTWORD_TOGGLE_ON, exceptions=[constants.DUMMY], propagateToSkills=True, siteId=siteId, session=session)
 
 
-	# noinspection PyUnusedLocal
-	def onSnipsHotwordToggleOff(self, client, data, msg: mqtt.MQTTMessage):
+	def hotwordToggleOff(self, _client, _data, msg: mqtt.MQTTMessage):
 		siteId = self.Commons.parseSiteId(msg)
-		self.broadcast(method=constants.EVENT_HOTWORD_TOGGLE_OFF, exceptions=[constants.DUMMY], propagateToSkills=True, siteId=siteId)
+		session = self.DialogManager.getSession(self.Commons.parseSessionId(msg))
+		self.broadcast(method=constants.EVENT_HOTWORD_TOGGLE_OFF, exceptions=[constants.DUMMY], propagateToSkills=True, siteId=siteId, session=session)
 
 
-	# noinspection PyUnusedLocal
-	def onSnipsSessionStarted(self, client, data, msg: mqtt.MQTTMessage):
-		sessionId = self.Commons.parseSessionId(msg)
-		session = self.DialogSessionManager.addSession(sessionId=sessionId, message=msg)
+	def sessionStarted(self, _client, _data, msg: mqtt.MQTTMessage):
+		session = self.DialogManager.getSession(sessionId=self.Commons.parseSessionId(msg))
 
 		if session:
 			session.update(msg)
 			self.broadcast(method=constants.EVENT_SESSION_STARTED, exceptions=[self.name], propagateToSkills=True, session=session)
 
 
-	# noinspection PyUnusedLocal
-	def onSnipsSessionQueued(self, client, data, msg: mqtt.MQTTMessage):
+	def sessionQueued(self, _client, _data, msg: mqtt.MQTTMessage):
 		sessionId = self.Commons.parseSessionId(msg)
-		session = self.DialogSessionManager.addSession(sessionId=sessionId, message=msg)
+		session = self.DialogManager.addSession(sessionId=sessionId, message=msg)
 
 		if session:
 			session.update(msg)
 			self.broadcast(method=constants.EVENT_SESSION_QUEUED, exceptions=[self.name], propagateToSkills=True, session=session)
 
 
-	# noinspection PyUnusedLocal
-	def onTopicNluQuery(self, client, data, msg: mqtt.MQTTMessage):
+	def nluQuery(self, _client, _data, msg: mqtt.MQTTMessage):
 		sessionId = self.Commons.parseSessionId(msg)
+		siteId = self.Commons.parseSiteId(msg)
 
-		session = self.DialogSessionManager.getSession(sessionId)
+		session = self.DialogManager.getSession(sessionId)
 		if not session:
-			session = self.DialogSessionManager.addSession(sessionId=sessionId, message=msg)
+			session = self.DialogManager.newSession(siteId=siteId)
 		else:
 			session.update(msg)
 
 		self.broadcast(method=constants.EVENT_NLU_QUERY, exceptions=[self.name], propagateToSkills=True, session=session)
 
 
-	# noinspection PyUnusedLocal
-	def onSnipsStartListening(self, client, data, msg: mqtt.MQTTMessage):
+	def asrToggleOn(self, _client, _data, msg: mqtt.MQTTMessage):
+		self.broadcast(method=constants.EVENT_ASR_TOGGLE_ON, exceptions=[self.name], propagateToSkills=True, siteId=self.Commons.parseSiteId(msg))
+
+
+	def asrToggleOff(self, _client, _data, msg: mqtt.MQTTMessage):
+		self.broadcast(method=constants.EVENT_ASR_TOGGLE_OFF, exceptions=[self.name], propagateToSkills=True, siteId=self.Commons.parseSiteId(msg))
+
+
+	def startListening(self, _client, _data, msg: mqtt.MQTTMessage):
 		sessionId = self.Commons.parseSessionId(msg)
-		session = self.DialogSessionManager.getSession(sessionId=sessionId)
+		session = self.DialogManager.getSession(sessionId=sessionId)
 
 		if session:
 			session.update(msg)
 			self.broadcast(method=constants.EVENT_START_LISTENING, exceptions=[self.name], propagateToSkills=True, session=session)
 
 
-	# noinspection PyUnusedLocal
-	def onSnipsStopListening(self, client, data, msg: mqtt.MQTTMessage):
+	def stopListening(self, _client, _data, msg: mqtt.MQTTMessage):
 		sessionId = self.Commons.parseSessionId(msg)
-		session = self.DialogSessionManager.getSession(sessionId=sessionId)
+		session = self.DialogManager.getSession(sessionId=sessionId)
 
 		if session:
 			session.update(msg)
 			self.broadcast(method=constants.EVENT_STOP_LISTENING, exceptions=[self.name], propagateToSkills=True, session=session)
 
 
-	# noinspection PyUnusedLocal
-	def onSnipsCaptured(self, client, data, msg: mqtt.MQTTMessage):
+	def captured(self, _client, _data, msg: mqtt.MQTTMessage):
 		sessionId = self.Commons.parseSessionId(msg)
-		session = self.DialogSessionManager.getSession(sessionId=sessionId)
+		session = self.DialogManager.getSession(sessionId=sessionId)
 
 		if session:
 			session.update(msg)
 			self.broadcast(method=constants.EVENT_CAPTURED, exceptions=[self.name], propagateToSkills=True, session=session)
 
 
-	def onSnipsIntentParsed(self, client, data, msg: mqtt.MQTTMessage):
+	def intentParsed(self, client, data, msg: mqtt.MQTTMessage):
 		sessionId = self.Commons.parseSessionId(msg)
-		session = self.DialogSessionManager.getSession(sessionId=sessionId)
+		session = self.DialogManager.getSession(sessionId=sessionId)
 
 		if session:
 			session.update(msg)
 
-			intent = Intent(session.payload["intent"]["intentName"])
+			intent = Intent(session.payload['intent']['intentName'])
 			if str(intent) in self._deactivatedIntents:
 				# If the intent was deactivated, let's try the next possible alternative, if any
 				alternative = dict()
@@ -380,37 +404,30 @@ class MqttManager(Manager):
 
 				message = mqtt.MQTTMessage(topic=str.encode(str(intent)))
 				message.payload = json.dumps(payload)
-				self.onMqttMessage(client=client, userdata=data, message=message)
+				self.onMqttMessage(_client=client, _userdata=data, message=message)
 			else:
 				self.broadcast(method=constants.EVENT_INTENT_PARSED, exceptions=[self.name], propagateToSkills=True, session=session)
 
-				if session.isAPIGenerated:
-					intent = Intent(session.payload['intent']['intentName'])
-					message = mqtt.MQTTMessage(topic=str.encode(str(intent)))
-					message.payload = json.dumps(session.payload)
-					self.onMqttMessage(client=client, userdata=data, message=message)
 
-
-	# noinspection PyUnusedLocal
-	def onSnipsContinueSession(self, client, data, msg: mqtt.MQTTMessage):
+	def continueSession(self, _client, _data, msg: mqtt.MQTTMessage):
 		sessionId = self.Commons.parseSessionId(msg)
-		session = self.DialogSessionManager.getSession(sessionId)
+		session = self.DialogManager.getSession(sessionId)
 		if session:
 			session.update(msg)
-
-		self.broadcast(method=constants.EVENT_CONTINUE_SESSION, exceptions=[self.name], propagateToSkills=True, session=session)
-
-
-	# noinspection PyUnusedLocal
-	def onSnipsSessionEnded(self, client, data, msg: mqtt.MQTTMessage):
-		sessionId = self.Commons.parseSessionId(msg)
-		session = self.DialogSessionManager.getSession(sessionId)
-
-		if session:
-			session.hasEnded = True
-			session.update(msg)
+			self.broadcast(method=constants.EVENT_CONTINUE_SESSION, exceptions=[self.name], propagateToSkills=True, session=session)
 		else:
+			self.logWarning(f'Was asked to continue session with id **{sessionId}** but session does not exist')
+
+
+	def sessionEnded(self, _client, data, msg: mqtt.MQTTMessage):
+		sessionId = self.Commons.parseSessionId(msg)
+		session = self.DialogManager.getSession(sessionId)
+
+		if not session:
 			return
+
+		session.hasEnded = True
+		session.update(msg)
 
 		reason = session.payload['termination']['reason']
 		if reason:
@@ -421,7 +438,7 @@ class MqttManager(Manager):
 				self.broadcast(method=constants.EVENT_SESSION_TIMEOUT, exceptions=[self.name], propagateToSkills=True, session=session)
 			elif reason == 'intentNotRecognized':
 				# This should never trigger, as "sendIntentNotRecognized" is always set to True, but we never know
-				self.onSnipsIntentNotRecognized(None, data, msg)
+				self.intentNotRecognized(None, data, msg)
 			elif reason == 'error':
 				self.logError(f'Session "{session.sessionId}" ended with an unrecoverable error: {session.payload["termination"]["error"]}')
 				self.broadcast(method=constants.EVENT_SESSION_ERROR, exceptions=[self.name], propagateToSkills=True, session=session)
@@ -430,90 +447,54 @@ class MqttManager(Manager):
 				return
 
 		self.broadcast(method=constants.EVENT_SESSION_ENDED, exceptions=[self.name], propagateToSkills=True, session=session)
-		self.DialogSessionManager.removeSession(sessionId=sessionId)
 
 
-	# noinspection PyUnusedLocal
-	def onSnipsSay(self, client, data, msg: mqtt.MQTTMessage):
+	def intentSay(self, _client, _data, msg: mqtt.MQTTMessage):
 		sessionId = self.Commons.parseSessionId(msg)
 		payload = self.Commons.payload(msg)
 
-		session = self.DialogSessionManager.getSession(sessionId)
+		session = self.DialogManager.getSession(sessionId)
 		if session:
 			session.update(msg)
-			siteId = session.siteId
 		else:
-			siteId = self.Commons.parseSiteId(msg)
+			session = self.DialogManager.newSession(siteId=self.Commons.parseSiteId(msg), message=msg)
 
 		if 'text' in payload:
 			skill = self.SkillManager.getSkillInstance('ContextSensitive')
 			if skill:
-				skill.addChat(text=payload['text'], siteId=siteId)
+				skill.addChat(text=payload['text'], siteId=session.siteId)
 
 		self.broadcast(method=constants.EVENT_SAY, exceptions=[self.name], propagateToSkills=True, session=session)
 
 
-	def onSnipsSayFinished(self, _client, _data, msg: mqtt.MQTTMessage):
+	def sayFinished(self, _client, _data, msg: mqtt.MQTTMessage):
 		sessionId = self.Commons.parseSessionId(msg)
-
-		session = self.DialogSessionManager.getSession(sessionId)
+		uid = ''
+		session = self.DialogManager.getSession(sessionId)
 		if session:
 			session.update(msg)
+			uid = session.payload['id']
 
-		self.broadcast(method=constants.EVENT_SAY_FINISHED, exceptions=[self.name], propagateToSkills=True, session=session)
+		self.broadcast(method=constants.EVENT_SAY_FINISHED, exceptions=[self.name], propagateToSkills=True, session=session, uid=uid)
 
 
-	# noinspection PyUnusedLocal
-	def onSnipsIntentNotRecognized(self, client, data, msg: mqtt.MQTTMessage):
+	def intentNotRecognized(self, _client, _data, msg: mqtt.MQTTMessage):
 		sessionId = self.Commons.parseSessionId(msg)
-		session = self.DialogSessionManager.getSession(sessionId)
+		session = self.DialogManager.getSession(sessionId)
 
 		if not session:
 			self.ask(text=self.TalkManager.randomTalk('notUnderstood', skill='system'))
 		else:
-			# session.update(msg)
-			# if session.intentFilter and not str(self._INTENT_RANDOM_ANSWER) in session.intentFilter:
-			# 	print('returned')
-			# 	return
-			#
-			# payload = self.Commons.payload(msg)
-			# if 'input' in payload:
-			# 	# Trick the session into thinking it got RandomAnswer
-			# 	session.intentName = str(self._INTENT_RANDOM_ANSWER)
-			# 	session.message.topic = str(self._INTENT_RANDOM_ANSWER).encode('utf-8')
-			#
-			# 	# Forge the slot for total transparancy for skill devs
-			# 	slot = {
-			# 		'rawValue'    : payload['input'],
-			# 		'value'       : {
-			# 			'kind' : 'Custom',
-			# 			'value': payload['input']
-			# 		},
-			# 		'alternatives': [],
-			# 		'range'       : {
-			# 			'start': 0,
-			# 			'end'  : len(payload['input']) - 1
-			# 		},
-			# 		'entity'      : 'Alice/RandomWords',
-			# 		'slotName'    : 'RandomWord'
-			# 	}
-			#
-			# 	session.slots['RandomWord'] = payload['input']
-			# 	session.slotsAsObjects.get('RandomWord', list()).append(Slot(**slot))
-			#
-			# 	consumed = False
-			# 	for skill in self.SkillManager.activeSkills.values():
-			# 		if skill.onDispatchMessage(session):
-			# 			consumed = True
-			# 			break
-			#
-			# 	if consumed:
-			# 		return
+			intentFilter = session.intentFilter
 			session.update(msg)
 
-			if session.notUnderstood < self.ConfigManager.getAliceConfigByName('notUnderstoodRetries'):
+			if session.notUnderstood <= self.ConfigManager.getAliceConfigByName('notUnderstoodRetries'):
 				session.notUnderstood = session.notUnderstood + 1
-				self.reviveSession(session, self.TalkManager.randomTalk('notUnderstood', skill='system'))
+				self.continueDialog(
+					sessionId=sessionId,
+					text=self.TalkManager.randomTalk('notUnderstood', skill='system'),
+					intentFilter=intentFilter
+				)
 			else:
 				session.notUnderstood = 0
 				self.endDialog(sessionId=sessionId, text=self.TalkManager.randomTalk('notUnderstoodEnd', skill='system'))
@@ -521,10 +502,8 @@ class MqttManager(Manager):
 			self.broadcast(method=constants.EVENT_INTENT_NOT_RECOGNIZED, exceptions=[self.name], propagateToSkills=True, session=session)
 
 
-	# noinspection PyUnusedLocal
-	def onNluPartialCapture(self, client, data, msg: mqtt.MQTTMessage):
-		sessionId = self.Commons.parseSessionId(msg)
-		session = self.DialogSessionManager.getSession(sessionId)
+	def nluPartialCapture(self, _client, _data, msg: mqtt.MQTTMessage):
+		session = self.DialogManager.getSession(self.Commons.parseSessionId(msg))
 
 		if session:
 			session.update(msg)
@@ -532,29 +511,75 @@ class MqttManager(Manager):
 			self.broadcast(method=constants.EVENT_PARTIAL_TEXT_CAPTURED, exceptions=[self.name], propagateToSkills=True, session=session, text=payload['text'], likelihood=payload['likelihood'], seconds=payload['seconds'])
 
 
-	# noinspection PyUnusedLocal
-	def onVADUp(self, client, data, msg: mqtt.MQTTMessage):
+	def nluIntentNotRecognized(self, _client, _data, msg: mqtt.MQTTMessage):
+		session = self.DialogManager.getSession(self.Commons.parseSessionId(msg))
+
+		if session:
+			session.update(msg)
+			self.broadcast(method=constants.EVENT_NLU_INTENT_NOT_RECOGNIZED, exceptions=[self.name], propagateToSkills=True, session=session)
+
+
+	def startSession(self, _client, _data, msg: mqtt.MQTTMessage):
+		self.broadcast(
+			method=constants.EVENT_START_SESSION,
+			exceptions=[self.name],
+			propagateToSkills=True,
+			siteId=self.Commons.parseSiteId(msg),
+			payload=self.Commons.payload(msg)
+		)
+
+
+	def onVADUp(self, _client, _data, msg: mqtt.MQTTMessage):
 		siteId = self.Commons.parseSiteId(msg)
-		self.broadcast(method=constants.EVENT_VAD_UP, exceptions=[self.name], propagateToSkills=True, siteId=siteId)
+		self.broadcast(
+			method=constants.EVENT_VAD_UP,
+			exceptions=[self.name],
+			propagateToSkills=True,
+			siteId=siteId
+		)
 
 
-	# noinspection PyUnusedLocal
-	def onVADDown(self, client, data, msg: mqtt.MQTTMessage):
+	def onVADDown(self, _client, _data, msg: mqtt.MQTTMessage):
 		siteId = self.Commons.parseSiteId(msg)
 		self.broadcast(method=constants.EVENT_VAD_DOWN, exceptions=[self.name], propagateToSkills=True, siteId=siteId)
 
 
-	# noinspection PyUnusedLocal
-	def onEventEndSession(self, client, data, msg: mqtt.MQTTMessage):
+	def eventEndSession(self, _client, _data, msg: mqtt.MQTTMessage):
 		sessionId = self.Commons.parseSessionId(msg)
-		session = self.DialogSessionManager.getSession(sessionId)
+		session = self.DialogManager.getSession(sessionId)
 		if session:
 			session.update(msg)
 			self.broadcast(method=constants.EVENT_END_SESSION, exceptions=[self.name], propagateToSkills=True, session=session)
 
 
-	# noinspection PyUnusedLocal
-	def deviceHeartbeat(self, client, data, msg: mqtt.MQTTMessage):
+	def topicPlayBytes(self, _client, _data, msg: mqtt.MQTTMessage):
+		"""
+		SessionId is completly custom and does not belong in the Hermes Protocol
+		:param _client:
+		:param _data:
+		:param msg:
+		:return:
+		"""
+		count = msg.topic.count('/')
+		if count > 4:
+			requestId = msg.topic.rsplit('/')[-1]
+			sessionId = msg.topic.rsplit('/')[-2]
+		else:
+			requestId = msg.topic.rsplit('/')[-1]
+			sessionId = None
+
+		siteId = self.Commons.parseSiteId(msg)
+		self.broadcast(method=constants.EVENT_PLAY_BYTES, exceptions=self.name, propagateToSkills=True, requestId=requestId, payload=msg.payload, siteId=siteId, sessionId=sessionId)
+
+
+	def topicPlayBytesFinished(self, _client, _data, msg: mqtt.MQTTMessage):
+		requestId = msg.topic.rsplit('/')[-1]
+		siteId = self.Commons.parseSiteId(msg)
+		sessionId = self.Commons.parseSessionId(msg)
+		self.broadcast(method=constants.EVENT_PLAY_BYTES_FINISHED, exceptions=self.name, propagateToSkills=True, requestId=requestId, siteId=siteId, sessionId=sessionId)
+
+
+	def deviceHeartbeat(self, _client, _data, msg: mqtt.MQTTMessage):
 		payload = self.Commons.payload(msg)
 		uid = payload.get('uid', None)
 		if not uid:
@@ -565,11 +590,10 @@ class MqttManager(Manager):
 		self.broadcast(method=constants.EVENT_DEVICE_HEARTBEAT, exceptions=[self.name], propagateToSkills=True, uid=uid, siteId=siteId)
 
 
-	def reviveSession(self, session: DialogSession, text: str):
-		self.endSession(session.sessionId)
-		self.DialogSessionManager.planSessionRevival(session)
-		previousIntent = session.previousIntent[-1] if session.previousIntent else None
-		self.ask(text=text, customData=session.customData, previousIntent=previousIntent, intentFilter=session.intentFilter, client=session.siteId)
+	def toggleFeedback(self, _client, _data, msg: mqtt.MQTTMessage):
+		siteId = self.Commons.parseSiteId(msg)
+		method = constants.EVENT_TOGGLE_FEEDBACK_OFF if msg.topic.lower().endswith('off') else constants.EVENT_TOGGLE_FEEDBACK_ON
+		self.broadcast(method=method, exceptions=[self.name], propagateToSkills=True, siteId=siteId)
 
 
 	def say(self, text, client: str = constants.DEFAULT_SITE_ID, customData: dict = None, canBeEnqueued: bool = True):
@@ -587,7 +611,7 @@ class MqttManager(Manager):
 
 			if client == constants.ALL:
 				for device in deviceList:
-					device = device.replace('@mqtt', '')
+					device = device.replace(self.DEFAULT_CLIENT_EXTENSION, '')
 					if not device:
 						continue
 
@@ -617,13 +641,12 @@ class MqttManager(Manager):
 			}))
 
 
-	def ask(self, text: str, client: str = constants.DEFAULT_SITE_ID, intentFilter: list = None, customData: dict = None, previousIntent: str = '', canBeEnqueued: bool = True, currentDialogState: str = '', probabilityThreshold: float = None):
+	def ask(self, text: str, client: str = constants.DEFAULT_SITE_ID, intentFilter: list = None, customData: dict = None, canBeEnqueued: bool = True, currentDialogState: str = '', probabilityThreshold: float = None):
 		"""
 		Initiates a new session by asking something and waiting on user answer
 		:param probabilityThreshold: The override threshold for the user's answer to this question
 		:param currentDialogState: a str representing a state in the dialog, usefull for multiturn dialogs
 		:param canBeEnqueued: wheter or not this can be played later if the dialog manager is busy
-		:param previousIntent: the previous intent that triggered the method, if available
 		:param text: str The text to speak
 		:param client: int Where to ask
 		:param intentFilter: array Filter to force user intents
@@ -639,17 +662,13 @@ class MqttManager(Manager):
 			customData = dict()
 
 		user = customData.get('user', constants.UNKNOWN_USER) if customData else constants.UNKNOWN_USER
-		preSession = self.DialogSessionManager.preSession(client, user)
-		if previousIntent:
-			preSession.intentHistory.append(previousIntent)
-
-		preSession.intentFilter = intentFilter
+		session = self.DialogManager.newSession(client, user)
 
 		if currentDialogState:
-			preSession.currentState = currentDialogState
+			session.currentState = currentDialogState
 
 		if probabilityThreshold is not None:
-			preSession.probabilityThreshold = probabilityThreshold
+			session.probabilityThreshold = probabilityThreshold
 
 		if client == constants.ALL:
 			if not customData:
@@ -672,24 +691,26 @@ class MqttManager(Manager):
 			'sendIntentNotRecognized': True
 		}
 
+		intentList = list()
 		if intentFilter:
-			intentList = [str(x).replace('hermes/intent/', '') for x in intentFilter]
+			intentList = [x.replace('hermes/intent/', '') if isinstance(x, str) else x.justTopic for x in intentFilter]
 			initDict['intentFilter'] = intentList
 
 		jsonDict['init'] = initDict
+		session.intentFilter = intentList
 
 		if client == constants.ALL:
 			deviceList = self.DeviceManager.getDevicesByType('AliceSatellite', connectedOnly=True)
 			deviceList.append(constants.DEFAULT_SITE_ID)
 
 			for device in deviceList:
-				device = device.replace('@mqtt', '')
-				self.ask(text=text, client=device, intentFilter=intentFilter, customData=customData)
+				device = device.replace(self.DEFAULT_CLIENT_EXTENSION, '')
+				self.ask(text=text, client=device, intentFilter=intentList, customData=customData)
 		else:
 			self._mqttClient.publish(constants.TOPIC_START_SESSION, json.dumps(jsonDict))
 
 
-	def continueDialog(self, sessionId: str, text: str, customData: dict = None, intentFilter: list = None, previousIntent: str = '', slot: str = '', currentDialogState: str = '', probabilityThreshold: float = None):
+	def continueDialog(self, sessionId: str, text: str, customData: dict = None, intentFilter: list = None, slot: str = '', currentDialogState: str = '', probabilityThreshold: float = None):
 		"""
 		Continues a dialog
 		:param probabilityThreshold: The probability threshold override for the user's answer to this coming conversation round
@@ -698,12 +719,8 @@ class MqttManager(Manager):
 		:param customData: json str
 		:param text: str text spoken
 		:param intentFilter: array intent filter for user randomTalk
-		:param previousIntent: the previous intent that started the dialog continuation
 		:param slot: Optional String, requires intentFilter to contain a single value - If set, the dialogue engine will not run the the intent classification on the user response and go straight to slot filling, assuming the intent is the one passed in the intentFilter, and searching the value of the given slot
 		"""
-
-		if previousIntent:
-			self.DialogSessionManager.addPreviousIntent(sessionId=sessionId, previousIntent=previousIntent)
 
 		jsonDict = {
 			'sessionId'              : sessionId,
@@ -723,7 +740,7 @@ class MqttManager(Manager):
 
 		intentList = list()
 		if intentFilter:
-			intentList = [str(x).replace('hermes/intent/', '') for x in intentFilter]
+			intentList = [x.replace('hermes/intent/', '') if isinstance(x, str) else x.justTopic for x in intentFilter]
 			jsonDict['intentFilter'] = intentList
 
 		if slot:
@@ -734,8 +751,8 @@ class MqttManager(Manager):
 			else:
 				jsonDict['slot'] = slot
 
-		session = self.DialogSessionManager.getSession(sessionId=sessionId)
-		session.intentFilter = intentFilter
+		session = self.DialogManager.getSession(sessionId=sessionId)
+		session.intentFilter = intentList
 		if probabilityThreshold is not None:
 			session.probabilityThreshold = probabilityThreshold
 
@@ -757,10 +774,7 @@ class MqttManager(Manager):
 		if not sessionId:
 			return
 
-		session = self.DialogSessionManager.getSession(sessionId)
-		if session and session.isAPIGenerated:
-			return self.say(text=text, client=session.siteId)
-
+		session = self.DialogManager.getSession(sessionId)
 		if session and client and text and session.siteId != client:
 			self._mqttClient.publish(constants.TOPIC_END_SESSION, json.dumps({
 				'sessionId': sessionId
@@ -808,7 +822,7 @@ class MqttManager(Manager):
 			deviceList.append(constants.DEFAULT_SITE_ID)
 
 			for device in deviceList:
-				device = device.replace('@mqtt', '')
+				device = device.replace(self.DEFAULT_CLIENT_EXTENSION, '')
 				self.playSound(soundFilename, location, sessionId, device, uid)
 		else:
 			if ' ' in siteId:
@@ -820,12 +834,13 @@ class MqttManager(Manager):
 				self.logError(f"Sound file {soundFile} doesn't exist")
 				return
 
-			self._mqttClient.publish(constants.TOPIC_PLAY_BYTES.format(siteId, uid), payload=bytearray(soundFile.read_bytes()))
+			self._mqttClient.publish(constants.TOPIC_PLAY_BYTES.format(siteId).replace('#', uid), payload=bytearray(soundFile.read_bytes()))
 
 
 	def publish(self, topic: str, payload: (dict, str) = None, qos: int = 0, retain: bool = False):
 		if isinstance(payload, dict):
 			payload = json.dumps(payload)
+
 		self._mqttClient.publish(topic, payload, qos, retain)
 
 
@@ -855,7 +870,6 @@ class MqttManager(Manager):
 				'intents': intents
 			}
 		)
-
 		self.broadcast(method=constants.EVENT_CONFIGURE_INTENT, exceptions=[self.name], propagateToSkills=True, intents=intents)
 
 
@@ -870,7 +884,7 @@ class MqttManager(Manager):
 		:param state: str On or off
 		"""
 
-		deviceList = [device.name.replace('@mqtt', '') for device in self.DeviceManager.getDevicesByType('AliceSatellite', connectedOnly=True)]
+		deviceList = [device.name.replace(self.DEFAULT_CLIENT_EXTENSION, '') for device in self.DeviceManager.getDevicesByType('AliceSatellite', connectedOnly=True)]
 		deviceList.append(constants.DEFAULT_SITE_ID)
 
 		for siteId in deviceList:

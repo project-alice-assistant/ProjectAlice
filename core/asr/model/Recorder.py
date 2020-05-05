@@ -1,9 +1,10 @@
 import queue
 import threading
+import wave
 from typing import Optional
 
+import io
 import paho.mqtt.client as mqtt
-import struct
 
 from core.base.model.ProjectAliceObject import ProjectAliceObject
 from core.dialog.model.DialogSession import DialogSession
@@ -46,28 +47,16 @@ class Recorder(ProjectAliceObject):
 
 
 	def onAudioFrame(self, message: mqtt.MQTTMessage):
-		try:
-			riff, size, fformat = struct.unpack('<4sI4s', message.payload[:12])
+		with io.BytesIO(message.payload) as buffer:
+			try:
+				with wave.open(buffer, 'rb') as wav:
+					frame = wav.readframes(512)
+					while frame:
+						self._buffer.put(frame)
+						frame = wav.readframes(512)
 
-			if riff != b'RIFF':
-				self.logError('Frame parse error')
-				return
-
-			if fformat != b'WAVE':
-				self.logError('Frame wrong format')
-				return
-
-			chunkOffset = 52
-			while chunkOffset < size:
-				subChunk2Id, subChunk2Size = struct.unpack('<4sI', message.payload[chunkOffset:chunkOffset + 8])
-				chunkOffset += 8
-				if subChunk2Id == b'data':
-					self._buffer.put(message.payload[chunkOffset:chunkOffset + subChunk2Size])
-
-				chunkOffset = chunkOffset + subChunk2Size + 8
-
-		except Exception as e:
-			self.logError(f'Error recording user speech: {e}')
+			except Exception as e:
+				self.logError(f'Error recording user speech: {e}')
 
 
 	def __iter__(self):
@@ -86,7 +75,7 @@ class Recorder(ProjectAliceObject):
 		data = list()
 		while not self._buffer.empty():
 			chunk = self._buffer.get(block=False)
-			if not chunk:
+			if not chunk or not self._recording:
 				break
 
 			data.append(chunk)
@@ -105,10 +94,10 @@ class Recorder(ProjectAliceObject):
 
 			data = [chunk]
 
-			while True:
+			while self._recording:
 				try:
 					chunk = self._buffer.get(block=False)
-					if not chunk:
+					if not chunk or not self._recording:
 						return
 
 					data.append(chunk)

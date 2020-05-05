@@ -94,8 +94,8 @@ class DeviceManager(Manager):
 		self.MqttManager.publish(topic='projectalice/devices/coreDisconnection')
 
 
-	def deviceMessage(self, message: MQTTMessage) -> Optional[DialogSession]:
-		return self.DialogSessionManager.addTempSession(sessionId=str(uuid.uuid4()), message=message)
+	def deviceMessage(self, message: MQTTMessage) -> DialogSession:
+		return self.DialogManager.newTempSession(message=message)
 
 
 	def loadDevices(self):
@@ -140,7 +140,7 @@ class DeviceManager(Manager):
 
 
 	def addZigBeeDevice(self):
-		pass
+		pass # Should be implemented or deleted
 
 
 	def startTasmotaFlashingProcess(self, room: str, espType: str, session: DialogSession) -> bool:
@@ -409,7 +409,7 @@ class DeviceManager(Manager):
 
 
 	def getDevicesByType(self, deviceType: str, connectedOnly: bool = False) -> List[Device]:
-		return [x for x in self._devices.values() if x.deviceType == deviceType and (not connectedOnly or x.connected)]
+		return [x for x in self._devices.values() if x.deviceType == deviceType.lower() and (not connectedOnly or x.connected)]
 
 
 	def getDeviceByUID(self, uid: str) -> Optional[Device]:

@@ -91,7 +91,7 @@ class AliceWatchManager(Manager):
 		})
 
 
-	def onHotwordToggleOn(self, siteId: str):
+	def onHotwordToggleOn(self, siteId: str, session: DialogSession):
 		if self._verbosity < 2:
 			return
 
@@ -100,7 +100,7 @@ class AliceWatchManager(Manager):
 		})
 
 
-	def onHotwordToggleOff(self, siteId: str):
+	def onHotwordToggleOff(self, siteId: str, session: DialogSession):
 		if self._verbosity < 2:
 			return
 
@@ -136,7 +136,7 @@ class AliceWatchManager(Manager):
 		})
 
 
-	def onEndSession(self, session: DialogSession):
+	def onEndSession(self, session: DialogSession, reason: str = 'nominal'):
 		if self._verbosity < 1:
 			return
 
@@ -211,7 +211,7 @@ class AliceWatchManager(Manager):
 			return
 
 		text = f'[Dialogue] Was asked to configure all sites:'
-		for intent in intents:
+		for intent in intents: #NOSONAR
 			text = f'{text}\n{"![Green](enable)" if intent["enable"] else "![Red](disable)"} {intent["intentId"]}'
 
 		text = f'{text}'
@@ -226,7 +226,7 @@ class AliceWatchManager(Manager):
 			return
 
 		self.publish(payload={
-			'text': f'[Nlu] Was asekd to parse input "![Yellow]({session.payload.get("input", "")})'
+			'text': f'[Nlu] Was asked to parse input "![Yellow]({session.payload.get("input", "")}")'
 		})
 
 

@@ -78,5 +78,15 @@
 	],
 	"offline": [
 		"I'm sorry but I can't do that while being offline"
+	],
+	"notification": [
+		"yes?",
+		"yeah?",
+		"I'm listening!",
+		"I'm all ears!",
+		"At your service!",
+		"Listening!",
+		"yep?",
+		"tell me!"
 	]
 }

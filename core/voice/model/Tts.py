@@ -1,4 +1,5 @@
 import getpass
+import uuid
 from pathlib import Path
 from typing import Optional
 
@@ -35,6 +36,7 @@ class TTS(ProjectAliceObject):
 
 		self._cacheFile: Path = Path()
 		self._text = ''
+		self._speaking = False
 
 
 	def onStart(self):
@@ -158,26 +160,26 @@ class TTS(ProjectAliceObject):
 
 
 	def _speak(self, file: Path, session: DialogSession):
+		self._speaking = True
+		uid = str(uuid.uuid4())
 		SuperManager.getInstance().mqttManager.playSound(
 			soundFilename=file.stem,
 			location=file.parent,
 			sessionId=session.sessionId,
-			siteId=session.siteId
+			siteId=session.siteId,
+			uid=uid
 		)
 
 		duration = round(len(AudioSegment.from_file(file)) / 1000, 2)
-		SuperManager.getInstance().threadManager.doLater(interval=duration + 0.1, func=self._sayFinished, args=[session])
+		SuperManager.getInstance().threadManager.doLater(interval=duration + 0.1, func=self._sayFinished, args=[session, uid])
 
 
-	@staticmethod
-	def _sayFinished(session: DialogSession):
-		if 'id' not in session.payload:
-			return
-
+	def _sayFinished(self, session: DialogSession, uid: str):
+		self._speaking = False
 		SuperManager.getInstance().mqttManager.publish(
 			topic=constants.TOPIC_TTS_FINISHED,
 			payload={
-				'id': session.payload['id'],
+				'id': uid,
 				'sessionId': session.sessionId
 			}
 		)
