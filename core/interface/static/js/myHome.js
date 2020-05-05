@@ -8,6 +8,7 @@ $(function () {
 	let buildingMode = false;
 	let paintingMode = false;
 	let decoratorMode = false;
+	let deviceInstallerMode = false;
 
 	let selectedFloor = '';
 	let selectedDeco = '';
@@ -29,6 +30,9 @@ $(function () {
 				});
 				$.each(zone['deco'], function (iiii, deco) {
 					newDeco($zone, deco);
+				});
+				$.each(zone['devices'], function (iiiii, device) {
+					newDevice($zone, device);
 				});
 			})
 		});
@@ -75,6 +79,18 @@ $(function () {
 			data[zoneName]['deco'] = [];
 			$(this).children('.floorPlan-Deco').each(function () {
 				data[zoneName]['deco'].push({
+					'x'       : $(this).css('left').replace('px', ''),
+					'y'       : $(this).css('top').replace('px', ''),
+					'rotation': matrixToAngle($(this).css('transform')),
+					'width'   : $(this).width(),
+					'height'  : $(this).height(),
+					'texture' : $(this).data('texture')
+				})
+			});
+
+			data[zoneName]['devices'] = [];
+			$(this).children('.floorPlan-Device').each(function () {
+				data[zoneName]['devices'].push({
 					'x'       : $(this).css('left').replace('px', ''),
 					'y'       : $(this).css('top').replace('px', ''),
 					'rotation': matrixToAngle($(this).css('transform')),
@@ -210,6 +226,60 @@ $(function () {
 
 				let $deco = newDeco($newZone, decoData);
 				makeResizableRotatableAndDraggable($deco);
+			} else if (deviceInstallerMode) {
+				if (selectedDevice == null || selectedDevice == '') {
+					return;
+				}
+
+				let deviceData = {
+					'x'      : 25,
+					'y'      : 25,
+					'width'  : 50,
+					'height' : 50,
+					'rotation': 0,
+					'texture': selectedDeco
+				}
+
+				let $device = newDevice($newZone, deviceData);
+				makeResizableRotatableAndDraggable($device);
+			} else {
+				let $settings = $('#settings');
+				let content = "<h1>"+data['name']+"</h1>";
+				content += "<div class='configBox'>";
+				content += "<div class='configList'>";
+				content += "<div class='configBlock'><div class='configLabel'>Synonyms:</div>";
+				content += "<div class='configBlockContent'><ul class='configListCurrent'/><input class='configInput'/><div class='link-hover configListAdd'><i class=\"fas fa-plus-circle\"></i>	</div></div></div>";
+				content += "<div class='configBlock'><div class='configLabel'>Devices:</div><input class='configInput'/></div>";
+				content += "<div class='configBlock'><div class='configLabel'>Linked Devices:</div><input class='configInput'/></div>";
+				content += "</div></div>";
+
+				//TODO load existing settings
+				$settings.html(content);
+				$settings.sidebar({side: "right"}).trigger("sidebar:open");
+
+				// reroute enter to click event
+				$('.configInput').keypress(function (e) {
+				  if (e.which == 13) {
+				  	$(this).parent().children('.configListAdd').click();
+					return false;
+				  }
+				});
+
+				// add new entry to conf. List
+				// TODO add to DB
+				// TODO check if is existing
+				$('.configListAdd').on('click touchstart',function() {
+					let $inp = $(this).parent().children('.configInput');
+					if ($inp.val() != "") {
+						$(this).parent().children('.configListCurrent').append("<li>" + $inp.val() + "<div class='addWidgetCheck configListRemove link-hover'><i class='fas fa-minus-circle'></i></div></li>");
+						$inp.val('');
+					}
+					$('.configListRemove').on('click touchstart',function() {
+						$(this).parent().remove();
+					});
+				});
+
+
 			}
 		});
 
@@ -248,6 +318,7 @@ $(function () {
 		$element.append($newWall);
 		return $newWall;
 	}
+
 
 	function newConstruction($element, data) {
 		data = snapPosition(data)
@@ -297,6 +368,30 @@ $(function () {
 		return $newDeco;
 	}
 
+		function newDevice($element, data) {
+		data = snapPosition(data)
+		data = snapAngle(data);
+		// noinspection CssUnknownTarget
+		let $newDevice = $('<div class="floorPlan-Device" ' +
+			'style="background: url(\'/static/css/images/myHome/device/' + data["texture"] + '.png\') no-repeat; background-size: 100% 100%; left: ' + data["x"] + 'px; top: ' + data["y"] + 'px; width: ' + data["width"] + 'px; height: ' + data["height"] + 'px; position: absolute; z-index: auto; transform: rotate(' + data["rotation"] + 'deg);" ' +
+			'data-texture="' + data["texture"] + '">' +
+			'</div>');
+
+		$newDevice.on('click touchstart', function () {
+			return false;
+		});
+
+		$newDevice.on('contextmenu', function () {
+			if (decoratorMode) {
+				$(this).remove();
+				return false;
+			}
+		});
+
+		$element.append($newDevice);
+		return $newDevice;
+	}
+
 	$('#toolbarToggleShow').on('click touchstart', function () {
 		$('#toolbar_full').show();
 		$('#toolbar_toggle').hide();
@@ -310,6 +405,7 @@ $(function () {
 
 		$('#painterTiles').hide();
 		$('#decoTiles').hide();
+		$('#deviceTiles').hide();
 
 		$('.inputOrText').each(function() {
 			let name = $(this).text();
@@ -327,6 +423,7 @@ $(function () {
 		paintingMode = false;
 		decoratorMode = false;
 		moveMode = false;
+		deviceInstallerMode = false;
 
 		$floorPlan.removeClass('floorPlanEditMode');
 		$floorPlan.removeClass('floorPlanEditMode-AddingZone');
@@ -334,10 +431,12 @@ $(function () {
 		removeResizableRotatableAndDraggable($('.floorPlan-Zone'));
 		removeResizableRotatableAndDraggable($('.floorPlan-Wall'));
 		removeResizableRotatableAndDraggable($('.floorPlan-Deco'));
+		removeResizableRotatableAndDraggable($('.floorPlan-Device'));
 		removeResizableRotatableAndDraggable($('.floorPlan-Construction'));
 
 		$('#painterTiles').hide();
 		$('#decoTiles').hide();
+		$('#deviceTiles').hide();
 
 		markSelectedTool(null);
 
@@ -360,9 +459,11 @@ $(function () {
 		moveMode = false;
 		paintingMode = false;
 		decoratorMode = false;
+		deviceInstallerMode = false;
 
 		$('#painterTiles').hide();
 		$('#decoTiles').hide();
+		$('#deviceTiles').hide();
 
 		markSelectedTool($(this));
 		$('#floorPlan').addClass('floorPlanEditMode-AddingZone');
@@ -400,6 +501,7 @@ $(function () {
 		paintingMode = false;
 		zoneMode = false;
 		decoratorMode = false;
+		deviceInstallerMode = false;
 
 		$('#painterTiles').hide();
 		$('#decoTiles').hide();
@@ -456,6 +558,7 @@ $(function () {
 		}
 	});
 
+
 	$('#mover').on('click touchstart', function () {
 		markSelectedTool($(this));
 
@@ -495,6 +598,33 @@ $(function () {
 			});
 		} else {
 			$('.floorPlan-Deco').each(function() {
+				removeResizableRotatableAndDraggable($(this));
+			});
+			markSelectedTool(null);
+		}
+	});
+
+		$('#deviceInstaller').on('click touchstart', function () {
+		markSelectedTool($(this));
+
+		if (!deviceInstallerMode) {
+			deviceInstallerMode = true;
+			$('#deviceTiles').css('display', 'flex');
+			$floorPlan.removeClass('floorPlanEditMode-AddingZone');
+
+			$('.floorPlan-Device').each(function() {
+				makeResizableRotatableAndDraggable($(this));
+			});
+
+			$('.floorPlan-Zone, .floorPlan-Wall, .floorPlan-Construction').each(function() {
+				removeResizableRotatableAndDraggable($(this));
+			});
+
+			$('.floorPlan-Deco, .floorPlan-Wall, .floorPlan-Construction').each(function() {
+				removeResizableRotatableAndDraggable($(this));
+			});
+		} else {
+			$('.floorPlan-Device').each(function() {
 				removeResizableRotatableAndDraggable($(this));
 			});
 			markSelectedTool(null);

@@ -6,6 +6,7 @@
 
 {% block loaders %}
 	<link rel="stylesheet" href="{{ url_for('static', filename='css/myHome.css') }}">
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-sidebar/3.3.2/jquery.sidebar.min.js"></script>
 	<script src="{{ url_for('static', filename='js/myHome.js') }}"></script>
 {% endblock %}
 
@@ -16,6 +17,9 @@
 {% block content %}
 	<div class="stick-top-right">
 		<div class="toolbar initialHidden" id="toolbar_full">
+			<span class="toolbarButton link-hover" id="deviceInstaller">
+				<i class="fas fa-plug" aria-hidden="true"></i>
+			</span>
 			<span class="toolbarButton link-hover" id="painter">
 				<i class="fas fa-paint-roller" aria-hidden="true"></i>
 			</span>
@@ -44,5 +48,7 @@
 	<div class="tileContainer initialHidden tileholder" id="constructionTiles"></div>
 	<div class="tileContainer initialHidden tileholder" id="painterTiles"></div>
 	<div class="tileContainer initialHidden tileholder" id="decoTiles"></div>
+	<div class="tileContainer initialHidden tileholder" id="deviceTiles"></div>
 	<div class="floorPlan" id="floorPlan"></div>
+	<div class="sidebar right" id="settings"></div>
 {% endblock %}

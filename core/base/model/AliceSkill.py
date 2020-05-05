@@ -48,6 +48,7 @@ class AliceSkill(ProjectAliceObject):
 		self._required = False
 		self._databaseSchema = databaseSchema
 		self._widgets = dict()
+		self._deviceTypes = dict()
 		self._intentsDefinitions = dict()
 		self._scenarioNodeName = ''
 		self._scenarioNodeVersion = Version(mainVersion=0, updateVersion=0, hotfix=0)
@@ -201,8 +202,65 @@ class AliceSkill(ProjectAliceObject):
 				)
 
 
+	def loadDevices(self):
+		fp = self.getResource('device')
+		if fp.exists():
+			self.logInfo(f"Loading **{len(list(fp.glob('*.py'))) - 1}** device type", plural='types')
+
+			data = self.DatabaseManager.fetch(
+				tableName='deviceTypes',
+				query='SELECT * FROM :__table__ WHERE parent = :parent ORDER BY `zindex`',
+				callerName=self.SkillManager.name,
+				values={'parentSkill': self.name},
+				method='all'
+			)
+			if data:
+				data = {row['name']: row for row in data}
+
+			for file in fp.glob('*.py'):
+				if file.name.startswith('__'):
+					continue
+
+				deviceType = Path(file).stem
+				deviceTypeImport = importlib.import_module(f'skills.{self.name}.device.device_{deviceType}')
+				klass = getattr(deviceTypeImport, deviceType)
+
+				if deviceType in data:  # deviceType already exists in DB
+					deviceClass = klass(data[deviceType])
+					self._deviceTypes[deviceType] = deviceClass
+					deviceClass.setParentSkillInstance(self)
+					del data[deviceType]
+					self.logInfo(f'Loaded device type **{deviceType}**')
+
+				else:  # deviceClass is new
+					self.logInfo(f'Adding device type **{deviceType}**')
+					deviceClass = klass({
+						'name'  : deviceType,
+						'parent': self.name,
+					})
+					self._deviceTypes[deviceType] = deviceClass
+					deviceClass.setParentSkillInstance(self)
+					deviceClass.saveToDB()
+
+			for deviceType in data:  # deprecated devices
+				self.logInfo(f'Widget **{deviceType}** is deprecated, removing')
+				self.DatabaseManager.delete(
+					tableName='widgets',
+					callerName=self.SkillManager.name,
+					query='DELETE FROM :__table__ WHERE parent = :parent AND name = :name',
+					values={
+						'parent': self.name,
+						'name'  : deviceType
+					}
+				)
+
+
+
 	def getWidgetInstance(self, widgetName: str) -> Optional[Widget]:
 		return self._widgets.get(widgetName)
+
+	def getDeviceTypeInstance(self, deviceTypeName: str) -> Optional[Device]:
+		return self._deviceTypes.get(deviceTypeName)
 
 
 	def getUtterancesByIntent(self, intent: Union[Intent, tuple, str], forceLowerCase: bool = True, cleanSlots: bool = False) -> list:
@@ -230,6 +288,11 @@ class AliceSkill(ProjectAliceObject):
 	@property
 	def widgets(self) -> dict:
 		return self._widgets
+
+
+	@property
+	def deviceTypes(self) -> dict:
+		return self._deviceTypes
 
 
 	@property
