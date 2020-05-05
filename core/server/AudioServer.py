@@ -44,7 +44,9 @@ class AudioManager(Manager):
 	def onStart(self):
 		super().onStart()
 		self.MqttManager.mqttClient.subscribe(constants.TOPIC_AUDIO_FRAME.format(constants.DEFAULT_SITE_ID))
-		self.ThreadManager.newThread(name='audioPublisher', target=self.publishAudio)
+
+		if not self.ConfigManager.getAliceConfigByName('disableSoundAndMic'):
+			self.ThreadManager.newThread(name='audioPublisher', target=self.publishAudio)
 
 
 	def onStop(self):
@@ -127,7 +129,7 @@ class AudioManager(Manager):
 
 
 	def onPlayBytes(self, requestId: str, payload: bytearray, siteId: str, sessionId: str = None):
-		if siteId != constants.DEFAULT_SITE_ID:
+		if siteId != constants.DEFAULT_SITE_ID or self.ConfigManager.getAliceConfigByName('disableSoundAndMic'):
 			return
 
 		with io.BytesIO(payload) as buffer:
