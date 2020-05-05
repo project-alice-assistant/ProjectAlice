@@ -1,4 +1,3 @@
-PyAudio==0.2.11
 python-dateutil==2.8.0
 paho-mqtt==1.5.0
 requests==2.21.0
