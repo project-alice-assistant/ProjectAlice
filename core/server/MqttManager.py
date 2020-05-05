@@ -753,7 +753,6 @@ class MqttManager(Manager):
 
 		session = self.DialogManager.getSession(sessionId=sessionId)
 		session.intentFilter = intentList
-		session.inDialog = True
 		if probabilityThreshold is not None:
 			session.probabilityThreshold = probabilityThreshold
 

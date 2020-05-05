@@ -20,12 +20,12 @@ class DialogSession:
 	notUnderstood: int = 0
 	currentState: str = constants.DEFAULT
 	hasEnded: bool = False
+	hasStarted: bool = False
 	isEnding: bool = False
 	inDialog = False
 	probabilityThreshold: float = 0.5
 	text: str = ''
 	isNotification: bool = False
-	hotworded: bool = False
 	slots: dict = field(default_factory=dict)
 	slotsAsObjects: dict = field(default_factory=dict)
 	customData: dict = field(default_factory=dict)

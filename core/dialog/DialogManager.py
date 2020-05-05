@@ -1,7 +1,7 @@
 import uuid
 from pathlib import Path
 from threading import Timer
-from typing import Dict, List, Optional
+from typing import Dict, Optional
 
 from paho.mqtt.client import MQTTMessage
 
@@ -11,14 +11,6 @@ from core.dialog.model.DialogSession import DialogSession
 
 
 class DialogManager(Manager):
-	"""
-	onHotword is the real starting point. It creates a new session that will be held throughout the entire dialogue
-
-	This handles the hermes protocol but adds none standard payload informations that were not originally thought by the Snips team
-
-	This contains a hack to make sure sessions are started only when the notification has finished playing
-	"""
-
 
 	def __init__(self):
 		super().__init__()
@@ -28,7 +20,6 @@ class DialogManager(Manager):
 		self._feedbackSounds: Dict[str: bool] = dict()
 		self._sessionTimeouts: Dict[str, Timer] = dict()
 		self._revivePendingSessions: Dict[str, DialogSession] = dict()
-		self._says: List[str] = list()
 
 		self._disabledByDefaultIntents = set()
 		self._enabledByDefaultIntents = set()
@@ -56,7 +47,6 @@ class DialogManager(Manager):
 		self._endedSessions[siteId] = self._sessionsById.pop(siteId, None)
 
 		session = self.newSession(siteId=siteId, user=user)
-		session.hotworded = True
 
 		# Turn off the wakeword component
 		self.MqttManager.publish(
@@ -67,28 +57,25 @@ class DialogManager(Manager):
 			}
 		)
 
-		requestId = str(uuid.uuid4())
-
 		# Play notification if needed
 		if self._feedbackSounds.get('siteId', True):
-			# Adding the session id is custom!
-			uid = str(uuid.uuid4())
-			self.addSayUuid(uid)
 			self.MqttManager.publish(
-				topic=constants.TOPIC_TTS_SAY,
+				topic=constants.TOPIC_START_SESSION,
 				payload={
-					'text'     : self.TalkManager.randomTalk(
-						talk='notification',
-						skill='system'
-					),
-					'lang'     : self.LanguageManager.activeLanguageAndCountryCode,
-					'siteId'   : siteId,
-					'sessionId': session.sessionId,
-					'uid'      : uid
-				}
-			)
+					'siteId'    : siteId,
+					'init'      : {
+						'type'                   : 'action',
+						'text'                   : self.TalkManager.randomTalk(
+							talk='notification',
+							skill='system'
+						),
+						'sendIntentNotRecognized': True,
+						'canBeEnqueued'          : False
+					},
+					'customData': {}
+				})
 		else:
-			self.onSayFinished(session=session, uid=requestId)
+			self.onSayFinished(session=session, uid=str(uuid.uuid4()))
 
 
 	def onSayFinished(self, session: DialogSession, uid: str = None):
@@ -100,10 +87,8 @@ class DialogManager(Manager):
 		:return:
 		"""
 
-		if session.hasEnded or not uid or not uid in self._says:
+		if session.hasEnded:
 			return
-
-		self._says.remove(uid)
 
 		if session.isEnding or session.isNotification:
 			self.MqttManager.publish(
@@ -118,13 +103,25 @@ class DialogManager(Manager):
 				}
 			)
 		else:
-			if not session.inDialog:
+			if not session.hasStarted:
 				self.onStartSession(
 					siteId=session.siteId,
 					payload=dict()
 				)
 			else:
-				self.onSessionStarted(session=session)
+				self.startSessionTimeout(sessionId=session.sessionId)
+
+				self.MqttManager.publish(
+					topic=constants.TOPIC_ASR_TOGGLE_ON
+				)
+
+				self.MqttManager.publish(
+					topic=constants.TOPIC_ASR_START_LISTENING,
+					payload={
+						'siteId'   : session.siteId,
+						'sessionId': session.sessionId
+					}
+				)
 
 
 	def startSessionTimeout(self, sessionId: str, tempSession: bool = False):
@@ -182,21 +179,7 @@ class DialogManager(Manager):
 		:return:
 		"""
 		self.startSessionTimeout(sessionId=session.sessionId)
-
-		if session.isNotification:
-			return
-
-		self.MqttManager.publish(
-			topic=constants.TOPIC_ASR_TOGGLE_ON
-		)
-
-		self.MqttManager.publish(
-			topic=constants.TOPIC_ASR_START_LISTENING,
-			payload={
-				'siteId'   : session.siteId,
-				'sessionId': session.sessionId
-			}
-		)
+		session.hasStarted = True
 
 
 	def onCaptured(self, session: DialogSession):
@@ -321,17 +304,23 @@ class DialogManager(Manager):
 		:param payload:
 		:return:
 		"""
+
 		session = self._sessionsBySites.get(siteId, None)
 		if not session:
 			# The session was started programmatically, we need to create one
 			session = self.newSession(siteId=siteId)
-		elif not session.hotworded:
-			if 'init' in payload and payload['init'].get('canBeEnqueued', True):
+		else:
+			if session.hasStarted and not session.hasEnded and 'init' in payload and payload['init'].get('canBeEnqueued', True):
 				self.ThreadManager.doLater(interval=1, func=self.onStartSession, kwargs={'siteId': siteId, 'payload': payload})
-			return
+				return
 
-		if 'init' in payload and payload['init']['type'] == 'notification':
-			session.isNotification = True
+		if 'init' in payload:
+			if payload['init']['type'] == 'notification':
+				session.isNotification = True
+				session.inDialog = False
+			else:
+				session.isNotification = False
+				session.inDialog = True
 
 		self.MqttManager.publish(
 			topic=constants.TOPIC_SESSION_STARTED,
@@ -342,9 +331,9 @@ class DialogManager(Manager):
 			}
 		)
 
-		if session.isNotification:
+		text = payload.get('init', dict()).get('text', '')
+		if text:
 			uid = str(uuid.uuid4())
-			self.addSayUuid(uid)
 			self.MqttManager.publish(
 				topic=constants.TOPIC_TTS_SAY,
 				payload={
@@ -359,15 +348,18 @@ class DialogManager(Manager):
 
 	def onContinueSession(self, session: DialogSession):
 		self.startSessionTimeout(sessionId=session.sessionId)
-		self.MqttManager.publish(
-			topic=constants.TOPIC_TTS_SAY,
-			payload={
-				'text'     : session.payload['text'],
-				'lang'     : self.LanguageManager.activeLanguageAndCountryCode,
-				'siteId'   : session.siteId,
-				'sessionId': session.sessionId
-			}
-		)
+		session.inDialog = True
+
+		if 'text' in session.payload and session.payload['text']:
+			self.MqttManager.publish(
+				topic=constants.TOPIC_TTS_SAY,
+				payload={
+					'text'     : session.payload['text'],
+					'lang'     : self.LanguageManager.activeLanguageAndCountryCode,
+					'siteId'   : session.siteId,
+					'sessionId': session.sessionId
+				}
+			)
 
 
 	def onEndSession(self, session: DialogSession):
@@ -421,10 +413,6 @@ class DialogManager(Manager):
 		)
 
 		self.removeSession(sessionId=session.sessionId)
-
-
-	def addSayUuid(self, uid: str):
-		self._says.append(uid)
 
 
 	def onToggleFeedbackOn(self, siteId: str):

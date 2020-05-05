@@ -162,7 +162,6 @@ class TTS(ProjectAliceObject):
 	def _speak(self, file: Path, session: DialogSession):
 		self._speaking = True
 		uid = str(uuid.uuid4())
-		self.DialogManager.addSayUuid(uid)
 		SuperManager.getInstance().mqttManager.playSound(
 			soundFilename=file.stem,
 			location=file.parent,
