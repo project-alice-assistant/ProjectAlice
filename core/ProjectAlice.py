@@ -21,6 +21,7 @@ class ProjectAlice(Singleton):
 		self._logger.logInfo('Starting Alice main unit')
 		self._booted = False
 		self._isUpdating = False
+		self._shuttingDown = False
 		with Stopwatch() as stopWatch:
 			self._restart = False
 			self._restartHandler = restartHandler
@@ -65,6 +66,7 @@ class ProjectAlice(Singleton):
 
 	def onStop(self, withReboot: bool = False):
 		self._logger.logInfo('Shutting down')
+		self._shuttingDown = True
 		self._superManager.onStop()
 		if self._superManager.configManager.getAliceConfigByName('useHLC'):
 			self._superManager.commons.runRootSystemCommand(['systemctl', 'stop', 'hermesledcontrol'])
@@ -140,3 +142,8 @@ class ProjectAlice(Singleton):
 	@property
 	def updating(self) -> bool:
 		return self._isUpdating
+
+
+	@property
+	def shuttingDown(self) -> bool:
+		return self._shuttingDown

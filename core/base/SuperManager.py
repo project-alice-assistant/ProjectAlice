@@ -33,7 +33,6 @@ class SuperManager:
 		self.threadManager = None
 		self.mqttManager = None
 		self.timeManager = None
-		self.dialogSessionManager = None
 		self.multiIntentManager = None
 		self.telemetryManager = None
 		self.skillManager = None
@@ -49,7 +48,8 @@ class SuperManager:
 		self.snipsAssistantManager = None
 		self.dialogTemplateManager = None
 		self.aliceWatchManager = None
-		self.audioServer = None
+		self.audioManager = None
+		self.dialogManager = None
 
 
 	def onStart(self):
@@ -127,7 +127,6 @@ class SuperManager:
 		from core.base.ConfigManager import ConfigManager
 		from core.base.SkillManager import SkillManager
 		from core.device.DeviceManager import DeviceManager
-		from core.dialog.DialogSessionManager import DialogSessionManager
 		from core.dialog.MultiIntentManager import MultiIntentManager
 		from core.dialog.ProtectedIntentManager import ProtectedIntentManager
 		from core.server.MqttManager import MqttManager
@@ -150,7 +149,8 @@ class SuperManager:
 		from core.snips.SnipsAssistantManager import SnipsAssistantManager
 		from core.nlu.NluManager import NluManager
 		from core.util.AliceWatchManager import AliceWatchManager
-		from core.server.AudioServer import AudioServer
+		from core.server.AudioServer import AudioManager
+		from core.dialog.DialogManager import DialogManager
 
 		self.commonsManager = CommonsManager()
 		self.commons = self.commonsManager
@@ -165,7 +165,6 @@ class SuperManager:
 		self.mqttManager = MqttManager()
 		self.timeManager = TimeManager()
 		self.userManager = UserManager()
-		self.dialogSessionManager = DialogSessionManager()
 		self.multiIntentManager = MultiIntentManager()
 		self.telemetryManager = TelemetryManager()
 		self.skillManager = SkillManager()
@@ -180,7 +179,8 @@ class SuperManager:
 		self.snipsAssistantManager = SnipsAssistantManager()
 		self.nluManager = NluManager()
 		self.aliceWatchManager = AliceWatchManager()
-		self.audioServer = AudioServer()
+		self.audioManager = AudioManager()
+		self.dialogManager = DialogManager()
 
 		self._managers = {name[0].upper() + name[1:]: manager for name, manager in self.__dict__.items() if name.endswith('Manager')}
 

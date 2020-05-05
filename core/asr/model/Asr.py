@@ -14,8 +14,8 @@ from core.commons import constants
 from core.dialog.model.DialogSession import DialogSession
 
 
-class ASR(ProjectAliceObject):
-	NAME = 'Generic ASR'
+class Asr(ProjectAliceObject):
+	NAME = 'Generic Asr'
 	DEPENDENCIES = dict()
 
 
@@ -102,12 +102,9 @@ class ASR(ProjectAliceObject):
 		self._timeout.set()
 
 
-	def onStartListening(self, session):
-		self.MqttManager.mqttClient.subscribe(constants.TOPIC_AUDIO_FRAME.format(session.siteId))
-
-
 	def decodeFile(self, filepath: Path, session: DialogSession):
-		raise NotImplementedError
+		# We do not yet use decode file, but might at one point
+		pass
 
 
 	def decodeStream(self, session: DialogSession):
@@ -115,8 +112,7 @@ class ASR(ProjectAliceObject):
 		self._timeoutTimer = self.ThreadManager.newTimer(interval=int(self.ConfigManager.getAliceConfigByName('asrTimeout')), func=self.timeout)
 
 
-	def end(self, session: DialogSession):
-		self.MqttManager.mqttClient.unsubscribe(constants.TOPIC_AUDIO_FRAME.format(session.siteId))
+	def end(self):
 		self._recorder.stopRecording()
 		if self._timeoutTimer and self._timeoutTimer.is_alive():
 			self._timeoutTimer.cancel()
@@ -124,7 +120,7 @@ class ASR(ProjectAliceObject):
 
 	def timeout(self):
 		self._timeout.set()
-		self.logWarning('ASR timed out')
+		self.logWarning('Asr timed out')
 
 
 	def checkLanguage(self) -> bool:

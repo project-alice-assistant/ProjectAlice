@@ -5,7 +5,7 @@ from typing import Generator, Optional
 import numpy as np
 
 from core.asr.model.ASRResult import ASRResult
-from core.asr.model.Asr import ASR
+from core.asr.model.Asr import Asr
 from core.asr.model.Recorder import Recorder
 from core.dialog.model.DialogSession import DialogSession
 from core.util.Stopwatch import Stopwatch
@@ -16,8 +16,8 @@ except:
 	pass
 
 
-class DeepSpeechASR(ASR):
-	NAME = 'DeepSpeech ASR'
+class DeepSpeechAsr(Asr):
+	NAME = 'DeepSpeech Asr'
 	DEPENDENCIES = {
 		'system': [],
 		'pip'   : {
@@ -81,9 +81,6 @@ class DeepSpeechASR(ASR):
 
 
 	def onVadUp(self):
-		if self._vadTemporisation and self._vadTemporisation.is_alive():
-			self._vadTemporisation.cancel()
-
 		self._triggerFlag.set()
 
 
@@ -91,19 +88,13 @@ class DeepSpeechASR(ASR):
 		if not self._triggerFlag.is_set():
 			return
 
-		if not self._vadTemporisation or not self._vadTemporisation.is_alive():
-			self._vadTemporisation = self.ThreadManager.newTimer(interval=1, func=self.vadDown)
-
-
-	def vadDown(self):
-		if self._triggerFlag.is_set():
-			self._triggerFlag.clear()
-			self._recorder.stopRecording()
+		self._recorder.stopRecording()
 
 
 	def decodeStream(self, session: DialogSession) -> Optional[ASRResult]:
 		super().decodeStream(session)
 		result = None
+		previous = ''
 
 		with Stopwatch() as processingTime:
 			with Recorder(self._timeout) as recorder:
@@ -117,10 +108,13 @@ class DeepSpeechASR(ASR):
 					self._model.feedAudioContent(streamContext, np.frombuffer(chunk, np.int16))
 
 					result = self._model.intermediateDecode(streamContext)
-					self.partialTextCaptured(session=session, text=result, likelihood=1, seconds=0)
+					if result and result != previous:
+						previous = result
+						self.partialTextCaptured(session=session, text=result, likelihood=1, seconds=0)
 
 			text = self._model.finishStream(streamContext)
-			self.end(session)
+			self._triggerFlag.clear()
+			self.end()
 
 		return ASRResult(
 			text=text,

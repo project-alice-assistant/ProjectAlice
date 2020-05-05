@@ -59,7 +59,7 @@ _logger.addHandler(streamHandler)
 _logger.addHandler(mqttHandler)
 
 
-def exceptionListener(*exc_info):
+def exceptionListener(*exc_info): #NOSONAR
 	global _logger
 	_logger.error('[Project Alice]           An unhandled exception occured')
 	text = ''.join(traceback.format_exception(*exc_info))

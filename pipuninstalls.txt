@@ -1,2 +1,3 @@
 enum34
 serial
+pyalsaaudio

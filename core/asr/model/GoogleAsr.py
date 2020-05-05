@@ -4,7 +4,7 @@ from typing import Generator, Optional
 import os
 
 from core.asr.model.ASRResult import ASRResult
-from core.asr.model.Asr import ASR
+from core.asr.model.Asr import Asr
 from core.asr.model.Recorder import Recorder
 from core.dialog.model.DialogSession import DialogSession
 from core.util.Stopwatch import Stopwatch
@@ -15,8 +15,10 @@ except:
 	pass
 
 
-class GoogleASR(ASR):
-	NAME = 'Google ASR'
+# noinspection PyAbstractClass
+class GoogleAsr(Asr):
+
+	NAME = 'Google Asr'
 	DEPENDENCIES = {
 		'system': [],
 		'pip'   : {
@@ -32,6 +34,8 @@ class GoogleASR(ASR):
 
 		self._client: Optional[SpeechClient] = None
 		self._streamingConfig: Optional[types.StreamingRecognitionConfig] = None
+
+		self._previousCapture = ''
 
 
 	def onStart(self):
@@ -51,17 +55,19 @@ class GoogleASR(ASR):
 
 	def decodeStream(self, session: DialogSession) -> Optional[ASRResult]:
 		super().decodeStream(session)
+
 		recorder = Recorder(self._timeout)
 		self.ASRManager.addRecorder(session.siteId, recorder)
 		self._recorder = recorder
 		with Stopwatch() as processingTime:
 			with recorder as stream:
 				audioStream = stream.audioStream()
+				# noinspection PyUnresolvedReferences
 				requests = (types.StreamingRecognizeRequest(audio_content=content) for content in audioStream)
 				responses = self._client.streaming_recognize(self._streamingConfig, requests)
 				result = self._checkResponses(session, responses)
 
-			self.end(session)
+			self.end()
 
 		return ASRResult(
 			text=result[0],
@@ -85,7 +91,8 @@ class GoogleASR(ASR):
 
 			if result.is_final:
 				return result.alternatives[0].transcript, result.alternatives[0].confidence
-			else:
+			elif result.alternatives[0].transcript != self._previousCapture:
 				self.partialTextCaptured(session=session, text=result.alternatives[0].transcript, likelihood=result.alternatives[0].confidence, seconds=0)
+				self._previousCapture = result.alternatives[0].transcript
 
 		return None

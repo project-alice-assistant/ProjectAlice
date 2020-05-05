@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from typing import Any, Optional
+from typing import Any
 
 from paho.mqtt.client import MQTTMessage
 
@@ -19,10 +19,13 @@ class DialogSession:
 	intentName: str = ''
 	notUnderstood: int = 0
 	currentState: str = constants.DEFAULT
-	isAPIGenerated: bool = False
 	hasEnded: bool = False
+	hasStarted: bool = False
+	isEnding: bool = False
+	inDialog = False
 	probabilityThreshold: float = 0.5
 	text: str = ''
+	isNotification: bool = False
 	slots: dict = field(default_factory=dict)
 	slotsAsObjects: dict = field(default_factory=dict)
 	customData: dict = field(default_factory=dict)
@@ -31,7 +34,7 @@ class DialogSession:
 	intentFilter: list = field(default_factory=list)
 
 
-	def __post_init__(self):
+	def __post_init__(self): #NOSONAR
 		self.probabilityThreshold = SuperManager.getInstance().configManager.getAliceConfigByName('probabilityThreshold')
 
 
@@ -67,28 +70,6 @@ class DialogSession:
 			self.customData = dict()
 
 
-	def reviveOldSession(self, session: DialogSession):
-		"""
-		Revives old session keeping siteId, sessionId and isAPIGenerated from the
-		new session
-		"""
-		self.addToHistory(self.intentName)
-
-		self.payload = session.payload
-		self.slots = session.slots
-		self.slotsAsObjects = session.slotsAsObjects
-		self.customData = session.customData
-		self.user = session.user
-		self.message = session.message
-		self.intentName = session.intentName
-		self.intentHistory = session.intentHistory
-		self.intentFilter = session.intentFilter
-		self.notUnderstood = session.notUnderstood
-		self.currentState = session.currentState
-		self.isAPIGenerated = session.isAPIGenerated
-		self.probabilityThreshold = session.probabilityThreshold
-
-
 	def slotValue(self, slotName: str, index: int = 0, defaultValue: Any = None) -> Any:
 		"""
 		This returns the slot master value, not what was heard / captured
@@ -107,9 +88,10 @@ class DialogSession:
 
 
 	def addToHistory(self, intent: Intent):
-		self.intentHistory.append(intent)
+		if str(intent).startswith('hermes/intent'):
+			self.intentHistory.append(intent)
 
 
 	@property
-	def previousIntent(self) -> Optional[Intent]:
-		return self.intentHistory[-1] if self.intentHistory else None
+	def previousIntent(self) -> str:
+		return str(self.intentHistory[-1])
