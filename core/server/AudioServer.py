@@ -17,7 +17,6 @@ class AudioManager(Manager):
 		super().__init__()
 
 		if self.ConfigManager.getAliceConfigByName('disableSoundAndMic'):
-			self._isActive = False
 			return
 
 		with self.Commons.shutUpAlsaFFS():
@@ -52,7 +51,9 @@ class AudioManager(Manager):
 	def onStop(self):
 		super().onStop()
 		self.MqttManager.mqttClient.unsubscribe(constants.TOPIC_AUDIO_FRAME.format(constants.DEFAULT_SITE_ID))
-		self._audio.terminate()
+
+		if not self.ConfigManager.getAliceConfigByName('disableSoundAndMic'):
+			self._audio.terminate()
 
 
 	def onHotword(self, siteId: str, user: str = constants.UNKNOWN_USER):
