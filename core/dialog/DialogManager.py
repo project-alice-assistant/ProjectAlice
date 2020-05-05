@@ -46,9 +46,6 @@ class DialogManager(Manager):
 	def onHotword(self, siteId: str, user: str = constants.UNKNOWN_USER):
 		self._endedSessions[siteId] = self._sessionsById.pop(siteId, None)
 
-		if self.AudioServer.isPlaying:
-			self.AudioServer.stopPlaying()
-
 		session = self.newSession(siteId=siteId, user=user)
 
 		# Turn off the wakeword component
@@ -207,17 +204,8 @@ class DialogManager(Manager):
 		)
 
 		if session.payload['text'].lower() in cancel:
-			self.MqttManager.publish(
-				topic=constants.TOPIC_SESSION_ENDED,
-				payload={
-					'siteId'     : session.siteId,
-					'sessionId'  : session.sessionId,
-					'customData' : session.customData,
-					'termination': {
-						'reason': 'abortedByUser'
-					}
-				}
-			)
+			session.payload['text'] = ''
+			self.onEndSession(session=session, reason='abortedByUser')
 			return
 
 		self.MqttManager.publish(
@@ -365,7 +353,7 @@ class DialogManager(Manager):
 			)
 
 
-	def onEndSession(self, session: DialogSession):
+	def onEndSession(self, session: DialogSession, reason: str = 'nominal'):
 		text = session.payload['text']
 
 		if text:
@@ -389,7 +377,7 @@ class DialogManager(Manager):
 					'sessionId'  : session.sessionId,
 					'customData' : session.customData,
 					'termination': {
-						'reason': 'nominal'
+						'reason': reason
 					}
 				}
 			)

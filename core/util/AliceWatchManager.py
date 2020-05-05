@@ -136,7 +136,7 @@ class AliceWatchManager(Manager):
 		})
 
 
-	def onEndSession(self, session: DialogSession):
+	def onEndSession(self, session: DialogSession, reason: str = 'nominal'):
 		if self._verbosity < 1:
 			return
 

@@ -443,7 +443,7 @@ class ProjectAliceObject:
 		pass # Super object function is overriden only if needed
 
 
-	def onEndSession(self, session):
+	def onEndSession(self, session, reason: str = 'nominal'):
 		pass # Super object function is overriden only if needed
 
 
