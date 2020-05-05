@@ -43,6 +43,10 @@ class DialogManager(Manager):
 		return session
 
 
+	def onWakeword(self, siteId: str, user: str = constants.UNKNOWN_USER):
+		self.onHotword(siteId=siteId, user=user)
+
+
 	def onHotword(self, siteId: str, user: str = constants.UNKNOWN_USER):
 		self._endedSessions[siteId] = self._sessionsById.pop(siteId, None)
 
