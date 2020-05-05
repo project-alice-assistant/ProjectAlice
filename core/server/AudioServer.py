@@ -18,6 +18,9 @@ class AudioManager(Manager):
 	def __init__(self):
 		super().__init__()
 
+		self._stopPlayingFlag = threading.Event()
+		self._playing = False
+
 		if self.ConfigManager.getAliceConfigByName('disableSoundAndMic'):
 			return
 
@@ -40,8 +43,6 @@ class AudioManager(Manager):
 
 		self.logInfo(f'Using **{self._audioInput["name"]}** for audio input')
 		self._vad = Vad(2)
-		self._stopPlayingFlag = threading.Event()
-		self._playing = False
 
 
 	def onStart(self):
