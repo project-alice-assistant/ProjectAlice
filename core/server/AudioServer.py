@@ -1,3 +1,4 @@
+import threading
 import time
 import wave
 
@@ -5,6 +6,7 @@ import io
 import pyaudio
 from webrtcvad import Vad
 
+from core.ProjectAliceExceptions import PlayBytesStopped
 from core.base.model.Manager import Manager
 from core.commons import constants
 
@@ -38,6 +40,8 @@ class AudioManager(Manager):
 
 		self.logInfo(f'Using **{self._audioInput["name"]}** for audio input')
 		self._vad = Vad(2)
+		self._stopPlayingFlag = threading.Event()
+		self._playing = False
 
 
 	def onStart(self):
@@ -133,6 +137,7 @@ class AudioManager(Manager):
 		if siteId != constants.DEFAULT_SITE_ID or self.ConfigManager.getAliceConfigByName('disableSoundAndMic'):
 			return
 
+		self._playing = True
 		with io.BytesIO(payload) as buffer:
 			try:
 				with wave.open(buffer, 'rb') as wav:
@@ -156,12 +161,19 @@ class AudioManager(Manager):
 					self.logDebug(f'Playing wav stream using **{self._audioOutput["name"]}** on site id **{siteId}**')
 					audioStream.start_stream()
 					while audioStream.is_active():
+						if self._stopPlayingFlag.is_set():
+							raise PlayBytesStopped
 						time.sleep(0.1)
 
 					audioStream.stop_stream()
 					audioStream.close()
+			except PlayBytesStopped:
+				self.logDebug('Playing bytes stopped')
 			except Exception as e:
 				self.logError(f'Playing wav failed with error: {e}')
+			finally:
+				self._stopPlayingFlag.clear()
+				self._playing = False
 
 		# Session id support is not Hermes protocol official
 		self.MqttManager.publish(
@@ -171,3 +183,12 @@ class AudioManager(Manager):
 				'sessionId': sessionId
 			}
 		)
+
+
+	def stopPlaying(self):
+		self._stopPlayingFlag.set()
+
+
+	@property
+	def isPlaying(self) -> bool:
+		return self._playing

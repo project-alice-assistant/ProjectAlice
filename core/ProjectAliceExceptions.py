@@ -4,7 +4,7 @@ from core.base.SuperManager import SuperManager
 from core.util.model.Logger import Logger
 
 
-class _ProjectAliceException(Exception):
+class ProjectAliceException(Exception):
 
 	def __init__(self, message: str = None, status: int = None, context: list = None):
 		self._logger = Logger()
@@ -29,13 +29,13 @@ class _ProjectAliceException(Exception):
 		return self._context
 
 
-class FunctionNotImplemented(_ProjectAliceException):
+class FunctionNotImplemented(ProjectAliceException):
 
 	def __init__(self, clazz: str, funcName: str):
 		self._logger.logError(f'{funcName} must be implemented in {clazz}!')
 
 
-class SkillStartingFailed(_ProjectAliceException):
+class SkillStartingFailed(ProjectAliceException):
 
 	def __init__(self, skillName: str = '', error: str = ''):
 		super().__init__(message=error)
@@ -45,7 +45,7 @@ class SkillStartingFailed(_ProjectAliceException):
 			SuperManager.getInstance().skillManager.deactivateSkill(skillName)
 
 
-class SkillStartDelayed(_ProjectAliceException):
+class SkillStartDelayed(ProjectAliceException):
 
 	def __init__(self, skillName):
 		super().__init__(skillName)
@@ -53,31 +53,31 @@ class SkillStartDelayed(_ProjectAliceException):
 		SuperManager.getInstance().skillManager.getSkillInstance(skillName).delayed = True
 
 
-class IntentError(_ProjectAliceException):
+class IntentError(ProjectAliceException):
 
 	def __init__(self, status: int, message: str, context: list):
 		super().__init__(message, status, context)
 
 
-class HttpError(_ProjectAliceException):
+class HttpError(ProjectAliceException):
 
 	def __init__(self, status: int, message: str, context: list):
 		super().__init__(message, status, context)
 
 
-class IntentWithUnknownSlotError(_ProjectAliceException):
+class IntentWithUnknownSlotError(ProjectAliceException):
 
 	def __init__(self, status: int, message: str, context: list):
 		super().__init__(message, status, context)
 
 
-class AssistantNotFoundError(_ProjectAliceException):
+class AssistantNotFoundError(ProjectAliceException):
 
 	def __init__(self, status: int, message: str, context: list):
 		super().__init__(message, status, context)
 
 
-class SkillNotConditionCompliant(_ProjectAliceException):
+class SkillNotConditionCompliant(ProjectAliceException):
 
 	def __init__(self, message: str, skillName: str, condition: str, conditionValue: str):
 		self._skillName = skillName
@@ -101,34 +101,47 @@ class SkillNotConditionCompliant(_ProjectAliceException):
 		return self._conditionValue
 
 
-class OfflineError(_ProjectAliceException): pass
+class OfflineError(ProjectAliceException):
+	pass  # Raised for capture only
 
 
-class DbConnectionError(_ProjectAliceException): pass
+class DbConnectionError(ProjectAliceException):
+	pass  # Raised for capture only
 
 
-class InvalidQuery(_ProjectAliceException): pass
+class InvalidQuery(ProjectAliceException):
+	pass  # Raised for capture only
 
 
-class AccessLevelTooLow(_ProjectAliceException): pass
+class AccessLevelTooLow(ProjectAliceException):
+	pass  # Raised for capture only
 
 
-class GithubTokenFailed(_ProjectAliceException): pass
+class GithubTokenFailed(ProjectAliceException):
+	pass  # Raised for capture only
 
 
-class GithubRateLimit(_ProjectAliceException): pass
+class GithubRateLimit(ProjectAliceException):
+	pass  # Raised for capture only
 
 
-class GithubNotFound(_ProjectAliceException): pass
+class GithubNotFound(ProjectAliceException):
+	pass  # Raised for capture only
 
 
-class LanguageManagerLangNotSupported(_ProjectAliceException): pass
+class LanguageManagerLangNotSupported(ProjectAliceException):
+	pass  # Raised for capture only
 
 
-class ConfigurationUpdateFailed(_ProjectAliceException): pass
+class ConfigurationUpdateFailed(ProjectAliceException):
+	pass  # Raised for capture only
 
 
-class VitalConfigMissing(_ProjectAliceException):
+class PlayBytesStopped(ProjectAliceException):
+	pass  # Raised for capture only
+
+
+class VitalConfigMissing(ProjectAliceException):
 
 	def __init__(self, message: str = None):
 		super().__init__(message)

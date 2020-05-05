@@ -46,6 +46,9 @@ class DialogManager(Manager):
 	def onHotword(self, siteId: str, user: str = constants.UNKNOWN_USER):
 		self._endedSessions[siteId] = self._sessionsById.pop(siteId, None)
 
+		if self.AudioServer.isPlaying:
+			self.AudioServer.stopPlaying()
+
 		session = self.newSession(siteId=siteId, user=user)
 
 		# Turn off the wakeword component
