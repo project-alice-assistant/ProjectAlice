@@ -61,15 +61,6 @@ class AudioManager(Manager):
 			self._audio.terminate()
 
 
-	def onHotword(self, siteId: str, user: str = constants.UNKNOWN_USER):
-		self.MqttManager.publish(
-			topic=constants.TOPIC_ASR_TOGGLE_ON,
-			payload={
-				'siteId': siteId
-			}
-		)
-
-
 	def publishAudio(self):
 		self.logInfo('Starting audio publisher')
 		audioStream = self._audio.open(
