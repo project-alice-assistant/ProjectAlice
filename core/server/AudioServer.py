@@ -29,22 +29,22 @@ class AudioManager(Manager):
 		with self.Commons.shutUpAlsaFFS():
 			self._audio = pyaudio.PyAudio()
 
+		self._vad = Vad(2)
+
 		try:
 			self._audioOutput = self._audio.get_default_output_device_info()
 		except:
 			self.logFatal('Audio output not found, cannot continue')
 			return
-
-		self.logInfo(f'Using **{self._audioOutput["name"]}** for audio output')
+		else:
+			self.logInfo(f'Using **{self._audioOutput["name"]}** for audio output')
 
 		try:
 			self._audioInput = self._audio.get_default_input_device_info()
 		except:
 			self.logFatal('Audio input not found, cannot continue')
-			return
-
-		self.logInfo(f'Using **{self._audioInput["name"]}** for audio input')
-		self._vad = Vad(2)
+		else:
+			self.logInfo(f'Using **{self._audioInput["name"]}** for audio input')
 
 
 	def onStart(self):
