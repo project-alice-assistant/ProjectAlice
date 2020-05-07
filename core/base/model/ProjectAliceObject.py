@@ -210,6 +210,10 @@ class ProjectAliceObject:
 		pass # Super object function is overriden only if needed
 
 
+	def onNluError(self, session):
+		pass # Super object function is overriden only if needed
+
+
 	def onSessionError(self, session):
 		pass # Super object function is overriden only if needed
 

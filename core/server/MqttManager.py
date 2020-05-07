@@ -71,6 +71,7 @@ class MqttManager(Manager):
 		self._mqttClient.message_callback_add(constants.TOPIC_TOGGLE_FEEDBACK_ON, self.toggleFeedback)
 		self._mqttClient.message_callback_add(constants.TOPIC_TOGGLE_FEEDBACK_OFF, self.toggleFeedback)
 		self._mqttClient.message_callback_add(constants.TOPIC_NLU_INTENT_NOT_RECOGNIZED, self.nluIntentNotRecognized)
+		self._mqttClient.message_callback_add(constants.TOPIC_NLU_ERROR, self.nluError)
 
 		self._mqttClient.message_callback_add(constants.TOPIC_PLAY_BYTES.format(constants.DEFAULT_SITE_ID), self.topicPlayBytes)
 		self._mqttClient.message_callback_add(constants.TOPIC_PLAY_BYTES_FINISHED.format(constants.DEFAULT_SITE_ID), self.topicPlayBytesFinished)
@@ -117,7 +118,8 @@ class MqttManager(Manager):
 			(constants.TOPIC_TOGGLE_FEEDBACK_ON, 0),
 			(constants.TOPIC_TOGGLE_FEEDBACK_OFF, 0),
 			(constants.TOPIC_NLU_INTENT_NOT_RECOGNIZED, 0),
-			(constants.TOPIC_START_SESSION, 0)
+			(constants.TOPIC_START_SESSION, 0),
+			(constants.TOPIC_NLU_ERROR, 0)
 		]
 
 		for username in self.UserManager.getAllUserNames():
@@ -517,6 +519,14 @@ class MqttManager(Manager):
 		if session:
 			session.update(msg)
 			self.broadcast(method=constants.EVENT_NLU_INTENT_NOT_RECOGNIZED, exceptions=[self.name], propagateToSkills=True, session=session)
+
+
+	def nluError(self, _client, _data, msg: mqtt.MQTTMessage):
+		session = self.DialogManager.getSession(self.Commons.parseSessionId(msg))
+
+		if session:
+			session.update(msg)
+			self.broadcast(method=constants.EVENT_NLU_ERROR, exceptions=[self.name], propagateToSkills=True, session=session)
 
 
 	def startSession(self, _client, _data, msg: mqtt.MQTTMessage):

@@ -292,6 +292,20 @@ class DialogManager(Manager):
 		)
 
 
+	def onNluError(self, session: DialogSession):
+		"""
+		NLU reported an error
+		:param session:
+		:return:
+		"""
+		if not 'error' in session.payload:
+			return
+
+		self.logWarning(f'NLU query failed with: {session.payload["error"]}')
+		session.payload['text'] = ''
+		self.onEndSession(session=session, reason='error')
+
+
 	def onStartSession(self, siteId: str, payload: dict):
 		"""
 		Starts a new session
