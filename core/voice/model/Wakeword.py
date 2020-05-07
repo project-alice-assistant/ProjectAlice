@@ -3,8 +3,6 @@ from pathlib import Path
 
 import tempfile
 
-from core.base.SuperManager import SuperManager
-
 
 class Wakeword:
 
@@ -31,8 +29,8 @@ class Wakeword:
 	def newSample(self):
 		sample = wave.open(str(self.getSamplePath(len(self._samples) + 1)), 'wb')
 		sample.setsampwidth(2)
-		sample.setframerate(SuperManager.getInstance().configManager.getAliceConfigByName('micSampleRate'))
-		sample.setnchannels(SuperManager.getInstance().configManager.getAliceConfigByName('micChannels'))
+		sample.setframerate(16000)
+		sample.setnchannels(1)
 		self._samples.append(sample)
 
 

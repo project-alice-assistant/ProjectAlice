@@ -41,8 +41,8 @@ class WakewordManager(Manager):
 		self._wakeword = None
 		self._threshold = 0
 		self._wakewordUploadThreads = list()
-		self._sampleRate = self.ConfigManager.getAliceConfigByName('micSampleRate')
-		self._channels = self.ConfigManager.getAliceConfigByName('micChannels')
+		self._sampleRate = 16000
+		self._channels = 1
 
 
 	def onStart(self):
@@ -70,8 +70,6 @@ class WakewordManager(Manager):
 				file.unlink()
 
 		self._wakeword = Wakeword(username)
-		self._sampleRate = self.ConfigManager.getAliceConfigByName('micSampleRate')
-		self._channels = self.ConfigManager.getAliceConfigByName('micChannels')
 
 
 	def addASample(self):

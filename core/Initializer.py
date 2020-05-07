@@ -245,8 +245,6 @@ network={
 		# Those that don't need checking
 		confs['ssid'] = initConfs['wifiNetworkName']
 		confs['wifipassword'] = str(initConfs['wifiWPAPass'])
-		confs['micSampleRate'] = int(initConfs['micSampleRate'] or 16000)
-		confs['micChannels'] = int(initConfs['micChannels'] or 1)
 		confs['useHLC'] = bool(initConfs['useHLC'])
 		confs['webInterfaceActive'] = bool(initConfs['webInterfaceActive'])
 		confs['devMode'] = bool(initConfs['devMode'])

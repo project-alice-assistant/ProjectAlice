@@ -46,7 +46,7 @@ class GoogleAsr(Asr):
 		# noinspection PyUnresolvedReferences
 		config = types.RecognitionConfig(
 			encoding=enums.RecognitionConfig.AudioEncoding.LINEAR16,
-			sample_rate_hertz=self.ConfigManager.getAliceConfigByName('micSampleRate'),
+			sample_rate_hertz=16000,
 			language_code=self.LanguageManager.getLanguageAndCountryCode()
 		)
 

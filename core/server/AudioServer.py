@@ -13,6 +13,8 @@ from core.commons import constants
 
 class AudioManager(Manager):
 
+	SAMPLERATE = 16000
+
 	# Inspired by https://github.com/koenvervloesem/hermes-audio-server
 
 	def __init__(self):
@@ -66,13 +68,13 @@ class AudioManager(Manager):
 		audioStream = self._audio.open(
 			format=pyaudio.paInt16,
 			channels=1,
-			rate=self.ConfigManager.getAliceConfigByName('micSampleRate'),
+			rate=self.SAMPLERATE,
 			frames_per_buffer=320,
 			input=True
 		)
 
 		speech = False
-		silence = 16000 / 320
+		silence = self.SAMPLERATE / 320
 		speechFrames = 0
 		minSpeechFrames = round(silence / 3)
 

@@ -66,10 +66,6 @@ audioHardware:
     ps3eye:             no
     jabra410:           no
 
-# Capture
-micSampleRate: 16000
-micChannels: 1
-
 # System
 # Whether to install Hermes Led Control or not. HLC is the best way to manage your device leds if you have any
 useHLC: yes

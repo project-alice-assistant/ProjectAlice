@@ -85,18 +85,6 @@ settings = {
 		'description' : 'Mqtt TLS file path for SSL',
 		'onUpdate'    : 'updateMqttSettings'
 	},
-	'micSampleRate'         : {
-		'defaultValue': 44100,
-		'dataType'    : 'integer',
-		'isSensitive' : False,
-		'description' : 'Your microphone sample rate'
-	},
-	'micChannels'           : {
-		'defaultValue': 1,
-		'dataType'    : 'integer',
-		'isSensitive' : False,
-		'description' : 'How many channel does your microphone support'
-	},
 	'enableDataStoring'     : {
 		'defaultValue': False,
 		'dataType'    : 'boolean',
