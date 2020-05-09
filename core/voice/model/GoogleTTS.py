@@ -12,7 +12,7 @@ from core.voice.model.Tts import TTS
 try:
 	from google.cloud import texttospeech
 except ModuleNotFoundError:
-	subprocess.run(['pip3', 'install', 'google-cloud-texttospeech'])
+	subprocess.run(['pip', 'install', 'google-cloud-texttospeech'])
 
 
 class GoogleTTS(TTS):

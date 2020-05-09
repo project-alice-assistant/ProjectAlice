@@ -53,6 +53,10 @@ class TTSManager(Manager):
 			from core.voice.model.AmazonTTS import AmazonTTS
 
 			self._tts = AmazonTTS(user)
+		elif tts == TTSEnum.WATSON:
+			from core.voice.model.WatsonTTS import WatsonTTS
+
+			self._tts = WatsonTTS(user)
 		elif tts == TTSEnum.GOOGLE:
 			if not Path(self.Commons.rootDir(), 'credentials/googlecredentials.json').exists():
 				self.logWarning('No Google credentials found for Google Wavenet, falling back to pico')
