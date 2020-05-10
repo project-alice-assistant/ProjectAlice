@@ -29,7 +29,7 @@ a:hover { color: var(--hover); }
 input, select { background-color: var(--mainBG); color: var(--text); border: 1px dotted #636363; outline: none; box-sizing: content-box; width: auto; padding: 5px; margin-left: 20px; margin-right: 20px; }
 input:hover { border: dotted 1px; }
 input[type='text'], input[type='password'], input[type='number'], select { width: auto; }
-input:focus { border: yellow dotted 1px; }
+input:focus { border: var(--hover) dotted 1px; }
 
 /* ======================= COLOR MARKINGS ======================== */
 .red, .disabled, .warning, .saveFailed, .logError, .logRed { color: red; }
@@ -153,11 +153,14 @@ button.button{ font-size: 1.6em; height: 2em; }
 .skillSettings { width: 100%; margin: .2em; text-align: right; }
 
 /* Configuration Screens */
-.configBox { width: 100%; display: table; font-family: var(--long); font-size: .8em; }
+.configCategory { width: 100%; display: table; margin-bottom: 30px; font-family: var(--long); background-color: var(--secondary); }
 .configLine { width: 100%; display: table-row; height: 40px; }
 
-.configLabel { display: table-cell; text-align: left; vertical-align: middle; overflow: hidden; cursor: pointer; min-width: 20%}
-.configInput { display: table-cell; padding-left: 20px; text-align: left; vertical-align: middle; min-width: 50%}
+.configLine input, select { width: 500px; }
+
+.configCategoryTitle { display: table-caption; padding: 10px; text-align: left; vertical-align: middle; background-color: var(--windowBG); font-size: 1.3em; text-transform: uppercase; }
+.configLabel { display: table-cell; min-width: 250px; padding: 0 10px 0 10px; text-align: left; vertical-align: middle; overflow: hidden; cursor: pointer; }
+.configInput { display: table-cell; width: 100%; padding-left: 20px; text-align: left; vertical-align: middle; }
 
 /* Admin Auth */
 .adminAuthDisplayUser { margin: 1em; height: 1.5em; font-family: var(--short); font-size: 2em; text-align: center; }

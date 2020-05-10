@@ -28,9 +28,11 @@ class ConfigManager(Manager):
 		super().__init__()
 
 		self._vitalConfigs = list()
+		self._aliceConfigurationCategories = list()
 
 		self._aliceConfigurations: typing.Dict[str, typing.Any] = self._loadCheckAndUpdateAliceConfigFile()
 		self._aliceTemplateConfigurations: typing.Dict[str, dict] = configTemplate.settings
+
 		self._snipsConfigurations = self.loadSnipsConfigurations()
 
 		self._skillsConfigurations = dict()
@@ -57,6 +59,10 @@ class ConfigManager(Manager):
 
 		changes = False
 		for setting, definition in configTemplate.settings.items():
+
+			if definition['category'] not in self._aliceConfigurationCategories:
+				self._aliceConfigurationCategories.append(definition['category'])
+
 			if setting not in aliceConfigs:
 				self.logInfo(f'New configuration found: **{setting}**')
 				changes = True
@@ -484,6 +490,11 @@ class ConfigManager(Manager):
 	@property
 	def aliceConfigurations(self) -> dict:
 		return self._aliceConfigurations
+
+
+	@property
+	def aliceConfigurationCategories(self) -> list:
+		return sorted(self._aliceConfigurationCategories)
 
 
 	@property
