@@ -91,7 +91,7 @@ class DialogManager(Manager):
 		:return:
 		"""
 
-		if session.hasEnded:
+		if not session or session.hasEnded:
 			return
 
 		if session.isEnding or session.isNotification:

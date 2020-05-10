@@ -336,9 +336,9 @@ class CommonsManager(Manager):
 		return int(number) if not number.startswith('0') else self.randomNumber(length)
 
 # noinspection PyUnusedLocal
-def py_error_handler(filename, line, function, err, fmt):
+def py_error_handler(filename, line, function, err, fmt): #NOSONAR
 	# Errors are handled by our loggers
 	pass
 
 
-c_error_handler = CommonsManager.ERROR_HANDLER_FUNC(py_error_handler)
+c_error_handler = CommonsManager.ERROR_HANDLER_FUNC(py_error_handler) #NOSONAR
