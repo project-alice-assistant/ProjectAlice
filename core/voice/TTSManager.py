@@ -1,3 +1,4 @@
+from importlib import import_module, reload
 from pathlib import Path
 
 from core.base.model.Manager import Manager
@@ -21,55 +22,65 @@ class TTSManager(Manager):
 
 	def onStart(self):
 		super().onStart()
+		self._loadTTS(self.ConfigManager.getAliceConfigByName('tts').lower())
 
-		tts = self._loadTTS(self.ConfigManager.getAliceConfigByName('tts').lower())
 
-		if (self.ConfigManager.getAliceConfigByName('stayCompletlyOffline') or self.ConfigManager.getAliceConfigByName('keepTTSOffline')) and self._tts.online:
-			self._tts = PicoTTS()
-			self.logInfo('Started "Pico" TTS')
+	def _loadTTS(self, userTTS: str = None, user: User = None):
+		if not userTTS:
+			systemTTS = self.ConfigManager.getAliceConfigByName('tts').lower()
 		else:
-			self.logInfo(f'Started **{tts.value}** TTS')
+			systemTTS = userTTS.lower()
 
-		self._tts.onStart()
+		keepTTSOffline = self.ConfigManager.getAliceConfigByName('keepTTSOffline')
+		stayOffline = self.ConfigManager.getAliceConfigByName('stayCompletlyOffline')
+		online = self.InternetManager.online
 
+		self._tts = None
 
-	def _loadTTS(self, tts: str, user: User = None) -> TTSEnum:
-		try:
-			tts = TTSEnum(tts)
-		except:
-			tts = TTSEnum.SNIPS
+		if systemTTS == TTSEnum.PICO.value:
+			package = 'core.voice.model.PicoTTS'
+		elif systemTTS == TTSEnum.MYCROFT.value:
+			package = 'core.voice.model.MycroftTTS'
+		elif systemTTS == TTSEnum.AMAZON.value:
+			package = 'core.voice.model.AmazonTTS'
+		elif systemTTS == TTSEnum.WATSON.value:
+			package = 'core.voice.model.WatsonTTS'
+		elif systemTTS == TTSEnum.GOOGLE.value:
+			package = 'core.voice.model.GoogleTTS'
+		else:
+			package = 'core.voice.model.SnipsTTS'
 
-		if tts == TTSEnum.PICO:
+		module = import_module(package)
+		tts = getattr(module, package.rsplit('.', 1)[-1])
+		self._tts = tts(user)
+
+		if not self._tts.checkDependencies():
+			if not self._tts.installDependencies():
+				self._tts = None
+			else:
+				module = reload(module)
+				tts = getattr(module, package.rsplit('.', 1)[-1])
+				self._tts = tts(user)
+
+		if self._tts is None:
+			self.logWarning("Couldn't install TTS, falling back to PicoTTS")
+			from core.voice.model.PicoTTS import PicoTTS
+
 			self._tts = PicoTTS(user)
-		elif tts == TTSEnum.MYCROFT:
-			if not Path(Path(self.Commons.rootDir()).parent, 'mimic/voices').is_dir():
-				self.logWarning('Trying to use Mycroft as TTS but files not available, falling back to picotts')
-				self._tts = PicoTTS(user)
-				tts = TTSEnum.PICO
-			else:
-				from core.voice.model.MycroftTTS import MycroftTTS
-				self._tts = MycroftTTS(user)
-		elif tts == TTSEnum.AMAZON:
-			from core.voice.model.AmazonTTS import AmazonTTS
 
-			self._tts = AmazonTTS(user)
-		elif tts == TTSEnum.WATSON:
-			from core.voice.model.WatsonTTS import WatsonTTS
+		if self._tts.online and (not online or keepTTSOffline or stayOffline):
+			self._tts = None
 
-			self._tts = WatsonTTS(user)
-		elif tts == TTSEnum.GOOGLE:
-			if not Path(self.Commons.rootDir(), 'credentials/googlecredentials.json').exists():
-				self.logWarning('No Google credentials found for Google Wavenet, falling back to pico')
-				self._tts = PicoTTS(user)
-			else:
-				from core.voice.model.GoogleTTS import GoogleTTS
+		if self._tts is None:
+			self.logWarning('TTS did not satisfy the user settings, falling back to PicoTTS')
+			from core.voice.model.PicoTTS import PicoTTS
 
-				self._tts = GoogleTTS(user)
-		else:
-			from core.voice.model.SnipsTTS import SnipsTTS
-			self._tts = SnipsTTS(user)
+			self._tts = PicoTTS(user)
 
-		return tts
+		try:
+			self._tts.onStart()
+		except Exception as e:
+			self.logFatal(f"TTS failed starting: {e}")
 
 
 	@property
@@ -100,6 +111,5 @@ class TTSManager(Manager):
 			user: User = self.UserManager.getUser(session.user)
 			if user and user.tts:
 				self._loadTTS(user.tts, user)
-				self._tts.onStart()
 
 		self._tts.onSay(session)

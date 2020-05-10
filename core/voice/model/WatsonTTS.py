@@ -1,5 +1,3 @@
-import subprocess
-
 from core.dialog.model.DialogSession import DialogSession
 from core.user.model.User import User
 from core.voice.model.TTSEnum import TTSEnum
@@ -9,21 +7,24 @@ try:
 	from ibm_watson import TextToSpeechV1
 	from ibm_cloud_sdk_core.authenticators import IAMAuthenticator
 except ModuleNotFoundError:
-	subprocess.run(['pip', 'install', 'ibm-watson'])
+	pass # Installed automagically through TTS Manager
 
 
 class WatsonTTS(TTS):
 	TTS = TTSEnum.WATSON
 
+	DEPENDENCIES = {
+		'system': [],
+		'pip'   : {
+			'ibm-watson==4.4.0'
+		}
+	}
+
 	def __init__(self, user: User = None):
 		super().__init__(user)
 		self._online = True
 		self._privacyMalus = -20
-
-
-		auth = IAMAuthenticator(self.ConfigManager.getAliceConfigByName('ibmCloudAPIKey'))
-		self._client = TextToSpeechV1(authenticator=auth)
-		self._client.set_service_url(self.ConfigManager.getAliceConfigByName('ibmCloudAPIURL'))
+		self._client = None
 
 		# TODO implement the others
 		# https://cloud.ibm.com/apidocs/text-to-speech?code=python#list-voices
@@ -106,6 +107,14 @@ class WatsonTTS(TTS):
 				}
 			}
 		}
+
+
+	def onStart(self):
+		super().onStart()
+		self._client = TextToSpeechV1(
+			authenticator=IAMAuthenticator(self.ConfigManager.getAliceConfigByName('ibmCloudAPIKey'))
+		)
+		self._client.set_service_url(self.ConfigManager.getAliceConfigByName('ibmCloudAPIURL'))
 
 
 	@staticmethod

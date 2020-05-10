@@ -12,7 +12,7 @@ from core.util.Stopwatch import Stopwatch
 try:
 	from google.cloud.speech import SpeechClient, enums, types
 except:
-	pass
+	pass # Auto installed
 
 
 # noinspection PyAbstractClass
