@@ -372,7 +372,7 @@ class DialogManager(Manager):
 
 
 	def onEndSession(self, session: DialogSession, reason: str = 'nominal'):
-		text = session.payload['text']
+		text = session.payload.get('text', '')
 
 		if text:
 			session.isEnding = True
