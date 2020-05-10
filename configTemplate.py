@@ -170,26 +170,30 @@ settings = {
 		'dataType'    : 'list',
 		'isSensitive' : False,
 		'values'      : {'Pico': 'pico', 'Mycroft': 'mycroft', 'Amazon Polly': 'amazon', 'Google Wavenet': 'google', 'IBM Watson': 'watson', 'Snips Makers TTS': 'snips'},
-		'description' : 'The TTS to use. Can\'t use an online TTS if you have set keepTTSOffline!'
+		'description' : 'The TTS to use. Can\'t use an online TTS if you have set keepTTSOffline!',
+		'onUpdate'    : 'reloadTTS'
 	},
 	'ttsLanguage'             : {
 		'defaultValue': 'en-US',
 		'dataType'    : 'string',
 		'isSensitive' : False,
-		'description' : 'Language for the TTS to use'
+		'description' : 'Language for the TTS to use',
+		'onUpdate'    : 'reloadTTS'
 	},
 	'ttsType'                 : {
 		'defaultValue': 'male',
 		'dataType'    : 'list',
 		'isSensitive' : False,
 		'values'      : ['male', 'female'],
-		'description' : 'Choose the voice gender you want'
+		'description' : 'Choose the voice gender you want',
+		'onUpdate'    : 'reloadTTS'
 	},
 	'ttsVoice'                : {
 		'defaultValue': 'en-US',
 		'dataType'    : 'string',
 		'isSensitive' : False,
-		'description' : 'The voice the TTS should use. Find lists on respective TTS websites'
+		'description' : 'The voice the TTS should use. Find lists on respective TTS websites',
+		'onUpdate'    : 'reloadTTS'
 	},
 	'awsRegion'               : {
 		'defaultValue': 'eu-central-1',

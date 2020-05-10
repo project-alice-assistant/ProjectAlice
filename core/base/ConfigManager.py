@@ -442,6 +442,12 @@ class ConfigManager(Manager):
 		self.ASRManager.onStart()
 
 
+
+	def reloadTTS(self):
+		self.TTSManager.onStop()
+		self.TTSManager.onStart()
+
+
 	def checkNewAdminPinCode(self, pinCode: str) -> bool:
 		try:
 			pin = int(pinCode)
