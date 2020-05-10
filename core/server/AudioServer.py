@@ -49,7 +49,7 @@ class AudioManager(Manager):
 
 	def onStart(self):
 		super().onStart()
-		self.MqttManager.mqttClient.subscribe(constants.TOPIC_AUDIO_FRAME.format(constants.DEFAULT_SITE_ID))
+		self.MqttManager.mqttClient.subscribe(constants.TOPIC_AUDIO_FRAME.format(self.ConfigManager.getAliceConfigByName('deviceName')))
 
 		if not self.ConfigManager.getAliceConfigByName('disableSoundAndMic'):
 			self.ThreadManager.newThread(name='audioPublisher', target=self.publishAudio)
@@ -57,7 +57,7 @@ class AudioManager(Manager):
 
 	def onStop(self):
 		super().onStop()
-		self.MqttManager.mqttClient.unsubscribe(constants.TOPIC_AUDIO_FRAME.format(constants.DEFAULT_SITE_ID))
+		self.MqttManager.mqttClient.unsubscribe(constants.TOPIC_AUDIO_FRAME.format(self.ConfigManager.getAliceConfigByName('deviceName')))
 
 		if not self.ConfigManager.getAliceConfigByName('disableSoundAndMic'):
 			self._audio.terminate()
@@ -90,9 +90,9 @@ class AudioManager(Manager):
 					elif speechFrames >= minSpeechFrames:
 						speech = True
 						self.MqttManager.publish(
-							topic=constants.TOPIC_VAD_UP.format(constants.DEFAULT_SITE_ID),
+							topic=constants.TOPIC_VAD_UP.format(self.ConfigManager.getAliceConfigByName('deviceName')),
 							payload={
-								'siteId': constants.DEFAULT_SITE_ID
+								'siteId': self.ConfigManager.getAliceConfigByName('deviceName')
 							})
 						silence = 16000 / 320
 						speechFrames = 0
@@ -103,9 +103,9 @@ class AudioManager(Manager):
 						else:
 							speech = False
 							self.MqttManager.publish(
-								topic=constants.TOPIC_VAD_DOWN.format(constants.DEFAULT_SITE_ID),
+								topic=constants.TOPIC_VAD_DOWN.format(self.ConfigManager.getAliceConfigByName('deviceName')),
 								payload={
-									'siteId': constants.DEFAULT_SITE_ID
+									'siteId': self.ConfigManager.getAliceConfigByName('deviceName')
 								})
 					else:
 						speechFrames = 0
@@ -124,11 +124,11 @@ class AudioManager(Manager):
 				wav.writeframes(frames)
 
 			audioFrames = buffer.getvalue()
-			self.MqttManager.publish(topic=constants.TOPIC_AUDIO_FRAME.format(constants.DEFAULT_SITE_ID), payload=bytearray(audioFrames))
+			self.MqttManager.publish(topic=constants.TOPIC_AUDIO_FRAME.format(self.ConfigManager.getAliceConfigByName('deviceName')), payload=bytearray(audioFrames))
 
 
 	def onPlayBytes(self, requestId: str, payload: bytearray, siteId: str, sessionId: str = None):
-		if siteId != constants.DEFAULT_SITE_ID or self.ConfigManager.getAliceConfigByName('disableSoundAndMic'):
+		if siteId != self.ConfigManager.getAliceConfigByName('deviceName') or self.ConfigManager.getAliceConfigByName('disableSoundAndMic'):
 			return
 
 		self._playing = True

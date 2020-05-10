@@ -20,7 +20,6 @@ from paho.mqtt.client import MQTTMessage
 
 import core.commons.model.Slot as slotModel
 from core.base.model.Manager import Manager
-from core.commons import constants
 from core.commons.model.PartOfDay import PartOfDay
 from core.dialog.model.DialogSession import DialogSession
 
@@ -124,7 +123,9 @@ class CommonsManager(Manager):
 		if 'siteId' in data:
 			return data['siteId'].replace('_', ' ')
 		else:
-			return data.get('IPAddress', constants.DEFAULT_SITE_ID)
+			print(data)
+			from core.base.SuperManager import SuperManager
+			return data.get('IPAddress', SuperManager.getInstance().configManager.getAliceConfigByName('deviceName'))
 
 
 	@staticmethod

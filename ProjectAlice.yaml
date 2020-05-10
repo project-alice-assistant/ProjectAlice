@@ -41,9 +41,6 @@ wifiNetworkName:
 wifiWPAPass:
 wifiCountryCode:
 
-# The name of the device to set up. Do use a room name to name the device!
-deviceName: default
-
 # Connection
 mqttHost: localhost
 mqttPort: 1883

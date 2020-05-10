@@ -311,9 +311,6 @@ network={
 		if not snipsConf:
 			self.logFatal('Error loading snips.toml')
 
-		if initConfs['deviceName'] != 'default':
-			snipsConf['snips-audio-server']['bind'] = f'{initConfs["deviceName"]}@mqtt'
-
 		if initConfs['mqttHost'] != 'localhost' or initConfs['mqttPort'] != 1883:
 			snipsConf['snips-common']['mqtt'] = f'{initConfs["mqttHost"]}:{initConfs["mqttPort"]}'
 

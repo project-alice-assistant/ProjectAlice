@@ -1,5 +1,5 @@
 VERSION = '1.0.0-b1'
-DEFAULT_SITE_ID = 'default'
+
 DEFAULT = 'default'
 UNKNOWN_WORD = 'unknownword'
 UNKNOWN_USER = 'unknownUser'

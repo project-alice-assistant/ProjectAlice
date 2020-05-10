@@ -18,7 +18,6 @@ import importlib
 import typing
 from core.ProjectAliceExceptions import ConfigurationUpdateFailed, VitalConfigMissing
 from core.base.model.Manager import Manager
-from core.commons import constants
 
 
 class ConfigManager(Manager):
@@ -33,7 +32,6 @@ class ConfigManager(Manager):
 		self._aliceConfigurations: typing.Dict[str, typing.Any] = self._loadCheckAndUpdateAliceConfigFile()
 		self._aliceTemplateConfigurations: typing.Dict[str, dict] = configTemplate.settings
 		self._snipsConfigurations = self.loadSnipsConfigurations()
-		self._setDefaultSiteId()
 
 		self._skillsConfigurations = dict()
 		self._skillsTemplateConfigurations: typing.Dict[str, dict] = dict()
@@ -44,14 +42,6 @@ class ConfigManager(Manager):
 		for conf in self._vitalConfigs:
 			if conf not in self._aliceConfigurations or self._aliceConfigurations[conf] == '':
 				raise VitalConfigMissing(conf)
-
-
-	# TODO
-	def _setDefaultSiteId(self):
-		if self._snipsConfigurations['snips-audio-server']['bind']:
-			constants.DEFAULT_SITE_ID = self._snipsConfigurations['snips-audio-server']['bind'].replace('@mqtt', '')
-		else:
-			constants.DEFAULT_SITE_ID = constants.DEFAULT
 
 
 	def _loadCheckAndUpdateAliceConfigFile(self) -> dict:

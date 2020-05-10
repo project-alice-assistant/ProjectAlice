@@ -1,4 +1,10 @@
 settings = {
+	'deviceName'          : {
+		'defaultValue': 'default',
+		'dataType'    : 'string',
+		'isSensitive' : False,
+		'description' : 'Name this Alice unit. It is good practice to use a room/locatiion name to name your devices.'
+	},
 	'sessionTimeout'          : {
 		'defaultValue': 10,
 		'dataType'    : 'integer',
