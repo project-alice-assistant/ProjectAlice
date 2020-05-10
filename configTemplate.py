@@ -3,14 +3,14 @@ settings = {
 		'defaultValue': 'default',
 		'dataType'    : 'string',
 		'isSensitive' : False,
-		'description' : 'Name this Alice unit. It is good practice to use a room/locatiion name to name your devices.',
+		'description' : 'Name this Alice unit. It is good practice to use a room/location name to name your devices.',
 		'category'    : 'device'
 	},
 	'sessionTimeout'          : {
 		'defaultValue': 10,
 		'dataType'    : 'integer',
 		'isSensitive' : False,
-		'description' : 'Defines the number of seconds before a session timesout for inactivity',
+		'description' : 'Defines the number of seconds before a session times out for inactivity',
 		'category'    : 'device'
 	},
 	'adminPinCode'            : {
