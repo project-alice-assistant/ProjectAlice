@@ -13,7 +13,7 @@
 #                                              #
 ################################################
 #            DON'T CHANGE ME                   #
-version: 1.18
+version: 1.19
 ################################################
 
 # How to prevent frequent errors:
@@ -112,12 +112,8 @@ whisperWhenSleeping: no
 # Either 'pocketsphinx', 'deepspeech' or 'google'
 asr: pocketsphinx
 
-# Either 'pico', 'snips', 'mycroft', 'amazon' or 'google'
+# Either 'pico', 'snips', 'mycroft', 'amazon', 'google' or 'watson'
 tts: pico
-
-ttsType: male
-ttsVoice: en-US
-ttsLanguage: en-US
 
 # Amazon Polly
 # https://docs.aws.amazon.com/en_us/general/latest/gr/rande.html

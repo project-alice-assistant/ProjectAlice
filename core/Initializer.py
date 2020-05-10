@@ -69,7 +69,7 @@ network={
 		self._latest = 1.18
 
 
-	def initProjectAlice(self) -> bool:
+	def initProjectAlice(self) -> bool: #NOSONAR
 		if not self._initFile.exists() and not self._confsFile.exists():
 			self.logFatal('Init file not found and there\'s no configuration file, aborting Project Alice start')
 		elif not self._initFile.exists():
@@ -258,9 +258,9 @@ network={
 		confs['probabilityThreshold'] = float(initConfs['probabilityThreshold'] or 0.5)
 		confs['shortReplies'] = bool(initConfs['shortReplies'])
 		confs['whisperWhenSleeping'] = bool(initConfs['whisperWhenSleeping'])
-		confs['ttsLanguage'] = initConfs['ttsLanguage'] or confs['activeLanguage']
-		confs['ttsType'] = initConfs['ttsType'] if initConfs['ttsType'] in {'female', 'male'} else 'female'
-		confs['ttsVoice'] = initConfs['ttsVoice']
+		confs['ttsLanguage'] = confs['activeLanguage']
+		confs['ttsType'] = 'male'
+		confs['ttsVoice'] = ''
 		confs['githubUsername'] = initConfs['githubUsername']
 		confs['githubToken'] = initConfs['githubToken']
 
