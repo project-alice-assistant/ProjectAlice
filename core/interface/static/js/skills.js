@@ -159,7 +159,7 @@ $(function () {
 	$('[id^=config_for_]').dialog({
 		autoOpen: false,
 		draggable: false,
-		width: 600,
+		width: '80%',
 		height: 600,
 		modal: true,
 		resizable: false

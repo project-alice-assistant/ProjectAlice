@@ -153,6 +153,7 @@ button.button{ font-size: 1.6em; height: 2em; }
 .skillSettings { width: 100%; margin: .2em; text-align: right; }
 
 /* Configuration Screens */
+.configBox { width: 100%; display: table; font-family: var(--long); background-color: var(--secondary); }
 .configCategory { width: 100%; display: table; margin-bottom: 30px; font-family: var(--long); background-color: var(--secondary); }
 .configLine { width: 100%; display: table-row; height: 40px; }
 

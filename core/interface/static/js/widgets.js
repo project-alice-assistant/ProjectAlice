@@ -61,7 +61,7 @@ $(function () {
 	$('.widgetOptions').dialog({
 		autoOpen : false,
 		draggable: false,
-		width    : 600,
+		width    : '60%',
 		height   : 600,
 		modal    : true,
 		resizable: false,
