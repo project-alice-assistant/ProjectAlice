@@ -13,6 +13,20 @@ from core.voice.model.Tts import TTS
 class MycroftTTS(TTS):
 	TTS = TTSEnum.MYCROFT
 
+	DEPENDENCIES = {
+		'system': [
+			'gcc',
+			'make',
+			'pkg-config',
+			'automake',
+			'libtool',
+			'libicu-dev',
+			'libpcre2-dev',
+			'libasound2-dev'
+		],
+		'pip'   : {}
+	}
+
 	def __init__(self, user: User = None):
 		super().__init__(user)
 
@@ -76,6 +90,22 @@ class MycroftTTS(TTS):
 				}
 			}
 		}
+
+
+	def checkDependencies(self) -> bool:
+		return Path(Path(self.Commons.rootDir()).parent, 'mimic/voices').exists()
+
+
+	def installDependencies(self) -> bool:
+		if not super().installDependencies():
+			return False
+
+		try:
+			self.Commons.runRootSystemCommand(['sudo', Path(self.Commons.rootDir(), 'system/scripts/installMycroftMimic.sh')])
+		except:
+			return False
+		else:
+			return True
 
 
 	@staticmethod

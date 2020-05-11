@@ -1,5 +1,3 @@
-import subprocess
-
 import re
 
 from core.base.SuperManager import SuperManager
@@ -11,22 +9,24 @@ from core.voice.model.Tts import TTS
 try:
 	import boto3
 except ModuleNotFoundError:
-	subprocess.run(['pip3', 'install', 'boto3'])
+	pass # Auto installeed
 
 
 class AmazonTTS(TTS):
 	TTS = TTSEnum.AMAZON
 
+	DEPENDENCIES = {
+		'system': [],
+		'pip'   : {
+			'boto3==1.13.6'
+		}
+	}
+
 	def __init__(self, user: User = None):
 		super().__init__(user)
 		self._online = True
 		self._privacyMalus = -20
-		self._client = boto3.client(
-			'polly',
-			region_name=SuperManager.getInstance().configManager.getAliceConfigByName('awsRegion'),
-			aws_access_key_id=SuperManager.getInstance().configManager.getAliceConfigByName('awsAccessKey'),
-			aws_secret_access_key=SuperManager.getInstance().configManager.getAliceConfigByName('awsSecretKey')
-		)
+		self._client = None
 
 		# TODO implement the others
 		# https://docs.aws.amazon.com/polly/latest/dg/voicelist.html
@@ -193,6 +193,16 @@ class AmazonTTS(TTS):
 				}
 			}
 		}
+
+
+	def onStart(self):
+		super().onStart()
+		self._client = boto3.client(
+			'polly',
+			region_name=SuperManager.getInstance().configManager.getAliceConfigByName('awsRegion'),
+			aws_access_key_id=SuperManager.getInstance().configManager.getAliceConfigByName('awsAccessKey'),
+			aws_secret_access_key=SuperManager.getInstance().configManager.getAliceConfigByName('awsSecretKey')
+		)
 
 
 	@staticmethod

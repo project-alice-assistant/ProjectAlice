@@ -1,5 +1,5 @@
 VERSION = '1.0.0-b1'
-DEFAULT_SITE_ID = 'default'
+
 DEFAULT = 'default'
 UNKNOWN_WORD = 'unknownword'
 UNKNOWN_USER = 'unknownUser'
@@ -117,3 +117,4 @@ EVENT_PLAY_BYTES = 'playBytes'
 EVENT_PLAY_BYTES_FINISHED = 'playBytesFinished'
 EVENT_TOGGLE_FEEDBACK_ON = 'toggleFeedbackOn'
 EVENT_TOGGLE_FEEDBACK_OFF = 'toggleFeedbackOff'
+EVENT_NLU_ERROR = 'nluError'

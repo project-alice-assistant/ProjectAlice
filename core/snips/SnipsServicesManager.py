@@ -63,6 +63,6 @@ class SnipsServicesManager(Manager):
 			for device in devices:
 				self.MqttManager.publish(topic=topic, payload={'siteId': device.room})
 
-			self.MqttManager.publish(topic=topic, payload={'siteId': constants.DEFAULT_SITE_ID})
+			self.MqttManager.publish(topic=topic, payload={'siteId': self.ConfigManager.getAliceConfigByName('deviceName')})
 		else:
 			self.MqttManager.publish(topic=topic, payload={'siteId': siteId})

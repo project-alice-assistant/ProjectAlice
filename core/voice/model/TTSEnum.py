@@ -7,3 +7,4 @@ class TTSEnum(Enum):
 	MYCROFT = 'mycroft'
 	AMAZON = 'amazon'
 	GOOGLE = 'google'
+	WATSON = 'watson'

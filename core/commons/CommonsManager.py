@@ -20,7 +20,6 @@ from paho.mqtt.client import MQTTMessage
 
 import core.commons.model.Slot as slotModel
 from core.base.model.Manager import Manager
-from core.commons import constants
 from core.commons.model.PartOfDay import PartOfDay
 from core.dialog.model.DialogSession import DialogSession
 
@@ -124,7 +123,8 @@ class CommonsManager(Manager):
 		if 'siteId' in data:
 			return data['siteId'].replace('_', ' ')
 		else:
-			return data.get('IPAddress', constants.DEFAULT_SITE_ID)
+			from core.base.SuperManager import SuperManager
+			return data.get('IPAddress', SuperManager.getInstance().configManager.getAliceConfigByName('deviceName'))
 
 
 	@staticmethod
@@ -336,9 +336,9 @@ class CommonsManager(Manager):
 		return int(number) if not number.startswith('0') else self.randomNumber(length)
 
 # noinspection PyUnusedLocal
-def py_error_handler(filename, line, function, err, fmt):
+def py_error_handler(filename, line, function, err, fmt): #NOSONAR
 	# Errors are handled by our loggers
 	pass
 
 
-c_error_handler = CommonsManager.ERROR_HANDLER_FUNC(py_error_handler)
+c_error_handler = CommonsManager.ERROR_HANDLER_FUNC(py_error_handler) #NOSONAR

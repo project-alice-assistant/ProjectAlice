@@ -42,8 +42,8 @@ class MqttManager(Manager):
 		for username in self.UserManager.getAllUserNames():
 			self._mqttClient.message_callback_add(constants.TOPIC_WAKEWORD_DETECTED.replace('{user}', username), self.onHotwordDetected)
 
-		self._mqttClient.message_callback_add(constants.TOPIC_VAD_UP.format(constants.DEFAULT_SITE_ID), self.onVADUp)
-		self._mqttClient.message_callback_add(constants.TOPIC_VAD_DOWN.format(constants.DEFAULT_SITE_ID), self.onVADDown)
+		self._mqttClient.message_callback_add(constants.TOPIC_VAD_UP.format(self.ConfigManager.getAliceConfigByName('deviceName')), self.onVADUp)
+		self._mqttClient.message_callback_add(constants.TOPIC_VAD_DOWN.format(self.ConfigManager.getAliceConfigByName('deviceName')), self.onVADDown)
 		for device in self.DeviceManager.getDevicesByType('alicesatellite'):
 			self._mqttClient.message_callback_add(constants.TOPIC_VAD_UP.format(device.room), self.onVADUp)
 			self._mqttClient.message_callback_add(constants.TOPIC_VAD_DOWN.format(device.room), self.onVADDown)
@@ -71,9 +71,10 @@ class MqttManager(Manager):
 		self._mqttClient.message_callback_add(constants.TOPIC_TOGGLE_FEEDBACK_ON, self.toggleFeedback)
 		self._mqttClient.message_callback_add(constants.TOPIC_TOGGLE_FEEDBACK_OFF, self.toggleFeedback)
 		self._mqttClient.message_callback_add(constants.TOPIC_NLU_INTENT_NOT_RECOGNIZED, self.nluIntentNotRecognized)
+		self._mqttClient.message_callback_add(constants.TOPIC_NLU_ERROR, self.nluError)
 
-		self._mqttClient.message_callback_add(constants.TOPIC_PLAY_BYTES.format(constants.DEFAULT_SITE_ID), self.topicPlayBytes)
-		self._mqttClient.message_callback_add(constants.TOPIC_PLAY_BYTES_FINISHED.format(constants.DEFAULT_SITE_ID), self.topicPlayBytesFinished)
+		self._mqttClient.message_callback_add(constants.TOPIC_PLAY_BYTES.format(self.ConfigManager.getAliceConfigByName('deviceName')), self.topicPlayBytes)
+		self._mqttClient.message_callback_add(constants.TOPIC_PLAY_BYTES_FINISHED.format(self.ConfigManager.getAliceConfigByName('deviceName')), self.topicPlayBytesFinished)
 
 		for device in self.DeviceManager.getDevicesByType('alicesatellite'):
 			self._mqttClient.message_callback_add(constants.TOPIC_PLAY_BYTES.format(device.room), self.topicPlayBytes)
@@ -117,20 +118,21 @@ class MqttManager(Manager):
 			(constants.TOPIC_TOGGLE_FEEDBACK_ON, 0),
 			(constants.TOPIC_TOGGLE_FEEDBACK_OFF, 0),
 			(constants.TOPIC_NLU_INTENT_NOT_RECOGNIZED, 0),
-			(constants.TOPIC_START_SESSION, 0)
+			(constants.TOPIC_START_SESSION, 0),
+			(constants.TOPIC_NLU_ERROR, 0)
 		]
 
 		for username in self.UserManager.getAllUserNames():
 			subscribedEvents.append((constants.TOPIC_WAKEWORD_DETECTED.format(username), 0))
 
-		subscribedEvents.append((constants.TOPIC_VAD_UP.format(constants.DEFAULT_SITE_ID), 0))
-		subscribedEvents.append((constants.TOPIC_VAD_DOWN.format(constants.DEFAULT_SITE_ID), 0))
+		subscribedEvents.append((constants.TOPIC_VAD_UP.format(self.ConfigManager.getAliceConfigByName('deviceName')), 0))
+		subscribedEvents.append((constants.TOPIC_VAD_DOWN.format(self.ConfigManager.getAliceConfigByName('deviceName')), 0))
 		for device in self.DeviceManager.getDevicesByType('alicesatellite'):
 			subscribedEvents.append((constants.TOPIC_VAD_UP.format(device.room), 0))
 			subscribedEvents.append((constants.TOPIC_VAD_DOWN.format(device.room), 0))
 
-		subscribedEvents.append((constants.TOPIC_PLAY_BYTES.format(constants.DEFAULT_SITE_ID), 0))
-		subscribedEvents.append((constants.TOPIC_PLAY_BYTES_FINISHED.format(constants.DEFAULT_SITE_ID), 0))
+		subscribedEvents.append((constants.TOPIC_PLAY_BYTES.format(self.ConfigManager.getAliceConfigByName('deviceName')), 0))
+		subscribedEvents.append((constants.TOPIC_PLAY_BYTES_FINISHED.format(self.ConfigManager.getAliceConfigByName('deviceName')), 0))
 		for device in self.DeviceManager.getDevicesByType('alicesatellite'):
 			subscribedEvents.append((constants.TOPIC_PLAY_BYTES.format(device.room), 0))
 			subscribedEvents.append((constants.TOPIC_PLAY_BYTES_FINISHED.format(device.room), 0))
@@ -519,6 +521,14 @@ class MqttManager(Manager):
 			self.broadcast(method=constants.EVENT_NLU_INTENT_NOT_RECOGNIZED, exceptions=[self.name], propagateToSkills=True, session=session)
 
 
+	def nluError(self, _client, _data, msg: mqtt.MQTTMessage):
+		session = self.DialogManager.getSession(self.Commons.parseSessionId(msg))
+
+		if session:
+			session.update(msg)
+			self.broadcast(method=constants.EVENT_NLU_ERROR, exceptions=[self.name], propagateToSkills=True, session=session)
+
+
 	def startSession(self, _client, _data, msg: mqtt.MQTTMessage):
 		self.broadcast(
 			method=constants.EVENT_START_SESSION,
@@ -596,7 +606,7 @@ class MqttManager(Manager):
 		self.broadcast(method=method, exceptions=[self.name], propagateToSkills=True, siteId=siteId)
 
 
-	def say(self, text, client: str = constants.DEFAULT_SITE_ID, customData: dict = None, canBeEnqueued: bool = True):
+	def say(self, text, client: str = None, customData: dict = None, canBeEnqueued: bool = True):
 		"""
 		Initiate a notification session which is termniated once the text is spoken
 		:param canBeEnqueued: bool
@@ -605,9 +615,11 @@ class MqttManager(Manager):
 		:param customData: json object
 		"""
 
+		client = self.getDefaultSiteId(client)
+
 		if client == constants.ALL or client == constants.RANDOM:
 			deviceList = [device.room for device in self.DeviceManager.getDevicesByType('AliceSatellite', connectedOnly=True) if device]
-			deviceList.append(constants.DEFAULT_SITE_ID)
+			deviceList.append(self.ConfigManager.getAliceConfigByName('deviceName'))
 
 			if client == constants.ALL:
 				for device in deviceList:
@@ -641,7 +653,7 @@ class MqttManager(Manager):
 			}))
 
 
-	def ask(self, text: str, client: str = constants.DEFAULT_SITE_ID, intentFilter: list = None, customData: dict = None, canBeEnqueued: bool = True, currentDialogState: str = '', probabilityThreshold: float = None):
+	def ask(self, text: str, client: str = None, intentFilter: list = None, customData: dict = None, canBeEnqueued: bool = True, currentDialogState: str = '', probabilityThreshold: float = None):
 		"""
 		Initiates a new session by asking something and waiting on user answer
 		:param probabilityThreshold: The override threshold for the user's answer to this question
@@ -653,6 +665,8 @@ class MqttManager(Manager):
 		:param customData: json object
 		:return:
 		"""
+
+		client = self.getDefaultSiteId(client)
 
 		if ' ' in client:
 			client = client.replace(' ', '_')
@@ -701,7 +715,7 @@ class MqttManager(Manager):
 
 		if client == constants.ALL:
 			deviceList = self.DeviceManager.getDevicesByType('AliceSatellite', connectedOnly=True)
-			deviceList.append(constants.DEFAULT_SITE_ID)
+			deviceList.append(self.ConfigManager.getAliceConfigByName('deviceName'))
 
 			for device in deviceList:
 				device = device.replace(self.DEFAULT_CLIENT_EXTENSION, '')
@@ -764,7 +778,7 @@ class MqttManager(Manager):
 		self._mqttClient.publish(constants.TOPIC_CONTINUE_SESSION, json.dumps(jsonDict))
 
 
-	def endDialog(self, sessionId: str = '', text: str = '', client: str = ''):
+	def endDialog(self, sessionId: str = '', text: str = '', client: str = None):
 		"""
 		Ends a session by speaking the given text
 		:param sessionId: int session id to terminate
@@ -804,7 +818,9 @@ class MqttManager(Manager):
 		}))
 
 
-	def playSound(self, soundFilename: str, location: Path = None, sessionId: str = '', siteId: str = constants.DEFAULT_SITE_ID, uid: str = '', suffix: str = '.wav'):
+	def playSound(self, soundFilename: str, location: Path = None, sessionId: str = '', siteId: str = None, uid: str = '', suffix: str = '.wav'):
+
+		siteId = self.getDefaultSiteId(siteId)
 
 		if not sessionId:
 			sessionId = str(uuid.uuid4())
@@ -819,7 +835,7 @@ class MqttManager(Manager):
 
 		if siteId == constants.ALL:
 			deviceList = self.DeviceManager.getDevicesByType('AliceSatellite', connectedOnly=True)
-			deviceList.append(constants.DEFAULT_SITE_ID)
+			deviceList.append(self.ConfigManager.getAliceConfigByName('deviceName'))
 
 			for device in deviceList:
 				device = device.replace(self.DEFAULT_CLIENT_EXTENSION, '')
@@ -852,7 +868,7 @@ class MqttManager(Manager):
 			payload['siteId'] = device.room
 			self.publish(topic=topic, payload=payload, qos=qos, retain=retain)
 
-		payload['siteId'] = constants.DEFAULT_SITE_ID
+		payload['siteId'] = self.ConfigManager.getAliceConfigByName('deviceName')
 		self.publish(topic=topic, payload=json.dumps(payload), qos=qos, retain=retain)
 
 
@@ -885,7 +901,11 @@ class MqttManager(Manager):
 		"""
 
 		deviceList = [device.name.replace(self.DEFAULT_CLIENT_EXTENSION, '') for device in self.DeviceManager.getDevicesByType('AliceSatellite', connectedOnly=True)]
-		deviceList.append(constants.DEFAULT_SITE_ID)
+		deviceList.append(self.ConfigManager.getAliceConfigByName('deviceName'))
 
 		for siteId in deviceList:
 			publish.single(constants.TOPIC_TOGGLE_FEEDBACK.format(state.title()), payload=json.dumps({'siteId': siteId}))
+
+
+	def getDefaultSiteId(self, siteId: str = None) -> str:
+		return self.ConfigManager.getAliceConfigByName('deviceName') if not siteId else siteId

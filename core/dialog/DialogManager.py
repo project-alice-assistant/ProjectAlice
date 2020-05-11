@@ -91,7 +91,7 @@ class DialogManager(Manager):
 		:return:
 		"""
 
-		if session.hasEnded:
+		if not session or session.hasEnded:
 			return
 
 		if session.isEnding or session.isNotification:
@@ -292,6 +292,20 @@ class DialogManager(Manager):
 		)
 
 
+	def onNluError(self, session: DialogSession):
+		"""
+		NLU reported an error
+		:param session:
+		:return:
+		"""
+		if not 'error' in session.payload:
+			return
+
+		self.logWarning(f'NLU query failed with: {session.payload["error"]}')
+		session.payload['text'] = ''
+		self.onEndSession(session=session, reason='error')
+
+
 	def onStartSession(self, siteId: str, payload: dict):
 		"""
 		Starts a new session
@@ -358,7 +372,7 @@ class DialogManager(Manager):
 
 
 	def onEndSession(self, session: DialogSession, reason: str = 'nominal'):
-		text = session.payload['text']
+		text = session.payload.get('text', '')
 
 		if text:
 			session.isEnding = True

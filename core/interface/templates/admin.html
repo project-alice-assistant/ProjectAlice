@@ -19,61 +19,65 @@
 			<li class="tab" data-for="Utilities">{{ langData.adminTabTitleUtilities }}</li>
 		</ul>
 		<div class="tabsContent">
-			<div id="AliceSettings" class="configBox">
-				<form action="/admin/saveAliceSettings/" name="config_for_{{ skillName }}" method="post"
-					  autocomplete="off" novalidate>
-					{% for settingName, settingValue in aliceSettings.items() if not settingName == 'skills' and not settingName == 'supportedLanguages' %}
-						{% if aliceSettingsTemplate[settingName]['display'] != 'hidden' %}
-							<div class="configLine">
-								<label class="configLabel" for="{{ settingName }}"
-									   title="{{ aliceSettingsTemplate[settingName]['description'] }}">{{ settingName }}</label>
-								<div class="configInput">
-									{% if aliceSettingsTemplate[settingName]['dataType'] == 'boolean' %}
-										<input type="checkbox" name="{{ settingName }}" value="on"
-											   id="{{ settingName }}"
-											   {% if settingValue is sameas true %}checked{% endif %}>
-										<!-- Make sure unchecked chexboxes send off data -->
-										<input type="hidden" name="{{ settingName }}" value="off">
-									{% elif aliceSettingsTemplate[settingName]['dataType'] == 'integer' %}
-										{% if aliceSettingsTemplate[settingName]['isSensitive'] is sameas true %}
-											<input type="password" name="{{ settingName }}" value="{{ settingValue }}"
-												   id="{{ settingName }}">
-										{% else %}
-											<input type="number" name="{{ settingName }}" value="{{ settingValue }}"
-												   id="{{ settingName }}">
-										{% endif %}
-									{% elif aliceSettingsTemplate[settingName]['dataType'] == 'string' %}
-										{% if aliceSettingsTemplate[settingName]['isSensitive'] is sameas true %}
-											<input type="password" name="{{ settingName }}" value="{{ settingValue }}"
-												   id="{{ settingName }}">
-										{% else %}
-											<input type="text" name="{{ settingName }}" value="{{ settingValue }}"
-												   id="{{ settingName }}">
-										{% endif %}
-									{% elif aliceSettingsTemplate[settingName]['dataType'] == 'list' %}
-										{% if aliceSettingsTemplate[settingName]['values'] is mapping %}
-											<select name="{{ settingName }}" id="{{ settingName }}">
-												{% for optionName, optionValue in aliceSettingsTemplate[settingName]['values'].items() %}
-													<option value="{{ optionValue }}"
-															{% if optionValue == settingValue %}selected{% endif %}>{{ optionName }}</option>
-												{% endfor %}
-											</select>
-										{% else %}
-											<select name="{{ settingName }}" id="{{ settingName }}">
-												{% for optionValue in aliceSettingsTemplate[settingName]['values'] %}
-													<option value="{{ optionValue }}"
-															{% if optionValue == settingValue %}selected{% endif %}>{{ optionValue }}</option>
-												{% endfor %}
-											</select>
-										{% endif %}
-									{% else %}
-										<input type="text" name="{{ settingName }}" value="{{ settingValue }}"
-											   id="{{ settingName }}">
-									{% endif %}
+			<div id="AliceSettings">
+				<form action="/admin/saveAliceSettings/" name="config_for_{{ skillName }}" method="post" autocomplete="off" novalidate>
+					{% for category in aliceSettingCategories %}
+						<div class="configCategory">
+							<div class="configCategoryTitle">{{ category }}</div>
+							{% for settingName, settingValue in aliceSettings.items() if not settingName == 'skills' and not settingName == 'supportedLanguages' and aliceSettingsTemplate[settingName]['category'] == category %}
+								{% if aliceSettingsTemplate[settingName]['display'] != 'hidden' %}
+									<div class="configLine">
+										<label class="configLabel" for="{{ settingName }}"
+											   title="{{ aliceSettingsTemplate[settingName]['description'] }}">{{ settingName }}</label>
+										<div class="configInput">
+											{% if aliceSettingsTemplate[settingName]['dataType'] == 'boolean' %}
+												<input type="checkbox" name="{{ settingName }}" value="on"
+													   id="{{ settingName }}"
+													   {% if settingValue is sameas true %}checked{% endif %}>
+												<!-- Make sure unchecked chexboxes send off data -->
+												<input type="hidden" name="{{ settingName }}" value="off">
+											{% elif aliceSettingsTemplate[settingName]['dataType'] == 'integer' %}
+												{% if aliceSettingsTemplate[settingName]['isSensitive'] is sameas true %}
+													<input type="password" name="{{ settingName }}" value="{{ settingValue }}"
+														   id="{{ settingName }}">
+												{% else %}
+													<input type="number" name="{{ settingName }}" value="{{ settingValue }}"
+														   id="{{ settingName }}">
+												{% endif %}
+											{% elif aliceSettingsTemplate[settingName]['dataType'] == 'string' %}
+												{% if aliceSettingsTemplate[settingName]['isSensitive'] is sameas true %}
+													<input type="password" name="{{ settingName }}" value="{{ settingValue }}"
+														   id="{{ settingName }}">
+												{% else %}
+													<input type="text" name="{{ settingName }}" value="{{ settingValue }}"
+														   id="{{ settingName }}">
+												{% endif %}
+											{% elif aliceSettingsTemplate[settingName]['dataType'] == 'list' %}
+												{% if aliceSettingsTemplate[settingName]['values'] is mapping %}
+													<select name="{{ settingName }}" id="{{ settingName }}">
+														{% for optionName, optionValue in aliceSettingsTemplate[settingName]['values'].items() %}
+															<option value="{{ optionValue }}"
+																	{% if optionValue == settingValue %}selected{% endif %}>{{ optionName }}</option>
+														{% endfor %}
+													</select>
+												{% else %}
+													<select name="{{ settingName }}" id="{{ settingName }}">
+														{% for optionValue in aliceSettingsTemplate[settingName]['values'] %}
+															<option value="{{ optionValue }}"
+																	{% if optionValue == settingValue %}selected{% endif %}>{{ optionValue }}</option>
+														{% endfor %}
+													</select>
+												{% endif %}
+											{% else %}
+												<input type="text" name="{{ settingName }}" value="{{ settingValue }}"
+													   id="{{ settingName }}">
+											{% endif %}
 
-								</div>
-							</div>
-						{% endif %}
+										</div>
+									</div>
+								{% endif %}
+							{% endfor %}
+						</div>
 					{% endfor %}
 					<div class="buttonLine">
 						<input class="button" type="submit" value="{{ langData.save }}">

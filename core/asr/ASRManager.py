@@ -55,7 +55,7 @@ class ASRManager(Manager):
 		self._asr = asr()
 
 		if not self._asr.checkDependencies():
-			if not self._asr.install():
+			if not self._asr.installDependencies():
 				self._asr = None
 			else:
 				module = reload(module)

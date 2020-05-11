@@ -13,7 +13,7 @@
 #                                              #
 ################################################
 #            DON'T CHANGE ME                   #
-version: 1.18
+version: 1.19
 ################################################
 
 # How to prevent frequent errors:
@@ -41,9 +41,6 @@ wifiNetworkName:
 wifiWPAPass:
 wifiCountryCode:
 
-# The name of the device to set up. Do use a room name to name the device!
-deviceName: default
-
 # Connection
 mqttHost: localhost
 mqttPort: 1883
@@ -65,10 +62,6 @@ audioHardware:
     matrixVoice:        no
     ps3eye:             no
     jabra410:           no
-
-# Capture
-micSampleRate: 16000
-micChannels: 1
 
 # System
 # Whether to install Hermes Led Control or not. HLC is the best way to manage your device leds if you have any
@@ -116,12 +109,8 @@ whisperWhenSleeping: no
 # Either 'pocketsphinx', 'deepspeech' or 'google'
 asr: pocketsphinx
 
-# Either 'pico', 'snips', 'mycroft', 'amazon' or 'google'
+# Either 'pico', 'snips', 'mycroft', 'amazon', 'google' or 'watson'
 tts: pico
-
-ttsType: male
-ttsVoice: en-US
-ttsLanguage: en-US
 
 # Amazon Polly
 # https://docs.aws.amazon.com/en_us/general/latest/gr/rande.html

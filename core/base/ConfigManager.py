@@ -18,7 +18,6 @@ import importlib
 import typing
 from core.ProjectAliceExceptions import ConfigurationUpdateFailed, VitalConfigMissing
 from core.base.model.Manager import Manager
-from core.commons import constants
 
 
 class ConfigManager(Manager):
@@ -29,11 +28,12 @@ class ConfigManager(Manager):
 		super().__init__()
 
 		self._vitalConfigs = list()
+		self._aliceConfigurationCategories = list()
 
 		self._aliceConfigurations: typing.Dict[str, typing.Any] = self._loadCheckAndUpdateAliceConfigFile()
 		self._aliceTemplateConfigurations: typing.Dict[str, dict] = configTemplate.settings
+
 		self._snipsConfigurations = self.loadSnipsConfigurations()
-		self._setDefaultSiteId()
 
 		self._skillsConfigurations = dict()
 		self._skillsTemplateConfigurations: typing.Dict[str, dict] = dict()
@@ -44,14 +44,6 @@ class ConfigManager(Manager):
 		for conf in self._vitalConfigs:
 			if conf not in self._aliceConfigurations or self._aliceConfigurations[conf] == '':
 				raise VitalConfigMissing(conf)
-
-
-	# TODO
-	def _setDefaultSiteId(self):
-		if self._snipsConfigurations['snips-audio-server']['bind']:
-			constants.DEFAULT_SITE_ID = self._snipsConfigurations['snips-audio-server']['bind'].replace('@mqtt', '')
-		else:
-			constants.DEFAULT_SITE_ID = constants.DEFAULT
 
 
 	def _loadCheckAndUpdateAliceConfigFile(self) -> dict:
@@ -67,6 +59,10 @@ class ConfigManager(Manager):
 
 		changes = False
 		for setting, definition in configTemplate.settings.items():
+
+			if definition['category'] not in self._aliceConfigurationCategories:
+				self._aliceConfigurationCategories.append(definition['category'])
+
 			if setting not in aliceConfigs:
 				self.logInfo(f'New configuration found: **{setting}**')
 				changes = True
@@ -442,6 +438,12 @@ class ConfigManager(Manager):
 		self.ASRManager.onStart()
 
 
+
+	def reloadTTS(self):
+		self.TTSManager.onStop()
+		self.TTSManager.onStart()
+
+
 	def checkNewAdminPinCode(self, pinCode: str) -> bool:
 		try:
 			pin = int(pinCode)
@@ -488,6 +490,11 @@ class ConfigManager(Manager):
 	@property
 	def aliceConfigurations(self) -> dict:
 		return self._aliceConfigurations
+
+
+	@property
+	def aliceConfigurationCategories(self) -> list:
+		return sorted(self._aliceConfigurationCategories)
 
 
 	@property
