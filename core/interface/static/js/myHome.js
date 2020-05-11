@@ -12,6 +12,8 @@ $(function () {
 
 	let selectedFloor = '';
 	let selectedDeco = '';
+	let selectedDevice = '';
+	let selectedDeviceSkill = '';
 	let selectedConstruction = '';
 
 	function loadHouse() {
@@ -19,18 +21,26 @@ $(function () {
 			url : '/myhome/load/',
 			type: 'GET'
 		}).done(function (response) {
-			let $data = JSON.parse(response);
+			let $data = response;
 			$.each($data, function (i, zone) {
 				let $zone = newZone(zone);
-				$.each(zone['walls'], function (ii, wall) {
-					newWall($zone, wall);
-				});
-				$.each(zone['construction'], function (iii, construction) {
-					newConstruction($zone, construction);
-				});
-				$.each(zone['deco'], function (iiii, deco) {
-					newDeco($zone, deco);
-				});
+				if (zone['display']) {
+					if (zone['display'].hasOwnProperty('walls')) {
+						$.each(zone['display']['walls'], function (ii, wall) {
+							newWall($zone, wall);
+						});
+					}
+					if (zone['display'].hasOwnProperty('construction')) {
+						$.each(zone['display']['construction'], function (iii, construction) {
+							newConstruction($zone, construction);
+						});
+					}
+					if (zone['display'].hasOwnProperty('deco')) {
+						$.each(zone['display']['deco'], function (iiii, deco) {
+							newDeco($zone, deco);
+						});
+					}
+				}
 				$.each(zone['devices'], function (iiiii, device) {
 					newDevice($zone, device);
 				});
@@ -43,60 +53,64 @@ $(function () {
 		$floorPlan.children('.floorPlan-Zone').each(function () {
 			let zoneName = $(this).data('name');
 			data[zoneName] = {
-				'name'    : $(this).data('name'),
-				'x'       : $(this).css('left').replace('px', ''),
-				'y'       : $(this).css('top').replace('px', ''),
-				'z-index' : $(this).css('z-index'),
-				'rotation': matrixToAngle($(this).css('transform')),
-				'width'   : $(this).width(),
-				'height'  : $(this).height(),
-				'texture' : $(this).data('texture')
+				"id"	  : $(this).data('id'),
+				"name"    : $(this).data('name')
 			};
-
-			data[zoneName]['walls'] = [];
+			data[zoneName]['display'] = {
+				"x"       : $(this).css('left').replace('px', ''),
+				"y"       : $(this).css('top').replace('px', ''),
+				"z-index" : $(this).css('z-index'),
+				"rotation": matrixToAngle($(this).css('transform')),
+				"width"   : $(this).width(),
+				"height"  : $(this).height(),
+				"texture" : $(this).data('texture')
+			}
+			data[zoneName]['display']['walls'] = [];
 			$(this).children('.floorPlan-Wall').each(function () {
-				data[zoneName]['walls'].push({
-					'x'       : $(this).css('left').replace('px', ''),
-					'y'       : $(this).css('top').replace('px', ''),
-					'rotation': matrixToAngle($(this).css('transform')),
-					'width'   : $(this).width(),
-					'height'  : $(this).height()
+				data[zoneName]['display']['walls'].push({
+					"x"       : $(this).css('left').replace('px', ''),
+					"y"       : $(this).css('top').replace('px', ''),
+					"rotation": matrixToAngle($(this).css('transform')),
+					"width"   : $(this).width(),
+					"height"  : $(this).height()
 				})
 			});
 
-			data[zoneName]['construction'] = [];
+			data[zoneName]['display']['construction'] = [];
 			$(this).children('.floorPlan-Construction').each(function () {
-				data[zoneName]['construction'].push({
-					'x'       : $(this).css('left').replace('px', ''),
-					'y'       : $(this).css('top').replace('px', ''),
-					'rotation': matrixToAngle($(this).css('transform')),
-					'width'   : $(this).width(),
-					'height'  : $(this).height(),
-					'texture' : $(this).data('texture')
+				data[zoneName]['display']['construction'].push({
+					"x"       : $(this).css('left').replace('px', ''),
+					"y"       : $(this).css('top').replace('px', ''),
+					"rotation": matrixToAngle($(this).css('transform')),
+					"width"   : $(this).width(),
+					"height"  : $(this).height(),
+					"texture" : $(this).data('texture')
 				})
 			});
 
-			data[zoneName]['deco'] = [];
+			data[zoneName]['display']['deco'] = [];
 			$(this).children('.floorPlan-Deco').each(function () {
-				data[zoneName]['deco'].push({
-					'x'       : $(this).css('left').replace('px', ''),
-					'y'       : $(this).css('top').replace('px', ''),
-					'rotation': matrixToAngle($(this).css('transform')),
-					'width'   : $(this).width(),
-					'height'  : $(this).height(),
-					'texture' : $(this).data('texture')
+				data[zoneName]['display']['deco'].push({
+					"x"       : $(this).css('left').replace('px', ''),
+					"y"       : $(this).css('top').replace('px', ''),
+					"rotation": matrixToAngle($(this).css('transform')),
+					"width"   : $(this).width(),
+					"height"  : $(this).height(),
+					"texture" : $(this).data('texture')
 				})
 			});
 
 			data[zoneName]['devices'] = [];
 			$(this).children('.floorPlan-Device').each(function () {
 				data[zoneName]['devices'].push({
-					'x'       : $(this).css('left').replace('px', ''),
-					'y'       : $(this).css('top').replace('px', ''),
-					'rotation': matrixToAngle($(this).css('transform')),
-					'width'   : $(this).width(),
-					'height'  : $(this).height(),
-					'texture' : $(this).data('texture')
+					"uid"	  : $(this).data('uid'),
+					"x"       : $(this).css('left').replace('px', ''),
+					"y"       : $(this).css('top').replace('px', ''),
+					"rotation": matrixToAngle($(this).css('transform')),
+					"width"   : $(this).width(),
+					"height"  : $(this).height(),
+					"deviceType" : $(this).data('texture'),
+					"skillName" : $(this).data('skillname')
 				})
 			});
 		});
@@ -167,10 +181,14 @@ $(function () {
 	function newZone(data) {
 		data = snapPosition(data)
 		data = snapAngle(data);
-		let $newZone = $('<div class="floorPlan-Zone ' + data["texture"] + '" ' +
+		if(!data["display"]){
+			data["display"] = {};
+		}
+		let $newZone = $('<div class="floorPlan-Zone ' + data["display"]["texture"] + '" ' +
+			'data-id="' + data["id"] + '" ' +
 			'data-name="' + data["name"] + '" ' +
-			'data-texture="' + data["texture"] + '" ' +
-			'style="left: ' + data["x"] + 'px; top: ' + data["y"] + 'px; width: ' + data["width"] + 'px; height: ' + data["height"] + 'px; position: absolute; transform: rotate(' + data["rotation"] + 'deg); z-index: ' + data["z-index"] + '">' +
+			'data-texture="' + data["display"]["texture"] + '" ' +
+			'style="left: ' + data["display"]["x"] + 'px; top: ' + data["display"]["y"] + 'px; width: ' + data["display"]["width"] + 'px; height: ' + data["display"]["height"] + 'px; position: absolute; transform: rotate(' + data["display"]["rotation"] + 'deg); z-index: ' + data["display"]["z-index"] + '">' +
 			'<div class="inputOrText">' + data["name"] + '</div>' +
 			'<div class="zindexer initialHidden">' +
 				'<div class="zindexer-up"><i class="fas fa-level-up-alt" aria-hidden="true"></i></div>' +
@@ -237,24 +255,26 @@ $(function () {
 					'width'  : 50,
 					'height' : 50,
 					'rotation': 0,
-					'texture': selectedDeco
+					'deviceType': selectedDevice,
+					'skillName': selectedDeviceSkill
 				}
 
 				let $device = newDevice($newZone, deviceData);
 				makeResizableRotatableAndDraggable($device);
 			} else {
 				let $settings = $('#settings');
-				let content = "<h1>"+data['name']+"</h1>";
+				let content = "<i>"+data['id']+"</i> <h1>"+data['name']+"</h1>";
 				content += "<div class='configBox'>";
 				content += "<div class='configList'>";
 				content += "<div class='configBlock'><div class='configLabel'>Synonyms:</div>";
-				content += "<div class='configBlockContent'><ul class='configListCurrent'/><input class='configInput'/><div class='link-hover configListAdd'><i class=\"fas fa-plus-circle\"></i>	</div></div></div>";
+				content += "<div class='configBlockContent addSynonym' id='Location/"+data['id']+"/addSynonym'><ul class='configListCurrent'/><input class='configInput'/><div class='link-hover configListAdd'><i class=\"fas fa-plus-circle\"></i>	</div></div></div>";
 				content += "<div class='configBlock'><div class='configLabel'>Devices:</div><input class='configInput'/></div>";
 				content += "<div class='configBlock'><div class='configLabel'>Linked Devices:</div><input class='configInput'/></div>";
 				content += "</div></div>";
 
 				//TODO load existing settings
 				$settings.html(content);
+				loadLocationSettings(data['id'],$settings);
 				$settings.sidebar({side: "right"}).trigger("sidebar:open");
 
 				// reroute enter to click event
@@ -267,19 +287,18 @@ $(function () {
 
 				// add new entry to conf. List
 				// TODO add to DB
-				// TODO check if is existing
 				$('.configListAdd').on('click touchstart',function() {
-					let $inp = $(this).parent().children('.configInput');
+					let $parent = $(this).parent();
+					let $inp = $parent.children('.configInput');
 					if ($inp.val() != "") {
-						$(this).parent().children('.configListCurrent').append("<li>" + $inp.val() + "<div class='addWidgetCheck configListRemove link-hover'><i class='fas fa-minus-circle'></i></div></li>");
-						$inp.val('');
+						$.post( '/myhome/'+$parent[0].id,
+							{ value: $inp.val() } )
+						.done(function( result ) {
+							newConfigListVal($parent,$inp.val());
+							$inp.val('');
+						});
 					}
-					$('.configListRemove').on('click touchstart',function() {
-						$(this).parent().remove();
-					});
 				});
-
-
 			}
 		});
 
@@ -288,6 +307,7 @@ $(function () {
 				let result = confirm('Do you really want to delete this zone?');
 				if (result == true) {
 					$(this).remove();
+					$.post('/myhome/Location/'+data['id']+'/delete', {id : data['id']});
 				}
 				return false;
 			}
@@ -295,6 +315,24 @@ $(function () {
 
 		$floorPlan.append($newZone);
 		return $newZone;
+	}
+
+	function loadLocationSettings(id, $settings){
+		$.post('/myhome/Location/'+id+'/getSettings').done(function (res) {
+			$synonyms = $settings.find('.addSynonym');
+			$.each(res, function (i, synonym) {
+				newConfigListVal($synonyms, synonym,'/myhome/Location/'+id+'/deleteSynonym');
+			});
+		})
+	}
+
+	function newConfigListVal($parent, val, deletionLink) {
+		$parent.children('.configListCurrent').append("<li>" + val + "<div class='addWidgetCheck configListRemove link-hover'><i class='fas fa-minus-circle'></i></div></li>");
+		$('.configListRemove').on('click touchstart', function () {
+			$(this).parent().remove();
+			$.post(deletionLink, { 'value': val })
+			//TODO confirmation
+		});
 	}
 
 	function newWall($element, data) {
@@ -318,7 +356,6 @@ $(function () {
 		$element.append($newWall);
 		return $newWall;
 	}
-
 
 	function newConstruction($element, data) {
 		data = snapPosition(data)
@@ -368,21 +405,75 @@ $(function () {
 		return $newDeco;
 	}
 
-		function newDevice($element, data) {
+	function newDevice($element, data) {
 		data = snapPosition(data)
 		data = snapAngle(data);
 		// noinspection CssUnknownTarget
 		let $newDevice = $('<div class="floorPlan-Device" ' +
-			'style="background: url(\'/static/css/images/myHome/device/' + data["texture"] + '.png\') no-repeat; background-size: 100% 100%; left: ' + data["x"] + 'px; top: ' + data["y"] + 'px; width: ' + data["width"] + 'px; height: ' + data["height"] + 'px; position: absolute; z-index: auto; transform: rotate(' + data["rotation"] + 'deg);" ' +
-			'data-texture="' + data["texture"] + '">' +
+			'style="background: url(\'deviceType_static/' + data['skillName'] + '/img/' + data["deviceType"] + '.png\') no-repeat; background-size: 100% 100%; left: ' + data["x"] + 'px; top: ' + data["y"] + 'px; width: ' + data["width"] + 'px; height: ' + data["height"] + 'px; position: absolute; z-index: auto; transform: rotate(' + data["rotation"] + 'deg);" ' +
+			'data-texture="' + data["deviceType"] + '"; data-skillName="' + data["skillName"] +'">' +
 			'</div>');
 
 		$newDevice.on('click touchstart', function () {
+			if(editMode) {
+				let $settings = $('#settings');
+				let content = "<h1>" + data['name'] + "</h1>";
+				content += "<h2>" + data['deviceType'] + "</h2>";
+				content += "<div class='configBox'>";
+				content += "<div class='configList'>";
+				content += "<div class='configBlock'><div class='configLabel'>Synonyms:</div>";
+				content += "<div class='configBlockContent' id='Device/"+data['id']+"/addSynonym'><ul class='configListCurrent'/><input class='configInput'/><div class='link-hover configListAdd'><i class=\"fas fa-plus-circle\"></i>	</div></div></div>";
+				content += "<div class='configBlock'><div class='configLabel'>Devices:</div><input class='configInput'/></div>";
+				content += "<div class='configBlock'><div class='configLabel'>Linked Devices:</div><input class='configInput'/></div>";
+				content += "</div></div>";
+
+				//TODO load existing settings
+				$settings.html(content);
+				$settings.sidebar({side: "right"}).trigger("sidebar:open");
+
+				// reroute synonym enter to click event
+				$('.configInput').keypress(function (e) {
+					if (e.which == 13) {
+						$(this).parent().children('.configListAdd').click();
+						return false;
+					}
+				});
+
+				// add new synonym entry to conf. List
+				// TODO add to DB
+				// TODO check if is existing
+				$('.configListAdd').on('click touchstart', function () {
+					let $parent = $(this).parent();
+					let $inp = $parent.children('.configInput');
+					if ($inp.val() != "") {
+						$.post( '/myHome/add'+$parent.id,
+							{ value: $inp.val() } )
+						.done(function( result ) {
+							$parent.children('.configListCurrent').append("<li>" + $inp.val() + "<div class='addWidgetCheck configListRemove link-hover'><i class='fas fa-minus-circle'></i></div></li>");
+							$inp.val('');
+
+							$('.configListRemove').on('click touchstart', function () {
+								$(this).parent().remove();
+							});
+						});
+					}
+				});
+			} else {
+				// display mode: Try toggling the device
+				$.post( '/myHome/toggleDevice/',
+							{ parent: 'AliceSatellite',
+							deviceType: 'Satellites',
+							uid: '1231231'} )
+					.done(function( result ) {
+						$newDevice.css('background: url("/deviceType_static/' + result + '.png')
+					});
+
+			}
 			return false;
 		});
 
 		$newDevice.on('contextmenu', function () {
-			if (decoratorMode) {
+			if (deviceInstallerMode) {
 				$(this).remove();
 				return false;
 			}
@@ -454,6 +545,8 @@ $(function () {
 		if (!editMode) {
 			return;
 		}
+		markSelectedTool($(this));
+
 		zoneMode = true;
 		buildingMode = false;
 		moveMode = false;
@@ -465,7 +558,6 @@ $(function () {
 		$('#decoTiles').hide();
 		$('#deviceTiles').hide();
 
-		markSelectedTool($(this));
 		$('#floorPlan').addClass('floorPlanEditMode-AddingZone');
 	});
 
@@ -475,23 +567,30 @@ $(function () {
 		}
 
 		let zoneName = prompt('Please name this new zone');
-		if (zoneName != null && zoneName != '') {
-			let data = {
-				'name'   : zoneName,
-				'x'      : e.pageX - $(this).offset().left,
-				'y'      : e.pageY - $(this).offset().top,
-				'width'  : 100,
-				'height' : 100,
-				'texture': ''
-			}
-			let $zone = newZone(data);
-			makeResizableRotatableAndDraggable($zone)
-		}
+		let x = $(this).offset().left;
+		let y = $(this).offset().top;
 
-		zoneMode = false;
-		markSelectedTool($('#mover'));
-		$('.zindexer').show();
-		$(this).removeClass('floorPlanEditMode-AddingZone');
+		$.post('/myhome/Location/0/add', {name : zoneName}).done(function(data){
+			zoneId = data;
+			if (zoneName != null && zoneName != '') {
+				let data = {
+					'id'	 : zoneId,
+					'name'   : zoneName,
+					'x'      : e.pageX - x,
+					'y'      : e.pageY - y,
+					'width'  : 100,
+					'height' : 100,
+					'texture': ''
+				}
+				let $zone = newZone(data);
+				makeResizableRotatableAndDraggable($zone)
+			}
+
+			zoneMode = false;
+			markSelectedTool($('#mover'));
+			$('.zindexer').show();
+			$(this).removeClass('floorPlanEditMode-AddingZone');
+		})
 	});
 
 	function markSelectedTool($element) {
@@ -509,6 +608,8 @@ $(function () {
 
 		selectedFloor = '';
 		selectedDeco = '';
+		selectedDevice = '';
+		selectedDeviceSkill = '';
 
 		$('.floorPlan-tile').removeClass('selected');
 		$('.floorPlan-tile-background').removeClass('selected');
@@ -604,7 +705,7 @@ $(function () {
 		}
 	});
 
-		$('#deviceInstaller').on('click touchstart', function () {
+	$('#deviceInstaller').on('click touchstart', function () {
 		markSelectedTool($(this));
 
 		if (!deviceInstallerMode) {
@@ -631,6 +732,7 @@ $(function () {
 		}
 	});
 
+	// load construction tiles
 	for (let i = 1; i <= 11; i++) {
 		// noinspection CssUnknownTarget
 		let $tile = $('<div class="floorPlan-tile" style="background: url(\'/static/css/images/myHome/construction/construction-' + i + '.png\') no-repeat; background-size: 100% 100%;"></div>');
@@ -647,6 +749,7 @@ $(function () {
 		$('#constructionTiles').append($tile);
 	}
 
+	// load floor tiles
 	for (let i = 1; i <= 79; i++) {
 		let $tile = $('<div class="floorPlan-tile floor-' + i + '"></div>');
 		$tile.on('click touchstart', function () {
@@ -663,6 +766,7 @@ $(function () {
 		$('#painterTiles').append($tile);
 	}
 
+	// load deco tiles
 	for (let i = 1; i <= 167; i++) {
 		// noinspection CssUnknownTarget
 		let $tile = $('<div class="floorPlan-tile" style="background: url(\'/static/css/images/myHome/deco/deco-' + i + '.png\') no-repeat; background-size: 100% 100%;"></div>');
@@ -679,5 +783,31 @@ $(function () {
 		$('#decoTiles').append($tile);
 	}
 
+	$.get('deviceType/getList').done(function (dats) {
+		$.each(dats, function(k, dat) {
+		let $tile = $('<div class="floorPlan-tile" style="background: url(\'deviceType_static/' + dat['skillName'] + '/img/' + dat['deviceType'] + '.png\') no-repeat; background-size: 100% 100%;"></div>');
+		$tile.on('click touchstart', function () {
+			if (!$(this).hasClass('selected')) {
+				$('.floorPlan-tile').removeClass('selected');
+				$(this).addClass('selected');
+				selectedDevice = dat['deviceType'];
+				selectedDeviceSkill = dat['skillName'];
+			} else {
+				$(this).removeClass('selected');
+				selectedDevice = '';
+				selectedDeviceSkill = '';
+			}
+		});
+		$('#deviceTiles').append($tile);
+		});
+	});
+
+	function loadDevices(){
+		$.get('device/getList').done(dats, function (k, dat) {
+			$.each(dats, function(k, dat) {
+				newDevice($zone, device);
+			})
+		});
+	}
 	loadHouse();
 });

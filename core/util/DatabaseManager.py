@@ -199,6 +199,7 @@ class DatabaseManager(Manager):
 		if not query:
 			updates = [f'{col} = "{val}"' for col, val in values.items()]
 			query = f'UPDATE :__table__ SET {" ,".join(updates)} WHERE {row[0]} = "{row[1]}"'
+			self.logInfo(query)
 
 		query = self.basicChecks(tableName, query, callerName, values)
 		if not query:
@@ -274,6 +275,7 @@ class DatabaseManager(Manager):
 		database = None
 		try:
 			database = self.getConnection()
+			self.logInfo(query)
 			database.execute(query, values)
 		except DbConnectionError as e:
 			self.logWarning(f'Error deleting from table **{tableName}** for component **{callerName}**: {e}')

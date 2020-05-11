@@ -209,9 +209,9 @@ class AliceSkill(ProjectAliceObject):
 
 			data = self.DatabaseManager.fetch(
 				tableName='deviceTypes',
-				query='SELECT * FROM :__table__ WHERE parent = :parent ORDER BY `zindex`',
+				query='SELECT * FROM :__table__ WHERE parent = :parent',
 				callerName=self.SkillManager.name,
-				values={'parentSkill': self.name},
+				values={'parent': self.name},
 				method='all'
 			)
 			if data:
@@ -222,7 +222,7 @@ class AliceSkill(ProjectAliceObject):
 					continue
 
 				deviceType = Path(file).stem
-				deviceTypeImport = importlib.import_module(f'skills.{self.name}.device.device_{deviceType}')
+				deviceTypeImport = importlib.import_module(f'skills.{self.name}.device.{deviceType}')
 				klass = getattr(deviceTypeImport, deviceType)
 
 				if deviceType in data:  # deviceType already exists in DB
@@ -509,6 +509,7 @@ class AliceSkill(ProjectAliceObject):
 		self.TalkManager.loadSkillTalks(self.name)
 
 		self.loadWidgets()
+		self.loadDevices()
 		self.loadScenarioNodes()
 
 		self.logInfo(f'![green](Started!)')

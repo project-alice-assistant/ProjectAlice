@@ -24,13 +24,21 @@ from core.dialog.model.DialogSession import DialogSession
 
 class DeviceManager(Manager):
 
+	DB_DEVICE = 'devices'
+	DB_LINKS = 'deviceLinks'
 	DATABASE = {
-		'devices': [
+		DB_DEVICE: [
 			'id INTEGER PRIMARY KEY',
 			'type TEXT NOT NULL',
 			'uid TEXT NOT NULL',
-			'room TEXT NOT NULL',
+			'locationID INTEGER NOT NULL',
 			'name TEXT'
+		],
+		DB_LINKS: [
+			'id INTEGER PRIMARY KEY',
+			'deviceID INTEGER',
+			'locationID INTEGER',
+			'locSettings TEXT'
 		]
 	}
 
@@ -78,6 +86,10 @@ class DeviceManager(Manager):
 	def broadcastRoom(self) -> str:
 		return self._broadcastRoom
 
+	@property
+	def devices(self) -> Dict[str, Device]:
+		return self._devices
+
 
 	def onBooted(self):
 		self.MqttManager.publish(topic='projectalice/devices/coreReconnection')
@@ -100,6 +112,8 @@ class DeviceManager(Manager):
 
 	def loadDevices(self):
 		for row in self.databaseFetch(tableName='devices', query='SELECT * FROM :__table__', method='all'):
+			# to dict!
+
 			self._devices[row['uid']] = Device(row)
 
 
@@ -130,13 +144,45 @@ class DeviceManager(Manager):
 			uid = self._getFreeUID()
 
 		try:
-			values = {'type': ttype, 'uid': uid, 'room': room}
-			values['id'] = self.databaseInsert(tableName='devices', query='INSERT INTO :__table__ (type, uid, room) VALUES (:type, :uid, :room)', values=values)
+			# get locationID for room
+			location = self.LocationManager.getLocationWithName(name=room)
+			if not location:
+				location = self.LocationManager.addNewLocation(name=room)
+			values = {'type': ttype, 'uid': uid, 'locationID': location.id}
+			values['id'] = self.databaseInsert(tableName='devices', query='INSERT INTO :__table__ (type, uid, locationID) VALUES (:type, :uid, :locationID)', values=values)
 			self._devices[uid] = Device(values, True)
 			return True
 		except Exception as e:
 			self.logWarning(f"Couldn't insert device in database: {e}")
 			return False
+
+
+	def devUIDtoID(self, UID: str) -> int:
+		return self.devices[UID].id
+
+
+	def devIDtoUID(self, ID: int) -> str:
+		for uid, dev in self.devices:
+			if dev.id == ID:
+				return uid
+
+
+	def deleteDeviceID(self, deviceID: int):
+		self.devices.pop(self.devIDtoUID(ID=deviceID))
+		self.DatabaseManager.delete(tableName='devices', callerName=self.name, query='DELETE :__table__ WHERE id = :id', values={id: deviceID})
+		self.DatabaseManager.delete(tableName='deviceLinks', callerName=self.name, query='DELETE :__table__ WHERE id = :id', values={id: deviceID})
+
+
+	def addLink(self, id: int, locationid: int):
+		#todo get device type
+		#todo get device/room specific settings
+		locSettings = []
+		#todo maybe check if links are allowed?
+		values = {'id' : id, 'locationid': locationid, 'locSettings': locSettings}
+		self.databaseInsert(tableName=self.DB_LINKS, query='INSERT INTO :__table__ (deviceID, locationID, locSettings) VALUES (:id, :locationid, locSettings)', values=values)
+
+	def deleteDeviceUID(self, deviceUID: str):
+		self.deleteDeviceID(deviceID=devUIDtoID(UID=deviceUID))
 
 
 	def addZigBeeDevice(self):

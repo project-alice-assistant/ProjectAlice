@@ -589,3 +589,8 @@ class ProjectAliceObject:
 	@property
 	def DialogManager(self): #NOSONAR
 		return SM.SuperManager.getInstance().dialogManager
+
+
+	@property
+	def LocationManager(self): #NOSONAR
+		return SM.SuperManager.getInstance().locationManager
