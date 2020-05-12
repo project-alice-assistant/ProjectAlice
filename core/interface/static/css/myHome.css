@@ -14,6 +14,7 @@
 .tileholder:hover { height: auto; z-index: 9999; background: url('images/transparent.png'); }
 
 .selectedTool { color: var(--hover); }
+.selectedToolbar { color: var(--hover); }
 
 /* Textures */
 .floor-1 { background: url('./images/myHome/floors/floor-1.png'); color: var(--accent); }

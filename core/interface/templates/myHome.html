@@ -16,31 +16,44 @@
 
 {% block content %}
 	<div class="stick-top-right">
-		<div class="toolbar initialHidden" id="toolbar_full">
-			<span class="toolbarButton link-hover" id="deviceInstaller">
-				<i class="fas fa-plug" aria-hidden="true"></i>
-			</span>
-			<span class="toolbarButton link-hover" id="painter">
-				<i class="fas fa-paint-roller" aria-hidden="true"></i>
-			</span>
-			<span class="toolbarButton link-hover" id="builder">
-				<i class="fas fa-hard-hat" aria-hidden="true"></i>
-			</span>
-			<span class="toolbarButton link-hover" id="decorator">
-				<i class="fas fa-couch" aria-hidden="true"></i>
-			</span>
-			<span class="toolbarButton link-hover" id="mover">
-				<i class="fas fa-arrows-alt" aria-hidden="true"></i>
-			</span>
-			<span class="toolbarButton link-hover" id="addZone">
+		<div class="toolbar initialHidden" id="toolbarConstruction">
+			<span class="toolbarButton link-hover" id="addZone" title="Add Location">
 				<i class="fas fa-plus-circle" aria-hidden="true"></i>
 			</span>
-			<span class="toolbarButton link-hover" id="toolbarToggleHide">
+			<span class="toolbarButton link-hover" id="painter" title="Paint the floor">
+				<i class="fas fa-paint-roller" aria-hidden="true"></i>
+			</span>
+			<span class="toolbarButton link-hover" id="builder" title="Add walls, doors..">
+				<i class="fas fa-hard-hat" aria-hidden="true"></i>
+			</span>
+			<span class="toolbarButton link-hover" id="decorator" title="Decoration">
+				<i class="fas fa-couch" aria-hidden="true"></i>
+			</span>
+			<span class="toolbarButton link-hover" id="mover" title="Position rooms">
+				<i class="fas fa-arrows-alt" aria-hidden="true"></i>
+			</span>
+		</div>
+		<div class="toolbar initialHidden" id="toolbarTechnic">
+			<span class="toolbarButton link-hover" id="deviceInstaller" title="Add devices">
+				<i class="fas fa-plus-circle" aria-hidden="true"></i>
+			</span>
+			<span class="toolbarButton link-hover" id="deviceLinker" title="Link a device with multiple rooms">
+				<i class="fas fa-link"></i>
+			</span>
+		</div>
+		<div class="toolbar initialHidden" id="toolbarOverview">
+			<span class="toolbarButton link-hover" id="toolbarTechnicShow" title="Manage devices">
+				<i class="fas fa-plug" aria-hidden="true"></i>
+			</span>
+			<span class="toolbarButton link-hover" id="toolbarConstructionShow" title="Manage Locations">
+				<i class="fas fa-pencil-ruler"></i>
+			</span>
+			<span class="toolbarButton link-hover" id="finishToolbarAction" title="Save">
 				<i class="far fa-save" aria-hidden="true"></i>
 			</span>
 		</div>
-		<div class="toolbar" id="toolbar_toggle" style="display: block;">
-			<span class="toolbarButton link-hover" id="toolbarToggleShow">
+		<div class="toolbar" id="toolbarToggle" style="display: block;">
+			<span class="toolbarButton link-hover" id="toolbarOverviewShow" title="Open Toolbar">
 				<i class="fas fa-pen-square" aria-hidden="true"></i>
 			</span>
 		</div>

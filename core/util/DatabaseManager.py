@@ -199,7 +199,6 @@ class DatabaseManager(Manager):
 		if not query:
 			updates = [f'{col} = "{val}"' for col, val in values.items()]
 			query = f'UPDATE :__table__ SET {" ,".join(updates)} WHERE {row[0]} = "{row[1]}"'
-			self.logInfo(query)
 
 		query = self.basicChecks(tableName, query, callerName, values)
 		if not query:
@@ -267,6 +266,10 @@ class DatabaseManager(Manager):
 
 		if not values:
 			values = dict()
+
+		if not query:
+			where = ', '.join([f'{k} = "{v}"' for k,v in values.items()])
+			query = f'DELETE FROM :__table__ WHERE {where}'
 
 		query = self.basicChecks(tableName, query, callerName)
 		if not query:

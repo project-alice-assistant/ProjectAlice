@@ -25,7 +25,7 @@ class LocationManager(Manager):
 		super().onStart()
 
 		self.loadLocations()
-		self.logInfo(f'Loaded **{len(self._locations)}** room', plural='rooms')
+		self.logInfo(f'Loaded **{len(self._locations)}** locations', plural='location')
 
 
 	def getLocationWithName(self, name: str):
@@ -42,7 +42,7 @@ class LocationManager(Manager):
 	def addNewLocation(self, name: str = None) -> bool:
 		# TODO check first if name is already existing!
 		values = {'name': name}
-		values['id'] = self.databaseInsert(tableName=self.TABLE, query='INSERT INTO :__table__ (name) VALUES (:name)', values=values)
+		values['id'] = self.databaseInsert(tableName=self.TABLE, values=values)
 		self._locations[values['id']] = Location(values)
 		return self._locations[values['id']]
 
@@ -50,7 +50,6 @@ class LocationManager(Manager):
 	def deleteLocation(self, id: int) -> bool:
 		self.DatabaseManager.delete(tableName=self.TABLE,
 		                            callerName=self.name,
-		                            query='DELETE FROM :__table__ WHERE id = :id',
 		                            values={'id': id})
 		self._locations.pop(id, None)
 		return True
@@ -60,9 +59,7 @@ class LocationManager(Manager):
 		synlist = self._locations[id].addSynonym(synonym)
 		self.DatabaseManager.update(tableName=self.TABLE,
 		                            callerName=self.name,
-		                            values={
-			                            'synonyms': synlist
-		                            },
+		                            values={'synonyms': synlist},
 		                            row=('id', id))
 
 

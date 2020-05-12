@@ -1,6 +1,6 @@
 $(function () {
 
-	let $floorPlan = $('#floorPlan');
+  	let $floorPlan = $('#floorPlan');
 	let editMode = false;
 
 	let moveMode = false;
@@ -15,6 +15,8 @@ $(function () {
 	let selectedDevice = '';
 	let selectedDeviceSkill = '';
 	let selectedConstruction = '';
+
+	$( document ).tooltip();
 
 	function loadHouse() {
 		$.ajax({
@@ -318,7 +320,7 @@ $(function () {
 	}
 
 	function loadLocationSettings(id, $settings){
-		$.post('/myhome/Location/'+id+'/getSettings').done(function (res) {
+		$.get('/myhome/Location/'+id+'/getSettings').done(function (res) {
 			$synonyms = $settings.find('.addSynonym');
 			$.each(res, function (i, synonym) {
 				newConfigListVal($synonyms, synonym,'/myhome/Location/'+id+'/deleteSynonym');
@@ -483,9 +485,45 @@ $(function () {
 		return $newDevice;
 	}
 
+	function resetEditable(){
+		editMode = false;
+		zoneMode = false;
+		buildingMode = false;
+		paintingMode = false;
+		decoratorMode = false;
+		moveMode = false;
+		deviceInstallerMode = false;
+
+		$('#toolbarConstruction').hide();
+		$('#toolbarTechnic').hide();
+
+		removeResizableRotatableAndDraggable($('.floorPlan-Zone'));
+		removeResizableRotatableAndDraggable($('.floorPlan-Wall'));
+		removeResizableRotatableAndDraggable($('.floorPlan-Deco'));
+		removeResizableRotatableAndDraggable($('.floorPlan-Device'));
+		removeResizableRotatableAndDraggable($('.floorPlan-Construction'));
+
+		markSelectedTool(null);
+
+		$('#painterTiles').hide();
+		$('#decoTiles').hide();
+		$('#deviceTiles').hide();
+
+		$floorPlan.removeClass('floorPlanEditMode');
+		$floorPlan.removeClass('floorPlanEditMode-AddingZone');
+
+	}
+	$('#finishToolbarAction').on('click touchstart', function () {
+		saveHouse();
+		resetEditable();
+
+		$('#toolbarOverview').hide();
+		$('#toolbarToggle').show();
+	});
+
 	$('#toolbarToggleShow').on('click touchstart', function () {
-		$('#toolbar_full').show();
-		$('#toolbar_toggle').hide();
+		$('#toolbarOverview').show();
+		$('#toolbarToggle').hide();
 		$floorPlan.addClass('floorPlanEditMode');
 		editMode = true;
 		zoneMode = false;
@@ -505,60 +543,39 @@ $(function () {
 		})
 	});
 
-	$('#toolbarToggleHide').on('click touchstart', function () {
-		$('#toolbar_full').hide();
-		$('#toolbar_toggle').show();
-		editMode = false;
+
+	$('#toolbarConstructionShow').on('click touchstart', function () {
+		resetEditable();
+		markSelectedToolbar($(this));
+		$('#toolbarConstruction').show();
+	});
+
+	$('#toolbarTechnicShow').on('click touchstart', function () {
+		resetEditable();
+		markSelectedToolbar($(this));
+		$('#toolbarTechnic').show();
+	});
+
+	$('#toolbarOverviewShow').on('click touchstart', function () {
+		$('#toolbarOverview').show();
+		$('#toolbarToggle').hide();
+		$floorPlan.addClass('floorPlanEditMode');
+		editMode = true;
 		zoneMode = false;
 		buildingMode = false;
 		paintingMode = false;
 		decoratorMode = false;
 		moveMode = false;
-		deviceInstallerMode = false;
-
-		$floorPlan.removeClass('floorPlanEditMode');
-		$floorPlan.removeClass('floorPlanEditMode-AddingZone');
-
-		removeResizableRotatableAndDraggable($('.floorPlan-Zone'));
-		removeResizableRotatableAndDraggable($('.floorPlan-Wall'));
-		removeResizableRotatableAndDraggable($('.floorPlan-Deco'));
-		removeResizableRotatableAndDraggable($('.floorPlan-Device'));
-		removeResizableRotatableAndDraggable($('.floorPlan-Construction'));
 
 		$('#painterTiles').hide();
 		$('#decoTiles').hide();
 		$('#deviceTiles').hide();
-
-		markSelectedTool(null);
 
 		$('.inputOrText').each(function() {
-			let name = $(this).children('input').val();
-			$(this).parent().attr('data-name', name);
-			$(this).remove('input');
-			$(this).text(name);
+			let name = $(this).text();
+			$(this).empty();
+			$(this).html('<input type="text" value="' + name + '">');
 		})
-
-		saveHouse();
-	});
-
-	$('#addZone').on('click touchstart', function () {
-		if (!editMode) {
-			return;
-		}
-		markSelectedTool($(this));
-
-		zoneMode = true;
-		buildingMode = false;
-		moveMode = false;
-		paintingMode = false;
-		decoratorMode = false;
-		deviceInstallerMode = false;
-
-		$('#painterTiles').hide();
-		$('#decoTiles').hide();
-		$('#deviceTiles').hide();
-
-		$('#floorPlan').addClass('floorPlanEditMode-AddingZone');
 	});
 
 	$floorPlan.on('click touchstart', function (e) {
@@ -593,6 +610,14 @@ $(function () {
 		})
 	});
 
+	function markSelectedToolbar($element) {
+		$('.selectedToolbar').removeClass('selectedToolbar');
+
+		if ($element != null) {
+			$element.addClass('selectedToolbar');
+		}
+	}
+
 	function markSelectedTool($element) {
 		$('.selectedTool').removeClass('selectedTool');
 
@@ -619,6 +644,27 @@ $(function () {
 			$element.addClass('selectedTool');
 		}
 	}
+
+// construction tools
+	$('#addZone').on('click touchstart', function () {
+		if (!editMode) {
+			return;
+		}
+		markSelectedTool($(this));
+
+		zoneMode = true;
+		buildingMode = false;
+		moveMode = false;
+		paintingMode = false;
+		decoratorMode = false;
+		deviceInstallerMode = false;
+
+		$('#painterTiles').hide();
+		$('#decoTiles').hide();
+		$('#deviceTiles').hide();
+
+		$('#floorPlan').addClass('floorPlanEditMode-AddingZone');
+	});
 
 	$('#builder').on('click touchstart', function () {
 		markSelectedTool($(this));
@@ -658,7 +704,6 @@ $(function () {
 			markSelectedTool(null);
 		}
 	});
-
 
 	$('#mover').on('click touchstart', function () {
 		markSelectedTool($(this));
@@ -705,6 +750,7 @@ $(function () {
 		}
 	});
 
+// technic tools
 	$('#deviceInstaller').on('click touchstart', function () {
 		markSelectedTool($(this));
 
@@ -732,7 +778,8 @@ $(function () {
 		}
 	});
 
-	// load construction tiles
+
+// load construction tiles
 	for (let i = 1; i <= 11; i++) {
 		// noinspection CssUnknownTarget
 		let $tile = $('<div class="floorPlan-tile" style="background: url(\'/static/css/images/myHome/construction/construction-' + i + '.png\') no-repeat; background-size: 100% 100%;"></div>');
