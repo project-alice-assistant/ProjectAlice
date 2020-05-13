@@ -13,7 +13,6 @@ try:
 except ModuleNotFoundError:
 	configFileNotExist = False
 
-import difflib
 import importlib
 import typing
 from core.ProjectAliceExceptions import ConfigurationUpdateFailed, VitalConfigMissing
@@ -253,11 +252,12 @@ class ConfigManager(Manager):
 		return skillName in self._skillsConfigurations and configName in self._skillsConfigurations[skillName]
 
 
-	def getAliceConfigByName(self, configName: str, voiceControl: bool = False) -> typing.Any:
-		return self._aliceConfigurations.get(
-			configName,
-			difflib.get_close_matches(word=configName, possibilities=self._aliceConfigurations, n=3) if voiceControl else ''
-		)
+	def getAliceConfigByName(self, configName: str) -> typing.Any:
+		if configName in self._aliceConfigurations:
+			return self._aliceConfigurations[configName]
+		else:
+			self.logDebug(f'Trying to get config **{configName}** but it does not exist')
+			return ''
 
 
 	def getSkillConfigByName(self, skillName: str, configName: str) -> typing.Any:

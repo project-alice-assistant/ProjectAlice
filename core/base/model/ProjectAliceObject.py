@@ -608,8 +608,8 @@ class ProjectAliceObject:
 
 
 	@property
-	def WakewordManager(self): #NOSONAR
-		return SM.SuperManager.getInstance().wakewordManager
+	def WakewordRecorder(self): #NOSONAR
+		return SM.SuperManager.getInstance().wakewordRecorder
 
 
 	@property
@@ -655,3 +655,8 @@ class ProjectAliceObject:
 	@property
 	def DialogManager(self): #NOSONAR
 		return SM.SuperManager.getInstance().dialogManager
+
+
+	@property
+	def WakewordManager(self): #NOSONAR
+		return SM.SuperManager.getInstance().wakewordRecorder

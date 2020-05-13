@@ -13,7 +13,7 @@ class SnipsServicesManager(Manager):
 		super().__init__()
 
 		self._snipsServices = [
-			'snips-hotword'
+			''
 		]
 
 

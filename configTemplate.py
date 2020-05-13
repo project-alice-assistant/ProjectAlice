@@ -198,6 +198,21 @@ settings = {
 		'description' : 'Defines after how many seconds the Asr times out',
 		'category'    : 'asr'
 	},
+	'wakewordEngine'          : {
+		'defaultValue': 'porcupine',
+		'dataType'    : 'list',
+		'isSensitive' : False,
+		'values'      : ['porcupine'],
+		'description' : 'Wakeword engine to use',
+		'category'    : 'wakeword'
+	},
+	'wakewordSensitivity'     : {
+		'defaultValue': 0.5,
+		'dataType'    : 'float',
+		'isSensitive' : False,
+		'description' : 'Default wakeword sensitivity',
+		'category'    : 'wakeword'
+	},
 	'tts'                     : {
 		'defaultValue': 'pico',
 		'dataType'    : 'list',
