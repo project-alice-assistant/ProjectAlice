@@ -1,5 +1,11 @@
-import os
+import queue
 import sys
+import wave
+
+import io
+import os
+import pvporcupine
+from paho.mqtt.client import MQTTMessage
 
 from core.commons import constants
 from core.dialog.model.DialogSession import DialogSession
@@ -26,11 +32,13 @@ class PorcupineWakeword(WakewordEngine):
 	def __init__(self):
 		super().__init__()
 		self._working = self.ThreadManager.newEvent('ListenForWakeword')
+		self._buffer = queue.Queue()
 		self._hotwordThread = None
+		self._handler = pvporcupine.create(keywords=['picovoice', 'bumblebee'])
 
 
-	def onStart(self):
-		super().onStart()
+	def onBooted(self):
+		super().onBooted()
 		self._hotwordThread = self.ThreadManager.newThread(name='HotwordThread', target=self.worker)
 
 
@@ -43,20 +51,32 @@ class PorcupineWakeword(WakewordEngine):
 
 
 	def onHotwordToggleOn(self, siteId: str, session: DialogSession):
-		self._hotwordThread = self.ThreadManager.newThread(name='HotwordThread', target=self.worker)
+		self._working.set()
+
+
+	def onAudioFrame(self, message: MQTTMessage):
+		if not self._working.is_set():
+			return
+
+		with io.BytesIO(message.payload) as buffer:
+			try:
+				with wave.open(buffer, 'rb') as wav:
+					frame = wav.readframes(self._handler.frame_length)
+					while frame:
+						self._buffer.put(frame)
+						frame = wav.readframes(self._handler.frame_length)
+
+			except Exception as e:
+				self.logError(f'Error recording audio frame: {e}')
 
 
 	def worker(self):
-		self._working.set()
-		porcupine = Porcupine(
-			library_path=LIBRARY_PATH,
-			model_file_path=MODEL_FILE_PATH,
-			keyword_file_paths=[KEYWORD_FILE_PATHS['bumblebee']],
-			sensitivities=[0.5]
-		)
-		while self._working.is_set():
-			result = porcupine.process()
+		while True:
+			result = self._handler.process(self._buffer.get())
 			if result:
+				self._working.clear()
+				self._buffer = queue.Queue()
+
 				self.logDebug('Detected wakeword')
 				self.MqttManager.publish(
 					topic=constants.TOPIC_HOTWORD_DETECTED

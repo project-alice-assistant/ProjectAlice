@@ -1,8 +1,6 @@
 from importlib import import_module, reload
 
 from core.base.model.Manager import Manager
-import pvporcupine
-
 from core.voice.model.WakewordEngine import WakewordEngine
 
 
@@ -11,7 +9,6 @@ class WakewordManager(Manager):
 	def __init__(self):
 		super().__init__()
 		self._engine = None
-		self._handler = pvporcupine.create(keywords=['picovoice', 'bumblebee'])
 
 
 	def onStart(self):
@@ -22,6 +19,11 @@ class WakewordManager(Manager):
 	def onStop(self):
 		if self._engine:
 			self._engine.onStop()
+
+
+	def onBooted(self):
+		if self._engine:
+			self._engine.onBooted()
 
 
 	def _startWakewordEngine(self):
