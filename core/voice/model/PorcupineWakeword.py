@@ -45,7 +45,9 @@ class PorcupineWakeword(WakewordEngine):
 
 
 	def onStop(self):
+		super().onStop()
 		self._working.clear()
+		self._buffer = queue.Queue()
 
 
 	def onHotwordToggleOff(self, siteId: str, session):
@@ -58,7 +60,7 @@ class PorcupineWakeword(WakewordEngine):
 
 
 	def onAudioFrame(self, message: MQTTMessage, siteId: str):
-		if not self._working.is_set():
+		if not self.enabled or not self._working.is_set():
 			return
 
 		with io.BytesIO(message.payload) as buffer:
@@ -76,7 +78,6 @@ class PorcupineWakeword(WakewordEngine):
 	def worker(self):
 		while True:
 			if not self._working.is_set():
-				print('sleep')
 				time.sleep(0.1)
 				continue
 

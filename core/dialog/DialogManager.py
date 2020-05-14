@@ -405,6 +405,19 @@ class DialogManager(Manager):
 		self.removeSession(sessionId=session.sessionId)
 
 
+	def toggleFeedbackSound(self, state: str, siteId: str = constants.ALL):
+		topic = constants.TOPIC_TOGGLE_FEEDBACK_ON if state == 'on' else constants.TOPIC_TOGGLE_FEEDBACK_OFF
+
+		if siteId == 'all':
+			devices = self.DeviceManager.getDevicesByType(deviceType='AliceSatellite', connectedOnly=True)
+			for device in devices:
+				self.MqttManager.publish(topic=topic, payload={'siteId': device.room})
+
+			self.MqttManager.publish(topic=topic, payload={'siteId': self.ConfigManager.getAliceConfigByName('deviceName')})
+		else:
+			self.MqttManager.publish(topic=topic, payload={'siteId': siteId})
+
+
 	def onToggleFeedbackOn(self, siteId: str):
 		self._feedbackSounds[siteId] = True
 

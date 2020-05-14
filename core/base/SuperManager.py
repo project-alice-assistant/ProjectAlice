@@ -26,7 +26,6 @@ class SuperManager:
 		self.configManager = None
 		self.databaseManager = None
 		self.languageManager = None
-		self.snipsServicesManager = None
 		self.asrManager = None
 		self.ttsManager = None
 		self.protectedIntentManager = None
@@ -81,7 +80,6 @@ class SuperManager:
 		snipsAssistantManager = self._managers.pop('SnipsAssistantManager')
 		nluManager = self._managers.pop('NluManager')
 		nodeRedManager = self._managers.pop('NodeRedManager')
-		snipsServicesManager = self._managers.pop('SnipsServicesManager')
 
 		for manager in self._managers.values():
 			if manager:
@@ -91,14 +89,12 @@ class SuperManager:
 		skillManager.onStart()
 		dialogTemplateManager.onStart()
 		snipsAssistantManager.onStart()
-		snipsServicesManager.onStart()
 		nluManager.onStart()
 		nodeRedManager.onStart()
 
 		self._managers[configManager.name] = configManager
 		self._managers[languageManager.name] = languageManager
 		self._managers[talkManager.name] = talkManager
-		self._managers[snipsServicesManager.name] = snipsServicesManager
 		self._managers[databaseManager.name] = databaseManager
 		self._managers[userManager.name] = userManager
 		self._managers[mqttManager.name] = mqttManager
@@ -131,7 +127,6 @@ class SuperManager:
 		from core.dialog.MultiIntentManager import MultiIntentManager
 		from core.dialog.ProtectedIntentManager import ProtectedIntentManager
 		from core.server.MqttManager import MqttManager
-		from core.snips.SnipsServicesManager import SnipsServicesManager
 		from core.user.UserManager import UserManager
 		from core.util.DatabaseManager import DatabaseManager
 		from core.util.InternetManager import InternetManager
@@ -159,7 +154,6 @@ class SuperManager:
 		self.configManager = ConfigManager()
 		self.databaseManager = DatabaseManager()
 		self.languageManager = LanguageManager()
-		self.snipsServicesManager = SnipsServicesManager()
 		self.asrManager = ASRManager()
 		self.ttsManager = TTSManager()
 		self.threadManager = ThreadManager()

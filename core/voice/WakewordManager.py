@@ -16,7 +16,8 @@ class WakewordManager(Manager):
 
 	def onStart(self):
 		super().onStart()
-		self._startWakewordEngine()
+		if not self.ConfigManager.getAliceConfigByName('disableSoundAndMic'):
+			self._startWakewordEngine()
 
 
 	def onStop(self):
@@ -76,3 +77,24 @@ class WakewordManager(Manager):
 	@property
 	def wakewordEngine(self) -> WakewordEngine:
 		return self._engine
+
+
+	def disableEngine(self):
+		if self._engine:
+			self._engine.onStop()
+			self._engine.enabled = False
+
+
+	def enableEngine(self):
+		if self._engine:
+			self._engine.onStart()
+		else:
+			self._startWakewordEngine()
+			if self._engine:
+				self._engine.onBooted()
+
+
+	def restartEngine(self):
+		if self._engine:
+			self._engine.onStop()
+		self.enableEngine()

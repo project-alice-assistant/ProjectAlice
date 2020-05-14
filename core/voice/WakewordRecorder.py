@@ -357,7 +357,7 @@ class WakewordRecorder(Manager):
 
 		if update:
 			self.ConfigManager.updateSnipsConfiguration(parent='snips-hotword', key='model', value=rebuild, restartSnips=False, createIfNotExist=False)
-			self.SnipsServicesManager.runCmd('restart', 'snips-hotword')
+			self.WakewordManager.restartEngine()
 
 		return update
 

@@ -220,7 +220,7 @@ class ConfigManager(Manager):
 			self._snipsConfigurations.dump()
 
 			if restartSnips:
-				self.SnipsServicesManager.runCmd('restart')
+				self.Commons.runRootSystemCommand(['systemct', 'restart', 'snips-nlu'])
 
 
 	def getSnipsConfiguration(self, parent: str, key: str, createIfNotExist: bool = True) -> typing.Optional[str]:
@@ -462,14 +462,14 @@ class ConfigManager(Manager):
 
 	def enableDisableSoundInSnips(self):
 		if self.getAliceConfigByName('disableSoundAndMic'):
-			self.SnipsServicesManager.runCmd(cmd='stop', services=['snips-hotword'])
+			self.WakewordManager.disableEngine()
 			self.updateSnipsConfiguration(parent='snips-audio-server', key='disable_playback', value=True)
 			self.updateSnipsConfiguration(parent='snips-audio-server', key='disable_capture', value=True, restartSnips=True)
 		else:
+			self.WakewordManager.enableEngine()
 			del self._snipsConfigurations['snips-audio-server']['disable_playback']
 			del self._snipsConfigurations['snips-audio-server']['disable_capture']
 			self._snipsConfigurations.dump()
-			self.SnipsServicesManager.runCmd('restart')
 
 
 	def refreshStoreData(self):

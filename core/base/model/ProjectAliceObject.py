@@ -553,11 +553,6 @@ class ProjectAliceObject:
 
 
 	@property
-	def SnipsServicesManager(self): #NOSONAR
-		return SM.SuperManager.getInstance().snipsServicesManager
-
-
-	@property
 	def UserManager(self): #NOSONAR
 		return SM.SuperManager.getInstance().userManager
 

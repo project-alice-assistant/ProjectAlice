@@ -5,7 +5,6 @@ from subprocess import CompletedProcess
 import re
 import shutil
 
-from core.base.SuperManager import SuperManager
 from core.commons import constants
 from core.nlu.model.NluEngine import NluEngine
 from core.util.Stopwatch import Stopwatch
@@ -24,12 +23,12 @@ class SnipsNlu(NluEngine):
 
 	def start(self):
 		super().start()
-		SuperManager.getInstance().snipsServicesManager.runCmd(cmd='start', services=['snips-nlu'])
+		self.Commons.runRootSystemCommand(['systemct', 'start', 'snips-nlu'])
 
 
 	def stop(self):
 		super().stop()
-		SuperManager.getInstance().snipsServicesManager.runCmd(cmd='stop', services=['snips-nlu'])
+		self.Commons.runRootSystemCommand(['systemct', 'stop', 'snips-nlu'])
 
 
 	def convertDialogTemplate(self, file: Path):
@@ -157,7 +156,7 @@ class SnipsNlu(NluEngine):
 			tempTrainingData.rename(assistantPath)
 
 			self.broadcast(method=constants.EVENT_NLU_TRAINED, exceptions=[constants.DUMMY], propagateToSkills=True)
-			self.SnipsServicesManager.runCmd(cmd='restart', services=['snips-nlu'])
+			self.Commons.runRootSystemCommand(['systemct', 'restart', 'snips-nlu'])
 
 		self._timer.cancel()
 		self.MqttManager.publish(constants.TOPIC_NLU_TRAINING_STATUS, payload={'status': 'done'})
