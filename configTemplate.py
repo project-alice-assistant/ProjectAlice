@@ -208,7 +208,10 @@ settings = {
 	},
 	'wakewordSensitivity'     : {
 		'defaultValue': 0.5,
-		'dataType'    : 'float',
+		'dataType'    : 'range',
+		'min'         : 0,
+		'max'         : 1,
+		'step'        : 0.01,
 		'isSensitive' : False,
 		'description' : 'Default wakeword sensitivity',
 		'category'    : 'wakeword'

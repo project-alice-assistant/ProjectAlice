@@ -141,12 +141,15 @@ class ConfigManager(Manager):
 			except:
 				self.logWarning(f'Value missmatch for config **{key}** in skill **{skillName}**')
 				value = 0
-		elif vartype == 'float':
+		elif vartype == 'float' or vartype == 'range':
 			try:
 				value = float(value)
+				if vartype == 'range' and (value > self._skillsTemplateConfigurations[skillName][key]['max'] or value < self._skillsTemplateConfigurations[skillName][key]['min']):
+					value = self._skillsTemplateConfigurations[skillName][key]['defaultValue']
+					self.logWarning(f'Value for config **{key}** in skill **{skillName}** is out of bound, reverted to default')
 			except:
 				self.logWarning(f'Value missmatch for config **{key}** in skill **{skillName}**')
-				value = 0.0
+				value = 0
 		elif vartype in {'string', 'email', 'password'}:
 			try:
 				value = str(value)
