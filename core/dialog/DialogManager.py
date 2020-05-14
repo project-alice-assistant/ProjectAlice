@@ -95,17 +95,8 @@ class DialogManager(Manager):
 			return
 
 		if session.isEnding or session.isNotification:
-			self.MqttManager.publish(
-				topic=constants.TOPIC_SESSION_ENDED,
-				payload={
-					'siteId'     : session.siteId,
-					'sessionId'  : session.sessionId,
-					'customData' : session.customData,
-					'termination': {
-						'reason': 'nominal'
-					}
-				}
-			)
+			session.payload['text'] = ''
+			self.onEndSession(session=session, reason='nominal')
 		else:
 			if not session.hasStarted:
 				self.onStartSession(
@@ -162,18 +153,8 @@ class DialogManager(Manager):
 			self.removeSession(sessionId=sessionId)
 			return
 
-
-		self.MqttManager.publish(
-			topic=constants.TOPIC_SESSION_ENDED,
-			payload={
-				'siteId'     : session.siteId,
-				'sessionId'  : sessionId,
-				'customData' : session.customData,
-				'termination': {
-					'reason': 'timeout'
-				}
-			}
-		)
+		session.payload['text'] = ''
+		self.onEndSession(session=session, reason='timeout')
 
 
 	def onSessionStarted(self, session: DialogSession):
