@@ -23,12 +23,12 @@ class SnipsNlu(NluEngine):
 
 	def start(self):
 		super().start()
-		self.Commons.runRootSystemCommand(['systemct', 'start', 'snips-nlu'])
+		self.Commons.runRootSystemCommand(['systemctl', 'start', 'snips-nlu'])
 
 
 	def stop(self):
 		super().stop()
-		self.Commons.runRootSystemCommand(['systemct', 'stop', 'snips-nlu'])
+		self.Commons.runRootSystemCommand(['systemctl', 'stop', 'snips-nlu'])
 
 
 	def convertDialogTemplate(self, file: Path):
@@ -156,7 +156,7 @@ class SnipsNlu(NluEngine):
 			tempTrainingData.rename(assistantPath)
 
 			self.broadcast(method=constants.EVENT_NLU_TRAINED, exceptions=[constants.DUMMY], propagateToSkills=True)
-			self.Commons.runRootSystemCommand(['systemct', 'restart', 'snips-nlu'])
+			self.Commons.runRootSystemCommand(['systemctl', 'restart', 'snips-nlu'])
 
 		self._timer.cancel()
 		self.MqttManager.publish(constants.TOPIC_NLU_TRAINING_STATUS, payload={'status': 'done'})

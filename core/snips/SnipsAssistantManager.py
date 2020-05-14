@@ -216,7 +216,7 @@ class SnipsAssistantManager(Manager):
 		self.Commons.runRootSystemCommand(['ln', '-sfn', self.Commons.rootDir() + f'/system/sounds/{self.LanguageManager.activeLanguage}/start_of_input.wav', self.Commons.rootDir() + '/assistant/custom_dialogue/sound/start_of_input.wav'])
 		self.Commons.runRootSystemCommand(['ln', '-sfn', self.Commons.rootDir() + f'/system/sounds/{self.LanguageManager.activeLanguage}/end_of_input.wav', self.Commons.rootDir() + '/assistant/custom_dialogue/sound/end_of_input.wav'])
 		self.Commons.runRootSystemCommand(['ln', '-sfn', self.Commons.rootDir() + f'/system/sounds/{self.LanguageManager.activeLanguage}/error.wav', self.Commons.rootDir() + '/assistant/custom_dialogue/sound/error.wav'])
-		self.Commons.runRootSystemCommand(['systemct', 'restart', 'snips-nlu'])
+		self.Commons.runRootSystemCommand(['systemctl', 'restart', 'snips-nlu'])
 
 
 	def generateAssistant(self) -> dict:

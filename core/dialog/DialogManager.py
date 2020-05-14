@@ -173,7 +173,7 @@ class DialogManager(Manager):
 		:param session:
 		:return:
 		"""
-		self.cancelSessionTimeout(sessionId=session.sessionId)
+		self.startSessionTimeout(sessionId=session.sessionId)
 
 		self.MqttManager.publish(
 			topic=constants.TOPIC_ASR_STOP_LISTENING,

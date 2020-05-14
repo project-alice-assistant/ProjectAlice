@@ -220,7 +220,7 @@ class ConfigManager(Manager):
 			self._snipsConfigurations.dump()
 
 			if restartSnips:
-				self.Commons.runRootSystemCommand(['systemct', 'restart', 'snips-nlu'])
+				self.Commons.runRootSystemCommand(['systemctl', 'restart', 'snips-nlu'])
 
 
 	def getSnipsConfiguration(self, parent: str, key: str, createIfNotExist: bool = True) -> typing.Optional[str]:
