@@ -3,6 +3,7 @@ from importlib import import_module, reload
 from paho.mqtt.client import MQTTMessage
 
 from core.base.model.Manager import Manager
+from core.dialog.model.DialogSession import DialogSession
 from core.voice.model.WakewordEngine import WakewordEngine
 
 
@@ -31,6 +32,16 @@ class WakewordManager(Manager):
 	def onAudioFrame(self, message: MQTTMessage, siteId: str):
 		if self._engine:
 			self._engine.onAudioFrame(message=message, siteId=siteId)
+
+
+	def onHotwordToggleOn(self, siteId: str, session: DialogSession):
+		if self._engine:
+			self._engine.onHotwordToggleOn(siteId=siteId, session=DialogSession)
+
+
+	def onHotwordToggleOff(self, siteId: str, session: DialogSession):
+		if self._engine:
+			self._engine.onHotwordToggleOff(siteId=siteId, session=DialogSession)
 
 
 	def _startWakewordEngine(self):

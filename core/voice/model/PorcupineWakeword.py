@@ -1,5 +1,6 @@
 import queue
 import sys
+import time
 import wave
 
 import io
@@ -34,7 +35,7 @@ class PorcupineWakeword(WakewordEngine):
 		self._working = self.ThreadManager.newEvent('ListenForWakeword')
 		self._buffer = queue.Queue()
 		self._hotwordThread = None
-		self._handler = pvporcupine.create(keywords=['picovoice', 'bumblebee'])
+		self._handler = pvporcupine.create(keywords=['porcupine', 'bumblebee'])
 
 
 	def onBooted(self):
@@ -49,6 +50,7 @@ class PorcupineWakeword(WakewordEngine):
 
 	def onHotwordToggleOff(self, siteId: str, session):
 		self._working.clear()
+		self._buffer = queue.Queue()
 
 
 	def onHotwordToggleOn(self, siteId: str, session: DialogSession):
@@ -62,10 +64,10 @@ class PorcupineWakeword(WakewordEngine):
 		with io.BytesIO(message.payload) as buffer:
 			try:
 				with wave.open(buffer, 'rb') as wav:
-					frame = wav.readframes(self._handler.frame_length)
+					frame = wav.readframes(self.AudioServer.FRAMES_PER_BUFFER)
 					while frame:
 						self._buffer.put(frame)
-						frame = wav.readframes(self._handler.frame_length)
+						frame = wav.readframes(self.AudioServer.FRAMES_PER_BUFFER)
 
 			except Exception as e:
 				self.logError(f'Error recording audio frame: {e}')
@@ -73,11 +75,13 @@ class PorcupineWakeword(WakewordEngine):
 
 	def worker(self):
 		while True:
-			result = self._handler.process(self._buffer.get())
-			if result > 0:
-				self._working.clear()
-				self._buffer = queue.Queue()
+			if not self._working.is_set():
+				print('sleep')
+				time.sleep(0.1)
+				continue
 
+			result = self._handler.process(self._buffer.get())
+			if result and result > 0:
 				self.logDebug('Detected wakeword')
 				self.MqttManager.publish(
 					topic=constants.TOPIC_HOTWORD_DETECTED,

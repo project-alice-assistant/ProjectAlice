@@ -199,7 +199,7 @@ settings = {
 		'category'    : 'asr'
 	},
 	'wakewordEngine'          : {
-		'defaultValue': 'porcupine',
+		'defaultValue': 'snips',
 		'dataType'    : 'list',
 		'isSensitive' : False,
 		'values'      : ['porcupine', 'snips'],
