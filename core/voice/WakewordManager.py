@@ -1,5 +1,7 @@
 from importlib import import_module, reload
 
+from paho.mqtt.client import MQTTMessage
+
 from core.base.model.Manager import Manager
 from core.voice.model.WakewordEngine import WakewordEngine
 
@@ -24,6 +26,11 @@ class WakewordManager(Manager):
 	def onBooted(self):
 		if self._engine:
 			self._engine.onBooted()
+
+
+	def onAudioFrame(self, message: MQTTMessage, siteId: str):
+		if self._engine:
+			self._engine.onAudioFrame(message=message, siteId=siteId)
 
 
 	def _startWakewordEngine(self):

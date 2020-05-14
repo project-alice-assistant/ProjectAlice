@@ -39,6 +39,7 @@ class PorcupineWakeword(WakewordEngine):
 
 	def onBooted(self):
 		super().onBooted()
+		self._working.set()
 		self._hotwordThread = self.ThreadManager.newThread(name='HotwordThread', target=self.worker)
 
 
@@ -54,7 +55,7 @@ class PorcupineWakeword(WakewordEngine):
 		self._working.set()
 
 
-	def onAudioFrame(self, message: MQTTMessage):
+	def onAudioFrame(self, message: MQTTMessage, siteId: str):
 		if not self._working.is_set():
 			return
 
@@ -73,11 +74,14 @@ class PorcupineWakeword(WakewordEngine):
 	def worker(self):
 		while True:
 			result = self._handler.process(self._buffer.get())
-			if result:
+			if result > 0:
 				self._working.clear()
 				self._buffer = queue.Queue()
 
 				self.logDebug('Detected wakeword')
 				self.MqttManager.publish(
-					topic=constants.TOPIC_HOTWORD_DETECTED
+					topic=constants.TOPIC_HOTWORD_DETECTED,
+					payload={
+						'siteId': 'office'
+					}
 				)
