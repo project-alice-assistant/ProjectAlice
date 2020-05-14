@@ -62,7 +62,7 @@ input:focus { border: var(--hover) dotted 1px; }
 .skillStoreSkillTile .buttonLine,
 .skillTile .buttonLine { position: absolute; bottom: .1em; }
 
-.button{ background-color: var(--secondary); color: var(--text); height: 2.5em; margin: .1em; overflow: hidden; display: flex; flex-basis: 0; flex-grow: 1; align-items: center; justify-content: center; text-align: center; font-family: var(--short); border: none; }
+.button{ background-color: var(--secondary); color: var(--text); height: 2.5em; margin: .1em; overflow: hidden; display: flex; flex-basis: 0; flex-grow: 1; align-items: center; justify-content: center; text-align: center; font-family: var(--short); border: none; box-sizing: content-box; }
 input.button,
 button.button{ font-size: 1.6em; height: 2em; }
 .buttonIconOnly { font-size: 1.8em; }
@@ -162,6 +162,7 @@ button.button{ font-size: 1.6em; height: 2em; }
 .configCategoryTitle { display: table-caption; padding: 10px; text-align: left; vertical-align: middle; background-color: var(--windowBG); font-size: 1.3em; text-transform: uppercase; }
 .configLabel { display: table-cell; min-width: 250px; padding: 0 10px 0 10px; text-align: left; vertical-align: middle; overflow: hidden; cursor: pointer; }
 .configInput { display: table-cell; width: 100%; padding-left: 20px; text-align: left; vertical-align: middle; }
+.configOutput { position: relative; display: block; left: 48%; top: -10px; width: 50px; margin: 0; padding: 0; }
 
 /* Admin Auth */
 .adminAuthDisplayUser { margin: 1em; height: 1.5em; font-family: var(--short); font-size: 2em; text-align: center; }
