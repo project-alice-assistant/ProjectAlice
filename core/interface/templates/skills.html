@@ -64,8 +64,10 @@
 						</div>
 					{% endif %}
 				{% endfor %}
-				<input type="hidden" name="skillName" value="{{ skillName }}">
-				<input class="button" type="submit" value="{{ langData.save }}">
+				<div class="buttonLine">
+					<input type="hidden" name="skillName" value="{{ skillName }}">
+					<input class="button" type="submit" value="{{ langData.save }}">
+				</div>
 			</form>
 		</div>
 	{% endfor %}
