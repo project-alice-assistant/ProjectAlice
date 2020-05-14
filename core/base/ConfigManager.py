@@ -13,7 +13,6 @@ try:
 except ModuleNotFoundError:
 	configFileNotExist = False
 
-import difflib
 import importlib
 import typing
 from core.ProjectAliceExceptions import ConfigurationUpdateFailed, VitalConfigMissing
@@ -221,7 +220,7 @@ class ConfigManager(Manager):
 			self._snipsConfigurations.dump()
 
 			if restartSnips:
-				self.SnipsServicesManager.runCmd('restart')
+				self.Commons.runRootSystemCommand(['systemctl', 'restart', 'snips-nlu'])
 
 
 	def getSnipsConfiguration(self, parent: str, key: str, createIfNotExist: bool = True) -> typing.Optional[str]:
@@ -253,11 +252,12 @@ class ConfigManager(Manager):
 		return skillName in self._skillsConfigurations and configName in self._skillsConfigurations[skillName]
 
 
-	def getAliceConfigByName(self, configName: str, voiceControl: bool = False) -> typing.Any:
-		return self._aliceConfigurations.get(
-			configName,
-			difflib.get_close_matches(word=configName, possibilities=self._aliceConfigurations, n=3) if voiceControl else ''
-		)
+	def getAliceConfigByName(self, configName: str) -> typing.Any:
+		if configName in self._aliceConfigurations:
+			return self._aliceConfigurations[configName]
+		else:
+			self.logDebug(f'Trying to get config **{configName}** but it does not exist')
+			return ''
 
 
 	def getSkillConfigByName(self, skillName: str, configName: str) -> typing.Any:
@@ -462,14 +462,14 @@ class ConfigManager(Manager):
 
 	def enableDisableSoundInSnips(self):
 		if self.getAliceConfigByName('disableSoundAndMic'):
-			self.SnipsServicesManager.runCmd(cmd='stop', services=['snips-hotword'])
+			self.WakewordManager.disableEngine()
 			self.updateSnipsConfiguration(parent='snips-audio-server', key='disable_playback', value=True)
 			self.updateSnipsConfiguration(parent='snips-audio-server', key='disable_capture', value=True, restartSnips=True)
 		else:
+			self.WakewordManager.enableEngine()
 			del self._snipsConfigurations['snips-audio-server']['disable_playback']
 			del self._snipsConfigurations['snips-audio-server']['disable_capture']
 			self._snipsConfigurations.dump()
-			self.SnipsServicesManager.runCmd('restart')
 
 
 	def refreshStoreData(self):
