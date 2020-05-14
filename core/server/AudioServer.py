@@ -121,7 +121,7 @@ class AudioManager(Manager):
 			with wave.open(buffer, 'wb') as wav:
 				wav.setnchannels(1)
 				wav.setsampwidth(2)
-				wav.setframerate(16000)
+				wav.setframerate(self.SAMPLERATE)
 				wav.writeframes(frames)
 
 			audioFrames = buffer.getvalue()
