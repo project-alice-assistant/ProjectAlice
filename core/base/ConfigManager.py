@@ -50,7 +50,7 @@ class ConfigManager(Manager):
 
 		if not configFileExist:
 			self.logInfo('Creating config file from config template')
-			confs = {configName: configData['values'] if 'dataType' in configData and configData['dataType'] == 'list' else configData['defaultValue'] if 'defaultValue' in configData else configData for configName, configData in configTemplate.settings.items()}
+			confs = {configName: configData['defaultValue'] if 'defaultValue' in configData else configData for configName, configData in configTemplate.settings.items()}
 			Path(self.CONFIG_FILE).write_text(f'settings = {json.dumps(confs, indent=4)}')
 			aliceConfigs = importlib.import_module(self.CONFIG_FILE).settings.copy()
 		else:
@@ -65,10 +65,7 @@ class ConfigManager(Manager):
 			if setting not in aliceConfigs:
 				self.logInfo(f'New configuration found: **{setting}**')
 				changes = True
-				if definition.get('dataType', '') == 'list':
-					aliceConfigs[setting] = definition.get('values', list())
-				else:
-					aliceConfigs[setting] = definition.get('defaultValue', '')
+				aliceConfigs[setting] = definition.get('defaultValue', '')
 			else:
 				if setting == 'supportedLanguages':
 					continue
