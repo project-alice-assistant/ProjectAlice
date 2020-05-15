@@ -1,24 +1,17 @@
 import queue
-import sys
-import time
 import wave
+from typing import Optional
 
 import io
-import os
 import pvporcupine
+import pyaudio
+import struct
 from paho.mqtt.client import MQTTMessage
 
 from core.commons import constants
 from core.dialog.model.DialogSession import DialogSession
 from core.voice.model.WakewordEngine import WakewordEngine
 
-sys.path.append(os.path.join(os.path.dirname(__file__), '../../../venv/lib/python3.7/site-packages/pvporcupine/binding/python'))
-sys.path.append(os.path.join(os.path.dirname(__file__), '../../../venv/lib/python3.7/site-packages/pvporcupine/resources/util/python'))
-
-# noinspection PyUnresolvedReferences
-from porcupine import Porcupine #NOSONAR
-# noinspection PyUnresolvedReferences
-from util import * #NOSONAR
 
 class PorcupineWakeword(WakewordEngine):
 
@@ -35,7 +28,9 @@ class PorcupineWakeword(WakewordEngine):
 		self._working = self.ThreadManager.newEvent('ListenForWakeword')
 		self._buffer = queue.Queue()
 		self._hotwordThread = None
-		self._handler = pvporcupine.create(keywords=['porcupine', 'bumblebee'])
+		self._handler = pvporcupine.create(keywords=['porcupine', 'bumblebee', 'terminator', 'blueberry'])
+		with self.Commons.shutUpAlsaFFS():
+			self._audio = pyaudio.PyAudio()
 
 
 	def onBooted(self):
@@ -50,13 +45,15 @@ class PorcupineWakeword(WakewordEngine):
 		self._buffer = queue.Queue()
 
 
-	def onHotwordToggleOff(self, siteId: str, session):
+	def onHotwordToggleOff(self, siteId: str, session: DialogSession):
 		self._working.clear()
 		self._buffer = queue.Queue()
 
 
 	def onHotwordToggleOn(self, siteId: str, session: DialogSession):
 		self._working.set()
+		self._buffer = queue.Queue()
+		self._hotwordThread = self.ThreadManager.newThread(name='HotwordThread', target=self.worker)
 
 
 	def onAudioFrame(self, message: MQTTMessage, siteId: str):
@@ -77,18 +74,45 @@ class PorcupineWakeword(WakewordEngine):
 
 	def worker(self):
 		while True:
-			if not self._working.is_set():
-				time.sleep(0.1)
-				continue
+			stream = self.audioStream()
+			for data in stream:
+				if not self._working.is_set():
+					break
 
-			data = self._buffer.get()
+				pcm = struct.unpack_from('h' * self._handler.frame_length, data)
+				result = self._handler.process(pcm)
+				if result is not None and result > -1:
+					self.logDebug('Detected wakeword')
+					self.MqttManager.publish(
+						topic=constants.TOPIC_HOTWORD_DETECTED.format('default'),
+						payload={
+							'siteId': self.ConfigManager.getAliceConfigByName('deviceName'),
+							'modelId': f'porcupine_{result}',
+							'modelVersion': self._handler.version,
+							'modelType': 'universal',
+							'currentSensitivity': self.ConfigManager.getAliceConfigByName('wakewordSensitivity')
+						}
+					)
+					return
 
-			result = self._handler.process(data)
-			if result and result > 0:
-				self.logDebug('Detected wakeword')
-				self.MqttManager.publish(
-					topic=constants.TOPIC_HOTWORD_DETECTED,
-					payload={
-						'siteId': self.ConfigManager.getAliceConfigByName('deviceName')
-					}
-				)
+
+	def audioStream(self) -> Optional[bytes]:
+		while self._working.is_set():
+			chunk = self._buffer.get()
+			if not chunk:
+				return
+
+			data = [chunk]
+			size = len(chunk)
+
+			while self._working and size < 1024:
+				try:
+					chunk = self._buffer.get(block=True)
+					if not chunk or not self._working:
+						return
+					size += len(chunk)
+					data.append(chunk)
+				except queue.Empty:
+					break
+
+			yield b''.join(data)
