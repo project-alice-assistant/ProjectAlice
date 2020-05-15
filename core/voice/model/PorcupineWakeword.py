@@ -81,12 +81,14 @@ class PorcupineWakeword(WakewordEngine):
 				time.sleep(0.1)
 				continue
 
-			result = self._handler.process(self._buffer.get())
+			data = self._buffer.get()
+
+			result = self._handler.process(data)
 			if result and result > 0:
 				self.logDebug('Detected wakeword')
 				self.MqttManager.publish(
 					topic=constants.TOPIC_HOTWORD_DETECTED,
 					payload={
-						'siteId': 'office'
+						'siteId': self.ConfigManager.getAliceConfigByName('deviceName')
 					}
 				)
