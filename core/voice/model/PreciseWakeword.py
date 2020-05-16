@@ -2,12 +2,15 @@ import wave
 
 import io
 from paho.mqtt.client import MQTTMessage
-from precise_runner import PreciseEngine, PreciseRunner, ReadWriteStream
 
 from core.commons import constants
 from core.dialog.model.DialogSession import DialogSession
 from core.voice.model.WakewordEngine import WakewordEngine
 
+try:
+	from precise_runner import PreciseEngine, PreciseRunner, ReadWriteStream
+except ModuleNotFoundError:
+	pass # Autoinstall
 
 class PreciseWakeword(WakewordEngine):
 
@@ -22,16 +25,20 @@ class PreciseWakeword(WakewordEngine):
 	def __init__(self):
 		super().__init__()
 		self._hotwordThread = None
-		self._stream = ReadWriteStream()
-		self._handler = PreciseRunner(
-			PreciseEngine(
-				exe_file=f'{self.Commons.rootDir()}/venv/bin/precise-engine',
-				model_file=f'{self.Commons.rootDir()}/trained/hotwords/mycroft-precise/athena.pb'
-			),
-			sensitivity=self.ConfigManager.getAliceConfigByName('wakewordSensitivity'),
-			stream=self._stream,
-			on_activation=self.hotwordSpotted
-		)
+
+		try:
+			self._stream = ReadWriteStream()
+			self._handler = PreciseRunner(
+				PreciseEngine(
+					exe_file=f'{self.Commons.rootDir()}/venv/bin/precise-engine',
+					model_file=f'{self.Commons.rootDir()}/trained/hotwords/mycroft-precise/athena.pb'
+				),
+				sensitivity=self.ConfigManager.getAliceConfigByName('wakewordSensitivity'),
+				stream=self._stream,
+				on_activation=self.hotwordSpotted
+			)
+		except:
+			self._enabled = False
 
 
 	def onBooted(self):

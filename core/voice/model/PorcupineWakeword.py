@@ -3,7 +3,6 @@ import wave
 from typing import Optional
 
 import io
-import pvporcupine
 import pyaudio
 import struct
 from paho.mqtt.client import MQTTMessage
@@ -12,6 +11,10 @@ from core.commons import constants
 from core.dialog.model.DialogSession import DialogSession
 from core.voice.model.WakewordEngine import WakewordEngine
 
+try:
+	import pvporcupine
+except ModuleNotFoundError:
+	pass # Will autoinstall
 
 class PorcupineWakeword(WakewordEngine):
 
@@ -28,9 +31,13 @@ class PorcupineWakeword(WakewordEngine):
 		self._working = self.ThreadManager.newEvent('ListenForWakeword')
 		self._buffer = queue.Queue()
 		self._hotwordThread = None
-		self._handler = pvporcupine.create(keywords=['porcupine', 'bumblebee', 'terminator', 'blueberry'])
-		with self.Commons.shutUpAlsaFFS():
-			self._audio = pyaudio.PyAudio()
+
+		try:
+			self._handler = pvporcupine.create(keywords=['porcupine', 'bumblebee', 'terminator', 'blueberry'])
+			with self.Commons.shutUpAlsaFFS():
+				self._audio = pyaudio.PyAudio()
+		except:
+			self._enabled = False
 
 
 	def onBooted(self):
