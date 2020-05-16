@@ -50,7 +50,6 @@ class AdminView(View):
 				if pp:
 					postProcessing.add(pp)
 
-			confs['skills'] = self.ConfigManager.getAliceConfigByName('skills')
 			confs['supportedLanguages'] = self.ConfigManager.getAliceConfigByName('supportedLanguages')
 
 			self.ConfigManager.writeToAliceConfigurationFile(confs=confs)

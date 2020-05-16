@@ -50,17 +50,13 @@ class WakewordManager(Manager):
 
 		self._engine = None
 
-		if userWakeword == 'porcupine':
-			package = 'core.voice.model.PorcupineWakeword'
-		else:
-			package = 'core.voice.model.SnipsWakeword'
-
+		package = f'core.voice.model.{userWakeword.title()}Wakeword'
 		module = import_module(package)
 		wakeword = getattr(module, package.rsplit('.', 1)[-1])
 		self._engine = wakeword()
 
 		if not self._engine.checkDependencies():
-			if self._engine.installDependencies():
+			if not self._engine.installDependencies():
 				self._engine = None
 			else:
 				module = reload(module)

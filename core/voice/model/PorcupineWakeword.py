@@ -35,25 +35,29 @@ class PorcupineWakeword(WakewordEngine):
 
 	def onBooted(self):
 		super().onBooted()
-		self._working.set()
-		self._hotwordThread = self.ThreadManager.newThread(name='HotwordThread', target=self.worker)
+		if self._enabled:
+			self._working.set()
+			self._hotwordThread = self.ThreadManager.newThread(name='HotwordThread', target=self.worker)
 
 
 	def onStop(self):
 		super().onStop()
-		self._working.clear()
-		self._buffer = queue.Queue()
+		if self._enabled:
+			self._working.clear()
+			self._buffer = queue.Queue()
 
 
 	def onHotwordToggleOff(self, siteId: str, session: DialogSession):
-		self._working.clear()
-		self._buffer = queue.Queue()
+		if self._enabled:
+			self._working.clear()
+			self._buffer = queue.Queue()
 
 
 	def onHotwordToggleOn(self, siteId: str, session: DialogSession):
-		self._working.set()
-		self._buffer = queue.Queue()
-		self._hotwordThread = self.ThreadManager.newThread(name='HotwordThread', target=self.worker)
+		if self._enabled:
+			self._working.set()
+			self._buffer = queue.Queue()
+			self._hotwordThread = self.ThreadManager.newThread(name='HotwordThread', target=self.worker)
 
 
 	def onAudioFrame(self, message: MQTTMessage, siteId: str):

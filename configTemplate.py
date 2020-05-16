@@ -202,7 +202,7 @@ settings = {
 		'defaultValue': 'snips',
 		'dataType'    : 'list',
 		'isSensitive' : False,
-		'values'      : ['porcupine', 'snips'],
+		'values'      : ['porcupine', 'snips', 'precise'],
 		'description' : 'Wakeword engine to use',
 		'category'    : 'wakeword'
 	},
