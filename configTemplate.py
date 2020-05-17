@@ -247,6 +247,7 @@ settings = {
 		'dataType'    : 'string',
 		'isSensitive' : False,
 		'description' : 'Language for the TTS to use',
+		'help'        : 'PICO VOICE<br>AMAZON POLLY<br>MYCROFT<br>GOOGLE WAVENET<br>IBM WATSON<br>Snips Makers TTS',
 		'onUpdate'    : 'reloadTTS',
 		'category'    : 'tts'
 	},
