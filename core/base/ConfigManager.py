@@ -94,12 +94,11 @@ class ConfigManager(Manager):
 			logging.getLogger('ProjectAlice').setLevel(logging.DEBUG)
 
 		temp = aliceConfigs.copy()
-
-		for k, v in temp.items():
-			if k not in configTemplate.settings:
-				self.logInfo(f'Deprecated configuration: **{k}**')
+		for key in temp:
+			if key not in configTemplate.settings:
+				self.logInfo(f'Deprecated configuration: **{key}**')
 				changes = True
-				del aliceConfigs[k]
+				del aliceConfigs[key]
 
 		if changes:
 			self.writeToAliceConfigurationFile(aliceConfigs)
