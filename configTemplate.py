@@ -191,6 +191,14 @@ settings = {
 		'onUpdate'    : 'reloadASR',
 		'category'    : 'asr'
 	},
+	'asrFallback'             : {
+		'defaultValue': 'pocketsphinx',
+		'dataType'    : 'list',
+		'isSensitive' : False,
+		'values'      : ['deepspeech', 'pocketsphinx', 'google'],
+		'description' : 'The Asr to use in case the default ASR becomes unavailable',
+		'category'    : 'asr'
+	},
 	'asrTimeout'              : {
 		'defaultValue': 10,
 		'dataType'    : 'integer',
@@ -222,6 +230,15 @@ settings = {
 		'isSensitive' : False,
 		'values'      : {'Pico': 'pico', 'Mycroft': 'mycroft', 'Amazon Polly': 'amazon', 'Google Wavenet': 'google', 'IBM Watson': 'watson', 'Snips Makers TTS': 'snips'},
 		'description' : 'The TTS to use. Can\'t use an online TTS if you have set keepTTSOffline!',
+		'onUpdate'    : 'reloadTTS',
+		'category'    : 'tts'
+	},
+	'ttsFallback': {
+		'defaultValue': 'pico',
+		'dataType'    : 'list',
+		'isSensitive' : False,
+		'values'      : {'Pico': 'pico', 'Mycroft': 'mycroft', 'Amazon Polly': 'amazon', 'Google Wavenet': 'google', 'IBM Watson': 'watson', 'Snips Makers TTS': 'snips'},
+		'description' : 'The TTS to use in case the default TTS becomes unavailable.',
 		'onUpdate'    : 'reloadTTS',
 		'category'    : 'tts'
 	},
