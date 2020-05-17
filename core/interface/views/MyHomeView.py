@@ -40,6 +40,7 @@ class MyHomeView(View):
 
 	@route('/Location/<path:id>/addSynonym', methods = ['POST'])
 	def addLocationSynonym(self, id: str):
+		#todo check duplicates (with other rooms as well!)
 		try:
 			id = int(id)
 			req_data = request.form.to_dict()
@@ -51,9 +52,11 @@ class MyHomeView(View):
 
 	@route('/Location/0/add', methods = ['POST'])
 	def addLocation(self):
-		req_data = request.form.to_dict()
-		return jsonify(self.LocationManager.addNewLocation(req_data['name']).id)
-
+		try:
+			req_data = request.form.to_dict()
+			return jsonify(id=self.LocationManager.addNewLocation(req_data['name']).id)
+		except Exception as e:
+			return jsonify(error=str(e))
 
 	@route('/Location/<path:id>/delete', methods = ['POST'])
 	def deleteLocation(self,id: str):
@@ -68,11 +71,9 @@ class MyHomeView(View):
 		return send_from_directory(f'{self.WebInterfaceManager.app.root_path}/../../skills/{parent}/device/{fileType}/', filename)
 
 
-	@route('/deviceType/getList')
+	@route('/DeviceType/getList')
 	def deviceType_getList(self):
-		res = []
-		for parentName, deviceList in self.SkillManager.deviceTypes.items():
-			res.extend([{'skillName' : parentName, 'deviceType' : device} for device in deviceList])
+		res = [{'skill' : devobs.skill, 'deviceType' : devobs.name, 'id': id} for id, devobs in self.DeviceManager.deviceTypes.items()]
 		return jsonify(res)
 
 
@@ -86,6 +87,21 @@ class MyHomeView(View):
 		for d in self.DeviceManager.devices.values():
 			res+=d.data
 		return res
+
+
+	@route('/Device/0/add', methods=['POST'])
+	def addDevice(self):
+		try:
+			req_data = request.form.to_dict()
+			device = self.DeviceManager.addNewDevice(deviceTypeID=int(req_data['deviceTypeID']),locationID=int(req_data['locationID']))
+			if not device:
+				raise Exception(f'Device creation failed - please see log')
+			deviceType = device.getDeviceType()
+			return {'id': device.id, 'skill': deviceType.skill, 'deviceType': deviceType.name}
+		except Exception as e:
+			self.logError(f'Failed adding device: {e}')
+			return jsonify(error=str(e))
+
 
 	@route('/Device/<path:id>/delete', methods = ['POST'])
 	def deleteDevice(self, id: int):
@@ -165,13 +181,12 @@ class MyHomeView(View):
 			result[id] = loc.asJson()
 		return jsonify(result)
 
-
-	def put(self):
+	@route('/save/', methods=['POST'])
+	def save(self):
 		try:
-			data = json.loads(request.form['data'])
-
+			tmp = request.get_json()
 			# save to DB
-			self.LocationManager.updateLocations(data)
+			self.LocationManager.updateLocations(tmp)
 
 			return jsonify(success=True)
 		except Exception as e:

@@ -3,9 +3,10 @@ from dataclasses import dataclass, field
 import sqlite3
 from flask import jsonify
 import ast
+from core.base.model.ProjectAliceObject import ProjectAliceObject
 
 @dataclass
-class Location:
+class Location(ProjectAliceObject):
 	data: sqlite3.Row
 	name: str = ''
 
@@ -18,7 +19,6 @@ class Location:
 			self.synonyms = ast.literal_eval(self.data['synonyms'])
 		else:
 			self.synonyms = list()
-		# TODO maybe combine these into just one?
 		if 'display' in self.data.keys() and self.data['display']:
 			self.display = ast.literal_eval(self.data['display'])
 		else:
@@ -48,9 +48,11 @@ class Location:
 		}})
 
 	def asJson(self):
+		devices = {device.id: device.asJson() for device in self.DeviceManager.getDevicesByRoom(locationID=self.id)}
 		return {
 				'id'      : self.id,
 				'name'    : self.name,
 				'synonyms': self.synonyms,
-				'display' : self.display
+				'display' : self.display,
+				'devices' : devices
 		}

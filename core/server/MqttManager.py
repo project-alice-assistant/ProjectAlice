@@ -44,6 +44,7 @@ class MqttManager(Manager):
 
 		self._mqttClient.message_callback_add(constants.TOPIC_VAD_UP.format(self.ConfigManager.getAliceConfigByName('deviceName')), self.onVADUp)
 		self._mqttClient.message_callback_add(constants.TOPIC_VAD_DOWN.format(self.ConfigManager.getAliceConfigByName('deviceName')), self.onVADDown)
+		## todo move to sat skill
 		for device in self.DeviceManager.getDevicesByType('alicesatellite'):
 			self._mqttClient.message_callback_add(constants.TOPIC_VAD_UP.format(device.room), self.onVADUp)
 			self._mqttClient.message_callback_add(constants.TOPIC_VAD_DOWN.format(device.room), self.onVADDown)
@@ -76,6 +77,7 @@ class MqttManager(Manager):
 		self._mqttClient.message_callback_add(constants.TOPIC_PLAY_BYTES.format(self.ConfigManager.getAliceConfigByName('deviceName')), self.topicPlayBytes)
 		self._mqttClient.message_callback_add(constants.TOPIC_PLAY_BYTES_FINISHED.format(self.ConfigManager.getAliceConfigByName('deviceName')), self.topicPlayBytesFinished)
 
+		## todo move to alice Sat Skill
 		for device in self.DeviceManager.getDevicesByType('alicesatellite'):
 			self._mqttClient.message_callback_add(constants.TOPIC_PLAY_BYTES.format(device.room), self.topicPlayBytes)
 			self._mqttClient.message_callback_add(constants.TOPIC_PLAY_BYTES_FINISHED.format(device.room), self.topicPlayBytesFinished)

@@ -47,11 +47,6 @@ class SkillManager(Manager):
 			'options TEXT NOT NULL',
 			'custStyle TEXT NOT NULL',
 			'zindex INTEGER'
-		],
-		'deviceTypes': [
-			'id INTEGER PRIMARY KEY',
-			'parent text NOT NULL',
-			'name text NOT NULL'
 		]
 	}
 
@@ -72,7 +67,6 @@ class SkillManager(Manager):
 		self._failedSkills: Dict[str, FailedAliceSkill] = dict()
 
 		self._widgets = dict()
-		self._deviceTypes = dict()
 
 
 	def onStart(self):
@@ -133,6 +127,7 @@ class SkillManager(Manager):
 					query='DELETE FROM :__table__ WHERE parent = :skill',
 					values={'skill': skill}
 				)
+				self.DeviceManager.removeDeviceTypesForSkill(skillName=skill)
 
 		# Now that we are clean, reload the skills from database
 		# Those represent the skills we have
@@ -204,6 +199,8 @@ class SkillManager(Manager):
 			values={'skill': skillName}
 		)
 
+		self.DeviceManager.removeDeviceTypesForSkill(skillName=skillName)
+
 
 	def onSnipsAssistantInstalled(self, **kwargs):
 		self.MqttManager.mqttBroadcast(topic='hermes/leds/clear')
@@ -251,11 +248,6 @@ class SkillManager(Manager):
 	@property
 	def widgets(self) -> dict:
 		return self._widgets
-
-
-	@property
-	def deviceTypes(self) -> dict:
-		return self._deviceTypes
 
 
 	@property
@@ -467,7 +459,7 @@ class SkillManager(Manager):
 			self._widgets[skillName] = skillInstance.widgets
 
 		if skillInstance.deviceTypes:
-			self._deviceTypes[skillName] = skillInstance.deviceTypes
+			self.DeviceManager.addDeviceTypes(deviceTypes=skillInstance.deviceTypes)
 
 		return skillInstance.supportedIntents
 
@@ -522,8 +514,8 @@ class SkillManager(Manager):
 			skillInstance = self._activeSkills.pop(skillName)
 			self._deactivatedSkills[skillName] = skillInstance
 			skillInstance.onStop()
-			self._widgets.pop(skillName, None)
-			self._deviceTypes.pop(skillName, None)
+			self._widgetwidgets.pop(skillName, None)
+			self.DeviceManager.removeDeviceTypesForSkill(skillName=skillName)
 
 			if persistent:
 				self.changeSkillStateInDB(skillName=skillName, newState=False)

@@ -18,26 +18,38 @@ from serial.tools import list_ports
 from core.base.model.Manager import Manager
 from core.commons import constants
 from core.device.model.Device import Device
+from core.device.model.DeviceType import DeviceType
 from core.device.model.TasmotaConfigs import TasmotaConfigs
 from core.dialog.model.DialogSession import DialogSession
 
 
 class DeviceManager(Manager):
+#todo remove all room: string - replace with locationID
 
 	DB_DEVICE = 'devices'
 	DB_LINKS = 'deviceLinks'
+	DB_TYPES = 'deviceTypes'
 	DATABASE = {
 		DB_DEVICE: [
 			'id INTEGER PRIMARY KEY',
-			'type TEXT NOT NULL',
-			'uid TEXT NOT NULL',
+			'typeID INTEGER NOT NULL',
+			'uid TEXT',
 			'locationID INTEGER NOT NULL',
-			'name TEXT'
+			'name TEXT',
+			'display TEXT',
+			'devSettings TEXT'
 		],
 		DB_LINKS: [
 			'id INTEGER PRIMARY KEY',
-			'deviceID INTEGER',
-			'locationID INTEGER',
+			'deviceID INTEGER NOT NULL',
+			'locationID INTEGER NOT NULL',
+			'locSettings TEXT'
+		],
+		DB_TYPES: [
+			'id INTEGER PRIMARY KEY',
+			'skill TEXT NOT NULL',
+			'name TEXT NOT NULL',
+			'devSettings TEXT',
 			'locSettings TEXT'
 		]
 	}
@@ -47,6 +59,8 @@ class DeviceManager(Manager):
 		super().__init__(databaseSchema=self.DATABASE)
 
 		self._devices: Dict[str, Device] = dict()
+		#self._idToUID: Dict[int, str] = dict() #todo maybe relevant for faster access?
+		self._deviceTypes: Dict[str, DeviceType] = dict()
 		self._broadcastRoom = ''
 		self._broadcastFlag = threading.Event()
 
@@ -79,6 +93,7 @@ class DeviceManager(Manager):
 		self._listenSocket.bind(('', self._listenPort))
 
 		self.loadDevices()
+
 		self.logInfo(f'Loaded **{len(self._devices)}** device', plural='device')
 
 
@@ -111,10 +126,9 @@ class DeviceManager(Manager):
 
 
 	def loadDevices(self):
-		for row in self.databaseFetch(tableName='devices', query='SELECT * FROM :__table__', method='all'):
+		for row in self.databaseFetch(tableName=self.DB_DEVICE, method='all'):
 			# to dict!
-
-			self._devices[row['uid']] = Device(row)
+			self._devices[row['id']] = Device(row)
 
 
 	# noinspection SqlResolve
@@ -127,34 +141,25 @@ class DeviceManager(Manager):
 			return False
 
 
-	def isBusy(self) -> bool:
-		return self.ThreadManager.isThreadAlive('broadcast')
-
-
-	@property
-	def broadcastFlag(self) -> threading.Event:
-		return self._broadcastFlag
-
-
 	# noinspection SqlResolve
-	def addNewDevice(self, ttype: str, room: str = None, uid: str = None) -> bool:
-		if not room:
-			room = self._broadcastRoom
-		if not uid:
-			uid = self._getFreeUID()
-
+	def addNewDevice(self, deviceTypeID: int, locationID: int = None, room: str = None, uid: str = None) -> Device:
+		# get or create location from different inputs
 		try:
-			# get locationID for room
-			location = self.LocationManager.getLocationWithName(name=room)
-			if not location:
-				location = self.LocationManager.addNewLocation(name=room)
-			values = {'type': ttype, 'uid': uid, 'locationID': location.id}
-			values['id'] = self.databaseInsert(tableName='devices', query='INSERT INTO :__table__ (type, uid, locationID) VALUES (:type, :uid, :locationID)', values=values)
-			self._devices[uid] = Device(values, True)
-			return True
+			if not room and not locationID:
+				room = self._broadcastRoom
+
+			location = self.LocationManager.getLocation(id=locationID, room=room)
+
+			self.assertDeviceTypeAllowedAtLocation(locationID=location.id, deviceTypeID=deviceTypeID)
+
+			values = {'typeID': deviceTypeID, 'uid': uid, 'locationID': location.id, 'display': "{}"}
+			values['id'] = self.databaseInsert(tableName=self.DB_DEVICE, values=values)
+
+			self._devices[values['id']] = Device(data=values)
+			return self._devices[values['id']]
 		except Exception as e:
 			self.logWarning(f"Couldn't insert device in database: {e}")
-			return False
+			return None
 
 
 	def devUIDtoID(self, UID: str) -> int:
@@ -168,85 +173,299 @@ class DeviceManager(Manager):
 
 
 	def deleteDeviceID(self, deviceID: int):
-		self.devices.pop(self.devIDtoUID(ID=deviceID))
+		self.devices.pop(deviceID)
 		self.DatabaseManager.delete(tableName='devices', callerName=self.name, query='DELETE :__table__ WHERE id = :id', values={id: deviceID})
 		self.DatabaseManager.delete(tableName='deviceLinks', callerName=self.name, query='DELETE :__table__ WHERE id = :id', values={id: deviceID})
 
 
+	def getDeviceType(self, id):
+		return self.deviceTypes[id]
+
+
+	def getDeviceTypesForSkill(self, skillName: str) -> Dict[int, DeviceType]:
+		return {id: deviceType for id, deviceType in self.deviceTypes.items() if deviceType.skill == skillName}
+
+
+	def removeDeviceTypesForSkill(self,skillName: str):
+		for id, deviceType in self.getDeviceTypesForSkill(skillName):
+			self.deviceTypes.pop(id, None)
+
+
+	def addDeviceTypes(self, deviceTypes: Dict):
+		self.deviceTypes.update(deviceTypes)
+
+
+	def removeDeviceType(self, id: int):
+		self.DatabaseManager.delete(
+			tableName=self.DB_TYPES,
+			callerName=self.name,
+			values={
+				'id': id
+			}
+		)
+		self._deviceTypes.pop(id)
+
+
 	def addLink(self, id: int, locationid: int):
-		#todo get device type
+		device = self.getDeviceByID(id)
+		deviceType = device.getDeviceType()
+		if not deviceType.canHaveMultipleRooms():
+			raise Exception(f'Device type {deviceType.name} can\'t be linked to other rooms')
+
 		#todo get device/room specific settings
 		locSettings = []
-		#todo maybe check if links are allowed?
 		values = {'id' : id, 'locationid': locationid, 'locSettings': locSettings}
 		self.databaseInsert(tableName=self.DB_LINKS, query='INSERT INTO :__table__ (deviceID, locationID, locSettings) VALUES (:id, :locationid, locSettings)', values=values)
+
 
 	def deleteDeviceUID(self, deviceUID: str):
 		self.deleteDeviceID(deviceID=devUIDtoID(UID=deviceUID))
 
 
-	def addZigBeeDevice(self):
-		pass # Should be implemented or deleted
+	def _getFreeUID(self, base: str = '') -> str:
+		"""
+		Gets a free uid. A free uid is a uid not declared in database. If base is provided it will be used as a uid pattern
+		:param base: str
+		:return: str
+		"""
+		if not base:
+			uid = str(uuid.uuid4())
+		else:
+			uid = base = base.replace(':', '').replace(' ', '')
+
+		while not self.isUIDAvailable(uid):
+			if not base:
+				uid = str(uuid.uuid4())
+			else:
+				aList = list(base)
+				shuffle(aList)
+				uid = ''.join(aList)
+
+		return uid
+
+## Braodcasting ## todo move to SAT skill?
+	@property
+	def broadcastFlag(self) -> threading.Event:
+		return self._broadcastFlag
 
 
-	def startTasmotaFlashingProcess(self, room: str, espType: str, session: DialogSession) -> bool:
-		self.ThreadManager.doLater(interval=0.5, func=self.MqttManager.endDialog, args=[session.sessionId, self.TalkManager.randomTalk('connectESPForFlashing', skill='AliceCore')])
-
-		self._broadcastFlag.set()
-
-		binFile = Path('tasmota.bin')
-		if binFile.exists():
-			binFile.unlink()
-
-		try:
-			req = requests.get(f'https://github.com/arendst/Tasmota/releases/download/v8.2.0/tasmota.bin')
-			with binFile.open('wb') as file:
-				file.write(req.content)
-				self.logInfo('Downloaded tasmota.bin')
-		except Exception as e:
-			self.logError(f'Something went wrong downloading tasmota.bin: {e}')
-			self._broadcastFlag.clear()
+	def startBroadcastingForNewDevice(self, room: str, siteId: str, uid: str = '') -> bool:
+		if self.isBusy():
 			return False
 
-		self.ThreadManager.newThread(name='flashThread', target=self.doFlashTasmota, args=[room, espType, session.siteId])
+		self._broadcastRoom = self.Commons.cleanRoomNameToSiteId(room)
+
+		if not uid:
+			uid = self._getFreeUID()
+
+		self.logInfo(f'Started broadcasting on {self._broadcastPort} for new device addition. Attributed uid: {uid}')
+		self._listenSocket.listen(2)
+		self.ThreadManager.newThread(name='broadcast', target=self.startBroadcast, args=[room, uid, siteId])
+
+		self._broadcastTimer = self.ThreadManager.newTimer(interval=300, func=self.stopBroadcasting)
+
+		self.broadcast(method=constants.EVENT_BROADCASTING_FOR_NEW_DEVICE, exceptions=[self.name], propagateToSkills=True)
 		return True
 
 
-	def findUSBPort(self, timeout: int) -> str:
-		oldPorts = list()
-		scanPresent = True
-		found = False
-		tries = 0
-		self.logInfo(f'Looking for USB device for the next {timeout} seconds')
-		while not found:
-			tries += 1
-			if tries > timeout * 2:
-				break
+	def stopBroadcasting(self):
+		self.logInfo('Stopped broadcasting for new devices')
+		self._broadcastFlag.clear()
 
-			newPorts = list()
-			for port, desc, hwid in sorted(list_ports.comports()):
-				if scanPresent:
-					oldPorts.append(port)
-				newPorts.append(port)
+		if self._broadcastTimer:
+			self._broadcastTimer.cancel()
 
-			scanPresent = False
+		self._broadcastRoom = ''
+		self.broadcast(method=constants.EVENT_STOP_BROADCASTING_FOR_NEW_DEVICE, exceptions=[self.name], propagateToSkills=True)
 
-			if len(newPorts) < len(oldPorts):
-				# User disconnected a device
-				self.logInfo('USB device disconnected')
-				oldPorts = list()
-				scanPresent = True
-			else:
-				changes = [port for port in newPorts if port not in oldPorts]
-				if changes:
-					port = changes[0]
-					self.logInfo(f'Found usb device on {port}')
-					return port
 
-			time.sleep(0.5)
+	def startBroadcast(self, room: str, uid: str, replyOnSiteId: str):
+		self._broadcastFlag.set()
+		while self._broadcastFlag.isSet():
+			self._broadcastSocket.sendto(bytes(f'{self.Commons.getLocalIp()}:{self._listenPort}:{room.replace(" ", "_")}:{uid}', encoding='utf8'), ('<broadcast>', self._broadcastPort))
+			try:
+				sock, address = self._listenSocket.accept()
+				sock.settimeout(None)
+				answer = sock.recv(1024).decode()
 
-		return ''
+				deviceIp = answer.split(':')[0]
+				deviceType = answer.split(':')[1]
 
+				if deviceType.lower() == 'alicesatellite':
+					for satellite in self.getDevicesByRoom(room):
+						if satellite.deviceType.lower() == 'alicesatellite':
+							self.logWarning('Cannot have more than one Alice skill per room, aborting')
+							self.MqttManager.say(text=self.TalkManager.randomTalk('maxOneAlicePerRoom', skill='system'), client=replyOnSiteId)
+							answer = 'nok'
+							break
+
+				if answer != 'nok':
+					if self.addNewDevice(deviceType, room, uid):
+						self.logInfo(f'New device with uid {uid} successfully added')
+						self.MqttManager.say(text=self.TalkManager.randomTalk('newDeviceAdditionSuccess', skill='system'), client=replyOnSiteId)
+						answer = 'ok'
+					else:
+						self.logInfo('Failed adding new device')
+						self.MqttManager.say(text=self.TalkManager.randomTalk('newDeviceAdditionFailed', skill='system'), client=replyOnSiteId)
+						answer = 'nok'
+
+					if deviceType.lower() == 'alicesatellite':
+						self.ThreadManager.doLater(interval=5, func=self.WakewordManager.uploadToNewDevice, args=[uid])
+
+				self._broadcastSocket.sendto(bytes(answer, encoding='utf8'), (deviceIp, self._broadcastPort))
+				self.stopBroadcasting()
+			except socket.timeout:
+				self.logInfo('No device query received')
+
+
+	def broadcastToDevices(self, topic: str, payload: dict = None, deviceType: str = None, room: str = None, connectedOnly: bool = True):
+		if not payload:
+			payload = dict()
+
+		for device in self._devices.values():
+			if deviceType and device.deviceType.lower() != deviceType.lower():
+				continue
+
+			if room and device.room.lower() != room.lower():
+				continue
+
+			if connectedOnly and not device.connected:
+				continue
+
+			payload.setdefault('uid', device.uid)
+			payload.setdefault('siteId', device.room)
+
+			self.MqttManager.publish(
+				topic=topic,
+				payload=json.dumps(payload)
+			)
+
+
+	def deviceConnecting(self, uid: str) -> Optional[Device]:
+		device = self.getDeviceByUID(uid)
+		if not device:
+			self.logWarning(f'A device with uid **{uid}** tried to connect but is unknown')
+			return None
+
+		if not device.connected:
+			device.connected = True
+			self.broadcast(method=constants.EVENT_DEVICE_CONNECTING, exceptions=[self.name], propagateToSkills=True)
+
+		self._heartbeats[uid] = time.time() + 5
+		if not self._heartbeatsCheckTimer:
+			self._heartbeatsCheckTimer = self.ThreadManager.newTimer(interval=3, func=self.checkHeartbeats)
+
+		return device
+
+
+	def deviceDisconnecting(self, uid: str):
+		self._heartbeats.pop(uid, None)
+
+		device = self.getDeviceByUID(uid)
+
+		if not device:
+			return
+
+		if device.connected:
+			self.logInfo(f'Device with uid **{uid}** disconnected')
+			device.connected = False
+			self.broadcast(method=constants.EVENT_DEVICE_DISCONNECTING, exceptions=[self.name], propagateToSkills=True)
+
+
+	def isBusy(self) -> bool:
+		return self.ThreadManager.isThreadAlive('broadcast')
+
+## Heartbeats
+	def onDeviceHeartbeat(self, uid: str, siteId: str = None):
+		device = self.getDeviceByUID(uid=uid)
+		if not device:
+			self.logWarning(f'Device with uid **{uid}** does not exist')
+			return
+
+		if siteId and siteId.replace(' ', '_').lower() != device.room.lower():
+			self.logWarning(f'Device with uid **{uid}** is not matching its defined room (received **{siteId.replace(" ", "_").lower()}** but required **{device.room}**')
+			return
+
+		self._heartbeats[uid] = time.time()
+
+
+	def checkHeartbeats(self):
+		now = time.time()
+		for uid, lastTime in self._heartbeats.copy().items():
+			if now - 5 > lastTime:
+				self.logWarning(f'Device with uid **{uid}** has not given a signal since 5 seconds or more')
+				self._heartbeats.pop(uid)
+				device = self.getDeviceByUID(uid)
+				if device:
+					device.connected = False
+
+		self._heartbeatsCheckTimer = self.ThreadManager.newTimer(interval=3, func=self.checkHeartbeats)
+
+
+	def sendHeartbeat(self):
+		self.MqttManager.publish(
+			topic=constants.TOPIC_CORE_HEARTBEAT
+		)
+
+		self._heartbeatTimer = self.ThreadManager.newTimer(interval=2, func=self.sendHeartbeat)
+
+## base
+	def getDeviceTypeBySkillRAW(self, skill: str):
+		data = self.DatabaseManager.fetch(
+			tableName=self.DB_TYPES,
+			query='SELECT * FROM :__table__ WHERE skill = :skill',
+			callerName=self.name,
+			values={'skill': skill},
+			method='all'
+		)
+		return {d['name']: {'id': d['id'], 'name': d['name'], 'skill': d['skill']} for d in data}
+
+
+	def updateDevice(self,device: dict):
+		self.getDeviceByID(device['id']).display = device['display']
+		self.DatabaseManager.update(tableName=self.DB_DEVICE,
+		                            callerName=self.name,
+		                            values={'display': device['display']},
+		                            row=('id', device['id']))
+
+
+	def assertDeviceTypeAllowedAtLocation(self, typeID: int, locationID: int):
+		# check max allowed per Location
+		deviceType = self.getDeviceType(typeID)
+		if deviceType.locationLimit > 0:
+			if deviceType.locationLimit <= self.LocationManager.getDevicesByRoom(locationID=locationID,deviceTypeID=typeID):
+				raise Exception(f'Maximum limit of devices in this location reached')
+
+
+	@property
+	def deviceTypes(self) -> dict:
+		return self._deviceTypes
+
+
+	def getDevicesByRoom(self, room: str = None, locationID: int = None, connectedOnly: bool = False, deviceTypeID: int = None) -> List[Device]:
+		if not room and not locationID:
+			raise Exception(f'you need to provice a room name or ID')
+
+		if not locationID and room:
+			locationID = self.LocationManager.getLocationWithName(room=room)
+
+		return [device for device in self._devices.values() if device.locationID == locationID
+		        and (not connectedOnly or device.connected)
+		        and (not deviceTypeID or device.deviceTypeID == deviceTypeID)]
+
+
+	def getDevicesByType(self, deviceType: int, connectedOnly: bool = False) -> List[Device]:
+		return [x for x in self._devices.values() if x.deviceTypeID == deviceType and (not connectedOnly or x.connected)]
+
+
+	def getDeviceByUID(self, uid: str) -> Optional[Device]:
+		return self._devices.get(self.devUIDtoID(uid), None)
+
+
+	def getDeviceByID(self, id: int) -> Optional[Device]:
+		return self._devices.get(id, None)
+
+## todo move to tasmota skill
 
 	def doFlashTasmota(self, room: str, espType: str, siteId: str):
 		port = self.findUSBPort(timeout=60)
@@ -330,190 +549,60 @@ class DeviceManager(Manager):
 			self._broadcastFlag.clear()
 
 
-	def _getFreeUID(self, base: str = '') -> str:
-		"""
-		Gets a free uid. A free uid is a uid not declared in database. If base is provided it will be used as a uid pattern
-		:param base: str
-		:return: str
-		"""
-		if not base:
-			uid = str(uuid.uuid4())
-		else:
-			uid = base = base.replace(':', '').replace(' ', '')
+	def findUSBPort(self, timeout: int) -> str:
+		oldPorts = list()
+		scanPresent = True
+		found = False
+		tries = 0
+		self.logInfo(f'Looking for USB device for the next {timeout} seconds')
+		while not found:
+			tries += 1
+			if tries > timeout * 2:
+				break
 
-		while not self.isUIDAvailable(uid):
-			if not base:
-				uid = str(uuid.uuid4())
+			newPorts = list()
+			for port, desc, hwid in sorted(list_ports.comports()):
+				if scanPresent:
+					oldPorts.append(port)
+				newPorts.append(port)
+
+			scanPresent = False
+
+			if len(newPorts) < len(oldPorts):
+				# User disconnected a device
+				self.logInfo('USB device disconnected')
+				oldPorts = list()
+				scanPresent = True
 			else:
-				aList = list(base)
-				shuffle(aList)
-				uid = ''.join(aList)
+				changes = [port for port in newPorts if port not in oldPorts]
+				if changes:
+					port = changes[0]
+					self.logInfo(f'Found usb device on {port}')
+					return port
 
-		return uid
+			time.sleep(0.5)
+
+		return ''
 
 
-	def startBroadcastingForNewDevice(self, room: str, siteId: str, uid: str = '') -> bool:
-		if self.isBusy():
+	def startTasmotaFlashingProcess(self, room: str, espType: str, session: DialogSession) -> bool:
+		self.ThreadManager.doLater(interval=0.5, func=self.MqttManager.endDialog, args=[session.sessionId, self.TalkManager.randomTalk('connectESPForFlashing', skill='AliceCore')])
+
+		self._broadcastFlag.set()
+
+		binFile = Path('tasmota.bin')
+		if binFile.exists():
+			binFile.unlink()
+
+		try:
+			req = requests.get(f'https://github.com/arendst/Tasmota/releases/download/v8.2.0/tasmota.bin')
+			with binFile.open('wb') as file:
+				file.write(req.content)
+				self.logInfo('Downloaded tasmota.bin')
+		except Exception as e:
+			self.logError(f'Something went wrong downloading tasmota.bin: {e}')
+			self._broadcastFlag.clear()
 			return False
 
-		self._broadcastRoom = self.Commons.cleanRoomNameToSiteId(room)
-
-		if not uid:
-			uid = self._getFreeUID()
-
-		self.logInfo(f'Started broadcasting on {self._broadcastPort} for new device addition. Attributed uid: {uid}')
-		self._listenSocket.listen(2)
-		self.ThreadManager.newThread(name='broadcast', target=self.startBroadcast, args=[room, uid, siteId])
-
-		self._broadcastTimer = self.ThreadManager.newTimer(interval=300, func=self.stopBroadcasting)
-
-		self.broadcast(method=constants.EVENT_BROADCASTING_FOR_NEW_DEVICE, exceptions=[self.name], propagateToSkills=True)
+		self.ThreadManager.newThread(name='flashThread', target=self.doFlashTasmota, args=[room, espType, session.siteId])
 		return True
-
-
-	def stopBroadcasting(self):
-		self.logInfo('Stopped broadcasting for new devices')
-		self._broadcastFlag.clear()
-
-		if self._broadcastTimer:
-			self._broadcastTimer.cancel()
-
-		self._broadcastRoom = ''
-		self.broadcast(method=constants.EVENT_STOP_BROADCASTING_FOR_NEW_DEVICE, exceptions=[self.name], propagateToSkills=True)
-
-
-	def startBroadcast(self, room: str, uid: str, replyOnSiteId: str):
-		self._broadcastFlag.set()
-		while self._broadcastFlag.isSet():
-			self._broadcastSocket.sendto(bytes(f'{self.Commons.getLocalIp()}:{self._listenPort}:{room.replace(" ", "_")}:{uid}', encoding='utf8'), ('<broadcast>', self._broadcastPort))
-			try:
-				sock, address = self._listenSocket.accept()
-				sock.settimeout(None)
-				answer = sock.recv(1024).decode()
-
-				deviceIp = answer.split(':')[0]
-				deviceType = answer.split(':')[1]
-
-				if deviceType.lower() == 'alicesatellite':
-					for satellite in self.getDevicesByRoom(room):
-						if satellite.deviceType.lower() == 'alicesatellite':
-							self.logWarning('Cannot have more than one Alice skill per room, aborting')
-							self.MqttManager.say(text=self.TalkManager.randomTalk('maxOneAlicePerRoom', skill='system'), client=replyOnSiteId)
-							answer = 'nok'
-							break
-
-				if answer != 'nok':
-					if self.addNewDevice(deviceType, room, uid):
-						self.logInfo(f'New device with uid {uid} successfully added')
-						self.MqttManager.say(text=self.TalkManager.randomTalk('newDeviceAdditionSuccess', skill='system'), client=replyOnSiteId)
-						answer = 'ok'
-					else:
-						self.logInfo('Failed adding new device')
-						self.MqttManager.say(text=self.TalkManager.randomTalk('newDeviceAdditionFailed', skill='system'), client=replyOnSiteId)
-						answer = 'nok'
-
-					if deviceType.lower() == 'alicesatellite':
-						self.ThreadManager.doLater(interval=5, func=self.WakewordManager.uploadToNewDevice, args=[uid])
-
-				self._broadcastSocket.sendto(bytes(answer, encoding='utf8'), (deviceIp, self._broadcastPort))
-				self.stopBroadcasting()
-			except socket.timeout:
-				self.logInfo('No device query received')
-
-
-	def deviceConnecting(self, uid: str) -> Optional[Device]:
-		if uid not in self._devices:
-			self.logWarning(f'A device with uid **{uid}** tried to connect but is unknown')
-			return None
-
-		if not self._devices[uid].connected:
-			self._devices[uid].connected = True
-			self.broadcast(method=constants.EVENT_DEVICE_CONNECTING, exceptions=[self.name], propagateToSkills=True)
-
-		self._heartbeats[uid] = time.time() + 5
-		if not self._heartbeatsCheckTimer:
-			self._heartbeatsCheckTimer = self.ThreadManager.newTimer(interval=3, func=self.checkHeartbeats)
-
-		return self._devices[uid]
-
-
-	def deviceDisconnecting(self, uid: str):
-		self._heartbeats.pop(uid, None)
-
-		if uid not in self._devices:
-			return
-
-		if self._devices[uid].connected:
-			self.logInfo(f'Device with uid **{uid}** disconnected')
-			self._devices[uid].connected = False
-			self.broadcast(method=constants.EVENT_DEVICE_DISCONNECTING, exceptions=[self.name], propagateToSkills=True)
-
-
-	def getDevicesByRoom(self, room: str, connectedOnly: bool = False) -> List[Device]:
-		room = room.lower().replace(' ', '_')
-		return [x for x in self._devices.values() if x.room.lower() == room and (not connectedOnly or x.connected)]
-
-
-	def getDevicesByType(self, deviceType: str, connectedOnly: bool = False) -> List[Device]:
-		return [x for x in self._devices.values() if x.deviceType.lower() == deviceType.lower() and (not connectedOnly or x.connected)]
-
-
-	def getDeviceByUID(self, uid: str) -> Optional[Device]:
-		return self._devices.get(uid, None)
-
-
-	def broadcastToDevices(self, topic: str, payload: dict = None, deviceType: str = None, room: str = None, connectedOnly: bool = True):
-		if not payload:
-			payload = dict()
-
-		for device in self._devices.values():
-			if deviceType and device.deviceType.lower() != deviceType.lower():
-				continue
-
-			if room and device.room.lower() != room.lower():
-				continue
-
-			if connectedOnly and not device.connected:
-				continue
-
-			payload.setdefault('uid', device.uid)
-			payload.setdefault('siteId', device.room)
-
-			self.MqttManager.publish(
-				topic=topic,
-				payload=json.dumps(payload)
-			)
-
-
-	def onDeviceHeartbeat(self, uid: str, siteId: str = None):
-		device = self.getDeviceByUID(uid=uid)
-		if not device:
-			self.logWarning(f'Device with uid **{uid}** does not exist')
-			return
-
-		if siteId and siteId.replace(' ', '_').lower() != device.room.lower():
-			self.logWarning(f'Device with uid **{uid}** is not matching its defined room (received **{siteId.replace(" ", "_").lower()}** but required **{device.room}**')
-			return
-
-		self._heartbeats[uid] = time.time()
-
-
-	def checkHeartbeats(self):
-		now = time.time()
-		for uid, lastTime in self._heartbeats.copy().items():
-			if now - 5 > lastTime:
-				self.logWarning(f'Device with uid **{uid}** has not given a signal since 5 seconds or more')
-				self._heartbeats.pop(uid)
-				device = self._devices[uid]
-				if device:
-					device.connected = False
-
-		self._heartbeatsCheckTimer = self.ThreadManager.newTimer(interval=3, func=self.checkHeartbeats)
-
-
-	def sendHeartbeat(self):
-		self.MqttManager.publish(
-			topic=constants.TOPIC_CORE_HEARTBEAT
-		)
-
-		self._heartbeatTimer = self.ThreadManager.newTimer(interval=2, func=self.sendHeartbeat)

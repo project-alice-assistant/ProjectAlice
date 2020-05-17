@@ -205,17 +205,9 @@ class AliceSkill(ProjectAliceObject):
 	def loadDevices(self):
 		fp = self.getResource('device')
 		if fp.exists():
-			self.logInfo(f"Loading **{len(list(fp.glob('*.py'))) - 1}** device type", plural='types')
+			self.logInfo(f"Loading **{len(list(fp.glob('*.py')))}** device type", plural='types')
 
-			data = self.DatabaseManager.fetch(
-				tableName='deviceTypes',
-				query='SELECT * FROM :__table__ WHERE parent = :parent',
-				callerName=self.SkillManager.name,
-				values={'parent': self.name},
-				method='all'
-			)
-			if data:
-				data = {row['name']: row for row in data}
+			data = self.DeviceManager.getDeviceTypeBySkillRAW(skill=self.name)
 
 			for file in fp.glob('*.py'):
 				if file.name.startswith('__'):
@@ -227,32 +219,23 @@ class AliceSkill(ProjectAliceObject):
 
 				if deviceType in data:  # deviceType already exists in DB
 					deviceClass = klass(data[deviceType])
-					self._deviceTypes[deviceType] = deviceClass
+					self._deviceTypes[deviceClass.id] = deviceClass
 					deviceClass.setParentSkillInstance(self)
 					del data[deviceType]
 					self.logInfo(f'Loaded device type **{deviceType}**')
 
 				else:  # deviceClass is new
-					self.logInfo(f'Adding device type **{deviceType}**')
+					self.logInfo(f'Adding new device type **{deviceType}**')
 					deviceClass = klass({
 						'name'  : deviceType,
-						'parent': self.name,
+						'skill': self.name
 					})
-					self._deviceTypes[deviceType] = deviceClass
 					deviceClass.setParentSkillInstance(self)
-					deviceClass.saveToDB()
+					self._deviceTypes[deviceClass.id] = deviceClass
 
 			for deviceType in data:  # deprecated devices
-				self.logInfo(f'Widget **{deviceType}** is deprecated, removing')
-				self.DatabaseManager.delete(
-					tableName='widgets',
-					callerName=self.SkillManager.name,
-					query='DELETE FROM :__table__ WHERE parent = :parent AND name = :name',
-					values={
-						'parent': self.name,
-						'name'  : deviceType
-					}
-				)
+				self.logInfo(f'Device type **{deviceType}** is deprecated, removing')
+				self.DeviceManager.removeDeviceType(id=deviceType.id)
 
 
 

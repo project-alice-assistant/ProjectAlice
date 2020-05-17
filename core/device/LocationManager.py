@@ -9,7 +9,7 @@ class LocationManager(Manager):
 	DATABASE =  {
 		TABLE: [
 			'id INTEGER PRIMARY KEY',
-			'name TEXT',
+			'name TEXT NOT NULL',
 			'synonyms TEXT',
 			'display TEXT'
 		]
@@ -25,10 +25,10 @@ class LocationManager(Manager):
 		super().onStart()
 
 		self.loadLocations()
-		self.logInfo(f'Loaded **{len(self._locations)}** locations', plural='location')
+		self.logInfo(f'Loaded **{len(self._locations)}** location', plural='location')
 
 
-	def getLocationWithName(self, name: str):
+	def getLocationWithName(self, name: str) -> Optional[Location]:
 		for id, val in self._locations.items():
 			if val.name == name:
 				return val
@@ -40,11 +40,29 @@ class LocationManager(Manager):
 
 
 	def addNewLocation(self, name: str = None) -> bool:
-		# TODO check first if name is already existing!
-		values = {'name': name}
-		values['id'] = self.databaseInsert(tableName=self.TABLE, values=values)
-		self._locations[values['id']] = Location(values)
-		return self._locations[values['id']]
+		loc = self.getLocationWithName(name)
+		#todo check existing synonyms!
+		if not loc:
+			values = {'name': name}
+			values['id'] = self.databaseInsert(tableName=self.TABLE, values=values)
+			self._locations[values['id']] = Location(values)
+			return self._locations[values['id']]
+		else:
+			raise Exception(f'Location {name} already exists')
+
+
+	def getLocation(self,id: int = None, room: str = None) -> Location:
+		if room:
+			loc = self.getLocationWithName(name=room)
+		if id:
+			loc = self.locations.get(id)
+			if not loc:
+				raise Exception(f'No location with id {id} found')
+
+		if not loc and room:
+			loc = self.LocationManager.addNewLocation(name=room)
+
+		return loc
 
 
 	def deleteLocation(self, id: int) -> bool:
@@ -78,16 +96,25 @@ class LocationManager(Manager):
 
 	def updateLocations(self, data: Dict):
 		for room, values in data.items():
-			# new entry! TODO should not happen anymore? Adding happened before!
+			# unknown entry!
 			if values['id'] == 'undefined':
-				values['id'] = self.addNewLocation(values['name']).id
+				self.logError(f'unknown location updated! {values["name"]} reported without id.')
+				continue
+			# update display of location
 			self._locations[values['id']].display = values['display']
-			#todo update devices
-			#todo check synonyms for new injection
+			#todo check synonyms for new injection -> should happen while creating!
 			self.DatabaseManager.update(tableName=self.TABLE,
 			                            callerName=self.name,
 			                            values={
 				                            'display': values['display']
 			                            },
 			                            row=('id', values['id']))
+			self.logInfo(data)
+			for device in values['devices']:
+				self.DeviceManager.updateDevice(device)
 		pass
+
+
+	@property
+	def locations(self) -> Dict[int, Location]:
+		return self._locations
