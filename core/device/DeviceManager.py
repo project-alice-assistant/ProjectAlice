@@ -316,7 +316,7 @@ class DeviceManager(Manager):
 						answer = 'nok'
 
 					if deviceType.lower() == 'alicesatellite':
-						self.ThreadManager.doLater(interval=5, func=self.WakewordManager.uploadToNewDevice, args=[uid])
+						self.ThreadManager.doLater(interval=5, func=self.WakewordRecorder.uploadToNewDevice, args=[uid])
 
 				self._broadcastSocket.sendto(bytes(answer, encoding='utf8'), (deviceIp, self._broadcastPort))
 				self.stopBroadcasting()

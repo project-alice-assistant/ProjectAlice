@@ -331,7 +331,7 @@ network={
 		serviceFile.replace('#USER', f'User={getpass.getuser()}')
 
 		Path('/tmp/service').write_text(serviceFile)
-		subprocess.run(['sudo', 'mv', 'service', serviceFilePath])
+		subprocess.run(['sudo', 'mv', '/tmp/service', serviceFilePath])
 
 		self.logInfo('Installing audio hardware')
 		audioHardware = ''

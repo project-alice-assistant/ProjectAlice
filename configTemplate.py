@@ -191,12 +191,38 @@ settings = {
 		'onUpdate'    : 'reloadASR',
 		'category'    : 'asr'
 	},
+	'asrFallback'             : {
+		'defaultValue': 'pocketsphinx',
+		'dataType'    : 'list',
+		'isSensitive' : False,
+		'values'      : ['deepspeech', 'pocketsphinx', 'google'],
+		'description' : 'The Asr to use in case the default ASR becomes unavailable',
+		'category'    : 'asr'
+	},
 	'asrTimeout'              : {
 		'defaultValue': 10,
 		'dataType'    : 'integer',
 		'isSensitive' : False,
 		'description' : 'Defines after how many seconds the Asr times out',
 		'category'    : 'asr'
+	},
+	'wakewordEngine'          : {
+		'defaultValue': 'snips',
+		'dataType'    : 'list',
+		'isSensitive' : False,
+		'values'      : ['porcupine', 'snips', 'precise'],
+		'description' : 'Wakeword engine to use',
+		'category'    : 'wakeword'
+	},
+	'wakewordSensitivity'     : {
+		'defaultValue': 0.5,
+		'dataType'    : 'range',
+		'min'         : 0,
+		'max'         : 1,
+		'step'        : 0.01,
+		'isSensitive' : False,
+		'description' : 'Default wakeword sensitivity',
+		'category'    : 'wakeword'
 	},
 	'tts'                     : {
 		'defaultValue': 'pico',
@@ -207,11 +233,21 @@ settings = {
 		'onUpdate'    : 'reloadTTS',
 		'category'    : 'tts'
 	},
+	'ttsFallback': {
+		'defaultValue': 'pico',
+		'dataType'    : 'list',
+		'isSensitive' : False,
+		'values'      : {'Pico': 'pico', 'Mycroft': 'mycroft', 'Amazon Polly': 'amazon', 'Google Wavenet': 'google', 'IBM Watson': 'watson', 'Snips Makers TTS': 'snips'},
+		'description' : 'The TTS to use in case the default TTS becomes unavailable.',
+		'onUpdate'    : 'reloadTTS',
+		'category'    : 'tts'
+	},
 	'ttsLanguage'             : {
 		'defaultValue': 'en-US',
 		'dataType'    : 'string',
 		'isSensitive' : False,
 		'description' : 'Language for the TTS to use',
+		'help'        : 'PICO VOICE<br>AMAZON POLLY<br>MYCROFT<br>GOOGLE WAVENET<br>IBM WATSON<br>Snips Makers TTS',
 		'onUpdate'    : 'reloadTTS',
 		'category'    : 'tts'
 	},

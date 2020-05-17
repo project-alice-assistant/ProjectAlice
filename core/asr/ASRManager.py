@@ -35,8 +35,8 @@ class ASRManager(Manager):
 			self._asr.onStop()
 
 
-	def _startASREngine(self):
-		userASR = self.ConfigManager.getAliceConfigByName(configName='asr').lower()
+	def _startASREngine(self, forceAsr = None):
+		userASR = self.ConfigManager.getAliceConfigByName(configName='asr').lower() if forceAsr is None else forceAsr
 		keepASROffline = self.ConfigManager.getAliceConfigByName('keepASROffline')
 		stayOffline = self.ConfigManager.getAliceConfigByName('stayCompletlyOffline')
 		online = self.InternetManager.online
@@ -70,10 +70,13 @@ class ASRManager(Manager):
 			self._asr = None
 
 		if self._asr is None:
-			self.logWarning('Asr did not satisfy the user settings, falling back to Deepspeech')
-			from core.asr.model.DeepSpeechAsr import DeepSpeechAsr
-
-			self._asr = DeepSpeechAsr()
+			if not forceAsr:
+				fallback = self.ConfigManager.getAliceConfigByName('asrFallback')
+				self.logWarning(f'Asr did not satisfy the user settings, falling back to **{fallback}**')
+				self._startASREngine(forceAsr=fallback)
+			else:
+				self.logFatal('Fallback ASR failed, going down')
+				return
 
 		self._asr.onStart()
 

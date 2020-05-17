@@ -14,6 +14,7 @@ from core.commons import constants
 class AudioManager(Manager):
 
 	SAMPLERATE = 16000
+	FRAMES_PER_BUFFER = 320
 
 	# Inspired by https://github.com/koenvervloesem/hermes-audio-server
 
@@ -69,12 +70,12 @@ class AudioManager(Manager):
 			format=pyaudio.paInt16,
 			channels=1,
 			rate=self.SAMPLERATE,
-			frames_per_buffer=320,
+			frames_per_buffer=self.FRAMES_PER_BUFFER,
 			input=True
 		)
 
 		speech = False
-		silence = self.SAMPLERATE / 320
+		silence = self.SAMPLERATE / self.FRAMES_PER_BUFFER
 		speechFrames = 0
 		minSpeechFrames = round(silence / 3)
 
@@ -83,8 +84,8 @@ class AudioManager(Manager):
 				break
 
 			try:
-				frames = audioStream.read(num_frames=320, exception_on_overflow=False)
-				if self._vad.is_speech(frames, 16000):
+				frames = audioStream.read(num_frames=self.FRAMES_PER_BUFFER, exception_on_overflow=False)
+				if self._vad.is_speech(frames, self.SAMPLERATE):
 					if not speech and speechFrames < minSpeechFrames:
 						speechFrames += 1
 					elif speechFrames >= minSpeechFrames:
@@ -94,7 +95,7 @@ class AudioManager(Manager):
 							payload={
 								'siteId': self.ConfigManager.getAliceConfigByName('deviceName')
 							})
-						silence = 16000 / 320
+						silence = self.SAMPLERATE / self.FRAMES_PER_BUFFER
 						speechFrames = 0
 				else:
 					if speech:
@@ -120,7 +121,7 @@ class AudioManager(Manager):
 			with wave.open(buffer, 'wb') as wav:
 				wav.setnchannels(1)
 				wav.setsampwidth(2)
-				wav.setframerate(16000)
+				wav.setframerate(self.SAMPLERATE)
 				wav.writeframes(frames)
 
 			audioFrames = buffer.getvalue()

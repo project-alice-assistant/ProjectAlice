@@ -26,7 +26,6 @@ class SuperManager:
 		self.configManager = None
 		self.databaseManager = None
 		self.languageManager = None
-		self.snipsServicesManager = None
 		self.asrManager = None
 		self.ttsManager = None
 		self.protectedIntentManager = None
@@ -39,7 +38,7 @@ class SuperManager:
 		self.deviceManager = None
 		self.locationManager = None
 		self.internetManager = None
-		self.wakewordManager = None
+		self.wakewordRecorder = None
 		self.userManager = None
 		self.talkManager = None
 		self.webInterfaceManager = None
@@ -52,6 +51,7 @@ class SuperManager:
 		self.audioManager = None
 		self.dialogManager = None
 		self.locationManager = None
+		self.wakewordManager = None
 
 
 	def onStart(self):
@@ -82,7 +82,6 @@ class SuperManager:
 		snipsAssistantManager = self._managers.pop('SnipsAssistantManager')
 		nluManager = self._managers.pop('NluManager')
 		nodeRedManager = self._managers.pop('NodeRedManager')
-		snipsServicesManager = self._managers.pop('SnipsServicesManager')
 
 		for manager in self._managers.values():
 			if manager:
@@ -92,14 +91,12 @@ class SuperManager:
 		skillManager.onStart()
 		dialogTemplateManager.onStart()
 		snipsAssistantManager.onStart()
-		snipsServicesManager.onStart()
 		nluManager.onStart()
 		nodeRedManager.onStart()
 
 		self._managers[configManager.name] = configManager
 		self._managers[languageManager.name] = languageManager
 		self._managers[talkManager.name] = talkManager
-		self._managers[snipsServicesManager.name] = snipsServicesManager
 		self._managers[databaseManager.name] = databaseManager
 		self._managers[userManager.name] = userManager
 		self._managers[mqttManager.name] = mqttManager
@@ -133,7 +130,6 @@ class SuperManager:
 		from core.dialog.MultiIntentManager import MultiIntentManager
 		from core.dialog.ProtectedIntentManager import ProtectedIntentManager
 		from core.server.MqttManager import MqttManager
-		from core.snips.SnipsServicesManager import SnipsServicesManager
 		from core.user.UserManager import UserManager
 		from core.util.DatabaseManager import DatabaseManager
 		from core.util.InternetManager import InternetManager
@@ -144,7 +140,7 @@ class SuperManager:
 		from core.voice.LanguageManager import LanguageManager
 		from core.voice.TalkManager import TalkManager
 		from core.voice.TTSManager import TTSManager
-		from core.voice.WakewordManager import WakewordManager
+		from core.voice.WakewordRecorder import WakewordRecorder
 		from core.interface.WebInterfaceManager import WebInterfaceManager
 		from core.interface.NodeRedManager import NodeRedManager
 		from core.base.SkillStoreManager import SkillStoreManager
@@ -154,13 +150,13 @@ class SuperManager:
 		from core.util.AliceWatchManager import AliceWatchManager
 		from core.server.AudioServer import AudioManager
 		from core.dialog.DialogManager import DialogManager
+		from core.voice.WakewordManager import WakewordManager
 
 		self.commonsManager = CommonsManager()
 		self.commons = self.commonsManager
 		self.configManager = ConfigManager()
 		self.databaseManager = DatabaseManager()
 		self.languageManager = LanguageManager()
-		self.snipsServicesManager = SnipsServicesManager()
 		self.asrManager = ASRManager()
 		self.ttsManager = TTSManager()
 		self.threadManager = ThreadManager()
@@ -174,7 +170,7 @@ class SuperManager:
 		self.deviceManager = DeviceManager()
 		self.locationManager = LocationManager()
 		self.internetManager = InternetManager()
-		self.wakewordManager = WakewordManager()
+		self.wakewordRecorder = WakewordRecorder()
 		self.talkManager = TalkManager()
 		self.webInterfaceManager = WebInterfaceManager()
 		self.nodeRedManager = NodeRedManager()
@@ -185,6 +181,7 @@ class SuperManager:
 		self.aliceWatchManager = AliceWatchManager()
 		self.audioManager = AudioManager()
 		self.dialogManager = DialogManager()
+		self.wakewordManager = WakewordManager()
 
 		self._managers = {name[0].upper() + name[1:]: manager for name, manager in self.__dict__.items() if name.endswith('Manager')}
 

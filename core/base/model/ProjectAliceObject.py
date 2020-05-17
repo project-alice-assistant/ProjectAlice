@@ -58,7 +58,7 @@ class ProjectAliceObject:
 				func(**kwargs)
 
 		except TypeError as e:
-			self.logWarning(f'- Failed to broadcast event {method} to DialogManager: {e}')
+			self.logWarning(f'- Failed to broadcast event **{method}** to **DialogManager**: {e}')
 
 
 		deadManagers = list()
@@ -76,7 +76,7 @@ class ProjectAliceObject:
 					func(**kwargs)
 
 			except TypeError as e:
-				self.logWarning(f'- Failed to broadcast event {method} to {man.name}: {e}')
+				self.logWarning(f'- Failed to broadcast event **{method}** to **{man.name}**: {e}')
 
 		if propagateToSkills:
 			self.SkillManager.skillBroadcast(method=method, **kwargs)
@@ -553,11 +553,6 @@ class ProjectAliceObject:
 
 
 	@property
-	def SnipsServicesManager(self): #NOSONAR
-		return SM.SuperManager.getInstance().snipsServicesManager
-
-
-	@property
 	def UserManager(self): #NOSONAR
 		return SM.SuperManager.getInstance().userManager
 
@@ -608,8 +603,8 @@ class ProjectAliceObject:
 
 
 	@property
-	def WakewordManager(self): #NOSONAR
-		return SM.SuperManager.getInstance().wakewordManager
+	def WakewordRecorder(self): #NOSONAR
+		return SM.SuperManager.getInstance().wakewordRecorder
 
 
 	@property
@@ -660,3 +655,8 @@ class ProjectAliceObject:
 	@property
 	def LocationManager(self): #NOSONAR
 		return SM.SuperManager.getInstance().locationManager
+
+
+	@property
+	def WakewordManager(self): #NOSONAR
+		return SM.SuperManager.getInstance().wakewordRecorder

@@ -25,7 +25,7 @@ class TTSManager(Manager):
 		self._loadTTS(self.ConfigManager.getAliceConfigByName('tts').lower())
 
 
-	def _loadTTS(self, userTTS: str = None, user: User = None):
+	def _loadTTS(self, userTTS: str = None, user: User = None, forceTts = None):
 		if not userTTS:
 			systemTTS = self.ConfigManager.getAliceConfigByName('tts').lower()
 		else:
@@ -72,10 +72,13 @@ class TTSManager(Manager):
 			self._tts = None
 
 		if self._tts is None:
-			self.logWarning('TTS did not satisfy the user settings, falling back to PicoTTS')
-			from core.voice.model.PicoTTS import PicoTTS
-
-			self._tts = PicoTTS(user)
+			if not forceTts:
+				fallback = self.ConfigManager.getAliceConfigByName('ttsFallback')
+				self.logWarning(f'TTS did not satisfy the user settings, falling back to **{fallback}**')
+				self._loadTTS(userTTS=userTTS, user=user, forceTts=fallback)
+			else:
+				self.logFatal('Fallback TTS failed, going down')
+				return
 
 		try:
 			self._tts.onStart()

@@ -35,6 +35,8 @@
 									{% else %}
 										<input type="number" name="{{ settingName }}" value="{{ settingValue }}" id="{{ settingName }}">
 									{% endif %}
+								{% elif skill.getSkillConfigsTemplate()[settingName]['dataType'] == 'range' %}
+									<input type="range" name="{{ settingName }}" value="{{ settingValue }}" id="{{ settingName }}" min="{{ skill.getSkillConfigsTemplate()[settingName]['min'] }}" max="{{ skill.getSkillConfigsTemplate()[settingName]['max'] }}" step="{{ skill.getSkillConfigsTemplate()[settingName]['step'] }}">
 								{% elif skill.getSkillConfigsTemplate()[settingName]['dataType'] == 'string' %}
 									{% if skill.getSkillConfigsTemplate()[settingName]['isSensitive'] is sameas true %}
 										<input type="password" name="{{ settingName }}" value="{{ settingValue }}" id="{{ settingName }}">
@@ -62,8 +64,10 @@
 						</div>
 					{% endif %}
 				{% endfor %}
-				<input type="hidden" name="skillName" value="{{ skillName }}">
-				<input class="button" type="submit" value="{{ langData.save }}">
+				<div class="buttonLine">
+					<input type="hidden" name="skillName" value="{{ skillName }}">
+					<input class="button" type="submit" value="{{ langData.save }}">
+				</div>
 			</form>
 		</div>
 	{% endfor %}
