@@ -44,7 +44,8 @@ class DeviceType(ProjectAliceObject):
 			                            callerName=self.DeviceManager.name,
 			                            values={'locSettings': self._locSettings},
 			                            row=('id', values['id']))
-			# todo update location settings for all links
+			for links in self.DeviceManager.getDeviceLinksByType(deviceType=self.id):
+				links.changedLocSettingsStructure(self._locSettings)
 
 
 

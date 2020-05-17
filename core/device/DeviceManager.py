@@ -58,9 +58,10 @@ class DeviceManager(Manager):
 	def __init__(self):
 		super().__init__(databaseSchema=self.DATABASE)
 
-		self._devices: Dict[str, Device] = dict()
+		self._devices: Dict[int, Device] = dict()
+		self._deviceLinks: Dict[int, DeviceLink] = dict()
 		#self._idToUID: Dict[int, str] = dict() #todo maybe relevant for faster access?
-		self._deviceTypes: Dict[str, DeviceType] = dict()
+		self._deviceTypes: Dict[int, DeviceType] = dict()
 		self._broadcastRoom = ''
 		self._broadcastFlag = threading.Event()
 
@@ -93,6 +94,7 @@ class DeviceManager(Manager):
 		self._listenSocket.bind(('', self._listenPort))
 
 		self.loadDevices()
+		self.loadLinks()
 
 		self.logInfo(f'Loaded **{len(self._devices)}** device', plural='device')
 
@@ -205,6 +207,9 @@ class DeviceManager(Manager):
 		)
 		self._deviceTypes.pop(id)
 
+	def getLink(self, deviceID, int, locationID: int):
+
+
 
 	def addLink(self, id: int, locationid: int):
 		device = self.getDeviceByID(id)
@@ -217,6 +222,7 @@ class DeviceManager(Manager):
 		values = {'id' : id, 'locationid': locationid, 'locSettings': locSettings}
 		self.databaseInsert(tableName=self.DB_LINKS, query='INSERT INTO :__table__ (deviceID, locationID, locSettings) VALUES (:id, :locationid, locSettings)', values=values)
 
+	def deleteLink(self, id: int):
 
 	def deleteDeviceUID(self, deviceUID: str):
 		self.deleteDeviceID(deviceID=devUIDtoID(UID=deviceUID))
@@ -457,8 +463,11 @@ class DeviceManager(Manager):
 	def getDevicesByType(self, deviceType: int, connectedOnly: bool = False) -> List[Device]:
 		return [x for x in self._devices.values() if x.deviceTypeID == deviceType and (not connectedOnly or x.connected)]
 
+	def getDeviceLinksByType(self, deviceType: int) -> List[Device]:
+		return [x for x in self._deviceLinks.values() if x.deviceTypeID == deviceType and (not connectedOnly or x.connected)]
 
-	def getDeviceByUID(self, uid: str) -> Optional[Device]:
+
+def getDeviceByUID(self, uid: str) -> Optional[Device]:
 		return self._devices.get(self.devUIDtoID(uid), None)
 
 

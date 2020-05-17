@@ -78,17 +78,6 @@ class MyHomeView(View):
 
 
 ### Device API
-	@route('/Device/getList')
-	def device_getList(self):
-		self.logInfo(self.DeviceManager.devices)
-		# uid, name, deviceType, room, lastContact, positioning
-		# TODO this can't be the real way.....
-		res = ""
-		for d in self.DeviceManager.devices.values():
-			res+=d.data
-		return res
-
-
 	@route('/Device/0/add', methods=['POST'])
 	def addDevice(self):
 		try:
@@ -153,7 +142,6 @@ class MyHomeView(View):
 				raise Exception('No valid room ID supplied')
 			else:
 				self.DeviceManager.addLink(id=id,roomid=roomid)
-				pass
 		except Exception as e:
 			self.logError(f'Failed adding room/device Link: {e}')
 
@@ -164,11 +152,10 @@ class MyHomeView(View):
 			id = int(id)
 			roomid = int(roomid)
 			if roomid == 0:
-				#todo get generic settings
-				pass
+				raise Exception('No valid room ID supplied')
 			else:
-				#todo get room dependent settings
-				pass
+				linkID = self.DeviceManager.getLink(deviceID, locationID)
+				self.DeviceManager.deleteLink(id=linkID)
 		except Exception as e:
 			self.logError(f'Failed deleting room/device Link: {e}')
 

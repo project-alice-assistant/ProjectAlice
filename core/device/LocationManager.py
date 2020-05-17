@@ -114,6 +114,19 @@ class LocationManager(Manager):
 				self.DeviceManager.updateDevice(device)
 		pass
 
+	def getLocation(self, room: str = None, siteID: str = None, deviceTypeID: int = None):
+		# room: a room name issued by the user
+		# siteID: the current devices site NAME
+		# deviceTypeID: only rooms with that type of device can be found - linked is allowed as well
+		##todo implement location det. logic
+		# 1a) check name vs locations
+		# 1b) check name vs location synonyms
+		# 2a) check siteID vs locations
+		# 2b) check siteID vs synonyms
+		# 3) try to get the location context sensitive
+		# 4) check if there is only one room that has that type of device
+		# if 1 or 2 provides names
+		pass
 
 	@property
 	def locations(self) -> Dict[int, Location]:
