@@ -29,6 +29,9 @@ class DialogTemplateManager(Manager):
 	def onStart(self):
 		super().onStart()
 
+		if not self._pathToCache.exists():
+			self._pathToCache.mkdir(parents=True)
+
 		if not self._pathToChecksums.exists():
 			self._pathToChecksums.write_text('{}')
 
