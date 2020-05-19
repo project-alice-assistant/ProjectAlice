@@ -13,12 +13,10 @@ try:
 except ModuleNotFoundError:
 	configFileNotExist = False
 
-import difflib
 import importlib
 import typing
 from core.ProjectAliceExceptions import ConfigurationUpdateFailed, VitalConfigMissing
 from core.base.model.Manager import Manager
-from core.commons import constants
 
 
 class ConfigManager(Manager):
@@ -29,11 +27,12 @@ class ConfigManager(Manager):
 		super().__init__()
 
 		self._vitalConfigs = list()
+		self._aliceConfigurationCategories = list()
 
 		self._aliceConfigurations: typing.Dict[str, typing.Any] = self._loadCheckAndUpdateAliceConfigFile()
 		self._aliceTemplateConfigurations: typing.Dict[str, dict] = configTemplate.settings
+
 		self._snipsConfigurations = self.loadSnipsConfigurations()
-		self._setDefaultSiteId()
 
 		self._skillsConfigurations = dict()
 		self._skillsTemplateConfigurations: typing.Dict[str, dict] = dict()
@@ -46,20 +45,12 @@ class ConfigManager(Manager):
 				raise VitalConfigMissing(conf)
 
 
-	# TODO
-	def _setDefaultSiteId(self):
-		if self._snipsConfigurations['snips-audio-server']['bind']:
-			constants.DEFAULT_SITE_ID = self._snipsConfigurations['snips-audio-server']['bind'].replace('@mqtt', '')
-		else:
-			constants.DEFAULT_SITE_ID = constants.DEFAULT
-
-
 	def _loadCheckAndUpdateAliceConfigFile(self) -> dict:
 		self.logInfo('Checking Alice configuration file')
 
 		if not configFileExist:
 			self.logInfo('Creating config file from config template')
-			confs = {configName: configData['values'] if 'dataType' in configData and configData['dataType'] == 'list' else configData['defaultValue'] if 'defaultValue' in configData else configData for configName, configData in configTemplate.settings.items()}
+			confs = {configName: configData['defaultValue'] if 'defaultValue' in configData else configData for configName, configData in configTemplate.settings.items()}
 			Path(self.CONFIG_FILE).write_text(f'settings = {json.dumps(confs, indent=4)}')
 			aliceConfigs = importlib.import_module(self.CONFIG_FILE).settings.copy()
 		else:
@@ -67,13 +58,14 @@ class ConfigManager(Manager):
 
 		changes = False
 		for setting, definition in configTemplate.settings.items():
+
+			if definition['category'] not in self._aliceConfigurationCategories:
+				self._aliceConfigurationCategories.append(definition['category'])
+
 			if setting not in aliceConfigs:
 				self.logInfo(f'New configuration found: **{setting}**')
 				changes = True
-				if definition.get('dataType', '') == 'list':
-					aliceConfigs[setting] = definition.get('values', list())
-				else:
-					aliceConfigs[setting] = definition.get('defaultValue', '')
+				aliceConfigs[setting] = definition.get('defaultValue', '')
 			else:
 				if setting == 'supportedLanguages':
 					continue
@@ -102,12 +94,11 @@ class ConfigManager(Manager):
 			logging.getLogger('ProjectAlice').setLevel(logging.DEBUG)
 
 		temp = aliceConfigs.copy()
-
-		for k, v in temp.items():
-			if k not in configTemplate.settings:
-				self.logInfo(f'Deprecated configuration: **{k}**')
+		for key in temp:
+			if key not in configTemplate.settings:
+				self.logInfo(f'Deprecated configuration: **{key}**')
 				changes = True
-				del aliceConfigs[k]
+				del aliceConfigs[key]
 
 		if changes:
 			self.writeToAliceConfigurationFile(aliceConfigs)
@@ -146,12 +137,15 @@ class ConfigManager(Manager):
 			except:
 				self.logWarning(f'Value missmatch for config **{key}** in skill **{skillName}**')
 				value = 0
-		elif vartype == 'float':
+		elif vartype == 'float' or vartype == 'range':
 			try:
 				value = float(value)
+				if vartype == 'range' and (value > self._skillsTemplateConfigurations[skillName][key]['max'] or value < self._skillsTemplateConfigurations[skillName][key]['min']):
+					value = self._skillsTemplateConfigurations[skillName][key]['defaultValue']
+					self.logWarning(f'Value for config **{key}** in skill **{skillName}** is out of bound, reverted to default')
 			except:
 				self.logWarning(f'Value missmatch for config **{key}** in skill **{skillName}**')
-				value = 0.0
+				value = 0
 		elif vartype in {'string', 'email', 'password'}:
 			try:
 				value = str(value)
@@ -225,7 +219,7 @@ class ConfigManager(Manager):
 			self._snipsConfigurations.dump()
 
 			if restartSnips:
-				self.SnipsServicesManager.runCmd('restart')
+				self.Commons.runRootSystemCommand(['systemctl', 'restart', 'snips-nlu'])
 
 
 	def getSnipsConfiguration(self, parent: str, key: str, createIfNotExist: bool = True) -> typing.Optional[str]:
@@ -257,11 +251,12 @@ class ConfigManager(Manager):
 		return skillName in self._skillsConfigurations and configName in self._skillsConfigurations[skillName]
 
 
-	def getAliceConfigByName(self, configName: str, voiceControl: bool = False) -> typing.Any:
-		return self._aliceConfigurations.get(
-			configName,
-			difflib.get_close_matches(word=configName, possibilities=self._aliceConfigurations, n=3) if voiceControl else ''
-		)
+	def getAliceConfigByName(self, configName: str) -> typing.Any:
+		if configName in self._aliceConfigurations:
+			return self._aliceConfigurations[configName]
+		else:
+			self.logDebug(f'Trying to get config **{configName}** but it does not exist')
+			return ''
 
 
 	def getSkillConfigByName(self, skillName: str, configName: str) -> typing.Any:
@@ -442,6 +437,12 @@ class ConfigManager(Manager):
 		self.ASRManager.onStart()
 
 
+
+	def reloadTTS(self):
+		self.TTSManager.onStop()
+		self.TTSManager.onStart()
+
+
 	def checkNewAdminPinCode(self, pinCode: str) -> bool:
 		try:
 			pin = int(pinCode)
@@ -460,14 +461,14 @@ class ConfigManager(Manager):
 
 	def enableDisableSoundInSnips(self):
 		if self.getAliceConfigByName('disableSoundAndMic'):
-			self.SnipsServicesManager.runCmd(cmd='stop', services=['snips-hotword'])
+			self.WakewordManager.disableEngine()
 			self.updateSnipsConfiguration(parent='snips-audio-server', key='disable_playback', value=True)
 			self.updateSnipsConfiguration(parent='snips-audio-server', key='disable_capture', value=True, restartSnips=True)
 		else:
+			self.WakewordManager.enableEngine()
 			del self._snipsConfigurations['snips-audio-server']['disable_playback']
 			del self._snipsConfigurations['snips-audio-server']['disable_capture']
 			self._snipsConfigurations.dump()
-			self.SnipsServicesManager.runCmd('restart')
 
 
 	def refreshStoreData(self):
@@ -488,6 +489,11 @@ class ConfigManager(Manager):
 	@property
 	def aliceConfigurations(self) -> dict:
 		return self._aliceConfigurations
+
+
+	@property
+	def aliceConfigurationCategories(self) -> list:
+		return sorted(self._aliceConfigurationCategories)
 
 
 	@property

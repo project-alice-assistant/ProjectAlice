@@ -21,7 +21,7 @@ class DialogApi(Api):
 	@ApiAuthenticated
 	def say(self):
 		try:
-			siteId = request.form.get('siteId') if request.form.get('siteId', None) is not None else constants.DEFAULT_SITE_ID
+			siteId = request.form.get('siteId') if request.form.get('siteId', None) is not None else self.ConfigManager.getAliceConfigByName('deviceName')
 			self.MqttManager.say(
 				text=request.form.get('text'),
 				client=siteId
@@ -36,7 +36,7 @@ class DialogApi(Api):
 	@ApiAuthenticated
 	def ask(self):
 		try:
-			siteId = request.form.get('siteId') if request.form.get('siteId', None) is not None else constants.DEFAULT_SITE_ID
+			siteId = request.form.get('siteId') if request.form.get('siteId', None) is not None else self.ConfigManager.getAliceConfigByName('deviceName')
 			self.MqttManager.ask(
 				text=request.form.get('text'),
 				client=siteId
@@ -51,7 +51,7 @@ class DialogApi(Api):
 	@ApiAuthenticated
 	def process(self):
 		try:
-			siteId = request.form.get('siteId') if request.form.get('siteId', None) is not None else constants.DEFAULT_SITE_ID
+			siteId = request.form.get('siteId') if request.form.get('siteId', None) is not None else self.ConfigManager.getAliceConfigByName('deviceName')
 
 			user = self.UserManager.getUserByAPIToken(request.headers.get('auth', ''))
 			session = self.DialogManager.newSession(siteId=siteId, user=user.name)

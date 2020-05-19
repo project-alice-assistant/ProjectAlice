@@ -69,7 +69,7 @@ network={
 		self._latest = 1.18
 
 
-	def initProjectAlice(self) -> bool:
+	def initProjectAlice(self) -> bool: #NOSONAR
 		if not self._initFile.exists() and not self._confsFile.exists():
 			self.logFatal('Init file not found and there\'s no configuration file, aborting Project Alice start')
 		elif not self._initFile.exists():
@@ -227,7 +227,7 @@ network={
 			confs['keepASROffline'] = bool(initConfs['keepASROffline'])
 			confs['keepTTSOffline'] = bool(initConfs['keepTTSOffline'])
 			confs['skillAutoUpdate'] = bool(initConfs['skillAutoUpdate'])
-			confs['tts'] = initConfs['tts'] if initConfs['tts'] in {'pico', 'snips', 'mycroft', 'amazon', 'google'} else 'pico'
+			confs['tts'] = initConfs['tts'] if initConfs['tts'] in {'pico', 'snips', 'mycroft', 'amazon', 'google', 'watson'} else 'pico'
 			confs['awsRegion'] = initConfs['awsRegion']
 			confs['awsAccessKey'] = initConfs['awsAccessKey']
 			confs['awsSecretKey'] = initConfs['awsSecretKey']
@@ -245,8 +245,6 @@ network={
 		# Those that don't need checking
 		confs['ssid'] = initConfs['wifiNetworkName']
 		confs['wifipassword'] = str(initConfs['wifiWPAPass'])
-		confs['micSampleRate'] = int(initConfs['micSampleRate'] or 16000)
-		confs['micChannels'] = int(initConfs['micChannels'] or 1)
 		confs['useHLC'] = bool(initConfs['useHLC'])
 		confs['webInterfaceActive'] = bool(initConfs['webInterfaceActive'])
 		confs['devMode'] = bool(initConfs['devMode'])
@@ -260,9 +258,9 @@ network={
 		confs['probabilityThreshold'] = float(initConfs['probabilityThreshold'] or 0.5)
 		confs['shortReplies'] = bool(initConfs['shortReplies'])
 		confs['whisperWhenSleeping'] = bool(initConfs['whisperWhenSleeping'])
-		confs['ttsLanguage'] = initConfs['ttsLanguage'] or confs['activeLanguage']
-		confs['ttsType'] = initConfs['ttsType'] if initConfs['ttsType'] in {'female', 'male'} else 'female'
-		confs['ttsVoice'] = initConfs['ttsVoice']
+		confs['ttsLanguage'] = confs['activeLanguage']
+		confs['ttsType'] = 'male'
+		confs['ttsVoice'] = ''
 		confs['githubUsername'] = initConfs['githubUsername']
 		confs['githubToken'] = initConfs['githubToken']
 
@@ -313,9 +311,6 @@ network={
 		if not snipsConf:
 			self.logFatal('Error loading snips.toml')
 
-		if initConfs['deviceName'] != 'default':
-			snipsConf['snips-audio-server']['bind'] = f'{initConfs["deviceName"]}@mqtt'
-
 		if initConfs['mqttHost'] != 'localhost' or initConfs['mqttPort'] != 1883:
 			snipsConf['snips-common']['mqtt'] = f'{initConfs["mqttHost"]}:{initConfs["mqttPort"]}'
 
@@ -336,7 +331,7 @@ network={
 		serviceFile.replace('#USER', f'User={getpass.getuser()}')
 
 		Path('/tmp/service').write_text(serviceFile)
-		subprocess.run(['sudo', 'mv', 'service', serviceFilePath])
+		subprocess.run(['sudo', 'mv', '/tmp/service', serviceFilePath])
 
 		self.logInfo('Installing audio hardware')
 		audioHardware = ''

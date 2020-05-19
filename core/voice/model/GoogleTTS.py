@@ -1,4 +1,3 @@
-import subprocess
 from pathlib import Path
 
 from google.oauth2.service_account import Credentials
@@ -12,20 +11,24 @@ from core.voice.model.Tts import TTS
 try:
 	from google.cloud import texttospeech
 except ModuleNotFoundError:
-	subprocess.run(['pip3', 'install', 'google-cloud-texttospeech'])
+	pass # Auto installed
 
 
 class GoogleTTS(TTS):
 	TTS = TTSEnum.GOOGLE
 
+	DEPENDENCIES = {
+		'system': [],
+		'pip'   : {
+			'google-cloud-texttospeech==1.0.1'
+		}
+	}
+
 	def __init__(self, user: User = None):
 		super().__init__(user)
 		self._online = True
 		self._privacyMalus = -20
-
-
-		creds = Credentials.from_service_account_file(filename=Path(SuperManager.getInstance().commons.rootDir(), 'credentials/googlecredentials.json'))
-		self._client = texttospeech.TextToSpeechClient(credentials=creds)
+		self._client = None
 
 		# TODO implement the others
 		# https://cloud.google.com/text-to-speech/docs/voices
@@ -151,6 +154,13 @@ class GoogleTTS(TTS):
 				}
 			}
 		}
+
+
+	def onStart(self):
+		super().onStart()
+		self._client = texttospeech.TextToSpeechClient(
+			credentials=Credentials.from_service_account_file(filename=Path(SuperManager.getInstance().commons.rootDir(), 'credentials/googlecredentials.json'))
+		)
 
 
 	@staticmethod

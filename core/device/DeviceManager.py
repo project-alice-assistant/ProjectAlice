@@ -367,7 +367,7 @@ class DeviceManager(Manager):
 						answer = 'nok'
 
 					if deviceType.lower() == 'alicesatellite':
-						self.ThreadManager.doLater(interval=5, func=self.WakewordManager.uploadToNewDevice, args=[uid])
+						self.ThreadManager.doLater(interval=5, func=self.WakewordRecorder.uploadToNewDevice, args=[uid])
 
 				self._broadcastSocket.sendto(bytes(answer, encoding='utf8'), (deviceIp, self._broadcastPort))
 				self.stopBroadcasting()
@@ -409,7 +409,7 @@ class DeviceManager(Manager):
 
 
 	def getDevicesByType(self, deviceType: str, connectedOnly: bool = False) -> List[Device]:
-		return [x for x in self._devices.values() if x.deviceType == deviceType.lower() and (not connectedOnly or x.connected)]
+		return [x for x in self._devices.values() if x.deviceType.lower() == deviceType.lower() and (not connectedOnly or x.connected)]
 
 
 	def getDeviceByUID(self, uid: str) -> Optional[Device]:

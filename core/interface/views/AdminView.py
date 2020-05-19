@@ -16,6 +16,7 @@ class AdminView(View):
 	def index(self):
 		return render_template(template_name_or_list='admin.html',
 		                       langData=self._langData,
+		                       aliceSettingCategories=self.ConfigManager.aliceConfigurationCategories,
 		                       aliceSettings=self.ConfigManager.aliceConfigurations,
 		                       aliceSettingsTemplate=self.ConfigManager.aliceTemplateConfigurations)
 
@@ -49,7 +50,6 @@ class AdminView(View):
 				if pp:
 					postProcessing.add(pp)
 
-			confs['skills'] = self.ConfigManager.getAliceConfigByName('skills')
 			confs['supportedLanguages'] = self.ConfigManager.getAliceConfigByName('supportedLanguages')
 
 			self.ConfigManager.writeToAliceConfigurationFile(confs=confs)

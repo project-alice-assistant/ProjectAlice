@@ -529,11 +529,11 @@ class AliceSkill(ProjectAliceObject):
 		return self.SkillManager.getSkillInstance(skillName=skillName)
 
 
-	def say(self, text: str, siteId: str = constants.DEFAULT_SITE_ID, customData: dict = None, canBeEnqueued: bool = True):
+	def say(self, text: str, siteId: str = None, customData: dict = None, canBeEnqueued: bool = True):
 		self.MqttManager.say(text=text, client=siteId, customData=customData, canBeEnqueued=canBeEnqueued)
 
 
-	def ask(self, text: str, siteId: str = constants.DEFAULT_SITE_ID, intentFilter: list = None, customData: dict = None, canBeEnqueued: bool = True, currentDialogState: str = '', probabilityThreshold: float = None):
+	def ask(self, text: str, siteId: str = None, intentFilter: list = None, customData: dict = None, canBeEnqueued: bool = True, currentDialogState: str = '', probabilityThreshold: float = None):
 		if currentDialogState:
 			currentDialogState = f'{self.name}:{currentDialogState}'
 		self.MqttManager.ask(text=text, client=siteId, intentFilter=intentFilter, customData=customData, canBeEnqueued=canBeEnqueued, currentDialogState=currentDialogState, probabilityThreshold=probabilityThreshold)
@@ -553,7 +553,7 @@ class AliceSkill(ProjectAliceObject):
 		self.MqttManager.endSession(sessionId=sessionId)
 
 
-	def playSound(self, soundFilename: str, location: Path = None, sessionId: str = '', siteId: str = constants.DEFAULT_SITE_ID, uid: str = ''):
+	def playSound(self, soundFilename: str, location: Path = None, sessionId: str = '', siteId: str = None, uid: str = ''):
 		self.MqttManager.playSound(soundFilename=soundFilename, location=location, sessionId=sessionId, siteId=siteId, uid=uid)
 
 

@@ -13,6 +13,9 @@ from core.commons import constants
 
 class AudioManager(Manager):
 
+	SAMPLERATE = 16000
+	FRAMES_PER_BUFFER = 320
+
 	# Inspired by https://github.com/koenvervloesem/hermes-audio-server
 
 	def __init__(self):
@@ -27,27 +30,27 @@ class AudioManager(Manager):
 		with self.Commons.shutUpAlsaFFS():
 			self._audio = pyaudio.PyAudio()
 
+		self._vad = Vad(2)
+
 		try:
 			self._audioOutput = self._audio.get_default_output_device_info()
 		except:
 			self.logFatal('Audio output not found, cannot continue')
 			return
-
-		self.logInfo(f'Using **{self._audioOutput["name"]}** for audio output')
+		else:
+			self.logInfo(f'Using **{self._audioOutput["name"]}** for audio output')
 
 		try:
 			self._audioInput = self._audio.get_default_input_device_info()
 		except:
 			self.logFatal('Audio input not found, cannot continue')
-			return
-
-		self.logInfo(f'Using **{self._audioInput["name"]}** for audio input')
-		self._vad = Vad(2)
+		else:
+			self.logInfo(f'Using **{self._audioInput["name"]}** for audio input')
 
 
 	def onStart(self):
 		super().onStart()
-		self.MqttManager.mqttClient.subscribe(constants.TOPIC_AUDIO_FRAME.format(constants.DEFAULT_SITE_ID))
+		self.MqttManager.mqttClient.subscribe(constants.TOPIC_AUDIO_FRAME.format(self.ConfigManager.getAliceConfigByName('deviceName')))
 
 		if not self.ConfigManager.getAliceConfigByName('disableSoundAndMic'):
 			self.ThreadManager.newThread(name='audioPublisher', target=self.publishAudio)
@@ -55,19 +58,10 @@ class AudioManager(Manager):
 
 	def onStop(self):
 		super().onStop()
-		self.MqttManager.mqttClient.unsubscribe(constants.TOPIC_AUDIO_FRAME.format(constants.DEFAULT_SITE_ID))
+		self.MqttManager.mqttClient.unsubscribe(constants.TOPIC_AUDIO_FRAME.format(self.ConfigManager.getAliceConfigByName('deviceName')))
 
 		if not self.ConfigManager.getAliceConfigByName('disableSoundAndMic'):
 			self._audio.terminate()
-
-
-	def onHotword(self, siteId: str, user: str = constants.UNKNOWN_USER):
-		self.MqttManager.publish(
-			topic=constants.TOPIC_ASR_TOGGLE_ON,
-			payload={
-				'siteId': siteId
-			}
-		)
 
 
 	def publishAudio(self):
@@ -75,13 +69,13 @@ class AudioManager(Manager):
 		audioStream = self._audio.open(
 			format=pyaudio.paInt16,
 			channels=1,
-			rate=self.ConfigManager.getAliceConfigByName('micSampleRate'),
-			frames_per_buffer=320,
+			rate=self.SAMPLERATE,
+			frames_per_buffer=self.FRAMES_PER_BUFFER,
 			input=True
 		)
 
 		speech = False
-		silence = 16000 / 320
+		silence = self.SAMPLERATE / self.FRAMES_PER_BUFFER
 		speechFrames = 0
 		minSpeechFrames = round(silence / 3)
 
@@ -90,18 +84,18 @@ class AudioManager(Manager):
 				break
 
 			try:
-				frames = audioStream.read(num_frames=320, exception_on_overflow=False)
-				if self._vad.is_speech(frames, 16000):
+				frames = audioStream.read(num_frames=self.FRAMES_PER_BUFFER, exception_on_overflow=False)
+				if self._vad.is_speech(frames, self.SAMPLERATE):
 					if not speech and speechFrames < minSpeechFrames:
 						speechFrames += 1
 					elif speechFrames >= minSpeechFrames:
 						speech = True
 						self.MqttManager.publish(
-							topic=constants.TOPIC_VAD_UP.format(constants.DEFAULT_SITE_ID),
+							topic=constants.TOPIC_VAD_UP.format(self.ConfigManager.getAliceConfigByName('deviceName')),
 							payload={
-								'siteId': constants.DEFAULT_SITE_ID
+								'siteId': self.ConfigManager.getAliceConfigByName('deviceName')
 							})
-						silence = 16000 / 320
+						silence = self.SAMPLERATE / self.FRAMES_PER_BUFFER
 						speechFrames = 0
 				else:
 					if speech:
@@ -110,9 +104,9 @@ class AudioManager(Manager):
 						else:
 							speech = False
 							self.MqttManager.publish(
-								topic=constants.TOPIC_VAD_DOWN.format(constants.DEFAULT_SITE_ID),
+								topic=constants.TOPIC_VAD_DOWN.format(self.ConfigManager.getAliceConfigByName('deviceName')),
 								payload={
-									'siteId': constants.DEFAULT_SITE_ID
+									'siteId': self.ConfigManager.getAliceConfigByName('deviceName')
 								})
 					else:
 						speechFrames = 0
@@ -127,15 +121,15 @@ class AudioManager(Manager):
 			with wave.open(buffer, 'wb') as wav:
 				wav.setnchannels(1)
 				wav.setsampwidth(2)
-				wav.setframerate(16000)
+				wav.setframerate(self.SAMPLERATE)
 				wav.writeframes(frames)
 
 			audioFrames = buffer.getvalue()
-			self.MqttManager.publish(topic=constants.TOPIC_AUDIO_FRAME.format(constants.DEFAULT_SITE_ID), payload=bytearray(audioFrames))
+			self.MqttManager.publish(topic=constants.TOPIC_AUDIO_FRAME.format(self.ConfigManager.getAliceConfigByName('deviceName')), payload=bytearray(audioFrames))
 
 
 	def onPlayBytes(self, requestId: str, payload: bytearray, siteId: str, sessionId: str = None):
-		if siteId != constants.DEFAULT_SITE_ID or self.ConfigManager.getAliceConfigByName('disableSoundAndMic'):
+		if siteId != self.ConfigManager.getAliceConfigByName('deviceName') or self.ConfigManager.getAliceConfigByName('disableSoundAndMic'):
 			return
 
 		self._playing = True

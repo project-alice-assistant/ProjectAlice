@@ -91,21 +91,12 @@ class DialogManager(Manager):
 		:return:
 		"""
 
-		if session.hasEnded:
+		if not session or session.hasEnded:
 			return
 
 		if session.isEnding or session.isNotification:
-			self.MqttManager.publish(
-				topic=constants.TOPIC_SESSION_ENDED,
-				payload={
-					'siteId'     : session.siteId,
-					'sessionId'  : session.sessionId,
-					'customData' : session.customData,
-					'termination': {
-						'reason': 'nominal'
-					}
-				}
-			)
+			session.payload['text'] = ''
+			self.onEndSession(session=session, reason='nominal')
 		else:
 			if not session.hasStarted:
 				self.onStartSession(
@@ -162,18 +153,8 @@ class DialogManager(Manager):
 			self.removeSession(sessionId=sessionId)
 			return
 
-
-		self.MqttManager.publish(
-			topic=constants.TOPIC_SESSION_ENDED,
-			payload={
-				'siteId'     : session.siteId,
-				'sessionId'  : sessionId,
-				'customData' : session.customData,
-				'termination': {
-					'reason': 'timeout'
-				}
-			}
-		)
+		session.payload['text'] = ''
+		self.onEndSession(session=session, reason='timeout')
 
 
 	def onSessionStarted(self, session: DialogSession):
@@ -192,7 +173,7 @@ class DialogManager(Manager):
 		:param session:
 		:return:
 		"""
-		self.cancelSessionTimeout(sessionId=session.sessionId)
+		self.startSessionTimeout(sessionId=session.sessionId)
 
 		self.MqttManager.publish(
 			topic=constants.TOPIC_ASR_STOP_LISTENING,
@@ -292,6 +273,20 @@ class DialogManager(Manager):
 		)
 
 
+	def onNluError(self, session: DialogSession):
+		"""
+		NLU reported an error
+		:param session:
+		:return:
+		"""
+		if not 'error' in session.payload:
+			return
+
+		self.logWarning(f'NLU query failed with: {session.payload["error"]}')
+		session.payload['text'] = ''
+		self.onEndSession(session=session, reason='error')
+
+
 	def onStartSession(self, siteId: str, payload: dict):
 		"""
 		Starts a new session
@@ -358,7 +353,7 @@ class DialogManager(Manager):
 
 
 	def onEndSession(self, session: DialogSession, reason: str = 'nominal'):
-		text = session.payload['text']
+		text = session.payload.get('text', '')
 
 		if text:
 			session.isEnding = True
@@ -408,6 +403,19 @@ class DialogManager(Manager):
 		)
 
 		self.removeSession(sessionId=session.sessionId)
+
+
+	def toggleFeedbackSound(self, state: str, siteId: str = constants.ALL):
+		topic = constants.TOPIC_TOGGLE_FEEDBACK_ON if state == 'on' else constants.TOPIC_TOGGLE_FEEDBACK_OFF
+
+		if siteId == 'all':
+			devices = self.DeviceManager.getDevicesByType(deviceType='AliceSatellite', connectedOnly=True)
+			for device in devices:
+				self.MqttManager.publish(topic=topic, payload={'siteId': device.room})
+
+			self.MqttManager.publish(topic=topic, payload={'siteId': self.ConfigManager.getAliceConfigByName('deviceName')})
+		else:
+			self.MqttManager.publish(topic=topic, payload={'siteId': siteId})
 
 
 	def onToggleFeedbackOn(self, siteId: str):
