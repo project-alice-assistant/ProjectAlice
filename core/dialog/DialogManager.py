@@ -1,4 +1,5 @@
 import uuid
+import json
 from pathlib import Path
 from threading import Timer
 from typing import Dict, Optional
@@ -374,7 +375,7 @@ class DialogManager(Manager):
 				payload={
 					'siteId'     : session.siteId,
 					'sessionId'  : session.sessionId,
-					'customData' : session.customData,
+					'customData' : json.dumps(session.customData),
 					'termination': {
 						'reason': reason
 					}
