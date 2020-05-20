@@ -1,5 +1,5 @@
-import uuid
 import json
+import uuid
 from pathlib import Path
 from threading import Timer
 from typing import Dict, Optional
@@ -439,7 +439,7 @@ class DialogManager(Manager):
 			return
 
 		self._endedSessions[sessionId] = session
-		self._sessionsBySites.pop(session.siteId)
+		self._sessionsBySites.pop(session.siteId, None)
 
 
 	@property
