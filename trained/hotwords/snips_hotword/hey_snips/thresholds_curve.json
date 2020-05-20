@@ -1,0 +1,128 @@
+[
+  {
+    "threshold": 0.998,
+    "recall": 0.8845846645367411,
+    "sensitivity": 0.0,
+    "far": 0.0
+  },
+  {
+    "threshold": 0.998,
+    "recall": 0.8845846645367411,
+    "sensitivity": 0.05,
+    "far": 0.0
+  },
+  {
+    "threshold": 0.987,
+    "recall": 0.9636581469648562,
+    "sensitivity": 0.1,
+    "far": 0.0
+  },
+  {
+    "threshold": 0.98,
+    "recall": 0.9692492012779553,
+    "sensitivity": 0.15,
+    "far": 0.0
+  },
+  {
+    "threshold": 0.707,
+    "recall": 0.9912140575079872,
+    "sensitivity": 0.2,
+    "far": 0.3461397298829652
+  },
+  {
+    "threshold": 0.934,
+    "recall": 0.9828274760383386,
+    "sensitivity": 0.25,
+    "far": 0.04326746623537065
+  },
+  {
+    "threshold": 0.92,
+    "recall": 0.9844249201277955,
+    "sensitivity": 0.3,
+    "far": 0.04326746623537065
+  },
+  {
+    "threshold": 0.894,
+    "recall": 0.9864217252396166,
+    "sensitivity": 0.35,
+    "far": 0.04326746623537065
+  },
+  {
+    "threshold": 0.842,
+    "recall": 0.9892172523961661,
+    "sensitivity": 0.4,
+    "far": 0.08653493247074126
+  },
+  {
+    "threshold": 0.807,
+    "recall": 0.9892172523961661,
+    "sensitivity": 0.45,
+    "far": 0.1298023987061119
+  },
+  {
+    "threshold": 0.787,
+    "recall": 0.9896166134185304,
+    "sensitivity": 0.5,
+    "far": 0.17306986494148255
+  },
+  {
+    "threshold": 0.749,
+    "recall": 0.990814696485623,
+    "sensitivity": 0.55,
+    "far": 0.2596047974122239
+  },
+  {
+    "threshold": 0.72,
+    "recall": 0.9912140575079872,
+    "sensitivity": 0.6,
+    "far": 0.3461397298829652
+  },
+  {
+    "threshold": 0.695,
+    "recall": 0.9916134185303515,
+    "sensitivity": 0.65,
+    "far": 0.3461397298829652
+  },
+  {
+    "threshold": 0.683,
+    "recall": 0.9916134185303515,
+    "sensitivity": 0.7,
+    "far": 0.3461397298829652
+  },
+  {
+    "threshold": 0.504,
+    "recall": 0.9924121405750799,
+    "sensitivity": 0.75,
+    "far": 0.6490119935305596
+  },
+  {
+    "threshold": 0.356,
+    "recall": 0.9936102236421726,
+    "sensitivity": 0.8,
+    "far": 1.2980239870611205
+  },
+  {
+    "threshold": 0.289,
+    "recall": 0.994408945686901,
+    "sensitivity": 0.85,
+    "far": 1.6441637169440853
+  },
+  {
+    "threshold": 0.216,
+    "recall": 0.9952076677316294,
+    "sensitivity": 0.9,
+    "far": 2.2499082442392764
+  },
+  {
+    "threshold": 0.156,
+    "recall": 0.9964057507987221,
+    "sensitivity": 0.95,
+    "far": 2.8556527715344644
+  },
+  {
+    "threshold": 0.12,
+    "recall": 0.9972044728434505,
+    "sensitivity": 1.0,
+    "far": 3.807537028712616
+  }
+]
