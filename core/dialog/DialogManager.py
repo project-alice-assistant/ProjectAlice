@@ -53,6 +53,8 @@ class DialogManager(Manager):
 
 		session = self.newSession(siteId=siteId, user=user)
 
+		self.logDebug(f'Wakeword detected on site **{siteId}**')
+
 		# Turn off the wakeword component
 		self.MqttManager.publish(
 			topic=constants.TOPIC_HOTWORD_TOGGLE_OFF,
