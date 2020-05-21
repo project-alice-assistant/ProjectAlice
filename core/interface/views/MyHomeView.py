@@ -160,6 +160,18 @@ class MyHomeView(View):
 			self.logError(f'Failed deleting room/device Link: {e}')
 
 
+	@route('/Device/<path:id>/pair', methods=['POST'])
+	def pairDevice(self, id: str):
+		try:
+			id = int(id)
+			device = self.DeviceManager.getDeviceByID(id=id)
+			device.getDeviceType().discover(device=device)
+			return jsonify(success=True)
+		except Exception as e:
+			self.logError(f'Failed pairing device: {e}')
+			return jsonify(error=str(e))
+
+
 ### general myHome API
 	@route('/load/')
 	def load(self) -> str:

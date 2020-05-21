@@ -262,7 +262,7 @@ class DatabaseManager(Manager):
 		self.delete(tableName=tableName, callerName=callerName, query=query)
 
 
-	def delete(self, tableName: str, callerName: str, query: str, values: dict = None):
+	def delete(self, tableName: str, callerName: str, query: str = None, values: dict = None):
 
 		if not values:
 			values = dict()

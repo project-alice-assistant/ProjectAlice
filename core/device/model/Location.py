@@ -12,6 +12,7 @@ class Location(ProjectAliceObject):
 
 	id: int = field(init=False)
 
+
 	def __post_init__(self):
 		self.id = self.data['id']
 		self.name = self.data['name']
@@ -23,6 +24,10 @@ class Location(ProjectAliceObject):
 			self.display = ast.literal_eval(self.data['display'])
 		else:
 			self.display = dict()
+
+
+	def getSaveName(self):
+		return self.name.replace(" ", "_")
 
 
 	def addSynonym(self,synonym: str):

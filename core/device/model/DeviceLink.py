@@ -6,7 +6,7 @@ class DeviceLink(ProjectAliceObject):
 
 	def __init__(self, data: sqlite3.Row):
 		super().__init__()
-		self._locSettings = locSettings
+		self._locSettings = ast.literal_eval(data['locSettings'])
 		self._deviceID = data['deviceID']
 		self._locationID = data['locationID']
 

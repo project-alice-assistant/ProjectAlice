@@ -51,18 +51,7 @@ class LocationManager(Manager):
 			raise Exception(f'Location {name} already exists')
 
 
-	def getLocation(self,id: int = None, room: str = None) -> Location:
-		if room:
-			loc = self.getLocationWithName(name=room)
-		if id:
-			loc = self.locations.get(id)
-			if not loc:
-				raise Exception(f'No location with id {id} found')
 
-		if not loc and room:
-			loc = self.LocationManager.addNewLocation(name=room)
-
-		return loc
 
 
 	def deleteLocation(self, id: int) -> bool:
@@ -114,10 +103,21 @@ class LocationManager(Manager):
 				self.DeviceManager.updateDevice(device)
 		pass
 
-	def getLocation(self, room: str = None, siteID: str = None, deviceTypeID: int = None):
+	def getLocation(self,id: int = None, room: str = None, siteID: str = None, deviceTypeID: int = None) -> Location:
 		# room: a room name issued by the user
 		# siteID: the current devices site NAME
 		# deviceTypeID: only rooms with that type of device can be found - linked is allowed as well
+		if room:
+			loc = self.getLocationWithName(name=room)
+		if id:
+			loc = self.locations.get(id)
+			if not loc:
+				raise Exception(f'No location with id {id} found')
+
+		if not loc and room:
+			loc = self.LocationManager.addNewLocation(name=room)
+
+		return loc
 		##todo implement location det. logic
 		# 1a) check name vs locations
 		# 1b) check name vs location synonyms
@@ -131,3 +131,20 @@ class LocationManager(Manager):
 	@property
 	def locations(self) -> Dict[int, Location]:
 		return self._locations
+
+
+	def cleanRoomNameToSiteId(self, roomName: str) -> str:
+		"""
+		User might answer "in the living room" when asked for a room. In that case it should be turned into "living_room"
+		:param roomName: str: original captured name
+		:return: str: formated room name to site id
+		"""
+
+		parasites = self.LanguageManager.getStrings(key='inThe')
+
+		for parasite in parasites:
+			if parasite in roomName:
+				roomName = roomName.replace(parasite, '')
+				break
+
+		return roomName.strip().replace(' ', '_')

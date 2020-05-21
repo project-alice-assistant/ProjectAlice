@@ -190,6 +190,13 @@ button.button{ font-size: 1.6em; height: 2em; }
 .ui-widget.ui-widget-content{ border: 2px solid var(--accent); }
 .ui-dialog-titlebar{ border-radius: 0; border: solid 2px var(--accent); margin: -2px; }
 
+/* Device Linking */
+.deviceLink {
+  border: 3px solid;
+  pointer-events: none;
+  border-radius: 100%;
+  border-color: yellow;
+}
 
 /*======================== TECHNICAL OVERWRITES================== */
 .flex-row { overflow-y: auto; overflow-x: hidden; display: flex; flex-wrap: wrap; align-content: flex-start; }

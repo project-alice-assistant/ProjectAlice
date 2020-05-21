@@ -1,7 +1,9 @@
 import json
 from dataclasses import dataclass, field
-from core.device.model import DeviceType
+from core.device.model.DeviceType import DeviceType
+from core.device.model.Location import Location
 from core.base.model.ProjectAliceObject import ProjectAliceObject
+import ast
 
 @dataclass
 class Device(ProjectAliceObject):
@@ -22,21 +24,32 @@ class Device(ProjectAliceObject):
 		self.uid = self.data['uid']
 		self.locationID = self.data['locationID']
 		if self.data['display']:
-			self._display = self.data['display']
+			self._display = ast.literal_eval(self.data['display'])
 		else:
 			self._display = {}
 
 		if 'devSettings' in self.data:
-			self._devSettings = data['devSettings']
+			self._devSettings = ast.literal_eval(data['devSettings'])
 		else:
 			self._devSettings = dict()
+
+	def getMainLocation(self) -> Location:
+		return self.LocationManager.getLocation(id=self.locationID)
+
+
+	def pairingDone(self, uid: str):
+		self.uid = uid
+		##todo save to DB
+		# todo broadcast: pairing done
 
 
 	def toJson(self) -> str:
 		return json.dumps(self.asJson())
 
+
 	def getDeviceType(self) -> DeviceType:
 		return self.DeviceManager.getDeviceType(id=self.deviceTypeID)
+
 
 	def asJson(self):
 		return {
@@ -54,6 +67,7 @@ class Device(ProjectAliceObject):
 
 
 	def changedDevSettingsStructure(self, newSet: dict):
+		self.logInfo(newSet)
 		for set in newSet.keys():
 			if set in self.devSettings:
 				newSet[set] = self.devSettings[set]

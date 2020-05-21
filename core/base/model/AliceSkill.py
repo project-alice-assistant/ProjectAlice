@@ -232,6 +232,7 @@ class AliceSkill(ProjectAliceObject):
 					})
 					deviceClass.setParentSkillInstance(self)
 					self._deviceTypes[deviceClass.id] = deviceClass
+				deviceClass.onStart()
 
 			for deviceType in data:  # deprecated devices
 				self.logInfo(f'Device type **{deviceType}** is deprecated, removing')
@@ -501,6 +502,8 @@ class AliceSkill(ProjectAliceObject):
 	def onStop(self):
 		self._active = False
 		self.SkillManager.configureSkillIntents(self._name, False)
+		for devt in self.DeviceManager.getDeviceTypesForSkill(self.name):
+			devt.onStop()
 		self.logInfo(f'![green](Stopped)')
 
 

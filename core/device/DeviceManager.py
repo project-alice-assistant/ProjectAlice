@@ -62,23 +62,9 @@ class DeviceManager(Manager):
 		self._deviceLinks: Dict[int, DeviceLink] = dict()
 		#self._idToUID: Dict[int, str] = dict() #todo maybe relevant for faster access?
 		self._deviceTypes: Dict[int, DeviceType] = dict()
-		self._broadcastRoom = ''
 		self._broadcastFlag = threading.Event()
 
-		self._broadcastPort = None
-		self._broadcastTimer = None
-
 		self._flashThread = None
-
-		self._listenPort = None
-
-		self._broadcastSocket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-		self._broadcastSocket.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
-		self._broadcastSocket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-
-		self._listenSocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-		self._listenSocket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-		self._listenSocket.settimeout(2)
 
 		self._heartbeats = dict()
 		self._heartbeatsCheckTimer = None
@@ -88,20 +74,11 @@ class DeviceManager(Manager):
 	def onStart(self):
 		super().onStart()
 
-		self._broadcastPort = int(self.ConfigManager.getAliceConfigByName('newDeviceBroadcastPort'))  # Default 12354
-		self._listenPort = self._broadcastPort + 1
-
-		self._listenSocket.bind(('', self._listenPort))
-
 		self.loadDevices()
-		self.loadLinks()
+		#self.loadLinks()
 
 		self.logInfo(f'Loaded **{len(self._devices)}** device', plural='device')
 
-
-	@property
-	def broadcastRoom(self) -> str:
-		return self._broadcastRoom
 
 	@property
 	def devices(self) -> Dict[str, Device]:
@@ -118,8 +95,6 @@ class DeviceManager(Manager):
 
 	def onStop(self):
 		super().onStop()
-		self.stopBroadcasting()
-		self._broadcastSocket.close()
 		self.MqttManager.publish(topic='projectalice/devices/coreDisconnection')
 
 
@@ -147,12 +122,9 @@ class DeviceManager(Manager):
 	def addNewDevice(self, deviceTypeID: int, locationID: int = None, room: str = None, uid: str = None) -> Device:
 		# get or create location from different inputs
 		try:
-			if not room and not locationID:
-				room = self._broadcastRoom
-
 			location = self.LocationManager.getLocation(id=locationID, room=room)
 
-			self.assertDeviceTypeAllowedAtLocation(locationID=location.id, deviceTypeID=deviceTypeID)
+			self.assertDeviceTypeAllowedAtLocation(locationID=location.id, typeID=deviceTypeID)
 
 			values = {'typeID': deviceTypeID, 'uid': uid, 'locationID': location.id, 'display': "{}"}
 			values['id'] = self.databaseInsert(tableName=self.DB_DEVICE, values=values)
@@ -176,12 +148,19 @@ class DeviceManager(Manager):
 
 	def deleteDeviceID(self, deviceID: int):
 		self.devices.pop(deviceID)
-		self.DatabaseManager.delete(tableName='devices', callerName=self.name, query='DELETE :__table__ WHERE id = :id', values={id: deviceID})
-		self.DatabaseManager.delete(tableName='deviceLinks', callerName=self.name, query='DELETE :__table__ WHERE id = :id', values={id: deviceID})
+		self.DatabaseManager.delete(tableName=self.DB_DEVICE, callerName=self.name, values={"id": deviceID})
+		self.DatabaseManager.delete(tableName=self.DB_LINKS, callerName=self.name, values={"id": deviceID})
 
 
-	def getDeviceType(self, id):
-		return self.deviceTypes[id]
+	def getDeviceType(self, id: int):
+		return self.deviceTypes.get(id, None)
+
+
+	def getDeviceTypeByName(self, name: str):
+		for device in self.deviceTypes.values():
+			if device.name == name:
+				return device
+		return None
 
 
 	def getDeviceTypesForSkill(self, skillName: str) -> Dict[int, DeviceType]:
@@ -208,6 +187,7 @@ class DeviceManager(Manager):
 		self._deviceTypes.pop(id)
 
 	def getLink(self, deviceID, int, locationID: int):
+		pass
 
 
 
@@ -223,6 +203,7 @@ class DeviceManager(Manager):
 		self.databaseInsert(tableName=self.DB_LINKS, query='INSERT INTO :__table__ (deviceID, locationID, locSettings) VALUES (:id, :locationid, locSettings)', values=values)
 
 	def deleteLink(self, id: int):
+		pass
 
 	def deleteDeviceUID(self, deviceUID: str):
 		self.deleteDeviceID(deviceID=devUIDtoID(UID=deviceUID))
@@ -249,79 +230,7 @@ class DeviceManager(Manager):
 
 		return uid
 
-## Braodcasting ## todo move to SAT skill?
-	@property
-	def broadcastFlag(self) -> threading.Event:
-		return self._broadcastFlag
 
-
-	def startBroadcastingForNewDevice(self, room: str, siteId: str, uid: str = '') -> bool:
-		if self.isBusy():
-			return False
-
-		self._broadcastRoom = self.Commons.cleanRoomNameToSiteId(room)
-
-		if not uid:
-			uid = self._getFreeUID()
-
-		self.logInfo(f'Started broadcasting on {self._broadcastPort} for new device addition. Attributed uid: {uid}')
-		self._listenSocket.listen(2)
-		self.ThreadManager.newThread(name='broadcast', target=self.startBroadcast, args=[room, uid, siteId])
-
-		self._broadcastTimer = self.ThreadManager.newTimer(interval=300, func=self.stopBroadcasting)
-
-		self.broadcast(method=constants.EVENT_BROADCASTING_FOR_NEW_DEVICE, exceptions=[self.name], propagateToSkills=True)
-		return True
-
-
-	def stopBroadcasting(self):
-		self.logInfo('Stopped broadcasting for new devices')
-		self._broadcastFlag.clear()
-
-		if self._broadcastTimer:
-			self._broadcastTimer.cancel()
-
-		self._broadcastRoom = ''
-		self.broadcast(method=constants.EVENT_STOP_BROADCASTING_FOR_NEW_DEVICE, exceptions=[self.name], propagateToSkills=True)
-
-
-	def startBroadcast(self, room: str, uid: str, replyOnSiteId: str):
-		self._broadcastFlag.set()
-		while self._broadcastFlag.isSet():
-			self._broadcastSocket.sendto(bytes(f'{self.Commons.getLocalIp()}:{self._listenPort}:{room.replace(" ", "_")}:{uid}', encoding='utf8'), ('<broadcast>', self._broadcastPort))
-			try:
-				sock, address = self._listenSocket.accept()
-				sock.settimeout(None)
-				answer = sock.recv(1024).decode()
-
-				deviceIp = answer.split(':')[0]
-				deviceType = answer.split(':')[1]
-
-				if deviceType.lower() == 'alicesatellite':
-					for satellite in self.getDevicesByRoom(room):
-						if satellite.deviceType.lower() == 'alicesatellite':
-							self.logWarning('Cannot have more than one Alice skill per room, aborting')
-							self.MqttManager.say(text=self.TalkManager.randomTalk('maxOneAlicePerRoom', skill='system'), client=replyOnSiteId)
-							answer = 'nok'
-							break
-
-				if answer != 'nok':
-					if self.addNewDevice(deviceType, room, uid):
-						self.logInfo(f'New device with uid {uid} successfully added')
-						self.MqttManager.say(text=self.TalkManager.randomTalk('newDeviceAdditionSuccess', skill='system'), client=replyOnSiteId)
-						answer = 'ok'
-					else:
-						self.logInfo('Failed adding new device')
-						self.MqttManager.say(text=self.TalkManager.randomTalk('newDeviceAdditionFailed', skill='system'), client=replyOnSiteId)
-						answer = 'nok'
-
-					if deviceType.lower() == 'alicesatellite':
-						self.ThreadManager.doLater(interval=5, func=self.WakewordRecorder.uploadToNewDevice, args=[uid])
-
-				self._broadcastSocket.sendto(bytes(answer, encoding='utf8'), (deviceIp, self._broadcastPort))
-				self.stopBroadcasting()
-			except socket.timeout:
-				self.logInfo('No device query received')
 
 
 	def broadcastToDevices(self, topic: str, payload: dict = None, deviceType: str = None, room: str = None, connectedOnly: bool = True):
@@ -377,9 +286,6 @@ class DeviceManager(Manager):
 			device.connected = False
 			self.broadcast(method=constants.EVENT_DEVICE_DISCONNECTING, exceptions=[self.name], propagateToSkills=True)
 
-
-	def isBusy(self) -> bool:
-		return self.ThreadManager.isThreadAlive('broadcast')
 
 ## Heartbeats
 	def onDeviceHeartbeat(self, uid: str, siteId: str = None):
@@ -441,6 +347,7 @@ class DeviceManager(Manager):
 		if deviceType.locationLimit > 0:
 			if deviceType.locationLimit <= self.LocationManager.getDevicesByRoom(locationID=locationID,deviceTypeID=typeID):
 				raise Exception(f'Maximum limit of devices in this location reached')
+		#todo self.MqttManager.say(text=self.TalkManager.randomTalk('maxOneAlicePerRoom', skill='system'), client=replyOnSiteId)
 
 
 	@property
@@ -467,7 +374,7 @@ class DeviceManager(Manager):
 		return [x for x in self._deviceLinks.values() if x.deviceTypeID == deviceType and (not connectedOnly or x.connected)]
 
 
-def getDeviceByUID(self, uid: str) -> Optional[Device]:
+	def getDeviceByUID(self, uid: str) -> Optional[Device]:
 		return self._devices.get(self.devUIDtoID(uid), None)
 
 
@@ -475,6 +382,10 @@ def getDeviceByUID(self, uid: str) -> Optional[Device]:
 		return self._devices.get(id, None)
 
 ## todo move to tasmota skill
+	@property
+	def broadcastFlag(self) -> threading.Event:
+		return self._broadcastFlag
+
 
 	def doFlashTasmota(self, room: str, espType: str, siteId: str):
 		port = self.findUSBPort(timeout=60)

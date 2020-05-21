@@ -2,19 +2,26 @@ $(function () {
 
   	let $floorPlan = $('#floorPlan');
 	let editMode = false;
-	let deviceEditMode = false;
 
 	let moveMode = false;
 	let zoneMode = false;
 	let buildingMode = false;
 	let paintingMode = false;
 	let decoratorMode = false;
+
+	let deviceEditMode = false;
 	let deviceInstallerMode = false;
+	let deviceLinkerMode = false;
+	let technicalMode = false;
 
 	let selectedFloor = '';
 	let selectedDeco = '';
 	let selectedDeviceTypeID = '';
 	let selectedConstruction = '';
+
+	// Linker
+	let selectedDevice = null;
+
 
 	$( document ).tooltip();
 
@@ -270,9 +277,30 @@ $(function () {
 						makeResizableRotatableAndDraggable($device);
 				});
 
-			} else {
+			} else if (deviceLinkerMode) {
+				if (selectedDevice == null || selectedDevice == ''){
+					return;
+				}
+				// todo: implement frontend linking
+				// add link from selected Device to zone
+				// frontend checks: link already there
+				// --> new link
+					// backend checks: link already there
+					// backend checks: link is allowed
+					// frontend: draw bezier
+					$(this).children('.inputOrText').connections({
+					  to: selectedDevice,
+					  'class': 'deviceLink'
+					});
+					// frontend: add to link list
+					// frontend: load link room settings
+				// --> remove link
+					// yeah..
+
+			} else if (technicalMode){
 				let $settings = $('#settings');
 				let content = "<i>"+data['id']+"</i> <h1>"+data['name']+"</h1>";
+				content += "<div class='configBox'>";
 				content += "<div class='configBox'>";
 				content += "<div class='configList'>";
 				content += "<div class='configBlock'><div class='configLabel'>Synonyms:</div>";
@@ -430,8 +458,8 @@ $(function () {
 				let content = "<h1>" + data['name'] + "</h1>";
 				content += "<h2>" + data['deviceType'] + "</h2>";
 
-				if( data['uid'] == 'undefined' ){
-					content += "<div class='button'>Search Device</div>"
+				if( data['uid'] == 'undefined' || data['uid'] == null ){
+					content += "NO DEVICE PAIRED!<div id='startPair' class='button'>Search Device</div>"
 				}
 
 				content += "<div class='configBox'>";
@@ -443,11 +471,15 @@ $(function () {
 				content += "<div class='configBlock'><div class='configLabel'>Device Setting example:</div><input class='configInput'/></div>";
 // TODO Room specific Settings
 				content += "<div class='configBlock'><div class='configLabel'>Available in following Rooms:</div><input class='configInput'/></div>";
+				content += "<span class=\"toolbarButton link-hover\" id=\"deviceLinker\" title=\"Link a device with multiple rooms\"><i class=\"fas fa-link\"></i></span>";
 				content += "</div></div>";
 
 				$settings.html(content);
 				$settings.sidebar({side: "right"}).trigger("sidebar:open");
 
+				$('#startPair').on('click touchstart', function () {
+					$.post('Device/'+data['id']+'/pair');
+				});
 				// reroute synonym enter to click event
 				$('.configInput').keypress(function (e) {
 					if (e.which == 13) {
@@ -475,12 +507,17 @@ $(function () {
 						});
 					}
 				});*/
+				if(deviceLinkerMode) {
+					removeAllBeziers();
+					selectedDevice = $(this);
+					$(this).attr('id', 'linked');
+				}
 			} else {
 				// display mode: Try toggling the device
 				$.post( '/myHome/toggleDevice/',
-							{ parent: data['skill'],
-							deviceType: data['deviceType'],
-							uid: data['uid']} )
+					{ parent: data['skill'],
+						deviceType: data['deviceType'],
+						uid: data['uid']} )
 					.done(function( result ) {
 						$newDevice.css('background: url("/deviceType_static/' + result + '.png')
 					});
@@ -516,6 +553,7 @@ $(function () {
 		decoratorMode = false;
 		moveMode = false;
 		deviceInstallerMode = false;
+		deviceLinkerMode = false;
 
 		$('#toolbarConstruction').hide();
 		$('#toolbarTechnic').hide();
@@ -808,6 +846,32 @@ $(function () {
 			markSelectedTool(null);
 		}
 	});
+
+	$('#deviceLinker').on('click touchstart', function () {
+		markSelectedTool($(this));
+
+		if(!deviceLinkerMode){
+			deviceLinkerMode = true;
+			setBPMode(true);
+		}else{
+			deviceLinkerMode = false;
+			markSelectedTool(null);
+			removeAllBeziers();
+			setBPMode(false);
+		}
+
+	});
+
+	function removeAllBeziers(){
+		$('.linked').removeClass('linked');
+	}
+
+	function setBPMode(value){
+		// todo implement:
+		// hide decoration
+		// change textures to blueprint
+		// set device Icons to default Icon
+	}
 
 
 	// load construction tiles
