@@ -17,7 +17,6 @@ googletrans==2.4.0
 bcrypt==3.1.7
 psutil==5.6.7
 numpy==1.16.2
-pyjwt==1.7.1
 importlib_metadata==1.6.0
 langdetect==1.0.8
 webrtcvad==2.0.10

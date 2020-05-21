@@ -212,7 +212,8 @@ settings = {
 		'isSensitive' : False,
 		'values'      : ['porcupine', 'snips', 'precise'],
 		'description' : 'Wakeword engine to use',
-		'category'    : 'wakeword'
+		'category'    : 'wakeword',
+		'onUpdate'    : 'reloadWakeword'
 	},
 	'wakewordSensitivity'     : {
 		'defaultValue': 0.5,
@@ -222,7 +223,8 @@ settings = {
 		'step'        : 0.01,
 		'isSensitive' : False,
 		'description' : 'Default wakeword sensitivity',
-		'category'    : 'wakeword'
+		'category'    : 'wakeword',
+		'onUpdate'    : 'restartWakewordEngine'
 	},
 	'tts'                     : {
 		'defaultValue': 'pico',
