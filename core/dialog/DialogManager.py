@@ -409,9 +409,10 @@ class DialogManager(Manager):
 		topic = constants.TOPIC_TOGGLE_FEEDBACK_ON if state == 'on' else constants.TOPIC_TOGGLE_FEEDBACK_OFF
 
 		if siteId == 'all':
-			devices = self.DeviceManager.getDevicesByType(deviceType='AliceSatellite', connectedOnly=True)
+			# todo abstract: no hard coded device types!
+			devices = self.DeviceManager.getDevicesByType(deviceTypeID=self.DeviceManager.getDeviceTypeByName('AliceSatellite'), connectedOnly=True)
 			for device in devices:
-				self.MqttManager.publish(topic=topic, payload={'siteId': device.room})
+				self.MqttManager.publish(topic=topic, payload={'siteId': device.siteId})
 
 			self.MqttManager.publish(topic=topic, payload={'siteId': self.ConfigManager.getAliceConfigByName('deviceName')})
 		else:

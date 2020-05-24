@@ -6,15 +6,19 @@ import paho.mqtt.client as mqtt
 import paho.mqtt.publish as publish
 import random
 import re
+from typing import Dict, List, Optional
 
 from core.base.model.Intent import Intent
 from core.base.model.Manager import Manager
 from core.commons import constants
+from core.device.model.Device import Device
+from core.device.model.DeviceType import DeviceType
 
 
 class MqttManager(Manager):
 
 	DEFAULT_CLIENT_EXTENSION = '@mqtt'
+	SAT_TYPE = 'alicesatellite'
 
 	def __init__(self):
 		super().__init__()
@@ -44,10 +48,6 @@ class MqttManager(Manager):
 
 		self._mqttClient.message_callback_add(constants.TOPIC_VAD_UP.format(self.ConfigManager.getAliceConfigByName('deviceName')), self.onVADUp)
 		self._mqttClient.message_callback_add(constants.TOPIC_VAD_DOWN.format(self.ConfigManager.getAliceConfigByName('deviceName')), self.onVADDown)
-		## todo move to sat skill
-		for device in self.DeviceManager.getDevicesByType('alicesatellite'):
-			self._mqttClient.message_callback_add(constants.TOPIC_VAD_UP.format(device.room), self.onVADUp)
-			self._mqttClient.message_callback_add(constants.TOPIC_VAD_DOWN.format(device.room), self.onVADDown)
 
 		self._mqttClient.message_callback_add(constants.TOPIC_SESSION_STARTED, self.sessionStarted)
 		self._mqttClient.message_callback_add(constants.TOPIC_ASR_START_LISTENING, self.startListening)
@@ -77,10 +77,12 @@ class MqttManager(Manager):
 		self._mqttClient.message_callback_add(constants.TOPIC_PLAY_BYTES.format(self.ConfigManager.getAliceConfigByName('deviceName')), self.topicPlayBytes)
 		self._mqttClient.message_callback_add(constants.TOPIC_PLAY_BYTES_FINISHED.format(self.ConfigManager.getAliceConfigByName('deviceName')), self.topicPlayBytesFinished)
 
-		## todo move to alice Sat Skill
-		for device in self.DeviceManager.getDevicesByType('alicesatellite'):
-			self._mqttClient.message_callback_add(constants.TOPIC_PLAY_BYTES.format(device.room), self.topicPlayBytes)
-			self._mqttClient.message_callback_add(constants.TOPIC_PLAY_BYTES_FINISHED.format(device.room), self.topicPlayBytesFinished)
+		for device in self.getAliceTypeDevices():
+			self.MqttManager.mqttClient.message_callback_add(constants.TOPIC_VAD_UP.format(device.siteId), self.MqttManager.onVADUp)
+			self.MqttManager.mqttClient.message_callback_add(constants.TOPIC_VAD_DOWN.format(device.siteId), self.MqttManager.onVADDown)
+
+			self._mqttClient.message_callback_add(constants.TOPIC_PLAY_BYTES.format(device.siteId), self.MqttManager.topicPlayBytes)
+			self._mqttClient.message_callback_add(constants.TOPIC_PLAY_BYTES_FINISHED.format(device.siteId), self.MqttManager.topicPlayBytesFinished)
 
 		self.connect()
 
@@ -129,15 +131,16 @@ class MqttManager(Manager):
 
 		subscribedEvents.append((constants.TOPIC_VAD_UP.format(self.ConfigManager.getAliceConfigByName('deviceName')), 0))
 		subscribedEvents.append((constants.TOPIC_VAD_DOWN.format(self.ConfigManager.getAliceConfigByName('deviceName')), 0))
-		for device in self.DeviceManager.getDevicesByType('alicesatellite'):
-			subscribedEvents.append((constants.TOPIC_VAD_UP.format(device.room), 0))
-			subscribedEvents.append((constants.TOPIC_VAD_DOWN.format(device.room), 0))
 
 		subscribedEvents.append((constants.TOPIC_PLAY_BYTES.format(self.ConfigManager.getAliceConfigByName('deviceName')), 0))
 		subscribedEvents.append((constants.TOPIC_PLAY_BYTES_FINISHED.format(self.ConfigManager.getAliceConfigByName('deviceName')), 0))
-		for device in self.DeviceManager.getDevicesByType('alicesatellite'):
-			subscribedEvents.append((constants.TOPIC_PLAY_BYTES.format(device.room), 0))
-			subscribedEvents.append((constants.TOPIC_PLAY_BYTES_FINISHED.format(device.room), 0))
+
+		for device in self.getAliceTypeDevices():
+			subscribedEvents.append((constants.TOPIC_VAD_UP.format(device.siteId), 0))
+			subscribedEvents.append((constants.TOPIC_VAD_DOWN.format(device.siteId), 0))
+
+			subscribedEvents.append((constants.TOPIC_PLAY_BYTES.format(device.siteId), 0))
+			subscribedEvents.append((constants.TOPIC_PLAY_BYTES_FINISHED.format(device.siteId), 0))
 
 		self._mqttClient.subscribe(subscribedEvents)
 		self.toggleFeedbackSounds()
@@ -620,7 +623,7 @@ class MqttManager(Manager):
 		client = self.getDefaultSiteId(client)
 
 		if client == constants.ALL or client == constants.RANDOM:
-			deviceList = [device.room for device in self.DeviceManager.getDevicesByType('AliceSatellite', connectedOnly=True) if device]
+			deviceList = [device.siteId for device in self.getAliceTypeDevices(connectedOnly=True) if device]
 			deviceList.append(self.ConfigManager.getAliceConfigByName('deviceName'))
 
 			if client == constants.ALL:
@@ -716,7 +719,7 @@ class MqttManager(Manager):
 		session.intentFilter = intentList
 
 		if client == constants.ALL:
-			deviceList = self.DeviceManager.getDevicesByType('AliceSatellite', connectedOnly=True)
+			deviceList = self.getAliceTypeDevices(connectedOnly=True)
 			deviceList.append(self.ConfigManager.getAliceConfigByName('deviceName'))
 
 			for device in deviceList:
@@ -836,7 +839,7 @@ class MqttManager(Manager):
 			location = Path(self.Commons.rootDir()) / location
 
 		if siteId == constants.ALL:
-			deviceList = self.DeviceManager.getDevicesByType('AliceSatellite', connectedOnly=True)
+			deviceList = self.getAliceTypeDevices(connectedOnly=True)
 			deviceList.append(self.ConfigManager.getAliceConfigByName('deviceName'))
 
 			for device in deviceList:
@@ -867,7 +870,7 @@ class MqttManager(Manager):
 			payload = dict()
 
 		for device in self.DeviceManager.getDevicesByType(deviceType):
-			payload['siteId'] = device.room
+			payload['siteId'] = device.siteId
 			self.publish(topic=topic, payload=payload, qos=qos, retain=retain)
 
 		payload['siteId'] = self.ConfigManager.getAliceConfigByName('deviceName')
@@ -911,3 +914,8 @@ class MqttManager(Manager):
 
 	def getDefaultSiteId(self, siteId: str = None) -> str:
 		return self.ConfigManager.getAliceConfigByName('deviceName') if not siteId else siteId
+
+
+	def getAliceTypeDevices(self, connectedOnly: bool = False) -> List[Device]:
+		#todo remove hard coded AliceSatellite. replace for example with some type of "device ability" -> "can broadcast" -> "can play sound" ..
+		return self.DeviceManager.getDevicesByType(self.SAT_TYPE, connectedOnly=connectedOnly)

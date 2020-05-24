@@ -133,6 +133,15 @@ class MyHomeView(View):
 			self.logError(f'Failed saving device settings: {e}')
 
 
+	@route('/Device/<path:id>/toggle', methods = ['POST'])
+	def toggleDevice(self):
+		try:
+			id = int(id)
+			self.DeviceManager.getDeviceByID(id=id).toggle()
+		except Exception as e:
+			self.logError(f'Failed toggling device Link: {e}')
+
+
 	@route('/Device/<path:id>/addLink/<path:roomid>', methods = ['POST'])
 	def addDeviceLink(self, id: str, roomid: str):
 		try:
@@ -171,6 +180,9 @@ class MyHomeView(View):
 			self.logError(f'Failed pairing device: {e}')
 			return jsonify(error=str(e))
 
+	#todo send MQTT message out for changing the icon of a device
+	# payload: image or link to image?
+	# triggered by the deviceType class of the skills
 
 ### general myHome API
 	@route('/load/')

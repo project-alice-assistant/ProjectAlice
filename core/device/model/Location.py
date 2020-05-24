@@ -53,7 +53,7 @@ class Location(ProjectAliceObject):
 		}})
 
 	def asJson(self):
-		devices = {device.id: device.asJson() for device in self.DeviceManager.getDevicesByRoom(locationID=self.id)}
+		devices = {device.id: device.asJson() for device in self.DeviceManager.getDevicesByLocation(locationID=self.id)}
 		return {
 				'id'      : self.id,
 				'name'    : self.name,

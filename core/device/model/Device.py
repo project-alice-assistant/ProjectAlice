@@ -13,9 +13,8 @@ class Device(ProjectAliceObject):
 	lastContact: int = 0
 
 	id: int = field(init=False)
-	deviceTypeID: str = field(init=False)
+	deviceTypeID: int = field(init=False)
 	uid: str = field(init=False)
-	room: str = field(init=False)
 
 	def __post_init__(self): #NOSONAR
 		self.id = self.data['id']
@@ -39,7 +38,10 @@ class Device(ProjectAliceObject):
 
 	def pairingDone(self, uid: str):
 		self.uid = uid
-		##todo save to DB
+		self.DatabaseManager.update(tableName=self.DeviceManager.DB_DEVICE,
+		                            callerName=self.DeviceManager.name,
+		                            values={'uid': uid},
+		                            row=('id',self.id))
 		# todo broadcast: pairing done
 
 
@@ -49,6 +51,12 @@ class Device(ProjectAliceObject):
 
 	def getDeviceType(self) -> DeviceType:
 		return self.DeviceManager.getDeviceType(id=self.deviceTypeID)
+
+
+	def isInLocation(self, location: Location) -> bool:
+		if self.locationID == location.id:
+			return True
+		# todo check links
 
 
 	def asJson(self):
@@ -80,6 +88,13 @@ class Device(ProjectAliceObject):
 		                            callerName=self.DeviceManager.name,
 		                            values={'devSettings': self.devSettings},
 		                            row=('id',self.id))
+
+	def toggle(self):
+		self.getDeviceType().toggle(device=self)
+
+	@property
+	def siteId(self) -> str:
+		return self.getMainLocation().getSaveName()
 
 
 	@property

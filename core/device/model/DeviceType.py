@@ -4,14 +4,14 @@ from core.base.model.ProjectAliceObject import ProjectAliceObject
 
 class DeviceType(ProjectAliceObject):
 
-	def __init__(self, data: sqlite3.Row, devSettings: dict = {}, locSettings: dict = {}, multiRoom: bool = True, locationLimit: int = 0, deviceLimit: int = 0):
+	def __init__(self, data: sqlite3.Row, devSettings: dict = {}, locSettings: dict = {}, allowLocationLinks: bool = True, perLocationLimit: int = 0, totalDeviceLimit: int = 0):
 		super().__init__()
 		self._name = data['name']
 		self._skill = data['skill']
 		self._skillInstance = None
-		self._locationLimit = locationLimit
-		self._deviceLimit = deviceLimit
-		self._multiRoom = multiRoom
+		self._perLocationLimit = perLocationLimit
+		self._totalDeviceLimit = totalDeviceLimit
+		self._allowLocationLinks = allowLocationLinks
 		self._devSettings = devSettings
 		self._locSettings = locSettings
 
@@ -37,6 +37,10 @@ class DeviceType(ProjectAliceObject):
 		# e.g. a light bulb can be on or off and display its status
 		pass
 
+	def toggle(self, device: Device):
+		# the functionality to execute when the device is clicked/toggled in the webinterface
+		pass
+
 ### Generic part
 	def saveToDB(self):
 		values = {'skill': self.skill, 'name': self.name, 'locSettings': self._locSettings, 'devSettings': self._devSettings}
@@ -51,7 +55,7 @@ class DeviceType(ProjectAliceObject):
 			                            callerName=self.DeviceManager.name,
 			                            values={'devSettings': self._devSettings},
 			                            row=('id', self.id))
-			for device in self.DeviceManager.getDevicesByType(deviceType=self.id):
+			for device in self.DeviceManager.getDevicesByType(deviceTypeID=self.id):
 				device.changedDevSettingsStructure(self._devSettings)
 
 		if row['locSettings'] != self._locSettings:
@@ -93,18 +97,18 @@ class DeviceType(ProjectAliceObject):
 
 
 	@property
-	def locationLimit(self) -> int:
-		return self._locationLimit
+	def totalDeviceLimit(self) -> int:
+		return self._totalDeviceLimit
 
 
 	@property
-	def deviceLimit(self) -> int:
-		return self._locationLimit
+	def perLocationLimit(self) -> int:
+		return self._perLocationLimit
 
 
 	@property
-	def multiRoom(self) -> bool:
-		return self._multiRoom
+	def allowLocationLinks(self) -> bool:
+		return self._allowLocationLinks
 
 
 	def __repr__(self):

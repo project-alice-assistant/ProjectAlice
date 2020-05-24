@@ -19,6 +19,7 @@ from core.base.model.Manager import Manager
 from core.commons import constants
 from core.device.model.Device import Device
 from core.device.model.DeviceType import DeviceType
+from core.device.model.Location import Location
 from core.device.model.TasmotaConfigs import TasmotaConfigs
 from core.dialog.model.DialogSession import DialogSession
 
@@ -119,10 +120,10 @@ class DeviceManager(Manager):
 
 
 	# noinspection SqlResolve
-	def addNewDevice(self, deviceTypeID: int, locationID: int = None, room: str = None, uid: str = None) -> Device:
+	def addNewDevice(self, deviceTypeID: int, locationID: int = None, uid: str = None) -> Device:
 		# get or create location from different inputs
 		try:
-			location = self.LocationManager.getLocation(id=locationID, room=room)
+			location = self.LocationManager.getLocation(id=locationID)
 
 			self.assertDeviceTypeAllowedAtLocation(locationID=location.id, typeID=deviceTypeID)
 
@@ -194,7 +195,7 @@ class DeviceManager(Manager):
 	def addLink(self, id: int, locationid: int):
 		device = self.getDeviceByID(id)
 		deviceType = device.getDeviceType()
-		if not deviceType.canHaveMultipleRooms():
+		if not deviceType.multiRoom():
 			raise Exception(f'Device type {deviceType.name} can\'t be linked to other rooms')
 
 		#todo get device/room specific settings
@@ -233,22 +234,22 @@ class DeviceManager(Manager):
 
 
 
-	def broadcastToDevices(self, topic: str, payload: dict = None, deviceType: str = None, room: str = None, connectedOnly: bool = True):
+	def broadcastToDevices(self, topic: str, payload: dict = None, deviceType: DeviceType = None, location: Location = None, connectedOnly: bool = True):
 		if not payload:
 			payload = dict()
 
 		for device in self._devices.values():
-			if deviceType and device.deviceType.lower() != deviceType.lower():
+			if deviceType and device.deviceType != deviceType:
 				continue
 
-			if room and device.room.lower() != room.lower():
+			if location and device.isInLocation(location):
 				continue
 
 			if connectedOnly and not device.connected:
 				continue
 
 			payload.setdefault('uid', device.uid)
-			payload.setdefault('siteId', device.room)
+			payload.setdefault('siteId', device.siteId)
 
 			self.MqttManager.publish(
 				topic=topic,
@@ -290,12 +291,15 @@ class DeviceManager(Manager):
 ## Heartbeats
 	def onDeviceHeartbeat(self, uid: str, siteId: str = None):
 		device = self.getDeviceByUID(uid=uid)
+		if siteId:
+			location = self.LocationManager.getLocation(siteID=siteId)
+
 		if not device:
 			self.logWarning(f'Device with uid **{uid}** does not exist')
 			return
 
-		if siteId and siteId.replace(' ', '_').lower() != device.room.lower():
-			self.logWarning(f'Device with uid **{uid}** is not matching its defined room (received **{siteId.replace(" ", "_").lower()}** but required **{device.room}**')
+		if location and not device.isInLocation(location):
+			self.logWarning(f'Device with uid **{uid}** is not matching its defined room (received **{siteId.replace(" ", "_").lower()}** but required **{device.getMainLocation().getSaveName()}**')
 			return
 
 		self._heartbeats[uid] = time.time()
@@ -344,9 +348,16 @@ class DeviceManager(Manager):
 	def assertDeviceTypeAllowedAtLocation(self, typeID: int, locationID: int):
 		# check max allowed per Location
 		deviceType = self.getDeviceType(typeID)
-		if deviceType.locationLimit > 0:
-			if deviceType.locationLimit <= self.LocationManager.getDevicesByRoom(locationID=locationID,deviceTypeID=typeID):
-				raise Exception(f'Maximum limit of devices in this location reached')
+		# check if another instance of this device is allowed
+		if deviceType.totalDeviceLimit > 0:
+			if deviceType.totalDeviceLimit <= self.DeviceManager.getDevicesByType(deviceTypeID=typeID):
+				raise Exception(f'Maximum limit of devices from this device type reached')
+		#todo self.MqttManager.say(text=self.TalkManager.randomTalk('maxOneAlicePerRoom', skill='system'), client=replyOnSiteId)
+
+		# check if there are aleady too many of this device type in the location
+		if deviceType.perLocationLimit > 0:
+			if deviceType.perLocationLimit <= self.LocationManager.getDevicesByLocation(locationID=locationID,deviceTypeID=typeID):
+				raise Exception(f'Maximum limit of devices in this location already reached')
 		#todo self.MqttManager.say(text=self.TalkManager.randomTalk('maxOneAlicePerRoom', skill='system'), client=replyOnSiteId)
 
 
@@ -355,20 +366,14 @@ class DeviceManager(Manager):
 		return self._deviceTypes
 
 
-	def getDevicesByRoom(self, room: str = None, locationID: int = None, connectedOnly: bool = False, deviceTypeID: int = None) -> List[Device]:
-		if not room and not locationID:
-			raise Exception(f'you need to provice a room name or ID')
-
-		if not locationID and room:
-			locationID = self.LocationManager.getLocationWithName(room=room)
-
+	def getDevicesByLocation(self, locationID: int, connectedOnly: bool = False, deviceTypeID: int = None) -> List[Device]:
 		return [device for device in self._devices.values() if device.locationID == locationID
 		        and (not connectedOnly or device.connected)
 		        and (not deviceTypeID or device.deviceTypeID == deviceTypeID)]
 
 
-	def getDevicesByType(self, deviceType: int, connectedOnly: bool = False) -> List[Device]:
-		return [x for x in self._devices.values() if x.deviceTypeID == deviceType and (not connectedOnly or x.connected)]
+	def getDevicesByType(self, deviceTypeID: int, connectedOnly: bool = False) -> List[Device]:
+		return [x for x in self._devices.values() if x.deviceTypeID == deviceTypeID and (not connectedOnly or x.connected)]
 
 	def getDeviceLinksByType(self, deviceType: int) -> List[Device]:
 		return [x for x in self._deviceLinks.values() if x.deviceTypeID == deviceType and (not connectedOnly or x.connected)]
@@ -387,7 +392,7 @@ class DeviceManager(Manager):
 		return self._broadcastFlag
 
 
-	def doFlashTasmota(self, room: str, espType: str, siteId: str):
+	def doFlashTasmota(self, location: Location, espType: str, siteId: str):
 		port = self.findUSBPort(timeout=60)
 		if not port:
 			self.MqttManager.say(text=self.TalkManager.randomTalk('noESPFound', skill='AliceCore'), client=siteId)
@@ -421,7 +426,7 @@ class DeviceManager(Manager):
 			time.sleep(10)
 			uid = self._getFreeUID(mac)
 			tasmotaConfigs = TasmotaConfigs(deviceType=espType, uid=uid)
-			confs = tasmotaConfigs.getBacklogConfigs(room)
+			confs = tasmotaConfigs.getBacklogConfigs(location.getSaveName())
 			if not confs:
 				self.logError('Something went wrong getting tasmota configuration')
 				self.MqttManager.say(text=self.TalkManager.randomTalk('espFailed', skill='AliceCore'), client=siteId)
@@ -456,7 +461,9 @@ class DeviceManager(Manager):
 					ser.close()
 					self.logInfo('Tasmota flashing and configuring done')
 					self.MqttManager.say(text=self.TalkManager.randomTalk('espFlashingDone', skill='AliceCore'), client=siteId)
-					self.addNewDevice(espType, room, uid)
+
+					#todo espType is not a valid input anymore: need a proper device type!
+					self.addNewDevice(espType, locationID=location.id, uid=uid)
 					self._broadcastFlag.clear()
 
 				except Exception as e:
@@ -504,8 +511,9 @@ class DeviceManager(Manager):
 
 		return ''
 
-
+	# todo currently called from AliceCore - should be moved to a seperate skill or be handled with callbacks specified by skills
 	def startTasmotaFlashingProcess(self, room: str, espType: str, session: DialogSession) -> bool:
+		location = self.LocationManager.getLocationWithName(name=room)
 		self.ThreadManager.doLater(interval=0.5, func=self.MqttManager.endDialog, args=[session.sessionId, self.TalkManager.randomTalk('connectESPForFlashing', skill='AliceCore')])
 
 		self._broadcastFlag.set()
@@ -524,5 +532,5 @@ class DeviceManager(Manager):
 			self._broadcastFlag.clear()
 			return False
 
-		self.ThreadManager.newThread(name='flashThread', target=self.doFlashTasmota, args=[room, espType, session.siteId])
+		self.ThreadManager.newThread(name='flashThread', target=self.doFlashTasmota, args=[location, espType, session.siteId])
 		return True

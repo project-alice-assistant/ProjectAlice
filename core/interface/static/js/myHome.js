@@ -460,6 +460,8 @@ $(function () {
 
 				if( data['uid'] == 'undefined' || data['uid'] == null ){
 					content += "NO DEVICE PAIRED!<div id='startPair' class='button'>Search Device</div>"
+				} else {
+					content += "<div class='techDetail' >"+data['uid']+"</div>";
 				}
 
 				content += "<div class='configBox'>";
