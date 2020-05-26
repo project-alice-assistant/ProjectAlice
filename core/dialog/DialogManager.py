@@ -216,6 +216,10 @@ class DialogManager(Manager):
 			}
 		)
 
+		skill = self.SkillManager.getSkillInstance('ContextSensitive')
+		if skill:
+			skill.addUserChat(text=session.payload['text'], siteId=session.siteId)
+
 
 	def forgeUserRandomAnswer(self, session: DialogSession):
 		"""
