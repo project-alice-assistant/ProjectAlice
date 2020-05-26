@@ -463,7 +463,7 @@ class MqttManager(Manager):
 		else:
 			session = self.DialogManager.newSession(siteId=self.Commons.parseSiteId(msg), message=msg)
 
-		if 'text' in payload and payload.get('isHotwordNotification', False):
+		if 'text' in payload and not payload.get('isHotwordNotification', False):
 			skill = self.SkillManager.getSkillInstance('ContextSensitive')
 			if skill:
 				skill.addChat(text=payload['text'], siteId=session.siteId)
