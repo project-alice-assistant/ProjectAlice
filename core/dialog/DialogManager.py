@@ -77,7 +77,8 @@ class DialogManager(Manager):
 							skill='system'
 						),
 						'sendIntentNotRecognized': True,
-						'canBeEnqueued'          : False
+						'canBeEnqueued'          : False,
+						'isHotwordNotification'  : True
 					},
 					'customData': {}
 				})
@@ -129,7 +130,7 @@ class DialogManager(Manager):
 			interval=self.ConfigManager.getAliceConfigByName('sessionTimeout'),
 			func=self.sessionTimeout,
 			kwargs={
-				'sessionId': sessionId,
+				'sessionId'  : sessionId,
 				'tempSession': tempSession
 			}
 		)
@@ -307,6 +308,8 @@ class DialogManager(Manager):
 				self.ThreadManager.doLater(interval=1, func=self.onStartSession, kwargs={'siteId': siteId, 'payload': payload})
 				return
 
+		hotwordNotification = False
+
 		if 'init' in payload:
 			if payload['init']['type'] == 'notification':
 				session.isNotification = True
@@ -314,6 +317,9 @@ class DialogManager(Manager):
 			else:
 				session.isNotification = False
 				session.inDialog = True
+
+			if 'isHotwordNotification' in payload['init'] and payload['init']['isHotwordNotification']:
+				hotwordNotification = True
 
 		self.MqttManager.publish(
 			topic=constants.TOPIC_SESSION_STARTED,
@@ -330,11 +336,12 @@ class DialogManager(Manager):
 			self.MqttManager.publish(
 				topic=constants.TOPIC_TTS_SAY,
 				payload={
-					'text'     : payload['init']['text'],
-					'lang'     : self.LanguageManager.activeLanguageAndCountryCode,
-					'siteId'   : siteId,
-					'sessionId': session.sessionId,
-					'uid'      : uid
+					'text'                 : payload['init']['text'],
+					'lang'                 : self.LanguageManager.activeLanguageAndCountryCode,
+					'siteId'               : siteId,
+					'sessionId'            : session.sessionId,
+					'uid'                  : uid,
+					'isHotwordNotification': hotwordNotification
 				}
 			)
 
