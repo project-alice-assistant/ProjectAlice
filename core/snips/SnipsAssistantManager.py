@@ -31,6 +31,7 @@ class SnipsAssistantManager(Manager):
 		self.logInfo('Checking assistant')
 		if not self._assistantPath.exists():
 			self.logInfo('Assistant not found, generating')
+			self.linkAssistant()
 			self.train()
 		else:
 			self.logInfo('Assistant existing, check consistency')
@@ -213,7 +214,6 @@ class SnipsAssistantManager(Manager):
 
 	def linkAssistant(self):
 		self.Commons.runRootSystemCommand(['ln', '-sfn', self.Commons.rootDir() + f'/trained/assistants/assistant_{self.LanguageManager.activeLanguage}', self.Commons.rootDir() + '/assistant'])
-		self.Commons.runRootSystemCommand(['ln', '-sfn', self.Commons.rootDir() + f'/system/sounds/{self.LanguageManager.activeLanguage}/start_of_input.wav', self.Commons.rootDir() + '/assistant/custom_dialogue/sound/start_of_input.wav'])
 		self.Commons.runRootSystemCommand(['ln', '-sfn', self.Commons.rootDir() + f'/system/sounds/{self.LanguageManager.activeLanguage}/end_of_input.wav', self.Commons.rootDir() + '/assistant/custom_dialogue/sound/end_of_input.wav'])
 		self.Commons.runRootSystemCommand(['ln', '-sfn', self.Commons.rootDir() + f'/system/sounds/{self.LanguageManager.activeLanguage}/error.wav', self.Commons.rootDir() + '/assistant/custom_dialogue/sound/error.wav'])
 		self.Commons.runRootSystemCommand(['systemctl', 'restart', 'snips-nlu'])

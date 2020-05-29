@@ -3,6 +3,7 @@ import logging
 from pathlib import Path
 
 import configTemplate
+from core.base.SuperManager import SuperManager
 from core.base.model.TomlFile import TomlFile
 
 try:
@@ -469,6 +470,14 @@ class ConfigManager(Manager):
 			del self._snipsConfigurations['snips-audio-server']['disable_playback']
 			del self._snipsConfigurations['snips-audio-server']['disable_capture']
 			self._snipsConfigurations.dump()
+
+
+	def restartWakewordEngine(self):
+		self.WakewordManager.restartEngine()
+
+
+	def reloadWakeword(self):
+		SuperManager.getInstance().restartManager(manager=self.WakewordManager.name)
 
 
 	def refreshStoreData(self):

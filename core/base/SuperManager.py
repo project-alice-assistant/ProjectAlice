@@ -203,6 +203,16 @@ class SuperManager:
 		return self._managers.get(managerName, None)
 
 
+	def restartManager(self, manager: str):
+		if not manager in self._managers:
+			Logger().logWarning(f'Was asking to restart manager **{manager}** but it doesn\'t exist')
+			return
+
+		self._managers[manager].onStop()
+		self._managers[manager].onStart()
+		self._managers[manager].onBooted()
+
+
 	@property
 	def managers(self) -> dict:
 		return self._managers

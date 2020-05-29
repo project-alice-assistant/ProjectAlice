@@ -71,7 +71,6 @@ class TasmotaConfigs(ProjectAliceObject):
 				'MqttHost {mqtthost}',
 				'MqttClient {type}_{room}',
 				'TelePeriod 0',
-				# TODO should this be renamed?
 				'module 18'
 			],
 			'waitAfter': 8

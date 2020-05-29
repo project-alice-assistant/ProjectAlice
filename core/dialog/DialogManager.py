@@ -1,3 +1,4 @@
+import json
 import uuid
 from pathlib import Path
 from threading import Timer
@@ -52,6 +53,8 @@ class DialogManager(Manager):
 
 		session = self.newSession(siteId=siteId, user=user)
 
+		self.logDebug(f'Wakeword detected on site **{siteId}**')
+
 		# Turn off the wakeword component
 		self.MqttManager.publish(
 			topic=constants.TOPIC_HOTWORD_TOGGLE_OFF,
@@ -74,7 +77,8 @@ class DialogManager(Manager):
 							skill='system'
 						),
 						'sendIntentNotRecognized': True,
-						'canBeEnqueued'          : False
+						'canBeEnqueued'          : False,
+						'isHotwordNotification'  : True
 					},
 					'customData': {}
 				})
@@ -126,7 +130,7 @@ class DialogManager(Manager):
 			interval=self.ConfigManager.getAliceConfigByName('sessionTimeout'),
 			func=self.sessionTimeout,
 			kwargs={
-				'sessionId': sessionId,
+				'sessionId'  : sessionId,
 				'tempSession': tempSession
 			}
 		)
@@ -211,6 +215,10 @@ class DialogManager(Manager):
 				'sessionId'   : session.sessionId
 			}
 		)
+
+		skill = self.SkillManager.getSkillInstance('ContextSensitive')
+		if skill:
+			skill.addUserChat(text=session.payload['text'], siteId=session.siteId)
 
 
 	def forgeUserRandomAnswer(self, session: DialogSession):
@@ -304,6 +312,8 @@ class DialogManager(Manager):
 				self.ThreadManager.doLater(interval=1, func=self.onStartSession, kwargs={'siteId': siteId, 'payload': payload})
 				return
 
+		hotwordNotification = False
+
 		if 'init' in payload:
 			if payload['init']['type'] == 'notification':
 				session.isNotification = True
@@ -311,6 +321,9 @@ class DialogManager(Manager):
 			else:
 				session.isNotification = False
 				session.inDialog = True
+
+			if 'isHotwordNotification' in payload['init'] and payload['init']['isHotwordNotification']:
+				hotwordNotification = True
 
 		self.MqttManager.publish(
 			topic=constants.TOPIC_SESSION_STARTED,
@@ -327,11 +340,12 @@ class DialogManager(Manager):
 			self.MqttManager.publish(
 				topic=constants.TOPIC_TTS_SAY,
 				payload={
-					'text'     : payload['init']['text'],
-					'lang'     : self.LanguageManager.activeLanguageAndCountryCode,
-					'siteId'   : siteId,
-					'sessionId': session.sessionId,
-					'uid'      : uid
+					'text'                 : payload['init']['text'],
+					'lang'                 : self.LanguageManager.activeLanguageAndCountryCode,
+					'siteId'               : siteId,
+					'sessionId'            : session.sessionId,
+					'uid'                  : uid,
+					'isHotwordNotification': hotwordNotification
 				}
 			)
 
@@ -374,7 +388,7 @@ class DialogManager(Manager):
 				payload={
 					'siteId'     : session.siteId,
 					'sessionId'  : session.sessionId,
-					'customData' : session.customData,
+					'customData' : json.dumps(session.customData),
 					'termination': {
 						'reason': reason
 					}
@@ -439,7 +453,7 @@ class DialogManager(Manager):
 			return
 
 		self._endedSessions[sessionId] = session
-		self._sessionsBySites.pop(session.siteId)
+		self._sessionsBySites.pop(session.siteId, None)
 
 
 	@property

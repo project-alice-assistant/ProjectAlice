@@ -19,6 +19,7 @@ class MqttManager(Manager):
 
 	DEFAULT_CLIENT_EXTENSION = '@mqtt'
 	SAT_TYPE = 'alicesatellite'
+	TOPIC_AUDIO_FRAME = constants.TOPIC_AUDIO_FRAME.replace('{}', '+')
 
 	def __init__(self):
 		super().__init__()
@@ -27,7 +28,7 @@ class MqttManager(Manager):
 		self._multiDetectionsHolder = list()
 		self._deactivatedIntents = list()
 
-		self._audioFrameRegex = re.compile(constants.TOPIC_AUDIO_FRAME.replace('{}', '(.*)'))
+		self._audioFrameRegex = re.compile(self.TOPIC_AUDIO_FRAME.replace('+', '(.*)'))
 		self._wakewordDetectedRegex = re.compile(constants.TOPIC_WAKEWORD_DETECTED.replace('{}', '(.*)'))
 		self._vadUpRegex = re.compile(constants.TOPIC_VAD_UP.replace('{}', '(.*)'))
 		self._vadDownRegex = re.compile(constants.TOPIC_VAD_DOWN.replace('{}', '(.*)'))
@@ -123,7 +124,8 @@ class MqttManager(Manager):
 			(constants.TOPIC_TOGGLE_FEEDBACK_OFF, 0),
 			(constants.TOPIC_NLU_INTENT_NOT_RECOGNIZED, 0),
 			(constants.TOPIC_START_SESSION, 0),
-			(constants.TOPIC_NLU_ERROR, 0)
+			(constants.TOPIC_NLU_ERROR, 0),
+			(self.TOPIC_AUDIO_FRAME, 0)
 		]
 
 		for username in self.UserManager.getAllUserNames():
@@ -466,7 +468,7 @@ class MqttManager(Manager):
 		else:
 			session = self.DialogManager.newSession(siteId=self.Commons.parseSiteId(msg), message=msg)
 
-		if 'text' in payload:
+		if 'text' in payload and not payload.get('isHotwordNotification', False):
 			skill = self.SkillManager.getSkillInstance('ContextSensitive')
 			if skill:
 				skill.addChat(text=payload['text'], siteId=session.siteId)
