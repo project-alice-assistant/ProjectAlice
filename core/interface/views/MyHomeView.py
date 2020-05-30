@@ -136,6 +136,7 @@ class MyHomeView(View):
 	@route('/Device/<path:id>/toggle', methods = ['POST'])
 	def toggleDevice(self):
 		try:
+			self.logInfo(f'toggling device id {id}')
 			id = int(id)
 			self.DeviceManager.getDeviceByID(id=id).toggle()
 		except Exception as e:

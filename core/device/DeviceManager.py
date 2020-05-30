@@ -82,7 +82,7 @@ class DeviceManager(Manager):
 
 
 	@property
-	def devices(self) -> Dict[str, Device]:
+	def devices(self) -> Dict[int, Device]:
 		return self._devices
 
 
@@ -138,13 +138,13 @@ class DeviceManager(Manager):
 
 
 	def devUIDtoID(self, UID: str) -> int:
-		return self.devices[UID].id
+		for id, dev in self.devices.items():
+			if dev.uid == UID:
+				return id
 
 
 	def devIDtoUID(self, ID: int) -> str:
-		for uid, dev in self.devices:
-			if dev.id == ID:
-				return uid
+		return self.devices[ID].uid
 
 
 	def deleteDeviceID(self, deviceID: int):
@@ -239,7 +239,7 @@ class DeviceManager(Manager):
 			payload = dict()
 
 		for device in self._devices.values():
-			if deviceType and device.deviceType != deviceType:
+			if deviceType and device.getDeviceType() != deviceType:
 				continue
 
 			if location and device.isInLocation(location):
@@ -258,7 +258,9 @@ class DeviceManager(Manager):
 
 
 	def deviceConnecting(self, uid: str) -> Optional[Device]:
+		self.logInfo(f'load device {uid}')
 		device = self.getDeviceByUID(uid)
+		self.logInfo(f'loaded device {device.id}')
 		if not device:
 			self.logWarning(f'A device with uid **{uid}** tried to connect but is unknown')
 			return None
@@ -267,7 +269,9 @@ class DeviceManager(Manager):
 			device.connected = True
 			self.broadcast(method=constants.EVENT_DEVICE_CONNECTING, exceptions=[self.name], propagateToSkills=True)
 
+		self.logInfo(f'beating')
 		self._heartbeats[uid] = time.time() + 5
+		self.logInfo(f'done')
 		if not self._heartbeatsCheckTimer:
 			self._heartbeatsCheckTimer = self.ThreadManager.newTimer(interval=3, func=self.checkHeartbeats)
 

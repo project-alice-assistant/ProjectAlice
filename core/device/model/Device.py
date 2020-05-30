@@ -115,3 +115,12 @@ class Device(ProjectAliceObject):
 	@devSettings.setter
 	def devSettings(self, value: dict):
 		self._devSettings = value
+
+
+	@property
+	def deviceType(self) -> DeviceType:
+		return self.getDeviceType()
+
+	@property
+	def room(self) -> str:
+		return self.getMainLocation().getSaveName()

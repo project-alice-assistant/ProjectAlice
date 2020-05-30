@@ -300,7 +300,7 @@ class SkillManager(Manager):
 				# The command was recognized but required higher access level
 				return True
 			except Exception as e:
-				self.logError(f'Error dispatching message to {skillInstance.name}: {e}')
+				self.logError(f'Error dispatching message "{session.intentName.split("/")[-1]}" to {skillInstance.name}: {e}')
 				self.MqttManager.endDialog(
 					sessionId=session.sessionId,
 					text=self.TalkManager.randomTalk(talk='error', skill='system')
