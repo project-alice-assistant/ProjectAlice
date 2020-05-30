@@ -18,7 +18,7 @@ class AmazonTTS(TTS):
 	DEPENDENCIES = {
 		'system': [],
 		'pip'   : {
-			'boto3==1.13.6'
+			'boto3==1.13.19'
 		}
 	}
 
