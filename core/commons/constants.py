@@ -58,6 +58,8 @@ TOPIC_DND = 'projectalice/devices/stopListen'
 TOPIC_STOP_DND = 'projectalice/devices/startListen'
 TOPIC_TOGGLE_DND = 'projectalice/devices/toggleListen'
 
+TOPIC_DEVICE_STATUS = 'projectalice/devices/status'
+
 EVENT_FULL_MINUTE = 'fullMinute'
 EVENT_FIVE_MINUTE = 'fiveMinute'
 EVENT_QUARTER_HOUR = 'quarterHour'

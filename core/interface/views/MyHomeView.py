@@ -134,13 +134,15 @@ class MyHomeView(View):
 
 
 	@route('/Device/<path:id>/toggle', methods = ['POST'])
-	def toggleDevice(self):
+	def toggleDevice(self, id: str):
 		try:
 			self.logInfo(f'toggling device id {id}')
 			id = int(id)
 			self.DeviceManager.getDeviceByID(id=id).toggle()
+			return jsonify(success=True)
 		except Exception as e:
 			self.logError(f'Failed toggling device Link: {e}')
+			return jsonify(success=False)
 
 
 	@route('/Device/<path:id>/addLink/<path:roomid>', methods = ['POST'])
@@ -152,8 +154,26 @@ class MyHomeView(View):
 				raise Exception('No valid room ID supplied')
 			else:
 				self.DeviceManager.addLink(id=id,roomid=roomid)
+			return jsonify(success=True)
 		except Exception as e:
 			self.logError(f'Failed adding room/device Link: {e}')
+			return jsonify(success=False)
+
+
+	@route('/Device/u/<path:uid>/icon', methods = ['GET'])
+	def getIconUID(self, uid: str):
+		return self.getIcon(id=self.DeviceManager.devUIDtoID(uid=uid))
+
+
+	@route('/Device/<path:id>/icon', methods = ['GET'])
+	def getIcon(self, id: str):
+		try:
+			id = int(id)
+			device = self.DeviceManager.getDeviceByID(id=id)
+			return send_from_directory(f'{self.WebInterfaceManager.app.root_path}/../../skills/{device.skill}/device/img/', device.getIcon())
+		except Exception as e:
+			self.logError(f'Failed loading icon: {e}')
+			return send_from_directory(f'{self.WebInterfaceManager.app.root_path}/../static/css/images/', 'error.png')
 
 
 	@route('/Device/<path:id>/deleteLink/<path:roomid>', methods = ['POST'])

@@ -54,6 +54,7 @@ class DeviceManager(Manager):
 			'locSettings TEXT'
 		]
 	}
+	SAT_TYPE = 'device_AliceSatellite'
 
 
 	def __init__(self):
@@ -97,6 +98,11 @@ class DeviceManager(Manager):
 	def onStop(self):
 		super().onStop()
 		self.MqttManager.publish(topic='projectalice/devices/coreDisconnection')
+
+
+	def onDeviceStatus(self, session) -> bool:
+		device = self.getDeviceByUID(uid=session.payload['uid'])
+		device.onDeviceStatus()
 
 
 	def deviceMessage(self, message: MQTTMessage) -> DialogSession:
@@ -157,7 +163,7 @@ class DeviceManager(Manager):
 		return self.deviceTypes.get(id, None)
 
 
-	def getDeviceTypeByName(self, name: str):
+	def getDeviceTypeByName(self, name: str) -> DeviceType:
 		for device in self.deviceTypes.values():
 			if device.name == name:
 				return device
@@ -258,9 +264,7 @@ class DeviceManager(Manager):
 
 
 	def deviceConnecting(self, uid: str) -> Optional[Device]:
-		self.logInfo(f'load device {uid}')
 		device = self.getDeviceByUID(uid)
-		self.logInfo(f'loaded device {device.id}')
 		if not device:
 			self.logWarning(f'A device with uid **{uid}** tried to connect but is unknown')
 			return None
@@ -268,10 +272,9 @@ class DeviceManager(Manager):
 		if not device.connected:
 			device.connected = True
 			self.broadcast(method=constants.EVENT_DEVICE_CONNECTING, exceptions=[self.name], propagateToSkills=True)
+			self.MqttManager.publish('projectalice/devices/updated', payload={'id': device.id, 'type': 'status'})
 
-		self.logInfo(f'beating')
 		self._heartbeats[uid] = time.time() + 5
-		self.logInfo(f'done')
 		if not self._heartbeatsCheckTimer:
 			self._heartbeatsCheckTimer = self.ThreadManager.newTimer(interval=3, func=self.checkHeartbeats)
 
@@ -290,6 +293,7 @@ class DeviceManager(Manager):
 			self.logInfo(f'Device with uid **{uid}** disconnected')
 			device.connected = False
 			self.broadcast(method=constants.EVENT_DEVICE_DISCONNECTING, exceptions=[self.name], propagateToSkills=True)
+			self.MqttManager.publish('projectalice/devices/updated', payload={'id': device.id, 'type': 'status'})
 
 
 ## Heartbeats
@@ -306,6 +310,7 @@ class DeviceManager(Manager):
 			self.logWarning(f'Device with uid **{uid}** is not matching its defined room (received **{siteId.replace(" ", "_").lower()}** but required **{device.getMainLocation().getSaveName()}**')
 			return
 
+		device.connected = True
 		self._heartbeats[uid] = time.time()
 
 
@@ -318,6 +323,7 @@ class DeviceManager(Manager):
 				device = self.getDeviceByUID(uid)
 				if device:
 					device.connected = False
+					self.publish('projectalice/devices/updated', payload={'id': device.id, 'type': 'status'})
 
 		self._heartbeatsCheckTimer = self.ThreadManager.newTimer(interval=3, func=self.checkHeartbeats)
 
@@ -354,7 +360,7 @@ class DeviceManager(Manager):
 		deviceType = self.getDeviceType(typeID)
 		# check if another instance of this device is allowed
 		if deviceType.totalDeviceLimit > 0:
-			if deviceType.totalDeviceLimit <= self.DeviceManager.getDevicesByType(deviceTypeID=typeID):
+			if deviceType.totalDeviceLimit <= self.DeviceManager.getDevicesByTypeID(deviceTypeID=typeID):
 				raise Exception(f'Maximum limit of devices from this device type reached')
 		#todo self.MqttManager.say(text=self.TalkManager.randomTalk('maxOneAlicePerRoom', skill='system'), client=replyOnSiteId)
 
@@ -376,8 +382,16 @@ class DeviceManager(Manager):
 		        and (not deviceTypeID or device.deviceTypeID == deviceTypeID)]
 
 
-	def getDevicesByType(self, deviceTypeID: int, connectedOnly: bool = False) -> List[Device]:
+	def getDevicesByType(self, deviceType: str, connectedOnly: bool = False) -> List[Device]:
+		deviceTypeObj = self.getDeviceTypeByName(deviceType)
+		if deviceTypeObj:
+			return [x for x in self._devices.values() if x.deviceTypeID == deviceTypeObj.id and (not connectedOnly or x.connected)]
+		return list()
+
+
+	def getDevicesByTypeID(self, deviceTypeID: int, connectedOnly: bool = False) -> List[Device]:
 		return [x for x in self._devices.values() if x.deviceTypeID == deviceTypeID and (not connectedOnly or x.connected)]
+
 
 	def getDeviceLinksByType(self, deviceType: int) -> List[Device]:
 		return [x for x in self._deviceLinks.values() if x.deviceTypeID == deviceType and (not connectedOnly or x.connected)]
@@ -389,6 +403,7 @@ class DeviceManager(Manager):
 
 	def getDeviceByID(self, id: int) -> Optional[Device]:
 		return self._devices.get(id, None)
+
 
 ## todo move to tasmota skill
 	@property

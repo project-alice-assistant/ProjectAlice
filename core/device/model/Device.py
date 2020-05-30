@@ -16,6 +16,7 @@ class Device(ProjectAliceObject):
 	deviceTypeID: int = field(init=False)
 	uid: str = field(init=False)
 
+
 	def __post_init__(self): #NOSONAR
 		self.id = self.data['id']
 		self.deviceTypeID = self.data['typeID']
@@ -31,6 +32,12 @@ class Device(ProjectAliceObject):
 			self._devSettings = ast.literal_eval(data['devSettings'])
 		else:
 			self._devSettings = dict()
+
+		if 'customValues' in self.data:
+			self._customValues = ast.literal_eval(data['customValues'])
+		else:
+			self._customValues = dict()
+
 
 	def getMainLocation(self) -> Location:
 		return self.LocationManager.getLocation(id=self.locationID)
@@ -68,6 +75,7 @@ class Device(ProjectAliceObject):
 			'name': self.name,
 			'uid': self.uid,
 			'locationID': self.locationID,
+			'room': self.getMainLocation().name,
 			'lastContact': self.lastContact,
 			'connected': self.connected,
 			'display': self.display
@@ -89,8 +97,22 @@ class Device(ProjectAliceObject):
 		                            values={'devSettings': self.devSettings},
 		                            row=('id',self.id))
 
+
 	def toggle(self):
 		self.getDeviceType().toggle(device=self)
+
+
+	def getIcon(self):
+		return self.getDeviceType().getDeviceIcon(device=self)
+
+
+	def setCustomValue(self, name: str, value):
+		self.customValues[name] = value
+
+
+	def getCustomValue(self, name: str):
+		return self.customValues.get(name, None)
+
 
 	@property
 	def siteId(self) -> str:
@@ -118,9 +140,23 @@ class Device(ProjectAliceObject):
 
 
 	@property
+	def customValues(self) -> dict:
+		return self._customValues
+
+
+	@customValues.setter
+	def customValues(self, value: dict):
+		self._customValues = value
+
+
+	@property
 	def deviceType(self) -> DeviceType:
 		return self.getDeviceType()
 
 	@property
 	def room(self) -> str:
 		return self.getMainLocation().getSaveName()
+
+	@property
+	def skill(self) -> str:
+		return self.getDeviceType().skill

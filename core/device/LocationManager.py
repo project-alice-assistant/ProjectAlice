@@ -107,6 +107,7 @@ class LocationManager(Manager):
 		# room: a room name issued by the user
 		# siteID: the current devices site NAME
 		# deviceTypeID: only rooms with that type of device can be found - linked is allowed as well
+		loc = None
 		if room:
 			loc = self.getLocationWithName(name=room)
 		if id:

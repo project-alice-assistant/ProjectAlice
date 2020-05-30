@@ -25,6 +25,25 @@ $(function () {
 
 	$( document ).tooltip();
 
+	function onConnect() {
+		MQTT.subscribe('projectalice/devices/updated');
+	}
+
+	function onMessage(msg) {
+		let payload = JSON.parse(msg.payloadString);
+		console.log(msg.topic)
+		if (msg.topic === 'projectalice/devices/updated') {
+			if(payload['type'] == 'status') {
+				console.log(payload);
+				tochange = $('#device_' + payload['id']);
+				url = 'Device/' + payload['id'] + '/icon?random=' + new Date().getTime();
+				tochange.css('background-image', 'url('+url+')');
+				console.log('done');
+			}
+		}
+
+	}
+
 	function loadHouse() {
 		$.ajax({
 			url : '/myhome/load/',
@@ -447,8 +466,8 @@ $(function () {
 		data = snapPosition(data)
 		data = snapAngle(data);
 		// noinspection CssUnknownTarget
-		let $newDevice = $('<div class="floorPlan-Device" ' +
-			'style="background: url(\'deviceType_static/' + data['skill'] + '/img/' + data['deviceType'] + '.png\') no-repeat; background-size: 100% 100%; left: ' + data["display"]["x"] + 'px; top: ' + data["display"]["y"] + 'px; width: ' + data["display"]["width"] + 'px; height: ' + data["display"]["height"] + 'px; position: absolute; z-index: auto; transform: rotate(' + data["display"]["rotation"] + 'deg);" ' +
+		let $newDevice = $('<div class="floorPlan-Device" id="device_'+data['id']+'" ' +
+			'style="background: url(\'Device/'+data['id']+'/icon?random='+ new Date().getTime()+'\') no-repeat; background-size: 100% 100%; left: ' + data["display"]["x"] + 'px; top: ' + data["display"]["y"] + 'px; width: ' + data["display"]["width"] + 'px; height: ' + data["display"]["height"] + 'px; position: absolute; z-index: auto; transform: rotate(' + data["display"]["rotation"] + 'deg);" ' +
 			'data-texture="' + data["deviceType"] + '"; data-skill="' + data["skill"] +'"; data-id="' + data["id"] +'"; data-uid="' + data["uid"] +'">' +
 			'</div>');
 
@@ -516,10 +535,7 @@ $(function () {
 				}
 			} else {
 				// display mode: Try toggling the device
-				$.post( '/myHome/toggleDevice/',
-					{ parent: data['skill'],
-						deviceType: data['deviceType'],
-						uid: data['uid']} )
+				$.post( 'Device/'+data['id']+'/toggle')
 					.done(function( result ) {
 						$newDevice.css('background: url("/deviceType_static/' + result + '.png')
 					});
@@ -952,4 +968,6 @@ $(function () {
 		});
 	}
 	loadHouse();
+	mqttRegisterSelf(onConnect, 'onConnect');
+	mqttRegisterSelf(onMessage, 'onMessage');
 });

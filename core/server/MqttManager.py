@@ -18,7 +18,6 @@ from core.device.model.DeviceType import DeviceType
 class MqttManager(Manager):
 
 	DEFAULT_CLIENT_EXTENSION = '@mqtt'
-	SAT_TYPE = 'alicesatellite'
 	TOPIC_AUDIO_FRAME = constants.TOPIC_AUDIO_FRAME.replace('{}', '+')
 
 	def __init__(self):
@@ -871,7 +870,7 @@ class MqttManager(Manager):
 		if not payload:
 			payload = dict()
 
-		for device in self.DeviceManager.getDevicesByType(deviceType):
+		for device in self.DeviceManager.getDevicesByType(deviceType=deviceType):
 			payload['siteId'] = device.siteId
 			self.publish(topic=topic, payload=payload, qos=qos, retain=retain)
 
@@ -907,7 +906,7 @@ class MqttManager(Manager):
 		:param state: str On or off
 		"""
 
-		deviceList = [device.name.replace(self.DEFAULT_CLIENT_EXTENSION, '') for device in self.DeviceManager.getDevicesByType('AliceSatellite', connectedOnly=True)]
+		deviceList = [device.name.replace(self.DEFAULT_CLIENT_EXTENSION, '') for device in self.DeviceManager.getDevicesByType(deviceType=self.DeviceManager.SAT_TYPE, connectedOnly=True)]
 		deviceList.append(self.ConfigManager.getAliceConfigByName('deviceName'))
 
 		for siteId in deviceList:
@@ -920,4 +919,4 @@ class MqttManager(Manager):
 
 	def getAliceTypeDevices(self, connectedOnly: bool = False) -> List[Device]:
 		#todo remove hard coded AliceSatellite. replace for example with some type of "device ability" -> "can broadcast" -> "can play sound" ..
-		return self.DeviceManager.getDevicesByType(self.SAT_TYPE, connectedOnly=connectedOnly)
+		return self.DeviceManager.getDevicesByType(deviceType=self.DeviceManager.SAT_TYPE, connectedOnly=connectedOnly)

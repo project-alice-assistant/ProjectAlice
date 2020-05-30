@@ -83,6 +83,7 @@ class IndexView(View):
 	def widgetCall(self):
 		try:
 			data = request.json
+			self.logInfo(data)
 
 			if not data['param']:
 				data['param'] = '{}'

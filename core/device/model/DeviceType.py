@@ -24,7 +24,6 @@ class DeviceType(ProjectAliceObject):
 
 
 ### to reimplement for any device type
-### Find A new Device
 	def discover(self, uid: str = None, device: Device = None):
 		# implement the method which can start the search for a new device.
 		# on success the uid should be added to the device and it should be saved
@@ -32,14 +31,16 @@ class DeviceType(ProjectAliceObject):
 		pass
 
 
-	def getStatusTile(self):
+	def getDeviceIcon(self):
 		# Return the tile representing the current status of the device:
 		# e.g. a light bulb can be on or off and display its status
 		pass
 
+
 	def toggle(self, device: Device):
 		# the functionality to execute when the device is clicked/toggled in the webinterface
 		pass
+
 
 ### Generic part
 	def saveToDB(self):
@@ -55,7 +56,7 @@ class DeviceType(ProjectAliceObject):
 			                            callerName=self.DeviceManager.name,
 			                            values={'devSettings': self._devSettings},
 			                            row=('id', self.id))
-			for device in self.DeviceManager.getDevicesByType(deviceTypeID=self.id):
+			for device in self.DeviceManager.getDevicesByTypeID(deviceTypeID=self.id):
 				device.changedDevSettingsStructure(self._devSettings)
 
 		if row['locSettings'] != self._locSettings:

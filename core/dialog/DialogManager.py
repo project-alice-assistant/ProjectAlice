@@ -424,7 +424,7 @@ class DialogManager(Manager):
 
 		if siteId == 'all':
 			# todo abstract: no hard coded device types!
-			devices = self.DeviceManager.getDevicesByType(deviceTypeID=self.DeviceManager.getDeviceTypeByName('AliceSatellite'), connectedOnly=True)
+			devices = self.DeviceManager.getDevicesByType(deviceType=self.DeviceManager.SAT_TYPE, connectedOnly=True)
 			for device in devices:
 				self.MqttManager.publish(topic=topic, payload={'siteId': device.siteId})
 
