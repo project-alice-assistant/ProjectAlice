@@ -654,4 +654,4 @@ class ProjectAliceObject:
 
 	@property
 	def WakewordManager(self): #NOSONAR
-		return SM.SuperManager.getInstance().wakewordRecorder
+		return SM.SuperManager.getInstance().wakewordManager

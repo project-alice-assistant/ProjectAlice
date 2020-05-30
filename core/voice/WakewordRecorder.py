@@ -47,6 +47,7 @@ class WakewordRecorder(Manager):
 
 	def onStart(self):
 		super().onStart()
+		self._sampleRate = self.AudioServer.SAMPLERATE
 		self._threshold = self.THRESHOLD
 
 
@@ -224,7 +225,7 @@ class WakewordRecorder(Manager):
 			'model_version': 1
 		}
 
-		path = Path(self.Commons.rootDir(), 'trained/hotwords', self.wakeword.username.lower())
+		path = Path(self.Commons.rootDir(), 'trained/hotwords/snips_hotword', self.wakeword.username.lower())
 
 		if path.exists():
 			self.logWarning('Destination directory for new wakeword already exists, deleting')
@@ -260,14 +261,14 @@ class WakewordRecorder(Manager):
 				addHeySnips = False
 
 		if addHeySnips:
-			models.append(str(Path(self.Commons.rootDir(), 'trained/hotwords/snips_hotword=0.53')))
+			models.append(str(Path(self.Commons.rootDir(), 'trained/hotwords/snips_hotword/hey_snips=0.53')))
 
 		models.append(f'{path}=0.52')
 		self.ConfigManager.updateSnipsConfiguration('snips-hotword', 'model', models, restartSnips=True)
 
 
 	def uploadToNewDevice(self, uid: str):
-		directory = Path(self.Commons.rootDir(), 'trained/hotwords')
+		directory = Path(self.Commons.rootDir(), 'trained/hotwords/snips_hotword')
 		for fiile in directory.iterdir():
 			if (directory/fiile).is_file():
 				continue

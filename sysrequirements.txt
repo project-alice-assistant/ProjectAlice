@@ -12,7 +12,6 @@ libicu-dev
 libpcre2-dev
 libasound2-dev
 portaudio19-dev
-python-pyaudio
 python3-pyaudio
 mosquitto
 mosquitto-clients

@@ -65,7 +65,7 @@ class TTS(ProjectAliceObject):
 			self.logInfo(f'Voice from config: **{self._voice}**')
 
 		if self._lang not in self._supportedLangAndVoices:
-			self.logWarning(f'Language **{self._lang}** not found, falling back to "en-US"')
+			self.logWarning(f'Language **{self._lang}** not found, falling back to **en-US**')
 			self._lang = 'en-US'
 
 		if self._type not in self._supportedLangAndVoices[self._lang]:
