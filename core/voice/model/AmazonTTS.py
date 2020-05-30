@@ -1,6 +1,5 @@
 import re
 
-from core.base.SuperManager import SuperManager
 from core.dialog.model.DialogSession import DialogSession
 from core.user.model.User import User
 from core.voice.model.TTSEnum import TTSEnum
@@ -199,9 +198,9 @@ class AmazonTTS(TTS):
 		super().onStart()
 		self._client = boto3.client(
 			'polly',
-			region_name=SuperManager.getInstance().configManager.getAliceConfigByName('awsRegion'),
-			aws_access_key_id=SuperManager.getInstance().configManager.getAliceConfigByName('awsAccessKey'),
-			aws_secret_access_key=SuperManager.getInstance().configManager.getAliceConfigByName('awsSecretKey')
+			region_name=self.ConfigManager.getAliceConfigByName('awsRegion'),
+			aws_access_key_id=self.ConfigManager.getAliceConfigByName('awsAccessKey'),
+			aws_secret_access_key=self.ConfigManager.getAliceConfigByName('awsSecretKey')
 		)
 
 

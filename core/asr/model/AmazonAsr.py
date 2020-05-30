@@ -27,5 +27,9 @@ class AmazonAsr(Asr):
 
 	def onStart(self):
 		super().onStart()
-		self._client = client('transcribe')
-
+		self._client = client(
+			'transcribe',
+			region_name=self.ConfigManager.getAliceConfigByName('awsRegion'),
+			aws_access_key_id=self.ConfigManager.getAliceConfigByName('awsAccessKey'),
+			aws_secret_access_key=self.ConfigManager.getAliceConfigByName('awsSecretKey')
+		)
