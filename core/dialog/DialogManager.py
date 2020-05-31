@@ -80,7 +80,7 @@ class DialogManager(Manager):
 						'canBeEnqueued'          : False,
 						'isHotwordNotification'  : True
 					},
-					'customData': {}
+					'customData': json.dumps(dict())
 				})
 		else:
 			self.onSayFinished(session=session, uid=str(uuid.uuid4()))
@@ -247,12 +247,12 @@ class DialogManager(Manager):
 			topic=f'hermes/intent/{session.payload["intent"]["intentName"]}',
 			payload={
 				'sessionId'    : session.sessionId,
-				'customData'   : session.customData,
+				'customData'   : json.dumps(session.customData),
 				'siteId'       : session.siteId,
 				'input'        : session.payload['input'],
 				'intent'       : session.payload['intent'],
 				'slots'        : session.payload['slots'],
-				'asrTokens'    : [],
+				'asrTokens'    : json.dumps(list()),
 				'asrConfidence': session.payload['intent']['confidenceScore'],
 				'alternatives' : session.payload['alternatives']
 			}
@@ -274,7 +274,7 @@ class DialogManager(Manager):
 			topic=constants.TOPIC_INTENT_NOT_RECOGNIZED,
 			payload={
 				'siteId'    : session.siteId,
-				'customData': session.customData,
+				'customData': json.dumps(session.customData),
 				'sessionId' : session.sessionId,
 				'input'     : session.payload['input']
 			}
