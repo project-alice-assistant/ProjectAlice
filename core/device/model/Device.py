@@ -29,12 +29,12 @@ class Device(ProjectAliceObject):
 			self._display = {}
 
 		if 'devSettings' in self.data:
-			self._devSettings = ast.literal_eval(data['devSettings'])
+			self._devSettings = ast.literal_eval(self.data['devSettings'])
 		else:
 			self._devSettings = dict()
 
 		if 'customValues' in self.data:
-			self._customValues = ast.literal_eval(data['customValues'])
+			self._customValues = ast.literal_eval(self.data['customValues'])
 		else:
 			self._customValues = dict()
 

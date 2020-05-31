@@ -243,7 +243,7 @@ class AliceSkill(ProjectAliceObject):
 	def getWidgetInstance(self, widgetName: str) -> Optional[Widget]:
 		return self._widgets.get(widgetName)
 
-	def getDeviceTypeInstance(self, deviceTypeName: str) -> Optional[Device]:
+	def getDeviceTypeInstance(self, deviceTypeName: str) -> Optional[DeviceType]:
 		return self._deviceTypes.get(deviceTypeName)
 
 

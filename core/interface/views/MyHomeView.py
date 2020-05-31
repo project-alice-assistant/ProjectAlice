@@ -180,11 +180,11 @@ class MyHomeView(View):
 	def deleteDeviceLink(self, id: str, roomid: str):
 		try:
 			id = int(id)
-			roomid = int(roomid)
-			if roomid == 0:
+			locationID = int(roomid)
+			if locationID == 0:
 				raise Exception('No valid room ID supplied')
 			else:
-				linkID = self.DeviceManager.getLink(deviceID, locationID)
+				linkID = self.DeviceManager.getLink(id, locationID)
 				self.DeviceManager.deleteLink(id=linkID)
 		except Exception as e:
 			self.logError(f'Failed deleting room/device Link: {e}')

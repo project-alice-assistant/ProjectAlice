@@ -19,6 +19,7 @@ from core.base.model.Manager import Manager
 from core.commons import constants
 from core.device.model.Device import Device
 from core.device.model.DeviceType import DeviceType
+from core.device.model.DeviceLink import DeviceLink
 from core.device.model.Location import Location
 from core.device.model.TasmotaConfigs import TasmotaConfigs
 from core.dialog.model.DialogSession import DialogSession
@@ -213,7 +214,7 @@ class DeviceManager(Manager):
 		pass
 
 	def deleteDeviceUID(self, deviceUID: str):
-		self.deleteDeviceID(deviceID=devUIDtoID(UID=deviceUID))
+		self.deleteDeviceID(deviceID=self.devUIDtoID(UID=deviceUID))
 
 
 	def _getFreeUID(self, base: str = '') -> str:
@@ -393,7 +394,7 @@ class DeviceManager(Manager):
 		return [x for x in self._devices.values() if x.deviceTypeID == deviceTypeID and (not connectedOnly or x.connected)]
 
 
-	def getDeviceLinksByType(self, deviceType: int) -> List[Device]:
+	def getDeviceLinksByType(self, deviceType: int, connectedOnly: bool = False) -> List[Device]:
 		return [x for x in self._deviceLinks.values() if x.deviceTypeID == deviceType and (not connectedOnly or x.connected)]
 
 

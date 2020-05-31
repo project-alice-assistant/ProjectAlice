@@ -1,6 +1,7 @@
 from core.device.model import Device
 import sqlite3
 from core.base.model.ProjectAliceObject import ProjectAliceObject
+import ast
 
 class DeviceLink(ProjectAliceObject):
 
