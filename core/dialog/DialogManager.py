@@ -330,7 +330,7 @@ class DialogManager(Manager):
 			payload={
 				'siteId'    : siteId,
 				'sessionId' : session.sessionId,
-				'customData': dict()
+				'customData': json.dumps(dict())
 			}
 		)
 
