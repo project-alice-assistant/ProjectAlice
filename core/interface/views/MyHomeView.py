@@ -153,7 +153,7 @@ class MyHomeView(View):
 			if roomid == 0:
 				raise Exception('No valid room ID supplied')
 			else:
-				self.DeviceManager.addLink(id=id,roomid=roomid)
+				self.DeviceManager.addLink(deviceID=id,locationID=roomid)
 			return jsonify(success=True)
 		except Exception as e:
 			self.logError(f'Failed adding room/device Link: {e}')
@@ -195,15 +195,12 @@ class MyHomeView(View):
 		try:
 			id = int(id)
 			device = self.DeviceManager.getDeviceByID(id=id)
-			device.getDeviceType().discover(device=device)
+			device.getDeviceType().discover(device=device, uid=self.DeviceManager.getFreeUID())
 			return jsonify(success=True)
 		except Exception as e:
 			self.logError(f'Failed pairing device: {e}')
 			return jsonify(error=str(e))
 
-	#todo send MQTT message out for changing the icon of a device
-	# payload: image or link to image?
-	# triggered by the deviceType class of the skills
 
 ### general myHome API
 	@route('/load/')

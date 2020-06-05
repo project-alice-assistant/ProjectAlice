@@ -1,6 +1,9 @@
 from core.device.model import Device
 import sqlite3
 from core.base.model.ProjectAliceObject import ProjectAliceObject
+from core.dialog.model.DialogSession import DialogSession
+from core.base.model.AliceSkill import AliceSkill
+import copy
 
 class DeviceType(ProjectAliceObject):
 
@@ -24,10 +27,12 @@ class DeviceType(ProjectAliceObject):
 
 
 ### to reimplement for any device type
-	def discover(self, uid: str = None, device: Device = None):
+	def discover(self, device: Device, replyOnSiteId: str = "", session:DialogSession = None) -> bool:
 		# implement the method which can start the search for a new device.
 		# on success the uid should be added to the device and it should be saved
 		# for this, call device.pairingDone(uid)
+		# return False if busy
+		# if not implemented, it will always look busy!
 		pass
 
 
@@ -43,6 +48,11 @@ class DeviceType(ProjectAliceObject):
 
 
 ### Generic part
+	@property
+	def initialLocationSettings(self) -> Dict:
+		return copy.deepcopy(self._locSettings)
+
+
 	def saveToDB(self):
 		values = {'skill': self.skill, 'name': self.name, 'locSettings': self._locSettings, 'devSettings': self._devSettings}
 		self._id = self.DatabaseManager.insert(tableName=self.DeviceManager.DB_TYPES, values=values, callerName=self.DeviceManager.name)
@@ -68,7 +78,13 @@ class DeviceType(ProjectAliceObject):
 				links.changedLocSettingsStructure(self._locSettings)
 
 
-	def setParentSkillInstance(self, skill):
+	@property
+	def parentSkillInstance(self) -> AliceSkill:
+		return self._skillInstance
+
+
+	@parentSkillInstance.setter
+	def parentSkillInstance(self, skill):
 		self._skillInstance = skill
 
 

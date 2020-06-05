@@ -220,18 +220,14 @@ class AliceSkill(ProjectAliceObject):
 				if deviceType in data:  # deviceType already exists in DB
 					deviceClass = klass(data[deviceType])
 					self._deviceTypes[deviceClass.id] = deviceClass
-					deviceClass.setParentSkillInstance(self)
 					del data[deviceType]
 					self.logInfo(f'Loaded device type **{deviceType}**')
-
 				else:  # deviceClass is new
 					self.logInfo(f'Adding new device type **{deviceType}**')
-					deviceClass = klass({
-						'name'  : deviceType,
-						'skill': self.name
-					})
-					deviceClass.setParentSkillInstance(self)
+					deviceClass = klass({'name'  : deviceType, 'skill': self.name})
 					self._deviceTypes[deviceClass.id] = deviceClass
+
+				deviceClass.parentSkillInstance = self
 				deviceClass.onStart()
 
 			for deviceType in data:  # deprecated devices

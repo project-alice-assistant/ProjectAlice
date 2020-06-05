@@ -38,6 +38,12 @@ class Device(ProjectAliceObject):
 		else:
 			self._customValues = dict()
 
+	def clearUID(self):
+		self.uid = ''
+		self.DatabaseManager.update(tableName=self.DeviceManager.DB_DEVICE,
+		                            callerName=self.DeviceManager.name,
+		                            values={'uid': uid},
+		                            row=('id',self.id))
 
 	def getMainLocation(self) -> Location:
 		return self.LocationManager.getLocation(id=self.locationID)
@@ -49,7 +55,7 @@ class Device(ProjectAliceObject):
 		                            callerName=self.DeviceManager.name,
 		                            values={'uid': uid},
 		                            row=('id',self.id))
-		# todo broadcast: pairing done
+		self.MqttManager.publish('projectalice/devices/updated', payload={'id': self.id, 'type': 'status'})
 
 
 	def toJson(self) -> str:
@@ -63,7 +69,10 @@ class Device(ProjectAliceObject):
 	def isInLocation(self, location: Location) -> bool:
 		if self.locationID == location.id:
 			return True
-		# todo check links
+		for link in self.DeviceManager.getLinksForDevice(device=self):
+			if link.locationID == location.id:
+				return True
+		return False
 
 
 	def asJson(self):

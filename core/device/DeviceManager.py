@@ -1,16 +1,12 @@
 import json
 import socket
 import sqlite3
-import threading
 import time
 import uuid
 from pathlib import Path
 from typing import Dict, List, Optional
 
-import esptool
-import requests
-import serial
-from esptool import ESPLoader
+#import serial
 from paho.mqtt.client import MQTTMessage
 from random import shuffle
 from serial.tools import list_ports
@@ -21,12 +17,12 @@ from core.device.model.Device import Device
 from core.device.model.DeviceType import DeviceType
 from core.device.model.DeviceLink import DeviceLink
 from core.device.model.Location import Location
-from core.device.model.TasmotaConfigs import TasmotaConfigs
 from core.dialog.model.DialogSession import DialogSession
+
+from core.device.model.DeviceException import maxDeviceOfTypeReached, maxDevicePerLocationReached
 
 
 class DeviceManager(Manager):
-#todo remove all room: string - replace with locationID
 
 	DB_DEVICE = 'devices'
 	DB_LINKS = 'deviceLinks'
@@ -63,11 +59,8 @@ class DeviceManager(Manager):
 
 		self._devices: Dict[int, Device] = dict()
 		self._deviceLinks: Dict[int, DeviceLink] = dict()
-		#self._idToUID: Dict[int, str] = dict() #todo maybe relevant for faster access?
+		#self._idToUID: Dict[int, str] = dict() #option: maybe relevant for faster access?
 		self._deviceTypes: Dict[int, DeviceType] = dict()
-		self._broadcastFlag = threading.Event()
-
-		self._flashThread = None
 
 		self._heartbeats = dict()
 		self._heartbeatsCheckTimer = None
@@ -101,7 +94,7 @@ class DeviceManager(Manager):
 		self.MqttManager.publish(topic='projectalice/devices/coreDisconnection')
 
 
-	def onDeviceStatus(self, session) -> bool:
+	def onDeviceStatus(self, session:DialogSession) -> bool:
 		device = self.getDeviceByUID(uid=session.payload['uid'])
 		device.onDeviceStatus()
 
@@ -129,19 +122,15 @@ class DeviceManager(Manager):
 	# noinspection SqlResolve
 	def addNewDevice(self, deviceTypeID: int, locationID: int = None, uid: str = None) -> Device:
 		# get or create location from different inputs
-		try:
-			location = self.LocationManager.getLocation(id=locationID)
+		location = self.LocationManager.getLocation(id=locationID)
 
-			self.assertDeviceTypeAllowedAtLocation(locationID=location.id, typeID=deviceTypeID)
+		self.assertDeviceTypeAllowedAtLocation(locationID=location.id, typeID=deviceTypeID)
 
-			values = {'typeID': deviceTypeID, 'uid': uid, 'locationID': location.id, 'display': "{}"}
-			values['id'] = self.databaseInsert(tableName=self.DB_DEVICE, values=values)
+		values = {'typeID': deviceTypeID, 'uid': uid, 'locationID': location.id, 'display': "{}"}
+		values['id'] = self.databaseInsert(tableName=self.DB_DEVICE, values=values)
 
-			self._devices[values['id']] = Device(data=values)
-			return self._devices[values['id']]
-		except Exception as e:
-			self.logWarning(f"Couldn't insert device in database: {e}")
-			return None
+		self._devices[values['id']] = Device(data=values)
+		return self._devices[values['id']]
 
 
 	def devUIDtoID(self, UID: str) -> int:
@@ -199,16 +188,15 @@ class DeviceManager(Manager):
 
 
 
-	def addLink(self, id: int, locationid: int):
-		device = self.getDeviceByID(id)
+	def addLink(self, deviceID: int, locationID: int):
+		device = self.getDeviceByID(deviceID)
 		deviceType = device.getDeviceType()
 		if not deviceType.multiRoom():
 			raise Exception(f'Device type {deviceType.name} can\'t be linked to other rooms')
 
-		#todo get device/room specific settings
-		locSettings = []
-		values = {'id' : id, 'locationid': locationid, 'locSettings': locSettings}
-		self.databaseInsert(tableName=self.DB_LINKS, query='INSERT INTO :__table__ (deviceID, locationID, locSettings) VALUES (:id, :locationid, locSettings)', values=values)
+		locSettings = deviceType.initialLocationSettings
+		values = {'deviceID' : deviceID, 'locationID': locationID, 'locSettings': locSettings}
+		self.databaseInsert(tableName=self.DB_LINKS, query='INSERT INTO :__table__ (deviceID, locationID, locSettings) VALUES (:deviceID, :locationID, locSettings)', values=values)
 
 	def deleteLink(self, id: int):
 		pass
@@ -217,7 +205,7 @@ class DeviceManager(Manager):
 		self.deleteDeviceID(deviceID=self.devUIDtoID(UID=deviceUID))
 
 
-	def _getFreeUID(self, base: str = '') -> str:
+	def getFreeUID(self, base: str = '') -> str:
 		"""
 		Gets a free uid. A free uid is a uid not declared in database. If base is provided it will be used as a uid pattern
 		:param base: str
@@ -324,7 +312,7 @@ class DeviceManager(Manager):
 				device = self.getDeviceByUID(uid)
 				if device:
 					device.connected = False
-					self.publish('projectalice/devices/updated', payload={'id': device.id, 'type': 'status'})
+					self.MqttManager.publish('projectalice/devices/updated', payload={'id': device.id, 'type': 'status'})
 
 		self._heartbeatsCheckTimer = self.ThreadManager.newTimer(interval=3, func=self.checkHeartbeats)
 
@@ -361,15 +349,15 @@ class DeviceManager(Manager):
 		deviceType = self.getDeviceType(typeID)
 		# check if another instance of this device is allowed
 		if deviceType.totalDeviceLimit > 0:
-			if deviceType.totalDeviceLimit <= self.DeviceManager.getDevicesByTypeID(deviceTypeID=typeID):
-				raise Exception(f'Maximum limit of devices from this device type reached')
-		#todo self.MqttManager.say(text=self.TalkManager.randomTalk('maxOneAlicePerRoom', skill='system'), client=replyOnSiteId)
+			currAmount = len(self.DeviceManager.getDevicesByTypeID(deviceTypeID=typeID))
+			if deviceType.totalDeviceLimit <= currAmount:
+				raise maxDeviceOfTypeReached(maxAmount=deviceType.totalDeviceLimit, currAmount=currAmount)
 
 		# check if there are aleady too many of this device type in the location
 		if deviceType.perLocationLimit > 0:
-			if deviceType.perLocationLimit <= self.LocationManager.getDevicesByLocation(locationID=locationID,deviceTypeID=typeID):
-				raise Exception(f'Maximum limit of devices in this location already reached')
-		#todo self.MqttManager.say(text=self.TalkManager.randomTalk('maxOneAlicePerRoom', skill='system'), client=replyOnSiteId)
+			currAmount = len(self.LocationManager.getDevicesByLocation(locationID=locationID,deviceTypeID=typeID))
+			if deviceType.perLocationLimit <= currAmount:
+				raise maxDevicePerLocationReached(maxAmount=deviceType.perLocationLimit, currAmount=currAmount)
 
 
 	@property
@@ -379,6 +367,7 @@ class DeviceManager(Manager):
 
 	def getDevicesByLocation(self, locationID: int, connectedOnly: bool = False, deviceTypeID: int = None) -> List[Device]:
 		return [device for device in self._devices.values() if device.locationID == locationID
+				and device.getDeviceType()
 		        and (not connectedOnly or device.connected)
 		        and (not deviceTypeID or device.deviceTypeID == deviceTypeID)]
 
@@ -406,96 +395,11 @@ class DeviceManager(Manager):
 		return self._devices.get(id, None)
 
 
-## todo move to tasmota skill
-	@property
-	def broadcastFlag(self) -> threading.Event:
-		return self._broadcastFlag
+	def getLinksForDevice(self, device: Device) -> Dict[DeviceLink]:
+		return [link for link in self._deviceLinks.values() if link.deviceId == device.id]
 
 
-	def doFlashTasmota(self, location: Location, espType: str, siteId: str):
-		port = self.findUSBPort(timeout=60)
-		if not port:
-			self.MqttManager.say(text=self.TalkManager.randomTalk('noESPFound', skill='AliceCore'), client=siteId)
-			self._broadcastFlag.clear()
-			return
-
-		self.MqttManager.say(text=self.TalkManager.randomTalk('usbDeviceFound', skill='AliceCore'), client=siteId)
-		try:
-			mac = ESPLoader.detect_chip(port=port, baud=115200).read_mac()
-			mac = ':'.join([f'{x:02x}' for x in mac])
-			cmd = [
-				'--port', port,
-				'--baud', '115200',
-				'--after', 'no_reset', 'write_flash',
-				'--flash_mode', 'dout', '0x00000', 'tasmota.bin',
-				'--erase-all'
-			]
-
-			esptool.main(cmd)
-		except Exception as e:
-			self.logError(f'Something went wrong flashing esp device: {e}')
-			self.MqttManager.say(text=self.TalkManager.randomTalk('espFailed', skill='AliceCore'), client=siteId)
-			self._broadcastFlag.clear()
-			return
-
-		self.logInfo('Tasmota flash done')
-		self.MqttManager.say(text=self.TalkManager.randomTalk('espFlashedUnplugReplug', skill='AliceCore'), client=siteId)
-		found = self.findUSBPort(timeout=60)
-		if found:
-			self.MqttManager.say(text=self.TalkManager.randomTalk('espFoundReadyForConf', skill='AliceCore'), client=siteId)
-			time.sleep(10)
-			uid = self._getFreeUID(mac)
-			tasmotaConfigs = TasmotaConfigs(deviceType=espType, uid=uid)
-			confs = tasmotaConfigs.getBacklogConfigs(location.getSaveName())
-			if not confs:
-				self.logError('Something went wrong getting tasmota configuration')
-				self.MqttManager.say(text=self.TalkManager.randomTalk('espFailed', skill='AliceCore'), client=siteId)
-			else:
-				ser = serial.Serial()
-				ser.baudrate = 115200
-				ser.port = port
-				ser.open()
-
-				try:
-					for group in confs:
-						cmd = ';'.join(group['cmds'])
-						if len(group['cmds']) > 1:
-							cmd = f'Backlog {cmd}'
-
-						arr = list()
-						if len(cmd) > 50:
-							while len(cmd) > 50:
-								arr.append(cmd[:50])
-								cmd = cmd[50:]
-							arr.append(f'{cmd}\r\n')
-						else:
-							arr.append(f'{cmd}\r\n')
-
-						for piece in arr:
-							ser.write(piece.encode())
-							self.logInfo('Sent {}'.format(piece.replace('\r\n', '')))
-							time.sleep(0.5)
-
-						time.sleep(group['waitAfter'])
-
-					ser.close()
-					self.logInfo('Tasmota flashing and configuring done')
-					self.MqttManager.say(text=self.TalkManager.randomTalk('espFlashingDone', skill='AliceCore'), client=siteId)
-
-					#todo espType is not a valid input anymore: need a proper device type!
-					self.addNewDevice(espType, locationID=location.id, uid=uid)
-					self._broadcastFlag.clear()
-
-				except Exception as e:
-					self.logError(f'Something went wrong writting configuration to esp device: {e}')
-					self.MqttManager.say(text=self.TalkManager.randomTalk('espFailed', skill='AliceCore'), client=siteId)
-					self._broadcastFlag.clear()
-					ser.close()
-		else:
-			self.MqttManager.say(text=self.TalkManager.randomTalk('espFailed', skill='AliceCore'), client=siteId)
-			self._broadcastFlag.clear()
-
-
+## generic helper for finding a new USB device
 	def findUSBPort(self, timeout: int) -> str:
 		oldPorts = list()
 		scanPresent = True
@@ -530,27 +434,3 @@ class DeviceManager(Manager):
 			time.sleep(0.5)
 
 		return ''
-
-	# todo currently called from AliceCore - should be moved to a seperate skill or be handled with callbacks specified by skills
-	def startTasmotaFlashingProcess(self, room: str, espType: str, session: DialogSession) -> bool:
-		location = self.LocationManager.getLocationWithName(name=room)
-		self.ThreadManager.doLater(interval=0.5, func=self.MqttManager.endDialog, args=[session.sessionId, self.TalkManager.randomTalk('connectESPForFlashing', skill='AliceCore')])
-
-		self._broadcastFlag.set()
-
-		binFile = Path('tasmota.bin')
-		if binFile.exists():
-			binFile.unlink()
-
-		try:
-			req = requests.get(f'https://github.com/arendst/Tasmota/releases/download/v8.2.0/tasmota.bin')
-			with binFile.open('wb') as file:
-				file.write(req.content)
-				self.logInfo('Downloaded tasmota.bin')
-		except Exception as e:
-			self.logError(f'Something went wrong downloading tasmota.bin: {e}')
-			self._broadcastFlag.clear()
-			return False
-
-		self.ThreadManager.newThread(name='flashThread', target=self.doFlashTasmota, args=[location, espType, session.siteId])
-		return True

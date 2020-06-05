@@ -30,3 +30,13 @@ class DeviceLink(ProjectAliceObject):
 	@property
 	def locSettings(self) -> dict:
 		return self._locSettings
+
+
+	@property
+	def locationID(self) -> int:
+		return self._locationID
+
+
+	@property
+	def deviceID(self) -> int:
+		return self._deviceID
