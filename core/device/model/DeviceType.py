@@ -3,6 +3,7 @@ import sqlite3
 from core.base.model.ProjectAliceObject import ProjectAliceObject
 from core.dialog.model.DialogSession import DialogSession
 from core.base.model.AliceSkill import AliceSkill
+from typing import Dict
 import copy
 
 class DeviceType(ProjectAliceObject):

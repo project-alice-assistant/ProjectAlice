@@ -20,6 +20,8 @@ from core.commons import constants
 from core.dialog.model.DialogSession import DialogSession
 from core.user.model.AccessLevels import AccessLevel
 
+from core.device.model.DeviceType import DeviceType
+
 
 class AliceSkill(ProjectAliceObject):
 

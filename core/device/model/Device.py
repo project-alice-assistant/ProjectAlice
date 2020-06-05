@@ -42,7 +42,7 @@ class Device(ProjectAliceObject):
 		self.uid = ''
 		self.DatabaseManager.update(tableName=self.DeviceManager.DB_DEVICE,
 		                            callerName=self.DeviceManager.name,
-		                            values={'uid': uid},
+		                            values={'uid': self.uid},
 		                            row=('id',self.id))
 
 	def getMainLocation(self) -> Location:
