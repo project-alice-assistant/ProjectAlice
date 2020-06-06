@@ -35,8 +35,8 @@ $(function () {
 		if (msg.topic === 'projectalice/devices/updated') {
 			if(payload['type'] == 'status') {
 				console.log(payload);
-				tochange = $('#device_' + payload['id']);
-				url = 'Device/' + payload['id'] + '/icon?random=' + new Date().getTime();
+				let tochange = $('#device_' + payload['id']);
+				let url = 'Device/' + payload['id'] + '/icon?random=' + new Date().getTime();
 				tochange.css('background-image', 'url('+url+')');
 				console.log('done');
 			}
@@ -375,7 +375,7 @@ $(function () {
 
 	function loadLocationSettings(id, $settings){
 		$.get('/myhome/Location/'+id+'/getSettings').done(function (res) {
-			$synonyms = $settings.find('.addSynonym');
+			let $synonyms = $settings.find('.addSynonym');
 			$.each(res, function (i, synonym) {
 				newConfigListVal($synonyms, synonym,'/myhome/Location/'+id+'/deleteSynonym');
 			});
@@ -547,7 +547,7 @@ $(function () {
 		$newDevice.on('contextmenu', function () {
 			if (deviceInstallerMode) {
 				if(confirm('Do you really want to delete this device?')){
-					$dev = $(this)
+					let $dev = $(this)
 					$.post('Device/'+data['id']+'/delete').done(function () {
 						$dev.remove();
 					})
@@ -673,7 +673,7 @@ $(function () {
 			if( handleError(data) ) {
 				return;
 			}
-			zoneId = data['id'];
+			let zoneId = data['id'];
 
 			if (zoneName != null && zoneName != '') {
 				let data = {
@@ -730,7 +730,7 @@ $(function () {
 		selectedFloor = '';
 		selectedDeco = '';
 		selectedDevice = '';
-		selectedDeviceSkill = '';
+		let selectedDeviceSkill = '';
 
 		$('.floorPlan-tile').removeClass('selected');
 		$('.floorPlan-tile-background').removeClass('selected');

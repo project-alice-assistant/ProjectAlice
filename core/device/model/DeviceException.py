@@ -2,7 +2,8 @@ class DeviceException(Exception):
 	pass
 
 class requiresWIFISettings(DeviceException):
-	super().__init__(f'This device type needs wifi settings!')
+	def __init__(self):
+		super().__init__(f'This device type needs wifi settings!')
 
 
 class maxDeviceOfTypeReached(DeviceException):

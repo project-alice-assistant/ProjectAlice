@@ -1,6 +1,5 @@
 import json
 from dataclasses import dataclass, field
-from core.device.model.DeviceType import DeviceType
 from core.device.model.Location import Location
 from core.base.model.ProjectAliceObject import ProjectAliceObject
 import ast
@@ -62,7 +61,7 @@ class Device(ProjectAliceObject):
 		return json.dumps(self.asJson())
 
 
-	def getDeviceType(self) -> DeviceType:
+	def getDeviceType(self):
 		return self.DeviceManager.getDeviceType(id=self.deviceTypeID)
 
 
@@ -159,7 +158,7 @@ class Device(ProjectAliceObject):
 
 
 	@property
-	def deviceType(self) -> DeviceType:
+	def deviceType(self):
 		return self.getDeviceType()
 
 	@property

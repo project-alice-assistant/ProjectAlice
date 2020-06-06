@@ -2,7 +2,6 @@ from core.device.model import Device
 import sqlite3
 from core.base.model.ProjectAliceObject import ProjectAliceObject
 from core.dialog.model.DialogSession import DialogSession
-from core.base.model.AliceSkill import AliceSkill
 from typing import Dict
 import copy
 
@@ -80,7 +79,7 @@ class DeviceType(ProjectAliceObject):
 
 
 	@property
-	def parentSkillInstance(self) -> AliceSkill:
+	def parentSkillInstance(self):
 		return self._skillInstance
 
 

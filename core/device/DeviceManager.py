@@ -395,7 +395,7 @@ class DeviceManager(Manager):
 		return self._devices.get(id, None)
 
 
-	def getLinksForDevice(self, device: Device) -> Dict[DeviceLink]:
+	def getLinksForDevice(self, device: Device) -> List[DeviceLink]:
 		return [link for link in self._deviceLinks.values() if link.deviceId == device.id]
 
 
