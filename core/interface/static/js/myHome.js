@@ -1,18 +1,20 @@
 $(function () {
 
   	let $floorPlan = $('#floorPlan');
+
 	let editMode = false;
 
+	let locationEditMode = false;
 	let moveMode = false;
 	let zoneMode = false;
 	let buildingMode = false;
 	let paintingMode = false;
 	let decoratorMode = false;
 
+	let technicalMode = false;
 	let deviceEditMode = false;
 	let deviceInstallerMode = false;
 	let deviceLinkerMode = false;
-	let technicalMode = false;
 
 	let selectedFloor = '';
 	let selectedDeco = '';
@@ -22,9 +24,7 @@ $(function () {
 	// Linker
 	let selectedDevice = null;
 
-
-	$( document ).tooltip();
-
+// Setup and handle MQTT
 	function onConnect() {
 		MQTT.subscribe('projectalice/devices/updated');
 	}
@@ -44,6 +44,7 @@ $(function () {
 
 	}
 
+// Basic functionality for loading, saving
 	function loadHouse() {
 		$.ajax({
 			url : '/myhome/load/',
@@ -149,6 +150,7 @@ $(function () {
 		$.ajax({'url': '/myhome/save/', data: JSON.stringify(data), 'type':'POST', 'contentType' :'application/json'});
 	}
 
+// Basic functionality for build area
 	function matrixToAngle(matrix) {
 		if (matrix == 'none' || matrix == null) {
 			return 0;
@@ -203,6 +205,7 @@ $(function () {
 		}
 	}
 
+// logic for individual items
 	function newZone(data) {
 		data = snapPosition(data)
 		data = snapAngle(data);
@@ -371,25 +374,6 @@ $(function () {
 
 		$floorPlan.append($newZone);
 		return $newZone;
-	}
-
-	function loadLocationSettings(id, $settings){
-		$.get('/myhome/Location/'+id+'/getSettings').done(function (res) {
-			let $synonyms = $settings.find('.addSynonym');
-			$.each(res, function (i, synonym) {
-				newConfigListVal($synonyms, synonym,'/myhome/Location/'+id+'/deleteSynonym');
-			});
-		})
-		// TODO load device specific settings
-	}
-
-	function newConfigListVal($parent, val, deletionLink) {
-		$parent.children('.configListCurrent').append("<li>" + val + "<div class='addWidgetCheck configListRemove link-hover'><i class='fas fa-minus-circle'></i></div></li>");
-		$('.configListRemove').on('click touchstart', function () {
-			$(this).parent().remove();
-			$.post(deletionLink, { 'value': val })
-			//TODO confirmation
-		});
 	}
 
 	function newWall($element, data) {
@@ -561,9 +545,18 @@ $(function () {
 		return $newDevice;
 	}
 
+// helper functions
+	function handleError($data){
+		if('error' in $data) {
+			alert($data['error']);
+			return true;
+		}else{
+			return false;
+		}
+	}
 
-	function resetEditable(){
-		editMode = false;
+	function initEditable(){
+		editMode = true;
 		deviceEditMode = false;
 		zoneMode = false;
 		buildingMode = false;
@@ -588,50 +581,63 @@ $(function () {
 		$('#decoTiles').hide();
 		$('#deviceTiles').hide();
 
-		$floorPlan.removeClass('floorPlanEditMode');
 		$floorPlan.removeClass('floorPlanEditMode-AddingZone');
+		$floorPlan.addClass('floorPlanEditMode');
 
 	}
 
+	function loadLocationSettings(id, $settings){
+		$.get('/myhome/Location/'+id+'/getSettings').done(function (res) {
+			let $synonyms = $settings.find('.addSynonym');
+			$.each(res, function (i, synonym) {
+				newConfigListVal($synonyms, synonym,'/myhome/Location/'+id+'/deleteSynonym');
+			});
+		})
+		// TODO load device specific settings
+	}
+
+	function newConfigListVal($parent, val, deletionLink) {
+		$parent.children('.configListCurrent').append("<li>" + val + "<div class='addWidgetCheck configListRemove link-hover'><i class='fas fa-minus-circle'></i></div></li>");
+		$('.configListRemove').on('click touchstart', function () {
+			$(this).parent().remove();
+			$.post(deletionLink, { 'value': val })
+			//TODO confirmation
+		});
+	}
+
+// handle toolbar
+	// save, hide toolbars, restore live view
 	$('#finishToolbarAction').on('click touchstart', function () {
 		saveHouse();
-		resetEditable();
+		initEditable();
 
 		$('#toolbarOverview').hide();
 		$('#toolbarToggle').show();
+
+		$floorPlan.removeClass('floorPlanEditMode');
+		setBPMode(false);
 	});
 
+	// enter edit mode
 	$('#toolbarToggleShow').on('click touchstart', function () {
 		$('#toolbarOverview').show();
 		$('#toolbarToggle').hide();
-		$floorPlan.addClass('floorPlanEditMode');
-		editMode = true;
-		deviceEditMode = true;
-		zoneMode = false;
-		buildingMode = false;
-		paintingMode = false;
-		decoratorMode = false;
-		moveMode = false;
-
-		$('#painterTiles').hide();
-		$('#decoTiles').hide();
-		$('#deviceTiles').hide();
-
-		$('.inputOrText').each(function() {
-			let name = $(this).text();
-			$(this).empty();
-			$(this).html('<input type="text" value="' + name + '">');
-		})
+		initEditable();
 	});
 
+	// enter construction/location mode
 	$('#toolbarConstructionShow').on('click touchstart', function () {
-		resetEditable();
+		initEditable();
+		setBPMode(false);
+		locationEditMode = true;
 		markSelectedToolbar($(this));
 		$('#toolbarConstruction').show();
 	});
 
+	// enter device editing mode
 	$('#toolbarTechnicShow').on('click touchstart', function () {
-		resetEditable();
+		initEditable();
+		setBPMode(true);
 		deviceEditMode = true;
 		markSelectedToolbar($(this));
 		$('#toolbarTechnic').show();
@@ -640,24 +646,7 @@ $(function () {
 	$('#toolbarOverviewShow').on('click touchstart', function () {
 		$('#toolbarOverview').show();
 		$('#toolbarToggle').hide();
-		$floorPlan.addClass('floorPlanEditMode');
-		editMode = true;
-		deviceEditMode = false;
-		zoneMode = false;
-		buildingMode = false;
-		paintingMode = false;
-		decoratorMode = false;
-		moveMode = false;
-
-		$('#painterTiles').hide();
-		$('#decoTiles').hide();
-		$('#deviceTiles').hide();
-
-		$('.inputOrText').each(function() {
-			let name = $(this).text();
-			$(this).empty();
-			$(this).html('<input type="text" value="' + name + '">');
-		})
+		initEditable();
 	});
 
 	$floorPlan.on('click touchstart', function (e) {
@@ -695,15 +684,6 @@ $(function () {
 			$(this).removeClass('floorPlanEditMode-AddingZone');
 		})
 	});
-
-	function handleError($data){
-		if('error' in $data) {
-			alert($data['error']);
-			return true;
-		}else{
-			return false;
-		}
-	}
 
 	function markSelectedToolbar($element) {
 		$('.selectedToolbar').removeClass('selectedToolbar');
@@ -885,14 +865,16 @@ $(function () {
 	}
 
 	function setBPMode(value){
-		// todo implement:
-		// hide decoration
-		// change textures to blueprint
-		// set device Icons to default Icon
+		if (value) {
+			$('.floorPlan-Deco').css('display', 'none');
+			$('.floorPlan-Zone').addClass('blueprint')
+		} else {
+			$('.floorPlan-Deco').css('display', 'block');
+			$('.floorPlan-Zone').removeClass('blueprint')
+		}
 	}
 
-
-	// load construction tiles
+// load construction tiles
 	for (let i = 1; i <= 11; i++) {
 		// noinspection CssUnknownTarget
 		let $tile = $('<div class="floorPlan-tile" style="background: url(\'/static/css/images/myHome/construction/construction-' + i + '.png\') no-repeat; background-size: 100% 100%;"></div>');
@@ -909,7 +891,7 @@ $(function () {
 		$('#constructionTiles').append($tile);
 	}
 
-	// load floor tiles
+// load floor tiles
 	for (let i = 1; i <= 79; i++) {
 		let $tile = $('<div class="floorPlan-tile floor-' + i + '"></div>');
 		$tile.on('click touchstart', function () {
@@ -926,7 +908,7 @@ $(function () {
 		$('#painterTiles').append($tile);
 	}
 
-	// load deco tiles
+// load deco tiles
 	for (let i = 1; i <= 167; i++) {
 		// noinspection CssUnknownTarget
 		let $tile = $('<div class="floorPlan-tile" style="background: url(\'/static/css/images/myHome/deco/deco-' + i + '.png\') no-repeat; background-size: 100% 100%;"></div>');
@@ -960,13 +942,8 @@ $(function () {
 		});
 	});
 
-	function loadDevices(){
-		$.get('device/getList').done(dats, function (k, dat) {
-			$.each(dats, function(k, dat) {
-				newDevice($zone, device);
-			})
-		});
-	}
+//run logic on startup
+	$( document ).tooltip();
 	loadHouse();
 	mqttRegisterSelf(onConnect, 'onConnect');
 	mqttRegisterSelf(onMessage, 'onMessage');

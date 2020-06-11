@@ -7,7 +7,7 @@ import copy
 
 class DeviceType(ProjectAliceObject):
 
-	def __init__(self, data: sqlite3.Row, devSettings: dict = {}, locSettings: dict = {}, allowLocationLinks: bool = True, perLocationLimit: int = 0, totalDeviceLimit: int = 0):
+	def __init__(self, data: sqlite3.Row, devSettings: dict = {}, locSettings: dict = {}, allowLocationLinks: bool = True, perLocationLimit: int = 0, totalDeviceLimit: int = 0, heartbeatRate: int = 5):
 		super().__init__()
 		self._name = data['name']
 		self._skill = data['skill']
@@ -17,6 +17,7 @@ class DeviceType(ProjectAliceObject):
 		self._allowLocationLinks = allowLocationLinks
 		self._devSettings = devSettings
 		self._locSettings = locSettings
+		self.heartbeatRate = heartbeatRate
 
 		if 'id' in data:
 			self._id = data['id']

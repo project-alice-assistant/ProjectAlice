@@ -108,15 +108,19 @@ class LocationManager(Manager):
 		# siteID: the current devices site NAME
 		# deviceTypeID: only rooms with that type of device can be found - linked is allowed as well
 		loc = None
-		if room:
-			loc = self.getLocationWithName(name=room)
+
 		if id:
-			loc = self.locations.get(id)
+			loc = self.locations.get(id, None)
 			if not loc:
 				raise Exception(f'No location with id {id} found')
+			return  loc
 
-		if not loc and room:
-			loc = self.LocationManager.addNewLocation(name=room)
+		if room:
+			loc = self.getLocationWithName(name=room)
+			if not loc:
+				loc = self.LocationManager.addNewLocation(name=room)
+			if loc:
+				return loc
 
 		return loc
 		##todo implement location det. logic

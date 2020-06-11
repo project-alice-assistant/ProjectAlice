@@ -126,7 +126,7 @@ class DeviceManager(Manager):
 
 		self.assertDeviceTypeAllowedAtLocation(locationID=location.id, typeID=deviceTypeID)
 
-		values = {'typeID': deviceTypeID, 'uid': uid, 'locationID': location.id, 'display': "{}"}
+		values = {'typeID': deviceTypeID, 'uid': uid, 'locationID': location.id, 'display': "{'x': '10', 'y': '10', 'rotation': 0, 'width': 45, 'height': 45}"}
 		values['id'] = self.databaseInsert(tableName=self.DB_DEVICE, values=values)
 
 		self._devices[values['id']] = Device(data=values)
@@ -306,8 +306,8 @@ class DeviceManager(Manager):
 	def checkHeartbeats(self):
 		now = time.time()
 		for uid, lastTime in self._heartbeats.copy().items():
-			if now - 5 > lastTime:
-				self.logWarning(f'Device with uid **{uid}** has not given a signal since 5 seconds or more')
+			if now - self.getDeviceByUID(uid).getDeviceType().heartbeatRate > lastTime:
+				self.logWarning(f'Device with uid **{uid}** has not given a signal since {self.getDeviceByUID(uid).getDeviceType().heartbeatRate} seconds or more')
 				self._heartbeats.pop(uid)
 				device = self.getDeviceByUID(uid)
 				if device:
