@@ -183,8 +183,15 @@ class DeviceManager(Manager):
 		)
 		self._deviceTypes.pop(id)
 
-	def getLink(self, deviceID, int, locationID: int):
-		pass
+	def getLink(self,id: int = None, deviceID: int = None, locationID: int = None) -> DeviceLink:
+		if id:
+			return self._deviceLinks.get(id,None)
+		if not deviceID or not locationID:
+			raise Exception('getLink: supply locationID or deviceID!')
+		for id, link in self._deviceLinks:
+			if link.deviceId == deviceID and link.locationID == locationID:
+					return link
+
 
 
 
@@ -199,7 +206,9 @@ class DeviceManager(Manager):
 		self.databaseInsert(tableName=self.DB_LINKS, query='INSERT INTO :__table__ (deviceID, locationID, locSettings) VALUES (:deviceID, :locationID, locSettings)', values=values)
 
 	def deleteLink(self, id: int):
-		pass
+		self._deviceLinks.pop(id)
+		self.DatabaseManager.delete(tableName=self.DB_LINKS, callerName=self.name, values={"id": id})
+
 
 	def deleteDeviceUID(self, deviceUID: str):
 		self.deleteDeviceID(deviceID=self.devUIDtoID(UID=deviceUID))
@@ -261,7 +270,7 @@ class DeviceManager(Manager):
 		if not device.connected:
 			device.connected = True
 			self.broadcast(method=constants.EVENT_DEVICE_CONNECTING, exceptions=[self.name], propagateToSkills=True)
-			self.MqttManager.publish('projectalice/devices/updated', payload={'id': device.id, 'type': 'status'})
+			self.MqttManager.publish(constants.TOPIC_DEVICE_UPDATED, payload={'id': device.id, 'type': 'status'})
 
 		self._heartbeats[uid] = time.time() + 5
 		if not self._heartbeatsCheckTimer:
@@ -282,7 +291,7 @@ class DeviceManager(Manager):
 			self.logInfo(f'Device with uid **{uid}** disconnected')
 			device.connected = False
 			self.broadcast(method=constants.EVENT_DEVICE_DISCONNECTING, exceptions=[self.name], propagateToSkills=True)
-			self.MqttManager.publish('projectalice/devices/updated', payload={'id': device.id, 'type': 'status'})
+			self.MqttManager.publish(constants.TOPIC_DEVICE_UPDATED, payload={'id': device.id, 'type': 'status'})
 
 
 ## Heartbeats
@@ -312,7 +321,7 @@ class DeviceManager(Manager):
 				device = self.getDeviceByUID(uid)
 				if device:
 					device.connected = False
-					self.MqttManager.publish('projectalice/devices/updated', payload={'id': device.id, 'type': 'status'})
+					self.MqttManager.publish(constants.TOPIC_DEVICE_UPDATED, payload={'id': device.id, 'type': 'status'})
 
 		self._heartbeatsCheckTimer = self.ThreadManager.newTimer(interval=3, func=self.checkHeartbeats)
 
