@@ -196,6 +196,7 @@ button.button{ font-size: 1.6em; height: 2em; }
   pointer-events: none;
   border-radius: 100%;
   border-color: yellow;
+  z-index: 999;
 }
 
 /*======================== TECHNICAL OVERWRITES================== */

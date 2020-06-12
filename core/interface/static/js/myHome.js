@@ -608,6 +608,7 @@ $(function () {
 // handle toolbar
 	// save, hide toolbars, restore live view
 	$('#finishToolbarAction').on('click touchstart', function () {
+		setBPMode(false);
 		saveHouse();
 		initEditable();
 
@@ -615,7 +616,6 @@ $(function () {
 		$('#toolbarToggle').show();
 
 		$floorPlan.removeClass('floorPlanEditMode');
-		setBPMode(false);
 	});
 
 	// enter edit mode
