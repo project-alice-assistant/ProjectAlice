@@ -213,23 +213,6 @@ class CommonsManager(Manager):
 		return len(theString) == (len(theString.replace(' ', '').strip()) * 2) - 1
 
 
-	def cleanRoomNameToSiteId(self, roomName: str) -> str:
-		"""
-		User might answer "in the living room" when asked for a room. In that case it should be turned into "living_room"
-		:param roomName: str: original captured name
-		:return: str: formated room name to site id
-		"""
-
-		parasites = self.LanguageManager.getStrings(key='inThe')
-
-		for parasite in parasites:
-			if parasite in roomName:
-				roomName = roomName.replace(parasite, '')
-				break
-
-		return roomName.strip().replace(' ', '_')
-
-
 	@staticmethod
 	def getLocalIp() -> str:
 		sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)

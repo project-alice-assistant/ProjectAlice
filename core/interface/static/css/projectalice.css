@@ -80,11 +80,11 @@ button.button{ font-size: 1.6em; height: 2em; }
 
 .page {	flex: 1 100%; flex-flow: row nowrap; display: flex; }
 
-.toolbar { background: var(--mainBG); display: flex; float: right; padding-top: .2em; padding-left: 1em; border: solid 2px; border-bottom-left-radius: 1.5em; border-top: none; border-color: var(--accent); }
+.toolbar { background: var(--mainBG); display: flex; float: right; clear: both; padding-top: .2em; padding-left: 1em; border: solid 2px; border-bottom-left-radius: 1.5em; border-top: none; border-color: var(--accent); }
 .toolbarButton { font-size: 2em; padding-right: .5em; min-width: .9em; text-align: center; }
 
 .zindexer { position: absolute; top: 15px; right: 15px; color: var(--accent); font-weight: bold; font-size: 1.3em; z-index: 999; cursor: pointer; }
-[class^="zindexer-"]:hover { color: var(--hover); }
+[class^='zindexer-']:hover { color: var(--hover); }
 
 /* Utility screen for administration */
 .utility { width: 12em; height: 12em; flex-flow: column; align-items: center; }
@@ -177,12 +177,27 @@ button.button{ font-size: 1.6em; height: 2em; }
 .floorPlanEditMode { background: var(--secondary) url('./images/grid.png'); }
 .floorPlanEditMode-AddingZone { cursor: cell; }
 
+.sidebar.right { position: absolute; top: 0; right: -290px; bottom: 0; width: 270px; background: var(--windowBG); border-left: solid var(--accent); overflow-y: auto; padding: 3em 1em 1em 1em;}
+
+.configListCurrent li{list-style-type: none;}
+.configBlock{background: var(--secondary);border: var(--accent);border-style: dotted;}
+.configBlock .configLabel{ display: block; vertical-align: top;}
+.configListAdd {display: inline;font-size: 2em;vertical-align: middle;}
+
 /* JQUERY POPUP */
 .ui-widget-content { background: var(--mainBG); }
 .ui-widget { padding: 0; border-radius: 0; }
 .ui-widget.ui-widget-content{ border: 2px solid var(--accent); }
 .ui-dialog-titlebar{ border-radius: 0; border: solid 2px var(--accent); margin: -2px; }
 
+/* Device Linking */
+.deviceLink {
+  border: 3px solid;
+  pointer-events: none;
+  border-radius: 100%;
+  border-color: yellow;
+  z-index: 999;
+}
 
 /*======================== TECHNICAL OVERWRITES================== */
 .flex-row { overflow-y: auto; overflow-x: hidden; display: flex; flex-wrap: wrap; align-content: flex-start; }

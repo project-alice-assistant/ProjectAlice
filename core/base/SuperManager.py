@@ -36,6 +36,7 @@ class SuperManager:
 		self.telemetryManager = None
 		self.skillManager = None
 		self.deviceManager = None
+		self.locationManager = None
 		self.internetManager = None
 		self.wakewordRecorder = None
 		self.userManager = None
@@ -49,6 +50,7 @@ class SuperManager:
 		self.aliceWatchManager = None
 		self.audioManager = None
 		self.dialogManager = None
+		self.locationManager = None
 		self.wakewordManager = None
 
 
@@ -124,6 +126,7 @@ class SuperManager:
 		from core.base.ConfigManager import ConfigManager
 		from core.base.SkillManager import SkillManager
 		from core.device.DeviceManager import DeviceManager
+		from core.device.LocationManager import LocationManager
 		from core.dialog.MultiIntentManager import MultiIntentManager
 		from core.dialog.ProtectedIntentManager import ProtectedIntentManager
 		from core.server.MqttManager import MqttManager
@@ -165,6 +168,7 @@ class SuperManager:
 		self.telemetryManager = TelemetryManager()
 		self.skillManager = SkillManager()
 		self.deviceManager = DeviceManager()
+		self.locationManager = LocationManager()
 		self.internetManager = InternetManager()
 		self.wakewordRecorder = WakewordRecorder()
 		self.talkManager = TalkManager()

@@ -127,6 +127,7 @@ class SkillManager(Manager):
 					query='DELETE FROM :__table__ WHERE parent = :skill',
 					values={'skill': skill}
 				)
+				self.DeviceManager.removeDeviceTypesForSkill(skillName=skill)
 
 		# Now that we are clean, reload the skills from database
 		# Those represent the skills we have
@@ -197,6 +198,8 @@ class SkillManager(Manager):
 			query='DELETE FROM :__table__ WHERE parent = :skill',
 			values={'skill': skillName}
 		)
+
+		self.DeviceManager.removeDeviceTypesForSkill(skillName=skillName)
 
 
 	def onSnipsAssistantInstalled(self, **kwargs):
@@ -297,7 +300,7 @@ class SkillManager(Manager):
 				# The command was recognized but required higher access level
 				return True
 			except Exception as e:
-				self.logError(f'Error dispatching message to {skillInstance.name}: {e}')
+				self.logError(f'Error dispatching message "{session.intentName.split("/")[-1]}" to {skillInstance.name}: {e}')
 				self.MqttManager.endDialog(
 					sessionId=session.sessionId,
 					text=self.TalkManager.randomTalk(talk='error', skill='system')
@@ -455,6 +458,9 @@ class SkillManager(Manager):
 		if skillInstance.widgets:
 			self._widgets[skillName] = skillInstance.widgets
 
+		if skillInstance.deviceTypes:
+			self.DeviceManager.addDeviceTypes(deviceTypes=skillInstance.deviceTypes)
+
 		return skillInstance.supportedIntents
 
 
@@ -508,7 +514,8 @@ class SkillManager(Manager):
 			skillInstance = self._activeSkills.pop(skillName)
 			self._deactivatedSkills[skillName] = skillInstance
 			skillInstance.onStop()
-			self._widgets.pop(skillName, None)
+			self._widgetwidgets.pop(skillName, None)
+			self.DeviceManager.removeDeviceTypesForSkill(skillName=skillName)
 
 			if persistent:
 				self.changeSkillStateInDB(skillName=skillName, newState=False)

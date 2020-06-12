@@ -262,10 +262,14 @@ class DatabaseManager(Manager):
 		self.delete(tableName=tableName, callerName=callerName, query=query)
 
 
-	def delete(self, tableName: str, callerName: str, query: str, values: dict = None):
+	def delete(self, tableName: str, callerName: str, query: str = None, values: dict = None):
 
 		if not values:
 			values = dict()
+
+		if not query:
+			where = ', '.join([f'{k} = "{v}"' for k,v in values.items()])
+			query = f'DELETE FROM :__table__ WHERE {where}'
 
 		query = self.basicChecks(tableName, query, callerName)
 		if not query:
@@ -274,6 +278,7 @@ class DatabaseManager(Manager):
 		database = None
 		try:
 			database = self.getConnection()
+			self.logInfo(query)
 			database.execute(query, values)
 		except DbConnectionError as e:
 			self.logWarning(f'Error deleting from table **{tableName}** for component **{callerName}**: {e}')

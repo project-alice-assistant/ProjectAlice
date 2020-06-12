@@ -653,5 +653,10 @@ class ProjectAliceObject:
 
 
 	@property
+	def LocationManager(self): #NOSONAR
+		return SM.SuperManager.getInstance().locationManager
+
+
+	@property
 	def WakewordManager(self): #NOSONAR
 		return SM.SuperManager.getInstance().wakewordManager
