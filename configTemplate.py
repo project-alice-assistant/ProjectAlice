@@ -393,7 +393,28 @@ settings = {
 		'category'    : 'system'
 	},
 	'supportedLanguages'      : {
-		'defaultValue': 'en',
+		'defaultValue': {
+			'en': {
+				'default'           : True,
+				'defaultCountryCode': 'US',
+				'countryCodes'      : ['US', 'GB', 'AU']
+			},
+			'fr': {
+				'default'           : False,
+				'defaultCountryCode': 'FR',
+				'countryCodes'      : ['FR']
+			},
+			'de': {
+				'default'           : False,
+				'defaultCountryCode': 'DE',
+				'countryCodes'      : ['DE']
+			},
+			'it': {
+				'default'           : False,
+				'defaultCountryCode': 'IT',
+				'countryCodes'      : ['IT']
+			}
+		},
 		'dataType'    : 'list',
 		'isSensitive' : False,
 		'values'      : {
