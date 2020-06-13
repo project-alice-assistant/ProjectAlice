@@ -119,6 +119,9 @@ class SnipsAssistantManager(Manager):
 
 
 	def train(self):
+		if not self._assistantPath.exists():
+			return
+
 		self.logInfo('Training assistant')
 
 		try:
