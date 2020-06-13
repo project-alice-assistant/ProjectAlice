@@ -101,7 +101,6 @@ class LocationManager(Manager):
 			self.logInfo(json.dumps(data))
 			for device in values['devices']:
 				self.DeviceManager.updateDevice(device)
-		pass
 
 
 	# noinspection PyUnusedLocal
