@@ -2,11 +2,11 @@ import json
 import sqlite3
 import time
 import uuid
-from random import shuffle
 from typing import Dict, List, Optional
 
 # import serial
 from paho.mqtt.client import MQTTMessage
+from random import shuffle
 from serial.tools import list_ports
 
 from core.base.model.Manager import Manager
@@ -192,7 +192,7 @@ class DeviceManager(Manager):
 
 
 	def addLink(self, deviceId: int, locationId: int):
-		device = self.getDeviceByID(deviceId)
+		device = self.getDeviceById(deviceId)
 		deviceType = device.getDeviceType()
 		if not deviceType.multiRoom():
 			raise Exception(f'Device type {deviceType.name} can\'t be linked to other rooms')
@@ -343,7 +343,7 @@ class DeviceManager(Manager):
 
 
 	def updateDevice(self, device: dict):
-		self.getDeviceByID(device['id']).display = device['display']
+		self.getDeviceById(device['id']).display = device['display']
 		self.DatabaseManager.update(tableName=self.DB_DEVICE,
 		                            callerName=self.name,
 		                            values={'display': device['display']},
@@ -398,7 +398,7 @@ class DeviceManager(Manager):
 		return self._devices.get(self.devUIDtoID(uid), None)
 
 
-	def getDeviceByID(self, _id: int) -> Optional[Device]:
+	def getDeviceById(self, _id: int) -> Optional[Device]:
 		return self._devices.get(_id, None)
 
 

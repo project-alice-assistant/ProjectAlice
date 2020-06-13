@@ -144,7 +144,7 @@ class MyHomeView(View):
 		try:
 			self.logInfo(f'Toggling device id {_id}')
 			_id = int(_id)
-			self.DeviceManager.getDeviceByID(_id=_id).toggle()
+			self.DeviceManager.getDeviceById(_id).toggle()
 			return jsonify(success=True)
 		except Exception as e:
 			self.logError(f'Failed toggling device Link: {e}')
@@ -175,7 +175,7 @@ class MyHomeView(View):
 	def getIcon(self, _id: str):
 		try:
 			_id = int(_id)
-			device = self.DeviceManager.getDeviceByID()
+			device = self.DeviceManager.getDeviceById(_id)
 			return send_from_directory(f'{self.WebInterfaceManager.app.root_path}/../../skills/{device.skill}/device/img/', device.getIcon())
 		except Exception as e:
 			self.logError(f'Failed loading icon: {e}')
@@ -200,7 +200,7 @@ class MyHomeView(View):
 	def pairDevice(self, _id: str):
 		try:
 			_id = int(_id)
-			device = self.DeviceManager.getDeviceByID()
+			device = self.DeviceManager.getDeviceById(_id)
 			device.getDeviceType().discover(device=device, uid=self.DeviceManager.getFreeUID())
 			return jsonify(success=True)
 		except Exception as e:
