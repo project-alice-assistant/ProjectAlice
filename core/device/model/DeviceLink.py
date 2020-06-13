@@ -23,13 +23,16 @@ class DeviceLink(ProjectAliceObject):
 		self._id = self.DatabaseManager.insert(tableName=self.DeviceManager.DB_LINKS, values=values, callerName=self.DeviceManager.name)
 
 
+	def getDevice(self):
+		return self.DeviceManager.getDeviceByID(_id=self.deviceId)
+
+
 	def changedLocSettingsStructure(self, newSet: dict):
 		for _set in newSet.keys():
 			if _set in self.locSettings:
 				newSet[_set] = self.locSettings[_set]
 		self._locSettings = newSet
-		# TODO unknown function
-		#self.saveDevSettings()
+		self.saveToDB()
 
 
 	@property

@@ -390,8 +390,7 @@ class DeviceManager(Manager):
 
 
 	def getDeviceLinksByType(self, deviceType: int, connectedOnly: bool = False) -> List[DeviceLink]:
-		# TODO Unknown deviceTypeId and connected
-		return [x for x in self._deviceLinks.values() if x.deviceTypeID == deviceType and (not connectedOnly or x.connected)]
+		return [x for x in self._deviceLinks.values() if x.getDevice().deviceTypeID == deviceType and (not connectedOnly or x.getDevice().connected)]
 
 
 	def getDeviceByUID(self, uid: str) -> Optional[Device]:
