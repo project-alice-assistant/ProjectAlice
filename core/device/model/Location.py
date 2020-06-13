@@ -1,9 +1,10 @@
-import json
-from dataclasses import dataclass, field
-import sqlite3
-from flask import jsonify
 import ast
+import json
+import sqlite3
+from dataclasses import dataclass, field
+
 from core.base.model.ProjectAliceObject import ProjectAliceObject
+
 
 @dataclass
 class Location(ProjectAliceObject):
@@ -27,37 +28,40 @@ class Location(ProjectAliceObject):
 
 
 	def getSaveName(self):
-		return self.name.replace(" ", "_")
+		return self.name.replace(' ', '_')
 
 
-	def addSynonym(self,synonym: str):
+	def addSynonym(self, synonym: str):
 		if synonym in self.synonyms:
-			raise Exception(synonym,' already known')
+			raise Exception(synonym, ' already known')
 		self.synonyms.append(synonym)
 		return self.synonyms
 
 
-	def deleteSynonym(self,synonym: str):
+	def deleteSynonym(self, synonym: str):
 		if synonym not in self.synonyms:
-			raise Exception(synonym,' unknown')
+			raise Exception(synonym, ' unknown')
 		self.synonyms.remove(synonym)
 		return self.synonyms
 
 
 	def toJson(self) -> str:
-		return json.dumps({ self.name: {
-			'id': self.id,
-			'name': self.name,
-			'synonyms': self.synonyms,
-			'display': self.display
-		}})
+		return json.dumps({
+			self.name: {
+				'id'      : self.id,
+				'name'    : self.name,
+				'synonyms': self.synonyms,
+				'display' : self.display
+			}
+		})
+
 
 	def asJson(self):
 		devices = {device.id: device.asJson() for device in self.DeviceManager.getDevicesByLocation(locationID=self.id)}
 		return {
-				'id'      : self.id,
-				'name'    : self.name,
-				'synonyms': self.synonyms,
-				'display' : self.display,
-				'devices' : devices
+			'id'      : self.id,
+			'name'    : self.name,
+			'synonyms': self.synonyms,
+			'display' : self.display,
+			'devices' : devices
 		}

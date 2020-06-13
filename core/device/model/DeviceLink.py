@@ -1,7 +1,8 @@
-from core.device.model import Device
 import sqlite3
-from core.base.model.ProjectAliceObject import ProjectAliceObject
 import ast
+
+from core.base.model.ProjectAliceObject import ProjectAliceObject
+
 
 class DeviceLink(ProjectAliceObject):
 
@@ -16,16 +17,20 @@ class DeviceLink(ProjectAliceObject):
 		else:
 			self.saveToDB()
 
+
 	def saveToDB(self):
 		values = {'deviceID': self._deviceID, 'locSettings': self._locSettings, 'locationID': self._locationID}
 		self._id = self.DatabaseManager.insert(tableName=self.DeviceManager.DB_LINKS, values=values, callerName=self.DeviceManager.name)
 
+
 	def changedLocSettingsStructure(self, newSet: dict):
-		for set in newSet.keys():
-			if set in self.locSettings:
-				newSet[set] = self.locSettings[set]
-		self.locSettings = newSet
-		self.saveDevSettings()
+		for _set in newSet.keys():
+			if _set in self.locSettings:
+				newSet[_set] = self.locSettings[_set]
+		self._locSettings = newSet
+		# TODO unknown function
+		#self.saveDevSettings()
+
 
 	@property
 	def locSettings(self) -> dict:
@@ -33,10 +38,10 @@ class DeviceLink(ProjectAliceObject):
 
 
 	@property
-	def locationID(self) -> int:
+	def locationId(self) -> int:
 		return self._locationID
 
 
 	@property
-	def deviceID(self) -> int:
+	def deviceId(self) -> int:
 		return self._deviceID

@@ -6,13 +6,12 @@ import paho.mqtt.client as mqtt
 import paho.mqtt.publish as publish
 import random
 import re
-from typing import Dict, List, Optional
+from typing import List
 
 from core.base.model.Intent import Intent
 from core.base.model.Manager import Manager
 from core.commons import constants
 from core.device.model.Device import Device
-from core.device.model.DeviceType import DeviceType
 
 
 class MqttManager(Manager):

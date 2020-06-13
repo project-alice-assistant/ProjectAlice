@@ -7,8 +7,14 @@ import copy
 
 class DeviceType(ProjectAliceObject):
 
-	def __init__(self, data: sqlite3.Row, devSettings: dict = {}, locSettings: dict = {}, allowLocationLinks: bool = True, perLocationLimit: int = 0, totalDeviceLimit: int = 0, heartbeatRate: int = 5):
+	def __init__(self, data: sqlite3.Row, devSettings = None, locSettings = None, allowLocationLinks: bool = True, perLocationLimit: int = 0, totalDeviceLimit: int = 0, heartbeatRate: int = 5):
 		super().__init__()
+
+		if locSettings is None:
+			locSettings = {}
+		if devSettings is None:
+			devSettings = {}
+
 		self._name = data['name']
 		self._skill = data['skill']
 		self._skillInstance = None
@@ -34,18 +40,18 @@ class DeviceType(ProjectAliceObject):
 		# for this, call device.pairingDone(uid)
 		# return False if busy
 		# if not implemented, it will always look busy!
-		pass
+		raise NotImplementedError
 
 
 	def getDeviceIcon(self):
 		# Return the tile representing the current status of the device:
 		# e.g. a light bulb can be on or off and display its status
-		pass
+		raise NotImplementedError
 
 
 	def toggle(self, device: Device):
 		# the functionality to execute when the device is clicked/toggled in the webinterface
-		pass
+		raise NotImplementedError
 
 
 ### Generic part

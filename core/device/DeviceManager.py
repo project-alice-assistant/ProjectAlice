@@ -1,29 +1,25 @@
 import json
-import socket
 import sqlite3
 import time
 import uuid
-from pathlib import Path
+from random import shuffle
 from typing import Dict, List, Optional
 
-#import serial
+# import serial
 from paho.mqtt.client import MQTTMessage
-from random import shuffle
 from serial.tools import list_ports
 
 from core.base.model.Manager import Manager
 from core.commons import constants
 from core.device.model.Device import Device
-from core.device.model.DeviceType import DeviceType
+from core.device.model.DeviceException import maxDeviceOfTypeReached, maxDevicePerLocationReached
 from core.device.model.DeviceLink import DeviceLink
+from core.device.model.DeviceType import DeviceType
 from core.device.model.Location import Location
 from core.dialog.model.DialogSession import DialogSession
 
-from core.device.model.DeviceException import maxDeviceOfTypeReached, maxDevicePerLocationReached
-
 
 class DeviceManager(Manager):
-
 	DB_DEVICE = 'devices'
 	DB_LINKS = 'deviceLinks'
 	DB_TYPES = 'deviceTypes'
@@ -37,13 +33,13 @@ class DeviceManager(Manager):
 			'display TEXT',
 			'devSettings TEXT'
 		],
-		DB_LINKS: [
+		DB_LINKS : [
 			'id INTEGER PRIMARY KEY',
 			'deviceID INTEGER NOT NULL',
 			'locationID INTEGER NOT NULL',
 			'locSettings TEXT'
 		],
-		DB_TYPES: [
+		DB_TYPES : [
 			'id INTEGER PRIMARY KEY',
 			'skill TEXT NOT NULL',
 			'name TEXT NOT NULL',
@@ -59,7 +55,7 @@ class DeviceManager(Manager):
 
 		self._devices: Dict[int, Device] = dict()
 		self._deviceLinks: Dict[int, DeviceLink] = dict()
-		#self._idToUID: Dict[int, str] = dict() #option: maybe relevant for faster access?
+		# self._idToUID: Dict[int, str] = dict() #option: maybe relevant for faster access?
 		self._deviceTypes: Dict[int, DeviceType] = dict()
 
 		self._heartbeats = dict()
@@ -71,7 +67,7 @@ class DeviceManager(Manager):
 		super().onStart()
 
 		self.loadDevices()
-		#self.loadLinks()
+		# self.loadLinks()
 
 		self.logInfo(f'Loaded **{len(self._devices)}** device', plural='device')
 
@@ -94,9 +90,10 @@ class DeviceManager(Manager):
 		self.MqttManager.publish(topic='projectalice/devices/coreDisconnection')
 
 
-	def onDeviceStatus(self, session:DialogSession) -> bool:
+	def onDeviceStatus(self, session: DialogSession):
 		device = self.getDeviceByUID(uid=session.payload['uid'])
-		device.onDeviceStatus()
+		if device:
+			device.onDeviceStatus(session)
 
 
 	def deviceMessage(self, message: MQTTMessage) -> DialogSession:
@@ -120,40 +117,40 @@ class DeviceManager(Manager):
 
 
 	# noinspection SqlResolve
-	def addNewDevice(self, deviceTypeID: int, locationID: int = None, uid: str = None) -> Device:
+	def addNewDevice(self, deviceTypeId: int, locationId: int = None, uid: str = None) -> Device:
 		# get or create location from different inputs
-		location = self.LocationManager.getLocation(id=locationID)
+		location = self.LocationManager.getLocation(locId=locationId)
 
-		self.assertDeviceTypeAllowedAtLocation(locationID=location.id, typeID=deviceTypeID)
+		self.assertDeviceTypeAllowedAtLocation(locationID=location.id, typeID=deviceTypeId)
 
-		values = {'typeID': deviceTypeID, 'uid': uid, 'locationID': location.id, 'display': "{'x': '10', 'y': '10', 'rotation': 0, 'width': 45, 'height': 45}"}
+		values = {'typeID': deviceTypeId, 'uid': uid, 'locationID': location.id, 'display': "{'x': '10', 'y': '10', 'rotation': 0, 'width': 45, 'height': 45}"}
 		values['id'] = self.databaseInsert(tableName=self.DB_DEVICE, values=values)
 
 		self._devices[values['id']] = Device(data=values)
 		return self._devices[values['id']]
 
 
-	def devUIDtoID(self, UID: str) -> int:
-		for id, dev in self.devices.items():
-			if dev.uid == UID:
-				return id
+	def devUIDtoID(self, uid: str) -> int:
+		for _id, dev in self.devices.items():
+			if dev.uid == uid:
+				return _id
 
 
-	def devIDtoUID(self, ID: int) -> str:
-		return self.devices[ID].uid
+	def devIDtoUID(self, _id: int) -> str:
+		return self.devices[_id].uid
 
 
-	def deleteDeviceID(self, deviceID: int):
-		self.devices.pop(deviceID)
-		self.DatabaseManager.delete(tableName=self.DB_DEVICE, callerName=self.name, values={"id": deviceID})
-		self.DatabaseManager.delete(tableName=self.DB_LINKS, callerName=self.name, values={"id": deviceID})
+	def deleteDeviceID(self, deviceId: int):
+		self.devices.pop(deviceId)
+		self.DatabaseManager.delete(tableName=self.DB_DEVICE, callerName=self.name, values={"id": deviceId})
+		self.DatabaseManager.delete(tableName=self.DB_LINKS, callerName=self.name, values={"id": deviceId})
 
 
-	def getDeviceType(self, id: int):
-		return self.deviceTypes.get(id, None)
+	def getDeviceType(self, _id: int):
+		return self.deviceTypes.get(_id, None)
 
 
-	def getDeviceTypeByName(self, name: str) -> DeviceType:
+	def getDeviceTypeByName(self, name: str) -> Optional[DeviceType]:
 		for device in self.deviceTypes.values():
 			if device.name == name:
 				return device
@@ -161,57 +158,57 @@ class DeviceManager(Manager):
 
 
 	def getDeviceTypesForSkill(self, skillName: str) -> Dict[int, DeviceType]:
-		return {id: deviceType for id, deviceType in self.deviceTypes.items() if deviceType.skill == skillName}
+		return {_id: deviceType for _id, deviceType in self.deviceTypes.items() if deviceType.skill == skillName}
 
 
-	def removeDeviceTypesForSkill(self,skillName: str):
-		for id, deviceType in self.getDeviceTypesForSkill(skillName):
-			self.deviceTypes.pop(id, None)
+	def removeDeviceTypesForSkill(self, skillName: str):
+		for _id in self.getDeviceTypesForSkill(skillName):
+			self.deviceTypes.pop(_id, None)
 
 
 	def addDeviceTypes(self, deviceTypes: Dict):
 		self.deviceTypes.update(deviceTypes)
 
 
-	def removeDeviceType(self, id: int):
+	def removeDeviceType(self, _id: int):
 		self.DatabaseManager.delete(
 			tableName=self.DB_TYPES,
 			callerName=self.name,
 			values={
-				'id': id
+				'id': _id
 			}
 		)
-		self._deviceTypes.pop(id)
+		self._deviceTypes.pop(_id)
 
-	def getLink(self,id: int = None, deviceID: int = None, locationID: int = None) -> DeviceLink:
-		if id:
-			return self._deviceLinks.get(id,None)
-		if not deviceID or not locationID:
+
+	def getLink(self, _id: int = None, deviceId: int = None, locationId: int = None) -> DeviceLink:
+		if _id:
+			return self._deviceLinks.get(_id, None)
+		if not deviceId or not locationId:
 			raise Exception('getLink: supply locationID or deviceID!')
-		for id, link in self._deviceLinks:
-			if link.deviceId == deviceID and link.locationID == locationID:
-					return link
+		for _id, link in self._deviceLinks:
+			if link.deviceId == deviceId and link.locationId == locationId:
+				return link
 
 
-
-
-	def addLink(self, deviceID: int, locationID: int):
-		device = self.getDeviceByID(deviceID)
+	def addLink(self, deviceId: int, locationId: int):
+		device = self.getDeviceByID(deviceId)
 		deviceType = device.getDeviceType()
 		if not deviceType.multiRoom():
 			raise Exception(f'Device type {deviceType.name} can\'t be linked to other rooms')
 
 		locSettings = deviceType.initialLocationSettings
-		values = {'deviceID' : deviceID, 'locationID': locationID, 'locSettings': locSettings}
+		values = {'deviceID': deviceId, 'locationID': locationId, 'locSettings': locSettings}
 		self.databaseInsert(tableName=self.DB_LINKS, query='INSERT INTO :__table__ (deviceID, locationID, locSettings) VALUES (:deviceID, :locationID, locSettings)', values=values)
 
-	def deleteLink(self, id: int):
-		self._deviceLinks.pop(id)
-		self.DatabaseManager.delete(tableName=self.DB_LINKS, callerName=self.name, values={"id": id})
+
+	def deleteLink(self, _id: int):
+		self._deviceLinks.pop(_id)
+		self.DatabaseManager.delete(tableName=self.DB_LINKS, callerName=self.name, values={"id": _id})
 
 
 	def deleteDeviceUID(self, deviceUID: str):
-		self.deleteDeviceID(deviceID=self.devUIDtoID(UID=deviceUID))
+		self.deleteDeviceID(deviceId=self.devUIDtoID(uid=deviceUID))
 
 
 	def getFreeUID(self, base: str = '') -> str:
@@ -234,8 +231,6 @@ class DeviceManager(Manager):
 				uid = ''.join(aList)
 
 		return uid
-
-
 
 
 	def broadcastToDevices(self, topic: str, payload: dict = None, deviceType: DeviceType = None, location: Location = None, connectedOnly: bool = True):
@@ -294,11 +289,12 @@ class DeviceManager(Manager):
 			self.MqttManager.publish(constants.TOPIC_DEVICE_UPDATED, payload={'id': device.id, 'type': 'status'})
 
 
-## Heartbeats
+	## Heartbeats
 	def onDeviceHeartbeat(self, uid: str, siteId: str = None):
 		device = self.getDeviceByUID(uid=uid)
+		location = None
 		if siteId:
-			location = self.LocationManager.getLocation(siteID=siteId)
+			location = self.LocationManager.getLocation(siteId=siteId)
 
 		if not device:
 			self.logWarning(f'Device with uid **{uid}** does not exist')
@@ -333,7 +329,8 @@ class DeviceManager(Manager):
 
 		self._heartbeatTimer = self.ThreadManager.newTimer(interval=2, func=self.sendHeartbeat)
 
-## base
+
+	## base
 	def getDeviceTypeBySkillRAW(self, skill: str):
 		data = self.DatabaseManager.fetch(
 			tableName=self.DB_TYPES,
@@ -345,7 +342,7 @@ class DeviceManager(Manager):
 		return {d['name']: {'id': d['id'], 'name': d['name'], 'skill': d['skill']} for d in data}
 
 
-	def updateDevice(self,device: dict):
+	def updateDevice(self, device: dict):
 		self.getDeviceByID(device['id']).display = device['display']
 		self.DatabaseManager.update(tableName=self.DB_DEVICE,
 		                            callerName=self.name,
@@ -360,13 +357,13 @@ class DeviceManager(Manager):
 		if deviceType.totalDeviceLimit > 0:
 			currAmount = len(self.DeviceManager.getDevicesByTypeID(deviceTypeID=typeID))
 			if deviceType.totalDeviceLimit <= currAmount:
-				raise maxDeviceOfTypeReached(maxAmount=deviceType.totalDeviceLimit, currAmount=currAmount)
+				raise maxDeviceOfTypeReached(maxAmount=deviceType.totalDeviceLimit)
 
 		# check if there are aleady too many of this device type in the location
 		if deviceType.perLocationLimit > 0:
-			currAmount = len(self.LocationManager.getDevicesByLocation(locationID=locationID,deviceTypeID=typeID))
+			currAmount = len(self.LocationManager.getDevicesByLocation(locationID=locationID, deviceTypeID=typeID))
 			if deviceType.perLocationLimit <= currAmount:
-				raise maxDevicePerLocationReached(maxAmount=deviceType.perLocationLimit, currAmount=currAmount)
+				raise maxDevicePerLocationReached(maxAmount=deviceType.perLocationLimit)
 
 
 	@property
@@ -376,7 +373,7 @@ class DeviceManager(Manager):
 
 	def getDevicesByLocation(self, locationID: int, connectedOnly: bool = False, deviceTypeID: int = None) -> List[Device]:
 		return [device for device in self._devices.values() if device.locationID == locationID
-				and device.getDeviceType()
+		        and device.getDeviceType()
 		        and (not connectedOnly or device.connected)
 		        and (not deviceTypeID or device.deviceTypeID == deviceTypeID)]
 
@@ -392,7 +389,8 @@ class DeviceManager(Manager):
 		return [x for x in self._devices.values() if x.deviceTypeID == deviceTypeID and (not connectedOnly or x.connected)]
 
 
-	def getDeviceLinksByType(self, deviceType: int, connectedOnly: bool = False) -> List[Device]:
+	def getDeviceLinksByType(self, deviceType: int, connectedOnly: bool = False) -> List[DeviceLink]:
+		# TODO Unknown deviceTypeId and connected
 		return [x for x in self._deviceLinks.values() if x.deviceTypeID == deviceType and (not connectedOnly or x.connected)]
 
 
@@ -400,15 +398,15 @@ class DeviceManager(Manager):
 		return self._devices.get(self.devUIDtoID(uid), None)
 
 
-	def getDeviceByID(self, id: int) -> Optional[Device]:
-		return self._devices.get(id, None)
+	def getDeviceByID(self, _id: int) -> Optional[Device]:
+		return self._devices.get(_id, None)
 
 
 	def getLinksForDevice(self, device: Device) -> List[DeviceLink]:
 		return [link for link in self._deviceLinks.values() if link.deviceId == device.id]
 
 
-## generic helper for finding a new USB device
+	## generic helper for finding a new USB device
 	def findUSBPort(self, timeout: int) -> str:
 		oldPorts = list()
 		scanPresent = True

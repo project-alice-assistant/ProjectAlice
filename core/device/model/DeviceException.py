@@ -1,5 +1,9 @@
-class DeviceException(Exception):
-	pass
+from core.ProjectAliceExceptions import ProjectAliceException
+
+class DeviceException(ProjectAliceException):
+	def __init__(self, message: str = None, status: int = None, context: list = None):
+		super().__init__(message, status, context)
+
 
 class requiresWIFISettings(DeviceException):
 	def __init__(self):

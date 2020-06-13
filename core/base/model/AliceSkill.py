@@ -207,7 +207,7 @@ class AliceSkill(ProjectAliceObject):
 	def loadDevices(self):
 		fp = self.getResource('device')
 		if fp.exists():
-			self.logInfo(f"Loading **{len(list(fp.glob('*.py')))}** device type", plural='types')
+			self.logInfo(f"Loading **{len(list(fp.glob('*.py')))}** device type", plural='type')
 
 			data = self.DeviceManager.getDeviceTypeBySkillRAW(skill=self.name)
 
@@ -226,7 +226,7 @@ class AliceSkill(ProjectAliceObject):
 					self.logInfo(f'Loaded device type **{deviceType}**')
 				else:  # deviceClass is new
 					self.logInfo(f'Adding new device type **{deviceType}**')
-					deviceClass = klass({'name'  : deviceType, 'skill': self.name})
+					deviceClass = klass({'name': deviceType, 'skill': self.name})
 					self._deviceTypes[deviceClass.id] = deviceClass
 
 				deviceClass.parentSkillInstance = self
@@ -234,7 +234,7 @@ class AliceSkill(ProjectAliceObject):
 
 			for deviceType in data:  # deprecated devices
 				self.logInfo(f'Device type **{deviceType}** is deprecated, removing')
-				self.DeviceManager.removeDeviceType(id=deviceType.id)
+				self.DeviceManager.removeDeviceType(_id=deviceType.id)
 
 
 

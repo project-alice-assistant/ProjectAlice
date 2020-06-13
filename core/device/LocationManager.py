@@ -1,12 +1,13 @@
+import json
+from typing import Dict, Optional
+
 from core.base.model.Manager import Manager
 from core.device.model.Location import Location
-from typing import Dict, List, Optional
-import json
+
 
 class LocationManager(Manager):
-
 	TABLE = 'locations'
-	DATABASE =  {
+	DATABASE = {
 		TABLE: [
 			'id INTEGER PRIMARY KEY',
 			'name TEXT NOT NULL',
@@ -29,7 +30,7 @@ class LocationManager(Manager):
 
 
 	def getLocationWithName(self, name: str) -> Optional[Location]:
-		for id, val in self._locations.items():
+		for val in self._locations.values():
 			if val.name == name:
 				return val
 
@@ -41,76 +42,86 @@ class LocationManager(Manager):
 
 	def addNewLocation(self, name: str = None) -> Location:
 		loc = self.getLocationWithName(name)
-		#todo check existing synonyms!
+		# todo check existing synonyms!
 		if not loc:
 			values = {'name': name}
 			values['id'] = self.databaseInsert(tableName=self.TABLE, values=values)
+			# noinspection PyTypeChecker
 			self._locations[values['id']] = Location(values)
 			return self._locations[values['id']]
 		else:
 			raise Exception(f'Location {name} already exists')
 
 
-	def deleteLocation(self, id: int) -> bool:
+	def deleteLocation(self, locId: str) -> bool:
 		self.DatabaseManager.delete(tableName=self.TABLE,
 		                            callerName=self.name,
-		                            values={'id': id})
-		self._locations.pop(id, None)
+		                            values={'id': locId})
+		self._locations.pop(locId, None)
 		return True
 
 
-	def addLocationSynonym(self, id: int, synonym: str):
-		synlist = self._locations[id].addSynonym(synonym)
+	def addLocationSynonym(self, locId: str, synonym: str):
+		synlist = self._locations[locId].addSynonym(synonym)
 		self.DatabaseManager.update(tableName=self.TABLE,
 		                            callerName=self.name,
 		                            values={'synonyms': synlist},
-		                            row=('id', id))
+		                            row=('id', locId))
 
 
-	def deleteLocationSynonym(self, id: int, synonym: str):
-		synlist = self._locations[id].deleteSynonym(synonym)
+	def deleteLocationSynonym(self, locId: str, synonym: str):
+		synlist = self._locations[locId].deleteSynonym(synonym)
 		self.DatabaseManager.update(tableName=self.TABLE,
 		                            callerName=self.name,
 		                            values={
 			                            'synonyms': synlist
 		                            },
-		                            row=('id', id))
+		                            row=('id', locId))
 
 
-	def getSettings(self, id: int):
-		return self._locations[id].synonyms
+	def getSettings(self, locId: str):
+		return self._locations[locId].synonyms
+
 
 	def updateLocations(self, data: Dict):
 		for room, values in data.items():
 			# unknown entry!
 			if values['id'] == 'undefined':
-				self.logError(f'unknown location updated! {values["name"]} reported without id.')
+				self.logError(f'Unknown location updated! {values["name"]} reported without id.')
 				continue
 			# update display of location
 			self._locations[values['id']].display = values['display']
-			#todo check synonyms for new injection -> should happen while creating!
+			# todo check synonyms for new injection -> should happen while creating!
 			self.DatabaseManager.update(tableName=self.TABLE,
 			                            callerName=self.name,
 			                            values={
 				                            'display': values['display']
 			                            },
 			                            row=('id', values['id']))
-			self.logInfo(data)
+			self.logInfo(json.dumps(data))
 			for device in values['devices']:
 				self.DeviceManager.updateDevice(device)
 		pass
 
-	def getLocation(self,id: int = None, room: str = None, siteID: str = None, deviceTypeID: int = None) -> Location:
-		# room: a room name issued by the user
-		# siteID: the current devices site NAME
-		# deviceTypeID: only rooms with that type of device can be found - linked is allowed as well
+
+	# noinspection PyUnusedLocal
+	def getLocation(self, locId: str = None, room: str = None, siteId: str = None, deviceTypeId: int = None) -> Location:
+		# TODO siteId is not in use
+		"""
+		:param locId:
+		:param room: a room name issued by the user
+		:param siteId: the current devices site NAME
+		:param deviceTypeId: only rooms with that type of device can be found - linked is allowed as well
+		:return: Location
+		"""
+
 		loc = None
 
-		if id:
-			loc = self.locations.get(id, None)
+		if locId:
+			loc = self._locations.get(locId, None)
 			if not loc:
-				raise Exception(f'No location with id {id} found')
-			return  loc
+				raise Exception(f'No location with id {locId} found')
+			return loc
 
 		if room:
 			loc = self.getLocationWithName(name=room)
@@ -120,17 +131,19 @@ class LocationManager(Manager):
 				return loc
 
 		return loc
-		#todo implement location det. logic
-		# 1a) check name vs locations - done
-		# 1b) check name vs location synonyms
-		# 2a) check siteID vs locations
-		# 2b) check siteID vs synonyms
-		# 3) try to get the location context sensitive
-		# 4) check if there is only one room that has that type of device
-		# if 1 or 2 provides names
+
+
+	# todo implement location det. logic
+	# 1a) check name vs locations - done
+	# 1b) check name vs location synonyms
+	# 2a) check siteID vs locations
+	# 2b) check siteID vs synonyms
+	# 3) try to get the location context sensitive
+	# 4) check if there is only one room that has that type of device
+	# if 1 or 2 provides names
 
 	@property
-	def locations(self) -> Dict[int, Location]:
+	def locations(self) -> Dict[str, Location]:
 		return self._locations
 
 
