@@ -88,7 +88,7 @@ class ProjectAliceObject:
 	def checkDependencies(self) -> bool:
 		self.logInfo('Checking dependencies')
 		for dep in self.DEPENDENCIES['pip']:
-			match = re.match(r'^([a-zA-Z-_]*)(?:([=><]{0,2})([\d.]*)$)', dep)
+			match = re.match(r'^([a-zA-Z0-9-_]*)(?:([=><]{0,2})([\d.]*)$)', dep)
 			if not match:
 				continue
 
