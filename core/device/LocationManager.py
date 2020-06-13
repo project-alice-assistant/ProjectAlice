@@ -39,7 +39,7 @@ class LocationManager(Manager):
 			self._locations[row['id']] = Location(row)
 
 
-	def addNewLocation(self, name: str = None) -> bool:
+	def addNewLocation(self, name: str = None) -> Location:
 		loc = self.getLocationWithName(name)
 		#todo check existing synonyms!
 		if not loc:
@@ -49,9 +49,6 @@ class LocationManager(Manager):
 			return self._locations[values['id']]
 		else:
 			raise Exception(f'Location {name} already exists')
-
-
-
 
 
 	def deleteLocation(self, id: int) -> bool:
@@ -123,15 +120,14 @@ class LocationManager(Manager):
 				return loc
 
 		return loc
-		##todo implement location det. logic
-		# 1a) check name vs locations
+		#todo implement location det. logic
+		# 1a) check name vs locations - done
 		# 1b) check name vs location synonyms
 		# 2a) check siteID vs locations
 		# 2b) check siteID vs synonyms
 		# 3) try to get the location context sensitive
 		# 4) check if there is only one room that has that type of device
 		# if 1 or 2 provides names
-		pass
 
 	@property
 	def locations(self) -> Dict[int, Location]:

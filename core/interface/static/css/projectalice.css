@@ -177,7 +177,7 @@ button.button{ font-size: 1.6em; height: 2em; }
 .floorPlanEditMode { background: var(--secondary) url('./images/grid.png'); }
 .floorPlanEditMode-AddingZone { cursor: cell; }
 
-.sidebar.right { position: absolute; top: 0; right: -290px; bottom: 0; width: 270px; background: var(--windowBG); border-left: solid var(--accent); overflow-y: auto; padding: 3em 1em 1em 1em;}
+.sidebar.right { position: absolute; top: 0; right: -290px; bottom: 0; width: 270px; background: var(--windowBG); border-left: solid var(--accent); overflow-y: auto; padding: 5em 1em 1em 1em;}
 
 .configListCurrent li{list-style-type: none;}
 .configBlock{background: var(--secondary);border: var(--accent);border-style: dotted;}
