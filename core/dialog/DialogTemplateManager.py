@@ -15,6 +15,12 @@ class DialogTemplateManager(Manager):
 		self._hasChanges = False
 		self._updatedData: Dict[str, list] = dict()
 
+		if not self._pathToCache.exists():
+			self._pathToCache.mkdir(parents=True)
+
+		if not self._pathToChecksums.exists():
+			self._pathToChecksums.write_text('{}')
+
 
 	@property
 	def hasChanges(self) -> bool:
@@ -28,12 +34,6 @@ class DialogTemplateManager(Manager):
 
 	def onStart(self):
 		super().onStart()
-
-		if not self._pathToCache.exists():
-			self._pathToCache.mkdir(parents=True)
-
-		if not self._pathToChecksums.exists():
-			self._pathToChecksums.write_text('{}')
 
 		changes = self.checkCache()
 		if not changes:

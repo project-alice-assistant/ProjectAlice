@@ -11,14 +11,14 @@ class NluManager(Manager):
 		super().__init__()
 		self._nluEngine = None
 		self._pathToCache = Path(self.Commons.rootDir(), 'var/cache/nlu/trainingData')
+		if not self._pathToCache.exists():
+			self._pathToCache.mkdir(parents=True)
+
 		self.selectNluEngine()
 
 
 	def onStart(self):
 		super().onStart()
-		if not self._pathToCache.exists():
-			self._pathToCache.mkdir(parents=True)
-
 		self.isTrainingNeeded()
 
 
