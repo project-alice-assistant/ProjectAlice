@@ -17,10 +17,9 @@ from core.base.model.Intent import Intent
 from core.base.model.ProjectAliceObject import ProjectAliceObject
 from core.base.model.Version import Version
 from core.commons import constants
+from core.device.model.DeviceType import DeviceType
 from core.dialog.model.DialogSession import DialogSession
 from core.user.model.AccessLevels import AccessLevel
-
-from core.device.model.DeviceType import DeviceType
 
 
 class AliceSkill(ProjectAliceObject):
@@ -500,7 +499,7 @@ class AliceSkill(ProjectAliceObject):
 	def onStop(self):
 		self._active = False
 		self.SkillManager.configureSkillIntents(self._name, False)
-		for devt in self.DeviceManager.getDeviceTypesForSkill(self.name):
+		for devt in self.DeviceManager.getDeviceTypesForSkill(self.name).values():
 			devt.onStop()
 		self.logInfo(f'![green](Stopped)')
 
