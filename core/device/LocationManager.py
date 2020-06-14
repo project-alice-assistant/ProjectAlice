@@ -105,7 +105,14 @@ class LocationManager(Manager):
 
 	# noinspection PyUnusedLocal
 	def getLocation(self, locId: str = None, room: str = None, siteId: str = None, deviceTypeId: int = None) -> Location:
-		# TODO siteId is not in use
+		#todo implement location det. logic
+		# 1a) check name vs locations - done
+		# 1b) check name vs location synonyms
+		# 2a) check siteID vs locations
+		# 2b) check siteID vs synonyms
+		# 3) try to get the location context sensitive
+		# 4) check if there is only one room that has that type of device
+		# if 1 or 2 provides names
 		"""
 		:param locId:
 		:param room: a room name issued by the user
@@ -131,15 +138,6 @@ class LocationManager(Manager):
 
 		return loc
 
-
-	# todo implement location det. logic
-	# 1a) check name vs locations - done
-	# 1b) check name vs location synonyms
-	# 2a) check siteID vs locations
-	# 2b) check siteID vs synonyms
-	# 3) try to get the location context sensitive
-	# 4) check if there is only one room that has that type of device
-	# if 1 or 2 provides names
 
 	@property
 	def locations(self) -> Dict[str, Location]:
