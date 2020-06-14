@@ -64,6 +64,9 @@ class SuperManager:
 		languageManager = self._managers.pop('LanguageManager')
 		languageManager.onStart()
 
+		audioServer = self._managers.pop('AudioManager')
+		audioServer.onStart()
+
 		internetManager = self._managers.pop('InternetManager')
 		internetManager.onStart()
 
@@ -95,6 +98,7 @@ class SuperManager:
 		nodeRedManager.onStart()
 
 		self._managers[configManager.name] = configManager
+		self._managers[audioServer.name] = audioServer
 		self._managers[languageManager.name] = languageManager
 		self._managers[talkManager.name] = talkManager
 		self._managers[databaseManager.name] = databaseManager
@@ -155,6 +159,7 @@ class SuperManager:
 		self.commonsManager = CommonsManager()
 		self.commons = self.commonsManager
 		self.configManager = ConfigManager()
+		self.audioManager = AudioManager()
 		self.databaseManager = DatabaseManager()
 		self.languageManager = LanguageManager()
 		self.asrManager = ASRManager()
@@ -179,7 +184,6 @@ class SuperManager:
 		self.snipsAssistantManager = SnipsAssistantManager()
 		self.nluManager = NluManager()
 		self.aliceWatchManager = AliceWatchManager()
-		self.audioManager = AudioManager()
 		self.dialogManager = DialogManager()
 		self.wakewordManager = WakewordManager()
 
@@ -197,6 +201,8 @@ class SuperManager:
 			mqttManager.onStop()
 		except Exception as e:
 			Logger().logError(f'Error while shutting down manager **{managerName}**: {e}')
+			import traceback
+			traceback.print_exc()
 
 
 	def getManager(self, managerName: str):
