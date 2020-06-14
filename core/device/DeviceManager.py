@@ -372,7 +372,7 @@ class DeviceManager(Manager):
 
 
 	def getDevicesByLocation(self, locationID: int, connectedOnly: bool = False, deviceTypeID: int = None) -> List[Device]:
-		return [device for device in self._devices.values() if device.locationID == locationID
+		return [device for device in self._devices.values() if (device.locationID == locationID or self.getLink(deviceId=device.id, locationId=locationID))
 		        and device.getDeviceType()
 		        and (not connectedOnly or device.connected)
 		        and (not deviceTypeID or device.deviceTypeID == deviceTypeID)]
