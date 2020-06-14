@@ -88,12 +88,12 @@ class DatabaseManager(Manager):
 					colType = column.split(' ')[1]
 					cols[colName] = colType
 					if colName not in installedColumns:
-						self.logInfo(f'Found a missing column **{colName}** for table **{fullTableName}** in component **{callerName}**')
+						self.logWarning(f'Found a missing column **{colName}** for table **{fullTableName}** in component **{callerName}**')
 						cursor.execute(f'ALTER TABLE {fullTableName} ADD COLUMN `{colName}` `{colType}`')
 
 				database.commit()
 			except sqlite3.Error as e:
-				self.logInfo(f'Failed altering table **{fullTableName}** for component **{callerName}**: {e}')
+				self.logError(f'Failed altering table **{fullTableName}** for component **{callerName}**: {e}')
 				database.rollback()
 				return False
 
@@ -123,7 +123,7 @@ class DatabaseManager(Manager):
 		for tableName in self._tables:
 			tableName = tableName['name']
 			if not tableName.startswith('sqlite_') and tableName.startswith(callerName + '_') and tableName.split('_')[1] not in schema:
-				self.logInfo(f'Found a deprecated table **{tableName}** for component **{callerName}**')
+				self.logWarning(f'Found a deprecated table **{tableName}** for component **{callerName}**')
 
 				try:
 					cursor.execute(f'DROP TABLE {tableName}')
@@ -278,7 +278,6 @@ class DatabaseManager(Manager):
 		database = None
 		try:
 			database = self.getConnection()
-			self.logInfo(query)
 			database.execute(query, values)
 		except DbConnectionError as e:
 			self.logWarning(f'Error deleting from table **{tableName}** for component **{callerName}**: {e}')
