@@ -231,7 +231,7 @@ class AmazonTTS(TTS):
 				Engine='standard',
 				LanguageCode=self._lang,
 				OutputFormat='mp3',
-				SampleRate='16000',
+				SampleRate=str(self.AudioServer.SAMPLERATE),
 				Text=self._text,
 				TextType='ssml',
 				VoiceId=self._voice.title()

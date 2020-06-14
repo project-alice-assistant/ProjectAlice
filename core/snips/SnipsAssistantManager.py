@@ -32,6 +32,7 @@ class SnipsAssistantManager(Manager):
 		if not self._assistantPath.exists():
 			self.logInfo('Assistant not found, generating')
 			self.linkAssistant()
+			self._assistantPath.write_text('{}')
 			self.train()
 		else:
 			self.logInfo('Assistant existing, check consistency')
@@ -119,9 +120,6 @@ class SnipsAssistantManager(Manager):
 
 
 	def train(self):
-		if not self._assistantPath.exists():
-			return
-
 		self.logInfo('Training assistant')
 
 		try:
