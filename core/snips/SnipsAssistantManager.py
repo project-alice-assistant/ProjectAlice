@@ -11,6 +11,10 @@ class SnipsAssistantManager(Manager):
 	def __init__(self):
 		super().__init__()
 		self._assistantPath = Path(self.Commons.rootDir(), f'assistant/assistant.json')
+		if not self._assistantPath.exists():
+			self.logInfo('Assistant not found, generating')
+			self.linkAssistant()
+			self._assistantPath.write_text('{}')
 
 
 	def onStart(self):
@@ -29,16 +33,9 @@ class SnipsAssistantManager(Manager):
 
 	def checkAssistant(self):
 		self.logInfo('Checking assistant')
-		if not self._assistantPath.exists():
-			self.logInfo('Assistant not found, generating')
-			self.linkAssistant()
-			self._assistantPath.write_text('{}')
+		if not self.checkConsistency():
+			self.logInfo('Assistant is not consistent, it needs training')
 			self.train()
-		else:
-			self.logInfo('Assistant existing, check consistency')
-			if not self.checkConsistency():
-				self.logInfo('Assistant is not consistent, needs training')
-				self.train()
 
 
 	def retrain(self):
