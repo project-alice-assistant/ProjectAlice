@@ -102,7 +102,6 @@ class Device(ProjectAliceObject):
 
 
 	def changedDevSettingsStructure(self, newSet: dict):
-		self.logInfo(json.dumps(newSet))
 		for _set in newSet.keys():
 			if _set in self.devSettings:
 				newSet[_set] = self.devSettings[_set]
