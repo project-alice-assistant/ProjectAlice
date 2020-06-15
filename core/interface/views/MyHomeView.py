@@ -108,14 +108,13 @@ class MyHomeView(View):
 			return jsonify(success=False)
 
 
-	@route('/Device/<path:_id>/getSettings/<path:roomid>', methods=['POST'])
+	@route('/Device/<path:_id>/getSettings/<path:roomid>', methods=['GET'])
 	def getDeviceSettings(self, _id: str, roomid: str):
 		try:
 			_id = int(_id)
-			if roomid:
-				roomid = int(roomid)
+			device = self.DeviceManager.getDeviceById(_id=_id)
+			roomid = int(roomid)
 			if roomid == 0:
-				device = self.DeviceManager.getDeviceById(_id=_id)
 				return jsonify(device.devSettings)
 			else:
 				link = self.DeviceManager.getLink(deviceId=_id, locationId=roomid)
@@ -128,11 +127,14 @@ class MyHomeView(View):
 	@route('/Device/<path:_id>/saveSettings/<path:roomid>', methods=['POST'])
 	def saveDeviceSettings(self, _id: str, roomid: str):
 		try:
+			confs = {key: self.retrieveValue(value) for key, value in request.form.items()}
 			_id = int(_id)
+			device = self.DeviceManager.getDeviceById(_id=_id)
 			roomid = int(roomid)
 			if roomid == 0:
-				# todo get generic settings
-				pass
+				device.devSettings = confs
+				device.saveDevSettings()
+				return jsonify(success=True)
 			else:
 				# todo get room dependent settings
 				pass

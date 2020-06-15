@@ -64,8 +64,7 @@ class TTSManager(Manager):
 
 		if self._tts is None:
 			self.logWarning("Couldn't install Tts, falling back to PicoTts")
-			from core.voice.model.PicoTtspy import PicoTts
-
+			from core.voice.model.PicoTts import PicoTts
 			self._tts = PicoTts(user)
 
 		if self._tts.online and (not online or keepTTSOffline or stayOffline):
