@@ -6,7 +6,7 @@ from core.base.SuperManager import SuperManager
 from core.dialog.model.DialogSession import DialogSession
 from core.user.model.User import User
 from core.voice.model.TTSEnum import TTSEnum
-from core.voice.model.Tts import TTS
+from core.voice.model.Tts import Tts
 
 try:
 	from google.cloud import texttospeech
@@ -14,7 +14,7 @@ except ModuleNotFoundError:
 	pass # Auto installed
 
 
-class GoogleTTS(TTS):
+class GoogleTts(Tts):
 	TTS = TTSEnum.GOOGLE
 
 	DEPENDENCIES = {

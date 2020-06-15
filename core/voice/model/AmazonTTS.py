@@ -3,7 +3,7 @@ import re
 from core.dialog.model.DialogSession import DialogSession
 from core.user.model.User import User
 from core.voice.model.TTSEnum import TTSEnum
-from core.voice.model.Tts import TTS
+from core.voice.model.Tts import Tts
 
 try:
 	import boto3
@@ -11,7 +11,7 @@ except ModuleNotFoundError:
 	pass # Auto installeed
 
 
-class AmazonTTS(TTS):
+class AmazonTts(Tts):
 	TTS = TTSEnum.AMAZON
 
 	DEPENDENCIES = {

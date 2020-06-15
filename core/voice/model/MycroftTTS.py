@@ -7,10 +7,10 @@ from core.base.SuperManager import SuperManager
 from core.dialog.model.DialogSession import DialogSession
 from core.user.model.User import User
 from core.voice.model.TTSEnum import TTSEnum
-from core.voice.model.Tts import TTS
+from core.voice.model.Tts import Tts
 
 
-class MycroftTTS(TTS):
+class MycroftTts(Tts):
 	TTS = TTSEnum.MYCROFT
 
 	DEPENDENCIES = {

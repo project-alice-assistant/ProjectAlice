@@ -1,16 +1,16 @@
 from core.dialog.model.DialogSession import DialogSession
 from core.user.model.User import User
 from core.voice.model.TTSEnum import TTSEnum
-from core.voice.model.Tts import TTS
+from core.voice.model.Tts import Tts
 
 try:
 	from ibm_watson import TextToSpeechV1
 	from ibm_cloud_sdk_core.authenticators import IAMAuthenticator
 except ModuleNotFoundError:
-	pass # Installed automagically through TTS Manager
+	pass # Installed automagically through Tts Manager
 
 
-class WatsonTTS(TTS):
+class WatsonTts(Tts):
 	TTS = TTSEnum.WATSON
 
 	DEPENDENCIES = {

@@ -14,7 +14,7 @@ from core.user.model.User import User
 from core.voice.model.TTSEnum import TTSEnum
 
 
-class TTS(ProjectAliceObject):
+class Tts(ProjectAliceObject):
 	TEMP_ROOT = Path(tempfile.gettempdir(), '/tempTTS')
 	TTS = None
 
@@ -169,6 +169,7 @@ class TTS(ProjectAliceObject):
 		)
 
 		duration = round(len(AudioSegment.from_file(file)) / 1000, 2)
+		self.DialogManager.increaseSessionTimeout(session=session, interval=duration + 0.2)
 		self.ThreadManager.doLater(interval=duration + 0.1, func=self._sayFinished, args=[session, uid])
 
 
