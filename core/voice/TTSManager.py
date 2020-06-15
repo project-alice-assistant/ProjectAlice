@@ -5,7 +5,7 @@ from core.base.model.Manager import Manager
 from core.commons import constants
 from core.dialog.model.DialogSession import DialogSession
 from core.user.model.User import User
-from core.voice.model.PicoTTS import PicoTts
+from core.voice.model.PicoTts import PicoTts
 from core.voice.model.TTSEnum import TTSEnum
 from core.voice.model.Tts import Tts
 
@@ -64,7 +64,7 @@ class TTSManager(Manager):
 
 		if self._tts is None:
 			self.logWarning("Couldn't install Tts, falling back to PicoTts")
-			from core.voice.model.PicoTTS import PicoTts
+			from core.voice.model.PicoTtspy import PicoTts
 
 			self._tts = PicoTts(user)
 
