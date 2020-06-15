@@ -123,11 +123,11 @@ class DialogManager(Manager):
 				)
 
 
-	def startSessionTimeout(self, sessionId: str, tempSession: bool = False):
+	def startSessionTimeout(self, sessionId: str, tempSession: bool = False, delay: float = 0.0):
 		self.cancelSessionTimeout(sessionId=sessionId)
 
 		self._sessionTimeouts[sessionId] = self.ThreadManager.newTimer(
-			interval=self.ConfigManager.getAliceConfigByName('sessionTimeout'),
+			interval=self.ConfigManager.getAliceConfigByName('sessionTimeout') + delay,
 			func=self.sessionTimeout,
 			kwargs={
 				'sessionId'  : sessionId,
@@ -454,6 +454,19 @@ class DialogManager(Manager):
 
 		self._endedSessions[sessionId] = session
 		self._sessionsBySites.pop(session.siteId, None)
+
+
+	def increaseSessionTimeout(self, session: DialogSession, interval: float):
+		"""
+		This is used by the TTS, so that the timeout is set to the duration of the speech at least
+		:param session:
+		:param interval:
+		:return:
+		"""
+		if session.sessionId not in self._sessionsById:
+			return
+
+		self.startSessionTimeout(sessionId=session.sessionId, delay=interval)
 
 
 	@property
