@@ -473,6 +473,11 @@ $(function () {
 // 				content += "<div class='configBlock'><div class='configLabel'>Synonyms:</div>";
 //				content += "<div class='configBlockContent' id='Device/"+data['id']+"/addSynonym'><ul class='configListCurrent'/><input class='configInput'/><div class='link-hover configListAdd'><i class=\"fas fa-plus-circle\"></i>	</div></div></div>";
 // TODO Load Device Settings
+
+				$.get('/myhome/Device/'+data['id']+'/getSettings/0').done(function (res) {
+					console.log(res)
+				});
+
 				content += "<div class='configBlock'><div class='configLabel'>Device Setting example:</div><input class='configInput'/></div>";
 // TODO Room specific Settings
 				content += "<div class='configBlock'><div class='configLabel'>Available in following Rooms:</div><input class='configInput'/></div>";
