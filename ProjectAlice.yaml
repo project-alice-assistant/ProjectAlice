@@ -103,7 +103,7 @@ probabilityThreshold: 0.5
 # If set to yes Alice will only answer with shorter answers, when available
 shortReplies: no
 
-# If set to yes Alice will whisper instead of using short answers when you are sleeping. Currently only available with Amazon TTS
+# If set to yes Alice will whisper instead of using short answers when you are sleeping. Currently only available with Amazon Tts
 whisperWhenSleeping: no
 
 # Either 'pocketsphinx', 'deepspeech' or 'google'
@@ -131,7 +131,7 @@ aliceUpdateChannel: master
 skillsUpdateChannel: master
 
 # Google
-# If you are using Google as Asr and/or TTS you need to create an account on their console and activate the API
+# If you are using Google as Asr and/or Tts you need to create an account on their console and activate the API
 # for speech recognition and/or text to speech. Once activated, choose to create a service account and paste the
 # content of the file here
 googleServiceFile: {}

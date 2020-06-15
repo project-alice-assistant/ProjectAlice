@@ -14,7 +14,7 @@ from core.user.model.User import User
 from core.voice.model.TTSEnum import TTSEnum
 
 
-class TTS(ProjectAliceObject):
+class Tts(ProjectAliceObject):
 	TEMP_ROOT = Path(tempfile.gettempdir(), '/tempTTS')
 	TTS = None
 

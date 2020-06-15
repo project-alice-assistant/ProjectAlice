@@ -26,14 +26,14 @@ settings = {
 		'defaultValue': '',
 		'dataType'    : 'string',
 		'isSensitive' : True,
-		'description' : 'API key for IBM Cloud Watson TTS and ASR',
+		'description' : 'API key for IBM Cloud Watson Tts and ASR',
 		'category'    : 'credentials'
 	},
 	'ibmCloudAPIURL'          : {
 		'defaultValue': '',
 		'dataType'    : 'string',
 		'isSensitive' : False,
-		'description' : 'API url for IBM Cloud Watson TTS and ASR',
+		'description' : 'API url for IBM Cloud Watson Tts and ASR',
 		'category'    : 'credentials'
 	},
 	'autoReportSkillErrors'   : {
@@ -158,7 +158,7 @@ settings = {
 		'defaultValue': True,
 		'dataType'    : 'boolean',
 		'isSensitive' : False,
-		'description' : 'Do not use any online TTS such as Google Wavenet or Amazon Polly',
+		'description' : 'Do not use any online Tts such as Google Wavenet or Amazon Polly',
 		'category'    : 'tts'
 	},
 	'shortReplies'            : {
@@ -230,8 +230,8 @@ settings = {
 		'defaultValue': 'pico',
 		'dataType'    : 'list',
 		'isSensitive' : False,
-		'values'      : {'Pico': 'pico', 'Mycroft': 'mycroft', 'Amazon Polly': 'amazon', 'Google Wavenet': 'google', 'IBM Watson': 'watson', 'Snips Makers TTS': 'snips'},
-		'description' : 'The TTS to use. Can\'t use an online TTS if you have set keepTTSOffline!',
+		'values'      : {'Pico': 'pico', 'Mycroft': 'mycroft', 'Amazon Polly': 'amazon', 'Google Wavenet': 'google', 'IBM Watson': 'watson', 'Snips Makers Tts': 'snips'},
+		'description' : 'The Tts to use. Can\'t use an online Tts if you have set keepTTSOffline!',
 		'onUpdate'    : 'reloadTTS',
 		'category'    : 'tts'
 	},
@@ -239,8 +239,8 @@ settings = {
 		'defaultValue': 'pico',
 		'dataType'    : 'list',
 		'isSensitive' : False,
-		'values'      : {'Pico': 'pico', 'Mycroft': 'mycroft', 'Amazon Polly': 'amazon', 'Google Wavenet': 'google', 'IBM Watson': 'watson', 'Snips Makers TTS': 'snips'},
-		'description' : 'The TTS to use in case the default TTS becomes unavailable.',
+		'values'      : {'Pico': 'pico', 'Mycroft': 'mycroft', 'Amazon Polly': 'amazon', 'Google Wavenet': 'google', 'IBM Watson': 'watson', 'Snips Makers Tts': 'snips'},
+		'description' : 'The Tts to use in case the default Tts becomes unavailable.',
 		'onUpdate'    : 'reloadTTS',
 		'category'    : 'tts'
 	},
@@ -248,8 +248,8 @@ settings = {
 		'defaultValue': 'en-US',
 		'dataType'    : 'string',
 		'isSensitive' : False,
-		'description' : 'Language for the TTS to use',
-		'help'        : 'PICO VOICE<br>AMAZON POLLY<br>MYCROFT<br>GOOGLE WAVENET<br>IBM WATSON<br>Snips Makers TTS',
+		'description' : 'Language for the Tts to use',
+		'help'        : 'PICO VOICE<br>AMAZON POLLY<br>MYCROFT<br>GOOGLE WAVENET<br>IBM WATSON<br>Snips Makers Tts',
 		'onUpdate'    : 'reloadTTS',
 		'category'    : 'tts'
 	},
@@ -266,7 +266,7 @@ settings = {
 		'defaultValue': 'en-US',
 		'dataType'    : 'string',
 		'isSensitive' : False,
-		'description' : 'The voice the TTS should use. Find lists on respective TTS websites',
+		'description' : 'The voice the Tts should use. Find lists on respective Tts websites',
 		'onUpdate'    : 'reloadTTS',
 		'category'    : 'tts'
 	},

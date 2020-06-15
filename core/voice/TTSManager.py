@@ -5,9 +5,9 @@ from core.base.model.Manager import Manager
 from core.commons import constants
 from core.dialog.model.DialogSession import DialogSession
 from core.user.model.User import User
-from core.voice.model.PicoTTS import PicoTTS
+from core.voice.model.PicoTTS import PicoTts
 from core.voice.model.TTSEnum import TTSEnum
-from core.voice.model.Tts import TTS
+from core.voice.model.Tts import Tts
 
 
 class TTSManager(Manager):
@@ -38,17 +38,17 @@ class TTSManager(Manager):
 		self._tts = None
 
 		if systemTTS == TTSEnum.PICO.value:
-			package = 'core.voice.model.PicoTTS'
+			package = 'core.voice.model.PicoTts'
 		elif systemTTS == TTSEnum.MYCROFT.value:
-			package = 'core.voice.model.MycroftTTS'
+			package = 'core.voice.model.MycroftTts'
 		elif systemTTS == TTSEnum.AMAZON.value:
-			package = 'core.voice.model.AmazonTTS'
+			package = 'core.voice.model.AmazonTts'
 		elif systemTTS == TTSEnum.WATSON.value:
-			package = 'core.voice.model.WatsonTTS'
+			package = 'core.voice.model.WatsonTts'
 		elif systemTTS == TTSEnum.GOOGLE.value:
-			package = 'core.voice.model.GoogleTTS'
+			package = 'core.voice.model.GoogleTts'
 		else:
-			package = 'core.voice.model.SnipsTTS'
+			package = 'core.voice.model.SnipsTts'
 
 		module = import_module(package)
 		tts = getattr(module, package.rsplit('.', 1)[-1])
@@ -63,10 +63,10 @@ class TTSManager(Manager):
 				self._tts = tts(user)
 
 		if self._tts is None:
-			self.logWarning("Couldn't install TTS, falling back to PicoTTS")
-			from core.voice.model.PicoTTS import PicoTTS
+			self.logWarning("Couldn't install Tts, falling back to PicoTts")
+			from core.voice.model.PicoTTS import PicoTts
 
-			self._tts = PicoTTS(user)
+			self._tts = PicoTts(user)
 
 		if self._tts.online and (not online or keepTTSOffline or stayOffline):
 			self._tts = None
@@ -74,20 +74,20 @@ class TTSManager(Manager):
 		if self._tts is None:
 			if not forceTts:
 				fallback = self.ConfigManager.getAliceConfigByName('ttsFallback')
-				self.logWarning(f'TTS did not satisfy the user settings, falling back to **{fallback}**')
+				self.logWarning(f'Tts did not satisfy the user settings, falling back to **{fallback}**')
 				self._loadTTS(userTTS=userTTS, user=user, forceTts=fallback)
 			else:
-				self.logFatal('Fallback TTS failed, going down')
+				self.logFatal('Fallback Tts failed, going down')
 				return
 
 		try:
 			self._tts.onStart()
 		except Exception as e:
-			self.logFatal(f"TTS failed starting: {e}")
+			self.logFatal(f"Tts failed starting: {e}")
 
 
 	@property
-	def tts(self) -> TTS:
+	def tts(self) -> Tts:
 		return self._tts
 
 
@@ -98,7 +98,7 @@ class TTSManager(Manager):
 
 	def onInternetLost(self):
 		if self._tts.online:
-			self._fallback = PicoTTS()
+			self._fallback = PicoTts()
 
 
 	def onInternetConnected(self):

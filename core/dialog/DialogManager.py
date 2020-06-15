@@ -88,7 +88,7 @@ class DialogManager(Manager):
 
 	def onSayFinished(self, session: DialogSession, uid: str = None):
 		"""
-		Triggers when a TTS say has finished playing.
+		Triggers when a Tts say has finished playing.
 		If the session has not yet ended and is currently in dialog, we start listening again
 		:param uid:
 		:param session:
@@ -458,7 +458,7 @@ class DialogManager(Manager):
 
 	def increaseSessionTimeout(self, session: DialogSession, interval: float):
 		"""
-		This is used by the TTS, so that the timeout is set to the duration of the speech at least
+		This is used by the Tts, so that the timeout is set to the duration of the speech at least
 		:param session:
 		:param interval:
 		:return:
