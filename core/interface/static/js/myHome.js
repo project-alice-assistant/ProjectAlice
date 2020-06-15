@@ -467,25 +467,70 @@ $(function () {
 					content += "<div class='techDetail' >"+data['uid']+"</div>";
 				}
 
-				content += "<div class='configBox'>";
-				content += "<div class='configList'>";
+
+				$settings.html(content);
+				//TODO add loading circle
+				$settings.sidebar({side: "right"}).trigger("sidebar:open");
+
 // TODO logic for synonyms of devices
 // 				content += "<div class='configBlock'><div class='configLabel'>Synonyms:</div>";
 //				content += "<div class='configBlockContent' id='Device/"+data['id']+"/addSynonym'><ul class='configListCurrent'/><input class='configInput'/><div class='link-hover configListAdd'><i class=\"fas fa-plus-circle\"></i>	</div></div></div>";
 // TODO Load Device Settings
 
 				$.get('/myhome/Device/'+data['id']+'/getSettings/0').done(function (res) {
-					console.log(res)
+					confLines = ""
+					$.each(res, function(key, val){
+						confLines += "<div class='configLabel'>"+key+"</div><input class='configInput'/>";
+					});
+					if(confLines){
+						content += "<div class='configBox'><div class='configList'><form id='SetForm' name='config_for_devSet' action='Device/"+data['id']+"/saveSettings/0' method='post'><div class='configBlock'>";
+						content += confLines
+						content += "</div>";
+						content += "<div class='buttonLine'><input id='SetFormSubmit' class='button' type='submit' value='Save Device Settings'></div>";
+						content += "</form></div></div>";
+
+						$settings.html(content);
+
+						// perform submit/save of the form without switching page
+						let form = $('#SetForm');
+						let saveButton = form.find('#SetFormSubmit');
+						// noinspection JSDeprecatedSymbols
+						form.submit(function (event) {
+							saveButton.val($('#langConfSaving').text());
+							saveButton.addClass('saving');
+							$.post(form.attr('action'),
+								form.serialize()).done(function () {
+								saveButton.val($('#langConfSaved').text());
+								saveButton.addClass('saved');
+							})
+								.fail(function () {
+									saveButton.val($('#langConfSaveFailed').text());
+									saveButton.addClass('saveFailed');
+								}).always(
+								function () {
+									saveButton.removeClass('saving');
+								});
+							event.preventDefault();
+						});
+						// todo text is missing after click
+						// todo test fields reset button
+						// todo savin always empty....
+
+						// change button back to save if something was changed
+						$('.configInput').on('change', function () {
+							saveButton.val($('#langConfSave').text());
+							saveButton.removeClass('saved');
+							saveButton.removeClass('saveFailed');
+						});
+
+
+					}
 				});
 
-				content += "<div class='configBlock'><div class='configLabel'>Device Setting example:</div><input class='configInput'/></div>";
 // TODO Room specific Settings
-				content += "<div class='configBlock'><div class='configLabel'>Available in following Rooms:</div><input class='configInput'/></div>";
-				content += "<span class=\"toolbarButton link-hover\" id=\"deviceLinker\" title=\"Link a device with multiple rooms\"><i class=\"fas fa-link\"></i></span>";
-				content += "</div></div>";
+				//content += "<div class='configBlock'><div class='configLabel'>Available in following Rooms:</div><input class='configInput'/></div>";
+				//content += "<span class=\"toolbarButton link-hover\" id=\"deviceLinker\" title=\"Link a device with multiple rooms\"><i class=\"fas fa-link\"></i></span>";
 
-				$settings.html(content);
-				$settings.sidebar({side: "right"}).trigger("sidebar:open");
 
 				$('#startPair').on('click touchstart', function () {
 					$.post('Device/'+data['id']+'/pair');
