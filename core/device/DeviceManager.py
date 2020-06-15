@@ -12,7 +12,7 @@ from serial.tools import list_ports
 from core.base.model.Manager import Manager
 from core.commons import constants
 from core.device.model.Device import Device
-from core.device.model.DeviceException import maxDeviceOfTypeReached, maxDevicePerLocationReached
+from core.device.model.DeviceException import MaxDeviceOfTypeReached, MaxDevicePerLocationReached
 from core.device.model.DeviceLink import DeviceLink
 from core.device.model.DeviceType import DeviceType
 from core.device.model.Location import Location
@@ -357,13 +357,13 @@ class DeviceManager(Manager):
 		if deviceType.totalDeviceLimit > 0:
 			currAmount = len(self.DeviceManager.getDevicesByTypeID(deviceTypeID=typeID))
 			if deviceType.totalDeviceLimit <= currAmount:
-				raise maxDeviceOfTypeReached(maxAmount=deviceType.totalDeviceLimit)
+				raise MaxDeviceOfTypeReached(maxAmount=deviceType.totalDeviceLimit)
 
 		# check if there are aleady too many of this device type in the location
 		if deviceType.perLocationLimit > 0:
 			currAmount = len(self.LocationManager.getDevicesByLocation(locationID=locationID, deviceTypeID=typeID))
 			if deviceType.perLocationLimit <= currAmount:
-				raise maxDevicePerLocationReached(maxAmount=deviceType.perLocationLimit)
+				raise MaxDevicePerLocationReached(maxAmount=deviceType.perLocationLimit)
 
 
 	@property
