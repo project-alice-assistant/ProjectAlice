@@ -199,7 +199,7 @@ class DialogManager(Manager):
 
 		self.MqttManager.publish(
 			topic=constants.TOPIC_PLAY_BYTES.format(session.siteId).replace('#', f'{uuid.uuid4()}'),
-			payload=bytearray(Path('assistant/custom_dialogue/sound/end_of_input.wav').read_bytes())
+			payload=bytearray(Path(f'system/sounds/{self.LanguageManager.activeLanguage}/end_of_input.wav').read_bytes())
 		)
 
 		# If we've set the filter to a random answer, forge the session and publish an intent captured as UserRandomAnswer
@@ -417,6 +417,13 @@ class DialogManager(Manager):
 		)
 
 		self.removeSession(sessionId=session.sessionId)
+
+
+	def onSessionError(self, session: DialogSession):
+		self.MqttManager.publish(
+			topic=constants.TOPIC_PLAY_BYTES.format(session.siteId).replace('#', f'{uuid.uuid4()}'),
+			payload=bytearray(Path(f'system/sounds/{self.LanguageManager.activeLanguage}/error.wav').read_bytes())
+		)
 
 
 	def toggleFeedbackSound(self, state: str, siteId: str = constants.ALL):

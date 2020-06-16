@@ -52,6 +52,7 @@ class SuperManager:
 		self.dialogManager = None
 		self.locationManager = None
 		self.wakewordManager = None
+		self.assistantManager = None
 
 
 	def onStart(self):
@@ -83,6 +84,7 @@ class SuperManager:
 		skillManager = self._managers.pop('SkillManager')
 		dialogTemplateManager = self._managers.pop('DialogTemplateManager')
 		snipsAssistantManager = self._managers.pop('SnipsAssistantManager')
+		assistantManager = self._managers.pop('AssistantManager')
 		nluManager = self._managers.pop('NluManager')
 		nodeRedManager = self._managers.pop('NodeRedManager')
 
@@ -93,6 +95,7 @@ class SuperManager:
 		talkManager.onStart()
 		skillManager.onStart()
 		dialogTemplateManager.onStart()
+		assistantManager.onStart()
 		snipsAssistantManager.onStart()
 		nluManager.onStart()
 		nodeRedManager.onStart()
@@ -107,6 +110,7 @@ class SuperManager:
 		self._managers[skillManager.name] = skillManager
 		self._managers[dialogTemplateManager.name] = dialogTemplateManager
 		self._managers[snipsAssistantManager.name] = snipsAssistantManager
+		self._managers[assistantManager.name] = assistantManager
 		self._managers[nluManager.name] = nluManager
 		self._managers[internetManager.name] = internetManager
 		self._managers[nodeRedManager.name] = nodeRedManager
@@ -150,6 +154,7 @@ class SuperManager:
 		from core.base.SkillStoreManager import SkillStoreManager
 		from core.dialog.DialogTemplateManager import DialogTemplateManager
 		from core.snips.SnipsAssistantManager import SnipsAssistantManager
+		from core.base.AssistantManager import AssistantManager
 		from core.nlu.NluManager import NluManager
 		from core.util.AliceWatchManager import AliceWatchManager
 		from core.server.AudioServer import AudioManager
@@ -181,7 +186,8 @@ class SuperManager:
 		self.nodeRedManager = NodeRedManager()
 		self.skillStoreManager = SkillStoreManager()
 		self.dialogTemplateManager = DialogTemplateManager()
-		self.snipsAssistantManager = SnipsAssistantManager()
+		self.snipsAssistantManager = SnipsAssistantManager() # TODO remove me
+		self.assistantManager = AssistantManager()
 		self.nluManager = NluManager()
 		self.aliceWatchManager = AliceWatchManager()
 		self.dialogManager = DialogManager()
