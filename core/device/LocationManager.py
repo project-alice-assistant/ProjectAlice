@@ -1,4 +1,3 @@
-import json
 from typing import Dict, Optional
 
 from core.base.model.Manager import Manager
@@ -98,7 +97,6 @@ class LocationManager(Manager):
 				                            'display': values['display']
 			                            },
 			                            row=('id', values['id']))
-			self.logInfo(json.dumps(data))
 			for device in values['devices']:
 				self.DeviceManager.updateDevice(device)
 
