@@ -21,6 +21,7 @@ class MaxDevicePerLocationReached(DeviceException):
 		super().__init__(f'Maximal amount of {maxAmount} devices in that location already reached')
 		self.maxAmount = maxAmount
 
+
 class RequiresGuiSettings(DeviceException):
 	def __init__(self):
 		super().__init__(f'This device type needs additional information in the my home web interface.')

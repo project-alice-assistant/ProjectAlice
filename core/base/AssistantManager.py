@@ -3,20 +3,24 @@ from datetime import datetime
 from pathlib import Path
 from typing import Dict, Generator
 
+import os
+
 from core.base.model.Manager import Manager
 
 
 class AssistantManager(Manager):
-	
+
 	def __init__(self):
 		super().__init__()
+
 		self._assistantPath = Path(self.Commons.rootDir(), f'assistant/assistant.json')
 		if not self._assistantPath.exists():
 			self.logInfo('Assistant not found, generating')
 			self.linkAssistant()
-			self._assistantPath.write_text('{}')
-	
-	
+			self._assistantPath = Path(self.Commons.rootDir(), f'assistant/assistant.json')
+			self._assistantPath.write_text(json.dumps(self.newAssistant()))
+
+
 	def onStart(self):
 		super().onStart()
 		self.checkAssistant()
@@ -195,7 +199,8 @@ class AssistantManager(Manager):
 
 
 	def linkAssistant(self):
-		self.Commons.runRootSystemCommand(['ln', '-sfn', self.Commons.rootDir() + f'/trained/assistants/assistant_{self.LanguageManager.activeLanguage}', self.Commons.rootDir() + '/assistant'])
+		Path(self.Commons.rootDir(), f'trained/assistants/{self.LanguageManager.activeLanguage}').mkdir(parents=True, exist_ok=True)
+		os.symlink(src=f'{self.Commons.rootDir()}/trained/assistants/{self.LanguageManager.activeLanguage}', dst=f'{self.Commons.rootDir()}/assistant', target_is_directory=True)
 
 
 	def newAssistant(self) -> dict:

@@ -637,8 +637,8 @@ class ProjectAliceObject:
 
 
 	@property
-	def SnipsAssistantManager(self): #NOSONAR
-		return SM.SuperManager.getInstance().snipsAssistantManager
+	def AssistantManager(self): #NOSONAR
+		return SM.SuperManager.getInstance().assistantManager
 
 
 	@property

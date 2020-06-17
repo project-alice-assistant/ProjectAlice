@@ -632,7 +632,7 @@ class SkillManager(Manager):
 					if self.ProjectAlice.isBooted:
 						self.allSkills[skillName].onBooted()
 
-				self.SnipsAssistantManager.train()
+				self.AssistantManager.train()
 				self.DialogTemplateManager.afterSkillChange()
 				self.NluManager.afterSkillChange()
 
@@ -858,7 +858,7 @@ class SkillManager(Manager):
 		self.removeSkillFromDB(skillName=skillName)
 		shutil.rmtree(Path(self.Commons.rootDir(), 'skills', skillName))
 
-		self.SnipsAssistantManager.train()
+		self.AssistantManager.train()
 		self.DialogTemplateManager.afterSkillChange()
 		self.NluManager.afterSkillChange()
 
@@ -871,7 +871,7 @@ class SkillManager(Manager):
 
 		self._initSkills(loadOnly=skillName, reload=True)
 
-		self.SnipsAssistantManager.checkAssistant()
+		self.AssistantManager.checkAssistant()
 		self.DialogTemplateManager.afterSkillChange()
 		self.NluManager.afterSkillChange()
 

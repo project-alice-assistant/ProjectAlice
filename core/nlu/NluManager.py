@@ -48,8 +48,8 @@ class NluManager(Manager):
 
 	def isTrainingNeeded(self):
 		if not Path(self.Commons.rootDir(), f'assistant/nlu_engine').exists():
-			if Path(self.Commons.rootDir(), f'trained/assistants/assistant_{self.LanguageManager.activeLanguage}/nlu_engine').exists():
-				self.SnipsAssistantManager.linkAssistant()
+			if Path(self.Commons.rootDir(), f'trained/assistants/{self.LanguageManager.activeLanguage}/nlu_engine').exists():
+				self.AssistantManager.linkAssistant()
 			else:
 				self.DialogTemplateManager.clearCache()
 

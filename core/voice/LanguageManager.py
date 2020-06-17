@@ -25,10 +25,11 @@ class LanguageManager(Manager):
 		self._floatExpressionPattern = re.compile(r'([0-9]+\.[0-9]+)')
 		self._mathSigns = ('+', '-', '/', '*', '%')
 
+		self._loadSupportedLanguages()
+
 
 	def onStart(self):
 		super().onStart()
-		self._loadSupportedLanguages()
 		self.loadSystemStrings()
 
 
