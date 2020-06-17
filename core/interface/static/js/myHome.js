@@ -467,8 +467,17 @@ $(function () {
 					content += "<div class='techDetail' >"+data['uid']+"</div>";
 				}
 
-
 				$settings.html(content);
+				$('#startPair').on('click touchstart', function () {
+					//TODO make waiting circle appear
+					$.post('Device/'+data['id']+'/pair').done(function (data){
+						if( handleError(data) ) {
+							return;
+						}
+						//TODO make pairing button disappear
+					});
+				});
+
 				//TODO add loading circle
 				$settings.sidebar({side: "right"}).trigger("sidebar:open");
 
@@ -478,9 +487,13 @@ $(function () {
 // TODO Load Device Settings
 
 				$.get('/myhome/Device/'+data['id']+'/getSettings/0').done(function (res) {
-					confLines = ""
+					if( handleError(res) ) {
+						return;
+					}
+					let confLines = "";
+					content = "";
 					$.each(res, function(key, val){
-						confLines += "<div class='configLabel'>"+key+"</div><input class='configInput'/>";
+						confLines += "<div class='configLabel'>"+key+"</div><input name='"+key+"' class='configInput' value='"+val+"'/>";
 					});
 					if(confLines){
 						content += "<div class='configBox'><div class='configList'><form id='SetForm' name='config_for_devSet' action='Device/"+data['id']+"/saveSettings/0' method='post'><div class='configBlock'>";
@@ -489,7 +502,7 @@ $(function () {
 						content += "<div class='buttonLine'><input id='SetFormSubmit' class='button' type='submit' value='Save Device Settings'></div>";
 						content += "</form></div></div>";
 
-						$settings.html(content);
+						$settings.append(content);
 
 						// perform submit/save of the form without switching page
 						let form = $('#SetForm');
@@ -532,9 +545,7 @@ $(function () {
 				//content += "<span class=\"toolbarButton link-hover\" id=\"deviceLinker\" title=\"Link a device with multiple rooms\"><i class=\"fas fa-link\"></i></span>";
 
 
-				$('#startPair').on('click touchstart', function () {
-					$.post('Device/'+data['id']+'/pair');
-				});
+
 				// reroute synonym enter to click event
 				$('.configInput').keypress(function (e) {
 					if (e.which == 13) {
@@ -715,7 +726,7 @@ $(function () {
 			let zoneId = data['id'];
 
 			if (zoneName != null && zoneName != '') {
-				let data = {
+				let zdata = {
 					'id'	 : zoneId,
 					'name'   : zoneName,
 					'x'      : e.pageX - x,
@@ -724,7 +735,7 @@ $(function () {
 					'height' : 100,
 					'texture': ''
 				}
-				let $zone = newZone(data);
+				let $zone = newZone(zdata);
 				makeResizableRotatableAndDraggable($zone)
 			}
 

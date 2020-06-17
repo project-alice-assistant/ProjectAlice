@@ -27,17 +27,17 @@ class Device(ProjectAliceObject):
 
 		self.uid = self.data['uid']
 		self.locationID = self.data['locationID']
-		if self.data['display']:
+		if 'display' in self.data.keys() and self.data['display']:
 			self._display = ast.literal_eval(self.data['display'])
 		else:
-			self._display = {}
+			self._display = dict()
 
-		if 'devSettings' in self.data:
+		if 'devSettings' in self.data.keys() and self.data['devSettings']:
 			self._devSettings = ast.literal_eval(self.data['devSettings'])
 		else:
 			self._devSettings = dict()
 
-		if 'customValues' in self.data:
+		if 'customValues' in self.data.keys() and self.data['customValues']:
 			self._customValues = ast.literal_eval(self.data['customValues'])
 		else:
 			self._customValues = dict()

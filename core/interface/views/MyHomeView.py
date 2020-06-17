@@ -29,9 +29,9 @@ class MyHomeView(View):
 	def deleteLocationSynonym(self, _id: str):
 		try:
 			_id = int(_id)
-			req_data = request.form.to_dict()
-			self.logInfo(f'trying to delete {req_data} for {_id}')
-			return jsonify(self.LocationManager.deleteLocationSynonym(_id, req_data['value']))
+			reqData = request.form.to_dict()
+			self.logInfo(f'trying to delete {reqData} for {_id}')
+			return jsonify(self.LocationManager.deleteLocationSynonym(_id, reqData['value']))
 		except Exception as e:
 			self.logError(f'Failed deleting synonym: {e}')
 			return jsonify(sucess=False)
@@ -127,7 +127,7 @@ class MyHomeView(View):
 	@route('/Device/<path:_id>/saveSettings/<path:roomid>', methods=['POST'])
 	def saveDeviceSettings(self, _id: str, roomid: str):
 		try:
-			confs = {key: self.retrieveValue(value) for key, value in request.form.items()}
+			confs = {key: value for key, value in request.form.items()}
 			_id = int(_id)
 			device = self.DeviceManager.getDeviceById(_id=_id)
 			roomid = int(roomid)

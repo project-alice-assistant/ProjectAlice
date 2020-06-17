@@ -233,7 +233,7 @@ class AliceSkill(ProjectAliceObject):
 
 			for deviceType in data:  # deprecated devices
 				self.logInfo(f'Device type **{deviceType}** is deprecated, removing')
-				self.DeviceManager.removeDeviceType(_id=deviceType.id)
+				self.DeviceManager.removeDeviceTypeName(_name=deviceType)
 
 
 

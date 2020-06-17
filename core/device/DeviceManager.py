@@ -181,6 +181,16 @@ class DeviceManager(Manager):
 		self._deviceTypes.pop(_id)
 
 
+	def removeDeviceTypeName(self, _name: str):
+		self.DatabaseManager.delete(
+			tableName=self.DB_TYPES,
+			callerName=self.name,
+			values={
+				'name': _name
+			}
+		)
+
+
 	def getLink(self, _id: int = None, deviceId: int = None, locationId: int = None) -> DeviceLink:
 		if _id:
 			return self._deviceLinks.get(_id, None)
