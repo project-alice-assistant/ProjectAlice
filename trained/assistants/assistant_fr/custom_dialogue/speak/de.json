@@ -1,8 +1,0 @@
-{
-	"language": "de",
-	"confirmation_cancel_pattern": "(?i)(?:\\W+|^)(?:abbrechen|brich ab|verwerfen|zur[üu]cknehmen|annullieren|stornieren|r[üu]ckbuchen|widerrufen|zur[üu]ckziehen)(?:\\W+|$)",
-	"confirmation_yes_pattern": "(?i)(?:\\W+|^)(?:ja|von mir aus|auf alle F[äa]lle|meinetwegen|auf jeden Fall|klar|unbedingt|absolut|einverstanden|passt|OK|sicher|bestimmt|joa)(?:\\W+|$)",
-	"confirmation_no_pattern": "(?i)(?:\\W+|^)(nein|auf keinen Fall|na|nee)(?:\\W+|$)",
-	"general_misunderstanding": "tut mir leid, aber ich verstehe nicht, was Sie wollen",
-	"answer_misunderstanding": "Ich konnte Ihre Antwort nicht verstehen"
-}

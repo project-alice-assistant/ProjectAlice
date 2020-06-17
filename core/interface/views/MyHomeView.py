@@ -29,9 +29,9 @@ class MyHomeView(View):
 	def deleteLocationSynonym(self, _id: str):
 		try:
 			_id = int(_id)
-			reqData = request.form.to_dict()
-			self.logInfo(f'trying to delete {reqData} for {_id}')
-			return jsonify(self.LocationManager.deleteLocationSynonym(_id, reqData['value']))
+			data = request.form.to_dict()
+			self.logInfo(f'Deleting {data} for {_id}')
+			return jsonify(self.LocationManager.deleteLocationSynonym(_id, data['value']))
 		except Exception as e:
 			self.logError(f'Failed deleting synonym: {e}')
 			return jsonify(sucess=False)
@@ -42,9 +42,9 @@ class MyHomeView(View):
 		# todo check duplicates (with other rooms as well!)
 		try:
 			_id = int(_id)
-			req_data = request.form.to_dict()
-			self.logInfo(f'trying to add {req_data} for {_id}')
-			return jsonify(self.LocationManager.addLocationSynonym(_id, req_data['value']))
+			data = request.form.to_dict()
+			self.logInfo(f'Adding {data} for {_id}')
+			return jsonify(self.LocationManager.addLocationSynonym(_id, data['value']))
 		except Exception as e:
 			self.logError(f'Failed adding synonym: {e}')
 			return jsonify(sucess=False)
@@ -54,8 +54,8 @@ class MyHomeView(View):
 	@route('/Location/0/add', methods=['POST'])
 	def addLocation(self):
 		try:
-			req_data = request.form.to_dict()
-			return jsonify(id=self.LocationManager.addNewLocation(req_data['name']).id)
+			data = request.form.to_dict()
+			return jsonify(id=self.LocationManager.addNewLocation(data['name']).id)
 		except Exception as e:
 			return jsonify(error=str(e))
 
@@ -71,7 +71,6 @@ class MyHomeView(View):
 	@route('/deviceType_static/<path:filename>')
 	def deviceType_static(self, filename: str):
 		parent, fileType, filename = filename.split('/')
-		self.logInfo(f'../../skills/{parent}/device/{fileType}/{filename}')
 		return send_from_directory(f'{self.WebInterfaceManager.app.root_path}/../../skills/{parent}/device/{fileType}/', filename)
 
 
@@ -85,8 +84,8 @@ class MyHomeView(View):
 	@route('/Device/0/add', methods=['POST'])
 	def addDevice(self):
 		try:
-			req_data = request.form.to_dict()
-			device = self.DeviceManager.addNewDevice(deviceTypeId=int(req_data['deviceTypeID']), locationId=int(req_data['locationID']))
+			data = request.form.to_dict()
+			device = self.DeviceManager.addNewDevice(deviceTypeId=int(data['deviceTypeID']), locationId=int(data['locationID']))
 			if not device:
 				raise Exception(f'Device creation failed - please see log')
 			deviceType = device.getDeviceType()

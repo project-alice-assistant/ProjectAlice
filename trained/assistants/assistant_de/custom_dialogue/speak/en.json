@@ -1,8 +1,0 @@
-{
-	"language": "en",
-	"confirmation_cancel_pattern": "(?i)(?:\\W+|^)(?:cancel)(?:\\W+|$)",
-	"confirmation_yes_pattern": "(?i)(?:\\W+|^)(?:yes)(?:\\W+|$)",
-	"confirmation_no_pattern": "(?i)(?:\\W+|^)(?:no)(?:\\W+|$)",
-	"general_misunderstanding": "Sorry I didn't understand what you want",
-	"answer_misunderstanding": "I couldn't understand your answer"
-}

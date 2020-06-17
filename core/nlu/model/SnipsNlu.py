@@ -139,7 +139,7 @@ class SnipsNlu(NluEngine):
 			if training.returncode != 0:
 				self.logError(f'Error while training Snips NLU: {training.stderr.decode()}')
 
-			assistantPath = Path(self.Commons.rootDir(), f'trained/assistants/assistant_{self.LanguageManager.activeLanguage}/nlu_engine')
+			assistantPath = Path(self.Commons.rootDir(), f'trained/assistants/{self.LanguageManager.activeLanguage}/nlu_engine')
 
 			if not tempTrainingData.exists():
 				self.logError('Snips NLU training failed')

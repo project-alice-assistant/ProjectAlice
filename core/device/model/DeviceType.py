@@ -1,11 +1,19 @@
-from core.device.model import Device
 import sqlite3
-from core.base.model.ProjectAliceObject import ProjectAliceObject
-from core.dialog.model.DialogSession import DialogSession
 from typing import Dict
+
 import copy
 
+from core.base.model.ProjectAliceObject import ProjectAliceObject
+from core.device.model import Device
+from core.dialog.model.DialogSession import DialogSession
+
+
 class DeviceType(ProjectAliceObject):
+
+	TASMOTA_DOWNLOAD_LINK = ''
+	DEV_SETTINGS = ''
+	LOC_SETTINGS = ''
+	ESPTYPE = ''
 
 	def __init__(self, data: sqlite3.Row, devSettings = None, locSettings = None, allowLocationLinks: bool = True, perLocationLimit: int = 0, totalDeviceLimit: int = 0, heartbeatRate: int = 5):
 		super().__init__()
@@ -34,7 +42,7 @@ class DeviceType(ProjectAliceObject):
 
 
 ### to reimplement for any device type
-	def discover(self, device: Device, replyOnSiteId: str = "", session:DialogSession = None) -> bool:
+	def discover(self, device: Device, replyOnSiteId: str = '', session: DialogSession = None) -> bool:
 		# implement the method which can start the search for a new device.
 		# on success the uid should be added to the device and it should be saved
 		# for this, call device.pairingDone(uid)
@@ -43,7 +51,7 @@ class DeviceType(ProjectAliceObject):
 		raise NotImplementedError
 
 
-	def getDeviceIcon(self):
+	def getDeviceIcon(self, device: Device) -> str:
 		# Return the tile representing the current status of the device:
 		# e.g. a light bulb can be on or off and display its status
 		raise NotImplementedError
@@ -52,6 +60,11 @@ class DeviceType(ProjectAliceObject):
 	def toggle(self, device: Device):
 		# the functionality to execute when the device is clicked/toggled in the webinterface
 		raise NotImplementedError
+
+
+	def getDeviceConfig(self):
+		# Getting device config
+		pass
 
 
 ### Generic part
