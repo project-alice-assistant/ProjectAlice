@@ -134,6 +134,7 @@ class MyHomeView(View):
 				device.devSettings = confs
 				device.saveDevSettings()
 				return jsonify(success=True)
+
 			else:
 				# todo get room dependent settings
 				pass

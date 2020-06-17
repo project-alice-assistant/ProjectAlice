@@ -473,6 +473,7 @@ $(function () {
 					$.post('Device/'+data['id']+'/pair').done(function (data){
 						if( handleError(data) ) {
 							return;
+
 						}
 						//TODO make pairing button disappear
 					});
