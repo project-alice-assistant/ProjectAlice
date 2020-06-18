@@ -1,8 +1,9 @@
 import json
 from pathlib import Path
-from typing import Dict
+from typing import Dict, Generator
 
 from core.base.model.Manager import Manager
+from core.dialog.model.DialogTemplate import DialogTemplate
 
 
 class DialogTemplateManager(Manager):
@@ -11,15 +12,22 @@ class DialogTemplateManager(Manager):
 		super().__init__()
 
 		self._pathToCache = Path(self.Commons.rootDir(), 'var/cache/dialogTemplates/')
+		self._pathToCache.mkdir(parents=True, exist_ok=True)
+
 		self._pathToChecksums = self._pathToCache / 'checksums.json'
+		self._pathToData = self._pathToCache / 'data.json'
+
 		self._hasChanges = False
 		self._updatedData: Dict[str, list] = dict()
 
-		if not self._pathToCache.exists():
-			self._pathToCache.mkdir(parents=True)
-
 		if not self._pathToChecksums.exists():
 			self._pathToChecksums.write_text('{}')
+
+		if not self._pathToData.exists():
+			self._pathToData.write_text('{}')
+
+		self._dialogTemplates = dict()
+		self._slotTypes = dict()
 
 
 	@property
@@ -34,12 +42,33 @@ class DialogTemplateManager(Manager):
 
 	def onStart(self):
 		super().onStart()
+		self._loadData()
 
 		changes = self.checkCache()
 		if not changes:
 			self.logInfo('Cache uptodate')
 		else:
 			self.buildCache()
+
+
+	def _loadData(self):
+		for resource in self.skillResource():
+			data = json.loads(resource.read_text())
+			dialogTemplate = DialogTemplate(**data)
+			self._dialogTemplates[dialogTemplate.skill] = dialogTemplate
+
+			for slot in dialogTemplate.allSlots:
+				if slot.name in self._slotTypes:
+					self.logInfo(f'Skill **{dialogTemplate.skill}** extends slot **{slot.name}**')
+
+				self._slotTypes[slot.name] = [*self._slotTypes.get(slot.name, list()), *slot.values]
+
+		data = list()
+		for skillName, skillData in self._dialogTemplates.items():
+			data.append(skillData)
+
+		#self._pathToData.write_text(data=json.dumps(data, ensure_ascii=True, indent=4))
+
 
 
 	def afterSkillChange(self):
@@ -142,7 +171,7 @@ class DialogTemplateManager(Manager):
 			self.buildCache()
 
 
-	def skillResource(self) -> Path:
+	def skillResource(self) -> Generator[Path, None, None]:
 		for skillName, skillInstance in self.SkillManager.allWorkingSkills.items():
 			resource = skillInstance.getResource(f'dialogTemplate/{self.LanguageManager.activeLanguage}.json')
 			if not resource.exists():
