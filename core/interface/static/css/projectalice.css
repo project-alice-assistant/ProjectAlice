@@ -178,11 +178,32 @@ button.button{ font-size: 1.6em; height: 2em; }
 .floorPlanEditMode-AddingZone { cursor: cell; }
 
 .sidebar.right { position: absolute; top: 0; right: -290px; bottom: 0; width: 270px; background: var(--windowBG); border-left: solid var(--accent); overflow-y: auto; padding: 5em 1em 1em 1em;}
+.sidebar input {
+    width: 100%;
+    width: -moz-available;          /* WebKit-based browsers will ignore this. */
+    width: -webkit-fill-available;  /* Mozilla-based browsers will ignore this. */
+    width: fill-available;
+}
 
 .configListCurrent li{list-style-type: none;}
 .configBlock{background: var(--secondary);border: var(--accent);border-style: dotted;}
 .configBlock .configLabel{ display: block; vertical-align: top;}
 .configListAdd {display: inline;font-size: 2em;vertical-align: middle;}
+
+.waiting::after { font-family: 'Font Awesome 5 Free'; content: '\f110';
+   display: inline-block;
+   padding-right: 3px;
+   vertical-align: middle;
+   font-weight: 900;
+  -webkit-animation: fa-spin 2s infinite linear;
+  animation: fa-spin 2s infinite linear;
+}
+.after_big::after {
+    font-size: 5em;
+    text-align: center;
+    display: block;
+    margin: 1em;
+}
 
 /* JQUERY POPUP */
 .ui-widget-content { background: var(--mainBG); }
@@ -191,13 +212,8 @@ button.button{ font-size: 1.6em; height: 2em; }
 .ui-dialog-titlebar{ border-radius: 0; border: solid 2px var(--accent); margin: -2px; }
 
 /* Device Linking */
-.deviceLink {
-  border: 3px solid;
-  pointer-events: none;
-  border-radius: 100%;
-  border-color: yellow;
-  z-index: 999;
-}
+.deviceLink {border: 3px solid; pointer-events: none;border-radius: 100%;border-color: yellow;z-index: 999;}
+
 
 /*======================== TECHNICAL OVERWRITES================== */
 .flex-row { overflow-y: auto; overflow-x: hidden; display: flex; flex-wrap: wrap; align-content: flex-start; }

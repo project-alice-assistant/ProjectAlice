@@ -20,7 +20,15 @@ class DeviceLink(ProjectAliceObject):
 
 	def saveToDB(self):
 		values = {'deviceID': self._deviceID, 'locSettings': self._locSettings, 'locationID': self._locationID}
-		self._id = self.DatabaseManager.insert(tableName=self.DeviceManager.DB_LINKS, values=values, callerName=self.DeviceManager.name)
+		self._id = self.DatabaseManager.insert(tableName=self.DeviceManager.DB_LINKS,
+		                                       values=values,
+		                                       callerName=self.DeviceManager.name)
+
+	def saveLocSettings(self):
+		self.DatabaseManager.update(tableName=self.DeviceManager.DB_LINKS,
+		                            callerName=self.DeviceManager.name,
+		                            values={'locSettings': self.locSettings},
+		                            row=('id', self.id))
 
 
 	def getDevice(self):
@@ -28,16 +36,22 @@ class DeviceLink(ProjectAliceObject):
 
 
 	def changedLocSettingsStructure(self, newSet: dict):
+		newSet = newSet.copy()
 		for _set in newSet.keys():
 			if _set in self.locSettings:
 				newSet[_set] = self.locSettings[_set]
-		self._locSettings = newSet
-		self.saveToDB()
+		self.locSettings = newSet
+		self.saveLocSettings()
 
 
 	@property
 	def locSettings(self) -> dict:
 		return self._locSettings
+
+
+	@locSettings.setter
+	def locSettings(self, locSettings):
+		self._locSettings = locSettings
 
 
 	@property

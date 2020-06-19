@@ -10,10 +10,8 @@ from core.dialog.model.DialogSession import DialogSession
 
 class DeviceType(ProjectAliceObject):
 
-	TASMOTA_DOWNLOAD_LINK = ''
 	DEV_SETTINGS = ''
 	LOC_SETTINGS = ''
-	ESPTYPE = ''
 
 	def __init__(self, data: sqlite3.Row, devSettings = None, locSettings = None, allowLocationLinks: bool = True, perLocationLimit: int = 0, totalDeviceLimit: int = 0, heartbeatRate: int = 5):
 		super().__init__()
@@ -70,7 +68,7 @@ class DeviceType(ProjectAliceObject):
 ### Generic part
 	@property
 	def initialLocationSettings(self) -> Dict:
-		return copy.deepcopy(self._locSettings)
+		return self._locSettings
 
 
 	def saveToDB(self):
@@ -79,9 +77,12 @@ class DeviceType(ProjectAliceObject):
 
 	def checkChangedSettings(self):
 		row = self.DeviceManager.databaseFetch(tableName=self.DeviceManager.DB_TYPES,
-			                                    values={'id':self.id})
+									            query='SELECT * FROM :__table__ WHERE id = :id',
+			                                    values={'id':self.id},
+		                                        method='one')
 
-		if row['devSettings'] != self._devSettings:
+		if row['devSettings'] != str(self._devSettings):
+			self.logInfo(f'Updating device Settings structure for {self.name}')
 			self.DatabaseManager.update(tableName=self.DeviceManager.DB_TYPES,
 			                            callerName=self.DeviceManager.name,
 			                            values={'devSettings': self._devSettings},
@@ -89,7 +90,8 @@ class DeviceType(ProjectAliceObject):
 			for device in self.DeviceManager.getDevicesByTypeID(deviceTypeID=self.id):
 				device.changedDevSettingsStructure(self._devSettings)
 
-		if row['locSettings'] != self._locSettings:
+		if row['locSettings'] != str(self._locSettings):
+			self.logInfo(f'Updating locations Settings structure for {self.name}')
 			self.DatabaseManager.update(tableName=self.DeviceManager.DB_TYPES,
 			                            callerName=self.DeviceManager.name,
 			                            values={'locSettings': self._locSettings},

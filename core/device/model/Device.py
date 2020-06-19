@@ -102,6 +102,7 @@ class Device(ProjectAliceObject):
 
 
 	def changedDevSettingsStructure(self, newSet: dict):
+		newSet = newSet.copy()
 		for _set in newSet.keys():
 			if _set in self.devSettings:
 				newSet[_set] = self.devSettings[_set]

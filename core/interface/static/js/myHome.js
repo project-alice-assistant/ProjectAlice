@@ -307,6 +307,11 @@ $(function () {
 				// add link from selected Device to zone
 				// frontend checks: link already there
 				// --> new link
+					$.post('/myhome/Device/'+selectedDevice.attr('data-id')+'/addLink/'+data["id"]).done(function (result){
+						if( handleError(result) ){
+							return;
+						}
+					})
 					// backend checks: link already there
 					// backend checks: link is allowed
 					// frontend: draw bezier
@@ -469,17 +474,18 @@ $(function () {
 
 				$settings.html(content);
 				$('#startPair').on('click touchstart', function () {
-					//TODO make waiting circle appear
+					$(this).addClass('waiting')
 					$.post('Device/'+data['id']+'/pair').done(function (data){
 						if( handleError(data) ) {
 							return;
-
 						}
-						//TODO make pairing button disappear
+						let sp = $('#startPair')
+						sp.removeClass('waiting');
+						sp.hide();
 					});
 				});
 
-				//TODO add loading circle
+				$settings.addClass('waiting after_big')
 				$settings.sidebar({side: "right"}).trigger("sidebar:open");
 
 // TODO logic for synonyms of devices
@@ -500,7 +506,7 @@ $(function () {
 						content += "<div class='configBox'><div class='configList'><form id='SetForm' name='config_for_devSet' action='Device/"+data['id']+"/saveSettings/0' method='post'><div class='configBlock'>";
 						content += confLines
 						content += "</div>";
-						content += "<div class='buttonLine'><input id='SetFormSubmit' class='button' type='submit' value='Save Device Settings'></div>";
+						content += "<div class='buttonLine'><input id='SetFormSubmit' class='button' type='submit' value='" + $('#langSave').text() + "'></div>";
 						content += "</form></div></div>";
 
 						$settings.append(content);
@@ -510,15 +516,15 @@ $(function () {
 						let saveButton = form.find('#SetFormSubmit');
 						// noinspection JSDeprecatedSymbols
 						form.submit(function (event) {
-							saveButton.val($('#langConfSaving').text());
+							saveButton.val($('#langSaving').text());
 							saveButton.addClass('saving');
-							$.post(form.attr('action'),
-								form.serialize()).done(function () {
-								saveButton.val($('#langConfSaved').text());
+							$.post(form.attr('action'),form.serialize())
+								.done(function () {
+								saveButton.val($('#langSaved').text());
 								saveButton.addClass('saved');
 							})
 								.fail(function () {
-									saveButton.val($('#langConfSaveFailed').text());
+									saveButton.val($('#langSaveFailed').text());
 									saveButton.addClass('saveFailed');
 								}).always(
 								function () {
@@ -526,13 +532,10 @@ $(function () {
 								});
 							event.preventDefault();
 						});
-						// todo text is missing after click
-						// todo test fields reset button
-						// todo savin always empty....
 
 						// change button back to save if something was changed
 						$('.configInput').on('change', function () {
-							saveButton.val($('#langConfSave').text());
+							saveButton.val($('#langSave').text());
 							saveButton.removeClass('saved');
 							saveButton.removeClass('saveFailed');
 						});
@@ -579,6 +582,8 @@ $(function () {
 					selectedDevice = $(this);
 					$(this).attr('id', 'linked');
 				}
+
+				$settings.removeClass('waiting after_big')
 			} else {
 				// display mode: Try toggling the device
 				$.post( 'Device/'+data['id']+'/toggle')
@@ -673,6 +678,7 @@ $(function () {
 		setBPMode(false);
 		saveHouse();
 		initEditable();
+		removeAllBeziers();
 
 		$('#toolbarOverview').hide();
 		$('#toolbarToggle').show();

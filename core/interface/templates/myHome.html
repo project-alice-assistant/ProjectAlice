@@ -16,6 +16,12 @@
 {% endblock %}
 
 {% block content %}
+
+	<div class="hidden" id="langNoConf">{{ langData.noConfs }}</div>
+	<div class="hidden" id="langSave">{{ langData.save }}</div>
+	<div class="hidden" id="langSaving">{{ langData.saving }}</div>
+	<div class="hidden" id="langSaved">{{ langData.saved }}</div>
+	<div class="hidden" id="langSaveFailed">{{ langData.saveFailed }}</div>
 	<div class="stick-top-right">
 		<div class="toolbar initialHidden" id="toolbarConstruction">
 			<span class="toolbarButton link-hover" id="addZone" title="Add Location">

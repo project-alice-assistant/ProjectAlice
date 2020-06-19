@@ -204,12 +204,11 @@ class DeviceManager(Manager):
 	def addLink(self, deviceId: int, locationId: int):
 		device = self.getDeviceById(deviceId)
 		deviceType = device.getDeviceType()
-		if not deviceType.multiRoom():
+		if not deviceType.allowLocationLinks:
 			raise Exception(f'Device type {deviceType.name} can\'t be linked to other rooms')
-
-		locSettings = deviceType.initialLocationSettings
-		values = {'deviceID': deviceId, 'locationID': locationId, 'locSettings': locSettings}
-		self.databaseInsert(tableName=self.DB_LINKS, query='INSERT INTO :__table__ (deviceID, locationID, locSettings) VALUES (:deviceID, :locationID, locSettings)', values=values)
+		#todo check if adding locSettings here is required
+		values = {'deviceID': deviceId, 'locationID': locationId}
+		self.databaseInsert(tableName=self.DB_LINKS, query='INSERT INTO :__table__ (deviceID, locationID) VALUES (:deviceID, :locationID)', values=values)
 
 
 	def deleteLink(self, _id: int):

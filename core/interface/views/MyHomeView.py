@@ -162,11 +162,11 @@ class MyHomeView(View):
 			if roomid == 0:
 				raise Exception('No valid room ID supplied')
 			else:
-				self.DeviceManager.addLink(deviceId=id, locationId=roomid)
+				self.DeviceManager.addLink(deviceId=_id, locationId=roomid)
 			return jsonify(success=True)
 		except Exception as e:
 			self.logError(f'Failed adding room/device Link: {e}')
-			return jsonify(success=False)
+			return jsonify(error='Faild adding link')
 
 
 	@route('/Device/u/<path:uid>/icon', methods=['GET'])
