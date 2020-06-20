@@ -1,34 +1,77 @@
 $(function () {
 
-	let $floorPlan = $('#floorPlan');
+  	let $floorPlan = $('#floorPlan');
+
 	let editMode = false;
 
+	let locationEditMode = false;
 	let moveMode = false;
 	let zoneMode = false;
 	let buildingMode = false;
 	let paintingMode = false;
 	let decoratorMode = false;
 
+	let technicalMode = false;
+	let deviceEditMode = false;
+	let deviceInstallerMode = false;
+	let deviceLinkerMode = false;
+
 	let selectedFloor = '';
 	let selectedDeco = '';
+	let selectedDeviceTypeID = '';
 	let selectedConstruction = '';
 
+	// Linker
+	let selectedDevice = null;
+
+// Setup and handle MQTT
+	function onConnect() {
+		MQTT.subscribe('projectalice/devices/updated');
+	}
+
+	function onMessage(msg) {
+		let payload = JSON.parse(msg.payloadString);
+		console.log(msg.topic)
+		if (msg.topic === 'projectalice/devices/updated') {
+			if(payload['type'] == 'status') {
+				console.log(payload);
+				let tochange = $('#device_' + payload['id']);
+				let url = 'Device/' + payload['id'] + '/icon?random=' + new Date().getTime();
+				tochange.css('background-image', 'url('+url+')');
+				console.log('done');
+			}
+		}
+
+	}
+
+// Basic functionality for loading, saving
 	function loadHouse() {
 		$.ajax({
 			url : '/myhome/load/',
 			type: 'GET'
 		}).done(function (response) {
-			let $data = JSON.parse(response);
+			let $data = response;
 			$.each($data, function (i, zone) {
 				let $zone = newZone(zone);
-				$.each(zone['walls'], function (ii, wall) {
-					newWall($zone, wall);
-				});
-				$.each(zone['construction'], function (iii, construction) {
-					newConstruction($zone, construction);
-				});
-				$.each(zone['deco'], function (iiii, deco) {
-					newDeco($zone, deco);
+				if (zone['display']) {
+					if (zone['display'].hasOwnProperty('walls')) {
+						$.each(zone['display']['walls'], function (ii, wall) {
+							newWall($zone, wall);
+						});
+					}
+					if (zone['display'].hasOwnProperty('construction')) {
+						$.each(zone['display']['construction'], function (iii, construction) {
+							newConstruction($zone, construction);
+						});
+					}
+					if (zone['display'].hasOwnProperty('deco')) {
+						$.each(zone['display']['deco'], function (iiii, deco) {
+							newDeco($zone, deco);
+						});
+					}
+				}
+				$.each(zone['devices'], function (iiiii, device) {
+					newDevice($zone, device);
 				});
 			})
 		});
@@ -37,63 +80,77 @@ $(function () {
 	function saveHouse() {
 		let data = {};
 		$floorPlan.children('.floorPlan-Zone').each(function () {
-			let zoneName = $(this).data('name');
-			data[zoneName] = {
-				'name'    : $(this).data('name'),
-				'x'       : $(this).css('left').replace('px', ''),
-				'y'       : $(this).css('top').replace('px', ''),
-				'z-index' : $(this).css('z-index'),
-				'rotation': matrixToAngle($(this).css('transform')),
-				'width'   : $(this).width(),
-				'height'  : $(this).height(),
-				'texture' : $(this).data('texture')
+			let zoneID = $(this).data('id');
+			data[zoneID] = {
+				"id"	  : $(this).data('id'),
+				"name"    : $(this).data('name')
 			};
-
-			data[zoneName]['walls'] = [];
+			data[zoneID]['display'] = {
+				"x"       : $(this).css('left').replace('px', ''),
+				"y"       : $(this).css('top').replace('px', ''),
+				"z-index" : $(this).css('z-index'),
+				"rotation": matrixToAngle($(this).css('transform')),
+				"width"   : $(this).width(),
+				"height"  : $(this).height(),
+				"texture" : $(this).data('texture')
+			};
+			data[zoneID]['display']['walls'] = [];
 			$(this).children('.floorPlan-Wall').each(function () {
-				data[zoneName]['walls'].push({
-					'x'       : $(this).css('left').replace('px', ''),
-					'y'       : $(this).css('top').replace('px', ''),
-					'rotation': matrixToAngle($(this).css('transform')),
-					'width'   : $(this).width(),
-					'height'  : $(this).height()
+				data[zoneID]['display']['walls'].push({
+					"x"       : $(this).css('left').replace('px', ''),
+					"y"       : $(this).css('top').replace('px', ''),
+					"rotation": matrixToAngle($(this).css('transform')),
+					"width"   : $(this).width(),
+					"height"  : $(this).height()
 				})
 			});
 
-			data[zoneName]['construction'] = [];
+			data[zoneID]['display']['construction'] = [];
 			$(this).children('.floorPlan-Construction').each(function () {
-				data[zoneName]['construction'].push({
-					'x'       : $(this).css('left').replace('px', ''),
-					'y'       : $(this).css('top').replace('px', ''),
-					'rotation': matrixToAngle($(this).css('transform')),
-					'width'   : $(this).width(),
-					'height'  : $(this).height(),
-					'texture' : $(this).data('texture')
+				data[zoneID]['display']['construction'].push({
+					"x"       : $(this).css('left').replace('px', ''),
+					"y"       : $(this).css('top').replace('px', ''),
+					"rotation": matrixToAngle($(this).css('transform')),
+					"width"   : $(this).width(),
+					"height"  : $(this).height(),
+					"texture" : $(this).data('texture')
 				})
 			});
 
-			data[zoneName]['deco'] = [];
+			data[zoneID]['display']['deco'] = [];
 			$(this).children('.floorPlan-Deco').each(function () {
-				data[zoneName]['deco'].push({
-					'x'       : $(this).css('left').replace('px', ''),
-					'y'       : $(this).css('top').replace('px', ''),
-					'rotation': matrixToAngle($(this).css('transform')),
-					'width'   : $(this).width(),
-					'height'  : $(this).height(),
-					'texture' : $(this).data('texture')
+				data[zoneID]['display']['deco'].push({
+					"x"       : $(this).css('left').replace('px', ''),
+					"y"       : $(this).css('top').replace('px', ''),
+					"rotation": matrixToAngle($(this).css('transform')),
+					"width"   : $(this).width(),
+					"height"  : $(this).height(),
+					"texture" : $(this).data('texture')
+				})
+			});
+
+			data[zoneID]['devices'] = [];
+			$(this).children('.floorPlan-Device').each(function () {
+				data[zoneID]['devices'].push({
+					"id"	  : $(this).data('id'),
+					"uid"	  : $(this).data('uid'),
+					"deviceType" : $(this).data('texture'),
+					"skill" : $(this).data('skill'),
+					"display" : {
+						"x"       : $(this).css('left').replace('px', ''),
+						"y"       : $(this).css('top').replace('px', ''),
+						"rotation": matrixToAngle($(this).css('transform')),
+						"width"   : $(this).width(),
+						"height"  : $(this).height()
+					}
 				})
 			});
 		});
 
-		$.ajax({
-			url : '/myhome/',
-			type: 'PUT',
-			data: {
-				'data': JSON.stringify(data)
-			}
-		});
+		$.ajax({'url': '/myhome/save/', data: JSON.stringify(data), 'type':'POST', 'contentType' :'application/json'});
 	}
 
+// Basic functionality for build area
 	function matrixToAngle(matrix) {
 		if (matrix == 'none' || matrix == null) {
 			return 0;
@@ -148,13 +205,18 @@ $(function () {
 		}
 	}
 
+// logic for individual items
 	function newZone(data) {
 		data = snapPosition(data)
 		data = snapAngle(data);
-		let $newZone = $('<div class="floorPlan-Zone ' + data["texture"] + '" ' +
+		if(!data["display"]){
+			data["display"] = {};
+		}
+		let $newZone = $('<div class="floorPlan-Zone ' + data["display"]["texture"] + '" ' +
+			'data-id="' + data["id"] + '" ' +
 			'data-name="' + data["name"] + '" ' +
-			'data-texture="' + data["texture"] + '" ' +
-			'style="left: ' + data["x"] + 'px; top: ' + data["y"] + 'px; width: ' + data["width"] + 'px; height: ' + data["height"] + 'px; position: absolute; transform: rotate(' + data["rotation"] + 'deg); z-index: ' + data["z-index"] + '">' +
+			'data-texture="' + data["display"]["texture"] + '" ' +
+			'style="left: ' + data["display"]["x"] + 'px; top: ' + data["display"]["y"] + 'px; width: ' + data["display"]["width"] + 'px; height: ' + data["display"]["height"] + 'px; position: absolute; transform: rotate(' + data["display"]["rotation"] + 'deg); z-index: ' + data["display"]["z-index"] + '">' +
 			'<div class="inputOrText">' + data["name"] + '</div>' +
 			'<div class="zindexer initialHidden">' +
 				'<div class="zindexer-up"><i class="fas fa-level-up-alt" aria-hidden="true"></i></div>' +
@@ -210,6 +272,97 @@ $(function () {
 
 				let $deco = newDeco($newZone, decoData);
 				makeResizableRotatableAndDraggable($deco);
+			} else if (deviceInstallerMode) {
+				if (selectedDeviceTypeID == null || selectedDeviceTypeID == '') {
+					return;
+				}
+
+				$.post('/myhome/Device/0/add',
+					{ 'locationID': data["id"],
+					  'deviceTypeID': selectedDeviceTypeID } ).done(function (rec) {
+					  	if(handleError(rec)){
+					  		return;
+						}
+					  	let deviceData = {
+					  		'display': {
+								'x'      : 25,
+								'y'      : 25,
+								'width'  : 50,
+								'height' : 50,
+								'rotation': 0 },
+							'deviceTypeID': selectedDeviceTypeID,
+							'skill': rec['skill'],
+							'deviceType': rec['deviceType'],
+							'id': rec['id']
+						};
+						let $device = newDevice($newZone, deviceData);
+						makeResizableRotatableAndDraggable($device);
+				});
+
+			} else if (deviceLinkerMode) {
+				if (selectedDevice == null || selectedDevice == ''){
+					return;
+				}
+				// todo: implement frontend linking
+				// add link from selected Device to zone
+				// frontend checks: link already there
+				// --> new link
+					$.post('/myhome/Device/'+selectedDevice.attr('data-id')+'/addLink/'+data["id"]).done(function (result){
+						if( handleError(result) ){
+							return;
+						}
+					})
+					// backend checks: link already there
+					// backend checks: link is allowed
+					// frontend: draw bezier
+					$(this).children('.inputOrText').connections({
+					  to: selectedDevice,
+					  'class': 'deviceLink'
+					});
+					// frontend: add to link list
+					// frontend: load link room settings
+				// --> remove link
+					// yeah..
+
+			} else if (technicalMode){
+				let $settings = $('#settings');
+				let content = "<i>"+data['id']+"</i> <h1>"+data['name']+"</h1>";
+				content += "<div class='configBox'>";
+				content += "<div class='configBox'>";
+				content += "<div class='configList'>";
+				content += "<div class='configBlock'><div class='configLabel'>Synonyms:</div>";
+				content += "<div class='configBlockContent addSynonym' id='Location/"+data['id']+"/addSynonym'><ul class='configListCurrent'/><input class='configInput'/><div class='link-hover configListAdd'><i class=\"fas fa-plus-circle\"></i>	</div></div></div>";
+				content += "<div class='configBlock'><div class='configLabel'>Devices:</div><input class='configInput'/></div>";
+				content += "<div class='configBlock'><div class='configLabel'>Linked Devices:</div><input class='configInput'/></div>";
+				content += "</div></div>";
+
+				//TODO load existing settings
+				$settings.html(content);
+				loadLocationSettings(data['id'],$settings);
+				$settings.sidebar({side: "right"}).trigger("sidebar:open");
+
+				// reroute enter to click event
+				$('.configInput').keypress(function (e) {
+				  if (e.which == 13) {
+				  	$(this).parent().children('.configListAdd').click();
+					return false;
+				  }
+				});
+
+				// add new entry to conf. List
+				// TODO add to DB
+				$('.configListAdd').on('click touchstart',function() {
+					let $parent = $(this).parent();
+					let $inp = $parent.children('.configInput');
+					if ($inp.val() != "") {
+						$.post( '/myhome/'+$parent[0].id,
+							{ value: $inp.val() } )
+						.done(function( result ) {
+							newConfigListVal($parent,$inp.val());
+							$inp.val('');
+						});
+					}
+				});
 			}
 		});
 
@@ -218,6 +371,7 @@ $(function () {
 				let result = confirm('Do you really want to delete this zone?');
 				if (result == true) {
 					$(this).remove();
+					$.post('/myhome/Location/'+data['id']+'/delete', {id : data['id']});
 				}
 				return false;
 			}
@@ -297,75 +451,270 @@ $(function () {
 		return $newDeco;
 	}
 
-	$('#toolbarToggleShow').on('click touchstart', function () {
-		$('#toolbar_full').show();
-		$('#toolbar_toggle').hide();
-		$floorPlan.addClass('floorPlanEditMode');
+	function newDevice($element, data) {
+		data = snapPosition(data)
+		data = snapAngle(data);
+		// noinspection CssUnknownTarget
+		let $newDevice = $('<div class="floorPlan-Device" id="device_'+data['id']+'" ' +
+			'style="background: url(\'Device/'+data['id']+'/icon?random='+ new Date().getTime()+'\') no-repeat; background-size: 100% 100%; left: ' + data["display"]["x"] + 'px; top: ' + data["display"]["y"] + 'px; width: ' + data["display"]["width"] + 'px; height: ' + data["display"]["height"] + 'px; position: absolute; z-index: auto; transform: rotate(' + data["display"]["rotation"] + 'deg);" ' +
+			'data-texture="' + data["deviceType"] + '"; data-skill="' + data["skill"] +'"; data-id="' + data["id"] +'"; data-uid="' + data["uid"] +'">' +
+			'</div>');
+
+		$newDevice.on('click touchstart', function () {
+			if(deviceEditMode) {
+				let $settings = $('#settings');
+				let content = "<h1>" + data['name'] + "</h1>";
+				content += "<h2>" + data['deviceType'] + "</h2>";
+
+				if( data['uid'] == 'undefined' || data['uid'] == null ){
+					content += "NO DEVICE PAIRED!<div id='startPair' class='button'>Search Device</div>"
+				} else {
+					content += "<div class='techDetail' >"+data['uid']+"</div>";
+				}
+
+				$settings.html(content);
+				$('#startPair').on('click touchstart', function () {
+					$(this).addClass('waiting')
+					$.post('Device/'+data['id']+'/pair').done(function (data){
+						if( handleError(data) ) {
+							return;
+						}
+						let sp = $('#startPair')
+						sp.removeClass('waiting');
+						sp.hide();
+					});
+				});
+
+				$settings.addClass('waiting after_big')
+				$settings.sidebar({side: "right"}).trigger("sidebar:open");
+
+// TODO logic for synonyms of devices
+// 				content += "<div class='configBlock'><div class='configLabel'>Synonyms:</div>";
+//				content += "<div class='configBlockContent' id='Device/"+data['id']+"/addSynonym'><ul class='configListCurrent'/><input class='configInput'/><div class='link-hover configListAdd'><i class=\"fas fa-plus-circle\"></i>	</div></div></div>";
+// TODO Load Device Settings
+
+				$.get('/myhome/Device/'+data['id']+'/getSettings/0').done(function (res) {
+					if( handleError(res) ) {
+						return;
+					}
+					let confLines = "";
+					content = "";
+					$.each(res, function(key, val){
+						confLines += "<div class='configLabel'>"+key+"</div><input name='"+key+"' class='configInput' value='"+val+"'/>";
+					});
+					if(confLines){
+						content += "<div class='configBox'><div class='configList'><form id='SetForm' name='config_for_devSet' action='Device/"+data['id']+"/saveSettings/0' method='post'><div class='configBlock'>";
+						content += confLines
+						content += "</div>";
+						content += "<div class='buttonLine'><input id='SetFormSubmit' class='button' type='submit' value='" + $('#langSave').text() + "'></div>";
+						content += "</form></div></div>";
+
+						$settings.append(content);
+
+						// perform submit/save of the form without switching page
+						let form = $('#SetForm');
+						let saveButton = form.find('#SetFormSubmit');
+						// noinspection JSDeprecatedSymbols
+						form.submit(function (event) {
+							saveButton.val($('#langSaving').text());
+							saveButton.addClass('saving');
+							$.post(form.attr('action'),form.serialize())
+								.done(function () {
+								saveButton.val($('#langSaved').text());
+								saveButton.addClass('saved');
+							})
+								.fail(function () {
+									saveButton.val($('#langSaveFailed').text());
+									saveButton.addClass('saveFailed');
+								}).always(
+								function () {
+									saveButton.removeClass('saving');
+								});
+							event.preventDefault();
+						});
+
+						// change button back to save if something was changed
+						$('.configInput').on('change', function () {
+							saveButton.val($('#langSave').text());
+							saveButton.removeClass('saved');
+							saveButton.removeClass('saveFailed');
+						});
+
+
+					}
+				});
+
+// TODO Room specific Settings
+				//content += "<div class='configBlock'><div class='configLabel'>Available in following Rooms:</div><input class='configInput'/></div>";
+				//content += "<span class=\"toolbarButton link-hover\" id=\"deviceLinker\" title=\"Link a device with multiple rooms\"><i class=\"fas fa-link\"></i></span>";
+
+
+
+				// reroute synonym enter to click event
+				$('.configInput').keypress(function (e) {
+					if (e.which == 13) {
+						$(this).parent().children('.configListAdd').click();
+						return false;
+					}
+				});
+
+				// add new synonym entry to conf. List
+				// TODO add to DB
+				// TODO check if is existing
+/*				$('.configListAdd').on('click touchstart', function () {
+					let $parent = $(this).parent();
+					let $inp = $parent.children('.configInput');
+					if ($inp.val() != "") {
+						$.post( '/myHome/add'+$parent.id,
+							{ value: $inp.val() } )
+						.done(function( result ) {
+							$parent.children('.configListCurrent').append("<li>" + $inp.val() + "<div class='addWidgetCheck configListRemove link-hover'><i class='fas fa-minus-circle'></i></div></li>");
+							$inp.val('');
+
+							$('.configListRemove').on('click touchstart', function () {
+								$(this).parent().remove();
+							});
+						});
+					}
+				});*/
+				if(deviceLinkerMode) {
+					removeAllBeziers();
+					selectedDevice = $(this);
+					$(this).attr('id', 'linked');
+				}
+
+				$settings.removeClass('waiting after_big')
+			} else {
+				// display mode: Try toggling the device
+				$.post( 'Device/'+data['id']+'/toggle')
+					.done(function( result ) {
+						$newDevice.css('background: url("/deviceType_static/' + result + '.png')
+					});
+
+			}
+			return false;
+		});
+
+		$newDevice.on('contextmenu', function () {
+			if (deviceInstallerMode) {
+				if(confirm('Do you really want to delete this device?')){
+					let $dev = $(this)
+					$.post('Device/'+data['id']+'/delete').done(function () {
+						$dev.remove();
+					})
+				}
+				// TODO remove from DB as well...
+				return false;
+			}
+		});
+
+		$element.append($newDevice);
+		return $newDevice;
+	}
+
+// helper functions
+	function handleError($data){
+		if('error' in $data) {
+			alert($data['error']);
+			return true;
+		}else{
+			return false;
+		}
+	}
+
+	function initEditable(){
 		editMode = true;
+		deviceEditMode = false;
 		zoneMode = false;
 		buildingMode = false;
 		paintingMode = false;
 		decoratorMode = false;
 		moveMode = false;
+		deviceInstallerMode = false;
+		deviceLinkerMode = false;
 
-		$('#painterTiles').hide();
-		$('#decoTiles').hide();
-
-		$('.inputOrText').each(function() {
-			let name = $(this).text();
-			$(this).empty();
-			$(this).html('<input type="text" value="' + name + '">');
-		})
-	});
-
-	$('#toolbarToggleHide').on('click touchstart', function () {
-		$('#toolbar_full').hide();
-		$('#toolbar_toggle').show();
-		editMode = false;
-		zoneMode = false;
-		buildingMode = false;
-		paintingMode = false;
-		decoratorMode = false;
-		moveMode = false;
-
-		$floorPlan.removeClass('floorPlanEditMode');
-		$floorPlan.removeClass('floorPlanEditMode-AddingZone');
+		$('#toolbarConstruction').hide();
+		$('#toolbarTechnic').hide();
 
 		removeResizableRotatableAndDraggable($('.floorPlan-Zone'));
 		removeResizableRotatableAndDraggable($('.floorPlan-Wall'));
 		removeResizableRotatableAndDraggable($('.floorPlan-Deco'));
+		removeResizableRotatableAndDraggable($('.floorPlan-Device'));
 		removeResizableRotatableAndDraggable($('.floorPlan-Construction'));
-
-		$('#painterTiles').hide();
-		$('#decoTiles').hide();
 
 		markSelectedTool(null);
 
-		$('.inputOrText').each(function() {
-			let name = $(this).children('input').val();
-			$(this).parent().attr('data-name', name);
-			$(this).remove('input');
-			$(this).text(name);
-		})
-
-		saveHouse();
-	});
-
-	$('#addZone').on('click touchstart', function () {
-		if (!editMode) {
-			return;
-		}
-		zoneMode = true;
-		buildingMode = false;
-		moveMode = false;
-		paintingMode = false;
-		decoratorMode = false;
-
 		$('#painterTiles').hide();
 		$('#decoTiles').hide();
+		$('#deviceTiles').hide();
 
-		markSelectedTool($(this));
-		$('#floorPlan').addClass('floorPlanEditMode-AddingZone');
+		$floorPlan.removeClass('floorPlanEditMode-AddingZone');
+		$floorPlan.addClass('floorPlanEditMode');
+
+	}
+
+	function loadLocationSettings(id, $settings){
+		$.get('/myhome/Location/'+id+'/getSettings').done(function (res) {
+			let $synonyms = $settings.find('.addSynonym');
+			$.each(res, function (i, synonym) {
+				newConfigListVal($synonyms, synonym,'/myhome/Location/'+id+'/deleteSynonym');
+			});
+		})
+		// TODO load device specific settings
+	}
+
+	function newConfigListVal($parent, val, deletionLink) {
+		$parent.children('.configListCurrent').append("<li>" + val + "<div class='addWidgetCheck configListRemove link-hover'><i class='fas fa-minus-circle'></i></div></li>");
+		$('.configListRemove').on('click touchstart', function () {
+			$(this).parent().remove();
+			$.post(deletionLink, { 'value': val })
+			//TODO confirmation
+		});
+	}
+
+// handle toolbar
+	// save, hide toolbars, restore live view
+	$('#finishToolbarAction').on('click touchstart', function () {
+		setBPMode(false);
+		saveHouse();
+		initEditable();
+		removeAllBeziers();
+
+		$('#toolbarOverview').hide();
+		$('#toolbarToggle').show();
+
+		$floorPlan.removeClass('floorPlanEditMode');
+	});
+
+	// enter edit mode
+	$('#toolbarToggleShow').on('click touchstart', function () {
+		$('#toolbarOverview').show();
+		$('#toolbarToggle').hide();
+		initEditable();
+	});
+
+	// enter construction/location mode
+	$('#toolbarConstructionShow').on('click touchstart', function () {
+		initEditable();
+		setBPMode(false);
+		locationEditMode = true;
+		markSelectedToolbar($(this));
+		$('#toolbarConstruction').show();
+	});
+
+	// enter device editing mode
+	$('#toolbarTechnicShow').on('click touchstart', function () {
+		initEditable();
+		setBPMode(true);
+		deviceEditMode = true;
+		markSelectedToolbar($(this));
+		$('#toolbarTechnic').show();
+	});
+
+	$('#toolbarOverviewShow').on('click touchstart', function () {
+		$('#toolbarOverview').show();
+		$('#toolbarToggle').hide();
+		initEditable();
 	});
 
 	$floorPlan.on('click touchstart', function (e) {
@@ -374,24 +723,43 @@ $(function () {
 		}
 
 		let zoneName = prompt('Please name this new zone');
-		if (zoneName != null && zoneName != '') {
-			let data = {
-				'name'   : zoneName,
-				'x'      : e.pageX - $(this).offset().left,
-				'y'      : e.pageY - $(this).offset().top,
-				'width'  : 100,
-				'height' : 100,
-				'texture': ''
-			}
-			let $zone = newZone(data);
-			makeResizableRotatableAndDraggable($zone)
-		}
+		let x = $(this).offset().left;
+		let y = $(this).offset().top;
 
-		zoneMode = false;
-		markSelectedTool($('#mover'));
-		$('.zindexer').show();
-		$(this).removeClass('floorPlanEditMode-AddingZone');
+		$.post('/myhome/Location/0/add', {name : zoneName}).done(function(data){
+			if( handleError(data) ) {
+				return;
+			}
+			let zoneId = data['id'];
+
+			if (zoneName != null && zoneName != '') {
+				let zdata = {
+					'id'	 : zoneId,
+					'name'   : zoneName,
+					'x'      : e.pageX - x,
+					'y'      : e.pageY - y,
+					'width'  : 100,
+					'height' : 100,
+					'texture': ''
+				}
+				let $zone = newZone(zdata);
+				makeResizableRotatableAndDraggable($zone)
+			}
+
+			zoneMode = false;
+			markSelectedTool($('#mover'));
+			$('.zindexer').show();
+			$(this).removeClass('floorPlanEditMode-AddingZone');
+		})
 	});
+
+	function markSelectedToolbar($element) {
+		$('.selectedToolbar').removeClass('selectedToolbar');
+
+		if ($element != null) {
+			$element.addClass('selectedToolbar');
+		}
+	}
 
 	function markSelectedTool($element) {
 		$('.selectedTool').removeClass('selectedTool');
@@ -400,6 +768,8 @@ $(function () {
 		paintingMode = false;
 		zoneMode = false;
 		decoratorMode = false;
+		deviceInstallerMode = false;
+		moveMode = false;
 
 		$('#painterTiles').hide();
 		$('#decoTiles').hide();
@@ -407,6 +777,8 @@ $(function () {
 
 		selectedFloor = '';
 		selectedDeco = '';
+		selectedDevice = '';
+		let selectedDeviceSkill = '';
 
 		$('.floorPlan-tile').removeClass('selected');
 		$('.floorPlan-tile-background').removeClass('selected');
@@ -416,6 +788,18 @@ $(function () {
 			$element.addClass('selectedTool');
 		}
 	}
+
+// construction tools
+	$('#addZone').on('click touchstart', function () {
+		markSelectedTool($(this));
+		zoneMode = true;
+
+		$('#painterTiles').hide();
+		$('#decoTiles').hide();
+		$('#deviceTiles').hide();
+
+		$('#floorPlan').addClass('floorPlanEditMode-AddingZone');
+	});
 
 	$('#builder').on('click touchstart', function () {
 		markSelectedTool($(this));
@@ -501,6 +885,64 @@ $(function () {
 		}
 	});
 
+// technic tools
+	$('#deviceInstaller').on('click touchstart', function () {
+		markSelectedTool($(this));
+
+		if (!deviceInstallerMode) {
+			deviceInstallerMode = true;
+			$('#deviceTiles').css('display', 'flex');
+			$floorPlan.removeClass('floorPlanEditMode-AddingZone');
+
+			$('.floorPlan-Device').each(function() {
+				makeResizableRotatableAndDraggable($(this));
+			});
+
+			$('.floorPlan-Zone, .floorPlan-Wall, .floorPlan-Construction').each(function() {
+				removeResizableRotatableAndDraggable($(this));
+			});
+
+			$('.floorPlan-Deco, .floorPlan-Wall, .floorPlan-Construction').each(function() {
+				removeResizableRotatableAndDraggable($(this));
+			});
+		} else {
+			$('.floorPlan-Device').each(function() {
+				removeResizableRotatableAndDraggable($(this));
+			});
+			markSelectedTool(null);
+		}
+	});
+
+	$('#deviceLinker').on('click touchstart', function () {
+		markSelectedTool($(this));
+
+		if(!deviceLinkerMode){
+			deviceLinkerMode = true;
+			setBPMode(true);
+		}else{
+			deviceLinkerMode = false;
+			markSelectedTool(null);
+			removeAllBeziers();
+			setBPMode(false);
+		}
+
+	});
+
+	function removeAllBeziers(){
+		$('.linked').removeClass('linked');
+	}
+
+	function setBPMode(value){
+		if (value) {
+			$('.floorPlan-Deco').css('display', 'none');
+			$('.floorPlan-Zone').addClass('blueprint')
+		} else {
+			$('.floorPlan-Deco').css('display', 'block');
+			$('.floorPlan-Zone').removeClass('blueprint')
+		}
+	}
+
+// load construction tiles
 	for (let i = 1; i <= 11; i++) {
 		// noinspection CssUnknownTarget
 		let $tile = $('<div class="floorPlan-tile" style="background: url(\'/static/css/images/myHome/construction/construction-' + i + '.png\') no-repeat; background-size: 100% 100%;"></div>');
@@ -517,6 +959,7 @@ $(function () {
 		$('#constructionTiles').append($tile);
 	}
 
+// load floor tiles
 	for (let i = 1; i <= 79; i++) {
 		let $tile = $('<div class="floorPlan-tile floor-' + i + '"></div>');
 		$tile.on('click touchstart', function () {
@@ -533,6 +976,7 @@ $(function () {
 		$('#painterTiles').append($tile);
 	}
 
+// load deco tiles
 	for (let i = 1; i <= 167; i++) {
 		// noinspection CssUnknownTarget
 		let $tile = $('<div class="floorPlan-tile" style="background: url(\'/static/css/images/myHome/deco/deco-' + i + '.png\') no-repeat; background-size: 100% 100%;"></div>');
@@ -549,5 +993,26 @@ $(function () {
 		$('#decoTiles').append($tile);
 	}
 
+	$.get('DeviceType/getList').done(function (dats) {
+		$.each(dats, function(k, dat) {
+		let $tile = $('<div class="floorPlan-tile" style="background: url(\'deviceType_static/' + dat['skill'] + '/img/' + dat['deviceType'] + '.png\') no-repeat; background-size: 100% 100%;"></div>');
+		$tile.on('click touchstart', function () {
+			if (!$(this).hasClass('selected')) {
+				$('.floorPlan-tile').removeClass('selected');
+				$(this).addClass('selected');
+				selectedDeviceTypeID = dat['id'];
+			} else {
+				$(this).removeClass('selected');
+				selectedDeviceTypeID = '';
+			}
+		});
+		$('#deviceTiles').append($tile);
+		});
+	});
+
+//run logic on startup
+	$( document ).tooltip();
 	loadHouse();
+	mqttRegisterSelf(onConnect, 'onConnect');
+	mqttRegisterSelf(onMessage, 'onMessage');
 });

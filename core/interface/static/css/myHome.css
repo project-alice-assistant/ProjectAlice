@@ -14,6 +14,7 @@
 .tileholder:hover { height: auto; z-index: 9999; background: url('images/transparent.png'); }
 
 .selectedTool { color: var(--hover); }
+.selectedToolbar { color: var(--hover); }
 
 /* Textures */
 .floor-1 { background: url('./images/myHome/floors/floor-1.png'); color: var(--accent); }
@@ -95,3 +96,6 @@
 .floor-77 { background: url('./images/myHome/floors/floor-77.png'); color: var(--accent); font-weight: bold; }
 .floor-78 { background: url('./images/myHome/floors/floor-78.png'); }
 .floor-79 { background: url('./images/myHome/floors/floor-79.png'); color: var(--accent); font-weight: bold; }
+
+.blueprint { background-color: #3057E1; background-size: 50px 50px; font-weight: bold; color: white;
+	background-image: linear-gradient(0deg, transparent 24%, rgba(255, 255, 255, .05) 25%, rgba(255, 255, 255, .05) 26%, transparent 27%, transparent 74%, rgba(255, 255, 255, .05) 75%, rgba(255, 255, 255, .05) 76%, transparent 77%, transparent), linear-gradient(90deg, transparent 24%, rgba(255, 255, 255, .05) 25%, rgba(255, 255, 255, .05) 26%, transparent 27%, transparent 74%, rgba(255, 255, 255, .05) 75%, rgba(255, 255, 255, .05) 76%, transparent 77%, transparent); }

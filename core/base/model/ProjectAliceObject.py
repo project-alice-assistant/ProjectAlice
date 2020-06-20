@@ -88,7 +88,7 @@ class ProjectAliceObject:
 	def checkDependencies(self) -> bool:
 		self.logInfo('Checking dependencies')
 		for dep in self.DEPENDENCIES['pip']:
-			match = re.match(r'^([a-zA-Z-_]*)(?:([=><]{0,2})([\d.]*)$)', dep)
+			match = re.match(r'^([a-zA-Z0-9-_]*)(?:([=><]{0,2})([\d.]*)$)', dep)
 			if not match:
 				continue
 
@@ -517,6 +517,10 @@ class ProjectAliceObject:
 		pass # Super object function is overriden only if needed
 
 
+	def onDeviceStatus(self, session):
+		pass # Super object function is overriden only if needed
+
+
 	@property
 	def ProjectAlice(self): #NOSONAR
 		return SM.SuperManager.getInstance().projectAlice
@@ -633,8 +637,8 @@ class ProjectAliceObject:
 
 
 	@property
-	def SnipsAssistantManager(self): #NOSONAR
-		return SM.SuperManager.getInstance().snipsAssistantManager
+	def AssistantManager(self): #NOSONAR
+		return SM.SuperManager.getInstance().assistantManager
 
 
 	@property
@@ -650,6 +654,11 @@ class ProjectAliceObject:
 	@property
 	def DialogManager(self): #NOSONAR
 		return SM.SuperManager.getInstance().dialogManager
+
+
+	@property
+	def LocationManager(self): #NOSONAR
+		return SM.SuperManager.getInstance().locationManager
 
 
 	@property

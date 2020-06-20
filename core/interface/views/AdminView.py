@@ -85,7 +85,7 @@ class AdminView(View):
 			self.__class__.setWaitType('trainAssistant')
 			self.ThreadManager.newEvent('TrainAssistant').set()
 			self.DialogTemplateManager.clearCache()
-			self.SnipsAssistantManager.retrain()
+			self.AssistantManager.retrain()
 			self.ThreadManager.doLater(interval=1, func=self.NluManager.trainNLU())
 
 			return jsonify(success=True)

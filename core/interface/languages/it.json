@@ -54,8 +54,8 @@
 	"tuneWakeword": "Regola wakeword",
 	"widgetCustStyleTitle": "Opzioni dello schermo",
 	"widgetConfigTitle": "Opzioni dei widget",
-	"widgetsNoConfs": "Nessuna configurazione per questo widget!",
-    "widgetConfSaving": "Salvataggio in corso",
-    "widgetConfSaved": "Salvato",
-    "widgetConfSaveFailed": "Salvataggio fallito"
+	"noConfs": "Nessuna configurazione per questo widget!",
+    "saving": "Salvataggio in corso",
+    "saved": "Salvato",
+    "saveFailed": "Salvataggio fallito"
 }

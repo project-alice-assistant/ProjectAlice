@@ -80,7 +80,7 @@ class DialogManager(Manager):
 						'canBeEnqueued'          : False,
 						'isHotwordNotification'  : True
 					},
-					'customData': {}
+					'customData': json.dumps(dict())
 				})
 		else:
 			self.onSayFinished(session=session, uid=str(uuid.uuid4()))
@@ -88,7 +88,7 @@ class DialogManager(Manager):
 
 	def onSayFinished(self, session: DialogSession, uid: str = None):
 		"""
-		Triggers when a TTS say has finished playing.
+		Triggers when a Tts say has finished playing.
 		If the session has not yet ended and is currently in dialog, we start listening again
 		:param uid:
 		:param session:
@@ -123,11 +123,11 @@ class DialogManager(Manager):
 				)
 
 
-	def startSessionTimeout(self, sessionId: str, tempSession: bool = False):
+	def startSessionTimeout(self, sessionId: str, tempSession: bool = False, delay: float = 0.0):
 		self.cancelSessionTimeout(sessionId=sessionId)
 
 		self._sessionTimeouts[sessionId] = self.ThreadManager.newTimer(
-			interval=self.ConfigManager.getAliceConfigByName('sessionTimeout'),
+			interval=self.ConfigManager.getAliceConfigByName('sessionTimeout') + delay,
 			func=self.sessionTimeout,
 			kwargs={
 				'sessionId'  : sessionId,
@@ -199,7 +199,7 @@ class DialogManager(Manager):
 
 		self.MqttManager.publish(
 			topic=constants.TOPIC_PLAY_BYTES.format(session.siteId).replace('#', f'{uuid.uuid4()}'),
-			payload=bytearray(Path('assistant/custom_dialogue/sound/end_of_input.wav').read_bytes())
+			payload=bytearray(Path(f'system/sounds/{self.LanguageManager.activeLanguage}/end_of_input.wav').read_bytes())
 		)
 
 		# If we've set the filter to a random answer, forge the session and publish an intent captured as UserRandomAnswer
@@ -247,12 +247,12 @@ class DialogManager(Manager):
 			topic=f'hermes/intent/{session.payload["intent"]["intentName"]}',
 			payload={
 				'sessionId'    : session.sessionId,
-				'customData'   : session.customData,
+				'customData'   : json.dumps(session.customData),
 				'siteId'       : session.siteId,
 				'input'        : session.payload['input'],
 				'intent'       : session.payload['intent'],
 				'slots'        : session.payload['slots'],
-				'asrTokens'    : [],
+				'asrTokens'    : json.dumps(list()),
 				'asrConfidence': session.payload['intent']['confidenceScore'],
 				'alternatives' : session.payload['alternatives']
 			}
@@ -274,7 +274,7 @@ class DialogManager(Manager):
 			topic=constants.TOPIC_INTENT_NOT_RECOGNIZED,
 			payload={
 				'siteId'    : session.siteId,
-				'customData': session.customData,
+				'customData': json.dumps(session.customData),
 				'sessionId' : session.sessionId,
 				'input'     : session.payload['input']
 			}
@@ -419,13 +419,21 @@ class DialogManager(Manager):
 		self.removeSession(sessionId=session.sessionId)
 
 
+	def onSessionError(self, session: DialogSession):
+		self.MqttManager.publish(
+			topic=constants.TOPIC_PLAY_BYTES.format(session.siteId).replace('#', f'{uuid.uuid4()}'),
+			payload=bytearray(Path(f'system/sounds/{self.LanguageManager.activeLanguage}/error.wav').read_bytes())
+		)
+
+
 	def toggleFeedbackSound(self, state: str, siteId: str = constants.ALL):
 		topic = constants.TOPIC_TOGGLE_FEEDBACK_ON if state == 'on' else constants.TOPIC_TOGGLE_FEEDBACK_OFF
 
 		if siteId == 'all':
-			devices = self.DeviceManager.getDevicesByType(deviceType='AliceSatellite', connectedOnly=True)
+			# todo abstract: no hard coded device types!
+			devices = self.DeviceManager.getDevicesByType(deviceType=self.DeviceManager.SAT_TYPE, connectedOnly=True)
 			for device in devices:
-				self.MqttManager.publish(topic=topic, payload={'siteId': device.room})
+				self.MqttManager.publish(topic=topic, payload={'siteId': device.siteId})
 
 			self.MqttManager.publish(topic=topic, payload={'siteId': self.ConfigManager.getAliceConfigByName('deviceName')})
 		else:
@@ -453,6 +461,19 @@ class DialogManager(Manager):
 
 		self._endedSessions[sessionId] = session
 		self._sessionsBySites.pop(session.siteId, None)
+
+
+	def increaseSessionTimeout(self, session: DialogSession, interval: float):
+		"""
+		This is used by the Tts, so that the timeout is set to the duration of the speech at least
+		:param session:
+		:param interval:
+		:return:
+		"""
+		if session.sessionId not in self._sessionsById:
+			return
+
+		self.startSessionTimeout(sessionId=session.sessionId, delay=interval)
 
 
 	@property

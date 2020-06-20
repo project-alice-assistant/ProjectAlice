@@ -58,6 +58,17 @@ class TasmotaConfigs(ProjectAliceObject):
 		return cmds
 
 
+	def getTasmotaDownloadLink(self) -> str:
+		if self._deviceType in self.SPECIFIC_VERSIONS:
+			return self.SPECIFIC_VERSIONS[self._deviceType]
+		return 'https://github.com/arendst/Tasmota/releases/download/v8.3.1/tasmota.bin'
+
+
+	SPECIFIC_VERSIONS = {
+		'envSensor': 'https://github.com/arendst/Tasmota/releases/download/v8.3.1/tasmota-sensors.bin'
+	}
+
+
 	BACKLOG_CONFIGS = [
 		{
 			'cmds'     : [

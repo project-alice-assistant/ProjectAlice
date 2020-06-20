@@ -36,6 +36,7 @@ class SuperManager:
 		self.telemetryManager = None
 		self.skillManager = None
 		self.deviceManager = None
+		self.locationManager = None
 		self.internetManager = None
 		self.wakewordRecorder = None
 		self.userManager = None
@@ -44,12 +45,13 @@ class SuperManager:
 		self.nodeRedManager = None
 		self.skillStoreManager = None
 		self.nluManager = None
-		self.snipsAssistantManager = None
 		self.dialogTemplateManager = None
 		self.aliceWatchManager = None
 		self.audioManager = None
 		self.dialogManager = None
+		self.locationManager = None
 		self.wakewordManager = None
+		self.assistantManager = None
 
 
 	def onStart(self):
@@ -61,6 +63,9 @@ class SuperManager:
 
 		languageManager = self._managers.pop('LanguageManager')
 		languageManager.onStart()
+
+		audioServer = self._managers.pop('AudioManager')
+		audioServer.onStart()
 
 		internetManager = self._managers.pop('InternetManager')
 		internetManager.onStart()
@@ -77,7 +82,7 @@ class SuperManager:
 		talkManager = self._managers.pop('TalkManager')
 		skillManager = self._managers.pop('SkillManager')
 		dialogTemplateManager = self._managers.pop('DialogTemplateManager')
-		snipsAssistantManager = self._managers.pop('SnipsAssistantManager')
+		assistantManager = self._managers.pop('AssistantManager')
 		nluManager = self._managers.pop('NluManager')
 		nodeRedManager = self._managers.pop('NodeRedManager')
 
@@ -88,11 +93,12 @@ class SuperManager:
 		talkManager.onStart()
 		skillManager.onStart()
 		dialogTemplateManager.onStart()
-		snipsAssistantManager.onStart()
+		assistantManager.onStart()
 		nluManager.onStart()
 		nodeRedManager.onStart()
 
 		self._managers[configManager.name] = configManager
+		self._managers[audioServer.name] = audioServer
 		self._managers[languageManager.name] = languageManager
 		self._managers[talkManager.name] = talkManager
 		self._managers[databaseManager.name] = databaseManager
@@ -100,7 +106,7 @@ class SuperManager:
 		self._managers[mqttManager.name] = mqttManager
 		self._managers[skillManager.name] = skillManager
 		self._managers[dialogTemplateManager.name] = dialogTemplateManager
-		self._managers[snipsAssistantManager.name] = snipsAssistantManager
+		self._managers[assistantManager.name] = assistantManager
 		self._managers[nluManager.name] = nluManager
 		self._managers[internetManager.name] = internetManager
 		self._managers[nodeRedManager.name] = nodeRedManager
@@ -124,6 +130,7 @@ class SuperManager:
 		from core.base.ConfigManager import ConfigManager
 		from core.base.SkillManager import SkillManager
 		from core.device.DeviceManager import DeviceManager
+		from core.device.LocationManager import LocationManager
 		from core.dialog.MultiIntentManager import MultiIntentManager
 		from core.dialog.ProtectedIntentManager import ProtectedIntentManager
 		from core.server.MqttManager import MqttManager
@@ -142,7 +149,7 @@ class SuperManager:
 		from core.interface.NodeRedManager import NodeRedManager
 		from core.base.SkillStoreManager import SkillStoreManager
 		from core.dialog.DialogTemplateManager import DialogTemplateManager
-		from core.snips.SnipsAssistantManager import SnipsAssistantManager
+		from core.base.AssistantManager import AssistantManager
 		from core.nlu.NluManager import NluManager
 		from core.util.AliceWatchManager import AliceWatchManager
 		from core.server.AudioServer import AudioManager
@@ -152,6 +159,7 @@ class SuperManager:
 		self.commonsManager = CommonsManager()
 		self.commons = self.commonsManager
 		self.configManager = ConfigManager()
+		self.audioManager = AudioManager()
 		self.databaseManager = DatabaseManager()
 		self.languageManager = LanguageManager()
 		self.asrManager = ASRManager()
@@ -165,6 +173,7 @@ class SuperManager:
 		self.telemetryManager = TelemetryManager()
 		self.skillManager = SkillManager()
 		self.deviceManager = DeviceManager()
+		self.locationManager = LocationManager()
 		self.internetManager = InternetManager()
 		self.wakewordRecorder = WakewordRecorder()
 		self.talkManager = TalkManager()
@@ -172,10 +181,9 @@ class SuperManager:
 		self.nodeRedManager = NodeRedManager()
 		self.skillStoreManager = SkillStoreManager()
 		self.dialogTemplateManager = DialogTemplateManager()
-		self.snipsAssistantManager = SnipsAssistantManager()
+		self.assistantManager = AssistantManager()
 		self.nluManager = NluManager()
 		self.aliceWatchManager = AliceWatchManager()
-		self.audioManager = AudioManager()
 		self.dialogManager = DialogManager()
 		self.wakewordManager = WakewordManager()
 
@@ -193,6 +201,8 @@ class SuperManager:
 			mqttManager.onStop()
 		except Exception as e:
 			Logger().logError(f'Error while shutting down manager **{managerName}**: {e}')
+			import traceback
+			traceback.print_exc()
 
 
 	def getManager(self, managerName: str):

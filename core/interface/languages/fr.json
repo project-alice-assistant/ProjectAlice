@@ -54,8 +54,8 @@
 	"tuneWakeword": "Tuner wakeword",
 	"widgetCustStyleTitle": "Options d'affichage",
 	"widgetConfigTitle": "Options de widget",
-	"widgetsNoConfs": "Pas de config pour ce widget!",
-	"widgetConfSaving": "Sauvegarde",
-	"widgetConfSaved": "Sauvegardé",
-	"widgetConfSaveFailed": "Erreur de sauvegarde"
+	"noConfs": "Pas de config pour ce widget!",
+	"saving": "Sauvegarde",
+	"saved": "Sauvegardé",
+	"saveFailed": "Erreur de sauvegarde"
 }

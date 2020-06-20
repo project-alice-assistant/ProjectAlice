@@ -41,7 +41,7 @@ class WakewordRecorder(Manager):
 		self._wakeword = None
 		self._threshold = 0
 		self._wakewordUploadThreads = list()
-		self._sampleRate = 16000
+		self._sampleRate = self.AudioServer.SAMPLERATE
 		self._channels = 1
 
 
@@ -99,7 +99,7 @@ class WakewordRecorder(Manager):
 			chunkHeader = message.payload[12:20]
 			subChunkId, subChunkSize = struct.unpack('<4sI', chunkHeader)
 
-			samplerate = 22050
+			samplerate = self.AudioServer.SAMPLERATE
 			channels = 2
 			if subChunkId == b'fmt ':
 				aFormat, channels, samplerate, byterate, blockAlign, bps = struct.unpack('HHIIHH', message.payload[20:36])
@@ -152,7 +152,7 @@ class WakewordRecorder(Manager):
 		endTrim = self.detectLeadingSilence(sound.reverse())
 		duration = len(sound)
 		trimmed = sound[startTrim: duration - endTrim]
-		reworked = trimmed.set_frame_rate(16000)
+		reworked = trimmed.set_frame_rate(self.AudioServer.SAMPLERATE)
 		reworked = reworked.set_channels(1)
 
 		reworked.export(Path(tempfile.gettempdir(), f'{len(self.wakeword.samples)}.wav'), format='wav')
@@ -209,7 +209,7 @@ class WakewordRecorder(Manager):
 			'band_radius': 10,
 			'shift': 10,
 			'window_size': 10,
-			'sample_rate': 16000,
+			'sample_rate': self.AudioServer.SAMPLERATE,
 			'frame_length_ms': 25.0,
 			'frame_shift_ms': 10.0,
 			'num_mfcc': 13,
@@ -279,7 +279,7 @@ class WakewordRecorder(Manager):
 	def _upload(self, path: Path, uid: str = ''):
 		wakewordName, zipPath = self._prepareHotword(path)
 
-		for device in self.DeviceManager.getDevicesByType(deviceType='AliceSatellite', connectedOnly=False):
+		for device in self.DeviceManager.getDevicesByType(deviceType=self.DeviceManager.SAT_TYPE, connectedOnly=False):
 			if uid and device.uid != uid:
 				continue
 

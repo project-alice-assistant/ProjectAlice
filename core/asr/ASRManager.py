@@ -78,7 +78,12 @@ class ASRManager(Manager):
 				self.logFatal('Fallback ASR failed, going down')
 				return
 
-		self._asr.onStart()
+		try:
+			self._asr.onStart()
+		except Exception as e:
+			fallback = self.ConfigManager.getAliceConfigByName('asrFallback')
+			self.logWarning(f'Something went wrong starting user ASR, falling back to **{fallback}**: {e}')
+			self._startASREngine(forceAsr=fallback)
 
 
 	@property
