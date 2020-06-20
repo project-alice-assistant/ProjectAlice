@@ -17,11 +17,6 @@ class NluManager(Manager):
 		self.selectNluEngine()
 
 
-	def onStart(self):
-		super().onStart()
-		self.isTrainingNeeded()
-
-
 	def onStop(self):
 		super().onStop()
 
@@ -29,33 +24,29 @@ class NluManager(Manager):
 			self._nluEngine.stop()
 
 
-	def afterSkillChange(self):
-		if not self.checkCachedData():
-			self.isTrainingNeeded()
+	def checkData(self) -> bool:
+		return self.checkEngine() and self.checkCachedData()
 
 
 	def checkCachedData(self) -> bool:
 		skills = self.SkillManager.allSkills
-		changes = False
 
 		for file in self._pathToCache.glob('*.json'):
 			if file.stem.split('_')[0] not in skills:
-				file.unlink()
-				changes = True
+				return False
 
-		return changes
+		return True
 
 
-	def isTrainingNeeded(self):
+	def checkEngine(self) -> bool:
 		if not Path(self.Commons.rootDir(), f'assistant/nlu_engine').exists():
 			if Path(self.Commons.rootDir(), f'trained/assistants/{self.LanguageManager.activeLanguage}/nlu_engine').exists():
 				self.AssistantManager.linkAssistant()
+				return True
 			else:
-				self.DialogTemplateManager.clearCache()
-
-		if self.DialogTemplateManager.hasChanges:
-			self.buildTrainingData(self.DialogTemplateManager.updatedData)
-			self.trainNLU()
+				return False
+		else:
+			return True
 
 
 	def selectNluEngine(self):
@@ -74,24 +65,16 @@ class NluManager(Manager):
 		self._nluEngine.start()
 
 
-	def buildTrainingData(self, changes: dict):
-		for changedSkill, changedLanguages in changes.items():
-			if not changedSkill.startswith('--'):
-				pathToSkillResources = Path(self.Commons.rootDir(), f'skills/{changedSkill}/dialogTemplate')
+	def buildTrainingData(self):
+		from core.dialog.DialogTemplateManager import DialogTemplateManager
+		self.clearCache()
+		for path in DialogTemplateManager.skillResource():
+			self._nluEngine.convertDialogTemplate(path)
 
-				for lang in changedLanguages:
-					self._nluEngine.convertDialogTemplate(pathToSkillResources / f'{lang}.json')
-			else:
-				skillName = changedSkill.replace('--', '')
 
-				if not changedLanguages:
-					for file in Path(self.Commons.rootDir(), '/var/cache/nlu/trainingData/').glob(f'{skillName}_'):
-						file.unlink()
-				else:
-					for lang in changedLanguages:
-						langFile = Path(self.Commons.rootDir(), f'/var/cache/nlu/trainingData/{skillName}_{lang}.json')
-						if langFile.exists():
-							langFile.unlink()
+	def train(self):
+		self.buildTrainingData()
+		self.trainNLU()
 
 
 	def trainNLU(self):

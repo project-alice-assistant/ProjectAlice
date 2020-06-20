@@ -31,6 +31,14 @@ class AssistantManager(Manager):
 		if not self.checkConsistency():
 			self.logInfo('Assistant is not consistent, it needs training')
 			self.train()
+			self.DialogTemplateManager.train()
+			self.NluManager.train()
+		else:
+			if not self.DialogTemplateManager.checkData():
+				self.DialogTemplateManager.train()
+				self.NluManager.train()
+			elif not self.NluManager.checkData():
+				self.NluManager.train()
 
 
 	def checkConsistency(self) -> bool:

@@ -1,4 +1,3 @@
-import json
 from dataclasses import dataclass, field
 
 
@@ -11,11 +10,11 @@ class DialogTemplateSlotType:
 	matchingStrictness: float = 0
 
 
-	def toJson(self) -> str:
-		return json.dumps({
+	def dump(self) -> dict:
+		return {
 			'name'                   : f'{self.name}',
 			'matchingStrictness'     : f'{self.matchingStrictness}',
 			'automaticallyExtensible': f'{self.automaticallyExtensible}',
 			'useSynonyms'            : f'{self.useSynonyms}',
 			'values'                 : f'{self.values}'
-		}, ensure_ascii=False, indent=4)
+		}

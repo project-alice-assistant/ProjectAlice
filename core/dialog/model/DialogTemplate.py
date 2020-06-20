@@ -1,4 +1,3 @@
-import json
 from dataclasses import dataclass, field
 from typing import Generator
 
@@ -40,11 +39,11 @@ class DialogTemplate:
 			yield intent
 
 
-	def toJson(self) -> dict:
+	def dump(self) -> dict:
 		return {
 			'skill'      : f'{self.skill}',
 			'icon'       : f'{self.icon}',
 			'description': f'{self.description}',
-			'slotTypes'  : [slot.toJson() for slot in self.mySlotTypes.values()],
-			'intents'    : [intent.toJson() for intent in self.myIntents.values()]
+			'slotTypes'  : [slot.dump() for slot in self.mySlotTypes.values()],
+			'intents'    : [intent.dump() for intent in self.myIntents.values()]
 		}
