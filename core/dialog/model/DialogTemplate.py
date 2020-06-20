@@ -39,6 +39,27 @@ class DialogTemplate:
 			yield intent
 
 
+	def fuseSlotType(self, otherSlot: DialogTemplateSlotType):
+		mySlot: DialogTemplateSlotType = self.mySlotTypes.get(otherSlot.name, None)
+		if not mySlot:
+			return
+
+		if not mySlot.useSynonyms and otherSlot.useSynonyms:
+			mySlot.useSynonyms = True
+
+		if not mySlot.automaticallyExtensible and otherSlot.automaticallyExtensible:
+			mySlot.automaticallyExtensible = True
+
+		myValues = {value['value']: value for value in mySlot.values}
+		for otherValue in otherSlot.values:
+			if otherValue['value'] not in myValues:
+				# This slot value does not exist in original slot
+				mySlot.values = mySlot.values.append(otherValue)
+			else:
+				newSynonyms = myValues[otherValue['value']]['synonyms']
+				newSynonyms.extend(synonym for synonym in otherValue['synonyms'] if synonym not in newSynonyms)
+
+
 	def dump(self) -> dict:
 		return {
 			'skill'      : f'{self.skill}',
