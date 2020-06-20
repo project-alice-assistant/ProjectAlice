@@ -65,9 +65,9 @@ class DialogTemplateManager(Manager):
 
 		data = list()
 		for skillName, skillData in self._dialogTemplates.items():
-			data.append(skillData)
+			data.append(skillData.toJson())
 
-		#self._pathToData.write_text(data=json.dumps(data, ensure_ascii=True, indent=4))
+		self._pathToData.write_text(data=json.dumps(data, ensure_ascii=False, indent=4))
 
 
 
