@@ -514,7 +514,7 @@ class SkillManager(Manager):
 			skillInstance = self._activeSkills.pop(skillName)
 			self._deactivatedSkills[skillName] = skillInstance
 			skillInstance.onStop()
-			self._widgetwidgets.pop(skillName, None)
+			self._widgets.pop(skillName, None)
 			self.DeviceManager.removeDeviceTypesForSkill(skillName=skillName)
 
 			if persistent:
