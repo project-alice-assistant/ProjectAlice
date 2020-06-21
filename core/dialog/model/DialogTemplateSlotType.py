@@ -30,9 +30,9 @@ class DialogTemplateSlotType:
 
 	def dump(self) -> dict:
 		return {
-			'name'                   : f'{self.name}',
-			'matchingStrictness'     : f'{self.matchingStrictness}',
-			'automaticallyExtensible': f'{self.automaticallyExtensible}',
-			'useSynonyms'            : f'{self.useSynonyms}',
+			'name'                   : self.name,
+			'matchingStrictness'     : self.matchingStrictness,
+			'automaticallyExtensible': self.automaticallyExtensible,
+			'useSynonyms'            : self.useSynonyms,
 			'values'                 : list(self.myValues.values())
 		}

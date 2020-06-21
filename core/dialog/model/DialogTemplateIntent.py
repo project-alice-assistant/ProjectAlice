@@ -12,9 +12,9 @@ class DialogTemplateIntent:
 
 	def dump(self) -> dict:
 		return {
-			'name'            : f'{self.name}',
-			'description'     : f'{self.description}',
-			'enabledByDefault': f'{self.enabledByDefault}',
-			'utterances'      : f'{self.utterances}',
-			'slots'           : f'{self.slots}'
+			'name'            : self.name,
+			'description'     : self.description,
+			'enabledByDefault': self.enabledByDefault,
+			'utterances'      : self.utterances,
+			'slots'           : self.slots
 		}
