@@ -1,5 +1,7 @@
+from __future__ import annotations
+
 from dataclasses import dataclass, field
-from typing import Generator
+from typing import Generator, List
 
 from core.dialog.model.DialogTemplateIntent import DialogTemplateIntent
 from core.dialog.model.DialogTemplateSlotType import DialogTemplateSlotType
@@ -33,15 +35,23 @@ class DialogTemplate:
 			yield slot
 
 
+	def getSlot(self, slotName: str) -> DialogTemplateSlotType:
+		return self.mySlotTypes.get(slotName, None)
+
+
 	@property
 	def allIntents(self) -> Generator[DialogTemplateIntent, None, None]:
 		for intent in self.myIntents.values():
 			yield intent
 
 
-	def fuseSlotType(self, otherSlot: DialogTemplateSlotType):
-		mySlot: DialogTemplateSlotType = self.mySlotTypes.get(otherSlot.name, None)
+	def fuseSlotType(self, otherTemplate: DialogTemplate, slotName: str):
+		mySlot: DialogTemplateSlotType = self.mySlotTypes.get(slotName, None)
 		if not mySlot:
+			return
+
+		otherSlot = otherTemplate.getSlot(slotName)
+		if not otherSlot:
 			return
 
 		if not mySlot.useSynonyms and otherSlot.useSynonyms:
@@ -50,14 +60,25 @@ class DialogTemplate:
 		if not mySlot.automaticallyExtensible and otherSlot.automaticallyExtensible:
 			mySlot.automaticallyExtensible = True
 
-		myValues = {value['value']: value for value in mySlot.values}
-		for otherValue in otherSlot.values:
-			if otherValue['value'] not in myValues:
+		for otherValueName, otherValue in otherSlot.myValues.items():
+			if otherValueName not in mySlot.myValues:
 				# This slot value does not exist in original slot
-				mySlot.values = mySlot.values.append(otherValue)
+				mySlot.addNewValue(otherValue)
 			else:
-				newSynonyms = myValues[otherValue['value']]['synonyms']
-				newSynonyms.extend(synonym for synonym in otherValue['synonyms'] if synonym not in newSynonyms)
+				mySynonyms: List = mySlot.myValues.get('synonyms', list)
+				otherSynonyms: List = otherValue.get('synonyms', list)
+
+				for otherSynonym in otherSynonyms:
+					if otherSynonym in mySynonyms:
+						continue
+
+					mySlot.addNewSynonym(otherValueName, otherSynonym)
+
+		otherTemplate.removeSlotType(slotName)
+
+
+	def removeSlotType(self, slotTypeName: str):
+		self.mySlotTypes.pop(slotTypeName, None)
 
 
 	def dump(self) -> dict:

@@ -1,6 +1,6 @@
 import json
 from pathlib import Path
-from typing import Generator
+from typing import Dict, Generator, List
 
 from core.base.SuperManager import SuperManager
 from core.base.model.Manager import Manager
@@ -26,8 +26,13 @@ class DialogTemplateManager(Manager):
 		if not self._pathToData.exists():
 			self._pathToData.write_text('{}')
 
-		self._dialogTemplates = dict()
-		self._slotTypes = dict()
+		self._dialogTemplates: Dict[str, DialogTemplate] = dict()
+		self._slotTypes: Dict[str, List[DialogTemplate]] = dict()
+
+
+	@property
+	def pathToData(self) -> Path:
+		return self._pathToData
 
 
 	def onStart(self):
@@ -53,11 +58,22 @@ class DialogTemplateManager(Manager):
 			dialogTemplate = DialogTemplate(**data)
 			self._dialogTemplates[dialogTemplate.skill] = dialogTemplate
 
+			# Generate a list of slots with skills using it
 			for slot in dialogTemplate.allSlots:
-				if slot.name in self._slotTypes:
-					self.logInfo(f'Skill **{dialogTemplate.skill}** extends slot **{slot.name}**')
+				self._slotTypes.setdefault(slot.name, list()).append(dialogTemplate)
 
-				self._slotTypes[slot.name] = [*self._slotTypes.get(slot.name, list()), *slot.values]
+		self._checkSlotExtenders()
+
+
+	def _checkSlotExtenders(self):
+		for slotName, templates in self._slotTypes.items():
+			if len(templates) <= 1:
+				continue
+
+			baseTemplate = templates.pop(0)
+			for template in templates:
+				self.logInfo(f'Skill **{template.skill}** extends slot **{slotName}**')
+				baseTemplate.fuseSlotType(template, slotName)
 
 
 	def _dumpData(self):

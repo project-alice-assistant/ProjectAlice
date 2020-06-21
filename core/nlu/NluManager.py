@@ -1,6 +1,5 @@
-from pathlib import Path
-
 import shutil
+from pathlib import Path
 
 from core.base.model.Manager import Manager
 
@@ -66,10 +65,8 @@ class NluManager(Manager):
 
 
 	def buildTrainingData(self):
-		from core.dialog.DialogTemplateManager import DialogTemplateManager
 		self.clearCache()
-		for path in DialogTemplateManager.skillResource():
-			self._nluEngine.convertDialogTemplate(path)
+		self._nluEngine.convertDialogTemplate(self.DialogTemplateManager.pathToData)
 
 
 	def train(self):

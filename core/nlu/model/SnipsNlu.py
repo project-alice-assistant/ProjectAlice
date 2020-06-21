@@ -1,9 +1,8 @@
 import json
-from pathlib import Path
-from subprocess import CompletedProcess
-
 import re
 import shutil
+from pathlib import Path
+from subprocess import CompletedProcess
 
 from core.commons import constants
 from core.nlu.model.NluEngine import NluEngine
@@ -32,9 +31,8 @@ class SnipsNlu(NluEngine):
 
 
 	def convertDialogTemplate(self, file: Path):
-		self.logInfo(f'Preparing NLU training file for {file.parent.parent.stem}')
-		with file.open() as fp:
-			dialogTemplate = json.load(fp)
+		self.logInfo(f'Preparing NLU training file')
+		dialogTemplate = json.loads(file.read_text())
 
 		nluTrainingSample = dict()
 		nluTrainingSample['language'] = file.stem
@@ -75,9 +73,9 @@ class SnipsNlu(NluEngine):
 							continue
 
 						text, slotName = match.split(':=>')
-						entity = slots.get(slotName, 'Unknown')
+						entity = slots.get(slotName, None)
 
-						if entity == 'Unknown':
+						if not entity:
 							self.logWarning(f'Slot named "{slotName}" with text "{text}" in utterance "{utterance}" doesn\'t have any matching slot definition, skipping to avoid NLU training failure')
 							continue
 
@@ -93,7 +91,7 @@ class SnipsNlu(NluEngine):
 				# noinspection PyTypeChecker
 				nluTrainingSample['intents'][intentName]['utterances'].append({'data': data})
 
-		with Path(self._cachePath, f'{dialogTemplate["skill"]}_{file.stem}.json').open('w') as fp:
+		with Path(self._cachePath / f'{self.LanguageManager.activeLanguage}.json').open('w') as fp:
 			json.dump(nluTrainingSample, fp, ensure_ascii=False, indent=4)
 
 
