@@ -153,7 +153,7 @@ class SnipsNlu(NluEngine):
 			if assistantPath.exists():
 				shutil.rmtree(assistantPath)
 
-			tempTrainingData.rename(assistantPath)
+			shutil.move(tempTrainingData, assistantPath)
 
 			self.broadcast(method=constants.EVENT_NLU_TRAINED, exceptions=[constants.DUMMY], propagateToSkills=True)
 			self.Commons.runRootSystemCommand(['systemctl', 'restart', 'snips-nlu'])
