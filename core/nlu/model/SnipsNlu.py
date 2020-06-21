@@ -35,9 +35,8 @@ class SnipsNlu(NluEngine):
 		self.logInfo(f'Preparing NLU training file')
 		dialogTemplate = json.loads(file.read_text())
 
-
 		nluTrainingSample = dict()
-		nluTrainingSample['language'] = file.stem
+		nluTrainingSample['language'] = self.LanguageManager.activeLanguage
 		nluTrainingSample['entities'] = dict()
 
 		for skill in dialogTemplate:
@@ -58,7 +57,7 @@ class SnipsNlu(NluEngine):
 			for intent in skill['intents']:
 				intentName = intent['name']
 				slots = self.loadSlots(intent)
-				nluTrainingSample['intents'].setdefault(intentName, {'utterances': list()})
+				nluTrainingSample['intents'][intentName] = {'utterances': list()}
 
 				for utterance in intent['utterances']:
 					data = list()
@@ -95,7 +94,7 @@ class SnipsNlu(NluEngine):
 					nluTrainingSample['intents'][intentName]['utterances'].append({'data': data})
 
 		with Path(self._cachePath / f'{self.LanguageManager.activeLanguage}.json').open('w') as fp:
-			json.dump(nluTrainingSample, fp, ensure_ascii=False, indent=4)
+			json.dump(nluTrainingSample, fp, ensure_ascii=False)
 
 
 	def train(self):
@@ -106,11 +105,10 @@ class SnipsNlu(NluEngine):
 			'language': self.LanguageManager.activeLanguage,
 		}
 
-		for file in self._cachePath.glob(f'*_{self.LanguageManager.activeLanguage}.json'):
-			with file.open() as fp:
-				trainingData = json.load(fp)
-				dataset['entities'].update(trainingData['entities'])
-				dataset['intents'].update(trainingData['intents'])
+		with Path(self._cachePath / f'{self.LanguageManager.activeLanguage}.json').open() as fp:
+			trainingData = json.load(fp)
+			dataset['entities'].update(trainingData['entities'])
+			dataset['intents'].update(trainingData['intents'])
 
 		datasetFile = Path('/tmp/snipsNluDataset.json')
 

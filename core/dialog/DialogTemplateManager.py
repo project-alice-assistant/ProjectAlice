@@ -88,6 +88,7 @@ class DialogTemplateManager(Manager):
 		with self._pathToChecksums.open() as fp:
 			checksums = json.load(fp)
 
+		uptodate = True
 		# First check upon the skills that are installed and active
 		language = self.LanguageManager.activeLanguage
 		for skillName, skillInstance in self.SkillManager.allWorkingSkills.items():
@@ -96,7 +97,7 @@ class DialogTemplateManager(Manager):
 			if skillName not in checksums:
 				self.logInfo(f'Skill **{skillName}** is new')
 				checksums[skillName] = list()
-				return False
+				uptodate = False
 
 			pathToResources = skillInstance.getResource('dialogTemplate')
 			if not pathToResources.exists():
@@ -109,26 +110,26 @@ class DialogTemplateManager(Manager):
 					# Trigger a change only if the change concerns the language in use
 					if filename == language:
 						self.logInfo(f'Skill **{skillName}** has new language support **{filename}**')
-						return False
+						uptodate = False
 					continue
 
 				if self.Commons.fileChecksum(file) != checksums[skillName][filename] and filename == language:
 					# Trigger a change only if the change concerns the language in use
 					self.logInfo(f'Skill **{skillName}** has changes in language **{filename}**')
-					return False
+					uptodate = False
 
 		# Now check that what we have in cache in actually existing and wasn't manually deleted
 		for skillName, languages in checksums.items():
 			if not Path(self.Commons.rootDir(), f'skills/{skillName}/').exists():
 				self.logInfo(f'Skill **{skillName}** was removed')
-				return False
+				uptodate = False
 
 			for lang in languages:
 				if not Path(self.Commons.rootDir(), f'skills/{skillName}/dialogTemplate/{lang}{self.JSON_EXT}').exists() and lang == language:
 					self.logInfo(f'Skill **{skillName}** has dropped language **{lang}**')
-					return False
+					uptodate = False
 
-		return True
+		return uptodate
 
 
 	def buildCache(self):
