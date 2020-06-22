@@ -4,7 +4,6 @@ import time
 import uuid
 from typing import Dict, List, Optional
 
-# import serial
 from paho.mqtt.client import MQTTMessage
 from random import shuffle
 from serial.tools import list_ports
