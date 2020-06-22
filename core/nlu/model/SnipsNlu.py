@@ -38,6 +38,7 @@ class SnipsNlu(NluEngine):
 		nluTrainingSample = dict()
 		nluTrainingSample['language'] = self.LanguageManager.activeLanguage
 		nluTrainingSample['entities'] = dict()
+		nluTrainingSample['intents'] = dict()
 
 		for skill in dialogTemplate:
 			for entity in skill['slotTypes']:
@@ -53,7 +54,6 @@ class SnipsNlu(NluEngine):
 					} for value in entity['values']
 				]
 
-			nluTrainingSample['intents'] = dict()
 			for intent in skill['intents']:
 				intentName = intent['name']
 				slots = self.loadSlots(intent)
