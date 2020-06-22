@@ -1,5 +1,6 @@
-import shutil
 from pathlib import Path
+
+import shutil
 
 from core.base.model.Manager import Manager
 
@@ -27,13 +28,9 @@ class NluManager(Manager):
 		return self.checkEngine() and self.checkCachedData()
 
 
-	def checkCachedData(self) -> bool:
-		skills = self.SkillManager.allSkills
-
-		for file in self._pathToCache.glob('*.json'):
-			if file.stem.split('_')[0] not in skills:
-				return False
-
+	@staticmethod
+	def checkCachedData() -> bool:
+		#TODO checked training dataset
 		return True
 
 
