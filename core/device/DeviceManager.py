@@ -46,7 +46,7 @@ class DeviceManager(Manager):
 			'locSettings TEXT'
 		]
 	}
-	SAT_TYPE = 'device_AliceSatellite'
+	SAT_TYPE = 'AliceSatellite'
 
 
 	def __init__(self):

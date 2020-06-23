@@ -1,8 +1,6 @@
 import sqlite3
 from typing import Dict
 
-import copy
-
 from core.base.model.ProjectAliceObject import ProjectAliceObject
 from core.device.model import Device
 from core.dialog.model.DialogSession import DialogSession
@@ -40,7 +38,7 @@ class DeviceType(ProjectAliceObject):
 
 
 ### to reimplement for any device type
-	def discover(self, device: Device, replyOnSiteId: str = '', session: DialogSession = None) -> bool:
+	def discover(self, device: Device, uid: str, replyOnSiteId: str = '', session: DialogSession = None) -> bool:
 		# implement the method which can start the search for a new device.
 		# on success the uid should be added to the device and it should be saved
 		# for this, call device.pairingDone(uid)
