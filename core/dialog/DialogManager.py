@@ -13,8 +13,14 @@ from core.dialog.model.DialogSession import DialogSession
 
 class DialogManager(Manager):
 
+	DATABASE = {
+		'notRecognizedIntents' : [
+			'text TEXT NOT NULL'
+		]
+	}
+
 	def __init__(self):
-		super().__init__()
+		super().__init__(databaseSchema=self.DATABASE)
 		self._sessionsById: Dict[str: DialogSession] = dict()
 		self._sessionsBySites: Dict[str: DialogSession] = dict()
 		self._endedSessions: Dict[str: DialogSession] = dict()
@@ -99,6 +105,11 @@ class DialogManager(Manager):
 			return
 
 		if session.isEnding or session.isNotification:
+			if session.isEnding and 0 < session.notUnderstood < int(self.ConfigManager.getAliceConfigByName('notUnderstoodRetries')):
+				session.isEnding = False
+				self.SkillManager.getSkillInstance('AliceCore').askUpdateUtterance(session=session)
+				return
+
 			session.payload['text'] = ''
 			self.onEndSession(session=session, reason='nominal')
 		else:
@@ -448,6 +459,19 @@ class DialogManager(Manager):
 		self._feedbackSounds[siteId] = False
 
 
+	def onIntentNotRecognized(self, session: DialogSession):
+		if not session.input:
+			return
+
+		session.previousInput = session.input
+		self.databaseInsert(
+			tableName='notRecognizedIntents',
+			values={
+				'text': session.input
+			}
+		)
+
+
 	def getSession(self, sessionId: str) -> Optional[DialogSession]:
 		return self._sessionsById.get(sessionId, None)
 
@@ -490,3 +514,13 @@ class DialogManager(Manager):
 
 	def addEnabledByDefaultIntent(self, intent: str):
 		self._enabledByDefaultIntents.add(intent)
+
+
+	def cleanNotRecognizedIntent(self, text: str):
+		self.DatabaseManager.delete(
+			tableName='notRecognizedIntents',
+			callerName=self.name,
+			values={
+				'text': text
+			}
+		)

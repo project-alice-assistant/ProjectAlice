@@ -25,6 +25,8 @@ class DialogSession:
 	inDialog = False
 	probabilityThreshold: float = 0.5
 	text: str = ''
+	input: str = ''
+	previousInput: str = ''
 	isNotification: bool = False
 	slots: dict = field(default_factory=dict)
 	slotsAsObjects: dict = field(default_factory=dict)
@@ -63,6 +65,7 @@ class DialogSession:
 		self.slots.update(commonsManager.parseSlots(message))
 		self.slotsAsObjects.update(commonsManager.parseSlotsToObjects(message))
 		self.text = self.payload.get('text', '')
+		self.input = self.payload.get('input', '')
 
 		if self.customData:
 			self.customData.update(commonsManager.parseCustomData(message))

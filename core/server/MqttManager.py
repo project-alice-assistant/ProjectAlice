@@ -232,6 +232,8 @@ class MqttManager(Manager):
 						probabilityThreshold=session.probabilityThreshold,
 						intentFilter=session.intentFilter
 					)
+
+					self.broadcast(method=constants.EVENT_INTENT_NOT_RECOGNIZED, exceptions=[self.name], propagateToSkills=True, session=session)
 				else:
 					session.notUnderstood = 0
 					self.endDialog(
@@ -492,7 +494,6 @@ class MqttManager(Manager):
 		if not session:
 			self.ask(text=self.TalkManager.randomTalk('notUnderstood', skill='system'))
 		else:
-			intentFilter = session.intentFilter
 			session.update(msg)
 
 			if session.notUnderstood <= self.ConfigManager.getAliceConfigByName('notUnderstoodRetries'):
@@ -500,7 +501,7 @@ class MqttManager(Manager):
 				self.continueDialog(
 					sessionId=sessionId,
 					text=self.TalkManager.randomTalk('notUnderstood', skill='system'),
-					intentFilter=intentFilter
+					intentFilter=session.intentFilter
 				)
 			else:
 				session.notUnderstood = 0

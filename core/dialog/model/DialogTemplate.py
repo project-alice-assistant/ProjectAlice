@@ -81,6 +81,10 @@ class DialogTemplate:
 		self.mySlotTypes.pop(slotTypeName, None)
 
 
+	def addUtterance(self, text: str, intentName: str):
+		self.myIntents[intentName].addUtterance(text)
+
+
 	def dump(self) -> dict:
 		return {
 			'skill'      : self.skill,

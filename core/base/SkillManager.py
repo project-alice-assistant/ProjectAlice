@@ -305,6 +305,7 @@ class SkillManager(Manager):
 					sessionId=session.sessionId,
 					text=self.TalkManager.randomTalk(talk='error', skill='system')
 				)
+				traceback.print_exc()
 				return True
 
 			if self.MultiIntentManager.isProcessing(session.sessionId):

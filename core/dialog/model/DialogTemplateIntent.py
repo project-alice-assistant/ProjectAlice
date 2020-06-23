@@ -10,6 +10,10 @@ class DialogTemplateIntent:
 	slots: list = field(default_factory=list)
 
 
+	def addUtterance(self, text: str):
+		self.utterances.append(text)
+
+
 	def dump(self) -> dict:
 		return {
 			'name'            : self.name,

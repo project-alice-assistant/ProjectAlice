@@ -60,6 +60,29 @@ class AliceSkill(ProjectAliceObject):
 		self._utteranceSlotCleaner = re.compile('{(.+?):=>.+?}')
 
 
+	def addUtterance(self, text: str, intent: str) -> bool:
+		file = self.getResource(f'dialogTemplate/{self.activeLanguage()}.json')
+		if not file:
+			return False
+
+		data = json.loads(file.read_text())
+		if 'intents' not in data:
+			return False
+
+		for i, declaredIntent in enumerate(data['intents']):
+			if declaredIntent['name'].lower() != intent.lower():
+				continue
+
+			utterances = declaredIntent.get('utterances', list())
+			if not text in utterances:
+				utterances.append(text)
+				data['intents'][i]['utterances'] = utterances
+				file.write_text(json.dumps(data, ensure_ascii=False, indent=4))
+				return True
+
+		return False
+
+
 	def loadScenarioNodes(self):
 		path = self.getResource('scenarioNodes/package.json')
 		if not path.exists():

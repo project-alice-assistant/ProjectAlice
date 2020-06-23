@@ -4,6 +4,7 @@ from typing import Dict, Generator, List
 
 from core.base.SuperManager import SuperManager
 from core.base.model.Manager import Manager
+from core.dialog.model.DialogSession import DialogSession
 from core.dialog.model.DialogTemplate import DialogTemplate
 
 
@@ -28,6 +29,7 @@ class DialogTemplateManager(Manager):
 
 		self._dialogTemplates: Dict[str, DialogTemplate] = dict()
 		self._slotTypes: Dict[str, List[DialogTemplate]] = dict()
+		self._intentsToSkills: Dict[str, DialogTemplate] = dict()
 
 
 	@property
@@ -61,6 +63,10 @@ class DialogTemplateManager(Manager):
 			# Generate a list of slots with skills using it
 			for slot in dialogTemplate.allSlots:
 				self._slotTypes.setdefault(slot.name, list()).append(dialogTemplate)
+
+			# Keep track of what skill has what intents
+			for intent in dialogTemplate.allIntents:
+				self._intentsToSkills[intent.name] = dialogTemplate
 
 		self._checkSlotExtenders()
 
@@ -170,6 +176,31 @@ class DialogTemplateManager(Manager):
 
 		if rebuild:
 			self.buildCache()
+
+
+	def addUtterance(self, session: DialogSession):
+		text = session.previousInput
+		if not text:
+			return
+
+		intent = session.previousIntent
+		if not intent:
+			return
+
+		if '/' in intent:
+			intent = intent.split('/')[-1]
+
+		if not intent in self._intentsToSkills:
+			return
+
+		dialogTemplate = self._intentsToSkills[intent]
+		skill = self.SkillManager.getSkillInstance(skillName=dialogTemplate.skill)
+		if not skill:
+			return
+
+		skill.addUtterance(text=text, intent=intent)
+		self.DialogManager.cleanNotRecognizedIntent(text=text)
+		self.AssistantManager.checkAssistant()
 
 
 	@classmethod
