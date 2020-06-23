@@ -42,7 +42,7 @@ class AssistantManager(Manager):
 
 
 	def checkConsistency(self) -> bool:
-		if not self._assistantPath.exists():
+		if not self._assistantPath.exists() or not self.DialogTemplateManager.checkData():
 			return False
 
 		existingIntents: Dict[str, dict] = dict()

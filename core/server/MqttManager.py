@@ -223,6 +223,7 @@ class MqttManager(Manager):
 			self.broadcast(method=constants.EVENT_INTENT, exceptions=[self.name], propagateToSkills=True, session=session)
 
 			if 'intent' in payload and float(payload['intent']['confidenceScore']) < session.probabilityThreshold:
+				self.logDebug(f'Intent **{message.topic}** detected but confidence score too low ({payload["intent"]["confidenceScore"]})')
 				if session.notUnderstood <= self.ConfigManager.getAliceConfigByName('notUnderstoodRetries'):
 					session.notUnderstood = session.notUnderstood + 1
 
