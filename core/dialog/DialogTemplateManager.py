@@ -1,6 +1,6 @@
 import json
 from pathlib import Path
-from typing import Dict, Generator, List
+from typing import Dict, Generator, List, Optional
 
 from core.base.SuperManager import SuperManager
 from core.base.model.Manager import Manager
@@ -27,14 +27,20 @@ class DialogTemplateManager(Manager):
 		if not self._pathToData.exists():
 			self._pathToData.write_text('{}')
 
-		self._dialogTemplates: Dict[str, DialogTemplate] = dict()
-		self._slotTypes: Dict[str, List[DialogTemplate]] = dict()
-		self._intentsToSkills: Dict[str, DialogTemplate] = dict()
+		self._dialogTemplates: Optional[Dict[str, DialogTemplate]] = None
+		self._slotTypes: Optional[Dict[str, List[DialogTemplate]]] = None
+		self._intentsToSkills: Optional[Dict[str, DialogTemplate]] = None
 
 
 	@property
 	def pathToData(self) -> Path:
 		return self._pathToData
+
+
+	def initHolders(self):
+		self._dialogTemplates = dict()
+		self._slotTypes = dict()
+		self._intentsToSkills = dict()
 
 
 	def onStart(self):
@@ -51,10 +57,13 @@ class DialogTemplateManager(Manager):
 
 
 	def train(self):
+		self._loadData()
 		self.buildCache()
 
 
 	def _loadData(self):
+		self.initHolders()
+
 		for resource in self.skillResource():
 			data = json.loads(resource.read_text())
 			dialogTemplate = DialogTemplate(**data)
@@ -104,6 +113,7 @@ class DialogTemplateManager(Manager):
 				self.logInfo(f'Skill **{skillName}** is new')
 				checksums[skillName] = list()
 				uptodate = False
+				continue
 
 			pathToResources = skillInstance.getResource('dialogTemplate')
 			if not pathToResources.exists():
@@ -129,6 +139,7 @@ class DialogTemplateManager(Manager):
 			if not Path(self.Commons.rootDir(), f'skills/{skillName}/').exists():
 				self.logInfo(f'Skill **{skillName}** was removed')
 				uptodate = False
+				break
 
 			for lang in languages:
 				if not Path(self.Commons.rootDir(), f'skills/{skillName}/dialogTemplate/{lang}{self.JSON_EXT}').exists() and lang == language:
@@ -200,7 +211,7 @@ class DialogTemplateManager(Manager):
 
 		skill.addUtterance(text=text, intent=intent)
 		self.DialogManager.cleanNotRecognizedIntent(text=text)
-		self.AssistantManager.checkAssistant()
+		self.ThreadManager.doLater(interval=2, func=self.AssistantManager.checkAssistant)
 
 
 	@classmethod
