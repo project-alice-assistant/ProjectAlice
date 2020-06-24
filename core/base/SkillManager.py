@@ -587,7 +587,7 @@ class SkillManager(Manager):
 			except Exception as e:
 				self.logError(f'Error checking updates for skill **{skillName}**: {e}')
 
-		self.logInfo(f'Found {updateCount} skill update(s)')
+		self.logInfo(f'Found {updateCount} skill update', plural='update')
 		return updateCount > 0
 
 
@@ -603,7 +603,7 @@ class SkillManager(Manager):
 		if self._busyInstalling.isSet() or not files or self.ProjectAlice.restart or self.ProjectAlice.updating:
 			return
 
-		self.logInfo(f'Found {len(files)} install ticket(s)')
+		self.logInfo(f'Found {len(files)} install ticket', plural='ticket')
 		self._busyInstalling.set()
 
 		skillsToBoot = dict()
