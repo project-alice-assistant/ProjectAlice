@@ -88,7 +88,7 @@ class ProjectAlice(Singleton):
 		self._superManager.databaseManager.clearDB()
 		self._superManager.dialogTemplateManager.clearCache(False)
 		self._superManager.nluManager.clearCache()
-		self._superManager.snipsAssistantManager.clearData()
+		self._superManager.assistantManager.clearData()
 
 
 	def updateProjectAlice(self):
