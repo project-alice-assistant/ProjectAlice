@@ -1,12 +1,16 @@
 import json
 from pathlib import Path
-from typing import Dict, Generator
+from typing import Dict, Generator, List, Optional
 
+from core.base.SuperManager import SuperManager
 from core.base.model.Manager import Manager
+from core.dialog.model.DialogSession import DialogSession
 from core.dialog.model.DialogTemplate import DialogTemplate
 
 
 class DialogTemplateManager(Manager):
+
+	JSON_EXT = '.json'
 
 	def __init__(self):
 		super().__init__()
@@ -14,11 +18,8 @@ class DialogTemplateManager(Manager):
 		self._pathToCache = Path(self.Commons.rootDir(), 'var/cache/dialogTemplates/')
 		self._pathToCache.mkdir(parents=True, exist_ok=True)
 
-		self._pathToChecksums = self._pathToCache / 'checksums.json'
-		self._pathToData = self._pathToCache / 'data.json'
-
-		self._hasChanges = False
-		self._updatedData: Dict[str, list] = dict()
+		self._pathToChecksums = self._pathToCache / f'checksums{self.JSON_EXT}'
+		self._pathToData = self._pathToCache / f'data{self.JSON_EXT}'
 
 		if not self._pathToChecksums.exists():
 			self._pathToChecksums.write_text('{}')
@@ -26,64 +27,84 @@ class DialogTemplateManager(Manager):
 		if not self._pathToData.exists():
 			self._pathToData.write_text('{}')
 
+		self._dialogTemplates: Optional[Dict[str, DialogTemplate]] = None
+		self._slotTypes: Optional[Dict[str, List[DialogTemplate]]] = None
+		self._intentsToSkills: Optional[Dict[str, DialogTemplate]] = None
+
+
+	@property
+	def pathToData(self) -> Path:
+		return self._pathToData
+
+
+	def initHolders(self):
 		self._dialogTemplates = dict()
 		self._slotTypes = dict()
-
-
-	@property
-	def hasChanges(self) -> bool:
-		return self._hasChanges
-
-
-	@property
-	def updatedData(self) -> Dict[str, list]:
-		return self._updatedData
+		self._intentsToSkills = dict()
 
 
 	def onStart(self):
 		super().onStart()
 		self._loadData()
 
-		changes = self.checkCache()
-		if not changes:
+
+	def checkData(self) -> bool:
+		uptodate = self.checkCache()
+		if uptodate:
 			self.logInfo('Cache uptodate')
-		else:
-			self.buildCache()
+
+		return uptodate
+
+
+	def train(self):
+		self._loadData()
+		self.buildCache()
 
 
 	def _loadData(self):
+		self.initHolders()
+
 		for resource in self.skillResource():
 			data = json.loads(resource.read_text())
 			dialogTemplate = DialogTemplate(**data)
 			self._dialogTemplates[dialogTemplate.skill] = dialogTemplate
 
+			# Generate a list of slots with skills using it
 			for slot in dialogTemplate.allSlots:
-				if slot.name in self._slotTypes:
-					self.logInfo(f'Skill **{dialogTemplate.skill}** extends slot **{slot.name}**')
+				self._slotTypes.setdefault(slot.name, list()).append(dialogTemplate)
 
-				self._slotTypes[slot.name] = [*self._slotTypes.get(slot.name, list()), *slot.values]
+			# Keep track of what skill has what intents
+			for intent in dialogTemplate.allIntents:
+				self._intentsToSkills[intent.name] = dialogTemplate
 
+		self._checkSlotExtenders()
+
+
+	def _checkSlotExtenders(self):
+		for slotName, templates in self._slotTypes.items():
+			if len(templates) <= 1:
+				continue
+
+			baseTemplate = templates.pop(0)
+			for template in templates:
+				self.logInfo(f'Skill **{template.skill}** extends slot **{slotName}**')
+				baseTemplate.fuseSlotType(template, slotName)
+
+
+	def _dumpData(self):
 		data = list()
 		for skillName, skillData in self._dialogTemplates.items():
-			data.append(skillData.toJson())
+			data.append(skillData.dump())
 
-		self._pathToData.write_text(data=json.dumps(data, ensure_ascii=False, indent=4))
-
-
-
-	def afterSkillChange(self):
-		if self.checkCache():
-			self.buildCache()
+		self._pathToData.write_text(data=json.dumps(data, ensure_ascii=False))
 
 
-	def checkCache(self) -> Dict[str, list]:
-		self._hasChanges = False
-
+	def checkCache(self) -> bool:
 		with self._pathToChecksums.open() as fp:
 			checksums = json.load(fp)
 
+		uptodate = True
 		# First check upon the skills that are installed and active
-		changes = dict()
 		language = self.LanguageManager.activeLanguage
 		for skillName, skillInstance in self.SkillManager.allWorkingSkills.items():
 
@@ -91,49 +112,47 @@ class DialogTemplateManager(Manager):
 			if skillName not in checksums:
 				self.logInfo(f'Skill **{skillName}** is new')
 				checksums[skillName] = list()
-				changes[skillName] = list()
+				uptodate = False
+				continue
 
 			pathToResources = skillInstance.getResource('dialogTemplate')
 			if not pathToResources.exists():
 				self.logWarning(f'**{skillName}** has no dialog template defined')
-				changes.pop(skillName, None)
 				continue
 
-			for file in pathToResources.glob('*.json'):
+			for file in pathToResources.glob(f'*{self.JSON_EXT}'):
 				filename = file.stem
 				if filename not in checksums[skillName]:
 					# Trigger a change only if the change concerns the language in use
 					if filename == language:
 						self.logInfo(f'Skill **{skillName}** has new language support **{filename}**')
-						changes.setdefault(skillName, list()).append(filename)
+						uptodate = False
 					continue
 
 				if self.Commons.fileChecksum(file) != checksums[skillName][filename] and filename == language:
 					# Trigger a change only if the change concerns the language in use
 					self.logInfo(f'Skill **{skillName}** has changes in language **{filename}**')
-					changes.setdefault(skillName, list()).append(filename)
+					uptodate = False
 
 		# Now check that what we have in cache in actually existing and wasn't manually deleted
 		for skillName, languages in checksums.items():
 			if not Path(self.Commons.rootDir(), f'skills/{skillName}/').exists():
 				self.logInfo(f'Skill **{skillName}** was removed')
-				changes[f'--{skillName}'] = list()
-				continue
+				uptodate = False
+				break
 
 			for lang in languages:
-				if not Path(self.Commons.rootDir(), f'skills/{skillName}/dialogTemplate/{lang}.json').exists() and lang == language:
+				if not Path(self.Commons.rootDir(), f'skills/{skillName}/dialogTemplate/{lang}{self.JSON_EXT}').exists() and lang == language:
 					self.logInfo(f'Skill **{skillName}** has dropped language **{lang}**')
-					changes.setdefault(f'--{skillName}', list()).append(lang)
+					uptodate = False
 
-		if changes:
-			self._hasChanges = True
-			self._updatedData = changes
-
-		return changes
+		return uptodate
 
 
 	def buildCache(self):
 		self.logInfo('Building dialog templates cache')
+
+		self._dumpData()
 
 		cached = dict()
 
@@ -144,14 +163,14 @@ class DialogTemplateManager(Manager):
 				continue
 
 			cached[skillName] = dict()
-			for file in pathToResources.glob('*.json'):
+			for file in pathToResources.glob(f'*{self.JSON_EXT}'):
 				cached[skillName][file.stem] = self.Commons.fileChecksum(file)
 
 		self._pathToChecksums.write_text(json.dumps(cached, indent=4, sort_keys=True))
 
 
 	def cleanCache(self, skillName: str):
-		for file in Path(self._pathToCache, 'trainingData').glob('*.json'):
+		for file in Path(self._pathToCache, 'trainingData').glob(f'*{self.JSON_EXT}'):
 			if file.stem.startswith(f'{skillName}_'):
 				file.unlink()
 
@@ -163,17 +182,49 @@ class DialogTemplateManager(Manager):
 
 	def clearCache(self, rebuild: bool = True):
 		if self._pathToChecksums.exists():
-			self._pathToChecksums.write_text(json.dumps(dict()))
+			self._pathToChecksums.write_text('{}')
 			self.logInfo('Cache cleared')
 
 		if rebuild:
-			self.checkCache()
 			self.buildCache()
 
 
-	def skillResource(self) -> Generator[Path, None, None]:
-		for skillName, skillInstance in self.SkillManager.allWorkingSkills.items():
-			resource = skillInstance.getResource(f'dialogTemplate/{self.LanguageManager.activeLanguage}.json')
+	def addUtterance(self, session: DialogSession):
+		text = session.previousInput
+		if not text:
+			return
+
+		intent = session.previousIntent
+		if not intent:
+			return
+
+		if '/' in intent:
+			intent = intent.split('/')[-1]
+
+		if not intent in self._intentsToSkills:
+			return
+
+		dialogTemplate = self._intentsToSkills[intent]
+		skill = self.SkillManager.getSkillInstance(skillName=dialogTemplate.skill)
+		if not skill:
+			return
+
+		skill.addUtterance(text=text, intent=intent)
+		self.DialogManager.cleanNotRecognizedIntent(text=text)
+		self.ThreadManager.doLater(interval=2, func=self.AssistantManager.checkAssistant)
+
+
+	@classmethod
+	def skillResource(cls) -> Generator[Path, None, None]:
+		languageManager = SuperManager.getInstance().languageManager
+		skillManager = SuperManager.getInstance().skillManager
+
+		if not languageManager or not skillManager:
+			return
+
+		language = languageManager.activeLanguage
+		for skillName, skillInstance in skillManager.allWorkingSkills.items():
+			resource = skillInstance.getResource(f'dialogTemplate/{language}.json')
 			if not resource.exists():
 				continue
 

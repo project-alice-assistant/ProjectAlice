@@ -179,7 +179,8 @@ class Tts(ProjectAliceObject):
 			topic=constants.TOPIC_TTS_FINISHED,
 			payload={
 				'id': uid,
-				'sessionId': session.sessionId
+				'sessionId': session.sessionId,
+				'siteId': session.siteId
 			}
 		)
 

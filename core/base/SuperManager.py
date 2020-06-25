@@ -81,8 +81,8 @@ class SuperManager:
 
 		talkManager = self._managers.pop('TalkManager')
 		skillManager = self._managers.pop('SkillManager')
-		dialogTemplateManager = self._managers.pop('DialogTemplateManager')
 		assistantManager = self._managers.pop('AssistantManager')
+		dialogTemplateManager = self._managers.pop('DialogTemplateManager')
 		nluManager = self._managers.pop('NluManager')
 		nodeRedManager = self._managers.pop('NodeRedManager')
 
@@ -92,9 +92,9 @@ class SuperManager:
 
 		talkManager.onStart()
 		skillManager.onStart()
+		nluManager.onStart()
 		dialogTemplateManager.onStart()
 		assistantManager.onStart()
-		nluManager.onStart()
 		nodeRedManager.onStart()
 
 		self._managers[configManager.name] = configManager

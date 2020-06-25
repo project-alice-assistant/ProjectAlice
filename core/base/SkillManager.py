@@ -305,6 +305,7 @@ class SkillManager(Manager):
 					sessionId=session.sessionId,
 					text=self.TalkManager.randomTalk(talk='error', skill='system')
 				)
+				traceback.print_exc()
 				return True
 
 			if self.MultiIntentManager.isProcessing(session.sessionId):
@@ -514,7 +515,7 @@ class SkillManager(Manager):
 			skillInstance = self._activeSkills.pop(skillName)
 			self._deactivatedSkills[skillName] = skillInstance
 			skillInstance.onStop()
-			self._widgetwidgets.pop(skillName, None)
+			self._widgets.pop(skillName, None)
 			self.DeviceManager.removeDeviceTypesForSkill(skillName=skillName)
 
 			if persistent:
@@ -586,7 +587,7 @@ class SkillManager(Manager):
 			except Exception as e:
 				self.logError(f'Error checking updates for skill **{skillName}**: {e}')
 
-		self.logInfo(f'Found {updateCount} skill update(s)')
+		self.logInfo(f'Found {updateCount} skill update', plural='update')
 		return updateCount > 0
 
 
@@ -602,7 +603,7 @@ class SkillManager(Manager):
 		if self._busyInstalling.isSet() or not files or self.ProjectAlice.restart or self.ProjectAlice.updating:
 			return
 
-		self.logInfo(f'Found {len(files)} install ticket(s)')
+		self.logInfo(f'Found {len(files)} install ticket', plural='ticket')
 		self._busyInstalling.set()
 
 		skillsToBoot = dict()
@@ -632,9 +633,7 @@ class SkillManager(Manager):
 					if self.ProjectAlice.isBooted:
 						self.allSkills[skillName].onBooted()
 
-				self.AssistantManager.train()
-				self.DialogTemplateManager.afterSkillChange()
-				self.NluManager.afterSkillChange()
+				self.AssistantManager.checkAssistant()
 
 			self._busyInstalling.clear()
 
@@ -858,9 +857,7 @@ class SkillManager(Manager):
 		self.removeSkillFromDB(skillName=skillName)
 		shutil.rmtree(Path(self.Commons.rootDir(), 'skills', skillName))
 
-		self.AssistantManager.train()
-		self.DialogTemplateManager.afterSkillChange()
-		self.NluManager.afterSkillChange()
+		self.AssistantManager.checkAssistant()
 
 
 	def reloadSkill(self, skillName: str):
@@ -872,8 +869,6 @@ class SkillManager(Manager):
 		self._initSkills(loadOnly=skillName, reload=True)
 
 		self.AssistantManager.checkAssistant()
-		self.DialogTemplateManager.afterSkillChange()
-		self.NluManager.afterSkillChange()
 
 		self._startSkill(skillName=skillName)
 

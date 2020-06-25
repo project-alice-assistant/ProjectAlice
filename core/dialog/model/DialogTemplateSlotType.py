@@ -1,4 +1,3 @@
-import json
 from dataclasses import dataclass, field
 
 
@@ -9,13 +8,31 @@ class DialogTemplateSlotType:
 	useSynonyms: bool
 	values: list = field(default_factory=list)
 	matchingStrictness: float = 0
+	myValues: dict = field(default_factory=dict)
 
 
-	def toJson(self) -> str:
-		return json.dumps({
-			'name'                   : f'{self.name}',
-			'matchingStrictness'     : f'{self.matchingStrictness}',
-			'automaticallyExtensible': f'{self.automaticallyExtensible}',
-			'useSynonyms'            : f'{self.useSynonyms}',
-			'values'                 : f'{self.values}'
-		}, ensure_ascii=False, indent=4)
+	def __post_init__(self): #NOSONAR
+		for value in self.values:
+			self.myValues[value['value']] = value
+
+
+	def addNewValue(self, value: dict):
+		self.myValues[value['value']] = value
+
+
+	def addNewSynonym(self, valueName: str, synonym: str):
+		value = self.myValues.get(valueName, None)
+		if not value:
+			return
+
+		self.myValues[valueName] = value.get('synonyms', list).append(synonym)
+
+
+	def dump(self) -> dict:
+		return {
+			'name'                   : self.name,
+			'matchingStrictness'     : self.matchingStrictness,
+			'automaticallyExtensible': self.automaticallyExtensible,
+			'useSynonyms'            : self.useSynonyms,
+			'values'                 : list(self.myValues.values())
+		}

@@ -20,4 +20,4 @@ importlib_metadata==1.6.0
 langdetect==1.0.8
 webrtcvad==2.0.10
 PyAudio==0.2.11
-jwt==1.0.0
+PyJWT==1.7.1

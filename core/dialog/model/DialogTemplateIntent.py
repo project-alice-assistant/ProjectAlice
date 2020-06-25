@@ -1,4 +1,3 @@
-import json
 from dataclasses import dataclass, field
 
 
@@ -11,11 +10,15 @@ class DialogTemplateIntent:
 	slots: list = field(default_factory=list)
 
 
-	def toJson(self) -> str:
-		return json.dumps({
-			'name'            : f'{self.name}',
-			'description'     : f'{self.description}',
-			'enabledByDefault': f'{self.enabledByDefault}',
-			'utterances'      : f'{self.utterances}',
-			'slots'           : f'{self.slots}'
-		}, ensure_ascii=False, indent=4)
+	def addUtterance(self, text: str):
+		self.utterances.append(text)
+
+
+	def dump(self) -> dict:
+		return {
+			'name'            : self.name,
+			'description'     : self.description,
+			'enabledByDefault': self.enabledByDefault,
+			'utterances'      : self.utterances,
+			'slots'           : self.slots
+		}

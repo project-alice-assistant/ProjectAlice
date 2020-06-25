@@ -223,6 +223,7 @@ class MqttManager(Manager):
 			self.broadcast(method=constants.EVENT_INTENT, exceptions=[self.name], propagateToSkills=True, session=session)
 
 			if 'intent' in payload and float(payload['intent']['confidenceScore']) < session.probabilityThreshold:
+				self.logDebug(f'Intent **{message.topic}** detected but confidence score too low ({payload["intent"]["confidenceScore"]})')
 				if session.notUnderstood <= self.ConfigManager.getAliceConfigByName('notUnderstoodRetries'):
 					session.notUnderstood = session.notUnderstood + 1
 
@@ -232,6 +233,8 @@ class MqttManager(Manager):
 						probabilityThreshold=session.probabilityThreshold,
 						intentFilter=session.intentFilter
 					)
+
+					self.broadcast(method=constants.EVENT_INTENT_NOT_RECOGNIZED, exceptions=[self.name], propagateToSkills=True, session=session)
 				else:
 					session.notUnderstood = 0
 					self.endDialog(
@@ -492,7 +495,6 @@ class MqttManager(Manager):
 		if not session:
 			self.ask(text=self.TalkManager.randomTalk('notUnderstood', skill='system'))
 		else:
-			intentFilter = session.intentFilter
 			session.update(msg)
 
 			if session.notUnderstood <= self.ConfigManager.getAliceConfigByName('notUnderstoodRetries'):
@@ -500,7 +502,7 @@ class MqttManager(Manager):
 				self.continueDialog(
 					sessionId=sessionId,
 					text=self.TalkManager.randomTalk('notUnderstood', skill='system'),
-					intentFilter=intentFilter
+					intentFilter=session.intentFilter
 				)
 			else:
 				session.notUnderstood = 0

@@ -4,7 +4,6 @@ import time
 import uuid
 from typing import Dict, List, Optional
 
-# import serial
 from paho.mqtt.client import MQTTMessage
 from random import shuffle
 from serial.tools import list_ports
@@ -47,7 +46,7 @@ class DeviceManager(Manager):
 			'locSettings TEXT'
 		]
 	}
-	SAT_TYPE = 'device_AliceSatellite'
+	SAT_TYPE = 'AliceSatellite'
 
 
 	def __init__(self):
