@@ -26,9 +26,13 @@ class AssistantManager(Manager):
 		self.checkAssistant()
 
 
-	def checkAssistant(self):
+	def clearAssistant(self):
+		self._assistantPath.write_text(json.dumps(self.newAssistant()))
+
+
+	def checkAssistant(self, forceRetrain: bool = False):
 		self.logInfo('Checking assistant')
-		if not self.checkConsistency():
+		if not self.checkConsistency() or forceRetrain:
 			self.logInfo('Assistant is not consistent, it needs training')
 			self.train()
 			self.DialogTemplateManager.train()

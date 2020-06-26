@@ -174,7 +174,7 @@ class Device(ProjectAliceObject):
 
 
 	@property
-	def room(self) -> str:
+	def location(self) -> str:
 		return self.getMainLocation().getSaveName()
 
 
