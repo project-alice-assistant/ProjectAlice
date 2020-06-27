@@ -627,8 +627,8 @@ class AliceSkill(ProjectAliceObject):
 		self.MqttManager.playSound(soundFilename=soundFilename, location=location, sessionId=sessionId, siteId=siteId, uid=uid)
 
 
-	def publish(self, topic: str, payload: dict = None, qos: int = 0, retain: bool = False):
-		self.MqttManager.publish(topic=topic, payload=payload, qos=qos, retain=retain)
+	def publish(self, topic: str, payload: dict = None, stringPayload: str = None, qos: int = 0, retain: bool = False):
+		self.MqttManager.publish(topic=topic, payload=payload, stringPayload=stringPayload, qos=qos, retain=retain)
 
 
 	def __repr__(self) -> str:
