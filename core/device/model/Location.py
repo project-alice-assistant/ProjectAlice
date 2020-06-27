@@ -27,18 +27,18 @@ class Location(ProjectAliceObject):
 			self.display = dict()
 
 
-	def getSaveName(self):
+	def getSaveName(self) -> str:
 		return self.name.replace(' ', '_')
 
 
-	def addSynonym(self, synonym: str):
+	def addSynonym(self, synonym: str) -> list:
 		if synonym in self.synonyms:
 			raise Exception(synonym, ' already known')
 		self.synonyms.append(synonym)
 		return self.synonyms
 
 
-	def deleteSynonym(self, synonym: str):
+	def deleteSynonym(self, synonym: str) -> list:
 		if synonym not in self.synonyms:
 			raise Exception(synonym, ' unknown')
 		self.synonyms.remove(synonym)
@@ -56,7 +56,7 @@ class Location(ProjectAliceObject):
 		})
 
 
-	def asJson(self):
+	def asJson(self) -> dict:
 		devices = {device.id: device.asJson() for device in self.DeviceManager.getDevicesByLocation(locationID=self.id)}
 		return {
 			'id'      : self.id,

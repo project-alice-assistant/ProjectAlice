@@ -76,12 +76,8 @@ class CommonsManager(Manager):
 		try:
 			payload = json.loads(message.payload)
 		except (ValueError, TypeError):
-			payload = dict()
-
-		if payload is True:
-			payload = {'true': True}
-		elif payload is False:
-			payload = {'false': False}
+			var = message.topic.split('/')[-1]
+			payload = {var: message.payload}
 
 		return payload
 

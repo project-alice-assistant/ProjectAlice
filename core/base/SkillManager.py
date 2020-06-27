@@ -747,12 +747,15 @@ class SkillManager(Manager):
 			directory = Path(self.Commons.rootDir()) / 'skills' / installFile['name']
 
 			for requirement in pipReqs:
+				self.logInfo(f'Installing pip requirement: {requirement}')
 				self.Commons.runSystemCommand(['./venv/bin/pip3', 'install', requirement])
 
 			for requirement in sysReqs:
+				self.logInfo(f'Installing system requirement: {requirement}')
 				self.Commons.runRootSystemCommand(['apt-get', 'install', '-y', requirement])
 
 			if scriptReq:
+				self.logInfo('Running post install script')
 				self.Commons.runRootSystemCommand(['chmod', '+x', str(directory / scriptReq)])
 				self.Commons.runRootSystemCommand([str(directory / scriptReq)])
 
