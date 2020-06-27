@@ -144,7 +144,7 @@ class ASRManager(Manager):
 		else:
 			self.MqttManager.playSound(
 				soundFilename='error',
-				location=Path(f'system/sounds/{self.LanguageManager.activeLanguage}/error.wav'),
+				location=Path(f'system/sounds/{self.LanguageManager.activeLanguage}'),
 				siteId=session.siteId,
 				sessionId=session.sessionId
 			)
