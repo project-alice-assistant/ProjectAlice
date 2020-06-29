@@ -62,6 +62,10 @@ class DialogSession:
 		self.message = message
 		self.intentName = message.topic
 		self.payload = commonsManager.payload(message)
+
+		if not isinstance(self.payload, dict):
+			return
+
 		self.slots.update(commonsManager.parseSlots(message))
 		self.slotsAsObjects.update(commonsManager.parseSlotsToObjects(message))
 		self.text = self.payload.get('text', '')
