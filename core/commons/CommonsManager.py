@@ -79,6 +79,13 @@ class CommonsManager(Manager):
 			var = message.topic.split('/')[-1]
 			payload = {var: message.payload}
 
+		if isinstance(payload, list):
+			payload = {
+				'list': payload
+			}
+		elif not payload:
+			payload = dict()
+
 		return payload
 
 

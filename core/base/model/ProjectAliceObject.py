@@ -521,6 +521,20 @@ class ProjectAliceObject:
 		pass # Super object function is overriden only if needed
 
 
+	def onSkillStarted(self, skill):
+		"""
+		param skill: AliceSkill instance
+		"""
+		pass  # Super object function is overriden only if needed
+
+
+	def onSkillStopped(self, skill):
+		"""
+		:param skill: AliceSkill instance
+		"""
+		pass  # Super object function is overriden only if needed
+
+
 	@property
 	def ProjectAlice(self): #NOSONAR
 		return SM.SuperManager.getInstance().projectAlice
