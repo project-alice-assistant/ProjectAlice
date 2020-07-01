@@ -3,6 +3,7 @@ import json
 from dataclasses import dataclass, field
 
 from core.base.model.ProjectAliceObject import ProjectAliceObject
+from core.commons import constants
 from core.device.model.Location import Location
 
 
@@ -65,7 +66,7 @@ class Device(ProjectAliceObject):
 		                            callerName=self.DeviceManager.name,
 		                            values={'uid': uid},
 		                            row=('id', self.id))
-		self.MqttManager.publish('projectalice/devices/updated', payload={'id': self.id, 'type': 'status'})
+		self.MqttManager.publish(constants.TOPIC_DEVICE_UPDATED, payload={'id': self.id, 'type': 'status'})
 
 
 	def toJson(self) -> str:

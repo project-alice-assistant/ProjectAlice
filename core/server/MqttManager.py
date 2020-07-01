@@ -1,4 +1,5 @@
 import json
+import traceback
 import uuid
 from pathlib import Path
 from typing import List
@@ -270,6 +271,7 @@ class MqttManager(Manager):
 
 		except Exception as e:
 			self.logError(f'Error in onMessage: {e}')
+			traceback.print_exc()
 
 
 	def onHotwordDetected(self, _client, _data, msg):

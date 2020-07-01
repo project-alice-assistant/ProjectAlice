@@ -385,6 +385,18 @@ class ProjectAliceObject:
 		pass # Super object function is overriden only if needed
 
 
+	def onDeviceDiscovered(self, device, uid: str):
+		pass # Super object function is overriden only if needed
+
+
+	def onDeviceAdded(self, device, uid: str):
+		pass # Super object function is overriden only if needed
+
+
+	def onDeviceRemoved(self, device, uid: str):
+		pass # Super object function is overriden only if needed
+
+
 	def onDeviceConnecting(self):
 		pass # Super object function is overriden only if needed
 
@@ -519,6 +531,20 @@ class ProjectAliceObject:
 
 	def onDeviceStatus(self, session):
 		pass # Super object function is overriden only if needed
+
+
+	def onSkillStarted(self, skill):
+		"""
+		param skill: AliceSkill instance
+		"""
+		pass  # Super object function is overriden only if needed
+
+
+	def onSkillStopped(self, skill):
+		"""
+		:param skill: AliceSkill instance
+		"""
+		pass  # Super object function is overriden only if needed
 
 
 	@property

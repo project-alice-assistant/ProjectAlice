@@ -7,7 +7,7 @@ $(function () {
 
 	function addToLogs(msg) {
 		let pattern = /(\[.*])[ ]+/gi;
-		let text = msg.replace(pattern, '<span style="display: inline-block; min-width: 230px;">$1</span>');
+		let text = msg.replace(pattern, '<span style="display: inline-block; min-width: 300px;">$1</span>');
 
 		let container = $('#console');
 		container.append(text);

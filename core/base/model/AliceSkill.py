@@ -25,8 +25,8 @@ from core.user.model.AccessLevels import AccessLevel
 class AliceSkill(ProjectAliceObject):
 
 
-	def __init__(self, supportedIntents: Iterable = None, databaseSchema: dict = None):
-		super().__init__()
+	def __init__(self, supportedIntents: Iterable = None, databaseSchema: dict = None, **kwargs):
+		super().__init__(**kwargs)
 		try:
 			self._skillPath = Path(inspect.getfile(self.__class__)).parent
 			self._installFile = Path(inspect.getfile(self.__class__)).with_suffix('.install')
@@ -469,8 +469,7 @@ class AliceSkill(ProjectAliceObject):
 		matchingIntent = None
 		oldIntentName = None
 		for intentName, intent in self._supportedIntents.items():
-			if MQTTClient.topic_matches_sub(intentName, session.message.topic) \
-					and (not matchingIntent or self.intentNameMoreSpecific(intentName, oldIntentName)):
+			if MQTTClient.topic_matches_sub(intentName, session.message.topic) and (not matchingIntent or self.intentNameMoreSpecific(intentName, oldIntentName)):
 				matchingIntent = intent
 				oldIntentName = intentName
 
@@ -525,6 +524,7 @@ class AliceSkill(ProjectAliceObject):
 		for devt in self.DeviceManager.getDeviceTypesForSkill(self.name).values():
 			devt.onStop()
 		self.logInfo(f'![green](Stopped)')
+		self.broadcast(method=constants.EVENT_SKILL_STOPPED, exceptions=[self.name], propagateToSkills=True, skill=self)
 
 
 	def onBooted(self) -> bool:
