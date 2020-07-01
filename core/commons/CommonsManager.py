@@ -20,6 +20,7 @@ from paho.mqtt.client import MQTTMessage
 
 import core.commons.model.Slot as slotModel
 from core.base.model.Manager import Manager
+from core.commons import constants
 from core.commons.model.PartOfDay import PartOfDay
 from core.dialog.model.DialogSession import DialogSession
 
@@ -76,12 +77,8 @@ class CommonsManager(Manager):
 		try:
 			payload = json.loads(message.payload)
 		except (ValueError, TypeError):
-			payload = dict()
-
-		if payload is True:
-			payload = {'true': True}
-		elif payload is False:
-			payload = {'false': False}
+			var = message.topic.split('/')[-1]
+			payload = {var: message.payload}
 
 		return payload
 
@@ -90,6 +87,10 @@ class CommonsManager(Manager):
 	def parseSlotsToObjects(cls, message: MQTTMessage) -> dict:
 		slots = defaultdict(list)
 		data = cls.payload(message)
+
+		if not isinstance(data, dict):
+			return dict()
+
 		for slotData in data.get('slots', dict()):
 			slot = slotModel.Slot(**slotData)
 			slots[slot.slotName].append(slot)
@@ -99,12 +100,20 @@ class CommonsManager(Manager):
 	@classmethod
 	def parseSlots(cls, message: MQTTMessage) -> dict:
 		data = cls.payload(message)
+
+		if not isinstance(data, dict):
+			return dict()
+
 		return {slot['slotName']: slot['rawValue'] for slot in data.get('slots', dict())}
 
 
 	@classmethod
 	def parseSessionId(cls, message: MQTTMessage) -> Union[str, bool]:
 		data = cls.payload(message)
+
+		if not isinstance(data, dict):
+			return False
+
 		return data.get('sessionId', False)
 
 
@@ -120,6 +129,10 @@ class CommonsManager(Manager):
 	@classmethod
 	def parseSiteId(cls, message: MQTTMessage) -> str:
 		data = cls.payload(message)
+
+		if not isinstance(data, dict):
+			return constants.UNKNOWN
+
 		if 'siteId' in data:
 			return data['siteId'].replace('_', ' ')
 		else:

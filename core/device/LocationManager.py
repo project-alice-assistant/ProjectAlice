@@ -102,7 +102,7 @@ class LocationManager(Manager):
 
 
 	# noinspection PyUnusedLocal
-	def getLocation(self, locId: str = None, room: str = None, siteId: str = None, deviceTypeId: int = None) -> Location:
+	def getLocation(self, locId: str = None, location: str = None, siteId: str = None, deviceTypeId: int = None) -> Location:
 		#todo implement location det. logic
 		# 1a) check name vs locations - done
 		# 1b) check name vs location synonyms
@@ -127,10 +127,10 @@ class LocationManager(Manager):
 				raise Exception(f'No location with id {locId} found')
 			return loc
 
-		if room:
-			loc = self.getLocationWithName(name=room)
+		if location:
+			loc = self.getLocationWithName(name=location)
 			if not loc:
-				loc = self.LocationManager.addNewLocation(name=room)
+				loc = self.LocationManager.addNewLocation(name=location)
 			if loc:
 				return loc
 

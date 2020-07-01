@@ -1,12 +1,13 @@
 import json
+import traceback
 import uuid
 from pathlib import Path
+from typing import List
 
 import paho.mqtt.client as mqtt
 import paho.mqtt.publish as publish
 import random
 import re
-from typing import List
 
 from core.base.model.Intent import Intent
 from core.base.model.Manager import Manager
@@ -270,6 +271,7 @@ class MqttManager(Manager):
 
 		except Exception as e:
 			self.logError(f'Error in onMessage: {e}')
+			traceback.print_exc()
 
 
 	def onHotwordDetected(self, _client, _data, msg):
@@ -860,9 +862,12 @@ class MqttManager(Manager):
 			self._mqttClient.publish(constants.TOPIC_PLAY_BYTES.format(siteId).replace('#', uid), payload=bytearray(soundFile.read_bytes()))
 
 
-	def publish(self, topic: str, payload: (dict, str) = None, qos: int = 0, retain: bool = False):
+	def publish(self, topic: str, payload: (dict, str) = None, stringPayload: str = None, qos: int = 0, retain: bool = False):
 		if isinstance(payload, dict):
 			payload = json.dumps(payload)
+
+		if stringPayload:
+			payload = stringPayload
 
 		self._mqttClient.publish(topic, payload, qos, retain)
 

@@ -1,4 +1,5 @@
 import logging
+from datetime import datetime
 from typing import Match
 
 import re
@@ -45,8 +46,8 @@ class Formatter(logging.Formatter):
 	def format(self, record: logging.LogRecord) -> str:
 		level = record.levelname
 		msg = record.getMessage()
-
-		msg = f'<span class="log">{msg}</span>'
+		now = datetime.utcnow().strftime('%H:%M:%S.%f')[:-3]
+		msg = f'<span class="log">[--{now}--] {msg}</span>'
 		msg = self.BOLD.sub(HtmlFormatting.INLINE.value.format(HtmlFormatting.BOLD.value, r'\1'), msg)
 		msg = self.UNDERLINED.sub(HtmlFormatting.INLINE.value.format(HtmlFormatting.UNDERLINED.value, r'\1'), msg)
 		msg = self.DIM.sub(HtmlFormatting.INLINE.value.format(HtmlFormatting.DIM.value, r'\1'), msg)

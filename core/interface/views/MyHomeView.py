@@ -147,7 +147,9 @@ class MyHomeView(View):
 		try:
 			self.logInfo(f'Toggling device id {_id}')
 			_id = int(_id)
-			self.DeviceManager.getDeviceById(_id).toggle()
+			custResult = self.DeviceManager.getDeviceById(_id).toggle()
+			if custResult:
+				return custResult
 			return jsonify(success=True)
 		except Exception as e:
 			self.logError(f'Failed toggling device Link: {e}')
