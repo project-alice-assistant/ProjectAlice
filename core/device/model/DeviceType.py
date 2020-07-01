@@ -73,6 +73,7 @@ class DeviceType(ProjectAliceObject):
 		values = {'skill': self.skill, 'name': self.name, 'locSettings': self._locSettings, 'devSettings': self._devSettings}
 		self._id = self.DatabaseManager.insert(tableName=self.DeviceManager.DB_TYPES, values=values, callerName=self.DeviceManager.name)
 
+
 	def checkChangedSettings(self):
 		row = self.DeviceManager.databaseFetch(tableName=self.DeviceManager.DB_TYPES,
 									            query='SELECT * FROM :__table__ WHERE id = :id',
