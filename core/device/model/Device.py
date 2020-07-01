@@ -118,7 +118,7 @@ class Device(ProjectAliceObject):
 
 
 	def toggle(self):
-		self.getDeviceType().toggle(device=self)
+		return self.getDeviceType().toggle(device=self)
 
 
 	def getIcon(self):

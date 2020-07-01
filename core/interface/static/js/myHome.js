@@ -586,8 +586,12 @@ $(function () {
 			} else {
 				// display mode: Try toggling the device
 				$.post( 'Device/'+data['id']+'/toggle')
-					.done(function( result ) {
-						$newDevice.css('background: url("/deviceType_static/' + result + '.png')
+					.done(function( $data ) {
+						// check if the result gives a link to open
+						if('href' in $data) {
+							window.open($data['href']);
+							return true;
+						}
 					});
 
 			}
