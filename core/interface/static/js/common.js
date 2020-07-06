@@ -59,7 +59,8 @@ $(document).tooltip();
 $(function () {
 
 	function onFailure(_msg) {
-		console.log('Mqtt connection failed');
+		console.log('Mqtt connection failed, retry in 5 seconds');
+		setTimeout(function() { connectMqtt(); }, 5000);
 	}
 
 	function onConnect(msg) {
@@ -69,6 +70,11 @@ $(function () {
 
 	function onMessage(msg) {
 		dispatchToMqttSubscribers('onMessage', msg);
+	}
+
+	function onConnectionLost(resObj) {
+		console.log('Mqtt disconnected, automatic reconnect is enabled Error code: ' + resObj.errorCode +' - '+ resObj.errorMessage );
+		connectMqtt();
 	}
 
 	function dispatchToMqttSubscribers(method, msg) {
@@ -95,6 +101,7 @@ $(function () {
 				}
 				MQTT = new Paho.MQTT.Client(MQTT_HOST, MQTT_PORT, 'ProjectAliceInterface');
 				MQTT.onMessageArrived = onMessage;
+				MQTT.onConnectionLost = onConnectionLost;
 				MQTT.connect({
 					onSuccess: onConnect,
 					onFailure: onFailure,
