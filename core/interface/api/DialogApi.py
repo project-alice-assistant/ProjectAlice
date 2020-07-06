@@ -56,6 +56,15 @@ class DialogApi(Api):
 			user = self.UserManager.getUserByAPIToken(request.headers.get('auth', ''))
 			session = self.DialogManager.newSession(siteId=siteId, user=user.name)
 
+			# Turn off the wakeword component
+			self.MqttManager.publish(
+				topic=constants.TOPIC_HOTWORD_TOGGLE_OFF,
+				payload={
+					'siteId'   : siteId,
+					'sessionId': session.sessionId
+				}
+			)
+
 			message = MQTTMessage()
 			message.payload = json.dumps({'sessionId': session.sessionId, 'siteId': siteId, 'text': request.form.get('query')})
 			session.extend(message=message)
