@@ -548,6 +548,8 @@ class AliceSkill(ProjectAliceObject):
 		if skill != self.name or not self._databaseSchema:
 			return
 
+		for tableName in self._databaseSchema:
+			self.DatabaseManager.dropTable(tableName=tableName, callerName=self.name)
 
 
 	# HELPERS
