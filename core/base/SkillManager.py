@@ -854,7 +854,7 @@ class SkillManager(Manager):
 		if skillName not in self.allSkills:
 			return
 
-		self.broadcast(method=constants.EVENT_SKILL_DELETED, exceptions=[self.name], propagateToSkills=True, skillName=skillName)
+		self.broadcast(method=constants.EVENT_SKILL_DELETED, exceptions=[self.name], propagateToSkills=True, skill=skillName)
 
 		if skillName in self._activeSkills:
 			self._activeSkills[skillName].onStop()
