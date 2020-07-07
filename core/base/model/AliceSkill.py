@@ -544,6 +544,12 @@ class AliceSkill(ProjectAliceObject):
 		self.MqttManager.subscribeSkillIntents(self.name)
 
 
+	def onSkillDeleted(self, skill: str):
+		if skill != self.name or not self._databaseSchema:
+			return
+
+
+
 	# HELPERS
 	def getConfig(self, key: str) -> Any:
 		return self.ConfigManager.getSkillConfigByName(skillName=self.name, configName=key)
