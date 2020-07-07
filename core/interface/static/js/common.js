@@ -99,7 +99,8 @@ $(function () {
 				if (MQTT_HOST === 'localhost') {
 					MQTT_HOST = window.location.hostname;
 				}
-				MQTT = new Paho.MQTT.Client(MQTT_HOST, MQTT_PORT, 'ProjectAliceInterface');
+				let randomNum = Math.floor((Math.random() * 10000000) + 1);
+				MQTT = new Paho.MQTT.Client(MQTT_HOST, MQTT_PORT, 'ProjectAliceInterface'+randomNum);
 				MQTT.onMessageArrived = onMessage;
 				MQTT.onConnectionLost = onConnectionLost;
 				MQTT.connect({
