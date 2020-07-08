@@ -110,9 +110,11 @@ $(function () {
 				});
 			} else {
 				console.log('Failed fetching MQTT settings')
+				setTimeout(function() { connectMqtt(); }, 5000);
 			}
 		}).fail(function () {
-			console.log("Coulnd't connect to MQTT")
+			console.log("Coulnd't get MQTT information")
+			setTimeout(function() { connectMqtt(); }, 5000);
 		});
 	}
 
