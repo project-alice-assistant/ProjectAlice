@@ -73,7 +73,33 @@ class DialogApi(Api):
 				'input'    : request.form.get('query'),
 				'sessionId': session.sessionId
 			})
-			return jsonify(success=True)
+			return jsonify(success=True, sessionId=session.sessionId)
+		except Exception as e:
+			self.logError(f'Failed processing: {e}')
+			return jsonify(success=False)
+
+
+	@route('/continue/', methods=['POST'])
+	@ApiAuthenticated
+	def continueDialog(self):
+		try:
+			siteId = request.form.get('siteId') if request.form.get('siteId', None) is not None else self.ConfigManager.getAliceConfigByName('deviceName')
+
+			user = self.UserManager.getUserByAPIToken(request.headers.get('auth', ''))
+
+			sessionId = request.form.get('sessionId')
+			session = self.DialogManager.getSession(sessionId=sessionId)
+
+			message = MQTTMessage()
+			message.payload = json.dumps({'sessionId': session.sessionId, 'siteId': siteId, 'text': request.form.get('query')})
+			session.extend(message=message)
+
+			self.MqttManager.publish(topic=constants.TOPIC_NLU_QUERY, payload={
+				'input'    : request.form.get('query'),
+				'sessionId': session.sessionId,
+				'intentFilter': session.intentFilter
+			})
+			return jsonify(success=True, sessionId=session.sessionId)
 		except Exception as e:
 			self.logError(f'Failed processing: {e}')
 			return jsonify(success=False)
