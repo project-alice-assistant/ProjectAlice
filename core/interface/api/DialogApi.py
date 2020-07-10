@@ -85,8 +85,6 @@ class DialogApi(Api):
 		try:
 			siteId = request.form.get('siteId') if request.form.get('siteId', None) is not None else self.ConfigManager.getAliceConfigByName('deviceName')
 
-			user = self.UserManager.getUserByAPIToken(request.headers.get('auth', ''))
-
 			sessionId = request.form.get('sessionId')
 			session = self.DialogManager.getSession(sessionId=sessionId)
 
