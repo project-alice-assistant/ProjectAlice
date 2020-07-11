@@ -402,17 +402,17 @@ settings = {
 			'fr': {
 				'default'           : False,
 				'defaultCountryCode': 'FR',
-				'countryCodes'      : ['FR']
+				'countryCodes'      : ['FR', 'CH']
 			},
 			'de': {
 				'default'           : False,
 				'defaultCountryCode': 'DE',
-				'countryCodes'      : ['DE']
+				'countryCodes'      : ['DE', 'CH']
 			},
 			'it': {
 				'default'           : False,
 				'defaultCountryCode': 'IT',
-				'countryCodes'      : ['IT']
+				'countryCodes'      : ['IT', 'CH']
 			}
 		},
 		'dataType'    : 'list',
@@ -426,17 +426,17 @@ settings = {
 			'fr': {
 				'default'           : False,
 				'defaultCountryCode': 'FR',
-				'countryCodes'      : ['FR']
+				'countryCodes'      : ['FR', 'CH']
 			},
 			'de': {
 				'default'           : False,
 				'defaultCountryCode': 'DE',
-				'countryCodes'      : ['DE']
+				'countryCodes'      : ['DE', 'CH']
 			},
 			'it': {
 				'default'           : False,
 				'defaultCountryCode': 'IT',
-				'countryCodes'      : ['IT']
+				'countryCodes'      : ['IT', 'CH']
 			}
 		},
 		'display'     : 'hidden',
