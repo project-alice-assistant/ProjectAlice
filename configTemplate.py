@@ -1,4 +1,11 @@
 settings = {
+	'recordAudioAfterWakeword': {
+		'defaultValue': False,
+		'dataType'    : 'boolean',
+		'isSensitive' : False,
+		'description' : 'Allow audio record after a wakeword is detected to keep the last user speech. Can be usefull for recording skills',
+		'category'    : 'system'
+	},
 	'deviceName'              : {
 		'defaultValue': 'default',
 		'dataType'    : 'string',
