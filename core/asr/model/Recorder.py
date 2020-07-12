@@ -1,10 +1,9 @@
-import io
 import queue
 import threading
 import wave
-from pathlib import Path
 from typing import Optional
 
+import io
 import paho.mqtt.client as mqtt
 
 from core.base.model.ProjectAliceObject import ProjectAliceObject
@@ -20,9 +19,6 @@ class Recorder(ProjectAliceObject):
 		self._recording = False
 		self._timeoutFlag = timeoutFlag
 		self._buffer = queue.Queue()
-		self._lastUserSpeech = Path(self.Commons.rootDir(), 'var/cache/lastUserpeech.wav')
-		self._secondLastUserSpeech = Path(self.Commons.rootDir(), 'var/cache/secondLastUserSpeech.wav')
-		self._wavFile = None
 
 
 	def __enter__(self):
@@ -44,25 +40,12 @@ class Recorder(ProjectAliceObject):
 
 
 	def startRecording(self):
-		if self.ConfigManager.getAliceConfigByName('recordAudioAfterWakeword'):
-			if self._lastUserSpeech.exists():
-				self._lastUserSpeech.rename(self._secondLastUserSpeech)
-
-			self._wavFile = wave.open(str(self._lastUserSpeech), 'wb')
-			self._wavFile.setsampwidth(2)
-			self._wavFile.setframerate(self.AudioServer.SAMPLERATE)
-			self._wavFile.setnchannels(1)
-
 		self._recording = True
 
 
 	def stopRecording(self):
 		self._recording = False
 		self._buffer.put(None)
-
-		if self.ConfigManager.getAliceConfigByName('recordAudioAfterWakeword') and self._wavFile:
-			self._wavFile.close()
-			self._wavFile = None
 
 
 	def onAudioFrame(self, message: mqtt.MQTTMessage, siteId: str):
@@ -73,7 +56,7 @@ class Recorder(ProjectAliceObject):
 					while frame:
 						self._buffer.put(frame)
 
-						if self.ConfigManager.getAliceConfigByName('recordAudioAfterWakeword') and self._wavFile:
+						if self.ConfigManager.getAliceConfigByName('recordAudioAfterWakeword'):
 							self.AudioServer.recordFrame(siteId, frame)
 
 						frame = wav.readframes(512)

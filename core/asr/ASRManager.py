@@ -154,7 +154,7 @@ class ASRManager(Manager):
 		if siteId not in self._streams or not self._streams[siteId].isRecording:
 			return
 
-		self._streams[siteId].onAudioFrame(message)
+		self._streams[siteId].onAudioFrame(message, siteId)
 
 
 	def onSessionError(self, session: DialogSession):

@@ -1,10 +1,10 @@
-import io
 import threading
 import time
 import wave
 from pathlib import Path
 from typing import Dict
 
+import io
 import pyaudio
 from webrtcvad import Vad
 
@@ -53,7 +53,6 @@ class AudioManager(Manager):
 		else:
 			self.logInfo(f'Using **{self._audioInput["name"]}** for audio input')
 
-		self._wavFile = None
 		self._waves: Dict[str, wave.Wave_write] = dict()
 
 
@@ -82,7 +81,7 @@ class AudioManager(Manager):
 		if path.exists():
 			path.rename(Path(self.SECOND_LAST_USER_SPEECH.format(user, siteId)))
 
-		waveFile = wave.open(path, 'wb')
+		waveFile = wave.open(str(path), 'wb')
 		waveFile.setsampwidth(2)
 		waveFile.setframerate(self.AudioServer.SAMPLERATE)
 		waveFile.setnchannels(1)
@@ -100,8 +99,7 @@ class AudioManager(Manager):
 		if siteId not in self._waves:
 			return
 
-		waveFile = self._waves[siteId]
-		waveFile.writeframes(frame)
+		self._waves[siteId].writeframes(frame)
 
 
 	def publishAudio(self):
@@ -194,7 +192,7 @@ class AudioManager(Manager):
 						stream_callback=streamCallback
 					)
 
-					self.logDebug(f'Playing wav stream using **{self._audioOutput["name"]}** Audio Output from site id **{siteId}**')
+					self.logDebug(f'Playing wav stream using **{self._audioOutput["name"]}** audio output from site id **{siteId}**')
 					audioStream.start_stream()
 					while audioStream.is_active():
 						if self._stopPlayingFlag.is_set():
