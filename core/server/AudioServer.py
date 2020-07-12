@@ -1,20 +1,26 @@
+import io
 import threading
 import time
 import wave
+from pathlib import Path
+from typing import Dict
 
-import io
 import pyaudio
 from webrtcvad import Vad
 
 from core.ProjectAliceExceptions import PlayBytesStopped
 from core.base.model.Manager import Manager
 from core.commons import constants
+from core.dialog.model.DialogSession import DialogSession
 
 
 class AudioManager(Manager):
 
 	SAMPLERATE = 16000
 	FRAMES_PER_BUFFER = 320
+
+	LAST_USER_SPEECH = 'var/cache/lastUserpeech_{}_{}.wav'
+	SECOND_LAST_USER_SPEECH = 'var/cache/secondLastUserSpeech_{}_{}.wav'
 
 	# Inspired by https://github.com/koenvervloesem/hermes-audio-server
 
@@ -47,6 +53,9 @@ class AudioManager(Manager):
 		else:
 			self.logInfo(f'Using **{self._audioInput["name"]}** for audio input')
 
+		self._wavFile = None
+		self._waves: Dict[str, wave.Wave_write] = dict()
+
 
 	def onStart(self):
 		super().onStart()
@@ -62,6 +71,37 @@ class AudioManager(Manager):
 
 		if not self.ConfigManager.getAliceConfigByName('disableSoundAndMic'):
 			self._audio.terminate()
+
+
+	def onHotword(self, siteId: str, user: str = constants.UNKNOWN_USER):
+		if not self.ConfigManager.getAliceConfigByName('recordAudioAfterWakeword'):
+			return
+
+		path = Path(self.LAST_USER_SPEECH.format(user, siteId))
+
+		if path.exists():
+			path.rename(Path(self.SECOND_LAST_USER_SPEECH.format(user, siteId)))
+
+		waveFile = wave.open(path, 'wb')
+		waveFile.setsampwidth(2)
+		waveFile.setframerate(self.AudioServer.SAMPLERATE)
+		waveFile.setnchannels(1)
+		self._waves[siteId] = waveFile
+
+
+	def onCaptured(self, session: DialogSession):
+		wav = self._waves.pop(session.siteId, None)
+		if not wav:
+			return
+		wav.close()
+
+
+	def recordFrame(self, siteId: str, frame: bytes):
+		if siteId not in self._waves:
+			return
+
+		waveFile = self._waves[siteId]
+		waveFile.writeframes(frame)
 
 
 	def publishAudio(self):
@@ -85,6 +125,7 @@ class AudioManager(Manager):
 
 			try:
 				frames = audioStream.read(num_frames=self.FRAMES_PER_BUFFER, exception_on_overflow=False)
+
 				if self._vad.is_speech(frames, self.SAMPLERATE):
 					if not speech and speechFrames < minSpeechFrames:
 						speechFrames += 1

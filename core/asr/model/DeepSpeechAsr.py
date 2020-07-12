@@ -97,7 +97,7 @@ class DeepSpeechAsr(Asr):
 		previous = ''
 
 		with Stopwatch() as processingTime:
-			with Recorder(self._timeout) as recorder:
+			with Recorder(self._timeout, session.user, session.siteId) as recorder:
 				self.ASRManager.addRecorder(session.siteId, recorder)
 				self._recorder = recorder
 				streamContext = self._model.createStream()
