@@ -3,6 +3,7 @@ import json
 from dataclasses import dataclass, field
 
 from core.base.model.ProjectAliceObject import ProjectAliceObject
+from core.commons import constants
 from core.device.model.Location import Location
 
 
@@ -65,7 +66,7 @@ class Device(ProjectAliceObject):
 		                            callerName=self.DeviceManager.name,
 		                            values={'uid': uid},
 		                            row=('id', self.id))
-		self.MqttManager.publish('projectalice/devices/updated', payload={'id': self.id, 'type': 'status'})
+		self.MqttManager.publish(constants.TOPIC_DEVICE_UPDATED, payload={'id': self.id, 'type': 'status'})
 
 
 	def toJson(self) -> str:
@@ -97,7 +98,8 @@ class Device(ProjectAliceObject):
 			'room'        : self.getMainLocation().name,
 			'lastContact' : self.lastContact,
 			'connected'   : self.connected,
-			'display'     : self.display
+			'display'     : self.display,
+			'custom'      : self._customValues
 		}
 
 
@@ -118,7 +120,7 @@ class Device(ProjectAliceObject):
 
 
 	def toggle(self):
-		self.getDeviceType().toggle(device=self)
+		return self.getDeviceType().toggle(device=self)
 
 
 	def getIcon(self):
@@ -174,7 +176,7 @@ class Device(ProjectAliceObject):
 
 
 	@property
-	def room(self) -> str:
+	def location(self) -> str:
 		return self.getMainLocation().getSaveName()
 
 

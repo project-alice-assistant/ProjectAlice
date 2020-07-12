@@ -137,6 +137,19 @@ class DatabaseManager(Manager):
 		return True
 
 
+	def dropTable(self, tableName: str, callerName: str) -> bool:
+		database = self.getConnection()
+		cursor = database.cursor()
+
+		try:
+			cursor.execute(f'DROP TABLE {tableName}')
+			database.commit()
+			return True
+		except sqlite3.Error as e:
+			self.logError(f'Failed dropping table **{tableName}** for component **{callerName}**: {e}')
+			return False
+
+
 	def replace(self, tableName: str, query: str = None, callerName: str = None, values: dict = None) -> int:
 		if not query:
 			cols = ', '.join(values)

@@ -84,10 +84,7 @@ class AdminView(View):
 		try:
 			self.__class__.setWaitType('trainAssistant')
 			self.ThreadManager.newEvent('TrainAssistant').set()
-			self.DialogTemplateManager.clearCache()
-			self.AssistantManager.retrain()
-			self.ThreadManager.doLater(interval=1, func=self.NluManager.trainNLU())
-
+			self.AssistantManager.checkAssistant()
 			return jsonify(success=True)
 		except Exception as e:
 			self.logError(f'Failed training assistant: {e}')

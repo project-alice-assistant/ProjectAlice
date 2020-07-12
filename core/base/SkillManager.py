@@ -381,6 +381,7 @@ class SkillManager(Manager):
 			instance: AliceSkill = klass()
 		except ImportError as e:
 			self.logError(f"Couldn't import skill {skillName}.{skillResource}: {e}")
+			traceback.print_exc()
 		except AttributeError as e:
 			self.logError(f"Couldn't find main class for skill {skillName}.{skillResource}: {e}")
 		except Exception as e:
@@ -394,6 +395,7 @@ class SkillManager(Manager):
 
 		for skillItem in self._activeSkills.values():
 			skillItem.onStop()
+			self.broadcast(method=constants.EVENT_SKILL_STOPPED, exceptions=[self.name], propagateToSkills=True, skill=self)
 
 
 	def onQuarterHour(self):
@@ -441,6 +443,7 @@ class SkillManager(Manager):
 
 		try:
 			skillInstance.onStart()
+			self.broadcast(method=constants.EVENT_SKILL_STARTED, exceptions=[self.name], propagateToSkills=True, skill=self)
 		except SkillStartingFailed:
 			self._failedSkills[skillName] = FailedAliceSkill(self._skillList[skillName]['installer'])
 		except SkillStartDelayed:
@@ -515,6 +518,7 @@ class SkillManager(Manager):
 			skillInstance = self._activeSkills.pop(skillName)
 			self._deactivatedSkills[skillName] = skillInstance
 			skillInstance.onStop()
+			self.broadcast(method=constants.EVENT_SKILL_STOPPED, exceptions=[self.name], propagateToSkills=True, skill=self)
 			self._widgets.pop(skillName, None)
 			self.DeviceManager.removeDeviceTypesForSkill(skillName=skillName)
 
@@ -679,6 +683,7 @@ class SkillManager(Manager):
 				if skillName in self._activeSkills:
 					try:
 						self._activeSkills[skillName].onStop()
+						self.broadcast(method=constants.EVENT_SKILL_STOPPED, exceptions=[self.name], propagateToSkills=True, skill=self)
 					except Exception as e:
 						self.logError(f'Error stopping "{skillName}" for update: {e}')
 						raise
@@ -747,12 +752,15 @@ class SkillManager(Manager):
 			directory = Path(self.Commons.rootDir()) / 'skills' / installFile['name']
 
 			for requirement in pipReqs:
+				self.logInfo(f'Installing pip requirement: {requirement}')
 				self.Commons.runSystemCommand(['./venv/bin/pip3', 'install', requirement])
 
 			for requirement in sysReqs:
+				self.logInfo(f'Installing system requirement: {requirement}')
 				self.Commons.runRootSystemCommand(['apt-get', 'install', '-y', requirement])
 
 			if scriptReq:
+				self.logInfo('Running post install script')
 				self.Commons.runRootSystemCommand(['chmod', '+x', str(directory / scriptReq)])
 				self.Commons.runRootSystemCommand([str(directory / scriptReq)])
 
@@ -846,8 +854,11 @@ class SkillManager(Manager):
 		if skillName not in self.allSkills:
 			return
 
+		self.broadcast(method=constants.EVENT_SKILL_DELETED, exceptions=[self.name], propagateToSkills=True, skill=skillName)
+
 		if skillName in self._activeSkills:
 			self._activeSkills[skillName].onStop()
+			self.broadcast(method=constants.EVENT_SKILL_STOPPED, exceptions=[self.name], propagateToSkills=True, skill=self)
 
 		self._skillList.pop(skillName, None)
 		self._activeSkills.pop(skillName, None)
@@ -865,6 +876,7 @@ class SkillManager(Manager):
 
 		if skillName in self._activeSkills:
 			self._activeSkills[skillName].onStop()
+			self.broadcast(method=constants.EVENT_SKILL_STOPPED, exceptions=[self.name], propagateToSkills=True, skill=self)
 
 		self._initSkills(loadOnly=skillName, reload=True)
 

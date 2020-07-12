@@ -134,6 +134,7 @@ class Widget(ProjectAliceObject):
 			fp = file.open()
 			content = fp.read()
 			content = re.sub(r'{{ lang\.([\w]*) }}', self.langReplace, content)
+			content = re.sub(r'{{ options\.([\w]*) }}', self.optionsReplace, content)
 
 			return content
 		except:
@@ -144,12 +145,22 @@ class Widget(ProjectAliceObject):
 	def langReplace(self, match: Match):
 		return self.getLanguageString(match.group(1))
 
+	def optionsReplace(self, match: Match):
+		return self.getOptions(match.group(1))
+
 
 	def getLanguageString(self, key: str) -> str:
 		try:
 			return self._language[self.LanguageManager.activeLanguage][key]
 		except KeyError:
 			return 'Missing string'
+
+
+	def getOptions(self, key: str) -> str:
+		try:
+			return self._options[key]
+		except KeyError:
+			return 'Missing option'
 
 
 	@property

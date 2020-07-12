@@ -50,8 +50,7 @@ $(function () {
 			url : '/myhome/load/',
 			type: 'GET'
 		}).done(function (response) {
-			let $data = response;
-			$.each($data, function (i, zone) {
+			$.each(response, function (i, zone) {
 				let $zone = newZone(zone);
 				if (zone['display']) {
 					if (zone['display'].hasOwnProperty('walls')) {
@@ -354,7 +353,7 @@ $(function () {
 				$('.configListAdd').on('click touchstart',function() {
 					let $parent = $(this).parent();
 					let $inp = $parent.children('.configInput');
-					if ($inp.val() != "") {
+					if ($inp.val() != '') {
 						$.post( '/myhome/'+$parent[0].id,
 							{ value: $inp.val() } )
 						.done(function( result ) {
@@ -497,8 +496,8 @@ $(function () {
 					if( handleError(res) ) {
 						return;
 					}
-					let confLines = "";
-					content = "";
+					let confLines = '';
+					content = '';
 					$.each(res, function(key, val){
 						confLines += "<div class='configLabel'>"+key+"</div><input name='"+key+"' class='configInput' value='"+val+"'/>";
 					});
@@ -564,7 +563,7 @@ $(function () {
 /*				$('.configListAdd').on('click touchstart', function () {
 					let $parent = $(this).parent();
 					let $inp = $parent.children('.configInput');
-					if ($inp.val() != "") {
+					if ($inp.val() != '') {
 						$.post( '/myHome/add'+$parent.id,
 							{ value: $inp.val() } )
 						.done(function( result ) {
@@ -587,8 +586,12 @@ $(function () {
 			} else {
 				// display mode: Try toggling the device
 				$.post( 'Device/'+data['id']+'/toggle')
-					.done(function( result ) {
-						$newDevice.css('background: url("/deviceType_static/' + result + '.png')
+					.done(function( $data ) {
+						// check if the result gives a link to open
+						if('href' in $data) {
+							window.open($data['href']);
+							return true;
+						}
 					});
 
 			}
@@ -599,8 +602,12 @@ $(function () {
 			if (deviceInstallerMode) {
 				if(confirm('Do you really want to delete this device?')){
 					let $dev = $(this)
-					$.post('Device/'+data['id']+'/delete').done(function () {
-						$dev.remove();
+					$.post('Device/'+data['id']+'/delete').done(function (res) {
+						if(res['success']) {
+							$dev.remove();
+						} else {
+							alert('Failed removing device!');
+						}
 					})
 				}
 				// TODO remove from DB as well...
@@ -748,6 +755,7 @@ $(function () {
 
 			zoneMode = false;
 			markSelectedTool($('#mover'));
+			moveMode = true;
 			$('.zindexer').show();
 			$(this).removeClass('floorPlanEditMode-AddingZone');
 		})
@@ -778,7 +786,6 @@ $(function () {
 		selectedFloor = '';
 		selectedDeco = '';
 		selectedDevice = '';
-		let selectedDeviceSkill = '';
 
 		$('.floorPlan-tile').removeClass('selected');
 		$('.floorPlan-tile-background').removeClass('selected');
