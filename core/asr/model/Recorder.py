@@ -18,7 +18,8 @@ class Recorder(ProjectAliceObject):
 		self._recording = False
 		self._timeoutFlag = timeoutFlag
 		self._buffer = queue.Queue()
-		self._userSpeech = Path(self.Commons.rootDir(), 'var/cache/userLastSpeech.wav')
+		self._lastUserSpeech = Path(self.Commons.rootDir(), 'var/cache/lastUserpeech.wav')
+		self._secondLastUserSpeech = Path(self.Commons.rootDir(), 'var/cache/secondLastUserSpeech.wav')
 		self._wavFile = None
 
 
@@ -42,7 +43,10 @@ class Recorder(ProjectAliceObject):
 
 	def startRecording(self):
 		if self.ConfigManager.getAliceConfigByName('recordAudioAfterWakeword'):
-			self._wavFile = wave.open(str(self._userSpeech), 'wb')
+			if self._lastUserSpeech.exists():
+				self._lastUserSpeech.rename(self._secondLastUserSpeech)
+
+			self._wavFile = wave.open(str(self._lastUserSpeech), 'wb')
 			self._wavFile.setsampwidth(2)
 			self._wavFile.setframerate(self.AudioServer.SAMPLERATE)
 			self._wavFile.setnchannels(1)
