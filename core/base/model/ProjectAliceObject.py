@@ -188,6 +188,10 @@ class ProjectAliceObject:
 		pass # Super object function is overriden only if needed
 
 
+	def onSkillDeleted(self, skill: str):
+		pass # Super object function is overriden only if needed
+
+
 	def onSkillUpdated(self, skill: str):
 		pass # Super object function is overriden only if needed
 

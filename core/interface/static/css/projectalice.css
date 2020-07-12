@@ -119,7 +119,7 @@ button.button{ font-size: 1.6em; height: 2em; }
 /* Tabs */
 .tabsContainer { padding-bottom: .1em; border: 2px solid var(--secondary); }
 .tabsContainer ul { display: flex; background-color: var(--secondary); margin-top: 0; padding-left: .4em; }
-.tabsContainer li { background-color: var(--windowBG); font-size: 1.25em; height: 1.8em; padding: 0 .7em; margin: .3em .3em 0 0; display: inline-flex; align-items: center; box-sizing: border-box; border-radius: .3em .3em 0 0; border: 2px solid var(--accent); border-bottom: 0; }
+.tabsContainer li { background-color: var(--windowBG); font-size: 1.25em; padding: .2em .7em; margin: .3em .3em 0 0; display: inline-flex; align-items: center; box-sizing: border-box; border-radius: .3em .3em 0 0; border: 2px solid var(--accent); border-bottom: 0; }
 .tabsContainer .activeTab {	background-color: var(--mainBG); }
 .tabsContent { display: flex; overflow-y: auto; overflow-x: hidden; padding-left: .7em; }
 
@@ -210,6 +210,15 @@ button.button{ font-size: 1.6em; height: 2em; }
 .ui-widget { padding: 0; border-radius: 0; }
 .ui-widget.ui-widget-content{ border: 2px solid var(--accent); }
 .ui-dialog-titlebar{ border-radius: 0; border: solid 2px var(--accent); margin: -2px; }
+
+.ui-widget .configLabel { flex: 1; min-width: 1%; }
+.ui-widget .configInput { flex: 1; min-width: 1%; }
+.ui-widget .configLine { flex: 1; display: flex; }
+.ui-widget form { flex: 1; display: flex; flex-direction: column; align-items: stretch; }
+.tabsContent .tabPage { flex-direction: row; align-items: stretch; width: 100%; }
+.ui-widget .configLine input, select { min-width: 10%; width: unset; }
+
+
 
 /* Device Linking */
 .deviceLink {border: 3px solid; pointer-events: none;border-radius: 100%;border-color: yellow;z-index: 999;}

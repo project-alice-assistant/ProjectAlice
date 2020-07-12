@@ -474,7 +474,7 @@ class MqttManager(Manager):
 		if 'text' in payload and not payload.get('isHotwordNotification', False):
 			skill = self.SkillManager.getSkillInstance('ContextSensitive')
 			if skill:
-				skill.addChat(text=payload['text'], siteId=session.siteId)
+				skill.addAliceChat(text=payload['text'], siteId=session.siteId)
 
 		self.broadcast(method=constants.EVENT_SAY, exceptions=[self.name], propagateToSkills=True, session=session)
 

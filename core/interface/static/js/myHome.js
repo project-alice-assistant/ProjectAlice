@@ -602,8 +602,12 @@ $(function () {
 			if (deviceInstallerMode) {
 				if(confirm('Do you really want to delete this device?')){
 					let $dev = $(this)
-					$.post('Device/'+data['id']+'/delete').done(function () {
-						$dev.remove();
+					$.post('Device/'+data['id']+'/delete').done(function (res) {
+						if(res['success']) {
+							$dev.remove();
+						} else {
+							alert('Failed removing device!');
+						}
 					})
 				}
 				// TODO remove from DB as well...

@@ -98,7 +98,8 @@ class Device(ProjectAliceObject):
 			'room'        : self.getMainLocation().name,
 			'lastContact' : self.lastContact,
 			'connected'   : self.connected,
-			'display'     : self.display
+			'display'     : self.display,
+			'custom'      : self._customValues
 		}
 
 

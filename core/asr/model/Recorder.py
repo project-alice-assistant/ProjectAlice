@@ -1,6 +1,7 @@
 import queue
 import threading
 import wave
+from pathlib import Path
 from typing import Optional
 
 import io
@@ -17,6 +18,8 @@ class Recorder(ProjectAliceObject):
 		self._recording = False
 		self._timeoutFlag = timeoutFlag
 		self._buffer = queue.Queue()
+		self._userSpeech = Path(self.Commons.rootDir(), 'var/cache/userLastSpeech.wav')
+		self._wavFile = None
 
 
 	def __enter__(self):
@@ -38,12 +41,22 @@ class Recorder(ProjectAliceObject):
 
 
 	def startRecording(self):
+		if self.ConfigManager.getAliceConfigByName('recordAudioAfterWakeword'):
+			self._wavFile = wave.open(str(self._userSpeech), 'wb')
+			self._wavFile.setsampwidth(2)
+			self._wavFile.setframerate(self.AudioServer.SAMPLERATE)
+			self._wavFile.setnchannels(1)
+
 		self._recording = True
 
 
 	def stopRecording(self):
 		self._recording = False
 		self._buffer.put(None)
+
+		if self.ConfigManager.getAliceConfigByName('recordAudioAfterWakeword') and self._wavFile:
+			self._wavFile.close()
+			self._wavFile = None
 
 
 	def onAudioFrame(self, message: mqtt.MQTTMessage):
@@ -53,6 +66,10 @@ class Recorder(ProjectAliceObject):
 					frame = wav.readframes(512)
 					while frame:
 						self._buffer.put(frame)
+
+						if self.ConfigManager.getAliceConfigByName('recordAudioAfterWakeword') and self._wavFile:
+							self._wavFile.writeframes(frame)
+
 						frame = wav.readframes(512)
 
 			except Exception as e:
