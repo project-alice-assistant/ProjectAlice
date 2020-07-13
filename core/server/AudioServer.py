@@ -72,20 +72,20 @@ class AudioManager(Manager):
 			self._audio.terminate()
 
 
-	def onHotword(self, siteId: str, user: str = constants.UNKNOWN_USER):
+	def onStartListening(self, session: DialogSession):
 		if not self.ConfigManager.getAliceConfigByName('recordAudioAfterWakeword'):
 			return
 
-		path = Path(self.LAST_USER_SPEECH.format(user, siteId))
+		path = Path(self.LAST_USER_SPEECH.format(session.user, session.siteId))
 
 		if path.exists():
-			path.rename(Path(self.SECOND_LAST_USER_SPEECH.format(user, siteId)))
+			path.rename(Path(self.SECOND_LAST_USER_SPEECH.format(session.user, session.siteId)))
 
 		waveFile = wave.open(str(path), 'wb')
 		waveFile.setsampwidth(2)
 		waveFile.setframerate(self.AudioServer.SAMPLERATE)
 		waveFile.setnchannels(1)
-		self._waves[siteId] = waveFile
+		self._waves[session.siteId] = waveFile
 
 
 	def onCaptured(self, session: DialogSession):
