@@ -869,7 +869,7 @@ class MqttManager(Manager):
 		if stringPayload:
 			payload = stringPayload
 
-		if not isinstance(payload, str) and not isinstance(payload, bytearray) and not isinstance(payload, int) and not isinstance(payload, float):
+		if payload and not isinstance(payload, str) and not isinstance(payload, bytearray) and not isinstance(payload, int) and not isinstance(payload, float):
 			self.logWarning(f'Trying to send an invalid payload: {payload}')
 			return
 
