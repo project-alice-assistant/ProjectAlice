@@ -1,4 +1,6 @@
 import json
+import random
+import re
 import traceback
 import uuid
 from pathlib import Path
@@ -6,8 +8,6 @@ from typing import List
 
 import paho.mqtt.client as mqtt
 import paho.mqtt.publish as publish
-import random
-import re
 
 from core.base.model.Intent import Intent
 from core.base.model.Manager import Manager
@@ -868,6 +868,10 @@ class MqttManager(Manager):
 
 		if stringPayload:
 			payload = stringPayload
+
+		if not isinstance(payload, str) and not isinstance(payload, bytearray) and not isinstance(payload, int) and not isinstance(payload, float):
+			self.logWarning(f'Trying to send an invalid payload: {payload}')
+			return
 
 		self._mqttClient.publish(topic, payload, qos, retain)
 
