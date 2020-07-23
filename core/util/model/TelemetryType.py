@@ -17,3 +17,4 @@ class TelemetryType(Enum):
 	WIND_ANGLE = 'wind_angle'
 	GUST_STRENGTH = 'gust_strength'
 	GUST_ANGLE = 'gust_angle'
+	DEWPOINT = 'DewPoint'
