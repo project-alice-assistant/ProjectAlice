@@ -12,8 +12,10 @@ from core.dialog.model.DialogSession import DialogSession
 
 class Recorder(ProjectAliceObject):
 
-	def __init__(self, timeoutFlag: threading.Event):
+	def __init__(self, timeoutFlag: threading.Event, user: str, siteId: str):
 		super().__init__()
+		self._user = user,
+		self._siteId = siteId
 		self._recording = False
 		self._timeoutFlag = timeoutFlag
 		self._buffer = queue.Queue()
@@ -46,13 +48,17 @@ class Recorder(ProjectAliceObject):
 		self._buffer.put(None)
 
 
-	def onAudioFrame(self, message: mqtt.MQTTMessage):
+	def onAudioFrame(self, message: mqtt.MQTTMessage, siteId: str):
 		with io.BytesIO(message.payload) as buffer:
 			try:
 				with wave.open(buffer, 'rb') as wav:
 					frame = wav.readframes(512)
 					while frame:
 						self._buffer.put(frame)
+
+						if self.ConfigManager.getAliceConfigByName('recordAudioAfterWakeword'):
+							self.AudioServer.recordFrame(siteId, frame)
+
 						frame = wav.readframes(512)
 
 			except Exception as e:

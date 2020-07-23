@@ -1,4 +1,11 @@
 settings = {
+	'recordAudioAfterWakeword': {
+		'defaultValue': False,
+		'dataType'    : 'boolean',
+		'isSensitive' : False,
+		'description' : 'Allow audio record after a wakeword is detected to keep the last user speech. Can be usefull for recording skills',
+		'category'    : 'system'
+	},
 	'deviceName'              : {
 		'defaultValue': 'default',
 		'dataType'    : 'string',
@@ -402,17 +409,17 @@ settings = {
 			'fr': {
 				'default'           : False,
 				'defaultCountryCode': 'FR',
-				'countryCodes'      : ['FR']
+				'countryCodes'      : ['FR', 'CH']
 			},
 			'de': {
 				'default'           : False,
 				'defaultCountryCode': 'DE',
-				'countryCodes'      : ['DE']
+				'countryCodes'      : ['DE', 'CH']
 			},
 			'it': {
 				'default'           : False,
 				'defaultCountryCode': 'IT',
-				'countryCodes'      : ['IT']
+				'countryCodes'      : ['IT', 'CH']
 			}
 		},
 		'dataType'    : 'list',
@@ -426,17 +433,17 @@ settings = {
 			'fr': {
 				'default'           : False,
 				'defaultCountryCode': 'FR',
-				'countryCodes'      : ['FR']
+				'countryCodes'      : ['FR', 'CH']
 			},
 			'de': {
 				'default'           : False,
 				'defaultCountryCode': 'DE',
-				'countryCodes'      : ['DE']
+				'countryCodes'      : ['DE', 'CH']
 			},
 			'it': {
 				'default'           : False,
 				'defaultCountryCode': 'IT',
-				'countryCodes'      : ['IT']
+				'countryCodes'      : ['IT', 'CH']
 			}
 		},
 		'display'     : 'hidden',

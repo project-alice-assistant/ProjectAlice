@@ -84,7 +84,7 @@ class AdminView(View):
 		try:
 			self.__class__.setWaitType('trainAssistant')
 			self.ThreadManager.newEvent('TrainAssistant').set()
-			self.AssistantManager.checkAssistant()
+			self.AssistantManager.checkAssistant(forceRetrain=True)
 			return jsonify(success=True)
 		except Exception as e:
 			self.logError(f'Failed training assistant: {e}')

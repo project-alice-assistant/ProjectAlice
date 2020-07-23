@@ -1,8 +1,7 @@
-from pathlib import Path
-from typing import Optional
-
 import shutil
 import tarfile
+from pathlib import Path
+from typing import Optional
 
 from core.asr.model.ASRResult import ASRResult
 from core.asr.model.Asr import Asr
@@ -105,7 +104,7 @@ class PocketSphinxAsr(Asr):
 		result = None
 		counter = 0
 		with Stopwatch() as processingTime:
-			with Recorder(self._timeout) as recorder:
+			with Recorder(self._timeout, session.user, session.siteId) as recorder:
 				self.ASRManager.addRecorder(session.siteId, recorder)
 				self._recorder = recorder
 				self._decoder.start_utt()
