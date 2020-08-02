@@ -33,7 +33,7 @@ class LocationManager(Manager):
 			if val.name.lower() == name.lower():
 				return val
 		for loc in self._locations.values():
-			if syn.lower() in (name.lower() for name in loc.synonyms):
+			if name.lower() in (syn.lower() for syn in loc.synonyms):
 				return loc
 
 
