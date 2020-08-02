@@ -17,14 +17,12 @@ class Location(ProjectAliceObject):
 	def __post_init__(self):
 		self.id = self.data['id']
 		self.name = self.data['name']
+		self.synonyms = list()
 		if 'synonyms' in self.data.keys() and self.data['synonyms']:
 			self.synonyms = ast.literal_eval(self.data['synonyms'])
-		else:
-			self.synonyms = list()
+		self.display = dict()
 		if 'display' in self.data.keys() and self.data['display']:
 			self.display = ast.literal_eval(self.data['display'])
-		else:
-			self.display = dict()
 
 
 	def getSaveName(self) -> str:

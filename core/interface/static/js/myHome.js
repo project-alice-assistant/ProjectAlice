@@ -303,16 +303,16 @@ $(function () {
 					return;
 				}
 				// todo: implement frontend linking
+				// check if there is currently a link shown
+				let alreadyConnected = false;
+				if(alreadyConnected){
+					return;
+				}
 				// add link from selected Device to zone
-				// frontend checks: link already there
-				// --> new link
-					$.post('/myhome/Device/'+selectedDevice.attr('data-id')+'/addLink/'+data["id"]).done(function (result){
-						if( handleError(result) ){
-							return;
-						}
-					})
-					// backend checks: link already there
-					// backend checks: link is allowed
+				$.post('/myhome/Device/'+selectedDevice.attr('data-id')+'/addLink/'+data["id"]).done(function (result){
+					if( handleError(result) ){
+						return;
+					}
 					// frontend: draw bezier
 					$(this).children('.inputOrText').connections({
 					  to: selectedDevice,
@@ -320,22 +320,20 @@ $(function () {
 					});
 					// frontend: add to link list
 					// frontend: load link room settings
-				// --> remove link
-					// yeah..
+				});
 
-			} else if (technicalMode){
+			} else if (locationEditMode){
 				let $settings = $('#settings');
 				let content = "<i>"+data['id']+"</i> <h1>"+data['name']+"</h1>";
 				content += "<div class='configBox'>";
 				content += "<div class='configBox'>";
 				content += "<div class='configList'>";
 				content += "<div class='configBlock'><div class='configLabel'>Synonyms:</div>";
-				content += "<div class='configBlockContent addSynonym' id='Location/"+data['id']+"/addSynonym'><ul class='configListCurrent'/><input class='configInput'/><div class='link-hover configListAdd'><i class=\"fas fa-plus-circle\"></i>	</div></div></div>";
-				content += "<div class='configBlock'><div class='configLabel'>Devices:</div><input class='configInput'/></div>";
-				content += "<div class='configBlock'><div class='configLabel'>Linked Devices:</div><input class='configInput'/></div>";
+				content += "<div class='configBlockContent addSynonym' id='Location/"+data['id']+"/addSynonym' data-dellink='Location/"+data['id']+"/deleteSynonym'><ul class='configListCurrent'/><div class='configLine'><input class='configInput'/><div class='link-hover configListAdd'><i class=\"fas fa-plus-circle\"></i></div></div></div></div>";
+//				content += "<div class='configBlock'><div class='configLabel'>Devices:</div><input class='configInput'/></div>";
+//				content += "<div class='configBlock'><div class='configLabel'>Linked Devices:</div><input class='configInput'/></div>";
 				content += "</div></div>";
 
-				//TODO load existing settings
 				$settings.html(content);
 				loadLocationSettings(data['id'],$settings);
 				$settings.sidebar({side: "right"}).trigger("sidebar:open");
@@ -349,15 +347,18 @@ $(function () {
 				});
 
 				// add new entry to conf. List
-				// TODO add to DB
 				$('.configListAdd').on('click touchstart',function() {
 					let $parent = $(this).parent();
 					let $inp = $parent.children('.configInput');
+					$parent = $parent.parent();
 					if ($inp.val() != '') {
 						$.post( '/myhome/'+$parent[0].id,
 							{ value: $inp.val() } )
 						.done(function( result ) {
-							newConfigListVal($parent,$inp.val());
+							if(handleError(result)){
+								return;
+							}
+							newConfigListVal($parent,$inp.val(),$parent.data('dellink') );
 							$inp.val('');
 						});
 					}
@@ -372,6 +373,9 @@ $(function () {
 					$(this).remove();
 					$.post('/myhome/Location/'+data['id']+'/delete', {id : data['id']});
 				}
+				return false;
+			} else if (deviceLinkerMode){
+				$(this).children('.inputOrText').connections('remove');
 				return false;
 			}
 		});
@@ -610,7 +614,6 @@ $(function () {
 						}
 					})
 				}
-				// TODO remove from DB as well...
 				return false;
 			}
 		});
@@ -671,7 +674,7 @@ $(function () {
 	}
 
 	function newConfigListVal($parent, val, deletionLink) {
-		$parent.children('.configListCurrent').append("<li>" + val + "<div class='addWidgetCheck configListRemove link-hover'><i class='fas fa-minus-circle'></i></div></li>");
+		$parent.find('.configListCurrent').append("<li>" + val + "<div class='addWidgetCheck configListRemove link-hover'><i class='fas fa-minus-circle'></i></div></li>");
 		$('.configListRemove').on('click touchstart', function () {
 			$(this).parent().remove();
 			$.post(deletionLink, { 'value': val })

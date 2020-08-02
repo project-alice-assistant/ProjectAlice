@@ -18,7 +18,7 @@ class LocationManager(Manager):
 
 	def __init__(self):
 		super().__init__(databaseSchema=self.DATABASE)
-		self._locations: Dict[str, Location] = dict()
+		self._locations: Dict[int, Location] = dict()
 
 
 	def onStart(self):
@@ -30,8 +30,11 @@ class LocationManager(Manager):
 
 	def getLocationWithName(self, name: str) -> Optional[Location]:
 		for val in self._locations.values():
-			if val.name == name:
+			if val.name.lower() == name.lower():
 				return val
+		for loc in self._locations.values():
+			if syn.lower() in (name.lower() for name in loc.synonyms):
+				return loc
 
 
 	def loadLocations(self):
@@ -61,6 +64,9 @@ class LocationManager(Manager):
 
 
 	def addLocationSynonym(self, locId: str, synonym: str):
+		location = self.getLocationWithName(synonym)
+		if location:
+			raise Exception(f'Synonym already used for {location.name}')
 		synlist = self._locations[locId].addSynonym(synonym)
 		self.DatabaseManager.update(tableName=self.TABLE,
 		                            callerName=self.name,
@@ -105,13 +111,14 @@ class LocationManager(Manager):
 	def getLocation(self, locId: str = None, location: str = None, siteId: str = None, deviceTypeId: int = None) -> Location:
 		#todo implement location det. logic
 		# 1a) check name vs locations - done
-		# 1b) check name vs location synonyms
+		# 1b) check name vs location synonyms - done
 		# 2a) check siteID vs locations
 		# 2b) check siteID vs synonyms
 		# 3) try to get the location context sensitive
 		# 4) check if there is only one room that has that type of device
 		# if 1 or 2 provides names
 		"""
+		:param location:
 		:param locId:
 		:param room: a room name issued by the user
 		:param siteId: the current devices site NAME

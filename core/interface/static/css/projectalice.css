@@ -184,6 +184,9 @@ button.button{ font-size: 1.6em; height: 2em; }
     width: -webkit-fill-available;  /* Mozilla-based browsers will ignore this. */
     width: fill-available;
 }
+.sidebar .configLine {
+    display: flex;
+}
 
 .configListCurrent li{list-style-type: none;}
 .configBlock{background: var(--secondary);border: var(--accent);border-style: dotted;}

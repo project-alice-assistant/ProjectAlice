@@ -15,14 +15,14 @@ class MyHomeView(View):
 
 
 	### Location API
-	@route('/Location/<path:_id>/getSettings', methods=['POST'])
+	@route('/Location/<path:_id>/getSettings', methods=['GET'])
 	def getLocationSettings(self, _id: str):
 		try:
 			_id = int(_id)
 			return jsonify(self.LocationManager.getSettings(_id))
 		except Exception as e:
 			self.logError(f'Failed loading settings: {e}')
-			return jsonify(sucess=False)
+			return jsonify(success=False)
 
 
 	@route('/Location/<path:_id>/deleteSynonym', methods=['POST'])
@@ -34,20 +34,20 @@ class MyHomeView(View):
 			return jsonify(self.LocationManager.deleteLocationSynonym(_id, data['value']))
 		except Exception as e:
 			self.logError(f'Failed deleting synonym: {e}')
-			return jsonify(sucess=False)
+			return jsonify(success=False)
 
 
 	@route('/Location/<path:_id>/addSynonym', methods=['POST'])
 	def addLocationSynonym(self, _id: str):
-		# todo check duplicates (with other rooms as well!)
 		try:
 			_id = int(_id)
 			data = request.form.to_dict()
 			self.logInfo(f'Adding {data} for {_id}')
-			return jsonify(self.LocationManager.addLocationSynonym(_id, data['value']))
+			self.LocationManager.addLocationSynonym(_id, data['value'])
+			return jsonify(success=True)
 		except Exception as e:
 			self.logError(f'Failed adding synonym: {e}')
-			return jsonify(sucess=False)
+			return jsonify(success=False, error=str(e))
 
 
 	# TODO Consider using PUT method?
@@ -57,7 +57,7 @@ class MyHomeView(View):
 			data = request.form.to_dict()
 			return jsonify(id=self.LocationManager.addNewLocation(data['name']).id)
 		except Exception as e:
-			return jsonify(error=str(e))
+			return jsonify(success=False, error=str(e))
 
 
 	# TODO consider using DELETE method?
@@ -92,7 +92,7 @@ class MyHomeView(View):
 			return {'id': device.id, 'skill': deviceType.skill, 'deviceType': deviceType.name}
 		except Exception as e:
 			self.logError(f'Failed adding device: {e}')
-			return jsonify(error=str(e))
+			return jsonify(success=False, error=str(e))
 
 
 	# TODO consider using DELETE method?
@@ -104,7 +104,7 @@ class MyHomeView(View):
 			return jsonify(success=True)
 		except Exception as e:
 			self.logError(f'Failed deleting device: {e}')
-			return jsonify(success=False)
+			return jsonify(success=False, error=str(e))
 
 
 	@route('/Device/<path:_id>/getSettings/<path:roomid>', methods=['GET'])
@@ -114,6 +114,8 @@ class MyHomeView(View):
 			device = self.DeviceManager.getDeviceById(_id=_id)
 			roomid = int(roomid)
 			if roomid == 0:
+				if not device.devSettings:
+					device.devSettings = device.getDeviceType().DEV_SETTINGS.copy()
 				return jsonify(device.devSettings)
 			else:
 				link = self.DeviceManager.getLink(deviceId=_id, locationId=roomid)

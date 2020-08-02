@@ -369,7 +369,7 @@ class DeviceManager(Manager):
 
 		# check if there are aleady too many of this device type in the location
 		if deviceType.perLocationLimit > 0:
-			currAmount = len(self.LocationManager.getDevicesByLocation(locationID=locationID, deviceTypeID=typeID))
+			currAmount = len(self.getDevicesByLocation(locationID=locationID, deviceTypeID=typeID))
 			if deviceType.perLocationLimit <= currAmount:
 				raise MaxDevicePerLocationReached(maxAmount=deviceType.perLocationLimit)
 
