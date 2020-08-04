@@ -287,14 +287,14 @@ class CommonsManager(Manager):
 		return [result.text for result in Translator().translate(**kwargs)]
 
 
-	def runRootSystemCommand(self, commands: list, shell: bool = False, stdout = subprocess.PIPE, stderr = subprocess.PIPE):
+	def runRootSystemCommand(self, commands: list, shell: bool = False, stdout = subprocess.PIPE, stderr = subprocess.PIPE) -> subprocess.CompletedProcess:
 		if commands[0] != 'sudo':
 			commands.insert(0, 'sudo')
 		return self.runSystemCommand(commands, shell=shell, stdout=stdout, stderr=stderr)
 
 
 	@staticmethod
-	def runSystemCommand(commands: list, shell: bool = False, stdout = subprocess.PIPE, stderr = subprocess.PIPE):
+	def runSystemCommand(commands: list, shell: bool = False, stdout = subprocess.PIPE, stderr = subprocess.PIPE) -> subprocess.CompletedProcess:
 		return subprocess.run(commands, shell=shell, stdout=stdout, stderr=stderr)
 
 

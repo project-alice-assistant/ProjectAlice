@@ -3,6 +3,7 @@ import json
 import re
 from copy import copy
 from importlib_metadata import PackageNotFoundError, version as packageVersion
+from shutil import which
 
 import core.base.SuperManager as SM
 from core.base.model.Version import Version
@@ -117,6 +118,11 @@ class ProjectAliceObject:
 				self.logWarning(f'Dependency "{packageName}" is not conform with version requirements')
 				return False
 
+		for dep in self.DEPENDENCIES['system']:
+			if not which(dep):
+				self.logWarning(f'Found missing dependency: {dep}')
+				return False
+
 		return True
 
 
@@ -126,12 +132,18 @@ class ProjectAliceObject:
 		try:
 			for dep in self.DEPENDENCIES['system']:
 				self.logInfo(f'Installing "{dep}"')
-				self.Commons.runRootSystemCommand(['apt-get', 'install', '-y', dep])
+				result = self.Commons.runRootSystemCommand(['apt-get', 'install', '-y', dep])
+				if result:
+					raise Exception(result.stderr)
+
 				self.logInfo(f'Installed!')
 
 			for dep in self.DEPENDENCIES['pip']:
 				self.logInfo(f'Installing "{dep}"')
-				self.Commons.runSystemCommand(['./venv/bin/pip', 'install', dep])
+				result = self.Commons.runSystemCommand(['./venv/bin/pip', 'install', dep])
+				if result:
+					raise Exception(result.stderr)
+
 				self.logInfo(f'Installed!')
 
 			return True
