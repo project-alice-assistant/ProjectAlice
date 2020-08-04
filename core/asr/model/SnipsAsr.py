@@ -1,4 +1,7 @@
+import time
+
 from core.asr.model.Asr import Asr
+from core.dialog.model.DialogSession import DialogSession
 
 
 class SnipsAsr(Asr):
@@ -15,6 +18,20 @@ class SnipsAsr(Asr):
 		super().__init__()
 		self._capableOfArbitraryCapture = True
 		self._isOnlineASR = False
+		self._listening = False
+
+
+	def onStartListening(self, session):
+		self._listening = True
+
+
+	def onAsrToggleOff(self, siteId: str):
+		self._listening = False
+
+
+	def decodeStream(self, session: DialogSession):
+		while self._listening:
+			time.sleep(0.1)
 
 
 	def onStart(self):
@@ -23,8 +40,11 @@ class SnipsAsr(Asr):
 		if self.LanguageManager.activeLanguage != 'en':
 			raise Exception('Snips generic ASR only for english')
 
-		if not self.ConfigManager.getSnipsConfiguration('snips-asr', 'model').contains('500'):
+		if not '500' in str(self.ConfigManager.getSnipsConfiguration('snips-asr', 'model')):
 			self.ConfigManager.updateSnipsConfiguration('snips-asr', 'model', value='/usr/share/snips/snips-asr-model-en-500MB', restartSnips=True)
+
+		if not self.ConfigManager.getSnipsConfiguration('snips-asr', 'model', createIfNotExist=False):
+			self.ConfigManager.updateSnipsConfiguration('snips-asr', 'partial', value='true', restartSnips=True)
 
 		result = self.Commons.runRootSystemCommand(['systemctl', 'start', 'snips-asr'])
 		if result.returncode:

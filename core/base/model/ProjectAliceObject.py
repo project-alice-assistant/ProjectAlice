@@ -3,7 +3,6 @@ import json
 import re
 from copy import copy
 from importlib_metadata import PackageNotFoundError, version as packageVersion
-from shutil import which
 
 import core.base.SuperManager as SM
 from core.base.model.Version import Version
@@ -119,7 +118,7 @@ class ProjectAliceObject:
 				return False
 
 		for dep in self.DEPENDENCIES['system']:
-			if not which(dep):
+			if not self.Commons.runRootSystemCommand(['dpkg', 'l', '|', 'grep', dep]):
 				self.logWarning(f'Found missing dependency: {dep}')
 				return False
 

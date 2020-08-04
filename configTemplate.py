@@ -193,7 +193,7 @@ settings = {
 		'defaultValue': 'deepspeech',
 		'dataType'    : 'list',
 		'isSensitive' : False,
-		'values'      : ['deepspeech', 'pocketsphinx', 'google'],
+		'values'      : ['deepspeech', 'pocketsphinx', 'google', 'snips'],
 		'description' : 'The Asr to use. Can\'t use an online Asr if you have set keepASROffline to true!',
 		'onUpdate'    : 'reloadASR',
 		'category'    : 'asr'
@@ -202,7 +202,7 @@ settings = {
 		'defaultValue': 'pocketsphinx',
 		'dataType'    : 'list',
 		'isSensitive' : False,
-		'values'      : ['deepspeech', 'pocketsphinx', 'google'],
+		'values'      : ['deepspeech', 'pocketsphinx', 'google', 'snips'],
 		'description' : 'The Asr to use in case the default ASR becomes unavailable',
 		'category'    : 'asr'
 	},
