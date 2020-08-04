@@ -363,7 +363,7 @@ network={
 			Path('/tmp/service').write_text(serviceFile)
 			subprocess.run(['sudo', 'mv', 'service', serviceFilePath])
 
-
+		useFallbackHLC = False
 		if audioHardware in {'respeaker2', 'respeaker4', 'respeaker6MicArray'}:
 			subprocess.run(['sudo', Path(self._rootDir, 'system/scripts/audioHardware/respeakers.sh')])
 			if initConfs['useHLC']:
@@ -399,6 +399,7 @@ network={
 		elif audioHardware == 'usbMic':
 			subprocess.run(['sudo', Path(self._rootDir, 'system/scripts/audioHardware/usbmic.sh')])
 			subprocess.run(['sudo', 'cp', Path(self._rootDir, 'system', 'asounds', 'usbmic.conf'), Path(ASOUND)])
+			useFallbackHLC = True
 
 		elif audioHardware == 'ps3eye':
 			subprocess.run(['sudo', 'cp', Path(self._rootDir, 'system', 'asounds', 'ps3eye.conf'), Path(ASOUND)])
@@ -407,9 +408,14 @@ network={
 			subprocess.run(['echo', '    type plug', '>>', asoundrc])
 			subprocess.run(['echo', '    slave.pcm "dmix"', '>>', asoundrc])
 			subprocess.run(['echo', '}', '>>', asoundrc])
+			useFallbackHLC = True
 
 		elif audioHardware == 'jabra410':
 			subprocess.run(['sudo', 'cp', Path(self._rootDir, 'system', 'asounds', 'jabra410.conf'), Path(ASOUND)])
+			useFallbackHLC = True
+
+		if initConfs['useHLC'] and useFallbackHLC:
+			subprocess.run(['sudo', 'sed', '-i', '-e', 's/%HARDWARE%/dummy/', str(hlcServiceFilePath)])
 
 		subprocess.run(['sudo', 'systemctl', 'daemon-reload'])
 
