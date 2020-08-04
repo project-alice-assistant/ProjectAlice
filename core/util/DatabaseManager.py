@@ -142,7 +142,7 @@ class DatabaseManager(Manager):
 		cursor = database.cursor()
 
 		try:
-			cursor.execute(f'DROP TABLE {tableName}')
+			cursor.execute(f'DROP TABLE {callerName}_{tableName}')
 			database.commit()
 			return True
 		except sqlite3.Error as e:
