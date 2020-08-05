@@ -13,7 +13,7 @@
 #                                              #
 ################################################
 #            DON'T CHANGE ME                   #
-version: 1.19
+version: 1.20
 ################################################
 
 # How to prevent frequent errors:
@@ -27,9 +27,6 @@ doGroundInstall: yes
 
 # After initialization is done, keep a copy of this yaml file in /boot. Be aware this can be a security risk, as /boot is accessible by anyone mounting your SD card!
 keepYAMLBackup: no
-
-# If you are installing on Raspbian Buster, set the following to yes
-installOnBuster: yes
 
 # Base configs
 # Set the admin pin code. This code will allow you to access the interface. Only numbers, 4 digits
@@ -106,10 +103,10 @@ shortReplies: no
 # If set to yes Alice will whisper instead of using short answers when you are sleeping. Currently only available with Amazon Tts
 whisperWhenSleeping: no
 
-# Either 'pocketsphinx', 'deepspeech' or 'google'
+# Either 'pocketsphinx', 'deepspeech', 'snips' (EN only) or 'google'
 asr: pocketsphinx
 
-# Either 'pico', 'snips', 'mycroft', 'amazon', 'google' or 'watson'
+# Either 'pico', 'mycroft', 'amazon', 'google' or 'watson'
 tts: pico
 
 # Amazon Polly

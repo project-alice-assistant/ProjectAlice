@@ -66,7 +66,7 @@ network={
 		self._confsFile = Path(self._rootDir, 'config.py')
 		self._confsSample = Path(self._rootDir, 'configTemplate.py')
 		self._initFile = Path(YAML)
-		self._latest = 1.18
+		self._latest = 1.20
 
 
 	def initProjectAlice(self) -> bool: #NOSONAR
@@ -163,35 +163,17 @@ network={
 
 		# Do some installation if wanted by the user
 		if 'doGroundInstall' not in initConfs or initConfs['doGroundInstall']:
-			subprocess.run([PIP, 'install', '-r', str(Path(self._rootDir, 'requirements.txt'))])
+			self.Commons.runRootSystemCommand(['apt', 'install', f'{self.Commons.rootDir()}/system/snips/snips-platform-common_0.64.0_armhf.deb'])
 
-			if 'installOnBuster' not in initConfs or initConfs['installOnBuster']:
-				subprocess.run(['sudo', 'apt-get', 'install', '-y', 'dirmngr', 'apt-transport-https'])
-				subprocess.run(['sudo', 'bash', '-c', 'echo "deb https://raspbian.snips.ai/stretch stable main" > /etc/apt/sources.list.d/snips.list'])
-				subprocess.run(['sudo', 'apt-key', 'adv', '--fetch-keys', 'https://debian.snips.ai/5FFCD0DEB5BA45CD.pub'])
-				subprocess.run(['wget', '-q', 'https://ftp-master.debian.org/keys/release-10.asc', '-O-', '|', 'sudo', 'apt-key', 'add', '-'])
-				subprocess.run(['echo', '"deb http://deb.debian.org/debian buster non-free"', '|', 'sudo', 'tee', '/etc/apt/sources.list.d/debian.list'])
-				subprocess.run(['sudo', 'apt-key', 'adv', '--keyserver', 'gpg.mozilla.org', '--recv-keys', 'D4F50CDCA10A2849'])
-				subprocess.run(['sudo', 'sh', '-c', '\'curl https://raspbian.snips.ai/531DD1A7B702B14D.pub | apt-key add -\''])
-				subprocess.run(['sudo', 'apt-get', 'install', '-y', 'libttspico0'])
-				subprocess.run(['sudo', 'apt-get', 'install', '-y', 'libttspico-utils'])
-				subprocess.run(['sudo', 'apt-get', 'install', '-y', 'libatlas3-base=3.10.3-8+rpi1'])
-				subprocess.run(['sudo', 'apt-get', 'install', '-y', 'libgfortran3'])
-			else:
-				subprocess.run(['sudo', 'bash', '-c', 'echo "deb https://raspbian.snips.ai/$(lsb_release -cs) stable main" > /etc/apt/sources.list.d/snips.list'])
-				subprocess.run(['sudo', 'apt-key', 'adv', '--keyserver', 'gpg.mozilla.org', '--recv-keys', 'D4F50CDCA10A2849'])
-				subprocess.run(['sudo', 'apt-get', 'update'])
+			subprocess.run([PIP, 'install', '-r', str(Path(self._rootDir, 'requirements.txt'))])
 
 			reqs = [line.rstrip('\n') for line in open(Path(self._rootDir, 'sysrequirements.txt'))]
 			subprocess.run(['sudo', 'apt-get', 'install', '-y', '--allow-unauthenticated'] + reqs)
 
 			subprocess.run(['sudo', 'systemctl', 'stop', 'snips-*'])
 			subprocess.run(['sudo', 'systemctl', 'disable', 'snips-nlu'])
-			subprocess.run(['sudo', 'systemctl', 'disable', 'snips-dialogue'])
 			subprocess.run(['sudo', 'systemctl', 'disable', 'snips-injection'])
 			subprocess.run(['sudo', 'systemctl', 'disable', 'snips-hotword'])
-			subprocess.run(['sudo', 'systemctl', 'disable', 'snips-audio-server'])
-			subprocess.run(['sudo', 'systemctl', 'disable', 'snips-tts'])
 
 		confPath = Path('/etc/mosquitto/conf.d/websockets.conf')
 		if not confPath.exists():
@@ -232,9 +214,13 @@ network={
 			confs['awsAccessKey'] = initConfs['awsAccessKey']
 			confs['awsSecretKey'] = initConfs['awsSecretKey']
 
-			confs['asr'] = initConfs['asr'] if initConfs['asr'] in {'pocketsphinx', 'google', 'deepspeech'} else 'deepspeech'
+			confs['asr'] = initConfs['asr'] if initConfs['asr'] in {'pocketsphinx', 'google', 'deepspeech', 'snips'} else 'deepspeech'
 			if confs['asr'] == 'google' and not initConfs['googleServiceFile']:
 				self.logInfo('You cannot use Google Asr without a google service file, falling back to Deepspeech')
+				confs['asr'] = 'deepspeech'
+
+			if confs['asr'] == 'snips' and confs['activeLanguage'] != 'en':
+				self.logInfo('You can only use Snips Asr for english, falling back to Deepspeech')
 				confs['asr'] = 'deepspeech'
 
 			if initConfs['googleServiceFile']:
