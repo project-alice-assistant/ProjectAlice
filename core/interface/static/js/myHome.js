@@ -199,7 +199,15 @@ $(function () {
 			snap         : true,
 			snapTolerance: 5,
 			zIndex		 : 999,
-			revert       : revert
+			revert       : revert,
+			helper	     : "clone",
+			appendTo     : "body",
+			start: function(e){
+				$(e.target).css({opacity: 0.3});
+			},
+			stop: function(e){ // need to put it back on stop
+				$(e.target).css({opacity: 1});
+			},
 		});
 	}
 
