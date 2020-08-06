@@ -120,13 +120,30 @@ class DeviceManager(Manager):
 		# get or create location from different inputs
 		location = self.LocationManager.getLocation(locId=locationId)
 
-		self.assertDeviceTypeAllowedAtLocation(locationID=location.id, typeID=deviceTypeId)
+		self.assertDeviceTypeAllowedAtLocation(locationId=location.id, typeId=deviceTypeId)
 
 		values = {'typeID': deviceTypeId, 'uid': uid, 'locationID': location.id, 'display': "{'x': '10', 'y': '10', 'rotation': 0, 'width': 45, 'height': 45}"}
 		values['id'] = self.databaseInsert(tableName=self.DB_DEVICE, values=values)
 
 		self._devices[values['id']] = Device(data=values)
 		return self._devices[values['id']]
+
+
+	def changeLocation(self, device: Device, locationId: int):
+		# check location is good
+		loc = self.LocationManager.getLocation(locId=locationId)
+		if not loc:
+			raise Exception("Location not found")
+		# check location but not global
+		self.assertDeviceTypeAllowedAtLocation(typeId=device.getDeviceType().id, locationId=locationId, moveDevice=True)
+		# update DB
+		self.DatabaseManager.update(tableName=self.DB_DEVICE,
+		                            callerName=self.name,
+		                            values={'locationID': locationId},
+		                            row=('id', device.id))
+
+		# update data
+		device.locationID = locationId
 
 
 	def devUIDtoID(self, uid: str) -> int:
@@ -350,7 +367,7 @@ class DeviceManager(Manager):
 		return {d['name']: {'id': d['id'], 'name': d['name'], 'skill': d['skill']} for d in data}
 
 
-	def updateDevice(self, device: dict):
+	def updateDeviceDisplay(self, device: dict):
 		self.getDeviceById(device['id']).display = device['display']
 		self.DatabaseManager.update(tableName=self.DB_DEVICE,
 		                            callerName=self.name,
@@ -358,18 +375,18 @@ class DeviceManager(Manager):
 		                            row=('id', device['id']))
 
 
-	def assertDeviceTypeAllowedAtLocation(self, typeID: int, locationID: int):
+	def assertDeviceTypeAllowedAtLocation(self, typeId: int, locationId: int, moveDevice: bool = False):
 		# check max allowed per Location
-		deviceType = self.getDeviceType(typeID)
+		deviceType = self.getDeviceType(typeId)
 		# check if another instance of this device is allowed
-		if deviceType.totalDeviceLimit > 0:
-			currAmount = len(self.DeviceManager.getDevicesByTypeID(deviceTypeID=typeID))
+		if deviceType.totalDeviceLimit > 0 and not moveDevice:
+			currAmount = len(self.DeviceManager.getDevicesByTypeID(deviceTypeID=typeId))
 			if deviceType.totalDeviceLimit <= currAmount:
 				raise MaxDeviceOfTypeReached(maxAmount=deviceType.totalDeviceLimit)
 
 		# check if there are aleady too many of this device type in the location
 		if deviceType.perLocationLimit > 0:
-			currAmount = len(self.getDevicesByLocation(locationID=locationID, deviceTypeID=typeID))
+			currAmount = len(self.getDevicesByLocation(locationID=locationId, deviceTypeID=typeId))
 			if deviceType.perLocationLimit <= currAmount:
 				raise MaxDevicePerLocationReached(maxAmount=deviceType.perLocationLimit)
 

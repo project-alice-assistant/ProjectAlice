@@ -95,7 +95,22 @@ class MyHomeView(View):
 			return jsonify(success=False, error=str(e))
 
 
-	# TODO consider using DELETE method?
+	@route('/Device/<path:_id>/changeLocation/<path:roomid>', methods=['POST'])
+	def changeLocation(self, _id: str, roomid: str):
+		try:
+			_id = int(_id)
+			device = self.DeviceManager.getDeviceById(_id=_id)
+			roomid = int(roomid)
+			if roomid == 0:
+				return jsonify(success=False, error="No Location provided")
+			else:
+				self.DeviceManager.changeLocation(device=device, locationId=roomid)
+				return jsonify(success=True)
+		except Exception as e:
+			self.logError(f'Failed changing location: {e}')
+
+
+	# TODO consider using DELETE method? (will blow up jquery, because only get/post have shortcut methods)
 	@route('/Device/<path:_id>/delete', methods=['POST'])
 	def deleteDevice(self, _id: int):
 		try:
