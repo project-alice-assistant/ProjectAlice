@@ -20,9 +20,6 @@ libxslt-dev
 flac
 libttspico-utils
 libav-tools
-snips-platform-voice
-snips-makers-tts
-snips-hotword-model-heysnipsv4
 libatlas-base-dev
 gfortran
 ffmpeg
