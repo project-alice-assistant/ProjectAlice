@@ -127,13 +127,13 @@ network={
 		updateChannel = initConfs['aliceUpdateChannel'] if 'aliceUpdateChannel' in initConfs else 'master'
 		updateSource = self.getUpdateSource(updateChannel)
 		# Update our system and sources
-		#subprocess.run(['sudo', 'apt-get', 'update'])
-		#subprocess.run(['sudo', 'apt-get', 'dist-upgrade', '-y'])
-		#subprocess.run(['git', 'clean', '-df'])
-		#subprocess.run(['git', 'stash'])
-		#subprocess.run(['git', 'checkout', updateSource])
-		#subprocess.run(['git', 'pull'])
-		#subprocess.run(['git', 'stash', 'clear'])
+		subprocess.run(['sudo', 'apt-get', 'update'])
+		subprocess.run(['sudo', 'apt-get', 'dist-upgrade', '-y'])
+		subprocess.run(['git', 'clean', '-df'])
+		subprocess.run(['git', 'stash'])
+		subprocess.run(['git', 'checkout', updateSource])
+		subprocess.run(['git', 'pull'])
+		subprocess.run(['git', 'stash', 'clear'])
 
 		time.sleep(1)
 
@@ -145,12 +145,15 @@ network={
 		serviceFile.replace('#WORKINGDIR', f'WorkingDirectory=/home/{getpass.getuser()}/ProjectAlice')
 		serviceFile.replace('#EXECSTART', f'ExecStart=/home/{getpass.getuser()}/ProjectAlice/venv/bin/python main.py')
 		serviceFile.replace('#USER', f'User={getpass.getuser()}')
+		Path('/tmp/service').write_text(serviceFile)
+		subprocess.run(['sudo', 'mv', '/tmp/service', serviceFilePath])
 
 		if not Path('venv').exists():
 			self.logInfo('Not running with venv, I need to create it')
 			subprocess.run(['sudo', 'apt', 'install', 'python3-venv', '-y'])
 			subprocess.run(['python3.7', '-m', 'venv', 'venv'])
 			self.logInfo('Installed virtual environement, restarting...')
+			subprocess.run(['sudo', 'systemctl', 'daemon-reload'])
 			subprocess.run(['sudo', 'systemctl', 'enable', 'ProjectAlice'])
 			subprocess.run(['sudo', 'shutdown', '-r', 'now'])
 		else:
@@ -331,9 +334,6 @@ network={
 
 		snipsConf['snips-common']['assistant'] = f'/home/{getpass.getuser()}/ProjectAlice/assistant'
 		snipsConf['snips-hotword']['model'] = [f'/home/{getpass.getuser()}/ProjectAlice/trained/hotwords/snips_hotword=0.53']
-
-		Path('/tmp/service').write_text(serviceFile)
-		subprocess.run(['sudo', 'mv', '/tmp/service', serviceFilePath])
 
 		self.logInfo('Installing audio hardware')
 		audioHardware = ''
