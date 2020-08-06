@@ -952,6 +952,11 @@ $(function () {
 						//todo add in icon for moving
 						ui.draggable.draggable( "option", "revert", false );
 					    ui.draggable.css({top: ui.offset.top - $(this).offset().top, left: ui.offset.left - $(this).offset().left } );
+					    if(userConf){
+							setBPMode(false);
+					    	saveHouse();
+							setBPMode(true);
+						}
 						setTimeout( function() { ui.draggable.draggable( "option", "revert", true ); }, 1000 );
 					} else {
 						// nothing has to be done here!
