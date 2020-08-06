@@ -142,9 +142,9 @@ network={
 			subprocess.run(['sudo', 'rm', serviceFilePath])
 
 		serviceFile = Path('ProjectAlice.service').read_text()
-		serviceFile.replace('#WORKINGDIR', f'WorkingDirectory=/home/{getpass.getuser()}/ProjectAlice')
-		serviceFile.replace('#EXECSTART', f'ExecStart=/home/{getpass.getuser()}/ProjectAlice/venv/bin/python main.py')
-		serviceFile.replace('#USER', f'User={getpass.getuser()}')
+		serviceFile = serviceFile.replace('#WORKINGDIR', f'WorkingDirectory=/home/{getpass.getuser()}/ProjectAlice')
+		serviceFile = serviceFile.replace('#EXECSTART', f'ExecStart=/home/{getpass.getuser()}/ProjectAlice/venv/bin/python main.py')
+		serviceFile = serviceFile.replace('#USER', f'User={getpass.getuser()}')
 		Path('/tmp/service').write_text(serviceFile)
 		subprocess.run(['sudo', 'mv', '/tmp/service', serviceFilePath])
 
@@ -358,9 +358,9 @@ network={
 				subprocess.run(['sudo', 'rm', hlcServiceFilePath])
 
 			serviceFile = Path(f'/home/{getpass.getuser()}/hermesLedControl/hermesledcontrol.service').read_text()
-			serviceFile.replace('%WORKING_DIR%', f'/home/{getpass.getuser()}/hermesLedControl')
-			serviceFile.replace('%EXECSTART%', f'/home/{getpass.getuser()}/hermesLedControl/venv/bin/python main.py --hardware=%HARDWARE% --pattern=projectalice')
-			serviceFile.replace('%USER%', f'{getpass.getuser()}')
+			serviceFile = serviceFile.replace('%WORKING_DIR%', f'/home/{getpass.getuser()}/hermesLedControl')
+			serviceFile = serviceFile.replace('%EXECSTART%', f'/home/{getpass.getuser()}/hermesLedControl/venv/bin/python main.py --hardware=%HARDWARE% --pattern=projectalice')
+			serviceFile = serviceFile.replace('%USER%', f'{getpass.getuser()}')
 
 			Path('/tmp/service').write_text(serviceFile)
 			subprocess.run(['sudo', 'mv', 'service', serviceFilePath])
