@@ -18,6 +18,7 @@
 	inactive authors:       Jierka <https://github.com/jr-k>
 							maxbachmann <https://github.com/maxbachmann>
 """
+
 import logging.handlers
 import signal
 import subprocess
@@ -29,6 +30,12 @@ from pathlib import Path
 
 import os
 
+
+def isVenv() -> bool:
+	return hasattr(sys, 'real_prefix') or (hasattr(sys, 'base_prefix') and sys.base_prefix != sys.prefix)
+
+PIP = './venv/bin/pip' if isVenv() else 'pip3'
+
 result = subprocess.run(['dpkg-query', '-l', 'python3-pip'], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 if result.returncode:
 	subprocess.run(['sudo', 'apt-get', 'install', '-y', 'python3-pip'])
@@ -36,19 +43,19 @@ if result.returncode:
 try:
 	import psutil
 except:
-	subprocess.run(['pip3', 'install', 'psutil'])
+	subprocess.run([PIP, 'install', 'psutil'])
 	import psutil
 
 try:
 	import requests
 except:
-	subprocess.run(['pip3', 'install', 'requests'])
+	subprocess.run([PIP, 'install', 'requests'])
 	import requests
 
 try:
 	import importlib_metadata
 except:
-	subprocess.run(['pip3', 'install', 'importlib_metadata'])
+	subprocess.run([PIP, 'install', 'importlib_metadata'])
 	import importlib_metadata
 
 from core.Initializer import Initializer

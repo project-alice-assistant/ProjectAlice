@@ -18,10 +18,15 @@ YAML = '/boot/ProjectAlice.yaml'
 ASOUND = '/etc/asound.conf'
 SNIPS_TOML = '/etc/snips.toml'
 
+def isVenv() -> bool:
+	return hasattr(sys, 'real_prefix') or (hasattr(sys, 'base_prefix') and sys.base_prefix != sys.prefix)
+
+PIP = './venv/bin/pip' if isVenv() else 'pip3'
+
 try:
 	import yaml
 except:
-	subprocess.run(['pip3', 'install', 'pyyaml'])
+	subprocess.run([PIP, 'install', 'pyyaml'])
 	import yaml
 
 import configTemplate
@@ -156,8 +161,7 @@ network={
 			subprocess.run(['sudo', 'systemctl', 'daemon-reload'])
 			subprocess.run(['sudo', 'systemctl', 'enable', 'ProjectAlice'])
 			subprocess.run(['sudo', 'shutdown', '-r', 'now'])
-		else:
-			if not hasattr(sys, 'real_prefix') or (hasattr(sys, 'base_prefix') and sys.base_prefix == sys.prefix):
+		elif not isVenv():
 				self.logFatal('Please run using the virtual environement: "./venv/bin/python main.py"')
 
 		subprocess.run([PIP, 'uninstall', '-y', '-r', str(Path(self._rootDir, 'pipuninstalls.txt'))])
