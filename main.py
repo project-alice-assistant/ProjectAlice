@@ -29,22 +29,27 @@ from pathlib import Path
 
 import os
 
-PIP = './venv/bin/pip'
+result = subprocess.run(['dpkg-query', '-l', 'python3-pip'], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+if result.returncode:
+	subprocess.run(['sudo', 'apt-get', 'install', '-y', 'python3-pip'])
+
 try:
 	import psutil
 except:
-	subprocess.run([PIP, 'install', 'psutil'])
+	subprocess.run(['pip3', 'install', 'psutil'])
 	import psutil
 
 try:
 	import requests
 except:
-	subprocess.run([PIP, 'install', 'requests'])
+	subprocess.run(['pip3', 'install', 'requests'])
+	import requests
 
 try:
 	import importlib_metadata
 except:
-	subprocess.run([PIP, 'install', 'importlib_metadata'])
+	subprocess.run(['pip3', 'install', 'importlib_metadata'])
+	import importlib_metadata
 
 from core.Initializer import Initializer
 from core.util.model import BashFormatting, FileFormatting, HtmlFormatting

@@ -3,6 +3,7 @@ import importlib
 import json
 import socket
 import subprocess
+import sys
 import time
 from pathlib import Path
 
@@ -20,7 +21,7 @@ SNIPS_TOML = '/etc/snips.toml'
 try:
 	import yaml
 except:
-	subprocess.run([PIP, 'install', 'pyyaml'])
+	subprocess.run(['pip3', 'install', 'pyyaml'])
 	import yaml
 
 import configTemplate
@@ -122,18 +123,39 @@ network={
 		if not connected:
 			self.logFatal('Your device needs internet access to continue')
 
+
 		updateChannel = initConfs['aliceUpdateChannel'] if 'aliceUpdateChannel' in initConfs else 'master'
 		updateSource = self.getUpdateSource(updateChannel)
 		# Update our system and sources
-		subprocess.run(['sudo', 'apt-get', 'update'])
-		subprocess.run(['sudo', 'apt-get', 'dist-upgrade', '-y'])
-		subprocess.run(['git', 'clean', '-df'])
-		subprocess.run(['git', 'stash'])
-		subprocess.run(['git', 'checkout', updateSource])
-		subprocess.run(['git', 'pull'])
-		subprocess.run(['git', 'stash', 'clear'])
+		#subprocess.run(['sudo', 'apt-get', 'update'])
+		#subprocess.run(['sudo', 'apt-get', 'dist-upgrade', '-y'])
+		#subprocess.run(['git', 'clean', '-df'])
+		#subprocess.run(['git', 'stash'])
+		#subprocess.run(['git', 'checkout', updateSource])
+		#subprocess.run(['git', 'pull'])
+		#subprocess.run(['git', 'stash', 'clear'])
 
 		time.sleep(1)
+
+		serviceFilePath = Path('/etc/systemd/system/ProjectAlice.service')
+		if serviceFilePath.exists():
+			subprocess.run(['sudo', 'rm', serviceFilePath])
+
+		serviceFile = Path('ProjectAlice.service').read_text()
+		serviceFile.replace('#WORKINGDIR', f'WorkingDirectory=/home/{getpass.getuser()}/ProjectAlice')
+		serviceFile.replace('#EXECSTART', f'ExecStart=/home/{getpass.getuser()}/ProjectAlice/venv/bin/python main.py')
+		serviceFile.replace('#USER', f'User={getpass.getuser()}')
+
+		if not Path('venv').exists():
+			self.logInfo('Not running with venv, I need to create it')
+			subprocess.run(['sudo', 'apt', 'install', 'python3-venv', '-y'])
+			subprocess.run(['python3.7', '-m', 'venv', 'venv'])
+			self.logInfo('Installed virtual environement, restarting...')
+			subprocess.run(['sudo', 'systemctl', 'enable', 'ProjectAlice'])
+			subprocess.run(['sudo', 'shutdown', '-r', 'now'])
+		else:
+			if not hasattr(sys, 'real_prefix') or (hasattr(sys, 'base_prefix') and sys.base_prefix == sys.prefix):
+				self.logFatal('Please run using the virtual environement: "./venv/bin/python main.py"')
 
 		subprocess.run([PIP, 'uninstall', '-y', '-r', str(Path(self._rootDir, 'pipuninstalls.txt'))])
 
@@ -163,17 +185,20 @@ network={
 
 		# Do some installation if wanted by the user
 		if 'doGroundInstall' not in initConfs or initConfs['doGroundInstall']:
-			subprocess.run(['sudo', 'apt', 'install', f'system/snips/snips-platform-common_0.64.0_armhf.deb'])
+
+			subprocess.run(['sudo', 'apt', 'install', '-y' f'./system/snips/snips-platform-common_0.64.0_armhf.deb'])
+
+			subprocess.run(['wget', 'http://ftp.us.debian.org/debian/pool/non-free/s/svox/libttspico0_1.0+git20130326-9_armhf.deb'])
+			subprocess.run(['wget', 'http://ftp.us.debian.org/debian/pool/non-free/s/svox/libttspico-utils_1.0+git20130326-9_armhf.deb'])
+			subprocess.run(['sudo', 'apt', 'install', '-y', './libttspico0_1.0+git20130326-9_armhf.deb', './libttspico-utils_1.0+git20130326-9_armhf.deb'])
+
+			subprocess.run(['rm', 'libttspico0_1.0+git20130326-9_armhf.deb'])
+			subprocess.run(['rm', 'libttspico-utils_1.0+git20130326-9_armhf.deb'])
 
 			subprocess.run([PIP, 'install', '-r', str(Path(self._rootDir, 'requirements.txt'))])
 
 			reqs = [line.rstrip('\n') for line in open(Path(self._rootDir, 'sysrequirements.txt'))]
 			subprocess.run(['sudo', 'apt-get', 'install', '-y', '--allow-unauthenticated'] + reqs)
-
-			subprocess.run(['sudo', 'systemctl', 'stop', 'snips-*'])
-			subprocess.run(['sudo', 'systemctl', 'disable', 'snips-nlu'])
-			subprocess.run(['sudo', 'systemctl', 'disable', 'snips-injection'])
-			subprocess.run(['sudo', 'systemctl', 'disable', 'snips-hotword'])
 
 		confPath = Path('/etc/mosquitto/conf.d/websockets.conf')
 		if not confPath.exists():
@@ -209,7 +234,7 @@ network={
 			confs['keepASROffline'] = bool(initConfs['keepASROffline'])
 			confs['keepTTSOffline'] = bool(initConfs['keepTTSOffline'])
 			confs['skillAutoUpdate'] = bool(initConfs['skillAutoUpdate'])
-			confs['tts'] = initConfs['tts'] if initConfs['tts'] in {'pico', 'snips', 'mycroft', 'amazon', 'google', 'watson'} else 'pico'
+			confs['tts'] = initConfs['tts'] if initConfs['tts'] in {'pico', 'mycroft', 'amazon', 'google', 'watson'} else 'pico'
 			confs['awsRegion'] = initConfs['awsRegion']
 			confs['awsAccessKey'] = initConfs['awsAccessKey']
 			confs['awsSecretKey'] = initConfs['awsSecretKey']
@@ -306,15 +331,6 @@ network={
 
 		snipsConf['snips-common']['assistant'] = f'/home/{getpass.getuser()}/ProjectAlice/assistant'
 		snipsConf['snips-hotword']['model'] = [f'/home/{getpass.getuser()}/ProjectAlice/trained/hotwords/snips_hotword=0.53']
-
-		serviceFilePath = Path('/etc/systemd/system/ProjectAlice.service')
-		if serviceFilePath.exists():
-			subprocess.run(['sudo', 'rm', serviceFilePath])
-
-		serviceFile = Path('ProjectAlice.service').read_text()
-		serviceFile.replace('#WORKINGDIR', f'WorkingDirectory=/home/{getpass.getuser()}/ProjectAlice')
-		serviceFile.replace('#EXECSTART', f'ExecStart=/home/{getpass.getuser()}/ProjectAlice/venv/bin/python main.py')
-		serviceFile.replace('#USER', f'User={getpass.getuser()}')
 
 		Path('/tmp/service').write_text(serviceFile)
 		subprocess.run(['sudo', 'mv', '/tmp/service', serviceFilePath])

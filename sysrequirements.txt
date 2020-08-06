@@ -18,8 +18,6 @@ mosquitto-clients
 libxml2-dev
 libxslt-dev
 flac
-libttspico-utils
-libav-tools
 libatlas-base-dev
 gfortran
 ffmpeg
