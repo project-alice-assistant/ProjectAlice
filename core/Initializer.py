@@ -163,7 +163,7 @@ network={
 
 		# Do some installation if wanted by the user
 		if 'doGroundInstall' not in initConfs or initConfs['doGroundInstall']:
-			self.Commons.runRootSystemCommand(['apt', 'install', f'{self.Commons.rootDir()}/system/snips/snips-platform-common_0.64.0_armhf.deb'])
+			subprocess.run(['sudo', 'apt', 'install', f'{self.Commons.rootDir()}/system/snips/snips-platform-common_0.64.0_armhf.deb'])
 
 			subprocess.run([PIP, 'install', '-r', str(Path(self._rootDir, 'requirements.txt'))])
 
