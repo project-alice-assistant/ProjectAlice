@@ -279,9 +279,9 @@ network={
 		confs['probabilityThreshold'] = float(initConfs['probabilityThreshold'] or 0.5)
 		confs['shortReplies'] = bool(initConfs['shortReplies'])
 		confs['whisperWhenSleeping'] = bool(initConfs['whisperWhenSleeping'])
-		confs['ttsLanguage'] = confs['activeLanguage']
-		confs['ttsType'] = 'male'
-		confs['ttsVoice'] = ''
+		confs['ttsLanguage'] = initConfs['ttsLanguage']
+		confs['ttsType'] = initConfs['ttsType']
+		confs['ttsVoice'] = initConfs['ttsVoice']
 		confs['githubUsername'] = initConfs['githubUsername']
 		confs['githubToken'] = initConfs['githubToken']
 
