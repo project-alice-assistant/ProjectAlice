@@ -9,7 +9,7 @@ fi
 git clone https://github.com/respeaker/seeed-voicecard.git
 cd seeed-voicecard || exit
 chmod +x ./install.sh
-./install.sh
+./install.sh --compat-kernel
 
 sleep 1
 
