@@ -9,6 +9,7 @@ from pathlib import Path
 
 import pkg_resources
 import requests
+import yaml
 
 from core.base.model.TomlFile import TomlFile
 from core.base.model.Version import Version
@@ -22,12 +23,6 @@ def isVenv() -> bool:
 	return hasattr(sys, 'real_prefix') or (hasattr(sys, 'base_prefix') and sys.base_prefix != sys.prefix)
 
 PIP = './venv/bin/pip' if isVenv() else 'pip3'
-
-try:
-	import yaml
-except:
-	subprocess.run([PIP, 'install', 'pyyaml'])
-	import yaml
 
 import configTemplate
 from core.base.model.ProjectAliceObject import ProjectAliceObject
