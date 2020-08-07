@@ -64,6 +64,13 @@ class DeviceType(ProjectAliceObject):
 		pass
 
 
+	def onChangedLocation(self, device: Device):
+		# Location has changed:
+		# inform device?
+		# change configs?
+		pass
+
+
 ### Generic part
 	@property
 	def initialLocationSettings(self) -> Dict:

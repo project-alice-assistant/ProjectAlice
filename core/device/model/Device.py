@@ -112,6 +112,11 @@ class Device(ProjectAliceObject):
 		self.saveDevSettings()
 
 
+	def changeLocation(self, locationId: int):
+		self.locationID = locationId
+		self.getDeviceType().onChangedLocation(device=self)
+
+
 	def saveDevSettings(self):
 		self.DatabaseManager.update(tableName=self.DeviceManager.DB_DEVICE,
 		                            callerName=self.DeviceManager.name,

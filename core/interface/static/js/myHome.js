@@ -5,16 +5,19 @@ $(function () {
 	let editMode = false;
 
 	let locationEditMode = false;
-	let moveMode = false;
+	let locationMoveMode = false;
 	let zoneMode = false;
 	let buildingMode = false;
 	let paintingMode = false;
 	let decoratorMode = false;
+	let locationSettingsMode = false;
 
 	let technicalMode = false;
 	let deviceEditMode = false;
 	let deviceInstallerMode = false;
 	let deviceLinkerMode = false;
+	let deviceMoveMode = false;
+	let deviceSettingsMode = false;
 
 	let selectedFloor = '';
 	let selectedDeco = '';
@@ -176,6 +179,18 @@ $(function () {
 		return data;
 	}
 
+	function makeMoveable(mySelector){
+		$(mySelector).each(function() {
+			makeResizableRotatableAndDraggable($(this));
+		});
+	}
+
+	function makeNotMoveable(mySelector){
+		$(mySelector).each(function() {
+			removeResizableRotatableAndDraggable($(this));
+		});
+	}
+
 	function makeResizableRotatableAndDraggable($element, revert) {
 		if(!revert){
 			revert = false;
@@ -207,7 +222,7 @@ $(function () {
 			},
 			stop: function(e){ // need to put it back on stop
 				$(e.target).css({opacity: 1});
-			},
+			}
 		});
 	}
 
@@ -336,7 +351,7 @@ $(function () {
 					// frontend: load link room settings
 				});
 
-			} else if (locationEditMode){
+			} else if (locationSettingsMode){
 				let $settings = $('#settings');
 				let content = "<i>"+data['id']+"</i> <h1>"+data['name']+"</h1>";
 				content += "<div class='configBox'>";
@@ -381,7 +396,7 @@ $(function () {
 		});
 
 		$newZone.on('contextmenu', function () {
-			if (moveMode) {
+			if (locationMoveMode) {
 				let result = confirm('Do you really want to delete this zone?');
 				if (result == true) {
 					$(this).remove();
@@ -478,7 +493,7 @@ $(function () {
 			'</div>');
 
 		$newDevice.on('click touchstart', function () {
-			if(deviceEditMode) {
+			if(deviceSettingsMode) {
 				let $settings = $('#settings');
 				let content = "<h1>" + data['name'] + "</h1>";
 				content += "<h2>" + data['deviceType'] + "</h2>";
@@ -605,6 +620,9 @@ $(function () {
 				// display mode: Try toggling the device
 				$.post( 'Device/'+data['id']+'/toggle')
 					.done(function( $data ) {
+						if(editMode){
+							return;
+						}
 						// check if the result gives a link to open
 						if('href' in $data) {
 							window.open($data['href']);
@@ -653,7 +671,8 @@ $(function () {
 		buildingMode = false;
 		paintingMode = false;
 		decoratorMode = false;
-		moveMode = false;
+		locationMoveMode = false;
+		deviceMoveMode = false;
 		deviceInstallerMode = false;
 		deviceLinkerMode = false;
 
@@ -771,8 +790,8 @@ $(function () {
 			}
 
 			zoneMode = false;
-			markSelectedTool($('#mover'));
-			moveMode = true;
+			markSelectedTool($('#locationMover'));
+			locationMoveMode = true;
 			$('.zindexer').show();
 			$(this).removeClass('floorPlanEditMode-AddingZone');
 		})
@@ -794,7 +813,13 @@ $(function () {
 		zoneMode = false;
 		decoratorMode = false;
 		deviceInstallerMode = false;
-		moveMode = false;
+		locationMoveMode = false;
+		locationSettingsMode = false;
+		deviceMoveMode = false;
+		deviceSettingsMode = false;
+
+		$('#settings').sidebar({side: "right"}).trigger("sidebar:close");
+		$('.ui-droppable').droppable('destroy');
 
 		$('#painterTiles').hide();
 		$('#decoTiles').hide();
@@ -833,12 +858,8 @@ $(function () {
 			$floorPlan.removeClass('floorPlanEditMode-AddingZone');
 			$('#constructionTiles').css('display', 'flex');
 
-			$('.floorPlan-Zone, .floorPlan-Deco').each(function() {
-				removeResizableRotatableAndDraggable($(this));
-			});
-			$('.floorPlan-Wall, .floorPlan-Construction').each(function() {
-				makeResizableRotatableAndDraggable($(this));
-			});
+			makeMoveable('.floorPlan-Wall, .floorPlan-Construction');
+			makeNotMoveable('.floorPlan-Zone, .floorPlan-Deco');
 		} else {
 			$('.floorPlan-Wall, .floorPlan-Construction').each(function() {
 				removeResizableRotatableAndDraggable($(this));
@@ -856,32 +877,37 @@ $(function () {
 			$('#painterTiles').css('display', 'flex');
 			$floorPlan.removeClass('floorPlanEditMode-AddingZone');
 
-			$('.floorPlan-Zone, .floorPlan-Deco, .floorPlan-Wall, .floorPlan-Construction').each(function() {
-				removeResizableRotatableAndDraggable($(this));
-			});
+			makeNotMoveable('.floorPlan-Zone, .floorPlan-Deco, .floorPlan-Wall, .floorPlan-Construction');
 		} else {
 			markSelectedTool(null);
 		}
 	});
 
-	$('#mover').on('click touchstart', function () {
-		markSelectedTool($(this));
+	$('#locationMover').on('click touchstart', function () {
 
-		if (!moveMode) {
-			moveMode = true;
+		if (!locationMoveMode) {
+			markSelectedTool($(this));
+			locationMoveMode = true;
 			$('.zindexer').show();
+			makeMoveable('.floorPlan-Zone');
+			makeNotMoveable('.floorPlan-Deco, .floorPlan-Wall, .floorPlan-Construction');
 
-			$('.floorPlan-Zone').each(function() {
-				makeResizableRotatableAndDraggable($(this));
+			$('.floorPlan').droppable({
+  				drop: function( event, ui ) {
+  					let roomChange = false;
+  					// check if room didn't change
+					if (ui.draggable.parent()[0] != this){
+						roomChange = true;
+					}
+					ui.draggable.draggable( "option", "revert", false );
+					ui.draggable.css({top: ui.offset.top - $(this).offset().top, left: ui.offset.left - $(this).offset().left } );
+					setTimeout( function() { ui.draggable.draggable( "option", "revert", true ); }, 1000 );
+  				}
 			});
 
-			$('.floorPlan-Deco, .floorPlan-Wall, .floorPlan-Construction').each(function() {
-				removeResizableRotatableAndDraggable($(this));
-			});
 		} else {
-			$('.floorPlan-Zone').each(function() {
-				removeResizableRotatableAndDraggable($(this));
-			});
+			$('.floorPlan').droppable('destroy');
+			makeNotMoveable('.floorPlan-Zone');
 			markSelectedTool(null);
 		}
 	});
@@ -891,20 +917,46 @@ $(function () {
 
 		if (!decoratorMode) {
 			decoratorMode = true;
+			$('.floorPlan-Deco').css('pointer-events', 'auto');
 			$('#decoTiles').css('display', 'flex');
 			$floorPlan.removeClass('floorPlanEditMode-AddingZone');
-
-			$('.floorPlan-Deco').each(function() {
-				makeResizableRotatableAndDraggable($(this));
+			$('.floorPlan-Zone').droppable({
+  				drop: function( event, ui ) {
+  					let roomChange = false;
+  					let errorOccured = false;
+					// check if room didn't change
+					if (ui.draggable.parent()[0] != this){
+						roomChange = true;
+					}
+					if(roomChange) {
+						$(this).append(ui.draggable);
+					}
+						//todo add in icon for moving
+						ui.draggable.draggable( "option", "revert", false );
+					    ui.draggable.css({top: ui.offset.top - $(this).offset().top, left: ui.offset.left - $(this).offset().left } );
+						setTimeout( function() { ui.draggable.draggable( "option", "revert", true ); }, 1000 );
+  				}
 			});
 
-			$('.floorPlan-Zone, .floorPlan-Wall, .floorPlan-Construction').each(function() {
-				removeResizableRotatableAndDraggable($(this));
-			});
+			makeMoveable('.floorPlan-Deco');
+
+			makeNotMoveable('.floorPlan-Zone, .floorPlan-Wall, .floorPlan-Construction');
 		} else {
-			$('.floorPlan-Deco').each(function() {
-				removeResizableRotatableAndDraggable($(this));
-			});
+			$('.floorPlan-Zone').droppable('destroy');
+			makeNotMoveable('.floorPlan-Deco');
+			markSelectedTool(null);
+		}
+	});
+
+	$('#locationSettings').on('click touchstart', function () {
+
+		if (!locationSettingsMode) {
+			markSelectedTool($(this));
+			locationSettingsMode = true;
+			$('.floorPlan-Deco').css('pointer-events', 'none');
+			makeNotMoveable('.floorPlan-Zone, .floorPlan-Deco, .floorPlan-Wall, .floorPlan-Construction');
+		} else {
+			locationSettingsMode = false;
 			markSelectedTool(null);
 		}
 	});
@@ -917,10 +969,35 @@ $(function () {
 			deviceInstallerMode = true;
 			$('#deviceTiles').css('display', 'flex');
 			$floorPlan.removeClass('floorPlanEditMode-AddingZone');
+			makeNotMoveable('.floorPlan-Device');
 
-			$('.floorPlan-Device').each(function() {
-				makeResizableRotatableAndDraggable($(this), true);
-			});
+		} else {
+			makeNotMoveable('.floorPlan-Device');
+			markSelectedTool(null);
+		}
+	});
+
+	$('#deviceLinker').on('click touchstart', function () {
+		markSelectedTool($(this));
+
+		if(!deviceLinkerMode){
+			deviceLinkerMode = true;
+			makeNotMoveable('.floorPlan-Device');
+		}else{
+			deviceLinkerMode = false;
+			markSelectedTool(null);
+			removeAllBeziers();
+		}
+
+	});
+
+	$('#deviceMover').on('click touchstart', function () {
+
+		if (!deviceMoveMode) {
+			markSelectedTool($(this));
+			deviceMoveMode = true;
+
+			makeMoveable('.floorPlan-Device');
 
 			$('.floorPlan-Zone').droppable({
   				drop: function( event, ui ) {
@@ -970,36 +1047,25 @@ $(function () {
 						// nothing has to be done here!
 					}
   				}
-			})
-
-			$('.floorPlan-Zone, .floorPlan-Wall, .floorPlan-Construction').each(function() {
-				removeResizableRotatableAndDraggable($(this));
 			});
 
-			$('.floorPlan-Deco, .floorPlan-Wall, .floorPlan-Construction').each(function() {
-				removeResizableRotatableAndDraggable($(this));
-			});
 		} else {
-			$('.floorPlan-Device').each(function() {
-				removeResizableRotatableAndDraggable($(this));
-			});
+			makeNotMoveable('.floorPlan-Device');
+			$('.floorPlan-Zone').droppable('destroy');
 			markSelectedTool(null);
 		}
 	});
 
-	$('#deviceLinker').on('click touchstart', function () {
+	$('#deviceSettings').on('click touchstart', function () {
 		markSelectedTool($(this));
 
-		if(!deviceLinkerMode){
-			deviceLinkerMode = true;
-			setBPMode(true);
-		}else{
-			deviceLinkerMode = false;
+		if (!deviceSettingsMode) {
+			deviceSettingsMode = true;
+			makeNotMoveable('.floorPlan-Device');
+		} else {
+			deviceSettingsMode = false;
 			markSelectedTool(null);
-			removeAllBeziers();
-			setBPMode(false);
 		}
-
 	});
 
 	function removeAllBeziers(){

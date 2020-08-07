@@ -136,14 +136,14 @@ class DeviceManager(Manager):
 			raise Exception("Location not found")
 		# check location but not global
 		self.assertDeviceTypeAllowedAtLocation(typeId=device.getDeviceType().id, locationId=locationId, moveDevice=True)
+		# update device and trigger device type dependent Updates
+		# might raise exception and cancle DB update
+		device.changeLocation(locationId=locationId)
 		# update DB
 		self.DatabaseManager.update(tableName=self.DB_DEVICE,
 		                            callerName=self.name,
 		                            values={'locationID': locationId},
 		                            row=('id', device.id))
-
-		# update data
-		device.locationID = locationId
 
 
 	def devUIDtoID(self, uid: str) -> int:
