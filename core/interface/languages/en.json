@@ -57,5 +57,6 @@
 	"noConfs": "No config for this widget!",
 	"saving": "Saving",
 	"saved": "Saved",
-	"saveFailed": "Save failed"
+	"saveFailed": "Save failed",
+	"confMoveDevice": "Do you want to save and move this device to the new location: "
 }
