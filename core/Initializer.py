@@ -134,6 +134,7 @@ network={
 		# Update our system and sources
 		subprocess.run(['sudo', 'apt-get', 'update'])
 		subprocess.run(['sudo', 'apt-get', 'dist-upgrade', '-y'])
+		subprocess.run(['sudo', 'apt', 'autoremove', '-y'])
 		subprocess.run(['git', 'clean', '-df'])
 		subprocess.run(['git', 'stash'])
 		subprocess.run(['git', 'checkout', updateSource])
