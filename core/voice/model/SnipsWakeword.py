@@ -14,8 +14,8 @@ class SnipsWakeword(WakewordEngine):
 
 
 	def installDependencies(self) -> bool:
-		installed = self.Commons.runRootSystemCommand(['apt', 'install', f'{self.Commons.rootDir()}/system/snips/snips-hotword_0.64.0_armhf.deb'])
-		installed2 = self.Commons.runRootSystemCommand(['apt', 'install', f'{self.Commons.rootDir()}/system/snips/snips-hotword-model-heysnipsv4_0.64.0_armhf.deb'])
+		installed = self.Commons.runRootSystemCommand(['apt-get', 'install', '-y', f'{self.Commons.rootDir()}/system/snips/snips-hotword_0.64.0_armhf.deb'])
+		installed2 = self.Commons.runRootSystemCommand(['apt-get', 'install', '-y', f'{self.Commons.rootDir()}/system/snips/snips-hotword-model-heysnipsv4_0.64.0_armhf.deb'])
 		if installed.returncode or installed2.returncode:
 			self.logError(f"Couldn't install Snips wakeword: {installed.stderr}")
 			return False
