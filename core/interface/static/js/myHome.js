@@ -236,6 +236,7 @@ $(function () {
 			data["display"] = {};
 		}
 		let $newZone = $('<div class="floorPlan-Zone ' + data["display"]["texture"] + '" ' +
+			'id="floorPlan-Zone_'+data["id"]+'" '+
 			'data-id="' + data["id"] + '" ' +
 			'data-name="' + data["name"] + '" ' +
 			'data-texture="' + data["display"]["texture"] + '" ' +
@@ -400,8 +401,12 @@ $(function () {
 				}
 				return false;
 			} else if (deviceLinkerMode){
-				$.post('Device/'+ selectedDevice.data('id') +'/removeLink/'+ $(this).data('id')).done(function () {
-					$(this).children('.inputOrText').connections('remove');
+				target = this;
+				$.post('Device/'+ selectedDevice.data('id') +'/removeLink/'+ $(this).data('id')).done(function (res) {
+					if( handleError(res) ){
+						return;
+					}
+					$(target).children('.inputOrText').connections('remove');
 				})
 				return false;
 			}

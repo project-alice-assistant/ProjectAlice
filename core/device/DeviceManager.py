@@ -237,6 +237,9 @@ class DeviceManager(Manager):
 
 	def deleteLink(self, _id: int = None, deviceId: int = None, locationId: int = None):
 		link = self.DeviceManager.getLink(_id=_id, deviceId=deviceId, locationId=locationId)
+		if  not link:
+			raise Exception('Link not found.')
+		self.logInfo(f'Removing link {link._id}')
 		self._deviceLinks.pop(link._id)
 		self.DatabaseManager.delete(tableName=self.DB_LINKS, callerName=self.name, values={"id": link._id})
 
