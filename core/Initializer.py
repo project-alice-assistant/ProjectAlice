@@ -190,6 +190,10 @@ network={
 		if 'doGroundInstall' not in initConfs or initConfs['doGroundInstall']:
 
 			subprocess.run(['sudo', 'apt', 'install', '-y' f'./system/snips/snips-platform-common_0.64.0_armhf.deb'])
+			subprocess.run(['sudo', 'apt', 'install', '-y' f'./system/snips/snips-hotword_0.64.0_armhf.deb'])
+			subprocess.run(['sudo', 'apt', 'install', '-y' f'./system/snips/snips-hotword-model-heysnipsv4_0.64.0_armhf.deb'])
+
+			subprocess.run(['sudo', 'systemctl', 'disable', 'snips-hotword'])
 
 			subprocess.run(['wget', 'http://ftp.us.debian.org/debian/pool/non-free/s/svox/libttspico0_1.0+git20130326-9_armhf.deb'])
 			subprocess.run(['wget', 'http://ftp.us.debian.org/debian/pool/non-free/s/svox/libttspico-utils_1.0+git20130326-9_armhf.deb'])
