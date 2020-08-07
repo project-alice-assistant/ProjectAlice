@@ -212,7 +212,7 @@ network={
 			subprocess.run(['sudo', 'cp', str(Path(self._rootDir, 'system/websockets.conf')), str(confPath)])
 
 		subprocess.run(['sudo', 'systemctl', 'stop', 'mosquitto'])
-		subprocess.run(['sudo', 'sed', '-i', '-e', "'s/persistence true/persistence false/'", '/etc/mosquitto/mosquitto.conf'])
+		subprocess.run(['sudo', 'sed', '-i', '-e', '\'s/persistence true/persistence false/\'', '/etc/mosquitto/mosquitto.conf'])
 		subprocess.run(['sudo', 'rm', '/var/lib/mosquitto/mosquitto.db '])
 
 		# Now let's dump some values to their respective places
@@ -340,7 +340,7 @@ network={
 			snipsConf['snips-common']['mqtt_password'] = initConfs['mqttPassword']
 
 		snipsConf['snips-common']['assistant'] = f'/home/{getpass.getuser()}/ProjectAlice/assistant'
-		snipsConf['snips-hotword']['model'] = [f'/home/{getpass.getuser()}/ProjectAlice/trained/hotwords/snips_hotword=0.53']
+		snipsConf['snips-hotword']['model'] = [f'/home/{getpass.getuser()}/ProjectAlice/trained/hotwords/snips_hotword/hey_snips=0.53']
 
 		self.logInfo('Installing audio hardware')
 		audioHardware = ''
