@@ -38,6 +38,7 @@ def isVenv() -> bool:
 def restart():
 	sys.stdout.flush()
 	try:
+		import psutil
 		# Close everything related to ProjectAlice, allows restart without component failing
 		process = psutil.Process(os.getpid())
 		for handler in process.open_files() + process.connections():
@@ -59,7 +60,6 @@ try:
 	import psutil
 except:
 	subprocess.run([PIP, 'install', 'psutil'])
-	restart()
 
 try:
 	import requests

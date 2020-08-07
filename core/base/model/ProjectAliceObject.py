@@ -118,7 +118,8 @@ class ProjectAliceObject:
 				return False
 
 		for dep in self.DEPENDENCIES['system']:
-			if not self.Commons.runRootSystemCommand(['dpkg', '-l', '|', 'grep', dep]):
+			result = self.Commons.runRootSystemCommand(['dpkg-query', '-l', dep])
+			if result.returncode:
 				self.logWarning(f'Found missing dependency: {dep}')
 				return False
 
