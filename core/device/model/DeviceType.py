@@ -1,5 +1,5 @@
-import sqlite3
 import json
+import sqlite3
 from typing import Dict
 
 from core.base.model.ProjectAliceObject import ProjectAliceObject
@@ -78,7 +78,7 @@ class DeviceType(ProjectAliceObject):
 
 
 	def saveToDB(self):
-		values = {'skill': self.skill, 'name': self.name, 'locSettings': self._locSettings, 'devSettings': self._devSettings}
+		values = {'skill': self.skill, 'name': self.name, 'locSettings': json.dumps(self._locSettings), 'devSettings': json.dumps(self._devSettings)}
 		self._id = self.DatabaseManager.insert(tableName=self.DeviceManager.DB_TYPES, values=values, callerName=self.DeviceManager.name)
 
 
@@ -92,7 +92,7 @@ class DeviceType(ProjectAliceObject):
 			self.logInfo(f'Updating device Settings structure for {self.name}')
 			self.DatabaseManager.update(tableName=self.DeviceManager.DB_TYPES,
 			                            callerName=self.DeviceManager.name,
-			                            values={'devSettings': self._devSettings},
+			                            values={'devSettings': json.dumps(self._devSettings)},
 			                            row=('id', self.id))
 			for device in self.DeviceManager.getDevicesByTypeID(deviceTypeID=self.id):
 				device.changedDevSettingsStructure(self._devSettings)
@@ -101,7 +101,7 @@ class DeviceType(ProjectAliceObject):
 			self.logInfo(f'Updating locations Settings structure for {self.name}')
 			self.DatabaseManager.update(tableName=self.DeviceManager.DB_TYPES,
 			                            callerName=self.DeviceManager.name,
-			                            values={'locSettings': self._locSettings},
+			                            values={'locSettings': json.dumps(self._locSettings)},
 			                            row=('id', self.id))
 			for links in self.DeviceManager.getDeviceLinksByType(deviceType=self.id):
 				links.changedLocSettingsStructure(self._locSettings)
