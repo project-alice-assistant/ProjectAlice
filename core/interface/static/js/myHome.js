@@ -176,7 +176,10 @@ $(function () {
 		return data;
 	}
 
-	function makeResizableRotatableAndDraggable($element) {
+	function makeResizableRotatableAndDraggable($element, revert) {
+		if(!revert){
+			revert = false;
+		}
 		$element.resizable({
 			containment: 'parent',
 			grid       : [5, 5]
@@ -189,11 +192,22 @@ $(function () {
 				left: 0
 			}
 		}).draggable({
+			addClasses   : false,
 			cursor       : 'move',
 			distance     : 10,
 			grid         : [5, 5],
 			snap         : true,
-			snapTolerance: 5
+			snapTolerance: 5,
+			zIndex		 : 999,
+			revert       : revert,
+			helper	     : "clone",
+			appendTo     : "body",
+			start: function(e){
+				$(e.target).css({opacity: 0.3});
+			},
+			stop: function(e){ // need to put it back on stop
+				$(e.target).css({opacity: 1});
+			},
 		});
 	}
 
@@ -905,8 +919,58 @@ $(function () {
 			$floorPlan.removeClass('floorPlanEditMode-AddingZone');
 
 			$('.floorPlan-Device').each(function() {
-				makeResizableRotatableAndDraggable($(this));
+				makeResizableRotatableAndDraggable($(this), true);
 			});
+
+			$('.floorPlan-Zone').droppable({
+  				drop: function( event, ui ) {
+  					let userConf = false;
+  					let roomChange = false;
+  					let errorOccured = false;
+					// check if room didn't change
+					if (ui.draggable.parent()[0] != this){
+						roomChange = true;
+					}
+					if(roomChange) {
+						//todo replace with translateable text
+						userConf = confirm('Do you want to move this device to the new location: ' + $(this).attr('data-name'));
+					}
+					if(!roomChange || userConf){
+						//save to db
+						if(roomChange){
+							//async required to revert with jquery draggable standard
+							newParent = this;
+							$.ajax({'url': 'Device/' + ui.draggable.data('id') + '/changeLocation/' + $(newParent).data('id'),
+									'async': false,
+									'method': 'POST'} )
+								.done(function( result ) {
+									if(handleError(result)){
+										errorOccured = true
+										return;
+									}
+									$(newParent).append(ui.draggable);
+								}).fail(function(result) {
+									alert("I just can't reach my servers!")
+									errorOccured = true
+							});
+						}
+						if(errorOccured){
+							return;
+						}
+						//todo add in icon for moving
+						ui.draggable.draggable( "option", "revert", false );
+					    ui.draggable.css({top: ui.offset.top - $(this).offset().top, left: ui.offset.left - $(this).offset().left } );
+					    if(userConf){
+							setBPMode(false);
+					    	saveHouse();
+							setBPMode(true);
+						}
+						setTimeout( function() { ui.draggable.draggable( "option", "revert", true ); }, 1000 );
+					} else {
+						// nothing has to be done here!
+					}
+  				}
+			})
 
 			$('.floorPlan-Zone, .floorPlan-Wall, .floorPlan-Construction').each(function() {
 				removeResizableRotatableAndDraggable($(this));

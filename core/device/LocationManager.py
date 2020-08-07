@@ -104,7 +104,7 @@ class LocationManager(Manager):
 			                            },
 			                            row=('id', values['id']))
 			for device in values['devices']:
-				self.DeviceManager.updateDevice(device)
+				self.DeviceManager.updateDeviceDisplay(device)
 
 
 	# noinspection PyUnusedLocal
