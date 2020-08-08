@@ -400,8 +400,6 @@ network={
 			settings = Path(f'system/asounds/matrix.conf').read_text()
 			confs['asoundConfig'] = settings
 
-			snipsConf['snips-audio-server']['mike'] = 'MATRIXIO-SOUND: - (hw:2,0)'
-
 			if initConfs['useHLC']:
 				subprocess.run(['sudo', 'sed', '-i', '-e', f's/%HARDWARE%/{audioHardware.lower()}/', str(hlcServiceFilePath)])
 
