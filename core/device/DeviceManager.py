@@ -2,10 +2,10 @@ import json
 import sqlite3
 import time
 import uuid
+from random import shuffle
 from typing import Dict, List, Optional
 
 from paho.mqtt.client import MQTTMessage
-from random import shuffle
 from serial.tools import list_ports
 
 from core.base.model.Manager import Manager
@@ -230,6 +230,7 @@ class DeviceManager(Manager):
 			raise Exception(f'There is already a link from {deviceId} to {locationId}')
 		#todo check if adding locSettings here is required
 		values = {'deviceID': deviceId, 'locationID': locationId}
+		# noinspection SqlResolve
 		values['id'] = self.databaseInsert(tableName=self.DB_LINKS, query='INSERT INTO :__table__ (deviceID, locationID) VALUES (:deviceID, :locationID)', values=values)
 		self.logInfo(f'Added link from device {deviceId} to location {locationId}')
 		self._deviceLinks[values['id']] = DeviceLink(data=values)
@@ -239,9 +240,9 @@ class DeviceManager(Manager):
 		link = self.DeviceManager.getLink(_id=_id, deviceId=deviceId, locationId=locationId)
 		if  not link:
 			raise Exception('Link not found.')
-		self.logInfo(f'Removing link {link._id}')
-		self._deviceLinks.pop(link._id)
-		self.DatabaseManager.delete(tableName=self.DB_LINKS, callerName=self.name, values={"id": link._id})
+		self.logInfo(f'Removing link {link.id}')
+		self._deviceLinks.pop(link.id)
+		self.DatabaseManager.delete(tableName=self.DB_LINKS, callerName=self.name, values={"id": link.id})
 
 
 	def deleteDeviceUID(self, deviceUID: str):
@@ -369,6 +370,7 @@ class DeviceManager(Manager):
 
 	## base
 	def getDeviceTypeBySkillRAW(self, skill: str):
+		# noinspection SqlResolve
 		data = self.DatabaseManager.fetch(
 			tableName=self.DB_TYPES,
 			query='SELECT * FROM :__table__ WHERE skill = :skill',

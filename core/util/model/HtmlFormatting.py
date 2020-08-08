@@ -1,9 +1,8 @@
 import logging
-from datetime import datetime
-from typing import Match
-
 import re
+from datetime import datetime
 from enum import Enum
+from typing import Match
 
 
 class HtmlFormatting(Enum):
@@ -26,7 +25,7 @@ class Formatter(logging.Formatter):
 	BOLD = re.compile(r'\*\*(.+?)\*\*')
 	DIM = re.compile(r'--(.+?)--')
 	UNDERLINED = re.compile(r'__(.+?)__')
-	COLOR = re.compile(r'(?i)!\[(red|green|yellow|blue|grey)\]\((.+?)\)')
+	COLOR = re.compile(r'(?i)!\[(red|green|yellow|blue|grey)]\((.+?)\)')
 	THE_REST = re.compile(r'</span>(.+?)<span')
 
 	COLORS = {

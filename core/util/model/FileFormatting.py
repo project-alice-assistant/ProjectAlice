@@ -8,7 +8,7 @@ class Formatter(logging.Formatter):
 	BOLD = re.compile(r'\*\*(.+?)\*\*')
 	DIM = re.compile(r'--(.+?)--')
 	UNDERLINED = re.compile(r'__(.+?)__')
-	COLOR = re.compile(r'(?i)!\[(red|green|yellow|blue|gray)\]\((.+?)\)')
+	COLOR = re.compile(r'(?i)!\[(red|green|yellow|blue|gray)]\((.+?)\)')
 
 
 	def __init__(self):

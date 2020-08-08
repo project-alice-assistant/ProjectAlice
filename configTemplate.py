@@ -1,4 +1,12 @@
 settings = {
+	'asoundConfig': {
+		'defaultValue': '',
+		'dataType'    : 'longstring',
+		'isSensitive' : False,
+		'description' : 'Your asound settings',
+		'beforeUpdate': 'injectAsound',
+		'category'    : 'system'
+	},
 	'recordAudioAfterWakeword': {
 		'defaultValue': False,
 		'dataType'    : 'boolean',
@@ -55,7 +63,7 @@ settings = {
 		'dataType'    : 'boolean',
 		'isSensitive' : False,
 		'description' : 'If this device is a server without sound and mic, turn this to True',
-		'onUpdate'    : 'enableDisableSoundInSnips',
+		'onUpdate'    : 'enableDisableSound',
 		'category'    : 'device'
 	},
 	'notUnderstoodRetries'    : {
@@ -237,7 +245,7 @@ settings = {
 		'defaultValue': 'pico',
 		'dataType'    : 'list',
 		'isSensitive' : False,
-		'values'      : {'Pico': 'pico', 'Mycroft': 'mycroft', 'Amazon Polly': 'amazon', 'Google Wavenet': 'google', 'IBM Watson': 'watson', 'Snips Makers Tts': 'snips'},
+		'values'      : {'Pico': 'pico', 'Mycroft': 'mycroft', 'Amazon Polly': 'amazon', 'Google Wavenet': 'google', 'IBM Watson': 'watson'},
 		'description' : 'The Tts to use. Can\'t use an online Tts if you have set keepTTSOffline!',
 		'onUpdate'    : 'reloadTTS',
 		'category'    : 'tts'
@@ -246,7 +254,7 @@ settings = {
 		'defaultValue': 'pico',
 		'dataType'    : 'list',
 		'isSensitive' : False,
-		'values'      : {'Pico': 'pico', 'Mycroft': 'mycroft', 'Amazon Polly': 'amazon', 'Google Wavenet': 'google', 'IBM Watson': 'watson', 'Snips Makers Tts': 'snips'},
+		'values'      : {'Pico': 'pico', 'Mycroft': 'mycroft', 'Amazon Polly': 'amazon', 'Google Wavenet': 'google', 'IBM Watson': 'watson'},
 		'description' : 'The Tts to use in case the default Tts becomes unavailable.',
 		'onUpdate'    : 'reloadTTS',
 		'category'    : 'tts'
@@ -256,7 +264,7 @@ settings = {
 		'dataType'    : 'string',
 		'isSensitive' : False,
 		'description' : 'Language for the Tts to use',
-		'help'        : 'PICO VOICE<br>AMAZON POLLY<br>MYCROFT<br>GOOGLE WAVENET<br>IBM WATSON<br>Snips Makers Tts',
+		'help'        : 'PICO VOICE<br>AMAZON POLLY<br>MYCROFT<br>GOOGLE WAVENET<br>IBM WATSON',
 		'onUpdate'    : 'reloadTTS',
 		'category'    : 'tts'
 	},

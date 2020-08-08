@@ -26,10 +26,11 @@ nav { background-color: var(--mainBG); width: 9.4em; flex-shrink: 0; margin-left
 main { background-color: var(--mainBG); flex-grow: 1; position: relative; margin-left: 2px;  flex-flow: column; padding: .3em; }
 a:link, a:visited, a:active { text-decoration: none; color: var(--text); }
 a:hover { color: var(--hover); }
-input, select { background-color: var(--mainBG); color: var(--text); border: 1px dotted #636363; outline: none; box-sizing: content-box; width: auto; padding: 5px; margin-left: 20px; margin-right: 20px; }
-input:hover { border: dotted 1px; }
-input[type='text'], input[type='password'], input[type='number'], select { width: auto; }
-input:focus { border: var(--hover) dotted 1px; }
+input, select, textarea { background-color: var(--mainBG); color: var(--text); border: 1px dotted #636363; outline: none; box-sizing: content-box; width: auto; padding: 5px; margin-left: 20px; margin-right: 20px; }
+input:hover, textarea:hover { border: dotted 1px; }
+input[type='text'], input[type='password'], input[type='number'], select, textarea { width: auto; }
+textarea { min-height: 200px; }
+input:focus, textarea:focus { border: var(--hover) dotted 1px; }
 
 /* ======================= COLOR MARKINGS ======================== */
 .red, .disabled, .warning, .saveFailed, .logError, .logRed { color: red; }
@@ -154,14 +155,14 @@ button.button{ font-size: 1.6em; height: 2em; }
 
 /* Configuration Screens */
 .configBox { width: 100%; display: table; font-family: var(--long); background-color: var(--secondary); }
-.configCategory { width: 100%; display: table; margin-bottom: 30px; font-family: var(--long); background-color: var(--secondary); }
-.configLine { width: 100%; display: table-row; height: 40px; }
+.configCategory { width: 100%; display: table; margin-bottom: 30px; font-family: var(--long); background-color: var(--secondary); border-spacing: 0 10px; }
+.configLine { width: 100%; display: table-row; }
 
-.configLine input, select { width: 500px; }
+.configLine input, select, textarea { width: 500px; }
 
 .configCategoryTitle { display: table-caption; padding: 10px; text-align: left; vertical-align: middle; background-color: var(--windowBG); font-size: 1.3em; text-transform: uppercase; }
-.configLabel { display: table-cell; min-width: 250px; padding: 0 10px 0 10px; text-align: left; vertical-align: middle; overflow: hidden; cursor: pointer; }
-.configInput { display: table-cell; width: 100%; padding-left: 20px; text-align: left; vertical-align: middle; }
+.configLabel { display: table-cell; min-width: 250px; padding: 0 10px 0 10px; text-align: left; vertical-align: top; overflow: hidden; cursor: pointer; }
+.configInput { display: table-cell; width: 100%; padding-left: 20px; padding-right: 5px; text-align: left; vertical-align: top; }
 .configOutput { position: relative; display: block; left: 48%; top: -10px; width: 50px; margin: 0; padding: 0; }
 
 /* Admin Auth */

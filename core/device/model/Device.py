@@ -13,6 +13,7 @@ class Device(ProjectAliceObject):
 	connected: bool = False
 	name: str = ''
 	lastContact: int = 0
+	locationID: int = 0
 
 	id: int = field(init=False)
 	deviceTypeID: int = field(init=False)

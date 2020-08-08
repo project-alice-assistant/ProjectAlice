@@ -1,6 +1,7 @@
+import json
+
 from flask import jsonify, render_template, request, send_from_directory
 from flask_classful import route
-import json
 
 from core.interface.model.View import View
 
@@ -216,8 +217,8 @@ class MyHomeView(View):
 			return jsonify(error=f'Failed adding room/device Link: {e}')
 
 
-	@route('/Device/u/<path:uid>/icon', methods=['GET'])
-	def getIconUID(self, uid: str):
+	@route('/Device/u/<path:_uid>/icon', methods=['GET'])
+	def getIconUID(self, _uid: str):
 		return self.getIcon(id=self.DeviceManager.devUIDtoID())
 
 

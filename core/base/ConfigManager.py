@@ -71,18 +71,18 @@ class ConfigManager(Manager):
 				if setting == 'supportedLanguages':
 					continue
 
-				if definition['dataType'] != 'list':
+				if definition['dataType'] != 'list' and definition['dataType'] != 'longstring':
 					if not isinstance(aliceConfigs[setting], type(definition['defaultValue'])):
 						changes = True
 						try:
-							# First try to cast the seting we have to the new type
+							# First try to cast the setting we have to the new type
 							aliceConfigs[setting] = type(definition['defaultValue'])(aliceConfigs[setting])
 							self.logWarning(f'Existing configuration type missmatch: **{setting}**, cast variable to template configuration type')
 						except Exception:
 							# If casting failed let's fall back to the new default value
 							self.logWarning(f'Existing configuration type missmatch: **{setting}**, replaced with template configuration')
 							aliceConfigs[setting] = definition['defaultValue']
-				else:
+				elif definition['dataType'] == 'list':
 					values = definition['values'].values() if isinstance(definition['values'], dict) else definition['values']
 
 					if aliceConfigs[setting] not in values:
@@ -147,7 +147,7 @@ class ConfigManager(Manager):
 			except:
 				self.logWarning(f'Value missmatch for config **{key}** in skill **{skillName}**')
 				value = 0
-		elif vartype in {'string', 'email', 'password'}:
+		elif vartype in {'string', 'email', 'password', 'longstring'}:
 			try:
 				value = str(value)
 			except:
@@ -460,16 +460,13 @@ class ConfigManager(Manager):
 		self.UserManager.addUserPinCode('admin', self.getAliceConfigByName('adminPinCode'))
 
 
-	def enableDisableSoundInSnips(self):
+	def enableDisableSound(self):
 		if self.getAliceConfigByName('disableSoundAndMic'):
 			self.WakewordManager.disableEngine()
-			self.updateSnipsConfiguration(parent='snips-audio-server', key='disable_playback', value=True)
-			self.updateSnipsConfiguration(parent='snips-audio-server', key='disable_capture', value=True, restartSnips=True)
+			self.AudioServer.onStop()
 		else:
 			self.WakewordManager.enableEngine()
-			del self._snipsConfigurations['snips-audio-server']['disable_playback']
-			del self._snipsConfigurations['snips-audio-server']['disable_capture']
-			self._snipsConfigurations.dump()
+			self.AudioServer.onStart()
 
 
 	def restartWakewordEngine(self):
@@ -482,6 +479,15 @@ class ConfigManager(Manager):
 
 	def refreshStoreData(self):
 		self.SkillStoreManager.refreshStoreData()
+
+
+	def injectAsound(self, newSettings: str):
+		newSettings = newSettings.replace('\r\n', '\n')
+		if self.getAliceConfigByName('asoundConfig') != newSettings:
+			tmp = Path('/tmp/asound')
+			tmp.write_text(newSettings)
+			self.Commons.runRootSystemCommand(['sudo', 'mv', tmp, '/etc/asound.conf'])
+			self.Commons.runRootSystemCommand(['sudo', 'alsactl', 'kill', 'rescan'])
 
 
 	def getGithubAuth(self) -> tuple:

@@ -83,6 +83,7 @@ class DeviceType(ProjectAliceObject):
 
 
 	def checkChangedSettings(self):
+		# noinspection SqlResolve
 		row = self.DeviceManager.databaseFetch(tableName=self.DeviceManager.DB_TYPES,
 									            query='SELECT * FROM :__table__ WHERE id = :id',
 			                                    values={'id':self.id},

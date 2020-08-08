@@ -1,20 +1,19 @@
 from __future__ import annotations
 
 import json
+import re
 import subprocess
+import tempfile
 from pathlib import Path
 from textwrap import dedent
 from typing import Any, Dict, ItemsView, Optional, Union, ValuesView
-
-import re
-import tempfile
 
 from core.base.model.ProjectAliceObject import ProjectAliceObject
 
 
 class TomlFile(ProjectAliceObject):
 
-	SECTION_PATTERN = re.compile(r'^\[(?P<sectionName>.+)\]$')
+	SECTION_PATTERN = re.compile(r'^\[(?P<sectionName>.+)]$')
 	CONFIG_PATTERN = re.compile(r'^(#)?( )?(?P<configName>.+)?( )=?( )(?P<configValue>.*)')
 
 	def __init__(self, path: Path):

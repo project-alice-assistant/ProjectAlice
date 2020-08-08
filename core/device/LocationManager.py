@@ -55,7 +55,7 @@ class LocationManager(Manager):
 			raise Exception(f'Location {name} already exists')
 
 
-	def deleteLocation(self, locId: str) -> bool:
+	def deleteLocation(self, locId: int) -> bool:
 		self.DatabaseManager.delete(tableName=self.TABLE,
 		                            callerName=self.name,
 		                            values={'id': locId})
@@ -63,7 +63,7 @@ class LocationManager(Manager):
 		return True
 
 
-	def addLocationSynonym(self, locId: str, synonym: str):
+	def addLocationSynonym(self, locId: int, synonym: str):
 		location = self.getLocationWithName(synonym)
 		if location:
 			raise Exception(f'Synonym already used for {location.name}')
@@ -74,7 +74,7 @@ class LocationManager(Manager):
 		                            row=('id', locId))
 
 
-	def deleteLocationSynonym(self, locId: str, synonym: str):
+	def deleteLocationSynonym(self, locId: int, synonym: str):
 		synlist = self._locations[locId].deleteSynonym(synonym)
 		self.DatabaseManager.update(tableName=self.TABLE,
 		                            callerName=self.name,
@@ -84,7 +84,7 @@ class LocationManager(Manager):
 		                            row=('id', locId))
 
 
-	def getSettings(self, locId: str):
+	def getSettings(self, locId: int):
 		return self._locations[locId].synonyms
 
 
@@ -108,7 +108,7 @@ class LocationManager(Manager):
 
 
 	# noinspection PyUnusedLocal
-	def getLocation(self, locId: str = None, location: str = None, siteId: str = None, deviceTypeId: int = None) -> Location:
+	def getLocation(self, locId: int = None, location: str = None, siteId: str = None, deviceTypeId: int = None) -> Location:
 		#todo implement location det. logic
 		# 1a) check name vs locations - done
 		# 1b) check name vs location synonyms - done
@@ -118,9 +118,8 @@ class LocationManager(Manager):
 		# 4) check if there is only one room that has that type of device
 		# if 1 or 2 provides names
 		"""
-		:param location:
+		:param location: a location name issued by the user
 		:param locId:
-		:param room: a room name issued by the user
 		:param siteId: the current devices site NAME
 		:param deviceTypeId: only rooms with that type of device can be found - linked is allowed as well
 		:return: Location
@@ -145,7 +144,7 @@ class LocationManager(Manager):
 
 
 	@property
-	def locations(self) -> Dict[str, Location]:
+	def locations(self) -> Dict[int, Location]:
 		return self._locations
 
 
