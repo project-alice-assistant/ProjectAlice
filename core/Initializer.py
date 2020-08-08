@@ -378,8 +378,10 @@ network={
 			if initConfs['useHLC']:
 				subprocess.run(['sudo', 'sed', '-i', '-e', f's/%HARDWARE%/{audioHardware}/', str(hlcServiceFilePath)])
 
-			if audioHardware == 'respeaker6MicArray':
-				subprocess.run(['sudo', 'cp', Path(self._rootDir, 'system', 'asounds', 'respeaker6micarray.conf'), Path(ASOUND)])
+			settings = Path(f'system/asounds/{audioHardware.lower()}.conf').read_text()
+			confs['asoundConfig'] = settings
+
+			subprocess.run(['sudo', 'cp', Path(self._rootDir, 'system', 'asounds', f'{audioHardware.lower()}.conf'), Path(ASOUND)])
 
 		elif audioHardware == 'respeaker7':
 			subprocess.run(['sudo', Path(self._rootDir, 'system/scripts/audioHardware/respeaker7.sh')])
@@ -395,6 +397,9 @@ network={
 			subprocess.run(['sudo', Path(self._rootDir, 'system/scripts/audioHardware/matrix.sh')])
 			subprocess.run(['sudo', 'cp', Path(self._rootDir, 'system', 'asounds', 'matrix.conf'), Path(ASOUND)])
 
+			settings = Path(f'system/asounds/matrix.conf').read_text()
+			confs['asoundConfig'] = settings
+
 			snipsConf['snips-audio-server']['mike'] = 'MATRIXIO-SOUND: - (hw:2,0)'
 
 			if initConfs['useHLC']:
@@ -405,9 +410,17 @@ network={
 			if initConfs['useHLC']:
 				subprocess.run(['sudo', 'sed', '-i', '-e', 's/%HARDWARE%/googleAIY/', str(hlcServiceFilePath)])
 
+			subprocess.run(['sudo', 'cp', Path(self._rootDir, 'system', 'asounds', 'aiy.conf'), Path(ASOUND)])
+			settings = Path(f'system/asounds/aiy.conf').read_text()
+			confs['asoundConfig'] = settings
+
 		elif audioHardware == 'usbMic':
 			subprocess.run(['sudo', Path(self._rootDir, 'system/scripts/audioHardware/usbmic.sh')])
 			subprocess.run(['sudo', 'cp', Path(self._rootDir, 'system', 'asounds', 'usbmic.conf'), Path(ASOUND)])
+
+			settings = Path(f'system/asounds/usbmic.conf').read_text()
+			confs['asoundConfig'] = settings
+
 			useFallbackHLC = True
 
 		elif audioHardware == 'ps3eye':
@@ -417,10 +430,18 @@ network={
 			subprocess.run(['echo', '    type plug', '>>', asoundrc])
 			subprocess.run(['echo', '    slave.pcm "dmix"', '>>', asoundrc])
 			subprocess.run(['echo', '}', '>>', asoundrc])
+
+			settings = Path(f'system/asounds/ps3eye.conf').read_text()
+			confs['asoundConfig'] = settings
+
 			useFallbackHLC = True
 
 		elif audioHardware == 'jabra410':
 			subprocess.run(['sudo', 'cp', Path(self._rootDir, 'system', 'asounds', 'jabra410.conf'), Path(ASOUND)])
+
+			settings = Path(f'system/asounds/jabra410.conf').read_text()
+			confs['asoundConfig'] = settings
+
 			useFallbackHLC = True
 
 		if initConfs['useHLC'] and useFallbackHLC:
