@@ -1,4 +1,7 @@
 $(function () {
+	// TODO remove commented code: just kept it to be sure I don't destory enything
+
+	// TODO performance: check if there is already a link before sending to alice
 
   	let $floorPlan = $('#floorPlan');
 
@@ -228,7 +231,31 @@ $(function () {
 		}
 	}
 
-// logic for individual items
+	function setSelectedDevice($element){
+		// clear old, set new, draw links
+		if(selectedDevice) {
+			selectedDevice.connections('remove');
+			selectedDevice.removeClass('highlightedDevice');
+		}
+		selectedDevice = $element;
+		if(selectedDevice) {
+			selectedDevice.addClass('highlightedDevice');
+			//selectedDevice.attr('id', 'linked'); // TODO check reason?
+			$.get('Device/' + selectedDevice.data('id') + '/getLinks').done(function (res) {
+				res = jQuery.parseJSON(res);
+				$.each(res, function (id, link) {
+					target = $('#floorPlan-Zone_' + link['locationID']);
+					target.children('.inputOrText').connections({
+						to     : selectedDevice,
+						'class': 'deviceLink'
+					});
+				});
+			});
+		}
+
+	}
+
+	// logic for individual items
 	function newZone(data) {
 		data = snapPosition(data)
 		data = snapAngle(data);
@@ -324,28 +351,17 @@ $(function () {
 				});
 
 			} else if (deviceLinkerMode) {
-				if (selectedDevice == null || selectedDevice == ''){
-					return;
-				}
-				// todo: implement frontend linking
-				// check if there is currently a link shown
-				let alreadyConnected = false;
-				if(alreadyConnected){
-					return;
-				}
+				if (selectedDevice == null || selectedDevice == '') return;
+
 				// add link from selected Device to zone
 				target = this;
-				$.post('/myhome/Device/'+selectedDevice.attr('data-id')+'/addLink/'+data["id"]).done(function (result){
-					if( handleError(result) ){
-						return;
-					}
+				$.post('/myhome/Device/'+selectedDevice.data('id')+'/addLink/'+data["id"]).done(function (result){
+					if( handleError(result) ) return;
 					// frontend: draw bezier
 					$(target).children('.inputOrText').connections({
 					  to: selectedDevice,
 					  'class': 'deviceLink'
 					});
-					// frontend: add to link list
-					// frontend: load link room settings
 				});
 
 			} else if (locationSettingsMode){
@@ -531,6 +547,8 @@ $(function () {
 					if (handleError(res)) {
 						return;
 					}
+					setSelectedDevice($newDevice);
+
 					let confLines = '';
 					content = '';
 					$.each(res, function (key, val) {
@@ -592,8 +610,8 @@ $(function () {
 				});
 
 				// add new synonym entry to conf. List
-				// TODO add to DB
-				// TODO check if is existing
+				//TODO add to DB
+				// check if is existing
 				/*				$('.configListAdd').on('click touchstart', function () {
 									let $parent = $(this).parent();
 									let $inp = $parent.children('.configInput');
@@ -612,22 +630,7 @@ $(function () {
 								});*/
 				$settings.removeClass('waiting after_big')
 			} else if(deviceLinkerMode) {
-				removeAllBeziers();
-				selectedDevice = $(this);
-				$('.highlightedDevice').removeClass('highlightedDevice');
-				$(this).addClass('highlightedDevice');
-				$(this).attr('id', 'linked');
-				$.get('Device/'+data['id']+'/getLinks').done(function (res) {
-					console.log(res);
-					res = jQuery.parseJSON(res);
-					$.each(res, function (id, link) {
-						target = $('#floorPlan-Zone_' + link['locationID']);
-						target.children('.inputOrText').connections({
-						  to: selectedDevice,
-						  'class': 'deviceLink'
-						});
-					});
-				})
+				setSelectedDevice($(this));
 			} else {
 				// display mode: Try toggling the device
 				$.post( 'Device/'+data['id']+'/toggle')
@@ -691,17 +694,18 @@ $(function () {
 		$('#toolbarConstruction').hide();
 		$('#toolbarTechnic').hide();
 
-		removeResizableRotatableAndDraggable($('.floorPlan-Zone'));
+		makeNotMoveable('.floorPlan-Zone, .floorPlan-Wall, .floorPlan-Deco, .floorPlan-Device, .floorPlan-Construction');
+		/*removeResizableRotatableAndDraggable($('.floorPlan-Zone'));
 		removeResizableRotatableAndDraggable($('.floorPlan-Wall'));
 		removeResizableRotatableAndDraggable($('.floorPlan-Deco'));
 		removeResizableRotatableAndDraggable($('.floorPlan-Device'));
-		removeResizableRotatableAndDraggable($('.floorPlan-Construction'));
+		removeResizableRotatableAndDraggable($('.floorPlan-Construction'));*/
 
 		markSelectedTool(null);
 
-		$('#painterTiles').hide();
-		$('#decoTiles').hide();
-		$('#deviceTiles').hide();
+		$('#painterTiles, #decoTiles, #deviceTiles').hide();
+		//$('#decoTiles').hide();
+		//$('#deviceTiles').hide();
 
 		$floorPlan.removeClass('floorPlanEditMode-AddingZone');
 		$floorPlan.addClass('floorPlanEditMode');
@@ -715,7 +719,6 @@ $(function () {
 				newConfigListVal($synonyms, synonym,'/myhome/Location/'+id+'/deleteSynonym');
 			});
 		})
-		// TODO load device specific settings
 	}
 
 	function newConfigListVal($parent, val, deletionLink) {
@@ -733,7 +736,9 @@ $(function () {
 		setBPMode(false);
 		saveHouse();
 		initEditable();
-		removeAllBeziers();
+		setSelectedDevice(false);
+		markSelectedTool(null);
+		markSelectedToolbar(null);
 
 		$('#toolbarOverview').hide();
 		$('#toolbarToggle').show();
@@ -829,17 +834,20 @@ $(function () {
 		locationSettingsMode = false;
 		deviceMoveMode = false;
 		deviceSettingsMode = false;
+		deviceLinkerMode = false;
 
 		$('#settings').sidebar({side: "right"}).trigger("sidebar:close");
 		$('.ui-droppable').droppable('destroy');
 
-		$('#painterTiles').hide();
-		$('#decoTiles').hide();
-		$('#constructionTiles').hide();
+		$('#painterTiles, #decoTiles, #constructionTiles, #deviceTiles').hide();
+//		$('#decoTiles').hide();
+//		$('#constructionTiles').hide();
+//		$('#deviceTiles').hide();
 
 		selectedFloor = '';
 		selectedDeco = '';
-		selectedDevice = '';
+
+		setSelectedDevice(null);
 
 		$('.floorPlan-tile').removeClass('selected');
 		$('.floorPlan-tile-background').removeClass('selected');
@@ -852,20 +860,22 @@ $(function () {
 
 // construction tools
 	$('#addZone').on('click touchstart', function () {
-		markSelectedTool($(this));
-		zoneMode = true;
-
-		$('#painterTiles').hide();
-		$('#decoTiles').hide();
-		$('#deviceTiles').hide();
-
-		$('#floorPlan').addClass('floorPlanEditMode-AddingZone');
+		if(!zoneMode) {
+			markSelectedTool($(this));
+			zoneMode = true;
+			$('#floorPlan').addClass('floorPlanEditMode-AddingZone');
+			makeNotMoveable('.floorPlan-Zone, .floorPlan-Deco, .floorPlan-Wall, .floorPlan-Construction');
+		} else {
+			zoneMode = false;
+			markSelectedTool(null);
+			$floorPlan.removeClass('floorPlanEditMode-AddingZone');
+		}
 	});
 
 	$('#builder').on('click touchstart', function () {
-		markSelectedTool($(this));
 
 		if (!buildingMode) {
+			markSelectedTool($(this));
 			buildingMode = true;
 			$floorPlan.removeClass('floorPlanEditMode-AddingZone');
 			$('#constructionTiles').css('display', 'flex');
@@ -873,25 +883,25 @@ $(function () {
 			makeMoveable('.floorPlan-Wall, .floorPlan-Construction');
 			makeNotMoveable('.floorPlan-Zone, .floorPlan-Deco');
 		} else {
-			$('.floorPlan-Wall, .floorPlan-Construction').each(function() {
-				removeResizableRotatableAndDraggable($(this));
-			});
-
+			makeNotMoveable($('.floorPlan-Wall, .floorPlan-Construction'));
+			buildingMode = false;
+			$('#constructionTiles').hide();
 			markSelectedTool(null);
 		}
 	});
 
 	$('#painter').on('click touchstart', function () {
-		markSelectedTool($(this));
-
 		if (!paintingMode) {
+			markSelectedTool($(this));
 			paintingMode = true;
 			$('#painterTiles').css('display', 'flex');
 			$floorPlan.removeClass('floorPlanEditMode-AddingZone');
 
 			makeNotMoveable('.floorPlan-Zone, .floorPlan-Deco, .floorPlan-Wall, .floorPlan-Construction');
 		} else {
+			paintingMode = false;
 			markSelectedTool(null);
+			$('#painterTiles').hide();
 		}
 	});
 
@@ -925,9 +935,9 @@ $(function () {
 	});
 
 	$('#decorator').on('click touchstart', function () {
-		markSelectedTool($(this));
 
 		if (!decoratorMode) {
+			markSelectedTool($(this));
 			decoratorMode = true;
 			$('.floorPlan-Deco').css('pointer-events', 'auto');
 			$('#decoTiles').css('display', 'flex');
@@ -973,9 +983,9 @@ $(function () {
 
 // technic tools
 	$('#deviceInstaller').on('click touchstart', function () {
-		markSelectedTool($(this));
 
 		if (!deviceInstallerMode) {
+			markSelectedTool($(this));
 			deviceInstallerMode = true;
 			$('#deviceTiles').css('display', 'flex');
 			$floorPlan.removeClass('floorPlanEditMode-AddingZone');
@@ -988,15 +998,15 @@ $(function () {
 	});
 
 	$('#deviceLinker').on('click touchstart', function () {
-		markSelectedTool($(this));
 
 		if(!deviceLinkerMode){
+			markSelectedTool($(this));
 			deviceLinkerMode = true;
 			makeNotMoveable('.floorPlan-Device');
 		}else{
 			deviceLinkerMode = false;
 			markSelectedTool(null);
-			removeAllBeziers();
+			setSelectedDevice(false);
 		}
 
 	});
@@ -1066,9 +1076,9 @@ $(function () {
 	});
 
 	$('#deviceSettings').on('click touchstart', function () {
-		markSelectedTool($(this));
 
 		if (!deviceSettingsMode) {
+			markSelectedTool($(this));
 			deviceSettingsMode = true;
 			makeNotMoveable('.floorPlan-Device');
 		} else {
@@ -1076,10 +1086,6 @@ $(function () {
 			markSelectedTool(null);
 		}
 	});
-
-	function removeAllBeziers(){
-		$('.highlightedDevice').connections('remove');
-	}
 
 	function setBPMode(value){
 		if (value) {
