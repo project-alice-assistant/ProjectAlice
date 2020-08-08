@@ -190,6 +190,7 @@ network={
 		if 'doGroundInstall' not in initConfs or initConfs['doGroundInstall']:
 
 			subprocess.run(['sudo', 'apt', 'install', '-y', f'./system/snips/snips-platform-common_0.64.0_armhf.deb'])
+			subprocess.run(['sudo', 'apt', 'install', '-y', f'./system/snips/snips-nlu_0.64.0_armhf.deb'])
 			subprocess.run(['sudo', 'apt', 'install', '-y', f'./system/snips/snips-hotword_0.64.0_armhf.deb'])
 			subprocess.run(['sudo', 'apt', 'install', '-y', f'./system/snips/snips-hotword-model-heysnipsv4_0.64.0_armhf.deb'])
 
