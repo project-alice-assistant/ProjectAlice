@@ -13,6 +13,7 @@ class Device(ProjectAliceObject):
 	connected: bool = False
 	name: str = ''
 	lastContact: int = 0
+	locationID: str = ''
 
 	id: int = field(init=False)
 	deviceTypeID: int = field(init=False)
@@ -112,7 +113,7 @@ class Device(ProjectAliceObject):
 		self.saveDevSettings()
 
 
-	def changeLocation(self, locationId: int):
+	def changeLocation(self, locationId: str):
 		self.locationID = locationId
 		self.getDeviceType().onChangedLocation(device=self)
 

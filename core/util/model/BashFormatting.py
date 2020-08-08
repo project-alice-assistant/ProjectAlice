@@ -1,9 +1,8 @@
 import logging
-from typing import Match
-
 import re
 from copy import copy
 from enum import Enum
+from typing import Match
 
 
 class BashStringFormatCode(Enum):
@@ -24,7 +23,7 @@ class Formatter(logging.Formatter):
 	BOLD = re.compile(r'\*\*(.+?)\*\*')
 	DIM = re.compile(r'--(.+?)--')
 	UNDERLINED = re.compile(r'__(.+?)__')
-	COLOR = re.compile(r'(?i)!\[(red|green|yellow|blue|gray)\]\((.+?)\)')
+	COLOR = re.compile(r'(?i)!\[(red|green|yellow|blue|gray)]\((.+?)\)')
 
 	GLUED_RESETS = re.compile(r'(?:\\033\[(?:0|2[1-8])m){2,}$')
 	GLUED_CODES = re.compile(r'\\033\[([0-9]+?)m+')

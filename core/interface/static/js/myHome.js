@@ -492,7 +492,7 @@ $(function () {
 		// noinspection CssUnknownTarget
 		let $newDevice = $('<div class="floorPlan-Device" id="device_'+data['id']+'" ' +
 			'style="background: url(\'Device/'+data['id']+'/icon?random='+ new Date().getTime()+'\') no-repeat; background-size: 100% 100%; left: ' + data["display"]["x"] + 'px; top: ' + data["display"]["y"] + 'px; width: ' + data["display"]["width"] + 'px; height: ' + data["display"]["height"] + 'px; position: absolute; z-index: auto; transform: rotate(' + data["display"]["rotation"] + 'deg);" ' +
-			'data-texture="' + data["deviceType"] + '"; data-skill="' + data["skill"] +'"; data-id="' + data["id"] +'"; data-uid="' + data["uid"] +'">' +
+			'data-texture="' + data["deviceType"] + '" data-skill="' + data["skill"] + '" data-id="' + data["id"] + '" data-uid="' + data["uid"] + '">' +
 			'</div>');
 
 		$newDevice.on('click touchstart', function () {

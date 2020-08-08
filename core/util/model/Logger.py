@@ -1,7 +1,6 @@
 import logging
-from typing import Match
-
 import re
+from typing import Match
 
 
 class Logger:
@@ -52,7 +51,7 @@ class Logger:
 		if self._prepend:
 			msg = f'{self._prepend} {msg}'
 
-		match = re.match(r'^(\[[\w ]+\])(.*)$', msg)
+		match = re.match(r'^(\[[\w ]+])(.*)$', msg)
 		if match:
 			tag, log = match.groups()
 			space = ''.join([' ' for _ in range(25 - len(tag))])

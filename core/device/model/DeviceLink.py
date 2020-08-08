@@ -1,13 +1,14 @@
-import sqlite3
 import ast
 import json
+import sqlite3
+from typing import Union
 
 from core.base.model.ProjectAliceObject import ProjectAliceObject
 
 
 class DeviceLink(ProjectAliceObject):
 
-	def __init__(self, data: sqlite3.Row):
+	def __init__(self, data: Union[dict, sqlite3.Row]):
 		super().__init__()
 		self._locSettings = dict()
 		if 'locSettings' in data and data['locSettings']:
@@ -21,6 +22,11 @@ class DeviceLink(ProjectAliceObject):
 			self.saveToDB()
 
 
+	@property
+	def id(self) -> int:
+		return self._id
+
+
 	def saveToDB(self):
 		values = {'deviceID': self._deviceID, 'locSettings': json.dumps(self._locSettings), 'locationID': self._locationID}
 		self._id = self.DatabaseManager.insert(tableName=self.DeviceManager.DB_LINKS,
@@ -31,7 +37,7 @@ class DeviceLink(ProjectAliceObject):
 		self.DatabaseManager.update(tableName=self.DeviceManager.DB_LINKS,
 		                            callerName=self.DeviceManager.name,
 		                            values={'locSettings': self.locSettings},
-		                            row=('id', self.id))
+		                            row=('id', self._id))
 
 
 	def getDevice(self):
