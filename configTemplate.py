@@ -63,7 +63,7 @@ settings = {
 		'dataType'    : 'boolean',
 		'isSensitive' : False,
 		'description' : 'If this device is a server without sound and mic, turn this to True',
-		'onUpdate'    : 'enableDisableSoundInSnips',
+		'onUpdate'    : 'enableDisableSound',
 		'category'    : 'device'
 	},
 	'notUnderstoodRetries'    : {

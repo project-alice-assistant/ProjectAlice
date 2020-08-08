@@ -460,16 +460,13 @@ class ConfigManager(Manager):
 		self.UserManager.addUserPinCode('admin', self.getAliceConfigByName('adminPinCode'))
 
 
-	def enableDisableSoundInSnips(self):
+	def enableDisableSound(self):
 		if self.getAliceConfigByName('disableSoundAndMic'):
 			self.WakewordManager.disableEngine()
-			self.updateSnipsConfiguration(parent='snips-audio-server', key='disable_playback', value=True)
-			self.updateSnipsConfiguration(parent='snips-audio-server', key='disable_capture', value=True, restartSnips=True)
+			self.AudioServer.onStop()
 		else:
 			self.WakewordManager.enableEngine()
-			del self._snipsConfigurations['snips-audio-server']['disable_playback']
-			del self._snipsConfigurations['snips-audio-server']['disable_capture']
-			self._snipsConfigurations.dump()
+			self.AudioServer.onStart()
 
 
 	def restartWakewordEngine(self):
