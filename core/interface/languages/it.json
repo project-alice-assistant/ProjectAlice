@@ -57,5 +57,9 @@
 	"noConfs": "Nessuna configurazione per questo widget!",
     "saving": "Salvataggio in corso",
     "saved": "Salvato",
-    "saveFailed": "Salvataggio fallito"
+    "saveFailed": "Salvataggio fallito",
+	"confMoveDevice": "Do you want to save and move this device to the new location: ",
+	"confDeleteDevice": "Are you sure you want to delete that device?",
+	"confDeleteZone": "Are you sure you want to delete this location?",
+	"nameNewZone": "Please name the new location"
 }

@@ -1,9 +1,19 @@
 $(function () {
-	// TODO remove commented code: just kept it to be sure I don't destory enything
-
 	// TODO performance: check if there is already a link before sending to alice
 
   	let $floorPlan = $('#floorPlan');
+
+  	//selectors
+  	let sWall = '.floorPlan-Wall';
+  	let sConstr = '.floorPlan-Construction';
+  	let sZone = '.floorPlan-Zone';
+  	let sDeco = '.floorPlan-Deco';
+  	let sDevice = '.floorPlan-Device';
+	let sTile = '.floorPlan-tile';
+
+  	let classAddZone = 'floorPlanEditMode-AddingZone';
+  	
+  	let sWallConstr = sWall+", "+sConstr;
 
 	let editMode = false;
 
@@ -15,7 +25,6 @@ $(function () {
 	let decoratorMode = false;
 	let locationSettingsMode = false;
 
-	let technicalMode = false;
 	let deviceEditMode = false;
 	let deviceInstallerMode = false;
 	let deviceLinkerMode = false;
@@ -83,7 +92,7 @@ $(function () {
 
 	function saveHouse() {
 		let data = {};
-		$floorPlan.children('.floorPlan-Zone').each(function () {
+		$floorPlan.children(sZone).each(function () {
 			let zoneID = $(this).data('id');
 			data[zoneID] = {
 				"id"	  : $(this).data('id'),
@@ -99,7 +108,7 @@ $(function () {
 				"texture" : $(this).data('texture')
 			};
 			data[zoneID]['display']['walls'] = [];
-			$(this).children('.floorPlan-Wall').each(function () {
+			$(this).children(sWall).each(function () {
 				data[zoneID]['display']['walls'].push({
 					"x"       : $(this).css('left').replace('px', ''),
 					"y"       : $(this).css('top').replace('px', ''),
@@ -110,7 +119,7 @@ $(function () {
 			});
 
 			data[zoneID]['display']['construction'] = [];
-			$(this).children('.floorPlan-Construction').each(function () {
+			$(this).children(sConstr).each(function () {
 				data[zoneID]['display']['construction'].push({
 					"x"       : $(this).css('left').replace('px', ''),
 					"y"       : $(this).css('top').replace('px', ''),
@@ -122,7 +131,7 @@ $(function () {
 			});
 
 			data[zoneID]['display']['deco'] = [];
-			$(this).children('.floorPlan-Deco').each(function () {
+			$(this).children(sDeco).each(function () {
 				data[zoneID]['display']['deco'].push({
 					"x"       : $(this).css('left').replace('px', ''),
 					"y"       : $(this).css('top').replace('px', ''),
@@ -134,7 +143,7 @@ $(function () {
 			});
 
 			data[zoneID]['devices'] = [];
-			$(this).children('.floorPlan-Device').each(function () {
+			$(this).children(sDevice).each(function () {
 				data[zoneID]['devices'].push({
 					"id"	  : $(this).data('id'),
 					"uid"	  : $(this).data('uid'),
@@ -181,54 +190,70 @@ $(function () {
 		return data;
 	}
 
-	function makeMoveable(mySelector){
-		$(mySelector).each(function() {
-			makeResizableRotatableAndDraggable($(this));
-		});
-	}
-
-	function makeNotMoveable(mySelector){
-		$(mySelector).each(function() {
-			removeResizableRotatableAndDraggable($(this));
-		});
+	function makeDroppable($element, changeParent){
+			$element.droppable({
+  				drop: function( event, ui ) {
+  					if(changeParent) {
+						let roomChange = false;
+						if (ui.draggable.parent()[0] != this) {
+							roomChange = true;
+						}
+						if (roomChange) {
+							$(this).append(ui.draggable);
+						}
+					}
+					ui.draggable.draggable( "option", "revert", false );
+					ui.draggable.css({top: ui.offset.top - $(this).offset().top, left: ui.offset.left - $(this).offset().left } );
+					setTimeout( function() { ui.draggable.draggable( "option", "revert", true ); }, 1000 );
+  				}
+			});
 	}
 
 	function makeResizableRotatableAndDraggable($element, revert) {
 		if(!revert){
 			revert = false;
 		}
-		$element.resizable({
-			containment: 'parent',
-			grid       : [5, 5]
-		}).rotatable({
-			snap: true,
-			step: 15,
-			degrees: matrixToAngle($element.css('transform')),
-			handleOffset: {
-				top: 0,
-				left: 0
-			}
-		}).draggable({
-			addClasses   : false,
-			cursor       : 'move',
-			distance     : 10,
-			grid         : [5, 5],
-			snap         : true,
-			snapTolerance: 5,
-			zIndex		 : 999,
-			revert       : revert,
-			helper	     : "clone",
-			appendTo     : "body",
-			start: function(e){ $(e.target).css({opacity: 0.3}); },
-			stop: function(e){  $(e.target).css({opacity: 1}); }
+		// required to handle one at a time for rotatable!
+		$element.each(function () {
+			$(this).resizable({
+				containment: 'parent',
+				grid       : [5, 5]
+			}).rotatable({
+				snap        : true,
+				step        : 15,
+				degrees     : matrixToAngle($(this).css('transform')),
+				handleOffset: {
+					top : 0,
+					left: 0
+				}
+			}).draggable({
+				addClasses   : false,
+				cursor       : 'move',
+				distance     : 10,
+				grid         : [5, 5],
+				snap         : true,
+				snapTolerance: 5,
+				zIndex       : 999,
+				revert       : revert,
+				helper       : "clone",
+				appendTo     : "body",
+				start        : function (e) {
+					$(e.target).css({opacity: 0.3});
+				},
+				stop         : function (e) {
+					$(e.target).css({opacity: 1});
+				}
+			});
 		});
 	}
 
 	function removeResizableRotatableAndDraggable($element) {
-		try {
-			$element.resizable('destroy').draggable('destroy').rotatable('destroy');
-		} catch (err) {
-		}
+		$element.each(function () {
+			try {
+				$(this).resizable('destroy').draggable('destroy').rotatable('destroy');
+			} catch (err) {
+			}
+		});
 	}
 
 	function setSelectedDevice($element){
@@ -240,15 +265,16 @@ $(function () {
 		selectedDevice = $element;
 		if(selectedDevice) {
 			selectedDevice.addClass('highlightedDevice');
-			//selectedDevice.attr('id', 'linked'); // TODO check reason?
 			$.get('Device/' + selectedDevice.data('id') + '/getLinks').done(function (res) {
 				res = jQuery.parseJSON(res);
+				let content = "";
 				$.each(res, function (id, link) {
 					target = $('#floorPlan-Zone_' + link['locationID']);
 					target.children('.inputOrText').connections({
 						to     : selectedDevice,
 						'class': 'deviceLink'
 					});
+					content += link['']
 				});
 			});
 		}
@@ -410,8 +436,7 @@ $(function () {
 
 		$newZone.on('contextmenu', function () {
 			if (locationMoveMode) {
-				let result = confirm('Do you really want to delete this zone?');
-				if (result == true) {
+				if(confirm($('#langConfDeleteZone').text())){
 					$(this).remove();
 					$.post('/myhome/Location/'+data['id']+'/delete', {id : data['id']});
 				}
@@ -544,9 +569,8 @@ $(function () {
 //				content += "<div class='configBlockContent' id='Device/"+data['id']+"/addSynonym'><ul class='configListCurrent'/><input class='configInput'/><div class='link-hover configListAdd'><i class=\"fas fa-plus-circle\"></i>	</div></div></div>";
 
 				$.get('/myhome/Device/' + data['id'] + '/getSettings/0').done(function (res) {
-					if (handleError(res)) {
-						return;
-					}
+					if (handleError(res)) return;
+
 					setSelectedDevice($newDevice);
 
 					let confLines = '';
@@ -651,14 +675,11 @@ $(function () {
 
 		$newDevice.on('contextmenu', function () {
 			if (deviceInstallerMode) {
-				if(confirm('Do you really want to delete this device?')){
+				if(confirm($('#langConfDeleteDevice').text())){
 					let $dev = $(this)
 					$.post('Device/'+data['id']+'/delete').done(function (res) {
-						if(res['success']) {
-							$dev.remove();
-						} else {
-							alert('Failed removing device!');
-						}
+						if(handleError(res)) return;
+						$dev.remove();
 					})
 				}
 				return false;
@@ -681,35 +702,16 @@ $(function () {
 
 	function initEditable(){
 		editMode = true;
-		deviceEditMode = false;
-		zoneMode = false;
-		buildingMode = false;
-		paintingMode = false;
-		decoratorMode = false;
-		locationMoveMode = false;
-		deviceMoveMode = false;
-		deviceInstallerMode = false;
-		deviceLinkerMode = false;
+		deviceLinkerMode = deviceInstallerMode = deviceMoveMode = locationMoveMode = decoratorMode = paintingMode = buildingMode = zoneMode = deviceEditMode = false;
 
-		$('#toolbarConstruction').hide();
-		$('#toolbarTechnic').hide();
-
-		makeNotMoveable('.floorPlan-Zone, .floorPlan-Wall, .floorPlan-Deco, .floorPlan-Device, .floorPlan-Construction');
-		/*removeResizableRotatableAndDraggable($('.floorPlan-Zone'));
-		removeResizableRotatableAndDraggable($('.floorPlan-Wall'));
-		removeResizableRotatableAndDraggable($('.floorPlan-Deco'));
-		removeResizableRotatableAndDraggable($('.floorPlan-Device'));
-		removeResizableRotatableAndDraggable($('.floorPlan-Construction'));*/
+		removeResizableRotatableAndDraggable($(sZone+", "+sWall+", "+sDeco+", "+sDevice+", "+sConstr));
 
 		markSelectedTool(null);
 
-		$('#painterTiles, #decoTiles, #deviceTiles').hide();
-		//$('#decoTiles').hide();
-		//$('#deviceTiles').hide();
+		$('#toolbarConstruction, #toolbarTechnic, #painterTiles, #decoTiles, #deviceTiles').hide();
 
-		$floorPlan.removeClass('floorPlanEditMode-AddingZone');
+		$floorPlan.removeClass(classAddZone);
 		$floorPlan.addClass('floorPlanEditMode');
-
 	}
 
 	function loadLocationSettings(id, $settings){
@@ -726,7 +728,6 @@ $(function () {
 		$('.configListRemove').on('click touchstart', function () {
 			$(this).parent().remove();
 			$.post(deletionLink, { 'value': val })
-			//TODO confirmation
 		});
 	}
 
@@ -782,7 +783,7 @@ $(function () {
 			return;
 		}
 
-		let zoneName = prompt('Please name this new zone');
+		let zoneName = prompt($('#langNameNewZone').text());
 		let x = $(this).offset().left;
 		let y = $(this).offset().top;
 
@@ -804,13 +805,14 @@ $(function () {
 				}
 				let $zone = newZone(zdata);
 				makeResizableRotatableAndDraggable($zone)
+				makeDroppable($(sZone), true);
 			}
 
 			zoneMode = false;
 			markSelectedTool($('#locationMover'));
 			locationMoveMode = true;
 			$('.zindexer').show();
-			$(this).removeClass('floorPlanEditMode-AddingZone');
+			$(this).removeClass(classAddZone);
 		})
 	});
 
@@ -849,7 +851,7 @@ $(function () {
 
 		setSelectedDevice(null);
 
-		$('.floorPlan-tile').removeClass('selected');
+		$(sTile).removeClass('selected');
 		$('.floorPlan-tile-background').removeClass('selected');
 		$('.zindexer').hide();
 
@@ -863,12 +865,12 @@ $(function () {
 		if(!zoneMode) {
 			markSelectedTool($(this));
 			zoneMode = true;
-			$('#floorPlan').addClass('floorPlanEditMode-AddingZone');
-			makeNotMoveable('.floorPlan-Zone, .floorPlan-Deco, .floorPlan-Wall, .floorPlan-Construction');
+			$floorPlan.addClass(classAddZone);
+			removeResizableRotatableAndDraggable($(sZone+", "+sDeco+", "+sWall+", "+sConstr));
 		} else {
 			zoneMode = false;
 			markSelectedTool(null);
-			$floorPlan.removeClass('floorPlanEditMode-AddingZone');
+			$floorPlan.removeClass(classAddZone);
 		}
 	});
 
@@ -877,13 +879,14 @@ $(function () {
 		if (!buildingMode) {
 			markSelectedTool($(this));
 			buildingMode = true;
-			$floorPlan.removeClass('floorPlanEditMode-AddingZone');
+			$floorPlan.removeClass(classAddZone);
 			$('#constructionTiles').css('display', 'flex');
-
-			makeMoveable('.floorPlan-Wall, .floorPlan-Construction');
-			makeNotMoveable('.floorPlan-Zone, .floorPlan-Deco');
+			makeDroppable($(sZone), true);
+			makeResizableRotatableAndDraggable($(sWallConstr));
+			removeResizableRotatableAndDraggable($(sZone+", "+sDeco));
 		} else {
-			makeNotMoveable($('.floorPlan-Wall, .floorPlan-Construction'));
+			removeResizableRotatableAndDraggable($(sWallConstr));
+			$(sZone).droppable('destroy');
 			buildingMode = false;
 			$('#constructionTiles').hide();
 			markSelectedTool(null);
@@ -895,9 +898,9 @@ $(function () {
 			markSelectedTool($(this));
 			paintingMode = true;
 			$('#painterTiles').css('display', 'flex');
-			$floorPlan.removeClass('floorPlanEditMode-AddingZone');
+			$floorPlan.removeClass(classAddZone);
 
-			makeNotMoveable('.floorPlan-Zone, .floorPlan-Deco, .floorPlan-Wall, .floorPlan-Construction');
+			removeResizableRotatableAndDraggable($(sZone+", "+sDeco+", "+sWall+", "+sConstr));
 		} else {
 			paintingMode = false;
 			markSelectedTool(null);
@@ -911,25 +914,14 @@ $(function () {
 			markSelectedTool($(this));
 			locationMoveMode = true;
 			$('.zindexer').show();
-			makeMoveable('.floorPlan-Zone');
-			makeNotMoveable('.floorPlan-Deco, .floorPlan-Wall, .floorPlan-Construction');
+			makeResizableRotatableAndDraggable($(sZone));
+			removeResizableRotatableAndDraggable($(sDeco+", "+sWallConstr));
 
-			$('.floorPlan').droppable({
-  				drop: function( event, ui ) {
-  					let roomChange = false;
-  					// check if room didn't change
-					if (ui.draggable.parent()[0] != this){
-						roomChange = true;
-					}
-					ui.draggable.draggable( "option", "revert", false );
-					ui.draggable.css({top: ui.offset.top - $(this).offset().top, left: ui.offset.left - $(this).offset().left } );
-					setTimeout( function() { ui.draggable.draggable( "option", "revert", true ); }, 1000 );
-  				}
-			});
+			makeDroppable($floorPlan, false);
 
 		} else {
-			$('.floorPlan').droppable('destroy');
-			makeNotMoveable('.floorPlan-Zone');
+			$floorPlan.droppable('destroy');
+			removeResizableRotatableAndDraggable($(sZone));
 			markSelectedTool(null);
 		}
 	});
@@ -939,31 +931,16 @@ $(function () {
 		if (!decoratorMode) {
 			markSelectedTool($(this));
 			decoratorMode = true;
-			$('.floorPlan-Deco').css('pointer-events', 'auto');
+			$(sDeco).css('pointer-events', 'auto');
 			$('#decoTiles').css('display', 'flex');
-			$floorPlan.removeClass('floorPlanEditMode-AddingZone');
-			$('.floorPlan-Zone').droppable({
-  				drop: function( event, ui ) {
-  					let roomChange = false;
-					// check if room didn't change
-					if (ui.draggable.parent()[0] != this){
-						roomChange = true;
-					}
-					if(roomChange) {
-						$(this).append(ui.draggable);
-					}
-						ui.draggable.draggable( "option", "revert", false );
-					    ui.draggable.css({top: ui.offset.top - $(this).offset().top, left: ui.offset.left - $(this).offset().left } );
-						setTimeout( function() { ui.draggable.draggable( "option", "revert", true ); }, 1000 );
-  				}
-			});
+			$floorPlan.removeClass(classAddZone);
+			makeDroppable($(sZone), true);
 
-			makeMoveable('.floorPlan-Deco');
-
-			makeNotMoveable('.floorPlan-Zone, .floorPlan-Wall, .floorPlan-Construction');
+			makeResizableRotatableAndDraggable($(sDeco));
+			removeResizableRotatableAndDraggable($(sZone+", "+sWallConstr));
 		} else {
-			$('.floorPlan-Zone').droppable('destroy');
-			makeNotMoveable('.floorPlan-Deco');
+			$(sZone).droppable('destroy');
+			removeResizableRotatableAndDraggable($(sDeco));
 			markSelectedTool(null);
 		}
 	});
@@ -973,8 +950,8 @@ $(function () {
 		if (!locationSettingsMode) {
 			markSelectedTool($(this));
 			locationSettingsMode = true;
-			$('.floorPlan-Deco').css('pointer-events', 'none');
-			makeNotMoveable('.floorPlan-Zone, .floorPlan-Deco, .floorPlan-Wall, .floorPlan-Construction');
+			$(sDeco).css('pointer-events', 'none');
+			removeResizableRotatableAndDraggable($(sZone+", "+sDeco+", "+sWall+", "+sConstr));
 		} else {
 			locationSettingsMode = false;
 			markSelectedTool(null);
@@ -988,11 +965,11 @@ $(function () {
 			markSelectedTool($(this));
 			deviceInstallerMode = true;
 			$('#deviceTiles').css('display', 'flex');
-			$floorPlan.removeClass('floorPlanEditMode-AddingZone');
-			makeNotMoveable('.floorPlan-Device');
+			$floorPlan.removeClass(classAddZone);
+			removeResizableRotatableAndDraggable($(sDevice));
 
 		} else {
-			makeNotMoveable('.floorPlan-Device');
+			removeResizableRotatableAndDraggable($(sDevice));
 			markSelectedTool(null);
 		}
 	});
@@ -1002,7 +979,7 @@ $(function () {
 		if(!deviceLinkerMode){
 			markSelectedTool($(this));
 			deviceLinkerMode = true;
-			makeNotMoveable('.floorPlan-Device');
+			removeResizableRotatableAndDraggable($(sDevice));
 		}else{
 			deviceLinkerMode = false;
 			markSelectedTool(null);
@@ -1017,9 +994,9 @@ $(function () {
 			markSelectedTool($(this));
 			deviceMoveMode = true;
 
-			makeMoveable('.floorPlan-Device');
+			makeResizableRotatableAndDraggable($(sDevice));
 
-			$('.floorPlan-Zone').droppable({
+			$(sZone).droppable({
   				drop: function( event, ui ) {
   					let userConf = false;
   					let roomChange = false;
@@ -1053,24 +1030,23 @@ $(function () {
 						if(errorOccured){
 							return;
 						}
-						//todo add in icon for moving
+
 						ui.draggable.draggable( "option", "revert", false );
 					    ui.draggable.css({top: ui.offset.top - $(this).offset().top, left: ui.offset.left - $(this).offset().left } );
 					    if(userConf){
+					    	// no BP while saving: orientation of decoration is lost!
 							setBPMode(false);
 					    	saveHouse();
 							setBPMode(true);
 						}
 						setTimeout( function() { ui.draggable.draggable( "option", "revert", true ); }, 1000 );
-					} else {
-						// nothing has to be done here!
 					}
   				}
 			});
 
 		} else {
-			makeNotMoveable('.floorPlan-Device');
-			$('.floorPlan-Zone').droppable('destroy');
+			removeResizableRotatableAndDraggable($(sDevice));
+			$(sZone).droppable('destroy');
 			markSelectedTool(null);
 		}
 	});
@@ -1080,7 +1056,7 @@ $(function () {
 		if (!deviceSettingsMode) {
 			markSelectedTool($(this));
 			deviceSettingsMode = true;
-			makeNotMoveable('.floorPlan-Device');
+			removeResizableRotatableAndDraggable($(sDevice));
 		} else {
 			deviceSettingsMode = false;
 			markSelectedTool(null);
@@ -1089,11 +1065,11 @@ $(function () {
 
 	function setBPMode(value){
 		if (value) {
-			$('.floorPlan-Deco').css('display', 'none');
-			$('.floorPlan-Zone').addClass('blueprint')
+			$(sDeco).css('display', 'none');
+			$(sZone).addClass('blueprint')
 		} else {
-			$('.floorPlan-Deco').css('display', 'block');
-			$('.floorPlan-Zone').removeClass('blueprint')
+			$(sDeco).css('display', 'block');
+			$(sZone).removeClass('blueprint')
 		}
 	}
 
@@ -1103,7 +1079,7 @@ $(function () {
 		let $tile = $('<div class="floorPlan-tile" style="background: url(\'/static/css/images/myHome/construction/construction-' + i + '.png\') no-repeat; background-size: 100% 100%;"></div>');
 		$tile.on('click touchstart', function () {
 			if (!$(this).hasClass('selected')) {
-				$('.floorPlan-tile').removeClass('selected');
+				$(sTile).removeClass('selected');
 				$(this).addClass('selected');
 				selectedConstruction = 'construction-' + i;
 			} else {
@@ -1119,7 +1095,7 @@ $(function () {
 		let $tile = $('<div class="floorPlan-tile floor-' + i + '"></div>');
 		$tile.on('click touchstart', function () {
 			if (!$(this).hasClass('selected')) {
-				$('.floorPlan-tile').removeClass('selected');
+				$(sTile).removeClass('selected');
 				$(this).addClass('selected');
 				selectedFloor = 'floor-' + i;
 			} else {
@@ -1137,7 +1113,7 @@ $(function () {
 		let $tile = $('<div class="floorPlan-tile" style="background: url(\'/static/css/images/myHome/deco/deco-' + i + '.png\') no-repeat; background-size: 100% 100%;"></div>');
 		$tile.on('click touchstart', function () {
 			if (!$(this).hasClass('selected')) {
-				$('.floorPlan-tile').removeClass('selected');
+				$(sTile).removeClass('selected');
 				$(this).addClass('selected');
 				selectedDeco = 'deco-' + i;
 			} else {
@@ -1153,7 +1129,7 @@ $(function () {
 		let $tile = $('<div class="floorPlan-tile" style="background: url(\'deviceType_static/' + dat['skill'] + '/img/' + dat['deviceType'] + '.png\') no-repeat; background-size: 100% 100%;"></div>');
 		$tile.on('click touchstart', function () {
 			if (!$(this).hasClass('selected')) {
-				$('.floorPlan-tile').removeClass('selected');
+				$(sTile).removeClass('selected');
 				$(this).addClass('selected');
 				selectedDeviceTypeID = dat['id'];
 			} else {
