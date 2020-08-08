@@ -25,9 +25,6 @@
 						<div class="configCategory">
 							<div class="configCategoryTitle">{{ category }}</div>
 							{% for settingName, settingValue in aliceSettings.items() if not settingName == 'skills' and not settingName == 'supportedLanguages' and aliceSettingsTemplate[settingName]['category'] == category %}
-								{% if 'help' in aliceSettingsTemplate[settingName] %}
-
-								{% endif %}
 								{% if aliceSettingsTemplate[settingName]['display'] != 'hidden' %}
 									<div class="configLine">
 										{% if 'help' in aliceSettingsTemplate[settingName] %}
@@ -56,6 +53,8 @@
 												{% else %}
 													<input type="text" name="{{ settingName }}" value="{{ settingValue }}" id="{{ settingName }}">
 												{% endif %}
+											{% elif aliceSettingsTemplate[settingName]['dataType'] == 'longstring' %}
+												<textarea name="{{ settingName }}" id="{{ settingName }}">{{ settingValue }}</textarea>
 											{% elif aliceSettingsTemplate[settingName]['dataType'] == 'list' %}
 												{% if aliceSettingsTemplate[settingName]['values'] is mapping %}
 													<select name="{{ settingName }}" id="{{ settingName }}">
