@@ -34,7 +34,6 @@ $(function () {
 
 	function onMessage(msg) {
 		let payload = JSON.parse(msg.payloadString);
-		console.log(msg.topic)
 		if (msg.topic === 'projectalice/devices/updated') {
 			if(payload['type'] == 'status') {
 				console.log(payload);
@@ -217,12 +216,8 @@ $(function () {
 			revert       : revert,
 			helper	     : "clone",
 			appendTo     : "body",
-			start: function(e){
-				$(e.target).css({opacity: 0.3});
-			},
-			stop: function(e){ // need to put it back on stop
-				$(e.target).css({opacity: 1});
-			}
+			start: function(e){ $(e.target).css({opacity: 0.3}); },
+			stop: function(e){  $(e.target).css({opacity: 1}); }
 		});
 	}
 
@@ -241,6 +236,7 @@ $(function () {
 			data["display"] = {};
 		}
 		let $newZone = $('<div class="floorPlan-Zone ' + data["display"]["texture"] + '" ' +
+			'id="floorPlan-Zone_'+data["id"]+'" '+
 			'data-id="' + data["id"] + '" ' +
 			'data-name="' + data["name"] + '" ' +
 			'data-texture="' + data["display"]["texture"] + '" ' +
@@ -338,12 +334,13 @@ $(function () {
 					return;
 				}
 				// add link from selected Device to zone
+				target = this;
 				$.post('/myhome/Device/'+selectedDevice.attr('data-id')+'/addLink/'+data["id"]).done(function (result){
 					if( handleError(result) ){
 						return;
 					}
 					// frontend: draw bezier
-					$(this).children('.inputOrText').connections({
+					$(target).children('.inputOrText').connections({
 					  to: selectedDevice,
 					  'class': 'deviceLink'
 					});
@@ -404,7 +401,13 @@ $(function () {
 				}
 				return false;
 			} else if (deviceLinkerMode){
-				$(this).children('.inputOrText').connections('remove');
+				target = this;
+				$.post('Device/'+ selectedDevice.data('id') +'/removeLink/'+ $(this).data('id')).done(function (res) {
+					if( handleError(res) ){
+						return;
+					}
+					$(target).children('.inputOrText').connections('remove');
+				})
 				return false;
 			}
 		});
@@ -498,17 +501,17 @@ $(function () {
 				let content = "<h1>" + data['name'] + "</h1>";
 				content += "<h2>" + data['deviceType'] + "</h2>";
 
-				if( data['uid'] == 'undefined' || data['uid'] == null ){
+				if (data['uid'] == 'undefined' || data['uid'] == null) {
 					content += "NO DEVICE PAIRED!<div id='startPair' class='button'>Search Device</div>"
 				} else {
-					content += "<div class='techDetail' >"+data['uid']+"</div>";
+					content += "<div class='techDetail' >" + data['uid'] + "</div>";
 				}
 
 				$settings.html(content);
 				$('#startPair').on('click touchstart', function () {
 					$(this).addClass('waiting')
-					$.post('Device/'+data['id']+'/pair').done(function (data){
-						if( handleError(data) ) {
+					$.post('Device/' + data['id'] + '/pair').done(function (data) {
+						if (handleError(data)) {
 							return;
 						}
 						let sp = $('#startPair')
@@ -523,19 +526,18 @@ $(function () {
 // TODO logic for synonyms of devices
 // 				content += "<div class='configBlock'><div class='configLabel'>Synonyms:</div>";
 //				content += "<div class='configBlockContent' id='Device/"+data['id']+"/addSynonym'><ul class='configListCurrent'/><input class='configInput'/><div class='link-hover configListAdd'><i class=\"fas fa-plus-circle\"></i>	</div></div></div>";
-// TODO Load Device Settings
 
-				$.get('/myhome/Device/'+data['id']+'/getSettings/0').done(function (res) {
-					if( handleError(res) ) {
+				$.get('/myhome/Device/' + data['id'] + '/getSettings/0').done(function (res) {
+					if (handleError(res)) {
 						return;
 					}
 					let confLines = '';
 					content = '';
-					$.each(res, function(key, val){
-						confLines += "<div class='configLabel'>"+key+"</div><input name='"+key+"' class='configInput' value='"+val+"'/>";
+					$.each(res, function (key, val) {
+						confLines += "<div class='configLabel'>" + key + "</div><input name='" + key + "' class='configInput' value='" + val + "'/>";
 					});
-					if(confLines){
-						content += "<div class='configBox'><div class='configList'><form id='SetForm' name='config_for_devSet' action='Device/"+data['id']+"/saveSettings/0' method='post'><div class='configBlock'>";
+					if (confLines) {
+						content += "<div class='configBox'><div class='configList'><form id='SetForm' name='config_for_devSet' action='Device/" + data['id'] + "/saveSettings/0' method='post'><div class='configBlock'>";
 						content += confLines
 						content += "</div>";
 						content += "<div class='buttonLine'><input id='SetFormSubmit' class='button' type='submit' value='" + $('#langSave').text() + "'></div>";
@@ -550,11 +552,11 @@ $(function () {
 						form.submit(function (event) {
 							saveButton.val($('#langSaving').text());
 							saveButton.addClass('saving');
-							$.post(form.attr('action'),form.serialize())
+							$.post(form.attr('action'), form.serialize())
 								.done(function () {
-								saveButton.val($('#langSaved').text());
-								saveButton.addClass('saved');
-							})
+									saveButton.val($('#langSaved').text());
+									saveButton.addClass('saved');
+								})
 								.fail(function () {
 									saveButton.val($('#langSaveFailed').text());
 									saveButton.addClass('saveFailed');
@@ -581,7 +583,6 @@ $(function () {
 				//content += "<span class=\"toolbarButton link-hover\" id=\"deviceLinker\" title=\"Link a device with multiple rooms\"><i class=\"fas fa-link\"></i></span>";
 
 
-
 				// reroute synonym enter to click event
 				$('.configInput').keypress(function (e) {
 					if (e.which == 13) {
@@ -593,29 +594,40 @@ $(function () {
 				// add new synonym entry to conf. List
 				// TODO add to DB
 				// TODO check if is existing
-/*				$('.configListAdd').on('click touchstart', function () {
-					let $parent = $(this).parent();
-					let $inp = $parent.children('.configInput');
-					if ($inp.val() != '') {
-						$.post( '/myHome/add'+$parent.id,
-							{ value: $inp.val() } )
-						.done(function( result ) {
-							$parent.children('.configListCurrent').append("<li>" + $inp.val() + "<div class='addWidgetCheck configListRemove link-hover'><i class='fas fa-minus-circle'></i></div></li>");
-							$inp.val('');
+				/*				$('.configListAdd').on('click touchstart', function () {
+									let $parent = $(this).parent();
+									let $inp = $parent.children('.configInput');
+									if ($inp.val() != '') {
+										$.post( '/myHome/add'+$parent.id,
+											{ value: $inp.val() } )
+										.done(function( result ) {
+											$parent.children('.configListCurrent').append("<li>" + $inp.val() + "<div class='addWidgetCheck configListRemove link-hover'><i class='fas fa-minus-circle'></i></div></li>");
+											$inp.val('');
 
-							$('.configListRemove').on('click touchstart', function () {
-								$(this).parent().remove();
-							});
-						});
-					}
-				});*/
-				if(deviceLinkerMode) {
-					removeAllBeziers();
-					selectedDevice = $(this);
-					$(this).attr('id', 'linked');
-				}
-
+											$('.configListRemove').on('click touchstart', function () {
+												$(this).parent().remove();
+											});
+										});
+									}
+								});*/
 				$settings.removeClass('waiting after_big')
+			} else if(deviceLinkerMode) {
+				removeAllBeziers();
+				selectedDevice = $(this);
+				$('.highlightedDevice').removeClass('highlightedDevice');
+				$(this).addClass('highlightedDevice');
+				$(this).attr('id', 'linked');
+				$.get('Device/'+data['id']+'/getLinks').done(function (res) {
+					console.log(res);
+					res = jQuery.parseJSON(res);
+					$.each(res, function (id, link) {
+						target = $('#floorPlan-Zone_' + link['locationID']);
+						target.children('.inputOrText').connections({
+						  to: selectedDevice,
+						  'class': 'deviceLink'
+						});
+					});
+				})
 			} else {
 				// display mode: Try toggling the device
 				$.post( 'Device/'+data['id']+'/toggle')
@@ -923,7 +935,6 @@ $(function () {
 			$('.floorPlan-Zone').droppable({
   				drop: function( event, ui ) {
   					let roomChange = false;
-  					let errorOccured = false;
 					// check if room didn't change
 					if (ui.draggable.parent()[0] != this){
 						roomChange = true;
@@ -931,7 +942,6 @@ $(function () {
 					if(roomChange) {
 						$(this).append(ui.draggable);
 					}
-						//todo add in icon for moving
 						ui.draggable.draggable( "option", "revert", false );
 					    ui.draggable.css({top: ui.offset.top - $(this).offset().top, left: ui.offset.left - $(this).offset().left } );
 						setTimeout( function() { ui.draggable.draggable( "option", "revert", true ); }, 1000 );
@@ -1009,8 +1019,7 @@ $(function () {
 						roomChange = true;
 					}
 					if(roomChange) {
-						//todo replace with translateable text
-						userConf = confirm('Do you want to move this device to the new location: ' + $(this).attr('data-name'));
+						userConf = confirm($('#langConfMoveDevice').text() + $(this).attr('data-name'));
 					}
 					if(!roomChange || userConf){
 						//save to db
@@ -1069,7 +1078,7 @@ $(function () {
 	});
 
 	function removeAllBeziers(){
-		$('.linked').removeClass('linked');
+		$('.highlightedDevice').connections('remove');
 	}
 
 	function setBPMode(value){

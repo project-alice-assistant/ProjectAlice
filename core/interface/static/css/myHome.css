@@ -16,6 +16,10 @@
 .selectedTool { color: var(--hover); }
 .selectedToolbar { color: var(--hover); }
 
+/* Device Linking */
+.highlightedDevice { box-shadow: 0px 0px 4px 4px var(--hover);}
+.deviceLink {border: 3px solid; pointer-events: none;border-radius: 100%;border-color: yellow;z-index: 999;}
+
 /* Textures */
 .floor-1 { background: url('./images/myHome/floors/floor-1.png'); color: var(--accent); }
 .floor-2 { background: url('./images/myHome/floors/floor-2.png'); color: var(--accent); }

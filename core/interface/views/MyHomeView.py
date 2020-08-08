@@ -1,5 +1,6 @@
 from flask import jsonify, render_template, request, send_from_directory
 from flask_classful import route
+import json
 
 from core.interface.model.View import View
 
@@ -173,6 +174,33 @@ class MyHomeView(View):
 			return jsonify(success=False)
 
 
+	@route('/Device/<path:_id>/getLinks', methods=['GET'])
+	def getLinks(self, _id: str ):
+		try:
+			_id = int(_id)
+			device = self.DeviceManager.getDeviceById(_id=_id)
+			links = self.DeviceManager.getLinksForDevice(device=device)
+			return json.dumps([link.asJson() for link in links])
+		except Exception as e:
+			self.logError(f'Error while loading Links: {e}')
+			return jsonify(error=f'Error while loading Links: {e}')
+
+
+	@route('/Device/<path:_id>/removeLink/<path:roomid>', methods=['POST'])
+	def removeDeviceLink(self, _id: str, roomid: str):
+		try:
+			_id = int(_id)
+			roomid = int(roomid)
+			if roomid == 0:
+				raise Exception('No valid room ID supplied')
+			else:
+				self.DeviceManager.deleteLink(deviceId=_id, locationId=roomid)
+			return jsonify(success=True)
+		except Exception as e:
+			self.logError(f'Failed removing room/device Link: {e}')
+			return jsonify(error=f'Failed removing room/device Link: {e}')
+
+
 	@route('/Device/<path:_id>/addLink/<path:roomid>', methods=['POST'])
 	def addDeviceLink(self, _id: str, roomid: str):
 		try:
@@ -185,7 +213,7 @@ class MyHomeView(View):
 			return jsonify(success=True)
 		except Exception as e:
 			self.logError(f'Failed adding room/device Link: {e}')
-			return jsonify(error='Faild adding link')
+			return jsonify(error=f'Failed adding room/device Link: {e}')
 
 
 	@route('/Device/u/<path:uid>/icon', methods=['GET'])

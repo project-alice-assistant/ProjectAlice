@@ -1,5 +1,6 @@
 import sqlite3
 import ast
+import json
 
 from core.base.model.ProjectAliceObject import ProjectAliceObject
 
@@ -8,7 +9,9 @@ class DeviceLink(ProjectAliceObject):
 
 	def __init__(self, data: sqlite3.Row):
 		super().__init__()
-		self._locSettings = ast.literal_eval(data['locSettings'])
+		self._locSettings = dict()
+		if 'locSettings' in data and data['locSettings']:
+			self._locSettings = ast.literal_eval(data['locSettings'])
 		self._deviceID = data['deviceID']
 		self._locationID = data['locationID']
 
@@ -19,7 +22,7 @@ class DeviceLink(ProjectAliceObject):
 
 
 	def saveToDB(self):
-		values = {'deviceID': self._deviceID, 'locSettings': self._locSettings, 'locationID': self._locationID}
+		values = {'deviceID': self._deviceID, 'locSettings': json.dumps(self._locSettings), 'locationID': self._locationID}
 		self._id = self.DatabaseManager.insert(tableName=self.DeviceManager.DB_LINKS,
 		                                       values=values,
 		                                       callerName=self.DeviceManager.name)
@@ -62,3 +65,11 @@ class DeviceLink(ProjectAliceObject):
 	@property
 	def deviceId(self) -> int:
 		return self._deviceID
+
+	def asJson(self):
+		return {
+			'id'          : self._id,
+			'deviceID'    : self._deviceID,
+			'locationID'  : self._locationID,
+			'locSettings' : self._locSettings
+		}

@@ -55,7 +55,7 @@ class Location(ProjectAliceObject):
 
 
 	def asJson(self) -> dict:
-		devices = {device.id: device.asJson() for device in self.DeviceManager.getDevicesByLocation(locationID=self.id)}
+		devices = {device.id: device.asJson() for device in self.DeviceManager.getDevicesByLocation(locationID=self.id, withLinks=False)}
 		return {
 			'id'      : self.id,
 			'name'    : self.name,

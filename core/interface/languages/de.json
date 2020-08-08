@@ -57,5 +57,6 @@
 	"noConfs": "Keine Einstellungen",
 	"saving": "Speichern",
 	"saved": "Gespeichert",
-	"saveFailed": "Speichern fehlgeschlagen"
+	"saveFailed": "Speichern fehlgeschlagen",
+	"confMoveDevice": "Möchtest du Speichern und das Gerät an einen neuen Ort verschieben: "
 }

@@ -66,7 +66,7 @@ class DeviceManager(Manager):
 		super().onStart()
 
 		self.loadDevices()
-		# self.loadLinks()
+		self.loadLinks()
 
 		self.logInfo(f'Loaded **{len(self._devices)}** device', plural='device')
 
@@ -101,8 +101,12 @@ class DeviceManager(Manager):
 
 	def loadDevices(self):
 		for row in self.databaseFetch(tableName=self.DB_DEVICE, method='all'):
-			# to dict!
 			self._devices[row['id']] = Device(row)
+
+
+	def loadLinks(self):
+		for row in self.databaseFetch(tableName=self.DB_LINKS, method='all'):
+			self._deviceLinks[row['id']] = DeviceLink(row)
 
 
 	# noinspection SqlResolve
@@ -212,7 +216,7 @@ class DeviceManager(Manager):
 			return self._deviceLinks.get(_id, None)
 		if not deviceId or not locationId:
 			raise Exception('getLink: supply locationID or deviceID!')
-		for _id, link in self._deviceLinks:
+		for link in self._deviceLinks.values():
 			if link.deviceId == deviceId and link.locationId == locationId:
 				return link
 
@@ -222,14 +226,22 @@ class DeviceManager(Manager):
 		deviceType = device.getDeviceType()
 		if not deviceType.allowLocationLinks:
 			raise Exception(f'Device type {deviceType.name} can\'t be linked to other rooms')
+		if self.getLink(deviceId=deviceId, locationId=locationId):
+			raise Exception(f'There is already a link from {deviceId} to {locationId}')
 		#todo check if adding locSettings here is required
 		values = {'deviceID': deviceId, 'locationID': locationId}
-		self.databaseInsert(tableName=self.DB_LINKS, query='INSERT INTO :__table__ (deviceID, locationID) VALUES (:deviceID, :locationID)', values=values)
+		values['id'] = self.databaseInsert(tableName=self.DB_LINKS, query='INSERT INTO :__table__ (deviceID, locationID) VALUES (:deviceID, :locationID)', values=values)
+		self.logInfo(f'Added link from device {deviceId} to location {locationId}')
+		self._deviceLinks[values['id']] = DeviceLink(data=values)
 
 
-	def deleteLink(self, _id: int):
-		self._deviceLinks.pop(_id)
-		self.DatabaseManager.delete(tableName=self.DB_LINKS, callerName=self.name, values={"id": _id})
+	def deleteLink(self, _id: int = None, deviceId: int = None, locationId: int = None):
+		link = self.DeviceManager.getLink(_id=_id, deviceId=deviceId, locationId=locationId)
+		if  not link:
+			raise Exception('Link not found.')
+		self.logInfo(f'Removing link {link._id}')
+		self._deviceLinks.pop(link._id)
+		self.DatabaseManager.delete(tableName=self.DB_LINKS, callerName=self.name, values={"id": link._id})
 
 
 	def deleteDeviceUID(self, deviceUID: str):
@@ -396,8 +408,8 @@ class DeviceManager(Manager):
 		return self._deviceTypes
 
 
-	def getDevicesByLocation(self, locationID: int, connectedOnly: bool = False, deviceTypeID: int = None) -> List[Device]:
-		return [device for device in self._devices.values() if (device.locationID == locationID or self.getLink(deviceId=device.id, locationId=locationID))
+	def getDevicesByLocation(self, locationID: int, connectedOnly: bool = False, deviceTypeID: int = None, withLinks: bool = True) -> List[Device]:
+		return [device for device in self._devices.values() if (device.locationID == locationID or (withLinks and self.getLink(deviceId=device.id, locationId=locationID)))
 		        and device.getDeviceType()
 		        and (not connectedOnly or device.connected)
 		        and (not deviceTypeID or device.deviceTypeID == deviceTypeID)]
