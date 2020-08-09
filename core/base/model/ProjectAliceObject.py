@@ -133,7 +133,7 @@ class ProjectAliceObject:
 			for dep in self.DEPENDENCIES['system']:
 				self.logInfo(f'Installing "{dep}"')
 				result = self.Commons.runRootSystemCommand(['apt-get', 'install', '-y', dep])
-				if result.errorcode:
+				if result.returncode:
 					raise Exception(result.stderr)
 
 				self.logInfo(f'Installed!')
@@ -141,7 +141,7 @@ class ProjectAliceObject:
 			for dep in self.DEPENDENCIES['pip']:
 				self.logInfo(f'Installing "{dep}"')
 				result = self.Commons.runSystemCommand(['./venv/bin/pip', 'install', dep])
-				if result.errorcode:
+				if result.returncode:
 					raise Exception(result.stderr)
 
 				self.logInfo(f'Installed!')
