@@ -18,6 +18,7 @@ PIP = './venv/bin/pip'
 YAML = '/boot/ProjectAlice.yaml'
 ASOUND = '/etc/asound.conf'
 SNIPS_TOML = '/etc/snips.toml'
+TEMP = Path('/tmp/service')
 
 def isVenv() -> bool:
 	return hasattr(sys, 'real_prefix') or (hasattr(sys, 'base_prefix') and sys.base_prefix != sys.prefix)
@@ -123,6 +124,8 @@ network={
 		if not connected:
 			self.logFatal('Your device needs internet access to continue')
 
+		subprocess.run(['git', 'config', '--global', 'user.email', 'anotheruser@projectalice.io'])
+		subprocess.run(['git', 'config', '--global', 'user.name', 'another'])
 
 		updateChannel = initConfs['aliceUpdateChannel'] if 'aliceUpdateChannel' in initConfs else 'master'
 		updateSource = self.getUpdateSource(updateChannel)
@@ -146,12 +149,12 @@ network={
 		serviceFile = serviceFile.replace('#WORKINGDIR', f'WorkingDirectory=/home/{getpass.getuser()}/ProjectAlice')
 		serviceFile = serviceFile.replace('#EXECSTART', f'ExecStart=/home/{getpass.getuser()}/ProjectAlice/venv/bin/python main.py')
 		serviceFile = serviceFile.replace('#USER', f'User={getpass.getuser()}')
-		Path('/tmp/service').write_text(serviceFile)
-		subprocess.run(['sudo', 'mv', '/tmp/service', serviceFilePath])
+		TEMP.write_text(serviceFile)
+		subprocess.run(['sudo', 'mv', TEMP, serviceFilePath])
 
 		if not Path('venv').exists():
 			self.logInfo('Not running with venv, I need to create it')
-			subprocess.run(['sudo', 'apt', 'install', 'python3-venv', '-y'])
+			subprocess.run(['sudo', 'apt-get', 'install', 'python3-venv', '-y'])
 			subprocess.run(['python3.7', '-m', 'venv', 'venv'])
 			self.logInfo('Installed virtual environement, restarting...')
 			subprocess.run(['sudo', 'systemctl', 'daemon-reload'])
@@ -370,8 +373,8 @@ network={
 			serviceFile = serviceFile.replace('%EXECSTART%', f'/home/{getpass.getuser()}/hermesLedControl/venv/bin/python main.py --hardware=%HARDWARE% --pattern=projectalice')
 			serviceFile = serviceFile.replace('%USER%', f'{getpass.getuser()}')
 
-			Path('/tmp/service').write_text(serviceFile)
-			subprocess.run(['sudo', 'mv', 'service', serviceFilePath])
+			TEMP.write_text(serviceFile)
+			subprocess.run(['sudo', 'mv', TEMP, serviceFilePath])
 
 		useFallbackHLC = False
 		if audioHardware in {'respeaker2', 'respeaker4', 'respeaker6MicArray'}:
