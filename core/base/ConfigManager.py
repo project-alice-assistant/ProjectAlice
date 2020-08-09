@@ -490,6 +490,13 @@ class ConfigManager(Manager):
 			self.Commons.runRootSystemCommand(['sudo', 'alsactl', 'kill', 'rescan'])
 
 
+	def toggleDebugLogs(self):
+		if self.getAliceConfigByName('debug'):
+			logging.getLogger('ProjectAlice').setLevel(logging.DEBUG)
+		else:
+			logging.getLogger('ProjectAlice').setLevel(logging.WARN)
+
+
 	def getGithubAuth(self) -> tuple:
 		username = self.getAliceConfigByName('githubUsername')
 		token = self.getAliceConfigByName('githubToken')

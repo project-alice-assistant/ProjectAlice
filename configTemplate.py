@@ -85,6 +85,7 @@ settings = {
 		'dataType'    : 'boolean',
 		'isSensitive' : False,
 		'description' : 'If true debug logs will show',
+		'onUpdate'    : 'toggleDebugLogs',
 		'category'    : 'system'
 	},
 	'wifipassword'            : {
