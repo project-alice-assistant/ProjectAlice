@@ -387,7 +387,7 @@ network={
 			serviceFile = serviceFile.replace('%USER%', f'{getpass.getuser()}')
 
 			TEMP.write_text(serviceFile)
-			subprocess.run(['sudo', 'mv', TEMP, serviceFilePath])
+			subprocess.run(['sudo', 'mv', TEMP, hlcServiceFilePath])
 
 		useFallbackHLC = False
 		if audioHardware in {'respeaker2', 'respeaker4', 'respeaker6MicArray'}:
