@@ -6,6 +6,7 @@ from typing import Optional
 import hashlib
 import tempfile
 from pydub import AudioSegment
+from pydub.exceptions import CouldntDecodeError
 
 from core.base.model.ProjectAliceObject import ProjectAliceObject
 from core.commons import constants
@@ -168,9 +169,13 @@ class Tts(ProjectAliceObject):
 			uid=uid
 		)
 
-		duration = round(len(AudioSegment.from_file(file)) / 1000, 2)
-		self.DialogManager.increaseSessionTimeout(session=session, interval=duration + 0.2)
-		self.ThreadManager.doLater(interval=duration + 0.1, func=self._sayFinished, args=[session, uid])
+		try:
+			duration = round(len(AudioSegment.from_file(file)) / 1000, 2)
+		except CouldntDecodeError:
+			self.logError('Error decoding TTS file')
+		else:
+			self.DialogManager.increaseSessionTimeout(session=session, interval=duration + 0.2)
+			self.ThreadManager.doLater(interval=duration + 0.1, func=self._sayFinished, args=[session, uid])
 
 
 	def _sayFinished(self, session: DialogSession, uid: str):

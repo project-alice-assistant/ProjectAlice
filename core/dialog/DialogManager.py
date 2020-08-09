@@ -55,11 +55,14 @@ class DialogManager(Manager):
 
 
 	def onHotword(self, siteId: str, user: str = constants.UNKNOWN_USER):
+		self.logDebug(f'Wakeword detected on site **{siteId}**')
+
 		self._endedSessions[siteId] = self._sessionsById.pop(siteId, None)
 
 		session = self.newSession(siteId=siteId, user=user)
-
-		self.logDebug(f'Wakeword detected on site **{siteId}**')
+		redQueen = self.SkillManager.getSkillInstance('RedQueen')
+		if redQueen and not redQueen.inTheMood(session):
+			return
 
 		# Turn off the wakeword component
 		self.MqttManager.publish(
