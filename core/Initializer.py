@@ -368,6 +368,19 @@ network={
 			if hlcServiceFilePath.exists():
 				subprocess.run(['sudo', 'rm', hlcServiceFilePath])
 
+			subprocess.run(['python3.7', '-m', 'venv', f'/home/{getpass.getuser()}/hermesLedControl/venv'])
+
+			reqs = [
+				'RPi.GPIO',
+				'spidev',
+				'gpiozero',
+				'paho-mqtt',
+				'toml',
+				'numpy'
+			]
+			for req in reqs:
+				subprocess.run([f'/home/{getpass.getuser()}/hermesLedControl/venv/bin/pip', 'install', req])
+
 			serviceFile = Path(f'/home/{getpass.getuser()}/hermesLedControl/hermesledcontrol.service').read_text()
 			serviceFile = serviceFile.replace('%WORKING_DIR%', f'/home/{getpass.getuser()}/hermesLedControl')
 			serviceFile = serviceFile.replace('%EXECSTART%', f'/home/{getpass.getuser()}/hermesLedControl/venv/bin/python main.py --hardware=%HARDWARE% --pattern=projectalice')
