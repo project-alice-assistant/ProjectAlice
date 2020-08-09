@@ -58,5 +58,8 @@
 	"saving": "Speichern",
 	"saved": "Gespeichert",
 	"saveFailed": "Speichern fehlgeschlagen",
-	"confMoveDevice": "Möchtest du Speichern und das Gerät an einen neuen Ort verschieben: "
+	"confMoveDevice": "Möchtest du Speichern und das Gerät an einen neuen Ort verschieben: ",
+	"confDeleteDevice": "Möchtest du wirklich das Gerät löschen?",
+	"confDeleteZone": "Möchtest du diesen Bereich wirklich löschen?",
+	"nameNewZone": "Wie soll der neue Bereich heißen?"
 }

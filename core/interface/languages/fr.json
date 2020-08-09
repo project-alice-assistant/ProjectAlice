@@ -57,5 +57,9 @@
 	"noConfs": "Pas de config pour ce widget!",
 	"saving": "Sauvegarde",
 	"saved": "Sauvegardé",
-	"saveFailed": "Erreur de sauvegarde"
+	"saveFailed": "Erreur de sauvegarde",
+	"confMoveDevice": "Do you want to save and move this device to the new location: ",
+	"confDeleteDevice": "Are you sure you want to delete that device?",
+	"confDeleteZone": "Are you sure you want to delete this location?",
+	"nameNewZone": "Please name the new location"
 }
