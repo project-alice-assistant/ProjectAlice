@@ -464,6 +464,9 @@ network={
 
 		subprocess.run(['sudo', 'systemctl', 'daemon-reload'])
 
+		if initConfs['useHLC']:
+			subprocess.run(['sudo', 'systemctl', 'enable', hlcServiceFilePath.stem])
+
 		sort = dict(sorted(confs.items()))
 
 		try:
