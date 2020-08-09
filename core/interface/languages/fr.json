@@ -58,8 +58,8 @@
 	"saving": "Sauvegarde",
 	"saved": "Sauvegardé",
 	"saveFailed": "Erreur de sauvegarde",
-	"confMoveDevice": "Do you want to save and move this device to the new location: ",
-	"confDeleteDevice": "Are you sure you want to delete that device?",
-	"confDeleteZone": "Are you sure you want to delete this location?",
-	"nameNewZone": "Please name the new location"
+	"confMoveDevice": "Veux-tu sauvegarder et déplacer cet appareil vers le nouvel emplacement?",
+	"confDeleteDevice": "Tu es sûr de vouloir supprimer cet appareil?",
+	"confDeleteZone": "Tu es sûr de vouloir supprimer cet emplacement?",
+	"nameNewZone": "Donne un nom à la nouvel location s'il te plaît"
 }
