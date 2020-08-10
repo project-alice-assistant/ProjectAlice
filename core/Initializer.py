@@ -197,7 +197,9 @@ network={
 			subprocess.run(['sudo', 'apt', 'install', '-y', f'./system/snips/snips-hotword_0.64.0_armhf.deb'])
 			subprocess.run(['sudo', 'apt', 'install', '-y', f'./system/snips/snips-hotword-model-heysnipsv4_0.64.0_armhf.deb'])
 
+			subprocess.run(['sudo', 'systemctl', 'stop', 'snips-hotword'])
 			subprocess.run(['sudo', 'systemctl', 'disable', 'snips-hotword'])
+			subprocess.run(['sudo', 'systemctl', 'stop', 'snips-nlu'])
 			subprocess.run(['sudo', 'systemctl', 'disable', 'snips-nlu'])
 
 			subprocess.run(['wget', 'http://ftp.us.debian.org/debian/pool/non-free/s/svox/libttspico0_1.0+git20130326-9_armhf.deb'])
