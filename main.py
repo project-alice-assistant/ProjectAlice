@@ -13,6 +13,7 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>
 
     authors: 	            Psycho <https://github.com/Psychokiller1888>
+                            philipp2310 <https://github.com/philipp2310>
 
 	retired or
 	inactive authors:       Jierka <https://github.com/jr-k>
