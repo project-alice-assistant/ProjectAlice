@@ -290,7 +290,7 @@ network={
 		confs['ttsVoice'] = initConfs['ttsVoice']
 		confs['githubUsername'] = initConfs['githubUsername']
 		confs['githubToken'] = initConfs['githubToken']
-		confs['timezone'] = initConfs['timezone']
+		confs['timezone'] = initConfs['timezone'] or 'Europe/Zurich'
 
 		aliceUpdateChannel = initConfs['aliceUpdateChannel']
 		if aliceUpdateChannel not in {'master', 'rc', 'beta', 'alpha'}:
