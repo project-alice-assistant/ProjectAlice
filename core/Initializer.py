@@ -290,6 +290,7 @@ network={
 		confs['ttsVoice'] = initConfs['ttsVoice']
 		confs['githubUsername'] = initConfs['githubUsername']
 		confs['githubToken'] = initConfs['githubToken']
+		confs['timezone'] = initConfs['timezone']
 
 		aliceUpdateChannel = initConfs['aliceUpdateChannel']
 		if aliceUpdateChannel not in {'master', 'rc', 'beta', 'alpha'}:
@@ -482,6 +483,11 @@ network={
 		snipsConf.dump()
 
 		subprocess.run(['sudo', 'rm', '-rf', Path(self._rootDir, 'assistant')])
+
+		subprocess.run(['sudo', 'sed', '-i', '-e', 's/#dtparam=i2c_arm=on/dtparam=i2c_arm=on/', '/boot/config.txt'])
+		subprocess.run(['sudo', 'sed', '-i', '-e', 's/#dtparam=spi=on/dtparam=spi=on/', '/boot/config.txt'])
+
+		subprocess.run(['sudo', 'timedatectl', 'set-timezone', confs['timezone']])
 
 		if initConfs['keepYAMLBackup']:
 			subprocess.run(['sudo', 'mv', Path(YAML), Path('/boot/ProjectAlice.yaml.bak')])

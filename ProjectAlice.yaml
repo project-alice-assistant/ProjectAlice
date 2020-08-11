@@ -88,6 +88,9 @@ baseCurrency: CHF
 # Either 'metric', 'kelvin' or 'imperial'
 baseUnits: metric
 
+# Your timezone. For a complete list check this wiki: https://en.wikipedia.org/wiki/List_of_tz_database_time_zones
+timezone: Europe/Zurich
+
 # Telemetry data, such as temperature, pressure, humidity and others depending on your sensors can be kept in your internal database for forecast or AI use
 enableDataStoring: yes
 

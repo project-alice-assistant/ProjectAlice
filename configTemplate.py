@@ -1,4 +1,12 @@
 settings = {
+	'timezone': {
+		'defaultValue': 'Europe/Zurich',
+		'dataType'    : 'string',
+		'isSensitive' : False,
+		'description' : 'Your timezone',
+		'beforeUpdate': 'updateTimezone',
+		'category'    : 'system'
+	},
 	'asoundConfig': {
 		'defaultValue': '',
 		'dataType'    : 'longstring',

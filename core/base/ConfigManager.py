@@ -490,6 +490,12 @@ class ConfigManager(Manager):
 			self.Commons.runRootSystemCommand(['sudo', 'alsactl', 'kill', 'rescan'])
 
 
+	def updateTimezone(self, newTimezone: str):
+		result = self.Commons.runRootSystemCommand(['timedatectl', 'set-timezone', newTimezone])
+		if result.returncode:
+			self.logError('Unsupported timezone format')
+
+
 	def toggleDebugLogs(self):
 		if self.getAliceConfigByName('debug'):
 			logging.getLogger('ProjectAlice').setLevel(logging.DEBUG)
