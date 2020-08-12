@@ -9,13 +9,34 @@ from pathlib import Path
 
 import os
 import pkg_resources
+import psutil
 import requests
 import yaml
 
-from core.base.model.TomlFile import TomlFile
+
+def restart():
+	sys.stdout.flush()
+	try:
+		# Close everything related to ProjectAlice, allows restart without component failing
+		process = psutil.Process(os.getpid())
+		for handler in process.open_files() + process.connections():
+			os.close(handler.fd)
+	except Exception as e:
+		print(f'Failed restarting Project Alice: {e}')
+
+	python = sys.executable
+	os.execl(python, python, *sys.argv)
+
+
+def isVenv() -> bool:
+	return hasattr(sys, 'real_prefix') or (hasattr(sys, 'base_prefix') and sys.base_prefix != sys.prefix)
+
+
+PIP = './venv/bin/pip' if isVenv() else 'pip3'
+
+import toml
 from core.base.model.Version import Version
 
-PIP = './venv/bin/pip'
 YAML = '/boot/ProjectAlice.yaml'
 ASOUND = '/etc/asound.conf'
 SNIPS_TOML = '/etc/snips.toml'
@@ -27,7 +48,6 @@ def isVenv() -> bool:
 PIP = './venv/bin/pip' if isVenv() else 'pip3'
 
 import configTemplate
-from core.base.model.ProjectAliceObject import ProjectAliceObject
 
 
 class InitDict(dict):
@@ -44,7 +64,7 @@ class InitDict(dict):
 			return ''
 
 
-class Initializer(ProjectAliceObject):
+class Initializer:
 	NAME = 'ProjectAlice'
 
 	_WPA_FILE = '''country=%wifiCountryCode%
@@ -140,12 +160,12 @@ network={
 		result = subprocess.run(['git', 'checkout', updateSource], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 		if 'switched' in result.stderr.decode().lower():
 			print('Switched branch, restarting...')
-			self.restart()
+			restart()
 
 		result = subprocess.run(['git', 'pull'], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 		if 'core/initializer.py' in result.stdout.decode().lower():
 			print('Updated critical sources, restarting...')
-			self.restart()
+			restart()
 
 		subprocess.run(['git', 'stash', 'clear'])
 		time.sleep(1)
@@ -484,7 +504,9 @@ network={
 		else:
 			importlib.reload(config)
 
-		snipsConf.dump()
+		Path(SNIPS_TOML).write_text(
+			json.dumps(snipsConf)
+		)
 
 		subprocess.run(['sudo', 'rm', '-rf', Path(self._rootDir, 'assistant')])
 
@@ -508,7 +530,7 @@ network={
 		subprocess.run(['sudo', 'shutdown', '-r', 'now'])
 
 
-	def loadSnipsConfigurations(self) -> TomlFile:
+	def loadSnipsConfigurations(self) -> dict:
 		self.logInfo('Loading Snips configuration file')
 		snipsConfig = Path(SNIPS_TOML)
 
@@ -517,7 +539,7 @@ network={
 
 		subprocess.run(['sudo', 'cp', Path(self._rootDir, 'system/snips/snips.toml'), Path(SNIPS_TOML)])
 
-		return TomlFile.loadToml(snipsConfig)
+		return toml.load(snipsConfig)
 
 
 	@staticmethod
@@ -554,16 +576,16 @@ network={
 
 
 	@staticmethod
-	def restart():
-		sys.stdout.flush()
-		try:
-			import psutil
-			# Close everything related to ProjectAlice, allows restart without component failing
-			process = psutil.Process(os.getpid())
-			for handler in process.open_files() + process.connections():
-				os.close(handler.fd)
-		except Exception as e:
-			print(f'Failed restarting Project Alice: {e}')
+	def logInfo(text: str):
+		print(f'[INFO] {text}')
 
-		python = sys.executable
-		os.execl(python, python, *sys.argv)
+
+	@staticmethod
+	def logWarning(text: str):
+		print(f'[WARNING] {text}')
+
+
+	@staticmethod
+	def logFatal(text: str):
+		print(f'[FATAL] {text}')
+		exit(0)

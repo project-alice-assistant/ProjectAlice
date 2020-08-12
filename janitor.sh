@@ -28,3 +28,10 @@ systemctl enable ProjectAlice
 sudo -u "$(logname)" bash <<EOF
   history -c
 EOF
+
+# TODO
+# install pip3
+# install pyaml==5.3
+# install requests==2.21.0
+# install psutil==5.6.7
+# install toml==0.10.1
