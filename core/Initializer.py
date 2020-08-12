@@ -7,6 +7,7 @@ import sys
 import time
 from pathlib import Path
 
+import os
 import pkg_resources
 import requests
 import yaml
@@ -124,8 +125,8 @@ network={
 		if not connected:
 			self.logFatal('Your device needs internet access to continue')
 
-		subprocess.run(['git', 'config', '--global', 'user.email', 'anotheruser@projectalice.io'])
-		subprocess.run(['git', 'config', '--global', 'user.name', 'another'])
+		subprocess.run(['git', 'config', '--global', 'user.name', '"An Other"'])
+		subprocess.run(['git', 'config', '--global', 'user.email', '"anotheruser@projectalice.io"'])
 
 		updateChannel = initConfs['aliceUpdateChannel'] if 'aliceUpdateChannel' in initConfs else 'master'
 		updateSource = self.getUpdateSource(updateChannel)
@@ -135,8 +136,19 @@ network={
 		subprocess.run(['sudo', 'apt', 'autoremove', '-y'])
 		subprocess.run(['git', 'clean', '-df'])
 		subprocess.run(['git', 'stash'])
-		subprocess.run(['git', 'checkout', updateSource])
-		subprocess.run(['git', 'pull'])
+
+		result = subprocess.run(['git', 'checkout', updateSource], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+
+		if 'switched' in result.stderr.decode().lower():
+			print('Switched branch, restarting...')
+			self.restart()
+
+		result = subprocess.run(['git', 'pull'], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+
+		if 'already up to date' not in result.stdout.decode().lower():
+			print('Updated critical sources, restarting...')
+			self.restart()
+
 		subprocess.run(['git', 'stash', 'clear'])
 
 		time.sleep(1)
@@ -543,3 +555,19 @@ network={
 	@staticmethod
 	def newConfs():
 		return {configName: configData['values'] if 'dataType' in configData and configData['dataType'] == 'list' else configData['defaultValue'] if 'defaultValue' in configData else configData for configName, configData in configTemplate.settings.items()}
+
+
+	@staticmethod
+	def restart():
+		sys.stdout.flush()
+		try:
+			import psutil
+			# Close everything related to ProjectAlice, allows restart without component failing
+			process = psutil.Process(os.getpid())
+			for handler in process.open_files() + process.connections():
+				os.close(handler.fd)
+		except Exception as e:
+			print(f'Failed restarting Project Alice: {e}')
+
+		python = sys.executable
+		os.execl(python, python, *sys.argv)
