@@ -148,7 +148,6 @@ network={
 			self.restart()
 
 		subprocess.run(['git', 'stash', 'clear'])
-
 		time.sleep(1)
 
 		serviceFilePath = Path('/etc/systemd/system/ProjectAlice.service')
