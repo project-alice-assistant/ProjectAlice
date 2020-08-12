@@ -188,7 +188,7 @@ network={
 			self.logInfo('Installed virtual environement, restarting...')
 			subprocess.run(['sudo', 'systemctl', 'daemon-reload'])
 			subprocess.run(['sudo', 'systemctl', 'enable', 'ProjectAlice'])
-			subprocess.run(['sudo', 'shutdown', '-r', 'now'])
+			restart()
 		elif not isVenv():
 				self.logFatal('Please run using the virtual environement: "./venv/bin/python main.py"')
 
