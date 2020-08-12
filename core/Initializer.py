@@ -138,14 +138,12 @@ network={
 		subprocess.run(['git', 'stash'])
 
 		result = subprocess.run(['git', 'checkout', updateSource], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-
 		if 'switched' in result.stderr.decode().lower():
 			print('Switched branch, restarting...')
 			self.restart()
 
 		result = subprocess.run(['git', 'pull'], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-
-		if 'already up to date' not in result.stdout.decode().lower():
+		if 'core/initializer.py' in result.stdout.decode().lower():
 			print('Updated critical sources, restarting...')
 			self.restart()
 
