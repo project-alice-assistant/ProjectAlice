@@ -14,7 +14,9 @@ try:
 	import psutil
 	import requests
 	import yaml
+	import toml
 except:
+	# Would mean we have just started using the venv
 	pass
 
 
@@ -38,7 +40,7 @@ def restart():
 	python = sys.executable
 	os.execl(python, python, *sys.argv)
 
-import toml
+
 from core.base.model.Version import Version
 
 YAML = '/boot/ProjectAlice.yaml'
