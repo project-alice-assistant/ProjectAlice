@@ -474,11 +474,6 @@ network={
 		if initConfs['useHLC'] and useFallbackHLC:
 			subprocess.run(['sudo', 'sed', '-i', '-e', 's/%HARDWARE%/dummy/', str(hlcServiceFilePath)])
 
-		subprocess.run(['sudo', 'systemctl', 'daemon-reload'])
-
-		if initConfs['useHLC']:
-			subprocess.run(['sudo', 'systemctl', 'enable', hlcServiceFilePath.stem])
-
 		sort = dict(sorted(confs.items()))
 
 		try:
@@ -503,9 +498,13 @@ network={
 		else:
 			subprocess.run(['sudo', 'rm', Path(YAML)])
 
+		subprocess.run(['sudo', 'systemctl', 'daemon-reload'])
+		subprocess.run(['sudo', 'systemctl', 'enable', 'ProjectAlice'])
+		if initConfs['useHLC']:
+			subprocess.run(['sudo', 'systemctl', 'enable', hlcServiceFilePath.stem])
+
 		self.logWarning('Initializer done with configuring')
 		time.sleep(2)
-		subprocess.run(['sudo', 'systemctl', 'enable', 'ProjectAlice'])
 		subprocess.run(['sudo', 'shutdown', '-r', 'now'])
 
 
