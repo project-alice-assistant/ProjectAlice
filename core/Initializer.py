@@ -191,9 +191,10 @@ network={
 			self.logInfo('Not running with venv, I need to create it')
 			subprocess.run(['sudo', 'apt-get', 'install', 'python3-venv', '-y'])
 			subprocess.run(['python3.7', '-m', 'venv', 'venv'])
-			self.logInfo('Installed virtual environement, restarting...')
+			subprocess.run(['./venv/bin/pip', 'install', 'pyaml==5.3'])
 			subprocess.run(['sudo', 'systemctl', 'daemon-reload'])
 			subprocess.run(['sudo', 'systemctl', 'enable', 'ProjectAlice'])
+			self.logInfo('Installed virtual environement, restarting...')
 			subprocess.run(['sudo', 'shutdown', '-r', 'now'])
 		elif not isVenv():
 				self.logFatal('Please run using the virtual environement: "./venv/bin/python main.py"')
