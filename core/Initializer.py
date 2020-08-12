@@ -14,6 +14,13 @@ import requests
 import yaml
 
 
+def isVenv() -> bool:
+	return hasattr(sys, 'real_prefix') or (hasattr(sys, 'base_prefix') and sys.base_prefix != sys.prefix)
+
+
+PIP = './venv/bin/pip' if isVenv() else 'pip3'
+
+
 def restart():
 	sys.stdout.flush()
 	try:
@@ -26,13 +33,6 @@ def restart():
 
 	python = sys.executable
 	os.execl(python, python, *sys.argv)
-
-
-def isVenv() -> bool:
-	return hasattr(sys, 'real_prefix') or (hasattr(sys, 'base_prefix') and sys.base_prefix != sys.prefix)
-
-
-PIP = './venv/bin/pip' if isVenv() else 'pip3'
 
 import toml
 from core.base.model.Version import Version
@@ -188,7 +188,7 @@ network={
 			self.logInfo('Installed virtual environement, restarting...')
 			subprocess.run(['sudo', 'systemctl', 'daemon-reload'])
 			subprocess.run(['sudo', 'systemctl', 'enable', 'ProjectAlice'])
-			restart()
+			subprocess.run(['sudo', 'shutdown', '-r', 'now'])
 		elif not isVenv():
 				self.logFatal('Please run using the virtual environement: "./venv/bin/python main.py"')
 
