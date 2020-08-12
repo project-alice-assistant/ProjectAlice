@@ -9,9 +9,13 @@ from pathlib import Path
 
 import os
 import pkg_resources
-import psutil
-import requests
-import yaml
+
+try:
+	import psutil
+	import requests
+	import yaml
+except:
+	pass
 
 
 def isVenv() -> bool:
@@ -193,6 +197,7 @@ network={
 				self.logFatal('Please run using the virtual environement: "./venv/bin/python main.py"')
 
 		subprocess.run([PIP, 'uninstall', '-y', '-r', str(Path(self._rootDir, 'pipuninstalls.txt'))])
+		subprocess.run([PIP, 'install', '-r', str(Path(self._rootDir, 'requirements.txt'))])
 
 		if 'forceRewrite' not in initConfs:
 			initConfs['forceRewrite'] = True
@@ -236,8 +241,6 @@ network={
 
 			subprocess.run(['rm', 'libttspico0_1.0+git20130326-9_armhf.deb'])
 			subprocess.run(['rm', 'libttspico-utils_1.0+git20130326-9_armhf.deb'])
-
-			subprocess.run([PIP, 'install', '-r', str(Path(self._rootDir, 'requirements.txt'))])
 
 			reqs = [line.rstrip('\n') for line in open(Path(self._rootDir, 'sysrequirements.txt'))]
 			subprocess.run(['sudo', 'apt-get', 'install', '-y', '--allow-unauthenticated'] + reqs)
