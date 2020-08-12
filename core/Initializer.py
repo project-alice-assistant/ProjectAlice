@@ -10,6 +10,12 @@ from pathlib import Path
 import os
 import pkg_resources
 
+
+def isVenv() -> bool:
+	return hasattr(sys, 'real_prefix') or (hasattr(sys, 'base_prefix') and sys.base_prefix != sys.prefix)
+
+PIP = './venv/bin/pip' if isVenv() else 'pip3'
+
 try:
 	import psutil
 	import requests
@@ -17,14 +23,7 @@ try:
 	import toml
 except:
 	# Would mean we have just started using the venv
-	pass
-
-
-def isVenv() -> bool:
-	return hasattr(sys, 'real_prefix') or (hasattr(sys, 'base_prefix') and sys.base_prefix != sys.prefix)
-
-
-PIP = './venv/bin/pip' if isVenv() else 'pip3'
+	subprocess.run([PIP, 'install', 'PyYAML==5.3.1'])
 
 
 def restart():
@@ -191,7 +190,6 @@ network={
 			self.logInfo('Not running with venv, I need to create it')
 			subprocess.run(['sudo', 'apt-get', 'install', 'python3-venv', '-y'])
 			subprocess.run(['python3.7', '-m', 'venv', 'venv'])
-			subprocess.run(['./venv/bin/pip', 'install', 'PyYAML==5.3.1'])
 			subprocess.run(['sudo', 'systemctl', 'daemon-reload'])
 			subprocess.run(['sudo', 'systemctl', 'enable', 'ProjectAlice'])
 			self.logInfo('Installed virtual environement, restarting...')
