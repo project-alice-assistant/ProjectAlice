@@ -1,6 +1,6 @@
 {
 	"name": "ContextSensitive",
-	"version": "1.0.17",
+	"version": "1.0.23",
 	"icon": "fas fa-brain",
 	"category": "alice",
 	"author": "ProjectAlice",
@@ -9,7 +9,7 @@
 		"maxbachmann"
 	],
 	"desc": "ContextSensitive is the official context sensitive skill. It handles intents like 'Delete this', 'Change that', 'Please repeat",
-	"aliceMinVersion": "1.0.0-a6",
+	"aliceMinVersion": "1.0.0-b1",
 	"systemRequirements": [],
 	"pipRequirements": [],
 	"conditions": {

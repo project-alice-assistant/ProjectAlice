@@ -1,6 +1,6 @@
 {
 	"name": "DateDayTimeYear",
-	"version": "1.0.24",
+	"version": "1.0.26",
 	"icon": "far fa-clock",
 	"category": "assistance",
 	"author": "Psychokiller1888",
@@ -11,9 +11,7 @@
 	"desc": "Ask for the time, date, day and year",
 	"aliceMinVersion": "1.0.0-a6",
 	"systemRequirements": [],
-	"pipRequirements": [
-		"Babel"
-	],
+	"pipRequirements": ["Babel"],
 	"conditions": {
 		"lang": [
 			"en",
