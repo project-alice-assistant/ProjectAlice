@@ -28,7 +28,7 @@ systemctl enable ProjectAlice
 apt-get install -y python3-pip
 pip3 install PyYAML==5.3.1
 pip3 install requests==2.21.0
-pip3 install psutil==5.6.7
+pip3 install psutil==5.7.2
 pip3 install toml==0.10.1
 
 sudo -u "$(logname)" bash <<EOF
