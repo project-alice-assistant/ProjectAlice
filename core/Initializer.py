@@ -554,7 +554,13 @@ class Initializer:
 			settings = Path(f'system/asounds/{audioHardware.lower()}.conf').read_text()
 			confs['asoundConfig'] = settings
 
-			subprocess.run(['sudo', 'cp', Path(self._rootDir, 'system', 'asounds', f'{audioHardware.lower()}.conf'), Path(ASOUND)])
+			dest = Path('/etc/voicecard/asound_2mic.conf')
+			if audioHardware == 'respeaker4':
+				dest = Path('/etc/voicecard/asound_4mic.conf')
+			elif audioHardware == 'respeaker6MicArray':
+				dest = Path('/etc/voicecard/asound_6mic.conf')
+
+			subprocess.run(['sudo', 'cp', Path(self._rootDir, 'system', 'asounds', f'{audioHardware.lower()}.conf'), dest])
 
 		elif audioHardware == 'respeaker7':
 			subprocess.run(['sudo', Path(self._rootDir, 'system/scripts/audioHardware/respeaker7.sh')])

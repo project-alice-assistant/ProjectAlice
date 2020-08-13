@@ -16,5 +16,3 @@ chmod +x ./install.sh
 ./install.sh --compat-kernel
 
 sleep 1
-
-systemctl enable seeed-voicecard
