@@ -1,8 +1,6 @@
 .floorPlan-Zone { overflow: visible; background-color: var(--mainBG); color: var(--windowBG); position: absolute; display: flex; justify-content: center; align-items: center; font-size: 1.5em; }
 
 .floorPlan-Wall { background-color: var(--accent); }
-.floorPlan-Deco { }
-.floorPlan-Construction { }
 
 .floorPlan-tile { width: 50px; height: 50px; box-sizing: border-box; margin: 3px; background-position: center center; background-size: contain; cursor: pointer; }
 .floorPlan-tile:hover { border: 2px solid var(--hover); }
@@ -17,8 +15,8 @@
 .selectedToolbar { color: var(--hover); }
 
 /* Device Linking */
-.highlightedDevice { box-shadow: 0px 0px 4px 4px var(--hover);}
-.deviceLink {border: 3px solid; pointer-events: none;border-radius: 100%;border-color: yellow;z-index: 999;}
+.highlightedDevice { box-shadow: 0 0 4px 4px var(--hover); }
+.deviceLink { pointer-events: none; border-radius: 100%; border: 3px solid yellow; z-index: 999; }
 
 /* Textures */
 .floor-1 { background: url('./images/myHome/floors/floor-1.png'); color: var(--accent); }

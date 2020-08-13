@@ -551,8 +551,8 @@ $(function () {
 				$settings.html(content);
 				$('#startPair').on('click touchstart', function () {
 					$(this).addClass('waiting')
-					$.post('Device/' + data['id'] + '/pair').done(function (data) {
-						if (handleError(data)) {
+					$.post('Device/' + data['id'] + '/pair').done(function (dataa) {
+						if (handleError(dataa)) {
 							return;
 						}
 						let sp = $('#startPair')
