@@ -337,8 +337,8 @@ class Initializer:
 			confs = self.newConfs()
 			self._confsFile.write_text(f"settings = {json.dumps(confs, indent=4).replace('false', 'False').replace('true', 'True')}")
 
-		config = importlib.import_module('config')
 		# noinspection PyUnresolvedReferences
+		import config
 		confs = config.settings.copy()
 
 		# Do some installation if wanted by the user
