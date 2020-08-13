@@ -88,6 +88,7 @@ class PreInit:
 		self.doUpdates()
 		if not self.checkVenv():
 			self.setServiceFileTo('venv')
+			subprocess.run(['sudo', 'systemctl', 'enable', 'ProjectAlice'])
 			subprocess.run(['sudo', 'systemctl', 'restart', 'ProjectAlice'])
 			exit(0)
 
@@ -257,11 +258,7 @@ class PreInit:
 			self._logger.logInfo('Not running with venv, I need to create it')
 			subprocess.run(['sudo', 'apt-get', 'install', 'python3-venv', '-y'])
 			subprocess.run(['python3.7', '-m', 'venv', 'venv'])
-
 			self.updateVenv()
-
-			subprocess.run(['sudo', 'systemctl', 'daemon-reload'])
-			subprocess.run(['sudo', 'systemctl', 'enable', 'ProjectAlice'])
 			self._logger.logInfo('Installed virtual environement, restarting...')
 			return False
 		elif not self.isVenv():
@@ -295,6 +292,7 @@ class PreInit:
 		TEMP.write_text(serviceFile)
 		subprocess.run(['sudo', 'mv', TEMP, serviceFilePath])
 		subprocess.run(['sudo', 'systemctl', 'daemon-reload'])
+		time.sleep(1)
 
 
 class Initializer:
