@@ -631,9 +631,8 @@ class Initializer:
 		else:
 			importlib.reload(config)
 
-		Path(SNIPS_TOML).write_text(
-			json.dumps(snipsConf)
-		)
+		TEMP.write_text(json.dumps(snipsConf))
+		subprocess.run(['sudo', 'mv', TEMP, Path(SNIPS_TOML)])
 
 		subprocess.run(['sudo', 'rm', '-rf', Path(self._rootDir, 'assistant')])
 
