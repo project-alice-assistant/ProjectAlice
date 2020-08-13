@@ -199,9 +199,10 @@ button.button{ font-size: 1.6em; height: 2em; }
    padding-right: 3px;
    vertical-align: middle;
    font-weight: 900;
-  -webkit-animation: fa-spin 2s infinite linear;
-  animation: fa-spin 2s infinite linear;
+   -webkit-animation: fa-spin 2s infinite linear;
+   animation: fa-spin 2s infinite linear;
 }
+
 .after_big::after {
     font-size: 5em;
     text-align: center;
