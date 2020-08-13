@@ -21,10 +21,12 @@ class FailedAliceSkill(ProjectAliceObject):
 		return False
 
 
-	def onStart(self): pass
+	def onStart(self):
+		pass # Is always handeled by the sibling
 
 
-	def onStop(self): pass
+	def onStop(self):
+		pass  # Is always handeled by the sibling
 
 
 	def onBooted(self) -> bool:
