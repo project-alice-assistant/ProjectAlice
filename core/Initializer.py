@@ -1,6 +1,9 @@
+VERSION = 1.21
+
 import getpass
 import importlib
 import json
+import logging
 import socket
 import subprocess
 import sys
@@ -8,51 +11,12 @@ import time
 from pathlib import Path
 
 import os
-import pkg_resources
 
-
-def isVenv() -> bool:
-	return hasattr(sys, 'real_prefix') or (hasattr(sys, 'base_prefix') and sys.base_prefix != sys.prefix)
-
-PIP = './venv/bin/pip' if isVenv() else 'pip3'
-
-try:
-	import psutil
-	import requests
-	import yaml
-	import toml
-except:
-	# Would mean we have just started using the venv
-	subprocess.run([PIP, 'install', 'PyYAML==5.3.1'])
-
-
-def restart():
-	sys.stdout.flush()
-	try:
-		# Close everything related to ProjectAlice, allows restart without component failing
-		process = psutil.Process(os.getpid())
-		for handler in process.open_files() + process.connections():
-			os.close(handler.fd)
-	except Exception as e:
-		print(f'Failed restarting Project Alice: {e}')
-
-	python = sys.executable
-	os.execl(python, python, *sys.argv)
-
-
-from core.base.model.Version import Version
 
 YAML = '/boot/ProjectAlice.yaml'
 ASOUND = '/etc/asound.conf'
 SNIPS_TOML = '/etc/snips.toml'
 TEMP = Path('/tmp/service')
-
-def isVenv() -> bool:
-	return hasattr(sys, 'real_prefix') or (hasattr(sys, 'base_prefix') and sys.base_prefix != sys.prefix)
-
-PIP = './venv/bin/pip' if isVenv() else 'pip3'
-
-import configTemplate
 
 
 class InitDict(dict):
@@ -69,91 +33,127 @@ class InitDict(dict):
 			return ''
 
 
-class Initializer:
-	NAME = 'ProjectAlice'
+class SimpleLogger:
 
-	_WPA_FILE = '''country=%wifiCountryCode%
-ctrl_interface=DIR=/var/run/wpa_supplicant GROUP=netdev
-update_config=1
+	def __init__(self, prepend: str = None):
+		self._prepend = f'[{prepend}]\t\t\t'
+		self._logger = logging.getLogger('ProjectAlice')
 
-network={
-    ssid="%wifiNetworkName%"
-    scan_ssid=1
-    psk="%wifiWPAPass%"
-    key_mgmt=WPA-PSK
-}
-	'''
+
+	def logInfo(self, text: str):
+		self._logger.info(f'{self._prepend} {text}')
+
+
+	def logWarning(self, text: str):
+		self._logger.warning(f'{self._prepend} {text}')
+
+
+	def logError(self, text: str):
+		self._logger.error(f'{self._prepend} {text}')
+
+
+	def logFatal(self, text: str):
+		self._logger.fatal(f'{self._prepend} {text}')
+		exit(1)
+
+
+class PreInit:
+	"""
+	Pre init checks and makes sure vital stuff is installed and running. Not much, but internet, venv and so on
+	Pre init is meant to run on the system python and not on the venv
+	"""
 
 
 	def __init__(self):
-		super().__init__()
-		self.logInfo('Starting Project Alice initialization')
+		self._logger = SimpleLogger(prepend='PreInitializer')
 
-		self._rootDir = Path(__file__).resolve().parent.parent
-
-		self._confsFile = Path(self._rootDir, 'config.py')
-		self._confsSample = Path(self._rootDir, 'configTemplate.py')
-		self._initFile = Path(YAML)
-		self._latest = 1.20
+		self.rootDir = Path(__file__).resolve().parent.parent
+		self.confsFile = Path(self.rootDir, 'config.py')
+		self.initFile = Path(YAML)
+		self.initConfs = dict()
 
 
-	def initProjectAlice(self) -> bool: #NOSONAR
-		if not self._initFile.exists() and not self._confsFile.exists():
-			self.logFatal('Init file not found and there\'s no configuration file, aborting Project Alice start')
-		elif not self._initFile.exists():
-			self.logInfo('No initialization needed')
+	def start(self):
+		if not self.initFile.exists() and not self.confsFile.exists():
+			self._logger.logFatal('Init file not found and there\'s no configuration file, aborting Project Alice start')
+			return False
+		elif not self.initFile.exists():
+			self._logger.logInfo('No initialization needed')
 			return False
 
-		with self._initFile.open(mode='r') as f:
+		self.initConfs = self.loadConfig()
+		self.checkWPASupplicant()
+		self.checkInternet()
+		self.doUpdates()
+		if not self.checkVenv():
+			self.setServiceFileTo('venv')
+			subprocess.run(['sudo', 'systemctl', 'restart', 'ProjectAlice'])
+			exit(0)
+
+		return True
+
+
+	def loadConfig(self) -> dict:
+
+		try:
+			import yaml
+		except:
+			self.setServiceFileTo('system')
+			subprocess.run(['sudo', 'systemctl', 'restart', 'ProjectAlice'])
+			exit(0)
+
+		with Path(YAML).open(mode='r') as f:
 			try:
+				# noinspection PyUnboundLocalVariable
 				load = yaml.safe_load(f)
 				if not load:
 					raise yaml.YAMLError
 
 				initConfs = InitDict(load)
 			except yaml.YAMLError as e:
-				self.logFatal(f'Failed loading init configurations: {e}')
+				self._logger.logFatal(f'Failed loading init configurations: {e}')
+				return dict()
 
-		# Check that we are running using the latest yaml
-		if float(initConfs['version']) < self._latest:
-			self.logFatal('The yaml file you are using is deprecated. Please update it before trying again')
+			# Check that we are running using the latest yaml
+			if float(initConfs['version']) < VERSION:
+				self._logger.logFatal('The yaml file you are using is deprecated. Please update it before trying again')
 
+			return initConfs
+
+
+	@staticmethod
+	def isVenv() -> bool:
+		return hasattr(sys, 'real_prefix') or (hasattr(sys, 'base_prefix') and sys.base_prefix != sys.prefix)
+
+
+	def checkWPASupplicant(self):
 		wpaSupplicant = Path('/etc/wpa_supplicant/wpa_supplicant.conf')
-		if not wpaSupplicant.exists() and initConfs['useWifi']:
-			self.logInfo('Setting up wifi')
+		if not wpaSupplicant.exists() and self.initConfs['useWifi']:
+			self._logger.logInfo('Setting up wifi')
 
-			if not initConfs['wifiCountryCode'] or not initConfs['wifiNetworkName'] or not initConfs['wifiWPAPass']:
-				self.logFatal('You must specify the wifi parameters')
+			if not self.initConfs['wifiCountryCode'] or not self.initConfs['wifiNetworkName'] or not self.initConfs['wifiWPAPass']:
+				self._logger.logFatal('You must specify the wifi parameters')
 
 			bootWpaSupplicant = Path('/boot/wpa_supplicant.conf')
 
-			wpaFile = self._WPA_FILE \
-				.replace('%wifiCountryCode%', str(initConfs['wifiCountryCode'])) \
-				.replace('%wifiNetworkName%', str(initConfs['wifiNetworkName'])) \
-				.replace('%wifiWPAPass%', str(initConfs['wifiWPAPass']))
+			wpaFile = Path('wpa_supplicant.conf').read_text() \
+				.replace('%wifiCountryCode%', str(self.initConfs['wifiCountryCode'])) \
+				.replace('%wifiNetworkName%', str(self.initConfs['wifiNetworkName'])) \
+				.replace('%wifiWPAPass%', str(self.initConfs['wifiWPAPass']))
 
-			file = Path(self._rootDir, 'wifi.conf')
+			file = Path(self.rootDir, 'wifi.conf')
 			file.write_text(wpaFile)
 
 			subprocess.run(['sudo', 'mv', str(file), bootWpaSupplicant])
-			self.logInfo('Successfully initialized wpa_supplicant.conf')
-			time.sleep(1)
-			subprocess.run(['sudo', 'shutdown', '-r', 'now'])
-			exit(0)
+			self._logger.logInfo('Successfully initialized wpa_supplicant.conf')
+			self.reboot()
 
-		try:
-			socket.create_connection(('www.google.com', 80))
-			connected = True
-		except:
-			connected = False
 
-		if not connected:
-			self.logFatal('Your device needs internet access to continue')
-
+	def doUpdates(self):
 		subprocess.run(['git', 'config', '--global', 'user.name', '"An Other"'])
 		subprocess.run(['git', 'config', '--global', 'user.email', '"anotheruser@projectalice.io"'])
 
-		updateChannel = initConfs['aliceUpdateChannel'] if 'aliceUpdateChannel' in initConfs else 'master'
+		updateChannel = self.initConfs['aliceUpdateChannel'] if 'aliceUpdateChannel' in self.initConfs else 'master'
 		updateSource = self.getUpdateSource(updateChannel)
 		# Update our system and sources
 		subprocess.run(['sudo', 'apt-get', 'update'])
@@ -165,63 +165,174 @@ network={
 		result = subprocess.run(['git', 'checkout', updateSource], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 		if 'switched' in result.stderr.decode().lower():
 			print('Switched branch, restarting...')
-			restart()
+			self.restart()
 
 		result = subprocess.run(['git', 'pull'], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 		if 'core/initializer.py' in result.stdout.decode().lower():
 			print('Updated critical sources, restarting...')
-			restart()
+			self.restart()
 
 		subprocess.run(['git', 'stash', 'clear'])
-		time.sleep(1)
 
+
+	@staticmethod
+	def reboot():
+		time.sleep(1)
+		subprocess.run(['sudo', 'shutdown', '-r', 'now'])
+		exit(0)
+
+
+	def restart(self):
+		sys.stdout.flush()
+		try:
+			# Close everything related to ProjectAlice, allows restart without component failing
+			try:
+				import psutil
+			except:
+				self.setServiceFileTo('system')
+				subprocess.run(['sudo', 'systemctl', 'restart', 'ProjectAlice'])
+				exit(0)
+
+			# noinspection PyUnboundLocalVariable
+			process = psutil.Process(os.getpid())
+			for handler in process.open_files() + process.connections():
+				os.close(handler.fd)
+		except Exception as e:
+			print(f'Failed restarting Project Alice: {e}')
+
+		python = sys.executable
+		os.execl(python, python, *sys.argv)
+
+
+	def checkInternet(self):
+		try:
+			socket.create_connection(('www.google.com', 80))
+			connected = True
+		except:
+			connected = False
+
+		if not connected:
+			self._logger.logFatal('Your device needs internet access to continue')
+
+
+	def getUpdateSource(self, definedSource: str) -> str:
+		updateSource = 'master'
+		if definedSource in {'master', 'release'}:
+			return updateSource
+
+		try:
+			import requests
+		except:
+			self.setServiceFileTo('system')
+			subprocess.run(['sudo', 'systemctl', 'restart', 'ProjectAlice'])
+			exit(0)
+
+		# noinspection PyUnboundLocalVariable
+		req = requests.get('https://api.github.com/repos/project-alice-assistant/ProjectAlice/branches')
+		result = req.json()
+
+		versions = list()
+		from core.base.model.Version import Version
+		for branch in result:
+			repoVersion = Version.fromString(branch['name'])
+
+			releaseType = repoVersion.releaseType
+			if not repoVersion.isVersionNumber \
+					or definedSource == 'rc' and releaseType in {'b', 'a'} \
+					or definedSource == 'beta' and releaseType == 'a':
+				continue
+
+			versions.append(repoVersion)
+
+		if versions:
+			versions.sort(reverse=True)
+			updateSource = versions[0]
+
+		return str(updateSource)
+
+
+	def checkVenv(self) -> bool:
+		if not Path('venv').exists():
+			self._logger.logInfo('Not running with venv, I need to create it')
+			subprocess.run(['sudo', 'apt-get', 'install', 'python3-venv', '-y'])
+			subprocess.run(['python3.7', '-m', 'venv', 'venv'])
+			subprocess.run(['sudo', 'systemctl', 'daemon-reload'])
+			subprocess.run(['sudo', 'systemctl', 'enable', 'ProjectAlice'])
+			self._logger.logInfo('Installed virtual environement, restarting...')
+			return False
+		elif not self.isVenv():
+			self._logger.logWarning('Restarting to run using virtual environement: "./venv/bin/python main.py"')
+			return False
+
+		return True
+
+
+	@staticmethod
+	def setServiceFileTo(pointer: str):
 		serviceFilePath = Path('/etc/systemd/system/ProjectAlice.service')
 		if serviceFilePath.exists():
 			subprocess.run(['sudo', 'rm', serviceFilePath])
 
 		serviceFile = Path('ProjectAlice.service').read_text()
+
+		if pointer == 'venv':
+			serviceFile = serviceFile.replace('#EXECSTART', f'ExecStart=/home/{getpass.getuser()}/ProjectAlice/venv/bin/python main.py')
+		else:
+			serviceFile = serviceFile.replace('#EXECSTART', f'ExecStart=python3 main.py')
+
 		serviceFile = serviceFile.replace('#WORKINGDIR', f'WorkingDirectory=/home/{getpass.getuser()}/ProjectAlice')
-		serviceFile = serviceFile.replace('#EXECSTART', f'ExecStart=/home/{getpass.getuser()}/ProjectAlice/venv/bin/python main.py')
 		serviceFile = serviceFile.replace('#USER', f'User={getpass.getuser()}')
 		TEMP.write_text(serviceFile)
 		subprocess.run(['sudo', 'mv', TEMP, serviceFilePath])
+		subprocess.run(['sudo', 'systemctl', 'daemon-reload'])
 
-		if not Path('venv').exists():
-			self.logInfo('Not running with venv, I need to create it')
-			subprocess.run(['sudo', 'apt-get', 'install', 'python3-venv', '-y'])
-			subprocess.run(['python3.7', '-m', 'venv', 'venv'])
-			subprocess.run(['sudo', 'systemctl', 'daemon-reload'])
-			subprocess.run(['sudo', 'systemctl', 'enable', 'ProjectAlice'])
-			self.logInfo('Installed virtual environement, restarting...')
-			subprocess.run(['sudo', 'shutdown', '-r', 'now'])
-		elif not isVenv():
-				self.logFatal('Please run using the virtual environement: "./venv/bin/python main.py"')
 
-		subprocess.run([PIP, 'uninstall', '-y', '-r', str(Path(self._rootDir, 'pipuninstalls.txt'))])
-		subprocess.run([PIP, 'install', '-r', str(Path(self._rootDir, 'requirements.txt'))])
+class Initializer:
+	PIP = './venv/bin/pip'
+
+
+	def __init__(self):
+		super().__init__()
+		self._logger = SimpleLogger()
+		self._logger.logInfo('Starting Project Alice initialization')
+		self._preInit = PreInit()
+		self._confsSample = Path(self._preInit.rootDir, 'configTemplate.py')
+		self._confsFile = self._preInit.confsFile
+		self._rootDir = self._preInit.rootDir
+
+
+	def initProjectAlice(self) -> bool:  # NOSONAR
+		if not self._preInit.start():
+			return False
+
+		initConfs = self._preInit.initConfs
+
+		subprocess.run([self.PIP, 'uninstall', '-y', '-r', str(Path(self._rootDir, 'pipuninstalls.txt'))])
+		subprocess.run([self.PIP, 'install', '-r', str(Path(self._rootDir, 'requirements.txt'))])
 
 		if 'forceRewrite' not in initConfs:
 			initConfs['forceRewrite'] = True
 
 		if not self._confsFile.exists() and not self._confsSample.exists():
-			self.logFatal('No config and no config template found, can\'t continue')
+			self._logger.logFatal('No config and no config template found, can\'t continue')
 
 		elif not self._confsFile.exists() and self._confsSample.exists():
-			self.logWarning('No config file found, creating it from sample file')
+			self._logger.logWarning('No config file found, creating it from sample file')
 			confs = self.newConfs()
 			self._confsFile.write_text(f"settings = {json.dumps(confs, indent=4).replace('false', 'False').replace('true', 'True')}")
 
 		elif self._confsFile.exists() and not initConfs['forceRewrite']:
-			self.logWarning('Config file already existing and user not wanting to rewrite, aborting')
+			self._logger.logWarning('Config file already existing and user not wanting to rewrite, aborting')
 			return False
 
 		elif self._confsFile.exists() and initConfs['forceRewrite']:
-			self.logWarning('Config file found and force rewrite specified, let\'s restart all this!')
+			self._logger.logWarning('Config file found and force rewrite specified, let\'s restart all this!')
 			self._confsFile.unlink()
 			confs = self.newConfs()
 			self._confsFile.write_text(f"settings = {json.dumps(confs, indent=4).replace('false', 'False').replace('true', 'True')}")
 
 		config = importlib.import_module('config')
+		# noinspection PyUnresolvedReferences
 		confs = config.settings.copy()
 
 		# Do some installation if wanted by the user
@@ -265,7 +376,7 @@ network={
 			if len(str(pin)) != 4:
 				raise Exception
 		except:
-			self.logFatal('Pin code must be 4 digits')
+			self._logger.logFatal('Pin code must be 4 digits')
 
 		confs['adminPinCode'] = int(pinCode)
 
@@ -290,17 +401,16 @@ network={
 
 			confs['asr'] = initConfs['asr'] if initConfs['asr'] in {'pocketsphinx', 'google', 'deepspeech', 'snips'} else 'deepspeech'
 			if confs['asr'] == 'google' and not initConfs['googleServiceFile']:
-				self.logInfo('You cannot use Google Asr without a google service file, falling back to Deepspeech')
+				self._logger.logInfo('You cannot use Google Asr without a google service file, falling back to Deepspeech')
 				confs['asr'] = 'deepspeech'
 
 			if confs['asr'] == 'snips' and confs['activeLanguage'] != 'en':
-				self.logInfo('You can only use Snips Asr for english, falling back to Deepspeech')
+				self._logger.logInfo('You can only use Snips Asr for english, falling back to Deepspeech')
 				confs['asr'] = 'deepspeech'
 
 			if initConfs['googleServiceFile']:
 				googleCreds = Path(self._rootDir, 'credentials/googlecredentials.json')
 				googleCreds.write_text(json.dumps(initConfs['googleServiceFile']))
-
 
 		# Those that don't need checking
 		confs['ssid'] = initConfs['wifiNetworkName']
@@ -327,14 +437,14 @@ network={
 
 		aliceUpdateChannel = initConfs['aliceUpdateChannel']
 		if aliceUpdateChannel not in {'master', 'rc', 'beta', 'alpha'}:
-			self.logWarning(f'{aliceUpdateChannel} is not a supported updateChannel, only master, rc, beta and alpha are supported. Reseting to master')
+			self._logger.logWarning(f'{aliceUpdateChannel} is not a supported updateChannel, only master, rc, beta and alpha are supported. Reseting to master')
 			confs['aliceUpdateChannel'] = 'master'
 		else:
 			confs['aliceUpdateChannel'] = aliceUpdateChannel
 
 		skillsUpdateChannel = initConfs['skillsUpdateChannel'] if 'skillsUpdateChannel' in initConfs else 'master'
 		if skillsUpdateChannel not in {'master', 'rc', 'beta', 'alpha'}:
-			self.logWarning(f'{skillsUpdateChannel} is not a supported updateChannel, only master, rc, beta and alpha are supported. Reseting to master')
+			self._logger.logWarning(f'{skillsUpdateChannel} is not a supported updateChannel, only master, rc, beta and alpha are supported. Reseting to master')
 			confs['skillsUpdateChannel'] = 'master'
 		else:
 			confs['skillsUpdateChannel'] = skillsUpdateChannel
@@ -344,10 +454,12 @@ network={
 		confs['mqttTLSFile'] = initConfs['mqttTLSFile']
 
 		try:
+			import pkg_resources
+
 			pkg_resources.require('snips-nlu')
 			subprocess.run(['./venv/bin/snips-nlu', 'download', confs['activeLanguage']])
 		except:
-			self.logInfo("Snips NLU not installed, let's do this")
+			self._logger.logInfo("Snips NLU not installed, let's do this")
 			subprocess.run(['sudo', 'apt-get', 'install', 'libatlas3-base', 'libgfortran5'])
 			subprocess.run(['wget', '--content-disposition', 'https://github.com/project-alice-assistant/snips-nlu-rebirth/blob/master/wheels/scikit_learn-0.22.1-cp37-cp37m-linux_armv7l.whl?raw=true'])
 			subprocess.run(['wget', '--content-disposition', 'https://github.com/project-alice-assistant/snips-nlu-rebirth/blob/master/wheels/scipy-1.3.3-cp37-cp37m-linux_armv7l.whl?raw=true'])
@@ -355,11 +467,11 @@ network={
 			subprocess.run(['wget', '--content-disposition', 'https://github.com/project-alice-assistant/snips-nlu-rebirth/blob/master/wheels/snips_nlu_parsers-0.4.3-cp37-cp37m-linux_armv7l.whl?raw=true'])
 			subprocess.run(['wget', '--content-disposition', 'https://github.com/project-alice-assistant/snips-nlu-rebirth/blob/master/wheels/snips_nlu-0.20.2-py3-none-any.whl?raw=true'])
 			time.sleep(1)
-			subprocess.run([PIP, 'install', 'scipy-1.3.3-cp37-cp37m-linux_armv7l.whl'])
-			subprocess.run([PIP, 'install', 'scikit_learn-0.22.1-cp37-cp37m-linux_armv7l.whl'])
-			subprocess.run([PIP, 'install', 'snips_nlu_utils-0.9.1-cp37-cp37m-linux_armv7l.whl'])
-			subprocess.run([PIP, 'install', 'snips_nlu_parsers-0.4.3-cp37-cp37m-linux_armv7l.whl'])
-			subprocess.run([PIP, 'install', 'snips_nlu-0.20.2-py3-none-any.whl'])
+			subprocess.run([self.PIP, 'install', 'scipy-1.3.3-cp37-cp37m-linux_armv7l.whl'])
+			subprocess.run([self.PIP, 'install', 'scikit_learn-0.22.1-cp37-cp37m-linux_armv7l.whl'])
+			subprocess.run([self.PIP, 'install', 'snips_nlu_utils-0.9.1-cp37-cp37m-linux_armv7l.whl'])
+			subprocess.run([self.PIP, 'install', 'snips_nlu_parsers-0.4.3-cp37-cp37m-linux_armv7l.whl'])
+			subprocess.run([self.PIP, 'install', 'snips_nlu-0.20.2-py3-none-any.whl'])
 			time.sleep(1)
 			subprocess.run(['rm', 'scipy-1.3.3-cp37-cp37m-linux_armv7l.whl'])
 			subprocess.run(['rm', 'scikit_learn-0.22.1-cp37-cp37m-linux_armv7l.whl'])
@@ -370,7 +482,7 @@ network={
 
 		snipsConf = self.loadSnipsConfigurations()
 		if not snipsConf:
-			self.logFatal('Error loading snips.toml')
+			self._logger.logFatal('Error loading snips.toml')
 
 		if initConfs['mqttHost'] != 'localhost' or initConfs['mqttPort'] != 1883:
 			snipsConf['snips-common']['mqtt'] = f'{initConfs["mqttHost"]}:{initConfs["mqttPort"]}'
@@ -382,7 +494,7 @@ network={
 		snipsConf['snips-common']['assistant'] = f'/home/{getpass.getuser()}/ProjectAlice/assistant'
 		snipsConf['snips-hotword']['model'] = [f'/home/{getpass.getuser()}/ProjectAlice/trained/hotwords/snips_hotword/hey_snips=0.53']
 
-		self.logInfo('Installing audio hardware')
+		self._logger.logInfo('Installing audio hardware')
 		audioHardware = ''
 		for hardware in initConfs['audioHardware']:
 			if initConfs['audioHardware'][hardware]:
@@ -504,7 +616,7 @@ network={
 			confString = json.dumps(sort, indent=4).replace('false', 'False').replace('true', 'True')
 			self._confsFile.write_text(f'settings = {confString}')
 		except Exception as e:
-			self.logFatal(f'An error occured while writting final configuration file: {e}')
+			self._logger.logFatal(f'An error occured while writting final configuration file: {e}')
 		else:
 			importlib.reload(config)
 
@@ -529,13 +641,13 @@ network={
 		if initConfs['useHLC']:
 			subprocess.run(['sudo', 'systemctl', 'enable', hlcServiceFilePath.stem])
 
-		self.logWarning('Initializer done with configuring')
+		self._logger.logWarning('Initializer done with configuring')
 		time.sleep(2)
 		subprocess.run(['sudo', 'shutdown', '-r', 'now'])
 
 
 	def loadSnipsConfigurations(self) -> dict:
-		self.logInfo('Loading Snips configuration file')
+		self._logger.logInfo('Loading Snips configuration file')
 		snipsConfig = Path(SNIPS_TOML)
 
 		if snipsConfig.exists():
@@ -543,53 +655,12 @@ network={
 
 		subprocess.run(['sudo', 'cp', Path(self._rootDir, 'system/snips/snips.toml'), Path(SNIPS_TOML)])
 
+		import toml
+
 		return toml.load(snipsConfig)
 
 
 	@staticmethod
-	def getUpdateSource(definedSource: str) -> str:
-		updateSource = 'master'
-		if definedSource == 'master':
-			return updateSource
-
-		req = requests.get('https://api.github.com/repos/project-alice-assistant/ProjectAlice/branches')
-		result = req.json()
-
-		versions = list()
-		for branch in result:
-			repoVersion = Version.fromString(branch['name'])
-
-			releaseType = repoVersion.releaseType
-			if not repoVersion.isVersionNumber \
-					or definedSource == 'rc' and releaseType in {'b', 'a'} \
-					or definedSource == 'beta' and releaseType == 'a':
-				continue
-
-			versions.append(repoVersion)
-
-		if versions:
-			versions.sort(reverse=True)
-			updateSource = versions[0]
-
-		return str(updateSource)
-
-
-	@staticmethod
 	def newConfs():
+		import configTemplate
 		return {configName: configData['values'] if 'dataType' in configData and configData['dataType'] == 'list' else configData['defaultValue'] if 'defaultValue' in configData else configData for configName, configData in configTemplate.settings.items()}
-
-
-	@staticmethod
-	def logInfo(text: str):
-		print(f'[INFO] {text}')
-
-
-	@staticmethod
-	def logWarning(text: str):
-		print(f'[WARNING] {text}')
-
-
-	@staticmethod
-	def logFatal(text: str):
-		print(f'[FATAL] {text}')
-		exit(0)
