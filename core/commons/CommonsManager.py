@@ -63,8 +63,8 @@ class CommonsManager(Manager):
 
 
 	@staticmethod
-	def dictMaxValue(d: dict) -> Any:
-		return max(d, key=d.get)
+	def dictMaxValue(dictionary: dict) -> Any:
+		return max(dictionary, key=dictionary.get)
 
 
 	@staticmethod
@@ -77,12 +77,8 @@ class CommonsManager(Manager):
 		try:
 			payload = json.loads(message.payload)
 		except (ValueError, TypeError):
-			payload = dict()
-
-		if payload is True:
-			payload = {'true': True}
-		elif payload is False:
-			payload = {'false': False}
+			var = message.topic.split('/')[-1]
+			payload = {var: message.payload}
 
 		return payload
 
@@ -91,6 +87,10 @@ class CommonsManager(Manager):
 	def parseSlotsToObjects(cls, message: MQTTMessage) -> dict:
 		slots = defaultdict(list)
 		data = cls.payload(message)
+
+		if not isinstance(data, dict):
+			return dict()
+
 		for slotData in data.get('slots', dict()):
 			slot = slotModel.Slot(**slotData)
 			slots[slot.slotName].append(slot)
@@ -100,12 +100,20 @@ class CommonsManager(Manager):
 	@classmethod
 	def parseSlots(cls, message: MQTTMessage) -> dict:
 		data = cls.payload(message)
+
+		if not isinstance(data, dict):
+			return dict()
+
 		return {slot['slotName']: slot['rawValue'] for slot in data.get('slots', dict())}
 
 
 	@classmethod
 	def parseSessionId(cls, message: MQTTMessage) -> Union[str, bool]:
 		data = cls.payload(message)
+
+		if not isinstance(data, dict):
+			return False
+
 		return data.get('sessionId', False)
 
 
@@ -121,10 +129,15 @@ class CommonsManager(Manager):
 	@classmethod
 	def parseSiteId(cls, message: MQTTMessage) -> str:
 		data = cls.payload(message)
+
+		if not isinstance(data, dict):
+			return constants.UNKNOWN
+
 		if 'siteId' in data:
-			return data['siteId'].replace('_', ' ')  # WTF!! This is highly no no no!!!
+			return data['siteId'].replace('_', ' ')
 		else:
-			return data.get('IPAddress', constants.DEFAULT_SITE_ID)
+			from core.base.SuperManager import SuperManager
+			return data.get('IPAddress', SuperManager.getInstance().configManager.getAliceConfigByName('deviceName'))
 
 
 	@staticmethod
@@ -135,8 +148,8 @@ class CommonsManager(Manager):
 
 
 	@staticmethod
-	def clamp(x: float, minimum: float, maximum: float) -> float:
-		return max(minimum, min(x, maximum))
+	def clamp(number: float, minimum: float, maximum: float) -> float:
+		return max(minimum, min(number, maximum))
 
 
 	@staticmethod
@@ -213,23 +226,6 @@ class CommonsManager(Manager):
 		return len(theString) == (len(theString.replace(' ', '').strip()) * 2) - 1
 
 
-	def cleanRoomNameToSiteId(self, roomName: str) -> str:
-		"""
-		User might answer "in the living room" when asked for a room. In that case it should be turned into "living_room"
-		:param roomName: str: original captured name
-		:return: str: formated room name to site id
-		"""
-
-		parasites = self.LanguageManager.getStrings(key='inThe')
-
-		for parasite in parasites:
-			if parasite in roomName:
-				roomName = roomName.replace(parasite, '')
-				break
-
-		return roomName.strip().replace(' ', '_')
-
-
 	@staticmethod
 	def getLocalIp() -> str:
 		sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
@@ -291,14 +287,14 @@ class CommonsManager(Manager):
 		return [result.text for result in Translator().translate(**kwargs)]
 
 
-	def runRootSystemCommand(self, commands: list, shell: bool = False, stdout = subprocess.PIPE, stderr = subprocess.PIPE):
+	def runRootSystemCommand(self, commands: list, shell: bool = False, stdout = subprocess.PIPE, stderr = subprocess.PIPE) -> subprocess.CompletedProcess:
 		if commands[0] != 'sudo':
 			commands.insert(0, 'sudo')
 		return self.runSystemCommand(commands, shell=shell, stdout=stdout, stderr=stderr)
 
 
 	@staticmethod
-	def runSystemCommand(commands: list, shell: bool = False, stdout = subprocess.PIPE, stderr = subprocess.PIPE):
+	def runSystemCommand(commands: list, shell: bool = False, stdout = subprocess.PIPE, stderr = subprocess.PIPE) -> subprocess.CompletedProcess:
 		return subprocess.run(commands, shell=shell, stdout=stdout, stderr=stderr)
 
 
@@ -336,8 +332,9 @@ class CommonsManager(Manager):
 		return int(number) if not number.startswith('0') else self.randomNumber(length)
 
 # noinspection PyUnusedLocal
-def py_error_handler(filename, line, function, err, fmt):
+def py_error_handler(filename, line, function, err, fmt): #NOSONAR
+	# Errors are handled by our loggers
 	pass
 
 
-c_error_handler = CommonsManager.ERROR_HANDLER_FUNC(py_error_handler)
+c_error_handler = CommonsManager.ERROR_HANDLER_FUNC(py_error_handler) #NOSONAR

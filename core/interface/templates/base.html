@@ -6,38 +6,45 @@
 <link rel="stylesheet" href="{{ url_for('static', filename='css/solid.css') }}">
 <link rel="stylesheet" href="{{ url_for('static', filename='css/regular.css') }}">
 <link rel="stylesheet" href="{{ url_for('static', filename='css/projectalice.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/ui-toggle.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/jquery.ui.rotatable.css') }}">
 <script src="{{ url_for('static', filename='js/jquery-3.4.1.min.js') }}"></script>
 <script src="{{ url_for('static', filename='js/jquery-ui.js') }}"></script>
 <script src="{{ url_for('static', filename='js/paho-mqtt-min.js') }}"></script>
+<script src="{{ url_for('static', filename='js/jquery.toggler.js') }}"></script>
+<script src="{{ url_for('static', filename='js/jquery.ui.touch-punch.min.js') }}"></script>
+<script src="{{ url_for('static', filename='js/jquery.ui.rotatable.min.js') }}"></script>
 <script src="{{ url_for('static', filename='js/common.js') }}"></script>
 
 {% block loaders %}{% endblock %}
 
+<header>
+	<div class="pageTitle">
+		{% block pageTitle %}{% endblock %}
+	</div>
+  <div id="aliceStatus" class="aliceStatus"></div>
+	{% if aliceSettings['aliceUpdateChannel'] != 'master' %}
+		<div class="updateChannelMarker warning">
+			{{ aliceSettings['aliceUpdateChannel'] }}
+		</div>
+	{% endif %}
+</header>
+<div class="page">
 <nav>
 	<ul class="mainMenuList">
-		<li class="mainMenuListItem" onclick="location.href='/home/';">{{ langData.home }}</li>
-		<li class="mainMenuListItem" onclick="location.href='/skills/';">{{ langData.skills }}</li>
-		<li class="mainMenuListItem" onclick="location.href='/scenarios/';">{{ langData.scenarios }}</li>
-		<li class="mainMenuListItem" onclick="location.href='/syslog/';">{{ langData.syslog }}</li>
-		<li class="mainMenuListItem" onclick="location.href='/alicewatch/';">{{ langData.alicewatch }}</li>
-		<li class="mainMenuListItem" onclick="location.href='/admin/';">{{ langData.admin }}</li>
+		<li class="mainMenuListItem button" onclick="location.href='/home/';">{{ langData.home }}</li>
+		<li class="mainMenuListItem button" onclick="location.href='/skills/';">{{ langData.skills }}</li>
+		<li class="mainMenuListItem button" onclick="location.href='/myhome/';">{{ langData.myHome }}</li>
+		<li class="mainMenuListItem button" onclick="location.href='/scenarios/';">{{ langData.scenarios }}</li>
+		<li class="mainMenuListItem button" onclick="location.href='/syslog/';">{{ langData.syslog }}</li>
+		<li class="mainMenuListItem button" onclick="location.href='/alicewatch/';">{{ langData.alicewatch }}</li>
+		<li class="mainMenuListItem button" onclick="location.href='/admin/';">{{ langData.admin }}</li>
 		{% if aliceSettings['devMode'] is sameas true %}
-			<li class="mainMenuListItem" onclick="location.href='/devmode/';">{{ langData.devMode }}</li>
+			<li class="mainMenuListItem button" onclick="location.href='/devmode/';">{{ langData.devMode }}</li>
 		{% endif %}
 	</ul>
 </nav>
-<section class="page">
-	<header>
-		<div class="pageTitle">
-			{% block pageTitle %}{% endblock %}
-		</div>
-		{% if aliceSettings['aliceUpdateChannel'] != 'master' %}
-			<div class="updateChannelMarker">
-				{{ aliceSettings['aliceUpdateChannel'] }}
-			</div>
-		{% endif %}
-	</header>
-	<section class="content">
+  <main>
 		{% block content %}{% endblock %}
-	</section>
-</section>
+	</main>
+</div>

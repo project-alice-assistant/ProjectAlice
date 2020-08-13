@@ -2,11 +2,9 @@ import json
 from pathlib import Path
 from subprocess import CompletedProcess
 
-import random
 import re
 import shutil
 
-from core.base.SuperManager import SuperManager
 from core.commons import constants
 from core.nlu.model.NluEngine import NluEngine
 from core.util.Stopwatch import Stopwatch
@@ -25,78 +23,78 @@ class SnipsNlu(NluEngine):
 
 	def start(self):
 		super().start()
-		SuperManager.getInstance().snipsServicesManager.runCmd(cmd='start', services=['snips-nlu'])
+		self.Commons.runRootSystemCommand(['systemctl', 'start', 'snips-nlu'])
 
 
 	def stop(self):
 		super().stop()
-		SuperManager.getInstance().snipsServicesManager.runCmd(cmd='stop', services=['snips-nlu'])
+		self.Commons.runRootSystemCommand(['systemctl', 'stop', 'snips-nlu'])
 
 
 	def convertDialogTemplate(self, file: Path):
-		self.logInfo(f'Preparing NLU training file for {file.parent.parent.stem}')
-		with file.open() as fp:
-			dialogTemplate = json.load(fp)
+		self.logInfo(f'Preparing NLU training file')
+		dialogTemplate = json.loads(file.read_text())
 
 		nluTrainingSample = dict()
-		nluTrainingSample['language'] = file.stem
+		nluTrainingSample['language'] = self.LanguageManager.activeLanguage
 		nluTrainingSample['entities'] = dict()
-
-		for entity in dialogTemplate['slotTypes']:
-			nluTrainingSampleEntity = nluTrainingSample['entities'].setdefault(entity['name'], dict())
-
-			nluTrainingSampleEntity['automatically_extensible'] = entity['automaticallyExtensible']
-			nluTrainingSampleEntity['matching_strictness'] = entity['matchingStrictness'] or 1.0
-			nluTrainingSampleEntity['use_synonyms'] = entity['useSynonyms']
-
-			nluTrainingSampleEntity['data'] = [{
-					'value'   : value['value'],
-					'synonyms': value.get('synonyms', list())
-				} for value in entity['values']
-			]
-
 		nluTrainingSample['intents'] = dict()
-		for intent in dialogTemplate['intents']:
-			intentName = intent['name']
-			slots = self.loadSlots(intent)
-			nluTrainingSample['intents'].setdefault(intentName, {'utterances': list()})
 
-			for utterance in intent['utterances']:
-				data = list()
-				result = self.UTTERANCE_REGEX.split(utterance)
-				if not result:
-					data.append({
-						'text': utterance
-					})
-				else:
-					for match in result:
-						if ':=>' not in match:
-							data.append({
-								'text': match
-							})
-							continue
+		for skill in dialogTemplate:
+			for entity in skill['slotTypes']:
+				nluTrainingSampleEntity = nluTrainingSample['entities'].setdefault(entity['name'], dict())
 
-						text, slotName = match.split(':=>')
-						entity = slots.get(slotName, 'Unknown')
+				nluTrainingSampleEntity['automatically_extensible'] = entity['automaticallyExtensible']
+				nluTrainingSampleEntity['matching_strictness'] = entity['matchingStrictness'] or 1.0
+				nluTrainingSampleEntity['use_synonyms'] = entity['useSynonyms']
 
-						if entity == 'Unknown':
-							self.logWarning(f'Slot named "{slotName}" with text "{text}" in utterance "{utterance}" doesn\'t have any matching slot definition, skipping to avoid NLU training failure')
-							continue
+				nluTrainingSampleEntity['data'] = [{
+						'value'   : value['value'],
+						'synonyms': value.get('synonyms', list())
+					} for value in entity['values']
+				]
 
-						if entity.startswith('snips/'):
-							nluTrainingSample['entities'][entity] = dict()
+			for intent in skill['intents']:
+				intentName = intent['name']
+				slots = self.loadSlots(intent)
+				nluTrainingSample['intents'][intentName] = {'utterances': list()}
 
+				for utterance in intent['utterances']:
+					data = list()
+					result = self.UTTERANCE_REGEX.split(utterance)
+					if not result:
 						data.append({
-							'entity'   : entity,
-							'slot_name': slotName,
-							'text'     : text
+							'text': utterance
 						})
+					else:
+						for match in result:
+							if ':=>' not in match:
+								data.append({
+									'text': match
+								})
+								continue
 
-				# noinspection PyTypeChecker
-				nluTrainingSample['intents'][intentName]['utterances'].append({'data': data})
+							text, slotName = match.split(':=>')
+							entity = slots.get(slotName, None)
 
-		with Path(self._cachePath, f'{dialogTemplate["skill"]}_{file.stem}.json').open('w') as fp:
-			json.dump(nluTrainingSample, fp, ensure_ascii=False, indent=4)
+							if not entity:
+								self.logWarning(f'Slot named "{slotName}" with text "{text}" in utterance "{utterance}" doesn\'t have any matching slot definition, skipping to avoid NLU training failure')
+								continue
+
+							if entity.startswith('snips/'):
+								nluTrainingSample['entities'][entity] = dict()
+
+							data.append({
+								'entity'   : entity,
+								'slot_name': slotName,
+								'text'     : text
+							})
+
+					# noinspection PyTypeChecker
+					nluTrainingSample['intents'][intentName]['utterances'].append({'data': data})
+
+		with Path(self._cachePath / f'{self.LanguageManager.activeLanguage}.json').open('w') as fp:
+			json.dump(nluTrainingSample, fp, ensure_ascii=False)
 
 
 	def train(self):
@@ -107,11 +105,10 @@ class SnipsNlu(NluEngine):
 			'language': self.LanguageManager.activeLanguage,
 		}
 
-		for file in self._cachePath.glob(f'*_{self.LanguageManager.activeLanguage}.json'):
-			with file.open() as fp:
-				trainingData = json.load(fp)
-				dataset['entities'].update(trainingData['entities'])
-				dataset['intents'].update(trainingData['intents'])
+		with Path(self._cachePath / f'{self.LanguageManager.activeLanguage}.json').open() as fp:
+			trainingData = json.load(fp)
+			dataset['entities'].update(trainingData['entities'])
+			dataset['intents'].update(trainingData['intents'])
 
 		datasetFile = Path('/tmp/snipsNluDataset.json')
 
@@ -130,7 +127,7 @@ class SnipsNlu(NluEngine):
 	def nluTrainingThread(self, datasetFile: Path):
 		with Stopwatch() as stopWatch:
 			self.logInfo('Begin training...')
-			self._timer = self.ThreadManager.newTimer(interval=10, func=self.trainingStatus)
+			self._timer = self.ThreadManager.newTimer(interval=0.25, func=self.trainingStatus)
 
 			tempTrainingData = Path('/tmp/snipsNLU')
 
@@ -141,10 +138,11 @@ class SnipsNlu(NluEngine):
 			if training.returncode != 0:
 				self.logError(f'Error while training Snips NLU: {training.stderr.decode()}')
 
-			assistantPath = Path(self.Commons.rootDir(), f'trained/assistants/assistant_{self.LanguageManager.activeLanguage}/nlu_engine')
+			assistantPath = Path(self.Commons.rootDir(), f'trained/assistants/{self.LanguageManager.activeLanguage}/nlu_engine')
 
 			if not tempTrainingData.exists():
 				self.logError('Snips NLU training failed')
+				self.MqttManager.publish(constants.TOPIC_NLU_TRAINING_STATUS, payload={'status': 'failed'})
 				if not assistantPath.exists():
 					self.logFatal('No NLU engine found, cannot start')
 
@@ -154,19 +152,20 @@ class SnipsNlu(NluEngine):
 			if assistantPath.exists():
 				shutil.rmtree(assistantPath)
 
-			tempTrainingData.rename(assistantPath)
+			shutil.move(tempTrainingData, assistantPath)
 
 			self.broadcast(method=constants.EVENT_NLU_TRAINED, exceptions=[constants.DUMMY], propagateToSkills=True)
-			self.SnipsServicesManager.runCmd(cmd='restart', services=['snips-nlu'])
+			self.Commons.runRootSystemCommand(['systemctl', 'restart', 'snips-nlu'])
 
 		self._timer.cancel()
+		self.MqttManager.publish(constants.TOPIC_NLU_TRAINING_STATUS, payload={'status': 'done'})
 		self.ThreadManager.getEvent('TrainAssistant').clear()
 		self.logInfo(f'Snips NLU trained in {stopWatch} seconds')
 
 
 	def trainingStatus(self):
-		self.logInfo(random.choice(['Still training...', "Don't worry, I'm still training", 'Still on it', 'Takes time, I know', 'Working...', 'Working as fast as I can!']))
-		self._timer = self.ThreadManager.newTimer(interval=10, func=self.trainingStatus)
+		self.MqttManager.publish(constants.TOPIC_NLU_TRAINING_STATUS, payload={'status': 'training'})
+		self._timer = self.ThreadManager.newTimer(interval=0.25, func=self.trainingStatus)
 
 
 	@staticmethod

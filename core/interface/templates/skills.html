@@ -22,8 +22,7 @@
 				{% for settingName, settingValue in skill.getSkillConfigs().items() %}
 					{% if skill.getSkillConfigsTemplate()[settingName]['display'] != 'hidden' %}
 						<div class="configLine">
-							<label class="configLabel" for="{{ settingName }}"
-								   title="{{ skill.getSkillConfigsTemplate()['description'] }}">{{ settingName }}</label>
+							<label class="configLabel" for="{{ settingName }}" title="{{ skill.getSkillConfigsTemplate()['description'] }}">{{ settingName }}</label>
 							<div class="configInput">
 								{% if skill.getSkillConfigsTemplate()[settingName]['dataType'] == 'boolean' %}
 									<input type="checkbox" name="{{ settingName }}" value="on" id="{{ settingName }}"
@@ -32,89 +31,86 @@
 									<input type="hidden" name="{{ settingName }}" value="off">
 								{% elif skill.getSkillConfigsTemplate()[settingName]['dataType'] == 'integer' %}
 									{% if skill.getSkillConfigsTemplate()[settingName]['isSensitive'] is sameas true %}
-										<input type="password" name="{{ settingName }}" value="{{ settingValue }}"
-											   id="{{ settingName }}">
+										<input type="password" name="{{ settingName }}" value="{{ settingValue }}" id="{{ settingName }}">
 									{% else %}
-										<input type="number" name="{{ settingName }}" value="{{ settingValue }}"
-											   id="{{ settingName }}">
+										<input type="number" name="{{ settingName }}" value="{{ settingValue }}" id="{{ settingName }}">
 									{% endif %}
+								{% elif skill.getSkillConfigsTemplate()[settingName]['dataType'] == 'range' %}
+									<input type="range" name="{{ settingName }}" value="{{ settingValue }}" id="{{ settingName }}" min="{{ skill.getSkillConfigsTemplate()[settingName]['min'] }}" max="{{ skill.getSkillConfigsTemplate()[settingName]['max'] }}" step="{{ skill.getSkillConfigsTemplate()[settingName]['step'] }}">
 								{% elif skill.getSkillConfigsTemplate()[settingName]['dataType'] == 'string' %}
 									{% if skill.getSkillConfigsTemplate()[settingName]['isSensitive'] is sameas true %}
-										<input type="password" name="{{ settingName }}" value="{{ settingValue }}"
-											   id="{{ settingName }}">
+										<input type="password" name="{{ settingName }}" value="{{ settingValue }}" id="{{ settingName }}">
 									{% else %}
-										<input type="text" name="{{ settingName }}" value="{{ settingValue }}"
-											   id="{{ settingName }}">
+										<input type="text" name="{{ settingName }}" value="{{ settingValue }}" id="{{ settingName }}">
 									{% endif %}
 								{% elif skill.getSkillConfigsTemplate()[settingName]['dataType'] == 'list' %}
 									{% if skill.getSkillConfigsTemplate()[settingName]['values'] is mapping %}
 										<select name="{{ settingName }}" id="{{ settingName }}">
 											{% for optionName, optionValue in skill.getSkillConfigsTemplate()[settingName]['values'].items() %}
-												<option value="{{ optionValue }}"
-														{% if optionValue == settingValue %}selected{% endif %}>{{ optionName }}</option>
+												<option value="{{ optionValue }}" {% if optionValue == settingValue %}selected{% endif %}>{{ optionName }}</option>
 											{% endfor %}
 										</select>
 									{% else %}
 										<select name="{{ settingName }}" id="{{ settingName }}">
 											{% for optionValue in skill.getSkillConfigsTemplate()[settingName]['values'] %}
-												<option value="{{ optionValue }}"
-														{% if optionValue == settingValue %}selected{% endif %}>{{ optionValue }}</option>
+												<option value="{{ optionValue }}" {% if optionValue == settingValue %}selected{% endif %}>{{ optionValue }}</option>
 											{% endfor %}
 										</select>
 									{% endif %}
 								{% else %}
-									<input type="text" name="{{ settingName }}" value="{{ settingValue }}"
-										   id="{{ settingName }}">
+									<input type="text" name="{{ settingName }}" value="{{ settingValue }}" id="{{ settingName }}">
 								{% endif %}
 							</div>
 						</div>
 					{% endif %}
 				{% endfor %}
-				<input type="hidden" name="skillName" value="{{ skillName }}">
-				<input class="button" type="submit" value="{{ langData.save }}">
+				<div class="buttonLine">
+					<input type="hidden" name="skillName" value="{{ skillName }}">
+					<input class="button" type="submit" value="{{ langData.save }}">
+				</div>
 			</form>
 		</div>
 	{% endfor %}
-	<div class="toolbar">
-		<span class="toolbarButton" id="openSkillStore">
+	<div class="toolbar stick-top-right">
+		<span class="toolbarButton link-hover" id="openSkillStore">
 			<i class="fas fa-download" aria-hidden="true"></i>
 		</span>
-		<span class="toolbarButton" id="applySkillStore">
+		<span class="toolbarButton link-hover" id="applySkillStore">
 			<i class="fas fa-cloud-download-alt" aria-hidden="true"></i>
 		</span>
-		<span class="toolbarButton" id="closeSkillStore">
+		<span class="toolbarButton link-hover initialHidden" id="closeSkillStore">
 			<i class="fas fa-times-circle" aria-hidden="true"></i>
 		</span>
 	</div>
-	<div class="skillsStore" id="skillsStore">
-		<div class="skillStoreWait" id="skillStoreWait"><i class="fas fa-spinner fa-spin" aria-hidden="true"></i></div>
+	<div class="skillStore tileContainer fill-vertical initialHidden" id="skillStore">
+		<div class="contentLoadingAnimation" id="skillStoreWait"><i class="fas fa-spinner fa-spin" aria-hidden="true"></i></div>
 	</div>
-	<div class="skillsPane" id="skillsPane">
+	<div class="skillsPane tileContainer fill-vertical" id="skillsPane">
 		{% for skillName, skill in skills.items() %}
-			<div class="skillTile" id="{{ skillName }}-{{ skill.author }}">
+			<div class="tile skillTile" id="{{ skillName }}-{{ skill.author }}">
 				<div class="skillTitle">
-					<div class="skillName">{{ skillName }}</div>
+					<div class="skillName">{{ skillName }}</div><i class="{{ skill.icon }}" aria-hidden="true"></i>
 				</div>
 				<div class="skillContainer skillDefaultView">
-					<div class="skillAuthor">
+					<div class="skillAuthor spaced">
 						<i class="fas fa-user-cog fa-pull-left" aria-hidden="true"></i> {{ skill.author }}
 					</div>
-					<div class="skillVersion">
+					<div class="skillVersion stick-top-right">
 						<i class="fas fa-code-branch fa-pull-left" aria-hidden="true"></i> {{ skill.version }}
 					</div>
 					<div class="skillStatus {% if skill.active is sameas true %}active{% else %}disabled{% endif %}">
 						{{ langData.status }}: {% if skill.active is sameas true %}enabled{% else %}disabled{% endif %}
 					</div>
-					<div class="skillViewIntents">
+					<div class="skillViewIntents link-hover">
 						{{ langData.viewIntents }} <i class="fas fa-eye" aria-hidden="true"></i>
 					</div>
 					{% if skill.getSkillConfigs()|length %}
-						<div class="skillSettings" data-forSkill="{{ skillName }}">
+						<div class="skillSettings link-hover" data-forSkill="{{ skillName }}">
 							{{ langData.skillSettings }} <i class="fas fa-cog" aria-hidden="true"></i>
 						</div>
 					{% endif %}
-					<div class="skillActions">
-						<div class="skillButton"
+					<div class="buttonLine">
+						<div class="button"
 								{% if skill.required is sameas true %} style="display: none;" {% endif %} id="toggle_{{ skillName }}">
 							{% if skill.active is sameas true %}
 								{{ langData.disable }}
@@ -122,33 +118,33 @@
 								{{ langData.enable }}
 							{% endif %}
 						</div>
-						<div class="skillButton"
+						<div class="button"
 								{% if skill.required is sameas true %} style="display: none;" {% endif %} id="delete_{{ skillName }}">
 							{{ langData.delete }}
 						</div>
 						{% if skill.updateAvailable is sameas true %}
-							<div class="skillUpdating" id="update_{{ skill.author }}_{{ skillName }}_animation">
-								<i class="fas fa-spinner fa-spin" aria-hidden="true"></i>
+							<div class="button" id="update_{{ skill.author }}_{{ skillName }}_animation">
+								<i class="fas fa-spinner fa-spin buttonIconOnly" aria-hidden="true"></i>
 							</div>
-							<div class="skillButton" id="update_{{ skill.author }}_{{ skillName }}">
+							<div class="button" id="update_{{ skill.author }}_{{ skillName }}">
 								{{ langData.updatee }}
 							</div>
 						{% endif %}
 						{% if aliceSettings['devMode'] is sameas true %}
-							<div class="skillButton" id="reload_{{ skillName }}">
+							<div class="button" id="reload_{{ skillName }}">
 								{{ langData.reload }}
 							</div>
 						{% endif %}
 					</div>
 				</div>
-				<div class="skillContainer skillIntentsView">
-					<div class="skillIntentsViewCloseButton">
+				<div class="skillContainer skillIntentsView initialHidden">
+					<div class="stick-top-right spaced link-hover skillIntentsViewCloseButton">
 						<i class="fas fa-times-circle" aria-hidden="true"></i>
 					</div>
-					<div class="skillsIntentsViewList">
+					<div class="skillsIntentsViewList spaced">
 						{% for intent in skill.supportedIntents.values() %}
-							{% if not 'Dummy' in intent|string %}
-								<div class="intentTopic" title="{{ skill.getUtterancesByIntent(intent, true, true)|random }}">
+							{% if not 'Dummy' in intent|string and 'hermes/' in intent|string  %}
+								<div class="intentTopic link-hover" title="{{ skill.getUtterancesByIntent(intent, true, true)|random }}">
 									{{ intent.justTopic }}
 								</div>
 							{% endif %}

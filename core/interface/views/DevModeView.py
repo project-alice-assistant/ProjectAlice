@@ -1,4 +1,5 @@
 from flask import jsonify, render_template, request
+from flask_classful import route
 
 from core.interface.model.View import View
 
@@ -7,8 +8,7 @@ class DevModeView(View):
 	route_base = '/devmode/'
 
 	def index(self):
-		skills = {**self.SkillManager.activeSkills, **self.SkillManager.deactivatedSkills}
-		skills = {skillName: skill for skillName, skill in sorted(skills.items()) if skill is not None}
+		skills = {skillName: skill for skillName, skill in sorted(self.SkillManager.allWorkingSkills.items()) if skill is not None}
 
 		return render_template(template_name_or_list='devmode.html',
 		                       skills=skills,
@@ -47,6 +47,7 @@ class DevModeView(View):
 				'description'           : request.form.get('description', 'Missing description'),
 				'fr'                    : request.form.get('fr', False),
 				'de'                    : request.form.get('de', False),
+				'it'                    : request.form.get('it', False),
 				'pipreq'                : request.form.get('pipreq', list()),
 				'sysreq'                : request.form.get('sysreq', list()),
 				'conditionOnline'       : request.form.get('sysreq', False),
@@ -64,3 +65,15 @@ class DevModeView(View):
 		except Exception as e:
 			self.logError(f'Something went wrong creating a new skill: {e}')
 			return jsonify(success=False)
+
+
+	@route('/editskill/<skillName>')
+	def editSkill(self, skillName: str):
+		skill = self.SkillManager.getSkillInstance(skillName)
+		if not skill:
+			return jsonify(success=False)
+
+		return render_template(template_name_or_list='editSkill.html',
+		                       skill=skill,
+		                       langData=self._langData,
+		                       aliceSettings=self.ConfigManager.aliceConfigurations)

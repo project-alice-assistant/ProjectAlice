@@ -1,21 +1,20 @@
 from __future__ import annotations
 
 import json
+import re
 import subprocess
+import tempfile
 from pathlib import Path
 from textwrap import dedent
 from typing import Any, Dict, ItemsView, Optional, Union, ValuesView
-
-import re
-import tempfile
 
 from core.base.model.ProjectAliceObject import ProjectAliceObject
 
 
 class TomlFile(ProjectAliceObject):
 
-	SECTION_PATTERN = re.compile('^\[(?P<sectionName>.+)\]$')
-	CONFIG_PATTERN = re.compile('^(#)?( )?(?P<configName>.+)?( )=?( )(?P<configValue>.*)')
+	SECTION_PATTERN = re.compile(r'^\[(?P<sectionName>.+)]$')
+	CONFIG_PATTERN = re.compile(r'^(#)?( )?(?P<configName>.+)?( )=?( )(?P<configValue>.*)')
 
 	def __init__(self, path: Path):
 		super().__init__()
@@ -40,7 +39,7 @@ class TomlFile(ProjectAliceObject):
 	def _load(self):
 		with self._path.open() as f:
 			# noinspection PyTypeChecker
-			section: Section = None
+			section: Optional[Section] = None
 			for line in f:
 				match = re.match(self.SECTION_PATTERN, line)
 				if match:
@@ -56,7 +55,7 @@ class TomlFile(ProjectAliceObject):
 				if line.startswith('##') and section is not None:
 					section.addComment(Comment(line))
 
-				if not line.strip():
+				if not line.strip() and section is not None:
 					section.addEmptiness()
 		self._loaded = True
 
@@ -221,7 +220,7 @@ class Section(dict):
 
 
 	def __delitem__(self, key: str):
-		del self.data[key]
+		self.data[key].commentOut()
 
 
 	def __contains__(self, item) -> bool:

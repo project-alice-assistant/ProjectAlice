@@ -11,15 +11,10 @@ class NluManager(Manager):
 		super().__init__()
 		self._nluEngine = None
 		self._pathToCache = Path(self.Commons.rootDir(), 'var/cache/nlu/trainingData')
-		self.selectNluEngine()
-
-
-	def onStart(self):
-		super().onStart()
 		if not self._pathToCache.exists():
 			self._pathToCache.mkdir(parents=True)
 
-		self.isTrainingNeeded()
+		self.selectNluEngine()
 
 
 	def onStop(self):
@@ -29,20 +24,25 @@ class NluManager(Manager):
 			self._nluEngine.stop()
 
 
-	def afterNewSkillInstall(self):
-		self.isTrainingNeeded()
+	def checkData(self) -> bool:
+		return self.checkEngine() and self.checkCachedData()
 
 
-	def isTrainingNeeded(self):
+	@staticmethod
+	def checkCachedData() -> bool:
+		#TODO checked training dataset
+		return True
+
+
+	def checkEngine(self) -> bool:
 		if not Path(self.Commons.rootDir(), f'assistant/nlu_engine').exists():
-			if Path(self.Commons.rootDir(), f'trained/assistants/assistant_{self.LanguageManager.activeLanguage}/nlu_engine').exists():
-				self.SnipsAssistantManager.linkAssistant()
+			if Path(self.Commons.rootDir(), f'trained/assistants/{self.LanguageManager.activeLanguage}/nlu_engine').exists():
+				self.AssistantManager.linkAssistant()
+				return True
 			else:
-				self.DialogTemplateManager.clearCache()
-
-		if self.DialogTemplateManager.hasChanges:
-			self.buildTrainingData(self.DialogTemplateManager.updatedData)
-			self.trainNLU()
+				return False
+		else:
+			return True
 
 
 	def selectNluEngine(self):
@@ -61,24 +61,14 @@ class NluManager(Manager):
 		self._nluEngine.start()
 
 
-	def buildTrainingData(self, changes: dict):
-		for changedSkill, changedLanguages in changes.items():
-			if not changedSkill.startswith('--'):
-				pathToSkillResources = Path(self.Commons.rootDir(), f'skills/{changedSkill}/dialogTemplate')
+	def buildTrainingData(self):
+		self.clearCache()
+		self._nluEngine.convertDialogTemplate(self.DialogTemplateManager.pathToData)
 
-				for lang in changedLanguages:
-					self._nluEngine.convertDialogTemplate(pathToSkillResources / f'{lang}.json')
-			else:
-				skillName = changedSkill.replace('--', '')
 
-				if not changedLanguages:
-					for file in Path(self.Commons.rootDir(), '/var/cache/nlu/trainingData/').glob(f'{skillName}_'):
-						file.unlink()
-				else:
-					for lang in changedLanguages:
-						langFile = Path(self.Commons.rootDir(), f'/var/cache/nlu/trainingData/{skillName}_{lang}.json')
-						if langFile.exists():
-							langFile.unlink()
+	def train(self):
+		self.buildTrainingData()
+		self.trainNLU()
 
 
 	def trainNLU(self):

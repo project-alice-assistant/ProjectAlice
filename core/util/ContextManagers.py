@@ -5,7 +5,7 @@ from core.base.SuperManager import SuperManager
 
 
 @contextmanager
-def Online():
+def Online(): #NOSONAR
 	internetManager = SuperManager.getInstance().internetManager
 	if internetManager.online:
 		try:

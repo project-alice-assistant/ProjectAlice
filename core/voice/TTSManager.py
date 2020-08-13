@@ -1,12 +1,13 @@
+from importlib import import_module, reload
 from pathlib import Path
 
 from core.base.model.Manager import Manager
 from core.commons import constants
 from core.dialog.model.DialogSession import DialogSession
 from core.user.model.User import User
-from core.voice.model.PicoTTS import PicoTTS
-from core.voice.model.TTS import TTS
+from core.voice.model.PicoTts import PicoTts
 from core.voice.model.TTSEnum import TTSEnum
+from core.voice.model.Tts import Tts
 
 
 class TTSManager(Manager):
@@ -21,55 +22,71 @@ class TTSManager(Manager):
 
 	def onStart(self):
 		super().onStart()
+		self._loadTTS(self.ConfigManager.getAliceConfigByName('tts').lower())
 
-		tts = self._loadTTS(self.ConfigManager.getAliceConfigByName('tts').lower())
 
-		if (self.ConfigManager.getAliceConfigByName('stayCompletlyOffline') or self.ConfigManager.getAliceConfigByName('keepTTSOffline')) and self._tts.online:
-			self._tts = PicoTTS()
-			self.logInfo('Started "Pico" TTS')
+	def _loadTTS(self, userTTS: str = None, user: User = None, forceTts = None):
+		if not userTTS:
+			systemTTS = self.ConfigManager.getAliceConfigByName('tts').lower()
 		else:
-			self.logInfo(f'Started "{tts.value}" TTS')
+			systemTTS = userTTS.lower()
 
-		self._tts.onStart()
+		keepTTSOffline = self.ConfigManager.getAliceConfigByName('keepTTSOffline')
+		stayOffline = self.ConfigManager.getAliceConfigByName('stayCompletlyOffline')
+		online = self.InternetManager.online
 
+		self._tts = None
 
-	def _loadTTS(self, tts: str, user: User = None) -> TTSEnum:
+		if systemTTS == TTSEnum.PICO.value:
+			package = 'core.voice.model.PicoTts'
+		elif systemTTS == TTSEnum.MYCROFT.value:
+			package = 'core.voice.model.MycroftTts'
+		elif systemTTS == TTSEnum.AMAZON.value:
+			package = 'core.voice.model.AmazonTts'
+		elif systemTTS == TTSEnum.WATSON.value:
+			package = 'core.voice.model.WatsonTts'
+		elif systemTTS == TTSEnum.GOOGLE.value:
+			package = 'core.voice.model.GoogleTts'
+		else:
+			package = 'core.voice.model.SnipsTts'
+
+		module = import_module(package)
+		tts = getattr(module, package.rsplit('.', 1)[-1])
+		self._tts = tts(user)
+
+		if not self._tts.checkDependencies():
+			if not self._tts.installDependencies():
+				self._tts = None
+			else:
+				module = reload(module)
+				tts = getattr(module, package.rsplit('.', 1)[-1])
+				self._tts = tts(user)
+
+		if self._tts is None:
+			self.logWarning("Couldn't install Tts, falling back to PicoTts")
+			from core.voice.model.PicoTts import PicoTts
+			self._tts = PicoTts(user)
+
+		if self._tts.online and (not online or keepTTSOffline or stayOffline):
+			self._tts = None
+
+		if self._tts is None:
+			if not forceTts:
+				fallback = self.ConfigManager.getAliceConfigByName('ttsFallback')
+				self.logWarning(f'Tts did not satisfy the user settings, falling back to **{fallback}**')
+				self._loadTTS(userTTS=userTTS, user=user, forceTts=fallback)
+			else:
+				self.logFatal('Fallback Tts failed, going down')
+				return
+
 		try:
-			tts = TTSEnum(tts)
-		except:
-			tts = TTSEnum.SNIPS
-
-		if tts == TTSEnum.PICO:
-			self._tts = PicoTTS(user)
-		elif tts == TTSEnum.MYCROFT:
-			if not Path(Path(self.Commons.rootDir()).parent, 'mimic/voices').is_dir():
-				self.logWarning('Trying to use Mycroft as TTS but files not available, falling back to picotts')
-				self._tts = PicoTTS(user)
-				tts = TTSEnum.PICO
-			else:
-				from core.voice.model.MycroftTTS import MycroftTTS
-				self._tts = MycroftTTS(user)
-		elif tts == TTSEnum.AMAZON:
-			from core.voice.model.AmazonTTS import AmazonTTS
-
-			self._tts = AmazonTTS(user)
-		elif tts == TTSEnum.GOOGLE:
-			if not Path(self.Commons.rootDir(), 'credentials/googlecredentials.json').exists():
-				self.logWarning('No Google credentials found for Google Wavenet, falling back to pico')
-				self._tts = PicoTTS(user)
-			else:
-				from core.voice.model.GoogleTTS import GoogleTTS
-
-				self._tts = GoogleTTS(user)
-		else:
-			from core.voice.model.SnipsTTS import SnipsTTS
-			self._tts = SnipsTTS(user)
-
-		return tts
+			self._tts.onStart()
+		except Exception as e:
+			self.logFatal(f"Tts failed starting: {e}")
 
 
 	@property
-	def tts(self) -> TTS:
+	def tts(self) -> Tts:
 		return self._tts
 
 
@@ -80,7 +97,7 @@ class TTSManager(Manager):
 
 	def onInternetLost(self):
 		if self._tts.online:
-			self._fallback = PicoTTS()
+			self._fallback = PicoTts()
 
 
 	def onInternetConnected(self):
@@ -96,6 +113,5 @@ class TTSManager(Manager):
 			user: User = self.UserManager.getUser(session.user)
 			if user and user.tts:
 				self._loadTTS(user.tts, user)
-				self._tts.onStart()
 
 		self._tts.onSay(session)

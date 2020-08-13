@@ -1,4 +1,4 @@
-pyalsaaudio==0.8.4
+wheel==0.34.2
 python-dateutil==2.8.0
 paho-mqtt==1.5.0
 requests==2.21.0
@@ -7,14 +7,18 @@ pyserial==3.4
 pydub==0.23.1
 terminaltables==3.1.0
 click==7.0
-pyyaml==5.3
-boto3==1.10.46
+PyYAML==5.3.1
 flask==1.1.1
 flask-classful==0.14.2
 flask-login==0.4.1
 flask-socketio==4.2.1
 googletrans==2.4.0
 bcrypt==3.1.7
-psutil==5.6.7
+psutil==5.7.2
 numpy==1.16.2
+importlib_metadata==1.6.0
+langdetect==1.0.8
+webrtcvad==2.0.10
+PyAudio==0.2.11
 pyjwt==1.7.1
+toml==0.10.1

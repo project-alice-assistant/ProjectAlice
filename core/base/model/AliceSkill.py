@@ -5,9 +5,10 @@ import inspect
 import json
 import sqlite3
 from pathlib import Path
-from typing import Any, Dict, Iterable, Optional
+from typing import Any, Dict, Iterable, Optional, Union
 
 import re
+from copy import copy
 from paho.mqtt import client as MQTTClient
 
 from core.ProjectAliceExceptions import AccessLevelTooLow, SkillStartingFailed
@@ -16,6 +17,7 @@ from core.base.model.Intent import Intent
 from core.base.model.ProjectAliceObject import ProjectAliceObject
 from core.base.model.Version import Version
 from core.commons import constants
+from core.device.model.DeviceType import DeviceType
 from core.dialog.model.DialogSession import DialogSession
 from core.user.model.AccessLevels import AccessLevel
 
@@ -23,27 +25,31 @@ from core.user.model.AccessLevels import AccessLevel
 class AliceSkill(ProjectAliceObject):
 
 
-	def __init__(self, supportedIntents: Iterable = None, databaseSchema: dict = None):
-		super().__init__(logDepth=4)
+	def __init__(self, supportedIntents: Iterable = None, databaseSchema: dict = None, **kwargs):
+		super().__init__(**kwargs)
 		try:
-			path = Path(inspect.getfile(self.__class__)).with_suffix('.install')
-			self._install = json.loads(path.read_text())
+			self._skillPath = Path(inspect.getfile(self.__class__)).parent
+			self._installFile = Path(inspect.getfile(self.__class__)).with_suffix('.install')
+			self._installer = json.loads(self._installFile.read_text())
 		except FileNotFoundError:
-			raise SkillStartingFailed(error=f'[{type(self).__name__}] Cannot find install file')
+			raise SkillStartingFailed(skillName=constants.UNKNOWN, error=f'[{type(self).__name__}] Cannot find install file')
 		except Exception as e:
-			raise SkillStartingFailed(error=f'[{type(self).__name__}] Failed loading skill: {e}')
+			raise SkillStartingFailed(skillName=constants.UNKNOWN, error=f'[{type(self).__name__}] Failed loading skill: {e}')
 
-		self._name = self._install['name']
-		self._author = self._install['author']
-		self._version = self._install['version']
-		self._icon = self._install['icon']
-		self._category = self._install['category'] if 'category' in self._install else 'undefined'
+		self._name = self._installer['name']
+		self._author = self._installer['author']
+		self._version = self._installer['version']
+		self._icon = self._installer['icon']
+		self._description = self._installer['desc']
+		self._category = self._installer['category'] if 'category' in self._installer else 'undefined'
+		self._conditions = self._installer['conditions']
 		self._updateAvailable = False
-		self._active = True
+		self._active = False
 		self._delayed = False
 		self._required = False
 		self._databaseSchema = databaseSchema
 		self._widgets = dict()
+		self._deviceTypes = dict()
 		self._intentsDefinitions = dict()
 		self._scenarioNodeName = ''
 		self._scenarioNodeVersion = Version(mainVersion=0, updateVersion=0, hotfix=0)
@@ -52,12 +58,33 @@ class AliceSkill(ProjectAliceObject):
 		self.loadIntentsDefinition()
 
 		self._utteranceSlotCleaner = re.compile('{(.+?):=>.+?}')
-		self.loadWidgets()
-		self.loadScenarioNodes()
+
+
+	def addUtterance(self, text: str, intent: str) -> bool:
+		file = self.getResource(f'dialogTemplate/{self.activeLanguage()}.json')
+		if not file:
+			return False
+
+		data = json.loads(file.read_text())
+		if 'intents' not in data:
+			return False
+
+		for i, declaredIntent in enumerate(data['intents']):
+			if declaredIntent['name'].lower() != intent.lower():
+				continue
+
+			utterances = declaredIntent.get('utterances', list())
+			if not text in utterances:
+				utterances.append(text)
+				data['intents'][i]['utterances'] = utterances
+				file.write_text(json.dumps(data, ensure_ascii=False, indent=4))
+				return True
+
+		return False
 
 
 	def loadScenarioNodes(self):
-		path = Path(self.getCurrentDir() / 'scenarioNodes/package.json')
+		path = self.getResource('scenarioNodes/package.json')
 		if not path.exists():
 			return
 
@@ -71,7 +98,7 @@ class AliceSkill(ProjectAliceObject):
 
 
 	def loadIntentsDefinition(self):
-		dialogTemplate = Path(self.getCurrentDir(), 'dialogTemplate')
+		dialogTemplate = self.getResource('dialogTemplate')
 
 		for lang in self.LanguageManager.supportedLanguages:
 			try:
@@ -89,7 +116,7 @@ class AliceSkill(ProjectAliceObject):
 					for intent in data['intents']:
 						self._intentsDefinitions[lang][intent['name']] = intent['utterances']
 			except Exception as e:
-				self.logWarning(f'Something went wrong loading intent definition for skill {self._name}, language "{lang}": {e}')
+				self.logWarning(f'Something went wrong loading intent definition for skill **{self._name}**, language **{lang}**: {e}')
 
 
 	def buildIntentList(self, supportedIntents) -> dict:
@@ -111,6 +138,7 @@ class AliceSkill(ProjectAliceObject):
 
 				if item.fallbackFunction:
 					intents[str(item)].fallbackFunction = item.fallbackFunction
+
 				# always use the highest auth level specified (low values mean a higher auth level)
 				if item.authLevel < intents[str(item)].authLevel:
 					intents[str(item)].authLevel = item.authLevel
@@ -146,9 +174,9 @@ class AliceSkill(ProjectAliceObject):
 
 	# noinspection SqlResolve
 	def loadWidgets(self):
-		fp = Path(self.getCurrentDir(), 'widgets')
+		fp = self.getResource('widgets')
 		if fp.exists():
-			self.logInfo(f"Loading {len(list(fp.glob('*.py'))) - 1} widgets")
+			self.logInfo(f"Loading **{len(list(fp.glob('*.py'))) - 1}** widget", plural='widget')
 
 			data = self.DatabaseManager.fetch(
 				tableName='widgets',
@@ -173,12 +201,12 @@ class AliceSkill(ProjectAliceObject):
 					self._widgets[widgetName] = widget
 					widget.setParentSkillInstance(self)
 					del data[widgetName]
-					self.logInfo(f'Loaded widget "{widgetName}"')
+					self.logInfo(f'Loaded widget **{widgetName}**')
 
 				else:  # widget is new
-					self.logInfo(f'Adding widget "{widgetName}"')
+					self.logInfo(f'Adding widget **{widgetName}**')
 					widget = klass({
-						'name': widgetName,
+						'name'  : widgetName,
 						'parent': self.name,
 					})
 					self._widgets[widgetName] = widget
@@ -186,28 +214,64 @@ class AliceSkill(ProjectAliceObject):
 					widget.saveToDB()
 
 			for widgetName in data:  # deprecated widgets
-				self.logInfo(f'Widget "{widgetName}" is deprecated, removing')
+				self.logInfo(f'Widget **{widgetName}** is deprecated, removing')
 				self.DatabaseManager.delete(
 					tableName='widgets',
 					callerName=self.SkillManager.name,
 					query='DELETE FROM :__table__ WHERE parent = :parent AND name = :name',
 					values={
 						'parent': self.name,
-						'name': widgetName
+						'name'  : widgetName
 					}
 				)
+
+
+	def loadDevices(self):
+		fp = self.getResource('device')
+		if fp.exists():
+			self.logInfo(f"Loading **{len(list(fp.glob('*.py')))}** device type", plural='type')
+
+			data = self.DeviceManager.getDeviceTypeBySkillRAW(skill=self.name)
+
+			for file in fp.glob('*.py'):
+				if file.name.startswith('__'):
+					continue
+
+				deviceType = Path(file).stem
+				deviceTypeImport = importlib.import_module(f'skills.{self.name}.device.{deviceType}')
+				klass = getattr(deviceTypeImport, deviceType)
+
+				if deviceType in data:  # deviceType already exists in DB
+					deviceClass = klass(data[deviceType])
+					self._deviceTypes[deviceClass.id] = deviceClass
+					del data[deviceType]
+					self.logInfo(f'Loaded device type **{deviceType}**')
+				else:  # deviceClass is new
+					self.logInfo(f'Adding new device type **{deviceType}**')
+					deviceClass = klass({'name': deviceType, 'skill': self.name})
+					self._deviceTypes[deviceClass.id] = deviceClass
+
+				deviceClass.parentSkillInstance = self
+				deviceClass.onStart()
+
+			for deviceType in data:  # deprecated devices
+				self.logInfo(f'Device type **{deviceType}** is deprecated, removing')
+				self.DeviceManager.removeDeviceTypeName(_name=deviceType)
+
 
 
 	def getWidgetInstance(self, widgetName: str) -> Optional[Widget]:
 		return self._widgets.get(widgetName)
 
+	def getDeviceTypeInstance(self, deviceTypeName: str) -> Optional[DeviceType]:
+		return self._deviceTypes.get(deviceTypeName)
 
-	def getUtterancesByIntent(self, intent: Intent, forceLowerCase: bool = True, cleanSlots: bool = False) -> list:
+
+	def getUtterancesByIntent(self, intent: Union[Intent, tuple, str], forceLowerCase: bool = True, cleanSlots: bool = False) -> list:
 		lang = self.LanguageManager.activeLanguage
 		if lang not in self._intentsDefinitions:
 			return list()
 
-		#TODO: either typing in function definition is wrong, or it is always a Intent
 		if isinstance(intent, tuple):
 			check = intent[0].action
 		elif isinstance(intent, Intent):
@@ -225,13 +289,14 @@ class AliceSkill(ProjectAliceObject):
 			for utterance in self._intentsDefinitions[lang][check]]
 
 
-	def getCurrentDir(self):
-		return Path(inspect.getfile(self.__class__)).parent
-
-
 	@property
 	def widgets(self) -> dict:
 		return self._widgets
+
+
+	@property
+	def deviceTypes(self) -> dict:
+		return self._deviceTypes
 
 
 	@property
@@ -262,6 +327,16 @@ class AliceSkill(ProjectAliceObject):
 	@author.setter
 	def author(self, value: str):
 		self._author = value
+
+
+	@property
+	def description(self) -> str:
+		return self._description
+
+
+	@description.setter
+	def description(self, value: str):
+		self._description = value
 
 
 	@property
@@ -329,16 +404,26 @@ class AliceSkill(ProjectAliceObject):
 		return self._icon
 
 
+	@property
+	def installFile(self) -> Path:
+		return self._installFile
+
+
+	@property
+	def skillPath(self) -> Path:
+		return self._skillPath
+
+
 	def hasScenarioNodes(self) -> bool:
 		return self._scenarioNodeName != ''
 
 
-	def subscribe(self, mqttClient: MQTTClient):
-		for intent in self._supportedIntents:
-			try:
-				mqttClient.subscribe(str(intent))
-			except:
-				self.logError(f'Failed subscribing to intent "{str(intent)}"')
+	def subscribeIntents(self):
+		self.MqttManager.subscribeSkillIntents(self._supportedIntents)
+
+
+	def unsubscribeIntents(self):
+		self.MqttManager.unsubscribeSkillIntents(self._supportedIntents)
 
 
 	def notifyDevice(self, topic: str, uid: str = '', siteId: str = ''):
@@ -384,28 +469,31 @@ class AliceSkill(ProjectAliceObject):
 		matchingIntent = None
 		oldIntentName = None
 		for intentName, intent in self._supportedIntents.items():
-			if MQTTClient.topic_matches_sub(intentName, session.message.topic) \
-					and (not matchingIntent or self.intentNameMoreSpecific(intentName, oldIntentName)):
+			if MQTTClient.topic_matches_sub(intentName, session.message.topic) and (not matchingIntent or self.intentNameMoreSpecific(intentName, oldIntentName)):
 				matchingIntent = intent
 				oldIntentName = intentName
 
 		return matchingIntent
 
 
-	def onDispatchMessage(self, session: DialogSession) -> bool:
+	def onMessageDispatch(self, session: DialogSession) -> bool:
 		intent = self.filterIntent(session)
 		if not intent:
 			return False
 
 		if intent.authLevel != AccessLevel.ZERO:
-			self.authenticateIntent(session)
+			try:
+				self.authenticateIntent(session)
+			except AccessLevelTooLow:
+				raise
 
 		function = intent.getMapping(session) or self.onMessage
-		return function(session=session)
+		ret = function(session=session)
+		return True if ret is None or ret == True else False
 
 
-	def getResource(self, skillName: str = '', resourcePathFile: str = '') -> Path:
-		return Path(self.Commons.rootDir(), 'skills', skillName or self.name, resourcePathFile)
+	def getResource(self, resourcePathFile: str = '') -> Path:
+		return self.skillPath / resourcePathFile
 
 
 	def _initDB(self) -> bool:
@@ -415,17 +503,28 @@ class AliceSkill(ProjectAliceObject):
 
 
 	def onStart(self):
-		if not self._active:
-			self.logInfo(f'Skill {self.name} is not active')
-		else:
-			self.logInfo(f'Starting {self.name} skill')
+		self.logInfo(f'Starting')
+		self._active = True
 
 		self._initDB()
-		self.MqttManager.subscribeSkillIntents(self.name)
+		self.SkillManager.configureSkillIntents(self._name, True)
+		self.LanguageManager.loadSkillStrings(self.name)
+		self.TalkManager.loadSkillTalks(self.name)
+
+		self.loadWidgets()
+		self.loadDevices()
+		self.loadScenarioNodes()
+
+		self.logInfo(f'![green](Started!)')
 
 
 	def onStop(self):
+		self._active = False
 		self.SkillManager.configureSkillIntents(self._name, False)
+		for devt in self.DeviceManager.getDeviceTypesForSkill(self.name).values():
+			devt.onStop()
+		self.logInfo(f'![green](Stopped)')
+		self.broadcast(method=constants.EVENT_SKILL_STOPPED, exceptions=[self.name], propagateToSkills=True, skill=self)
 
 
 	def onBooted(self) -> bool:
@@ -437,8 +536,7 @@ class AliceSkill(ProjectAliceObject):
 
 
 	def onSkillInstalled(self, **kwargs):
-		self._updateAvailable = False
-		self.MqttManager.subscribeSkillIntents(self.name)
+		self.onSkillUpdated(**kwargs)
 
 
 	def onSkillUpdated(self, **kwargs):
@@ -446,18 +544,23 @@ class AliceSkill(ProjectAliceObject):
 		self.MqttManager.subscribeSkillIntents(self.name)
 
 
+	def onSkillDeleted(self, skill: str):
+		if skill != self.name or not self._databaseSchema:
+			return
+
+		for tableName in self._databaseSchema:
+			self.DatabaseManager.dropTable(tableName=tableName, callerName=self.name)
+
+
 	# HELPERS
 	def getConfig(self, key: str) -> Any:
 		return self.ConfigManager.getSkillConfigByName(skillName=self.name, configName=key)
 
 
-	def getSkillConfigs(self, withInfo: bool = False) -> dict:
-		skillConfigs = self.ConfigManager.getSkillConfigs(self.name)
-		if not withInfo:
-			infoSettings = self.ConfigManager.aliceSkillConfigurationKeys
-			skillConfigs = {key: value for key, value in skillConfigs.items() if key not in infoSettings}
-
-		return skillConfigs
+	def getSkillConfigs(self) -> dict:
+		ret = copy(self.ConfigManager.getSkillConfigs(self.name))
+		ret.pop('active', None)
+		return ret
 
 
 	def getSkillConfigsTemplate(self) -> dict:
@@ -504,20 +607,20 @@ class AliceSkill(ProjectAliceObject):
 		return self.SkillManager.getSkillInstance(skillName=skillName)
 
 
-	def say(self, text: str, siteId: str = constants.DEFAULT_SITE_ID, customData: dict = None, canBeEnqueued: bool = True):
+	def say(self, text: str, siteId: str = None, customData: dict = None, canBeEnqueued: bool = True):
 		self.MqttManager.say(text=text, client=siteId, customData=customData, canBeEnqueued=canBeEnqueued)
 
 
-	def ask(self, text: str, siteId: str = constants.DEFAULT_SITE_ID, intentFilter: list = None, customData: dict = None, previousIntent: str = '', canBeEnqueued: bool = True, currentDialogState: str = '', probabilityThreshold: float = None):
+	def ask(self, text: str, siteId: str = None, intentFilter: list = None, customData: dict = None, canBeEnqueued: bool = True, currentDialogState: str = '', probabilityThreshold: float = None):
 		if currentDialogState:
 			currentDialogState = f'{self.name}:{currentDialogState}'
-		self.MqttManager.ask(text=text, client=siteId, intentFilter=intentFilter, customData=customData, previousIntent=previousIntent, canBeEnqueued=canBeEnqueued, currentDialogState=currentDialogState, probabilityThreshold=probabilityThreshold)
+		self.MqttManager.ask(text=text, client=siteId, intentFilter=intentFilter, customData=customData, canBeEnqueued=canBeEnqueued, currentDialogState=currentDialogState, probabilityThreshold=probabilityThreshold)
 
 
-	def continueDialog(self, sessionId: str, text: str, customData: dict = None, intentFilter: list = None, previousIntent: str = '', slot: str = '', currentDialogState: str = '', probabilityThreshold: float = None):
+	def continueDialog(self, sessionId: str, text: str, customData: dict = None, intentFilter: list = None, slot: str = '', currentDialogState: str = '', probabilityThreshold: float = None):
 		if currentDialogState:
 			currentDialogState = f'{self.name}:{currentDialogState}'
-		self.MqttManager.continueDialog(sessionId=sessionId, text=text, customData=customData, intentFilter=intentFilter, previousIntent=str(previousIntent), slot=slot, currentDialogState=currentDialogState, probabilityThreshold=probabilityThreshold)
+		self.MqttManager.continueDialog(sessionId=sessionId, text=text, customData=customData, intentFilter=intentFilter, slot=slot, currentDialogState=currentDialogState, probabilityThreshold=probabilityThreshold)
 
 
 	def endDialog(self, sessionId: str = '', text: str = '', siteId: str = ''):
@@ -528,30 +631,30 @@ class AliceSkill(ProjectAliceObject):
 		self.MqttManager.endSession(sessionId=sessionId)
 
 
-	def playSound(self, soundFilename: str, location: Path = None, sessionId: str = '', siteId: str = constants.DEFAULT_SITE_ID, uid: str = ''):
+	def playSound(self, soundFilename: str, location: Path = None, sessionId: str = '', siteId: str = None, uid: str = ''):
 		self.MqttManager.playSound(soundFilename=soundFilename, location=location, sessionId=sessionId, siteId=siteId, uid=uid)
 
 
-	def publish(self, topic: str, payload: dict = None, qos: int = 0, retain: bool = False):
-		self.MqttManager.publish(topic=topic, payload=payload, qos=qos, retain=retain)
+	def publish(self, topic: str, payload: dict = None, stringPayload: str = None, qos: int = 0, retain: bool = False):
+		self.MqttManager.publish(topic=topic, payload=payload, stringPayload=stringPayload, qos=qos, retain=retain)
 
 
-	def decorate(self, msg: str, depth: int) -> str:
-		"""
-		overwrite Logger decoration method, since it should always
-		be the skill name
-		"""
-		return f'[{self.name}] {msg}'
+	def __repr__(self) -> str:
+		return json.dumps(self.toJson())
+
+
+	def __str__(self) -> str:
+		return self.__repr__()
 
 
 	def toJson(self) -> dict:
 		return {
-			'name': self._name,
-			'author': self._author,
-			'version': self._version,
+			'name'           : self._name,
+			'author'         : self._author,
+			'version'        : self._version,
 			'updateAvailable': self._updateAvailable,
-			'active': self._active,
-			'delayed': self._delayed,
-			'required': self._required,
-			'databaseSchema': self._databaseSchema
+			'active'         : self._active,
+			'delayed'        : self._delayed,
+			'required'       : self._required,
+			'databaseSchema' : self._databaseSchema
 		}

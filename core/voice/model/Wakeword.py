@@ -3,12 +3,13 @@ from pathlib import Path
 
 import tempfile
 
-from core.base.SuperManager import SuperManager
+from core.base.model.ProjectAliceObject import ProjectAliceObject
 
 
-class Wakeword:
+class Wakeword(ProjectAliceObject):
 
 	def __init__(self, username: str):
+		super().__init__()
 		self._samples = list()
 		self._username = username
 
@@ -31,8 +32,8 @@ class Wakeword:
 	def newSample(self):
 		sample = wave.open(str(self.getSamplePath(len(self._samples) + 1)), 'wb')
 		sample.setsampwidth(2)
-		sample.setframerate(SuperManager.getInstance().configManager.getAliceConfigByName('micSampleRate'))
-		sample.setnchannels(SuperManager.getInstance().configManager.getAliceConfigByName('micChannels'))
+		sample.setframerate(self.AudioServer.SAMPLERATE)
+		sample.setnchannels(1)
 		self._samples.append(sample)
 
 
