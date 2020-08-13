@@ -21,3 +21,4 @@ langdetect==1.0.8
 webrtcvad==2.0.10
 PyAudio==0.2.11
 pyjwt==1.7.1
+toml==0.10.1
