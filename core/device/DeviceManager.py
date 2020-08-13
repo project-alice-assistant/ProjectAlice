@@ -2,10 +2,10 @@ import json
 import sqlite3
 import time
 import uuid
-from random import shuffle
 from typing import Dict, List, Optional
 
 from paho.mqtt.client import MQTTMessage
+from random import shuffle
 from serial.tools import list_ports
 
 from core.base.model.Manager import Manager
@@ -24,7 +24,7 @@ class DeviceManager(Manager):
 	DB_TYPES = 'deviceTypes'
 	DATABASE = {
 		DB_DEVICE: [
-			'id INTEGER PRIMARY KEY',
+			'id INTEGER PRIMARY KEY', #NOSONAR
 			'typeID INTEGER NOT NULL',
 			'uid TEXT',
 			'locationID INTEGER NOT NULL',
@@ -33,13 +33,13 @@ class DeviceManager(Manager):
 			'devSettings TEXT'
 		],
 		DB_LINKS : [
-			'id INTEGER PRIMARY KEY',
+			'id INTEGER PRIMARY KEY', #NOSONAR
 			'deviceID INTEGER NOT NULL',
 			'locationID INTEGER NOT NULL',
 			'locSettings TEXT'
 		],
 		DB_TYPES : [
-			'id INTEGER PRIMARY KEY',
+			'id INTEGER PRIMARY KEY', #NOSONAR
 			'skill TEXT NOT NULL',
 			'name TEXT NOT NULL',
 			'devSettings TEXT',

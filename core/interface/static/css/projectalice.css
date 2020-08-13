@@ -194,14 +194,15 @@ button.button{ font-size: 1.6em; height: 2em; }
 .configBlock .configLabel{ display: block; vertical-align: top;}
 .configListAdd {display: inline;font-size: 2em;vertical-align: middle;}
 
-.waiting::after { font-family: 'Font Awesome 5 Free'; content: '\f110';
+.waiting::after { font-family: 'Font Awesome 5 Free', sans-serif; content: '\f110';
    display: inline-block;
    padding-right: 3px;
    vertical-align: middle;
    font-weight: 900;
-  -webkit-animation: fa-spin 2s infinite linear;
-  animation: fa-spin 2s infinite linear;
+   -webkit-animation: fa-spin 2s infinite linear;
+   animation: fa-spin 2s infinite linear;
 }
+
 .after_big::after {
     font-size: 5em;
     text-align: center;

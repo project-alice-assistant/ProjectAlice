@@ -551,8 +551,8 @@ $(function () {
 				$settings.html(content);
 				$('#startPair').on('click touchstart', function () {
 					$(this).addClass('waiting')
-					$.post('Device/' + data['id'] + '/pair').done(function (data) {
-						if (handleError(data)) {
+					$.post('Device/' + data['id'] + '/pair').done(function (dataa) {
+						if (handleError(dataa)) {
 							return;
 						}
 						let sp = $('#startPair')
@@ -1012,7 +1012,7 @@ $(function () {
 						//save to db
 						if(roomChange){
 							//async required to revert with jquery draggable standard
-							newParent = this;
+							let newParent = this;
 							$.ajax({'url': 'Device/' + ui.draggable.data('id') + '/changeLocation/' + $(newParent).data('id'),
 									'async': false,
 									'method': 'POST'} )
