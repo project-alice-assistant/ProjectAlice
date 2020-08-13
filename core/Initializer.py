@@ -333,7 +333,6 @@ class Initializer:
 
 		elif self._confsFile.exists() and initConfs['forceRewrite']:
 			self._logger.logWarning('Config file found and force rewrite specified, let\'s restart all this!')
-			self._confsFile.unlink()
 			confs = self.newConfs()
 			self._confsFile.write_text(f"settings = {json.dumps(confs, indent=4).replace('false', 'False').replace('true', 'True')}")
 
@@ -631,7 +630,8 @@ class Initializer:
 		else:
 			importlib.reload(config)
 
-		TEMP.write_text(json.dumps(snipsConf))
+		import toml
+		TEMP.write_text(toml.dumps(snipsConf))
 		subprocess.run(['sudo', 'mv', TEMP, Path(SNIPS_TOML)])
 
 		subprocess.run(['sudo', 'rm', '-rf', Path(self._rootDir, 'assistant')])
@@ -666,7 +666,6 @@ class Initializer:
 		subprocess.run(['sudo', 'cp', Path(self._rootDir, 'system/snips/snips.toml'), Path(SNIPS_TOML)])
 
 		import toml
-
 		return toml.load(snipsConfig)
 
 
