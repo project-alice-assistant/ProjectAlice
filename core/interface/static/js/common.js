@@ -143,6 +143,20 @@ $(function () {
 		}
 	}
 
+	function pingAlice() {
+		let $nodal = $('.serverUnavailable');
+		$.get(location.origin + location.pathname)
+			.done(function(res) {
+				if ($nodal.is(':visible')) {
+					$nodal.hide();
+					location.reload();
+				}
+			})
+			.fail(function (res){
+				$nodal.show();
+			});
+	}
+
 	let $defaultTab = $('.tabsContainer ul li:first');
 	$('.tabsContent').children().each(function () {
 		if ($(this).attr('id') == $defaultTab.data('for')) {
@@ -180,4 +194,5 @@ $(function () {
 
 	connectMqtt();
 
+	setInterval(pingAlice, 2000);
 });
