@@ -63,6 +63,7 @@ class PreInit:
 	Pre init is meant to run on the system python and not on the venv
 	"""
 
+	PIP = './venv/bin/pip'
 
 	def __init__(self):
 		self._logger = SimpleLogger(prepend='PreInitializer')
@@ -256,15 +257,24 @@ class PreInit:
 			self._logger.logInfo('Not running with venv, I need to create it')
 			subprocess.run(['sudo', 'apt-get', 'install', 'python3-venv', '-y'])
 			subprocess.run(['python3.7', '-m', 'venv', 'venv'])
+
+			self.updateVenv()
+
 			subprocess.run(['sudo', 'systemctl', 'daemon-reload'])
 			subprocess.run(['sudo', 'systemctl', 'enable', 'ProjectAlice'])
 			self._logger.logInfo('Installed virtual environement, restarting...')
 			return False
 		elif not self.isVenv():
+			self.updateVenv()
 			self._logger.logWarning('Restarting to run using virtual environement: "./venv/bin/python main.py"')
 			return False
 
 		return True
+
+
+	def updateVenv(self):
+		subprocess.run([self.PIP, 'uninstall', '-y', '-r', str(Path(self.rootDir, 'pipuninstalls.txt'))])
+		subprocess.run([self.PIP, 'install', '-r', str(Path(self.rootDir, 'requirements.txt'))])
 
 
 	@staticmethod
@@ -290,7 +300,6 @@ class PreInit:
 class Initializer:
 	PIP = './venv/bin/pip'
 
-
 	def __init__(self):
 		super().__init__()
 		self._logger = SimpleLogger()
@@ -306,9 +315,6 @@ class Initializer:
 			return False
 
 		initConfs = self._preInit.initConfs
-
-		subprocess.run([self.PIP, 'uninstall', '-y', '-r', str(Path(self._rootDir, 'pipuninstalls.txt'))])
-		subprocess.run([self.PIP, 'install', '-r', str(Path(self._rootDir, 'requirements.txt'))])
 
 		if 'forceRewrite' not in initConfs:
 			initConfs['forceRewrite'] = True
