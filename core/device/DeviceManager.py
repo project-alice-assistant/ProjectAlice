@@ -229,9 +229,9 @@ class DeviceManager(Manager):
 		if self.getLink(deviceId=deviceId, locationId=locationId):
 			raise Exception(f'There is already a link from {deviceId} to {locationId}')
 		#todo check if adding locSettings here is required
-		values = {'deviceID': deviceId, 'locationID': locationId}
+		values = {'deviceID': deviceId, 'locationID': locationId, 'locSettings': json.dumps(deviceType._locSettings)}
 		# noinspection SqlResolve
-		values['id'] = self.databaseInsert(tableName=self.DB_LINKS, query='INSERT INTO :__table__ (deviceID, locationID) VALUES (:deviceID, :locationID)', values=values)
+		values['id'] = self.databaseInsert(tableName=self.DB_LINKS, query='INSERT INTO :__table__ (deviceID, locationID, locSettings) VALUES (:deviceID, :locationID, :locSettings)', values=values)
 		self.logInfo(f'Added link from device {deviceId} to location {locationId}')
 		self._deviceLinks[values['id']] = DeviceLink(data=values)
 

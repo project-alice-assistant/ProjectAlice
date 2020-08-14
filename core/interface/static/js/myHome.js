@@ -2,6 +2,7 @@ $(function () {
 	// TODO performance: check if there is already a link before sending to alice
 
   	let $floorPlan = $('#floorPlan');
+  	let $sideBar = $('#settings');
 
   	//selectors
   	let sWall = '.floorPlan-Wall';
@@ -38,6 +39,10 @@ $(function () {
 
 	// Linker
 	let selectedDevice = null;
+	let selectedLinks = null;
+
+	// DATA
+	let dirtyFormulars = [];
 
 // Setup and handle MQTT
 	function onConnect() {
@@ -58,6 +63,9 @@ $(function () {
 
 	}
 
+	function makeDirty(event){
+		dirtyFormulars.push(event.target);
+	}
 // Basic functionality for loading, saving
 	function loadHouse() {
 		$.ajax({
@@ -167,6 +175,7 @@ $(function () {
 	function matrixToAngle(matrix) {
 		if (matrix == 'none' || matrix == null) {
 			return 0;
+			makeDirty(null);
 		}
 
 		let values = matrix.split('(')[1].split(')')[0].split(',');
@@ -217,7 +226,11 @@ $(function () {
 		$element.each(function () {
 			$(this).resizable({
 				containment: 'parent',
-				grid       : [5, 5]
+				grid       : [5, 5],
+				autoHide   : true,
+				stop        : function (e) {
+					saveRequired();
+				}
 			}).rotatable({
 				snap        : true,
 				step        : 15,
@@ -225,6 +238,10 @@ $(function () {
 				handleOffset: {
 					top : 0,
 					left: 0
+				},
+				autoHide: true,
+				stop        : function (e) {
+					saveRequired();
 				}
 			}).draggable({
 				addClasses   : false,
@@ -241,6 +258,7 @@ $(function () {
 					$(e.target).css({opacity: 0.3});
 				},
 				stop         : function (e) {
+					saveRequired();
 					$(e.target).css({opacity: 1});
 				}
 			});
@@ -256,7 +274,8 @@ $(function () {
 		});
 	}
 
-	function setSelectedDevice($element){
+	function setSelectedDevice($element, $confOut){
+		saveSidebar();
 		// clear old, set new, draw links
 		if(selectedDevice) {
 			selectedDevice.connections('remove');
@@ -267,6 +286,8 @@ $(function () {
 			selectedDevice.addClass('highlightedDevice');
 			$.get('Device/' + selectedDevice.data('id') + '/getLinks').done(function (res) {
 				res = jQuery.parseJSON(res);
+				if(handleError(res)) return;
+				selectedLinks = res;
 				let content = "";
 				$.each(res, function (id, link) {
 					target = $('#floorPlan-Zone_' + link['locationID']);
@@ -276,6 +297,29 @@ $(function () {
 					});
 					content += link['']
 				});
+				if($confOut && selectedLinks){
+					total = "<div class='configCategoryTitle'>Available In:</div>";
+					let hasOne = false;
+					$.each(selectedLinks, function (id, val){
+						hasOne = true;
+						content = "<div class='linkTitle'>"+val['locationName']+"</div>";
+						confLines = "<form>";
+						$.each(val['locSettings'], function (ckey, cval) {
+							confLines += "<div class='configLabel'>" + ckey + "</div><input name='" + ckey + "' class='configInput' value='" + cval + "'/>";
+						});
+						if (confLines) {
+							//content += "<div class='configBox'><div class='configList'><form id='SetForm' name='config_for_devSet' action='Device/" + data['id'] + "/saveSettings/0' method='post'><div class='configBlock'>";
+							content += confLines
+							content += "</form>";
+							//content += "</div>";
+							//content += "<div class='buttonLine'><input id='SetFormSubmit' class='button' type='submit' value='" + $('#langSave').text() + "'></div>";
+							//content += "</form></div></div>";
+						}
+						total += content;
+					});
+					if(hasOne) $confOut.append(total);
+					$('input').change(makeDirty);
+				}
 			});
 		}
 
@@ -391,7 +435,6 @@ $(function () {
 				});
 
 			} else if (locationSettingsMode){
-				let $settings = $('#settings');
 				let content = "<i>"+data['id']+"</i> <h1>"+data['name']+"</h1>";
 				content += "<div class='configBox'>";
 				content += "<div class='configBox'>";
@@ -402,9 +445,9 @@ $(function () {
 //				content += "<div class='configBlock'><div class='configLabel'>Linked Devices:</div><input class='configInput'/></div>";
 				content += "</div></div>";
 
-				$settings.html(content);
-				loadLocationSettings(data['id'],$settings);
-				$settings.sidebar({side: "right"}).trigger("sidebar:open");
+				$sideBar.html(content);
+				loadLocationSettings(data['id'],$sideBar);
+				$sideBar.sidebar({side: "right"}).trigger("sidebar:open");
 
 				// reroute enter to click event
 				$('.configInput').keypress(function (e) {
@@ -538,7 +581,6 @@ $(function () {
 
 		$newDevice.on('click touchstart', function () {
 			if(deviceSettingsMode) {
-				let $settings = $('#settings');
 				let content = "<h1>" + data['name'] + "</h1>";
 				content += "<h2>" + data['deviceType'] + "</h2>";
 
@@ -548,7 +590,7 @@ $(function () {
 					content += "<div class='techDetail' >" + data['uid'] + "</div>";
 				}
 
-				$settings.html(content);
+				$sideBar.html(content);
 				$('#startPair').on('click touchstart', function () {
 					$(this).addClass('waiting')
 					$.post('Device/' + data['id'] + '/pair').done(function (dataa) {
@@ -561,8 +603,8 @@ $(function () {
 					});
 				});
 
-				$settings.addClass('waiting after_big')
-				$settings.sidebar({side: "right"}).trigger("sidebar:open");
+				$sideBar.addClass('waiting after_big')
+				$sideBar.sidebar({side: "right"}).trigger("sidebar:open");
 
 // TODO logic for synonyms of devices
 // 				content += "<div class='configBlock'><div class='configLabel'>Synonyms:</div>";
@@ -570,8 +612,6 @@ $(function () {
 
 				$.get('/myhome/Device/' + data['id'] + '/getSettings/0').done(function (res) {
 					if (handleError(res)) return;
-
-					setSelectedDevice($newDevice);
 
 					let confLines = '';
 					content = '';
@@ -585,7 +625,7 @@ $(function () {
 						content += "<div class='buttonLine'><input id='SetFormSubmit' class='button' type='submit' value='" + $('#langSave').text() + "'></div>";
 						content += "</form></div></div>";
 
-						$settings.append(content);
+						$sideBar.append(content);
 
 						// perform submit/save of the form without switching page
 						let form = $('#SetForm');
@@ -618,6 +658,8 @@ $(function () {
 
 
 					}
+					selectedLinks = null;
+					setSelectedDevice($newDevice, $sideBar);
 				});
 
 // TODO Room specific Settings
@@ -652,7 +694,7 @@ $(function () {
 										});
 									}
 								});*/
-				$settings.removeClass('waiting after_big')
+				$sideBar.removeClass('waiting after_big')
 			} else if(deviceLinkerMode) {
 				setSelectedDevice($(this));
 			} else {
@@ -733,6 +775,17 @@ $(function () {
 
 // handle toolbar
 	// save, hide toolbars, restore live view
+	//unused
+	$('#saveToolbarAction').on('click touchstart', function () {
+		if($(sZone).hasClass('blueprint')) {
+			setBPMode(false);
+			saveHouse();
+			setBPMode(true);
+		} else {
+			saveHouse();
+		}
+	});
+
 	$('#finishToolbarAction').on('click touchstart', function () {
 		setBPMode(false);
 		saveHouse();
@@ -803,16 +856,16 @@ $(function () {
 					'height' : 100,
 					'texture': ''
 				}
+				zoneMode = false;
+				markSelectedTool($('#locationMover'));
+				locationMoveMode = true;
+				$('.zindexer').show();
+				$(this).removeClass(classAddZone);
 				let $zone = newZone(zdata);
-				makeResizableRotatableAndDraggable($zone)
-				makeDroppable($(sZone), true);
+				makeResizableRotatableAndDraggable($(sZone));
+				makeDroppable($floorPlan, false);
 			}
 
-			zoneMode = false;
-			markSelectedTool($('#locationMover'));
-			locationMoveMode = true;
-			$('.zindexer').show();
-			$(this).removeClass(classAddZone);
 		})
 	});
 
@@ -838,7 +891,9 @@ $(function () {
 		deviceSettingsMode = false;
 		deviceLinkerMode = false;
 
-		$('#settings').sidebar({side: "right"}).trigger("sidebar:close");
+		setSelectedDevice(null);
+
+		$sideBar.sidebar({side: "right"}).trigger("sidebar:close");
 		$('.ui-droppable').droppable('destroy');
 
 		$('#painterTiles, #decoTiles, #constructionTiles, #deviceTiles').hide();
@@ -849,7 +904,6 @@ $(function () {
 		selectedFloor = '';
 		selectedDeco = '';
 
-		setSelectedDevice(null);
 
 		$(sTile).removeClass('selected');
 		$('.floorPlan-tile-background').removeClass('selected');
@@ -1140,6 +1194,21 @@ $(function () {
 		$('#deviceTiles').append($tile);
 		});
 	});
+
+	function saveSidebar(){
+		if(dirtyFormulars.length == 0) return;
+		dirtyFormulars.forEach(function (value){
+			//todo add correct form info
+			// wait for response
+			// stop action if not successful
+			value.form.submit();
+		});
+		dirtyFormulars = [];
+	}
+
+	function saveRequired(){
+		$('#finishToolbarAction > .far').addClass('wiggly');
+	}
 
 //run logic on startup
 	$( document ).tooltip();
