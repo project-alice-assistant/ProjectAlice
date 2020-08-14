@@ -246,7 +246,7 @@ class AmazonTts(Tts):
 			self._mp3ToWave(src=tmpFile, dest=self._cacheFile)
 			tmpFile.unlink()
 
-			self.logDebug(f'Downloaded speach file **{self._cacheFile.stem}**')
+			self.logDebug(f'Downloaded speech file **{self._cacheFile.stem}**')
 		else:
 			self.logDebug(f'Using existing cached file **{self._cacheFile.stem}**')
 
