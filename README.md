@@ -75,8 +75,8 @@ If you see or find a copyright breach, feel free to contact us immediately. It i
 
 ## Other repositories
 -   [Project Alice Skills](https://github.com/project-alice-assistant/ProjectAliceSkills)
--   [Project Alice Amazon Polly and Google WaveNet cached TTS speeches](https://github.com/project-alice-assistant/ProjectAliceCachedSpeeches)
 
+# Support
 -   [Donate](https://paypal.me/Psychokiller1888)
 -   [Fund](https://liberapay.com/Psycho)
 -   Donate in bitcoin, Blockchain.com wallet: <a href="https://blockchain.com"><img alt="Blockchain.com Bitcoin wallet" src="https://github.com/project-alice-assistant/ProjectAlice/blob/master/bitcoindonate.png"></a>
