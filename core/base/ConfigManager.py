@@ -1,49 +1,42 @@
 import json
 import logging
-import shutil
 from pathlib import Path
 
 import configTemplate
-from core.base.SkillManager import SkillManager
+from core.base.SuperManager import SuperManager
 from core.base.model.TomlFile import TomlFile
 
 try:
 	# noinspection PyUnresolvedReferences,PyPackageRequirements
 	import config
+
 	configFileExist = True
 except ModuleNotFoundError:
 	configFileNotExist = False
 
-import difflib
 import importlib
 import typing
 from core.ProjectAliceExceptions import ConfigurationUpdateFailed, VitalConfigMissing
 from core.base.model.Manager import Manager
-from core.commons import constants
 
 
 class ConfigManager(Manager):
 
+	CONFIG_FILE = 'config.py'
+
 	def __init__(self):
 		super().__init__()
 
-		self._aliceSkillConfigurationKeys = [
-			'active',
-			'version',
-			'author',
-			'conditions'
-		]
-
 		self._vitalConfigs = list()
+		self._aliceConfigurationCategories = list()
 
 		self._aliceConfigurations: typing.Dict[str, typing.Any] = self._loadCheckAndUpdateAliceConfigFile()
 		self._aliceTemplateConfigurations: typing.Dict[str, dict] = configTemplate.settings
+
 		self._snipsConfigurations = self.loadSnipsConfigurations()
-		self._setDefaultSiteId()
 
 		self._skillsConfigurations = dict()
 		self._skillsTemplateConfigurations: typing.Dict[str, dict] = dict()
-		self.loadCheckAndUpdateSkillConfigurations()
 
 
 	def onStart(self):
@@ -53,49 +46,48 @@ class ConfigManager(Manager):
 				raise VitalConfigMissing(conf)
 
 
-	def _setDefaultSiteId(self):
-		if self._snipsConfigurations['snips-audio-server']['bind']:
-			constants.DEFAULT_SITE_ID = self._snipsConfigurations['snips-audio-server']['bind'].replace('@mqtt', '')
-
-
 	def _loadCheckAndUpdateAliceConfigFile(self) -> dict:
 		self.logInfo('Checking Alice configuration file')
 
 		if not configFileExist:
 			self.logInfo('Creating config file from config template')
-			confs = {configName: configData['values'] if 'dataType' in configData and configData['dataType'] == 'list' else configData['defaultValue'] if 'defaultValue' in configData else configData for configName, configData in configTemplate.settings.items()}
-			Path('config.py').write_text(f'settings = {json.dumps(confs, indent=4)}')
-			aliceConfigs = importlib.import_module('config.py').settings.copy()
+			confs = {configName: configData['defaultValue'] if 'defaultValue' in configData else configData for configName, configData in configTemplate.settings.items()}
+			Path(self.CONFIG_FILE).write_text(f'settings = {json.dumps(confs, indent=4)}')
+			aliceConfigs = importlib.import_module(self.CONFIG_FILE).settings.copy()
 		else:
 			aliceConfigs = config.settings.copy()
 
 		changes = False
 		for setting, definition in configTemplate.settings.items():
+
+			if definition['category'] not in self._aliceConfigurationCategories:
+				self._aliceConfigurationCategories.append(definition['category'])
+
 			if setting not in aliceConfigs:
-				self.logInfo(f'- New configuration found: {setting}')
+				self.logInfo(f'New configuration found: **{setting}**')
 				changes = True
 				aliceConfigs[setting] = definition.get('defaultValue', '')
 			else:
-				if setting == 'skills' or setting == 'supportedLanguages':
+				if setting == 'supportedLanguages':
 					continue
 
-				if definition['dataType'] != 'list':
+				if definition['dataType'] != 'list' and definition['dataType'] != 'longstring':
 					if not isinstance(aliceConfigs[setting], type(definition['defaultValue'])):
 						changes = True
 						try:
-							# First try to cast the seting we have to the new type
+							# First try to cast the setting we have to the new type
 							aliceConfigs[setting] = type(definition['defaultValue'])(aliceConfigs[setting])
-							self.logInfo(f'- Existing configuration type missmatch: {setting}, cast variable to template configuration type')
+							self.logWarning(f'Existing configuration type missmatch: **{setting}**, cast variable to template configuration type')
 						except Exception:
 							# If casting failed let's fall back to the new default value
-							self.logInfo(f'- Existing configuration type missmatch: {setting}, replaced with template configuration')
+							self.logWarning(f'Existing configuration type missmatch: **{setting}**, replaced with template configuration')
 							aliceConfigs[setting] = definition['defaultValue']
-				else:
+				elif definition['dataType'] == 'list':
 					values = definition['values'].values() if isinstance(definition['values'], dict) else definition['values']
 
 					if aliceConfigs[setting] not in values:
 						changes = True
-						self.logInfo(f'- Selected value "{aliceConfigs[setting]}" for setting "{setting}" doesn\'t exist, reverted to default value "{definition["defaultValue"]}"')
+						self.logWarning(f'Selected value **{aliceConfigs[setting]}** for setting **{setting}** doesn\'t exist, reverted to default value --{definition["defaultValue"]}--')
 						aliceConfigs[setting] = definition['defaultValue']
 
 		# Setting logger level immediately
@@ -103,12 +95,11 @@ class ConfigManager(Manager):
 			logging.getLogger('ProjectAlice').setLevel(logging.DEBUG)
 
 		temp = aliceConfigs.copy()
-
-		for k, v in temp.items():
-			if k not in configTemplate.settings:
-				self.logInfo(f'- Deprecated configuration: {k}')
+		for key in temp:
+			if key not in configTemplate.settings:
+				self.logInfo(f'Deprecated configuration: **{key}**')
 				changes = True
-				del aliceConfigs[k]
+				del aliceConfigs[key]
 
 		if changes:
 			self.writeToAliceConfigurationFile(aliceConfigs)
@@ -116,22 +107,9 @@ class ConfigManager(Manager):
 		return aliceConfigs
 
 
-	def addSkillToAliceConfig(self, skillName: str, data: dict):
-		self._skillsConfigurations[skillName] = data
-		self.updateAliceConfiguration('skills', self._skillsConfigurations)
-		self.loadCheckAndUpdateSkillConfigurations(skillName)
-
-
 	def updateAliceConfiguration(self, key: str, value: typing.Any):
 		if key not in self._aliceConfigurations:
-			self.logWarning(f'Was asked to update {key} but key doesn\'t exist')
-			raise ConfigurationUpdateFailed()
-
-		try:
-			# Remove skill configurations
-			if key == 'skills':
-				value = {k: v for k, v in value.items() if k not in self._aliceSkillConfigurationKeys}
-		except AttributeError:
+			self.logWarning(f'Was asked to update **{key}** but key doesn\'t exist')
 			raise ConfigurationUpdateFailed()
 
 		self._aliceConfigurations[key] = value
@@ -140,11 +118,11 @@ class ConfigManager(Manager):
 
 	def updateSkillConfigurationFile(self, skillName: str, key: str, value: typing.Any):
 		if skillName not in self._skillsConfigurations:
-			self.logWarning(f'Was asked to update {key} in skill {skillName} but skill doesn\'t exist')
+			self.logWarning(f'Was asked to update **{key}** in skill **{skillName}** but skill doesn\'t exist')
 			return
 
 		if key not in self._skillsConfigurations[skillName]:
-			self.logWarning(f'Was asked to update {key} in skill {skillName} but key doesn\'t exist')
+			self.logWarning(f'Was asked to update **{key}** in skill **{skillName}** but key doesn\'t exist')
 			return
 
 		# Cast value to template defined type
@@ -158,19 +136,22 @@ class ConfigManager(Manager):
 			try:
 				value = int(value)
 			except:
-				self.logWarning(f'Value missmatch for config {key} in skill {skillName}')
+				self.logWarning(f'Value missmatch for config **{key}** in skill **{skillName}**')
 				value = 0
-		elif vartype == 'float':
+		elif vartype == 'float' or vartype == 'range':
 			try:
 				value = float(value)
+				if vartype == 'range' and (value > self._skillsTemplateConfigurations[skillName][key]['max'] or value < self._skillsTemplateConfigurations[skillName][key]['min']):
+					value = self._skillsTemplateConfigurations[skillName][key]['defaultValue']
+					self.logWarning(f'Value for config **{key}** in skill **{skillName}** is out of bound, reverted to default')
 			except:
-				self.logWarning(f'Value missmatch for config {key} in skill {skillName}')
-				value = 0.0
-		elif vartype in {'string', 'email', 'password'}:
+				self.logWarning(f'Value missmatch for config **{key}** in skill **{skillName}**')
+				value = 0
+		elif vartype in {'string', 'email', 'password', 'longstring'}:
 			try:
 				value = str(value)
 			except:
-				self.logWarning(f'Value missmatch for config {key} in skill {skillName}')
+				self.logWarning(f'Value missmatch for config **{key}** in skill **{skillName}**')
 				value = ''
 
 		self._skillsConfigurations[skillName][key] = value
@@ -183,24 +164,11 @@ class ConfigManager(Manager):
 		:param confs: the dict to save
 		"""
 		sort = dict(sorted(confs.items()))
-
-		# Only store "active", "version", "author", "conditions" value for skill config
-		misterProper = ['active', 'version', 'author', 'conditions']
-
-		# pop skills key so it gets added in the back
-		skills = sort.pop('skills')
-		skills = dict() if not isinstance(skills, dict) else skills
-
-		sort['skills'] = dict()
-		for skillName, setting in skills.items():
-			skillCleaned = {key: value for key, value in setting.items() if key in misterProper}
-			sort['skills'][skillName] = skillCleaned
-
 		self._aliceConfigurations = sort
 
 		try:
 			confString = json.dumps(sort, indent=4).replace('false', 'False').replace('true', 'True')
-			Path('config.py').write_text(f'settings = {confString}')
+			Path(self.CONFIG_FILE).write_text(f'settings = {confString}')
 			importlib.reload(config)
 		except Exception:
 			raise ConfigurationUpdateFailed()
@@ -252,7 +220,7 @@ class ConfigManager(Manager):
 			self._snipsConfigurations.dump()
 
 			if restartSnips:
-				self.SnipsServicesManager.runCmd('restart')
+				self.Commons.runRootSystemCommand(['systemctl', 'restart', 'snips-nlu'])
 
 
 	def getSnipsConfiguration(self, parent: str, key: str, createIfNotExist: bool = True) -> typing.Optional[str]:
@@ -270,7 +238,8 @@ class ConfigManager(Manager):
 
 		config = self._snipsConfigurations[parent].get(key, None)
 		if config is None:
-			self.logWarning(f'Tried to get "{parent}/{key}" in snips configuration but key was not found')
+			self.logWarning(f'Tried to get **{parent}/{key}** in snips configuration but key was not found')
+			return config
 
 		return config
 
@@ -283,11 +252,12 @@ class ConfigManager(Manager):
 		return skillName in self._skillsConfigurations and configName in self._skillsConfigurations[skillName]
 
 
-	def getAliceConfigByName(self, configName: str, voiceControl: bool = False) -> typing.Any:
-		return self._aliceConfigurations.get(
-			configName,
-			difflib.get_close_matches(word=configName, possibilities=self._aliceConfigurations, n=3) if voiceControl else ''
-		)
+	def getAliceConfigByName(self, configName: str) -> typing.Any:
+		if configName in self._aliceConfigurations:
+			return self._aliceConfigurations[configName]
+		else:
+			self.logDebug(f'Trying to get config **{configName}** but it does not exist')
+			return ''
 
 
 	def getSkillConfigByName(self, skillName: str, configName: str) -> typing.Any:
@@ -306,19 +276,18 @@ class ConfigManager(Manager):
 		return self._skillsTemplateConfigurations.get(skillName, dict())
 
 
-	def loadCheckAndUpdateSkillConfigurations(self, skill: str = None):
+	def loadCheckAndUpdateSkillConfigurations(self, skillToLoad: str = None):
 		skillsConfigurations = dict()
 
-		skillsPath = Path(self.Commons.rootDir() + '/skills')
-		for skillDirectory in skillsPath.glob('*'):
-			if not skillDirectory.is_dir() or (skill is not None and skillDirectory.stem != skill) or skillDirectory.stem.startswith('_'):
+		for skillName, skillInstance in self.SkillManager.activeSkills.items():
+
+			if skillToLoad and skillName != skillToLoad:
 				continue
 
-			self.logInfo(f'Checking configuration for skill {skillDirectory.stem}')
+			self.logInfo(f'Checking configuration for skill **{skillName}**')
 
-			skillConfigFile = Path(skillsPath / skillDirectory / 'config.json')
-			skillConfigTemplate = Path(skillsPath / skillDirectory / 'config.json.template')
-			skillName = skillDirectory.stem
+			skillConfigFile = skillInstance.getResource('config.json')
+			skillConfigTemplate = skillInstance.getResource('config.json.template')
 			config = dict()
 
 			if not skillConfigFile.exists() and skillConfigTemplate.exists():
@@ -326,7 +295,7 @@ class ConfigManager(Manager):
 				config = json.load(skillConfigFile.open())
 
 			elif skillConfigFile.exists() and not skillConfigTemplate.exists():
-				self.logInfo(f'- Deprecated config file for skill "{skillName}", removing')
+				self.logInfo(f'- Deprecated config file for skill **{skillName}**, removing')
 				skillConfigFile.unlink()
 				self._skillsTemplateConfigurations[skillName] = dict()
 				skillsConfigurations[skillName] = dict()
@@ -340,78 +309,41 @@ class ConfigManager(Manager):
 					changes = False
 					for setting, definition in configSample.items():
 						if setting not in config:
-							self.logInfo(f'- New configuration found for skill "{skillName}": {setting}')
+							self.logInfo(f'- New configuration found for skill **{skillName}**: {setting}')
 							changes = True
 							config[setting] = definition['defaultValue']
 
 						elif 'defaultValue' in definition and not isinstance(config[setting], type(definition['defaultValue'])):
 							changes = True
 							try:
-								# First try to cast the seting we have to the new type
+								# First try to cast the setting we have to the new type
 								config[setting] = type(definition['defaultValue'])(config[setting])
-								self.logInfo(f'- Existing configuration type missmatch for skill "{skillName}": {setting}, cast variable to template configuration type')
+								self.logInfo(f'- Existing configuration type missmatch for skill **{skillName}**: {setting}, cast variable to template configuration type')
 							except Exception:
 								# If casting failed let's fall back to the new default value
-								self.logInfo(f'- Existing configuration type missmatch for skill "{skillName}": {setting}, replaced with template configuration')
+								self.logInfo(f'- Existing configuration type missmatch for skill **{skillName}**: {setting}, replaced with template configuration')
 								config[setting] = definition['defaultValue']
 
 					temp = config.copy()
 					for k, v in temp.items():
 						if k not in configSample:
-							self.logInfo(f'- Deprecated configuration for skill "{skillName}": {k}')
+							self.logInfo(f'- Deprecated configuration for skill **{skillName}**: {k}')
 							changes = True
 							del config[k]
 
 					if changes:
 						self._writeToSkillConfigurationFile(skillName, config)
 				except Exception as e:
-					self.logWarning(f'- Failed updating existing skill config file for skill {skillName}: {e}')
+					self.logWarning(f'- Failed updating existing skill config file for skill **{skillName}**: {e}')
 					skillConfigFile.unlink()
 					if skillConfigTemplate.exists():
 						self._newSkillConfigFile(skillName, skillConfigTemplate)
 					else:
-						self.logWarning(f'- Cannot create config, template not existing, skipping skill "{skillName}"')
+						self.logWarning(f'- Cannot create config, template not existing, skipping skill **{skillName}**')
 
 			else:
 				self._skillsTemplateConfigurations[skillName] = dict()
 				skillsConfigurations[skillName] = dict()
-
-			if skillName in self._aliceConfigurations['skills']:
-				config = {**config, **self._aliceConfigurations['skills'][skillName]}
-			else:
-				# For some reason we have a skill not declared in alice configs... I think getting rid of it is best
-				if skillName not in SkillManager.NEEDED_SKILLS and not self.getAliceConfigByName('devMode'):
-					self.logInfo(f'- Skill "{skillName}" not declared in config but files are existing, cleaning up')
-					shutil.rmtree(skillDirectory, ignore_errors=True)
-					if skillName in skillsConfigurations:
-						skillsConfigurations.pop(skillName)
-					continue
-				elif skillName in SkillManager.NEEDED_SKILLS:
-					self.logInfo(f'- Skill "{skillName}" is required but is missing definition in Alice config, generating them')
-				elif self.getAliceConfigByName('devMode'):
-					self.logInfo(f'- Dev mode is on, "{skillName}" is missing definition in Alice config, generating them')
-
-				try:
-					installFile = json.load(Path(skillsPath / skillDirectory / f'{skillName}.install').open())
-					node = {
-						'active': True,
-						'version': installFile['version'],
-						'author': installFile['author'],
-						'conditions': installFile['conditions']
-					}
-					config = {**config, **node}
-					self._skillsConfigurations[skillName] = config
-					self.updateAliceConfiguration('skills', self._skillsConfigurations)
-				except Exception as e:
-					if self.getAliceConfigByName('devMode'):
-						self.logInfo(f'- Failed generating default config. Please check your config template for skill "{skillName}"')
-						continue
-					else:
-						self.logError(f'- Failed generating default config, scheduling download for skill "{skillName}": {e}')
-						self.Commons.downloadFile(f'https://skills.projectalice.ch/{skillName}', f'system/skillInstallTickets/{skillName}.install')
-						if skillName in skillsConfigurations:
-							skillsConfigurations.pop(skillName)
-						continue
 
 			if config:
 				skillsConfigurations[skillName] = config
@@ -420,7 +352,7 @@ class ConfigManager(Manager):
 
 
 	def _newSkillConfigFile(self, skillName: str, skillConfigTemplate: Path):
-		self.logInfo(f'- New config file for skill "{skillName}", creating from template')
+		self.logInfo(f'- New config file for skill **{skillName}**, creating from template')
 
 		template = json.load(skillConfigTemplate.open())
 
@@ -428,34 +360,6 @@ class ConfigManager(Manager):
 		self._skillsTemplateConfigurations[skillName] = template
 		self._skillsConfigurations[skillName] = confs
 		self._writeToSkillConfigurationFile(skillName, confs)
-
-
-	def deactivateSkill(self, skillName: str, persistent: bool = False):
-
-		if skillName in self.aliceConfigurations['skills']:
-			self.logInfo(f"Deactivated skill {skillName} {'with' if persistent else 'without'} persistence")
-			self.aliceConfigurations['skills'][skillName]['active'] = False
-
-			if persistent:
-				self.writeToAliceConfigurationFile(self._aliceConfigurations)
-
-
-	def activateSkill(self, skillName: str, persistent: bool = False):
-
-		if skillName in self.aliceConfigurations['skills']:
-			self.logInfo(f"Activated skill {skillName} {'with' if persistent else 'without'} persistence")
-			self.aliceConfigurations['skills'][skillName]['active'] = True
-
-			if persistent:
-				self.writeToAliceConfigurationFile(self._aliceConfigurations)
-
-
-	def removeSkill(self, skillName: str):
-		if skillName in self.aliceConfigurations['skills']:
-			skills = self.aliceConfigurations['skills']
-			del skills[skillName]
-			self.aliceConfigurations['skills'] = skills
-			self.writeToAliceConfigurationFile(self._aliceConfigurations)
 
 
 	def changeActiveLanguage(self, toLang: str):
@@ -489,10 +393,15 @@ class ConfigManager(Manager):
 		# Call alice config pre processing functions.
 		try:
 			func = getattr(self, function)
-			return func(value)
-		except:
-			self.logWarning(f'Configuration pre processing method "{function}" does not exist')
+		except AttributeError:
+			self.logWarning(f'Configuration pre processing method **{function}** does not exist')
 			return False
+		else:
+			try:
+				return func(value)
+			except Exception as e:
+				self.logError(f'Configuration pre processing method **{function}** failed: {e}')
+				return False
 
 
 	def doConfigUpdatePostProcessing(self, functions: set):
@@ -501,10 +410,15 @@ class ConfigManager(Manager):
 		for function in functions:
 			try:
 				func = getattr(self, function)
-				func()
-			except:
-				self.logWarning(f'Configuration post processing method "{function}" does not exist')
+			except AttributeError:
+				self.logWarning(f'Configuration post processing method **{function}** does not exist')
 				continue
+			else:
+				try:
+					func()
+				except Exception as e:
+					self.logError(f'Configuration post processing method **{function}** failed: {e}')
+					continue
 
 
 	def updateMqttSettings(self):
@@ -524,11 +438,17 @@ class ConfigManager(Manager):
 		self.ASRManager.onStart()
 
 
+
+	def reloadTTS(self):
+		self.TTSManager.onStop()
+		self.TTSManager.onStart()
+
+
 	def checkNewAdminPinCode(self, pinCode: str) -> bool:
 		try:
 			pin = int(pinCode)
 			if len(str(pin)) != 4:
-				raise
+				raise Exception
 
 			return True
 		except:
@@ -540,8 +460,47 @@ class ConfigManager(Manager):
 		self.UserManager.addUserPinCode('admin', self.getAliceConfigByName('adminPinCode'))
 
 
+	def enableDisableSound(self):
+		if self.getAliceConfigByName('disableSoundAndMic'):
+			self.WakewordManager.disableEngine()
+			self.AudioServer.onStop()
+		else:
+			self.WakewordManager.enableEngine()
+			self.AudioServer.onStart()
+
+
+	def restartWakewordEngine(self):
+		self.WakewordManager.restartEngine()
+
+
+	def reloadWakeword(self):
+		SuperManager.getInstance().restartManager(manager=self.WakewordManager.name)
+
+
 	def refreshStoreData(self):
 		self.SkillStoreManager.refreshStoreData()
+
+
+	def injectAsound(self, newSettings: str):
+		newSettings = newSettings.replace('\r\n', '\n')
+		if self.getAliceConfigByName('asoundConfig') != newSettings:
+			tmp = Path('/tmp/asound')
+			tmp.write_text(newSettings)
+			self.Commons.runRootSystemCommand(['sudo', 'mv', tmp, '/etc/asound.conf'])
+			self.Commons.runRootSystemCommand(['sudo', 'alsactl', 'kill', 'rescan'])
+
+
+	def updateTimezone(self, newTimezone: str):
+		result = self.Commons.runRootSystemCommand(['timedatectl', 'set-timezone', newTimezone])
+		if result.returncode:
+			self.logError('Unsupported timezone format')
+
+
+	def toggleDebugLogs(self):
+		if self.getAliceConfigByName('debug'):
+			logging.getLogger('ProjectAlice').setLevel(logging.DEBUG)
+		else:
+			logging.getLogger('ProjectAlice').setLevel(logging.WARN)
 
 
 	def getGithubAuth(self) -> tuple:
@@ -561,18 +520,13 @@ class ConfigManager(Manager):
 
 
 	@property
-	def skillsConfigurations(self) -> dict:
-		return self._skillsConfigurations
+	def aliceConfigurationCategories(self) -> list:
+		return sorted(self._aliceConfigurationCategories)
 
 
 	@property
 	def vitalConfigs(self) -> list:
 		return self._vitalConfigs
-
-
-	@property
-	def aliceSkillConfigurationKeys(self) -> list:
-		return self._aliceSkillConfigurationKeys
 
 
 	@property

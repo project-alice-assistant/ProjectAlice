@@ -25,38 +25,37 @@ class IndexView(View):
 		return send_from_directory(f'{self.WebInterfaceManager.app.root_path}/../../skills/{parent}/widgets/{fileType}/', filename)
 
 
-	@route('/home/saveWidgetPosition/', methods=['POST'])
-	def saveWidgetPosition(self):
+	@route('/home/saveWidgets/', methods=['POST'])
+	def saveWidgets(self):
 		try:
-			data = request.get_json()
-			p, w = data['id'].split('_')
+			data = request.json
 
-			widget = self.SkillManager.widgets[p][w]
-			widget.x = data['x']
-			widget.y = data['y']
-			widget.saveToDB()
+			for identifier, widgetData in data.items():
+				parent, widgetName = identifier.split('_')
 
-			order = data['order']
-			for index, widget in enumerate(order, start=1):
-				widgetParent, widgetName = widget.split('_')
-				widget = self.SkillManager.widgets[widgetParent][widgetName]
-				widget.zindex = index
+				widget = self.SkillManager.widgets[parent][widgetName]
+				widget.x = widgetData['x']
+				widget.y = widgetData['y']
+				widget.zindex = widgetData['zindex']
+				widget.width = int(widgetData['w'])
+				widget.height = int(widgetData['h'])
 				widget.saveToDB()
 
 			return jsonify(success=True)
 		except Exception as e:
-			self.logWarning(f"[Widget] Couldn't save position: {e}")
+			self.logWarning(f"[Widget] Couldn't save widget: {e}")
 			return jsonify(success=False)
 
 
 	@route('/home/removeWidget/', methods=['POST'])
 	def removeWidget(self):
 		try:
-			p, w = request.form.get('id').split('_')
+			parent, widgetName = request.form.get('id').split('_')
 
-			widget = self.SkillManager.widgets[p][w]
+			widget = self.SkillManager.widgets[parent][widgetName]
 			widget.state = 0
 			widget.saveToDB()
+			self.SkillManager.sortWidgetZIndexes()
 
 			return jsonify(success=True)
 		except Exception as e:
@@ -67,11 +66,12 @@ class IndexView(View):
 	@route('/home/addWidget/', methods=['POST'])
 	def addWidget(self):
 		try:
-			line, p, w = request.form.get('id').split('_')
+			line, parent, widgetName = request.form.get('id').split('_')
 
-			widget = self.SkillManager.widgets[p][w]
+			widget = self.SkillManager.widgets[parent][widgetName]
 			widget.state = 1
 			widget.saveToDB()
+			self.SkillManager.sortWidgetZIndexes()
 
 			return redirect('home.html')
 		except Exception as e:
@@ -90,9 +90,49 @@ class IndexView(View):
 			skill = self.SkillManager.getSkillInstance(skillName=data['skill'])
 			widget = skill.getWidgetInstance(data['widget'])
 			func = getattr(widget, data['func'])
-			return func(**json.loads(data['param']))
+			ret = func(**json.loads(data['param']))
+			if not ret:
+				return jsonify(success=True)
+			return ret
 		except Exception as e:
 			self.logWarning(f"[Widget] Widget tried to call a core function but failed: {e}")
+			return jsonify(success=False)
+
+
+	@route('/home/saveWidgetConfig/', methods=['POST'])
+	def saveWidgetConfig(self):
+		parent, widgetName = request.form.get('id').split('_')
+		widget = self.SkillManager.widgets[parent][widgetName]
+		widget.options.update(request.form)
+		# 'id' would mess up the complete form anyways, must not be used!
+		widget.options.pop('id', None)
+		widget.saveToDB()
+		return jsonify(success=True)
+
+
+	@route('/home/readWidgetConfig/', methods=['POST'])
+	def readWidgetConfig(self):
+		parent, widgetName = request.form.get('id').split('_')
+		widget = self.SkillManager.widgets[parent][widgetName]
+		return jsonify(widget.options)
+
+
+	@route('/home/saveWidgetCustStyle/', methods=['POST'])
+	def saveWidgetCustStyle(self):
+		parent, widgetName = request.form.get('id').split('_')
+		widget = self.SkillManager.widgets[parent][widgetName]
+		widget.custStyle.update(request.form)
+		# 'id' would mess up the complete form anyways, must not be used!
+		widget.custStyle.pop('id', None)
+		widget.saveToDB()
+		return jsonify(success=True)
+
+
+	@route('/home/readWidgetCustStyle/', methods=['POST'])
+	def readWidgetCustStyle(self):
+		parent, widegetName = request.form.get('id').split('_')
+		widget = self.SkillManager.widgets[parent][widegetName]
+		return jsonify(widget.custStyle)
 
 
 	@route('/home/getMqttConfig/', methods=['POST'])

@@ -1,16 +1,17 @@
 {
 	"name": "AliceCore",
-	"version": "1.0.61",
-	"icon": "fas fa-biohazard",
+	"version": "1.2.6",
+	"icon": "fab fa-creative-commons-by",
 	"category": "alice",
 	"author": "ProjectAlice",
 	"maintainers": [
 		"Psycho",
 		"Jierka",
-		"maxbachmann"
+		"maxbachmann",
+		"philipp2310"
 	],
 	"desc": "AliceCore is the official skill that handles all core intents.",
-	"aliceMinVersion": "1.0.0-a6",
+	"aliceMinVersion": "1.0.0-b1",
 	"systemRequirements": [],
 	"pipRequirements": [],
 	"conditions": {

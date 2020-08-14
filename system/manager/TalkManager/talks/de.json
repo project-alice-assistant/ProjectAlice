@@ -66,7 +66,7 @@
 	},
 	"maxOneAlicePerRoom": {
 		"default": [
-			"Es tut mir leid, aber ich kann nicht mehrere Geräte pro Raum haben",
+			"Es tut mir leid, aber ich kann nicht mehrere Alice Geräte pro Raum haben",
 			"Entschuldigung, mehrere Alice pro Raum verkraftest du einfach nicht!"
 		]
 	},
@@ -79,5 +79,14 @@
 	],
 	"offline": [
 		"Entschuldigung, das kann ich nicht machen wenn ich offline bin."
+	],
+	"notification": [
+		"ja?",
+		"ja?",
+		"ja?",
+		"ja?",
+		"Was gibt's?",
+		"Ja bitte?",
+		"Zu diensten"
 	]
 }

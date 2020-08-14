@@ -16,6 +16,7 @@ class AdminView(View):
 	def index(self):
 		return render_template(template_name_or_list='admin.html',
 		                       langData=self._langData,
+		                       aliceSettingCategories=self.ConfigManager.aliceConfigurationCategories,
 		                       aliceSettings=self.ConfigManager.aliceConfigurations,
 		                       aliceSettingsTemplate=self.ConfigManager.aliceTemplateConfigurations)
 
@@ -42,15 +43,13 @@ class AdminView(View):
 					continue
 
 				pre = self.ConfigManager.getAliceConfUpdatePreProcessing(conf)
-				if pre:
-					if not self.ConfigManager.doConfigUpdatePreProcessing(pre, value):
-						continue
+				if pre and not self.ConfigManager.doConfigUpdatePreProcessing(pre, value):
+					continue
 
 				pp = self.ConfigManager.getAliceConfUpdatePostProcessing(conf)
 				if pp:
 					postProcessing.add(pp)
 
-			confs['skills'] = self.ConfigManager.getAliceConfigByName('skills')
 			confs['supportedLanguages'] = self.ConfigManager.getAliceConfigByName('supportedLanguages')
 
 			self.ConfigManager.writeToAliceConfigurationFile(confs=confs)
@@ -74,8 +73,7 @@ class AdminView(View):
 	def reboot(self) -> dict:
 		try:
 			self.__class__.setWaitType('reboot')
-			self.ProjectAlice.onStop()
-			self.ThreadManager.doLater(interval=2, func=self.Commons.runRootSystemCommand, args=[['shutdown', '-r', 'now']])
+			self.ProjectAlice.onStop(withReboot=True)
 			return jsonify(success=True)
 		except Exception as e:
 			self.logError(f'Failed rebooting device: {e}')
@@ -86,10 +84,7 @@ class AdminView(View):
 		try:
 			self.__class__.setWaitType('trainAssistant')
 			self.ThreadManager.newEvent('TrainAssistant').set()
-			self.DialogTemplateManager.clearCache()
-			self.SnipsAssistantManager.retrain()
-			self.ThreadManager.doLater(interval=1, func=self.NluManager.trainNLU())
-
+			self.AssistantManager.checkAssistant(forceRetrain=True)
 			return jsonify(success=True)
 		except Exception as e:
 			self.logError(f'Failed training assistant: {e}')

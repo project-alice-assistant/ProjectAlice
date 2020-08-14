@@ -1,0 +1,133 @@
+/* https://www.jqueryscript.net/form/Sliding-Switch-jQuery-simpleToggler.html */
+
+.ui-stoggle--hidden {
+	opacity: 0;
+	font-size: 0;
+	height: 0;
+	width: 0;
+	position: absolute;
+	left: -9999px;
+}
+
+.ui-stoggle {
+	display: inline-block;
+	width: 63px;
+	height: 20px;
+	background: #ccc;
+	position: relative;
+	border: 1px solid var(--text);
+	margin-left: 20px;
+
+	-webkit-touch-callout: none;
+	-webkit-user-select: none;
+	-khtml-user-select: none;
+	-moz-user-select: none;
+	-ms-user-select: none;
+	user-select: none;
+}
+
+.ui-stoggle--label-on,
+.ui-stoggle--label-off {
+	overflow: hidden;
+	width: 100%;
+	-webkit-transition: width 200ms;
+	-moz-transition: width 200ms;
+	-ms-transition: width 200ms;
+	-o-transition: width 200ms;
+	transition: width 200ms;
+}
+
+.ui-stoggle--label-on {
+	position: absolute;
+	left: 0;
+	top: 0;
+	width: 100%;
+	height: 100%;
+}
+
+.ui-stoggle--label-off {
+	position: absolute;
+	right: 0;
+	top: 0;
+	width: 100%;
+	height: 100%;
+	text-align: right;
+}
+
+.ui-stoggle--slider,
+.ui-stoggle--label-on,
+.ui-stoggle--label-off,
+.ui-stoggle--inner,
+.ui-stoggle {
+	border-radius: 10px;
+}
+
+.ui-stoggle--inner {
+	display: block;
+	height: 100%;
+	border-radius: 10px;
+	overflow: hidden;
+	position: relative;
+}
+
+.ui-stoggle--slider {
+	position: absolute;
+	left: 0;
+	top: 0;
+	width: 100%;
+	height: 100%;
+}
+
+.ui-stoggle--slider i {
+	background: #f3f3f3; /* Old browsers */
+	width: 22px;
+	height: 22px;
+	position: absolute;
+	left: -1px;
+	top: -1px;
+	box-shadow: 0 0 2px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.9);
+	border-radius: 11px;
+	-webkit-transition: all 200ms;
+	-moz-transition: all 200ms;
+	-ms-transition: all 200ms;
+	-o-transition: all 200ms;
+	transition: all 200ms;
+}
+
+.ui-stoggle--label-text {
+	display: block;
+	line-height: 20px;
+	padding: 0 9px 0 10px;
+	font-size: 13px;
+	color: var(--text);
+	text-shadow: 0 1px 0 rgba(255, 255, 255, 0.4);
+	font-family: Tahoma, sans-serif;
+	font-style: normal;
+	box-sizing: border-box;
+	-moz-box-sizing: border-box;
+	width: 64px;
+	border-radius: 10px;
+	background: var(--windowBG);
+	box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.2);
+}
+
+.ui-stoggle--label-on .ui-stoggle--label-text {
+	float: right;
+	background: var(--windowBG);
+}
+
+.ui-stoggle.off .ui-stoggle--label-on {
+	width: 0;
+}
+
+.ui-stoggle.on .ui-stoggle--label-on {
+	display: block;
+}
+
+.ui-stoggle.on .ui-stoggle--label-off {
+	width: 0;
+}
+
+.ui-stoggle.on .ui-stoggle--slider i {
+	left: 43px;
+}

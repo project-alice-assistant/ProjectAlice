@@ -30,7 +30,7 @@ class Version:
 	@classmethod
 	def fromString(cls, versionString: str) -> Version:
 		versionMatch = re.search(
-			'(?P<mainVersion>\d+)\.(?P<updateVersion>\d+)(?:\.(?P<hotfix>\d+))?(?:-(?P<releaseType>a|b|rc)(?P<releaseNumber>\d+)?)?',
+			r'(?P<mainVersion>\d+)\.(?P<updateVersion>\d+)(?:\.(?P<hotfix>\d+))?(?:-(?P<releaseType>a|b|rc)(?P<releaseNumber>\d+)?)?',
 			str(versionString))
 
 		# when the string is no version set the version to the lowest possible value

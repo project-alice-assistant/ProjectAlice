@@ -1,10 +1,6 @@
-$(document).tooltip();
-
 $(function () {
 
 	let locked = false;
-	let $defaultTab = $('#adminPageTabsContainer ul li:first');
-	$defaultTab.addClass('activeTab');
 
 	function areYouReady($icon) {
 		$.ajax({
@@ -48,36 +44,6 @@ $(function () {
 		}, timeout);
 	}
 
-	$('.tabsContent').children().each(function () {
-		if ($(this).attr('id') == $defaultTab.data('for')) {
-			$(this).show();
-		}
-		else {
-			$(this).hide();
-		}
-	});
-
-	$('.tab').on('click touchstart', function () {
-		let target = $(this).data('for');
-		$(this).addClass('activeTab');
-
-		$('#adminPageTabsContainer ul li').each(function () {
-			if ($(this).data('for') != target) {
-				$(this).removeClass('activeTab');
-			}
-		});
-
-		$('.tabsContent').children().each(function () {
-			if ($(this).attr('id') == target) {
-				$(this).show();
-			}
-			else {
-				$(this).hide();
-			}
-		});
-		return false;
-	});
-
 	$('#restart').on('click touchstart', function () {
 		handleUtilityClick($(this), 'restart', 5000);
 		return false;
@@ -117,4 +83,6 @@ $(function () {
 		handleUtilityClick($(this), 'tuneWakeword', 1000);
 		return false;
 	});
+
+	$(":checkbox").checkToggler();
 });

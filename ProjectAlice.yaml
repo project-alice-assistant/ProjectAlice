@@ -13,7 +13,7 @@
 #                                              #
 ################################################
 #            DON'T CHANGE ME                   #
-version: 1.16
+version: 1.21
 ################################################
 
 # How to prevent frequent errors:
@@ -28,9 +28,6 @@ doGroundInstall: yes
 # After initialization is done, keep a copy of this yaml file in /boot. Be aware this can be a security risk, as /boot is accessible by anyone mounting your SD card!
 keepYAMLBackup: no
 
-# If you are installing on Raspbian Buster, set the following to yes
-installOnBuster: yes
-
 # Base configs
 # Set the admin pin code. This code will allow you to access the interface. Only numbers, 4 digits
 adminPinCode: 1234
@@ -40,11 +37,6 @@ useWifi: yes
 wifiNetworkName:
 wifiWPAPass:
 wifiCountryCode:
-
-# The name of the device to set up
-# Caution: The main device should be named default! This will be changed later.
-deviceName: default
-soundPlaybackAndRecordEnabled: yes
 
 # Connection
 mqttHost: localhost
@@ -66,10 +58,7 @@ audioHardware:
     matrixCreator:      no
     matrixVoice:        no
     ps3eye:             no
-
-# Capture
-micSampleRate: 16000
-micChannels: 1
+    jabra410:           no
 
 # System
 # Whether to install Hermes Led Control or not. HLC is the best way to manage your device leds if you have any
@@ -99,6 +88,9 @@ baseCurrency: CHF
 # Either 'metric', 'kelvin' or 'imperial'
 baseUnits: metric
 
+# Your timezone. For a complete list check this wiki: https://en.wikipedia.org/wiki/List_of_tz_database_time_zones
+timezone: Europe/Zurich
+
 # Telemetry data, such as temperature, pressure, humidity and others depending on your sensors can be kept in your internal database for forecast or AI use
 enableDataStoring: yes
 
@@ -111,18 +103,14 @@ probabilityThreshold: 0.5
 # If set to yes Alice will only answer with shorter answers, when available
 shortReplies: no
 
-# If set to yes Alice will whisper instead of using short answers when you are sleeping. Currently only available with Amazon TTS
+# If set to yes Alice will whisper instead of using short answers when you are sleeping. Currently only available with Amazon Tts
 whisperWhenSleeping: no
 
-# Either 'pocketsphinx', 'deepspeech' or 'google'
+# Either 'pocketsphinx', 'deepspeech', 'snips' (EN only) or 'google'
 asr: pocketsphinx
 
-# Either 'pico', 'snips', 'mycroft', 'amazon' or 'google'
+# Either 'pico', 'mycroft', 'amazon', 'google' or 'watson'
 tts: pico
-
-ttsType: male
-ttsVoice: en-US
-ttsLanguage: en-US
 
 # Amazon Polly
 # https://docs.aws.amazon.com/en_us/general/latest/gr/rande.html
@@ -143,7 +131,7 @@ aliceUpdateChannel: master
 skillsUpdateChannel: master
 
 # Google
-# If you are using Google as ASR and/or TTS you need to create an account on their console and activate the API
+# If you are using Google as Asr and/or Tts you need to create an account on their console and activate the API
 # for speech recognition and/or text to speech. Once activated, choose to create a service account and paste the
 # content of the file here
 googleServiceFile: {}

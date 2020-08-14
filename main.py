@@ -13,11 +13,16 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>
 
     authors: 	            Psycho <https://github.com/Psychokiller1888>
+                            philipp2310 <https://github.com/philipp2310>
 
 	retired or
 	inactive authors:       Jierka <https://github.com/jr-k>
 							maxbachmann <https://github.com/maxbachmann>
 """
+
+from core.Initializer import Initializer
+Initializer().initProjectAlice()
+
 import logging.handlers
 import signal
 import sys
@@ -26,10 +31,6 @@ import traceback
 from datetime import datetime
 from pathlib import Path
 
-import os
-import psutil
-
-from core.Initializer import Initializer
 from core.util.model import BashFormatting, FileFormatting, HtmlFormatting
 from core.util.model.MqttLoggingHandler import MqttLoggingHandler
 
@@ -59,9 +60,9 @@ _logger.addHandler(streamHandler)
 _logger.addHandler(mqttHandler)
 
 
-def exceptionListener(*exc_info):
+def exceptionListener(*exc_info): #NOSONAR
 	global _logger
-	_logger.error('An unhandled exception occured')
+	_logger.error('[Project Alice]           An unhandled exception occured')
 	text = ''.join(traceback.format_exception(*exc_info))
 	_logger.error(f'- Traceback: {text}')
 
@@ -97,23 +98,16 @@ def main():
 		while RUNNING:
 			time.sleep(0.1)
 	except KeyboardInterrupt:
-		_logger.info('Interruption detected')
-	finally:
-		projectAlice.onStop()
-		_logger.info('Project Alice stopped, see you soon!')
-		if projectAlice.restart:
-			time.sleep(3)
-			sys.stdout.flush()
-			try:
-				# Close everything related to ProjectAlice, allows restart without component failing
-				p = psutil.Process(os.getpid())
-				for h in p.open_files() + p.connections():
-					os.close(h.fd)
-			except Exception as e:
-				_logger.error(f'Failed restarting ProjectAlice: {e}')
+		_logger.info('[Project Alice]           Interruption detected, preparing shutdown')
 
-			python = sys.executable
-			os.execl(python, python, *sys.argv)
+	finally:
+		if projectAlice.isBooted:
+			projectAlice.onStop()
+
+	_logger.info('[Project Alice]           Shutdown completed, see you soon!')
+	if projectAlice.restart:
+		time.sleep(3)
+		restart()
 
 
 RUNNING = False

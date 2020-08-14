@@ -11,7 +11,7 @@ class GithubCloner(ProjectAliceObject):
 
 
 	def __init__(self, baseUrl: str, path: Path, dest: Path):
-		super().__init__(logDepth=3)
+		super().__init__()
 		self._baseUrl = baseUrl
 		self._path = path
 		self._dest = dest

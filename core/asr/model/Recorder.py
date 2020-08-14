@@ -1,9 +1,10 @@
 import queue
 import threading
+import wave
 from typing import Optional
 
+import io
 import paho.mqtt.client as mqtt
-import struct
 
 from core.base.model.ProjectAliceObject import ProjectAliceObject
 from core.dialog.model.DialogSession import DialogSession
@@ -11,8 +12,10 @@ from core.dialog.model.DialogSession import DialogSession
 
 class Recorder(ProjectAliceObject):
 
-	def __init__(self, timeoutFlag: threading.Event):
+	def __init__(self, timeoutFlag: threading.Event, user: str, siteId: str):
 		super().__init__()
+		self._user = user,
+		self._siteId = siteId
 		self._recording = False
 		self._timeoutFlag = timeoutFlag
 		self._buffer = queue.Queue()
@@ -23,7 +26,7 @@ class Recorder(ProjectAliceObject):
 		return self
 
 
-	def __exit__(self, exc_type, exc_val, exc_tb):
+	def __exit__(self, excType, excVal, excTb):
 		self.stopRecording()
 
 
@@ -45,29 +48,21 @@ class Recorder(ProjectAliceObject):
 		self._buffer.put(None)
 
 
-	def onAudioFrame(self, message: mqtt.MQTTMessage):
-		try:
-			riff, size, fformat = struct.unpack('<4sI4s', message.payload[:12])
+	def onAudioFrame(self, message: mqtt.MQTTMessage, siteId: str):
+		with io.BytesIO(message.payload) as buffer:
+			try:
+				with wave.open(buffer, 'rb') as wav:
+					frame = wav.readframes(512)
+					while frame:
+						self._buffer.put(frame)
 
-			if riff != b'RIFF':
-				self.logError('Frame parse error')
-				return
+						if self.ConfigManager.getAliceConfigByName('recordAudioAfterWakeword'):
+							self.AudioServer.recordFrame(siteId, frame)
 
-			if fformat != b'WAVE':
-				self.logError('Frame wrong format')
-				return
+						frame = wav.readframes(512)
 
-			chunkOffset = 52
-			while chunkOffset < size:
-				subChunk2Id, subChunk2Size = struct.unpack('<4sI', message.payload[chunkOffset:chunkOffset + 8])
-				chunkOffset += 8
-				if subChunk2Id == b'data':
-					self._buffer.put(message.payload[chunkOffset:chunkOffset + subChunk2Size])
-
-				chunkOffset = chunkOffset + subChunk2Size + 8
-
-		except Exception as e:
-			self.logError(f'Error recording user speech: {e}')
+			except Exception as e:
+				self.logError(f'Error recording user speech: {e}')
 
 
 	def __iter__(self):
@@ -86,7 +81,7 @@ class Recorder(ProjectAliceObject):
 		data = list()
 		while not self._buffer.empty():
 			chunk = self._buffer.get(block=False)
-			if not chunk:
+			if not chunk or not self._recording:
 				break
 
 			data.append(chunk)
@@ -105,10 +100,10 @@ class Recorder(ProjectAliceObject):
 
 			data = [chunk]
 
-			while True:
+			while self._recording:
 				try:
 					chunk = self._buffer.get(block=False)
-					if not chunk:
+					if not chunk or not self._recording:
 						return
 
 					data.append(chunk)

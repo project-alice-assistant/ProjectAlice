@@ -1,13 +1,10 @@
 {
 	"name": "Telemetry",
-	"version": "1.1.5",
+	"version": "1.1.9",
 	"icon": "fas fa-database",
 	"category": "alice",
 	"author": "ProjectAlice",
-	"maintainers": [
-		"Psychokiller1888",
-		"maxbachmann"
-	],
+	"maintainers": ["Psychokiller1888", "maxbachmann"],
 	"desc": "Access your stored telemetry data",
 	"aliceMinVersion": "1.0.0-a5",
 	"pipRequirements": [],
@@ -18,8 +15,6 @@
 			"de",
 			"it"
 		],
-		"activeManager": [
-			"TelemetryManager"
-		]
+		"activeManager": ["TelemetryManager"]
 	}
 }

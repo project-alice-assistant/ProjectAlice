@@ -1,0 +1,103 @@
+.floorPlan-Zone { overflow: visible; background-color: var(--mainBG); color: var(--windowBG); position: absolute; display: flex; justify-content: center; align-items: center; font-size: 1.5em; }
+
+.floorPlan-Wall { background-color: var(--accent); }
+
+.floorPlan-tile { width: 50px; height: 50px; box-sizing: border-box; margin: 3px; background-position: center center; background-size: contain; cursor: pointer; }
+.floorPlan-tile:hover { border: 2px solid var(--hover); }
+.floorPlan-tile-background { width: 50px; height: 50px; box-sizing: border-box; margin-right: 5px; background-color: var(--windowBG); }
+.selected { border: 2px solid var(--hover) }
+
+.tileholder { position: relative; height: 80px; width: 50em; overflow: hidden; }
+
+.tileholder:hover { height: auto; z-index: 9999; background: url('images/transparent.png'); }
+
+.selectedTool { color: var(--hover); }
+.selectedToolbar { color: var(--hover); }
+
+/* Device Linking */
+.highlightedDevice { box-shadow: 0 0 4px 4px var(--hover); }
+.deviceLink { pointer-events: none; border-radius: 100%; border: 3px solid yellow; z-index: 999; }
+
+/* Textures */
+.floor-1 { background: url('./images/myHome/floors/floor-1.png'); color: var(--accent); }
+.floor-2 { background: url('./images/myHome/floors/floor-2.png'); color: var(--accent); }
+.floor-3 { background: url('./images/myHome/floors/floor-3.png'); color: var(--accent); }
+.floor-4 { background: url('./images/myHome/floors/floor-4.png'); color: var(--accent); font-weight: bold; }
+.floor-5 { background: url('./images/myHome/floors/floor-5.png'); color: var(--accent); font-weight: bold; }
+.floor-6 { background: url('./images/myHome/floors/floor-6.png'); color: var(--accent); }
+.floor-7 { background: url('./images/myHome/floors/floor-7.png'); color: var(--accent); font-weight: bold; }
+.floor-8 { background: url('./images/myHome/floors/floor-8.png'); }
+.floor-9 { background: url('./images/myHome/floors/floor-9.png'); color: var(--accent); font-weight: bold; }
+.floor-10 { background: url('./images/myHome/floors/floor-10.png'); }
+.floor-11 { background: url('./images/myHome/floors/floor-11.png'); }
+.floor-12 { background: url('./images/myHome/floors/floor-12.png'); color: var(--accent); }
+.floor-13 { background: url('./images/myHome/floors/floor-13.png'); color: var(--accent); }
+.floor-14 { background: url('./images/myHome/floors/floor-14.png'); color: var(--accent); font-weight: bold; }
+.floor-15 { background: url('./images/myHome/floors/floor-15.png'); color: var(--accent); }
+.floor-16 { background: url('./images/myHome/floors/floor-16.png'); color: var(--accent); }
+.floor-17 { background: url('./images/myHome/floors/floor-17.png'); }
+.floor-18 { background: url('./images/myHome/floors/floor-18.png'); }
+.floor-19 { background: url('./images/myHome/floors/floor-19.png'); }
+.floor-20 { background: url('./images/myHome/floors/floor-20.png'); }
+.floor-21 { background: url('./images/myHome/floors/floor-21.png'); }
+.floor-22 { background: url('./images/myHome/floors/floor-22.png'); }
+.floor-23 { background: url('./images/myHome/floors/floor-23.png'); }
+.floor-24 { background: url('./images/myHome/floors/floor-24.png'); }
+.floor-25 { background: url('./images/myHome/floors/floor-25.png'); color: var(--accent); }
+.floor-26 { background: url('./images/myHome/floors/floor-26.png'); }
+.floor-27 { background: url('./images/myHome/floors/floor-27.png'); color: var(--accent); }
+.floor-28 { background: url('./images/myHome/floors/floor-28.png'); }
+.floor-29 { background: url('./images/myHome/floors/floor-29.png'); }
+.floor-30 { background: url('./images/myHome/floors/floor-30.png'); }
+.floor-31 { background: url('./images/myHome/floors/floor-31.png'); color: var(--accent); }
+.floor-32 { background: url('./images/myHome/floors/floor-32.png'); color: var(--accent); font-weight: bold; }
+.floor-33 { background: url('./images/myHome/floors/floor-33.png'); color: var(--accent); font-weight: bold; }
+.floor-34 { background: url('./images/myHome/floors/floor-34.png'); }
+.floor-35 { background: url('./images/myHome/floors/floor-35.png'); color: var(--accent); font-weight: bold; }
+.floor-36 { background: url('./images/myHome/floors/floor-36.png'); }
+.floor-37 { background: url('./images/myHome/floors/floor-37.png'); font-weight: bold; }
+.floor-38 { background: url('./images/myHome/floors/floor-38.png'); color: var(--accent); font-weight: bold; }
+.floor-39 { background: url('./images/myHome/floors/floor-39.png'); color: var(--accent); font-weight: bold; }
+.floor-40 { background: url('./images/myHome/floors/floor-40.png'); color: var(--accent); }
+.floor-41 { background: url('./images/myHome/floors/floor-41.png'); color: var(--accent); font-weight: bold; }
+.floor-42 { background: url('./images/myHome/floors/floor-42.png'); }
+.floor-43 { background: url('./images/myHome/floors/floor-43.png'); color: var(--accent); font-weight: bold; }
+.floor-44 { background: url('./images/myHome/floors/floor-44.png'); }
+.floor-45 { background: url('./images/myHome/floors/floor-45.png'); }
+.floor-46 { background: url('./images/myHome/floors/floor-46.png'); color: var(--accent); font-weight: bold; }
+.floor-47 { background: url('./images/myHome/floors/floor-47.png'); color: var(--accent); }
+.floor-48 { background: url('./images/myHome/floors/floor-48.png'); color: var(--accent); }
+.floor-49 { background: url('./images/myHome/floors/floor-49.png'); color: var(--accent); font-weight: bold; }
+.floor-50 { background: url('./images/myHome/floors/floor-50.png'); color: var(--accent); font-weight: bold; }
+.floor-51 { background: url('./images/myHome/floors/floor-51.png'); color: var(--accent); font-weight: bold; }
+.floor-52 { background: url('./images/myHome/floors/floor-52.png'); }
+.floor-53 { background: url('./images/myHome/floors/floor-53.png'); color: var(--accent); font-weight: bold; }
+.floor-54 { background: url('./images/myHome/floors/floor-54.png'); font-weight: bold; }
+.floor-55 { background: url('./images/myHome/floors/floor-55.png'); color: var(--accent); }
+.floor-56 { background: url('./images/myHome/floors/floor-56.png'); color: var(--accent); }
+.floor-57 { background: url('./images/myHome/floors/floor-57.png'); color: var(--accent); font-weight: bold; }
+.floor-58 { background: url('./images/myHome/floors/floor-58.png'); color: var(--accent); font-weight: bold; }
+.floor-59 { background: url('./images/myHome/floors/floor-59.png'); color: var(--accent); }
+.floor-60 { background: url('./images/myHome/floors/floor-60.png'); }
+.floor-61 { background: url('./images/myHome/floors/floor-61.png'); }
+.floor-62 { background: url('./images/myHome/floors/floor-62.png'); }
+.floor-63 { background: url('./images/myHome/floors/floor-63.png'); }
+.floor-64 { background: url('./images/myHome/floors/floor-64.png'); }
+.floor-65 { background: url('./images/myHome/floors/floor-65.png'); color: var(--accent); font-weight: bold; }
+.floor-66 { background: url('./images/myHome/floors/floor-66.png'); color: var(--accent); font-weight: bold; }
+.floor-67 { background: url('./images/myHome/floors/floor-67.png'); color: var(--accent); }
+.floor-68 { background: url('./images/myHome/floors/floor-68.png'); color: var(--accent); font-weight: bold; }
+.floor-69 { background: url('./images/myHome/floors/floor-69.png'); color: var(--accent); }
+.floor-70 { background: url('./images/myHome/floors/floor-70.png'); font-weight: bold; }
+.floor-71 { background: url('./images/myHome/floors/floor-71.png'); font-weight: bold; }
+.floor-72 { background: url('./images/myHome/floors/floor-72.png'); color: var(--accent); font-weight: bold; }
+.floor-73 { background: url('./images/myHome/floors/floor-73.png'); color: var(--accent); font-weight: bold; }
+.floor-74 { background: url('./images/myHome/floors/floor-74.png'); color: var(--accent); font-weight: bold; }
+.floor-75 { background: url('./images/myHome/floors/floor-75.png'); }
+.floor-76 { background: url('./images/myHome/floors/floor-76.png'); color: var(--accent); font-weight: bold; }
+.floor-77 { background: url('./images/myHome/floors/floor-77.png'); color: var(--accent); font-weight: bold; }
+.floor-78 { background: url('./images/myHome/floors/floor-78.png'); }
+.floor-79 { background: url('./images/myHome/floors/floor-79.png'); color: var(--accent); font-weight: bold; }
+
+.blueprint { background-color: #3057E1; background-size: 50px 50px; font-weight: bold; color: white;
+	background-image: linear-gradient(0deg, transparent 24%, rgba(255, 255, 255, .05) 25%, rgba(255, 255, 255, .05) 26%, transparent 27%, transparent 74%, rgba(255, 255, 255, .05) 75%, rgba(255, 255, 255, .05) 76%, transparent 77%, transparent), linear-gradient(90deg, transparent 24%, rgba(255, 255, 255, .05) 25%, rgba(255, 255, 255, .05) 26%, transparent 27%, transparent 74%, rgba(255, 255, 255, .05) 75%, rgba(255, 255, 255, .05) 76%, transparent 77%, transparent); }

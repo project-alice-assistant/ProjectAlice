@@ -120,6 +120,7 @@ class TelemetryManager(Manager):
 		if service:
 			values['service'] = service
 
+		# noinspection SqlResolve
 		return self.databaseFetch(
 			tableName='telemetry',
 			query="SELECT value, timestamp FROM :__table__ WHERE type = :type and siteId = :siteId ORDER BY `timestamp` DESC LIMIT 1",

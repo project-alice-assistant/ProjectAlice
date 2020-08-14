@@ -20,38 +20,32 @@ class TalkManager(Manager):
 
 	def onStart(self):
 		super().onStart()
-		self.loadTalks()
+		self.loadSystemTalks()
 
 
-	def loadTalks(self, skillToLoad: str = None):
-		# Global System Talks
-		if not skillToLoad:
-			systemLangTalksMountpoint = Path('system/manager/TalkManager/talks')
+	def loadSystemTalks(self):
+		systemLangTalksMountpoint = Path('system/manager/TalkManager/talks')
 
-			for systemLangTalkFile in systemLangTalksMountpoint.glob('*.json'):
-				lang = systemLangTalkFile.stem
-				self._langData.setdefault('system', dict())[lang] = json.loads(systemLangTalkFile.read_text())
+		for systemLangTalkFile in systemLangTalksMountpoint.glob('*.json'):
+			lang = systemLangTalkFile.stem
+			self._langData.setdefault('system', dict())[lang] = json.loads(systemLangTalkFile.read_text())
 
-		# Skill Talks
-		skills = self.ConfigManager.skillsConfigurations
 
-		for skillName in skills:
-			if skillToLoad and skillToLoad != skillName:
-				continue
+	def loadSkillTalks(self, skillName: str):
+		skillInstance = self.SkillManager.getSkillInstance(skillName)
+		if not skillInstance:
+			self.logError(f'Loading talks for skill **{skillName}** failed')
 
-			langTalksMountpoint = Path('skills', skillName, 'talks')
-			if not langTalksMountpoint.exists():
-				continue
+		try:
+			skillTalks = skillInstance.getResource(f'talks/{self.LanguageManager.activeLanguageAndCountryCode}.json')
+			if not skillTalks.exists():
+				skillTalks = skillInstance.getResource(f'talks/{self.LanguageManager.activeLanguage}.json')
 
-			for langTalkFile in langTalksMountpoint.glob('*.json'):
-				lang = langTalkFile.stem
-				try:
-					self._langData.setdefault(skillName, dict())[lang] = json.loads(langTalkFile.read_text())
-				except FileNotFoundError:
-					continue
-				except ValueError as e:
-					self.logError(f'{e}')
-					continue
+			self._langData.setdefault(skillName, dict())[self.LanguageManager.activeLanguage] = json.loads(skillTalks.read_text())
+		except FileNotFoundError:
+			self.logDebug(f'Talk file for skill **{skillName}** does not exist')
+		except ValueError:
+			self.logError(f'Talk file for skill **{skillName}** is corrupted')
 
 
 	def getTexts(self, skill, talk, strType='default') -> list:
@@ -83,12 +77,12 @@ class TalkManager(Manager):
 		except KeyError:
 			# Fallback to default language then
 			if activeLanguage != defaultLanguage:
-				self.logError(f'Was asked to get "{talk}" from "{skill}" skill in "{activeLanguage}" but it doesn\'t exist, falling back to "{defaultLanguage}" version instead')
+				self.logError(f'Was asked to get **{talk}** from **{skill}** skill in **{activeLanguage}** but it doesn\'t exist, falling back to **{defaultLanguage}** version instead')
 				# call itself again with default language and then exit because activeLanguage == defaultLanguage
 				return self.chooseTalk(talk, skill, defaultLanguage, defaultLanguage, shortReplyMode)
 
 			# Give up, that text does not exist...
-			self.logError(f'Was asked to get "{talk}" from "{skill}" skill but language string doesn\'t exist')
+			self.logError(f'Was asked to get **{talk}** from **{skill}** skill but language string doesn\'t exist')
 			return ''
 
 

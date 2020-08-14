@@ -1,7 +1,7 @@
 {% extends 'base.html' %}
 
 {% block title %}
-	{{ langData.admin }}
+	{{ langData.devMode }}
 {% endblock %}
 
 {% block loaders %}
@@ -13,7 +13,7 @@
 {% endblock %}
 
 {% block content %}
-	<div id="devmodeTabsContainer">
+	<div id="devmodeTabsContainer" class="tabsContainer">
 		<ul>
 			<li class="tab" data-for="NewSkill">{{ langData.devmodeNewSkill }}</li>
 			<li class="tab" data-for="EditSkill">{{ langData.devmodeEditSkill }}</li>
@@ -46,13 +46,14 @@
 							<label for="fr">{{ langData.french }}</label><br>
 							<input type="checkbox" name="lang" value="de" id="de">
 							<label for="de">{{ langData.german }}</label>
+							<input type="checkbox" name="lang" value="it" id="it">
+							<label for="it">{{ langData.italian }}</label>
 						</div>
 					</div>
 					<div class="configLine">
 						<label class="configLabel" for="pipreq">{{ langData.pipreq }}</label>
 						<div class="configInput">
-							<input type="text" size="50" name="pipreq" value="" id="pipreq"
-								   placeholder="{{ langData.commaSeparatedExplanation }}">
+							<input type="text" size="50" name="pipreq" value="" id="pipreq" placeholder="{{ langData.commaSeparatedExplanation }}">
 						</div>
 					</div>
 					<div class="configLine">
@@ -89,24 +90,23 @@
 					</div>
 					<div class="configLine">
 						<label class="configLabel">{{ langData.actions }}</label>
-						<div class="configInput">
-							<button type="button" id="createSkillButton" style="display: none;">{{ langData.createSkill }}</button>
-							<button type="button" id="uploadSkillButton" style="display: none;">{{ langData.uploadSkillToGithub }}</button>
-							<button type="button" id="resetSkillButton">{{ langData.resetSkill }}</button>
-							<button type="button" id="goGithubButton" style="display: none;"></button>
+						<div class="buttonLine">
+							<button type="button" class="button" id="createSkillButton" style="display: none;">{{ langData.createSkill }}</button>
+							<button type="button" class="button" id="uploadSkillButton" style="display: none;">{{ langData.uploadSkillToGithub }}</button>
+							<button type="button" class="button" id="resetSkillButton">{{ langData.resetSkill }}</button>
+							<button type="button" class="button" id="goGithubButton" style="display: none;"></button>
 						</div>
 					</div>
 				</form>
 			</div>
-			<div id="EditSkill" class="configBox">
-				<div id="editSkillSelectContainer" class="editSkillsPane">
-					{% for skillName, skill in skills.items() %}
-						<div id="editSkill_{{ skillName }}" class="editSkillTile">
-							{{ skillName }}
-							<i class="{{ skill.icon }}" aria-hidden="true"></i>
+			<div id="EditSkill" class="configBox flex-row">
+				{% for skillName, skill in skills.items() %}
+					<div id="editSkill_{{ skillName }}" class="tile skillTile">
+						<div class="skillTitle">
+							<div class="skillName">{{ skillName }}</div><i class="{{ skill.icon }}" aria-hidden="true"></i>
 						</div>
-					{% endfor %}
-				</div>
+					</div>
+				{% endfor %}
 			</div>
 		</div>
 	</div>
