@@ -5,26 +5,26 @@ from typing import Union
 
 from core.base.model.ProjectAliceObject import ProjectAliceObject
 
+from dataclasses import dataclass, field
 
+@dataclass
 class DeviceLink(ProjectAliceObject):
+	data: dict
+	
+	_id: int = field(init=False)
+	_locSettings: dict = field(default_factory=dict)
+	_deviceID: int = field(init=False)
+	_locationID: int = field(init=False)
 
-	def __init__(self, data: Union[dict, sqlite3.Row]):
-		super().__init__()
-		self._locSettings = dict()
-		if 'locSettings' in data and data['locSettings']:
-			self._locSettings = ast.literal_eval(data['locSettings'])
-		self._deviceID = data['deviceID']
-		self._locationID = data['locationID']
+	def __post_init__(self):  # NOSONAR
+		self._id = self.data['id']
+		self._deviceID = self.data['deviceID']
+		self._locationID = self.data['locationID']
 
-		if 'id' in data:
-			self._id = data['id']
+		if 'locSettings' in self.data.keys() and self.data['locSettings']:
+			self._locSettings = ast.literal_eval(self.data['locSettings'])
 		else:
-			self.saveToDB()
-
-
-	@property
-	def id(self) -> int:
-		return self._id
+			self._locSettings = dict()
 
 
 	def saveToDB(self):
@@ -32,6 +32,7 @@ class DeviceLink(ProjectAliceObject):
 		self._id = self.DatabaseManager.insert(tableName=self.DeviceManager.DB_LINKS,
 		                                       values=values,
 		                                       callerName=self.DeviceManager.name)
+		self.logInfo(f'Created new Link {self._id}')
 
 	def saveLocSettings(self):
 		self.DatabaseManager.update(tableName=self.DeviceManager.DB_LINKS,
@@ -41,7 +42,7 @@ class DeviceLink(ProjectAliceObject):
 
 
 	def getDevice(self):
-		return self.DeviceManager.getDeviceByID(_id=self.deviceId)
+		return self.DeviceManager.getDeviceByID(id=self.deviceId)
 
 
 	def changedLocSettingsStructure(self, newSet: dict):
@@ -51,6 +52,11 @@ class DeviceLink(ProjectAliceObject):
 				newSet[_set] = self.locSettings[_set]
 		self.locSettings = newSet
 		self.saveLocSettings()
+
+
+	@property
+	def id(self) -> int:
+		return self._id
 
 
 	@property
@@ -76,6 +82,8 @@ class DeviceLink(ProjectAliceObject):
 		return {
 			'id'          : self._id,
 			'deviceID'    : self._deviceID,
+			'deviceName'  : self.DeviceManager.getDeviceById(_id=self._deviceID).name,
 			'locationID'  : self._locationID,
+			'locationName': self.LocationManager.getLocation(locId=self._locationID).name,
 			'locSettings' : self._locSettings
 		}
