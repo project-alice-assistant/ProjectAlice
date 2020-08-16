@@ -196,6 +196,20 @@ class AudioManager(Manager):
 					audioStream.start_stream()
 					while audioStream.is_active():
 						if self._stopPlayingFlag.is_set():
+							audioStream.stop_stream()
+							audioStream.close()
+
+							if sessionId:
+								self.MqttManager.publish(
+									topic=constants.TOPIC_TTS_FINISHED,
+									payload={
+										'id'       : requestId,
+										'sessionId': sessionId,
+										'siteId'   : siteId
+									}
+								)
+								self.DialogManager.onEndSession(self.DialogManager.getSession(sessionId))
+
 							raise PlayBytesStopped
 						time.sleep(0.1)
 
