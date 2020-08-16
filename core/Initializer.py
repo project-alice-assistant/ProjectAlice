@@ -677,4 +677,4 @@ class Initializer:
 	@staticmethod
 	def newConfs():
 		import configTemplate
-		return {configName: configData['values'] if 'dataType' in configData and configData['dataType'] == 'list' else configData['defaultValue'] if 'defaultValue' in configData else configData for configName, configData in configTemplate.settings.items()}
+		return {configName: configData['defaultValue'] for configName, configData in configTemplate.settings.items()}

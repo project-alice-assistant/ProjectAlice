@@ -1,4 +1,11 @@
 settings = {
+	'delegateNluTraining': {
+		'defaultValue': False,
+		'dataType'    : 'boolean',
+		'isSensitive' : False,
+		'description' : 'When activated, the NLU training part will not happen on this device but delegated to another device of your mqtt network.',
+		'category'    : 'nlu'
+	},
 	'timezone': {
 		'defaultValue': 'Europe/Zurich',
 		'dataType'    : 'string',
@@ -488,7 +495,7 @@ settings = {
 		'isSensitive' : False,
 		'values'      : ['snips'],
 		'description' : 'Natural Language Understanding engine to use',
-		'category'    : 'system'
+		'category'    : 'nlu'
 	},
 	'onReboot'                : {
 		'defaultValue': '',
