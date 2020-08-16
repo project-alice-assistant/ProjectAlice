@@ -30,7 +30,8 @@ class DeviceManager(Manager):
 			'locationID INTEGER NOT NULL',
 			'name TEXT',
 			'display TEXT',
-			'devSettings TEXT'
+			'devSettings TEXT',
+			'SkillName TEXT'
 		],
 		DB_LINKS : [
 			'id INTEGER PRIMARY KEY', #NOSONAR
