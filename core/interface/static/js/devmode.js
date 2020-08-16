@@ -93,6 +93,7 @@ $(function () {
 				'description': $('#skilldesc').val(),
 				'fr': ($('#fr').is(':checked')) ? 'yes' : 'no',
 				'de': ($('#de').is(':checked')) ? 'yes' : 'no',
+				'it': ($('#it').is(':checked')) ? 'yes' : 'no',
 				'pipreq': $('#pipreq').val(),
 				'sysreq': $('#sysreq').val(),
 				'conditionOnline': ($('#conditionOnline').is(':checked')) ? 'yes' : 'no',

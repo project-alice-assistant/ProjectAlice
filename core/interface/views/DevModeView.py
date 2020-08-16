@@ -50,7 +50,7 @@ class DevModeView(View):
 				'it'                    : request.form.get('it', False),
 				'pipreq'                : request.form.get('pipreq', list()),
 				'sysreq'                : request.form.get('sysreq', list()),
-				'conditionOnline'       : request.form.get('sysreq', False),
+				'conditionOnline'       : request.form.get('conditionOnline', False),
 				'conditionASRArbitrary' : request.form.get('conditionASRArbitrary', False),
 				'conditionSkill'        : request.form.get('conditionSkill', list()),
 				'conditionNotSkill'     : request.form.get('conditionNotSkill', list()),
