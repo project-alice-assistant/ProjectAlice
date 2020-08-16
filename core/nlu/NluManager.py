@@ -14,6 +14,9 @@ class NluManager(Manager):
 		if not self._pathToCache.exists():
 			self._pathToCache.mkdir(parents=True)
 
+
+	def onStart(self):
+		super().onStart()
 		self.selectNluEngine()
 
 
@@ -22,6 +25,11 @@ class NluManager(Manager):
 
 		if self._nluEngine:
 			self._nluEngine.stop()
+
+
+	def onBooted(self):
+		super().onBooted()
+		self._nluEngine.start()
 
 
 	def checkData(self) -> bool:
@@ -56,9 +64,6 @@ class NluManager(Manager):
 		else:
 			self.logFatal(f'Unsupported NLU engine: {self.ConfigManager.getAliceConfigByName("nluEngine")}')
 			self.ProjectAlice.onStop()
-			return
-
-		self._nluEngine.start()
 
 
 	def buildTrainingData(self):
