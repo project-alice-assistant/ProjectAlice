@@ -90,7 +90,7 @@ class ProjectAliceObject:
 	def checkDependencies(self) -> bool:
 		self.logInfo('Checking dependencies')
 
-		for dep in zip(self.DEPENDENCIES.get('internal', dict()), self.DEPENDENCIES.get('external', dict())):
+		for dep in {**self.DEPENDENCIES.get('internal', dict()), **self.DEPENDENCIES.get('external', dict())}:
 			result = self.Commons.runRootSystemCommand(['dpkg-query', '-l', dep])
 			if result.returncode:
 				self.logWarning(f'Found missing dependency: {dep}')
