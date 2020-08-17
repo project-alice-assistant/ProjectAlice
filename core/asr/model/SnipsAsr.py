@@ -16,9 +16,7 @@ class SnipsAsr(Asr):
 			'snips-asr-model-en-500mb': 'https://raspbian.snips.ai/stretch/pool/s/sn/snips-asr-model-en-500MB_0.6.0-alpha.4_armhf.deb'
 		},
 		'system': [
-			'libgfortran3',
-			'snips-asr',
-			'snips-asr-model-en-500mb'
+			'libgfortran3'
 		],
 		'pip'   : []
 	}
