@@ -9,10 +9,16 @@ class SnipsAsr(Asr):
 	NAME = 'Snips Asr'
 	DEPENDENCIES = {
 		'internal': {
-			'snips-kaldi-atlas': 'system/snips/snips-kaldi-atlas_0.26.1_armhf.deb'
+			'snips-kaldi-atlas': 'system/snips/snips-kaldi-atlas_0.26.1_armhf.deb',
+			'snips-asr': 'system/snips/snips-asr_0.64.0_armhf.deb'
+		},
+		'external': {
+			'snips-asr-model-en-500mb': 'https://raspbian.snips.ai/stretch/pool/s/sn/snips-asr-model-en-500MB_0.6.0-alpha.4_armhf.deb'
 		},
 		'system': [
-			'libgfortran3'
+			'libgfortran3',
+			'snips-asr',
+			'snips-asr-model-en-500mb'
 		],
 		'pip'   : []
 	}
@@ -35,22 +41,6 @@ class SnipsAsr(Asr):
 	def decodeStream(self, session: DialogSession):
 		while self._listening:
 			time.sleep(0.1)
-
-
-	def installDependencies(self) -> bool:
-		super().installDependencies()
-		installed = self.Commons.runRootSystemCommand(['apt', 'install', f'{self.Commons.rootDir()}/system/snips/snips-asr_0.64.0_armhf.deb'])
-		self.logWarning('Downloading generic ASR, this may take a while')
-		self.Commons.downloadFile(
-			url='https://raspbian.snips.ai/stretch/pool/s/sn/snips-asr-model-en-500MB_0.6.0-alpha.4_armhf.deb',
-			dest=f'{self.Commons.rootDir()}/system/snips/snips-asr-model-en-500MB_0.6.0-alpha.4_armhf.deb'
-		)
-		installed2 = self.Commons.runRootSystemCommand(['apt', 'install', f'{self.Commons.rootDir()}/system/snips/snips-asr-model-en-500MB_0.6.0-alpha.4_armhf.deb'])
-		if installed.returncode or installed2.returncode:
-			self.logError(f"Couldn't install Snips ASR: {installed.stderr}")
-			return False
-
-		return True
 
 
 	def onStart(self):
