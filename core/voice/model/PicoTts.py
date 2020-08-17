@@ -74,5 +74,8 @@ class PicoTts(Tts):
 
 		if not self._cacheFile.exists():
 			SuperManager.getInstance().commonsManager.runRootSystemCommand(['pico2wave', '-l', self._lang, '-w', self._cacheFile, self._text])
+			self.logDebug(f'Generated speech file **{self._cacheFile.stem}**')
+		else:
+			self.logDebug(f'Using existing cached file **{self._cacheFile.stem}**')
 
 		self._speak(file=self._cacheFile, session=session)

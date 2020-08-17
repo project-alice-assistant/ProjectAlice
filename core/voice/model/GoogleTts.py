@@ -200,5 +200,8 @@ class GoogleTts(Tts):
 
 			self._mp3ToWave(src=tmpFile, dest=self._cacheFile)
 			tmpFile.unlink()
+			self.logDebug(f'Downloaded speech file **{self._cacheFile.stem}**')
+		else:
+			self.logDebug(f'Using existing cached file **{self._cacheFile.stem}**')
 
 		self._speak(self._cacheFile, session)
