@@ -4,13 +4,12 @@ import getpass
 import importlib
 import json
 import logging
+import os
 import socket
 import subprocess
 import sys
 import time
 from pathlib import Path
-
-import os
 
 
 YAML = '/boot/ProjectAlice.yaml'
@@ -36,7 +35,7 @@ class InitDict(dict):
 class SimpleLogger:
 
 	def __init__(self, prepend: str = None):
-		self._prepend = f'[{prepend}]\t\t\t'
+		self._prepend = f'[{prepend}]\t'
 		self._logger = logging.getLogger('ProjectAlice')
 
 
