@@ -79,4 +79,4 @@ If you see or find a copyright breach, feel free to contact us immediately. It i
 # Support
 -   [Donate](https://paypal.me/Psychokiller1888)
 -   [Fund](https://liberapay.com/Psycho)
--   Donate in bitcoin, Blockchain.com wallet: <a href="https://blockchain.com"><img alt="Blockchain.com Bitcoin wallet" src="https://github.com/project-alice-assistant/ProjectAlice/blob/master/bitcoindonate.png"></a>
+-   Donate in bitcoin, Blockchain.com wallet: <a href="https://blockchain.com">1Dv6CtEHUmDgv6tkgbsbrVRrBLh1KxUKPA</a>
