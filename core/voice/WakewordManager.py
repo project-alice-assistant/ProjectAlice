@@ -21,6 +21,7 @@ class WakewordManager(Manager):
 
 
 	def onStop(self):
+		super().onStop()
 		if self._engine:
 			self._engine.onStop()
 
@@ -78,7 +79,6 @@ class WakewordManager(Manager):
 	def disableEngine(self):
 		if self._engine:
 			self._engine.onStop()
-			self._engine.enabled = False
 
 
 	def enableEngine(self):
@@ -94,3 +94,13 @@ class WakewordManager(Manager):
 		if self._engine:
 			self._engine.onStop()
 		self.enableEngine()
+
+
+	def toggleEngine(self):
+		if not self._engine:
+			return
+
+		if self._engine.enabled:
+			self._engine.onStop()
+		else:
+			self._engine.onStart()
