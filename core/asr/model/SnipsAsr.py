@@ -40,7 +40,7 @@ class SnipsAsr(Asr):
 
 
 	def installDependencies(self) -> bool:
-		self.logWarning('Snips ASR is not installed, installing...')
+		super().installDependencies()
 		installed = self.Commons.runRootSystemCommand(['apt', 'install', f'{self.Commons.rootDir()}/system/snips/snips-asr_0.64.0_armhf.deb'])
 		self.logWarning('Downloading generic ASR, this may take a while')
 		self.Commons.downloadFile(
