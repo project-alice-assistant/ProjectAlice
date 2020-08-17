@@ -1,4 +1,5 @@
 import json
+from pathlib import Path
 
 import re
 from copy import copy
@@ -148,13 +149,16 @@ class ProjectAliceObject:
 				self.logInfo(f'Installed!')
 
 			for dep, link in self.DEPENDENCIES.get('external', dict()).items():
-				self.logInfo(f'Installing "{dep}"')
+				self.logInfo(f'Downloading "{dep}"')
 				if not self.Commons.downloadFile(link, link.rsplit('/')[-1]):
 					return False
 
+				self.logInfo(f'Installing "{dep}"')
 				result = self.Commons.runRootSystemCommand(['apt-get', 'install', '-y', f'./{link.rsplit("/")[-1]}'])
 				if result.returncode:
 					raise Exception(result.stderr)
+
+				Path(link.rsplit('/')[-1]).unlink()
 
 				self.logInfo(f'Installed!')
 
