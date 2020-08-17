@@ -8,11 +8,15 @@ class SnipsAsr(Asr):
 
 	NAME = 'Snips Asr'
 	DEPENDENCIES = {
+		'internal': {
+			'snips-kaldi-atlas': 'system/snips/snips-kaldi-atlas_0.26.1_armhf.deb'
+		},
 		'system': [
+			'libgfortran3',
 			'snips-asr',
 			'snips-asr-model-en-500mb'
 		],
-		'pip'   : {}
+		'pip'   : []
 	}
 
 	def __init__(self):

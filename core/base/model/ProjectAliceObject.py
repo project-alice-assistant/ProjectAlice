@@ -12,6 +12,8 @@ from core.util.model.Logger import Logger
 
 class ProjectAliceObject:
 	DEPENDENCIES = {
+		'internal': {},
+		'external': {},
 		'system': [],
 		'pip'   : []
 	}
@@ -87,6 +89,13 @@ class ProjectAliceObject:
 
 	def checkDependencies(self) -> bool:
 		self.logInfo('Checking dependencies')
+
+		for dep in zip(self.DEPENDENCIES.get('internal', dict()), self.DEPENDENCIES.get('external', dict())):
+			result = self.Commons.runRootSystemCommand(['dpkg-query', '-l', dep])
+			if result.returncode:
+				self.logWarning(f'Found missing dependency: {dep}')
+				return False
+
 		for dep in self.DEPENDENCIES['pip']:
 			match = re.match(r'^([a-zA-Z0-9-_]*)(?:([=><]{0,2})([\d.]*)$)', dep)
 			if not match:
@@ -130,6 +139,25 @@ class ProjectAliceObject:
 		self.logInfo('Installing dependencies')
 
 		try:
+			for dep, link in self.DEPENDENCIES.get('internal', dict()).items():
+				self.logInfo(f'Installing "{dep}"')
+				result = self.Commons.runRootSystemCommand(['apt-get', 'install', '-y', f'./{link}'])
+				if result.returncode:
+					raise Exception(result.stderr)
+
+				self.logInfo(f'Installed!')
+
+			for dep, link in self.DEPENDENCIES.get('external', dict()).items():
+				self.logInfo(f'Installing "{dep}"')
+				if not self.Commons.downloadFile(link, link.rsplit('/')[-1]):
+					return False
+
+				result = self.Commons.runRootSystemCommand(['apt-get', 'install', '-y', f'./{link.rsplit("/")[-1]}'])
+				if result.returncode:
+					raise Exception(result.stderr)
+
+				self.logInfo(f'Installed!')
+
 			for dep in self.DEPENDENCIES['system']:
 				self.logInfo(f'Installing "{dep}"')
 				result = self.Commons.runRootSystemCommand(['apt-get', 'install', '-y', dep])
