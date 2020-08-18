@@ -114,7 +114,7 @@ class TelemetryManager(Manager):
 			value = float(value)
 			if settings[0] == 'upperThreshold' and value > threshold or \
 					settings[0] == 'lowerThreshold' and value < threshold:
-				self.broadcast(method=message, exceptions=[self.name], propagateToSkills=True, service=service, trigger=settings[0], value=value, threshold=threshold )
+				self.broadcast(method=message, exceptions=[self.name], propagateToSkills=True, service=service, trigger=settings[0], value=value, threshold=threshold, area=siteId )
 				break
 
 
