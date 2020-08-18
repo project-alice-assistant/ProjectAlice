@@ -500,6 +500,8 @@ class ProjectAliceObject:
 	def onPressureHighAlert(self, *args, **kwargs):
 		pass # Super object function is overriden only if needed
 
+	def onGasHighAlert(self, *args, **kwargs):
+		pass # Super object function is overriden only if needed
 
 	def onPressureLowAlert(self, *args, **kwargs):
 		pass # Super object function is overriden only if needed
