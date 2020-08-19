@@ -4,12 +4,13 @@ import getpass
 import importlib
 import json
 import logging
-import os
 import socket
 import subprocess
 import sys
 import time
 from pathlib import Path
+
+import os
 
 
 YAML = '/boot/ProjectAlice.yaml'
@@ -35,7 +36,7 @@ class InitDict(dict):
 class SimpleLogger:
 
 	def __init__(self, prepend: str = None):
-		self._prepend = f'[{prepend}]\t'
+		self._prepend = f'[{prepend}]\t '
 		self._logger = logging.getLogger('ProjectAlice')
 
 
@@ -299,7 +300,7 @@ class Initializer:
 
 	def __init__(self):
 		super().__init__()
-		self._logger = SimpleLogger()
+		self._logger = SimpleLogger('Initializer')
 		self._logger.logInfo('Starting Project Alice initialization')
 		self._preInit = PreInit()
 		self._confsSample = Path(self._preInit.rootDir, 'configTemplate.py')
