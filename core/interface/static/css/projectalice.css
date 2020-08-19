@@ -60,6 +60,11 @@ input:focus, textarea:focus { border: var(--hover) dotted 1px; }
 ::-webkit-scrollbar { width: 8px; background-color: var(--accent); }
 ::-webkit-scrollbar-thumb { background-color: var(--secondary); }
 
+.ui-widget-shadow {
+	-webkit-box-shadow: 0 0 20px 5px var(--secondary);
+	box-shadow: 0 0 8px 5px var(--secondary);
+}
+
 /* line filled with buttons */
 .buttonLine { display: flex; width: 100%; }
 .skillStoreSkillTile .buttonLine,

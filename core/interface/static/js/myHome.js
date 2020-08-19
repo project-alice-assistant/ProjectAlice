@@ -1211,7 +1211,6 @@ $(function () {
 	}
 
 //run logic on startup
-	$( document ).tooltip();
 	loadHouse();
 	mqttRegisterSelf(onConnect, 'onConnect');
 	mqttRegisterSelf(onMessage, 'onMessage');
