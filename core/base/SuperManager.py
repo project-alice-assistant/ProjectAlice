@@ -91,8 +91,8 @@ class SuperManager:
 				manager.onStart()
 
 		talkManager.onStart()
-		skillManager.onStart()
 		nluManager.onStart()
+		skillManager.onStart()
 		dialogTemplateManager.onStart()
 		assistantManager.onStart()
 		nodeRedManager.onStart()
