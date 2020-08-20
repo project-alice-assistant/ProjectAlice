@@ -1,3 +1,5 @@
+git
+python3-pip
 libffi-dev
 apt-transport-https
 zip
