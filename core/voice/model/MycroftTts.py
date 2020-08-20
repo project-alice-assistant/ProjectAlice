@@ -1,7 +1,6 @@
 import getpass
-from pathlib import Path
-
 import re
+from pathlib import Path
 
 from core.base.SuperManager import SuperManager
 from core.dialog.model.DialogSession import DialogSession
@@ -147,5 +146,8 @@ class MycroftTts(Tts):
 					'-o', self._cacheFile,
 					'-voice', self._voice
 				])
+			self.logDebug(f'Generated speech file **{self._cacheFile.stem}**')
+		else:
+			self.logDebug(f'Using existing cached file **{self._cacheFile.stem}**')
 
 		self._speak(file=self._cacheFile, session=session)

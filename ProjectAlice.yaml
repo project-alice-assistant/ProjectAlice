@@ -13,7 +13,7 @@
 #                                              #
 ################################################
 #            DON'T CHANGE ME                   #
-version: 1.21
+version: 1.22
 ################################################
 
 # How to prevent frequent errors:
@@ -21,9 +21,6 @@ version: 1.21
 
 # If you place this file into /boot after a first initialization it won't overwrite your settings unless you set this to yes
 forceRewrite: no
-
-# By setting the next parameter to yes, ProjectAlice will also install all the required dependencies
-doGroundInstall: yes
 
 # After initialization is done, keep a copy of this yaml file in /boot. Be aware this can be a security risk, as /boot is accessible by anyone mounting your SD card!
 keepYAMLBackup: no
@@ -64,7 +61,6 @@ audioHardware:
 # Whether to install Hermes Led Control or not. HLC is the best way to manage your device leds if you have any
 useHLC: yes
 
-stayCompletlyOffline: no
 keepASROffline: yes
 keepTTSOffline: yes
 skillAutoUpdate: yes
@@ -111,6 +107,8 @@ asr: pocketsphinx
 
 # Either 'pico', 'mycroft', 'amazon', 'google' or 'watson'
 tts: pico
+ttsLanguage: en-US
+ttsVoice: en-US
 
 # Amazon Polly
 # https://docs.aws.amazon.com/en_us/general/latest/gr/rande.html

@@ -12,7 +12,6 @@ from core.base.model.ProjectAliceObject import ProjectAliceObject
 from core.commons import constants
 from core.dialog.model.DialogSession import DialogSession
 from core.user.model.User import User
-from core.voice.model.TTSEnum import TTSEnum
 
 
 class Tts(ProjectAliceObject):
@@ -81,18 +80,6 @@ class Tts(ProjectAliceObject):
 		if not self.TEMP_ROOT.is_dir():
 			self.Commons.runRootSystemCommand(['mkdir', str(self.TEMP_ROOT)])
 			self.Commons.runRootSystemCommand(['chown', getpass.getuser(), str(self.TEMP_ROOT)])
-
-		if self.TTS == TTSEnum.SNIPS:
-			voiceFile = f'cmu_{self.LanguageManager.activeCountryCode.lower()}_{self._voice}'
-			if not Path(self.Commons.rootDir(), 'system/voices', voiceFile).exists():
-				self.logInfo(f'Using **{self.TTS.value}** as TTS with voice **{self._voice}** but voice file not found. Downloading...')
-
-				if not self.Commons.downloadFile(
-						url=f'https://github.com/MycroftAI/mimic1/blob/development/voices/{voiceFile}.flitevox?raw=true',
-						dest=Path(self.Commons.rootDir(), f'var/voices/{voiceFile}.flitevox')):
-
-					self.logError('Failed downloading voice file, falling back to slt')
-					self._voice = next(iter(self._supportedLangAndVoices[self._lang][self._type]))
 
 
 	def cacheDirectory(self) -> Path:

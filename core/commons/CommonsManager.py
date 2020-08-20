@@ -300,7 +300,7 @@ class CommonsManager(Manager):
 
 	def downloadFile(self, url: str, dest: str) -> bool:
 		if not self.Commons.rootDir() in dest:
-			dest = self.Commons.rootDir() + dest
+			dest = f'{self.Commons.rootDir()}/{dest}'
 
 		try:
 			with requests.get(url, stream=True) as r:

@@ -1,6 +1,7 @@
-import os
 from pathlib import Path
 from typing import Generator, Optional
+
+import os
 
 from core.asr.model.ASRResult import ASRResult
 from core.asr.model.Asr import Asr
@@ -62,9 +63,12 @@ class GoogleAsr(Asr):
 			with recorder as stream:
 				audioStream = stream.audioStream()
 				# noinspection PyUnresolvedReferences
-				requests = (types.StreamingRecognizeRequest(audio_content=content) for content in audioStream)
-				responses = self._client.streaming_recognize(self._streamingConfig, requests)
-				result = self._checkResponses(session, responses)
+				try:
+					requests = (types.StreamingRecognizeRequest(audio_content=content) for content in audioStream)
+					responses = self._client.streaming_recognize(self._streamingConfig, requests)
+					result = self._checkResponses(session, responses)
+				except:
+					self.logWarning('Failed ASR request')
 
 			self.end()
 

@@ -1,4 +1,5 @@
 import json
+from pathlib import Path
 
 import re
 from copy import copy
@@ -12,6 +13,8 @@ from core.util.model.Logger import Logger
 
 class ProjectAliceObject:
 	DEPENDENCIES = {
+		'internal': {},
+		'external': {},
 		'system': [],
 		'pip'   : []
 	}
@@ -85,8 +88,30 @@ class ProjectAliceObject:
 			del SM.SuperManager.getInstance().managers[name]
 
 
+		# Now send the event over mqtt
+		payload = dict()
+		for item, value in kwargs.items():
+			try:
+				payload[item] = json.dumps(value)
+			except:
+				# Cannot serialize that attribute, do nothing
+				pass
+
+		self.MqttManager.publish(
+			topic=method,
+			payload=payload
+		)
+
+
 	def checkDependencies(self) -> bool:
 		self.logInfo('Checking dependencies')
+
+		for dep in {**self.DEPENDENCIES.get('internal', dict()), **self.DEPENDENCIES.get('external', dict())}:
+			result = self.Commons.runRootSystemCommand(['dpkg-query', '-l', dep])
+			if result.returncode:
+				self.logWarning(f'Found missing dependency: {dep}')
+				return False
+
 		for dep in self.DEPENDENCIES['pip']:
 			match = re.match(r'^([a-zA-Z0-9-_]*)(?:([=><]{0,2})([\d.]*)$)', dep)
 			if not match:
@@ -130,6 +155,28 @@ class ProjectAliceObject:
 		self.logInfo('Installing dependencies')
 
 		try:
+			for dep, link in self.DEPENDENCIES.get('internal', dict()).items():
+				self.logInfo(f'Installing "{dep}"')
+				result = self.Commons.runRootSystemCommand(['apt-get', 'install', '-y', f'./{link}'])
+				if result.returncode:
+					raise Exception(result.stderr)
+
+				self.logInfo(f'Installed!')
+
+			for dep, link in self.DEPENDENCIES.get('external', dict()).items():
+				self.logInfo(f'Downloading "{dep}"')
+				if not self.Commons.downloadFile(link, link.rsplit('/')[-1]):
+					return False
+
+				self.logInfo(f'Installing "{dep}"')
+				result = self.Commons.runRootSystemCommand(['apt-get', 'install', '-y', f'./{link.rsplit("/")[-1]}'])
+				if result.returncode:
+					raise Exception(result.stderr)
+
+				Path(link.rsplit('/')[-1]).unlink()
+
+				self.logInfo(f'Installed!')
+
 			for dep in self.DEPENDENCIES['system']:
 				self.logInfo(f'Installing "{dep}"')
 				result = self.Commons.runRootSystemCommand(['apt-get', 'install', '-y', dep])
@@ -468,6 +515,8 @@ class ProjectAliceObject:
 	def onPressureHighAlert(self, *args, **kwargs):
 		pass # Super object function is overriden only if needed
 
+	def onGasAlert(self, *args, **kwargs):
+		pass # Super object function is overriden only if needed
 
 	def onPressureLowAlert(self, *args, **kwargs):
 		pass # Super object function is overriden only if needed

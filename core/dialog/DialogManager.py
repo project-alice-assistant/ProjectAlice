@@ -508,6 +508,11 @@ class DialogManager(Manager):
 		return self._sessionsById
 
 
+	@property
+	def sessionsBySites(self) -> Dict[str, DialogSession]:
+		return self._sessionsBySites
+
+
 	def addDisabledByDefaultIntent(self, intent: str):
 		self._disabledByDefaultIntents.add(intent)
 		# Remove it from enabled intents in case it exists

@@ -438,7 +438,6 @@ class ConfigManager(Manager):
 		self.ASRManager.onStart()
 
 
-
 	def reloadTTS(self):
 		self.TTSManager.onStop()
 		self.TTSManager.onStart()

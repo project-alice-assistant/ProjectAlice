@@ -1,4 +1,4 @@
-VERSION = '1.0.0-b1'
+VERSION = '1.0.0-b2'
 
 DEFAULT = 'default'
 UNKNOWN_WORD = 'unknownword'
