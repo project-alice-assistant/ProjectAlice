@@ -88,6 +88,21 @@ class ProjectAliceObject:
 			del SM.SuperManager.getInstance().managers[name]
 
 
+		# Now send the event over mqtt
+		payload = dict()
+		for item, value in kwargs.items():
+			try:
+				payload[item] = json.dumps(value)
+			except:
+				# Cannot serialize that attribute, do nothing
+				pass
+
+		self.MqttManager.publish(
+			topic=method,
+			payload=payload
+		)
+
+
 	def checkDependencies(self) -> bool:
 		self.logInfo('Checking dependencies')
 
