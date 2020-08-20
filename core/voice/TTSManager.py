@@ -5,7 +5,6 @@ from core.base.model.Manager import Manager
 from core.commons import constants
 from core.dialog.model.DialogSession import DialogSession
 from core.user.model.User import User
-from core.voice.model.PicoTts import PicoTts
 from core.voice.model.TTSEnum import TTSEnum
 from core.voice.model.Tts import Tts
 
@@ -26,6 +25,7 @@ class TTSManager(Manager):
 
 
 	def _loadTTS(self, userTTS: str = None, user: User = None, forceTts = None):
+		self._fallback = None
 		if forceTts:
 			systemTTS = forceTts
 		else:
@@ -99,20 +99,22 @@ class TTSManager(Manager):
 		return self._cacheRoot
 
 
+	def onInternetConnected(self):
+		if self.ConfigManager.getAliceConfigByName('stayCompletlyOffline') or self.ConfigManager.getAliceConfigByName('keepTTSOffline'):
+			return
+
+		if not self._tts.online:
+			self.logInfo('Connected to internet, switching TTS')
+			self._loadTTS(self.ConfigManager.getAliceConfigByName('tts').lower())
+
+
 	def onInternetLost(self):
 		if self._tts.online:
-			self._fallback = PicoTts()
-
-
-	def onInternetConnected(self):
-		self._fallback = None
+			self.logInfo('Internet lost, switching to offline TTS')
+			self._loadTTS(self.ConfigManager.getAliceConfigByName('ttsFallback').lower())
 
 
 	def onSay(self, session: DialogSession):
-		if self._fallback:
-			self._fallback.onSay(session)
-			return
-
 		if session and session.user != constants.UNKNOWN_USER:
 			user: User = self.UserManager.getUser(session.user)
 			if user and user.tts:
