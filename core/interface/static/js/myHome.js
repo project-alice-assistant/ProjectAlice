@@ -169,6 +169,8 @@ $(function () {
 		});
 
 		$.ajax({'url': '/myhome/save/', data: JSON.stringify(data), 'type':'POST', 'contentType' :'application/json'});
+
+		$('#finishToolbarAction > .far').removeClass('wiggly');
 	}
 
 // Basic functionality for build area
