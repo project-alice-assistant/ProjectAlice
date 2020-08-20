@@ -86,6 +86,7 @@ class PreInit:
 		self.checkWPASupplicant()
 		self.checkInternet()
 		self.doUpdates()
+		self.installSystemDependencies()
 		if not self.checkVenv():
 			self.setServiceFileTo('venv')
 			subprocess.run(['sudo', 'systemctl', 'enable', 'ProjectAlice'])
@@ -93,6 +94,11 @@ class PreInit:
 			exit(0)
 
 		return True
+
+
+	def installSystemDependencies(self):
+		reqs = [line.rstrip('\n') for line in open(Path(self.rootDir, 'sysrequirements.txt'))]
+		subprocess.run(['sudo', 'apt-get', 'install', '-y', '--allow-unauthenticated'] + reqs)
 
 
 	def loadConfig(self) -> dict:
@@ -343,27 +349,22 @@ class Initializer:
 		# noinspection PyUnresolvedReferences
 		confs = config.settings.copy()
 
-		# Do some installation if wanted by the user
-		if 'doGroundInstall' not in initConfs or initConfs['doGroundInstall']:
 
-			subprocess.run(['sudo', 'apt', 'install', '-y', f'./system/snips/snips-platform-common_0.64.0_armhf.deb'])
-			subprocess.run(['sudo', 'apt', 'install', '-y', f'./system/snips/snips-nlu_0.64.0_armhf.deb'])
-			subprocess.run(['sudo', 'systemctl', 'stop', 'snips-nlu'])
-			subprocess.run(['sudo', 'systemctl', 'disable', 'snips-nlu'])
-			subprocess.run(['sudo', 'apt', 'install', '-y', f'./system/snips/snips-hotword_0.64.0_armhf.deb'])
-			subprocess.run(['sudo', 'systemctl', 'stop', 'snips-hotword'])
-			subprocess.run(['sudo', 'systemctl', 'disable', 'snips-hotword'])
-			subprocess.run(['sudo', 'apt', 'install', '-y', f'./system/snips/snips-hotword-model-heysnipsv4_0.64.0_armhf.deb'])
+		subprocess.run(['sudo', 'apt', 'install', '-y', f'./system/snips/snips-platform-common_0.64.0_armhf.deb'])
+		subprocess.run(['sudo', 'apt', 'install', '-y', f'./system/snips/snips-nlu_0.64.0_armhf.deb'])
+		subprocess.run(['sudo', 'systemctl', 'stop', 'snips-nlu'])
+		subprocess.run(['sudo', 'systemctl', 'disable', 'snips-nlu'])
+		subprocess.run(['sudo', 'apt', 'install', '-y', f'./system/snips/snips-hotword_0.64.0_armhf.deb'])
+		subprocess.run(['sudo', 'systemctl', 'stop', 'snips-hotword'])
+		subprocess.run(['sudo', 'systemctl', 'disable', 'snips-hotword'])
+		subprocess.run(['sudo', 'apt', 'install', '-y', f'./system/snips/snips-hotword-model-heysnipsv4_0.64.0_armhf.deb'])
 
-			subprocess.run(['wget', 'http://ftp.us.debian.org/debian/pool/non-free/s/svox/libttspico0_1.0+git20130326-9_armhf.deb'])
-			subprocess.run(['wget', 'http://ftp.us.debian.org/debian/pool/non-free/s/svox/libttspico-utils_1.0+git20130326-9_armhf.deb'])
-			subprocess.run(['sudo', 'apt', 'install', '-y', './libttspico0_1.0+git20130326-9_armhf.deb', './libttspico-utils_1.0+git20130326-9_armhf.deb'])
+		subprocess.run(['wget', 'http://ftp.us.debian.org/debian/pool/non-free/s/svox/libttspico0_1.0+git20130326-9_armhf.deb'])
+		subprocess.run(['wget', 'http://ftp.us.debian.org/debian/pool/non-free/s/svox/libttspico-utils_1.0+git20130326-9_armhf.deb'])
+		subprocess.run(['sudo', 'apt', 'install', '-y', './libttspico0_1.0+git20130326-9_armhf.deb', './libttspico-utils_1.0+git20130326-9_armhf.deb'])
 
-			subprocess.run(['rm', 'libttspico0_1.0+git20130326-9_armhf.deb'])
-			subprocess.run(['rm', 'libttspico-utils_1.0+git20130326-9_armhf.deb'])
-
-			reqs = [line.rstrip('\n') for line in open(Path(self._rootDir, 'sysrequirements.txt'))]
-			subprocess.run(['sudo', 'apt-get', 'install', '-y', '--allow-unauthenticated'] + reqs)
+		subprocess.run(['rm', 'libttspico0_1.0+git20130326-9_armhf.deb'])
+		subprocess.run(['rm', 'libttspico-utils_1.0+git20130326-9_armhf.deb'])
 
 		confPath = Path('/etc/mosquitto/conf.d/websockets.conf')
 		if not confPath.exists():
