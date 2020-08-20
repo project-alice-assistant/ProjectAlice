@@ -389,7 +389,7 @@ class Initializer:
 
 		confs['adminPinCode'] = int(pinCode)
 
-		confs['stayCompletlyOffline'] = bool(initConfs['stayCompletlyOffline'])
+		confs['stayCompletlyOffline'] = bool(initConfs['stayCompletlyOffline'] or False)
 		if initConfs['stayCompletlyOffline']:
 			confs['keepASROffline'] = True
 			confs['keepTTSOffline'] = True
