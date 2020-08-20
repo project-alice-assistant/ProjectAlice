@@ -107,6 +107,8 @@ asr: pocketsphinx
 
 # Either 'pico', 'mycroft', 'amazon', 'google' or 'watson'
 tts: pico
+ttsLanguage: en-US
+ttsVoice: en-US
 
 # Amazon Polly
 # https://docs.aws.amazon.com/en_us/general/latest/gr/rande.html
