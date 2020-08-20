@@ -26,10 +26,13 @@ class TTSManager(Manager):
 
 
 	def _loadTTS(self, userTTS: str = None, user: User = None, forceTts = None):
-		if not userTTS:
-			systemTTS = self.ConfigManager.getAliceConfigByName('tts').lower()
+		if forceTts:
+			systemTTS = forceTts
 		else:
-			systemTTS = userTTS.lower()
+			if not userTTS:
+				systemTTS = self.ConfigManager.getAliceConfigByName('tts').lower()
+			else:
+				systemTTS = userTTS.lower()
 
 		keepTTSOffline = self.ConfigManager.getAliceConfigByName('keepTTSOffline')
 		stayOffline = self.ConfigManager.getAliceConfigByName('stayCompletlyOffline')
