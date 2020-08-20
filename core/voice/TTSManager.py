@@ -75,6 +75,7 @@ class TTSManager(Manager):
 				fallback = self.ConfigManager.getAliceConfigByName('ttsFallback')
 				self.logWarning(f'Tts did not satisfy the user settings, falling back to **{fallback}**')
 				self._loadTTS(userTTS=userTTS, user=user, forceTts=fallback)
+				return
 			else:
 				self.logFatal('Fallback Tts failed, going down')
 				return
