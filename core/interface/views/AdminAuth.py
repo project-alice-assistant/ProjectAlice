@@ -25,7 +25,10 @@ class AdminAuth(View):
 		if current_user.is_authenticated:
 			return redirect(self.__class__.nextPage)
 
-		self.SkillManager.getSkillInstance('AliceCore').explainInterfaceAuth()
+		alice = self.SkillManager.getSkillInstance('AliceCore')
+		if alice:
+			alice.explainInterfaceAuth()
+
 		return render_template(template_name_or_list='adminAuth.html',
 		                       langData=self._langData,
 		                       aliceSettings=self.ConfigManager.aliceConfigurations)
