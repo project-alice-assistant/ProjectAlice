@@ -141,7 +141,6 @@ class MyHomeView(View):
 			self.logError(f'Failed getting device settings: {e}')
 
 
-	#TODO consider using UPDATE method?
 	@route('/Device/<path:_id>/saveSettings/<path:roomid>', methods=['POST'])
 	def saveDeviceSettings(self, _id: str, roomid: str):
 		try:
@@ -155,8 +154,12 @@ class MyHomeView(View):
 				return jsonify(success=True)
 
 			else:
-				# todo get room dependent settings
-				pass
+				link = self.DeviceManager.getLink(deviceId=_id, locationId=roomid)
+				if not link:
+					raise Exception("Link not found")
+				link.locSettings = confs
+				link.saveLocSettings()
+				return jsonify(success=True)
 		except Exception as e:
 			self.logError(f'Failed saving device settings: {e}')
 

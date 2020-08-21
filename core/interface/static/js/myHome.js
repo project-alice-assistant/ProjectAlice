@@ -64,7 +64,10 @@ $(function () {
 	}
 
 	function makeDirty(event){
-		dirtyFormulars.push(event.target);
+		if(!dirtyFormulars.includes(event.target)){
+			dirtyFormulars.push(event.target);
+			saveRequired();
+		}
 	}
 // Basic functionality for loading, saving
 	function loadHouse() {
@@ -170,14 +173,13 @@ $(function () {
 
 		$.ajax({'url': '/myhome/save/', data: JSON.stringify(data), 'type':'POST', 'contentType' :'application/json'});
 
-		$('#finishToolbarAction > .far').removeClass('wiggly');
+		saveNotRequired();
 	}
 
 // Basic functionality for build area
 	function matrixToAngle(matrix) {
 		if (matrix == 'none' || matrix == null) {
 			return 0;
-			makeDirty(null);
 		}
 
 		let values = matrix.split('(')[1].split(')')[0].split(',');
@@ -305,17 +307,13 @@ $(function () {
 					$.each(selectedLinks, function (id, val){
 						hasOne = true;
 						content = "<div class='linkTitle'>"+val['locationName']+"</div>";
-						confLines = "<form>"; //todo add correct action, prevent page reload
+						confLines = "<form action='Device/"+val['deviceID']+"/saveSettings/"+val['locationID']+"'>";
 						$.each(val['locSettings'], function (ckey, cval) {
 							confLines += "<div class='configLabel'>" + ckey + "</div><input name='" + ckey + "' class='configInput' value='" + cval + "'/>";
 						});
 						if (confLines) {
-							//content += "<div class='configBox'><div class='configList'><form id='SetForm' name='config_for_devSet' action='Device/" + data['id'] + "/saveSettings/0' method='post'><div class='configBlock'>";
 							content += confLines
 							content += "</form>";
-							//content += "</div>";
-							//content += "<div class='buttonLine'><input id='SetFormSubmit' class='button' type='submit' value='" + $('#langSave').text() + "'></div>";
-							//content += "</form></div></div>";
 						}
 						total += content;
 					});
@@ -624,40 +622,11 @@ $(function () {
 						content += "<div class='configBox'><div class='configList'><form id='SetForm' name='config_for_devSet' action='Device/" + data['id'] + "/saveSettings/0' method='post'><div class='configBlock'>";
 						content += confLines
 						content += "</div>";
-						content += "<div class='buttonLine'><input id='SetFormSubmit' class='button' type='submit' value='" + $('#langSave').text() + "'></div>";
 						content += "</form></div></div>";
 
 						$sideBar.append(content);
 
-						// perform submit/save of the form without switching page
-						let form = $('#SetForm');
-						let saveButton = form.find('#SetFormSubmit');
-						// noinspection JSDeprecatedSymbols
-						form.submit(function (event) {
-							saveButton.val($('#langSaving').text());
-							saveButton.addClass('saving');
-							$.post(form.attr('action'), form.serialize())
-								.done(function () {
-									saveButton.val($('#langSaved').text());
-									saveButton.addClass('saved');
-								})
-								.fail(function () {
-									saveButton.val($('#langSaveFailed').text());
-									saveButton.addClass('saveFailed');
-								}).always(
-								function () {
-									saveButton.removeClass('saving');
-								});
-							event.preventDefault();
-						});
-
-						// change button back to save if something was changed
-						$('.configInput').on('change', function () {
-							saveButton.val($('#langSave').text());
-							saveButton.removeClass('saved');
-							saveButton.removeClass('saveFailed');
-						});
-
+						$('#SetForm').change(makeDirty);
 
 					}
 					selectedLinks = null;
@@ -1197,16 +1166,34 @@ $(function () {
 	function saveSidebar(){
 		if(dirtyFormulars.length == 0) return;
 		dirtyFormulars.forEach(function (value){
-			//todo add correct form info
-			// wait for response
-			// stop action if not successful
-			value.form.submit();
+
+			//todo move message to config part
+			$('.aliceStatus').html("Saving...")
+			$.ajax({'url'   : value.form.action,
+					'async' : false,
+					'method': 'POST',
+					'data'  : $(value.form).serialize()})
+				.done(function () {
+					saveNotRequired();
+					$('.aliceStatus').html("Saved!")
+					//todo remove "saved" after a few seconds
+					dirtyFormulars = [];
+				})
+				.fail(function () {
+					$('.aliceStatus').html("Error Saving!");
+					throw new Error("Error Saving!");
+				});
 		});
-		dirtyFormulars = [];
+
 	}
 
 	function saveRequired(){
 		$('#finishToolbarAction > .far').addClass('wiggly');
+		saveSidebar();
+	}
+
+	function saveNotRequired(){
+		$('#finishToolbarAction > .far').removeClass('wiggly');
 	}
 
 //run logic on startup
