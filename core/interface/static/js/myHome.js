@@ -305,7 +305,7 @@ $(function () {
 					$.each(selectedLinks, function (id, val){
 						hasOne = true;
 						content = "<div class='linkTitle'>"+val['locationName']+"</div>";
-						confLines = "<form>";
+						confLines = "<form>"; //todo add correct action, prevent page reload
 						$.each(val['locSettings'], function (ckey, cval) {
 							confLines += "<div class='configLabel'>" + ckey + "</div><input name='" + ckey + "' class='configInput' value='" + cval + "'/>";
 						});
@@ -899,9 +899,6 @@ $(function () {
 		$('.ui-droppable').droppable('destroy');
 
 		$('#painterTiles, #decoTiles, #constructionTiles, #deviceTiles').hide();
-//		$('#decoTiles').hide();
-//		$('#constructionTiles').hide();
-//		$('#deviceTiles').hide();
 
 		selectedFloor = '';
 		selectedDeco = '';

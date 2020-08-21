@@ -26,6 +26,7 @@ class Device(ProjectAliceObject):
 	def __post_init__(self):  # NOSONAR
 		self.id = self.data['id']
 		self.deviceTypeID = self.data['typeID']
+		self.name = self.data['name']
 
 		self.uid = self.data['uid']
 		self.locationID = self.data['locationID']
