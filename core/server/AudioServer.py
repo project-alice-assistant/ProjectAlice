@@ -189,6 +189,7 @@ class AudioManager(Manager):
 						channels=channels,
 						rate=framerate,
 						output=True,
+						output_device_index=self._audioOutput['index'],
 						stream_callback=streamCallback
 					)
 
