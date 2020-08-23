@@ -57,6 +57,7 @@ TOPIC_CORE_HEARTBEAT = 'projectalice/devices/coreHeartbeat'
 TOPIC_DND = 'projectalice/devices/stopListen'
 TOPIC_STOP_DND = 'projectalice/devices/startListen'
 TOPIC_TOGGLE_DND = 'projectalice/devices/toggleListen'
+TOPIC_SKILL_INSTRUCTIONS = 'projectalice/skills/instructions'
 
 TOPIC_DEVICE_STATUS = 'projectalice/devices/status'
 TOPIC_DEVICE_UPDATED = 'projectalice/devices/updated'

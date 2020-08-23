@@ -29,6 +29,7 @@ class AudioManager(Manager):
 
 		self._stopPlayingFlag = threading.Event()
 		self._playing = False
+		self._waves: Dict[str, wave.Wave_write] = dict()
 
 		if self.ConfigManager.getAliceConfigByName('disableSoundAndMic'):
 			return
@@ -52,8 +53,6 @@ class AudioManager(Manager):
 			self.logFatal('Audio input not found, cannot continue')
 		else:
 			self.logInfo(f'Using **{self._audioInput["name"]}** for audio input')
-
-		self._waves: Dict[str, wave.Wave_write] = dict()
 
 
 	def onStart(self):
@@ -189,6 +188,7 @@ class AudioManager(Manager):
 						channels=channels,
 						rate=framerate,
 						output=True,
+						output_device_index=self._audioOutput['index'],
 						stream_callback=streamCallback
 					)
 
