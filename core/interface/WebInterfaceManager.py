@@ -1,14 +1,15 @@
+import string
+
 import json
 import logging
-import string
-import time
-from pathlib import Path
-
 import random
+import time
 from flask import Flask, send_from_directory
 from flask_login import LoginManager
+from pathlib import Path
 
 from core.base.model.Manager import Manager
+from core.commons import constants
 from core.interface.api.DialogApi import DialogApi
 from core.interface.api.LoginApi import LoginApi
 from core.interface.api.SkillsApi import SkillsApi
@@ -41,12 +42,14 @@ class WebInterfaceManager(Manager):
 		self._langData = dict()
 		self._skillInstallProcesses = dict()
 		self._flaskLoginManager = None
+		self._instructions = ''
 
 
 	# noinspection PyMethodParameters
 	@app.route('/favicon.ico')
 	def favicon():
 		return send_from_directory('static/', 'favicon.ico', mimetype='image/vnd.microsoft.icon')
+
 
 	@app.route('/base/<path:filename>')
 	def base_static(self, filename):
@@ -107,8 +110,24 @@ class WebInterfaceManager(Manager):
 			)
 
 
+	def onBooted(self):
+		if self._instructions:
+			print('publishing')
+			self.MqttManager.publish(
+				topic=constants.TOPIC_SKILL_INSTRUCTIONS,
+				payload={
+					'instructions': self._instructions
+				}
+			)
+			self._instructions = ''
+
+
 	def onStop(self):
 		self.ThreadManager.terminateThread('WebInterface')
+
+
+	def addSkillInstructions(self, instructions: str):
+		self._instructions = f'{self._instructions}<br>{instructions}'
 
 
 	def newSkillInstallProcess(self, skill):

@@ -22,32 +22,37 @@
 	<div class="pageTitle">
 		{% block pageTitle %}{% endblock %}
 	</div>
-  <div id="aliceStatus" class="aliceStatus"></div>
+	<div id="aliceStatus" class="aliceStatus"></div>
 	{% if aliceSettings['aliceUpdateChannel'] != 'master' %}
 		<div class="updateChannelMarker warning">
 			{{ aliceSettings['aliceUpdateChannel'] }}
 		</div>
 	{% endif %}
 </header>
-<div class="serverUnavailable initialHidden">
-	Project Alice is currently unreachable, the page will try to reload in a short while
+<div class="screenOverlay initialHidden" id="serverUnavailable">
+	<div class="overlayError">
+		Project Alice is currently unreachable, the page will try to reload in a short while
+	</div>
+</div>
+<div class="screenOverlay initialHidden" id="skillInstructions">
+	<div class="overlayInfo"></div>
 </div>
 <div class="page">
-<nav>
-	<ul class="mainMenuList">
-		<li class="mainMenuListItem button" onclick="location.href='/home/';">{{ langData.home }}</li>
-		<li class="mainMenuListItem button" onclick="location.href='/skills/';">{{ langData.skills }}</li>
-		<li class="mainMenuListItem button" onclick="location.href='/myhome/';">{{ langData.myHome }}</li>
-		<li class="mainMenuListItem button" onclick="location.href='/scenarios/';">{{ langData.scenarios }}</li>
-		<li class="mainMenuListItem button" onclick="location.href='/syslog/';">{{ langData.syslog }}</li>
-		<li class="mainMenuListItem button" onclick="location.href='/alicewatch/';">{{ langData.alicewatch }}</li>
-		<li class="mainMenuListItem button" onclick="location.href='/admin/';">{{ langData.admin }}</li>
-		{% if aliceSettings['devMode'] is sameas true %}
-			<li class="mainMenuListItem button" onclick="location.href='/devmode/';">{{ langData.devMode }}</li>
-		{% endif %}
-	</ul>
-</nav>
-  <main>
+	<nav>
+		<ul class="mainMenuList">
+			<li class="mainMenuListItem button" onclick="location.href='/home/';">{{ langData.home }}</li>
+			<li class="mainMenuListItem button" onclick="location.href='/skills/';">{{ langData.skills }}</li>
+			<li class="mainMenuListItem button" onclick="location.href='/myhome/';">{{ langData.myHome }}</li>
+			<li class="mainMenuListItem button" onclick="location.href='/scenarios/';">{{ langData.scenarios }}</li>
+			<li class="mainMenuListItem button" onclick="location.href='/syslog/';">{{ langData.syslog }}</li>
+			<li class="mainMenuListItem button" onclick="location.href='/alicewatch/';">{{ langData.alicewatch }}</li>
+			<li class="mainMenuListItem button" onclick="location.href='/admin/';">{{ langData.admin }}</li>
+			{% if aliceSettings['devMode'] is sameas true %}
+				<li class="mainMenuListItem button" onclick="location.href='/devmode/';">{{ langData.devMode }}</li>
+			{% endif %}
+		</ul>
+	</nav>
+	<main>
 		{% block content %}{% endblock %}
 	</main>
 </div>

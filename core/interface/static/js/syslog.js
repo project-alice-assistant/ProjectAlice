@@ -30,11 +30,6 @@ $(function () {
 
 	function onConnect() {
 		MQTT.subscribe('projectalice/logging/syslog');
-
-		$.ajax({
-			url: '/syslog/connected/',
-			type: 'POST'
-		})
 	}
 
 	for(let i = 0; i < logHistory.length; i++) {

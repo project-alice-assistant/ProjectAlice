@@ -49,7 +49,9 @@ input:focus, textarea:focus { border: var(--hover) dotted 1px; }
 .logUnderlined { text-decoration: underline; }
 
 /* =========================== GENERAL =========================== */
-.serverUnavailable { position: fixed; top: 0; left: 0; bottom: 0; right: 0; background-color: rgba(0, 0, 0, 0.75); width: 100%; height: 100%; z-index: 100000000; color: var(--text); font-size: 2em; text-align: center; padding-top: 10em; box-sizing: border-box; }
+.screenOverlay { position: fixed; top: 0; left: 0; bottom: 0; right: 0; background-color: rgba(0, 0, 0, 0.75); width: 100%; height: 100%; z-index: 100000000; box-sizing: border-box; text-align: center; }
+.overlayError { color: var(--text); font-size: 2em; text-align: center; padding-top: 10em; }
+.overlayInfo { position: fixed; top: 150px; left: 250px; right: 250px; bottom: 150px; overflow: auto; background-color: var(--mainBG); box-sizing: border-box; border: 1px solid var(--secondary); padding: 15px; font-size: 1em; color: var(--text); }
 
 .hidden { display: none; }
 

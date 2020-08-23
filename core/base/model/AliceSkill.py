@@ -3,13 +3,12 @@ from __future__ import annotations
 import importlib
 import inspect
 import json
-import sqlite3
-from pathlib import Path
-from typing import Any, Dict, Iterable, Optional, Union
-
 import re
+import sqlite3
 from copy import copy
 from paho.mqtt import client as MQTTClient
+from pathlib import Path
+from typing import Any, Dict, Iterable, Optional, Union
 
 from core.ProjectAliceExceptions import AccessLevelTooLow, SkillStartingFailed
 from core.base.model import Widget
@@ -514,6 +513,11 @@ class AliceSkill(ProjectAliceObject):
 		self.loadWidgets()
 		self.loadDevices()
 		self.loadScenarioNodes()
+
+		instructionsFile = self.getResource('instructions.md')
+		if instructionsFile.exists():
+			instructions = instructionsFile.read_text()
+			self.WebInterfaceManager.addSkillInstructions(instructions)
 
 		self.logInfo(f'![green](Started!)')
 
