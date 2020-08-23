@@ -37,7 +37,7 @@ class DeviceLink(ProjectAliceObject):
 	def saveLocSettings(self):
 		self.DatabaseManager.update(tableName=self.DeviceManager.DB_LINKS,
 		                            callerName=self.DeviceManager.name,
-		                            values={'locSettings': self.locSettings},
+		                            values={'locSettings': json.dumps(self.locSettings)},
 		                            row=('id', self._id))
 
 

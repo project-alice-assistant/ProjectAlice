@@ -229,7 +229,6 @@ class DeviceManager(Manager):
 			raise Exception(f'Device type {deviceType.name} can\'t be linked to other rooms')
 		if self.getLink(deviceId=deviceId, locationId=locationId):
 			raise Exception(f'There is already a link from {deviceId} to {locationId}')
-		#todo check if adding locSettings here is required
 		values = {'deviceID': deviceId, 'locationID': locationId, 'locSettings': json.dumps(deviceType._locSettings)}
 		# noinspection SqlResolve
 		values['id'] = self.databaseInsert(tableName=self.DB_LINKS, query='INSERT INTO :__table__ (deviceID, locationID, locSettings) VALUES (:deviceID, :locationID, :locSettings)', values=values)

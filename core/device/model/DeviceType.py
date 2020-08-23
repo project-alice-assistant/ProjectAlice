@@ -89,7 +89,7 @@ class DeviceType(ProjectAliceObject):
 			                                    values={'id':self.id},
 		                                        method='one')
 
-		if row['devSettings'] != str(self._devSettings):
+		if row['devSettings'] != json.dumps(self._devSettings):
 			self.logInfo(f'Updating device Settings structure for {self.name}')
 			self.DatabaseManager.update(tableName=self.DeviceManager.DB_TYPES,
 			                            callerName=self.DeviceManager.name,
@@ -98,7 +98,7 @@ class DeviceType(ProjectAliceObject):
 			for device in self.DeviceManager.getDevicesByTypeID(deviceTypeID=self.id):
 				device.changedDevSettingsStructure(self._devSettings)
 
-		if row['locSettings'] != str(self._locSettings):
+		if row['locSettings'] != json.dumps(self._locSettings):
 			self.logInfo(f'Updating locations Settings structure for {self.name}')
 			self.DatabaseManager.update(tableName=self.DeviceManager.DB_TYPES,
 			                            callerName=self.DeviceManager.name,

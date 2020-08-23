@@ -210,7 +210,7 @@ class DatabaseManager(Manager):
 
 	def update(self, tableName: str, callerName: str, values: dict, query: str = None, row: tuple = None) -> bool:
 		if not query:
-			updates = [f'{col} = "{val}"' for col, val in values.items()]
+			updates = [f'{col} = :{col}' for col in values.keys()]
 			query = f'UPDATE :__table__ SET {" ,".join(updates)} WHERE {row[0]} = "{row[1]}"'
 
 		query = self.basicChecks(tableName, query, callerName, values)

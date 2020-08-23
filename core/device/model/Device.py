@@ -123,7 +123,7 @@ class Device(ProjectAliceObject):
 	def saveDevSettings(self):
 		self.DatabaseManager.update(tableName=self.DeviceManager.DB_DEVICE,
 		                            callerName=self.DeviceManager.name,
-		                            values={'devSettings': self.devSettings},
+		                            values={'devSettings': json.dumps(self.devSettings)},
 		                            row=('id', self.id))
 
 
