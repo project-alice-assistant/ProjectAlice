@@ -309,7 +309,7 @@ $(function () {
 						content = "<div class='linkTitle'>"+val['locationName']+"</div>";
 						confLines = "<form action='Device/"+val['deviceID']+"/saveSettings/"+val['locationID']+"'>";
 						$.each(val['locSettings'], function (ckey, cval) {
-							confLines += "<div class='configLabel'>" + ckey + "</div><input name='" + ckey + "' class='configInput' value='" + cval + "'/>";
+							confLines += "<div class='configLabel'>" + ckey + "</div><input name='" + ckey + "' class='saveEnter configInput' value='" + cval + "'/>";
 						});
 						if (confLines) {
 							content += confLines
@@ -317,7 +317,11 @@ $(function () {
 						}
 						total += content;
 					});
-					if(hasOne) $confOut.append(total);
+					if(hasOne) {
+						$confOut.append(total);
+						saveEnter();
+					}
+
 					$('input').change(makeDirty);
 				}
 			});
