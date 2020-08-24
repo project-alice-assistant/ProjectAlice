@@ -620,7 +620,7 @@ $(function () {
 					let confLines = '';
 					content = '';
 					$.each(res, function (key, val) {
-						confLines += "<div class='configLabel'>" + key + "</div><input name='" + key + "' class='configInput' value='" + val + "'/>";
+						confLines += "<div class='configLabel'>" + key + "</div><input name='" + key + "' class='saveEnter configInput' value='" + val + "'/>";
 					});
 					if (confLines) {
 						content += "<div class='configBox'><div class='configList'><form id='SetForm' name='config_for_devSet' action='Device/" + data['id'] + "/saveSettings/0' method='post'><div class='configBlock'>";
@@ -629,12 +629,14 @@ $(function () {
 						content += "</form></div></div>";
 
 						$sideBar.append(content);
+						saveEnter();
 
 						$('#SetForm').change(makeDirty);
 
 					}
 					selectedLinks = null;
 					setSelectedDevice($newDevice, $sideBar);
+
 				});
 
 // TODO Room specific Settings
@@ -642,13 +644,7 @@ $(function () {
 				//content += "<span class=\"toolbarButton link-hover\" id=\"deviceLinker\" title=\"Link a device with multiple rooms\"><i class=\"fas fa-link\"></i></span>";
 
 
-				// reroute synonym enter to click event
-				$('.configInput').keypress(function (e) {
-					if (e.which == 13) {
-						$(this).parent().children('.configListAdd').click();
-						return false;
-					}
-				});
+
 
 				// add new synonym entry to conf. List
 				//TODO add to DB
@@ -1198,6 +1194,18 @@ $(function () {
 
 	function saveNotRequired(){
 		$('#finishToolbarAction > .far').removeClass('wiggly');
+	}
+
+	function saveEnter(){
+		// reroute enter save
+		let relevants = $('.saveEnter.configInput');
+		relevants.keypress(function (e) {
+			if (e.which == 13) {
+				e.preventDefault();
+				makeDirty(e);
+				return false;
+			}
+		});
 	}
 
 //run logic on startup

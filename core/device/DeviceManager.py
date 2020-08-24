@@ -385,7 +385,7 @@ class DeviceManager(Manager):
 		self.getDeviceById(device['id']).display = device['display']
 		self.DatabaseManager.update(tableName=self.DB_DEVICE,
 		                            callerName=self.name,
-		                            values={'display': device['display']},
+		                            values={'display': json.dumps(device['display'])},
 		                            row=('id', device['id']))
 
 
@@ -410,11 +410,12 @@ class DeviceManager(Manager):
 		return self._deviceTypes
 
 
-	def getDevicesByLocation(self, locationID: int, connectedOnly: bool = False, deviceTypeID: int = None, withLinks: bool = True) -> List[Device]:
+	def getDevicesByLocation(self, locationID: int, connectedOnly: bool = False, deviceTypeID: int = None, withLinks: bool = True, pairedOnly: bool = False) -> List[Device]:
 		return [device for device in self._devices.values() if (device.locationID == locationID or (withLinks and self.getLink(deviceId=device.id, locationId=locationID)))
 		        and device.getDeviceType()
 		        and (not connectedOnly or device.connected)
-		        and (not deviceTypeID or device.deviceTypeID == deviceTypeID)]
+		        and (not deviceTypeID or device.deviceTypeID == deviceTypeID)
+		        and (not pairedOnly or device.uid)]
 
 
 	def getDevicesByType(self, deviceType: str, connectedOnly: bool = False) -> List[Device]:

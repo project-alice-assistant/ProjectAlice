@@ -1,4 +1,5 @@
 from typing import Dict, Optional
+import json
 
 from core.base.model.Manager import Manager
 from core.device.model.Location import Location
@@ -70,7 +71,7 @@ class LocationManager(Manager):
 		synlist = self._locations[locId].addSynonym(synonym)
 		self.DatabaseManager.update(tableName=self.TABLE,
 		                            callerName=self.name,
-		                            values={'synonyms': synlist},
+		                            values={'synonyms': json.dumps(synlist)},
 		                            row=('id', locId))
 
 
@@ -100,7 +101,7 @@ class LocationManager(Manager):
 			self.DatabaseManager.update(tableName=self.TABLE,
 			                            callerName=self.name,
 			                            values={
-				                            'display': values['display']
+				                            'display': json.dumps(values['display'])
 			                            },
 			                            row=('id', values['id']))
 			for device in values['devices']:
