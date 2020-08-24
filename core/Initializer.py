@@ -1,16 +1,16 @@
 VERSION = 1.22
 
 import getpass
+
 import importlib
 import json
 import logging
+import os
 import socket
 import subprocess
 import sys
 import time
 from pathlib import Path
-
-import os
 
 
 YAML = '/boot/ProjectAlice.yaml'
@@ -107,7 +107,11 @@ class PreInit:
 		try:
 			import yaml
 		except:
+			subprocess.run(['sudo', 'apt-get', 'install', 'python3-pip'])
+			subprocess.run(['pip3', 'install', 'PyYAML==5.3.1'])
+
 			self.setServiceFileTo('system')
+			subprocess.run(['sudo', 'systemctl', 'enable', 'ProjectAlice'])
 			subprocess.run(['sudo', 'systemctl', 'restart', 'ProjectAlice'])
 			exit(0)
 
