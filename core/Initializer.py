@@ -92,6 +92,7 @@ class PreInit:
 			self.setServiceFileTo('venv')
 			subprocess.run(['sudo', 'systemctl', 'enable', 'ProjectAlice'])
 			subprocess.run(['sudo', 'systemctl', 'restart', 'ProjectAlice'])
+			self._logger.logInfo('I am now restarting and will use my service file. To continue checking what I do, please type "tail -f /var/log/syslog"')
 			exit(0)
 
 		return True
@@ -107,12 +108,14 @@ class PreInit:
 		try:
 			import yaml
 		except:
+			subprocess.run(['sudo', 'apt-get', 'update'])
 			subprocess.run(['sudo', 'apt-get', 'install', 'python3-pip', '-y'])
 			subprocess.run(['pip3', 'install', 'PyYAML==5.3.1'])
 
 			self.setServiceFileTo('system')
 			subprocess.run(['sudo', 'systemctl', 'enable', 'ProjectAlice'])
 			subprocess.run(['sudo', 'systemctl', 'restart', 'ProjectAlice'])
+			self._logger.logInfo('I am now restarting and will use my service file. To continue checking what I do, please type "tail -f /var/log/syslog"')
 			exit(0)
 
 		with Path(YAML).open(mode='r') as f:
@@ -204,6 +207,7 @@ class PreInit:
 			except:
 				self.setServiceFileTo('system')
 				subprocess.run(['sudo', 'systemctl', 'restart', 'ProjectAlice'])
+				self._logger.logInfo('I am now restarting and will use my service file. To continue checking what I do, please type "tail -f /var/log/syslog"')
 				exit(0)
 
 			# noinspection PyUnboundLocalVariable
@@ -238,6 +242,7 @@ class PreInit:
 		except:
 			self.setServiceFileTo('system')
 			subprocess.run(['sudo', 'systemctl', 'restart', 'ProjectAlice'])
+			self._logger.logInfo('I am now restarting and will use my service file. To continue checking what I do, please type "tail -f /var/log/syslog"')
 			exit(0)
 
 		# noinspection PyUnboundLocalVariable
