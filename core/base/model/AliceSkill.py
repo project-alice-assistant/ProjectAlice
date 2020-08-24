@@ -339,12 +339,12 @@ class AliceSkill(ProjectAliceObject):
 
 
 	@property
-	def version(self) -> float:
+	def version(self) -> str:
 		return self._version
 
 
 	@version.setter
-	def version(self, value: float):
+	def version(self, value: str):
 		self._version = value
 
 
@@ -514,11 +514,6 @@ class AliceSkill(ProjectAliceObject):
 		self.loadDevices()
 		self.loadScenarioNodes()
 
-		instructionsFile = self.getResource('instructions.md')
-		if instructionsFile.exists():
-			instructions = instructionsFile.read_text()
-			self.WebInterfaceManager.addSkillInstructions(instructions)
-
 		self.logInfo(f'![green](Started!)')
 
 
@@ -546,6 +541,11 @@ class AliceSkill(ProjectAliceObject):
 	def onSkillUpdated(self, **kwargs):
 		self._updateAvailable = False
 		self.MqttManager.subscribeSkillIntents(self.name)
+
+		instructionsFile = self.getResource('instructions.md')
+		if instructionsFile.exists():
+			instructions = instructionsFile.read_text()
+			self.WebInterfaceManager.addSkillInstructions(self, instructions)
 
 
 	def onSkillDeleted(self, skill: str):
