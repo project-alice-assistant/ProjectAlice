@@ -145,7 +145,7 @@ $(function () {
 	}
 
 	function pingAlice() {
-		let $nodal = $('.serverUnavailable');
+		let $nodal = $('#serverUnavailable');
 		$.get(location.origin)
 			.done(function(res) {
 				if ($nodal.is(':visible')) {

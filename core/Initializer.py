@@ -92,10 +92,13 @@ class PreInit:
 			self.setServiceFileTo('venv')
 			subprocess.run(['sudo', 'systemctl', 'enable', 'ProjectAlice'])
 			subprocess.run(['sudo', 'systemctl', 'restart', 'ProjectAlice'])
-			self._logger.logInfo('I am now restarting and will use my service file. To continue checking what I do, please type "tail -f /var/log/syslog"')
 			exit(0)
 
 		return True
+
+
+	def informUser(self):
+		self._logger.logInfo('I am now restarting and will use my service file. To continue checking what I do, please type "tail -f /var/log/syslog"')
 
 
 	def installSystemDependencies(self):
@@ -115,7 +118,7 @@ class PreInit:
 			self.setServiceFileTo('system')
 			subprocess.run(['sudo', 'systemctl', 'enable', 'ProjectAlice'])
 			subprocess.run(['sudo', 'systemctl', 'restart', 'ProjectAlice'])
-			self._logger.logInfo('I am now restarting and will use my service file. To continue checking what I do, please type "tail -f /var/log/syslog"')
+			self.informUser()
 			exit(0)
 
 		with Path(YAML).open(mode='r') as f:
@@ -207,7 +210,7 @@ class PreInit:
 			except:
 				self.setServiceFileTo('system')
 				subprocess.run(['sudo', 'systemctl', 'restart', 'ProjectAlice'])
-				self._logger.logInfo('I am now restarting and will use my service file. To continue checking what I do, please type "tail -f /var/log/syslog"')
+				self.informUser()
 				exit(0)
 
 			# noinspection PyUnboundLocalVariable
@@ -242,7 +245,7 @@ class PreInit:
 		except:
 			self.setServiceFileTo('system')
 			subprocess.run(['sudo', 'systemctl', 'restart', 'ProjectAlice'])
-			self._logger.logInfo('I am now restarting and will use my service file. To continue checking what I do, please type "tail -f /var/log/syslog"')
+			self.informUser()
 			exit(0)
 
 		# noinspection PyUnboundLocalVariable
