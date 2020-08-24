@@ -107,7 +107,7 @@ class PreInit:
 		try:
 			import yaml
 		except:
-			subprocess.run(['sudo', 'apt-get', 'install', 'python3-pip'])
+			subprocess.run(['sudo', 'apt-get', 'install', 'python3-pip', '-y'])
 			subprocess.run(['pip3', 'install', 'PyYAML==5.3.1'])
 
 			self.setServiceFileTo('system')
