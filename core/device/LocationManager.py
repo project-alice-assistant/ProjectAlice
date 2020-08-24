@@ -80,7 +80,7 @@ class LocationManager(Manager):
 		self.DatabaseManager.update(tableName=self.TABLE,
 		                            callerName=self.name,
 		                            values={
-			                            'synonyms': synlist
+			                            'synonyms': json.dumps(synlist)
 		                            },
 		                            row=('id', locId))
 
