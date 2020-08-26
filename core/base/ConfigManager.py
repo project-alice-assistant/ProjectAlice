@@ -381,12 +381,12 @@ class ConfigManager(Manager):
 
 	def getAliceConfUpdatePreProcessing(self, confName: str) -> typing.Optional[str]:
 		# Some config need some pre processing to run some checks before saving
-		return self._aliceTemplateConfigurations.get(confName, dict()).get('beforeUpdate')
+		return self._aliceTemplateConfigurations.get(confName, dict()).get('beforeUpdate', None)
 
 
 	def getAliceConfUpdatePostProcessing(self, confName: str) -> typing.Optional[str]:
 		# Some config need some post processing if updated while Alice is running
-		return self._aliceTemplateConfigurations.get(confName, dict()).get('onUpdate')
+		return self._aliceTemplateConfigurations.get(confName, dict()).get('onUpdate', None)
 
 
 	def doConfigUpdatePreProcessing(self, function: str, value: typing.Any) -> bool:
