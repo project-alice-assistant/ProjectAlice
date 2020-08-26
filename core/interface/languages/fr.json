@@ -61,5 +61,6 @@
 	"confMoveDevice": "Veux-tu sauvegarder et déplacer cet appareil vers le nouvel emplacement?",
 	"confDeleteDevice": "Tu es sûr de vouloir supprimer cet appareil?",
 	"confDeleteZone": "Tu es sûr de vouloir supprimer cet emplacement?",
-	"nameNewZone": "Donne un nom à la nouvel location s'il te plaît"
+	"nameNewZone": "Donne un nom à la nouvel location s'il te plaît",
+	"unreachable": "Project Alice is currently unreachable, the page will try to reload in a short while"
 }
