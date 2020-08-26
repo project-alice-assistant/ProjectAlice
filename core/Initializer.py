@@ -1,16 +1,16 @@
 VERSION = 1.22
 
 import getpass
+
 import importlib
 import json
 import logging
+import os
 import socket
 import subprocess
 import sys
 import time
 from pathlib import Path
-
-import os
 
 
 YAML = '/boot/ProjectAlice.yaml'
@@ -97,6 +97,10 @@ class PreInit:
 		return True
 
 
+	def informUser(self):
+		self._logger.logInfo('I am now restarting and will use my service file. To continue checking what I do, please type "tail -f /var/log/syslog"')
+
+
 	def installSystemDependencies(self):
 		reqs = [line.rstrip('\n') for line in open(Path(self.rootDir, 'sysrequirements.txt'))]
 		subprocess.run(['sudo', 'apt-get', 'install', '-y', '--allow-unauthenticated'] + reqs)
@@ -107,8 +111,14 @@ class PreInit:
 		try:
 			import yaml
 		except:
+			subprocess.run(['sudo', 'apt-get', 'update'])
+			subprocess.run(['sudo', 'apt-get', 'install', 'python3-pip', 'python3-wheel', '-y'])
+			subprocess.run(['pip3', 'install', 'PyYAML==5.3.1'])
+
 			self.setServiceFileTo('system')
+			subprocess.run(['sudo', 'systemctl', 'enable', 'ProjectAlice'])
 			subprocess.run(['sudo', 'systemctl', 'restart', 'ProjectAlice'])
+			self.informUser()
 			exit(0)
 
 		with Path(YAML).open(mode='r') as f:
@@ -200,6 +210,7 @@ class PreInit:
 			except:
 				self.setServiceFileTo('system')
 				subprocess.run(['sudo', 'systemctl', 'restart', 'ProjectAlice'])
+				self.informUser()
 				exit(0)
 
 			# noinspection PyUnboundLocalVariable
@@ -234,6 +245,7 @@ class PreInit:
 		except:
 			self.setServiceFileTo('system')
 			subprocess.run(['sudo', 'systemctl', 'restart', 'ProjectAlice'])
+			self.informUser()
 			exit(0)
 
 		# noinspection PyUnboundLocalVariable

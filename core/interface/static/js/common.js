@@ -121,31 +121,39 @@ $(function () {
 
 	function onConnected() {
 		MQTT.subscribe('projectalice/nlu/trainingStatus');
+		MQTT.subscribe('projectalice/skills/instructions');
 	}
 
 	function onMessageIn(msg) {
 		let payload = JSON.parse(msg.payloadString);
-		let $container = $('#aliceStatus');
-		if (payload.status == 'training') {
-			if ($container.text().length <= 0) {
-				$container.text('Nlu training');
-			} else {
-				let count = ($container.text().match(/\./g) || []).length;
-				if (count < 10) {
-					$container.text($container.text() + '.');
+		if (msg.topic == 'projectalice/nlu/trainingStatus') {
+			let $container = $('#aliceStatus');
+			if (payload.status == 'training') {
+				if ($container.text().length <= 0) {
+					$container.text('Nlu training');
 				} else {
-					$container.text('Nlu training.');
+					let count = ($container.text().match(/\./g) || []).length;
+					if (count < 10) {
+						$container.text($container.text() + '.');
+					} else {
+						$container.text('Nlu training.');
+					}
 				}
+			} else if (payload.status == 'failed') {
+				$container.text('Nlu training failed...');
+			} else if (payload.status == 'done') {
+				$container.text('Nlu training done!');
 			}
-		} else if (payload.status == 'failed') {
-			$container.text('Nlu training failed...');
-		} else if (payload.status == 'done') {
-			$container.text('Nlu training done!');
+		}
+		else if (msg.topic == 'projectalice/skills/instructions') {
+			$('#skillInstructions').show();
+			let $content = $('#skillInstructionsContent');
+			$content.html($content.html() + payload['instructions']);
 		}
 	}
 
 	function pingAlice() {
-		let $nodal = $('.serverUnavailable');
+		let $nodal = $('#serverUnavailable');
 		$.get(location.origin)
 			.done(function(res) {
 				if ($nodal.is(':visible')) {
@@ -187,6 +195,10 @@ $(function () {
 			}
 		});
 		return false;
+	});
+
+	$('.overlayInfoClose').on('click touchstart', function () {
+		$('#skillInstructions').hide();
 	});
 
 	mqttRegisterSelf(onConnected, 'onConnect');

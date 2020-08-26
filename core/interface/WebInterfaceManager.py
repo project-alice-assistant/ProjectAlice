@@ -3,11 +3,14 @@ import string
 import json
 import logging
 import random
+import re
 import time
 from flask import Flask, send_from_directory
 from flask_login import LoginManager
 from pathlib import Path
+from re import Match
 
+from core.base.model.AliceSkill import AliceSkill
 from core.base.model.Manager import Manager
 from core.commons import constants
 from core.interface.api.DialogApi import DialogApi
@@ -110,24 +113,26 @@ class WebInterfaceManager(Manager):
 			)
 
 
-	def onBooted(self):
-		if self._instructions:
-			print('publishing')
-			self.MqttManager.publish(
-				topic=constants.TOPIC_SKILL_INSTRUCTIONS,
-				payload={
-					'instructions': self._instructions
-				}
-			)
-			self._instructions = ''
-
-
 	def onStop(self):
 		self.ThreadManager.terminateThread('WebInterface')
 
 
-	def addSkillInstructions(self, instructions: str):
-		self._instructions = f'{self._instructions}<br>{instructions}'
+	def addSkillInstructions(self, skill: AliceSkill, instructions: str):
+		self._instructions = f'{self._instructions}<br/><div class="overlayInfoSkillName">{skill.name} - {skill.version}</div><div>{self.toHtml(instructions)}</div>'
+
+
+	def onSkillStarted(self, skill: AliceSkill):
+		if self._instructions:
+			self.ThreadManager.doLater(interval=1, func=self.publish)
+
+
+	def publish(self):
+		self.MqttManager.publish(
+			topic=constants.TOPIC_SKILL_INSTRUCTIONS,
+			payload={
+				'instructions': self._instructions
+			}
+		)
 
 
 	def newSkillInstallProcess(self, skill):
@@ -169,3 +174,19 @@ class WebInterfaceManager(Manager):
 	@property
 	def flaskLoginManager(self) -> LoginManager:
 		return self._flaskLoginManager
+
+
+	def toHtml(self, text: str) -> str:
+		text = text.replace('\r\n', '\n')
+		text = text.replace('\n', '<br/>')
+
+		text = re.sub(r'\*\*(.+?)\*\*', r'<span class="logBold">\1</span>', text)
+		text = re.sub(r'--(.+?)--', r'<span class="logDim">\1</span>', text)
+		text = re.sub(r'\*(.+?)\*', r'<span class="logItalic">\1</span>', text)
+		text = re.sub(r'__(.+?)__', r'<span class="logUnderlined">\1</span>', text)
+		return re.sub(r'(?i)!\[(red|green|yellow|blue|grey)]\((.+?)\)', self.colorFormat, text)
+
+
+	@staticmethod
+	def colorFormat(matching: Match) -> str:
+		return f'<span class="log {matching.group(1).title()}">{matching.group(2)}</span>'
