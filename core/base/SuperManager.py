@@ -113,11 +113,11 @@ class SuperManager:
 
 
 	def onBooted(self):
+		self.mqttManager.playSound(soundFilename='boot')
+
 		for manager in self._managers.values():
 			if manager:
 				manager.onBooted()
-
-		self.threadManager.doLater(interval=0.5, func=self.mqttManager.playSound, kwargs={'soundFilename': 'boot'})
 
 
 	@staticmethod

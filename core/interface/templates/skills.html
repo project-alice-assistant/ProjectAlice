@@ -70,6 +70,9 @@
 				</div>
 			</form>
 		</div>
+		<div id="instructions_for_{{ skillName }}" title="{{ langData.instructions }}">
+			{{ skill.getHtmlInstructions() }}
+		</div>
 	{% endfor %}
 	<div class="toolbar stick-top-right">
 		<span class="toolbarButton link-hover" id="openSkillStore">
@@ -107,6 +110,11 @@
 					{% if skill.getSkillConfigs()|length %}
 						<div class="skillSettings link-hover" data-forSkill="{{ skillName }}">
 							{{ langData.skillSettings }} <i class="fas fa-cog" aria-hidden="true"></i>
+						</div>
+					{% endif %}
+					{% if skill.instructions %}
+						<div class="skillInstructions link-hover" data-forSkill="{{ skillName }}">
+							{{ langData.instructions }} <i class="fas fa-question-circle" aria-hidden="true"></i>
 						</div>
 					{% endif %}
 					<div class="buttonLine">

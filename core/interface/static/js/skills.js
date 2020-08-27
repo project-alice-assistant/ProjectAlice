@@ -165,6 +165,15 @@ $(function () {
 		resizable: false
 	});
 
+	$('[id^=instructions_for_]').dialog({
+		autoOpen: false,
+		draggable: false,
+		width: '60%',
+		height: 600,
+		modal: true,
+		resizable: false
+	});
+
 	$('[id^=update_]').on('click touchstart', function () {
 		let $self = $(this);
 		$.ajax({
@@ -197,6 +206,11 @@ $(function () {
 	$('.skillIntentsViewCloseButton').on('click touchstart', function () {
 		$(this).parent().parent().children('.skillDefaultView').css('display', 'flex');
 		$(this).parent('.skillIntentsView').css('display', 'none');
+		return false;
+	});
+
+	$('.skillInstructions').on('click touchstart', function () {
+		$('#instructions_for_' + $(this).attr('data-forSkill')).dialog('open');
 		return false;
 	});
 

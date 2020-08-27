@@ -164,7 +164,8 @@ button.button{ font-size: 1.6em; height: 2em; }
 .skillName { overflow: hidden; font-size: 1.25em; }
 
 .skillViewIntents,
-.skillSettings { width: 100%; margin: .2em; text-align: right; }
+.skillSettings,
+.skillInstructions { width: 100%; margin: .2em; text-align: right; }
 
 /* Configuration Screens */
 .configBox { width: 100%; display: table; font-family: var(--long); background-color: var(--secondary); border-spacing: 0 10px; }

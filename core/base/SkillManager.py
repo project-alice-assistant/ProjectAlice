@@ -1,14 +1,14 @@
 import getpass
+import traceback
+
 import importlib
 import json
-import threading
-import traceback
-from pathlib import Path
-from typing import Dict, Optional
-
 import os
 import requests
 import shutil
+import threading
+from pathlib import Path
+from typing import Dict, Optional
 
 from core.ProjectAliceExceptions import AccessLevelTooLow, GithubNotFound, GithubRateLimit, GithubTokenFailed, SkillNotConditionCompliant, SkillStartDelayed, SkillStartingFailed
 from core.base.SuperManager import SuperManager
@@ -630,9 +630,9 @@ class SkillManager(Manager):
 						pass
 
 					if info['update']:
-						self.allSkills[skillName].onSkillUpdated()
+						self.allSkills[skillName].onSkillUpdated(skill=skillName)
 					else:
-						self.allSkills[skillName].onSkillInstalled()
+						self.allSkills[skillName].onSkillInstalled(skill=skillName)
 
 					if self.ProjectAlice.isBooted:
 						self.allSkills[skillName].onBooted()

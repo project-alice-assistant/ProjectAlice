@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import flask
 import importlib
 import inspect
 import json
@@ -35,6 +36,9 @@ class AliceSkill(ProjectAliceObject):
 		except Exception as e:
 			raise SkillStartingFailed(skillName=constants.UNKNOWN, error=f'[{type(self).__name__}] Failed loading skill: {e}')
 
+		instructionsFile = self.getResource('instructions.md')
+		self._instructions = instructionsFile.read_text() if instructionsFile.exists() else ''
+
 		self._name = self._installer['name']
 		self._author = self._installer['author']
 		self._version = self._installer['version']
@@ -57,6 +61,10 @@ class AliceSkill(ProjectAliceObject):
 		self.loadIntentsDefinition()
 
 		self._utteranceSlotCleaner = re.compile('{(.+?):=>.+?}')
+
+
+	def getHtmlInstructions(self) -> flask.Markup:
+		return flask.Markup(self.Commons.toHtml(self._instructions))
 
 
 	def addUtterance(self, text: str, intent: str) -> bool:
@@ -413,6 +421,11 @@ class AliceSkill(ProjectAliceObject):
 		return self._skillPath
 
 
+	@property
+	def instructions(self) -> str:
+		return self._instructions
+
+
 	def hasScenarioNodes(self) -> bool:
 		return self._scenarioNodeName != ''
 
@@ -538,14 +551,12 @@ class AliceSkill(ProjectAliceObject):
 		self.onSkillUpdated(**kwargs)
 
 
-	def onSkillUpdated(self, **kwargs):
+	def onSkillUpdated(self, skill: str):
+		if skill != self.name:
+			return
+
 		self._updateAvailable = False
 		self.MqttManager.subscribeSkillIntents(self.name)
-
-		instructionsFile = self.getResource('instructions.md')
-		if instructionsFile.exists():
-			instructions = instructionsFile.read_text()
-			self.WebInterfaceManager.addSkillInstructions(self, instructions)
 
 
 	def onSkillDeleted(self, skill: str):
