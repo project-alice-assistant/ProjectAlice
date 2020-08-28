@@ -7,6 +7,7 @@ import json
 import re
 import sqlite3
 from copy import copy
+from markdown import markdown
 from paho.mqtt import client as MQTTClient
 from pathlib import Path
 from typing import Any, Dict, Iterable, Optional, Union
@@ -64,7 +65,7 @@ class AliceSkill(ProjectAliceObject):
 
 
 	def getHtmlInstructions(self) -> flask.Markup:
-		return flask.Markup(self.Commons.toHtml(self._instructions))
+		return flask.Markup(markdown(self._instructions))
 
 
 	def addUtterance(self, text: str, intent: str) -> bool:

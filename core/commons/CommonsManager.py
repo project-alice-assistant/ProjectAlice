@@ -7,7 +7,6 @@ import hashlib
 import inspect
 import json
 import random
-import re
 import requests
 import socket
 import subprocess
@@ -17,7 +16,6 @@ from datetime import datetime
 from googletrans import Translator
 from paho.mqtt.client import MQTTMessage
 from pathlib import Path
-from re import Match
 from typing import Any, Union
 
 import core.commons.model.Slot as slotModel
@@ -333,21 +331,6 @@ class CommonsManager(Manager):
 		number = ''.join(random.choice(digits) for _ in range(length))
 		return int(number) if not number.startswith('0') else self.randomNumber(length)
 
-
-	def toHtml(self, text: str) -> str:
-		text = text.replace('\r\n', '\n')
-		text = text.replace('\n', '<br/>')
-
-		text = re.sub(r'\*{2}(.+?)\*{2}', r'<span class="logBold">\1</span>', text)
-		text = re.sub(r'-{2}(.+?)-{2}', r'<span class="logDim">\1</span>', text)
-		text = re.sub(r'/{2}(.+?)/{2}', r'<span class="logItalic">\1</span>', text)
-		text = re.sub(r'_{2}(.+?)_{2}', r'<span class="logUnderlined">\1</span>', text)
-		return re.sub(r'(?i)!\[(red|green|yellow|blue|grey)]\((.+?)\)', self.colorFormat, text)
-
-
-	@staticmethod
-	def colorFormat(matching: Match) -> str:
-		return f'<span class="log {matching.group(1).title()}">{matching.group(2)}</span>'
 
 # noinspection PyUnusedLocal
 def py_error_handler(filename, line, function, err, fmt): #NOSONAR
