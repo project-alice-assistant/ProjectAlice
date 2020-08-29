@@ -1,8 +1,9 @@
-from typing import Dict, Optional
+from typing import Dict, Optional, List
 import json
 
 from core.base.model.Manager import Manager
 from core.device.model.Location import Location
+from core.dialog.model.DialogSession import DialogSession
 
 
 class LocationManager(Manager):
@@ -113,8 +114,7 @@ class LocationManager(Manager):
 		#todo implement location det. logic
 		# 1a) check name vs locations - done
 		# 1b) check name vs location synonyms - done
-		# 2a) check siteID vs locations
-		# 2b) check siteID vs synonyms
+		# 2) get device for siteID, get main location of device - done
 		# 3) try to get the location context sensitive
 		# 4) check if there is only one room that has that type of device
 		# if 1 or 2 provides names
@@ -141,7 +141,24 @@ class LocationManager(Manager):
 			if loc:
 				return loc
 
+		if siteId:
+			loc = self.getLocationWithName(name=siteId)
+			if loc:
+				return loc
+
+			loc = self.DeviceManager.getDeviceByUID(uid=siteId).getMainLocation()
+			if loc:
+				return loc
+
 		return loc
+
+
+	def getLocationsForSession(self, sess: DialogSession, slotName: str = 'Location') -> List[Location]:
+		slotValues = [x.value['value'] for x in sess.slotsAsObjects.get(slotName, list())]
+		if len(slotValues) == 0:
+			return [self.DeviceManager.getDeviceByUID(uid=sess.siteId).getMainLocation()]
+		else:
+			return [self.getLocation(location=loc) for loc in slotValues]
 
 
 	@property

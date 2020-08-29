@@ -63,5 +63,6 @@
 	"confDeleteZone": "Are you sure you want to delete this location?",
 	"nameNewZone": "Please name the new location",
 	"unreachable": "Project Alice is currently unreachable, the page will try to reload in a short while",
-	"instructions": "Instructions"
+	"instructions": "Instructions",
+	"renameDevice": "What is the devices new name?"
 }

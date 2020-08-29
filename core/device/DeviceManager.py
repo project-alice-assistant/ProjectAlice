@@ -83,6 +83,8 @@ class DeviceManager(Manager):
 		if self._devices:
 			self._heartbeatsCheckTimer = self.ThreadManager.newTimer(interval=3, func=self.checkHeartbeats)
 			self._heartbeatTimer = self.ThreadManager.newTimer(interval=2, func=self.sendHeartbeat)
+		else:
+			self.logInfo("No Devices No Heartbeat!")
 
 
 	def onStop(self):
@@ -127,7 +129,9 @@ class DeviceManager(Manager):
 
 		self.assertDeviceTypeAllowedAtLocation(locationId=location.id, typeId=deviceTypeId)
 
-		values = {'typeID': deviceTypeId, 'uid': uid, 'locationID': location.id, 'display': "{'x': '10', 'y': '10', 'rotation': 0, 'width': 45, 'height': 45}"}
+		skillName = self.getDeviceType(_id=deviceTypeId).skill
+
+		values = {'typeID': deviceTypeId, 'uid': uid, 'locationID': location.id, 'display': "{'x': '10', 'y': '10', 'rotation': 0, 'width': 45, 'height': 45}", 'skillname': skillName}
 		values['id'] = self.databaseInsert(tableName=self.DB_DEVICE, values=values)
 
 		self._devices[values['id']] = Device(data=values)
@@ -217,8 +221,11 @@ class DeviceManager(Manager):
 			return self._deviceLinks.get(_id, None)
 		if not deviceId or not locationId:
 			raise Exception('getLink: supply locationID or deviceID!')
+
+		if not isinstance(locationId, List): locationId = [locationId]
+
 		for link in self._deviceLinks.values():
-			if link.deviceId == deviceId and link.locationId == locationId:
+			if link.deviceId == deviceId and link.locationId in locationId:
 				return link
 
 
@@ -330,16 +337,9 @@ class DeviceManager(Manager):
 	## Heartbeats
 	def onDeviceHeartbeat(self, uid: str, siteId: str = None):
 		device = self.getDeviceByUID(uid=uid)
-		location = None
-		if siteId:
-			location = self.LocationManager.getLocation(siteId=siteId)
 
 		if not device:
 			self.logWarning(f'Device with uid **{uid}** does not exist')
-			return
-
-		if location and not device.isInLocation(location):
-			self.logWarning(f'Device with uid **{uid}** is not matching its defined room (received **{siteId.replace(" ", "_").lower()}** but required **{device.getMainLocation().getSaveName()}**')
 			return
 
 		device.connected = True
@@ -410,12 +410,31 @@ class DeviceManager(Manager):
 		return self._deviceTypes
 
 
-	def getDevicesByLocation(self, locationID: int, connectedOnly: bool = False, deviceTypeID: int = None, withLinks: bool = True, pairedOnly: bool = False) -> List[Device]:
-		return [device for device in self._devices.values() if (device.locationID == locationID or (withLinks and self.getLink(deviceId=device.id, locationId=locationID)))
-		        and device.getDeviceType()
+	def getDevicesForSkill(self, skill: str):
+		return [device for device in self.devices.values() if device.skillName == skill]
+
+
+	def getMainDevice(self) -> Device:
+		devices = self.DeviceManager.getDevicesForSkill('AliceCore')
+		if len(devices) != 1:
+			raise Exception(f'No main device exists! {len(devices)}')
+		return devices[0]
+
+	def getDevicesByLocation(self, locationID: int, deviceTypeID: int = None, connectedOnly: bool = False, withLinks: bool = True, pairedOnly: bool = False) -> List[Device]:
+
+		if locationID and not isinstance(locationID, List): locationID = [locationID]
+		if deviceTypeID and not isinstance(deviceTypeID, List): deviceTypeID = [deviceTypeID]
+
+		return [device for device in self._devices.values()
+		        #location: exact or link
+		        if ( (locationID and device.locationID in locationID)
+		            or (withLinks and self.getLink(deviceId=device.id, locationId=locationID) ) )
+		        #check status
 		        and (not connectedOnly or device.connected)
-		        and (not deviceTypeID or device.deviceTypeID == deviceTypeID)
-		        and (not pairedOnly or device.uid)]
+		        and (not pairedOnly or device.uid)
+		        #check deviceType
+		        and device.getDeviceType()
+		        and (not deviceTypeID or device.deviceTypeID in deviceTypeID)]
 
 
 	def getDevicesByType(self, deviceType: str, connectedOnly: bool = False) -> List[Device]:
@@ -431,6 +450,38 @@ class DeviceManager(Manager):
 
 	def getDeviceLinksByType(self, deviceType: int, connectedOnly: bool = False) -> List[DeviceLink]:
 		return [x for x in self._deviceLinks.values() if x.getDevice().deviceTypeID == deviceType and (not connectedOnly or x.getDevice().connected)]
+
+
+	def getDeviceLinks(self, locationID: int, deviceTypeID: int = None, connectedOnly: bool = False, pairedOnly: bool = False) -> List[DeviceLink]:
+		if locationID and not isinstance(locationID, List): locationID = [locationID]
+		if deviceTypeID and not isinstance(deviceTypeID, List): deviceTypeID = [deviceTypeID]
+
+		return [x for x in self._deviceLinks.values()
+		        if (not locationID or x.locationId in locationID)
+		        and x.getDevice()
+		        and (not deviceTypeID or x.getDevice().deviceTypeID in deviceTypeID)
+		        and (not connectedOnly or x.getDevice().connected)
+		        and (not pairedOnly or x.getDevice().uid)]
+
+
+	def getDeviceLinksForSession(self, session: DialogSession, skill: str):
+		#get all relevant deviceTypes
+		devTypes = self.DeviceManager.getDeviceTypesForSkill(skillName=skill)
+		devTypeIds = [dev for dev in devTypes] # keys in dict are Ids
+
+		#get all required locations
+		locations = self.LocationManager.getLocationsForSession(sess=session)
+		locationIds = [loc.id for loc in locations]
+
+		return self.DeviceManager.getDeviceLinks(deviceTypeID=devTypeIds, locationID=locationIds)
+
+
+	def groupDeviceLinksByDevice(self, links: List[DeviceLink]) -> Dict[int,DeviceLink]:
+		# group links by device
+		devGrouped = dict()
+		for l in links:
+			devGrouped.setdefault(l.deviceId,[]).append(l)
+		return devGrouped
 
 
 	def getDeviceByUID(self, uid: str) -> Optional[Device]:

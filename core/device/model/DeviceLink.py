@@ -42,7 +42,7 @@ class DeviceLink(ProjectAliceObject):
 
 
 	def getDevice(self):
-		return self.DeviceManager.getDeviceByID(id=self.deviceId)
+		return self.DeviceManager.getDeviceById(_id=self.deviceId)
 
 
 	def changedLocSettingsStructure(self, newSet: dict):

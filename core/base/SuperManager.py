@@ -64,6 +64,9 @@ class SuperManager:
 		languageManager = self._managers.pop('LanguageManager')
 		languageManager.onStart()
 
+		deviceManager = self._managers.pop('DeviceManager')
+		deviceManager.onStart()
+
 		audioServer = self._managers.pop('AudioManager')
 		audioServer.onStart()
 
@@ -100,6 +103,7 @@ class SuperManager:
 		self._managers[configManager.name] = configManager
 		self._managers[audioServer.name] = audioServer
 		self._managers[languageManager.name] = languageManager
+		self._managers[deviceManager.name] = deviceManager
 		self._managers[talkManager.name] = talkManager
 		self._managers[databaseManager.name] = databaseManager
 		self._managers[userManager.name] = userManager
@@ -159,8 +163,10 @@ class SuperManager:
 		self.commonsManager = CommonsManager()
 		self.commons = self.commonsManager
 		self.configManager = ConfigManager()
-		self.audioManager = AudioManager()
 		self.databaseManager = DatabaseManager()
+		self.skillManager = SkillManager()
+		self.deviceManager = DeviceManager()
+		self.audioManager = AudioManager()
 		self.languageManager = LanguageManager()
 		self.asrManager = ASRManager()
 		self.ttsManager = TTSManager()
@@ -171,8 +177,6 @@ class SuperManager:
 		self.userManager = UserManager()
 		self.multiIntentManager = MultiIntentManager()
 		self.telemetryManager = TelemetryManager()
-		self.skillManager = SkillManager()
-		self.deviceManager = DeviceManager()
 		self.locationManager = LocationManager()
 		self.internetManager = InternetManager()
 		self.wakewordRecorder = WakewordRecorder()

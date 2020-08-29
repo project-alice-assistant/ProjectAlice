@@ -31,6 +31,12 @@ class Device(ProjectAliceObject):
 
 		self.uid = self.data['uid']
 		self.locationID = self.data['locationID']
+
+		if 'skillName' in self.data.keys():
+			self.skillName = self.data['skillName']
+		else:
+			self.skillName = ''
+
 		if 'display' in self.data.keys() and self.data['display']:
 			self._display = ast.literal_eval(self.data['display'])
 		else:
@@ -94,7 +100,7 @@ class Device(ProjectAliceObject):
 			'id'          : self.id,
 			'deviceTypeID': self.deviceTypeID,
 			'deviceType'  : self.getDeviceType().name,
-			'skill'       : self.getDeviceType().skill,
+			'skillName'   : self.skillName,
 			'name'        : self.name,
 			'uid'         : self.uid,
 			'locationID'  : self.locationID,
@@ -118,6 +124,15 @@ class Device(ProjectAliceObject):
 	def changeLocation(self, locationId: int):
 		self.locationID = locationId
 		self.getDeviceType().onChangedLocation(device=self)
+
+
+	def changeName(self, newName: str):
+		self.name = newName
+		self.DatabaseManager.update(tableName=self.DeviceManager.DB_DEVICE,
+		                            callerName=self.DeviceManager.name,
+		                            values={'name': newName},
+		                            row=('id', self.id))
+
 
 
 	def saveDevSettings(self):

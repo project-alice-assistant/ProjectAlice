@@ -52,7 +52,6 @@ class MyHomeView(View):
 			return jsonify(success=False, error=str(e))
 
 
-	# TODO Consider using PUT method?
 	@route('/Location/0/add', methods=['POST'])
 	def addLocation(self):
 		try:
@@ -62,7 +61,6 @@ class MyHomeView(View):
 			return jsonify(success=False, error=str(e))
 
 
-	# TODO consider using DELETE method?
 	@route('/Location/<path:_id>/delete', methods=['POST'])
 	def deleteLocation(self, _id: str):
 		_id = int(_id)
@@ -112,7 +110,6 @@ class MyHomeView(View):
 			self.logError(f'Failed changing location: {e}')
 
 
-	# TODO consider using DELETE method? (will blow up jquery, because only get/post have shortcut methods)
 	@route('/Device/<path:_id>/delete', methods=['POST'])
 	def deleteDevice(self, _id: int):
 		try:
@@ -164,6 +161,19 @@ class MyHomeView(View):
 			self.logError(f'Failed saving device settings: {e}')
 
 
+	@route('/Device/<path:_id>/saveCoreSettings', methods=['POST'])
+	def saveDeviceCoreSettings(self, _id: str):
+		try:
+			data = request.form.to_dict()
+			_id = int(_id)
+			device = self.DeviceManager.getDeviceById(_id=_id)
+			device.changeName(newName=data['name'])
+			return jsonify(success=True)
+		except Exception as e:
+			self.logError(f'Failed saving device core settings: {e}')
+			return jsonify(success=False, error=str(e))
+
+
 	@route('/Device/<path:_id>/toggle', methods=['POST'])
 	def toggleDevice(self, _id: str):
 		try:
@@ -175,7 +185,7 @@ class MyHomeView(View):
 			return jsonify(success=True)
 		except Exception as e:
 			self.logError(f'Failed toggling device Link: {e}')
-			return jsonify(success=False)
+			return jsonify(success=False, error=str(e))
 
 
 	@route('/Device/<path:_id>/getLinks', methods=['GET'])

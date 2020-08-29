@@ -422,6 +422,7 @@ $(function () {
 						};
 						let $device = newDevice($newZone, deviceData);
 						makeResizableRotatableAndDraggable($device);
+						makeDroppable($(sZone), true);
 				});
 
 			} else if (deviceLinkerMode) {
@@ -585,8 +586,10 @@ $(function () {
 
 		$newDevice.on('click touchstart', function () {
 			if(deviceSettingsMode) {
-				let content = "<h1>" + data['name'] + "</h1>";
-				content += "<h2>" + data['deviceType'] + "</h2>";
+				let content = "<div class='deviceName'><div id='content'>";
+				content += data['name'];
+				content += "</div><i class='fas fa-pencil-alt link-hover' id='renameDevice'></div></i>";
+				content += "<h3>" + data['deviceType'] + "</h3>";
 
 				if (data['uid'] == 'undefined' || data['uid'] == null) {
 					content += "NO DEVICE PAIRED!<div id='startPair' class='button'>Search Device</div>"
@@ -639,12 +642,22 @@ $(function () {
 
 				});
 
-// TODO Room specific Settings
-				//content += "<div class='configBlock'><div class='configLabel'>Available in following Rooms:</div><input class='configInput'/></div>";
-				//content += "<span class=\"toolbarButton link-hover\" id=\"deviceLinker\" title=\"Link a device with multiple rooms\"><i class=\"fas fa-link\"></i></span>";
-
-
-
+				$('#renameDevice').on('click touchstart', function (e) {
+					let targetName = $(this).parent().children('#content')
+					let newDevName = prompt($('#langRenameDevice').text(), data['name']);
+					if(newDevName === null){
+						return;
+					}
+					$.post('/myhome/Device/'+data['id']+'/saveCoreSettings', {name : newDevName}).done(function(ret) {
+						if (handleError(ret)) {
+							return;
+						}
+						data['name'] = newDevName;
+						targetName.html(newDevName);
+						chTitle = $('#device_'+data['id']);
+						chTitle.prop('title', newDevName);
+					});
+				});
 
 				// add new synonym entry to conf. List
 				//TODO add to DB
@@ -687,7 +700,7 @@ $(function () {
 		});
 
 		$newDevice.on('contextmenu', function () {
-			if (deviceInstallerMode) {
+			if (deviceInstallerMode || deviceMoveMode) {
 				if(confirm($('#langConfDeleteDevice').text())){
 					let $dev = $(this)
 					$.post('Device/'+data['id']+'/delete').done(function (res) {

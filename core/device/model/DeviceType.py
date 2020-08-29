@@ -108,6 +108,16 @@ class DeviceType(ProjectAliceObject):
 				links.changedLocSettingsStructure(self._locSettings)
 
 
+	def checkDevices(self):
+		if not self.parentSkillInstance:
+			self.logInfo(f'no parent skill!')
+			return
+		self.DatabaseManager.update(tableName=self.DeviceManager.DB_DEVICE,
+		                            callerName=self.DeviceManager.name,
+		                            values={'skillName': self.parentSkillInstance.name},
+		                            row=('typeID', self.id))
+
+
 	@property
 	def parentSkillInstance(self):
 		return self._skillInstance
@@ -116,6 +126,7 @@ class DeviceType(ProjectAliceObject):
 	@parentSkillInstance.setter
 	def parentSkillInstance(self, skill):
 		self._skillInstance = skill
+		self.checkDevices()
 
 
 	@property
