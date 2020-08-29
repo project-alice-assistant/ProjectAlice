@@ -29,7 +29,7 @@ class NodeRedManager(Manager):
 	def injectSkillNodes(self):
 		package = Path('../.node-red/package.json')
 		if not package.exists():
-			self.logWarning('Package json file for Node Red is missing. Is Node Red even installed?')
+			#self.logWarning('Package json file for Node Red is missing. Is Node Red even installed?')
 			return
 
 		for skillName, tup in self.SkillManager.allScenarioNodes().items():
