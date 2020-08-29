@@ -162,6 +162,7 @@ $(function () {
 				}
 			})
 			.fail(function (res){
+				if ($('#adminPageTabsContainer').length > 0) return;
 				$nodal.show();
 			});
 	}
