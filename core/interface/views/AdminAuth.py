@@ -1,5 +1,4 @@
 import datetime
-
 from flask import jsonify, redirect, render_template, request
 from flask_login import current_user, login_user
 
@@ -26,7 +25,7 @@ class AdminAuth(View):
 			return redirect(self.__class__.nextPage)
 
 		alice = self.SkillManager.getSkillInstance('AliceCore')
-		if alice:
+		if self.ProjectAlice.isBooted and alice:
 			alice.explainInterfaceAuth()
 
 		return render_template(template_name_or_list='adminAuth.html',
