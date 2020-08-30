@@ -577,8 +577,8 @@ class SkillManager(Manager):
 					self.logInfo(f'![yellow]({skillName}) - Version {self._skillList[skillName]["installer"]["version"]} < {str(remoteVersion)} in {self.ConfigManager.getAliceConfigByName("skillsUpdateChannel")}')
 
 					if not self.ConfigManager.getAliceConfigByName('skillAutoUpdate'):
-						if skillName in self._activeSkills:
-							self._activeSkills[skillName].updateAvailable = True
+						if skillName in self.allSkills:
+							self.allSkills[skillName].updateAvailable = True
 					else:
 						if not self.downloadInstallTicket(skillName):
 							raise Exception
