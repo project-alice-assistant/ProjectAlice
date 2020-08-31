@@ -2,11 +2,10 @@ import json
 import sqlite3
 import time
 import uuid
-from typing import Dict, List, Optional
-
 from paho.mqtt.client import MQTTMessage
 from random import shuffle
 from serial.tools import list_ports
+from typing import Dict, List, Optional, Union
 
 from core.base.model.Manager import Manager
 from core.commons import constants
@@ -216,13 +215,14 @@ class DeviceManager(Manager):
 		)
 
 
-	def getLink(self, _id: int = None, deviceId: int = None, locationId: int = None) -> DeviceLink:
+	def getLink(self, _id: int = None, deviceId: int = None, locationId: Union[list, int] = None) -> DeviceLink:
 		if _id:
 			return self._deviceLinks.get(_id, None)
 		if not deviceId or not locationId:
 			raise Exception('getLink: supply locationID or deviceID!')
 
-		if not isinstance(locationId, List): locationId = [locationId]
+		if not isinstance(locationId, List):
+			locationId = [locationId]
 
 		for link in self._deviceLinks.values():
 			if link.deviceId == deviceId and link.locationId in locationId:
@@ -236,7 +236,7 @@ class DeviceManager(Manager):
 			raise Exception(f'Device type {deviceType.name} can\'t be linked to other rooms')
 		if self.getLink(deviceId=deviceId, locationId=locationId):
 			raise Exception(f'There is already a link from {deviceId} to {locationId}')
-		values = {'deviceID': deviceId, 'locationID': locationId, 'locSettings': json.dumps(deviceType._locSettings)}
+		values = {'deviceID': deviceId, 'locationID': locationId, 'locSettings': json.dumps(deviceType.initialLocationSettings)}
 		# noinspection SqlResolve
 		values['id'] = self.databaseInsert(tableName=self.DB_LINKS, query='INSERT INTO :__table__ (deviceID, locationID, locSettings) VALUES (:deviceID, :locationID, :locSettings)', values=values)
 		self.logInfo(f'Added link from device {deviceId} to location {locationId}')
@@ -422,8 +422,11 @@ class DeviceManager(Manager):
 
 	def getDevicesByLocation(self, locationID: int, deviceTypeID: int = None, connectedOnly: bool = False, withLinks: bool = True, pairedOnly: bool = False) -> List[Device]:
 
-		if locationID and not isinstance(locationID, List): locationID = [locationID]
-		if deviceTypeID and not isinstance(deviceTypeID, List): deviceTypeID = [deviceTypeID]
+		if locationID and not isinstance(locationID, List):
+			locationID = [locationID]
+
+		if deviceTypeID and not isinstance(deviceTypeID, List):
+			deviceTypeID = [deviceTypeID]
 
 		return [device for device in self._devices.values()
 		        #location: exact or link
@@ -453,8 +456,11 @@ class DeviceManager(Manager):
 
 
 	def getDeviceLinks(self, locationID: int, deviceTypeID: int = None, connectedOnly: bool = False, pairedOnly: bool = False) -> List[DeviceLink]:
-		if locationID and not isinstance(locationID, List): locationID = [locationID]
-		if deviceTypeID and not isinstance(deviceTypeID, List): deviceTypeID = [deviceTypeID]
+		if locationID and not isinstance(locationID, List):
+			locationID = [locationID]
+
+		if deviceTypeID and not isinstance(deviceTypeID, List):
+			deviceTypeID = [deviceTypeID]
 
 		return [x for x in self._deviceLinks.values()
 		        if (not locationID or x.locationId in locationID)
@@ -476,11 +482,12 @@ class DeviceManager(Manager):
 		return self.DeviceManager.getDeviceLinks(deviceTypeID=devTypeIds, locationID=locationIds)
 
 
-	def groupDeviceLinksByDevice(self, links: List[DeviceLink]) -> Dict[int,DeviceLink]:
+	@staticmethod
+	def groupDeviceLinksByDevice(links: List[DeviceLink]) -> Dict[int, DeviceLink]:
 		# group links by device
 		devGrouped = dict()
-		for l in links:
-			devGrouped.setdefault(l.deviceId,[]).append(l)
+		for link in links:
+			devGrouped.setdefault(link.deviceId,[]).append(link)
 		return devGrouped
 
 
