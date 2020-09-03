@@ -618,7 +618,7 @@ class SkillManager(Manager):
 		finally:
 			self.MqttManager.mqttBroadcast(topic='hermes/leds/clear')
 
-			if skillsToBoot:
+			if skillsToBoot and self.ProjectAlice.isBooted:
 				for skillName, info in skillsToBoot.items():
 					self._initSkills(loadOnly=skillName, reload=info['update'])
 					self.ConfigManager.loadCheckAndUpdateSkillConfigurations(skillToLoad=skillName)
@@ -634,8 +634,7 @@ class SkillManager(Manager):
 					else:
 						self.allSkills[skillName].onSkillInstalled(skill=skillName)
 
-					if self.ProjectAlice.isBooted:
-						self.allSkills[skillName].onBooted()
+					self.allSkills[skillName].onBooted()
 
 				self.AssistantManager.checkAssistant()
 

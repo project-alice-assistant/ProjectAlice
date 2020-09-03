@@ -1,9 +1,8 @@
 import json
+import os
 from datetime import datetime
 from pathlib import Path
 from typing import Dict, Generator
-
-import os
 
 from core.base.model.Manager import Manager
 
@@ -35,8 +34,12 @@ class AssistantManager(Manager):
 		if not self.checkConsistency() or forceRetrain:
 			self.logInfo('Assistant is not consistent, it needs training')
 			self.train()
-			self.DialogTemplateManager.train()
-			self.NluManager.train()
+
+			if not self.DialogTemplateManager.checkData():
+				self.DialogTemplateManager.train()
+
+			if not self.NluManager.checkData():
+				self.NluManager.train()
 		else:
 			if not self.NluManager.checkData():
 				self.NluManager.train()
@@ -90,6 +93,7 @@ class AssistantManager(Manager):
 
 		for intentName, intent in existingIntents.items():
 			if intentName not in declaredIntents:
+				print(f'la {intentName}')
 				passed = False
 				break
 
@@ -98,10 +102,12 @@ class AssistantManager(Manager):
 
 			for slot in intent['slots']:
 				if intentName not in declaredSlots:
+					print(f'here {intentName}')
 					passed = False
 					break
 
 				if slot['name'] not in declaredSlots[intentName]:
+					print(slot['name'])
 					passed = False
 					break
 
