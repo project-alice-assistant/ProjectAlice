@@ -93,7 +93,6 @@ class AssistantManager(Manager):
 
 		for intentName, intent in existingIntents.items():
 			if intentName not in declaredIntents:
-				print(f'la {intentName}')
 				passed = False
 				break
 
@@ -102,12 +101,10 @@ class AssistantManager(Manager):
 
 			for slot in intent['slots']:
 				if intentName not in declaredSlots:
-					print(f'here {intentName}')
 					passed = False
 					break
 
 				if slot['name'] not in declaredSlots[intentName]:
-					print(slot['name'])
 					passed = False
 					break
 
