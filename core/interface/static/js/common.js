@@ -2,6 +2,7 @@ let MQTT;
 let mqttSubscribers = {};
 let MQTT_HOST;
 let MQTT_PORT;
+let LAST_CORE_HEARTBEAT = 0;
 
 function mqttRegisterSelf(target, method) {
 	if (!mqttSubscribers.hasOwnProperty(method)) {
@@ -122,6 +123,7 @@ $(function () {
 	function onConnected() {
 		MQTT.subscribe('projectalice/nlu/trainingStatus');
 		MQTT.subscribe('projectalice/skills/instructions');
+		MQTT.subscribe('projectalice/devices/coreHeartbeat');
 	}
 
 	function onMessageIn(msg) {
@@ -149,6 +151,9 @@ $(function () {
 			$('#skillInstructions').show();
 			let $content = $('#skillInstructionsContent');
 			$content.html($content.html() + payload['instructions']);
+		}
+		else if (msg.topic == 'projectalice/devices/coreHeartbeat') {
+			LAST_CORE_HEARTBEAT = Date.now();
 		}
 	}
 

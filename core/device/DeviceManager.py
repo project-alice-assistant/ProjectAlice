@@ -81,9 +81,8 @@ class DeviceManager(Manager):
 
 		if self._devices:
 			self._heartbeatsCheckTimer = self.ThreadManager.newTimer(interval=3, func=self.checkHeartbeats)
-			self._heartbeatTimer = self.ThreadManager.newTimer(interval=2, func=self.sendHeartbeat)
-		else:
-			self.logInfo("No Devices No Heartbeat!")
+
+		self._heartbeatTimer = self.ThreadManager.newTimer(interval=2, func=self.sendHeartbeat)
 
 
 	def onStop(self):
