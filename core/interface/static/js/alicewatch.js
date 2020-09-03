@@ -3,7 +3,7 @@ $(function () {
 	let $console = $('#console');
 
 	function onMessage(msg) {
-		if (!msg.hasOwnProperty('payloadString')) {
+		if (!msg.payloadString) {
 			return;
 		}
 

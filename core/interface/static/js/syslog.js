@@ -1,7 +1,7 @@
 $(function () {
 
 	function onMessage(msg) {
-		if (!msg.hasOwnProperty('payloadString')) {
+		if (!msg.payloadString) {
 			return;
 		}
 
