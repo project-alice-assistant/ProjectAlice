@@ -646,7 +646,7 @@ $(function () {
 
 				});
 
-				$('#renameDevice').on('click touchstart', function (e) {
+				$('#renameDevice').on('click touchstart', function () {
 					let targetName = $(this).parent().children('#content')
 					let newDevName = prompt($('#langRenameDevice').text(), data['name']);
 					if(newDevName === null){
