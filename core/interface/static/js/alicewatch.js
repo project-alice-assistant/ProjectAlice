@@ -3,6 +3,10 @@ $(function () {
 	let $console = $('#console');
 
 	function onMessage(msg) {
+		if (!msg.hasOwnProperty('payloadString')) {
+			return;
+		}
+
 		let payload = JSON.parse(msg.payloadString);
 
 		let pattern = /!\[(Red|Green|Yellow|Orange|Blue|Grey)]\((.*?)\)/gi;

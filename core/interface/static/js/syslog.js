@@ -1,6 +1,10 @@
 $(function () {
 
 	function onMessage(msg) {
+		if (!msg.hasOwnProperty('payloadString')) {
+			return;
+		}
+
 		let json = JSON.parse(msg.payloadString);
 		addToLogs(json['msg'])
 	}
