@@ -127,8 +127,8 @@ $(function () {
 	}
 
 	function onMessageIn(msg) {
-		let payload = JSON.parse(msg.payloadString);
 		if (msg.topic == 'projectalice/nlu/trainingStatus') {
+			let payload = JSON.parse(msg.payloadString);
 			let $container = $('#aliceStatus');
 			if (payload.status == 'training') {
 				if ($container.text().length <= 0) {
@@ -148,6 +148,7 @@ $(function () {
 			}
 		}
 		else if (msg.topic == 'projectalice/skills/instructions') {
+			let payload = JSON.parse(msg.payloadString);
 			$('#skillInstructions').show();
 			let $content = $('#skillInstructionsContent');
 			$content.html($content.html() + payload['instructions']);
@@ -157,18 +158,17 @@ $(function () {
 		}
 	}
 
-	function pingAlice() {
+	function checkCoreStatus() {
 		let $nodal = $('#serverUnavailable');
-		$.get(location.origin)
-			.done(function(res) {
-				if ($nodal.is(':visible')) {
-					$nodal.hide();
-					location.reload();
-				}
-			})
-			.fail(function (res){
-				$nodal.show();
-			});
+
+		if (Date.now() > LAST_CORE_HEARTBEAT + 3000) {
+			$nodal.show();
+		} else {
+			if ($nodal.is(':visible')) {
+				$nodal.hide();
+				location.reload();
+			}
+		}
 	}
 
 	let $defaultTab = $('.tabsContainer ul li:first');
@@ -211,5 +211,5 @@ $(function () {
 
 	connectMqtt();
 
-	setInterval(pingAlice, 2000);
+	setInterval(checkCoreStatus, 2000);
 });
