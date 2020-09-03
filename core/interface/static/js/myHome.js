@@ -236,7 +236,7 @@ $(function () {
 				containment: 'parent',
 				grid       : [5, 5],
 				autoHide   : true,
-				stop        : function (e) {
+				stop        : function () {
 					saveRequired();
 				}
 			}).rotatable({
@@ -248,7 +248,7 @@ $(function () {
 					left: 0
 				},
 				autoHide: true,
-				stop        : function (e) {
+				stop        : function () {
 					saveRequired();
 				}
 			}).draggable({
@@ -285,7 +285,7 @@ $(function () {
 	function setSelectedDevice($element, $confOut){
 		saveSidebar();
 		// clear old, set new, draw links
-		if(selectedDevice) {
+		if (selectedDevice) {
 			selectedDevice.connections('remove');
 			selectedDevice.removeClass('highlightedDevice');
 		}
@@ -293,12 +293,12 @@ $(function () {
 		if(selectedDevice) {
 			selectedDevice.addClass('highlightedDevice');
 			$.get('Device/' + selectedDevice.data('id') + '/getLinks').done(function (res) {
-				res = jQuery.parseJSON(res);
+				res = JSON.parse(res);
 				if(handleError(res)) return;
 				selectedLinks = res;
 				let content = "";
 				$.each(res, function (id, link) {
-					target = $('#floorPlan-Zone_' + link['locationID']);
+					let target = $('#floorPlan-Zone_' + link['locationID']);
 					target.children('.inputOrText').connections({
 						to     : selectedDevice,
 						'class': 'deviceLink'
@@ -306,12 +306,12 @@ $(function () {
 					content += link['']
 				});
 				if($confOut && selectedLinks){
-					total = "<div class='configCategoryTitle'>Available In:</div>";
+					let total = "<div class='configCategoryTitle'>Available In:</div>";
 					let hasOne = false;
 					$.each(selectedLinks, function (id, val){
 						hasOne = true;
 						content = "<div class='linkTitle'>"+val['locationName']+"</div>";
-						confLines = "<form action='Device/"+val['deviceID']+"/saveSettings/"+val['locationID']+"'>";
+						let confLines = "<form action='Device/"+val['deviceID']+"/saveSettings/"+val['locationID']+"'>";
 						$.each(val['locSettings'], function (ckey, cval) {
 							confLines += "<div class='configLabel'>" + ckey + "</div><input name='" + ckey + "' class='saveEnter configInput' value='" + cval + "'/>";
 						});
@@ -433,7 +433,7 @@ $(function () {
 				if (selectedDevice == null || selectedDevice == '') return;
 
 				// add link from selected Device to zone
-				target = this;
+				let target = this;
 				$.post('/myhome/Device/'+selectedDevice.data('id')+'/addLink/'+data["id"]).done(function (result){
 					if( handleError(result) ) return;
 					// frontend: draw bezier
@@ -494,7 +494,7 @@ $(function () {
 				}
 				return false;
 			} else if (deviceLinkerMode){
-				target = this;
+				let target = this;
 				$.post('Device/'+ selectedDevice.data('id') +'/removeLink/'+ $(this).data('id')).done(function (res) {
 					if( handleError(res) ){
 						return;
@@ -658,7 +658,7 @@ $(function () {
 						}
 						data['name'] = newDevName;
 						targetName.html(newDevName);
-						chTitle = $('#device_'+data['id']);
+						let chTitle = $('#device_'+data['id']);
 						chTitle.prop('title', newDevName);
 					});
 				});
@@ -850,7 +850,7 @@ $(function () {
 				$('.zindexer').show();
 				$(this).removeClass(classAddZone);
 				let $zone = newZone(zdata);
-				makeResizableRotatableAndDraggable($(sZone));
+				makeResizableRotatableAndDraggable($zone);
 				makeDroppable($floorPlan, false);
 			}
 
@@ -1061,7 +1061,7 @@ $(function () {
 										return;
 									}
 									$(newParent).append(ui.draggable);
-								}).fail(function(result) {
+								}).fail(function() {
 									alert("I just can't reach my servers!")
 									errorOccured = true
 							});
@@ -1216,13 +1216,13 @@ $(function () {
 	function saveEnter(){
 		// reroute enter save
 		let relevants = $('.saveEnter.configInput');
-		relevants.keypress(function (e) {
-			if (e.which == 13) {
+		relevants.on('keydown', function(e) {
+			if (e.key == "Enter") {
 				e.preventDefault();
 				makeDirty(e);
 				return false;
 			}
-		});
+		})
 	}
 
 //run logic on startup
