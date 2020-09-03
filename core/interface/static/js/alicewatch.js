@@ -3,7 +3,7 @@ $(function () {
 	let $console = $('#console');
 
 	function onMessage(msg) {
-		if (!msg.payloadString) {
+		if (msg.topic != 'projectalice/logging/alicewatch' || !msg.payloadString) {
 			return;
 		}
 

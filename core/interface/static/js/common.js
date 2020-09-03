@@ -8,6 +8,7 @@ function mqttRegisterSelf(target, method) {
 	if (!mqttSubscribers.hasOwnProperty(method)) {
 		mqttSubscribers[method] = [];
 	}
+
 	mqttSubscribers[method].push(target);
 }
 

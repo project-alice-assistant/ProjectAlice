@@ -44,12 +44,16 @@ $(function () {
 	// DATA
 	let dirtyFormulars = [];
 
-// Setup and handle MQTT
+	// Setup and handle MQTT
 	function onConnect() {
 		MQTT.subscribe('projectalice/devices/updated');
 	}
 
 	function onMessage(msg) {
+		if (msg.topic != 'projectalice/devices/updated' || !msg.payloadString) {
+			return;
+		}
+
 		let payload = JSON.parse(msg.payloadString);
 		if (msg.topic === 'projectalice/devices/updated') {
 			if(payload['type'] == 'status') {
@@ -215,9 +219,9 @@ $(function () {
 							$(this).append(ui.draggable);
 						}
 					}
-					ui.draggable.draggable( "option", "revert", false );
+					ui.draggable.draggable( 'option', 'revert', false );
 					ui.draggable.css({top: ui.offset.top - $(this).offset().top, left: ui.offset.left - $(this).offset().left } );
-					setTimeout( function() { ui.draggable.draggable( "option", "revert", true ); }, 1000 );
+					setTimeout( function() { ui.draggable.draggable( 'option', 'revert', true ); }, 1000 );
   				}
 			});
 	}

@@ -1,7 +1,7 @@
 $(function () {
 
 	function onMessage(msg) {
-		if (!msg.payloadString) {
+		if (msg != 'projectalice/logging/syslog' || !msg.payloadString) {
 			return;
 		}
 
