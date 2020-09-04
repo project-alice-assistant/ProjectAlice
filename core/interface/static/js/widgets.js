@@ -175,8 +175,6 @@ $(function () {
 				newForm += "<div class='buttonLine'><input id='submitConfig' class='button' type='submit' value='" + $('#langConfSave').text() + "'></div>";
 				dialogContainer.find('#' + tab).html(newForm);
 
-				$(":checkbox").checkToggler();
-
 				// perform submit/save of the form without switching page
 				let form = $('#' + tab + 'Form');
 				let saveButton = form.find('#submitConfig');
