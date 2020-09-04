@@ -13,6 +13,7 @@ from core.device.model.Device import Device
 from core.device.model.DeviceException import MaxDeviceOfTypeReached, MaxDevicePerLocationReached
 from core.device.model.DeviceLink import DeviceLink
 from core.device.model.DeviceType import DeviceType
+from core.device.model.Heartbeat import Heartbeat
 from core.device.model.Location import Location
 from core.dialog.model.DialogSession import DialogSession
 
@@ -59,7 +60,7 @@ class DeviceManager(Manager):
 
 		self._heartbeats = dict()
 		self._heartbeatsCheckTimer = None
-		self._heartbeatTimer = None
+		self._heartbeat: Optional[Heartbeat] = None
 
 
 	def onStart(self):
@@ -82,7 +83,7 @@ class DeviceManager(Manager):
 		if self._devices:
 			self.ThreadManager.newThread(name='checkHeartbeats', target=self.checkHeartbeats)
 
-		self.ThreadManager.newThread(name='sendCoreHeartbeat', target=self.sendHeartbeat)
+		self._heartbeat = Heartbeat()
 
 
 	def onStop(self):
@@ -357,14 +358,6 @@ class DeviceManager(Manager):
 					self.MqttManager.publish(constants.TOPIC_DEVICE_UPDATED, payload={'id': device.id, 'type': 'status'})
 
 		self._heartbeatsCheckTimer = self.ThreadManager.newTimer(interval=3, func=self.checkHeartbeats)
-
-
-	def sendHeartbeat(self):
-		self.MqttManager.publish(
-			topic=constants.TOPIC_CORE_HEARTBEAT
-		)
-
-		self._heartbeatTimer = self.ThreadManager.newTimer(interval=2, func=self.sendHeartbeat)
 
 
 	## base
