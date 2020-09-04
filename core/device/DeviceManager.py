@@ -80,9 +80,9 @@ class DeviceManager(Manager):
 		self.MqttManager.publish(topic='projectalice/devices/coreReconnection')
 
 		if self._devices:
-			self._heartbeatsCheckTimer = self.ThreadManager.newTimer(interval=3, func=self.checkHeartbeats)
+			self.ThreadManager.newThread(name='checkHeartbeats', target=self.checkHeartbeats)
 
-		self._heartbeatTimer = self.ThreadManager.newTimer(interval=2, func=self.sendHeartbeat)
+		self.ThreadManager.newThread(name='sendCoreHeartbeat', target=self.sendHeartbeat)
 
 
 	def onStop(self):
