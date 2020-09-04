@@ -83,6 +83,4 @@ $(function () {
 		handleUtilityClick($(this), 'tuneWakeword', 1000);
 		return false;
 	});
-
-	$(":checkbox").checkToggler();
 });

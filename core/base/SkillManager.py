@@ -577,8 +577,8 @@ class SkillManager(Manager):
 					self.logInfo(f'![yellow]({skillName}) - Version {self._skillList[skillName]["installer"]["version"]} < {str(remoteVersion)} in {self.ConfigManager.getAliceConfigByName("skillsUpdateChannel")}')
 
 					if not self.ConfigManager.getAliceConfigByName('skillAutoUpdate'):
-						if skillName in self._activeSkills:
-							self._activeSkills[skillName].updateAvailable = True
+						if skillName in self.allSkills:
+							self.allSkills[skillName].updateAvailable = True
 					else:
 						if not self.downloadInstallTicket(skillName):
 							raise Exception
@@ -618,7 +618,7 @@ class SkillManager(Manager):
 		finally:
 			self.MqttManager.mqttBroadcast(topic='hermes/leds/clear')
 
-			if skillsToBoot:
+			if skillsToBoot and self.ProjectAlice.isBooted:
 				for skillName, info in skillsToBoot.items():
 					self._initSkills(loadOnly=skillName, reload=info['update'])
 					self.ConfigManager.loadCheckAndUpdateSkillConfigurations(skillToLoad=skillName)
@@ -634,8 +634,7 @@ class SkillManager(Manager):
 					else:
 						self.allSkills[skillName].onSkillInstalled(skill=skillName)
 
-					if self.ProjectAlice.isBooted:
-						self.allSkills[skillName].onBooted()
+					self.allSkills[skillName].onBooted()
 
 				self.AssistantManager.checkAssistant()
 

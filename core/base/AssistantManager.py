@@ -1,9 +1,8 @@
 import json
+import os
 from datetime import datetime
 from pathlib import Path
 from typing import Dict, Generator
-
-import os
 
 from core.base.model.Manager import Manager
 
@@ -35,8 +34,12 @@ class AssistantManager(Manager):
 		if not self.checkConsistency() or forceRetrain:
 			self.logInfo('Assistant is not consistent, it needs training')
 			self.train()
-			self.DialogTemplateManager.train()
-			self.NluManager.train()
+
+			if not self.DialogTemplateManager.checkData():
+				self.DialogTemplateManager.train()
+
+			if not self.NluManager.checkData():
+				self.NluManager.train()
 		else:
 			if not self.NluManager.checkData():
 				self.NluManager.train()

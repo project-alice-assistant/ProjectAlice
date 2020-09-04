@@ -550,7 +550,8 @@
 			}
 		},
 		"display": "hidden",
-		"category": "system"
+		"category": "system",
+		"description": "Bla bla bla"
 	},
 	"baseCurrency": {
 		"defaultValue": "CHF",
@@ -593,7 +594,8 @@
 		"dataType": "string",
 		"isSensitive": false,
 		"display": "hidden",
-		"category": "system"
+		"category": "system",
+		"description": "Something that should happen after reboot"
 	},
 	"webInterfaceActive": {
 		"defaultValue": true,

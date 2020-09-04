@@ -2,7 +2,21 @@ $(function () {
 
 	let $console = $('#console');
 
+	function setVerbosity(level) {
+		$.ajax({
+			url: '/alicewatch/verbosity/',
+			data: {
+				verbosity: level
+			},
+			type: 'POST'
+		});
+	}
+
 	function onMessage(msg) {
+		if (msg.topic != 'projectalice/logging/alicewatch' || !msg.payloadString) {
+			return;
+		}
+
 		let payload = JSON.parse(msg.payloadString);
 
 		let pattern = /!\[(Red|Green|Yellow|Orange|Blue|Grey)]\((.*?)\)/gi;
@@ -57,15 +71,19 @@ $(function () {
 	$('[class^="fas fa-thermometer"]').on('click touchstart', function () {
 		$('[class^="fas fa-thermometer"]').removeClass('active');
 		$(this).addClass('active');
-		$.ajax({
-			url: '/alicewatch/verbosity/',
-			data: {
-				verbosity: $(this).data('verbosity')
-			},
-			type: 'POST'
-		});
+		let level = $(this).data('verbosity');
+		setVerbosity(level);
+		document.cookie = 'AliceWatch_verbosity=' + level;
 		return false;
 	});
+
+	let verbosity = getCookie('AliceWatch_verbosity');
+	if (verbosity != '') {
+		setVerbosity(verbosity);
+		let $elements = $('[class^="fas fa-thermometer"]')
+		$elements.removeClass('active');
+		$('[data-verbosity="' + verbosity + '"]').addClass('active');
+	}
 
 	mqttRegisterSelf(onConnect, 'onConnect');
 	mqttRegisterSelf(onMessage, 'onMessage');

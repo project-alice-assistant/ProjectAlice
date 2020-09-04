@@ -99,12 +99,15 @@ class ThreadManager(Manager):
 	def terminateThread(self, name: str):
 		thread = self._threads.pop(name, None)
 		if not thread:
-			for aThread in threading.enumerate():
-				if aThread.name == name:
-					thread = aThread
+			for t in threading.enumerate():
+				if t.name == name:
+					thread = t
 
-		if thread and thread.is_alive():
-			thread.join(timeout=1)
+		try:
+			if thread and thread.is_alive():
+				thread.join(timeout=1)
+		except Exception as e:
+			self.logError(f'Error terminating thread "{name}": {e}')
 
 
 	def isThreadAlive(self, name: str) -> bool:

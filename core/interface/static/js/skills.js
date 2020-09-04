@@ -255,5 +255,4 @@ $(function () {
 	});
 
 	$('#applySkillStore').hide();
-	$(":checkbox").checkToggler();
 });

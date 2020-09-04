@@ -2,11 +2,33 @@ let MQTT;
 let mqttSubscribers = {};
 let MQTT_HOST;
 let MQTT_PORT;
+let LAST_CORE_HEARTBEAT = 0;
+
+function getCookie(cname) {
+	let name = cname + '=';
+	let decodedCookie = decodeURIComponent(document.cookie);
+	let ca = decodedCookie.split(';');
+	for(let i = 0; i < ca.length; i++) {
+		let c = ca[i];
+		while (c.charAt(0) == ' ') {
+			c = c.substring(1);
+		}
+		if (c.indexOf(name) == 0) {
+			return c.substring(name.length, c.length);
+		}
+	}
+	return '';
+}
+
+function unsetCookie(cname) {
+	document.cookie = cname + '=; expires=Thu, 01 Jan 1970 00:00:00 UTC;';
+}
 
 function mqttRegisterSelf(target, method) {
 	if (!mqttSubscribers.hasOwnProperty(method)) {
 		mqttSubscribers[method] = [];
 	}
+
 	mqttSubscribers[method].push(target);
 }
 
@@ -121,11 +143,12 @@ $(function () {
 	function onConnected() {
 		MQTT.subscribe('projectalice/nlu/trainingStatus');
 		MQTT.subscribe('projectalice/skills/instructions');
+		MQTT.subscribe('projectalice/devices/coreHeartbeat');
 	}
 
 	function onMessageIn(msg) {
-		let payload = JSON.parse(msg.payloadString);
 		if (msg.topic == 'projectalice/nlu/trainingStatus') {
+			let payload = JSON.parse(msg.payloadString);
 			let $container = $('#aliceStatus');
 			if (payload.status == 'training') {
 				if ($container.text().length <= 0) {
@@ -145,25 +168,27 @@ $(function () {
 			}
 		}
 		else if (msg.topic == 'projectalice/skills/instructions') {
+			let payload = JSON.parse(msg.payloadString);
 			$('#skillInstructions').show();
 			let $content = $('#skillInstructionsContent');
 			$content.html($content.html() + payload['instructions']);
 		}
+		else if (msg.topic == 'projectalice/devices/coreHeartbeat') {
+			LAST_CORE_HEARTBEAT = Date.now();
+		}
 	}
 
-	function pingAlice() {
+	function checkCoreStatus() {
 		let $nodal = $('#serverUnavailable');
-		$.get(location.origin)
-			.done(function(res) {
-				if ($nodal.is(':visible')) {
-					$nodal.hide();
-					location.reload();
-				}
-			})
-			.fail(function (res){
-				if ($('#adminPageTabsContainer').length > 0) return;
-				$nodal.show();
-			});
+
+		if (Date.now() > LAST_CORE_HEARTBEAT + 3000) {
+			$nodal.show();
+		} else {
+			if ($nodal.is(':visible')) {
+				$nodal.hide();
+				location.reload();
+			}
+		}
 	}
 
 	let $defaultTab = $('.tabsContainer ul li:first');
@@ -206,5 +231,7 @@ $(function () {
 
 	connectMqtt();
 
-	setInterval(pingAlice, 2000);
+	setInterval(checkCoreStatus, 2000);
+
+	$(":checkbox").checkToggler();
 });

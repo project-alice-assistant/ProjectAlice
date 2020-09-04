@@ -1,6 +1,10 @@
 $(function () {
 
 	function onMessage(msg) {
+		if (msg.topic != 'projectalice/logging/syslog' || !msg.payloadString) {
+			return;
+		}
+
 		let json = JSON.parse(msg.payloadString);
 		addToLogs(json['msg'])
 	}
