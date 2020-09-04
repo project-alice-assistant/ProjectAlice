@@ -69,7 +69,6 @@ $(function () {
 	}
 
 	function onMessage(msg) {
-		console.log(msg.topic);
 		dispatchToMqttSubscribers('onMessage', msg);
 	}
 

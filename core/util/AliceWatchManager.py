@@ -27,7 +27,7 @@ class AliceWatchManager(Manager):
 			return
 
 		self.publish(payload={
-			'text': f'[Hotword] Detected on site **{siteId}**, for user **{user}**'
+			'text': f'[Hotword] Detected on site **{self.DeviceManager.siteIdToDeviceName(siteId)}**, for user **{user}**'
 		})
 
 
@@ -69,7 +69,7 @@ class AliceWatchManager(Manager):
 			return
 
 		self.publish(payload={
-			'text': f'[Dialogue] Session with id "**{session.sessionId}**" was started on site **{session.siteId}**'
+			'text': f'[Dialogue] Session with id "**{session.sessionId}**" was started on site **{self.DeviceManager.siteIdToDeviceName(session.siteId)}**'
 		})
 
 
@@ -96,7 +96,7 @@ class AliceWatchManager(Manager):
 			return
 
 		self.publish(payload={
-			'text': f'[Hotword] Was asked to toggle itself **on** on site **{siteId}**'
+			'text': f'[Hotword] Was asked to toggle itself **on** on site **{self.DeviceManager.siteIdToDeviceName(siteId)}**'
 		})
 
 
@@ -105,7 +105,7 @@ class AliceWatchManager(Manager):
 			return
 
 		self.publish(payload={
-			'text': f'[Hotword] Was asked to toggle itself **off** on site **{siteId}**'
+			'text': f'[Hotword] Was asked to toggle itself **off** on site **{self.DeviceManager.siteIdToDeviceName(siteId)}**'
 		})
 
 
@@ -114,7 +114,7 @@ class AliceWatchManager(Manager):
 			return
 
 		self.publish(payload={
-			'text': f'[Asr] Was asked to start listening on site **{session.siteId}**'
+			'text': f'[Asr] Was asked to start listening on site **{self.DeviceManager.siteIdToDeviceName(session.siteId)}**'
 		})
 
 
@@ -123,7 +123,7 @@ class AliceWatchManager(Manager):
 			return
 
 		self.publish(payload={
-			'text': f'[Asr] Was asked to stop listening on site **{session.siteId}**'
+			'text': f'[Asr] Was asked to stop listening on site **{self.DeviceManager.siteIdToDeviceName(session.siteId)}**'
 		})
 
 
@@ -172,7 +172,7 @@ class AliceWatchManager(Manager):
 		if self._verbosity < 1:
 			return
 
-		text = f'[Dialogue] Session with id "**{session.sessionId}**" was ended on site **{session.siteId}**.'
+		text = f'[Dialogue] Session with id "**{session.sessionId}**" was ended on site **{self.DeviceManager.siteIdToDeviceName(session.siteId)}**.'
 
 		reason = session.payload['termination']['reason']
 		if reason:
@@ -197,7 +197,7 @@ class AliceWatchManager(Manager):
 			return
 
 		self.publish(payload={
-			'text': f'[VoiceActivity] Up on site **{siteId}**'
+			'text': f'[VoiceActivity] Up on site **{self.DeviceManager.siteIdToDeviceName(siteId)}**'
 		})
 
 
@@ -206,7 +206,7 @@ class AliceWatchManager(Manager):
 			return
 
 		self.publish(payload={
-			'text': f'[VoiceActivity] Down on site **{siteId}**'
+			'text': f'[VoiceActivity] Down on site **{self.DeviceManager.siteIdToDeviceName(siteId)}**'
 		})
 
 

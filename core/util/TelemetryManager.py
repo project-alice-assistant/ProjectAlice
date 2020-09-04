@@ -3,7 +3,7 @@ from typing import Iterable
 
 from core.base.model.Manager import Manager
 from core.util.model.TelemetryType import TelemetryType
-
+from core.device.model.Location import Location
 
 class TelemetryManager(Manager):
 
@@ -14,6 +14,7 @@ class TelemetryManager(Manager):
 			'value TEXT NOT NULL',
 			'service TEXT NOT NULL',
 			'siteId TEXT NOT NULL',
+			'locationID INTEGER NOT NULL',
 			'timestamp INTEGER NOT NULL'
 		]
 	}
@@ -118,14 +119,22 @@ class TelemetryManager(Manager):
 				break
 
 
-	def getData(self, ttype: TelemetryType, siteId: str, service: str = None) -> Iterable:
-		values = {'type': ttype.value, 'siteId': siteId}
+	def getData(self, ttype: TelemetryType, siteId: str = None, service: str = None, location: Location = None) -> Iterable:
+		if location:
+			values = {'type': ttype.value, 'locationId': location.id}
+		elif siteId:
+			values = {'type': ttype.value, 'siteId': siteId}
+		else:
+			raise Exception("Supply location or site/uuid")
 		if service:
 			values['service'] = service
+
+		dynWhere = [f'{col} = :{col}' for col in values.keys()]
+		query = f'SELECT value, timestamp FROM :__table__ WHERE {" ,".join(dynWhere)} ORDER BY `timestamp` DESC LIMIT 1'
 
 		# noinspection SqlResolve
 		return self.databaseFetch(
 			tableName='telemetry',
-			query="SELECT value, timestamp FROM :__table__ WHERE type = :type and siteId = :siteId ORDER BY `timestamp` DESC LIMIT 1",
+			query=query,
 			values=values
 		)

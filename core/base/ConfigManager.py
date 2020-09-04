@@ -2,17 +2,8 @@ import json
 import logging
 from pathlib import Path
 
-import configTemplate
 from core.base.SuperManager import SuperManager
 from core.base.model.TomlFile import TomlFile
-
-try:
-	# noinspection PyUnresolvedReferences,PyPackageRequirements
-	import config
-
-	configFileExist = True
-except ModuleNotFoundError:
-	configFileNotExist = False
 
 import importlib
 import typing
@@ -22,16 +13,19 @@ from core.base.model.Manager import Manager
 
 class ConfigManager(Manager):
 
-	CONFIG_FILE = 'config.py'
+	TEMPLATE_FILE = 'configTemplate.json'
+	CONFIG_FILE = 'config.json'
 
 	def __init__(self):
 		super().__init__()
 
+		self.configFileExists = False
+
 		self._vitalConfigs = list()
 		self._aliceConfigurationCategories = list()
 
+		self._aliceTemplateConfigurations: typing.Dict[str, dict] = self.loadJsonFromFile(self.TEMPLATE_FILE)
 		self._aliceConfigurations: typing.Dict[str, typing.Any] = self._loadCheckAndUpdateAliceConfigFile()
-		self._aliceTemplateConfigurations: typing.Dict[str, dict] = configTemplate.settings
 
 		self._snipsConfigurations = self.loadSnipsConfigurations()
 
@@ -46,19 +40,45 @@ class ConfigManager(Manager):
 				raise VitalConfigMissing(conf)
 
 
+	#todo remove this method in a few month 01092020
+	def migrateConfigToJson(self):
+		try:
+			# noinspection PyUnresolvedReferences,PyPackageRequirements
+			import config
+
+			Path(self.CONFIG_FILE).write_text(json.dumps(config.settings, indent=4))
+			self.logInfo('Migrated from old config.py')
+			return config.settings.copy()
+		except ModuleNotFoundError:
+			self.logWarning(f'Found no old config.py!')
+			return None
+
+
 	def _loadCheckAndUpdateAliceConfigFile(self) -> dict:
 		self.logInfo('Checking Alice configuration file')
 
-		if not configFileExist:
+		try:
+			aliceConfigs = self.loadJsonFromFile(self.CONFIG_FILE)
+		except Exception as e:
+			self.logInfo(f'No {self.CONFIG_FILE} found.')
+			aliceConfigs = self.migrateConfigToJson()
+
+		if not aliceConfigs:
 			self.logInfo('Creating config file from config template')
-			confs = {configName: configData['defaultValue'] if 'defaultValue' in configData else configData for configName, configData in configTemplate.settings.items()}
-			Path(self.CONFIG_FILE).write_text(f'settings = {json.dumps(confs, indent=4)}')
-			aliceConfigs = importlib.import_module(self.CONFIG_FILE).settings.copy()
-		else:
-			aliceConfigs = config.settings.copy()
+			aliceConfigs = {configName: configData['defaultValue'] if 'defaultValue' in configData else configData for configName, configData in self._aliceTemplateConfigurations.items()}
+			Path(self.CONFIG_FILE).write_text(json.dumps(confs, indent=4))
 
 		changes = False
-		for setting, definition in configTemplate.settings.items():
+
+		#most important: uuid is always required!
+		if 'uuid' not in aliceConfigs or not aliceConfigs['uuid']:
+			import uuid
+			##uuid4: no collission expected until extinction of all life (only on earth though!)
+			aliceConfigs['uuid'] = str(uuid.uuid4())
+			changes = True
+
+
+		for setting, definition in self._aliceTemplateConfigurations.items():
 
 			if definition['category'] not in self._aliceConfigurationCategories:
 				self._aliceConfigurationCategories.append(definition['category'])
@@ -96,7 +116,7 @@ class ConfigManager(Manager):
 
 		temp = aliceConfigs.copy()
 		for key in temp:
-			if key not in configTemplate.settings:
+			if key not in self._aliceTemplateConfigurations:
 				self.logInfo(f'Deprecated configuration: **{key}**')
 				changes = True
 				del aliceConfigs[key]
@@ -105,6 +125,12 @@ class ConfigManager(Manager):
 			self.writeToAliceConfigurationFile(aliceConfigs)
 
 		return aliceConfigs
+
+
+	@staticmethod
+	def loadJsonFromFile(jsonFile):
+		with open(jsonFile) as jsonContent:
+			return json.load(jsonContent)
 
 
 	def updateAliceConfiguration(self, key: str, value: typing.Any):
@@ -167,9 +193,8 @@ class ConfigManager(Manager):
 		self._aliceConfigurations = sort
 
 		try:
-			confString = json.dumps(sort, indent=4).replace('false', 'False').replace('true', 'True')
-			Path(self.CONFIG_FILE).write_text(f'settings = {confString}')
-			importlib.reload(config)
+			confString = json.dumps(sort, indent=4)
+			Path(self.CONFIG_FILE).write_text(confString)
 		except Exception:
 			raise ConfigurationUpdateFailed()
 

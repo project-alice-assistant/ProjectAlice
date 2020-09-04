@@ -62,7 +62,7 @@
     "confDeleteDevice": "Sei sicuro di voler eliminare questo dispositivo?",
     "confDeleteZone": "Sei sicuro di voler eliminare questa posizione?",
     "nameNewZone": "Dai un nome alla nuova posizione per favore",
-	"unreachable": "Project Alice is currently unreachable, the page will try to reload in a short while",
+	"unreachable": "Project Alice is currently unreachable,\nthe page will try to reload in a short while",
 	"instructions": "Instructions",
 	"renameDevice": "Qual è il nuovo nome per il dispositivo?"
 }

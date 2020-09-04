@@ -6,6 +6,14 @@ settings = {
 		'description' : 'When activated, the NLU training part will not happen on this device but delegated to another device of your mqtt network.',
 		'category'    : 'nlu'
 	},
+	'uuid': {
+		'defaultValue': '',
+		'dataType'    : 'string',
+		'isSensitive' : False,
+		'hidden'      : True,
+		'description' : 'Attributed device uuid',
+		'category'    : 'device'
+	},
 	'timezone': {
 		'defaultValue': 'Europe/Zurich',
 		'dataType'    : 'string',

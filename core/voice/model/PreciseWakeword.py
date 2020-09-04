@@ -63,7 +63,7 @@ class PreciseWakeword(WakewordEngine):
 		self.MqttManager.publish(
 			topic=constants.TOPIC_HOTWORD_DETECTED.format('default'),
 			payload={
-				'siteId'            : self.ConfigManager.getAliceConfigByName('deviceName'),
+				'siteId'            : self.ConfigManager.getAliceConfigByName('uuid'),
 				'modelId'           : f'precise_athena',
 				'modelVersion'      : '0.3.0',
 				'modelType'         : 'universal',

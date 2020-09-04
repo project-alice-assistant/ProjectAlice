@@ -61,6 +61,7 @@ class DeviceManager(Manager):
 		self._heartbeats = dict()
 		self._heartbeatsCheckTimer = None
 		self._heartbeatTimer = None
+		self._bufferedMainDevice = None
 
 
 	def onStart(self):
@@ -123,13 +124,15 @@ class DeviceManager(Manager):
 
 
 	# noinspection SqlResolve
-	def addNewDevice(self, deviceTypeId: int, locationId: int = None, uid: str = None) -> Device:
+	def addNewDevice(self, deviceTypeId: int, locationId: int = None, uid: str = None, noChecks: bool = False, skillName: str = None) -> Device:
 		# get or create location from different inputs
 		location = self.LocationManager.getLocation(locId=locationId)
 
-		self.assertDeviceTypeAllowedAtLocation(locationId=location.id, typeId=deviceTypeId)
+		if not noChecks:
+			self.assertDeviceTypeAllowedAtLocation(locationId=location.id, typeId=deviceTypeId)
 
-		skillName = self.getDeviceType(_id=deviceTypeId).skill
+		if not skillName:
+			skillName = self.getDeviceType(_id=deviceTypeId).skill
 
 		values = {'typeID': deviceTypeId, 'uid': uid, 'locationID': location.id, 'display': "{'x': '10', 'y': '10', 'rotation': 0, 'width': 45, 'height': 45}", 'skillname': skillName}
 		values['id'] = self.databaseInsert(tableName=self.DB_DEVICE, values=values)
@@ -415,10 +418,15 @@ class DeviceManager(Manager):
 
 
 	def getMainDevice(self) -> Device:
-		devices = self.DeviceManager.getDevicesForSkill('AliceCore')
-		if len(devices) != 1:
-			raise Exception(f'No main device exists! {len(devices)}')
-		return devices[0]
+		if not self._bufferedMainDevice:
+			devices = self.DeviceManager.getDevicesForSkill('AliceCore')
+			if len(devices) == 0:
+				self.logWarning(f'No main device exists using DUMMY - RESTART REQUIRED!')
+				values = {'id': 0, 'name': 'dummy', 'typeID': 0, 'uid': self.ConfigManager.getAliceConfigByName('uuid'), 'locationID': 1}
+				self._bufferedMainDevice = Device(data=values)
+				return self._bufferedMainDevice
+			self._bufferedMainDevice = devices[0]
+		return self._bufferedMainDevice
 
 	def getDevicesByLocation(self, locationID: int, deviceTypeID: int = None, connectedOnly: bool = False, withLinks: bool = True, pairedOnly: bool = False) -> List[Device]:
 
@@ -531,3 +539,21 @@ class DeviceManager(Manager):
 			time.sleep(0.5)
 
 		return ''
+
+
+	def getAliceTypeDevices(self, connectedOnly: bool = False, includeMain: bool = False) -> List[Device]:
+		#todo remove hard coded AliceSatellite. replace for example with some type of "device ability" -> "can broadcast" -> "can play sound" ..
+		devices = self.DeviceManager.getDevicesByType(deviceType=self.SAT_TYPE, connectedOnly=connectedOnly)
+		if includeMain:
+			devices.append(self.DeviceManager.getMainDevice())
+		return devices
+
+
+	def siteIdToDeviceName(self, siteId: str) -> str:
+		device = self.DeviceManager.getDeviceByUID(uid=siteId)
+		if device and device.name:
+			return device.name
+		elif device:
+			return f'{device.getMainLocation().name} ({device.uid})'
+		else:
+			return siteId

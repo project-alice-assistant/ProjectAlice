@@ -55,7 +55,7 @@ class DialogManager(Manager):
 
 
 	def onHotword(self, siteId: str, user: str = constants.UNKNOWN_USER):
-		self.logDebug(f'Wakeword detected on site **{siteId}**')
+		self.logDebug(f'Wakeword detected by **{self.DeviceManager.siteIdToDeviceName(siteId)}**')
 
 		self._endedSessions[siteId] = self._sessionsById.pop(siteId, None)
 
@@ -444,12 +444,10 @@ class DialogManager(Manager):
 		topic = constants.TOPIC_TOGGLE_FEEDBACK_ON if state == 'on' else constants.TOPIC_TOGGLE_FEEDBACK_OFF
 
 		if siteId == 'all':
-			# todo abstract: no hard coded device types!
-			devices = self.DeviceManager.getDevicesByType(deviceType=self.DeviceManager.SAT_TYPE, connectedOnly=True)
+			devices = self.DeviceManager.getAliceTypeDevices(connectedOnly=True, includeMain=True)
 			for device in devices:
-				self.MqttManager.publish(topic=topic, payload={'siteId': device.siteId})
+				self.MqttManager.publish(topic=topic, payload={'siteId': device.uid})
 
-			self.MqttManager.publish(topic=topic, payload={'siteId': self.ConfigManager.getAliceConfigByName('deviceName')})
 		else:
 			self.MqttManager.publish(topic=topic, payload={'siteId': siteId})
 

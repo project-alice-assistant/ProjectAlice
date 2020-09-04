@@ -46,9 +46,6 @@ class MqttManager(Manager):
 		for username in self.UserManager.getAllUserNames():
 			self._mqttClient.message_callback_add(constants.TOPIC_WAKEWORD_DETECTED.replace('{user}', username), self.onHotwordDetected)
 
-		self._mqttClient.message_callback_add(constants.TOPIC_VAD_UP.format(self.ConfigManager.getAliceConfigByName('deviceName')), self.onVADUp)
-		self._mqttClient.message_callback_add(constants.TOPIC_VAD_DOWN.format(self.ConfigManager.getAliceConfigByName('deviceName')), self.onVADDown)
-
 		self._mqttClient.message_callback_add(constants.TOPIC_SESSION_STARTED, self.sessionStarted)
 		self._mqttClient.message_callback_add(constants.TOPIC_ASR_START_LISTENING, self.startListening)
 		self._mqttClient.message_callback_add(constants.TOPIC_ASR_STOP_LISTENING, self.stopListening)
@@ -74,17 +71,15 @@ class MqttManager(Manager):
 		self._mqttClient.message_callback_add(constants.TOPIC_NLU_INTENT_NOT_RECOGNIZED, self.nluIntentNotRecognized)
 		self._mqttClient.message_callback_add(constants.TOPIC_NLU_ERROR, self.nluError)
 
-		self._mqttClient.message_callback_add(constants.TOPIC_PLAY_BYTES.format(self.ConfigManager.getAliceConfigByName('deviceName')), self.topicPlayBytes)
-		self._mqttClient.message_callback_add(constants.TOPIC_PLAY_BYTES_FINISHED.format(self.ConfigManager.getAliceConfigByName('deviceName')), self.topicPlayBytesFinished)
+		for device in self.DeviceManager.getAliceTypeDevices(includeMain=True):
+			self._mqttClient.message_callback_add(constants.TOPIC_VAD_UP.format(device.uid), self.onVADUp)
+			self._mqttClient.message_callback_add(constants.TOPIC_VAD_DOWN.format(device.uid), self.onVADDown)
 
-		for device in self.getAliceTypeDevices():
-			self.MqttManager.mqttClient.message_callback_add(constants.TOPIC_VAD_UP.format(device.siteId), self.MqttManager.onVADUp)
-			self.MqttManager.mqttClient.message_callback_add(constants.TOPIC_VAD_DOWN.format(device.siteId), self.MqttManager.onVADDown)
-
-			self._mqttClient.message_callback_add(constants.TOPIC_PLAY_BYTES.format(device.siteId), self.MqttManager.topicPlayBytes)
-			self._mqttClient.message_callback_add(constants.TOPIC_PLAY_BYTES_FINISHED.format(device.siteId), self.MqttManager.topicPlayBytesFinished)
+			self._mqttClient.message_callback_add(constants.TOPIC_PLAY_BYTES.format(device.uid), self.topicPlayBytes)
+			self._mqttClient.message_callback_add(constants.TOPIC_PLAY_BYTES_FINISHED.format(device.uid), self.topicPlayBytesFinished)
 
 		self.connect()
+		self.logInfo("done")
 
 
 	def onStop(self):
@@ -130,13 +125,13 @@ class MqttManager(Manager):
 		for username in self.UserManager.getAllUserNames():
 			subscribedEvents.append((constants.TOPIC_WAKEWORD_DETECTED.format(username), 0))
 
-		subscribedEvents.append((constants.TOPIC_VAD_UP.format(self.ConfigManager.getAliceConfigByName('deviceName')), 0))
-		subscribedEvents.append((constants.TOPIC_VAD_DOWN.format(self.ConfigManager.getAliceConfigByName('deviceName')), 0))
+		subscribedEvents.append((constants.TOPIC_VAD_UP.format(self.ConfigManager.getAliceConfigByName('uuid')), 0))
+		subscribedEvents.append((constants.TOPIC_VAD_DOWN.format(self.ConfigManager.getAliceConfigByName('uuid')), 0))
 
-		subscribedEvents.append((constants.TOPIC_PLAY_BYTES.format(self.ConfigManager.getAliceConfigByName('deviceName')), 0))
-		subscribedEvents.append((constants.TOPIC_PLAY_BYTES_FINISHED.format(self.ConfigManager.getAliceConfigByName('deviceName')), 0))
+		subscribedEvents.append((constants.TOPIC_PLAY_BYTES.format(self.ConfigManager.getAliceConfigByName('uuid')), 0))
+		subscribedEvents.append((constants.TOPIC_PLAY_BYTES_FINISHED.format(self.ConfigManager.getAliceConfigByName('uuid')), 0))
 
-		for device in self.getAliceTypeDevices():
+		for device in self.DeviceManager.getAliceTypeDevices():
 			subscribedEvents.append((constants.TOPIC_VAD_UP.format(device.siteId), 0))
 			subscribedEvents.append((constants.TOPIC_VAD_DOWN.format(device.siteId), 0))
 
@@ -623,8 +618,7 @@ class MqttManager(Manager):
 		client = self.getDefaultSiteId(client)
 
 		if client == constants.ALL or client == constants.RANDOM:
-			deviceList = [device.siteId for device in self.getAliceTypeDevices(connectedOnly=True) if device]
-			deviceList.append(self.ConfigManager.getAliceConfigByName('deviceName'))
+			deviceList = [device.uid for device in self.DeviceManager.getAliceTypeDevices(connectedOnly=True, includeMain=True) if device]
 
 			if client == constants.ALL:
 				for device in deviceList:
@@ -719,8 +713,7 @@ class MqttManager(Manager):
 		session.intentFilter = intentList
 
 		if client == constants.ALL:
-			deviceList = self.getAliceTypeDevices(connectedOnly=True)
-			deviceList.append(self.ConfigManager.getAliceConfigByName('deviceName'))
+			deviceList = [device.uid for device in self.DeviceManager.getAliceTypeDevices(connectedOnly=True, includeMain=True) if device]
 
 			for device in deviceList:
 				device = device.replace(self.DEFAULT_CLIENT_EXTENSION, '')
@@ -839,14 +832,13 @@ class MqttManager(Manager):
 			location = Path(self.Commons.rootDir()) / location
 
 		if siteId == constants.ALL:
-			deviceList = self.getAliceTypeDevices(connectedOnly=True)
-			deviceList.append(self.ConfigManager.getAliceConfigByName('deviceName'))
+			deviceList = [device.uid for device in self.DeviceManager.getAliceTypeDevices(connectedOnly=True, includeMain=True) if device]
 
 			for device in deviceList:
 				device = device.replace(self.DEFAULT_CLIENT_EXTENSION, '')
 				self.playSound(soundFilename, location, sessionId, device, uid)
 		else:
-			if ' ' in siteId:
+			if siteId and ' ' in siteId:
 				siteId = siteId.replace(' ', '_')
 
 			soundFile = Path(location / soundFilename).with_suffix(suffix)
@@ -880,7 +872,7 @@ class MqttManager(Manager):
 			payload['siteId'] = device.siteId
 			self.publish(topic=topic, payload=payload, qos=qos, retain=retain)
 
-		payload['siteId'] = self.ConfigManager.getAliceConfigByName('deviceName')
+		payload['siteId'] = self.ConfigManager.getAliceConfigByName('uuid')
 		self.publish(topic=topic, payload=json.dumps(payload), qos=qos, retain=retain)
 
 
@@ -911,18 +903,11 @@ class MqttManager(Manager):
 		Activates or disables the feedback sounds, on all devices
 		:param state: str On or off
 		"""
-
-		deviceList = [device.name.replace(self.DEFAULT_CLIENT_EXTENSION, '') for device in self.DeviceManager.getDevicesByType(deviceType=self.DeviceManager.SAT_TYPE, connectedOnly=True)]
-		deviceList.append(self.ConfigManager.getAliceConfigByName('deviceName'))
+		deviceList = [device.uid for device in self.DeviceManager.getAliceTypeDevices(connectedOnly=True, includeMain=True) if device]
 
 		for siteId in deviceList:
 			publish.single(constants.TOPIC_TOGGLE_FEEDBACK.format(state.title()), payload=json.dumps({'siteId': siteId}))
 
 
 	def getDefaultSiteId(self, siteId: str = None) -> str:
-		return self.ConfigManager.getAliceConfigByName('deviceName') if not siteId else siteId
-
-
-	def getAliceTypeDevices(self, connectedOnly: bool = False) -> List[Device]:
-		#todo remove hard coded AliceSatellite. replace for example with some type of "device ability" -> "can broadcast" -> "can play sound" ..
-		return self.DeviceManager.getDevicesByType(deviceType=self.DeviceManager.SAT_TYPE, connectedOnly=connectedOnly)
+		return self.ConfigManager.getAliceConfigByName('uuid') if not siteId else siteId

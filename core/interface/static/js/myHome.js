@@ -53,11 +53,9 @@ $(function () {
 		let payload = JSON.parse(msg.payloadString);
 		if (msg.topic === 'projectalice/devices/updated') {
 			if(payload['type'] == 'status') {
-				console.log(payload);
 				let tochange = $('#device_' + payload['id']);
 				let url = 'Device/' + payload['id'] + '/icon?random=' + new Date().getTime();
 				tochange.css('background-image', 'url('+url+')');
-				console.log('done');
 			}
 		}
 

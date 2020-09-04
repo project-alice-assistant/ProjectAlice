@@ -62,7 +62,7 @@
 	"confDeleteDevice": "Möchtest du wirklich das Gerät löschen?",
 	"confDeleteZone": "Möchtest du diesen Bereich wirklich löschen?",
 	"nameNewZone": "Wie soll der neue Bereich heißen?",
-	"unreachable": "Project Alice ist gerade nicht erreichbar, die Seite aktualisiert sich automatisch.",
+	"unreachable": "Project Alice ist gerade nicht erreichbar,\ndiese Seite aktualisiert sich automatisch.",
 	"instructions": "Instructions",
 	"renameDevice": "Wie lautet der neue Name des Gerätes?"
 }
