@@ -182,7 +182,7 @@ $(function () {
 	function checkCoreStatus() {
 		let $nodal = $('#serverUnavailable');
 
-		if (Date.now() > LAST_CORE_HEARTBEAT + 3000) {
+		if (Date.now() > LAST_CORE_HEARTBEAT + 4000) {
 			$nodal.show();
 		} else {
 			if ($nodal.is(':visible')) {
