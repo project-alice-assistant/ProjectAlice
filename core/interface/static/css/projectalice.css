@@ -59,6 +59,7 @@ input:focus, textarea:focus { border: var(--hover) dotted 1px; }
 .overlayWarning { color: var(--text); font-family: var(--readable); font-size: 1.5em; text-align: center; margin: 15px; }
 .overlaySubtitle { color: var(--text); font-family: var(--readable); font-size: 1.2em; background-color: var(--secondary); padding: 10px; box-sizing: border-box; }
 .overlaySubtext { color: var(--text); font-family: var(--readable); font-size: 1em; margin: 10px; box-sizing: border-box; }
+.overlayInfo #skillInstructionsContent { -moz-user-select: text; -webkit-touch-callout: default; -webkit-user-select: text; -ms-user-select: text; user-select: text; -khtml-user-select: text; }
 
 .hidden { display: none; }
 

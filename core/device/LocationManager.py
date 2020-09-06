@@ -160,7 +160,11 @@ class LocationManager(Manager):
 			if noneIsEverywhere:
 				return self.locations
 			else:
-				return [self.DeviceManager.getDeviceByUID(uid=sess.siteId).getMainLocation()]
+				device = self.DeviceManager.getDeviceByUID(uid=sess.siteId)
+				if device:
+					return [device.getMainLocation()]
+				else:
+					return list()
 		else:
 			return [self.getLocation(location=loc) for loc in slotValues]
 
