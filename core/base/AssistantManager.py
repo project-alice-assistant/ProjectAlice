@@ -38,8 +38,9 @@ class AssistantManager(Manager):
 			if not self.DialogTemplateManager.checkData():
 				self.DialogTemplateManager.train()
 
-			if not self.NluManager.checkData():
-				self.NluManager.train()
+			# TODO finish nlu checks
+			#if not self.NluManager.checkData():
+			self.NluManager.train()
 		else:
 			if not self.NluManager.checkData():
 				self.NluManager.train()

@@ -1,7 +1,5 @@
 from pathlib import Path
 
-from google.oauth2.service_account import Credentials
-
 from core.base.SuperManager import SuperManager
 from core.dialog.model.DialogSession import DialogSession
 from core.user.model.User import User
@@ -9,8 +7,9 @@ from core.voice.model.TTSEnum import TTSEnum
 from core.voice.model.Tts import Tts
 
 try:
+	from google.oauth2.service_account import Credentials
 	from google.cloud import texttospeech
-except ModuleNotFoundError:
+except:
 	pass # Auto installed
 
 
@@ -20,6 +19,7 @@ class GoogleTts(Tts):
 	DEPENDENCIES = {
 		'system': [],
 		'pip'   : {
+			'google-auth==1.21.1',
 			'google-cloud-texttospeech==1.0.1'
 		}
 	}

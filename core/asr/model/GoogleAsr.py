@@ -1,7 +1,6 @@
+import os
 from pathlib import Path
 from typing import Generator, Optional
-
-import os
 
 from core.asr.model.ASRResult import ASRResult
 from core.asr.model.Asr import Asr
@@ -59,6 +58,7 @@ class GoogleAsr(Asr):
 		recorder = Recorder(self._timeout, session.user, session.siteId)
 		self.ASRManager.addRecorder(session.siteId, recorder)
 		self._recorder = recorder
+		result = None
 		with Stopwatch() as processingTime:
 			with recorder as stream:
 				audioStream = stream.audioStream()

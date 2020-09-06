@@ -64,5 +64,7 @@
 	"nameNewZone": "Please name the new location",
 	"unreachable": "Project Alice is currently unreachable,\nthe page will try to reload in a short while",
 	"instructions": "Instructions",
-	"renameDevice": "What is the devices new name?"
+	"renameDevice": "What is the devices new name?",
+	"accept": "accept",
+	"refuse": "refuse"
 }

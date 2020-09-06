@@ -31,6 +31,14 @@ class AdminView(View):
 		return cls.waitType
 
 
+	def acceptAliceConfigUpdate(self):
+		self.ConfigManager
+
+
+	def refuseAliceConfigUpdate(self):
+		pass
+
+
 	def saveAliceSettings(self):
 		try:
 			# Create the conf dict. on and off values are translated to True and False and we try to cast to int

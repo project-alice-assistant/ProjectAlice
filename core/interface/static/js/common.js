@@ -144,6 +144,7 @@ $(function () {
 		MQTT.subscribe('projectalice/nlu/trainingStatus');
 		MQTT.subscribe('projectalice/skills/instructions');
 		MQTT.subscribe('projectalice/devices/coreHeartbeat');
+		MQTT.subscribe('projectalice/skills/coreConfigUpdateWarning');
 	}
 
 	function onMessageIn(msg) {
@@ -176,12 +177,36 @@ $(function () {
 		else if (msg.topic == 'projectalice/devices/coreHeartbeat') {
 			LAST_CORE_HEARTBEAT = Date.now();
 		}
+		else if (msg.topic == 'projectalice/skills/coreConfigUpdateWarning') {
+			return;
+			$('#serverUnavailable').hide();
+			let $nodal = $('#coreConfigUpdateAlert');
+			$nodal.show();
+
+			let payload = JSON.parse(msg.payloadString);
+
+			let $container = $('#overlaySkillContent');
+			if ($container.children().length <= 0) {
+				$container.append(('<div class="overlaySubtitle">' + payload['skill'] + '</div><div class="overlaySubtext">' + payload['key'] + ' => ' + payload['value'] + '</div>'));
+			} else {
+				let found = false;
+				$container.children('.overlaySubtitle').each(function() {
+					if (!found && $(this).text() == payload['skill']) {
+						$(this).append(('<div class="overlaySubtext">' + payload['key'] + ' => ' + payload['value'] + '</div>'));
+						found = true;
+					}
+				})
+				if (!found) {
+					$container.append(('<div class="overlaySubtitle">' + payload['skill'] + '</div><div class="overlaySubtext">' + payload['key'] + ' => ' + payload['value'] + '</div>'));
+				}
+			}
+		}
 	}
 
 	function checkCoreStatus() {
 		let $nodal = $('#serverUnavailable');
 
-		if (Date.now() > LAST_CORE_HEARTBEAT + 3000) {
+		if (Date.now() > LAST_CORE_HEARTBEAT + 4000) {
 			$nodal.show();
 		} else {
 			if ($nodal.is(':visible')) {
@@ -223,7 +248,19 @@ $(function () {
 	});
 
 	$('.overlayInfoClose').on('click touchstart', function () {
-		$('#skillInstructions').hide();
+		$(this).parent().hide();
+	});
+
+	$('#refuseAliceConfUpdate').on('click touchstart', function() {
+		$.post('/admin/refuseAliceConfigUpdate/').done(function (status) {
+			$('#coreConfigUpdateAlert').hide();
+		});
+	});
+
+	$('#acceptAliceConfUpdate').on('click touchstart', function() {
+		$.post('/admin/acceptAliceConfigUpdate/').done(function (status) {
+			$('#coreConfigUpdateAlert').hide();
+		});
 	});
 
 	mqttRegisterSelf(onConnected, 'onConnect');

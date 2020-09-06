@@ -1,4 +1,5 @@
 import datetime
+
 from flask import jsonify, redirect, render_template, request
 from flask_login import current_user, login_user
 
@@ -12,7 +13,7 @@ class AdminAuth(View):
 
 	nextPage = 'index'
 	user = None
-	linkedSnipsSession = None
+	linkedSession = None
 
 
 	def index(self):
@@ -77,8 +78,8 @@ class AdminAuth(View):
 
 	def keyboardAuth(self):
 		self.SkillManager.getSkillInstance('AliceCore').authWithKeyboard()
-		if self.__class__.linkedSnipsSession is not None:
-			self.MqttManager.endSession(sessionId=self.__class__.linkedSnipsSession.sessionId)
+		if self.__class__.linkedSession is not None:
+			self.MqttManager.endSession(sessionId=self.__class__.linkedSession.sessionId)
 		return jsonify(success=True)
 
 
@@ -103,5 +104,5 @@ class AdminAuth(View):
 
 
 	@classmethod
-	def setLinkedSnipsSession(cls, session: DialogSession):
-		cls.linkedSnipsSession = session
+	def setLinkedSession(cls, session: DialogSession):
+		cls.linkedSession = session
