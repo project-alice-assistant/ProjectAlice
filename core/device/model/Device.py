@@ -9,10 +9,10 @@ from core.device.model.Location import Location
 
 class Device(ProjectAliceObject):
 
-	def __init__(self, dataIn):
+	def __init__(self, data):
 		super().__init__()
 
-		self.data: dict = dataIn
+		self.data: dict = data
 		self.connected: bool = False
 
 		self.id: int = self.data['id']
