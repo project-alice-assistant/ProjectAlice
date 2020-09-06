@@ -1,9 +1,11 @@
+import inspect
 import json
 import logging
 from pathlib import Path
 
 from core.base.SuperManager import SuperManager
 from core.base.model.TomlFile import TomlFile
+from core.commons import constants
 
 import importlib
 import typing
@@ -31,6 +33,8 @@ class ConfigManager(Manager):
 
 		self._skillsConfigurations = dict()
 		self._skillsTemplateConfigurations: typing.Dict[str, dict] = dict()
+
+		self._pendingAliceConfUpdates = dict()
 
 
 	def onStart(self):
@@ -134,12 +138,61 @@ class ConfigManager(Manager):
 
 
 	def updateAliceConfiguration(self, key: str, value: typing.Any):
+		"""
+		Updating a core config is sensitive, if the request comes from a skill.
+		First check if the request came from a skill at anytime and if so ask permission
+		to the user
+		:param key: str
+		:param value: str
+		:return: None
+		"""
+
+		rootSkills = [name.lower() for name in self.SkillManager.NEEDED_SKILLS]
+		callers = [inspect.getmodulename(frame[1]).lower() for frame in inspect.stack()]
+		if 'aliceskill' in callers:
+			skillName = callers[callers.index("aliceskill") + 1]
+			if skillName not in rootSkills:
+				self._pendingAliceConfUpdates[key] = value
+				self.logWarning(f'Skill **{skillName}** is trying to modify a core configuration')
+
+				self.ThreadManager.doLater(
+					interval=2,
+					func=self.MqttManager.publish,
+					kwargs={
+						'topic': constants.TOPIC_SKILL_UPDATE_CORE_CONFIG_WARNING,
+						'payload': {
+							'skill': skillName,
+							'key'  : key,
+							'value': value
+						}
+					}
+				)
+				return
+
 		if key not in self._aliceConfigurations:
 			self.logWarning(f'Was asked to update **{key}** but key doesn\'t exist')
 			raise ConfigurationUpdateFailed()
 
 		self._aliceConfigurations[key] = value
-		self.writeToAliceConfigurationFile(self.aliceConfigurations)
+		self.writeToAliceConfigurationFile(self._aliceConfigurations)
+
+
+	def bulkUpdateAliceConfigurations(self):
+		if not self._pendingAliceConfUpdates:
+			return
+
+		for key, value in self._pendingAliceConfUpdates.items():
+			if key not in self._aliceConfigurations:
+				self.logWarning(f'Was asked to update **{key}** but key doesn\'t exist')
+				continue
+			self._aliceConfigurations[key] = value
+
+		self.writeToAliceConfigurationFile(self._aliceConfigurations)
+		self.deletePendingAliceConfigurationUpdates()
+
+
+	def deletePendingAliceConfigurationUpdates(self):
+		self._pendingAliceConfUpdates = dict()
 
 
 	def updateSkillConfigurationFile(self, skillName: str, key: str, value: typing.Any):
