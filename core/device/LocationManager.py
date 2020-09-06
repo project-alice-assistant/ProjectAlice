@@ -42,6 +42,7 @@ class LocationManager(Manager):
 	def loadLocations(self):
 		for row in self.databaseFetch(tableName=self.TABLE, query='SELECT * FROM :__table__', method='all'):
 			self._locations[row['id']] = Location(row)
+			self.logInfo(f'loaded Loaction {row["id"]} - {row["name"]}')
 
 
 	def addNewLocation(self, name: str = None) -> Location:

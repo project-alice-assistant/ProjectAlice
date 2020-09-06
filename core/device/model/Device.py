@@ -7,50 +7,28 @@ from core.commons import constants
 from core.device.model.Location import Location
 
 
-@dataclass
 class Device(ProjectAliceObject):
-	data: dict
-	connected: bool = False
-	name: str = ''
-	lastContact: int = 0
-	locationID: int = 0
 
-	id: int = field(init=False)
-	deviceTypeID: int = field(init=False)
-	uid: str = field(init=False)
-	_display: dict = field(default_factory=dict)
-	_devSettings: dict = field(default_factory=dict)
-	_customValues: dict = field(default_factory=dict)
+	def __init__(self, dataIn):
+		super().__init__()
 
+		self.data: dict = dataIn
+		self.connected: bool = False
 
-	def __post_init__(self):  # NOSONAR
-		self.id = self.data['id']
-		self.deviceTypeID = self.data['typeID']
-		if 'name' in self.data.keys() and self.data['name']:
-			self.name = self.data['name']
+		self.id: int = self.data['id']
+		self.deviceTypeID: int = self.data['typeID']
+		self.locationID = self.data['locationID'] if self.data['locationID'] else 0
+		self.uid: str = self.data['uid']
 
-		self.uid = self.data['uid']
-		self.locationID = self.data['locationID']
+		self.name = self.data['name'] if 'name' in self.data.keys() else ''
 
-		if 'skillName' in self.data.keys():
-			self.skillName = self.data['skillName']
-		else:
-			self.skillName = ''
+		self.skillName = self.data['skillName'] if 'skillName' in self.data.keys() else ''
 
-		if 'display' in self.data.keys() and self.data['display']:
-			self._display = ast.literal_eval(self.data['display'])
-		else:
-			self._display = dict()
+		self._display = ast.literal_eval(self.data['display']) if 'display' in self.data.keys() and self.data['display'] else dict()
+		self._devSettings = ast.literal_eval(self.data['devSettings']) if 'devSettings' in self.data.keys() and self.data['devSettings'] else dict()
+		self._customValues = ast.literal_eval(self.data['customValues']) if 'customValues' in self.data.keys() and self.data['customValues'] else dict()
 
-		if 'devSettings' in self.data.keys() and self.data['devSettings']:
-			self._devSettings = ast.literal_eval(self.data['devSettings'])
-		else:
-			self._devSettings = dict()
-
-		if 'customValues' in self.data.keys() and self.data['customValues']:
-			self._customValues = ast.literal_eval(self.data['customValues'])
-		else:
-			self._customValues = dict()
+		self.lastContact: int = 0
 
 
 	def replace(self, needle: str, haystack: str) -> str:
@@ -206,3 +184,10 @@ class Device(ProjectAliceObject):
 	@property
 	def skill(self) -> str:
 		return self.getDeviceType().skill
+
+
+	def __repr__(self):
+		return f'Device({self.id} - {self.name}, UID({self.uid}), Location({self.locationID}))'
+
+	def __eq__(self, other):
+		return other and self.id == other.id

@@ -64,6 +64,9 @@ class SuperManager:
 		languageManager = self._managers.pop('LanguageManager')
 		languageManager.onStart()
 
+		locationManager = self._managers.pop('LocationManager')
+		locationManager.onStart()
+
 		deviceManager = self._managers.pop('DeviceManager')
 		deviceManager.onStart()
 
@@ -103,6 +106,7 @@ class SuperManager:
 		self._managers[configManager.name] = configManager
 		self._managers[audioServer.name] = audioServer
 		self._managers[languageManager.name] = languageManager
+		self._managers[locationManager.name] = locationManager
 		self._managers[deviceManager.name] = deviceManager
 		self._managers[talkManager.name] = talkManager
 		self._managers[databaseManager.name] = databaseManager

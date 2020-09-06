@@ -418,6 +418,9 @@ class DeviceManager(Manager):
 				self._bufferedMainDevice = Device(data=values)
 				return self._bufferedMainDevice
 			self._bufferedMainDevice = devices[0]
+			if self._bufferedMainDevice.uid != self.ConfigManager.getAliceConfigByName('uuid'):
+				self._bufferedMainDevice.pairingDone(self.ConfigManager.getAliceConfigByName('uuid'))
+				raise Exception('UUID changed, restart required!')
 		return self._bufferedMainDevice
 
 	def getDevicesByLocation(self, locationID: int, deviceTypeID: int = None, connectedOnly: bool = False, withLinks: bool = True, pairedOnly: bool = False) -> List[Device]:
@@ -546,6 +549,10 @@ class DeviceManager(Manager):
 		if includeMain:
 			devices.append(self.DeviceManager.getMainDevice())
 		return devices
+
+
+	def getAliceTypeDeviceTypeIds(self):
+		return [self.getMainDevice().deviceTypeID, self.getDeviceTypeByName(self.SAT_TYPE)]
 
 
 	def siteIdToDeviceName(self, siteId: str) -> str:

@@ -96,7 +96,7 @@ class IndexView(View):
 			return ret
 		except Exception as e:
 			self.logWarning(f"[Widget] Widget tried to call a core function but failed: {e}")
-			return jsonify(success=False)
+			return jsonify(success=False, message=str(e))
 
 
 	@route('/home/saveWidgetConfig/', methods=['POST'])
