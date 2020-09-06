@@ -65,6 +65,6 @@
 	"unreachable": "Project Alice is currently unreachable, the page will try to reload in a short while",
 	"instructions": "Instructions",
 	"renameDevice": "Qual è il nuovo nome per il dispositivo?",
-	"accept": "accept",
-	"refuse": "refuse"
+	"accept": "accettare",
+	"refuse": "refiutare"
 }

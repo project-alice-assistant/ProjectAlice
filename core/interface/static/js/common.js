@@ -197,6 +197,9 @@ $(function () {
 						found = true;
 					}
 				})
+				if (!found) {
+					$container.append(('<div class="overlaySubtitle">' + payload['skill'] + '</div><div class="overlaySubtext">' + payload['key'] + ' => ' + payload['value'] + '</div>'));
+				}
 			}
 		}
 	}
@@ -247,6 +250,18 @@ $(function () {
 
 	$('.overlayInfoClose').on('click touchstart', function () {
 		$(this).parent().hide();
+	});
+
+	$('#refuseAliceConfUpdate').on('click touchstart', function() {
+		$.post('/admin/refuseAliceConfigUpdate/').done(function (status) {
+			$('#coreConfigUpdateAlert').hide();
+		});
+	});
+
+	$('#acceptAliceConfUpdate').on('click touchstart', function() {
+		$.post('/admin/acceptAliceConfigUpdate/').done(function (status) {
+			$('#coreConfigUpdateAlert').hide();
+		});
 	});
 
 	mqttRegisterSelf(onConnected, 'onConnect');
