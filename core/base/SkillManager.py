@@ -1,14 +1,14 @@
 import getpass
-import traceback
-
 import importlib
 import json
 import os
-import requests
 import shutil
 import threading
+import traceback
 from pathlib import Path
 from typing import Dict, Optional
+
+import requests
 
 from core.ProjectAliceExceptions import AccessLevelTooLow, GithubNotFound, GithubRateLimit, GithubTokenFailed, SkillNotConditionCompliant, SkillStartDelayed, SkillStartingFailed
 from core.base.SuperManager import SuperManager
@@ -202,7 +202,7 @@ class SkillManager(Manager):
 		self.DeviceManager.removeDeviceTypesForSkill(skillName=skillName)
 
 
-	def onSnipsAssistantInstalled(self, **kwargs):
+	def onAssistantInstalled(self, **kwargs):
 		self.MqttManager.mqttBroadcast(topic='hermes/leds/clear')
 
 		argv = kwargs.get('skillsInfos', dict())
