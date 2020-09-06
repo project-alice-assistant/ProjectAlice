@@ -1,7 +1,6 @@
-from typing import Any
-
 from flask import jsonify, render_template, request
 from flask_login import login_required
+from typing import Any
 
 from core.interface.model.View import View
 
@@ -32,11 +31,15 @@ class AdminView(View):
 
 
 	def acceptAliceConfigUpdate(self):
-		self.ConfigManager
+		self.ConfigManager.bulkUpdateAliceConfigurations()
+		self.logDebug('User **accepted** core config changes by a skill')
+		return jsonify(success=True)
 
 
 	def refuseAliceConfigUpdate(self):
-		pass
+		self.ConfigManager.deletePendingAliceConfigurationUpdates()
+		self.logDebug('User **refused** core config changes by a skill')
+		return jsonify(success=True)
 
 
 	def saveAliceSettings(self):

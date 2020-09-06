@@ -179,7 +179,6 @@ $(function () {
 			LAST_CORE_HEARTBEAT = Date.now();
 		}
 		else if (msg.topic == 'projectalice/skills/coreConfigUpdateWarning') {
-			return;
 			$('#serverUnavailable').hide();
 			let $nodal = $('#coreConfigUpdateAlert');
 			$nodal.show();
@@ -188,17 +187,14 @@ $(function () {
 
 			let $container = $('#overlaySkillContent');
 			if ($container.children().length <= 0) {
-				$container.append(('<div class="overlaySubtitle">' + payload['skill'] + '</div><div class="overlaySubtext">' + payload['key'] + ' => ' + payload['value'] + '</div>'));
+				$container.append('<div id="confWarning_' + payload["skill"] + '"><div class="overlaySubtitle">' + payload['skill'] + '</div><div class="overlaySubtext">' + payload['key'] + ' => ' + payload['value'] + '</div></div>');
 			} else {
-				let found = false;
-				$container.children('.overlaySubtitle').each(function() {
-					if (!found && $(this).text() == payload['skill']) {
-						$(this).append(('<div class="overlaySubtext">' + payload['key'] + ' => ' + payload['value'] + '</div>'));
-						found = true;
-					}
-				})
-				if (!found) {
-					$container.append(('<div class="overlaySubtitle">' + payload['skill'] + '</div><div class="overlaySubtext">' + payload['key'] + ' => ' + payload['value'] + '</div>'));
+				let $skillWarning = $('#confWarning_' + payload["skill"]);
+
+				if ($skillWarning.length == 0) {
+					$container.append('<div id="confWarning_' + payload["skill"] + '"><div class="overlaySubtitle">' + payload['skill'] + '</div><div class="overlaySubtext">' + payload['key'] + ' => ' + payload['value'] + '</div></div>');
+				} else {
+					$skillWarning.append('<div class="overlaySubtext">' + payload['key'] + ' => ' + payload['value'] + '</div>');
 				}
 			}
 		}
