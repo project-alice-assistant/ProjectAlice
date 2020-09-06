@@ -241,7 +241,8 @@ class DialogManager(Manager):
 		:param session:
 		:return:
 		"""
-		session.payload['input'] = session.payload['text']
+		if 'text' in session.payload: #todo figure out why text sometimes is not filled although input is
+			session.payload['input'] = session.payload['text']
 		session.payload.setdefault('intent', dict())
 		session.payload['intent']['intentName'] = 'UserRandomAnswer'
 		session.payload['intent']['confidenceScore'] = 1.0
