@@ -154,10 +154,13 @@ class LocationManager(Manager):
 		return loc
 
 
-	def getLocationsForSession(self, sess: DialogSession, slotName: str = 'Location') -> List[Location]:
+	def getLocationsForSession(self, sess: DialogSession, slotName: str = 'Location', noneIsEverywhere: bool = False) -> List[Location]:
 		slotValues = [x.value['value'] for x in sess.slotsAsObjects.get(slotName, list())]
 		if len(slotValues) == 0:
-			return [self.DeviceManager.getDeviceByUID(uid=sess.siteId).getMainLocation()]
+			if noneIsEverywhere:
+				return self.locations
+			else:
+				return [self.DeviceManager.getDeviceByUID(uid=sess.siteId).getMainLocation()]
 		else:
 			return [self.getLocation(location=loc) for loc in slotValues]
 

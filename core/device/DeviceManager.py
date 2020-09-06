@@ -473,13 +473,13 @@ class DeviceManager(Manager):
 		        and (not pairedOnly or x.getDevice().uid)]
 
 
-	def getDeviceLinksForSession(self, session: DialogSession, skill: str):
+	def getDeviceLinksForSession(self, session: DialogSession, skill: str, noneIsEverywhere: bool = False):
 		#get all relevant deviceTypes
 		devTypes = self.DeviceManager.getDeviceTypesForSkill(skillName=skill)
 		devTypeIds = [dev for dev in devTypes] # keys in dict are Ids
 
 		#get all required locations
-		locations = self.LocationManager.getLocationsForSession(sess=session)
+		locations = self.LocationManager.getLocationsForSession(sess=session, noneIsEverywhere=noneIsEverywhere)
 		locationIds = [loc.id for loc in locations]
 
 		return self.DeviceManager.getDeviceLinks(deviceTypeID=devTypeIds, locationID=locationIds)
