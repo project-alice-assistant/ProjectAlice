@@ -64,5 +64,7 @@
 	"nameNewZone": "Wie soll der neue Bereich heißen?",
 	"unreachable": "Project Alice ist gerade nicht erreichbar, die Seite aktualisiert sich automatisch.",
 	"instructions": "Instructions",
-	"renameDevice": "Wie lautet der neue Name des Gerätes?"
+	"renameDevice": "Wie lautet der neue Name des Gerätes?",
+	"accept": "accept",
+	"refuse": "refuse"
 }

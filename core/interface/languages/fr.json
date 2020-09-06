@@ -64,5 +64,7 @@
 	"nameNewZone": "Donne un nom à la nouvel location s'il te plaît",
 	"unreachable": "Project Alice n'est pas disponible pour le moment. Cette page se rechargera dans un moment.",
 	"instructions": "Instructions",
-	"renameDevice": "Quel est le nouveau nom de l'appareil?"
+	"renameDevice": "Quel est le nouveau nom de l'appareil?",
+	"accept": "accepter",
+	"refuse": "refuser"
 }

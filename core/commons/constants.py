@@ -58,6 +58,7 @@ TOPIC_DND = 'projectalice/devices/stopListen'
 TOPIC_STOP_DND = 'projectalice/devices/startListen'
 TOPIC_TOGGLE_DND = 'projectalice/devices/toggleListen'
 TOPIC_SKILL_INSTRUCTIONS = 'projectalice/skills/instructions'
+TOPIC_SKILL_UPDATE_CORE_CONFIG_WARNING = 'projectalice/skills/coreConfigUpdateWarning'
 
 TOPIC_DEVICE_STATUS = 'projectalice/devices/status'
 TOPIC_DEVICE_UPDATED = 'projectalice/devices/updated'
