@@ -1,16 +1,14 @@
 import inspect
 import json
 import logging
+import typing
 from pathlib import Path
 
+from core.ProjectAliceExceptions import ConfigurationUpdateFailed, VitalConfigMissing
 from core.base.SuperManager import SuperManager
+from core.base.model.Manager import Manager
 from core.base.model.TomlFile import TomlFile
 from core.commons import constants
-
-import importlib
-import typing
-from core.ProjectAliceExceptions import ConfigurationUpdateFailed, VitalConfigMissing
-from core.base.model.Manager import Manager
 
 
 class ConfigManager(Manager):
@@ -63,14 +61,14 @@ class ConfigManager(Manager):
 
 		try:
 			aliceConfigs = self.loadJsonFromFile(self.CONFIG_FILE)
-		except Exception as e:
+		except Exception:
 			self.logInfo(f'No {self.CONFIG_FILE} found.')
 			aliceConfigs = self.migrateConfigToJson()
 
 		if not aliceConfigs:
 			self.logInfo('Creating config file from config template')
 			aliceConfigs = {configName: configData['defaultValue'] if 'defaultValue' in configData else configData for configName, configData in self._aliceTemplateConfigurations.items()}
-			Path(self.CONFIG_FILE).write_text(json.dumps(confs, indent=4))
+			Path(self.CONFIG_FILE).write_text(json.dumps(aliceConfigs, indent=4))
 
 		changes = False
 
@@ -364,7 +362,7 @@ class ConfigManager(Manager):
 
 			self.logInfo(f'Checking configuration for skill **{skillName}**')
 
-			skillConfigFile = skillInstance.getResource('config.json')
+			skillConfigFile = skillInstance.getResource(self.CONFIG_FILE)
 			skillConfigTemplate = skillInstance.getResource('config.json.template')
 			config = dict()
 
