@@ -41,8 +41,15 @@ $(function () {
 	let selectedDevice = null;
 	let selectedLinks = null;
 
+	let maxZindex = 10;
+
 	// DATA
 	let dirtyFormulars = [];
+
+
+	let zindexSorter = function(a,b) {
+		return a.style.zIndex - b.style.zIndex;
+	}
 
 	// Setup and handle MQTT
 	function onConnect() {
@@ -99,6 +106,11 @@ $(function () {
 				$.each(zone['devices'], function (iiiii, device) {
 					newDevice($zone, device);
 				});
+			})
+			let sortedZones = $(sZone).sort(zindexSorter);
+			$.each(sortedZones, function (i, zone) {
+				zone.style.zIndex = maxZindex.toString();
+				maxZindex++;
 			})
 		});
 	}
@@ -338,6 +350,10 @@ $(function () {
 		if(!data["display"]){
 			data["display"] = {};
 		}
+		if(data["display"]["z-index"] == "auto" || data["display"]["z-index"] == null){
+			data["display"]["z-index"] = maxZindex;
+			maxZindex++;
+		}
 		let $newZone = $('<div class="floorPlan-Zone ' + data["display"]["texture"] + '" ' +
 			'id="floorPlan-Zone_'+data["id"]+'" '+
 			'data-id="' + data["id"] + '" ' +
@@ -487,8 +503,16 @@ $(function () {
 		$newZone.on('contextmenu', function () {
 			if (locationMoveMode) {
 				if(confirm($('#langConfDeleteZone').text())){
+					let missingZindex = this.style.zIndex;
 					$(this).remove();
-					$.post('/myhome/Location/'+data['id']+'/delete', {id : data['id']});
+					$.post('/myhome/Location/'+data['id']+'/delete', {id : data['id']}).done(function () {
+						let sortedZones = $(sZone).sort(zindexSorter);
+						$.each(sortedZones, function (i, zone) {
+							if(zone.style.zIndex > missingZindex) {
+								zone.style.zIndex = (parseInt(zone.style.zIndex) - 1).toString();
+							}
+						})
+					});
 				}
 				return false;
 			} else if (deviceLinkerMode){
@@ -838,8 +862,8 @@ $(function () {
 					'name'   : zoneName,
 					'x'      : e.pageX - x,
 					'y'      : e.pageY - y,
-					'width'  : 100,
-					'height' : 100,
+					'display': {'width'  : 150,
+								'height' : 150},
 					'texture': ''
 				}
 				zoneMode = false;
