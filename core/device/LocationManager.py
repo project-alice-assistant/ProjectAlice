@@ -1,5 +1,5 @@
-from typing import Dict, Optional, List
 import json
+from typing import Dict, List, Optional
 
 from core.base.model.Manager import Manager
 from core.device.model.Location import Location
@@ -42,7 +42,7 @@ class LocationManager(Manager):
 	def loadLocations(self):
 		for row in self.databaseFetch(tableName=self.TABLE, query='SELECT * FROM :__table__', method='all'):
 			self._locations[row['id']] = Location(row)
-			self.logInfo(f'loaded Loaction {row["id"]} - {row["name"]}')
+			self.logInfo(f'Loaded location {row["id"]} - {row["name"]}')
 
 
 	def addNewLocation(self, name: str = None) -> Location:
