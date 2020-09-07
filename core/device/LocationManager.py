@@ -158,7 +158,7 @@ class LocationManager(Manager):
 		slotValues = [x.value['value'] for x in sess.slotsAsObjects.get(slotName, list())]
 		if len(slotValues) == 0:
 			if noneIsEverywhere:
-				return self.locations
+				return [loc[1] for loc in self.locations.items()]
 			else:
 				device = self.DeviceManager.getDeviceByUID(uid=sess.siteId)
 				if device:
