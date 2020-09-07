@@ -20,6 +20,5 @@ class SyslogView(View):
 			break
 
 		return render_template(template_name_or_list='syslog.html',
-		                       langData=self._langData,
 		                       history=json.dumps(history, ensure_ascii=False),
-		                       aliceSettings=self.ConfigManager.aliceConfigurations)
+		                       **self._everyPagesRenderValues)

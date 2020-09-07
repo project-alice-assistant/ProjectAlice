@@ -145,6 +145,7 @@ $(function () {
 		MQTT.subscribe('projectalice/skills/instructions');
 		MQTT.subscribe('projectalice/devices/coreHeartbeat');
 		MQTT.subscribe('projectalice/skills/coreConfigUpdateWarning');
+		MQTT.subscribe('projectalice/devices/resourceUsage');
 	}
 
 	function onMessageIn(msg) {
@@ -196,6 +197,13 @@ $(function () {
 					$skillWarning.append('<div class="overlaySubtext">' + payload['key'] + ' => ' + payload['value'] + '</div>');
 				}
 			}
+		} else if (msg.topic == 'projectalice/devices/resourceUsage') {
+			let $div = $('#resourceUsage');
+			if ($div.length == 0) {
+				return;
+			}
+			let payload = JSON.parse(msg.payloadString);
+			$div.text(`CPU: ${payload['cpu']}% RAM: ${payload['ram']}% SWP: ${payload['swp']}%`);
 		}
 	}
 
@@ -248,13 +256,13 @@ $(function () {
 	});
 
 	$('#refuseAliceConfUpdate').on('click touchstart', function() {
-		$.post('/admin/refuseAliceConfigUpdate/').done(function (status) {
+		$.post('/admin/refuseAliceConfigUpdate/').done(function () {
 			$('#coreConfigUpdateAlert').hide();
 		});
 	});
 
 	$('#acceptAliceConfUpdate').on('click touchstart', function() {
-		$.post('/admin/acceptAliceConfigUpdate/').done(function (status) {
+		$.post('/admin/acceptAliceConfigUpdate/').done(function () {
 			$('#coreConfigUpdateAlert').hide();
 		});
 	});

@@ -79,6 +79,7 @@ class SkillManager(Manager):
 		# If it's the first time we start, don't delay skill install and do it on main thread
 		if not self._skillList:
 			self.logInfo('Looks like a fresh install or skills were nuked. Let\'s install the basic skills!')
+			self.wipeSkills(True)
 			self._checkForSkillInstall()
 		elif self.checkForSkillUpdates():
 			self._checkForSkillInstall()

@@ -1,6 +1,5 @@
-from pathlib import Path
-
 import shutil
+from pathlib import Path
 
 from core.base.model.Manager import Manager
 
@@ -30,16 +29,6 @@ class NluManager(Manager):
 	def onBooted(self):
 		super().onBooted()
 		self._nluEngine.start()
-
-
-	def checkData(self) -> bool:
-		return self.checkEngine() and self.checkCachedData()
-
-
-	@staticmethod
-	def checkCachedData() -> bool:
-		#TODO checked training dataset
-		return True
 
 
 	def checkEngine(self) -> bool:

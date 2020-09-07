@@ -15,8 +15,7 @@ class IndexView(View):
 	def index(self):
 		return render_template(template_name_or_list='home.html',
 		                       widgets=self.SkillManager.widgets,
-		                       langData=self._langData,
-		                       aliceSettings=self.ConfigManager.aliceConfigurations)
+		                       **self._everyPagesRenderValues)
 
 
 	@route('widget_static/<path:filename>')

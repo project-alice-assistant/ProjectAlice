@@ -15,6 +15,7 @@ GITHUB_URL = 'https://github.com/project-alice-assistant'
 GITHUB_RAW_URL = 'https://raw.githubusercontent.com/project-alice-assistant'
 GITHUB_API_URL = 'https://api.github.com/repos/project-alice-assistant'
 GITHUB_REPOSITORY_ID = 193512918
+JSON_EXT = '.json'
 
 TOPIC_AUDIO_FRAME = 'hermes/audioServer/{}/audioFrame'
 TOPIC_HOTWORD_DETECTED = 'hermes/hotword/default/detected'
@@ -59,6 +60,7 @@ TOPIC_STOP_DND = 'projectalice/devices/startListen'
 TOPIC_TOGGLE_DND = 'projectalice/devices/toggleListen'
 TOPIC_SKILL_INSTRUCTIONS = 'projectalice/skills/instructions'
 TOPIC_SKILL_UPDATE_CORE_CONFIG_WARNING = 'projectalice/skills/coreConfigUpdateWarning'
+TOPIC_RESOURCE_USAGE = 'projectalice/devices/resourceUsage'
 
 TOPIC_DEVICE_STATUS = 'projectalice/devices/status'
 TOPIC_DEVICE_UPDATED = 'projectalice/devices/updated'

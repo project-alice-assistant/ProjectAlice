@@ -1,18 +1,16 @@
-import json
 import traceback
-import uuid
-from pathlib import Path
-from typing import List
 
+import json
 import paho.mqtt.client as mqtt
 import paho.mqtt.publish as publish
 import random
 import re
+import uuid
+from pathlib import Path
 
 from core.base.model.Intent import Intent
 from core.base.model.Manager import Manager
 from core.commons import constants
-from core.device.model.Device import Device
 
 
 class MqttManager(Manager):
@@ -79,7 +77,6 @@ class MqttManager(Manager):
 			self._mqttClient.message_callback_add(constants.TOPIC_PLAY_BYTES_FINISHED.format(device.uid), self.topicPlayBytesFinished)
 
 		self.connect()
-		self.logInfo("done")
 
 
 	def onStop(self):

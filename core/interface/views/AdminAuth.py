@@ -30,8 +30,7 @@ class AdminAuth(View):
 			alice.explainInterfaceAuth()
 
 		return render_template(template_name_or_list='adminAuth.html',
-		                       langData=self._langData,
-		                       aliceSettings=self.ConfigManager.aliceConfigurations)
+		                       **self._everyPagesRenderValues)
 
 
 	def checkAuthState(self):
