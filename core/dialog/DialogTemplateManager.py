@@ -4,13 +4,12 @@ from typing import Dict, Generator, List, Optional
 
 from core.base.SuperManager import SuperManager
 from core.base.model.Manager import Manager
+from core.commons import constants
 from core.dialog.model.DialogSession import DialogSession
 from core.dialog.model.DialogTemplate import DialogTemplate
 
 
 class DialogTemplateManager(Manager):
-
-	JSON_EXT = '.json'
 
 	def __init__(self):
 		super().__init__()
@@ -18,8 +17,8 @@ class DialogTemplateManager(Manager):
 		self._pathToCache = Path(self.Commons.rootDir(), 'var/cache/dialogTemplates/')
 		self._pathToCache.mkdir(parents=True, exist_ok=True)
 
-		self._pathToChecksums = self._pathToCache / f'checksums{self.JSON_EXT}'
-		self._pathToData = self._pathToCache / f'data{self.JSON_EXT}'
+		self._pathToChecksums = self._pathToCache / f'checksums{constants.JSON_EXT}'
+		self._pathToData = self._pathToCache / f'data{constants.JSON_EXT}'
 
 		if not self._pathToChecksums.exists():
 			self._pathToChecksums.write_text('{}')
@@ -120,7 +119,7 @@ class DialogTemplateManager(Manager):
 				self.logWarning(f'**{skillName}** has no dialog template defined')
 				continue
 
-			for file in pathToResources.glob(f'*{self.JSON_EXT}'):
+			for file in pathToResources.glob(f'*{constants.JSON_EXT}'):
 				filename = file.stem
 				if filename not in checksums[skillName]:
 					# Trigger a change only if the change concerns the language in use
@@ -142,7 +141,7 @@ class DialogTemplateManager(Manager):
 				break
 
 			for lang in languages:
-				if not Path(self.Commons.rootDir(), f'skills/{skillName}/dialogTemplate/{lang}{self.JSON_EXT}').exists() and lang == language:
+				if not Path(self.Commons.rootDir(), f'skills/{skillName}/dialogTemplate/{lang}{constants.JSON_EXT}').exists() and lang == language:
 					self.logInfo(f'Skill **{skillName}** has dropped language **{lang}**')
 					uptodate = False
 
@@ -163,14 +162,14 @@ class DialogTemplateManager(Manager):
 				continue
 
 			cached[skillName] = dict()
-			for file in pathToResources.glob(f'*{self.JSON_EXT}'):
+			for file in pathToResources.glob(f'*{constants.JSON_EXT}'):
 				cached[skillName][file.stem] = self.Commons.fileChecksum(file)
 
 		self._pathToChecksums.write_text(json.dumps(cached, indent=4, sort_keys=True))
 
 
 	def cleanCache(self, skillName: str):
-		for file in Path(self._pathToCache, 'trainingData').glob(f'*{self.JSON_EXT}'):
+		for file in Path(self._pathToCache, 'trainingData').glob(f'*{constants.JSON_EXT}'):
 			if file.stem.startswith(f'{skillName}_'):
 				file.unlink()
 
