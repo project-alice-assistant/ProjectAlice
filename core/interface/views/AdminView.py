@@ -1,6 +1,7 @@
+from typing import Any
+
 from flask import jsonify, render_template, request
 from flask_login import login_required
-from typing import Any
 
 from core.interface.model.View import View
 
@@ -14,10 +15,9 @@ class AdminView(View):
 	@login_required
 	def index(self):
 		return render_template(template_name_or_list='admin.html',
-		                       langData=self._langData,
 		                       aliceSettingCategories=self.ConfigManager.aliceConfigurationCategories,
-		                       aliceSettings=self.ConfigManager.aliceConfigurations,
-		                       aliceSettingsTemplate=self.ConfigManager.aliceTemplateConfigurations)
+		                       aliceSettingsTemplate=self.ConfigManager.aliceTemplateConfigurations,
+		                       **self._everyPagesRenderValues)
 
 
 	@classmethod

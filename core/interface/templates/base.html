@@ -23,6 +23,9 @@
 		{% block pageTitle %}{% endblock %}
 	</div>
 	<div id="aliceStatus" class="aliceStatus"></div>
+	<div class="updateChannelMarker">
+		{{ aliceVersion }}
+	</div>
 	{% if aliceSettings['aliceUpdateChannel'] != 'master' %}
 		<div class="updateChannelMarker warning">
 			{{ aliceSettings['aliceUpdateChannel'] }}
@@ -41,7 +44,7 @@
 <div class="screenOverlay initialHidden" id="coreConfigUpdateAlert">
 	<div class="overlayInfoClose"><i class="far fa-times-circle" aria-hidden="true"></i></div>
 	<div class="overlayInfo" id="coreConfigUpdateAlertContent">
-		<div class="overlayWarning">Some skill(s) want to change some core configurations</div>
+		<div class="overlayWarning">{{ langData.warningSkillChangeAliceconf }}</div>
 		<div id="overlaySkillContent"></div>
 		<div class="buttonLine">
 			<input type="submit" class="button" value="refuse" id="refuseAliceConfUpdate"><input type="submit" class="button" value="accept" id="acceptAliceConfUpdate">

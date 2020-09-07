@@ -12,8 +12,7 @@ class DevModeView(View):
 
 		return render_template(template_name_or_list='devmode.html',
 		                       skills=skills,
-		                       langData=self._langData,
-		                       aliceSettings=self.ConfigManager.aliceConfigurations)
+		                       **self._everyPagesRenderValues)
 
 
 	def uploadToGithub(self):

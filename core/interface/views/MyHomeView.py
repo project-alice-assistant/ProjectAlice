@@ -12,8 +12,7 @@ class MyHomeView(View):
 
 	def index(self):
 		return render_template(template_name_or_list='myHome.html',
-		                       langData=self._langData,
-		                       aliceSettings=self.ConfigManager.aliceConfigurations)
+		                       **self._everyPagesRenderValues)
 
 
 	### Location API
