@@ -860,20 +860,21 @@ $(function () {
 				let zdata = {
 					'id'	 : zoneId,
 					'name'   : zoneName,
-					'x'      : e.pageX - x,
-					'y'      : e.pageY - y,
-					'display': {'width'  : 150,
+					'display': {'x'      : e.pageX - x,
+								'y'      : e.pageY - y,
+								'width'  : 150,
 								'height' : 150},
 					'texture': ''
 				}
 				zoneMode = false;
 				markSelectedTool($('#locationMover'));
 				locationMoveMode = true;
-				$('.zindexer').show();
 				$(this).removeClass(classAddZone);
 				let $zone = newZone(zdata);
 				makeResizableRotatableAndDraggable($zone);
+				$('.zindexer').show();
 				makeDroppable($floorPlan, false);
+				saveRequired();
 			}
 
 		})

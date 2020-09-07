@@ -23,6 +23,9 @@ class Location(ProjectAliceObject):
 		self.display = dict()
 		if 'display' in self.data.keys() and self.data['display']:
 			self.display = ast.literal_eval(self.data['display'])
+		else:
+			self.display = {'width'  : 150,
+							'height' : 150},
 
 
 	def getSaveName(self) -> str:
