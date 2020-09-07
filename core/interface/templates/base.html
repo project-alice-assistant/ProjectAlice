@@ -23,6 +23,9 @@
 		{% block pageTitle %}{% endblock %}
 	</div>
 	<div id="aliceStatus" class="aliceStatus"></div>
+	{% if aliceSettings['displaySystemUsage'] is sameas true %}
+		<div class="resourceUsage" id="resourceUsage"></div>
+	{% endif %}
 	<div class="updateChannelMarker">
 		{{ aliceVersion }}
 	</div>

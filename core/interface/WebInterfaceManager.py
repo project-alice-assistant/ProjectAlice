@@ -1,12 +1,13 @@
-import string
-
 import json
 import logging
 import random
+import string
 import time
+from pathlib import Path
+
+import psutil
 from flask import Flask, send_from_directory
 from flask_login import LoginManager
-from pathlib import Path
 
 from core.base.model.AliceSkill import AliceSkill
 from core.base.model.Manager import Manager
@@ -99,6 +100,12 @@ class WebInterfaceManager(Manager):
 					self.logInfo(f'Exception while registering api endpoint: {e}')
 					continue
 
+			if self.ConfigManager.getAliceConfigByName('displaySystemUsage'):
+				self.ThreadManager.newThread(
+					name='DisplayResourceUsage',
+					target=self.publishResourceUsage
+				)
+
 			self.ThreadManager.newThread(
 				name='WebInterface',
 				target=self.app.run,
@@ -124,16 +131,28 @@ class WebInterfaceManager(Manager):
 
 	def onSkillStarted(self, skill: AliceSkill):
 		if self._instructions:
-			self.ThreadManager.doLater(interval=1, func=self.publish)
+			self.ThreadManager.doLater(interval=1, func=self.publishInstructions)
 
 
-	def publish(self):
+	def publishInstructions(self):
 		self.MqttManager.publish(
 			topic=constants.TOPIC_SKILL_INSTRUCTIONS,
 			payload={
 				'instructions': self._instructions
 			}
 		)
+
+
+	def publishResourceUsage(self):
+		self.MqttManager.publish(
+			topic=constants.TOPIC_RESOURCE_USAGE,
+			payload={
+				'cpu': psutil.cpu_percent(),
+				'ram': psutil.virtual_memory().percent,
+				'swp': psutil.swap_memory().percent
+			}
+		)
+		self.ThreadManager.doLater(interval=1, func=self.publishResourceUsage)
 
 
 	def newSkillInstallProcess(self, skill):

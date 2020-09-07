@@ -1,4 +1,11 @@
 {
+	"displaySystemUsage"      : {
+		"defaultValue": false,
+		"dataType"    : "boolean",
+		"isSensitive" : false,
+		"description" : "Displays the current system usage on the interface",
+		"category"    : "system"
+	},
 	"delegateNluTraining"     : {
 		"defaultValue": false,
 		"dataType"    : "boolean",
