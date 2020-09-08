@@ -3,6 +3,7 @@ let mqttSubscribers = {};
 let MQTT_HOST;
 let MQTT_PORT;
 let LAST_CORE_HEARTBEAT = 0;
+let MAIN_GOING_DOWN = false
 
 function getCookie(cname) {
 	let name = cname + '=';
@@ -144,6 +145,8 @@ $(function () {
 		MQTT.subscribe('projectalice/nlu/trainingStatus');
 		MQTT.subscribe('projectalice/skills/instructions');
 		MQTT.subscribe('projectalice/devices/coreHeartbeat');
+		MQTT.subscribe('projectalice/devices/coreReconnection');
+		MQTT.subscribe('projectalice/devices/coreDisconnection');
 		MQTT.subscribe('projectalice/skills/coreConfigUpdateWarning');
 		MQTT.subscribe('projectalice/devices/resourceUsage');
 	}
@@ -204,10 +207,20 @@ $(function () {
 			}
 			let payload = JSON.parse(msg.payloadString);
 			$div.text(`CPU: ${payload['cpu']}% RAM: ${payload['ram']}% SWP: ${payload['swp']}%`);
+		} else if (msg.topic == 'projectalice/devices/coreDisconnection') {
+			$('#serverUnavailable').show();
+			MAIN_GOING_DOWN = true;
+		} else if (msg.topic == 'projectalice/devices/coreReconnection') {
+			$('#serverUnavailable').hide();
+			MAIN_GOING_DOWN = false;
 		}
 	}
 
 	function checkCoreStatus() {
+		if (MAIN_GOING_DOWN) {
+			return;
+		}
+
 		let $nodal = $('#serverUnavailable');
 
 		if (Date.now() > LAST_CORE_HEARTBEAT + 6000) {

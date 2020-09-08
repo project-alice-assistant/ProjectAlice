@@ -2,10 +2,11 @@ import json
 import sqlite3
 import time
 import uuid
-from paho.mqtt.client import MQTTMessage
 from random import shuffle
-from serial.tools import list_ports
 from typing import Dict, List, Optional, Union
+
+from paho.mqtt.client import MQTTMessage
+from serial.tools import list_ports
 
 from core.base.model.Manager import Manager
 from core.commons import constants
@@ -79,7 +80,7 @@ class DeviceManager(Manager):
 
 
 	def onBooted(self):
-		self.MqttManager.publish(topic='projectalice/devices/coreReconnection')
+		self.MqttManager.publish(topic=constants.TOPIC_CORE_RECONNECTION)
 
 		if self._devices:
 			self.ThreadManager.newThread(name='checkHeartbeats', target=self.checkHeartbeats)
@@ -89,7 +90,9 @@ class DeviceManager(Manager):
 
 	def onStop(self):
 		super().onStop()
-		self.MqttManager.publish(topic='projectalice/devices/coreDisconnection')
+		if self._heartbeat:
+			self._heartbeat.stopHeartBeat()
+		self.MqttManager.publish(topic=constants.TOPIC_CORE_DISCONNECTION)
 
 
 	def onDeviceStatus(self, session: DialogSession):
