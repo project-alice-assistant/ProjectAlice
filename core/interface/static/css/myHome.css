@@ -18,11 +18,11 @@
 .highlightedDevice { box-shadow: 0 0 4px 4px var(--hover); }
 .deviceLink { pointer-events: none; border-radius: 100%; border: 3px solid yellow; z-index: 999; }
 
-.deviceName > #content {
+.sidebarH1 > #content {
 	font-size: 1.5em;
 	display: inline;
 }
-.deviceName > i {
+.sidebarH1 > i {
 	font-size: 0.75em;
 }
 

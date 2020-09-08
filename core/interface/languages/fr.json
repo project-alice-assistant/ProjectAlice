@@ -65,6 +65,7 @@
 	"unreachable"                : "Project Alice n'est pas disponible pour le moment.\nCette page se rechargera dans un moment.",
 	"instructions"               : "Instructions",
 	"renameDevice"               : "Quel est le nouveau nom de l'appareil?",
+	"renameLocation"             : "Quel est le nouveau nom de l'emplacement?",
 	"warningSkillChangeAliceconf": "Modification de configuration de base demandée par un ou des skill(s)",
 	"accept"                     : "accepter",
 	"refuse"                     : "refuser"

@@ -32,6 +32,14 @@ class Location(ProjectAliceObject):
 		return self.name.replace(' ', '_')
 
 
+	def changeName(self, newName: str):
+		self.name = newName
+		self.DatabaseManager.update(tableName=self.LocationManager.TABLE,
+		                            callerName=self.LocationManager.name,
+		                            values={'name': newName},
+		                            row=('id', self.id))
+
+
 	def addSynonym(self, synonym: str) -> list:
 		if synonym in self.synonyms:
 			raise Exception(synonym, ' already known')

@@ -112,7 +112,6 @@ class Device(ProjectAliceObject):
 		                            row=('id', self.id))
 
 
-
 	def saveDevSettings(self):
 		self.DatabaseManager.update(tableName=self.DeviceManager.DB_DEVICE,
 		                            callerName=self.DeviceManager.name,

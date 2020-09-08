@@ -16,6 +16,19 @@ class MyHomeView(View):
 
 
 	### Location API
+	@route('/Location/<path:_id>/saveCoreSettings', methods=['POST'])
+	def saveLocationCoreSettings(self, _id: str):
+		try:
+			data = request.form.to_dict()
+			_id = int(_id)
+			location = self.LocationManager.getLocation(locId=_id)
+			location.changeName(newName=data['name'])
+			return jsonify(success=True)
+		except Exception as e:
+			self.logError(f'Failed saving location core settings: {e}')
+			return jsonify(success=False, error=str(e))
+
+
 	@route('/Location/<path:_id>/getSettings', methods=['GET'])
 	def getLocationSettings(self, _id: str):
 		try:

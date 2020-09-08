@@ -458,7 +458,10 @@ $(function () {
 				});
 
 			} else if (locationSettingsMode){
-				let content = "<i>"+data['id']+"</i> <h1>"+data['name']+"</h1>";
+
+				let content = "<div class='sidebarH1'>"+data['id']+" - <div id='content'>";
+				content += data['name'];
+				content += "</div><i class='fas fa-pencil-alt link-hover' id='renameLocation'></div></i>";
 				content += "<div class='configBox'>";
 				content += "<div class='configBox'>";
 				content += "<div class='configList'>";
@@ -469,6 +472,24 @@ $(function () {
 				content += "</div></div>";
 
 				$sideBar.html(content);
+
+				$('#renameLocation').on('click touchstart', function () {
+					let targetName = $(this).parent().children('#content')
+					let newLocName = prompt($('#langRenameLocation').text(), data['name']);
+					if(newLocName === null){
+						return;
+					}
+					$.post('/myhome/Location/'+data['id']+'/saveCoreSettings', {name : newLocName}).done(function(ret) {
+						if (handleError(ret)) {
+							return;
+						}
+						data['name'] = newLocName;
+						targetName.html(newLocName);
+						let chTitle = $('#floorPlan-Zone_'+data['id']);
+						chTitle.children('.inputOrText').html(newLocName);
+					});
+				});
+
 				loadLocationSettings(data['id'],$sideBar);
 				$sideBar.sidebar({side: "right"}).trigger("sidebar:open");
 
@@ -612,7 +633,7 @@ $(function () {
 
 		$newDevice.on('click touchstart', function () {
 			if(deviceSettingsMode) {
-				let content = "<div class='deviceName'><div id='content'>";
+				let content = "<div class='sidebarH1'><div id='content'>";
 				content += data['name'];
 				content += "</div><i class='fas fa-pencil-alt link-hover' id='renameDevice'></div></i>";
 				content += "<h3>" + data['deviceType'] + "</h3>";
