@@ -683,7 +683,6 @@ class SkillManager(Manager):
 				if skillName in self._activeSkills:
 					try:
 						self._activeSkills[skillName].onStop()
-						self.broadcast(method=constants.EVENT_SKILL_STOPPED, exceptions=[self.name], propagateToSkills=True, skill=self)
 					except Exception as e:
 						self.logError(f'Error stopping "{skillName}" for update: {e}')
 						raise
