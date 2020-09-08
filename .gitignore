@@ -112,6 +112,7 @@ venv.bak/
 
 .DS_Store
 config.py
+config.json
 *.pyc
 *Config.h
 
