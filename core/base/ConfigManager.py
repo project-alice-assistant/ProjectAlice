@@ -128,6 +128,8 @@ class ConfigManager(Manager):
 
 		if changes:
 			self.writeToAliceConfigurationFile(aliceConfigs)
+		else:
+			self._aliceConfigurations = aliceConfigs
 
 
 	@staticmethod
