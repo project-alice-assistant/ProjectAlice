@@ -185,10 +185,23 @@ $(function () {
 			});
 		});
 
-		$.ajax({'url': '/myhome/save/', data: JSON.stringify(data), 'type':'POST', 'contentType' :'application/json'});
-
+		let result = JSON.stringify(data);
+		$.ajax({'url': '/myhome/save/', data: result, 'type': 'POST', 'contentType': 'octet/stream'});
 		saveNotRequired();
+		return result;
 	}
+
+	$('#backupMyHome').on('click touchstart', function () {
+		let data = saveHouse();
+		let file = new Blob([data], {type: 'application/json'});
+		let url = window.URL.createObjectURL(file);
+
+		let $link = $('<a id="downloadBackup" style="hidden" download="myHome.json" href="' + url + '">');
+		$('body').append($link);
+		document.getElementById('downloadBackup').click();
+		window.URL.revokeObjectURL(url);
+		$link.remove();
+	})
 
 // Basic functionality for build area
 	function matrixToAngle(matrix) {
@@ -198,7 +211,7 @@ $(function () {
 
 		let values = matrix.split('(')[1].split(')')[0].split(',');
 		let a = parseFloat(values[0]);
-        let b = parseFloat(values[1]);
+		let b = parseFloat(values[1]);
         let angle = Math.round(Math.atan2(b, a) * (180/Math.PI));
 		angle = (angle < 0) ? angle + 360 : angle;
 		return snapAngle({'rotation': angle})['rotation'];
