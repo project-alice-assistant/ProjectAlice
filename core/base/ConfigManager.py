@@ -134,7 +134,11 @@ class ConfigManager(Manager):
 
 	@staticmethod
 	def loadJsonFromFile(jsonFile: Path) -> dict:
-		return json.loads(jsonFile.read_text())
+		try:
+			return json.loads(jsonFile.read_text())
+		except:
+			# Prevents failing for caller
+			raise
 
 
 	def updateAliceConfiguration(self, key: str, value: typing.Any):
