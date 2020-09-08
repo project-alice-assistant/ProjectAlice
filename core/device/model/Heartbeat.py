@@ -1,5 +1,6 @@
-import paho.mqtt.client as mqtt
 from time import time
+
+import paho.mqtt.client as mqtt
 
 from core.base.model.ProjectAliceObject import ProjectAliceObject
 from core.commons import constants
@@ -12,18 +13,17 @@ class Heartbeat(ProjectAliceObject):
 		self._client = None
 		self._tempo = tempo
 		self._topic = topic
-		self._thread = None
+		self._rnd = 0
 		self.startHeartbeat()
 
 
 	def startHeartbeat(self):
-		rnd = int(time())
-		self._thread = self.ThreadManager.newThread(name=f'heartBeatThread-{rnd}', target=self.thread)
+		self._rnd = int(time())
+		self.ThreadManager.newThread(name=f'heartBeatThread-{self._rnd}', target=self.thread)
 
 
 	def stopHeartBeat(self):
-		if self._thread and self._thread.is_alive():
-			self._thread.join(timeout=2)
+		self.ThreadManager.terminateThread(name=f'heartBeatThread-{self._rnd}')
 
 
 	def thread(self):
@@ -42,5 +42,6 @@ class Heartbeat(ProjectAliceObject):
 
 
 	def beat(self):
-		self._client.publish(topic=self._topic, payload=None, qos=0, retain=False)
+		if not self.ProjectAlice.shuttingDown:
+			self._client.publish(topic=self._topic, payload=None, qos=0, retain=False)
 		self.ThreadManager.newTimer(interval=self._tempo, func=self.beat)
