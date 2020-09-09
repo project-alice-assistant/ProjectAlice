@@ -1,4 +1,3 @@
-import threading
 from pathlib import Path
 from typing import Generator, Optional
 
@@ -35,7 +34,6 @@ class DeepSpeechAsr(Asr):
 
 		self._model: Optional[deepspeech.Model] = None
 		self._triggerFlag = self.ThreadManager.newEvent('asrTriggerFlag')
-		self._vadTemporisation: Optional[threading.Timer] = None
 
 
 	def onStart(self):

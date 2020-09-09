@@ -1,18 +1,18 @@
+import io
 import queue
-import threading
 import wave
 from typing import Optional
 
-import io
 import paho.mqtt.client as mqtt
 
 from core.base.model.ProjectAliceObject import ProjectAliceObject
 from core.dialog.model.DialogSession import DialogSession
+from core.util.model.AliceEvent import AliceEvent
 
 
 class Recorder(ProjectAliceObject):
 
-	def __init__(self, timeoutFlag: threading.Event, user: str, siteId: str):
+	def __init__(self, timeoutFlag: AliceEvent, user: str, siteId: str):
 		super().__init__()
 		self._user = user,
 		self._siteId = siteId
