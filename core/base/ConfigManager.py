@@ -116,6 +116,10 @@ class ConfigManager(Manager):
 						aliceConfigs[setting] = definition['defaultValue']
 
 		# Setting logger level immediately
+		if aliceConfigs['advancedDebug'] and not aliceConfigs['debug']:
+			aliceConfigs['debug'] = True
+			changes = True
+
 		if aliceConfigs['debug']:
 			logging.getLogger('ProjectAlice').setLevel(logging.DEBUG)
 

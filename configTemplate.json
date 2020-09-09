@@ -88,7 +88,7 @@
 		"description" : "If true, an error thrown by a skill will automatically post a github issue and ping the author",
 		"category"    : "system"
 	},
-	"disableSoundAndMic"      : {
+	"disableSoundAndMic"  : {
 		"defaultValue": false,
 		"dataType"    : "boolean",
 		"isSensitive" : false,
@@ -96,21 +96,21 @@
 		"onUpdate"    : "enableDisableSound",
 		"category"    : "device"
 	},
-	"notUnderstoodRetries"    : {
+	"notUnderstoodRetries": {
 		"defaultValue": 3,
 		"dataType"    : "integer",
 		"isSensitive" : false,
 		"description" : "Defines how many times Alice will ask to repeat if not understood before she gives up",
 		"category"    : "system"
 	},
-	"ssid"                    : {
+	"ssid"                : {
 		"defaultValue": "",
 		"dataType"    : "string",
 		"isSensitive" : false,
 		"description" : "Your Wifi name",
 		"category"    : "device"
 	},
-	"debug"                   : {
+	"debug"               : {
 		"defaultValue": false,
 		"dataType"    : "boolean",
 		"isSensitive" : false,
@@ -118,14 +118,21 @@
 		"onUpdate"    : "toggleDebugLogs",
 		"category"    : "system"
 	},
-	"wifipassword"            : {
+	"advancedDebug"       : {
+		"defaultValue": false,
+		"dataType"    : "boolean",
+		"isSensitive" : false,
+		"description" : "If true advanced debugging will be enabled. Might consume more resources",
+		"category"    : "system"
+	},
+	"wifipassword"        : {
 		"defaultValue": "",
 		"dataType"    : "string",
 		"isSensitive" : true,
 		"description" : "Your Wifi password",
 		"category"    : "device"
 	},
-	"mqttHost"                : {
+	"mqttHost"            : {
 		"defaultValue": "localhost",
 		"dataType"    : "string",
 		"isSensitive" : false,
@@ -133,7 +140,7 @@
 		"onUpdate"    : "updateMqttSettings",
 		"category"    : "mqtt"
 	},
-	"mqttPort"                : {
+	"mqttPort"            : {
 		"defaultValue": 1883,
 		"dataType"    : "integer",
 		"isSensitive" : false,
