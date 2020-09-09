@@ -20,7 +20,16 @@
 							maxbachmann <https://github.com/maxbachmann>
 """
 
+try:
+	import pydevd_pycharm
+
+	pydevd_pycharm.settrace('192.168.1.176', port=12345, stdoutToServer=True, stderrToServer=True)
+except:
+	# Do nothing, this is only for debug server, advanced stuff
+	pass
+
 from core.Initializer import Initializer
+
 Initializer().initProjectAlice()
 
 import logging.handlers
