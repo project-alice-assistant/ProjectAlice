@@ -28,7 +28,6 @@ class ASRManager(Manager):
 	def onStart(self):
 		super().onStart()
 		self._startASREngine()
-		self.logInfo("done")
 
 
 	def onStop(self):
