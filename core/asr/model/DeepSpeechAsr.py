@@ -48,8 +48,10 @@ class DeepSpeechAsr(Asr):
 		self._model.enableDecoderWithLM(f'{self._langPath}/deepspeech-0.6.1-models/lm.binary', f'{self._langPath}/deepspeech-0.6.1-models/trie', 0.75, 1.85)
 
 
-	def install(self) -> bool:
-		super().install()
+	def installDependencies(self) -> bool:
+		if not super().installDependencies():
+			return False
+
 		return self.downloadLanguage() if not self.checkLanguage() else True
 
 
