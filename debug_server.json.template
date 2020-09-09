@@ -1,0 +1,7 @@
+{
+	"enable": false,
+	"server": "x.x.x.x",
+	"port"  : 12345,
+	"stdout": true,
+	"stderr": true
+}

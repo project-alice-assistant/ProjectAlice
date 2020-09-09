@@ -20,35 +20,31 @@
 							maxbachmann <https://github.com/maxbachmann>
 """
 
+import subprocess
+
+subprocess.run(['clear'])
+
 try:
+	from pathlib import Path
+	import json
+
+	conf = json.loads(Path('debug_server.json').read_text())
+	if not conf['enable']:
+		raise Exception
+
 	import pydevd_pycharm
 
-	pydevd_pycharm.settrace('192.168.1.176', port=12345, stdoutToServer=True, stderrToServer=True)
+	pydevd_pycharm.settrace(conf['server'], port=conf['port'], stdoutToServer=conf['stdout'], stderrToServer=conf['stderr'])
 except:
 	# Do nothing, this is only for debug server, advanced stuff
 	pass
 
-from core.Initializer import Initializer
-
-Initializer().initProjectAlice()
-
 import logging.handlers
-import signal
-import sys
-import time
-import traceback
 from datetime import datetime
-from pathlib import Path
-
-from core.util.model import BashFormatting, FileFormatting, HtmlFormatting
-from core.util.model.MqttLoggingHandler import MqttLoggingHandler
+from core.util.model import FileFormatting, BashFormatting
 
 _logger = logging.getLogger('ProjectAlice')
 _logger.setLevel(logging.INFO)
-
-logFileFormatter = FileFormatting.Formatter()
-bashFormatter = BashFormatting.Formatter()
-htmlFormatter = HtmlFormatting.Formatter()
 
 date = int(datetime.now().strftime('%Y%m%d'))
 logsMountpoint = Path(Path(__file__).resolve().parent, 'var', 'logs')
@@ -56,20 +52,37 @@ logsMountpoint = Path(Path(__file__).resolve().parent, 'var', 'logs')
 logFileHandler = logging.FileHandler(filename=f'{logsMountpoint}/logs.log', mode='w')
 rotatingHandler = logging.handlers.RotatingFileHandler(filename=f'{logsMountpoint}/{date}-logs.log', mode='a', maxBytes=100000, backupCount=20)
 streamHandler = logging.StreamHandler()
-mqttHandler = MqttLoggingHandler()
 
+logFileFormatter = FileFormatting.Formatter()
+bashFormatter = BashFormatting.Formatter()
 logFileHandler.setFormatter(logFileFormatter)
 rotatingHandler.setFormatter(logFileFormatter)
-mqttHandler.setFormatter(htmlFormatter)
 streamHandler.setFormatter(bashFormatter)
 
 _logger.addHandler(logFileHandler)
 _logger.addHandler(rotatingHandler)
 _logger.addHandler(streamHandler)
+
+from core.Initializer import Initializer
+
+Initializer().initProjectAlice()
+
+import signal
+import sys
+import time
+import traceback
+
+# This needs access to non native python packages, cannot init before the initializer is done
+from core.util.model import HtmlFormatting
+from core.util.model.MqttLoggingHandler import MqttLoggingHandler
+
+htmlFormatter = HtmlFormatting.Formatter()
+mqttHandler = MqttLoggingHandler()
+mqttHandler.setFormatter(htmlFormatter)
 _logger.addHandler(mqttHandler)
 
 
-def exceptionListener(*exc_info): #NOSONAR
+def exceptionListener(*exc_info):  # NOSONAR
 	global _logger
 	_logger.error('[Project Alice]           An unhandled exception occured')
 	text = ''.join(traceback.format_exception(*exc_info))
@@ -79,7 +92,6 @@ def exceptionListener(*exc_info): #NOSONAR
 sys.excepthook = exceptionListener
 
 from core.ProjectAlice import ProjectAlice
-import subprocess
 
 
 # noinspection PyUnusedLocal
@@ -94,14 +106,12 @@ def restart():
 
 
 def main():
-	subprocess.run(['clear'])
 	global RUNNING
 	RUNNING = True
 
 	signal.signal(signal.SIGINT, stopHandler)
 	signal.signal(signal.SIGTERM, stopHandler)
 
-	Initializer().initProjectAlice()
 	projectAlice = ProjectAlice(restartHandler=restart)
 	try:
 		while RUNNING:
