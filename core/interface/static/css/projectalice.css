@@ -198,7 +198,7 @@ button.button{ font-size: 1.6em; height: 2em; }
 .floorPlanEditMode { background: var(--secondary) url('./images/grid.png'); }
 .floorPlanEditMode-AddingZone { cursor: cell; }
 
-.sidebar.right { position: absolute; top: 0; right: -290px; bottom: 0; width: 270px; background: var(--windowBG); border-left: solid var(--accent); overflow-y: auto; padding: 6em 1em 1em 1em;}
+.sidebar.right { position: absolute; top: 0; right: -290px; bottom: 0; width: 270px; background: var(--windowBG); border-left: solid var(--accent); overflow-y: auto; padding: 6em 1em 1em 1em; z-index: 98;}
 .sidebar input {
     width: 100%;
     width: -moz-available;          /* WebKit-based browsers will ignore this. */
