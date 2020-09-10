@@ -116,6 +116,10 @@ class ConfigManager(Manager):
 						aliceConfigs[setting] = definition['defaultValue']
 
 		# Setting logger level immediately
+		if aliceConfigs['advancedDebug'] and not aliceConfigs['debug']:
+			aliceConfigs['debug'] = True
+			changes = True
+
 		if aliceConfigs['debug']:
 			logging.getLogger('ProjectAlice').setLevel(logging.DEBUG)
 
@@ -134,7 +138,11 @@ class ConfigManager(Manager):
 
 	@staticmethod
 	def loadJsonFromFile(jsonFile: Path) -> dict:
-		return json.loads(jsonFile.read_text())
+		try:
+			return json.loads(jsonFile.read_text())
+		except:
+			# Prevents failing for caller
+			raise
 
 
 	def updateAliceConfiguration(self, key: str, value: typing.Any):

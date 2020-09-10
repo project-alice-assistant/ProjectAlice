@@ -1,10 +1,9 @@
-import threading
+import io
 import time
 import wave
 from pathlib import Path
-from typing import Dict
+from typing import Dict, Optional
 
-import io
 import pyaudio
 from webrtcvad import Vad
 
@@ -12,6 +11,7 @@ from core.ProjectAliceExceptions import PlayBytesStopped
 from core.base.model.Manager import Manager
 from core.commons import constants
 from core.dialog.model.DialogSession import DialogSession
+from core.util.model.AliceEvent import AliceEvent
 
 
 class AudioManager(Manager):
@@ -27,7 +27,7 @@ class AudioManager(Manager):
 	def __init__(self):
 		super().__init__()
 
-		self._stopPlayingFlag = threading.Event()
+		self._stopPlayingFlag: Optional[AliceEvent] = None
 		self._playing = False
 		self._waves: Dict[str, wave.Wave_write] = dict()
 
@@ -57,6 +57,7 @@ class AudioManager(Manager):
 
 	def onStart(self):
 		super().onStart()
+		self._stopPlayingFlag = self.ThreadManager.newEvent('stopPlaying')
 		self.MqttManager.mqttClient.subscribe(constants.TOPIC_AUDIO_FRAME.format(self.ConfigManager.getAliceConfigByName('uuid')))
 
 		if not self.ConfigManager.getAliceConfigByName('disableSoundAndMic'):

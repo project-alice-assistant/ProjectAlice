@@ -1,13 +1,13 @@
 import json
 import threading
 from pathlib import Path
-from threading import Event
 from typing import Optional
 
 from core.asr.model.Recorder import Recorder
 from core.base.model.ProjectAliceObject import ProjectAliceObject
 from core.commons import constants
 from core.dialog.model.DialogSession import DialogSession
+from core.util.model.AliceEvent import AliceEvent
 
 
 class Asr(ProjectAliceObject):
@@ -18,7 +18,7 @@ class Asr(ProjectAliceObject):
 	def __init__(self):
 		self._capableOfArbitraryCapture = False
 		self._isOnlineASR = False
-		self._timeout = Event()
+		self._timeout: AliceEvent = self.ThreadManager.newEvent('asrTimeout')
 		self._timeoutTimer: Optional[threading.Timer] = None
 		self._recorder: Optional[Recorder] = None
 		super().__init__()
