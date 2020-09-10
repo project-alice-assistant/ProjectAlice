@@ -186,7 +186,7 @@ $(function () {
 		});
 
 		let result = JSON.stringify(data);
-		$.ajax({'url': '/myhome/save/', data: result, 'type': 'POST', 'contentType': 'octet/stream'});
+		$.ajax({'url': '/myhome/save/', data: result, 'type': 'POST', 'contentType': 'application/json'});
 		saveNotRequired();
 		return result;
 	}
