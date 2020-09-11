@@ -223,7 +223,7 @@ $(function () {
 
 		let $nodal = $('#serverUnavailable');
 
-		if (Date.now() > LAST_CORE_HEARTBEAT + 6000) {
+		if (LAST_CORE_HEARTBEAT > 0 && Date.now() > LAST_CORE_HEARTBEAT + 4000) {
 			$nodal.show();
 		} else {
 			if ($nodal.is(':visible')) {
