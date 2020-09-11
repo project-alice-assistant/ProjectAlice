@@ -1187,7 +1187,7 @@ $(function () {
 	}
 
 // load floor tiles
-	for (let i = 1; i <= 79; i++) {
+	for (let i = 1; i <= 80; i++) {
 		let $tile = $('<div class="floorPlan-tile floor-' + i + '"></div>');
 		$tile.on('click touchstart', function () {
 			if (!$(this).hasClass('selected')) {
