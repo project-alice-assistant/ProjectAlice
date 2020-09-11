@@ -1,6 +1,5 @@
 import ast
 import json
-from dataclasses import dataclass, field
 
 from core.base.model.ProjectAliceObject import ProjectAliceObject
 from core.commons import constants

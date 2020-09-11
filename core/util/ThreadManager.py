@@ -47,12 +47,14 @@ class ThreadManager(Manager):
 	def onQuarterHour(self):
 		deadTimers = 0
 		deadThreads = 0
-		for threadTimer in self._timers:
+		timers = self._timers.copy()
+		for threadTimer in timers:
 			if not threadTimer.timer.isAlive():
 				self._timers.remove(threadTimer)
 				deadTimers += 1
 
-		for threadName, thread in self._threads.items():
+		threads = self._threads.copy()
+		for threadName, thread in threads.items():
 			if not thread.is_alive():
 				self._threads.pop(threadName, None)
 				deadThreads += 1

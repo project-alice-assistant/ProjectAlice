@@ -67,8 +67,8 @@ $(function () {
 		resizable: false,
 		close    : function () {
 			let tab = $('#config_tabs');
-			tab.find('#WidgetSettings').html("");
-			tab.find('#GraphicSettings').html("");
+			tab.find('#WidgetSettings').html('');
+			tab.find('#GraphicSettings').html('');
 		}
 	});
 

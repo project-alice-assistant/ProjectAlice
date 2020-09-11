@@ -6,7 +6,7 @@
 
 {% block loaders %}
 	<link rel="stylesheet" href="{{ url_for('static', filename='css/myHome.css') }}">
-	<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-sidebar/3.3.2/jquery.sidebar.min.js"></script>
+	<script src="{{ url_for('static', filename='js/jquery.sidebar.min.js') }}"></script>
 	<script src="{{ url_for('static', filename='js/jquery.connections.js') }}"></script>
 	<script src="{{ url_for('static', filename='js/myHome.js') }}"></script>
 {% endblock %}

@@ -1,6 +1,8 @@
 $(function () {
 
 	let $console = $('#console');
+	let $stopScroll = $('#stopScroll');
+	let $startScroll = $('#startScroll');
 
 	function setVerbosity(level) {
 		$.ajax({
@@ -41,7 +43,7 @@ $(function () {
 			'<span class="logLine">' + text + '</span>'
 		);
 
-		if ($('#stopScroll').is(':visible')) {
+		if ($stopScroll.is(':visible')) {
 			$console.scrollTop($console.prop('scrollHeight'));
 		}
 	}
@@ -56,19 +58,20 @@ $(function () {
 		MQTT.subscribe('projectalice/logging/alicewatch')
 	}
 
-	$('#stopScroll').on('click touchstart', function () {
+	$stopScroll.on('click touchstart', function () {
 		$(this).hide();
-		$('#startScroll').show();
+		$startScroll.show();
 		return false;
 	});
 
-	$('#startScroll').on('click touchstart', function () {
+	$startScroll.on('click touchstart', function () {
 		$(this).hide();
-		$('#stopScroll').show();
+		$stopScroll.show();
 		return false;
 	});
 
-	$('[class^="fas fa-thermometer"]').on('click touchstart', function () {
+	let $thermometers = $('[class^="fas fa-thermometer"]');
+	$thermometers.on('click touchstart', function () {
 		$('[class^="fas fa-thermometer"]').removeClass('active');
 		$(this).addClass('active');
 		let level = $(this).data('verbosity');
@@ -80,8 +83,7 @@ $(function () {
 	let verbosity = getCookie('AliceWatch_verbosity');
 	if (verbosity != '') {
 		setVerbosity(verbosity);
-		let $elements = $('[class^="fas fa-thermometer"]')
-		$elements.removeClass('active');
+		$thermometers.removeClass('active');
 		$('[data-verbosity="' + verbosity + '"]').addClass('active');
 	}
 

@@ -2,8 +2,9 @@ import time
 from typing import Iterable
 
 from core.base.model.Manager import Manager
-from core.util.model.TelemetryType import TelemetryType
 from core.device.model.Location import Location
+from core.util.model.TelemetryType import TelemetryType
+
 
 class TelemetryManager(Manager):
 
@@ -130,6 +131,7 @@ class TelemetryManager(Manager):
 			values['service'] = service
 
 		dynWhere = [f'{col} = :{col}' for col in values.keys()]
+		# noinspection SqlResolve
 		query = f'SELECT value, timestamp FROM :__table__ WHERE {" ,".join(dynWhere)} ORDER BY `timestamp` DESC LIMIT 1'
 
 		# noinspection SqlResolve
