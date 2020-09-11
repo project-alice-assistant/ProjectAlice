@@ -5,7 +5,7 @@ from pathlib import Path
 from core.ProjectAliceExceptions import DbConnectionError, InvalidQuery
 from core.base.model.Manager import Manager
 from core.commons import constants
-
+from core.commons.CommonsManager import CommonsManager
 
 # noinspection SqlResolve
 class DatabaseManager(Manager):
@@ -36,6 +36,7 @@ class DatabaseManager(Manager):
 
 	def getConnection(self) -> sqlite3.Connection:
 		try:
+			self.logInfo(f'DB lock aquired by {CommonsManager.getFunctionCaller(depth=5)}->{CommonsManager.getFunctionCaller(depth=4)} -> {CommonsManager.getFunctionCaller(depth=3)}')
 			con = sqlite3.connect(constants.DATABASE_FILE)
 		except sqlite3.Error as e:
 			self.logError(f'Failed to connect to DB ({constants.DATABASE_FILE}): {e}')
