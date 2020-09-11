@@ -3,12 +3,16 @@ $(function () {
 	let $defaultTab = $('#devmodeTabsContainer ul li:first');
 	$defaultTab.addClass('activeTab');
 
+	let $createSkillButton = $('#createSkillButton');
+	let $uploadSkillButton = $('#uploadSkillButton');
+	let $goGithubButton = $('#goGithubButton');
+
 	function toggleCreateButton() {
 		if ($('#skillNameOk').is(':visible') && $('#skillDescOk').is(':visible')) {
-			$('#createSkillButton').show();
+			$createSkillButton.show();
 		} else {
-			$('#createSkillButton').hide();
-			$('#uploadSkillButton').hide();
+			$createSkillButton.hide();
+			$uploadSkillButton.hide();
 		}
 	}
 
@@ -18,8 +22,8 @@ $(function () {
 		$('#skillNameKo').show();
 		$('#skillDescOk').hide();
 		$('#skillDescKo').show();
-		$('#uploadSkillButton').hide();
-		$('#goGithubButton').hide();
+		$uploadSkillButton.hide();
+		$goGithubButton.hide();
 	}
 
 
@@ -51,7 +55,9 @@ $(function () {
 		return false;
 	});
 
-	$('#skillname').on('input', function () {
+	let $skillName = $('#skillName');
+
+	$skillName.on('input', function () {
 		if ($(this).val().length < 5) {
 			$('#skillNameOk').hide();
 			$('#skillNameKo').show();
@@ -85,9 +91,9 @@ $(function () {
 		toggleCreateButton();
 	});
 
-	$('#createSkillButton').on('click touchstart', function () {
+	$createSkillButton.on('click touchstart', function () {
 		$.ajax({
-			url: '/devmode/' + $('#skillname').val() + '/',
+			url: '/devmode/' + $skillName.val() + '/',
 			type: 'PUT',
 			data: {
 				'description': $('#skilldesc').val(),
@@ -103,15 +109,15 @@ $(function () {
 				'conditionActiveManager': $('#conditionActiveManager').val(),
 				'widgets': $('#widgets').val()
 			}
-		}).done(function (status) {
+		}).done(function () {
 			$('#newSkillForm :input').prop('disabled', true);
-			$('#uploadSkillButton').prop('disabled', false).show();
+			$uploadSkillButton.prop('disabled', false).show();
 			$('#resetSkillButton').prop('disabled', false);
-			$('#createSkillButton').hide();
+			$createSkillButton.hide();
 		});
 	});
 
-	$('#uploadSkillButton').on('click touchstart', function () {
+	$uploadSkillButton.on('click touchstart', function () {
 		$.ajax({
 			url: '/devmode/uploadToGithub/',
 			type: 'POST',
@@ -121,7 +127,7 @@ $(function () {
 			}
 		}).done(function (status) {
 			if (status['success']) {
-				$('#uploadSkillButton').hide();
+				$uploadSkillButton.hide();
 				$('#goGithubButton').text(status['url']).prop('disabled', false).show();
 			}
 		});
@@ -131,7 +137,7 @@ $(function () {
 		resetSkillPage();
 	});
 
-	$('#goGithubButton').on('click touchstart', function () {
+	$goGithubButton.on('click touchstart', function () {
 		window.open($(this).text());
 	});
 

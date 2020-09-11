@@ -1,5 +1,8 @@
 $(function () {
 
+	let $stopScroll = $('#stopScroll');
+	let $startScroll = $('#startScroll');
+
 	function onMessage(msg) {
 		if (msg.topic != 'projectalice/logging/syslog' || !msg.payloadString) {
 			return;
@@ -15,20 +18,20 @@ $(function () {
 
 		let container = $('#console');
 		container.append(text);
-		if ($('#stopScroll').is(':visible')) {
+		if ($stopScroll.is(':visible')) {
 			container.scrollTop(container.prop('scrollHeight'));
 		}
 	}
 
-	$('#stopScroll').on('click touchstart', function () {
+	$stopScroll.on('click touchstart', function () {
 		$(this).hide();
-		$('#startScroll').show();
+		$startScroll.show();
 		return false;
 	});
 
-	$('#startScroll').on('click touchstart', function () {
+	$startScroll.on('click touchstart', function () {
 		$(this).hide();
-		$('#stopScroll').show();
+		$stopScroll.show();
 		return false;
 	});
 
