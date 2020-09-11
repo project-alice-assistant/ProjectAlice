@@ -2,7 +2,7 @@ import unittest
 from unittest import mock
 
 from core.commons.CommonsManager import CommonsManager
-from core.commons import constants
+
 
 class TestCommonsManager(unittest.TestCase):
 
@@ -127,9 +127,6 @@ class TestCommonsManager(unittest.TestCase):
 		self.assertEqual(
 			CommonsManager.parseSiteId(MQTTMessage('{"IPAddress": "127.0.0.1"}')),
 			'127.0.0.1')
-		self.assertEqual(
-			CommonsManager.parseSiteId(MQTTMessage('{}')),
-			constants.DEFAULT_SITE_ID)
 
 
 	def test_getDuration(self):

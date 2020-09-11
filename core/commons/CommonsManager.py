@@ -1,22 +1,22 @@
-import string
-from collections import defaultdict
-from contextlib import contextmanager, suppress
-from ctypes import *
-
 import hashlib
 import inspect
 import json
 import random
-import requests
 import socket
+import string
 import subprocess
 import tempfile
 import time
+from collections import defaultdict
+from contextlib import contextmanager, suppress
+from ctypes import *
 from datetime import datetime
-from googletrans import Translator
-from paho.mqtt.client import MQTTMessage
 from pathlib import Path
 from typing import Any, Union
+
+import requests
+from googletrans import Translator
+from paho.mqtt.client import MQTTMessage
 
 import core.commons.model.Slot as slotModel
 from core.base.model.Manager import Manager
@@ -338,4 +338,5 @@ def py_error_handler(filename, line, function, err, fmt): #NOSONAR
 	pass
 
 
+# noinspection PyTypeChecker
 c_error_handler = CommonsManager.ERROR_HANDLER_FUNC(py_error_handler) #NOSONAR

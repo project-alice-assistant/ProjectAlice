@@ -1,11 +1,9 @@
 import ast
 import json
-import sqlite3
-from typing import Union
+from dataclasses import dataclass, field
 
 from core.base.model.ProjectAliceObject import ProjectAliceObject
 
-from dataclasses import dataclass, field
 
 @dataclass
 class DeviceLink(ProjectAliceObject):

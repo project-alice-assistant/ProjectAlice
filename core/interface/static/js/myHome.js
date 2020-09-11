@@ -1222,7 +1222,7 @@ $(function () {
 
 	$.get('DeviceType/getList').done(function (dats) {
 		$.each(dats, function(k, dat) {
-		let $tile = $('<div class="floorPlan-tile" style="background: url(\'deviceType_static/' + dat['skill'] + '/img/' + dat['deviceType'] + '.png\') no-repeat; background-size: 100% 100%;"></div>');
+			let $tile = $('<div class="floorPlan-tile" style="background: url(\'deviceType_static/' + dat['skill'] + '/img/' + dat['deviceType'] + '.png\') no-repeat; background-size: 100% 100%;"></div>');
 		$tile.on('click touchstart', function () {
 			if (!$(this).hasClass('selected')) {
 				$(sTile).removeClass('selected');

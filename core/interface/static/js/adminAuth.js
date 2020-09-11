@@ -21,7 +21,7 @@ $(function () {
 		})
 	}
 
-	$('#username').on('keyup', function (e) {
+	$('#username').on('keyup', function () {
 		$.ajax({
 			url: '/adminAuth/login/',
 			data: {

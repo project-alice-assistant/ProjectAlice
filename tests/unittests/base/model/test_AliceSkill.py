@@ -23,6 +23,7 @@ class TestAliceSkill(unittest.TestCase):
 		class ExampleSkill(AliceSkill):
 
 			# ignore all stuff that would happen in the AliceSkill init
+			# noinspection PyMissingConstructor
 			def __init__(self):
 				self._name = 'ExampleSkill'
 
@@ -86,6 +87,7 @@ class TestAliceSkill(unittest.TestCase):
 
 		class ExampleSkill(AliceSkill):
 			#ignore all stuff that would happen in the AliceSkill init
+			# noinspection PyMissingConstructor
 			def __init__(self):
 				self._name = 'ExampleSkill'
 

@@ -74,5 +74,4 @@ class DevModeView(View):
 
 		return render_template(template_name_or_list='editSkill.html',
 		                       skill=skill,
-		                       langData=self._langData,
-		                       aliceSettings=self.ConfigManager.aliceConfigurations)
+		                       **self._everyPagesRenderValues)
