@@ -120,66 +120,66 @@ $(function () {
 		$floorPlan.children(sZone).each(function () {
 			let zoneID = $(this).data('id');
 			data[zoneID] = {
-				"id"	  : $(this).data('id'),
-				"name"    : $(this).data('name')
+				'id'	  : $(this).data('id'),
+				'name'    : $(this).data('name')
 			};
 			data[zoneID]['display'] = {
-				"x"       : $(this).css('left').replace('px', ''),
-				"y"       : $(this).css('top').replace('px', ''),
-				"z-index" : $(this).css('z-index'),
-				"rotation": matrixToAngle($(this).css('transform')),
-				"width"   : $(this).width(),
-				"height"  : $(this).height(),
-				"texture" : $(this).data('texture')
+				'x'       : $(this).css('left').replace('px', ''),
+				'y'       : $(this).css('top').replace('px', ''),
+				'z-index' : $(this).css('z-index'),
+				'rotation': matrixToAngle($(this).css('transform')),
+				'width'   : $(this).width(),
+				'height'  : $(this).height(),
+				'texture' : $(this).data('texture')
 			};
 			data[zoneID]['display']['walls'] = [];
 			$(this).children(sWall).each(function () {
 				data[zoneID]['display']['walls'].push({
-					"x"       : $(this).css('left').replace('px', ''),
-					"y"       : $(this).css('top').replace('px', ''),
-					"rotation": matrixToAngle($(this).css('transform')),
-					"width"   : $(this).width(),
-					"height"  : $(this).height()
+					'x'       : $(this).css('left').replace('px', ''),
+					'y'       : $(this).css('top').replace('px', ''),
+					'rotation': matrixToAngle($(this).css('transform')),
+					'width'   : $(this).width(),
+					'height'  : $(this).height()
 				})
 			});
 
 			data[zoneID]['display']['construction'] = [];
 			$(this).children(sConstr).each(function () {
 				data[zoneID]['display']['construction'].push({
-					"x"       : $(this).css('left').replace('px', ''),
-					"y"       : $(this).css('top').replace('px', ''),
-					"rotation": matrixToAngle($(this).css('transform')),
-					"width"   : $(this).width(),
-					"height"  : $(this).height(),
-					"texture" : $(this).data('texture')
+					'x'       : $(this).css('left').replace('px', ''),
+					'y'       : $(this).css('top').replace('px', ''),
+					'rotation': matrixToAngle($(this).css('transform')),
+					'width'   : $(this).width(),
+					'height'  : $(this).height(),
+					'texture' : $(this).data('texture')
 				})
 			});
 
 			data[zoneID]['display']['deco'] = [];
 			$(this).children(sDeco).each(function () {
 				data[zoneID]['display']['deco'].push({
-					"x"       : $(this).css('left').replace('px', ''),
-					"y"       : $(this).css('top').replace('px', ''),
-					"rotation": matrixToAngle($(this).css('transform')),
-					"width"   : $(this).width(),
-					"height"  : $(this).height(),
-					"texture" : $(this).data('texture')
+					'x'       : $(this).css('left').replace('px', ''),
+					'y'       : $(this).css('top').replace('px', ''),
+					'rotation': matrixToAngle($(this).css('transform')),
+					'width'   : $(this).width(),
+					'height'  : $(this).height(),
+					'texture' : $(this).data('texture')
 				})
 			});
 
 			data[zoneID]['devices'] = [];
 			$(this).children(sDevice).each(function () {
 				data[zoneID]['devices'].push({
-					"id"	  : $(this).data('id'),
-					"uid"	  : $(this).data('uid'),
-					"deviceType" : $(this).data('texture'),
-					"skill" : $(this).data('skill'),
-					"display" : {
-						"x"       : $(this).css('left').replace('px', ''),
-						"y"       : $(this).css('top').replace('px', ''),
-						"rotation": matrixToAngle($(this).css('transform')),
-						"width"   : $(this).width(),
-						"height"  : $(this).height()
+					'id'	  : $(this).data('id'),
+					'uid'	  : $(this).data('uid'),
+					'deviceType' : $(this).data('texture'),
+					'skill' : $(this).data('skill'),
+					'display' : {
+						'x'       : $(this).css('left').replace('px', ''),
+						'y'       : $(this).css('top').replace('px', ''),
+						'rotation': matrixToAngle($(this).css('transform')),
+						'width'   : $(this).width(),
+						'height'  : $(this).height()
 					}
 				})
 			});
@@ -283,8 +283,8 @@ $(function () {
 				snapTolerance: 5,
 				zIndex       : 999,
 				revert       : revert,
-				helper       : "clone",
-				appendTo     : "body",
+				helper       : 'clone',
+				appendTo     : 'body',
 				start        : function (e) {
 					$(e.target).css({opacity: 0.3});
 				},
@@ -319,7 +319,7 @@ $(function () {
 				res = JSON.parse(res);
 				if(handleError(res)) return;
 				selectedLinks = res;
-				let content = "";
+				let content = '';
 				$.each(res, function (id, link) {
 					let target = $('#floorPlan-Zone_' + link['locationID']);
 					target.children('.inputOrText').connections({
@@ -349,7 +349,9 @@ $(function () {
 						saveEnter();
 					}
 
-					$('input').change(makeDirty);
+					$('input').on('change', function(){
+						makeDirty();
+					});
 				}
 			});
 		}
@@ -360,20 +362,20 @@ $(function () {
 	function newZone(data) {
 		data = snapPosition(data)
 		data = snapAngle(data);
-		if(!data["display"]){
-			data["display"] = {};
+		if(!data['display']){
+			data['display'] = {};
 		}
-		if(data["display"]["z-index"] == "auto" || data["display"]["z-index"] == null){
-			data["display"]["z-index"] = maxZindex;
+		if(data['display']['z-index'] == 'auto' || data['display']['z-index'] == null){
+			data['display']['z-index'] = maxZindex;
 			maxZindex++;
 		}
-		let $newZone = $('<div class="floorPlan-Zone ' + data["display"]["texture"] + '" ' +
-			'id="floorPlan-Zone_'+data["id"]+'" '+
-			'data-id="' + data["id"] + '" ' +
-			'data-name="' + data["name"] + '" ' +
-			'data-texture="' + data["display"]["texture"] + '" ' +
-			'style="left: ' + data["display"]["x"] + 'px; top: ' + data["display"]["y"] + 'px; width: ' + data["display"]["width"] + 'px; height: ' + data["display"]["height"] + 'px; position: absolute; transform: rotate(' + data["display"]["rotation"] + 'deg); z-index: ' + data["display"]["z-index"] + '">' +
-			'<div class="inputOrText">' + data["name"] + '</div>' +
+		let $newZone = $('<div class="floorPlan-Zone ' + data['display']['texture'] + '" ' +
+			'id="floorPlan-Zone_' + data['id'] + '" '+
+			'data-id="' + data['id'] + '" ' +
+			'data-name="' + data['name'] + '" ' +
+			'data-texture="' + data['display']['texture'] + '" ' +
+			'style="left: ' + data['display']['x'] + 'px; top: ' + data['display']['y'] + 'px; width: ' + data['display']['width'] + 'px; height: ' + data['display']['height'] + 'px; position: absolute; transform: rotate(' + data['display']['rotation'] + 'deg); z-index: ' + data['display']['z-index'] + '">' +
+			'<div class="inputOrText">' + data['name'] + '</div>' +
 			'<div class="zindexer initialHidden">' +
 				'<div class="zindexer-up"><i class="fas fa-level-up-alt" aria-hidden="true"></i></div>' +
 				'<div class="zindexer-down"><i class="fas fa-level-down-alt" aria-hidden="true"></i></div>' +
@@ -434,7 +436,7 @@ $(function () {
 				}
 
 				$.post('/myhome/Device/0/add',
-					{ 'locationID': data["id"],
+					{ 'locationID': data['id'],
 					  'deviceTypeID': selectedDeviceTypeID } ).done(function (rec) {
 					  	if(handleError(rec)){
 					  		return;
@@ -461,7 +463,7 @@ $(function () {
 
 				// add link from selected Device to zone
 				let target = this;
-				$.post('/myhome/Device/'+selectedDevice.data('id')+'/addLink/'+data["id"]).done(function (result){
+				$.post('/myhome/Device/'+selectedDevice.data('id')+'/addLink/' + data['id']).done(function (result){
 					if( handleError(result) ) return;
 					// frontend: draw bezier
 					$(target).children('.inputOrText').connections({
@@ -504,12 +506,12 @@ $(function () {
 				});
 
 				loadLocationSettings(data['id'],$sideBar);
-				$sideBar.sidebar({side: "right"}).trigger("sidebar:open");
+				$sideBar.sidebar({side: 'right'}).trigger('sidebar:open');
 
 				// reroute enter to click event
-				$('.configInput').keypress(function (e) {
-				  if (e.which == 13) {
-				  	$(this).parent().children('.configListAdd').click();
+				$('.configInput').on('keydown',function (e) {
+				  if (e.key == 'Enter') {
+				  	$(this).parent().children('.configListAdd').trigger('click');
 					return false;
 				  }
 				});
@@ -569,7 +571,7 @@ $(function () {
 		data = snapPosition(data)
 		data = snapAngle(data);
 		let $newWall = $('<div class="floorPlan-Wall" ' +
-			'style="left: ' + data["x"] + 'px; top: ' + data["y"] + 'px; width: ' + data["width"] + 'px; height: ' + data["height"] + 'px; position: absolute; z-index: auto; transform: rotate(' + data["rotation"] + 'deg);">' +
+			'style="left: ' + data['x'] + 'px; top: ' + data['y'] + 'px; width: ' + data['width'] + 'px; height: ' + data['height'] + 'px; position: absolute; z-index: auto; transform: rotate(' + data['rotation'] + 'deg);">' +
 			'</div>');
 
 		$newWall.on('click touchstart', function () {
@@ -592,8 +594,8 @@ $(function () {
 		data = snapAngle(data);
 		// noinspection CssUnknownTarget
 		let $newConstruction = $('<div class="floorPlan-Construction" ' +
-			'style="background: url(\'/static/css/images/myHome/construction/' + data["texture"] + '.png\') no-repeat; background-size: 100% 100%; left: ' + data["x"] + 'px; top: ' + data["y"] + 'px; width: ' + data["width"] + 'px; height: ' + data["height"] + 'px; position: absolute; z-index: auto; transform: rotate(' + data["rotation"] + 'deg);" ' +
-			'data-texture="' + data["texture"] + '">' +
+			'style="background: url(\'/static/css/images/myHome/construction/' + data['texture'] + '.png\') no-repeat; background-size: 100% 100%; left: ' + data['x'] + 'px; top: ' + data['y'] + 'px; width: ' + data['width'] + 'px; height: ' + data['height'] + 'px; position: absolute; z-index: auto; transform: rotate(' + data['rotation'] + 'deg);" ' +
+			'data-texture="' + data['texture'] + '">' +
 			'</div>');
 
 		$newConstruction.on('click touchstart', function () {
@@ -616,8 +618,8 @@ $(function () {
 		data = snapAngle(data);
 		// noinspection CssUnknownTarget
 		let $newDeco = $('<div class="floorPlan-Deco" ' +
-			'style="background: url(\'/static/css/images/myHome/deco/' + data["texture"] + '.png\') no-repeat; background-size: 100% 100%; left: ' + data["x"] + 'px; top: ' + data["y"] + 'px; width: ' + data["width"] + 'px; height: ' + data["height"] + 'px; position: absolute; z-index: auto; transform: rotate(' + data["rotation"] + 'deg);" ' +
-			'data-texture="' + data["texture"] + '">' +
+			'style="background: url(\'/static/css/images/myHome/deco/' + data['texture'] + '.png\') no-repeat; background-size: 100% 100%; left: ' + data['x'] + 'px; top: ' + data['y'] + 'px; width: ' + data['width'] + 'px; height: ' + data['height'] + 'px; position: absolute; z-index: auto; transform: rotate(' + data['rotation'] + 'deg);" ' +
+			'data-texture="' + data['texture'] + '">' +
 			'</div>');
 
 		$newDeco.on('click touchstart', function () {
@@ -640,8 +642,8 @@ $(function () {
 		data = snapAngle(data);
 		// noinspection CssUnknownTarget
 		let $newDevice = $('<div class="floorPlan-Device" id="device_'+data['id']+'" ' +
-			'style="background: url(\'Device/'+data['id']+'/icon?random='+ new Date().getTime()+'\') no-repeat; background-size: 100% 100%; left: ' + data["display"]["x"] + 'px; top: ' + data["display"]["y"] + 'px; width: ' + data["display"]["width"] + 'px; height: ' + data["display"]["height"] + 'px; position: absolute; z-index: auto; transform: rotate(' + data["display"]["rotation"] + 'deg);" ' +
-			'data-texture="' + data["deviceType"] + '" data-skill="' + data["skill"] + '" data-id="' + data["id"] + '" data-uid="' + data["uid"] + '" title="'+data['name']+'">' +
+			'style="background: url(\'Device/'+data['id']+'/icon?random='+ new Date().getTime()+'\') no-repeat; background-size: 100% 100%; left: ' + data['display']['x'] + 'px; top: ' + data['display']['y'] + 'px; width: ' + data['display']['width'] + 'px; height: ' + data['display']['height'] + 'px; position: absolute; z-index: auto; transform: rotate(' + data['display']['rotation'] + 'deg);" ' +
+			'data-texture="' + data['deviceType'] + '" data-skill="' + data['skill'] + '" data-id="' + data['id'] + '" data-uid="' + data['uid'] + '" title="'+data['name']+'">' +
 			'</div>');
 
 		$newDevice.on('click touchstart', function () {
@@ -671,7 +673,7 @@ $(function () {
 				});
 
 				$sideBar.addClass('waiting after_big')
-				$sideBar.sidebar({side: "right"}).trigger("sidebar:open");
+				$sideBar.sidebar({side: 'right'}).trigger("sidebar:open");
 
 // TODO logic for synonyms of devices
 // 				content += "<div class='configBlock'><div class='configLabel'>Synonyms:</div>";
@@ -694,7 +696,9 @@ $(function () {
 						$sideBar.append(content);
 						saveEnter();
 
-						$('#SetForm').change(makeDirty);
+						$('#SetForm').on('change', function() {
+							makeDirty();
+						})
 
 					}
 					selectedLinks = null;
@@ -938,7 +942,7 @@ $(function () {
 
 		setSelectedDevice(null);
 
-		$sideBar.sidebar({side: "right"}).trigger("sidebar:close");
+		$sideBar.sidebar({side: 'right'}).trigger("sidebar:close");
 		$('.ui-droppable').droppable('destroy');
 
 		$('#painterTiles, #decoTiles, #constructionTiles, #deviceTiles').hide();
@@ -1127,7 +1131,7 @@ $(function () {
 							return;
 						}
 
-						ui.draggable.draggable( "option", "revert", false );
+						ui.draggable.draggable( 'option', 'revert', false );
 					    ui.draggable.css({top: ui.offset.top - $(this).offset().top, left: ui.offset.left - $(this).offset().left } );
 					    if(userConf){
 					    	// no BP while saving: orientation of decoration is lost!
@@ -1135,7 +1139,7 @@ $(function () {
 					    	saveHouse();
 							setBPMode(true);
 						}
-						setTimeout( function() { ui.draggable.draggable( "option", "revert", true ); }, 1000 );
+						setTimeout( function() { ui.draggable.draggable( 'option', 'revert', true ); }, 1000 );
 					}
   				}
 			});
@@ -1222,6 +1226,7 @@ $(function () {
 
 	$.get('DeviceType/getList').done(function (dats) {
 		$.each(dats, function(k, dat) {
+			// noinspection CssUnknownTarget
 			let $tile = $('<div class="floorPlan-tile" style="background: url(\'deviceType_static/' + dat['skill'] + '/img/' + dat['deviceType'] + '.png\') no-repeat; background-size: 100% 100%;"></div>');
 		$tile.on('click touchstart', function () {
 			if (!$(this).hasClass('selected')) {
@@ -1250,7 +1255,7 @@ $(function () {
 				.done(function () {
 					saveNotRequired();
 					$('.aliceStatus').html("Saved!")
-					//todo remove "saved" after a few seconds
+					//todo remove 'saved' after a few seconds
 					dirtyFormulars = [];
 				})
 				.fail(function () {
@@ -1274,7 +1279,7 @@ $(function () {
 		// reroute enter save
 		let relevants = $('.saveEnter.configInput');
 		relevants.on('keydown', function(e) {
-			if (e.key == "Enter") {
+			if (e.key == 'Enter') {
 				e.preventDefault();
 				makeDirty(e);
 				return false;
