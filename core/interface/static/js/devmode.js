@@ -122,8 +122,8 @@ $(function () {
 			url: '/devmode/uploadToGithub/',
 			type: 'POST',
 			data: {
-				'skillName': $('#skillname').val(),
-				'skillDesc': $('#skilldesc').val()
+				'skillName': $('#skillName').val(),
+				'skillDesc': $('#skillDesc').val()
 			}
 		}).done(function (status) {
 			if (status['success']) {
@@ -141,7 +141,7 @@ $(function () {
 		window.open($(this).text());
 	});
 
-	$('#skillname').on('keydown', function (e) {
+	$skillName.on('keydown', function (e) {
 		if (e.key == ' ') {
 			return false;
 		}

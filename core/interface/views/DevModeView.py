@@ -21,7 +21,7 @@ class DevModeView(View):
 			skillDesc = request.form.get('skillDesc', '')
 
 			if not skillName:
-				raise Exception
+				raise Exception('Missing skill name')
 
 			if self.SkillManager.uploadSkillToGithub(skillName, skillDesc):
 				return jsonify(success=True, url=f'https://github.com/{self.ConfigManager.getAliceConfigByName("githubUsername")}/skill_{skillName}.git')
