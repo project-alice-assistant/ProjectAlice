@@ -27,7 +27,7 @@
 							{% for settingName, settingValue in aliceSettings.items() if not settingName == 'skills' and not settingName == 'supportedLanguages' and aliceSettingsTemplate[settingName]['category'] == category %}
 								{% if aliceSettingsTemplate[settingName]['display'] != 'hidden' %}
 									{% set state = '' %}
-									{% if 'parent' in aliceSettingsTemplate[settingName] %}
+									{% if aliceSettingsTemplate.parent is defined %}
 										{% set parentConfig = aliceSettingsTemplate[settingName][parent][config] %}
 										{% set condition = aliceSettingsTemplate[settingName][parent][condition] %}
 										{% set value = aliceSettingsTemplate[settingName][parent][value]|string %}
