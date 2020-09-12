@@ -189,7 +189,7 @@ class DatabaseManager(Manager):
 
 		database = None
 		try:
-			start_time = time.time()
+			startTime = time.time()
 			database = self.getConnection()
 			cursor = database.cursor()
 
@@ -206,7 +206,7 @@ class DatabaseManager(Manager):
 			database.commit()
 			cursor.close()
 			database.close()
-			self.logInfo(f'It took {time.time() - start_time} seconds to INSERT {tableName} DB ')
+			self.logDebug(f'It took {time.time() - startTime} seconds to INSERT {tableName} DB ')
 			if insertId:
 				return insertId
 			else:
@@ -223,7 +223,7 @@ class DatabaseManager(Manager):
 			raise InvalidQuery
 
 		try:
-			start_time = time.time()
+			startTime = time.time()
 			database = self.getConnection()
 			cursor = database.cursor()
 			cursor.execute(query, values)
@@ -234,7 +234,7 @@ class DatabaseManager(Manager):
 			database.commit()
 			cursor.close()
 			database.close()
-			self.logInfo(f'It took {time.time() - start_time} seconds to UPDATE to {tableName} DB ')
+			self.logDebug(f'It took {time.time() - startTime} seconds to UPDATE to {tableName} DB ')
 			return True
 
 
@@ -259,7 +259,7 @@ class DatabaseManager(Manager):
 			return sqlite3.Row()
 
 		try:
-			start_time = time.time()
+			startTime = time.time()
 			database = self.getConnection()
 			cursor = database.cursor()
 
@@ -275,7 +275,7 @@ class DatabaseManager(Manager):
 		else:
 			cursor.close()
 			database.close()
-			self.logInfo(f'It took {time.time() - start_time} seconds to FETCH from {tableName} DB ')
+			self.logDebug(f'It took {time.time() - startTime} seconds to FETCH from {tableName} DB ')
 			return data
 
 
@@ -299,7 +299,7 @@ class DatabaseManager(Manager):
 
 		database = None
 		try:
-			start_time = time.time()
+			startTime = time.time()
 			database = self.getConnection()
 			database.execute(query, values)
 		except DbConnectionError as e:
@@ -311,7 +311,7 @@ class DatabaseManager(Manager):
 		else:
 			database.commit()
 			database.close()
-			self.logInfo(f'It took {time.time() - start_time} seconds to DELETE in {tableName} DB ')
+			self.logDebug(f'It took {time.time() - startTime} seconds to DELETE in {tableName} DB ')
 
 
 	# noinspection SqlResolve
@@ -330,7 +330,7 @@ class DatabaseManager(Manager):
 
 		database = None
 		try:
-			start_time = time.time()
+			startTime = time.time()
 			database = self.getConnection()
 			database.execute(query)
 		except DbConnectionError as e:
@@ -342,7 +342,7 @@ class DatabaseManager(Manager):
 		else:
 			database.commit()
 			database.close()
-			self.logInfo(f'It took {time.time() - start_time} seconds to PRUNE {tableName} DB ')
+			self.logDebug(f'It took {time.time() - startTime} seconds to PRUNE {tableName} DB ')
 
 
 	def basicChecks(self, tableName: str, query: str, callerName: str, values: dict = None) -> typing.Optional[str]:
