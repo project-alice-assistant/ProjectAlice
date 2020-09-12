@@ -32,6 +32,7 @@ from core.interface.views.SyslogView import SyslogView
 class WebInterfaceManager(Manager):
 	app = Flask(__name__)
 	app.config['SEND_FILE_MAX_AGE_DEFAULT'] = 0
+	app.jinja_env.add_extension('jinja2.ext.loopcontrols')
 
 	_VIEWS = [AdminView, AdminAuth, IndexView, SkillsView, AliceWatchView, SyslogView, DevModeView, ScenarioView, MyHomeView]
 	_APIS = [UtilsApi, LoginApi, UsersApi, SkillsApi, DialogApi, TelemetryApi]

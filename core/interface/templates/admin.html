@@ -26,7 +26,19 @@
 							<div class="configCategoryTitle">{{ category }}</div>
 							{% for settingName, settingValue in aliceSettings.items() if not settingName == 'skills' and not settingName == 'supportedLanguages' and aliceSettingsTemplate[settingName]['category'] == category %}
 								{% if aliceSettingsTemplate[settingName]['display'] != 'hidden' %}
-									<div class="configLine">
+									{% set state = '' %}
+									{% if 'parent' in aliceSettingsTemplate[settingName] %}
+										{% set parentConfig = aliceSettingsTemplate[settingName][parent][config] %}
+										{% set condition = aliceSettingsTemplate[settingName][parent][condition] %}
+										{% set value = aliceSettingsTemplate[settingName][parent][value]|string %}
+										{% set parentVal = aliceSettings[parentConfig]|string %}
+										{% if (condition == 'is' and parentVal != value) or (condition == 'isnot' and parentVal == value) or (condition == 'isgreater' and parentVal < value) or (condition == 'islower' and parentVal > value) %}
+											{% set state = 'initialHidden' %}
+										{% endif %}
+									{% else %}
+										{% set parentConfig = '' %}
+									{% endif %}
+									<div class="configLine {{ state }}" data-parent="{{ parentConfig }}">
 										{% if 'help' in aliceSettingsTemplate[settingName] %}
 											<label class="configLabel" for="{{ settingName }}" title="{{ aliceSettingsTemplate[settingName]['description'] }}">{{ settingName }} <span><i class="far fa-question-circle" aria-hidden="true"></i></span></label>
 										{% else %}
@@ -59,8 +71,7 @@
 												{% if aliceSettingsTemplate[settingName]['values'] is mapping %}
 													<select name="{{ settingName }}" id="{{ settingName }}">
 														{% for optionName, optionValue in aliceSettingsTemplate[settingName]['values'].items() %}
-															<option value="{{ optionValue }}"
-																	{% if optionValue == settingValue %}selected{% endif %}>{{ optionName }}</option>
+															<option value="{{ optionValue }}" {% if optionValue == settingValue %}selected{% endif %}>{{ optionName }}</option>
 														{% endfor %}
 													</select>
 												{% else %}
