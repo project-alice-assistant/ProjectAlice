@@ -14,6 +14,7 @@ class AdminView(View):
 
 	@login_required
 	def index(self):
+		super().index()
 		return render_template(template_name_or_list='admin.html',
 		                       aliceSettingCategories=self.ConfigManager.aliceConfigurationCategories,
 		                       aliceSettingsTemplate=self.ConfigManager.aliceTemplateConfigurations,

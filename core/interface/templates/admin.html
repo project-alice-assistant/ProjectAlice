@@ -20,17 +20,17 @@
 		</ul>
 		<div class="tabsContent">
 			<div id="AliceSettings">
-				<form action="/admin/saveAliceSettings/" name="config_for_{{ skillName }}" method="post" autocomplete="off" novalidate>
+				<form action="/admin/saveAliceSettings/" name="config" method="post" autocomplete="off" novalidate>
 					{% for category in aliceSettingCategories %}
 						<div class="configCategory">
 							<div class="configCategoryTitle">{{ category }}</div>
 							{% for settingName, settingValue in aliceSettings.items() if not settingName == 'skills' and not settingName == 'supportedLanguages' and aliceSettingsTemplate[settingName]['category'] == category %}
 								{% if aliceSettingsTemplate[settingName]['display'] != 'hidden' %}
 									{% set state = '' %}
-									{% if aliceSettingsTemplate.parent is defined %}
-										{% set parentConfig = aliceSettingsTemplate[settingName][parent][config] %}
-										{% set condition = aliceSettingsTemplate[settingName][parent][condition] %}
-										{% set value = aliceSettingsTemplate[settingName][parent][value]|string %}
+									{% if aliceSettingsTemplate[settingName]['parent'] is defined %}
+										{% set parentConfig = aliceSettingsTemplate[settingName]['parent']['config'] %}
+										{% set condition = aliceSettingsTemplate[settingName]['parent']['condition'] %}
+										{% set value = aliceSettingsTemplate[settingName]['parent']['value']|string %}
 										{% set parentVal = aliceSettings[parentConfig]|string %}
 										{% if (condition == 'is' and parentVal != value) or (condition == 'isnot' and parentVal == value) or (condition == 'isgreater' and parentVal < value) or (condition == 'islower' and parentVal > value) %}
 											{% set state = 'initialHidden' %}
@@ -40,7 +40,8 @@
 									{% endif %}
 									<div class="configLine {{ state }}" data-parent="{{ parentConfig }}">
 										{% if 'help' in aliceSettingsTemplate[settingName] %}
-											<label class="configLabel" for="{{ settingName }}" title="{{ aliceSettingsTemplate[settingName]['description'] }}">{{ settingName }} <span><i class="far fa-question-circle" aria-hidden="true"></i></span></label>
+											<label class="configLabel" for="{{ settingName }}" title="{{ aliceSettingsTemplate[settingName]['description'] }}">{{ settingName }}
+												<span><i class="far fa-question-circle" aria-hidden="true"></i></span></label>
 										{% else %}
 											<label class="configLabel" for="{{ settingName }}" title="{{ aliceSettingsTemplate[settingName]['description'] }}">{{ settingName }}</label>
 										{% endif %}
