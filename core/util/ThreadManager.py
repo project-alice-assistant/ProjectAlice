@@ -34,12 +34,13 @@ class ThreadManager(Manager):
 				event.clear()
 
 
-	@IfSetting(settingName='advancedDebug', settingValue=True)
+	@IfSetting(settingName='memoryProfiling', settingValue=True)
 	def onBooted(self):
+		self._memProfiler.start()
 		self._memProfiler.dump()
 
 
-	@IfSetting(settingName='advancedDebug', settingValue=True)
+	@IfSetting(settingName='memoryProfiling', settingValue=True)
 	def onFiveMinute(self):
 		self._memProfiler.dump()
 
