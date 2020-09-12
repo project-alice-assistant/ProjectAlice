@@ -38,7 +38,7 @@
 									{% else %}
 										{% set parentConfig = '' %}
 									{% endif %}
-									<div class="configLine {{ state }}" data-parent="{{ parentConfig }}">
+									<div class="configLine {{ state }}" data-childs="" data-parent="{{ parentConfig }}" data-condition="{{ condition }}" data-value="{{ parentVal }}" data-id="{{ settingName }}">
 										{% if 'help' in aliceSettingsTemplate[settingName] %}
 											<label class="configLabel" for="{{ settingName }}" title="{{ aliceSettingsTemplate[settingName]['description'] }}">{{ settingName }}
 												<span><i class="far fa-question-circle" aria-hidden="true"></i></span></label>

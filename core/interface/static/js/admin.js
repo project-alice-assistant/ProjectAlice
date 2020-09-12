@@ -1,12 +1,13 @@
 $(function () {
 
 	let locked = false;
+	let relations = {};
 
 	function areYouReady($icon) {
 		$.ajax({
-			url: '/admin/areYouReady/',
+			url : '/admin/areYouReady/',
 			type: 'POST'
-		}).done(function(response) {
+		}).done(function (response) {
 			if (response['success']) {
 				$icon.removeClass('red');
 				$icon.addClass('green');
@@ -82,5 +83,36 @@ $(function () {
 	$('#tuneWakeword').on('click touchstart', function () {
 		handleUtilityClick($(this), 'tuneWakeword', 1000);
 		return false;
+	});
+
+	$('input, select').on('change', function () {
+		let newValue;
+
+		if ($(this).is('select')) {
+			newValue = $(this).children('option:selected').val();
+		} else {
+			if ($(this).attr('type') == 'checkbox') {
+				newValue = newValue == 'on';
+			}
+
+		}
+
+		let id = $(this).attr('id');
+		if (relations.hasOwnProperty(id)) {
+			for (const relation of relations[id]) {
+				let $parent = relation.parent().parent();
+			}
+		}
+	});
+
+	// Build a parent/child relation list
+	$('.configLine').each(function () {
+		let parent = $(this).data('parent');
+		if (parent != '') {
+			if (!relations.hasOwnProperty(parent)) {
+				relations[parent] = [];
+			}
+			relations[parent].push($(this))
+		}
 	});
 });
