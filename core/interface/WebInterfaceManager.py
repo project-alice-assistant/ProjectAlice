@@ -33,6 +33,8 @@ class WebInterfaceManager(Manager):
 	app = Flask(__name__)
 	app.config['SEND_FILE_MAX_AGE_DEFAULT'] = 0
 	app.jinja_env.add_extension('jinja2.ext.loopcontrols')
+	app.jinja_env.trim_blocks = True
+	app.jinja_env.lstrip_blocks = True
 
 	_VIEWS = [AdminView, AdminAuth, IndexView, SkillsView, AliceWatchView, SyslogView, DevModeView, ScenarioView, MyHomeView]
 	_APIS = [UtilsApi, LoginApi, UsersApi, SkillsApi, DialogApi, TelemetryApi]
