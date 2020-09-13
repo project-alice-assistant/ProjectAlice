@@ -111,7 +111,10 @@ class ThreadManager(Manager):
 		kwargs = kwargs or dict()
 
 		if name in self._threads:
-			self._threads[name].join(timeout=2)
+			try:
+				self._threads[name].join(timeout=2)
+			except:
+				pass  # Might be a non started thread only
 
 		thread = threading.Thread(name=name, target=target, args=args, kwargs=kwargs)
 		thread.setDaemon(True)
