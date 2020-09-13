@@ -96,7 +96,7 @@ $(function () {
 			url: '/devmode/' + $skillName.val() + '/',
 			type: 'PUT',
 			data: {
-				'description'           : $('#skilDesc').val(),
+				'description'           : $('#skillDesc').val(),
 				'fr'                    : ($('#fr').is(':checked')) ? 'yes' : 'no',
 				'de'                    : ($('#de').is(':checked')) ? 'yes' : 'no',
 				'it'                    : ($('#it').is(':checked')) ? 'yes' : 'no',
