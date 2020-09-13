@@ -115,6 +115,9 @@ class TTSManager(Manager):
 
 
 	def onSay(self, session: DialogSession):
+		if session.textOnly:
+			return
+
 		if session and session.user != constants.UNKNOWN_USER:
 			user: User = self.UserManager.getUser(session.user)
 			if user and user.tts:
