@@ -47,7 +47,7 @@ class DatabaseManager(Manager):
 		try:
 			if self.ConfigManager.getAliceConfigByName('databaseProfiling'):
 				self.logDebug(f'DB lock aquired by {CommonsManager.getFunctionCaller(depth=5)}->{CommonsManager.getFunctionCaller(depth=4)}->{CommonsManager.getFunctionCaller(depth=3)}')
-			con = sqlite3.connect(constants.DATABASE_FILE)
+			con = sqlite3.connect(constants.DATABASE_FILE, timeout=10)
 		except sqlite3.Error as e:
 			self.logError(f'Failed to connect to DB ({constants.DATABASE_FILE}): {e}')
 			raise DbConnectionError()
