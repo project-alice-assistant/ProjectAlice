@@ -45,7 +45,8 @@ class DatabaseManager(Manager):
 
 	def getConnection(self) -> sqlite3.Connection:
 		try:
-			self.logDebug(f'DB lock aquired by {CommonsManager.getFunctionCaller(depth=5)}->{CommonsManager.getFunctionCaller(depth=4)}->{CommonsManager.getFunctionCaller(depth=3)}')
+			if self.ConfigManager.getAliceConfigByName('databaseProfiling'):
+				self.logDebug(f'DB lock aquired by {CommonsManager.getFunctionCaller(depth=5)}->{CommonsManager.getFunctionCaller(depth=4)}->{CommonsManager.getFunctionCaller(depth=3)}')
 			con = sqlite3.connect(constants.DATABASE_FILE)
 		except sqlite3.Error as e:
 			self.logError(f'Failed to connect to DB ({constants.DATABASE_FILE}): {e}')
@@ -227,7 +228,8 @@ class DatabaseManager(Manager):
 				database.commit()
 				cursor.close()
 				database.close()
-				self.logDebug(f'It took {time.time() - startTime} seconds to INSERT {tableName} DB ')
+				if self.ConfigManager.getAliceConfigByName('databaseProfiling'):
+					self.logDebug(f'It took {time.time() - startTime} seconds to INSERT {tableName} DB ')
 				if insertId:
 					return insertId
 				else:
@@ -271,7 +273,8 @@ class DatabaseManager(Manager):
 				raise
 			else:
 				database.commit()
-				self.logDebug(f'It took {time.time() - startTime} seconds to UPDATE to {tableName} DB ')
+				if self.ConfigManager.getAliceConfigByName('databaseProfiling'):
+					self.logDebug(f'It took {time.time() - startTime} seconds to UPDATE to {tableName} DB ')
 		except:
 			ret = False
 		finally:
@@ -314,7 +317,8 @@ class DatabaseManager(Manager):
 			else:
 				data = cursor.fetchall()
 
-			self.logDebug(f'It took {time.time() - startTime} seconds to FETCH from {tableName} DB ')
+			if self.ConfigManager.getAliceConfigByName('databaseProfiling'):
+				self.logDebug(f'It took {time.time() - startTime} seconds to FETCH from {tableName} DB ')
 		except (DbConnectionError, sqlite3.Error) as e:
 			self.logWarning(f'Error fetching data for component **{callerName}** in table **{tableName}**: {e}')
 		finally:
@@ -350,7 +354,8 @@ class DatabaseManager(Manager):
 			startTime = time.time()
 			database.execute(query, values)
 			database.commit()
-			self.logDebug(f'It took {time.time() - startTime} seconds to DELETE in {tableName} DB ')
+			if self.ConfigManager.getAliceConfigByName('databaseProfiling'):
+				self.logDebug(f'It took {time.time() - startTime} seconds to DELETE in {tableName} DB ')
 		except DbConnectionError as e:
 			self.logWarning(f'Error deleting from table **{tableName}** for component **{callerName}**: {e}')
 		except sqlite3.Error as e:
@@ -382,7 +387,8 @@ class DatabaseManager(Manager):
 			startTime = time.time()
 			database.execute(query)
 			database.commit()
-			self.logDebug(f'It took {time.time() - startTime} seconds to PRUNE {tableName} DB ')
+			if self.ConfigManager.getAliceConfigByName('databaseProfiling'):
+				self.logDebug(f'It took {time.time() - startTime} seconds to PRUNE {tableName} DB ')
 		except DbConnectionError as e:
 			self.logWarning(f'Error pruning table **{tableName}** for component **{callerName}**: {e}')
 		except sqlite3.Error as e:

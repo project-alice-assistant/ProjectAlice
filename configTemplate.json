@@ -132,9 +132,21 @@
 		"description" : "Log memory usage. This WILL dramatically slow down Alice!",
 		"category"    : "advanced debug",
 		"parent"      : {
-			"config": "advancedDebug",
+			"config"   : "advancedDebug",
 			"condition": "is",
-			"value": true
+			"value"    : true
+		}
+	},
+	"databaseProfiling"   : {
+		"defaultValue": false,
+		"dataType"    : "boolean",
+		"isSensitive" : false,
+		"description" : "Log database execution times",
+		"category"    : "advanced debug",
+		"parent"      : {
+			"config"   : "advancedDebug",
+			"condition": "is",
+			"value"    : true
 		}
 	},
 	"wifipassword"        : {
