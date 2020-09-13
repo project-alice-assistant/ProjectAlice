@@ -90,17 +90,26 @@ $(function () {
 
 		if ($(this).is('select')) {
 			newValue = $(this).children('option:selected').val();
+		} else if ($(this).attr('type') == 'checkbox') {
+			newValue = !!$(this).is(':checked');
 		} else {
-			if ($(this).attr('type') == 'checkbox') {
-				newValue = newValue == 'on';
-			}
-
+			newValue = $(this).val();
 		}
+
+		newValue = newValue.toString().toLowerCase();
 
 		let id = $(this).attr('id');
 		if (relations.hasOwnProperty(id)) {
 			for (const relation of relations[id]) {
-				let $parent = relation.parent().parent();
+				let $container = relation.closest('.configLine');
+				let condition = $container.data('condition').toLowerCase();
+				let value = $container.data('value').toLowerCase();
+
+				if ((condition == 'is' && value != newValue) || (condition == 'isnot' && value == newValue) || (condition == 'isgreater' && newValue <= value) || (condition == 'islower' && newValue >= value)) {
+					relation.hide();
+				} else {
+					relation.show();
+				}
 			}
 		}
 	});
