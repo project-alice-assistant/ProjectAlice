@@ -241,8 +241,40 @@ class ConfigManager(Manager):
 				self.logWarning(f'Value missmatch for config **{key}** in skill **{skillName}**')
 				value = ''
 
+		skillInstance = self.SkillManager.getSkillInstance(skillName=skillName, silent=True)
+		if self._skillsConfigurations[skillName].get('beforeUpdate', None):
+			if not skillInstance:
+				self.logWarning(f'Needed to execute an action before updating a config value for skill **{skillName}** but the skill is not running')
+			else:
+				function = self._skillsConfigurations[skillName]['beforeUpdate']
+				try:
+					func = getattr(self, function)
+				except AttributeError:
+					self.logWarning(f'Configuration pre processing method **{function}** for skill **{skillName}** does not exist')
+				else:
+					try:
+						if not func(value):
+							return
+					except Exception as e:
+						self.logError(f'Configuration pre processing method **{function}** for skill **{skillName}** failed: {e}')
+
 		self._skillsConfigurations[skillName][key] = value
 		self._writeToSkillConfigurationFile(skillName, self._skillsConfigurations[skillName])
+
+		if self._skillsConfigurations[skillName].get('onUpdate', None):
+			if not skillInstance:
+				self.logWarning(f'Needed to execute an action after updating a config value for skill **{skillName}** but the skill is not running')
+			else:
+				function = self._skillsConfigurations[skillName]['onUpdate']
+				try:
+					func = getattr(self, function)
+				except AttributeError:
+					self.logWarning(f'Configuration post processing method **{function}** for skill **{skillName}** does not exist')
+				else:
+					try:
+						func(value)
+					except Exception as e:
+						self.logError(f'Configuration post processing method **{function}** for skill **{skillName}** failed: {e}')
 
 
 	def writeToAliceConfigurationFile(self, confs: dict = None):
