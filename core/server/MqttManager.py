@@ -670,8 +670,6 @@ class MqttManager(Manager):
 			self.logWarning(f'Ask was provided customdata of unsupported type: {customData}')
 			customData = dict()
 
-		print(customData)
-
 		user = customData.get('user', constants.UNKNOWN_USER) if customData else constants.UNKNOWN_USER
 		session = self.DialogManager.newSession(client, user)
 
