@@ -131,8 +131,9 @@ class TelemetryManager(Manager):
 			values['service'] = service
 
 		dynWhere = [f'{col} = :{col}' for col in values.keys()]
+
 		# noinspection SqlResolve
-		query = f'SELECT value, timestamp FROM :__table__ WHERE {" ,".join(dynWhere)} ORDER BY `timestamp` DESC LIMIT 1'
+		query = f'SELECT value, timestamp FROM :__table__ WHERE {" and ".join(dynWhere)} ORDER BY `timestamp` DESC LIMIT 1'
 
 		# noinspection SqlResolve
 		return self.databaseFetch(
