@@ -80,7 +80,7 @@ $(function () {
 		});
 	});
 
-	$('#skilldesc').on('input', function () {
+	$('#skillDesc').on('input', function () {
 		if ($(this).val().length > 20) {
 			$('#skillDescKo').hide();
 			$('#skillDescOk').show();
@@ -96,16 +96,16 @@ $(function () {
 			url: '/devmode/' + $skillName.val() + '/',
 			type: 'PUT',
 			data: {
-				'description': $('#skilldesc').val(),
-				'fr': ($('#fr').is(':checked')) ? 'yes' : 'no',
-				'de': ($('#de').is(':checked')) ? 'yes' : 'no',
-				'it': ($('#it').is(':checked')) ? 'yes' : 'no',
-				'pipreq': $('#pipreq').val(),
-				'sysreq': $('#sysreq').val(),
-				'conditionOnline': ($('#conditionOnline').is(':checked')) ? 'yes' : 'no',
-				'conditionASRArbitrary': ($('#conditionASRArbitrary').is(':checked')) ? 'yes' : 'no',
-				'conditionSkill': $('#conditionSkill').val(),
-				'conditionNotSkill': $('#conditionNotSkill').val(),
+				'description'           : $('#skillDesc').val(),
+				'fr'                    : ($('#fr').is(':checked')) ? 'yes' : 'no',
+				'de'                    : ($('#de').is(':checked')) ? 'yes' : 'no',
+				'it'                    : ($('#it').is(':checked')) ? 'yes' : 'no',
+				'pipreq'                : $('#pipreq').val(),
+				'sysreq'                : $('#sysreq').val(),
+				'conditionOnline'       : ($('#conditionOnline').is(':checked')) ? 'yes' : 'no',
+				'conditionASRArbitrary' : ($('#conditionASRArbitrary').is(':checked')) ? 'yes' : 'no',
+				'conditionSkill'        : $('#conditionSkill').val(),
+				'conditionNotSkill'     : $('#conditionNotSkill').val(),
 				'conditionActiveManager': $('#conditionActiveManager').val(),
 				'widgets': $('#widgets').val()
 			}

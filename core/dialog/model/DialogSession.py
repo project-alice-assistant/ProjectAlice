@@ -34,9 +34,10 @@ class DialogSession:
 	payload: dict = field(default_factory=dict)
 	intentHistory: list = field(default_factory=list)
 	intentFilter: list = field(default_factory=list)
+	textOnly: bool = False
 
 
-	def __post_init__(self): #NOSONAR
+	def __post_init__(self):  # NOSONAR
 		self.probabilityThreshold = SuperManager.getInstance().configManager.getAliceConfigByName('probabilityThreshold')
 
 

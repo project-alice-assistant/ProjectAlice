@@ -13,6 +13,7 @@ class IndexView(View):
 	@route('/home/', endpoint='index')
 	@route('/index/', endpoint='index')
 	def index(self):
+		super().index()
 		return render_template(template_name_or_list='home.html',
 		                       widgets=self.SkillManager.widgets,
 		                       **self._everyPagesRenderValues)

@@ -1,12 +1,12 @@
-import traceback
-
 import json
-import paho.mqtt.client as mqtt
-import paho.mqtt.publish as publish
 import random
 import re
+import traceback
 import uuid
 from pathlib import Path
+
+import paho.mqtt.client as mqtt
+import paho.mqtt.publish as publish
 
 from core.base.model.Intent import Intent
 from core.base.model.Manager import Manager
@@ -14,7 +14,6 @@ from core.commons import constants
 
 
 class MqttManager(Manager):
-
 	DEFAULT_CLIENT_EXTENSION = '@mqtt'
 	TOPIC_AUDIO_FRAME = constants.TOPIC_AUDIO_FRAME.replace('{}', '+')
 
@@ -708,6 +707,7 @@ class MqttManager(Manager):
 
 		jsonDict['init'] = initDict
 		session.intentFilter = intentList
+		session.customData = customData
 
 		if client == constants.ALL:
 			deviceList = [device.uid for device in self.DeviceManager.getAliceTypeDevices(connectedOnly=True, includeMain=True) if device]

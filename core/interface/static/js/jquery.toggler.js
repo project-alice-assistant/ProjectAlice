@@ -47,7 +47,7 @@
 
         onUIClick: function (e) {
             this.$element.trigger('click');
-            console.log('UI Click: ' + this.$element.prop('checked'));
+            //console.log('UI Click: ' + this.$element.prop('checked'));
         },
 
         onChange: function (e) {

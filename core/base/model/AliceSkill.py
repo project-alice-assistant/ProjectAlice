@@ -1,16 +1,17 @@
 from __future__ import annotations
 
-import flask
 import importlib
 import inspect
 import json
 import re
 import sqlite3
 from copy import copy
+from pathlib import Path
+from typing import Any, Dict, Iterable, List, Optional, Union
+
+import flask
 from markdown import markdown
 from paho.mqtt import client as MQTTClient
-from pathlib import Path
-from typing import Any, Dict, Iterable, Optional, Union
 
 from core.ProjectAliceExceptions import AccessLevelTooLow, SkillStartingFailed
 from core.base.model import Widget
@@ -611,7 +612,10 @@ class AliceSkill(ProjectAliceObject):
 		return self.DatabaseManager.insert(tableName=tableName, query=query, values=values, callerName=self.name)
 
 
-	def randomTalk(self, text: str, replace: list = None, skill: str = None) -> str:
+	def randomTalk(self, text: str, replace: Union[str, List] = None, skill: str = None) -> str:
+		if not isinstance(replace, list):
+			replace = [replace]
+
 		talk = self.TalkManager.randomTalk(talk=text, skill=skill or self.name)
 
 		if replace:

@@ -12,16 +12,16 @@
 			],
 			"properties": {
 				"defaultValue": {},
-				"values": {},
-				"min": {},
-				"max": {},
-				"step": {},
-				"help": {
-					"type": "string",
+				"values"      : {},
+				"min"         : {},
+				"max"         : {},
+				"step"        : {},
+				"help"        : {
+					"type"     : "string",
 					"minLength": 10,
-					"pattern": "^[A-Z].*$"
+					"pattern"  : "^[A-Z].*$"
 				},
-				"dataType": {
+				"dataType"    : {
 					"type": "string",
 					"enum": [
 						"string",
@@ -33,7 +33,7 @@
 						"longstring"
 					]
 				},
-				"category": {
+				"category"    : {
 					"type": "string",
 					"enum": [
 						"asr",
@@ -43,33 +43,59 @@
 						"credentials",
 						"mqtt",
 						"tts",
-						"wakeword"
+						"wakeword",
+						"advanced debug"
 					]
 				},
-				"isSensitive": {
+				"isSensitive" : {
 					"type": "boolean"
 				},
-				"hidden": {
+				"hidden"      : {
 					"type": "boolean"
 				},
-				"description": {
-					"type": "string",
+				"description" : {
+					"type"     : "string",
 					"minLength": 10,
-					"pattern": "^[A-Z].*$"
+					"pattern"  : "^[A-Z].*$"
 				},
-				"display": {
+				"display"     : {
 					"type": "string",
 					"enum": [
 						"hidden"
 					]
 				},
 				"beforeUpdate": {
-					"type": "string",
+					"type"   : "string",
 					"pattern": "^[a-z].*$"
 				},
-				"onUpdate": {
-					"type": "string",
+				"onUpdate"    : {
+					"type"   : "string",
 					"pattern": "^[a-z].*$"
+				},
+				"parent"      : {
+					"type"      : "object",
+					"required"  : [
+						"config",
+						"condition",
+						"value"
+					],
+					"properties": {
+						"config": {
+							"type": "string"
+						},
+						"condition": {
+							"type": "string",
+							"enum": [
+								"is",
+								"isnot",
+								"isgreater",
+								"islower"
+							]
+						},
+						"value": {
+							"type": ["string", "number", "integer", "boolean"]
+						}
+					}
 				}
 			},
 			"allOf": [

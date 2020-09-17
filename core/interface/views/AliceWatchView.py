@@ -8,6 +8,7 @@ class AliceWatchView(View):
 
 
 	def index(self):
+		super().index()
 		return render_template(template_name_or_list='alicewatch.html',
 		                       **self._everyPagesRenderValues)
 

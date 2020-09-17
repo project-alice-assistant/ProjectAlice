@@ -17,6 +17,7 @@ class AdminAuth(View):
 
 
 	def index(self):
+		super().index()
 		try:
 			self.__class__.setNextPage(request.args.get('next'))
 		except:

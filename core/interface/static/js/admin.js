@@ -1,12 +1,13 @@
 $(function () {
 
 	let locked = false;
+	let relations = {};
 
 	function areYouReady($icon) {
 		$.ajax({
-			url: '/admin/areYouReady/',
+			url : '/admin/areYouReady/',
 			type: 'POST'
-		}).done(function(response) {
+		}).done(function (response) {
 			if (response['success']) {
 				$icon.removeClass('red');
 				$icon.addClass('green');
@@ -82,5 +83,45 @@ $(function () {
 	$('#tuneWakeword').on('click touchstart', function () {
 		handleUtilityClick($(this), 'tuneWakeword', 1000);
 		return false;
+	});
+
+	$('input, select').on('change', function () {
+		let newValue;
+
+		if ($(this).is('select')) {
+			newValue = $(this).children('option:selected').val();
+		} else if ($(this).attr('type') == 'checkbox') {
+			newValue = !!$(this).is(':checked');
+		} else {
+			newValue = $(this).val();
+		}
+
+		newValue = newValue.toString().toLowerCase();
+
+		let id = $(this).attr('id');
+		if (relations.hasOwnProperty(id)) {
+			for (const relation of relations[id]) {
+				let $container = relation.closest('.configLine');
+				let condition = $container.data('condition').toLowerCase();
+				let value = $container.data('value').toLowerCase();
+
+				if ((condition == 'is' && value != newValue) || (condition == 'isnot' && value == newValue) || (condition == 'isgreater' && newValue <= value) || (condition == 'islower' && newValue >= value)) {
+					relation.hide();
+				} else {
+					relation.show();
+				}
+			}
+		}
+	});
+
+	// Build a parent/child relation list
+	$('.configLine').each(function () {
+		let parent = $(this).data('parent');
+		if (parent != '') {
+			if (!relations.hasOwnProperty(parent)) {
+				relations[parent] = [];
+			}
+			relations[parent].push($(this))
+		}
 	});
 });

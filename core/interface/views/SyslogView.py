@@ -11,6 +11,7 @@ class SyslogView(View):
 	route_base = '/syslog/'
 
 	def index(self):
+		super().index()
 		logger = logging.getLogger('ProjectAlice')
 		history = list()
 		for handler in logger.handlers:
