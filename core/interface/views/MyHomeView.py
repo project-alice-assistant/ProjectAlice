@@ -88,7 +88,7 @@ class MyHomeView(View):
 
 	@route('/DeviceType/getList')
 	def deviceType_getList(self):
-		res = [{'skill': devobs.skill, 'deviceType': devobs.name, 'id': _id} for _id, devobs in self.DeviceManager.deviceTypes.items()]
+		res = [{'skill': devobs.skill, 'deviceType': devobs.name, 'id': _id} for _id, devobs in self.DeviceManager.deviceTypes.items() if not devobs.internalOnly]
 		return jsonify(res)
 
 

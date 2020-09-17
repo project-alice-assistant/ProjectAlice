@@ -1228,17 +1228,17 @@ $(function () {
 		$.each(dats, function(k, dat) {
 			// noinspection CssUnknownTarget
 			let $tile = $('<div class="floorPlan-tile" style="background: url(\'deviceType_static/' + dat['skill'] + '/img/' + dat['deviceType'] + '.png\') no-repeat; background-size: 100% 100%;"></div>');
-		$tile.on('click touchstart', function () {
-			if (!$(this).hasClass('selected')) {
-				$(sTile).removeClass('selected');
-				$(this).addClass('selected');
-				selectedDeviceTypeID = dat['id'];
-			} else {
-				$(this).removeClass('selected');
-				selectedDeviceTypeID = '';
-			}
-		});
-		$('#deviceTiles').append($tile);
+			$tile.on('click touchstart', function () {
+				if (!$(this).hasClass('selected')) {
+					$(sTile).removeClass('selected');
+					$(this).addClass('selected');
+					selectedDeviceTypeID = dat['id'];
+				} else {
+					$(this).removeClass('selected');
+					selectedDeviceTypeID = '';
+				}
+			});
+			$('#deviceTiles').append($tile);
 		});
 	});
 

@@ -12,7 +12,7 @@ class DeviceType(ProjectAliceObject):
 	DEV_SETTINGS = dict()
 	LOC_SETTINGS = dict()
 
-	def __init__(self, data: sqlite3.Row, devSettings = None, locSettings = None, allowLocationLinks: bool = True, perLocationLimit: int = 0, totalDeviceLimit: int = 0, heartbeatRate: int = 5):
+	def __init__(self, data: sqlite3.Row, devSettings = None, locSettings = None, allowLocationLinks: bool = True, perLocationLimit: int = 0, totalDeviceLimit: int = 0, heartbeatRate: int = 5, internalOnly: bool = False):
 		super().__init__()
 
 		if locSettings is None:
@@ -29,6 +29,7 @@ class DeviceType(ProjectAliceObject):
 		self._devSettings = devSettings
 		self._locSettings = locSettings
 		self.heartbeatRate = heartbeatRate
+		self.internalOnly = internalOnly
 
 		if 'id' in data:
 			self._id = data['id']
