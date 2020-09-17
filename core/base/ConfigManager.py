@@ -75,13 +75,13 @@ class ConfigManager(Manager):
 
 		changes = False
 
-		#most important: uuid is always required!
-		if 'uuid' not in aliceConfigs or not aliceConfigs['uuid']:
+		# most important: uuid is always required!
+		if not aliceConfigs.get('uuid', None):
 			import uuid
+
 			##uuid4: no collission expected until extinction of all life (only on earth though!)
 			aliceConfigs['uuid'] = str(uuid.uuid4())
 			changes = True
-
 
 		for setting, definition in self._aliceTemplateConfigurations.items():
 
