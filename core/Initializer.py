@@ -347,7 +347,7 @@ class Initializer:
 
 		elif not self._confsFile.exists() and self._confsSample.exists():
 			self._logger.logWarning('No config file found, creating it from sample file')
-			self._confsFile.write_text(json.dumps(self._confsSample.read_text(), indent=4))
+			self._confsFile.write_text(json.dumps({configName: configData['defaultValue'] for configName, configData in json.loads(jsonFile.read_text()).items()}, indent=4))
 
 		elif self._confsFile.exists() and initConfs['forceRewrite']:
 			self._logger.logWarning('Config file found and force rewrite specified, let\'s restart all this!')
