@@ -51,7 +51,7 @@ class ConfigManager(Manager):
 			# noinspection PyUnresolvedReferences,PyPackageRequirements
 			import config
 
-			self.CONFIG_FILE.write_text(json.dumps(config.settings, indent=4))
+			self.CONFIG_FILE.write_text(json.dumps(config.settings, indent=4, ensure_ascii=False))
 			self.logInfo('Migrated from old config.py')
 			return config.settings.copy()
 		except ModuleNotFoundError:
@@ -71,7 +71,7 @@ class ConfigManager(Manager):
 		if not aliceConfigs:
 			self.logInfo('Creating config file from config template')
 			aliceConfigs = {configName: configData['defaultValue'] if 'defaultValue' in configData else configData for configName, configData in self._aliceTemplateConfigurations.items()}
-			self.CONFIG_FILE.write_text(json.dumps(aliceConfigs, indent=4))
+			self.CONFIG_FILE.write_text(json.dumps(aliceConfigs, indent=4, ensure_ascii=False))
 
 		changes = False
 

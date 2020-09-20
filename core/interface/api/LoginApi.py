@@ -19,6 +19,6 @@ class LoginApi(Api):
 
 			token = self.UserManager.getUser(username).apiToken or self.UserManager.createApiToken(self.UserManager.getUser(username))
 
-			return jsonify({'apiToken': token})
+			return jsonify(apiToken=token)
 		except:
 			return jsonify(message='ERROR: Unauthorized')
