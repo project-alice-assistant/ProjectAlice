@@ -22,6 +22,8 @@ Please follow the [documentation](https://docs.projectalice.io/set-up/)
 ## Chat with us and the community
 Join us on our [Discord server](https://discord.gg/C6HNtzV)
 
+## Install new skills
+Either directly on your device on the interface, or on [https://store.projectalice.io](https://store.projectalice.io)
 
 ## Who made this?
 The original code base was started at the end 2015 and several rewrites made it what it is today. It was entirely written by me *Psycho* until recently, where I decided to make the code openly available to the world.
