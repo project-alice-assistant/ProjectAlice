@@ -7,6 +7,7 @@ from pathlib import Path
 
 import psutil
 from flask import Flask, send_from_directory
+from flask_cors import CORS
 from flask_login import LoginManager
 
 from core.base.model.AliceSkill import AliceSkill
@@ -35,6 +36,7 @@ class WebInterfaceManager(Manager):
 	app.jinja_env.add_extension('jinja2.ext.loopcontrols')
 	app.jinja_env.trim_blocks = True
 	app.jinja_env.lstrip_blocks = True
+	CORS(app, resources={r'/api/*': {'origins': '*'}})
 
 	_VIEWS = [AdminView, AdminAuth, IndexView, SkillsView, AliceWatchView, SyslogView, DevModeView, ScenarioView, MyHomeView]
 	_APIS = [UtilsApi, LoginApi, UsersApi, SkillsApi, DialogApi, TelemetryApi]
