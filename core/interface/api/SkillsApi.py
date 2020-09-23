@@ -13,6 +13,7 @@ class SkillsApi(Api):
 		super().__init__()
 
 
+	@route('/')
 	@ApiAuthenticated
 	def index(self):
 		return jsonify(data=[skill.toJson() for skill in self.SkillManager.allSkills.values()])
@@ -35,6 +36,7 @@ class SkillsApi(Api):
 			return jsonify(success=False, reason=f'Failed deleting skill: {e}')
 
 
+	@route('/<skillName>/')
 	@ApiAuthenticated
 	def get(self, skillName: str):
 		skill = self.SkillManager.getSkillInstance(skillName=skillName, silent=True)

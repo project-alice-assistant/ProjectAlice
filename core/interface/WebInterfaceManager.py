@@ -105,6 +105,7 @@ class WebInterfaceManager(Manager):
 					self.logInfo(f'Exception while registering api endpoint: {e}')
 					continue
 
+
 			if self.ConfigManager.getAliceConfigByName('displaySystemUsage'):
 				self.ThreadManager.newThread(
 					name='DisplayResourceUsage',
@@ -115,6 +116,8 @@ class WebInterfaceManager(Manager):
 				name='WebInterface',
 				target=self.app.run,
 				kwargs={
+					# 'ssl_context' : 'adhoc',
+					'app'         : self.app,
 					'debug'       : self.ConfigManager.getAliceConfigByName('debug'),
 					'port'        : int(self.ConfigManager.getAliceConfigByName('webInterfacePort')),
 					'host'        : self.Commons.getLocalIp(),
