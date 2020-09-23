@@ -69,13 +69,12 @@ class PreInit:
 
 		self.rootDir = Path(__file__).resolve().parent.parent
 		self.confsFile = Path(self.rootDir, 'config.json')
-		self.oldConfsFile = Path(self.rootDir, 'config.py')
 		self.initFile = Path(YAML)
 		self.initConfs = dict()
 
 
 	def start(self):
-		if not self.initFile.exists() and not self.confsFile.exists() and not self.oldConfsFile.exists():
+		if not self.initFile.exists() and not self.confsFile.exists():
 			self._logger.logFatal('Init file not found and there\'s no configuration file, aborting Project Alice start')
 			return False
 		elif not self.initFile.exists():

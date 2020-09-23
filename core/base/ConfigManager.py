@@ -45,28 +45,14 @@ class ConfigManager(Manager):
 				raise VitalConfigMissing(conf)
 
 
-	#todo remove this method in a few month 01092020
-	def migrateConfigToJson(self):
-		try:
-			# noinspection PyUnresolvedReferences,PyPackageRequirements
-			import config
-
-			self.CONFIG_FILE.write_text(json.dumps(config.settings, indent=4, ensure_ascii=False))
-			self.logInfo('Migrated from old config.py')
-			return config.settings.copy()
-		except ModuleNotFoundError:
-			self.logWarning(f'No old config.py found!')
-			return None
-
-
 	def _loadCheckAndUpdateAliceConfigFile(self):
 		self.logInfo('Checking Alice configuration file')
 
 		try:
 			aliceConfigs = self.loadJsonFromFile(self.CONFIG_FILE)
 		except Exception:
-			self.logInfo(f'No {str(self.CONFIG_FILE)} found.')
-			aliceConfigs = self.migrateConfigToJson()
+			self.logWarning(f'No {str(self.CONFIG_FILE)} found.')
+			aliceConfigs = dict()
 
 		if not aliceConfigs:
 			self.logInfo('Creating config file from config template')
@@ -281,7 +267,7 @@ class ConfigManager(Manager):
 
 	def writeToAliceConfigurationFile(self, confs: dict = None):
 		"""
-		Saves the given configuration into config.py
+		Saves the given configuration into config.json
 		:param confs: the dict to save
 		"""
 		confs = confs if confs else self._aliceConfigurations
@@ -297,7 +283,7 @@ class ConfigManager(Manager):
 
 	def _writeToSkillConfigurationFile(self, skillName: str, confs: dict):
 		"""
-		Saves the given configuration into config.py of the Skill
+		Saves the given configuration into config.json of the Skill
 		:param skillName: the targeted skill
 		:param confs: the dict to save
 		"""
