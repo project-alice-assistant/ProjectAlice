@@ -117,7 +117,6 @@ class WebInterfaceManager(Manager):
 				target=self.app.run,
 				kwargs={
 					# 'ssl_context' : 'adhoc',
-					'app'         : self.app,
 					'debug'       : self.ConfigManager.getAliceConfigByName('debug'),
 					'port'        : int(self.ConfigManager.getAliceConfigByName('webInterfacePort')),
 					'host'        : self.Commons.getLocalIp(),
