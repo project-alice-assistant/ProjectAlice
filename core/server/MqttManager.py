@@ -903,7 +903,7 @@ class MqttManager(Manager):
 		deviceList = [device.uid for device in self.DeviceManager.getAliceTypeDevices(connectedOnly=True, includeMain=True) if device]
 
 		for siteId in deviceList:
-			publish.single(constants.TOPIC_TOGGLE_FEEDBACK.format(state.title()), payload=json.dumps({'siteId': siteId}))
+			publish.single(constants.TOPIC_TOGGLE_FEEDBACK.format(state.title()), payload=json.dumps({'siteId': siteId}), hostname=self.ConfigManager.getAliceConfigByName('mqttHost'))
 
 
 	def getDefaultSiteId(self, siteId: str = None) -> str:
