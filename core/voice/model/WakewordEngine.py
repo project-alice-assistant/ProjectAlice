@@ -9,6 +9,7 @@ class WakewordEngine(ProjectAliceObject):
 	def __init__(self):
 		super().__init__()
 		self._enabled = True
+		self._recording = False
 
 
 	def onStart(self):
@@ -20,6 +21,10 @@ class WakewordEngine(ProjectAliceObject):
 		self._enabled = False
 
 
+	def recordWakeword(self):
+		self._recording = True
+
+
 	@property
 	def enabled(self) -> bool:
 		return self._enabled
@@ -28,3 +33,8 @@ class WakewordEngine(ProjectAliceObject):
 	@enabled.setter
 	def enabled(self, value: bool):
 		self._enabled = value
+
+
+	@property
+	def recording(self) -> bool:
+		return self._recording

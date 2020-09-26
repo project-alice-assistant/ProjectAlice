@@ -104,3 +104,25 @@ class WakewordManager(Manager):
 			self._engine.onStop()
 		else:
 			self._engine.onStart()
+
+
+	def createNewWakeword(self, siteId: str, username: str):
+		pass
+
+
+	def recordWakeword(self):
+		if not self._engine:
+			return
+
+		if not self._engine.enabled:
+			self._engine.onStart()
+
+		self._engine.recordWakeword()
+
+
+	def isRecording(self) -> bool:
+		return self._engine is not None and self._engine.recording
+
+
+	def dumpWakewordSample(self):
+		path = self.AudioServer.LAST_USER_SPEECH.format(siteId, username)

@@ -73,7 +73,7 @@ class AudioManager(Manager):
 
 
 	def onStartListening(self, session: DialogSession):
-		if not self.ConfigManager.getAliceConfigByName('recordAudioAfterWakeword'):
+		if not self.ConfigManager.getAliceConfigByName('recordAudioAfterWakeword') and not self.WakewordManager.isRecording():
 			return
 
 		path = Path(self.LAST_USER_SPEECH.format(session.user, session.siteId))
