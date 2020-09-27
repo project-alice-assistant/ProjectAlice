@@ -1,0 +1,28 @@
+:art: cleanup
+:rocket: deploy
+:pencil2: typo
+:construction: WIP
+:heavy_plus_sign: add dependency
+:heavy_minus_sign: remove dependency
+:speaker: add logs
+:mute: remove logs
+:bug: fix
+:globe_with_meridians: i18n
+:poop: crap
+:boom: breaking
+:beers: drunk coding
+:lipstick: Cosmetic
+:lock: fix security issue
+:heavy_exclamation_mark: woot
+:white_check_mark: add test
+:green_heart: fix ci
+:recycle: refactor
+:children_crossing: improve user experience
+:wastebasket: deprecated
+:see_no_evil: gitignore
+:alien: api change
+:sparkles: new feature
+:wheelchair: improve accessibility
+:zap: improve performance
+:fire: remove code or file
+:ambulance: hotfix
