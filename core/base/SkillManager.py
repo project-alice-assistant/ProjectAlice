@@ -66,6 +66,8 @@ class SkillManager(Manager):
 		self._deactivatedSkills: Dict[str, AliceSkill] = dict()
 		self._failedSkills: Dict[str, FailedAliceSkill] = dict()
 
+		self._postBootSkillActions = dict()
+
 		self._widgets = dict()
 
 
@@ -288,6 +290,7 @@ class SkillManager(Manager):
 
 	def onBooted(self):
 		self.skillBroadcast(constants.EVENT_BOOTED)
+		self._finishInstall()
 
 		if self._skillInstallThread:
 			self._skillInstallThread.start()
@@ -620,26 +623,41 @@ class SkillManager(Manager):
 			self.MqttManager.mqttBroadcast(topic='hermes/leds/clear')
 
 			if skillsToBoot and self.ProjectAlice.isBooted:
-				for skillName, info in skillsToBoot.items():
-					self._initSkills(loadOnly=skillName, reload=info['update'])
-					self.ConfigManager.loadCheckAndUpdateSkillConfigurations(skillToLoad=skillName)
-
-					try:
-						self._startSkill(skillName)
-					except SkillStartDelayed:
-						# The skill start was delayed
-						pass
-
-					if info['update']:
-						self.allSkills[skillName].onSkillUpdated(skill=skillName)
-					else:
-						self.allSkills[skillName].onSkillInstalled(skill=skillName)
-
-					self.allSkills[skillName].onBooted()
-
-				self.AssistantManager.checkAssistant()
+				self._finishInstall(skillsToBoot, True)
+			else:
+				self._postBootSkillActions = skillsToBoot.copy()
 
 			self._busyInstalling.clear()
+
+
+	def _finishInstall(self, skills: dict = None, startSkill: bool = False):
+		if not skills and not self._postBootSkillActions:
+			return
+
+		if not skills and self._postBootSkillActions:
+			skills = self._postBootSkillActions
+
+		for skillName, info in skills.items():
+
+			if startSkill:
+				self._initSkills(loadOnly=skillName, reload=info['update'])
+				self.ConfigManager.loadCheckAndUpdateSkillConfigurations(skillToLoad=skillName)
+
+				try:
+					self._startSkill(skillName)
+				except SkillStartDelayed:
+					# The skill start was delayed
+					pass
+
+			if info['update']:
+				self.allSkills[skillName].onSkillUpdated(skill=skillName)
+			else:
+				self.allSkills[skillName].onSkillInstalled(skill=skillName)
+
+			self.allSkills[skillName].onBooted()
+
+		self._postBootSkillActions = dict()
+		self.AssistantManager.checkAssistant()
 
 
 	def _installSkills(self, skills: list) -> dict:
