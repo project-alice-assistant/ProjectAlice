@@ -304,9 +304,10 @@ class ConfigManager(Manager):
 		return toml.load(str(self.SNIPS_CONF))
 
 
-	def updateSnipsConfiguration(self, parent: str, key: str, value, restartSnips: bool = False, createIfNotExist: bool = False):
+	def updateSnipsConfiguration(self, parent: str, key: str, value, restartSnips: bool = False, createIfNotExist: bool = False, silent: bool = False):
 		"""
 		Setting a config in snips.toml
+		:param silent: output warnings or not
 		:param createIfNotExist: bool create the missing parent key value if not present
 		:param parent: Parent key in toml
 		:param key: Key in that parent key
@@ -319,12 +320,13 @@ class ConfigManager(Manager):
 			if createIfNotExist:
 				self._snipsConfigurations.setdefault(parent, dict()).setdefault(key, value)
 				self.SNIPS_CONF.write_text(toml.dumps(self._snipsConfigurations))
-			else:
-				self.logDebug(f'Tried to set **{parent}/{key}** in snips configuration but key was not found')
+			elif not silent:
+				self.logWarning(f'Tried to set **{parent}/{key}** in snips configuration but key was not found')
 		else:
 			currentValue = self._snipsConfigurations[parent][key]
 			if currentValue != value:
 				self._snipsConfigurations[parent][key] = value
+				self.SNIPS_CONF.write_text(toml.dumps(self._snipsConfigurations))
 			else:
 				restartSnips = False
 
@@ -332,16 +334,17 @@ class ConfigManager(Manager):
 			self.Commons.runRootSystemCommand(['systemctl', 'restart', 'snips-nlu'])
 
 
-	def getSnipsConfiguration(self, parent: str, key: str) -> typing.Optional[str]:
+	def getSnipsConfiguration(self, parent: str, key: str, silent: bool = False) -> typing.Optional[str]:
 		"""
 		Getting a specific configuration from snips.toml
+		:param silent: whether to print warning or not
 		:param parent: parent key
 		:param key: key within parent conf
 		:return: config value
 		"""
 
 		config = self._snipsConfigurations.get(parent, dict()).get(key, None)
-		if config is None:
+		if config is None and not silent:
 			self.logWarning(f'Tried to get **{parent}/{key}** in snips configuration but key was not found')
 
 		return config
