@@ -10,13 +10,15 @@ from core.dialog.model.DialogTemplateSlotType import DialogTemplateSlotType
 @dataclass
 class DialogTemplate:
 	skill: str
-	icon: str
-	description: str
 	slotTypes: list
 	intents: list
 
 	mySlotTypes: dict = field(default_factory=dict)
 	myIntents: dict = field(default_factory=dict)
+
+	# TODO remove me
+	icon: str = ''
+	description: str = ''
 
 
 	def __post_init__(self):  # NOSONAR
@@ -88,8 +90,6 @@ class DialogTemplate:
 	def dump(self) -> dict:
 		return {
 			'skill'      : self.skill,
-			'icon'       : self.icon,
-			'description': self.description,
 			'slotTypes'  : [slot.dump() for slot in self.mySlotTypes.values()],
 			'intents'    : [intent.dump() for intent in self.myIntents.values()]
 		}
