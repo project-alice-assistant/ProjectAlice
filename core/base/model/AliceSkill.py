@@ -38,7 +38,10 @@ class AliceSkill(ProjectAliceObject):
 		except Exception as e:
 			raise SkillStartingFailed(skillName=constants.UNKNOWN, error=f'[{type(self).__name__}] Failed loading skill: {e}')
 
-		instructionsFile = self.getResource('instructions.md')
+		instructionsFile = self.getResource(f'instructions/{self.LanguageManager.activeLanguage}.md')
+		if not instructionsFile.exists():
+			instructionsFile = self.getResource(f'instructions/en.md')
+
 		self._instructions = instructionsFile.read_text() if instructionsFile.exists() else ''
 
 		self._name = self._installer['name']
