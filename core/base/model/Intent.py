@@ -20,6 +20,8 @@ class Intent:
 
 	def __post_init__(self):
 		self.topic = f'hermes/intent/{self.action}' if self.userIntent else self.action
+		if self.isProtected:
+			print('Usage of `isProtected` is deprecated')
 
 
 	def __str__(self) -> str:
