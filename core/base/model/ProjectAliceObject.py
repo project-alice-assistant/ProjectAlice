@@ -638,11 +638,6 @@ class ProjectAliceObject:
 
 
 	@property
-	def ProtectedIntentManager(self): #NOSONAR
-		return SM.SuperManager.getInstance().protectedIntentManager
-
-
-	@property
 	def MqttManager(self): #NOSONAR
 		return SM.SuperManager.getInstance().mqttManager
 

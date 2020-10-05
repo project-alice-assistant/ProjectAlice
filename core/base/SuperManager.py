@@ -28,7 +28,6 @@ class SuperManager:
 		self.languageManager = None
 		self.asrManager = None
 		self.ttsManager = None
-		self.protectedIntentManager = None
 		self.threadManager = None
 		self.mqttManager = None
 		self.timeManager = None
@@ -140,7 +139,6 @@ class SuperManager:
 		from core.device.DeviceManager import DeviceManager
 		from core.device.LocationManager import LocationManager
 		from core.dialog.MultiIntentManager import MultiIntentManager
-		from core.dialog.ProtectedIntentManager import ProtectedIntentManager
 		from core.server.MqttManager import MqttManager
 		from core.user.UserManager import UserManager
 		from core.util.DatabaseManager import DatabaseManager
@@ -175,7 +173,6 @@ class SuperManager:
 		self.asrManager = ASRManager()
 		self.ttsManager = TTSManager()
 		self.threadManager = ThreadManager()
-		self.protectedIntentManager = ProtectedIntentManager()
 		self.mqttManager = MqttManager()
 		self.timeManager = TimeManager()
 		self.userManager = UserManager()

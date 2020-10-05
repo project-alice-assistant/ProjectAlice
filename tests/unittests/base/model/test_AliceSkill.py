@@ -10,7 +10,6 @@ from core.util.Decorators import IntentHandler, MqttHandler
 
 class TestAliceSkill(unittest.TestCase):
 
-	@mock.patch('core.util.Decorators.Intent.ProtectedIntentManager', new_callable=PropertyMock)
 	@mock.patch('core.util.Decorators.Intent.ConfigManager', new_callable=PropertyMock)
 	def testFindDecoratedIntents(self, mock_config, mock_protected):
 		owner_mock = MagicMock()
@@ -34,7 +33,7 @@ class TestAliceSkill(unittest.TestCase):
 
 
 			@IntentHandler('intent2', requiredState='exampleState')
-			@IntentHandler('intent3', isProtected=True)
+			@IntentHandler('intent3')
 			def multiple_decorator(self, *args, **kwargs):
 				return self, args, kwargs
 

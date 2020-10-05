@@ -29,7 +29,7 @@ class MqttManager(Manager):
 		self._vadUpRegex = re.compile(constants.TOPIC_VAD_UP.replace('{}', '(.*)'))
 		self._vadDownRegex = re.compile(constants.TOPIC_VAD_DOWN.replace('{}', '(.*)'))
 
-		self._INTENT_RANDOM_ANSWER = Intent('UserRandomAnswer', isProtected=True)
+		self._INTENT_RANDOM_ANSWER = Intent('UserRandomAnswer')
 
 
 	def onStart(self):
