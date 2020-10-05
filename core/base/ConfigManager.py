@@ -276,7 +276,7 @@ class ConfigManager(Manager):
 		self._aliceConfigurations = sort
 
 		try:
-			self.CONFIG_FILE.write_text(json.dumps(sort, indent=4))
+			self.CONFIG_FILE.write_text(json.dumps(sort, indent=4, sort_keys=True))
 		except Exception:
 			raise ConfigurationUpdateFailed()
 
@@ -293,7 +293,7 @@ class ConfigManager(Manager):
 		confsCleaned = {key: value for key, value in confs.items() if key not in misterProper}
 
 		skillConfigFile = Path(self.Commons.rootDir(), 'skills', skillName, 'config.json')
-		skillConfigFile.write_text(json.dumps(confsCleaned, indent=4, ensure_ascii=False))
+		skillConfigFile.write_text(json.dumps(confsCleaned, indent=4, ensure_ascii=False, sort_keys=True))
 
 
 	def loadSnipsConfigurations(self) -> dict:
