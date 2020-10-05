@@ -139,7 +139,7 @@ class AliceWatchManager(Manager):
 	def onEndSession(self, session: DialogSession, reason: str = 'nominal'):
 		if self._verbosity < 1:
 			return
-		
+
 		if 'text' in session.payload:
 			self.publish(payload={
 				'text': f'[Dialogue] Was asked to end session with id "**{session.sessionId}**" by saying "![Yellow]({session.payload["text"]})"'
@@ -148,7 +148,7 @@ class AliceWatchManager(Manager):
 			self.publish(payload={
 				'text': f'[Dialogue] Was asked to end session with id "**{session.sessionId}**" by without text!'
 			})
-			
+
 
 	def onSay(self, session: DialogSession):
 		if self._verbosity < 1:
@@ -216,7 +216,7 @@ class AliceWatchManager(Manager):
 			return
 
 		text = f'[Dialogue] Was asked to configure all sites:'
-		for intent in intents: #NOSONAR
+		for intent in intents:  # NOSONAR
 			text = f'{text}\n{"![Green](enable)" if intent["enable"] else "![Red](disable)"} {intent["intentId"]}'
 
 		text = f'{text}'

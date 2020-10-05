@@ -8,11 +8,12 @@ from core.base.model.ProjectAliceObject import ProjectAliceObject
 @dataclass
 class DeviceLink(ProjectAliceObject):
 	data: dict
-	
+
 	_id: int = field(init=False)
 	_locSettings: dict = field(default_factory=dict)
 	_deviceID: int = field(init=False)
 	_locationID: int = field(init=False)
+
 
 	def __post_init__(self):  # NOSONAR
 		self._id = self.data['id']
@@ -31,6 +32,7 @@ class DeviceLink(ProjectAliceObject):
 		                                       values=values,
 		                                       callerName=self.DeviceManager.name)
 		self.logInfo(f'Created new Link {self._id}')
+
 
 	def saveLocSettings(self):
 		self.DatabaseManager.update(tableName=self.DeviceManager.DB_LINKS,
@@ -75,6 +77,7 @@ class DeviceLink(ProjectAliceObject):
 	@property
 	def deviceId(self) -> int:
 		return self._deviceID
+
 
 	def asJson(self):
 		return {

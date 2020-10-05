@@ -1,4 +1,4 @@
-from flask import jsonify, request
+from flask import jsonify
 
 from core.interface.model.Api import Api
 from core.util.Decorators import ApiAuthenticated
@@ -15,9 +15,6 @@ class TelemetryApi(Api):
 	@ApiAuthenticated
 	def post(self):
 		try:
-			fromTimestamp = request.form.get('from', '')
-			toTimestamp = request.form.get('to', '')
-
 			return jsonify(message='Not implemented')
 		except Exception as e:
 			self.logError(f'Failed getting telemetry data: {e}')
