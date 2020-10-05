@@ -14,11 +14,11 @@ class AdminView(View):
 
 	@login_required
 	def index(self):
+		super().index()
 		return render_template(template_name_or_list='admin.html',
-		                       langData=self._langData,
 		                       aliceSettingCategories=self.ConfigManager.aliceConfigurationCategories,
-		                       aliceSettings=self.ConfigManager.aliceConfigurations,
-		                       aliceSettingsTemplate=self.ConfigManager.aliceTemplateConfigurations)
+		                       aliceSettingsTemplate=self.ConfigManager.aliceTemplateConfigurations,
+		                       **self._everyPagesRenderValues)
 
 
 	@classmethod
@@ -29,6 +29,18 @@ class AdminView(View):
 	@classmethod
 	def getWaitType(cls) -> str:
 		return cls.waitType
+
+
+	def acceptAliceConfigUpdate(self):
+		self.ConfigManager.bulkUpdateAliceConfigurations()
+		self.logDebug('User **accepted** core config changes by a skill')
+		return jsonify(success=True)
+
+
+	def refuseAliceConfigUpdate(self):
+		self.ConfigManager.deletePendingAliceConfigurationUpdates()
+		self.logDebug('User **refused** core config changes by a skill')
+		return jsonify(success=True)
 
 
 	def saveAliceSettings(self):

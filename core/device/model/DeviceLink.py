@@ -1,11 +1,9 @@
 import ast
 import json
-import sqlite3
-from typing import Union
+from dataclasses import dataclass, field
 
 from core.base.model.ProjectAliceObject import ProjectAliceObject
 
-from dataclasses import dataclass, field
 
 @dataclass
 class DeviceLink(ProjectAliceObject):
@@ -37,12 +35,12 @@ class DeviceLink(ProjectAliceObject):
 	def saveLocSettings(self):
 		self.DatabaseManager.update(tableName=self.DeviceManager.DB_LINKS,
 		                            callerName=self.DeviceManager.name,
-		                            values={'locSettings': self.locSettings},
+		                            values={'locSettings': json.dumps(self.locSettings)},
 		                            row=('id', self._id))
 
 
 	def getDevice(self):
-		return self.DeviceManager.getDeviceByID(id=self.deviceId)
+		return self.DeviceManager.getDeviceById(_id=self.deviceId)
 
 
 	def changedLocSettingsStructure(self, newSet: dict):

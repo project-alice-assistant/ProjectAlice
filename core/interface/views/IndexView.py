@@ -13,10 +13,10 @@ class IndexView(View):
 	@route('/home/', endpoint='index')
 	@route('/index/', endpoint='index')
 	def index(self):
+		super().index()
 		return render_template(template_name_or_list='home.html',
 		                       widgets=self.SkillManager.widgets,
-		                       langData=self._langData,
-		                       aliceSettings=self.ConfigManager.aliceConfigurations)
+		                       **self._everyPagesRenderValues)
 
 
 	@route('widget_static/<path:filename>')
@@ -96,7 +96,7 @@ class IndexView(View):
 			return ret
 		except Exception as e:
 			self.logWarning(f"[Widget] Widget tried to call a core function but failed: {e}")
-			return jsonify(success=False)
+			return jsonify(success=False, message=str(e))
 
 
 	@route('/home/saveWidgetConfig/', methods=['POST'])

@@ -1,5 +1,6 @@
 git
 python3-pip
+python3-wheel
 libffi-dev
 apt-transport-https
 zip

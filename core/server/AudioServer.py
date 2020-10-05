@@ -1,10 +1,9 @@
-import threading
+import io
 import time
 import wave
 from pathlib import Path
-from typing import Dict
+from typing import Dict, Optional
 
-import io
 import pyaudio
 from webrtcvad import Vad
 
@@ -12,6 +11,7 @@ from core.ProjectAliceExceptions import PlayBytesStopped
 from core.base.model.Manager import Manager
 from core.commons import constants
 from core.dialog.model.DialogSession import DialogSession
+from core.util.model.AliceEvent import AliceEvent
 
 
 class AudioManager(Manager):
@@ -27,8 +27,9 @@ class AudioManager(Manager):
 	def __init__(self):
 		super().__init__()
 
-		self._stopPlayingFlag = threading.Event()
+		self._stopPlayingFlag: Optional[AliceEvent] = None
 		self._playing = False
+		self._waves: Dict[str, wave.Wave_write] = dict()
 
 		if self.ConfigManager.getAliceConfigByName('disableSoundAndMic'):
 			return
@@ -53,12 +54,11 @@ class AudioManager(Manager):
 		else:
 			self.logInfo(f'Using **{self._audioInput["name"]}** for audio input')
 
-		self._waves: Dict[str, wave.Wave_write] = dict()
-
 
 	def onStart(self):
 		super().onStart()
-		self.MqttManager.mqttClient.subscribe(constants.TOPIC_AUDIO_FRAME.format(self.ConfigManager.getAliceConfigByName('deviceName')))
+		self._stopPlayingFlag = self.ThreadManager.newEvent('stopPlaying')
+		self.MqttManager.mqttClient.subscribe(constants.TOPIC_AUDIO_FRAME.format(self.ConfigManager.getAliceConfigByName('uuid')))
 
 		if not self.ConfigManager.getAliceConfigByName('disableSoundAndMic'):
 			self.ThreadManager.newThread(name='audioPublisher', target=self.publishAudio)
@@ -66,7 +66,7 @@ class AudioManager(Manager):
 
 	def onStop(self):
 		super().onStop()
-		self.MqttManager.mqttClient.unsubscribe(constants.TOPIC_AUDIO_FRAME.format(self.ConfigManager.getAliceConfigByName('deviceName')))
+		self.MqttManager.mqttClient.unsubscribe(constants.TOPIC_AUDIO_FRAME.format(self.ConfigManager.getAliceConfigByName('uuid')))
 
 		if not self.ConfigManager.getAliceConfigByName('disableSoundAndMic'):
 			self._audio.terminate()
@@ -130,9 +130,9 @@ class AudioManager(Manager):
 					elif speechFrames >= minSpeechFrames:
 						speech = True
 						self.MqttManager.publish(
-							topic=constants.TOPIC_VAD_UP.format(self.ConfigManager.getAliceConfigByName('deviceName')),
+							topic=constants.TOPIC_VAD_UP.format(self.ConfigManager.getAliceConfigByName('uuid')),
 							payload={
-								'siteId': self.ConfigManager.getAliceConfigByName('deviceName')
+								'siteId': self.ConfigManager.getAliceConfigByName('uuid')
 							})
 						silence = self.SAMPLERATE / self.FRAMES_PER_BUFFER
 						speechFrames = 0
@@ -143,9 +143,9 @@ class AudioManager(Manager):
 						else:
 							speech = False
 							self.MqttManager.publish(
-								topic=constants.TOPIC_VAD_DOWN.format(self.ConfigManager.getAliceConfigByName('deviceName')),
+								topic=constants.TOPIC_VAD_DOWN.format(self.ConfigManager.getAliceConfigByName('uuid')),
 								payload={
-									'siteId': self.ConfigManager.getAliceConfigByName('deviceName')
+									'siteId': self.ConfigManager.getAliceConfigByName('uuid')
 								})
 					else:
 						speechFrames = 0
@@ -164,11 +164,11 @@ class AudioManager(Manager):
 				wav.writeframes(frames)
 
 			audioFrames = buffer.getvalue()
-			self.MqttManager.publish(topic=constants.TOPIC_AUDIO_FRAME.format(self.ConfigManager.getAliceConfigByName('deviceName')), payload=bytearray(audioFrames))
+			self.MqttManager.publish(topic=constants.TOPIC_AUDIO_FRAME.format(self.ConfigManager.getAliceConfigByName('uuid')), payload=bytearray(audioFrames))
 
 
 	def onPlayBytes(self, requestId: str, payload: bytearray, siteId: str, sessionId: str = None):
-		if siteId != self.ConfigManager.getAliceConfigByName('deviceName') or self.ConfigManager.getAliceConfigByName('disableSoundAndMic'):
+		if siteId != self.ConfigManager.getAliceConfigByName('uuid') or self.ConfigManager.getAliceConfigByName('disableSoundAndMic'):
 			return
 
 		self._playing = True
@@ -189,10 +189,11 @@ class AudioManager(Manager):
 						channels=channels,
 						rate=framerate,
 						output=True,
+						output_device_index=self._audioOutput['index'],
 						stream_callback=streamCallback
 					)
 
-					self.logDebug(f'Playing wav stream using **{self._audioOutput["name"]}** audio output from site id **{siteId}** (Format: {nFormat}, channels: {channels}, rate: {framerate})')
+					self.logDebug(f'Playing wav stream using **{self._audioOutput["name"]}** audio output from site id **{self.DeviceManager.siteIdToDeviceName(siteId)}** (Format: {nFormat}, channels: {channels}, rate: {framerate})')
 					audioStream.start_stream()
 					while audioStream.is_active():
 						if self._stopPlayingFlag.is_set():

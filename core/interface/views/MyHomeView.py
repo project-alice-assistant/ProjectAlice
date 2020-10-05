@@ -11,12 +11,25 @@ class MyHomeView(View):
 
 
 	def index(self):
+		super().index()
 		return render_template(template_name_or_list='myHome.html',
-		                       langData=self._langData,
-		                       aliceSettings=self.ConfigManager.aliceConfigurations)
+		                       **self._everyPagesRenderValues)
 
 
 	### Location API
+	@route('/Location/<path:_id>/saveCoreSettings', methods=['POST'])
+	def saveLocationCoreSettings(self, _id: str):
+		try:
+			data = request.form.to_dict()
+			_id = int(_id)
+			location = self.LocationManager.getLocation(locId=_id)
+			location.changeName(newName=data['name'])
+			return jsonify(success=True)
+		except Exception as e:
+			self.logError(f'Failed saving location core settings: {e}')
+			return jsonify(success=False, error=str(e))
+
+
 	@route('/Location/<path:_id>/getSettings', methods=['GET'])
 	def getLocationSettings(self, _id: str):
 		try:
@@ -52,7 +65,6 @@ class MyHomeView(View):
 			return jsonify(success=False, error=str(e))
 
 
-	# TODO Consider using PUT method?
 	@route('/Location/0/add', methods=['POST'])
 	def addLocation(self):
 		try:
@@ -62,7 +74,6 @@ class MyHomeView(View):
 			return jsonify(success=False, error=str(e))
 
 
-	# TODO consider using DELETE method?
 	@route('/Location/<path:_id>/delete', methods=['POST'])
 	def deleteLocation(self, _id: str):
 		_id = int(_id)
@@ -78,7 +89,7 @@ class MyHomeView(View):
 
 	@route('/DeviceType/getList')
 	def deviceType_getList(self):
-		res = [{'skill': devobs.skill, 'deviceType': devobs.name, 'id': _id} for _id, devobs in self.DeviceManager.deviceTypes.items()]
+		res = [{'skill': devobs.skill, 'deviceType': devobs.name, 'id': _id} for _id, devobs in self.DeviceManager.deviceTypes.items() if not devobs.internalOnly]
 		return jsonify(res)
 
 
@@ -112,7 +123,6 @@ class MyHomeView(View):
 			self.logError(f'Failed changing location: {e}')
 
 
-	# TODO consider using DELETE method? (will blow up jquery, because only get/post have shortcut methods)
 	@route('/Device/<path:_id>/delete', methods=['POST'])
 	def deleteDevice(self, _id: int):
 		try:
@@ -141,7 +151,6 @@ class MyHomeView(View):
 			self.logError(f'Failed getting device settings: {e}')
 
 
-	#TODO consider using UPDATE method?
 	@route('/Device/<path:_id>/saveSettings/<path:roomid>', methods=['POST'])
 	def saveDeviceSettings(self, _id: str, roomid: str):
 		try:
@@ -155,10 +164,27 @@ class MyHomeView(View):
 				return jsonify(success=True)
 
 			else:
-				# todo get room dependent settings
-				pass
+				link = self.DeviceManager.getLink(deviceId=_id, locationId=roomid)
+				if not link:
+					raise Exception("Link not found")
+				link.locSettings = confs
+				link.saveLocSettings()
+				return jsonify(success=True)
 		except Exception as e:
 			self.logError(f'Failed saving device settings: {e}')
+
+
+	@route('/Device/<path:_id>/saveCoreSettings', methods=['POST'])
+	def saveDeviceCoreSettings(self, _id: str):
+		try:
+			data = request.form.to_dict()
+			_id = int(_id)
+			device = self.DeviceManager.getDeviceById(_id=_id)
+			device.changeName(newName=data['name'])
+			return jsonify(success=True)
+		except Exception as e:
+			self.logError(f'Failed saving device core settings: {e}')
+			return jsonify(success=False, error=str(e))
 
 
 	@route('/Device/<path:_id>/toggle', methods=['POST'])
@@ -172,7 +198,7 @@ class MyHomeView(View):
 			return jsonify(success=True)
 		except Exception as e:
 			self.logError(f'Failed toggling device Link: {e}')
-			return jsonify(success=False)
+			return jsonify(success=False, error=str(e))
 
 
 	@route('/Device/<path:_id>/getLinks', methods=['GET'])

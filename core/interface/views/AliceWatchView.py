@@ -8,9 +8,9 @@ class AliceWatchView(View):
 
 
 	def index(self):
+		super().index()
 		return render_template(template_name_or_list='alicewatch.html',
-		                       langData=self._langData,
-		                       aliceSettings=self.ConfigManager.aliceConfigurations)
+		                       **self._everyPagesRenderValues)
 
 
 	def verbosity(self):

@@ -112,6 +112,8 @@ venv.bak/
 
 .DS_Store
 config.py
+config.json
+debug_server.json
 *.pyc
 *Config.h
 

@@ -1,6 +1,7 @@
 $(function () {
 	let selectedSkillsToDownload = [];
 	let skillStatuses = {};
+	let $applySkillStore = $('#applySkillStore');
 
 	function skillStatus(skill) {
 		$.ajax({
@@ -23,8 +24,9 @@ $(function () {
 		if (status == JSON.stringify('installed')) {
 			$('#' + skill + 'InstallTile').remove();
 		} else if (status == JSON.stringify('failed') || status == JSON.stringify('unknown')) {
-			$('#' + skill + 'InstallTile').children('.skillStoreSkillWaitAnimation').hide();
-			$('#' + skill + 'InstallTile').children('.skillStoreSkillDownloadFail').css('display', 'flex');
+			let $container = $('#' + skill + 'InstallTile');
+			$container.children('.skillStoreSkillWaitAnimation').hide();
+			$container.children('.skillStoreSkillDownloadFail').css('display', 'flex');
 		} else {
 			setTimeout(function () {
 				checkInstallStatus(skill);
@@ -79,7 +81,7 @@ $(function () {
 					}
 				}
 				if (selectedSkillsToDownload.length <= 0) {
-					$('#applySkillStore').hide();
+					$applySkillStore.hide();
 				}
 				return false;
 			});
@@ -90,7 +92,7 @@ $(function () {
 				$(this).hide();
 				$(this).parent().children('.skillStoreSkillSelected').css('display', 'flex');
 				selectedSkillsToDownload.push({'skill': installer['name'], 'author': installer['author']});
-				$('#applySkillStore').show();
+				$applySkillStore.show();
 				return false;
 			});
 			$actions.append($button);
@@ -119,7 +121,7 @@ $(function () {
 		});
 	}
 
-	$('#applySkillStore').on('click touchstart', function () {
+	$applySkillStore.on('click touchstart', function () {
 		$('.skillStoreSkillSelected').hide();
 		$(this).hide();
 		$.each(selectedSkillsToDownload, function (index, skill) {
@@ -165,6 +167,15 @@ $(function () {
 		resizable: false
 	});
 
+	$('[id^=instructions_for_]').dialog({
+		autoOpen: false,
+		draggable: false,
+		width: '60%',
+		height: 600,
+		modal: true,
+		resizable: false
+	});
+
 	$('[id^=update_]').on('click touchstart', function () {
 		let $self = $(this);
 		$.ajax({
@@ -197,6 +208,11 @@ $(function () {
 	$('.skillIntentsViewCloseButton').on('click touchstart', function () {
 		$(this).parent().parent().children('.skillDefaultView').css('display', 'flex');
 		$(this).parent('.skillIntentsView').css('display', 'none');
+		return false;
+	});
+
+	$('.skillInstructions').on('click touchstart', function () {
+		$('#instructions_for_' + $(this).attr('data-forSkill')).dialog('open');
 		return false;
 	});
 
@@ -240,6 +256,5 @@ $(function () {
 		return false;
 	});
 
-	$('#applySkillStore').hide();
-	$(":checkbox").checkToggler();
+	$applySkillStore.hide();
 });

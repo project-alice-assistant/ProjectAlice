@@ -67,8 +67,8 @@ $(function () {
 		resizable: false,
 		close    : function () {
 			let tab = $('#config_tabs');
-			tab.find('#WidgetSettings').html("");
-			tab.find('#GraphicSettings').html("");
+			tab.find('#WidgetSettings').html('');
+			tab.find('#GraphicSettings').html('');
 		}
 	});
 
@@ -174,8 +174,6 @@ $(function () {
 				});
 				newForm += "<div class='buttonLine'><input id='submitConfig' class='button' type='submit' value='" + $('#langConfSave').text() + "'></div>";
 				dialogContainer.find('#' + tab).html(newForm);
-
-				$(":checkbox").checkToggler();
 
 				// perform submit/save of the form without switching page
 				let form = $('#' + tab + 'Form');

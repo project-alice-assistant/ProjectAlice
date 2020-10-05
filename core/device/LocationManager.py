@@ -1,7 +1,9 @@
-from typing import Dict, Optional
+import json
+from typing import Dict, List, Optional
 
 from core.base.model.Manager import Manager
 from core.device.model.Location import Location
+from core.dialog.model.DialogSession import DialogSession
 
 
 class LocationManager(Manager):
@@ -40,6 +42,7 @@ class LocationManager(Manager):
 	def loadLocations(self):
 		for row in self.databaseFetch(tableName=self.TABLE, query='SELECT * FROM :__table__', method='all'):
 			self._locations[row['id']] = Location(row)
+			self.logInfo(f'Loaded location {row["id"]} - {row["name"]}')
 
 
 	def addNewLocation(self, name: str = None) -> Location:
@@ -70,7 +73,7 @@ class LocationManager(Manager):
 		synlist = self._locations[locId].addSynonym(synonym)
 		self.DatabaseManager.update(tableName=self.TABLE,
 		                            callerName=self.name,
-		                            values={'synonyms': synlist},
+		                            values={'synonyms': json.dumps(synlist)},
 		                            row=('id', locId))
 
 
@@ -79,7 +82,7 @@ class LocationManager(Manager):
 		self.DatabaseManager.update(tableName=self.TABLE,
 		                            callerName=self.name,
 		                            values={
-			                            'synonyms': synlist
+			                            'synonyms': json.dumps(synlist)
 		                            },
 		                            row=('id', locId))
 
@@ -100,7 +103,7 @@ class LocationManager(Manager):
 			self.DatabaseManager.update(tableName=self.TABLE,
 			                            callerName=self.name,
 			                            values={
-				                            'display': values['display']
+				                            'display': json.dumps(values['display'])
 			                            },
 			                            row=('id', values['id']))
 			for device in values['devices']:
@@ -112,8 +115,7 @@ class LocationManager(Manager):
 		#todo implement location det. logic
 		# 1a) check name vs locations - done
 		# 1b) check name vs location synonyms - done
-		# 2a) check siteID vs locations
-		# 2b) check siteID vs synonyms
+		# 2) get device for siteID, get main location of device - done
 		# 3) try to get the location context sensitive
 		# 4) check if there is only one room that has that type of device
 		# if 1 or 2 provides names
@@ -140,7 +142,31 @@ class LocationManager(Manager):
 			if loc:
 				return loc
 
+		if siteId:
+			loc = self.getLocationWithName(name=siteId)
+			if loc:
+				return loc
+
+			loc = self.DeviceManager.getDeviceByUID(uid=siteId).getMainLocation()
+			if loc:
+				return loc
+
 		return loc
+
+
+	def getLocationsForSession(self, sess: DialogSession, slotName: str = 'Location', noneIsEverywhere: bool = False) -> List[Location]:
+		slotValues = [x.value['value'] for x in sess.slotsAsObjects.get(slotName, list())]
+		if len(slotValues) == 0:
+			if noneIsEverywhere:
+				return [loc[1] for loc in self.locations.items()]
+			else:
+				device = self.DeviceManager.getDeviceByUID(uid=sess.siteId)
+				if device:
+					return [device.getMainLocation()]
+				else:
+					return list()
+		else:
+			return [self.getLocation(location=loc) for loc in slotValues]
 
 
 	@property

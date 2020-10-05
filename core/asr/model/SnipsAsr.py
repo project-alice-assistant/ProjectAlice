@@ -47,11 +47,8 @@ class SnipsAsr(Asr):
 		if self.LanguageManager.activeLanguage != 'en':
 			raise Exception('Snips generic ASR only for english')
 
-		if not '500' in str(self.ConfigManager.getSnipsConfiguration('snips-asr', 'model')):
-			self.ConfigManager.updateSnipsConfiguration('snips-asr', 'model', value='/usr/share/snips/snips-asr-model-en-500MB', restartSnips=True)
-
-		if not self.ConfigManager.getSnipsConfiguration('snips-asr', 'model', createIfNotExist=False):
-			self.ConfigManager.updateSnipsConfiguration('snips-asr', 'partial', value='true', restartSnips=True)
+		self.ConfigManager.updateSnipsConfiguration('snips-asr', 'model', value='/usr/share/snips/snips-asr-model-en-500MB')
+		self.ConfigManager.updateSnipsConfiguration('snips-asr', 'partial', value=True)
 
 		self.Commons.runRootSystemCommand(['systemctl', 'start', 'snips-asr'])
 

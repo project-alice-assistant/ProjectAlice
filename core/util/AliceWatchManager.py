@@ -27,7 +27,7 @@ class AliceWatchManager(Manager):
 			return
 
 		self.publish(payload={
-			'text': f'[Hotword] Detected on site **{siteId}**, for user **{user}**'
+			'text': f'[Hotword] Detected on site **{self.DeviceManager.siteIdToDeviceName(siteId)}**, for user **{user}**'
 		})
 
 
@@ -69,7 +69,7 @@ class AliceWatchManager(Manager):
 			return
 
 		self.publish(payload={
-			'text': f'[Dialogue] Session with id "**{session.sessionId}**" was started on site **{session.siteId}**'
+			'text': f'[Dialogue] Session with id "**{session.sessionId}**" was started on site **{self.DeviceManager.siteIdToDeviceName(session.siteId)}**'
 		})
 
 
@@ -96,7 +96,7 @@ class AliceWatchManager(Manager):
 			return
 
 		self.publish(payload={
-			'text': f'[Hotword] Was asked to toggle itself **on** on site **{siteId}**'
+			'text': f'[Hotword] Was asked to toggle itself **on** on site **{self.DeviceManager.siteIdToDeviceName(siteId)}**'
 		})
 
 
@@ -105,7 +105,7 @@ class AliceWatchManager(Manager):
 			return
 
 		self.publish(payload={
-			'text': f'[Hotword] Was asked to toggle itself **off** on site **{siteId}**'
+			'text': f'[Hotword] Was asked to toggle itself **off** on site **{self.DeviceManager.siteIdToDeviceName(siteId)}**'
 		})
 
 
@@ -114,7 +114,7 @@ class AliceWatchManager(Manager):
 			return
 
 		self.publish(payload={
-			'text': f'[Asr] Was asked to start listening on site **{session.siteId}**'
+			'text': f'[Asr] Was asked to start listening on site **{self.DeviceManager.siteIdToDeviceName(session.siteId)}**'
 		})
 
 
@@ -123,7 +123,7 @@ class AliceWatchManager(Manager):
 			return
 
 		self.publish(payload={
-			'text': f'[Asr] Was asked to stop listening on site **{session.siteId}**'
+			'text': f'[Asr] Was asked to stop listening on site **{self.DeviceManager.siteIdToDeviceName(session.siteId)}**'
 		})
 
 
@@ -139,11 +139,16 @@ class AliceWatchManager(Manager):
 	def onEndSession(self, session: DialogSession, reason: str = 'nominal'):
 		if self._verbosity < 1:
 			return
-
-		self.publish(payload={
-			'text': f'[Dialogue] Was asked to end session with id "**{session.sessionId}**" by saying "![Yellow]({session.payload["text"]})"'
-		})
-
+		
+		if 'text' in session.payload:
+			self.publish(payload={
+				'text': f'[Dialogue] Was asked to end session with id "**{session.sessionId}**" by saying "![Yellow]({session.payload["text"]})"'
+			})
+		else:
+			self.publish(payload={
+				'text': f'[Dialogue] Was asked to end session with id "**{session.sessionId}**" by without text!'
+			})
+			
 
 	def onSay(self, session: DialogSession):
 		if self._verbosity < 1:
@@ -167,7 +172,7 @@ class AliceWatchManager(Manager):
 		if self._verbosity < 1:
 			return
 
-		text = f'[Dialogue] Session with id "**{session.sessionId}**" was ended on site **{session.siteId}**.'
+		text = f'[Dialogue] Session with id "**{session.sessionId}**" was ended on site **{self.DeviceManager.siteIdToDeviceName(session.siteId)}**.'
 
 		reason = session.payload['termination']['reason']
 		if reason:
@@ -192,7 +197,7 @@ class AliceWatchManager(Manager):
 			return
 
 		self.publish(payload={
-			'text': f'[VoiceActivity] Up on site **{siteId}**'
+			'text': f'[VoiceActivity] Up on site **{self.DeviceManager.siteIdToDeviceName(siteId)}**'
 		})
 
 
@@ -201,7 +206,7 @@ class AliceWatchManager(Manager):
 			return
 
 		self.publish(payload={
-			'text': f'[VoiceActivity] Down on site **{siteId}**'
+			'text': f'[VoiceActivity] Down on site **{self.DeviceManager.siteIdToDeviceName(siteId)}**'
 		})
 
 

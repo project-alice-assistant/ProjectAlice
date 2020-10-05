@@ -2,6 +2,7 @@ import time
 from typing import Iterable
 
 from core.base.model.Manager import Manager
+from core.device.model.Location import Location
 from core.util.model.TelemetryType import TelemetryType
 
 
@@ -14,6 +15,7 @@ class TelemetryManager(Manager):
 			'value TEXT NOT NULL',
 			'service TEXT NOT NULL',
 			'siteId TEXT NOT NULL',
+			'locationID INTEGER NOT NULL',
 			'timestamp INTEGER NOT NULL'
 		]
 	}
@@ -88,7 +90,7 @@ class TelemetryManager(Manager):
 
 
 	# noinspection SqlResolve
-	def storeData(self, ttype: TelemetryType, value: str, service: str, siteId: str, timestamp=None):
+	def storeData(self, ttype: TelemetryType, value: str, service: str, siteId: str, timestamp=None, locationID: int = None):
 		if not self.isActive:
 			return
 
@@ -96,8 +98,8 @@ class TelemetryManager(Manager):
 
 		self.databaseInsert(
 			tableName='telemetry',
-			query='INSERT INTO :__table__ (type, value, service, siteId, timestamp) VALUES (:type, :value, :service, :siteId, :timestamp)',
-			values={'type': ttype.value, 'value': value, 'service': service, 'siteId': siteId, 'timestamp': round(timestamp)}
+			query='INSERT INTO :__table__ (type, value, service, siteId, timestamp, locationID) VALUES (:type, :value, :service, :siteId, :timestamp, :locationID)',
+			values={'type': ttype.value, 'value': value, 'service': service, 'siteId': siteId, 'timestamp': round(timestamp), 'locationID': locationID}
 		)
 
 		telemetrySkill = self.SkillManager.getSkillInstance('Telemetry')
@@ -118,14 +120,24 @@ class TelemetryManager(Manager):
 				break
 
 
-	def getData(self, ttype: TelemetryType, siteId: str, service: str = None) -> Iterable:
-		values = {'type': ttype.value, 'siteId': siteId}
+	def getData(self, ttype: TelemetryType, siteId: str = None, service: str = None, location: Location = None) -> Iterable:
+		if location:
+			values = {'type': ttype.value, 'locationId': location.id}
+		elif siteId:
+			values = {'type': ttype.value, 'siteId': siteId}
+		else:
+			raise Exception("Supply location or site/uuid")
 		if service:
 			values['service'] = service
+
+		dynWhere = [f'{col} = :{col}' for col in values.keys()]
+
+		# noinspection SqlResolve
+		query = f'SELECT value, timestamp FROM :__table__ WHERE {" and ".join(dynWhere)} ORDER BY `timestamp` DESC LIMIT 1'
 
 		# noinspection SqlResolve
 		return self.databaseFetch(
 			tableName='telemetry',
-			query="SELECT value, timestamp FROM :__table__ WHERE type = :type and siteId = :siteId ORDER BY `timestamp` DESC LIMIT 1",
+			query=query,
 			values=values
 		)

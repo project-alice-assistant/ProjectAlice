@@ -1,8 +1,24 @@
 $(function () {
 
 	let $console = $('#console');
+	let $stopScroll = $('#stopScroll');
+	let $startScroll = $('#startScroll');
+
+	function setVerbosity(level) {
+		$.ajax({
+			url: '/alicewatch/verbosity/',
+			data: {
+				verbosity: level
+			},
+			type: 'POST'
+		});
+	}
 
 	function onMessage(msg) {
+		if (msg.topic != 'projectalice/logging/alicewatch' || !msg.payloadString) {
+			return;
+		}
+
 		let payload = JSON.parse(msg.payloadString);
 
 		let pattern = /!\[(Red|Green|Yellow|Orange|Blue|Grey)]\((.*?)\)/gi;
@@ -27,7 +43,7 @@ $(function () {
 			'<span class="logLine">' + text + '</span>'
 		);
 
-		if ($('#stopScroll').is(':visible')) {
+		if ($stopScroll.is(':visible')) {
 			$console.scrollTop($console.prop('scrollHeight'));
 		}
 	}
@@ -42,30 +58,34 @@ $(function () {
 		MQTT.subscribe('projectalice/logging/alicewatch')
 	}
 
-	$('#stopScroll').on('click touchstart', function () {
+	$stopScroll.on('click touchstart', function () {
 		$(this).hide();
-		$('#startScroll').show();
+		$startScroll.show();
 		return false;
 	});
 
-	$('#startScroll').on('click touchstart', function () {
+	$startScroll.on('click touchstart', function () {
 		$(this).hide();
-		$('#stopScroll').show();
+		$stopScroll.show();
 		return false;
 	});
 
-	$('[class^="fas fa-thermometer"]').on('click touchstart', function () {
+	let $thermometers = $('[class^="fas fa-thermometer"]');
+	$thermometers.on('click touchstart', function () {
 		$('[class^="fas fa-thermometer"]').removeClass('active');
 		$(this).addClass('active');
-		$.ajax({
-			url: '/alicewatch/verbosity/',
-			data: {
-				verbosity: $(this).data('verbosity')
-			},
-			type: 'POST'
-		});
+		let level = $(this).data('verbosity');
+		setVerbosity(level);
+		document.cookie = 'AliceWatch_verbosity=' + level;
 		return false;
 	});
+
+	let verbosity = getCookie('AliceWatch_verbosity');
+	if (verbosity != '') {
+		setVerbosity(verbosity);
+		$thermometers.removeClass('active');
+		$('[data-verbosity="' + verbosity + '"]').addClass('active');
+	}
 
 	mqttRegisterSelf(onConnect, 'onConnect');
 	mqttRegisterSelf(onMessage, 'onMessage');

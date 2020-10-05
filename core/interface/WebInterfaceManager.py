@@ -1,14 +1,18 @@
 import json
 import logging
+import random
 import string
 import time
 from pathlib import Path
 
-import random
+import psutil
 from flask import Flask, send_from_directory
+from flask_cors import CORS
 from flask_login import LoginManager
 
+from core.base.model.AliceSkill import AliceSkill
 from core.base.model.Manager import Manager
+from core.commons import constants
 from core.interface.api.DialogApi import DialogApi
 from core.interface.api.LoginApi import LoginApi
 from core.interface.api.SkillsApi import SkillsApi
@@ -29,6 +33,10 @@ from core.interface.views.SyslogView import SyslogView
 class WebInterfaceManager(Manager):
 	app = Flask(__name__)
 	app.config['SEND_FILE_MAX_AGE_DEFAULT'] = 0
+	app.jinja_env.add_extension('jinja2.ext.loopcontrols')
+	app.jinja_env.trim_blocks = True
+	app.jinja_env.lstrip_blocks = True
+	CORS(app, resources={r'/api/*': {'origins': '*'}})
 
 	_VIEWS = [AdminView, AdminAuth, IndexView, SkillsView, AliceWatchView, SyslogView, DevModeView, ScenarioView, MyHomeView]
 	_APIS = [UtilsApi, LoginApi, UsersApi, SkillsApi, DialogApi, TelemetryApi]
@@ -41,12 +49,14 @@ class WebInterfaceManager(Manager):
 		self._langData = dict()
 		self._skillInstallProcesses = dict()
 		self._flaskLoginManager = None
+		self._instructions = ''
 
 
 	# noinspection PyMethodParameters
 	@app.route('/favicon.ico')
 	def favicon():
 		return send_from_directory('static/', 'favicon.ico', mimetype='image/vnd.microsoft.icon')
+
 
 	@app.route('/base/<path:filename>')
 	def base_static(self, filename):
@@ -95,10 +105,18 @@ class WebInterfaceManager(Manager):
 					self.logInfo(f'Exception while registering api endpoint: {e}')
 					continue
 
+
+			if self.ConfigManager.getAliceConfigByName('displaySystemUsage'):
+				self.ThreadManager.newThread(
+					name='DisplayResourceUsage',
+					target=self.publishResourceUsage
+				)
+
 			self.ThreadManager.newThread(
 				name='WebInterface',
 				target=self.app.run,
 				kwargs={
+					# 'ssl_context' : 'adhoc',
 					'debug'       : self.ConfigManager.getAliceConfigByName('debug'),
 					'port'        : int(self.ConfigManager.getAliceConfigByName('webInterfacePort')),
 					'host'        : self.Commons.getLocalIp(),
@@ -109,6 +127,39 @@ class WebInterfaceManager(Manager):
 
 	def onStop(self):
 		self.ThreadManager.terminateThread('WebInterface')
+
+
+	def addSkillInstructions(self, skill: AliceSkill):
+		if not skill.instructions:
+			return
+
+		self._instructions += f'{skill.instructions}<br/><div class="overlayInfoSkillName">{skill.name} - {skill.version}</div><div>{skill.getHtmlInstructions()}</div>'
+
+
+	def onSkillStarted(self, skill: AliceSkill):
+		if self._instructions:
+			self.ThreadManager.doLater(interval=1, func=self.publishInstructions)
+
+
+	def publishInstructions(self):
+		self.MqttManager.publish(
+			topic=constants.TOPIC_SKILL_INSTRUCTIONS,
+			payload={
+				'instructions': self._instructions
+			}
+		)
+
+
+	def publishResourceUsage(self):
+		self.MqttManager.publish(
+			topic=constants.TOPIC_RESOURCE_USAGE,
+			payload={
+				'cpu': psutil.cpu_percent(),
+				'ram': psutil.virtual_memory().percent,
+				'swp': psutil.swap_memory().percent
+			}
+		)
+		self.ThreadManager.doLater(interval=1, func=self.publishResourceUsage)
 
 
 	def newSkillInstallProcess(self, skill):
@@ -122,6 +173,7 @@ class WebInterfaceManager(Manager):
 		try:
 			if skill in self.skillInstallProcesses:
 				self.skillInstallProcesses[skill]['status'] = 'updated'
+			self.addSkillInstructions(self.SkillManager.getSkillInstance(skill, True))
 		except KeyError as e:
 			self.logError(f'Failed setting skill **{skill}** status to **updated**: {e}')
 
@@ -130,6 +182,7 @@ class WebInterfaceManager(Manager):
 		try:
 			if skill in self.skillInstallProcesses:
 				self.skillInstallProcesses[skill]['status'] = 'installed'
+			self.addSkillInstructions(self.SkillManager.getSkillInstance(skill, True))
 		except KeyError as e:
 			self.logError(f'Failed setting skill **{skill}** status to **installed**: {e}')
 

@@ -3,12 +3,14 @@ from __future__ import annotations
 import importlib
 import inspect
 import json
-import sqlite3
-from pathlib import Path
-from typing import Any, Dict, Iterable, Optional, Union
-
 import re
+import sqlite3
 from copy import copy
+from pathlib import Path
+from typing import Any, Dict, Iterable, List, Optional, Union
+
+import flask
+from markdown import markdown
 from paho.mqtt import client as MQTTClient
 
 from core.ProjectAliceExceptions import AccessLevelTooLow, SkillStartingFailed
@@ -36,6 +38,12 @@ class AliceSkill(ProjectAliceObject):
 		except Exception as e:
 			raise SkillStartingFailed(skillName=constants.UNKNOWN, error=f'[{type(self).__name__}] Failed loading skill: {e}')
 
+		instructionsFile = self.getResource(f'instructions/{self.LanguageManager.activeLanguage}.md')
+		if not instructionsFile.exists():
+			instructionsFile = self.getResource(f'instructions/en.md')
+
+		self._instructions = instructionsFile.read_text() if instructionsFile.exists() else ''
+
 		self._name = self._installer['name']
 		self._author = self._installer['author']
 		self._version = self._installer['version']
@@ -58,6 +66,10 @@ class AliceSkill(ProjectAliceObject):
 		self.loadIntentsDefinition()
 
 		self._utteranceSlotCleaner = re.compile('{(.+?):=>.+?}')
+
+
+	def getHtmlInstructions(self) -> flask.Markup:
+		return flask.Markup(markdown(self._instructions))
 
 
 	def addUtterance(self, text: str, intent: str) -> bool:
@@ -340,12 +352,12 @@ class AliceSkill(ProjectAliceObject):
 
 
 	@property
-	def version(self) -> float:
+	def version(self) -> str:
 		return self._version
 
 
 	@version.setter
-	def version(self, value: float):
+	def version(self, value: str):
 		self._version = value
 
 
@@ -412,6 +424,11 @@ class AliceSkill(ProjectAliceObject):
 	@property
 	def skillPath(self) -> Path:
 		return self._skillPath
+
+
+	@property
+	def instructions(self) -> str:
+		return self._instructions
 
 
 	def hasScenarioNodes(self) -> bool:
@@ -539,7 +556,10 @@ class AliceSkill(ProjectAliceObject):
 		self.onSkillUpdated(**kwargs)
 
 
-	def onSkillUpdated(self, **kwargs):
+	def onSkillUpdated(self, skill: str):
+		if skill != self.name:
+			return
+
 		self._updateAvailable = False
 		self.MqttManager.subscribeSkillIntents(self.name)
 
@@ -595,7 +615,10 @@ class AliceSkill(ProjectAliceObject):
 		return self.DatabaseManager.insert(tableName=tableName, query=query, values=values, callerName=self.name)
 
 
-	def randomTalk(self, text: str, replace: list = None, skill: str = None) -> str:
+	def randomTalk(self, text: str, replace: Union[str, List] = None, skill: str = None) -> str:
+		if not isinstance(replace, list):
+			replace = [replace]
+
 		talk = self.TalkManager.randomTalk(talk=text, skill=skill or self.name)
 
 		if replace:

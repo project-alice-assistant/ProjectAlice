@@ -1,7 +1,8 @@
-import shutil
-import tarfile
 from pathlib import Path
 from typing import Optional
+
+import shutil
+import tarfile
 
 from core.asr.model.ASRResult import ASRResult
 from core.asr.model.Asr import Asr
@@ -73,26 +74,33 @@ class PocketSphinxAsr(Asr):
 			pass
 
 
-	def downloadLanguage(self) -> bool:
-		self.logInfo(f'Downloading language model for "{self.LanguageManager.activeLanguage}"')
+	def downloadLanguage(self, forceLang: str = '') -> bool:
+		lang = forceLang or self.LanguageManager.activeLanguageAndCountryCode
+		self.logInfo(f'Downloading language model for "{lang}"')
 
 		venv = Path(self.Commons.rootDir(), 'venv/lib/python3.7/site-packages/pocketsphinx/')
 		for url in self.LANGUAGE_PACK:
-			url = url.replace('%lang%', self.LanguageManager.activeLanguageAndCountryCode.lower())
+			url = url.replace('%lang%', lang.lower())
 			filename = Path(url).name
 			download = Path(venv, 'model', filename)
-			self.Commons.downloadFile(url=f'{url}?raw=true', dest=str(download))
+			result = self.Commons.downloadFile(url=f'{url}?raw=true', dest=str(download))
+			if not result:
+				if forceLang:
+					return False
+				else:
+					# TODO be universal
+					self.downloadLanguage(forceLang='eu-US')
+			else:
+				if download.suffix == '.tar':
+					dest = Path(venv, 'model', lang.lower())
 
-			if download.suffix == '.tar':
-				dest = Path(venv, 'model', self.LanguageManager.activeLanguageAndCountryCode.lower())
+					if dest.exists():
+						shutil.rmtree(dest)
 
-				if dest.exists():
-					shutil.rmtree(dest)
+					tar = tarfile.open(str(download))
+					tar.extractall(str(dest))
 
-				tar = tarfile.open(str(download))
-				tar.extractall(str(dest))
-
-				download.unlink()
+					download.unlink()
 
 		self.logInfo('Downloaded and installed')
 		return True

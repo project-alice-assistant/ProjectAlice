@@ -245,7 +245,7 @@ class TestDecorators(unittest.TestCase):
 				return self, args, kwargs
 
 			@IntentHandler(mock_intent('intent2'))
-			@IntentHandler('intent3', isProtected=True)
+			@IntentHandler('intent3')
 			def multiple_decorator(self, *args, **kwargs):
 				return self, args, kwargs
 

@@ -12,7 +12,7 @@ class DeviceType(ProjectAliceObject):
 	DEV_SETTINGS = dict()
 	LOC_SETTINGS = dict()
 
-	def __init__(self, data: sqlite3.Row, devSettings = None, locSettings = None, allowLocationLinks: bool = True, perLocationLimit: int = 0, totalDeviceLimit: int = 0, heartbeatRate: int = 5):
+	def __init__(self, data: sqlite3.Row, devSettings = None, locSettings = None, allowLocationLinks: bool = True, perLocationLimit: int = 0, totalDeviceLimit: int = 0, heartbeatRate: int = 5, internalOnly: bool = False):
 		super().__init__()
 
 		if locSettings is None:
@@ -29,6 +29,7 @@ class DeviceType(ProjectAliceObject):
 		self._devSettings = devSettings
 		self._locSettings = locSettings
 		self.heartbeatRate = heartbeatRate
+		self.internalOnly = internalOnly
 
 		if 'id' in data:
 			self._id = data['id']
@@ -89,7 +90,7 @@ class DeviceType(ProjectAliceObject):
 			                                    values={'id':self.id},
 		                                        method='one')
 
-		if row['devSettings'] != str(self._devSettings):
+		if row['devSettings'] != json.dumps(self._devSettings):
 			self.logInfo(f'Updating device Settings structure for {self.name}')
 			self.DatabaseManager.update(tableName=self.DeviceManager.DB_TYPES,
 			                            callerName=self.DeviceManager.name,
@@ -98,7 +99,7 @@ class DeviceType(ProjectAliceObject):
 			for device in self.DeviceManager.getDevicesByTypeID(deviceTypeID=self.id):
 				device.changedDevSettingsStructure(self._devSettings)
 
-		if row['locSettings'] != str(self._locSettings):
+		if row['locSettings'] != json.dumps(self._locSettings):
 			self.logInfo(f'Updating locations Settings structure for {self.name}')
 			self.DatabaseManager.update(tableName=self.DeviceManager.DB_TYPES,
 			                            callerName=self.DeviceManager.name,
@@ -106,6 +107,16 @@ class DeviceType(ProjectAliceObject):
 			                            row=('id', self.id))
 			for links in self.DeviceManager.getDeviceLinksByType(deviceType=self.id):
 				links.changedLocSettingsStructure(self._locSettings)
+
+
+	def checkDevices(self):
+		if not self.parentSkillInstance:
+			self.logInfo(f'no parent skill!')
+			return
+		self.DatabaseManager.update(tableName=self.DeviceManager.DB_DEVICE,
+		                            callerName=self.DeviceManager.name,
+		                            values={'skillName': self.parentSkillInstance.name},
+		                            row=('typeID', self.id))
 
 
 	@property
@@ -116,6 +127,7 @@ class DeviceType(ProjectAliceObject):
 	@parentSkillInstance.setter
 	def parentSkillInstance(self, skill):
 		self._skillInstance = skill
+		self.checkDevices()
 
 
 	@property

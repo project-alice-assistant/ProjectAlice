@@ -46,10 +46,20 @@ input:focus, textarea:focus { border: var(--hover) dotted 1px; }
 .logDefault { color: var(--text); }
 .logBold { font-weight: 900; }
 .logDim { font-weight: lighter; font-style: italic; }
+.logItalic { font-style: italic; }
 .logUnderlined { text-decoration: underline; }
 
 /* =========================== GENERAL =========================== */
-.serverUnavailable { position: fixed; top: 0; left: 0; bottom: 0; right: 0; background-color: rgba(0, 0, 0, 0.75); width: 100%; height: 100%; z-index: 100000000; color: var(--text); font-size: 2em; text-align: center; padding-top: 10em; box-sizing: border-box; }
+.screenOverlay { position: fixed; top: 0; left: 0; bottom: 0; right: 0; background-color: rgba(0, 0, 0, 0.75); width: 100%; height: 100%; z-index: 100000000; box-sizing: border-box; text-align: center; }
+.overlayError { color: var(--text); font-size: 2em; text-align: center; padding-top: 10em; white-space: pre-line;}
+.overlayInfo { position: fixed; top: 150px; left: 250px; right: 250px; bottom: 150px; overflow: auto; background-color: var(--mainBG); box-sizing: border-box; border: 1px solid var(--secondary); padding: 15px; font-size: 1em; color: var(--text); text-align: left; font-family: var(--readable); }
+.overlayInfoSkillName { font-size: 1.5em; text-decoration: underline; }
+.overlayInfoClose { position: absolute; top: 10px; right: 10px; font-size: 3em; vertical-align: middle; font-weight: bold; }
+.overlayInfoClose:hover { cursor: pointer; color: var(--hover); }
+.overlayWarning { color: var(--text); font-family: var(--readable); font-size: 1.5em; text-align: center; margin: 15px; }
+.overlaySubtitle { color: var(--text); font-family: var(--readable); font-size: 1.2em; background-color: var(--secondary); padding: 10px; box-sizing: border-box; }
+.overlaySubtext { color: var(--text); font-family: var(--readable); font-size: 1em; margin: 10px; box-sizing: border-box; }
+.overlayInfo #skillInstructionsContent { -moz-user-select: text; -webkit-touch-callout: default; -webkit-user-select: text; -ms-user-select: text; user-select: text; -khtml-user-select: text; }
 
 .hidden { display: none; }
 
@@ -86,6 +96,8 @@ button.button{ font-size: 1.6em; height: 2em; }
 .aliceStatus { flex-grow: 1; }
 .updateChannelMarker { font-style: italic; margin: 0 .9em; align-items: center; display: flex; }
 
+.resourceUsage { margin: 0 .9em; align-items: center; display: flex; }
+
 .page {	flex: 1 100%; flex-flow: row nowrap; display: flex; }
 
 .toolbar { background: var(--mainBG); display: flex; float: right; clear: both; padding-top: .2em; padding-left: 1em; border: solid 2px; border-bottom-left-radius: 1.5em; border-top: none; border-color: var(--accent); }
@@ -101,7 +113,7 @@ button.button{ font-size: 1.6em; height: 2em; }
 
 /* console and logging */
 /* using color markings as defined above */
-.console { position: absolute; top: 20px; bottom: 40px; left: 20px; right: 20px; padding: 1em; background-color: black; color: var(--text); overflow-y: scroll; overflow-x: hidden; font-family: var(--readable); }
+.console { position: absolute; top: 20px; bottom: 40px; left: 20px; right: 20px; padding: 1em; background-color: black; color: var(--text); overflow-y: scroll; overflow-x: hidden; font-family: var(--readable); -moz-user-select: text; -webkit-touch-callout: default; -webkit-user-select: text; -ms-user-select: text; user-select: text; -khtml-user-select: text; }
 .log { display: inline-block; }
 .logLine { display: flex; font-family: var(--readable); font-size: 0.9em; margin: 2px 0 2px 0; align-items: flex-start; }
 
@@ -158,7 +170,8 @@ button.button{ font-size: 1.6em; height: 2em; }
 .skillName { overflow: hidden; font-size: 1.25em; }
 
 .skillViewIntents,
-.skillSettings { width: 100%; margin: .2em; text-align: right; }
+.skillSettings,
+.skillInstructions { width: 100%; margin: .2em; text-align: right; }
 
 /* Configuration Screens */
 .configBox { width: 100%; display: table; font-family: var(--long); background-color: var(--secondary); border-spacing: 0 10px; }
@@ -185,7 +198,7 @@ button.button{ font-size: 1.6em; height: 2em; }
 .floorPlanEditMode { background: var(--secondary) url('./images/grid.png'); }
 .floorPlanEditMode-AddingZone { cursor: cell; }
 
-.sidebar.right { position: absolute; top: 0; right: -290px; bottom: 0; width: 270px; background: var(--windowBG); border-left: solid var(--accent); overflow-y: auto; padding: 5em 1em 1em 1em;}
+.sidebar.right { position: absolute; top: 0; right: -290px; bottom: 0; width: 270px; background: var(--windowBG); border-left: solid var(--accent); overflow-y: auto; padding: 6em 1em 1em 1em; z-index: 98;}
 .sidebar input {
     width: 100%;
     width: -moz-available;          /* WebKit-based browsers will ignore this. */

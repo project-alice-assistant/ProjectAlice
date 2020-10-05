@@ -1,14 +1,14 @@
 import getpass
 import importlib
 import json
+import os
+import shutil
 import threading
 import traceback
 from pathlib import Path
 from typing import Dict, Optional
 
-import os
 import requests
-import shutil
 
 from core.ProjectAliceExceptions import AccessLevelTooLow, GithubNotFound, GithubRateLimit, GithubTokenFailed, SkillNotConditionCompliant, SkillStartDelayed, SkillStartingFailed
 from core.base.SuperManager import SuperManager
@@ -66,6 +66,8 @@ class SkillManager(Manager):
 		self._deactivatedSkills: Dict[str, AliceSkill] = dict()
 		self._failedSkills: Dict[str, FailedAliceSkill] = dict()
 
+		self._postBootSkillActions = dict()
+
 		self._widgets = dict()
 
 
@@ -79,6 +81,7 @@ class SkillManager(Manager):
 		# If it's the first time we start, don't delay skill install and do it on main thread
 		if not self._skillList:
 			self.logInfo('Looks like a fresh install or skills were nuked. Let\'s install the basic skills!')
+			self.wipeSkills(True)
 			self._checkForSkillInstall()
 		elif self.checkForSkillUpdates():
 			self._checkForSkillInstall()
@@ -202,7 +205,7 @@ class SkillManager(Manager):
 		self.DeviceManager.removeDeviceTypesForSkill(skillName=skillName)
 
 
-	def onSnipsAssistantInstalled(self, **kwargs):
+	def onAssistantInstalled(self, **kwargs):
 		self.MqttManager.mqttBroadcast(topic='hermes/leds/clear')
 
 		argv = kwargs.get('skillsInfos', dict())
@@ -287,6 +290,7 @@ class SkillManager(Manager):
 
 	def onBooted(self):
 		self.skillBroadcast(constants.EVENT_BOOTED)
+		self._finishInstall()
 
 		if self._skillInstallThread:
 			self._skillInstallThread.start()
@@ -577,8 +581,8 @@ class SkillManager(Manager):
 					self.logInfo(f'![yellow]({skillName}) - Version {self._skillList[skillName]["installer"]["version"]} < {str(remoteVersion)} in {self.ConfigManager.getAliceConfigByName("skillsUpdateChannel")}')
 
 					if not self.ConfigManager.getAliceConfigByName('skillAutoUpdate'):
-						if skillName in self._activeSkills:
-							self._activeSkills[skillName].updateAvailable = True
+						if skillName in self.allSkills:
+							self.allSkills[skillName].updateAvailable = True
 					else:
 						if not self.downloadInstallTicket(skillName):
 							raise Exception
@@ -618,28 +622,42 @@ class SkillManager(Manager):
 		finally:
 			self.MqttManager.mqttBroadcast(topic='hermes/leds/clear')
 
-			if skillsToBoot:
-				for skillName, info in skillsToBoot.items():
-					self._initSkills(loadOnly=skillName, reload=info['update'])
-					self.ConfigManager.loadCheckAndUpdateSkillConfigurations(skillToLoad=skillName)
-
-					try:
-						self._startSkill(skillName)
-					except SkillStartDelayed:
-						# The skill start was delayed
-						pass
-
-					if info['update']:
-						self.allSkills[skillName].onSkillUpdated()
-					else:
-						self.allSkills[skillName].onSkillInstalled()
-
-					if self.ProjectAlice.isBooted:
-						self.allSkills[skillName].onBooted()
-
-				self.AssistantManager.checkAssistant()
+			if skillsToBoot and self.ProjectAlice.isBooted:
+				self._finishInstall(skillsToBoot, True)
+			else:
+				self._postBootSkillActions = skillsToBoot.copy()
 
 			self._busyInstalling.clear()
+
+
+	def _finishInstall(self, skills: dict = None, startSkill: bool = False):
+		if not skills and not self._postBootSkillActions:
+			return
+
+		if not skills and self._postBootSkillActions:
+			skills = self._postBootSkillActions
+
+		for skillName, info in skills.items():
+
+			if startSkill:
+				self._initSkills(loadOnly=skillName, reload=info['update'])
+				self.ConfigManager.loadCheckAndUpdateSkillConfigurations(skillToLoad=skillName)
+
+				try:
+					self._startSkill(skillName)
+				except SkillStartDelayed:
+					# The skill start was delayed
+					pass
+
+			if info['update']:
+				self.allSkills[skillName].onSkillUpdated(skill=skillName)
+			else:
+				self.allSkills[skillName].onSkillInstalled(skill=skillName)
+
+			self.allSkills[skillName].onBooted()
+
+		self._postBootSkillActions = dict()
+		self.AssistantManager.checkAssistant()
 
 
 	def _installSkills(self, skills: list) -> dict:
@@ -683,7 +701,6 @@ class SkillManager(Manager):
 				if skillName in self._activeSkills:
 					try:
 						self._activeSkills[skillName].onStop()
-						self.broadcast(method=constants.EVENT_SKILL_STOPPED, exceptions=[self.name], propagateToSkills=True, skill=self)
 					except Exception as e:
 						self.logError(f'Error stopping "{skillName}" for update: {e}')
 						raise

@@ -1,8 +1,8 @@
 import json
-from pathlib import Path
-
 import re
 from copy import copy
+from pathlib import Path
+
 from importlib_metadata import PackageNotFoundError, version as packageVersion
 
 import core.base.SuperManager as SM
@@ -542,11 +542,11 @@ class ProjectAliceObject:
 		pass # Super object function is overriden only if needed
 
 
-	def onSnipsAssistantInstalled(self, **kwargs):
+	def onAssistantInstalled(self, **kwargs):
 		pass # Super object function is overriden only if needed
 
 
-	def onSnipsAssistantFailedTraining(self, **kwargs):
+	def onAssistantFailedTraining(self, **kwargs):
 		pass # Super object function is overriden only if needed
 
 
@@ -635,11 +635,6 @@ class ProjectAliceObject:
 	@property
 	def MultiIntentManager(self): #NOSONAR
 		return SM.SuperManager.getInstance().multiIntentManager
-
-
-	@property
-	def ProtectedIntentManager(self): #NOSONAR
-		return SM.SuperManager.getInstance().protectedIntentManager
 
 
 	@property

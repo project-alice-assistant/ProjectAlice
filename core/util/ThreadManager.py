@@ -2,7 +2,9 @@ import threading
 from typing import Callable
 
 from core.base.model.Manager import Manager
+from core.util.Decorators import IfSetting
 from core.util.model.AliceEvent import AliceEvent
+from core.util.model.MemoryProfiler import MemoryProfiler
 from core.util.model.ThreadTimer import ThreadTimer
 
 
@@ -14,6 +16,7 @@ class ThreadManager(Manager):
 		self._timers = list()
 		self._threads = dict()
 		self._events = dict()
+		self._memProfiler = MemoryProfiler()
 
 
 	def onStop(self):
@@ -31,13 +34,37 @@ class ThreadManager(Manager):
 				event.clear()
 
 
+	@IfSetting(settingName='memoryProfiling', settingValue=True)
+	def onBooted(self):
+		self._memProfiler.start()
+		self._memProfiler.dump()
+
+
+	@IfSetting(settingName='memoryProfiling', settingValue=True)
+	def onFiveMinute(self):
+		self._memProfiler.dump()
+
+
 	def onQuarterHour(self):
 		deadTimers = 0
-		for threadTimer in self._timers:
+		deadThreads = 0
+		timers = self._timers.copy()
+		for threadTimer in timers:
 			if not threadTimer.timer.isAlive():
 				self._timers.remove(threadTimer)
 				deadTimers += 1
-		self.logInfo(f'Cleaned {deadTimers} dead timers')
+
+		threads = self._threads.copy()
+		for threadName, thread in threads.items():
+			if not thread.is_alive():
+				self._threads.pop(threadName, None)
+				deadThreads += 1
+
+		if deadTimers > 0:
+			self.logInfo(f'Cleaned {deadTimers} dead timer', 'timer')
+
+		if deadThreads > 0:
+			self.logInfo(f'Cleaned {deadThreads} dead thread', 'thread')
 
 
 	def newTimer(self, interval: float, func: Callable, autoStart: bool = True, args: list = None, kwargs: dict = None) -> threading.Timer:
@@ -84,7 +111,10 @@ class ThreadManager(Manager):
 		kwargs = kwargs or dict()
 
 		if name in self._threads:
-			self._threads[name].join(timeout=2)
+			try:
+				self._threads[name].join(timeout=2)
+			except:
+				pass  # Might be a non started thread only
 
 		thread = threading.Thread(name=name, target=target, args=args, kwargs=kwargs)
 		thread.setDaemon(True)
@@ -93,18 +123,24 @@ class ThreadManager(Manager):
 			thread.start()
 
 		self._threads[name] = thread
+		self.logDebug(f'Started new thread **{name}**, thread count: {threading.active_count()}')
 		return thread
 
 
 	def terminateThread(self, name: str):
 		thread = self._threads.pop(name, None)
 		if not thread:
-			for aThread in threading.enumerate():
-				if aThread.name == name:
-					thread = aThread
+			for t in threading.enumerate():
+				if t.name == name:
+					thread = t
 
-		if thread and thread.is_alive():
-			thread.join(timeout=1)
+		try:
+			if thread and thread.is_alive():
+				thread.join(timeout=1)
+		except Exception as e:
+			self.logError(f'Error terminating thread "{name}": {e}')
+
+		self.logDebug(f'Terminated thread **{name}**, thread count: {threading.active_count()}')
 
 
 	def isThreadAlive(self, name: str) -> bool:

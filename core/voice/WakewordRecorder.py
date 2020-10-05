@@ -1,13 +1,13 @@
 import json
-from pathlib import Path
-from typing import Optional
-
-import paho.mqtt.client as mqtt
 import re
 import shutil
 import struct
 import tempfile
 from enum import Enum
+from pathlib import Path
+from typing import Optional
+
+import paho.mqtt.client as mqtt
 from pydub import AudioSegment
 
 from core.base.model.Manager import Manager
@@ -357,7 +357,7 @@ class WakewordRecorder(Manager):
 			rebuild.append(updated)
 
 		if update:
-			self.ConfigManager.updateSnipsConfiguration(parent='snips-hotword', key='model', value=rebuild, restartSnips=False, createIfNotExist=False)
+			self.ConfigManager.updateSnipsConfiguration(parent='snips-hotword', key='model', value=rebuild, restartSnips=False, createIfNotExist=True)
 			self.WakewordManager.restartEngine()
 
 		return update

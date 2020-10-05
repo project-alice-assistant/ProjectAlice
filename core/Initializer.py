@@ -1,16 +1,15 @@
 VERSION = 1.22
 
 import getpass
-import importlib
+
 import json
 import logging
+import os
 import socket
 import subprocess
 import sys
 import time
 from pathlib import Path
-
-import os
 
 
 YAML = '/boot/ProjectAlice.yaml'
@@ -69,7 +68,7 @@ class PreInit:
 		self._logger = SimpleLogger(prepend='PreInitializer')
 
 		self.rootDir = Path(__file__).resolve().parent.parent
-		self.confsFile = Path(self.rootDir, 'config.py')
+		self.confsFile = Path(self.rootDir, 'config.json')
 		self.initFile = Path(YAML)
 		self.initConfs = dict()
 
@@ -97,6 +96,10 @@ class PreInit:
 		return True
 
 
+	def informUser(self):
+		self._logger.logInfo('I am now restarting and will use my service file. To continue checking what I do, please type "tail -f /var/log/syslog"')
+
+
 	def installSystemDependencies(self):
 		reqs = [line.rstrip('\n') for line in open(Path(self.rootDir, 'sysrequirements.txt'))]
 		subprocess.run(['sudo', 'apt-get', 'install', '-y', '--allow-unauthenticated'] + reqs)
@@ -107,8 +110,14 @@ class PreInit:
 		try:
 			import yaml
 		except:
+			subprocess.run(['sudo', 'apt-get', 'update'])
+			subprocess.run(['sudo', 'apt-get', 'install', 'python3-pip', 'python3-wheel', '-y'])
+			subprocess.run(['pip3', 'install', 'PyYAML==5.3.1'])
+
 			self.setServiceFileTo('system')
+			subprocess.run(['sudo', 'systemctl', 'enable', 'ProjectAlice'])
 			subprocess.run(['sudo', 'systemctl', 'restart', 'ProjectAlice'])
+			self.informUser()
 			exit(0)
 
 		with Path(YAML).open(mode='r') as f:
@@ -196,10 +205,12 @@ class PreInit:
 		try:
 			# Close everything related to ProjectAlice, allows restart without component failing
 			try:
+				# noinspection PyUnresolvedReferences
 				import psutil
 			except:
 				self.setServiceFileTo('system')
 				subprocess.run(['sudo', 'systemctl', 'restart', 'ProjectAlice'])
+				self.informUser()
 				exit(0)
 
 			# noinspection PyUnboundLocalVariable
@@ -234,6 +245,7 @@ class PreInit:
 		except:
 			self.setServiceFileTo('system')
 			subprocess.run(['sudo', 'systemctl', 'restart', 'ProjectAlice'])
+			self.informUser()
 			exit(0)
 
 		# noinspection PyUnboundLocalVariable
@@ -310,7 +322,7 @@ class Initializer:
 		self._logger = SimpleLogger('Initializer')
 		self._logger.logInfo('Starting Project Alice initialization')
 		self._preInit = PreInit()
-		self._confsSample = Path(self._preInit.rootDir, 'configTemplate.py')
+		self._confsSample = Path(self._preInit.rootDir, 'configTemplate.json')
 		self._confsFile = self._preInit.confsFile
 		self._rootDir = self._preInit.rootDir
 
@@ -326,29 +338,30 @@ class Initializer:
 
 		if not self._confsFile.exists() and not self._confsSample.exists():
 			self._logger.logFatal('No config and no config template found, can\'t continue')
-
-		elif not self._confsFile.exists() and self._confsSample.exists():
-			self._logger.logWarning('No config file found, creating it from sample file')
-			confs = self.newConfs()
-			self._confsFile.write_text(f"settings = {json.dumps(confs, indent=4).replace('false', 'False').replace('true', 'True')}")
+			return False
 
 		elif self._confsFile.exists() and not initConfs['forceRewrite']:
 			self._logger.logWarning('Config file already existing and user not wanting to rewrite, aborting')
 			return False
 
+		elif not self._confsFile.exists() and self._confsSample.exists():
+			self._logger.logWarning('No config file found, creating it from sample file')
+			self._confsFile.write_text(json.dumps({configName: configData['defaultValue'] for configName, configData in json.loads(self._confsSample.read_text()).items()}, indent=4, ensure_ascii=False))
+
 		elif self._confsFile.exists() and initConfs['forceRewrite']:
 			self._logger.logWarning('Config file found and force rewrite specified, let\'s restart all this!')
-			confs = self.newConfs()
-			self._confsFile.write_text(f"settings = {json.dumps(confs, indent=4).replace('false', 'False').replace('true', 'True')}")
+			if not self._confsSample.exists():
+				self._logger.logFatal('Unfortunately it won\'t be possible, config sample is not existing')
+				return False
+
+			self._confsFile.write_text(json.dumps(self._confsSample.read_text(), indent=4))
+
 
 		try:
-			# noinspection PyUnresolvedReferences
-			import config
-		except:
-			config = importlib.import_module('config')
-
-		# noinspection PyUnresolvedReferences
-		confs = config.settings.copy()
+			confs = json.loads(self._confsFile.read_text())
+		except Exception as e:
+			self._logger.logFatal(f'Something went wrong loading configs: {e}')
+			return False
 
 
 		subprocess.run(['sudo', 'apt', 'install', '-y', f'./system/snips/snips-platform-common_0.64.0_armhf.deb'])
@@ -630,12 +643,9 @@ class Initializer:
 		sort = dict(sorted(confs.items()))
 
 		try:
-			confString = json.dumps(sort, indent=4).replace('false', 'False').replace('true', 'True')
-			self._confsFile.write_text(f'settings = {confString}')
+			self._confsFile.write_text(json.dumps(sort, indent=4))
 		except Exception as e:
 			self._logger.logFatal(f'An error occured while writting final configuration file: {e}')
-		else:
-			importlib.reload(config)
 
 		import toml
 		TEMP.write_text(toml.dumps(snipsConf))
@@ -674,9 +684,3 @@ class Initializer:
 
 		import toml
 		return toml.load(snipsConfig)
-
-
-	@staticmethod
-	def newConfs():
-		import configTemplate
-		return {configName: configData['defaultValue'] for configName, configData in configTemplate.settings.items()}

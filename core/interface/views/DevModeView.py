@@ -8,12 +8,12 @@ class DevModeView(View):
 	route_base = '/devmode/'
 
 	def index(self):
+		super().index()
 		skills = {skillName: skill for skillName, skill in sorted(self.SkillManager.allWorkingSkills.items()) if skill is not None}
 
 		return render_template(template_name_or_list='devmode.html',
 		                       skills=skills,
-		                       langData=self._langData,
-		                       aliceSettings=self.ConfigManager.aliceConfigurations)
+		                       **self._everyPagesRenderValues)
 
 
 	def uploadToGithub(self):
@@ -22,7 +22,7 @@ class DevModeView(View):
 			skillDesc = request.form.get('skillDesc', '')
 
 			if not skillName:
-				raise Exception
+				raise Exception('Missing skill name')
 
 			if self.SkillManager.uploadSkillToGithub(skillName, skillDesc):
 				return jsonify(success=True, url=f'https://github.com/{self.ConfigManager.getAliceConfigByName("githubUsername")}/skill_{skillName}.git')
@@ -75,5 +75,4 @@ class DevModeView(View):
 
 		return render_template(template_name_or_list='editSkill.html',
 		                       skill=skill,
-		                       langData=self._langData,
-		                       aliceSettings=self.ConfigManager.aliceConfigurations)
+		                       **self._everyPagesRenderValues)

@@ -6,7 +6,7 @@
 
 {% block loaders %}
 	<link rel="stylesheet" href="{{ url_for('static', filename='css/myHome.css') }}">
-	<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-sidebar/3.3.2/jquery.sidebar.min.js"></script>
+	<script src="{{ url_for('static', filename='js/jquery.sidebar.min.js') }}"></script>
 	<script src="{{ url_for('static', filename='js/jquery.connections.js') }}"></script>
 	<script src="{{ url_for('static', filename='js/myHome.js') }}"></script>
 {% endblock %}
@@ -26,6 +26,8 @@
 	<div class="hidden" id="langConfDeleteDevice">{{ langData.confDeleteDevice }}</div>
 	<div class="hidden" id="langConfDeleteZone">{{ langData.confDeleteZone }}</div>
 	<div class="hidden" id="langNameNewZone">{{ langData.nameNewZone }}</div>
+	<div class="hidden" id="langRenameDevice">{{ langData.renameDevice }}</div>
+	<div class="hidden" id="langRenameLocation">{{ langData.renameLocation }}</div>
 	<div class="stick-top-right">
 		<div class="toolbar initialHidden" id="toolbarConstruction">
 			<span class="toolbarButton link-hover" id="addZone" title="Add Location">
@@ -62,7 +64,7 @@
 			</span>
 		</div>
 		<div class="toolbar initialHidden" id="toolbarOverview">
-			<span class="toolbarButton link-hover" id="backup" title="Backup My Home">
+			<span class="toolbarButton link-hover" id="backupMyHome" title="Backup My Home">
 				<i class="fas fa-download" aria-hidden="true"></i>
 			</span>
 			<span class="toolbarButton link-hover" id="toolbarTechnicShow" title="Manage devices">

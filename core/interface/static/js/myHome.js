@@ -41,30 +41,42 @@ $(function () {
 	let selectedDevice = null;
 	let selectedLinks = null;
 
+	let maxZindex = 10;
+
 	// DATA
 	let dirtyFormulars = [];
 
-// Setup and handle MQTT
+
+	let zindexSorter = function(a,b) {
+		return a.style.zIndex - b.style.zIndex;
+	}
+
+	// Setup and handle MQTT
 	function onConnect() {
 		MQTT.subscribe('projectalice/devices/updated');
 	}
 
 	function onMessage(msg) {
+		if (msg.topic != 'projectalice/devices/updated' || !msg.payloadString) {
+			return;
+		}
+
 		let payload = JSON.parse(msg.payloadString);
 		if (msg.topic === 'projectalice/devices/updated') {
 			if(payload['type'] == 'status') {
-				console.log(payload);
 				let tochange = $('#device_' + payload['id']);
 				let url = 'Device/' + payload['id'] + '/icon?random=' + new Date().getTime();
 				tochange.css('background-image', 'url('+url+')');
-				console.log('done');
 			}
 		}
 
 	}
 
 	function makeDirty(event){
-		dirtyFormulars.push(event.target);
+		if(!dirtyFormulars.includes(event.target)){
+			dirtyFormulars.push(event.target);
+			saveRequired();
+		}
 	}
 // Basic functionality for loading, saving
 	function loadHouse() {
@@ -95,6 +107,11 @@ $(function () {
 					newDevice($zone, device);
 				});
 			})
+			let sortedZones = $(sZone).sort(zindexSorter);
+			$.each(sortedZones, function (i, zone) {
+				zone.style.zIndex = maxZindex.toString();
+				maxZindex++;
+			})
 		});
 	}
 
@@ -103,84 +120,98 @@ $(function () {
 		$floorPlan.children(sZone).each(function () {
 			let zoneID = $(this).data('id');
 			data[zoneID] = {
-				"id"	  : $(this).data('id'),
-				"name"    : $(this).data('name')
+				'id'	  : $(this).data('id'),
+				'name'    : $(this).data('name')
 			};
 			data[zoneID]['display'] = {
-				"x"       : $(this).css('left').replace('px', ''),
-				"y"       : $(this).css('top').replace('px', ''),
-				"z-index" : $(this).css('z-index'),
-				"rotation": matrixToAngle($(this).css('transform')),
-				"width"   : $(this).width(),
-				"height"  : $(this).height(),
-				"texture" : $(this).data('texture')
+				'x'       : $(this).css('left').replace('px', ''),
+				'y'       : $(this).css('top').replace('px', ''),
+				'z-index' : $(this).css('z-index'),
+				'rotation': matrixToAngle($(this).css('transform')),
+				'width'   : $(this).width(),
+				'height'  : $(this).height(),
+				'texture' : $(this).data('texture')
 			};
 			data[zoneID]['display']['walls'] = [];
 			$(this).children(sWall).each(function () {
 				data[zoneID]['display']['walls'].push({
-					"x"       : $(this).css('left').replace('px', ''),
-					"y"       : $(this).css('top').replace('px', ''),
-					"rotation": matrixToAngle($(this).css('transform')),
-					"width"   : $(this).width(),
-					"height"  : $(this).height()
+					'x'       : $(this).css('left').replace('px', ''),
+					'y'       : $(this).css('top').replace('px', ''),
+					'rotation': matrixToAngle($(this).css('transform')),
+					'width'   : $(this).width(),
+					'height'  : $(this).height()
 				})
 			});
 
 			data[zoneID]['display']['construction'] = [];
 			$(this).children(sConstr).each(function () {
 				data[zoneID]['display']['construction'].push({
-					"x"       : $(this).css('left').replace('px', ''),
-					"y"       : $(this).css('top').replace('px', ''),
-					"rotation": matrixToAngle($(this).css('transform')),
-					"width"   : $(this).width(),
-					"height"  : $(this).height(),
-					"texture" : $(this).data('texture')
+					'x'       : $(this).css('left').replace('px', ''),
+					'y'       : $(this).css('top').replace('px', ''),
+					'rotation': matrixToAngle($(this).css('transform')),
+					'width'   : $(this).width(),
+					'height'  : $(this).height(),
+					'texture' : $(this).data('texture')
 				})
 			});
 
 			data[zoneID]['display']['deco'] = [];
 			$(this).children(sDeco).each(function () {
 				data[zoneID]['display']['deco'].push({
-					"x"       : $(this).css('left').replace('px', ''),
-					"y"       : $(this).css('top').replace('px', ''),
-					"rotation": matrixToAngle($(this).css('transform')),
-					"width"   : $(this).width(),
-					"height"  : $(this).height(),
-					"texture" : $(this).data('texture')
+					'x'       : $(this).css('left').replace('px', ''),
+					'y'       : $(this).css('top').replace('px', ''),
+					'rotation': matrixToAngle($(this).css('transform')),
+					'width'   : $(this).width(),
+					'height'  : $(this).height(),
+					'texture' : $(this).data('texture')
 				})
 			});
 
 			data[zoneID]['devices'] = [];
 			$(this).children(sDevice).each(function () {
 				data[zoneID]['devices'].push({
-					"id"	  : $(this).data('id'),
-					"uid"	  : $(this).data('uid'),
-					"deviceType" : $(this).data('texture'),
-					"skill" : $(this).data('skill'),
-					"display" : {
-						"x"       : $(this).css('left').replace('px', ''),
-						"y"       : $(this).css('top').replace('px', ''),
-						"rotation": matrixToAngle($(this).css('transform')),
-						"width"   : $(this).width(),
-						"height"  : $(this).height()
+					'id'	  : $(this).data('id'),
+					'uid'	  : $(this).data('uid'),
+					'deviceType' : $(this).data('texture'),
+					'skill' : $(this).data('skill'),
+					'display' : {
+						'x'       : $(this).css('left').replace('px', ''),
+						'y'       : $(this).css('top').replace('px', ''),
+						'rotation': matrixToAngle($(this).css('transform')),
+						'width'   : $(this).width(),
+						'height'  : $(this).height()
 					}
 				})
 			});
 		});
 
-		$.ajax({'url': '/myhome/save/', data: JSON.stringify(data), 'type':'POST', 'contentType' :'application/json'});
+		let result = JSON.stringify(data);
+		$.ajax({'url': '/myhome/save/', data: result, 'type': 'POST', 'contentType': 'application/json'});
+		saveNotRequired();
+		return result;
 	}
+
+	$('#backupMyHome').on('click touchstart', function () {
+		let data = saveHouse();
+		let file = new Blob([data], {type: 'application/json'});
+		let url = window.URL.createObjectURL(file);
+
+		let $link = $('<a id="downloadBackup" style="hidden" download="myHome.json" href="' + url + '">');
+		$('body').append($link);
+		document.getElementById('downloadBackup').click();
+		window.URL.revokeObjectURL(url);
+		$link.remove();
+	})
 
 // Basic functionality for build area
 	function matrixToAngle(matrix) {
 		if (matrix == 'none' || matrix == null) {
 			return 0;
-			makeDirty(null);
 		}
 
 		let values = matrix.split('(')[1].split(')')[0].split(',');
 		let a = parseFloat(values[0]);
-        let b = parseFloat(values[1]);
+		let b = parseFloat(values[1]);
         let angle = Math.round(Math.atan2(b, a) * (180/Math.PI));
 		angle = (angle < 0) ? angle + 360 : angle;
 		return snapAngle({'rotation': angle})['rotation'];
@@ -211,9 +242,9 @@ $(function () {
 							$(this).append(ui.draggable);
 						}
 					}
-					ui.draggable.draggable( "option", "revert", false );
+					ui.draggable.draggable( 'option', 'revert', false );
 					ui.draggable.css({top: ui.offset.top - $(this).offset().top, left: ui.offset.left - $(this).offset().left } );
-					setTimeout( function() { ui.draggable.draggable( "option", "revert", true ); }, 1000 );
+					setTimeout( function() { ui.draggable.draggable( 'option', 'revert', true ); }, 1000 );
   				}
 			});
 	}
@@ -228,7 +259,7 @@ $(function () {
 				containment: 'parent',
 				grid       : [5, 5],
 				autoHide   : true,
-				stop        : function (e) {
+				stop        : function () {
 					saveRequired();
 				}
 			}).rotatable({
@@ -240,7 +271,7 @@ $(function () {
 					left: 0
 				},
 				autoHide: true,
-				stop        : function (e) {
+				stop        : function () {
 					saveRequired();
 				}
 			}).draggable({
@@ -252,8 +283,8 @@ $(function () {
 				snapTolerance: 5,
 				zIndex       : 999,
 				revert       : revert,
-				helper       : "clone",
-				appendTo     : "body",
+				helper       : 'clone',
+				appendTo     : 'body',
 				start        : function (e) {
 					$(e.target).css({opacity: 0.3});
 				},
@@ -277,7 +308,7 @@ $(function () {
 	function setSelectedDevice($element, $confOut){
 		saveSidebar();
 		// clear old, set new, draw links
-		if(selectedDevice) {
+		if (selectedDevice) {
 			selectedDevice.connections('remove');
 			selectedDevice.removeClass('highlightedDevice');
 		}
@@ -285,12 +316,12 @@ $(function () {
 		if(selectedDevice) {
 			selectedDevice.addClass('highlightedDevice');
 			$.get('Device/' + selectedDevice.data('id') + '/getLinks').done(function (res) {
-				res = jQuery.parseJSON(res);
+				res = JSON.parse(res);
 				if(handleError(res)) return;
 				selectedLinks = res;
-				let content = "";
+				let content = '';
 				$.each(res, function (id, link) {
-					target = $('#floorPlan-Zone_' + link['locationID']);
+					let target = $('#floorPlan-Zone_' + link['locationID']);
 					target.children('.inputOrText').connections({
 						to     : selectedDevice,
 						'class': 'deviceLink'
@@ -298,27 +329,29 @@ $(function () {
 					content += link['']
 				});
 				if($confOut && selectedLinks){
-					total = "<div class='configCategoryTitle'>Available In:</div>";
+					let total = "<div class='configCategoryTitle'>Available In:</div>";
 					let hasOne = false;
 					$.each(selectedLinks, function (id, val){
 						hasOne = true;
 						content = "<div class='linkTitle'>"+val['locationName']+"</div>";
-						confLines = "<form>";
+						let confLines = "<form action='Device/"+val['deviceID']+"/saveSettings/"+val['locationID']+"'>";
 						$.each(val['locSettings'], function (ckey, cval) {
-							confLines += "<div class='configLabel'>" + ckey + "</div><input name='" + ckey + "' class='configInput' value='" + cval + "'/>";
+							confLines += "<div class='configLabel'>" + ckey + "</div><input name='" + ckey + "' class='saveEnter configInput' value='" + cval + "'/>";
 						});
 						if (confLines) {
-							//content += "<div class='configBox'><div class='configList'><form id='SetForm' name='config_for_devSet' action='Device/" + data['id'] + "/saveSettings/0' method='post'><div class='configBlock'>";
 							content += confLines
 							content += "</form>";
-							//content += "</div>";
-							//content += "<div class='buttonLine'><input id='SetFormSubmit' class='button' type='submit' value='" + $('#langSave').text() + "'></div>";
-							//content += "</form></div></div>";
 						}
 						total += content;
 					});
-					if(hasOne) $confOut.append(total);
-					$('input').change(makeDirty);
+					if(hasOne) {
+						$confOut.append(total);
+						saveEnter();
+					}
+
+					$('input').on('change', function(){
+						makeDirty();
+					});
 				}
 			});
 		}
@@ -329,16 +362,20 @@ $(function () {
 	function newZone(data) {
 		data = snapPosition(data)
 		data = snapAngle(data);
-		if(!data["display"]){
-			data["display"] = {};
+		if(!data['display']){
+			data['display'] = {};
 		}
-		let $newZone = $('<div class="floorPlan-Zone ' + data["display"]["texture"] + '" ' +
-			'id="floorPlan-Zone_'+data["id"]+'" '+
-			'data-id="' + data["id"] + '" ' +
-			'data-name="' + data["name"] + '" ' +
-			'data-texture="' + data["display"]["texture"] + '" ' +
-			'style="left: ' + data["display"]["x"] + 'px; top: ' + data["display"]["y"] + 'px; width: ' + data["display"]["width"] + 'px; height: ' + data["display"]["height"] + 'px; position: absolute; transform: rotate(' + data["display"]["rotation"] + 'deg); z-index: ' + data["display"]["z-index"] + '">' +
-			'<div class="inputOrText">' + data["name"] + '</div>' +
+		if(data['display']['z-index'] == 'auto' || data['display']['z-index'] == null){
+			data['display']['z-index'] = maxZindex;
+			maxZindex++;
+		}
+		let $newZone = $('<div class="floorPlan-Zone ' + data['display']['texture'] + '" ' +
+			'id="floorPlan-Zone_' + data['id'] + '" '+
+			'data-id="' + data['id'] + '" ' +
+			'data-name="' + data['name'] + '" ' +
+			'data-texture="' + data['display']['texture'] + '" ' +
+			'style="left: ' + data['display']['x'] + 'px; top: ' + data['display']['y'] + 'px; width: ' + data['display']['width'] + 'px; height: ' + data['display']['height'] + 'px; position: absolute; transform: rotate(' + data['display']['rotation'] + 'deg); z-index: ' + data['display']['z-index'] + '">' +
+			'<div class="inputOrText">' + data['name'] + '</div>' +
 			'<div class="zindexer initialHidden">' +
 				'<div class="zindexer-up"><i class="fas fa-level-up-alt" aria-hidden="true"></i></div>' +
 				'<div class="zindexer-down"><i class="fas fa-level-down-alt" aria-hidden="true"></i></div>' +
@@ -399,7 +436,7 @@ $(function () {
 				}
 
 				$.post('/myhome/Device/0/add',
-					{ 'locationID': data["id"],
+					{ 'locationID': data['id'],
 					  'deviceTypeID': selectedDeviceTypeID } ).done(function (rec) {
 					  	if(handleError(rec)){
 					  		return;
@@ -418,14 +455,15 @@ $(function () {
 						};
 						let $device = newDevice($newZone, deviceData);
 						makeResizableRotatableAndDraggable($device);
+						makeDroppable($(sZone), true);
 				});
 
 			} else if (deviceLinkerMode) {
 				if (selectedDevice == null || selectedDevice == '') return;
 
 				// add link from selected Device to zone
-				target = this;
-				$.post('/myhome/Device/'+selectedDevice.data('id')+'/addLink/'+data["id"]).done(function (result){
+				let target = this;
+				$.post('/myhome/Device/'+selectedDevice.data('id')+'/addLink/' + data['id']).done(function (result){
 					if( handleError(result) ) return;
 					// frontend: draw bezier
 					$(target).children('.inputOrText').connections({
@@ -435,7 +473,10 @@ $(function () {
 				});
 
 			} else if (locationSettingsMode){
-				let content = "<i>"+data['id']+"</i> <h1>"+data['name']+"</h1>";
+
+				let content = "<div class='sidebarH1'>"+data['id']+" - <div id='content'>";
+				content += data['name'];
+				content += "</div><i class='fas fa-pencil-alt link-hover' id='renameLocation'></div></i>";
 				content += "<div class='configBox'>";
 				content += "<div class='configBox'>";
 				content += "<div class='configList'>";
@@ -446,13 +487,31 @@ $(function () {
 				content += "</div></div>";
 
 				$sideBar.html(content);
+
+				$('#renameLocation').on('click touchstart', function () {
+					let targetName = $(this).parent().children('#content')
+					let newLocName = prompt($('#langRenameLocation').text(), data['name']);
+					if(newLocName === null){
+						return;
+					}
+					$.post('/myhome/Location/'+data['id']+'/saveCoreSettings', {name : newLocName}).done(function(ret) {
+						if (handleError(ret)) {
+							return;
+						}
+						data['name'] = newLocName;
+						targetName.html(newLocName);
+						let chTitle = $('#floorPlan-Zone_'+data['id']);
+						chTitle.children('.inputOrText').html(newLocName);
+					});
+				});
+
 				loadLocationSettings(data['id'],$sideBar);
-				$sideBar.sidebar({side: "right"}).trigger("sidebar:open");
+				$sideBar.sidebar({side: 'right'}).trigger('sidebar:open');
 
 				// reroute enter to click event
-				$('.configInput').keypress(function (e) {
-				  if (e.which == 13) {
-				  	$(this).parent().children('.configListAdd').click();
+				$('.configInput').on('keydown',function (e) {
+				  if (e.key == 'Enter') {
+				  	$(this).parent().children('.configListAdd').trigger('click');
 					return false;
 				  }
 				});
@@ -480,12 +539,20 @@ $(function () {
 		$newZone.on('contextmenu', function () {
 			if (locationMoveMode) {
 				if(confirm($('#langConfDeleteZone').text())){
+					let missingZindex = this.style.zIndex;
 					$(this).remove();
-					$.post('/myhome/Location/'+data['id']+'/delete', {id : data['id']});
+					$.post('/myhome/Location/'+data['id']+'/delete', {id : data['id']}).done(function () {
+						let sortedZones = $(sZone).sort(zindexSorter);
+						$.each(sortedZones, function (i, zone) {
+							if(zone.style.zIndex > missingZindex) {
+								zone.style.zIndex = (parseInt(zone.style.zIndex) - 1).toString();
+							}
+						})
+					});
 				}
 				return false;
 			} else if (deviceLinkerMode){
-				target = this;
+				let target = this;
 				$.post('Device/'+ selectedDevice.data('id') +'/removeLink/'+ $(this).data('id')).done(function (res) {
 					if( handleError(res) ){
 						return;
@@ -504,7 +571,7 @@ $(function () {
 		data = snapPosition(data)
 		data = snapAngle(data);
 		let $newWall = $('<div class="floorPlan-Wall" ' +
-			'style="left: ' + data["x"] + 'px; top: ' + data["y"] + 'px; width: ' + data["width"] + 'px; height: ' + data["height"] + 'px; position: absolute; z-index: auto; transform: rotate(' + data["rotation"] + 'deg);">' +
+			'style="left: ' + data['x'] + 'px; top: ' + data['y'] + 'px; width: ' + data['width'] + 'px; height: ' + data['height'] + 'px; position: absolute; z-index: auto; transform: rotate(' + data['rotation'] + 'deg);">' +
 			'</div>');
 
 		$newWall.on('click touchstart', function () {
@@ -527,8 +594,8 @@ $(function () {
 		data = snapAngle(data);
 		// noinspection CssUnknownTarget
 		let $newConstruction = $('<div class="floorPlan-Construction" ' +
-			'style="background: url(\'/static/css/images/myHome/construction/' + data["texture"] + '.png\') no-repeat; background-size: 100% 100%; left: ' + data["x"] + 'px; top: ' + data["y"] + 'px; width: ' + data["width"] + 'px; height: ' + data["height"] + 'px; position: absolute; z-index: auto; transform: rotate(' + data["rotation"] + 'deg);" ' +
-			'data-texture="' + data["texture"] + '">' +
+			'style="background: url(\'/static/css/images/myHome/construction/' + data['texture'] + '.png\') no-repeat; background-size: 100% 100%; left: ' + data['x'] + 'px; top: ' + data['y'] + 'px; width: ' + data['width'] + 'px; height: ' + data['height'] + 'px; position: absolute; z-index: auto; transform: rotate(' + data['rotation'] + 'deg);" ' +
+			'data-texture="' + data['texture'] + '">' +
 			'</div>');
 
 		$newConstruction.on('click touchstart', function () {
@@ -551,8 +618,8 @@ $(function () {
 		data = snapAngle(data);
 		// noinspection CssUnknownTarget
 		let $newDeco = $('<div class="floorPlan-Deco" ' +
-			'style="background: url(\'/static/css/images/myHome/deco/' + data["texture"] + '.png\') no-repeat; background-size: 100% 100%; left: ' + data["x"] + 'px; top: ' + data["y"] + 'px; width: ' + data["width"] + 'px; height: ' + data["height"] + 'px; position: absolute; z-index: auto; transform: rotate(' + data["rotation"] + 'deg);" ' +
-			'data-texture="' + data["texture"] + '">' +
+			'style="background: url(\'/static/css/images/myHome/deco/' + data['texture'] + '.png\') no-repeat; background-size: 100% 100%; left: ' + data['x'] + 'px; top: ' + data['y'] + 'px; width: ' + data['width'] + 'px; height: ' + data['height'] + 'px; position: absolute; z-index: auto; transform: rotate(' + data['rotation'] + 'deg);" ' +
+			'data-texture="' + data['texture'] + '">' +
 			'</div>');
 
 		$newDeco.on('click touchstart', function () {
@@ -575,14 +642,16 @@ $(function () {
 		data = snapAngle(data);
 		// noinspection CssUnknownTarget
 		let $newDevice = $('<div class="floorPlan-Device" id="device_'+data['id']+'" ' +
-			'style="background: url(\'Device/'+data['id']+'/icon?random='+ new Date().getTime()+'\') no-repeat; background-size: 100% 100%; left: ' + data["display"]["x"] + 'px; top: ' + data["display"]["y"] + 'px; width: ' + data["display"]["width"] + 'px; height: ' + data["display"]["height"] + 'px; position: absolute; z-index: auto; transform: rotate(' + data["display"]["rotation"] + 'deg);" ' +
-			'data-texture="' + data["deviceType"] + '" data-skill="' + data["skill"] + '" data-id="' + data["id"] + '" data-uid="' + data["uid"] + '" title="'+data['name']+'">' +
+			'style="background: url(\'Device/'+data['id']+'/icon?random='+ new Date().getTime()+'\') no-repeat; background-size: 100% 100%; left: ' + data['display']['x'] + 'px; top: ' + data['display']['y'] + 'px; width: ' + data['display']['width'] + 'px; height: ' + data['display']['height'] + 'px; position: absolute; z-index: auto; transform: rotate(' + data['display']['rotation'] + 'deg);" ' +
+			'data-texture="' + data['deviceType'] + '" data-skill="' + data['skill'] + '" data-id="' + data['id'] + '" data-uid="' + data['uid'] + '" title="'+data['name']+'">' +
 			'</div>');
 
 		$newDevice.on('click touchstart', function () {
 			if(deviceSettingsMode) {
-				let content = "<h1>" + data['name'] + "</h1>";
-				content += "<h2>" + data['deviceType'] + "</h2>";
+				let content = "<div class='sidebarH1'><div id='content'>";
+				content += data['name'];
+				content += "</div><i class='fas fa-pencil-alt link-hover' id='renameDevice'></div></i>";
+				content += "<h3>" + data['deviceType'] + "</h3>";
 
 				if (data['uid'] == 'undefined' || data['uid'] == null) {
 					content += "NO DEVICE PAIRED!<div id='startPair' class='button'>Search Device</div>"
@@ -604,7 +673,7 @@ $(function () {
 				});
 
 				$sideBar.addClass('waiting after_big')
-				$sideBar.sidebar({side: "right"}).trigger("sidebar:open");
+				$sideBar.sidebar({side: 'right'}).trigger("sidebar:open");
 
 // TODO logic for synonyms of devices
 // 				content += "<div class='configBlock'><div class='configLabel'>Synonyms:</div>";
@@ -616,63 +685,42 @@ $(function () {
 					let confLines = '';
 					content = '';
 					$.each(res, function (key, val) {
-						confLines += "<div class='configLabel'>" + key + "</div><input name='" + key + "' class='configInput' value='" + val + "'/>";
+						confLines += "<div class='configLabel'>" + key + "</div><input name='" + key + "' class='saveEnter configInput' value='" + val + "'/>";
 					});
 					if (confLines) {
 						content += "<div class='configBox'><div class='configList'><form id='SetForm' name='config_for_devSet' action='Device/" + data['id'] + "/saveSettings/0' method='post'><div class='configBlock'>";
 						content += confLines
 						content += "</div>";
-						content += "<div class='buttonLine'><input id='SetFormSubmit' class='button' type='submit' value='" + $('#langSave').text() + "'></div>";
 						content += "</form></div></div>";
 
 						$sideBar.append(content);
+						saveEnter();
 
-						// perform submit/save of the form without switching page
-						let form = $('#SetForm');
-						let saveButton = form.find('#SetFormSubmit');
-						// noinspection JSDeprecatedSymbols
-						form.submit(function (event) {
-							saveButton.val($('#langSaving').text());
-							saveButton.addClass('saving');
-							$.post(form.attr('action'), form.serialize())
-								.done(function () {
-									saveButton.val($('#langSaved').text());
-									saveButton.addClass('saved');
-								})
-								.fail(function () {
-									saveButton.val($('#langSaveFailed').text());
-									saveButton.addClass('saveFailed');
-								}).always(
-								function () {
-									saveButton.removeClass('saving');
-								});
-							event.preventDefault();
-						});
-
-						// change button back to save if something was changed
-						$('.configInput').on('change', function () {
-							saveButton.val($('#langSave').text());
-							saveButton.removeClass('saved');
-							saveButton.removeClass('saveFailed');
-						});
-
+						$('#SetForm').on('change', function() {
+							makeDirty();
+						})
 
 					}
 					selectedLinks = null;
 					setSelectedDevice($newDevice, $sideBar);
+
 				});
 
-// TODO Room specific Settings
-				//content += "<div class='configBlock'><div class='configLabel'>Available in following Rooms:</div><input class='configInput'/></div>";
-				//content += "<span class=\"toolbarButton link-hover\" id=\"deviceLinker\" title=\"Link a device with multiple rooms\"><i class=\"fas fa-link\"></i></span>";
-
-
-				// reroute synonym enter to click event
-				$('.configInput').keypress(function (e) {
-					if (e.which == 13) {
-						$(this).parent().children('.configListAdd').click();
-						return false;
+				$('#renameDevice').on('click touchstart', function () {
+					let targetName = $(this).parent().children('#content')
+					let newDevName = prompt($('#langRenameDevice').text(), data['name']);
+					if(newDevName === null){
+						return;
 					}
+					$.post('/myhome/Device/'+data['id']+'/saveCoreSettings', {name : newDevName}).done(function(ret) {
+						if (handleError(ret)) {
+							return;
+						}
+						data['name'] = newDevName;
+						targetName.html(newDevName);
+						let chTitle = $('#device_'+data['id']);
+						chTitle.prop('title', newDevName);
+					});
 				});
 
 				// add new synonym entry to conf. List
@@ -716,7 +764,7 @@ $(function () {
 		});
 
 		$newDevice.on('contextmenu', function () {
-			if (deviceInstallerMode) {
+			if (deviceInstallerMode || deviceMoveMode) {
 				if(confirm($('#langConfDeleteDevice').text())){
 					let $dev = $(this)
 					$.post('Device/'+data['id']+'/delete').done(function (res) {
@@ -850,20 +898,21 @@ $(function () {
 				let zdata = {
 					'id'	 : zoneId,
 					'name'   : zoneName,
-					'x'      : e.pageX - x,
-					'y'      : e.pageY - y,
-					'width'  : 100,
-					'height' : 100,
+					'display': {'x'      : e.pageX - x,
+								'y'      : e.pageY - y,
+								'width'  : 150,
+								'height' : 150},
 					'texture': ''
 				}
 				zoneMode = false;
 				markSelectedTool($('#locationMover'));
 				locationMoveMode = true;
-				$('.zindexer').show();
 				$(this).removeClass(classAddZone);
 				let $zone = newZone(zdata);
-				makeResizableRotatableAndDraggable($(sZone));
+				makeResizableRotatableAndDraggable($zone);
+				$('.zindexer').show();
 				makeDroppable($floorPlan, false);
+				saveRequired();
 			}
 
 		})
@@ -893,13 +942,10 @@ $(function () {
 
 		setSelectedDevice(null);
 
-		$sideBar.sidebar({side: "right"}).trigger("sidebar:close");
+		$sideBar.sidebar({side: 'right'}).trigger("sidebar:close");
 		$('.ui-droppable').droppable('destroy');
 
 		$('#painterTiles, #decoTiles, #constructionTiles, #deviceTiles').hide();
-//		$('#decoTiles').hide();
-//		$('#constructionTiles').hide();
-//		$('#deviceTiles').hide();
 
 		selectedFloor = '';
 		selectedDeco = '';
@@ -1076,7 +1122,7 @@ $(function () {
 										return;
 									}
 									$(newParent).append(ui.draggable);
-								}).fail(function(result) {
+								}).fail(function() {
 									alert("I just can't reach my servers!")
 									errorOccured = true
 							});
@@ -1085,7 +1131,7 @@ $(function () {
 							return;
 						}
 
-						ui.draggable.draggable( "option", "revert", false );
+						ui.draggable.draggable( 'option', 'revert', false );
 					    ui.draggable.css({top: ui.offset.top - $(this).offset().top, left: ui.offset.left - $(this).offset().left } );
 					    if(userConf){
 					    	// no BP while saving: orientation of decoration is lost!
@@ -1093,7 +1139,7 @@ $(function () {
 					    	saveHouse();
 							setBPMode(true);
 						}
-						setTimeout( function() { ui.draggable.draggable( "option", "revert", true ); }, 1000 );
+						setTimeout( function() { ui.draggable.draggable( 'option', 'revert', true ); }, 1000 );
 					}
   				}
 			});
@@ -1145,7 +1191,7 @@ $(function () {
 	}
 
 // load floor tiles
-	for (let i = 1; i <= 79; i++) {
+	for (let i = 1; i <= 80; i++) {
 		let $tile = $('<div class="floorPlan-tile floor-' + i + '"></div>');
 		$tile.on('click touchstart', function () {
 			if (!$(this).hasClass('selected')) {
@@ -1180,34 +1226,65 @@ $(function () {
 
 	$.get('DeviceType/getList').done(function (dats) {
 		$.each(dats, function(k, dat) {
-		let $tile = $('<div class="floorPlan-tile" style="background: url(\'deviceType_static/' + dat['skill'] + '/img/' + dat['deviceType'] + '.png\') no-repeat; background-size: 100% 100%;"></div>');
-		$tile.on('click touchstart', function () {
-			if (!$(this).hasClass('selected')) {
-				$(sTile).removeClass('selected');
-				$(this).addClass('selected');
-				selectedDeviceTypeID = dat['id'];
-			} else {
-				$(this).removeClass('selected');
-				selectedDeviceTypeID = '';
-			}
-		});
-		$('#deviceTiles').append($tile);
+			// noinspection CssUnknownTarget
+			let $tile = $('<div class="floorPlan-tile" style="background: url(\'deviceType_static/' + dat['skill'] + '/img/' + dat['deviceType'] + '.png\') no-repeat; background-size: 100% 100%;"></div>');
+			$tile.on('click touchstart', function () {
+				if (!$(this).hasClass('selected')) {
+					$(sTile).removeClass('selected');
+					$(this).addClass('selected');
+					selectedDeviceTypeID = dat['id'];
+				} else {
+					$(this).removeClass('selected');
+					selectedDeviceTypeID = '';
+				}
+			});
+			$('#deviceTiles').append($tile);
 		});
 	});
 
 	function saveSidebar(){
 		if(dirtyFormulars.length == 0) return;
 		dirtyFormulars.forEach(function (value){
-			//todo add correct form info
-			// wait for response
-			// stop action if not successful
-			value.form.submit();
+
+			//todo move message to config part
+			$('.aliceStatus').html("Saving...")
+			$.ajax({'url'   : value.form.action,
+					'async' : false,
+					'method': 'POST',
+					'data'  : $(value.form).serialize()})
+				.done(function () {
+					saveNotRequired();
+					$('.aliceStatus').html("Saved!")
+					//todo remove 'saved' after a few seconds
+					dirtyFormulars = [];
+				})
+				.fail(function () {
+					$('.aliceStatus').html("Error Saving!");
+					throw new Error("Error Saving!");
+				});
 		});
-		dirtyFormulars = [];
+
 	}
 
 	function saveRequired(){
 		$('#finishToolbarAction > .far').addClass('wiggly');
+		saveSidebar();
+	}
+
+	function saveNotRequired(){
+		$('#finishToolbarAction > .far').removeClass('wiggly');
+	}
+
+	function saveEnter(){
+		// reroute enter save
+		let relevants = $('.saveEnter.configInput');
+		relevants.on('keydown', function(e) {
+			if (e.key == 'Enter') {
+				e.preventDefault();
+				makeDirty(e);
+				return false;
+			}
+		})
 	}
 
 //run logic on startup

@@ -11,6 +11,7 @@ class SyslogView(View):
 	route_base = '/syslog/'
 
 	def index(self):
+		super().index()
 		logger = logging.getLogger('ProjectAlice')
 		history = list()
 		for handler in logger.handlers:
@@ -20,6 +21,5 @@ class SyslogView(View):
 			break
 
 		return render_template(template_name_or_list='syslog.html',
-		                       langData=self._langData,
 		                       history=json.dumps(history, ensure_ascii=False),
-		                       aliceSettings=self.ConfigManager.aliceConfigurations)
+		                       **self._everyPagesRenderValues)

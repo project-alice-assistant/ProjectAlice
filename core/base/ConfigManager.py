@@ -1,42 +1,41 @@
+import inspect
 import json
 import logging
+import typing
 from pathlib import Path
 
-import configTemplate
-from core.base.SuperManager import SuperManager
-from core.base.model.TomlFile import TomlFile
+import toml
 
-try:
-	# noinspection PyUnresolvedReferences,PyPackageRequirements
-	import config
-
-	configFileExist = True
-except ModuleNotFoundError:
-	configFileNotExist = False
-
-import importlib
-import typing
 from core.ProjectAliceExceptions import ConfigurationUpdateFailed, VitalConfigMissing
+from core.base.SuperManager import SuperManager
 from core.base.model.Manager import Manager
+from core.commons import constants
 
 
 class ConfigManager(Manager):
 
-	CONFIG_FILE = 'config.py'
+	TEMPLATE_FILE = Path('configTemplate.json')
+	CONFIG_FILE = Path('config.json')
+	SNIPS_CONF = Path('/etc/snips.toml')
 
 	def __init__(self):
 		super().__init__()
 
+		self.configFileExists = False
+
 		self._vitalConfigs = list()
 		self._aliceConfigurationCategories = list()
 
-		self._aliceConfigurations: typing.Dict[str, typing.Any] = self._loadCheckAndUpdateAliceConfigFile()
-		self._aliceTemplateConfigurations: typing.Dict[str, dict] = configTemplate.settings
+		self._aliceTemplateConfigurations: typing.Dict[str, dict] = self.loadJsonFromFile(self.TEMPLATE_FILE)
+		self._aliceConfigurations: typing.Dict[str, typing.Any] = dict()
 
+		self._loadCheckAndUpdateAliceConfigFile()
 		self._snipsConfigurations = self.loadSnipsConfigurations()
 
 		self._skillsConfigurations = dict()
 		self._skillsTemplateConfigurations: typing.Dict[str, dict] = dict()
+
+		self._pendingAliceConfUpdates = dict()
 
 
 	def onStart(self):
@@ -46,19 +45,31 @@ class ConfigManager(Manager):
 				raise VitalConfigMissing(conf)
 
 
-	def _loadCheckAndUpdateAliceConfigFile(self) -> dict:
+	def _loadCheckAndUpdateAliceConfigFile(self):
 		self.logInfo('Checking Alice configuration file')
 
-		if not configFileExist:
+		try:
+			aliceConfigs = self.loadJsonFromFile(self.CONFIG_FILE)
+		except Exception:
+			self.logWarning(f'No {str(self.CONFIG_FILE)} found.')
+			aliceConfigs = dict()
+
+		if not aliceConfigs:
 			self.logInfo('Creating config file from config template')
-			confs = {configName: configData['defaultValue'] if 'defaultValue' in configData else configData for configName, configData in configTemplate.settings.items()}
-			Path(self.CONFIG_FILE).write_text(f'settings = {json.dumps(confs, indent=4)}')
-			aliceConfigs = importlib.import_module(self.CONFIG_FILE).settings.copy()
-		else:
-			aliceConfigs = config.settings.copy()
+			aliceConfigs = {configName: configData['defaultValue'] if 'defaultValue' in configData else configData for configName, configData in self._aliceTemplateConfigurations.items()}
+			self.CONFIG_FILE.write_text(json.dumps(aliceConfigs, indent=4, ensure_ascii=False))
 
 		changes = False
-		for setting, definition in configTemplate.settings.items():
+
+		# most important: uuid is always required!
+		if not aliceConfigs.get('uuid', None):
+			import uuid
+
+			##uuid4: no collission expected until extinction of all life (only on earth though!)
+			aliceConfigs['uuid'] = str(uuid.uuid4())
+			changes = True
+
+		for setting, definition in self._aliceTemplateConfigurations.items():
 
 			if definition['category'] not in self._aliceConfigurationCategories:
 				self._aliceConfigurationCategories.append(definition['category'])
@@ -91,29 +102,91 @@ class ConfigManager(Manager):
 						aliceConfigs[setting] = definition['defaultValue']
 
 		# Setting logger level immediately
+		if aliceConfigs['advancedDebug'] and not aliceConfigs['debug']:
+			aliceConfigs['debug'] = True
+			changes = True
+
 		if aliceConfigs['debug']:
 			logging.getLogger('ProjectAlice').setLevel(logging.DEBUG)
 
 		temp = aliceConfigs.copy()
 		for key in temp:
-			if key not in configTemplate.settings:
+			if key not in self._aliceTemplateConfigurations:
 				self.logInfo(f'Deprecated configuration: **{key}**')
 				changes = True
 				del aliceConfigs[key]
 
 		if changes:
 			self.writeToAliceConfigurationFile(aliceConfigs)
+		else:
+			self._aliceConfigurations = aliceConfigs
 
-		return aliceConfigs
+
+	@staticmethod
+	def loadJsonFromFile(jsonFile: Path) -> dict:
+		try:
+			return json.loads(jsonFile.read_text())
+		except:
+			# Prevents failing for caller
+			raise
 
 
 	def updateAliceConfiguration(self, key: str, value: typing.Any):
+		"""
+		Updating a core config is sensitive, if the request comes from a skill.
+		First check if the request came from a skill at anytime and if so ask permission
+		to the user
+		:param key: str
+		:param value: str
+		:return: None
+		"""
+
+		rootSkills = [name.lower() for name in self.SkillManager.NEEDED_SKILLS]
+		callers = [inspect.getmodulename(frame[1]).lower() for frame in inspect.stack()]
+		if 'aliceskill' in callers:
+			skillName = callers[callers.index("aliceskill") + 1]
+			if skillName not in rootSkills:
+				self._pendingAliceConfUpdates[key] = value
+				self.logWarning(f'Skill **{skillName}** is trying to modify a core configuration')
+
+				self.ThreadManager.doLater(
+					interval=2,
+					func=self.MqttManager.publish,
+					kwargs={
+						'topic': constants.TOPIC_SKILL_UPDATE_CORE_CONFIG_WARNING,
+						'payload': {
+							'skill': skillName,
+							'key'  : key,
+							'value': value
+						}
+					}
+				)
+				return
+
 		if key not in self._aliceConfigurations:
 			self.logWarning(f'Was asked to update **{key}** but key doesn\'t exist')
 			raise ConfigurationUpdateFailed()
 
 		self._aliceConfigurations[key] = value
-		self.writeToAliceConfigurationFile(self.aliceConfigurations)
+		self.writeToAliceConfigurationFile()
+
+
+	def bulkUpdateAliceConfigurations(self):
+		if not self._pendingAliceConfUpdates:
+			return
+
+		for key, value in self._pendingAliceConfUpdates.items():
+			if key not in self._aliceConfigurations:
+				self.logWarning(f'Was asked to update **{key}** but key doesn\'t exist')
+				continue
+			self._aliceConfigurations[key] = value
+
+		self.writeToAliceConfigurationFile()
+		self.deletePendingAliceConfigurationUpdates()
+
+
+	def deletePendingAliceConfigurationUpdates(self):
+		self._pendingAliceConfUpdates = dict()
 
 
 	def updateSkillConfigurationFile(self, skillName: str, key: str, value: typing.Any):
@@ -154,29 +227,63 @@ class ConfigManager(Manager):
 				self.logWarning(f'Value missmatch for config **{key}** in skill **{skillName}**')
 				value = ''
 
+		skillInstance = self.SkillManager.getSkillInstance(skillName=skillName, silent=True)
+		if self._skillsTemplateConfigurations[skillName][key].get('beforeUpdate', None):
+			if not skillInstance:
+				self.logWarning(f'Needed to execute an action before updating a config value for skill **{skillName}** but the skill is not running')
+			else:
+				function = self._skillsTemplateConfigurations[skillName][key]['beforeUpdate']
+				try:
+					func = getattr(skillInstance, function)
+				except AttributeError:
+					self.logWarning(f'Configuration pre processing method **{function}** for skill **{skillName}** does not exist')
+				else:
+					try:
+						if not func(value):
+							self.logWarning(f'Configuration pre processing method **{function}** for skill **{skillName}** returned False, cancel setting update')
+							return
+					except Exception as e:
+						self.logError(f'Configuration pre processing method **{function}** for skill **{skillName}** failed: {e}')
+
 		self._skillsConfigurations[skillName][key] = value
 		self._writeToSkillConfigurationFile(skillName, self._skillsConfigurations[skillName])
 
+		if self._skillsTemplateConfigurations[skillName][key].get('onUpdate', None):
+			if not skillInstance:
+				self.logWarning(f'Needed to execute an action after updating a config value for skill **{skillName}** but the skill is not running')
+			else:
+				function = self._skillsTemplateConfigurations[skillName][key]['onUpdate']
+				try:
+					func = getattr(skillInstance, function)
+				except AttributeError:
+					self.logWarning(f'Configuration post processing method **{function}** for skill **{skillName}** does not exist')
+				else:
+					try:
+						if not func(value):
+							self.logWarning(f'Configuration post processing method **{function}** for skill **{skillName}** returned False')
+					except Exception as e:
+						self.logError(f'Configuration post processing method **{function}** for skill **{skillName}** failed: {e}')
 
-	def writeToAliceConfigurationFile(self, confs: dict):
+
+	def writeToAliceConfigurationFile(self, confs: dict = None):
 		"""
-		Saves the given configuration into config.py
+		Saves the given configuration into config.json
 		:param confs: the dict to save
 		"""
+		confs = confs if confs else self._aliceConfigurations
+
 		sort = dict(sorted(confs.items()))
 		self._aliceConfigurations = sort
 
 		try:
-			confString = json.dumps(sort, indent=4).replace('false', 'False').replace('true', 'True')
-			Path(self.CONFIG_FILE).write_text(f'settings = {confString}')
-			importlib.reload(config)
+			self.CONFIG_FILE.write_text(json.dumps(sort, indent=4, sort_keys=True))
 		except Exception:
 			raise ConfigurationUpdateFailed()
 
 
 	def _writeToSkillConfigurationFile(self, skillName: str, confs: dict):
 		"""
-		Saves the given configuration into config.py of the Skill
+		Saves the given configuration into config.json of the Skill
 		:param skillName: the targeted skill
 		:param confs: the dict to save
 		"""
@@ -186,60 +293,59 @@ class ConfigManager(Manager):
 		confsCleaned = {key: value for key, value in confs.items() if key not in misterProper}
 
 		skillConfigFile = Path(self.Commons.rootDir(), 'skills', skillName, 'config.json')
-		skillConfigFile.write_text(json.dumps(confsCleaned, indent=4))
+		skillConfigFile.write_text(json.dumps(confsCleaned, indent=4, ensure_ascii=False, sort_keys=True))
 
 
-	def loadSnipsConfigurations(self) -> TomlFile:
+	def loadSnipsConfigurations(self) -> dict:
 		self.logInfo('Loading Snips configuration file')
+		if not self.SNIPS_CONF.exists():
+			self.Commons.runRootSystemCommand(['cp', Path(self.Commons.rootDir(), 'system/snips/snips.toml'), self.SNIPS_CONF])
 
-		snipsConfigPath = Path('/etc/snips.toml')
-		snipsConfigTemplatePath = Path(self.Commons.rootDir(), 'system/snips/snips.toml')
-
-		if not snipsConfigPath.exists():
-			self.Commons.runRootSystemCommand(['cp', snipsConfigTemplatePath, '/etc/snips.toml'])
-			snipsConfigPath = snipsConfigTemplatePath
-
-		snipsConfig = TomlFile.loadToml(snipsConfigPath)
-
-		return snipsConfig
+		return toml.load(str(self.SNIPS_CONF))
 
 
-	def updateSnipsConfiguration(self, parent: str, key: str, value, restartSnips: bool = False, createIfNotExist: bool = True):
+	def updateSnipsConfiguration(self, parent: str, key: str, value, restartSnips: bool = False, createIfNotExist: bool = False, silent: bool = False):
 		"""
 		Setting a config in snips.toml
+		:param silent: output warnings or not
+		:param createIfNotExist: bool create the missing parent key value if not present
 		:param parent: Parent key in toml
 		:param key: Key in that parent key
 		:param value: The value to set
 		:param restartSnips: Whether to restart Snips or not after changing the value
-		:param createIfNotExist: If the parent key or the key doesn't exist do create it
 		"""
 
-		config = self.getSnipsConfiguration(parent=parent, key=key, createIfNotExist=createIfNotExist)
-		if config is not None:
-			self._snipsConfigurations[parent][key] = value
-			self._snipsConfigurations.dump()
+		config = self.getSnipsConfiguration(parent=parent, key=key)
+		if config is None:
+			if createIfNotExist:
+				self._snipsConfigurations.setdefault(parent, dict()).setdefault(key, value)
+				self.SNIPS_CONF.write_text(toml.dumps(self._snipsConfigurations))
+			elif not silent:
+				self.logWarning(f'Tried to set **{parent}/{key}** in snips configuration but key was not found')
+		else:
+			currentValue = self._snipsConfigurations[parent][key]
+			if currentValue != value:
+				self._snipsConfigurations[parent][key] = value
+				self.SNIPS_CONF.write_text(toml.dumps(self._snipsConfigurations))
+			else:
+				restartSnips = False
 
-			if restartSnips:
-				self.Commons.runRootSystemCommand(['systemctl', 'restart', 'snips-nlu'])
+		if restartSnips:
+			self.Commons.runRootSystemCommand(['systemctl', 'restart', 'snips-nlu'])
 
 
-	def getSnipsConfiguration(self, parent: str, key: str, createIfNotExist: bool = True) -> typing.Optional[str]:
+	def getSnipsConfiguration(self, parent: str, key: str, silent: bool = False) -> typing.Optional[str]:
 		"""
 		Getting a specific configuration from snips.toml
+		:param silent: whether to print warning or not
 		:param parent: parent key
 		:param key: key within parent conf
-		:param createIfNotExist: If that conf doesn't exist, create it
 		:return: config value
 		"""
-		if createIfNotExist and key not in self._snipsConfigurations[parent]:
-			conf = self._snipsConfigurations[parent][key]  # TomlFile does auto create missing keys
-			self._snipsConfigurations.dump()
-			return conf
 
-		config = self._snipsConfigurations[parent].get(key, None)
-		if config is None:
+		config = self._snipsConfigurations.get(parent, dict()).get(key, None)
+		if config is None and not silent:
 			self.logWarning(f'Tried to get **{parent}/{key}** in snips configuration but key was not found')
-			return config
 
 		return config
 
@@ -286,7 +392,7 @@ class ConfigManager(Manager):
 
 			self.logInfo(f'Checking configuration for skill **{skillName}**')
 
-			skillConfigFile = skillInstance.getResource('config.json')
+			skillConfigFile = skillInstance.getResource(str(self.CONFIG_FILE))
 			skillConfigTemplate = skillInstance.getResource('config.json.template')
 			config = dict()
 
@@ -348,7 +454,10 @@ class ConfigManager(Manager):
 			if config:
 				skillsConfigurations[skillName] = config
 
-		self._skillsConfigurations = {**self._skillsConfigurations, **skillsConfigurations}
+		if not skillToLoad:
+			self._skillsConfigurations = skillsConfigurations.copy()
+		else:
+			self._skillsConfigurations[skillToLoad] = skillsConfigurations[skillToLoad].copy()
 
 
 	def _newSkillConfigFile(self, skillName: str, skillConfigTemplate: Path):
@@ -381,12 +490,12 @@ class ConfigManager(Manager):
 
 	def getAliceConfUpdatePreProcessing(self, confName: str) -> typing.Optional[str]:
 		# Some config need some pre processing to run some checks before saving
-		return self._aliceTemplateConfigurations.get(confName, dict()).get('beforeUpdate')
+		return self._aliceTemplateConfigurations.get(confName, dict()).get('beforeUpdate', None)
 
 
 	def getAliceConfUpdatePostProcessing(self, confName: str) -> typing.Optional[str]:
 		# Some config need some post processing if updated while Alice is running
-		return self._aliceTemplateConfigurations.get(confName, dict()).get('onUpdate')
+		return self._aliceTemplateConfigurations.get(confName, dict()).get('onUpdate', None)
 
 
 	def doConfigUpdatePreProcessing(self, function: str, value: typing.Any) -> bool:
@@ -422,10 +531,10 @@ class ConfigManager(Manager):
 
 
 	def updateMqttSettings(self):
-		self.ConfigManager.updateSnipsConfiguration('snips-common', 'mqtt', f'{self.getAliceConfigByName("mqttHost")}:{self.getAliceConfigByName("mqttPort"):}', False, False)
-		self.ConfigManager.updateSnipsConfiguration('snips-common', 'mqtt_username', self.getAliceConfigByName('mqttHost'), False, False)
-		self.ConfigManager.updateSnipsConfiguration('snips-common', 'mqtt_password', self.getAliceConfigByName('mqttHost'), False, False)
-		self.ConfigManager.updateSnipsConfiguration('snips-common', 'mqtt_tls_cafile', self.getAliceConfigByName('mqttHost'), True, False)
+		self.ConfigManager.updateSnipsConfiguration('snips-common', 'mqtt', f'{self.getAliceConfigByName("mqttHost")}:{self.getAliceConfigByName("mqttPort"):}', False, True)
+		self.ConfigManager.updateSnipsConfiguration('snips-common', 'mqtt_username', self.getAliceConfigByName('mqttHost'), False, True)
+		self.ConfigManager.updateSnipsConfiguration('snips-common', 'mqtt_password', self.getAliceConfigByName('mqttHost'), False, True)
+		self.ConfigManager.updateSnipsConfiguration('snips-common', 'mqtt_tls_cafile', self.getAliceConfigByName('mqttHost'), True, True)
 		self.reconnectMqtt()
 
 
@@ -509,7 +618,7 @@ class ConfigManager(Manager):
 
 
 	@property
-	def snipsConfigurations(self) -> TomlFile:
+	def snipsConfigurations(self) -> dict:
 		return self._snipsConfigurations
 
 

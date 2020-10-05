@@ -28,7 +28,6 @@ class SuperManager:
 		self.languageManager = None
 		self.asrManager = None
 		self.ttsManager = None
-		self.protectedIntentManager = None
 		self.threadManager = None
 		self.mqttManager = None
 		self.timeManager = None
@@ -63,6 +62,12 @@ class SuperManager:
 
 		languageManager = self._managers.pop('LanguageManager')
 		languageManager.onStart()
+
+		locationManager = self._managers.pop('LocationManager')
+		locationManager.onStart()
+
+		deviceManager = self._managers.pop('DeviceManager')
+		deviceManager.onStart()
 
 		audioServer = self._managers.pop('AudioManager')
 		audioServer.onStart()
@@ -100,6 +105,8 @@ class SuperManager:
 		self._managers[configManager.name] = configManager
 		self._managers[audioServer.name] = audioServer
 		self._managers[languageManager.name] = languageManager
+		self._managers[locationManager.name] = locationManager
+		self._managers[deviceManager.name] = deviceManager
 		self._managers[talkManager.name] = talkManager
 		self._managers[databaseManager.name] = databaseManager
 		self._managers[userManager.name] = userManager
@@ -113,11 +120,11 @@ class SuperManager:
 
 
 	def onBooted(self):
+		self.mqttManager.playSound(soundFilename='boot')
+
 		for manager in self._managers.values():
 			if manager:
 				manager.onBooted()
-
-		self.threadManager.doLater(interval=0.5, func=self.mqttManager.playSound, kwargs={'soundFilename': 'boot'})
 
 
 	@staticmethod
@@ -132,7 +139,6 @@ class SuperManager:
 		from core.device.DeviceManager import DeviceManager
 		from core.device.LocationManager import LocationManager
 		from core.dialog.MultiIntentManager import MultiIntentManager
-		from core.dialog.ProtectedIntentManager import ProtectedIntentManager
 		from core.server.MqttManager import MqttManager
 		from core.user.UserManager import UserManager
 		from core.util.DatabaseManager import DatabaseManager
@@ -159,20 +165,19 @@ class SuperManager:
 		self.commonsManager = CommonsManager()
 		self.commons = self.commonsManager
 		self.configManager = ConfigManager()
-		self.audioManager = AudioManager()
 		self.databaseManager = DatabaseManager()
+		self.skillManager = SkillManager()
+		self.deviceManager = DeviceManager()
+		self.audioManager = AudioManager()
 		self.languageManager = LanguageManager()
 		self.asrManager = ASRManager()
 		self.ttsManager = TTSManager()
 		self.threadManager = ThreadManager()
-		self.protectedIntentManager = ProtectedIntentManager()
 		self.mqttManager = MqttManager()
 		self.timeManager = TimeManager()
 		self.userManager = UserManager()
 		self.multiIntentManager = MultiIntentManager()
 		self.telemetryManager = TelemetryManager()
-		self.skillManager = SkillManager()
-		self.deviceManager = DeviceManager()
 		self.locationManager = LocationManager()
 		self.internetManager = InternetManager()
 		self.wakewordRecorder = WakewordRecorder()

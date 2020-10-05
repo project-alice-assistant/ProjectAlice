@@ -23,10 +23,21 @@ class Location(ProjectAliceObject):
 		self.display = dict()
 		if 'display' in self.data.keys() and self.data['display']:
 			self.display = ast.literal_eval(self.data['display'])
+		else:
+			self.display = {'width'  : 150,
+							'height' : 150},
 
 
 	def getSaveName(self) -> str:
 		return self.name.replace(' ', '_')
+
+
+	def changeName(self, newName: str):
+		self.name = newName
+		self.DatabaseManager.update(tableName=self.LocationManager.TABLE,
+		                            callerName=self.LocationManager.name,
+		                            values={'name': newName},
+		                            row=('id', self.id))
 
 
 	def addSynonym(self, synonym: str) -> list:

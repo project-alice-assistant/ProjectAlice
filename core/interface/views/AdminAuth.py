@@ -13,10 +13,11 @@ class AdminAuth(View):
 
 	nextPage = 'index'
 	user = None
-	linkedSnipsSession = None
+	linkedSession = None
 
 
 	def index(self):
+		super().index()
 		try:
 			self.__class__.setNextPage(request.args.get('next'))
 		except:
@@ -25,10 +26,12 @@ class AdminAuth(View):
 		if current_user.is_authenticated:
 			return redirect(self.__class__.nextPage)
 
-		self.SkillManager.getSkillInstance('AliceCore').explainInterfaceAuth()
+		alice = self.SkillManager.getSkillInstance('AliceCore')
+		if self.ProjectAlice.isBooted and alice:
+			alice.explainInterfaceAuth()
+
 		return render_template(template_name_or_list='adminAuth.html',
-		                       langData=self._langData,
-		                       aliceSettings=self.ConfigManager.aliceConfigurations)
+		                       **self._everyPagesRenderValues)
 
 
 	def checkAuthState(self):
@@ -75,8 +78,8 @@ class AdminAuth(View):
 
 	def keyboardAuth(self):
 		self.SkillManager.getSkillInstance('AliceCore').authWithKeyboard()
-		if self.__class__.linkedSnipsSession is not None:
-			self.MqttManager.endSession(sessionId=self.__class__.linkedSnipsSession.sessionId)
+		if self.__class__.linkedSession is not None:
+			self.MqttManager.endSession(sessionId=self.__class__.linkedSession.sessionId)
 		return jsonify(success=True)
 
 
@@ -101,5 +104,5 @@ class AdminAuth(View):
 
 
 	@classmethod
-	def setLinkedSnipsSession(cls, session: DialogSession):
-		cls.linkedSnipsSession = session
+	def setLinkedSession(cls, session: DialogSession):
+		cls.linkedSession = session

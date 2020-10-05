@@ -1,0 +1,231 @@
+{
+	"type": "object",
+	"patternProperties": {
+		"^[a-z][a-zA-Z]+$": {
+			"type": "object",
+			"required": [
+				"defaultValue",
+				"dataType",
+				"isSensitive",
+				"description",
+				"category"
+			],
+			"properties": {
+				"defaultValue": {},
+				"values"      : {},
+				"min"         : {},
+				"max"         : {},
+				"step"        : {},
+				"help"        : {
+					"type"     : "string",
+					"minLength": 10,
+					"pattern"  : "^[A-Z].*$"
+				},
+				"dataType"    : {
+					"type": "string",
+					"enum": [
+						"string",
+						"boolean",
+						"integer",
+						"float",
+						"list",
+						"range",
+						"longstring"
+					]
+				},
+				"category"    : {
+					"type": "string",
+					"enum": [
+						"asr",
+						"nlu",
+						"system",
+						"device",
+						"credentials",
+						"mqtt",
+						"tts",
+						"wakeword",
+						"advanced debug"
+					]
+				},
+				"isSensitive" : {
+					"type": "boolean"
+				},
+				"hidden"      : {
+					"type": "boolean"
+				},
+				"description" : {
+					"type"     : "string",
+					"minLength": 10,
+					"pattern"  : "^[A-Z].*$"
+				},
+				"display"     : {
+					"type": "string",
+					"enum": [
+						"hidden"
+					]
+				},
+				"beforeUpdate": {
+					"type"   : "string",
+					"pattern": "^[a-z].*$"
+				},
+				"onUpdate"    : {
+					"type"   : "string",
+					"pattern": "^[a-z].*$"
+				},
+				"parent"      : {
+					"type"      : "object",
+					"required"  : [
+						"config",
+						"condition",
+						"value"
+					],
+					"properties": {
+						"config": {
+							"type": "string"
+						},
+						"condition": {
+							"type": "string",
+							"enum": [
+								"is",
+								"isnot",
+								"isgreater",
+								"islower"
+							]
+						},
+						"value": {
+							"type": ["string", "number", "integer", "boolean"]
+						}
+					}
+				}
+			},
+			"allOf": [
+				{
+					"if": {
+						"properties": {
+							"dataType": {
+								"const": "string"
+							}
+						}
+					},
+					"then": {
+						"properties": {
+							"defaultValue": {
+								"type": "string"
+							}
+						}
+					}
+				},
+				{
+					"if": {
+						"properties": {
+							"dataType": {
+								"const": "boolean"
+							}
+						}
+					},
+					"then": {
+						"properties": {
+							"defaultValue": {
+								"type": "boolean"
+							}
+						}
+					}
+				},
+				{
+					"if": {
+						"properties": {
+							"dataType": {
+								"const": "integer"
+							}
+						}
+					},
+					"then": {
+						"properties": {
+							"defaultValue": {
+								"type": "integer"
+							}
+						}
+					}
+				},
+				{
+					"if": {
+						"properties": {
+							"dataType": {
+								"const": "float"
+							}
+						}
+					},
+					"then": {
+						"properties": {
+							"defaultValue": {
+								"type": "number"
+							}
+						}
+					}
+				},
+				{
+					"if": {
+						"properties": {
+							"dataType": {
+								"const": "list"
+							}
+						}
+					},
+					"then": {
+						"properties": {
+							"defaultValue": {
+								"type": ["string", "object"]
+							},
+							"values": {
+								"type": ["array", "object"]
+							}
+						}
+					}
+				},
+				{
+					"if": {
+						"properties": {
+							"dataType": {
+								"const": "longstring"
+							}
+						}
+					},
+					"then": {
+						"properties": {
+							"defaultValue": {
+								"type": "string"
+							}
+						}
+					}
+				},
+				{
+					"if": {
+						"properties": {
+							"dataType": {
+								"const": "range"
+							}
+						}
+					},
+					"then": {
+						"properties": {
+							"defaultValue": {
+								"type": "number"
+							},
+							"min": {
+								"type": "number"
+							},
+							"max": {
+								"type": "number"
+							},
+							"step": {
+								"type": "number"
+							}
+						}
+					}
+				}
+			],
+			"additionalProperties": false
+		}
+	},
+	"additionalProperties": false
+}

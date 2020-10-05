@@ -1,48 +1,33 @@
 import ast
 import json
-from dataclasses import dataclass, field
 
 from core.base.model.ProjectAliceObject import ProjectAliceObject
 from core.commons import constants
 from core.device.model.Location import Location
 
 
-@dataclass
 class Device(ProjectAliceObject):
-	data: dict
-	connected: bool = False
-	name: str = ''
-	lastContact: int = 0
-	locationID: int = 0
 
-	id: int = field(init=False)
-	deviceTypeID: int = field(init=False)
-	uid: str = field(init=False)
-	_display: dict = field(default_factory=dict)
-	_devSettings: dict = field(default_factory=dict)
-	_customValues: dict = field(default_factory=dict)
+	def __init__(self, data):
+		super().__init__()
 
+		self.data: dict = data
+		self.connected: bool = False
 
-	def __post_init__(self):  # NOSONAR
-		self.id = self.data['id']
-		self.deviceTypeID = self.data['typeID']
+		self.id: int = self.data['id']
+		self.deviceTypeID: int = self.data['typeID']
+		self.locationID = self.data['locationID'] if self.data['locationID'] else 0
+		self.uid: str = self.data['uid']
 
-		self.uid = self.data['uid']
-		self.locationID = self.data['locationID']
-		if 'display' in self.data.keys() and self.data['display']:
-			self._display = ast.literal_eval(self.data['display'])
-		else:
-			self._display = dict()
+		self.name = self.data['name'] if 'name' in self.data.keys() else ''
 
-		if 'devSettings' in self.data.keys() and self.data['devSettings']:
-			self._devSettings = ast.literal_eval(self.data['devSettings'])
-		else:
-			self._devSettings = dict()
+		self.skillName = self.data['skillName'] if 'skillName' in self.data.keys() else ''
 
-		if 'customValues' in self.data.keys() and self.data['customValues']:
-			self._customValues = ast.literal_eval(self.data['customValues'])
-		else:
-			self._customValues = dict()
+		self._display = ast.literal_eval(self.data['display']) if 'display' in self.data.keys() and self.data['display'] else dict()
+		self._devSettings = ast.literal_eval(self.data['devSettings']) if 'devSettings' in self.data.keys() and self.data['devSettings'] else dict()
+		self._customValues = ast.literal_eval(self.data['customValues']) if 'customValues' in self.data.keys() and self.data['customValues'] else dict()
+
+		self.lastContact: int = 0
 
 
 	def replace(self, needle: str, haystack: str) -> str:
@@ -92,7 +77,7 @@ class Device(ProjectAliceObject):
 			'id'          : self.id,
 			'deviceTypeID': self.deviceTypeID,
 			'deviceType'  : self.getDeviceType().name,
-			'skill'       : self.getDeviceType().skill,
+			'skillName'   : self.skillName,
 			'name'        : self.name,
 			'uid'         : self.uid,
 			'locationID'  : self.locationID,
@@ -118,10 +103,18 @@ class Device(ProjectAliceObject):
 		self.getDeviceType().onChangedLocation(device=self)
 
 
+	def changeName(self, newName: str):
+		self.name = newName
+		self.DatabaseManager.update(tableName=self.DeviceManager.DB_DEVICE,
+		                            callerName=self.DeviceManager.name,
+		                            values={'name': newName},
+		                            row=('id', self.id))
+
+
 	def saveDevSettings(self):
 		self.DatabaseManager.update(tableName=self.DeviceManager.DB_DEVICE,
 		                            callerName=self.DeviceManager.name,
-		                            values={'devSettings': self.devSettings},
+		                            values={'devSettings': json.dumps(self.devSettings)},
 		                            row=('id', self.id))
 
 
@@ -189,3 +182,10 @@ class Device(ProjectAliceObject):
 	@property
 	def skill(self) -> str:
 		return self.getDeviceType().skill
+
+
+	def __repr__(self):
+		return f'Device({self.id} - {self.name}, UID({self.uid}), Location({self.locationID}))'
+
+	def __eq__(self, other):
+		return other and self.id == other.id
