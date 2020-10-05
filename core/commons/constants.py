@@ -14,6 +14,7 @@ SKILL_INSTALL_TICKET_PATH = 'system/skillInstallTickets'
 GITHUB_URL = 'https://github.com/project-alice-assistant'
 GITHUB_RAW_URL = 'https://raw.githubusercontent.com/project-alice-assistant'
 GITHUB_API_URL = 'https://api.github.com/repos/project-alice-assistant'
+SKILL_REDIRECT_URL = 'https://skills.projectalice.ch'
 GITHUB_REPOSITORY_ID = 193512918
 JSON_EXT = '.json'
 

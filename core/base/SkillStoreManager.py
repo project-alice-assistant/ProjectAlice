@@ -43,7 +43,7 @@ class SkillStoreManager(Manager):
 		versionMapping = self._skillStoreData.get(skillName, dict()).get('versionMapping', dict())
 
 		userUpdatePref = self.ConfigManager.getAliceConfigByName('skillsUpdateChannel')
-		skillUpdateVersion = (Version(), 'master')
+		skillUpdateVersion = (Version(), '')
 
 		aliceVersion = Version.fromString(constants.VERSION)
 		for aliceMinVersion, repoVersion in versionMapping.items():
@@ -69,11 +69,17 @@ class SkillStoreManager(Manager):
 
 
 	def getSkillUpdateTag(self, skillName: str) -> str:
-		return self._getSkillUpdateVersion(skillName)[1]
+		try:
+			return self._getSkillUpdateVersion(skillName)[1]
+		except GithubNotFound:
+			raise
 
 
 	def getSkillUpdateVersion(self, skillName: str) -> Version:
-		return self._getSkillUpdateVersion(skillName)[0]
+		try:
+			return self._getSkillUpdateVersion(skillName)[0]
+		except GithubNotFound:
+			raise
 
 
 	def getSkillData(self, skillName: str) -> dict:
