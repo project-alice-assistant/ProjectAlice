@@ -293,7 +293,7 @@ class ConfigManager(Manager):
 		confsCleaned = {key: value for key, value in confs.items() if key not in misterProper}
 
 		skillConfigFile = Path(self.Commons.rootDir(), 'skills', skillName, 'config.json')
-		skillConfigFile.write_text(json.dumps(confsCleaned, indent=4))
+		skillConfigFile.write_text(json.dumps(confsCleaned, indent=4, ensure_ascii=False))
 
 
 	def loadSnipsConfigurations(self) -> dict:
@@ -454,7 +454,10 @@ class ConfigManager(Manager):
 			if config:
 				skillsConfigurations[skillName] = config
 
-		self._skillsConfigurations = {**self._skillsConfigurations, **skillsConfigurations}
+		if not skillToLoad:
+			self._skillsConfigurations = skillsConfigurations.copy()
+		else:
+			self._skillsConfigurations[skillToLoad] = skillsConfigurations[skillToLoad].copy()
 
 
 	def _newSkillConfigFile(self, skillName: str, skillConfigTemplate: Path):
