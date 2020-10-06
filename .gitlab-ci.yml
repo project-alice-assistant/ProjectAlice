@@ -2,10 +2,11 @@ stages:
   - test
 
 test:
-  image: python:slim-buster
+  image: python:3.7
   before_script:
     - python3 -m pip install --upgrade pip
-    - pip3 install -r requirements.txt
-    - pip3 install nose2
   script:
-    - nose2 -v
+    - python -m pip install --upgrade pip
+    - pip install -r requirements.txt
+    - pip install -r requirements_test.txt
+    - pytest tests/unittests/ --cov=core   --cov-report xml:../result.xml
