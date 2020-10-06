@@ -139,7 +139,6 @@ class AliceSkill(ProjectAliceObject):
 				intent = item[0]
 				if not isinstance(intent, Intent):
 					intent = Intent(intent, userIntent=False)
-
 				intent.fallbackFunction = item[1]
 				item = intent
 			elif not isinstance(item, Intent):

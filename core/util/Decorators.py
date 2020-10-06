@@ -32,10 +32,11 @@ def deprecated(func):
 	return wrapper
 
 
-def IntentHandler(intent: Union[str, Intent], requiredState: str = None, authLevel: AccessLevel = AccessLevel.ZERO): #NOSONAR
+def IntentHandler(intent: Union[str, Intent], requiredState: str = None, authLevel: AccessLevel = AccessLevel.ZERO, userIntent: bool = True):  # NOSONAR
 	"""Decorator for adding a method as an intent handler."""
 	if isinstance(intent, str):
-		intent = Intent(intent, authLevel=authLevel)
+		intent = Intent(intent, authLevel=authLevel, userIntent=userIntent)
+
 
 	def wrapper(func):
 		# store the intent in the function
