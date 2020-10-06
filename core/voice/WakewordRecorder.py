@@ -283,7 +283,7 @@ class WakewordRecorder(Manager):
 			if uid and device.uid != uid:
 				continue
 
-			port = 8080 + len(self._wakewordUploadThreads)
+			port = 8600 + len(self._wakewordUploadThreads)
 
 			payload = {
 				'ip'  : self.Commons.getLocalIp(),
