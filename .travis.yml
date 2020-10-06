@@ -11,8 +11,7 @@ git:
 addons:
   sonarcloud:
     organization: "project-alice-assistant"
-    token:
-      secure: $SONAR_TOKEN
+    token: $SONAR_TOKEN
 
 before_install:
   - sudo apt-get update
