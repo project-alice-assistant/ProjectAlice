@@ -1,4 +1,6 @@
+version: ~> 1.0
 language: python
+os: linux
 dist: xenial
 python:
   - "3.7"
