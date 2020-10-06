@@ -10,14 +10,11 @@ from core.util.Decorators import IntentHandler, MqttHandler
 
 class TestAliceSkill(unittest.TestCase):
 
-	@mock.patch('core.util.Decorators.Intent.ConfigManager', new_callable=PropertyMock)
-	def testFindDecoratedIntents(self, mock_config, mock_protected):
+	@mock.patch('core.base.ConfigManager.ConfigManager', new_callable=PropertyMock)
+	def testFindDecoratedIntents(self, mock_config):
 		owner_mock = MagicMock()
 		owner_mock.getAliceConfigByName.return_value = 'unittest'
 		mock_config.return_value = owner_mock
-
-		property_mock = MagicMock()
-		mock_protected.return_value = property_mock
 
 		class ExampleSkill(AliceSkill):
 
@@ -34,55 +31,54 @@ class TestAliceSkill(unittest.TestCase):
 
 			@IntentHandler('intent2', requiredState='exampleState')
 			@IntentHandler('intent3')
+			@IntentHandler('intent4')
 			def multiple_decorator(self, *args, **kwargs):
 				return self, args, kwargs
 
 
-			@MqttHandler('hermes/intent/unittest:intent2', requiredState='exampleState2')
+			@MqttHandler('hermes/intent/intent2', requiredState='exampleState2')
 			def mqtt_decorator(self, *args, **kwargs):
 				return self, args, kwargs
+
 
 		exampleSkill = ExampleSkill()
 
 		mappings = exampleSkill.findDecoratedIntents()
-		self.assertEqual(property_mock.protectIntent.call_count, 2)
 
 		intent1 = mappings[str(Intent('intent1'))]
 		intent2 = mappings[str(Intent('intent2'))]
 		intent3 = mappings[str(Intent('intent3'))]
+		intent4 = mappings[str(Intent('intent4'))]
 
-		self.assertFalse(intent1.protected)
-		self.assertEqual(intent1.authOnly, AccessLevel.ADMIN)
+		self.assertEqual(intent1.authLevel, AccessLevel.ADMIN)
 		self.assertEqual(intent1.fallbackFunction, exampleSkill.single_decorator)
 		self.assertEqual(intent1.dialogMapping, dict())
-		self.assertEqual(str(intent1), 'hermes/intent/unittest:intent1')
+		self.assertEqual(str(intent1), 'hermes/intent/intent1')
 
-		self.assertFalse(intent2.protected)
-		self.assertEqual(intent2.authOnly, 0)
+		self.assertEqual(intent2.authLevel, 0)
 		self.assertEqual(intent2.fallbackFunction, None)
 		self.assertDictEqual(
 			intent2.dialogMapping,
-			{'ExampleSkill:exampleState': exampleSkill.multiple_decorator,
-			 'ExampleSkill:exampleState2': exampleSkill.mqtt_decorator})
-		self.assertEqual(str(intent2), 'hermes/intent/unittest:intent2')
+			{
+				'exampleState': exampleSkill.multiple_decorator,
+			    'exampleState2': exampleSkill.mqtt_decorator
+			}
+		)
+		self.assertEqual(str(intent2), 'hermes/intent/intent2')
 
-		self.assertTrue(intent3.protected)
-		self.assertEqual(intent3.authOnly, 0)
+		self.assertEqual(intent3.authLevel, 0)
 		self.assertEqual(intent3.fallbackFunction, exampleSkill.multiple_decorator)
 		self.assertEqual(intent3.dialogMapping, dict())
-		self.assertEqual(str(intent3), 'hermes/intent/unittest:intent3')
+		self.assertEqual(str(intent3), 'hermes/intent/intent3')
+		self.assertEqual(str(intent4), 'intent4')
 
 
-	@mock.patch('core.util.Decorators.Intent.ProtectedIntentManager', new_callable=PropertyMock)
-	@mock.patch('core.util.Decorators.Intent.ConfigManager', new_callable=PropertyMock)
+	@mock.patch('core.base.ConfigManager.ConfigManager', new_callable=PropertyMock)
 	@mock.patch('core.base.model.AliceSkill.AliceSkill.findDecoratedIntents')
-	def testBuildIntentList(self, mock_decoratedFuncs, mock_config, mock_protected):
+	def testBuildIntentList(self, mock_decoratedFuncs, mock_config):
 		owner_mock = MagicMock()
 		owner_mock.getAliceConfigByName.return_value = 'unittest'
 		mock_config.return_value = owner_mock
-
-		property_mock = MagicMock()
-		mock_protected.return_value = property_mock
 
 		class ExampleSkill(AliceSkill):
 			#ignore all stuff that would happen in the AliceSkill init
@@ -106,9 +102,9 @@ class TestAliceSkill(unittest.TestCase):
 		# no decorated functions
 		initIntents = [
 			Intent('Intent1', authLevel=AccessLevel.ADMIN),
-			'hermes/intent/unittest:Intent2',
+			'hermes/intent/Intent2',
 			(Intent('intent3'), exampleSkill.exampleFunc),
-			('hermes/intent/unittest:intent4', exampleSkill.exampleFunc)
+			('hermes/intent/intent4', exampleSkill.exampleFunc)
 		]
 
 		mappings = exampleSkill.buildIntentList(initIntents)
@@ -117,36 +113,32 @@ class TestAliceSkill(unittest.TestCase):
 		intent3 = mappings[str(Intent('intent3'))]
 		intent4 = mappings[str(Intent('intent4'))]
 
-		self.assertFalse(intent1.protected)
-		self.assertEqual(intent1.authOnly, AccessLevel.ADMIN)
+		self.assertEqual(intent1.authLevel, AccessLevel.ADMIN)
 		self.assertEqual(intent1.fallbackFunction, None)
 		self.assertEqual(intent1.dialogMapping, dict())
-		self.assertEqual(str(intent1), 'hermes/intent/unittest:Intent1')
+		self.assertEqual(str(intent1), 'hermes/intent/Intent1')
 
-		self.assertFalse(intent2.protected)
-		self.assertEqual(intent2.authOnly, 0)
+		self.assertEqual(intent2.authLevel, 0)
 		self.assertEqual(intent2.fallbackFunction, None)
 		self.assertEqual(intent2.dialogMapping, dict())
-		self.assertEqual(str(intent2), 'hermes/intent/unittest:Intent2')
+		self.assertEqual(str(intent2), 'hermes/intent/Intent2')
 
-		self.assertFalse(intent3.protected)
-		self.assertEqual(intent3.authOnly, 0)
+		self.assertEqual(intent3.authLevel, 0)
 		self.assertEqual(intent3.fallbackFunction, exampleSkill.exampleFunc)
 		self.assertEqual(intent3.dialogMapping, dict())
-		self.assertEqual(str(intent3), 'hermes/intent/unittest:intent3')
+		self.assertEqual(str(intent3), 'hermes/intent/intent3')
 
-		self.assertFalse(intent4.protected)
-		self.assertEqual(intent4.authOnly, 0)
+		self.assertEqual(intent4.authLevel, 0)
 		self.assertEqual(intent4.fallbackFunction, exampleSkill.exampleFunc)
 		self.assertEqual(intent4.dialogMapping, dict())
-		self.assertEqual(str(intent4), 'hermes/intent/unittest:intent4')
+		self.assertEqual(str(intent4), 'hermes/intent/intent4')
 
 
 		# decorated functions
 		intent1 = Intent('intent1')
 		intent1.fallbackFunction = exampleSkill.onMessage
 		mock_decoratedFuncs.return_value = {
-			'hermes/intent/unittest:intent1': intent1,
+			'hermes/intent/intent1': intent1,
 		}
 
 		initIntents = [
@@ -156,12 +148,11 @@ class TestAliceSkill(unittest.TestCase):
 		mappings = exampleSkill.buildIntentList(initIntents)
 		intent1 = mappings[str(Intent('intent1'))]
 
-		self.assertFalse(intent1.protected)
-		self.assertEqual(intent1.authOnly, AccessLevel.ADMIN)
+		self.assertEqual(intent1.authLevel, AccessLevel.ADMIN)
 		self.assertEqual(intent1.fallbackFunction, exampleSkill.onMessage)
 		self.assertEqual(intent1.dialogMapping, dict())
-		self.assertEqual(str(intent1), 'hermes/intent/unittest:intent1')
+		self.assertEqual(str(intent1), 'hermes/intent/intent1')
 
 
-if __name__ == "__main__":
+if __name__ == '__main__':
 	unittest.main()

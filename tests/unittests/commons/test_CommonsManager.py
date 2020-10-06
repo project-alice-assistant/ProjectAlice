@@ -28,126 +28,165 @@ class TestCommonsManager(unittest.TestCase):
 
 	def test_payload(self):
 		class MQTTMessage:
+
 			def __init__(self, payload):
 				self.payload = payload
+				self.topic = 'test'
+
 
 		self.assertEqual(
 			CommonsManager.payload(MQTTMessage("{'test': 2}")),
-			dict())
+			dict()
+		)
 		self.assertEqual(
 			CommonsManager.payload(MQTTMessage(None)),
-			dict())
+			dict()
+		)
 		self.assertEqual(
 			CommonsManager.payload(MQTTMessage(b'\x81')),
-			dict())
+			dict()
+		)
 		self.assertEqual(
 			CommonsManager.payload(MQTTMessage('{"test": 2}')),
-			{'test': 2})
+			{'test': 2}
+		)
 		self.assertEqual(
 			CommonsManager.payload(MQTTMessage(b'{"test": 2}')),
-			{'test': 2})
+			{'test': 2}
+		)
 		self.assertEqual(
 			CommonsManager.payload(MQTTMessage('true')),
-			{'true': True})
+			{'true': True}
+		)
 		self.assertEqual(
 			CommonsManager.payload(MQTTMessage('false')),
-			{'false': False})
+			{'false': False}
+		)
 		self.assertEqual(
 			CommonsManager.payload(MQTTMessage(b'true')),
-			{'true': True})
+			{'true': True}
+		)
 
 
 	def test_parseSlotsToObjects(self):
 		class MQTTMessage:
+
 			def __init__(self, payload):
 				self.payload = payload
+				self.topic = 'test'
+
 
 		self.assertEqual(
 			CommonsManager.parseSlotsToObjects(MQTTMessage(None)),
 			dict())
-		#TODO more tests required
+
+
+	# TODO more tests required
 
 
 	def test_parseSlots(self):
 		class MQTTMessage:
+
 			def __init__(self, payload):
 				self.payload = payload
+				self.topic = 'test'
+
 
 		self.assertEqual(
 			CommonsManager.parseSlots(MQTTMessage(None)),
-			dict())
+			dict()
+		)
 		message = MQTTMessage('{"slots": [\
 			{"slotName": "slotName1", "rawValue": "rawValue1"},\
 			{"slotName": "slotName2", "rawValue": "rawValue2"}]}')
 		self.assertEqual(
 			CommonsManager.parseSlots(message),
-			{"slotName1": "rawValue1", "slotName2": "rawValue2"})
+			{"slotName1": "rawValue1", "slotName2": "rawValue2"}
+		)
 
 
 	def test_parseSessionId(self):
 		class MQTTMessage:
+
 			def __init__(self, payload):
 				self.payload = payload
+				self.topic = 'test'
+
 
 		self.assertEqual(
-			CommonsManager.parseSessionId(MQTTMessage(None)),
-			False)
+			CommonsManager.parseSessionId(MQTTMessage(None)), False)
 		self.assertEqual(
-			CommonsManager.parseSessionId(MQTTMessage('{"sessionId": "sessionIdValue"}')),
-			"sessionIdValue")
+			CommonsManager.parseSessionId(MQTTMessage('{"sessionId": "sessionIdValue"}')), "sessionIdValue")
 
 
 	def test_parseCustomData(self):
 		class MQTTMessage:
+
 			def __init__(self, payload):
 				self.payload = payload
+				self.topic = 'test'
+
 
 		self.assertEqual(
 			CommonsManager.parseCustomData(MQTTMessage(None)),
-			dict())
+			dict()
+		)
 		self.assertEqual(
 			CommonsManager.parseCustomData(MQTTMessage(b'{"customData": "nonJsonString"}')),
-			dict())
+			dict()
+		)
 		self.assertEqual(
 			CommonsManager.parseCustomData(MQTTMessage(b'{"customData": null}')),
-			dict())
+			dict()
+		)
 		self.assertEqual(
 			CommonsManager.parseCustomData(MQTTMessage('{"customData": "{\\"test\\": \\"test\\"}"}')),
-			{'test': 'test'})
+			{'test': 'test'}
+		)
 
 
 	def test_parseSiteId(self):
 		class MQTTMessage:
+
 			def __init__(self, payload):
 				self.payload = payload
+				self.topic = 'test'
+
 
 		self.assertEqual(
 			CommonsManager.parseSiteId(MQTTMessage('{"siteId": "site_id", "IPAddress": "127.0.0.1"}')),
-			'site id')
+			'site id'
+		)
 		self.assertEqual(
 			CommonsManager.parseSiteId(MQTTMessage('{"IPAddress": "127.0.0.1"}')),
-			'127.0.0.1')
+			'127.0.0.1'
+		)
 
 
 	def test_getDuration(self):
 		"""Test getDuration method"""
 
+
 		class DialogSession:
+
 			def __init__(self, slotsAsObjects: dict):
 				self.slotsAsObjects = slotsAsObjects
 
+
 		class TimeObject:
+
 			def __init__(self, value: dict, entity: str = 'snips/duration'):
 				self.value = value
 				self.entity = entity
 
+
 		timeDict = {
 			'seconds': 6,
 			'minutes': 5,
-			'hours': 4,
-			'days': 3,
-			'weeks': 2,
-			'months': 1
+			'hours'  : 4,
+			'days'   : 3,
+			'weeks'  : 2,
+			'months' : 1
 		}
 
 		session = DialogSession({'Duration': [TimeObject(timeDict)]})
@@ -188,5 +227,5 @@ class TestCommonsManager(unittest.TestCase):
 		self.assertEqual(CommonsManager.clamp(1, -2, -1), -1)
 
 
-if __name__ == "__main__":
+if __name__ == '__main__':
 	unittest.main()
