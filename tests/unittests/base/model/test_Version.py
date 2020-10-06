@@ -2,6 +2,7 @@ import unittest
 
 from core.base.model.Version import Version
 
+
 class TestVersion(unittest.TestCase):
 
 	def test_fromString(self):
@@ -12,7 +13,7 @@ class TestVersion(unittest.TestCase):
 		self.assertFalse(Version.fromString('test').isVersionNumber)
 		self.assertTrue(Version.fromString('1.2').isVersionNumber)
 
-	def test_stringConvertsion(self):
+	def test_stringConversion(self):
 		self.assertEqual(str(Version(1, 2, 0, 'release', 1)), '1.2.0')
 		self.assertEqual(str(Version(1, 2, 0, 'a', 3)), '1.2.0-a3')
 
