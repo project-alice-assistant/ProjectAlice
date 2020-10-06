@@ -72,11 +72,24 @@ class PreInit:
 		self.initFile = Path(YAML)
 		self.initConfs = dict()
 
+		self.oldConfFile = Path(self.rootDir, 'config.py')
+
 
 	def start(self):
-		if not self.initFile.exists() and not self.confsFile.exists():
+		if not self.initFile.exists() and not self.confsFile.exists() and not self.oldConfFile.exists():
 			self._logger.logFatal('Init file not found and there\'s no configuration file, aborting Project Alice start')
 			return False
+
+		if not self.confsFile.exists() and self.oldConfFile.exists():
+			self._logger.logFatal('Found old conf file, trying to migrate...')
+			try:
+				import config.py
+
+				self.confsFile.write_text(json.dumps(config.settings, indent=4, ensure_ascii=False, sort_keys=True))
+			except:
+				self._logger.logFatal('Something went wrong migrating the old configs, aborting')
+			return False
+
 		elif not self.initFile.exists():
 			self._logger.logInfo('No initialization needed')
 			return False
