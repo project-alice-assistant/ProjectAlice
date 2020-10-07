@@ -29,8 +29,8 @@ jobs:
         run: |
           pytest tests/ --cov=core/ --cov-report=xml
       - name: Fix paths
-          run: |
-            sed -i 's/\/home\/runner\/work\/ProjectAlice\/ProjectAlice\//\/github\/workspace\//g' coverage.xml
+        run: |
+          sed -i 's/\/home\/runner\/work\/ProjectAlice\/ProjectAlice\//\/github\/workspace\//g' coverage.xml
       - name: Sonarcloud scan
         uses: sonarsource/sonarcloud-github-action@master
         env:
