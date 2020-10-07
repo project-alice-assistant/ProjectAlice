@@ -24,13 +24,13 @@ jobs:
           pip install -r requirements_test.txt
       - name: Tests
         run: |
-          pytest tests/unittests/ --cov=core --cov-report xml:../result.xml
+          pytest tests/unittests/ --cov=core --cov-report xml:result.xml
         continue-on-error: true
       - name: Store results
         uses: actions/upload-artifact@v2
         with:
           name: results
-          path: ../result.xml
+          path: result.xml
 
 
   analyze:
@@ -42,7 +42,7 @@ jobs:
           actions/download-artifact@v2
         with:
           name: results
-          path: ../result.xml
+          path: result.xml
       - name: Checkout
         uses: actions/checkout@master
         with:
