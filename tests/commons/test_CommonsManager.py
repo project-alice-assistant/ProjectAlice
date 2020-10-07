@@ -235,5 +235,66 @@ class TestCommonsManager(unittest.TestCase):
 		self.assertEqual(CommonsManager.clamp(1, -2, -1), -1)
 
 
+	def test_angleToCardinal(self):
+		self.assertEqual(CommonsManager.angleToCardinal(0), 'north')
+		self.assertEqual(CommonsManager.angleToCardinal(90), 'east')
+		self.assertEqual(CommonsManager.angleToCardinal(180), 'south')
+		self.assertEqual(CommonsManager.angleToCardinal(270), 'west')
+		self.assertEqual(CommonsManager.angleToCardinal(45), 'north east')
+		self.assertEqual(CommonsManager.angleToCardinal(135), 'south east')
+		self.assertEqual(CommonsManager.angleToCardinal(225), 'south west')
+		self.assertEqual(CommonsManager.angleToCardinal(315), 'north west')
+
+
+	def test_isYes(self):
+		class DialogSession:
+
+			def __init__(self, slotsAsObjects: dict):
+				self.slotsAsObjects = slotsAsObjects
+
+
+		class Slot:
+
+			def __init__(self, value):
+				self.value = {'value': value}
+
+
+		session1 = DialogSession(dict())
+		session2 = DialogSession({
+			'Answer': [
+				Slot('yes')
+			]
+		})
+		session3 = DialogSession({
+			'Answer': [
+				Slot('no')
+			]
+		})
+		session4 = DialogSession({
+			'Answer': [
+				Slot('yeah')
+			]
+		})
+
+		self.assertFalse(CommonsManager.isYes(session1))
+		self.assertTrue(CommonsManager.isYes(session2))
+		self.assertFalse(CommonsManager.isYes(session3))
+		self.assertFalse(CommonsManager.isYes(session4))
+
+
+	def test_indexOf(self):
+		string1 = 'unittest'
+		string2 = 'unit test'
+		string3 = 'unnittest'
+		string4 = 'test'
+
+		self.assertEqual(CommonsManager.indexOf('unittest', string1), 0)
+		self.assertEqual(CommonsManager.indexOf('unittest', string2), -1)
+		self.assertEqual(CommonsManager.indexOf('unittest', string3), -1)
+		self.assertEqual(CommonsManager.indexOf('unit', string4), -1)
+		self.assertEqual(CommonsManager.indexOf('test', string1), 4)
+		self.assertEqual(CommonsManager.indexOf('nn', string3), 1)
+
+
 if __name__ == '__main__':
 	unittest.main()
