@@ -24,7 +24,7 @@ jobs:
           pip install -r requirements_test.txt
       - name: Tests
         run: |
-          pytest tests/ --cov=core/ --cov-report xml:coverage.xml
+          pytest tests/ --cov=core/ --cov-report xml:/github/workspace/coverage.xml
       - name: Store results
         uses: actions/upload-artifact@v2
         with:
@@ -41,7 +41,7 @@ jobs:
         uses: actions/download-artifact@v2
         with:
           name: coverage
-          path: coverage.xml
+          path: /github/workspace/coverage.xml
       - name: Checkout
         uses: actions/checkout@master
         with:
