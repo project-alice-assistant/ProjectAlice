@@ -24,29 +24,29 @@ jobs:
           pip install -r requirements_test.txt
       - name: Tests
         run: |
-          pytest tests/unittests/ --cov=core --cov-report xml:result.xml
+          pytest tests/unittests/ --cov=core --cov-report xml:../result.xml
         continue-on-error: true
       - name: Store results
         uses: actions/upload-artifact@v2
         with:
           name: results
-          path: result.xml
+          path: ../result.xml
 
 
   analyze:
     name: SonarCloud analyze
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
-        uses: actions/checkout@master
-        with:
-          fetch-depth: 0
       - name: Fetching unittest results
         uses: |
           actions/download-artifact@v2
         with:
           name: results
-          path: result.xml
+          path: ../result.xml
+      - name: Checkout
+        uses: actions/checkout@master
+        with:
+          fetch-depth: 0
       - name: Sonarcloud scan
         uses:
           sonarsource/sonarcloud-github-action@master
