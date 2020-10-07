@@ -145,7 +145,11 @@ class TestCommonsManager(unittest.TestCase):
 		)
 
 
-	def test_parseSiteId(self):
+	@mock.patch('SuperManager.getInstance().configManager')
+	def test_parseSiteId(self, mock_configManager):
+		mock_configManager.getAliceConfigByName.return_value = '127.0.0.1'
+
+
 		class MQTTMessage:
 
 			def __init__(self, payload):
