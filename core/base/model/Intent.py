@@ -55,9 +55,12 @@ class Intent:
 		if isinstance(value, property):
 			self._dialogMapping = dict()
 		else:
-			self._dialogMapping = {
-				f'{skillName}:{dialogState}': func for dialogState, func in value.items()
-			}
+			try:
+				self._dialogMapping = {
+					f'{skillName}:{dialogState}': func for dialogState, func in value.items()
+				}
+			except:
+				self._dialogMapping = dict()
 
 
 	@property
@@ -67,7 +70,8 @@ class Intent:
 
 	def addDialogMapping(self, value: Dict[str, Callable], skillName: str):
 		for dialogState, func in value.items():
-			self.dialogMapping[f'{skillName}:{dialogState}'] = func
+			if callable(func):
+				self.dialogMapping[f'{skillName}:{dialogState}'] = func
 
 
 	def getMapping(self, session) -> Optional[Callable]:
