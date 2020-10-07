@@ -9,11 +9,14 @@ on:
 
 jobs:
   test:
-    name: Pytest
+    name: Run tests
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v2
+      - name: Checkout
+        uses: actions/checkout@master
+        with:
+          fetch-depth: 0
       - name: Set up Python 3.7
         uses: actions/setup-python@v2
         with:
@@ -24,28 +27,7 @@ jobs:
           pip install -r requirements_test.txt
       - name: Tests
         run: |
-          pytest tests/ --cov=core/ --cov-report xml:/github/workspace/coverage.xml
-      - name: Store results
-        uses: actions/upload-artifact@v2
-        with:
-          name: coverage
-          path: coverage.xml
-
-
-  analyze:
-    name: SonarCloud analyze
-    runs-on: ubuntu-latest
-    needs: test
-    steps:
-      - name: Fetching unittest results
-        uses: actions/download-artifact@v2
-        with:
-          name: coverage
-          path: /github/workspace/coverage.xml
-      - name: Checkout
-        uses: actions/checkout@master
-        with:
-          fetch-depth: 0
+          pytest tests/ --cov=core/ --cov-report=xml
       - name: Sonarcloud scan
         uses: sonarsource/sonarcloud-github-action@master
         env:
