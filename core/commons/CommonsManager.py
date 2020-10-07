@@ -76,6 +76,9 @@ class CommonsManager(Manager):
 	def payload(message: MQTTMessage) -> dict:
 		try:
 			payload = json.loads(message.payload)
+			if isinstance(payload, bool):
+				message.payload = payload
+				raise TypeError
 		except (ValueError, TypeError):
 			var = message.topic.split('/')[-1]
 			payload = {var: message.payload}

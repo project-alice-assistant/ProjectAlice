@@ -36,11 +36,11 @@ class TestCommonsManager(unittest.TestCase):
 
 		self.assertEqual(
 			CommonsManager.payload(MQTTMessage(None)),
-			dict()
+			{'test': None}
 		)
 		self.assertEqual(
 			CommonsManager.payload(MQTTMessage(b'\x81')),
-			dict()
+			{'test': b'\x81'}
 		)
 		self.assertEqual(
 			CommonsManager.payload(MQTTMessage('{"test": 2}')),
@@ -52,15 +52,15 @@ class TestCommonsManager(unittest.TestCase):
 		)
 		self.assertEqual(
 			CommonsManager.payload(MQTTMessage('true')),
-			{'true': True}
+			{'test': True}
 		)
 		self.assertEqual(
 			CommonsManager.payload(MQTTMessage('false')),
-			{'false': False}
+			{'test': False}
 		)
 		self.assertEqual(
 			CommonsManager.payload(MQTTMessage(b'true')),
-			{'true': True}
+			{'test': True}
 		)
 
 
@@ -74,10 +74,8 @@ class TestCommonsManager(unittest.TestCase):
 
 		self.assertEqual(
 			CommonsManager.parseSlotsToObjects(MQTTMessage(None)),
-			dict())
-
-
-	# TODO more tests required
+			dict()
+		)
 
 
 	def test_parseSlots(self):

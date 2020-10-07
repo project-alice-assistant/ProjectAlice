@@ -4,6 +4,7 @@ from unittest.mock import MagicMock, PropertyMock
 
 from core.voice.TalkManager import TalkManager
 
+
 class TestTalkManager(unittest.TestCase):
 
 	@mock.patch('core.voice.TalkManager.TalkManager.Commons', new_callable=PropertyMock)
