@@ -18,6 +18,7 @@ import requests
 from googletrans import Translator
 from paho.mqtt.client import MQTTMessage
 
+import core.base.SuperManager as SuperManager
 import core.commons.model.Slot as slotModel
 from core.base.model.Manager import Manager
 from core.commons import constants
@@ -139,8 +140,7 @@ class CommonsManager(Manager):
 		if 'siteId' in data:
 			return data['siteId'].replace('_', ' ')
 		else:
-			from core.base.SuperManager import SuperManager
-			return data.get('IPAddress', SuperManager.getInstance().configManager.getAliceConfigByName('uuid'))
+			return data.get('IPAddress', SuperManager.SuperManager.getInstance().configManager.getAliceConfigByName('uuid'))
 
 
 	@staticmethod
