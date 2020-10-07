@@ -24,7 +24,7 @@ jobs:
           pip install -r requirements_test.txt
       - name: Tests
         run: |
-          pytest tests/unittests/ --cov=./core --cov-report=xml
+          pytest tests/unittests/ --cov=core/ --cov-report xml:/github/workspace/coverage.xml
         continue-on-error: true
       - name: Store results
         uses: actions/upload-artifact@v2
