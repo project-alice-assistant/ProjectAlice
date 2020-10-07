@@ -25,14 +25,15 @@ jobs:
       - name: Tests
         run: |
           pytest tests/unittests/ --cov=core --cov-report xml:../result.xml
+      - name: Store results
         uses: actions/upload-artifact@v2
         with:
           name: results
           path: ../result.xml
 
 
-  sonarCloudTrigger:
-    name: SonarCloud Trigger
+  analyze:
+    name: SonarCloud analyze
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
