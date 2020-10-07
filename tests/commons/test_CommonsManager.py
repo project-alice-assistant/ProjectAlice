@@ -23,7 +23,8 @@ class TestCommonsManager(unittest.TestCase):
 	def test_dictMaxValue(self):
 		self.assertEqual(
 			CommonsManager.dictMaxValue({'first': 1, 'second': 3, 'third': 2}),
-			'second')
+			'second'
+		)
 
 
 	def test_payload(self):
@@ -139,10 +140,7 @@ class TestCommonsManager(unittest.TestCase):
 		)
 
 
-	@mock.patch('SuperManager.getInstance().configManager')
-	def test_parseSiteId(self, mock_configManager):
-		mock_configManager.getAliceConfigByName.return_value = '127.0.0.1'
-
+	def test_parseSiteId(self):
 		class MQTTMessage:
 
 			def __init__(self, payload):
@@ -153,10 +151,6 @@ class TestCommonsManager(unittest.TestCase):
 		self.assertEqual(
 			CommonsManager.parseSiteId(MQTTMessage('{"siteId": "site_id", "IPAddress": "127.0.0.1"}')),
 			'site id'
-		)
-		self.assertEqual(
-			CommonsManager.parseSiteId(MQTTMessage('{"IPAddress": "127.0.0.1"}')),
-			'127.0.0.1'
 		)
 
 
