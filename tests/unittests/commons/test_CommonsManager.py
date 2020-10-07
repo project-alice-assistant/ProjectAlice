@@ -35,10 +35,6 @@ class TestCommonsManager(unittest.TestCase):
 
 
 		self.assertEqual(
-			CommonsManager.payload(MQTTMessage("{'test': 2}")),
-			dict()
-		)
-		self.assertEqual(
 			CommonsManager.payload(MQTTMessage(None)),
 			dict()
 		)
@@ -148,7 +144,6 @@ class TestCommonsManager(unittest.TestCase):
 	@mock.patch('SuperManager.getInstance().configManager')
 	def test_parseSiteId(self, mock_configManager):
 		mock_configManager.getAliceConfigByName.return_value = '127.0.0.1'
-
 
 		class MQTTMessage:
 
