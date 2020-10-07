@@ -55,7 +55,6 @@ class TestDecorators(unittest.TestCase):
 				return self.online
 
 
-
 		exampleObject = AliceSkill()
 
 		# mock Managers

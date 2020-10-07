@@ -1,5 +1,6 @@
 import unittest
 from unittest import mock
+from unittest.mock import MagicMock
 
 from core.commons.CommonsManager import CommonsManager
 
@@ -140,7 +141,8 @@ class TestCommonsManager(unittest.TestCase):
 		)
 
 
-	def test_parseSiteId(self):
+	@mock.patch('core.base.SuperManager.SuperManager')
+	def test_parseSiteId(self, mock_superManager):
 		class MQTTMessage:
 
 			def __init__(self, payload):
@@ -148,9 +150,24 @@ class TestCommonsManager(unittest.TestCase):
 				self.topic = 'test'
 
 
+		# mock SuperManager
+		mock_instance = MagicMock()
+		mock_superManager.getInstance.return_value = mock_instance
+		mock_instance.configManager.getAliceConfigByName.return_value = 'uuid'
+
 		self.assertEqual(
 			CommonsManager.parseSiteId(MQTTMessage('{"siteId": "site_id", "IPAddress": "127.0.0.1"}')),
 			'site id'
+		)
+
+		self.assertEqual(
+			CommonsManager.parseSiteId(MQTTMessage('{"IPAddress": "127.0.0.1"}')),
+			'127.0.0.1'
+		)
+
+		self.assertEqual(
+			CommonsManager.parseSiteId(MQTTMessage('{}')),
+			'uuid'
 		)
 
 
