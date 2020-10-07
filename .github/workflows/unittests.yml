@@ -36,6 +36,7 @@ jobs:
   analyze:
     name: SonarCloud analyze
     runs-on: ubuntu-latest
+    needs: test
     steps:
       - name: Fetching unittest results
         uses: actions/download-artifact@v2
