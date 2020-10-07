@@ -25,7 +25,6 @@ jobs:
       - name: Tests
         run: |
           pytest tests/ --cov=core/ --cov-report xml:coverage.xml
-        continue-on-error: true
       - name: Store results
         uses: actions/upload-artifact@v2
         with:
