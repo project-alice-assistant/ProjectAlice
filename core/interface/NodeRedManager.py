@@ -40,7 +40,7 @@ class NodeRedManager(Manager):
 		proc.stdin.write(b'n\n')
 		proc.stdin.close()
 		for line in iter(proc.stdout.readline, ''):
-			self.logInfo(line)
+			self.logInfo(line.decode())
 		returnCode = proc.wait()
 
 		if returnCode:
