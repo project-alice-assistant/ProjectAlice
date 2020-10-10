@@ -35,11 +35,18 @@ class NodeRedManager(Manager):
 			dest='var/cache/node-red.sh'
 		)
 		self.Commons.runRootSystemCommand('chmod +x var/cache/node-red.sh'.split())
-		proc = Popen('./var/cache/node-red.sh'.split(), stdin=PIPE, stdout=PIPE)
-		proc.stdin.write(b'y\n')
-		proc.stdin.write(b'n\n')
-		returnCode = proc.wait()
-		proc.stdin.close()
+
+		process = Popen('./var/cache/node-red.sh'.split(), stdin=PIPE, stdout=PIPE)
+		try:
+			process.stdin.write(b'y\n')
+			process.stdin.write(b'n\n')
+		except IOError:
+			self.logError('Failed installing Node-red')
+			self.onStop()
+			return
+
+		process.stdin.close()
+		returnCode = process.wait(timeout=120)
 
 		if returnCode:
 			self.logError('Failed installing Node-red')
