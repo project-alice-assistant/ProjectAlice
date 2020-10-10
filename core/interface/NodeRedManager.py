@@ -1,8 +1,7 @@
-import json
 from pathlib import Path
+from subprocess import PIPE, Popen
 
 from core.base.model.Manager import Manager
-from core.base.model.Version import Version
 
 
 class NodeRedManager(Manager):
@@ -23,9 +22,31 @@ class NodeRedManager(Manager):
 
 		if not self.PACKAGE_PATH.exists():
 			self.logInfo('Node red not found, installing, this might take a while...')
+			self.ThreadManager.newThread(name='installNodered', target=self.install)
+			return
 
 		self.injectSkillNodes()
 		self.Commons.runRootSystemCommand(['systemctl', 'start', 'nodered'])
+
+
+	def install(self):
+		self.Commons.downloadFile(
+			url='https://raw.githubusercontent.com/node-red/linux-installers/master/deb/update-nodejs-and-nodered',
+			dest='var/cache/node-red.sh'
+		)
+		self.Commons.runRootSystemCommand('chmod +x var/cache/node-red.sh'.split())
+		proc = Popen('./var/cache/node-red.sh'.split(), stdin=PIPE, stdout=PIPE)
+		proc.stdin.write(b'y\n')
+		proc.stdin.write(b'n\n')
+		proc.stdin.close()
+		for line in iter(proc.stdout.readline, ''):
+			self.logInfo(line)
+		returnCode = proc.wait()
+
+		if returnCode:
+			self.logError('Failed installing Node-red')
+			self.onStop()
+		self.onStart()
 
 
 	def onStop(self):
@@ -52,6 +73,7 @@ class NodeRedManager(Manager):
 
 		if not self.PACKAGE_PATH.exists():
 			self.logWarning('Package json file for Node Red is missing. Is Node Red even installed?')
+			self.onStop()
 			return
 
 		for skillName, tup in self.SkillManager.allScenarioNodes().items():
