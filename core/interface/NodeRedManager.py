@@ -1,3 +1,5 @@
+import json
+import time
 from pathlib import Path
 from subprocess import PIPE, Popen
 
@@ -5,7 +7,6 @@ from core.base.model.Manager import Manager
 
 
 class NodeRedManager(Manager):
-
 	PACKAGE_PATH = Path('../.node-red/package.json')
 
 	def __init__(self):
@@ -21,6 +22,7 @@ class NodeRedManager(Manager):
 		super().onStart()
 
 		if not self.PACKAGE_PATH.exists():
+			self.isActive = False
 			self.ThreadManager.newThread(name='installNodered', target=self.install)
 			return
 
@@ -29,7 +31,7 @@ class NodeRedManager(Manager):
 
 
 	def install(self):
-		self.logInfo('Node red not found, installing, this might take a while...')
+		self.logInfo('Node-RED not found, installing, this might take a while...')
 		self.Commons.downloadFile(
 			url='https://raw.githubusercontent.com/node-red/linux-installers/master/deb/update-nodejs-and-nodered',
 			dest='var/cache/node-red.sh'
@@ -41,7 +43,7 @@ class NodeRedManager(Manager):
 			process.stdin.write(b'y\n')
 			process.stdin.write(b'n\n')
 		except IOError:
-			self.logError('Failed installing Node-red')
+			self.logError('Failed installing Node-RED')
 			self.onStop()
 			return
 
@@ -53,7 +55,25 @@ class NodeRedManager(Manager):
 			self.onStop()
 		else:
 			self.logInfo('Succesfully installed Node-red')
+			self.configureNewNodeRed()
 			self.onStart()
+
+
+	def configureNewNodeRed(self):
+		self.logInfo('Configuring Node-RED')
+		# Start to generate base configs and stop it after
+		self.Commons.runRootSystemCommand(['systemctl', 'start', 'nodered'])
+		time.sleep(5)
+		self.Commons.runRootSystemCommand(['systemctl', 'stop', 'nodered'])
+		time.sleep(5)
+
+		config = Path(self.PACKAGE_PATH.parent, '.config.json')
+		data = json.loads(config.read_text())
+		for package in data['nodes'].values():
+			for node in package['nodes'].values():
+				node['enabled'] = False
+
+		config.write_text(json.dumps(data))
 
 
 	def onStop(self):
@@ -79,7 +99,7 @@ class NodeRedManager(Manager):
 		restart = False
 
 		if not self.PACKAGE_PATH.exists():
-			self.logWarning('Package json file for Node Red is missing. Is Node Red even installed?')
+			self.logWarning('Package json file for Node-RED is missing. Is Node Red even installed?')
 			self.onStop()
 			return
 
@@ -93,7 +113,6 @@ class NodeRedManager(Manager):
 					self.logWarning(f'Something went wrong installing new node **{scenarioNodeName}**: {install.stderr}')
 				else:
 					restart = True
-
 				continue
 
 			version = self.SkillManager.getSkillScenarioVersion(skillName)
