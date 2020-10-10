@@ -66,11 +66,11 @@
 				},
 				"beforeUpdate": {
 					"type"   : "string",
-					"pattern": "^[a-z].*$"
+					"pattern": "^(?:[A-Z][a-zA-Z]+\\.)?[a-z][a-zA-Z0-9]+$"
 				},
 				"onUpdate"    : {
 					"type"   : "string",
-					"pattern": "^[a-z].*$"
+					"pattern": "^(?:[A-Z][a-zA-Z]+\\.)?[a-z][a-zA-Z0-9]+$"
 				},
 				"parent"      : {
 					"type"      : "object",

@@ -649,6 +649,14 @@
 		"description" : "Change the web interface port to be used",
 		"category"    : "system"
 	},
+	"scenariosActive"      : {
+		"defaultValue": false,
+		"dataType"    : "boolean",
+		"isSensitive" : false,
+		"description" : "Activates the scenarios support on the webinterface, using node-red.",
+		"category"    : "system",
+		"onUpdate"    : "NodeRedManager.toggle"
+	},
 	"devMode"                 : {
 		"defaultValue": false,
 		"dataType"    : "boolean",

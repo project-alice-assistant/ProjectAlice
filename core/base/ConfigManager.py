@@ -131,13 +131,14 @@ class ConfigManager(Manager):
 			raise
 
 
-	def updateAliceConfiguration(self, key: str, value: typing.Any):
+	def updateAliceConfiguration(self, key: str, value: typing.Any, dump: bool = True):
 		"""
 		Updating a core config is sensitive, if the request comes from a skill.
 		First check if the request came from a skill at anytime and if so ask permission
 		to the user
 		:param key: str
 		:param value: str
+		:param dump: bool If set to False, the configs won't be dumped to the json file
 		:return: None
 		"""
 
@@ -167,8 +168,18 @@ class ConfigManager(Manager):
 			self.logWarning(f'Was asked to update **{key}** but key doesn\'t exist')
 			raise ConfigurationUpdateFailed()
 
+		pre = self.getAliceConfUpdatePreProcessing(key)
+		if pre and not self.ConfigManager.doConfigUpdatePreProcessing(pre, value):
+			return
+
 		self._aliceConfigurations[key] = value
-		self.writeToAliceConfigurationFile()
+
+		if dump:
+			self.writeToAliceConfigurationFile()
+
+		pp = self.ConfigManager.getAliceConfUpdatePostProcessing(key)
+		if pp:
+			self.ConfigManager.doConfigUpdatePostProcessing(pp)
 
 
 	def bulkUpdateAliceConfigurations(self):
@@ -179,7 +190,7 @@ class ConfigManager(Manager):
 			if key not in self._aliceConfigurations:
 				self.logWarning(f'Was asked to update **{key}** but key doesn\'t exist')
 				continue
-			self._aliceConfigurations[key] = value
+			self.updateAliceConfiguration(key, value, False)
 
 		self.writeToAliceConfigurationFile()
 		self.deletePendingAliceConfigurationUpdates()
@@ -501,7 +512,18 @@ class ConfigManager(Manager):
 	def doConfigUpdatePreProcessing(self, function: str, value: typing.Any) -> bool:
 		# Call alice config pre processing functions.
 		try:
-			func = getattr(self, function)
+			if '.' in function:
+				manager, function = function.split('.')
+
+				try:
+					mngr = getattr(self, manager)
+				except AttributeError:
+					self.logWarning(f'Config pre processing manager **{manager}** does not exist')
+					return False
+			else:
+				mngr = self
+
+			func = getattr(mngr, function)
 		except AttributeError:
 			self.logWarning(f'Configuration pre processing method **{function}** does not exist')
 			return False
@@ -513,12 +535,27 @@ class ConfigManager(Manager):
 				return False
 
 
-	def doConfigUpdatePostProcessing(self, functions: set):
+	def doConfigUpdatePostProcessing(self, functions: typing.Union[str, set]):
 		# Call alice config post processing functions. This will call methods that are needed after a certain setting was
 		# updated while Project Alice was running
+
+		if isinstance(functions, str):
+			functions = {functions}
+
 		for function in functions:
 			try:
-				func = getattr(self, function)
+				if '.' in function:
+					manager, function = function.split('.')
+
+					try:
+						mngr = getattr(self, manager)
+					except AttributeError:
+						self.logWarning(f'Config post processing manager **{manager}** does not exist')
+						return False
+				else:
+					mngr = self
+
+				func = getattr(mngr, function)
 			except AttributeError:
 				self.logWarning(f'Configuration post processing method **{function}** does not exist')
 				continue
@@ -609,6 +646,10 @@ class ConfigManager(Manager):
 			logging.getLogger('ProjectAlice').setLevel(logging.DEBUG)
 		else:
 			logging.getLogger('ProjectAlice').setLevel(logging.WARN)
+
+
+	def toggleNodeRed(self):
+		self.NodeRedManager.toggle()
 
 
 	def getGithubAuth(self) -> tuple:
