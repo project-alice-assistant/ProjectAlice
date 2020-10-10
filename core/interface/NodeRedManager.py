@@ -21,7 +21,6 @@ class NodeRedManager(Manager):
 		super().onStart()
 
 		if not self.PACKAGE_PATH.exists():
-			self.logInfo('Node red not found, installing, this might take a while...')
 			self.ThreadManager.newThread(name='installNodered', target=self.install)
 			return
 
@@ -30,6 +29,7 @@ class NodeRedManager(Manager):
 
 
 	def install(self):
+		self.logInfo('Node red not found, installing, this might take a while...')
 		self.Commons.downloadFile(
 			url='https://raw.githubusercontent.com/node-red/linux-installers/master/deb/update-nodejs-and-nodered',
 			dest='var/cache/node-red.sh'
@@ -38,15 +38,15 @@ class NodeRedManager(Manager):
 		proc = Popen('./var/cache/node-red.sh'.split(), stdin=PIPE, stdout=PIPE)
 		proc.stdin.write(b'y\n')
 		proc.stdin.write(b'n\n')
-		proc.stdin.close()
-		for line in iter(proc.stdout.readline, ''):
-			self.logInfo(line.decode())
 		returnCode = proc.wait()
+		proc.stdin.close()
 
 		if returnCode:
 			self.logError('Failed installing Node-red')
 			self.onStop()
-		self.onStart()
+		else:
+			self.logInfo('Succesfully installed Node-red')
+			self.onStart()
 
 
 	def onStop(self):
