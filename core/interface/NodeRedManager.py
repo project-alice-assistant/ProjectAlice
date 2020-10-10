@@ -10,13 +10,12 @@ class NodeRedManager(Manager):
 	PACKAGE_PATH = Path('../.node-red/package.json')
 
 	def __init__(self):
-		if not self.ConfigManager.getAliceConfigByName('scenariosActive'):
-			self.isActive = False
-		else:
-			super().__init__()
+		super().__init__()
 
 
 	def onStart(self):
+		self.isActive = self.ConfigManager.getAliceConfigByName('scenariosActive')
+
 		if not self.isActive:
 			return
 
@@ -59,25 +58,33 @@ class NodeRedManager(Manager):
 			scenarioNodeName, scenarioNodeVersion, scenarioNodePath = tup
 			path = Path('../.node-red/node_modules', scenarioNodeName, 'package.json')
 			if not path.exists():
-				self.logInfo('New scenario node found')
+				self.logInfo(f'New scenario node found for skill **{skillName}**: {scenarioNodeName}')
 				install = self.Commons.runSystemCommand(f'cd ~/.node-red && npm install {scenarioNodePath}', shell=True)
 				if install.returncode == 1:
-					self.logWarning(f'Something went wrong installing new node: {install.stderr}')
+					self.logWarning(f'Something went wrong installing new node **{scenarioNodeName}**: {install.stderr}')
 				else:
 					restart = True
 
 				continue
 
-			data = json.loads(path.read_text())
-			version = Version.fromString(data['version'])
+			version = self.SkillManager.getSkillScenarioVersion(skillName)
 
 			if version < scenarioNodeVersion:
-				self.logInfo('New scenario node update found')
+				self.logInfo(f'New scenario update found for node **{scenarioNodeName}**')
 				install = self.Commons.runSystemCommand(f'cd ~/.node-red && npm install {scenarioNodePath}', shell=True)
 				if install.returncode == 1:
-					self.logWarning(f'Something went wrong updating node: {install.stderr}')
-				else:
-					restart = True
+					self.logWarning(f'Something went wrong updating node **{scenarioNodeName}**: {install.stderr}')
+					continue
+
+				self.DatabaseManager.update(
+					tableName='skills',
+					callerName=self.SkillManager.name,
+					values={
+						'scenarioVersion': str(scenarioNodeVersion)
+					},
+					row=('skillName', skillName)
+				)
+				restart = True
 
 		if restart:
 			self.reloadServer()
