@@ -41,11 +41,13 @@ class Manager(ProjectAliceObject):
 
 	def onStart(self):
 		self.logInfo(f'Starting')
+		self._isActive = True
 		return self._initDB()
 
 
 	def onStop(self):
 		self.logInfo(f'Stopping')
+		self._isActive = False
 
 
 	def _initDB(self):

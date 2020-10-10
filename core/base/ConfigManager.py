@@ -648,10 +648,6 @@ class ConfigManager(Manager):
 			logging.getLogger('ProjectAlice').setLevel(logging.WARN)
 
 
-	def toggleNodeRed(self):
-		self.NodeRedManager.toggle()
-
-
 	def getGithubAuth(self) -> tuple:
 		username = self.getAliceConfigByName('githubUsername')
 		token = self.getAliceConfigByName('githubToken')

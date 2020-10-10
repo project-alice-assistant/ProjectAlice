@@ -7,19 +7,41 @@ from core.base.model.Version import Version
 
 class NodeRedManager(Manager):
 
+	PACKAGE_PATH = Path('../.node-red/package.json')
+
 	def __init__(self):
-		super().__init__()
+		if not self.ConfigManager.getAliceConfigByName('scenariosActive'):
+			self.isActive = False
+		else:
+			super().__init__()
 
 
 	def onStart(self):
+		if not self.isActive:
+			return
+
 		super().onStart()
+
+		if not self.PACKAGE_PATH.exists():
+			self.logInfo('Node red not found, installing, this might take a while...')
+
 		self.injectSkillNodes()
 		self.Commons.runRootSystemCommand(['systemctl', 'start', 'nodered'])
 
 
 	def onStop(self):
+		if not self.isActive:
+			return
+
 		super().onStop()
 		self.Commons.runRootSystemCommand(['systemctl', 'stop', 'nodered'])
+
+
+	def toggle(self):
+		if self.isActive:
+			self.onStop()
+		else:
+			self.onStart()
 
 
 	def reloadServer(self):
@@ -27,9 +49,10 @@ class NodeRedManager(Manager):
 
 
 	def injectSkillNodes(self):
-		package = Path('../.node-red/package.json')
-		if not package.exists():
-			#self.logWarning('Package json file for Node Red is missing. Is Node Red even installed?')
+		restart = False
+
+		if not self.PACKAGE_PATH.exists():
+			self.logWarning('Package json file for Node Red is missing. Is Node Red even installed?')
 			return
 
 		for skillName, tup in self.SkillManager.allScenarioNodes().items():
@@ -40,15 +63,21 @@ class NodeRedManager(Manager):
 				install = self.Commons.runSystemCommand(f'cd ~/.node-red && npm install {scenarioNodePath}', shell=True)
 				if install.returncode == 1:
 					self.logWarning(f'Something went wrong installing new node: {install.stderr}')
+				else:
+					restart = True
 
 				continue
 
-			with path.open('r') as fp:
-				data = json.load(fp)
-				version = Version.fromString(data['version'])
+			data = json.loads(path.read_text())
+			version = Version.fromString(data['version'])
 
-				if version < scenarioNodeVersion:
-					self.logInfo('New scenario node update found')
-					install = self.Commons.runSystemCommand(f'cd ~/.node-red && npm install {scenarioNodePath}', shell=True)
-					if install.returncode == 1:
-						self.logWarning(f'Something went wrong updating node: {install.stderr}')
+			if version < scenarioNodeVersion:
+				self.logInfo('New scenario node update found')
+				install = self.Commons.runSystemCommand(f'cd ~/.node-red && npm install {scenarioNodePath}', shell=True)
+				if install.returncode == 1:
+					self.logWarning(f'Something went wrong updating node: {install.stderr}')
+				else:
+					restart = True
+
+		if restart:
+			self.reloadServer()
