@@ -98,7 +98,7 @@ class ProjectAliceObject:
 				pass
 
 		self.MqttManager.publish(
-			topic=method,
+			topic=f'projectalice/events/{method}',
 			payload=payload
 		)
 
