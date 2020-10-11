@@ -15,7 +15,9 @@ class NodeRedManager(Manager):
 			'debug',
 			'JSON',
 			'split',
-			'sort'
+			'sort',
+			'function',
+			'change'
 		]
 	}
 

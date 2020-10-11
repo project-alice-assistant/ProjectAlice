@@ -87,6 +87,8 @@ class ProjectAliceObject:
 		for name in deadManagers:
 			del SM.SuperManager.getInstance().managers[name]
 
+		if method == 'onAudioFrame':
+			return
 
 		# Now send the event over mqtt
 		payload = dict()

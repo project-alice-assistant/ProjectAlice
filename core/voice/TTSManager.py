@@ -118,6 +118,11 @@ class TTSManager(Manager):
 		if session.textOnly:
 			return
 
+		if 'text' not in session.payload:
+			self.logWarning('Was asked to say something but no text provided')
+			self.MqttManager.endSession(sessionId=session.sessionId)
+			return
+
 		if session and session.user != constants.UNKNOWN_USER:
 			user: User = self.UserManager.getUser(session.user)
 			if user and user.tts:
