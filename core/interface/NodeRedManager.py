@@ -10,6 +10,14 @@ from core.base.model.Manager import Manager
 
 class NodeRedManager(Manager):
 	PACKAGE_PATH = Path('../.node-red/package.json')
+	DEFAULT_NODES_ACTIVE = {
+		'node-red': [
+			'debug',
+			'JSON',
+			'split',
+			'sort'
+		]
+	}
 
 	def __init__(self):
 		super().__init__()
@@ -62,12 +70,12 @@ class NodeRedManager(Manager):
 
 
 	def configureNewNodeRed(self):
-		self.logInfo('Configuring Node-RED')
+		self.logInfo('Configuring')
 		# Start to generate base configs and stop it after
 		self.Commons.runRootSystemCommand(['systemctl', 'start', 'nodered'])
-		time.sleep(5)
+		time.sleep(4)
 		self.Commons.runRootSystemCommand(['systemctl', 'stop', 'nodered'])
-		time.sleep(5)
+		time.sleep(3)
 
 		config = Path(self.PACKAGE_PATH.parent, '.config.json')
 		data = json.loads(config.read_text())
@@ -76,15 +84,15 @@ class NodeRedManager(Manager):
 				node['enabled'] = False
 
 		config.write_text(json.dumps(data))
+		self.logInfo('Nodes configured')
+		self.logInfo('Applying Project Alice settings')
 
 		self.Commons.runSystemCommand('npm install --prefix ~/.node-red @node-red-contrib-themes/midnight-red'.split())
 		shutil.copy(Path('system/node-red/settings.js'), Path(os.path.expanduser('~/.node-red'), 'settings.js'))
+		self.logInfo("All done, let's start all this")
 
 
 	def onStop(self):
-		if not self.isActive:
-			return
-
 		super().onStop()
 		self.Commons.runRootSystemCommand(['systemctl', 'stop', 'nodered'])
 
@@ -104,7 +112,7 @@ class NodeRedManager(Manager):
 		restart = False
 
 		if not self.PACKAGE_PATH.exists():
-			self.logWarning('Package json file for Node-RED is missing. Is Node Red even installed?')
+			self.logWarning('Package json file for Node-RED is missing. Is Node-RED even installed?')
 			self.onStop()
 			return
 
