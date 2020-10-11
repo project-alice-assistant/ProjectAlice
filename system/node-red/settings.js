@@ -299,9 +299,6 @@ module.exports = {
 				'/home/pi/.node-red/node_modules/@node-red-contrib-themes/midnight-red/scrollbars.css'
 			]
 		},
-		menu    : {
-			'menu-item-keyboard-shortcuts': false
-		},
 		projects: {
 			enabled: false
 		}
