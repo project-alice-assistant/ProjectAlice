@@ -34,7 +34,8 @@ class SkillManager(Manager):
 	DATABASE = {
 		'skills' : [
 			'skillName TEXT NOT NULL UNIQUE',
-			'active INTEGER NOT NULL DEFAULT 1'
+			'active INTEGER NOT NULL DEFAULT 1',
+			'scenarioVersion TEXT NOT NULL DEFAULT "0.0.0"',
 		],
 		'widgets': [
 			'parent TEXT NOT NULL UNIQUE',
@@ -913,6 +914,18 @@ class SkillManager(Manager):
 		return ret
 
 
+	def getSkillScenarioVersion(self, skillName: str) -> Version:
+		if skillName not in self._skillList:
+			return Version.fromString('0.0.0')
+		else:
+			query = 'SELECT * FROM :__table__ WHERE skillName = :skillName'
+			data = self.DatabaseManager.fetch(tableName='skills', query=query, values={'skillName': skillName}, callerName=self.name)
+			if not data:
+				return Version.fromString('0.0.0')
+
+			return Version.fromString(data['scenarioVersion'])
+
+
 	def wipeSkills(self, addDefaults: bool = True):
 		shutil.rmtree(Path(self.Commons.rootDir(), 'skills'))
 		Path(self.Commons.rootDir(), 'skills').mkdir()
@@ -1117,7 +1130,7 @@ class SkillManager(Manager):
 			self.Commons.runSystemCommand(['git', '-C', str(localDirectory), 'remote', 'add', 'origin', remote])
 
 			self.Commons.runSystemCommand(['git', '-C', str(localDirectory), 'add', '--all'])
-			self.Commons.runSystemCommand(['git', '-C', str(localDirectory), 'commit', '-m', '"Initial upload"'])
+			self.Commons.runSystemCommand(['git', '-C', str(localDirectory), 'commit', '-m', '"Initial upload by Project Alice Skill Kit"'])
 			self.Commons.runSystemCommand(['git', '-C', str(localDirectory), 'push', '--set-upstream', 'origin', 'master'])
 
 			url = f'https://github.com/{self.ConfigManager.getAliceConfigByName("githubUsername")}/skill_{skillName}.git'

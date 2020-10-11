@@ -3,6 +3,7 @@ from typing import Any
 from flask import jsonify, render_template, request
 from flask_login import login_required
 
+from core.ProjectAliceExceptions import ConfigurationUpdateFailed
 from core.interface.model.View import View
 
 
@@ -49,23 +50,16 @@ class AdminView(View):
 			# or float because HTTP data is type less.
 			confs = {key: self.retrieveValue(value) for key, value in request.form.items()}
 
-			postProcessing = set()
 			for conf, value in confs.items():
 				if value == self.ConfigManager.getAliceConfigByName(conf):
 					continue
 
-				pre = self.ConfigManager.getAliceConfUpdatePreProcessing(conf)
-				if pre and not self.ConfigManager.doConfigUpdatePreProcessing(pre, value):
-					continue
+				try:
+					self.ConfigManager.updateAliceConfiguration(conf, value, False)
+				except ConfigurationUpdateFailed as e:
+					self.logError(f'Updating config failed for **{conf}**: {e}')
 
-				pp = self.ConfigManager.getAliceConfUpdatePostProcessing(conf)
-				if pp:
-					postProcessing.add(pp)
-
-			confs['supportedLanguages'] = self.ConfigManager.getAliceConfigByName('supportedLanguages')
-
-			self.ConfigManager.writeToAliceConfigurationFile(confs=confs)
-			self.ConfigManager.doConfigUpdatePostProcessing(postProcessing)
+			self.ConfigManager.writeToAliceConfigurationFile()
 			return self.index()
 		except Exception as e:
 			self.logError(f'Failed saving Alice config: {e}')

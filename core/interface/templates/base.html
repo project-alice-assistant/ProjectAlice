@@ -60,7 +60,9 @@
 			<li class="mainMenuListItem button" onclick="location.href='/home/';">{{ langData.home }}</li>
 			<li class="mainMenuListItem button" onclick="location.href='/skills/';">{{ langData.skills }}</li>
 			<li class="mainMenuListItem button" onclick="location.href='/myhome/';">{{ langData.myHome }}</li>
-			<li class="mainMenuListItem button" onclick="location.href='/scenarios/';">{{ langData.scenarios }}</li>
+			{% if aliceSettings['scenariosActive'] is sameas true %}
+				<li class="mainMenuListItem button" onclick="location.href='/scenarios/';">{{ langData.scenarios }}</li>
+			{% endif %}
 			<li class="mainMenuListItem button" onclick="location.href='/syslog/';">{{ langData.syslog }}</li>
 			<li class="mainMenuListItem button" onclick="location.href='/alicewatch/';">{{ langData.alicewatch }}</li>
 			<li class="mainMenuListItem button" onclick="location.href='/admin/';">{{ langData.admin }}</li>

@@ -87,6 +87,8 @@ class ProjectAliceObject:
 		for name in deadManagers:
 			del SM.SuperManager.getInstance().managers[name]
 
+		if method == 'onAudioFrame':
+			return
 
 		# Now send the event over mqtt
 		payload = dict()
@@ -98,7 +100,7 @@ class ProjectAliceObject:
 				pass
 
 		self.MqttManager.publish(
-			topic=method,
+			topic=f'projectalice/events/{method}',
 			payload=payload
 		)
 
@@ -750,3 +752,8 @@ class ProjectAliceObject:
 	@property
 	def WakewordManager(self): #NOSONAR
 		return SM.SuperManager.getInstance().wakewordManager
+
+
+	@property
+	def NodeRedManager(self): #NOSONAR
+		return SM.SuperManager.getInstance().nodeRedManager

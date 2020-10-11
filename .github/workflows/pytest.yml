@@ -5,7 +5,6 @@ name: Pytest and Sonarcloud analysis
 
 on:
   push:
-  pull_request:
 
 jobs:
   test:
