@@ -1,4 +1,6 @@
 import json
+import os
+import shutil
 import time
 from pathlib import Path
 from subprocess import PIPE, Popen
@@ -74,6 +76,9 @@ class NodeRedManager(Manager):
 				node['enabled'] = False
 
 		config.write_text(json.dumps(data))
+
+		self.Commons.runSystemCommand('npm install --prefix ~/.node-red @node-red-contrib-themes/midnight-red'.split())
+		shutil.copy(Path('system/node-red/settings.js'), Path(os.path.expanduser('~/.node-red'), 'settings.js'))
 
 
 	def onStop(self):
