@@ -1,6 +1,7 @@
 import unittest
 from unittest import mock
 from unittest.mock import MagicMock
+from uuid import UUID
 
 from core.commons.CommonsManager import CommonsManager
 
@@ -294,6 +295,38 @@ class TestCommonsManager(unittest.TestCase):
 		self.assertEqual(CommonsManager.indexOf('unit', string4), -1)
 		self.assertEqual(CommonsManager.indexOf('test', string1), 4)
 		self.assertEqual(CommonsManager.indexOf('nn', string3), 1)
+
+
+	def test_isUuid(self):
+		validStrings = [
+			'6e9bb2f8-bedb-4ade-9db7-f455e4c03051',
+			'{6e9bb2f8-bedb-4ade-9db7-f455e4c03051}',
+			'6e9bb2f8-becb-4ade-9db7-f455e4c03051',
+			'6e9bb2f8bedb4ade9db7f455e4c03051',
+			'urn:uuid:6e9bb2f8bedb4ade9db7f455e4c03051'
+		]
+		invalidStrings = [
+			'{6e9bb2f8-begb-4ade-9db7-f455e4c03051}',
+			'6e9bb2f8-bedb-4ade-9db7-f455e4c030',
+			'unittests'
+		]
+
+		for string in validStrings:
+			try:
+				val = UUID(string)
+			except:
+				val = None
+
+			self.assertIsNotNone(val)
+
+
+		for string in invalidStrings:
+			try:
+				val = UUID(string)
+			except:
+				val = None
+
+			self.assertIsNone(val)
 
 
 if __name__ == '__main__':
