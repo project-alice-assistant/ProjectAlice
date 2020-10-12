@@ -674,6 +674,6 @@
 		"dataType"    : "boolean",
 		"isSensitive" : false,
 		"description" : "Activates the developer part of the interface, for skill development",
-		"category"    : "scenarios"
+		"category"    : "system"
 	}
 }
