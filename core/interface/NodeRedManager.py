@@ -96,7 +96,8 @@ class NodeRedManager(Manager):
 
 	def onStop(self):
 		super().onStop()
-		self.Commons.runRootSystemCommand(['systemctl', 'stop', 'nodered'])
+		if not self.ConfigManager.getAliceConfigByName('dontStopNodeRed'):
+			self.Commons.runRootSystemCommand(['systemctl', 'stop', 'nodered'])
 
 
 	def toggle(self):

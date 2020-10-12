@@ -649,13 +649,25 @@
 		"description" : "Change the web interface port to be used",
 		"category"    : "system"
 	},
-	"scenariosActive"      : {
+	"scenariosActive"         : {
 		"defaultValue": false,
 		"dataType"    : "boolean",
 		"isSensitive" : false,
-		"description" : "Activates the scenarios support on the webinterface, using node-red.",
-		"category"    : "system",
+		"description" : "Activates the scenarios support on the webinterface, using Node-RED.",
+		"category"    : "scenarios",
 		"onUpdate"    : "NodeRedManager.toggle"
+	},
+	"dontStopNodeRed"         : {
+		"defaultValue": false,
+		"dataType"    : "boolean",
+		"isSensitive" : false,
+		"description" : "If activated, Node-RED won't be stopped when Alice is shut down.",
+		"category"    : "scenarios",
+		"parent"      : {
+			"config"   : "scenariosActive",
+			"condition": "is",
+			"value"    : true
+		}
 	},
 	"devMode"                 : {
 		"defaultValue": false,
