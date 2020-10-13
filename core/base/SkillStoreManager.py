@@ -42,6 +42,9 @@ class SkillStoreManager(Manager):
 	def _getSkillUpdateVersion(self, skillName: str) -> Optional[tuple]:
 		versionMapping = self._skillStoreData.get(skillName, dict()).get('versionMapping', dict())
 
+		if not versionMapping:
+			raise GithubNotFound
+
 		userUpdatePref = self.ConfigManager.getAliceConfigByName('skillsUpdateChannel')
 		skillUpdateVersion = (Version(), '')
 
