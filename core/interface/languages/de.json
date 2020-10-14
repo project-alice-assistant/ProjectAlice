@@ -68,5 +68,8 @@
 	"renameLocation"             : "Wie lautet der neue Name der Lokation?",
 	"warningSkillChangeAliceconf": "Änderung der Systemeinstellungen durch Skills erkannt",
 	"accept"                     : "akzeptieren",
-	"refuse"                     : "ablehnen"
+	"refuse"                     : "ablehnen",
+	"leaveEmptyIfNotNeeded"      : "Leave empty is not needed",
+	"scenarioNodes"              : "Scenario nodes",
+	"category"                   : "Category"
 }

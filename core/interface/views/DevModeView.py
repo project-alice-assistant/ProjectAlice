@@ -45,20 +45,24 @@ class DevModeView(View):
 			newSkill = {
 				'name'                  : skillName,
 				'description'           : request.form.get('description', 'Missing description'),
+				'category'              : request.form.get('skillCategory', 'undefined'),
 				'fr'                    : request.form.get('fr', False),
 				'de'                    : request.form.get('de', False),
 				'it'                    : request.form.get('it', False),
-				'pipreq'                : request.form.get('pipreq', list()),
-				'sysreq'                : request.form.get('sysreq', list()),
+				'instructions'          : request.form.get('createInstructions', False),
+				'pipreq'                : request.form.get('pipreq', ''),
+				'sysreq'                : request.form.get('sysreq', ''),
 				'conditionOnline'       : request.form.get('conditionOnline', False),
 				'conditionASRArbitrary' : request.form.get('conditionASRArbitrary', False),
-				'conditionSkill'        : request.form.get('conditionSkill', list()),
-				'conditionNotSkill'     : request.form.get('conditionNotSkill', list()),
-				'conditionActiveManager': request.form.get('conditionActiveManager', list()),
-				'widgets'               : request.form.get('widgets', list())
+				'conditionSkill'        : request.form.get('conditionSkill', ''),
+				'conditionNotSkill'     : request.form.get('conditionNotSkill', ''),
+				'conditionActiveManager': request.form.get('conditionActiveManager', ''),
+				'widgets'               : request.form.get('widgets', ''),
+				'nodes'                 : request.form.get('nodes', '')
 			}
+
 			if not self.SkillManager.createNewSkill(newSkill):
-				raise Exception('Unhandled skill creation exception')
+				raise Exception
 
 			return jsonify(success=True)
 

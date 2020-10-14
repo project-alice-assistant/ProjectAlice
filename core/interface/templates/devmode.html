@@ -38,6 +38,27 @@
 						</div>
 					</div>
 					<div class="configLine">
+						<label class="configLabel" for="skillCategory">{{ langData.category }}</label>
+						<div class="configInput">
+							<select name="skillCategory" id="skillCategory">
+								<option value="weather">weather</option>
+								<option value="information">information</option>
+								<option value="entertainment">entertainment</option>
+								<option value="music">music</option>
+								<option value="game">game</option>
+								<option value="kid">kid</option>
+								<option value="automation">automation</option>
+								<option value="assistance" selected>assistance</option>
+								<option value="security">security</option>
+								<option value="planning">planning</option>
+								<option value="shopping">shopping</option>
+								<option value="organisation">organisation</option>
+								<option value="household">household</option>
+								<option value="health">health</option>
+							</select>
+						</div>
+					</div>
+					<div class="configLine">
 						<label class="configLabel">{{ langData.skillLanguage }}</label>
 						<div class="configInput">
 							<input type="checkbox" name="lang" value="en" id="en" checked="checked" disabled="disabled">
@@ -48,6 +69,12 @@
 							<label for="de">{{ langData.german }}</label><br>
 							<input type="checkbox" name="lang" value="it" id="it">
 							<label for="it">{{ langData.italian }}</label>
+						</div>
+					</div>
+					<div class="configLine">
+						<label class="configLabel" for="createInstructions">{{ langData.instructions }}</label>
+						<div class="configInput">
+							<input type="checkbox" name="createInstructions" value="1" id="createInstructions">
 						</div>
 					</div>
 					<div class="configLine">
@@ -84,8 +111,13 @@
 					<div class="configLine">
 						<label class="configLabel" for="widgets">{{ langData.widgets }}</label>
 						<div class="configInput">
-							<input type="text" size="50" name="widgets" value="" id="widgets"
-								   placeholder="{{ langData.commaSeparatedExplanation }}">
+							<input type="text" size="50" name="widgets" value="" id="widgets" placeholder="{{ langData.commaSeparatedExplanation }}">
+						</div>
+					</div>
+					<div class="configLine">
+						<label class="configLabel" for="nodes">{{ langData.scenarioNodes }}</label>
+						<div class="configInput">
+							<input type="text" size="50" name="nodes" value="" id="nodes" placeholder="{{ langData.commaSeparatedExplanation }}">
 						</div>
 					</div>
 					<div class="configLine">
@@ -103,7 +135,8 @@
 				{% for skillName, skill in skills.items() %}
 					<div id="editSkill_{{ skillName }}" class="tile skillTile">
 						<div class="skillTitle">
-							<div class="skillName">{{ skillName }}</div><i class="{{ skill.icon }}" aria-hidden="true"></i>
+							<div class="skillName">{{ skillName }}</div>
+							<i class="{{ skill.icon }}" aria-hidden="true"></i>
 						</div>
 					</div>
 				{% endfor %}

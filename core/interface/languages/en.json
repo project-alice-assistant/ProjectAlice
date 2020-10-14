@@ -68,5 +68,8 @@
 	"renameLocation"             : "What is the locations new name?",
 	"warningSkillChangeAliceconf": "Core configuration change attempt detected!",
 	"accept"                     : "accept",
-	"refuse"                     : "refuse"
+	"refuse"                     : "refuse",
+	"leaveEmptyIfNotNeeded"      : "Leave empty is not needed",
+	"scenarioNodes"              : "Scenario nodes",
+	"category"                   : "Category"
 }

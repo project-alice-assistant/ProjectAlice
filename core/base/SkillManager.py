@@ -918,6 +918,7 @@ class SkillManager(Manager):
 		if skillName not in self._skillList:
 			return Version.fromString('0.0.0')
 		else:
+			# noinspection SqlResolve
 			query = 'SELECT * FROM :__table__ WHERE skillName = :skillName'
 			data = self.DatabaseManager.fetch(tableName='skills', query=query, values={'skillName': skillName}, callerName=self.name)
 			if not data:
@@ -951,21 +952,7 @@ class SkillManager(Manager):
 		try:
 			self.logInfo(f'Creating new skill "{skillDefinition["name"]}"')
 
-			rootDir = Path(self.Commons.rootDir()) / 'skills'
-			skillTemplateDir = rootDir / 'skill_DefaultTemplate'
-
-			if skillTemplateDir.exists():
-				shutil.rmtree(skillTemplateDir)
-
-			self.Commons.runSystemCommand(['git', '-C', str(rootDir), 'clone', f'{constants.GITHUB_URL}/skill_DefaultTemplate.git'])
-
 			skillName = skillDefinition['name'][0].upper() + skillDefinition['name'][1:]
-			skillDir = rootDir / skillName
-
-			skillTemplateDir.rename(skillDir)
-
-			installFile = skillDir / f'{skillDefinition["name"]}.install'
-			Path(skillDir, 'DefaultTemplate.install').rename(installFile)
 			supportedLanguages = [
 				'en'
 			]
@@ -995,103 +982,26 @@ class SkillManager(Manager):
 			if skillDefinition['conditionActiveManager']:
 				conditions['activeManager'] = [manager.strip() for manager in skillDefinition['conditionActiveManager'].split(',')]
 
-			installContent = {
-				'name'              : skillName,
-				'version'           : '0.0.1',
-				'icon'              : 'fab fa-battle-net',
-				'category'          : 'undefined',
-				'author'            : self.ConfigManager.getAliceConfigByName('githubUsername'),
-				'maintainers'       : [],
-				'desc'              : skillDefinition['description'].capitalize(),
-				'aliceMinVersion'   : constants.VERSION,
-				'systemRequirements': [req.strip() for req in skillDefinition['sysreq'].split(',')],
-				'pipRequirements'   : [req.strip() for req in skillDefinition['pipreq'].split(',')],
+			data = {
+				'username'          : self.ConfigManager.getAliceConfigByName('githubUsername'),
+				'skillName'         : skillName,
+				'description'       : skillDefinition['description'].capitalize(),
+				'category'          : skillDefinition['category'],
+				'langs'             : supportedLanguages,
+				'createInstructions': skillDefinition['instructions'],
+				'pipreq'            : [req.strip() for req in skillDefinition['pipreq'].split(',')],
+				'sysreq'            : [req.strip() for req in skillDefinition['sysreq'].split(',')],
+				'widgets'           : [self.Commons.toPascalCase(widget) for widget in skillDefinition['widgets'].split(',')],
+				'scenarioNodes'     : [self.Commons.toPascalCase(node) for node in skillDefinition['nodes'].split(',')],
+				'outputDestination' : str(Path(self.Commons.rootDir()) / 'skills' / skillName),
 				'conditions'        : conditions
 			}
 
-			# Install file
-			with installFile.open('w') as fp:
-				fp.write(json.dumps(installContent, indent=4))
+			dump = Path(f'/tmp/{skillName}.json')
+			dump.write_text(json.dumps(data, ensure_ascii=False))
 
-			# Dialog templates and talks
-			dialogTemplateTemplate = skillDir / 'dialogTemplate/default.json'
-			with dialogTemplateTemplate.open() as fp:
-				dialogTemplate = json.load(fp)
-				dialogTemplate['skill'] = skillName
-				dialogTemplate['description'] = skillDefinition['description'].capitalize()
-
-			for lang in supportedLanguages:
-				with Path(skillDir, f'dialogTemplate/{lang}.json').open('w+') as fp:
-					fp.write(json.dumps(dialogTemplate, indent=4))
-
-				with Path(skillDir, f'talks/{lang}.json').open('w+') as fp:
-					fp.write(json.dumps(dict()))
-
-			dialogTemplateTemplate.unlink()
-
-			# Widgets
-			if skillDefinition['widgets']:
-				widgetRootDir = skillDir / 'widgets'
-				css = widgetRootDir / 'css/widget.css'
-				js = widgetRootDir / 'js/widget.js'
-				lang = widgetRootDir / 'lang/widget.lang.json'
-				html = widgetRootDir / 'templates/widget.html'
-				python = widgetRootDir / 'widget.py'
-
-				for widget in skillDefinition['widgets'].split(','):
-					widgetName = widget.strip()
-					widgetName = widgetName[0].upper() + widgetName[1:]
-
-					content = css.read_text().replace('%widgetname%', widgetName)
-					with Path(widgetRootDir, f'css/{widgetName}.css').open('w+') as fp:
-						fp.write(content)
-
-					shutil.copy(str(js), str(js).replace('widget.js', f'{widgetName}.js'))
-					shutil.copy(str(lang), str(lang).replace('widget.lang.json', f'{widgetName}.lang.json'))
-
-					content = html.read_text().replace('%widgetname%', widgetName)
-					with Path(widgetRootDir, f'templates/{widgetName}.html').open('w+') as fp:
-						fp.write(content)
-
-					content = python.read_text().replace('Template(Widget)', f'{widgetName}(Widget)')
-					with Path(widgetRootDir, f'{widgetName}.py').open('w+') as fp:
-						fp.write(content)
-
-				css.unlink()
-				js.unlink()
-				lang.unlink()
-				html.unlink()
-				python.unlink()
-
-			else:
-				shutil.rmtree(str(Path(skillDir, 'widgets')))
-
-			languages = ''
-			for lang in supportedLanguages:
-				languages += f'    {lang}\n'
-
-			# Readme file
-			content = Path(skillDir, 'README.md').read_text().replace('%skillname%', skillName) \
-				.replace('%author%', self.ConfigManager.getAliceConfigByName('githubUsername')) \
-				.replace('%minVersion%', constants.VERSION) \
-				.replace('%description%', skillDefinition['description'].capitalize()) \
-				.replace('%languages%', languages)
-
-			with Path(skillDir, 'README.md').open('w') as fp:
-				fp.write(content)
-
-			# Main class
-			classFile = skillDir / f'{skillDefinition["name"]}.py'
-			Path(skillDir, 'DefaultTemplate.py').rename(classFile)
-
-			content = classFile.read_text().replace('%skillname%', skillName) \
-				.replace('%author%', self.ConfigManager.getAliceConfigByName('githubUsername')) \
-				.replace('%description%', skillDefinition['description'].capitalize())
-
-			with classFile.open('w') as fp:
-				fp.write(content)
-
-			self.logInfo(f'Created "{skillDefinition["name"]}" skill')
+			self.Commons.runSystemCommand(['./venv/bin/projectalice-sk', 'create', '--file', f'{str(dump)}'])
+			self.logInfo(f'Created **skillName** skill')
 
 			return True
 		except Exception as e:
