@@ -60,7 +60,7 @@ class NodeRedManager(Manager):
 			return
 
 		process.stdin.close()
-		returnCode = process.wait(timeout=120)
+		returnCode = process.wait(timeout=900)
 
 		if returnCode:
 			self.logError('Failed installing Node-red')
