@@ -127,7 +127,8 @@ button.button{ font-size: 1.6em; height: 2em; }
 .addWidgetCheck { float: right; color: var(--text); margin-right: .4em; }
 
 /* To use with custom Widgets! */
-.widget { display: block; box-shadow: 0 0 20px 5px #141414; background-color: var(--windowBG); cursor: default; overflow: hidden; }
+.widget { display: block; box-shadow: 0 0 20px 5px #141414; background-color: var(--windowBG); cursor: default; overflow: hidden; font-family: var(--readable) }
+
 .widgetIcons { font-size: 1.5em; display: flex; align-items: flex-start; }
 .widgetIconsHidden .widgetIcons { display: none; }
 .widgetIcon { display: flex; flex-grow: 1; }
