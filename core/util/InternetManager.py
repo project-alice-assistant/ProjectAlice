@@ -35,6 +35,9 @@ class InternetManager(Manager):
 
 
 	def checkOnlineState(self, addr: str = 'https://clients3.google.com/generate_204', silent: bool = False) -> bool:
+		if self.ConfigManager.getAliceConfigByName('stayCompletlyOffline'):
+			return False
+
 		try:
 			online = requests.get(addr).status_code == 204
 		except RequestException:

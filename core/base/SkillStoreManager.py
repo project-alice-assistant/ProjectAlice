@@ -14,6 +14,7 @@ class SkillStoreManager(Manager):
 	def __init__(self):
 		super().__init__()
 		self._skillStoreData = dict()
+		self._skillSamplesData = dict()
 
 
 	@property
@@ -30,6 +31,7 @@ class SkillStoreManager(Manager):
 		self.refreshStoreData()
 
 
+	@Online(catchOnly=True)
 	def refreshStoreData(self):
 		updateChannel = self.ConfigManager.getAliceConfigByName('skillsUpdateChannel')
 		req = requests.get(url=f'https://skills.projectalice.io/assets/store/{updateChannel}.json')
@@ -37,6 +39,12 @@ class SkillStoreManager(Manager):
 			return
 
 		self._skillStoreData = req.json()
+
+		req = requests.get(url=f'https://skills.projectalice.io/assets/store/{updateChannel}.samples')
+		if req.status_code not in {200, 304}:
+			return
+
+		self._skillSamplesData = req.json()
 
 
 	def _getSkillUpdateVersion(self, skillName: str) -> Optional[tuple]:
