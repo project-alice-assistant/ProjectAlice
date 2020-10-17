@@ -1,3 +1,4 @@
+import difflib
 from typing import Optional
 
 import requests
@@ -6,10 +7,13 @@ from core.ProjectAliceExceptions import GithubNotFound
 from core.base.model.Manager import Manager
 from core.base.model.Version import Version
 from core.commons import constants
+from core.dialog.model.DialogSession import DialogSession
 from core.util.Decorators import Online
 
 
 class SkillStoreManager(Manager):
+
+	SUGGESTIONS_DIFF_LIMIT = 0.75
 
 	def __init__(self):
 		super().__init__()
@@ -26,7 +30,6 @@ class SkillStoreManager(Manager):
 		self.refreshStoreData()
 
 
-	@Online(catchOnly=True)
 	def onQuarterHour(self):
 		self.refreshStoreData()
 
@@ -40,11 +43,20 @@ class SkillStoreManager(Manager):
 
 		self._skillStoreData = req.json()
 
+		if not self.ConfigManager.getAliceConfigByName('suggestSkillsToInstall'):
+			return
+
 		req = requests.get(url=f'https://skills.projectalice.io/assets/store/{updateChannel}.samples')
 		if req.status_code not in {200, 304}:
 			return
 
-		self._skillSamplesData = req.json()
+		data = req.json()
+
+		for skillName, skill in data.items():
+			for intent, samples in skill.get(self.LanguageManager.activeLanguage, dict()).items():
+				for sample in samples:
+					self._skillSamplesData.setdefault(skillName, list())
+					self._skillSamplesData[skillName].append(sample)
 
 
 	def _getSkillUpdateVersion(self, skillName: str) -> Optional[tuple]:
@@ -77,6 +89,22 @@ class SkillStoreManager(Manager):
 			raise GithubNotFound
 
 		return skillUpdateVersion
+
+
+	def findSkillSuggestion(self, session: DialogSession, string: str = None) -> set:
+		suggestions = set()
+		if not self._skillSamplesData or not self.InternetManager.online():
+			return suggestions
+
+		userInput = session.previousInput if not string else string
+		for skillName, samples in self._skillSamplesData.items():
+			for sample in samples:
+				diff = difflib.SequenceMatcher(None, userInput, sample).ratio()
+				if diff >= self.SUGGESTIONS_DIFF_LIMIT:
+					suggestions.add(skillName)
+					break
+
+		return suggestions
 
 
 	def getSkillUpdateTag(self, skillName: str) -> str:
