@@ -1,0 +1,93 @@
+	{
+	"noAccess": {
+		"default": [
+			"Przepraszam, nie mogę. Nie masz wystarczających uprawnień",
+			"Niemożliwe. Twoje uprawnienia są za niskie"
+		],
+		"short":[
+			"Brak dostępu"
+		]
+	},
+	"unknowUser": {
+		"default": [
+			"Przepraszam ale nie wiem kim jesteś",
+			"Przepraszam, nie mogę. Nie znam cię",
+			"Musisz zwracać się do mnie po imieniu abym wiedział kim jesteś"
+		],
+		"short": [
+			"Nie znam cię"
+		]
+	},
+	"notUnderstood": {
+		"default": [
+			"Przepraszam ale nie jestem pewien czy dobrze rozumiem czego chcesz",
+			"Nie zrozumiełem czego chcesz",
+			"Przepraszam, czy możesz powtórzyć?",
+			"Co??"
+		],
+		"short": [
+			"Nie zrozumiałem"
+		]
+	},
+	"notUnderstoodEnd": {
+		"default": [
+			"Przepraszam ale Cię nie rozumiem",
+			"Przepraszam ale nie rozumiem czego chcesz",
+			"Koniec tematu. Nie rozumiem Twojego polecenia",
+			"Stop. Nic z tego nie rozumiem"
+		],
+		"short": [
+			"Nie rozumiem"
+		]
+	},
+	"youreWelcome": {
+		"default": [
+			"Proszę bardzo!",
+			"Cała przyjemność po mojej stronie!",
+			"Nie ma sprawy!",
+			"W porządku!"
+		]
+	},
+	"error": {
+		"default": [
+			"Coś poszło nie tak, sprawdź logi"
+		]
+	},
+	"newDeviceAdditionFailed": {
+		"default": [
+			"Przepraszam, pojawił się problem z dodaniem nowego urządzenia"
+		]
+	},
+	"newDeviceAdditionSuccess": {
+		"default": [
+			"Nowe urządzenie zostało znalezione i pomyślnie dodane!"
+		]
+	},
+	"maxOneAlicePerRoom": {
+		"default": [
+			"Przepraszam ale nie możesz mieć więcej niż jeden odbiornik w pomieszczeniu",
+			"Przepraszam ale w jednym pomieszczeniu może być tylko jeden odbiornik"
+		]
+	},
+	"wakewordCaptured": [
+		"Zarejestrowałem twoje wyrażenie wywołujące, sprawdźmy je",
+		"OK, zarejestrowane. Odtwarzam do weryfikacji",
+		"Zarejestrowane. Posłuchaj czy wszystko się zgadza"
+	],
+	"isWakewordSampleOk": [
+		"Sprawdź czy tak jest dobrze"
+	],
+	"offline": [
+		"Przepraszam ale nie mogę tego zrobić będąc w trybie offline"
+	],
+	"notification": [
+		"Tak?",
+		"Słucham?",
+		"Zamieniam się w słuch!",
+		"Do usług!",
+		"Czekam na polecenie",
+		"Czekam na rozkaz",
+		"No co tam?",
+		"Mów o co chodzi"
+	]
+}

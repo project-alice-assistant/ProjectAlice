@@ -11,6 +11,10 @@
 		],
 		"it": [
 			"fuori"
+		],
+		"pl": [
+			"na zewnątrz",
+			"na dworze"
 		]
 	},
 	"intentSeparator": {
@@ -25,6 +29,9 @@
 		],
 		"it": [
 			" ed anche "
+		],
+		"pl": [
+			" a także "
 		]
 	},
 	"inThe": {
@@ -53,6 +60,11 @@
 			"nei ",
 			"dentro ",
 			"in "
+		],
+		"pl": [
+			"w pokoju ",
+			"w ",
+			"w pomieszczeniu "
 		]
 	},
 	"everywhere": {
@@ -68,6 +80,9 @@
 		"it": [
 			"dappertutto",
 			"ovunque"
+		],
+		"pl": [
+			"wszędzie"
 		]
 	},
 	"+": {
@@ -82,6 +97,9 @@
 		],
 		"it": [
 			"più"
+		],
+		"pl": [
+			"plus"
 		]
 	},
 	"-": {
@@ -96,6 +114,9 @@
 		],
 		"it": [
 			"meno"
+		],
+		"pl": [
+			"minus"
 		]
 	},
 	"*": {
@@ -110,6 +131,9 @@
 		],
 		"it": [
 			"per"
+		],
+		"pl": [
+			"razy"
 		]
 	},
 	"/": {
@@ -124,6 +148,9 @@
 		],
 		"it": [
 			"diviso"
+		],
+		"pl": [
+			"dzielone przez"
 		]
 	},
 	"%": {
@@ -137,6 +164,9 @@
 			"modulo"
 		],
 		"it": [
+			"modulo"
+		],
+		"en": [
 			"modulo"
 		]
 	},
@@ -165,6 +195,16 @@
 			"annulla",
 			"sta 'zitto",
 			"silenzio"
+		],
+		"pl": [
+			"anuluj",
+			"stop",
+			"zamknij się",
+			"cisza",
+			"cicho bądź",
+			"bądź cicho",
+			"morda w kubeł",
+			"ucisz się"
 		]
 	}
 }
