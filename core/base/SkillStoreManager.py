@@ -1,4 +1,6 @@
 import difflib
+from random import shuffle
+
 from typing import Optional
 
 import requests
@@ -51,22 +53,6 @@ class SkillStoreManager(Manager):
 			return
 
 		self.prepareSamplesData(req.json())
-
-		strings = [
-			'time',
-			'give me the date',
-			'what time is it',
-			'give me money',
-			'give me time',
-			'shopping list',
-			'add something to my shopping list',
-			'tell me time',
-			'what is blue'
-		]
-
-		for string in strings:
-			sug = self.findSkillSuggestion(session=None, string=string)
-			self.logDebug(f'Found {len(sug)} potential skill for **{string}**: {sug}', plural='skill')
 
 
 	def prepareSamplesData(self, data: dict):
@@ -123,7 +109,10 @@ class SkillStoreManager(Manager):
 		if not self._skillSamplesData or not self.InternetManager.online:
 			return suggestions
 
-		userInput = session.previousInput if not string else string
+		userInput = session.input if not string else string
+		if not userInput:
+			return suggestions
+
 		for skillName, samples in self._skillSamplesData.items():
 			for sample in samples:
 				diff = difflib.SequenceMatcher(None, userInput, sample).ratio()
@@ -131,7 +120,34 @@ class SkillStoreManager(Manager):
 					suggestions.add(skillName)
 					break
 
-		return suggestions
+		userInputs = list()
+		userInput = userInput.split()
+
+		if len(userInput) == 1:
+			userInputs.append(userInput.copy())
+
+		for _ in range(max(len(userInput), 8)):
+			shuffle(userInput)
+			userInputs.append(userInput.copy())
+
+		for skillName, samples in self._skillSamplesData.items():
+			for sample in samples:
+				for userInput in userInputs:
+					diff = difflib.SequenceMatcher(None, userInput, sample).ratio()
+					if diff >= self.SUGGESTIONS_DIFF_LIMIT:
+						suggestions.add(skillName)
+						break
+
+		ret = set()
+		for suggestedSkillName in suggestions:
+			speakableName = self._skillStoreData.get(suggestedSkillName, dict()).get('speakableName', '')
+
+			if not speakableName:
+				continue
+
+			ret.add((suggestedSkillName, speakableName))
+
+		return ret
 
 
 	def getSkillUpdateTag(self, skillName: str) -> str:

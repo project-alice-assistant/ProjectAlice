@@ -160,6 +160,8 @@ class Tts(ProjectAliceObject):
 			duration = round(len(AudioSegment.from_file(file)) / 1000, 2)
 		except CouldntDecodeError:
 			self.logError('Error decoding TTS file')
+			file.unlink()
+			self.onSay(session)
 		else:
 			self.DialogManager.increaseSessionTimeout(session=session, interval=duration + 0.2)
 			self.ThreadManager.doLater(interval=duration + 0.1, func=self._sayFinished, args=[session, uid])
