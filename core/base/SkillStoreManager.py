@@ -50,12 +50,39 @@ class SkillStoreManager(Manager):
 		if req.status_code not in {200, 304}:
 			return
 
-		data = req.json()
+		self.prepareSamplesData(req.json())
 
+		strings = [
+			'time',
+			'give me the date',
+			'what time is it',
+			'give me money',
+			'give me time',
+			'shopping list',
+			'add something to my shopping list',
+			'tell me time',
+			'what is blue'
+		]
+
+		for string in strings:
+			sug = self.findSkillSuggestion(session=None, string=string)
+			self.logDebug(f'Found {len(sug)} potential skill for **{string}**: {sug}', plural='skill')
+
+
+	def prepareSamplesData(self, data: dict):
+		if not data:
+			return
+
+		junks = self.LanguageManager.getStrings(key='politness', skill='system')
 		for skillName, skill in data.items():
 			for intent, samples in skill.get(self.LanguageManager.activeLanguage, dict()).items():
 				for sample in samples:
 					self._skillSamplesData.setdefault(skillName, list())
+
+					for junk in junks:
+						if junk in sample:
+							sample = sample.replace(junk, '')
+
 					self._skillSamplesData[skillName].append(sample)
 
 
@@ -93,7 +120,7 @@ class SkillStoreManager(Manager):
 
 	def findSkillSuggestion(self, session: DialogSession, string: str = None) -> set:
 		suggestions = set()
-		if not self._skillSamplesData or not self.InternetManager.online():
+		if not self._skillSamplesData or not self.InternetManager.online:
 			return suggestions
 
 		userInput = session.previousInput if not string else string
