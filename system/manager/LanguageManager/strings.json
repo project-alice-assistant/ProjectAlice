@@ -166,6 +166,26 @@
 			"sta 'zitto",
 			"silenzio"
 		]
+	},
+	"politness": {
+		"en": [
+			"please",
+			"could you",
+			"would you be so nice"
+		],
+		"fr": [
+			"s'il te plaît",
+			"pourrais-tu"
+		],
+		"de": [
+			"bitte",
+			"danke",
+			"kannst du",
+			"wärst du so nett",
+			"würdest du",
+			"könntest du"
+		],
+		"it": []
 	}
 }
 
