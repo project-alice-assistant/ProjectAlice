@@ -12,10 +12,16 @@ class TestInternetManager(unittest.TestCase):
 	@mock.patch('core.util.InternetManager.Manager.broadcast')
 	@mock.patch('core.util.InternetManager.requests')
 	@mock.patch('core.util.InternetManager.InternetManager.Commons', new_callable=PropertyMock)
-	def test_checkOnlineState(self, mock_commons, mock_requests, mock_broadcast):
+	@mock.patch('core.base.SuperManager.SuperManager')
+	def test_checkOnlineState(self, mock_commons, mock_requests, mock_broadcast, mock_superManager):
 		common_mock = MagicMock()
 		common_mock.getFunctionCaller.return_value = 'InternetManager'
 		mock_commons.return_value = common_mock
+
+		# mock SuperManager
+		mock_instance = MagicMock()
+		mock_superManager.getInstance.return_value = mock_instance
+		mock_instance.configManager.getAliceConfigByName.return_value = 'uuid'
 
 		internetManager = InternetManager()
 
