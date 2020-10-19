@@ -82,7 +82,10 @@ class NodeRedManager(Manager):
 		config = Path(self.PACKAGE_PATH.parent, '.config.nodes.json')
 		data = json.loads(config.read_text())
 		for package in data.values():
+			keeper = self.DEFAULT_NODES_ACTIVE.get(package['name'], list())
 			for node in package['nodes'].values():
+				if node['name'] in keeper:
+					continue
 				node['enabled'] = False
 
 		config.write_text(json.dumps(data))

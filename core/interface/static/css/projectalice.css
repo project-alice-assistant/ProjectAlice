@@ -148,26 +148,33 @@ button.button{ font-size: 1.6em; height: 2em; }
 .skillStoreSkillLeft { flex: 1 }
 .skillStoreSkillRight { display: flex; margin-right: 5px; align-items: center; justify-content: flex-end; font-size: 3.5em; }
 
-.skillStoreSkillAuthor,.skillStoreSkillVersion,.skillStoreSkillCategory,.skillVersion,
-.spaced{ margin: .2em; }
+.skillStoreSkillAuthor, .skillStoreSkillVersion, .skillStoreSkillCategory, .skillVersion,
+.spaced { margin: .2em; font-size: 0.8em; }
 
 /* bigger icon for FA */
 .spaced i { width: 1.2em; }
 
 /* Tile structure */
 .tileContainer { margin: .2em; overflow-y: auto; overflow-x: hidden; display: flex; flex-wrap: wrap; align-content: flex-start; flex-direction: row; }
-.tile { background-color: var(--windowBG); margin: .6em; display: flex; flex-wrap: wrap; align-content: flex-start; position: relative; box-shadow: 0 0 20px 5px #141414; }
-.skillStoreSkillTile { width: 18.75em; height: 18.75em; }
-.skillTile { width: 18.75em; height: 13em; }
 
-.skillStoreSkillDescription { background-color: var(--secondary); font-family: var(--long); font-size: 0.75em; width: 100%; height: 10em; margin: .5em; padding: .5em; box-sizing: border-box; overflow-x: hidden;	overflow-y: auto; }
+.tile { background-color: var(--windowBG); margin: .6em; display: flex; flex-wrap: wrap; align-content: flex-start; position: relative; box-shadow: 0 0 20px 5px #141414; }
+
+.skillStoreSkillTile { width: 18.75em; height: 18.75em; font-family: var(--readable); }
+
+.skillTile { width: 18.75em; height: 13em; font-family: var(--readable); font-size: 1em; }
+
+.skillStoreSkillDescription { background-color: var(--secondary); font-family: var(--long); font-size: 0.75em; width: 100%; height: 10em; margin: .5em; padding: .5em; box-sizing: border-box; overflow-x: hidden; overflow-y: auto; }
 
 .skillContainer { position: relative; flex-wrap: wrap; align-content: flex-start; height: 11.3em; margin: .2em; }
+
 .skillDefaultView { display: flex; }
+
 .skillIntentsView { width: 100%; overflow-x: hidden; overflow-y: auto; }
 
-.skillTitle { background-color: var(--secondary); height: 1.5em; width: 100%; padding: 0 .4em; display: flex; align-items: center; justify-content: space-between; overflow: hidden; }
+.skillTitle { background-color: var(--secondary); height: 1.5em; width: 100%; padding: 0 .4em; display: flex; align-items: center; justify-content: space-between; overflow: hidden; font-family: var(--short)}
+
 .skillStatus { width: 100%; margin-top: 10px; margin-left: 4px; }
+
 .skillName { overflow: hidden; font-size: 1.25em; }
 
 .skillViewIntents,
