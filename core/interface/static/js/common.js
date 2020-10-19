@@ -287,5 +287,8 @@ $(function () {
 
 	setInterval(checkCoreStatus, 2000);
 
-	$(":checkbox").checkToggler();
+	let $checkboxes = $(':checkbox');
+	if ($checkboxes.length) {
+		$checkboxes.checkToggler();
+	}
 });
