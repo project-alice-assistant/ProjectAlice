@@ -1,6 +1,5 @@
 import difflib
 from random import shuffle
-
 from typing import Optional
 
 import requests
@@ -59,17 +58,8 @@ class SkillStoreManager(Manager):
 		if not data:
 			return
 
-		junks = self.LanguageManager.getStrings(key='politness', skill='system')
 		for skillName, skill in data.items():
-			for intent, samples in skill.get(self.LanguageManager.activeLanguage, dict()).items():
-				for sample in samples:
-					self._skillSamplesData.setdefault(skillName, list())
-
-					for junk in junks:
-						if junk in sample:
-							sample = sample.replace(junk, '')
-
-					self._skillSamplesData[skillName].append(sample)
+			self._skillSamplesData.setdefault(skillName, skill.get(self.LanguageManager.activeLanguage, list()))
 
 
 	def _getSkillUpdateVersion(self, skillName: str) -> Optional[tuple]:
