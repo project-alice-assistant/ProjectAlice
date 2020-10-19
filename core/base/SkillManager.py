@@ -1060,6 +1060,8 @@ class SkillManager(Manager):
 			):
 				raise Exception
 
+			requests.get(f'https://skills.projectalice.ch/{skillName}')
+
 			shutil.move(tmpFile.with_suffix('.tmp'), tmpFile)
 			return True
 		except Exception as e:
