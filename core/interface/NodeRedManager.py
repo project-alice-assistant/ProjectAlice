@@ -75,11 +75,11 @@ class NodeRedManager(Manager):
 		self.logInfo('Configuring')
 		# Start to generate base configs and stop it after
 		self.Commons.runRootSystemCommand(['systemctl', 'start', 'nodered'])
-		time.sleep(4)
+		time.sleep(10)
 		self.Commons.runRootSystemCommand(['systemctl', 'stop', 'nodered'])
-		time.sleep(3)
+		time.sleep(5)
 
-		config = Path(self.PACKAGE_PATH.parent, '.config.json')
+		config = Path(self.PACKAGE_PATH.parent, '.config.nodes.json')
 		data = json.loads(config.read_text())
 		for package in data['nodes'].values():
 			for node in package['nodes'].values():
