@@ -81,7 +81,7 @@ class NodeRedManager(Manager):
 
 		config = Path(self.PACKAGE_PATH.parent, '.config.nodes.json')
 		data = json.loads(config.read_text())
-		for package in data['nodes'].values():
+		for package in data.values():
 			for node in package['nodes'].values():
 				node['enabled'] = False
 
