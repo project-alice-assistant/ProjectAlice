@@ -987,6 +987,7 @@ class SkillManager(Manager):
 				'skillName'         : skillName,
 				'description'       : skillDefinition['description'].capitalize(),
 				'category'          : skillDefinition['category'],
+				'speakableName'     : skillDefinition['speakableName'],
 				'langs'             : supportedLanguages,
 				'createInstructions': skillDefinition['instructions'],
 				'pipreq'            : [req.strip() for req in skillDefinition['pipreq'].split(',')],

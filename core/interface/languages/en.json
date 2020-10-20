@@ -71,5 +71,6 @@
 	"refuse"                     : "refuse",
 	"leaveEmptyIfNotNeeded"      : "Leave empty is not needed",
 	"scenarioNodes"              : "Scenario nodes",
-	"category"                   : "Category"
+	"category"                   : "Category",
+	"speakableName"              : "Speakable name"
 }

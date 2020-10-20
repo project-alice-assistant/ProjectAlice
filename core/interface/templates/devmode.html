@@ -30,6 +30,14 @@
 						</div>
 					</div>
 					<div class="configLine">
+						<label class="configLabel" for="speakableName">{{ langData.speakableName }}</label>
+						<div class="configInput">
+							<input type="text" size="50" name="speakableName" value="" id="speakableName" required>
+							<i class="fas fa-check" id="speakableNameNameOk" aria-hidden="true" style="display: none;"></i>
+							<i class="fas fa-times" id="speakableNameNameKo" aria-hidden="true"></i>
+						</div>
+					</div>
+					<div class="configLine">
 						<label class="configLabel" for="skillDesc">{{ langData.skillDesc }}</label>
 						<div class="configInput">
 							<input type="text" size="50" name="skillDesc" value="" id="skillDesc" required>

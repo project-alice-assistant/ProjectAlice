@@ -44,6 +44,7 @@ class DevModeView(View):
 		try:
 			newSkill = {
 				'name'                  : skillName,
+				'speakableName'         : request.form.get('speakableName', ''),
 				'description'           : request.form.get('description', 'Missing description'),
 				'category'              : request.form.get('skillCategory', 'undefined'),
 				'fr'                    : request.form.get('fr', False),

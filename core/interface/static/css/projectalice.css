@@ -141,8 +141,9 @@ button.button{ font-size: 1.6em; height: 2em; }
 .tabsContainer { padding-bottom: .1em; border: 2px solid var(--secondary); }
 .tabsContainer ul { display: flex; background-color: var(--secondary); margin-top: 0; padding-left: .4em; }
 .tabsContainer li { background-color: var(--windowBG); font-size: 1.25em; padding: .2em .7em; margin: .3em .3em 0 0; display: inline-flex; align-items: center; box-sizing: border-box; border-radius: .3em .3em 0 0; border: 2px solid var(--accent); border-bottom: 0; }
-.tabsContainer .activeTab {	background-color: var(--mainBG); }
-.tabsContent { display: flex; overflow-y: auto; overflow-x: hidden; padding-left: .7em; }
+.tabsContainer .activeTab { background-color: var(--mainBG); }
+
+.tabsContent { display: flex; overflow-y: auto; overflow-x: hidden; padding-left: .7em; padding-right: .7em; padding-bottom: .7em; }
 
 .skillStoreSkillInfoContainer { margin-top: .4em; display: flex; width: 100%; flex-flow: row; }
 .skillStoreSkillLeft { flex: 1 }

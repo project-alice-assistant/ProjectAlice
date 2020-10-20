@@ -8,7 +8,7 @@ $(function () {
 	let $goGithubButton = $('#goGithubButton');
 
 	function toggleCreateButton() {
-		if ($('#skillNameOk').is(':visible') && $('#skillDescOk').is(':visible')) {
+		if ($('#skillNameOk').is(':visible') && $('#skillDescOk').is(':visible') && $('#speakableNameNameOk').is(':visible')) {
 			$createSkillButton.show();
 		} else {
 			$createSkillButton.hide();
@@ -22,6 +22,8 @@ $(function () {
 		$('#skillNameKo').show();
 		$('#skillDescOk').hide();
 		$('#skillDescKo').show();
+		$('#speakableNameDescOk').hide();
+		$('#speakableNameDescKo').show();
 		$uploadSkillButton.hide();
 		$goGithubButton.hide();
 	}
@@ -80,6 +82,17 @@ $(function () {
 		});
 	});
 
+	$('#speakableName').on('input', function () {
+		if ($(this).val().length < 5) {
+			$('#speakableNameNameOk').hide();
+			$('#speakableNameNameKo').show();
+		} else {
+			$('#speakableNameNameOk').show();
+			$('#speakableNameNameKo').hide();
+		}
+		toggleCreateButton();
+	});
+
 	$('#skillDesc').on('input', function () {
 		if ($(this).val().length > 20) {
 			$('#skillDescKo').hide();
@@ -96,6 +109,7 @@ $(function () {
 			url: '/devmode/' + $skillName.val() + '/',
 			type: 'PUT',
 			data: {
+				'speakableName'         : $('#speakableName').val(),
 				'description'           : $('#skillDesc').val(),
 				'fr'                    : ($('#fr').is(':checked')) ? 'yes' : 'no',
 				'de'                    : ($('#de').is(':checked')) ? 'yes' : 'no',
