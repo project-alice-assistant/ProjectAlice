@@ -1001,6 +1001,7 @@ class SkillManager(Manager):
 			dump = Path(f'/tmp/{skillName}.json')
 			dump.write_text(json.dumps(data, ensure_ascii=False))
 
+			self.Commons.runSystemCommand(['./venv/bin/pip', '--upgrade', 'projectalice-sk'])
 			self.Commons.runSystemCommand(['./venv/bin/projectalice-sk', 'create', '--file', f'{str(dump)}'])
 			self.logInfo(f'Created **skillName** skill')
 
