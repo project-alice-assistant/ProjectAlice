@@ -75,14 +75,17 @@ class NodeRedManager(Manager):
 		self.logInfo('Configuring')
 		# Start to generate base configs and stop it after
 		self.Commons.runRootSystemCommand(['systemctl', 'start', 'nodered'])
-		time.sleep(4)
+		time.sleep(5)
 		self.Commons.runRootSystemCommand(['systemctl', 'stop', 'nodered'])
 		time.sleep(3)
 
-		config = Path(self.PACKAGE_PATH.parent, '.config.json')
+		config = Path(self.PACKAGE_PATH.parent, '.config.nodes.json')
 		data = json.loads(config.read_text())
-		for package in data['nodes'].values():
+		for package in data.values():
+			keeper = self.DEFAULT_NODES_ACTIVE.get(package['name'], list())
 			for node in package['nodes'].values():
+				if node['name'] in keeper:
+					continue
 				node['enabled'] = False
 
 		config.write_text(json.dumps(data))
