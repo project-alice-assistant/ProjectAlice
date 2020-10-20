@@ -89,7 +89,7 @@ class AliceSkill(ProjectAliceObject):
 			if not text in utterances:
 				utterances.append(text)
 				data['intents'][i]['utterances'] = utterances
-				file.write_text(json.dumps(data, ensure_ascii=False, indent=4))
+				file.write_text(json.dumps(data, ensure_ascii=False, indent='\t'))
 				return True
 
 		return False

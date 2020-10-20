@@ -196,7 +196,7 @@ class AssistantManager(Manager):
 
 			assistant['intents'] = [intent for intent in intents.values()]
 
-			self._assistantPath.write_text(json.dumps(assistant, ensure_ascii=False, indent=4, sort_keys=True))
+			self._assistantPath.write_text(json.dumps(assistant, ensure_ascii=False, indent='\t', sort_keys=True))
 			self.linkAssistant()
 
 			self.broadcast(method='snipsAssistantInstalled', exceptions=[self.name], propagateToSkills=True)

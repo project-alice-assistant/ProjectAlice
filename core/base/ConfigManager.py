@@ -57,7 +57,7 @@ class ConfigManager(Manager):
 		if not aliceConfigs:
 			self.logInfo('Creating config file from config template')
 			aliceConfigs = {configName: configData['defaultValue'] if 'defaultValue' in configData else configData for configName, configData in self._aliceTemplateConfigurations.items()}
-			self.CONFIG_FILE.write_text(json.dumps(aliceConfigs, indent=4, ensure_ascii=False))
+			self.CONFIG_FILE.write_text(json.dumps(aliceConfigs, indent='\t', ensure_ascii=False))
 
 		changes = False
 
@@ -287,7 +287,7 @@ class ConfigManager(Manager):
 		self._aliceConfigurations = sort
 
 		try:
-			self.CONFIG_FILE.write_text(json.dumps(sort, indent=4, sort_keys=True))
+			self.CONFIG_FILE.write_text(json.dumps(sort, indent='\t', sort_keys=True))
 		except Exception:
 			raise ConfigurationUpdateFailed()
 
@@ -304,7 +304,7 @@ class ConfigManager(Manager):
 		confsCleaned = {key: value for key, value in confs.items() if key not in misterProper}
 
 		skillConfigFile = Path(self.Commons.rootDir(), 'skills', skillName, 'config.json')
-		skillConfigFile.write_text(json.dumps(confsCleaned, indent=4, ensure_ascii=False, sort_keys=True))
+		skillConfigFile.write_text(json.dumps(confsCleaned, indent='\t', ensure_ascii=False, sort_keys=True))
 
 
 	def loadSnipsConfigurations(self) -> dict:

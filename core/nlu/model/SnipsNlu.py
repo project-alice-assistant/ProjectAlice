@@ -1,9 +1,8 @@
 import json
-from pathlib import Path
-from subprocess import CompletedProcess
-
 import re
 import shutil
+from pathlib import Path
+from subprocess import CompletedProcess
 
 from core.commons import constants
 from core.nlu.model.NluEngine import NluEngine
@@ -113,7 +112,7 @@ class SnipsNlu(NluEngine):
 		datasetFile = Path('/tmp/snipsNluDataset.json')
 
 		with datasetFile.open('w') as fp:
-			json.dump(dataset, fp, ensure_ascii=False, indent=4)
+			json.dump(dataset, fp, ensure_ascii=False, indent='\t')
 
 		self.logInfo('Generated dataset for training')
 
