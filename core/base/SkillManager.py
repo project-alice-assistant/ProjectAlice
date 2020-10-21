@@ -962,6 +962,8 @@ class SkillManager(Manager):
 				supportedLanguages.append('de')
 			if skillDefinition['it'] == 'yes':
 				supportedLanguages.append('it')
+			if skillDefinition['pl'] == 'yes':
+				supportedLanguages.append('pl')
 
 			conditions = {
 				'lang': supportedLanguages

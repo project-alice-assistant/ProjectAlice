@@ -7,7 +7,9 @@ from core.voice.model.TTSEnum import TTSEnum
 from core.voice.model.Tts import Tts
 
 try:
+	# noinspection PyUnresolvedReferences,PyPackageRequirements
 	from google.oauth2.service_account import Credentials
+	# noinspection PyUnresolvedReferences,PyPackageRequirements
 	from google.cloud import texttospeech
 except:
 	pass # Auto installed
@@ -142,13 +144,49 @@ class GoogleTts(Tts):
 					'it-IT-Standard-A': {
 						'neural': False
 					},
-					'it-IT-Standard-B' : {
+					'it-IT-Standard-B': {
 						'neural': False
 					},
 					'it-IT-Wavenet-A' : {
 						'neural': True
 					},
-					'it-IT-Wavenet-B': {
+					'it-IT-Wavenet-B' : {
+						'neural': True
+					}
+				}
+			},
+			'pl-PL': {
+				'male'  : {
+					'pl-PL-Standard-B': {
+						'neural': False
+					},
+					'pl-PL-Standard-C': {
+						'neural': False
+					},
+					'pl-PL-Wavenet-B' : {
+						'neural': True
+					},
+					'pl-PL-Wavenet-C' : {
+						'neural': True
+					}
+				},
+				'female': {
+					'pl-PL-Standard-A': {
+						'neural': False
+					},
+					'pl-PL-Standard-D': {
+						'neural': False
+					},
+					'pl-PL-Standard-E': {
+						'neural': True
+					},
+					'pl-PL-Wavenet-A' : {
+						'neural': True
+					},
+					'pl-PL-Wavenet-D' : {
+						'neural': True
+					},
+					'pl-PL-Wavenet-E' : {
 						'neural': True
 					}
 				}

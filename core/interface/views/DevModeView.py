@@ -50,6 +50,7 @@ class DevModeView(View):
 				'fr'                    : request.form.get('fr', False),
 				'de'                    : request.form.get('de', False),
 				'it'                    : request.form.get('it', False),
+				'pl'                    : request.form.get('pl', False),
 				'instructions'          : request.form.get('createInstructions', False),
 				'pipreq'                : request.form.get('pipreq', ''),
 				'sysreq'                : request.form.get('sysreq', ''),

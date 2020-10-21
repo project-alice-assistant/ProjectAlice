@@ -458,7 +458,8 @@
 			"fr",
 			"de",
 			"it",
-			"pt"
+			"pt",
+			"pl"
 		],
 		"description" : "Project Alice active language",
 		"category"    : "system"
@@ -603,6 +604,13 @@
 					"IT",
 					"CH"
 				]
+			},
+			"pl": {
+				"default"           : false,
+				"defaultCountryCode": "PL",
+				"countryCodes"      : [
+					"PL"
+				]
 			}
 		},
 		"dataType"    : "list",
@@ -639,6 +647,13 @@
 				"countryCodes"      : [
 					"IT",
 					"CH"
+				]
+			},
+			"pl": {
+				"default"           : false,
+				"defaultCountryCode": "PL",
+				"countryCodes"      : [
+					"PL"
 				]
 			}
 		},

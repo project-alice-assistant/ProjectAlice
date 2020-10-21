@@ -6,6 +6,7 @@ from core.voice.model.TTSEnum import TTSEnum
 from core.voice.model.Tts import Tts
 
 try:
+	# noinspection PyUnresolvedReferences
 	import boto3
 except ModuleNotFoundError:
 	pass # Auto installeed
@@ -186,7 +187,52 @@ class AmazonTts(Tts):
 					'Bianca': {
 						'neural': False
 					},
-					'Carla'  : {
+					'Carla' : {
+						'neural': False
+					}
+				}
+			},
+			'pl-PL': {
+				'male'  : {
+					'Jacek': {
+						'neural': False
+					},
+					'Jan'  : {
+						'neural': False
+					}
+				},
+				'female': {
+					'Ewa' : {
+						'neural': False
+					},
+					'Maja': {
+						'neural': False
+					}
+				}
+			},
+			'pt-BR': {
+				'male'  : {
+					'Ricardo': {
+						'neural': False
+					}
+				},
+				'female': {
+					'Camila' : {
+						'neural': False
+					},
+					'Vitoria': {
+						'neural': False
+					}
+				}
+			},
+			'pt-PT': {
+				'male'  : {
+					'Cristiano': {
+						'neural': False
+					}
+				},
+				'female': {
+					'Ines': {
 						'neural': False
 					}
 				}
