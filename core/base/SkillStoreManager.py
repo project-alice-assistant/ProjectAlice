@@ -37,8 +37,7 @@ class SkillStoreManager(Manager):
 
 	@Online(catchOnly=True)
 	def refreshStoreData(self):
-		updateChannel = self.ConfigManager.getAliceConfigByName('skillsUpdateChannel')
-		req = requests.get(url=f'https://skills.projectalice.io/assets/store/{updateChannel}.json')
+		req = requests.get(url=constants.SKILLS_STORE_ASSETS)
 		if req.status_code not in {200, 304}:
 			return
 
@@ -47,7 +46,7 @@ class SkillStoreManager(Manager):
 		if not self.ConfigManager.getAliceConfigByName('suggestSkillsToInstall'):
 			return
 
-		req = requests.get(url=f'https://skills.projectalice.io/assets/store/{updateChannel}.samples')
+		req = requests.get(url=constants.SKILLS_SAMPLES_STORE_ASSETS)
 		if req.status_code not in {200, 304}:
 			return
 
@@ -63,6 +62,15 @@ class SkillStoreManager(Manager):
 
 
 	def _getSkillUpdateVersion(self, skillName: str) -> Optional[tuple]:
+		"""
+		Get the highest skill version number a user can install.
+		This is based on the user preferences, dependending on the current Alice version
+		and the user's selected update channel for skills
+		In case nothing is found, DO NOT FALLBACK TO MASTER
+
+		:param skillName: The skill to look for
+		:return: tuple
+		"""
 		versionMapping = self._skillStoreData.get(skillName, dict()).get('versionMapping', dict())
 
 		if not versionMapping:
