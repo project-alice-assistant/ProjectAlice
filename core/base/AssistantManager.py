@@ -31,7 +31,14 @@ class AssistantManager(Manager):
 
 	def checkAssistant(self, forceRetrain: bool = False):
 		self.logInfo('Checking assistant')
-		if not self.checkConsistency() or forceRetrain:
+
+		if forceRetrain:
+			self.logInfo('Forced assistant training')
+			self.train()
+		elif not self._assistantPath.exists():
+			self.logInfo('Assistant not found')
+			self.train()
+		elif not self.checkConsistency():
 			self.logInfo('Assistant is not consistent, it needs training')
 			self.train()
 
@@ -43,9 +50,6 @@ class AssistantManager(Manager):
 
 
 	def checkConsistency(self) -> bool:
-		if not self._assistantPath.exists() or not self.DialogTemplateManager.checkData():
-			return False
-
 		existingIntents: Dict[str, dict] = dict()
 		existingSlots: Dict[str, set] = dict()
 
