@@ -39,14 +39,14 @@ class GithubCloner(ProjectAliceObject):
 
 	def _doClone(self, skillName: str) -> bool:
 		try:
+			updateTag = self.SkillStoreManager.getSkillUpdateTag(skillName)
 			if not Path(self._dest / '.git').exists():
 				self.Commons.runSystemCommand(['git', '-C', str(self._dest), 'init'])
 				self.Commons.runSystemCommand(['git', '-C', str(self._dest), 'remote', 'add', 'origin', self._baseUrl])
-				self.Commons.runSystemCommand(['git', '-C', str(self._dest), 'pull', 'origin', 'master'])
-			else:
 				self.Commons.runSystemCommand(['git', '-C', str(self._dest), 'pull'])
 
-			self.Commons.runSystemCommand(['git', '-C', str(self._dest), 'checkout', self.SkillStoreManager.getSkillUpdateTag(skillName)])
+			self.Commons.runSystemCommand(['git', '-C', str(self._dest), 'checkout', updateTag])
+			self.Commons.runSystemCommand(['git', '-C', str(self._dest), 'pull', 'origin', updateTag])
 
 			return True
 		except Exception as e:
