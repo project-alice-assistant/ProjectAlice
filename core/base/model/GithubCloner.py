@@ -1,6 +1,5 @@
-from pathlib import Path
-
 import shutil
+from pathlib import Path
 
 from core.base.SuperManager import SuperManager
 from core.base.model.ProjectAliceObject import ProjectAliceObject
@@ -43,8 +42,10 @@ class GithubCloner(ProjectAliceObject):
 			if not Path(self._dest / '.git').exists():
 				self.Commons.runSystemCommand(['git', '-C', str(self._dest), 'init'])
 				self.Commons.runSystemCommand(['git', '-C', str(self._dest), 'remote', 'add', 'origin', self._baseUrl])
+				self.Commons.runSystemCommand(['git', '-C', str(self._dest), 'pull', 'origin', 'master'])
+			else:
+				self.Commons.runSystemCommand(['git', '-C', str(self._dest), 'pull'])
 
-			self.Commons.runSystemCommand(['git', '-C', str(self._dest), 'pull', 'origin', 'master'])
 			self.Commons.runSystemCommand(['git', '-C', str(self._dest), 'checkout', self.SkillStoreManager.getSkillUpdateTag(skillName)])
 
 			return True
