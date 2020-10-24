@@ -10,12 +10,14 @@ class InternetManager(Manager):
 	def __init__(self):
 		super().__init__()
 		self._online = False
+		self._checkThread = None
 
 
 	def onStart(self):
 		super().onStart()
 		if not self.ConfigManager.getAliceConfigByName('stayCompletlyOffline'):
 			self.checkOnlineState(silent=True)
+			self._checkThread = self.ThreadManager.newThread(name='internetCheckThread', target=self.checkInternet)
 		else:
 			self.logInfo('Configurations set to stay completly offline')
 
@@ -29,9 +31,14 @@ class InternetManager(Manager):
 		self.checkOnlineState()
 
 
-	def onFullMinute(self):
-		if not self.ConfigManager.getAliceConfigByName('stayCompletlyOffline'):
-			self.checkOnlineState()
+	# def onFullMinute(self):
+	# 	if not self.ConfigManager.getAliceConfigByName('stayCompletlyOffline'):
+	# 		self.checkOnlineState()
+
+
+	def checkInternet(self):
+		self.checkOnlineState()
+		self.ThreadManager.doLater(interval=2, func=self.checkInternet)
 
 
 	def checkOnlineState(self, addr: str = 'https://clients3.google.com/generate_204', silent: bool = False) -> bool:

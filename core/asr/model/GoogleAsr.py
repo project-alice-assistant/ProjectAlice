@@ -1,5 +1,6 @@
 import os
 from pathlib import Path
+from threading import Event
 from typing import Generator, Optional
 
 from core.asr.model.ASRResult import ASRResult
@@ -33,6 +34,8 @@ class GoogleAsr(Asr):
 
 		self._client: Optional[SpeechClient] = None
 		self._streamingConfig: Optional[types.StreamingRecognitionConfig] = None
+
+		self._internetLostFlag = Event()
 
 		self._previousCapture = ''
 
@@ -68,6 +71,7 @@ class GoogleAsr(Asr):
 					responses = self._client.streaming_recognize(self._streamingConfig, requests)
 					result = self._checkResponses(session, responses)
 				except:
+					self._internetLostFlag.clear()
 					self.logWarning('Failed ASR request')
 
 			self.end()
@@ -80,11 +84,24 @@ class GoogleAsr(Asr):
 		) if result else None
 
 
+	def onInternetLost(self):
+		self._internetLostFlag.set()
+
+
 	def _checkResponses(self, session: DialogSession, responses: Generator) -> Optional[tuple]:
 		if responses is None:
 			return None
 
 		for response in responses:
+			if self._internetLostFlag.is_set():
+				self.logDebug('Internet connectivity lost during ASR decoding')
+
+				if not response.results:
+					raise Exception('Internet connectivity lost during decoding')
+
+				result = response.results[0]
+				return result.alternatives[0].transcript, result.alternatives[0].confidence
+
 			if not response.results:
 				continue
 
