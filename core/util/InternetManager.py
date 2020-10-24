@@ -3,7 +3,6 @@ from requests.exceptions import RequestException
 
 from core.base.model.Manager import Manager
 from core.commons import constants
-from core.util.Decorators import IfSetting
 
 
 class InternetManager(Manager):
@@ -42,8 +41,10 @@ class InternetManager(Manager):
 		self.ThreadManager.doLater(interval=self._checkFrequency, func=self.checkInternet)
 
 
-	@IfSetting(settingName='stayCompletlyOffline', settingValue=False, returnValue=False)
 	def checkOnlineState(self, addr: str = 'https://clients3.google.com/generate_204', silent: bool = False) -> bool:
+		if self.ConfigManager.getAliceConfigByName('stayCompletlyOffline'):
+			return False
+
 		try:
 			online = requests.get(addr).status_code == 204
 		except RequestException:
