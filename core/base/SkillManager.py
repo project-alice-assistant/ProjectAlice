@@ -994,8 +994,8 @@ class SkillManager(Manager):
 				'createInstructions': skillDefinition['instructions'],
 				'pipreq'            : [req.strip() for req in skillDefinition['pipreq'].split(',')],
 				'sysreq'            : [req.strip() for req in skillDefinition['sysreq'].split(',')],
-				'widgets'           : [self.Commons.toPascalCase(widget) for widget in skillDefinition['widgets'].split(',')],
-				'scenarioNodes'     : [self.Commons.toPascalCase(node) for node in skillDefinition['nodes'].split(',')],
+				'widgets'           : [self.Commons.toPascalCase(widget).strip() for widget in skillDefinition['widgets'].split(',')],
+				'scenarioNodes'     : [self.Commons.toPascalCase(node).strip() for node in skillDefinition['nodes'].split(',')],
 				'outputDestination' : str(Path(self.Commons.rootDir()) / 'skills' / skillName),
 				'conditions'        : conditions
 			}
