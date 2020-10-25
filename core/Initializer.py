@@ -29,6 +29,7 @@ class InitDict(dict):
 			item = super().__getitem__(item)
 			if not item:
 				raise Exception
+			return item
 		except:
 			print(f'Missing key **{item}** in provided yaml file.')
 			return ''
@@ -141,7 +142,6 @@ class PreInit:
 				# noinspection PyUnboundLocalVariable
 				load = yaml.safe_load(f)
 				initConfs = InitDict(load)
-
 				# Check that we are running using the latest yaml
 				if float(initConfs['version']) < VERSION:
 					self._logger.logFatal('The yaml file you are using is deprecated. Please update it before trying again')
