@@ -36,7 +36,7 @@ function mqttRegisterSelf(target, method) {
 function initIndexers($element) {
 	let indexer = $element.children('.zindexer');
 
-	indexer.children('.zindexer-up').on('click touchscreen', function () {
+	indexer.children('.zindexer-up').on('click touch', function () {
 		let $parent = $(this).parent().parent();
 		let actualIndex = $element.css('z-index');
 		if (actualIndex == null || actualIndex == 'auto') {
@@ -46,7 +46,7 @@ function initIndexers($element) {
 		}
 
 		let baseClass = $parent.attr('class').split(/\s+/)[0];
-		$('.' + baseClass).each(function() {
+		$('.' + baseClass).each(function () {
 			let thisIndex = $(this).css('z-index');
 			if (thisIndex != null && thisIndex != 'auto' && parseInt(thisIndex) == actualIndex + 1) {
 				$(this).css('z-index', actualIndex);
@@ -56,7 +56,7 @@ function initIndexers($element) {
 		});
 	});
 
-	indexer.children('.zindexer-down').on('click touchscreen', function () {
+	indexer.children('.zindexer-down').on('click touch', function () {
 		let $parent = $(this).parent().parent();
 		let actualIndex = $element.css('z-index');
 		if (actualIndex == null || actualIndex == 'auto' || parseInt(actualIndex) <= 0) {
@@ -66,7 +66,7 @@ function initIndexers($element) {
 		}
 
 		let baseClass = $parent.attr('class').split(/\s+/)[0];
-		$('.' + baseClass).each(function() {
+		$('.' + baseClass).each(function () {
 			let thisIndex = $(this).css('z-index');
 			if (thisIndex != null && thisIndex != 'auto' && parseInt(thisIndex) == actualIndex -1) {
 				$(this).css('z-index', actualIndex);
@@ -237,13 +237,12 @@ $(function () {
 	$('.tabsContent').children().each(function () {
 		if ($(this).attr('id') == $defaultTab.data('for')) {
 			$(this).show();
-		}
-		else {
+		} else {
 			$(this).hide();
 		}
 	});
 
-	$('.tab').on('click touchstart', function () {
+	$('.tab').on('click touch', function () {
 		let target = $(this).data('for');
 		$(this).addClass('activeTab');
 
@@ -256,25 +255,24 @@ $(function () {
 		$('.tabsContent').children().each(function () {
 			if ($(this).attr('id') == target) {
 				$(this).show();
-			}
-			else {
+			} else {
 				$(this).hide();
 			}
 		});
 		return false;
 	});
 
-	$('.overlayInfoClose').on('click touchstart', function () {
+	$('.overlayInfoClose').on('click touch', function () {
 		$(this).parent().hide();
 	});
 
-	$('#refuseAliceConfUpdate').on('click touchstart', function() {
+	$('#refuseAliceConfUpdate').on('click touch', function () {
 		$.post('/admin/refuseAliceConfigUpdate/').done(function () {
 			$('#coreConfigUpdateAlert').hide();
 		});
 	});
 
-	$('#acceptAliceConfUpdate').on('click touchstart', function() {
+	$('#acceptAliceConfUpdate').on('click touch', function () {
 		$.post('/admin/acceptAliceConfigUpdate/').done(function () {
 			$('#coreConfigUpdateAlert').hide();
 		});

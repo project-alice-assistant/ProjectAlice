@@ -62,7 +62,8 @@
 					{% for widgetName, widget in widgetList.items() %}
 						<div class="addWidgetLine {% if (widget.state|int) == 0 %}notInstalled{% else %}installed{% endif %}" id="addWidgetLine_{{ widget.parent }}_{{ widget.name }}">
 							<div class="addWidgetName">{{ widgetName }}</div>
-							<div class="addWidgetCheck link-hover"><i class="fas fa-check-circle" aria-hidden="true"></i></div>
+							<div class="addWidgetCheck link-hover">
+								<i class="fas fa-check-circle" aria-hidden="true"></i></div>
 						</div>
 					{% endfor %}
 				</div>
@@ -77,29 +78,29 @@
 						{% if widget.custStyle.get('titlebar') == "False" %}
 						widgetIconsHidden
 						{% endif %}
-						" id="{{ widget.parent }}_{{ widget.name }}"
+						z-indexed" id="{{ widget.parent }}_{{ widget.name }}"
 						 style="position: relative;  top: {{ widget.y }}px; left: {{ widget.x }}px;
-							{% if widget.width > 0 %}width: {{widget.width}}px;{% endif %}
-							{%  if widget.height > 0 %} height:{{widget.height}}px;{% endif %}
-							z-index: {{ widget.zindex }};
+								 {% if widget.width > 0 %}width: {{ widget.width }}px;{% endif %}
+								 {% if widget.height > 0 %} height:{{ widget.height }}px;{% endif %}
+								 z-index: {{ widget.zindex }};
 
-						 	{% if widget.custStyle.get('background-opactiy')|float < 1.0 %}
-								{% if widget.custStyle.get('background') != "" %}
-									background: rgba({{ widget.backgroundRGBA }});
-								{% else %}
-									background: var(--windowBG);
-								{% endif %}
-								box-shadow: none;
-							{% else %}
-								{% if widget.custStyle.get('background') != "" %}
-									background: {{ widget.custStyle.get('background') }};
-								{% else %}
-									background: var(--windowBG);
-								{% endif %}
-							{% endif %}
+								 {% if widget.custStyle.get('background-opactiy')|float < 1.0 %}
+									 {% if widget.custStyle.get('background') != "" %}
+										 background: rgba({{ widget.backgroundRGBA }});
+									 {% else %}
+										 background: var(--windowBG);
+									 {% endif %}
+									 box-shadow: none;
+								 {% else %}
+									 {% if widget.custStyle.get('background') != "" %}
+										 background: {{ widget.custStyle.get('background') }};
+									 {% else %}
+										 background: var(--windowBG);
+									 {% endif %}
+								 {% endif %}
 
-							{% if widget.custStyle.get('color') != "" %}color: {{ widget.custStyle.get('color') }};{% endif %}
-						 	{% if widget.custStyle.get('font-size') != "" %}font-size: {{ widget.custStyle.get('font-size') }}em;{% endif %}
+								 {% if widget.custStyle.get('color') != "" %}color: {{ widget.custStyle.get('color') }};{% endif %}
+								 {% if widget.custStyle.get('font-size') != "" %}font-size: {{ widget.custStyle.get('font-size') }}em;{% endif %}
 								 ">
 						{{ widget.html()|safe }}
 						<div class="widgetDelete widgetButton button initialHidden">

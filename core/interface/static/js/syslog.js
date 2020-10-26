@@ -23,13 +23,13 @@ $(function () {
 		}
 	}
 
-	$stopScroll.on('click touchstart', function () {
+	$stopScroll.on('click touch', function () {
 		$(this).hide();
 		$startScroll.show();
 		return false;
 	});
 
-	$startScroll.on('click touchstart', function () {
+	$startScroll.on('click touch', function () {
 		$(this).hide();
 		$stopScroll.show();
 		return false;
@@ -39,7 +39,7 @@ $(function () {
 		MQTT.subscribe('projectalice/logging/syslog');
 	}
 
-	for(let i = 0; i < logHistory.length; i++) {
+	for (let i = 0; i < logHistory.length; i++) {
 		addToLogs(logHistory[i]);
 	}
 
