@@ -33,50 +33,6 @@ function mqttRegisterSelf(target, method) {
 	mqttSubscribers[method].push(target);
 }
 
-function initIndexers($element) {
-	let indexer = $element.children('.zindexer');
-
-	indexer.children('.zindexer-up').on('click touch', function () {
-		let $parent = $(this).parent().parent();
-		let actualIndex = $element.css('z-index');
-		if (actualIndex == null || actualIndex == 'auto') {
-			actualIndex = 0;
-		} else {
-			actualIndex = parseInt(actualIndex);
-		}
-
-		let baseClass = $parent.attr('class').split(/\s+/)[0];
-		$('.' + baseClass).each(function () {
-			let thisIndex = $(this).css('z-index');
-			if (thisIndex != null && thisIndex != 'auto' && parseInt(thisIndex) == actualIndex + 1) {
-				$(this).css('z-index', actualIndex);
-				$parent.css('z-index', actualIndex + 1);
-				return false;
-			}
-		});
-	});
-
-	indexer.children('.zindexer-down').on('click touch', function () {
-		let $parent = $(this).parent().parent();
-		let actualIndex = $element.css('z-index');
-		if (actualIndex == null || actualIndex == 'auto' || parseInt(actualIndex) <= 0) {
-			actualIndex = 0;
-		} else {
-			actualIndex = parseInt(actualIndex);
-		}
-
-		let baseClass = $parent.attr('class').split(/\s+/)[0];
-		$('.' + baseClass).each(function () {
-			let thisIndex = $(this).css('z-index');
-			if (thisIndex != null && thisIndex != 'auto' && parseInt(thisIndex) == actualIndex -1) {
-				$(this).css('z-index', actualIndex);
-				$parent.css('z-index', actualIndex - 1);
-				return false;
-			}
-		});
-	});
-}
-
 $(document).tooltip();
 
 $(function () {
@@ -233,6 +189,35 @@ $(function () {
 		}
 	}
 
+	function reorder($widget, direction) {
+		let $container = $widget.parent();
+		let $family = $container.children('.z-indexed');
+
+		let actualIndex = $widget.css('z-index');
+		try {
+			actualIndex = parseInt(actualIndex);
+		} catch {
+			actualIndex = 0
+		}
+
+		let toIndex = actualIndex + 1;
+		if (direction === 'down') {
+			toIndex = Math.max(0, actualIndex - 1);
+		}
+
+		$family.each(function(){
+			try {
+				if ($(this) != $widget && parseInt($(this).css('z-index')) == toIndex) {
+					$(this).css('z-index', actualIndex);
+					return false;
+				}
+			} catch {
+				return true;
+			}
+		})
+		$widget.css('z-index', toIndex);
+	}
+
 	let $defaultTab = $('.tabsContainer ul li:first');
 	$('.tabsContent').children().each(function () {
 		if ($(this).attr('id') == $defaultTab.data('for')) {
@@ -288,5 +273,27 @@ $(function () {
 	let $checkboxes = $(':checkbox');
 	if ($checkboxes.length) {
 		$checkboxes.checkToggler();
+	}
+
+	// Z-indexers
+	let $zindexed = $('.z-indexed');
+	if ($zindexed.length) {
+		let $indexUp = $('<div class="zindexer-up"><i class="fas fa-level-up-alt" aria-hidden="true"></i></div>')
+		let $indexDown = $('<div class="zindexer-down"><i class="fas fa-level-up-alt" aria-hidden="true"></i></div>')
+
+		$indexUp.on('click touch', function() {
+			reorder($(this), 'up');
+		});
+		$indexUp.on('click touch', function() {
+			reorder($(this), 'down');
+		});
+
+		let $zindexer = $('<div class="zindexer initialHidden"></div>');
+		$zindexer.append($indexUp)
+		$zindexer.append($indexDown)
+
+		$zindexed.each(function() {
+			$zindexed.append($zindexer);
+		});
 	}
 });

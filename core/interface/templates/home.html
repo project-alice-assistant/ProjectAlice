@@ -74,25 +74,25 @@
 		{% for parentName, widgetList in widgets.items() %}
 			{% for widgetName, widget in widgetList.items() %}
 				{% if (widget.state|int) == 1 %}
-					<div class="widget {{ widget.size }}
+					<div class="widget {{ widget.size }} z-indexed
 						{% if widget.custStyle.get('titlebar') == "False" %}
 						widgetIconsHidden
 						{% endif %}
-						z-indexed" id="{{ widget.parent }}_{{ widget.name }}"
+						" id="{{ widget.parent }}_{{ widget.name }}"
 						 style="position: relative;  top: {{ widget.y }}px; left: {{ widget.x }}px;
 								 {% if widget.width > 0 %}width: {{ widget.width }}px;{% endif %}
 								 {% if widget.height > 0 %} height:{{ widget.height }}px;{% endif %}
 								 z-index: {{ widget.zindex }};
 
 								 {% if widget.custStyle.get('background-opactiy')|float < 1.0 %}
-									 {% if widget.custStyle.get('background') != "" %}
+									 {% if widget.custStyle.get('background') != '' %}
 										 background: rgba({{ widget.backgroundRGBA }});
 									 {% else %}
 										 background: var(--windowBG);
 									 {% endif %}
 									 box-shadow: none;
 								 {% else %}
-									 {% if widget.custStyle.get('background') != "" %}
+									 {% if widget.custStyle.get('background') != '' %}
 										 background: {{ widget.custStyle.get('background') }};
 									 {% else %}
 										 background: var(--windowBG);
@@ -108,10 +108,6 @@
 						</div>
 						<div class="widgetConfig widgetButton button initialHidden">
 							<i class="fas fa-cog" aria-hidden="true"></i>
-						</div>
-						<div class="zindexer initialHidden">
-							<div class="zindexer-up"><i class="fas fa-level-up-alt" aria-hidden="true"></i></div>
-							<div class="zindexer-down"><i class="fas fa-level-down-alt" aria-hidden="true"></i></div>
 						</div>
 					</div>
 				{% endif %}
