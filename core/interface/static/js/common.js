@@ -293,8 +293,8 @@ $(function () {
 	// Z-indexers
 	let $zindexed = $('.z-indexed');
 	if ($zindexed.length) {
-		let $indexUp = $('<div class="zindexer-up"><i class="fas fa-level-up-alt" aria-hidden="true"></i></div>');
-		let $indexDown = $('<div class="zindexer-down"><i class="fas fa-level-down-alt" aria-hidden="true"></i></div>');
+		let $indexUp = $('<div class="zindexer-up clickable"><i class="fas fa-chevron-circle-up fa-3x" aria-hidden="true"></i></div>');
+		let $indexDown = $('<div class="zindexer-down clickable"><i class="fas fa-chevron-circle-down fa-3x" aria-hidden="true"></i></div>');
 
 		$indexUp.on('click touch', function () {
 			reorder($(this), 'up');
