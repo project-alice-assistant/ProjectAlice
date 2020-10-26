@@ -190,7 +190,6 @@ $(function () {
 	}
 
 	function reorder($arrow, direction) {
-		console.log(direction);
 		let $widget = $arrow.parent().parent();
 		let $container = $widget.parent();
 		let $family = $container.children('.z-indexed');
@@ -225,7 +224,6 @@ $(function () {
 		$family.each(function(){
 			try {
 				if ($(this) != $widget && parseInt($(this).css('z-index')) == toIndex) {
-					console.log($(this).attr('id'));
 					$(this).css('z-index', actualIndex);
 				}
 			} catch {
