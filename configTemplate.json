@@ -757,5 +757,20 @@
 			"condition": "is",
 			"value"    : false
 		}
+	},
+	"internetQuality"     : {
+		"defaultValue": 10,
+		"dataType"    : "range",
+		"min"         : 1,
+		"max"         : 10,
+		"step"        : 1,
+		"isSensitive" : false,
+		"description" : "How would you rate your internet connection QUALITY? 0 = drops all the time, 10 = Very stable",
+		"category"    : "system",
+		"parent"      : {
+			"config"   : "stayCompletlyOffline",
+			"condition": "is",
+			"value"    : false
+		}
 	}
 }
