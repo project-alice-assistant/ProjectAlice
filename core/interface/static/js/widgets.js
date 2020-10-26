@@ -13,10 +13,6 @@ $(function () {
 		disabled: true
 	});
 
-	$widgets.each(function () {
-		initIndexers($(this));
-	});
-
 	/* Toolbar Functions */
 	$('#toolbarToggleShow').on('click touch', function () {
 		$('#toolbar_full').show();

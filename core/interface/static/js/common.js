@@ -189,7 +189,9 @@ $(function () {
 		}
 	}
 
-	function reorder($widget, direction) {
+	function reorder($arrow, direction) {
+		console.log(direction);
+		let $widget = $arrow.parent().parent();
 		let $container = $widget.parent();
 		let $family = $container.children('.z-indexed');
 
@@ -197,7 +199,7 @@ $(function () {
 		try {
 			actualIndex = parseInt(actualIndex);
 		} catch {
-			actualIndex = 0
+			actualIndex = 0;
 		}
 
 		let toIndex;
@@ -223,6 +225,7 @@ $(function () {
 		$family.each(function(){
 			try {
 				if ($(this) != $widget && parseInt($(this).css('z-index')) == toIndex) {
+					console.log($(this).attr('id'));
 					$(this).css('z-index', actualIndex);
 				}
 			} catch {
@@ -292,22 +295,20 @@ $(function () {
 	// Z-indexers
 	let $zindexed = $('.z-indexed');
 	if ($zindexed.length) {
-		let $indexUp = $('<div class="zindexer-up"><i class="fas fa-level-up-alt" aria-hidden="true"></i></div>')
-		let $indexDown = $('<div class="zindexer-down"><i class="fas fa-level-up-alt" aria-hidden="true"></i></div>')
+		let $indexUp = $('<div class="zindexer-up"><i class="fas fa-level-up-alt" aria-hidden="true"></i></div>');
+		let $indexDown = $('<div class="zindexer-down"><i class="fas fa-level-down-alt" aria-hidden="true"></i></div>');
 
-		$indexUp.on('click touch', function() {
+		$indexUp.on('click touch', function () {
 			reorder($(this), 'up');
 		});
-		$indexUp.on('click touch', function() {
+		$indexDown.on('click touch', function () {
 			reorder($(this), 'down');
 		});
 
 		let $zindexer = $('<div class="zindexer initialHidden"></div>');
-		$zindexer.append($indexUp)
-		$zindexer.append($indexDown)
+		$zindexer.append($indexUp);
+		$zindexer.append($indexDown);
 
-		$zindexed.each(function() {
-			$zindexed.append($zindexer);
-		});
+		$zindexed.append($zindexer);
 	}
 });
