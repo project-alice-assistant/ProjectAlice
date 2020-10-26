@@ -200,21 +200,35 @@ $(function () {
 			actualIndex = 0
 		}
 
-		let toIndex = actualIndex + 1;
+		let toIndex;
 		if (direction === 'down') {
 			toIndex = Math.max(0, actualIndex - 1);
+		} else {
+			let highest = 0;
+			$family.each(function(){
+				try {
+					if (parseInt($(this).css('z-index')) > highest) {
+						highest = parseInt($(this).css('z-index'));
+					}
+				} catch {
+					return true;
+				}
+			});
+			toIndex = actualIndex + 1;
+			if (toIndex > highest) {
+				return;
+			}
 		}
 
 		$family.each(function(){
 			try {
 				if ($(this) != $widget && parseInt($(this).css('z-index')) == toIndex) {
 					$(this).css('z-index', actualIndex);
-					return false;
 				}
 			} catch {
 				return true;
 			}
-		})
+		});
 		$widget.css('z-index', toIndex);
 	}
 
