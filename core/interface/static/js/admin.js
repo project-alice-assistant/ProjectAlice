@@ -37,7 +37,7 @@ $(function () {
 		let $icon = $div.children('.utilityIcon').children('i');
 		$icon.addClass('fa-spin red');
 		$.ajax({
-			url: '/admin/' + endpoint + '/',
+			url : '/admin/' + endpoint + '/',
 			type: 'POST'
 		});
 		setTimeout(function () {
@@ -45,42 +45,42 @@ $(function () {
 		}, timeout);
 	}
 
-	$('#restart').on('click touchstart', function () {
+	$('#restart').on('click touch', function () {
 		handleUtilityClick($(this), 'restart', 5000);
 		return false;
 	});
 
-	$('#reboot').on('click touchstart', function () {
+	$('#reboot').on('click touch', function () {
 		handleUtilityClick($(this), 'reboot', 10000);
 		return false;
 	});
 
-	$('#trainAssistant').on('click touchstart', function () {
+	$('#trainAssistant').on('click touch', function () {
 		handleUtilityClick($(this), 'trainAssistant', 5000);
 		return false;
 	});
 
-	$('#wipeAll').on('click touchstart', function () {
+	$('#wipeAll').on('click touch', function () {
 		handleUtilityClick($(this), 'wipeAll', 5000);
 		return false;
 	});
 
-	$('#update').on('click touchstart', function () {
+	$('#update').on('click touch', function () {
 		handleUtilityClick($(this), 'updatee', 5000);
 		return false;
 	});
 
-	$('#addUser').on('click touchstart', function () {
+	$('#addUser').on('click touch', function () {
 		handleUtilityClick($(this), 'addUser', 1000);
 		return false;
 	});
 
-	$('#addWakeword').on('click touchstart', function () {
+	$('#addWakeword').on('click touch', function () {
 		handleUtilityClick($(this), 'addWakeword', 1000);
 		return false;
 	});
 
-	$('#tuneWakeword').on('click touchstart', function () {
+	$('#tuneWakeword').on('click touch', function () {
 		handleUtilityClick($(this), 'tuneWakeword', 1000);
 		return false;
 	});
