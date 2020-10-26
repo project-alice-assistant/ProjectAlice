@@ -40,6 +40,7 @@ class SkillManager(Manager):
 		'widgets': [
 			'parent TEXT NOT NULL UNIQUE',
 			'name TEXT NOT NULL UNIQUE',
+			f'id TEXT NOT NULL UNIQUE DEFAULT "{constants.UNKNOWN}"',
 			'posx INTEGER NOT NULL',
 			'posy INTEGER NOT NULL',
 			'height INTEGER NOT NULL',
