@@ -1,5 +1,7 @@
 import os
 from pathlib import Path
+from threading import Event
+from time import time
 from typing import Generator, Optional
 
 from core.asr.model.ASRResult import ASRResult
@@ -9,6 +11,7 @@ from core.dialog.model.DialogSession import DialogSession
 from core.util.Stopwatch import Stopwatch
 
 try:
+	# noinspection PyUnresolvedReferences,PyPackageRequirements
 	from google.cloud.speech import SpeechClient, enums, types
 except:
 	pass # Auto installed
@@ -34,7 +37,10 @@ class GoogleAsr(Asr):
 		self._client: Optional[SpeechClient] = None
 		self._streamingConfig: Optional[types.StreamingRecognitionConfig] = None
 
-		self._previousCapture = ''
+		self._internetLostFlag = Event() # Set if internet goes down, cut the decoding
+		self._lastResultCheck = 0 # The time the intermediate results were last checked. If actual time is greater than this value + 3, stop processing, internet issues
+
+		self._previousCapture = '' # The text that was last captured in the iteration
 
 
 	def onStart(self):
@@ -68,6 +74,7 @@ class GoogleAsr(Asr):
 					responses = self._client.streaming_recognize(self._streamingConfig, requests)
 					result = self._checkResponses(session, responses)
 				except:
+					self._internetLostFlag.clear()
 					self.logWarning('Failed ASR request')
 
 			self.end()
@@ -80,11 +87,24 @@ class GoogleAsr(Asr):
 		) if result else None
 
 
+	def onInternetLost(self):
+		self._internetLostFlag.set()
+
+
 	def _checkResponses(self, session: DialogSession, responses: Generator) -> Optional[tuple]:
 		if responses is None:
 			return None
 
 		for response in responses:
+			if self._internetLostFlag.is_set():
+				self.logDebug('Internet connectivity lost during ASR decoding')
+
+				if not response.results:
+					raise Exception('Internet connectivity lost during decoding')
+
+				result = response.results[0]
+				return result.alternatives[0].transcript, result.alternatives[0].confidence
+
 			if not response.results:
 				continue
 
@@ -97,5 +117,18 @@ class GoogleAsr(Asr):
 			elif result.alternatives[0].transcript != self._previousCapture:
 				self.partialTextCaptured(session=session, text=result.alternatives[0].transcript, likelihood=result.alternatives[0].confidence, seconds=0)
 				self._previousCapture = result.alternatives[0].transcript
+			elif result.alternatives[0].transcript == self._previousCapture:
+				now = int(time())
+
+				if self._lastResultCheck == 0:
+					self._lastResultCheck = 0
+					continue
+
+				if now > self._lastResultCheck + 3:
+					self.logDebug(f'Stopping process as there seems to be connectivity issues')
+					return result.alternatives[0].transcript, result.alternatives[0].confidence
+
+				self._lastResultCheck = now
+				continue
 
 		return None

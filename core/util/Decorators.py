@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import functools
 import warnings
-from typing import Any, Callable, Tuple, Union
+from typing import Any, Callable, Optional, Tuple, Union
 
 from flask import jsonify, request
 
@@ -172,7 +172,7 @@ def ApiAuthenticated(func: Callable): #NOSONAR
 	return wrapper
 
 
-def IfSetting(func: Callable = None, settingName: str = None, settingValue: Any = None, inverted: bool = False, skillName: str = None): #NOSONAR
+def IfSetting(func: Callable = None, settingName: str = None, settingValue: Any = None, inverted: bool = False, skillName: str = None, returnValue: Optional[Any] = None): #NOSONAR
 	"""
 	Checks wheter a setting is equal to the given value before executing the wrapped method
 	If the setting is not equal to the given value, the wrapped method is not called
@@ -183,6 +183,7 @@ def IfSetting(func: Callable = None, settingName: str = None, settingValue: Any 
 	:param settingValue:
 	:param inverted:
 	:param skillName:
+	:param returnValue: The value to return if the setting check fails
 	:return:
 	"""
 
@@ -199,11 +200,13 @@ def IfSetting(func: Callable = None, settingName: str = None, settingValue: Any 
 			value = configManager.getSkillConfigByName(skillName, settingName) if skillName else configManager.getAliceConfigByName(settingName)
 
 			if value is None:
-				return None
+				return returnValue
 
 			if (not inverted and value == settingValue) or \
 				(inverted and value != settingValue):
 				return func(*args, **kwargs)
+			else:
+				return  returnValue
 
 		return settingDecorator
 

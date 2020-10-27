@@ -33,50 +33,6 @@ function mqttRegisterSelf(target, method) {
 	mqttSubscribers[method].push(target);
 }
 
-function initIndexers($element) {
-	let indexer = $element.children('.zindexer');
-
-	indexer.children('.zindexer-up').on('click touchscreen', function () {
-		let $parent = $(this).parent().parent();
-		let actualIndex = $element.css('z-index');
-		if (actualIndex == null || actualIndex == 'auto') {
-			actualIndex = 0;
-		} else {
-			actualIndex = parseInt(actualIndex);
-		}
-
-		let baseClass = $parent.attr('class').split(/\s+/)[0];
-		$('.' + baseClass).each(function() {
-			let thisIndex = $(this).css('z-index');
-			if (thisIndex != null && thisIndex != 'auto' && parseInt(thisIndex) == actualIndex + 1) {
-				$(this).css('z-index', actualIndex);
-				$parent.css('z-index', actualIndex + 1);
-				return false;
-			}
-		});
-	});
-
-	indexer.children('.zindexer-down').on('click touchscreen', function () {
-		let $parent = $(this).parent().parent();
-		let actualIndex = $element.css('z-index');
-		if (actualIndex == null || actualIndex == 'auto' || parseInt(actualIndex) <= 0) {
-			actualIndex = 0;
-		} else {
-			actualIndex = parseInt(actualIndex);
-		}
-
-		let baseClass = $parent.attr('class').split(/\s+/)[0];
-		$('.' + baseClass).each(function() {
-			let thisIndex = $(this).css('z-index');
-			if (thisIndex != null && thisIndex != 'auto' && parseInt(thisIndex) == actualIndex -1) {
-				$(this).css('z-index', actualIndex);
-				$parent.css('z-index', actualIndex - 1);
-				return false;
-			}
-		});
-	});
-}
-
 $(document).tooltip();
 
 $(function () {
@@ -237,13 +193,12 @@ $(function () {
 	$('.tabsContent').children().each(function () {
 		if ($(this).attr('id') == $defaultTab.data('for')) {
 			$(this).show();
-		}
-		else {
+		} else {
 			$(this).hide();
 		}
 	});
 
-	$('.tab').on('click touchstart', function () {
+	$('.tab').on('click touch', function () {
 		let target = $(this).data('for');
 		$(this).addClass('activeTab');
 
@@ -256,25 +211,24 @@ $(function () {
 		$('.tabsContent').children().each(function () {
 			if ($(this).attr('id') == target) {
 				$(this).show();
-			}
-			else {
+			} else {
 				$(this).hide();
 			}
 		});
 		return false;
 	});
 
-	$('.overlayInfoClose').on('click touchstart', function () {
+	$('.overlayInfoClose').on('click touch', function () {
 		$(this).parent().hide();
 	});
 
-	$('#refuseAliceConfUpdate').on('click touchstart', function() {
+	$('#refuseAliceConfUpdate').on('click touch', function () {
 		$.post('/admin/refuseAliceConfigUpdate/').done(function () {
 			$('#coreConfigUpdateAlert').hide();
 		});
 	});
 
-	$('#acceptAliceConfUpdate').on('click touchstart', function() {
+	$('#acceptAliceConfUpdate').on('click touch', function () {
 		$.post('/admin/acceptAliceConfigUpdate/').done(function () {
 			$('#coreConfigUpdateAlert').hide();
 		});
@@ -291,4 +245,73 @@ $(function () {
 	if ($checkboxes.length) {
 		$checkboxes.checkToggler();
 	}
+
+	// Z-indexers
+	let $zindexed = $('.z-indexed');
+	if ($zindexed.length) {
+		zIndexMe($zindexed)
+	}
 });
+
+	function reorder($arrow, direction) {
+		let $widget = $arrow.parent().parent();
+		let $container = $widget.parent();
+		let $family = $container.children('.z-indexed');
+
+		let actualIndex = $widget.css('z-index');
+		try {
+			actualIndex = parseInt(actualIndex);
+		} catch {
+			actualIndex = 0;
+		}
+
+		let toIndex;
+		if (direction === 'down') {
+			toIndex = Math.max(0, actualIndex - 1);
+		} else {
+			let highest = 0;
+			$family.each(function(){
+				try {
+					if (parseInt($(this).css('z-index')) > highest) {
+						highest = parseInt($(this).css('z-index'));
+					}
+				} catch {
+					return true;
+				}
+			});
+			toIndex = actualIndex + 1;
+			if (toIndex > highest) {
+				return;
+			}
+		}
+
+		$family.each(function(){
+			try {
+				if ($(this) != $widget && parseInt($(this).css('z-index')) == toIndex) {
+					$(this).css('z-index', actualIndex);
+				}
+			} catch {
+				return true;
+			}
+		});
+		$widget.css('z-index', toIndex);
+	}
+
+
+function zIndexMe($zindexed){
+		let $indexUp = $('<div class="zindexer-up clickable"><i class="fas fa-chevron-circle-up fa-3x" aria-hidden="true"></i></div>');
+		let $indexDown = $('<div class="zindexer-down clickable"><i class="fas fa-chevron-circle-down fa-3x" aria-hidden="true"></i></div>');
+
+		$indexUp.on('click touch', function () {
+			reorder($(this), 'up');
+		});
+		$indexDown.on('click touch', function () {
+			reorder($(this), 'down');
+		});
+
+		let $zindexer = $('<div class="zindexer initialHidden"></div>');
+		$zindexer.append($indexUp);
+		$zindexer.append($indexDown);
+
+		$zindexed.append($zindexer);
+}

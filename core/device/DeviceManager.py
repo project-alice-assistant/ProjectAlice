@@ -555,7 +555,7 @@ class DeviceManager(Manager):
 
 
 	def getAliceTypeDeviceTypeIds(self):
-		return [self.getMainDevice().deviceTypeID, self.getDeviceTypeByName(self.SAT_TYPE)]
+		return [self.getMainDevice().deviceTypeID, self.getDeviceTypeByName(self.SAT_TYPE).id]
 
 
 	def siteIdToDeviceName(self, siteId: str) -> str:

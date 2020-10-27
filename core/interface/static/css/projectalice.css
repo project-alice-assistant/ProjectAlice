@@ -94,26 +94,39 @@ button.button{ font-size: 1.6em; height: 2em; }
 
 .pageTitle { font-size: 2em; margin-left: 1em; align-items: center; display: flex; width: 7.4em;}
 .aliceStatus { flex-grow: 1; }
+
 .updateChannelMarker { font-style: italic; margin: 0 .9em; align-items: center; display: flex; }
 
 .resourceUsage { margin: 0 .9em; align-items: center; display: flex; }
 
-.page {	flex: 1 100%; flex-flow: row nowrap; display: flex; }
+.page { flex: 1 100%; flex-flow: row nowrap; display: flex; }
 
 .toolbar { background: var(--mainBG); display: flex; float: right; clear: both; padding-top: .2em; padding-left: 1em; border: solid 2px; border-bottom-left-radius: 1.5em; border-top: none; border-color: var(--accent); }
+
 .toolbarButton { font-size: 2em; padding-right: .5em; min-width: .9em; text-align: center; }
 
-.zindexer { position: absolute; top: 15px; right: 15px; color: var(--accent); font-weight: bold; font-size: 1.3em; z-index: 999; cursor: pointer; }
-[class^='zindexer-']:hover { color: var(--hover); }
+.zindexer { position: absolute; top: 5px; left: 5px; background-color: var(--mainBG); width: 50px; border-radius: 25px; text-align: center; color: var(--text); z-index:99; }
+
+.zindexer .clickable:first-child { margin-bottom: 5px; }
+
+.clickable { cursor: pointer; }
+
+.clickable:hover { color: var(--hover); }
+
+/*.zindexer { position: absolute; top: -15px; right: -15px; color: var(--accent); font-weight: bold; font-size: 1.3em; z-index: 999; cursor: pointer; }
+[class^='zindexer-']:hover { color: var(--hover); }*/
 
 /* Utility screen for administration */
 .utility { width: 12em; height: 12em; flex-flow: column; align-items: center; }
+
 .utilityIcon { text-align: center; font-size: 5em; margin-top: .4em; width: 100%; }
+
 .utilityText { font-size: 1.25em; margin: .3em; text-align: center; width: 90%; }
 
 /* console and logging */
 /* using color markings as defined above */
 .console { position: absolute; top: 20px; bottom: 40px; left: 20px; right: 20px; padding: 1em; background-color: black; color: var(--text); overflow-y: scroll; overflow-x: hidden; font-family: var(--readable); -moz-user-select: text; -webkit-touch-callout: default; -webkit-user-select: text; -ms-user-select: text; user-select: text; -khtml-user-select: text; }
+
 .log { display: inline-block; }
 .logLine { display: flex; font-family: var(--readable); font-size: 0.9em; margin: 2px 0 2px 0; align-items: flex-start; }
 
