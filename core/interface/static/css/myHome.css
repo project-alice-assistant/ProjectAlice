@@ -1,4 +1,5 @@
-.floorPlan-Zone { overflow: visible; background-color: var(--mainBG); color: var(--windowBG); position: absolute; display: flex; justify-content: center; align-items: center; font-size: 1.5em; }
+.floorPlan-Zone { overflow: visible; background-color: var(--mainBG); color: var(--windowBG); position: absolute; display: flex; justify-content: center; align-items: center;}
+.floorPlan-Zone > .inputOrText {font-size: 1.5em;}
 
 .floorPlan-Wall { background-color: var(--accent); }
 
