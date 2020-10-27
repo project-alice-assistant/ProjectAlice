@@ -70,7 +70,7 @@ class SkillManager(Manager):
 
 		self._postBootSkillActions = dict()
 
-		self._widgets = dict()
+		self._availableWidgets = dict()
 
 
 	def onStart(self):
@@ -175,7 +175,7 @@ class SkillManager(Manager):
 					'state' : 0,
 					'posx'  : 0,
 					'posy'  : 0,
-					'zindex': 9999
+					'zindex': -1
 				},
 				row=('parent', skillName)
 			)
@@ -232,27 +232,9 @@ class SkillManager(Manager):
 			)
 
 
-	def sortWidgetZIndexes(self):
-		widgets = dict()
-		for skillName, widgetList in self._widgets.items():
-			for widget in widgetList.values():
-				widgets[int(widget.zindex)] = widget
-
-		counter = 0
-		for i in sorted(widgets.keys()):
-			if widgets[i].state == 0:
-				widgets[i].zindex = -1
-				widgets[i].saveToDB()
-				continue
-
-			widgets[i].zindex = counter
-			counter += 1
-			widgets[i].saveToDB()
-
-
 	@property
-	def widgets(self) -> dict:
-		return self._widgets
+	def availableWidgets(self) -> dict:
+		return self._availableWidgets
 
 
 	@property
@@ -466,7 +448,7 @@ class SkillManager(Manager):
 			self._failedSkills[skillName] = FailedAliceSkill(self._skillList[skillName]['installer'])
 
 		if skillInstance.widgets:
-			self._widgets[skillName] = skillInstance.widgets
+			self._availableWidgets[skillName] = skillInstance.widgets
 
 		if skillInstance.deviceTypes:
 			self.DeviceManager.addDeviceTypes(deviceTypes=skillInstance.deviceTypes)
@@ -525,7 +507,7 @@ class SkillManager(Manager):
 			self._deactivatedSkills[skillName] = skillInstance
 			skillInstance.onStop()
 			self.broadcast(method=constants.EVENT_SKILL_STOPPED, exceptions=[self.name], propagateToSkills=True, skill=self)
-			self._widgets.pop(skillName, None)
+			self._availableWidgets.pop(skillName, None)
 			self.DeviceManager.removeDeviceTypesForSkill(skillName=skillName)
 
 			if persistent:
