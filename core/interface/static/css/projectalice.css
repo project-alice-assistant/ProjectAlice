@@ -105,7 +105,7 @@ button.button{ font-size: 1.6em; height: 2em; }
 
 .toolbarButton { font-size: 2em; padding-right: .5em; min-width: .9em; text-align: center; }
 
-.zindexer { position: absolute; top: 5px; left: 5px; background-color: var(--mainBG); width: 50px; border-radius: 25px; text-align: center; }
+.zindexer { position: absolute; top: 5px; left: 5px; background-color: var(--mainBG); width: 50px; border-radius: 25px; text-align: center; color: var(--text); z-index:99; }
 
 .zindexer .clickable:first-child { margin-bottom: 5px; }
 
