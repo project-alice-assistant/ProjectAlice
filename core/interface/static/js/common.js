@@ -189,50 +189,6 @@ $(function () {
 		}
 	}
 
-	function reorder($arrow, direction) {
-		let $widget = $arrow.parent().parent();
-		let $container = $widget.parent();
-		let $family = $container.children('.z-indexed');
-
-		let actualIndex = $widget.css('z-index');
-		try {
-			actualIndex = parseInt(actualIndex);
-		} catch {
-			actualIndex = 0;
-		}
-
-		let toIndex;
-		if (direction === 'down') {
-			toIndex = Math.max(0, actualIndex - 1);
-		} else {
-			let highest = 0;
-			$family.each(function(){
-				try {
-					if (parseInt($(this).css('z-index')) > highest) {
-						highest = parseInt($(this).css('z-index'));
-					}
-				} catch {
-					return true;
-				}
-			});
-			toIndex = actualIndex + 1;
-			if (toIndex > highest) {
-				return;
-			}
-		}
-
-		$family.each(function(){
-			try {
-				if ($(this) != $widget && parseInt($(this).css('z-index')) == toIndex) {
-					$(this).css('z-index', actualIndex);
-				}
-			} catch {
-				return true;
-			}
-		});
-		$widget.css('z-index', toIndex);
-	}
-
 	let $defaultTab = $('.tabsContainer ul li:first');
 	$('.tabsContent').children().each(function () {
 		if ($(this).attr('id') == $defaultTab.data('for')) {
@@ -293,6 +249,56 @@ $(function () {
 	// Z-indexers
 	let $zindexed = $('.z-indexed');
 	if ($zindexed.length) {
+		zIndexMe($zindexed)
+	}
+});
+
+	function reorder($arrow, direction) {
+		let $widget = $arrow.parent().parent();
+		let $container = $widget.parent();
+		let $family = $container.children('.z-indexed');
+
+		let actualIndex = $widget.css('z-index');
+		try {
+			actualIndex = parseInt(actualIndex);
+		} catch {
+			actualIndex = 0;
+		}
+
+		let toIndex;
+		if (direction === 'down') {
+			toIndex = Math.max(0, actualIndex - 1);
+		} else {
+			let highest = 0;
+			$family.each(function(){
+				try {
+					if (parseInt($(this).css('z-index')) > highest) {
+						highest = parseInt($(this).css('z-index'));
+					}
+				} catch {
+					return true;
+				}
+			});
+			toIndex = actualIndex + 1;
+			if (toIndex > highest) {
+				return;
+			}
+		}
+
+		$family.each(function(){
+			try {
+				if ($(this) != $widget && parseInt($(this).css('z-index')) == toIndex) {
+					$(this).css('z-index', actualIndex);
+				}
+			} catch {
+				return true;
+			}
+		});
+		$widget.css('z-index', toIndex);
+	}
+
+
+function zIndexMe($zindexed){
 		let $indexUp = $('<div class="zindexer-up clickable"><i class="fas fa-chevron-circle-up fa-3x" aria-hidden="true"></i></div>');
 		let $indexDown = $('<div class="zindexer-down clickable"><i class="fas fa-chevron-circle-down fa-3x" aria-hidden="true"></i></div>');
 
@@ -308,5 +314,4 @@ $(function () {
 		$zindexer.append($indexDown);
 
 		$zindexed.append($zindexer);
-	}
-});
+}

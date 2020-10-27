@@ -379,6 +379,7 @@ $(function () {
 			'</div>' +
 			'</div>');
 
+		zIndexMe($newZone);
 
 		$newZone.on('click touch', function () {
 			if (buildingMode) {
