@@ -369,20 +369,16 @@ $(function () {
 			data['display']['z-index'] = maxZindex;
 			maxZindex++;
 		}
-		let $newZone = $('<div class="floorPlan-Zone ' + data['display']['texture'] + '" ' +
+		let $newZone = $('<div class="z-indexed floorPlan-Zone ' + data['display']['texture'] + '" ' +
 			'id="floorPlan-Zone_' + data['id'] + '" '+
 			'data-id="' + data['id'] + '" ' +
 			'data-name="' + data['name'] + '" ' +
 			'data-texture="' + data['display']['texture'] + '" ' +
 			'style="left: ' + data['display']['x'] + 'px; top: ' + data['display']['y'] + 'px; width: ' + data['display']['width'] + 'px; height: ' + data['display']['height'] + 'px; position: absolute; transform: rotate(' + data['display']['rotation'] + 'deg); z-index: ' + data['display']['z-index'] + '">' +
 			'<div class="inputOrText">' + data['name'] + '</div>' +
-			'<div class="zindexer initialHidden">' +
-			'<div class="zindexer-up"><i class="fas fa-level-up-alt" aria-hidden="true"></i></div>' +
-			'<div class="zindexer-down"><i class="fas fa-level-down-alt" aria-hidden="true"></i></div>' +
 			'</div>' +
 			'</div>');
 
-		initIndexers($newZone);
 
 		$newZone.on('click touch', function () {
 			if (buildingMode) {
