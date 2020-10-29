@@ -30,14 +30,12 @@ class AudioManager(Manager):
 		self._playing = False
 		self._waves: Dict[str, wave.Wave_write] = dict()
 		self._audioInputStream = None
-		self._audioOutputStream = None
-		self._playBuffer = queue.Queue()
+		self._audioQueue = queue.Queue()
 
 		if self.ConfigManager.getAliceConfigByName('disableSoundAndMic'):
 			return
 
 		self._vad = Vad(2)
-		print(sd.query_devices())
 
 		try:
 			self._audioOutput = sd.query_devices()[0]
@@ -66,9 +64,6 @@ class AudioManager(Manager):
 
 	def onStop(self):
 		super().onStop()
-		self._playBuffer.empty()
-		self._audioOutputStream.stop(ignore_errors=True)
-		self._audioOutputStream.close(ignore_errors=True)
 		self._audioInputStream.stop(ignore_errors=True)
 		self._audioInputStream.close(ignore_errors=True)
 		self.MqttManager.mqttClient.unsubscribe(constants.TOPIC_AUDIO_FRAME.format(self.ConfigManager.getAliceConfigByName('uuid')))
@@ -181,25 +176,28 @@ class AudioManager(Manager):
 					framerate = wav.getframerate()
 
 
-					def streamCallback(_inData, frameCount, _timeInfo, _status) -> tuple:
-						data = wav.readframes(frameCount)
-						return data
+					def streamCallback(outdata, frameCount, _timeInfo, _status):
+						try:
+							data = wav.readframes(frameCount)
+							outdata[:] = data
+						except:
+							raise PlayBytesStopped
 
 
-					audioStream = sd.RawOutputStream(
+					stream = sd.RawOutputStream(
 						dtype='int16',
 						channels=channels,
 						samplerate=framerate,
-						device=8,
+						device=0,
 						callback=streamCallback
 					)
 
 					self.logDebug(f'Playing wav stream using **{self._audioOutput["name"]}** audio output from site id **{self.DeviceManager.siteIdToDeviceName(siteId)}** (channels: {channels}, rate: {framerate})')
-					audioStream.start()
-					while audioStream.active:
+					stream.start()
+					while stream.active:
 						if self._stopPlayingFlag.is_set():
-							audioStream.stop()
-							audioStream.close()
+							stream.stop()
+							stream.close()
 
 							if sessionId:
 								self.MqttManager.publish(
@@ -215,8 +213,8 @@ class AudioManager(Manager):
 							raise PlayBytesStopped
 						time.sleep(0.1)
 
-					audioStream.stop()
-					audioStream.close()
+					stream.stop()
+					stream.close()
 			except PlayBytesStopped:
 				self.logDebug('Playing bytes stopped')
 			except Exception as e:
