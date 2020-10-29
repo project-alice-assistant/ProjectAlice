@@ -4,6 +4,7 @@ import wave
 from pathlib import Path
 from typing import Dict, Optional
 
+import sounddevice as sd
 from webrtcvad import Vad
 
 from core.ProjectAliceExceptions import PlayBytesStopped
@@ -21,25 +22,21 @@ class AudioManager(Manager):
 	LAST_USER_SPEECH = 'var/cache/lastUserpeech_{}_{}.wav'
 	SECOND_LAST_USER_SPEECH = 'var/cache/secondLastUserSpeech_{}_{}.wav'
 
-	# Inspired by https://github.com/koenvervloesem/hermes-audio-server
-
 	def __init__(self):
 		super().__init__()
 
 		self._stopPlayingFlag: Optional[AliceEvent] = None
 		self._playing = False
 		self._waves: Dict[str, wave.Wave_write] = dict()
+		self._audioStream = None
 
 		if self.ConfigManager.getAliceConfigByName('disableSoundAndMic'):
 			return
 
-		with self.Commons.shutUpAlsaFFS():
-			self._audio = pyaudio.PyAudio()
-
 		self._vad = Vad(2)
 
 		try:
-			self._audioOutput = self._audio.get_default_output_device_info()
+			self._audioOutput = sd.query_devices()[0]
 		except:
 			self.logFatal('Audio output not found, cannot continue')
 			return
@@ -47,7 +44,7 @@ class AudioManager(Manager):
 			self.logInfo(f'Using **{self._audioOutput["name"]}** for audio output')
 
 		try:
-			self._audioInput = self._audio.get_default_input_device_info()
+			self._audioInput = sd.query_devices()[0]
 		except:
 			self.logFatal('Audio input not found, cannot continue')
 		else:
@@ -65,10 +62,9 @@ class AudioManager(Manager):
 
 	def onStop(self):
 		super().onStop()
+		self._audioStream.stop(ignore_errors=True)
+		self._audioStream.close(ignore_errors=True)
 		self.MqttManager.mqttClient.unsubscribe(constants.TOPIC_AUDIO_FRAME.format(self.ConfigManager.getAliceConfigByName('uuid')))
-
-		if not self.ConfigManager.getAliceConfigByName('disableSoundAndMic'):
-			self._audio.terminate()
 
 
 	def onStartListening(self, session: DialogSession):
@@ -103,13 +99,13 @@ class AudioManager(Manager):
 
 	def publishAudio(self):
 		self.logInfo('Starting audio publisher')
-		audioStream = self._audio.open(
-			format=pyaudio.paInt16,
+		self._audioStream = sd.RawInputStream(
+			dtype='int16',
 			channels=1,
-			rate=self.SAMPLERATE,
-			frames_per_buffer=self.FRAMES_PER_BUFFER,
-			input=True
+			samplerate=self.SAMPLERATE,
+			blocksize=self.FRAMES_PER_BUFFER,
 		)
+		self._audioStream.start()
 
 		speech = False
 		silence = self.SAMPLERATE / self.FRAMES_PER_BUFFER
@@ -121,7 +117,7 @@ class AudioManager(Manager):
 				break
 
 			try:
-				frames = audioStream.read(num_frames=self.FRAMES_PER_BUFFER, exception_on_overflow=False)
+				frames = self._audioStream.read(frames=self.FRAMES_PER_BUFFER)[0]
 
 				if self._vad.is_speech(frames, self.SAMPLERATE):
 					if not speech and speechFrames < minSpeechFrames:
