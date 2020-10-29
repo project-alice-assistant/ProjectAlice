@@ -1,4 +1,5 @@
 import io
+import queue
 import time
 import wave
 from pathlib import Path
@@ -28,12 +29,15 @@ class AudioManager(Manager):
 		self._stopPlayingFlag: Optional[AliceEvent] = None
 		self._playing = False
 		self._waves: Dict[str, wave.Wave_write] = dict()
-		self._audioStream = None
+		self._audioInputStream = None
+		self._audioOutputStream = None
+		self._playBuffer = queue.Queue()
 
 		if self.ConfigManager.getAliceConfigByName('disableSoundAndMic'):
 			return
 
 		self._vad = Vad(2)
+		print(sd.query_devices())
 
 		try:
 			self._audioOutput = sd.query_devices()[0]
@@ -62,8 +66,11 @@ class AudioManager(Manager):
 
 	def onStop(self):
 		super().onStop()
-		self._audioStream.stop(ignore_errors=True)
-		self._audioStream.close(ignore_errors=True)
+		self._playBuffer.empty()
+		self._audioOutputStream.stop(ignore_errors=True)
+		self._audioOutputStream.close(ignore_errors=True)
+		self._audioInputStream.stop(ignore_errors=True)
+		self._audioInputStream.close(ignore_errors=True)
 		self.MqttManager.mqttClient.unsubscribe(constants.TOPIC_AUDIO_FRAME.format(self.ConfigManager.getAliceConfigByName('uuid')))
 
 
@@ -99,13 +106,13 @@ class AudioManager(Manager):
 
 	def publishAudio(self):
 		self.logInfo('Starting audio publisher')
-		self._audioStream = sd.RawInputStream(
+		self._audioInputStream = sd.RawInputStream(
 			dtype='int16',
 			channels=1,
 			samplerate=self.SAMPLERATE,
 			blocksize=self.FRAMES_PER_BUFFER,
 		)
-		self._audioStream.start()
+		self._audioInputStream.start()
 
 		speech = False
 		silence = self.SAMPLERATE / self.FRAMES_PER_BUFFER
@@ -117,7 +124,7 @@ class AudioManager(Manager):
 				break
 
 			try:
-				frames = self._audioStream.read(frames=self.FRAMES_PER_BUFFER)[0]
+				frames = self._audioInputStream.read(frames=self.FRAMES_PER_BUFFER)[0]
 
 				if self._vad.is_speech(frames, self.SAMPLERATE):
 					if not speech and speechFrames < minSpeechFrames:
@@ -170,29 +177,28 @@ class AudioManager(Manager):
 		with io.BytesIO(payload) as buffer:
 			try:
 				with wave.open(buffer, 'rb') as wav:
-					sampleWidth = wav.getsampwidth()
-					nFormat = self._audio.get_format_from_width(sampleWidth)
 					channels = wav.getnchannels()
 					framerate = wav.getframerate()
 
+
 					def streamCallback(_inData, frameCount, _timeInfo, _status) -> tuple:
 						data = wav.readframes(frameCount)
-						return data, pyaudio.paContinue
+						return data
 
-					audioStream = self._audio.open(
-						format=nFormat,
+
+					audioStream = sd.RawOutputStream(
+						dtype='int16',
 						channels=channels,
-						rate=framerate,
-						output=True,
-						output_device_index=self._audioOutput['index'],
-						stream_callback=streamCallback
+						samplerate=framerate,
+						device=8,
+						callback=streamCallback
 					)
 
-					self.logDebug(f'Playing wav stream using **{self._audioOutput["name"]}** audio output from site id **{self.DeviceManager.siteIdToDeviceName(siteId)}** (Format: {nFormat}, channels: {channels}, rate: {framerate})')
-					audioStream.start_stream()
-					while audioStream.is_active():
+					self.logDebug(f'Playing wav stream using **{self._audioOutput["name"]}** audio output from site id **{self.DeviceManager.siteIdToDeviceName(siteId)}** (channels: {channels}, rate: {framerate})')
+					audioStream.start()
+					while audioStream.active:
 						if self._stopPlayingFlag.is_set():
-							audioStream.stop_stream()
+							audioStream.stop()
 							audioStream.close()
 
 							if sessionId:
@@ -209,7 +215,7 @@ class AudioManager(Manager):
 							raise PlayBytesStopped
 						time.sleep(0.1)
 
-					audioStream.stop_stream()
+					audioStream.stop()
 					audioStream.close()
 			except PlayBytesStopped:
 				self.logDebug('Playing bytes stopped')
