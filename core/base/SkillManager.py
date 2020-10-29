@@ -70,8 +70,6 @@ class SkillManager(Manager):
 
 		self._postBootSkillActions = dict()
 
-		self._availableWidgets = dict()
-
 
 	def onStart(self):
 		super().onStart()
@@ -116,7 +114,7 @@ class SkillManager(Manager):
 					self.logWarning(f'Skill "{file}" is not declared in database, ignoring it')
 
 		# Next, check that database declared skills are still existing, using the first database load
-		# If not, cleanup both skills and widgets tables
+		# If not, cleanup skills table
 		for skill in skills:
 			if skill not in physicalSkills:
 				self.logWarning(f'Skill "{skill}" declared in database but is not existing, cleaning this')
@@ -124,12 +122,6 @@ class SkillManager(Manager):
 					tableName='skills',
 					callerName=self.name,
 					query='DELETE FROM :__table__ WHERE skillName = :skill',
-					values={'skill': skill}
-				)
-				self.DatabaseManager.delete(
-					tableName='widgets',
-					callerName=self.name,
-					query='DELETE FROM :__table__ WHERE parent = :skill',
 					values={'skill': skill}
 				)
 				self.DeviceManager.removeDeviceTypesForSkill(skillName=skill)
@@ -157,7 +149,7 @@ class SkillManager(Manager):
 
 
 	def changeSkillStateInDB(self, skillName: str, newState: bool):
-		# Changes the state of a skill in db and also deactivates widgets if state is False
+		# Changes the state of a skill in db
 		self.DatabaseManager.update(
 			tableName='skills',
 			callerName=self.name,
@@ -166,19 +158,6 @@ class SkillManager(Manager):
 			},
 			row=('skillName', skillName)
 		)
-
-		if not newState:
-			self.DatabaseManager.update(
-				tableName='widgets',
-				callerName=self.name,
-				values={
-					'state' : 0,
-					'posx'  : 0,
-					'posy'  : 0,
-					'zindex': -1
-				},
-				row=('parent', skillName)
-			)
 
 
 	def addSkillToDB(self, skillName: str, active: int = 1):
@@ -194,13 +173,6 @@ class SkillManager(Manager):
 			tableName='skills',
 			callerName=self.name,
 			query='DELETE FROM :__table__ WHERE skillName = :skill',
-			values={'skill': skillName}
-		)
-
-		self.DatabaseManager.delete(
-			tableName='widgets',
-			callerName=self.name,
-			query='DELETE FROM :__table__ WHERE parent = :skill',
 			values={'skill': skillName}
 		)
 
@@ -230,11 +202,6 @@ class SkillManager(Manager):
 				exceptions=[constants.DUMMY],
 				skill=skillName
 			)
-
-
-	@property
-	def availableWidgets(self) -> dict:
-		return self._availableWidgets
 
 
 	@property
@@ -447,9 +414,6 @@ class SkillManager(Manager):
 
 			self._failedSkills[skillName] = FailedAliceSkill(self._skillList[skillName]['installer'])
 
-		if skillInstance.widgets:
-			self._availableWidgets[skillName] = skillInstance.widgets
-
 		if skillInstance.deviceTypes:
 			self.DeviceManager.addDeviceTypes(deviceTypes=skillInstance.deviceTypes)
 
@@ -507,7 +471,6 @@ class SkillManager(Manager):
 			self._deactivatedSkills[skillName] = skillInstance
 			skillInstance.onStop()
 			self.broadcast(method=constants.EVENT_SKILL_STOPPED, exceptions=[self.name], propagateToSkills=True, skill=self)
-			self._availableWidgets.pop(skillName, None)
 			self.DeviceManager.removeDeviceTypesForSkill(skillName=skillName)
 
 			if persistent:

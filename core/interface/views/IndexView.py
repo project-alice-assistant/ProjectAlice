@@ -1,6 +1,6 @@
 import json
 
-from flask import jsonify, redirect, render_template, request, send_from_directory
+from flask import jsonify, render_template, request, send_from_directory
 from flask_classful import route
 
 from core.interface.model.View import View
@@ -25,58 +25,6 @@ class IndexView(View):
 		return send_from_directory(f'{self.WebInterfaceManager.app.root_path}/../../skills/{parent}/widgets/{fileType}/', filename)
 
 
-	@route('/home/saveWidgets/', methods=['POST'])
-	def saveWidgets(self):
-		try:
-			data = request.json
-
-			for identifier, widgetData in data.items():
-				parent, widgetName = identifier.split('_')
-
-				widget = self.SkillManager.availableWidgets[parent][widgetName]
-				widget.x = widgetData['x']
-				widget.y = widgetData['y']
-				widget.zindex = widgetData['zindex']
-				widget.width = int(widgetData['w'])
-				widget.height = int(widgetData['h'])
-				widget.saveToDB()
-
-			return jsonify(success=True)
-		except Exception as e:
-			self.logWarning(f"[Widget] Couldn't save widget: {e}")
-			return jsonify(success=False)
-
-
-	@route('/home/removeWidget/', methods=['POST'])
-	def removeWidget(self):
-		try:
-			parent, widgetName = request.form.get('id').split('_')
-
-			widget = self.SkillManager.availableWidgets[parent][widgetName]
-			widget.state = 0
-			widget.saveToDB()
-
-			return jsonify(success=True)
-		except Exception as e:
-			self.logWarning(f"[Widget] Couldn't remove from home: {e}")
-			return jsonify(success=False)
-
-
-	@route('/home/addWidget/', methods=['POST'])
-	def addWidget(self):
-		try:
-			line, parent, widgetName = request.form.get('id').split('_')
-
-			widget = self.SkillManager.availableWidgets[parent][widgetName]
-			widget.state = 1
-			widget.saveToDB()
-
-			return redirect('home.html')
-		except Exception as e:
-			self.logWarning(f"[Widget] Couldn't add to home: {e}")
-			return jsonify(success=False)
-
-
 	@route('/home/widget/', methods=['POST'])
 	def widgetCall(self):
 		try:
@@ -95,42 +43,6 @@ class IndexView(View):
 		except Exception as e:
 			self.logWarning(f"[Widget] Widget tried to call a core function but failed: {e}")
 			return jsonify(success=False, message=str(e))
-
-
-	@route('/home/saveWidgetConfig/', methods=['POST'])
-	def saveWidgetConfig(self):
-		parent, widgetName = request.form.get('id').split('_')
-		widget = self.SkillManager.availableWidgets[parent][widgetName]
-		widget.options.update(request.form)
-		# 'id' would mess up the complete form anyways, must not be used!
-		widget.options.pop('id', None)
-		widget.saveToDB()
-		return jsonify(success=True)
-
-
-	@route('/home/readWidgetConfig/', methods=['POST'])
-	def readWidgetConfig(self):
-		parent, widgetName = request.form.get('id').split('_')
-		widget = self.SkillManager.availableWidgets[parent][widgetName]
-		return jsonify(widget.options)
-
-
-	@route('/home/saveWidgetCustStyle/', methods=['POST'])
-	def saveWidgetCustStyle(self):
-		parent, widgetName = request.form.get('id').split('_')
-		widget = self.SkillManager.availableWidgets[parent][widgetName]
-		widget.custStyle.update(request.form)
-		# 'id' would mess up the complete form anyways, must not be used!
-		widget.custStyle.pop('id', None)
-		widget.saveToDB()
-		return jsonify(success=True)
-
-
-	@route('/home/readWidgetCustStyle/', methods=['POST'])
-	def readWidgetCustStyle(self):
-		parent, widegetName = request.form.get('id').split('_')
-		widget = self.SkillManager.availableWidgets[parent][widegetName]
-		return jsonify(widget.custStyle)
 
 
 	@route('/home/getMqttConfig/', methods=['POST'])
