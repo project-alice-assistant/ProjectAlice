@@ -26,3 +26,4 @@ toml==0.10.1
 markdown==3.2.2
 ProjectAlice-sk
 #pyopenssl==19.1.0
+sounddevice==0.4.1

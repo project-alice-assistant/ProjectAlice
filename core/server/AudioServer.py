@@ -4,7 +4,6 @@ import wave
 from pathlib import Path
 from typing import Dict, Optional
 
-import pyaudio
 from webrtcvad import Vad
 
 from core.ProjectAliceExceptions import PlayBytesStopped
