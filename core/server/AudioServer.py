@@ -5,6 +5,7 @@ from pathlib import Path
 from typing import Dict, Optional
 
 import sounddevice as sd
+# noinspection PyUnresolvedReferences
 from webrtcvad import Vad
 
 from core.ProjectAliceExceptions import PlayBytesStopped
@@ -34,25 +35,34 @@ class AudioManager(Manager):
 			return
 
 		self._vad = Vad(2)
-
-		try:
-			self._audioOutput = sd.query_devices()[0]
-		except:
-			self.logFatal('Audio output not found, cannot continue')
-			return
-		else:
-			self.logInfo(f'Using **{self._audioOutput["name"]}** for audio output')
-
-		try:
-			self._audioInput = sd.query_devices()[0]
-		except:
-			self.logFatal('Audio input not found, cannot continue')
-		else:
-			self.logInfo(f'Using **{self._audioInput["name"]}** for audio input')
+		self._audioInput = None
+		self._audioOutput = None
 
 
 	def onStart(self):
 		super().onStart()
+
+		if not self.ConfigManager.getAliceConfigByName('inputDevice'):
+			self.logWarning('Input device not set in config, trying to find default device')
+			try:
+				self._audioInput = self.ConfigManager.getAliceConfigTemplateByName('inputDevice')['values'][0]
+			except:
+				self.logFatal('Audio input not found, cannot continue')
+				return
+			else:
+				self.logInfo(f'Using **{self._audioInput}** for audio input')
+
+		if not self.ConfigManager.getAliceConfigByName('outputDevice'):
+			self.logWarning('Output device not set in config, trying to find default device')
+			try:
+				self._audioInput = self.ConfigManager.getAliceConfigTemplateByName('outputDevice')['values'][0]
+			except:
+				self.logFatal('Audio output not found, cannot continue')
+				return
+			else:
+				self.logInfo(f'Using **{self._audioOutput}** for audio output')
+
+
 		self._stopPlayingFlag = self.ThreadManager.newEvent('stopPlaying')
 		self.MqttManager.mqttClient.subscribe(constants.TOPIC_AUDIO_FRAME.format(self.ConfigManager.getAliceConfigByName('uuid')))
 
@@ -102,6 +112,7 @@ class AudioManager(Manager):
 		self._audioInputStream = sd.RawInputStream(
 			dtype='int16',
 			channels=1,
+			device=self._audioInput,
 			samplerate=self.SAMPLERATE,
 			blocksize=self.FRAMES_PER_BUFFER,
 		)
@@ -184,7 +195,7 @@ class AudioManager(Manager):
 						dtype='int16',
 						channels=channels,
 						samplerate=framerate,
-						device=None,
+						device=self._audioOutput,
 						callback=streamCallback
 					)
 
@@ -231,6 +242,28 @@ class AudioManager(Manager):
 
 	def stopPlaying(self):
 		self._stopPlayingFlag.set()
+
+
+	def populateInputDevicesConfig(self):
+		devices = list()
+		try:
+			devices = [device['name'] for device in sd.query_devices(kind='input')]
+		except:
+			if not self.ConfigManager.getAliceConfigByName('disableSoundAndMic'):
+				self.logWarning('No input device found')
+
+		self.ConfigManager.updateAliceConfigDefinitionValues(setting='intputDevice', value=devices)
+
+
+	def populateOutputDevicesConfig(self):
+		devices = list()
+		try:
+			devices = [device['name'] for device in sd.query_devices(kind='output')]
+		except:
+			if not self.ConfigManager.getAliceConfigByName('disableSoundAndMic'):
+				self.logWarning('No output device found')
+
+		self.ConfigManager.updateAliceConfigDefinitionValues(setting='outputDevice', value=devices)
 
 
 	@property

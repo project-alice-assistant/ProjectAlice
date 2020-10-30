@@ -35,7 +35,12 @@
 		"isSensitive" : false,
 		"description" : "Your asound settings",
 		"beforeUpdate": "injectAsound",
-		"category"    : "audio"
+		"category"    : "audio",
+		"parent": {
+			"config": "disableSoundAndMic",
+			"condition": "isnot",
+			"value": false
+		}
 	},
 	"recordAudioAfterWakeword": {
 		"defaultValue": false,
@@ -51,7 +56,12 @@
 		"values"      : [],
 		"description" : "The device to use to play sounds",
 		"category"    : "audio",
-		"onInit"      : "AudioServer.populateOutputDevices"
+		"onStart"     : "AudioServer.populateOutputDevices",
+		"parent": {
+			"config": "disableSoundAndMic",
+			"condition": "isnot",
+			"value": false
+		}
 	},
 	"intputDevice"            : {
 		"defaultValue": "",
@@ -60,7 +70,12 @@
 		"values"      : [],
 		"description" : "The device to use to record sounds",
 		"category"    : "audio",
-		"onInit"      : "AudioServer.populateInputDevices"
+		"onStart"     : "AudioServer.populateInputDevices",
+		"parent": {
+			"config": "disableSoundAndMic",
+			"condition": "isnot",
+			"value": false
+		}
 	},
 	"deviceName"              : {
 		"defaultValue": "default",

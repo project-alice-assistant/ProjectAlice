@@ -44,6 +44,28 @@ class ConfigManager(Manager):
 			if conf not in self._aliceConfigurations or self._aliceConfigurations[conf] == '':
 				raise VitalConfigMissing(conf)
 
+		for definition in {**self._aliceTemplateConfigurations, **self._skillsTemplateConfigurations}.values():
+			if definition['onInit']:
+				function = definition['onInit']
+				try:
+					if '.' in function:
+						manager, function = function.split('.')
+
+						try:
+							mngr = getattr(self, manager)
+						except AttributeError:
+							self.logWarning(f'Config on init manager **{manager}** does not exist')
+							return False
+					else:
+						mngr = self
+
+					func = getattr(mngr, function)
+					func()
+				except AttributeError:
+					self.logWarning(f'Configuration on init method **{function}** does not exist')
+				except Exception as e:
+					self.logError(f'Configuration on init method **{function}** failed: {e}')
+
 
 	def _loadCheckAndUpdateAliceConfigFile(self):
 		self.logInfo('Checking Alice configuration file')
@@ -96,10 +118,25 @@ class ConfigManager(Manager):
 				elif definition['dataType'] == 'list':
 					values = definition['values'].values() if isinstance(definition['values'], dict) else definition['values']
 
-					if aliceConfigs[setting] not in values:
+					if aliceConfigs[setting] and aliceConfigs[setting] not in values:
 						changes = True
 						self.logWarning(f'Selected value **{aliceConfigs[setting]}** for setting **{setting}** doesn\'t exist, reverted to default value --{definition["defaultValue"]}--')
 						aliceConfigs[setting] = definition['defaultValue']
+
+				if definition['onInit']:
+					function = definition['onInit']
+					try:
+						if '.' in function:
+							self.logWarning(f'Use of manager for configuration **onInit** for config "{setting}" is not allowed')
+							function = function.split('.')[-1]
+
+						func = getattr(self, function)
+						func()
+					except AttributeError:
+						self.logWarning(f'Configuration on init method **{function}** does not exist')
+					except Exception as e:
+						self.logError(f'Configuration on init method **{function}** failed: {e}')
+
 
 		# Setting logger level immediately
 		if aliceConfigs['advancedDebug'] and not aliceConfigs['debug']:
@@ -120,6 +157,14 @@ class ConfigManager(Manager):
 			self.writeToAliceConfigurationFile(aliceConfigs)
 		else:
 			self._aliceConfigurations = aliceConfigs
+
+
+	def updateAliceConfigDefinitionValues(self, setting: str, value: typing.Any):
+		if setting not in self._aliceTemplateConfigurations:
+			self.logWarning(f'Was asked to update **{setting}** from config templates, but setting doesn\'t exist')
+			return
+
+		self._aliceTemplateConfigurations[setting] = value
 
 
 	@staticmethod
@@ -374,6 +419,14 @@ class ConfigManager(Manager):
 			return self._aliceConfigurations[configName]
 		else:
 			self.logDebug(f'Trying to get config **{configName}** but it does not exist')
+			return ''
+
+
+	def getAliceConfigTemplateByName(self, configName: str) -> typing.Any:
+		if configName in self._aliceTemplateConfigurations:
+			return self._aliceTemplateConfigurations[configName]
+		else:
+			self.logDebug(f'Trying to get config template **{configName}** but it does not exist')
 			return ''
 
 
