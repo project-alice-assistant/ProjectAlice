@@ -188,12 +188,13 @@ class AudioManager(Manager):
 					framerate = wav.getframerate()
 
 					def streamCallback(outdata, frameCount, _timeInfo, _status):
-						try:
-							data = wav.readframes(frameCount)
+						data = wav.readframes(frameCount)
+						if len(data) < len(outdata):
+							outdata[:len(data)] = data
+							outdata[len(data):] = b'\x00' * (len(outdata) - len(data))
+							raise sd.CallbackStop
+						else:
 							outdata[:] = data
-						except:
-							raise PlayBytesStopped
-
 
 					stream = sd.RawOutputStream(
 						dtype='int16',
