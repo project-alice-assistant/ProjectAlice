@@ -27,11 +27,9 @@ jobs:
       - name: Install Portaudio
         run: sudo apt-get install libportaudio2
       - name: Tests
-        run: |
-          pytest tests/ --cov=core/ --cov-report=xml
+        run: pytest tests/ --cov=core/ --cov-report=xml
       - name: Fix paths
-        run: |
-          sed -i 's/\/home\/runner\/work\/ProjectAlice\/ProjectAlice\//\/github\/workspace\//g' coverage.xml
+        run: sed -i 's/\/home\/runner\/work\/ProjectAlice\/ProjectAlice\//\/github\/workspace\//g' coverage.xml
       - name: Sonarcloud scan
         uses: sonarsource/sonarcloud-github-action@master
         env:
