@@ -60,7 +60,7 @@
 		"parent"      : {
 			"config"   : "disableSoundAndMic",
 			"condition": "isnot",
-			"value"    : false
+			"value"    : true
 		}
 	},
 	"inputDevice"             : {
@@ -74,7 +74,7 @@
 		"parent"      : {
 			"config"   : "disableSoundAndMic",
 			"condition": "isnot",
-			"value"    : false
+			"value"    : true
 		}
 	},
 	"deviceName"              : {
