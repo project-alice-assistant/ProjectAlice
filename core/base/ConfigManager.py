@@ -4,6 +4,7 @@ import logging
 import typing
 from pathlib import Path
 
+import sounddevice as sd
 import toml
 
 from core.ProjectAliceExceptions import ConfigurationUpdateFailed, VitalConfigMissing
@@ -44,27 +45,20 @@ class ConfigManager(Manager):
 			if conf not in self._aliceConfigurations or self._aliceConfigurations[conf] == '':
 				raise VitalConfigMissing(conf)
 
-		for definition in {**self._aliceTemplateConfigurations, **self._skillsTemplateConfigurations}.values():
-			if definition['onInit']:
-				function = definition['onInit']
+		for setting, definition in {**self._aliceTemplateConfigurations, **self._skillsTemplateConfigurations}.items():
+			function = definition.get('onStart', None)
+			if function:
 				try:
 					if '.' in function:
-						manager, function = function.split('.')
+						self.logWarning(f'Use of manager for configuration **onStart** for config "{setting}" is not allowed')
+						function = function.split('.')[-1]
 
-						try:
-							mngr = getattr(self, manager)
-						except AttributeError:
-							self.logWarning(f'Config on init manager **{manager}** does not exist')
-							return False
-					else:
-						mngr = self
-
-					func = getattr(mngr, function)
+					func = getattr(self, function)
 					func()
 				except AttributeError:
-					self.logWarning(f'Configuration on init method **{function}** does not exist')
+					self.logWarning(f'Configuration onStart method **{function}** does not exist')
 				except Exception as e:
-					self.logError(f'Configuration on init method **{function}** failed: {e}')
+					self.logError(f'Configuration onStart method **{function}** failed: {e}')
 
 
 	def _loadCheckAndUpdateAliceConfigFile(self):
@@ -133,9 +127,9 @@ class ConfigManager(Manager):
 						func = getattr(self, function)
 						func()
 					except AttributeError:
-						self.logWarning(f'Configuration on init method **{function}** does not exist')
+						self.logWarning(f'Configuration onInit method **{function}** does not exist')
 					except Exception as e:
-						self.logError(f'Configuration on init method **{function}** failed: {e}')
+						self.logError(f'Configuration onInit method **{function}** failed: {e}')
 
 
 		# Setting logger level immediately
@@ -705,6 +699,19 @@ class ConfigManager(Manager):
 		username = self.getAliceConfigByName('githubUsername')
 		token = self.getAliceConfigByName('githubToken')
 		return (username, token) if (username and token) else None
+
+
+	def populateAudioDevicesConfig(self):
+		devices = list()
+		try:
+			devices = [device['name'] for device in sd.query_devices()]
+			if not devices:
+				raise Exception
+		except:
+			if not self.getAliceConfigByName('disableSoundAndMic'):
+				self.logWarning('No audio device found')
+
+		self.updateAliceConfigDefinitionValues(setting='intputDevice', value=devices)
 
 
 	@property

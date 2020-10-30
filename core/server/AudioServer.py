@@ -45,7 +45,7 @@ class AudioManager(Manager):
 		if not self.ConfigManager.getAliceConfigByName('inputDevice'):
 			self.logWarning('Input device not set in config, trying to find default device')
 			try:
-				self._audioInput = self.ConfigManager.getAliceConfigTemplateByName('inputDevice')['values'][0]
+				self._audioInput = sd.query_devices(kind='input')['name']
 			except:
 				self.logFatal('Audio input not found, cannot continue')
 				return
@@ -55,7 +55,7 @@ class AudioManager(Manager):
 		if not self.ConfigManager.getAliceConfigByName('outputDevice'):
 			self.logWarning('Output device not set in config, trying to find default device')
 			try:
-				self._audioInput = self.ConfigManager.getAliceConfigTemplateByName('outputDevice')['values'][0]
+				self._audioOutput = sd.query_devices(kind='output')['name']
 			except:
 				self.logFatal('Audio output not found, cannot continue')
 				return
@@ -242,28 +242,6 @@ class AudioManager(Manager):
 
 	def stopPlaying(self):
 		self._stopPlayingFlag.set()
-
-
-	def populateInputDevicesConfig(self):
-		devices = list()
-		try:
-			devices = [device['name'] for device in sd.query_devices(kind='input')]
-		except:
-			if not self.ConfigManager.getAliceConfigByName('disableSoundAndMic'):
-				self.logWarning('No input device found')
-
-		self.ConfigManager.updateAliceConfigDefinitionValues(setting='intputDevice', value=devices)
-
-
-	def populateOutputDevicesConfig(self):
-		devices = list()
-		try:
-			devices = [device['name'] for device in sd.query_devices(kind='output')]
-		except:
-			if not self.ConfigManager.getAliceConfigByName('disableSoundAndMic'):
-				self.logWarning('No output device found')
-
-		self.ConfigManager.updateAliceConfigDefinitionValues(setting='outputDevice', value=devices)
 
 
 	@property

@@ -56,25 +56,25 @@
 		"values"      : [],
 		"description" : "The device to use to play sounds",
 		"category"    : "audio",
-		"onStart"     : "AudioServer.populateOutputDevices",
-		"parent": {
-			"config": "disableSoundAndMic",
+		"onInit"      : "populateAudioDevicesConfig",
+		"parent"      : {
+			"config"   : "disableSoundAndMic",
 			"condition": "isnot",
-			"value": false
+			"value"    : false
 		}
 	},
-	"intputDevice"            : {
+	"inputDevice"             : {
 		"defaultValue": "",
 		"dataType"    : "list",
 		"isSensitive" : false,
 		"values"      : [],
 		"description" : "The device to use to record sounds",
 		"category"    : "audio",
-		"onStart"     : "AudioServer.populateInputDevices",
-		"parent": {
-			"config": "disableSoundAndMic",
+		"onInit"      : "populateAudioDevicesConfig",
+		"parent"      : {
+			"config"   : "disableSoundAndMic",
 			"condition": "isnot",
-			"value": false
+			"value"    : false
 		}
 	},
 	"deviceName"              : {
