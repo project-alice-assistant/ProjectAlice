@@ -51,6 +51,8 @@ class AudioManager(Manager):
 				return
 			else:
 				self.logInfo(f'Using **{self._audioInput}** for audio input')
+		else:
+			self._audioInput = self.ConfigManager.getAliceConfigByName('inputDevice')
 
 		if not self.ConfigManager.getAliceConfigByName('outputDevice'):
 			self.logWarning('Output device not set in config, trying to find default device')
@@ -61,6 +63,8 @@ class AudioManager(Manager):
 				return
 			else:
 				self.logInfo(f'Using **{self._audioOutput}** for audio output')
+		else:
+			self._audioOutput = self.ConfigManager.getAliceConfigByName('outputDevice')
 
 
 		self._stopPlayingFlag = self.ThreadManager.newEvent('stopPlaying')
