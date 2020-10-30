@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from typing import Any
+from typing import Any, Optional
 
 from paho.mqtt.client import MQTTMessage
 
@@ -101,5 +101,16 @@ class DialogSession:
 
 
 	@property
-	def previousIntent(self) -> str:
-		return str(self.intentHistory[-1])
+	def previousIntent(self) -> Optional[str]:
+		try:
+			return str(self.intentHistory[-1])
+		except:
+			return None
+
+
+	@property
+	def secondLastIntent(self) -> Optional[str]:
+		try:
+			return str(self.intentHistory[-2])
+		except:
+			return None
