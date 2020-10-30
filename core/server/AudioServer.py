@@ -62,16 +62,20 @@ class AudioManager(Manager):
 		else:
 			self._audioOutput = self.ConfigManager.getAliceConfigByName('outputDevice')
 
-		self.logInfo(f'Using **{self._audioInput}** for audio input')
-		self.logInfo(f'Using **{self._audioOutput}** for audio output')
-
-		sd.default.device = self._audioOutput, self._audioInput
+		self.setDefaults()
 
 		self._stopPlayingFlag = self.ThreadManager.newEvent('stopPlaying')
 		self.MqttManager.mqttClient.subscribe(constants.TOPIC_AUDIO_FRAME.format(self.ConfigManager.getAliceConfigByName('uuid')))
 
 		if not self.ConfigManager.getAliceConfigByName('disableSoundAndMic'):
 			self.ThreadManager.newThread(name='audioPublisher', target=self.publishAudio)
+
+
+	def setDefaults(self):
+		self.logInfo(f'Using **{self._audioInput}** for audio input')
+		self.logInfo(f'Using **{self._audioOutput}** for audio output')
+
+		sd.default.device = self._audioOutput, self._audioInput
 
 
 	def onStop(self):
@@ -238,7 +242,7 @@ class AudioManager(Manager):
 		self.MqttManager.publish(
 			topic=constants.TOPIC_PLAY_BYTES_FINISHED.format(siteId),
 			payload={
-				'id': requestId,
+				'id'       : requestId,
 				'sessionId': sessionId
 			}
 		)
@@ -246,6 +250,12 @@ class AudioManager(Manager):
 
 	def stopPlaying(self):
 		self._stopPlayingFlag.set()
+
+
+	def updateAudioDevices(self):
+		self._audioInput = self.ConfigManager.getAliceConfigByName('inputDevice')
+		self._audioOutput = self.ConfigManager.getAliceConfigByName('outputDevice')
+		self.setDefaults()
 
 
 	@property

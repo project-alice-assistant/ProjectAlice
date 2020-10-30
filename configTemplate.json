@@ -57,6 +57,7 @@
 		"description" : "The device to use to play sounds",
 		"category"    : "audio",
 		"onInit"      : "populateAudioOutputConfig",
+		"onUpdate"    : "AudioServer.updateAudioDevices",
 		"parent"      : {
 			"config"   : "disableSoundAndMic",
 			"condition": "isnot",
@@ -71,6 +72,7 @@
 		"description" : "The device to use to record sounds",
 		"category"    : "audio",
 		"onInit"      : "populateAudioInputConfig",
+		"onUpdate"    : "AudioServer.updateAudioDevices",
 		"parent"      : {
 			"config"   : "disableSoundAndMic",
 			"condition": "isnot",
