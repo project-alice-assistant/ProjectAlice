@@ -1,5 +1,4 @@
 import io
-import queue
 import time
 import wave
 from pathlib import Path
@@ -30,12 +29,18 @@ class AudioManager(Manager):
 		self._playing = False
 		self._waves: Dict[str, wave.Wave_write] = dict()
 		self._audioInputStream = None
-		self._audioQueue = queue.Queue()
 
 		if self.ConfigManager.getAliceConfigByName('disableSoundAndMic'):
 			return
 
 		self._vad = Vad(2)
+
+		devices = sd.query_devices()
+
+		for device in devices:
+			print(device)
+
+		print(devices)
 
 		try:
 			self._audioOutput = sd.query_devices()[0]
@@ -175,7 +180,6 @@ class AudioManager(Manager):
 					channels = wav.getnchannels()
 					framerate = wav.getframerate()
 
-
 					def streamCallback(outdata, frameCount, _timeInfo, _status):
 						try:
 							data = wav.readframes(frameCount)
@@ -183,12 +187,11 @@ class AudioManager(Manager):
 						except:
 							raise PlayBytesStopped
 
-
 					stream = sd.RawOutputStream(
 						dtype='int16',
 						channels=channels,
 						samplerate=framerate,
-						device=0,
+						device=None,
 						callback=streamCallback
 					)
 
