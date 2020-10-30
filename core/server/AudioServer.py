@@ -49,8 +49,6 @@ class AudioManager(Manager):
 			except:
 				self.logFatal('Audio input not found, cannot continue')
 				return
-			else:
-				self.logInfo(f'Using **{self._audioInput}** for audio input')
 		else:
 			self._audioInput = self.ConfigManager.getAliceConfigByName('inputDevice')
 
@@ -61,11 +59,13 @@ class AudioManager(Manager):
 			except:
 				self.logFatal('Audio output not found, cannot continue')
 				return
-			else:
-				self.logInfo(f'Using **{self._audioOutput}** for audio output')
 		else:
 			self._audioOutput = self.ConfigManager.getAliceConfigByName('outputDevice')
 
+		self.logInfo(f'Using **{self._audioInput}** for audio input')
+		self.logInfo(f'Using **{self._audioOutput}** for audio output')
+
+		sd.default.device = self._audioOutput, self._audioInput
 
 		self._stopPlayingFlag = self.ThreadManager.newEvent('stopPlaying')
 		self.MqttManager.mqttClient.subscribe(constants.TOPIC_AUDIO_FRAME.format(self.ConfigManager.getAliceConfigByName('uuid')))
@@ -116,7 +116,6 @@ class AudioManager(Manager):
 		self._audioInputStream = sd.RawInputStream(
 			dtype='int16',
 			channels=1,
-			device=self._audioInput,
 			samplerate=self.SAMPLERATE,
 			blocksize=self.FRAMES_PER_BUFFER,
 		)
@@ -195,15 +194,15 @@ class AudioManager(Manager):
 						except:
 							raise PlayBytesStopped
 
+
 					stream = sd.RawOutputStream(
 						dtype='int16',
 						channels=channels,
 						samplerate=framerate,
-						device=self._audioOutput,
 						callback=streamCallback
 					)
 
-					self.logDebug(f'Playing wav stream using **{self._audioOutput["name"]}** audio output from site id **{self.DeviceManager.siteIdToDeviceName(siteId)}** (channels: {channels}, rate: {framerate})')
+					self.logDebug(f'Playing wav stream using **{self._audioOutput}** audio output from site id **{self.DeviceManager.siteIdToDeviceName(siteId)}** (channels: {channels}, rate: {framerate})')
 					stream.start()
 					while stream.active:
 						if self._stopPlayingFlag.is_set():
