@@ -35,13 +35,6 @@ class AudioManager(Manager):
 
 		self._vad = Vad(2)
 
-		devices = sd.query_devices()
-
-		for device in devices:
-			print(device)
-
-		print(devices)
-
 		try:
 			self._audioOutput = sd.query_devices()[0]
 		except:
