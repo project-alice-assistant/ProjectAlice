@@ -56,7 +56,7 @@
 		"values"      : [],
 		"description" : "The device to use to play sounds",
 		"category"    : "audio",
-		"onInit"      : "populateAudioDevicesConfig",
+		"onInit"      : "populateAudioOutputConfig",
 		"parent"      : {
 			"config"   : "disableSoundAndMic",
 			"condition": "isnot",
@@ -70,7 +70,7 @@
 		"values"      : [],
 		"description" : "The device to use to record sounds",
 		"category"    : "audio",
-		"onInit"      : "populateAudioDevicesConfig",
+		"onInit"      : "populateAudioInputConfig",
 		"parent"      : {
 			"config"   : "disableSoundAndMic",
 			"condition": "isnot",

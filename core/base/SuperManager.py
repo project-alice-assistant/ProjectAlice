@@ -118,19 +118,23 @@ class SuperManager:
 			self._managers[nluManager.name] = nluManager
 			self._managers[internetManager.name] = internetManager
 			self._managers[nodeRedManager.name] = nodeRedManager
-		except:
-			pass  # This happens when onStop is called while booting
+		except Exception as e:
+			import traceback
+
+			traceback.print_exc()
+			Logger().logFatal(f'Error while starting managers: {e}')
 
 
 	def onBooted(self):
 		self.mqttManager.playSound(soundFilename='boot')
 
+		manager = None
 		try:
 			for manager in self._managers.values():
 				if manager:
 					manager.onBooted()
-		except:
-			pass  # Do nothing if manager is not ready
+		except Exception as e:
+			Logger().logError(f'Error while sending onBooted to manager **{manager.name}**: {e}')
 
 
 	@staticmethod

@@ -158,7 +158,7 @@ class ConfigManager(Manager):
 			self.logWarning(f'Was asked to update **{setting}** from config templates, but setting doesn\'t exist')
 			return
 
-		self._aliceTemplateConfigurations[setting] = value
+		self._aliceTemplateConfigurations[setting]['values'] = value
 
 
 	@staticmethod
@@ -701,17 +701,34 @@ class ConfigManager(Manager):
 		return (username, token) if (username and token) else None
 
 
-	def populateAudioDevicesConfig(self):
-		devices = list()
+	def populateAudioInputConfig(self):
+		try:
+			devices = self._listAudioDevices()
+			self.updateAliceConfigDefinitionValues(setting='inputDevice', value=devices)
+		except:
+			if not self.getAliceConfigByName('disableSoundAndMic'):
+				self.logWarning('No audio input device found')
+
+
+	def populateAudioOutputConfig(self):
+		try:
+			devices = self._listAudioDevices()
+			self.updateAliceConfigDefinitionValues(setting='outputDevice', value=devices)
+		except:
+			if not self.getAliceConfigByName('disableSoundAndMic'):
+				self.logWarning('No audio output device found')
+
+
+	@staticmethod
+	def _listAudioDevices() -> list:
 		try:
 			devices = [device['name'] for device in sd.query_devices()]
 			if not devices:
 				raise Exception
 		except:
-			if not self.getAliceConfigByName('disableSoundAndMic'):
-				self.logWarning('No audio device found')
+			raise
 
-		self.updateAliceConfigDefinitionValues(setting='intputDevice', value=devices)
+		return devices
 
 
 	@property
