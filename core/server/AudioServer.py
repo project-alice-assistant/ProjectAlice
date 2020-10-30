@@ -49,6 +49,7 @@ class AudioManager(Manager):
 			except:
 				self.logFatal('Audio input not found, cannot continue')
 				return
+			self.ConfigManager.updateAliceConfig(key='inputDevice', value=self._audioInput)
 		else:
 			self._audioInput = self.ConfigManager.getAliceConfigByName('inputDevice')
 
@@ -59,6 +60,7 @@ class AudioManager(Manager):
 			except:
 				self.logFatal('Audio output not found, cannot continue')
 				return
+			self.ConfigManager.updateAliceConfig(key='outputDevice', value=self._audioOutput)
 		else:
 			self._audioOutput = self.ConfigManager.getAliceConfigByName('outputDevice')
 
