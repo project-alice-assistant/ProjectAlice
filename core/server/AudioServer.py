@@ -49,9 +49,9 @@ class AudioManager(Manager):
 			except:
 				self.logFatal('Audio input not found, cannot continue')
 				return
-			self.ConfigManager.updateAliceConfig(key='inputDevice', value=self._audioInput)
+			self.ConfigManager.updateAliceConfiguration(key='inputDevice', value=self._audioInput)
 		else:
-			self._audioInput = self.ConfigManager.updateAliceConfiguration('inputDevice')
+			self._audioInput = self.ConfigManager.getAliceConfigByName('inputDevice')
 
 		if not self.ConfigManager.getAliceConfigByName('outputDevice'):
 			self.logWarning('Output device not set in config, trying to find default device')
@@ -60,9 +60,9 @@ class AudioManager(Manager):
 			except:
 				self.logFatal('Audio output not found, cannot continue')
 				return
-			self.ConfigManager.updateAliceConfig(key='outputDevice', value=self._audioOutput)
+			self.ConfigManager.updateAliceConfiguration(key='outputDevice', value=self._audioOutput)
 		else:
-			self._audioOutput = self.ConfigManager.updateAliceConfiguration('outputDevice')
+			self._audioOutput = self.ConfigManager.getAliceConfigByName('outputDevice')
 
 		self.setDefaults()
 
