@@ -193,7 +193,7 @@ class DialogTemplateManager(Manager):
 		if not text:
 			return
 
-		intent = session.previousIntent
+		intent = session.secondLastIntent
 		if not intent:
 			return
 
