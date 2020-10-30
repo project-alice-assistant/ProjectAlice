@@ -104,7 +104,7 @@ class ConfigManager(Manager):
 				if setting == 'supportedLanguages':
 					continue
 
-				if definition['dataType'] != 'list' and definition['dataType'] != 'longstring':
+				if definition['dataType'] != 'list' and definition['dataType'] != 'longstring' and not definition['onInit']:
 					if not isinstance(aliceConfigs[setting], type(definition['defaultValue'])):
 						changes = True
 						try:
@@ -115,7 +115,7 @@ class ConfigManager(Manager):
 							# If casting failed let's fall back to the new default value
 							self.logWarning(f'Existing configuration type missmatch: **{setting}**, replaced with template configuration')
 							aliceConfigs[setting] = definition['defaultValue']
-				elif definition['dataType'] == 'list':
+				elif definition['dataType'] == 'list' and not definition['onInit']:
 					values = definition['values'].values() if isinstance(definition['values'], dict) else definition['values']
 
 					if aliceConfigs[setting] and aliceConfigs[setting] not in values:
