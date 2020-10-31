@@ -35,14 +35,49 @@
 		"isSensitive" : false,
 		"description" : "Your asound settings",
 		"beforeUpdate": "injectAsound",
-		"category"    : "system"
+		"category"    : "audio",
+		"parent": {
+			"config": "disableSoundAndMic",
+			"condition": "isnot",
+			"value": false
+		}
 	},
 	"recordAudioAfterWakeword": {
 		"defaultValue": false,
 		"dataType"    : "boolean",
 		"isSensitive" : false,
 		"description" : "Allow audio record after a wakeword is detected to keep the last user speech. Can be usefull for recording skills",
-		"category"    : "system"
+		"category"    : "audio"
+	},
+	"outputDevice"            : {
+		"defaultValue": "",
+		"dataType"    : "list",
+		"isSensitive" : false,
+		"values"      : [],
+		"description" : "The device to use to play sounds",
+		"category"    : "audio",
+		"onInit"      : "populateAudioOutputConfig",
+		"onUpdate"    : "AudioServer.updateAudioDevices",
+		"parent"      : {
+			"config"   : "disableSoundAndMic",
+			"condition": "isnot",
+			"value"    : true
+		}
+	},
+	"inputDevice"             : {
+		"defaultValue": "",
+		"dataType"    : "list",
+		"isSensitive" : false,
+		"values"      : [],
+		"description" : "The device to use to record sounds",
+		"category"    : "audio",
+		"onInit"      : "populateAudioInputConfig",
+		"onUpdate"    : "AudioServer.updateAudioDevices",
+		"parent"      : {
+			"config"   : "disableSoundAndMic",
+			"condition": "isnot",
+			"value"    : true
+		}
 	},
 	"deviceName"              : {
 		"defaultValue": "default",
@@ -109,7 +144,7 @@
 		"isSensitive" : false,
 		"description" : "If this device is a server without sound and mic, turn this to true",
 		"onUpdate"    : "enableDisableSound",
-		"category"    : "device"
+		"category"    : "audio"
 	},
 	"notUnderstoodRetries": {
 		"defaultValue": 3,

@@ -44,7 +44,9 @@
 						"mqtt",
 						"tts",
 						"wakeword",
-						"advanced debug"
+						"advanced debug",
+						"audio",
+						"scenarios"
 					]
 				},
 				"isSensitive" : {
@@ -69,6 +71,14 @@
 					"pattern": "^(?:[A-Z][a-zA-Z]+\\.)?[a-z][a-zA-Z0-9]+$"
 				},
 				"onUpdate"    : {
+					"type"   : "string",
+					"pattern": "^(?:[A-Z][a-zA-Z]+\\.)?[a-z][a-zA-Z0-9]+$"
+				},
+				"onStart"    : {
+					"type"   : "string",
+					"pattern": "^(?:[A-Z][a-zA-Z]+\\.)?[a-z][a-zA-Z0-9]+$"
+				},
+				"onInit"    : {
 					"type"   : "string",
 					"pattern": "^(?:[A-Z][a-zA-Z]+\\.)?[a-z][a-zA-Z0-9]+$"
 				},

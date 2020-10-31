@@ -4,7 +4,8 @@ import wave
 from pathlib import Path
 from typing import Dict, Optional
 
-import pyaudio
+import sounddevice as sd
+# noinspection PyUnresolvedReferences
 from webrtcvad import Vad
 
 from core.ProjectAliceExceptions import PlayBytesStopped
@@ -22,41 +23,49 @@ class AudioManager(Manager):
 	LAST_USER_SPEECH = 'var/cache/lastUserpeech_{}_{}.wav'
 	SECOND_LAST_USER_SPEECH = 'var/cache/secondLastUserSpeech_{}_{}.wav'
 
-	# Inspired by https://github.com/koenvervloesem/hermes-audio-server
-
 	def __init__(self):
 		super().__init__()
 
 		self._stopPlayingFlag: Optional[AliceEvent] = None
 		self._playing = False
 		self._waves: Dict[str, wave.Wave_write] = dict()
+		self._audioInputStream = None
 
 		if self.ConfigManager.getAliceConfigByName('disableSoundAndMic'):
 			return
 
-		with self.Commons.shutUpAlsaFFS():
-			self._audio = pyaudio.PyAudio()
-
 		self._vad = Vad(2)
-
-		try:
-			self._audioOutput = self._audio.get_default_output_device_info()
-		except:
-			self.logFatal('Audio output not found, cannot continue')
-			return
-		else:
-			self.logInfo(f'Using **{self._audioOutput["name"]}** for audio output')
-
-		try:
-			self._audioInput = self._audio.get_default_input_device_info()
-		except:
-			self.logFatal('Audio input not found, cannot continue')
-		else:
-			self.logInfo(f'Using **{self._audioInput["name"]}** for audio input')
+		self._audioInput = None
+		self._audioOutput = None
 
 
 	def onStart(self):
 		super().onStart()
+
+		if not self.ConfigManager.getAliceConfigByName('inputDevice'):
+			self.logWarning('Input device not set in config, trying to find default device')
+			try:
+				self._audioInput = sd.query_devices(kind='input')['name']
+			except:
+				self.logFatal('Audio input not found, cannot continue')
+				return
+			self.ConfigManager.updateAliceConfiguration(key='inputDevice', value=self._audioInput)
+		else:
+			self._audioInput = self.ConfigManager.getAliceConfigByName('inputDevice')
+
+		if not self.ConfigManager.getAliceConfigByName('outputDevice'):
+			self.logWarning('Output device not set in config, trying to find default device')
+			try:
+				self._audioOutput = sd.query_devices(kind='output')['name']
+			except:
+				self.logFatal('Audio output not found, cannot continue')
+				return
+			self.ConfigManager.updateAliceConfiguration(key='outputDevice', value=self._audioOutput)
+		else:
+			self._audioOutput = self.ConfigManager.getAliceConfigByName('outputDevice')
+
+		self.setDefaults()
+
 		self._stopPlayingFlag = self.ThreadManager.newEvent('stopPlaying')
 		self.MqttManager.mqttClient.subscribe(constants.TOPIC_AUDIO_FRAME.format(self.ConfigManager.getAliceConfigByName('uuid')))
 
@@ -64,12 +73,18 @@ class AudioManager(Manager):
 			self.ThreadManager.newThread(name='audioPublisher', target=self.publishAudio)
 
 
+	def setDefaults(self):
+		self.logInfo(f'Using **{self._audioInput}** for audio input')
+		self.logInfo(f'Using **{self._audioOutput}** for audio output')
+
+		sd.default.device = self._audioOutput, self._audioInput
+
+
 	def onStop(self):
 		super().onStop()
+		self._audioInputStream.stop(ignore_errors=True)
+		self._audioInputStream.close(ignore_errors=True)
 		self.MqttManager.mqttClient.unsubscribe(constants.TOPIC_AUDIO_FRAME.format(self.ConfigManager.getAliceConfigByName('uuid')))
-
-		if not self.ConfigManager.getAliceConfigByName('disableSoundAndMic'):
-			self._audio.terminate()
 
 
 	def onStartListening(self, session: DialogSession):
@@ -104,13 +119,13 @@ class AudioManager(Manager):
 
 	def publishAudio(self):
 		self.logInfo('Starting audio publisher')
-		audioStream = self._audio.open(
-			format=pyaudio.paInt16,
+		self._audioInputStream = sd.RawInputStream(
+			dtype='int16',
 			channels=1,
-			rate=self.SAMPLERATE,
-			frames_per_buffer=self.FRAMES_PER_BUFFER,
-			input=True
+			samplerate=self.SAMPLERATE,
+			blocksize=self.FRAMES_PER_BUFFER,
 		)
+		self._audioInputStream.start()
 
 		speech = False
 		silence = self.SAMPLERATE / self.FRAMES_PER_BUFFER
@@ -122,7 +137,7 @@ class AudioManager(Manager):
 				break
 
 			try:
-				frames = audioStream.read(num_frames=self.FRAMES_PER_BUFFER, exception_on_overflow=False)
+				frames = self._audioInputStream.read(frames=self.FRAMES_PER_BUFFER)[0]
 
 				if self._vad.is_speech(frames, self.SAMPLERATE):
 					if not speech and speechFrames < minSpeechFrames:
@@ -175,30 +190,31 @@ class AudioManager(Manager):
 		with io.BytesIO(payload) as buffer:
 			try:
 				with wave.open(buffer, 'rb') as wav:
-					sampleWidth = wav.getsampwidth()
-					nFormat = self._audio.get_format_from_width(sampleWidth)
 					channels = wav.getnchannels()
 					framerate = wav.getframerate()
 
-					def streamCallback(_inData, frameCount, _timeInfo, _status) -> tuple:
+					def streamCallback(outdata, frameCount, _timeInfo, _status):
 						data = wav.readframes(frameCount)
-						return data, pyaudio.paContinue
+						if len(data) < len(outdata):
+							outdata[:len(data)] = data
+							outdata[len(data):] = b'\x00' * (len(outdata) - len(data))
+							raise sd.CallbackStop
+						else:
+							outdata[:] = data
 
-					audioStream = self._audio.open(
-						format=nFormat,
+					stream = sd.RawOutputStream(
+						dtype='int16',
 						channels=channels,
-						rate=framerate,
-						output=True,
-						output_device_index=self._audioOutput['index'],
-						stream_callback=streamCallback
+						samplerate=framerate,
+						callback=streamCallback
 					)
 
-					self.logDebug(f'Playing wav stream using **{self._audioOutput["name"]}** audio output from site id **{self.DeviceManager.siteIdToDeviceName(siteId)}** (Format: {nFormat}, channels: {channels}, rate: {framerate})')
-					audioStream.start_stream()
-					while audioStream.is_active():
+					self.logDebug(f'Playing wav stream using **{self._audioOutput}** audio output from site id **{self.DeviceManager.siteIdToDeviceName(siteId)}** (channels: {channels}, rate: {framerate})')
+					stream.start()
+					while stream.active:
 						if self._stopPlayingFlag.is_set():
-							audioStream.stop_stream()
-							audioStream.close()
+							stream.stop()
+							stream.close()
 
 							if sessionId:
 								self.MqttManager.publish(
@@ -214,8 +230,8 @@ class AudioManager(Manager):
 							raise PlayBytesStopped
 						time.sleep(0.1)
 
-					audioStream.stop_stream()
-					audioStream.close()
+					stream.stop()
+					stream.close()
 			except PlayBytesStopped:
 				self.logDebug('Playing bytes stopped')
 			except Exception as e:
@@ -228,7 +244,7 @@ class AudioManager(Manager):
 		self.MqttManager.publish(
 			topic=constants.TOPIC_PLAY_BYTES_FINISHED.format(siteId),
 			payload={
-				'id': requestId,
+				'id'       : requestId,
 				'sessionId': sessionId
 			}
 		)
@@ -236,6 +252,12 @@ class AudioManager(Manager):
 
 	def stopPlaying(self):
 		self._stopPlayingFlag.set()
+
+
+	def updateAudioDevices(self):
+		self._audioInput = self.ConfigManager.getAliceConfigByName('inputDevice')
+		self._audioOutput = self.ConfigManager.getAliceConfigByName('outputDevice')
+		self.setDefaults()
 
 
 	@property
