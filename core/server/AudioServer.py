@@ -77,7 +77,7 @@ class AudioManager(Manager):
 		self.logInfo(f'Using **{self._audioInput}** for audio input')
 		self.logInfo(f'Using **{self._audioOutput}** for audio output')
 
-		sd.default.device = self._audioOutput, self._audioInput
+		sd.default.device = self._audioInput, self._audioOutput
 
 
 	def onStop(self):
