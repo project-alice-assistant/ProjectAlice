@@ -32,7 +32,11 @@ $(function () {
 		widget.draggable('disable');
 		widget.resizable('disable');
 		$('.zindexer').hide();
+		saveWidgets();
+	});
 
+	function saveWidgets() {
+		let widget = $('.widget');
 		let data = {};
 		widget.each(function () {
 			data[$(this).attr('id')] = {
@@ -52,7 +56,7 @@ $(function () {
 			dataType   : 'json',
 			type       : 'POST'
 		});
-	});
+	}
 
 	$('.widgetOptions').dialog({
 		autoOpen : false,
@@ -116,6 +120,9 @@ $(function () {
 		$('#toolbar_checkmark').hide();
 		$('.widgetDelete').hide();
 		$('.widgetConfig').hide();
+
+		saveWidgets();
+
 		location.reload();
 		return false;
 	});
