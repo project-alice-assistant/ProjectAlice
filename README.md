@@ -1,9 +1,9 @@
-<h1 align=center style="max-width: 100%;">
+<h1 style="max-width: 100%; text-align: center;">
   <a href="https://project-alice-assistant.github.io/docs/"><img width="800" alt="Project Alice Logo" src="https://raw.githubusercontent.com/project-alice-assistant/docs/master/docs/.vuepress/public/images/projectalice_banner.svg?sanitize=true"></a><br/>
   <a href="https://project-alice-assistant.github.io/docs/">@ProjectAlice/docs</a>
 </h1>
 
-<p align=center style="line-height: 2;">
+<p style="line-height: 2; text-align: center;">
   <a href="LICENSE" target="_blank"><img src="https://img.shields.io/github/license/project-alice-assistant/ProjectAlice" alt="License" /></a>
   <a href="https://discord.gg/Jfcj355" target="_blank"><img alt="Discord" src="https://img.shields.io/discord/579345007518154752?logo=discord"></a><br/>
   <a href="https://github.com/project-alice-assistant/ProjectAlice/actions?query=workflow%3A%22Unittest+%26+Quality%22"><img alt="Tests" src="https://github.com/project-alice-assistant/ProjectAlice/workflows/Unittest%20&%20Quality/badge.svg"></a>
