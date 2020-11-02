@@ -95,6 +95,7 @@ $(function () {
 
 	$('#configToggle').on('click touch', function () {
 		$('.widgetConfig').show();
+		$('.zindexer').hide();
 		$('#toolbar_checkmark').show();
 		$('#toolbar_full').hide();
 		return false;
