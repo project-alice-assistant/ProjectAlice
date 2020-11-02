@@ -3,13 +3,13 @@ let mqttSubscribers = {};
 let MQTT_HOST;
 let MQTT_PORT;
 let LAST_CORE_HEARTBEAT = 0;
-let MAIN_GOING_DOWN = false
+let MAIN_GOING_DOWN = false;
 
 function getCookie(cname) {
 	let name = cname + '=';
 	let decodedCookie = decodeURIComponent(document.cookie);
 	let ca = decodedCookie.split(';');
-	for(let i = 0; i < ca.length; i++) {
+	for (let i = 0; i < ca.length; i++) {
 		let c = ca[i];
 		while (c.charAt(0) == ' ') {
 			c = c.substring(1);
@@ -39,7 +39,9 @@ $(function () {
 
 	function onFailure(_msg) {
 		console.log('Mqtt connection failed, retry in 5 seconds');
-		setTimeout(function() { connectMqtt(); }, 5000);
+		setTimeout(function () {
+			connectMqtt();
+		}, 5000);
 	}
 
 	function onConnect(msg) {
@@ -52,7 +54,7 @@ $(function () {
 	}
 
 	function onConnectionLost(resObj) {
-		console.log('Mqtt disconnected, automatic reconnect is enabled Error code: ' + resObj.errorCode +' - '+ resObj.errorMessage );
+		console.log('Mqtt disconnected, automatic reconnect is enabled Error code: ' + resObj.errorCode + ' - ' + resObj.errorMessage);
 		connectMqtt();
 	}
 
@@ -79,7 +81,7 @@ $(function () {
 					MQTT_HOST = window.location.hostname;
 				}
 				let randomNum = Math.floor((Math.random() * 10000000) + 1);
-				MQTT = new Paho.MQTT.Client(MQTT_HOST, MQTT_PORT, 'ProjectAliceInterface'+randomNum);
+				MQTT = new Paho.MQTT.Client(MQTT_HOST, MQTT_PORT, 'ProjectAliceInterface' + randomNum);
 				MQTT.onMessageArrived = onMessage;
 				MQTT.onConnectionLost = onConnectionLost;
 				MQTT.connect({
@@ -88,12 +90,16 @@ $(function () {
 					timeout  : 5
 				});
 			} else {
-				console.log('Failed fetching MQTT settings')
-				setTimeout(function() { connectMqtt(); }, 5000);
+				console.log('Failed fetching MQTT settings');
+				setTimeout(function () {
+					connectMqtt();
+				}, 5000);
 			}
 		}).fail(function () {
-			console.log("Coulnd't get MQTT information")
-			setTimeout(function() { connectMqtt(); }, 5000);
+			console.log('Coulnd\'t get MQTT information');
+			setTimeout(function () {
+				connectMqtt();
+			}, 5000);
 		});
 	}
 
@@ -127,17 +133,14 @@ $(function () {
 			} else if (payload.status == 'done') {
 				$container.text('Nlu training done!');
 			}
-		}
-		else if (msg.topic == 'projectalice/skills/instructions') {
+		} else if (msg.topic == 'projectalice/skills/instructions') {
 			let payload = JSON.parse(msg.payloadString);
 			$('#skillInstructions').show();
 			let $content = $('#skillInstructionsContent');
 			$content.html($content.html() + payload['instructions']);
-		}
-		else if (msg.topic == 'projectalice/devices/coreHeartbeat') {
+		} else if (msg.topic == 'projectalice/devices/coreHeartbeat') {
 			LAST_CORE_HEARTBEAT = Date.now();
-		}
-		else if (msg.topic == 'projectalice/skills/coreConfigUpdateWarning') {
+		} else if (msg.topic == 'projectalice/skills/coreConfigUpdateWarning') {
 			$('#serverUnavailable').hide();
 			let $nodal = $('#coreConfigUpdateAlert');
 			$nodal.show();
@@ -146,12 +149,12 @@ $(function () {
 
 			let $container = $('#overlaySkillContent');
 			if ($container.children().length <= 0) {
-				$container.append('<div id="confWarning_' + payload["skill"] + '"><div class="overlaySubtitle">' + payload['skill'] + '</div><div class="overlaySubtext">' + payload['key'] + ' => ' + payload['value'] + '</div></div>');
+				$container.append('<div id="confWarning_' + payload['skill'] + '"><div class="overlaySubtitle">' + payload['skill'] + '</div><div class="overlaySubtext">' + payload['key'] + ' => ' + payload['value'] + '</div></div>');
 			} else {
-				let $skillWarning = $('#confWarning_' + payload["skill"]);
+				let $skillWarning = $('#confWarning_' + payload['skill']);
 
 				if ($skillWarning.length == 0) {
-					$container.append('<div id="confWarning_' + payload["skill"] + '"><div class="overlaySubtitle">' + payload['skill'] + '</div><div class="overlaySubtext">' + payload['key'] + ' => ' + payload['value'] + '</div></div>');
+					$container.append('<div id="confWarning_' + payload['skill'] + '"><div class="overlaySubtitle">' + payload['skill'] + '</div><div class="overlaySubtext">' + payload['key'] + ' => ' + payload['value'] + '</div></div>');
 				} else {
 					$skillWarning.append('<div class="overlaySubtext">' + payload['key'] + ' => ' + payload['value'] + '</div>');
 				}
@@ -249,69 +252,69 @@ $(function () {
 	// Z-indexers
 	let $zindexed = $('.z-indexed');
 	if ($zindexed.length) {
-		zIndexMe($zindexed)
+		zIndexMe($zindexed);
 	}
 });
 
-	function reorder($arrow, direction) {
-		let $widget = $arrow.parent().parent();
-		let $container = $widget.parent();
-		let $family = $container.children('.z-indexed');
+function reorder($arrow, direction) {
+	let $widget = $arrow.parent().parent();
+	let $container = $widget.parent();
+	let $family = $container.children('.z-indexed');
 
-		let actualIndex = $widget.css('z-index');
-		try {
-			actualIndex = parseInt(actualIndex);
-		} catch {
-			actualIndex = 0;
-		}
+	let actualIndex = $widget.css('z-index');
+	try {
+		actualIndex = parseInt(actualIndex);
+	} catch {
+		actualIndex = 0;
+	}
 
-		let toIndex;
-		if (direction === 'down') {
-			toIndex = Math.max(0, actualIndex - 1);
-		} else {
-			let highest = 0;
-			$family.each(function(){
-				try {
-					if (parseInt($(this).css('z-index')) > highest) {
-						highest = parseInt($(this).css('z-index'));
-					}
-				} catch {
-					return true;
-				}
-			});
-			toIndex = actualIndex + 1;
-			if (toIndex > highest) {
-				return;
-			}
-		}
-
-		$family.each(function(){
+	let toIndex;
+	if (direction === 'down') {
+		toIndex = Math.max(0, actualIndex - 1);
+	} else {
+		let highest = 0;
+		$family.each(function () {
 			try {
-				if ($(this) != $widget && parseInt($(this).css('z-index')) == toIndex) {
-					$(this).css('z-index', actualIndex);
+				if (parseInt($(this).css('z-index')) > highest) {
+					highest = parseInt($(this).css('z-index'));
 				}
 			} catch {
 				return true;
 			}
 		});
-		$widget.css('z-index', toIndex);
+		toIndex = actualIndex + 1;
+		if (toIndex > highest) {
+			return;
+		}
 	}
 
+	$family.each(function () {
+		try {
+			if ($(this) != $widget && parseInt($(this).css('z-index')) == toIndex) {
+				$(this).css('z-index', actualIndex);
+			}
+		} catch {
+			return true;
+		}
+	});
+	$widget.css('z-index', toIndex);
+}
 
-function zIndexMe($zindexed){
-		let $indexUp = $('<div class="zindexer-up clickable"><i class="fas fa-chevron-circle-up fa-3x" aria-hidden="true"></i></div>');
-		let $indexDown = $('<div class="zindexer-down clickable"><i class="fas fa-chevron-circle-down fa-3x" aria-hidden="true"></i></div>');
 
-		$indexUp.on('click touch', function () {
-			reorder($(this), 'up');
-		});
-		$indexDown.on('click touch', function () {
-			reorder($(this), 'down');
-		});
+function zIndexMe($zindexed) {
+	let $indexUp = $('<div class="zindexer-up clickable"><i class="fas fa-chevron-circle-up fa-2x" aria-hidden="true"></i></div>');
+	let $indexDown = $('<div class="zindexer-down clickable"><i class="fas fa-chevron-circle-down fa-2x" aria-hidden="true"></i></div>');
 
-		let $zindexer = $('<div class="zindexer initialHidden"></div>');
-		$zindexer.append($indexUp);
-		$zindexer.append($indexDown);
+	$indexUp.on('click touch', function () {
+		reorder($(this), 'up');
+	});
+	$indexDown.on('click touch', function () {
+		reorder($(this), 'down');
+	});
 
-		$zindexed.append($zindexer);
+	let $zindexer = $('<div class="zindexer initialHidden"></div>');
+	$zindexer.append($indexUp);
+	$zindexer.append($indexDown);
+
+	$zindexed.append($zindexer);
 }
