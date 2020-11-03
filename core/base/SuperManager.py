@@ -54,77 +54,87 @@ class SuperManager:
 
 
 	def onStart(self):
-		commons = self._managers.pop('CommonsManager')
-		commons.onStart()
+		try:
+			commons = self._managers.pop('CommonsManager')
+			commons.onStart()
 
-		configManager = self._managers.pop('ConfigManager')
-		configManager.onStart()
+			configManager = self._managers.pop('ConfigManager')
+			configManager.onStart()
 
-		languageManager = self._managers.pop('LanguageManager')
-		languageManager.onStart()
+			languageManager = self._managers.pop('LanguageManager')
+			languageManager.onStart()
 
-		locationManager = self._managers.pop('LocationManager')
-		locationManager.onStart()
+			locationManager = self._managers.pop('LocationManager')
+			locationManager.onStart()
 
-		deviceManager = self._managers.pop('DeviceManager')
-		deviceManager.onStart()
+			deviceManager = self._managers.pop('DeviceManager')
+			deviceManager.onStart()
 
-		audioServer = self._managers.pop('AudioManager')
-		audioServer.onStart()
+			audioServer = self._managers.pop('AudioManager')
+			audioServer.onStart()
 
-		internetManager = self._managers.pop('InternetManager')
-		internetManager.onStart()
+			internetManager = self._managers.pop('InternetManager')
+			internetManager.onStart()
 
-		databaseManager = self._managers.pop('DatabaseManager')
-		databaseManager.onStart()
+			databaseManager = self._managers.pop('DatabaseManager')
+			databaseManager.onStart()
 
-		userManager = self._managers.pop('UserManager')
-		userManager.onStart()
+			userManager = self._managers.pop('UserManager')
+			userManager.onStart()
 
-		mqttManager = self._managers.pop('MqttManager')
-		mqttManager.onStart()
+			mqttManager = self._managers.pop('MqttManager')
+			mqttManager.onStart()
 
-		talkManager = self._managers.pop('TalkManager')
-		skillManager = self._managers.pop('SkillManager')
-		assistantManager = self._managers.pop('AssistantManager')
-		dialogTemplateManager = self._managers.pop('DialogTemplateManager')
-		nluManager = self._managers.pop('NluManager')
-		nodeRedManager = self._managers.pop('NodeRedManager')
+			talkManager = self._managers.pop('TalkManager')
+			skillManager = self._managers.pop('SkillManager')
+			assistantManager = self._managers.pop('AssistantManager')
+			dialogTemplateManager = self._managers.pop('DialogTemplateManager')
+			nluManager = self._managers.pop('NluManager')
+			nodeRedManager = self._managers.pop('NodeRedManager')
 
-		for manager in self._managers.values():
-			if manager:
-				manager.onStart()
+			for manager in self._managers.values():
+				if manager:
+					manager.onStart()
 
-		talkManager.onStart()
-		nluManager.onStart()
-		skillManager.onStart()
-		dialogTemplateManager.onStart()
-		assistantManager.onStart()
-		nodeRedManager.onStart()
+			talkManager.onStart()
+			nluManager.onStart()
+			skillManager.onStart()
+			dialogTemplateManager.onStart()
+			assistantManager.onStart()
+			nodeRedManager.onStart()
 
-		self._managers[configManager.name] = configManager
-		self._managers[audioServer.name] = audioServer
-		self._managers[languageManager.name] = languageManager
-		self._managers[locationManager.name] = locationManager
-		self._managers[deviceManager.name] = deviceManager
-		self._managers[talkManager.name] = talkManager
-		self._managers[databaseManager.name] = databaseManager
-		self._managers[userManager.name] = userManager
-		self._managers[mqttManager.name] = mqttManager
-		self._managers[skillManager.name] = skillManager
-		self._managers[dialogTemplateManager.name] = dialogTemplateManager
-		self._managers[assistantManager.name] = assistantManager
-		self._managers[nluManager.name] = nluManager
-		self._managers[internetManager.name] = internetManager
-		self._managers[nodeRedManager.name] = nodeRedManager
+			self._managers[configManager.name] = configManager
+			self._managers[audioServer.name] = audioServer
+			self._managers[languageManager.name] = languageManager
+			self._managers[locationManager.name] = locationManager
+			self._managers[deviceManager.name] = deviceManager
+			self._managers[talkManager.name] = talkManager
+			self._managers[databaseManager.name] = databaseManager
+			self._managers[userManager.name] = userManager
+			self._managers[mqttManager.name] = mqttManager
+			self._managers[skillManager.name] = skillManager
+			self._managers[dialogTemplateManager.name] = dialogTemplateManager
+			self._managers[assistantManager.name] = assistantManager
+			self._managers[nluManager.name] = nluManager
+			self._managers[internetManager.name] = internetManager
+			self._managers[nodeRedManager.name] = nodeRedManager
+		except Exception as e:
+			import traceback
+
+			traceback.print_exc()
+			Logger().logFatal(f'Error while starting managers: {e}')
 
 
 	def onBooted(self):
 		self.mqttManager.playSound(soundFilename='boot')
 
-		for manager in self._managers.values():
-			if manager:
-				manager.onBooted()
+		manager = None
+		try:
+			for manager in self._managers.values():
+				if manager:
+					manager.onBooted()
+		except Exception as e:
+			Logger().logError(f'Error while sending onBooted to manager **{manager.name}**: {e}')
 
 
 	@staticmethod
@@ -197,8 +207,9 @@ class SuperManager:
 
 	def onStop(self):
 		managerName = constants.UNKNOWN_MANAGER
-		mqttManager = self._managers.pop('MqttManager')
 		try:
+			mqttManager = self._managers.pop('MqttManager')
+
 			for managerName, manager in self._managers.items():
 				manager.onStop()
 
@@ -206,8 +217,6 @@ class SuperManager:
 			mqttManager.onStop()
 		except Exception as e:
 			Logger().logError(f'Error while shutting down manager **{managerName}**: {e}')
-			import traceback
-			traceback.print_exc()
 
 
 	def getManager(self, managerName: str):

@@ -1,5 +1,4 @@
 import requests
-from requests.exceptions import RequestException
 
 from core.base.model.Manager import Manager
 from core.commons import constants
@@ -47,7 +46,7 @@ class InternetManager(Manager):
 
 		try:
 			online = requests.get(addr).status_code == 204
-		except RequestException:
+		except:
 			online = False
 
 		if silent:

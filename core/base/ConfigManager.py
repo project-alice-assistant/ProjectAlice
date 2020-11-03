@@ -4,6 +4,7 @@ import logging
 import typing
 from pathlib import Path
 
+import sounddevice as sd
 import toml
 
 from core.ProjectAliceExceptions import ConfigurationUpdateFailed, VitalConfigMissing
@@ -44,6 +45,21 @@ class ConfigManager(Manager):
 			if conf not in self._aliceConfigurations or self._aliceConfigurations[conf] == '':
 				raise VitalConfigMissing(conf)
 
+		for setting, definition in {**self._aliceTemplateConfigurations, **self._skillsTemplateConfigurations}.items():
+			function = definition.get('onStart', None)
+			if function:
+				try:
+					if '.' in function:
+						self.logWarning(f'Use of manager for configuration **onStart** for config "{setting}" is not allowed')
+						function = function.split('.')[-1]
+
+					func = getattr(self, function)
+					func()
+				except AttributeError:
+					self.logWarning(f'Configuration onStart method **{function}** does not exist')
+				except Exception as e:
+					self.logError(f'Configuration onStart method **{function}** failed: {e}')
+
 
 	def _loadCheckAndUpdateAliceConfigFile(self):
 		self.logInfo('Checking Alice configuration file')
@@ -82,7 +98,7 @@ class ConfigManager(Manager):
 				if setting == 'supportedLanguages':
 					continue
 
-				if definition['dataType'] != 'list' and definition['dataType'] != 'longstring':
+				if definition['dataType'] != 'list' and definition['dataType'] != 'longstring' and 'onInit' not in definition:
 					if not isinstance(aliceConfigs[setting], type(definition['defaultValue'])):
 						changes = True
 						try:
@@ -93,13 +109,28 @@ class ConfigManager(Manager):
 							# If casting failed let's fall back to the new default value
 							self.logWarning(f'Existing configuration type missmatch: **{setting}**, replaced with template configuration')
 							aliceConfigs[setting] = definition['defaultValue']
-				elif definition['dataType'] == 'list':
+				elif definition['dataType'] == 'list' and 'onInit' not in definition:
 					values = definition['values'].values() if isinstance(definition['values'], dict) else definition['values']
 
-					if aliceConfigs[setting] not in values:
+					if aliceConfigs[setting] and aliceConfigs[setting] not in values:
 						changes = True
 						self.logWarning(f'Selected value **{aliceConfigs[setting]}** for setting **{setting}** doesn\'t exist, reverted to default value --{definition["defaultValue"]}--')
 						aliceConfigs[setting] = definition['defaultValue']
+
+				function = definition.get('onInit', None)
+				if function:
+					try:
+						if '.' in function:
+							self.logWarning(f'Use of manager for configuration **onInit** for config "{setting}" is not allowed')
+							function = function.split('.')[-1]
+
+						func = getattr(self, function)
+						func()
+					except AttributeError:
+						self.logWarning(f'Configuration onInit method **{function}** does not exist')
+					except Exception as e:
+						self.logError(f'Configuration onInit method **{function}** failed: {e}')
+
 
 		# Setting logger level immediately
 		if aliceConfigs['advancedDebug'] and not aliceConfigs['debug']:
@@ -120,6 +151,14 @@ class ConfigManager(Manager):
 			self.writeToAliceConfigurationFile(aliceConfigs)
 		else:
 			self._aliceConfigurations = aliceConfigs
+
+
+	def updateAliceConfigDefinitionValues(self, setting: str, value: typing.Any):
+		if setting not in self._aliceTemplateConfigurations:
+			self.logWarning(f'Was asked to update **{setting}** from config templates, but setting doesn\'t exist')
+			return
+
+		self._aliceTemplateConfigurations[setting]['values'] = value
 
 
 	@staticmethod
@@ -374,6 +413,14 @@ class ConfigManager(Manager):
 			return self._aliceConfigurations[configName]
 		else:
 			self.logDebug(f'Trying to get config **{configName}** but it does not exist')
+			return ''
+
+
+	def getAliceConfigTemplateByName(self, configName: str) -> typing.Any:
+		if configName in self._aliceTemplateConfigurations:
+			return self._aliceTemplateConfigurations[configName]
+		else:
+			self.logDebug(f'Trying to get config template **{configName}** but it does not exist')
 			return ''
 
 
@@ -652,6 +699,36 @@ class ConfigManager(Manager):
 		username = self.getAliceConfigByName('githubUsername')
 		token = self.getAliceConfigByName('githubToken')
 		return (username, token) if (username and token) else None
+
+
+	def populateAudioInputConfig(self):
+		try:
+			devices = self._listAudioDevices()
+			self.updateAliceConfigDefinitionValues(setting='inputDevice', value=devices)
+		except:
+			if not self.getAliceConfigByName('disableSoundAndMic'):
+				self.logWarning('No audio input device found')
+
+
+	def populateAudioOutputConfig(self):
+		try:
+			devices = self._listAudioDevices()
+			self.updateAliceConfigDefinitionValues(setting='outputDevice', value=devices)
+		except:
+			if not self.getAliceConfigByName('disableSoundAndMic'):
+				self.logWarning('No audio output device found')
+
+
+	@staticmethod
+	def _listAudioDevices() -> list:
+		try:
+			devices = [device['name'] for device in sd.query_devices()]
+			if not devices:
+				raise Exception
+		except:
+			raise
+
+		return devices
 
 
 	@property

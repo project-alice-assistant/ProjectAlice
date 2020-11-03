@@ -35,14 +35,49 @@
 		"isSensitive" : false,
 		"description" : "Your asound settings",
 		"beforeUpdate": "injectAsound",
-		"category"    : "system"
+		"category"    : "audio",
+		"parent"      : {
+			"config"   : "disableSoundAndMic",
+			"condition": "isnot",
+			"value"    : true
+		}
 	},
 	"recordAudioAfterWakeword": {
 		"defaultValue": false,
 		"dataType"    : "boolean",
 		"isSensitive" : false,
 		"description" : "Allow audio record after a wakeword is detected to keep the last user speech. Can be usefull for recording skills",
-		"category"    : "system"
+		"category"    : "audio"
+	},
+	"outputDevice"            : {
+		"defaultValue": "",
+		"dataType"    : "list",
+		"isSensitive" : false,
+		"values"      : [],
+		"description" : "The device to use to play sounds",
+		"category"    : "audio",
+		"onInit"      : "populateAudioOutputConfig",
+		"onUpdate"    : "AudioServer.updateAudioDevices",
+		"parent"      : {
+			"config"   : "disableSoundAndMic",
+			"condition": "isnot",
+			"value"    : true
+		}
+	},
+	"inputDevice"             : {
+		"defaultValue": "",
+		"dataType"    : "list",
+		"isSensitive" : false,
+		"values"      : [],
+		"description" : "The device to use to record sounds",
+		"category"    : "audio",
+		"onInit"      : "populateAudioInputConfig",
+		"onUpdate"    : "AudioServer.updateAudioDevices",
+		"parent"      : {
+			"config"   : "disableSoundAndMic",
+			"condition": "isnot",
+			"value"    : true
+		}
 	},
 	"deviceName"              : {
 		"defaultValue": "default",
@@ -103,29 +138,29 @@
 			"value"    : false
 		}
 	},
-	"disableSoundAndMic"  : {
+	"disableSoundAndMic"      : {
 		"defaultValue": false,
 		"dataType"    : "boolean",
 		"isSensitive" : false,
 		"description" : "If this device is a server without sound and mic, turn this to true",
 		"onUpdate"    : "enableDisableSound",
-		"category"    : "device"
+		"category"    : "audio"
 	},
-	"notUnderstoodRetries": {
+	"notUnderstoodRetries"    : {
 		"defaultValue": 3,
 		"dataType"    : "integer",
 		"isSensitive" : false,
 		"description" : "Defines how many times Alice will ask to repeat if not understood before she gives up",
 		"category"    : "system"
 	},
-	"ssid"                : {
+	"ssid"                    : {
 		"defaultValue": "",
 		"dataType"    : "string",
 		"isSensitive" : false,
 		"description" : "Your Wifi name",
 		"category"    : "device"
 	},
-	"debug"               : {
+	"debug"                   : {
 		"defaultValue": false,
 		"dataType"    : "boolean",
 		"isSensitive" : false,
@@ -133,14 +168,14 @@
 		"onUpdate"    : "toggleDebugLogs",
 		"category"    : "system"
 	},
-	"advancedDebug"       : {
+	"advancedDebug"           : {
 		"defaultValue": false,
 		"dataType"    : "boolean",
 		"isSensitive" : false,
 		"description" : "If true advanced debugging will be enabled. This activates extra information and tools for debugging.",
 		"category"    : "advanced debug"
 	},
-	"memoryProfiling"     : {
+	"memoryProfiling"         : {
 		"defaultValue": false,
 		"dataType"    : "boolean",
 		"isSensitive" : false,
@@ -152,7 +187,7 @@
 			"value"    : true
 		}
 	},
-	"databaseProfiling"   : {
+	"databaseProfiling"       : {
 		"defaultValue": false,
 		"dataType"    : "boolean",
 		"isSensitive" : false,
@@ -164,14 +199,14 @@
 			"value"    : true
 		}
 	},
-	"wifipassword"        : {
+	"wifipassword"            : {
 		"defaultValue": "",
 		"dataType"    : "string",
 		"isSensitive" : true,
 		"description" : "Your Wifi password",
 		"category"    : "device"
 	},
-	"mqttHost"            : {
+	"mqttHost"                : {
 		"defaultValue": "localhost",
 		"dataType"    : "string",
 		"isSensitive" : false,
@@ -179,7 +214,7 @@
 		"onUpdate"    : "updateMqttSettings",
 		"category"    : "mqtt"
 	},
-	"mqttPort"            : {
+	"mqttPort"                : {
 		"defaultValue": 1883,
 		"dataType"    : "integer",
 		"isSensitive" : false,
@@ -758,7 +793,7 @@
 			"value"    : false
 		}
 	},
-	"internetQuality"     : {
+	"internetQuality"         : {
 		"defaultValue": 10,
 		"dataType"    : "range",
 		"min"         : 1,
