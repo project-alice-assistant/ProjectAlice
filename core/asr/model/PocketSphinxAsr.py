@@ -89,7 +89,7 @@ class PocketSphinxAsr(Asr):
 					return False
 				else:
 					# TODO be universal
-					self.downloadLanguage(forceLang='eu-US')
+					self.downloadLanguage(forceLang='en-US')
 			else:
 				if download.suffix == '.tar':
 					dest = Path(venv, 'model', lang.lower())
