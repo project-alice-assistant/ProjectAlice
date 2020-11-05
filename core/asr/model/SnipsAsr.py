@@ -18,14 +18,21 @@ class SnipsAsr(Asr):
 		'system': [
 			'libgfortran3'
 		],
-		'pip'   : []
+		'pip'     : []
 	}
+
 
 	def __init__(self):
 		super().__init__()
 		self._capableOfArbitraryCapture = True
 		self._isOnlineASR = False
 		self._listening = False
+
+
+	def installDependencies(self):
+		super().installDependencies()
+		self.Commons.runRootSystemCommand(['systemctl', 'stop', 'snips-asr'])
+		self.Commons.runRootSystemCommand(['systemctl', 'disable', 'snips-asr'])
 
 
 	def onStartListening(self, session):
