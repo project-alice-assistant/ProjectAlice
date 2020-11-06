@@ -67,7 +67,6 @@ class NluManager(Manager):
 
 
 	def trainNLU(self):
-		self._training = True
 		self._nluEngine.train()
 
 

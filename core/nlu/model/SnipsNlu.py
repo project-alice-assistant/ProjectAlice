@@ -103,6 +103,7 @@ class SnipsNlu(NluEngine):
 
 		self.logInfo('Training Snips NLU')
 		try:
+			self.NluManager.training = True
 			dataset = {
 				'entities': dict(),
 				'intents' : dict(),
