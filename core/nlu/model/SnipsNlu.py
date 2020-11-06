@@ -97,69 +97,81 @@ class SnipsNlu(NluEngine):
 
 
 	def train(self):
+		if self.NluManager.training:
+			self.logWarning("NLU is already training, can't train again now")
+			return
+
 		self.logInfo('Training Snips NLU')
-		dataset = {
-			'entities': dict(),
-			'intents' : dict(),
-			'language': self.LanguageManager.activeLanguage,
-		}
+		try:
+			dataset = {
+				'entities': dict(),
+				'intents' : dict(),
+				'language': self.LanguageManager.activeLanguage,
+			}
 
-		with Path(self._cachePath / f'{self.LanguageManager.activeLanguage}.json').open() as fp:
-			trainingData = json.load(fp)
-			dataset['entities'].update(trainingData['entities'])
-			dataset['intents'].update(trainingData['intents'])
+			with Path(self._cachePath / f'{self.LanguageManager.activeLanguage}.json').open() as fp:
+				trainingData = json.load(fp)
+				dataset['entities'].update(trainingData['entities'])
+				dataset['intents'].update(trainingData['intents'])
 
-		datasetFile = Path('/tmp/snipsNluDataset.json')
+			datasetFile = Path('/tmp/snipsNluDataset.json')
 
-		with datasetFile.open('w') as fp:
-			json.dump(dataset, fp, ensure_ascii=False, indent='\t')
+			with datasetFile.open('w') as fp:
+				json.dump(dataset, fp, ensure_ascii=False, indent='\t')
 
-		self.logInfo('Generated dataset for training')
+			self.logInfo('Generated dataset for training')
 
-		# Now that we have generated the dataset, let's train in the background if we are already booted, else do it directly
-		if self.ProjectAlice.isBooted:
-			self.ThreadManager.newThread(name='NLUTraining', target=self.nluTrainingThread, args=[datasetFile])
-		else:
-			self.nluTrainingThread(datasetFile)
+			# Now that we have generated the dataset, let's train in the background if we are already booted, else do it directly
+			if self.ProjectAlice.isBooted:
+				self.ThreadManager.newThread(name='NLUTraining', target=self.nluTrainingThread, args=[datasetFile])
+			else:
+				self.nluTrainingThread(datasetFile)
+		except:
+			self.NluManager.training = False
 
 
 	def nluTrainingThread(self, datasetFile: Path):
-		with Stopwatch() as stopWatch:
-			self.logInfo('Begin training...')
-			self._timer = self.ThreadManager.newTimer(interval=0.25, func=self.trainingStatus)
+		try:
+			with Stopwatch() as stopWatch:
+				self.logInfo('Begin training...')
+				self._timer = self.ThreadManager.newTimer(interval=0.25, func=self.trainingStatus)
 
-			tempTrainingData = Path('/tmp/snipsNLU')
+				tempTrainingData = Path('/tmp/snipsNLU')
 
-			if tempTrainingData.exists():
-				shutil.rmtree(tempTrainingData)
+				if tempTrainingData.exists():
+					shutil.rmtree(tempTrainingData)
 
-			training: CompletedProcess = self.Commons.runSystemCommand([f'./venv/bin/snips-nlu', 'train', str(datasetFile), str(tempTrainingData)])
-			if training.returncode != 0:
-				self.logError(f'Error while training Snips NLU: {training.stderr.decode()}')
+				training: CompletedProcess = self.Commons.runSystemCommand([f'./venv/bin/snips-nlu', 'train', str(datasetFile), str(tempTrainingData)])
+				if training.returncode != 0:
+					self.logError(f'Error while training Snips NLU: {training.stderr.decode()}')
 
-			assistantPath = Path(self.Commons.rootDir(), f'trained/assistants/{self.LanguageManager.activeLanguage}/nlu_engine')
+				assistantPath = Path(self.Commons.rootDir(), f'trained/assistants/{self.LanguageManager.activeLanguage}/nlu_engine')
 
-			if not tempTrainingData.exists():
-				self.logError('Snips NLU training failed')
-				self.MqttManager.publish(constants.TOPIC_NLU_TRAINING_STATUS, payload={'status': 'failed'})
-				if not assistantPath.exists():
-					self.logFatal('No NLU engine found, cannot start')
+				if not tempTrainingData.exists():
+					self.logError('Snips NLU training failed')
+					self.MqttManager.publish(constants.TOPIC_NLU_TRAINING_STATUS, payload={'status': 'failed'})
+					if not assistantPath.exists():
+						self.logFatal('No NLU engine found, cannot start')
 
-				self._timer.cancel()
-				return
+					self._timer.cancel()
+					return
 
-			if assistantPath.exists():
-				shutil.rmtree(assistantPath)
+				if assistantPath.exists():
+					shutil.rmtree(assistantPath)
 
-			shutil.move(tempTrainingData, assistantPath)
+				shutil.move(tempTrainingData, assistantPath)
 
-			self.broadcast(method=constants.EVENT_NLU_TRAINED, exceptions=[constants.DUMMY], propagateToSkills=True)
-			self.Commons.runRootSystemCommand(['systemctl', 'restart', 'snips-nlu'])
+				self.broadcast(method=constants.EVENT_NLU_TRAINED, exceptions=[constants.DUMMY], propagateToSkills=True)
+				self.Commons.runRootSystemCommand(['systemctl', 'restart', 'snips-nlu'])
 
-		self._timer.cancel()
-		self.MqttManager.publish(constants.TOPIC_NLU_TRAINING_STATUS, payload={'status': 'done'})
-		self.ThreadManager.getEvent('TrainAssistant').clear()
-		self.logInfo(f'Snips NLU trained in {stopWatch} seconds')
+			self._timer.cancel()
+			self.MqttManager.publish(constants.TOPIC_NLU_TRAINING_STATUS, payload={'status': 'done'})
+			self.ThreadManager.getEvent('TrainAssistant').clear()
+			self.logInfo(f'Snips NLU trained in {stopWatch} seconds')
+		except:
+			pass  # Do nothing, the finally clause will finish the work
+		finally:
+			self.NluManager.training = False
 
 
 	def trainingStatus(self):
