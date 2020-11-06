@@ -12,7 +12,7 @@ class NluManager(Manager):
 		self._pathToCache = Path(self.Commons.rootDir(), 'var/cache/nlu/trainingData')
 		if not self._pathToCache.exists():
 			self._pathToCache.mkdir(parents=True)
-		self._training = True
+		self._training = False
 
 
 	def onStart(self):
