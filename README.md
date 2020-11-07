@@ -20,6 +20,9 @@ However, as an option, since we've built Project Alice on top of Snips, Project 
 ## Installing
 Please follow the [documentation](https://docs.projectalice.io/setup/)
 
+## Join the community
+Join our forum on https://community.projectalice.io
+
 ## Chat with us and the community
 Join us on our [Discord server](https://discord.gg/C6HNtzV)
 
