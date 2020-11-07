@@ -27,6 +27,7 @@ class AmazonTts(Tts):
 		self._online = True
 		self._privacyMalus = -20
 		self._client = None
+		self._supportsSSML = True
 
 		# TODO implement the others
 		# https://docs.aws.amazon.com/polly/latest/dg/voicelist.html
@@ -255,12 +256,11 @@ class AmazonTts(Tts):
 		return '<amazon:effect name="whispered">', '</amazon:effect>'
 
 
-	@staticmethod
-	def _checkText(session: DialogSession) -> str:
-		text = session.payload['text']
+	def _checkText(self, session: DialogSession) -> str:
+		text = super()._checkText(session)
 
-		if not re.search('<speak>', text):
-			text = f'<speak><amazon:auto-breaths>{text}</amazon:auto-breaths></speak>'
+		if not re.search('<amazon:auto-breaths>', text):
+			text = re.sub(r'<speak>(.*)</speak>', r'<speak><amazon:auto-breaths>\1</amazon:auto-breaths></speak>', text)
 
 		return text
 

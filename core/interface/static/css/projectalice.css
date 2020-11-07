@@ -113,9 +113,6 @@ button.button{ font-size: 1.6em; height: 2em; }
 
 .clickable:hover { color: var(--hover); }
 
-/*.zindexer { position: absolute; top: -15px; right: -15px; color: var(--accent); font-weight: bold; font-size: 1.3em; z-index: 999; cursor: pointer; }
-[class^='zindexer-']:hover { color: var(--hover); }*/
-
 /* Utility screen for administration */
 .utility { width: 12em; height: 12em; flex-flow: column; align-items: center; }
 

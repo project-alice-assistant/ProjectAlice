@@ -31,6 +31,7 @@ class GoogleTts(Tts):
 		self._online = True
 		self._privacyMalus = -20
 		self._client = None
+		self._supportsSSML = True
 
 		# TODO implement the others
 		# https://cloud.google.com/text-to-speech/docs/voices
@@ -199,16 +200,6 @@ class GoogleTts(Tts):
 		self._client = texttospeech.TextToSpeechClient(
 			credentials=Credentials.from_service_account_file(filename=Path(SuperManager.getInstance().commons.rootDir(), 'credentials/googlecredentials.json'))
 		)
-
-
-	@staticmethod
-	def _checkText(session: DialogSession) -> str:
-		text = session.payload['text']
-
-		if not '<speak>' in text:
-			text = f'<speak>{text}</speak>'
-
-		return text
 
 
 	def onSay(self, session: DialogSession):

@@ -25,6 +25,7 @@ class WatsonTts(Tts):
 		self._online = True
 		self._privacyMalus = -20
 		self._client = None
+		self._supportsSSML = True
 
 		# TODO implement the others
 		# https://cloud.ibm.com/apidocs/text-to-speech?code=python#list-voices
@@ -115,16 +116,6 @@ class WatsonTts(Tts):
 			authenticator=IAMAuthenticator(self.ConfigManager.getAliceConfigByName('ibmCloudAPIKey'))
 		)
 		self._client.set_service_url(self.ConfigManager.getAliceConfigByName('ibmCloudAPIURL'))
-
-
-	@staticmethod
-	def _checkText(session: DialogSession) -> str:
-		text = session.payload['text']
-
-		if not '<speak>' in text:
-			text = f'<speak>{text}</speak>'
-
-		return text
 
 
 	def onSay(self, session: DialogSession):
