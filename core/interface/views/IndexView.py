@@ -54,7 +54,7 @@ class IndexView(View):
 
 			widget = self.SkillManager.widgets[parent][widgetName]
 			widget.state = 0
-			widget.saveToDB()
+			widget.zindex = -1
 			self.SkillManager.sortWidgetZIndexes()
 
 			return jsonify(success=True)
@@ -70,7 +70,7 @@ class IndexView(View):
 
 			widget = self.SkillManager.widgets[parent][widgetName]
 			widget.state = 1
-			widget.saveToDB()
+			widget.zindex = self.SkillManager.nextZIndex()
 			self.SkillManager.sortWidgetZIndexes()
 
 			return redirect('home.html')

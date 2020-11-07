@@ -70,6 +70,7 @@ class SkillManager(Manager):
 		self._postBootSkillActions = dict()
 
 		self._widgets = dict()
+		self._widgetsByIndex = dict()
 
 
 	def onStart(self):
@@ -96,6 +97,7 @@ class SkillManager(Manager):
 		self.ConfigManager.loadCheckAndUpdateSkillConfigurations()
 
 		self.startAllSkills()
+		self.sortWidgetZIndexes()
 
 
 	# noinspection SqlResolve
@@ -174,7 +176,7 @@ class SkillManager(Manager):
 					'state' : 0,
 					'posx'  : 0,
 					'posy'  : 0,
-					'zindex': 9999
+					'zindex': -1
 				},
 				row=('parent', skillName)
 			)
@@ -232,21 +234,34 @@ class SkillManager(Manager):
 
 
 	def sortWidgetZIndexes(self):
-		widgets = dict()
+		# Create a list of skills with their z index as key
+		self._widgetsByIndex = dict()
 		for skillName, widgetList in self._widgets.items():
 			for widget in widgetList.values():
-				widgets[int(widget.zindex)] = widget
+				if widget.state != 1:
+					continue
 
-		counter = 0
-		for i in sorted(widgets.keys()):
-			if widgets[i].state == 0:
-				widgets[i].zindex = -1
-				widgets[i].saveToDB()
-				continue
+				if int(widget.zindex) not in self._widgetsByIndex:
+					self._widgetsByIndex[int(widget.zindex)] = widget
+				else:
+					i = 1000
+					while True:
+						if i not in self._widgetsByIndex:
+							self._widgetsByIndex[i] = widget
+							break
+						i += 1
 
-			widgets[i].zindex = counter
-			counter += 1
-			widgets[i].saveToDB()
+		print(self._widgetsByIndex)
+
+		# Rewrite a logical zindex flow
+		for i, widget in enumerate(self._widgetsByIndex.values()):
+			print(i)
+			widget.zindex = i
+			widget.saveToDB()
+
+
+	def nextZIndex(self) -> int:
+		return len(self._widgetsByIndex)
 
 
 	@property
