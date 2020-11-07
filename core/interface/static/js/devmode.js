@@ -8,7 +8,7 @@ $(function () {
 	let $goGithubButton = $('#goGithubButton');
 
 	function toggleCreateButton() {
-		if ($('#skillNameOk').is(':visible') && $('#skillDescOk').is(':visible')) {
+		if ($('#skillNameOk').is(':visible') && $('#skillDescOk').is(':visible') && $('#speakableNameNameOk').is(':visible')) {
 			$createSkillButton.show();
 		} else {
 			$createSkillButton.hide();
@@ -22,6 +22,8 @@ $(function () {
 		$('#skillNameKo').show();
 		$('#skillDescOk').hide();
 		$('#skillDescKo').show();
+		$('#speakableNameDescOk').hide();
+		$('#speakableNameDescKo').show();
 		$uploadSkillButton.hide();
 		$goGithubButton.hide();
 	}
@@ -35,7 +37,7 @@ $(function () {
 		}
 	});
 
-	$('.tab').on('click touchstart', function () {
+	$('.tab').on('click touch', function () {
 		let target = $(this).data('for');
 		$(this).addClass('activeTab');
 
@@ -80,6 +82,17 @@ $(function () {
 		});
 	});
 
+	$('#speakableName').on('input', function () {
+		if ($(this).val().length < 5) {
+			$('#speakableNameNameOk').hide();
+			$('#speakableNameNameKo').show();
+		} else {
+			$('#speakableNameNameOk').show();
+			$('#speakableNameNameKo').hide();
+		}
+		toggleCreateButton();
+	});
+
 	$('#skillDesc').on('input', function () {
 		if ($(this).val().length > 20) {
 			$('#skillDescKo').hide();
@@ -91,11 +104,12 @@ $(function () {
 		toggleCreateButton();
 	});
 
-	$createSkillButton.on('click touchstart', function () {
+	$createSkillButton.on('click touch', function () {
 		$.ajax({
-			url: '/devmode/' + $skillName.val() + '/',
+			url : '/devmode/' + $skillName.val() + '/',
 			type: 'PUT',
 			data: {
+				'speakableName'         : $('#speakableName').val(),
 				'description'           : $('#skillDesc').val(),
 				'fr'                    : ($('#fr').is(':checked')) ? 'yes' : 'no',
 				'de'                    : ($('#de').is(':checked')) ? 'yes' : 'no',
@@ -107,7 +121,7 @@ $(function () {
 				'conditionSkill'        : $('#conditionSkill').val(),
 				'conditionNotSkill'     : $('#conditionNotSkill').val(),
 				'conditionActiveManager': $('#conditionActiveManager').val(),
-				'widgets': $('#widgets').val()
+				'widgets'               : $('#widgets').val()
 			}
 		}).done(function () {
 			$('#newSkillForm :input').prop('disabled', true);
@@ -117,9 +131,9 @@ $(function () {
 		});
 	});
 
-	$uploadSkillButton.on('click touchstart', function () {
+	$uploadSkillButton.on('click touch', function () {
 		$.ajax({
-			url: '/devmode/uploadToGithub/',
+			url : '/devmode/uploadToGithub/',
 			type: 'POST',
 			data: {
 				'skillName': $('#skillName').val(),
@@ -133,11 +147,11 @@ $(function () {
 		});
 	});
 
-	$('#resetSkillButton').on('click touchstart', function () {
+	$('#resetSkillButton').on('click touch', function () {
 		resetSkillPage();
 	});
 
-	$goGithubButton.on('click touchstart', function () {
+	$goGithubButton.on('click touch', function () {
 		window.open($(this).text());
 	});
 
@@ -147,7 +161,7 @@ $(function () {
 		}
 	});
 
-	$('[id*=editSkill_]').on('click touchstart', function () {
+	$('[id*=editSkill_]').on('click touch', function () {
 		window.location.href = '/devmode/editskill/' + $(this).data('skill');
 	});
 });

@@ -6,6 +6,7 @@ from core.voice.model.TTSEnum import TTSEnum
 from core.voice.model.Tts import Tts
 
 try:
+	# noinspection PyUnresolvedReferences
 	import boto3
 except ModuleNotFoundError:
 	pass # Auto installeed
@@ -26,6 +27,7 @@ class AmazonTts(Tts):
 		self._online = True
 		self._privacyMalus = -20
 		self._client = None
+		self._supportsSSML = True
 
 		# TODO implement the others
 		# https://docs.aws.amazon.com/polly/latest/dg/voicelist.html
@@ -186,7 +188,52 @@ class AmazonTts(Tts):
 					'Bianca': {
 						'neural': False
 					},
-					'Carla'  : {
+					'Carla' : {
+						'neural': False
+					}
+				}
+			},
+			'pl-PL': {
+				'male'  : {
+					'Jacek': {
+						'neural': False
+					},
+					'Jan'  : {
+						'neural': False
+					}
+				},
+				'female': {
+					'Ewa' : {
+						'neural': False
+					},
+					'Maja': {
+						'neural': False
+					}
+				}
+			},
+			'pt-BR': {
+				'male'  : {
+					'Ricardo': {
+						'neural': False
+					}
+				},
+				'female': {
+					'Camila' : {
+						'neural': False
+					},
+					'Vitoria': {
+						'neural': False
+					}
+				}
+			},
+			'pt-PT': {
+				'male'  : {
+					'Cristiano': {
+						'neural': False
+					}
+				},
+				'female': {
+					'Ines': {
 						'neural': False
 					}
 				}
@@ -209,12 +256,11 @@ class AmazonTts(Tts):
 		return '<amazon:effect name="whispered">', '</amazon:effect>'
 
 
-	@staticmethod
-	def _checkText(session: DialogSession) -> str:
-		text = session.payload['text']
+	def _checkText(self, session: DialogSession) -> str:
+		text = super()._checkText(session)
 
-		if not re.search('<speak>', text):
-			text = f'<speak><amazon:auto-breaths>{text}</amazon:auto-breaths></speak>'
+		if not re.search('<amazon:auto-breaths>', text):
+			text = re.sub(r'<speak>(.*)</speak>', r'<speak><amazon:auto-breaths>\1</amazon:auto-breaths></speak>', text)
 
 		return text
 

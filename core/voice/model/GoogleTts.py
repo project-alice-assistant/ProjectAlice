@@ -7,7 +7,9 @@ from core.voice.model.TTSEnum import TTSEnum
 from core.voice.model.Tts import Tts
 
 try:
+	# noinspection PyUnresolvedReferences,PyPackageRequirements
 	from google.oauth2.service_account import Credentials
+	# noinspection PyUnresolvedReferences,PyPackageRequirements
 	from google.cloud import texttospeech
 except:
 	pass # Auto installed
@@ -29,6 +31,7 @@ class GoogleTts(Tts):
 		self._online = True
 		self._privacyMalus = -20
 		self._client = None
+		self._supportsSSML = True
 
 		# TODO implement the others
 		# https://cloud.google.com/text-to-speech/docs/voices
@@ -142,13 +145,49 @@ class GoogleTts(Tts):
 					'it-IT-Standard-A': {
 						'neural': False
 					},
-					'it-IT-Standard-B' : {
+					'it-IT-Standard-B': {
 						'neural': False
 					},
 					'it-IT-Wavenet-A' : {
 						'neural': True
 					},
-					'it-IT-Wavenet-B': {
+					'it-IT-Wavenet-B' : {
+						'neural': True
+					}
+				}
+			},
+			'pl-PL': {
+				'male'  : {
+					'pl-PL-Standard-B': {
+						'neural': False
+					},
+					'pl-PL-Standard-C': {
+						'neural': False
+					},
+					'pl-PL-Wavenet-B' : {
+						'neural': True
+					},
+					'pl-PL-Wavenet-C' : {
+						'neural': True
+					}
+				},
+				'female': {
+					'pl-PL-Standard-A': {
+						'neural': False
+					},
+					'pl-PL-Standard-D': {
+						'neural': False
+					},
+					'pl-PL-Standard-E': {
+						'neural': True
+					},
+					'pl-PL-Wavenet-A' : {
+						'neural': True
+					},
+					'pl-PL-Wavenet-D' : {
+						'neural': True
+					},
+					'pl-PL-Wavenet-E' : {
 						'neural': True
 					}
 				}
@@ -161,16 +200,6 @@ class GoogleTts(Tts):
 		self._client = texttospeech.TextToSpeechClient(
 			credentials=Credentials.from_service_account_file(filename=Path(SuperManager.getInstance().commons.rootDir(), 'credentials/googlecredentials.json'))
 		)
-
-
-	@staticmethod
-	def _checkText(session: DialogSession) -> str:
-		text = session.payload['text']
-
-		if not '<speak>' in text:
-			text = f'<speak>{text}</speak>'
-
-		return text
 
 
 	def onSay(self, session: DialogSession):

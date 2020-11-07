@@ -59,8 +59,8 @@ class AliceSkill(ProjectAliceObject):
 		self._widgets = dict()
 		self._deviceTypes = dict()
 		self._intentsDefinitions = dict()
-		self._scenarioNodeName = ''
-		self._scenarioNodeVersion = Version(mainVersion=0, updateVersion=0, hotfix=0)
+		self._scenarioPackageName = ''
+		self._scenarioPackageVersion = Version(mainVersion=0, updateVersion=0, hotfix=0)
 
 		self._supportedIntents: Dict[str, Intent] = self.buildIntentList(supportedIntents)
 		self.loadIntentsDefinition()
@@ -89,7 +89,7 @@ class AliceSkill(ProjectAliceObject):
 			if not text in utterances:
 				utterances.append(text)
 				data['intents'][i]['utterances'] = utterances
-				file.write_text(json.dumps(data, ensure_ascii=False, indent=4))
+				file.write_text(json.dumps(data, ensure_ascii=False, indent='\t'))
 				return True
 
 		return False
@@ -103,8 +103,8 @@ class AliceSkill(ProjectAliceObject):
 		try:
 			with path.open('r') as fp:
 				data = json.load(fp)
-				self._scenarioNodeName = data['name']
-				self._scenarioNodeVersion = Version.fromString(data['version'])
+				self._scenarioPackageName = data['name']
+				self._scenarioPackageVersion = Version.fromString(data['version'])
 		except Exception as e:
 			self.logWarning(f'Failed to load scenario nodes: {e}')
 
@@ -402,12 +402,12 @@ class AliceSkill(ProjectAliceObject):
 
 	@property
 	def scenarioNodeName(self) -> str:
-		return self._scenarioNodeName
+		return self._scenarioPackageName
 
 
 	@property
 	def scenarioNodeVersion(self) -> Version:
-		return self._scenarioNodeVersion
+		return self._scenarioPackageVersion
 
 
 	@property
@@ -431,7 +431,7 @@ class AliceSkill(ProjectAliceObject):
 
 
 	def hasScenarioNodes(self) -> bool:
-		return self._scenarioNodeName != ''
+		return self._scenarioPackageName != ''
 
 
 	def subscribeIntents(self):

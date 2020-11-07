@@ -13,22 +13,18 @@ $(function () {
 		disabled: true
 	});
 
-	$widgets.each(function () {
-		initIndexers($(this));
-	});
-
 	/* Toolbar Functions */
-	$('#toolbarToggleShow').on('click touchstart', function () {
+	$('#toolbarToggleShow').on('click touch', function () {
 		$('#toolbar_full').show();
 		$('#toolbar_toggle').hide();
 		let widget = $('.widget');
-		widget.css('outline', "2px var(--accent) dotted");
+		widget.css('outline', '2px var(--accent) dotted');
 		widget.draggable('enable');
 		widget.resizable('enable');
 		$('.zindexer').show();
 	});
 
-	$('#toolbarToggleHide').on('click touchstart', function () {
+	$('#toolbarToggleHide').on('click touch', function () {
 		$('#toolbar_full').hide();
 		$('#toolbar_toggle').show();
 		let widget = $('.widget');
@@ -36,7 +32,11 @@ $(function () {
 		widget.draggable('disable');
 		widget.resizable('disable');
 		$('.zindexer').hide();
+		saveWidgets();
+	});
 
+	function saveWidgets() {
+		let widget = $('.widget');
 		let data = {};
 		widget.each(function () {
 			data[$(this).attr('id')] = {
@@ -46,7 +46,7 @@ $(function () {
 				w     : $(this).outerWidth(),
 				h     : $(this).outerHeight(),
 				zindex: $(this).css('z-index')
-			}
+			};
 		});
 
 		$.ajax({
@@ -56,7 +56,7 @@ $(function () {
 			dataType   : 'json',
 			type       : 'POST'
 		});
-	});
+	}
 
 	$('.widgetOptions').dialog({
 		autoOpen : false,
@@ -85,26 +85,29 @@ $(function () {
 	});
 
 
-	$('#removeWidget').on('click touchstart', function () {
+	$('#removeWidget').on('click touch', function () {
 		$('.widgetDelete').show();
+		$('.widgetConfig').hide();
+		$('.zindexer').hide();
 		$('#toolbar_checkmark').show();
 		$('#toolbar_full').hide();
 		return false;
 	});
 
-	$('#addWidget').on('click touchstart', function () {
+	$('#addWidget').on('click touch', function () {
 		$('#addWidgetDialog').dialog('open');
 		return false;
 	});
 
-	$('#configToggle').on('click touchstart', function () {
+	$('#configToggle').on('click touch', function () {
 		$('.widgetConfig').show();
+		$('.zindexer').hide();
 		$('#toolbar_checkmark').show();
 		$('#toolbar_full').hide();
 		return false;
 	});
 
-	$('#cinemaToggle').on('click touchstart', function () {
+	$('#cinemaToggle').on('click touch', function () {
 		$('nav').toggle();
 		$('#toolbar_full').hide();
 		$('header').toggle();
@@ -115,17 +118,20 @@ $(function () {
 		$('.zindexer').hide();
 	});
 
-	$('#widgetCheck').on('click touchstart', function () {
+	$('#widgetCheck').on('click touch', function () {
 		$('#toolbar_checkmark').hide();
 		$('.widgetDelete').hide();
 		$('.widgetConfig').hide();
+
+		saveWidgets();
+
 		location.reload();
 		return false;
 	});
 
 	/*=================== Functions for the single widgets ======================*/
 	/* Remove the selected widget */
-	$('.widgetDelete').on('click touchstart', function () {
+	$('.widgetDelete').on('click touch', function () {
 		if ($(this).parents('.widget').length > 0) {
 			$.post('/home/removeWidget/', {id: $(this).parent().attr('id')});
 			$(this).parent().remove();
@@ -145,8 +151,8 @@ $(function () {
 				}
 
 				// build configuration
-				let newForm = "<form action='/home/save" + tab + "/' id='" + tab + "Form' method='post' autocomplete='off' novalidate target=''>";
-				newForm += "<input type='hidden' name='id' value='" + parent.attr('id') + "'/>";
+				let newForm = '<form action=\'/home/save' + tab + '/\' id=\'' + tab + 'Form\' method=\'post\' autocomplete=\'off\' novalidate target=\'\'>';
+				newForm += '<input type=\'hidden\' name=\'id\' value=\'' + parent.attr('id') + '\'/>';
 				jQuery.each(data, function (i, val) {
 					let input = '<input class="configInput widgetConfigInput" type="text" name="' + i + '" value="' + val + '"/></div>';
 					if (i == 'background') {
@@ -170,9 +176,9 @@ $(function () {
 						input += '<input type="hidden" name="' + i + '" value="False"/></div>';
 					}
 
-					newForm += "<div class='configLine'><label class='configLabel'>" + i + "</label>" + input;
+					newForm += '<div class=\'configLine\'><label class=\'configLabel\'>' + i + '</label>' + input;
 				});
-				newForm += "<div class='buttonLine'><input id='submitConfig' class='button' type='submit' value='" + $('#langConfSave').text() + "'></div>";
+				newForm += '<div class=\'buttonLine\'><input id=\'submitConfig\' class=\'button\' type=\'submit\' value=\'' + $('#langConfSave').text() + '\'></div>';
 				dialogContainer.find('#' + tab).html(newForm);
 
 				// perform submit/save of the form without switching page
@@ -208,7 +214,7 @@ $(function () {
 	}
 
 	/* Opening of widget specific settings */
-	$('.widgetConfig').on('click touchstart', function () {
+	$('.widgetConfig').on('click touch', function () {
 		if ($(this).parents('.widget').length > 0) {
 			let parent = $(this).parent();
 			prepareConfigTab(parent, 'WidgetConfig');
@@ -217,7 +223,7 @@ $(function () {
 		return false;
 	});
 
-	$('.addWidgetCheck').on('click touchstart', function () {
+	$('.addWidgetCheck').on('click touch', function () {
 		if ($(this).parents('.addWidgetLine').length > 0) {
 			$.post('/home/addWidget/', {id: $(this).parent().attr('id')});
 			$(this).parent().remove();

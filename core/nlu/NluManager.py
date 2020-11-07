@@ -12,6 +12,7 @@ class NluManager(Manager):
 		self._pathToCache = Path(self.Commons.rootDir(), 'var/cache/nlu/trainingData')
 		if not self._pathToCache.exists():
 			self._pathToCache.mkdir(parents=True)
+		self._training = False
 
 
 	def onStart(self):
@@ -72,3 +73,13 @@ class NluManager(Manager):
 	def clearCache(self):
 		shutil.rmtree(self._pathToCache)
 		self._pathToCache.mkdir()
+
+
+	@property
+	def training(self) -> bool:
+		return self._training
+
+
+	@training.setter
+	def training(self, value: bool):
+		self._training = value

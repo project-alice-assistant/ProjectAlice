@@ -77,7 +77,7 @@ class Widget(ProjectAliceObject):
 		if 'zindex' in data.keys() and data['zindex'] is not None:
 			self._zindex = data['zindex']
 		else:
-			self._zindex = 999
+			self._zindex = -1
 			updateWidget = True
 
 		if updateWidget:

@@ -13,6 +13,7 @@ from ctypes import *
 from datetime import datetime
 from pathlib import Path
 from typing import Any, Union
+from uuid import UUID
 
 import requests
 from googletrans import Translator
@@ -333,6 +334,15 @@ class CommonsManager(Manager):
 		digits = string.digits
 		number = ''.join(random.choice(digits) for _ in range(length))
 		return int(number) if not number.startswith('0') else self.randomNumber(length)
+
+
+	@staticmethod
+	def isUuid(uuid: str) -> bool:
+		try:
+			_ = UUID(uuid)
+			return True
+		except ValueError:
+			return False
 
 
 # noinspection PyUnusedLocal

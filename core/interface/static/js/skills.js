@@ -71,7 +71,7 @@ $(function () {
 			let $actions = $('<div class="buttonLine"></div>');
 
 			let $button = $('<div class="skillStoreSkillSelected button initialHidden"><i class="fas fa-shopping-cart buttonIconOnly"></i></div>');
-			$button.on('click touchstart', function () {
+			$button.on('click touch', function () {
 				$(this).hide();
 				$(this).parent().children('.skillStoreSkillDownloadButton').css('display', 'flex');
 				for (let i = 0; i < selectedSkillsToDownload.length; i++) {
@@ -88,7 +88,7 @@ $(function () {
 			$actions.append($button);
 
 			$button = $('<div class="skillStoreSkillDownloadButton button"><i class="fas fa-download buttonIconOnly"></i></div>');
-			$button.on('click touchstart', function () {
+			$button.on('click touch', function () {
 				$(this).hide();
 				$(this).parent().children('.skillStoreSkillSelected').css('display', 'flex');
 				selectedSkillsToDownload.push({'skill': installer['name'], 'author': installer['author']});
@@ -111,17 +111,17 @@ $(function () {
 
 	function loadStoreData() {
 		$.ajax({
-			url: '/skills/loadStoreData/',
+			url : '/skills/loadStoreData/',
 			type: 'POST'
-		}).done(function (answer){
+		}).done(function (answer) {
 			$('#skillStoreWait').hide();
-			$.each(answer, function(skillName, installer){
+			$.each(answer, function (skillName, installer) {
 				addToStore(installer);
 			});
 		});
 	}
 
-	$applySkillStore.on('click touchstart', function () {
+	$applySkillStore.on('click touch', function () {
 		$('.skillStoreSkillSelected').hide();
 		$(this).hide();
 		$.each(selectedSkillsToDownload, function (index, skill) {
@@ -129,8 +129,8 @@ $(function () {
 		});
 
 		$.ajax({
-			url: '/skills/installSkills/',
-			data: JSON.stringify(selectedSkillsToDownload),
+			url        : '/skills/installSkills/',
+			data       : JSON.stringify(selectedSkillsToDownload),
 			contentType: 'application/json',
 			dataType: 'json',
 			type: 'POST'
@@ -145,9 +145,9 @@ $(function () {
 		return false;
 	});
 
-	$('[id^=toggle_]').on('click touchstart', function () {
+	$('[id^=toggle_]').on('click touch', function () {
 		$.ajax({
-			url: '/skills/toggleSkill/',
+			url : '/skills/toggleSkill/',
 			data: {
 				id: $(this).attr('id')
 			},
@@ -168,18 +168,18 @@ $(function () {
 	});
 
 	$('[id^=instructions_for_]').dialog({
-		autoOpen: false,
+		autoOpen : false,
 		draggable: false,
-		width: '60%',
-		height: 600,
-		modal: true,
+		width    : '60%',
+		height   : 600,
+		modal    : true,
 		resizable: false
 	});
 
-	$('[id^=update_]').on('click touchstart', function () {
+	$('[id^=update_]').on('click touch', function () {
 		let $self = $(this);
 		$.ajax({
-			url: '/skills/updateSkill/',
+			url : '/skills/updateSkill/',
 			data: {
 				id: $(this).attr('id')
 			},
@@ -194,31 +194,31 @@ $(function () {
 		return false;
 	});
 
-	$('.skillSettings').on('click touchstart', function () {
+	$('.skillSettings').on('click touch', function () {
 		$('#config_for_' + $(this).attr('data-forSkill')).dialog('open');
 		return false;
 	});
 
-	$('.skillViewIntents').on('click touchstart', function () {
+	$('.skillViewIntents').on('click touch', function () {
 		$(this).parent('.skillDefaultView').css('display', 'none');
 		$(this).parent().parent().children('.skillIntentsView').css('display', 'flex');
 		return false;
 	});
 
-	$('.skillIntentsViewCloseButton').on('click touchstart', function () {
+	$('.skillIntentsViewCloseButton').on('click touch', function () {
 		$(this).parent().parent().children('.skillDefaultView').css('display', 'flex');
 		$(this).parent('.skillIntentsView').css('display', 'none');
 		return false;
 	});
 
-	$('.skillInstructions').on('click touchstart', function () {
+	$('.skillInstructions').on('click touch', function () {
 		$('#instructions_for_' + $(this).attr('data-forSkill')).dialog('open');
 		return false;
 	});
 
-	$('[id^=delete_]').on('click touchstart', function () {
+	$('[id^=delete_]').on('click touch', function () {
 		$.ajax({
-			url: '/skills/deleteSkill/',
+			url : '/skills/deleteSkill/',
 			data: {
 				id: $(this).attr('id')
 			},
@@ -229,9 +229,9 @@ $(function () {
 		return false;
 	});
 
-	$('[id^=reload_]').on('click touchstart', function () {
+	$('[id^=reload_]').on('click touch', function () {
 		$.ajax({
-			url: '/skills/reloadSkill/',
+			url : '/skills/reloadSkill/',
 			data: {
 				id: $(this).attr('id')
 			},
@@ -242,7 +242,7 @@ $(function () {
 		return false;
 	});
 
-	$('#openSkillStore').on('click touchstart', function () {
+	$('#openSkillStore').on('click touch', function () {
 		loadStoreData();
 		$('#skillsPane').hide();
 		$('#skillStore').css('display', 'flex');
@@ -251,7 +251,7 @@ $(function () {
 		return false;
 	});
 
-	$('#closeSkillStore').on('click touchstart', function () {
+	$('#closeSkillStore').on('click touch', function () {
 		location.reload();
 		return false;
 	});

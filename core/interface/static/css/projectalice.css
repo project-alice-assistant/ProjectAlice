@@ -94,26 +94,36 @@ button.button{ font-size: 1.6em; height: 2em; }
 
 .pageTitle { font-size: 2em; margin-left: 1em; align-items: center; display: flex; width: 7.4em;}
 .aliceStatus { flex-grow: 1; }
+
 .updateChannelMarker { font-style: italic; margin: 0 .9em; align-items: center; display: flex; }
 
 .resourceUsage { margin: 0 .9em; align-items: center; display: flex; }
 
-.page {	flex: 1 100%; flex-flow: row nowrap; display: flex; }
+.page { flex: 1 100%; flex-flow: row nowrap; display: flex; }
 
 .toolbar { background: var(--mainBG); display: flex; float: right; clear: both; padding-top: .2em; padding-left: 1em; border: solid 2px; border-bottom-left-radius: 1.5em; border-top: none; border-color: var(--accent); }
+
 .toolbarButton { font-size: 2em; padding-right: .5em; min-width: .9em; text-align: center; }
 
-.zindexer { position: absolute; top: 15px; right: 15px; color: var(--accent); font-weight: bold; font-size: 1.3em; z-index: 999; cursor: pointer; }
-[class^='zindexer-']:hover { color: var(--hover); }
+.zindexer { position: absolute; top: 5px; left: 5px; background-color: var(--mainBG); width: 36px; border-radius: 18px; text-align: center; color: var(--text); z-index: 99; }
+
+.zindexer .clickable:first-child { margin-bottom: 5px; }
+
+.clickable { cursor: pointer; }
+
+.clickable:hover { color: var(--hover); }
 
 /* Utility screen for administration */
 .utility { width: 12em; height: 12em; flex-flow: column; align-items: center; }
+
 .utilityIcon { text-align: center; font-size: 5em; margin-top: .4em; width: 100%; }
+
 .utilityText { font-size: 1.25em; margin: .3em; text-align: center; width: 90%; }
 
 /* console and logging */
 /* using color markings as defined above */
 .console { position: absolute; top: 20px; bottom: 40px; left: 20px; right: 20px; padding: 1em; background-color: black; color: var(--text); overflow-y: scroll; overflow-x: hidden; font-family: var(--readable); -moz-user-select: text; -webkit-touch-callout: default; -webkit-user-select: text; -ms-user-select: text; user-select: text; -khtml-user-select: text; }
+
 .log { display: inline-block; }
 .logLine { display: flex; font-family: var(--readable); font-size: 0.9em; margin: 2px 0 2px 0; align-items: flex-start; }
 
@@ -127,7 +137,8 @@ button.button{ font-size: 1.6em; height: 2em; }
 .addWidgetCheck { float: right; color: var(--text); margin-right: .4em; }
 
 /* To use with custom Widgets! */
-.widget { display: block; box-shadow: 0 0 20px 5px #141414; background-color: var(--windowBG); cursor: default; overflow: hidden; }
+.widget { display: block; box-shadow: 0 0 20px 5px #141414; background-color: var(--windowBG); cursor: default; overflow: hidden; font-family: var(--readable) }
+
 .widgetIcons { font-size: 1.5em; display: flex; align-items: flex-start; }
 .widgetIconsHidden .widgetIcons { display: none; }
 .widgetIcon { display: flex; flex-grow: 1; }
@@ -140,33 +151,41 @@ button.button{ font-size: 1.6em; height: 2em; }
 .tabsContainer { padding-bottom: .1em; border: 2px solid var(--secondary); }
 .tabsContainer ul { display: flex; background-color: var(--secondary); margin-top: 0; padding-left: .4em; }
 .tabsContainer li { background-color: var(--windowBG); font-size: 1.25em; padding: .2em .7em; margin: .3em .3em 0 0; display: inline-flex; align-items: center; box-sizing: border-box; border-radius: .3em .3em 0 0; border: 2px solid var(--accent); border-bottom: 0; }
-.tabsContainer .activeTab {	background-color: var(--mainBG); }
-.tabsContent { display: flex; overflow-y: auto; overflow-x: hidden; padding-left: .7em; }
+.tabsContainer .activeTab { background-color: var(--mainBG); }
+
+.tabsContent { display: flex; overflow-y: auto; overflow-x: hidden; padding-left: .7em; padding-right: .7em; padding-bottom: .7em; }
 
 .skillStoreSkillInfoContainer { margin-top: .4em; display: flex; width: 100%; flex-flow: row; }
 .skillStoreSkillLeft { flex: 1 }
 .skillStoreSkillRight { display: flex; margin-right: 5px; align-items: center; justify-content: flex-end; font-size: 3.5em; }
 
-.skillStoreSkillAuthor,.skillStoreSkillVersion,.skillStoreSkillCategory,.skillVersion,
-.spaced{ margin: .2em; }
+.skillStoreSkillAuthor, .skillStoreSkillVersion, .skillStoreSkillCategory, .skillVersion,
+.spaced { margin: .2em; font-size: 0.8em; }
 
 /* bigger icon for FA */
 .spaced i { width: 1.2em; }
 
 /* Tile structure */
 .tileContainer { margin: .2em; overflow-y: auto; overflow-x: hidden; display: flex; flex-wrap: wrap; align-content: flex-start; flex-direction: row; }
-.tile { background-color: var(--windowBG); margin: .6em; display: flex; flex-wrap: wrap; align-content: flex-start; position: relative; box-shadow: 0 0 20px 5px #141414; }
-.skillStoreSkillTile { width: 18.75em; height: 18.75em; }
-.skillTile { width: 18.75em; height: 13em; }
 
-.skillStoreSkillDescription { background-color: var(--secondary); font-family: var(--long); font-size: 0.75em; width: 100%; height: 10em; margin: .5em; padding: .5em; box-sizing: border-box; overflow-x: hidden;	overflow-y: auto; }
+.tile { background-color: var(--windowBG); margin: .6em; display: flex; flex-wrap: wrap; align-content: flex-start; position: relative; box-shadow: 0 0 20px 5px #141414; }
+
+.skillStoreSkillTile { width: 18.75em; height: 18.75em; font-family: var(--readable); }
+
+.skillTile { width: 18.75em; height: 13em; font-family: var(--readable); font-size: 1em; }
+
+.skillStoreSkillDescription { background-color: var(--secondary); font-family: var(--long); font-size: 0.75em; width: 100%; height: 10em; margin: .5em; padding: .5em; box-sizing: border-box; overflow-x: hidden; overflow-y: auto; }
 
 .skillContainer { position: relative; flex-wrap: wrap; align-content: flex-start; height: 11.3em; margin: .2em; }
+
 .skillDefaultView { display: flex; }
+
 .skillIntentsView { width: 100%; overflow-x: hidden; overflow-y: auto; }
 
-.skillTitle { background-color: var(--secondary); height: 1.5em; width: 100%; padding: 0 .4em; display: flex; align-items: center; justify-content: space-between; overflow: hidden; }
+.skillTitle { background-color: var(--secondary); height: 1.5em; width: 100%; padding: 0 .4em; display: flex; align-items: center; justify-content: space-between; overflow: hidden; font-family: var(--short)}
+
 .skillStatus { width: 100%; margin-top: 10px; margin-left: 4px; }
+
 .skillName { overflow: hidden; font-size: 1.25em; }
 
 .skillViewIntents,
@@ -174,9 +193,11 @@ button.button{ font-size: 1.6em; height: 2em; }
 .skillInstructions { width: 100%; margin: .2em; text-align: right; }
 
 /* Configuration Screens */
-.configBox { width: 100%; display: table; font-family: var(--long); background-color: var(--secondary); border-spacing: 0 10px; }
+.configBox { width: 100%; font-family: var(--readable); background-color: var(--secondary); border-spacing: 0 10px; }
+
 .configCategory { width: 100%; display: table; margin-bottom: 30px; font-family: var(--long); background-color: var(--secondary); border-spacing: 0 10px; }
-.configLine { width: 100%; display: table-row; }
+
+.configLine { width: 100%; display: table-row; font-family: var(--readable); }
 
 .configLine input, select, textarea { width: 500px; }
 

@@ -1,6 +1,8 @@
 import getpass
+import re
 import uuid
 from pathlib import Path
+from re import Match
 from typing import Optional
 
 import hashlib
@@ -17,6 +19,7 @@ from core.user.model.User import User
 class Tts(ProjectAliceObject):
 	TEMP_ROOT = Path(tempfile.gettempdir(), '/tempTTS')
 	TTS = None
+	SPELL_OUT = re.compile(r'<say-as interpret-as=\"(?:spell-out|characters|verbatim)\">(.+)</say-as>')
 
 
 	def __init__(self, user: User = None, *args, **kwargs):
@@ -36,6 +39,8 @@ class Tts(ProjectAliceObject):
 		self._cacheFile: Path = Path()
 		self._text = ''
 		self._speaking = False
+
+		self._supportsSSML = False
 
 
 	def onStart(self):
@@ -160,6 +165,8 @@ class Tts(ProjectAliceObject):
 			duration = round(len(AudioSegment.from_file(file)) / 1000, 2)
 		except CouldntDecodeError:
 			self.logError('Error decoding TTS file')
+			file.unlink()
+			self.onSay(session)
 		else:
 			self.DialogManager.increaseSessionTimeout(session=session, interval=duration + 0.2)
 			self.ThreadManager.doLater(interval=duration + 0.1, func=self._sayFinished, args=[session, uid])
@@ -177,9 +184,21 @@ class Tts(ProjectAliceObject):
 		)
 
 
+	def _checkText(self, session: DialogSession) -> str:
+		text = session.payload['text']
+		if not self._supportsSSML:
+			# We need to remove all ssml tags but transform some first
+			text = re.sub(self.SPELL_OUT, self._replaceSpellOuts, text)
+			return ' '.join(re.sub('<.*?>', ' ', text).split())
+		else:
+			if not '<speak>' in text:
+				text = f'<speak>{text}</speak>'
+			return text
+
+
 	@staticmethod
-	def _checkText(session: DialogSession) -> str:
-		return session.payload['text']
+	def _replaceSpellOuts(matching: Match) -> str:
+		return '<break time="160ms"/>'.join(matching.group(1))
 
 
 	def onSay(self, session: DialogSession):

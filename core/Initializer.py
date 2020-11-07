@@ -26,7 +26,10 @@ class InitDict(dict):
 
 	def __getitem__(self, item):
 		try:
-			return super().__getitem__(item) or ''
+			item = super().__getitem__(item)
+			if not item:
+				raise Exception
+			return item
 		except:
 			print(f'Missing key **{item}** in provided yaml file.')
 			return ''
@@ -83,9 +86,10 @@ class PreInit:
 		if not self.confsFile.exists() and self.oldConfFile.exists():
 			self._logger.logFatal('Found old conf file, trying to migrate...')
 			try:
+				# noinspection PyPackageRequirements,PyUnresolvedReferences
 				import config.py
 
-				self.confsFile.write_text(json.dumps(config.settings, indent=4, ensure_ascii=False, sort_keys=True))
+				self.confsFile.write_text(json.dumps(config.settings, indent='\t', ensure_ascii=False, sort_keys=True))
 			except:
 				self._logger.logFatal('Something went wrong migrating the old configs, aborting')
 			return False
@@ -137,17 +141,13 @@ class PreInit:
 			try:
 				# noinspection PyUnboundLocalVariable
 				load = yaml.safe_load(f)
-				if not load:
-					raise yaml.YAMLError
-
 				initConfs = InitDict(load)
+				# Check that we are running using the latest yaml
+				if float(initConfs['version']) < VERSION:
+					self._logger.logFatal('The yaml file you are using is deprecated. Please update it before trying again')
+
 			except yaml.YAMLError as e:
 				self._logger.logFatal(f'Failed loading init configurations: {e}')
-				return dict()
-
-			# Check that we are running using the latest yaml
-			if float(initConfs['version']) < VERSION:
-				self._logger.logFatal('The yaml file you are using is deprecated. Please update it before trying again')
 
 			return initConfs
 
@@ -359,7 +359,7 @@ class Initializer:
 
 		elif not self._confsFile.exists() and self._confsSample.exists():
 			self._logger.logWarning('No config file found, creating it from sample file')
-			self._confsFile.write_text(json.dumps({configName: configData['defaultValue'] for configName, configData in json.loads(self._confsSample.read_text()).items()}, indent=4, ensure_ascii=False))
+			self._confsFile.write_text(json.dumps({configName: configData['defaultValue'] for configName, configData in json.loads(self._confsSample.read_text()).items()}, indent='\t', ensure_ascii=False))
 
 		elif self._confsFile.exists() and initConfs['forceRewrite']:
 			self._logger.logWarning('Config file found and force rewrite specified, let\'s restart all this!')
@@ -367,7 +367,7 @@ class Initializer:
 				self._logger.logFatal('Unfortunately it won\'t be possible, config sample is not existing')
 				return False
 
-			self._confsFile.write_text(json.dumps(self._confsSample.read_text(), indent=4))
+			self._confsFile.write_text(json.dumps(self._confsSample.read_text(), indent='\t'))
 
 
 		try:
@@ -537,6 +537,11 @@ class Initializer:
 				audioHardware = hardware
 				break
 
+		if not audioHardware:
+			confs['disableSoundAndMic'] = True
+		else:
+			confs['disableSoundAndMic'] = False
+
 		hlcServiceFilePath = Path('/etc/systemd/system/hermesledcontrol.service')
 		if initConfs['useHLC']:
 
@@ -656,7 +661,7 @@ class Initializer:
 		sort = dict(sorted(confs.items()))
 
 		try:
-			self._confsFile.write_text(json.dumps(sort, indent=4))
+			self._confsFile.write_text(json.dumps(sort, indent='\t'))
 		except Exception as e:
 			self._logger.logFatal(f'An error occured while writting final configuration file: {e}')
 

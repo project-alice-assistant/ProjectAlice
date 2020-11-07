@@ -55,23 +55,23 @@ $(function () {
 			'<span class="logLine"><span style="display: inline-block; width: 270px;"><span class="logYellow">[' + time + ']</span> [AliceWatch]</span>Watching on ' + MQTT_HOST + ':' + MQTT_PORT + ' (MQTT)</span>'
 		);
 
-		MQTT.subscribe('projectalice/logging/alicewatch')
+		MQTT.subscribe('projectalice/logging/alicewatch');
 	}
 
-	$stopScroll.on('click touchstart', function () {
+	$stopScroll.on('click touch', function () {
 		$(this).hide();
 		$startScroll.show();
 		return false;
 	});
 
-	$startScroll.on('click touchstart', function () {
+	$startScroll.on('click touch', function () {
 		$(this).hide();
 		$stopScroll.show();
 		return false;
 	});
 
 	let $thermometers = $('[class^="fas fa-thermometer"]');
-	$thermometers.on('click touchstart', function () {
+	$thermometers.on('click touch', function () {
 		$('[class^="fas fa-thermometer"]').removeClass('active');
 		$(this).addClass('active');
 		let level = $(this).data('verbosity');

@@ -63,6 +63,10 @@ class LocationManager(Manager):
 		                            callerName=self.name,
 		                            values={'id': locId})
 		self._locations.pop(locId, None)
+
+		self.DatabaseManager.delete(tableName=self.DeviceManager.DB_LINKS,
+		                            callerName=self.DeviceManager.name,
+		                            values={'locationID': locId})
 		return True
 
 

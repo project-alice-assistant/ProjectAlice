@@ -23,6 +23,7 @@ class ASRManager(Manager):
 		self._asr = None
 		self._streams: Dict[str, Recorder] = dict()
 		self._translator = Translator()
+		self._usingFallback = False
 
 
 	def onStart(self):
@@ -98,7 +99,8 @@ class ASRManager(Manager):
 
 
 	def onInternetConnected(self):
-		if self.ConfigManager.getAliceConfigByName('stayCompletlyOffline') or self.ConfigManager.getAliceConfigByName('keepASROffline'):
+		if self.ConfigManager.getAliceConfigByName('stayCompletlyOffline') or self.ConfigManager.getAliceConfigByName('keepASROffline') or \
+				self.ConfigManager.getAliceConfigByName('asrFallback') == self.ConfigManager.getAliceConfigByName('asr'):
 			return
 
 		if not self._asr.isOnlineASR:

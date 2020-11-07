@@ -60,12 +60,6 @@ class PicoTts(Tts):
 		}
 
 
-	@staticmethod
-	def _checkText(session: DialogSession) -> str:
-		text = session.payload['text']
-		return ' '.join(re.sub('<.*?>', ' ', text).split())
-
-
 	def onSay(self, session: DialogSession):
 		super().onSay(session)
 

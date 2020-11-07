@@ -1,4 +1,4 @@
-VERSION = '1.0.0-b3'
+VERSION = '1.0.0-b4'
 
 DEFAULT = 'default'
 UNKNOWN_WORD = 'unknownword'
@@ -15,6 +15,8 @@ GITHUB_URL = 'https://github.com/project-alice-assistant'
 GITHUB_RAW_URL = 'https://raw.githubusercontent.com/project-alice-assistant'
 GITHUB_API_URL = 'https://api.github.com/repos/project-alice-assistant'
 SKILL_REDIRECT_URL = 'https://skills.projectalice.ch'
+SKILLS_STORE_ASSETS = 'https://skills.projectalice.io/assets/store/skills.json'
+SKILLS_SAMPLES_STORE_ASSETS = 'https://skills.projectalice.io/assets/store/skills.samples'
 GITHUB_REPOSITORY_ID = 193512918
 JSON_EXT = '.json'
 

@@ -488,11 +488,13 @@ class MqttManager(Manager):
 
 			if session.notUnderstood <= self.ConfigManager.getAliceConfigByName('notUnderstoodRetries'):
 				session.notUnderstood = session.notUnderstood + 1
-				self.continueDialog(
-					sessionId=sessionId,
-					text=self.TalkManager.randomTalk('notUnderstood', skill='system'),
-					intentFilter=session.intentFilter
-				)
+
+				if not self.ConfigManager.getAliceConfigByName('suggestSkillsToInstall'):
+					self.continueDialog(
+						sessionId=sessionId,
+						text=self.TalkManager.randomTalk('notUnderstood', skill='system'),
+						intentFilter=session.intentFilter
+					)
 			else:
 				session.notUnderstood = 0
 				self.endDialog(sessionId=sessionId, text=self.TalkManager.randomTalk('notUnderstoodEnd', skill='system'))

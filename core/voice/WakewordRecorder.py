@@ -233,7 +233,7 @@ class WakewordRecorder(Manager):
 
 		path.mkdir()
 
-		(path/'config.json').write_text(json.dumps(config, indent=4))
+		(path/'config.json').write_text(json.dumps(config, indent='\t'))
 
 		for i in range(1, 4):
 			shutil.move(Path(tempfile.gettempdir(), f'{i}.wav'), path/f'{i}.wav')

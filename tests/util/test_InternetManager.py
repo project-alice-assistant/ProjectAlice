@@ -12,10 +12,16 @@ class TestInternetManager(unittest.TestCase):
 	@mock.patch('core.util.InternetManager.Manager.broadcast')
 	@mock.patch('core.util.InternetManager.requests')
 	@mock.patch('core.util.InternetManager.InternetManager.Commons', new_callable=PropertyMock)
-	def test_checkOnlineState(self, mock_commons, mock_requests, mock_broadcast):
+	@mock.patch('core.base.SuperManager.SuperManager')
+	def test_checkOnlineState(self, mock_superManager, mock_commons, mock_requests, mock_broadcast):
 		common_mock = MagicMock()
 		common_mock.getFunctionCaller.return_value = 'InternetManager'
 		mock_commons.return_value = common_mock
+
+		# mock SuperManager
+		mock_instance = MagicMock()
+		mock_superManager.getInstance.return_value = mock_instance
+		mock_instance.configManager.getAliceConfigByName.return_value = False
 
 		internetManager = InternetManager()
 
@@ -25,7 +31,14 @@ class TestInternetManager(unittest.TestCase):
 		type(mock_requestsResult).status_code = mock_statusCode
 		mock_requests.get.return_value = mock_requestsResult
 
+		# Not called if stay completly offline
+		mock_instance.configManager.getAliceConfigByName.return_value = True
 		internetManager.checkOnlineState()
+		mock_requests.get.asset_not_called()
+
+		mock_instance.configManager.getAliceConfigByName.return_value = False
+		internetManager.checkOnlineState()
+
 		mock_requests.get.assert_called_once_with('https://clients3.google.com/generate_204')
 		mock_broadcast.assert_called_once_with(method='internetConnected', exceptions=['InternetManager'], propagateToSkills=True)
 		self.assertEqual(internetManager.online, True)

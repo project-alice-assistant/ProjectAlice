@@ -165,7 +165,7 @@ class DialogTemplateManager(Manager):
 			for file in pathToResources.glob(f'*{constants.JSON_EXT}'):
 				cached[skillName][file.stem] = self.Commons.fileChecksum(file)
 
-		self._pathToChecksums.write_text(json.dumps(cached, indent=4, sort_keys=True))
+		self._pathToChecksums.write_text(json.dumps(cached, indent='\t', sort_keys=True))
 
 
 	def cleanCache(self, skillName: str):
@@ -176,7 +176,7 @@ class DialogTemplateManager(Manager):
 		checksums = json.load(self._pathToChecksums)
 		checksums.pop(skillName, None)
 
-		self._pathToChecksums.write_text(json.dumps(checksums, indent=4, sort_keys=True))
+		self._pathToChecksums.write_text(json.dumps(checksums, indent='\t', sort_keys=True))
 
 
 	def clearCache(self, rebuild: bool = True):
@@ -193,7 +193,7 @@ class DialogTemplateManager(Manager):
 		if not text:
 			return
 
-		intent = session.previousIntent
+		intent = session.secondLastIntent
 		if not intent:
 			return
 

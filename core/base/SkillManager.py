@@ -34,7 +34,8 @@ class SkillManager(Manager):
 	DATABASE = {
 		'skills' : [
 			'skillName TEXT NOT NULL UNIQUE',
-			'active INTEGER NOT NULL DEFAULT 1'
+			'active INTEGER NOT NULL DEFAULT 1',
+			'scenarioVersion TEXT NOT NULL DEFAULT "0.0.0"',
 		],
 		'widgets': [
 			'parent TEXT NOT NULL UNIQUE',
@@ -69,6 +70,7 @@ class SkillManager(Manager):
 		self._postBootSkillActions = dict()
 
 		self._widgets = dict()
+		self._widgetsByIndex = dict()
 
 
 	def onStart(self):
@@ -95,6 +97,7 @@ class SkillManager(Manager):
 		self.ConfigManager.loadCheckAndUpdateSkillConfigurations()
 
 		self.startAllSkills()
+		self.sortWidgetZIndexes()
 
 
 	# noinspection SqlResolve
@@ -173,7 +176,7 @@ class SkillManager(Manager):
 					'state' : 0,
 					'posx'  : 0,
 					'posy'  : 0,
-					'zindex': 9999
+					'zindex': -1
 				},
 				row=('parent', skillName)
 			)
@@ -231,21 +234,31 @@ class SkillManager(Manager):
 
 
 	def sortWidgetZIndexes(self):
-		widgets = dict()
+		# Create a list of skills with their z index as key
+		self._widgetsByIndex = dict()
 		for skillName, widgetList in self._widgets.items():
 			for widget in widgetList.values():
-				widgets[int(widget.zindex)] = widget
+				if widget.state != 1:
+					continue
 
-		counter = 0
-		for i in sorted(widgets.keys()):
-			if widgets[i].state == 0:
-				widgets[i].zindex = -1
-				widgets[i].saveToDB()
-				continue
+				if int(widget.zindex) not in self._widgetsByIndex:
+					self._widgetsByIndex[int(widget.zindex)] = widget
+				else:
+					i = 1000
+					while True:
+						if i not in self._widgetsByIndex:
+							self._widgetsByIndex[i] = widget
+							break
+						i += 1
 
-			widgets[i].zindex = counter
-			counter += 1
-			widgets[i].saveToDB()
+		# Rewrite a logical zindex flow
+		for i, widget in enumerate(self._widgetsByIndex.values()):
+			widget.zindex = i
+			widget.saveToDB()
+
+
+	def nextZIndex(self) -> int:
+		return len(self._widgetsByIndex)
 
 
 	@property
@@ -608,7 +621,7 @@ class SkillManager(Manager):
 		root = Path(self.Commons.rootDir(), constants.SKILL_INSTALL_TICKET_PATH)
 		files = [f for f in root.iterdir() if f.suffix == '.install']
 
-		if self._busyInstalling.isSet() or not files or self.ProjectAlice.restart or self.ProjectAlice.updating:
+		if self._busyInstalling.isSet() or not files or self.ProjectAlice.restart or self.ProjectAlice.updating or self.NluManager.training:
 			return
 
 		self.logInfo(f'Found {len(files)} install ticket', plural='ticket')
@@ -913,6 +926,19 @@ class SkillManager(Manager):
 		return ret
 
 
+	def getSkillScenarioVersion(self, skillName: str) -> Version:
+		if skillName not in self._skillList:
+			return Version.fromString('0.0.0')
+		else:
+			# noinspection SqlResolve
+			query = 'SELECT * FROM :__table__ WHERE skillName = :skillName'
+			data = self.DatabaseManager.fetch(tableName='skills', query=query, values={'skillName': skillName}, callerName=self.name)
+			if not data:
+				return Version.fromString('0.0.0')
+
+			return Version.fromString(data['scenarioVersion'])
+
+
 	def wipeSkills(self, addDefaults: bool = True):
 		shutil.rmtree(Path(self.Commons.rootDir(), 'skills'))
 		Path(self.Commons.rootDir(), 'skills').mkdir()
@@ -938,21 +964,7 @@ class SkillManager(Manager):
 		try:
 			self.logInfo(f'Creating new skill "{skillDefinition["name"]}"')
 
-			rootDir = Path(self.Commons.rootDir()) / 'skills'
-			skillTemplateDir = rootDir / 'skill_DefaultTemplate'
-
-			if skillTemplateDir.exists():
-				shutil.rmtree(skillTemplateDir)
-
-			self.Commons.runSystemCommand(['git', '-C', str(rootDir), 'clone', f'{constants.GITHUB_URL}/skill_DefaultTemplate.git'])
-
 			skillName = skillDefinition['name'][0].upper() + skillDefinition['name'][1:]
-			skillDir = rootDir / skillName
-
-			skillTemplateDir.rename(skillDir)
-
-			installFile = skillDir / f'{skillDefinition["name"]}.install'
-			Path(skillDir, 'DefaultTemplate.install').rename(installFile)
 			supportedLanguages = [
 				'en'
 			]
@@ -962,6 +974,8 @@ class SkillManager(Manager):
 				supportedLanguages.append('de')
 			if skillDefinition['it'] == 'yes':
 				supportedLanguages.append('it')
+			if skillDefinition['pl'] == 'yes':
+				supportedLanguages.append('pl')
 
 			conditions = {
 				'lang': supportedLanguages
@@ -982,103 +996,28 @@ class SkillManager(Manager):
 			if skillDefinition['conditionActiveManager']:
 				conditions['activeManager'] = [manager.strip() for manager in skillDefinition['conditionActiveManager'].split(',')]
 
-			installContent = {
-				'name'              : skillName,
-				'version'           : '0.0.1',
-				'icon'              : 'fab fa-battle-net',
-				'category'          : 'undefined',
-				'author'            : self.ConfigManager.getAliceConfigByName('githubUsername'),
-				'maintainers'       : [],
-				'desc'              : skillDefinition['description'].capitalize(),
-				'aliceMinVersion'   : constants.VERSION,
-				'systemRequirements': [req.strip() for req in skillDefinition['sysreq'].split(',')],
-				'pipRequirements'   : [req.strip() for req in skillDefinition['pipreq'].split(',')],
+			data = {
+				'username'          : self.ConfigManager.getAliceConfigByName('githubUsername'),
+				'skillName'         : skillName,
+				'description'       : skillDefinition['description'].capitalize(),
+				'category'          : skillDefinition['category'],
+				'speakableName'     : skillDefinition['speakableName'],
+				'langs'             : supportedLanguages,
+				'createInstructions': skillDefinition['instructions'],
+				'pipreq'            : [req.strip() for req in skillDefinition['pipreq'].split(',')],
+				'sysreq'            : [req.strip() for req in skillDefinition['sysreq'].split(',')],
+				'widgets'           : [self.Commons.toPascalCase(widget).strip() for widget in skillDefinition['widgets'].split(',')],
+				'scenarioNodes'     : [self.Commons.toPascalCase(node).strip() for node in skillDefinition['nodes'].split(',')],
+				'outputDestination' : str(Path(self.Commons.rootDir()) / 'skills' / skillName),
 				'conditions'        : conditions
 			}
 
-			# Install file
-			with installFile.open('w') as fp:
-				fp.write(json.dumps(installContent, indent=4))
+			dump = Path(f'/tmp/{skillName}.json')
+			dump.write_text(json.dumps(data, ensure_ascii=False))
 
-			# Dialog templates and talks
-			dialogTemplateTemplate = skillDir / 'dialogTemplate/default.json'
-			with dialogTemplateTemplate.open() as fp:
-				dialogTemplate = json.load(fp)
-				dialogTemplate['skill'] = skillName
-				dialogTemplate['description'] = skillDefinition['description'].capitalize()
-
-			for lang in supportedLanguages:
-				with Path(skillDir, f'dialogTemplate/{lang}.json').open('w+') as fp:
-					fp.write(json.dumps(dialogTemplate, indent=4))
-
-				with Path(skillDir, f'talks/{lang}.json').open('w+') as fp:
-					fp.write(json.dumps(dict()))
-
-			dialogTemplateTemplate.unlink()
-
-			# Widgets
-			if skillDefinition['widgets']:
-				widgetRootDir = skillDir / 'widgets'
-				css = widgetRootDir / 'css/widget.css'
-				js = widgetRootDir / 'js/widget.js'
-				lang = widgetRootDir / 'lang/widget.lang.json'
-				html = widgetRootDir / 'templates/widget.html'
-				python = widgetRootDir / 'widget.py'
-
-				for widget in skillDefinition['widgets'].split(','):
-					widgetName = widget.strip()
-					widgetName = widgetName[0].upper() + widgetName[1:]
-
-					content = css.read_text().replace('%widgetname%', widgetName)
-					with Path(widgetRootDir, f'css/{widgetName}.css').open('w+') as fp:
-						fp.write(content)
-
-					shutil.copy(str(js), str(js).replace('widget.js', f'{widgetName}.js'))
-					shutil.copy(str(lang), str(lang).replace('widget.lang.json', f'{widgetName}.lang.json'))
-
-					content = html.read_text().replace('%widgetname%', widgetName)
-					with Path(widgetRootDir, f'templates/{widgetName}.html').open('w+') as fp:
-						fp.write(content)
-
-					content = python.read_text().replace('Template(Widget)', f'{widgetName}(Widget)')
-					with Path(widgetRootDir, f'{widgetName}.py').open('w+') as fp:
-						fp.write(content)
-
-				css.unlink()
-				js.unlink()
-				lang.unlink()
-				html.unlink()
-				python.unlink()
-
-			else:
-				shutil.rmtree(str(Path(skillDir, 'widgets')))
-
-			languages = ''
-			for lang in supportedLanguages:
-				languages += f'    {lang}\n'
-
-			# Readme file
-			content = Path(skillDir, 'README.md').read_text().replace('%skillname%', skillName) \
-				.replace('%author%', self.ConfigManager.getAliceConfigByName('githubUsername')) \
-				.replace('%minVersion%', constants.VERSION) \
-				.replace('%description%', skillDefinition['description'].capitalize()) \
-				.replace('%languages%', languages)
-
-			with Path(skillDir, 'README.md').open('w') as fp:
-				fp.write(content)
-
-			# Main class
-			classFile = skillDir / f'{skillDefinition["name"]}.py'
-			Path(skillDir, 'DefaultTemplate.py').rename(classFile)
-
-			content = classFile.read_text().replace('%skillname%', skillName) \
-				.replace('%author%', self.ConfigManager.getAliceConfigByName('githubUsername')) \
-				.replace('%description%', skillDefinition['description'].capitalize())
-
-			with classFile.open('w') as fp:
-				fp.write(content)
-
-			self.logInfo(f'Created "{skillDefinition["name"]}" skill')
+			self.Commons.runSystemCommand(['./venv/bin/pip', '--upgrade', 'projectalice-sk'])
+			self.Commons.runSystemCommand(['./venv/bin/projectalice-sk', 'create', '--file', f'{str(dump)}'])
+			self.logInfo(f'Created **skillName** skill')
 
 			return True
 		except Exception as e:
@@ -1117,7 +1056,7 @@ class SkillManager(Manager):
 			self.Commons.runSystemCommand(['git', '-C', str(localDirectory), 'remote', 'add', 'origin', remote])
 
 			self.Commons.runSystemCommand(['git', '-C', str(localDirectory), 'add', '--all'])
-			self.Commons.runSystemCommand(['git', '-C', str(localDirectory), 'commit', '-m', '"Initial upload"'])
+			self.Commons.runSystemCommand(['git', '-C', str(localDirectory), 'commit', '-m', '"Initial upload by Project Alice Skill Kit"'])
 			self.Commons.runSystemCommand(['git', '-C', str(localDirectory), 'push', '--set-upstream', 'origin', 'master'])
 
 			url = f'https://github.com/{self.ConfigManager.getAliceConfigByName("githubUsername")}/skill_{skillName}.git'
@@ -1136,6 +1075,8 @@ class SkillManager(Manager):
 					dest=str(tmpFile.with_suffix('.tmp'))
 			):
 				raise Exception
+
+			requests.get(f'https://skills.projectalice.ch/{skillName}')
 
 			shutil.move(tmpFile.with_suffix('.tmp'), tmpFile)
 			return True

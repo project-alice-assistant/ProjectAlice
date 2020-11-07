@@ -7,10 +7,6 @@
 {% block loaders %}
 	<script src="{{ url_for('static', filename='js/jquery-3.4.1.min.js') }}"></script>
 	<script src="{{ url_for('static', filename='js/scenarios.js') }}"></script>
-	<script src="{{ url_for('static', filename='blockly/blockly_compressed.js') }}"></script>
-	<script src="{{ url_for('static', filename='blockly/blocks_compressed.js') }}"></script>
-	<script src="{{ url_for('static', filename='javascript_compressed.js') }}"></script>
-	<script src="{{ url_for('static', filename='blockly/msg/js/en.js') }}"></script>
 {% endblock %}
 
 {% block pageTitle %}
@@ -18,5 +14,5 @@
 {% endblock %}
 
 {% block content %}
-	<iframe id="nodered" title="nodered" width="100%" height="100%" src="http://{{ myIp }}:1880"></iframe>
+	<iframe id="nodered" title="nodered" width="100%" height="100%" style="overflow: hidden; border: none; background: var(--mainBG)" src="http://{{ myIp }}:1880"></iframe>
 {% endblock %}

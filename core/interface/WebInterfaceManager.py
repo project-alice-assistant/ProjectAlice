@@ -119,7 +119,7 @@ class WebInterfaceManager(Manager):
 					# 'ssl_context' : 'adhoc',
 					'debug'       : self.ConfigManager.getAliceConfigByName('debug'),
 					'port'        : int(self.ConfigManager.getAliceConfigByName('webInterfacePort')),
-					'host'        : self.Commons.getLocalIp(),
+					'host'        : '0.0.0.0',
 					'use_reloader': False
 				}
 			)

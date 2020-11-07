@@ -23,7 +23,7 @@ $(function () {
 
 	$('#username').on('keyup', function () {
 		$.ajax({
-			url: '/adminAuth/login/',
+			url : '/adminAuth/login/',
 			data: {
 				'username': $(this).val()
 			},
@@ -31,7 +31,7 @@ $(function () {
 		});
 	});
 
-	$('.adminAuthKeyboardKey').not('.erase').not('.backspace').on('click touchstart', function () {
+	$('.adminAuthKeyboardKey').not('.erase').not('.backspace').on('click touch', function () {
 		if (!keyboardAuthNotified) {
 			$.post('/adminAuth/keyboardAuth/');
 			keyboardAuthNotified = true;
@@ -64,16 +64,16 @@ $(function () {
 		return true;
 	});
 
-	$('.erase').on('click touchstart', function () {
+	$('.erase').on('click touch', function () {
 		code = '';
 		$('#codeContainer').children('.adminAuthDisplayDigit').each(function () {
 			$(this).removeClass('adminAuthDigitFilled');
 		});
 	});
 
-	$('.backspace').on('click touchstart', function () {
+	$('.backspace').on('click touch', function () {
 		code = code.slice(0, -1);
-		$('#codeContainer').children('.adminAuthDigitFilled').last().removeClass('adminAuthDigitFilled')
+		$('#codeContainer').children('.adminAuthDigitFilled').last().removeClass('adminAuthDigitFilled');
 	});
 
 	$('#adminAuthKeyboardContainer').hide();
