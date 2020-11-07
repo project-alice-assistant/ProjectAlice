@@ -37,11 +37,11 @@ class GoogleAsr(Asr):
 		self._client: Optional[SpeechClient] = None
 		self._streamingConfig: Optional[types.StreamingRecognitionConfig] = None
 
-		self._internetLostFlag = Event() # Set if internet goes down, cut the decoding
-		self._lastResultCheck = 0 # The time the intermediate results were last checked. If actual time is greater than this value + 3, stop processing, internet issues
+		self._internetLostFlag = Event()  # Set if internet goes down, cut the decoding
+		self._lastResultCheck = 0  # The time the intermediate results were last checked. If actual time is greater than this value + 3, stop processing, internet issues
 
-		self._previousCapture = '' # The text that was last captured in the iteration
-
+		self._previousCapture = ''  # The text that was last captured in the iteration
+		self._delayedGoogleConfirmation = False  # set whether slow internet is detected or not
 
 	def onStart(self):
 		super().onStart()
@@ -113,22 +113,36 @@ class GoogleAsr(Asr):
 				continue
 
 			if result.is_final:
+				self._lastResultCheck = 0
+				self._delayedGoogleConfirmation = False
+				# print(f'Text confirmed by Google')
 				return result.alternatives[0].transcript, result.alternatives[0].confidence
 			elif result.alternatives[0].transcript != self._previousCapture:
 				self.partialTextCaptured(session=session, text=result.alternatives[0].transcript, likelihood=result.alternatives[0].confidence, seconds=0)
-				self._previousCapture = result.alternatives[0].transcript
+				# below function captures the "potential" full utterance not just one word from it
+				if len(self._previousCapture) <= len(result.alternatives[0].transcript):
+					self._previousCapture = result.alternatives[0].transcript
 			elif result.alternatives[0].transcript == self._previousCapture:
+
+				# If we are here it's cause google hasn't responded yet with confirmation on captured text
+				# Store the time in seconds since epoch
 				now = int(time())
-
-				if self._lastResultCheck == 0:
-					self._lastResultCheck = 0
+				# Set a reference to nows time plus 3 seconds
+				self._lastResultCheck = now + 3
+				# wait 3 seconds and see if google responds
+				if not self._delayedGoogleConfirmation:
+					# print(f'Text of "{self._previousCapture}" captured but not confirmed by GoogleASR yet')
+					while now <= self._lastResultCheck:
+						now = int(time())
+						self._delayedGoogleConfirmation = True
+					# Give google the option to still process  the utterance
 					continue
-
-				if now > self._lastResultCheck + 3:
+				# During next iteration, If google hasn't responded in 3 seconds assume intent is correct
+				if self._delayedGoogleConfirmation:
 					self.logDebug(f'Stopping process as there seems to be connectivity issues')
+					self._lastResultCheck = 0
+					self._delayedGoogleConfirmation = False
 					return result.alternatives[0].transcript, result.alternatives[0].confidence
 
-				self._lastResultCheck = now
-				continue
-
 		return None
+
