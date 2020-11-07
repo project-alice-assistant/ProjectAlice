@@ -251,11 +251,8 @@ class SkillManager(Manager):
 							break
 						i += 1
 
-		print(self._widgetsByIndex)
-
 		# Rewrite a logical zindex flow
 		for i, widget in enumerate(self._widgetsByIndex.values()):
-			print(i)
 			widget.zindex = i
 			widget.saveToDB()
 

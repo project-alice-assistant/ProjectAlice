@@ -87,6 +87,8 @@ $(function () {
 
 	$('#removeWidget').on('click touch', function () {
 		$('.widgetDelete').show();
+		$('.widgetConfig').hide();
+		$('.zindexer').hide();
 		$('#toolbar_checkmark').show();
 		$('#toolbar_full').hide();
 		return false;
