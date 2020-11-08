@@ -61,7 +61,7 @@ class ProjectAliceObject:
 				func(**kwargs)
 
 		except TypeError as e:
-			self.logWarning(f'- Failed to broadcast event **{method}** to **DialogManager**: {e}')
+			self.logWarning(f'Failed to broadcast event **{method}** to **DialogManager**: {e}')
 
 
 		deadManagers = list()
@@ -79,7 +79,7 @@ class ProjectAliceObject:
 					func(**kwargs)
 
 			except TypeError as e:
-				self.logWarning(f'- Failed to broadcast event **{method}** to **{man.name}**: {e}')
+				self.logWarning(f'Failed to broadcast event **{method}** to **{man.name}**: {e}')
 
 		if propagateToSkills:
 			self.SkillManager.skillBroadcast(method=method, **kwargs)
