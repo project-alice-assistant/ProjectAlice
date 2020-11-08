@@ -40,7 +40,8 @@ class SuperManager:
 		self.wakewordRecorder = None
 		self.userManager = None
 		self.talkManager = None
-		self.webInterfaceManager = None
+		# self.webInterfaceManager = None
+		self.webUiManager = None
 		self.nodeRedManager = None
 		self.skillStoreManager = None
 		self.nluManager = None
@@ -161,7 +162,8 @@ class SuperManager:
 		from core.voice.TalkManager import TalkManager
 		from core.voice.TTSManager import TTSManager
 		from core.voice.WakewordRecorder import WakewordRecorder
-		from core.interface.WebInterfaceManager import WebInterfaceManager
+		# from core.interface.WebInterfaceManager import WebInterfaceManager
+		from core.webui.WebUiManager import WebUiManager
 		from core.interface.NodeRedManager import NodeRedManager
 		from core.base.SkillStoreManager import SkillStoreManager
 		from core.dialog.DialogTemplateManager import DialogTemplateManager
@@ -192,7 +194,8 @@ class SuperManager:
 		self.internetManager = InternetManager()
 		self.wakewordRecorder = WakewordRecorder()
 		self.talkManager = TalkManager()
-		self.webInterfaceManager = WebInterfaceManager()
+		# self.webInterfaceManager = WebInterfaceManager()
+		self.webUiManager = WebUiManager()
 		self.nodeRedManager = NodeRedManager()
 		self.skillStoreManager = SkillStoreManager()
 		self.dialogTemplateManager = DialogTemplateManager()
