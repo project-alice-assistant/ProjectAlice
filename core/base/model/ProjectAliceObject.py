@@ -695,22 +695,27 @@ class ProjectAliceObject:
 
 
 	@property
-	def WakewordRecorder(self): #NOSONAR
+	def WakewordRecorder(self):  # NOSONAR
 		return SM.SuperManager.getInstance().wakewordRecorder
 
 
 	@property
-	def WebInterfaceManager(self): #NOSONAR
-		return SM.SuperManager.getInstance().webInterfaceManager
+	def WebInterfaceManager(self):  # NOSONAR
+		return SM.SuperManager.getInstance().webUiManager
 
 
 	@property
-	def Commons(self): #NOSONAR
+	def ApiManager(self):  # NOSONAR
+		return SM.SuperManager.getInstance().apiManager
+
+
+	@property
+	def Commons(self):  # NOSONAR
 		return SM.SuperManager.getInstance().commonsManager
 
 
 	@property
-	def SkillStoreManager(self): #NOSONAR
+	def SkillStoreManager(self):  # NOSONAR
 		return SM.SuperManager.getInstance().skillStoreManager
 
 

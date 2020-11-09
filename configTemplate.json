@@ -745,21 +745,31 @@
 		"dataType"    : "boolean",
 		"isSensitive" : false,
 		"description" : "Activates the web interface to be reached by browsing to x.x.x.x:webInterfacePort, e.g. 192.168.1.2:5000",
-		"category"    : "system"
+		"category"    : "interface",
+		"onUpdate"    : "WebUIManager.restart"
 	},
 	"webInterfacePort"        : {
 		"defaultValue": 5000,
 		"dataType"    : "integer",
 		"isSensitive" : false,
 		"description" : "Change the web interface port to be used",
-		"category"    : "system"
+		"category"    : "interface",
+		"onUpdate"    : "WebUIManager.restart"
+	},
+	"apiPort"                 : {
+		"defaultValue": 5001,
+		"dataType"    : "integer",
+		"isSensitive" : false,
+		"description" : "Change the port the api is bound to",
+		"category"    : "interface",
+		"onUpdate"    : "ApiManager.restart"
 	},
 	"scenariosActive"         : {
 		"defaultValue": false,
 		"dataType"    : "boolean",
 		"isSensitive" : false,
 		"description" : "Activates the scenarios support on the webinterface, using Node-RED.",
-		"category"    : "scenarios",
+		"category"    : "interface",
 		"onUpdate"    : "NodeRedManager.toggle"
 	},
 	"dontStopNodeRed"         : {
@@ -767,7 +777,7 @@
 		"dataType"    : "boolean",
 		"isSensitive" : false,
 		"description" : "If activated, Node-RED won't be stopped when Alice is shut down.",
-		"category"    : "scenarios",
+		"category"    : "interface",
 		"parent"      : {
 			"config"   : "scenariosActive",
 			"condition": "is",

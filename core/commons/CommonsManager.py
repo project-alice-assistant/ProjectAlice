@@ -7,6 +7,7 @@ import string
 import subprocess
 import tempfile
 import time
+import uuid
 from collections import defaultdict
 from contextlib import contextmanager, suppress
 from ctypes import *
@@ -15,6 +16,7 @@ from pathlib import Path
 from typing import Any, Union
 from uuid import UUID
 
+import jinja2
 import requests
 from googletrans import Translator
 from paho.mqtt.client import MQTTMessage
@@ -337,12 +339,29 @@ class CommonsManager(Manager):
 
 
 	@staticmethod
-	def isUuid(uuid: str) -> bool:
+	def isUuid(uid: str) -> bool:
 		try:
-			_ = UUID(uuid)
+			_ = UUID(uid)
 			return True
 		except ValueError:
 			return False
+
+
+	def createFileFromTemplate(self, templateFile: Path, dest: Path, **kwargs):
+		try:
+			templateLoader = jinja2.FileSystemLoader(searchpath=templateFile.parent)
+			templateEnv = jinja2.Environment(loader=templateLoader, autoescape=True)
+			template = templateEnv.get_template(templateFile.name)
+			tmp = Path(f'/tmp/{uuid.uuid4()}')
+			tmp.write_text(template.render(**kwargs))
+
+			cmd = f'mv {str(tmp)} {str(dest)}'.split()
+			if '/home/' not in str(dest):
+				self.runRootSystemCommand(cmd)
+			else:
+				self.runSystemCommand(cmd)
+		except:
+			raise
 
 
 # noinspection PyUnusedLocal
