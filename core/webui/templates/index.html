@@ -5,9 +5,11 @@
 	<meta http-equiv="X-UA-Compatible" content="IE=edge">
 	<meta name="viewport" content="width=device-width,initial-scale=1.0">
 	<title>Project Alice</title>
-	<script src="{{ url_for('static', filename='js/vue.js') }}"></script>
-	<script src="{{ url_for('static', filename='js/vue-cookies.js') }}"></script>
+	<script src="{{ url_for('static', filename='js/libraries/vue.js') }}"></script>
+	<script src="{{ url_for('static', filename='js/libraries/vue-cookies.js') }}"></script>
 	<script src="{{ url_for('static', filename='js/main.js') }}" type="module"></script>
+	<link rel="stylesheet" href="{{ url_for('static', filename='css/common.css') }}">
+	<link rel="stylesheet" href="{{ url_for('static', filename='css/header.css') }}">
 </head>
 <body>
 <div id="app"></div>

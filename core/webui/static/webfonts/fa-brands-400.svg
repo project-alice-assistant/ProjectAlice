@@ -4,17 +4,17 @@ Font Awesome Free 5.11.2 by @fontawesome - https://fontawesome.com
 License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License)
 -->
 <!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd" >
-<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1">
-<metadata>
-Created by FontForge 20190801 at Mon Sep 23 12:53:49 2019
- By Robert Madole
-Copyright (c) Font Awesome
-</metadata>
-<defs>
-<font id="FontAwesome5Brands-Regular" horiz-adv-x="448" >
-  <font-face 
-    font-family="Font Awesome 5 Brands Regular"
-    font-weight="400"
+<svg xmlns="http://www.w3.org/2000/svg" version="1.1">
+  <metadata>
+    Created by FontForge 20190801 at Mon Sep 23 12:53:49 2019
+    By Robert Madole
+    Copyright (c) Font Awesome
+  </metadata>
+  <defs>
+    <font id="FontAwesome5Brands-Regular" horiz-adv-x="448">
+      <font-face
+              font-family="Font Awesome 5 Brands Regular"
+              font-weight="400"
     font-stretch="normal"
     units-per-em="512"
     panose-1="2 0 5 3 0 0 0 0 0 0"

@@ -1,0 +1,68 @@
+/* ========================== VARIABLES ========================== */
+/* Not used in for example in .console*/
+:root {
+	/* COLOR */
+	--hover: yellow;
+	--mainBG: #1e1e1e;
+	--windowBG: #636363;
+	--secondary: #343434;
+	--accent: black;
+	--text: #d1d1d1;
+	/* TEXT */
+	--short: 'marskeregular', Arial, sans-serif;
+	--long: 'neogreyregular', Arial, sans-serif;
+	--readable: 'Roboto', Arial, sans-serif;
+}
+
+/* ============================ FONTS ============================ */
+@font-face {
+	font-family: 'marskeregular';
+	font-weight: normal;
+	font-style: normal;
+	src: url('../webfonts/marske-webfont.woff2') format('woff2'), url('../webfonts/marske-webfont.woff') format('woff');
+}
+
+@font-face {
+	font-family: 'neogreyregular';
+	font-weight: normal;
+	font-style: normal;
+	src: url('../webfonts/neogreyregular-webfont.woff2') format('woff2'), url('../webfonts/neogreyregular-webfont.woff') format('woff');
+}
+
+@font-face {
+	font-family: 'Roboto';
+	font-weight: normal;
+	font-style: normal;
+	src: url('../webfonts/Roboto-Regular.eot');
+	src: url('../webfonts/Roboto-Regular.eot?#iefix') format('embedded-opentype'), url('../webfonts/Roboto-Regular.woff2') format('woff2'), url('../webfonts/Roboto-Regular.woff') format('woff'), url('../webfonts/Roboto-Regular.ttf') format('truetype'), url('../webfonts/Roboto-Regular.svg#Roboto-Regular') format('svg');
+}
+
+/* ========================= BUILT IN TAGS ======================== */
+html, body { background-color: var(--accent); color: var(--text); font-family: var(--short); width: 100%; height: 100%; overflow: hidden; margin: 0; display: flex; flex-flow: column; -moz-user-select: none; -webkit-touch-callout: none; -webkit-user-select: none; -ms-user-select: none; user-select: none; -khtml-user-select: none; }
+
+header { background-color: var(--mainBG); width: 100%; height: 3em; margin: .125em; display: flex; flex-shrink: 0; align-items: center;}
+
+nav { background-color: var(--mainBG); width: 9.4em; flex-shrink: 0; margin-left: .125em; }
+
+main { background-color: var(--mainBG); flex-grow: 1; position: relative; margin-left: 2px; flex-flow: column; padding: .3em; }
+
+a:link, a:visited, a:active { text-decoration: none; color: var(--text); }
+
+a:hover { color: var(--hover); }
+
+input, select, textarea { background-color: var(--mainBG); color: var(--text); border: 1px dotted #636363; outline: none; box-sizing: content-box; width: auto; padding: 5px; margin-left: 20px; margin-right: 20px; }
+
+input:hover, textarea:hover { border: dotted 1px; }
+
+input[type='text'], input[type='password'], input[type='number'], select, textarea { width: auto; }
+
+textarea { min-height: 200px; }
+
+input:focus, textarea:focus { border: var(--hover) dotted 1px; }
+
+/* ======================= COLOR MARKINGS ======================== */
+.red, .disabled, .warning, .saveFailed, .logError, .logRed { color: red; }
+
+.green, .saved, .logGreen { color: green; }
+
+.yellow, .active, .saving, .logYellow { color: yellow; }
