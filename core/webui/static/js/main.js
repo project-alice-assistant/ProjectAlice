@@ -1,4 +1,4 @@
-import App from './components/App.js';
+import App from './components/app.js';
 
 Vue.config.productionTip = false;
 Vue.$cookies.config('10y');

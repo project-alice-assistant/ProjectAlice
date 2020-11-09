@@ -1,4 +1,4 @@
 let vue;
 export default vue = `
-<Header/>
+<nav>my nav</nav>
 `
