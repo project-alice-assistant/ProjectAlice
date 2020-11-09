@@ -1,4 +1,4 @@
 let vue;
 export default vue = `
-<section>my body</section>
+<section id="mainSection">my body</section>
 `

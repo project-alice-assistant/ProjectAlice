@@ -1,8 +1,10 @@
 let vue;
 export default vue = `
-<div>
+<div id="mainContainer">
 <Header/>
-<Nav/>
-<Body/>
+<div id="main">
+	<Nav/>
+	<Body/>
+</div>
 </div>
 `
