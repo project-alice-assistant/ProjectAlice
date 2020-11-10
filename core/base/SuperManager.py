@@ -162,7 +162,7 @@ class SuperManager:
 		from core.voice.TalkManager import TalkManager
 		from core.voice.TTSManager import TTSManager
 		from core.voice.WakewordRecorder import WakewordRecorder
-		from core.webui.ApiManager import ApiManager
+		from core.webApi.ApiManager import ApiManager
 		from core.interface.NodeRedManager import NodeRedManager
 		from core.base.SkillStoreManager import SkillStoreManager
 		from core.dialog.DialogTemplateManager import DialogTemplateManager

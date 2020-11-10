@@ -33,3 +33,12 @@ class UtilsApi(Api):
 		except Exception as e:
 			self.logError(f'Failed rebooting device: {e}')
 			return jsonify(success=False)
+
+
+	@route('/config/', methods=['GET'])
+	def config(self):
+		try:
+			return jsonify(config=self.ConfigManager.aliceConfigurations)
+		except Exception as e:
+			self.logError(f'Failed retrieving Alice configs: {e}')
+			return jsonify(success=False)

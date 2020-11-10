@@ -13,12 +13,6 @@ from flask_login import LoginManager
 from core.base.model.AliceSkill import AliceSkill
 from core.base.model.Manager import Manager
 from core.commons import constants
-from core.interface.api.DialogApi import DialogApi
-from core.interface.api.LoginApi import LoginApi
-from core.interface.api.SkillsApi import SkillsApi
-from core.interface.api.TelemetryApi import TelemetryApi
-from core.interface.api.UsersApi import UsersApi
-from core.interface.api.UtilsApi import UtilsApi
 from core.interface.views.AdminAuth import AdminAuth
 from core.interface.views.AdminView import AdminView
 from core.interface.views.AliceWatchView import AliceWatchView
@@ -28,6 +22,12 @@ from core.interface.views.MyHomeView import MyHomeView
 from core.interface.views.ScenarioView import ScenarioView
 from core.interface.views.SkillsView import SkillsView
 from core.interface.views.SyslogView import SyslogView
+from core.webApi.model.DialogApi import DialogApi
+from core.webApi.model.LoginApi import LoginApi
+from core.webApi.model.SkillsApi import SkillsApi
+from core.webApi.model.TelemetryApi import TelemetryApi
+from core.webApi.model.UsersApi import UsersApi
+from core.webApi.model.UtilsApi import UtilsApi
 
 
 class WebInterfaceManager(Manager):
