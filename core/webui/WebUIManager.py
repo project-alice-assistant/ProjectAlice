@@ -1,6 +1,9 @@
 from pathlib import Path
 
+import psutil as psutil
+
 from core.base.model.Manager import Manager
+from core.commons import constants
 
 
 class WebUIManager(Manager):
@@ -17,6 +20,23 @@ class WebUIManager(Manager):
 			self.isActive = False
 		else:
 			self.startWebserver()
+			if self.ConfigManager.getAliceConfigByName('displaySystemUsage'):
+				self.ThreadManager.newThread(
+					name='DisplayResourceUsage',
+					target=self.publishResourceUsage
+				)
+
+
+	def publishResourceUsage(self):
+		self.MqttManager.publish(
+			topic=constants.TOPIC_RESOURCE_USAGE,
+			payload={
+				'cpu': psutil.cpu_percent(),
+				'ram': psutil.virtual_memory().percent,
+				'swp': psutil.swap_memory().percent
+			}
+		)
+		self.ThreadManager.doLater(interval=1, func=self.publishResourceUsage)
 
 
 	def setConfFile(self) -> bool:

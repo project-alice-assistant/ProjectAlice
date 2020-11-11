@@ -42,3 +42,12 @@ class UtilsApi(Api):
 		except Exception as e:
 			self.logError(f'Failed retrieving Alice configs: {e}')
 			return jsonify(success=False)
+
+
+	@route('/mqttConfig/', methods=['GET'])
+	def mqttConfig(self):
+		return jsonify(
+			success=True,
+			host=self.Commons.getLocalIp(),
+			port=int(self.ConfigManager.getAliceConfigByName('mqttPort')) + 1
+		)
