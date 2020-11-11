@@ -527,7 +527,7 @@ class SkillManager(Manager):
 					func(event=method, **kwargs)
 
 			except TypeError as e:
-				self.logWarning(f'- Failed to broadcast event {method} to {skillName}: {e}')
+				self.logWarning(f'Failed to broadcast event {method} to {skillName}: {e}')
 
 
 	def deactivateSkill(self, skillName: str, persistent: bool = False):
@@ -872,7 +872,7 @@ class SkillManager(Manager):
 			else:
 				skills[skillName].unsubscribeIntents()
 		except Exception as e:
-			self.logWarning(f'Intent configuration failed: {e} {traceback.print_exc()}')
+			self.logWarning(f'Intent configuration failed: {e}')
 
 
 	def isIntentInUse(self, intent: Intent, filtered: list) -> bool:
