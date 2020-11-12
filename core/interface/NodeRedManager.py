@@ -17,7 +17,13 @@ class NodeRedManager(Manager):
 			'split',
 			'sort',
 			'function',
-			'change'
+			'change',
+			'inject',
+			'delay',
+			'mqtt',
+			'switch',
+			'trigger',
+			'template'
 		]
 	}
 
