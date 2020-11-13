@@ -531,3 +531,7 @@ class DialogManager(Manager):
 				'text': text
 			}
 		)
+
+
+	def getEnabledByDefaultIntents(self):
+		return self._enabledByDefaultIntents
