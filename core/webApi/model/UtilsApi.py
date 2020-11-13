@@ -1,4 +1,4 @@
-from flask import jsonify
+from flask import jsonify, request
 from flask_classful import route
 
 from core.interface.model.Api import Api
@@ -37,8 +37,17 @@ class UtilsApi(Api):
 
 	@route('/config/', methods=['GET'])
 	def config(self):
+		"""
+		Returns Alice configs. If authenticated, with passwords, if not, sensitive data is removed
+		"""
 		try:
-			return jsonify(config=self.ConfigManager.aliceConfigurations)
+			configs = self.ConfigManager.aliceConfigurations
+			configs['aliceIp'] = self.Commons.getLocalIp()
+			configs['apiPort'] = self.ConfigManager.getAliceConfigByName('apiPort')
+			if not self.UserManager.apiTokenValid(request.headers.get('auth', '')):
+				configs = {key: value for key, value in configs.items() if not self.ConfigManager.isAliceConfSensitive(key)}
+
+			return jsonify(config=configs)
 		except Exception as e:
 			self.logError(f'Failed retrieving Alice configs: {e}')
 			return jsonify(success=False)

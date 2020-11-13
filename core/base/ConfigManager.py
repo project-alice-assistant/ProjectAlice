@@ -542,8 +542,11 @@ class ConfigManager(Manager):
 
 
 	def isAliceConfHidden(self, confName: str) -> bool:
-		return confName in self._aliceTemplateConfigurations and \
-		       self._aliceTemplateConfigurations.get('display') == 'hidden'
+		return self._aliceTemplateConfigurations.get(confName, dict()).get('display', '') == 'hidden'
+
+
+	def isAliceConfSensitive(self, confName: str) -> bool:
+		return self._aliceTemplateConfigurations.get(confName, dict()).get('isSensitive', False)
 
 
 	def getAliceConfUpdatePreProcessing(self, confName: str) -> typing.Optional[str]:

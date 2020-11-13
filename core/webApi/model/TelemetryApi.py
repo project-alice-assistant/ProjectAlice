@@ -13,7 +13,7 @@ class TelemetryApi(Api):
 
 
 	@ApiAuthenticated
-	def post(self):
+	def get(self):
 		try:
 			return jsonify(message='Not implemented')
 		except Exception as e:

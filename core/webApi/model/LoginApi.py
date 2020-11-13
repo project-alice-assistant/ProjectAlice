@@ -1,6 +1,8 @@
 from flask import jsonify, request
+from flask_classful import route
 
 from core.interface.model.Api import Api
+from core.util.Decorators import ApiAuthenticated
 
 
 class LoginApi(Api):
@@ -11,7 +13,8 @@ class LoginApi(Api):
 		super().__init__()
 
 
-	def post(self):
+	@route('/', methods=['POST'])
+	def login(self):
 		try:
 			username = request.form.get('username')
 			if not self.UserManager.checkPinCode(self.UserManager.getUser(username), request.form.get('pin')):
@@ -20,5 +23,14 @@ class LoginApi(Api):
 			token = self.UserManager.getUser(username).apiToken or self.UserManager.createApiToken(self.UserManager.getUser(username))
 
 			return jsonify(apiToken=token)
+		except:
+			return jsonify(message='ERROR: Unauthorized')
+
+
+	@route('/checkToken/', methods=['POST'])
+	@ApiAuthenticated
+	def checkToken(self):
+		try:
+			return jsonify(success=True)
 		except:
 			return jsonify(message='ERROR: Unauthorized')

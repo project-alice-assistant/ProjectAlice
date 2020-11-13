@@ -127,6 +127,7 @@ class SkillsApi(Api):
 
 
 	@route('/<skillName>/checkUpdate/')
+	@ApiAuthenticated
 	def checkUpdate(self, skillName: str):
 		if skillName not in self.SkillManager.allSkills:
 			return self.skillNotFound()
