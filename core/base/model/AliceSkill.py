@@ -678,5 +678,7 @@ class AliceSkill(ProjectAliceObject):
 			'active'         : self._active,
 			'delayed'        : self._delayed,
 			'required'       : self._required,
-			'databaseSchema' : self._databaseSchema
+			'databaseSchema' : self._databaseSchema,
+			'icon'           : self._icon,
+			'instructions'   : self._instructions
 		}
