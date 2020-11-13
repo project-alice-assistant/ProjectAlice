@@ -680,5 +680,7 @@ class AliceSkill(ProjectAliceObject):
 			'required'       : self._required,
 			'databaseSchema' : self._databaseSchema,
 			'icon'           : self._icon,
-			'instructions'   : self._instructions
+			'instructions'   : self._instructions,
+			'settings'       : self.ConfigManager.getSkillConfigs(self.name),
+			'description'    : self._description
 		}

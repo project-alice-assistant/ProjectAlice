@@ -102,11 +102,11 @@ class SkillsApi(Api):
 		try:
 			self.logInfo(f'Reloading skill "{skillName}"')
 			self.SkillManager.reloadSkill(skillName)
+			skill = self.SkillManager.getSkillInstance(skillName=skillName, silent=True)
+			return jsonify(skill=skill.toJson() if skill else dict())
 		except Exception as e:
 			self.logWarning(f'Failed reloading skill: {e}', printStack=True)
 			return jsonify(success=False)
-
-		return jsonify(success=True)
 
 
 	@ApiAuthenticated
