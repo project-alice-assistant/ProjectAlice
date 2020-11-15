@@ -1,4 +1,5 @@
 from core.base.model.Manager import Manager
+from core.base.model.Widget import Widget
 
 
 class WidgetManager(Manager):
@@ -27,7 +28,8 @@ class WidgetManager(Manager):
 
 	def __init__(self):
 		super().__init__(databaseSchema=self.DATABASE)
-		self._widgets = dict()
+		self._widgetTemplates = dict()
+		self._widgetInstances = dict()
 		self._pages = dict()
 		self._widgetsByIndex = dict()
 
@@ -36,9 +38,7 @@ class WidgetManager(Manager):
 		super().onStart()
 		self.loadPages()
 		self.loadWidgets()
-
-
-	# self.sortWidgetZIndexes()
+		self.sortWidgetZIndexes()
 
 
 	def loadWidgets(self):
@@ -48,7 +48,11 @@ class WidgetManager(Manager):
 				continue
 
 			count += len(skill.widgets)
-			self._widgets[skill.name] = skill.widgets
+			self._widgetTemplates[skill.name] = skill.widgets
+
+		allTemplates = list()
+		for widgets in self._widgetTemplates.values():
+			allTemplates += widgets
 
 		# Cleanup possible deprecated widgets
 		data = self.DatabaseManager.fetch(
@@ -58,31 +62,29 @@ class WidgetManager(Manager):
 			method='all'
 		)
 
-		widgetsCopy = self._widgets.copy()
-		if data:
-			data = [row['name'] for row in data]
-			for skillName, widgets in widgetsCopy:
-				for fp in widgets:
-					widgetName = fp.stem
-					if widgetName in data:
-						continue
+		for widget in data:
+			if widget['skill'] not in self._widgetTemplates.values or \
+					widget['name'] not in allTemplates:
 
-					self.logInfo(f'Widget **{widgetName}** is deprecated, removing')
-					self.DatabaseManager.delete(
-						tableName='widgets',
-						callerName=self.SkillManager.name,
-						query='DELETE FROM :__table__ WHERE skill = :skill AND name = :name',
-						values={
-							'parent': skillName,
-							'name'  : widgetName
-						}
-					)
-					self._widgets[skillName].remove(fp)
-					count -= 1
-					if not self._widgets[skillName]:
-						self._widgets.pop(skillName)
+				self.logInfo(f'Widget **{widget["name"]}** is deprecated, removing')
+				# noinspection SqlResolve
+				self.DatabaseManager.delete(
+					tableName='widgets',
+					callerName=self.SkillManager.name,
+					query='DELETE FROM :__table__ WHERE skill = :skill AND name = :name',
+					values={
+						'parent': widget['skill'],
+						'name'  : widget['name']
+					}
+				)
+				continue
 
-		self.logInfo(f"Loaded **{count}** widget from {len(self._widgets)} skill", plural=['widget', 'skill'])
+			# self._widgetInstance[SKILLNAME][WIDGETNAME][LIST OF INSTANCES]
+			self._widgetInstances.setdefault(widget['skill'], dict()).setdefault(widget['name'], list())
+			self._widgetInstances[widget['skill']][widget['name']].append(Widget(widget))
+
+		self.logInfo(f'Loaded **{count}** widget template from {len(self._widgetTemplates)} skill', plural=['template', 'skill'])
+		self.logInfo(f'Loaded {len(self._widgetInstances)} active widget', plural='widget')
 
 
 	def loadPages(self):
@@ -110,6 +112,7 @@ class WidgetManager(Manager):
 
 
 	def skillRemoved(self, skillName: str):
+		# noinspection SqlResolve
 		self.DatabaseManager.delete(
 			tableName='widgets',
 			callerName=self.name,
@@ -133,27 +136,31 @@ class WidgetManager(Manager):
 
 
 	def sortWidgetZIndexes(self):
-		# Create a list of skills with their z index as key
-		self._widgetsByIndex = dict()
-		for skillName, widgetList in self._widgets.items():
-			for widget in widgetList.values():
-				if widget.state != 1:
-					continue
+		# TODO rework for multi page support, z indexes can be same
+		return
 
-				if int(widget.zindex) not in self._widgetsByIndex:
-					self._widgetsByIndex[int(widget.zindex)] = widget
-				else:
-					i = 1000
-					while True:
-						if i not in self._widgetsByIndex:
-							self._widgetsByIndex[i] = widget
-							break
-						i += 1
 
-		# Rewrite a logical zindex flow
-		for i, widget in enumerate(self._widgetsByIndex.values()):
-			widget.zindex = i
-			widget.saveToDB()
+	# Create a list of skills with their z index as key
+	# self._widgetsByIndex = dict()
+	# for skillName, widgetList in self._widgetTemplates.items():
+	# 	for widget in widgetList.values():
+	# 		if widget.state != 1:
+	# 			continue
+	#
+	# 		if int(widget.zindex) not in self._widgetsByIndex:
+	# 			self._widgetsByIndex[int(widget.zindex)] = widget
+	# 		else:
+	# 			i = 1000
+	# 			while True:
+	# 				if i not in self._widgetsByIndex:
+	# 					self._widgetsByIndex[i] = widget
+	# 					break
+	# 				i += 1
+	#
+	# # Rewrite a logical zindex flow
+	# for i, widget in enumerate(self._widgetsByIndex.values()):
+	# 	widget.zindex = i
+	# 	widget.saveToDB()
 
 
 	def nextZIndex(self) -> int:
@@ -161,5 +168,20 @@ class WidgetManager(Manager):
 
 
 	@property
-	def widgets(self) -> dict:
-		return self._widgets
+	def widgetTemplates(self) -> dict:
+		return self._widgetTemplates
+
+
+	@property
+	def widgetInstances(self) -> dict:
+		return self._widgetInstances
+
+
+	@property
+	def pages(self) -> dict:
+		return self._pages
+
+
+	def getAvailableWidgets(self) -> dict:
+		# TODO
+		return {widget: dict() for widget in self._widgetTemplates.items()}
