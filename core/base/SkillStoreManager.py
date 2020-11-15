@@ -168,3 +168,7 @@ class SkillStoreManager(Manager):
 
 	def skillExists(self, skillName: str) -> bool:
 		return skillName in self._skillStoreData
+
+
+	def getStoreData(self) -> dict:
+		return self._skillStoreData

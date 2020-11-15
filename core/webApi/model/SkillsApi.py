@@ -36,6 +36,11 @@ class SkillsApi(Api):
 			return jsonify(success=False, reason=f'Failed deleting skill: {e}')
 
 
+	@route('/getStore/')
+	def getStore(self):
+		return jsonify(store=self.SkillStoreManager.getStoreData())
+
+
 	@route('/<skillName>/')
 	@ApiAuthenticated
 	def get(self, skillName: str):
