@@ -48,6 +48,8 @@ class AliceSkill(ProjectAliceObject):
 		self._author = self._installer['author']
 		self._version = self._installer['version']
 		self._icon = self._installer['icon']
+		self._aliceMinVersion = Version.fromString(self._installer['aliceMinVersion'])
+		self._maintainers = self._installer['maintainers']
 		self._description = self._installer['desc']
 		self._category = self._installer['category'] if 'category' in self._installer else 'undefined'
 		self._conditions = self._installer['conditions']
@@ -682,5 +684,8 @@ class AliceSkill(ProjectAliceObject):
 			'icon'           : self._icon,
 			'instructions'   : self._instructions,
 			'settings'       : self.ConfigManager.getSkillConfigs(self.name),
-			'description'    : self._description
+			'description'    : self._description,
+			'category'       : self._category,
+			'aliceMinVersion': str(self._aliceMinVersion),
+			'maintainers'    : self._maintainers
 		}

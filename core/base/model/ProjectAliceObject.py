@@ -755,10 +755,15 @@ class ProjectAliceObject:
 
 
 	@property
-	def WakewordManager(self): #NOSONAR
+	def WakewordManager(self):  # NOSONAR
 		return SM.SuperManager.getInstance().wakewordManager
 
 
 	@property
-	def NodeRedManager(self): #NOSONAR
+	def NodeRedManager(self):  # NOSONAR
 		return SM.SuperManager.getInstance().nodeRedManager
+
+
+	@property
+	def WidgetManager(self):  # NOSONAR
+		return SM.SuperManager.getInstance().widgetManager

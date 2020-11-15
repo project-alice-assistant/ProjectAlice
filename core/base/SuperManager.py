@@ -34,6 +34,7 @@ class SuperManager:
 		self.multiIntentManager = None
 		self.telemetryManager = None
 		self.skillManager = None
+		self.widgetManager = None
 		self.deviceManager = None
 		self.locationManager = None
 		self.internetManager = None
@@ -88,6 +89,7 @@ class SuperManager:
 
 			talkManager = self._managers.pop('TalkManager')
 			skillManager = self._managers.pop('SkillManager')
+			widgetManager = self._managers.pop('WidgetManager')
 			assistantManager = self._managers.pop('AssistantManager')
 			dialogTemplateManager = self._managers.pop('DialogTemplateManager')
 			nluManager = self._managers.pop('NluManager')
@@ -100,6 +102,7 @@ class SuperManager:
 			talkManager.onStart()
 			nluManager.onStart()
 			skillManager.onStart()
+			widgetManager.onStart()
 			dialogTemplateManager.onStart()
 			assistantManager.onStart()
 			nodeRedManager.onStart()
@@ -114,6 +117,7 @@ class SuperManager:
 			self._managers[userManager.name] = userManager
 			self._managers[mqttManager.name] = mqttManager
 			self._managers[skillManager.name] = skillManager
+			self._managers[widgetManager.name] = widgetManager
 			self._managers[dialogTemplateManager.name] = dialogTemplateManager
 			self._managers[assistantManager.name] = assistantManager
 			self._managers[nluManager.name] = nluManager
@@ -147,6 +151,7 @@ class SuperManager:
 		from core.commons.CommonsManager import CommonsManager
 		from core.base.ConfigManager import ConfigManager
 		from core.base.SkillManager import SkillManager
+		from core.base.WidgetManager import WidgetManager
 		from core.device.DeviceManager import DeviceManager
 		from core.device.LocationManager import LocationManager
 		from core.dialog.MultiIntentManager import MultiIntentManager
@@ -179,6 +184,7 @@ class SuperManager:
 		self.configManager = ConfigManager()
 		self.databaseManager = DatabaseManager()
 		self.skillManager = SkillManager()
+		self.widgetManager = WidgetManager()
 		self.deviceManager = DeviceManager()
 		self.audioManager = AudioManager()
 		self.languageManager = LanguageManager()

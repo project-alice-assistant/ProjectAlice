@@ -36,18 +36,6 @@ class SkillManager(Manager):
 			'skillName TEXT NOT NULL UNIQUE',
 			'active INTEGER NOT NULL DEFAULT 1',
 			'scenarioVersion TEXT NOT NULL DEFAULT "0.0.0"',
-		],
-		'widgets': [
-			'parent TEXT NOT NULL UNIQUE',
-			'name TEXT NOT NULL UNIQUE',
-			'posx INTEGER NOT NULL',
-			'posy INTEGER NOT NULL',
-			'height INTEGER NOT NULL',
-			'width INTEGER NOT NULL',
-			'state TEXT NOT NULL',
-			'options TEXT NOT NULL',
-			'custStyle TEXT NOT NULL',
-			'zindex INTEGER'
 		]
 	}
 
@@ -68,9 +56,6 @@ class SkillManager(Manager):
 		self._failedSkills: Dict[str, FailedAliceSkill] = dict()
 
 		self._postBootSkillActions = dict()
-
-		self._widgets = dict()
-		self._widgetsByIndex = dict()
 
 
 	def onStart(self):
@@ -97,7 +82,6 @@ class SkillManager(Manager):
 		self.ConfigManager.loadCheckAndUpdateSkillConfigurations()
 
 		self.startAllSkills()
-		self.sortWidgetZIndexes()
 
 
 	# noinspection SqlResolve
@@ -117,23 +101,11 @@ class SkillManager(Manager):
 					self.logWarning(f'Skill "{file}" is not declared in database, ignoring it')
 
 		# Next, check that database declared skills are still existing, using the first database load
-		# If not, cleanup both skills and widgets tables
+		# If not, cleanup skills table
 		for skill in skills:
 			if skill not in physicalSkills:
 				self.logWarning(f'Skill "{skill}" declared in database but is not existing, cleaning this')
-				self.DatabaseManager.delete(
-					tableName='skills',
-					callerName=self.name,
-					query='DELETE FROM :__table__ WHERE skillName = :skill',
-					values={'skill': skill}
-				)
-				self.DatabaseManager.delete(
-					tableName='widgets',
-					callerName=self.name,
-					query='DELETE FROM :__table__ WHERE parent = :skill',
-					values={'skill': skill}
-				)
-				self.DeviceManager.removeDeviceTypesForSkill(skillName=skill)
+				self.removeSkillFromDB(skillName=skill)
 
 		# Now that we are clean, reload the skills from database
 		# Those represent the skills we have
@@ -158,7 +130,8 @@ class SkillManager(Manager):
 
 
 	def changeSkillStateInDB(self, skillName: str, newState: bool):
-		# Changes the state of a skill in db and also deactivates widgets if state is False
+		# Changes the state of a skill in db and also deactivates widgets
+		# and device types if state is False
 		self.DatabaseManager.update(
 			tableName='skills',
 			callerName=self.name,
@@ -169,17 +142,8 @@ class SkillManager(Manager):
 		)
 
 		if not newState:
-			self.DatabaseManager.update(
-				tableName='widgets',
-				callerName=self.name,
-				values={
-					'state' : 0,
-					'posx'  : 0,
-					'posy'  : 0,
-					'zindex': -1
-				},
-				row=('parent', skillName)
-			)
+			self.WidgetManager.skillDeactivated(skillName=skillName)
+			self.DeviceManager.removeDeviceTypesForSkill(skillName=skillName)
 
 
 	def addSkillToDB(self, skillName: str, active: int = 1):
@@ -198,13 +162,7 @@ class SkillManager(Manager):
 			values={'skill': skillName}
 		)
 
-		self.DatabaseManager.delete(
-			tableName='widgets',
-			callerName=self.name,
-			query='DELETE FROM :__table__ WHERE parent = :skill',
-			values={'skill': skillName}
-		)
-
+		self.WidgetManager.skillRemoved(skillName=skillName)
 		self.DeviceManager.removeDeviceTypesForSkill(skillName=skillName)
 
 
@@ -231,39 +189,6 @@ class SkillManager(Manager):
 				exceptions=[constants.DUMMY],
 				skill=skillName
 			)
-
-
-	def sortWidgetZIndexes(self):
-		# Create a list of skills with their z index as key
-		self._widgetsByIndex = dict()
-		for skillName, widgetList in self._widgets.items():
-			for widget in widgetList.values():
-				if widget.state != 1:
-					continue
-
-				if int(widget.zindex) not in self._widgetsByIndex:
-					self._widgetsByIndex[int(widget.zindex)] = widget
-				else:
-					i = 1000
-					while True:
-						if i not in self._widgetsByIndex:
-							self._widgetsByIndex[i] = widget
-							break
-						i += 1
-
-		# Rewrite a logical zindex flow
-		for i, widget in enumerate(self._widgetsByIndex.values()):
-			widget.zindex = i
-			widget.saveToDB()
-
-
-	def nextZIndex(self) -> int:
-		return len(self._widgetsByIndex)
-
-
-	@property
-	def widgets(self) -> dict:
-		return self._widgets
 
 
 	@property
@@ -476,9 +401,6 @@ class SkillManager(Manager):
 
 			self._failedSkills[skillName] = FailedAliceSkill(self._skillList[skillName]['installer'])
 
-		if skillInstance.widgets:
-			self._widgets[skillName] = skillInstance.widgets
-
 		if skillInstance.deviceTypes:
 			self.DeviceManager.addDeviceTypes(deviceTypes=skillInstance.deviceTypes)
 
@@ -536,8 +458,6 @@ class SkillManager(Manager):
 			self._deactivatedSkills[skillName] = skillInstance
 			skillInstance.onStop()
 			self.broadcast(method=constants.EVENT_SKILL_STOPPED, exceptions=[self.name], propagateToSkills=True, skill=self)
-			self._widgets.pop(skillName, None)
-			self.DeviceManager.removeDeviceTypesForSkill(skillName=skillName)
 
 			if persistent:
 				self.changeSkillStateInDB(skillName=skillName, newState=False)
