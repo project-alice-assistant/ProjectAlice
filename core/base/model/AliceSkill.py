@@ -189,54 +189,12 @@ class AliceSkill(ProjectAliceObject):
 	def loadWidgets(self):
 		fp = self.getResource('widgets')
 		if fp.exists():
-			self.logInfo(f"Loading **{len(list(fp.glob('*.py'))) - 1}** widget", plural='widget')
-
-			data = self.DatabaseManager.fetch(
-				tableName='widgets',
-				query='SELECT * FROM :__table__ WHERE parent = :parent ORDER BY `zindex`',
-				callerName=self.SkillManager.name,
-				values={'parent': self.name},
-				method='all'
-			)
-			if data:
-				data = {row['name']: row for row in data}
-
+			self.logInfo(f"Found **{len(list(fp.glob('*.py'))) - 1}** widget", plural='widget')
 			for file in fp.glob('*.py'):
 				if file.name.startswith('__'):
 					continue
 
-				widgetName = Path(file).stem
-				widgetImport = importlib.import_module(f'skills.{self.name}.widgets.{widgetName}')
-				klass = getattr(widgetImport, widgetName)
-
-				if widgetName in data:  # widget already exists in DB
-					widget = klass(data[widgetName])
-					self._widgets[widgetName] = widget
-					widget.setParentSkillInstance(self)
-					del data[widgetName]
-					self.logInfo(f'Loaded widget **{widgetName}**')
-
-				else:  # widget is new
-					self.logInfo(f'Adding widget **{widgetName}**')
-					widget = klass({
-						'name'  : widgetName,
-						'parent': self.name,
-					})
-					self._widgets[widgetName] = widget
-					widget.setParentSkillInstance(self)
-					widget.saveToDB()
-
-			for widgetName in data:  # deprecated widgets
-				self.logInfo(f'Widget **{widgetName}** is deprecated, removing')
-				self.DatabaseManager.delete(
-					tableName='widgets',
-					callerName=self.SkillManager.name,
-					query='DELETE FROM :__table__ WHERE parent = :parent AND name = :name',
-					values={
-						'parent': self.name,
-						'name'  : widgetName
-					}
-				)
+				self._widgets[Path(file).stem] = Path(file)
 
 
 	def loadDevices(self):

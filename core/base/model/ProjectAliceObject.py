@@ -2,6 +2,7 @@ import json
 import re
 from copy import copy
 from pathlib import Path
+from typing import Union
 
 from importlib_metadata import PackageNotFoundError, version as packageVersion
 
@@ -201,19 +202,19 @@ class ProjectAliceObject:
 			return False
 
 
-	def logInfo(self, msg: str, plural: str = None):
+	def logInfo(self, msg: str, plural: Union[list, str] = None):
 		self._logger.doLog(function='info', msg=self.decorateLogs(msg), printStack=False, plural=plural)
 
 
-	def logError(self, msg: str, plural: str = None):
+	def logError(self, msg: str, plural: Union[list, str] = None):
 		self._logger.doLog(function='error', msg=self.decorateLogs(msg), plural=plural)
 
 
-	def logDebug(self, msg: str, plural: str = None):
+	def logDebug(self, msg: str, plural: Union[list, str] = None):
 		self._logger.doLog(function='debug', msg=self.decorateLogs(msg), printStack=False, plural=plural)
 
 
-	def logFatal(self, msg: str, plural: str = None):
+	def logFatal(self, msg: str, plural: Union[list, str] = None):
 		self._logger.doLog(function='fatal', msg=self.decorateLogs(msg), plural=plural)
 		try:
 			self.ProjectAlice.onStop()
@@ -221,11 +222,11 @@ class ProjectAliceObject:
 			exit()
 
 
-	def logWarning(self, msg: str, printStack: bool = False, plural: str = None):
+	def logWarning(self, msg: str, printStack: bool = False, plural: Union[list, str] = None):
 		self._logger.doLog(function='warning', msg=self.decorateLogs(msg), printStack=printStack, plural=plural)
 
 
-	def logCritical(self, msg: str, plural: str = None):
+	def logCritical(self, msg: str, plural: Union[list, str] = None):
 		self._logger.doLog(function='critical', msg=self.decorateLogs(msg), plural=plural)
 
 
@@ -234,7 +235,7 @@ class ProjectAliceObject:
 
 
 	def onStart(self):
-		pass # Super object function is overriden only if needed
+		pass  # Super object function is overriden only if needed
 
 
 	def onStop(self, **kwargs):

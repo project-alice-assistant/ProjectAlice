@@ -14,7 +14,8 @@ class WidgetManager(Manager):
 			'options TEXT NOT NULL',
 			'custStyle TEXT NOT NULL',
 			'zindex INTEGER',
-			'parent TEXT'
+			'parent TEXT',
+			'page INTEGER NOT NULL DEFAULT 0'
 		],
 		'widgetPages': [
 			'id INTEGER PRIMARY KEY',
@@ -27,9 +28,85 @@ class WidgetManager(Manager):
 	def __init__(self):
 		super().__init__(databaseSchema=self.DATABASE)
 		self._widgets = dict()
+		self._pages = dict()
 		self._widgetsByIndex = dict()
 
-		self.sortWidgetZIndexes()
+
+	def onStart(self):
+		super().onStart()
+		self.loadPages()
+		self.loadWidgets()
+
+
+	# self.sortWidgetZIndexes()
+
+
+	def loadWidgets(self):
+		count = 0
+		for skill in self.SkillManager.allSkills.values():
+			if not skill.widgets:
+				continue
+
+			count += len(skill.widgets)
+			self._widgets[skill.name] = skill.widgets
+
+		# Cleanup possible deprecated widgets
+		data = self.DatabaseManager.fetch(
+			tableName='widgets',
+			query='SELECT * FROM :__table__',
+			callerName=self.name,
+			method='all'
+		)
+
+		widgetsCopy = self._widgets.copy()
+		if data:
+			data = [row['name'] for row in data]
+			for skillName, widgets in widgetsCopy:
+				for fp in widgets:
+					widgetName = fp.stem
+					if widgetName in data:
+						continue
+
+					self.logInfo(f'Widget **{widgetName}** is deprecated, removing')
+					self.DatabaseManager.delete(
+						tableName='widgets',
+						callerName=self.SkillManager.name,
+						query='DELETE FROM :__table__ WHERE skill = :skill AND name = :name',
+						values={
+							'parent': skillName,
+							'name'  : widgetName
+						}
+					)
+					self._widgets[skillName].remove(fp)
+					count -= 1
+					if not self._widgets[skillName]:
+						self._widgets.pop(skillName)
+
+		self.logInfo(f"Loaded **{count}** widget from {len(self._widgets)} skill", plural=['widget', 'skill'])
+
+
+	def loadPages(self):
+		data = self.DatabaseManager.fetch(
+			tableName='widgetPages',
+			query='SELECT * FROM :__table__',
+			callerName=self.name,
+			method='all'
+		)
+		if data:
+			self._pages = {row['id']: row for row in data}
+		else:
+			# Insert default page
+			self.DatabaseManager.insert(
+				tableName='widgetPages',
+				callerName=self.name,
+				values={
+					'icon'    : 'fas fa-biohazard',
+					'position': 0
+				}
+			)
+			return self.loadPages()
+
+		self.logInfo(f'Loaded **{len(self._pages)}** page', plural='page')
 
 
 	def skillRemoved(self, skillName: str):
