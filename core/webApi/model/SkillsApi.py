@@ -41,6 +41,25 @@ class SkillsApi(Api):
 		return jsonify(store=self.SkillStoreManager.getStoreData())
 
 
+	@ApiAuthenticated
+	@route('/installSkills/', methods=['PUT'])
+	def installSkills(self):
+		try:
+			skills = request.json
+
+			status = dict()
+			for skill in skills:
+				if self.SkillManager.downloadInstallTicket(skill):
+					status[skill] = 'ok'
+				else:
+					status[skill] = 'ko'
+
+			return jsonify(status=status)
+		except Exception as e:
+			self.logWarning(f'Failed installing skill: {e}', printStack=True)
+			return jsonify(success=False)
+
+
 	@route('/<skillName>/')
 	@ApiAuthenticated
 	def get(self, skillName: str):

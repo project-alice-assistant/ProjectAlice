@@ -1,10 +1,14 @@
+from typing import Optional
+
 from core.base.model.Manager import Manager
 from core.base.model.Widget import Widget
+from core.base.model.WidgetPage import WidgetPage
 
 
 class WidgetManager(Manager):
 	DATABASE = {
 		'widgets'    : [
+			'id INTEGER PRIMARY KEY',
 			'skill TEXT NOT NULL UNIQUE',
 			'name TEXT NOT NULL UNIQUE',
 			'posx INTEGER NOT NULL',
@@ -21,7 +25,7 @@ class WidgetManager(Manager):
 		'widgetPages': [
 			'id INTEGER PRIMARY KEY',
 			'icon TEXT NOT NULL',
-			'position INTEGER NOT NULL UNIQUE'
+			'position INTEGER NOT NULL'
 		]
 	}
 
@@ -70,7 +74,7 @@ class WidgetManager(Manager):
 				# noinspection SqlResolve
 				self.DatabaseManager.delete(
 					tableName='widgets',
-					callerName=self.SkillManager.name,
+					callerName=self.name,
 					query='DELETE FROM :__table__ WHERE skill = :skill AND name = :name',
 					values={
 						'parent': widget['skill'],
@@ -95,7 +99,7 @@ class WidgetManager(Manager):
 			method='all'
 		)
 		if data:
-			self._pages = {row['id']: row for row in data}
+			self._pages = {row['id']: WidgetPage(row) for row in data}
 		else:
 			# Insert default page
 			self.DatabaseManager.insert(
@@ -103,12 +107,85 @@ class WidgetManager(Manager):
 				callerName=self.name,
 				values={
 					'icon'    : 'fas fa-biohazard',
-					'position': 0
+					'position': 1
 				}
 			)
 			return self.loadPages()
 
 		self.logInfo(f'Loaded **{len(self._pages)}** page', plural='page')
+
+
+	def addPage(self) -> Optional[WidgetPage]:
+		try:
+			maxPos = 0
+			for page in self._pages.values():
+				if page.position > maxPos:
+					maxPos = page.position
+
+			pageId = self.DatabaseManager.insert(
+				tableName='widgetPages',
+				callerName=self.name,
+				values={
+					'icon'    : 'fas fa-biohazard',
+					'position': maxPos + 1
+				}
+			)
+
+			page = WidgetPage({
+				'id'      : pageId,
+				'icon'    : 'fas fa-biohazard',
+				'position': maxPos
+			})
+			self._pages[pageId] = page
+
+			return page
+		except Exception as e:
+			self.logError(f'Failed adding new widget page: {e}')
+			return None
+
+
+	def updatePageIcon(self, pageId: int, icon: str):
+		self.DatabaseManager.update(
+			tableName='widgetPages',
+			callerName=self.name,
+			values={
+				'icon': icon
+			},
+			row=('id', pageId)
+		)
+		self._pages[pageId].icon = icon
+
+
+	def removePage(self, pageId: int):
+		position = self._pages[pageId].position
+		for pageId, page in self._pages.items():
+			if page.position <= position:
+				continue
+
+			page.position -= 1
+			self.DatabaseManager.update(
+				tableName='widgetPages',
+				callerName=self.name,
+				values={
+					'position': page.position
+				},
+				row=('id', page.id)
+			)
+		self._pages.pop(pageId, None)
+
+
+	# TODO Remove widgets instances
+
+
+	def removeWidget(self, widgetId: int):
+		self.DatabaseManager.delete(
+			tableName='widgets',
+			callerName=self.name,
+			query='DELETE FROM :__table__ WHERE id = :widgetId',
+			values={
+				'id': widgetId
+			}
+		)
 
 
 	def skillRemoved(self, skillName: str):

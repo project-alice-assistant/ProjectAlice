@@ -1,4 +1,4 @@
-from flask import jsonify
+from flask import jsonify, request
 from flask_classful import route
 
 from core.interface.model.Api import Api
@@ -23,13 +23,40 @@ class WidgetsApi(Api):
 			return jsonify(success=False)
 
 
-	@route('/pages/')
+	@route('/pages/', methods=['GET'])
 	@ApiAuthenticated
 	def getPages(self):
 		try:
-			return jsonify(pages=self.WidgetManager.pages)
+			pages = {page.id: str(page) for page in self.WidgetManager.pages.values()}
+			return jsonify(pages=pages)
 		except Exception as e:
 			self.logError(f'Failed retrieving widget pages: {e}')
+			return jsonify(success=False)
+
+
+	@route('/pages/<pageId>/', methods=['DELETE'])
+	@ApiAuthenticated
+	def removePage(self, pageId: str):
+		try:
+			if int(pageId) == 0:
+				raise Exception
+
+			self.WidgetManager.removePage(int(pageId))
+			pages = {page.id: str(page) for page in self.WidgetManager.pages.values()}
+			return jsonify(pages=pages)
+		except Exception as e:
+			self.logError(f'Failed removing widget page: {e}')
+			return jsonify(success=False)
+
+
+	@route('/pages/<pageId>/', methods=['PATCH'])
+	@ApiAuthenticated
+	def updatePageIcon(self, pageId: str):
+		try:
+			self.WidgetManager.updatePageIcon(int(pageId), request.json['newIcon'])
+			return jsonify(success=True)
+		except Exception as e:
+			self.logError(f'Failed saving widget page icon: {e}')
 			return jsonify(success=False)
 
 
@@ -39,4 +66,18 @@ class WidgetsApi(Api):
 			return jsonify(widgets=self.WidgetManager.getAvailableWidgets())
 		except Exception as e:
 			self.logError(f'Failed retrieving widgets: {e}')
+			return jsonify(success=False)
+
+
+	@route('/addPage/', methods=['PUT'])
+	@ApiAuthenticated
+	def put(self):
+		try:
+			page = self.WidgetManager.addPage()
+			if not page:
+				raise Exception
+
+			return jsonify(newpage=str(page))
+		except Exception as e:
+			self.logError(f'Failed adding new widget page: {e}')
 			return jsonify(success=False)
