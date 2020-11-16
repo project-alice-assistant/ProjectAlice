@@ -75,7 +75,6 @@ class WidgetManager(Manager):
 				self.DatabaseManager.delete(
 					tableName='widgets',
 					callerName=self.name,
-					query='DELETE FROM :__table__ WHERE skill = :skill AND name = :name',
 					values={
 						'parent': widget['skill'],
 						'name'  : widget['name']
@@ -107,7 +106,7 @@ class WidgetManager(Manager):
 				callerName=self.name,
 				values={
 					'icon'    : 'fas fa-biohazard',
-					'position': 1
+					'position': 0
 				}
 			)
 			return self.loadPages()
@@ -134,7 +133,7 @@ class WidgetManager(Manager):
 			page = WidgetPage({
 				'id'      : pageId,
 				'icon'    : 'fas fa-biohazard',
-				'position': maxPos
+				'position': maxPos + 1
 			})
 			self._pages[pageId] = page
 
@@ -158,7 +157,7 @@ class WidgetManager(Manager):
 
 	def removePage(self, pageId: int):
 		position = self._pages[pageId].position
-		for pageId, page in self._pages.items():
+		for pid, page in self._pages.items():
 			if page.position <= position:
 				continue
 
@@ -169,9 +168,17 @@ class WidgetManager(Manager):
 				values={
 					'position': page.position
 				},
-				row=('id', page.id)
+				row=('id', pid)
 			)
 		self._pages.pop(pageId, None)
+
+		self.DatabaseManager.delete(
+			tableName='widgetPages',
+			callerName=self.name,
+			values={
+				'id': pageId
+			}
+		)
 
 
 	# TODO Remove widgets instances
@@ -181,7 +188,6 @@ class WidgetManager(Manager):
 		self.DatabaseManager.delete(
 			tableName='widgets',
 			callerName=self.name,
-			query='DELETE FROM :__table__ WHERE id = :widgetId',
 			values={
 				'id': widgetId
 			}
@@ -193,7 +199,6 @@ class WidgetManager(Manager):
 		self.DatabaseManager.delete(
 			tableName='widgets',
 			callerName=self.name,
-			query='DELETE FROM :__table__ WHERE skill = :skill',
 			values={'skill': skillName}
 		)
 
