@@ -3,6 +3,7 @@ import inspect
 import json
 import random
 import socket
+import sqlite3
 import string
 import subprocess
 import tempfile
@@ -362,6 +363,11 @@ class CommonsManager(Manager):
 				self.runSystemCommand(cmd)
 		except:
 			raise
+
+
+	@staticmethod
+	def dictFromRow(row: sqlite3.Row) -> dict:
+		return dict(zip(row.keys(), row))
 
 
 # noinspection PyUnusedLocal

@@ -14,7 +14,6 @@ from markdown import markdown
 from paho.mqtt import client as MQTTClient
 
 from core.ProjectAliceExceptions import AccessLevelTooLow, SkillStartingFailed
-from core.base.model import Widget
 from core.base.model.Intent import Intent
 from core.base.model.ProjectAliceObject import ProjectAliceObject
 from core.base.model.Version import Version
@@ -58,7 +57,7 @@ class AliceSkill(ProjectAliceObject):
 		self._delayed = False
 		self._required = False
 		self._databaseSchema = databaseSchema
-		self._widgets = dict()
+		self._widgets = list()
 		self._deviceTypes = dict()
 		self._intentsDefinitions = dict()
 		self._scenarioPackageName = ''
@@ -194,7 +193,7 @@ class AliceSkill(ProjectAliceObject):
 				if file.name.startswith('__'):
 					continue
 
-				self._widgets[Path(file).stem] = Path(file)
+				self._widgets.append(Path(file).stem)
 
 
 	def loadDevices(self):
@@ -230,10 +229,6 @@ class AliceSkill(ProjectAliceObject):
 				self.DeviceManager.removeDeviceTypeName(_name=deviceType)
 
 
-
-	def getWidgetInstance(self, widgetName: str) -> Optional[Widget]:
-		return self._widgets.get(widgetName)
-
 	def getDeviceTypeInstance(self, deviceTypeName: str) -> Optional[DeviceType]:
 		return self._deviceTypes.get(deviceTypeName)
 
@@ -261,7 +256,7 @@ class AliceSkill(ProjectAliceObject):
 
 
 	@property
-	def widgets(self) -> dict:
+	def widgets(self) -> list:
 		return self._widgets
 
 

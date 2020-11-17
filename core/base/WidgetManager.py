@@ -11,15 +11,8 @@ class WidgetManager(Manager):
 			'id INTEGER PRIMARY KEY',
 			'skill TEXT NOT NULL UNIQUE',
 			'name TEXT NOT NULL UNIQUE',
-			'posx INTEGER NOT NULL',
-			'posy INTEGER NOT NULL',
-			'height INTEGER NOT NULL',
-			'width INTEGER NOT NULL',
-			'state TEXT NOT NULL',
-			'options TEXT NOT NULL',
-			'custStyle TEXT NOT NULL',
-			'zindex INTEGER',
-			'parent TEXT',
+			"params TEXT NOT NULL DEFAULT '{}'",
+			"settings TEXT NOT NULL DEFAULT '{}'",
 			'page INTEGER NOT NULL DEFAULT 0'
 		],
 		'widgetPages': [
@@ -86,7 +79,7 @@ class WidgetManager(Manager):
 			self._widgetInstances.setdefault(widget['skill'], dict()).setdefault(widget['name'], list())
 			self._widgetInstances[widget['skill']][widget['name']].append(Widget(widget))
 
-		self.logInfo(f'Loaded **{count}** widget template from {len(self._widgetTemplates)} skill', plural=['template', 'skill'])
+		self.logInfo(f'Loaded **{count}** template from {len(self._widgetTemplates)} skill', plural=['template', 'skill'])
 		self.logInfo(f'Loaded {len(self._widgetInstances)} active widget', plural='widget')
 
 
@@ -262,8 +255,3 @@ class WidgetManager(Manager):
 	@property
 	def pages(self) -> dict:
 		return self._pages
-
-
-	def getAvailableWidgets(self) -> dict:
-		# TODO
-		return {widget: dict() for widget in self._widgetTemplates.items()}

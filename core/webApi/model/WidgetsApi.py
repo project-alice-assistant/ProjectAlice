@@ -60,12 +60,12 @@ class WidgetsApi(Api):
 			return jsonify(success=False)
 
 
-	@route('/available/')
-	def getAvailable(self):
+	@route('/templates/')
+	def getTemplates(self):
 		try:
-			return jsonify(widgets=self.WidgetManager.getAvailableWidgets())
+			return jsonify(widgets=self.WidgetManager.widgetTemplates)
 		except Exception as e:
-			self.logError(f'Failed retrieving widgets: {e}')
+			self.logError(f'Failed retrieving widget templates: {e}')
 			return jsonify(success=False)
 
 

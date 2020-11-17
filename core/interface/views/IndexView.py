@@ -82,6 +82,9 @@ class IndexView(View):
 	@route('/home/widget/', methods=['POST'])
 	def widgetCall(self):
 		try:
+			# TODO refacto
+			raise Exception
+
 			data = request.json
 
 			if not data['param']:

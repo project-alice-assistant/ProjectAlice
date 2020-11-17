@@ -1,96 +1,41 @@
 import inspect
 import json
+import re
 import sqlite3
 from pathlib import Path
 from textwrap import dedent
 from typing import Dict, Match, Optional
-
-import re
 
 from core.base.model.ProjectAliceObject import ProjectAliceObject
 from core.base.model.WidgetSizes import WidgetSizes
 
 
 class Widget(ProjectAliceObject):
-	DEFAULT_SIZE = WidgetSizes.w
+	DEFAULT_SIZE = WidgetSizes.w_small
 
 	DEFAULT_OPTIONS = dict()
 	CUSTOM_STYLE = {
-		'background': '',
+		'background'        : '',
 		'background-opacity': '1.0',
-		'color': '',
-		'font-size': '1.0',
-		'titlebar': 'True'
+		'color'             : '',
+		'font-size'         : '1.0',
+		'titlebar'          : 'True'
 	}
+
 
 	def __init__(self, data: sqlite3.Row):
 		super().__init__()
+
+		self._id = data['id']
+		self._skill = data['skill']
 		self._name = data['name']
-		self._parent = data['parent']
-		self._skillInstance = None
-
-		# sqlite3.Row does not support .get like dicts
-		# Many checks here because of NOT NULL DB constraints
-		updateWidget = False
-		if 'state' in data.keys() and data['state']:
-			self._state = int(data['state'])
-		else:
-			self._state = 0
-			updateWidget = True
-
-		if 'posx' in data.keys() and data['posx']:
-			self._x = data['posx']
-		else:
-			self._x = 10
-			updateWidget = True
-
-		if 'posy' in data.keys() and data['posy']:
-			self._y = data['posy']
-		else:
-			self._y = 10
-			updateWidget = True
-
-		if 'height' in data.keys() and data['height']:
-			self._height = data['height']
-		else:
-			self._height = 0
-			updateWidget = True
-
-		if 'width' in data.keys() and data['width']:
-			self._width = data['width']
-		else:
-			self._width = 0
-			updateWidget = True
-
-		self._size = self.DEFAULT_SIZE.value
-
-		self._options = self.DEFAULT_OPTIONS
-		if 'options' in data.keys():
-			self._options.update(json.loads(data['options']))
-
-		self._custStyle = self.CUSTOM_STYLE.copy()
-		if 'custStyle' in data.keys() and data['custStyle']:
-			self._custStyle.update(json.loads(data['custStyle']))
-		else:
-			updateWidget = True
-
-		if 'zindex' in data.keys() and data['zindex'] is not None:
-			self._zindex = data['zindex']
-		else:
-			self._zindex = -1
-			updateWidget = True
-
-		if updateWidget:
-			self.saveToDB()
-
-		self._language = self.loadLanguage()
+		self._params = data['paraams']
+		self._settings = data['settings']
+		self._page = data['page']
+		self._lang = self.loadLanguageFile()
 
 
-	def setParentSkillInstance(self, skill):
-		self._skillInstance = skill
-
-
-	def loadLanguage(self) -> Optional[Dict]:
+	def loadLanguageFile(self) -> Optional[Dict]:
 		try:
 			file = self.getCurrentDir() / f'lang/{self.name}.lang.json'
 			with file.open() as fp:
@@ -107,19 +52,15 @@ class Widget(ProjectAliceObject):
 	def saveToDB(self):
 		self.DatabaseManager.replace(
 			tableName='widgets',
-			query='REPLACE INTO :__table__ (parent, name, posx, posy, height, width, state, options, custStyle, zindex) VALUES (:parent, :name, :posx, :posy, :height, :width, :state, :options, :custStyle, :zindex)',
+			query='REPLACE INTO :__table__ (id, skill, name, params, settings, page) VALUES (:id, :skill, :name, :params, :settings, :page)',
 			callerName=self.SkillManager.name,
 			values={
-				'parent': self.parent,
-				'name': self.name,
-				'posx': self.x,
-				'posy': self.y,
-				'height': self.height,
-				'width': self.width,
-				'state': self.state,
-				'options': json.dumps(self.options),
-				'custStyle': json.dumps(self.custStyle),
-				'zindex': self.zindex
+				'id'      : self._id,
+				'skill'   : self._skill,
+				'name'    : self._name,
+				'params'  : self._params,
+				'settings': self._settings,
+				'page'    : self._page
 			}
 		)
 
@@ -145,13 +86,14 @@ class Widget(ProjectAliceObject):
 	def langReplace(self, match: Match):
 		return self.getLanguageString(match.group(1))
 
+
 	def optionsReplace(self, match: Match):
 		return self.getOptions(match.group(1))
 
 
 	def getLanguageString(self, key: str) -> str:
 		try:
-			return self._language[self.LanguageManager.activeLanguage][key]
+			return self._lang[self.LanguageManager.activeLanguage][key]
 		except KeyError:
 			return 'Missing string'
 
@@ -164,13 +106,18 @@ class Widget(ProjectAliceObject):
 
 
 	@property
-	def parent(self) -> str:
-		return self._parent
+	def id(self) -> str:
+		return self._id
 
 
-	@parent.setter
-	def parent(self, value: str):
-		self._parent = value
+	@property
+	def skill(self) -> str:
+		return self._skill
+
+
+	@skill.setter
+	def skill(self, value: str):
+		self._skill = value
 
 
 	@property
@@ -184,117 +131,60 @@ class Widget(ProjectAliceObject):
 
 
 	@property
-	def x(self) -> int:
-		return self._x
+	def params(self) -> dict:
+		return self._params
 
 
-	@x.setter
-	def x(self, value: int):
-		self._x = value
-
-
-	@property
-	def y(self) -> int:
-		return self._y
-
-
-	@y.setter
-	def y(self, value: int):
-		self._y = value
+	@params.setter
+	def params(self, value: dict):
+		self._params = value
 
 
 	@property
-	def state(self) -> int:
-		return self._state
+	def settings(self) -> dict:
+		return self._settings
 
 
-	@state.setter
-	def state(self, value: int):
-		self._state = value
-
-
-	@property
-	def size(self) -> WidgetSizes:
-		return self._size
-
-
-	@size.setter
-	def size(self, value: str):
-		self._size = value
+	@settings.setter
+	def settings(self, value: dict):
+		self._settings = value
 
 
 	@property
-	def height(self) -> int:
-		return self._height
+	def page(self) -> int:
+		return self._page
 
 
-	@height.setter
-	def height(self, value: int):
-		self._height = value
+	@page.setter
+	def page(self, value: int):
+		self._page = value
 
 
-	@property
-	def width(self) -> int:
-		return self._width
-
-
-	@width.setter
-	def width(self, value: int):
-		self._width = value
-
-
-	@property
-	def options(self) -> dict:
-		return self._options
-
-
-	@options.setter
-	def options(self, value: str):
-		self._options = value
-
-
-	@property
-	def custStyle(self) -> dict:
-		return self._custStyle
-
-
-	@custStyle.setter
-	def custStyle(self, value: str):
-		self._custStyle = value
-
-
-	@property
-	def backgroundRGBA(self) -> str:
-		color = self._custStyle['background'].lstrip('#')
-		rgb = list(int(color[i:i + 2], 16) for i in (0, 2, 4))
-		rgb.append(self._custStyle['background-opacity'])
-		return ', '.join(str(i) for i in rgb)
-
-
-	@property
-	def zindex(self) -> int:
-		return self._zindex
-
-
-	@zindex.setter
-	def zindex(self, value: int):
-		self._zindex = value
-
-
-	@property
-	def skillInstance(self):
-		return self._skillInstance
+	# @property
+	# def backgroundRGBA(self) -> str:
+	# 	color = self._custStyle['background'].lstrip('#')
+	# 	rgb = list(int(color[i:i + 2], 16) for i in (0, 2, 4))
+	# 	rgb.append(self._custStyle['background-opacity'])
+	# 	return ', '.join(str(i) for i in rgb)
 
 
 	def __repr__(self):
 		return dedent(f'''\
 			---- WIDGET -----
-			 Parent: {self.parent}
-			 Name: {self.name}
-			 Size: {self.size}
-			 CustomSize: {self.height}/{self.width}
-			 State: {self.state}
-			 PosX: {self.x}
-			 PosY: {self.y}
-			 Z-Index: {self.zindex}\
+			 Name: {self._name}
+			 Skill: {self._skill}
+			 Params: {json.dumps(self.params)}
+			 Settings: {json.dumps(self.settings)}
+			 Page: {self.page}\
 		''')
+
+
+	def __str__(self) -> str:
+		return json.dumps({
+			'id'      : self._id,
+			'skill'   : self._skill,
+			'name'    : self._name,
+			'params'  : self._params,
+			'settings': self._settings,
+			'page'    : self._page
+		})
