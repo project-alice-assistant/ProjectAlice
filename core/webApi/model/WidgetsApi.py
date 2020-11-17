@@ -13,7 +13,7 @@ class WidgetsApi(Api):
 		super().__init__()
 
 
-	@route('/')
+	@route('/', methods=['GET'])
 	@ApiAuthenticated
 	def getWidgets(self):
 		try:
@@ -27,7 +27,14 @@ class WidgetsApi(Api):
 	@ApiAuthenticated
 	def addWidget(self):
 		try:
-			return jsonify(widgets=self.WidgetManager.widgetInstances)
+			skillName = request.json['skillName']
+			widgetName = request.json['widgetName']
+			pageId = request.json['pageId']
+			widget = self.WidgetManager.addWidget(skillName, widgetName, pageId)
+			if not widget:
+				raise Exception
+
+			return jsonify(widget=str(widget))
 		except Exception as e:
 			self.logError(f'Failed adding widget instance: {e}')
 			return jsonify(success=False)

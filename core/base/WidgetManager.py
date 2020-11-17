@@ -7,6 +7,8 @@ from core.base.model.WidgetPage import WidgetPage
 
 
 class WidgetManager(Manager):
+	DEFAULT_ICON = 'fas fa-biohazard'
+
 	DATABASE = {
 		'widgets'    : [
 			'id INTEGER PRIMARY KEY',
@@ -61,8 +63,7 @@ class WidgetManager(Manager):
 		)
 
 		for widget in data:
-			if widget['skill'] not in self._widgetTemplates.values or \
-					widget['name'] not in allTemplates:
+			if widget['skill'] not in self._widgetTemplates or widget['name'] not in allTemplates:
 
 				self.logInfo(f'Widget **{widget["name"]}** is deprecated, removing')
 				# noinspection SqlResolve
@@ -77,25 +78,8 @@ class WidgetManager(Manager):
 				continue
 
 			# Create widget instance
-			skill = self.SkillManager.getSkillInstance(widget['skill'])
-			if not skill:
-				self.logWarning(f'Skill {widget["skill"]} for widget {widget["name"]} is not instanciated, skipping widget')
-				continue
-
-			try:
-				resource = skill.getResource(f'widgets/{widget["name"]}')
-				widgetImport = importlib.import_module(f'skills.{skill.name}.{resource}')
-
-				klass = getattr(widgetImport, widget["name"])
-				instance: Widget = klass(widget)
-			except ImportError as e:
-				self.logError(f"Couldn't import widget **{widget['name']}**: {e}")
-				continue
-			except AttributeError as e:
-				self.logError(f"Couldn't find main class for widget **{widget['name']}**: {e}")
-				continue
-			except Exception as e:
-				self.logError(f"Couldn't instanciate widget **{widget['name']}**: {e}")
+			instance = self.instanciateWidget(widget)
+			if not instance:
 				continue
 
 			# self._widgetInstance[SKILLNAME][WIDGETNAME][LIST OF INSTANCES]
@@ -104,6 +88,53 @@ class WidgetManager(Manager):
 
 		self.logInfo(f'Loaded **{count}** template from {len(self._widgetTemplates)} skill', plural=['template', 'skill'])
 		self.logInfo(f'Loaded {len(self._widgetInstances)} active widget', plural='widget')
+
+
+	def instanciateWidget(self, widgetData: dict) -> Optional[Widget]:
+		skill = self.SkillManager.getSkillInstance(widgetData['skill'])
+		if not skill:
+			self.logWarning(f'Skill {widgetData["skill"]} for widget {widgetData["name"]} is not instanciated, skipping widget')
+			return None
+
+		try:
+			resource = skill.getResource(f'widgets/{widgetData["name"]}').stem
+			widgetImport = importlib.import_module(f'skills.{skill.name}.widgets.{resource}')
+
+			klass = getattr(widgetImport, widgetData["name"])
+			return klass(widgetData)
+		except ImportError as e:
+			self.logError(f"Couldn't import widget **{widgetData['name']}**: {e}")
+			return None
+		except AttributeError as e:
+			self.logError(f"Couldn't find main class for widget **{widgetData['name']}**: {e}")
+			return None
+		except Exception as e:
+			self.logError(f"Couldn't instanciate widget **{widgetData['name']}**: {e}")
+			return None
+
+
+	def addWidget(self, skillName: str, widgetName: str, pageId: int) -> Optional[Widget]:
+		if skillName not in self._widgetTemplates or widgetName not in self._widgetTemplates[skillName]:
+			self.logWarning(f'Tried to add widget **{widgetName}** from skill **{skillName}** but no template was found')
+			return None
+
+		if pageId not in self._pages:
+			self.logWarning(f'Tried to add widget **{widgetName}** from skill **{skillName}** to page id **{pageId}** but the page doesn\'t exist')
+			return None
+
+		instance = self.instanciateWidget({
+			'skill'   : skillName,
+			'name'    : widgetName,
+			'params'  : '{}',
+			'settings': '{}',
+			'page'    : pageId
+		})
+
+		self._widgetInstances.setdefault(skillName, dict()).setdefault(widgetName, list())
+		self._widgetInstances[skillName][widgetName].append(instance)
+
+		instance.saveToDB()
+		return instance
 
 
 	def loadPages(self):
@@ -121,7 +152,7 @@ class WidgetManager(Manager):
 				tableName='widgetPages',
 				callerName=self.name,
 				values={
-					'icon'    : 'fas fa-biohazard',
+					'icon'    : self.DEFAULT_ICON,
 					'position': 0
 				}
 			)
@@ -141,7 +172,7 @@ class WidgetManager(Manager):
 				tableName='widgetPages',
 				callerName=self.name,
 				values={
-					'icon'    : 'fas fa-biohazard',
+					'icon'    : self.DEFAULT_ICON,
 					'position': maxPos + 1
 				}
 			)

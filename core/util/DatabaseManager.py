@@ -342,7 +342,7 @@ class DatabaseManager(Manager):
 			values = dict()
 
 		if not query:
-			where = ', '.join([f'{k} = "{v}"' for k, v in values.items()])
+			where = 'AND '.join([f'{k} = "{v}"' for k, v in values.items()])
 			query = f'DELETE FROM :__table__ WHERE {where}'
 
 		query = self.basicChecks(tableName, query, callerName)

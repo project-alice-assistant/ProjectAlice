@@ -26,13 +26,21 @@ class Widget(ProjectAliceObject):
 	def __init__(self, data: sqlite3.Row):
 		super().__init__()
 
-		self._id = data['id']
+		self._id = data['id'] if 'id' in data else 99999
 		self._skill = data['skill']
 		self._name = data['name']
-		self._params = data['paraams']
-		self._settings = data['settings']
+		self._params = json.loads(data['params'])
+		self._settings = json.loads(data['settings'])
 		self._page = data['page']
 		self._lang = self.loadLanguageFile()
+
+
+	def _setId(self, wid: int):
+		"""
+		If the widget is created through the interface, the id is unknown until db insert
+		:param wid: int
+		"""
+		self._id = wid
 
 
 	def loadLanguageFile(self) -> Optional[Dict]:
@@ -50,19 +58,34 @@ class Widget(ProjectAliceObject):
 
 	# noinspection SqlResolve
 	def saveToDB(self):
-		self.DatabaseManager.replace(
-			tableName='widgets',
-			query='REPLACE INTO :__table__ (id, skill, name, params, settings, page) VALUES (:id, :skill, :name, :params, :settings, :page)',
-			callerName=self.SkillManager.name,
-			values={
-				'id'      : self._id,
-				'skill'   : self._skill,
-				'name'    : self._name,
-				'params'  : self._params,
-				'settings': self._settings,
-				'page'    : self._page
-			}
-		)
+		if self._id == 99999:
+			self.DatabaseManager.replace(
+				tableName='widgets',
+				query='REPLACE INTO :__table__ (id, skill, name, params, settings, page) VALUES (:id, :skill, :name, :params, :settings, :page)',
+				callerName=self.WidgetManager.name,
+				values={
+					'id'      : self._id if self._id != 9999 else '',
+					'skill'   : self._skill,
+					'name'    : self._name,
+					'params'  : json.dumps(self._params),
+					'settings': json.dumps(self._settings),
+					'page'    : self._page
+				}
+			)
+		else:
+			widgetId = self.DatabaseManager.insert(
+				tableName='widgets',
+				callerName=self.WidgetManager.name,
+				values={
+					'skill'   : self._skill,
+					'name'    : self._name,
+					'params'  : json.dumps(self._params),
+					'settings': json.dumps(self._settings),
+					'page'    : self._page
+				}
+			)
+
+			self._setId(widgetId)
 
 
 	def getCurrentDir(self) -> Path:
