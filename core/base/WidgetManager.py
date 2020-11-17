@@ -1,5 +1,6 @@
 import importlib
-from typing import Optional
+import sqlite3
+from typing import Optional, Union
 
 from core.base.model.Manager import Manager
 from core.base.model.Widget import Widget
@@ -90,7 +91,10 @@ class WidgetManager(Manager):
 		self.logInfo(f'Loaded {len(self._widgetInstances)} active widget', plural='widget')
 
 
-	def instanciateWidget(self, widgetData: dict) -> Optional[Widget]:
+	def instanciateWidget(self, widgetData: Union[sqlite3.Row, dict]) -> Optional[Widget]:
+		if isinstance(widgetData, sqlite3.Row):
+			widgetData = self.Commons.dictFromRow(widgetData)
+
 		skill = self.SkillManager.getSkillInstance(widgetData['skill'])
 		if not skill:
 			self.logWarning(f'Skill {widgetData["skill"]} for widget {widgetData["name"]} is not instanciated, skipping widget')
@@ -133,7 +137,6 @@ class WidgetManager(Manager):
 		self._widgetInstances.setdefault(skillName, dict()).setdefault(widgetName, list())
 		self._widgetInstances[skillName][widgetName].append(instance)
 
-		instance.saveToDB()
 		return instance
 
 

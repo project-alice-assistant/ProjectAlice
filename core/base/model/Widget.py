@@ -1,9 +1,7 @@
 import inspect
 import json
 import re
-import sqlite3
 from pathlib import Path
-from textwrap import dedent
 from typing import Dict, Match, Optional
 
 from core.base.model.ProjectAliceObject import ProjectAliceObject
@@ -23,16 +21,26 @@ class Widget(ProjectAliceObject):
 	}
 
 
-	def __init__(self, data: sqlite3.Row):
+	def __init__(self, data: dict):
 		super().__init__()
 
-		self._id = data['id'] if 'id' in data else 99999
+		self._id = int(data.get('id', -1))
 		self._skill = data['skill']
 		self._name = data['name']
 		self._params = json.loads(data['params'])
 		self._settings = json.loads(data['settings'])
 		self._page = data['page']
 		self._lang = self.loadLanguageFile()
+
+		if not self._params:
+			self._params = {
+				'x'   : 0,
+				'y'   : 0,
+				'size': self.DEFAULT_SIZE.value
+			}
+
+		if self._id == -1:
+			self.saveToDB()
 
 
 	def _setId(self, wid: int):
@@ -58,7 +66,7 @@ class Widget(ProjectAliceObject):
 
 	# noinspection SqlResolve
 	def saveToDB(self):
-		if self._id == 99999:
+		if self._id != 0:
 			self.DatabaseManager.replace(
 				tableName='widgets',
 				query='REPLACE INTO :__table__ (id, skill, name, params, settings, page) VALUES (:id, :skill, :name, :params, :settings, :page)',
@@ -191,23 +199,12 @@ class Widget(ProjectAliceObject):
 	# 	return ', '.join(str(i) for i in rgb)
 
 
-	def __repr__(self):
-		return dedent(f'''\
-			---- WIDGET -----
-			 Name: {self._name}
-			 Skill: {self._skill}
-			 Params: {json.dumps(self.params)}
-			 Settings: {json.dumps(self.settings)}
-			 Page: {self.page}\
-		''')
-
-
-	def __str__(self) -> str:
-		return json.dumps({
+	def toDict(self) -> dict:
+		return {
 			'id'      : self._id,
 			'skill'   : self._skill,
 			'name'    : self._name,
 			'params'  : self._params,
 			'settings': self._settings,
 			'page'    : self._page
-		})
+		}
