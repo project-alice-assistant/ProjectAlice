@@ -1,3 +1,4 @@
+import importlib
 from typing import Optional
 
 from core.base.model.Manager import Manager
@@ -75,9 +76,31 @@ class WidgetManager(Manager):
 				)
 				continue
 
+			# Create widget instance
+			skill = self.SkillManager.getSkillInstance(widget['skill'])
+			if not skill:
+				self.logWarning(f'Skill {widget["skill"]} for widget {widget["name"]} is not instanciated, skipping widget')
+				continue
+
+			try:
+				resource = skill.getResource(f'widgets/{widget["name"]}')
+				widgetImport = importlib.import_module(f'skills.{skill.name}.{resource}')
+
+				klass = getattr(widgetImport, widget["name"])
+				instance: Widget = klass(widget)
+			except ImportError as e:
+				self.logError(f"Couldn't import widget **{widget['name']}**: {e}")
+				continue
+			except AttributeError as e:
+				self.logError(f"Couldn't find main class for widget **{widget['name']}**: {e}")
+				continue
+			except Exception as e:
+				self.logError(f"Couldn't instanciate widget **{widget['name']}**: {e}")
+				continue
+
 			# self._widgetInstance[SKILLNAME][WIDGETNAME][LIST OF INSTANCES]
 			self._widgetInstances.setdefault(widget['skill'], dict()).setdefault(widget['name'], list())
-			self._widgetInstances[widget['skill']][widget['name']].append(Widget(widget))
+			self._widgetInstances[widget['skill']][widget['name']].append(instance)
 
 		self.logInfo(f'Loaded **{count}** template from {len(self._widgetTemplates)} skill', plural=['template', 'skill'])
 		self.logInfo(f'Loaded {len(self._widgetInstances)} active widget', plural='widget')

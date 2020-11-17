@@ -23,6 +23,16 @@ class WidgetsApi(Api):
 			return jsonify(success=False)
 
 
+	@route('/', methods=['PUT'])
+	@ApiAuthenticated
+	def addWidget(self):
+		try:
+			return jsonify(widgets=self.WidgetManager.widgetInstances)
+		except Exception as e:
+			self.logError(f'Failed adding widget instance: {e}')
+			return jsonify(success=False)
+
+
 	@route('/pages/', methods=['GET'])
 	@ApiAuthenticated
 	def getPages(self):
