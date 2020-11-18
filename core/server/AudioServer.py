@@ -82,7 +82,7 @@ class AudioManager(Manager):
 
 	def onStop(self):
 		super().onStop()
-        if self._audioInputStream:
+		if self._audioInputStream:
 			self._audioInputStream.stop(ignore_errors=True)
 			self._audioInputStream.close(ignore_errors=True)
 		self.MqttManager.mqttClient.unsubscribe(constants.TOPIC_AUDIO_FRAME.format(self.ConfigManager.getAliceConfigByName('uuid')))
