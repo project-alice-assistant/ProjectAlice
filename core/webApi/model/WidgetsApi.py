@@ -39,7 +39,7 @@ class WidgetsApi(Api):
 			if not widget:
 				raise Exception
 
-			return jsonify(widget=str(widget))
+			return jsonify(widget=widget.toDict())
 		except Exception as e:
 			self.logError(f'Failed adding widget instance: {e}')
 			return jsonify(success=False)
@@ -102,4 +102,24 @@ class WidgetsApi(Api):
 			return jsonify(newpage=str(page))
 		except Exception as e:
 			self.logError(f'Failed adding new widget page: {e}')
+			return jsonify(success=False)
+
+
+	@route('<widgetId>/savePosition/', methods=['PATCH'])
+	@ApiAuthenticated
+	def savePosition(self, widgetId: str):
+		try:
+			return jsonify(success=self.WidgetManager.saveWidgetPosition(int(widgetId), request.json['x'], request.json['y']))
+		except Exception as e:
+			self.logError(f'Failed saving widget position: {e}')
+			return jsonify(success=False)
+
+
+	@route('<widgetId>/saveSize/', methods=['PATCH'])
+	@ApiAuthenticated
+	def saveSize(self, widgetId: str):
+		try:
+			return jsonify(success=self.WidgetManager.saveWidgetSize(int(widgetId), request.json['x'], request.json['y'], request.json['w'], request.json['h']))
+		except Exception as e:
+			self.logError(f'Failed saving widget size: {e}')
 			return jsonify(success=False)

@@ -31,6 +31,7 @@ class WidgetManager(Manager):
 		super().__init__(databaseSchema=self.DATABASE)
 		self._widgetTemplates = dict()
 		self._widgetInstances = dict()
+		self._widgetIds = dict()
 		self._pages = dict()
 		self._widgetsByIndex = dict()
 
@@ -86,6 +87,7 @@ class WidgetManager(Manager):
 			# self._widgetInstance[SKILLNAME][WIDGETNAME][LIST OF INSTANCES]
 			self._widgetInstances.setdefault(widget['skill'], dict()).setdefault(widget['name'], list())
 			self._widgetInstances[widget['skill']][widget['name']].append(instance)
+			self._widgetIds[instance.id] = instance
 
 		self.logInfo(f'Loaded **{count}** template from {len(self._widgetTemplates)} skill', plural=['template', 'skill'])
 		self.logInfo(f'Loaded {len(self._widgetInstances)} active widget', plural='widget')
@@ -136,6 +138,7 @@ class WidgetManager(Manager):
 
 		self._widgetInstances.setdefault(skillName, dict()).setdefault(widgetName, list())
 		self._widgetInstances[skillName][widgetName].append(instance)
+		self._widgetIds[instance.id] = instance
 
 		return instance
 
@@ -231,7 +234,7 @@ class WidgetManager(Manager):
 		)
 
 		self.DatabaseManager.delete(
-			tableName='widges',
+			tableName='widgets',
 			callerName=self.name,
 			values={
 				'page': pageId
@@ -254,6 +257,7 @@ class WidgetManager(Manager):
 				'id': widgetId
 			}
 		)
+		self._widgetIds.pop(widgetId, None)
 
 
 	def skillRemoved(self, skillName: str):
@@ -264,19 +268,13 @@ class WidgetManager(Manager):
 			values={'skill': skillName}
 		)
 
+		for skillNamee in self._widgetInstances:
+			if skillNamee == skillName:
+				self._widgetInstances.pop(skillName, None)
+
 
 	def skillDeactivated(self, skillName: str):
-		self.DatabaseManager.update(
-			tableName='widgets',
-			callerName=self.name,
-			values={
-				'state' : 0,
-				'posx'  : 0,
-				'posy'  : 0,
-				'zindex': -1
-			},
-			row=('skill', skillName)
-		)
+		self.skillRemoved(skillName)
 
 
 	def getNextZIndex(self, pageId: int):
@@ -291,31 +289,31 @@ class WidgetManager(Manager):
 		return len(widgets) + 1
 
 
-	# Create a list of skills with their z index as key
-	# self._widgetsByIndex = dict()
-	# for skillName, widgetList in self._widgetTemplates.items():
-	# 	for widget in widgetList.values():
-	# 		if widget.state != 1:
-	# 			continue
-	#
-	# 		if int(widget.zindex) not in self._widgetsByIndex:
-	# 			self._widgetsByIndex[int(widget.zindex)] = widget
-	# 		else:
-	# 			i = 1000
-	# 			while True:
-	# 				if i not in self._widgetsByIndex:
-	# 					self._widgetsByIndex[i] = widget
-	# 					break
-	# 				i += 1
-	#
-	# # Rewrite a logical zindex flow
-	# for i, widget in enumerate(self._widgetsByIndex.values()):
-	# 	widget.zindex = i
-	# 	widget.saveToDB()
+	def saveWidgetPosition(self, widgetId: int, x: int, y: int) -> bool:  # NOSONAR
+		widget: Widget = self._widgetIds.get(widgetId, None)
+
+		if not widget:
+			self.logWarning('Tried to save a widget instance that doesn\'t exist')
+			return False
+
+		widget.x = x
+		widget.y = y
+		widget.saveToDB()
+		return True
 
 
-	def nextZIndex(self) -> int:
-		return len(self._widgetsByIndex)
+	def saveWidgetSize(self, widgetId: int, x: int, y: int, w: int, h: int) -> bool:  # NOSONAR
+		widget: Widget = self._widgetIds.get(widgetId, None)
+
+		if not widget:
+			self.logWarning('Tried to save a widget instance that doesn\'t exist')
+			return False
+
+		widget.x = x
+		widget.y = y
+		widget.size = f'{w}x{h}'
+		widget.saveToDB()
+		return True
 
 
 	@property

@@ -114,6 +114,20 @@ class Widget(ProjectAliceObject):
 			return ''
 
 
+	def css(self) -> str:
+		try:
+			return Path(self.getCurrentDir(), f'css/{self.name}.css').read_text()
+		except:
+			return ''
+
+
+	def js(self) -> str:
+		try:
+			return Path(self.getCurrentDir(), f'js/{self.name}.js').read_text()
+		except:
+			return ''
+
+
 	def langReplace(self, match: Match):
 		return self.getLanguageString(match.group(1))
 
@@ -142,33 +156,65 @@ class Widget(ProjectAliceObject):
 
 
 	@property
-	def x(self) -> int:
+	def x(self) -> int:  # NOSONAR
 		return self._params.get('x', 0)
 
 
 	@x.setter
-	def x(self, value: int):
+	def x(self, value: int):  # NOSONAR
 		self._params['x'] = value
 
 
 	@property
-	def y(self) -> int:
+	def y(self) -> int:  # NOSONAR
 		return self._params.get('y', 0)
 
 
 	@y.setter
-	def y(self, value: int):
+	def y(self, value: int):  # NOSONAR
 		self._params['y'] = value
 
 
 	@property
-	def z(self) -> int:
+	def z(self) -> int:  # NOSONAR
 		return self._params.get('z', 0)
 
 
 	@z.setter
-	def z(self, value: int):
+	def z(self, value: int):  # NOSONAR
 		self._params['z'] = value
+
+
+	@property
+	def size(self) -> str:
+		return self._params.get('size', '')
+
+
+	@size.setter
+	def size(self, value: str):
+		self._params['size'] = value
+
+
+	@property
+	def w(self) -> int:  # NOSONAR
+		return self._params.get('size', '50x50').split('x')[0]
+
+
+	@w.setter
+	def w(self, w: int):  # NOSONAR
+		size = self._params.get('size', '50x50')
+		self._params['size'] = f'{w}x{size.split("x")[1]}'
+
+
+	@property
+	def h(self) -> int:  # NOSONAR
+		return self._params.get('size', '50x50').split('x')[1]
+
+
+	@h.setter
+	def h(self, h: int):  # NOSONAR
+		size = self._params.get('size', '50x50')
+		self._params['size'] = f'{size.split("x")[0]}x{h}'
 
 
 	@property
@@ -236,5 +282,8 @@ class Widget(ProjectAliceObject):
 			'name'    : self._name,
 			'params'  : self._params,
 			'settings': self._settings,
-			'page'    : self._page
+			'page'    : self._page,
+			'html'    : self.html(),
+			'css'     : self.css(),
+			'js'      : self.js()
 		}
