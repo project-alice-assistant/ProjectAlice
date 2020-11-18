@@ -13,8 +13,8 @@ class WidgetManager(Manager):
 	DATABASE = {
 		'widgets'    : [
 			'id INTEGER PRIMARY KEY',
-			'skill TEXT NOT NULL UNIQUE',
-			'name TEXT NOT NULL UNIQUE',
+			'skill TEXT NOT NULL',
+			'name TEXT NOT NULL',
 			"params TEXT NOT NULL DEFAULT '{}'",
 			"settings TEXT NOT NULL DEFAULT '{}'",
 			'page INTEGER NOT NULL DEFAULT 0'
@@ -39,7 +39,7 @@ class WidgetManager(Manager):
 		super().onStart()
 		self.loadPages()
 		self.loadWidgets()
-		self.sortWidgetZIndexes()
+		self.getNextZIndex(1)
 
 
 	def loadWidgets(self):
@@ -267,9 +267,16 @@ class WidgetManager(Manager):
 		)
 
 
-	def sortWidgetZIndexes(self):
-		# TODO rework for multi page support, z indexes can be same
-		return
+	def getNextZIndex(self, pageId: int):
+		# Build a list of widgets on this page
+		widgets = list()
+		for skillName, widgetName in self._widgetInstances.items():
+			for widgetList in self._widgetInstances[skillName].values():
+				for widget in widgetList:
+					if widget.page == pageId:
+						widgets.insert(widget.z, widget)
+
+		return len(widgets) + 1
 
 
 	# Create a list of skills with their z index as key

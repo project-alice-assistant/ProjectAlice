@@ -36,6 +36,7 @@ class Widget(ProjectAliceObject):
 			self._params = {
 				'x'   : 0,
 				'y'   : 0,
+				'z'   : self.WidgetManager.getNextZIndex(self._page),
 				'size': self.DEFAULT_SIZE.value
 			}
 
@@ -66,7 +67,7 @@ class Widget(ProjectAliceObject):
 
 	# noinspection SqlResolve
 	def saveToDB(self):
-		if self._id != 0:
+		if self._id != -1:
 			self.DatabaseManager.replace(
 				tableName='widgets',
 				query='REPLACE INTO :__table__ (id, skill, name, params, settings, page) VALUES (:id, :skill, :name, :params, :settings, :page)',
@@ -106,7 +107,6 @@ class Widget(ProjectAliceObject):
 			fp = file.open()
 			content = fp.read()
 			content = re.sub(r'{{ lang\.([\w]*) }}', self.langReplace, content)
-			content = re.sub(r'{{ options\.([\w]*) }}', self.optionsReplace, content)
 
 			return content
 		except:
@@ -137,8 +137,38 @@ class Widget(ProjectAliceObject):
 
 
 	@property
-	def id(self) -> str:
+	def id(self) -> int:
 		return self._id
+
+
+	@property
+	def x(self) -> int:
+		return self._params.get('x', 0)
+
+
+	@x.setter
+	def x(self, value: int):
+		self._params['x'] = value
+
+
+	@property
+	def y(self) -> int:
+		return self._params.get('y', 0)
+
+
+	@y.setter
+	def y(self, value: int):
+		self._params['y'] = value
+
+
+	@property
+	def z(self) -> int:
+		return self._params.get('z', 0)
+
+
+	@z.setter
+	def z(self, value: int):
+		self._params['z'] = value
 
 
 	@property
