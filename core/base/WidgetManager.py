@@ -230,8 +230,20 @@ class WidgetManager(Manager):
 			}
 		)
 
+		self.DatabaseManager.delete(
+			tableName='widges',
+			callerName=self.name,
+			values={
+				'page': pageId
+			}
+		)
 
-	# TODO Remove widgets instances
+		tmp = self._widgetInstances.copy()
+		for skillName, widgetName in tmp.items():
+			for widgetList in tmp[skillName].values():
+				for widget in widgetList:
+					if widget.page == pageId:
+						self._widgetInstances[skillName][widgetName].pop(widget, None)
 
 
 	def removeWidget(self, widgetId: int):
