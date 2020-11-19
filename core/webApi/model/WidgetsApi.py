@@ -17,12 +17,7 @@ class WidgetsApi(Api):
 	@ApiAuthenticated
 	def getWidgets(self):
 		try:
-			temp = list()
-			for skillName, widgets in self.WidgetManager.widgetInstances.items():
-				for widgetList in widgets.values():
-					temp += [widget for widget in widgetList]
-
-			return jsonify(widgets={widget.id: widget.toDict() for widget in temp})
+			return jsonify(widgets={widget.id: widget.toDict() for widget in self.WidgetManager.widgets.values()})
 		except Exception as e:
 			self.logError(f'Failed retrieving widget instances: {e}')
 			return jsonify(success=False)
@@ -42,6 +37,17 @@ class WidgetsApi(Api):
 			return jsonify(widget=widget.toDict())
 		except Exception as e:
 			self.logError(f'Failed adding widget instance: {e}')
+			return jsonify(success=False)
+
+
+	@route('/<widgetId>/', methods=['DELETE'])
+	@ApiAuthenticated
+	def removeWidget(self, widgetId: str):
+		try:
+			self.WidgetManager.removeWidget(int(widgetId))
+			return jsonify(success=True)
+		except Exception as e:
+			self.logError(f'Failed removing widget: {e}')
 			return jsonify(success=False)
 
 

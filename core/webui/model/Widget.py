@@ -9,7 +9,7 @@ from cssmin import cssmin
 from jsmin import jsmin
 
 from core.base.model.ProjectAliceObject import ProjectAliceObject
-from core.base.model.WidgetSizes import WidgetSizes
+from core.webui.model.WidgetSizes import WidgetSizes
 
 
 class Widget(ProjectAliceObject):

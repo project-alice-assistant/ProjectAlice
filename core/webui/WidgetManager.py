@@ -3,8 +3,8 @@ import sqlite3
 from typing import Optional, Union
 
 from core.base.model.Manager import Manager
-from core.base.model.Widget import Widget
-from core.base.model.WidgetPage import WidgetPage
+from core.webui.model.Widget import Widget
+from core.webui.model.WidgetPage import WidgetPage
 
 
 class WidgetManager(Manager):
@@ -84,13 +84,10 @@ class WidgetManager(Manager):
 			if not instance:
 				continue
 
-			# self._widgetInstance[SKILLNAME][WIDGETNAME][LIST OF INSTANCES]
-			self._widgetInstances.setdefault(widget['skill'], dict()).setdefault(widget['name'], list())
-			self._widgetInstances[widget['skill']][widget['name']].append(instance)
 			self._widgetIds[instance.id] = instance
 
 		self.logInfo(f'Loaded **{count}** template from {len(self._widgetTemplates)} skill', plural=['template', 'skill'])
-		self.logInfo(f'Loaded {len(self._widgetInstances)} active widget', plural='widget')
+		self.logInfo(f'Loaded {len(self._widgetIds)} active widget', plural='widget')
 
 
 	def instanciateWidget(self, widgetData: Union[sqlite3.Row, dict]) -> Optional[Widget]:
@@ -136,8 +133,6 @@ class WidgetManager(Manager):
 			'page'    : pageId
 		})
 
-		self._widgetInstances.setdefault(skillName, dict()).setdefault(widgetName, list())
-		self._widgetInstances[skillName][widgetName].append(instance)
 		self._widgetIds[instance.id] = instance
 
 		return instance
@@ -241,12 +236,10 @@ class WidgetManager(Manager):
 			}
 		)
 
-		tmp = self._widgetInstances.copy()
-		for skillName, widgetName in tmp.items():
-			for widgetList in tmp[skillName].values():
-				for widget in widgetList:
-					if widget.page == pageId:
-						self._widgetInstances[skillName][widgetName].pop(widget, None)
+		tmp = self._widgetIds.copy()
+		for wid, widget in tmp.items():
+			if widget.page == pageId:
+				self._widgetIds.pop(wid, None)
 
 
 	def removeWidget(self, widgetId: int):
@@ -268,9 +261,10 @@ class WidgetManager(Manager):
 			values={'skill': skillName}
 		)
 
-		for skillNamee in self._widgetInstances:
-			if skillNamee == skillName:
-				self._widgetInstances.pop(skillName, None)
+		tmp = self._widgetIds.copy()
+		for wid, widget in tmp.items():
+			if widget.skill == skillName:
+				self._widgetIds.pop(wid, None)
 
 
 	def skillDeactivated(self, skillName: str):
@@ -280,11 +274,9 @@ class WidgetManager(Manager):
 	def getNextZIndex(self, pageId: int):
 		# Build a list of widgets on this page
 		widgets = list()
-		for skillName, widgetName in self._widgetInstances.items():
-			for widgetList in self._widgetInstances[skillName].values():
-				for widget in widgetList:
-					if widget.page == pageId:
-						widgets.insert(widget.z, widget)
+		for widget in self._widgetIds.values():
+			if widget.page == pageId:
+				widgets.insert(widget.z, widget)
 
 		return len(widgets) + 1
 
@@ -322,8 +314,8 @@ class WidgetManager(Manager):
 
 
 	@property
-	def widgetInstances(self) -> dict:
-		return self._widgetInstances
+	def widgets(self) -> dict:
+		return self._widgetIds
 
 
 	@property

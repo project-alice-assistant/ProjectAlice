@@ -151,7 +151,7 @@ class SuperManager:
 		from core.commons.CommonsManager import CommonsManager
 		from core.base.ConfigManager import ConfigManager
 		from core.base.SkillManager import SkillManager
-		from core.base.WidgetManager import WidgetManager
+		from core.webui.WidgetManager import WidgetManager
 		from core.device.DeviceManager import DeviceManager
 		from core.device.LocationManager import LocationManager
 		from core.dialog.MultiIntentManager import MultiIntentManager
