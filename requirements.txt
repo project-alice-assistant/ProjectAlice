@@ -27,3 +27,6 @@ markdown==3.2.2
 ProjectAlice-sk
 #pyopenssl==19.1.0
 sounddevice==0.4.1
+htmlmin==0.1.12
+jsmin==2.2.2
+cssmin==0.2.0

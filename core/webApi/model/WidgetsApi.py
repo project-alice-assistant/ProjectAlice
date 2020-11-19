@@ -17,12 +17,12 @@ class WidgetsApi(Api):
 	@ApiAuthenticated
 	def getWidgets(self):
 		try:
-			ret = list()
+			temp = list()
 			for skillName, widgets in self.WidgetManager.widgetInstances.items():
 				for widgetList in widgets.values():
-					ret += [widget.toDict() for widget in widgetList]
+					temp += [widget for widget in widgetList]
 
-			return jsonify(widgets=ret)
+			return jsonify(widgets={widget.id: widget.toDict() for widget in temp})
 		except Exception as e:
 			self.logError(f'Failed retrieving widget instances: {e}')
 			return jsonify(success=False)

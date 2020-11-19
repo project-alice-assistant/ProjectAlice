@@ -4,6 +4,10 @@ import re
 from pathlib import Path
 from typing import Dict, Match, Optional
 
+import htmlmin as htmlmin
+from cssmin import cssmin
+from jsmin import jsmin
+
 from core.base.model.ProjectAliceObject import ProjectAliceObject
 from core.base.model.WidgetSizes import WidgetSizes
 
@@ -34,10 +38,15 @@ class Widget(ProjectAliceObject):
 
 		if not self._params:
 			self._params = {
-				'x'   : 0,
-				'y'   : 0,
-				'z'   : self.WidgetManager.getNextZIndex(self._page),
-				'size': self.DEFAULT_SIZE.value
+				'x'                 : 0,
+				'y'                 : 0,
+				'z'                 : self.WidgetManager.getNextZIndex(self._page),
+				'size'              : self.DEFAULT_SIZE.value,
+				'background'        : '',
+				'background-opacity': '',
+				'color'             : '',
+				'font-size'         : '',
+				'title'             : True,
 			}
 
 		if self._id == -1:
@@ -101,13 +110,37 @@ class Widget(ProjectAliceObject):
 		return Path(inspect.getfile(self.__class__)).parent
 
 
+	def icon(self) -> str:
+		try:
+			file = Path(self.getCurrentDir(), f'templates/{self.name}.html')
+			content = cssmin(file.read_text())
+			header = re.search(r'<icon>(.*)</icon>', content)
+			if header:
+				return header.group(1)
+
+			return ''
+		except:
+			self.logWarning(f"Widget doesn't have any icon")
+			return ''
+
+
 	def html(self) -> str:
 		try:
-			file = self.getCurrentDir() / f'templates/{self.name}.html'
-			fp = file.open()
-			content = fp.read()
+			file = Path(self.getCurrentDir(), f'templates/{self.name}.html')
+			content = file.read_text()
 			content = re.sub(r'{{ lang\.([\w]*) }}', self.langReplace, content)
-
+			content = re.sub(r'<icon>.*</icon>(.*)', r'\1', content)
+			content = re.sub(r'<widget>.*</widget>(.*)', r'\1', content)
+			content = htmlmin.minify(content,
+			                         remove_comments=True,
+			                         remove_empty_space=True,
+			                         remove_all_empty_space=True,
+			                         reduce_empty_attributes=True,
+			                         reduce_boolean_attributes=True,
+			                         remove_optional_attribute_quotes=True,
+			                         convert_charrefs=True,
+			                         keep_pre=False
+			                         )
 			return content
 		except:
 			self.logWarning(f"Widget doesn't have html file")
@@ -116,14 +149,18 @@ class Widget(ProjectAliceObject):
 
 	def css(self) -> str:
 		try:
-			return Path(self.getCurrentDir(), f'css/{self.name}.css').read_text()
+			file = Path(self.getCurrentDir(), f'css/{self.name}.css')
+			content = cssmin(file.read_text())
+			return content
 		except:
 			return ''
 
 
 	def js(self) -> str:
 		try:
-			return Path(self.getCurrentDir(), f'js/{self.name}.js').read_text()
+			file = Path(self.getCurrentDir(), f'js/{self.name}.js')
+			content = jsmin(file.read_text())
+			return content
 		except:
 			return ''
 
@@ -132,22 +169,11 @@ class Widget(ProjectAliceObject):
 		return self.getLanguageString(match.group(1))
 
 
-	def optionsReplace(self, match: Match):
-		return self.getOptions(match.group(1))
-
-
 	def getLanguageString(self, key: str) -> str:
 		try:
 			return self._lang[self.LanguageManager.activeLanguage][key]
 		except KeyError:
 			return 'Missing string'
-
-
-	def getOptions(self, key: str) -> str:
-		try:
-			return self._options[key]
-		except KeyError:
-			return 'Missing option'
 
 
 	@property
@@ -197,7 +223,7 @@ class Widget(ProjectAliceObject):
 
 	@property
 	def w(self) -> int:  # NOSONAR
-		return self._params.get('size', '50x50').split('x')[0]
+		return int(self._params.get('size', '50x50').split('x')[0])
 
 
 	@w.setter
@@ -208,7 +234,7 @@ class Widget(ProjectAliceObject):
 
 	@property
 	def h(self) -> int:  # NOSONAR
-		return self._params.get('size', '50x50').split('x')[1]
+		return int(self._params.get('size', '50x50').split('x')[1])
 
 
 	@h.setter
@@ -283,6 +309,7 @@ class Widget(ProjectAliceObject):
 			'params'  : self._params,
 			'settings': self._settings,
 			'page'    : self._page,
+			'icon'    : self.icon(),
 			'html'    : self.html(),
 			'css'     : self.css(),
 			'js'      : self.js()
