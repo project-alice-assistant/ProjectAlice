@@ -55,7 +55,7 @@ class WidgetsApi(Api):
 	@ApiAuthenticated
 	def getPages(self):
 		try:
-			pages = {page.id: str(page) for page in self.WidgetManager.pages.values()}
+			pages = {page.id: page.toDict() for page in self.WidgetManager.pages.values()}
 			return jsonify(pages=pages)
 		except Exception as e:
 			self.logError(f'Failed retrieving widget pages: {e}')
@@ -70,7 +70,7 @@ class WidgetsApi(Api):
 				raise Exception
 
 			self.WidgetManager.removePage(int(pageId))
-			pages = {page.id: str(page) for page in self.WidgetManager.pages.values()}
+			pages = {page.id: page.toDict() for page in self.WidgetManager.pages.values()}
 			return jsonify(pages=pages)
 		except Exception as e:
 			self.logError(f'Failed removing widget page: {e}')
@@ -105,7 +105,7 @@ class WidgetsApi(Api):
 			if not page:
 				raise Exception
 
-			return jsonify(newpage=str(page))
+			return jsonify(newpage=page.toDict())
 		except Exception as e:
 			self.logError(f'Failed adding new widget page: {e}')
 			return jsonify(success=False)

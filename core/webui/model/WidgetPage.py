@@ -1,4 +1,3 @@
-import json
 from dataclasses import dataclass
 
 
@@ -16,9 +15,9 @@ class WidgetPage:
 		self.position = self.data['position']
 
 
-	def __str__(self) -> str:
-		return json.dumps({
+	def toDict(self) -> dict:
+		return {
 			'id'      : self.id,
 			'icon'    : self.icon,
 			'position': self.position
-		})
+		}
