@@ -14,10 +14,11 @@ class WidgetsApi(Api):
 
 
 	@route('/', methods=['GET'])
-	@ApiAuthenticated
 	def getWidgets(self):
 		try:
-			return jsonify(widgets={widget.id: widget.toDict() for widget in self.WidgetManager.widgets.values()})
+			widgets = {widget.id: widget.toDict(self.UserManager.apiTokenValid(request.headers.get('auth', ''))) for widget in self.WidgetManager.widgets.values()}
+			return jsonify(widgets=widgets)
+
 		except Exception as e:
 			self.logError(f'Failed retrieving widget instances: {e}')
 			return jsonify(success=False)
@@ -52,11 +53,9 @@ class WidgetsApi(Api):
 
 
 	@route('/pages/', methods=['GET'])
-	@ApiAuthenticated
 	def getPages(self):
 		try:
-			pages = {page.id: page.toDict() for page in self.WidgetManager.pages.values()}
-			return jsonify(pages=pages)
+			return jsonify(pages={page.id: page.toDict() for page in self.WidgetManager.pages.values()})
 		except Exception as e:
 			self.logError(f'Failed retrieving widget pages: {e}')
 			return jsonify(success=False)

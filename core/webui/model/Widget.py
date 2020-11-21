@@ -294,13 +294,13 @@ class Widget(ProjectAliceObject):
 		self._page = value
 
 
-	def toDict(self) -> dict:
+	def toDict(self, isAuth: bool = False) -> dict:
 		return {
 			'id'      : self._id,
 			'skill'   : self._skill,
 			'name'    : self._name,
 			'params'  : self._params,
-			'settings': self._settings,
+			'settings': self._settings if isAuth else dict(),
 			'page'    : self._page,
 			'icon'    : self.icon(),
 			'html'    : self.html(),
