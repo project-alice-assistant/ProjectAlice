@@ -42,10 +42,11 @@ class Widget(ProjectAliceObject):
 				'y'                 : 0,
 				'z'                 : self.WidgetManager.getNextZIndex(self._page),
 				'size'              : self.DEFAULT_SIZE.value,
-				'background'        : '',
-				'background-opacity': '',
-				'color'             : '',
-				'font-size'         : '',
+				'background'        : '#636363',
+				'background-opacity': '1',
+				'color'             : '#d1d1d1',
+				'font-size'         : '1',
+				'rgba'              : 'rgba(99, 99, 99, 1)',
 				'title'             : True,
 			}
 
@@ -291,14 +292,6 @@ class Widget(ProjectAliceObject):
 	@page.setter
 	def page(self, value: int):
 		self._page = value
-
-
-	# @property
-	# def backgroundRGBA(self) -> str:
-	# 	color = self._custStyle['background'].lstrip('#')
-	# 	rgb = list(int(color[i:i + 2], 16) for i in (0, 2, 4))
-	# 	rgb.append(self._custStyle['background-opacity'])
-	# 	return ', '.join(str(i) for i in rgb)
 
 
 	def toDict(self) -> dict:

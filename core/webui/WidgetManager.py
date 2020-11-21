@@ -308,6 +308,18 @@ class WidgetManager(Manager):
 		return True
 
 
+	def saveWidgetParams(self, widgetId: int, params: dict) -> bool:  # NOSONAR
+		widget: Widget = self._widgetIds.get(widgetId, None)
+
+		if not widget:
+			self.logWarning('Tried to save a widget instance that doesn\'t exist')
+			return False
+
+		widget.params = params
+		widget.saveToDB()
+		return True
+
+
 	@property
 	def widgetTemplates(self) -> dict:
 		return self._widgetTemplates

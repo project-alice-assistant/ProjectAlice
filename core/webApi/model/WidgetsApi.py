@@ -111,7 +111,7 @@ class WidgetsApi(Api):
 			return jsonify(success=False)
 
 
-	@route('<widgetId>/savePosition/', methods=['PATCH'])
+	@route('/<widgetId>/savePosition/', methods=['PATCH'])
 	@ApiAuthenticated
 	def savePosition(self, widgetId: str):
 		try:
@@ -121,11 +121,21 @@ class WidgetsApi(Api):
 			return jsonify(success=False)
 
 
-	@route('<widgetId>/saveSize/', methods=['PATCH'])
+	@route('/<widgetId>/saveSize/', methods=['PATCH'])
 	@ApiAuthenticated
 	def saveSize(self, widgetId: str):
 		try:
 			return jsonify(success=self.WidgetManager.saveWidgetSize(int(widgetId), request.json['x'], request.json['y'], request.json['w'], request.json['h']))
 		except Exception as e:
 			self.logError(f'Failed saving widget size: {e}')
+			return jsonify(success=False)
+
+
+	@route('/<widgetId>/', methods=['PATCH'])
+	@ApiAuthenticated
+	def saveParams(self, widgetId: str):
+		try:
+			return jsonify(success=self.WidgetManager.saveWidgetParams(int(widgetId), request.json))
+		except Exception as e:
+			self.logError(f'Failed saving widget paraams: {e}')
 			return jsonify(success=False)
