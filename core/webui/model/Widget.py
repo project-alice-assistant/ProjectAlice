@@ -48,6 +48,7 @@ class Widget(ProjectAliceObject):
 				'font-size'         : '1',
 				'rgba'              : 'rgba(99, 99, 99, 1)',
 				'title'             : True,
+				'borders'           : True
 			}
 
 		if self._id == -1:

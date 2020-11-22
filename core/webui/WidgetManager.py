@@ -12,7 +12,7 @@ class WidgetManager(Manager):
 
 	DATABASE = {
 		'widgets'    : [
-			'id INTEGER PRIMARY KEY',
+			'id INTEGER PRIMARY KEY', # NOSONAR
 			'skill TEXT NOT NULL',
 			'name TEXT NOT NULL',
 			"params TEXT NOT NULL DEFAULT '{}'",
@@ -23,6 +23,11 @@ class WidgetManager(Manager):
 			'id INTEGER PRIMARY KEY',
 			'icon TEXT NOT NULL',
 			'position INTEGER NOT NULL'
+		],
+		'widgetPageTemplates': [
+			'id INTEGER PRIMARY KEY',
+			'name TEXT NOT NULL',
+			'layout TEXT NOT NULL'
 		]
 	}
 
@@ -285,7 +290,7 @@ class WidgetManager(Manager):
 		widget: Widget = self._widgetIds.get(widgetId, None)
 
 		if not widget:
-			self.logWarning('Tried to save a widget instance that doesn\'t exist')
+			self.logWarning('Tried to save a widget position but widget doesn\'t exist')
 			return False
 
 		widget.x = x
@@ -298,7 +303,7 @@ class WidgetManager(Manager):
 		widget: Widget = self._widgetIds.get(widgetId, None)
 
 		if not widget:
-			self.logWarning('Tried to save a widget instance that doesn\'t exist')
+			self.logWarning('Tried to save a widget size but widget doesn\'t exist')
 			return False
 
 		widget.x = x
@@ -312,7 +317,7 @@ class WidgetManager(Manager):
 		widget: Widget = self._widgetIds.get(widgetId, None)
 
 		if not widget:
-			self.logWarning('Tried to save a widget instance that doesn\'t exist')
+			self.logWarning('Tried to save a widget params but widget doesn\'t exist')
 			return False
 
 		widget.params = params
