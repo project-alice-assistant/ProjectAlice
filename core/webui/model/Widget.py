@@ -42,10 +42,11 @@ class Widget(ProjectAliceObject):
 				'y'                 : 0,
 				'z'                 : self.WidgetManager.getNextZIndex(self._page),
 				'size'              : self.DEFAULT_SIZE.value,
+				'rotation'          : 0,
 				'background'        : '#636363',
-				'background-opacity': '1',
+				'background-opacity': 1,
 				'color'             : '#d1d1d1',
-				'font-size'         : '1',
+				'font-size'         : 1,
 				'rgba'              : 'rgba(99, 99, 99, 1)',
 				'title'             : True,
 				'borders'           : True
