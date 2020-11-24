@@ -60,6 +60,23 @@ class SkillsApi(Api):
 			return jsonify(success=False)
 
 
+	@route('/<skillName>/', methods=['PATCH'])
+	@ApiAuthenticated
+	def saveSkillSettings(self, skillName: str):
+		try:
+			for confName, confValue in request.json.items():
+				self.ConfigManager.updateSkillConfigurationFile(
+					skillName=skillName,
+					key=confName,
+					value=confValue
+				)
+
+			return jsonify(success=True)
+		except Exception as e:
+			self.logWarning(f'Failed updating skill settings: {e}', printStack=True)
+			return jsonify(success=False)
+
+
 	@route('/<skillName>/')
 	@ApiAuthenticated
 	def get(self, skillName: str):

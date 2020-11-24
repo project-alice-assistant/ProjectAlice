@@ -251,10 +251,11 @@ class ConfigManager(Manager):
 		# Cast value to template defined type
 		vartype = self._skillsTemplateConfigurations[skillName][key]['dataType']
 		if vartype == 'boolean':
-			if value.lower() in {'on', 'yes', 'true', 'active'}:
-				value = True
-			elif value.lower() in {'off', 'no', 'false', 'inactive'}:
-				value = False
+			if not isinstance(value, bool):
+				if value.lower() in {'on', 'yes', 'true', 'active'}:
+					value = True
+				elif value.lower() in {'off', 'no', 'false', 'inactive'}:
+					value = False
 		elif vartype == 'integer':
 			try:
 				value = int(value)

@@ -252,7 +252,11 @@ class AliceSkill(ProjectAliceObject):
 			return list(self._intentsDefinitions[lang][check])
 
 		return [re.sub(self._utteranceSlotCleaner, '\\1', utterance.lower() if forceLowerCase else utterance)
-			for utterance in self._intentsDefinitions[lang][check]]
+		        for utterance in self._intentsDefinitions[lang][check]]
+
+
+	def supportedIntentsWithUtterances(self) -> dict:
+		return {str(intent): self.getUtterancesByIntent(intent, True, True) for intent in self._supportedIntents}
 
 
 	@property
@@ -626,19 +630,21 @@ class AliceSkill(ProjectAliceObject):
 
 	def toJson(self) -> dict:
 		return {
-			'name'           : self._name,
-			'author'         : self._author,
-			'version'        : self._version,
-			'updateAvailable': self._updateAvailable,
-			'active'         : self._active,
-			'delayed'        : self._delayed,
-			'required'       : self._required,
-			'databaseSchema' : self._databaseSchema,
-			'icon'           : self._icon,
-			'instructions'   : self._instructions,
-			'settings'       : self.ConfigManager.getSkillConfigs(self.name),
-			'description'    : self._description,
-			'category'       : self._category,
-			'aliceMinVersion': str(self._aliceMinVersion),
-			'maintainers'    : self._maintainers
+			'name'            : self._name,
+			'author'          : self._author,
+			'version'         : self._version,
+			'updateAvailable' : self._updateAvailable,
+			'active'          : self._active,
+			'delayed'         : self._delayed,
+			'required'        : self._required,
+			'databaseSchema'  : self._databaseSchema,
+			'icon'            : self._icon,
+			'instructions'    : self._instructions,
+			'settings'        : self.ConfigManager.getSkillConfigs(self.name),
+			'settingsTemplate': self.getSkillConfigsTemplate(),
+			'description'     : self._description,
+			'category'        : self._category,
+			'aliceMinVersion' : str(self._aliceMinVersion),
+			'maintainers'     : self._maintainers,
+			'intents'         : self.supportedIntentsWithUtterances()
 		}
