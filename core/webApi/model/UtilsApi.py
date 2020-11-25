@@ -60,3 +60,13 @@ class UtilsApi(Api):
 			host=self.Commons.getLocalIp(),
 			port=int(self.ConfigManager.getAliceConfigByName('mqttPort')) + 1
 		)
+
+
+	@route('/i18n/', methods=['GET'])
+	def i18n(self):
+		return jsonify(data=self.LanguageManager.webUIStrings)
+
+
+	@route('/i18n/<lang>/', methods=['GET'])
+	def i18nLang(self, lang: str):
+		return jsonify(data=self.LanguageManager.webUIStrings[lang])

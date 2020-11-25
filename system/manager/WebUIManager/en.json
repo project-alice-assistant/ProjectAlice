@@ -1,0 +1,14 @@
+{
+	"nav": {
+		"widgets": "widgets",
+		"skills": "skills",
+		"myhome": "my home",
+		"scenarions": "scenarios",
+		"syslog": "syslog",
+		"alicewatch": "alicewatch",
+		"devmode": "devmode",
+		"admin": "admin",
+		"login": "login",
+		"logout": "logout"
+	}
+}
