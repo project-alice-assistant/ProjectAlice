@@ -64,9 +64,9 @@ class UtilsApi(Api):
 
 	@route('/i18n/', methods=['GET'])
 	def i18n(self):
-		return jsonify(data=self.LanguageManager.webUIStrings)
+		return jsonify(data=self.LanguageManager.loadWebUIStrings())
 
 
 	@route('/i18n/<lang>/', methods=['GET'])
 	def i18nLang(self, lang: str):
-		return jsonify(data=self.LanguageManager.webUIStrings[lang])
+		return jsonify(data=self.LanguageManager.loadWebUIStrings().get(lang, dict()))

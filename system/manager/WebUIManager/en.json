@@ -10,5 +10,70 @@
 		"admin"     : "admin",
 		"login"     : "login",
 		"logout"    : "logout"
+	},
+	"tours": {
+		"skills": {
+			"data0": "This is a skill that is installed on Project Alice.",
+			"data1": "If the skill has any user settings available, this button will appear. Click it to configure your skill!",
+			"data2": "You can stop any skill that isn't required for Alice to run using this button.",
+			"data3": "You can also reload a skill that isn't critical for Alice.",
+			"data4": "You disabled skill auto update? In that case you'll still be able to update your skill using this button! Please note that it is only showing if an update is available",
+			"data5": "Not using this skill anymore? Well, you can delete it here! Keep in mind you can't delete Alice required skills!",
+			"data6": "This shows the status of the skill.<br/><br/><div style=\"text-align: left;\">Green: All good<br/>Yellow: The skill was disabled<br/>Red: The skill failed starting.</div>",
+			"data7": "Don't know what to say to use this skill? Check here!",
+			"data8": "Get some useful info about the skill, like, who made it, its actual version etc.",
+			"data9": "If the skill developer included some instructions on how to use this skill, you will find them here.",
+			"data10": "Need more skills? This is where you can get them!"
+		}
+	},
+	"skill": {
+		"intents": "intents",
+		"info": "info",
+		"instructions": "instructions",
+		"demoDesc": "This is a UI tour demo skill",
+		"demoInstructions": "This is a demo"
+	},
+	"tooltips": {
+		"settings": "Settings",
+		"start": "Start",
+		"stop": "Stop",
+		"reload": "Reload",
+		"update": "Update",
+		"remove": "Remove",
+		"shop": "Shop",
+		"download": "Download",
+		"close": "Close",
+		"edit" : "Edit",
+		"theaterMode" : "Theater mode",
+		"uploadPresets" : "Upload presets",
+		"downloadPresets" : "Download presets",
+		"addWidgets" : "Add widgets",
+		"removeWidgets" : "Remove widgets",
+		"yes": "Yes",
+		"no": "No"
+	},
+	"buttons": {
+		"cancel": "Cancel",
+		"confirm": "Confirm",
+		"login": "Login"
+	},
+	"dialogs": {
+		"titles": {
+			"addWidgets": "Add widgets",
+			"widgetOptions": "Widget options",
+			"skillSettings": "Skill settings"
+		},
+		"labels": {
+			"displayTitle": "Display title",
+			"displayBorders": "Display borders",
+			"rotation": "Rotation",
+			"backgroundColor": "Background color",
+			"backgroundOpacity": "Background opacity",
+			"fontSize": "Font size",
+			"fontColor": "Font color",
+			"username": "Username",
+			"pinCode": "Pin code",
+			"rememberMe": "Remember me"
+		}
 	}
 }

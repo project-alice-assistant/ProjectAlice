@@ -57,9 +57,10 @@ class LanguageManager(Manager):
 			self._stringsData['system'] = json.load(jsonFile)
 
 
-	def loadWebUIStrings(self):
+	def loadWebUIStrings(self) -> dict:
 		for file in Path('system/manager/WebUIManager/').glob('*.json'):
 			self._webUIData[file.stem] = json.loads(file.read_text())
+		return self._webUIData
 
 
 	def loadSkillStrings(self, skillName: str):
