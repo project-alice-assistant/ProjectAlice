@@ -52,7 +52,9 @@
 		"yes": "Yes",
 		"no": "No",
 		"follow": "Follow",
-		"lock": "Lock"
+		"lock": "Lock",
+		"decreaseVerbosity": "Decrease verbosity",
+		"increaseVerbosity": "Increase verbosity"
 	},
 	"buttons": {
 		"cancel": "Cancel",
