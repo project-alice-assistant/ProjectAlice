@@ -50,12 +50,18 @@
 		"addWidgets" : "Add widgets",
 		"removeWidgets" : "Remove widgets",
 		"yes": "Yes",
-		"no": "No"
+		"no": "No",
+		"follow": "Follow",
+		"lock": "Lock"
 	},
 	"buttons": {
 		"cancel": "Cancel",
 		"confirm": "Confirm",
-		"login": "Login"
+		"login": "Login",
+		"send": "Send"
+	},
+	"labels": {
+		"sendCommand": "Send Command"
 	},
 	"dialogs": {
 		"titles": {

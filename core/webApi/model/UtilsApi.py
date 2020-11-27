@@ -70,3 +70,16 @@ class UtilsApi(Api):
 	@route('/i18n/<lang>/', methods=['GET'])
 	def i18nLang(self, lang: str):
 		return jsonify(data=self.LanguageManager.loadWebUIStrings().get(lang, dict()))
+
+
+	@route('/sysCmd/', methods=['POST'])
+	def sysCmd(self):
+		cmd = request.form.get('cmd', '')
+		cmd = cmd.split() if ' ' in cmd else [cmd]
+
+		if self.UserManager.apiTokenValid(request.headers.get('auth', '')):
+			self.Commons.runRootSystemCommand(cmd)
+		else:
+			self.Commons.runSystemCommand(cmd)
+
+		return jsonify(success=True)
