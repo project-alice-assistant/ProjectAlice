@@ -47,7 +47,7 @@ class UtilsApi(Api):
 			if not self.UserManager.apiTokenValid(request.headers.get('auth', '')):
 				configs = {key: value for key, value in configs.items() if not self.ConfigManager.isAliceConfSensitive(key)}
 
-			return jsonify(config=configs)
+			return jsonify(config=configs, categories=self.ConfigManager.aliceConfigurationCategories)
 		except Exception as e:
 			self.logError(f'Failed retrieving Alice configs: {e}')
 			return jsonify(success=False)
