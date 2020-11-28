@@ -84,5 +84,15 @@
 			"pinCode": "Pin code",
 			"rememberMe": "Remember me"
 		}
+	},
+	"utilities": {
+		"restart": "Restart",
+		"reboot": "Reboot",
+		"train": "Train assistant",
+		"update": "Update",
+		"addUser": "Add user",
+		"addWakeword": "Add wakeword",
+		"tuneWakeword": "Tune wakeword",
+		"wipe": "Wipe all"
 	}
 }
