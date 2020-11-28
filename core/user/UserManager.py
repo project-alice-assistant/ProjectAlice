@@ -1,7 +1,7 @@
 from pathlib import Path
 from time import time
 from typing import Any, Dict, Optional
-
+import json
 import bcrypt
 import jwt
 
@@ -178,7 +178,8 @@ class UserManager(Manager):
 	def goingBed(self, user: str = 'all'):
 		if user == 'all':
 			for user in self._users:
-				self._users[user].state('goingBed')
+				self.updateUserState(name=user, state='goingBed')
+			# self._users[user].state('goingBed')
 		else:
 			self._users[user].home = True
 			self._users[user].goingBed = True
@@ -188,7 +189,8 @@ class UserManager(Manager):
 	def sleeping(self, user: str = 'all'):
 		if user == 'all':
 			for user in self._users:
-				self._users[user].state('sleeping')
+				self.updateUserState(name=user, state='sleeping')
+			# self._users[user].state('sleeping')
 		else:
 			self._users[user].home = True
 			self._users[user].goingBed = False
@@ -198,7 +200,8 @@ class UserManager(Manager):
 	def wakeup(self, user: str = 'all'):
 		if user == 'all':
 			for user in self._users:
-				self._users[user].state('home')
+				self.updateUserState(name=user, state='home')
+			# self._users[user].state('home')
 		else:
 			self._users[user].home = True
 			self._users[user].goingBed = False
@@ -208,7 +211,8 @@ class UserManager(Manager):
 	def leftHome(self, user: str = 'all'):
 		if user == 'all':
 			for user in self._users:
-				self._users[user].state('out')
+				self.updateUserState(name=user, state='out')
+			# self._users[user].state('out')
 		else:
 			self._users[user].home = False
 			self._users[user].goingBed = False
@@ -218,18 +222,29 @@ class UserManager(Manager):
 	def home(self, user: str = 'all'):
 		if user == 'all':
 			for user in self._users:
-				self._users[user].state('home')
+				self.updateUserState(name=user, state='home')
+			# self._users[user].state('home')
 		else:
 			self._users[user].home = True
 			self._users[user].goingBed = False
 			self._users[user].sleeping = False
 
 
+	def updateUserState(self, name, state):
+		self.DatabaseManager.update(
+			tableName='users',
+			callerName=self.name,
+			values={'state': state},
+			row=('username', name))
+		self._loadUsers()
+
+
 	def hasAccessLevel(self, user: str, requiredAccessLevel: int) -> bool:
 		if isinstance(requiredAccessLevel, AccessLevel):
 			requiredAccessLevel = requiredAccessLevel.value
 
-		return user.lower() in self._users and AccessLevel[self._users[user.lower()].accessLevel.upper()].value <= requiredAccessLevel
+		return user.lower() in self._users and AccessLevel[
+			self._users[user.lower()].accessLevel.upper()].value <= requiredAccessLevel
 
 
 	def apiTokenValid(self, token: str) -> bool:
