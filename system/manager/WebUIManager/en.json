@@ -54,7 +54,8 @@
 		"follow": "Follow",
 		"lock": "Lock",
 		"decreaseVerbosity": "Decrease verbosity",
-		"increaseVerbosity": "Increase verbosity"
+		"increaseVerbosity": "Increase verbosity",
+		"save": "Save"
 	},
 	"buttons": {
 		"cancel": "Cancel",

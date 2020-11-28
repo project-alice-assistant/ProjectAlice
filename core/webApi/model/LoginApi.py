@@ -22,7 +22,7 @@ class LoginApi(Api):
 
 			token = self.UserManager.getUser(username).apiToken or self.UserManager.createApiToken(self.UserManager.getUser(username))
 
-			return jsonify(apiToken=token, authLevel=self.UserManager.getUser(username).accessLevel)
+			return jsonify(apiToken=token, authLevel=self.UserManager.apiTokenLevel(token))
 		except:
 			return jsonify(message='ERROR: Unauthorized')
 
@@ -31,6 +31,6 @@ class LoginApi(Api):
 	@ApiAuthenticated
 	def checkToken(self):
 		try:
-			return jsonify(success=True)
+			return jsonify(success=True, authLevel=self.UserManager.apiTokenLevel(request.headers.get('auth')))
 		except:
 			return jsonify(message='ERROR: Unauthorized')

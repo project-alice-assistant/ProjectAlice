@@ -1,6 +1,7 @@
 from flask import jsonify, request
 from flask_classful import route
 
+from core.ProjectAliceExceptions import ConfigurationUpdateFailed
 from core.interface.model.Api import Api
 from core.util.Decorators import ApiAuthenticated
 
@@ -44,12 +45,33 @@ class UtilsApi(Api):
 			configs = self.ConfigManager.aliceConfigurations
 			configs['aliceIp'] = self.Commons.getLocalIp()
 			configs['apiPort'] = self.ConfigManager.getAliceConfigByName('apiPort')
-			if not self.UserManager.apiTokenValid(request.headers.get('auth', '')):
+			if not self.UserManager.apiTokenValid(request.headers.get('auth', '') or self.UserManager.apiTokenLevel(request.headers.get('auth')) != 'admin'):
 				configs = {key: value for key, value in configs.items() if not self.ConfigManager.isAliceConfSensitive(key)}
 
-			return jsonify(config=configs, categories=self.ConfigManager.aliceConfigurationCategories)
+			return jsonify(config=configs, templates=self.ConfigManager.aliceTemplateConfigurations, categories=self.ConfigManager.aliceConfigurationCategories)
 		except Exception as e:
 			self.logError(f'Failed retrieving Alice configs: {e}')
+			return jsonify(success=False)
+
+
+	@route('/config/', methods=['PATCH'])
+	def setConfig(self):
+		try:
+			confs = request.json
+			for conf, value in confs.items():
+				if value == self.ConfigManager.getAliceConfigByName(conf):
+					continue
+
+				try:
+					self.ConfigManager.updateAliceConfiguration(conf, value, False)
+				except ConfigurationUpdateFailed as e:
+					self.logError(f'Updating config failed for **{conf}**: {e}')
+
+			self.ConfigManager.writeToAliceConfigurationFile()
+
+			return jsonify(success=True)
+		except Exception as e:
+			self.logError(f'Failed saving Alice configs: {e}')
 			return jsonify(success=False)
 
 
