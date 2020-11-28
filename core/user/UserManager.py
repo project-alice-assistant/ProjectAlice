@@ -1,7 +1,7 @@
 from pathlib import Path
 from time import time
 from typing import Any, Dict, Optional
-import json
+
 import bcrypt
 import jwt
 
