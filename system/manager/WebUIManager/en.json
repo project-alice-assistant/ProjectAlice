@@ -63,7 +63,7 @@
 		"send": "Send"
 	},
 	"labels": {
-		"sendCommand": "Send Command"
+		"sendCommand": "Send Linux system command"
 	},
 	"dialogs": {
 		"titles": {
