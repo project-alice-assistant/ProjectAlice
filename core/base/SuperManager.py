@@ -53,12 +53,16 @@ class SuperManager:
 		self.locationManager = None
 		self.wakewordManager = None
 		self.assistantManager = None
+		self.stateManager = None
 
 
 	def onStart(self):
 		try:
 			commons = self._managers.pop('CommonsManager')
 			commons.onStart()
+
+			stateManager = self._managers.pop('StateManager')
+			stateManager.onStart()
 
 			configManager = self._managers.pop('ConfigManager')
 			configManager.onStart()
@@ -123,6 +127,7 @@ class SuperManager:
 			self._managers[nluManager.name] = nluManager
 			self._managers[internetManager.name] = internetManager
 			self._managers[nodeRedManager.name] = nodeRedManager
+			self._managers[stateManager.name] = stateManager
 		except Exception as e:
 			import traceback
 
@@ -178,9 +183,11 @@ class SuperManager:
 		from core.dialog.DialogManager import DialogManager
 		from core.voice.WakewordManager import WakewordManager
 		from core.webui.WebUIManager import WebUIManager
+		from core.base.StateManager import StateManager
 
 		self.commonsManager = CommonsManager()
 		self.commons = self.commonsManager
+		self.stateManager = StateManager()
 		self.configManager = ConfigManager()
 		self.databaseManager = DatabaseManager()
 		self.skillManager = SkillManager()
