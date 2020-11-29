@@ -223,13 +223,14 @@ class UserManager(Manager):
 		if user == 'all':
 			for user in self._users:
 				self.updateUserState(name=user, state='home')
-			# self._users[user].state('home')
+		# self._users[user].state('home')
 		else:
 			self._users[user].home = True
 			self._users[user].goingBed = False
 			self._users[user].sleeping = False
 
 
+	# todo - Store user state in memory and write it to database onStop
 	def updateUserState(self, name, state):
 		self.DatabaseManager.update(
 			tableName='users',
