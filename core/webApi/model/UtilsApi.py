@@ -36,9 +36,9 @@ class UtilsApi(Api):
 			return jsonify(success=False)
 
 
-	@route('/updateAlice/')
+	@route('/update/')
 	@ApiAuthenticated
-	def updateAlice(self):
+	def update(self):
 		try:
 			self.ProjectAlice.updateProjectAlice()
 			return jsonify(success=True)
@@ -116,3 +116,49 @@ class UtilsApi(Api):
 			self.Commons.runSystemCommand(cmd)
 
 		return jsonify(success=True)
+
+
+	def addWakeword(self) -> dict:
+		try:
+			self.SkillManager.getSkillInstance('AliceCore').addNewWakeword()
+			return jsonify(success=True)
+		except Exception as e:
+			self.logError(f'Failed adding new wakeword: {e}')
+			return jsonify(success=False)
+
+
+	def tuneWakeword(self) -> dict:
+		try:
+			self.SkillManager.getSkillInstance('AliceCore').tuneWakeword()
+			return jsonify(success=True)
+		except Exception as e:
+			self.logError(f'Failed tuning wakeword: {e}')
+			return jsonify(success=False)
+
+
+	def wipeAll(self) -> dict:
+		try:
+			self.ProjectAlice.wipeAll()
+			self.ThreadManager.doLater(interval=2, func=self.ProjectAlice.doRestart)
+			return jsonify(success=True)
+		except Exception as e:
+			self.logError(f'Failed wiping system: {e}')
+			return jsonify(success=False)
+
+
+	def addUser(self) -> dict:
+		try:
+			self.SkillManager.getSkillInstance('AliceCore').addNewUser()
+			return jsonify(success=True)
+		except Exception as e:
+			self.logError(f'Failed adding new user: {e}')
+			return jsonify(success=False)
+
+
+	def train(self) -> dict:
+		try:
+			self.AssistantManager.checkAssistant(forceRetrain=True)
+			return jsonify(success=True)
+		except Exception as e:
+			self.logError(f'Failed training assistant: {e}')
+			return jsonify(success=False)

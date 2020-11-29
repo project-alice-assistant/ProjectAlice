@@ -2,6 +2,7 @@ import shutil
 from pathlib import Path
 
 from core.base.model.Manager import Manager
+from core.base.model.StateType import StateType
 
 
 class NluManager(Manager):
@@ -83,3 +84,6 @@ class NluManager(Manager):
 	@training.setter
 	def training(self, value: bool):
 		self._training = value
+
+		if not value:
+			self.StateManager.setState('projectalice.core.training', newState=StateType.FINISHED)
