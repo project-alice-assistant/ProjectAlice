@@ -768,3 +768,8 @@ class ProjectAliceObject:
 	@property
 	def WidgetManager(self):  # NOSONAR
 		return SM.SuperManager.getInstance().widgetManager
+
+
+	@property
+	def StateManager(self):  # NOSONAR
+		return SM.SuperManager.getInstance().stateManager

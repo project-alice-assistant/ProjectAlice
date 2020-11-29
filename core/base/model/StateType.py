@@ -10,3 +10,4 @@ class StateType(Enum):
 	STOPPED = 5
 	CRASHED = 6
 	KILLED = 7
+	BOOTING = 8

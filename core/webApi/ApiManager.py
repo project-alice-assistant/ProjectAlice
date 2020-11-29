@@ -13,6 +13,7 @@ from core.webApi.model.TelemetryApi import TelemetryApi
 from core.webApi.model.UsersApi import UsersApi
 from core.webApi.model.UtilsApi import UtilsApi
 from core.webApi.model.WidgetsApi import WidgetsApi
+from core.webApi.model.StateApi import StateApi
 
 
 class ApiManager(Manager):
@@ -20,7 +21,7 @@ class ApiManager(Manager):
 	app.config['SEND_FILE_MAX_AGE_DEFAULT'] = 0
 	CORS(app, resources={r'/api/*': {'origins': '*'}})
 
-	_APIS = [UtilsApi, LoginApi, UsersApi, SkillsApi, DialogApi, TelemetryApi, WidgetsApi]
+	_APIS = [UtilsApi, LoginApi, UsersApi, SkillsApi, DialogApi, TelemetryApi, WidgetsApi, StateApi]
 
 
 	def __init__(self):

@@ -4,6 +4,7 @@ from pathlib import Path
 import requests
 
 from core.base.SuperManager import SuperManager
+from core.base.model.StateType import StateType
 from core.base.model.Version import Version
 from core.commons import constants
 from core.commons.model.Singleton import Singleton
@@ -93,6 +94,9 @@ class ProjectAlice(Singleton):
 
 	def updateProjectAlice(self):
 		self._logger.logInfo('Checking for core updates')
+		self._superManager.stateManager.register('projectalice.core.updating', initialState=StateType.RUNNING)
+		self._superManager.stateManager.setState('projectalice.core.updating', newState=StateType.FINISHED)
+		return
 		self._isUpdating = True
 		req = requests.get(url=f'{constants.GITHUB_API_URL}/ProjectAlice/branches', auth=SuperManager.getInstance().configManager.getGithubAuth())
 		if req.status_code != 200:

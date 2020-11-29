@@ -36,6 +36,17 @@ class UtilsApi(Api):
 			return jsonify(success=False)
 
 
+	@route('/updateAlice/')
+	@ApiAuthenticated
+	def updateAlice(self):
+		try:
+			self.ProjectAlice.updateProjectAlice()
+			return jsonify(success=True)
+		except Exception as e:
+			self.logError(f'Failed updating Alice: {e}')
+			return jsonify(success=False)
+
+
 	@route('/config/', methods=['GET'])
 	def config(self):
 		"""

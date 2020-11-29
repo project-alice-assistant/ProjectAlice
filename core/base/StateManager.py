@@ -28,34 +28,39 @@ class StateManager(Manager):
 		return self._states
 
 
-	def register(self, statePath: str, autoRun: bool = False) -> Optional[State]:
+	def register(self, statePath: str, initialState: StateType.BORN) -> Optional[State]:
 		"""
 		Register a new state
 		:param statePath: If containing "." it will be distributed as a dict
-		:param autoRun: If true, state is set as RUNNING by default
+		:param initialState: sets the initialstate
 		:return: State
 		"""
 
 		try:
-			state = State(statePath.split('.')[-1], StateType.BORN if not autoRun else StateType.RUNNING)
-			self._buildDict(statePath, state)
+			state = State(statePath.split('.')[-1], initialState)
+			self._buildDict(statePath, state, initialState)
 			return state
 		except StateAlreadyRegistered:
 			return None
 
 
-	def _buildDict(self, statePath, state):
+	def _buildDict(self, statePath: str, state: State, initialState: StateType):
 		"""
 		Generates a dict from a dotted string
 		:param statePath: dotted string
 		:param state: state name
+		:param initialState: initialstate
 		"""
 		track = self._states
 		parts = statePath.split('.')
 		for i, path in enumerate(parts):
 			if i + 1 == len(parts):
 				if path in track:
-					raise StateAlreadyRegistered('Already declared state')
+					if state.currentState == initialState:
+						raise StateAlreadyRegistered('Already declared state')
+					else:
+						state.currentState = initialState
+						return
 				else:
 					track[path] = state
 					return
