@@ -1,4 +1,5 @@
 import subprocess
+import time
 from pathlib import Path
 
 import requests
@@ -94,9 +95,16 @@ class ProjectAlice(Singleton):
 
 	def updateProjectAlice(self):
 		self._logger.logInfo('Checking for core updates')
-		self._superManager.stateManager.register('projectalice.core.updating', initialState=StateType.RUNNING)
-		self._superManager.stateManager.setState('projectalice.core.updating', newState=StateType.FINISHED)
-		return
+		STATE = 'projectalice.core.updating'
+		state = self._superManager.stateManager.getState(STATE)
+		if not state:
+			self._superManager.stateManager.register(STATE, initialState=StateType.RUNNING)
+		elif state.currentState == StateType.RUNNING:
+			self._logger.logInfo('Update cancelled, already running')
+			return
+
+		self._superManager.stateManager.setState(STATE, newState=StateType.RUNNING)
+
 		self._isUpdating = True
 		req = requests.get(url=f'{constants.GITHUB_API_URL}/ProjectAlice/branches', auth=SuperManager.getInstance().configManager.getGithubAuth())
 		if req.status_code != 200:
@@ -135,6 +143,8 @@ class ProjectAlice(Singleton):
 
 		# Remove install tickets
 		[file.unlink() for file in Path(commons.rootDir(), 'system/skillInstallTickets').glob('*') if file.is_file()]
+
+		self._superManager.stateManager.setState(STATE, newState=StateType.FINISHED)
 
 		if currentHash != newHash:
 			self._logger.logWarning('New Alice version installed, need to restart...')

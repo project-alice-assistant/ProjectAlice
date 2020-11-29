@@ -28,7 +28,7 @@ class StateManager(Manager):
 		return self._states
 
 
-	def register(self, statePath: str, initialState: StateType.BORN) -> Optional[State]:
+	def register(self, statePath: str, initialState: StateType = StateType.BORN) -> Optional[State]:
 		"""
 		Register a new state
 		:param statePath: If containing "." it will be distributed as a dict
@@ -56,11 +56,7 @@ class StateManager(Manager):
 		for i, path in enumerate(parts):
 			if i + 1 == len(parts):
 				if path in track:
-					if state.currentState == initialState:
-						raise StateAlreadyRegistered('Already declared state')
-					else:
-						state.currentState = initialState
-						return
+					raise StateAlreadyRegistered('Already declared state')
 				else:
 					track[path] = state
 					return
@@ -73,21 +69,24 @@ class StateManager(Manager):
 
 	def getState(self, statePath: str) -> Optional[State]:
 		"""
-		Returns a registered staate on the given path, if any
+		Returns a registered state on the given path, if any
 		:param statePath: path
 		:return: State
 		"""
 		track = self._states
 		parts = statePath.split('.')
-		for i, path in enumerate(parts):
-			if i + 1 == len(parts):
-				ret = track.get(path)
-				if not isinstance(ret, State):
-					return None
+		try:
+			for i, path in enumerate(parts):
+				if i + 1 == len(parts):
+					ret = track.get(path)
+					if not isinstance(ret, State):
+						return None
+					else:
+						return ret
 				else:
-					return ret
-			else:
-				track = track[path]
+					track = track[path]
+		except KeyError:
+			return None
 
 
 	def setState(self, statePath: str, newState: StateType) -> bool:
