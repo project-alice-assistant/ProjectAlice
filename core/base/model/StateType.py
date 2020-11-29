@@ -11,3 +11,4 @@ class StateType(Enum):
 	CRASHED = 6
 	KILLED = 7
 	BOOTING = 8
+	ERROR = 9
