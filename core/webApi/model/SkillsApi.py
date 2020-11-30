@@ -42,6 +42,59 @@ class SkillsApi(Api):
 
 
 	@ApiAuthenticated
+	@route('/createSkill/', methods=['PUT'])
+	def createSkill(self):
+		try:
+			newSkill = {
+				'name'                  : request.form.get('skillName', ''),
+				'speakableName'         : request.form.get('skillSpeakableName', ''),
+				'description'           : request.form.get('skillDescription', 'Missing description'),
+				'category'              : request.form.get('skillCategory', 'undefined'),
+				'fr'                    : request.form.get('fr', False),
+				'de'                    : request.form.get('de', False),
+				'it'                    : request.form.get('it', False),
+				'pl'                    : request.form.get('pl', False),
+				'instructions'          : request.form.get('skillInstructions', False),
+				'pipreq'                : request.form.get('skillPipRequirements', ''),
+				'sysreq'                : request.form.get('skillSystemRequirements', ''),
+				'conditionOnline'       : request.form.get('skillOnline', False),
+				'conditionASRArbitrary' : request.form.get('skillArbitrary', False),
+				'conditionSkill'        : request.form.get('skillRequiredSkills', ''),
+				'conditionNotSkill'     : request.form.get('skillConflictingSkills', ''),
+				'conditionActiveManager': request.form.get('skillRequiredManagers', ''),
+				'widgets'               : request.form.get('skillWidgets', ''),
+				'nodes'                 : request.form.get('skillScenarioNodes', '')
+			}
+
+			if not self.SkillManager.createNewSkill(newSkill):
+				raise Exception
+
+			return jsonify(success=True)
+
+		except Exception as e:
+			self.logError(f'Something went wrong creating a new skill: {e}')
+			return jsonify(success=False)
+
+	@ApiAuthenticated
+	@route('/uploadSkill/', methods=['POST'])
+	def uploadToGithub(self):
+		try:
+			skillName = request.form.get('skillName', '')
+			skillDesc = request.form.get('skillDesc', '')
+
+			if not skillName:
+				raise Exception('Missing skill name')
+
+			if self.SkillManager.uploadSkillToGithub(skillName, skillDesc):
+				return jsonify(success=True, url=f'https://github.com/{self.ConfigManager.getAliceConfigByName("githubUsername")}/skill_{skillName}.git')
+
+			return jsonify(success=False)
+		except Exception as e:
+			self.logError(f'Failed uploading to github: {e}')
+			return jsonify(success=False)
+
+
+	@ApiAuthenticated
 	@route('/installSkills/', methods=['PUT'])
 	def installSkills(self):
 		try:

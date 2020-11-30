@@ -61,10 +61,39 @@
 		"cancel": "Cancel",
 		"confirm": "Confirm",
 		"login": "Login",
-		"send": "Send"
+		"send": "Send",
+		"create": "Create",
+		"reset": "Reset",
+		"uploadToGithub": "Upload to github",
+		"checkOnGithub": "Check on Github"
 	},
 	"labels": {
-		"sendCommand": "Send Linux system command"
+		"sendCommand": "Send Linux system command",
+		"skillName": "Skill name",
+		"skillSpeakableName": "Skill speakable name",
+		"skillDescription": "Skill description",
+		"skillCategory": "Skill category",
+		"skillLanguages": "Skill languages",
+		"skillInstructions": "Skill instructions",
+		"skillPipRequirements": "Skill PIP requirements",
+		"skillSystemRequirements": "Skill system requirements",
+		"skillWidgets": "Skill widgets",
+		"skillScenarioNodes": "Skill scenario nodes",
+		"skillOnline": "Skill requires internet",
+		"skillArbitrary": "Skill requires arbitrary ASR capture",
+		"skillRequiredSkills": "Skill required skills",
+		"skillConflictingSkills": "Skill conflicting skills",
+		"skillRequiredManagers": "Skill required managers"
+	},
+	"devMode": {
+		"listExplain": "Enter a comma separated list, example 'foo, bar, baz'"
+	},
+	"misc": {
+		"english": "English",
+		"german": "German",
+		"french": "French",
+		"italian": "Italian",
+		"polish": "Polish"
 	},
 	"dialogs": {
 		"titles": {

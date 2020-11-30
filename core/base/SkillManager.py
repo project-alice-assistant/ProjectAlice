@@ -937,7 +937,7 @@ class SkillManager(Manager):
 
 			self.Commons.runSystemCommand(['./venv/bin/pip', '--upgrade', 'projectalice-sk'])
 			self.Commons.runSystemCommand(['./venv/bin/projectalice-sk', 'create', '--file', f'{str(dump)}'])
-			self.logInfo(f'Created **skillName** skill')
+			self.logInfo(f'Created **{skillName}** skill')
 
 			return True
 		except Exception as e:
