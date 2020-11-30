@@ -75,6 +75,7 @@ class SkillsApi(Api):
 			self.logError(f'Something went wrong creating a new skill: {e}')
 			return jsonify(success=False)
 
+
 	@ApiAuthenticated
 	@route('/uploadSkill/', methods=['POST'])
 	def uploadToGithub(self):
