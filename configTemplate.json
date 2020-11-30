@@ -300,7 +300,12 @@
 		"dataType"    : "boolean",
 		"isSensitive" : false,
 		"description" : "Only available with Amazon Polly",
-		"category"    : "tts"
+		"category"    : "tts",
+		"parent"      : {
+			"config"   : "tts",
+			"condition": "is",
+			"value"    : "amazon"
+		}
 	},
 	"newDeviceBroadcastPort"  : {
 		"defaultValue": 12354,
