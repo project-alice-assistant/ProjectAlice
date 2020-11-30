@@ -86,7 +86,8 @@
 		"skillRequiredManagers": "Skill required managers"
 	},
 	"devMode": {
-		"listExplain": "Enter a comma separated list, example 'foo, bar, baz'"
+		"listExplain": "Enter a comma separated list, example 'foo, bar, baz'",
+		"skillAlreadyExists": "This skill already exists"
 	},
 	"misc": {
 		"english": "English",
