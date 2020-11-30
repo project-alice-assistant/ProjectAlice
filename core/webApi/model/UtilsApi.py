@@ -2,6 +2,7 @@ from flask import jsonify, request
 from flask_classful import route
 
 from core.ProjectAliceExceptions import ConfigurationUpdateFailed
+from core.commons import constants
 from core.interface.model.Api import Api
 from core.util.Decorators import ApiAuthenticated
 
@@ -56,6 +57,7 @@ class UtilsApi(Api):
 			configs = self.ConfigManager.aliceConfigurations
 			configs['aliceIp'] = self.Commons.getLocalIp()
 			configs['apiPort'] = self.ConfigManager.getAliceConfigByName('apiPort')
+			configs['aliceVersion'] = constants.VERSION
 			if not self.UserManager.apiTokenValid(request.headers.get('auth', '') or self.UserManager.apiTokenLevel(request.headers.get('auth')) != 'admin'):
 				configs = {key: value for key, value in configs.items() if not self.ConfigManager.isAliceConfSensitive(key)}
 
