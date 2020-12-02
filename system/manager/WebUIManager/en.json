@@ -65,7 +65,8 @@
 		"create": "Create",
 		"reset": "Reset",
 		"uploadToGithub": "Upload to github",
-		"checkOnGithub": "Check on Github"
+		"checkOnGithub": "Check on Github",
+		"minimize": "Minimize"
 	},
 	"labels": {
 		"sendCommand": "Send Linux system command",
