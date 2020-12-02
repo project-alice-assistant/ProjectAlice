@@ -100,7 +100,8 @@
 		"titles": {
 			"addWidgets": "Add widgets",
 			"widgetOptions": "Widget options",
-			"skillSettings": "Skill settings"
+			"skillSettings": "Skill settings",
+			"confirmSkillDeletion": "Are you sure you want to delete this skill?"
 		},
 		"labels": {
 			"displayTitle": "Display title",
@@ -112,7 +113,10 @@
 			"fontColor": "Font color",
 			"username": "Username",
 			"pinCode": "Pin code",
-			"rememberMe": "Remember me"
+			"rememberMe": "Remember me",
+			"yes": "yes",
+			"no": "no",
+			"cancel": "cancel"
 		}
 	},
 	"utilities": {
