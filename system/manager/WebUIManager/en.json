@@ -55,11 +55,19 @@
 		"lock": "Lock",
 		"decreaseVerbosity": "Decrease verbosity",
 		"increaseVerbosity": "Increase verbosity",
-		"save": "Save"
+		"save": "Save",
+		"manageLocations": "Manage locations",
+		"manageDevices": "Manage devices",
+		"addLocations": "Add locations",
+		"removeLocations": "Remove locations",
+		"paintFloors": "Paint floors",
+		"buildMode": "Build",
+		"manageFurniture": "Manage furniture"
 	},
 	"buttons": {
 		"cancel": "Cancel",
 		"confirm": "Confirm",
+		"ok": "Ok",
 		"login": "Login",
 		"send": "Send",
 		"create": "Create",
@@ -102,7 +110,11 @@
 			"addWidgets": "Add widgets",
 			"widgetOptions": "Widget options",
 			"skillSettings": "Skill settings",
-			"confirmSkillDeletion": "Are you sure you want to delete this skill?"
+			"confirmSkillDeletion": "Are you sure you want to delete this skill?",
+			"enterLocationName": "Please name this new location"
+		},
+		"bodies": {
+			"clickToAddLocation": "Then click on your floor plan where you want the new location to be added"
 		},
 		"labels": {
 			"displayTitle": "Display title",

@@ -1,31 +1,25 @@
-import ast
 import json
-import sqlite3
 from dataclasses import dataclass, field
 
 from core.base.model.ProjectAliceObject import ProjectAliceObject
+from core.commons import constants
 
 
 @dataclass
 class Location(ProjectAliceObject):
-	data: sqlite3.Row
-	name: str = ''
+	data: dict
 
 	id: int = field(init=False)
+	name: str = field(init=False)
+	synonyms: set = field(default_factory=set)
+	settings: dict = field(default_factory=dict)
 
 
 	def __post_init__(self):
 		self.id = self.data['id']
 		self.name = self.data['name']
-		self.synonyms = list()
-		if 'synonyms' in self.data.keys() and self.data['synonyms']:
-			self.synonyms = ast.literal_eval(self.data['synonyms'])
-		self.display = dict()
-		if 'display' in self.data.keys() and self.data['display']:
-			self.display = ast.literal_eval(self.data['display'])
-		else:
-			self.display = {'width'  : 150,
-							'height' : 150},
+		self.synonyms = json.loads(self.data['synonyms'])
+		self.settings = json.loads(self.data['settings'])
 
 
 	def getSaveName(self) -> str:
@@ -34,24 +28,23 @@ class Location(ProjectAliceObject):
 
 	def changeName(self, newName: str):
 		self.name = newName
-		self.DatabaseManager.update(tableName=self.LocationManager.TABLE,
-		                            callerName=self.LocationManager.name,
-		                            values={'name': newName},
-		                            row=('id', self.id))
+		self.DatabaseManager.update(
+			tableName=self.LocationManager.LOCATIONS_TABLE,
+			callerName=self.LocationManager.name,
+			values={'name': newName},
+			row=('id', self.id)
+		)
 
 
-	def addSynonym(self, synonym: str) -> list:
-		if synonym in self.synonyms:
-			raise Exception(synonym, ' already known')
-		self.synonyms.append(synonym)
-		return self.synonyms
+	def addSynonym(self, synonym: str):
+		self.synonyms.add(synonym)
 
 
-	def deleteSynonym(self, synonym: str) -> list:
-		if synonym not in self.synonyms:
-			raise Exception(synonym, ' unknown')
-		self.synonyms.remove(synonym)
-		return self.synonyms
+	def deleteSynonym(self, synonym: str):
+		try:
+			self.synonyms.remove(synonym)
+		except:
+			raise Exception(synonym, constants.UNKNOWN)
 
 
 	def toJson(self) -> str:
@@ -60,17 +53,15 @@ class Location(ProjectAliceObject):
 				'id'      : self.id,
 				'name'    : self.name,
 				'synonyms': self.synonyms,
-				'display' : self.display
+				'settings': self.settings
 			}
 		})
 
 
-	def asJson(self) -> dict:
-		devices = {device.id: device.asJson() for device in self.DeviceManager.getDevicesByLocation(locationID=self.id, withLinks=False)}
+	def toDict(self) -> dict:
 		return {
 			'id'      : self.id,
 			'name'    : self.name,
 			'synonyms': self.synonyms,
-			'display' : self.display,
-			'devices' : devices
+			'settings': self.settings
 		}

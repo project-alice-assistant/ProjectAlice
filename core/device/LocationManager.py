@@ -2,80 +2,164 @@ import json
 from typing import Dict, List, Optional
 
 from core.base.model.Manager import Manager
+from core.device.model.Construction import Construction
+from core.device.model.Furniture import Furniture
 from core.device.model.Location import Location
 from core.dialog.model.DialogSession import DialogSession
 
 
 class LocationManager(Manager):
-	TABLE = 'locations'
+
+	LOCATIONS_TABLE = 'locations'
+	CONSTRUCTIONS_TABLE = 'constructions'
+	FURNITURE_TABLE = 'furnitures'
+
 	DATABASE = {
-		TABLE: [
-			'id INTEGER PRIMARY KEY',
+		LOCATIONS_TABLE: [
+			'id INTEGER PRIMARY KEY', #NOSONAR
 			'name TEXT NOT NULL',
-			'synonyms TEXT',
-			'display TEXT'
+			"synonyms TEXT NOT NULL DEFAULT '{}'",
+			'parentLocation INTEGER NOT NULL DEFAULT 0',
+			"settings TEXT NOT NULL DEFAULT '{}'"
+		],
+		CONSTRUCTIONS_TABLE: [
+			'id INTEGER PRIMARY KEY',
+			'parentLocation INTEGER',
+			"settings TEXT DEFAULT '{}'"
+		],
+		FURNITURE_TABLE: [
+			'id INTEGER PRIMARY KEY',
+			'parentLocation INTEGER',
+			"settings TEXT DEFAULT '{}'"
 		]
 	}
 
 
 	def __init__(self):
 		super().__init__(databaseSchema=self.DATABASE)
+
 		self._locations: Dict[int, Location] = dict()
+		self._constructions: Dict[int, Construction] = dict()
+		self._furnitures: Dict[int, Furniture] = dict()
 
 
 	def onStart(self):
 		super().onStart()
 
 		self.loadLocations()
+		self.loadConstructions()
+		self.loadFurnitures()
+
 		self.logInfo(f'Loaded **{len(self._locations)}** location', plural='location')
 
 
-	def getLocationWithName(self, name: str) -> Optional[Location]:
-		for val in self._locations.values():
-			if val.name.lower() == name.lower():
-				return val
-		for loc in self._locations.values():
-			if name.lower() in (syn.lower() for syn in loc.synonyms):
-				return loc
-
-
 	def loadLocations(self):
-		for row in self.databaseFetch(tableName=self.TABLE, query='SELECT * FROM :__table__', method='all'):
-			self._locations[row['id']] = Location(row)
+		for row in self.databaseFetch(tableName=self.LOCATIONS_TABLE, query='SELECT * FROM :__table__', method='all'): #NOSONAR
+			self._locations[row['id']] = Location(self.Commons.dictFromRow(row))
 			self.logInfo(f'Loaded location {row["id"]} - {row["name"]}')
 
 
-	def addNewLocation(self, name: str = None) -> Location:
-		loc = self.getLocationWithName(name)
-		# todo check existing synonyms!
-		if not loc:
-			values = {'name': name}
-			values['id'] = self.databaseInsert(tableName=self.TABLE, values=values)
-			# noinspection PyTypeChecker
-			self._locations[values['id']] = Location(values)
-			return self._locations[values['id']]
-		else:
-			raise Exception(f'Location {name} already exists')
+	def loadConstructions(self):
+		for row in self.databaseFetch(tableName=self.CONSTRUCTIONS_TABLE, query='SELECT * FROM :__table__', method='all'): #NOSONAR
+			self._constructions[row['id']] = Construction(self.Commons.dictFromRow(row))
 
 
-	def deleteLocation(self, locId: int) -> bool:
-		self.DatabaseManager.delete(tableName=self.TABLE,
-		                            callerName=self.name,
-		                            values={'id': locId})
+	def loadFurnitures(self):
+		for row in self.databaseFetch(tableName=self.FURNITURE_TABLE, query='SELECT * FROM :__table__', method='all'): #NOSONAR
+			self._furnitures[row['id']] = Furniture(self.Commons.dictFromRow(row))
+
+
+	def addNewLocation(self, name: str = None, data: dict = None) -> Optional[Location]:
+		if not name:
+			name = data['name']
+
+		if self.getLocationByName(name) or self.getLocationBySynonym(name=name):
+			self.logWarning(f'Location with name or synonym **{name}** already exists')
+			return None
+
+		locationId = self.databaseInsert(
+			tableName=self.LOCATIONS_TABLE,
+			values={
+				'name': name
+			}
+		)
+
+		location = Location({
+			'id': locationId,
+			'name': name,
+			'synonyms': set(),
+			'settings': {
+				'x': data['x'],
+				'y': data['y']
+			}
+		})
+
+		self._locations[locationId] = location
+		return location
+
+
+	def deleteLocation(self, locId: int):
+		self.DatabaseManager.delete(
+			tableName=self.LOCATIONS_TABLE,
+		    callerName=self.name,
+		    values={
+			    'id': locId
+		    }
+		)
 		self._locations.pop(locId, None)
 
-		self.DatabaseManager.delete(tableName=self.DeviceManager.DB_LINKS,
-		                            callerName=self.DeviceManager.name,
-		                            values={'locationID': locId})
-		return True
+		self.DatabaseManager.delete(
+			tableName=self.CONSTRUCTIONS_TABLE,
+			callerName=self.name,
+			values={
+				'parentLocationId': locId
+			}
+		)
+
+		for construction in self._constructions.copy().values():
+			if construction.parentLocation == locId:
+				self._constructions.pop(construction.id, None)
+
+
+		self.DatabaseManager.delete(
+			tableName=self.FURNITURE_TABLE,
+			callerName=self.name,
+			values={
+				'parentLocationId': locId
+			}
+		)
+
+		for furniture in self._furnitures.copy().values():
+			if furniture.parentLocation == locId:
+				self._furnitures.pop(furniture.id, None)
+
+
+		self.DatabaseManager.delete(
+			tableName=self.DeviceManager.DB_LINKS,
+			callerName=self.DeviceManager.name,
+			values={
+				'locationID': locId
+			}
+		)
+
+
+	def getLocationByName(self, name: str) -> Optional[Location]:
+		return {location.name.lower(): location for location in self._locations.values()}.get(name.lower(), None)
+
+
+	def getLocationBySynonym(self, name: str) -> Optional[Location]:
+		for location in self._locations.values():
+			if name.lower() in [synonym.lower() for synonym in location.synonyms]:
+				return location
+		return None
 
 
 	def addLocationSynonym(self, locId: int, synonym: str):
-		location = self.getLocationWithName(synonym)
+		location = self.getLocationByName(synonym)
 		if location:
 			raise Exception(f'Synonym already used for {location.name}')
 		synlist = self._locations[locId].addSynonym(synonym)
-		self.DatabaseManager.update(tableName=self.TABLE,
+		self.DatabaseManager.update(tableName=self.LOCATIONS_TABLE,
 		                            callerName=self.name,
 		                            values={'synonyms': json.dumps(synlist)},
 		                            row=('id', locId))
@@ -83,7 +167,7 @@ class LocationManager(Manager):
 
 	def deleteLocationSynonym(self, locId: int, synonym: str):
 		synlist = self._locations[locId].deleteSynonym(synonym)
-		self.DatabaseManager.update(tableName=self.TABLE,
+		self.DatabaseManager.update(tableName=self.LOCATIONS_TABLE,
 		                            callerName=self.name,
 		                            values={
 			                            'synonyms': json.dumps(synlist)
@@ -104,7 +188,7 @@ class LocationManager(Manager):
 			# update display of location
 			self._locations[values['id']].display = values['display']
 			# todo check synonyms for new injection -> should happen while creating!
-			self.DatabaseManager.update(tableName=self.TABLE,
+			self.DatabaseManager.update(tableName=self.LOCATIONS_TABLE,
 			                            callerName=self.name,
 			                            values={
 				                            'display': json.dumps(values['display'])
@@ -116,7 +200,7 @@ class LocationManager(Manager):
 
 	# noinspection PyUnusedLocal
 	def getLocation(self, locId: int = None, location: str = None, siteId: str = None, deviceTypeId: int = None) -> Location:
-		#todo implement location det. logic
+		# todo implement location det. logic
 		# 1a) check name vs locations - done
 		# 1b) check name vs location synonyms - done
 		# 2) get device for siteID, get main location of device - done
@@ -140,14 +224,14 @@ class LocationManager(Manager):
 			return loc
 
 		if location:
-			loc = self.getLocationWithName(name=location)
+			loc = self.getLocationByName(name=location)
 			if not loc:
 				loc = self.LocationManager.addNewLocation(name=location)
 			if loc:
 				return loc
 
 		if siteId:
-			loc = self.getLocationWithName(name=siteId)
+			loc = self.getLocationByName(name=siteId)
 			if loc:
 				return loc
 
@@ -176,6 +260,16 @@ class LocationManager(Manager):
 	@property
 	def locations(self) -> Dict[int, Location]:
 		return self._locations
+
+
+	@property
+	def constructions(self) -> Dict[int, Construction]:
+		return self._constructions
+
+
+	@property
+	def furnitures(self) -> Dict[int, Furniture]:
+		return self._furnitures
 
 
 	def cleanRoomNameToSiteId(self, roomName: str) -> str:

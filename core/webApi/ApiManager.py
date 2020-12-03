@@ -8,6 +8,7 @@ from flask_cors import CORS
 from core.base.model.Manager import Manager
 from core.webApi.model.DialogApi import DialogApi
 from core.webApi.model.LoginApi import LoginApi
+from core.webApi.model.MyHomeApi import MyHomeApi
 from core.webApi.model.SkillsApi import SkillsApi
 from core.webApi.model.TelemetryApi import TelemetryApi
 from core.webApi.model.UsersApi import UsersApi
@@ -21,7 +22,7 @@ class ApiManager(Manager):
 	app.config['SEND_FILE_MAX_AGE_DEFAULT'] = 0
 	CORS(app, resources={r'/api/*': {'origins': '*'}})
 
-	_APIS = [UtilsApi, LoginApi, UsersApi, SkillsApi, DialogApi, TelemetryApi, WidgetsApi, StateApi]
+	_APIS = [UtilsApi, LoginApi, UsersApi, SkillsApi, DialogApi, TelemetryApi, WidgetsApi, StateApi, MyHomeApi]
 
 
 	def __init__(self):
