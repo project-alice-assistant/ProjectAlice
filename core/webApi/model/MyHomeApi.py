@@ -34,9 +34,9 @@ class MyHomeApi(Api):
 			if location:
 				return jsonify(location=location.toDict())
 			else:
-				raise Exception
+				return jsonify(success=False)
 		except Exception as e:
-			self.logError(f'Something went wrong creating a new location: {e}')
+			self.logError(f'Something went wrong creating a new location {e}')
 			return jsonify(message='ERROR')
 
 

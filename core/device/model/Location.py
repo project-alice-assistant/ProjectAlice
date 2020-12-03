@@ -3,6 +3,7 @@ from dataclasses import dataclass, field
 
 from core.base.model.ProjectAliceObject import ProjectAliceObject
 from core.commons import constants
+from core.util.Decorators import deprecated
 
 
 @dataclass
@@ -11,6 +12,7 @@ class Location(ProjectAliceObject):
 
 	id: int = field(init=False)
 	name: str = field(init=False)
+	parentLocation: int = field(init=False)
 	synonyms: set = field(default_factory=set)
 	settings: dict = field(default_factory=dict)
 
@@ -18,10 +20,23 @@ class Location(ProjectAliceObject):
 	def __post_init__(self):
 		self.id = self.data['id']
 		self.name = self.data['name']
-		self.synonyms = json.loads(self.data['synonyms'])
+		self.parentLocation = self.data['parentLocation']
+		self.synonyms = set(json.loads(self.data['synonyms']))
 		self.settings = json.loads(self.data['settings'])
 
+		if not self.settings:
+			self.settings = {
+				'x': 0,
+				'y': 0,
+				'z': 0,
+				'w': 150,
+				'h': 150,
+				'rotation': 0,
+				'texture': ''
+			}
 
+
+	@deprecated
 	def getSaveName(self) -> str:
 		return self.name.replace(' ', '_')
 
@@ -52,7 +67,8 @@ class Location(ProjectAliceObject):
 			self.name: {
 				'id'      : self.id,
 				'name'    : self.name,
-				'synonyms': self.synonyms,
+				'parentLocation': self.parentLocation,
+				'synonyms': list(self.synonyms),
 				'settings': self.settings
 			}
 		})
@@ -62,6 +78,7 @@ class Location(ProjectAliceObject):
 		return {
 			'id'      : self.id,
 			'name'    : self.name,
-			'synonyms': self.synonyms,
+			'parentLocation': self.parentLocation,
+			'synonyms': list(self.synonyms),
 			'settings': self.settings
 		}

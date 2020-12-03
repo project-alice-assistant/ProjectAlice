@@ -73,6 +73,10 @@ class LocationManager(Manager):
 		if not name:
 			name = data['name']
 
+		if not name:
+			self.logError('Cannot create a new location with empty name')
+			return None
+
 		if self.getLocationByName(name) or self.getLocationBySynonym(name=name):
 			self.logWarning(f'Location with name or synonym **{name}** already exists')
 			return None
@@ -80,18 +84,21 @@ class LocationManager(Manager):
 		locationId = self.databaseInsert(
 			tableName=self.LOCATIONS_TABLE,
 			values={
-				'name': name
+				'name': name,
+				'parentLocation': data['parentLocation']
 			}
 		)
 
 		location = Location({
 			'id': locationId,
 			'name': name,
-			'synonyms': set(),
-			'settings': {
+			'parentLocation': data['parentLocation'],
+			'synonyms': json.dumps(list()),
+			'settings': json.dumps({
 				'x': data['x'],
-				'y': data['y']
-			}
+				'y': data['y'],
+				'z': data['z']
+			})
 		})
 
 		self._locations[locationId] = location
@@ -136,10 +143,10 @@ class LocationManager(Manager):
 
 		self.DatabaseManager.delete(
 			tableName=self.DeviceManager.DB_LINKS,
-			callerName=self.DeviceManager.name,
-			values={
-				'locationID': locId
-			}
+		    callerName=self.DeviceManager.name,
+		    values={
+			    'locationID': locId
+		    }
 		)
 
 
