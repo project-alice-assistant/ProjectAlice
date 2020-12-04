@@ -1,6 +1,6 @@
-import traceback
+from pathlib import Path
 
-from flask import jsonify, request
+from flask import jsonify, request, send_from_directory
 from flask_classful import route
 
 from core.interface.model.Api import Api
@@ -25,7 +25,6 @@ class MyHomeApi(Api):
 				'furnitures': {furniture.id: furniture.toDict() for furniture in self.LocationManager.furnitures.values()}
 			})
 		except:
-			traceback.print_exc()
 			return jsonify(success=False)
 
 
@@ -50,4 +49,20 @@ class MyHomeApi(Api):
 			return jsonify(success=self.LocationManager.updateLocation(int(locationId), request.json).toDict())
 		except Exception as e:
 			self.logError(f'Failed saving location {e}')
+			return jsonify(success=False)
+
+
+	@route('/locations/floors/', methods=['GET'])
+	def getFloorsList(self):
+		try:
+			return jsonify(data=[image.stem for image in Path(self.Commons.rootDir(), 'core/webApi/static/images/floors/').glob('*.png')])
+		except:
+			return jsonify(success=False)
+
+
+	@route('/locations/floors/<imageId>.png', methods=['GET'])
+	def getFloor(self, imageId: str):
+		try:
+			return send_from_directory('static/images', f'floors/{imageId}.png')
+		except:
 			return jsonify(success=False)
