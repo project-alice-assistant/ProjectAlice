@@ -1,4 +1,5 @@
 import json
+import math
 from dataclasses import dataclass, field
 
 from core.base.model.ProjectAliceObject import ProjectAliceObject
@@ -22,18 +23,18 @@ class Location(ProjectAliceObject):
 		self.name = self.data['name']
 		self.parentLocation = self.data['parentLocation']
 		self.synonyms = set(json.loads(self.data.get('synonyms', '{}')))
-		self.settings = json.loads(self.data.get('settings', '{}'))
+		self.settings = json.loads(self.data.get('settings', '{}')) if isinstance(self.data.get('settings', '{}'), str) else self.data.get('settings', dict)
 
-		if not self.settings:
-			self.settings = {
-				'x': 0,
-				'y': 0,
-				'z': 0,
-				'w': 150,
-				'h': 150,
-				'rotation': 0,
-				'texture': ''
-			}
+		settings = {
+			'x': 0,
+			'y': 0,
+			'z': 0,
+			'w': 150,
+			'h': 150,
+			'r': 0,
+			't': ''
+		}
+		self.settings = {**settings, **self.settings}
 
 		if self.id == -1:
 			self.saveToDB()
@@ -43,30 +44,47 @@ class Location(ProjectAliceObject):
 	def saveToDB(self):
 		if self.id != -1:
 			self.DatabaseManager.replace(
-				tableName='widgets',
+				tableName=self.LocationManager.LOCATIONS_TABLE,
 				query='REPLACE INTO :__table__ (id, name, parentLocation, synonyms, settings) VALUES (:id, :name, :parentLocation, :synonyms, :settings)',
 				callerName=self.LocationManager.name,
 				values={
-					'id'      : self.id,
-					'name'    : self.name,
-					'parentLocation'  : json.dumps(self.parentLocation),
-					'synonyms'  : json.dumps(list(self.synonyms)),
-					'settings': json.dumps(self.settings)
+					'id'            : self.id,
+					'name'          : self.name,
+					'parentLocation': self.parentLocation,
+					'synonyms'      : json.dumps(list(self.synonyms)),
+					'settings'      : json.dumps(self.settings)
 				}
 			)
 		else:
 			locationId = self.DatabaseManager.insert(
-				tableName='locations',
+				tableName=self.LocationManager.LOCATIONS_TABLE,
 				callerName=self.LocationManager.name,
 				values={
-					'name'    : self.name,
-					'parentLocation'  : json.dumps(self.parentLocation),
-					'synonyms'  : json.dumps(list(self.synonyms)),
-					'settings': json.dumps(self.settings)
+					'name'          : self.name,
+					'parentLocation': self.parentLocation,
+					'synonyms'      : json.dumps(list(self.synonyms)),
+					'settings'      : json.dumps(self.settings)
 				}
 			)
 
 			self.id = locationId
+
+
+	def updateSettings(self, settings: dict):
+		if 'x' in settings:
+			settings['x'] = math.ceil(settings['x'] / 5) * 5
+		if 'y' in settings:
+			settings['y'] = math.ceil(settings['y'] / 5) * 5
+		if 'w' in settings:
+			settings['w'] = math.ceil(settings['w'] / 5) * 5
+		if 'h' in settings:
+			settings['h'] = math.ceil(settings['h'] / 5) * 5
+
+		self.settings = {**self.settings, **settings}
+
+
+	def updatesynonyms(self, synonyms):
+		self.synonyms = {*self.synonyms, *synonyms}
 
 
 	@deprecated
@@ -98,20 +116,20 @@ class Location(ProjectAliceObject):
 	def toJson(self) -> str:
 		return json.dumps({
 			self.name: {
-				'id'      : self.id,
-				'name'    : self.name,
+				'id'            : self.id,
+				'name'          : self.name,
 				'parentLocation': self.parentLocation,
-				'synonyms': list(self.synonyms),
-				'settings': self.settings
+				'synonyms'      : list(self.synonyms),
+				'settings'      : self.settings
 			}
 		})
 
 
 	def toDict(self) -> dict:
 		return {
-			'id'      : self.id,
-			'name'    : self.name,
+			'id'            : self.id,
+			'name'          : self.name,
 			'parentLocation': self.parentLocation,
-			'synonyms': list(self.synonyms),
-			'settings': self.settings
+			'synonyms'      : list(self.synonyms),
+			'settings'      : self.settings
 		}

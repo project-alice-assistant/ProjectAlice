@@ -1,10 +1,9 @@
-import json
 from typing import Dict, List, Optional
 
 from core.base.model.Manager import Manager
-from core.device.model.Construction import Construction
-from core.device.model.Furniture import Furniture
-from core.device.model.Location import Location
+from core.myHome.model.Construction import Construction
+from core.myHome.model.Furniture import Furniture
+from core.myHome.model.Location import Location
 from core.dialog.model.DialogSession import DialogSession
 
 
@@ -54,18 +53,18 @@ class LocationManager(Manager):
 
 
 	def loadLocations(self):
-		for row in self.databaseFetch(tableName=self.LOCATIONS_TABLE, query='SELECT * FROM :__table__', method='all'): #NOSONAR
+		for row in self.databaseFetch(tableName=self.LOCATIONS_TABLE, method='all'): #NOSONAR
 			self._locations[row['id']] = Location(self.Commons.dictFromRow(row))
-			self.logInfo(f'Loaded location {row["id"]} - {row["name"]}')
+			self.logInfo(f'Loaded location **{row["name"]}**')
 
 
 	def loadConstructions(self):
-		for row in self.databaseFetch(tableName=self.CONSTRUCTIONS_TABLE, query='SELECT * FROM :__table__', method='all'): #NOSONAR
+		for row in self.databaseFetch(tableName=self.CONSTRUCTIONS_TABLE, method='all'): #NOSONAR
 			self._constructions[row['id']] = Construction(self.Commons.dictFromRow(row))
 
 
 	def loadFurnitures(self):
-		for row in self.databaseFetch(tableName=self.FURNITURE_TABLE, query='SELECT * FROM :__table__', method='all'): #NOSONAR
+		for row in self.databaseFetch(tableName=self.FURNITURE_TABLE, method='all'): #NOSONAR
 			self._furnitures[row['id']] = Furniture(self.Commons.dictFromRow(row))
 
 
@@ -143,47 +142,54 @@ class LocationManager(Manager):
 
 
 	def addLocationSynonym(self, locId: int, synonym: str):
-		location = self.getLocationByName(synonym)
+		location = self.getLocationBySynonym(synonym)
 		if location:
 			raise Exception(f'Synonym already used for {location.name}')
-		synlist = self._locations[locId].addSynonym(synonym)
-		self.DatabaseManager.update(tableName=self.LOCATIONS_TABLE,
-		                            callerName=self.name,
-		                            values={'synonyms': json.dumps(synlist)},
-		                            row=('id', locId))
+
+		location = self._locations.get(locId, None)
+		if not location:
+			raise Exception(f"Cannot add synonym, location with id **{locId}** doesn't exist")
+
+		location.addSynonym(synonym)
+		location.saveToDB()
 
 
 	def deleteLocationSynonym(self, locId: int, synonym: str):
-		synlist = self._locations[locId].deleteSynonym(synonym)
-		self.DatabaseManager.update(tableName=self.LOCATIONS_TABLE,
-		                            callerName=self.name,
-		                            values={
-			                            'synonyms': json.dumps(synlist)
-		                            },
-		                            row=('id', locId))
+		location = self._locations.get(locId, None)
+		if not location:
+			raise Exception(f"Cannot remove synonym, location with id **{locId}** doesn't exist")
+
+		location.deleteSynonym(synonym)
+		location.saveToDB()
 
 
-	def getSettings(self, locId: int):
-		return self._locations[locId].synonyms
+	def getSettings(self, locId: int) -> dict:
+		location = self._locations.get(locId, None)
+		if not location:
+			raise Exception(f"Cannot retrieve settings, location with id **{locId}** doesn't exist")
+
+		return location.settings
 
 
-	def updateLocations(self, data: Dict):
-		for room, values in data.items():
-			# unknown entry!
-			if values['id'] == 'undefined':
-				self.logError(f'Unknown location updated! {values["name"]} reported without id.')
-				continue
-			# update display of location
-			self._locations[values['id']].display = values['display']
-			# todo check synonyms for new injection -> should happen while creating!
-			self.DatabaseManager.update(tableName=self.LOCATIONS_TABLE,
-			                            callerName=self.name,
-			                            values={
-				                            'display': json.dumps(values['display'])
-			                            },
-			                            row=('id', values['id']))
-			for device in values['devices']:
-				self.DeviceManager.updateDeviceDisplay(device)
+	def updateLocation(self, locId: int, data: dict) -> Location:
+		location = self._locations.get(locId, None)
+		if not location:
+			raise Exception(f"Cannot update location, location with id **{locId}** doesn't exist")
+
+		if 'name' in data:
+			location.name = data['name']
+
+		if 'parentLocation' in data:
+			location.parentLocation = data['parentLocation']
+
+		if 'synonyms' in data:
+			location.updatesynonyms(set(data['synonyms']))
+
+		if 'settings' in data:
+			location.updateSettings(data['settings'])
+
+		location.saveToDB()
+		return location
 
 
 	# noinspection PyUnusedLocal

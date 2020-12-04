@@ -3,7 +3,7 @@ import json
 
 from core.base.model.ProjectAliceObject import ProjectAliceObject
 from core.commons import constants
-from core.device.model.Location import Location
+from core.myHome.model.Location import Location
 
 
 class Device(ProjectAliceObject):

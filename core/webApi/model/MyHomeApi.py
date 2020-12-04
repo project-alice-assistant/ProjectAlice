@@ -26,7 +26,7 @@ class MyHomeApi(Api):
 			})
 		except:
 			traceback.print_exc()
-			return jsonify(message='ERROR')
+			return jsonify(success=False)
 
 
 	@route('/locations/', methods=['PUT'])
@@ -40,24 +40,14 @@ class MyHomeApi(Api):
 				return jsonify(success=False)
 		except Exception as e:
 			self.logError(f'Something went wrong creating a new location {e}')
-			return jsonify(message='ERROR')
-
-
-	@route('/locations/<locationId>/savePosition/', methods=['PATCH'])
-	@ApiAuthenticated
-	def savePosition(self, locationId: str):
-		try:
-			return jsonify(success=self.WidgetManager.saveWidgetPosition(int(widgetId), request.json['x'], request.json['y']))
-		except Exception as e:
-			self.logError(f'Failed saving widget position: {e}')
 			return jsonify(success=False)
 
 
-	@route('/locations/<locationId>/saveSize/', methods=['PATCH'])
+	@route('/locations/<locationId>/', methods=['PATCH'])
 	@ApiAuthenticated
-	def saveSize(self, locationId: str):
+	def updateLocation(self, locationId: str):
 		try:
-			return jsonify(success=self.WidgetManager.saveWidgetSize(int(widgetId), request.json['x'], request.json['y'], request.json['w'], request.json['h']))
+			return jsonify(success=self.LocationManager.updateLocation(int(locationId), request.json).toDict())
 		except Exception as e:
-			self.logError(f'Failed saving widget size: {e}')
+			self.logError(f'Failed saving location {e}')
 			return jsonify(success=False)

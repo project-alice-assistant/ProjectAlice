@@ -15,7 +15,7 @@ from core.device.model.DeviceException import MaxDeviceOfTypeReached, MaxDeviceP
 from core.device.model.DeviceLink import DeviceLink
 from core.device.model.DeviceType import DeviceType
 from core.device.model.Heartbeat import Heartbeat
-from core.device.model.Location import Location
+from core.myHome.model.Location import Location
 from core.dialog.model.DialogSession import DialogSession
 
 

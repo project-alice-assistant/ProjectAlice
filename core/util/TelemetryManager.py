@@ -2,7 +2,7 @@ import time
 from typing import Iterable
 
 from core.base.model.Manager import Manager
-from core.device.model.Location import Location
+from core.myHome.model.Location import Location
 from core.util.model.TelemetryType import TelemetryType
 
 

@@ -158,7 +158,7 @@ class SuperManager:
 		from core.base.SkillManager import SkillManager
 		from core.webui.WidgetManager import WidgetManager
 		from core.device.DeviceManager import DeviceManager
-		from core.device.LocationManager import LocationManager
+		from core.myHome.LocationManager import LocationManager
 		from core.dialog.MultiIntentManager import MultiIntentManager
 		from core.server.MqttManager import MqttManager
 		from core.user.UserManager import UserManager

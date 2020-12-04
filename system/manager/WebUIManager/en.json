@@ -111,7 +111,8 @@
 			"widgetOptions": "Widget options",
 			"skillSettings": "Skill settings",
 			"confirmSkillDeletion": "Are you sure you want to delete this skill?",
-			"enterLocationName": "Please name this new location"
+			"enterLocationName": "Please name this new location",
+			"enterNewLocationName": "Please enter the new name for this location"
 		},
 		"bodies": {
 			"clickToAddLocation": "Then click on your floor plan where you want the new location to be added"
