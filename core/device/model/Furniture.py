@@ -16,3 +16,22 @@ class Furniture(ProjectAliceObject):
 		self.id = self.data['id']
 		self.name = self.data['name']
 		self.settings = json.loads(self.data['settings'])
+
+		if not self.settings:
+			self.settings = {
+				'x': 0,
+				'y': 0,
+				'z': 0,
+				'w': 25,
+				'h': 25,
+				'rotation': 0,
+				'texture': ''
+			}
+
+
+	def toDict(self) -> dict:
+		return {
+			'id': self.id,
+			'parentLocation': self.parentLocation,
+			'settings': self.settings
+		}

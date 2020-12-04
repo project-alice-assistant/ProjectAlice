@@ -18,11 +18,11 @@ class Location(ProjectAliceObject):
 
 
 	def __post_init__(self):
-		self.id = self.data['id']
+		self.id = self.data.get('id', -1)
 		self.name = self.data['name']
 		self.parentLocation = self.data['parentLocation']
-		self.synonyms = set(json.loads(self.data['synonyms']))
-		self.settings = json.loads(self.data['settings'])
+		self.synonyms = set(json.loads(self.data.get('synonyms', '{}')))
+		self.settings = json.loads(self.data.get('settings', '{}'))
 
 		if not self.settings:
 			self.settings = {
@@ -34,6 +34,39 @@ class Location(ProjectAliceObject):
 				'rotation': 0,
 				'texture': ''
 			}
+
+		if self.id == -1:
+			self.saveToDB()
+
+
+	# noinspection SqlResolve
+	def saveToDB(self):
+		if self.id != -1:
+			self.DatabaseManager.replace(
+				tableName='widgets',
+				query='REPLACE INTO :__table__ (id, name, parentLocation, synonyms, settings) VALUES (:id, :name, :parentLocation, :synonyms, :settings)',
+				callerName=self.LocationManager.name,
+				values={
+					'id'      : self.id,
+					'name'    : self.name,
+					'parentLocation'  : json.dumps(self.parentLocation),
+					'synonyms'  : json.dumps(list(self.synonyms)),
+					'settings': json.dumps(self.settings)
+				}
+			)
+		else:
+			locationId = self.DatabaseManager.insert(
+				tableName='locations',
+				callerName=self.LocationManager.name,
+				values={
+					'name'    : self.name,
+					'parentLocation'  : json.dumps(self.parentLocation),
+					'synonyms'  : json.dumps(list(self.synonyms)),
+					'settings': json.dumps(self.settings)
+				}
+			)
+
+			self.id = locationId
 
 
 	@deprecated

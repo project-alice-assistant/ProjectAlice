@@ -69,9 +69,8 @@ class LocationManager(Manager):
 			self._furnitures[row['id']] = Furniture(self.Commons.dictFromRow(row))
 
 
-	def addNewLocation(self, name: str = None, data: dict = None) -> Optional[Location]:
-		if not name:
-			name = data['name']
+	def addNewLocation(self, data: dict) -> Optional[Location]:
+		name = data['name']
 
 		if not name:
 			self.logError('Cannot create a new location with empty name')
@@ -81,27 +80,9 @@ class LocationManager(Manager):
 			self.logWarning(f'Location with name or synonym **{name}** already exists')
 			return None
 
-		locationId = self.databaseInsert(
-			tableName=self.LOCATIONS_TABLE,
-			values={
-				'name': name,
-				'parentLocation': data['parentLocation']
-			}
-		)
+		location = Location(data)
+		self._locations[location.id] = location
 
-		location = Location({
-			'id': locationId,
-			'name': name,
-			'parentLocation': data['parentLocation'],
-			'synonyms': json.dumps(list()),
-			'settings': json.dumps({
-				'x': data['x'],
-				'y': data['y'],
-				'z': data['z']
-			})
-		})
-
-		self._locations[locationId] = location
 		return location
 
 
