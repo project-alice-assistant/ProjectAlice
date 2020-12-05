@@ -52,6 +52,17 @@ class MyHomeApi(Api):
 			return jsonify(success=False)
 
 
+	@route('/locations/<locationId>/', methods=['DELETE'])
+	@ApiAuthenticated
+	def deleteLocation(self, locationId: str):
+		try:
+			self.LocationManager.deleteLocation(int(locationId))
+			return jsonify(success=True)
+		except Exception as e:
+			self.logError(f'Failed saving location {e}')
+			return jsonify(success=False)
+
+
 	@route('/locations/floors/', methods=['GET'])
 	def getFloorsList(self):
 		try:

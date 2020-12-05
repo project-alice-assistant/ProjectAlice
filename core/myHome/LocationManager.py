@@ -99,7 +99,7 @@ class LocationManager(Manager):
 			tableName=self.CONSTRUCTIONS_TABLE,
 			callerName=self.name,
 			values={
-				'parentLocationId': locId
+				'parentLocation': locId
 			}
 		)
 
@@ -112,7 +112,7 @@ class LocationManager(Manager):
 			tableName=self.FURNITURE_TABLE,
 			callerName=self.name,
 			values={
-				'parentLocationId': locId
+				'parentLocation': locId
 			}
 		)
 
