@@ -51,7 +51,10 @@ class WidgetManager(Manager):
 	def loadWidgets(self):
 		count = 0
 		for skill in self.SkillManager.allSkills.values():
-			if not skill.widgets:
+			try: #failed skills don't have any .widgets at all and crash the manager!
+				if not skill.widgets:
+					continue
+			except:
 				continue
 
 			count += len(skill.widgets)
