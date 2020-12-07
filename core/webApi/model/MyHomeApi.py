@@ -48,7 +48,7 @@ class MyHomeApi(Api):
 		try:
 			furniture = self.LocationManager.addNewFurniture(data=request.json)
 			if furniture:
-				return jsonify(location=furniture.toDict())
+				return jsonify(furniture=furniture.toDict())
 			else:
 				return jsonify(success=False)
 		except Exception as e:
@@ -56,7 +56,7 @@ class MyHomeApi(Api):
 			return jsonify(success=False)
 
 
-	@route('/locations/<furnitureId>/', methods=['PATCH'])
+	@route('/furniture/<furnitureId>/', methods=['PATCH'])
 	@ApiAuthenticated
 	def updateFurniture(self, furnitureId: str):
 		try:
@@ -87,7 +87,7 @@ class MyHomeApi(Api):
 			return jsonify(success=False)
 
 
-	@route('/locations/<furnitureId>/', methods=['DELETE'])
+	@route('/furniture/<furnitureId>/', methods=['DELETE'])
 	@ApiAuthenticated
 	def deleteFurniture(self, furnitureId: str):
 		try:
@@ -106,7 +106,7 @@ class MyHomeApi(Api):
 			return jsonify(success=False)
 
 
-	@route('/locations/furniture/', methods=['GET'])
+	@route('/furniture/tiles/', methods=['GET'])
 	def getFurnitureList(self):
 		try:
 			return jsonify(data=[image.stem for image in Path(self.Commons.rootDir(), 'core/webApi/static/images/furniture/').glob('*.png')])
@@ -122,7 +122,7 @@ class MyHomeApi(Api):
 			return jsonify(success=False)
 
 
-	@route('/locations/furniture/<imageId>.png', methods=['GET'])
+	@route('/furniture/<imageId>.png', methods=['GET'])
 	def getFurniture(self, imageId: str):
 		try:
 			return send_from_directory('static/images', f'furniture/{imageId}.png')
