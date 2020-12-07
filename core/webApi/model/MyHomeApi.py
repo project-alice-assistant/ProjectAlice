@@ -42,6 +42,30 @@ class MyHomeApi(Api):
 			return jsonify(success=False)
 
 
+	@route('/furniture/', methods=['PUT'])
+	@ApiAuthenticated
+	def addFurniture(self):
+		try:
+			furniture = self.LocationManager.addNewFurniture(data=request.json)
+			if furniture:
+				return jsonify(location=furniture.toDict())
+			else:
+				return jsonify(success=False)
+		except Exception as e:
+			self.logError(f'Something went wrong creating a new furniture {e}')
+			return jsonify(success=False)
+
+
+	@route('/locations/<furnitureId>/', methods=['PATCH'])
+	@ApiAuthenticated
+	def updateFurniture(self, furnitureId: str):
+		try:
+			return jsonify(success=self.LocationManager.updateFurniture(int(furnitureId), request.json).toDict())
+		except Exception as e:
+			self.logError(f'Failed saving furniture {e}')
+			return jsonify(success=False)
+
+
 	@route('/locations/<locationId>/', methods=['PATCH'])
 	@ApiAuthenticated
 	def updateLocation(self, locationId: str):
@@ -59,7 +83,18 @@ class MyHomeApi(Api):
 			self.LocationManager.deleteLocation(int(locationId))
 			return jsonify(success=True)
 		except Exception as e:
-			self.logError(f'Failed saving location {e}')
+			self.logError(f'Failed deleting location {e}')
+			return jsonify(success=False)
+
+
+	@route('/locations/<furnitureId>/', methods=['DELETE'])
+	@ApiAuthenticated
+	def deleteFurniture(self, furnitureId: str):
+		try:
+			self.LocationManager.deleteFurniture(int(furnitureId))
+			return jsonify(success=True)
+		except Exception as e:
+			self.logError(f'Failed deleting furniture {e}')
 			return jsonify(success=False)
 
 
@@ -71,9 +106,25 @@ class MyHomeApi(Api):
 			return jsonify(success=False)
 
 
+	@route('/locations/furniture/', methods=['GET'])
+	def getFurnitureList(self):
+		try:
+			return jsonify(data=[image.stem for image in Path(self.Commons.rootDir(), 'core/webApi/static/images/furniture/').glob('*.png')])
+		except:
+			return jsonify(success=False)
+
+
 	@route('/locations/floors/<imageId>.png', methods=['GET'])
 	def getFloor(self, imageId: str):
 		try:
 			return send_from_directory('static/images', f'floors/{imageId}.png')
+		except:
+			return jsonify(success=False)
+
+
+	@route('/locations/furniture/<imageId>.png', methods=['GET'])
+	def getFurniture(self, imageId: str):
+		try:
+			return send_from_directory('static/images', f'furniture/{imageId}.png')
 		except:
 			return jsonify(success=False)

@@ -34,7 +34,7 @@ class MyHomeView(View):
 	def getLocationSettings(self, _id: str):
 		try:
 			_id = int(_id)
-			return jsonify(self.LocationManager.getSettings(_id))
+			return jsonify(self.LocationManager.getLocationSettings(_id))
 		except Exception as e:
 			self.logError(f'Failed loading settings: {e}')
 			return jsonify(success=False)

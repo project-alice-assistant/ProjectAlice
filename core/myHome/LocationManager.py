@@ -68,6 +68,47 @@ class LocationManager(Manager):
 			self._furnitures[row['id']] = Furniture(self.Commons.dictFromRow(row))
 
 
+	def addNewFurniture(self, data: dict) -> Optional[Furniture]:
+		furniture = Furniture(data)
+		self._furnitures[furniture.id] = furniture
+
+		return furniture
+
+
+	def deleteFurniture(self, furId: int):
+		self.DatabaseManager.delete(
+			tableName=self.FURNITURE_TABLE,
+		    callerName=self.name,
+		    values={
+			    'id': furId
+		    }
+		)
+		self._furnitures.pop(furId, None)
+
+
+	def updateFurniture(self, furId: int, data: dict) -> Furniture:
+		furniture = self._furnitures.get(furId, None)
+		if not furniture:
+			raise Exception(f"Cannot update furniture, furniture with id **{furId}** doesn't exist")
+
+		if 'parentLocation' in data:
+			furniture.parentLocation = data['parentLocation']
+
+		if 'settings' in data:
+			furniture.updateSettings(data['settings'])
+
+		furniture.saveToDB()
+		return furniture
+
+
+	def getFurnitureSettings(self, furId: int) -> dict:
+		furniture = self._furnitures.get(furId, None)
+		if not furniture:
+			raise Exception(f"Cannot retrieve settings, furniture with id **{furId}** doesn't exist")
+
+		return furniture.settings
+
+
 	def addNewLocation(self, data: dict) -> Optional[Location]:
 		name = data['name']
 
@@ -163,7 +204,7 @@ class LocationManager(Manager):
 		location.saveToDB()
 
 
-	def getSettings(self, locId: int) -> dict:
+	def getLocationSettings(self, locId: int) -> dict:
 		location = self._locations.get(locId, None)
 		if not location:
 			raise Exception(f"Cannot retrieve settings, location with id **{locId}** doesn't exist")
