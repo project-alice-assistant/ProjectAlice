@@ -115,7 +115,8 @@
 			"enterNewLocationName": "Please enter the new name for this location"
 		},
 		"bodies": {
-			"clickToAddLocation": "Then click on your floor plan where you want the new location to be added. You can drag your click to create a location at the desired dimensions."
+			"clickToAddLocation": "Then click on your floor plan where you want the new location to be added. You can drag your click to create a location at the desired dimensions.",
+			"locationNameOrSynonymAlreadyExist": "There's already a location with this name or synonym existing."
 		},
 		"labels": {
 			"displayTitle": "Display title",

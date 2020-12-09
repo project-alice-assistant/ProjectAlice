@@ -1,4 +1,5 @@
 from pathlib import Path
+from typing import Union
 
 from flask import jsonify, request, send_from_directory
 from flask_classful import route
@@ -39,6 +40,29 @@ class MyHomeApi(Api):
 				return jsonify(success=False)
 		except Exception as e:
 			self.logError(f'Something went wrong creating a new location {e}')
+			return jsonify(success=False)
+
+
+	@route('/locations/<location>/', methods=['GET'])
+	@ApiAuthenticated
+	def getLocation(self, location: Union[int, str]):
+		try:
+			try:
+				locId = int(location)
+				location = self.LocationManager.getLocation(locId=locId)
+				if location:
+					return jsonify(location=location.toDict())
+				else:
+					return jsonify(success=False)
+			except ValueError:
+				location = self.LocationManager.getLocation(locationName=location, locationSynonym=location)
+				if location:
+					return jsonify(location=location.toDict())
+				else:
+					return jsonify(success=False)
+
+		except Exception as e:
+			self.logError(f'Something went wrong retrieving location {location} {e}')
 			return jsonify(success=False)
 
 
@@ -128,3 +152,5 @@ class MyHomeApi(Api):
 			return send_from_directory('static/images', f'furniture/{imageId}.png')
 		except:
 			return jsonify(success=False)
+
+

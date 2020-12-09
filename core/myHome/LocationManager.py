@@ -234,7 +234,7 @@ class LocationManager(Manager):
 
 
 	# noinspection PyUnusedLocal
-	def getLocation(self, locId: int = None, location: str = None, siteId: str = None, deviceTypeId: int = None) -> Location:
+	def getLocation(self, locId: int = None, locationName: str = None, locationSynonym: str = None, siteId: str = None, deviceTypeId: int = None) -> Optional[Location]:
 		# todo implement location det. logic
 		# 1a) check name vs locations - done
 		# 1b) check name vs location synonyms - done
@@ -243,38 +243,36 @@ class LocationManager(Manager):
 		# 4) check if there is only one room that has that type of device
 		# if 1 or 2 provides names
 		"""
-		:param location: a location name issued by the user
+		:param locationName: a location name issued by the user
+		:param locationSynonym: the name could be a synonym
 		:param locId:
 		:param siteId: the current devices site NAME
 		:param deviceTypeId: only rooms with that type of device can be found - linked is allowed as well
 		:return: Location
 		"""
 
-		loc = None
-
 		if locId:
 			loc = self._locations.get(locId, None)
 			if not loc:
 				raise Exception(f'No location with id {locId} found')
+
 			return loc
 
-		if location:
-			loc = self.getLocationByName(name=location)
-			if not loc:
-				loc = self.LocationManager.addNewLocation(name=location)
-			if loc:
-				return loc
+		if locationName:
+			loc = self.getLocationByName(name=locationName)
+			if not loc and locationSynonym:
+				loc = self.getLocationBySynonym(locationSynonym)
+
+			return loc
 
 		if siteId:
 			loc = self.getLocationByName(name=siteId)
 			if loc:
 				return loc
 
-			loc = self.DeviceManager.getDeviceByUID(uid=siteId).getMainLocation()
-			if loc:
-				return loc
+			return self.DeviceManager.getDeviceByUID(uid=siteId).getMainLocation()
 
-		return loc
+		return None
 
 
 	def getLocationsForSession(self, sess: DialogSession, slotName: str = 'Location', noneIsEverywhere: bool = False) -> List[Location]:

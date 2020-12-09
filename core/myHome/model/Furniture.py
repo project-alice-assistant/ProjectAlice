@@ -1,5 +1,4 @@
 import json
-import math
 from dataclasses import dataclass, field
 
 from core.base.model.ProjectAliceObject import ProjectAliceObject
@@ -61,15 +60,6 @@ class Furniture(ProjectAliceObject):
 
 
 	def updateSettings(self, settings: dict):
-		if 'x' in settings:
-			settings['x'] = math.ceil(settings['x'] / 5) * 5
-		if 'y' in settings:
-			settings['y'] = math.ceil(settings['y'] / 5) * 5
-		if 'w' in settings:
-			settings['w'] = math.ceil(settings['w'] / 5) * 5
-		if 'h' in settings:
-			settings['h'] = math.ceil(settings['y'] / 5) * 5
-
 		self.settings = {**self.settings, **settings}
 
 
