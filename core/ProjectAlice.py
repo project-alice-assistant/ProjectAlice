@@ -1,5 +1,4 @@
 import subprocess
-import time
 from pathlib import Path
 
 import requests
@@ -151,6 +150,7 @@ class ProjectAlice(Singleton):
 			self._logger.logWarning('New Alice version installed, need to restart...')
 			self.doRestart()
 
+		self._logger.logInfo('Update checks completed.')
 		self._isUpdating = False
 
 
