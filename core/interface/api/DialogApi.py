@@ -71,6 +71,7 @@ class DialogApi(Api):
 
 			self.MqttManager.publish(topic=constants.TOPIC_NLU_QUERY, payload={
 				'input'    : request.form.get('query'),
+				'intentFilter': list(self.DialogManager.getEnabledByDefaultIntents()),
 				'sessionId': session.sessionId
 			})
 			return jsonify(success=True, sessionId=session.sessionId)

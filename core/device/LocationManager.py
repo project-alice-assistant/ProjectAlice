@@ -45,6 +45,13 @@ class LocationManager(Manager):
 			self.logInfo(f'Loaded location {row["id"]} - {row["name"]}')
 
 
+	def getListOfAvailableLocations(self) -> list:
+		allLocations = list()
+		for row in self.databaseFetch(tableName=self.TABLE, query='SELECT * FROM :__table__', method='all'):
+			allLocations.append(row['name'])
+		return allLocations
+
+
 	def addNewLocation(self, name: str = None) -> Location:
 		loc = self.getLocationWithName(name)
 		# todo check existing synonyms!
@@ -116,7 +123,7 @@ class LocationManager(Manager):
 
 	# noinspection PyUnusedLocal
 	def getLocation(self, locId: int = None, location: str = None, siteId: str = None, deviceTypeId: int = None) -> Location:
-		#todo implement location det. logic
+		# todo implement location det. logic
 		# 1a) check name vs locations - done
 		# 1b) check name vs location synonyms - done
 		# 2) get device for siteID, get main location of device - done

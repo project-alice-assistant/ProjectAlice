@@ -96,7 +96,7 @@ class AliceWatchManager(Manager):
 			return
 
 		self.publish(payload={
-			'text': f'[Hotword] Was asked to toggle itself **on** on site **{self.DeviceManager.siteIdToDeviceName(siteId)}**'
+			'text': f'[Hotword] Was asked to toggle itself **on** for site **{self.DeviceManager.siteIdToDeviceName(siteId)}**'
 		})
 
 
@@ -105,7 +105,7 @@ class AliceWatchManager(Manager):
 			return
 
 		self.publish(payload={
-			'text': f'[Hotword] Was asked to toggle itself **off** on site **{self.DeviceManager.siteIdToDeviceName(siteId)}**'
+			'text': f'[Hotword] Was asked to toggle itself **off** for site **{self.DeviceManager.siteIdToDeviceName(siteId)}**'
 		})
 
 
