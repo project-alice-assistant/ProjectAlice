@@ -68,6 +68,47 @@ class LocationManager(Manager):
 			self._furnitures[row['id']] = Furniture(self.Commons.dictFromRow(row))
 
 
+	def addNewConstruction(self, data: dict) -> Optional[Construction]:
+		construction = Construction(data)
+		self._constructions[construction.id] = construction
+
+		return construction
+
+
+	def deleteConstruction(self, conId: int):
+		self.DatabaseManager.delete(
+			tableName=self.CONSTRUCTIONS_TABLE,
+		    callerName=self.name,
+		    values={
+			    'id': conId
+		    }
+		)
+		self._constructions.pop(conId, None)
+
+
+	def updateConstruction(self, conId: int, data: dict) -> Construction:
+		construction = self._constructions.get(conId, None)
+		if not construction:
+			raise Exception(f"Cannot update construction, construction with id **{conId}** doesn't exist")
+
+		if 'parentLocation' in data:
+			construction.parentLocation = data['parentLocation']
+
+		if 'settings' in data:
+			construction.updateSettings(data['settings'])
+
+		construction.saveToDB()
+		return construction
+
+
+	def getConstructionSettings(self, conId: int) -> dict:
+		construction = self._furnitures.get(conId, None)
+		if not construction:
+			raise Exception(f"Cannot retrieve settings, construction with id **{conId}** doesn't exist")
+
+		return construction.settings
+
+
 	def addNewFurniture(self, data: dict) -> Optional[Furniture]:
 		furniture = Furniture(data)
 		self._furnitures[furniture.id] = furniture
@@ -287,7 +328,7 @@ class LocationManager(Manager):
 				else:
 					return list()
 		else:
-			return [self.getLocation(location=loc) for loc in slotValues]
+			return [self.getLocation(locationName=loc) for loc in slotValues]
 
 
 	@property

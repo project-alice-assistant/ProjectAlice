@@ -80,6 +80,20 @@ class MyHomeApi(Api):
 			return jsonify(success=False)
 
 
+	@route('/constructions/', methods=['PUT'])
+	@ApiAuthenticated
+	def addConstruction(self):
+		try:
+			furniture = self.LocationManager.addNewFurniture(data=request.json)
+			if furniture:
+				return jsonify(furniture=furniture.toDict())
+			else:
+				return jsonify(success=False)
+		except Exception as e:
+			self.logError(f'Something went wrong creating a new furniture {e}')
+			return jsonify(success=False)
+
+
 	@route('/furniture/<furnitureId>/', methods=['PATCH'])
 	@ApiAuthenticated
 	def updateFurniture(self, furnitureId: str):
