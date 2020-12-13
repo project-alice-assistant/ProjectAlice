@@ -29,20 +29,6 @@ class MyHomeApi(Api):
 			return jsonify(success=False)
 
 
-	@route('/locations/', methods=['PUT'])
-	@ApiAuthenticated
-	def addLocation(self):
-		try:
-			location = self.LocationManager.addNewLocation(data=request.json)
-			if location:
-				return jsonify(location=location.toDict())
-			else:
-				return jsonify(success=False)
-		except Exception as e:
-			self.logError(f'Something went wrong creating a new location {e}')
-			return jsonify(success=False)
-
-
 	@route('/locations/<location>/', methods=['GET'])
 	@ApiAuthenticated
 	def getLocation(self, location: Union[int, str]):
@@ -66,6 +52,20 @@ class MyHomeApi(Api):
 			return jsonify(success=False)
 
 
+	@route('/locations/', methods=['PUT'])
+	@ApiAuthenticated
+	def addLocation(self):
+		try:
+			location = self.LocationManager.addNewLocation(data=request.json)
+			if location:
+				return jsonify(location=location.toDict())
+			else:
+				return jsonify(success=False)
+		except Exception as e:
+			self.logError(f'Something went wrong creating a new location {e}')
+			return jsonify(success=False)
+
+
 	@route('/furniture/', methods=['PUT'])
 	@ApiAuthenticated
 	def addFurniture(self):
@@ -84,13 +84,23 @@ class MyHomeApi(Api):
 	@ApiAuthenticated
 	def addConstruction(self):
 		try:
-			furniture = self.LocationManager.addNewFurniture(data=request.json)
-			if furniture:
-				return jsonify(furniture=furniture.toDict())
+			construction = self.LocationManager.addNewConstruction(data=request.json)
+			if construction:
+				return jsonify(construction=construction.toDict())
 			else:
 				return jsonify(success=False)
 		except Exception as e:
-			self.logError(f'Something went wrong creating a new furniture {e}')
+			self.logError(f'Something went wrong creating a new construction {e}')
+			return jsonify(success=False)
+
+
+	@route('/locations/<locationId>/', methods=['PATCH'])
+	@ApiAuthenticated
+	def updateLocation(self, locationId: str):
+		try:
+			return jsonify(success=self.LocationManager.updateLocation(int(locationId), request.json).toDict())
+		except Exception as e:
+			self.logError(f'Failed saving location {e}')
 			return jsonify(success=False)
 
 
@@ -104,13 +114,13 @@ class MyHomeApi(Api):
 			return jsonify(success=False)
 
 
-	@route('/locations/<locationId>/', methods=['PATCH'])
+	@route('/constructions/<constructionId>/', methods=['PATCH'])
 	@ApiAuthenticated
-	def updateLocation(self, locationId: str):
+	def updateConstruction(self, constructionId: str):
 		try:
-			return jsonify(success=self.LocationManager.updateLocation(int(locationId), request.json).toDict())
+			return jsonify(success=self.LocationManager.updateConstruction(int(constructionId), request.json).toDict())
 		except Exception as e:
-			self.logError(f'Failed saving location {e}')
+			self.logError(f'Failed saving construction {e}')
 			return jsonify(success=False)
 
 
@@ -136,6 +146,17 @@ class MyHomeApi(Api):
 			return jsonify(success=False)
 
 
+	@route('/constructions/<constructionId>/', methods=['DELETE'])
+	@ApiAuthenticated
+	def deleteConstruction(self, constructionId: str):
+		try:
+			self.LocationManager.deleteConstruction(int(constructionId))
+			return jsonify(success=True)
+		except Exception as e:
+			self.logError(f'Failed deleting construction {e}')
+			return jsonify(success=False)
+
+
 	@route('/locations/floors/', methods=['GET'])
 	def getFloorsList(self):
 		try:
@@ -148,6 +169,14 @@ class MyHomeApi(Api):
 	def getFurnitureList(self):
 		try:
 			return jsonify(data=[image.stem for image in Path(self.Commons.rootDir(), 'core/webApi/static/images/furniture/').glob('*.png')])
+		except:
+			return jsonify(success=False)
+
+
+	@route('/constructions/tiles/', methods=['GET'])
+	def getConstructionList(self):
+		try:
+			return jsonify(data=[image.stem for image in Path(self.Commons.rootDir(), 'core/webApi/static/images/constructions/').glob('*.png')])
 		except:
 			return jsonify(success=False)
 
@@ -168,3 +197,9 @@ class MyHomeApi(Api):
 			return jsonify(success=False)
 
 
+	@route('/constructions/<imageId>.png', methods=['GET'])
+	def getConstruction(self, imageId: str):
+		try:
+			return send_from_directory('static/images', f'constructions/{imageId}.png')
+		except:
+			return jsonify(success=False)
