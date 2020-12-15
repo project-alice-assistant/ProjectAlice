@@ -132,15 +132,15 @@ class Widget(ProjectAliceObject):
 			file = Path(self.getCurrentDir(), f'templates/{self.name}.html')
 			content = file.read_text()
 			content = re.sub(r'{{ lang\.([\w]*) }}', self.langReplace, content)
+			content = re.sub(r'<widget>(.*)</widget>', r'\1', content, flags=re.S)
 			content = re.sub(r'<icon>.*</icon>(.*)', r'\1', content)
-			content = re.sub(r'<widget>.*</widget>(.*)', r'\1', content)
 			content = htmlmin.minify(content,
 			                         remove_comments=True,
 			                         remove_empty_space=True,
 			                         remove_all_empty_space=True,
 			                         reduce_empty_attributes=True,
 			                         reduce_boolean_attributes=True,
-			                         remove_optional_attribute_quotes=True,
+			                         remove_optional_attribute_quotes=False,
 			                         convert_charrefs=True,
 			                         keep_pre=False
 			                         )
@@ -305,7 +305,5 @@ class Widget(ProjectAliceObject):
 			'settings': self._settings if isAuth else dict(),
 			'page'    : self._page,
 			'icon'    : self.icon(),
-			'html'    : self.html(),
-			'css'     : self.css(),
-			'js'      : self.js()
+			'html'    : self.html()
 		}

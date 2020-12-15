@@ -1,4 +1,4 @@
-from flask import jsonify, request
+from flask import jsonify, request, send_from_directory
 from flask_classful import route
 
 from core.interface.model.Api import Api
@@ -38,6 +38,24 @@ class WidgetsApi(Api):
 			return jsonify(widget=widget.toDict())
 		except Exception as e:
 			self.logError(f'Failed adding widget instance: {e}')
+			return jsonify(success=False)
+
+
+	@route('/resources/<skillName>/<widgetName>.js/', methods=['GET'])
+	def getJS(self, skillName: str, widgetName: str):
+		try:
+			return send_from_directory(f'{self.Commons.rootDir()}/skills/{skillName}/widgets/js', f'{widgetName}.js')
+		except Exception as e:
+			self.logError(f'Error fetching widget JS resource {e}')
+			return jsonify(success=False)
+
+
+	@route('/resources/<skillName>/<widgetName>.css', methods=['GET'])
+	def getCSS(self, skillName: str, widgetName: str):
+		try:
+			return send_from_directory(f'{self.Commons.rootDir()}/skills/{skillName}/widgets/css', f'{widgetName}.css')
+		except Exception as e:
+			self.logError(f'Error fetching widget CSS resource {e}')
 			return jsonify(success=False)
 
 

@@ -31,7 +31,8 @@ class Location(ProjectAliceObject):
 			'w': 150,
 			'h': 150,
 			'r': 0,
-			't': ''
+			't': '',
+			'b': ''
 		}
 		self.settings = {**settings, **self.settings}
 

@@ -25,7 +25,8 @@ class Construction(ProjectAliceObject):
 			'w': 10,
 			'h': 50,
 			'r': 0,
-			'c': ''
+			'c': '',
+			'b': ''
 		}
 
 		self.settings = {**settings, **self.settings}
