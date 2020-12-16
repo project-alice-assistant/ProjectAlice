@@ -305,5 +305,6 @@ class Widget(ProjectAliceObject):
 			'settings': self._settings if isAuth else dict(),
 			'page'    : self._page,
 			'icon'    : self.icon(),
-			'html'    : self.html()
+			'html'    : self.html(),
+			'css'     : self.css()
 		}
