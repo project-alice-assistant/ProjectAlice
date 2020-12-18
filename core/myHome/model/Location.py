@@ -27,7 +27,7 @@ class Location(ProjectAliceObject):
 		settings = {
 			'x': 0,
 			'y': 0,
-			'z': 0,
+			'z': len(self.LocationManager.locations),
 			'w': 150,
 			'h': 150,
 			'r': 0,
