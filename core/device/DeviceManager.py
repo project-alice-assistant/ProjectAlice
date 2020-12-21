@@ -1,5 +1,7 @@
 import json
+import socket
 import sqlite3
+import threading
 import time
 import uuid
 from random import shuffle
@@ -10,6 +12,7 @@ from serial.tools import list_ports
 
 from core.base.model.Manager import Manager
 from core.commons import constants
+from core.device.model import DeviceAbility
 from core.device.model.Device import Device
 from core.device.model.DeviceException import MaxDeviceOfTypeReached, MaxDevicePerLocationReached
 from core.device.model.DeviceLink import DeviceLink
@@ -22,47 +25,46 @@ from core.dialog.model.DialogSession import DialogSession
 class DeviceManager(Manager):
 	DB_DEVICE = 'devices'
 	DB_LINKS = 'deviceLinks'
-	DB_TYPES = 'deviceTypes'
 	DATABASE = {
 		DB_DEVICE: [
-			'id INTEGER PRIMARY KEY', #NOSONAR
-			'typeID INTEGER NOT NULL',
-			'uid TEXT',
-			'locationID INTEGER NOT NULL',
+			'uid TEXT PRIMARY KEY', #NOSONAR
+			'locationId INTEGER NOT NULL',
 			'name TEXT',
-			'display TEXT',
-			'devSettings TEXT',
 			'skillName TEXT'
+			'display TEXT',
+			'deviceParams TEXT'
 		],
 		DB_LINKS : [
 			'id INTEGER PRIMARY KEY', #NOSONAR
-			'deviceID INTEGER NOT NULL',
-			'locationID INTEGER NOT NULL',
-			'locSettings TEXT'
-		],
-		DB_TYPES : [
-			'id INTEGER PRIMARY KEY', #NOSONAR
-			'skill TEXT NOT NULL',
-			'name TEXT NOT NULL',
-			'devSettings TEXT',
-			'locSettings TEXT'
+			'device INTEGER NOT NULL',
+			'locationId INTEGER NOT NULL',
+			'locationSettings TEXT'
 		]
 	}
-	SAT_TYPE = 'AliceSatellite'
 
 
 	def __init__(self):
 		super().__init__(databaseSchema=self.DATABASE)
 
-		self._devices: Dict[int, Device] = dict()
+		self._devices: Dict[str, Device] = dict()
 		self._deviceLinks: Dict[int, DeviceLink] = dict()
-		# self._idToUID: Dict[int, str] = dict() #option: maybe relevant for faster access?
-		self._deviceTypes: Dict[int, DeviceType] = dict()
+		self._deviceTypes: Dict[str, Dict[str, DeviceType]] = dict()
 
 		self._heartbeats = dict()
 		self._heartbeatsCheckTimer = None
 		self._heartbeat: Optional[Heartbeat] = None
-		self._bufferedMainDevice = None
+
+		self._broadcastFlag = threading.Event()
+		self._listenSocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+		self._listenSocket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+		self._listenSocket.settimeout(2)
+		self._broadcastSocket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+		self._broadcastSocket.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
+		self._broadcastSocket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+		self._broadcastPort = int(self.ConfigManager.getAliceConfigByName('newDeviceBroadcastPort'))  # Default 12354
+		self._listenPort = self._broadcastPort + 1
+		self._listenSocket.bind(('', self._listenPort))
+		self._broadcastTimer = None
 
 
 	def onStart(self):
@@ -72,11 +74,6 @@ class DeviceManager(Manager):
 		self.loadLinks()
 
 		self.logInfo(f'Loaded **{len(self._devices)}** device', plural='device')
-
-
-	@property
-	def devices(self) -> Dict[int, Device]:
-		return self._devices
 
 
 	def onBooted(self):
@@ -90,13 +87,84 @@ class DeviceManager(Manager):
 
 	def onStop(self):
 		super().onStop()
+
+		self.stopBroadcasting()
+		self._broadcastSocket.close()
+
 		if self._heartbeat:
 			self._heartbeat.stopHeartBeat()
 		self.MqttManager.publish(topic=constants.TOPIC_CORE_DISCONNECTION)
 
 
+	def loadDevices(self):
+		for row in self.databaseFetch(tableName=self.DB_DEVICE, method='all'):
+			self._devices[row['uid']] = Device(row)
+
+
+	def loadLinks(self):
+		for row in self.databaseFetch(tableName=self.DB_LINKS, method='all'):
+			self._deviceLinks[row['id']] = DeviceLink(row)
+
+
+	def checkHeartbeats(self):
+		now = time.time()
+		for uid, lastTime in self._heartbeats.copy().items():
+			device = self.getDevice(uid)
+			if not device:
+				self._heartbeats.pop(uid)
+			else:
+				if now - device.getDeviceType().heartbeatRate > lastTime:
+					self.logWarning(f'Device with uid **{uid}** has not given a signal since {device.getDeviceType().heartbeatRate} seconds or more')
+					self._heartbeats.pop(uid)
+					device.connected = False
+					self.MqttManager.publish(constants.TOPIC_DEVICE_UPDATED, payload={'uid': device.uid, 'type': 'status'})
+
+		self._heartbeatsCheckTimer = self.ThreadManager.newTimer(interval=3, func=self.checkHeartbeats)
+
+
+	def getDevice(self, uid: str) -> Optional[Device]:
+		return self._devices.get(uid, None)
+
+
+	def registerDeviceType(self, skillName: str, data: dict):
+		data.setdefault('skill', skillName)
+
+		self._deviceTypes.setdefault(skillName, dict())
+		self._deviceTypes[skillName].setdefault(data['name'].lower(), DeviceType(data))
+
+
+	def getDevicesWithAbilities(self, abilites: List[DeviceAbility], connectedOnly: bool = True) -> list:
+		ret = list()
+		for device in self._devices.values():
+			if connectedOnly and not device.connected:
+				continue
+
+			if device.hasAbilities(abilites):
+				ret.append(device)
+
+		return ret
+
+
+	def getDeviceType(self, skillName, deviceName):
+		return self.deviceTypes.get(skillName, list()).get(deviceName, None)
+
+
+
+
+
+
+
+
+	@property
+	def devices(self) -> Dict[str, Device]:
+		return self._devices
+
+
+
+
+
 	def onDeviceStatus(self, session: DialogSession):
-		device = self.getDeviceByUID(uid=session.payload['uid'])
+		device = self.getDevice(uid=session.payload['uid'])
 		if device:
 			device.onDeviceStatus(session)
 
@@ -105,14 +173,7 @@ class DeviceManager(Manager):
 		return self.DialogManager.newTempSession(message=message)
 
 
-	def loadDevices(self):
-		for row in self.databaseFetch(tableName=self.DB_DEVICE, method='all'):
-			self._devices[row['id']] = Device(row)
 
-
-	def loadLinks(self):
-		for row in self.databaseFetch(tableName=self.DB_LINKS, method='all'):
-			self._deviceLinks[row['id']] = DeviceLink(row)
 
 
 	# noinspection SqlResolve
@@ -123,6 +184,66 @@ class DeviceManager(Manager):
 		except sqlite3.OperationalError as e:
 			self.logWarning(f"Couldn't check device from database: {e}")
 			return False
+
+
+	@property
+	def broadcastFlag(self) -> threading.Event:
+		return self._broadcastFlag
+
+
+	def startBroadcastingForNewDevice(self, device: Device, uid: str, replyOnSiteId: str = '') -> bool:
+		if self.isBusy():
+			return False
+
+		self.logInfo(f'Started broadcasting on {self._broadcastPort} for new device addition. Attributed uid: {device.uid}')
+		self._listenSocket.listen(2)
+		self.ThreadManager.newThread(name='broadcast', target=self.startBroadcast, args=[device, uid, replyOnSiteId])
+
+		self._broadcastTimer = self.ThreadManager.newTimer(interval=300, func=self.stopBroadcasting)
+
+		self.broadcast(method=constants.EVENT_BROADCASTING_FOR_NEW_DEVICE, exceptions=[self.name], propagateToSkills=True)
+		return True
+
+
+	def stopBroadcasting(self):
+		if not self.isBusy():
+			return
+
+		self.logInfo('Stopped broadcasting for new devices')
+		self._broadcastFlag.clear()
+
+		self._broadcastTimer.cancel()
+		self.broadcast(method=constants.EVENT_STOP_BROADCASTING_FOR_NEW_DEVICE, exceptions=[self.name], propagateToSkills=True)
+
+
+	def startBroadcast(self, device: Device, uid: str, replyOnSiteId: str = ''):
+		# TODO Check device type connecting, is it what we wanted?
+		self._broadcastFlag.set()
+		location = device.getMainLocation()
+		while self._broadcastFlag.isSet():
+			self._broadcastSocket.sendto(bytes(f'{self.Commons.getLocalIp()}:{self._listenPort}:{location.getSaveName()}:{uid}', encoding='utf8'), ('<broadcast>', self._broadcastPort))
+			try:
+				sock, address = self._listenSocket.accept()
+				sock.settimeout(None)
+				answer = sock.recv(1024).decode()
+
+				deviceIp = answer.split(':')[0]
+
+				device.pairingDone(uid=uid)
+				self.logWarning(f'Device with uid {uid} successfully paired')
+				if replyOnSiteId:
+					self.MqttManager.say(text=self.TalkManager.randomTalk('newDeviceAdditionSuccess', skill='system'), client=replyOnSiteId)
+
+				self.ThreadManager.doLater(interval=5, func=self.WakewordRecorder.uploadToNewDevice, args=[uid])
+
+				self._broadcastSocket.sendto(bytes('ok', encoding='utf8'), (deviceIp, self._broadcastPort))
+				self.stopBroadcasting()
+			except socket.timeout:
+				self.logInfo('No device query received')
+
+
+	def isBusy(self) -> bool:
+		return self.ThreadManager.isThreadAlive('broadcast')
 
 
 	# noinspection SqlResolve
@@ -136,7 +257,7 @@ class DeviceManager(Manager):
 		if not skillName:
 			skillName = self.getDeviceType(_id=deviceTypeId).skill
 
-		values = {'typeID': deviceTypeId, 'uid': uid, 'locationID': location.id, 'display': "{'x': '10', 'y': '10', 'rotation': 0, 'width': 45, 'height': 45}", 'skillname': skillName}
+		values = {'typeId': deviceTypeId, 'uid': uid, 'locationId': location.id, 'display': "{'x': '10', 'y': '10', 'rotation': 0, 'width': 45, 'height': 45}", 'skillname': skillName}
 		values['id'] = self.databaseInsert(tableName=self.DB_DEVICE, values=values)
 
 		self._devices[values['id']] = Device(data=values)
@@ -156,7 +277,7 @@ class DeviceManager(Manager):
 		# update DB
 		self.DatabaseManager.update(tableName=self.DB_DEVICE,
 		                            callerName=self.name,
-		                            values={'locationID': locationId},
+		                            values={'locationId': locationId},
 		                            row=('id', device.id))
 
 
@@ -225,7 +346,7 @@ class DeviceManager(Manager):
 		if _id:
 			return self._deviceLinks.get(_id, None)
 		if not deviceId or not locationId:
-			raise Exception('getLink: supply locationID or deviceID!')
+			raise Exception('getLink: supply locationId or deviceID!')
 
 		if not isinstance(locationId, List):
 			locationId = [locationId]
@@ -242,9 +363,9 @@ class DeviceManager(Manager):
 			raise Exception(f'Device type {deviceType.name} can\'t be linked to other rooms')
 		if self.getLink(deviceId=deviceId, locationId=locationId):
 			raise Exception(f'There is already a link from {deviceId} to {locationId}')
-		values = {'deviceID': deviceId, 'locationID': locationId, 'locSettings': json.dumps(deviceType.initialLocationSettings)}
+		values = {'deviceID': deviceId, 'locationId': locationId, 'locSettings': json.dumps(deviceType.initialLocationSettings)}
 		# noinspection SqlResolve
-		values['id'] = self.databaseInsert(tableName=self.DB_LINKS, query='INSERT INTO :__table__ (deviceID, locationID, locSettings) VALUES (:deviceID, :locationID, :locSettings)', values=values)
+		values['id'] = self.databaseInsert(tableName=self.DB_LINKS, query='INSERT INTO :__table__ (deviceID, locationId, locSettings) VALUES (:deviceID, :locationId, :locSettings)', values=values)
 		self.logInfo(f'Added link from device {deviceId} to location {locationId}')
 		self._deviceLinks[values['id']] = DeviceLink(data=values)
 
@@ -352,18 +473,7 @@ class DeviceManager(Manager):
 		self._heartbeats[uid] = time.time()
 
 
-	def checkHeartbeats(self):
-		now = time.time()
-		for uid, lastTime in self._heartbeats.copy().items():
-			if now - self.getDeviceByUID(uid).getDeviceType().heartbeatRate > lastTime:
-				self.logWarning(f'Device with uid **{uid}** has not given a signal since {self.getDeviceByUID(uid).getDeviceType().heartbeatRate} seconds or more')
-				self._heartbeats.pop(uid)
-				device = self.getDeviceByUID(uid)
-				if device:
-					device.connected = False
-					self.MqttManager.publish(constants.TOPIC_DEVICE_UPDATED, payload={'id': device.id, 'type': 'status'})
 
-		self._heartbeatsCheckTimer = self.ThreadManager.newTimer(interval=3, func=self.checkHeartbeats)
 
 
 	## base
@@ -392,13 +502,13 @@ class DeviceManager(Manager):
 		deviceType = self.getDeviceType(typeId)
 		# check if another instance of this device is allowed
 		if deviceType.totalDeviceLimit > 0 and not moveDevice:
-			currAmount = len(self.DeviceManager.getDevicesByTypeID(deviceTypeID=typeId))
+			currAmount = len(self.DeviceManager.getDevicesByTypeID(deviceTypeId=typeId))
 			if deviceType.totalDeviceLimit <= currAmount:
 				raise MaxDeviceOfTypeReached(maxAmount=deviceType.totalDeviceLimit)
 
 		# check if there are aleady too many of this device type in the location
 		if deviceType.perLocationLimit > 0:
-			currAmount = len(self.getDevicesByLocation(locationID=locationId, deviceTypeID=typeId))
+			currAmount = len(self.getDevicesByLocation(locationId=locationId, deviceTypeId=typeId))
 			if deviceType.perLocationLimit <= currAmount:
 				raise MaxDevicePerLocationReached(maxAmount=deviceType.perLocationLimit)
 
@@ -417,7 +527,7 @@ class DeviceManager(Manager):
 			devices = self.DeviceManager.getDevicesForSkill('AliceCore')
 			if len(devices) == 0:
 				self.logWarning(f'No main device exists using DUMMY - RESTART REQUIRED!')
-				values = {'id': 0, 'name': 'dummy', 'typeID': 0, 'uid': self.ConfigManager.getAliceConfigByName('uuid'), 'locationID': 1}
+				values = {'id': 0, 'name': 'dummy', 'typeId': 0, 'uid': self.ConfigManager.getAliceConfigByName('uuid'), 'locationId': 1}
 				self._bufferedMainDevice = Device(data=values)
 				return self._bufferedMainDevice
 			self._bufferedMainDevice = devices[0]
@@ -426,52 +536,52 @@ class DeviceManager(Manager):
 				raise Exception('UUID changed, restart required!')
 		return self._bufferedMainDevice
 
-	def getDevicesByLocation(self, locationID: int, deviceTypeID: int = None, connectedOnly: bool = False, withLinks: bool = True, pairedOnly: bool = False) -> List[Device]:
+	def getDevicesByLocation(self, locationId: int, deviceTypeId: int = None, connectedOnly: bool = False, withLinks: bool = True, pairedOnly: bool = False) -> List[Device]:
 
-		if locationID and not isinstance(locationID, List):
-			locationID = [locationID]
+		if locationId and not isinstance(locationId, List):
+			locationId = [locationId]
 
-		if deviceTypeID and not isinstance(deviceTypeID, List):
-			deviceTypeID = [deviceTypeID]
+		if deviceTypeId and not isinstance(deviceTypeId, List):
+			deviceTypeId = [deviceTypeId]
 
 		return [device for device in self._devices.values()
 		        #location: exact or link
-		        if ( (locationID and device.locationID in locationID)
-		            or (withLinks and self.getLink(deviceId=device.id, locationId=locationID) ) )
+		        if ( (locationId and device.locationId in locationId)
+		            or (withLinks and self.getLink(deviceId=device.id, locationId=locationId) ) )
 		        #check status
 		        and (not connectedOnly or device.connected)
 		        and (not pairedOnly or device.uid)
 		        #check deviceType
 		        and device.getDeviceType()
-		        and (not deviceTypeID or device.deviceTypeID in deviceTypeID)]
+		        and (not deviceTypeId or device.deviceTypeId in deviceTypeId)]
 
 
 	def getDevicesByType(self, deviceType: str, connectedOnly: bool = False) -> List[Device]:
 		deviceTypeObj = self.getDeviceTypeByName(deviceType)
 		if deviceTypeObj:
-			return [x for x in self._devices.values() if x.deviceTypeID == deviceTypeObj.id and (not connectedOnly or x.connected)]
+			return [x for x in self._devices.values() if x.deviceTypeId == deviceTypeObj.id and (not connectedOnly or x.connected)]
 		return list()
 
 
-	def getDevicesByTypeID(self, deviceTypeID: int, connectedOnly: bool = False) -> List[Device]:
-		return [x for x in self._devices.values() if x.deviceTypeID == deviceTypeID and (not connectedOnly or x.connected)]
+	def getDevicesByTypeID(self, deviceTypeId: int, connectedOnly: bool = False) -> List[Device]:
+		return [x for x in self._devices.values() if x.deviceTypeId == deviceTypeId and (not connectedOnly or x.connected)]
 
 
 	def getDeviceLinksByType(self, deviceType: int, connectedOnly: bool = False) -> List[DeviceLink]:
-		return [x for x in self._deviceLinks.values() if x.getDevice().deviceTypeID == deviceType and (not connectedOnly or x.getDevice().connected)]
+		return [x for x in self._deviceLinks.values() if x.getDevice().deviceTypeId == deviceType and (not connectedOnly or x.getDevice().connected)]
 
 
-	def getDeviceLinks(self, locationID: int, deviceTypeID: int = None, connectedOnly: bool = False, pairedOnly: bool = False) -> List[DeviceLink]:
-		if locationID and not isinstance(locationID, List):
-			locationID = [locationID]
+	def getDeviceLinks(self, locationId: int, deviceTypeId: int = None, connectedOnly: bool = False, pairedOnly: bool = False) -> List[DeviceLink]:
+		if locationId and not isinstance(locationId, List):
+			locationId = [locationId]
 
-		if deviceTypeID and not isinstance(deviceTypeID, List):
-			deviceTypeID = [deviceTypeID]
+		if deviceTypeId and not isinstance(deviceTypeId, List):
+			deviceTypeId = [deviceTypeId]
 
 		return [x for x in self._deviceLinks.values()
-		        if (not locationID or x.locationId in locationID)
+		        if (not locationId or x.locationId in locationId)
 		        and x.getDevice()
-		        and (not deviceTypeID or x.getDevice().deviceTypeID in deviceTypeID)
+		        and (not deviceTypeId or x.getDevice().deviceTypeId in deviceTypeId)
 		        and (not connectedOnly or x.getDevice().connected)
 		        and (not pairedOnly or x.getDevice().uid)]
 
@@ -485,7 +595,7 @@ class DeviceManager(Manager):
 		locations = self.LocationManager.getLocationsForSession(sess=session, noneIsEverywhere=noneIsEverywhere)
 		locationIds = [loc.id for loc in locations]
 
-		return self.DeviceManager.getDeviceLinks(deviceTypeID=devTypeIds, locationID=locationIds)
+		return self.DeviceManager.getDeviceLinks(deviceTypeId=devTypeIds, locationId=locationIds)
 
 
 	@staticmethod
@@ -497,8 +607,7 @@ class DeviceManager(Manager):
 		return devGrouped
 
 
-	def getDeviceByUID(self, uid: str) -> Optional[Device]:
-		return self._devices.get(self.devUIDtoID(uid), None)
+
 
 
 	def getDeviceById(self, _id: int) -> Optional[Device]:
@@ -555,7 +664,7 @@ class DeviceManager(Manager):
 
 
 	def getAliceTypeDeviceTypeIds(self):
-		return [self.getMainDevice().deviceTypeID, self.getDeviceTypeByName(self.SAT_TYPE).id]
+		return [self.getMainDevice().deviceTypeId, self.getDeviceTypeByName(self.SAT_TYPE).id]
 
 
 	def siteIdToDeviceName(self, siteId: str) -> str:

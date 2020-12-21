@@ -5,9 +5,14 @@ class DeviceException(ProjectAliceException):
 		super().__init__(message, status, context)
 
 
+class DeviceTypeUndefined(DeviceException):
+	def __init__(self, deviceName: str):
+		super().__init__(f'The device {deviceName} has no defined type')
+
+
 class RequiresWIFISettings(DeviceException):
 	def __init__(self):
-		super().__init__(f'This device type needs wifi settings!')
+		super().__init__('This device type needs wifi settings!')
 
 
 class MaxDeviceOfTypeReached(DeviceException):

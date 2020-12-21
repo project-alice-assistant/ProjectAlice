@@ -25,8 +25,7 @@ from core.user.model.AccessLevels import AccessLevel
 
 class AliceSkill(ProjectAliceObject):
 
-
-	def __init__(self, supportedIntents: Iterable = None, databaseSchema: dict = None, **kwargs):
+	def __init__(self, supportedIntents: Iterable = None, databaseSchema: dict = None, devices: dict = None, **kwargs):
 		super().__init__(**kwargs)
 		try:
 			self._skillPath = Path(inspect.getfile(self.__class__)).parent
@@ -67,6 +66,11 @@ class AliceSkill(ProjectAliceObject):
 		self.loadIntentsDefinition()
 
 		self._utteranceSlotCleaner = re.compile('{(.+?):=>.+?}')
+		self._myDevicesTemplates = dict()
+
+		if devices:
+			for deviceData in devices.values():
+				self.DeviceManager.registerDeviceType(self.name, deviceData)
 
 
 	def getHtmlInstructions(self) -> flask.Markup:

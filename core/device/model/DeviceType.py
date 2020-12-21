@@ -1,42 +1,64 @@
 import json
 import sqlite3
-from typing import Dict
+from typing import Dict, List, Union
 
 from core.base.model.ProjectAliceObject import ProjectAliceObject
 from core.device.model import Device
+from core.device.model.DeviceAbility import DeviceAbility
 from core.dialog.model.DialogSession import DialogSession
 
 
 class DeviceType(ProjectAliceObject):
 
-	DEV_SETTINGS = dict()
-	LOC_SETTINGS = dict()
+	DEVICE_SETTINGS = dict()
+	LOCATION_SETTINGS = dict()
 
-	def __init__(self, data: sqlite3.Row, devSettings = None, locSettings = None, allowLocationLinks: bool = True, perLocationLimit: int = 0, totalDeviceLimit: int = 0, heartbeatRate: int = 5, internalOnly: bool = False):
+	def __init__(self, data: Union[Dict, sqlite3.Row]):
 		super().__init__()
 
-		if locSettings is None:
-			locSettings = {}
-		if devSettings is None:
-			devSettings = {}
+		if isinstance(data, sqlite3.Row):
+			data = self.Commons.dictFromRow(data)
 
 		self._name = data['name']
 		self._skill = data['skill']
-		self._skillInstance = None
-		self._perLocationLimit = perLocationLimit
-		self._totalDeviceLimit = totalDeviceLimit
-		self._allowLocationLinks = allowLocationLinks
-		self._devSettings = devSettings
-		self._locSettings = locSettings
-		self.heartbeatRate = heartbeatRate
-		self.internalOnly = internalOnly
+		self._perLocationLimit = data.get('perLocationLimit', 0)
+		self._totalDeviceLimit = data.get('totalDeviceLimit', 0)
+		self._allowLocationLinks = data.get('allowLocationLinks', True)
+		self._deviceSettings = data.get('deviceSettings', dict())
+		self._locationSettings = data.get('locationSettings', dict())
+		self._heartbeatRate = data.get('heartbeatRate', 5)
+		self._internalOnly = data.get('internalOnly', False)
 
-		if 'id' in data:
-			self._id = data['id']
-		else:
-			self.saveToDB()
+		abilities = data.get('abilities', [])
+		self._abilities = 0
+		for ability in abilities:
+			self._abilities |= ability.value
 
-		self.checkChangedSettings()
+
+	def hasAbilities(self, abilities: List[DeviceAbility]) -> bool:
+		"""
+		Checks if that device type has the given abilities, through a bitwise comparison
+		:param abilities: a list of DeviceAbility
+		:return: boolean
+		"""
+		check = 0
+		for ability in abilities:
+			check |= ability.value
+
+		return self._abilities & check == check
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 ### to reimplement for any device type
