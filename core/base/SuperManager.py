@@ -75,9 +75,6 @@ class SuperManager:
 			locationManager = self._managers.pop('LocationManager')
 			locationManager.onStart()
 
-			deviceManager = self._managers.pop('DeviceManager')
-			deviceManager.onStart()
-
 			audioServer = self._managers.pop('AudioManager')
 			audioServer.onStart()
 
@@ -95,6 +92,7 @@ class SuperManager:
 
 			talkManager = self._managers.pop('TalkManager')
 			skillManager = self._managers.pop('SkillManager')
+			deviceManager = self._managers.pop('DeviceManager')
 			widgetManager = self._managers.pop('WidgetManager')
 			assistantManager = self._managers.pop('AssistantManager')
 			dialogTemplateManager = self._managers.pop('DialogTemplateManager')
@@ -108,6 +106,7 @@ class SuperManager:
 			talkManager.onStart()
 			nluManager.onStart()
 			skillManager.onStart()
+			deviceManager.onStart()
 			widgetManager.onStart()
 			dialogTemplateManager.onStart()
 			assistantManager.onStart()

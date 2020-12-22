@@ -24,7 +24,7 @@ class Device(ProjectAliceObject):
 		self._typeName:str = data.get('typeName', '')
 		self._skillName: str = data.get('skillName', '')
 		self._locationId: int = data.get('locationId', 0)
-		self._deviceType: Optional[DeviceType] = None # Will be set once booted
+		self._deviceType: DeviceType = self.DeviceManager.getDeviceType(self._skillName, self._typeName)
 		self._abilities: int = 0 if not data.get('abilities', None) else self.setAbilities(data['abilities'])
 		self._deviceParams: Dict = json.loads(data.get('deviceParams', '{}'))
 		self._displayName: str = data.get('displayName', '')
@@ -50,12 +50,6 @@ class Device(ProjectAliceObject):
 			self.saveToDB()
 
 
-	def onBooted(self):
-		self._deviceType = self.DeviceManager.getDeviceType(self._skillName, self._typeName)
-		if not self._deviceType:
-			raise DeviceTypeUndefined(f'{self._skillName}_{self._typeName}')
-
-
 	def hasAbilities(self, abilities: List[DeviceAbility]) -> bool:
 		"""
 		Checks if that device has the given abilities
@@ -63,10 +57,8 @@ class Device(ProjectAliceObject):
 		:return: boolean
 		"""
 		if self._abilities == 0:
-			print('here')
 			return self._deviceType.hasAbilities(abilities)
 		else:
-			print('la')
 			check = 0
 			for ability in abilities:
 				check |= ability.value
@@ -173,6 +165,13 @@ class Device(ProjectAliceObject):
 	@property
 	def uid(self) -> str:
 		return self._uid
+
+
+	def __repr__(self):
+		return f'Device({self._id} - {self._displayName}, uid({self._uid}), Location({self._locationId}))'
+
+	def __eq__(self, other):
+		return other and self._uid == other.uid
 
 
 
@@ -328,9 +327,3 @@ class Device(ProjectAliceObject):
 	def skill(self) -> str:
 		return self.getDeviceType().skill
 
-
-	def __repr__(self):
-		return f'Device({self.id} - {self.name}, UId({self.uid}), Location({self.locationId}))'
-
-	def __eq__(self, other):
-		return other and self.id == other.id

@@ -74,6 +74,21 @@ class DeviceManager(Manager):
 		self.loadDevices()
 		self.loadLinks()
 
+		# Create the default core device if needed. Cannot be done in AliceCore skill due to load sequence
+		device = self.getMainDevice()
+		if not device:
+			device = self.addNewDevice(deviceType='AliceCore', skillName='AliceCore')
+			if not device:
+				self.logFatal('Core unit device creation failed, cannot continue')
+				return
+
+			self.logInfo('Created main unit device')
+			self.ConfigManager.updateAliceConfiguration('uuid', device.uid)
+
+
+		if self.ConfigManager.getAliceConfigByName('disableSoundAndMic'):
+			device.setAbilities([DeviceAbility.IS_CORE]) #Remove default abilities
+
 		self.logInfo(f'Loaded **{len(self._devices)}** device', plural='device')
 
 
@@ -145,9 +160,7 @@ class DeviceManager(Manager):
 
 	def getDevicesWithAbilities(self, abilites: List, connectedOnly: bool = True) -> list:
 		ret = list()
-		print(self._devices)
 		for device in self._devices.values():
-			print(device)
 			if connectedOnly and not device.connected:
 				continue
 
@@ -230,9 +243,7 @@ class DeviceManager(Manager):
 
 
 	def getMainDevice(self) -> Optional[Device]:
-		print('ici')
 		devices = self.getDevicesWithAbilities(abilites=[DeviceAbility.IS_CORE], connectedOnly=False)
-		print(devices)
 		if not devices:
 			return None
 
