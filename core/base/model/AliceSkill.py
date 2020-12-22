@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import importlib
 import inspect
 import json
 import re
@@ -18,7 +17,6 @@ from core.base.model.Intent import Intent
 from core.base.model.ProjectAliceObject import ProjectAliceObject
 from core.base.model.Version import Version
 from core.commons import constants
-from core.device.model.DeviceType import DeviceType
 from core.dialog.model.DialogSession import DialogSession
 from core.user.model.AccessLevels import AccessLevel
 
@@ -198,43 +196,6 @@ class AliceSkill(ProjectAliceObject):
 					continue
 
 				self._widgets.append(Path(file).stem)
-
-
-	def loadDevices(self):
-		fp = self.getResource('device')
-		if fp.exists():
-			self.logInfo(f"Loading **{len(list(fp.glob('*.py')))}** device type", plural='type')
-
-			data = self.DeviceManager.getDeviceTypeBySkillRAW(skill=self.name)
-
-			for file in fp.glob('*.py'):
-				if file.name.startswith('__'):
-					continue
-
-				deviceType = Path(file).stem
-				deviceTypeImport = importlib.import_module(f'skills.{self.name}.device.{deviceType}')
-				klass = getattr(deviceTypeImport, deviceType)
-
-				if deviceType in data:  # deviceType already exists in DB
-					deviceClass = klass(data[deviceType])
-					self._deviceTypes[deviceClass.id] = deviceClass
-					del data[deviceType]
-					self.logInfo(f'Loaded device type **{deviceType}**')
-				else:  # deviceClass is new
-					self.logInfo(f'Adding new device type **{deviceType}**')
-					deviceClass = klass({'name': deviceType, 'skill': self.name})
-					self._deviceTypes[deviceClass.id] = deviceClass
-
-				deviceClass.parentSkillInstance = self
-				deviceClass.onStart()
-
-			for deviceType in data:  # deprecated devices
-				self.logInfo(f'Device type **{deviceType}** is deprecated, removing')
-				self.DeviceManager.removeDeviceTypeName(_name=deviceType)
-
-
-	def getDeviceTypeInstance(self, deviceTypeName: str) -> Optional[DeviceType]:
-		return self._deviceTypes.get(deviceTypeName)
 
 
 	def getUtterancesByIntent(self, intent: Union[Intent, tuple, str], forceLowerCase: bool = True, cleanSlots: bool = False) -> list:
@@ -491,7 +452,6 @@ class AliceSkill(ProjectAliceObject):
 		self.TalkManager.loadSkillTalks(self.name)
 
 		self.loadWidgets()
-		self.loadDevices()
 		self.loadScenarioNodes()
 
 		self.logInfo(f'![green](Started!)')
@@ -500,8 +460,6 @@ class AliceSkill(ProjectAliceObject):
 	def onStop(self):
 		self._active = False
 		self.SkillManager.configureSkillIntents(self._name, False)
-		for devt in self.DeviceManager.getDeviceTypesForSkill(self.name).values():
-			devt.onStop()
 		self.logInfo(f'![green](Stopped)')
 		self.broadcast(method=constants.EVENT_SKILL_STOPPED, exceptions=[self.name], propagateToSkills=True, skill=self)
 

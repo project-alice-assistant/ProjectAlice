@@ -1,11 +1,12 @@
 import json
 import sqlite3
-from typing import Dict, List, Union
+from typing import Dict, List, Optional, Union
 
 from core.base.model.ProjectAliceObject import ProjectAliceObject
 from core.commons import constants
 from core.device.model.DeviceAbility import DeviceAbility
 from core.device.model.DeviceException import DeviceTypeUndefined
+from core.device.model.DeviceType import DeviceType
 from core.myHome.model.Location import Location
 
 
@@ -18,24 +19,41 @@ class Device(ProjectAliceObject):
 			data = self.Commons.dictFromRow(data)
 
 		self._data: dict = data
+		self._id: str = data.get('id', -1)
+		self._uid: str = data['uid']
+		self._typeName:str = data.get('typeName', '')
+		self._skillName: str = data.get('skillName', '')
+		self._locationId: int = data.get('locationId', 0)
+		self._deviceType: Optional[DeviceType] = None # Will be set once booted
+		self._abilities: int = 0 if not data.get('abilities', None) else self.setAbilities(data['abilities'])
+		self._deviceParams: Dict = json.loads(data.get('deviceParams', '{}'))
+		self._displayName: str = data.get('displayName', '')
 		self._connected: bool = False
 
-		self._locationId = data.get('locationId', 0)
-		self._name = data.get('name', '')
-		self._skillName = data.get('skillName', '')
-		self._uid: str = data['uid']
+		self._displaySettings = json.loads(data.get('displaySettings', '{}')) if isinstance(data.get('displaySettings', '{}'), str) else data.get('settings', dict())
+		settings = {
+			'x': 0,
+			'y': 0,
+			'z': len(self.LocationManager.locations),
+			'w': 50,
+			'h': 50,
+			'r': 0
+		}
 
-		self._deviceType = self.DeviceManager.getDeviceType(self._skillName, self.name)
-		self._abilities = 0 # We can override device's ability from DeviceType in case needed (think main unit with mic and sound disabled)
-
-		if not self._deviceType:
-			raise DeviceTypeUndefined(f'{self._skillName}_{self.name}')
-
-
-		self._display: Dict = json.loads(data.get('display', '{}'))
-		self._deviceParams: Dict = json.loads(data.get('deviceParams', '{}'))
-
+		self._displaySettings = {**settings, **self._displaySettings}
 		self._lastContact: int = 0
+
+		if not self._displayName:
+			self._displayName = self._typeName
+
+		if self._id == -1:
+			self.saveToDB()
+
+
+	def onBooted(self):
+		self._deviceType = self.DeviceManager.getDeviceType(self._skillName, self._typeName)
+		if not self._deviceType:
+			raise DeviceTypeUndefined(f'{self._skillName}_{self._typeName}')
 
 
 	def hasAbilities(self, abilities: List[DeviceAbility]) -> bool:
@@ -45,8 +63,10 @@ class Device(ProjectAliceObject):
 		:return: boolean
 		"""
 		if self._abilities == 0:
+			print('here')
 			return self._deviceType.hasAbilities(abilities)
 		else:
+			print('la')
 			check = 0
 			for ability in abilities:
 				check |= ability.value
@@ -55,19 +75,108 @@ class Device(ProjectAliceObject):
 
 
 	def setAbilities(self, abilities: List[DeviceAbility]):
+		"""
+		Sets this device's abilities, basd on a bitmask
+		:param abilities:
+		:return:
+		"""
 		self._abilities = 0
 		for ability in abilities:
 			self._abilities |= ability.value
 
 
+	# noinspection SqlResolve
+	def saveToDB(self):
+		"""
+		Updates or inserts this device in DB
+		:return:
+		"""
+		if self._id != -1:
+			self.DatabaseManager.replace(
+				tableName=self.DeviceManager.DB_DEVICE,
+				query='REPLACE INTO :__table__ (id, uid, locationId, type, skillname, displaySettings, displayName, deviceParams) VALUES (:id, :uid, :locationId, :type, :skillname, :displaySettings, :displayName, :deviceParams)',
+				callerName=self.DeviceManager.name,
+				values={
+					'id'             : self._id,
+					'uid'            : self._uid,
+					'locationId'     : self._locationId,
+					'typeName'       : self._typeName,
+					'skillName'      : self._skillName,
+					'displaySettings': json.dumps(self._displaySettings),
+					'displayName'    : self._displayName,
+					'deviceParams'   : json.dumps(self._deviceParams)
+				}
+			)
+		else:
+			deviceId = self.DatabaseManager.insert(
+				tableName=self.DeviceManager.DB_DEVICE,
+				callerName=self.DeviceManager.name,
+				values={
+					'uid'            : self._uid,
+					'locationId'     : self._locationId,
+					'typeName'       : self._typeName,
+					'skillName'      : self._skillName,
+					'displaySettings': json.dumps(self._displaySettings),
+					'displayName'    : self._displayName,
+					'deviceParams'   : json.dumps(self._deviceParams)
+				}
+			)
+
+			self._id = deviceId
+
+
 	@property
 	def connected(self) -> bool:
+		"""
+		Returns wheather or not this device is connected
+		:return:
+		"""
 		return self._connected
 
 
 	@connected.setter
 	def connected(self, value: bool):
+		"""
+		Sets device connection status
+		:param value: bool
+		:return:
+		"""
 		self._connected = value
+
+
+	@property
+	def strType(self) -> str:
+		return self._typeName
+
+
+	@property
+	def deviceType(self) -> DeviceType:
+		return self._deviceType
+
+
+	@property
+	def locationId(self) -> int:
+		return self._locationId
+
+
+	@locationId.setter
+	def locationId(self, value: int):
+		self._locationId = value
+		self._locationId = value
+
+
+	@property
+	def skillName(self) -> str:
+		return self._skillName
+
+
+	@property
+	def uid(self) -> str:
+		return self._uid
+
+
+
+
 
 
 
@@ -102,10 +211,6 @@ class Device(ProjectAliceObject):
 
 	def toJson(self) -> str:
 		return json.dumps(self.asJson())
-
-
-	def getDeviceType(self):
-		return self.DeviceManager.getDeviceType(_id=self.deviceTypeId)
 
 
 	def isInLocation(self, location: Location) -> bool:
@@ -186,12 +291,12 @@ class Device(ProjectAliceObject):
 
 	@property
 	def display(self) -> dict:
-		return self._display
+		return self._displaySettings
 
 
 	@display.setter
 	def display(self, value: dict):
-		self._display = value
+		self._displaySettings = value
 
 
 	@property
@@ -212,11 +317,6 @@ class Device(ProjectAliceObject):
 	@customValues.setter
 	def customValues(self, value: dict):
 		self._customValues = value
-
-
-	@property
-	def deviceType(self):
-		return self.getDeviceType()
 
 
 	@property

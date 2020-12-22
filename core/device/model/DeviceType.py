@@ -10,24 +10,18 @@ from core.dialog.model.DialogSession import DialogSession
 
 class DeviceType(ProjectAliceObject):
 
-	DEVICE_SETTINGS = dict()
-	LOCATION_SETTINGS = dict()
-
 	def __init__(self, data: Union[Dict, sqlite3.Row]):
 		super().__init__()
 
 		if isinstance(data, sqlite3.Row):
 			data = self.Commons.dictFromRow(data)
 
-		self._name = data['name']
-		self._skill = data['skill']
+		self._deviceTypeName = data['deviceTypeName']
+		self._skillName = data['skillName']
 		self._perLocationLimit = data.get('perLocationLimit', 0)
 		self._totalDeviceLimit = data.get('totalDeviceLimit', 0)
 		self._allowLocationLinks = data.get('allowLocationLinks', True)
-		self._deviceSettings = data.get('deviceSettings', dict())
-		self._locationSettings = data.get('locationSettings', dict())
 		self._heartbeatRate = data.get('heartbeatRate', 5)
-		self._internalOnly = data.get('internalOnly', False)
 
 		abilities = data.get('abilities', [])
 		self._abilities = 0
@@ -48,7 +42,13 @@ class DeviceType(ProjectAliceObject):
 		return self._abilities & check == check
 
 
+	@property
+	def heartbeatRate(self) -> int:
+		return self._heartbeatRate
 
+
+	def __repr__(self):
+		return f'{self.skill} - {self.name}'
 
 
 
@@ -97,38 +97,34 @@ class DeviceType(ProjectAliceObject):
 ### Generic part
 	@property
 	def initialLocationSettings(self) -> Dict:
-		return self._locSettings
-
-
-	def saveToDB(self):
-		values = {'skill': self.skill, 'name': self.name, 'locSettings': json.dumps(self._locSettings), 'devSettings': json.dumps(self._devSettings)}
-		self._id = self.DatabaseManager.insert(tableName=self.DeviceManager.DB_TYPES, values=values, callerName=self.DeviceManager.name)
+		return self._locationSettings
 
 
 	def checkChangedSettings(self):
+		return
 		# noinspection SqlResolve
 		row = self.DeviceManager.databaseFetch(tableName=self.DeviceManager.DB_TYPES,
 									            query='SELECT * FROM :__table__ WHERE id = :id',
 			                                    values={'id':self.id},
 		                                        method='one')
 
-		if row['devSettings'] != json.dumps(self._devSettings):
+		if row['devSettings'] != json.dumps(self._deviceSettings):
 			self.logInfo(f'Updating device Settings structure for {self.name}')
 			self.DatabaseManager.update(tableName=self.DeviceManager.DB_TYPES,
 			                            callerName=self.DeviceManager.name,
-			                            values={'devSettings': json.dumps(self._devSettings)},
+			                            values={'devSettings': json.dumps(self._deviceSettings)},
 			                            row=('id', self.id))
 			for device in self.DeviceManager.getDevicesByTypeID(deviceTypeID=self.id):
-				device.changedDevSettingsStructure(self._devSettings)
+				device.changedDevSettingsStructure(self._deviceSettings)
 
-		if row['locSettings'] != json.dumps(self._locSettings):
+		if row['locSettings'] != json.dumps(self._locationSettings):
 			self.logInfo(f'Updating locations Settings structure for {self.name}')
 			self.DatabaseManager.update(tableName=self.DeviceManager.DB_TYPES,
 			                            callerName=self.DeviceManager.name,
-			                            values={'locSettings': json.dumps(self._locSettings)},
+			                            values={'locSettings': json.dumps(self._locationSettings)},
 			                            row=('id', self.id))
 			for links in self.DeviceManager.getDeviceLinksByType(deviceType=self.id):
-				links.changedLocSettingsStructure(self._locSettings)
+				links.changedLocSettingsStructure(self._locationSettings)
 
 
 	def checkDevices(self):
@@ -142,24 +138,13 @@ class DeviceType(ProjectAliceObject):
 
 
 	@property
-	def parentSkillInstance(self):
-		return self._skillInstance
-
-
-	@parentSkillInstance.setter
-	def parentSkillInstance(self, skill):
-		self._skillInstance = skill
-		self.checkDevices()
-
-
-	@property
 	def skill(self) -> str:
-		return self._skill
+		return self._skillName
 
 
 	@skill.setter
 	def skill(self, value: str):
-		self._skill = value
+		self._skillName = value
 
 
 	@property
@@ -169,12 +154,12 @@ class DeviceType(ProjectAliceObject):
 
 	@property
 	def name(self) -> str:
-		return self._name
+		return self._deviceTypeName
 
 
 	@name.setter
 	def name(self, value: str):
-		self._name = value
+		self._deviceTypeName = value
 
 
 	@property
@@ -192,5 +177,4 @@ class DeviceType(ProjectAliceObject):
 		return self._allowLocationLinks
 
 
-	def __repr__(self):
-		return f'{self.skill} - {self.name}'
+

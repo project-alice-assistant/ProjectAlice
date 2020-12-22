@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import traceback
+
 from core.commons import constants
 from core.util.model.Logger import Logger
 
@@ -233,6 +235,7 @@ class SuperManager:
 			mqttManager.onStop()
 		except Exception as e:
 			Logger().logError(f'Error while shutting down manager **{managerName}**: {e}')
+			traceback.print_exc()
 
 
 	def getManager(self, managerName: str):

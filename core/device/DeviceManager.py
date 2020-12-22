@@ -12,8 +12,8 @@ from serial.tools import list_ports
 
 from core.base.model.Manager import Manager
 from core.commons import constants
-from core.device.model import DeviceAbility
 from core.device.model.Device import Device
+from core.device.model.DeviceAbility import DeviceAbility
 from core.device.model.DeviceException import MaxDeviceOfTypeReached, MaxDevicePerLocationReached
 from core.device.model.DeviceLink import DeviceLink
 from core.device.model.DeviceType import DeviceType
@@ -27,15 +27,17 @@ class DeviceManager(Manager):
 	DB_LINKS = 'deviceLinks'
 	DATABASE = {
 		DB_DEVICE: [
-			'uid TEXT PRIMARY KEY', #NOSONAR
+			'id INTEGER PRIMARY KEY',
+			'uid TEXT UNIQUE',
 			'locationId INTEGER NOT NULL',
-			'name TEXT',
-			'skillName TEXT'
-			'display TEXT',
+			'typeName TEXT NOT NULL',
+			'skillName TEXT NOT NULL',
+			'displaySettings TEXT',
+			'displayName TEXT',
 			'deviceParams TEXT'
 		],
 		DB_LINKS : [
-			'id INTEGER PRIMARY KEY', #NOSONAR
+			'id INTEGER PRIMARY KEY',
 			'device INTEGER NOT NULL',
 			'locationId INTEGER NOT NULL',
 			'locationSettings TEXT'
@@ -69,7 +71,6 @@ class DeviceManager(Manager):
 
 	def onStart(self):
 		super().onStart()
-
 		self.loadDevices()
 		self.loadLinks()
 
@@ -77,6 +78,8 @@ class DeviceManager(Manager):
 
 
 	def onBooted(self):
+		super().onBooted()
+
 		self.MqttManager.publish(topic=constants.TOPIC_CORE_RECONNECTION)
 
 		if self._devices:
@@ -97,6 +100,10 @@ class DeviceManager(Manager):
 
 
 	def loadDevices(self):
+		"""
+		Loads devices from database
+		:return:
+		"""
 		for row in self.databaseFetch(tableName=self.DB_DEVICE, method='all'):
 			self._devices[row['uid']] = Device(row)
 
@@ -113,8 +120,8 @@ class DeviceManager(Manager):
 			if not device:
 				self._heartbeats.pop(uid)
 			else:
-				if now - device.getDeviceType().heartbeatRate > lastTime:
-					self.logWarning(f'Device with uid **{uid}** has not given a signal since {device.getDeviceType().heartbeatRate} seconds or more')
+				if now - device.deviceType.heartbeatRate > lastTime:
+					self.logWarning(f'Device with uid **{uid}** has not given a signal since {device.deviceType.heartbeatRate} seconds or more')
 					self._heartbeats.pop(uid)
 					device.connected = False
 					self.MqttManager.publish(constants.TOPIC_DEVICE_UPDATED, payload={'uid': device.uid, 'type': 'status'})
@@ -127,15 +134,20 @@ class DeviceManager(Manager):
 
 
 	def registerDeviceType(self, skillName: str, data: dict):
-		data.setdefault('skill', skillName)
+		data.setdefault('skillName', skillName)
+		if not data.get('deviceTypeName') or not data.get('skillName'):
+			self.logError('Cannot register new device type without a type name and a skill name')
+			return
 
-		self._deviceTypes.setdefault(skillName, dict())
-		self._deviceTypes[skillName].setdefault(data['name'].lower(), DeviceType(data))
+		self._deviceTypes.setdefault(skillName.lower(), dict())
+		self._deviceTypes[skillName.lower()].setdefault(data['deviceTypeName'].lower(), DeviceType(data))
 
 
-	def getDevicesWithAbilities(self, abilites: List[DeviceAbility], connectedOnly: bool = True) -> list:
+	def getDevicesWithAbilities(self, abilites: List, connectedOnly: bool = True) -> list:
 		ret = list()
+		print(self._devices)
 		for device in self._devices.values():
+			print(device)
 			if connectedOnly and not device.connected:
 				continue
 
@@ -145,19 +157,161 @@ class DeviceManager(Manager):
 		return ret
 
 
-	def getDeviceType(self, skillName, deviceName):
-		return self.deviceTypes.get(skillName, list()).get(deviceName, None)
+	def getDevicesByType(self, deviceType: DeviceType, connectedOnly: bool = True) -> list:
+		"""
+		Returns a list of devices that are of the given type from the given skill
+		:param connectedOnly: Include or not devices that are not connected
+		:param deviceType: DeeviceType
+		:return: list of Device instances
+		"""
+
+		ret = list()
+		for device in self._devices.values():
+			if connectedOnly and not device.connected:
+				continue
+
+			if device.deviceType == deviceType:
+				ret.append(device)
+
+		return ret
 
 
+	def getDevicesByLocation(self, locationId: int, deviceType: DeviceType = None, abilities: List[DeviceAbility] = None, connectedOnly: bool = True) -> list:
+		"""
+		Returns a list of devices fitting thee locationId and the optional arguments
+		:param locationId: the location Id, only mandatory argument
+		:param deviceType: The device type that must be
+		:param abilities: The abilities the device has to have
+		:param connectedOnly: Wheather or not to return non connected devices
+		:return: list of Device instances
+		"""
+		return self._filterDevices(locationId=locationId, deviceType=deviceType, abilities=abilities, connectedOnly=connectedOnly)
 
 
+	def getDevicesBySkill(self, skillName: str, deviceType: DeviceType = None, abilities: List[DeviceAbility] = None, connectedOnly: bool = True) -> list:
+		"""
+		Returns a list of devices fitting the skill name and the optional arguments
+		:param skillName: the location Id, only mandatory argument
+		:param deviceType: The device type that must be
+		:param abilities: The abilities the device has to have
+		:param connectedOnly: Wheather or not to return non connected devices
+		:return: list of Device instances
+		"""
+		return self._filterDevices(skillName=skillName, deviceType=deviceType, abilities=abilities, connectedOnly=connectedOnly)
 
 
+	def _filterDevices(self, locationId: int = None, skillName: str = None, deviceType: DeviceType = None, abilities: List[DeviceAbility] = None, connectedOnly: bool = True) -> list:
+		"""
+		Returns a list of devices fitting the optional arguments
+		:param locationId: the location Id, only mandatory argument
+		:param skillName: the skill the device belongs to
+		:param deviceType: The device type that must be
+		:param abilities: The abilities the device has to have
+		:param connectedOnly: Wheather or not to return non connected devices
+		:return: list of Device instances
+		"""
+
+		ret = list()
+		for device in self._devices.values():
+			if (locationId and device.locationId != locationId)\
+			    or (skillName and device.skillName != skillName)\
+				or (deviceType and device.deviceType != deviceType)\
+				or (connectedOnly and not device.connected)\
+				or (abilities and not device.hasAbilities(abilities)):
+				continue
+
+			ret.append(device)
+
+		return ret
+
+
+	def getDeviceType(self, skillName: str, deviceType: str) -> Optional[DeviceType]:
+		return self.deviceTypes.get(skillName.lower(), dict()).get(deviceType.lower(), None)
+
+
+	def getMainDevice(self) -> Optional[Device]:
+		print('ici')
+		devices = self.getDevicesWithAbilities(abilites=[DeviceAbility.IS_CORE], connectedOnly=False)
+		print(devices)
+		if not devices:
+			return None
+
+		return devices[0]
+
+
+	def addNewDevice(self, deviceType: str, skillName: str, locationId: int = 0, uid: str = None, abilities: List[DeviceAbility] = None, displaySettings: Dict = None, displayName: str = None, noChecks: bool = False) -> Optional[Device]:
+		"""
+		Adds a new device to Alice. The device is immediately saved in DB
+		:param deviceType: the type of device, defined by each skill
+		:param skillName: the skill this device belongs to
+		:param locationId: the location id where the device is placed
+		:param uid: the device uid
+		:param abilities: a list of abilities for this device
+		:param displaySettings: a dict of display settings, for the UI
+		:param displayName: the ui display name
+		:param noChecks: if true, no condition checks will apply
+		:return: A Device instance or None if something failed
+		"""
+
+		if not noChecks:
+			dType: DeviceType = self.getDeviceType(skillName=skillName, deviceType=deviceType)
+			if 0 < dType.totalDeviceLimit <= len(self.getDevicesByType(deviceType=dType)):
+				self.logWarning(f'Cannot add device **{deviceType}**, maximum total limit reached')
+				return
+
+			if 0 < dType.perLocationLimit <= len(self.getDevicesByLocation(locationId, deviceType=dType)):
+				self.logWarning(f'Cannot add device **{deviceType}**, maximum peer location limit reached')
+				return
+
+
+		if not displaySettings:
+			displaySettings = {
+				'x': 50000,
+				'y': 50000
+			}
+
+		data = {
+			'uid'            : uid or str(uuid.uuid4()),
+			'locationId'     : locationId,
+			'typeName'       : deviceType,
+			'skillName'      : skillName,
+			'displaySettings': displaySettings,
+			'displayName'    : displayName,
+			'abilities'      : abilities
+		}
+
+		device = Device(data)
+		self._devices[data['uid']] = device
+		return device
 
 
 	@property
 	def devices(self) -> Dict[str, Device]:
 		return self._devices
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -246,24 +400,6 @@ class DeviceManager(Manager):
 		return self.ThreadManager.isThreadAlive('broadcast')
 
 
-	# noinspection SqlResolve
-	def addNewDevice(self, deviceTypeId: int, locationId: int = None, uid: str = None, noChecks: bool = False, skillName: str = None) -> Device:
-		# get or create location from different inputs
-		location = self.LocationManager.getLocation(locId=locationId)
-
-		if not noChecks:
-			self.assertDeviceTypeAllowedAtLocation(locationId=location.id, typeId=deviceTypeId)
-
-		if not skillName:
-			skillName = self.getDeviceType(_id=deviceTypeId).skill
-
-		values = {'typeId': deviceTypeId, 'uid': uid, 'locationId': location.id, 'display': "{'x': '10', 'y': '10', 'rotation': 0, 'width': 45, 'height': 45}", 'skillname': skillName}
-		values['id'] = self.databaseInsert(tableName=self.DB_DEVICE, values=values)
-
-		self._devices[values['id']] = Device(data=values)
-		return self._devices[values['id']]
-
-
 	def changeLocation(self, device: Device, locationId: int):
 		# check location is good
 		loc = self.LocationManager.getLocation(locId=locationId)
@@ -297,10 +433,6 @@ class DeviceManager(Manager):
 		self.DatabaseManager.delete(tableName=self.DB_LINKS, callerName=self.name, values={"id": deviceId})
 
 
-	def getDeviceType(self, _id: int):
-		return self.deviceTypes.get(_id, None)
-
-
 	def getDeviceTypeByName(self, name: str) -> Optional[DeviceType]:
 		for device in self.deviceTypes.values():
 			if device.name == name:
@@ -319,27 +451,6 @@ class DeviceManager(Manager):
 
 	def addDeviceTypes(self, deviceTypes: Dict):
 		self.deviceTypes.update(deviceTypes)
-
-
-	def removeDeviceType(self, _id: int):
-		self.DatabaseManager.delete(
-			tableName=self.DB_TYPES,
-			callerName=self.name,
-			values={
-				'id': _id
-			}
-		)
-		self._deviceTypes.pop(_id)
-
-
-	def removeDeviceTypeName(self, _name: str):
-		self.DatabaseManager.delete(
-			tableName=self.DB_TYPES,
-			callerName=self.name,
-			values={
-				'name': _name
-			}
-		)
 
 
 	def getLink(self, _id: int = None, deviceId: int = None, locationId: Union[list, int] = None) -> DeviceLink:
@@ -476,19 +587,6 @@ class DeviceManager(Manager):
 
 
 
-	## base
-	def getDeviceTypeBySkillRAW(self, skill: str):
-		# noinspection SqlResolve
-		data = self.DatabaseManager.fetch(
-			tableName=self.DB_TYPES,
-			query='SELECT * FROM :__table__ WHERE skill = :skill',
-			callerName=self.name,
-			values={'skill': skill},
-			method='all'
-		)
-		return {d['name']: {'id': d['id'], 'name': d['name'], 'skill': d['skill']} for d in data}
-
-
 	def updateDeviceDisplay(self, device: dict):
 		self.getDeviceById(device['id']).display = device['display']
 		self.DatabaseManager.update(tableName=self.DB_DEVICE,
@@ -520,47 +618,6 @@ class DeviceManager(Manager):
 
 	def getDevicesForSkill(self, skill: str):
 		return [device for device in self.devices.values() if device.skillName == skill]
-
-
-	def getMainDevice(self) -> Device:
-		if not self._bufferedMainDevice:
-			devices = self.DeviceManager.getDevicesForSkill('AliceCore')
-			if len(devices) == 0:
-				self.logWarning(f'No main device exists using DUMMY - RESTART REQUIRED!')
-				values = {'id': 0, 'name': 'dummy', 'typeId': 0, 'uid': self.ConfigManager.getAliceConfigByName('uuid'), 'locationId': 1}
-				self._bufferedMainDevice = Device(data=values)
-				return self._bufferedMainDevice
-			self._bufferedMainDevice = devices[0]
-			if self._bufferedMainDevice.uid != self.ConfigManager.getAliceConfigByName('uuid'):
-				self._bufferedMainDevice.pairingDone(self.ConfigManager.getAliceConfigByName('uuid'))
-				raise Exception('UUID changed, restart required!')
-		return self._bufferedMainDevice
-
-	def getDevicesByLocation(self, locationId: int, deviceTypeId: int = None, connectedOnly: bool = False, withLinks: bool = True, pairedOnly: bool = False) -> List[Device]:
-
-		if locationId and not isinstance(locationId, List):
-			locationId = [locationId]
-
-		if deviceTypeId and not isinstance(deviceTypeId, List):
-			deviceTypeId = [deviceTypeId]
-
-		return [device for device in self._devices.values()
-		        #location: exact or link
-		        if ( (locationId and device.locationId in locationId)
-		            or (withLinks and self.getLink(deviceId=device.id, locationId=locationId) ) )
-		        #check status
-		        and (not connectedOnly or device.connected)
-		        and (not pairedOnly or device.uid)
-		        #check deviceType
-		        and device.getDeviceType()
-		        and (not deviceTypeId or device.deviceTypeId in deviceTypeId)]
-
-
-	def getDevicesByType(self, deviceType: str, connectedOnly: bool = False) -> List[Device]:
-		deviceTypeObj = self.getDeviceTypeByName(deviceType)
-		if deviceTypeObj:
-			return [x for x in self._devices.values() if x.deviceTypeId == deviceTypeObj.id and (not connectedOnly or x.connected)]
-		return list()
 
 
 	def getDevicesByTypeID(self, deviceTypeId: int, connectedOnly: bool = False) -> List[Device]:
@@ -654,13 +711,6 @@ class DeviceManager(Manager):
 
 		return ''
 
-
-	def getAliceTypeDevices(self, connectedOnly: bool = False, includeMain: bool = False) -> List[Device]:
-		#todo remove hard coded AliceSatellite. replace for example with some type of "device ability" -> "can broadcast" -> "can play sound" ..
-		devices = self.DeviceManager.getDevicesByType(deviceType=self.SAT_TYPE, connectedOnly=connectedOnly)
-		if includeMain:
-			devices.append(self.DeviceManager.getMainDevice())
-		return devices
 
 
 	def getAliceTypeDeviceTypeIds(self):

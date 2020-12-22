@@ -83,7 +83,7 @@ class DeviceLink(ProjectAliceObject):
 		return {
 			'id'          : self._id,
 			'deviceID'    : self._deviceID,
-			'deviceName'  : self.DeviceManager.getDeviceById(_id=self._deviceID).name,
+			'deviceType'  : self.DeviceManager.getDeviceById(_id=self._deviceID).name,
 			'locationID'  : self._locationID,
 			'locationName': self.LocationManager.getLocation(locId=self._locationID).name,
 			'locSettings' : self._locSettings
