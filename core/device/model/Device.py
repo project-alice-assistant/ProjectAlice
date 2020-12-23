@@ -22,24 +22,25 @@ class Device(ProjectAliceObject):
 		self._uid: str = data['uid']
 		self._typeName:str = data.get('typeName', '')
 		self._skillName: str = data.get('skillName', '')
-		self._locationId: int = data.get('locationId', 0)
+		self._parentLocation: int = data.get('parentLocation', 0)
 		self._deviceType: DeviceType = self.DeviceManager.getDeviceType(self._skillName, self._typeName)
 		self._abilities: int = -1 if not data.get('abilities', None) else self.setAbilities(data['abilities'])
 		self._deviceParams: Dict = json.loads(data.get('deviceParams', '{}'))
 		self._displayName: str = data.get('displayName', '')
 		self._connected: bool = False
 
-		self._displaySettings = json.loads(data.get('displaySettings', '{}')) if isinstance(data.get('displaySettings', '{}'), str) else data.get('settings', dict())
+		# Settings are for UI, all the components use the same variable
+		self._settings = json.loads(data.get('settings', '{}')) if isinstance(data.get('settings', '{}'), str) else data.get('settings', dict())
 		settings = {
 			'x': 0,
 			'y': 0,
-			'z': len(self.LocationManager.locations),
+			'z': len(self.DeviceManager.devices),
 			'w': 50,
 			'h': 50,
 			'r': 0
 		}
 
-		self._displaySettings = {**settings, **self._displaySettings}
+		self._settings = {**settings, **self._settings}
 		self._lastContact: int = 0
 
 		if not self._displayName:
@@ -96,15 +97,15 @@ class Device(ProjectAliceObject):
 		if self._id != -1:
 			self.DatabaseManager.replace(
 				tableName=self.DeviceManager.DB_DEVICE,
-				query='REPLACE INTO :__table__ (id, uid, locationId, type, skillname, displaySettings, displayName, deviceParams) VALUES (:id, :uid, :locationId, :type, :skillname, :displaySettings, :displayName, :deviceParams)',
+				query='REPLACE INTO :__table__ (id, uid, parentLocation, typeName, skillName, settings, displayName, deviceParams) VALUES (:id, :uid, :parentLocation, :typeName, :skillName, :settings, :displayName, :deviceParams)',
 				callerName=self.DeviceManager.name,
 				values={
 					'id'             : self._id,
 					'uid'            : self._uid,
-					'locationId'     : self._locationId,
+					'parentLocation' : self._parentLocation,
 					'typeName'       : self._typeName,
 					'skillName'      : self._skillName,
-					'displaySettings': json.dumps(self._displaySettings),
+					'settings'       : json.dumps(self._settings),
 					'displayName'    : self._displayName,
 					'deviceParams'   : json.dumps(self._deviceParams)
 				}
@@ -115,10 +116,10 @@ class Device(ProjectAliceObject):
 				callerName=self.DeviceManager.name,
 				values={
 					'uid'            : self._uid,
-					'locationId'     : self._locationId,
+					'parentLocation' : self._parentLocation,
 					'typeName'       : self._typeName,
 					'skillName'      : self._skillName,
-					'displaySettings': json.dumps(self._displaySettings),
+					'settings'       : json.dumps(self._settings),
 					'displayName'    : self._displayName,
 					'deviceParams'   : json.dumps(self._deviceParams)
 				}
@@ -157,14 +158,13 @@ class Device(ProjectAliceObject):
 
 
 	@property
-	def locationId(self) -> int:
-		return self._locationId
+	def parentLocation(self) -> int:
+		return self._parentLocation
 
 
-	@locationId.setter
-	def locationId(self, value: int):
-		self._locationId = value
-		self._locationId = value
+	@parentLocation.setter
+	def parentLocation(self, value: int):
+		self._parentLocation = value
 
 
 	@property
@@ -178,27 +178,38 @@ class Device(ProjectAliceObject):
 
 
 	@property
+	def id(self) -> str:
+		#Prefer using uid when possible
+		return self._id
+
+
+	@property
 	def uid(self) -> str:
 		return self._uid
 
 
 	def toDict(self) -> dict:
 		return {
-			'id'             : self._id,
-			'uid'            : self._uid,
-			'typeName'       : self._typeName,
-			'skillName'      : self._skillName,
-			'displaySettings': self._displaySettings,
+			'abilities'      : bin(self.getAbilities()),
+			'connected'      : self._connected,
 			'deviceParams'   : self._deviceParams,
 			'displayName'    : self._displayName,
-			'connected'      : self._connected,
+			'settings'       : self._settings,
+			'id'             : self._id,
 			'lastContact'    : self._lastContact,
-			'abilities'      : bin(self.getAbilities())
+			'parentLocation' : self._parentLocation,
+			'skillName'      : self._skillName,
+			'typeName'       : self._typeName,
+			'uid'            : self._uid
 		}
 
 
+	def updateSettings(self, settings: dict):
+		self._settings = {**self._settings, **settings}
+
+
 	def __repr__(self):
-		return f'Device({self._id} - {self._displayName}, uid({self._uid}), Location({self._locationId}))'
+		return f'Device({self._id} - {self._displayName}, uid({self._uid}), Location({self._parentLocation}))'
 
 
 	def __eq__(self, other):
@@ -304,12 +315,12 @@ class Device(ProjectAliceObject):
 
 	@property
 	def display(self) -> dict:
-		return self._displaySettings
+		return self._settings
 
 
 	@display.setter
 	def display(self, value: dict):
-		self._displaySettings = value
+		self._settings = value
 
 
 	@property

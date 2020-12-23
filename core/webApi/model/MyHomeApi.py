@@ -126,6 +126,16 @@ class MyHomeApi(Api):
 			return jsonify(success=False)
 
 
+	@route('/devices/<deviceUid>/', methods=['PATCH'])
+	@ApiAuthenticated
+	def updateDevice(self, deviceUid: str):
+		try:
+			return jsonify(success=self.DeviceManager.updateDeviceDisplay(deviceUid, request.json).toDict())
+		except Exception as e:
+			self.logError(f'Failed saving device {e}')
+			return jsonify(success=False)
+
+
 	@route('/locations/<locationId>/', methods=['DELETE'])
 	@ApiAuthenticated
 	def deleteLocation(self, locationId: str):
@@ -156,6 +166,17 @@ class MyHomeApi(Api):
 			return jsonify(success=True)
 		except Exception as e:
 			self.logError(f'Failed deleting construction {e}')
+			return jsonify(success=False)
+
+
+	@route('/devices/<deviceUid>/', methods=['DELETE'])
+	@ApiAuthenticated
+	def deleteDevice(self, deviceUid: str):
+		try:
+			self.DeviceManager.deleteDevice(deviceUid)
+			return jsonify(success=True)
+		except Exception as e:
+			self.logError(f'Failed deleting device {e}')
 			return jsonify(success=False)
 
 

@@ -29,17 +29,17 @@ class DeviceManager(Manager):
 		DB_DEVICE: [
 			'id INTEGER PRIMARY KEY',
 			'uid TEXT UNIQUE',
-			'locationId INTEGER NOT NULL',
+			'parentLocation INTEGER NOT NULL',
 			'typeName TEXT NOT NULL',
 			'skillName TEXT NOT NULL',
-			'displaySettings TEXT',
+			'settings TEXT',
 			'displayName TEXT',
 			'deviceParams TEXT'
 		],
 		DB_LINKS : [
 			'id INTEGER PRIMARY KEY',
-			'device INTEGER NOT NULL',
-			'locationId INTEGER NOT NULL',
+			'device TEXT NOT NULL',
+			'parentLocation INTEGER NOT NULL',
 			'locationSettings TEXT'
 		]
 	}
@@ -251,7 +251,7 @@ class DeviceManager(Manager):
 
 		ret = list()
 		for device in self._devices.values():
-			if (locationId and device.locationId != locationId)\
+			if (locationId and device.parentLocation != locationId)\
 			    or (skillName and device.skillName != skillName)\
 				or (deviceType and device.deviceType != deviceType)\
 				or (connectedOnly and not device.connected)\
@@ -317,13 +317,13 @@ class DeviceManager(Manager):
 			}
 
 		data = {
-			'uid'            : uid or str(uuid.uuid4()),
-			'locationId'     : locationId,
-			'typeName'       : deviceType,
-			'skillName'      : skillName,
-			'displaySettings': displaySettings,
+			'abilities'      : abilities,
 			'displayName'    : displayName,
-			'abilities'      : abilities
+			'parentLocation' : locationId,
+			'settings'       : displaySettings,
+			'skillName'      : skillName,
+			'typeName'       : deviceType,
+			'uid'            : uid or str(uuid.uuid4())
 		}
 
 		device = Device(data)
@@ -336,10 +336,38 @@ class DeviceManager(Manager):
 		return self._devices
 
 
+	def updateDeviceDisplay(self, deviceUid: str, data: dict) -> Device:
+		"""
+		Updates the UI part of a device
+		:param deviceUid: The device uid to update
+		:param data: A dict of data to update
+		:return: Device instance
+		"""
+		device = self._devices.get(deviceUid, None)
+		if not device:
+			raise Exception(f"Cannot update device, device with uid **{deviceUid}** doesn't exist")
+
+		if 'parentLocation' in data:
+			device.parentLocation = data['parentLocation']
+
+		if 'settings' in data:
+			device.updateSettings(data['settings'])
+
+		device.saveToDB()
+		return device
 
 
-
-
+	def deleteDevice(self, deviceUid: str):
+		# TODO unsub mqtt, clean links
+		device = self._devices.get(deviceUid, None)
+		if not device:
+			raise Exception(f'Device with uid {deviceUid} not found')
+		elif device.hasAbilities([DeviceAbility.IS_CORE]):
+			raise Exception(f'Cannot delete main unit')
+		else:
+			self.devices.pop(deviceUid)
+			self.DatabaseManager.delete(tableName=self.DB_DEVICE, callerName=self.name, values={'uid': device.uid})
+			self.DatabaseManager.delete(tableName=self.DB_LINKS, callerName=self.name, values={'device': device.id})
 
 
 
@@ -629,16 +657,6 @@ class DeviceManager(Manager):
 		device.connected = True
 		self._heartbeats[uid] = time.time()
 
-
-
-
-
-	def updateDeviceDisplay(self, device: dict):
-		self.getDeviceById(device['id']).display = device['display']
-		self.DatabaseManager.update(tableName=self.DB_DEVICE,
-		                            callerName=self.name,
-		                            values={'display': json.dumps(device['display'])},
-		                            row=('id', device['id']))
 
 
 	def assertDeviceTypeAllowedAtLocation(self, typeId: int, locationId: int, moveDevice: bool = False):
