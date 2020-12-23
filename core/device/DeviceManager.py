@@ -371,9 +371,58 @@ class DeviceManager(Manager):
 			self.DatabaseManager.delete(tableName=self.DB_LINKS, callerName=self.name, values={'device': device.id})
 
 
+	def findUSBPort(self, timeout: int) -> str:
+		"""
+		This waits until a change is detected on the usb ports, meaning a device was plugged in
+		Plugging a device out doesn't break the check, and only timeout or a detected plug in returns the port
+		:param timeout: Seconds after which the function stops looking for a new device
+		:return: The usb port detected or not
+		"""
+		oldPorts = list()
+		scanPresent = True
+		found = False
+		tries = 0
+		self.logInfo(f'Looking for USB device for the next {timeout} seconds')
+		while not found:
+			tries += 1
+			if tries > timeout * 2:
+				break
+
+			newPorts = list()
+			for port, desc, hwid in sorted(list_ports.comports()):
+				if scanPresent:
+					oldPorts.append(port)
+				newPorts.append(port)
+
+			scanPresent = False
+
+			if len(newPorts) < len(oldPorts):
+				self.logInfo('USB device disconnected')
+				oldPorts = list()
+				scanPresent = True
+			else:
+				changes = [port for port in newPorts if port not in oldPorts]
+				if changes:
+					port = changes[0]
+					self.logInfo(f'Found usb device on {port}')
+					return port
+
+			time.sleep(0.5)
+
+		return ''
 
 
+	def isBusy(self) -> bool:
+		"""
+		The manager is busy if it's already broadcasting for a new device
+		:return: boolean
+		"""
+		return self.ThreadManager.isThreadAlive('broadcast')
 
+
+	@property
+	def broadcastFlag(self) -> threading.Event:
+		return self._broadcastFlag
 
 
 
@@ -415,9 +464,7 @@ class DeviceManager(Manager):
 			return False
 
 
-	@property
-	def broadcastFlag(self) -> threading.Event:
-		return self._broadcastFlag
+
 
 
 	def startBroadcastingForNewDevice(self, device: Device, uid: str, replyOnSiteId: str = '') -> bool:
@@ -471,8 +518,7 @@ class DeviceManager(Manager):
 				self.logInfo('No device query received')
 
 
-	def isBusy(self) -> bool:
-		return self.ThreadManager.isThreadAlive('broadcast')
+
 
 
 	def changeLocation(self, device: Device, locationId: int):
@@ -741,42 +787,4 @@ class DeviceManager(Manager):
 
 
 	## generic helper for finding a new USB device
-	def findUSBPort(self, timeout: int) -> str:
-		oldPorts = list()
-		scanPresent = True
-		found = False
-		tries = 0
-		self.logInfo(f'Looking for USB device for the next {timeout} seconds')
-		while not found:
-			tries += 1
-			if tries > timeout * 2:
-				break
 
-			newPorts = list()
-			for port, desc, hwid in sorted(list_ports.comports()):
-				if scanPresent:
-					oldPorts.append(port)
-				newPorts.append(port)
-
-			scanPresent = False
-
-			if len(newPorts) < len(oldPorts):
-				# User disconnected a device
-				self.logInfo('USB device disconnected')
-				oldPorts = list()
-				scanPresent = True
-			else:
-				changes = [port for port in newPorts if port not in oldPorts]
-				if changes:
-					port = changes[0]
-					self.logInfo(f'Found usb device on {port}')
-					return port
-
-			time.sleep(0.5)
-
-		return ''
-
-
-
-	def getAliceTypeDeviceTypeIds(self):
-		return [self.getMainDevice().deviceTypeId, self.getDeviceTypeByName(self.SAT_TYPE).id]

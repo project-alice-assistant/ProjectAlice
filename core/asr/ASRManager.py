@@ -148,12 +148,12 @@ class ASRManager(Manager):
 					text = self._translator.translate(text=text, src=language, dest='en').text
 					self.logDebug(f'Asr translated to: {text}')
 
-			self.MqttManager.publish(topic=constants.TOPIC_TEXT_CAPTURED, payload={'sessionId': session.sessionId, 'text': text, 'siteId': session.siteId, 'likelihood': result.likelihood, 'seconds': result.processingTime})
+			self.MqttManager.publish(topic=constants.TOPIC_TEXT_CAPTURED, payload={'sessionId': session.sessionId, 'text': text, 'device': session.siteId, 'likelihood': result.likelihood, 'seconds': result.processingTime})
 		else:
 			self.MqttManager.playSound(
 				soundFilename='error',
 				location=Path(f'system/sounds/{self.LanguageManager.activeLanguage}'),
-				siteId=session.siteId,
+				device=session.siteId,
 				sessionId=session.sessionId
 			)
 

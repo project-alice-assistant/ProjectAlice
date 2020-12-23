@@ -3,6 +3,7 @@ from __future__ import annotations
 import traceback
 
 from core.commons import constants
+from core.device.model.DeviceAbility import DeviceAbility
 from core.util.model.Logger import Logger
 
 
@@ -137,8 +138,6 @@ class SuperManager:
 
 
 	def onBooted(self):
-		self.mqttManager.playSound(soundFilename='boot')
-
 		manager = None
 		try:
 			for manager in self._managers.values():
@@ -146,6 +145,9 @@ class SuperManager:
 					manager.onBooted()
 		except Exception as e:
 			Logger().logError(f'Error while sending onBooted to manager **{manager.name}**: {e}')
+
+		deviceList = self.deviceManager.getDevicesWithAbilities([DeviceAbility.IS_SATELITTE, DeviceAbility.IS_CORE])
+		self.mqttManager.playSound(soundFilename='boot', device=deviceList)
 
 
 	@staticmethod

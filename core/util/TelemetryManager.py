@@ -98,8 +98,8 @@ class TelemetryManager(Manager):
 
 		self.databaseInsert(
 			tableName='telemetry',
-			query='INSERT INTO :__table__ (type, value, service, siteId, timestamp, locationID) VALUES (:type, :value, :service, :siteId, :timestamp, :locationID)',
-			values={'type': ttype.value, 'value': value, 'service': service, 'siteId': siteId, 'timestamp': round(timestamp), 'locationID': locationID}
+			query='INSERT INTO :__table__ (type, value, service, device, timestamp, locationID) VALUES (:type, :value, :service, :device, :timestamp, :locationID)',
+			values={'type': ttype.value, 'value': value, 'service': service, 'device': siteId, 'timestamp': round(timestamp), 'locationID': locationID}
 		)
 
 		telemetrySkill = self.SkillManager.getSkillInstance('Telemetry')
@@ -124,7 +124,7 @@ class TelemetryManager(Manager):
 		if location:
 			values = {'type': ttype.value, 'locationId': location.id}
 		elif siteId:
-			values = {'type': ttype.value, 'siteId': siteId}
+			values = {'type': ttype.value, 'device': siteId}
 		else:
 			raise Exception("Supply location or site/uuid")
 		if service:
