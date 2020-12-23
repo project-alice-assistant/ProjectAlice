@@ -69,14 +69,18 @@ class MqttManager(Manager):
 		self._mqttClient.message_callback_add(constants.TOPIC_NLU_INTENT_NOT_RECOGNIZED, self.nluIntentNotRecognized)
 		self._mqttClient.message_callback_add(constants.TOPIC_NLU_ERROR, self.nluError)
 
+		self.connect()
+
+
+	def onBooted(self):
+		super().onBooted()
+
 		for device in self.DeviceManager.getDevicesWithAbilities(abilites=[DeviceAbility.PLAY_SOUND, DeviceAbility.CAPTURE_SOUND], connectedOnly=False):
 			self._mqttClient.message_callback_add(constants.TOPIC_VAD_UP.format(device.uid), self.onVADUp)
 			self._mqttClient.message_callback_add(constants.TOPIC_VAD_DOWN.format(device.uid), self.onVADDown)
 
 			self._mqttClient.message_callback_add(constants.TOPIC_PLAY_BYTES.format(device.uid), self.topicPlayBytes)
 			self._mqttClient.message_callback_add(constants.TOPIC_PLAY_BYTES_FINISHED.format(device.uid), self.topicPlayBytesFinished)
-
-		self.connect()
 
 
 	def onStop(self):

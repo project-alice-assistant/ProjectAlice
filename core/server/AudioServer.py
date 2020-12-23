@@ -210,7 +210,7 @@ class AudioManager(Manager):
 						callback=streamCallback
 					)
 
-					self.logDebug(f'Playing wav stream using **{self._audioOutput}** audio output from site id **{self.DeviceManager.siteIdToDeviceName(siteId)}** (channels: {channels}, rate: {framerate})')
+					self.logDebug(f'Playing wav stream using **{self._audioOutput}** audio output from device **{self.DeviceManager.getDevice(siteId).displayName}** (channels: {channels}, rate: {framerate})')
 					stream.start()
 					while stream.active:
 						if self._stopPlayingFlag.is_set():

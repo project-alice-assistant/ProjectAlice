@@ -96,6 +96,7 @@ class DeviceManager(Manager):
 		super().onBooted()
 
 		self.MqttManager.publish(topic=constants.TOPIC_CORE_RECONNECTION)
+		self.getMainDevice().connected = True
 
 		if self._devices:
 			self.ThreadManager.newThread(name='checkHeartbeats', target=self.checkHeartbeats)
@@ -779,13 +780,3 @@ class DeviceManager(Manager):
 
 	def getAliceTypeDeviceTypeIds(self):
 		return [self.getMainDevice().deviceTypeId, self.getDeviceTypeByName(self.SAT_TYPE).id]
-
-
-	def siteIdToDeviceName(self, siteId: str) -> str:
-		device = self.DeviceManager.getDeviceByUID(uid=siteId)
-		if device and device.name:
-			return device.name
-		elif device:
-			return f'{device.getMainLocation().name} ({device.uid})'
-		else:
-			return siteId

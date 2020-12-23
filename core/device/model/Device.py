@@ -187,6 +187,15 @@ class Device(ProjectAliceObject):
 	def uid(self) -> str:
 		return self._uid
 
+	@property
+	def displayName(self) -> str:
+		return self._displayName
+
+
+	@displayName.setter
+	def displayName(self, value: str):
+		self._displayName = value
+
 
 	def toDict(self) -> dict:
 		return {

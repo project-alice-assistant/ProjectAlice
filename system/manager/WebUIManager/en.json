@@ -62,7 +62,10 @@
 		"removeLocations": "Remove locations",
 		"paintFloors": "Paint floors",
 		"buildMode": "Build",
-		"manageFurniture": "Manage furniture"
+		"manageFurniture": "Manage furniture",
+		"addDevice": "Add new device",
+		"removeDevice": "Remove devices",
+		"linkDevice": "Link devices with multiple locations"
 	},
 	"buttons": {
 		"cancel": "Cancel",
