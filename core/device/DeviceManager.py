@@ -117,18 +117,26 @@ class DeviceManager(Manager):
 	def loadDevices(self):
 		"""
 		Loads devices from database
-		:return:
+		:return: None
 		"""
 		for row in self.databaseFetch(tableName=self.DB_DEVICE, method='all'):
 			self._devices[row['uid']] = Device(row)
 
 
 	def loadLinks(self):
+		"""
+		Loads location links from database
+		:return: None
+		"""
 		for row in self.databaseFetch(tableName=self.DB_LINKS, method='all'):
 			self._deviceLinks[row['id']] = DeviceLink(row)
 
 
 	def checkHeartbeats(self):
+		"""
+		Routine that checks all heartbeats and disconnects devices that haven't signaled their presence for hearbeatRate time
+		:return: None
+		"""
 		now = time.time()
 		for uid, lastTime in self._heartbeats.copy().items():
 			device = self.getDevice(uid)
@@ -145,10 +153,21 @@ class DeviceManager(Manager):
 
 
 	def getDevice(self, uid: str) -> Optional[Device]:
+		"""
+		Returns a Device with the provided uid, if any
+		:param uid: The device uid
+		:return: Device instance if any or None
+		"""
 		return self._devices.get(uid, None)
 
 
 	def registerDeviceType(self, skillName: str, data: dict):
+		"""
+		Registers a new DeviceType
+		:param skillName: The skill name owning that device type
+		:param data: The DeviceType data as a dict
+		:return: None
+		"""
 		data.setdefault('skillName', skillName)
 		if not data.get('deviceTypeName') or not data.get('skillName'):
 			self.logError('Cannot register new device type without a type name and a skill name')
@@ -158,7 +177,13 @@ class DeviceManager(Manager):
 		self._deviceTypes[skillName.lower()].setdefault(data['deviceTypeName'].lower(), DeviceType(data))
 
 
-	def getDevicesWithAbilities(self, abilites: List, connectedOnly: bool = True) -> list:
+	def getDevicesWithAbilities(self, abilites: List[DeviceAbility], connectedOnly: bool = True) -> List[Device]:
+		"""
+		Returns a list of Device instances having AT LEAST the provided abilities
+		:param abilites: A list of DeviceAbility the device must have
+		:param connectedOnly: Wheather or not the devices should be connected to bee returned
+		:return: A list of Device instances
+		"""
 		ret = list()
 		for device in self._devices.values():
 			if connectedOnly and not device.connected:
@@ -170,7 +195,7 @@ class DeviceManager(Manager):
 		return ret
 
 
-	def getDevicesByType(self, deviceType: DeviceType, connectedOnly: bool = True) -> list:
+	def getDevicesByType(self, deviceType: DeviceType, connectedOnly: bool = True) -> List[Device]:
 		"""
 		Returns a list of devices that are of the given type from the given skill
 		:param connectedOnly: Include or not devices that are not connected
@@ -189,7 +214,7 @@ class DeviceManager(Manager):
 		return ret
 
 
-	def getDevicesByLocation(self, locationId: int, deviceType: DeviceType = None, abilities: List[DeviceAbility] = None, connectedOnly: bool = True) -> list:
+	def getDevicesByLocation(self, locationId: int, deviceType: DeviceType = None, abilities: List[DeviceAbility] = None, connectedOnly: bool = True) -> List[Device]:
 		"""
 		Returns a list of devices fitting thee locationId and the optional arguments
 		:param locationId: the location Id, only mandatory argument
@@ -201,7 +226,7 @@ class DeviceManager(Manager):
 		return self._filterDevices(locationId=locationId, deviceType=deviceType, abilities=abilities, connectedOnly=connectedOnly)
 
 
-	def getDevicesBySkill(self, skillName: str, deviceType: DeviceType = None, abilities: List[DeviceAbility] = None, connectedOnly: bool = True) -> list:
+	def getDevicesBySkill(self, skillName: str, deviceType: DeviceType = None, abilities: List[DeviceAbility] = None, connectedOnly: bool = True) -> List[Device]:
 		"""
 		Returns a list of devices fitting the skill name and the optional arguments
 		:param skillName: the location Id, only mandatory argument
@@ -213,7 +238,7 @@ class DeviceManager(Manager):
 		return self._filterDevices(skillName=skillName, deviceType=deviceType, abilities=abilities, connectedOnly=connectedOnly)
 
 
-	def _filterDevices(self, locationId: int = None, skillName: str = None, deviceType: DeviceType = None, abilities: List[DeviceAbility] = None, connectedOnly: bool = True) -> list:
+	def _filterDevices(self, locationId: int = None, skillName: str = None, deviceType: DeviceType = None, abilities: List[DeviceAbility] = None, connectedOnly: bool = True) -> List[Device]:
 		"""
 		Returns a list of devices fitting the optional arguments
 		:param locationId: the location Id, only mandatory argument
@@ -239,10 +264,20 @@ class DeviceManager(Manager):
 
 
 	def getDeviceType(self, skillName: str, deviceType: str) -> Optional[DeviceType]:
+		"""
+		Returns the DeviceType instance for the skillname and devicetype
+		:param skillName: The skill name
+		:param deviceType: The device type string
+		:return: Device instance
+		"""
 		return self.deviceTypes.get(skillName.lower(), dict()).get(deviceType.lower(), None)
 
 
 	def getMainDevice(self) -> Optional[Device]:
+		"""
+		Returns the main device, the only one having the IS_CORE ability
+		:return: Device instance
+		"""
 		devices = self.getDevicesWithAbilities(abilites=[DeviceAbility.IS_CORE], connectedOnly=False)
 		if not devices:
 			return None

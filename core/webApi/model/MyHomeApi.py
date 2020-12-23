@@ -4,6 +4,7 @@ from typing import Union
 from flask import jsonify, request, send_from_directory
 from flask_classful import route
 
+from core.device.model.Device import Device
 from core.interface.model.Api import Api
 from core.util.Decorators import ApiAuthenticated
 
@@ -23,7 +24,8 @@ class MyHomeApi(Api):
 			return jsonify(data={
 				'locations': {location.id: location.toDict() for location in self.LocationManager.locations.values()},
 				'constructions': {construction.id: construction.toDict() for construction in self.LocationManager.constructions.values()},
-				'furnitures': {furniture.id: furniture.toDict() for furniture in self.LocationManager.furnitures.values()}
+				'furnitures': {furniture.id: furniture.toDict() for furniture in self.LocationManager.furnitures.values()},
+				'devices': {device.uid: device.toDict() for device in self.DeviceManager.devices.values()}
 			})
 		except:
 			return jsonify(success=False)
@@ -184,7 +186,7 @@ class MyHomeApi(Api):
 	@route('/locations/floors/<imageId>.png', methods=['GET'])
 	def getFloor(self, imageId: str):
 		try:
-			return send_from_directory('static/images', f'floors/{imageId}.png')
+			return send_from_directory('static/images/floors', f'{imageId}.png')
 		except:
 			return jsonify(success=False)
 
@@ -192,7 +194,7 @@ class MyHomeApi(Api):
 	@route('/furniture/<imageId>.png', methods=['GET'])
 	def getFurniture(self, imageId: str):
 		try:
-			return send_from_directory('static/images', f'furniture/{imageId}.png')
+			return send_from_directory('static/images/furniture', f'{imageId}.png')
 		except:
 			return jsonify(success=False)
 
@@ -200,6 +202,15 @@ class MyHomeApi(Api):
 	@route('/constructions/<imageId>.png', methods=['GET'])
 	def getConstruction(self, imageId: str):
 		try:
-			return send_from_directory('static/images', f'constructions/{imageId}.png')
+			return send_from_directory('static/images/constructions', f'{imageId}.png')
+		except:
+			return jsonify(success=False)
+
+
+	@route('/devices/<uid>/device.png', methods=['GET'])
+	def getDeviceIcon(self, uid: str):
+		try:
+			device: Device = self.DeviceManager.getDevice(uid=uid)
+			return send_from_directory(f'{self.Commons.rootDir()}/skills/{device.skillName}/device/img', f'{device.typeName}.png')
 		except:
 			return jsonify(success=False)

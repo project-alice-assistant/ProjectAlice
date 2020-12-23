@@ -1,11 +1,10 @@
 import json
 import sqlite3
-from typing import Dict, List, Optional, Union
+from typing import Dict, List, Union
 
 from core.base.model.ProjectAliceObject import ProjectAliceObject
 from core.commons import constants
 from core.device.model.DeviceAbility import DeviceAbility
-from core.device.model.DeviceException import DeviceTypeUndefined
 from core.device.model.DeviceType import DeviceType
 from core.myHome.model.Location import Location
 
@@ -25,7 +24,7 @@ class Device(ProjectAliceObject):
 		self._skillName: str = data.get('skillName', '')
 		self._locationId: int = data.get('locationId', 0)
 		self._deviceType: DeviceType = self.DeviceManager.getDeviceType(self._skillName, self._typeName)
-		self._abilities: int = 0 if not data.get('abilities', None) else self.setAbilities(data['abilities'])
+		self._abilities: int = -1 if not data.get('abilities', None) else self.setAbilities(data['abilities'])
 		self._deviceParams: Dict = json.loads(data.get('deviceParams', '{}'))
 		self._displayName: str = data.get('displayName', '')
 		self._connected: bool = False
@@ -50,13 +49,24 @@ class Device(ProjectAliceObject):
 			self.saveToDB()
 
 
+	def getAbilities(self) -> bin:
+		"""
+		Returns the device's abilities
+		:return: a bitmask of the device's abilities
+		"""
+		if self._abilities == -1:
+			return self._deviceType.abilities
+		else:
+			return self._abilities
+
+
 	def hasAbilities(self, abilities: List[DeviceAbility]) -> bool:
 		"""
 		Checks if that device has the given abilities
 		:param abilities: a list of DeviceAbility
 		:return: boolean
 		"""
-		if self._abilities == 0:
+		if self._abilities == -1:
 			return self._deviceType.hasAbilities(abilities)
 		else:
 			check = 0
@@ -68,7 +78,7 @@ class Device(ProjectAliceObject):
 
 	def setAbilities(self, abilities: List[DeviceAbility]):
 		"""
-		Sets this device's abilities, basd on a bitmask
+		Sets this device's abilities, based on a bitmask
 		:param abilities:
 		:return:
 		"""
@@ -163,12 +173,33 @@ class Device(ProjectAliceObject):
 
 
 	@property
+	def typeName(self) -> str:
+		return self._typeName
+
+
+	@property
 	def uid(self) -> str:
 		return self._uid
 
 
+	def toDict(self) -> dict:
+		return {
+			'id'             : self._id,
+			'uid'            : self._uid,
+			'typeName'       : self._typeName,
+			'skillName'      : self._skillName,
+			'displaySettings': self._displaySettings,
+			'deviceParams'   : self._deviceParams,
+			'displayName'    : self._displayName,
+			'connected'      : self._connected,
+			'lastContact'    : self._lastContact,
+			'abilities'      : bin(self.getAbilities())
+		}
+
+
 	def __repr__(self):
 		return f'Device({self._id} - {self._displayName}, uid({self._uid}), Location({self._locationId}))'
+
 
 	def __eq__(self, other):
 		return other and self._uid == other.uid
@@ -219,23 +250,6 @@ class Device(ProjectAliceObject):
 			if link.locationId == location.id:
 				return True
 		return False
-
-
-	def asJson(self):
-		return {
-			'id'          : self.id,
-			'deviceTypeId': self.deviceTypeId,
-			'deviceType'  : self.getDeviceType().name,
-			'skillName'   : self.skillName,
-			'name'        : self.name,
-			'uid'         : self.uid,
-			'locationId'  : self.locationId,
-			'room'        : self.getMainLocation().name,
-			'lastContact' : self.lastContact,
-			'connected'   : self.connected,
-			'display'     : self.display,
-			'custom'      : self._customValues
-		}
 
 
 	def changedDevSettingsStructure(self, newSet: dict):

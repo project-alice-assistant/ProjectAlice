@@ -47,6 +47,11 @@ class DeviceType(ProjectAliceObject):
 		return self._heartbeatRate
 
 
+	@property
+	def abilities(self) -> bin:
+		return self._abilities
+
+
 	def __repr__(self):
 		return f'{self.skill} - {self.name}'
 
