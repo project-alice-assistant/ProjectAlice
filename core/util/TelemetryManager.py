@@ -4,6 +4,7 @@ from typing import Iterable
 from core.base.model.Manager import Manager
 from core.myHome.model.Location import Location
 from core.util.model.TelemetryType import TelemetryType
+from core.util.model.TelemetryData import TelemetryData
 
 
 class TelemetryManager(Manager):
@@ -61,6 +62,7 @@ class TelemetryManager(Manager):
 	def __init__(self):
 		super().__init__(databaseSchema=self.DATABASE)
 		self._data = list()
+		self._currentValues = list()
 
 
 	def onStart(self):
@@ -77,16 +79,11 @@ class TelemetryManager(Manager):
 			self.pruneTable('telemetry')
 
 
-	# noinspection SqlResolve
 	def loadData(self):
 		if not self._isActive:
 			return
 
-		self._data = self.databaseFetch(
-			tableName='telemetry',
-			query='SELECT * FROM :__table__ ORDER BY timestamp DESC LIMIT 200',
-			method='all'
-		)
+		self._currentValues = [ TelemetryData(val) for val in self.getDistinct()]
 
 
 	# noinspection SqlResolve
@@ -120,24 +117,67 @@ class TelemetryManager(Manager):
 				break
 
 
-	def getData(self, ttype: TelemetryType, siteId: str = None, service: str = None, location: Location = None) -> Iterable:
-		if location:
-			values = {'type': ttype.value, 'locationId': location.id}
-		elif siteId:
-			values = {'type': ttype.value, 'siteId': siteId}
-		else:
-			raise Exception("Supply location or site/uuid")
+	def getData(self, ttype: TelemetryType = None, siteId: str = None, service: str = None, locationId: int = None, historyFrom: int = None, historyTo: int = None, all: bool = False) -> Iterable:
+		values = {}
+		if ttype:
+			values['type'] = ttype
+		if locationId:
+			values['locationId'] = locationId
+		if siteId:
+			values['siteId'] = siteId
+
 		if service:
 			values['service'] = service
 
 		dynWhere = [f'{col} = :{col}' for col in values.keys()]
 
+
+		if historyTo:
+			dynWhere.append(f'timestamp <= {historyTo}')
+		if historyFrom:
+			dynWhere.append(f'timestamp >= {historyFrom}')
+
 		# noinspection SqlResolve
-		query = f'SELECT value, timestamp FROM :__table__ WHERE {" and ".join(dynWhere)} ORDER BY `timestamp` DESC LIMIT 1'
+		query = f'SELECT * FROM :__table__ WHERE {" and ".join(dynWhere)} ORDER BY `timestamp` DESC{" LIMIT 1" if not historyFrom and not historyTo and not all else ""}'
 
 		# noinspection SqlResolve
 		return self.databaseFetch(
 			tableName='telemetry',
 			query=query,
-			values=values
+			values=values,
+			method='all'
 		)
+
+	def getDistinct(self, ttype: TelemetryType = None, siteId: str = None, service: str = None, locationId: int = None) -> Iterable:
+		values = {}
+		group = []
+		if ttype:
+			values['type'] = ttype
+		if locationId:
+			values['locationId'] = locationId
+		if siteId:
+			values['siteId'] = siteId
+		if service:
+			values['service'] = service
+
+		where = " WHERE " + " and ".join([f'{col} = :{col}' for col in values.keys()]) if values else ""
+
+		# noinspection SqlResolve
+		query = f'SELECT t1.* FROM :__table__ t1 ' \
+		        f'INNER JOIN ' \
+		        f'(SELECT max(id) id, service, siteId, locationId, type ' \
+				f'FROM :__table__ { where } ' \
+		        f'GROUP BY `service`, `siteId`, `locationId`, `type`) t2 ' \
+		        f'ON t1.id  = t2.id ' \
+		        f'ORDER BY `timestamp` DESC '
+
+		# noinspection SqlResolve
+		return self.databaseFetch(
+			tableName='telemetry',
+			query=query,
+			values=values,
+			method='all'
+		)
+
+	def getAllCombinationsForAPI(self):
+		return [ val.forApi() for val in self._currentValues ]

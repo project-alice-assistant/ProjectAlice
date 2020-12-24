@@ -505,6 +505,10 @@ class DeviceManager(Manager):
 		return self._devices.get(_id, None)
 
 
+	def getDeviceByName(self, name: str):
+		return next((dev for dev in self._devices.values() if dev.name == name), None)
+
+
 	def getLinksForDevice(self, device: Device) -> List[DeviceLink]:
 		return [link for link in self._deviceLinks.values() if link.deviceId == device.id]
 

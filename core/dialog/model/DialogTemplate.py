@@ -67,8 +67,10 @@ class DialogTemplate:
 				# This slot value does not exist in original slot
 				mySlot.addNewValue(otherValue)
 			else:
-				mySynonyms: List = mySlot.myValues.get('synonyms', list)
+				mySynonyms: List = mySlot.myValues.get('synonyms', {})
 				otherSynonyms: List = otherValue.get('synonyms', list)
+
+				print(mySynonyms)
 
 				for otherSynonym in otherSynonyms:
 					if otherSynonym in mySynonyms:

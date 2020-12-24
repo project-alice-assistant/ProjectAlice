@@ -105,10 +105,13 @@ class Device(ProjectAliceObject):
 
 	def changeName(self, newName: str):
 		self.name = newName
-		self.DatabaseManager.update(tableName=self.DeviceManager.DB_DEVICE,
-		                            callerName=self.DeviceManager.name,
-		                            values={'name': newName},
-		                            row=('id', self.id))
+		if self.deviceType.onRename(device=self, newName=newName):
+			self.DatabaseManager.update(tableName=self.DeviceManager.DB_DEVICE,
+			                            callerName=self.DeviceManager.name,
+			                            values={'name': newName},
+			                            row=('id', self.id))
+		else:
+			raise Exception('renaming failed')
 
 
 	def saveDevSettings(self):
