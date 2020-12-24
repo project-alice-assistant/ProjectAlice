@@ -79,7 +79,7 @@ class DeviceType(ProjectAliceObject):
 	def getDeviceIcon(self, device: Device) -> str:
 		# Return the tile representing the current status of the device:
 		# e.g. a light bulb can be on or off and display its status
-		self.TelemetryManager.getData(siteId=device.id)
+		self.TelemetryManager.getData(deviceId=device.id)
 		raise NotImplementedError
 
 

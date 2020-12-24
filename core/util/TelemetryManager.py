@@ -15,8 +15,8 @@ class TelemetryManager(Manager):
 			'type TEXT NOT NULL',
 			'value TEXT NOT NULL',
 			'service TEXT NOT NULL',
-			'siteId TEXT NOT NULL',
-			'locationID INTEGER NOT NULL',
+			'deviceId TEXT NOT NULL',
+			'locationId INTEGER NOT NULL',
 			'timestamp INTEGER NOT NULL'
 		]
 	}
@@ -87,7 +87,7 @@ class TelemetryManager(Manager):
 
 
 	# noinspection SqlResolve
-	def storeData(self, ttype: TelemetryType, value: str, service: str, siteId: str, timestamp=None, locationID: int = None):
+	def storeData(self, ttype: TelemetryType, value: str, service: str, deviceId: str, timestamp=None, locationID: int = None):
 		if not self.isActive:
 			return
 
@@ -95,8 +95,8 @@ class TelemetryManager(Manager):
 
 		self.databaseInsert(
 			tableName='telemetry',
-			query='INSERT INTO :__table__ (type, value, service, device, timestamp, locationID) VALUES (:type, :value, :service, :device, :timestamp, :locationID)',
-			values={'type': ttype.value, 'value': value, 'service': service, 'device': siteId, 'timestamp': round(timestamp), 'locationID': locationID}
+			query='INSERT INTO :__table__ (type, value, service, deviceId, timestamp, locationId) VALUES (:type, :value, :service, :deviceId, :timestamp, :locationId)',
+			values={'type': ttype.value, 'value': value, 'service': service, 'deviceId': deviceId, 'timestamp': round(timestamp), 'locationId': locationID}
 		)
 
 		telemetrySkill = self.SkillManager.getSkillInstance('Telemetry')
@@ -113,18 +113,18 @@ class TelemetryManager(Manager):
 			value = float(value)
 			if settings[0] == 'upperThreshold' and value > threshold or \
 					settings[0] == 'lowerThreshold' and value < threshold:
-				self.broadcast(method=message, exceptions=[self.name], propagateToSkills=True, service=service, trigger=settings[0], value=value, threshold=threshold, area=siteId )
+				self.broadcast(method=message, exceptions=[self.name], propagateToSkills=True, service=service, trigger=settings[0], value=value, threshold=threshold, area=deviceId )
 				break
 
 
-	def getData(self, ttype: TelemetryType = None, siteId: str = None, service: str = None, locationId: int = None, historyFrom: int = None, historyTo: int = None, all: bool = False) -> Iterable:
+	def getData(self, ttype: TelemetryType = None, deviceId: str = None, service: str = None, locationId: int = None, historyFrom: int = None, historyTo: int = None, all: bool = False) -> Iterable:
 		values = {}
 		if ttype:
 			values['type'] = ttype
 		if locationId:
 			values['locationId'] = locationId
-		if siteId:
-			values['device'] = siteId
+		if deviceId:
+			values['deviceId'] = deviceId
 
 		if service:
 			values['service'] = service
@@ -148,15 +148,15 @@ class TelemetryManager(Manager):
 			method='all'
 		)
 
-	def getDistinct(self, ttype: TelemetryType = None, siteId: str = None, service: str = None, locationId: int = None) -> Iterable:
+	def getDistinct(self, ttype: TelemetryType = None, deviceId: str = None, service: str = None, locationId: int = None) -> Iterable:
 		values = {}
 		group = []
 		if ttype:
 			values['type'] = ttype
 		if locationId:
 			values['locationId'] = locationId
-		if siteId:
-			values['device'] = siteId
+		if deviceId:
+			values['deviceId'] = deviceId
 		if service:
 			values['service'] = service
 
@@ -165,9 +165,9 @@ class TelemetryManager(Manager):
 		# noinspection SqlResolve
 		query = f'SELECT t1.* FROM :__table__ t1 ' \
 		        f'INNER JOIN ' \
-		        f'(SELECT max(id) id, service, siteId, locationId, type ' \
+		        f'(SELECT max(id) id, service, deviceId, locationId, type ' \
 				f'FROM :__table__ { where } ' \
-		        f'GROUP BY `service`, `siteId`, `locationId`, `type`) t2 ' \
+		        f'GROUP BY `service`, `deviceId`, `locationId`, `type`) t2 ' \
 		        f'ON t1.id  = t2.id ' \
 		        f'ORDER BY `timestamp` DESC '
 

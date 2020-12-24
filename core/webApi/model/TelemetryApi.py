@@ -24,7 +24,7 @@ class TelemetryApi(Api):
 			historyFrom = request.args.get('historyFrom', None)
 			historyTo = request.args.get('historyTo', None)
 			all = request.args.get('all', False)
-			rows = self.TelemetryManager.getData(ttype=ttype, siteId=deviceId, locationId=locationId, historyTo=historyTo, historyFrom=historyFrom, all=all)
+			rows = self.TelemetryManager.getData(ttype=ttype, deviceId=deviceId, locationId=locationId, historyTo=historyTo, historyFrom=historyFrom, all=all)
 			rowarray_list = []
 			for row in rows:
 				d = dict(zip(row.keys(), row))  # a dict with column names as keys
