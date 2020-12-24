@@ -1,3 +1,4 @@
+import importlib
 import json
 import socket
 import sqlite3
@@ -145,7 +146,7 @@ class DeviceManager(Manager):
 				self._heartbeats.pop(uid)
 			else:
 				if now - device.deviceType.heartbeatRate > lastTime:
-					self.logWarning(f'Device with uid **{uid}** has not given a signal since {device.deviceType.heartbeatRate} seconds or more')
+					self.logWarning(f'Device **{device.displayName}** has not given a signal since {device.deviceType.heartbeatRate} seconds or more')
 					self._heartbeats.pop(uid)
 					device.connected = False
 					self.MqttManager.publish(constants.TOPIC_DEVICE_UPDATED, payload={'uid': device.uid, 'type': 'status'})
@@ -164,7 +165,7 @@ class DeviceManager(Manager):
 
 	def registerDeviceType(self, skillName: str, data: dict):
 		"""
-		Registers a new DeviceType
+		Registers a new DeviceType. The device type can be generic or skill specific if class present in skill
 		:param skillName: The skill name owning that device type
 		:param data: The DeviceType data as a dict
 		:return: None
@@ -174,8 +175,15 @@ class DeviceManager(Manager):
 			self.logError('Cannot register new device type without a type name and a skill name')
 			return
 
-		self._deviceTypes.setdefault(skillName.lower(), dict())
-		self._deviceTypes[skillName.lower()].setdefault(data['deviceTypeName'].lower(), DeviceType(data))
+		try:
+			skillImport = importlib.import_module(f'skills.{skillName}.device.{data.get("deviceTypeName")}')
+			klass = getattr(skillImport, data.get('deviceTypeName'))
+			deviceType = klass(data)
+
+			self._deviceTypes.setdefault(skillName.lower(), dict())
+			self._deviceTypes[skillName.lower()].setdefault(data['deviceTypeName'].lower(), deviceType)
+		except Exception as e:
+			self.logError(f"Couldn't create device type: {e}")
 
 
 	def getDevicesWithAbilities(self, abilites: List[DeviceAbility], connectedOnly: bool = True) -> List[Device]:

@@ -52,10 +52,65 @@ class DeviceType(ProjectAliceObject):
 		return self._abilities
 
 
+	@property
+	def deviceTypeName(self) -> str:
+		return self._deviceTypeName
+
+
+	@deviceTypeName.setter
+	def deviceTypeName(self, value: str):
+		self._deviceTypeName = value
+
+
+	@property
+	def totalDeviceLimit(self) -> int:
+		return self._totalDeviceLimit
+
+
+	@property
+	def perLocationLimit(self) -> int:
+		return self._perLocationLimit
+
+
+	@property
+	def allowLocationLinks(self) -> bool:
+		return self._allowLocationLinks
+
+
 	def __repr__(self):
-		return f'{self.skill} - {self.name}'
+		return f'{self._skillName} - {self._deviceTypeName}'
 
 
+	def getDeviceIcon(self, device: Device) -> str:
+		"""
+		Return the tile representing the current status of the device
+		e.g. a light bulb can be on or off and display its status
+		:param device: Device instance
+		:return: the icon filename
+		"""
+		raise NotImplementedError
+
+
+	def onUIClicked(self, device: Device):
+		"""
+		Functionality to execute when the device is clicked in the webinterface
+		:param device: Device instance
+		:return:
+		"""
+		pass
+
+
+	def discover(self, device: Device, uid: str, replyOnDevice: str = '', session: DialogSession = None) -> bool:
+		# TODO generic method
+		"""
+		Method that starts the search for a new device
+		:param device: The device class we want to add
+		:param uid:
+		:param replyOnDevice:
+		:param session:
+		:return:
+		"""
+		pass
 
 
 
@@ -67,25 +122,10 @@ class DeviceType(ProjectAliceObject):
 
 
 ### to reimplement for any device type
-	def discover(self, device: Device, uid: str, replyOnSiteId: str = '', session: DialogSession = None) -> bool:
-		# implement the method which can start the search for a new device.
-		# on success the uid should be added to the device and it should be saved
-		# for this, call device.pairingDone(uid)
-		# return False if busy
-		# if not implemented, it will always look busy!
-		raise NotImplementedError
 
 
-	def getDeviceIcon(self, device: Device) -> str:
-		# Return the tile representing the current status of the device:
-		# e.g. a light bulb can be on or off and display its status
-		self.TelemetryManager.getData(deviceId=device.id)
-		raise NotImplementedError
 
 
-	def toggle(self, device: Device):
-		# the functionality to execute when the device is clicked/toggled in the webinterface
-		raise NotImplementedError
 
 
 	def getDeviceConfig(self):
@@ -164,29 +204,7 @@ class DeviceType(ProjectAliceObject):
 		return self._id
 
 
-	@property
-	def name(self) -> str:
-		return self._deviceTypeName
 
-
-	@name.setter
-	def name(self, value: str):
-		self._deviceTypeName = value
-
-
-	@property
-	def totalDeviceLimit(self) -> int:
-		return self._totalDeviceLimit
-
-
-	@property
-	def perLocationLimit(self) -> int:
-		return self._perLocationLimit
-
-
-	@property
-	def allowLocationLinks(self) -> bool:
-		return self._allowLocationLinks
 
 
 
