@@ -392,6 +392,7 @@ class SkillManager(Manager):
 			raise
 		except Exception as e:
 			self.logError(f'- Couldn\'t start skill "{skillName}". Error: {e}')
+			traceback.print_exc()
 
 			try:
 				self.deactivateSkill(skillName=skillName)

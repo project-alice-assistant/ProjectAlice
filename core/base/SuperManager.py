@@ -1,6 +1,9 @@
 from __future__ import annotations
 
+import traceback
+
 from core.commons import constants
+from core.device.model.DeviceAbility import DeviceAbility
 from core.util.model.Logger import Logger
 
 
@@ -73,9 +76,6 @@ class SuperManager:
 			locationManager = self._managers.pop('LocationManager')
 			locationManager.onStart()
 
-			deviceManager = self._managers.pop('DeviceManager')
-			deviceManager.onStart()
-
 			audioServer = self._managers.pop('AudioManager')
 			audioServer.onStart()
 
@@ -93,6 +93,7 @@ class SuperManager:
 
 			talkManager = self._managers.pop('TalkManager')
 			skillManager = self._managers.pop('SkillManager')
+			deviceManager = self._managers.pop('DeviceManager')
 			widgetManager = self._managers.pop('WidgetManager')
 			assistantManager = self._managers.pop('AssistantManager')
 			dialogTemplateManager = self._managers.pop('DialogTemplateManager')
@@ -106,6 +107,7 @@ class SuperManager:
 			talkManager.onStart()
 			nluManager.onStart()
 			skillManager.onStart()
+			deviceManager.onStart()
 			widgetManager.onStart()
 			dialogTemplateManager.onStart()
 			assistantManager.onStart()
@@ -136,8 +138,6 @@ class SuperManager:
 
 
 	def onBooted(self):
-		self.mqttManager.playSound(soundFilename='boot')
-
 		manager = None
 		try:
 			for manager in self._managers.values():
@@ -145,6 +145,9 @@ class SuperManager:
 					manager.onBooted()
 		except Exception as e:
 			Logger().logError(f'Error while sending onBooted to manager **{manager.name}**: {e}')
+
+		deviceList = self.deviceManager.getDevicesWithAbilities([DeviceAbility.IS_SATELITTE, DeviceAbility.IS_CORE])
+		self.mqttManager.playSound(soundFilename='boot', device=deviceList)
 
 
 	@staticmethod
@@ -233,6 +236,7 @@ class SuperManager:
 			mqttManager.onStop()
 		except Exception as e:
 			Logger().logError(f'Error while shutting down manager **{managerName}**: {e}')
+			traceback.print_exc()
 
 
 	def getManager(self, managerName: str):

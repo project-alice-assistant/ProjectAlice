@@ -4,6 +4,7 @@ import re
 import traceback
 import uuid
 from pathlib import Path
+from typing import List, Union
 
 import paho.mqtt.client as mqtt
 import paho.mqtt.publish as publish
@@ -11,6 +12,8 @@ import paho.mqtt.publish as publish
 from core.base.model.Intent import Intent
 from core.base.model.Manager import Manager
 from core.commons import constants
+from core.device.model.Device import Device
+from core.device.model.DeviceAbility import DeviceAbility
 
 
 class MqttManager(Manager):
@@ -68,14 +71,18 @@ class MqttManager(Manager):
 		self._mqttClient.message_callback_add(constants.TOPIC_NLU_INTENT_NOT_RECOGNIZED, self.nluIntentNotRecognized)
 		self._mqttClient.message_callback_add(constants.TOPIC_NLU_ERROR, self.nluError)
 
-		for device in self.DeviceManager.getAliceTypeDevices(includeMain=True):
+		self.connect()
+
+
+	def onBooted(self):
+		super().onBooted()
+
+		for device in self.DeviceManager.getDevicesWithAbilities(abilites=[DeviceAbility.PLAY_SOUND, DeviceAbility.CAPTURE_SOUND], connectedOnly=False):
 			self._mqttClient.message_callback_add(constants.TOPIC_VAD_UP.format(device.uid), self.onVADUp)
 			self._mqttClient.message_callback_add(constants.TOPIC_VAD_DOWN.format(device.uid), self.onVADDown)
 
 			self._mqttClient.message_callback_add(constants.TOPIC_PLAY_BYTES.format(device.uid), self.topicPlayBytes)
 			self._mqttClient.message_callback_add(constants.TOPIC_PLAY_BYTES_FINISHED.format(device.uid), self.topicPlayBytesFinished)
-
-		self.connect()
 
 
 	def onStop(self):
@@ -127,7 +134,7 @@ class MqttManager(Manager):
 		subscribedEvents.append((constants.TOPIC_PLAY_BYTES.format(self.ConfigManager.getAliceConfigByName('uuid')), 0))
 		subscribedEvents.append((constants.TOPIC_PLAY_BYTES_FINISHED.format(self.ConfigManager.getAliceConfigByName('uuid')), 0))
 
-		for device in self.DeviceManager.getAliceTypeDevices():
+		for device in self.DeviceManager.getDevicesWithAbilities(abilites=[DeviceAbility.PLAY_SOUND, DeviceAbility.CAPTURE_SOUND], connectedOnly=False):
 			subscribedEvents.append((constants.TOPIC_VAD_UP.format(device.siteId), 0))
 			subscribedEvents.append((constants.TOPIC_VAD_DOWN.format(device.siteId), 0))
 
@@ -616,7 +623,7 @@ class MqttManager(Manager):
 		client = self.getDefaultSiteId(client)
 
 		if client == constants.ALL or client == constants.RANDOM:
-			deviceList = [device.uid for device in self.DeviceManager.getAliceTypeDevices(connectedOnly=True, includeMain=True) if device]
+			deviceList = [device.uid for device in self.DeviceManager.getDevicesWithAbilities(abilites=[DeviceAbility.PLAY_SOUND, DeviceAbility.CAPTURE_SOUND])]
 
 			if client == constants.ALL:
 				for device in deviceList:
@@ -712,7 +719,7 @@ class MqttManager(Manager):
 		session.customData = customData
 
 		if client == constants.ALL:
-			deviceList = [device.uid for device in self.DeviceManager.getAliceTypeDevices(connectedOnly=True, includeMain=True) if device]
+			deviceList = [device.uid for device in self.DeviceManager.getDevicesWithAbilities(abilites=[DeviceAbility.PLAY_SOUND, DeviceAbility.CAPTURE_SOUND])]
 
 			for device in deviceList:
 				device = device.replace(self.DEFAULT_CLIENT_EXTENSION, '')
@@ -815,9 +822,9 @@ class MqttManager(Manager):
 		}))
 
 
-	def playSound(self, soundFilename: str, location: Path = None, sessionId: str = '', siteId: str = None, uid: str = '', suffix: str = '.wav'):
-
-		siteId = self.getDefaultSiteId(siteId)
+	def playSound(self, soundFilename: str, location: Path = None, sessionId: str = '', device: Union[str, List[Union[str, Device]]] = None, uid: str = '', suffix: str = '.wav'):
+		if not device:
+			device = self.getDefaultSiteId(device)
 
 		if not sessionId:
 			sessionId = str(uuid.uuid4())
@@ -830,23 +837,24 @@ class MqttManager(Manager):
 		elif not location.is_absolute():
 			location = Path(self.Commons.rootDir()) / location
 
-		if siteId == constants.ALL:
-			deviceList = [device.uid for device in self.DeviceManager.getAliceTypeDevices(connectedOnly=True, includeMain=True) if device]
+		if device == constants.ALL or isinstance(device, list):
+
+			if not isinstance(device, list):
+				deviceList = [device.uid for device in self.DeviceManager.getDevicesWithAbilities(abilites=[DeviceAbility.PLAY_SOUND, DeviceAbility.CAPTURE_SOUND])]
+			else:
+				deviceList = [uid if isinstance(uid, str) else uid.uid for uid in device]
 
 			for device in deviceList:
 				device = device.replace(self.DEFAULT_CLIENT_EXTENSION, '')
 				self.playSound(soundFilename, location, sessionId, device, uid)
 		else:
-			if siteId and ' ' in siteId:
-				siteId = siteId.replace(' ', '_')
-
 			soundFile = Path(location / soundFilename).with_suffix(suffix)
 
 			if not soundFile.exists():
 				self.logError(f"Sound file {soundFile} doesn't exist")
 				return
 
-			self._mqttClient.publish(constants.TOPIC_PLAY_BYTES.format(siteId).replace('#', uid), payload=bytearray(soundFile.read_bytes()))
+			self._mqttClient.publish(constants.TOPIC_PLAY_BYTES.format(device).replace('#', uid), payload=bytearray(soundFile.read_bytes()))
 
 
 	def publish(self, topic: str, payload: (dict, str) = None, stringPayload: str = None, qos: int = 0, retain: bool = False):
@@ -902,10 +910,10 @@ class MqttManager(Manager):
 		Activates or disables the feedback sounds, on all devices
 		:param state: str On or off
 		"""
-		deviceList = [device.uid for device in self.DeviceManager.getAliceTypeDevices(connectedOnly=True, includeMain=True) if device]
+		deviceList = [device.uid for device in self.DeviceManager.getDevicesWithAbilities(abilites=[DeviceAbility.PLAY_SOUND, DeviceAbility.CAPTURE_SOUND])]
 
-		for siteId in deviceList:
-			publish.single(constants.TOPIC_TOGGLE_FEEDBACK.format(state.title()), payload=json.dumps({'siteId': siteId}), hostname=self.ConfigManager.getAliceConfigByName('mqttHost'))
+		for deviceUid in deviceList:
+			publish.single(constants.TOPIC_TOGGLE_FEEDBACK.format(state.title()), payload=json.dumps({'siteId': deviceUid}), hostname=self.ConfigManager.getAliceConfigByName('mqttHost'))
 
 
 	def getDefaultSiteId(self, siteId: str = None) -> str:

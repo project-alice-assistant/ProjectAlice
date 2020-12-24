@@ -17,7 +17,7 @@ version: 1.22
 ################################################
 
 # How to prevent frequent errors:
-# Always add a space after the ":" (e.g. deviceName: default instead of deviceName:default)
+# Always add a space after the ":" (e.g. deviceType: default instead of deviceType:default)
 
 # If you place this file into /boot after a first initialization it won't overwrite your settings unless you set this to yes
 forceRewrite: no

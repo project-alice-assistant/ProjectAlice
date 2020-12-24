@@ -157,7 +157,7 @@ class Tts(ProjectAliceObject):
 			soundFilename=file.stem,
 			location=file.parent,
 			sessionId=session.sessionId,
-			siteId=session.siteId,
+			device=session.siteId,
 			uid=uid
 		)
 

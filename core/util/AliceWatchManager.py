@@ -13,7 +13,7 @@ class AliceWatchManager(Manager):
 
 	def onHotword(self, siteId: str, user: str = constants.UNKNOWN_USER):
 		self.publish(payload={
-			'text': f'Detected on site **{self.DeviceManager.siteIdToDeviceName(siteId)}**, for user **{user}**',
+			'text': f'Detected on device **{self.DeviceManager.getDevice(siteId).displayName}**, for user **{user}**',
 			'component': 'Hotword',
 			'verbosity': 1
 		})
@@ -55,7 +55,7 @@ class AliceWatchManager(Manager):
 
 	def onSessionStarted(self, session: DialogSession):
 		self.publish(payload={
-			'text': f'Session with id "**{session.sessionId}**" was started on site **{self.DeviceManager.siteIdToDeviceName(session.siteId)}**',
+			'text': f'Session with id "**{session.sessionId}**" was started on device **{self.DeviceManager.getDevice(session.siteId).displayName}**',
 			'component': 'Dialogue',
 			'verbosity': 1
 		})
@@ -79,7 +79,7 @@ class AliceWatchManager(Manager):
 
 	def onHotwordToggleOn(self, siteId: str, session: DialogSession):
 		self.publish(payload={
-			'text': f'Was asked to toggle itself **on** on site **{self.DeviceManager.siteIdToDeviceName(siteId)}**',
+			'text': f'Was asked to toggle itself **on** on device **{self.DeviceManager.getDevice(siteId).displayName}**',
 			'component': 'Hotword',
 			'verbosity': 2
 		})
@@ -87,7 +87,7 @@ class AliceWatchManager(Manager):
 
 	def onHotwordToggleOff(self, siteId: str, session: DialogSession):
 		self.publish(payload={
-			'text': f'Was asked to toggle itself **off** on site **{self.DeviceManager.siteIdToDeviceName(siteId)}**',
+			'text': f'Was asked to toggle itself **off** on device **{self.DeviceManager.getDevice(siteId).displayName}**',
 			'component': 'Hotword',
 			'verbosity': 2
 		})
@@ -95,7 +95,7 @@ class AliceWatchManager(Manager):
 
 	def onStartListening(self, session):
 		self.publish(payload={
-			'text': f'Was asked to start listening on site **{self.DeviceManager.siteIdToDeviceName(session.siteId)}**',
+			'text': f'Was asked to start listening on device **{self.DeviceManager.getDevice(session.siteId).displayName}**',
 			'component': 'Asr',
 			'verbosity': 2
 		})
@@ -103,7 +103,7 @@ class AliceWatchManager(Manager):
 
 	def onStopListening(self, session):
 		self.publish(payload={
-			'text': f'Was asked to stop listening on site **{self.DeviceManager.siteIdToDeviceName(session.siteId)}**',
+			'text': f'Was asked to stop listening on device **{self.DeviceManager.getDevice(session.siteId).displayName}**',
 			'component': 'Asr',
 			'verbosity': 2
 		})
@@ -149,7 +149,7 @@ class AliceWatchManager(Manager):
 
 
 	def onSessionEnded(self, session: DialogSession):
-		text = f'Session with id "**{session.sessionId}**" was ended on site **{self.DeviceManager.siteIdToDeviceName(session.siteId)}**.'
+		text = f'Session with id "**{session.sessionId}**" was ended on device **{self.DeviceManager.getDevice(session.siteId).displayName}**.'
 
 		reason = session.payload['termination']['reason']
 		if reason:
@@ -173,7 +173,7 @@ class AliceWatchManager(Manager):
 
 	def onVadUp(self, siteId: str):
 		self.publish(payload={
-			'text': f'Up on site **{self.DeviceManager.siteIdToDeviceName(siteId)}**',
+			'text': f'Up on device **{self.DeviceManager.getDevice(siteId).displayName}**',
 			'component': 'Voice activity',
 			'verbosity': 2
 		})
@@ -181,7 +181,7 @@ class AliceWatchManager(Manager):
 
 	def onVadDown(self, siteId: str):
 		self.publish(payload={
-			'text': f'Down on site **{self.DeviceManager.siteIdToDeviceName(siteId)}**',
+			'text': f'Down on device **{self.DeviceManager.getDevice(siteId).displayName}**',
 			'component': 'Voice activity',
 			'verbosity': 2
 		})
@@ -189,7 +189,7 @@ class AliceWatchManager(Manager):
 
 	# TODO Should support site configuration
 	def onConfigureIntent(self, intents: list):
-		text = f'Was asked to configure all sites:'
+		text = f'Was asked to configure all devices:'
 		for intent in intents:  # NOSONAR
 			text = f'{text}\n[=>]{"![green](enable)" if intent["enable"] else "![red](disable)"} {intent["intentId"]}'
 

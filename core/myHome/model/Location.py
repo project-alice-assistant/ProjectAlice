@@ -75,7 +75,7 @@ class Location(ProjectAliceObject):
 
 
 	def updatesynonyms(self, synonyms):
-		self.synonyms = {*self.synonyms, *synonyms}
+		self.synonyms = synonyms
 
 
 	@deprecated

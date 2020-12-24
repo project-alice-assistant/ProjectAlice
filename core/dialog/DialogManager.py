@@ -8,6 +8,7 @@ from paho.mqtt.client import MQTTMessage
 
 from core.base.model.Manager import Manager
 from core.commons import constants
+from core.device.model.DeviceAbility import DeviceAbility
 from core.dialog.model.DialogSession import DialogSession
 
 
@@ -55,7 +56,7 @@ class DialogManager(Manager):
 
 
 	def onHotword(self, siteId: str, user: str = constants.UNKNOWN_USER):
-		self.logDebug(f'Wakeword detected by **{self.DeviceManager.siteIdToDeviceName(siteId)}**')
+		self.logDebug(f'Wakeword detected by **{self.DeviceManager.getDevice(siteId).displayName}**')
 
 		self._endedSessions[siteId] = self._sessionsById.pop(siteId, None)
 
@@ -445,7 +446,7 @@ class DialogManager(Manager):
 		topic = constants.TOPIC_TOGGLE_FEEDBACK_ON if state == 'on' else constants.TOPIC_TOGGLE_FEEDBACK_OFF
 
 		if siteId == 'all':
-			devices = self.DeviceManager.getAliceTypeDevices(connectedOnly=True, includeMain=True)
+			devices = self.DeviceManager.getDevicesWithAbilities(abilites=[DeviceAbility.PLAY_SOUND, DeviceAbility.CAPTURE_SOUND])
 			for device in devices:
 				self.MqttManager.publish(topic=topic, payload={'siteId': device.uid})
 
