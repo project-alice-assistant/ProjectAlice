@@ -122,7 +122,14 @@ class DeviceManager(Manager):
 		:return: None
 		"""
 		for row in self.databaseFetch(tableName=self.DB_DEVICE, method='all'):
-			self._devices[row['uid']] = Device(row)
+			try:
+				data = self.Commons.dictFromRow(row)
+				skillImport = importlib.import_module(f'skills.{data.get("skillName")}.device.{data.get("typeName")}')
+				klass = getattr(skillImport, data.get('typeName'))
+				device = klass(data)
+				self._devices[device.uid] = device
+			except Exception as e:
+				self.logError(f"Couldn't create device instance: {e}")
 
 
 	def loadLinks(self):
@@ -175,15 +182,20 @@ class DeviceManager(Manager):
 			self.logError('Cannot register new device type without a type name and a skill name')
 			return
 
+		# Try to create the device type, if overriden by the user, else fallback to default generic type
 		try:
-			skillImport = importlib.import_module(f'skills.{skillName}.device.{data.get("deviceTypeName")}')
+			skillImport = importlib.import_module(f'skills.{skillName}.device.type.{data.get("deviceTypeName")}')
 			klass = getattr(skillImport, data.get('deviceTypeName'))
 			deviceType = klass(data)
+		except:
+			try:
+				deviceType = DeviceType(data)
+			except Exception as e:
+				self.logError(f"Couldn't create device type: {e}")
+				return
 
-			self._deviceTypes.setdefault(skillName.lower(), dict())
-			self._deviceTypes[skillName.lower()].setdefault(data['deviceTypeName'].lower(), deviceType)
-		except Exception as e:
-			self.logError(f"Couldn't create device type: {e}")
+		self._deviceTypes.setdefault(skillName.lower(), dict())
+		self._deviceTypes[skillName.lower()].setdefault(data['deviceTypeName'].lower(), deviceType)
 
 
 	def getDevicesWithAbilities(self, abilites: List[DeviceAbility], connectedOnly: bool = True) -> List[Device]:

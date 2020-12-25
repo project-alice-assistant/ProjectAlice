@@ -1,6 +1,7 @@
 import json
 import sqlite3
-from typing import Dict, List, Union
+from pathlib import Path
+from typing import Any, Dict, List, Union
 
 from core.base.model.ProjectAliceObject import ProjectAliceObject
 from core.commons import constants
@@ -213,8 +214,30 @@ class Device(ProjectAliceObject):
 		}
 
 
+	def getDeviceIcon(self) -> Path:
+		"""
+		Return the path of the icon representing the current status of the device
+		e.g. a light bulb can be on or off and display its status
+		:return: the icon file path
+		"""
+		return Path(f'{self.Commons.rootDir()}/skills/{self.skillName}/device/img/{self.typeName}.png')
+
+
 	def updateSettings(self, settings: dict):
 		self._settings = {**self._settings, **settings}
+
+
+	def getParam(self, key: str, default: Any = False) -> Any:
+		return self._deviceParams.get(key, default)
+
+
+	def updateParams(self, key: str, value: Any):
+		self._deviceParams[key] = value
+		self.saveToDB()
+
+
+	def onUIClick(self):
+		pass # Implemented by child
 
 
 	def __repr__(self):

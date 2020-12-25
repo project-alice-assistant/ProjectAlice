@@ -5,6 +5,7 @@ from flask import jsonify, request, send_from_directory
 from flask_classful import route
 
 from core.device.model.Device import Device
+from core.device.model.DeviceType import DeviceType
 from core.interface.model.Api import Api
 from core.util.Decorators import ApiAuthenticated
 
@@ -232,6 +233,17 @@ class MyHomeApi(Api):
 	def getDeviceIcon(self, uid: str):
 		try:
 			device: Device = self.DeviceManager.getDevice(uid=uid)
-			return send_from_directory(f'{self.Commons.rootDir()}/skills/{device.skillName}/device/img', f'{device.typeName}.png')
+			file = device.getDeviceIcon()
+			return send_from_directory(file.parent, f'{file.stem}.png')
+		except:
+			return jsonify(success=False)
+
+
+	@route('/devices/<uid>/click/', methods=['PATCH'])
+	def deviceClick(self, uid: str):
+		try:
+			device = self.DeviceManager.getDevice(uid=uid)
+			device.onUIClick()
+			return jsonify(success=True)
 		except:
 			return jsonify(success=False)

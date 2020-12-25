@@ -1,5 +1,6 @@
 import json
 import sqlite3
+from pathlib import Path
 from typing import Dict, List, Union
 
 from core.base.model.ProjectAliceObject import ProjectAliceObject
@@ -79,25 +80,6 @@ class DeviceType(ProjectAliceObject):
 
 	def __repr__(self):
 		return f'{self._skillName} - {self._deviceTypeName}'
-
-
-	def getDeviceIcon(self, device: Device) -> str:
-		"""
-		Return the tile representing the current status of the device
-		e.g. a light bulb can be on or off and display its status
-		:param device: Device instance
-		:return: the icon filename
-		"""
-		raise NotImplementedError
-
-
-	def onUIClicked(self, device: Device):
-		"""
-		Functionality to execute when the device is clicked in the webinterface
-		:param device: Device instance
-		:return:
-		"""
-		pass
 
 
 	def discover(self, device: Device, uid: str, replyOnDevice: str = '', session: DialogSession = None) -> bool:
