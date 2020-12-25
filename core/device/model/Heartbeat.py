@@ -1,19 +1,27 @@
+import json
 from time import time
 
 import paho.mqtt.client as mqtt
 
 from core.base.model.ProjectAliceObject import ProjectAliceObject
 from core.commons import constants
+from core.device.model.Device import Device
 
 
 class Heartbeat(ProjectAliceObject):
 
-	def __init__(self, tempo: int = 2, topic: str = constants.TOPIC_CORE_HEARTBEAT):
+	def __init__(self, device: Device, tempo: int = 0, topic: str = constants.TOPIC_CORE_HEARTBEAT):
 		super().__init__()
 		self._client = None
-		self._tempo = tempo
+
+		if tempo == 0:
+			self._tempo = device.deviceType.heartbeatRate
+		else:
+			self._tempo = tempo
+
 		self._topic = topic
 		self._rnd = 0
+		self._device = device
 		self.startHeartbeat()
 
 
@@ -43,5 +51,5 @@ class Heartbeat(ProjectAliceObject):
 
 	def beat(self):
 		if not self.ProjectAlice.shuttingDown:
-			self._client.publish(topic=self._topic, payload=None, qos=0, retain=False)
+			self._client.publish(topic=self._topic, payload=json.dumps({'uid': self._device.uid}), qos=0, retain=False)
 		self.ThreadManager.newTimer(interval=self._tempo, func=self.beat)

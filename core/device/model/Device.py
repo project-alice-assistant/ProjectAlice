@@ -111,6 +111,7 @@ class Device(ProjectAliceObject):
 					'deviceParams'   : json.dumps(self._deviceParams)
 				}
 			)
+			self.publishDevice()
 		else:
 			deviceId = self.DatabaseManager.insert(
 				tableName=self.DeviceManager.DB_DEVICE,
@@ -127,6 +128,15 @@ class Device(ProjectAliceObject):
 			)
 
 			self._id = deviceId
+
+
+	def publishDevice(self):
+		"""
+		Whenever something changes on the device, the device data are published over mqtt
+		to refresh the UI per exemple
+		:return:
+		"""
+		self.MqttManager.publish(constants.TOPIC_DEVICE_UPDATED, payload={'uid': self._uid, 'device': self.toDict()})
 
 
 	@property
@@ -146,6 +156,7 @@ class Device(ProjectAliceObject):
 		:return:
 		"""
 		self._connected = value
+
 
 
 	@property
@@ -210,7 +221,8 @@ class Device(ProjectAliceObject):
 			'parentLocation' : self._parentLocation,
 			'skillName'      : self._skillName,
 			'typeName'       : self._typeName,
-			'uid'            : self._uid
+			'uid'            : self._uid,
+			'heartbeatRate'  : self.deviceType.heartbeatRate
 		}
 
 

@@ -1,6 +1,5 @@
 import json
 import sqlite3
-from pathlib import Path
 from typing import Dict, List, Union
 
 from core.base.model.ProjectAliceObject import ProjectAliceObject

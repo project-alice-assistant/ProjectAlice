@@ -239,7 +239,7 @@ class MyHomeApi(Api):
 			return jsonify(success=False)
 
 
-	@route('/devices/<uid>/click/', methods=['PATCH'])
+	@route('/devices/<uid>/onClick/', methods=['PATCH'])
 	def deviceClick(self, uid: str):
 		try:
 			device = self.DeviceManager.getDevice(uid=uid)

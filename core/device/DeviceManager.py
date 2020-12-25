@@ -102,7 +102,7 @@ class DeviceManager(Manager):
 		if self._devices:
 			self.ThreadManager.newThread(name='checkHeartbeats', target=self.checkHeartbeats)
 
-		self._heartbeat = Heartbeat()
+		self._heartbeat = Heartbeat(device=self.getMainDevice())
 
 
 	def onStop(self):
@@ -440,6 +440,39 @@ class DeviceManager(Manager):
 		return self.ThreadManager.isThreadAlive('broadcast')
 
 
+	def deviceConnecting(self, uid: str) -> Optional[Device]:
+		device = self.getDevice(uid)
+		if not device:
+			self.logWarning(f'A device with uid **{uid}** tried to connect but is unknown')
+			return None
+
+		if not device.connected:
+			device.connected = True
+			self.broadcast(method=constants.EVENT_DEVICE_CONNECTING, exceptions=[self.name], propagateToSkills=True)
+			self.MqttManager.publish(constants.TOPIC_DEVICE_UPDATED, payload={'uid': device.uid, 'type': 'status'})
+
+		self._heartbeats[uid] = time.time() + 5
+		if not self._heartbeatsCheckTimer:
+			self._heartbeatsCheckTimer = self.ThreadManager.newTimer(interval=3, func=self.checkHeartbeats)
+
+		return device
+
+
+	def deviceDisconnecting(self, uid: str):
+		self._heartbeats.pop(uid, None)
+
+		device = self.getDevice(uid)
+
+		if not device:
+			return
+
+		if device.connected:
+			self.logInfo(f'Device with uid **{uid}** disconnected')
+			device.connected = False
+			self.broadcast(method=constants.EVENT_DEVICE_DISCONNECTING, exceptions=[self.name], propagateToSkills=True)
+			self.MqttManager.publish(constants.TOPIC_DEVICE_UPDATED, payload={'id': device.id, 'type': 'status'})
+
+
 	@property
 	def broadcastFlag(self) -> threading.Event:
 		return self._broadcastFlag
@@ -680,37 +713,7 @@ class DeviceManager(Manager):
 			)
 
 
-	def deviceConnecting(self, uid: str) -> Optional[Device]:
-		device = self.getDeviceByUID(uid)
-		if not device:
-			self.logWarning(f'A device with uid **{uid}** tried to connect but is unknown')
-			return None
 
-		if not device.connected:
-			device.connected = True
-			self.broadcast(method=constants.EVENT_DEVICE_CONNECTING, exceptions=[self.name], propagateToSkills=True)
-			self.MqttManager.publish(constants.TOPIC_DEVICE_UPDATED, payload={'id': device.id, 'type': 'status'})
-
-		self._heartbeats[uid] = time.time() + 5
-		if not self._heartbeatsCheckTimer:
-			self._heartbeatsCheckTimer = self.ThreadManager.newTimer(interval=3, func=self.checkHeartbeats)
-
-		return device
-
-
-	def deviceDisconnecting(self, uid: str):
-		self._heartbeats.pop(uid, None)
-
-		device = self.getDeviceByUID(uid)
-
-		if not device:
-			return
-
-		if device.connected:
-			self.logInfo(f'Device with uid **{uid}** disconnected')
-			device.connected = False
-			self.broadcast(method=constants.EVENT_DEVICE_DISCONNECTING, exceptions=[self.name], propagateToSkills=True)
-			self.MqttManager.publish(constants.TOPIC_DEVICE_UPDATED, payload={'id': device.id, 'type': 'status'})
 
 
 	## Heartbeats
