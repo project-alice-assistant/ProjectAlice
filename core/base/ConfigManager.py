@@ -657,12 +657,17 @@ class ConfigManager(Manager):
 
 
 	def enableDisableSound(self):
-		if self.getAliceConfigByName('disableSoundAndMic'):
-			self.WakewordManager.disableEngine()
+		if self.getAliceConfigByName('disableSound'):
 			self.AudioServer.onStop()
 		else:
-			self.WakewordManager.enableEngine()
 			self.AudioServer.onStart()
+
+
+	def enableDisableCapture(self):
+		if self.getAliceConfigByName('disableCapture'):
+			self.WakewordManager.disableEngine()
+		else:
+			self.WakewordManager.enableEngine()
 
 
 	def restartWakewordEngine(self):
@@ -710,7 +715,7 @@ class ConfigManager(Manager):
 			devices = self._listAudioDevices()
 			self.updateAliceConfigDefinitionValues(setting='inputDevice', value=devices)
 		except:
-			if not self.getAliceConfigByName('disableSoundAndMic'):
+			if not self.getAliceConfigByName('disableCapture'):
 				self.logWarning('No audio input device found')
 
 
@@ -719,7 +724,7 @@ class ConfigManager(Manager):
 			devices = self._listAudioDevices()
 			self.updateAliceConfigDefinitionValues(setting='outputDevice', value=devices)
 		except:
-			if not self.getAliceConfigByName('disableSoundAndMic'):
+			if not self.getAliceConfigByName('disableSound'):
 				self.logWarning('No audio output device found')
 
 

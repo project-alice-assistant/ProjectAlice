@@ -17,6 +17,7 @@ class WakewordEngine(ProjectAliceObject):
 
 
 	def onStop(self, **kwargs):
+		self.logInfo(f'Stopping **{self.NAME}**')
 		self._enabled = False
 
 

@@ -31,10 +31,9 @@ class AudioManager(Manager):
 		self._waves: Dict[str, wave.Wave_write] = dict()
 		self._audioInputStream = None
 
-		if self.ConfigManager.getAliceConfigByName('disableSoundAndMic'):
-			return
+		if not self.ConfigManager.getAliceConfigByName('disableCapture'):
+			self._vad = Vad(2)
 
-		self._vad = Vad(2)
 		self._audioInput = None
 		self._audioOutput = None
 
@@ -69,7 +68,7 @@ class AudioManager(Manager):
 		self._stopPlayingFlag = self.ThreadManager.newEvent('stopPlaying')
 		self.MqttManager.mqttClient.subscribe(constants.TOPIC_AUDIO_FRAME.format(self.ConfigManager.getAliceConfigByName('uuid')))
 
-		if not self.ConfigManager.getAliceConfigByName('disableSoundAndMic'):
+		if not self.ConfigManager.getAliceConfigByName('disableCapture'):
 			self.ThreadManager.newThread(name='audioPublisher', target=self.publishAudio)
 
 
@@ -184,7 +183,7 @@ class AudioManager(Manager):
 
 
 	def onPlayBytes(self, requestId: str, payload: bytearray, siteId: str, sessionId: str = None):
-		if siteId != self.ConfigManager.getAliceConfigByName('uuid') or self.ConfigManager.getAliceConfigByName('disableSoundAndMic'):
+		if siteId != self.ConfigManager.getAliceConfigByName('uuid') or self.ConfigManager.getAliceConfigByName('disableSound'):
 			return
 
 		self._playing = True

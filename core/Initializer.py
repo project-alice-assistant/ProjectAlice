@@ -538,9 +538,11 @@ class Initializer:
 				break
 
 		if not audioHardware:
-			confs['disableSoundAndMic'] = True
+			confs['disableSound'] = True
+			confs['disableCapture'] = True
 		else:
-			confs['disableSoundAndMic'] = False
+			confs['disableSound'] = False
+			confs['disableCapture'] = False
 
 		hlcServiceFilePath = Path('/etc/systemd/system/hermesledcontrol.service')
 		if initConfs['useHLC']:

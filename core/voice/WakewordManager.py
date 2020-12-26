@@ -16,7 +16,7 @@ class WakewordManager(Manager):
 
 	def onStart(self):
 		super().onStart()
-		if not self.ConfigManager.getAliceConfigByName('disableSoundAndMic'):
+		if not self.ConfigManager.getAliceConfigByName('disableCapture'):
 			self._startWakewordEngine()
 
 

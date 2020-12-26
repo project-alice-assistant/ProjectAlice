@@ -37,7 +37,7 @@
 		"beforeUpdate": "injectAsound",
 		"category"    : "audio",
 		"parent"      : {
-			"config"   : "disableSoundAndMic",
+			"config"   : "disableSound",
 			"condition": "isnot",
 			"value"    : true
 		}
@@ -59,7 +59,7 @@
 		"onInit"      : "populateAudioOutputConfig",
 		"onUpdate"    : "AudioServer.updateAudioDevices",
 		"parent"      : {
-			"config"   : "disableSoundAndMic",
+			"config"   : "disableSound",
 			"condition": "isnot",
 			"value"    : true
 		}
@@ -74,7 +74,7 @@
 		"onInit"      : "populateAudioInputConfig",
 		"onUpdate"    : "AudioServer.updateAudioDevices",
 		"parent"      : {
-			"config"   : "disableSoundAndMic",
+			"config"   : "disableCapture",
 			"condition": "isnot",
 			"value"    : true
 		}
@@ -138,12 +138,20 @@
 			"value"    : false
 		}
 	},
-	"disableSoundAndMic"      : {
+	"disableSound"      : {
 		"defaultValue": false,
 		"dataType"    : "boolean",
 		"isSensitive" : false,
-		"description" : "If this device is a server without sound and mic, turn this to true",
+		"description" : "Disable sound playback",
 		"onUpdate"    : "enableDisableSound",
+		"category"    : "audio"
+	},
+	"disableCapture"      : {
+		"defaultValue": false,
+		"dataType"    : "boolean",
+		"isSensitive" : false,
+		"description" : "Disable sound capture",
+		"onUpdate"    : "enableDisableCapture",
 		"category"    : "audio"
 	},
 	"notUnderstoodRetries"    : {
