@@ -94,10 +94,15 @@ class DeviceType(ProjectAliceObject):
 		pass
 
 
-
-
-
-
+	def toDict(self) -> dict:
+		return {
+			'deviceTypeName'    : self._deviceTypeName,
+			'skillName'         : self._skillName,
+			'perLocationLimit'  : self._perLocationLimit,
+			'totalDeviceLimit'  : self._totalDeviceLimit,
+			'allowLocationLinks': self._allowLocationLinks,
+			'heartbeatRate'     : self._heartbeatRate
+		}
 
 
 

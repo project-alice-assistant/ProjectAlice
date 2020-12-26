@@ -240,10 +240,26 @@ class MyHomeApi(Api):
 
 
 	@route('/devices/<uid>/onClick/', methods=['PATCH'])
+	@ApiAuthenticated
 	def deviceClick(self, uid: str):
 		try:
 			device = self.DeviceManager.getDevice(uid=uid)
 			device.onUIClick()
 			return jsonify(success=True)
 		except:
+			return jsonify(success=False)
+
+
+	@route('/deviceTypes/', methods=['GET'])
+	@ApiAuthenticated
+	def getDeviceTypes(self):
+		try:
+			data = dict()
+			for skillName, deviceType in self.DeviceManager.deviceTypes.items():
+				data.setdefault(skillName, list())
+				data[skillName] = [dType.toDict() for dType in deviceType.values()]
+
+			return jsonify(types=data)
+		except Exception as e:
+			self.logError(f'Cannot return device type list {e}')
 			return jsonify(success=False)

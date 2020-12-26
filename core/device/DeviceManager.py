@@ -482,6 +482,11 @@ class DeviceManager(Manager):
 		return self._broadcastFlag
 
 
+	@property
+	def deviceTypes(self) -> dict:
+		return self._deviceTypes
+
+
 
 
 
@@ -748,10 +753,6 @@ class DeviceManager(Manager):
 			if deviceType.perLocationLimit <= currAmount:
 				raise MaxDevicePerLocationReached(maxAmount=deviceType.perLocationLimit)
 
-
-	@property
-	def deviceTypes(self) -> dict:
-		return self._deviceTypes
 
 
 	def getDevicesForSkill(self, skill: str):
