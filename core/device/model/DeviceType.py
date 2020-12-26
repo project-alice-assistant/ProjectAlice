@@ -1,5 +1,6 @@
 import json
 import sqlite3
+from pathlib import Path
 from typing import Dict, List, Union
 
 from core.base.model.ProjectAliceObject import ProjectAliceObject
@@ -40,6 +41,14 @@ class DeviceType(ProjectAliceObject):
 			check |= ability.value
 
 		return self._abilities & check == check
+
+
+	def getDeviceTypeIcon(self) -> Path:
+		"""
+		Return the path of the icon representing this device type
+		:return: the icon file path
+		"""
+		return Path(f'{self.Commons.rootDir()}/skills/{self._skillName}/device/img/{self._deviceTypeName}.png')
 
 
 	@property

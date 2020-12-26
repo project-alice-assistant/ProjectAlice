@@ -263,3 +263,14 @@ class MyHomeApi(Api):
 		except Exception as e:
 			self.logError(f'Cannot return device type list {e}')
 			return jsonify(success=False)
+
+
+	@route('/deviceTypes/<skillName>/<deviceType>.png', methods=['GET'])
+	def getDeviceTypeIcon(self, skillName: str, deviceType: str):
+		try:
+			dType: DeviceType = self.DeviceManager.getDeviceType(skillName=skillName, deviceType=deviceType)
+			file = dType.getDeviceTypeIcon()
+			return send_from_directory(file.parent, f'{file.stem}.png')
+		except Exception as e:
+			self.logError(f'Failed retrieving device type icon {e}')
+			return jsonify(success=False)
