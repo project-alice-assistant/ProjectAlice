@@ -9,7 +9,9 @@
 		"devmode"   : "devmode",
 		"admin"     : "admin",
 		"login"     : "login",
-		"logout"    : "logout"
+		"logout"    : "logout",
+		"dialogView": "dialogue view",
+		"telemetry" : "telemetry"
 	},
 	"tours": {
 		"skills": {
