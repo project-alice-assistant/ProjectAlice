@@ -94,7 +94,7 @@ class DeviceManager(Manager):
 		elif self.ConfigManager.getAliceConfigByName('disableCapture'):
 			device.setAbilities([DeviceAbility.IS_CORE, DeviceAbility.PLAY_SOUND])
 
-		self.logInfo(f'Loaded **{len(self._devices)}** device', plural='device')
+		self.logInfo(f'Loaded **{len(self._devices)}** device instance', plural='instance')
 
 
 	def onBooted(self):

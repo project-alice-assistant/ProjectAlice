@@ -239,6 +239,15 @@ class MyHomeApi(Api):
 			return jsonify(success=False)
 
 
+	@route('/devices/', methods=['PUT'])
+	@ApiAuthenticated
+	def addDevice(self):
+		try:
+			return jsonify(success=True)
+		except:
+			return jsonify(success=False)
+
+
 	@route('/devices/<uid>/onClick/', methods=['PATCH'])
 	@ApiAuthenticated
 	def deviceClick(self, uid: str):

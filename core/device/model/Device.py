@@ -6,8 +6,8 @@ from typing import Any, Dict, List, Union
 from core.base.model.ProjectAliceObject import ProjectAliceObject
 from core.commons import constants
 from core.device.model.DeviceAbility import DeviceAbility
+from core.device.model.DeviceException import DeviceNotPaired
 from core.device.model.DeviceType import DeviceType
-from core.myHome.model.Location import Location
 
 
 class Device(ProjectAliceObject):
@@ -20,7 +20,7 @@ class Device(ProjectAliceObject):
 
 		self._data: dict = data
 		self._id: str = data.get('id', -1)
-		self._uid: str = data['uid']
+		self._uid: str = data.get('uid', -1)
 		self._typeName:str = data.get('typeName', '')
 		self._skillName: str = data.get('skillName', '')
 		self._parentLocation: int = data.get('parentLocation', 0)
@@ -158,6 +158,10 @@ class Device(ProjectAliceObject):
 		self._connected = value
 
 
+	@property
+	def paired(self) -> bool:
+		return self._uid != -1
+
 
 	@property
 	def strType(self) -> str:
@@ -249,7 +253,8 @@ class Device(ProjectAliceObject):
 
 
 	def onUIClick(self):
-		pass # Implemented by child
+		if not self.uid:
+			raise DeviceNotPaired()
 
 
 	def __repr__(self):
@@ -258,144 +263,3 @@ class Device(ProjectAliceObject):
 
 	def __eq__(self, other):
 		return other and self._uid == other.uid
-
-
-
-
-
-
-
-
-
-
-
-	def replace(self, needle: str, haystack: str) -> str:
-		return self.name.replace(needle, haystack)
-
-
-	def clearUid(self):
-		self.uid = ''
-		self.DatabaseManager.update(tableName=self.DeviceManager.DB_DEVICE,
-		                            callerName=self.DeviceManager.name,
-		                            values={'uid': self.uid},
-		                            row=('id', self.id))
-
-
-	def getMainLocation(self) -> Location:
-		return self.LocationManager.getLocation(locId=self.locationId)
-
-
-	def pairingDone(self, uid: str):
-		self.uid = uid
-		self.DatabaseManager.update(tableName=self.DeviceManager.DB_DEVICE,
-		                            callerName=self.DeviceManager.name,
-		                            values={'uid': uid},
-		                            row=('id', self.id))
-		self.MqttManager.publish(constants.TOPIC_DEVICE_UPDATED, payload={'id': self.id, 'type': 'status'})
-
-
-	def toJson(self) -> str:
-		return json.dumps(self.asJson())
-
-
-	def isInLocation(self, location: Location) -> bool:
-		if self.locationId == location.id:
-			return True
-		for link in self.DeviceManager.getLinksForDevice(device=self):
-			if link.locationId == location.id:
-				return True
-		return False
-
-
-	def changedDevSettingsStructure(self, newSet: dict):
-		newSet = newSet.copy()
-		for _set in newSet.keys():
-			if _set in self.devSettings:
-				newSet[_set] = self.devSettings[_set]
-		self.devSettings = newSet
-		self.saveDevSettings()
-
-
-	def changeLocation(self, locationId: int):
-		self.locationId = locationId
-		self.getDeviceType().onChangedLocation(device=self)
-
-
-	def changeName(self, newName: str):
-		self.name = newName
-		if self.deviceType.onRename(device=self, newName=newName):
-			self.DatabaseManager.update(tableName=self.DeviceManager.DB_DEVICE,
-			                            callerName=self.DeviceManager.name,
-			                            values={'name': newName},
-			                            row=('id', self.id))
-		else:
-			raise Exception('renaming failed')
-
-
-	def saveDevSettings(self):
-		self.DatabaseManager.update(tableName=self.DeviceManager.DB_DEVICE,
-		                            callerName=self.DeviceManager.name,
-		                            values={'devSettings': json.dumps(self.devSettings)},
-		                            row=('id', self.id))
-
-
-	def toggle(self):
-		return self.getDeviceType().toggle(device=self)
-
-
-	def getIcon(self):
-		return self.getDeviceType().getDeviceIcon(device=self)
-
-
-	def setCustomValue(self, name: str, value):
-		self.customValues[name] = value
-
-
-	def getCustomValue(self, name: str):
-		return self.customValues.get(name, None)
-
-
-	@property
-	def siteId(self) -> str:
-		return self.getMainLocation().getSaveName()
-
-
-	@property
-	def display(self) -> dict:
-		return self._settings
-
-
-	@display.setter
-	def display(self, value: dict):
-		self._settings = value
-
-
-	@property
-	def devSettings(self) -> dict:
-		return self._devSettings
-
-
-	@devSettings.setter
-	def devSettings(self, value: dict):
-		self._devSettings = value
-
-
-	@property
-	def customValues(self) -> dict:
-		return self._customValues
-
-
-	@customValues.setter
-	def customValues(self, value: dict):
-		self._customValues = value
-
-
-	@property
-	def location(self) -> str:
-		return self.getMainLocation().getSaveName()
-
-
-	@property
-	def skill(self) -> str:
-		return self.getDeviceType().skill
-

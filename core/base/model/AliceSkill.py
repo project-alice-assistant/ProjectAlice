@@ -70,6 +70,8 @@ class AliceSkill(ProjectAliceObject):
 			for deviceData in devices.values():
 				self.DeviceManager.registerDeviceType(self.name, deviceData)
 
+			self.logInfo(f'Registered **{len(devices)}** device type', plural='type')
+
 
 	def getHtmlInstructions(self) -> flask.Markup:
 		return flask.Markup(markdown(self._instructions))
