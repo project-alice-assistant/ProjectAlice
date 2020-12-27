@@ -26,7 +26,7 @@ class MyHomeApi(Api):
 				'locations': {location.id: location.toDict() for location in self.LocationManager.locations.values()},
 				'constructions': {construction.id: construction.toDict() for construction in self.LocationManager.constructions.values()},
 				'furnitures': {furniture.id: furniture.toDict() for furniture in self.LocationManager.furnitures.values()},
-				'devices': {device.uid: device.toDict() for device in self.DeviceManager.devices.values()}
+				'devices': {device.id: device.toDict() for device in self.DeviceManager.devices.values()}
 			})
 		except:
 			return jsonify(success=False)
@@ -243,8 +243,13 @@ class MyHomeApi(Api):
 	@ApiAuthenticated
 	def addDevice(self):
 		try:
-			return jsonify(success=True)
-		except:
+			device = self.DeviceManager.addNewDeviceFromWebUI(data=request.json)
+			if device:
+				return jsonify(device=device.toDict())
+			else:
+				raise Exception
+		except Exception as e:
+			self.logError(f'Failed adding new device {e}')
 			return jsonify(success=False)
 
 

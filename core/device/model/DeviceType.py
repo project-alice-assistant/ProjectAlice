@@ -110,7 +110,8 @@ class DeviceType(ProjectAliceObject):
 			'perLocationLimit'  : self._perLocationLimit,
 			'totalDeviceLimit'  : self._totalDeviceLimit,
 			'allowLocationLinks': self._allowLocationLinks,
-			'heartbeatRate'     : self._heartbeatRate
+			'heartbeatRate'     : self._heartbeatRate,
+			'abilities'         : bin(self._abilities)
 		}
 
 

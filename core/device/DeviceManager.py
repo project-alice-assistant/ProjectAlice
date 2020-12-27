@@ -310,7 +310,18 @@ class DeviceManager(Manager):
 		return devices[0]
 
 
-	def addNewDevice(self, deviceType: str, skillName: str, locationId: int = 0, uid: str = None, abilities: List[DeviceAbility] = None, displaySettings: Dict = None, displayName: str = None, noChecks: bool = False) -> Optional[Device]:
+	def addNewDeviceFromWebUI(self, data: Dict) -> Optional[Device]:
+		return self.addNewDevice(
+			deviceType=data['deviceType'],
+			skillName=data['skillName'],
+			locationId=data['parentLocation'],
+			uid=-1,
+			displaySettings=data['settings'],
+			displayName=data.get('displayName', '')
+		)
+
+
+	def addNewDevice(self, deviceType: str, skillName: str, locationId: int = 0, uid: Union[str, int] = None, abilities: List[DeviceAbility] = None, displaySettings: Dict = None, displayName: str = None, noChecks: bool = False) -> Optional[Device]:
 		"""
 		Adds a new device to Alice. The device is immediately saved in DB
 		:param deviceType: the type of device, defined by each skill
@@ -326,13 +337,13 @@ class DeviceManager(Manager):
 
 		if not noChecks:
 			dType: DeviceType = self.getDeviceType(skillName=skillName, deviceType=deviceType)
-			if 0 < dType.totalDeviceLimit <= len(self.getDevicesByType(deviceType=dType)):
+			if 0 < dType.totalDeviceLimit <= len(self.getDevicesByType(deviceType=dType, connectedOnly=False)):
 				self.logWarning(f'Cannot add device **{deviceType}**, maximum total limit reached')
-				return
+				return None
 
-			if 0 < dType.perLocationLimit <= len(self.getDevicesByLocation(locationId, deviceType=dType)):
-				self.logWarning(f'Cannot add device **{deviceType}**, maximum peer location limit reached')
-				return
+			if 0 < dType.perLocationLimit <= len(self.getDevicesByLocation(locationId, deviceType=dType, connectedOnly=False)):
+				self.logWarning(f'Cannot add device **{deviceType}**, maximum per location limit reached')
+				return None
 
 
 		if not displaySettings:
