@@ -19,6 +19,7 @@ SKILLS_STORE_ASSETS = 'https://skills.projectalice.io/assets/store/skills.json'
 SKILLS_SAMPLES_STORE_ASSETS = 'https://skills.projectalice.io/assets/store/skills.samples'
 GITHUB_REPOSITORY_ID = 193512918
 JSON_EXT = '.json'
+PNG_EXT = '.png'
 
 TOPIC_AUDIO_FRAME = 'hermes/audioServer/{}/audioFrame'
 TOPIC_HOTWORD_DETECTED = 'hermes/hotword/default/detected'

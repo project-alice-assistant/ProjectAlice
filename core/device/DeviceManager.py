@@ -49,7 +49,7 @@ class DeviceManager(Manager):
 	def __init__(self):
 		super().__init__(databaseSchema=self.DATABASE)
 
-		self._devices: Dict[str, Device] = dict()
+		self._devices: Dict[int, Device] = dict()
 		self._deviceLinks: Dict[int, DeviceLink] = dict()
 		self._deviceTypes: Dict[str, Dict[str, DeviceType]] = dict()
 
@@ -131,7 +131,7 @@ class DeviceManager(Manager):
 				skillImport = importlib.import_module(f'skills.{data.get("skillName")}.device.{data.get("typeName")}')
 				klass = getattr(skillImport, data.get('typeName'))
 				device = klass(data)
-				self._devices[device.uid] = device
+				self._devices[device.id] = device
 			except Exception as e:
 				self.logError(f"Couldn't create device instance: {e}")
 
@@ -152,7 +152,7 @@ class DeviceManager(Manager):
 		"""
 		now = time.time()
 		for uid, lastTime in self._heartbeats.copy().items():
-			device = self.getDevice(uid)
+			device = self.getDevice(uid=uid)
 			if not device:
 				self._heartbeats.pop(uid)
 			else:
@@ -165,13 +165,22 @@ class DeviceManager(Manager):
 		self._heartbeatsCheckTimer = self.ThreadManager.newTimer(interval=3, func=self.checkHeartbeats)
 
 
-	def getDevice(self, uid: str) -> Optional[Device]:
+	def getDevice(self, deviceId: int = None, uid: str = None) -> Optional[Device]:
 		"""
-		Returns a Device with the provided uid, if any
+		Returns a Device with the provided id or uid, if any
+		:param deviceId: The device id
 		:param uid: The device uid
 		:return: Device instance if any or None
 		"""
-		return self._devices.get(uid, None)
+		if deviceId:
+			return self._devices.get(deviceId, None)
+		elif uid:
+			for device in self._devices.values():
+				if device.uid == uid:
+					return device
+		else:
+			self.logWarning('Cannot get a device without id and uid')
+			return None
 
 
 	def registerDeviceType(self, skillName: str, data: dict):
@@ -368,20 +377,20 @@ class DeviceManager(Manager):
 
 
 	@property
-	def devices(self) -> Dict[str, Device]:
+	def devices(self) -> Dict[int, Device]:
 		return self._devices
 
 
-	def updateDeviceDisplay(self, deviceUid: str, data: dict) -> Device:
+	def updateDeviceDisplay(self, deviceId: int, data: dict) -> Device:
 		"""
 		Updates the UI part of a device
-		:param deviceUid: The device uid to update
+		:param deviceId: The device id to update
 		:param data: A dict of data to update
 		:return: Device instance
 		"""
-		device = self._devices.get(deviceUid, None)
+		device = self.getDevice(deviceId=deviceId)
 		if not device:
-			raise Exception(f"Cannot update device, device with uid **{deviceUid}** doesn't exist")
+			raise Exception(f"Cannot update device, device with id **{deviceId}** doesn't exist")
 
 		if 'parentLocation' in data:
 			device.parentLocation = data['parentLocation']
@@ -393,15 +402,15 @@ class DeviceManager(Manager):
 		return device
 
 
-	def deleteDevice(self, deviceUid: str):
+	def deleteDevice(self, deviceId: int = None, deviceUid: str = None):
 		# TODO unsub mqtt, clean links
-		device = self._devices.get(deviceUid, None)
+		device = self.getDevice(deviceId=deviceId, uid=deviceUid)
 		if not device:
 			raise Exception(f'Device with uid {deviceUid} not found')
 		elif device.hasAbilities([DeviceAbility.IS_CORE]):
 			raise Exception(f'Cannot delete main unit')
 		else:
-			self.devices.pop(deviceUid)
+			self._devices.pop(device.id)
 			self.DatabaseManager.delete(tableName=self.DB_DEVICE, callerName=self.name, values={'uid': device.uid})
 			self.DatabaseManager.delete(tableName=self.DB_LINKS, callerName=self.name, values={'device': device.id})
 
@@ -456,7 +465,7 @@ class DeviceManager(Manager):
 
 
 	def deviceConnecting(self, uid: str) -> Optional[Device]:
-		device = self.getDevice(uid)
+		device = self.getDevice(uid=uid)
 		if not device:
 			self.logWarning(f'A device with uid **{uid}** tried to connect but is unknown')
 			return None
@@ -476,7 +485,7 @@ class DeviceManager(Manager):
 	def deviceDisconnecting(self, uid: str):
 		self._heartbeats.pop(uid, None)
 
-		device = self.getDevice(uid)
+		device = self.getDevice(uid=uid)
 
 		if not device:
 			return

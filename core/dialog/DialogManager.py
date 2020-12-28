@@ -56,7 +56,7 @@ class DialogManager(Manager):
 
 
 	def onHotword(self, siteId: str, user: str = constants.UNKNOWN_USER):
-		self.logDebug(f'Wakeword detected by **{self.DeviceManager.getDevice(siteId).displayName}**')
+		self.logDebug(f'Wakeword detected by **{self.DeviceManager.getDevice(uid=siteId).displayName}**')
 
 		self._endedSessions[siteId] = self._sessionsById.pop(siteId, None)
 

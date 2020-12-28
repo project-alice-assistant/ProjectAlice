@@ -4,6 +4,7 @@ from typing import Union
 from flask import jsonify, request, send_from_directory
 from flask_classful import route
 
+from core.commons import constants
 from core.device.model.Device import Device
 from core.device.model.DeviceType import DeviceType
 from core.interface.model.Api import Api
@@ -127,11 +128,11 @@ class MyHomeApi(Api):
 			return jsonify(success=False)
 
 
-	@route('/devices/<deviceUid>/', methods=['PATCH'])
+	@route('/devices/<deviceId>/', methods=['PATCH'])
 	@ApiAuthenticated
-	def updateDevice(self, deviceUid: str):
+	def updateDevice(self, deviceId: str):
 		try:
-			return jsonify(success=self.DeviceManager.updateDeviceDisplay(deviceUid, request.json).toDict())
+			return jsonify(success=self.DeviceManager.updateDeviceDisplay(int(deviceId), request.json).toDict())
 		except Exception as e:
 			self.logError(f'Failed saving device {e}')
 			return jsonify(success=False)
@@ -170,11 +171,11 @@ class MyHomeApi(Api):
 			return jsonify(success=False)
 
 
-	@route('/devices/<deviceUid>/', methods=['DELETE'])
+	@route('/devices/<deviceId>/', methods=['DELETE'])
 	@ApiAuthenticated
-	def deleteDevice(self, deviceUid: str):
+	def deleteDevice(self, deviceId: str):
 		try:
-			self.DeviceManager.deleteDevice(deviceUid)
+			self.DeviceManager.deleteDevice(deviceId=int(deviceId))
 			return jsonify(success=True)
 		except Exception as e:
 			self.logError(f'Failed deleting device {e}')
@@ -184,7 +185,7 @@ class MyHomeApi(Api):
 	@route('/locations/floors/', methods=['GET'])
 	def getFloorsList(self):
 		try:
-			return jsonify(data=[image.stem for image in Path(self.Commons.rootDir(), 'core/webApi/static/images/floors/').glob('*.png')])
+			return jsonify(data=[image.stem for image in Path(self.Commons.rootDir(), 'core/webApi/static/images/floors/').glob(f'*{constants.PNG_EXT}')])
 		except:
 			return jsonify(success=False)
 
@@ -192,7 +193,7 @@ class MyHomeApi(Api):
 	@route('/furniture/tiles/', methods=['GET'])
 	def getFurnitureList(self):
 		try:
-			return jsonify(data=[image.stem for image in Path(self.Commons.rootDir(), 'core/webApi/static/images/furniture/').glob('*.png')])
+			return jsonify(data=[image.stem for image in Path(self.Commons.rootDir(), 'core/webApi/static/images/furniture/').glob(f'*{constants.PNG_EXT}')])
 		except:
 			return jsonify(success=False)
 
@@ -200,7 +201,7 @@ class MyHomeApi(Api):
 	@route('/constructions/tiles/', methods=['GET'])
 	def getConstructionList(self):
 		try:
-			return jsonify(data=[image.stem for image in Path(self.Commons.rootDir(), 'core/webApi/static/images/constructions/').glob('*.png')])
+			return jsonify(data=[image.stem for image in Path(self.Commons.rootDir(), 'core/webApi/static/images/constructions/').glob(f'*{constants.PNG_EXT}')])
 		except:
 			return jsonify(success=False)
 
@@ -208,7 +209,7 @@ class MyHomeApi(Api):
 	@route('/locations/floors/<imageId>.png', methods=['GET'])
 	def getFloor(self, imageId: str):
 		try:
-			return send_from_directory('static/images/floors', f'{imageId}.png')
+			return send_from_directory('static/images/floors', f'{imageId}{constants.PNG_EXT}')
 		except:
 			return jsonify(success=False)
 
@@ -216,7 +217,7 @@ class MyHomeApi(Api):
 	@route('/furniture/<imageId>.png', methods=['GET'])
 	def getFurniture(self, imageId: str):
 		try:
-			return send_from_directory('static/images/furniture', f'{imageId}.png')
+			return send_from_directory('static/images/furniture', f'{imageId}{constants.PNG_EXT}')
 		except:
 			return jsonify(success=False)
 
@@ -224,17 +225,17 @@ class MyHomeApi(Api):
 	@route('/constructions/<imageId>.png', methods=['GET'])
 	def getConstruction(self, imageId: str):
 		try:
-			return send_from_directory('static/images/constructions', f'{imageId}.png')
+			return send_from_directory('static/images/constructions', f'{imageId}{constants.PNG_EXT}')
 		except:
 			return jsonify(success=False)
 
 
-	@route('/devices/<uid>/device.png', methods=['GET'])
-	def getDeviceIcon(self, uid: str):
+	@route('/devices/<deviceId>/device.png', methods=['GET'])
+	def getDeviceIcon(self, deviceId: str):
 		try:
-			device: Device = self.DeviceManager.getDevice(uid=uid)
+			device: Device = self.DeviceManager.getDevice(deviceId=int(deviceId))
 			file = device.getDeviceIcon()
-			return send_from_directory(file.parent, f'{file.stem}.png')
+			return send_from_directory(file.parent, f'{file.stem}{constants.PNG_EXT}')
 		except:
 			return jsonify(success=False)
 
@@ -284,7 +285,7 @@ class MyHomeApi(Api):
 		try:
 			dType: DeviceType = self.DeviceManager.getDeviceType(skillName=skillName, deviceType=deviceType)
 			file = dType.getDeviceTypeIcon()
-			return send_from_directory(file.parent, f'{file.stem}.png')
+			return send_from_directory(file.parent, f'{file.stem}{constants.PNG_EXT}')
 		except Exception as e:
 			self.logError(f'Failed retrieving device type icon {e}')
 			return jsonify(success=False)

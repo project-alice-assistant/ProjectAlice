@@ -19,7 +19,7 @@ class Device(ProjectAliceObject):
 			data = self.Commons.dictFromRow(data)
 
 		self._data: dict = data
-		self._id: str = data.get('id', -1)
+		self._id: int = data.get('id', -1)
 		self._uid: str = data.get('uid', -1)
 		self._typeName:str = data.get('typeName', '')
 		self._skillName: str = data.get('skillName', '')
@@ -194,7 +194,7 @@ class Device(ProjectAliceObject):
 
 
 	@property
-	def id(self) -> str:
+	def id(self) -> int:
 		#Prefer using uid when possible
 		return self._id
 
