@@ -15,7 +15,6 @@ from core.base.model.Manager import Manager
 from core.commons import constants
 from core.device.model.Device import Device
 from core.device.model.DeviceAbility import DeviceAbility
-from core.device.model.DeviceException import MaxDeviceOfTypeReached, MaxDevicePerLocationReached
 from core.device.model.DeviceLink import DeviceLink
 from core.device.model.DeviceType import DeviceType
 from core.device.model.Heartbeat import Heartbeat
@@ -39,9 +38,8 @@ class DeviceManager(Manager):
 		],
 		DB_LINKS : [
 			'id INTEGER PRIMARY KEY',
-			'device TEXT NOT NULL',
-			'parentLocation INTEGER NOT NULL',
-			'locationSettings TEXT'
+			'deviceId INTEGER NOT NULL',
+			'targetLocation INTEGER NOT NULL'
 		]
 	}
 
@@ -381,7 +379,7 @@ class DeviceManager(Manager):
 		return self._devices
 
 
-	def updateDeviceDisplay(self, deviceId: int, data: dict) -> Device:
+	def updateDeviceDisplay(self, deviceId: int, data: dict) -> Optional[Device]:
 		"""
 		Updates the UI part of a device
 		:param deviceId: The device id to update
@@ -393,6 +391,8 @@ class DeviceManager(Manager):
 			raise Exception(f"Cannot update device, device with id **{deviceId}** doesn't exist")
 
 		if 'parentLocation' in data:
+			if data['parentLocation'] != device.parentLocation and not self.checkLocationChange(device=device, locationId=data['parentLocation']):
+				return None
 			device.parentLocation = data['parentLocation']
 
 		if 'settings' in data:
@@ -400,6 +400,26 @@ class DeviceManager(Manager):
 
 		device.saveToDB()
 		return device
+
+
+	def checkLocationChange(self, device: Device, locationId: int) -> bool:
+		"""
+		Checks if the given device can be moved to another location
+		:param device: Device instance
+		:param locationId: int
+		:return: bool
+		"""
+		loc = self.LocationManager.getLocation(locId=locationId)
+		if not loc:
+			self.logError('Cannot change device location to a unexisting location')
+			return False
+
+
+		if 0 < device.deviceType.perLocationLimit <= len(self.getDevicesByLocation(locationId, deviceType=deviceType, connectedOnly=False)):
+			self.logWarning(f'Cannot move device **{deviceType}** to new location, maximum per location limit reached')
+			return False
+
+		return True
 
 
 	def deleteDevice(self, deviceId: int = None, deviceUid: str = None):
@@ -507,10 +527,74 @@ class DeviceManager(Manager):
 		return self._deviceTypes
 
 
+	def addDeviceLink(self, targetLocation: int, deviceId: int = None, deviceUid: str = None) -> Optional[DeviceLink]:
+		"""
+		Add a new device link, from deviceId or deviceUid to targetLocation
+		:param targetLocation: int
+		:param deviceId: int
+		:param deviceUid: str
+		:return:
+		"""
+		device = self.getDevice(deviceId=deviceId) if deviceId is not None else self.getDevice(uid=deviceUid)
+		if not device:
+			self.logWarning('Cannot add a device link without either the target device id or uid')
+			return
+
+		if targetLocation <= 0:
+			self.logWarning('Cannot add a device link to no location')
+			return
+
+		if device.linkedTo(targetLocation):
+			self.logWarning('This device is already linked to that location')
+			return
+
+		data = {
+			'deviceId': device.id,
+			'targetLocation': targetLocation
+		}
+
+		link = DeviceLink(data)
+		self._deviceLinks[link.id] = link
+		return link
 
 
+	def deleteDeviceLinks(self, linkId: int = None, deviceId: int = None,deviceUid: str = None, targetLocationId: int = None):
+		"""
+		Delete one or more device links.
+		If link id is provided, deletes only one.
+		If deviceId or Uid provided, deletes any link belonging to that device.
+		If target location id provided, deletes any link to that location.
+		:param linkId: int
+		:param deviceId: int
+		:param deviceUid: str
+		:param targetLocationId: int
+		:return:
+		"""
+		if linkId:
+			self.DatabaseManager.delete(tableName=self.DB_LINKS, callerName=self.name, values={'id': linkId})
+		else:
+			if deviceId or deviceUid:
+				device = self.getDevice(deviceId=deviceId) if deviceId is not None else self.getDevice(uid=deviceUid)
+				if not device:
+					self.logWarning(f'Deleting device link from parent device failed, parent device with id **{deviceId}** not found')
+
+				self.DatabaseManager.delete(tableName=self.DB_LINKS, callerName=self.name, values={'deviceId': device.id})
+
+				for link in self._deviceLinks.copy().values():
+					if link.deviceId == device.id:
+						self._deviceLinks.pop(link.id)
+
+			if targetLocationId:
+				self.DatabaseManager.delete(tableName=self.DB_LINKS, callerName=self.name, values={'targetLocation': targetLocationId})
+
+				for link in self._deviceLinks.copy().values():
+					if link.targetLocation == targetLocationId:
+						self._deviceLinks.pop(link.id)
 
 
+	@property
+	def deviceLinks(self) -> Dict[int, DeviceLink]:
+		return self._deviceLinks
 
 
 
@@ -531,21 +615,6 @@ class DeviceManager(Manager):
 
 	def deviceMessage(self, message: MQTTMessage) -> DialogSession:
 		return self.DialogManager.newTempSession(message=message)
-
-
-
-
-
-	# noinspection SqlResolve
-	def isUIDAvailable(self, uid: str) -> bool:
-		try:
-			count = self.databaseFetch(tableName='devices', query='SELECT COUNT() FROM :__table__ WHERE uid = :uid', values={'uid': uid})[0]
-			return count <= 0
-		except sqlite3.OperationalError as e:
-			self.logWarning(f"Couldn't check device from database: {e}")
-			return False
-
-
 
 
 
@@ -603,21 +672,7 @@ class DeviceManager(Manager):
 
 
 
-	def changeLocation(self, device: Device, locationId: int):
-		# check location is good
-		loc = self.LocationManager.getLocation(locId=locationId)
-		if not loc:
-			raise Exception("Location not found")
-		# check location but not global
-		self.assertDeviceTypeAllowedAtLocation(typeId=device.getDeviceType().id, locationId=locationId, moveDevice=True)
-		# update device and trigger device type dependent Updates
-		# might raise exception and cancle DB update
-		device.changeLocation(locationId=locationId)
-		# update DB
-		self.DatabaseManager.update(tableName=self.DB_DEVICE,
-		                            callerName=self.name,
-		                            values={'locationId': locationId},
-		                            row=('id', device.id))
+
 
 
 	def devUIDtoID(self, uid: str) -> int:
@@ -670,27 +725,7 @@ class DeviceManager(Manager):
 				return link
 
 
-	def addLink(self, deviceId: int, locationId: int):
-		device = self.getDeviceById(deviceId)
-		deviceType = device.getDeviceType()
-		if not deviceType.allowLocationLinks:
-			raise Exception(f'Device type {deviceType.name} can\'t be linked to other rooms')
-		if self.getLink(deviceId=deviceId, locationId=locationId):
-			raise Exception(f'There is already a link from {deviceId} to {locationId}')
-		values = {'deviceID': deviceId, 'locationId': locationId, 'locSettings': json.dumps(deviceType.initialLocationSettings)}
-		# noinspection SqlResolve
-		values['id'] = self.databaseInsert(tableName=self.DB_LINKS, query='INSERT INTO :__table__ (deviceID, locationId, locSettings) VALUES (:deviceID, :locationId, :locSettings)', values=values)
-		self.logInfo(f'Added link from device {deviceId} to location {locationId}')
-		self._deviceLinks[values['id']] = DeviceLink(data=values)
 
-
-	def deleteLink(self, _id: int = None, deviceId: int = None, locationId: int = None):
-		link = self.DeviceManager.getLink(_id=_id, deviceId=deviceId, locationId=locationId)
-		if  not link:
-			raise Exception('Link not found.')
-		self.logInfo(f'Removing link {link.id}')
-		self._deviceLinks.pop(link.id)
-		self.DatabaseManager.delete(tableName=self.DB_LINKS, callerName=self.name, values={"id": link.id})
 
 
 	def deleteDeviceUID(self, deviceUID: str):
@@ -747,7 +782,7 @@ class DeviceManager(Manager):
 
 	## Heartbeats
 	def onDeviceHeartbeat(self, uid: str, siteId: str = None):
-		device = self.getDeviceByUID(uid=uid)
+		device = self.getDevice(uid=uid)
 
 		if not device:
 			self.logWarning(f'Device with uid **{uid}** does not exist')
@@ -755,32 +790,6 @@ class DeviceManager(Manager):
 
 		device.connected = True
 		self._heartbeats[uid] = time.time()
-
-
-
-	def assertDeviceTypeAllowedAtLocation(self, typeId: int, locationId: int, moveDevice: bool = False):
-		# check max allowed per Location
-		deviceType = self.getDeviceType(typeId)
-		# check if another instance of this device is allowed
-		if deviceType.totalDeviceLimit > 0 and not moveDevice:
-			currAmount = len(self.DeviceManager.getDevicesByTypeID(deviceTypeId=typeId))
-			if deviceType.totalDeviceLimit <= currAmount:
-				raise MaxDeviceOfTypeReached(maxAmount=deviceType.totalDeviceLimit)
-
-		# check if there are aleady too many of this device type in the location
-		if deviceType.perLocationLimit > 0:
-			currAmount = len(self.getDevicesByLocation(locationId=locationId, deviceTypeId=typeId))
-			if deviceType.perLocationLimit <= currAmount:
-				raise MaxDevicePerLocationReached(maxAmount=deviceType.perLocationLimit)
-
-
-
-	def getDevicesForSkill(self, skill: str):
-		return [device for device in self.devices.values() if device.skillName == skill]
-
-
-	def getDevicesByTypeID(self, deviceTypeId: int, connectedOnly: bool = False) -> List[Device]:
-		return [x for x in self._devices.values() if x.deviceTypeId == deviceTypeId and (not connectedOnly or x.connected)]
 
 
 	def getDeviceLinksByType(self, deviceType: int, connectedOnly: bool = False) -> List[DeviceLink]:

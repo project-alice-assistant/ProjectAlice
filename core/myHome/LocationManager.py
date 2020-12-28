@@ -207,7 +207,7 @@ class LocationManager(Manager):
 			tableName=self.DeviceManager.DB_LINKS,
 		    callerName=self.DeviceManager.name,
 		    values={
-			    'locationID': locId
+			    'targetLocation': locId
 		    }
 		)
 

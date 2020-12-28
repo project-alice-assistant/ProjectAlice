@@ -1,3 +1,4 @@
+import traceback
 from pathlib import Path
 from typing import Union
 
@@ -27,7 +28,8 @@ class MyHomeApi(Api):
 				'locations': {location.id: location.toDict() for location in self.LocationManager.locations.values()},
 				'constructions': {construction.id: construction.toDict() for construction in self.LocationManager.constructions.values()},
 				'furnitures': {furniture.id: furniture.toDict() for furniture in self.LocationManager.furnitures.values()},
-				'devices': {device.id: device.toDict() for device in self.DeviceManager.devices.values()}
+				'devices': {device.id: device.toDict() for device in self.DeviceManager.devices.values()},
+				'links': {link.id: link.toDict() for link in self.DeviceManager.deviceLinks.values()}
 			})
 		except:
 			return jsonify(success=False)
@@ -132,7 +134,8 @@ class MyHomeApi(Api):
 	@ApiAuthenticated
 	def updateDevice(self, deviceId: str):
 		try:
-			return jsonify(success=self.DeviceManager.updateDeviceDisplay(int(deviceId), request.json).toDict())
+			device = self.DeviceManager.updateDeviceDisplay(int(deviceId), request.json)
+			return jsonify(device=device.toDict())
 		except Exception as e:
 			self.logError(f'Failed saving device {e}')
 			return jsonify(success=False)
@@ -251,6 +254,21 @@ class MyHomeApi(Api):
 				raise Exception
 		except Exception as e:
 			self.logError(f'Failed adding new device {e}')
+			return jsonify(success=False)
+
+
+	@route('/deviceLinks/', methods=['PUT'])
+	@ApiAuthenticated
+	def addDeviceLink(self):
+		try:
+			link = self.DeviceManager.addDeviceLink(targetLocation=request.json.get('targetLocation'), deviceId=request.json.get('deviceId'))
+			if link:
+				return jsonify(link=link.toDict())
+			else:
+				raise Exception
+		except Exception as e:
+			self.logError(f'Failed adding new device link {e}')
+			traceback.print_exc()
 			return jsonify(success=False)
 
 

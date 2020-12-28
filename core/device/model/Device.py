@@ -257,6 +257,18 @@ class Device(ProjectAliceObject):
 			raise DeviceNotPaired()
 
 
+	def linkedTo(self, targetLocation: int) -> bool:
+		"""
+		Checks if this device is linked to the given location
+		:param targetLocation: int
+		:return: bool
+		"""
+		for link in self.DeviceManager.deviceLinks.values():
+			if link.deviceId == self.id and link.targetLocation == targetLocation:
+				return True
+		return False
+
+
 	def __repr__(self):
 		return f'Device({self._id} - {self._displayName}, uid({self._uid}), Location({self._parentLocation}))'
 

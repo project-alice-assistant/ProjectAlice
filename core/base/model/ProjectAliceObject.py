@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import json
 import re
 from copy import copy
@@ -7,18 +9,55 @@ from typing import Union
 from importlib_metadata import PackageNotFoundError, version as packageVersion
 
 import core.base.SuperManager as SM
+
 from core.base.model.Version import Version
 from core.commons import constants
+
 from core.util.model.Logger import Logger
+
+from typing import TYPE_CHECKING
+if TYPE_CHECKING:
+	from core.device.DeviceManager import DeviceManager
+	from core.ProjectAlice import ProjectAlice
+	from core.asr.ASRManager import ASRManager
+	from core.base.AssistantManager import AssistantManager
+	from core.base.ConfigManager import ConfigManager
+	from core.base.SkillStoreManager import SkillStoreManager
+	from core.base.StateManager import StateManager
+	from core.commons.CommonsManager import CommonsManager
+	from core.myHome.LocationManager import LocationManager
+	from core.dialog.DialogManager import DialogManager
+	from core.dialog.DialogTemplateManager import DialogTemplateManager
+	from core.dialog.MultiIntentManager import MultiIntentManager
+	from core.interface.WebInterfaceManager import WebInterfaceManager
+	from core.nlu.NluManager import NluManager
+	from core.server.AudioServer import AudioManager
+	from core.server.MqttManager import MqttManager
+	from core.user.UserManager import UserManager
+	from core.util.AliceWatchManager import AliceWatchManager
+	from core.util.DatabaseManager import DatabaseManager
+	from core.util.InternetManager import InternetManager
+	from core.util.TelemetryManager import TelemetryManager
+	from core.util.ThreadManager import ThreadManager
+	from core.util.TimeManager import TimeManager
+	from core.voice.LanguageManager import LanguageManager
+	from core.voice.TTSManager import TTSManager
+	from core.voice.TalkManager import TalkManager
+	from core.voice.WakewordManager import WakewordManager
+	from core.voice.WakewordRecorder import WakewordRecorder
+	from core.webApi.ApiManager import ApiManager
+	from core.webui.NodeRedManager import NodeRedManager
+	from core.webui.WidgetManager import WidgetManager
 
 
 class ProjectAliceObject:
 	DEPENDENCIES = {
 		'internal': {},
 		'external': {},
-		'system': [],
-		'pip'   : []
+		'system'  : [],
+		'pip'     : []
 	}
+
 
 	def __init__(self, *args, **kwargs):
 		self._logger = Logger(*args, **kwargs)
@@ -34,7 +73,7 @@ class ProjectAliceObject:
 		return self.__repr__()
 
 
-	def broadcast(self, method: str, exceptions: list = None, manager = None, propagateToSkills: bool = False, **kwargs): #NOSONAR
+	def broadcast(self, method: str, exceptions: list = None, manager = None, propagateToSkills: bool = False, **kwargs):  # NOSONAR
 		if not exceptions:
 			exceptions = list()
 
@@ -63,7 +102,6 @@ class ProjectAliceObject:
 
 		except TypeError as e:
 			self.logWarning(f'Failed to broadcast event **{method}** to **DialogManager**: {e}')
-
 
 		deadManagers = list()
 		for name, man in SM.SuperManager.getInstance().managers.items():
@@ -239,366 +277,368 @@ class ProjectAliceObject:
 
 
 	def onStop(self, **kwargs):
-		pass # Super object function is overriden only if needed
+		pass  # Super object function is overriden only if needed
 
 
 	def onBooted(self):
-		pass # Super object function is overriden only if needed
+		pass  # Super object function is overriden only if needed
 
 
 	def onSkillInstalled(self, skill: str):
-		pass # Super object function is overriden only if needed
+		pass  # Super object function is overriden only if needed
 
 
 	def onSkillDeleted(self, skill: str):
-		pass # Super object function is overriden only if needed
+		pass  # Super object function is overriden only if needed
 
 
 	def onSkillUpdated(self, skill: str):
-		pass # Super object function is overriden only if needed
+		pass  # Super object function is overriden only if needed
 
 
 	def onInternetConnected(self):
-		pass # Super object function is overriden only if needed
+		pass  # Super object function is overriden only if needed
 
 
 	def onInternetLost(self):
-		pass # Super object function is overriden only if needed
+		pass  # Super object function is overriden only if needed
 
 
 	def onHotword(self, siteId: str, user: str = constants.UNKNOWN_USER):
-		pass # Super object function is overriden only if needed
+		pass  # Super object function is overriden only if needed
 
 
 	def onHotwordToggleOn(self, siteId: str, session):
-		pass # Super object function is overriden only if needed
+		pass  # Super object function is overriden only if needed
 
 
 	def onHotwordToggleOff(self, siteId: str, session):
-		pass # Super object function is overriden only if needed
+		pass  # Super object function is overriden only if needed
 
 
 	def onSessionStarted(self, session):
-		pass # Super object function is overriden only if needed
+		pass  # Super object function is overriden only if needed
 
 
 	def onContinueSession(self, session):
-		pass # Super object function is overriden only if needed
+		pass  # Super object function is overriden only if needed
 
 
 	def onAsrToggleOn(self, siteId: str):
-		pass # Super object function is overriden only if needed
+		pass  # Super object function is overriden only if needed
 
 
 	def onAsrToggleOff(self, siteId: str):
-		pass # Super object function is overriden only if needed
+		pass  # Super object function is overriden only if needed
 
 
 	def onStartListening(self, session):
-		pass # Super object function is overriden only if needed
+		pass  # Super object function is overriden only if needed
 
 
 	def onStopListening(self, session):
-		pass # Super object function is overriden only if needed
+		pass  # Super object function is overriden only if needed
 
 
 	def onCaptured(self, session):
-		pass # Super object function is overriden only if needed
+		pass  # Super object function is overriden only if needed
 
 
 	def onNluQuery(self, session):
-		pass # Super object function is overriden only if needed
+		pass  # Super object function is overriden only if needed
 
 
 	def onIntentParsed(self, session):
-		pass # Super object function is overriden only if needed
+		pass  # Super object function is overriden only if needed
 
 
 	def onIntent(self, session):
-		pass # Super object function is overriden only if needed
+		pass  # Super object function is overriden only if needed
 
 
 	def onConfigureIntent(self, intents: list):
-		pass # Super object function is overriden only if needed
+		pass  # Super object function is overriden only if needed
 
 
 	def onUserCancel(self, session):
-		pass # Super object function is overriden only if needed
+		pass  # Super object function is overriden only if needed
 
 
 	def onSessionTimeout(self, session):
-		pass # Super object function is overriden only if needed
+		pass  # Super object function is overriden only if needed
 
 
 	def onIntentNotRecognized(self, session):
-		pass # Super object function is overriden only if needed
+		pass  # Super object function is overriden only if needed
 
 
 	def onNluIntentNotRecognized(self, session):
-		pass # Super object function is overriden only if needed
+		pass  # Super object function is overriden only if needed
 
 
 	def onNluError(self, session):
-		pass # Super object function is overriden only if needed
+		pass  # Super object function is overriden only if needed
 
 
 	def onSessionError(self, session):
-		pass # Super object function is overriden only if needed
+		pass  # Super object function is overriden only if needed
 
 
 	def onStartSession(self, siteId: str, payload: dict):
-		pass # Super object function is overriden only if needed
+		pass  # Super object function is overriden only if needed
 
 
 	def onSessionEnded(self, session):
-		pass # Super object function is overriden only if needed
+		pass  # Super object function is overriden only if needed
 
 
 	def onSay(self, session):
-		pass # Super object function is overriden only if needed
+		pass  # Super object function is overriden only if needed
 
 
 	def onSayFinished(self, session, uid: str = None):
-		pass # Super object function is overriden only if needed
+		pass  # Super object function is overriden only if needed
 
 
 	def onSessionQueued(self, session):
-		pass # Super object function is overriden only if needed
+		pass  # Super object function is overriden only if needed
 
 
-	def onMessage(self, session) -> bool: #NOSONAR
+	def onMessage(self, session) -> bool:  # NOSONAR
 		""" Do not consume the intent by default """
 		return False
 
 
 	def onSleep(self):
-		pass # Super object function is overriden only if needed
+		pass  # Super object function is overriden only if needed
 
 
 	def onWakeup(self):
-		pass # Super object function is overriden only if needed
+		pass  # Super object function is overriden only if needed
 
 
 	def onGoingBed(self):
-		pass # Super object function is overriden only if needed
+		pass  # Super object function is overriden only if needed
 
 
 	def onLeavingHome(self):
-		pass # Super object function is overriden only if needed
+		pass  # Super object function is overriden only if needed
 
 
 	def onReturningHome(self):
-		pass # Super object function is overriden only if needed
+		pass  # Super object function is overriden only if needed
 
 
 	def onEating(self):
-		pass # Super object function is overriden only if needed
+		pass  # Super object function is overriden only if needed
 
 
 	def onWatchingTV(self):
-		pass # Super object function is overriden only if needed
+		pass  # Super object function is overriden only if needed
 
 
 	def onCooking(self):
-		pass # Super object function is overriden only if needed
+		pass  # Super object function is overriden only if needed
 
 
 	def onMakeup(self):
-		pass # Super object function is overriden only if needed
+		pass  # Super object function is overriden only if needed
 
 
 	def onContextSensitiveDelete(self, session):
-		pass # Super object function is overriden only if needed
+		pass  # Super object function is overriden only if needed
 
 
 	def onContextSensitiveEdit(self, session):
-		pass # Super object function is overriden only if needed
+		pass  # Super object function is overriden only if needed
 
 
 	def onFullMinute(self):
-		pass # Super object function is overriden only if needed
+		pass  # Super object function is overriden only if needed
 
 
 	def onFiveMinute(self):
-		pass # Super object function is overriden only if needed
+		pass  # Super object function is overriden only if needed
 
 
 	def onQuarterHour(self):
-		pass # Super object function is overriden only if needed
+		pass  # Super object function is overriden only if needed
 
 
 	def onFullHour(self):
-		pass # Super object function is overriden only if needed
+		pass  # Super object function is overriden only if needed
 
 
 	def onWakeword(self, siteId: str, user: str = constants.UNKNOWN_USER):
-		pass # Super object function is overriden only if needed
+		pass  # Super object function is overriden only if needed
 
 
 	def onMotionDetected(self):
-		pass # Super object function is overriden only if needed
+		pass  # Super object function is overriden only if needed
 
 
 	def onMotionStopped(self):
-		pass # Super object function is overriden only if needed
+		pass  # Super object function is overriden only if needed
 
 
 	def onButtonPressed(self):
-		pass # Super object function is overriden only if needed
+		pass  # Super object function is overriden only if needed
 
 
 	def onButtonReleased(self):
-		pass # Super object function is overriden only if needed
+		pass  # Super object function is overriden only if needed
 
 
 	def onDeviceDiscovered(self, device, uid: str):
-		pass # Super object function is overriden only if needed
+		pass  # Super object function is overriden only if needed
 
 
 	def onDeviceAdded(self, device, uid: str):
-		pass # Super object function is overriden only if needed
+		pass  # Super object function is overriden only if needed
 
 
 	def onDeviceRemoved(self, device, uid: str):
-		pass # Super object function is overriden only if needed
+		pass  # Super object function is overriden only if needed
 
 
 	def onDeviceConnecting(self):
-		pass # Super object function is overriden only if needed
+		pass  # Super object function is overriden only if needed
 
 
 	def onDeviceDisconnecting(self):
-		pass # Super object function is overriden only if needed
+		pass  # Super object function is overriden only if needed
 
 
 	def onUVIndexAlert(self, *args, **kwargs):
-		pass # Super object function is overriden only if needed
+		pass  # Super object function is overriden only if needed
 
 
 	def onRaining(self, *args, **kwargs):
-		pass # Super object function is overriden only if needed
+		pass  # Super object function is overriden only if needed
 
 
 	def onTooMuchRain(self, *args, **kwargs):
-		pass # Super object function is overriden only if needed
+		pass  # Super object function is overriden only if needed
 
 
 	def onWindy(self, *args, **kwargs):
-		pass # Super object function is overriden only if needed
+		pass  # Super object function is overriden only if needed
 
 
 	def onFreezing(self, *args, **kwargs):
-		pass # Super object function is overriden only if needed
+		pass  # Super object function is overriden only if needed
 
 
 	def onTemperatureHighAlert(self, *args, **kwargs):
-		pass # Super object function is overriden only if needed
+		pass  # Super object function is overriden only if needed
 
 
 	def onTemperatureLowAlert(self, *args, **kwargs):
-		pass # Super object function is overriden only if needed
+		pass  # Super object function is overriden only if needed
 
 
 	def onCOTwoAlert(self, *args, **kwargs):
-		pass # Super object function is overriden only if needed
+		pass  # Super object function is overriden only if needed
 
 
 	def onHumidityHighAlert(self, *args, **kwargs):
-		pass # Super object function is overriden only if needed
+		pass  # Super object function is overriden only if needed
 
 
 	def onHumidityLowAlert(self, *args, **kwargs):
-		pass # Super object function is overriden only if needed
+		pass  # Super object function is overriden only if needed
 
 
 	def onNoiseAlert(self, *args, **kwargs):
-		pass # Super object function is overriden only if needed
+		pass  # Super object function is overriden only if needed
 
 
 	def onPressureHighAlert(self, *args, **kwargs):
-		pass # Super object function is overriden only if needed
+		pass  # Super object function is overriden only if needed
+
 
 	def onGasAlert(self, *args, **kwargs):
-		pass # Super object function is overriden only if needed
+		pass  # Super object function is overriden only if needed
+
 
 	def onPressureLowAlert(self, *args, **kwargs):
-		pass # Super object function is overriden only if needed
+		pass  # Super object function is overriden only if needed
 
 
 	def onBroadcastingForNewDeviceStart(self):
-		pass # Super object function is overriden only if needed
+		pass  # Super object function is overriden only if needed
 
 
 	def onBroadcastingForNewDeviceStop(self, *args):
-		pass # Super object function is overriden only if needed
+		pass  # Super object function is overriden only if needed
 
 
 	def onAuthenticated(self, session):
-		pass # Super object function is overriden only if needed
+		pass  # Super object function is overriden only if needed
 
 
 	def onAuthenticationFailed(self, session):
-		pass # Super object function is overriden only if needed
+		pass  # Super object function is overriden only if needed
 
 
 	def onAudioFrame(self, **kwargs):
-		pass # Super object function is overriden only if needed
+		pass  # Super object function is overriden only if needed
 
 
 	def onAssistantInstalled(self, **kwargs):
-		pass # Super object function is overriden only if needed
+		pass  # Super object function is overriden only if needed
 
 
 	def onAssistantFailedTraining(self, **kwargs):
-		pass # Super object function is overriden only if needed
+		pass  # Super object function is overriden only if needed
 
 
 	def onSkillInstallFailed(self, skill: str):
-		pass # Super object function is overriden only if needed
+		pass  # Super object function is overriden only if needed
 
 
 	def onNluTrained(self, **kwargs):
-		pass # Super object function is overriden only if needed
+		pass  # Super object function is overriden only if needed
 
 
 	def onVadUp(self, **kwargs):
-		pass # Super object function is overriden only if needed
+		pass  # Super object function is overriden only if needed
 
 
 	def onVadDown(self, **kwargs):
-		pass # Super object function is overriden only if needed
+		pass  # Super object function is overriden only if needed
 
 
 	def onPlayBytes(self, requestId: str, payload: bytearray, siteId: str, sessionId: str = None):
-		pass # Super object function is overriden only if needed
+		pass  # Super object function is overriden only if needed
 
 
 	def onPlayBytesFinished(self, requestId: str, siteId: str, sessionId: str = None):
-		pass # Super object function is overriden only if needed
+		pass  # Super object function is overriden only if needed
 
 
 	def onToggleFeedbackOn(self, siteId: str):
-		pass # Super object function is overriden only if needed
+		pass  # Super object function is overriden only if needed
 
 
 	def onToggleFeedbackOff(self, siteId: str):
-		pass # Super object function is overriden only if needed
+		pass  # Super object function is overriden only if needed
 
 
 	def onPartialTextCaptured(self, session, text: str, likelihood: float, seconds: float):
-		pass # Super object function is overriden only if needed
+		pass  # Super object function is overriden only if needed
 
 
 	def onEndSession(self, session, reason: str = 'nominal'):
-		pass # Super object function is overriden only if needed
+		pass  # Super object function is overriden only if needed
 
 
 	def onDeviceHeartbeat(self, uid: str, siteId: str = None):
-		pass # Super object function is overriden only if needed
+		pass  # Super object function is overriden only if needed
 
 
 	def onDeviceStatus(self, session):
-		pass # Super object function is overriden only if needed
+		pass  # Super object function is overriden only if needed
 
 
 	def onSkillStarted(self, skill):
@@ -616,160 +656,160 @@ class ProjectAliceObject:
 
 
 	@property
-	def ProjectAlice(self): #NOSONAR
+	def ProjectAlice(self) -> ProjectAlice:  # NOSONAR
 		return SM.SuperManager.getInstance().projectAlice
 
 
 	@property
-	def ConfigManager(self): #NOSONAR
+	def ConfigManager(self) -> ConfigManager:  # NOSONAR
 		return SM.SuperManager.getInstance().configManager
 
 
 	@property
-	def SkillManager(self): #NOSONAR
+	def SkillManager(self) -> SkillManager:  # NOSONAR
 		return SM.SuperManager.getInstance().skillManager
 
 
 	@property
-	def DeviceManager(self): #NOSONAR
+	def DeviceManager(self) -> DeviceManager:  # NOSONAR
 		return SM.SuperManager.getInstance().deviceManager
 
 
 	@property
-	def MultiIntentManager(self): #NOSONAR
+	def MultiIntentManager(self) -> MultiIntentManager:  # NOSONAR
 		return SM.SuperManager.getInstance().multiIntentManager
 
 
 	@property
-	def MqttManager(self): #NOSONAR
+	def MqttManager(self) -> MqttManager:  # NOSONAR
 		return SM.SuperManager.getInstance().mqttManager
 
 
 	@property
-	def UserManager(self): #NOSONAR
+	def UserManager(self) -> UserManager:  # NOSONAR
 		return SM.SuperManager.getInstance().userManager
 
 
 	@property
-	def DatabaseManager(self): #NOSONAR
+	def DatabaseManager(self) -> DatabaseManager:  # NOSONAR
 		return SM.SuperManager.getInstance().databaseManager
 
 
 	@property
-	def InternetManager(self): #NOSONAR
+	def InternetManager(self) -> InternetManager:  # NOSONAR
 		return SM.SuperManager.getInstance().internetManager
 
 
 	@property
-	def TelemetryManager(self): #NOSONAR
+	def TelemetryManager(self) -> TelemetryManager:  # NOSONAR
 		return SM.SuperManager.getInstance().telemetryManager
 
 
 	@property
-	def ThreadManager(self): #NOSONAR
+	def ThreadManager(self) -> ThreadManager:  # NOSONAR
 		return SM.SuperManager.getInstance().threadManager
 
 
 	@property
-	def TimeManager(self): #NOSONAR
+	def TimeManager(self) -> TimeManager:  # NOSONAR
 		return SM.SuperManager.getInstance().timeManager
 
 
 	@property
-	def ASRManager(self): #NOSONAR
+	def ASRManager(self) -> ASRManager:  # NOSONAR
 		return SM.SuperManager.getInstance().asrManager
 
 
 	@property
-	def LanguageManager(self): #NOSONAR
+	def LanguageManager(self) -> LanguageManager:  # NOSONAR
 		return SM.SuperManager.getInstance().languageManager
 
 
 	@property
-	def TalkManager(self): #NOSONAR
+	def TalkManager(self) -> TalkManager:  # NOSONAR
 		return SM.SuperManager.getInstance().talkManager
 
 
 	@property
-	def TTSManager(self): #NOSONAR
+	def TTSManager(self) -> TTSManager:  # NOSONAR
 		return SM.SuperManager.getInstance().ttsManager
 
 
 	@property
-	def WakewordRecorder(self):  # NOSONAR
+	def WakewordRecorder(self) -> WakewordRecorder:  # NOSONAR
 		return SM.SuperManager.getInstance().wakewordRecorder
 
 
 	@property
-	def WebInterfaceManager(self):  # NOSONAR
+	def WebInterfaceManager(self) -> WebInterfaceManager:  # NOSONAR
 		return SM.SuperManager.getInstance().webUiManager
 
 
 	@property
-	def ApiManager(self):  # NOSONAR
+	def ApiManager(self) -> ApiManager:  # NOSONAR
 		return SM.SuperManager.getInstance().apiManager
 
 
 	@property
-	def Commons(self):  # NOSONAR
+	def Commons(self) -> CommonsManager:  # NOSONAR
 		return SM.SuperManager.getInstance().commonsManager
 
 
 	@property
-	def SkillStoreManager(self):  # NOSONAR
+	def SkillStoreManager(self) -> SkillStoreManager:  # NOSONAR
 		return SM.SuperManager.getInstance().skillStoreManager
 
 
 	@property
-	def NluManager(self): #NOSONAR
+	def NluManager(self) -> NluManager:  # NOSONAR
 		return SM.SuperManager.getInstance().nluManager
 
 
 	@property
-	def DialogTemplateManager(self): #NOSONAR
+	def DialogTemplateManager(self) -> DialogTemplateManager:  # NOSONAR
 		return SM.SuperManager.getInstance().dialogTemplateManager
 
 
 	@property
-	def AssistantManager(self): #NOSONAR
+	def AssistantManager(self) -> AssistantManager:  # NOSONAR
 		return SM.SuperManager.getInstance().assistantManager
 
 
 	@property
-	def AliceWatchManager(self): #NOSONAR
+	def AliceWatchManager(self) -> AliceWatchManager:  # NOSONAR
 		return SM.SuperManager.getInstance().aliceWatchManager
 
 
 	@property
-	def AudioServer(self): #NOSONAR
+	def AudioServer(self) -> AudioManager:  # NOSONAR
 		return SM.SuperManager.getInstance().audioManager
 
 
 	@property
-	def DialogManager(self): #NOSONAR
+	def DialogManager(self) -> DialogManager:  # NOSONAR
 		return SM.SuperManager.getInstance().dialogManager
 
 
 	@property
-	def LocationManager(self): #NOSONAR
+	def LocationManager(self) -> LocationManager:  # NOSONAR
 		return SM.SuperManager.getInstance().locationManager
 
 
 	@property
-	def WakewordManager(self):  # NOSONAR
+	def WakewordManager(self) -> WakewordManager:  # NOSONAR
 		return SM.SuperManager.getInstance().wakewordManager
 
 
 	@property
-	def NodeRedManager(self):  # NOSONAR
+	def NodeRedManager(self) -> NodeRedManager:  # NOSONAR
 		return SM.SuperManager.getInstance().nodeRedManager
 
 
 	@property
-	def WidgetManager(self):  # NOSONAR
+	def WidgetManager(self) -> WidgetManager:  # NOSONAR
 		return SM.SuperManager.getInstance().widgetManager
 
 
 	@property
-	def StateManager(self):  # NOSONAR
+	def StateManager(self) -> StateManager:  # NOSONAR
 		return SM.SuperManager.getInstance().stateManager
