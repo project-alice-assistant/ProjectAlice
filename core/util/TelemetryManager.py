@@ -103,8 +103,11 @@ class TelemetryManager(Manager):
 		)
 
 		telemetrySkill = self.SkillManager.getSkillInstance('Telemetry')
+
 		messages = self.TELEMETRY_MAPPINGS.get(ttype, dict())
+
 		for message, settings in messages.items():
+
 			if settings is None:
 				self.broadcast(method=message, exceptions=[self.name], propagateToSkills=True, service=service)
 				break
@@ -114,10 +117,17 @@ class TelemetryManager(Manager):
 
 			threshold = float(self.ConfigManager.getSkillConfigByName('Telemetry', settings[1]) if isinstance(settings[1], str) else settings[1])
 			value = float(value)
+
 			if settings[0] == 'upperThreshold' and value > threshold or \
 					settings[0] == 'lowerThreshold' and value < threshold:
-				self.broadcast(method=message, exceptions=[self.name], propagateToSkills=True, service=service, trigger=settings[0], value=value, threshold=threshold, area=siteId )
-				break
+				if telemetrySkill.dontAlertWhenSleeping(event=settings[1]):
+					self.logWarning(
+						f'A {message} event with a value of "{value}" occured but was skipped due to sleep mode enabled')
+					break
+				else:
+					self.broadcast(method=message, exceptions=[self.name], propagateToSkills=True, service=service,
+								   trigger=settings[0], value=value, threshold=threshold, area=siteId)
+					break
 
 
 	def getData(self, ttype: TelemetryType, siteId: str = None, service: str = None, location: Location = None) -> Iterable:
