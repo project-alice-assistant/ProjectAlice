@@ -1,4 +1,3 @@
-import traceback
 from pathlib import Path
 from typing import Union
 
@@ -268,7 +267,6 @@ class MyHomeApi(Api):
 				raise Exception
 		except Exception as e:
 			self.logError(f'Failed adding new device link {e}')
-			traceback.print_exc()
 			return jsonify(success=False)
 
 
