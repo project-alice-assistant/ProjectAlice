@@ -1,7 +1,7 @@
-from flask import jsonify, request
+from flask import jsonify
 from flask_classful import route
 
-from core.interface.model.Api import Api
+from core.webApi.model.Api import Api
 from core.util.Decorators import ApiAuthenticated
 
 

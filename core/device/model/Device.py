@@ -164,7 +164,7 @@ class Device(ProjectAliceObject):
 
 
 	@property
-	def strType(self) -> str:
+	def deviceTypeName(self) -> str:
 		return self._typeName
 
 
@@ -189,13 +189,7 @@ class Device(ProjectAliceObject):
 
 
 	@property
-	def typeName(self) -> str:
-		return self._typeName
-
-
-	@property
 	def id(self) -> int:
-		#Prefer using uid when possible
 		return self._id
 
 
@@ -236,7 +230,7 @@ class Device(ProjectAliceObject):
 		e.g. a light bulb can be on or off and display its status
 		:return: the icon file path
 		"""
-		return Path(f'{self.Commons.rootDir()}/skills/{self.skillName}/device/img/{self.typeName}.png')
+		return Path(f'{self.Commons.rootDir()}/skills/{self.skillName}/device/img/{self._typeName}.png')
 
 
 	def updateSettings(self, settings: dict):

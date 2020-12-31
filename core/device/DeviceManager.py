@@ -1,7 +1,6 @@
 import importlib
 import json
 import socket
-import sqlite3
 import threading
 import time
 import uuid
@@ -390,9 +389,11 @@ class DeviceManager(Manager):
 		if not device:
 			raise Exception(f"Cannot update device, device with id **{deviceId}** doesn't exist")
 
-		if 'parentLocation' in data:
-			if data['parentLocation'] != device.parentLocation and not self.checkLocationChange(device=device, locationId=data['parentLocation']):
+		if 'parentLocation' in data and data['parentLocation'] != device.parentLocation:
+			if not self.checkLocationChange(device=device, locationId=data['parentLocation']):
 				return None
+
+			self.deleteDeviceLinks(deviceUid=device.uid, targetLocationId=data['parentLocation'])
 			device.parentLocation = data['parentLocation']
 
 		if 'settings' in data:
@@ -415,8 +416,8 @@ class DeviceManager(Manager):
 			return False
 
 
-		if 0 < device.deviceType.perLocationLimit <= len(self.getDevicesByLocation(locationId, deviceType=deviceType, connectedOnly=False)):
-			self.logWarning(f'Cannot move device **{deviceType}** to new location, maximum per location limit reached')
+		if 0 < device.deviceType.perLocationLimit <= len(self.getDevicesByLocation(locationId, deviceType=device.deviceType, connectedOnly=False)):
+			self.logWarning(f'Cannot move device **{device.displayName}** to new location, maximum per location limit reached')
 			return False
 
 		return True
@@ -558,12 +559,13 @@ class DeviceManager(Manager):
 		return link
 
 
-	def deleteDeviceLinks(self, linkId: int = None, deviceId: int = None,deviceUid: str = None, targetLocationId: int = None):
+	def deleteDeviceLinks(self, linkId: int = None, deviceId: int = None, deviceUid: str = None, targetLocationId: int = None):
 		"""
 		Delete one or more device links.
 		If link id is provided, deletes only one.
 		If deviceId or Uid provided, deletes any link belonging to that device.
 		If target location id provided, deletes any link to that location.
+		If both device id or uid and target location provided, deletes any links from that device to that location
 		:param linkId: int
 		:param deviceId: int
 		:param deviceUid: str
@@ -578,13 +580,17 @@ class DeviceManager(Manager):
 				if not device:
 					self.logWarning(f'Deleting device link from parent device failed, parent device with id **{deviceId}** not found')
 
+				delete = {'deviceId': device.id}
+				if targetLocationId:
+					delete['targetLocation'] = targetLocationId
+
 				self.DatabaseManager.delete(tableName=self.DB_LINKS, callerName=self.name, values={'deviceId': device.id})
 
 				for link in self._deviceLinks.copy().values():
-					if link.deviceId == device.id:
+					if link.deviceId == device.id and (not targetLocationId or targetLocationId == link.targetLocation):
 						self._deviceLinks.pop(link.id)
 
-			if targetLocationId:
+			if targetLocationId and not (deviceId or deviceUid):
 				self.DatabaseManager.delete(tableName=self.DB_LINKS, callerName=self.name, values={'targetLocation': targetLocationId})
 
 				for link in self._deviceLinks.copy().values():

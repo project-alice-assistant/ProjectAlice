@@ -122,7 +122,7 @@
 			"addDevice": "Add new device"
 		},
 		"bodies": {
-			"clickToAddLocation": "Then click on your floor plan where you want the new location to be added. You can drag your click to create a location at the desired dimensions.",
+			"clickToAddLocation": "And click OK. Click on your floorplan where you want to add that location to create a default sized location. You can also click and drag to create a location of different size and shape!",
 			"locationNameOrSynonymAlreadyExist": "There's already a location with this name or synonym existing.",
 			"chooseDevice": "Choose a device to add"
 		},

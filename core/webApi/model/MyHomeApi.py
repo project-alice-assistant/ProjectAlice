@@ -7,7 +7,7 @@ from flask_classful import route
 from core.commons import constants
 from core.device.model.Device import Device
 from core.device.model.DeviceType import DeviceType
-from core.interface.model.Api import Api
+from core.webApi.model.Api import Api
 from core.util.Decorators import ApiAuthenticated
 
 

@@ -86,6 +86,11 @@ class DeviceType(ProjectAliceObject):
 		return self._allowLocationLinks
 
 
+	@property
+	def skillName(self) -> str:
+		return self._skillName
+
+
 	def __repr__(self):
 		return f'{self._skillName} - {self._deviceTypeName}'
 
@@ -183,24 +188,6 @@ class DeviceType(ProjectAliceObject):
 		                            callerName=self.DeviceManager.name,
 		                            values={'skillName': self.parentSkillInstance.name},
 		                            row=('typeID', self.id))
-
-
-	@property
-	def skill(self) -> str:
-		return self._skillName
-
-
-	@skill.setter
-	def skill(self, value: str):
-		self._skillName = value
-
-
-	@property
-	def id(self) -> str:
-		return self._id
-
-
-
 
 
 

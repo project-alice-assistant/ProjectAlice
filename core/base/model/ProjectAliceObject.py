@@ -29,7 +29,6 @@ if TYPE_CHECKING:
 	from core.dialog.DialogManager import DialogManager
 	from core.dialog.DialogTemplateManager import DialogTemplateManager
 	from core.dialog.MultiIntentManager import MultiIntentManager
-	from core.interface.WebInterfaceManager import WebInterfaceManager
 	from core.nlu.NluManager import NluManager
 	from core.server.AudioServer import AudioManager
 	from core.server.MqttManager import MqttManager
@@ -738,11 +737,6 @@ class ProjectAliceObject:
 	@property
 	def WakewordRecorder(self) -> WakewordRecorder:  # NOSONAR
 		return SM.SuperManager.getInstance().wakewordRecorder
-
-
-	@property
-	def WebInterfaceManager(self) -> WebInterfaceManager:  # NOSONAR
-		return SM.SuperManager.getInstance().webUiManager
 
 
 	@property

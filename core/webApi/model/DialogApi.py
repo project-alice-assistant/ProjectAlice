@@ -5,7 +5,7 @@ from flask_classful import route
 from paho.mqtt.client import MQTTMessage
 
 from core.commons import constants
-from core.interface.model.Api import Api
+from core.webApi.model.Api import Api
 from core.util.Decorators import ApiAuthenticated
 
 

@@ -1,6 +1,6 @@
 from flask import jsonify, request
 
-from core.interface.model.Api import Api
+from core.webApi.model.Api import Api
 from core.user.model.AccessLevels import AccessLevel
 from core.util.Decorators import ApiAuthenticated
 
