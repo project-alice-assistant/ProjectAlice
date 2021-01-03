@@ -343,6 +343,8 @@ class DeviceManager(Manager):
 
 		if not noChecks:
 			dType: DeviceType = self.getDeviceType(skillName=skillName, deviceType=deviceType)
+			if not dType:
+				self.logError(f'Cannot add device **{deviceType}**, device type not found!')
 			if 0 < dType.totalDeviceLimit <= len(self.getDevicesByType(deviceType=dType, connectedOnly=False)):
 				self.logWarning(f'Cannot add device **{deviceType}**, maximum total limit reached')
 				return None
@@ -846,7 +848,7 @@ class DeviceManager(Manager):
 
 
 	def getDeviceByName(self, name: str):
-		return next((dev for dev in self._devices.values() if dev.name == name), None)
+		return next((dev for dev in self._devices.values() if dev.displayName == name), None)
 
 
 	def getLinksForDevice(self, device: Device) -> List[DeviceLink]:
