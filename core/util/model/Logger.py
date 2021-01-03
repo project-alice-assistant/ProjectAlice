@@ -5,7 +5,7 @@ from typing import Match, Union
 
 class Logger:
 
-	def __init__(self, prepend: str = None):
+	def __init__(self, prepend: str = None, **kwargs):
 		self._prepend = prepend
 		self._logger = logging.getLogger('ProjectAlice')
 
