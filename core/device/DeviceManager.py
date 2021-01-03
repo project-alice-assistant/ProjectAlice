@@ -345,6 +345,7 @@ class DeviceManager(Manager):
 			dType: DeviceType = self.getDeviceType(skillName=skillName, deviceType=deviceType)
 			if not dType:
 				self.logError(f'Cannot add device **{deviceType}**, device type not found!')
+				return None
 			if 0 < dType.totalDeviceLimit <= len(self.getDevicesByType(deviceType=dType, connectedOnly=False)):
 				self.logWarning(f'Cannot add device **{deviceType}**, maximum total limit reached')
 				return None
