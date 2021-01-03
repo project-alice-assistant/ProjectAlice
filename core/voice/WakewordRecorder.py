@@ -245,7 +245,7 @@ class WakewordRecorder(Manager):
 
 
 	def _addWakewordToSnips(self, path: Path):
-		models: list = self.ConfigManager.getSnipsConfiguration('snips-hotword', 'model', createIfNotExist=True)
+		models: list = self.ConfigManager.getSnipsConfiguration('snips-hotword', 'model')
 
 		if not isinstance(models, list):
 			models = list()
