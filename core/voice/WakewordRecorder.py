@@ -315,7 +315,7 @@ class WakewordRecorder(Manager):
 
 
 	def getUserWakeword(self, username: str) -> Optional[str]:
-		wakewords = self.ConfigManager.getSnipsConfiguration(parent='snips-hotword', key='model', createIfNotExist=False)
+		wakewords = self.ConfigManager.getSnipsConfiguration(parent='snips-hotword', key='model')
 
 		usernameMatch = re.compile(f'.*/{username}=[0-9.]+$')
 		for wakeword in wakewords:
@@ -335,7 +335,7 @@ class WakewordRecorder(Manager):
 
 
 	def setUserWakewordSensitivity(self, username: str, sensitivity: float) -> bool:
-		wakewords = self.ConfigManager.getSnipsConfiguration(parent='snips-hotword', key='model', createIfNotExist=False)
+		wakewords = self.ConfigManager.getSnipsConfiguration(parent='snips-hotword', key='model')
 		rebuild = list()
 
 		if sensitivity > 1:
