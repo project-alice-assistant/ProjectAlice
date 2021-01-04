@@ -238,7 +238,8 @@ class MyHomeApi(Api):
 			device: Device = self.DeviceManager.getDevice(deviceId=int(deviceId))
 			file = device.getDeviceIcon()
 			return send_from_directory(file.parent, f'{file.stem}{constants.PNG_EXT}')
-		except:
+		except Exception as e:
+			self.logError(f'Failed retrieving device icon {e}')
 			return jsonify(success=False)
 
 

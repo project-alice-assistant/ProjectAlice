@@ -111,13 +111,18 @@ class SkillManager(Manager):
 		# Those represent the skills we have
 		skills = self.loadSkillsFromDB()
 
+
 		data = dict()
-		for skill in skills:
-			installer = json.loads(Path(self.Commons.rootDir(), f'skills/{skill["skillName"]}/{skill["skillName"]}.install').read_text())
-			data[skill['skillName']] = {
-				'active'   : skill['active'],
-				'installer': installer
-			}
+		for skill in skills.copy():
+			try:
+				installer = json.loads(Path(self.Commons.rootDir(), f'skills/{skill["skillName"]}/{skill["skillName"]}.install').read_text())
+				data[skill['skillName']] = {
+					'active'   : skill['active'],
+					'installer': installer
+				}
+			except Exception as e:
+				self.logError(f'Error loading skill **{skill["skillName"]}**: {e}')
+				skills.pop(skill['skillName'])
 
 		return dict(sorted(data.items()))
 

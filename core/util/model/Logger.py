@@ -1,5 +1,6 @@
 import logging
 import re
+import traceback
 from typing import Match, Union
 
 
@@ -60,6 +61,8 @@ class Logger:
 
 		func = getattr(self._logger, function)
 		func(msg, exc_info=printStack)
+		if printStack:
+			traceback.print_exc()
 
 
 	@staticmethod
