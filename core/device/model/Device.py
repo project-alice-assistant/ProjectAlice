@@ -30,7 +30,6 @@ class Device(ProjectAliceObject):
 			self.logError(f'Failed retrieving device type for device {self._typeName}')
 			raise DeviceTypeUndefined(self._typeName)
 
-
 		self._abilities: int = -1 if not data.get('abilities', None) else self.setAbilities(data['abilities'])
 		self._deviceParams: Dict = json.loads(data.get('deviceParams', '{}'))
 		self._displayName: str = data.get('displayName', '')
