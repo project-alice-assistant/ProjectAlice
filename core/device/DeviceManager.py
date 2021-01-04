@@ -371,7 +371,11 @@ class DeviceManager(Manager):
 			'uid'            : uid or str(uuid.uuid4())
 		}
 
-		device = Device(data)
+		try:
+			device = Device(data)
+		except:
+			return None
+
 		self._devices[data['uid']] = device
 		return device
 

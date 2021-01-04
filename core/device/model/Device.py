@@ -6,7 +6,7 @@ from typing import Any, Dict, List, Union
 from core.base.model.ProjectAliceObject import ProjectAliceObject
 from core.commons import constants
 from core.device.model.DeviceAbility import DeviceAbility
-from core.device.model.DeviceException import DeviceNotPaired
+from core.device.model.DeviceException import DeviceNotPaired, DeviceTypeUndefined
 from core.device.model.DeviceType import DeviceType
 
 
@@ -21,10 +21,16 @@ class Device(ProjectAliceObject):
 		self._data: dict = data
 		self._id: int = data.get('id', -1)
 		self._uid: str = data.get('uid', -1)
-		self._typeName:str = data.get('typeName', '')
+		self._typeName: str = data.get('typeName', '')
 		self._skillName: str = data.get('skillName', '')
 		self._parentLocation: int = data.get('parentLocation', 0)
 		self._deviceType: DeviceType = self.DeviceManager.getDeviceType(self._skillName, self._typeName)
+
+		if not self._deviceType:
+			self.logError(f'Failed retrieving device type for device {self._typeName}')
+			raise DeviceTypeUndefined(self._typeName)
+
+
 		self._abilities: int = -1 if not data.get('abilities', None) else self.setAbilities(data['abilities'])
 		self._deviceParams: Dict = json.loads(data.get('deviceParams', '{}'))
 		self._displayName: str = data.get('displayName', '')
