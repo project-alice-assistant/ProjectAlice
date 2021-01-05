@@ -46,6 +46,18 @@ class LocationManager(Manager):
 		super().onStart()
 
 		self.loadLocations()
+
+		if not self._locations:
+			location = self.addNewLocation(data={
+				'name': 'The Hive',
+				'parentLocation': 0
+			})
+			if not location:
+				self.logFatal('Something went wrong creating the default location, cannot continue')
+				return
+
+			self.logInfo(f'Created default location **{location.name}**')
+
 		self.loadConstructions()
 		self.loadFurnitures()
 
@@ -311,7 +323,7 @@ class LocationManager(Manager):
 			if loc:
 				return loc
 
-			return self.DeviceManager.getDeviceByUID(uid=siteId).getMainLocation()
+			return self.DeviceManager.getDevice(uid=siteId).getMainLocation()
 
 		return None
 
@@ -322,7 +334,7 @@ class LocationManager(Manager):
 			if noneIsEverywhere:
 				return [loc[1] for loc in self.locations.items()]
 			else:
-				device = self.DeviceManager.getDeviceByUID(uid=sess.siteId)
+				device = self.DeviceManager.getDevice(uid=sess.siteId)
 				if device:
 					return [device.getMainLocation()]
 				else:
