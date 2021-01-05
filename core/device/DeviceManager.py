@@ -376,7 +376,7 @@ class DeviceManager(Manager):
 		except:
 			return None
 
-		self._devices[data['id']] = device
+		self._devices[device.id] = device
 		return device
 
 
