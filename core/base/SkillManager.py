@@ -3,12 +3,14 @@ import importlib
 import json
 import os
 import shutil
+import sqlite3
 import threading
 import traceback
 from pathlib import Path
 from typing import Dict, Optional
 
 import requests
+import typing
 
 from core.ProjectAliceExceptions import AccessLevelTooLow, GithubNotFound, GithubRateLimit, GithubTokenFailed, SkillNotConditionCompliant, SkillStartDelayed, SkillStartingFailed
 from core.base.SuperManager import SuperManager
@@ -127,7 +129,7 @@ class SkillManager(Manager):
 		return dict(sorted(data.items()))
 
 
-	def loadSkillsFromDB(self) -> list:
+	def loadSkillsFromDB(self) -> typing.Union[typing.Dict, sqlite3.Row]:
 		return self.databaseFetch(
 			tableName='skills',
 			method='all'
@@ -523,7 +525,7 @@ class SkillManager(Manager):
 						if skillName in self.allSkills:
 							self.allSkills[skillName].updateAvailable = True
 					else:
-						if not self.downloadInstallTicket(skillName):
+						if not self.downloadInstallTicket(skillName, isUpdate=True):
 							raise Exception
 				else:
 					self.logInfo(f'![green]({skillName}) - Version {self._skillList[skillName]["installer"]["version"]} in {self.ConfigManager.getAliceConfigByName("skillsUpdateChannel")}')
@@ -590,8 +592,20 @@ class SkillManager(Manager):
 
 			if info['update']:
 				self.allSkills[skillName].onSkillUpdated(skill=skillName)
+				self.MqttManager.mqttBroadcast(
+					topic=constants.TOPIC_SKILL_UPDATED,
+					payload={
+						'skillName': skillName
+					}
+				)
 			else:
 				self.allSkills[skillName].onSkillInstalled(skill=skillName)
+				self.MqttManager.mqttBroadcast(
+					topic=constants.TOPIC_SKILL_INSTALLED,
+					payload={
+						'skillName': skillName
+					}
+				)
 
 			self.allSkills[skillName].onBooted()
 
@@ -632,6 +646,13 @@ class SkillManager(Manager):
 					else:
 						self.logWarning(f'Skill "{skillName}" needs updating')
 						updating = True
+
+						self.MqttManager.mqttBroadcast(
+							topic=constants.TOPIC_SKILL_UPDATING,
+							payload={
+								'skillName': skillName
+							}
+						)
 				else:
 					updating = False
 
@@ -810,11 +831,18 @@ class SkillManager(Manager):
 		if skillName not in self.allSkills:
 			return
 
-		self.broadcast(method=constants.EVENT_SKILL_DELETED, exceptions=[self.name], propagateToSkills=True, skill=skillName)
-
 		if skillName in self._activeSkills:
 			self._activeSkills[skillName].onStop()
 			self.broadcast(method=constants.EVENT_SKILL_STOPPED, exceptions=[self.name], propagateToSkills=True, skill=self)
+
+		self.broadcast(method=constants.EVENT_SKILL_DELETED, exceptions=[self.name], propagateToSkills=True, skill=skillName)
+
+		self.MqttManager.mqttBroadcast(
+			topic=constants.TOPIC_SKILL_DELETED,
+			payload={
+				'skillName': skillName
+			}
+		)
 
 		self._skillList.pop(skillName, None)
 		self._activeSkills.pop(skillName, None)
@@ -998,7 +1026,7 @@ class SkillManager(Manager):
 			return False
 
 
-	def downloadInstallTicket(self, skillName: str) -> bool:
+	def downloadInstallTicket(self, skillName: str, isUpdate: bool = False) -> bool:
 		try:
 			tmpFile = Path(self.Commons.rootDir(), f'system/skillInstallTickets/{skillName}.install')
 			if not self.Commons.downloadFile(
@@ -1007,7 +1035,8 @@ class SkillManager(Manager):
 			):
 				raise Exception
 
-			requests.get(f'https://skills.projectalice.ch/{skillName}')
+			if not isUpdate:
+				requests.get(f'https://skills.projectalice.ch/{skillName}')
 
 			shutil.move(tmpFile.with_suffix('.tmp'), tmpFile)
 			return True

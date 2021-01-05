@@ -9,14 +9,10 @@ class SkillsApi(Api):
 	route_base = f'/api/{Api.version()}/skills/'
 
 
-	def __init__(self):
-		super().__init__()
-
-
 	@route('/')
 	@ApiAuthenticated
 	def index(self):
-		return jsonify(data=[skill.toJson() for skill in self.SkillManager.allSkills.values()])
+		return jsonify(skills={skillName: skill.toJson() for skillName, skill in self.SkillManager.allSkills.items()})
 
 
 	# noinspection PyMethodMayBeStatic
@@ -137,7 +133,7 @@ class SkillsApi(Api):
 		skill = self.SkillManager.getSkillInstance(skillName=skillName, silent=True)
 		skill = skill.toJson() if skill else dict()
 
-		return jsonify(data=skill)
+		return jsonify(skill=skill)
 
 
 	@route('/<skillName>/toggleActiveState/')
