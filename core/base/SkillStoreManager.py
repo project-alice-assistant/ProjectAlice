@@ -28,6 +28,12 @@ class SkillStoreManager(Manager):
 
 
 	def onStart(self):
+		super().onStart()
+		self.refreshStoreData()
+
+
+	def onBooted(self):
+		super().onBooted()
 		self.refreshStoreData()
 
 
@@ -42,6 +48,7 @@ class SkillStoreManager(Manager):
 			return
 
 		self._skillStoreData = req.json()
+		self.markInstalledSkills()
 
 		if not self.ConfigManager.getAliceConfigByName('suggestSkillsToInstall'):
 			return
@@ -51,6 +58,11 @@ class SkillStoreManager(Manager):
 			return
 
 		self.prepareSamplesData(req.json())
+
+
+	def markInstalledSkills(self):
+		for skillName, skillData in self._skillStoreData.items():
+			skillData['installed'] = skillName in self.SkillManager.allSkills.keys()
 
 
 	def prepareSamplesData(self, data: dict):
