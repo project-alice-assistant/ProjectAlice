@@ -9,7 +9,9 @@
 		"devmode"   : "devmode",
 		"admin"     : "admin",
 		"login"     : "login",
-		"logout"    : "logout"
+		"logout"    : "logout",
+		"dialogView": "Dialog",
+		"telemetry" : "telemetry"
 	},
 	"tours": {
 		"skills": {
@@ -55,7 +57,17 @@
 		"lock": "Sperren",
 		"decreaseVerbosity": "Verbosity verringern",
 		"increaseVerbosity": "Verbosity erhöhen",
-		"save": "Speichern"
+		"save": "Speichern",
+		"manageLocations": "Verwalte Lokationen",
+		"manageDevices": "Verwalte Geräte",
+		"addLocations": "Lokation hinzufügen",
+		"removeLocations": "Lokation entfernen",
+		"paintFloors": "Paint floors",
+		"buildMode": "Bauen",
+		"manageFurniture": "Verwalte Möbel",
+		"addDevice": "Neues Gerät hinzufügen",
+		"removeDevice": "Gerät entfernen",
+		"linkDevice": "Gerät mit Lokationen verknüpfen"
 	},
 	"buttons": {
 		"cancel": "Abbrechen",
@@ -102,7 +114,17 @@
 			"addWidgets": "Widgets hinzufügen",
 			"widgetOptions": "Widget Optionen",
 			"skillSettings": "Skill Einstellungen",
-			"confirmSkillDeletion": "Bist du dir sicher, dass du den Skill löschen willst?"
+			"confirmSkillDeletion": "Bist du dir sicher, dass du den Skill löschen willst?",
+			"enterLocationName": "Gib einen Namen für die neue Lokation an",
+			"enterNewLocationName": "Gib den neuen Namen für diese Lokation an",
+			"locationSetting": "Lokations Einstellungen",
+			"addDevice": "Füge ein Gerät hinzu"
+		},
+		"bodies": {
+			"clickToAddLocation": "Bestätige die Eingabe und Klicke auf den Grundriss, wo die Lokation erstellt werden soll. Wenn du die Maus ziehst, kannst du auch direkt die Größe des Raumes eingeben!",
+			"locationNameOrSynonymAlreadyExist": "Es gibt bereits eine Lokation mit diesem Namen oder Synonym.",
+			"chooseDevice": "Wähle ein Gerätetyp aus",
+			"noDevices": "Du kannst aktuell keine neuen Geräte hinzufügen. Installiere weitere Skills um neue Gerätetypen zu erhalten!"
 		},
 		"labels": {
 			"displayTitle": "Titel anzeigen",
@@ -117,7 +139,8 @@
 			"rememberMe": "eingeloggd bleiben",
 			"yes": "Ja",
 			"no": "Nein",
-			"cancel": "Abbrechen"
+			"cancel": "Abbrechen",
+			"addLocationSynonym": "Synonyme hinzufügen"
 		}
 	},
 	"utilities": {
