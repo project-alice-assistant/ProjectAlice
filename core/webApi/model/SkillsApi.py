@@ -12,7 +12,7 @@ class SkillsApi(Api):
 	@route('/')
 	@ApiAuthenticated
 	def index(self):
-		return jsonify(skills={skillName: skill.toJson() for skillName, skill in self.SkillManager.allSkills.items()})
+		return jsonify(skills={skillName: skill.toDict() for skillName, skill in self.SkillManager.allSkills.items()})
 
 
 	# noinspection PyMethodMayBeStatic
@@ -131,7 +131,7 @@ class SkillsApi(Api):
 	@ApiAuthenticated
 	def get(self, skillName: str):
 		skill = self.SkillManager.getSkillInstance(skillName=skillName, silent=True)
-		skill = skill.toJson() if skill else dict()
+		skill = skill.toDict() if skill else dict()
 
 		return jsonify(skill=skill)
 
@@ -194,7 +194,7 @@ class SkillsApi(Api):
 			self.logInfo(f'Reloading skill "{skillName}"')
 			self.SkillManager.reloadSkill(skillName)
 			skill = self.SkillManager.getSkillInstance(skillName=skillName, silent=True)
-			return jsonify(skill=skill.toJson() if skill else dict())
+			return jsonify(skill=skill.toDict() if skill else dict())
 		except Exception as e:
 			self.logWarning(f'Failed reloading skill: {e}', printStack=True)
 			return jsonify(success=False)

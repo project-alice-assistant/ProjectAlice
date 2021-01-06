@@ -42,14 +42,14 @@ class FailedAliceSkill(ProjectAliceObject):
 
 
 	def __repr__(self) -> str:
-		return json.dumps(self.toJson())
+		return json.dumps(self.toDict())
 
 
 	def __str__(self) -> str:
 		return self.__repr__()
 
 
-	def toJson(self) -> dict:
+	def toDict(self) -> dict:
 		return {
 			'name'           : self._name,
 			'author'         : self._installer['author'],

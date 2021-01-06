@@ -168,13 +168,13 @@ class MqttManager(Manager):
 		self.connect()
 
 
-	def subscribeSkillIntents(self, intents: list):
+	def subscribeSkillIntents(self, intents: dict):
 		# Have to send them one at a time, as intents is a list of Intent objects and mqtt doesn't want that
 		for intent in intents:
 			self.mqttClient.subscribe(str(intent))
 
 
-	def unsubscribeSkillIntents(self, intents: list):
+	def unsubscribeSkillIntents(self, intents: dict):
 		# Have to send them one at a time, as intents is a list of Intent objects and mqtt doesn't want that
 		for intent in intents:
 			self.mqttClient.unsubscribe(str(intent))

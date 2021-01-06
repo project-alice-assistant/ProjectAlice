@@ -394,7 +394,10 @@ class SkillManager(Manager):
 			skillInstance.onStart()
 			self.broadcast(method=constants.EVENT_SKILL_STARTED, exceptions=[self.name], propagateToSkills=True, skill=self)
 		except SkillStartingFailed:
-			self._failedSkills[skillName] = FailedAliceSkill(self._skillList[skillName]['installer'])
+			try:
+				skillInstance.failedStarting = True
+			except:
+				self._failedSkills[skillName] = FailedAliceSkill(self._skillList[skillName]['installer'])
 		except SkillStartDelayed:
 			raise
 		except Exception as e:

@@ -23,7 +23,7 @@ from core.user.model.AccessLevels import AccessLevel
 
 class AliceSkill(ProjectAliceObject):
 
-	def __init__(self, supportedIntents: Iterable = None, databaseSchema: dict = None, devices: dict = None, **kwargs):
+	def __init__(self, supportedIntents: Iterable = None, databaseSchema: dict = None, devices: dict = None, installer: Dict = None, **kwargs):
 		super().__init__(**kwargs)
 		try:
 			self._skillPath = Path(inspect.getfile(self.__class__)).parent
@@ -41,18 +41,19 @@ class AliceSkill(ProjectAliceObject):
 		self._instructions = instructionsFile.read_text() if instructionsFile.exists() else ''
 
 		self._name = self._installer['name']
-		self._author = self._installer['author']
-		self._version = self._installer['version']
-		self._icon = self._installer['icon']
-		self._aliceMinVersion = Version.fromString(self._installer['aliceMinVersion'])
-		self._maintainers = self._installer['maintainers']
-		self._description = self._installer['desc']
-		self._category = self._installer['category'] if 'category' in self._installer else 'undefined'
-		self._conditions = self._installer['conditions']
+		self._author = self._installer.get('author', constants.UNKNOWN)
+		self._version = self._installer.get('version', '0.0.1')
+		self._icon = self._installer.get('icon', 'fas fa-biohazard')
+		self._aliceMinVersion = Version.fromString(self._installer.get('aliceMinVersion', '1.0.0-b4'))
+		self._maintainers = self._installer.get('maintainers', list())
+		self._description = self._installer.get('desc', '')
+		self._category = self._installer.get('category', constants.UNKNOWN)
+		self._conditions = self._installer.get('conditions', dict())
 		self._updateAvailable = False
 		self._active = False
 		self._delayed = False
 		self._required = False
+		self._failedStarting = False
 		self._databaseSchema = databaseSchema
 		self._widgets = list()
 		self._deviceTypes = dict()
@@ -71,6 +72,16 @@ class AliceSkill(ProjectAliceObject):
 				self.DeviceManager.registerDeviceType(self.name, deviceData)
 
 			self.logInfo(f'Registered **{len(devices)}** device type', plural='type')
+
+
+	@property
+	def failedStarting(self) -> bool:
+		return self._failedStarting
+
+
+	@failedStarting.setter
+	def failedStarting(self, value: bool):
+		self._failedStarting = value
 
 
 	def getHtmlInstructions(self) -> flask.Markup:
@@ -456,6 +467,7 @@ class AliceSkill(ProjectAliceObject):
 		self.loadWidgets()
 		self.loadScenarioNodes()
 
+		self._failedStarting = False
 		self.logInfo(f'![green](Started!)')
 
 
@@ -483,7 +495,7 @@ class AliceSkill(ProjectAliceObject):
 			return
 
 		self._updateAvailable = False
-		self.MqttManager.subscribeSkillIntents(self.name)
+		self.MqttManager.subscribeSkillIntents(self._supportedIntents)
 
 
 	def onSkillDeleted(self, skill: str):
@@ -585,14 +597,14 @@ class AliceSkill(ProjectAliceObject):
 
 
 	def __repr__(self) -> str:
-		return json.dumps(self.toJson())
+		return json.dumps(self.toDict())
 
 
 	def __str__(self) -> str:
 		return self.__repr__()
 
 
-	def toJson(self) -> dict:
+	def toDict(self) -> dict:
 		return {
 			'name'            : self._name,
 			'author'          : self._author,
