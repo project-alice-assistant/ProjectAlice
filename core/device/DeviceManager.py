@@ -610,6 +610,27 @@ class DeviceManager(Manager):
 		return self._deviceLinks
 
 
+	def getDeviceTypesForSkill(self, skillName: str) -> Dict[str, DeviceType]:
+		"""
+		Return the list of device types a skill has registered
+		:param skillName: str
+		:return: Dict deviceTypeName:DeviceType
+		"""
+		return self._deviceTypes.get(skillName, dict())
+
+
+	def removeDeviceTypesForSkill(self, skillName: str):
+		"""
+		Removes deviceTypes for the given skill
+		:param skillName: str
+		:return:
+		"""
+		self._deviceTypes.pop(skillName, None)
+
+
+
+
+
 
 
 
@@ -711,13 +732,7 @@ class DeviceManager(Manager):
 		return None
 
 
-	def getDeviceTypesForSkill(self, skillName: str) -> Dict[int, DeviceType]:
-		return {_id: deviceType for _id, deviceType in self.deviceTypes.items() if deviceType.skill == skillName}
 
-
-	def removeDeviceTypesForSkill(self, skillName: str):
-		for _id in self.getDeviceTypesForSkill(skillName):
-			self.deviceTypes.pop(_id, None)
 
 
 	def addDeviceTypes(self, deviceTypes: Dict):
