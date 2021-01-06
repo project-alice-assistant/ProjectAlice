@@ -119,13 +119,15 @@
 			"enterLocationName": "Please name this new location",
 			"enterNewLocationName": "Please enter the new name for this location",
 			"locationSetting": "Location settings",
-			"addDevice": "Add new device"
+			"addDevice": "Add new device",
+			"newIcon": "New icon"
 		},
 		"bodies": {
 			"clickToAddLocation": "And click OK. Click on your floorplan where you want to add that location to create a default sized location. You can also click and drag to create a location of different size and shape!",
 			"locationNameOrSynonymAlreadyExist": "There's already a location with this name or synonym existing.",
 			"chooseDevice": "Choose a device to add",
-			"noDevices": "There are currently no device types available for addition. Install some more skills for additional devices!"
+			"noDevices": "There are currently no device types available for addition. Install some more skills for additional devices!",
+			"enterNewIcon": "Please enter the new font awesome icon, including the prefix.<br>You can find them on: <a href=\"https://fontawesome.com/icons?d=gallery&m=free\" target=\"_blank\" class=\"clickable\">Font Awesome</a>"
 		},
 		"labels": {
 			"displayTitle": "Display title",
@@ -141,7 +143,8 @@
 			"yes": "yes",
 			"no": "no",
 			"cancel": "cancel",
-			"addLocationSynonym": "Add new synonym"
+			"addLocationSynonym": "Add new synonym",
+			"faExample": "Example: fas fa-biohazard"
 		},
 		"placeholders": {
 			"typeAndPressEnter": "Type name and press enter"
