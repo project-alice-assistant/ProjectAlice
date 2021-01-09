@@ -69,6 +69,11 @@
 		"removeDevice": "Remove devices",
 		"linkDevice": "Link devices with multiple locations"
 	},
+	"notifications" : {
+		"errors": {
+			"noDeviceToDeviceLink": "Cannot link a device to another"
+		}
+	},
 	"buttons": {
 		"cancel": "Cancel",
 		"confirm": "Confirm",
@@ -79,9 +84,12 @@
 		"reset": "Reset",
 		"uploadToGithub": "Upload to github",
 		"checkOnGithub": "Check on Github",
-		"minimize": "Minimize"
+		"minimize": "Minimize",
+		"search": "Search"
 	},
 	"labels": {
+		"searchSetting": "Search setting",
+		"keyword": "Keyword",
 		"sendCommand": "Send Linux system command",
 		"skillName": "Skill name",
 		"skillSpeakableName": "Skill speakable name",
