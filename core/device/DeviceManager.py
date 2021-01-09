@@ -591,7 +591,7 @@ class DeviceManager(Manager):
 				if targetLocationId:
 					delete['targetLocation'] = targetLocationId
 
-				self.DatabaseManager.delete(tableName=self.DB_LINKS, callerName=self.name, values={'deviceId': device.id})
+				self.DatabaseManager.delete(tableName=self.DB_LINKS, callerName=self.name, values=delete)
 
 				for link in self._deviceLinks.copy().values():
 					if link.deviceId == device.id and (not targetLocationId or targetLocationId == link.targetLocation):

@@ -67,11 +67,19 @@
 		"manageFurniture": "Manage furniture",
 		"addDevice": "Add new device",
 		"removeDevice": "Remove devices",
-		"linkDevice": "Link devices with multiple locations"
+		"linkDevice": "Link devices with multiple locations",
+		"unlinkDevice": "Unlink devices"
 	},
 	"notifications" : {
 		"errors": {
-			"noDeviceToDeviceLink": "Cannot link a device to another"
+			"noDeviceToDeviceLink": "Cannot link a device to another",
+			"deviceUnlinkFailed": "Device unlinking failed"
+		},
+		"successes": {
+			"deviceUnlinked": "Device successfully unlinked"
+		},
+		"info": {
+			"deviceNotLinkedToLocation": "This device is not linked to this location"
 		}
 	},
 	"buttons": {

@@ -271,6 +271,17 @@ class MyHomeApi(Api):
 			return jsonify(success=False)
 
 
+	@route('/deviceLinks/', methods=['DELETE'])
+	@ApiAuthenticated
+	def removeDeviceLink(self):
+		try:
+			self.DeviceManager.deleteDeviceLinks(deviceId=request.json.get('deviceId'), targetLocationId=request.json.get('targetLocation'))
+			return jsonify(success=True)
+		except Exception as e:
+			self.logError(f'Failed deleting device link {e}')
+			return jsonify(success=False)
+
+
 	@route('/devices/<uid>/onClick/', methods=['PATCH'])
 	@ApiAuthenticated
 	def deviceClick(self, uid: str):
