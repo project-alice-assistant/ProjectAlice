@@ -27,7 +27,7 @@ class DeviceManager(Manager):
 	DATABASE = {
 		DB_DEVICE: [
 			'id INTEGER PRIMARY KEY',
-			'uid TEXT UNIQUE',
+			'uid TEXT',
 			'parentLocation INTEGER NOT NULL',
 			'typeName TEXT NOT NULL',
 			'skillName TEXT NOT NULL',
