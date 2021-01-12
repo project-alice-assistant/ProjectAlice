@@ -249,7 +249,7 @@ class MyHomeApi(Api):
 		try:
 			device = self.DeviceManager.addNewDeviceFromWebUI(data=request.json)
 			if device:
-				return jsonify(device=device.toDict())
+				return jsonify(success=True, device=device.toDict())
 			else:
 				return jsonify(success=False, message='Failed adding Device!')
 		except Exception as e:
