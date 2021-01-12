@@ -363,11 +363,11 @@ class DatabaseManager(Manager):
 		except sqlite3.Error as e:
 			self.logWarning(f'Error deleting from table **{tableName}** for component **{callerName}**: {e}')
 			database.rollback()
-		finally:
-			try:
-				database.close()
-			except:
-				pass  # Well, what's to do here....
+
+		try:
+			database.close()
+		except:
+			pass  # Well, what's to do here....
 
 
 	# noinspection SqlResolve
