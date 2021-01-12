@@ -134,6 +134,9 @@ class Device(ProjectAliceObject):
 
 			self._id = deviceId
 
+	def getLocation(self):
+		self.LocationManager.getLocation(locId=self.parentLocation)
+
 
 	def publishDevice(self):
 		"""
