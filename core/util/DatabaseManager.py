@@ -231,22 +231,19 @@ class DatabaseManager(Manager):
 				raise
 			else:
 				database.commit()
-				cursor.close()
-				database.close()
 				if self.ConfigManager.getAliceConfigByName('databaseProfiling'):
 					self.logDebug(f'It took {time.time() - startTime} seconds to INSERT {tableName} DB ')
-				if insertId:
-					return insertId
-				else:
-					raise Exception
 		except Exception as e:
 			exception = e
-		finally:
-			try:
-				cursor.close()
-				database.close()
-			except:
-				pass  # Well, what's to do here....
+
+		try:
+			cursor.close()
+		except Exception as e:
+			self.logError(f'FATAL ERROR: {e}')
+		try:
+			database.close()
+		except Exception as e:
+			self.logError(f'FATAL ERROR: {e}')
 
 		if insertId is not None and not exception:
 			return insertId
