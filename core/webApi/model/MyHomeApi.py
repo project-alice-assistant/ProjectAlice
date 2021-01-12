@@ -251,35 +251,43 @@ class MyHomeApi(Api):
 			if device:
 				return jsonify(device=device.toDict())
 			else:
-				raise Exception
+				return jsonify(success=False, message='Failed adding Device!')
 		except Exception as e:
 			self.logError(f'Failed adding new device {e}')
-			return jsonify(success=False)
+			return jsonify(success=False, message=f'Failed adding new device {e}')
 
 
 	@route('/deviceLinks/', methods=['PUT'])
 	@ApiAuthenticated
 	def addDeviceLink(self):
+		"""
+		 API method for creating a device link from a given deviceId to a targetLocation
+		:return: json object with success value and the created link or message containing an error message
+		"""
 		try:
 			link = self.DeviceManager.addDeviceLink(targetLocation=request.json.get('targetLocation'), deviceId=request.json.get('deviceId'))
 			if link:
-				return jsonify(link=link.toDict())
+				return jsonify(success=True, link=link.toDict())
 			else:
 				raise Exception
 		except Exception as e:
 			self.logError(f'Failed adding new device link {e}')
-			return jsonify(success=False)
+			return jsonify(success=False, message=str(e))
 
 
 	@route('/deviceLinks/', methods=['DELETE'])
 	@ApiAuthenticated
 	def removeDeviceLink(self):
+		"""
+		API method for deleting an existing device link to a location
+		:return: success value and error mesasge
+		"""
 		try:
 			self.DeviceManager.deleteDeviceLinks(deviceId=request.json.get('deviceId'), targetLocationId=request.json.get('targetLocation'))
 			return jsonify(success=True)
 		except Exception as e:
 			self.logError(f'Failed deleting device link {e}')
-			return jsonify(success=False)
+			return jsonify(success=False, message=str(e))
 
 
 	@route('/devices/<uid>/onClick/', methods=['PATCH'])
