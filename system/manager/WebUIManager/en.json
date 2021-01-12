@@ -73,10 +73,13 @@
 	"notifications" : {
 		"errors": {
 			"noDeviceToDeviceLink": "Cannot link a device to another",
-			"deviceUnlinkFailed": "Device unlinking failed"
+			"deviceUnlinkFailed": "Device unlinking failed",
+			"deviceLinked": "Device linking failed"
 		},
 		"successes": {
-			"deviceUnlinked": "Device successfully unlinked"
+			"deviceUnlinked": "Device successfully unlinked",
+			"deviceDeleted": "Device successfully deleted",
+			"deviceLinked": "Device successfully linked"
 		},
 		"info": {
 			"deviceNotLinkedToLocation": "This device is not linked to this location"
