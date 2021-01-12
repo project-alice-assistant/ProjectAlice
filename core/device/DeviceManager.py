@@ -14,7 +14,7 @@ from core.base.model.Manager import Manager
 from core.commons import constants
 from core.device.model.Device import Device
 from core.device.model.DeviceAbility import DeviceAbility
-from core.device.model.DeviceException import DeviceTypeUndefined, MaxDeviceOfTypeReached, MaxDeviceOfTypeReached
+from core.device.model.DeviceException import DeviceTypeUndefined, MaxDeviceOfTypeReached, MaxDevicePerLocationReached
 from core.device.model.DeviceLink import DeviceLink
 from core.device.model.DeviceType import DeviceType
 from core.device.model.Heartbeat import Heartbeat
