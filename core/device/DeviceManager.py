@@ -356,10 +356,16 @@ class DeviceManager(Manager):
 
 
 		if not displaySettings:
-			displaySettings = {
-				'x': 50000,
-				'y': 50000
-			}
+			if locationId == 0:
+				displaySettings = {
+					'x': 50000,
+					'y': 50000
+				}
+			else:
+				displaySettings = {
+					'x': 75,
+					'y': 75
+				}
 
 		data = {
 			'abilities'      : abilities,
@@ -431,6 +437,13 @@ class DeviceManager(Manager):
 
 
 	def deleteDevice(self, deviceId: int = None, deviceUid: str = None):
+		"""
+		called on deletion of a device
+		Checks if deletion is allowed and deletes the device and its from the database
+		:param deviceId:
+		:param deviceUid:
+		:return:
+		"""
 		# TODO unsub mqtt, clean links
 		device = self.getDevice(deviceId=deviceId, uid=deviceUid)
 		if not device:
@@ -438,9 +451,10 @@ class DeviceManager(Manager):
 		elif device.hasAbilities([DeviceAbility.IS_CORE]):
 			raise Exception(f'Cannot delete main unit')
 		else:
+			self.deleteDeviceLinks(deviceUid=device.uid)
 			self._devices.pop(device.id)
 			self.DatabaseManager.delete(tableName=self.DB_DEVICE, callerName=self.name, values={'uid': device.uid})
-			self.DatabaseManager.delete(tableName=self.DB_LINKS, callerName=self.name, values={'device': device.id})
+
 
 
 	def findUSBPort(self, timeout: int) -> str:
@@ -493,6 +507,12 @@ class DeviceManager(Manager):
 
 
 	def deviceConnecting(self, uid: str) -> Optional[Device]:
+		"""
+		Called upon connection of a new device.
+		Sets status to connected and ensures the heartbeats are checked
+		:param uid:
+		:return: the device Object if known
+		"""
 		device = self.getDevice(uid=uid)
 		if not device:
 			self.logWarning(f'A device with uid **{uid}** tried to connect but is unknown')
@@ -511,6 +531,11 @@ class DeviceManager(Manager):
 
 
 	def deviceDisconnecting(self, uid: str):
+		"""
+		Called when a device is disconnecting, removes the heartbeat  and sets status to disconnected
+		:param uid:
+		:return:
+		"""
 		self._heartbeats.pop(uid, None)
 
 		device = self.getDevice(uid=uid)
@@ -680,7 +705,7 @@ class DeviceManager(Manager):
 	def startBroadcast(self, device: Device, uid: str, replyOnSiteId: str = ''):
 		# TODO Check device type connecting, is it what we wanted?
 		self._broadcastFlag.set()
-		location = device.getMainLocation()
+		location = device.getLocation()
 		while self._broadcastFlag.isSet():
 			self._broadcastSocket.sendto(bytes(f'{self.Commons.getLocalIp()}:{self._listenPort}:{location.getSaveName()}:{uid}', encoding='utf8'), ('<broadcast>', self._broadcastPort))
 			try:
