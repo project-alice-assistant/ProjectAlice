@@ -1,13 +1,14 @@
 import json
 import sqlite3
 from pathlib import Path
-from typing import Any, Dict, List, Union
+from typing import Any, Dict, List, Union, Optional
 
 from core.base.model.ProjectAliceObject import ProjectAliceObject
 from core.commons import constants
 from core.device.model.DeviceAbility import DeviceAbility
 from core.device.model.DeviceException import DeviceNotPaired, DeviceTypeUndefined
 from core.device.model.DeviceType import DeviceType
+from core.myHome.model.Location import Location
 
 
 class Device(ProjectAliceObject):
@@ -134,8 +135,8 @@ class Device(ProjectAliceObject):
 
 			self._id = deviceId
 
-	def getLocation(self):
-		self.LocationManager.getLocation(locId=self.parentLocation)
+	def getLocation(self) -> Optional[Location]:
+		return self.LocationManager.getLocation(locId=self.parentLocation)
 
 
 	def publishDevice(self):
