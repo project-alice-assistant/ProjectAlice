@@ -743,16 +743,6 @@ class DeviceManager(Manager):
 		self.DatabaseManager.delete(tableName=self.DB_LINKS, callerName=self.name, values={"id": deviceId})
 
 
-	def getDeviceTypeByName(self, name: str) -> Optional[DeviceType]:
-		for device in self.deviceTypes.values():
-			if device.name == name:
-				return device
-		return None
-
-
-
-
-
 	def addDeviceTypes(self, deviceTypes: Dict):
 		self.deviceTypes.update(deviceTypes)
 
