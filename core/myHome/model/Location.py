@@ -25,8 +25,8 @@ class Location(ProjectAliceObject):
 		self.settings = json.loads(self.data.get('settings', '{}')) if isinstance(self.data.get('settings', '{}'), str) else self.data.get('settings', dict)
 
 		settings = {
-			'x': 0,
-			'y': 0,
+			'x': 50000,
+			'y': 50000,
 			'z': len(self.LocationManager.locations),
 			'w': 150,
 			'h': 150,
