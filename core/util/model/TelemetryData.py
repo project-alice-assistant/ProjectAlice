@@ -19,7 +19,7 @@ class TelemetryData(ProjectAliceObject):
 		self.locationId = self.data['locationId']
 		self.value = self.data['value']
 		self.timestamp = self.data['timestamp']
-		self.type = self.data['type']
+		self.type = TelemetryType(self.data['type'])
 
 	def forApi(self):
 		return {
@@ -30,7 +30,7 @@ class TelemetryData(ProjectAliceObject):
 			"location": self.getLocationName(),
 			"value": self.value,
 			"timestamp": self.timestamp,
-			"type": self.type
+			"type": self.type.value
 		}
 
 	def getDeviceName(self):
