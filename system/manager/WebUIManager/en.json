@@ -74,7 +74,8 @@
 		"errors": {
 			"noDeviceToDeviceLink": "Cannot link a device to another",
 			"deviceUnlinkFailed": "Device unlinking failed",
-			"deviceLinked": "Device linking failed"
+			"deviceLinked": "Device linking failed",
+			"somethingWentWrong": "Something went wrong, please check your logs"
 		},
 		"successes": {
 			"deviceUnlinked": "Device successfully unlinked",
@@ -82,7 +83,8 @@
 			"deviceLinked": "Device successfully linked"
 		},
 		"info": {
-			"deviceNotLinkedToLocation": "This device is not linked to this location"
+			"deviceNotLinkedToLocation": "This device is not linked to this location",
+			"pleasePlugDevice": "Please plug the device you want to pair"
 		}
 	},
 	"buttons": {
