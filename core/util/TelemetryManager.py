@@ -15,7 +15,7 @@ class TelemetryManager(Manager):
 			'type TEXT NOT NULL',
 			'value TEXT NOT NULL',
 			'service TEXT NOT NULL',
-			'deviceId TEXT NOT NULL',
+			'deviceId INTEGER NOT NULL',
 			'locationId INTEGER NOT NULL',
 			'timestamp INTEGER NOT NULL'
 		]
