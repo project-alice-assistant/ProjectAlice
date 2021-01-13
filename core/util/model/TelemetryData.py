@@ -7,7 +7,7 @@ class TelemetryData(ProjectAliceObject):
 	"""Class holding one data point of telemetry"""
 	data: dict
 	service: str = field(init=False)
-	siteId: str = field(init=False)
+	deviceId: str = field(init=False)
 	locationId: int = field(init=False)
 	value: str = field(init=False)
 	timestamp: str= field(init=False)
@@ -15,7 +15,7 @@ class TelemetryData(ProjectAliceObject):
 
 	def __post_init__(self):  # NOSONAR
 		self.service = self.data['service']
-		self.siteId = self.data['siteId']
+		self.deviceId = self.data['deviceId']
 		self.locationId = self.data['locationId']
 		self.value = self.data['value']
 		self.timestamp = self.data['timestamp']
@@ -24,7 +24,7 @@ class TelemetryData(ProjectAliceObject):
 	def forApi(self):
 		return {
 			"service": self.service,
-			"deviceId": self.siteId,
+			"deviceId": self.deviceId,
 			"device": self.getDeviceName(),
 			"locationId": self.locationId,
 			"location": self.getLocationName(),
@@ -34,7 +34,7 @@ class TelemetryData(ProjectAliceObject):
 		}
 
 	def getDeviceName(self):
-		return self.DeviceManager.getDeviceByUID(self.siteId).name
+		return self.DeviceManager.getDevice(deviceId=self.deviceId).displayName
 
 	def getLocationName(self):
 		return self.LocationManager.getLocation(locId=self.locationId).name
