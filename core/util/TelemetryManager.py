@@ -1,5 +1,5 @@
 import time
-from typing import Iterable
+from typing import Iterable, List
 
 from core.base.model.Manager import Manager
 from core.myHome.model.Location import Location
@@ -62,7 +62,7 @@ class TelemetryManager(Manager):
 	def __init__(self):
 		super().__init__(databaseSchema=self.DATABASE)
 		self._data = list()
-		self._currentValues = list()
+		self._currentValues: List[TelemetryData] = list()
 
 
 	def onStart(self):
@@ -85,18 +85,64 @@ class TelemetryManager(Manager):
 
 		self._currentValues = [ TelemetryData(val) for val in self.getDistinct()]
 
+	def currentValue(self, ttype: TelemetryType, value: str, service: str, deviceId: int, timestamp=None, locationId: int = None) -> bool:
+		"""
+		check currentValue needs new data
+		:param ttype:
+		:param value:
+		:param service:
+		:param deviceId:
+		:param timestamp:
+		:param locationId:
+		:return:
+		"""
+		match = None
+		for current in self._currentValues:
+			if current.type == ttype and current.service == service and current.deviceId == deviceId and current.locationId == locationId:
+				match = current
+		if match:
+			if match.timestamp == timestamp and match.value == value:
+				# skip exact dublicates
+				return False
+			else:
+				match.timestamp = timestamp
+				match.value = value
+				return True
+		else:
+			self._currentValues.append(TelemetryData({'type': ttype,
+			                                          'value': value,
+			                                          'service': service,
+			                                          'deviceId': deviceId,
+			                                          'timestamp': timestamp,
+			                                          'locationId': locationId}))
+			return True
 
 	# noinspection SqlResolve
-	def storeData(self, ttype: TelemetryType, value: str, service: str, deviceId: str, timestamp=None, locationID: int = None):
+	def storeData(self, ttype: TelemetryType, value: str, service: str, deviceId: int, timestamp=None, locationId: int = None) -> bool:
+		"""
+		Store telemetry data to the database and the list of current values.
+		Dublicates are filtered out.
+		If a new entry was added, true is returned, if not false
+		:param ttype:
+		:param value:
+		:param service:
+		:param deviceId:
+		:param timestamp:
+		:param locationId:
+		:return bool: if a new entry was created
+		"""
 		if not self.isActive:
-			return
+			return False
 
 		timestamp = timestamp or time.time()
+
+		if not self.currentValue(ttype, value, service, deviceId,timestamp, locationId):
+			return False
 
 		self.databaseInsert(
 			tableName='telemetry',
 			query='INSERT INTO :__table__ (type, value, service, deviceId, timestamp, locationId) VALUES (:type, :value, :service, :deviceId, :timestamp, :locationId)',
-			values={'type': ttype.value, 'value': value, 'service': service, 'deviceId': deviceId, 'timestamp': round(timestamp), 'locationId': locationID}
+			values={'type': ttype.value, 'value': value, 'service': service, 'deviceId': deviceId, 'timestamp': round(timestamp), 'locationId': locationId}
 		)
 
 		telemetrySkill = self.SkillManager.getSkillInstance('Telemetry')
@@ -115,6 +161,8 @@ class TelemetryManager(Manager):
 					settings[0] == 'lowerThreshold' and value < threshold:
 				self.broadcast(method=message, exceptions=[self.name], propagateToSkills=True, service=service, trigger=settings[0], value=value, threshold=threshold, area=deviceId )
 				break
+
+		return True
 
 
 	def getData(self, ttype: TelemetryType = None, deviceId: str = None, service: str = None, locationId: int = None, historyFrom: int = None, historyTo: int = None, all: bool = False) -> Iterable:
