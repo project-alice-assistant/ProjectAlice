@@ -110,7 +110,7 @@ class DeviceManager(Manager):
 	def onStop(self):
 		super().onStop()
 
-		self.stopBroadcasting()
+		self._stopBroadcasting()
 		self._broadcastSocket.close()
 
 		if self._heartbeat:
@@ -177,7 +177,7 @@ class DeviceManager(Manager):
 				if device.uid == uid:
 					return device
 		else:
-			raise Exception('Cannot get a device without id and uid')
+			raise Exception('Cannot get a device without id or uid')
 
 
 	def registerDeviceType(self, skillName: str, data: dict):
@@ -444,10 +444,9 @@ class DeviceManager(Manager):
 		elif device.hasAbilities([DeviceAbility.IS_CORE]):
 			raise Exception(f'Cannot delete main unit')
 		else:
-			self.deleteDeviceLinks(deviceUid=device.uid)
+			self.deleteDeviceLinks(deviceId=device.id)
 			self._devices.pop(device.id)
-			self.DatabaseManager.delete(tableName=self.DB_DEVICE, callerName=self.name, values={'uid': device.uid})
-
+			self.DatabaseManager.delete(tableName=self.DB_DEVICE, callerName=self.name, values={'id': device.id})
 
 
 	def findUSBPort(self, timeout: int) -> str:
@@ -654,7 +653,6 @@ class DeviceManager(Manager):
 		:param replyOnDeviceUid: Where Alice should announce the success or failure of the device addition
 		:return: boolean
 		"""
-		print('here')
 		if self.isBusy():
 			return False
 
@@ -665,7 +663,7 @@ class DeviceManager(Manager):
 		self._listenSocket.listen(2)
 		self.ThreadManager.newThread(name='broadcast', target=self._startBroadcast, args=[device, uid, replyOnDeviceUid])
 
-		self._broadcastTimer = self.ThreadManager.newTimer(interval=300, func=self.stopBroadcasting)
+		self._broadcastTimer = self.ThreadManager.newTimer(interval=300, func=self._stopBroadcasting)
 
 		self.broadcast(method=constants.EVENT_BROADCASTING_FOR_NEW_DEVICE, exceptions=[self.name], propagateToSkills=True)
 		return True
@@ -704,12 +702,16 @@ class DeviceManager(Manager):
 				#self.ThreadManager.doLater(interval=5, func=self.WakewordRecorder.uploadToNewDevice, args=[uid])
 
 				self._broadcastSocket.sendto(bytes('ok', encoding='utf8'), (deviceIp, self._broadcastPort))
-				self.stopBroadcasting()
+				self._stopBroadcasting()
 			except socket.timeout:
 				self.logInfo('No device query received')
 
 
-	def stopBroadcasting(self):
+	def _stopBroadcasting(self):
+		"""
+		Stops the new device discovery broadcast
+		:return:
+		"""
 		if not self.isBusy():
 			return
 
