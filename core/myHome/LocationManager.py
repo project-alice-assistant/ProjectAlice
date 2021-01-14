@@ -235,6 +235,19 @@ class LocationManager(Manager):
 		return None
 
 
+	def getLocationName(self, locId: int) -> Optional[str]:
+		"""
+		Returns a location name from a location id
+		:param locId: int
+		:return: str
+		"""
+		location = self._locations.get(locId, None)
+		if not location:
+			raise Exception(f"Cannot retrieve name, location with id **{locId}** doesn't exist")
+
+		return location.name
+
+
 	def addLocationSynonym(self, locId: int, synonym: str):
 		location = self.getLocationBySynonym(synonym)
 		if location:
