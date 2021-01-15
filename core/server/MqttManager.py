@@ -135,11 +135,11 @@ class MqttManager(Manager):
 		subscribedEvents.append((constants.TOPIC_PLAY_BYTES_FINISHED.format(self.ConfigManager.getAliceConfigByName('uuid')), 0))
 
 		for device in self.DeviceManager.getDevicesWithAbilities(abilites=[DeviceAbility.PLAY_SOUND, DeviceAbility.CAPTURE_SOUND], connectedOnly=False):
-			subscribedEvents.append((constants.TOPIC_VAD_UP.format(device.siteId), 0))
-			subscribedEvents.append((constants.TOPIC_VAD_DOWN.format(device.siteId), 0))
+			subscribedEvents.append((constants.TOPIC_VAD_UP.format(device.id), 0))
+			subscribedEvents.append((constants.TOPIC_VAD_DOWN.format(device.id), 0))
 
-			subscribedEvents.append((constants.TOPIC_PLAY_BYTES.format(device.siteId), 0))
-			subscribedEvents.append((constants.TOPIC_PLAY_BYTES_FINISHED.format(device.siteId), 0))
+			subscribedEvents.append((constants.TOPIC_PLAY_BYTES.format(device.id), 0))
+			subscribedEvents.append((constants.TOPIC_PLAY_BYTES_FINISHED.format(device.id), 0))
 
 		self._mqttClient.subscribe(subscribedEvents)
 		self.toggleFeedbackSounds()
