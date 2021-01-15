@@ -13,7 +13,6 @@ class WidgetManager(Manager):
 
 	WIDGETS_TABLE = 'widgets'
 	WIDGET_PAGES_TABLE = 'widgetPages'
-	WIDGET_LAYOUT_PRESETS_TABLE = 'widgetLayoutPresets'
 
 	DATABASE = {
 		WIDGETS_TABLE              : [
@@ -28,11 +27,6 @@ class WidgetManager(Manager):
 			'id INTEGER PRIMARY KEY',
 			'icon TEXT NOT NULL',
 			'position INTEGER NOT NULL'
-		],
-		WIDGET_LAYOUT_PRESETS_TABLE: [
-			'id INTEGER PRIMARY KEY',
-			'name TEXT NOT NULL',
-			'layout TEXT NOT NULL'
 		]
 	}
 
@@ -43,7 +37,6 @@ class WidgetManager(Manager):
 		self._widgets: Dict[int, Widget] = dict()
 		self._pages = dict()
 		self._widgetsByIndex = dict()
-		self._widgetLayoutPresets = dict()
 
 
 	def onStart(self):
@@ -51,25 +44,6 @@ class WidgetManager(Manager):
 		self.loadPages()
 		self.loadWidgets()
 		self.getNextZIndex(1)
-
-
-	def loadWidgetLayoutPresets(self):
-		data = self.databaseFetch(tableName=self.WIDGET_LAYOUT_PRESETS_TABLE, method='all')
-		self._widgetLayoutPresets = {preset['name'].lower: preset['layout'] for preset in data}
-		self.logInfo(f'Loaded {self._widgetLayoutPresets} widget layout preset', plural='preset')
-
-
-	def saveWidgetLayout(self, presetName: str):
-		layout = dict()
-		layout['name'] = presetName.lower()
-		for page in self._pages:
-			layout[page.id] = dict()
-			layout[page.id]['icon'] = page.icon
-			layout[page.id]['position'] = page.position
-			layout[page.id]['widgets'] = dict()
-			for wid, widget in self._widgets.items():
-				if widget.page != page.id:
-					continue
 
 
 	def loadWidgets(self):
