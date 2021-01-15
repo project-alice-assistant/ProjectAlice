@@ -21,7 +21,7 @@ class Device(ProjectAliceObject):
 
 		self._data: dict = data
 		self._id: int = data.get('id', -1)
-		self._uid: str = data.get('uid', -1)
+		self._uid: str = data.get('uid', '')
 		self._typeName: str = data.get('typeName', '')
 		self._skillName: str = data.get('skillName', '')
 		self._parentLocation: int = data.get('parentLocation', 0)
@@ -148,6 +148,16 @@ class Device(ProjectAliceObject):
 		self.MqttManager.publish(constants.TOPIC_DEVICE_UPDATED, payload={'uid': self._uid, 'device': self.toDict()})
 
 
+	def pairingDone(self, uid: str):
+		"""
+		Called whenever a pairing procedure succeeded
+		:param uid: the attributed uid
+		:return:
+		"""
+		self._uid = uid
+		self.saveToDB()
+
+
 	@property
 	def connected(self) -> bool:
 		"""
@@ -169,7 +179,7 @@ class Device(ProjectAliceObject):
 
 	@property
 	def paired(self) -> bool:
-		return self._uid != -1
+		return self._uid != ''
 
 
 	@property
@@ -256,8 +266,8 @@ class Device(ProjectAliceObject):
 
 
 	def onUIClick(self):
-		if not self.uid:
-			raise DeviceNotPaired()
+		if not self.paired:
+			self.DeviceManager.startBroadcastingForNewDevice(self)
 
 
 	def linkedTo(self, targetLocation: int) -> bool:

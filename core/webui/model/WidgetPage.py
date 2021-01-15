@@ -9,7 +9,7 @@ class WidgetPage:
 	position: int = 0
 
 
-	def __post_init__(self):
+	def __post_init__(self): #NOSONAR
 		self.id = self.data['id']
 		self.icon = self.data['icon']
 		self.position = self.data['position']

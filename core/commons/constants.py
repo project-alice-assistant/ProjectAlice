@@ -65,6 +65,8 @@ TOPIC_TOGGLE_DND = 'projectalice/devices/toggleListen'
 TOPIC_RESOURCE_USAGE = 'projectalice/devices/resourceUsage'
 TOPIC_DEVICE_STATUS = 'projectalice/devices/status'
 TOPIC_DEVICE_UPDATED = 'projectalice/devices/updated'
+TOPIC_DEVICE_REFUSED = 'projectalice/devices/connectionRefused'
+TOPIC_DEVICE_ACCEPTED = 'projectalice/devices/connectionAccepted'
 
 TOPIC_SKILL_INSTRUCTIONS = 'projectalice/skills/instructions'
 TOPIC_SKILL_UPDATE_CORE_CONFIG_WARNING = 'projectalice/skills/coreConfigUpdateWarning'

@@ -110,7 +110,7 @@ class DeviceManager(Manager):
 	def onStop(self):
 		super().onStop()
 
-		self.stopBroadcasting()
+		self._stopBroadcasting()
 		self._broadcastSocket.close()
 
 		if self._heartbeat:
@@ -177,7 +177,7 @@ class DeviceManager(Manager):
 				if device.uid == uid:
 					return device
 		else:
-			raise Exception('Cannot get a device without id and uid')
+			raise Exception('Cannot get a device without id or uid')
 
 
 	def registerDeviceType(self, skillName: str, data: dict):
@@ -444,10 +444,9 @@ class DeviceManager(Manager):
 		elif device.hasAbilities([DeviceAbility.IS_CORE]):
 			raise Exception(f'Cannot delete main unit')
 		else:
-			self.deleteDeviceLinks(deviceUid=device.uid)
+			self.deleteDeviceLinks(deviceId=device.id)
 			self._devices.pop(device.id)
-			self.DatabaseManager.delete(tableName=self.DB_DEVICE, callerName=self.name, values={'uid': device.uid})
-
+			self.DatabaseManager.delete(tableName=self.DB_DEVICE, callerName=self.name, values={'id': device.id})
 
 
 	def findUSBPort(self, timeout: int) -> str:
@@ -541,11 +540,6 @@ class DeviceManager(Manager):
 			device.connected = False
 			self.broadcast(method=constants.EVENT_DEVICE_DISCONNECTING, exceptions=[self.name], propagateToSkills=True)
 			self.MqttManager.publish(constants.TOPIC_DEVICE_UPDATED, payload={'id': device.id, 'type': 'status'})
-
-
-	@property
-	def broadcastFlag(self) -> threading.Event:
-		return self._broadcastFlag
 
 
 	@property
@@ -646,6 +640,112 @@ class DeviceManager(Manager):
 		self._deviceTypes.pop(skillName, None)
 
 
+	@property
+	def broadcastFlag(self) -> threading.Event:
+		return self._broadcastFlag
+
+
+	def startBroadcastingForNewDevice(self, device: Device, uid: str = '', replyOnDeviceUid: str = '') -> bool:
+		"""
+		Start broadcasting for a new device to join Alice's network
+		:param device: The device instance that is supposed to join
+		:param uid: The uid attributed to that device
+		:param replyOnDeviceUid: Where Alice should announce the success or failure of the device addition
+		:return: boolean
+		"""
+		if self.isBusy():
+			return False
+
+		if not uid:
+			uid = str(uuid.uuid4())
+
+		self.logInfo(f'Started broadcasting on {self._broadcastPort} for new device addition. Attributed uid: {device.uid}')
+		self._listenSocket.listen(2)
+		self.ThreadManager.newThread(name='broadcast', target=self._startBroadcast, args=[device, uid, replyOnDeviceUid])
+
+		self._broadcastTimer = self.ThreadManager.newTimer(interval=300, func=self._stopBroadcasting)
+
+		self.broadcast(method=constants.EVENT_BROADCASTING_FOR_NEW_DEVICE, exceptions=[self.name], propagateToSkills=True)
+		return True
+
+
+	def _startBroadcast(self, device: Device, uid: str, replyOnDeviceUid: str = ''):
+		"""
+		Starts the internal process of broadcasting for a new device
+		:param device: the device class
+		:param uid: the attributed uid
+		:param replyOnDeviceUid: if provided,confirm on the device
+		:return:
+		"""
+		self._broadcastFlag.set()
+		while self._broadcastFlag.isSet():
+			self._broadcastSocket.sendto(bytes(f'{self.Commons.getLocalIp()}:{self._listenPort}:{uid}', encoding='utf8'), ('<broadcast>', self._broadcastPort))
+			try:
+				sock, address = self._listenSocket.accept()
+				sock.settimeout(None)
+				answer = sock.recv(1024).decode()
+
+				deviceIp = answer.split(':')[0]
+				deviceType = answer.split(':')[1]
+
+				if deviceType.lower() != device.deviceTypeName.lower():
+					self.logWarning(f'Device with uid {uid} is not of correct type. Waiting on **{device.deviceTypeName}**, got **{deviceType}**')
+					self._broadcastSocket.sendto(bytes('nok', encoding='utf8'), (deviceIp, self._broadcastPort))
+					raise socket.timeout
+
+				device.pairingDone(uid=uid)
+				self.logInfo(f'Device with uid **{uid}** successfully paired')
+
+				if replyOnDeviceUid:
+					self.MqttManager.say(text=self.TalkManager.randomTalk('newDeviceAdditionSuccess', skill='system'), client=replyOnDeviceUid)
+
+				#self.ThreadManager.doLater(interval=5, func=self.WakewordRecorder.uploadToNewDevice, args=[uid])
+
+				self._broadcastSocket.sendto(bytes('ok', encoding='utf8'), (deviceIp, self._broadcastPort))
+				self._stopBroadcasting()
+			except socket.timeout:
+				self.logInfo('No device query received')
+
+
+	def _stopBroadcasting(self):
+		"""
+		Stops the new device discovery broadcast
+		:return:
+		"""
+		if not self.isBusy():
+			return
+
+		self.logInfo('Stopped broadcasting for new devices')
+		self._broadcastFlag.clear()
+		self._broadcastTimer.cancel()
+		self.broadcast(method=constants.EVENT_STOP_BROADCASTING_FOR_NEW_DEVICE, exceptions=[self.name], propagateToSkills=True)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -667,64 +767,6 @@ class DeviceManager(Manager):
 
 	def deviceMessage(self, message: MQTTMessage) -> DialogSession:
 		return self.DialogManager.newTempSession(message=message)
-
-
-
-	def startBroadcastingForNewDevice(self, device: Device, uid: str, replyOnSiteId: str = '') -> bool:
-		if self.isBusy():
-			return False
-
-		self.logInfo(f'Started broadcasting on {self._broadcastPort} for new device addition. Attributed uid: {device.uid}')
-		self._listenSocket.listen(2)
-		self.ThreadManager.newThread(name='broadcast', target=self.startBroadcast, args=[device, uid, replyOnSiteId])
-
-		self._broadcastTimer = self.ThreadManager.newTimer(interval=300, func=self.stopBroadcasting)
-
-		self.broadcast(method=constants.EVENT_BROADCASTING_FOR_NEW_DEVICE, exceptions=[self.name], propagateToSkills=True)
-		return True
-
-
-	def stopBroadcasting(self):
-		if not self.isBusy():
-			return
-
-		self.logInfo('Stopped broadcasting for new devices')
-		self._broadcastFlag.clear()
-
-		self._broadcastTimer.cancel()
-		self.broadcast(method=constants.EVENT_STOP_BROADCASTING_FOR_NEW_DEVICE, exceptions=[self.name], propagateToSkills=True)
-
-
-	def startBroadcast(self, device: Device, uid: str, replyOnSiteId: str = ''):
-		# TODO Check device type connecting, is it what we wanted?
-		self._broadcastFlag.set()
-		location = device.getLocation()
-		while self._broadcastFlag.isSet():
-			self._broadcastSocket.sendto(bytes(f'{self.Commons.getLocalIp()}:{self._listenPort}:{location.getSaveName()}:{uid}', encoding='utf8'), ('<broadcast>', self._broadcastPort))
-			try:
-				sock, address = self._listenSocket.accept()
-				sock.settimeout(None)
-				answer = sock.recv(1024).decode()
-
-				deviceIp = answer.split(':')[0]
-
-				device.pairingDone(uid=uid)
-				self.logWarning(f'Device with uid {uid} successfully paired')
-				if replyOnSiteId:
-					self.MqttManager.say(text=self.TalkManager.randomTalk('newDeviceAdditionSuccess', skill='system'), client=replyOnSiteId)
-
-				self.ThreadManager.doLater(interval=5, func=self.WakewordRecorder.uploadToNewDevice, args=[uid])
-
-				self._broadcastSocket.sendto(bytes('ok', encoding='utf8'), (deviceIp, self._broadcastPort))
-				self.stopBroadcasting()
-			except socket.timeout:
-				self.logInfo('No device query received')
-
-
-
-
-
-
 
 
 	def devUIDtoID(self, uid: str) -> int:

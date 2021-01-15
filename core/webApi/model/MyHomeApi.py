@@ -290,15 +290,18 @@ class MyHomeApi(Api):
 			return jsonify(success=False, message=str(e))
 
 
-	@route('/devices/<uid>/onClick/', methods=['PATCH'])
+	@route('/devices/<deviceId>/onClick/', methods=['GET'])
 	@ApiAuthenticated
-	def deviceClick(self, uid: str):
+	def deviceClick(self, deviceId: str):
 		try:
-			device = self.DeviceManager.getDevice(uid=uid)
+			device = self.DeviceManager.getDevice(deviceId=int(deviceId))
+			if not device:
+				raise Exception('No matching device found')
 			device.onUIClick()
 			return jsonify(success=True)
-		except:
-			return jsonify(success=False)
+		except Exception as e:
+			self.logError(f'Failed device on click {e}')
+			return jsonify(success=False, message=str(e))
 
 
 	@route('/deviceTypes/', methods=['GET'])

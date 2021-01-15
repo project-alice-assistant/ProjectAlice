@@ -1,6 +1,7 @@
 import importlib
 import sqlite3
-from typing import Optional, Union
+from pathlib import Path
+from typing import Dict, List, Optional, Union
 
 from core.base.model.Manager import Manager
 from core.webui.model.Widget import Widget
@@ -10,21 +11,25 @@ from core.webui.model.WidgetPage import WidgetPage
 class WidgetManager(Manager):
 	DEFAULT_ICON = 'fas fa-biohazard'
 
+	WIDGETS_TABLE = 'widgets'
+	WIDGET_PAGES_TABLE = 'widgetPages'
+	WIDGET_LAYOUT_PRESETS_TABLE = 'widgetLayoutPresets'
+
 	DATABASE = {
-		'widgets'    : [
-			'id INTEGER PRIMARY KEY', # NOSONAR
+		WIDGETS_TABLE              : [
+			'id INTEGER PRIMARY KEY',  # NOSONAR
 			'skill TEXT NOT NULL',
 			'name TEXT NOT NULL',
 			"params TEXT NOT NULL DEFAULT '{}'",
 			"settings TEXT NOT NULL DEFAULT '{}'",
 			'page INTEGER NOT NULL DEFAULT 0'
 		],
-		'widgetPages': [
+		WIDGET_PAGES_TABLE         : [
 			'id INTEGER PRIMARY KEY',
 			'icon TEXT NOT NULL',
 			'position INTEGER NOT NULL'
 		],
-		'widgetPageTemplates': [
+		WIDGET_LAYOUT_PRESETS_TABLE: [
 			'id INTEGER PRIMARY KEY',
 			'name TEXT NOT NULL',
 			'layout TEXT NOT NULL'
@@ -34,11 +39,11 @@ class WidgetManager(Manager):
 
 	def __init__(self):
 		super().__init__(databaseSchema=self.DATABASE)
-		self._widgetTemplates = dict()
-		self._widgetInstances = dict()
-		self._widgetIds = dict()
+		self._widgetTemplates: Dict[str, List[Path]] = dict()
+		self._widgets: Dict[int, Widget] = dict()
 		self._pages = dict()
 		self._widgetsByIndex = dict()
+		self._widgetLayoutPresets = dict()
 
 
 	def onStart(self):
@@ -46,6 +51,25 @@ class WidgetManager(Manager):
 		self.loadPages()
 		self.loadWidgets()
 		self.getNextZIndex(1)
+
+
+	def loadWidgetLayoutPresets(self):
+		data = self.databaseFetch(tableName=self.WIDGET_LAYOUT_PRESETS_TABLE, method='all')
+		self._widgetLayoutPresets = {preset['name'].lower: preset['layout'] for preset in data}
+		self.logInfo(f'Loaded {self._widgetLayoutPresets} widget layout preset', plural='preset')
+
+
+	def saveWidgetLayout(self, presetName: str):
+		layout = dict()
+		layout['name'] = presetName.lower()
+		for page in self._pages:
+			layout[page.id] = dict()
+			layout[page.id]['icon'] = page.icon
+			layout[page.id]['position'] = page.position
+			layout[page.id]['widgets'] = dict()
+			for wid, widget in self._widgets.items():
+				if widget.page != page.id:
+					continue
 
 
 	def loadWidgets(self):
@@ -65,12 +89,7 @@ class WidgetManager(Manager):
 			allTemplates += widgets
 
 		# Cleanup possible deprecated widgets
-		data = self.DatabaseManager.fetch(
-			tableName='widgets',
-			query='SELECT * FROM :__table__',
-			callerName=self.name,
-			method='all'
-		)
+		data = self.databaseFetch(tableName=self.WIDGETS_TABLE, method='all')
 
 		for widget in data:
 			if widget['skill'] not in self._widgetTemplates or widget['name'] not in allTemplates:
@@ -78,7 +97,7 @@ class WidgetManager(Manager):
 				self.logInfo(f'Widget **{widget["name"]}** is deprecated, removing')
 				# noinspection SqlResolve
 				self.DatabaseManager.delete(
-					tableName='widgets',
+					tableName=self.WIDGETS_TABLE,
 					callerName=self.name,
 					values={
 						'parent': widget['skill'],
@@ -92,10 +111,10 @@ class WidgetManager(Manager):
 			if not instance:
 				continue
 
-			self._widgetIds[instance.id] = instance
+			self._widgets[instance.id] = instance
 
 		self.logInfo(f'Loaded **{count}** template from {len(self._widgetTemplates)} skill', plural=['template', 'skill'])
-		self.logInfo(f'Loaded {len(self._widgetIds)} active widget', plural='widget')
+		self.logInfo(f'Loaded {len(self._widgets)} active widget', plural='widget')
 
 
 	def instanciateWidget(self, widgetData: Union[sqlite3.Row, dict]) -> Optional[Widget]:
@@ -141,26 +160,20 @@ class WidgetManager(Manager):
 			'page'    : pageId
 		})
 
-		self._widgetIds[instance.id] = instance
+		self._widgets[instance.id] = instance
 
 		return instance
 
 
 	def loadPages(self):
-		data = self.DatabaseManager.fetch(
-			tableName='widgetPages',
-			query='SELECT * FROM :__table__',
-			callerName=self.name,
-			method='all'
-		)
+		data = self.databaseFetch(tableName=self.WIDGET_PAGES_TABLE, method='all')
 		if data:
 			self._pages = {row['id']: WidgetPage(row) for row in data}
 		else:
 			# Insert default page
-			self.DatabaseManager.insert(
-				tableName='widgetPages',
-				callerName=self.name,
-				values={
+			self.databaseInsert(
+				tableName=self.WIDGET_PAGES_TABLE,
+				values = {
 					'icon'    : self.DEFAULT_ICON,
 					'position': 0
 				}
@@ -177,10 +190,9 @@ class WidgetManager(Manager):
 				if page.position > maxPos:
 					maxPos = page.position
 
-			pageId = self.DatabaseManager.insert(
-				tableName='widgetPages',
-				callerName=self.name,
-				values={
+			pageId = self.databaseInsert(
+				tableName=self.WIDGET_PAGES_TABLE,
+				values = {
 					'icon'    : self.DEFAULT_ICON,
 					'position': maxPos + 1
 				}
@@ -201,7 +213,7 @@ class WidgetManager(Manager):
 
 	def updatePageIcon(self, pageId: int, icon: str):
 		self.DatabaseManager.update(
-			tableName='widgetPages',
+			tableName=self.WIDGET_PAGES_TABLE,
 			callerName=self.name,
 			values={
 				'icon': icon
@@ -219,7 +231,7 @@ class WidgetManager(Manager):
 
 			page.position -= 1
 			self.DatabaseManager.update(
-				tableName='widgetPages',
+				tableName=self.WIDGET_PAGES_TABLE,
 				callerName=self.name,
 				values={
 					'position': page.position
@@ -229,7 +241,7 @@ class WidgetManager(Manager):
 		self._pages.pop(pageId, None)
 
 		self.DatabaseManager.delete(
-			tableName='widgetPages',
+			tableName=self.WIDGET_PAGES_TABLE,
 			callerName=self.name,
 			values={
 				'id': pageId
@@ -237,42 +249,44 @@ class WidgetManager(Manager):
 		)
 
 		self.DatabaseManager.delete(
-			tableName='widgets',
+			tableName=self.WIDGETS_TABLE,
 			callerName=self.name,
 			values={
 				'page': pageId
 			}
 		)
 
-		tmp = self._widgetIds.copy()
+		tmp = self._widgets.copy()
 		for wid, widget in tmp.items():
 			if widget.page == pageId:
-				self._widgetIds.pop(wid, None)
+				self._widgets.pop(wid, None)
 
 
 	def removeWidget(self, widgetId: int):
 		self.DatabaseManager.delete(
-			tableName='widgets',
+			tableName=self.WIDGETS_TABLE,
 			callerName=self.name,
 			values={
 				'id': widgetId
 			}
 		)
-		self._widgetIds.pop(widgetId, None)
+		self._widgets.pop(widgetId, None)
 
 
 	def skillRemoved(self, skillName: str):
 		# noinspection SqlResolve
 		self.DatabaseManager.delete(
-			tableName='widgets',
+			tableName=self.WIDGETS_TABLE,
 			callerName=self.name,
-			values={'skill': skillName}
+			values={
+				'skill': skillName
+			}
 		)
 
-		tmp = self._widgetIds.copy()
+		tmp = self._widgets.copy()
 		for wid, widget in tmp.items():
 			if widget.skill == skillName:
-				self._widgetIds.pop(wid, None)
+				self._widgets.pop(wid, None)
 
 
 	def skillDeactivated(self, skillName: str):
@@ -282,7 +296,7 @@ class WidgetManager(Manager):
 	def getNextZIndex(self, pageId: int):
 		# Build a list of widgets on this page
 		widgets = list()
-		for widget in self._widgetIds.values():
+		for widget in self._widgets.values():
 			if widget.page == pageId:
 				widgets.insert(widget.z, widget)
 
@@ -290,7 +304,7 @@ class WidgetManager(Manager):
 
 
 	def saveWidgetPosition(self, widgetId: int, x: int, y: int) -> bool:  # NOSONAR
-		widget: Widget = self._widgetIds.get(widgetId, None)
+		widget: Widget = self._widgets.get(widgetId, None)
 
 		if not widget:
 			self.logWarning('Tried to save a widget position but widget doesn\'t exist')
@@ -303,7 +317,7 @@ class WidgetManager(Manager):
 
 
 	def saveWidgetSize(self, widgetId: int, x: int, y: int, w: int, h: int) -> bool:  # NOSONAR
-		widget: Widget = self._widgetIds.get(widgetId, None)
+		widget: Widget = self._widgets.get(widgetId, None)
 
 		if not widget:
 			self.logWarning('Tried to save a widget size but widget doesn\'t exist')
@@ -317,7 +331,7 @@ class WidgetManager(Manager):
 
 
 	def saveWidgetParams(self, widgetId: int, params: dict) -> bool:  # NOSONAR
-		widget: Widget = self._widgetIds.get(widgetId, None)
+		widget: Widget = self._widgets.get(widgetId, None)
 
 		if not widget:
 			self.logWarning('Tried to save a widget params but widget doesn\'t exist')
@@ -335,7 +349,7 @@ class WidgetManager(Manager):
 
 	@property
 	def widgets(self) -> dict:
-		return self._widgetIds
+		return self._widgets
 
 
 	@property
