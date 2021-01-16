@@ -42,7 +42,7 @@ class DeviceLink(ProjectAliceObject):
 					'id'            : self._id,
 					'deviceId'      : self._deviceId,
 					'targetLocation': self._targetLocation,
-					'settings'      : self._settings
+					'settings'      : json.dumps(self._settings)
 				}
 			)
 		else:
@@ -52,7 +52,7 @@ class DeviceLink(ProjectAliceObject):
 				values={
 					'deviceId'      : self._deviceId,
 					'targetLocation': self._targetLocation,
-					'settings'      : self._settings
+					'settings'      : json.dumps(self._settings)
 				}
 			)
 
