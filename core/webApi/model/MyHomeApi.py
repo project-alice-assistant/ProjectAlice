@@ -41,20 +41,18 @@ class MyHomeApi(Api):
 			try:
 				locId = int(location)
 				location = self.LocationManager.getLocation(locId=locId)
-				if location:
-					return jsonify(location=location.toDict())
-				else:
-					return jsonify(success=False)
+				return jsonify(success=True, location=location.toDict())
+
 			except ValueError:
 				location = self.LocationManager.getLocation(locationName=location, locationSynonym=location)
 				if location:
-					return jsonify(location=location.toDict())
+					return jsonify(success=True, location=location.toDict())
 				else:
-					return jsonify(success=False)
+					return jsonify(success=False, message=f'Location {location} could not be found')
 
 		except Exception as e:
 			self.logError(f'Something went wrong retrieving location {location} {e}')
-			return jsonify(success=False)
+			return jsonify(success=False, message=str(e))
 
 
 	@route('/locations/', methods=['PUT'])
