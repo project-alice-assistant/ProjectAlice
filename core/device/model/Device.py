@@ -256,7 +256,7 @@ class Device(ProjectAliceObject):
 		e.g. a light bulb can be on or off and display its status
 		:return: the icon file path
 		"""
-		return Path(f'{self.Commons.rootDir()}/skills/{self.skillName}/device/img/{self._typeName}.png')
+		return Path(f'{self.Commons.rootDir()}/skills/{self.skillName}/devices/img/{self._typeName}.png')
 
 
 	def updateSettings(self, settings: dict):
