@@ -6,7 +6,7 @@ from typing import Any, Dict, List, Union, Optional
 from core.base.model.ProjectAliceObject import ProjectAliceObject
 from core.commons import constants
 from core.device.model.DeviceAbility import DeviceAbility
-from core.device.model.DeviceException import DeviceNotPaired, DeviceTypeUndefined
+from core.device.model.DeviceException import DeviceTypeUndefined
 from core.device.model.DeviceType import DeviceType
 from core.myHome.model.Location import Location
 
@@ -35,6 +35,7 @@ class Device(ProjectAliceObject):
 		self._deviceParams: Dict = json.loads(data.get('deviceParams', '{}'))
 		self._displayName: str = data.get('displayName', '')
 		self._connected: bool = False
+		self._heartbeatRate = self._deviceParams.get('heartbeatRate', self.deviceType.heartbeatRate)
 
 		# Settings are for UI, all the components use the same variable
 		self._settings = json.loads(data.get('settings', '{}')) if isinstance(data.get('settings', '{}'), str) else data.get('settings', dict())
@@ -183,6 +184,11 @@ class Device(ProjectAliceObject):
 
 
 	@property
+	def heartbeatRate(self) -> bool:
+		return self._heartbeatRate
+
+
+	@property
 	def deviceTypeName(self) -> str:
 		return self._typeName
 
@@ -228,18 +234,19 @@ class Device(ProjectAliceObject):
 
 	def toDict(self) -> dict:
 		return {
-			'abilities'      : bin(self.getAbilities()),
-			'connected'      : self._connected,
-			'deviceParams'   : self._deviceParams,
-			'displayName'    : self._displayName,
-			'settings'       : self._settings,
-			'id'             : self._id,
-			'lastContact'    : self._lastContact,
-			'parentLocation' : self._parentLocation,
-			'skillName'      : self._skillName,
-			'typeName'       : self._typeName,
-			'uid'            : self._uid,
-			'heartbeatRate'  : self.deviceType.heartbeatRate
+			'abilities'             : bin(self.getAbilities()),
+			'connected'             : self._connected,
+			'deviceParams'          : self._deviceParams,
+			'displayName'           : self._displayName,
+			'settings'              : self._settings,
+			'id'                    : self._id,
+			'lastContact'           : self._lastContact,
+			'parentLocation'        : self._parentLocation,
+			'skillName'             : self._skillName,
+			'typeName'              : self._typeName,
+			'uid'                   : self._uid,
+			'heartbeatRate'         : self._heartbeatRate,
+			'allowHeartbeatOverride': self.deviceType.allowHeartbeatOverride
 		}
 
 
@@ -288,3 +295,8 @@ class Device(ProjectAliceObject):
 
 	def __eq__(self, other):
 		return other and self._uid == other.uid
+
+
+	@classmethod
+	def getDeviceTypeDefinition(cls) -> dict:
+		raise NotImplementedError

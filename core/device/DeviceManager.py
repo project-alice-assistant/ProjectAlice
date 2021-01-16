@@ -126,7 +126,7 @@ class DeviceManager(Manager):
 		for row in self.databaseFetch(tableName=self.DB_DEVICE, method='all'):
 			try:
 				data = self.Commons.dictFromRow(row)
-				skillImport = importlib.import_module(f'skills.{data.get("skillName")}.device.{data.get("typeName")}')
+				skillImport = importlib.import_module(f'skills.{data.get("skillName")}.devices.{data.get("typeName")}')
 				klass = getattr(skillImport, data.get('typeName'))
 				device = klass(data)
 				self._devices[device.id] = device

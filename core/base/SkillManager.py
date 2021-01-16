@@ -412,9 +412,6 @@ class SkillManager(Manager):
 
 			self._failedSkills[skillName] = FailedAliceSkill(self._skillList[skillName]['installer'])
 
-		if skillInstance.deviceTypes:
-			self.DeviceManager.addDeviceTypes(deviceTypes=skillInstance.deviceTypes)
-
 		return skillInstance.supportedIntents
 
 

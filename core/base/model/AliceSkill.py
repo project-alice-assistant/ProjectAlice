@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import importlib
 import inspect
 import json
 import re
@@ -17,13 +18,14 @@ from core.base.model.Intent import Intent
 from core.base.model.ProjectAliceObject import ProjectAliceObject
 from core.base.model.Version import Version
 from core.commons import constants
+from core.device.model.Device import Device
 from core.dialog.model.DialogSession import DialogSession
 from core.user.model.AccessLevels import AccessLevel
 
 
 class AliceSkill(ProjectAliceObject):
 
-	def __init__(self, supportedIntents: Iterable = None, databaseSchema: dict = None, devices: dict = None, installer: Dict = None, **kwargs):
+	def __init__(self, supportedIntents: Iterable = None, databaseSchema: dict = None, installer: Dict = None, **kwargs):
 		super().__init__(**kwargs)
 		try:
 			self._skillPath = Path(inspect.getfile(self.__class__)).parent
@@ -56,7 +58,7 @@ class AliceSkill(ProjectAliceObject):
 		self._failedStarting = False
 		self._databaseSchema = databaseSchema
 		self._widgets = list()
-		self._deviceTypes = dict()
+		self._deviceTypes = list()
 		self._intentsDefinitions = dict()
 		self._scenarioPackageName = ''
 		self._scenarioPackageVersion = Version(mainVersion=0, updateVersion=0, hotfix=0)
@@ -66,12 +68,6 @@ class AliceSkill(ProjectAliceObject):
 
 		self._utteranceSlotCleaner = re.compile('{(.+?):=>.+?}')
 		self._myDevicesTemplates = dict()
-
-		if devices:
-			for deviceData in devices.values():
-				self.DeviceManager.registerDeviceType(self.name, deviceData)
-
-			self.logInfo(f'Registered **{len(devices)}** device type', plural='type')
 
 
 	@property
@@ -199,7 +195,6 @@ class AliceSkill(ProjectAliceObject):
 		return intentMappings
 
 
-	# noinspection SqlResolve
 	def loadWidgets(self):
 		fp = self.getResource('widgets')
 		if fp.exists():
@@ -209,6 +204,24 @@ class AliceSkill(ProjectAliceObject):
 					continue
 
 				self._widgets.append(Path(file).stem)
+
+
+	def loadDeviceTypes(self):
+		fp = self.getResource('devices')
+		if fp.exists():
+			self.logInfo(f"Found **{len(list(fp.glob('*.py'))) - 1}** device type", plural='type')
+			for file in fp.glob('*.py'):
+				if file.name.startswith('__'):
+					continue
+
+				self._deviceTypes.append(Path(file).stem)
+
+				try:
+					deviceImport = importlib.import_module(f'skills.{self.name}.devices.{file.stem}')
+					klass: Device = getattr(deviceImport, file.stem)
+					self.DeviceManager.registerDeviceType(self.name, klass.getDeviceTypeDefinition())
+				except Exception as e:
+					self.logError(f"Failed retrieving device type definition for device **{file.stem}** {e}")
 
 
 	def getUtterancesByIntent(self, intent: Union[Intent, tuple, str], forceLowerCase: bool = True, cleanSlots: bool = False) -> list:
@@ -243,7 +256,7 @@ class AliceSkill(ProjectAliceObject):
 
 
 	@property
-	def deviceTypes(self) -> dict:
+	def deviceTypes(self) -> list:
 		return self._deviceTypes
 
 
@@ -464,6 +477,7 @@ class AliceSkill(ProjectAliceObject):
 		self.LanguageManager.loadSkillStrings(self.name)
 		self.TalkManager.loadSkillTalks(self.name)
 
+		self.loadDeviceTypes()
 		self.loadWidgets()
 		self.loadScenarioNodes()
 

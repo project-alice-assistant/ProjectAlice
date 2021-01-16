@@ -78,7 +78,8 @@
 		"successes": {
 			"deviceUnlinked": "Device successfully unlinked",
 			"deviceDeleted": "Device successfully deleted",
-			"deviceLinked": "Device successfully linked"
+			"deviceLinked": "Device successfully linked",
+			"pageDeleted": "The page has been deleted"
 		},
 		"info": {
 			"deviceNotLinkedToLocation": "This device is not linked to this location",
@@ -139,14 +140,20 @@
 			"enterNewLocationName": "Please enter the new name for this location",
 			"locationSetting": "Location settings",
 			"addDevice": "Add new device",
-			"newIcon": "New icon"
+			"newIcon": "New icon",
+			"deviceSettings": "Device settings",
+			"generalSettings": "General settings",
+			"deviceLinksSettings": "Links settings",
+			"linkTo": "Link to"
 		},
 		"bodies": {
 			"clickToAddLocation": "And click OK. Click on your floorplan where you want to add that location to create a default sized location. You can also click and drag to create a location of different size and shape!",
 			"locationNameOrSynonymAlreadyExist": "There's already a location with this name or synonym existing.",
 			"chooseDevice": "Choose a device to add",
 			"noDevices": "There are currently no device types available for addition. Install some more skills for additional devices!",
-			"enterNewIcon": "Please enter the new font awesome icon, including the prefix.<br>You can find them on: <a href=\"https://fontawesome.com/icons?d=gallery&m=free\" target=\"_blank\" class=\"clickable\">Font Awesome</a>"
+			"enterNewIcon": "Please enter the new font awesome icon, including the prefix.<br>You can find them on: <a href=\"https://fontawesome.com/icons?d=gallery&m=free\" target=\"_blank\" class=\"clickable\">Font Awesome</a>",
+			"confirmPageDelete": "Do you really want to delete this page?",
+			"cannotDeleteDefaultPage": "You can't delete the default page"
 		},
 		"labels": {
 			"displayTitle": "Display title",
@@ -163,7 +170,9 @@
 			"no": "no",
 			"cancel": "cancel",
 			"addLocationSynonym": "Add new synonym",
-			"faExample": "Example: fas fa-biohazard"
+			"faExample": "Example: fas fa-biohazard",
+			"heartbeatRate": "Heartbeat rate in seconds",
+			"deviceDisplayName": "Device name"
 		},
 		"placeholders": {
 			"typeAndPressEnter": "Type name and press enter"
