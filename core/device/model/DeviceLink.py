@@ -1,3 +1,4 @@
+import json
 import sqlite3
 from typing import Dict, Optional, Union
 
@@ -17,6 +18,11 @@ class DeviceLink(ProjectAliceObject):
 		self._deviceId: int = data.get('deviceId')
 		self._targetLocation: int = data.get('targetLocation')
 
+		try:
+			self._settings: Dict = json.loads(data.get('settings', '{}'))
+		except:
+			self._settings = dict()
+
 		if self._id == -1:
 			self.saveToDB()
 
@@ -30,12 +36,13 @@ class DeviceLink(ProjectAliceObject):
 		if self._id != -1:
 			self.DatabaseManager.replace(
 				tableName=self.DeviceManager.DB_LINKS,
-				query='REPLACE INTO :__table__ (id, deviceId, targetLocation) VALUES (:id, :deviceId, :targetLocation)',
+				query='REPLACE INTO :__table__ (id, deviceId, targetLocation, settings) VALUES (:id, :deviceId, :targetLocation, :settings)',
 				callerName=self.DeviceManager.name,
 				values={
 					'id'            : self._id,
-					'deviceId'     : self._deviceId,
-					'targetLocation': self._targetLocation
+					'deviceId'      : self._deviceId,
+					'targetLocation': self._targetLocation,
+					'settings'      : self._settings
 				}
 			)
 		else:
@@ -43,8 +50,9 @@ class DeviceLink(ProjectAliceObject):
 				tableName=self.DeviceManager.DB_LINKS,
 				callerName=self.DeviceManager.name,
 				values={
-					'deviceId'     : self._deviceId,
-					'targetLocation': self._targetLocation
+					'deviceId'      : self._deviceId,
+					'targetLocation': self._targetLocation,
+					'settings'      : self._settings
 				}
 			)
 
@@ -82,5 +90,6 @@ class DeviceLink(ProjectAliceObject):
 			'id'            : self._id,
 			'deviceId'      : self._deviceId,
 			'deviceUid'     : self.deviceUid,
-			'targetLocation': self._targetLocation
+			'targetLocation': self._targetLocation,
+			'settings'      : self._settings
 		}

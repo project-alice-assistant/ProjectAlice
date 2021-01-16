@@ -39,7 +39,8 @@ class DeviceManager(Manager):
 		DB_LINKS : [
 			'id INTEGER PRIMARY KEY',
 			'deviceId INTEGER NOT NULL',
-			'targetLocation INTEGER NOT NULL'
+			'targetLocation INTEGER NOT NULL',
+			'settings TEXT'
 		]
 	}
 

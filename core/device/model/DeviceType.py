@@ -1,3 +1,4 @@
+import json
 import sqlite3
 from pathlib import Path
 from typing import Dict, List, Union
@@ -24,10 +25,28 @@ class DeviceType(ProjectAliceObject):
 		self._heartbeatRate = data.get('heartbeatRate', 5)
 		self._allowHeartbeatOverride = data.get('allowHeartbeatOverride', False)
 
+		self._deviceSettingsTemplates = dict()
+		self._linkSettingsTemplates = dict()
+		self.loadDeviceSettingsTemplates()
+
 		abilities = data.get('abilities', [])
 		self._abilities = 0
 		for ability in abilities:
 			self._abilities |= ability.value
+
+
+	def loadDeviceSettingsTemplates(self):
+		try:
+			filepath = Path(f'skills/{self._skillName}/devices/{self._deviceTypeName}.config.template')
+			if not filepath.exists():
+				return
+
+			data = json.loads(filepath.read_text())
+
+			self._linkSettingsTemplates = data['linkSettings']
+			self._deviceSettingsTemplates = data['deviceSettings']
+		except Exception as e:
+			self.logError(f'Error loading device config template for device type **{self._deviceTypeName}** {e}')
 
 
 	def hasAbilities(self, abilities: List[DeviceAbility]) -> bool:
@@ -48,7 +67,7 @@ class DeviceType(ProjectAliceObject):
 		Return the path of the icon representing this device type
 		:return: the icon file path
 		"""
-		return Path(f'{self.Commons.rootDir()}/skills/{self._skillName}/device/img/{self._deviceTypeName}.png')
+		return Path(f'{self.Commons.rootDir()}/skills/{self._skillName}/devices/img/{self._deviceTypeName}.png')
 
 
 	@property
@@ -115,12 +134,14 @@ class DeviceType(ProjectAliceObject):
 
 	def toDict(self) -> dict:
 		return {
-			'deviceTypeName'        : self._deviceTypeName,
-			'skillName'             : self._skillName,
-			'perLocationLimit'      : self._perLocationLimit,
-			'totalDeviceLimit'      : self._totalDeviceLimit,
-			'allowLocationLinks'    : self._allowLocationLinks,
-			'heartbeatRate'         : self._heartbeatRate,
-			'allowHeartbeatOverride': self._allowHeartbeatOverride,
-			'abilities'             : bin(self._abilities)
+			'deviceTypeName'         : self._deviceTypeName,
+			'skillName'              : self._skillName,
+			'perLocationLimit'       : self._perLocationLimit,
+			'totalDeviceLimit'       : self._totalDeviceLimit,
+			'allowLocationLinks'     : self._allowLocationLinks,
+			'heartbeatRate'          : self._heartbeatRate,
+			'allowHeartbeatOverride' : self._allowHeartbeatOverride,
+			'abilities'              : bin(self._abilities),
+			'deviceSettingsTemplates': self._deviceSettingsTemplates,
+			'linkSettingsTemplates'  : self._linkSettingsTemplates
 		}

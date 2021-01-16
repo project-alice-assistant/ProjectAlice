@@ -130,7 +130,7 @@ class Device(ProjectAliceObject):
 					'skillName'      : self._skillName,
 					'settings'       : json.dumps(self._settings),
 					'displayName'    : self._displayName,
-					'deviceParams'   : json.dumps(self._deviceParams)
+					'deviceParams'  : json.dumps(self._deviceParams)
 				}
 			)
 
@@ -236,7 +236,7 @@ class Device(ProjectAliceObject):
 		return {
 			'abilities'             : bin(self.getAbilities()),
 			'connected'             : self._connected,
-			'deviceParams'          : self._deviceParams,
+			'deviceParams'         : self._deviceParams,
 			'displayName'           : self._displayName,
 			'settings'              : self._settings,
 			'id'                    : self._id,
