@@ -238,7 +238,8 @@ class MyHomeApi(Api):
 			return send_from_directory(file.parent, f'{file.stem}{constants.PNG_EXT}')
 		except Exception as e:
 			self.logError(f'Failed retrieving device icon {e}')
-			return jsonify(success=False)
+			file = Path(self.Commons.rootDir(), 'core/webApi/static/images/missing-icon.png')
+			return send_from_directory(file.parent, f'{file.stem}{constants.PNG_EXT}')
 
 
 	@route('/devices/', methods=['PUT'])
@@ -325,4 +326,5 @@ class MyHomeApi(Api):
 			return send_from_directory(file.parent, f'{file.stem}{constants.PNG_EXT}')
 		except Exception as e:
 			self.logError(f'Failed retrieving device type icon {e}')
-			return jsonify(success=False)
+			file = Path(self.Commons.rootDir(), 'core/webApi/static/images/missing-icon.png')
+			return send_from_directory(file.parent, f'{file.stem}{constants.PNG_EXT}')
