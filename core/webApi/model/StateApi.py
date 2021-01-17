@@ -22,6 +22,6 @@ class StateApi(Api):
 			if not state:
 				raise Exception
 
-			return jsonify(state=state.currentState.value)
+			return jsonify(success=True, state=state.currentState.value)
 		except:
-			return jsonify(message=f'Unknown state: {statePath}')
+			return jsonify(success=False, message=f'Unknown state: {statePath}')

@@ -75,12 +75,12 @@ class MyHomeApi(Api):
 		try:
 			furniture = self.LocationManager.addNewFurniture(data=request.json)
 			if furniture:
-				return jsonify(furniture=furniture.toDict())
+				return jsonify(success=True, furniture=furniture.toDict())
 			else:
-				return jsonify(success=False)
+				return jsonify(success=False, message='No Furniture could be added')
 		except Exception as e:
 			self.logError(f'Something went wrong creating a new furniture {e}')
-			return jsonify(success=False)
+			return jsonify(success=False, message=str(e))
 
 
 	@route('/constructions/', methods=['PUT'])
@@ -89,12 +89,12 @@ class MyHomeApi(Api):
 		try:
 			construction = self.LocationManager.addNewConstruction(data=request.json)
 			if construction:
-				return jsonify(construction=construction.toDict())
+				return jsonify(success=True, construction=construction.toDict())
 			else:
-				return jsonify(success=False)
+				return jsonify(success=False, message='Construction could not be added')
 		except Exception as e:
 			self.logError(f'Something went wrong creating a new construction {e}')
-			return jsonify(success=False)
+			return jsonify(success=False, message=str(e))
 
 
 	@route('/locations/<locationId>/', methods=['PATCH'])
@@ -267,7 +267,7 @@ class MyHomeApi(Api):
 			if link:
 				return jsonify(success=True, link=link.toDict())
 			else:
-				raise Exception
+				raise Exception(f'Failed adding device with unknown error.')
 		except Exception as e:
 			self.logError(f'Failed adding new device link {e}')
 			return jsonify(success=False, message=str(e))

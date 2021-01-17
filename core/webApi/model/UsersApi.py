@@ -43,7 +43,7 @@ class UsersApi(Api):
 			return jsonify(success=True)
 		except Exception as e:
 			self.logError(f'Failed adding new user: {e}')
-			return jsonify(success=False)
+			return jsonify(success=False, message=str(e))
 
 
 	@ApiAuthenticated
@@ -63,4 +63,4 @@ class UsersApi(Api):
 			return jsonify(success=True)
 		except Exception as e:
 			self.logError(f'Failed deleting user: {e}')
-			return jsonify(success=False)
+			return jsonify(success=False, message=str(e))

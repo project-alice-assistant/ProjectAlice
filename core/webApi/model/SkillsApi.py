@@ -69,7 +69,7 @@ class SkillsApi(Api):
 
 		except Exception as e:
 			self.logError(f'Something went wrong creating a new skill: {e}')
-			return jsonify(success=False)
+			return jsonify(success=False, message=str(e))
 
 
 	@ApiAuthenticated
@@ -85,10 +85,10 @@ class SkillsApi(Api):
 			if self.SkillManager.uploadSkillToGithub(skillName, skillDesc):
 				return jsonify(success=True, url=f'https://github.com/{self.ConfigManager.getAliceConfigByName("githubUsername")}/skill_{skillName}.git')
 
-			return jsonify(success=False)
+			return jsonify(success=False, message=f'Error while uploading to github!')
 		except Exception as e:
 			self.logError(f'Failed uploading to github: {e}')
-			return jsonify(success=False)
+			return jsonify(success=False, message=str(e))
 
 
 	@ApiAuthenticated
@@ -104,10 +104,10 @@ class SkillsApi(Api):
 				else:
 					status[skill] = 'ko'
 
-			return jsonify(status=status)
+			return jsonify(success=True, status=status)
 		except Exception as e:
 			self.logWarning(f'Failed installing skill: {e}', printStack=True)
-			return jsonify(success=False)
+			return jsonify(success=False, message=str(e))
 
 
 	@route('/<skillName>/', methods=['PATCH'])
@@ -124,7 +124,7 @@ class SkillsApi(Api):
 			return jsonify(success=True)
 		except Exception as e:
 			self.logWarning(f'Failed updating skill settings: {e}', printStack=True)
-			return jsonify(success=False)
+			return jsonify(success=False, message=str(e))
 
 
 	@route('/<skillName>/')
@@ -133,24 +133,28 @@ class SkillsApi(Api):
 		skill = self.SkillManager.getSkillInstance(skillName=skillName, silent=True)
 		skill = skill.toDict() if skill else dict()
 
-		return jsonify(skill=skill)
+		return jsonify(success=True, skill=skill)
 
 
 	@route('/<skillName>/toggleActiveState/')
 	@ApiAuthenticated
 	def toggleActiveState(self, skillName: str):
-		if skillName not in self.SkillManager.allSkills:
-			return self.skillNotFound()
+		try:
+			if skillName not in self.SkillManager.allSkills:
+				return self.skillNotFound()
 
-		if self.SkillManager.isSkillActive(skillName):
-			if skillName in self.SkillManager.neededSkills:
-				return jsonify(success=False, reason='skill cannot be deactivated')
+			if self.SkillManager.isSkillActive(skillName):
+				if skillName in self.SkillManager.neededSkills:
+					return jsonify(success=False, message='Required skill cannot be deactivated!')
 
-			self.SkillManager.deactivateSkill(skillName=skillName, persistent=True)
-		else:
-			self.SkillManager.activateSkill(skillName=skillName, persistent=True)
+				self.SkillManager.deactivateSkill(skillName=skillName, persistent=True)
+			else:
+				self.SkillManager.activateSkill(skillName=skillName, persistent=True)
 
-		return jsonify(success=True)
+			return jsonify(success=True)
+		except Exception as e:
+			self.logWarning(f'Failed toggling skill: {e}', printStack=True)
+			return jsonify(success=False, message=str(e))
 
 
 	@route('/<skillName>/activate/', methods=['GET', 'POST'])
@@ -197,7 +201,7 @@ class SkillsApi(Api):
 			return jsonify(skill=skill.toDict() if skill else dict())
 		except Exception as e:
 			self.logWarning(f'Failed reloading skill: {e}', printStack=True)
-			return jsonify(success=False)
+			return jsonify(success=False, message=str(e))
 
 
 	@ApiAuthenticated
@@ -212,7 +216,7 @@ class SkillsApi(Api):
 				return jsonify(success=False, reason='skill not found')
 		except Exception as e:
 			self.logWarning(f'Failed installing skill: {e}', printStack=True)
-			return jsonify(success=False)
+			return jsonify(success=False, message=str(e))
 
 		return jsonify(success=True)
 

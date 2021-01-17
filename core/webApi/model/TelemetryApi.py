@@ -32,7 +32,7 @@ class TelemetryApi(Api):
 			return jsonify(rowarray_list)
 		except Exception as e:
 			self.logError(f'Failed getting telemetry data: {e}')
-			return jsonify(success=False)
+			return jsonify(success=False, message=str(e))
 
 
 	@route('/overview/', methods=['GET'])

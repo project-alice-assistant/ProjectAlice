@@ -23,7 +23,7 @@ class UtilsApi(Api):
 			return jsonify(success=True)
 		except Exception as e:
 			self.logError(f'Failed restarting Alice: {e}')
-			return jsonify(success=False)
+			return jsonify(success=False, message=str(e))
 
 
 	@route('/reboot/')
@@ -34,7 +34,7 @@ class UtilsApi(Api):
 			return jsonify(success=True)
 		except Exception as e:
 			self.logError(f'Failed rebooting device: {e}')
-			return jsonify(success=False)
+			return jsonify(success=False, message=str(e))
 
 
 	@route('/update/')
@@ -45,7 +45,7 @@ class UtilsApi(Api):
 			return jsonify(success=True)
 		except Exception as e:
 			self.logError(f'Failed updating Alice: {e}')
-			return jsonify(success=False)
+			return jsonify(success=False, message=str(e))
 
 
 	@route('/config/', methods=['GET'])
@@ -61,10 +61,10 @@ class UtilsApi(Api):
 			if not self.UserManager.apiTokenValid(request.headers.get('auth', '') or self.UserManager.apiTokenLevel(request.headers.get('auth')) != 'admin'):
 				configs = {key: value for key, value in configs.items() if not self.ConfigManager.isAliceConfSensitive(key)}
 
-			return jsonify(config=configs, templates=self.ConfigManager.aliceTemplateConfigurations, categories=self.ConfigManager.aliceConfigurationCategories)
+			return jsonify(success=True, config=configs, templates=self.ConfigManager.aliceTemplateConfigurations, categories=self.ConfigManager.aliceConfigurationCategories)
 		except Exception as e:
 			self.logError(f'Failed retrieving Alice configs: {e}')
-			return jsonify(success=False)
+			return jsonify(success=False, message=str(e))
 
 
 	@route('/config/', methods=['PATCH'])
@@ -85,7 +85,7 @@ class UtilsApi(Api):
 			return jsonify(success=True)
 		except Exception as e:
 			self.logError(f'Failed saving Alice configs: {e}')
-			return jsonify(success=False)
+			return jsonify(success=False, message=str(e))
 
 
 	@route('/mqttConfig/', methods=['GET'])
@@ -99,12 +99,12 @@ class UtilsApi(Api):
 
 	@route('/i18n/', methods=['GET'])
 	def i18n(self):
-		return jsonify(data=self.LanguageManager.loadWebUIStrings())
+		return jsonify(success=True, data=self.LanguageManager.loadWebUIStrings())
 
 
 	@route('/i18n/<lang>/', methods=['GET'])
 	def i18nLang(self, lang: str):
-		return jsonify(data=self.LanguageManager.loadWebUIStrings().get(lang, dict()))
+		return jsonify(success=True, data=self.LanguageManager.loadWebUIStrings().get(lang, dict()))
 
 
 	@route('/sysCmd/', methods=['POST'])
@@ -126,7 +126,7 @@ class UtilsApi(Api):
 			return jsonify(success=True)
 		except Exception as e:
 			self.logError(f'Failed adding new wakeword: {e}')
-			return jsonify(success=False)
+			return jsonify(success=False, message=str(e))
 
 
 	def tuneWakeword(self) -> dict:
@@ -135,7 +135,7 @@ class UtilsApi(Api):
 			return jsonify(success=True)
 		except Exception as e:
 			self.logError(f'Failed tuning wakeword: {e}')
-			return jsonify(success=False)
+			return jsonify(success=False, message=str(e))
 
 
 	def wipeAll(self) -> dict:
@@ -145,7 +145,7 @@ class UtilsApi(Api):
 			return jsonify(success=True)
 		except Exception as e:
 			self.logError(f'Failed wiping system: {e}')
-			return jsonify(success=False)
+			return jsonify(success=False, message=str(e))
 
 
 	def addUser(self) -> dict:
@@ -154,7 +154,7 @@ class UtilsApi(Api):
 			return jsonify(success=True)
 		except Exception as e:
 			self.logError(f'Failed adding new user: {e}')
-			return jsonify(success=False)
+			return jsonify(success=False, message=str(e))
 
 
 	def train(self) -> dict:
@@ -163,4 +163,4 @@ class UtilsApi(Api):
 			return jsonify(success=True)
 		except Exception as e:
 			self.logError(f'Failed training assistant: {e}')
-			return jsonify(success=False)
+			return jsonify(success=False, message=str(e))
