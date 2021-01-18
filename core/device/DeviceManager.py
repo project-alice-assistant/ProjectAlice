@@ -34,13 +34,14 @@ class DeviceManager(Manager):
 			'skillName TEXT NOT NULL',
 			'settings TEXT',
 			'displayName TEXT',
-			'deviceParams TEXT'
+			'deviceParams TEXT DEFAULT "{}"'
+			'deviceConfigs TEXT DEFAULT "{}"'
 		],
 		DB_LINKS : [
 			'id INTEGER PRIMARY KEY',
 			'deviceId INTEGER NOT NULL',
 			'targetLocation INTEGER NOT NULL',
-			'settings TEXT'
+			'configs TEXT'
 		]
 	}
 

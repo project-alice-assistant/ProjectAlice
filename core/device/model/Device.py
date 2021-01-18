@@ -14,6 +14,10 @@ from core.myHome.model.Location import Location
 class Device(ProjectAliceObject):
 
 	def __init__(self, data: Union[sqlite3.Row, Dict]):
+
+		# settings: Holds the device display settings, such as x and y position, size and that stuff
+		# deviceParams: Holds the device non declared params, such as sound muted and so on. These are not controlled values that can be completly random
+		# deviceConfigs: Holds the device configurations, provided by the device's .config.template. These configs and values are controlled and cannot be random at all!
 		super().__init__()
 
 		if isinstance(data, sqlite3.Row):
@@ -49,6 +53,7 @@ class Device(ProjectAliceObject):
 		}
 
 		self._settings = {**settings, **self._settings}
+		self._deviceConfigs: Dict = json.loads(data.get('deviceConfigs', '{}'))
 		self._lastContact: int = 0
 
 		if not self._displayName:
@@ -105,7 +110,7 @@ class Device(ProjectAliceObject):
 		if self._id != -1:
 			self.DatabaseManager.replace(
 				tableName=self.DeviceManager.DB_DEVICE,
-				query='REPLACE INTO :__table__ (id, uid, parentLocation, typeName, skillName, settings, displayName, deviceParams) VALUES (:id, :uid, :parentLocation, :typeName, :skillName, :settings, :displayName, :deviceParams)',
+				query='REPLACE INTO :__table__ (id, uid, parentLocation, typeName, skillName, settings, displayName, deviceParams, deviceConfigs) VALUES (:id, :uid, :parentLocation, :typeName, :skillName, :settings, :displayName, :deviceParams, :deviceConfigs)',
 				callerName=self.DeviceManager.name,
 				values={
 					'id'             : self._id,
@@ -115,7 +120,8 @@ class Device(ProjectAliceObject):
 					'skillName'      : self._skillName,
 					'settings'       : json.dumps(self._settings),
 					'displayName'    : self._displayName,
-					'deviceParams'   : json.dumps(self._deviceParams)
+					'deviceParams'   : json.dumps(self._deviceParams),
+					'deviceConfigs'  : json.dumps(self._deviceConfigs)
 				}
 			)
 			self.publishDevice()
@@ -130,7 +136,8 @@ class Device(ProjectAliceObject):
 					'skillName'      : self._skillName,
 					'settings'       : json.dumps(self._settings),
 					'displayName'    : self._displayName,
-					'deviceParams'  : json.dumps(self._deviceParams)
+					'deviceParams'   : json.dumps(self._deviceParams),
+					'deviceConfigs'  : json.dumps(self._deviceConfigs)
 				}
 			)
 
@@ -236,9 +243,10 @@ class Device(ProjectAliceObject):
 		return {
 			'abilities'             : bin(self.getAbilities()),
 			'connected'             : self._connected,
-			'deviceParams'         : self._deviceParams,
+			'deviceParams'          : self._deviceParams,
 			'displayName'           : self._displayName,
 			'settings'              : self._settings,
+			'deviceConfigs'         : self._deviceConfigs,
 			'id'                    : self._id,
 			'lastContact'           : self._lastContact,
 			'parentLocation'        : self._parentLocation,

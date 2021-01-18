@@ -25,9 +25,9 @@ class DeviceType(ProjectAliceObject):
 		self._heartbeatRate = data.get('heartbeatRate', 5)
 		self._allowHeartbeatOverride = data.get('allowHeartbeatOverride', False)
 
-		self._deviceSettingsTemplates = dict()
-		self._linkSettingsTemplates = dict()
-		self.loadDeviceSettingsTemplates()
+		self._deviceConfigsTemplates = dict()
+		self._linkConfigsTemplates = dict()
+		self.loadDeviceConfigsTemplates()
 
 		abilities = data.get('abilities', [])
 		self._abilities = 0
@@ -35,7 +35,7 @@ class DeviceType(ProjectAliceObject):
 			self._abilities |= ability.value
 
 
-	def loadDeviceSettingsTemplates(self):
+	def loadDeviceConfigsTemplates(self):
 		try:
 			filepath = Path(f'skills/{self._skillName}/devices/{self._deviceTypeName}.config.template')
 			if not filepath.exists():
@@ -43,8 +43,8 @@ class DeviceType(ProjectAliceObject):
 
 			data = json.loads(filepath.read_text())
 
-			self._linkSettingsTemplates = data['linkSettings']
-			self._deviceSettingsTemplates = data['deviceSettings']
+			self._linkConfigsTemplates = data['linkConfigs']
+			self._deviceConfigsTemplates = data['deviceConfigs']
 		except Exception as e:
 			self.logError(f'Error loading device config template for device type **{self._deviceTypeName}** {e}')
 
@@ -142,6 +142,6 @@ class DeviceType(ProjectAliceObject):
 			'heartbeatRate'          : self._heartbeatRate,
 			'allowHeartbeatOverride' : self._allowHeartbeatOverride,
 			'abilities'              : bin(self._abilities),
-			'deviceSettingsTemplates': self._deviceSettingsTemplates,
-			'linkSettingsTemplates'  : self._linkSettingsTemplates
+			'deviceConfigsTemplates' : self._deviceConfigsTemplates,
+			'linkConfigsTemplates'   : self._linkCofnigsTemplates
 		}

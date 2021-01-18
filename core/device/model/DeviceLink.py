@@ -19,9 +19,9 @@ class DeviceLink(ProjectAliceObject):
 		self._targetLocation: int = data.get('targetLocation')
 
 		try:
-			self._settings: Dict = json.loads(data.get('settings', '{}'))
+			self._configs: Dict = json.loads(data.get('configs', '{}'))
 		except:
-			self._settings = dict()
+			self._configs = dict()
 
 		if self._id == -1:
 			self.saveToDB()
@@ -36,13 +36,13 @@ class DeviceLink(ProjectAliceObject):
 		if self._id != -1:
 			self.DatabaseManager.replace(
 				tableName=self.DeviceManager.DB_LINKS,
-				query='REPLACE INTO :__table__ (id, deviceId, targetLocation, settings) VALUES (:id, :deviceId, :targetLocation, :settings)',
+				query='REPLACE INTO :__table__ (id, deviceId, targetLocation, configs) VALUES (:id, :deviceId, :targetLocation, :configs)',
 				callerName=self.DeviceManager.name,
 				values={
 					'id'            : self._id,
 					'deviceId'      : self._deviceId,
 					'targetLocation': self._targetLocation,
-					'settings'      : json.dumps(self._settings)
+					'configs'       : json.dumps(self._configs)
 				}
 			)
 		else:
@@ -52,7 +52,7 @@ class DeviceLink(ProjectAliceObject):
 				values={
 					'deviceId'      : self._deviceId,
 					'targetLocation': self._targetLocation,
-					'settings'      : json.dumps(self._settings)
+					'configs'       : json.dumps(self._configs)
 				}
 			)
 
@@ -91,5 +91,5 @@ class DeviceLink(ProjectAliceObject):
 			'deviceId'      : self._deviceId,
 			'deviceUid'     : self.deviceUid,
 			'targetLocation': self._targetLocation,
-			'settings'      : self._settings
+			'configs'       : self._configs
 		}
