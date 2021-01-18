@@ -34,8 +34,8 @@ class DeviceManager(Manager):
 			'skillName TEXT NOT NULL',
 			'settings TEXT',
 			'displayName TEXT',
-			'deviceParams TEXT DEFAULT "{}"'
-			'deviceConfigs TEXT DEFAULT "{}"'
+			"deviceParams TEXT NOT NULL DEFAULT '{}'",
+			"deviceConfigs TEXT NOT NULL DEFAULT '{}'"
 		],
 		DB_LINKS : [
 			'id INTEGER PRIMARY KEY',
