@@ -54,16 +54,57 @@ class Device(ProjectAliceObject):
 		self._settings = {**settings, **self._settings}
 		self._lastContact: int = 0
 
-		if not self._displayName:
-			self._displayName = self._typeName
-
 		self._deviceConfigs: Dict = json.loads(data.get('deviceConfigs', '{}'))
+		self._loadConfigs()
 
-		self._heartbeatRate = self._deviceConfigs.get('heartbeatRate', self.deviceType.heartbeatRate)
-		self._deviceConfigs.setdefault('displayName', self._displayName)
-		self._deviceConfigs.setdefault('heartbeatRate', self._heartbeatRate)
+		self._heartbeatRate = self._deviceConfigs.get('heartbeatRate')
 
 		if self._id == -1:
+			self.saveToDB()
+
+
+	def _loadConfigs(self):
+		self._deviceConfigs.setdefault('displayName', self._typeName)
+		self._deviceConfigs.setdefault('heartbeatRate', self._deviceType.heartbeatRate)
+
+		templates = self._deviceType.deviceConfigsTemplates
+		changes = False
+		for configName, configData in templates.items():
+			if configName not in self._deviceConfigs:
+				self.logInfo(f'Found new config for device **{self._deviceConfigs["displayName"]}**: {configName}')
+				self._deviceConfigs[configName] = configData['defaultValue']
+				changes = True
+
+		for configName, configValue in self._deviceConfigs.copy().items():
+			if configName == 'displayName' or configName == 'heartbeatRate':
+				continue
+
+			if configName not in templates:
+				self.logInfo(f'Found a deprecated config for device **{self._deviceConfigs["displayName"]}**: {configName}')
+				self._deviceConfigs.pop(configName, None)
+				continue
+
+			definition = templates[configName]
+			if definition['dataType'] != 'list' and definition['dataType'] != 'longstring' and 'onInit' not in definition:
+				if not isinstance(configValue, type(definition['defaultValue'])):
+					changes = True
+					try:
+						# First try to cast the setting we have to the new type
+						self._deviceConfigs[configName] = type(definition['defaultValue'])(configValue)
+						self.logWarning(f'Existing configuration type missmatch: **{configName}**, cast variable to template configuration type')
+					except Exception:
+						# If casting failed let's fall back to the new default value
+						self.logWarning(f'Existing configuration type missmatch: **{configName}**, replaced with template configuration')
+						self._deviceConfigs[configName] = definition['defaultValue']
+			elif definition['dataType'] == 'list' and 'onInit' not in definition:
+				values = definition['values'].values() if isinstance(definition['values'], dict) else definition['values']
+
+				if self._deviceConfigs[configName] and self._deviceConfigs[configName] not in values:
+					changes = True
+					self.logWarning(f'Selected value **{configValue}** for setting **{configName}** doesn\'t exist, reverted to default value --{definition["defaultValue"]}--')
+					self._deviceConfigs[configName] = definition['defaultValue']
+
+		if changes:
 			self.saveToDB()
 
 
@@ -114,7 +155,7 @@ class Device(ProjectAliceObject):
 		if self._id != -1:
 			self.DatabaseManager.replace(
 				tableName=self.DeviceManager.DB_DEVICE,
-				query='REPLACE INTO :__table__ (id, uid, parentLocation, typeName, skillName, settings, displayName, deviceParams, deviceConfigs) VALUES (:id, :uid, :parentLocation, :typeName, :skillName, :settings, :displayName, :deviceParams, :deviceConfigs)',
+				query='REPLACE INTO :__table__ (id, uid, parentLocation, typeName, skillName, settings, deviceParams, deviceConfigs) VALUES (:id, :uid, :parentLocation, :typeName, :skillName, :settings, :deviceParams, :deviceConfigs)',
 				callerName=self.DeviceManager.name,
 				values={
 					'id'             : self._id,
@@ -123,7 +164,6 @@ class Device(ProjectAliceObject):
 					'typeName'       : self._typeName,
 					'skillName'      : self._skillName,
 					'settings'       : json.dumps(self._settings),
-					'displayName'    : self._displayName,
 					'deviceParams'   : json.dumps(self._deviceParams),
 					'deviceConfigs'  : json.dumps(self._deviceConfigs)
 				}
@@ -139,7 +179,6 @@ class Device(ProjectAliceObject):
 					'typeName'       : self._typeName,
 					'skillName'      : self._skillName,
 					'settings'       : json.dumps(self._settings),
-					'displayName'    : self._displayName,
 					'deviceParams'   : json.dumps(self._deviceParams),
 					'deviceConfigs'  : json.dumps(self._deviceConfigs)
 				}
@@ -195,8 +234,8 @@ class Device(ProjectAliceObject):
 
 
 	@property
-	def heartbeatRate(self) -> bool:
-		return self._heartbeatRate
+	def heartbeatRate(self) -> int:
+		return self._deviceConfigs.get('heartbeatRate')
 
 
 	@property
@@ -248,7 +287,6 @@ class Device(ProjectAliceObject):
 			'abilities'             : bin(self.getAbilities()),
 			'connected'             : self._connected,
 			'deviceParams'          : self._deviceParams,
-			'displayName'           : self._displayName,
 			'settings'              : self._settings,
 			'deviceConfigs'         : self._deviceConfigs,
 			'id'                    : self._id,
@@ -257,7 +295,6 @@ class Device(ProjectAliceObject):
 			'skillName'             : self._skillName,
 			'typeName'              : self._typeName,
 			'uid'                   : self._uid,
-			'heartbeatRate'         : self._heartbeatRate,
 			'allowHeartbeatOverride': self.deviceType.allowHeartbeatOverride
 		}
 
@@ -273,6 +310,10 @@ class Device(ProjectAliceObject):
 
 	def updateSettings(self, settings: dict):
 		self._settings = {**self._settings, **settings}
+
+
+	def updateConfigs(self, configs: dict):
+		self._deviceConfigs = {**self._deviceConfigs, **configs}
 
 
 	def getParam(self, key: str, default: Any = False) -> Any:

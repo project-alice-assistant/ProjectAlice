@@ -131,10 +131,10 @@ class MyHomeApi(Api):
 	@ApiAuthenticated
 	def updateDevice(self, deviceId: str):
 		try:
-			device = self.DeviceManager.updateDeviceDisplay(int(deviceId), request.json)
-			return jsonify(device=device.toDict())
+			device = self.DeviceManager.updateDeviceSettings(int(deviceId), request.json)
+			return jsonify(success=True, device=device.toDict())
 		except Exception as e:
-			self.logError(f'Failed saving device {e}')
+			self.logError(f'Failed saving device: {e}')
 			return jsonify(success=False)
 
 

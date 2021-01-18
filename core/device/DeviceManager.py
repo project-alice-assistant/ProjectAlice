@@ -4,7 +4,6 @@ import socket
 import threading
 import time
 import uuid
-from random import shuffle
 from typing import Dict, List, Optional, Union
 
 from paho.mqtt.client import MQTTMessage
@@ -33,7 +32,6 @@ class DeviceManager(Manager):
 			'typeName TEXT NOT NULL',
 			'skillName TEXT NOT NULL',
 			'settings TEXT',
-			'displayName TEXT',
 			"deviceParams TEXT NOT NULL DEFAULT '{}'",
 			"deviceConfigs TEXT NOT NULL DEFAULT '{}'"
 		],
@@ -390,7 +388,7 @@ class DeviceManager(Manager):
 		return self._devices
 
 
-	def updateDeviceDisplay(self, deviceId: int, data: dict) -> Optional[Device]:
+	def updateDeviceSettings(self, deviceId: int, data: dict) -> Optional[Device]:
 		"""
 		Updates the UI part of a device
 		:param deviceId: The device id to update
@@ -409,6 +407,14 @@ class DeviceManager(Manager):
 
 		if 'settings' in data:
 			device.updateSettings(data['settings'])
+
+		if 'deviceConfigs' in data:
+			device.updateConfigs(data['deviceConfigs'])
+
+		if 'linksConfigs' in data:
+			for linkId, linkConfigs in data['linksConfigs'].items():
+				self._deviceLinks[int(linkId)].updateConfigs(linkConfigs)
+				self._deviceLinks[int(linkId)].saveToDB()
 
 		device.saveToDB()
 		return device
@@ -874,7 +880,3 @@ class DeviceManager(Manager):
 
 	def getLinksForDevice(self, device: Device) -> List[DeviceLink]:
 		return [link for link in self._deviceLinks.values() if link.deviceId == device.id]
-
-
-	## generic helper for finding a new USB device
-

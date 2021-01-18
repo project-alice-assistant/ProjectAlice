@@ -73,13 +73,15 @@
 			"noDeviceToDeviceLink": "Cannot link a device to another",
 			"deviceUnlinkFailed": "Device unlinking failed",
 			"deviceLinked": "Device linking failed",
-			"somethingWentWrong": "Something went wrong, please check your logs"
+			"somethingWentWrong": "Something went wrong, please check your logs",
+			"deviceSavingFailed": "Failed saving device configs"
 		},
 		"successes": {
 			"deviceUnlinked": "Device successfully unlinked",
 			"deviceDeleted": "Device successfully deleted",
 			"deviceLinked": "Device successfully linked",
-			"pageDeleted": "The page has been deleted"
+			"pageDeleted": "The page has been deleted",
+			"deviceSaved": "Device settings succesfully saved"
 		},
 		"info": {
 			"deviceNotLinkedToLocation": "This device is not linked to this location",

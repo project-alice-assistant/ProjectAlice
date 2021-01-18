@@ -4,6 +4,7 @@ from typing import Dict, Optional, Union
 
 from core.base.model.ProjectAliceObject import ProjectAliceObject
 from core.device.model.Device import Device
+from core.device.model.DeviceType import DeviceType
 
 
 class DeviceLink(ProjectAliceObject):
@@ -16,6 +17,7 @@ class DeviceLink(ProjectAliceObject):
 
 		self._id: int = data.get('id', -1)
 		self._deviceId: int = data.get('deviceId')
+		self._deviceType: DeviceType = self.DeviceManager.getDevice(deviceId=self._deviceId).deviceType
 		self._targetLocation: int = data.get('targetLocation')
 
 		try:
@@ -24,6 +26,40 @@ class DeviceLink(ProjectAliceObject):
 			self._configs = dict()
 
 		if self._id == -1:
+			self.saveToDB()
+
+
+	def _loadConfigs(self):
+		templates = self._deviceType.linkConfigsTemplates
+		changes = False
+		for configName, configData in templates.items():
+			if configName not in self._configs:
+				self._configs[configName] = configData['defaultValue']
+				changes = True
+
+		for configName, configValue in self._configs.copy().items():
+			if configName not in templates:
+				self._configs.pop(configName, None)
+				continue
+
+			definition = templates[configName]
+			if definition['dataType'] != 'list' and definition['dataType'] != 'longstring' and 'onInit' not in definition:
+				if not isinstance(configValue, type(definition['defaultValue'])):
+					changes = True
+					try:
+						# First try to cast the setting we have to the new type
+						self._configs[configName] = type(definition['defaultValue'])(configValue)
+					except Exception:
+						# If casting failed let's fall back to the new default value
+						self._configs[configName] = definition['defaultValue']
+			elif definition['dataType'] == 'list' and 'onInit' not in definition:
+				values = definition['values'].values() if isinstance(definition['values'], dict) else definition['values']
+
+				if self._configs[configName] and self._configs[configName] not in values:
+					changes = True
+					self._configs[configName] = definition['defaultValue']
+
+		if changes:
 			self.saveToDB()
 
 
@@ -83,6 +119,10 @@ class DeviceLink(ProjectAliceObject):
 	@property
 	def device(self) -> Optional[Device]:
 		return self.DeviceManager.getDevice(deviceId=self._deviceId)
+
+
+	def updateConfigs(self, configs: dict):
+		self._configs = {**self._configs, **configs}
 
 
 	def toDict(self):

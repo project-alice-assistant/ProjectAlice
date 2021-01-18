@@ -115,6 +115,16 @@ class DeviceType(ProjectAliceObject):
 		return self._skillName
 
 
+	@property
+	def deviceConfigsTemplates(self) -> dict:
+		return self._deviceConfigsTemplates
+
+
+	@property
+	def linkConfigsTemplates(self) -> dict:
+		return self._linkConfigsTemplates
+
+
 	def __repr__(self):
 		return f'{self._skillName} - {self._deviceTypeName}'
 
