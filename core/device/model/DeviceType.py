@@ -143,5 +143,5 @@ class DeviceType(ProjectAliceObject):
 			'allowHeartbeatOverride' : self._allowHeartbeatOverride,
 			'abilities'              : bin(self._abilities),
 			'deviceConfigsTemplates' : self._deviceConfigsTemplates,
-			'linkConfigsTemplates'   : self._linkCofnigsTemplates
+			'linkConfigsTemplates'   : self._linkConfigsTemplates
 		}
