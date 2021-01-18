@@ -381,6 +381,7 @@ class DeviceManager(Manager):
 		device = Device(data)
 
 		self._devices[device.id] = device
+		self.addDeviceLink(targetLocation=locationId, deviceId=device.id)
 		return device
 
 
@@ -723,6 +724,16 @@ class DeviceManager(Manager):
 		self.broadcast(method=constants.EVENT_STOP_BROADCASTING_FOR_NEW_DEVICE, exceptions=[self.name], propagateToSkills=True)
 
 
+	def onDeviceHeartbeat(self, uid: str, siteId: str = None):
+		device = self.getDevice(uid=uid)
+
+		if not device:
+			self.logWarning(f'Device with uid **{uid}** does not exist')
+			return
+
+		device.connected = True
+		self._heartbeats[uid] = time.time()
+
 
 
 
@@ -780,60 +791,6 @@ class DeviceManager(Manager):
 	def devIDtoUID(self, _id: int) -> str:
 		return self.devices[_id].uid
 
-
-	def deleteDeviceID(self, deviceId: int):
-		self.devices.pop(deviceId)
-		self.DatabaseManager.delete(tableName=self.DB_DEVICE, callerName=self.name, values={"id": deviceId})
-		self.DatabaseManager.delete(tableName=self.DB_LINKS, callerName=self.name, values={"id": deviceId})
-
-
-	def addDeviceTypes(self, deviceTypes: Dict):
-		self.deviceTypes.update(deviceTypes)
-
-
-	def getLink(self, _id: int = None, deviceId: int = None, locationId: Union[list, int] = None) -> DeviceLink:
-		if _id:
-			return self._deviceLinks.get(_id, None)
-		if not deviceId or not locationId:
-			raise Exception('getLink: supply locationId or deviceID!')
-
-		if not isinstance(locationId, List):
-			locationId = [locationId]
-
-		for link in self._deviceLinks.values():
-			if link.deviceId == deviceId and link.locationId in locationId:
-				return link
-
-
-
-
-
-	def deleteDeviceUID(self, deviceUID: str):
-		self.deleteDeviceID(deviceId=self.devUIDtoID(uid=deviceUID))
-
-
-	def getFreeUID(self, base: str = '') -> str:
-		"""
-		Gets a free uid. A free uid is a uid not declared in database. If base is provided it will be used as a uid pattern
-		:param base: str
-		:return: str
-		"""
-		if not base:
-			uid = str(uuid.uuid4())
-		else:
-			uid = base = base.replace(':', '').replace(' ', '')
-
-		while not self.isUIDAvailable(uid):
-			if not base:
-				uid = str(uuid.uuid4())
-			else:
-				aList = list(base)
-				shuffle(aList)
-				uid = ''.join(aList)
-
-		return uid
-
-
 	def broadcastToDevices(self, topic: str, payload: dict = None, deviceType: DeviceType = None, location: Location = None, connectedOnly: bool = True):
 		if not payload:
 			payload = dict()
@@ -861,15 +818,7 @@ class DeviceManager(Manager):
 
 
 	## Heartbeats
-	def onDeviceHeartbeat(self, uid: str, siteId: str = None):
-		device = self.getDevice(uid=uid)
 
-		if not device:
-			self.logWarning(f'Device with uid **{uid}** does not exist')
-			return
-
-		device.connected = True
-		self._heartbeats[uid] = time.time()
 
 
 	def getDeviceLinksByType(self, deviceType: int, connectedOnly: bool = False) -> List[DeviceLink]:

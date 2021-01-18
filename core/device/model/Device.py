@@ -39,7 +39,6 @@ class Device(ProjectAliceObject):
 		self._deviceParams: Dict = json.loads(data.get('deviceParams', '{}'))
 		self._displayName: str = data.get('displayName', '')
 		self._connected: bool = False
-		self._heartbeatRate = self._deviceParams.get('heartbeatRate', self.deviceType.heartbeatRate)
 
 		# Settings are for UI, all the components use the same variable
 		self._settings = json.loads(data.get('settings', '{}')) if isinstance(data.get('settings', '{}'), str) else data.get('settings', dict())
@@ -53,11 +52,16 @@ class Device(ProjectAliceObject):
 		}
 
 		self._settings = {**settings, **self._settings}
-		self._deviceConfigs: Dict = json.loads(data.get('deviceConfigs', '{}'))
 		self._lastContact: int = 0
 
 		if not self._displayName:
 			self._displayName = self._typeName
+
+		self._deviceConfigs: Dict = json.loads(data.get('deviceConfigs', '{}'))
+
+		self._heartbeatRate = self._deviceConfigs.get('heartbeatRate', self.deviceType.heartbeatRate)
+		self._deviceConfigs.setdefault('displayName', self._displayName)
+		self._deviceConfigs.setdefault('heartbeatRate', self._heartbeatRate)
 
 		if self._id == -1:
 			self.saveToDB()
