@@ -207,7 +207,7 @@ class DialogTemplateManager(Manager):
 		skill = self.SkillManager.getSkillInstance(skillName=dialogTemplate.skill)
 		if not skill:
 			return
-		print(f' current utterance is {text}')
+
 		skill.addUtterance(text=text, intent=intent)
 		self.DialogManager.cleanNotRecognizedIntent(text=text)
 		self.ThreadManager.doLater(interval=2, func=self.AssistantManager.checkAssistant)
