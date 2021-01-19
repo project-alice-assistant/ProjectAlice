@@ -23,7 +23,10 @@
 			"I'm sorry but I'm not sure I understood what you want",
 			"I did not understand what you want",
 			"Sorry? Can you repeat?",
-			"What??"
+			"Sorry? I'm not sure what you're on about",
+			"I can't make sense of that, please rephrase",
+			"Didn't quite understand that, try again please",
+			"Not too sure I understood, Please rephrase that!"
 		],
 		"short": [
 			"Sorry?"
@@ -80,13 +83,13 @@
 		"I'm sorry but I can't do that while being offline"
 	],
 	"notification": [
-		"yes?",
+		"yes {0}?",
 		"yeah?",
 		"I'm listening!",
 		"I'm all ears!",
-		"At your service!",
-		"Listening!",
+		"At your service {0}!",
+		"What's up {0}!",
 		"yep?",
-		"tell me!"
+		"How can I help {0}!"
 	]
 }
