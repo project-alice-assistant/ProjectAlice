@@ -1,5 +1,6 @@
 import json
 import sqlite3
+import uuid
 from pathlib import Path
 from typing import Any, Dict, List, Union, Optional
 
@@ -229,7 +230,15 @@ class Device(ProjectAliceObject):
 
 	@property
 	def paired(self) -> bool:
-		return self._uid != '' and self._uid != -1
+		"""
+		A device is paired when it has a valid UID
+		:return:
+		"""
+		try:
+			uuid.UUID(str(self._uid))
+			return True
+		except ValueError:
+			return False
 
 
 	@property
@@ -320,6 +329,10 @@ class Device(ProjectAliceObject):
 
 
 	def onUIClick(self):
+		"""
+		Called whenever a device's icon is clicked on the UI
+		:return:
+		"""
 		if not self.paired:
 			self.DeviceManager.startBroadcastingForNewDevice(self)
 
@@ -345,7 +358,7 @@ class Device(ProjectAliceObject):
 
 
 	def __repr__(self):
-		return f'Device({self._id} - {self._displayName}, uid({self._uid}), Location({self._parentLocation}))'
+		return f'Device({self._id} - {self._deviceConfigs["displayName"]}, uid({self._uid}), Location({self._parentLocation}))'
 
 
 	def __eq__(self, other):
