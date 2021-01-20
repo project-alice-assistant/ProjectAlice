@@ -402,8 +402,10 @@ class DeviceManager(Manager):
 		if 'parentLocation' in data and data['parentLocation'] != device.parentLocation:
 			self.assertLocationChange(device=device, locationId=data['parentLocation'])
 
-			self.deleteDeviceLinks(deviceUid=device.uid, targetLocationId=data['parentLocation'])
 			device.parentLocation = data['parentLocation']
+
+			if not device.linkedTo(data['parentLocation']):
+				self.addDeviceLink(targetLocation=data['parentLocation'], deviceId=device.id)
 
 		if 'settings' in data:
 			device.updateSettings(data['settings'])

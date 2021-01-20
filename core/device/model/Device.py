@@ -37,7 +37,6 @@ class Device(ProjectAliceObject):
 
 		self._abilities: int = -1 if not data.get('abilities', None) else self.setAbilities(data['abilities'])
 		self._deviceParams: Dict = json.loads(data.get('deviceParams', '{}'))
-		self._displayName: str = data.get('displayName', '')
 		self._connected: bool = False
 
 		# Settings are for UI, all the components use the same variable
@@ -274,12 +273,7 @@ class Device(ProjectAliceObject):
 
 	@property
 	def displayName(self) -> str:
-		return self._displayName
-
-
-	@displayName.setter
-	def displayName(self, value: str):
-		self._displayName = value
+		return self._deviceConfigs['displayName']
 
 
 	def toDict(self) -> dict:
