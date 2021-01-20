@@ -77,7 +77,8 @@
 			"deviceLinked": "Device linking failed",
 			"somethingWentWrong": "Something went wrong, please check your logs",
 			"deviceSavingFailed": "Failed saving device configs",
-			"cannotLinkDevice": "This device cannot be linked"
+			"cannotLinkDevice": "This device cannot be linked",
+			"skillDeleteFailed": "Failed deleting the skill"
 		},
 		"successes": {
 			"deviceUnlinked": "Device successfully unlinked",
@@ -85,7 +86,8 @@
 			"deviceLinked": "Device successfully linked",
 			"pageDeleted": "The page has been deleted",
 			"deviceSaved": "Device settings succesfully saved",
-			"deviceAlreadyLinkedToLocation": "This device is already linked to this location"
+			"deviceAlreadyLinkedToLocation": "This device is already linked to this location",
+			"skillDeleted": "The skill was correctly deleted"
 		},
 		"info": {
 			"deviceNotLinkedToLocation": "This device is not linked to this location",
