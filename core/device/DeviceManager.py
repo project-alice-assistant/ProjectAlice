@@ -412,8 +412,8 @@ class DeviceManager(Manager):
 			device.updateConfigs(data['deviceConfigs'])
 
 		if 'linksConfigs' in data:
-			for linkId, linkConfigs in data['linksConfigs'].items():
-				self._deviceLinks[int(linkId)].updateConfigs(linkConfigs)
+			for linkId, link in data['linksConfigs'].items():
+				self._deviceLinks[int(linkId)].updateConfigs(link['configs'])
 				self._deviceLinks[int(linkId)].saveToDB()
 
 		device.saveToDB()

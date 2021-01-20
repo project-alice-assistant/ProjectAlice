@@ -342,6 +342,14 @@ class Device(ProjectAliceObject):
 		return False
 
 
+	def getLinks(self) -> dict:
+		links = dict()
+		for link in self.DeviceManager.deviceLinks.values():
+			if link.deviceId == self.id:
+				links[link.id] = link
+		return links
+
+
 	def __repr__(self):
 		return f'Device({self._id} - {self._displayName}, uid({self._uid}), Location({self._parentLocation}))'
 

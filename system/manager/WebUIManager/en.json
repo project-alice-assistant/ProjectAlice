@@ -70,7 +70,8 @@
 	},
 	"notifications" : {
 		"errors": {
-			"unexpectedSeerverError": "An unexpected server error occured",
+			"uiError": "Sorry, something went wrong",
+			"unexpectedServerError": "An unexpected server error occured",
 			"noDeviceToDeviceLink": "Cannot link a device to another",
 			"deviceUnlinkFailed": "Device unlinking failed",
 			"deviceLinked": "Device linking failed",
