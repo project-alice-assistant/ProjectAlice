@@ -70,18 +70,21 @@
 	},
 	"notifications" : {
 		"errors": {
+			"unexpectedSeerverError": "An unexpected server error occured",
 			"noDeviceToDeviceLink": "Cannot link a device to another",
 			"deviceUnlinkFailed": "Device unlinking failed",
 			"deviceLinked": "Device linking failed",
 			"somethingWentWrong": "Something went wrong, please check your logs",
-			"deviceSavingFailed": "Failed saving device configs"
+			"deviceSavingFailed": "Failed saving device configs",
+			"cannotLinkDevice": "This device cannot be linked"
 		},
 		"successes": {
 			"deviceUnlinked": "Device successfully unlinked",
 			"deviceDeleted": "Device successfully deleted",
 			"deviceLinked": "Device successfully linked",
 			"pageDeleted": "The page has been deleted",
-			"deviceSaved": "Device settings succesfully saved"
+			"deviceSaved": "Device settings succesfully saved",
+			"deviceAlreadyLinkedToLocation": "This device is already linked to this location"
 		},
 		"info": {
 			"deviceNotLinkedToLocation": "This device is not linked to this location",
