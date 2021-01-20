@@ -229,7 +229,7 @@ class Device(ProjectAliceObject):
 
 	@property
 	def paired(self) -> bool:
-		return self._uid != ''
+		return self._uid != '' and self._uid != -1
 
 
 	@property
