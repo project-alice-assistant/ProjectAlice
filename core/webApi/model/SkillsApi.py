@@ -130,10 +130,14 @@ class SkillsApi(Api):
 	@route('/<skillName>/')
 	@ApiAuthenticated
 	def get(self, skillName: str):
-		skill = self.SkillManager.getSkillInstance(skillName=skillName, silent=True)
-		skill = skill.toDict() if skill else dict()
-
-		return jsonify(success=True, skill=skill)
+		try:
+			skill = self.SkillManager.getSkillInstance(skillName=skillName, silent=True)
+			if not skill:
+				skill = self.SkillManager.allSkills.get(skillName, dict())
+			return jsonify(success=True, skill=skill.toDict())
+		except Exception as e:
+			self.logWarning(f'Failed fetching skill: {e}', printStack=True)
+			return jsonify(success=False, message=str(e))
 
 
 	@route('/<skillName>/toggleActiveState/')
