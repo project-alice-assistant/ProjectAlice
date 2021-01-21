@@ -51,7 +51,6 @@ class Device(ProjectAliceObject):
 			'r': 0
 		}
 
-
 		self._settings = {**settings, **self._settings}
 		self._lastContact: int = 0
 
