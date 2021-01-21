@@ -15,6 +15,7 @@
 	},
 	"tours": {
 		"skills": {
+			"yourSkills": "Your skills",
 			"data0": "This is a skill that is installed on Project Alice.",
 			"data1": "If the skill has any user settings available, this button will appear. Click it to configure your skill!",
 			"data2": "You can stop any skill that isn't required for Alice to run using this button.",
@@ -78,7 +79,8 @@
 			"somethingWentWrong": "Something went wrong, please check your logs",
 			"deviceSavingFailed": "Failed saving device configs",
 			"cannotLinkDevice": "This device cannot be linked",
-			"skillDeleteFailed": "Failed deleting the skill"
+			"skillDeleteFailed": "Failed deleting the skill",
+			"noLocationEmptyName": "The location name cannot be empty"
 		},
 		"successes": {
 			"deviceUnlinked": "Device successfully unlinked",
@@ -87,7 +89,8 @@
 			"pageDeleted": "The page has been deleted",
 			"deviceSaved": "Device settings succesfully saved",
 			"deviceAlreadyLinkedToLocation": "This device is already linked to this location",
-			"skillDeleted": "The skill was correctly deleted"
+			"skillDeleted": "The skill was correctly deleted",
+			"reloadTriggered": "Reload triggered"
 		},
 		"info": {
 			"deviceNotLinkedToLocation": "This device is not linked to this location",
