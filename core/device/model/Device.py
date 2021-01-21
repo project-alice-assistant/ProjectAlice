@@ -64,7 +64,7 @@ class Device(ProjectAliceObject):
 
 
 	def _loadConfigs(self):
-		self._deviceConfigs.setdefault('displayName', self._typeName)
+		self._deviceConfigs.setdefault('displayName', self._data.get('displayName', self._typeName))
 		self._deviceConfigs.setdefault('heartbeatRate', self._deviceType.heartbeatRate)
 
 		templates = self._deviceType.deviceConfigsTemplates
