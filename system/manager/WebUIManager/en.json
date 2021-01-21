@@ -77,10 +77,11 @@
 			"deviceUnlinkFailed": "Device unlinking failed",
 			"deviceLinked": "Device linking failed",
 			"somethingWentWrong": "Something went wrong, please check your logs",
-			"deviceSavingFailed": "Failed saving device configs",
+			"deviceSavingFailed": "Failed saving device",
 			"cannotLinkDevice": "This device cannot be linked",
 			"skillDeleteFailed": "Failed deleting the skill",
-			"noLocationEmptyName": "The location name cannot be empty"
+			"noLocationEmptyName": "The location name cannot be empty",
+			"widgetSavingFailed": "Failed saving widget"
 		},
 		"successes": {
 			"deviceUnlinked": "Device successfully unlinked",
@@ -90,7 +91,8 @@
 			"deviceSaved": "Device settings succesfully saved",
 			"deviceAlreadyLinkedToLocation": "This device is already linked to this location",
 			"skillDeleted": "The skill was correctly deleted",
-			"reloadTriggered": "Reload triggered"
+			"reloadTriggered": "Reload triggered",
+			"widgetSaved": "Widget succesfully saved"
 		},
 		"info": {
 			"deviceNotLinkedToLocation": "This device is not linked to this location",

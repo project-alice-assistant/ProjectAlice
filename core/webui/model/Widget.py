@@ -15,34 +15,25 @@ from core.webui.model.WidgetSizes import WidgetSizes
 class Widget(ProjectAliceObject):
 	DEFAULT_SIZE = WidgetSizes.w_small
 
-	DEFAULT_OPTIONS = dict()
-	CUSTOM_STYLE = {
-		'background'        : '',
-		'background-opacity': '1.0',
-		'color'             : '',
-		'font-size'         : '1.0',
-		'titlebar'          : 'True'
-	}
-
-
 	def __init__(self, data: dict):
 		super().__init__()
 
 		self._id = int(data.get('id', -1))
 		self._skill = data['skill']
 		self._name = data['name']
-		self._params = json.loads(data['params'])
 		self._settings = json.loads(data['settings'])
+		self._configs = json.loads(data['configs'])
 		self._page = data['page']
 		self._lang = self.loadLanguageFile()
 
-		if not self._params:
-			self._params = {
+		if not self._settings:
+			self._settings = {
 				'x'                 : 0,
 				'y'                 : 0,
 				'z'                 : self.WidgetManager.getNextZIndex(self._page),
-				'size'              : self.DEFAULT_SIZE.value,
-				'rotation'          : 0,
+				'w'                 : int(self.DEFAULT_SIZE.value.split('x')[0]),
+				'h'                 : int(self.DEFAULT_SIZE.value.split('x')[1]),
+				'r'                 : 0,
 				'background'        : '#636363',
 				'background-opacity': 1,
 				'color'             : '#d1d1d1',
@@ -81,27 +72,27 @@ class Widget(ProjectAliceObject):
 	def saveToDB(self):
 		if self._id != -1:
 			self.DatabaseManager.replace(
-				tableName='widgets',
-				query='REPLACE INTO :__table__ (id, skill, name, params, settings, page) VALUES (:id, :skill, :name, :params, :settings, :page)',
+				tableName=self.WidgetManager.WIDGETS_TABLE,
+				query='REPLACE INTO :__table__ (id, skill, name, settings, configs, page) VALUES (:id, :skill, :name, :settings, :configs, :page)',
 				callerName=self.WidgetManager.name,
 				values={
 					'id'      : self._id if self._id != 9999 else '',
 					'skill'   : self._skill,
 					'name'    : self._name,
-					'params'  : json.dumps(self._params),
 					'settings': json.dumps(self._settings),
+					'configs' : json.dumps(self._configs),
 					'page'    : self._page
 				}
 			)
 		else:
 			widgetId = self.DatabaseManager.insert(
-				tableName='widgets',
+				tableName=self.WidgetManager.WIDGETS_TABLE,
 				callerName=self.WidgetManager.name,
 				values={
 					'skill'   : self._skill,
 					'name'    : self._name,
-					'params'  : json.dumps(self._params),
 					'settings': json.dumps(self._settings),
+					'configs' : json.dumps(self._configs),
 					'page'    : self._page
 				}
 			)
@@ -186,64 +177,52 @@ class Widget(ProjectAliceObject):
 
 	@property
 	def x(self) -> int:  # NOSONAR
-		return self._params.get('x', 0)
+		return self._settings.get('x', 0)
 
 
 	@x.setter
 	def x(self, value: int):  # NOSONAR
-		self._params['x'] = value
+		self._settings['x'] = value
 
 
 	@property
 	def y(self) -> int:  # NOSONAR
-		return self._params.get('y', 0)
+		return self._settings.get('y', 0)
 
 
 	@y.setter
 	def y(self, value: int):  # NOSONAR
-		self._params['y'] = value
+		self._settings['y'] = value
 
 
 	@property
 	def z(self) -> int:  # NOSONAR
-		return self._params.get('z', 0)
+		return self._settings.get('z', 0)
 
 
 	@z.setter
 	def z(self, value: int):  # NOSONAR
-		self._params['z'] = value
-
-
-	@property
-	def size(self) -> str:
-		return self._params.get('size', '')
-
-
-	@size.setter
-	def size(self, value: str):
-		self._params['size'] = value
+		self._settings['z'] = value
 
 
 	@property
 	def w(self) -> int:  # NOSONAR
-		return int(self._params.get('size', '50x50').split('x')[0])
+		return self._settings['w']
 
 
 	@w.setter
 	def w(self, w: int):  # NOSONAR
-		size = self._params.get('size', '50x50')
-		self._params['size'] = f'{w}x{size.split("x")[1]}'
+		self._settings['w'] = w
 
 
 	@property
 	def h(self) -> int:  # NOSONAR
-		return int(self._params.get('size', '50x50').split('x')[1])
+		return self._settings['h']
 
 
 	@h.setter
 	def h(self, h: int):  # NOSONAR
-		size = self._params.get('size', '50x50')
-		self._params['size'] = f'{size.split("x")[0]}x{h}'
+		self._settings['h'] = h
 
 
 	@property
@@ -268,12 +247,12 @@ class Widget(ProjectAliceObject):
 
 	@property
 	def params(self) -> dict:
-		return self._params
+		return self._settings
 
 
 	@params.setter
 	def params(self, value: dict):
-		self._params = value
+		self._settings = value
 
 
 	@property
@@ -301,8 +280,8 @@ class Widget(ProjectAliceObject):
 			'id'      : self._id,
 			'skill'   : self._skill,
 			'name'    : self._name,
-			'params'  : self._params,
-			'settings': self._settings if isAuth else dict(),
+			'settings': self._settings,
+			'configs' : self._configs if isAuth else dict(),
 			'page'    : self._page,
 			'icon'    : self.icon(),
 			'html'    : self.html(),

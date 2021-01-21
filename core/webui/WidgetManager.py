@@ -11,7 +11,7 @@ from core.webui.model.WidgetPage import WidgetPage
 class WidgetManager(Manager):
 	DEFAULT_ICON = 'fas fa-biohazard'
 
-	WIDGETS_TABLE = 'widgets'
+	WIDGETS_TABLE = 'activeWidgets'
 	WIDGET_PAGES_TABLE = 'widgetPages'
 
 	DATABASE = {
@@ -19,8 +19,8 @@ class WidgetManager(Manager):
 			'id INTEGER PRIMARY KEY',  # NOSONAR
 			'skill TEXT NOT NULL',
 			'name TEXT NOT NULL',
-			"params TEXT NOT NULL DEFAULT '{}'",
 			"settings TEXT NOT NULL DEFAULT '{}'",
+			"configs TEXT NOT NULL DEFAULT '{}'",
 			'page INTEGER NOT NULL DEFAULT 0'
 		],
 		WIDGET_PAGES_TABLE         : [
@@ -129,8 +129,8 @@ class WidgetManager(Manager):
 		instance = self.instanciateWidget({
 			'skill'   : skillName,
 			'name'    : widgetName,
-			'params'  : '{}',
 			'settings': '{}',
+			'configs' : '{}',
 			'page'    : pageId
 		})
 
@@ -299,19 +299,20 @@ class WidgetManager(Manager):
 
 		widget.x = x
 		widget.y = y
-		widget.size = f'{w}x{h}'
+		widget.w = w
+		widget.h = h
 		widget.saveToDB()
 		return True
 
 
-	def saveWidgetParams(self, widgetId: int, params: dict) -> bool:  # NOSONAR
+	def saveWidgetSettings(self, widgetId: int, settings: dict) -> bool:  # NOSONAR
 		widget: Widget = self._widgets.get(widgetId, None)
 
 		if not widget:
-			self.logWarning('Tried to save a widget params but widget doesn\'t exist')
+			self.logWarning('Tried to save widget settings but widget doesn\'t exist')
 			return False
 
-		widget.params = params
+		widget.settings = settings
 		widget.saveToDB()
 		return True
 

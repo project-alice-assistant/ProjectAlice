@@ -150,9 +150,9 @@ class WidgetsApi(Api):
 
 	@route('/<widgetId>/', methods=['PATCH'])
 	@ApiAuthenticated
-	def saveParams(self, widgetId: str):
+	def saveSettings(self, widgetId: str):
 		try:
-			return jsonify(success=self.WidgetManager.saveWidgetParams(int(widgetId), request.json))
+			return jsonify(success=self.WidgetManager.saveWidgetSettings(int(widgetId), request.json))
 		except Exception as e:
-			self.logError(f'Failed saving widget paraams: {e}')
+			self.logError(f'Failed saving widget settings: {e}')
 			return jsonify(success=False, message=str(e))
