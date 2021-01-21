@@ -73,6 +73,12 @@ class DialogManager(Manager):
 				'sessionId': session.sessionId
 			}
 		)
+		# Personalise the notification if able to
+		talkNotification = self.TalkManager.randomTalk(talk='notification', skill='system')
+		if session.user != constants.UNKNOWN_USER:
+			talkNotification = talkNotification.format(session.user)
+		else:
+			talkNotification = talkNotification.format("")
 
 		# Play notification if needed
 		if self._feedbackSounds.get('siteId', True):
@@ -82,10 +88,7 @@ class DialogManager(Manager):
 					'siteId'    : siteId,
 					'init'      : {
 						'type'                   : 'action',
-						'text'                   : self.TalkManager.randomTalk(
-							talk='notification',
-							skill='system'
-						),
+						'text'                   : talkNotification,
 						'sendIntentNotRecognized': True,
 						'canBeEnqueued'          : False,
 						'isHotwordNotification'  : True
