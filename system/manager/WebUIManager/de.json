@@ -15,7 +15,8 @@
 	},
 	"tours": {
 		"skills": {
-			"data0": "Das ist ein Skill den du gerade in Project Alice installiert hast.",
+			"yourSkills": "Deine Skills",
+			"data0": "Das ist ein Skill der aktuell in Project Alice installiert ist.",
 			"data1": "Wenn der Skill Benutzereinstellungen hat, erscheint dieser Knopf. Klicke ihn an um Einstellungen vorzunehmen!",
 			"data2": "Du kannst jeden nicht essenziellen Skill mit diesem Knopf stoppen.",
 			"data3": "Du kannst Skills auch neu laden und starten!",
@@ -47,8 +48,6 @@
 		"close": "Schließen",
 		"edit" : "Bearbeiten",
 		"theaterMode" : "Theater Modus",
-		"uploadPresets" : "Upload Voreinstellung",
-		"downloadPresets" : "Download Voreinstellung",
 		"addWidgets" : "Widgets hinzufügen",
 		"removeWidgets" : "Widgets entfernen",
 		"yes": "Ja",
@@ -67,20 +66,55 @@
 		"manageFurniture": "Verwalte Möbel",
 		"addDevice": "Neues Gerät hinzufügen",
 		"removeDevice": "Gerät entfernen",
-		"linkDevice": "Gerät mit Lokationen verknüpfen"
+		"linkDevice": "Gerät mit Lokationen verknüpfen",
+		"unlinkDevice": "Gerätelink entfernen"
+	},
+	"notifications" : {
+		"errors": {
+			"uiError": "Entschuldigung, da ist etwas schief gelaufen!",
+			"unexpectedServerError": "Ein unerwarteter Serverfehler ist aufgetreten.",
+			"noDeviceToDeviceLink": "Du kannst keinen Link zwischen zwei Geräten herstellen.",
+			"deviceUnlinkFailed": "Fehler beim Löschen eines Links.",
+			"deviceLinked": "Erstellen eines Links fehlgeschlagen.",
+			"somethingWentWrong": "Etwas ist schief gegangen, bitte prüfe deine Logs!",
+			"deviceSavingFailed": "Fehler beim Speichern des Gerätes.",
+			"cannotLinkDevice": "Du kannst keinen Link für dieses Gerät erstellen.",
+			"skillDeleteFailed": "Fehler beim Deinstallieren des Links.",
+			"noLocationEmptyName": "Die Lokation benötigt einen Namen.",
+			"widgetSavingFailed": "Fehler beim Speichern des Widgets."
+		},
+		"successes": {
+			"deviceUnlinked": "Gerätelink erfolgreich entfernt.",
+			"deviceDeleted": "Gerät erfolgreich gelöscht.",
+			"deviceLinked": "Gerät erfolgreich verlinkt.",
+			"pageDeleted": "Die Seite wurde gelöscht.",
+			"deviceSaved": "Geräteeinstellungen erfolgreich aktualisiert.",
+			"deviceAlreadyLinkedToLocation": "Es gibt bereits einen Link zwischen Gerät und Lokation.",
+			"skillDeleted": "Der Skill wurde erfolgreich deinstalliert.",
+			"reloadTriggered": "Neu Laden angestoßen.",
+			"widgetSaved": "Widget erfolgreich gespeichert."
+		},
+		"info": {
+			"deviceNotLinkedToLocation": "Das Gerät besitzt keinen Link zu dieser Lokation",
+			"pleasePlugDevice": "Bitte schalte das Gerät ein das gepaart werden soll."
+		}
 	},
 	"buttons": {
 		"cancel": "Abbrechen",
 		"confirm": "Bestätigen",
+		"ok": "Ok",
 		"login": "Login",
 		"send": "Senden",
 		"create": "Erstellen",
 		"reset": "Zurücksetzen",
 		"uploadToGithub": "Upload nach Github",
 		"checkOnGithub": "Auf Github prüfen",
-		"minimize": "Minimieren"
+		"minimize": "Minimieren",
+		"search": "Suchen"
 	},
 	"labels": {
+		"searchSetting": "Einstellungen durchsuchen",
+		"keyword": "Keyword",
 		"sendCommand": "Linux System Befehl senden",
 		"skillName": "Skill Name",
 		"skillSpeakableName": "Skill sprechbarer Name",
@@ -118,13 +152,21 @@
 			"enterLocationName": "Gib einen Namen für die neue Lokation an",
 			"enterNewLocationName": "Gib den neuen Namen für diese Lokation an",
 			"locationSetting": "Lokations Einstellungen",
-			"addDevice": "Füge ein Gerät hinzu"
+			"addDevice": "Füge ein Gerät hinzu",
+			"newIcon": "Neues Icon",
+			"deviceSettings": "Geräte-Einstellungen",
+			"generalSettings": "Allgemeine Einstellungen",
+			"deviceLinksSettings": "Link-Einstellungen",
+			"linkTo": "Verknüpft mit"
 		},
 		"bodies": {
 			"clickToAddLocation": "Bestätige die Eingabe und Klicke auf den Grundriss, wo die Lokation erstellt werden soll. Wenn du die Maus ziehst, kannst du auch direkt die Größe des Raumes eingeben!",
 			"locationNameOrSynonymAlreadyExist": "Es gibt bereits eine Lokation mit diesem Namen oder Synonym.",
 			"chooseDevice": "Wähle ein Gerätetyp aus",
-			"noDevices": "Du kannst aktuell keine neuen Geräte hinzufügen. Installiere weitere Skills um neue Gerätetypen zu erhalten!"
+			"noDevices": "Du kannst aktuell keine neuen Geräte hinzufügen. Installiere weitere Skills um neue Gerätetypen zu erhalten!",
+			"enterNewIcon": "Bitte gib das neue \"Font Awesome\" Icon inklusive Präfix an.<br>Du findest sie hier: <a href=\"https://fontawesome.com/icons?d=gallery&m=free\" target=\"_blank\" class=\"clickable\">Font Awesome</a>",
+			"confirmPageDelete": "Willst du diese Seite wirklich löschen?",
+			"cannotDeleteDefaultPage": "Du kannst die Standardseite nicht löschen!"
 		},
 		"labels": {
 			"displayTitle": "Titel anzeigen",
@@ -140,7 +182,13 @@
 			"yes": "Ja",
 			"no": "Nein",
 			"cancel": "Abbrechen",
-			"addLocationSynonym": "Synonyme hinzufügen"
+			"addLocationSynonym": "Synonyme hinzufügen",
+			"faExample": "Beispiel: fas fa-biohazard",
+			"heartbeatRate": "Heartbeat Abstand in Sekunden",
+			"deviceDisplayName": "Gerätename"
+		},
+		"placeholders": {
+			"typeAndPressEnter": "Gib den Namen ein Und drücke Enter"
 		}
 	},
 	"utilities": {
