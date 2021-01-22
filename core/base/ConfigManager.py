@@ -251,10 +251,11 @@ class ConfigManager(Manager):
 		# Cast value to template defined type
 		vartype = self._skillsTemplateConfigurations[skillName][key]['dataType']
 		if vartype == 'boolean':
-			if value.lower() in {'on', 'yes', 'true', 'active'}:
-				value = True
-			elif value.lower() in {'off', 'no', 'false', 'inactive'}:
-				value = False
+			if not isinstance(value, bool):
+				if value.lower() in {'on', 'yes', 'true', 'active'}:
+					value = True
+				elif value.lower() in {'off', 'no', 'false', 'inactive'}:
+					value = False
 		elif vartype == 'integer':
 			try:
 				value = int(value)
@@ -542,8 +543,11 @@ class ConfigManager(Manager):
 
 
 	def isAliceConfHidden(self, confName: str) -> bool:
-		return confName in self._aliceTemplateConfigurations and \
-		       self._aliceTemplateConfigurations.get('display') == 'hidden'
+		return self._aliceTemplateConfigurations.get(confName, dict()).get('display', '') == 'hidden'
+
+
+	def isAliceConfSensitive(self, confName: str) -> bool:
+		return self._aliceTemplateConfigurations.get(confName, dict()).get('isSensitive', False)
 
 
 	def getAliceConfUpdatePreProcessing(self, confName: str) -> typing.Optional[str]:
@@ -653,12 +657,17 @@ class ConfigManager(Manager):
 
 
 	def enableDisableSound(self):
-		if self.getAliceConfigByName('disableSoundAndMic'):
-			self.WakewordManager.disableEngine()
+		if self.getAliceConfigByName('disableSound'):
 			self.AudioServer.onStop()
 		else:
-			self.WakewordManager.enableEngine()
 			self.AudioServer.onStart()
+
+
+	def enableDisableCapture(self):
+		if self.getAliceConfigByName('disableCapture'):
+			self.WakewordManager.disableEngine()
+		else:
+			self.WakewordManager.enableEngine()
 
 
 	def restartWakewordEngine(self):
@@ -706,7 +715,7 @@ class ConfigManager(Manager):
 			devices = self._listAudioDevices()
 			self.updateAliceConfigDefinitionValues(setting='inputDevice', value=devices)
 		except:
-			if not self.getAliceConfigByName('disableSoundAndMic'):
+			if not self.getAliceConfigByName('disableCapture'):
 				self.logWarning('No audio input device found')
 
 
@@ -715,7 +724,7 @@ class ConfigManager(Manager):
 			devices = self._listAudioDevices()
 			self.updateAliceConfigDefinitionValues(setting='outputDevice', value=devices)
 		except:
-			if not self.getAliceConfigByName('disableSoundAndMic'):
+			if not self.getAliceConfigByName('disableSound'):
 				self.logWarning('No audio output device found')
 
 

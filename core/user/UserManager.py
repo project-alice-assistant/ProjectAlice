@@ -6,6 +6,7 @@ import bcrypt
 import jwt
 
 from core.base.model.Manager import Manager
+from core.commons import constants
 from core.user.model.AccessLevels import AccessLevel
 from core.user.model.User import User
 
@@ -253,7 +254,7 @@ class UserManager(Manager):
 
 
 	def apiTokenLevel(self, token: str) -> AccessLevel:
-		return self._validtokens[token].accessLevel
+		return self._validtokens[token].accessLevel if token in self._validtokens else constants.UNKNOWN
 
 
 	def getUserByAPIToken(self, token: str) -> Optional[User]:

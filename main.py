@@ -78,7 +78,7 @@ from core.util.model.MqttLoggingHandler import MqttLoggingHandler
 
 htmlFormatter = HtmlFormatting.Formatter()
 mqttHandler = MqttLoggingHandler()
-mqttHandler.setFormatter(htmlFormatter)
+#mqttHandler.setFormatter(htmlFormatter)
 _logger.addHandler(mqttHandler)
 
 

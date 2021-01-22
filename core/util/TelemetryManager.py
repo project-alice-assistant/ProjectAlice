@@ -1,9 +1,10 @@
 import time
-from typing import Iterable
+from typing import Iterable, List
 
 from core.base.model.Manager import Manager
-from core.device.model.Location import Location
+from core.myHome.model.Location import Location
 from core.util.model.TelemetryType import TelemetryType
+from core.util.model.TelemetryData import TelemetryData
 
 
 class TelemetryManager(Manager):
@@ -14,8 +15,8 @@ class TelemetryManager(Manager):
 			'type TEXT NOT NULL',
 			'value TEXT NOT NULL',
 			'service TEXT NOT NULL',
-			'siteId TEXT NOT NULL',
-			'locationID INTEGER NOT NULL',
+			'deviceId INTEGER NOT NULL',
+			'locationId INTEGER NOT NULL',
 			'timestamp INTEGER NOT NULL'
 		]
 	}
@@ -61,6 +62,7 @@ class TelemetryManager(Manager):
 	def __init__(self):
 		super().__init__(databaseSchema=self.DATABASE)
 		self._data = list()
+		self._currentValues: List[TelemetryData] = list()
 
 
 	def onStart(self):
@@ -77,29 +79,70 @@ class TelemetryManager(Manager):
 			self.pruneTable('telemetry')
 
 
-	# noinspection SqlResolve
 	def loadData(self):
 		if not self._isActive:
 			return
 
-		self._data = self.databaseFetch(
-			tableName='telemetry',
-			query='SELECT * FROM :__table__ ORDER BY timestamp DESC LIMIT 200',
-			method='all'
-		)
+		self._currentValues = [ TelemetryData(val) for val in self.getDistinct()]
 
+	def currentValue(self, ttype: TelemetryType, value: str, service: str, deviceId: int, timestamp=None, locationId: int = None) -> bool:
+		"""
+		check currentValue needs new data
+		:param ttype:
+		:param value:
+		:param service:
+		:param deviceId:
+		:param timestamp:
+		:param locationId:
+		:return:
+		"""
+		match = None
+		for current in self._currentValues:
+			if current.type == ttype and current.service == service and current.deviceId == deviceId and current.locationId == locationId:
+				match = current
+		if match:
+			if match.timestamp == timestamp and match.value == value:
+				# skip exact dublicates
+				return False
+			else:
+				match.timestamp = timestamp
+				match.value = value
+				return True
+		else:
+			self._currentValues.append(TelemetryData({'type': ttype,
+			                                          'value': value,
+			                                          'service': service,
+			                                          'deviceId': deviceId,
+			                                          'timestamp': timestamp,
+			                                          'locationId': locationId}))
+			return True
 
 	# noinspection SqlResolve
-	def storeData(self, ttype: TelemetryType, value: str, service: str, siteId: str, timestamp=None, locationID: int = None):
+	def storeData(self, ttype: TelemetryType, value: str, service: str, deviceId: int, timestamp=None, locationId: int = None) -> bool:
+		"""
+		Store telemetry data to the database and the list of current values.
+		Dublicates are filtered out.
+		If a new entry was added, true is returned, if not false
+		:param ttype:
+		:param value:
+		:param service:
+		:param deviceId:
+		:param timestamp:
+		:param locationId:
+		:return bool: if a new entry was created
+		"""
 		if not self.isActive:
-			return
+			return False
 
 		timestamp = timestamp or time.time()
 
+		if not self.currentValue(ttype, value, service, deviceId,timestamp, locationId):
+			return False
+
 		self.databaseInsert(
 			tableName='telemetry',
-			query='INSERT INTO :__table__ (type, value, service, siteId, timestamp, locationID) VALUES (:type, :value, :service, :siteId, :timestamp, :locationID)',
-			values={'type': ttype.value, 'value': value, 'service': service, 'siteId': siteId, 'timestamp': round(timestamp), 'locationID': locationID}
+			query='INSERT INTO :__table__ (type, value, service, deviceId, timestamp, locationId) VALUES (:type, :value, :service, :deviceId, :timestamp, :locationId)',
+			values={'type': ttype.value, 'value': value, 'service': service, 'deviceId': deviceId, 'timestamp': round(timestamp), 'locationId': locationId}
 		)
 
 		telemetrySkill = self.SkillManager.getSkillInstance('Telemetry')
@@ -116,29 +159,73 @@ class TelemetryManager(Manager):
 			value = float(value)
 			if settings[0] == 'upperThreshold' and value > threshold or \
 					settings[0] == 'lowerThreshold' and value < threshold:
-				self.broadcast(method=message, exceptions=[self.name], propagateToSkills=True, service=service,
-							   trigger=settings[0], value=value, threshold=threshold, area=siteId)
+				self.broadcast(method=message, exceptions=[self.name], propagateToSkills=True, service=service, trigger=settings[0], value=value, threshold=threshold, area=deviceId )
 				break
 
+		return True
 
-	def getData(self, ttype: TelemetryType, siteId: str = None, service: str = None, location: Location = None) -> Iterable:
-		if location:
-			values = {'type': ttype.value, 'locationId': location.id}
-		elif siteId:
-			values = {'type': ttype.value, 'siteId': siteId}
-		else:
-			raise Exception("Supply location or site/uuid")
+
+	def getData(self, ttype: TelemetryType = None, deviceId: str = None, service: str = None, locationId: int = None, historyFrom: int = None, historyTo: int = None, all: bool = False) -> Iterable:
+		values = {}
+		if ttype:
+			values['type'] = ttype
+		if locationId:
+			values['locationId'] = locationId
+		if deviceId:
+			values['deviceId'] = deviceId
+
 		if service:
 			values['service'] = service
 
 		dynWhere = [f'{col} = :{col}' for col in values.keys()]
 
+
+		if historyTo:
+			dynWhere.append(f'timestamp <= {historyTo}')
+		if historyFrom:
+			dynWhere.append(f'timestamp >= {historyFrom}')
+
 		# noinspection SqlResolve
-		query = f'SELECT value, timestamp FROM :__table__ WHERE {" and ".join(dynWhere)} ORDER BY `timestamp` DESC LIMIT 1'
+		query = f'SELECT * FROM :__table__ WHERE {" and ".join(dynWhere)} ORDER BY `timestamp` DESC{" LIMIT 1" if not historyFrom and not historyTo and not all else ""}'
 
 		# noinspection SqlResolve
 		return self.databaseFetch(
 			tableName='telemetry',
 			query=query,
-			values=values
+			values=values,
+			method='all'
 		)
+
+	def getDistinct(self, ttype: TelemetryType = None, deviceId: str = None, service: str = None, locationId: int = None) -> Iterable:
+		values = {}
+		group = []
+		if ttype:
+			values['type'] = ttype
+		if locationId:
+			values['locationId'] = locationId
+		if deviceId:
+			values['deviceId'] = deviceId
+		if service:
+			values['service'] = service
+
+		where = " WHERE " + " and ".join([f'{col} = :{col}' for col in values.keys()]) if values else ""
+
+		# noinspection SqlResolve
+		query = f'SELECT t1.* FROM :__table__ t1 ' \
+		        f'INNER JOIN ' \
+		        f'(SELECT max(id) id, service, deviceId, locationId, type ' \
+				f'FROM :__table__ { where } ' \
+		        f'GROUP BY `service`, `deviceId`, `locationId`, `type`) t2 ' \
+		        f'ON t1.id  = t2.id ' \
+		        f'ORDER BY `timestamp` DESC '
+
+		# noinspection SqlResolve
+		return self.databaseFetch(
+			tableName='telemetry',
+			query=query,
+			values=values,
+			method='all'
+		)
+
+	def getAllCombinationsForAPI(self):
+		return [ val.forApi() for val in self._currentValues ]

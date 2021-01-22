@@ -1,158 +1,98 @@
 import json
 import sqlite3
-from typing import Dict
+from pathlib import Path
+from typing import Dict, List, Union
 
 from core.base.model.ProjectAliceObject import ProjectAliceObject
 from core.device.model import Device
+from core.device.model.DeviceAbility import DeviceAbility
 from core.dialog.model.DialogSession import DialogSession
 
 
 class DeviceType(ProjectAliceObject):
 
-	DEV_SETTINGS = dict()
-	LOC_SETTINGS = dict()
-
-	def __init__(self, data: sqlite3.Row, devSettings = None, locSettings = None, allowLocationLinks: bool = True, perLocationLimit: int = 0, totalDeviceLimit: int = 0, heartbeatRate: int = 5, internalOnly: bool = False):
+	def __init__(self, data: Union[Dict, sqlite3.Row]):
 		super().__init__()
 
-		if locSettings is None:
-			locSettings = {}
-		if devSettings is None:
-			devSettings = {}
+		if isinstance(data, sqlite3.Row):
+			data = self.Commons.dictFromRow(data)
 
-		self._name = data['name']
-		self._skill = data['skill']
-		self._skillInstance = None
-		self._perLocationLimit = perLocationLimit
-		self._totalDeviceLimit = totalDeviceLimit
-		self._allowLocationLinks = allowLocationLinks
-		self._devSettings = devSettings
-		self._locSettings = locSettings
-		self.heartbeatRate = heartbeatRate
-		self.internalOnly = internalOnly
+		self._deviceTypeName = data['deviceTypeName']
+		self._skillName = data['skillName']
+		self._perLocationLimit = data.get('perLocationLimit', 0)
+		self._totalDeviceLimit = data.get('totalDeviceLimit', 0)
+		self._allowLocationLinks = data.get('allowLocationLinks', True)
+		self._heartbeatRate = data.get('heartbeatRate', 5)
+		self._allowHeartbeatOverride = data.get('allowHeartbeatOverride', False)
 
-		if 'id' in data:
-			self._id = data['id']
-		else:
-			self.saveToDB()
+		self._deviceConfigsTemplates = dict()
+		self._linkConfigsTemplates = dict()
+		self.loadDeviceConfigsTemplates()
 
-		self.checkChangedSettings()
+		abilities = data.get('abilities', [])
+		self._abilities = 0
+		for ability in abilities:
+			self._abilities |= ability.value
 
 
-### to reimplement for any device type
-	def discover(self, device: Device, uid: str, replyOnSiteId: str = '', session: DialogSession = None) -> bool:
-		# implement the method which can start the search for a new device.
-		# on success the uid should be added to the device and it should be saved
-		# for this, call device.pairingDone(uid)
-		# return False if busy
-		# if not implemented, it will always look busy!
-		raise NotImplementedError
+	def loadDeviceConfigsTemplates(self):
+		try:
+			filepath = Path(f'skills/{self._skillName}/devices/{self._deviceTypeName}.config.template')
+			if not filepath.exists():
+				return
+
+			data = json.loads(filepath.read_text())
+
+			self._linkConfigsTemplates = data['linkConfigs']
+			self._deviceConfigsTemplates = data['deviceConfigs']
+		except Exception as e:
+			self.logError(f'Error loading device config template for device type **{self._deviceTypeName}** {e}')
 
 
-	def getDeviceIcon(self, device: Device) -> str:
-		# Return the tile representing the current status of the device:
-		# e.g. a light bulb can be on or off and display its status
-		raise NotImplementedError
+	def hasAbilities(self, abilities: List[DeviceAbility]) -> bool:
+		"""
+		Checks if that device type has the given abilities, through a bitwise comparison
+		:param abilities: a list of DeviceAbility
+		:return: boolean
+		"""
+		check = 0
+		for ability in abilities:
+			check |= ability.value
+
+		return self._abilities & check == check
 
 
-	def toggle(self, device: Device):
-		# the functionality to execute when the device is clicked/toggled in the webinterface
-		raise NotImplementedError
-
-
-	def getDeviceConfig(self):
-		# Getting device config
-		pass
-
-
-	def onChangedLocation(self, device: Device):
-		# Location has changed:
-		# inform device?
-		# change configs?
-		pass
-
-
-### Generic part
-	@property
-	def initialLocationSettings(self) -> Dict:
-		return self._locSettings
-
-
-	def saveToDB(self):
-		values = {'skill': self.skill, 'name': self.name, 'locSettings': json.dumps(self._locSettings), 'devSettings': json.dumps(self._devSettings)}
-		self._id = self.DatabaseManager.insert(tableName=self.DeviceManager.DB_TYPES, values=values, callerName=self.DeviceManager.name)
-
-
-	def checkChangedSettings(self):
-		# noinspection SqlResolve
-		row = self.DeviceManager.databaseFetch(tableName=self.DeviceManager.DB_TYPES,
-									            query='SELECT * FROM :__table__ WHERE id = :id',
-			                                    values={'id':self.id},
-		                                        method='one')
-
-		if row['devSettings'] != json.dumps(self._devSettings):
-			self.logInfo(f'Updating device Settings structure for {self.name}')
-			self.DatabaseManager.update(tableName=self.DeviceManager.DB_TYPES,
-			                            callerName=self.DeviceManager.name,
-			                            values={'devSettings': json.dumps(self._devSettings)},
-			                            row=('id', self.id))
-			for device in self.DeviceManager.getDevicesByTypeID(deviceTypeID=self.id):
-				device.changedDevSettingsStructure(self._devSettings)
-
-		if row['locSettings'] != json.dumps(self._locSettings):
-			self.logInfo(f'Updating locations Settings structure for {self.name}')
-			self.DatabaseManager.update(tableName=self.DeviceManager.DB_TYPES,
-			                            callerName=self.DeviceManager.name,
-			                            values={'locSettings': json.dumps(self._locSettings)},
-			                            row=('id', self.id))
-			for links in self.DeviceManager.getDeviceLinksByType(deviceType=self.id):
-				links.changedLocSettingsStructure(self._locSettings)
-
-
-	def checkDevices(self):
-		if not self.parentSkillInstance:
-			self.logInfo(f'no parent skill!')
-			return
-		self.DatabaseManager.update(tableName=self.DeviceManager.DB_DEVICE,
-		                            callerName=self.DeviceManager.name,
-		                            values={'skillName': self.parentSkillInstance.name},
-		                            row=('typeID', self.id))
+	def getDeviceTypeIcon(self) -> Path:
+		"""
+		Return the path of the icon representing this device type
+		:return: the icon file path
+		"""
+		return Path(f'{self.Commons.rootDir()}/skills/{self._skillName}/devices/img/{self._deviceTypeName}.png')
 
 
 	@property
-	def parentSkillInstance(self):
-		return self._skillInstance
-
-
-	@parentSkillInstance.setter
-	def parentSkillInstance(self, skill):
-		self._skillInstance = skill
-		self.checkDevices()
+	def heartbeatRate(self) -> int:
+		return self._heartbeatRate
 
 
 	@property
-	def skill(self) -> str:
-		return self._skill
-
-
-	@skill.setter
-	def skill(self, value: str):
-		self._skill = value
+	def allowHeartbeatOverride(self) -> bool:
+		return self._allowHeartbeatOverride
 
 
 	@property
-	def id(self) -> str:
-		return self._id
+	def abilities(self) -> bin:
+		return self._abilities
 
 
 	@property
-	def name(self) -> str:
-		return self._name
+	def deviceTypeName(self) -> str:
+		return self._deviceTypeName
 
 
-	@name.setter
-	def name(self, value: str):
-		self._name = value
+	@deviceTypeName.setter
+	def deviceTypeName(self, value: str):
+		self._deviceTypeName = value
 
 
 	@property
@@ -170,5 +110,48 @@ class DeviceType(ProjectAliceObject):
 		return self._allowLocationLinks
 
 
+	@property
+	def skillName(self) -> str:
+		return self._skillName
+
+
+	@property
+	def deviceConfigsTemplates(self) -> dict:
+		return self._deviceConfigsTemplates
+
+
+	@property
+	def linkConfigsTemplates(self) -> dict:
+		return self._linkConfigsTemplates
+
+
 	def __repr__(self):
-		return f'{self.skill} - {self.name}'
+		return f'{self._skillName} - {self._deviceTypeName}'
+
+
+	def discover(self, device: Device, uid: str, replyOnDevice: str = '', session: DialogSession = None) -> bool:
+		# TODO generic method
+		"""
+		Method that starts the search for a new device
+		:param device: The device class we want to add
+		:param uid:
+		:param replyOnDevice:
+		:param session:
+		:return:
+		"""
+		pass
+
+
+	def toDict(self) -> dict:
+		return {
+			'deviceTypeName'         : self._deviceTypeName,
+			'skillName'              : self._skillName,
+			'perLocationLimit'       : self._perLocationLimit,
+			'totalDeviceLimit'       : self._totalDeviceLimit,
+			'allowLocationLinks'     : self._allowLocationLinks,
+			'heartbeatRate'          : self._heartbeatRate,
+			'allowHeartbeatOverride' : self._allowHeartbeatOverride,
+			'abilities'              : bin(self._abilities),
+			'deviceConfigsTemplates' : self._deviceConfigsTemplates,
+			'linkConfigsTemplates'   : self._linkConfigsTemplates
+		}

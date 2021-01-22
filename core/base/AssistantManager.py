@@ -5,9 +5,11 @@ from pathlib import Path
 from typing import Dict, Generator
 
 from core.base.model.Manager import Manager
+from core.base.model.StateType import StateType
 
 
 class AssistantManager(Manager):
+	STATE = 'projectalice.core.training'
 
 	def __init__(self):
 		super().__init__()
@@ -35,6 +37,10 @@ class AssistantManager(Manager):
 		if forceRetrain:
 			self.logInfo('Forced assistant training')
 			self.train()
+			self.DialogTemplateManager.clearCache(rebuild=False)
+			self.DialogTemplateManager.train()
+			self.NluManager.clearCache()
+			self.NluManager.train()
 		elif not self._assistantPath.exists():
 			self.logInfo('Assistant not found')
 			self.train()
@@ -119,6 +125,15 @@ class AssistantManager(Manager):
 
 	def train(self):
 		self.logInfo('Training assistant')
+
+		state = self.StateManager.getState(self.STATE)
+		if not state:
+			self.StateManager.register(self.STATE, initialState=StateType.RUNNING)
+		elif state.currentState == StateType.RUNNING:
+			self._logger.logInfo('Training cancelled, already running')
+			return
+
+		self.StateManager.setState(self.STATE, newState=StateType.RUNNING)
 
 		try:
 			assistant = self.newAssistant()

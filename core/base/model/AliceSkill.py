@@ -14,20 +14,18 @@ from markdown import markdown
 from paho.mqtt import client as MQTTClient
 
 from core.ProjectAliceExceptions import AccessLevelTooLow, SkillStartingFailed
-from core.base.model import Widget
 from core.base.model.Intent import Intent
 from core.base.model.ProjectAliceObject import ProjectAliceObject
 from core.base.model.Version import Version
 from core.commons import constants
-from core.device.model.DeviceType import DeviceType
+from core.device.model.Device import Device
 from core.dialog.model.DialogSession import DialogSession
 from core.user.model.AccessLevels import AccessLevel
 
 
 class AliceSkill(ProjectAliceObject):
 
-
-	def __init__(self, supportedIntents: Iterable = None, databaseSchema: dict = None, **kwargs):
+	def __init__(self, supportedIntents: Iterable = None, databaseSchema: dict = None, installer: Dict = None, **kwargs):
 		super().__init__(**kwargs)
 		try:
 			self._skillPath = Path(inspect.getfile(self.__class__)).parent
@@ -45,19 +43,22 @@ class AliceSkill(ProjectAliceObject):
 		self._instructions = instructionsFile.read_text() if instructionsFile.exists() else ''
 
 		self._name = self._installer['name']
-		self._author = self._installer['author']
-		self._version = self._installer['version']
-		self._icon = self._installer['icon']
-		self._description = self._installer['desc']
-		self._category = self._installer['category'] if 'category' in self._installer else 'undefined'
-		self._conditions = self._installer['conditions']
+		self._author = self._installer.get('author', constants.UNKNOWN)
+		self._version = self._installer.get('version', '0.0.1')
+		self._icon = self._installer.get('icon', 'fas fa-biohazard')
+		self._aliceMinVersion = Version.fromString(self._installer.get('aliceMinVersion', '1.0.0-b4'))
+		self._maintainers = self._installer.get('maintainers', list())
+		self._description = self._installer.get('desc', '')
+		self._category = self._installer.get('category', constants.UNKNOWN)
+		self._conditions = self._installer.get('conditions', dict())
 		self._updateAvailable = False
 		self._active = False
 		self._delayed = False
 		self._required = False
+		self._failedStarting = False
 		self._databaseSchema = databaseSchema
-		self._widgets = dict()
-		self._deviceTypes = dict()
+		self._widgets = list()
+		self._deviceTypes = list()
 		self._intentsDefinitions = dict()
 		self._scenarioPackageName = ''
 		self._scenarioPackageVersion = Version(mainVersion=0, updateVersion=0, hotfix=0)
@@ -66,6 +67,17 @@ class AliceSkill(ProjectAliceObject):
 		self.loadIntentsDefinition()
 
 		self._utteranceSlotCleaner = re.compile('{(.+?):=>.+?}')
+		self._myDevicesTemplates = dict()
+
+
+	@property
+	def failedStarting(self) -> bool:
+		return self._failedStarting
+
+
+	@failedStarting.setter
+	def failedStarting(self, value: bool):
+		self._failedStarting = value
 
 
 	def getHtmlInstructions(self) -> flask.Markup:
@@ -183,99 +195,33 @@ class AliceSkill(ProjectAliceObject):
 		return intentMappings
 
 
-	# noinspection SqlResolve
 	def loadWidgets(self):
 		fp = self.getResource('widgets')
 		if fp.exists():
-			self.logInfo(f"Loading **{len(list(fp.glob('*.py'))) - 1}** widget", plural='widget')
-
-			data = self.DatabaseManager.fetch(
-				tableName='widgets',
-				query='SELECT * FROM :__table__ WHERE parent = :parent ORDER BY `zindex`',
-				callerName=self.SkillManager.name,
-				values={'parent': self.name},
-				method='all'
-			)
-			if data:
-				data = {row['name']: row for row in data}
-
+			self.logInfo(f"Found **{len(list(fp.glob('*.py'))) - 1}** widget", plural='widget')
 			for file in fp.glob('*.py'):
 				if file.name.startswith('__'):
 					continue
 
-				widgetName = Path(file).stem
-				widgetImport = importlib.import_module(f'skills.{self.name}.widgets.{widgetName}')
-				klass = getattr(widgetImport, widgetName)
-
-				if widgetName in data:  # widget already exists in DB
-					widget = klass(data[widgetName])
-					self._widgets[widgetName] = widget
-					widget.setParentSkillInstance(self)
-					del data[widgetName]
-					self.logInfo(f'Loaded widget **{widgetName}**')
-
-				else:  # widget is new
-					self.logInfo(f'Adding widget **{widgetName}**')
-					widget = klass({
-						'name'  : widgetName,
-						'parent': self.name,
-					})
-					self._widgets[widgetName] = widget
-					widget.setParentSkillInstance(self)
-					widget.saveToDB()
-
-			for widgetName in data:  # deprecated widgets
-				self.logInfo(f'Widget **{widgetName}** is deprecated, removing')
-				self.DatabaseManager.delete(
-					tableName='widgets',
-					callerName=self.SkillManager.name,
-					query='DELETE FROM :__table__ WHERE parent = :parent AND name = :name',
-					values={
-						'parent': self.name,
-						'name'  : widgetName
-					}
-				)
+				self._widgets.append(Path(file).stem)
 
 
-	def loadDevices(self):
-		fp = self.getResource('device')
+	def loadDeviceTypes(self):
+		fp = self.getResource('devices')
 		if fp.exists():
-			self.logInfo(f"Loading **{len(list(fp.glob('*.py')))}** device type", plural='type')
-
-			data = self.DeviceManager.getDeviceTypeBySkillRAW(skill=self.name)
-
+			self.logInfo(f"Found **{len(list(fp.glob('*.py'))) - 1}** device type", plural='type')
 			for file in fp.glob('*.py'):
 				if file.name.startswith('__'):
 					continue
 
-				deviceType = Path(file).stem
-				deviceTypeImport = importlib.import_module(f'skills.{self.name}.device.{deviceType}')
-				klass = getattr(deviceTypeImport, deviceType)
+				self._deviceTypes.append(Path(file).stem)
 
-				if deviceType in data:  # deviceType already exists in DB
-					deviceClass = klass(data[deviceType])
-					self._deviceTypes[deviceClass.id] = deviceClass
-					del data[deviceType]
-					self.logInfo(f'Loaded device type **{deviceType}**')
-				else:  # deviceClass is new
-					self.logInfo(f'Adding new device type **{deviceType}**')
-					deviceClass = klass({'name': deviceType, 'skill': self.name})
-					self._deviceTypes[deviceClass.id] = deviceClass
-
-				deviceClass.parentSkillInstance = self
-				deviceClass.onStart()
-
-			for deviceType in data:  # deprecated devices
-				self.logInfo(f'Device type **{deviceType}** is deprecated, removing')
-				self.DeviceManager.removeDeviceTypeName(_name=deviceType)
-
-
-
-	def getWidgetInstance(self, widgetName: str) -> Optional[Widget]:
-		return self._widgets.get(widgetName)
-
-	def getDeviceTypeInstance(self, deviceTypeName: str) -> Optional[DeviceType]:
-		return self._deviceTypes.get(deviceTypeName)
+				try:
+					deviceImport = importlib.import_module(f'skills.{self.name}.devices.{file.stem}')
+					klass: Device = getattr(deviceImport, file.stem)
+					self.DeviceManager.registerDeviceType(self.name, klass.getDeviceTypeDefinition())
+				except Exception as e:
+					self.logError(f"Failed retrieving device type definition for device **{file.stem}** {e}")
 
 
 	def getUtterancesByIntent(self, intent: Union[Intent, tuple, str], forceLowerCase: bool = True, cleanSlots: bool = False) -> list:
@@ -297,16 +243,20 @@ class AliceSkill(ProjectAliceObject):
 			return list(self._intentsDefinitions[lang][check])
 
 		return [re.sub(self._utteranceSlotCleaner, '\\1', utterance.lower() if forceLowerCase else utterance)
-			for utterance in self._intentsDefinitions[lang][check]]
+		        for utterance in self._intentsDefinitions[lang][check]]
+
+
+	def supportedIntentsWithUtterances(self) -> dict:
+		return {str(intent): self.getUtterancesByIntent(intent, True, True) for intent in self._supportedIntents}
 
 
 	@property
-	def widgets(self) -> dict:
+	def widgets(self) -> list:
 		return self._widgets
 
 
 	@property
-	def deviceTypes(self) -> dict:
+	def deviceTypes(self) -> list:
 		return self._deviceTypes
 
 
@@ -527,18 +477,17 @@ class AliceSkill(ProjectAliceObject):
 		self.LanguageManager.loadSkillStrings(self.name)
 		self.TalkManager.loadSkillTalks(self.name)
 
+		self.loadDeviceTypes()
 		self.loadWidgets()
-		self.loadDevices()
 		self.loadScenarioNodes()
 
+		self._failedStarting = False
 		self.logInfo(f'![green](Started!)')
 
 
 	def onStop(self):
 		self._active = False
 		self.SkillManager.configureSkillIntents(self._name, False)
-		for devt in self.DeviceManager.getDeviceTypesForSkill(self.name).values():
-			devt.onStop()
 		self.logInfo(f'![green](Stopped)')
 		self.broadcast(method=constants.EVENT_SKILL_STOPPED, exceptions=[self.name], propagateToSkills=True, skill=self)
 
@@ -560,7 +509,7 @@ class AliceSkill(ProjectAliceObject):
 			return
 
 		self._updateAvailable = False
-		self.MqttManager.subscribeSkillIntents(self.name)
+		self.MqttManager.subscribeSkillIntents(self._supportedIntents)
 
 
 	def onSkillDeleted(self, skill: str):
@@ -654,7 +603,7 @@ class AliceSkill(ProjectAliceObject):
 
 
 	def playSound(self, soundFilename: str, location: Path = None, sessionId: str = '', siteId: str = None, uid: str = ''):
-		self.MqttManager.playSound(soundFilename=soundFilename, location=location, sessionId=sessionId, siteId=siteId, uid=uid)
+		self.MqttManager.playSound(soundFilename=soundFilename, location=location, sessionId=sessionId, device=siteId, uid=uid)
 
 
 	def publish(self, topic: str, payload: dict = None, stringPayload: str = None, qos: int = 0, retain: bool = False):
@@ -662,21 +611,30 @@ class AliceSkill(ProjectAliceObject):
 
 
 	def __repr__(self) -> str:
-		return json.dumps(self.toJson())
+		return json.dumps(self.toDict())
 
 
 	def __str__(self) -> str:
 		return self.__repr__()
 
 
-	def toJson(self) -> dict:
+	def toDict(self) -> dict:
 		return {
-			'name'           : self._name,
-			'author'         : self._author,
-			'version'        : self._version,
-			'updateAvailable': self._updateAvailable,
-			'active'         : self._active,
-			'delayed'        : self._delayed,
-			'required'       : self._required,
-			'databaseSchema' : self._databaseSchema
+			'name'            : self._name,
+			'author'          : self._author,
+			'version'         : self._version,
+			'updateAvailable' : self._updateAvailable,
+			'active'          : self._active,
+			'delayed'         : self._delayed,
+			'required'        : self._required,
+			'databaseSchema'  : self._databaseSchema,
+			'icon'            : self._icon,
+			'instructions'    : self._instructions,
+			'settings'        : self.ConfigManager.getSkillConfigs(self.name),
+			'settingsTemplate': self.getSkillConfigsTemplate(),
+			'description'     : self._description,
+			'category'        : self._category,
+			'aliceMinVersion' : str(self._aliceMinVersion),
+			'maintainers'     : self._maintainers,
+			'intents'         : self.supportedIntentsWithUtterances()
 		}

@@ -1,191 +1,370 @@
-import ast
 import json
+import sqlite3
+import uuid
+from pathlib import Path
+from typing import Any, Dict, List, Union, Optional
 
 from core.base.model.ProjectAliceObject import ProjectAliceObject
 from core.commons import constants
-from core.device.model.Location import Location
+from core.device.model.DeviceAbility import DeviceAbility
+from core.device.model.DeviceException import DeviceTypeUndefined
+from core.device.model.DeviceType import DeviceType
+from core.myHome.model.Location import Location
 
 
 class Device(ProjectAliceObject):
 
-	def __init__(self, data):
+	def __init__(self, data: Union[sqlite3.Row, Dict]):
+
+		# settings: Holds the device display settings, such as x and y position, size and that stuff
+		# deviceParams: Holds the device non declared params, such as sound muted and so on. These are not controlled values that can be completly random
+		# deviceConfigs: Holds the device configurations, provided by the device's .config.template. These configs and values are controlled and cannot be random at all!
 		super().__init__()
 
-		self.data: dict = data
-		self.connected: bool = False
+		if isinstance(data, sqlite3.Row):
+			data = self.Commons.dictFromRow(data)
 
-		self.id: int = self.data['id']
-		self.deviceTypeID: int = self.data['typeID']
-		self.locationID = self.data['locationID'] if self.data['locationID'] else 0
-		self.uid: str = self.data['uid']
+		self._data: dict = data
+		self._id: int = data.get('id', -1)
+		self._uid: str = data.get('uid', '')
+		self._typeName: str = data.get('typeName', '')
+		self._skillName: str = data.get('skillName', '')
+		self._parentLocation: int = data.get('parentLocation', 0)
+		self._deviceType: DeviceType = self.DeviceManager.getDeviceType(self._skillName, self._typeName)
 
-		self.name = self.data['name'] if 'name' in self.data.keys() else ''
+		if not self._deviceType:
+			self.logError(f'Failed retrieving device type for device {self._typeName}')
+			raise DeviceTypeUndefined(self._typeName)
 
-		self.skillName = self.data['skillName'] if 'skillName' in self.data.keys() else ''
+		self._abilities: int = -1 if not data.get('abilities', None) else self.setAbilities(data['abilities'])
+		self._deviceParams: Dict = json.loads(data.get('deviceParams', '{}'))
+		self._connected: bool = False
 
-		self._display = ast.literal_eval(self.data['display']) if 'display' in self.data.keys() and self.data['display'] else dict()
-		self._devSettings = ast.literal_eval(self.data['devSettings']) if 'devSettings' in self.data.keys() and self.data['devSettings'] else dict()
-		self._customValues = ast.literal_eval(self.data['customValues']) if 'customValues' in self.data.keys() and self.data['customValues'] else dict()
+		# Settings are for UI, all the components use the same variable
+		self._settings = json.loads(data.get('settings', '{}')) if isinstance(data.get('settings', '{}'), str) else data.get('settings', dict())
+		settings = {
+			'x': 0,
+			'y': 0,
+			'z': len(self.DeviceManager.devices),
+			'w': 50,
+			'h': 50,
+			'r': 0
+		}
 
-		self.lastContact: int = 0
+		self._settings = {**settings, **self._settings}
+		self._lastContact: int = 0
+
+		self._deviceConfigs: Dict = json.loads(data.get('deviceConfigs', '{}'))
+		self._loadConfigs()
+
+		self._heartbeatRate = self._deviceConfigs.get('heartbeatRate')
+
+		if self._id == -1:
+			self.saveToDB()
 
 
-	def replace(self, needle: str, haystack: str) -> str:
-		return self.name.replace(needle, haystack)
+	def _loadConfigs(self):
+		self._deviceConfigs.setdefault('displayName', self._data.get('displayName', self._typeName))
+		self._deviceConfigs.setdefault('heartbeatRate', self._deviceType.heartbeatRate)
+
+		templates = self._deviceType.deviceConfigsTemplates
+		changes = False
+		for configName, configData in templates.items():
+			if configName not in self._deviceConfigs:
+				self.logInfo(f'Found new config for device **{self._deviceConfigs["displayName"]}**: {configName}')
+				self._deviceConfigs[configName] = configData['defaultValue']
+				changes = True
+
+		for configName, configValue in self._deviceConfigs.copy().items():
+			if configName == 'displayName' or configName == 'heartbeatRate':
+				continue
+
+			if configName not in templates:
+				self.logInfo(f'Found a deprecated config for device **{self._deviceConfigs["displayName"]}**: {configName}')
+				self._deviceConfigs.pop(configName, None)
+				continue
+
+			definition = templates[configName]
+			if definition['dataType'] != 'list' and definition['dataType'] != 'longstring' and 'onInit' not in definition:
+				if not isinstance(configValue, type(definition['defaultValue'])):
+					changes = True
+					try:
+						# First try to cast the setting we have to the new type
+						self._deviceConfigs[configName] = type(definition['defaultValue'])(configValue)
+						self.logWarning(f'Existing configuration type missmatch: **{configName}**, cast variable to template configuration type')
+					except Exception:
+						# If casting failed let's fall back to the new default value
+						self.logWarning(f'Existing configuration type missmatch: **{configName}**, replaced with template configuration')
+						self._deviceConfigs[configName] = definition['defaultValue']
+			elif definition['dataType'] == 'list' and 'onInit' not in definition:
+				values = definition['values'].values() if isinstance(definition['values'], dict) else definition['values']
+
+				if self._deviceConfigs[configName] and self._deviceConfigs[configName] not in values:
+					changes = True
+					self.logWarning(f'Selected value **{configValue}** for setting **{configName}** doesn\'t exist, reverted to default value --{definition["defaultValue"]}--')
+					self._deviceConfigs[configName] = definition['defaultValue']
+
+		if changes:
+			self.saveToDB()
 
 
-	def clearUID(self):
-		self.uid = ''
-		self.DatabaseManager.update(tableName=self.DeviceManager.DB_DEVICE,
-		                            callerName=self.DeviceManager.name,
-		                            values={'uid': self.uid},
-		                            row=('id', self.id))
+	def getAbilities(self) -> bin:
+		"""
+		Returns the device's abilities
+		:return: a bitmask of the device's abilities
+		"""
+		if self._abilities == -1:
+			return self._deviceType.abilities
+		else:
+			return self._abilities
 
 
-	def getMainLocation(self) -> Location:
-		return self.LocationManager.getLocation(locId=self.locationID)
+	def hasAbilities(self, abilities: List[DeviceAbility]) -> bool:
+		"""
+		Checks if that device has the given abilities
+		:param abilities: a list of DeviceAbility
+		:return: boolean
+		"""
+		if self._abilities == -1:
+			return self._deviceType.hasAbilities(abilities)
+		else:
+			check = 0
+			for ability in abilities:
+				check |= ability.value
+
+			return self._abilities & check == check
+
+
+	def setAbilities(self, abilities: List[DeviceAbility]):
+		"""
+		Sets this device's abilities, based on a bitmask
+		:param abilities:
+		:return:
+		"""
+		self._abilities = 0
+		for ability in abilities:
+			self._abilities |= ability.value
+
+
+	# noinspection SqlResolve
+	def saveToDB(self):
+		"""
+		Updates or inserts this device in DB
+		:return:
+		"""
+		if self._id != -1:
+			self.DatabaseManager.replace(
+				tableName=self.DeviceManager.DB_DEVICE,
+				query='REPLACE INTO :__table__ (id, uid, parentLocation, typeName, skillName, settings, deviceParams, deviceConfigs) VALUES (:id, :uid, :parentLocation, :typeName, :skillName, :settings, :deviceParams, :deviceConfigs)',
+				callerName=self.DeviceManager.name,
+				values={
+					'id'             : self._id,
+					'uid'            : self._uid,
+					'parentLocation' : self._parentLocation,
+					'typeName'       : self._typeName,
+					'skillName'      : self._skillName,
+					'settings'       : json.dumps(self._settings),
+					'deviceParams'   : json.dumps(self._deviceParams),
+					'deviceConfigs'  : json.dumps(self._deviceConfigs)
+				}
+			)
+			self.publishDevice()
+		else:
+			deviceId = self.DatabaseManager.insert(
+				tableName=self.DeviceManager.DB_DEVICE,
+				callerName=self.DeviceManager.name,
+				values={
+					'uid'            : self._uid,
+					'parentLocation' : self._parentLocation,
+					'typeName'       : self._typeName,
+					'skillName'      : self._skillName,
+					'settings'       : json.dumps(self._settings),
+					'deviceParams'   : json.dumps(self._deviceParams),
+					'deviceConfigs'  : json.dumps(self._deviceConfigs)
+				}
+			)
+
+			self._id = deviceId
+
+	def getLocation(self) -> Optional[Location]:
+		return self.LocationManager.getLocation(locId=self.parentLocation)
+
+
+	def publishDevice(self):
+		"""
+		Whenever something changes on the device, the device data are published over mqtt
+		to refresh the UI per exemple
+		:return:
+		"""
+		self.MqttManager.publish(constants.TOPIC_DEVICE_UPDATED, payload={'uid': self._uid, 'device': self.toDict()})
 
 
 	def pairingDone(self, uid: str):
-		self.uid = uid
-		self.DatabaseManager.update(tableName=self.DeviceManager.DB_DEVICE,
-		                            callerName=self.DeviceManager.name,
-		                            values={'uid': uid},
-		                            row=('id', self.id))
-		self.MqttManager.publish(constants.TOPIC_DEVICE_UPDATED, payload={'id': self.id, 'type': 'status'})
+		"""
+		Called whenever a pairing procedure succeeded
+		:param uid: the attributed uid
+		:return:
+		"""
+		self._uid = uid
+		self.saveToDB()
 
 
-	def toJson(self) -> str:
-		return json.dumps(self.asJson())
+	@property
+	def connected(self) -> bool:
+		"""
+		Returns wheather or not this device is connected
+		:return:
+		"""
+		return self._connected
 
 
-	def getDeviceType(self):
-		return self.DeviceManager.getDeviceType(_id=self.deviceTypeID)
+	@connected.setter
+	def connected(self, value: bool):
+		"""
+		Sets device connection status
+		:param value: bool
+		:return:
+		"""
+		self._connected = value
 
 
-	def isInLocation(self, location: Location) -> bool:
-		if self.locationID == location.id:
+	@property
+	def paired(self) -> bool:
+		"""
+		A device is paired when it has a valid UID
+		:return:
+		"""
+		try:
+			uuid.UUID(str(self._uid))
 			return True
-		for link in self.DeviceManager.getLinksForDevice(device=self):
-			if link.locationId == location.id:
+		except ValueError:
+			return False
+
+
+	@property
+	def heartbeatRate(self) -> int:
+		return self._deviceConfigs.get('heartbeatRate')
+
+
+	@property
+	def deviceTypeName(self) -> str:
+		return self._typeName
+
+
+	@property
+	def deviceType(self) -> DeviceType:
+		return self._deviceType
+
+
+	@property
+	def parentLocation(self) -> int:
+		return self._parentLocation
+
+
+	@parentLocation.setter
+	def parentLocation(self, value: int):
+		self._parentLocation = value
+
+
+	@property
+	def skillName(self) -> str:
+		return self._skillName
+
+
+	@property
+	def id(self) -> int:
+		return self._id
+
+
+	@property
+	def uid(self) -> str:
+		return self._uid
+
+	@property
+	def displayName(self) -> str:
+		return self._deviceConfigs['displayName']
+
+
+	def toDict(self) -> dict:
+		return {
+			'abilities'             : bin(self.getAbilities()),
+			'connected'             : self._connected,
+			'deviceParams'          : self._deviceParams,
+			'settings'              : self._settings,
+			'deviceConfigs'         : self._deviceConfigs,
+			'id'                    : self._id,
+			'lastContact'           : self._lastContact,
+			'parentLocation'        : self._parentLocation,
+			'skillName'             : self._skillName,
+			'typeName'              : self._typeName,
+			'uid'                   : self._uid,
+			'allowHeartbeatOverride': self.deviceType.allowHeartbeatOverride
+		}
+
+
+	def getDeviceIcon(self) -> Path:
+		"""
+		Return the path of the icon representing the current status of the device
+		e.g. a light bulb can be on or off and display its status
+		:return: the icon file path
+		"""
+		return Path(f'{self.Commons.rootDir()}/skills/{self.skillName}/devices/img/{self._typeName}.png')
+
+
+	def updateSettings(self, settings: dict):
+		self._settings = {**self._settings, **settings}
+
+
+	def updateConfigs(self, configs: dict):
+		self._deviceConfigs = {**self._deviceConfigs, **configs}
+
+
+	def getParam(self, key: str, default: Any = False) -> Any:
+		return self._deviceParams.get(key, default)
+
+
+	def updateParams(self, key: str, value: Any):
+		self._deviceParams[key] = value
+		self.saveToDB()
+
+
+	def onUIClick(self):
+		"""
+		Called whenever a device's icon is clicked on the UI
+		:return:
+		"""
+		if not self.paired:
+			self.DeviceManager.startBroadcastingForNewDevice(self)
+
+
+	def linkedTo(self, targetLocation: int) -> bool:
+		"""
+		Checks if this device is linked to the given location
+		:param targetLocation: int
+		:return: bool
+		"""
+		for link in self.DeviceManager.deviceLinks.values():
+			if link.deviceId == self.id and link.targetLocation == targetLocation:
 				return True
 		return False
 
 
-	def asJson(self):
-		return {
-			'id'          : self.id,
-			'deviceTypeID': self.deviceTypeID,
-			'deviceType'  : self.getDeviceType().name,
-			'skillName'   : self.skillName,
-			'name'        : self.name,
-			'uid'         : self.uid,
-			'locationID'  : self.locationID,
-			'room'        : self.getMainLocation().name,
-			'lastContact' : self.lastContact,
-			'connected'   : self.connected,
-			'display'     : self.display,
-			'custom'      : self._customValues
-		}
-
-
-	def changedDevSettingsStructure(self, newSet: dict):
-		newSet = newSet.copy()
-		for _set in newSet.keys():
-			if _set in self.devSettings:
-				newSet[_set] = self.devSettings[_set]
-		self.devSettings = newSet
-		self.saveDevSettings()
-
-
-	def changeLocation(self, locationId: int):
-		self.locationID = locationId
-		self.getDeviceType().onChangedLocation(device=self)
-
-
-	def changeName(self, newName: str):
-		self.name = newName
-		self.DatabaseManager.update(tableName=self.DeviceManager.DB_DEVICE,
-		                            callerName=self.DeviceManager.name,
-		                            values={'name': newName},
-		                            row=('id', self.id))
-
-
-	def saveDevSettings(self):
-		self.DatabaseManager.update(tableName=self.DeviceManager.DB_DEVICE,
-		                            callerName=self.DeviceManager.name,
-		                            values={'devSettings': json.dumps(self.devSettings)},
-		                            row=('id', self.id))
-
-
-	def toggle(self):
-		return self.getDeviceType().toggle(device=self)
-
-
-	def getIcon(self):
-		return self.getDeviceType().getDeviceIcon(device=self)
-
-
-	def setCustomValue(self, name: str, value):
-		self.customValues[name] = value
-
-
-	def getCustomValue(self, name: str):
-		return self.customValues.get(name, None)
-
-
-	@property
-	def siteId(self) -> str:
-		return self.getMainLocation().getSaveName()
-
-
-	@property
-	def display(self) -> dict:
-		return self._display
-
-
-	@display.setter
-	def display(self, value: dict):
-		self._display = value
-
-
-	@property
-	def devSettings(self) -> dict:
-		return self._devSettings
-
-
-	@devSettings.setter
-	def devSettings(self, value: dict):
-		self._devSettings = value
-
-
-	@property
-	def customValues(self) -> dict:
-		return self._customValues
-
-
-	@customValues.setter
-	def customValues(self, value: dict):
-		self._customValues = value
-
-
-	@property
-	def deviceType(self):
-		return self.getDeviceType()
-
-
-	@property
-	def location(self) -> str:
-		return self.getMainLocation().getSaveName()
-
-
-	@property
-	def skill(self) -> str:
-		return self.getDeviceType().skill
+	def getLinks(self) -> dict:
+		links = dict()
+		for link in self.DeviceManager.deviceLinks.values():
+			if link.deviceId == self.id:
+				links[link.id] = link
+		return links
 
 
 	def __repr__(self):
-		return f'Device({self.id} - {self.name}, UID({self.uid}), Location({self.locationID}))'
+		return f'Device({self._id} - {self._deviceConfigs["displayName"]}, uid({self._uid}), Location({self._parentLocation}))'
+
 
 	def __eq__(self, other):
-		return other and self.id == other.id
+		return other and self._uid == other.uid
+
+
+	@classmethod
+	def getDeviceTypeDefinition(cls) -> dict:
+		raise NotImplementedError

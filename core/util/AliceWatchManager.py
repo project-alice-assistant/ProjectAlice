@@ -9,170 +9,147 @@ class AliceWatchManager(Manager):
 
 	def __init__(self):
 		super().__init__()
-		self._verbosity = 0
-
-
-	@property
-	def verbosity(self):
-		return self._verbosity
-
-
-	@verbosity.setter
-	def verbosity(self, value: int):
-		self._verbosity = self.Commons.clamp(value, 0, 4)
 
 
 	def onHotword(self, siteId: str, user: str = constants.UNKNOWN_USER):
-		if self._verbosity < 1:
-			return
-
 		self.publish(payload={
-			'text': f'[Hotword] Detected on site **{self.DeviceManager.siteIdToDeviceName(siteId)}**, for user **{user}**'
+			'text': f'Detected on device **{self.DeviceManager.getDevice(uid=siteId).displayName}**, for user **{user}**',
+			'component': 'Hotword',
+			'verbosity': 1
 		})
 
 
 	def onIntent(self, session: DialogSession):
-		text = f'[Dialogue] New intent detected ![Yellow]({session.payload["intent"]["intentName"]}) with confidence ![Yellow]({round(session.payload["intent"]["confidenceScore"], 3)})'
+		text = f'New intent detected ![yellow]({session.payload["intent"]["intentName"]}) with confidence ![yellow]({round(session.payload["intent"]["confidenceScore"], 3)})'
 
 		if session.slots:
 			text = f'{text}\n**__Slots__**'
 
 			for slot in session.slots:
-				text = f'{text}\n![Blue]({slot}) ![Yellow](->) {session.slotValue(slotName=slot, defaultValue="")}'
+				text = f'{text}\n![blue]({slot}) ![yellow](->) {session.slotValue(slotName=slot, defaultValue="")}'
 			text = f'{text}'
 
 		self.publish(payload={
-			'text': text
+			'text': text,
+			'component': 'Hialogue',
+			'verbosity': 0
 		})
 
 
 	def onIntentParsed(self, session: DialogSession):
-		if self._verbosity < 1:
-			return
-
-		text = f'[Nlu] Intent detected ![Yellow]({session.payload["intent"]["intentName"]}) with confidence **{round(session.payload["intent"]["confidenceScore"], 3)}** for input "![Yellow]({session.payload.get("input", "")})"'
+		text = f'Intent detected ![yellow]({session.payload["intent"]["intentName"]}) with confidence **{round(session.payload["intent"]["confidenceScore"], 3)}** for input "![yellow]({session.payload.get("input", "")})"'
 
 		if session.slots:
 			text = f'{text}\n**__Slots__**'
 
 			for slot in session.slots:
-				text = f'{text}\n![Blue]({slot}) ![Yellow](->) {session.slotValue(slotName=slot, defaultValue="")}'
+				text = f'{text}\n![blue]({slot}) ![yellow](->) {session.slotValue(slotName=slot, defaultValue="")}'
 			text = f'{text}'
 
 		self.publish(payload={
-			'text': text
+			'text': text,
+			'component': 'Nlu',
+			'verbosity': 1
 		})
 
 
 	def onSessionStarted(self, session: DialogSession):
-		if self._verbosity < 1:
-			return
-
 		self.publish(payload={
-			'text': f'[Dialogue] Session with id "**{session.sessionId}**" was started on site **{self.DeviceManager.siteIdToDeviceName(session.siteId)}**'
+			'text': f'Session with id "**{session.sessionId}**" was started on device **{self.DeviceManager.getDevice(uid=session.siteId).displayName}**',
+			'component': 'Dialogue',
+			'verbosity': 1
 		})
 
 
 	def onCaptured(self, session: DialogSession):
-		if self._verbosity < 1:
-			return
-
 		self.publish(payload={
-			'text': f'[Asr] Captured text "![Yellow]({session.payload["text"]})" in {round(session.payload["seconds"], 1)}s'
+			'text': f'Captured text "![yellow]({session.payload["text"]})" in {round(session.payload["seconds"], 1)}s',
+			'component': 'Asr',
+			'verbosity': 1
 		})
 
 
 	def onPartialTextCaptured(self, session, text: str, likelihood: float, seconds: float):
-		if self._verbosity < 2:
-			return
-
 		self.publish(payload={
-			'text': f'[Asr] Capturing text: "![Yellow]({text})"'
+			'text': f'Capturing text: "![yellow]({text})"',
+			'component': 'Asr',
+			'verbosity': 2
 		})
 
 
 	def onHotwordToggleOn(self, siteId: str, session: DialogSession):
-		if self._verbosity < 2:
-			return
-
 		self.publish(payload={
-			'text': f'[Hotword] Was asked to toggle itself **on** for site **{self.DeviceManager.siteIdToDeviceName(siteId)}**'
+			'text': f'Was asked to toggle itself **on** on device **{self.DeviceManager.getDevice(uid=siteId).displayName}**',
+			'component': 'Hotword',
+			'verbosity': 2
 		})
 
 
 	def onHotwordToggleOff(self, siteId: str, session: DialogSession):
-		if self._verbosity < 2:
-			return
-
 		self.publish(payload={
-			'text': f'[Hotword] Was asked to toggle itself **off** for site **{self.DeviceManager.siteIdToDeviceName(siteId)}**'
+			'text': f'Was asked to toggle itself **off** on device **{self.DeviceManager.getDevice(uid=siteId).displayName}**',
+			'component': 'Hotword',
+			'verbosity': 2
 		})
 
 
 	def onStartListening(self, session):
-		if self._verbosity < 2:
-			return
-
 		self.publish(payload={
-			'text': f'[Asr] Was asked to start listening on site **{self.DeviceManager.siteIdToDeviceName(session.siteId)}**'
+			'text': f'Was asked to start listening on device **{self.DeviceManager.getDevice(uid=session.siteId).displayName}**',
+			'component': 'Asr',
+			'verbosity': 2
 		})
 
 
 	def onStopListening(self, session):
-		if self._verbosity < 2:
-			return
-
 		self.publish(payload={
-			'text': f'[Asr] Was asked to stop listening on site **{self.DeviceManager.siteIdToDeviceName(session.siteId)}**'
+			'text': f'Was asked to stop listening on device **{self.DeviceManager.getDevice(uid=session.siteId).displayName}**',
+			'component': 'Asr',
+			'verbosity': 2
 		})
 
 
 	def onContinueSession(self, session):
-		if self._verbosity < 1:
-			return
-
 		self.publish(payload={
-			'text': f'[Dialogue] Was asked to continue session with id "**{session.sessionId}**" by saying "![Yellow]({session.text})"'
+			'text': f'Was asked to continue session with id "**{session.sessionId}**" by saying "![yellow]({session.text})"',
+			'component': 'Dialogue',
+			'verbosity': 1
 		})
 
 
 	def onEndSession(self, session: DialogSession, reason: str = 'nominal'):
-		if self._verbosity < 1:
-			return
-
 		if 'text' in session.payload:
 			self.publish(payload={
-				'text': f'[Dialogue] Was asked to end session with id "**{session.sessionId}**" by saying "![Yellow]({session.payload["text"]})"'
+				'text': f'Was asked to end session with id "**{session.sessionId}**" by saying "![yellow]({session.payload["text"]})"',
+				'component': 'Dialogue',
+				'verbosity': 1
 			})
 		else:
 			self.publish(payload={
-				'text': f'[Dialogue] Was asked to end session with id "**{session.sessionId}**" by without text!'
+				'text': f'Was asked to end session with id "**{session.sessionId}**" by without text!',
+				'component': 'Dialogue',
+				'verbosity': 1
 			})
 
 
 	def onSay(self, session: DialogSession):
-		if self._verbosity < 1:
-			return
-
 		self.publish(payload={
-			'text': f'[Tts] Was asked to say "![Yellow]({session.payload["text"]})"'
+			'text': f'Was asked to say "![yellow]({session.payload["text"]})"',
+			'component': 'Tts',
+			'verbosity': 1
 		})
 
 
 	def onIntentNotRecognized(self, session: DialogSession):
-		if self._verbosity < 1:
-			return
-
 		self.publish(payload={
-			'text': f'[NLU] ![Red](Intent not recognized) for "![Yellow]({session.text})"'
+			'text': f'![red](Intent not recognized) for "![yellow]({session.text})"',
+			'component': 'Nlu',
+			'verbosity': 1
 		})
 
 
 	def onSessionEnded(self, session: DialogSession):
-		if self._verbosity < 1:
-			return
-
-		text = f'[Dialogue] Session with id "**{session.sessionId}**" was ended on site **{self.DeviceManager.siteIdToDeviceName(session.siteId)}**.'
+		text = f'Session with id "**{session.sessionId}**" was ended on device **{self.DeviceManager.getDevice(uid=session.siteId).displayName}**.'
 
 		reason = session.payload['termination']['reason']
 		if reason:
@@ -188,55 +165,53 @@ class AliceWatchManager(Manager):
 				text = f'{text} The session ended as expected.'
 
 		self.publish(payload={
-			'text': text
+			'text': text,
+			'component': 'Dialogue',
+			'verbosity': 1
 		})
 
 
 	def onVadUp(self, siteId: str):
-		if self._verbosity < 2:
-			return
-
 		self.publish(payload={
-			'text': f'[VoiceActivity] Up on site **{self.DeviceManager.siteIdToDeviceName(siteId)}**'
+			'text': f'Up on device **{self.DeviceManager.getDevice(uid=siteId).displayName}**',
+			'component': 'Voice activity',
+			'verbosity': 2
 		})
 
 
 	def onVadDown(self, siteId: str):
-		if self._verbosity < 2:
-			return
-
 		self.publish(payload={
-			'text': f'[VoiceActivity] Down on site **{self.DeviceManager.siteIdToDeviceName(siteId)}**'
+			'text': f'Down on device **{self.DeviceManager.getDevice(uid=siteId).displayName}**',
+			'component': 'Voice activity',
+			'verbosity': 2
 		})
 
 
 	# TODO Should support site configuration
 	def onConfigureIntent(self, intents: list):
-		if self._verbosity < 1:
-			return
-
-		text = f'[Dialogue] Was asked to configure all sites:'
+		text = f'Was asked to configure all devices:'
 		for intent in intents:  # NOSONAR
-			text = f'{text}\n{"![Green](enable)" if intent["enable"] else "![Red](disable)"} {intent["intentId"]}'
+			text = f'{text}\n[=>]{"![green](enable)" if intent["enable"] else "![red](disable)"} {intent["intentId"]}'
 
 		text = f'{text}'
 
 		self.publish(payload={
-			'text': text
+			'text': text,
+			'component': 'Dialogue',
+			'verbosity': 1
 		})
 
 
 	def onNluQuery(self, session):
-		if self._verbosity < 2:
-			return
-
 		self.publish(payload={
-			'text': f'[Nlu] Was asked to parse input "![Yellow]({session.payload.get("input", "")}")'
+			'text': f'Was asked to parse input "![yellow]({session.payload.get("input", "")}")',
+			'component': 'Nlu',
+			'verbosity': 2
 		})
 
 
 	def publish(self, payload: dict = None):
 		topic = f'projectalice/logging/alicewatch'
-		payload['text'] = f'![Yellow]([{datetime.strftime(datetime.now(), "%H:%M:%S")}]) {payload["text"]}'
+		payload['time'] = datetime.strftime(datetime.now(), '%H:%M:%S')
 
 		self.MqttManager.publish(topic=topic, payload=payload)

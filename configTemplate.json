@@ -37,7 +37,7 @@
 		"beforeUpdate": "injectAsound",
 		"category"    : "audio",
 		"parent"      : {
-			"config"   : "disableSoundAndMic",
+			"config"   : "disableSound",
 			"condition": "isnot",
 			"value"    : true
 		}
@@ -59,7 +59,7 @@
 		"onInit"      : "populateAudioOutputConfig",
 		"onUpdate"    : "AudioServer.updateAudioDevices",
 		"parent"      : {
-			"config"   : "disableSoundAndMic",
+			"config"   : "disableSound",
 			"condition": "isnot",
 			"value"    : true
 		}
@@ -74,7 +74,7 @@
 		"onInit"      : "populateAudioInputConfig",
 		"onUpdate"    : "AudioServer.updateAudioDevices",
 		"parent"      : {
-			"config"   : "disableSoundAndMic",
+			"config"   : "disableCapture",
 			"condition": "isnot",
 			"value"    : true
 		}
@@ -138,12 +138,20 @@
 			"value"    : false
 		}
 	},
-	"disableSoundAndMic"      : {
+	"disableSound"      : {
 		"defaultValue": false,
 		"dataType"    : "boolean",
 		"isSensitive" : false,
-		"description" : "If this device is a server without sound and mic, turn this to true",
+		"description" : "Disable sound playback",
 		"onUpdate"    : "enableDisableSound",
+		"category"    : "audio"
+	},
+	"disableCapture"      : {
+		"defaultValue": false,
+		"dataType"    : "boolean",
+		"isSensitive" : false,
+		"description" : "Disable sound capture",
+		"onUpdate"    : "enableDisableCapture",
 		"category"    : "audio"
 	},
 	"notUnderstoodRetries"    : {
@@ -300,7 +308,12 @@
 		"dataType"    : "boolean",
 		"isSensitive" : false,
 		"description" : "Only available with Amazon Polly",
-		"category"    : "tts"
+		"category"    : "tts",
+		"parent"      : {
+			"config"   : "tts",
+			"condition": "is",
+			"value"    : "amazon"
+		}
 	},
 	"newDeviceBroadcastPort"  : {
 		"defaultValue": 12354,
@@ -745,21 +758,31 @@
 		"dataType"    : "boolean",
 		"isSensitive" : false,
 		"description" : "Activates the web interface to be reached by browsing to x.x.x.x:webInterfacePort, e.g. 192.168.1.2:5000",
-		"category"    : "system"
+		"category"    : "interface",
+		"onUpdate"    : "WebUIManager.restart"
 	},
 	"webInterfacePort"        : {
 		"defaultValue": 5000,
 		"dataType"    : "integer",
 		"isSensitive" : false,
 		"description" : "Change the web interface port to be used",
-		"category"    : "system"
+		"category"    : "interface",
+		"onUpdate"    : "WebUIManager.restart"
+	},
+	"apiPort"                 : {
+		"defaultValue": 5001,
+		"dataType"    : "integer",
+		"isSensitive" : false,
+		"description" : "Change the port the api is bound to",
+		"category"    : "interface",
+		"onUpdate"    : "ApiManager.restart"
 	},
 	"scenariosActive"         : {
 		"defaultValue": false,
 		"dataType"    : "boolean",
 		"isSensitive" : false,
 		"description" : "Activates the scenarios support on the webinterface, using Node-RED.",
-		"category"    : "scenarios",
+		"category"    : "interface",
 		"onUpdate"    : "NodeRedManager.toggle"
 	},
 	"dontStopNodeRed"         : {
@@ -767,7 +790,7 @@
 		"dataType"    : "boolean",
 		"isSensitive" : false,
 		"description" : "If activated, Node-RED won't be stopped when Alice is shut down.",
-		"category"    : "scenarios",
+		"category"    : "interface",
 		"parent"      : {
 			"config"   : "scenariosActive",
 			"condition": "is",
