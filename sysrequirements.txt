@@ -25,3 +25,4 @@ flac
 libatlas-base-dev
 gfortran
 ffmpeg
+nginx
