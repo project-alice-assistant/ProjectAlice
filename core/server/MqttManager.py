@@ -876,7 +876,7 @@ class MqttManager(Manager):
 			payload = dict()
 
 		for device in self.DeviceManager.getDevicesByType(deviceType=deviceType):
-			payload['siteId'] = device.siteId
+			payload['uid'] = device.uid
 			self.publish(topic=topic, payload=payload, qos=qos, retain=retain)
 
 		payload['siteId'] = self.ConfigManager.getAliceConfigByName('uuid')

@@ -59,6 +59,15 @@ class WidgetsApi(Api):
 			return jsonify(success=False, message=str(e))
 
 
+	@route('/resources/img/<skillName>/<image>', methods=['GET'])
+	def getImage(self, skillName: str, image: str):
+		try:
+			return send_from_directory(f'{self.Commons.rootDir()}/skills/{skillName}/widgets/img', f'{image}')
+		except Exception as e:
+			self.logError(f'Error fetching widget image resource {e}')
+			return jsonify(success=False, message=str(e))
+
+
 	@route('/<widgetId>/', methods=['DELETE'])
 	@ApiAuthenticated
 	def removeWidget(self, widgetId: str):
