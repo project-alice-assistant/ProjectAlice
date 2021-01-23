@@ -8,6 +8,7 @@ import htmlmin as htmlmin
 from cssmin import cssmin
 from jsmin import jsmin
 
+from core.base.model.AliceSkill import AliceSkill
 from core.base.model.ProjectAliceObject import ProjectAliceObject
 from core.webui.model.WidgetSizes import WidgetSizes
 
@@ -25,6 +26,7 @@ class Widget(ProjectAliceObject):
 		self._configs = json.loads(data['configs'])
 		self._page = data['page']
 		self._lang = self.loadLanguageFile()
+		self._skillInstance: AliceSkill = self.SkillManager.getSkillInstance(skillName=self._skill)
 
 		if not self._settings:
 			self._settings = {
@@ -273,6 +275,11 @@ class Widget(ProjectAliceObject):
 	@page.setter
 	def page(self, value: int):
 		self._page = value
+
+
+	@property
+	def skillInstance(self) -> AliceSkill:
+		return self._skillInstance
 
 
 	def toDict(self, isAuth: bool = False) -> dict:

@@ -317,6 +317,10 @@ class WidgetManager(Manager):
 		return True
 
 
+	def getWidgetInstance(self, widgetId: int) -> Optional[Widget]:
+		return self._widgets.get(widgetId, None)
+
+
 	@property
 	def widgetTemplates(self) -> dict:
 		return self._widgetTemplates

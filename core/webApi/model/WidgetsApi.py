@@ -165,3 +165,20 @@ class WidgetsApi(Api):
 		except Exception as e:
 			self.logError(f'Failed saving widget settings: {e}')
 			return jsonify(success=False, message=str(e))
+
+
+	@route('/<widgetId>/<function>/', methods=['GET'])
+	@ApiAuthenticated
+	def widgetApiCall(self, widgetId: str, function: str):
+		try:
+			widget = self.WidgetManager.getWidgetInstance(int(widgetId))
+			if not widget:
+				raise Exception(f'Widget instance with id **{widgetId}** not found')
+
+			func = getattr(widget, function)
+			func(**request.json)
+
+			return jsonify(success=self.WidgetManager.saveWidgetSettings(int(widgetId), request.json))
+		except Exception as e:
+			self.logError(f'Failed widget API call: {e}')
+			return jsonify(success=False, message=str(e))
