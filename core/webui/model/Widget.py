@@ -15,6 +15,7 @@ from core.webui.model.WidgetSizes import WidgetSizes
 
 class Widget(ProjectAliceObject):
 	DEFAULT_SIZE = WidgetSizes.w_small
+	DEFAULT_OPTIONS = dict()
 
 	def __init__(self, data: dict):
 		super().__init__()
@@ -27,6 +28,9 @@ class Widget(ProjectAliceObject):
 		self._page = data['page']
 		self._lang = self.loadLanguageFile()
 		self._skillInstance: AliceSkill = self.SkillManager.getSkillInstance(skillName=self._skill)
+
+		if not self._configs:
+			self._configs = self.DEFAULT_OPTIONS.copy()
 
 		if not self._settings:
 			self._settings = {
