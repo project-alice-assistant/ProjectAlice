@@ -167,7 +167,7 @@ class WidgetsApi(Api):
 			return jsonify(success=False, message=str(e))
 
 
-	@route('/<widgetId>/<function>/', methods=['GET'])
+	@route('/<widgetId>/function/<function>/', methods=['POST'])
 	@ApiAuthenticated
 	def widgetApiCall(self, widgetId: str, function: str):
 		try:
@@ -176,9 +176,9 @@ class WidgetsApi(Api):
 				raise Exception(f'Widget instance with id **{widgetId}** not found')
 
 			func = getattr(widget, function)
-			func(**request.json)
+			data = func(**request.json)
 
-			return jsonify(success=self.WidgetManager.saveWidgetSettings(int(widgetId), request.json))
+			return jsonify(success=True, data=data)
 		except Exception as e:
 			self.logError(f'Failed widget API call: {e}')
 			return jsonify(success=False, message=str(e))

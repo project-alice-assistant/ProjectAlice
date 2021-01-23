@@ -1,8 +1,9 @@
 import inspect
 import json
 import re
+import sqlite3
 from pathlib import Path
-from typing import Dict, Match, Optional
+from typing import Dict, Match, Optional, Union
 
 import htmlmin as htmlmin
 from cssmin import cssmin
@@ -17,8 +18,11 @@ class Widget(ProjectAliceObject):
 	DEFAULT_SIZE = WidgetSizes.w_small
 	DEFAULT_OPTIONS = dict()
 
-	def __init__(self, data: dict):
+	def __init__(self, data: Union[sqlite3.Row, dict]):
 		super().__init__()
+
+		if isinstance(data, sqlite3.Row):
+			data = self.Commons.dictFromRow(data)
 
 		self._id = int(data.get('id', -1))
 		self._skill = data['skill']
