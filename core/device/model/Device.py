@@ -210,6 +210,11 @@ class Device(ProjectAliceObject):
 
 
 	@property
+	def settings(self) -> dict:
+		return self._settings
+
+
+	@property
 	def connected(self) -> bool:
 		"""
 		Returns wheather or not this device is connected
