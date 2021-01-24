@@ -1,6 +1,7 @@
 import inspect
 import json
 import logging
+import re
 import typing
 from pathlib import Path
 
@@ -18,6 +19,9 @@ class ConfigManager(Manager):
 	TEMPLATE_FILE = Path('configTemplate.json')
 	CONFIG_FILE = Path('config.json')
 	SNIPS_CONF = Path('/etc/snips.toml')
+
+	CONFIG_FUNCTION_REGEX = re.compile(r'^(?:(?P<manager>\w+)\.)?(?P<function>\w+)(?:\((?P<args>.*)\))?')
+	CONFIRG_FUNCTION_ARG_REGEX = re.compile(r'(?:\w+)')
 
 	def __init__(self):
 		super().__init__()
@@ -182,27 +186,28 @@ class ConfigManager(Manager):
 		:return: None
 		"""
 
-		rootSkills = [name.lower() for name in self.SkillManager.NEEDED_SKILLS]
-		callers = [inspect.getmodulename(frame[1]).lower() for frame in inspect.stack()]
-		if 'aliceskill' in callers:
-			skillName = callers[callers.index("aliceskill") + 1]
-			if skillName not in rootSkills:
-				self._pendingAliceConfUpdates[key] = value
-				self.logWarning(f'Skill **{skillName}** is trying to modify a core configuration')
-
-				self.ThreadManager.doLater(
-					interval=2,
-					func=self.MqttManager.publish,
-					kwargs={
-						'topic': constants.TOPIC_SKILL_UPDATE_CORE_CONFIG_WARNING,
-						'payload': {
-							'skill': skillName,
-							'key'  : key,
-							'value': value
-						}
-					}
-				)
-				return
+		# TODO reimplement UI side
+		# rootSkills = [name.lower() for name in self.SkillManager.NEEDED_SKILLS]
+		# callers = [inspect.getmodulename(frame[1]).lower() for frame in inspect.stack()]
+		# if 'aliceskill' in callers:
+		# 	skillName = callers[callers.index("aliceskill") + 1]
+		# 	if skillName not in rootSkills:
+		# 		self._pendingAliceConfUpdates[key] = value
+		# 		self.logWarning(f'Skill **{skillName}** is trying to modify a core configuration')
+		#
+		# 		self.ThreadManager.doLater(
+		# 			interval=2,
+		# 			func=self.MqttManager.publish,
+		# 			kwargs={
+		# 				'topic': constants.TOPIC_SKILL_UPDATE_CORE_CONFIG_WARNING,
+		# 				'payload': {
+		# 					'skill': skillName,
+		# 					'key'  : key,
+		# 					'value': value
+		# 				}
+		# 			}
+		# 		)
+		# 		return
 
 		if key not in self._aliceConfigurations:
 			self.logWarning(f'Was asked to update **{key}** but key doesn\'t exist')
@@ -564,24 +569,32 @@ class ConfigManager(Manager):
 	def doConfigUpdatePreProcessing(self, function: str, value: typing.Any) -> bool:
 		# Call alice config pre processing functions.
 		try:
-			if '.' in function:
-				manager, function = function.split('.')
+			mngr = self
+			args = list()
 
-				try:
-					mngr = getattr(self, manager)
-				except AttributeError:
-					self.logWarning(f'Config pre processing manager **{manager}** does not exist')
-					return False
+			result = self.CONFIG_FUNCTION_REGEX.search(function)
+			if result:
+				function = result.group('function')
+
+				if result.group('manager'):
+					try:
+						mngr = getattr(self, result.group('manager'))
+					except AttributeError:
+						self.logWarning(f'Config pre processing manager **{result.group("manager")}** does not exist')
+						return False
+
+				if result.group('args'):
+					args = self.CONFIRG_FUNCTION_ARG_REGEX.findall(result.group('args'))
+
+				func = getattr(mngr, function)
 			else:
-				mngr = self
-
-			func = getattr(mngr, function)
+				raise AttributeError
 		except AttributeError:
 			self.logWarning(f'Configuration pre processing method **{function}** does not exist')
 			return False
 		else:
 			try:
-				return func(value)
+				return func(value, *args)
 			except Exception as e:
 				self.logError(f'Configuration pre processing method **{function}** failed: {e}')
 				return False
@@ -596,24 +609,32 @@ class ConfigManager(Manager):
 
 		for function in functions:
 			try:
-				if '.' in function:
-					manager, function = function.split('.')
+				mngr = self
+				args = list()
 
-					try:
-						mngr = getattr(self, manager)
-					except AttributeError:
-						self.logWarning(f'Config post processing manager **{manager}** does not exist')
-						return False
+				result = self.CONFIG_FUNCTION_REGEX.search(function)
+				if result:
+					function = result.group('function')
+
+					if result.group('manager'):
+						try:
+							mngr = getattr(self, result.group('manager'))
+						except AttributeError:
+							self.logWarning(f'Config post processing manager **{result.group("manager")}** does not exist')
+							return False
+
+					if result.group('args'):
+						args = self.CONFIRG_FUNCTION_ARG_REGEX.findall(result.group('args'))
+
+					func = getattr(mngr, function)
 				else:
-					mngr = self
-
-				func = getattr(mngr, function)
+					raise AttributeError
 			except AttributeError:
 				self.logWarning(f'Configuration post processing method **{function}** does not exist')
 				continue
 			else:
 				try:
-					func()
+					func(*args)
 				except Exception as e:
 					self.logError(f'Configuration post processing method **{function}** failed: {e}')
 					continue

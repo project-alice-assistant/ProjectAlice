@@ -135,12 +135,3 @@ class GoogleAsr(Asr):
 				self._lastResultCheck = now
 
 		return None
-
-
-	def updateCredentials(self):
-		self._credentialsFile.write_text(self.ConfigManager.getAliceConfigByName('googleASRCredentials'))
-
-		if self.ConfigManager.getAliceConfigByName('googleASRCredentials'):
-			self.onStart()
-		else:
-			self.ASRManager.onStart()

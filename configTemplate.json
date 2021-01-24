@@ -1,10 +1,10 @@
 {
 	"googleASRCredentials" : {
-		"defaultValue": "",
+		"defaultValue": "{}",
 		"dataType"    : "longstring",
 		"isSensitive" : true,
 		"description" : "Your Google service file content",
-		"onUpdate"    : "ASRManager.updateASRCredentials",
+		"onUpdate"    : "ASRManager.updateASRCredentials('google')",
 		"category"    : "asr",
 		"parent"      : {
 			"config"   : "asr",
@@ -477,7 +477,12 @@
 			"us-west-2"
 		],
 		"description" : "Region to use for Amazon Polly",
-		"category"    : "credentials"
+		"category"    : "credentials",
+		"parent"      : {
+			"config"   : ["tts", "ttsFallback"],
+			"condition": "is",
+			"value"    : "amazon"
+		}
 	},
 	"awsAccessKey"            : {
 		"defaultValue": "",

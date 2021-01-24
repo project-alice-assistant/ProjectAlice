@@ -199,5 +199,9 @@ class ASRManager(Manager):
 		self._streams[siteId] = recorder
 
 
-	def updateASRCredentials(self):
-		self._asr.updateCredentials()
+	def updateASRCredentials(self, asr: str):
+		if asr == 'google':
+			Path(self.Commons.rootDir(), 'credentials/googlecredentials.json').write_text(self.ConfigManager.getAliceConfigByName('googleASRCredentials'))
+
+			self.ASRManager.onStop()
+			self.ASRManager.onStart()
