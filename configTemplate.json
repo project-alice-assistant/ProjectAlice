@@ -480,6 +480,7 @@
 		"category"    : "credentials",
 		"parent"      : {
 			"config"   : ["tts", "ttsFallback"],
+			"checkType": "or",
 			"condition": "is",
 			"value"    : "amazon"
 		}
@@ -491,7 +492,7 @@
 		"description" : "Your Amazon services access key",
 		"category"    : "credentials",
 		"parent"      : {
-			"config"   : "stayCompletlyOffline",
+			"config"   : ["tts", "ttsFallback"],
 			"condition": "is",
 			"value"    : false
 		}
@@ -503,7 +504,7 @@
 		"description" : "Your Amazon services secret key",
 		"category"    : "credentials",
 		"parent"      : {
-			"config"   : "stayCompletlyOffline",
+			"config"   : ["tts", "ttsFallback"],
 			"condition": "is",
 			"value"    : false
 		}
