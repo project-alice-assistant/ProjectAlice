@@ -1,4 +1,17 @@
 {
+	"googleASRCredentials" : {
+		"defaultValue": "",
+		"dataType"    : "longstring",
+		"isSensitive" : true,
+		"description" : "Your Google service file content",
+		"onUpdate"    : "ASRManager.updateASRCredentials",
+		"category"    : "asr",
+		"parent"      : {
+			"config"   : "asr",
+			"condition": "is",
+			"value"    : "google"
+		}
+	},
 	"displaySystemUsage"      : {
 		"defaultValue": false,
 		"dataType"    : "boolean",

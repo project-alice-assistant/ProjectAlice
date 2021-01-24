@@ -197,3 +197,7 @@ class ASRManager(Manager):
 
 	def addRecorder(self, siteId: str, recorder: Recorder):
 		self._streams[siteId] = recorder
+
+
+	def updateASRCredentials(self):
+		self._asr.updateCredentials()

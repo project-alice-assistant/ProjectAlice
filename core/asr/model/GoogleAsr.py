@@ -31,11 +31,15 @@ class GoogleAsr(Asr):
 
 	def __init__(self):
 		super().__init__()
+		self._credentialsFile = Path(self.Commons.rootDir(), 'credentials/googlecredentials.json')
 		self._capableOfArbitraryCapture = True
 		self._isOnlineASR = True
 
 		self._client: Optional[SpeechClient] = None
 		self._streamingConfig: Optional[types.StreamingRecognitionConfig] = None
+
+		if self._credentialsFile.exists() and not self.ConfigManager.getAliceConfigByName('googleASRCredentials'):
+			self.ConfigManager.updateAliceConfiguration(key='googleASRCredentials', value=self._credentialsFile.read_text(), doPreAndPostProcessing=False)
 
 		self._internetLostFlag = Event() # Set if internet goes down, cut the decoding
 		self._lastResultCheck = 0 # The time the intermediate results were last checked. If actual time is greater than this value + 3, stop processing, internet issues
@@ -45,7 +49,7 @@ class GoogleAsr(Asr):
 
 	def onStart(self):
 		super().onStart()
-		os.environ['GOOGLE_APPLICATION_CREDENTIALS'] = str(Path(self.Commons.rootDir(), 'credentials/googlecredentials.json'))
+		os.environ['GOOGLE_APPLICATION_CREDENTIALS'] = str(self._credentialsFile)
 
 		self._client = SpeechClient()
 		# noinspection PyUnresolvedReferences
@@ -129,6 +133,14 @@ class GoogleAsr(Asr):
 					return result.alternatives[0].transcript, result.alternatives[0].confidence
 
 				self._lastResultCheck = now
-				continue
 
 		return None
+
+
+	def updateCredentials(self):
+		self._credentialsFile.write_text(self.ConfigManager.getAliceConfigByName('googleASRCredentials'))
+
+		if self.ConfigManager.getAliceConfigByName('googleASRCredentials'):
+			self.onStart()
+		else:
+			self.ASRManager.onStart()

@@ -170,11 +170,12 @@ class ConfigManager(Manager):
 			raise
 
 
-	def updateAliceConfiguration(self, key: str, value: typing.Any, dump: bool = True):
+	def updateAliceConfiguration(self, key: str, value: typing.Any, dump: bool = True, doPreAndPostProcessing: bool = True):
 		"""
 		Updating a core config is sensitive, if the request comes from a skill.
 		First check if the request came from a skill at anytime and if so ask permission
 		to the user
+		:param doPreAndPostProcessing: If set to false, all pre and post processings won't be called
 		:param key: str
 		:param value: str
 		:param dump: bool If set to False, the configs won't be dumped to the json file
@@ -208,7 +209,7 @@ class ConfigManager(Manager):
 			raise ConfigurationUpdateFailed()
 
 		pre = self.getAliceConfUpdatePreProcessing(key)
-		if pre and not self.ConfigManager.doConfigUpdatePreProcessing(pre, value):
+		if doPreAndPostProcessing and pre and not self.ConfigManager.doConfigUpdatePreProcessing(pre, value):
 			return
 
 		self._aliceConfigurations[key] = value
@@ -217,7 +218,7 @@ class ConfigManager(Manager):
 			self.writeToAliceConfigurationFile()
 
 		pp = self.ConfigManager.getAliceConfUpdatePostProcessing(key)
-		if pp:
+		if doPreAndPostProcessing and pp:
 			self.ConfigManager.doConfigUpdatePostProcessing(pp)
 
 
