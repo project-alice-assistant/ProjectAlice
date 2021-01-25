@@ -452,7 +452,7 @@
 		"category"    : "tts",
 		"display"     : "hidden"
 	},
-		"watsonTtsVoice"          : {
+	"watsonTtsVoice"          : {
 		"defaultValue": "en-US_AllisonV3Voice",
 		"dataType"    : "list",
 		"values"      : {
