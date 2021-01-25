@@ -453,6 +453,38 @@
 		"category"    : "tts",
 		"display"     : "hidden"
 	},
+	"mycroftTtsVoice"          : {
+		"defaultValue": "slt",
+		"dataType"    : "list",
+		"values"      : {
+			"en-US - male - slt": "slt",
+			"en-US - male - aew": "aew",
+			"en-US - male - ahw": "ahw",
+			"en-US - male - aup": "aup",
+			"en-US - male - awb": "awb",
+			"en-US - male - axb": "axb",
+			"en-US - male - bdl": "bdl",
+			"en-US - male - clb": "clb",
+			"en-US - male - eey": "eey",
+			"en-US - male - fem": "fem",
+			"en-US - male - gka": "gka",
+			"en-US - male - jmk": "jmk",
+			"en-US - male - ksp": "ksp",
+			"en-US - male - ljm": "ljm",
+			"en-US - male - rms": "rms",
+			"en-US - male - rxr": "rxr"
+		},
+		"isSensitive" : false,
+		"description" : "The voice Mycroft Tts should use",
+		"category"    : "tts",
+		"sets"        : "ttsLanguage - ttsType - ttsVoice",
+		"parent"      : {
+			"config"   : ["tts", "ttsFallback"],
+			"checkType": "or",
+			"condition": "is",
+			"value"    : "mycroft"
+		}
+	},
 	"googleTtsVoice"          : {
 		"defaultValue": "en-US-Standard-C",
 		"dataType"    : "list",
@@ -498,7 +530,7 @@
 			"pl-PL - female - pl-PL-Standard-E":  "pl-PL-Standard-E",
 			"pl-PL - female - pl-PL-Wavenet-A":  "pl-PL-Wavenet-A",
 			"pl-PL - female - pl-PL-Wavenet-D":  "pl-PL-Wavenet-D",
-			"pl-PL - female - pl-PL-Wavenet-E":  "pl-PL-Wavenet-E",
+			"pl-PL - female - pl-PL-Wavenet-E":  "pl-PL-Wavenet-E"
 		},
 		"isSensitive" : false,
 		"description" : "The voice Google Tts should use",
