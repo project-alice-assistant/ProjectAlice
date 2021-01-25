@@ -10,6 +10,8 @@ from core.device.model.DeviceAbility import DeviceAbility
 from core.device.model.DeviceException import DeviceTypeUndefined
 from core.device.model.DeviceType import DeviceType
 from core.myHome.model.Location import Location
+from core.webui.model.ClickReactionAction import ClickReactionAction
+from core.webui.model.OnClickReaction import OnClickReaction
 
 
 class Device(ProjectAliceObject):
@@ -31,6 +33,8 @@ class Device(ProjectAliceObject):
 		self._skillName: str = data.get('skillName', '')
 		self._parentLocation: int = data.get('parentLocation', 0)
 		self._deviceType: DeviceType = self.DeviceManager.getDeviceType(self._skillName, self._typeName)
+
+		self._secret = '' # Used to verify devices reply from UI
 
 		if not self._deviceType:
 			self.logError(f'Failed retrieving device type for device {self._typeName}')
@@ -61,6 +65,33 @@ class Device(ProjectAliceObject):
 
 		if self._id == -1:
 			self.saveToDB()
+
+
+	def newSecret(self) -> str:
+		"""
+		Generates a new secret string
+		:return:
+		"""
+		self._secret = str(uuid.uuid4())
+		return self._secret
+
+
+	def checkSecret(self, secret: str) -> bool:
+		"""
+		Checks if the given secret string matches the stored one and deletes the stored secret
+		:param secret:
+		:return:
+		"""
+		if not self._secret:
+			self.logWarning(f'Device id **{self.id}** was asked to check secret but no secret set')
+			return False
+
+		if secret != self._secret:
+			self.logWarning(f'Device id **{self.id}** replied with a wrong secret')
+			return False
+
+		self._secret = ''
+		return True
 
 
 	def _loadConfigs(self):
@@ -209,6 +240,15 @@ class Device(ProjectAliceObject):
 		self.saveToDB()
 
 
+	def onDeviceUIReply(self, data: dict):
+		"""
+		When a device is clicked in the UI, it receive an optional reply directive that calls this method
+		:param data:
+		:return:
+		"""
+		pass # Implemented by childs
+
+
 	@property
 	def settings(self) -> dict:
 		return self._settings
@@ -285,9 +325,15 @@ class Device(ProjectAliceObject):
 	def uid(self) -> str:
 		return self._uid
 
+
 	@property
 	def displayName(self) -> str:
 		return self._deviceConfigs['displayName']
+
+
+	@property
+	def skillInstance(self):
+		return self.SkillManager.getSkillInstance(self._skillName)
 
 
 	def toDict(self) -> dict:
@@ -333,13 +379,19 @@ class Device(ProjectAliceObject):
 		self.saveToDB()
 
 
-	def onUIClick(self):
+	def onUIClick(self) -> dict:
 		"""
 		Called whenever a device's icon is clicked on the UI
 		:return:
 		"""
 		if not self.paired:
 			self.DeviceManager.startBroadcastingForNewDevice(self)
+			reaction = OnClickReaction(
+				action=ClickReactionAction.INFO_NOTIFICATION.value,
+				data='notifications.info.pleasePlugDevice'
+			)
+			return reaction.toDict()
+		return dict()
 
 
 	def linkedTo(self, targetLocation: int) -> bool:

@@ -296,8 +296,8 @@ class MyHomeApi(Api):
 			device = self.DeviceManager.getDevice(deviceId=int(deviceId))
 			if not device:
 				raise Exception('No matching device found')
-			device.onUIClick()
-			return jsonify(success=True)
+
+			return jsonify(success=True, ret=device.onUIClick())
 		except Exception as e:
 			self.logError(f'Failed device on click {e}')
 			return jsonify(success=False, message=str(e))
@@ -328,3 +328,14 @@ class MyHomeApi(Api):
 			self.logError(f'Failed retrieving device type icon {e}')
 			file = Path(self.Commons.rootDir(), 'core/webApi/static/images/missing-icon.png')
 			return send_from_directory(file.parent, f'{file.stem}{constants.PNG_EXT}')
+
+
+	@route('/devices/<deviceId>/reply/', methods=['POST'])
+	@ApiAuthenticated
+	def deviceReply(self, deviceId: str):
+		try:
+			self.DeviceManager.getDevice(deviceId=int(deviceId)).onDeviceUIReply(request.json)
+			return jsonify(success=True)
+		except Exception as e:
+			self.logError(f'Cannot return device type list {e}')
+			return jsonify(success=False, message=f'Device not found {e}')
