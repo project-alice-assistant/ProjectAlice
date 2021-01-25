@@ -453,6 +453,28 @@
 		"category"    : "tts",
 		"display"     : "hidden"
 	},
+	"picoTtsVoice"          : {
+		"defaultValue": "en-US",
+		"dataType"    : "list",
+		"values"      : {
+			"en-US - male - en-US": "en-US",
+			"en-US - male - en-GB": "en-GB",
+			"en-US - male - de-DE": "de-DE",
+			"en-US - male - es-ES": "es-ES",
+			"en-US - male - fr-FR": "fr-FR",
+			"en-US - male - it-IT": "it-IT"
+		},
+		"isSensitive" : false,
+		"description" : "The voice PICO Tts should use",
+		"category"    : "tts",
+		"sets"        : "ttsLanguage - ttsType - ttsVoice",
+		"parent"      : {
+			"config"   : ["tts", "ttsFallback"],
+			"checkType": "or",
+			"condition": "is",
+			"value"    : "pico"
+		}
+	},
 	"mycroftTtsVoice"          : {
 		"defaultValue": "slt",
 		"dataType"    : "list",
