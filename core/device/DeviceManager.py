@@ -751,45 +751,11 @@ class DeviceManager(Manager):
 		return self.DialogManager.newTempSession(message=message)
 
 
+	def getDeviceByName(self, name: str):
+		return next((dev for dev in self._devices.values() if dev.displayName == name), None)
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-	# def broadcastToDevices(self, topic: str, payload: dict = None, deviceType: DeviceType = None, location: Location = None, connectedOnly: bool = True):
+# def broadcastToDevices(self, topic: str, payload: dict = None, deviceType: DeviceType = None, location: Location = None, connectedOnly: bool = True):
 	# 	if not payload:
 	# 		payload = dict()
 	#
@@ -855,8 +821,6 @@ class DeviceManager(Manager):
 	# 	return devGrouped
 	#
 	#
-	# def getDeviceByName(self, name: str):
-	# 	return next((dev for dev in self._devices.values() if dev.displayName == name), None)
 	#
 	#
 	# def getLinksForDevice(self, device: Device) -> List[DeviceLink]:
