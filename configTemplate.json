@@ -428,7 +428,6 @@
 		"dataType"    : "string",
 		"isSensitive" : false,
 		"description" : "Language for the Tts to use",
-		"help"        : "PICO VOICE<br>AMAZON POLLY<br>MYCROFT<br>GOOGLE WAVENET<br>IBM WATSON",
 		"onUpdate"    : "reloadTTS",
 		"category"    : "tts"
 	},
@@ -452,6 +451,48 @@
 		"onUpdate"    : "reloadTTS",
 		"category"    : "tts",
 		"display"     : "hidden"
+	},
+		"watsonTtsVoice"          : {
+		"defaultValue": "en-US_AllisonV3Voice",
+		"dataType"    : "list",
+		"values"      : {
+			"en-US - male - en-US_HenryV3Voice": "en-US_HenryV3Voice",
+			"en-US - male - en-US_KevinV3Voice": "en-US_KevinV3Voice",
+			"en-US - male - en-US_MichaelVoice": "en-US_MichaelVoice",
+			"en-US - male - en-US_MichaelV3Voice": "en-US_MichaelV3Voice",
+			"en-US - female - en-US_AllisonVoice": "en-US_AllisonVoice",
+			"en-US - female - en-US_AllisonV3Voice": "en-US_AllisonV3Voice",
+			"en-US - female - en-US_EmilyV3Voice": "en-US_EmilyV3Voice",
+			"en-US - female - en-US_LisaVoice": "en-US_LisaVoice",
+			"en-US - female - en-US_LisaV3Voice": "en-US_LisaV3Voice",
+			"en-US - female - en-US_OliviaV3Voice": "en-US_OliviaV3Voice",
+			"en-GB - female - en-GB_KateV3Voice": "en-GB_KateV3Voice",
+			"fr-FR - female - fr-FR_ReneeVoice": "fr-FR_ReneeVoice",
+			"fr-FR - female - fr-FR_ReneeV3Voice": "fr-FR_ReneeV3Voice",
+			"de-DE - male - de-DE_DieterVoice": "de-DE_DieterVoice",
+			"de-DE - male - de-DE_DieterV3Voice": "de-DE_DieterV3Voice",
+			"de-DE - female - de-DE_BirgitVoice": "de-DE_BirgitVoice",
+			"de-DE - female - de-DE_BirgitV3Voice": "de-DE_BirgitV3Voice",
+			"de-DE - female - de-DE_ErikaV3Voice": "de-DE_ErikaV3Voice",
+			"it-IT - female - it-IT_FrancescaVoice": "it-IT_FrancescaVoice",
+			"it-IT - female - it-IT_FrancescaV3Voice": "it-IT_FrancescaV3Voice",
+			"pt-BR - female - pt-BR_IsabelaV3Voice": "pt-BR_IsabelaV3Voice",
+			"ja-JP - female - ja-JP_EmiV3Voice": "ja-JP_EmiV3Voice",
+			"es-ES - male - es-ES_EnriqueV3Voice": "es-ES_EnriqueV3Voice",
+			"es-ES - female - es-ES_LauraV3Voice": "es-ES_LauraV3Voice",
+			"es-LA - female - es-LA_SofiaV3Voice": "es-LA_SofiaV3Voice",
+			"es-US - female - es-US_SofiaV3Voice": "es-US_SofiaV3Voice"
+		},
+		"isSensitive" : false,
+		"description" : "The voice Watson Tts should use",
+		"category"    : "tts",
+		"sets"        : "ttsLanguage - ttsType - ttsVoice",
+		"parent"      : {
+			"config"   : ["tts", "ttsFallback"],
+			"checkType": "or",
+			"condition": "is",
+			"value"    : "watson"
+		}
 	},
 	"picoTtsVoice"          : {
 		"defaultValue": "en-US",
