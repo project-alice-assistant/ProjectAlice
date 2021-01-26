@@ -68,6 +68,7 @@ class AliceSkill(ProjectAliceObject):
 
 		self._utteranceSlotCleaner = re.compile('{(.+?):=>.+?}')
 		self._myDevicesTemplates = dict()
+		self._myDevices: Dict[str, Device] = dict()
 
 
 	@property
@@ -78,6 +79,15 @@ class AliceSkill(ProjectAliceObject):
 	@failedStarting.setter
 	def failedStarting(self, value: bool):
 		self._failedStarting = value
+
+
+	def registerDeviceInstance(self, device: Device):
+		if device.paired:
+			self._myDevices[device.uid] = device
+
+
+	def unregisterDeviceInstance(self, device: Device):
+		self._myDevices.pop(device.uid, None)
 
 
 	def getHtmlInstructions(self) -> flask.Markup:

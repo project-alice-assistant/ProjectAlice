@@ -40,6 +40,9 @@ class Device(ProjectAliceObject):
 			self.logError(f'Failed retrieving device type for device {self._typeName}')
 			raise DeviceTypeUndefined(self._typeName)
 
+		if not self._typeName:
+			self._typeName = self._deviceType.deviceTypeName
+
 		self._abilities: int = -1 if not data.get('abilities', None) else self.setAbilities(data['abilities'])
 		self._deviceParams: Dict = json.loads(data.get('deviceParams', '{}'))
 		self._connected: bool = False
@@ -65,6 +68,20 @@ class Device(ProjectAliceObject):
 
 		if self._id == -1:
 			self.saveToDB()
+
+
+	def onStart(self):
+		super().onStart()
+		self.skillInstance.registerDeviceInstance(self)
+
+
+	def onStop(self):
+		super().onStop()
+		self.skillInstance.unregisterDeviceInstance(self)
+	
+	
+	def onBooted(self):
+		super().onBooted()
 
 
 	def newSecret(self) -> str:

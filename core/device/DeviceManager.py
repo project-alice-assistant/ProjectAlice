@@ -90,6 +90,9 @@ class DeviceManager(Manager):
 		elif self.ConfigManager.getAliceConfigByName('disableCapture'):
 			device.setAbilities([DeviceAbility.IS_CORE, DeviceAbility.PLAY_SOUND])
 
+		for device in self._devices.values():
+			device.onStart()
+
 		self.logInfo(f'Loaded **{len(self._devices)}** device instance', plural='instance')
 
 
@@ -102,6 +105,9 @@ class DeviceManager(Manager):
 		if self._devices:
 			self.ThreadManager.newThread(name='checkHeartbeats', target=self.checkHeartbeats)
 
+		for device in self._devices.values():
+			device.onBooted()
+
 		self._heartbeat = Heartbeat(device=self.getMainDevice())
 
 
@@ -110,6 +116,9 @@ class DeviceManager(Manager):
 
 		self._stopBroadcasting()
 		self._broadcastSocket.close()
+
+		for device in self._devices.values():
+			device.onStop()
 
 		if self._heartbeat:
 			self._heartbeat.stopHeartBeat()
@@ -152,7 +161,7 @@ class DeviceManager(Manager):
 			if not device:
 				self._heartbeats.pop(uid)
 			else:
-				if now - device.deviceType.heartbeatRate > lastTime:
+				if now - device.heartbeatRate > lastTime:
 					self.logWarning(f'Device **{device.displayName}** has not given a signal since {device.deviceType.heartbeatRate} seconds or more')
 					self._heartbeats.pop(uid)
 					device.connected = False
@@ -375,9 +384,9 @@ class DeviceManager(Manager):
 		}
 
 		device = Device(data)
-
 		self._devices[device.id] = device
 		self.addDeviceLink(targetLocation=locationId, deviceId=device.id)
+		device.onStart()
 		return device
 
 
@@ -446,13 +455,13 @@ class DeviceManager(Manager):
 		:param deviceUid:
 		:return:
 		"""
-		# TODO unsub mqtt, clean links
 		device = self.getDevice(deviceId=deviceId, uid=deviceUid)
 		if not device:
 			raise Exception(f'Device with uid {deviceUid} not found')
 		elif device.hasAbilities([DeviceAbility.IS_CORE]):
 			raise Exception(f'Cannot delete main unit')
 		else:
+			device.onStop()
 			self.deleteDeviceLinks(deviceId=device.id)
 			self._devices.pop(device.id)
 			self.DatabaseManager.delete(tableName=self.DB_DEVICE, callerName=self.name, values={'id': device.id})
