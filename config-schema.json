@@ -46,7 +46,8 @@
 						"wakeword",
 						"advanced debug",
 						"audio",
-						"scenarios"
+						"scenarios",
+						"interface"
 					]
 				},
 				"isSensitive" : {
@@ -72,7 +73,7 @@
 				},
 				"onUpdate"    : {
 					"type"   : "string",
-					"pattern": "^(?:[A-Z][a-zA-Z]+\\.)?[a-z][a-zA-Z0-9]+$"
+					"pattern": "^(?:[A-Z][a-zA-Z]+\\.)?[a-z][a-zA-Z0-9]+(\\(.*\\))?$"
 				},
 				"onStart"    : {
 					"type"   : "string",
@@ -81,6 +82,9 @@
 				"onInit"    : {
 					"type"   : "string",
 					"pattern": "^(?:[A-Z][a-zA-Z]+\\.)?[a-z][a-zA-Z0-9]+$"
+				},
+				"sets"      : {
+					"type": "string"
 				},
 				"parent"      : {
 					"type"      : "object",
@@ -91,7 +95,14 @@
 					],
 					"properties": {
 						"config": {
-							"type": "string"
+							"type": ["string", "array"]
+						},
+						"checkType" : {
+							"type": "string",
+							"enum": [
+								"and",
+								"or"
+							]
 						},
 						"condition": {
 							"type": "string",
