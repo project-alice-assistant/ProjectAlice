@@ -27,6 +27,12 @@
 			"data8"     : "Get some useful info about the skill, like, who made it, its actual version etc.",
 			"data9"     : "If the skill developer included some instructions on how to use this skill, you will find them here.",
 			"data10"    : "Need more skills? This is where you can get them!"
+		},
+		"myHome": {
+			"myHome": "My Home",
+			"data0"     : "Welcome in your home! Well, at least what might soon be your home... Let's have a look around here together, shall we?",
+			"data1": "This is your compass and as every compass, it helps you navigate. The only small difference with a real one, it that this one always points to the center of your floor plan!",
+			"data2": "This is the cursor, always pointing to the middle of the map. You can also click on to fast travel to middle of the map!"
 		}
 	},
 	"skill"        : {

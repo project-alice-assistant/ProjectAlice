@@ -78,8 +78,8 @@ class Device(ProjectAliceObject):
 	def onStop(self):
 		super().onStop()
 		self.skillInstance.unregisterDeviceInstance(self)
-	
-	
+
+
 	def onBooted(self):
 		super().onBooted()
 
