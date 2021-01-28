@@ -187,7 +187,6 @@ class DialogManager(Manager):
 		:param session:
 		:return:
 		"""
-		print(f"on session started {session}")
 		self.startSessionTimeout(sessionId=session.sessionId)
 		session.hasStarted = True
 
