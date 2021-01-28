@@ -34,6 +34,8 @@ class DialogManager(Manager):
 
 
 	def newSession(self, siteId: str, user: str = constants.UNKNOWN_USER, message: MQTTMessage = None) -> DialogSession:
+		if siteId == "Test":
+			siteId = self.DeviceManager.getMainDevice().uid
 		session = DialogSession(siteId=siteId, user=user, sessionId=str(uuid.uuid4()))
 
 		if message:
@@ -185,6 +187,7 @@ class DialogManager(Manager):
 		:param session:
 		:return:
 		"""
+		print(f"on session started {session}")
 		self.startSessionTimeout(sessionId=session.sessionId)
 		session.hasStarted = True
 

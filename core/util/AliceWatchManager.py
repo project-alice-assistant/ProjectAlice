@@ -30,8 +30,8 @@ class AliceWatchManager(Manager):
 			text = f'{text}'
 
 		self.publish(payload={
-			'text': text,
-			'component': 'Hialogue',
+			'text'     : text,
+			'component': 'Dialogue',
 			'verbosity': 0
 		})
 
@@ -86,8 +86,12 @@ class AliceWatchManager(Manager):
 
 
 	def onHotwordToggleOff(self, siteId: str, session: DialogSession):
+		# todo Temp fix for dialogue view.
+		# SiteId was causing issues by defaulting to "Test" in new interface
+		if siteId == "Test":
+			siteId = self.DeviceManager.getMainDevice().uid
 		self.publish(payload={
-			'text': f'Was asked to toggle itself **off** on device **{self.DeviceManager.getDevice(uid=siteId).displayName}**',
+			'text'     : f'Was asked to toggle itself **off** on device **{self.DeviceManager.getDevice(uid=siteId).displayName}**',
 			'component': 'Hotword',
 			'verbosity': 2
 		})
