@@ -205,6 +205,11 @@ class PreInit:
 
 		subprocess.run(['git', 'stash', 'clear'])
 
+		subprocess.run(['git', 'submodule', 'init'])
+		subprocess.run(['git', 'submodule', 'update'])
+		subprocess.run(['git', 'submodule', 'foreach', 'git', 'checkout', f'builds_{str(updateSource)}'])
+		subprocess.run(['git', 'submodule', 'foreach', 'git', 'pull'])
+
 
 	@staticmethod
 	def reboot():

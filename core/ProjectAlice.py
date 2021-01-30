@@ -138,6 +138,10 @@ class ProjectAlice(Singleton):
 		commons.runSystemCommand(['git', '-C', commons.rootDir(), 'clean', '-df'])
 		commons.runSystemCommand(['git', '-C', commons.rootDir(), 'checkout', str(candidate)])
 		commons.runSystemCommand(['git', '-C', commons.rootDir(), 'pull'])
+		commons.runSystemCommand(['git', '-C', commons.rootDir(), 'submodule', 'init'])
+		commons.runSystemCommand(['git', '-C', commons.rootDir(), 'submodule', 'update'])
+		commons.runSystemCommand(['git', '-C', commons.rootDir(), 'submodule', 'foreach', 'git', 'checkout', f'builds_{str(candidate)}'])
+		commons.runSystemCommand(['git', '-C', commons.rootDir(), 'submodule', 'foreach', 'git', 'pull'])
 
 		newHash = subprocess.check_output(['git', 'rev-parse', '--short HEAD'])
 
