@@ -183,6 +183,7 @@ class DeviceManager(Manager):
 			for device in self._devices.values():
 				if device.uid == uid:
 					return device
+			return None
 		else:
 			raise Exception('Cannot get a device without id or uid')
 

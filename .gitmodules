@@ -1,0 +1,3 @@
+[submodule "core/webui/public"]
+	path = core/webui/public
+	url = https://github.com/project-alice-assistant/webui.git
