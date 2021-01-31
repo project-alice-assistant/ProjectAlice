@@ -230,8 +230,14 @@ class MyHomeApi(Api):
 			return jsonify(success=False)
 
 
-	@route('/devices/<deviceId>/device.png', methods=['GET'])
-	def getDeviceIcon(self, deviceId: str):
+	@route('/devices/<deviceId>/<_rndStr>/device.png', methods=['GET'])
+	def getDeviceIcon(self, _rndStr: str, deviceId: str):
+		"""
+		Returns the icon of a device.
+		:param _rndStr: Is only used to bypass browser caching
+		:param deviceId:
+		:return:
+		"""
 		try:
 			device: Device = self.DeviceManager.getDevice(deviceId=int(deviceId))
 			file = device.getDeviceIcon()
@@ -297,7 +303,11 @@ class MyHomeApi(Api):
 			if not device:
 				raise Exception('No matching device found')
 
-			return jsonify(success=True, ret=device.onUIClick())
+			ret = device.onUIClick()
+			if not ret:
+				raise Exception('Device did not return any ClickReaction')
+
+			return jsonify(success=True, ret=ret)
 		except Exception as e:
 			self.logError(f'Failed device on click {e}')
 			return jsonify(success=False, message=str(e))

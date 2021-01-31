@@ -9,7 +9,7 @@ from core.webui.model.ClickReactionAction import ClickReactionAction
 class OnClickReaction(ProjectAliceObject):
 
 	action: ClickReactionAction
-	data: Any
+	data: Any = ''
 	reply: dict = field(default_factory=dict)
 
 

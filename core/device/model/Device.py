@@ -408,7 +408,8 @@ class Device(ProjectAliceObject):
 				data='notifications.info.pleasePlugDevice'
 			)
 			return reaction.toDict()
-		return dict()
+
+		return OnClickReaction(action=ClickReactionAction.NONE.value).toDict()
 
 
 	def linkedTo(self, targetLocation: int) -> bool:
