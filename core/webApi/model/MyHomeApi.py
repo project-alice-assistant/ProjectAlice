@@ -20,7 +20,6 @@ class MyHomeApi(Api):
 
 
 	@route('/', methods=['GET'])
-	@ApiAuthenticated
 	def getData(self):
 		try:
 			return jsonify(data={
@@ -314,7 +313,6 @@ class MyHomeApi(Api):
 
 
 	@route('/deviceTypes/', methods=['GET'])
-	@ApiAuthenticated
 	def getDeviceTypes(self):
 		try:
 			data = dict()

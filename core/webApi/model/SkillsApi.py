@@ -10,7 +10,6 @@ class SkillsApi(Api):
 
 
 	@route('/')
-	@ApiAuthenticated
 	def index(self):
 		return jsonify(skills={skillName: skill.toDict() for skillName, skill in self.SkillManager.allSkills.items()})
 
