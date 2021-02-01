@@ -71,6 +71,9 @@ class UtilsApi(Api):
 	def setConfig(self):
 		try:
 			confs = request.json
+			confs.pop('aliceIp', None)
+			confs.pop('apiPort', None)
+			confs.pop('aliceVersion', None)
 			for conf, value in confs.items():
 				if value == self.ConfigManager.getAliceConfigByName(conf):
 					continue
