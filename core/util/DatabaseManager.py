@@ -104,10 +104,10 @@ class DatabaseManager(Manager):
 							oldColName = [val for val in installedColumns if colName.casefold() == val.casefold()]
 							if oldColName:
 								self.logWarning(f'Found a case-changed column from **{oldColName[0]}** to **{colName}** for table **{fullTableName}** in component **{callerName}**')
-								cursor.execute(f'ALTER TABLE {fullTableName} RENAME COLUMN `{oldColName[0]}` TO `{colName}`')
+								cursor.execute(f'ALTER TABLE {fullTableName} RENAME COLUMN {oldColName[0]} TO {colName}')
 							else:
 								self.logWarning(f'Found a missing column **{colName}** for table **{fullTableName}** in component **{callerName}**')
-								cursor.execute(f'ALTER TABLE {fullTableName} ADD COLUMN `{colName}` `{colType}`')
+								cursor.execute(f'ALTER TABLE {fullTableName} ADD COLUMN {colName} {colType}')
 
 					database.commit()
 				except sqlite3.Error as e:
