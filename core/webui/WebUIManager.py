@@ -68,7 +68,7 @@ class WebUIManager(Manager):
 
 
 	def stopWebserver(self):
-		status = self.Commons.runRootSystemCommand('systemctl stop nginx'.split())
+		status = self.Commons.runRootSystemCommand('systemctl stop nginx')
 		if status.returncode != 0:
 			self.logWarning(f'Nginx stopping failed. Is it even installed?')
 		self.logInfo('Stopped nginx server')
@@ -78,7 +78,7 @@ class WebUIManager(Manager):
 		if not self.setConfFile():
 			return
 
-		status = self.Commons.runRootSystemCommand('systemctl start nginx'.split())
+		status = self.Commons.runRootSystemCommand('systemctl start nginx')
 		if status.returncode != 0:
 			raise Exception(f'Nginx starting failed. Is it even installed?')
 
