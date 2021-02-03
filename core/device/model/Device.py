@@ -34,7 +34,7 @@ class Device(ProjectAliceObject):
 		self._parentLocation: int = data.get('parentLocation', 0)
 		self._deviceType: DeviceType = self.DeviceManager.getDeviceType(self._skillName, self._typeName)
 
-		self._secret = '' # Used to verify devices reply from UI
+		self._secret = ''  # Used to verify devices reply from UI
 
 		if not self._deviceType:
 			self.logError(f'Failed retrieving device type for device {self._typeName}')
@@ -44,11 +44,13 @@ class Device(ProjectAliceObject):
 			self._typeName = self._deviceType.deviceTypeName
 
 		self._abilities: int = -1 if not data.get('abilities', None) else self.setAbilities(data['abilities'])
-		self._deviceParams: Dict = json.loads(data.get('deviceParams', '{}'))
+		self._deviceParams: Dict = json.loads(data.get('deviceParams', '{}')) if isinstance(
+			data.get('deviceParams', '{}'), str) else data.get('deviceParams', dict())
 		self._connected: bool = False
 
 		# Settings are for UI, all the components use the same variable
-		self._settings = json.loads(data.get('settings', '{}')) if isinstance(data.get('settings', '{}'), str) else data.get('settings', dict())
+		self._settings = json.loads(data.get('settings', '{}')) if isinstance(data.get('settings', '{}'),
+																			  str) else data.get('settings', dict())
 		settings = {
 			'x': 0,
 			'y': 0,
