@@ -1,4 +1,4 @@
-from flask import jsonify, request
+from flask import jsonify, request, send_from_directory
 from flask_classful import route
 
 from core.ProjectAliceExceptions import ConfigurationUpdateFailed
@@ -166,4 +166,12 @@ class UtilsApi(Api):
 			return jsonify(success=True)
 		except Exception as e:
 			self.logError(f'Failed training assistant: {e}')
+			return jsonify(success=False, message=str(e))
+
+
+	def pahows(self) -> dict:
+		try:
+			return send_from_directory(f'{self.Commons.rootDir()}/core/webApi/static', 'pahows.js')
+		except Exception as e:
+			self.logError(f'Error fetching pahows.js {e}')
 			return jsonify(success=False, message=str(e))
