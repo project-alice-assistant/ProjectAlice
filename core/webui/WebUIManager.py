@@ -8,10 +8,6 @@ from core.commons import constants
 
 class WebUIManager(Manager):
 
-	def __init__(self):
-		super().__init__()
-
-
 	def onStart(self):
 		super().onStart()
 
@@ -19,12 +15,16 @@ class WebUIManager(Manager):
 			self.logInfo('Web interface is disabled by settings')
 			self.isActive = False
 		else:
-			self.startWebserver()
-			if self.ConfigManager.getAliceConfigByName('displaySystemUsage'):
-				self.ThreadManager.newThread(
-					name='DisplayResourceUsage',
-					target=self.publishResourceUsage
-				)
+			try:
+				self.startWebserver()
+				if self.ConfigManager.getAliceConfigByName('displaySystemUsage'):
+					self.ThreadManager.newThread(
+						name='DisplayResourceUsage',
+						target=self.publishResourceUsage
+					)
+			except Exception as e:
+				self.logWarning(f'WebUI starting failed: {e}')
+				self.onStop()
 
 
 	def publishResourceUsage(self):
@@ -68,7 +68,9 @@ class WebUIManager(Manager):
 
 
 	def stopWebserver(self):
-		self.Commons.runRootSystemCommand('systemctl stop nginx'.split())
+		status = self.Commons.runRootSystemCommand('systemctl stop nginx')
+		if status.returncode != 0:
+			self.logWarning(f'Nginx stopping failed. Is it even installed?')
 		self.logInfo('Stopped nginx server')
 
 
@@ -76,5 +78,8 @@ class WebUIManager(Manager):
 		if not self.setConfFile():
 			return
 
-		self.Commons.runRootSystemCommand('systemctl start nginx'.split())
+		status = self.Commons.runRootSystemCommand('systemctl start nginx')
+		if status.returncode != 0:
+			raise Exception(f'Nginx starting failed. Is it even installed?')
+
 		self.logInfo('Started nginx server')

@@ -21,7 +21,10 @@ class DatabaseManager(Manager):
 
 	def onStart(self):
 		super().onStart()
+		self.fetchTables()
 
+
+	def fetchTables(self):
 		database = self.getConnection()
 		cursor = database.cursor()
 		try:
@@ -104,10 +107,10 @@ class DatabaseManager(Manager):
 							oldColName = [val for val in installedColumns if colName.casefold() == val.casefold()]
 							if oldColName:
 								self.logWarning(f'Found a case-changed column from **{oldColName[0]}** to **{colName}** for table **{fullTableName}** in component **{callerName}**')
-								cursor.execute(f'ALTER TABLE {fullTableName} RENAME COLUMN `{oldColName[0]}` TO `{colName}`')
+								cursor.execute(f'ALTER TABLE {fullTableName} RENAME COLUMN {oldColName[0]} TO {colName}')
 							else:
 								self.logWarning(f'Found a missing column **{colName}** for table **{fullTableName}** in component **{callerName}**')
-								cursor.execute(f'ALTER TABLE {fullTableName} ADD COLUMN `{colName}` `{colType}`')
+								cursor.execute(f'ALTER TABLE {fullTableName} ADD COLUMN {colName} {colType}')
 
 					database.commit()
 				except sqlite3.Error as e:
@@ -116,6 +119,10 @@ class DatabaseManager(Manager):
 					raise Exception
 
 				try:
+					cursor.execute(f'PRAGMA table_info({fullTableName})')
+					rows = cursor.fetchall()
+					installedColumns = {x[1]: x[2] for x in rows}
+
 					doUpdate = False
 					for column in installedColumns:
 						if column not in cols:
@@ -136,6 +143,8 @@ class DatabaseManager(Manager):
 					self.logError(f'Something went wrong initializing database for skill {callerName}: {e}')
 					database.rollback()
 					raise Exception
+
+			self.fetchTables()
 
 			# Let's check if we did not drop a table since an older version
 			for tableName in self._tables:

@@ -1,4 +1,4 @@
-from flask import jsonify, request
+from flask import jsonify, request, send_from_directory
 from flask_classful import route
 
 from core.ProjectAliceExceptions import ConfigurationUpdateFailed
@@ -71,6 +71,9 @@ class UtilsApi(Api):
 	def setConfig(self):
 		try:
 			confs = request.json
+			confs.pop('aliceIp', None)
+			confs.pop('apiPort', None)
+			confs.pop('aliceVersion', None)
 			for conf, value in confs.items():
 				if value == self.ConfigManager.getAliceConfigByName(conf):
 					continue
@@ -92,7 +95,7 @@ class UtilsApi(Api):
 	def mqttConfig(self):
 		return jsonify(
 			success=True,
-			host=self.Commons.getLocalIp(),
+			host=self.ConfigManager.getAliceConfigByName('mqttHost'),
 			port=int(self.ConfigManager.getAliceConfigByName('mqttPort')) + 1
 		)
 
@@ -163,4 +166,12 @@ class UtilsApi(Api):
 			return jsonify(success=True)
 		except Exception as e:
 			self.logError(f'Failed training assistant: {e}')
+			return jsonify(success=False, message=str(e))
+
+
+	def pahows(self) -> dict:
+		try:
+			return send_from_directory(f'{self.Commons.rootDir()}/core/webApi/static', 'pahows.js')
+		except Exception as e:
+			self.logError(f'Error fetching pahows.js {e}')
 			return jsonify(success=False, message=str(e))
