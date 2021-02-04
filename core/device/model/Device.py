@@ -383,11 +383,11 @@ class Device(ProjectAliceObject):
 
 	def updateSettings(self, settings: dict):
 		self._settings = {**self._settings, **settings}
-
+		self.saveToDB()
 
 	def updateConfigs(self, configs: dict):
 		self._deviceConfigs = {**self._deviceConfigs, **configs}
-
+		self.saveToDB()
 
 	def getParam(self, key: str, default: Any = False) -> Any:
 		return self._deviceParams.get(key, default)

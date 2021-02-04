@@ -174,7 +174,14 @@ class ConfigManager(Manager):
 			raise
 
 
-	def updateAliceConfiguration(self, key: str, value: typing.Any, dump: bool = True, doPreAndPostProcessing: bool = True):
+	def updateMainDeviceName(self, value: typing.Any):
+		if value != self.getAliceConfigByName('deviceName'):
+			device = self.DeviceManager.getMainDevice()
+			device.updateConfigs(configs={'displayName': value})
+
+
+	def updateAliceConfiguration(self, key: str, value: typing.Any, dump: bool = True,
+								 doPreAndPostProcessing: bool = True):
 		"""
 		Updating a core config is sensitive, if the request comes from a skill.
 		First check if the request came from a skill at anytime and if so ask permission
@@ -216,6 +223,9 @@ class ConfigManager(Manager):
 		pre = self.getAliceConfUpdatePreProcessing(key)
 		if doPreAndPostProcessing and pre and not self.ConfigManager.doConfigUpdatePreProcessing(pre, value):
 			return
+
+		if key == 'deviceName':
+			self.updateMainDeviceName(value=value)
 
 		self._aliceConfigurations[key] = value
 
