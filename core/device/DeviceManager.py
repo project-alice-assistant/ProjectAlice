@@ -82,8 +82,7 @@ class DeviceManager(Manager):
 			self.logInfo('Created main unit device')
 			self.ConfigManager.updateAliceConfiguration('uuid', device.uid)
 
-		if self.ConfigManager.getAliceConfigByName('disableSound') and self.ConfigManager.getAliceConfigByName(
-				'disableCapture'):
+		if self.ConfigManager.getAliceConfigByName('disableSound') and self.ConfigManager.getAliceConfigByName('disableCapture'):
 			device.setAbilities([DeviceAbility.IS_CORE])  # Remove default abilities
 		elif self.ConfigManager.getAliceConfigByName('disableSound'):
 			device.setAbilities([DeviceAbility.IS_CORE, DeviceAbility.CAPTURE_SOUND])
@@ -162,12 +161,10 @@ class DeviceManager(Manager):
 				self._heartbeats.pop(uid)
 			else:
 				if now - device.heartbeatRate > lastTime:
-					self.logWarning(
-						f'Device **{device.displayName}** has not given a signal since {device.deviceType.heartbeatRate} seconds or more')
+					self.logWarning(f'Device **{device.displayName}** has not given a signal since {device.deviceType.heartbeatRate} seconds or more')
 					self._heartbeats.pop(uid)
 					device.connected = False
-					self.MqttManager.publish(constants.TOPIC_DEVICE_UPDATED,
-											 payload={'uid': device.uid, 'type': 'status'})
+					self.MqttManager.publish(constants.TOPIC_DEVICE_UPDATED, payload={'uid': device.uid, 'type': 'status'})
 
 		self._heartbeatsCheckTimer = self.ThreadManager.newTimer(interval=3, func=self.checkHeartbeats)
 
@@ -255,8 +252,7 @@ class DeviceManager(Manager):
 		return ret
 
 
-	def getDevicesByLocation(self, locationId: int, deviceType: DeviceType = None,
-							 abilities: List[DeviceAbility] = None, connectedOnly: bool = True) -> List[Device]:
+	def getDevicesByLocation(self, locationId: int, deviceType: DeviceType = None, abilities: List[DeviceAbility] = None, connectedOnly: bool = True) -> List[Device]:
 		"""
 		Returns a list of devices fitting thee locationId and the optional arguments
 		:param locationId: the location Id, only mandatory argument
@@ -265,12 +261,10 @@ class DeviceManager(Manager):
 		:param connectedOnly: Wheather or not to return non connected devices
 		:return: list of Device instances
 		"""
-		return self._filterDevices(locationId=locationId, deviceType=deviceType, abilities=abilities,
-								   connectedOnly=connectedOnly)
+		return self._filterDevices(locationId=locationId, deviceType=deviceType, abilities=abilities, connectedOnly=connectedOnly)
 
 
-	def getDevicesBySkill(self, skillName: str, deviceType: DeviceType = None, abilities: List[DeviceAbility] = None,
-						  connectedOnly: bool = True) -> List[Device]:
+	def getDevicesBySkill(self, skillName: str, deviceType: DeviceType = None, abilities: List[DeviceAbility] = None, connectedOnly: bool = True) -> List[Device]:
 		"""
 		Returns a list of devices fitting the skill name and the optional arguments
 		:param skillName: the location Id, only mandatory argument
@@ -279,12 +273,10 @@ class DeviceManager(Manager):
 		:param connectedOnly: Wheather or not to return non connected devices
 		:return: list of Device instances
 		"""
-		return self._filterDevices(skillName=skillName, deviceType=deviceType, abilities=abilities,
-								   connectedOnly=connectedOnly)
+		return self._filterDevices(skillName=skillName, deviceType=deviceType, abilities=abilities, connectedOnly=connectedOnly)
 
 
-	def _filterDevices(self, locationId: int = None, skillName: str = None, deviceType: DeviceType = None,
-					   abilities: List[DeviceAbility] = None, connectedOnly: bool = True) -> List[Device]:
+	def _filterDevices(self, locationId: int = None, skillName: str = None, deviceType: DeviceType = None, abilities: List[DeviceAbility] = None, connectedOnly: bool = True) -> List[Device]:
 		"""
 		Returns a list of devices fitting the optional arguments
 		:param locationId: the location Id, only mandatory argument
@@ -342,9 +334,7 @@ class DeviceManager(Manager):
 		)
 
 
-	def addNewDevice(self, deviceType: str, skillName: str, locationId: int = 0, uid: Union[str, int] = None,
-					 abilities: List[DeviceAbility] = None, displaySettings: Dict = None, deviceParam: dict = None,
-					 displayName: str = None, noChecks: bool = False) -> Optional[Device]:
+	def addNewDevice(self, deviceType: str, skillName: str, locationId: int = 0, uid: Union[str, int] = None, abilities: List[DeviceAbility] = None, displaySettings: Dict = None, deviceParam: dict = None, displayName: str = None, noChecks: bool = False) -> Optional[Device]:
 		"""
 		Adds a new device to Alice. The device is immediately saved in DB
 		:param deviceType: the type of device, defined by each skill
@@ -368,8 +358,7 @@ class DeviceManager(Manager):
 			if 0 < dType.totalDeviceLimit <= len(self.getDevicesByType(deviceType=dType, connectedOnly=False)):
 				raise MaxDeviceOfTypeReached(dType.totalDeviceLimit)
 
-			if 0 < dType.perLocationLimit <= len(
-					self.getDevicesByLocation(locationId, deviceType=dType, connectedOnly=False)):
+			if 0 < dType.perLocationLimit <= len(self.getDevicesByLocation(locationId, deviceType=dType, connectedOnly=False)):
 				raise MaxDevicePerLocationReached(dType.perLocationLimit)
 
 
@@ -454,10 +443,8 @@ class DeviceManager(Manager):
 		if not loc:
 			raise Exception('Cannot change device location to a unexisting location')
 
-		if 0 < device.deviceType.perLocationLimit <= len(
-				self.getDevicesByLocation(locationId, deviceType=device.deviceType, connectedOnly=False)):
-			raise Exception(
-				f'Cannot move device **{device.displayName}** to new location, maximum per location limit reached')
+		if 0 < device.deviceType.perLocationLimit <= len(self.getDevicesByLocation(locationId, deviceType=device.deviceType, connectedOnly=False)):
+			raise Exception(f'Cannot move device **{device.displayName}** to new location, maximum per location limit reached')
 
 		return True
 
@@ -608,8 +595,7 @@ class DeviceManager(Manager):
 		return link
 
 
-	def deleteDeviceLinks(self, linkId: int = None, deviceId: int = None, deviceUid: str = None,
-						  targetLocationId: int = None):
+	def deleteDeviceLinks(self, linkId: int = None, deviceId: int = None, deviceUid: str = None, targetLocationId: int = None):
 		"""
 		Delete one or more device links.
 		If link id is provided, deletes only one.
@@ -629,8 +615,7 @@ class DeviceManager(Manager):
 		elif deviceId or deviceUid:
 			device = self.getDevice(deviceId=deviceId, uid=deviceUid)
 			if not device:
-				raise Exception(
-					f'Deleting device link from parent device failed, parent device with id **{deviceId}** not found')
+				raise Exception(f'Deleting device link from parent device failed, parent device with id **{deviceId}** not found')
 
 			delete = {'deviceId': device.id}
 
@@ -645,8 +630,7 @@ class DeviceManager(Manager):
 					self._deviceLinks.pop(link.id)
 
 		elif targetLocationId:
-			self.DatabaseManager.delete(tableName=self.DB_LINKS, callerName=self.name,
-										values={'targetLocation': targetLocationId})
+			self.DatabaseManager.delete(tableName=self.DB_LINKS, callerName=self.name, values={'targetLocation': targetLocationId})
 
 			for link in self._deviceLinks.copy().values():
 				if link.targetLocation == targetLocationId:
@@ -695,16 +679,13 @@ class DeviceManager(Manager):
 		if not uid:
 			uid = str(uuid.uuid4())
 
-		self.logInfo(
-			f'Started broadcasting on {self._broadcastPort} for new device addition. Attributed uid: {device.uid}')
+		self.logInfo(f'Started broadcasting on {self._broadcastPort} for new device addition. Attributed uid: {device.uid}')
 		self._listenSocket.listen(2)
-		self.ThreadManager.newThread(name='broadcast', target=self._startBroadcast,
-									 args=[device, uid, replyOnDeviceUid])
+		self.ThreadManager.newThread(name='broadcast', target=self._startBroadcast, args=[device, uid, replyOnDeviceUid])
 
 		self._broadcastTimer = self.ThreadManager.newTimer(interval=300, func=self._stopBroadcasting)
 
-		self.broadcast(method=constants.EVENT_BROADCASTING_FOR_NEW_DEVICE, exceptions=[self.name],
-					   propagateToSkills=True)
+		self.broadcast(method=constants.EVENT_BROADCASTING_FOR_NEW_DEVICE, exceptions=[self.name], propagateToSkills=True)
 		return True
 
 
@@ -718,9 +699,7 @@ class DeviceManager(Manager):
 		"""
 		self._broadcastFlag.set()
 		while self._broadcastFlag.isSet():
-			self._broadcastSocket.sendto(
-				bytes(f'{self.Commons.getLocalIp()}:{self._listenPort}:{uid}', encoding='utf8'),
-				('<broadcast>', self._broadcastPort))
+			self._broadcastSocket.sendto(bytes(f'{self.Commons.getLocalIp()}:{self._listenPort}:{uid}', encoding='utf8'), ('<broadcast>', self._broadcastPort))
 			try:
 				sock, address = self._listenSocket.accept()
 				sock.settimeout(None)
@@ -730,8 +709,7 @@ class DeviceManager(Manager):
 				deviceType = answer.split(':')[1]
 
 				if deviceType.lower() != device.deviceTypeName.lower():
-					self.logWarning(
-						f'Device with uid {uid} is not of correct type. Waiting on **{device.deviceTypeName}**, got **{deviceType}**')
+					self.logWarning(f'Device with uid {uid} is not of correct type. Waiting on **{device.deviceTypeName}**, got **{deviceType}**')
 					self._broadcastSocket.sendto(bytes('nok', encoding='utf8'), (deviceIp, self._broadcastPort))
 					raise socket.timeout
 
@@ -739,8 +717,7 @@ class DeviceManager(Manager):
 				self.logInfo(f'Device with uid **{uid}** successfully paired')
 
 				if replyOnDeviceUid:
-					self.MqttManager.say(text=self.TalkManager.randomTalk('newDeviceAdditionSuccess', skill='system'),
-										 client=replyOnDeviceUid)
+					self.MqttManager.say(text=self.TalkManager.randomTalk('newDeviceAdditionSuccess', skill='system'), client=replyOnDeviceUid)
 
 				# self.ThreadManager.doLater(interval=5, func=self.WakewordRecorder.uploadToNewDevice, args=[uid])
 
@@ -761,8 +738,7 @@ class DeviceManager(Manager):
 		self.logInfo('Stopped broadcasting for new devices')
 		self._broadcastFlag.clear()
 		self._broadcastTimer.cancel()
-		self.broadcast(method=constants.EVENT_STOP_BROADCASTING_FOR_NEW_DEVICE, exceptions=[self.name],
-					   propagateToSkills=True)
+		self.broadcast(method=constants.EVENT_STOP_BROADCASTING_FOR_NEW_DEVICE, exceptions=[self.name], propagateToSkills=True)
 
 
 	def onDeviceHeartbeat(self, uid: str, siteId: str = None):
