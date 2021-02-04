@@ -95,7 +95,7 @@ class UtilsApi(Api):
 	def mqttConfig(self):
 		return jsonify(
 			success=True,
-			host=self.Commons.getLocalIp(),
+			host=self.ConfigManager.getAliceConfigByName('mqttHost'),
 			port=int(self.ConfigManager.getAliceConfigByName('mqttPort')) + 1
 		)
 
