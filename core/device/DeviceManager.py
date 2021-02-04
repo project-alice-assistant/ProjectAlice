@@ -372,6 +372,7 @@ class DeviceManager(Manager):
 					self.getDevicesByLocation(locationId, deviceType=dType, connectedOnly=False)):
 				raise MaxDevicePerLocationReached(dType.perLocationLimit)
 
+
 		if not displaySettings:
 			if locationId == 0:
 				displaySettings = {
