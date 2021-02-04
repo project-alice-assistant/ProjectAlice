@@ -93,9 +93,14 @@ class UtilsApi(Api):
 
 	@route('/mqttConfig/', methods=['GET'])
 	def mqttConfig(self):
+		mqttHost = self.ConfigManager.getAliceConfigByName('mqttHost')
+
+		if mqttHost == 'localhost' or mqttHost == '127.0.0.1':
+			mqttHost = self.Commons.getLocalIp()
+
 		return jsonify(
 			success=True,
-			host=self.ConfigManager.getAliceConfigByName('mqttHost'),
+			host=mqttHost,
 			port=int(self.ConfigManager.getAliceConfigByName('mqttPort')) + 1
 		)
 
