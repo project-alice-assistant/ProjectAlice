@@ -82,8 +82,9 @@ class DeviceManager(Manager):
 			self.logInfo('Created main unit device')
 			self.ConfigManager.updateAliceConfiguration('uuid', device.uid)
 
+
 		if self.ConfigManager.getAliceConfigByName('disableSound') and self.ConfigManager.getAliceConfigByName('disableCapture'):
-			device.setAbilities([DeviceAbility.IS_CORE])  # Remove default abilities
+			device.setAbilities([DeviceAbility.IS_CORE]) #Remove default abilities
 		elif self.ConfigManager.getAliceConfigByName('disableSound'):
 			device.setAbilities([DeviceAbility.IS_CORE, DeviceAbility.CAPTURE_SOUND])
 		elif self.ConfigManager.getAliceConfigByName('disableCapture'):
@@ -289,11 +290,11 @@ class DeviceManager(Manager):
 
 		ret = list()
 		for device in self._devices.values():
-			if (locationId and device.parentLocation != locationId) \
-					or (skillName and device.skillName != skillName) \
-					or (deviceType and device.deviceType != deviceType) \
-					or (connectedOnly and not device.connected) \
-					or (abilities and not device.hasAbilities(abilities)):
+			if (locationId and device.parentLocation != locationId)\
+			    or (skillName and device.skillName != skillName)\
+				or (deviceType and device.deviceType != deviceType)\
+				or (connectedOnly and not device.connected)\
+				or (abilities and not device.hasAbilities(abilities)):
 				continue
 
 			ret.append(device)
@@ -586,7 +587,7 @@ class DeviceManager(Manager):
 			raise Exception('This device is already linked to that location')
 
 		data = {
-			'deviceId'      : device.id,
+			'deviceId': device.id,
 			'targetLocation': targetLocation
 		}
 
@@ -719,7 +720,7 @@ class DeviceManager(Manager):
 				if replyOnDeviceUid:
 					self.MqttManager.say(text=self.TalkManager.randomTalk('newDeviceAdditionSuccess', skill='system'), client=replyOnDeviceUid)
 
-				# self.ThreadManager.doLater(interval=5, func=self.WakewordRecorder.uploadToNewDevice, args=[uid])
+				#self.ThreadManager.doLater(interval=5, func=self.WakewordRecorder.uploadToNewDevice, args=[uid])
 
 				self._broadcastSocket.sendto(bytes('ok', encoding='utf8'), (deviceIp, self._broadcastPort))
 				self._stopBroadcasting()
@@ -765,73 +766,74 @@ class DeviceManager(Manager):
 	def getDeviceByName(self, name: str):
 		return next((dev for dev in self._devices.values() if dev.displayName == name), None)
 
+
 # def broadcastToDevices(self, topic: str, payload: dict = None, deviceType: DeviceType = None, location: Location = None, connectedOnly: bool = True):
-# 	if not payload:
-# 		payload = dict()
-#
-# 	for device in self._devices.values():
-# 		if deviceType and device.getDeviceType() != deviceType:
-# 			continue
-#
-# 		if location and device.isInLocation(location):
-# 			continue
-#
-# 		if connectedOnly and not device.connected:
-# 			continue
-#
-# 		payload.setdefault('uid', device.uid)
-# 		payload.setdefault('siteId', device.siteId)
-#
-# 		self.MqttManager.publish(
-# 			topic=topic,
-# 			payload=json.dumps(payload)
-# 		)
-#
-#
-# ## Heartbeats
-#
-#
-# def getDeviceLinksByType(self, deviceType: int, connectedOnly: bool = False) -> List[DeviceLink]:
-# 	return [x for x in self._deviceLinks.values() if x.getDevice().deviceTypeId == deviceType and (not connectedOnly or x.getDevice().connected)]
-#
-#
-# def getDeviceLinks(self, locationId: int, deviceTypeId: int = None, connectedOnly: bool = False, pairedOnly: bool = False) -> List[DeviceLink]:
-# 	if locationId and not isinstance(locationId, List):
-# 		locationId = [locationId]
-#
-# 	if deviceTypeId and not isinstance(deviceTypeId, List):
-# 		deviceTypeId = [deviceTypeId]
-#
-# 	return [x for x in self._deviceLinks.values()
-# 	        if (not locationId or x.locationId in locationId)
-# 	        and x.getDevice()
-# 	        and (not deviceTypeId or x.getDevice().deviceTypeId in deviceTypeId)
-# 	        and (not connectedOnly or x.getDevice().connected)
-# 	        and (not pairedOnly or x.getDevice().uid)]
-#
-#
-# def getDeviceLinksForSession(self, session: DialogSession, skill: str, noneIsEverywhere: bool = False):
-# 	#get all relevant deviceTypes
-# 	devTypes = self.DeviceManager.getDeviceTypesForSkill(skillName=skill)
-# 	devTypeIds = [dev for dev in devTypes] # keys in dict are Ids
-#
-# 	#get all required locations
-# 	locations = self.LocationManager.getLocationsForSession(sess=session, noneIsEverywhere=noneIsEverywhere)
-# 	locationIds = [loc.id for loc in locations]
-#
-# 	return self.DeviceManager.getDeviceLinks(deviceTypeId=devTypeIds, locationId=locationIds)
-#
-#
-# @staticmethod
-# def groupDeviceLinksByDevice(links: List[DeviceLink]) -> Dict[int, DeviceLink]:
-# 	# group links by device
-# 	devGrouped = dict()
-# 	for link in links:
-# 		devGrouped.setdefault(link.deviceId,[]).append(link)
-# 	return devGrouped
-#
-#
-#
-#
-# def getLinksForDevice(self, device: Device) -> List[DeviceLink]:
-# 	return [link for link in self._deviceLinks.values() if link.deviceId == device.id]
+	# 	if not payload:
+	# 		payload = dict()
+	#
+	# 	for device in self._devices.values():
+	# 		if deviceType and device.getDeviceType() != deviceType:
+	# 			continue
+	#
+	# 		if location and device.isInLocation(location):
+	# 			continue
+	#
+	# 		if connectedOnly and not device.connected:
+	# 			continue
+	#
+	# 		payload.setdefault('uid', device.uid)
+	# 		payload.setdefault('siteId', device.siteId)
+	#
+	# 		self.MqttManager.publish(
+	# 			topic=topic,
+	# 			payload=json.dumps(payload)
+	# 		)
+	#
+	#
+	# ## Heartbeats
+	#
+	#
+	# def getDeviceLinksByType(self, deviceType: int, connectedOnly: bool = False) -> List[DeviceLink]:
+	# 	return [x for x in self._deviceLinks.values() if x.getDevice().deviceTypeId == deviceType and (not connectedOnly or x.getDevice().connected)]
+	#
+	#
+	# def getDeviceLinks(self, locationId: int, deviceTypeId: int = None, connectedOnly: bool = False, pairedOnly: bool = False) -> List[DeviceLink]:
+	# 	if locationId and not isinstance(locationId, List):
+	# 		locationId = [locationId]
+	#
+	# 	if deviceTypeId and not isinstance(deviceTypeId, List):
+	# 		deviceTypeId = [deviceTypeId]
+	#
+	# 	return [x for x in self._deviceLinks.values()
+	# 	        if (not locationId or x.locationId in locationId)
+	# 	        and x.getDevice()
+	# 	        and (not deviceTypeId or x.getDevice().deviceTypeId in deviceTypeId)
+	# 	        and (not connectedOnly or x.getDevice().connected)
+	# 	        and (not pairedOnly or x.getDevice().uid)]
+	#
+	#
+	# def getDeviceLinksForSession(self, session: DialogSession, skill: str, noneIsEverywhere: bool = False):
+	# 	#get all relevant deviceTypes
+	# 	devTypes = self.DeviceManager.getDeviceTypesForSkill(skillName=skill)
+	# 	devTypeIds = [dev for dev in devTypes] # keys in dict are Ids
+	#
+	# 	#get all required locations
+	# 	locations = self.LocationManager.getLocationsForSession(sess=session, noneIsEverywhere=noneIsEverywhere)
+	# 	locationIds = [loc.id for loc in locations]
+	#
+	# 	return self.DeviceManager.getDeviceLinks(deviceTypeId=devTypeIds, locationId=locationIds)
+	#
+	#
+	# @staticmethod
+	# def groupDeviceLinksByDevice(links: List[DeviceLink]) -> Dict[int, DeviceLink]:
+	# 	# group links by device
+	# 	devGrouped = dict()
+	# 	for link in links:
+	# 		devGrouped.setdefault(link.deviceId,[]).append(link)
+	# 	return devGrouped
+	#
+	#
+	#
+	#
+	# def getLinksForDevice(self, device: Device) -> List[DeviceLink]:
+	# 	return [link for link in self._deviceLinks.values() if link.deviceId == device.id]
