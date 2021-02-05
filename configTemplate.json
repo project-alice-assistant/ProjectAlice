@@ -201,7 +201,12 @@
 		"dataType"    : "boolean",
 		"isSensitive" : false,
 		"description" : "If true method tracing will be availble for dev debugging.",
-		"category"    : "advanced debug"
+		"category"    : "advanced debug",
+		"parent"      : {
+			"config"   : "advancedDebug",
+			"condition": "is",
+			"value"    : true
+		}
 	},
 	"memoryProfiling"         : {
 		"defaultValue": false,
