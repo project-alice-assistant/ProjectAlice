@@ -335,7 +335,7 @@ class DeviceManager(Manager):
 		)
 
 
-	def addNewDevice(self, deviceType: str, skillName: str, locationId: int = 0, uid: Union[str, int] = None, abilities: List[DeviceAbility] = None, displaySettings: Dict = None, displayName: str = None, noChecks: bool = False) -> Optional[Device]:
+	def addNewDevice(self, deviceType: str, skillName: str, locationId: int = 0, uid: Union[str, int] = None, abilities: List[DeviceAbility] = None, displaySettings: Dict = None, deviceParam: dict = None, displayName: str = None, noChecks: bool = False) -> Optional[Device]:
 		"""
 		Adds a new device to Alice. The device is immediately saved in DB
 		:param deviceType: the type of device, defined by each skill
@@ -344,6 +344,7 @@ class DeviceManager(Manager):
 		:param uid: the device uid
 		:param abilities: a list of abilities for this device
 		:param displaySettings: a dict of display settings, for the UI
+		:param deviceParam: a dict of additional values
 		:param displayName: the ui display name
 		:param noChecks: if true, no condition checks will apply
 		:return: A Device instance or None if something failed
@@ -375,13 +376,14 @@ class DeviceManager(Manager):
 				}
 
 		data = {
-			'abilities'      : abilities,
-			'displayName'    : displayName,
-			'parentLocation' : locationId,
-			'settings'       : displaySettings,
-			'skillName'      : skillName,
-			'typeName'       : deviceType,
-			'uid'            : uid or str(uuid.uuid4())
+			'abilities'     : abilities,
+			'displayName'   : displayName,
+			'parentLocation': locationId,
+			'settings'      : displaySettings,
+			'deviceParams'  : deviceParam,
+			'skillName'     : skillName,
+			'typeName'      : deviceType,
+			'uid'           : uid or str(uuid.uuid4())
 		}
 
 		device = Device(data)

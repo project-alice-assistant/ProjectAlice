@@ -33,6 +33,20 @@ class Manager(ProjectAliceObject):
 	def isActive(self, value: bool):
 		self._isActive = value
 
+	def getMethodCaller(self, **kwargs):
+		"""
+		Used to print out the calling methods to aid in diagnosing code flow.
+
+		:params methodParam: Can call any or no additional parameters to print out those values
+		:return Syslog debug messages
+		"""
+		if self.ConfigManager.getAliceConfigByName('methodTracing'):
+			try:
+				return self.Commons.getMethodCaller()
+			except Exception as e:
+				self.logError(f'Something went wrong retrieving method caller: {e}')
+
+
 
 	def getFunctionCaller(self) -> Optional[str]:
 		try:

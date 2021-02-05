@@ -196,6 +196,13 @@
 		"description" : "If true advanced debugging will be enabled. This activates extra information and tools for debugging.",
 		"category"    : "advanced debug"
 	},
+	"methodTracing"           : {
+		"defaultValue": false,
+		"dataType"    : "boolean",
+		"isSensitive" : false,
+		"description" : "If true method tracing will be availble for dev debugging.",
+		"category"    : "advanced debug"
+	},
 	"memoryProfiling"         : {
 		"defaultValue": false,
 		"dataType"    : "boolean",

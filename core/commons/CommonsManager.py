@@ -52,6 +52,34 @@ class CommonsManager(Manager):
 		return inspect.getmodulename(inspect.stack()[depth][1])
 
 
+	def getMethodCaller(self, **methodParam):
+		"""
+		For dev debug use.
+		Used to print out the calling methods to aid in diagnosing code flow.
+		Additonally will print out key and value of provided methodParams
+
+		:params methodParam: Can call any or no additional parameters to print out those values
+		:return Syslog debug messages
+		"""
+		if not self.ConfigManager.getAliceConfigByName('methodTracing'):
+			return
+		allStackFrames = inspect.stack()
+		step1 = allStackFrames[1]
+		step2 = allStackFrames[2]
+		step3 = allStackFrames[3]
+		step4 = allStackFrames[4]
+
+		self.logInfo(f"![red](*** DEV METHOD TRACING CODE ***)")
+		self.logInfo(f"![yellow](The calling method to get to '{step1[3]}' was '{step2[3]}' in file '{step2[1]}' on line '{step2[2]}')")
+		self.logInfo(f"![yellow](Other calls to get to '{step2[3]}' were '{step3[3]}' method, and before that was '{step4[3]}')")
+
+		if methodParam:
+			for key, value in methodParam.items():
+				self.logInfo(f"'**{key}**' has a value of '**{value}**' ")
+
+		self.logInfo("")
+		self.logInfo(f"![red](**Remember to remove this devCode** from '{step1[1]}' line '{step1[2]}')")
+
 	def isEqualTranslated(self, baseString: str, compareTo: str, skill: str = 'system') -> bool:
 		"""
 		Compares the basestring to the compareTo string. compareTo string if the key in the strings file
