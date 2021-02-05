@@ -175,8 +175,10 @@ class ConfigManager(Manager):
 
 
 	def updateMainDeviceName(self, value: typing.Any):
-		if value != self.getAliceConfigByName('deviceName'):
-			device = self.DeviceManager.getMainDevice()
+		device = self.DeviceManager.getMainDevice()
+		if not device.displayName:
+			device.updateConfigs(configs={'displayName': "default"})
+		if value != device.displayName:
 			device.updateConfigs(configs={'displayName': value})
 
 
