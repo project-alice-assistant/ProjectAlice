@@ -319,6 +319,7 @@ class DeviceManager(Manager):
 		"""
 		devices = self.getDevicesWithAbilities(abilities=[DeviceAbility.IS_CORE], connectedOnly=False)
 		if not devices:
+			self.logFatal("Couldn't get main device, cannot continue, sorry")
 			return None
 
 		return devices[0]

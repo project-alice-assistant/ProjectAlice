@@ -816,7 +816,7 @@ class MqttManager(Manager):
 
 	def playSound(self, soundFilename: str, location: Path = None, sessionId: str = '', deviceUid: Union[str, List[Union[str, Device]]] = None, uid: str = '', suffix: str = '.wav'):
 		if not deviceUid:
-			deviceUid = self.DeviceManager.getMainDevice().uid
+			deviceUid = self.ConfigManager.getAliceConfigByName('uuid')
 
 		if not sessionId:
 			sessionId = str(uuid.uuid4())
