@@ -266,7 +266,11 @@ class DatabaseManager(Manager):
 			raise exception
 
 
-	def update(self, tableName: str, callerName: str, values: dict, query: str = None, row: tuple = None) -> bool:
+	def update(self, tableName: str, callerName: str, values: dict = None, query: str = None, row: tuple = None) -> bool:
+		if not query and not values:
+			self.logWarning('Cannot update database with neither query or values set')
+			return False
+
 		if not query:
 			updates = [f'{col} = :{col}' for col in values.keys()]
 			query = f'UPDATE :__table__ SET {" ,".join(updates)} WHERE {row[0]} = "{row[1]}"'

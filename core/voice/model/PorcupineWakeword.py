@@ -54,20 +54,20 @@ class PorcupineWakeword(WakewordEngine):
 			self._buffer = queue.Queue()
 
 
-	def onHotwordToggleOff(self, siteId: str, session: DialogSession):
+	def onHotwordToggleOff(self, deviceUid: str, session: DialogSession):
 		if self._enabled:
 			self._working.clear()
 			self._buffer = queue.Queue()
 
 
-	def onHotwordToggleOn(self, siteId: str, session: DialogSession):
+	def onHotwordToggleOn(self, deviceUid: str, session: DialogSession):
 		if self._enabled:
 			self._working.set()
 			self._buffer = queue.Queue()
 			self._hotwordThread = self.ThreadManager.newThread(name='HotwordThread', target=self.worker)
 
 
-	def onAudioFrame(self, message: MQTTMessage, siteId: str):
+	def onAudioFrame(self, message: MQTTMessage, deviceUid: str):
 		if not self.enabled or not self._working.is_set():
 			return
 
@@ -97,7 +97,7 @@ class PorcupineWakeword(WakewordEngine):
 					self.MqttManager.publish(
 						topic=constants.TOPIC_HOTWORD_DETECTED.format('default'),
 						payload={
-							'siteeId': self.ConfigManager.getAliceConfigByName('uuid'),
+							'siteId': self.DeviceManager.getMainDevice().uid,
 							'modelId': f'porcupine_{result}',
 							'modelVersion': self._handler.version,
 							'modelType': 'universal',

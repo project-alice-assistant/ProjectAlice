@@ -157,7 +157,7 @@ class Tts(ProjectAliceObject):
 			soundFilename=file.stem,
 			location=file.parent,
 			sessionId=session.sessionId,
-			device=session.siteId,
+			deviceUid=session.deviceUid,
 			uid=uid
 		)
 
@@ -179,7 +179,7 @@ class Tts(ProjectAliceObject):
 			payload={
 				'id': uid,
 				'sessionId': session.sessionId,
-				'siteId': session.siteId
+				'deviceUid': session.deviceUid
 			}
 		)
 

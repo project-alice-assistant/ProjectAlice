@@ -402,13 +402,8 @@ class AliceSkill(ProjectAliceObject):
 		self.MqttManager.unsubscribeSkillIntents(self._supportedIntents)
 
 
-	def notifyDevice(self, topic: str, uid: str = '', siteId: str = ''):
-		if uid:
-			self.MqttManager.publish(topic=topic, payload={'uid': uid})
-		elif siteId:
-			self.MqttManager.publish(topic=topic, payload={'siteId': siteId})
-		else:
-			self.logWarning('Tried to notify devices but no uid or site id specified')
+	def notifyDevice(self, topic: str, deviceUid: str = ''):
+		self.MqttManager.publish(topic=topic, payload={'uid': deviceUid})
 
 
 	def authenticateIntent(self, session: DialogSession):
@@ -588,14 +583,14 @@ class AliceSkill(ProjectAliceObject):
 		return self.SkillManager.getSkillInstance(skillName=skillName)
 
 
-	def say(self, text: str, siteId: str = None, customData: dict = None, canBeEnqueued: bool = True):
-		self.MqttManager.say(text=text, client=siteId, customData=customData, canBeEnqueued=canBeEnqueued)
+	def say(self, text: str, deviceUid: str = None, customData: dict = None, canBeEnqueued: bool = True):
+		self.MqttManager.say(text=text, deviceUid=deviceUid, customData=customData, canBeEnqueued=canBeEnqueued)
 
 
-	def ask(self, text: str, siteId: str = None, intentFilter: list = None, customData: dict = None, canBeEnqueued: bool = True, currentDialogState: str = '', probabilityThreshold: float = None):
+	def ask(self, text: str, deviceUid: str = None, intentFilter: list = None, customData: dict = None, canBeEnqueued: bool = True, currentDialogState: str = '', probabilityThreshold: float = None):
 		if currentDialogState:
 			currentDialogState = f'{self.name}:{currentDialogState}'
-		self.MqttManager.ask(text=text, client=siteId, intentFilter=intentFilter, customData=customData, canBeEnqueued=canBeEnqueued, currentDialogState=currentDialogState, probabilityThreshold=probabilityThreshold)
+		self.MqttManager.ask(text=text, client=deviceUid, intentFilter=intentFilter, customData=customData, canBeEnqueued=canBeEnqueued, currentDialogState=currentDialogState, probabilityThreshold=probabilityThreshold)
 
 
 	def continueDialog(self, sessionId: str, text: str, customData: dict = None, intentFilter: list = None, slot: str = '', currentDialogState: str = '', probabilityThreshold: float = None):
@@ -604,16 +599,16 @@ class AliceSkill(ProjectAliceObject):
 		self.MqttManager.continueDialog(sessionId=sessionId, text=text, customData=customData, intentFilter=intentFilter, slot=slot, currentDialogState=currentDialogState, probabilityThreshold=probabilityThreshold)
 
 
-	def endDialog(self, sessionId: str = '', text: str = '', siteId: str = ''):
-		self.MqttManager.endDialog(sessionId=sessionId, text=text, client=siteId)
+	def endDialog(self, sessionId: str = '', text: str = '', deviceUid: str = ''):
+		self.MqttManager.endDialog(sessionId=sessionId, text=text, deviceUid=deviceUid)
 
 
 	def endSession(self, sessionId):
 		self.MqttManager.endSession(sessionId=sessionId)
 
 
-	def playSound(self, soundFilename: str, location: Path = None, sessionId: str = '', siteId: str = None, uid: str = ''):
-		self.MqttManager.playSound(soundFilename=soundFilename, location=location, sessionId=sessionId, device=siteId, uid=uid)
+	def playSound(self, soundFilename: str, location: Path = None, sessionId: str = '', deviceUid: Union[str, List[Union[str, Device]]] = None, uid: str = ''):
+		self.MqttManager.playSound(soundFilename=soundFilename, location=location, sessionId=sessionId, deviceUid=deviceUid, uid=uid)
 
 
 	def publish(self, topic: str, payload: dict = None, stringPayload: str = None, qos: int = 0, retain: bool = False):

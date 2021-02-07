@@ -303,15 +303,15 @@ class ProjectAliceObject:
 		pass  # Super object function is overriden only if needed
 
 
-	def onHotword(self, siteId: str, user: str = constants.UNKNOWN_USER):
+	def onHotword(self, deviceUid: str, user: str = constants.UNKNOWN_USER):
 		pass  # Super object function is overriden only if needed
 
 
-	def onHotwordToggleOn(self, siteId: str, session):
+	def onHotwordToggleOn(self, deviceUid: str, session):
 		pass  # Super object function is overriden only if needed
 
 
-	def onHotwordToggleOff(self, siteId: str, session):
+	def onHotwordToggleOff(self, deviceUid: str, session):
 		pass  # Super object function is overriden only if needed
 
 
@@ -323,11 +323,11 @@ class ProjectAliceObject:
 		pass  # Super object function is overriden only if needed
 
 
-	def onAsrToggleOn(self, siteId: str):
+	def onAsrToggleOn(self, deviceUid: str):
 		pass  # Super object function is overriden only if needed
 
 
-	def onAsrToggleOff(self, siteId: str):
+	def onAsrToggleOff(self, deviceUid: str):
 		pass  # Super object function is overriden only if needed
 
 
@@ -383,7 +383,7 @@ class ProjectAliceObject:
 		pass  # Super object function is overriden only if needed
 
 
-	def onStartSession(self, siteId: str, payload: dict):
+	def onStartSession(self, deviceUid: str, payload: dict):
 		pass  # Super object function is overriden only if needed
 
 
@@ -468,7 +468,7 @@ class ProjectAliceObject:
 		pass  # Super object function is overriden only if needed
 
 
-	def onWakeword(self, siteId: str, user: str = constants.UNKNOWN_USER):
+	def onWakeword(self, deviceUid: str, user: str = constants.UNKNOWN_USER):
 		pass  # Super object function is overriden only if needed
 
 
@@ -608,19 +608,19 @@ class ProjectAliceObject:
 		pass  # Super object function is overriden only if needed
 
 
-	def onPlayBytes(self, requestId: str, payload: bytearray, siteId: str, sessionId: str = None):
+	def onPlayBytes(self, requestId: str, payload: bytearray, deviceUid: str, sessionId: str = None):
 		pass  # Super object function is overriden only if needed
 
 
-	def onPlayBytesFinished(self, requestId: str, siteId: str, sessionId: str = None):
+	def onPlayBytesFinished(self, requestId: str, deviceUid: str, sessionId: str = None):
 		pass  # Super object function is overriden only if needed
 
 
-	def onToggleFeedbackOn(self, siteId: str):
+	def onToggleFeedbackOn(self, deviceUid: str):
 		pass  # Super object function is overriden only if needed
 
 
-	def onToggleFeedbackOff(self, siteId: str):
+	def onToggleFeedbackOff(self, deviceUid: str):
 		pass  # Super object function is overriden only if needed
 
 
@@ -632,7 +632,7 @@ class ProjectAliceObject:
 		pass  # Super object function is overriden only if needed
 
 
-	def onDeviceHeartbeat(self, uid: str, siteId: str = None):
+	def onDeviceHeartbeat(self, uid: str, deviceUid: str = None):
 		pass  # Super object function is overriden only if needed
 
 

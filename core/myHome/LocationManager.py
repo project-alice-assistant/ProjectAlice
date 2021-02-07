@@ -300,7 +300,7 @@ class LocationManager(Manager):
 
 
 	# noinspection PyUnusedLocal
-	def getLocation(self, locId: int = None, locationName: str = None, locationSynonym: str = None, siteId: str = None, deviceTypeId: int = None) -> Optional[Location]:
+	def getLocation(self, locId: int = None, locationName: str = None, locationSynonym: str = None, deviceUid: str = None, deviceTypeId: int = None) -> Optional[Location]:
 		# todo implement location det. logic
 		# 1a) check name vs locations - done
 		# 1b) check name vs location synonyms - done
@@ -312,7 +312,7 @@ class LocationManager(Manager):
 		:param locationName: a location name issued by the user
 		:param locationSynonym: the name could be a synonym
 		:param locId:
-		:param siteId: the current devices site NAME
+		:param deviceUid: the current devices site NAME
 		:param deviceTypeId: only rooms with that type of device can be found - linked is allowed as well
 		:return: Location
 		"""
@@ -326,28 +326,27 @@ class LocationManager(Manager):
 
 		if locationName:
 			loc = self.getLocationByName(name=locationName)
-			if not loc and locationSynonym:
-				loc = self.getLocationBySynonym(locationSynonym)
+			if not loc:
+				loc = self.getLocationBySynonym(locationName)
+				if not loc and locationSynonym:
+					loc = self.getLocationBySynonym(locationSynonym)
 
 			return loc
 
-		if siteId:
-			loc = self.getLocationByName(name=siteId)
-			if loc:
-				return loc
-
-			return self.DeviceManager.getDevice(uid=siteId).getMainLocation()
+		if deviceUid:
+			locId = self.DeviceManager.getDevice(uid=deviceUid).parentLocation
+			return self.getLocation(locId=locId)
 
 		return None
 
 
-	def getLocationsForSession(self, sess: DialogSession, slotName: str = 'Location', noneIsEverywhere: bool = False) -> List[Location]:
-		slotValues = [x.value['value'] for x in sess.slotsAsObjects.get(slotName, list())]
+	def getLocationsForSession(self, session: DialogSession, slotName: str = 'Location', noneIsEverywhere: bool = False) -> List[Location]:
+		slotValues = [x.value['value'] for x in session.slotsAsObjects.get(slotName, list())]
 		if len(slotValues) == 0:
 			if noneIsEverywhere:
 				return [loc[1] for loc in self.locations.items()]
 			else:
-				device = self.DeviceManager.getDevice(uid=sess.siteId)
+				device = self.DeviceManager.getDevice(uid=session.deviceUid)
 				if device:
 					return [device.getMainLocation()]
 				else:
@@ -371,9 +370,9 @@ class LocationManager(Manager):
 		return self._furnitures
 
 
-	def cleanRoomNameToSiteId(self, roomName: str) -> str:
+	def cleanRoomName(self, roomName: str) -> str:
 		"""
-		User might answer "in the living room" when asked for a room. In that case it should be turned into "living_room"
+		User might answer "in the living room" when asked for a room. In that case it should be turned into "living room"
 		:param roomName: str: original captured name
 		:return: str: formated room name to site id
 		"""
@@ -385,4 +384,4 @@ class LocationManager(Manager):
 				roomName = roomName.replace(parasite, '')
 				break
 
-		return roomName.strip().replace(' ', '_')
+		return roomName.strip()

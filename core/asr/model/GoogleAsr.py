@@ -65,8 +65,8 @@ class GoogleAsr(Asr):
 	def decodeStream(self, session: DialogSession) -> Optional[ASRResult]:
 		super().decodeStream(session)
 
-		recorder = Recorder(self._timeout, session.user, session.siteId)
-		self.ASRManager.addRecorder(session.siteId, recorder)
+		recorder = Recorder(self._timeout, session.user, session.deviceUid)
+		self.ASRManager.addRecorder(session.deviceUid, recorder)
 		self._recorder = recorder
 		result = None
 		with Stopwatch() as processingTime:

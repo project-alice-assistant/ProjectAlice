@@ -81,7 +81,7 @@ def _exceptHandler(*args, text: str, exceptHandler: Callable, returnText: bool, 
 		if session.sessionId in SuperManager.getInstance().dialogManager.sessions:
 			SuperManager.getInstance().mqttManager.endDialog(sessionId=session.sessionId, text=newText)
 		else:
-			SuperManager.getInstance().mqttManager.say(text=newText, client=session.siteId)
+			SuperManager.getInstance().mqttManager.say(text=newText, deviceUid=session.deviceUid)
 	except AttributeError:
 		return newText
 

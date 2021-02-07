@@ -11,9 +11,9 @@ class AliceWatchManager(Manager):
 		super().__init__()
 
 
-	def onHotword(self, siteId: str, user: str = constants.UNKNOWN_USER):
+	def onHotword(self, deviceUid: str, user: str = constants.UNKNOWN_USER):
 		self.publish(payload={
-			'text': f'Detected on device **{self.DeviceManager.getDevice(uid=siteId).displayName}**, for user **{user}**',
+			'text': f'Detected on device **{self.DeviceManager.getDevice(uid=deviceUid).displayName}**, for user **{user}**',
 			'component': 'Hotword',
 			'verbosity': 1
 		})
@@ -55,7 +55,7 @@ class AliceWatchManager(Manager):
 
 	def onSessionStarted(self, session: DialogSession):
 		self.publish(payload={
-			'text': f'Session with id "**{session.sessionId}**" was started on device **{self.DeviceManager.getDevice(uid=session.siteId).displayName}**',
+			'text': f'Session with id "**{session.sessionId}**" was started on device **{self.DeviceManager.getDevice(uid=session.deviceUid).displayName}**',
 			'component': 'Dialogue',
 			'verbosity': 1
 		})
@@ -77,21 +77,21 @@ class AliceWatchManager(Manager):
 		})
 
 
-	def onHotwordToggleOn(self, siteId: str, session: DialogSession):
+	def onHotwordToggleOn(self, deviceUid: str, session: DialogSession):
 		self.publish(payload={
-			'text': f'Was asked to toggle itself **on** on device **{self.DeviceManager.getDevice(uid=siteId).displayName}**',
+			'text': f'Was asked to toggle itself **on** on device **{self.DeviceManager.getDevice(uid=deviceUid).displayName}**',
 			'component': 'Hotword',
 			'verbosity': 2
 		})
 
 
-	def onHotwordToggleOff(self, siteId: str, session: DialogSession):
+	def onHotwordToggleOff(self, deviceUid: str, session: DialogSession):
 		# todo Temp fix for dialogue view.
 		# SiteId was causing issues by defaulting to "Test" in new interface
-		if siteId == "Test":
-			siteId = self.DeviceManager.getMainDevice().uid
+		if deviceUid == 'Test':
+			deviceUid = self.DeviceManager.getMainDevice().uid
 		self.publish(payload={
-			'text'     : f'Was asked to toggle itself **off** on device **{self.DeviceManager.getDevice(uid=siteId).displayName}**',
+			'text'     : f'Was asked to toggle itself **off** on device **{self.DeviceManager.getDevice(uid=deviceUid).displayName}**',
 			'component': 'Hotword',
 			'verbosity': 2
 		})
@@ -99,7 +99,7 @@ class AliceWatchManager(Manager):
 
 	def onStartListening(self, session):
 		self.publish(payload={
-			'text': f'Was asked to start listening on device **{self.DeviceManager.getDevice(uid=session.siteId).displayName}**',
+			'text': f'Was asked to start listening on device **{self.DeviceManager.getDevice(uid=session.deviceUid).displayName}**',
 			'component': 'Asr',
 			'verbosity': 2
 		})
@@ -107,7 +107,7 @@ class AliceWatchManager(Manager):
 
 	def onStopListening(self, session):
 		self.publish(payload={
-			'text': f'Was asked to stop listening on device **{self.DeviceManager.getDevice(uid=session.siteId).displayName}**',
+			'text': f'Was asked to stop listening on device **{self.DeviceManager.getDevice(uid=session.deviceUid).displayName}**',
 			'component': 'Asr',
 			'verbosity': 2
 		})
@@ -153,7 +153,7 @@ class AliceWatchManager(Manager):
 
 
 	def onSessionEnded(self, session: DialogSession):
-		text = f'Session with id "**{session.sessionId}**" was ended on device **{self.DeviceManager.getDevice(uid=session.siteId).displayName}**.'
+		text = f'Session with id "**{session.sessionId}**" was ended on device **{self.DeviceManager.getDevice(uid=session.deviceUid).displayName}**.'
 
 		reason = session.payload['termination']['reason']
 		if reason:
@@ -175,17 +175,17 @@ class AliceWatchManager(Manager):
 		})
 
 
-	def onVadUp(self, siteId: str):
+	def onVadUp(self, deviceUid: str):
 		self.publish(payload={
-			'text': f'Up on device **{self.DeviceManager.getDevice(uid=siteId).displayName}**',
+			'text': f'Up on device **{self.DeviceManager.getDevice(uid=deviceUid).displayName}**',
 			'component': 'Voice activity',
 			'verbosity': 2
 		})
 
 
-	def onVadDown(self, siteId: str):
+	def onVadDown(self, deviceUid: str):
 		self.publish(payload={
-			'text': f'Down on device **{self.DeviceManager.getDevice(uid=siteId).displayName}**',
+			'text': f'Down on device **{self.DeviceManager.getDevice(uid=deviceUid).displayName}**',
 			'component': 'Voice activity',
 			'verbosity': 2
 		})

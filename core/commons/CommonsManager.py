@@ -163,16 +163,13 @@ class CommonsManager(Manager):
 
 
 	@classmethod
-	def parseSiteId(cls, message: MQTTMessage) -> str:
+	def parseDeviceUid(cls, message: MQTTMessage) -> str:
 		data = cls.payload(message)
 
 		if not isinstance(data, dict):
 			return constants.UNKNOWN
 
-		if 'siteId' in data:
-			return data['siteId'].replace('_', ' ')
-		else:
-			return data.get('IPAddress', SuperManager.SuperManager.getInstance().configManager.getAliceConfigByName('uuid'))
+		return data.get('siteId', data.get('IPAddress', SuperManager.SuperManager.getInstance().configManager.getAliceConfigByName('uuid')))
 
 
 	@staticmethod
