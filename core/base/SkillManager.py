@@ -113,7 +113,6 @@ class SkillManager(Manager):
 		# Those represent the skills we have
 		skills = self.loadSkillsFromDB()
 
-
 		data = dict()
 		for skill in skills.copy():
 			try:
@@ -124,7 +123,6 @@ class SkillManager(Manager):
 				}
 			except Exception as e:
 				self.logError(f'Error loading skill **{skill["skillName"]}**: {e}')
-				skills.pop(skill['skillName'])
 
 		return dict(sorted(data.items()))
 

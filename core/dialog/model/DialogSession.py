@@ -12,7 +12,7 @@ from core.commons import constants
 
 @dataclass
 class DialogSession:
-	siteId: str
+	deviceUid: str
 	sessionId: str = ''
 	user: str = constants.UNKNOWN_USER
 	message: MQTTMessage = None

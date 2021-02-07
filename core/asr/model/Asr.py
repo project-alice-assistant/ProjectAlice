@@ -81,6 +81,6 @@ class Asr(ProjectAliceObject):
 			'text'      : text,
 			'likelihood': likelihood,
 			'seconds'   : seconds,
-			'siteId'    : session.siteId,
+			'siteId'    : session.deviceUid,
 			'sessionId' : session.sessionId
 		}))

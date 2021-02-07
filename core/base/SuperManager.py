@@ -147,7 +147,7 @@ class SuperManager:
 			Logger().logError(f'Error while sending onBooted to manager **{manager.name}**: {e}')
 
 		deviceList = self.deviceManager.getDevicesWithAbilities([DeviceAbility.IS_SATELITTE, DeviceAbility.IS_CORE])
-		self.mqttManager.playSound(soundFilename='boot', device=deviceList)
+		self.mqttManager.playSound(soundFilename='boot', deviceUid=deviceList)
 
 
 	@staticmethod

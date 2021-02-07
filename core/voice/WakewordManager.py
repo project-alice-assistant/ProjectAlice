@@ -31,19 +31,19 @@ class WakewordManager(Manager):
 			self._engine.onBooted()
 
 
-	def onAudioFrame(self, message: MQTTMessage, siteId: str):
+	def onAudioFrame(self, message: MQTTMessage, deviceUid: str):
 		if self._engine:
-			self._engine.onAudioFrame(message=message, siteId=siteId)
+			self._engine.onAudioFrame(message=message, deviceUid=deviceUid)
 
 
-	def onHotwordToggleOn(self, siteId: str, session: DialogSession):
+	def onHotwordToggleOn(self, deviceUid: str, session: DialogSession):
 		if self._engine:
-			self._engine.onHotwordToggleOn(siteId=siteId, session=DialogSession)
+			self._engine.onHotwordToggleOn(deviceUid=deviceUid, session=DialogSession)
 
 
-	def onHotwordToggleOff(self, siteId: str, session: DialogSession):
+	def onHotwordToggleOff(self, deviceUid: str, session: DialogSession):
 		if self._engine:
-			self._engine.onHotwordToggleOff(siteId=siteId, session=DialogSession)
+			self._engine.onHotwordToggleOff(deviceUid=deviceUid, session=DialogSession)
 
 
 	def _startWakewordEngine(self):

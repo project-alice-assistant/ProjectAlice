@@ -39,7 +39,7 @@ class SnipsAsr(Asr):
 		self._listening = True
 
 
-	def onAsrToggleOff(self, siteId: str):
+	def onAsrToggleOff(self, deviceUid: str):
 		self._listening = False
 
 

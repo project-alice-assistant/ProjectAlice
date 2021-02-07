@@ -78,7 +78,7 @@ class WakewordRecorder(Manager):
 		self.state = WakewordRecorderState.RECORDING
 
 
-	def onAudioFrame(self, message: mqtt.MQTTMessage, siteId: str):
+	def onAudioFrame(self, message: mqtt.MQTTMessage, deviceUid: str):
 		if self.state != WakewordRecorderState.RECORDING:
 			return
 

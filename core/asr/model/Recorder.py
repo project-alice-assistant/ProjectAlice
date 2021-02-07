@@ -12,10 +12,10 @@ from core.util.model.AliceEvent import AliceEvent
 
 class Recorder(ProjectAliceObject):
 
-	def __init__(self, timeoutFlag: AliceEvent, user: str, siteId: str):
+	def __init__(self, timeoutFlag: AliceEvent, user: str, deviceUid: str):
 		super().__init__()
 		self._user = user,
-		self._siteId = siteId
+		self._deviceUid = deviceUid
 		self._recording = False
 		self._timeoutFlag = timeoutFlag
 		self._buffer = queue.Queue()
@@ -48,7 +48,7 @@ class Recorder(ProjectAliceObject):
 		self._buffer.put(None)
 
 
-	def onAudioFrame(self, message: mqtt.MQTTMessage, siteId: str):
+	def onAudioFrame(self, message: mqtt.MQTTMessage, deviceUid: str):
 		with io.BytesIO(message.payload) as buffer:
 			try:
 				with wave.open(buffer, 'rb') as wav:
@@ -57,7 +57,7 @@ class Recorder(ProjectAliceObject):
 						self._buffer.put(frame)
 
 						if self.ConfigManager.getAliceConfigByName('recordAudioAfterWakeword'):
-							self.AudioServer.recordFrame(siteId, frame)
+							self.AudioServer.recordFrame(deviceUid, frame)
 
 						frame = wav.readframes(512)
 

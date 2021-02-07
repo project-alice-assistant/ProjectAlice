@@ -23,7 +23,7 @@ class DialogManager(Manager):
 	def __init__(self):
 		super().__init__(databaseSchema=self.DATABASE)
 		self._sessionsById: Dict[str: DialogSession] = dict()
-		self._sessionsBySites: Dict[str: DialogSession] = dict()
+		self._sessionsByDeviceUids: Dict[str: DialogSession] = dict()
 		self._endedSessions: Dict[str: DialogSession] = dict()
 		self._feedbackSounds: Dict[str: bool] = dict()
 		self._sessionTimeouts: Dict[str, Timer] = dict()
@@ -33,36 +33,37 @@ class DialogManager(Manager):
 		self._enabledByDefaultIntents = set()
 
 
-	def newSession(self, siteId: str, user: str = constants.UNKNOWN_USER, message: MQTTMessage = None) -> DialogSession:
-		if siteId == "Test":
-			siteId = self.DeviceManager.getMainDevice().uid
-		session = DialogSession(siteId=siteId, user=user, sessionId=str(uuid.uuid4()))
+	def newSession(self, deviceUid: str, user: str = constants.UNKNOWN_USER, message: MQTTMessage = None) -> DialogSession:
+		#TODO remove test
+		if deviceUid == 'Test':
+			deviceUid = self.DeviceManager.getMainDevice().uid
+		session = DialogSession(deviceUid=deviceUid, user=user, sessionId=str(uuid.uuid4()))
 
 		if message:
 			session.update(message)
 
 		self._sessionsById[session.sessionId] = session
-		self._sessionsBySites[siteId] = session
+		self._sessionsByDeviceUids[deviceUid] = session
 		return session
 
 
 	def newTempSession(self, message: MQTTMessage = None) -> DialogSession:
-		siteId = self.Commons.parseSiteId(message)
-		session = self.newSession(siteId=siteId, message=message)
+		deviceUid = self.Commons.parseDeviceUid(message)
+		session = self.newSession(deviceUid=deviceUid, message=message)
 		self.startSessionTimeout(sessionId=session.sessionId, tempSession=True)
 		return session
 
 
-	def onWakeword(self, siteId: str, user: str = constants.UNKNOWN_USER):
-		self.onHotword(siteId=siteId, user=user)
+	def onWakeword(self, deviceUid: str, user: str = constants.UNKNOWN_USER):
+		self.onHotword(deviceUid=deviceUid, user=user)
 
 
-	def onHotword(self, siteId: str, user: str = constants.UNKNOWN_USER):
-		self.logDebug(f'Wakeword detected by **{self.DeviceManager.getDevice(uid=siteId).displayName}**')
+	def onHotword(self, deviceUid: str, user: str = constants.UNKNOWN_USER):
+		self.logDebug(f'Wakeword detected by **{self.DeviceManager.getDevice(uid=deviceUid).displayName}**')
 
-		self._endedSessions[siteId] = self._sessionsById.pop(siteId, None)
+		self._endedSessions[deviceUid] = self._sessionsById.pop(deviceUid, None)
 
-		session = self.newSession(siteId=siteId, user=user)
+		session = self.newSession(deviceUid=deviceUid, user=user)
 		redQueen = self.SkillManager.getSkillInstance('RedQueen')
 		if redQueen and not redQueen.inTheMood(session):
 			return
@@ -71,7 +72,7 @@ class DialogManager(Manager):
 		self.MqttManager.publish(
 			topic=constants.TOPIC_HOTWORD_TOGGLE_OFF,
 			payload={
-				'siteId'   : siteId,
+				'siteId'   : deviceUid,
 				'sessionId': session.sessionId
 			}
 		)
@@ -83,11 +84,11 @@ class DialogManager(Manager):
 			talkNotification = talkNotification.format("")
 
 		# Play notification if needed
-		if self._feedbackSounds.get('siteId', True):
+		if self._feedbackSounds.get('deviceUid', True):
 			self.MqttManager.publish(
 				topic=constants.TOPIC_START_SESSION,
 				payload={
-					'siteId'    : siteId,
+					'siteId'    : deviceUid,
 					'init'      : {
 						'type'                   : 'action',
 						'text'                   : talkNotification,
@@ -124,7 +125,7 @@ class DialogManager(Manager):
 		else:
 			if not session.hasStarted:
 				self.onStartSession(
-					siteId=session.siteId,
+					deviceUid=session.deviceUid,
 					payload=dict()
 				)
 			else:
@@ -137,7 +138,7 @@ class DialogManager(Manager):
 				self.MqttManager.publish(
 					topic=constants.TOPIC_ASR_START_LISTENING,
 					payload={
-						'siteId'   : session.siteId,
+						'siteId'   : session.deviceUid,
 						'sessionId': session.sessionId
 					}
 				)
@@ -202,7 +203,7 @@ class DialogManager(Manager):
 		self.MqttManager.publish(
 			topic=constants.TOPIC_ASR_STOP_LISTENING,
 			payload={
-				'siteId'   : session.siteId,
+				'siteId'   : session.deviceUid,
 				'sessionId': session.sessionId
 			}
 		)
@@ -218,7 +219,7 @@ class DialogManager(Manager):
 			return
 
 		self.MqttManager.publish(
-			topic=constants.TOPIC_PLAY_BYTES.format(session.siteId).replace('#', f'{uuid.uuid4()}'),
+			topic=constants.TOPIC_PLAY_BYTES.format(session.deviceUid).replace('#', f'{uuid.uuid4()}'),
 			payload=bytearray(Path(f'system/sounds/{self.LanguageManager.activeLanguage}/end_of_input.wav').read_bytes())
 		)
 
@@ -238,7 +239,7 @@ class DialogManager(Manager):
 
 		skill = self.SkillManager.getSkillInstance('ContextSensitive')
 		if skill:
-			skill.addUserChat(text=session.payload['text'], siteId=session.siteId)
+			skill.addUserChat(text=session.payload['text'], deviceUid=session.deviceUid)
 
 
 	def forgeUserRandomAnswer(self, session: DialogSession):
@@ -269,7 +270,7 @@ class DialogManager(Manager):
 			payload={
 				'sessionId'    : session.sessionId,
 				'customData'   : json.dumps(session.customData),
-				'siteId'       : session.siteId,
+				'siteId'       : session.deviceUid,
 				'input'        : session.payload['input'],
 				'intent'       : session.payload['intent'],
 				'slots'        : session.payload['slots'],
@@ -294,7 +295,7 @@ class DialogManager(Manager):
 		self.MqttManager.publish(
 			topic=constants.TOPIC_INTENT_NOT_RECOGNIZED,
 			payload={
-				'siteId'    : session.siteId,
+				'siteId'    : session.deviceUid,
 				'customData': json.dumps(session.customData),
 				'sessionId' : session.sessionId,
 				'input'     : session.payload['input']
@@ -316,21 +317,21 @@ class DialogManager(Manager):
 		self.onEndSession(session=session, reason='error')
 
 
-	def onStartSession(self, siteId: str, payload: dict):
+	def onStartSession(self, deviceUid: str, payload: dict):
 		"""
 		Starts a new session
-		:param siteId:
+		:param deviceUid:
 		:param payload:
 		:return:
 		"""
 
-		session = self._sessionsBySites.get(siteId, None)
+		session = self._sessionsByDeviceUids.get(deviceUid, None)
 		if not session:
 			# The session was started programmatically, we need to create one
-			session = self.newSession(siteId=siteId)
+			session = self.newSession(deviceUid=deviceUid)
 		else:
 			if session.hasStarted and not session.hasEnded and 'init' in payload and payload['init'].get('canBeEnqueued', True):
-				self.ThreadManager.doLater(interval=1, func=self.onStartSession, kwargs={'siteId': siteId, 'payload': payload})
+				self.ThreadManager.doLater(interval=1, func=self.onStartSession, kwargs={'deviceUid': deviceUid, 'payload': payload})
 				return
 
 		hotwordNotification = False
@@ -349,7 +350,7 @@ class DialogManager(Manager):
 		self.MqttManager.publish(
 			topic=constants.TOPIC_SESSION_STARTED,
 			payload={
-				'siteId'    : siteId,
+				'siteId'    : deviceUid,
 				'sessionId' : session.sessionId,
 				'customData': json.dumps(dict())
 			}
@@ -357,15 +358,14 @@ class DialogManager(Manager):
 
 		text = payload.get('init', dict()).get('text', '')
 		if text:
-			uid = str(uuid.uuid4())
 			self.MqttManager.publish(
 				topic=constants.TOPIC_TTS_SAY,
 				payload={
 					'text'                 : payload['init']['text'],
 					'lang'                 : self.LanguageManager.activeLanguageAndCountryCode,
-					'siteId'               : siteId,
+					'siteId'               : deviceUid,
 					'sessionId'            : session.sessionId,
-					'uid'                  : uid,
+					'uid'                  : str(uuid.uuid4()),
 					'isHotwordNotification': hotwordNotification
 				}
 			)
@@ -381,7 +381,7 @@ class DialogManager(Manager):
 				payload={
 					'text'     : session.payload['text'],
 					'lang'     : self.LanguageManager.activeLanguageAndCountryCode,
-					'siteId'   : session.siteId,
+					'siteId'   : session.deviceUid,
 					'sessionId': session.sessionId
 				}
 			)
@@ -399,7 +399,7 @@ class DialogManager(Manager):
 				payload={
 					'text'     : session.payload['text'],
 					'lang'     : self.LanguageManager.activeLanguageAndCountryCode,
-					'siteId'   : session.siteId,
+					'siteId'   : session.deviceUid,
 					'sessionId': session.sessionId
 				}
 			)
@@ -407,7 +407,7 @@ class DialogManager(Manager):
 			self.MqttManager.publish(
 				topic=constants.TOPIC_SESSION_ENDED,
 				payload={
-					'siteId'     : session.siteId,
+					'siteId'     : session.deviceUid,
 					'sessionId'  : session.sessionId,
 					'customData' : json.dumps(session.customData),
 					'termination': {
@@ -432,7 +432,7 @@ class DialogManager(Manager):
 		self.MqttManager.publish(
 			topic=constants.TOPIC_HOTWORD_TOGGLE_ON,
 			payload={
-				'siteId'   : session.siteId,
+				'siteId'   : session.deviceUid,
 				'sessionId': session.sessionId
 			}
 		)
@@ -442,29 +442,29 @@ class DialogManager(Manager):
 
 	def onSessionError(self, session: DialogSession):
 		self.MqttManager.publish(
-			topic=constants.TOPIC_PLAY_BYTES.format(session.siteId).replace('#', f'{uuid.uuid4()}'),
+			topic=constants.TOPIC_PLAY_BYTES.format(session.deviceUid).replace('#', f'{uuid.uuid4()}'),
 			payload=bytearray(Path(f'system/sounds/{self.LanguageManager.activeLanguage}/error.wav').read_bytes())
 		)
 
 
-	def toggleFeedbackSound(self, state: str, siteId: str = constants.ALL):
+	def toggleFeedbackSound(self, state: str, deviceUid: str = constants.ALL):
 		topic = constants.TOPIC_TOGGLE_FEEDBACK_ON if state == 'on' else constants.TOPIC_TOGGLE_FEEDBACK_OFF
 
-		if siteId == 'all':
-			devices = self.DeviceManager.getDevicesWithAbilities(abilites=[DeviceAbility.PLAY_SOUND, DeviceAbility.CAPTURE_SOUND])
+		if deviceUid == constants.ALL:
+			devices = self.DeviceManager.getDevicesWithAbilities(abilities=[DeviceAbility.PLAY_SOUND, DeviceAbility.CAPTURE_SOUND])
 			for device in devices:
 				self.MqttManager.publish(topic=topic, payload={'siteId': device.uid})
 
 		else:
-			self.MqttManager.publish(topic=topic, payload={'siteId': siteId})
+			self.MqttManager.publish(topic=topic, payload={'siteId': deviceUid})
 
 
-	def onToggleFeedbackOn(self, siteId: str):
-		self._feedbackSounds[siteId] = True
+	def onToggleFeedbackOn(self, deviceUid: str):
+		self._feedbackSounds[deviceUid] = True
 
 
-	def onToggleFeedbackOff(self, siteId: str):
-		self._feedbackSounds[siteId] = False
+	def onToggleFeedbackOff(self, deviceUid: str):
+		self._feedbackSounds[deviceUid] = False
 
 
 	def onIntentNotRecognized(self, session: DialogSession):
@@ -492,7 +492,7 @@ class DialogManager(Manager):
 			return
 
 		self._endedSessions[sessionId] = session
-		self._sessionsBySites.pop(session.siteId, None)
+		self._sessionsByDeviceUids.pop(session.deviceUid, None)
 
 
 	def increaseSessionTimeout(self, session: DialogSession, interval: float):
@@ -515,7 +515,7 @@ class DialogManager(Manager):
 
 	@property
 	def sessionsBySites(self) -> Dict[str, DialogSession]:
-		return self._sessionsBySites
+		return self._sessionsByDeviceUids
 
 
 	def addDisabledByDefaultIntent(self, intent: str):

@@ -157,17 +157,17 @@ class TestCommonsManager(unittest.TestCase):
 		mock_instance.configManager.getAliceConfigByName.return_value = 'uuid'
 
 		self.assertEqual(
-			CommonsManager.parseSiteId(MQTTMessage('{"siteId": "site_id", "IPAddress": "127.0.0.1"}')),
+			CommonsManager.parseDeviceUid(MQTTMessage('{"siteId": "site_id", "IPAddress": "127.0.0.1"}')),
 			'site id'
 		)
 
 		self.assertEqual(
-			CommonsManager.parseSiteId(MQTTMessage('{"IPAddress": "127.0.0.1"}')),
+			CommonsManager.parseDeviceUid(MQTTMessage('{"IPAddress": "127.0.0.1"}')),
 			'127.0.0.1'
 		)
 
 		self.assertEqual(
-			CommonsManager.parseSiteId(MQTTMessage('{}')),
+			CommonsManager.parseDeviceUid(MQTTMessage('{}')),
 			'uuid'
 		)
 

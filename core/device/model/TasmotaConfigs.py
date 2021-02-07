@@ -119,9 +119,9 @@ class TasmotaConfigs(ProjectAliceObject):
 		},
 		{
 			'cmds'     : [
-				'rule1 on System#Boot do publish projectalice/devices/tasmota/feedback/hello/{identifier} {{"siteId":"{room}","deviceType":"{type}","uid":"{identifier}"}} endon',
+				'rule1 on System#Boot do publish projectalice/devices/tasmota/feedback/hello/{identifier} {{"deviceUid":"{room}","deviceType":"{type}","uid":"{identifier}"}} endon',
 				'rule1 1',
-				'rule2 on switch1#state do publish projectalice/devices/tasmota/feedback/{identifier} {{"siteId":"{room}","deviceType":"{type}","feedback":%value%,"uid":"{identifier}"}} endon',
+				'rule2 on switch1#state do publish projectalice/devices/tasmota/feedback/{identifier} {{"deviceUid":"{room}","deviceType":"{type}","feedback":%value%,"uid":"{identifier}"}} endon',
 				'rule2 1',
 				'restart 1'
 			],
@@ -191,7 +191,7 @@ class TasmotaConfigs(ProjectAliceObject):
 					},
 					{
 						'topic'  : BASE_TOPIC + '/rule1', #NOSONAR
-						'payload': 'on switch1#state do publish projectalice/devices/tasmota/feedback/{identifier} {{"siteId":"{room}","deviceType":"{type}","feedback":%value%,"uid":"{identifier}"}} endon'
+						'payload': 'on switch1#state do publish projectalice/devices/tasmota/feedback/{identifier} {{"deviceUid":"{room}","deviceType":"{type}","feedback":%value%,"uid":"{identifier}"}} endon'
 					},
 					{
 						'topic'  : BASE_TOPIC + '/rule1', #NOSONAR

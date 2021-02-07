@@ -21,10 +21,10 @@ class DialogApi(Api):
 	@ApiAuthenticated
 	def say(self):
 		try:
-			siteId = request.form.get('siteId') if request.form.get('siteId', None) is not None else self.ConfigManager.getAliceConfigByName('uuid')
+			deviceUid = request.form.get('deviceUid') if request.form.get('deviceUid', None) is not None else self.DeviceManager.getMainDevice().uid
 			self.MqttManager.say(
 				text=request.form.get('text'),
-				client=siteId
+				deviceUid=deviceUid
 			)
 			return jsonify(success=True)
 		except Exception as e:
@@ -36,10 +36,10 @@ class DialogApi(Api):
 	@ApiAuthenticated
 	def ask(self):
 		try:
-			siteId = request.form.get('siteId') if request.form.get('siteId', None) is not None else self.ConfigManager.getAliceConfigByName('uuid')
+			deviceUid = request.form.get('deviceUid') if request.form.get('deviceUid', None) is not None else self.DeviceManager.getMainDevice().uid
 			self.MqttManager.ask(
 				text=request.form.get('text'),
-				client=siteId
+				deviceUid=deviceUid
 			)
 			return jsonify(success=True)
 		except Exception as e:
@@ -51,22 +51,22 @@ class DialogApi(Api):
 	@ApiAuthenticated
 	def process(self):
 		try:
-			siteId = request.form.get('siteId') if request.form.get('siteId', None) is not None else self.ConfigManager.getAliceConfigByName('uuid')
+			deviceUid = request.form.get('deviceUid') if request.form.get('deviceUid', None) is not None else self.DeviceManager.getMainDevice().uid
 
 			user = self.UserManager.getUserByAPIToken(request.headers.get('auth', ''))
-			session = self.DialogManager.newSession(siteId=siteId, user=user.name)
+			session = self.DialogManager.newSession(deviceUid=deviceUid, user=user.name)
 
 			# Turn off the wakeword component
 			self.MqttManager.publish(
 				topic=constants.TOPIC_HOTWORD_TOGGLE_OFF,
 				payload={
-					'siteId'   : siteId,
+					'siteId'   : deviceUid,
 					'sessionId': session.sessionId
 				}
 			)
 
 			message = MQTTMessage()
-			message.payload = json.dumps({'sessionId': session.sessionId, 'siteId': siteId, 'text': request.form.get('query')})
+			message.payload = json.dumps({'sessionId': session.sessionId, 'siteId': deviceUid, 'text': request.form.get('query')})
 			session.extend(message=message)
 
 			self.MqttManager.publish(topic=constants.TOPIC_NLU_QUERY, payload={
@@ -84,7 +84,7 @@ class DialogApi(Api):
 	@ApiAuthenticated
 	def continueDialog(self):
 		try:
-			siteId = request.form.get('siteId') if request.form.get('siteId', None) is not None else self.ConfigManager.getAliceConfigByName('uuid')
+			deviceUid = request.form.get('deviceUid') if request.form.get('deviceUid', None) is not None else self.DeviceManager.getMainDevice().uid
 
 			sessionId = request.form.get('sessionId')
 			session = self.DialogManager.getSession(sessionId=sessionId)
@@ -93,7 +93,7 @@ class DialogApi(Api):
 				return self.process()
 
 			message = MQTTMessage()
-			message.payload = json.dumps({'sessionId': session.sessionId, 'siteId': siteId, 'text': request.form.get('query')})
+			message.payload = json.dumps({'sessionId': session.sessionId, 'siteId': deviceUid, 'text': request.form.get('query')})
 			session.extend(message=message)
 
 			self.MqttManager.publish(topic=constants.TOPIC_NLU_QUERY, payload={

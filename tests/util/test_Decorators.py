@@ -103,7 +103,7 @@ class TestDecorators(unittest.TestCase):
 
 		exampleObject.offline(session=mock_session)
 		mock_instance.talkManager.randomTalk.assert_called_once_with('offline', skill='AliceSkill')
-		mock_instance.mqttManager.say.assert_called_once_with(text='offline', client='siteId')
+		mock_instance.mqttManager.say.assert_called_once_with(text='offline', deviceUid='siteId')
 		mock_instance.reset_mock()
 
 		# raise exception when it is not offline
@@ -205,7 +205,7 @@ class TestDecorators(unittest.TestCase):
 
 		exampleObject.catch_all(session=mock_session)
 		mock_instance.talkManager.randomTalk.assert_called_once_with('error', skill='AliceSkill')
-		mock_instance.mqttManager.say.assert_called_once_with(text='error', client='siteId')
+		mock_instance.mqttManager.say.assert_called_once_with(text='error', deviceUid='siteId')
 		mock_instance.reset_mock()
 
 		# raise exception when it is not in the exceptions list

@@ -218,10 +218,10 @@ class DeviceManager(Manager):
 		self._deviceTypes[skillName.lower()].setdefault(data['deviceTypeName'].lower(), deviceType)
 
 
-	def getDevicesWithAbilities(self, abilites: List[DeviceAbility], connectedOnly: bool = True) -> List[Device]:
+	def getDevicesWithAbilities(self, abilities: List[DeviceAbility], connectedOnly: bool = True) -> List[Device]:
 		"""
 		Returns a list of Device instances having AT LEAST the provided abilities
-		:param abilites: A list of DeviceAbility the device must have
+		:param abilities: A list of DeviceAbility the device must have
 		:param connectedOnly: Wheather or not the devices should be connected to bee returned
 		:return: A list of Device instances
 		"""
@@ -230,7 +230,7 @@ class DeviceManager(Manager):
 			if connectedOnly and not device.connected:
 				continue
 
-			if device.hasAbilities(abilites):
+			if device.hasAbilities(abilities):
 				ret.append(device)
 
 		return ret
@@ -319,8 +319,9 @@ class DeviceManager(Manager):
 		Returns the main device, the only one having the IS_CORE ability
 		:return: Device instance
 		"""
-		devices = self.getDevicesWithAbilities(abilites=[DeviceAbility.IS_CORE], connectedOnly=False)
+		devices = self.getDevicesWithAbilities(abilities=[DeviceAbility.IS_CORE], connectedOnly=False)
 		if not devices:
+			self.logFatal("Couldn't get main device, cannot continue, sorry")
 			return None
 
 		return devices[0]
@@ -720,7 +721,7 @@ class DeviceManager(Manager):
 				self.logInfo(f'Device with uid **{uid}** successfully paired')
 
 				if replyOnDeviceUid:
-					self.MqttManager.say(text=self.TalkManager.randomTalk('newDeviceAdditionSuccess', skill='system'), client=replyOnDeviceUid)
+					self.MqttManager.say(text=self.TalkManager.randomTalk('newDeviceAdditionSuccess', skill='system'), deviceUid=replyOnDeviceUid)
 
 				#self.ThreadManager.doLater(interval=5, func=self.WakewordRecorder.uploadToNewDevice, args=[uid])
 
@@ -744,7 +745,7 @@ class DeviceManager(Manager):
 		self.broadcast(method=constants.EVENT_STOP_BROADCASTING_FOR_NEW_DEVICE, exceptions=[self.name], propagateToSkills=True)
 
 
-	def onDeviceHeartbeat(self, uid: str, siteId: str = None):
+	def onDeviceHeartbeat(self, uid: str, deviceUid: str = None):
 		device = self.getDevice(uid=uid)
 
 		if not device:
@@ -820,7 +821,7 @@ class DeviceManager(Manager):
 	# 	devTypeIds = [dev for dev in devTypes] # keys in dict are Ids
 	#
 	# 	#get all required locations
-	# 	locations = self.LocationManager.getLocationsForSession(sess=session, noneIsEverywhere=noneIsEverywhere)
+	# 	locations = self.LocationManager.getLocationsForSession(session=session, noneIsEverywhere=noneIsEverywhere)
 	# 	locationIds = [loc.id for loc in locations]
 	#
 	# 	return self.DeviceManager.getDeviceLinks(deviceTypeId=devTypeIds, locationId=locationIds)

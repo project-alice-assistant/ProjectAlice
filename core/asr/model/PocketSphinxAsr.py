@@ -112,8 +112,8 @@ class PocketSphinxAsr(Asr):
 		result = None
 		counter = 0
 		with Stopwatch() as processingTime:
-			with Recorder(self._timeout, session.user, session.siteId) as recorder:
-				self.ASRManager.addRecorder(session.siteId, recorder)
+			with Recorder(self._timeout, session.user, session.deviceUid) as recorder:
+				self.ASRManager.addRecorder(session.deviceUid, recorder)
 				self._recorder = recorder
 				self._decoder.start_utt()
 				inSpeech = False
