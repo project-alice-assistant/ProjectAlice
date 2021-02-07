@@ -836,7 +836,8 @@ class MqttManager(Manager):
 			else:
 				deviceList = [uid if isinstance(uid, str) else uid.uid for uid in deviceUid]
 
-			self.playSound(soundFilename, location, sessionId, deviceList, uid)
+			for device in deviceList:
+				self.playSound(soundFilename, location, sessionId, deviceUid=device, uid=uid)
 		else:
 			soundFile = Path(location / soundFilename).with_suffix(suffix)
 
