@@ -77,6 +77,7 @@ class DatabaseManager(Manager):
 				else:
 					unique = ''
 
+				query = ''
 				try:
 					query = f"SELECT COUNT(name) FROM sqlite_master WHERE type = 'table' and name='{fullTableName}'"
 					cursor.execute(query)
@@ -90,7 +91,7 @@ class DatabaseManager(Manager):
 							database.rollback()
 							raise
 				except sqlite3.Error as e:
-					self.logError(f'Something went wrong creating database table **{fullTableName}** for component **{callerName}**: {e}')
+					self.logError(f'Something went wrong creating database table **{fullTableName}** for component **{callerName}**. The query was "{query}": {e}.')
 					continue
 
 				try:
@@ -100,7 +101,10 @@ class DatabaseManager(Manager):
 
 					cols = dict()
 					for column in schema[tableName]:
-						colName = column.split(' ')[0]
+						colName: str = column.split(' ')[0]
+						if colName.lower().startswith('unique'):
+							continue
+
 						colType = column.split(' ')[1]
 						cols[colName] = colType
 						if colName not in installedColumns:
