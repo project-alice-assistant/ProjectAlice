@@ -90,6 +90,8 @@ class DeviceManager(Manager):
 		elif self.ConfigManager.getAliceConfigByName('disableCapture'):
 			device.setAbilities([DeviceAbility.IS_CORE, DeviceAbility.PLAY_SOUND])
 
+		device.updateParams(key='aliceIp', value=self.Commons.getLocalIp())
+
 		for device in self._devices.values():
 			device.onStart()
 
