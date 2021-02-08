@@ -878,7 +878,7 @@ class MqttManager(Manager):
 			payload['uid'] = uid
 			self.publish(topic=topic, payload=payload, qos=qos, retain=retain)
 
-		payload['siteId'] = self.DeviceManager.getMainDevice().uid
+		payload['siteId'] = self.ConfigManager.getAliceConfigByName('uuid')
 		self.publish(topic=topic, payload=json.dumps(payload), qos=qos, retain=retain)
 
 
