@@ -453,6 +453,5 @@ class Device(ProjectAliceObject):
 		return other and self._uid == other.uid
 
 
-	@classmethod
-	def getDeviceTypeDefinition(cls) -> dict:
-		raise NotImplementedError
+	def getDeviceTypeDefinition(self) -> dict:
+		return self._deviceType.getDeviceTypeDefinition()

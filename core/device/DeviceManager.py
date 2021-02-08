@@ -167,11 +167,11 @@ class DeviceManager(Manager):
 			if not device:
 				self._heartbeats.pop(uid, None)
 			else:
-				if now - device.heartbeatRate > lastTime:
+				if now - (device.heartbeatRate * 2) > lastTime:
 					self.logWarning(f'Device **{device.displayName}** has not given a signal since {device.deviceType.heartbeatRate} seconds or more')
 					self._heartbeats.pop(uid, None)
 					device.connected = False
-					self.MqttManager.publish(constants.TOPIC_DEVICE_UPDATED, payload={'id': device.id, 'uid': device.uid, 'type': 'status'})
+					self.MqttManager.publish(constants.TOPIC_DEVICE_UPDATED, payload={'device': device.toDict()})
 
 		self._heartbeatsCheckTimer = self.ThreadManager.newTimer(interval=3, func=self.checkHeartbeats)
 
@@ -542,7 +542,7 @@ class DeviceManager(Manager):
 		if not device.connected:
 			device.connected = True
 			self.broadcast(method=constants.EVENT_DEVICE_CONNECTING, exceptions=[self.name], propagateToSkills=True)
-			self.MqttManager.publish(constants.TOPIC_DEVICE_UPDATED, payload={'id': device.id, 'uid': device.uid, 'type': 'status'})
+			self.MqttManager.publish(constants.TOPIC_DEVICE_UPDATED, payload={'device': device.toDict()})
 
 		self._heartbeats[uid] = time.time() + 5
 		if not self._heartbeatsCheckTimer:
@@ -568,7 +568,7 @@ class DeviceManager(Manager):
 			self.logInfo(f'Device with uid **{uid}** disconnected')
 			device.connected = False
 			self.broadcast(method=constants.EVENT_DEVICE_DISCONNECTING, exceptions=[self.name], propagateToSkills=True)
-			self.MqttManager.publish(constants.TOPIC_DEVICE_UPDATED, payload={'id': device.id, 'uid': device.uid, 'type': 'status'})
+			self.MqttManager.publish(constants.TOPIC_DEVICE_UPDATED, payload={'device': device.toDict()})
 
 
 	@property
