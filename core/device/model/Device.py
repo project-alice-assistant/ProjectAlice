@@ -71,7 +71,8 @@ class Device(ProjectAliceObject):
 			self.saveToDB()
 
 
-	def loadJson(self, data: Any) -> dict:
+	@staticmethod
+	def loadJson(data: Any) -> dict:
 		if not data:
 			return dict()
 		elif isinstance(data, str):
