@@ -632,15 +632,22 @@ class MqttManager(Manager):
 			else:
 				self.say(text=text, deviceUid=random.choice(deviceList), customData=customData)
 		else:
+
+			if not deviceUid:
+				device = self.DeviceManager.getMainDevice()
+
+				if not device:
+					self.logWarning('Tried to use **say** but no device uid found')
+					return
+
+				deviceUid = device.uid
+
 			if customData is not None:
 				if isinstance(customData, dict):
 					customData = json.dumps(customData)
 				elif not isinstance(customData, str):
 					self.logWarning(f'Ask was provided customdata of unsupported type: {customData}')
 					customData = ''
-
-			if ' ' in deviceUid:
-				deviceUid = deviceUid.replace(' ', '_')
 
 			self._mqttClient.publish(constants.TOPIC_START_SESSION, json.dumps({
 				'siteId'    : deviceUid,
