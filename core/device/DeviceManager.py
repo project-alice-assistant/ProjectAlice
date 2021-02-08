@@ -20,7 +20,7 @@ from core.dialog.model.DialogSession import DialogSession
 
 
 class DeviceManager(Manager):
-	DB_DEVICE = 'addedDevices'
+	DB_DEVICE = 'myDevices'
 	DB_LINKS = 'deviceLinks'
 	DATABASE = {
 		DB_DEVICE: [
@@ -147,7 +147,13 @@ class DeviceManager(Manager):
 		:return: None
 		"""
 		for row in self.databaseFetch(tableName=self.DB_LINKS, method='all'):
-			self._deviceLinks[row['id']] = DeviceLink(row)
+			link: DeviceLink = DeviceLink(row)
+			if link.invalid:
+				self.logWarning(f'Device link id **{link.id}** seems deprecated, removing')
+				self.deleteDeviceLinks(linkId=link.id)
+				self.loadLinks()
+			else:
+				self._deviceLinks[row['id']] = link
 
 
 	def checkHeartbeats(self):
@@ -159,11 +165,11 @@ class DeviceManager(Manager):
 		for uid, lastTime in self._heartbeats.copy().items():
 			device = self.getDevice(uid=uid)
 			if not device:
-				self._heartbeats.pop(uid)
+				self._heartbeats.pop(uid, None)
 			else:
 				if now - device.heartbeatRate > lastTime:
 					self.logWarning(f'Device **{device.displayName}** has not given a signal since {device.deviceType.heartbeatRate} seconds or more')
-					self._heartbeats.pop(uid)
+					self._heartbeats.pop(uid, None)
 					device.connected = False
 					self.MqttManager.publish(constants.TOPIC_DEVICE_UPDATED, payload={'uid': device.uid, 'type': 'status'})
 
@@ -317,8 +323,11 @@ class DeviceManager(Manager):
 		Returns the main device, the only one having the IS_CORE ability
 		:return: Device instance
 		"""
-		devices = self.getDevicesWithAbilities(abilities=[DeviceAbility.IS_CORE], connectedOnly=False)
-		return devices[0]
+		try:
+			devices = self.getDevicesWithAbilities(abilities=[DeviceAbility.IS_CORE], connectedOnly=False)
+			return devices[0]
+		except:
+			return None
 
 
 	def addNewDeviceFromWebUI(self, data: Dict) -> Optional[Device]:
@@ -463,7 +472,7 @@ class DeviceManager(Manager):
 		else:
 			device.onStop()
 			self.deleteDeviceLinks(deviceId=device.id)
-			self._devices.pop(device.id)
+			self._devices.pop(device.id, None)
 			self.DatabaseManager.delete(tableName=self.DB_DEVICE, callerName=self.name, values={'id': device.id})
 
 
@@ -608,7 +617,7 @@ class DeviceManager(Manager):
 		"""
 		if linkId:
 			self.DatabaseManager.delete(tableName=self.DB_LINKS, callerName=self.name, values={'id': linkId})
-			self._deviceLinks.pop(linkId)
+			self._deviceLinks.pop(linkId, None)
 
 		elif deviceId or deviceUid:
 			device = self.getDevice(deviceId=deviceId, uid=deviceUid)
@@ -625,14 +634,14 @@ class DeviceManager(Manager):
 
 			for link in self._deviceLinks.copy().values():
 				if link.deviceId == device.id and (not targetLocationId or targetLocationId == link.targetLocation):
-					self._deviceLinks.pop(link.id)
+					self._deviceLinks.pop(link.id, None)
 
 		elif targetLocationId:
 			self.DatabaseManager.delete(tableName=self.DB_LINKS, callerName=self.name, values={'targetLocation': targetLocationId})
 
 			for link in self._deviceLinks.copy().values():
 				if link.targetLocation == targetLocationId:
-					self._deviceLinks.pop(link.id)
+					self._deviceLinks.pop(link.id, None)
 
 
 	@property

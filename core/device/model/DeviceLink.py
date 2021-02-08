@@ -11,13 +11,18 @@ class DeviceLink(ProjectAliceObject):
 
 	def __init__(self, data: Union[sqlite3.Row, Dict]):
 		super().__init__()
+		self._invalid = True
 
 		if isinstance(data, sqlite3.Row):
 			data = self.Commons.dictFromRow(data)
 
 		self._id: int = data.get('id', -1)
 		self._deviceId: int = data.get('deviceId')
-		self._deviceType: DeviceType = self.DeviceManager.getDevice(deviceId=self._deviceId).deviceType
+		device: Device = self.DeviceManager.getDevice(deviceId=self._deviceId)
+		if not device:
+			return
+
+		self._deviceType: DeviceType = device.deviceType
 		self._targetLocation: int = data.get('targetLocation')
 
 		try:
@@ -27,6 +32,18 @@ class DeviceLink(ProjectAliceObject):
 
 		if self._id == -1:
 			self.saveToDB()
+
+		self._invalid = False
+
+
+	@property
+	def invalid(self) -> bool:
+		return self._invalid
+
+
+	@invalid.setter
+	def invalid(self, value: bool):
+		self._invalid = value
 
 
 	def _loadConfigs(self):
