@@ -44,13 +44,12 @@ class Device(ProjectAliceObject):
 			self._typeName = self._deviceType.deviceTypeName
 
 		self._abilities: int = -1 if not data.get('abilities', None) else self.setAbilities(data['abilities'])
-		self._deviceParams: Dict = json.loads(data.get('deviceParams', '{}')) if isinstance(
-			data.get('deviceParams', '{}'), str) else data.get('deviceParams', dict())
+
+		self._deviceParams: Dict = self.loadJson(data.get('deviceParams'))
 		self._connected: bool = False
 
 		# Settings are for UI, all the components use the same variable
-		self._settings = json.loads(data.get('settings', '{}')) if isinstance(data.get('settings', '{}'),
-																			  str) else data.get('settings', dict())
+		self._settings: Dict = self.loadJson(data.get('settings'))
 		settings = {
 			'x': 0,
 			'y': 0,
@@ -63,13 +62,25 @@ class Device(ProjectAliceObject):
 		self._settings = {**settings, **self._settings}
 		self._lastContact: int = 0
 
-		self._deviceConfigs: Dict = json.loads(data.get('deviceConfigs', '{}'))
+		self._deviceConfigs: Dict = self.loadJson(data.get('deviceConfigs'))
 		self._loadConfigs()
 
 		self._heartbeatRate = self._deviceConfigs.get('heartbeatRate')
 
 		if self._id == -1:
 			self.saveToDB()
+
+
+	@staticmethod
+	def loadJson(data: Any) -> dict:
+		if not data:
+			return dict()
+		elif isinstance(data, str):
+			return json.loads(data)
+		elif isinstance(data, dict):
+			return data
+		else:
+			return dict()
 
 
 	def onStart(self):
