@@ -171,7 +171,7 @@ class DeviceManager(Manager):
 					self.logWarning(f'Device **{device.displayName}** has not given a signal since {device.deviceType.heartbeatRate} seconds or more')
 					self._heartbeats.pop(uid, None)
 					device.connected = False
-					self.MqttManager.publish(constants.TOPIC_DEVICE_UPDATED, payload={'uid': device.uid, 'type': 'status'})
+					self.MqttManager.publish(constants.TOPIC_DEVICE_UPDATED, payload={'id': device.id, 'uid': device.uid, 'type': 'status'})
 
 		self._heartbeatsCheckTimer = self.ThreadManager.newTimer(interval=3, func=self.checkHeartbeats)
 
@@ -394,7 +394,7 @@ class DeviceManager(Manager):
 
 		device = Device(data)
 		self._devices[device.id] = device
-		if device.getDeviceTypeDefinition['allowLocationLinks']:
+		if device.getDeviceTypeDefinition().get('allowLocationLinks', False):
 			self.addDeviceLink(targetLocation=locationId, deviceId=device.id)
 
 		device.onStart()
@@ -422,7 +422,7 @@ class DeviceManager(Manager):
 
 			device.parentLocation = data['parentLocation']
 
-			if not device.linkedTo(data['parentLocation']) and device.getDeviceTypeDefinition['allowLocationLinks']:
+			if not device.linkedTo(data['parentLocation']) and device.getDeviceTypeDefinition().get('allowLocationLinks', False):
 				self.addDeviceLink(targetLocation=data['parentLocation'], deviceId=device.id)
 
 		if 'settings' in data:
@@ -542,7 +542,7 @@ class DeviceManager(Manager):
 		if not device.connected:
 			device.connected = True
 			self.broadcast(method=constants.EVENT_DEVICE_CONNECTING, exceptions=[self.name], propagateToSkills=True)
-			self.MqttManager.publish(constants.TOPIC_DEVICE_UPDATED, payload={'uid': device.uid, 'type': 'status'})
+			self.MqttManager.publish(constants.TOPIC_DEVICE_UPDATED, payload={'id': device.id, 'uid': device.uid, 'type': 'status'})
 
 		self._heartbeats[uid] = time.time() + 5
 		if not self._heartbeatsCheckTimer:
@@ -568,7 +568,7 @@ class DeviceManager(Manager):
 			self.logInfo(f'Device with uid **{uid}** disconnected')
 			device.connected = False
 			self.broadcast(method=constants.EVENT_DEVICE_DISCONNECTING, exceptions=[self.name], propagateToSkills=True)
-			self.MqttManager.publish(constants.TOPIC_DEVICE_UPDATED, payload={'id': device.id, 'type': 'status'})
+			self.MqttManager.publish(constants.TOPIC_DEVICE_UPDATED, payload={'id': device.id, 'uid': device.uid, 'type': 'status'})
 
 
 	@property

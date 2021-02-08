@@ -43,8 +43,8 @@ class DeviceType(ProjectAliceObject):
 
 			data = json.loads(filepath.read_text())
 
-			self._linkConfigsTemplates = data['linkConfigs']
 			self._deviceConfigsTemplates = data['deviceConfigs']
+			self._linkConfigsTemplates = data.get('linkConfigs', {})
 		except Exception as e:
 			self.logError(f'Error loading device config template for device type **{self._deviceTypeName}** {e}')
 
