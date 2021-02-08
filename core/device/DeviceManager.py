@@ -90,6 +90,7 @@ class DeviceManager(Manager):
 		elif self.ConfigManager.getAliceConfigByName('disableCapture'):
 			device.setAbilities([DeviceAbility.IS_CORE, DeviceAbility.PLAY_SOUND])
 
+
 		for device in self._devices.values():
 			device.onStart()
 
@@ -394,7 +395,9 @@ class DeviceManager(Manager):
 
 		device = Device(data)
 		self._devices[device.id] = device
-		if device.getDeviceTypeDefinition().get('allowLocationLinks', False):
+
+		# TODO Psycho... double check this change to make sure it meets your intentions
+		if not device.deviceType.allowLocationLinks:
 			self.addDeviceLink(targetLocation=locationId, deviceId=device.id)
 
 		device.onStart()
