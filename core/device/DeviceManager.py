@@ -20,7 +20,7 @@ from core.dialog.model.DialogSession import DialogSession
 
 
 class DeviceManager(Manager):
-	DB_DEVICE = 'devices'
+	DB_DEVICE = 'addedDevices'
 	DB_LINKS = 'deviceLinks'
 	DATABASE = {
 		DB_DEVICE: [
@@ -318,10 +318,6 @@ class DeviceManager(Manager):
 		:return: Device instance
 		"""
 		devices = self.getDevicesWithAbilities(abilities=[DeviceAbility.IS_CORE], connectedOnly=False)
-		if not devices:
-			self.logFatal("Couldn't get main device, cannot continue, sorry")
-			return None
-
 		return devices[0]
 
 
