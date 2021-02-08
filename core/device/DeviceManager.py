@@ -394,7 +394,9 @@ class DeviceManager(Manager):
 
 		device = Device(data)
 		self._devices[device.id] = device
-		self.addDeviceLink(targetLocation=locationId, deviceId=device.id)
+		if device.getDeviceTypeDefinition['allowLocationLinks']:
+			self.addDeviceLink(targetLocation=locationId, deviceId=device.id)
+
 		device.onStart()
 		return device
 
@@ -420,7 +422,7 @@ class DeviceManager(Manager):
 
 			device.parentLocation = data['parentLocation']
 
-			if not device.linkedTo(data['parentLocation']):
+			if not device.linkedTo(data['parentLocation']) and device.getDeviceTypeDefinition['allowLocationLinks']:
 				self.addDeviceLink(targetLocation=data['parentLocation'], deviceId=device.id)
 
 		if 'settings' in data:
