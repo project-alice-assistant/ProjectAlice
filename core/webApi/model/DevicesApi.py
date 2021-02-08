@@ -16,10 +16,26 @@ class DevicesApi(Api):
 			if not device:
 				return jsonify(success=True, reply='unknownDevice')
 			else:
+				self.DeviceManager.deviceConnecting(uid)
 				return jsonify(success=True, deviceId=device.id)
 
 		except Exception as e:
 			self.logError(f'Error for device Hello {e}')
+			return jsonify(success=False, message=str(e))
+
+
+	@route('/<uid>/bye/', methods=['GET'])
+	def bye(self, uid: str) -> dict:
+		try:
+			device = self.DeviceManager.getDevice(uid=uid)
+			if not device:
+				return jsonify(success=True, reply='unknownDevice')
+			else:
+				self.DeviceManager.deviceDisconnecting(uid)
+				return jsonify(success=True)
+
+		except Exception as e:
+			self.logError(f'Error for device Bye {e}')
 			return jsonify(success=False, message=str(e))
 
 
