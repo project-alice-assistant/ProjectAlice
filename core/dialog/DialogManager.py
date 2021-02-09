@@ -34,9 +34,6 @@ class DialogManager(Manager):
 
 
 	def newSession(self, deviceUid: str, user: str = constants.UNKNOWN_USER, message: MQTTMessage = None) -> DialogSession:
-		#TODO remove test
-		if deviceUid == 'Test':
-			deviceUid = self.DeviceManager.getMainDevice().uid
 		session = DialogSession(deviceUid=deviceUid, user=user, sessionId=str(uuid.uuid4()))
 
 		if message:
