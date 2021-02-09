@@ -33,8 +33,8 @@ class DialogManager(Manager):
 		self._enabledByDefaultIntents = set()
 
 
-	def newSession(self, deviceUid: str, user: str = constants.UNKNOWN_USER, message: MQTTMessage = None) -> DialogSession:
-		session = DialogSession(deviceUid=deviceUid, user=user, sessionId=str(uuid.uuid4()))
+	def newSession(self, deviceUid: str, user: str = constants.UNKNOWN_USER, message: MQTTMessage = None, increaseTimeout: int = 0) -> DialogSession:
+		session = DialogSession(deviceUid=deviceUid, user=user, sessionId=str(uuid.uuid4()), increaseTimeout=increaseTimeout)
 
 		if message:
 			session.update(message)
@@ -145,7 +145,7 @@ class DialogManager(Manager):
 		self.cancelSessionTimeout(sessionId=sessionId)
 
 		self._sessionTimeouts[sessionId] = self.ThreadManager.newTimer(
-			interval=self.ConfigManager.getAliceConfigByName('sessionTimeout') + delay,
+			interval=self.ConfigManager.getAliceConfigByName('sessionTimeout') + delay + self._sessionsById[sessionId].increaseTimeout,
 			func=self.sessionTimeout,
 			kwargs={
 				'sessionId'  : sessionId,

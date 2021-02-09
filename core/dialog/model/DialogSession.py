@@ -14,6 +14,7 @@ from core.commons import constants
 class DialogSession:
 	deviceUid: str
 	sessionId: str = ''
+	increaseTimeout: int = 0
 	user: str = constants.UNKNOWN_USER
 	message: MQTTMessage = None
 	intentName: str = ''
