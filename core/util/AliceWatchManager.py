@@ -54,6 +54,10 @@ class AliceWatchManager(Manager):
 
 
 	def onSessionStarted(self, session: DialogSession):
+		#todo @psycho - Some situations like self.ask() from gui (addUser) theres no session.deviceUid
+		# which results in getMainDevice().uid being None. the below is a temp fix
+		if not session.deviceUid:
+			session.deviceUid = self.DeviceManager.getMainDevice().uid
 		self.publish(payload={
 			'text': f'Session with id "**{session.sessionId}**" was started on device **{self.DeviceManager.getDevice(uid=session.deviceUid).displayName}**',
 			'component': 'Dialogue',
@@ -153,6 +157,10 @@ class AliceWatchManager(Manager):
 
 
 	def onSessionEnded(self, session: DialogSession):
+		#todo @psycho - Some situations like self.ask() from gui (addUser) theres no session.deviceUid
+		# which results in getMainDevice().uid being None. the below is a temp fix
+		if not session.deviceUid:
+			session.deviceUid = self.DeviceManager.getMainDevice().uid
 		text = f'Session with id "**{session.sessionId}**" was ended on device **{self.DeviceManager.getDevice(uid=session.deviceUid).displayName}**.'
 
 		reason = session.payload['termination']['reason']
