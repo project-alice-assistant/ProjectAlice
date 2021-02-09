@@ -590,7 +590,7 @@ class AliceSkill(ProjectAliceObject):
 	def ask(self, text: str, deviceUid: str = None, intentFilter: list = None, customData: dict = None, canBeEnqueued: bool = True, currentDialogState: str = '', probabilityThreshold: float = None):
 		if currentDialogState:
 			currentDialogState = f'{self.name}:{currentDialogState}'
-		self.MqttManager.ask(text=text, client=deviceUid, intentFilter=intentFilter, customData=customData, canBeEnqueued=canBeEnqueued, currentDialogState=currentDialogState, probabilityThreshold=probabilityThreshold)
+		self.MqttManager.ask(text=text, deviceUid=deviceUid, intentFilter=intentFilter, customData=customData, canBeEnqueued=canBeEnqueued, currentDialogState=currentDialogState, probabilityThreshold=probabilityThreshold)
 
 
 	def continueDialog(self, sessionId: str, text: str, customData: dict = None, intentFilter: list = None, slot: str = '', currentDialogState: str = '', probabilityThreshold: float = None):
