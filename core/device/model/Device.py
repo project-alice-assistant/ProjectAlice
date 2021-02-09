@@ -65,6 +65,9 @@ class Device(ProjectAliceObject):
 		self._deviceConfigs: Dict = self.loadJson(data.get('deviceConfigs'))
 		self._loadConfigs()
 
+		if self._deviceType.heartbeatRate > self._deviceConfigs.get('heartbeatRate'):
+			self._deviceConfigs['heartbeatRate'] = self._deviceConfigs.get('heartbeatRate')
+
 		self._heartbeatRate = self._deviceConfigs.get('heartbeatRate')
 
 		if self._id == -1:
@@ -125,8 +128,17 @@ class Device(ProjectAliceObject):
 
 
 	def _loadConfigs(self):
-		self._deviceConfigs.setdefault('displayName', self._data.get('displayName', self._typeName))
-		self._deviceConfigs.setdefault('heartbeatRate', self._deviceType.heartbeatRate)
+		displayName = self._data.get('displayName', None)
+		if not displayName or displayName.lower() == 'none':
+			displayName = self._typeName if self._typeName else self._deviceType.deviceTypeName
+
+		self._deviceConfigs['displayName'] = displayName
+
+		heartbeatRate = self._deviceConfigs.get('heartbeatRate', self._deviceType.heartbeatRate)
+		if heartbeatRate < self._deviceType.heartbeatRate:
+			heartbeatRate = self._deviceType.heartbeatRate
+
+		self._deviceConfigs['heartbeatRate'] = heartbeatRate
 
 		templates = self._deviceType.deviceConfigsTemplates
 		changes = False
