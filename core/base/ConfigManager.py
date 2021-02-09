@@ -176,8 +176,9 @@ class ConfigManager(Manager):
 
 	def updateMainDeviceName(self, value: typing.Any):
 		device = self.DeviceManager.getMainDevice()
+
 		if not device.displayName:
-			device.updateConfigs(configs={'displayName': "default"})
+			device.updateConfigs(configs={'displayName': "Alice"})
 		if value != device.displayName:
 			device.updateConfigs(configs={'displayName': value})
 
