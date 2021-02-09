@@ -128,6 +128,7 @@ class UtilsApi(Api):
 		return jsonify(success=True)
 
 
+	@ApiAuthenticated
 	def addWakeword(self) -> dict:
 		try:
 			self.SkillManager.getSkillInstance('AliceCore').addNewWakeword()
@@ -137,6 +138,7 @@ class UtilsApi(Api):
 			return jsonify(success=False, message=str(e))
 
 
+	@ApiAuthenticated
 	def tuneWakeword(self) -> dict:
 		try:
 			self.SkillManager.getSkillInstance('AliceCore').tuneWakeword()
@@ -146,6 +148,7 @@ class UtilsApi(Api):
 			return jsonify(success=False, message=str(e))
 
 
+	@ApiAuthenticated
 	def wipeAll(self) -> dict:
 		try:
 			self.ProjectAlice.wipeAll()
@@ -156,15 +159,22 @@ class UtilsApi(Api):
 			return jsonify(success=False, message=str(e))
 
 
+	@ApiAuthenticated
 	def addUser(self) -> dict:
 		try:
-			self.SkillManager.getSkillInstance('AliceCore').addNewUser()
+			uid = request.headers.get('uid', '')
+			if not uid:
+				raise Exception('No device uid defined')
+
+			session = self.DialogManager.newSession(deviceUid=uid)
+			self.SkillManager.getSkillInstance('AliceCore').addNewUser(session=session)
 			return jsonify(success=True)
 		except Exception as e:
 			self.logError(f'Failed adding new user: {e}')
 			return jsonify(success=False, message=str(e))
 
 
+	@ApiAuthenticated
 	def train(self) -> dict:
 		try:
 			self.AssistantManager.checkAssistant(forceRetrain=True)
