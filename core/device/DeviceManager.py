@@ -164,19 +164,19 @@ class DeviceManager(Manager):
 		Routine that checks all heartbeats and disconnects devices that haven't signaled their presence for hearbeatRate time
 		:return: None
 		"""
-		now = time.time()
+		now = round(time.time())
 		for uid, lastTime in self._heartbeats.copy().items():
 			device = self.getDevice(uid=uid)
 			if not device:
 				self._heartbeats.pop(uid, None)
 			else:
-				if now - (device.heartbeatRate * 2) > lastTime:
+				if lastTime < now - (device.heartbeatRate * 2):
 					self.logWarning(f'Device **{device.displayName}** has not given a signal since {device.deviceType.heartbeatRate} seconds or more')
 					self._heartbeats.pop(uid, None)
 					device.connected = False
 					self.MqttManager.publish(constants.TOPIC_DEVICE_UPDATED, payload={'device': device.toDict()})
 
-		self._heartbeatsCheckTimer = self.ThreadManager.newTimer(interval=3, func=self.checkHeartbeats)
+		self._heartbeatsCheckTimer = self.ThreadManager.newTimer(interval=2, func=self.checkHeartbeats)
 
 
 	def getDevice(self, deviceId: int = None, uid: str = None) -> Optional[Device]:
@@ -548,10 +548,11 @@ class DeviceManager(Manager):
 			device.connected = True
 			self.broadcast(method=constants.EVENT_DEVICE_CONNECTING, exceptions=[self.name], propagateToSkills=True)
 			self.MqttManager.publish(constants.TOPIC_DEVICE_UPDATED, payload={'device': device.toDict()})
+			self.logInfo(f'Device named **{device.displayName}** in {self.LocationManager.getLocation(locId=device.parentLocation).name} connected')
 
-		self._heartbeats[uid] = time.time() + 5
+		self._heartbeats[uid] = round(time.time())
 		if not self._heartbeatsCheckTimer:
-			self._heartbeatsCheckTimer = self.ThreadManager.newTimer(interval=3, func=self.checkHeartbeats)
+			self._heartbeatsCheckTimer = self.ThreadManager.newTimer(interval=2, func=self.checkHeartbeats)
 
 		return device
 
@@ -763,7 +764,7 @@ class DeviceManager(Manager):
 			return
 
 		device.connected = True
-		self._heartbeats[uid] = time.time()
+		self._heartbeats[uid] = round(time.time())
 
 
 	def onDeviceStatus(self, session: DialogSession):
