@@ -390,6 +390,8 @@ class SkillManager(Manager):
 
 		try:
 			skillInstance.onStart()
+			if self.ProjectAlice.isBooted:
+				skillInstance.onBooted()
 			self.broadcast(method=constants.EVENT_SKILL_STARTED, exceptions=[self.name], propagateToSkills=True, skill=self)
 		except SkillStartingFailed:
 			try:
