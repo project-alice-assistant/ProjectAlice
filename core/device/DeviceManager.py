@@ -74,7 +74,7 @@ class DeviceManager(Manager):
 		# Create the default core device if needed. Cannot be done in AliceCore skill due to load sequence
 		device = self.getMainDevice()
 		if not device:
-			device = self.addNewDevice(deviceType='AliceCore', skillName='AliceCore', locationId=1, displayName="Alice")
+			device = self.addNewDevice(deviceType='AliceCore', skillName='AliceCore', locationId=1, displayName='Alice')
 			if not device:
 				self.logFatal('Core unit device creation failed, cannot continue')
 				return
@@ -83,7 +83,7 @@ class DeviceManager(Manager):
 			self.ConfigManager.updateAliceConfiguration('uuid', device.uid)
 
 		if not device.displayName:
-			device.updateConfigs(configs={'displayName': "Alice"})
+			device.updateConfigs(configs={'displayName': 'Alice'})
 
 		if self.ConfigManager.getAliceConfigByName('disableSound') and self.ConfigManager.getAliceConfigByName('disableCapture'):
 			device.setAbilities([DeviceAbility.IS_CORE]) #Remove default abilities
