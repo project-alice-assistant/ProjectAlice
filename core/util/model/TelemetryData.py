@@ -34,7 +34,7 @@ class TelemetryData(ProjectAliceObject):
 		}
 
 	def getDeviceName(self):
-		return self.DeviceManager.getDevice(deviceId=self.deviceId).displayName
+		return self.DeviceManager.getDevice(deviceId=int(self.deviceId)).displayName
 
 	def getLocationName(self):
 		return self.LocationManager.getLocation(locId=self.locationId).name
