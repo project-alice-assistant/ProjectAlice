@@ -155,3 +155,11 @@ class DeviceType(ProjectAliceObject):
 			'deviceConfigsTemplates' : self._deviceConfigsTemplates,
 			'linkConfigsTemplates'   : self._linkConfigsTemplates
 		}
+
+
+	@classmethod
+	def getDeviceTypeDefinition(cls) -> dict:
+		try:
+			return cls.getDeviceTypeDefinition()
+		except:
+			raise NotImplementedError
