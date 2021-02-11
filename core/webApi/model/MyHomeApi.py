@@ -242,7 +242,7 @@ class MyHomeApi(Api):
 			file = device.getDeviceIcon()
 			return send_from_directory(file.parent, f'{file.stem}{constants.PNG_EXT}')
 		except Exception as e:
-			self.logError(f'Failed retrieving device icon {e}')
+			self.logError(f'Failed to retrieve the ![yellow]("{device.displayName}") icon with path of ![yellow]("{file}") :{e}') #NOSONAR
 			file = Path(self.Commons.rootDir(), 'core/webApi/static/images/missing-icon.png')
 			return send_from_directory(file.parent, f'{file.stem}{constants.PNG_EXT}')
 
