@@ -14,7 +14,7 @@ flask-login==0.4.1
 pympler==0.8
 Flask-Cors==3.0.9
 googletrans==2.4.0
-bcrypt==3.1.7
+bcrypt==3.2.0
 psutil==5.7.2
 numpy==1.16.2
 importlib_metadata==3.4.0
