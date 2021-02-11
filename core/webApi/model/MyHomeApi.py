@@ -145,8 +145,8 @@ class MyHomeApi(Api):
 		LocationId number 1. (the default and required location) .
 		"""
 		if int(locationId) == 1:
-			self.logError('This is the default location, you are not able to delete it.')
-			return jsonify(success=False)
+			self.logWarning('Cannot delete location id 1')
+			return jsonify(success=False, message="Cannot delete location id 1")
 
 		try:
 			self.LocationManager.deleteLocation(int(locationId))
@@ -250,7 +250,7 @@ class MyHomeApi(Api):
 			file = device.getDeviceIcon()
 			return send_from_directory(file.parent, f'{file.stem}{constants.PNG_EXT}')
 		except Exception as e:
-			self.logError(f'Failed to retrieve the ![yellow]("{device.displayName}") icon with path of ![yellow]("{file}") :{e}') #NOSONAR
+			self.logError(f'Failed to retrieve icon for device id **{deviceId}** :{e}') #NOSONAR
 			file = Path(self.Commons.rootDir(), 'core/webApi/static/images/missing-icon.png')
 			return send_from_directory(file.parent, f'{file.stem}{constants.PNG_EXT}')
 

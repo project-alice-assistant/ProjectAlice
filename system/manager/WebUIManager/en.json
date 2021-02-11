@@ -95,7 +95,6 @@
 			"deviceLinked"                 : "Device successfully linked",
 			"pageDeleted"                  : "The page has been deleted",
 			"deviceSaved"                  : "Device settings succesfully saved",
-			"deviceAlreadyLinkedToLocation": "This device is already linked to this location",
 			"skillDeleted"                 : "The skill was correctly deleted",
 			"reloadTriggered"              : "Reload triggered",
 			"widgetSaved"                  : "Widget succesfully saved"
@@ -103,7 +102,8 @@
 		"info"     : {
 			"deviceNotLinkedToLocation": "This device is not linked to this location",
 			"pleasePlugDevice"         : "Please plug the device you want to pair",
-			"theaterModeExplain"       : "Started theater mode. Press 'enter' or 'escape' close return to normal mode"
+			"theaterModeExplain"       : "Started theater mode. Press 'enter' or 'escape' close return to normal mode",
+			"deviceAlreadyLinkedToLocation": "This device is already linked to this location"
 		}
 	},
 	"buttons"      : {
