@@ -238,11 +238,11 @@ class MyHomeApi(Api):
 
 
 	@route('/devices/<deviceId>/<_rndStr>/device.png', methods=['GET'])
-	def getDeviceIcon(self, _rndStr: str, deviceId: str):
+	def getDeviceIcon(self, deviceId: str, _rndStr: str):
 		"""
 		Returns the icon of a device.
-		:param _rndStr: Is only used to bypass browser caching
 		:param deviceId:
+		:param _rndStr: Is only used to bypass browser caching
 		:return:
 		"""
 		try:
