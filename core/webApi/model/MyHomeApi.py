@@ -140,6 +140,14 @@ class MyHomeApi(Api):
 	@route('/locations/<locationId>/', methods=['DELETE'])
 	@ApiAuthenticated
 	def deleteLocation(self, locationId: str):
+		"""
+		Delete requested location and any associated furniture or constructions, providing it is NOT
+		LocationId number 1. (the default and required location) .
+		"""
+		if int(locationId) == 1:
+			self.logError('This is the default location, you are not able to delete it.')
+			return jsonify(success=False)
+
 		try:
 			self.LocationManager.deleteLocation(int(locationId))
 			return jsonify(success=True)
