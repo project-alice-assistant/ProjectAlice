@@ -143,7 +143,7 @@ class TestCommonsManager(unittest.TestCase):
 
 
 	@mock.patch('core.base.SuperManager.SuperManager')
-	def test_parseSiteId(self, mock_superManager):
+	def test_parseDeviceUid(self, mock_superManager):
 		class MQTTMessage:
 
 			def __init__(self, payload):
@@ -157,8 +157,8 @@ class TestCommonsManager(unittest.TestCase):
 		mock_instance.configManager.getAliceConfigByName.return_value = 'uuid'
 
 		self.assertEqual(
-			CommonsManager.parseDeviceUid(MQTTMessage('{"siteId": "site_id", "IPAddress": "127.0.0.1"}')),
-			'site id'
+			CommonsManager.parseDeviceUid(MQTTMessage('{"siteId": "uid", "IPAddress": "127.0.0.1"}')),
+			'uid'
 		)
 
 		self.assertEqual(

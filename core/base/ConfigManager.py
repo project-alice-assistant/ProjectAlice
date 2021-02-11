@@ -1,4 +1,3 @@
-import inspect
 import json
 import logging
 import re
@@ -11,7 +10,6 @@ import toml
 from core.ProjectAliceExceptions import ConfigurationUpdateFailed, VitalConfigMissing
 from core.base.SuperManager import SuperManager
 from core.base.model.Manager import Manager
-from core.commons import constants
 
 
 class ConfigManager(Manager):
