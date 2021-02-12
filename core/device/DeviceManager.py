@@ -226,7 +226,7 @@ class DeviceManager(Manager):
 		"""
 		Returns a list of Device instances having AT LEAST the provided abilities
 		:param abilities: A list of DeviceAbility the device must have
-		:param connectedOnly: Wheather or not the devices should be connected to bee returned
+		:param connectedOnly: Whether or not to return non connected devices
 		:return: A list of Device instances
 		"""
 		ret = list()
@@ -243,8 +243,8 @@ class DeviceManager(Manager):
 	def getDevicesByType(self, deviceType: DeviceType, connectedOnly: bool = True) -> List[Device]:
 		"""
 		Returns a list of devices that are of the given type from the given skill
-		:param connectedOnly: Include or not devices that are not connected
-		:param deviceType: DeeviceType
+		:param connectedOnly: Whether or not to return non connected devices
+		:param deviceType: DeviceType
 		:return: list of Device instances
 		"""
 
@@ -261,11 +261,11 @@ class DeviceManager(Manager):
 
 	def getDevicesByLocation(self, locationId: int, deviceType: DeviceType = None, abilities: List[DeviceAbility] = None, connectedOnly: bool = True) -> List[Device]:
 		"""
-		Returns a list of devices fitting thee locationId and the optional arguments
+		Returns a list of devices fitting the locationId and the optional arguments
 		:param locationId: the location Id, only mandatory argument
-		:param deviceType: The device type that must be
+		:param deviceType: The device type that it must be
 		:param abilities: The abilities the device has to have
-		:param connectedOnly: Wheather or not to return non connected devices
+		:param connectedOnly: Whether or not to return non connected devices
 		:return: list of Device instances
 		"""
 		return self._filterDevices(locationId=locationId, deviceType=deviceType, abilities=abilities, connectedOnly=connectedOnly)
@@ -275,9 +275,9 @@ class DeviceManager(Manager):
 		"""
 		Returns a list of devices fitting the skill name and the optional arguments
 		:param skillName: the location Id, only mandatory argument
-		:param deviceType: The device type that must be
+		:param deviceType: The device type that it must be
 		:param abilities: The abilities the device has to have
-		:param connectedOnly: Wheather or not to return non connected devices
+		:param connectedOnly: Whether or not to return non connected devices
 		:return: list of Device instances
 		"""
 		return self._filterDevices(skillName=skillName, deviceType=deviceType, abilities=abilities, connectedOnly=connectedOnly)
@@ -288,9 +288,9 @@ class DeviceManager(Manager):
 		Returns a list of devices fitting the optional arguments
 		:param locationId: the location Id, only mandatory argument
 		:param skillName: the skill the device belongs to
-		:param deviceType: The device type that must be
+		:param deviceType: The device type that it must be
 		:param abilities: The abilities the device has to have
-		:param connectedOnly: Wheather or not to return non connected devices
+		:param connectedOnly: Whether or not to return non connected devices
 		:return: list of Device instances
 		"""
 
@@ -452,7 +452,7 @@ class DeviceManager(Manager):
 		"""
 		loc = self.LocationManager.getLocation(locId=locationId)
 		if not loc:
-			raise Exception('Cannot change device location to a unexisting location')
+			raise Exception('Cannot change device location to a non existing location')
 
 		if 0 < device.deviceType.perLocationLimit <= len(self.getDevicesByLocation(locationId, deviceType=device.deviceType, connectedOnly=False)):
 			raise Exception(f'Cannot move device **{device.displayName}** to new location, maximum per location limit reached')
@@ -462,7 +462,7 @@ class DeviceManager(Manager):
 
 	def deleteDevice(self, deviceId: int = None, deviceUid: str = None):
 		"""
-		called on deletion of a device
+		Called on deletion of a device
 		Checks if deletion is allowed and deletes the device and its from the database
 		:param deviceId:
 		:param deviceUid:
@@ -491,7 +491,7 @@ class DeviceManager(Manager):
 		scanPresent = True
 		found = False
 		tries = 0
-		self.logInfo(f'Looking for USB device for the next {timeout} seconds')
+		self.logInfo(f'Looking for a USB device for the next {timeout} seconds')
 		while not found:
 			tries += 1
 			if tries > timeout * 2:
@@ -513,7 +513,7 @@ class DeviceManager(Manager):
 				changes = [port for port in newPorts if port not in oldPorts]
 				if changes:
 					port = changes[0]
-					self.logInfo(f'Found usb device on {port}')
+					self.logInfo(f'Found a usb device on {port}')
 					return port
 
 			time.sleep(0.5)
@@ -545,7 +545,7 @@ class DeviceManager(Manager):
 			device.connected = True
 			self.broadcast(method=constants.EVENT_DEVICE_CONNECTING, exceptions=[self.name], propagateToSkills=True)
 			self.MqttManager.publish(constants.TOPIC_DEVICE_UPDATED, payload={'device': device.toDict()})
-			self.logInfo(f'Device named **{device.displayName}** in {self.LocationManager.getLocation(locId=device.parentLocation).name} connected')
+			self.logInfo(f'Device named **{device.displayName}** in the {self.LocationManager.getLocation(locId=device.parentLocation).name} connected')
 
 		self._heartbeats[uid] = round(time.time())
 		if not self._heartbeatsCheckTimer:
