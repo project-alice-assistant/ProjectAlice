@@ -126,6 +126,7 @@
 		"skillSystemRequirements": "Skill System Anforderungen",
 		"skillWidgets"           : "Skill Widgets",
 		"skillScenarioNodes"     : "Skill Szenario Nodes",
+		"skillDevices"           : "Skill devices",
 		"skillOnline"            : "Skill benötigt Internet",
 		"skillArbitrary"         : "Skill benötigt freie Spracheingabe",
 		"skillRequiredSkills"    : "Skill benötigt andere Skills",

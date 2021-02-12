@@ -126,6 +126,7 @@
 		"skillSystemRequirements": "Dépendances système",
 		"skillWidgets"           : "Widgets",
 		"skillScenarioNodes"     : "Nodes pour scénarios",
+		"skillDevices"           : "Appareils",
 		"skillOnline"            : "Ce skill nécessite internet",
 		"skillArbitrary"         : "Ce skill doit pouvoir capturer des mots non entrainés",
 		"skillRequiredSkills"    : "Ce skill dépend des ces skills",

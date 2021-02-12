@@ -58,7 +58,8 @@ class SkillsApi(Api):
 				'conditionNotSkill'     : request.form.get('skillConflictingSkills', ''),
 				'conditionActiveManager': request.form.get('skillRequiredManagers', ''),
 				'widgets'               : request.form.get('skillWidgets', ''),
-				'nodes'                 : request.form.get('skillScenarioNodes', '')
+				'nodes'                 : request.form.get('skillScenarioNodes', ''),
+				'devices'               : request.form.get('devices', '')
 			}
 
 			if not self.SkillManager.createNewSkill(newSkill):

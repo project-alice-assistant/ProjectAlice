@@ -126,6 +126,7 @@
 		"skillSystemRequirements": "Requisiti di sistema della skill",
 		"skillWidgets"           : "Widgets della skill",
 		"skillScenarioNodes"     : "Nodi dello scenario della Skill",
+		"skillDevices"           : "Skill devices",
 		"skillOnline"            : "Requisiti internet della skill",
 		"skillArbitrary"         : "La skill richiede ASR capture arbitraria",
 		"skillRequiredSkills"    : "Skills richieste dalla skill",

@@ -133,6 +133,7 @@
 		"skillSystemRequirements": "Skill system requirements",
 		"skillWidgets"           : "Skill widgets",
 		"skillScenarioNodes"     : "Skill scenario nodes",
+		"skillDevices"           : "Skill devices",
 		"skillOnline"            : "Skill requires internet",
 		"skillArbitrary"         : "Skill requires arbitrary ASR capture",
 		"skillRequiredSkills"    : "Skill required skills",
