@@ -955,6 +955,21 @@ class SkillManager(Manager):
 			if skillDefinition['conditionActiveManager']:
 				conditions['activeManager'] = [manager.strip() for manager in skillDefinition['conditionActiveManager'].split(',')]
 
+			if skillDefinition['widgets']:
+				widgets = [self.Commons.toPascalCase(widget).strip() for widget in skillDefinition['widgets'].split(',')]
+			else:
+				widgets = list()
+
+			if skillDefinition['nodes']:
+				scenarioNodes = [self.Commons.toPascalCase(node).strip() for node in skillDefinition['nodes'].split(',')]
+			else:
+				scenarioNodes = list()
+
+			if skillDefinition['devices']:
+				devices = [self.Commons.toPascalCase(device).strip() for device in skillDefinition['devices'].split(',')]
+			else:
+				devices = list()
+
 			data = {
 				'username'          : self.ConfigManager.getAliceConfigByName('githubUsername'),
 				'skillName'         : skillName,
@@ -965,8 +980,9 @@ class SkillManager(Manager):
 				'createInstructions': skillDefinition['instructions'],
 				'pipreq'            : [req.strip() for req in skillDefinition['pipreq'].split(',')],
 				'sysreq'            : [req.strip() for req in skillDefinition['sysreq'].split(',')],
-				'widgets'           : [self.Commons.toPascalCase(widget).strip() for widget in skillDefinition['widgets'].split(',')],
-				'scenarioNodes'     : [self.Commons.toPascalCase(node).strip() for node in skillDefinition['nodes'].split(',')],
+				'widgets'           : widgets,
+				'scenarioNodes'     : scenarioNodes,
+				'devices'           : devices,
 				'outputDestination' : str(Path(self.Commons.rootDir()) / 'skills' / skillName),
 				'conditions'        : conditions
 			}
