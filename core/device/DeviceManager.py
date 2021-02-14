@@ -395,8 +395,7 @@ class DeviceManager(Manager):
 		device = Device(data)
 		self._devices[device.id] = device
 
-		# TODO Psycho... double check this change to make sure it meets your intentions
-		if not device.deviceType.allowLocationLinks:
+		if device.deviceType.allowLocationLinks:
 			self.addDeviceLink(targetLocation=locationId, deviceId=device.id)
 
 		device.onStart()
