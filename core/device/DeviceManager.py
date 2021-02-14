@@ -377,8 +377,8 @@ class DeviceManager(Manager):
 				}
 			else:
 				displaySettings = {
-					'x': 75,
-					'y': 75
+					'x': 2,
+					'y': 2
 				}
 
 		data = {
