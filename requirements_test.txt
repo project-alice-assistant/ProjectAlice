@@ -25,6 +25,6 @@ importlib_metadata~=3.4.0
 langdetect~=1.0.8
 webrtcvad~=2.0.10
 pyjwt~=2.0.1
-toml~=0.10.1
+toml~=0.10.2
 markdown~=3.2.2
 sounddevice==0.4.1
