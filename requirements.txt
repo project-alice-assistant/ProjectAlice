@@ -2,7 +2,7 @@ wheel==0.34.2
 python-dateutil==2.8.0
 paho-mqtt==1.5.0
 requests==2.25.1
-esptool==2.8
+esptool==3.0
 pyserial==3.4
 pydub==0.23.1
 terminaltables==3.1.0
@@ -22,7 +22,7 @@ langdetect==1.0.8
 webrtcvad==2.0.10
 PyAudio==0.2.11
 pyjwt==2.0.1
-toml==0.10.1
+toml==0.10.2
 markdown==3.2.2
 ProjectAlice-sk
 #pyopenssl==19.1.0
