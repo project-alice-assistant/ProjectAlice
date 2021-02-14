@@ -30,9 +30,9 @@
 		},
 		"myHome": {
 			"myHome": "My Home",
-			"data0"     : "Welcome in your home! Well, at least what might soon be your home... Let's have a look around here together, shall we?",
-			"data1": "This is your compass and as every compass, it helps you navigate. The only small difference with a real one, it that this one always points to the center of your floor plan!",
-			"data2": "This is the cursor, always pointing to the middle of the map. You can also click on to fast travel to middle of the map!"
+			"data0" : "Welcome in your home! Well, at least what might soon be your home... Let's have a look around here together, shall we?",
+			"data1" : "This is your compass and as every compass, it helps you navigate. The only small difference with a real one, it that this one always points to the center of your floor plan!",
+			"data2" : "This is the cursor, always pointing to the middle of the map. You can also click on to fast travel to middle of the map!"
 		}
 	},
 	"skill"        : {
@@ -54,6 +54,7 @@
 		"close"            : "Close",
 		"edit"             : "Edit",
 		"theaterMode"      : "Theater mode",
+		"magicMirrorMode"  : "Magic mirror mode",
 		"addWidgets"       : "Add widgets",
 		"removeWidgets"    : "Remove widgets",
 		"yes"              : "Yes",
@@ -90,19 +91,20 @@
 			"widgetSavingFailed"   : "Failed saving widget"
 		},
 		"successes": {
-			"deviceUnlinked"               : "Device successfully unlinked",
-			"deviceDeleted"                : "Device successfully deleted",
-			"deviceLinked"                 : "Device successfully linked",
-			"pageDeleted"                  : "The page has been deleted",
-			"deviceSaved"                  : "Device settings succesfully saved",
-			"skillDeleted"                 : "The skill was correctly deleted",
-			"reloadTriggered"              : "Reload triggered",
-			"widgetSaved"                  : "Widget succesfully saved"
+			"deviceUnlinked" : "Device successfully unlinked",
+			"deviceDeleted"  : "Device successfully deleted",
+			"deviceLinked"   : "Device successfully linked",
+			"pageDeleted"    : "The page has been deleted",
+			"deviceSaved"    : "Device settings succesfully saved",
+			"skillDeleted"   : "The skill was correctly deleted",
+			"reloadTriggered": "Reload triggered",
+			"widgetSaved"    : "Widget succesfully saved"
 		},
 		"info"     : {
-			"deviceNotLinkedToLocation": "This device is not linked to this location",
-			"pleasePlugDevice"         : "Please plug the device you want to pair",
-			"theaterModeExplain"       : "Started theater mode. Press 'enter' or 'escape' close return to normal mode",
+			"deviceNotLinkedToLocation"    : "This device is not linked to this location",
+			"pleasePlugDevice"             : "Please plug the device you want to pair",
+			"theaterModeExplain"           : "Started theater mode. Press 'enter' or 'escape' to return to normal mode",
+			"magicMirrorModeExplain"       : "Started magic mirror mode. Press 'enter' or 'escape' to return to normal mode. Press 'm' to move widgets or 's' to access their settings",
 			"deviceAlreadyLinkedToLocation": "This device is already linked to this location"
 		}
 	},
