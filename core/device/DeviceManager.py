@@ -452,7 +452,7 @@ class DeviceManager(Manager):
 		assert self.LocationManager.getLocation(locId=locationId) is not None, 'Cannot change device location to a non existing location'
 
 		if device.deviceType.perLocationLimit > 0:
-			assert len(self.getDevicesByLocation(locationId, deviceType=device.deviceType, connectedOnly=False)) <= device.deviceType.perLocationLimit, 'Maximum devices of this type reached for target location'
+			assert len(self.getDevicesByLocation(locationId, deviceType=device.deviceType, connectedOnly=False)) < device.deviceType.perLocationLimit, 'Maximum devices of this type reached for target location'
 
 		return True
 
