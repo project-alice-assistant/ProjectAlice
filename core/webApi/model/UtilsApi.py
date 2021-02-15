@@ -190,3 +190,11 @@ class UtilsApi(Api):
 		except Exception as e:
 			self.logError(f'Error fetching pahows.js {e}')
 			return jsonify(success=False, message=str(e))
+
+
+	def Widget(self) -> dict:
+		try:
+			return send_from_directory(f'{self.Commons.rootDir()}/core/webApi/static', 'Widget.js')
+		except Exception as e:
+			self.logError(f'Error fetching Widget.js {e}')
+			return jsonify(success=False, message=str(e))
