@@ -45,9 +45,8 @@ class Mqtt {
 
 	onMessage(message) {
 		if (this.subscribers.hasOwnProperty(message.destinationName)) {
-			for (const data of Object.values(this.subscribers[message.destinationName])) {
-				console.log(data.object)
-				data.callback(message).bind(data.object);
+			for (const callback of Object.values(this.subscribers[message.destinationName])) {
+				callback(message)
 			}
 		}
 	}
@@ -56,17 +55,12 @@ class Mqtt {
 		console.error('Mqtt connection for widgets failed');
 	}
 
-	subscribe(widgetUid, destinationName, callback, object) {
+	subscribe(widgetUid, destinationName, callback) {
 		if (!this.subscribers.hasOwnProperty(destinationName)) {
 			this.subscribers[destinationName] = {};
 		}
 
-		if (!this.subscribers[destinationName].hasOwnProperty(widgetUid)) {
-			this.subscribers[destinationName][widgetUid] = {};
-		}
-
-		this.subscribers[destinationName][widgetUid].callback = callback;
-		this.subscribers[destinationName][widgetUid].object = object;
+		this.subscribers[destinationName][widgetUid] = callback;
 		this.topics.add(destinationName);
 
 		if (this.connected) {
@@ -101,10 +95,10 @@ class Widget {
 	subscribe(destinationName, callback) {
 		if (Array.isArray(destinationName)) {
 			for (const topic of destinationName) {
-				mqtt.subscribe(this.uid, topic, callback, this);
+				mqtt.subscribe(this.uid, topic, callback.bind(this));
 			}
 		} else {
-			mqtt.subscribe(this.uid, destinationName, callback, this);
+			mqtt.subscribe(this.uid, destinationName, callback.bind(this));
 		}
 	}
 
