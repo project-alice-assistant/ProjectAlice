@@ -1,8 +1,10 @@
 import json
 import re
 import shutil
+import threading
 from pathlib import Path
 from subprocess import CompletedProcess
+from typing import Optional
 
 from core.commons import constants
 from core.nlu.model.NluEngine import NluEngine
@@ -18,16 +20,33 @@ class SnipsNlu(NluEngine):
 		super().__init__()
 		self._cachePath = Path(self.Commons.rootDir(), f'var/cache/nlu/trainingData')
 		self._timer = None
+		self._thread: threading.Thread = self.ThreadManager.newThread(name='asrEngine', target=self.run, autostart=False)
 
 
 	def start(self):
 		super().start()
-		self.Commons.runRootSystemCommand(['systemctl', 'start', 'snips-nlu'])
+		if self._thread.is_alive():
+			self._thread.join(timeout=5)
+
+		self._thread.start()
 
 
 	def stop(self):
 		super().stop()
-		self.Commons.runRootSystemCommand(['systemctl', 'stop', 'snips-nlu'])
+		if self._thread.is_alive():
+			self._thread.join(timeout=5)
+
+
+	def run(self):
+		cmd = f'snips-nlu -a {self.Commons.rootDir()}/assistant --mqtt {self.ConfigManager.getAliceConfigByName("mqttHost")}:{self.ConfigManager.getAliceConfigByName("mqttPort")}'
+
+		if self.ConfigManager.getAliceConfigByName('mqttUser'):
+			cmd += f' --mqtt-username {self.ConfigManager.getAliceConfigByName("mqttUser")} --mqtt-password {self.ConfigManager.getAliceConfigByName("mqttPassword")}'
+
+		if self.ConfigManager.getAliceConfigByName('mqttTLSFile'):
+			cmd += f' --mqtt-tls-cafile {self.ConfigManager.getAliceConfigByName("mqttTLSFile")}'
+
+		self.Commons.runSystemCommand(cmd, shell=True)
 
 
 	def convertDialogTemplate(self, file: Path):
