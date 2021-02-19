@@ -1,4 +1,7 @@
+import threading
 import time
+
+import subprocess
 
 from core.asr.model.Asr import Asr
 from core.dialog.model.DialogSession import DialogSession
@@ -27,6 +30,8 @@ class SnipsAsr(Asr):
 		self._capableOfArbitraryCapture = True
 		self._isOnlineASR = False
 		self._listening = False
+		self._thread: threading.Thread = self.ThreadManager.newThread(name='asrEngine', target=self.run, autostart=False)
+		self._flag = threading.Event()
 
 
 	def installDependencies(self):
@@ -54,12 +59,37 @@ class SnipsAsr(Asr):
 		if self.LanguageManager.activeLanguage != 'en':
 			raise Exception('Snips generic ASR only for english')
 
-		self.ConfigManager.updateSnipsConfiguration('snips-asr', 'model', value='/usr/share/snips/snips-asr-model-en-500MB')
-		self.ConfigManager.updateSnipsConfiguration('snips-asr', 'partial', value=True)
+		self._flag.clear()
+		if self._thread.is_alive():
+			self._thread.join(timeout=5)
 
-		self.Commons.runRootSystemCommand(['systemctl', 'start', 'snips-asr'])
+		self._thread.start()
+
+
+	def run(self):
+		cmd = f'snips-asr --assistant {self.Commons.rootDir()}/assistant --mqtt {self.ConfigManager.getAliceConfigByName("mqttHost")}:{self.ConfigManager.getAliceConfigByName("mqttPort")}'
+
+		if self.ConfigManager.getAliceConfigByName('mqttUser'):
+			cmd += f' --mqtt-username {self.ConfigManager.getAliceConfigByName("mqttUser")} --mqtt-password {self.ConfigManager.getAliceConfigByName("mqttPassword")}'
+
+		if self.ConfigManager.getAliceConfigByName('mqttTLSFile'):
+			cmd += f' --mqtt-tls-cafile {self.ConfigManager.getAliceConfigByName("mqttTLSFile")}'
+
+		cmd += f' --model /usr/share/snips/snips-asr-model-en-500MB'
+		cmd += f' --partial'
+
+		process = subprocess.Popen(cmd.split(), stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+
+		self._flag.set()
+		try:
+			while self._flag.is_set():
+				time.sleep(0.5)
+		finally:
+			process.terminate()
 
 
 	def onStop(self):
 		super().onStop()
-		self.Commons.runRootSystemCommand(['systemctl', 'stop', 'snips-asr'])
+		self._flag.clear()
+		if self._thread.is_alive():
+			self.ThreadManager.terminateThread(name='asrEngine')
