@@ -2,9 +2,11 @@ import json
 import re
 import shutil
 import threading
+import time
 from pathlib import Path
 from subprocess import CompletedProcess
-from typing import Optional
+
+import subprocess
 
 from core.commons import constants
 from core.nlu.model.NluEngine import NluEngine
@@ -20,11 +22,13 @@ class SnipsNlu(NluEngine):
 		super().__init__()
 		self._cachePath = Path(self.Commons.rootDir(), f'var/cache/nlu/trainingData')
 		self._timer = None
-		self._thread: threading.Thread = self.ThreadManager.newThread(name='asrEngine', target=self.run, autostart=False)
+		self._thread: threading.Thread = self.ThreadManager.newThread(name='nluEngine', target=self.run, autostart=False)
+		self._flag = threading.Event()
 
 
 	def start(self):
 		super().start()
+		self._flag.clear()
 		if self._thread.is_alive():
 			self._thread.join(timeout=5)
 
@@ -33,8 +37,9 @@ class SnipsNlu(NluEngine):
 
 	def stop(self):
 		super().stop()
+		self._flag.clear()
 		if self._thread.is_alive():
-			self._thread.join(timeout=5)
+			self.ThreadManager.terminateThread(name='nluEngine')
 
 
 	def run(self):
@@ -46,7 +51,14 @@ class SnipsNlu(NluEngine):
 		if self.ConfigManager.getAliceConfigByName('mqttTLSFile'):
 			cmd += f' --mqtt-tls-cafile {self.ConfigManager.getAliceConfigByName("mqttTLSFile")}'
 
-		self.Commons.runSystemCommand(cmd, shell=True)
+		process = subprocess.Popen(cmd.split(), stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+
+		self._flag.set()
+		try:
+			while self._flag.is_set():
+				time.sleep(0.5)
+		finally:
+			process.terminate()
 
 
 	def convertDialogTemplate(self, file: Path):
@@ -181,15 +193,15 @@ class SnipsNlu(NluEngine):
 
 				shutil.move(tempTrainingData, assistantPath)
 
-				self.broadcast(method=constants.EVENT_NLU_TRAINED, exceptions=[constants.DUMMY], propagateToSkills=True)
-				self.Commons.runRootSystemCommand(['systemctl', 'restart', 'snips-nlu'])
-
 			self._timer.cancel()
 			self.MqttManager.publish(constants.TOPIC_NLU_TRAINING_STATUS, payload={'status': 'done'})
 			self.ThreadManager.getEvent('TrainAssistant').clear()
 			self.logInfo(f'Snips NLU trained in {stopWatch} seconds')
+
+			self.broadcast(method=constants.EVENT_NLU_TRAINED, exceptions=[constants.DUMMY], propagateToSkills=True)
+			self.NluManager.reloadNLU()
 		except:
-			pass  # Do nothing, the finally clause will finish the work
+			self.MqttManager.publish(constants.TOPIC_NLU_TRAINING_STATUS, payload={'status': 'failed'})
 		finally:
 			self.NluManager.training = False
 

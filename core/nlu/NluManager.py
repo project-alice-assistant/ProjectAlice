@@ -28,6 +28,11 @@ class NluManager(Manager):
 			self._nluEngine.stop()
 
 
+	def reloadNLU(self):
+		self.selectNluEngine()
+		self._nluEngine.start()
+
+
 	def onBooted(self):
 		super().onBooted()
 		self._nluEngine.start()

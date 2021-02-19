@@ -399,7 +399,7 @@ class ConfigManager(Manager):
 				restartSnips = False
 
 		if restartSnips:
-			self.Commons.runRootSystemCommand(['systemctl', 'restart', 'snips-nlu'])
+			self.NluManager.reloadNLU()
 
 
 	def getSnipsConfiguration(self, parent: str, key: str, silent: bool = False) -> typing.Optional[str]:
