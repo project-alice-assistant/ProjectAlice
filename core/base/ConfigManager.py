@@ -399,6 +399,7 @@ class ConfigManager(Manager):
 				restartSnips = False
 
 		if restartSnips:
+			self.WakewordManager.restartEngine()
 			self.NluManager.reloadNLU()
 
 
