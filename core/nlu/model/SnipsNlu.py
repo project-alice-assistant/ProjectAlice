@@ -199,7 +199,7 @@ class SnipsNlu(NluEngine):
 			self.logInfo(f'Snips NLU trained in {stopWatch} seconds')
 
 			self.broadcast(method=constants.EVENT_NLU_TRAINED, exceptions=[constants.DUMMY], propagateToSkills=True)
-			self.NluManager.reloadNLU()
+			self.NluManager.restartEngine()
 		except:
 			self.MqttManager.publish(constants.TOPIC_NLU_TRAINING_STATUS, payload={'status': 'failed'})
 		finally:

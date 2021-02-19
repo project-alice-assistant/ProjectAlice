@@ -28,7 +28,7 @@ class NluManager(Manager):
 			self._nluEngine.stop()
 
 
-	def reloadNLU(self):
+	def restartEngine(self):
 		self.selectNluEngine()
 		self._nluEngine.start()
 

@@ -238,33 +238,9 @@ class WakewordRecorder(Manager):
 		for i in range(1, 4):
 			shutil.move(Path(tempfile.gettempdir(), f'{i}.wav'), path/f'{i}.wav')
 
-		self._addWakewordToSnips(path)
 		self.ThreadManager.newThread(name='SatelliteWakewordUpload', target=self._upload, args=[path, self._wakeword.username], autostart=True)
 
 		self._state = WakewordRecorderState.IDLE
-
-
-	def _addWakewordToSnips(self, path: Path):
-		models: list = self.ConfigManager.getSnipsConfiguration('snips-hotword', 'model')
-
-		if not isinstance(models, list):
-			models = list()
-
-		wakewordName = path.name
-
-		addHeySnips = True
-		copy = models.copy()
-		for i, model in enumerate(copy):
-			if wakewordName in model:
-				del models[i]
-			elif '/snips_hotword=' in model:
-				addHeySnips = False
-
-		if addHeySnips:
-			models.append(str(Path(self.Commons.rootDir(), 'trained/hotwords/snips_hotword/hey_snips=0.53')))
-
-		models.append(f'{path}=0.52')
-		self.ConfigManager.updateSnipsConfiguration('snips-hotword', 'model', models, restartSnips=True)
 
 
 	def uploadToNewDevice(self, uid: str):
@@ -315,52 +291,44 @@ class WakewordRecorder(Manager):
 
 
 	def getUserWakeword(self, username: str) -> Optional[str]:
-		wakewords = self.ConfigManager.getSnipsConfiguration(parent='snips-hotword', key='model')
-
-		usernameMatch = re.compile(f'.*/{username}=[0-9.]+$')
-		for wakeword in wakewords:
-			match = re.search(usernameMatch, wakeword)
-			if match:
-				return wakeword
-		return None
+		wakeword = Path(f'{self.Commons.rootDir()}/trained/hotwords/snips_hotword/{username}')
+		if not wakeword.exists():
+			return None
+		return wakeword
 
 
 	def getUserWakewordSensitivity(self, username: str) -> Optional[float]:
-		wakeword = self.getUserWakeword(username)
-		if wakeword is None:
-			return None
-
-		sensitivity = re.findall('[0-9.]+$', wakeword)
-		return round(float(sensitivity[0]), 2) if sensitivity else None
+		# TODO user wakeword sensitivity
+		return self.ConfigManager.getAliceConfigByName('wakewordSensitivity')
 
 
 	def setUserWakewordSensitivity(self, username: str, sensitivity: float) -> bool:
-		wakewords = self.ConfigManager.getSnipsConfiguration(parent='snips-hotword', key='model')
-		rebuild = list()
-
-		if sensitivity > 1:
-			sensitivity = 1
-		elif sensitivity < 0:
-			sensitivity = 0
-
-		usernameMatch = re.compile(f'.*/{username}=[0-9.]+$')
-		sensitivitySub = re.compile('=[0-9.]+$')
-		update = False
-		for wakeword in wakewords:
-			match = re.search(usernameMatch, wakeword)
-			if not match:
-				rebuild.append(wakeword)
-				continue
-
-			update = True
-			updated = re.sub(sensitivitySub, f'={round(float(sensitivity), 2)}', wakeword)
-			rebuild.append(updated)
-
-		if update:
-			self.ConfigManager.updateSnipsConfiguration(parent='snips-hotword', key='model', value=rebuild, restartSnips=False, createIfNotExist=True)
-			self.WakewordManager.restartEngine()
-
-		return update
+		# TODO user wakeword sensitivity
+		return True
+		# wakewords = self.ConfigManager.getSnipsConfiguration(parent='snips-hotword', key='model')
+		# rebuild = list()
+		#
+		# if sensitivity > 1:
+		# 	sensitivity = 1
+		# elif sensitivity < 0:
+		# 	sensitivity = 0
+		#
+		# usernameMatch = re.compile(f'.*/{username}=[0-9.]+$')
+		# sensitivitySub = re.compile('=[0-9.]+$')
+		# update = False
+		# for wakeword in wakewords:
+		# 	match = re.search(usernameMatch, wakeword)
+		# 	if not match:
+		# 		rebuild.append(wakeword)
+		# 		continue
+		#
+		# 	update = True
+		# 	updated = re.sub(sensitivitySub, f'={round(float(sensitivity), 2)}', wakeword)
+		# 	rebuild.append(updated)
+		#
+		# 	self.WakewordManager.restartEngine()
+		#
+		# return update
 
 
 	@property

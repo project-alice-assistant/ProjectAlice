@@ -36,6 +36,11 @@ class ASRManager(Manager):
 			self._asr.onStop()
 
 
+	def restartEngine(self):
+		self._asr.onStop()
+		self._startASREngine()
+
+
 	def _startASREngine(self, forceAsr = None):
 		userASR = self.ConfigManager.getAliceConfigByName(configName='asr').lower() if forceAsr is None else forceAsr
 		keepASROffline = self.ConfigManager.getAliceConfigByName('keepASROffline')
@@ -105,15 +110,13 @@ class ASRManager(Manager):
 
 		if not self._asr.isOnlineASR:
 			self.logInfo('Connected to internet, switching Asr')
-			self._asr.onStop()
-			self._startASREngine()
+			self.restartEngine()
 
 
 	def onInternetLost(self):
 		if self._asr.isOnlineASR:
 			self.logInfo('Internet lost, switching to offline Asr')
-			self._asr.onStop()
-			self._startASREngine()
+			self.restartEngine()
 
 
 	def onStartListening(self, session: DialogSession):

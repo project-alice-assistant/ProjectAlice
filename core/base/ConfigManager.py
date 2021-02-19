@@ -16,7 +16,6 @@ class ConfigManager(Manager):
 
 	TEMPLATE_FILE = Path('configTemplate.json')
 	CONFIG_FILE = Path('config.json')
-	SNIPS_CONF = Path('/etc/snips.toml')
 
 	CONFIG_FUNCTION_REGEX = re.compile(r'^(?:(?P<manager>\w+)\.)?(?P<function>\w+)(?:\((?P<args>.*)\))?')
 	CONFIRG_FUNCTION_ARG_REGEX = re.compile(r'(?:\w+)')
@@ -33,7 +32,6 @@ class ConfigManager(Manager):
 		self._aliceConfigurations: typing.Dict[str, typing.Any] = dict()
 
 		self._loadCheckAndUpdateAliceConfigFile()
-		self._snipsConfigurations = self.loadSnipsConfigurations()
 
 		self._skillsConfigurations = dict()
 		self._skillsTemplateConfigurations: typing.Dict[str, dict] = dict()
@@ -364,61 +362,6 @@ class ConfigManager(Manager):
 		skillConfigFile.write_text(json.dumps(confsCleaned, indent='\t', ensure_ascii=False, sort_keys=True))
 
 
-	def loadSnipsConfigurations(self) -> dict:
-		self.logInfo('Loading Snips configuration file')
-		if not self.SNIPS_CONF.exists():
-			self.Commons.runRootSystemCommand(['cp', Path(self.Commons.rootDir(), 'system/snips/snips.toml'), self.SNIPS_CONF])
-
-		return toml.load(str(self.SNIPS_CONF))
-
-
-	def updateSnipsConfiguration(self, parent: str, key: str, value, restartSnips: bool = False, createIfNotExist: bool = False, silent: bool = False):
-		"""
-		Setting a config in snips.toml
-		:param silent: output warnings or not
-		:param createIfNotExist: bool create the missing parent key value if not present
-		:param parent: Parent key in toml
-		:param key: Key in that parent key
-		:param value: The value to set
-		:param restartSnips: Whether to restart Snips or not after changing the value
-		"""
-
-		config = self.getSnipsConfiguration(parent=parent, key=key)
-		if config is None:
-			if createIfNotExist:
-				self._snipsConfigurations.setdefault(parent, dict()).setdefault(key, value)
-				self.SNIPS_CONF.write_text(toml.dumps(self._snipsConfigurations))
-			elif not silent:
-				self.logWarning(f'Tried to set **{parent}/{key}** in snips configuration but key was not found')
-		else:
-			currentValue = self._snipsConfigurations[parent][key]
-			if currentValue != value:
-				self._snipsConfigurations[parent][key] = value
-				self.SNIPS_CONF.write_text(toml.dumps(self._snipsConfigurations))
-			else:
-				restartSnips = False
-
-		if restartSnips:
-			self.WakewordManager.restartEngine()
-			self.NluManager.reloadNLU()
-
-
-	def getSnipsConfiguration(self, parent: str, key: str, silent: bool = False) -> typing.Optional[str]:
-		"""
-		Getting a specific configuration from snips.toml
-		:param silent: whether to print warning or not
-		:param parent: parent key
-		:param key: key within parent conf
-		:return: config value
-		"""
-
-		config = self._snipsConfigurations.get(parent, dict()).get(key, None)
-		if config is None and not silent:
-			self.logWarning(f'Tried to get **{parent}/{key}** in snips configuration but key was not found')
-
-		return config
-
-
 	def configAliceExists(self, configName: str) -> bool:
 		return configName in self._aliceConfigurations
 
@@ -653,10 +596,12 @@ class ConfigManager(Manager):
 
 
 	def updateMqttSettings(self):
-		self.ConfigManager.updateSnipsConfiguration('snips-common', 'mqtt', f'{self.getAliceConfigByName("mqttHost")}:{self.getAliceConfigByName("mqttPort"):}', False, True)
-		self.ConfigManager.updateSnipsConfiguration('snips-common', 'mqtt_username', self.getAliceConfigByName('mqttUser'), False, True)
-		self.ConfigManager.updateSnipsConfiguration('snips-common', 'mqtt_password', self.getAliceConfigByName('mqttPassword'), False, True)
-		self.ConfigManager.updateSnipsConfiguration('snips-common', 'mqtt_tls_cafile', self.getAliceConfigByName('mqttTLSFile'), True, True)
+		self.NluManager.restartEngine()
+		if self.getAliceConfigByName('wakewordEngine') == 'snips':
+			self.WakewordManager.restartEngine()
+		if self.getAliceConfigByName('asr') == 'snips' or self.getAliceConfigByName('asrFallback') == 'snips':
+			self.ASRManager.restartEngine()
+
 		self.reconnectMqtt()
 
 
@@ -664,14 +609,16 @@ class ConfigManager(Manager):
 		self.MqttManager.reconnect()
 
 
-	def reloadASR(self):
-		self.ASRManager.onStop()
-		self.ASRManager.onStart()
+	def reloadASRManager(self):
+		SuperManager.getInstance().restartManager(manager=self.ASRManager.name)
 
 
-	def reloadTTS(self):
-		self.TTSManager.onStop()
-		self.TTSManager.onStart()
+	def reloadTTSManager(self):
+		SuperManager.getInstance().restartManager(manager=self.TTSManager.name)
+
+
+	def reloadNLUManager(self):
+		SuperManager.getInstance().restartManager(manager=self.NluManager.name)
 
 
 	def checkNewAdminPinCode(self, pinCode: str) -> bool:
@@ -772,11 +719,6 @@ class ConfigManager(Manager):
 			raise
 
 		return devices
-
-
-	@property
-	def snipsConfigurations(self) -> dict:
-		return self._snipsConfigurations
 
 
 	@property
