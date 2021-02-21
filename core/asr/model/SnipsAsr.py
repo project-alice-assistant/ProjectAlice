@@ -2,6 +2,7 @@ import threading
 import time
 
 import subprocess
+from typing import Optional
 
 from core.asr.model.Asr import Asr
 from core.dialog.model.DialogSession import DialogSession
@@ -30,7 +31,7 @@ class SnipsAsr(Asr):
 		self._capableOfArbitraryCapture = True
 		self._isOnlineASR = False
 		self._listening = False
-		self._thread: threading.Thread = self.ThreadManager.newThread(name='asrEngine', target=self.run, autostart=False)
+		self._thread: Optional[threading.Thread] = None
 		self._flag = threading.Event()
 
 
@@ -60,10 +61,18 @@ class SnipsAsr(Asr):
 			raise Exception('Snips generic ASR only for english')
 
 		self._flag.clear()
-		if self._thread.is_alive():
+		if self._thread and self._thread.is_alive():
 			self._thread.join(timeout=5)
 
+		self._thread: threading.Thread = self.ThreadManager.newThread(name='asrEngine', target=self.run, autostart=False)
 		self._thread.start()
+
+
+	def onStop(self):
+		super().onStop()
+		self._flag.clear()
+		if self._thread and self._thread.is_alive():
+			self.ThreadManager.terminateThread(name='asrEngine')
 
 
 	def run(self):
@@ -86,10 +95,3 @@ class SnipsAsr(Asr):
 				time.sleep(0.5)
 		finally:
 			process.terminate()
-
-
-	def onStop(self):
-		super().onStop()
-		self._flag.clear()
-		if self._thread.is_alive():
-			self.ThreadManager.terminateThread(name='asrEngine')

@@ -4,6 +4,7 @@ import threading
 import subprocess
 import time
 from pathlib import Path
+from typing import Optional
 
 from core.voice.model.WakewordEngine import WakewordEngine
 
@@ -22,7 +23,7 @@ class SnipsWakeword(WakewordEngine):
 
 	def __init__(self):
 		super().__init__()
-		self._thread: threading.Thread = self.ThreadManager.newThread(name='snipsHotword', target=self.run, autostart=False)
+		self._thread: Optional[threading.Thread] = None
 		self._flag = threading.Event()
 
 
@@ -69,14 +70,15 @@ class SnipsWakeword(WakewordEngine):
 	def onStop(self):
 		super().onStop()
 		self._flag.clear()
-		if self._thread.is_alive():
+		if self._thread and self._thread.is_alive():
 			self.ThreadManager.terminateThread(name='snipsHotword')
 
 
 	def onStart(self):
 		super().onStart()
 		self._flag.clear()
-		if self._thread.is_alive():
+		if self._thread and self._thread.is_alive():
 			self._thread.join(timeout=5)
 
+		self._thread: threading.Thread = self.ThreadManager.newThread(name='snipsHotword', target=self.run, autostart=False)
 		self._thread.start()

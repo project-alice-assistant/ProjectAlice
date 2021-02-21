@@ -7,6 +7,7 @@ from pathlib import Path
 from subprocess import CompletedProcess
 
 import subprocess
+from typing import Optional
 
 from core.commons import constants
 from core.nlu.model.NluEngine import NluEngine
@@ -22,23 +23,24 @@ class SnipsNlu(NluEngine):
 		super().__init__()
 		self._cachePath = Path(self.Commons.rootDir(), f'var/cache/nlu/trainingData')
 		self._timer = None
-		self._thread: threading.Thread = self.ThreadManager.newThread(name='nluEngine', target=self.run, autostart=False)
+		self._thread: Optional[threading.Thread] = None
 		self._flag = threading.Event()
 
 
 	def start(self):
 		super().start()
 		self._flag.clear()
-		if self._thread.is_alive():
+		if self._thread and self._thread.is_alive():
 			self._thread.join(timeout=5)
 
+		self._thread: threading.Thread = self.ThreadManager.newThread(name='nluEngine', target=self.run, autostart=False)
 		self._thread.start()
 
 
 	def stop(self):
 		super().stop()
 		self._flag.clear()
-		if self._thread.is_alive():
+		if self._thread and self._thread.is_alive():
 			self.ThreadManager.terminateThread(name='nluEngine')
 
 
