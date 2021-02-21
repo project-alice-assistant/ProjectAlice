@@ -19,7 +19,7 @@
 	inactive authors:       Jierka <https://github.com/jr-k>
 							maxbachmann <https://github.com/maxbachmann>
 """
-
+import os
 import subprocess
 
 subprocess.run(['clear'])
@@ -105,6 +105,24 @@ def restart():
 	RUNNING = False
 
 
+def restartProcess():
+	sys.stdout.flush()
+	try:
+		# Close everything related to ProjectAlice, allows restart without component failing
+		import psutil
+
+		# noinspection PyUnboundLocalVariable
+		process = psutil.Process(os.getpid())
+		for handler in process.open_files() + process.connections():
+			os.close(handler.fd)
+
+	except Exception as e:
+		print(f'Failed restarting Project Alice: {e}')
+
+	python = sys.executable
+	os.execl(python, python, *sys.argv)
+
+
 def main():
 	global RUNNING
 	RUNNING = True
@@ -126,7 +144,7 @@ def main():
 	_logger.info('[Project Alice]           Shutdown completed, see you soon!')
 	if projectAlice.restart:
 		time.sleep(3)
-		restart()
+		restartProcess()
 
 
 RUNNING = False

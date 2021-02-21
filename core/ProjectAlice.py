@@ -28,6 +28,7 @@ class ProjectAlice(Singleton):
 		self._restartHandler = restartHandler
 
 		if not self.checkDependencies():
+			self._restart = True
 			self._restartHandler()
 		else:
 			with Stopwatch() as stopWatch:
