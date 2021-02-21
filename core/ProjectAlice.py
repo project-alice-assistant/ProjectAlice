@@ -1,3 +1,4 @@
+import hashlib
 import subprocess
 from pathlib import Path
 
@@ -23,25 +24,71 @@ class ProjectAlice(Singleton):
 		self._booted = False
 		self._isUpdating = False
 		self._shuttingDown = False
-		with Stopwatch() as stopWatch:
-			self._restart = False
-			self._restartHandler = restartHandler
-			self._superManager = SuperManager(self)
+		self._restart = False
+		self._restartHandler = restartHandler
 
-			self._superManager.initManagers()
-			self._superManager.onStart()
+		if not self.checkDependencies():
+			self._restartHandler()
+		else:
+			with Stopwatch() as stopWatch:
+				self._superManager = SuperManager(self)
 
-			if self._superManager.configManager.getAliceConfigByName('useHLC'):
-				self._superManager.commons.runRootSystemCommand(['systemctl', 'start', 'hermesledcontrol'])
+				self._superManager.initManagers()
+				self._superManager.onStart()
 
-			self._superManager.onBooted()
+				if self._superManager.configManager.getAliceConfigByName('useHLC'):
+					self._superManager.commons.runRootSystemCommand(['systemctl', 'start', 'hermesledcontrol'])
 
-		self._logger.logInfo(f'Started in {stopWatch} seconds')
-		self._booted = True
+				self._superManager.onBooted()
+
+			self._logger.logInfo(f'Started in {stopWatch} seconds')
+			self._booted = True
+
+
+	def checkDependencies(self) -> bool:
+		"""
+		Compares .hash files against requirements.txt and sysrrequirement.txt. Updates dependencies if necessary
+		:return: boolean False if the check failed, new deps were installed (reboot maybe? :) )
+		"""
+		HASH_SUFFIX = '.hash'
+		TXT_SUFFIX = '.txt'
+
+		path = Path('requirements')
+		savedHash = path.with_suffix(HASH_SUFFIX)
+		reqHash = hashlib.blake2b(path.with_suffix(TXT_SUFFIX).read_bytes()).hexdigest()
+
+		if not savedHash.exists() or savedHash.read_text() != reqHash:
+			self._logger.logInfo('Pip dependencies added or removed, updating virtual environment')
+			subprocess.run(['./venv/bin/pip', 'install', '-r', str(path.with_suffix(TXT_SUFFIX))])
+			savedHash.write_text(reqHash)
+			return False
+
+		path = Path('sysrequirements')
+		savedHash = path.with_suffix(HASH_SUFFIX)
+		reqHash = hashlib.blake2b(path.with_suffix(TXT_SUFFIX).read_bytes()).hexdigest()
+
+		if not savedHash.exists() or savedHash.read_text() != reqHash:
+			self._logger.logInfo('System dependencies added or removed, updating system')
+			reqs = [line.rstrip('\n') for line in open(path.with_suffix(TXT_SUFFIX))]
+			subprocess.run(['sudo', 'apt-get', 'install', '-y', '--allow-unauthenticated'] + reqs)
+			savedHash.write_text(reqHash)
+			return False
+
+		path = Path('pipuninstalls')
+		savedHash = path.with_suffix(HASH_SUFFIX)
+		reqHash = hashlib.blake2b(path.with_suffix(TXT_SUFFIX).read_bytes()).hexdigest()
+
+		if not savedHash.exists() or savedHash.read_text() != reqHash:
+			self._logger.logInfo('Pip conflicting dependencies added, updating virtual environment')
+			subprocess.run(['./venv/bin/pip', 'uninstall', '-y', '-r', str(path.with_suffix(TXT_SUFFIX))])
+			savedHash.write_text(reqHash)
+			return False
+
+		return True
 
 
 	@property
-	def name(self) -> str:
+	def name(self) -> str: #NOSONAR
 		return self.NAME
 
 
