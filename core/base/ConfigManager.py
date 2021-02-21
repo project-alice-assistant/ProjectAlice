@@ -5,7 +5,6 @@ import typing
 from pathlib import Path
 
 import sounddevice as sd
-import toml
 
 from core.ProjectAliceExceptions import ConfigurationUpdateFailed, VitalConfigMissing
 from core.base.SuperManager import SuperManager
@@ -649,10 +648,6 @@ class ConfigManager(Manager):
 			self.WakewordManager.disableEngine()
 		else:
 			self.WakewordManager.enableEngine()
-
-
-	def restartWakewordEngine(self):
-		self.WakewordManager.restartEngine()
 
 
 	def reloadWakeword(self):

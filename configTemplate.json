@@ -394,6 +394,19 @@
 		"category"    : "wakeword",
 		"onUpdate"    : "reloadWakeword"
 	},
+	"monoWakewordEngine"      : {
+		"defaultValue": false,
+		"dataType"    : "boolean",
+		"isSensitive" : false,
+		"description" : "If true, the main unit will treat the wakeword for every satellites in your network. Better for satellites, but loads your network much more.",
+		"category"    : "wakeword",
+		"onUpdate"    : "WakewordManager.restartEngine",
+		"parent"      : {
+			"config"   : "wakewordEngine",
+			"condition": "is",
+			"value"    : "snips"
+		}
+	},
 	"wakewordSensitivity"     : {
 		"defaultValue": 0.5,
 		"dataType"    : "range",
@@ -403,7 +416,7 @@
 		"isSensitive" : false,
 		"description" : "Default wakeword sensitivity",
 		"category"    : "wakeword",
-		"onUpdate"    : "restartWakewordEngine"
+		"onUpdate"    : "WakewordManager.restartEngine"
 	},
 	"tts"                     : {
 		"defaultValue": "pico",

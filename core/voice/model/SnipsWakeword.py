@@ -28,7 +28,11 @@ class SnipsWakeword(WakewordEngine):
 
 	def run(self):
 		cmd = f'snips-hotword --assistant {self.Commons.rootDir()}/assistant --mqtt {self.ConfigManager.getAliceConfigByName("mqttHost")}:{self.ConfigManager.getAliceConfigByName("mqttPort")}'
-		cmd += f' --audio {self.ConfigManager.getAliceConfigByName("uuid")}@mqtt'
+
+		if self.ConfigManager.getAliceConfigByName('monoWakewordEngine'):
+			cmd += ' --audio +@mqtt'
+		else:
+			cmd += f' --audio {self.ConfigManager.getAliceConfigByName("uuid")}@mqtt'
 
 		if self.ConfigManager.getAliceConfigByName('mqttUser'):
 			cmd += f' --mqtt-username {self.ConfigManager.getAliceConfigByName("mqttUser")} --mqtt-password {self.ConfigManager.getAliceConfigByName("mqttPassword")}'
