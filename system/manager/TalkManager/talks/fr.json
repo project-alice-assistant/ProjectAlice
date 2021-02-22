@@ -78,9 +78,11 @@
 		"Je suis désolée mais je ne peux pas faire ça en étant hors ligne"
 	],
 	"notification": [
-		"oui?",
+		"oui {}?",
 		"ouai?",
 		"je t'écoute!",
-		"à ton service!"
+		"je t'écoute {}!",
+		"à ton service!",
+		"à ton service {}!"
 	]
 }

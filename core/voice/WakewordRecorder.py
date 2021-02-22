@@ -65,98 +65,43 @@ class WakewordRecorder(Manager):
 
 
 	def newWakeword(self, username: str):
-		for i in range(1, 4):
-			file = Path(f'/tmp/{i}_raw.wav')
-			if file.exists():
-				file.unlink()
-
 		self._wakeword = Wakeword(username)
 
 
-	def addASample(self):
-		self.wakeword.newSample()
-		self.state = WakewordRecorderState.RECORDING
+	def startCapture(self):
+		self._state = WakewordRecorderState.RECORDING
 
 
-	def onAudioFrame(self, message: mqtt.MQTTMessage, deviceUid: str):
-		if self.state != WakewordRecorderState.RECORDING:
-			return
-
-		# @author DasBasti
-		# https://gist.github.com/DasBasti/050bf6c3232d4bb54c741a1f057459d3
-
-		try:
-			riff, size, fformat = struct.unpack('<4sI4s', message.payload[:12])
-
-			if riff != b'RIFF':
-				self.logError('Wakeword capture frame parse error')
-				return
-
-			if fformat != b'WAVE':
-				self.logError('Wakeword capture frame wrong format')
-				return
-
-			chunkHeader = message.payload[12:20]
-			subChunkId, subChunkSize = struct.unpack('<4sI', chunkHeader)
-
-			samplerate = self.AudioServer.SAMPLERATE
-			channels = 2
-			if subChunkId == b'fmt ':
-				aFormat, channels, samplerate, byterate, blockAlign, bps = struct.unpack('HHIIHH', message.payload[20:36])
-
-			record = self.wakeword.getSample()
-
-			# noinspection PyProtectedMember
-			if not record._datawritten:
-				record.setframerate(samplerate)
-				record.setnchannels(channels)
-				record.setsampwidth(2)
-
-			chunkOffset = 52
-			while chunkOffset < size:
-				subChunk2Id, subChunk2Size = struct.unpack('<4sI', message.payload[chunkOffset:chunkOffset + 8])
-				chunkOffset += 8
-				if subChunk2Id == b'data' and self._state == WakewordRecorderState.RECORDING:
-					record.writeframes(message.payload[chunkOffset:chunkOffset + subChunk2Size])
-
-				chunkOffset = chunkOffset + subChunk2Size + 8
-
-		except Exception as e:
-			self.logError(f'Error capturing wakeword: {e}')
+	def addRawSample(self, filepath: Path):
+		filepath = self.wakeword.addRawSample(filepath)
+		self._workAudioFile(filepath)
 
 
-	def _workAudioFile(self):
-		sample = self.wakeword.getSample()
+	def getRawSample(self, i: int = None):
+		return self.wakeword.getRawSample(i)
 
-		# noinspection PyProtectedMember
-		if not sample._datawritten:
-			self.logError('Something went wrong capturing audio, no data available in sample')
-			self._state = WakewordRecorderState.IDLE
-			return
 
-		sample.close()
-
+	def _workAudioFile(self, filepath: Path = None):
 		self._state = WakewordRecorderState.TRIMMING
 
-		self.wakeword.getSample().close()
+		if not filepath:
+			filepath = self.wakeword.getRawSample()
 
-		filepath = self.wakeword.getSamplePath()
-		if not filepath.exists():
-			self.logError(f'Raw wakeword **{len(self.wakeword.samples)}** wasn\'t found')
-			self._state = WakewordRecorderState.IDLE
-			return
+		# sound = AudioSegment.from_file(filepath, format='wav', frame_rate=self.AudioServer.SAMPLERATE)
+		# startTrim = self.detectLeadingSilence(sound)
+		# endTrim = self.detectLeadingSilence(sound.reverse())
+		# duration = len(sound)
+		# trimmed = sound[startTrim: duration - endTrim]
+		# reworked = trimmed.set_frame_rate(self.AudioServer.SAMPLERATE)
+		# reworked = reworked.set_channels(1)
+		# reworked.export(filepath, format='wav')
 
-
-		sound = AudioSegment.from_file(filepath, format='wav', frame_rate=self._sampleRate)
-		startTrim = self.detectLeadingSilence(sound)
-		endTrim = self.detectLeadingSilence(sound.reverse())
-		duration = len(sound)
-		trimmed = sound[startTrim: duration - endTrim]
-		reworked = trimmed.set_frame_rate(self.AudioServer.SAMPLERATE)
-		reworked = reworked.set_channels(1)
-
-		reworked.export(Path(tempfile.gettempdir(), f'{len(self.wakeword.samples)}.wav'), format='wav')
 		self._state = WakewordRecorderState.CONFIRMING
+
+
+
+
+
 
 
 	def trimMore(self):

@@ -1,7 +1,9 @@
-import wave
+import os
 from pathlib import Path
 
 import tempfile
+
+import shutil
 
 from core.base.model.ProjectAliceObject import ProjectAliceObject
 
@@ -10,8 +12,16 @@ class Wakeword(ProjectAliceObject):
 
 	def __init__(self, username: str):
 		super().__init__()
-		self._samples = list()
+		self._rawSamples = list()
+		self._trimmedSamples = list()
 		self._username = username
+		self._rootPath = Path(f'{tempfile.gettempdir()}/wakewords/{self._username}')
+		self.clearTmp()
+
+
+	def clearTmp(self):
+		shutil.rmtree(self._rootPath, ignore_errors=True)
+		os.makedirs(self._rootPath)
 
 
 	@property
@@ -26,26 +36,32 @@ class Wakeword(ProjectAliceObject):
 
 	@property
 	def samples(self) -> list:
-		return self._samples
+		return self._rawSamples
 
 
-	def newSample(self):
-		sample = wave.open(str(self.getSamplePath(len(self._samples) + 1)), 'wb')
-		sample.setsampwidth(2)
-		sample.setframerate(self.AudioServer.SAMPLERATE)
-		sample.setnchannels(1)
-		self._samples.append(sample)
+	def addRawSample(self, filepath: Path) -> Path:
+		tmpFile = Path(f'{self._rootPath}/{len(self._rawSamples) + 1}_raw.wav')
+		shutil.copyfile(filepath, tmpFile)
+		self._rawSamples.append(tmpFile)
+		return tmpFile
 
 
-	def getSamplePath(self, number: int = None) -> Path:
-		if not number:
-			number = len(self._samples)
+	def addTrimmedSample(self, filepath: Path, sampleNumber: int = None) -> Path:
+		tmpFile = Path(f'{self._rootPath}/{sampleNumber or len(self._trimmedSamples) + 1}.wav')
+		shutil.copyfile(filepath, tmpFile)
+		self._trimmedSamples.append(tmpFile)
+		return tmpFile
 
-		return Path(tempfile.gettempdir(), f'{number}_raw.wav')
+
+	def getRawSample(self, i: int = None) -> Path:
+		if not i:
+			i = len(self._rawSamples) - 1
+
+		return self._rawSamples[i]
 
 
-	def getSample(self, number: int = None) -> wave.Wave_write:
-		if not number:
-			number = len(self.samples) - 1
+	def getTrimmedSample(self, i: int = None) -> Path:
+		if not i:
+			i = len(self._trimmedSamples) - 1
 
-		return self.samples[number]
+		return self._trimmedSamples[i]

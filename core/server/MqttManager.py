@@ -574,8 +574,8 @@ class MqttManager(Manager):
 		:param msg:
 		:return:
 		"""
-		count = msg.topic.count('/')
-		if count > 4:
+		split = msg.topic.rsplit('/')
+		if len(split) > 4:
 			requestId = msg.topic.rsplit('/')[-1]
 			sessionId = msg.topic.rsplit('/')[-2]
 		else:
@@ -587,9 +587,9 @@ class MqttManager(Manager):
 
 
 	def topicPlayBytesFinished(self, _client, _data, msg: mqtt.MQTTMessage):
-		requestId = msg.topic.rsplit('/')[-1]
 		deviceUid = self.Commons.parseDeviceUid(msg)
 		sessionId = self.Commons.parseSessionId(msg)
+		requestId = self.Commons.payload(msg).get('id', None)
 		self.broadcast(method=constants.EVENT_PLAY_BYTES_FINISHED, exceptions=self.name, propagateToSkills=True, requestId=requestId, deviceUid=deviceUid, sessionId=sessionId)
 
 
@@ -615,7 +615,7 @@ class MqttManager(Manager):
 		Initiate a notification session which is termniated once the text is spoken
 		:param canBeEnqueued: bool
 		:param text: str Text to say
-		:param deviceUid: int Where to speak
+		:param deviceUid: str Where to speak
 		:param customData: json object
 		"""
 
@@ -668,7 +668,7 @@ class MqttManager(Manager):
 		:param currentDialogState: a str representing a state in the dialog, usefull for multiturn dialogs
 		:param canBeEnqueued: wheter or not this can be played later if the dialog manager is busy
 		:param text: str The text to speak
-		:param deviceUid: int Where to ask
+		:param deviceUid: str Where to ask
 		:param intentFilter: array Filter to force user intents
 		:param customData: json object
 		:return:
@@ -821,15 +821,15 @@ class MqttManager(Manager):
 		}))
 
 
-	def playSound(self, soundFilename: str, location: Path = None, sessionId: str = '', deviceUid: Union[str, List[Union[str, Device]]] = None, uid: str = '', suffix: str = '.wav'):
+	def playSound(self, soundFilename: str, location: Path = None, sessionId: str = '', deviceUid: Union[str, List[Union[str, Device]]] = None, suffix: str = '.wav', requestId: str = None):
 		if not deviceUid:
 			deviceUid = self.ConfigManager.getAliceConfigByName('uuid')
 
 		if not sessionId:
 			sessionId = str(uuid.uuid4())
 
-		if not uid:
-			uid = str(uuid.uuid4())
+		if not requestId:
+			requestId = str(uuid.uuid4()) #NOSONAR
 
 		if not location:
 			location = Path(self.Commons.rootDir()) / 'system' / 'sounds'
@@ -844,7 +844,7 @@ class MqttManager(Manager):
 				deviceList = [uid if isinstance(uid, str) else uid.uid for uid in deviceUid]
 
 			for device in deviceList:
-				self.playSound(soundFilename, location, sessionId, deviceUid=device, uid=uid)
+				self.playSound(soundFilename, location, sessionId, deviceUid=device)
 		else:
 			soundFile = Path(location / soundFilename).with_suffix(suffix)
 
@@ -852,7 +852,7 @@ class MqttManager(Manager):
 				self.logError(f"Sound file {soundFile} doesn't exist")
 				return
 
-			self._mqttClient.publish(constants.TOPIC_PLAY_BYTES.format(deviceUid).replace('#', uid), payload=bytearray(soundFile.read_bytes()))
+			self._mqttClient.publish(constants.TOPIC_PLAY_BYTES.format(deviceUid).replace('#', f'{sessionId}/{requestId}'), payload=bytearray(soundFile.read_bytes()))
 
 
 	def publish(self, topic: str, payload: (dict, str) = None, stringPayload: str = None, qos: int = 0, retain: bool = False):

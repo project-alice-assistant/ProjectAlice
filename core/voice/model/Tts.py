@@ -158,7 +158,7 @@ class Tts(ProjectAliceObject):
 			location=file.parent,
 			sessionId=session.sessionId,
 			deviceUid=session.deviceUid,
-			uid=uid
+			requestId=uid
 		)
 
 		try:

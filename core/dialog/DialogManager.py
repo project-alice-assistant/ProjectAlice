@@ -10,6 +10,7 @@ from core.base.model.Manager import Manager
 from core.commons import constants
 from core.device.model.DeviceAbility import DeviceAbility
 from core.dialog.model.DialogSession import DialogSession
+from core.voice.WakewordRecorder import WakewordRecorderState
 
 
 class DialogManager(Manager):
@@ -56,6 +57,9 @@ class DialogManager(Manager):
 
 
 	def onHotword(self, deviceUid: str, user: str = constants.UNKNOWN_USER):
+		if self.WakewordRecorder.state != WakewordRecorderState.IDLE:
+			return
+
 		self.logDebug(f'Wakeword detected by **{self.DeviceManager.getDevice(uid=deviceUid).displayName}**')
 
 		self._endedSessions[deviceUid] = self._sessionsById.pop(deviceUid, None)
@@ -78,7 +82,7 @@ class DialogManager(Manager):
 		if session.user != constants.UNKNOWN_USER:
 			talkNotification = talkNotification.format(session.user)
 		else:
-			talkNotification = talkNotification.format("")
+			talkNotification = talkNotification.format('')
 
 		# Play notification if needed
 		if self._feedbackSounds.get('deviceUid', True):
@@ -216,7 +220,7 @@ class DialogManager(Manager):
 			return
 
 		self.MqttManager.publish(
-			topic=constants.TOPIC_PLAY_BYTES.format(session.deviceUid).replace('#', f'{uuid.uuid4()}'),
+			topic=constants.TOPIC_PLAY_BYTES.format(session.deviceUid).replace('#', session.sessionId),
 			payload=bytearray(Path(f'system/sounds/{self.LanguageManager.activeLanguage}/end_of_input.wav').read_bytes())
 		)
 

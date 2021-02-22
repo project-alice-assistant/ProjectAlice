@@ -13,6 +13,7 @@ from core.base.model.Manager import Manager
 from core.commons import constants
 from core.dialog.model.DialogSession import DialogSession
 from core.util.model.AliceEvent import AliceEvent
+from core.voice.WakewordRecorder import WakewordRecorderState
 
 
 class AudioManager(Manager):
@@ -90,7 +91,7 @@ class AudioManager(Manager):
 
 
 	def onStartListening(self, session: DialogSession):
-		if not self.ConfigManager.getAliceConfigByName('recordAudioAfterWakeword'):
+		if not self.ConfigManager.getAliceConfigByName('recordAudioAfterWakeword') and self.WakewordRecorder.state != WakewordRecorderState.RECORDING:
 			return
 
 		path = Path(self.LAST_USER_SPEECH.format(session.user, session.deviceUid))

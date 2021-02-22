@@ -607,8 +607,8 @@ class AliceSkill(ProjectAliceObject):
 		self.MqttManager.endSession(sessionId=sessionId)
 
 
-	def playSound(self, soundFilename: str, location: Path = None, sessionId: str = '', deviceUid: Union[str, List[Union[str, Device]]] = None, uid: str = ''):
-		self.MqttManager.playSound(soundFilename=soundFilename, location=location, sessionId=sessionId, deviceUid=deviceUid, uid=uid)
+	def playSound(self, soundFilename: str, location: Path = None, sessionId: str = '', deviceUid: Union[str, List[Union[str, Device]]] = None, requestId: str = None):
+		self.MqttManager.playSound(soundFilename=soundFilename, location=location, sessionId=sessionId, deviceUid=deviceUid, requestId=requestId)
 
 
 	def publish(self, topic: str, payload: dict = None, stringPayload: str = None, qos: int = 0, retain: bool = False):
