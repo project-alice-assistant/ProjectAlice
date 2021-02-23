@@ -66,6 +66,7 @@ class WakewordRecorder(Manager):
 			self._wakeword.clearTmp()
 
 		self._wakeword = None
+		self._userTuning = 0
 
 
 	def startCapture(self):
