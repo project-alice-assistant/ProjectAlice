@@ -97,6 +97,9 @@ class CommonsManager(Manager):
 
 	@staticmethod
 	def dictMaxValue(dictionary: dict) -> Any:
+		if not dictionary:
+			return 0
+
 		return max(dictionary, key=dictionary.get)
 
 

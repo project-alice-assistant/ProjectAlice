@@ -33,6 +33,8 @@ class DialogManager(Manager):
 		self._disabledByDefaultIntents = set()
 		self._enabledByDefaultIntents = set()
 
+		self._userInputCaptureChime = True
+
 
 	def newSession(self, deviceUid: str, user: str = constants.UNKNOWN_USER, message: MQTTMessage = None, increaseTimeout: int = 0) -> DialogSession:
 		session = DialogSession(deviceUid=deviceUid, user=user, sessionId=str(uuid.uuid4()), increaseTimeout=increaseTimeout)
@@ -219,10 +221,11 @@ class DialogManager(Manager):
 			self.onEndSession(session=session, reason='abortedByUser')
 			return
 
-		self.MqttManager.publish(
-			topic=constants.TOPIC_PLAY_BYTES.format(session.deviceUid).replace('#', session.sessionId),
-			payload=bytearray(Path(f'system/sounds/{self.LanguageManager.activeLanguage}/end_of_input.wav').read_bytes())
-		)
+		if self._userInputCaptureChime:
+			self.MqttManager.publish(
+				topic=constants.TOPIC_PLAY_BYTES.format(session.deviceUid).replace('#', session.sessionId),
+				payload=bytearray(Path(f'system/sounds/{self.LanguageManager.activeLanguage}/end_of_input.wav').read_bytes())
+			)
 
 		# If we've set the filter to a random answer, forge the session and publish an intent captured as UserRandomAnswer
 		if session.intentFilter and session.intentFilter[-1] == 'UserRandomAnswer':
@@ -389,6 +392,7 @@ class DialogManager(Manager):
 
 
 	def onEndSession(self, session: DialogSession, reason: str = 'nominal'):
+		self.enableCaptureChime()
 		text = session.payload.get('text', '')
 
 		if text:
@@ -542,3 +546,11 @@ class DialogManager(Manager):
 
 	def getEnabledByDefaultIntents(self):
 		return self._enabledByDefaultIntents
+
+
+	def disableCaptureChime(self):
+		self._userInputCaptureChime = False
+
+
+	def enableCaptureChime(self):
+		self._userInputCaptureChime = True

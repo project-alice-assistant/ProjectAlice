@@ -1,17 +1,13 @@
-import json
-import re
 import shutil
-import struct
-import tempfile
 from enum import Enum
 from pathlib import Path
 from typing import Optional
 
-import paho.mqtt.client as mqtt
 from pydub import AudioSegment
 
 from core.base.model.Manager import Manager
 from core.commons import constants
+from core.device.model.DeviceAbility import DeviceAbility
 from core.dialog.model.DialogSession import DialogSession
 from core.voice.model.Wakeword import Wakeword
 from core.voice.model.WakewordUploadThread import WakewordUploadThread
@@ -28,27 +24,23 @@ class WakewordRecorderState(Enum):
 
 class WakewordRecorder(Manager):
 
-	RECORD_SECONDS = 2.5
-	THRESHOLD = -40.0
-
-
 	def __init__(self):
 		super().__init__()
 
 		self._state = WakewordRecorderState.IDLE
 
 		self._audio = None
-		self._wakeword = None
-		self._threshold = 0
+		self._wakeword: Optional[Wakeword] = None
+		self._userTuning = 0
 		self._wakewordUploadThreads = list()
 		self._sampleRate = self.AudioServer.SAMPLERATE
 		self._channels = 1
+		self._gainFix = 0
 
 
 	def onStart(self):
 		super().onStart()
 		self._sampleRate = self.AudioServer.SAMPLERATE
-		self._threshold = self.THRESHOLD
 
 
 	def onStop(self):
@@ -68,17 +60,31 @@ class WakewordRecorder(Manager):
 		self._wakeword = Wakeword(username)
 
 
+	def cancelWakeword(self):
+		self.state = WakewordRecorderState.IDLE
+		if self._wakeword:
+			self._wakeword.clearTmp()
+
+		self._wakeword = None
+
+
 	def startCapture(self):
+		self.DialogManager.disableCaptureChime()
 		self._state = WakewordRecorderState.RECORDING
 
 
-	def addRawSample(self, filepath: Path):
+	def addRawSample(self, filepath: Path) -> Path:
 		filepath = self.wakeword.addRawSample(filepath)
 		self._workAudioFile(filepath)
+		return filepath
 
 
-	def getRawSample(self, i: int = None):
-		return self.wakeword.getRawSample(i)
+	def getRawSample(self, sampleNumber: int = None):
+		return self.wakeword.getRawSample(sampleNumber)
+
+
+	def getTrimmedSample(self, sampleNumber: int = None):
+		return self.wakeword.getTrimmedSample(sampleNumber)
 
 
 	def _workAudioFile(self, filepath: Path = None):
@@ -87,120 +93,85 @@ class WakewordRecorder(Manager):
 		if not filepath:
 			filepath = self.wakeword.getRawSample()
 
-		# sound = AudioSegment.from_file(filepath, format='wav', frame_rate=self.AudioServer.SAMPLERATE)
-		# startTrim = self.detectLeadingSilence(sound)
-		# endTrim = self.detectLeadingSilence(sound.reverse())
-		# duration = len(sound)
-		# trimmed = sound[startTrim: duration - endTrim]
-		# reworked = trimmed.set_frame_rate(self.AudioServer.SAMPLERATE)
-		# reworked = reworked.set_channels(1)
-		# reworked.export(filepath, format='wav')
+		sound = AudioSegment.from_file(filepath, format='wav')
 
+		if self._gainFix > 0:
+			sound.append(self._gainFix)
+
+		startTrim = self.detectLeadingSilence(sound)
+		endTrim = self.detectLeadingSilence(sound.reverse())
+		duration = len(sound)
+		trimmed = sound[startTrim: duration - endTrim]
+
+		reworked = trimmed.set_frame_rate(self.AudioServer.SAMPLERATE)
+		reworked = reworked.set_channels(1)
+
+		tempFile = Path(filepath.parent, 'tmp.wav')
+		if tempFile.exists():
+			tempFile.unlink()
+
+		reworked.export(tempFile, format='wav')
+
+		self._wakeword.addTrimmedSample(tempFile, int(filepath.stem.replace('_raw', '')))
 		self._state = WakewordRecorderState.CONFIRMING
 
 
-
-
-
+	def getLastSampleNumber(self) -> int:
+		if self._wakeword and self._wakeword.getTrimmedSample():
+			return len(self._wakeword.trimmedSamples.keys())
+		return 1
 
 
 	def trimMore(self):
-		self._threshold += 3
+		self._userTuning += 3
 		self._workAudioFile()
 
 
 	def trimLess(self):
-		self._threshold -= 2
+		self._userTuning -= 2
 		self._workAudioFile()
 
 
-	def detectLeadingSilence(self, sound):
-		trim = 0
-		while sound[trim: trim + 10].dBFS < self._threshold and trim < len(sound):
-			trim += 10
-		return trim
+	def detectLeadingSilence(self, sound: AudioSegment) -> int:
+		average = sound.dBFS
+		pos = 0
+		while sound[pos: pos + 10].dBFS < (average + self._userTuning) and pos < len(sound):
+			pos += 10
+
+		return pos
 
 
 	def tryCaptureFix(self):
 		self._sampleRate /= 2
 		self._channels = 1
-		self._state = WakewordRecorderState.IDLE
 
 
-	def removeSample(self):
-		del self._wakeword.samples[-1]
-
-
-	def isDefaultThreshold(self) -> bool:
-		return self._threshold == self.THRESHOLD
-
-
-	def getLastSampleNumber(self) -> int:
-		if self._wakeword and self._wakeword.samples:
-			return len(self._wakeword.samples)
-		return 1
+	def removeRawSample(self, sampleNumber: int = None):
+		self._wakeword.removeRawSample(sampleNumber)
 
 
 	def finalizeWakeword(self):
 		self.logInfo(f'Finalyzing wakeword')
 		self._state = WakewordRecorderState.FINALIZING
-
-		config = {
-			'hotword_key': self._wakeword.username.lower(),
-			'kind': 'personal',
-			'dtw_ref': 0.22,
-			'from_mfcc': 1,
-			'to_mfcc': 13,
-			'band_radius': 10,
-			'shift': 10,
-			'window_size': 10,
-			'sample_rate': self.AudioServer.SAMPLERATE,
-			'frame_length_ms': 25.0,
-			'frame_shift_ms': 10.0,
-			'num_mfcc': 13,
-			'num_mel_bins': 13,
-			'mel_low_freq': 20,
-			'cepstral_lifter': 22.0,
-			'dither': 0.0,
-			'window_type': 'povey',
-			'use_energy': False,
-			'energy_floor': 0.0,
-			'raw_energy': True,
-			'preemphasis_coefficient': 0.97,
-			'model_version': 1
-		}
-
-		path = Path(self.Commons.rootDir(), 'trained/hotwords/snips_hotword', self.wakeword.username.lower())
-
-		if path.exists():
-			self.logWarning('Destination directory for new wakeword already exists, deleting')
-			shutil.rmtree(path)
-
-		path.mkdir()
-
-		(path/'config.json').write_text(json.dumps(config, indent='\t'))
-
-		for i in range(1, 4):
-			shutil.move(Path(tempfile.gettempdir(), f'{i}.wav'), path/f'{i}.wav')
-
+		path = self._wakeword.save()
 		self.ThreadManager.newThread(name='SatelliteWakewordUpload', target=self._upload, args=[path, self._wakeword.username], autostart=True)
-
-		self._state = WakewordRecorderState.IDLE
+		self.cancelWakeword()
+		self.WakewordManager.restartEngine()
 
 
 	def uploadToNewDevice(self, uid: str):
 		directory = Path(self.Commons.rootDir(), 'trained/hotwords/snips_hotword')
 		for fiile in directory.iterdir():
-			if (directory/fiile).is_file():
+			if (directory / fiile).is_file():
 				continue
 
-			self._upload(directory/fiile, uid)
+			self._upload(directory / fiile, uid)
 
 
 	def _upload(self, path: Path, uid: str = ''):
 		wakewordName, zipPath = self._prepareHotword(path)
 
-		for device in self.DeviceManager.getDevicesByType(deviceType=self.DeviceManager.SAT_TYPE, connectedOnly=False):
+		for device in self.DeviceManager.getDevicesWithAbilities(abilities=[DeviceAbility.CAPTURE_SOUND], connectedOnly=True):
 			if uid and device.uid != uid:
 				continue
 
@@ -250,30 +221,32 @@ class WakewordRecorder(Manager):
 	def setUserWakewordSensitivity(self, username: str, sensitivity: float) -> bool:
 		# TODO user wakeword sensitivity
 		return True
-		# wakewords = self.ConfigManager.getSnipsConfiguration(parent='snips-hotword', key='model')
-		# rebuild = list()
-		#
-		# if sensitivity > 1:
-		# 	sensitivity = 1
-		# elif sensitivity < 0:
-		# 	sensitivity = 0
-		#
-		# usernameMatch = re.compile(f'.*/{username}=[0-9.]+$')
-		# sensitivitySub = re.compile('=[0-9.]+$')
-		# update = False
-		# for wakeword in wakewords:
-		# 	match = re.search(usernameMatch, wakeword)
-		# 	if not match:
-		# 		rebuild.append(wakeword)
-		# 		continue
-		#
-		# 	update = True
-		# 	updated = re.sub(sensitivitySub, f'={round(float(sensitivity), 2)}', wakeword)
-		# 	rebuild.append(updated)
-		#
-		# 	self.WakewordManager.restartEngine()
-		#
-		# return update
+
+
+	# wakewords = self.ConfigManager.getSnipsConfiguration(parent='snips-hotword', key='model')
+	# rebuild = list()
+	#
+	# if sensitivity > 1:
+	# 	sensitivity = 1
+	# elif sensitivity < 0:
+	# 	sensitivity = 0
+	#
+	# usernameMatch = re.compile(f'.*/{username}=[0-9.]+$')
+	# sensitivitySub = re.compile('=[0-9.]+$')
+	# update = False
+	# for wakeword in wakewords:
+	# 	match = re.search(usernameMatch, wakeword)
+	# 	if not match:
+	# 		rebuild.append(wakeword)
+	# 		continue
+	#
+	# 	update = True
+	# 	updated = re.sub(sensitivitySub, f'={round(float(sensitivity), 2)}', wakeword)
+	# 	rebuild.append(updated)
+	#
+	# 	self.WakewordManager.restartEngine()
+	#
+	# return update
 
 
 	@property
