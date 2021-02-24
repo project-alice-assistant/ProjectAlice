@@ -1,23 +1,23 @@
-import inspect
 import json
 import logging
+import re
 import typing
 from pathlib import Path
 
 import sounddevice as sd
-import toml
 
 from core.ProjectAliceExceptions import ConfigurationUpdateFailed, VitalConfigMissing
 from core.base.SuperManager import SuperManager
 from core.base.model.Manager import Manager
-from core.commons import constants
 
 
 class ConfigManager(Manager):
 
 	TEMPLATE_FILE = Path('configTemplate.json')
 	CONFIG_FILE = Path('config.json')
-	SNIPS_CONF = Path('/etc/snips.toml')
+
+	CONFIG_FUNCTION_REGEX = re.compile(r'^(?:(?P<manager>\w+)\.)?(?P<function>\w+)(?:\((?P<args>.*)\))?')
+	CONFIRG_FUNCTION_ARG_REGEX = re.compile(r'(?:\w+)')
 
 	def __init__(self):
 		super().__init__()
@@ -31,7 +31,6 @@ class ConfigManager(Manager):
 		self._aliceConfigurations: typing.Dict[str, typing.Any] = dict()
 
 		self._loadCheckAndUpdateAliceConfigFile()
-		self._snipsConfigurations = self.loadSnipsConfigurations()
 
 		self._skillsConfigurations = dict()
 		self._skillsTemplateConfigurations: typing.Dict[str, dict] = dict()
@@ -170,46 +169,61 @@ class ConfigManager(Manager):
 			raise
 
 
-	def updateAliceConfiguration(self, key: str, value: typing.Any, dump: bool = True):
+	def updateMainDeviceName(self, value: typing.Any):
+		device = self.DeviceManager.getMainDevice()
+
+		if not device.displayName:
+			device.updateConfigs(configs={'displayName': 'Alice'})
+		if value != device.displayName:
+			device.updateConfigs(configs={'displayName': value})
+
+
+	def updateAliceConfiguration(self, key: str, value: typing.Any, dump: bool = True,
+								 doPreAndPostProcessing: bool = True):
 		"""
 		Updating a core config is sensitive, if the request comes from a skill.
 		First check if the request came from a skill at anytime and if so ask permission
 		to the user
+		:param doPreAndPostProcessing: If set to false, all pre and post processings won't be called
 		:param key: str
 		:param value: str
 		:param dump: bool If set to False, the configs won't be dumped to the json file
 		:return: None
 		"""
 
-		rootSkills = [name.lower() for name in self.SkillManager.NEEDED_SKILLS]
-		callers = [inspect.getmodulename(frame[1]).lower() for frame in inspect.stack()]
-		if 'aliceskill' in callers:
-			skillName = callers[callers.index("aliceskill") + 1]
-			if skillName not in rootSkills:
-				self._pendingAliceConfUpdates[key] = value
-				self.logWarning(f'Skill **{skillName}** is trying to modify a core configuration')
-
-				self.ThreadManager.doLater(
-					interval=2,
-					func=self.MqttManager.publish,
-					kwargs={
-						'topic': constants.TOPIC_SKILL_UPDATE_CORE_CONFIG_WARNING,
-						'payload': {
-							'skill': skillName,
-							'key'  : key,
-							'value': value
-						}
-					}
-				)
-				return
+		# TODO reimplement UI side
+		# rootSkills = [name.lower() for name in self.SkillManager.NEEDED_SKILLS]
+		# callers = [inspect.getmodulename(frame[1]).lower() for frame in inspect.stack()]
+		# if 'aliceskill' in callers:
+		# 	skillName = callers[callers.index("aliceskill") + 1]
+		# 	if skillName not in rootSkills:
+		# 		self._pendingAliceConfUpdates[key] = value
+		# 		self.logWarning(f'Skill **{skillName}** is trying to modify a core configuration')
+		#
+		# 		self.ThreadManager.doLater(
+		# 			interval=2,
+		# 			func=self.MqttManager.publish,
+		# 			kwargs={
+		# 				'topic': constants.TOPIC_SKILL_UPDATE_CORE_CONFIG_WARNING,
+		# 				'payload': {
+		# 					'skill': skillName,
+		# 					'key'  : key,
+		# 					'value': value
+		# 				}
+		# 			}
+		# 		)
+		# 		return
 
 		if key not in self._aliceConfigurations:
 			self.logWarning(f'Was asked to update **{key}** but key doesn\'t exist')
 			raise ConfigurationUpdateFailed()
 
 		pre = self.getAliceConfUpdatePreProcessing(key)
-		if pre and not self.ConfigManager.doConfigUpdatePreProcessing(pre, value):
+		if doPreAndPostProcessing and pre and not self.ConfigManager.doConfigUpdatePreProcessing(pre, value):
 			return
+
+		if key == 'deviceName':
+			self.updateMainDeviceName(value=value)
 
 		self._aliceConfigurations[key] = value
 
@@ -217,7 +231,7 @@ class ConfigManager(Manager):
 			self.writeToAliceConfigurationFile()
 
 		pp = self.ConfigManager.getAliceConfUpdatePostProcessing(key)
-		if pp:
+		if doPreAndPostProcessing and pp:
 			self.ConfigManager.doConfigUpdatePostProcessing(pp)
 
 
@@ -251,10 +265,11 @@ class ConfigManager(Manager):
 		# Cast value to template defined type
 		vartype = self._skillsTemplateConfigurations[skillName][key]['dataType']
 		if vartype == 'boolean':
-			if value.lower() in {'on', 'yes', 'true', 'active'}:
-				value = True
-			elif value.lower() in {'off', 'no', 'false', 'inactive'}:
-				value = False
+			if not isinstance(value, bool):
+				if value.lower() in {'on', 'yes', 'true', 'active'}:
+					value = True
+				elif value.lower() in {'off', 'no', 'false', 'inactive'}:
+					value = False
 		elif vartype == 'integer':
 			try:
 				value = int(value)
@@ -344,60 +359,6 @@ class ConfigManager(Manager):
 
 		skillConfigFile = Path(self.Commons.rootDir(), 'skills', skillName, 'config.json')
 		skillConfigFile.write_text(json.dumps(confsCleaned, indent='\t', ensure_ascii=False, sort_keys=True))
-
-
-	def loadSnipsConfigurations(self) -> dict:
-		self.logInfo('Loading Snips configuration file')
-		if not self.SNIPS_CONF.exists():
-			self.Commons.runRootSystemCommand(['cp', Path(self.Commons.rootDir(), 'system/snips/snips.toml'), self.SNIPS_CONF])
-
-		return toml.load(str(self.SNIPS_CONF))
-
-
-	def updateSnipsConfiguration(self, parent: str, key: str, value, restartSnips: bool = False, createIfNotExist: bool = False, silent: bool = False):
-		"""
-		Setting a config in snips.toml
-		:param silent: output warnings or not
-		:param createIfNotExist: bool create the missing parent key value if not present
-		:param parent: Parent key in toml
-		:param key: Key in that parent key
-		:param value: The value to set
-		:param restartSnips: Whether to restart Snips or not after changing the value
-		"""
-
-		config = self.getSnipsConfiguration(parent=parent, key=key)
-		if config is None:
-			if createIfNotExist:
-				self._snipsConfigurations.setdefault(parent, dict()).setdefault(key, value)
-				self.SNIPS_CONF.write_text(toml.dumps(self._snipsConfigurations))
-			elif not silent:
-				self.logWarning(f'Tried to set **{parent}/{key}** in snips configuration but key was not found')
-		else:
-			currentValue = self._snipsConfigurations[parent][key]
-			if currentValue != value:
-				self._snipsConfigurations[parent][key] = value
-				self.SNIPS_CONF.write_text(toml.dumps(self._snipsConfigurations))
-			else:
-				restartSnips = False
-
-		if restartSnips:
-			self.Commons.runRootSystemCommand(['systemctl', 'restart', 'snips-nlu'])
-
-
-	def getSnipsConfiguration(self, parent: str, key: str, silent: bool = False) -> typing.Optional[str]:
-		"""
-		Getting a specific configuration from snips.toml
-		:param silent: whether to print warning or not
-		:param parent: parent key
-		:param key: key within parent conf
-		:return: config value
-		"""
-
-		config = self._snipsConfigurations.get(parent, dict()).get(key, None)
-		if config is None and not silent:
-			self.logWarning(f'Tried to get **{parent}/{key}** in snips configuration but key was not found')
-
-		return config
 
 
 	def configAliceExists(self, configName: str) -> bool:
@@ -542,8 +503,11 @@ class ConfigManager(Manager):
 
 
 	def isAliceConfHidden(self, confName: str) -> bool:
-		return confName in self._aliceTemplateConfigurations and \
-		       self._aliceTemplateConfigurations.get('display') == 'hidden'
+		return self._aliceTemplateConfigurations.get(confName, dict()).get('display', '') == 'hidden'
+
+
+	def isAliceConfSensitive(self, confName: str) -> bool:
+		return self._aliceTemplateConfigurations.get(confName, dict()).get('isSensitive', False)
 
 
 	def getAliceConfUpdatePreProcessing(self, confName: str) -> typing.Optional[str]:
@@ -559,24 +523,32 @@ class ConfigManager(Manager):
 	def doConfigUpdatePreProcessing(self, function: str, value: typing.Any) -> bool:
 		# Call alice config pre processing functions.
 		try:
-			if '.' in function:
-				manager, function = function.split('.')
+			mngr = self
+			args = list()
 
-				try:
-					mngr = getattr(self, manager)
-				except AttributeError:
-					self.logWarning(f'Config pre processing manager **{manager}** does not exist')
-					return False
+			result = self.CONFIG_FUNCTION_REGEX.search(function)
+			if result:
+				function = result.group('function')
+
+				if result.group('manager'):
+					try:
+						mngr = getattr(self, result.group('manager'))
+					except AttributeError:
+						self.logWarning(f'Config pre processing manager **{result.group("manager")}** does not exist')
+						return False
+
+				if result.group('args'):
+					args = self.CONFIRG_FUNCTION_ARG_REGEX.findall(result.group('args'))
+
+				func = getattr(mngr, function)
 			else:
-				mngr = self
-
-			func = getattr(mngr, function)
+				raise AttributeError
 		except AttributeError:
 			self.logWarning(f'Configuration pre processing method **{function}** does not exist')
 			return False
 		else:
 			try:
-				return func(value)
+				return func(value, *args)
 			except Exception as e:
 				self.logError(f'Configuration pre processing method **{function}** failed: {e}')
 				return False
@@ -591,34 +563,44 @@ class ConfigManager(Manager):
 
 		for function in functions:
 			try:
-				if '.' in function:
-					manager, function = function.split('.')
+				mngr = self
+				args = list()
 
-					try:
-						mngr = getattr(self, manager)
-					except AttributeError:
-						self.logWarning(f'Config post processing manager **{manager}** does not exist')
-						return False
+				result = self.CONFIG_FUNCTION_REGEX.search(function)
+				if result:
+					function = result.group('function')
+
+					if result.group('manager'):
+						try:
+							mngr = getattr(self, result.group('manager'))
+						except AttributeError:
+							self.logWarning(f'Config post processing manager **{result.group("manager")}** does not exist')
+							return False
+
+					if result.group('args'):
+						args = self.CONFIRG_FUNCTION_ARG_REGEX.findall(result.group('args'))
+
+					func = getattr(mngr, function)
 				else:
-					mngr = self
-
-				func = getattr(mngr, function)
+					raise AttributeError
 			except AttributeError:
 				self.logWarning(f'Configuration post processing method **{function}** does not exist')
 				continue
 			else:
 				try:
-					func()
+					func(*args)
 				except Exception as e:
 					self.logError(f'Configuration post processing method **{function}** failed: {e}')
 					continue
 
 
 	def updateMqttSettings(self):
-		self.ConfigManager.updateSnipsConfiguration('snips-common', 'mqtt', f'{self.getAliceConfigByName("mqttHost")}:{self.getAliceConfigByName("mqttPort"):}', False, True)
-		self.ConfigManager.updateSnipsConfiguration('snips-common', 'mqtt_username', self.getAliceConfigByName('mqttUser'), False, True)
-		self.ConfigManager.updateSnipsConfiguration('snips-common', 'mqtt_password', self.getAliceConfigByName('mqttPassword'), False, True)
-		self.ConfigManager.updateSnipsConfiguration('snips-common', 'mqtt_tls_cafile', self.getAliceConfigByName('mqttTLSFile'), True, True)
+		self.NluManager.restartEngine()
+		if self.getAliceConfigByName('wakewordEngine') == 'snips':
+			self.WakewordManager.restartEngine()
+		if self.getAliceConfigByName('asr') == 'snips' or self.getAliceConfigByName('asrFallback') == 'snips':
+			self.ASRManager.restartEngine()
+
 		self.reconnectMqtt()
 
 
@@ -626,14 +608,16 @@ class ConfigManager(Manager):
 		self.MqttManager.reconnect()
 
 
-	def reloadASR(self):
-		self.ASRManager.onStop()
-		self.ASRManager.onStart()
+	def reloadASRManager(self):
+		SuperManager.getInstance().restartManager(manager=self.ASRManager.name)
 
 
-	def reloadTTS(self):
-		self.TTSManager.onStop()
-		self.TTSManager.onStart()
+	def reloadTTSManager(self):
+		SuperManager.getInstance().restartManager(manager=self.TTSManager.name)
+
+
+	def reloadNLUManager(self):
+		SuperManager.getInstance().restartManager(manager=self.NluManager.name)
 
 
 	def checkNewAdminPinCode(self, pinCode: str) -> bool:
@@ -653,16 +637,17 @@ class ConfigManager(Manager):
 
 
 	def enableDisableSound(self):
-		if self.getAliceConfigByName('disableSoundAndMic'):
-			self.WakewordManager.disableEngine()
+		if self.getAliceConfigByName('disableSound'):
 			self.AudioServer.onStop()
 		else:
-			self.WakewordManager.enableEngine()
 			self.AudioServer.onStart()
 
 
-	def restartWakewordEngine(self):
-		self.WakewordManager.restartEngine()
+	def enableDisableCapture(self):
+		if self.getAliceConfigByName('disableCapture'):
+			self.WakewordManager.disableEngine()
+		else:
+			self.WakewordManager.enableEngine()
 
 
 	def reloadWakeword(self):
@@ -706,7 +691,7 @@ class ConfigManager(Manager):
 			devices = self._listAudioDevices()
 			self.updateAliceConfigDefinitionValues(setting='inputDevice', value=devices)
 		except:
-			if not self.getAliceConfigByName('disableSoundAndMic'):
+			if not self.getAliceConfigByName('disableCapture'):
 				self.logWarning('No audio input device found')
 
 
@@ -715,7 +700,7 @@ class ConfigManager(Manager):
 			devices = self._listAudioDevices()
 			self.updateAliceConfigDefinitionValues(setting='outputDevice', value=devices)
 		except:
-			if not self.getAliceConfigByName('disableSoundAndMic'):
+			if not self.getAliceConfigByName('disableSound'):
 				self.logWarning('No audio output device found')
 
 
@@ -729,11 +714,6 @@ class ConfigManager(Manager):
 			raise
 
 		return devices
-
-
-	@property
-	def snipsConfigurations(self) -> dict:
-		return self._snipsConfigurations
 
 
 	@property

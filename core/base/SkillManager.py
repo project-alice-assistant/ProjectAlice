@@ -3,12 +3,14 @@ import importlib
 import json
 import os
 import shutil
+import sqlite3
 import threading
 import traceback
 from pathlib import Path
 from typing import Dict, Optional
 
 import requests
+import typing
 
 from core.ProjectAliceExceptions import AccessLevelTooLow, GithubNotFound, GithubRateLimit, GithubTokenFailed, SkillNotConditionCompliant, SkillStartDelayed, SkillStartingFailed
 from core.base.SuperManager import SuperManager
@@ -36,18 +38,6 @@ class SkillManager(Manager):
 			'skillName TEXT NOT NULL UNIQUE',
 			'active INTEGER NOT NULL DEFAULT 1',
 			'scenarioVersion TEXT NOT NULL DEFAULT "0.0.0"',
-		],
-		'widgets': [
-			'parent TEXT NOT NULL UNIQUE',
-			'name TEXT NOT NULL UNIQUE',
-			'posx INTEGER NOT NULL',
-			'posy INTEGER NOT NULL',
-			'height INTEGER NOT NULL',
-			'width INTEGER NOT NULL',
-			'state TEXT NOT NULL',
-			'options TEXT NOT NULL',
-			'custStyle TEXT NOT NULL',
-			'zindex INTEGER'
 		]
 	}
 
@@ -68,9 +58,6 @@ class SkillManager(Manager):
 		self._failedSkills: Dict[str, FailedAliceSkill] = dict()
 
 		self._postBootSkillActions = dict()
-
-		self._widgets = dict()
-		self._widgetsByIndex = dict()
 
 
 	def onStart(self):
@@ -97,7 +84,6 @@ class SkillManager(Manager):
 		self.ConfigManager.loadCheckAndUpdateSkillConfigurations()
 
 		self.startAllSkills()
-		self.sortWidgetZIndexes()
 
 
 	# noinspection SqlResolve
@@ -117,40 +103,31 @@ class SkillManager(Manager):
 					self.logWarning(f'Skill "{file}" is not declared in database, ignoring it')
 
 		# Next, check that database declared skills are still existing, using the first database load
-		# If not, cleanup both skills and widgets tables
+		# If not, cleanup skills table
 		for skill in skills:
 			if skill not in physicalSkills:
 				self.logWarning(f'Skill "{skill}" declared in database but is not existing, cleaning this')
-				self.DatabaseManager.delete(
-					tableName='skills',
-					callerName=self.name,
-					query='DELETE FROM :__table__ WHERE skillName = :skill',
-					values={'skill': skill}
-				)
-				self.DatabaseManager.delete(
-					tableName='widgets',
-					callerName=self.name,
-					query='DELETE FROM :__table__ WHERE parent = :skill',
-					values={'skill': skill}
-				)
-				self.DeviceManager.removeDeviceTypesForSkill(skillName=skill)
+				self.removeSkillFromDB(skillName=skill)
 
 		# Now that we are clean, reload the skills from database
 		# Those represent the skills we have
 		skills = self.loadSkillsFromDB()
 
 		data = dict()
-		for skill in skills:
-			installer = json.loads(Path(self.Commons.rootDir(), f'skills/{skill["skillName"]}/{skill["skillName"]}.install').read_text())
-			data[skill['skillName']] = {
-				'active'   : skill['active'],
-				'installer': installer
-			}
+		for skill in skills.copy():
+			try:
+				installer = json.loads(Path(self.Commons.rootDir(), f'skills/{skill["skillName"]}/{skill["skillName"]}.install').read_text())
+				data[skill['skillName']] = {
+					'active'   : skill['active'],
+					'installer': installer
+				}
+			except Exception as e:
+				self.logError(f'Error loading skill **{skill["skillName"]}**: {e}')
 
 		return dict(sorted(data.items()))
 
 
-	def loadSkillsFromDB(self) -> list:
+	def loadSkillsFromDB(self) -> typing.Union[typing.Dict, sqlite3.Row]:
 		return self.databaseFetch(
 			tableName='skills',
 			method='all'
@@ -158,7 +135,8 @@ class SkillManager(Manager):
 
 
 	def changeSkillStateInDB(self, skillName: str, newState: bool):
-		# Changes the state of a skill in db and also deactivates widgets if state is False
+		# Changes the state of a skill in db and also deactivates widgets
+		# and device types if state is False
 		self.DatabaseManager.update(
 			tableName='skills',
 			callerName=self.name,
@@ -169,17 +147,8 @@ class SkillManager(Manager):
 		)
 
 		if not newState:
-			self.DatabaseManager.update(
-				tableName='widgets',
-				callerName=self.name,
-				values={
-					'state' : 0,
-					'posx'  : 0,
-					'posy'  : 0,
-					'zindex': -1
-				},
-				row=('parent', skillName)
-			)
+			self.WidgetManager.skillDeactivated(skillName=skillName)
+			self.DeviceManager.removeDeviceTypesForSkill(skillName=skillName)
 
 
 	def addSkillToDB(self, skillName: str, active: int = 1):
@@ -198,13 +167,7 @@ class SkillManager(Manager):
 			values={'skill': skillName}
 		)
 
-		self.DatabaseManager.delete(
-			tableName='widgets',
-			callerName=self.name,
-			query='DELETE FROM :__table__ WHERE parent = :skill',
-			values={'skill': skillName}
-		)
-
+		self.WidgetManager.skillRemoved(skillName=skillName)
 		self.DeviceManager.removeDeviceTypesForSkill(skillName=skillName)
 
 
@@ -231,39 +194,6 @@ class SkillManager(Manager):
 				exceptions=[constants.DUMMY],
 				skill=skillName
 			)
-
-
-	def sortWidgetZIndexes(self):
-		# Create a list of skills with their z index as key
-		self._widgetsByIndex = dict()
-		for skillName, widgetList in self._widgets.items():
-			for widget in widgetList.values():
-				if widget.state != 1:
-					continue
-
-				if int(widget.zindex) not in self._widgetsByIndex:
-					self._widgetsByIndex[int(widget.zindex)] = widget
-				else:
-					i = 1000
-					while True:
-						if i not in self._widgetsByIndex:
-							self._widgetsByIndex[i] = widget
-							break
-						i += 1
-
-		# Rewrite a logical zindex flow
-		for i, widget in enumerate(self._widgetsByIndex.values()):
-			widget.zindex = i
-			widget.saveToDB()
-
-
-	def nextZIndex(self) -> int:
-		return len(self._widgetsByIndex)
-
-
-	@property
-	def widgets(self) -> dict:
-		return self._widgets
 
 
 	@property
@@ -460,13 +390,19 @@ class SkillManager(Manager):
 
 		try:
 			skillInstance.onStart()
+			if self.ProjectAlice.isBooted:
+				skillInstance.onBooted()
 			self.broadcast(method=constants.EVENT_SKILL_STARTED, exceptions=[self.name], propagateToSkills=True, skill=self)
 		except SkillStartingFailed:
-			self._failedSkills[skillName] = FailedAliceSkill(self._skillList[skillName]['installer'])
+			try:
+				skillInstance.failedStarting = True
+			except:
+				self._failedSkills[skillName] = FailedAliceSkill(self._skillList[skillName]['installer'])
 		except SkillStartDelayed:
 			raise
 		except Exception as e:
 			self.logError(f'- Couldn\'t start skill "{skillName}". Error: {e}')
+			traceback.print_exc()
 
 			try:
 				self.deactivateSkill(skillName=skillName)
@@ -475,12 +411,6 @@ class SkillManager(Manager):
 				self._deactivatedSkills.pop(skillName, None)
 
 			self._failedSkills[skillName] = FailedAliceSkill(self._skillList[skillName]['installer'])
-
-		if skillInstance.widgets:
-			self._widgets[skillName] = skillInstance.widgets
-
-		if skillInstance.deviceTypes:
-			self.DeviceManager.addDeviceTypes(deviceTypes=skillInstance.deviceTypes)
 
 		return skillInstance.supportedIntents
 
@@ -527,7 +457,7 @@ class SkillManager(Manager):
 					func(event=method, **kwargs)
 
 			except TypeError as e:
-				self.logWarning(f'- Failed to broadcast event {method} to {skillName}: {e}')
+				self.logWarning(f'Failed to broadcast event {method} to {skillName}: {e}')
 
 
 	def deactivateSkill(self, skillName: str, persistent: bool = False):
@@ -536,8 +466,6 @@ class SkillManager(Manager):
 			self._deactivatedSkills[skillName] = skillInstance
 			skillInstance.onStop()
 			self.broadcast(method=constants.EVENT_SKILL_STOPPED, exceptions=[self.name], propagateToSkills=True, skill=self)
-			self._widgets.pop(skillName, None)
-			self.DeviceManager.removeDeviceTypesForSkill(skillName=skillName)
 
 			if persistent:
 				self.changeSkillStateInDB(skillName=skillName, newState=False)
@@ -597,7 +525,7 @@ class SkillManager(Manager):
 						if skillName in self.allSkills:
 							self.allSkills[skillName].updateAvailable = True
 					else:
-						if not self.downloadInstallTicket(skillName):
+						if not self.downloadInstallTicket(skillName, isUpdate=True):
 							raise Exception
 				else:
 					self.logInfo(f'![green]({skillName}) - Version {self._skillList[skillName]["installer"]["version"]} in {self.ConfigManager.getAliceConfigByName("skillsUpdateChannel")}')
@@ -664,8 +592,20 @@ class SkillManager(Manager):
 
 			if info['update']:
 				self.allSkills[skillName].onSkillUpdated(skill=skillName)
+				self.MqttManager.mqttBroadcast(
+					topic=constants.TOPIC_SKILL_UPDATED,
+					payload={
+						'skillName': skillName
+					}
+				)
 			else:
 				self.allSkills[skillName].onSkillInstalled(skill=skillName)
+				self.MqttManager.mqttBroadcast(
+					topic=constants.TOPIC_SKILL_INSTALLED,
+					payload={
+						'skillName': skillName
+					}
+				)
 
 			self.allSkills[skillName].onBooted()
 
@@ -706,6 +646,13 @@ class SkillManager(Manager):
 					else:
 						self.logWarning(f'Skill "{skillName}" needs updating')
 						updating = True
+
+						self.MqttManager.mqttBroadcast(
+							topic=constants.TOPIC_SKILL_UPDATING,
+							payload={
+								'skillName': skillName
+							}
+						)
 				else:
 					updating = False
 
@@ -872,7 +819,7 @@ class SkillManager(Manager):
 			else:
 				skills[skillName].unsubscribeIntents()
 		except Exception as e:
-			self.logWarning(f'Intent configuration failed: {e} {traceback.print_exc()}')
+			self.logWarning(f'Intent configuration failed: {e}')
 
 
 	def isIntentInUse(self, intent: Intent, filtered: list) -> bool:
@@ -884,11 +831,18 @@ class SkillManager(Manager):
 		if skillName not in self.allSkills:
 			return
 
-		self.broadcast(method=constants.EVENT_SKILL_DELETED, exceptions=[self.name], propagateToSkills=True, skill=skillName)
-
 		if skillName in self._activeSkills:
 			self._activeSkills[skillName].onStop()
 			self.broadcast(method=constants.EVENT_SKILL_STOPPED, exceptions=[self.name], propagateToSkills=True, skill=self)
+
+		self.broadcast(method=constants.EVENT_SKILL_DELETED, exceptions=[self.name], propagateToSkills=True, skill=skillName)
+
+		self.MqttManager.mqttBroadcast(
+			topic=constants.TOPIC_SKILL_DELETED,
+			payload={
+				'skillName': skillName
+			}
+		)
 
 		self._skillList.pop(skillName, None)
 		self._activeSkills.pop(skillName, None)
@@ -965,6 +919,11 @@ class SkillManager(Manager):
 			self.logInfo(f'Creating new skill "{skillDefinition["name"]}"')
 
 			skillName = skillDefinition['name'][0].upper() + skillDefinition['name'][1:]
+
+			localDirectory = Path('/home', getpass.getuser(), f'ProjectAlice/skills/{skillName}')
+			if not localDirectory.exists():
+				raise Exception("Skill name exists locally")
+
 			supportedLanguages = [
 				'en'
 			]
@@ -996,6 +955,21 @@ class SkillManager(Manager):
 			if skillDefinition['conditionActiveManager']:
 				conditions['activeManager'] = [manager.strip() for manager in skillDefinition['conditionActiveManager'].split(',')]
 
+			if skillDefinition['widgets']:
+				widgets = [self.Commons.toPascalCase(widget).strip() for widget in skillDefinition['widgets'].split(',')]
+			else:
+				widgets = list()
+
+			if skillDefinition['nodes']:
+				scenarioNodes = [self.Commons.toPascalCase(node).strip() for node in skillDefinition['nodes'].split(',')]
+			else:
+				scenarioNodes = list()
+
+			if skillDefinition['devices']:
+				devices = [self.Commons.toPascalCase(device).strip() for device in skillDefinition['devices'].split(',')]
+			else:
+				devices = list()
+
 			data = {
 				'username'          : self.ConfigManager.getAliceConfigByName('githubUsername'),
 				'skillName'         : skillName,
@@ -1006,8 +980,9 @@ class SkillManager(Manager):
 				'createInstructions': skillDefinition['instructions'],
 				'pipreq'            : [req.strip() for req in skillDefinition['pipreq'].split(',')],
 				'sysreq'            : [req.strip() for req in skillDefinition['sysreq'].split(',')],
-				'widgets'           : [self.Commons.toPascalCase(widget).strip() for widget in skillDefinition['widgets'].split(',')],
-				'scenarioNodes'     : [self.Commons.toPascalCase(node).strip() for node in skillDefinition['nodes'].split(',')],
+				'widgets'           : widgets,
+				'scenarioNodes'     : scenarioNodes,
+				'devices'           : devices,
 				'outputDestination' : str(Path(self.Commons.rootDir()) / 'skills' / skillName),
 				'conditions'        : conditions
 			}
@@ -1017,7 +992,7 @@ class SkillManager(Manager):
 
 			self.Commons.runSystemCommand(['./venv/bin/pip', '--upgrade', 'projectalice-sk'])
 			self.Commons.runSystemCommand(['./venv/bin/projectalice-sk', 'create', '--file', f'{str(dump)}'])
-			self.logInfo(f'Created **skillName** skill')
+			self.logInfo(f'Created **{skillName}** skill')
 
 			return True
 		except Exception as e:
@@ -1067,7 +1042,7 @@ class SkillManager(Manager):
 			return False
 
 
-	def downloadInstallTicket(self, skillName: str) -> bool:
+	def downloadInstallTicket(self, skillName: str, isUpdate: bool = False) -> bool:
 		try:
 			tmpFile = Path(self.Commons.rootDir(), f'system/skillInstallTickets/{skillName}.install')
 			if not self.Commons.downloadFile(
@@ -1076,7 +1051,8 @@ class SkillManager(Manager):
 			):
 				raise Exception
 
-			requests.get(f'https://skills.projectalice.ch/{skillName}')
+			if not isUpdate:
+				requests.get(f'https://skills.projectalice.ch/{skillName}')
 
 			shutil.move(tmpFile.with_suffix('.tmp'), tmpFile)
 			return True

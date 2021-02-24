@@ -36,6 +36,11 @@ class ASRManager(Manager):
 			self._asr.onStop()
 
 
+	def restartEngine(self):
+		self._asr.onStop()
+		self._startASREngine()
+
+
 	def _startASREngine(self, forceAsr = None):
 		userASR = self.ConfigManager.getAliceConfigByName(configName='asr').lower() if forceAsr is None else forceAsr
 		keepASROffline = self.ConfigManager.getAliceConfigByName('keepASROffline')
@@ -105,27 +110,25 @@ class ASRManager(Manager):
 
 		if not self._asr.isOnlineASR:
 			self.logInfo('Connected to internet, switching Asr')
-			self._asr.onStop()
-			self._startASREngine()
+			self.restartEngine()
 
 
 	def onInternetLost(self):
 		if self._asr.isOnlineASR:
 			self.logInfo('Internet lost, switching to offline Asr')
-			self._asr.onStop()
-			self._startASREngine()
+			self.restartEngine()
 
 
 	def onStartListening(self, session: DialogSession):
 		self._asr.onStartListening(session)
-		self.ThreadManager.newThread(name=f'streamdecode_{session.siteId}', target=self.decodeStream, args=[session])
+		self.ThreadManager.newThread(name=f'streamdecode_{session.deviceUid}', target=self.decodeStream, args=[session])
 
 
 	def onStopListening(self, session: DialogSession):
-		if session.siteId not in self._streams:
+		if session.deviceUid not in self._streams:
 			return
 
-		self._streams[session.siteId].stopRecording()
+		self._streams[session.deviceUid].stopRecording()
 
 
 	def onPartialTextCaptured(self, session: DialogSession, text: str, likelihood: float, seconds: float):
@@ -148,52 +151,60 @@ class ASRManager(Manager):
 					text = self._translator.translate(text=text, src=language, dest='en').text
 					self.logDebug(f'Asr translated to: {text}')
 
-			self.MqttManager.publish(topic=constants.TOPIC_TEXT_CAPTURED, payload={'sessionId': session.sessionId, 'text': text, 'siteId': session.siteId, 'likelihood': result.likelihood, 'seconds': result.processingTime})
+			self.MqttManager.publish(topic=constants.TOPIC_TEXT_CAPTURED, payload={'sessionId': session.sessionId, 'text': text, 'device': session.deviceUid, 'likelihood': result.likelihood, 'seconds': result.processingTime})
 		else:
 			self.MqttManager.playSound(
 				soundFilename='error',
 				location=Path(f'system/sounds/{self.LanguageManager.activeLanguage}'),
-				siteId=session.siteId,
+				deviceUid=session.deviceUid,
 				sessionId=session.sessionId
 			)
 
 
-	def onAudioFrame(self, message: mqtt.MQTTMessage, siteId: str):
-		if siteId not in self._streams or not self._streams[siteId].isRecording:
+	def onAudioFrame(self, message: mqtt.MQTTMessage, deviceUid: str):
+		if deviceUid not in self._streams or not self._streams[deviceUid].isRecording:
 			return
 
-		self._streams[siteId].onAudioFrame(message, siteId)
+		self._streams[deviceUid].onAudioFrame(message, deviceUid)
 
 
 	def onSessionError(self, session: DialogSession):
-		if session.siteId not in self._streams or not self._streams[session.siteId].isRecording:
+		if session.deviceUid not in self._streams or not self._streams[session.deviceUid].isRecording:
 			return
 
-		self._streams[session.siteId].onSessionError(session)
-		self._streams.pop(session.siteId, None)
+		self._streams[session.deviceUid].onSessionError(session)
+		self._streams.pop(session.deviceUid, None)
 
 
 	def onSessionEnded(self, session: DialogSession):
-		if not self._asr or session.siteId not in self._streams or not self._streams[session.siteId].isRecording:
+		if not self._asr or session.deviceUid not in self._streams or not self._streams[session.deviceUid].isRecording:
 			return
 
 		self._asr.end()
-		self._streams.pop(session.siteId, None)
+		self._streams.pop(session.deviceUid, None)
 
 
-	def onVadUp(self, siteId: str):
-		if not self._asr or siteId not in self._streams or not self._streams[siteId].isRecording:
+	def onVadUp(self, deviceUid: str):
+		if not self._asr or deviceUid not in self._streams or not self._streams[deviceUid].isRecording:
 			return
 
 		self._asr.onVadUp()
 
 
-	def onVadDown(self, siteId: str):
-		if not self._asr or siteId not in self._streams or not self._streams[siteId].isRecording:
+	def onVadDown(self, deviceUid: str):
+		if not self._asr or deviceUid not in self._streams or not self._streams[deviceUid].isRecording:
 			return
 
 		self._asr.onVadDown()
 
 
-	def addRecorder(self, siteId: str, recorder: Recorder):
-		self._streams[siteId] = recorder
+	def addRecorder(self, deviceUid: str, recorder: Recorder):
+		self._streams[deviceUid] = recorder
+
+
+	def updateASRCredentials(self, asr: str):
+		if asr == 'google':
+			Path(self.Commons.rootDir(), 'credentials/googlecredentials.json').write_text(self.ConfigManager.getAliceConfigByName('googleASRCredentials'))
+
+			self.ASRManager.onStop()
+			self.ASRManager.onStart()

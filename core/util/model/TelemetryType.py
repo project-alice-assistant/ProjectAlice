@@ -18,3 +18,7 @@ class TelemetryType(Enum):
 	GUST_STRENGTH = 'gustStrength'
 	GUST_ANGLE = 'gustAngle'
 	DEWPOINT = 'dewPoint'
+	BATTERY = 'battery'
+	VOLTAGE = 'voltage'
+	CONTACT = 'contact'
+	LINKQUALITY = 'linkquality'

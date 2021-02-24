@@ -6,6 +6,7 @@ import bcrypt
 import jwt
 
 from core.base.model.Manager import Manager
+from core.commons import constants
 from core.user.model.AccessLevels import AccessLevel
 from core.user.model.User import User
 
@@ -178,7 +179,8 @@ class UserManager(Manager):
 	def goingBed(self, user: str = 'all'):
 		if user == 'all':
 			for user in self._users:
-				self._users[user].state('goingBed')
+				self.updateUserState(name=user, state='goingBed')
+			# self._users[user].state('goingBed')
 		else:
 			self._users[user].home = True
 			self._users[user].goingBed = True
@@ -188,7 +190,8 @@ class UserManager(Manager):
 	def sleeping(self, user: str = 'all'):
 		if user == 'all':
 			for user in self._users:
-				self._users[user].state('sleeping')
+				self.updateUserState(name=user, state='sleeping')
+			# self._users[user].state('sleeping')
 		else:
 			self._users[user].home = True
 			self._users[user].goingBed = False
@@ -198,7 +201,8 @@ class UserManager(Manager):
 	def wakeup(self, user: str = 'all'):
 		if user == 'all':
 			for user in self._users:
-				self._users[user].state('home')
+				self.updateUserState(name=user, state='home')
+			# self._users[user].state('home')
 		else:
 			self._users[user].home = True
 			self._users[user].goingBed = False
@@ -208,7 +212,8 @@ class UserManager(Manager):
 	def leftHome(self, user: str = 'all'):
 		if user == 'all':
 			for user in self._users:
-				self._users[user].state('out')
+				self.updateUserState(name=user, state='out')
+			# self._users[user].state('out')
 		else:
 			self._users[user].home = False
 			self._users[user].goingBed = False
@@ -218,18 +223,30 @@ class UserManager(Manager):
 	def home(self, user: str = 'all'):
 		if user == 'all':
 			for user in self._users:
-				self._users[user].state('home')
+				self.updateUserState(name=user, state='home')
+		# self._users[user].state('home')
 		else:
 			self._users[user].home = True
 			self._users[user].goingBed = False
 			self._users[user].sleeping = False
 
 
+	# todo - Store user state in memory and write it to database onStop
+	def updateUserState(self, name, state):
+		self.DatabaseManager.update(
+			tableName='users',
+			callerName=self.name,
+			values={'state': state},
+			row=('username', name))
+		self._loadUsers()
+
+
 	def hasAccessLevel(self, user: str, requiredAccessLevel: int) -> bool:
 		if isinstance(requiredAccessLevel, AccessLevel):
 			requiredAccessLevel = requiredAccessLevel.value
 
-		return user.lower() in self._users and AccessLevel[self._users[user.lower()].accessLevel.upper()].value <= requiredAccessLevel
+		return user.lower() in self._users and AccessLevel[
+			self._users[user.lower()].accessLevel.upper()].value <= requiredAccessLevel
 
 
 	def apiTokenValid(self, token: str) -> bool:
@@ -237,7 +254,7 @@ class UserManager(Manager):
 
 
 	def apiTokenLevel(self, token: str) -> AccessLevel:
-		return self._validtokens[token].accessLevel
+		return self._validtokens[token].accessLevel if token in self._validtokens else constants.UNKNOWN
 
 
 	def getUserByAPIToken(self, token: str) -> Optional[User]:

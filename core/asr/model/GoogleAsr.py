@@ -31,21 +31,25 @@ class GoogleAsr(Asr):
 
 	def __init__(self):
 		super().__init__()
+		self._credentialsFile = Path(self.Commons.rootDir(), 'credentials/googlecredentials.json')
 		self._capableOfArbitraryCapture = True
 		self._isOnlineASR = True
 
 		self._client: Optional[SpeechClient] = None
 		self._streamingConfig: Optional[types.StreamingRecognitionConfig] = None
 
-		self._internetLostFlag = Event()  # Set if internet goes down, cut the decoding
-		self._lastResultCheck = 0  # The time the intermediate results were last checked. If actual time is greater than this value + 3, stop processing, internet issues
+		if self._credentialsFile.exists() and not self.ConfigManager.getAliceConfigByName('googleASRCredentials'):
+			self.ConfigManager.updateAliceConfiguration(key='googleASRCredentials', value=self._credentialsFile.read_text(), doPreAndPostProcessing=False)
 
-		self._previousCapture = ''  # The text that was last captured in the iteration
-		self._delayedGoogleConfirmation = False  # set whether slow internet is detected or not
+		self._internetLostFlag = Event() # Set if internet goes down, cut the decoding
+		self._lastResultCheck = 0 # The time the intermediate results were last checked. If actual time is greater than this value + 3, stop processing, internet issues
+
+		self._previousCapture = '' # The text that was last captured in the iteration
+
 
 	def onStart(self):
 		super().onStart()
-		os.environ['GOOGLE_APPLICATION_CREDENTIALS'] = str(Path(self.Commons.rootDir(), 'credentials/googlecredentials.json'))
+		os.environ['GOOGLE_APPLICATION_CREDENTIALS'] = str(self._credentialsFile)
 
 		self._client = SpeechClient()
 		# noinspection PyUnresolvedReferences
@@ -61,8 +65,8 @@ class GoogleAsr(Asr):
 	def decodeStream(self, session: DialogSession) -> Optional[ASRResult]:
 		super().decodeStream(session)
 
-		recorder = Recorder(self._timeout, session.user, session.siteId)
-		self.ASRManager.addRecorder(session.siteId, recorder)
+		recorder = Recorder(self._timeout, session.user, session.deviceUid)
+		self.ASRManager.addRecorder(session.deviceUid, recorder)
 		self._recorder = recorder
 		result = None
 		with Stopwatch() as processingTime:
@@ -113,36 +117,21 @@ class GoogleAsr(Asr):
 				continue
 
 			if result.is_final:
-				self._lastResultCheck = 0
-				self._delayedGoogleConfirmation = False
-				# print(f'Text confirmed by Google')
 				return result.alternatives[0].transcript, result.alternatives[0].confidence
 			elif result.alternatives[0].transcript != self._previousCapture:
 				self.partialTextCaptured(session=session, text=result.alternatives[0].transcript, likelihood=result.alternatives[0].confidence, seconds=0)
-				# below function captures the "potential" full utterance not just one word from it
-				if len(self._previousCapture) <= len(result.alternatives[0].transcript):
-					self._previousCapture = result.alternatives[0].transcript
+				self._previousCapture = result.alternatives[0].transcript
 			elif result.alternatives[0].transcript == self._previousCapture:
-
-				# If we are here it's cause google hasn't responded yet with confirmation on captured text
-				# Store the time in seconds since epoch
 				now = int(time())
-				# Set a reference to nows time plus 3 seconds
-				self._lastResultCheck = now + 3
-				# wait 3 seconds and see if google responds
-				if not self._delayedGoogleConfirmation:
-					# print(f'Text of "{self._previousCapture}" captured but not confirmed by GoogleASR yet')
-					while now <= self._lastResultCheck:
-						now = int(time())
-						self._delayedGoogleConfirmation = True
-					# Give google the option to still process  the utterance
-					continue
-				# During next iteration, If google hasn't responded in 3 seconds assume intent is correct
-				if self._delayedGoogleConfirmation:
-					self.logDebug(f'Stopping process as there seems to be connectivity issues')
+
+				if self._lastResultCheck == 0:
 					self._lastResultCheck = 0
-					self._delayedGoogleConfirmation = False
+					continue
+
+				if now > self._lastResultCheck + 3:
+					self.logDebug(f'Stopping process as there seems to be connectivity issues')
 					return result.alternatives[0].transcript, result.alternatives[0].confidence
 
-		return None
+				self._lastResultCheck = now
 
+		return None

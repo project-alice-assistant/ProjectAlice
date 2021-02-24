@@ -14,7 +14,6 @@ from pathlib import Path
 
 YAML = '/boot/ProjectAlice.yaml'
 ASOUND = '/etc/asound.conf'
-SNIPS_TOML = '/etc/snips.toml'
 TEMP = Path('/tmp/service')
 
 
@@ -204,6 +203,11 @@ class PreInit:
 			self.restart()
 
 		subprocess.run(['git', 'stash', 'clear'])
+
+		subprocess.run(['git', 'submodule', 'init'])
+		subprocess.run(['git', 'submodule', 'update'])
+		subprocess.run(['git', 'submodule', 'foreach', 'git', 'checkout', f'builds_{str(updateSource)}'])
+		subprocess.run(['git', 'submodule', 'foreach', 'git', 'pull'])
 
 
 	@staticmethod
@@ -516,20 +520,6 @@ class Initializer:
 			subprocess.run(['rm', 'snips_nlu-0.20.2-py3-none-any.whl'])
 			subprocess.run(['./venv/bin/snips-nlu', 'download', confs['activeLanguage']])
 
-		snipsConf = self.loadSnipsConfigurations()
-		if not snipsConf:
-			self._logger.logFatal('Error loading snips.toml')
-
-		if initConfs['mqttHost'] != 'localhost' or initConfs['mqttPort'] != 1883:
-			snipsConf['snips-common']['mqtt'] = f'{initConfs["mqttHost"]}:{initConfs["mqttPort"]}'
-
-		if initConfs['mqttUser']:
-			snipsConf['snips-common']['mqtt_username'] = initConfs['mqttUser']
-			snipsConf['snips-common']['mqtt_password'] = initConfs['mqttPassword']
-
-		snipsConf['snips-common']['assistant'] = f'/home/{getpass.getuser()}/ProjectAlice/assistant'
-		snipsConf['snips-hotword']['model'] = [f'/home/{getpass.getuser()}/ProjectAlice/trained/hotwords/snips_hotword/hey_snips=0.53']
-
 		self._logger.logInfo('Installing audio hardware')
 		audioHardware = ''
 		for hardware in initConfs['audioHardware']:
@@ -538,9 +528,11 @@ class Initializer:
 				break
 
 		if not audioHardware:
-			confs['disableSoundAndMic'] = True
+			confs['disableSound'] = True
+			confs['disableCapture'] = True
 		else:
-			confs['disableSoundAndMic'] = False
+			confs['disableSound'] = False
+			confs['disableCapture'] = False
 
 		hlcServiceFilePath = Path('/etc/systemd/system/hermesledcontrol.service')
 		if initConfs['useHLC']:
@@ -665,10 +657,6 @@ class Initializer:
 		except Exception as e:
 			self._logger.logFatal(f'An error occured while writting final configuration file: {e}')
 
-		import toml
-		TEMP.write_text(toml.dumps(snipsConf))
-		subprocess.run(['sudo', 'mv', TEMP, Path(SNIPS_TOML)])
-
 		subprocess.run(['sudo', 'rm', '-rf', Path(self._rootDir, 'assistant')])
 
 		subprocess.run(['sudo', 'sed', '-i', '-e', 's/#dtparam=i2c_arm=on/dtparam=i2c_arm=on/', '/boot/config.txt'])
@@ -689,16 +677,3 @@ class Initializer:
 		self._logger.logWarning('Initializer done with configuring')
 		time.sleep(2)
 		subprocess.run(['sudo', 'shutdown', '-r', 'now'])
-
-
-	def loadSnipsConfigurations(self) -> dict:
-		self._logger.logInfo('Loading Snips configuration file')
-		snipsConfig = Path(SNIPS_TOML)
-
-		if snipsConfig.exists():
-			subprocess.run(['sudo', 'rm', SNIPS_TOML])
-
-		subprocess.run(['sudo', 'cp', Path(self._rootDir, 'system/snips/snips.toml'), Path(SNIPS_TOML)])
-
-		import toml
-		return toml.load(snipsConfig)

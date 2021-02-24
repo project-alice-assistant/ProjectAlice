@@ -63,7 +63,7 @@ class PreciseWakeword(WakewordEngine):
 		self.MqttManager.publish(
 			topic=constants.TOPIC_HOTWORD_DETECTED.format('default'),
 			payload={
-				'siteId'            : self.ConfigManager.getAliceConfigByName('uuid'),
+				'siteId'            : self.DeviceManager.getMainDevice().uid,
 				'modelId'           : f'precise_athena',
 				'modelVersion'      : '0.3.0',
 				'modelType'         : 'universal',
@@ -72,12 +72,12 @@ class PreciseWakeword(WakewordEngine):
 		)
 
 
-	def onHotwordToggleOn(self, siteId: str, session: DialogSession):
+	def onHotwordToggleOn(self, deviceUid: str, session: DialogSession):
 		if self._enabled and self._handler:
 			self._handler.start()
 
 
-	def onAudioFrame(self, message: MQTTMessage, siteId: str):
+	def onAudioFrame(self, message: MQTTMessage, deviceUid: str):
 		if not self.enabled or not self._handler or self._handler.is_paused or self._stream is None:
 			return
 

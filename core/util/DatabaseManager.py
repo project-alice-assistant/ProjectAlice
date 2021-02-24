@@ -21,7 +21,10 @@ class DatabaseManager(Manager):
 
 	def onStart(self):
 		super().onStart()
+		self.fetchTables()
 
+
+	def fetchTables(self):
 		database = self.getConnection()
 		cursor = database.cursor()
 		try:
@@ -74,6 +77,7 @@ class DatabaseManager(Manager):
 				else:
 					unique = ''
 
+				query = ''
 				try:
 					query = f"SELECT COUNT(name) FROM sqlite_master WHERE type = 'table' and name='{fullTableName}'"
 					cursor.execute(query)
@@ -87,7 +91,7 @@ class DatabaseManager(Manager):
 							database.rollback()
 							raise
 				except sqlite3.Error as e:
-					self.logError(f'Something went wrong creating database table **{fullTableName}** for component **{callerName}**: {e}')
+					self.logError(f'Something went wrong creating database table **{fullTableName}** for component **{callerName}**. The query was "{query}": {e}.')
 					continue
 
 				try:
@@ -97,12 +101,20 @@ class DatabaseManager(Manager):
 
 					cols = dict()
 					for column in schema[tableName]:
-						colName = column.split(' ')[0]
+						colName: str = column.split(' ')[0]
+						if colName.lower().startswith('unique'):
+							continue
+
 						colType = column.split(' ')[1]
 						cols[colName] = colType
 						if colName not in installedColumns:
-							self.logWarning(f'Found a missing column **{colName}** for table **{fullTableName}** in component **{callerName}**')
-							cursor.execute(f'ALTER TABLE {fullTableName} ADD COLUMN `{colName}` `{colType}`')
+							oldColName = [val for val in installedColumns if colName.casefold() == val.casefold()]
+							if oldColName:
+								self.logWarning(f'Found a case-changed column from **{oldColName[0]}** to **{colName}** for table **{fullTableName}** in component **{callerName}**')
+								cursor.execute(f'ALTER TABLE {fullTableName} RENAME COLUMN {oldColName[0]} TO {colName}')
+							else:
+								self.logWarning(f'Found a missing column **{colName}** for table **{fullTableName}** in component **{callerName}**')
+								cursor.execute(f'ALTER TABLE {fullTableName} ADD COLUMN {colName} {colType}')
 
 					database.commit()
 				except sqlite3.Error as e:
@@ -111,6 +123,10 @@ class DatabaseManager(Manager):
 					raise Exception
 
 				try:
+					cursor.execute(f'PRAGMA table_info({fullTableName})')
+					rows = cursor.fetchall()
+					installedColumns = {x[1]: x[2] for x in rows}
+
 					doUpdate = False
 					for column in installedColumns:
 						if column not in cols:
@@ -131,6 +147,8 @@ class DatabaseManager(Manager):
 					self.logError(f'Something went wrong initializing database for skill {callerName}: {e}')
 					database.rollback()
 					raise Exception
+
+			self.fetchTables()
 
 			# Let's check if we did not drop a table since an older version
 			for tableName in self._tables:
@@ -226,22 +244,19 @@ class DatabaseManager(Manager):
 				raise
 			else:
 				database.commit()
-				cursor.close()
-				database.close()
 				if self.ConfigManager.getAliceConfigByName('databaseProfiling'):
 					self.logDebug(f'It took {time.time() - startTime} seconds to INSERT {tableName} DB ')
-				if insertId:
-					return insertId
-				else:
-					raise Exception
 		except Exception as e:
 			exception = e
-		finally:
-			try:
-				cursor.close()
-				database.close()
-			except:
-				pass  # Well, what's to do here....
+
+		try:
+			cursor.close()
+		except Exception as e:
+			self.logError(f'FATAL ERROR: {e}')
+		try:
+			database.close()
+		except Exception as e:
+			self.logError(f'FATAL ERROR: {e}')
 
 		if insertId is not None and not exception:
 			return insertId
@@ -251,7 +266,11 @@ class DatabaseManager(Manager):
 			raise exception
 
 
-	def update(self, tableName: str, callerName: str, values: dict, query: str = None, row: tuple = None) -> bool:
+	def update(self, tableName: str, callerName: str, values: dict = None, query: str = None, row: tuple = None) -> bool:
+		if not query and not values:
+			self.logWarning('Cannot update database with neither query or values set')
+			return False
+
 		if not query:
 			updates = [f'{col} = :{col}' for col in values.keys()]
 			query = f'UPDATE :__table__ SET {" ,".join(updates)} WHERE {row[0]} = "{row[1]}"'
@@ -342,7 +361,7 @@ class DatabaseManager(Manager):
 			values = dict()
 
 		if not query:
-			where = ', '.join([f'{k} = "{v}"' for k, v in values.items()])
+			where = 'AND '.join([f'{k} = "{v}"' for k, v in values.items()])
 			query = f'DELETE FROM :__table__ WHERE {where}'
 
 		query = self.basicChecks(tableName, query, callerName)
@@ -361,11 +380,11 @@ class DatabaseManager(Manager):
 		except sqlite3.Error as e:
 			self.logWarning(f'Error deleting from table **{tableName}** for component **{callerName}**: {e}')
 			database.rollback()
-		finally:
-			try:
-				database.close()
-			except:
-				pass  # Well, what's to do here....
+
+		try:
+			database.close()
+		except:
+			pass  # Well, what's to do here....
 
 
 	# noinspection SqlResolve

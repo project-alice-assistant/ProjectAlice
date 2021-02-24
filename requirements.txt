@@ -10,7 +10,6 @@ click==7.0
 PyYAML==5.4.1
 flask==1.1.1
 flask-classful==0.14.2
-flask-login==0.4.1
 pympler==0.8
 Flask-Cors==3.0.10
 googletrans==3.0.0
@@ -22,8 +21,10 @@ langdetect==1.0.8
 webrtcvad==2.0.10
 PyAudio==0.2.11
 pyjwt==2.0.1
-toml==0.10.2
 markdown==3.2.2
 ProjectAlice-sk
 #pyopenssl==19.1.0
 sounddevice==0.4.1
+htmlmin==0.1.12
+jsmin==2.2.2
+cssmin==0.2.0

@@ -1,4 +1,17 @@
 {
+	"googleASRCredentials" : {
+		"defaultValue": "{}",
+		"dataType"    : "longstring",
+		"isSensitive" : true,
+		"description" : "Your Google service file content",
+		"onUpdate"    : "ASRManager.updateASRCredentials('google')",
+		"category"    : "asr",
+		"parent"      : {
+			"config"   : "asr",
+			"condition": "is",
+			"value"    : "google"
+		}
+	},
 	"displaySystemUsage"      : {
 		"defaultValue": false,
 		"dataType"    : "boolean",
@@ -37,7 +50,7 @@
 		"beforeUpdate": "injectAsound",
 		"category"    : "audio",
 		"parent"      : {
-			"config"   : "disableSoundAndMic",
+			"config"   : "disableSound",
 			"condition": "isnot",
 			"value"    : true
 		}
@@ -59,7 +72,7 @@
 		"onInit"      : "populateAudioOutputConfig",
 		"onUpdate"    : "AudioServer.updateAudioDevices",
 		"parent"      : {
-			"config"   : "disableSoundAndMic",
+			"config"   : "disableSound",
 			"condition": "isnot",
 			"value"    : true
 		}
@@ -74,7 +87,7 @@
 		"onInit"      : "populateAudioInputConfig",
 		"onUpdate"    : "AudioServer.updateAudioDevices",
 		"parent"      : {
-			"config"   : "disableSoundAndMic",
+			"config"   : "disableCapture",
 			"condition": "isnot",
 			"value"    : true
 		}
@@ -138,12 +151,20 @@
 			"value"    : false
 		}
 	},
-	"disableSoundAndMic"      : {
+	"disableSound"      : {
 		"defaultValue": false,
 		"dataType"    : "boolean",
 		"isSensitive" : false,
-		"description" : "If this device is a server without sound and mic, turn this to true",
+		"description" : "Disable sound playback",
 		"onUpdate"    : "enableDisableSound",
+		"category"    : "audio"
+	},
+	"disableCapture"      : {
+		"defaultValue": false,
+		"dataType"    : "boolean",
+		"isSensitive" : false,
+		"description" : "Disable sound capture",
+		"onUpdate"    : "enableDisableCapture",
 		"category"    : "audio"
 	},
 	"notUnderstoodRetries"    : {
@@ -174,6 +195,18 @@
 		"isSensitive" : false,
 		"description" : "If true advanced debugging will be enabled. This activates extra information and tools for debugging.",
 		"category"    : "advanced debug"
+	},
+	"methodTracing"           : {
+		"defaultValue": false,
+		"dataType"    : "boolean",
+		"isSensitive" : false,
+		"description" : "If true method tracing will be availble for dev debugging.",
+		"category"    : "advanced debug",
+		"parent"      : {
+			"config"   : "advancedDebug",
+			"condition": "is",
+			"value"    : true
+		}
 	},
 	"memoryProfiling"         : {
 		"defaultValue": false,
@@ -300,7 +333,12 @@
 		"dataType"    : "boolean",
 		"isSensitive" : false,
 		"description" : "Only available with Amazon Polly",
-		"category"    : "tts"
+		"category"    : "tts",
+		"parent"      : {
+			"config"   : "tts",
+			"condition": "is",
+			"value"    : "amazon"
+		}
 	},
 	"newDeviceBroadcastPort"  : {
 		"defaultValue": 12354,
@@ -356,6 +394,19 @@
 		"category"    : "wakeword",
 		"onUpdate"    : "reloadWakeword"
 	},
+	"monoWakewordEngine"      : {
+		"defaultValue": false,
+		"dataType"    : "boolean",
+		"isSensitive" : false,
+		"description" : "If true, the main unit will treat the wakeword for every satellites in your network. Better for satellites, but loads your network much more.",
+		"category"    : "wakeword",
+		"onUpdate"    : "WakewordManager.restartEngine",
+		"parent"      : {
+			"config"   : "wakewordEngine",
+			"condition": "is",
+			"value"    : "snips"
+		}
+	},
 	"wakewordSensitivity"     : {
 		"defaultValue": 0.5,
 		"dataType"    : "range",
@@ -365,7 +416,7 @@
 		"isSensitive" : false,
 		"description" : "Default wakeword sensitivity",
 		"category"    : "wakeword",
-		"onUpdate"    : "restartWakewordEngine"
+		"onUpdate"    : "WakewordManager.restartEngine"
 	},
 	"tts"                     : {
 		"defaultValue": "pico",
@@ -402,7 +453,6 @@
 		"dataType"    : "string",
 		"isSensitive" : false,
 		"description" : "Language for the Tts to use",
-		"help"        : "PICO VOICE<br>AMAZON POLLY<br>MYCROFT<br>GOOGLE WAVENET<br>IBM WATSON",
 		"onUpdate"    : "reloadTTS",
 		"category"    : "tts"
 	},
@@ -422,36 +472,244 @@
 		"defaultValue": "en-US",
 		"dataType"    : "string",
 		"isSensitive" : false,
-		"description" : "The voice the Tts should use. Find lists on respective Tts websites",
+		"description" : "The voice the Tts should use",
 		"onUpdate"    : "reloadTTS",
-		"category"    : "tts"
+		"category"    : "tts",
+		"display"     : "hidden"
+	},
+	"watsonTtsVoice"          : {
+		"defaultValue": "en-US_AllisonV3Voice",
+		"dataType"    : "list",
+		"values"      : {
+			"en-US - male - en-US_HenryV3Voice": "en-US_HenryV3Voice",
+			"en-US - male - en-US_KevinV3Voice": "en-US_KevinV3Voice",
+			"en-US - male - en-US_MichaelVoice": "en-US_MichaelVoice",
+			"en-US - male - en-US_MichaelV3Voice": "en-US_MichaelV3Voice",
+			"en-US - female - en-US_AllisonVoice": "en-US_AllisonVoice",
+			"en-US - female - en-US_AllisonV3Voice": "en-US_AllisonV3Voice",
+			"en-US - female - en-US_EmilyV3Voice": "en-US_EmilyV3Voice",
+			"en-US - female - en-US_LisaVoice": "en-US_LisaVoice",
+			"en-US - female - en-US_LisaV3Voice": "en-US_LisaV3Voice",
+			"en-US - female - en-US_OliviaV3Voice": "en-US_OliviaV3Voice",
+			"en-GB - female - en-GB_KateV3Voice": "en-GB_KateV3Voice",
+			"fr-FR - female - fr-FR_ReneeVoice": "fr-FR_ReneeVoice",
+			"fr-FR - female - fr-FR_ReneeV3Voice": "fr-FR_ReneeV3Voice",
+			"de-DE - male - de-DE_DieterVoice": "de-DE_DieterVoice",
+			"de-DE - male - de-DE_DieterV3Voice": "de-DE_DieterV3Voice",
+			"de-DE - female - de-DE_BirgitVoice": "de-DE_BirgitVoice",
+			"de-DE - female - de-DE_BirgitV3Voice": "de-DE_BirgitV3Voice",
+			"de-DE - female - de-DE_ErikaV3Voice": "de-DE_ErikaV3Voice",
+			"it-IT - female - it-IT_FrancescaVoice": "it-IT_FrancescaVoice",
+			"it-IT - female - it-IT_FrancescaV3Voice": "it-IT_FrancescaV3Voice",
+			"pt-BR - female - pt-BR_IsabelaV3Voice": "pt-BR_IsabelaV3Voice",
+			"ja-JP - female - ja-JP_EmiV3Voice": "ja-JP_EmiV3Voice",
+			"es-ES - male - es-ES_EnriqueV3Voice": "es-ES_EnriqueV3Voice",
+			"es-ES - female - es-ES_LauraV3Voice": "es-ES_LauraV3Voice",
+			"es-LA - female - es-LA_SofiaV3Voice": "es-LA_SofiaV3Voice",
+			"es-US - female - es-US_SofiaV3Voice": "es-US_SofiaV3Voice"
+		},
+		"isSensitive" : false,
+		"description" : "The voice Watson Tts should use",
+		"category"    : "tts",
+		"sets"        : "ttsLanguage - ttsType - ttsVoice",
+		"parent"      : {
+			"config"   : ["tts", "ttsFallback"],
+			"checkType": "or",
+			"condition": "is",
+			"value"    : "watson"
+		}
+	},
+	"picoTtsVoice"          : {
+		"defaultValue": "en-US",
+		"dataType"    : "list",
+		"values"      : {
+			"en-US - male - en-US": "en-US",
+			"en-US - male - en-GB": "en-GB",
+			"en-US - male - de-DE": "de-DE",
+			"en-US - male - es-ES": "es-ES",
+			"en-US - male - fr-FR": "fr-FR",
+			"en-US - male - it-IT": "it-IT"
+		},
+		"isSensitive" : false,
+		"description" : "The voice PICO Tts should use",
+		"category"    : "tts",
+		"sets"        : "ttsLanguage - ttsType - ttsVoice",
+		"parent"      : {
+			"config"   : ["tts", "ttsFallback"],
+			"checkType": "or",
+			"condition": "is",
+			"value"    : "pico"
+		}
+	},
+	"mycroftTtsVoice"          : {
+		"defaultValue": "slt",
+		"dataType"    : "list",
+		"values"      : {
+			"en-US - male - slt": "slt",
+			"en-US - male - aew": "aew",
+			"en-US - male - ahw": "ahw",
+			"en-US - male - aup": "aup",
+			"en-US - male - awb": "awb",
+			"en-US - male - axb": "axb",
+			"en-US - male - bdl": "bdl",
+			"en-US - male - clb": "clb",
+			"en-US - male - eey": "eey",
+			"en-US - male - fem": "fem",
+			"en-US - male - gka": "gka",
+			"en-US - male - jmk": "jmk",
+			"en-US - male - ksp": "ksp",
+			"en-US - male - ljm": "ljm",
+			"en-US - male - rms": "rms",
+			"en-US - male - rxr": "rxr"
+		},
+		"isSensitive" : false,
+		"description" : "The voice Mycroft Tts should use",
+		"category"    : "tts",
+		"sets"        : "ttsLanguage - ttsType - ttsVoice",
+		"parent"      : {
+			"config"   : ["tts", "ttsFallback"],
+			"checkType": "or",
+			"condition": "is",
+			"value"    : "mycroft"
+		}
+	},
+	"googleTtsVoice"          : {
+		"defaultValue": "en-US-Standard-C",
+		"dataType"    : "list",
+		"values"      : {
+			"en-US - male - en-US-Standard-B": "en-US-Standard-B",
+			"en-US - male - en-US-Standard-D":  "en-US-Standard-D",
+			"en-US - male - en-US-Wavenet-A":  "en-US-Wavenet-A",
+			"en-US - male - en-US-Wavenet-B": "en-US-Wavenet-B",
+			"en-US - male - en-US-Wavenet-D":  "en-US-Wavenet-D",
+			"en-US - female - en-US-Standard-C":  "en-US-Standard-C",
+			"en-US - female - en-US-Standard-E":  "en-US-Standard-E",
+			"en-US - female - en-US-Wavenet-C":  "en-US-Wavenet-C",
+			"en-US - female - en-US-Wavenet-E":  "en-US-Wavenet-E",
+			"en-US - female - en-US-Wavenet-F":  "en-US-Wavenet-F",
+			"fr-FR - male - fr-FR-Standard-B":  "fr-FR-Standard-B",
+			"fr-FR - male - fr-FR-Standard-D":  "fr-FR-Standard-D",
+			"fr-FR - male - fr-FR-Wavenet-B":  "fr-FR-Wavenet-B",
+			"fr-FR - male - fr-FR-Wavenet-D":  "fr-FR-Wavenet-D",
+			"fr-FR - female - fr-FR-Standard-A":  "fr-FR-Standard-A",
+			"fr-FR - female - fr-FR-Standard-C":  "fr-FR-Standard-C",
+			"fr-FR - female - fr-FR-Wavenet-A":  "fr-FR-Wavenet-A",
+			"fr-FR - female - fr-FR-Wavenet-C":  "fr-FR-Wavenet-C",
+			"de-DE - male - de-DE-Standard-B":  "de-DE-Standard-B",
+			"de-DE - male - de-DE-Wavenet-B":  "de-DE-Wavenet-B",
+			"de-DE - male - de-DE-Wavenet-D":  "de-DE-Wavenet-D",
+			"de-DE - female - de-DE-Standard-A":  "de-DE-Standard-A",
+			"de-DE - female - de-DE-Wavenet-A":  "de-DE-Wavenet-A",
+			"de-DE - female - de-DE-Wavenet-C":  "de-DE-Wavenet-C",
+			"it-IT - male - it-IT-Standard-C":  "it-IT-Standard-C",
+			"it-IT - male - it-IT-Standard-D":  "it-IT-Standard-D",
+			"it-IT - male - it-IT-Wavenet-C":  "it-IT-Wavenet-C",
+			"it-IT - male - it-IT-Wavenet-D":  "it-IT-Wavenet-D",
+			"it-IT - female - it-IT-Standard-A":  "it-IT-Standard-A",
+			"it-IT - female - it-IT-Standard-B":  "it-IT-Standard-B",
+			"it-IT - female - it-IT-Wavenet-A":  "it-IT-Wavenet-A",
+			"it-IT - female - it-IT-Wavenet-B":  "it-IT-Wavenet-B",
+			"pl-PL - male - pl-PL-Standard-B":  "pl-PL-Standard-B",
+			"pl-PL - male - pl-PL-Standard-C":  "pl-PL-Standard-C",
+			"pl-PL - male - pl-PL-Wavenet-B":  "pl-PL-Wavenet-B",
+			"pl-PL - male - pl-PL-Wavenet-C":  "pl-PL-Wavenet-C",
+			"pl-PL - female - pl-PL-Standard-A":  "pl-PL-Standard-A",
+			"pl-PL - female - pl-PL-Standard-D":  "pl-PL-Standard-D",
+			"pl-PL - female - pl-PL-Standard-E":  "pl-PL-Standard-E",
+			"pl-PL - female - pl-PL-Wavenet-A":  "pl-PL-Wavenet-A",
+			"pl-PL - female - pl-PL-Wavenet-D":  "pl-PL-Wavenet-D",
+			"pl-PL - female - pl-PL-Wavenet-E":  "pl-PL-Wavenet-E"
+		},
+		"isSensitive" : false,
+		"description" : "The voice Google Tts should use",
+		"category"    : "tts",
+		"sets"        : "ttsLanguage - ttsType - ttsVoice",
+		"parent"      : {
+			"config"   : ["tts", "ttsFallback"],
+			"checkType": "or",
+			"condition": "is",
+			"value"    : "google"
+		}
+	},
+	"amazonTtsVoice"          : {
+		"defaultValue": "Joanna",
+		"dataType"    : "list",
+		"values"      : {
+			"en-US - male - Joey": "Joey",
+			"en-US - male - Justin":  "Justin",
+			"en-US - male - Matthew":  "Matthew",
+			"en-US - female - Ivy": "Ivy",
+			"en-US - female - Joanna":  "Joanna",
+			"en-US - female - Kendra": "Kendra",
+			"en-US - female - Kimberly": "Kimberly",
+			"en-US - female - Salli": "Salli",
+			"en-AU - male - Russell": "Russell",
+			"en-AU - female - Nicole": "Nicole",
+			"en-GB - male - Brian": "Brian",
+			"en-GB - female - Amy": "Amy",
+			"en-GB - female - Emma": "Emma",
+			"de-DE - male - Hans": "Hans",
+			"de-DE - female - Marlene": "Marlene",
+			"de-DE - female - Vicky": "Vicky",
+			"fr-FR - male - Mathieu": "Mathieu",
+			"fr-FR - female - Celine": "Celine",
+			"fr-CA - female - Chantal": "Chantal",
+			"it-IT - male - Giorgio": "Giorgio",
+			"it-IT - female - Bianca": "Bianca",
+			"it-IT - female - Carla": "Carla",
+			"pl-PL - male - Jacek": "Jacek",
+			"pl-PL - male - Jan": "Jan",
+			"pl-PL - female - Ewa": "Ewa",
+			"pl-PL - female - Maja": "Maja",
+			"pt-BR - male - Ricardo": "Ricardo",
+			"pt-BR - female - Camila": "Camila",
+			"pt-BR - female - Vitoria": "Vitoria",
+			"pt-PT - male - Cristiano": "Cristiano",
+			"pt-PT - female - Ines": "Ines"
+		},
+		"isSensitive" : false,
+		"description" : "The voice Amazon Tts should use",
+		"category"    : "tts",
+		"sets"        : "ttsLanguage - ttsType - ttsVoice",
+		"parent"      : {
+			"config"   : ["tts", "ttsFallback"],
+			"checkType": "or",
+			"condition": "is",
+			"value"    : "amazon"
+		}
 	},
 	"awsRegion"               : {
 		"defaultValue": "eu-central-1",
 		"dataType"    : "list",
 		"isSensitive" : false,
-		"values"      : [
-			"eu-north-1",
-			"ap-south-1",
-			"eu-west-3",
-			"eu-west-2",
-			"eu-west-1",
-			"ap-northeast-2",
-			"me-south-1",
-			"ap-northeast-1",
-			"sa-east-1",
-			"ca-central-1",
-			"ap-east-1",
-			"ap-southeast-1",
-			"ap-southeast-2",
-			"eu-central-1",
-			"us-east-1",
-			"us-east-2",
-			"us-west-1",
-			"us-west-2"
-		],
+		"values"      : {
+			"Europe (Stockholm)"		: "eu-north-1",
+			"Asia Pacific (Mumbai)"		: "ap-south-1",
+			"Europe (Paris)"			: "eu-west-3",
+			"Europe (London)"			: "eu-west-2",
+			"Europe (Ireland)"			: "eu-west-1",
+			"Asia Pacific (Seoul)"		: "ap-northeast-2",
+			"Middle East (Bahrain)"		: "me-south-1",
+			"Asia Pacific (Tokyo)"		: "ap-northeast-1",
+			"South America (São Paulo)"	: "sa-east-1",
+			"Canada (Central)"			: "ca-central-1",
+			"Asia Pacific (Hong Kong)"	: "ap-east-1",
+			"Asia Pacific (Singapore)"	: "ap-southeast-1",
+			"Asia Pacific (Sydney)"		: "ap-southeast-2",
+			"Europe (Frankfurt)"		: "eu-central-1",
+			"US East (N. Virginia)"		: "us-east-1",
+			"US East (Ohio)" 			: "us-east-2",
+			"US West (N. California)" 	: "us-west-1",
+			"US West (Oregon)"			: "us-west-2"
+		},
 		"description" : "Region to use for Amazon Polly",
-		"category"    : "credentials"
+		"category"    : "credentials",
+		"parent"      : {
+			"config"   : ["tts", "ttsFallback"],
+			"checkType": "or",
+			"condition": "is",
+			"value"    : "amazon"
+		}
 	},
 	"awsAccessKey"            : {
 		"defaultValue": "",
@@ -460,7 +718,7 @@
 		"description" : "Your Amazon services access key",
 		"category"    : "credentials",
 		"parent"      : {
-			"config"   : "stayCompletlyOffline",
+			"config"   : ["tts", "ttsFallback"],
 			"condition": "is",
 			"value"    : false
 		}
@@ -472,7 +730,7 @@
 		"description" : "Your Amazon services secret key",
 		"category"    : "credentials",
 		"parent"      : {
-			"config"   : "stayCompletlyOffline",
+			"config"   : ["tts", "ttsFallback"],
 			"condition": "is",
 			"value"    : false
 		}
@@ -745,21 +1003,31 @@
 		"dataType"    : "boolean",
 		"isSensitive" : false,
 		"description" : "Activates the web interface to be reached by browsing to x.x.x.x:webInterfacePort, e.g. 192.168.1.2:5000",
-		"category"    : "system"
+		"category"    : "interface",
+		"onUpdate"    : "WebUIManager.restart"
 	},
 	"webInterfacePort"        : {
 		"defaultValue": 5000,
 		"dataType"    : "integer",
 		"isSensitive" : false,
 		"description" : "Change the web interface port to be used",
-		"category"    : "system"
+		"category"    : "interface",
+		"onUpdate"    : "WebUIManager.restart"
+	},
+	"apiPort"                 : {
+		"defaultValue": 5001,
+		"dataType"    : "integer",
+		"isSensitive" : false,
+		"description" : "Change the port the api is bound to",
+		"category"    : "interface",
+		"onUpdate"    : "ApiManager.restart"
 	},
 	"scenariosActive"         : {
 		"defaultValue": false,
 		"dataType"    : "boolean",
 		"isSensitive" : false,
 		"description" : "Activates the scenarios support on the webinterface, using Node-RED.",
-		"category"    : "scenarios",
+		"category"    : "interface",
 		"onUpdate"    : "NodeRedManager.toggle"
 	},
 	"dontStopNodeRed"         : {
@@ -767,7 +1035,7 @@
 		"dataType"    : "boolean",
 		"isSensitive" : false,
 		"description" : "If activated, Node-RED won't be stopped when Alice is shut down.",
-		"category"    : "scenarios",
+		"category"    : "interface",
 		"parent"      : {
 			"config"   : "scenariosActive",
 			"condition": "is",

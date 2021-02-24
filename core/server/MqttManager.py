@@ -4,6 +4,7 @@ import re
 import traceback
 import uuid
 from pathlib import Path
+from typing import List, Union
 
 import paho.mqtt.client as mqtt
 import paho.mqtt.publish as publish
@@ -11,6 +12,8 @@ import paho.mqtt.publish as publish
 from core.base.model.Intent import Intent
 from core.base.model.Manager import Manager
 from core.commons import constants
+from core.device.model.Device import Device
+from core.device.model.DeviceAbility import DeviceAbility
 
 
 class MqttManager(Manager):
@@ -68,14 +71,18 @@ class MqttManager(Manager):
 		self._mqttClient.message_callback_add(constants.TOPIC_NLU_INTENT_NOT_RECOGNIZED, self.nluIntentNotRecognized)
 		self._mqttClient.message_callback_add(constants.TOPIC_NLU_ERROR, self.nluError)
 
-		for device in self.DeviceManager.getAliceTypeDevices(includeMain=True):
+		self.connect()
+
+
+	def onBooted(self):
+		super().onBooted()
+
+		for device in self.DeviceManager.getDevicesWithAbilities(abilities=[DeviceAbility.PLAY_SOUND, DeviceAbility.CAPTURE_SOUND], connectedOnly=False):
 			self._mqttClient.message_callback_add(constants.TOPIC_VAD_UP.format(device.uid), self.onVADUp)
 			self._mqttClient.message_callback_add(constants.TOPIC_VAD_DOWN.format(device.uid), self.onVADDown)
 
 			self._mqttClient.message_callback_add(constants.TOPIC_PLAY_BYTES.format(device.uid), self.topicPlayBytes)
 			self._mqttClient.message_callback_add(constants.TOPIC_PLAY_BYTES_FINISHED.format(device.uid), self.topicPlayBytesFinished)
-
-		self.connect()
 
 
 	def onStop(self):
@@ -127,12 +134,12 @@ class MqttManager(Manager):
 		subscribedEvents.append((constants.TOPIC_PLAY_BYTES.format(self.ConfigManager.getAliceConfigByName('uuid')), 0))
 		subscribedEvents.append((constants.TOPIC_PLAY_BYTES_FINISHED.format(self.ConfigManager.getAliceConfigByName('uuid')), 0))
 
-		for device in self.DeviceManager.getAliceTypeDevices():
-			subscribedEvents.append((constants.TOPIC_VAD_UP.format(device.siteId), 0))
-			subscribedEvents.append((constants.TOPIC_VAD_DOWN.format(device.siteId), 0))
+		for device in self.DeviceManager.getDevicesWithAbilities(abilities=[DeviceAbility.PLAY_SOUND, DeviceAbility.CAPTURE_SOUND], connectedOnly=False):
+			subscribedEvents.append((constants.TOPIC_VAD_UP.format(device.id), 0))
+			subscribedEvents.append((constants.TOPIC_VAD_DOWN.format(device.id), 0))
 
-			subscribedEvents.append((constants.TOPIC_PLAY_BYTES.format(device.siteId), 0))
-			subscribedEvents.append((constants.TOPIC_PLAY_BYTES_FINISHED.format(device.siteId), 0))
+			subscribedEvents.append((constants.TOPIC_PLAY_BYTES.format(device.id), 0))
+			subscribedEvents.append((constants.TOPIC_PLAY_BYTES_FINISHED.format(device.id), 0))
 
 		self._mqttClient.subscribe(subscribedEvents)
 		self.toggleFeedbackSounds()
@@ -161,13 +168,13 @@ class MqttManager(Manager):
 		self.connect()
 
 
-	def subscribeSkillIntents(self, intents: list):
+	def subscribeSkillIntents(self, intents: dict):
 		# Have to send them one at a time, as intents is a list of Intent objects and mqtt doesn't want that
 		for intent in intents:
 			self.mqttClient.subscribe(str(intent))
 
 
-	def unsubscribeSkillIntents(self, intents: list):
+	def unsubscribeSkillIntents(self, intents: dict):
 		# Have to send them one at a time, as intents is a list of Intent objects and mqtt doesn't want that
 		for intent in intents:
 			self.mqttClient.unsubscribe(str(intent))
@@ -181,7 +188,7 @@ class MqttManager(Manager):
 					exceptions=[self.name],
 					propagateToSkills=True,
 					message=message,
-					siteId=message.topic.replace('hermes/audioServer/', '').replace('/audioFrame', '')
+					deviceUid=message.topic.replace('hermes/audioServer/', '').replace('/audioFrame', '')
 				)
 				return
 
@@ -262,7 +269,7 @@ class MqttManager(Manager):
 
 
 	def onHotwordDetected(self, _client, _data, msg):
-		siteId = self.Commons.parseSiteId(msg)
+		deviceUid = self.Commons.parseDeviceUid(msg)
 		payload = self.Commons.payload(msg)
 
 		if not self._multiDetectionsHolder:
@@ -278,9 +285,9 @@ class MqttManager(Manager):
 				user = users[speaker].name
 
 		if user == constants.UNKNOWN_USER:
-			self.broadcast(method=constants.EVENT_HOTWORD, exceptions=[self.name], propagateToSkills=True, siteId=siteId, user=user)
+			self.broadcast(method=constants.EVENT_HOTWORD, exceptions=[self.name], propagateToSkills=True, deviceUid=deviceUid, user=user)
 		else:
-			self.broadcast(method=constants.EVENT_WAKEWORD, exceptions=[self.name], propagateToSkills=True, siteId=siteId, user=user)
+			self.broadcast(method=constants.EVENT_WAKEWORD, exceptions=[self.name], propagateToSkills=True, deviceUid=deviceUid, user=user)
 
 
 	def handleMultiDetection(self):
@@ -298,15 +305,15 @@ class MqttManager(Manager):
 
 
 	def hotwordToggleOn(self, _client, _data, msg: mqtt.MQTTMessage):
-		siteId = self.Commons.parseSiteId(msg)
+		deviceUid = self.Commons.parseDeviceUid(msg)
 		session = self.DialogManager.getSession(self.Commons.parseSessionId(msg))
-		self.broadcast(method=constants.EVENT_HOTWORD_TOGGLE_ON, exceptions=[constants.DUMMY], propagateToSkills=True, siteId=siteId, session=session)
+		self.broadcast(method=constants.EVENT_HOTWORD_TOGGLE_ON, exceptions=[constants.DUMMY], propagateToSkills=True, deviceUid=deviceUid, session=session)
 
 
 	def hotwordToggleOff(self, _client, _data, msg: mqtt.MQTTMessage):
-		siteId = self.Commons.parseSiteId(msg)
+		deviceUid = self.Commons.parseDeviceUid(msg)
 		session = self.DialogManager.getSession(self.Commons.parseSessionId(msg))
-		self.broadcast(method=constants.EVENT_HOTWORD_TOGGLE_OFF, exceptions=[constants.DUMMY], propagateToSkills=True, siteId=siteId, session=session)
+		self.broadcast(method=constants.EVENT_HOTWORD_TOGGLE_OFF, exceptions=[constants.DUMMY], propagateToSkills=True, deviceUid=deviceUid, session=session)
 
 
 	def sessionStarted(self, _client, _data, msg: mqtt.MQTTMessage):
@@ -319,7 +326,7 @@ class MqttManager(Manager):
 
 	def sessionQueued(self, _client, _data, msg: mqtt.MQTTMessage):
 		sessionId = self.Commons.parseSessionId(msg)
-		session = self.DialogManager.addSession(sessionId=sessionId, message=msg)
+		session = self.DialogManager.getSession(sessionId)
 
 		if session:
 			session.update(msg)
@@ -328,11 +335,11 @@ class MqttManager(Manager):
 
 	def nluQuery(self, _client, _data, msg: mqtt.MQTTMessage):
 		sessionId = self.Commons.parseSessionId(msg)
-		siteId = self.Commons.parseSiteId(msg)
+		deviceUid = self.Commons.parseDeviceUid(msg)
 
 		session = self.DialogManager.getSession(sessionId)
 		if not session:
-			session = self.DialogManager.newSession(siteId=siteId)
+			session = self.DialogManager.newSession(deviceUid=deviceUid)
 		else:
 			session.update(msg)
 
@@ -340,11 +347,11 @@ class MqttManager(Manager):
 
 
 	def asrToggleOn(self, _client, _data, msg: mqtt.MQTTMessage):
-		self.broadcast(method=constants.EVENT_ASR_TOGGLE_ON, exceptions=[self.name], propagateToSkills=True, siteId=self.Commons.parseSiteId(msg))
+		self.broadcast(method=constants.EVENT_ASR_TOGGLE_ON, exceptions=[self.name], propagateToSkills=True, deviceUid=self.Commons.parseDeviceUid(msg))
 
 
 	def asrToggleOff(self, _client, _data, msg: mqtt.MQTTMessage):
-		self.broadcast(method=constants.EVENT_ASR_TOGGLE_OFF, exceptions=[self.name], propagateToSkills=True, siteId=self.Commons.parseSiteId(msg))
+		self.broadcast(method=constants.EVENT_ASR_TOGGLE_OFF, exceptions=[self.name], propagateToSkills=True, deviceUid=self.Commons.parseDeviceUid(msg))
 
 
 	def startListening(self, _client, _data, msg: mqtt.MQTTMessage):
@@ -456,12 +463,12 @@ class MqttManager(Manager):
 		if session:
 			session.update(msg)
 		else:
-			session = self.DialogManager.newSession(siteId=self.Commons.parseSiteId(msg), message=msg)
+			session = self.DialogManager.newSession(deviceUid=self.Commons.parseDeviceUid(msg), message=msg)
 
 		if 'text' in payload and not payload.get('isHotwordNotification', False):
 			skill = self.SkillManager.getSkillInstance('ContextSensitive')
 			if skill:
-				skill.addAliceChat(text=payload['text'], siteId=session.siteId)
+				skill.addAliceChat(text=payload['text'], deviceUid=session.deviceUid)
 
 		self.broadcast(method=constants.EVENT_SAY, exceptions=[self.name], propagateToSkills=True, session=session)
 
@@ -532,24 +539,23 @@ class MqttManager(Manager):
 			method=constants.EVENT_START_SESSION,
 			exceptions=[self.name],
 			propagateToSkills=True,
-			siteId=self.Commons.parseSiteId(msg),
+			deviceUid=self.Commons.parseDeviceUid(msg),
 			payload=self.Commons.payload(msg)
 		)
 
 
 	def onVADUp(self, _client, _data, msg: mqtt.MQTTMessage):
-		siteId = self.Commons.parseSiteId(msg)
 		self.broadcast(
 			method=constants.EVENT_VAD_UP,
 			exceptions=[self.name],
 			propagateToSkills=True,
-			siteId=siteId
+			deviceUid=self.Commons.parseDeviceUid(msg)
 		)
 
 
 	def onVADDown(self, _client, _data, msg: mqtt.MQTTMessage):
-		siteId = self.Commons.parseSiteId(msg)
-		self.broadcast(method=constants.EVENT_VAD_DOWN, exceptions=[self.name], propagateToSkills=True, siteId=siteId)
+		deviceUid = self.Commons.parseDeviceUid(msg)
+		self.broadcast(method=constants.EVENT_VAD_DOWN, exceptions=[self.name], propagateToSkills=True, deviceUid=deviceUid)
 
 
 	def eventEndSession(self, _client, _data, msg: mqtt.MQTTMessage):
@@ -568,23 +574,23 @@ class MqttManager(Manager):
 		:param msg:
 		:return:
 		"""
-		count = msg.topic.count('/')
-		if count > 4:
+		split = msg.topic.rsplit('/')
+		if len(split) > 4:
 			requestId = msg.topic.rsplit('/')[-1]
 			sessionId = msg.topic.rsplit('/')[-2]
 		else:
 			requestId = msg.topic.rsplit('/')[-1]
 			sessionId = None
 
-		siteId = self.Commons.parseSiteId(msg)
-		self.broadcast(method=constants.EVENT_PLAY_BYTES, exceptions=self.name, propagateToSkills=True, requestId=requestId, payload=msg.payload, siteId=siteId, sessionId=sessionId)
+		deviceUid = self.Commons.parseDeviceUid(msg)
+		self.broadcast(method=constants.EVENT_PLAY_BYTES, exceptions=self.name, propagateToSkills=True, requestId=requestId, payload=msg.payload, deviceUid=deviceUid, sessionId=sessionId)
 
 
 	def topicPlayBytesFinished(self, _client, _data, msg: mqtt.MQTTMessage):
-		requestId = msg.topic.rsplit('/')[-1]
-		siteId = self.Commons.parseSiteId(msg)
+		deviceUid = self.Commons.parseDeviceUid(msg)
 		sessionId = self.Commons.parseSessionId(msg)
-		self.broadcast(method=constants.EVENT_PLAY_BYTES_FINISHED, exceptions=self.name, propagateToSkills=True, requestId=requestId, siteId=siteId, sessionId=sessionId)
+		requestId = self.Commons.payload(msg).get('id', None)
+		self.broadcast(method=constants.EVENT_PLAY_BYTES_FINISHED, exceptions=self.name, propagateToSkills=True, requestId=requestId, deviceUid=deviceUid, sessionId=sessionId)
 
 
 	def deviceHeartbeat(self, _client, _data, msg: mqtt.MQTTMessage):
@@ -594,40 +600,48 @@ class MqttManager(Manager):
 			self.logWarning('Received a device heartbeat without uid')
 			return
 
-		siteId = self.Commons.parseSiteId(msg)
-		self.broadcast(method=constants.EVENT_DEVICE_HEARTBEAT, exceptions=[self.name], propagateToSkills=True, uid=uid, siteId=siteId)
+		deviceUid = self.Commons.parseDeviceUid(msg)
+		self.broadcast(method=constants.EVENT_DEVICE_HEARTBEAT, exceptions=[self.name], propagateToSkills=True, uid=uid, deviceUid=deviceUid)
 
 
 	def toggleFeedback(self, _client, _data, msg: mqtt.MQTTMessage):
-		siteId = self.Commons.parseSiteId(msg)
+		deviceUid = self.Commons.parseDeviceUid(msg)
 		method = constants.EVENT_TOGGLE_FEEDBACK_OFF if msg.topic.lower().endswith('off') else constants.EVENT_TOGGLE_FEEDBACK_ON
-		self.broadcast(method=method, exceptions=[self.name], propagateToSkills=True, siteId=siteId)
+		self.broadcast(method=method, exceptions=[self.name], propagateToSkills=True, deviceUid=deviceUid)
 
 
-	def say(self, text, client: str = None, customData: dict = None, canBeEnqueued: bool = True):
+	def say(self, text, deviceUid: str = None, customData: dict = None, canBeEnqueued: bool = True):
 		"""
 		Initiate a notification session which is termniated once the text is spoken
 		:param canBeEnqueued: bool
 		:param text: str Text to say
-		:param client: int Where to speak
+		:param deviceUid: str Where to speak
 		:param customData: json object
 		"""
 
-		client = self.getDefaultSiteId(client)
+		if deviceUid == constants.ALL or deviceUid == constants.RANDOM:
+			deviceList = [device.uid for device in self.DeviceManager.getDevicesWithAbilities(abilities=[DeviceAbility.PLAY_SOUND, DeviceAbility.CAPTURE_SOUND])]
 
-		if client == constants.ALL or client == constants.RANDOM:
-			deviceList = [device.uid for device in self.DeviceManager.getAliceTypeDevices(connectedOnly=True, includeMain=True) if device]
-
-			if client == constants.ALL:
+			if deviceUid == constants.ALL:
 				for device in deviceList:
 					device = device.replace(self.DEFAULT_CLIENT_EXTENSION, '')
 					if not device:
 						continue
 
-					self.say(text=text, client=device, customData=customData)
+					self.say(text=text, deviceUid=device, customData=customData)
 			else:
-				self.say(text=text, client=random.choice(deviceList), customData=customData)
+				self.say(text=text, deviceUid=random.choice(deviceList), customData=customData)
 		else:
+
+			if not deviceUid:
+				device = self.DeviceManager.getMainDevice()
+
+				if not device:
+					self.logWarning('Tried to use **say** but no device uid found')
+					return
+
+				deviceUid = device.uid
+
 			if customData is not None:
 				if isinstance(customData, dict):
 					customData = json.dumps(customData)
@@ -635,11 +649,8 @@ class MqttManager(Manager):
 					self.logWarning(f'Ask was provided customdata of unsupported type: {customData}')
 					customData = ''
 
-			if ' ' in client:
-				client = client.replace(' ', '_')
-
 			self._mqttClient.publish(constants.TOPIC_START_SESSION, json.dumps({
-				'siteId'    : client,
+				'siteId'    : deviceUid,
 				'init'      : {
 					'type'                   : 'notification',
 					'text'                   : text,
@@ -650,30 +661,25 @@ class MqttManager(Manager):
 			}))
 
 
-	def ask(self, text: str, client: str = None, intentFilter: list = None, customData: dict = None, canBeEnqueued: bool = True, currentDialogState: str = '', probabilityThreshold: float = None):
+	def ask(self, text: str, deviceUid: str = None, intentFilter: list = None, customData: dict = None, canBeEnqueued: bool = True, currentDialogState: str = '', probabilityThreshold: float = None):
 		"""
 		Initiates a new session by asking something and waiting on user answer
 		:param probabilityThreshold: The override threshold for the user's answer to this question
 		:param currentDialogState: a str representing a state in the dialog, usefull for multiturn dialogs
 		:param canBeEnqueued: wheter or not this can be played later if the dialog manager is busy
 		:param text: str The text to speak
-		:param client: int Where to ask
+		:param deviceUid: str Where to ask
 		:param intentFilter: array Filter to force user intents
 		:param customData: json object
 		:return:
 		"""
-
-		client = self.getDefaultSiteId(client)
-
-		if ' ' in client:
-			client = client.replace(' ', '_')
 
 		if customData is not None and not isinstance(customData, dict):
 			self.logWarning(f'Ask was provided customdata of unsupported type: {customData}')
 			customData = dict()
 
 		user = customData.get('user', constants.UNKNOWN_USER) if customData else constants.UNKNOWN_USER
-		session = self.DialogManager.newSession(client, user)
+		session = self.DialogManager.newSession(deviceUid, user)
 
 		if currentDialogState:
 			session.currentState = currentDialogState
@@ -681,7 +687,7 @@ class MqttManager(Manager):
 		if probabilityThreshold is not None:
 			session.probabilityThreshold = probabilityThreshold
 
-		if client == constants.ALL:
+		if deviceUid == constants.ALL:
 			if not customData:
 				customData = '{}'
 
@@ -689,7 +695,7 @@ class MqttManager(Manager):
 			customData['wideAskingSession'] = True
 
 		jsonDict = {
-			'siteId': client,
+			'siteId': deviceUid,
 		}
 
 		if customData:
@@ -711,12 +717,12 @@ class MqttManager(Manager):
 		session.intentFilter = intentList
 		session.customData = customData
 
-		if client == constants.ALL:
-			deviceList = [device.uid for device in self.DeviceManager.getAliceTypeDevices(connectedOnly=True, includeMain=True) if device]
+		if deviceUid == constants.ALL:
+			deviceList = [device.uid for device in self.DeviceManager.getDevicesWithAbilities(abilities=[DeviceAbility.PLAY_SOUND, DeviceAbility.CAPTURE_SOUND])]
 
 			for device in deviceList:
 				device = device.replace(self.DEFAULT_CLIENT_EXTENSION, '')
-				self.ask(text=text, client=device, intentFilter=intentList, customData=customData)
+				self.ask(text=text, deviceUid=device, intentFilter=intentList, customData=customData)
 		else:
 			self._mqttClient.publish(constants.TOPIC_START_SESSION, json.dumps(jsonDict))
 
@@ -775,25 +781,25 @@ class MqttManager(Manager):
 		self._mqttClient.publish(constants.TOPIC_CONTINUE_SESSION, json.dumps(jsonDict))
 
 
-	def endDialog(self, sessionId: str = '', text: str = '', client: str = None):
+	def endDialog(self, sessionId: str = '', text: str = '', deviceUid: str = None):
 		"""
 		Ends a session by speaking the given text
 		:param sessionId: int session id to terminate
 		:param text: str Text to speak
-		:param client: str Where to speak
+		:param deviceUid: str Where to speak
 		"""
 		if not sessionId:
 			return
 
 		session = self.DialogManager.getSession(sessionId)
-		if session and client and text and session.siteId != client:
+		if session and deviceUid and text and session.deviceUid != deviceUid:
 			self._mqttClient.publish(constants.TOPIC_END_SESSION, json.dumps({
 				'sessionId': sessionId
 			}))
 
 			self.say(
 				text=text,
-				client=client
+				deviceUid=deviceUid
 			)
 			return
 
@@ -815,38 +821,38 @@ class MqttManager(Manager):
 		}))
 
 
-	def playSound(self, soundFilename: str, location: Path = None, sessionId: str = '', siteId: str = None, uid: str = '', suffix: str = '.wav'):
-
-		siteId = self.getDefaultSiteId(siteId)
+	def playSound(self, soundFilename: str, location: Path = None, sessionId: str = '', deviceUid: Union[str, List[Union[str, Device]]] = None, suffix: str = '.wav', requestId: str = None):
+		if not deviceUid:
+			deviceUid = self.ConfigManager.getAliceConfigByName('uuid')
 
 		if not sessionId:
 			sessionId = str(uuid.uuid4())
 
-		if not uid:
-			uid = str(uuid.uuid4())
+		if not requestId:
+			requestId = str(uuid.uuid4()) #NOSONAR
 
 		if not location:
 			location = Path(self.Commons.rootDir()) / 'system' / 'sounds'
 		elif not location.is_absolute():
 			location = Path(self.Commons.rootDir()) / location
 
-		if siteId == constants.ALL:
-			deviceList = [device.uid for device in self.DeviceManager.getAliceTypeDevices(connectedOnly=True, includeMain=True) if device]
+		if deviceUid == constants.ALL or isinstance(deviceUid, list):
+
+			if not isinstance(deviceUid, list):
+				deviceList = [device.uid for device in self.DeviceManager.getDevicesWithAbilities(abilities=[DeviceAbility.PLAY_SOUND, DeviceAbility.CAPTURE_SOUND])]
+			else:
+				deviceList = [uid if isinstance(uid, str) else uid.uid for uid in deviceUid]
 
 			for device in deviceList:
-				device = device.replace(self.DEFAULT_CLIENT_EXTENSION, '')
-				self.playSound(soundFilename, location, sessionId, device, uid)
+				self.playSound(soundFilename, location, sessionId, deviceUid=device)
 		else:
-			if siteId and ' ' in siteId:
-				siteId = siteId.replace(' ', '_')
-
 			soundFile = Path(location / soundFilename).with_suffix(suffix)
 
 			if not soundFile.exists():
 				self.logError(f"Sound file {soundFile} doesn't exist")
 				return
 
-			self._mqttClient.publish(constants.TOPIC_PLAY_BYTES.format(siteId).replace('#', uid), payload=bytearray(soundFile.read_bytes()))
+			self._mqttClient.publish(constants.TOPIC_PLAY_BYTES.format(deviceUid).replace('#', f'{sessionId}/{requestId}'), payload=bytearray(soundFile.read_bytes()))
 
 
 	def publish(self, topic: str, payload: (dict, str) = None, stringPayload: str = None, qos: int = 0, retain: bool = False):
@@ -863,12 +869,20 @@ class MqttManager(Manager):
 		self._mqttClient.publish(topic, payload, qos, retain)
 
 
-	def mqttBroadcast(self, topic: str, payload: dict = None, qos: int = 0, retain: bool = False, deviceType: str = 'AliceSatellite'):
+	def mqttBroadcast(self, topic: str, payload: dict = None, qos: int = 0, retain: bool = False, deviceList: List[Union[str, Device]] = None):
 		if not payload:
 			payload = dict()
 
-		for device in self.DeviceManager.getDevicesByType(deviceType=deviceType):
-			payload['siteId'] = device.siteId
+		if not deviceList:
+			deviceList = self.DeviceManager.getDevicesWithAbilities(abilities=[DeviceAbility.IS_SATELITTE], connectedOnly=True)
+
+		for device in deviceList:
+			if isinstance(device, Device):
+				uid = device.uid
+			else:
+				uid = device
+
+			payload['uid'] = uid
 			self.publish(topic=topic, payload=payload, qos=qos, retain=retain)
 
 		payload['siteId'] = self.ConfigManager.getAliceConfigByName('uuid')
@@ -902,11 +916,7 @@ class MqttManager(Manager):
 		Activates or disables the feedback sounds, on all devices
 		:param state: str On or off
 		"""
-		deviceList = [device.uid for device in self.DeviceManager.getAliceTypeDevices(connectedOnly=True, includeMain=True) if device]
+		deviceList = [device.uid for device in self.DeviceManager.getDevicesWithAbilities(abilities=[DeviceAbility.PLAY_SOUND, DeviceAbility.CAPTURE_SOUND])]
 
-		for siteId in deviceList:
-			publish.single(constants.TOPIC_TOGGLE_FEEDBACK.format(state.title()), payload=json.dumps({'siteId': siteId}), hostname=self.ConfigManager.getAliceConfigByName('mqttHost'))
-
-
-	def getDefaultSiteId(self, siteId: str = None) -> str:
-		return self.ConfigManager.getAliceConfigByName('uuid') if not siteId else siteId
+		for deviceUid in deviceList:
+			publish.single(constants.TOPIC_TOGGLE_FEEDBACK.format(state.title()), payload=json.dumps({'siteId': deviceUid}), hostname=self.ConfigManager.getAliceConfigByName('mqttHost'))

@@ -20,6 +20,7 @@ class LanguageManager(Manager):
 		self._overrideCountryCode = ''
 
 		self._stringsData = dict()
+		self._webUIData = dict()
 		self._locals = list()
 
 		self._floatExpressionPattern = re.compile(r'([0-9]+\.[0-9]+)')
@@ -31,6 +32,7 @@ class LanguageManager(Manager):
 	def onStart(self):
 		super().onStart()
 		self.loadSystemStrings()
+		self.loadWebUIStrings()
 
 
 	def onBooted(self):
@@ -53,6 +55,12 @@ class LanguageManager(Manager):
 	def loadSystemStrings(self):
 		with open(Path('system/manager/LanguageManager/strings.json')) as jsonFile:
 			self._stringsData['system'] = json.load(jsonFile)
+
+
+	def loadWebUIStrings(self) -> dict:
+		for file in Path('system/manager/WebUIManager/').glob('*.json'):
+			self._webUIData[file.stem] = json.loads(file.read_text())
+		return self._webUIData
 
 
 	def loadSkillStrings(self, skillName: str):
@@ -218,3 +226,8 @@ class LanguageManager(Manager):
 	@property
 	def supportedLanguages(self) -> list:
 		return self._supportedLanguages
+
+
+	@property
+	def webUIStrings(self) -> dict:
+		return self._webUIData

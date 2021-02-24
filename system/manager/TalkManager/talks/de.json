@@ -85,8 +85,12 @@
 		"ja?",
 		"ja?",
 		"ja?",
+		"ja {}?",
+		"ja {}?",
+		"ja {}?",
 		"Was gibt's?",
 		"Ja bitte?",
-		"Zu diensten"
+		"Zu diensten",
+		"Zu diensten {}"
 	]
 }

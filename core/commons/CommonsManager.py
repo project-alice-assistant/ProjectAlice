@@ -3,10 +3,12 @@ import inspect
 import json
 import random
 import socket
+import sqlite3
 import string
 import subprocess
 import tempfile
 import time
+import uuid
 from collections import defaultdict
 from contextlib import contextmanager, suppress
 from ctypes import *
@@ -15,6 +17,7 @@ from pathlib import Path
 from typing import Any, Union
 from uuid import UUID
 
+import jinja2
 import requests
 from googletrans import Translator
 from paho.mqtt.client import MQTTMessage
@@ -49,6 +52,34 @@ class CommonsManager(Manager):
 		return inspect.getmodulename(inspect.stack()[depth][1])
 
 
+	def getMethodCaller(self, **methodParam):
+		"""
+		For dev debug use.
+		Used to print out the calling methods to aid in diagnosing code flow.
+		Additonally will print out key and value of provided methodParams
+
+		:params methodParam: Can call any or no additional parameters to print out those values
+		:return Syslog debug messages
+		"""
+		if not self.ConfigManager.getAliceConfigByName('methodTracing'):
+			return
+		allStackFrames = inspect.stack()
+		step1 = allStackFrames[1]
+		step2 = allStackFrames[2]
+		step3 = allStackFrames[3]
+		step4 = allStackFrames[4]
+
+		self.logInfo(f"![red](*** DEV METHOD TRACING CODE ***)")
+		self.logInfo(f"![yellow](The calling method to get to '{step1[3]}' was '{step2[3]}' in file '{step2[1]}' on line '{step2[2]}')")
+		self.logInfo(f"![yellow](Other calls to get to '{step2[3]}' were '{step3[3]}' method, and before that was '{step4[3]}')")
+
+		if methodParam:
+			for key, value in methodParam.items():
+				self.logInfo(f"'**{key}**' has a value of '**{value}**' ")
+
+		self.logInfo("")
+		self.logInfo(f"![red](**Remember to remove this devCode** from '{step1[1]}' line '{step1[2]}')")
+
 	def isEqualTranslated(self, baseString: str, compareTo: str, skill: str = 'system') -> bool:
 		"""
 		Compares the basestring to the compareTo string. compareTo string if the key in the strings file
@@ -66,6 +97,9 @@ class CommonsManager(Manager):
 
 	@staticmethod
 	def dictMaxValue(dictionary: dict) -> Any:
+		if not dictionary:
+			return 0
+
 		return max(dictionary, key=dictionary.get)
 
 
@@ -132,16 +166,13 @@ class CommonsManager(Manager):
 
 
 	@classmethod
-	def parseSiteId(cls, message: MQTTMessage) -> str:
+	def parseDeviceUid(cls, message: MQTTMessage) -> str:
 		data = cls.payload(message)
 
 		if not isinstance(data, dict):
 			return constants.UNKNOWN
 
-		if 'siteId' in data:
-			return data['siteId'].replace('_', ' ')
-		else:
-			return data.get('IPAddress', SuperManager.SuperManager.getInstance().configManager.getAliceConfigByName('uuid'))
+		return data.get('siteId', data.get('IPAddress', SuperManager.SuperManager.getInstance().configManager.getAliceConfigByName('uuid')))
 
 
 	@staticmethod
@@ -291,14 +322,17 @@ class CommonsManager(Manager):
 		return [result.text for result in Translator().translate(**kwargs)]
 
 
-	def runRootSystemCommand(self, commands: list, shell: bool = False, stdout = subprocess.PIPE, stderr = subprocess.PIPE) -> subprocess.CompletedProcess:
+	def runRootSystemCommand(self, commands: Union[list, str], shell: bool = False, stdout = subprocess.PIPE, stderr = subprocess.PIPE) -> subprocess.CompletedProcess:
+		if isinstance(commands, str) and not shell:
+			commands = commands.split()
+
 		if commands[0] != 'sudo':
 			commands.insert(0, 'sudo')
 		return self.runSystemCommand(commands, shell=shell, stdout=stdout, stderr=stderr)
 
 
 	@staticmethod
-	def runSystemCommand(commands: list, shell: bool = False, stdout = subprocess.PIPE, stderr = subprocess.PIPE) -> subprocess.CompletedProcess:
+	def runSystemCommand(commands: Union[list, str], shell: bool = False, stdout = subprocess.PIPE, stderr = subprocess.PIPE) -> subprocess.CompletedProcess:
 		return subprocess.run(commands, shell=shell, stdout=stdout, stderr=stderr)
 
 
@@ -337,12 +371,34 @@ class CommonsManager(Manager):
 
 
 	@staticmethod
-	def isUuid(uuid: str) -> bool:
+	def isUuid(uid: str) -> bool:
 		try:
-			_ = UUID(uuid)
+			_ = UUID(uid)
 			return True
 		except ValueError:
 			return False
+
+
+	def createFileFromTemplate(self, templateFile: Path, dest: Path, **kwargs):
+		try:
+			templateLoader = jinja2.FileSystemLoader(searchpath=templateFile.parent)
+			templateEnv = jinja2.Environment(loader=templateLoader, autoescape=True)
+			template = templateEnv.get_template(templateFile.name)
+			tmp = Path(f'/tmp/{uuid.uuid4()}')
+			tmp.write_text(template.render(**kwargs))
+
+			cmd = f'mv {str(tmp)} {str(dest)}'.split()
+			if '/home/' not in str(dest):
+				self.runRootSystemCommand(cmd)
+			else:
+				self.runSystemCommand(cmd)
+		except:
+			raise
+
+
+	@staticmethod
+	def dictFromRow(row: sqlite3.Row) -> dict:
+		return dict(zip(row.keys(), row))
 
 
 # noinspection PyUnusedLocal

@@ -1,4 +1,7 @@
+import sqlite3
 from typing import Optional
+
+import typing
 
 from core.base.SuperManager import SuperManager
 from core.base.model.ProjectAliceObject import ProjectAliceObject
@@ -30,6 +33,20 @@ class Manager(ProjectAliceObject):
 	def isActive(self, value: bool):
 		self._isActive = value
 
+	def getMethodCaller(self, **kwargs):
+		"""
+		Used to print out the calling methods to aid in diagnosing code flow.
+
+		:params methodParam: Can call any or no additional parameters to print out those values
+		:return Syslog debug messages
+		"""
+		if self.ConfigManager.getAliceConfigByName('methodTracing'):
+			try:
+				return self.Commons.getMethodCaller()
+			except Exception as e:
+				self.logError(f'Something went wrong retrieving method caller: {e}')
+
+
 
 	def getFunctionCaller(self) -> Optional[str]:
 		try:
@@ -57,7 +74,7 @@ class Manager(ProjectAliceObject):
 
 
 	# HELPERS
-	def databaseFetch(self, tableName: str, query: str = None, values: dict = None, method: str = 'one') -> list:
+	def databaseFetch(self, tableName: str, query: str = None, values: dict = None, method: str = 'one') -> typing.Union[typing.Dict, sqlite3.Row]:
 		if not query:
 			query = 'SELECT * FROM :__table__'
 

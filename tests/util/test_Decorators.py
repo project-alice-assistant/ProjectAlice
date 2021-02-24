@@ -69,8 +69,8 @@ class TestDecorators(unittest.TestCase):
 		mock_session = MagicMock()
 		mock_sessionId = mock.PropertyMock(return_value='sessionId')
 		type(mock_session).sessionId = mock_sessionId
-		mock_siteId = mock.PropertyMock(return_value='siteId')
-		type(mock_session).siteId = mock_siteId
+		mock_deviceUid = mock.PropertyMock(return_value='deviceUid')
+		type(mock_session).deviceUid = mock_deviceUid
 
 		# when there is already no internet
 		self.assertEqual(exampleObject.offline(), 'offline')
@@ -103,7 +103,7 @@ class TestDecorators(unittest.TestCase):
 
 		exampleObject.offline(session=mock_session)
 		mock_instance.talkManager.randomTalk.assert_called_once_with('offline', skill='AliceSkill')
-		mock_instance.mqttManager.say.assert_called_once_with(text='offline', client='siteId')
+		mock_instance.mqttManager.say.assert_called_once_with(text='offline', deviceUid='deviceUid')
 		mock_instance.reset_mock()
 
 		# raise exception when it is not offline
@@ -182,8 +182,8 @@ class TestDecorators(unittest.TestCase):
 		mock_session = MagicMock()
 		mock_sessionId = mock.PropertyMock(return_value='sessionId')
 		type(mock_session).sessionId = mock_sessionId
-		mock_siteId = mock.PropertyMock(return_value='siteId')
-		type(mock_session).siteId = mock_siteId
+		mock_deviceUid = mock.PropertyMock(return_value='deviceUid')
+		type(mock_session).deviceUid = mock_deviceUid
 
 		# when no DialogSession is provided return text
 		self.assertEqual(exampleObject.catch_all(), 'error')
@@ -205,7 +205,7 @@ class TestDecorators(unittest.TestCase):
 
 		exampleObject.catch_all(session=mock_session)
 		mock_instance.talkManager.randomTalk.assert_called_once_with('error', skill='AliceSkill')
-		mock_instance.mqttManager.say.assert_called_once_with(text='error', client='siteId')
+		mock_instance.mqttManager.say.assert_called_once_with(text='error', deviceUid='deviceUid')
 		mock_instance.reset_mock()
 
 		# raise exception when it is not in the exceptions list

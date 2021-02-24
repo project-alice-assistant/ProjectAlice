@@ -72,11 +72,15 @@ class Asr(ProjectAliceObject):
 		return False
 
 
+	def updateCredentials(self):
+		pass # Superseeded
+
+
 	def partialTextCaptured(self, session: DialogSession, text: str, likelihood: float, seconds: float):
 		self.MqttManager.publish(constants.TOPIC_PARTIAL_TEXT_CAPTURED, json.dumps({
 			'text'      : text,
 			'likelihood': likelihood,
 			'seconds'   : seconds,
-			'siteId'    : session.siteId,
+			'siteId'    : session.deviceUid,
 			'sessionId' : session.sessionId
 		}))

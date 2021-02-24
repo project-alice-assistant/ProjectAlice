@@ -1,8 +1,13 @@
 import json
 import re
 import shutil
+import threading
+import time
 from pathlib import Path
 from subprocess import CompletedProcess
+
+import subprocess
+from typing import Optional
 
 from core.commons import constants
 from core.nlu.model.NluEngine import NluEngine
@@ -18,16 +23,44 @@ class SnipsNlu(NluEngine):
 		super().__init__()
 		self._cachePath = Path(self.Commons.rootDir(), f'var/cache/nlu/trainingData')
 		self._timer = None
+		self._thread: Optional[threading.Thread] = None
+		self._flag = threading.Event()
 
 
 	def start(self):
 		super().start()
-		self.Commons.runRootSystemCommand(['systemctl', 'start', 'snips-nlu'])
+		self._flag.clear()
+		if self._thread and self._thread.is_alive():
+			self._thread.join(timeout=5)
+
+		self._thread: threading.Thread = self.ThreadManager.newThread(name='nluEngine', target=self.run, autostart=False)
+		self._thread.start()
 
 
 	def stop(self):
 		super().stop()
-		self.Commons.runRootSystemCommand(['systemctl', 'stop', 'snips-nlu'])
+		self._flag.clear()
+		if self._thread and self._thread.is_alive():
+			self.ThreadManager.terminateThread(name='nluEngine')
+
+
+	def run(self):
+		cmd = f'snips-nlu -a {self.Commons.rootDir()}/assistant --mqtt {self.ConfigManager.getAliceConfigByName("mqttHost")}:{self.ConfigManager.getAliceConfigByName("mqttPort")}'
+
+		if self.ConfigManager.getAliceConfigByName('mqttUser'):
+			cmd += f' --mqtt-username {self.ConfigManager.getAliceConfigByName("mqttUser")} --mqtt-password {self.ConfigManager.getAliceConfigByName("mqttPassword")}'
+
+		if self.ConfigManager.getAliceConfigByName('mqttTLSFile'):
+			cmd += f' --mqtt-tls-cafile {self.ConfigManager.getAliceConfigByName("mqttTLSFile")}'
+
+		process = subprocess.Popen(cmd.split(), stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+
+		self._flag.set()
+		try:
+			while self._flag.is_set():
+				time.sleep(0.5)
+		finally:
+			process.terminate()
 
 
 	def convertDialogTemplate(self, file: Path):
@@ -162,15 +195,15 @@ class SnipsNlu(NluEngine):
 
 				shutil.move(tempTrainingData, assistantPath)
 
-				self.broadcast(method=constants.EVENT_NLU_TRAINED, exceptions=[constants.DUMMY], propagateToSkills=True)
-				self.Commons.runRootSystemCommand(['systemctl', 'restart', 'snips-nlu'])
-
 			self._timer.cancel()
 			self.MqttManager.publish(constants.TOPIC_NLU_TRAINING_STATUS, payload={'status': 'done'})
 			self.ThreadManager.getEvent('TrainAssistant').clear()
 			self.logInfo(f'Snips NLU trained in {stopWatch} seconds')
+
+			self.broadcast(method=constants.EVENT_NLU_TRAINED, exceptions=[constants.DUMMY], propagateToSkills=True)
+			self.NluManager.restartEngine()
 		except:
-			pass  # Do nothing, the finally clause will finish the work
+			self.MqttManager.publish(constants.TOPIC_NLU_TRAINING_STATUS, payload={'status': 'failed'})
 		finally:
 			self.NluManager.training = False
 

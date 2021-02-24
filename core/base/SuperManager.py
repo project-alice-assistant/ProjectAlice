@@ -1,6 +1,9 @@
 from __future__ import annotations
 
+import traceback
+
 from core.commons import constants
+from core.device.model.DeviceAbility import DeviceAbility
 from core.util.model.Logger import Logger
 
 
@@ -34,13 +37,15 @@ class SuperManager:
 		self.multiIntentManager = None
 		self.telemetryManager = None
 		self.skillManager = None
+		self.widgetManager = None
 		self.deviceManager = None
 		self.locationManager = None
 		self.internetManager = None
 		self.wakewordRecorder = None
 		self.userManager = None
 		self.talkManager = None
-		self.webInterfaceManager = None
+		self.webUiManager = None
+		self.apiManager = None
 		self.nodeRedManager = None
 		self.skillStoreManager = None
 		self.nluManager = None
@@ -51,12 +56,16 @@ class SuperManager:
 		self.locationManager = None
 		self.wakewordManager = None
 		self.assistantManager = None
+		self.stateManager = None
 
 
 	def onStart(self):
 		try:
 			commons = self._managers.pop('CommonsManager')
 			commons.onStart()
+
+			stateManager = self._managers.pop('StateManager')
+			stateManager.onStart()
 
 			configManager = self._managers.pop('ConfigManager')
 			configManager.onStart()
@@ -66,9 +75,6 @@ class SuperManager:
 
 			locationManager = self._managers.pop('LocationManager')
 			locationManager.onStart()
-
-			deviceManager = self._managers.pop('DeviceManager')
-			deviceManager.onStart()
 
 			audioServer = self._managers.pop('AudioManager')
 			audioServer.onStart()
@@ -87,6 +93,8 @@ class SuperManager:
 
 			talkManager = self._managers.pop('TalkManager')
 			skillManager = self._managers.pop('SkillManager')
+			deviceManager = self._managers.pop('DeviceManager')
+			widgetManager = self._managers.pop('WidgetManager')
 			assistantManager = self._managers.pop('AssistantManager')
 			dialogTemplateManager = self._managers.pop('DialogTemplateManager')
 			nluManager = self._managers.pop('NluManager')
@@ -99,6 +107,8 @@ class SuperManager:
 			talkManager.onStart()
 			nluManager.onStart()
 			skillManager.onStart()
+			deviceManager.onStart()
+			widgetManager.onStart()
 			dialogTemplateManager.onStart()
 			assistantManager.onStart()
 			nodeRedManager.onStart()
@@ -113,11 +123,13 @@ class SuperManager:
 			self._managers[userManager.name] = userManager
 			self._managers[mqttManager.name] = mqttManager
 			self._managers[skillManager.name] = skillManager
+			self._managers[widgetManager.name] = widgetManager
 			self._managers[dialogTemplateManager.name] = dialogTemplateManager
 			self._managers[assistantManager.name] = assistantManager
 			self._managers[nluManager.name] = nluManager
 			self._managers[internetManager.name] = internetManager
 			self._managers[nodeRedManager.name] = nodeRedManager
+			self._managers[stateManager.name] = stateManager
 		except Exception as e:
 			import traceback
 
@@ -126,8 +138,6 @@ class SuperManager:
 
 
 	def onBooted(self):
-		self.mqttManager.playSound(soundFilename='boot')
-
 		manager = None
 		try:
 			for manager in self._managers.values():
@@ -135,6 +145,9 @@ class SuperManager:
 					manager.onBooted()
 		except Exception as e:
 			Logger().logError(f'Error while sending onBooted to manager **{manager.name}**: {e}')
+
+		deviceList = self.deviceManager.getDevicesWithAbilities([DeviceAbility.IS_SATELITTE, DeviceAbility.IS_CORE])
+		self.mqttManager.playSound(soundFilename='boot', deviceUid=deviceList)
 
 
 	@staticmethod
@@ -146,8 +159,9 @@ class SuperManager:
 		from core.commons.CommonsManager import CommonsManager
 		from core.base.ConfigManager import ConfigManager
 		from core.base.SkillManager import SkillManager
+		from core.webui.WidgetManager import WidgetManager
 		from core.device.DeviceManager import DeviceManager
-		from core.device.LocationManager import LocationManager
+		from core.myHome.LocationManager import LocationManager
 		from core.dialog.MultiIntentManager import MultiIntentManager
 		from core.server.MqttManager import MqttManager
 		from core.user.UserManager import UserManager
@@ -161,8 +175,8 @@ class SuperManager:
 		from core.voice.TalkManager import TalkManager
 		from core.voice.TTSManager import TTSManager
 		from core.voice.WakewordRecorder import WakewordRecorder
-		from core.interface.WebInterfaceManager import WebInterfaceManager
-		from core.interface.NodeRedManager import NodeRedManager
+		from core.webApi.ApiManager import ApiManager
+		from core.webui.NodeRedManager import NodeRedManager
 		from core.base.SkillStoreManager import SkillStoreManager
 		from core.dialog.DialogTemplateManager import DialogTemplateManager
 		from core.base.AssistantManager import AssistantManager
@@ -171,12 +185,16 @@ class SuperManager:
 		from core.server.AudioServer import AudioManager
 		from core.dialog.DialogManager import DialogManager
 		from core.voice.WakewordManager import WakewordManager
+		from core.webui.WebUIManager import WebUIManager
+		from core.base.StateManager import StateManager
 
 		self.commonsManager = CommonsManager()
 		self.commons = self.commonsManager
+		self.stateManager = StateManager()
 		self.configManager = ConfigManager()
 		self.databaseManager = DatabaseManager()
 		self.skillManager = SkillManager()
+		self.widgetManager = WidgetManager()
 		self.deviceManager = DeviceManager()
 		self.audioManager = AudioManager()
 		self.languageManager = LanguageManager()
@@ -192,7 +210,8 @@ class SuperManager:
 		self.internetManager = InternetManager()
 		self.wakewordRecorder = WakewordRecorder()
 		self.talkManager = TalkManager()
-		self.webInterfaceManager = WebInterfaceManager()
+		self.webUiManager = WebUIManager()
+		self.apiManager = ApiManager()
 		self.nodeRedManager = NodeRedManager()
 		self.skillStoreManager = SkillStoreManager()
 		self.dialogTemplateManager = DialogTemplateManager()
@@ -217,6 +236,7 @@ class SuperManager:
 			mqttManager.onStop()
 		except Exception as e:
 			Logger().logError(f'Error while shutting down manager **{managerName}**: {e}')
+			traceback.print_exc()
 
 
 	def getManager(self, managerName: str):

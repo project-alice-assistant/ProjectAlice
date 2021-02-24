@@ -13,6 +13,7 @@ from core.base.model.Manager import Manager
 from core.commons import constants
 from core.dialog.model.DialogSession import DialogSession
 from core.util.model.AliceEvent import AliceEvent
+from core.voice.WakewordRecorder import WakewordRecorderState
 
 
 class AudioManager(Manager):
@@ -31,10 +32,9 @@ class AudioManager(Manager):
 		self._waves: Dict[str, wave.Wave_write] = dict()
 		self._audioInputStream = None
 
-		if self.ConfigManager.getAliceConfigByName('disableSoundAndMic'):
-			return
+		if not self.ConfigManager.getAliceConfigByName('disableCapture'):
+			self._vad = Vad(2)
 
-		self._vad = Vad(2)
 		self._audioInput = None
 		self._audioOutput = None
 
@@ -69,7 +69,9 @@ class AudioManager(Manager):
 		self._stopPlayingFlag = self.ThreadManager.newEvent('stopPlaying')
 		self.MqttManager.mqttClient.subscribe(constants.TOPIC_AUDIO_FRAME.format(self.ConfigManager.getAliceConfigByName('uuid')))
 
-		if not self.ConfigManager.getAliceConfigByName('disableSoundAndMic'):
+
+	def onBooted(self):
+		if not self.ConfigManager.getAliceConfigByName('disableCapture'):
 			self.ThreadManager.newThread(name='audioPublisher', target=self.publishAudio)
 
 
@@ -82,39 +84,40 @@ class AudioManager(Manager):
 
 	def onStop(self):
 		super().onStop()
-		self._audioInputStream.stop(ignore_errors=True)
-		self._audioInputStream.close(ignore_errors=True)
-		self.MqttManager.mqttClient.unsubscribe(constants.TOPIC_AUDIO_FRAME.format(self.ConfigManager.getAliceConfigByName('uuid')))
+		if self._audioInputStream:
+			self._audioInputStream.stop(ignore_errors=True)
+			self._audioInputStream.close(ignore_errors=True)
+		self.MqttManager.mqttClient.unsubscribe(constants.TOPIC_AUDIO_FRAME.format(self.DeviceManager.getMainDevice().uid))
 
 
 	def onStartListening(self, session: DialogSession):
-		if not self.ConfigManager.getAliceConfigByName('recordAudioAfterWakeword'):
+		if not self.ConfigManager.getAliceConfigByName('recordAudioAfterWakeword') and self.WakewordRecorder.state != WakewordRecorderState.RECORDING:
 			return
 
-		path = Path(self.LAST_USER_SPEECH.format(session.user, session.siteId))
+		path = Path(self.LAST_USER_SPEECH.format(session.user, session.deviceUid))
 
 		if path.exists():
-			path.rename(Path(self.SECOND_LAST_USER_SPEECH.format(session.user, session.siteId)))
+			path.rename(Path(self.SECOND_LAST_USER_SPEECH.format(session.user, session.deviceUid)))
 
 		waveFile = wave.open(str(path), 'wb')
 		waveFile.setsampwidth(2)
 		waveFile.setframerate(self.AudioServer.SAMPLERATE)
 		waveFile.setnchannels(1)
-		self._waves[session.siteId] = waveFile
+		self._waves[session.deviceUid] = waveFile
 
 
 	def onCaptured(self, session: DialogSession):
-		wav = self._waves.pop(session.siteId, None)
+		wav = self._waves.pop(session.deviceUid, None)
 		if not wav:
 			return
 		wav.close()
 
 
-	def recordFrame(self, siteId: str, frame: bytes):
-		if siteId not in self._waves:
+	def recordFrame(self, deviceUid: str, frame: bytes):
+		if deviceUid not in self._waves:
 			return
 
-		self._waves[siteId].writeframes(frame)
+		self._waves[deviceUid].writeframes(frame)
 
 
 	def publishAudio(self):
@@ -145,9 +148,9 @@ class AudioManager(Manager):
 					elif speechFrames >= minSpeechFrames:
 						speech = True
 						self.MqttManager.publish(
-							topic=constants.TOPIC_VAD_UP.format(self.ConfigManager.getAliceConfigByName('uuid')),
+							topic=constants.TOPIC_VAD_UP.format(self.DeviceManager.getMainDevice().uid),
 							payload={
-								'siteId': self.ConfigManager.getAliceConfigByName('uuid')
+								'siteId': self.DeviceManager.getMainDevice().uid
 							})
 						silence = self.SAMPLERATE / self.FRAMES_PER_BUFFER
 						speechFrames = 0
@@ -158,9 +161,9 @@ class AudioManager(Manager):
 						else:
 							speech = False
 							self.MqttManager.publish(
-								topic=constants.TOPIC_VAD_DOWN.format(self.ConfigManager.getAliceConfigByName('uuid')),
+								topic=constants.TOPIC_VAD_DOWN.format(self.DeviceManager.getMainDevice().uid),
 								payload={
-									'siteId': self.ConfigManager.getAliceConfigByName('uuid')
+									'siteId': self.DeviceManager.getMainDevice().uid
 								})
 					else:
 						speechFrames = 0
@@ -179,11 +182,11 @@ class AudioManager(Manager):
 				wav.writeframes(frames)
 
 			audioFrames = buffer.getvalue()
-			self.MqttManager.publish(topic=constants.TOPIC_AUDIO_FRAME.format(self.ConfigManager.getAliceConfigByName('uuid')), payload=bytearray(audioFrames))
+			self.MqttManager.publish(topic=constants.TOPIC_AUDIO_FRAME.format(self.DeviceManager.getMainDevice().uid), payload=bytearray(audioFrames))
 
 
-	def onPlayBytes(self, requestId: str, payload: bytearray, siteId: str, sessionId: str = None):
-		if siteId != self.ConfigManager.getAliceConfigByName('uuid') or self.ConfigManager.getAliceConfigByName('disableSoundAndMic'):
+	def onPlayBytes(self, requestId: str, payload: bytearray, deviceUid: str, sessionId: str = None):
+		if deviceUid != self.DeviceManager.getMainDevice().uid or self.ConfigManager.getAliceConfigByName('disableSound'):
 			return
 
 		self._playing = True
@@ -209,7 +212,7 @@ class AudioManager(Manager):
 						callback=streamCallback
 					)
 
-					self.logDebug(f'Playing wav stream using **{self._audioOutput}** audio output from site id **{self.DeviceManager.siteIdToDeviceName(siteId)}** (channels: {channels}, rate: {framerate})')
+					self.logDebug(f'Playing wav stream using **{self._audioOutput}** audio output from device **{self.DeviceManager.getDevice(uid=deviceUid).displayName}** (channels: {channels}, rate: {framerate})')
 					stream.start()
 					while stream.active:
 						if self._stopPlayingFlag.is_set():
@@ -222,7 +225,7 @@ class AudioManager(Manager):
 									payload={
 										'id'       : requestId,
 										'sessionId': sessionId,
-										'siteId'   : siteId
+										'siteId'   : deviceUid
 									}
 								)
 								self.DialogManager.onEndSession(self.DialogManager.getSession(sessionId))
@@ -242,7 +245,7 @@ class AudioManager(Manager):
 
 		# Session id support is not Hermes protocol official
 		self.MqttManager.publish(
-			topic=constants.TOPIC_PLAY_BYTES_FINISHED.format(siteId),
+			topic=constants.TOPIC_PLAY_BYTES_FINISHED.format(deviceUid),
 			payload={
 				'id'       : requestId,
 				'sessionId': sessionId
