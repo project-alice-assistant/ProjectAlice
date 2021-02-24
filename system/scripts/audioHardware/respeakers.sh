@@ -10,7 +10,7 @@ fi
 # use alt repo that works with latest kernel without downgrading
 git clone https://github.com/HinTak/seeed-voicecard.git
 cd seeed-voicecard || exit
-git checkout v5.5
+git checkout v5.9
 git pull
 chmod +x ./install.sh
 ./install.sh --compat-kernel
