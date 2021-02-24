@@ -70,7 +70,7 @@ class WakewordRecorder(Manager):
 
 
 	def startCapture(self):
-		self.DialogManager.disableCaptureChime()
+		self.DialogManager.disableCaptureFeedback()
 		self._state = WakewordRecorderState.RECORDING
 
 

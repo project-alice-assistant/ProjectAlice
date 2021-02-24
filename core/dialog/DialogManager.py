@@ -33,7 +33,7 @@ class DialogManager(Manager):
 		self._disabledByDefaultIntents = set()
 		self._enabledByDefaultIntents = set()
 
-		self._userInputCaptureChime = True
+		self._captureFeedback = True
 
 
 	def newSession(self, deviceUid: str, user: str = constants.UNKNOWN_USER, message: MQTTMessage = None, increaseTimeout: int = 0) -> DialogSession:
@@ -221,7 +221,7 @@ class DialogManager(Manager):
 			self.onEndSession(session=session, reason='abortedByUser')
 			return
 
-		if self._userInputCaptureChime:
+		if self._captureFeedback:
 			self.MqttManager.publish(
 				topic=constants.TOPIC_PLAY_BYTES.format(session.deviceUid).replace('#', session.sessionId),
 				payload=bytearray(Path(f'system/sounds/{self.LanguageManager.activeLanguage}/end_of_input.wav').read_bytes())
@@ -392,7 +392,7 @@ class DialogManager(Manager):
 
 
 	def onEndSession(self, session: DialogSession, reason: str = 'nominal'):
-		self.enableCaptureChime()
+		self.enableCaptureFeedback()
 		text = session.payload.get('text', '')
 
 		if text:
@@ -548,9 +548,9 @@ class DialogManager(Manager):
 		return self._enabledByDefaultIntents
 
 
-	def disableCaptureChime(self):
-		self._userInputCaptureChime = False
+	def disableCaptureFeedback(self):
+		self._captureFeedback = False
 
 
-	def enableCaptureChime(self):
-		self._userInputCaptureChime = True
+	def enableCaptureFeedback(self):
+		self._captureFeedback = True

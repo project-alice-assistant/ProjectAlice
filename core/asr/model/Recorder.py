@@ -8,6 +8,7 @@ import paho.mqtt.client as mqtt
 from core.base.model.ProjectAliceObject import ProjectAliceObject
 from core.dialog.model.DialogSession import DialogSession
 from core.util.model.AliceEvent import AliceEvent
+from core.voice.WakewordRecorder import WakewordRecorderState
 
 
 class Recorder(ProjectAliceObject):
@@ -56,7 +57,7 @@ class Recorder(ProjectAliceObject):
 					while frame:
 						self._buffer.put(frame)
 
-						if self.ConfigManager.getAliceConfigByName('recordAudioAfterWakeword'):
+						if self.ConfigManager.getAliceConfigByName('recordAudioAfterWakeword') or self.WakewordRecorder.state == WakewordRecorderState.RECORDING:
 							self.AudioServer.recordFrame(deviceUid, frame)
 
 						frame = wav.readframes(512)
