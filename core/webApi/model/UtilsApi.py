@@ -3,6 +3,7 @@ from flask_classful import route
 
 from core.ProjectAliceExceptions import ConfigurationUpdateFailed
 from core.commons import constants
+from core.device.model.DeviceAbility import DeviceAbility
 from core.webApi.model.Api import Api
 from core.util.Decorators import ApiAuthenticated
 
@@ -165,6 +166,10 @@ class UtilsApi(Api):
 			uid = request.headers.get('uid', '')
 			if not uid:
 				raise Exception('No device uid defined')
+
+			device = self.DeviceManager.getDevice(uid=uid)
+			if not device.hasAbilities(abilities=[DeviceAbility.PLAY_SOUND, DeviceAbility.CAPTURE_SOUND]):
+				uid = self.DeviceManager.getMainDevice().uid
 
 			session = self.DialogManager.newSession(deviceUid=uid)
 			self.SkillManager.getSkillInstance('AliceCore').addNewUser(session=session)
