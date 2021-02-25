@@ -50,7 +50,7 @@ class UserManager(Manager):
 
 
 	def createApiToken(self, user: User, save: bool = True) -> str:
-		token = jwt.encode({'user': user.name, 'birth': time()}, 'projectalice', algorithm='HS256').decode()
+		token = jwt.encode({'user': user.name, 'birth': time()}, 'projectalice', algorithm='HS256')
 		self._validtokens[token] = user
 
 		if save:
@@ -80,7 +80,9 @@ class UserManager(Manager):
 
 	# noinspection SqlResolve
 	def addNewUser(self, name: str, access: str = 'guest', state: str = 'home', pinCode: int = None):
+		print(pinCode, self.ConfigManager.getAliceConfigByName('adminPinCode'))
 		hashedPassword = self.getHashedPassword(pinCode or 1234)
+		print(hashedPassword)
 
 		insertId = self.databaseInsert(
 			tableName='users',
