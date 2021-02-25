@@ -13,6 +13,6 @@ cd seeed-voicecard || exit
 git checkout v5.9
 git pull
 chmod +x ./install.sh
-./install.sh --compat-kernel
+./install.sh
 
 sleep 1
