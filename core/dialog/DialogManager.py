@@ -447,7 +447,7 @@ class DialogManager(Manager):
 
 	def onSessionError(self, session: DialogSession):
 		self.MqttManager.publish(
-			topic=constants.TOPIC_PLAY_BYTES.format(session.deviceUid).replace('#', f'{uuid.uuid4()}'),
+			topic=constants.TOPIC_PLAY_BYTES.format(session.deviceUid).replace('#', session.sessionId),
 			payload=bytearray(Path(f'system/sounds/{self.LanguageManager.activeLanguage}/error.wav').read_bytes())
 		)
 

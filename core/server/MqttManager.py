@@ -574,23 +574,16 @@ class MqttManager(Manager):
 		:param msg:
 		:return:
 		"""
-		split = msg.topic.rsplit('/')
-		if len(split) > 4:
-			requestId = msg.topic.rsplit('/')[-1]
-			sessionId = msg.topic.rsplit('/')[-2]
-		else:
-			requestId = msg.topic.rsplit('/')[-1]
-			sessionId = None
+		sessionId = msg.topic.rsplit('/')[-1]
+		deviceUid = msg.topic.rsplit('/')[-3]
 
-		deviceUid = self.Commons.parseDeviceUid(msg)
-		self.broadcast(method=constants.EVENT_PLAY_BYTES, exceptions=self.name, propagateToSkills=True, requestId=requestId, payload=msg.payload, deviceUid=deviceUid, sessionId=sessionId)
+		self.broadcast(method=constants.EVENT_PLAY_BYTES, exceptions=self.name, propagateToSkills=True, payload=msg.payload, deviceUid=deviceUid, sessionId=sessionId)
 
 
 	def topicPlayBytesFinished(self, _client, _data, msg: mqtt.MQTTMessage):
 		deviceUid = self.Commons.parseDeviceUid(msg)
 		sessionId = self.Commons.parseSessionId(msg)
-		requestId = self.Commons.payload(msg).get('id', None)
-		self.broadcast(method=constants.EVENT_PLAY_BYTES_FINISHED, exceptions=self.name, propagateToSkills=True, requestId=requestId, deviceUid=deviceUid, sessionId=sessionId)
+		self.broadcast(method=constants.EVENT_PLAY_BYTES_FINISHED, exceptions=self.name, propagateToSkills=True, deviceUid=deviceUid, sessionId=sessionId)
 
 
 	def deviceHeartbeat(self, _client, _data, msg: mqtt.MQTTMessage):
@@ -821,15 +814,26 @@ class MqttManager(Manager):
 		}))
 
 
-	def playSound(self, soundFilename: str, location: Path = None, sessionId: str = '', deviceUid: Union[str, List[Union[str, Device]]] = None, suffix: str = '.wav', requestId: str = None):
+	def playSound(self, soundFilename: str, location: Path = None, sessionId: str = '', deviceUid: Union[str, List[Union[str, Device]]] = None, suffix: str = '.wav'):
+		"""
+		Sends audio chunks from the audio file over Mqtt. Note that instead of using a random "requestId"
+		at the end of the topic, we use the session id if available.
+		:param soundFilename:
+		:param location:
+		:param sessionId:
+		:param deviceUid:
+		:param suffix:
+		:return:
+		"""
 		if not deviceUid:
 			deviceUid = self.ConfigManager.getAliceConfigByName('uuid')
 
 		if not sessionId:
 			sessionId = str(uuid.uuid4())
 
-		if not requestId:
-			requestId = str(uuid.uuid4()) #NOSONAR
+		session = self.DialogManager.getSession(sessionId=sessionId)
+		if session and not self.TTSManager.speaking:
+			session.lastWasSoundPlayOnly = True
 
 		if not location:
 			location = Path(self.Commons.rootDir()) / 'system' / 'sounds'
@@ -852,7 +856,7 @@ class MqttManager(Manager):
 				self.logError(f"Sound file {soundFile} doesn't exist")
 				return
 
-			self._mqttClient.publish(constants.TOPIC_PLAY_BYTES.format(deviceUid).replace('#', f'{sessionId}/{requestId}'), payload=bytearray(soundFile.read_bytes()))
+			self._mqttClient.publish(constants.TOPIC_PLAY_BYTES.format(deviceUid).replace('#', sessionId), payload=bytearray(soundFile.read_bytes()))
 
 
 	def publish(self, topic: str, payload: (dict, str) = None, stringPayload: str = None, qos: int = 0, retain: bool = False):

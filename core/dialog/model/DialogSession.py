@@ -36,6 +36,7 @@ class DialogSession:
 	intentHistory: list = field(default_factory=list)
 	intentFilter: list = field(default_factory=list)
 	textOnly: bool = False
+	lastWasSoundPlayOnly: bool = False # We don't use request ids for play bytes topic. Both say and playaudio use play bytes, therefor we need to track if the last play bytes was sound only or TTS
 
 
 	def __post_init__(self):  # NOSONAR

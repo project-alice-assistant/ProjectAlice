@@ -95,6 +95,13 @@ class TTSManager(Manager):
 
 
 	@property
+	def speaking(self) -> bool:
+		if not self._tts:
+			return False
+		return self._tts.speaking
+
+
+	@property
 	def cacheRoot(self) -> Path:
 		return self._cacheRoot
 

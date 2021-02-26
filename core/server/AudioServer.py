@@ -1,5 +1,6 @@
 import io
 import time
+import uuid
 import wave
 from pathlib import Path
 from typing import Dict, Optional
@@ -185,9 +186,11 @@ class AudioManager(Manager):
 			self.MqttManager.publish(topic=constants.TOPIC_AUDIO_FRAME.format(self.DeviceManager.getMainDevice().uid), payload=bytearray(audioFrames))
 
 
-	def onPlayBytes(self, requestId: str, payload: bytearray, deviceUid: str, sessionId: str = None):
+	def onPlayBytes(self, payload: bytearray, deviceUid: str, sessionId: str = None, requestId: str = None):
 		if deviceUid != self.DeviceManager.getMainDevice().uid or self.ConfigManager.getAliceConfigByName('disableSound'):
 			return
+
+		requestId = requestId or sessionId or str(uuid.uuid4())
 
 		self._playing = True
 		with io.BytesIO(payload) as buffer:
@@ -219,18 +222,23 @@ class AudioManager(Manager):
 							stream.stop()
 							stream.close()
 
-							if sessionId:
-								self.MqttManager.publish(
-									topic=constants.TOPIC_TTS_FINISHED,
-									payload={
-										'id'       : requestId,
-										'sessionId': sessionId,
-										'siteId'   : deviceUid
-									}
-								)
-								self.DialogManager.onEndSession(self.DialogManager.getSession(sessionId))
+							if not sessionId:
+								raise PlayBytesStopped
 
-							raise PlayBytesStopped
+							session = self.DialogManager.getSession(sessionId=sessionId)
+							if session.lastWasSoundPlayOnly:
+								raise PlayBytesStopped
+
+							self.MqttManager.publish(
+								topic=constants.TOPIC_TTS_FINISHED,
+								payload={
+									'id'       : requestId,
+									'sessionId': sessionId,
+									'siteId'   : deviceUid
+								}
+							)
+							self.DialogManager.onEndSession(session)
+
 						time.sleep(0.1)
 
 					stream.stop()
