@@ -1,5 +1,5 @@
 wheel==0.34.2
-python-dateutil==2.8.0
+python-dateutil==2.8.1
 paho-mqtt==1.5.0
 requests==2.25.1
 esptool==3.0
