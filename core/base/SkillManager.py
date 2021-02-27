@@ -927,13 +927,13 @@ class SkillManager(Manager):
 			supportedLanguages = [
 				'en'
 			]
-			if skillDefinition['fr'] == 'yes':
+			if skillDefinition['fr'] == 'true':
 				supportedLanguages.append('fr')
-			if skillDefinition['de'] == 'yes':
+			if skillDefinition['de'] == 'true':
 				supportedLanguages.append('de')
-			if skillDefinition['it'] == 'yes':
+			if skillDefinition['it'] == 'true':
 				supportedLanguages.append('it')
-			if skillDefinition['pl'] == 'yes':
+			if skillDefinition['pl'] == 'true':
 				supportedLanguages.append('pl')
 
 			conditions = {
