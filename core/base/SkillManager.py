@@ -921,7 +921,7 @@ class SkillManager(Manager):
 			skillName = skillDefinition['name'][0].upper() + skillDefinition['name'][1:]
 
 			localDirectory = Path('/home', getpass.getuser(), f'ProjectAlice/skills/{skillName}')
-			if not localDirectory.exists():
+			if localDirectory.exists():
 				raise Exception("Skill name exists locally")
 
 			supportedLanguages = [
