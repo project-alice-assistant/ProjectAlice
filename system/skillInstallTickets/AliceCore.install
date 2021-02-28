@@ -1,25 +1,28 @@
 {
-	"name": "AliceCore",
-	"version": "1.2.6",
-	"icon": "fab fa-creative-commons-by",
-	"category": "alice",
-	"author": "ProjectAlice",
-	"maintainers": [
-		"Psycho",
-		"Jierka",
-		"maxbachmann",
-		"philipp2310"
-	],
-	"desc": "AliceCore is the official skill that handles all core intents.",
-	"aliceMinVersion": "1.0.0-b1",
-	"systemRequirements": [],
-	"pipRequirements": [],
-	"conditions": {
-		"lang": [
-			"en",
-			"fr",
-			"de",
-			"it"
-		]
-	}
+  "name": "AliceCore",
+  "version": "1.5.11",
+  "icon": "fab fa-creative-commons-by",
+  "category": "alice",
+  "author": "ProjectAlice",
+  "maintainers": [
+	"Psycho",
+	"Jierka",
+	"maxbachmann",
+	"philipp2310",
+	"ChrisB85",
+  	"lazza"
+  ],
+    "desc": "AliceCore is the official skill that handles all core intents.",
+    "aliceMinVersion": "1.0.0-b5",
+    "systemRequirements": [],
+    "pipRequirements": [],
+    "conditions": {
+        "lang": [
+            "en",
+            "fr",
+            "de",
+            "it",
+            "pl"
+        ]
+    }
 }

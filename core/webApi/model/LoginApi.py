@@ -23,8 +23,8 @@ class LoginApi(Api):
 			token = self.UserManager.getUser(username).apiToken or self.UserManager.createApiToken(self.UserManager.getUser(username))
 
 			return jsonify(apiToken=token, authLevel=self.UserManager.apiTokenLevel(token))
-		except:
-			return jsonify(message='ERROR: Unauthorized')
+		except Exception as e:
+			return jsonify(message=f'ERROR: Unauthorized {e}')
 
 
 	@route('/checkToken/', methods=['POST'])
@@ -32,5 +32,5 @@ class LoginApi(Api):
 	def checkToken(self):
 		try:
 			return jsonify(success=True, authLevel=self.UserManager.apiTokenLevel(request.headers.get('auth')))
-		except:
-			return jsonify(message='ERROR: Unauthorized')
+		except Exception as e:
+			return jsonify(message=f'ERROR: Unauthorized {e}')

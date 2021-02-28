@@ -608,11 +608,11 @@ class ProjectAliceObject:
 		pass  # Super object function is overriden only if needed
 
 
-	def onPlayBytes(self, requestId: str, payload: bytearray, deviceUid: str, sessionId: str = None):
+	def onPlayBytes(self, payload: bytearray, deviceUid: str, sessionId: str = None):
 		pass  # Super object function is overriden only if needed
 
 
-	def onPlayBytesFinished(self, requestId: str, deviceUid: str, sessionId: str = None):
+	def onPlayBytesFinished(self, deviceUid: str, sessionId: str = None):
 		pass  # Super object function is overriden only if needed
 
 

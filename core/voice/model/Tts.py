@@ -136,6 +136,11 @@ class Tts(ProjectAliceObject):
 		return self._supportedLangAndVoices
 
 
+	@property
+	def speaking(self) -> bool:
+		return self._speaking
+
+
 	@staticmethod
 	def getWhisperMarkup() -> Optional[tuple]:
 		return None
@@ -152,13 +157,13 @@ class Tts(ProjectAliceObject):
 
 	def _speak(self, file: Path, session: DialogSession):
 		self._speaking = True
-		uid = str(uuid.uuid4())
+		session.lastWasSoundPlayOnly = False
+
 		self.MqttManager.playSound(
 			soundFilename=file.stem,
 			location=file.parent,
 			sessionId=session.sessionId,
-			deviceUid=session.deviceUid,
-			requestId=uid
+			deviceUid=session.deviceUid
 		)
 
 		try:
@@ -169,15 +174,15 @@ class Tts(ProjectAliceObject):
 			self.onSay(session)
 		else:
 			self.DialogManager.increaseSessionTimeout(session=session, interval=duration + 0.2)
-			self.ThreadManager.doLater(interval=duration + 0.1, func=self._sayFinished, args=[session, uid])
+			self.ThreadManager.doLater(interval=duration + 0.1, func=self._sayFinished, args=[session])
 
 
-	def _sayFinished(self, session: DialogSession, uid: str):
+	def _sayFinished(self, session: DialogSession):
 		self._speaking = False
 		self.MqttManager.publish(
 			topic=constants.TOPIC_TTS_FINISHED,
 			payload={
-				'id': uid,
+				'id': session.sessionId,
 				'sessionId': session.sessionId,
 				'deviceUid': session.deviceUid
 			}

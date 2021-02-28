@@ -1,23 +1,27 @@
 {
-	"name": "DateDayTimeYear",
-	"version": "1.0.26",
-	"icon": "far fa-clock",
-	"category": "assistance",
-	"author": "Psychokiller1888",
-	"maintainers": [
-		"maxbachmann",
-		"SkyHyperV"
-	],
-	"desc": "Ask for the time, date, day and year",
-	"aliceMinVersion": "1.0.0-a6",
-	"systemRequirements": [],
-	"pipRequirements": ["Babel"],
-	"conditions": {
-		"lang": [
-			"en",
-			"fr",
-			"de",
-			"it"
-		]
-	}
+    "name": "DateDayTimeYear",
+    "speakableName": "date time functions",
+    "version": "1.1.0",
+    "icon": "far fa-clock",
+    "category": "assistance",
+    "author": "Psychokiller1888",
+    "maintainers": [
+        "maxbachmann",
+        "SkyHyperV"
+    ],
+    "desc": "Ask for the time, date, day and year",
+    "aliceMinVersion": "1.0.0-b5",
+    "systemRequirements": [],
+    "pipRequirements": [
+        "Babel"
+    ],
+    "conditions": {
+        "lang": [
+            "en",
+            "fr",
+            "de",
+            "it",
+            "pl"
+        ]
+    }
 }
