@@ -13,6 +13,11 @@
   <a href="https://sonarcloud.io/dashboard?id=project-alice-assistant_ProjectAlice" target="_blank"><img alt="Code Smells" src="https://sonarcloud.io/api/project_badges/measure?project=project-alice-assistant_ProjectAlice&metric=code_smells"></a>
 </p>
 
+<p align=center>
+  <img src="https://img.shields.io/liberapay/patrons/Psycho.svg?logo=liberapay">
+  <img src="https://img.shields.io/liberapay/receives/Psycho.svg?logo=liberapay">
+</p>
+
 Project Alice is a smart voice home assistant that is completely modular and extensible. It was first built around Snips therefore runs entirely offline and never sends or shares your voice interactions with anyone, Project Alice **guarantees** your privacy in your home or wherever you’re using Project Alice.
 
 However, as an option, since we've built Project Alice on top of Snips, Project Alice can be configured to use some online alternatives and fall backs (for example, using Amazon or Google’s Text to Speech engines), just like Snips. Since Snips (and the Project Alice team) strongly believe that decisions about your privacy should be made by you and you alone, these options are all disabled by default.
