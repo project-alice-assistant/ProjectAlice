@@ -292,7 +292,7 @@ class PreInit:
 	def checkVenv(self) -> bool:
 		if not Path('venv').exists():
 			self._logger.logInfo('Not running with venv, I need to create it')
-			subprocess.run(['sudo', 'apt-get', 'install', 'python3-venv', '-y'])
+			subprocess.run(['sudo', 'apt-get', 'install', 'python3-dev', 'python3-pip', 'python3-venv', 'python3-wheel', '-y'])
 			subprocess.run(['python3.7', '-m', 'venv', 'venv'])
 			self.updateVenv()
 			self._logger.logInfo('Installed virtual environement, restarting...')
@@ -307,6 +307,7 @@ class PreInit:
 
 	def updateVenv(self):
 		subprocess.run([self.PIP, 'uninstall', '-y', '-r', str(Path(self.rootDir, 'pipuninstalls.txt'))])
+		subprocess.run([self.PIP, 'install', 'wheel'])
 		subprocess.run([self.PIP, 'install', '-r', str(Path(self.rootDir, 'requirements.txt'))])
 
 
