@@ -376,6 +376,12 @@ class DialogManager(Manager):
 
 
 	def onContinueSession(self, session: DialogSession):
+		if not session.hasStarted:
+			self.onStartSession(
+				deviceUid=session.deviceUid,
+				payload=session.payload
+			)
+
 		self.startSessionTimeout(sessionId=session.sessionId)
 		session.inDialog = True
 
