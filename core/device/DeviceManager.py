@@ -82,13 +82,13 @@ class DeviceManager(Manager):
 			self.logInfo('Created main unit device')
 			self.ConfigManager.updateAliceConfiguration('uuid', device.uid)
 
-		if self.ConfigManager.getAliceConfigByName('disableSound') and self.ConfigManager.getAliceConfigByName('disableCapture'):
-			device.setAbilities([DeviceAbility.IS_CORE]) #Remove default abilities
-		elif self.ConfigManager.getAliceConfigByName('disableSound'):
-			device.setAbilities([DeviceAbility.IS_CORE, DeviceAbility.CAPTURE_SOUND])
-		elif self.ConfigManager.getAliceConfigByName('disableCapture'):
-			device.setAbilities([DeviceAbility.IS_CORE, DeviceAbility.PLAY_SOUND])
+		abilities = [DeviceAbility.IS_CORE]
+		if not self.ConfigManager.getAliceConfigByName('disableSound'):
+			abilities.append(DeviceAbility.PLAY_SOUND)
+		if not self.ConfigManager.getAliceConfigByName('disableCapture'):
+			abilities.append(DeviceAbility.CAPTURE_SOUND)
 
+		device.setAbilities(abilities)
 
 		for device in self._devices.values():
 			device.onStart()
