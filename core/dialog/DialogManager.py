@@ -379,7 +379,7 @@ class DialogManager(Manager):
 		if not session.hasStarted:
 			self.onStartSession(
 				deviceUid=session.deviceUid,
-				payload=dict()
+				payload=session.payload
 			)
 
 		self.startSessionTimeout(sessionId=session.sessionId)
