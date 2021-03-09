@@ -1,6 +1,6 @@
 wheel==0.36.2
 python-dateutil==2.8.1
-paho-mqtt==1.5.0
+paho-mqtt==1.5.1
 requests==2.25.1
 esptool==3.0
 pyserial==3.5
