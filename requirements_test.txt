@@ -1,6 +1,6 @@
 pytest~=6.2.2
 coverage~=5.5
-pytest-cov~=2.8.1
+pytest-cov~=2.11.1
 coveralls~=3.0.1
 wheel~=0.34.2
 python-dateutil~=2.8.1
