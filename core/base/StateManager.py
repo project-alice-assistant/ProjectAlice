@@ -38,18 +38,17 @@ class StateManager(Manager):
 
 		try:
 			state = State(statePath.split('.')[-1], initialState)
-			self._buildDict(statePath, state, initialState)
+			self._buildDict(statePath, state)
 			return state
 		except StateAlreadyRegistered:
 			return None
 
 
-	def _buildDict(self, statePath: str, state: State, initialState: StateType):
+	def _buildDict(self, statePath: str, state: State):
 		"""
 		Generates a dict from a dotted string
 		:param statePath: dotted string
 		:param state: state name
-		:param initialState: initialstate
 		"""
 		track = self._states
 		parts = statePath.split('.')

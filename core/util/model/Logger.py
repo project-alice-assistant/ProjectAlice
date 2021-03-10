@@ -47,6 +47,9 @@ class Logger:
 
 
 	def doLog(self, function: callable, msg: str, printStack = True, plural: Union[list, str] = None):
+		if not msg:
+			return
+
 		if plural:
 			msg = self.doPlural(string=msg, word=plural)
 
@@ -79,6 +82,6 @@ class Logger:
 			words = [word]
 
 		for word in words:
-			string = re.sub('([\d]+)[* ]+?({})'.format(word), plural, string)
+			string = re.sub(r'([\d]+)[* ]+?({})'.format(word), plural, string)
 
 		return string

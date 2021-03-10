@@ -1,6 +1,7 @@
 import unittest
 from unittest.mock import MagicMock, patch
 
+from core.ProjectAliceExceptions import StateAlreadyRegistered
 from core.base.StateManager import StateManager
 from core.base.model.State import State
 from core.base.model.StateType import StateType
@@ -38,12 +39,24 @@ class test_StateManager(unittest.TestCase):
 
 
 	@patch('core.base.SuperManager.SuperManager')
+	def test__build_dict(self, mock_superManager):
+		mock_instance = MagicMock()
+		mock_superManager.getInstance.return_value = mock_instance
+		mock_instance.commonsManager.getFunctionCaller.return_value = 'unittest'
+		stateManager = StateManager()
+
+		self.assertIsNone(stateManager._buildDict('unit.test.is.awesome', State('awesome')))
+		self.assertRaises(StateAlreadyRegistered, stateManager._buildDict, statePath='unit.test.is.awesome', state=State('awesome'))
+
+
+	@patch('core.base.SuperManager.SuperManager')
 	def test_get_state(self, mock_superManager):
 		mock_instance = MagicMock()
 		mock_superManager.getInstance.return_value = mock_instance
 		mock_instance.commonsManager.getFunctionCaller.return_value = 'unittest'
 		stateManager = StateManager()
 
+		self.assertIsNone(stateManager.getState(''))
 		self.assertIsNone(stateManager.getState('unittest'))
 
 		stateManager.register('unit.test.is.awesome')
@@ -73,6 +86,9 @@ class test_StateManager(unittest.TestCase):
 		stateManager.register('unit.test.is.awesome')
 		state = stateManager.getState('unit.test.is.awesome')
 		self.assertEqual(state, mockState)
+
+		state = stateManager.setState('unit.test.is.crappy', StateType.WAITING)
+		self.assertEqual(state, False)
 
 		stateManager.setState('unit.test.is.awesome', StateType.WAITING)
 		state = stateManager.getState('unit.test.is.awesome')

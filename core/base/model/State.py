@@ -30,3 +30,8 @@ class State:
 				callback(oldState, newState)
 			except:
 				self.logger.logWarning(f'Failed callback for state {self.name}')
+
+
+	def __repr__(self) -> str:
+		return f'State "{self.name}" Current state "{self.currentState.value}"'
+
