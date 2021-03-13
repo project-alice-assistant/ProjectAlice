@@ -358,7 +358,7 @@
 			"snips"
 		],
 		"description" : "The Asr to use. Can't use an online Asr if you have set keepASROffline to true!",
-		"onUpdate"    : "reloadASR",
+		"onUpdate"    : "ASRManager.restartEngine",
 		"category"    : "asr"
 	},
 	"asrFallback"             : {
