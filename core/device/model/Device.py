@@ -128,7 +128,7 @@ class Device(ProjectAliceObject):
 
 
 	def _loadConfigs(self):
-		displayName = self._deviceConfigs.get('displayName', None)
+		displayName = self._deviceConfigs.get('displayName', self._data.get('displayName', None))
 		if not displayName or displayName.lower() == 'none':
 			displayName = self._typeName if self._typeName else self._deviceType.deviceTypeName
 
