@@ -665,6 +665,8 @@ class ConfigManager(Manager):
 			tmp.write_text(newSettings)
 			self.Commons.runRootSystemCommand(['sudo', 'mv', tmp, '/etc/asound.conf'])
 			self.Commons.runRootSystemCommand(['sudo', 'alsactl', 'kill', 'rescan'])
+			self.logInfo("Wrote new asound.conf")
+			return True
 
 
 	def updateTimezone(self, newTimezone: str):
