@@ -383,13 +383,15 @@ class DeviceManager(Manager):
 
 		data = {
 			'abilities'     : abilities,
-			'displayName'   : displayName,
 			'parentLocation': locationId,
 			'settings'      : displaySettings,
 			'deviceParams'  : deviceParam,
 			'skillName'     : skillName,
 			'typeName'      : deviceType,
-			'uid'           : uid or str(uuid.uuid4())
+			'uid'           : uid or str(uuid.uuid4()),
+			'deviceConfigs' : {
+				'displayName'   : displayName
+			}
 		}
 
 		device = Device(data)
