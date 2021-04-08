@@ -200,8 +200,7 @@ class SnipsNlu(NluEngine):
 			self.MqttManager.publish(constants.TOPIC_NLU_TRAINING_STATUS, payload={'status': 'done'})
 			self.WebUIManager.newNotification(
 				tipe=UINotificationType.INFO,
-				title=self.LanguageManager.getString('nluTrainingTitle'),
-				text=self.LanguageManager.getString('nluTrainingDone'),
+				notification='nluTrainingDone',
 				key='nluTraining'
 			)
 
@@ -216,24 +215,23 @@ class SnipsNlu(NluEngine):
 			self.NluManager.training = False
 
 
-	def trainingStatus(self, notificationString: str = None):
-		notificationString = notificationString or self.LanguageManager.getString('nluTraining')
-		count = notificationString.count('.')
-		if count > 7:
-			notificationString = self.LanguageManager.getString('nluTraining')
+	def trainingStatus(self, dots: str = ''):
+		count = dots.count('.')
+		if not dots or count > 7:
+			dots = '.'
 		else:
-			notificationString += '.'
+			dots += '.'
 
 		self.MqttManager.publish(constants.TOPIC_NLU_TRAINING_STATUS, payload={'status': 'training'})
 
 		self.WebUIManager.newNotification(
 			tipe=UINotificationType.INFO,
-			title=self.LanguageManager.getString('nluTrainingTitle'),
-			text=notificationString,
-			key='nluTraining'
+			notification='nluTraining',
+			key='nluTraining',
+			replaceBody=dots
 		)
 
-		self._timer = self.ThreadManager.newTimer(interval=1, func=self.trainingStatus, args=[notificationString])
+		self._timer = self.ThreadManager.newTimer(interval=1, func=self.trainingStatus, args=[dots])
 
 
 	@staticmethod
@@ -250,7 +248,6 @@ class SnipsNlu(NluEngine):
 
 		self.WebUIManager.newNotification(
 			tipe=UINotificationType.ERROR,
-			title=self.LanguageManager.getString('nluTrainingTitle'),
-			text=self.LanguageManager.getString('nluTrainingFailed'),
+			notification='nluTrainingFailed',
 			key='nluTraining'
 		)

@@ -524,9 +524,9 @@ class SkillManager(Manager):
 
 					self.WebUIManager.newNotification(
 						tipe=UINotificationType.INFO,
-						title=self.LanguageManager.getString('skillUpdateTitle'),
-						text=self.LanguageManager.getString('skillUpdateText').format(skillName, str(remoteVersion)),
-						key='skillUpdate_{}'.format(skillName)
+						notification='skillUpdateAvailable',
+						key='skillUpdate_{}'.format(skillName),
+						replaceBody=[skillName, str(remoteVersion)]
 					)
 
 					if not self.ConfigManager.getAliceConfigByName('skillAutoUpdate'):
@@ -609,9 +609,9 @@ class SkillManager(Manager):
 
 				self.WebUIManager.newNotification(
 					tipe=UINotificationType.INFO,
-					title=self.LanguageManager.getString('skillUpdateTitle'),
-					text=self.LanguageManager.getString('skillUpdatedText').format(skillName, self._skillList[skillName]['installer']['version']),
-					key='skillUpdate_{}'.format(skillName)
+					notification='skillUpdated',
+					key='skillUpdate_{}'.format(skillName),
+					replaceBody=[skillName, self._skillList[skillName]['installer']['version']]
 				)
 			else:
 				self.allSkills[skillName].onSkillInstalled(skill=skillName)

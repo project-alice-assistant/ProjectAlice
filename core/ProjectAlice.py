@@ -204,8 +204,7 @@ class ProjectAlice(Singleton):
 
 			self._superManager.webUiManager.newNotification(
 				tipe=UINotificationType.INFO,
-				title=self._superManager.languageManager.getString('aliceUpdatedTitle'),
-				text=self._superManager.languageManager.getString('aliceUpdatedText')
+				notification='aliceUpdated'
 			)
 			self.doRestart()
 

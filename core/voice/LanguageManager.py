@@ -2,6 +2,7 @@ import json
 from pathlib import Path
 
 import re
+from typing import Optional
 
 from core.ProjectAliceExceptions import LanguageManagerLangNotSupported
 from core.base.model.Manager import Manager
@@ -21,6 +22,7 @@ class LanguageManager(Manager):
 
 		self._stringsData = dict()
 		self._webUIData = dict()
+		self._webUINotifications = dict()
 		self._locals = list()
 
 		self._floatExpressionPattern = re.compile(r'([0-9]+\.[0-9]+)')
@@ -33,6 +35,7 @@ class LanguageManager(Manager):
 		super().onStart()
 		self.loadSystemStrings()
 		self.loadWebUIStrings()
+		self.loadWebUINotifications()
 
 
 	def onBooted(self):
@@ -61,6 +64,10 @@ class LanguageManager(Manager):
 		for file in Path('system/manager/WebUIManager/').glob('*.json'):
 			self._webUIData[file.stem] = json.loads(file.read_text())
 		return self._webUIData
+
+
+	def loadWebUINotifications(self):
+		self._webUINotifications = json.loads(Path('system/manager/LanguageManager/notifications.json').read_text())
 
 
 	def loadSkillStrings(self, skillName: str):
@@ -103,6 +110,25 @@ class LanguageManager(Manager):
 	def getString(self, key: str, skill: str = 'system') -> str:
 		strings = self.getTranslations(skill, key, self._activeLanguage)
 		return strings[0] or ''
+
+
+	def getWebUINotification(self, key: str) -> Optional[dict]:
+		if key not in self._webUINotifications:
+			self.logWarning(f'Tried to get notification "{key}" but it does not exist')
+			return None
+
+		if self._activeLanguage not in self._webUINotifications[key]['title']:
+			if self._defaultLanguage not in self._webUINotifications[key]['title']:
+
+				try:
+					return {'title': self._webUINotifications[key]['title']['en'], 'body': self._webUINotifications[key]['body']['en']}
+				except:
+					self.logWarning(f'Tried to get notification "{key}" in "en" but it does not exist')
+					return None
+			else:
+				return {'title': self._webUINotifications[key]['title'][self._defaultLanguage], 'body': self._webUINotifications[key]['body'][self._defaultLanguage]}
+		else:
+			return {'title': self._webUINotifications[key]['title'][self._activeLanguage], 'body': self._webUINotifications[key]['body'][self._activeLanguage]}
 
 
 	def _loadSupportedLanguages(self):

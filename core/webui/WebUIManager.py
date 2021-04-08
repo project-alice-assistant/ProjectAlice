@@ -86,18 +86,32 @@ class WebUIManager(Manager):
 		self.logInfo('Started nginx server')
 
 
-	def newNotification(self, tipe: UINotificationType, title: str, text: str, key: str = None):
+	def newNotification(self, tipe: UINotificationType, notification: str, key: str = None, replaceTitle: list = None, replaceBody: list = None):
 		"""
 		Sends a UI notification
-		:type tipe: The notification type
-		:param title: A short title
-		:param text: A text for the notification content
+		:param tipe: The notification type
+		:param notification: the json object key of the notification to send
 		:param key: A notification key. If provided, it will be used on the UI as div id. It's usefull for notifications that get updated over time
+		:param replaceTitle: A list of strings to format the original title string
+		:param replaceBody: A list of strings to format the original body string
 		:return:
 		"""
+
+		notification = self.LanguageManager.getWebUINotification(notification)
+		if not notification:
+			return
+
+		title = notification['title']
+		if replaceTitle:
+			title = title.format(replaceTitle)
+
+		body = notification['body']
+		if replaceBody:
+			body = body.format(replaceBody)
+
 		self.MqttManager.publish(topic=constants.TOPIC_UI_NOTIFICATION, payload={
 			'type': tipe.value,
 			'title': title,
-			'text': text,
+			'text': body,
 			'key': key
 		})
