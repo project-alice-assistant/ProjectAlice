@@ -522,16 +522,16 @@ class SkillManager(Manager):
 					updateCount += 1
 					self.logInfo(f'![yellow]({skillName}) - Version {self._skillList[skillName]["installer"]["version"]} < {str(remoteVersion)} in {self.ConfigManager.getAliceConfigByName("skillsUpdateChannel")}')
 
+					self.WebUIManager.newNotification(
+						tipe=UINotificationType.INFO,
+						title=self.LanguageManager.getString('skillUpdateTitle'),
+						text=self.LanguageManager.getString('skillUpdateText').format(skillName, str(remoteVersion)),
+						key='skillUpdate_{}'.format(skillName)
+					)
+
 					if not self.ConfigManager.getAliceConfigByName('skillAutoUpdate'):
 						if skillName in self.allSkills:
 							self.allSkills[skillName].updateAvailable = True
-
-							self.WebUIManager.newNotification(
-								tipe=UINotificationType.INFO,
-								title=self.LanguageManager.getString('skillUpdateTitle'),
-								text=self.LanguageManager.getString('skillUpdateText').format(skillName, str(remoteVersion)),
-								key='skillUpdate_{}'.format(skillName)
-							)
 					else:
 						if not self.downloadInstallTicket(skillName, isUpdate=True):
 							raise Exception
@@ -605,6 +605,13 @@ class SkillManager(Manager):
 					payload={
 						'skillName': skillName
 					}
+				)
+
+				self.WebUIManager.newNotification(
+					tipe=UINotificationType.INFO,
+					title=self.LanguageManager.getString('skillUpdateTitle'),
+					text=self.LanguageManager.getString('skillUpdatedText').format(skillName, self._skillList[skillName]['installer']['version']),
+					key='skillUpdate_{}'.format(skillName)
 				)
 			else:
 				self.allSkills[skillName].onSkillInstalled(skill=skillName)

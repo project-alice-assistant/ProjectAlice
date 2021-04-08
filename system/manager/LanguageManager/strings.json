@@ -273,6 +273,14 @@
 		"fr": [
 			"Le skill \"{}\" peut être mis à jours vers la version {}"
 		]
+	},
+	"skillUpdatedText": {
+		"en": [
+			"The skill \"{}\" has been updated to version {}"
+		],
+		"fr": [
+			"Le skill \"{}\" a été mis à jours vers la version {}"
+		]
 	}
 }
 
