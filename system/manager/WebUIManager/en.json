@@ -31,7 +31,7 @@
 		"myHome": {
 			"myHome": "My Home",
 			"data0" : "Welcome in your home! Well, at least what might soon be your home... Let's have a look around here together, shall we?",
-			"data1" : "This is your compass and as every compass, it helps you navigate. The only small difference with a real one, it that this one always points to the center of your floor plan!",
+			"data1" : "This compass always points to the center of your floor plan so that regardless of your zoom level, you will never be lost.",
 			"data2" : "This is the cursor, always pointing to the middle of the map. You can also click on to fast travel to middle of the map!"
 		}
 	},

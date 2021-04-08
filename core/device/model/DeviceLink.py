@@ -133,6 +133,11 @@ class DeviceLink(ProjectAliceObject):
 		return self._targetLocation
 
 
+	@targetLocation.setter
+	def targetLocation(self, newTarget: int):
+		self._targetLocation =  newTarget
+
+
 	@property
 	def device(self) -> Optional[Device]:
 		return self.DeviceManager.getDevice(deviceId=self._deviceId)

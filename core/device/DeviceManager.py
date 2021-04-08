@@ -383,13 +383,15 @@ class DeviceManager(Manager):
 
 		data = {
 			'abilities'     : abilities,
-			'displayName'   : displayName,
 			'parentLocation': locationId,
 			'settings'      : displaySettings,
 			'deviceParams'  : deviceParam,
 			'skillName'     : skillName,
 			'typeName'      : deviceType,
-			'uid'           : uid or str(uuid.uuid4())
+			'uid'           : uid or str(uuid.uuid4()),
+			'deviceConfigs' : {
+				'displayName'   : displayName
+			}
 		}
 
 		device = Device(data)
@@ -421,10 +423,19 @@ class DeviceManager(Manager):
 		if 'parentLocation' in data and data['parentLocation'] != device.parentLocation:
 			self.assertLocationChange(device=device, locationId=data['parentLocation'])
 
+			oldParent = device.parentLocation
 			device.parentLocation = data['parentLocation']
 
 			if not device.linkedTo(data['parentLocation']) and device.getDeviceTypeDefinition().get('allowLocationLinks', False):
-				self.addDeviceLink(targetLocation=data['parentLocation'], deviceId=device.id)
+				# if there is no link to the new parent location, take the current link to the old parent for the
+				linkToOldParent = device.getLink(oldParent)
+				if linkToOldParent:
+					self.logInfo(f'Moving device link {linkToOldParent.id} from {oldParent} to {data["parentLocation"]} ')
+					linkToOldParent.targetLocation = data['parentLocation']
+					linkToOldParent.saveToDB()
+				else:
+					self.logInfo(f'Adding new device link for new parent location {data["parentLocation"]} ')
+					self.addDeviceLink(targetLocation=data['parentLocation'], deviceId=device.id)
 
 		if 'settings' in data:
 			device.updateSettings(data['settings'])

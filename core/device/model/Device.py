@@ -457,6 +457,19 @@ class Device(ProjectAliceObject):
 		return links
 
 
+	def getLink(self, targetLocation: int):
+		"""
+		return the link to target location if it exists
+		:param targetLocation: int
+		:return: DeviceLink
+		"""
+		for link in self.DeviceManager.deviceLinks.values():
+			"""self.logInfo(f'I\'m {self.id}, the link is for {link.deviceId} to location {link.targetLocation} ({targetLocation}?)')"""
+			if link.deviceId == self.id and link.targetLocation == targetLocation:
+				return link
+		return None
+
+
 	def __repr__(self):
 		return f'Device({self._id} - {self._deviceConfigs["displayName"]}, uid({self._uid}), Location({self._parentLocation}))'
 
