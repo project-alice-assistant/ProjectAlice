@@ -100,6 +100,11 @@ class LanguageManager(Manager):
 		return self.getTranslations(skill, key, self._activeLanguage)
 
 
+	def getString(self, key: str, skill: str = 'system') -> str:
+		strings = self.getTranslations(skill, key, self._activeLanguage)
+		return strings[0] or ''
+
+
 	def _loadSupportedLanguages(self):
 		activeLangDef: str = self.ConfigManager.getAliceConfigByName('activeLanguage')
 		activeCountryCode = self.ConfigManager.getAliceConfigByName('activeCountryCode')

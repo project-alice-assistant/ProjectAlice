@@ -225,6 +225,38 @@
 		"it": [
 			"per favore"
 		]
+	},
+	"nluTrainingTitle": {
+		"en": [
+			"NLU training"
+		],
+		"fr": [
+			"NLU training"
+		]
+	},
+	"nluTraining": {
+		"en": [
+			"NLU training"
+		],
+		"fr": [
+			"NLU training"
+		]
+	},
+	"nluTrainingFailed": {
+		"en": [
+			"NLU training failed"
+		],
+		"fr": [
+			"NLU training échoué"
+		]
+	},
+	"nluTrainingDone": {
+		"en": [
+			"NLU training done!"
+		],
+		"fr": [
+			"NLU training terminé!"
+		]
 	}
 }
 

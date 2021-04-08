@@ -4,6 +4,7 @@ import psutil as psutil
 
 from core.base.model.Manager import Manager
 from core.commons import constants
+from core.webui.model.UINotificationType import UINotificationType
 
 
 class WebUIManager(Manager):
@@ -83,3 +84,20 @@ class WebUIManager(Manager):
 			raise Exception(f'Nginx starting failed. Is it even installed?')
 
 		self.logInfo('Started nginx server')
+
+
+	def newNotification(self, tipe: UINotificationType, title: str, text: str, key: str = None):
+		"""
+		Sends a UI notification
+		:type tipe: The notification type
+		:param title: A short title
+		:param text: A text for the notification content
+		:param key: A notification key. If provided, it will be used on the UI as div id. It's usefull for notifications that get updated over time
+		:return:
+		"""
+		self.MqttManager.publish(topic=constants.TOPIC_UI_NOTIFICATION, payload={
+			'type': tipe.value,
+			'title': title,
+			'text': text,
+			'key': key
+		})

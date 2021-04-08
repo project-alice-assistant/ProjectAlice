@@ -807,3 +807,7 @@ class ProjectAliceObject:
 	@property
 	def StateManager(self) -> StateManager:  # NOSONAR
 		return SM.SuperManager.getInstance().stateManager
+
+	@property
+	def WebUIManager(self) -> WebUIManager:  # NOSONAR
+		return SM.SuperManager.getInstance().webUiManager

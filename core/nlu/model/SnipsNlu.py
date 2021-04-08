@@ -12,6 +12,7 @@ from typing import Optional
 from core.commons import constants
 from core.nlu.model.NluEngine import NluEngine
 from core.util.Stopwatch import Stopwatch
+from core.webui.model.UINotificationType import UINotificationType
 
 
 class SnipsNlu(NluEngine):
@@ -182,8 +183,8 @@ class SnipsNlu(NluEngine):
 				assistantPath = Path(self.Commons.rootDir(), f'trained/assistants/{self.LanguageManager.activeLanguage}/nlu_engine')
 
 				if not tempTrainingData.exists():
-					self.logError('Snips NLU training failed')
-					self.MqttManager.publish(constants.TOPIC_NLU_TRAINING_STATUS, payload={'status': 'failed'})
+					self.trainingFailed()
+
 					if not assistantPath.exists():
 						self.logFatal('No NLU engine found, cannot start')
 
@@ -197,20 +198,42 @@ class SnipsNlu(NluEngine):
 
 			self._timer.cancel()
 			self.MqttManager.publish(constants.TOPIC_NLU_TRAINING_STATUS, payload={'status': 'done'})
+			self.WebUIManager.newNotification(
+				tipe=UINotificationType.INFO,
+				title=self.LanguageManager.getString('nluTrainingTitle'),
+				text=self.LanguageManager.getString('nluTrainingDone'),
+				key='nluTraining'
+			)
+
 			self.ThreadManager.getEvent('TrainAssistant').clear()
 			self.logInfo(f'Snips NLU trained in {stopWatch} seconds')
 
 			self.broadcast(method=constants.EVENT_NLU_TRAINED, exceptions=[constants.DUMMY], propagateToSkills=True)
 			self.NluManager.restartEngine()
 		except:
-			self.MqttManager.publish(constants.TOPIC_NLU_TRAINING_STATUS, payload={'status': 'failed'})
+			self.trainingFailed()
 		finally:
 			self.NluManager.training = False
 
 
-	def trainingStatus(self):
+	def trainingStatus(self, notificationString: str = None):
+		notificationString = notificationString or self.LanguageManager.getString('nluTraining')
+		count = notificationString.count('.')
+		if count > 7:
+			notificationString = self.LanguageManager.getString('nluTraining')
+		else:
+			notificationString += '.'
+
 		self.MqttManager.publish(constants.TOPIC_NLU_TRAINING_STATUS, payload={'status': 'training'})
-		self._timer = self.ThreadManager.newTimer(interval=0.25, func=self.trainingStatus)
+
+		self.WebUIManager.newNotification(
+			tipe=UINotificationType.INFO,
+			title=self.LanguageManager.getString('nluTrainingTitle'),
+			text=notificationString,
+			key='nluTraining'
+		)
+
+		self._timer = self.ThreadManager.newTimer(interval=1, func=self.trainingStatus, args=[notificationString])
 
 
 	@staticmethod
@@ -219,3 +242,15 @@ class SnipsNlu(NluEngine):
 			slot['name']: slot['type']
 			for slot in intent['slots']
 		}
+
+
+	def trainingFailed(self):
+		self.logError('Snips NLU training failed')
+		self.MqttManager.publish(constants.TOPIC_NLU_TRAINING_STATUS, payload={'status': 'failed'})
+
+		self.WebUIManager.newNotification(
+			tipe=UINotificationType.ERROR,
+			title=self.LanguageManager.getString('nluTrainingTitle'),
+			text=self.LanguageManager.getString('nluTrainingFailed'),
+			key='nluTraining'
+		)
