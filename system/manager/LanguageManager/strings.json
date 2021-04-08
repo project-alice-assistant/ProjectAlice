@@ -257,6 +257,22 @@
 		"fr": [
 			"NLU training terminé!"
 		]
+	},
+	"skillUpdateTitle": {
+		"en": [
+			"Skill update available"
+		],
+		"fr": [
+			"Mise à jour skill"
+		]
+	},
+	"skillUpdateText": {
+		"en": [
+			"The skill \"{}\" can be updated to version {}"
+		],
+		"fr": [
+			"Le skill \"{}\" peut être mis à jours vers la version {}"
+		]
 	}
 }
 

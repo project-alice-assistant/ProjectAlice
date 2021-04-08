@@ -23,6 +23,7 @@ from core.base.model.Version import Version
 from core.commons import constants
 from core.dialog.model.DialogSession import DialogSession
 from core.util.Decorators import IfSetting, Online
+from core.webui.model.UINotificationType import UINotificationType
 
 
 class SkillManager(Manager):
@@ -524,6 +525,13 @@ class SkillManager(Manager):
 					if not self.ConfigManager.getAliceConfigByName('skillAutoUpdate'):
 						if skillName in self.allSkills:
 							self.allSkills[skillName].updateAvailable = True
+
+							self.WebUIManager.newNotification(
+								tipe=UINotificationType.INFO,
+								title=self.LanguageManager.getString('skillUpdateTitle'),
+								text=self.LanguageManager.getString('skillUpdateText').format(skillName, str(remoteVersion)),
+								key='skillUpdate_{}'.format(skillName)
+							)
 					else:
 						if not self.downloadInstallTicket(skillName, isUpdate=True):
 							raise Exception
