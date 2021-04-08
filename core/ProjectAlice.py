@@ -11,6 +11,7 @@ from core.commons import constants
 from core.commons.model.Singleton import Singleton
 from core.util.Stopwatch import Stopwatch
 from core.util.model.Logger import Logger
+from core.webui.model.UINotificationType import UINotificationType
 
 
 class ProjectAlice(Singleton):
@@ -200,6 +201,12 @@ class ProjectAlice(Singleton):
 
 		if currentHash != newHash:
 			self._logger.logWarning('New Alice version installed, need to restart...')
+
+			self._superManager.webUiManager.newNotification(
+				tipe=UINotificationType.INFO,
+				title=self._superManager.languageManager.getString('aliceUpdatedTitle'),
+				text=self._superManager.languageManager.getString('aliceUpdatedText')
+			)
 			self.doRestart()
 
 		self._logger.logInfo('Update checks completed.')

@@ -281,6 +281,22 @@
 		"fr": [
 			"Le skill \"{}\" a été mis à jours vers la version {}"
 		]
+	},
+	"aliceUpdatedTitle": {
+		"en": [
+			"Project Alice update"
+		],
+		"fr": [
+			"Mise à jours Project Alice"
+		]
+	},
+	"aliceUpdatedText": {
+		"en": [
+			"Project Alice was jsut updated"
+		],
+		"fr": [
+			"Project Alice a été mis à jours!"
+		]
 	}
 }
 
