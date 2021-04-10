@@ -1,7 +1,7 @@
 from enum import Enum
 
 
-class ClickReactionAction(Enum):
+class DeviceClickReactionAction(Enum):
 	NONE = 'none'
 	NAVIGATE = 'navigate'
 	ANSWER_STRING = 'answer_string'

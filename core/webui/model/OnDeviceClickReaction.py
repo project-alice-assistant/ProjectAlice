@@ -2,13 +2,13 @@ from dataclasses import dataclass, field
 from typing import Any
 
 from core.base.model.ProjectAliceObject import ProjectAliceObject
-from core.webui.model.ClickReactionAction import ClickReactionAction
+from core.webui.model.DeviceClickReactionAction import DeviceClickReactionAction
 
 
 @dataclass
-class OnClickReaction(ProjectAliceObject):
+class OnDeviceClickReaction(ProjectAliceObject):
 
-	action: ClickReactionAction
+	action: DeviceClickReactionAction
 	data: Any = ''
 	reply: dict = field(default_factory=dict)
 
