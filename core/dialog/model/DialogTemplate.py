@@ -70,8 +70,6 @@ class DialogTemplate:
 				mySynonyms: List = mySlot.myValues.get('synonyms', {})
 				otherSynonyms: List = otherValue.get('synonyms', list)
 
-				print(mySynonyms)
-
 				for otherSynonym in otherSynonyms:
 					if otherSynonym in mySynonyms:
 						continue
