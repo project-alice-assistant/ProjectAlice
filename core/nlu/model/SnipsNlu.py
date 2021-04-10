@@ -83,7 +83,7 @@ class SnipsNlu(NluEngine):
 				nluTrainingSampleEntity['data'] = [{
 						'value'   : value['value'],
 						'synonyms': value.get('synonyms', list())
-					} for value in entity['values']
+					} for value in entity['values'] if value is not None
 				]
 
 			for intent in skill['intents']:
