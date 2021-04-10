@@ -10,8 +10,8 @@ from core.device.model.DeviceAbility import DeviceAbility
 from core.device.model.DeviceException import DeviceTypeUndefined
 from core.device.model.DeviceType import DeviceType
 from core.myHome.model.Location import Location
-from core.webui.model.ClickReactionAction import ClickReactionAction
-from core.webui.model.OnClickReaction import OnClickReaction
+from core.webui.model.DeviceClickReactionAction import DeviceClickReactionAction
+from core.webui.model.OnDeviceClickReaction import OnDeviceClickReaction
 
 
 class Device(ProjectAliceObject):
@@ -408,9 +408,15 @@ class Device(ProjectAliceObject):
 		self._settings = {**self._settings, **settings}
 		self.saveToDB()
 
+
+	def getConfig(self, key: str, default: Any = False) -> Any:
+		return self._deviceConfigs.get(key, default)
+
+
 	def updateConfigs(self, configs: dict):
 		self._deviceConfigs = {**self._deviceConfigs, **configs}
 		self.saveToDB()
+
 
 	def getParam(self, key: str, default: Any = False) -> Any:
 		return self._deviceParams.get(key, default)
@@ -428,13 +434,13 @@ class Device(ProjectAliceObject):
 		"""
 		if not self.paired:
 			self.DeviceManager.startBroadcastingForNewDevice(self)
-			reaction = OnClickReaction(
-				action=ClickReactionAction.INFO_NOTIFICATION.value,
+			reaction = OnDeviceClickReaction(
+				action=DeviceClickReactionAction.INFO_NOTIFICATION.value,
 				data='notifications.info.pleasePlugDevice'
 			)
 			return reaction.toDict()
 
-		return OnClickReaction(action=ClickReactionAction.NONE.value).toDict()
+		return OnDeviceClickReaction(action=DeviceClickReactionAction.NONE.value).toDict()
 
 
 	def linkedTo(self, targetLocation: int) -> bool:

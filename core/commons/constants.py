@@ -78,6 +78,8 @@ TOPIC_SKILL_DELETED = 'projectalice/skills/deleted'
 TOPIC_SYSLOG = 'projectalice/logging/syslog'
 TOPIC_NLU_TRAINING_STATUS = 'projectalice/nlu/trainingStatus'
 
+TOPIC_UI_NOTIFICATION = 'projectalice/notifications/ui/notification'
+
 EVENT_FULL_MINUTE = 'fullMinute'
 EVENT_FIVE_MINUTE = 'fiveMinute'
 EVENT_QUARTER_HOUR = 'quarterHour'

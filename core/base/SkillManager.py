@@ -23,6 +23,7 @@ from core.base.model.Version import Version
 from core.commons import constants
 from core.dialog.model.DialogSession import DialogSession
 from core.util.Decorators import IfSetting, Online
+from core.webui.model.UINotificationType import UINotificationType
 
 
 class SkillManager(Manager):
@@ -521,6 +522,13 @@ class SkillManager(Manager):
 					updateCount += 1
 					self.logInfo(f'![yellow]({skillName}) - Version {self._skillList[skillName]["installer"]["version"]} < {str(remoteVersion)} in {self.ConfigManager.getAliceConfigByName("skillsUpdateChannel")}')
 
+					self.WebUIManager.newNotification(
+						tipe=UINotificationType.INFO,
+						notification='skillUpdateAvailable',
+						key='skillUpdate_{}'.format(skillName),
+						replaceBody=[skillName, str(remoteVersion)]
+					)
+
 					if not self.ConfigManager.getAliceConfigByName('skillAutoUpdate'):
 						if skillName in self.allSkills:
 							self.allSkills[skillName].updateAvailable = True
@@ -597,6 +605,13 @@ class SkillManager(Manager):
 					payload={
 						'skillName': skillName
 					}
+				)
+
+				self.WebUIManager.newNotification(
+					tipe=UINotificationType.INFO,
+					notification='skillUpdated',
+					key='skillUpdate_{}'.format(skillName),
+					replaceBody=[skillName, self._skillList[skillName]['installer']['version']]
 				)
 			else:
 				self.allSkills[skillName].onSkillInstalled(skill=skillName)
