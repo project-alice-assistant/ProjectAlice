@@ -2,7 +2,7 @@ import json
 import uuid
 from pathlib import Path
 from threading import Timer
-from typing import Dict, Optional
+from typing import Dict, Optional, Set
 
 from paho.mqtt.client import MQTTMessage
 
@@ -134,17 +134,18 @@ class DialogManager(Manager):
 			else:
 				self.startSessionTimeout(sessionId=session.sessionId)
 
-				self.MqttManager.publish(
-					topic=constants.TOPIC_ASR_TOGGLE_ON
-				)
+				if not session.textInput:
+					self.MqttManager.publish(
+						topic=constants.TOPIC_ASR_TOGGLE_ON
+					)
 
-				self.MqttManager.publish(
-					topic=constants.TOPIC_ASR_START_LISTENING,
-					payload={
-						'siteId'   : session.deviceUid,
-						'sessionId': session.sessionId
-					}
-				)
+					self.MqttManager.publish(
+						topic=constants.TOPIC_ASR_START_LISTENING,
+						payload={
+							'siteId'   : session.deviceUid,
+							'sessionId': session.sessionId
+						}
+					)
 
 
 	def startSessionTimeout(self, sessionId: str, tempSession: bool = False, delay: float = 0.0):
@@ -550,7 +551,7 @@ class DialogManager(Manager):
 		)
 
 
-	def getEnabledByDefaultIntents(self):
+	def getEnabledByDefaultIntents(self) -> Set:
 		return self._enabledByDefaultIntents
 
 

@@ -5,6 +5,7 @@ from flask_classful import route
 from paho.mqtt.client import MQTTMessage
 
 from core.commons import constants
+from core.device.model.DeviceAbility import DeviceAbility
 from core.webApi.model.Api import Api
 from core.util.Decorators import ApiAuthenticated
 
@@ -56,6 +57,13 @@ class DialogApi(Api):
 			user = self.UserManager.getUserByAPIToken(request.headers.get('auth', ''))
 			session = self.DialogManager.newSession(deviceUid=deviceUid, user=user.name)
 
+			device = self.DeviceManager.getDevice(uid=deviceUid)
+			if not device.hasAbilities([DeviceAbility.PLAY_SOUND]):
+				session.textOnly = True
+
+			if not device.hasAbilities([DeviceAbility.CAPTURE_SOUND]):
+				session.textInput = True
+
 			# Turn off the wakeword component
 			self.MqttManager.publish(
 				topic=constants.TOPIC_HOTWORD_TOGGLE_OFF,
@@ -89,8 +97,10 @@ class DialogApi(Api):
 			sessionId = request.form.get('sessionId')
 			session = self.DialogManager.getSession(sessionId=sessionId)
 
-			if not session:
+			if not session or session.hasEnded:
 				return self.process()
+
+			self.DialogManager.startSessionTimeout(sessionId=session.sessionId)
 
 			message = MQTTMessage()
 			message.payload = json.dumps({'sessionId': session.sessionId, 'siteId': deviceUid, 'text': request.form.get('query')})
@@ -99,7 +109,7 @@ class DialogApi(Api):
 			self.MqttManager.publish(topic=constants.TOPIC_NLU_QUERY, payload={
 				'input'       : request.form.get('query'),
 				'sessionId'   : session.sessionId,
-				'intentFilter': session.intentFilter
+				'intentFilter': session.intentFilter if session.intentFilter else list(self.DialogManager.getEnabledByDefaultIntents())
 			})
 			return jsonify(success=True, sessionId=session.sessionId)
 		except Exception as e:
