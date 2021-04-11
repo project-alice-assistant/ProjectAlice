@@ -559,6 +559,7 @@ class Initializer:
 				'paho-mqtt',
 				'toml',
 				'numpy'
+				'pyyaml'
 			]
 			for req in reqs:
 				subprocess.run([f'/home/{getpass.getuser()}/hermesLedControl/venv/bin/pip', 'install', req])
