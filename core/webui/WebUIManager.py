@@ -107,7 +107,7 @@ class WebUIManager(Manager):
 
 		body = notification['body']
 		if replaceBody:
-			body = body.format(replaceBody)
+			body = body.format(*replaceBody)
 
 		self.MqttManager.publish(topic=constants.TOPIC_UI_NOTIFICATION, payload={
 			'type': tipe.value,
