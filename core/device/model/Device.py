@@ -486,3 +486,7 @@ class Device(ProjectAliceObject):
 
 	def getDeviceTypeDefinition(self) -> dict:
 		return self._deviceType.getDeviceTypeDefinition()
+
+
+	def broadcastUpdated(self):
+		self.MqttManager.publish(constants.TOPIC_DEVICE_UPDATED, payload={'device': self.toDict()})

@@ -22,3 +22,5 @@ class TelemetryType(Enum):
 	VOLTAGE = 'voltage'
 	CONTACT = 'contact'
 	LINKQUALITY = 'linkquality'
+	LATENCY = 'latency'
+	PACKET_LOSS = 'packetLoss'
