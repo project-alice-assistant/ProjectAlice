@@ -147,6 +147,10 @@ class DeviceLink(ProjectAliceObject):
 		self._configs = {**self._configs, **configs}
 
 
+	def getConfig(self, key: str, default: Any = False) -> Any:
+		return self._configs.get(key, default)
+
+
 	def toDict(self):
 		return {
 			'id'            : self._id,
