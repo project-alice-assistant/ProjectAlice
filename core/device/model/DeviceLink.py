@@ -1,6 +1,6 @@
 import json
 import sqlite3
-from typing import Dict, Optional, Union
+from typing import Dict, Optional, Union, Any
 
 from core.base.model.ProjectAliceObject import ProjectAliceObject
 from core.device.model.Device import Device
