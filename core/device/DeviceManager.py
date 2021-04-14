@@ -15,16 +15,7 @@
 #   You should have received a copy of the GNU General Public License
 #   along with this program.  If not, see <https://www.gnu.org/licenses/>
 #
-#   Last modified: 2021.04.15 at 00:01:41 MESZ
-
-#  Copyright (c) 2021
-#
-#  This file, DeviceManager.py, is part of Project Alice.
-#
-#
-#
-#
-#  Last modified: 2021.04.13 at 12:56:46 CEST
+#   Last modified: 2021.04.15 at 00:05:05 MESZ
 
 import importlib
 import socket
