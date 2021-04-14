@@ -60,7 +60,7 @@ class NodeRedManager(Manager):
 
 		if not self.PACKAGE_PATH.exists():
 			self.isActive = False
-			self.ThreadManager.newThread(name='installNodered', target=self.install)
+			self.install()
 			return
 
 		self.injectSkillNodes()
@@ -91,7 +91,7 @@ class NodeRedManager(Manager):
 			self.logError('Failed installing Node-red')
 			self.onStop()
 		else:
-			self.logInfo('Succesfully installed Node-red')
+			self.logInfo('Successfully installed Node-red')
 			self.configureNewNodeRed()
 			self.onStart()
 
