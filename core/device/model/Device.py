@@ -21,7 +21,7 @@ import json
 import sqlite3
 import uuid
 from pathlib import Path
-from typing import Any, Dict, List, Union, Optional
+from typing import Any, Dict, List, Optional, Union
 
 from core.base.model.ProjectAliceObject import ProjectAliceObject
 from core.commons import constants
@@ -299,6 +299,7 @@ class Device(ProjectAliceObject):
 		"""
 		self._uid = uid
 		self.saveToDB()
+		self.broadcastUpdated()
 
 
 	def onDeviceUIReply(self, data: dict):
