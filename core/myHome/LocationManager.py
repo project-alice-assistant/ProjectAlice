@@ -20,10 +20,10 @@
 from typing import Dict, List, Optional
 
 from core.base.model.Manager import Manager
+from core.dialog.model.DialogSession import DialogSession
 from core.myHome.model.Construction import Construction
 from core.myHome.model.Furniture import Furniture
 from core.myHome.model.Location import Location
-from core.dialog.model.DialogSession import DialogSession
 
 
 class LocationManager(Manager):
@@ -367,7 +367,7 @@ class LocationManager(Manager):
 			else:
 				device = self.DeviceManager.getDevice(uid=session.deviceUid)
 				if device:
-					return [device.getMainLocation()]
+					return [self.getLocation(locId=device.parentLocation)]
 				else:
 					return list()
 		else:

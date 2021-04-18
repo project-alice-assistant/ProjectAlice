@@ -19,7 +19,7 @@
 
 import json
 import sqlite3
-from typing import Dict, Optional, Union, Any
+from typing import Any, Dict, Optional, Union
 
 from core.base.model.ProjectAliceObject import ProjectAliceObject
 from core.device.model.Device import Device
@@ -154,7 +154,12 @@ class DeviceLink(ProjectAliceObject):
 
 	@targetLocation.setter
 	def targetLocation(self, newTarget: int):
-		self._targetLocation =  newTarget
+		self._targetLocation = newTarget
+
+
+	@property
+	def deviceType(self) -> Optional[DeviceType]:
+		return self._deviceType
 
 
 	@property

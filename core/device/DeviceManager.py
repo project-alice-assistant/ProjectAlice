@@ -314,9 +314,9 @@ class DeviceManager(Manager):
 
 		ret = list()
 		for device in self._devices.values():
-			if (locationId and device.parentLocation != locationId)\
-			    or (skillName and device.skillName != skillName)\
-				or (deviceType and device.deviceType != deviceType)\
+			if (locationId and device.parentLocation != locationId) \
+					or (skillName and device.skillName != skillName) \
+					or (deviceType and device.deviceType != deviceType)\
 				or (connectedOnly and not device.connected)\
 				or (abilities and not device.hasAbilities(abilities)):
 				continue
@@ -834,43 +834,43 @@ class DeviceManager(Manager):
 	# 	return [x for x in self._deviceLinks.values() if x.getDevice().deviceTypeId == deviceType and (not connectedOnly or x.getDevice().connected)]
 	#
 	#
-	# def getDeviceLinks(self, locationId: int, deviceTypeId: int = None, connectedOnly: bool = False, pairedOnly: bool = False) -> List[DeviceLink]:
-	# 	if locationId and not isinstance(locationId, List):
-	# 		locationId = [locationId]
-	#
-	# 	if deviceTypeId and not isinstance(deviceTypeId, List):
-	# 		deviceTypeId = [deviceTypeId]
-	#
-	# 	return [x for x in self._deviceLinks.values()
-	# 	        if (not locationId or x.locationId in locationId)
-	# 	        and x.getDevice()
-	# 	        and (not deviceTypeId or x.getDevice().deviceTypeId in deviceTypeId)
-	# 	        and (not connectedOnly or x.getDevice().connected)
-	# 	        and (not pairedOnly or x.getDevice().uid)]
-	#
-	#
-	# def getDeviceLinksForSession(self, session: DialogSession, skill: str, noneIsEverywhere: bool = False):
-	# 	#get all relevant deviceTypes
-	# 	devTypes = self.DeviceManager.getDeviceTypesForSkill(skillName=skill)
-	# 	devTypeIds = [dev for dev in devTypes] # keys in dict are Ids
-	#
-	# 	#get all required locations
-	# 	locations = self.LocationManager.getLocationsForSession(session=session, noneIsEverywhere=noneIsEverywhere)
-	# 	locationIds = [loc.id for loc in locations]
-	#
-	# 	return self.DeviceManager.getDeviceLinks(deviceTypeId=devTypeIds, locationId=locationIds)
-	#
-	#
-	# @staticmethod
-	# def groupDeviceLinksByDevice(links: List[DeviceLink]) -> Dict[int, DeviceLink]:
-	# 	# group links by device
-	# 	devGrouped = dict()
-	# 	for link in links:
-	# 		devGrouped.setdefault(link.deviceId,[]).append(link)
-	# 	return devGrouped
-	#
-	#
-	#
-	#
-	# def getLinksForDevice(self, device: Device) -> List[DeviceLink]:
-	# 	return [link for link in self._deviceLinks.values() if link.deviceId == device.id]
+	def getDeviceLinks(self, locationId: int, deviceTypeId: int = None, connectedOnly: bool = False, pairedOnly: bool = False) -> List[DeviceLink]:
+		if locationId and not isinstance(locationId, List):
+			locationId = [locationId]
+
+		if deviceTypeId and not isinstance(deviceTypeId, List):
+			deviceTypeId = [deviceTypeId]
+
+		return [x for x in self._deviceLinks.values()
+		        if (not locationId or x.targetLocation in locationId)
+		        and x.device is not None
+		        and (not deviceTypeId or x.device.deviceTypeId in deviceTypeId)
+		        and (not connectedOnly or x.device.connected)
+		        and (not pairedOnly or x.device.paired)]
+
+
+	def getDeviceLinksForSession(self, session: DialogSession, skill: str, noneIsEverywhere: bool = False):
+		# get all relevant deviceTypes
+		devTypes = self.DeviceManager.getDeviceTypesForSkill(skillName=skill)
+		devTypeIds = [dev for dev in devTypes]  # keys in dict are Ids
+
+		# get all required locations
+		locations = self.LocationManager.getLocationsForSession(session=session, noneIsEverywhere=noneIsEverywhere)
+		locationIds = [loc.id for loc in locations]
+
+		return self.DeviceManager.getDeviceLinks(deviceTypeId=devTypeIds, locationId=locationIds)
+
+
+	@staticmethod
+	def groupDeviceLinksByDevice(links: List[DeviceLink]) -> Dict[int, DeviceLink]:
+		if not links or links is None:
+			return dict()
+		# group links by device
+		devGrouped = dict()
+		for link in links:
+			devGrouped.setdefault(link.deviceId, []).append(link)
+		return devGrouped
+
+
+	def getLinksForDevice(self, device: Device) -> List[DeviceLink]:
+		return [link for link in self._deviceLinks.values() if link.deviceId == device.id]
