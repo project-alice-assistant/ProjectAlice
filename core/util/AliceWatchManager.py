@@ -15,7 +15,7 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>
 #
-#  Last modified: 2021.04.13 at 12:56:47 CEST
+#  Last modified: 2021.04.24 at 12:56:47 CEST
 
 from datetime import datetime
 
@@ -32,7 +32,7 @@ class AliceWatchManager(Manager):
 
 	def onHotword(self, deviceUid: str, user: str = constants.UNKNOWN_USER):
 		self.publish(payload={
-			'text': f'Detected on device **{self.DeviceManager.getDevice(uid=deviceUid).displayName}**, for user **{user}**',
+			'text'     : f'Detected on device **{self.getDisplayName(deviceUid)}**, for user **{user}**',
 			'component': 'Hotword',
 			'verbosity': 1
 		})
@@ -78,7 +78,7 @@ class AliceWatchManager(Manager):
 		if not session.deviceUid:
 			session.deviceUid = self.DeviceManager.getMainDevice().uid
 		self.publish(payload={
-			'text': f'Session with id "**{session.sessionId}**" was started on device **{self.DeviceManager.getDevice(uid=session.deviceUid).displayName}**',
+			'text'     : f'Session with id "**{session.sessionId}**" was started on device **{self.getDisplayName(session.deviceUid)}**',
 			'component': 'Dialogue',
 			'verbosity': 1
 		})
@@ -102,7 +102,7 @@ class AliceWatchManager(Manager):
 
 	def onHotwordToggleOn(self, deviceUid: str, session: DialogSession):
 		self.publish(payload={
-			'text': f'Was asked to toggle itself **on** on device **{self.DeviceManager.getDevice(uid=deviceUid).displayName}**',
+			'text'     : f'Was asked to toggle itself **on** on device **{self.getDisplayName(deviceUid)}**',
 			'component': 'Hotword',
 			'verbosity': 2
 		})
@@ -110,7 +110,7 @@ class AliceWatchManager(Manager):
 
 	def onHotwordToggleOff(self, deviceUid: str, session: DialogSession):
 		self.publish(payload={
-			'text'     : f'Was asked to toggle itself **off** on device **{self.DeviceManager.getDevice(uid=deviceUid).displayName}**',
+			'text'     : f'Was asked to toggle itself **off** on device **{self.getDisplayName(deviceUid)}**',
 			'component': 'Hotword',
 			'verbosity': 2
 		})
@@ -118,7 +118,7 @@ class AliceWatchManager(Manager):
 
 	def onStartListening(self, session):
 		self.publish(payload={
-			'text': f'Was asked to start listening on device **{self.DeviceManager.getDevice(uid=session.deviceUid).displayName}**',
+			'text'     : f'Was asked to start listening on device **{self.getDisplayName(session.deviceUid)}**',
 			'component': 'Asr',
 			'verbosity': 2
 		})
@@ -126,7 +126,7 @@ class AliceWatchManager(Manager):
 
 	def onStopListening(self, session):
 		self.publish(payload={
-			'text': f'Was asked to stop listening on device **{self.DeviceManager.getDevice(uid=session.deviceUid).displayName}**',
+			'text'     : f'Was asked to stop listening on device **{self.getDisplayName(session.deviceUid)}**',
 			'component': 'Asr',
 			'verbosity': 2
 		})
@@ -172,13 +172,7 @@ class AliceWatchManager(Manager):
 
 
 	def onSessionEnded(self, session: DialogSession):
-		device = self.DeviceManager.getDevice(uid=session.deviceUid)
-		if device:
-			displayName = device.displayName
-		else:
-			displayName = constants.UNKNOWN
-
-		text = f'Session with id "**{session.sessionId}**" was ended on device **{displayName}**.'
+		text = f'Session with id "**{session.sessionId}**" was ended on device **{self.getDisplayName(session.deviceUid)}**.'
 
 		reason = session.payload['termination']['reason']
 		if reason:
@@ -202,7 +196,7 @@ class AliceWatchManager(Manager):
 
 	def onVadUp(self, deviceUid: str):
 		self.publish(payload={
-			'text': f'Up on device **{self.DeviceManager.getDevice(uid=deviceUid).displayName}**',
+			'text'     : f'Up on device **{self.getDisplayName(deviceUid)}**',
 			'component': 'Voice activity',
 			'verbosity': 2
 		})
@@ -210,7 +204,7 @@ class AliceWatchManager(Manager):
 
 	def onVadDown(self, deviceUid: str):
 		self.publish(payload={
-			'text': f'Down on device **{self.DeviceManager.getDevice(uid=deviceUid).displayName}**',
+			'text'     : f'Down on device **{self.getDisplayName(deviceUid)}**',
 			'component': 'Voice activity',
 			'verbosity': 2
 		})
@@ -233,7 +227,7 @@ class AliceWatchManager(Manager):
 
 	def onNluQuery(self, session):
 		self.publish(payload={
-			'text': f'Was asked to parse input "![yellow]({session.payload.get("input", "")}")',
+			'text'     : f'Was asked to parse input "![yellow]({session.payload.get("input", "")}")',
 			'component': 'Nlu',
 			'verbosity': 2
 		})
@@ -244,3 +238,13 @@ class AliceWatchManager(Manager):
 		payload['time'] = datetime.strftime(datetime.now(), '%H:%M:%S')
 
 		self.MqttManager.publish(topic=topic, payload=payload)
+
+
+	def getDisplayName(self, deviceUid):
+		# This method should not be moved to DeviceManager or Device, as the output options are specific for AliceWatch
+		# Others need seperate handling
+		device = self.DeviceManager.getDevice(uid=session.deviceUid)
+		if device:
+			return device.displayName
+		else:
+			return f'with unknown UID {deviceUid}'
