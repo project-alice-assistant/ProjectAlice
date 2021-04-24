@@ -243,7 +243,7 @@ class AliceWatchManager(Manager):
 	def getDisplayName(self, deviceUid):
 		# This method should not be moved to DeviceManager or Device, as the output options are specific for AliceWatch
 		# Others need seperate handling
-		device = self.DeviceManager.getDevice(uid=session.deviceUid)
+		device = self.DeviceManager.getDevice(uid=deviceUid)
 		if device:
 			return device.displayName
 		else:
