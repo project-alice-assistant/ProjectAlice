@@ -16,7 +16,7 @@
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>
 #
 #  Last modified: 2021.04.13 at 12:56:45 CEST
-
+import inspect
 import json
 import logging
 import re
@@ -28,6 +28,7 @@ import sounddevice as sd
 from core.ProjectAliceExceptions import ConfigurationUpdateFailed, VitalConfigMissing
 from core.base.SuperManager import SuperManager
 from core.base.model.Manager import Manager
+from core.webui.model.UINotificationType import UINotificationType
 
 
 class ConfigManager(Manager):
@@ -203,22 +204,25 @@ class ConfigManager(Manager):
 		Updating a core config is sensitive, if the request comes from a skill.
 		First check if the request came from a skill at anytime and if so ask permission
 		to the user
-		:param doPreAndPostProcessing: If set to false, all pre and post processings won't be called
+		:param doPreAndPostProcessing: If set to false, all pre and post processing won't be called
 		:param key: str
 		:param value: str
 		:param dump: bool If set to False, the configs won't be dumped to the json file
 		:return: None
 		"""
 
-		# TODO reimplement UI side
-		# rootSkills = [name.lower() for name in self.SkillManager.NEEDED_SKILLS]
-		# callers = [inspect.getmodulename(frame[1]).lower() for frame in inspect.stack()]
-		# if 'aliceskill' in callers:
-		# 	skillName = callers[callers.index("aliceskill") + 1]
-		# 	if skillName not in rootSkills:
-		# 		self._pendingAliceConfUpdates[key] = value
-		# 		self.logWarning(f'Skill **{skillName}** is trying to modify a core configuration')
-		#
+		#TODO reimplement UI side
+		rootSkills = [name.lower() for name in self.SkillManager.NEEDED_SKILLS]
+		callers = [inspect.getmodulename(frame[1]).lower() for frame in inspect.stack()]
+		if 'aliceskill' in callers:
+			skillName = callers[callers.index('aliceskill') + 1]
+			if skillName not in rootSkills:
+				self._pendingAliceConfUpdates[key] = value
+				self.logWarning(f'Skill **{skillName}** is trying to modify a core configuration')
+
+				self.WebUIManager.newNotification(tipe=UINotificationType.ALERT, notification='coreConfigUpdateWarning', replaceBody=[skillName, key, value])
+				return
+
 		# 		self.ThreadManager.doLater(
 		# 			interval=2,
 		# 			func=self.MqttManager.publish,
