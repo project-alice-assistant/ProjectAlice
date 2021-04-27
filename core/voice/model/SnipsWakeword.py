@@ -17,7 +17,6 @@
 #
 #  Last modified: 2021.04.13 at 12:56:48 CEST
 
-import json
 import threading
 
 import subprocess
@@ -84,6 +83,7 @@ class SnipsWakeword(WakewordEngine):
 		if installed.returncode or installed2.returncode:
 			self.logError(f"Couldn't install Snips wakeword: {installed.stderr}")
 			return False
+		return True
 
 
 	def onStop(self):
