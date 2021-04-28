@@ -22,8 +22,8 @@ from typing import Iterable, List
 
 from core.base.model.Manager import Manager
 from core.myHome.model.Location import Location
-from core.util.model.TelemetryType import TelemetryType
 from core.util.model.TelemetryData import TelemetryData
+from core.util.model.TelemetryType import TelemetryType
 
 
 class TelemetryManager(Manager):
@@ -246,5 +246,8 @@ class TelemetryManager(Manager):
 			method='all'
 		)
 
+
 	def getAllCombinationsForAPI(self):
-		return [ val.forApi() for val in self._currentValues ]
+		list = [val.forApi() for val in self._currentValues]
+		list = [l for l in list if l is not None]  # workaround until obsolet telemetry is purged
+		return list

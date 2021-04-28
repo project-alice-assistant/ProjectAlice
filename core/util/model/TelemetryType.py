@@ -43,3 +43,4 @@ class TelemetryType(Enum):
 	LINKQUALITY = 'linkquality'
 	LATENCY = 'latency'
 	PACKET_LOSS = 'packetLoss'
+	STATE = 'state'

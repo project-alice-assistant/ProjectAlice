@@ -18,8 +18,10 @@
 #  Last modified: 2021.04.13 at 12:56:48 CEST
 
 from dataclasses import dataclass, field
-from core.util.model.TelemetryType import TelemetryType
+
 from core.base.model.ProjectAliceObject import ProjectAliceObject
+from core.util.model.TelemetryType import TelemetryType
+
 
 @dataclass
 class TelemetryData(ProjectAliceObject):
@@ -40,17 +42,21 @@ class TelemetryData(ProjectAliceObject):
 		self.timestamp = self.data['timestamp']
 		self.type = TelemetryType(self.data['type'])
 
+
 	def forApi(self):
-		return {
-			"service": self.service,
-			"deviceId": self.deviceId,
-			"device": self.getDeviceName(),
-			"locationId": self.locationId,
-			"location": self.getLocationName(),
-			"value": self.value,
-			"timestamp": self.timestamp,
-			"type": self.type.value
-		}
+		try:
+			return {
+				"service"   : self.service,
+				"deviceId"  : self.deviceId,
+				"device"    : self.getDeviceName(),
+				"locationId": self.locationId,
+				"location"  : self.getLocationName(),
+				"value"     : self.value,
+				"timestamp" : self.timestamp,
+				"type"      : self.type.value
+			}
+		except AttributeError:
+			return None
 
 	def getDeviceName(self):
 		return self.DeviceManager.getDevice(deviceId=int(self.deviceId)).displayName
