@@ -197,7 +197,7 @@ class DeviceManager(Manager):
 		self._heartbeatsCheckTimer = self.ThreadManager.newTimer(interval=2, func=self.checkHeartbeats)
 
 
-	def getDevice(self, deviceId: int = None, uid: str = None) -> Optional[Device]:
+	def getDevice(self, deviceId: int = None, uid: [str, uuid.UUID] = None) -> Optional[Device]:
 		"""
 		Returns a Device with the provided id or uid, if any
 		:param deviceId: The device id
@@ -418,11 +418,13 @@ class DeviceManager(Manager):
 			'typeName'      : deviceType,
 			'uid'           : uid or str(uuid.uuid4()),
 			'deviceConfigs' : {
-				'displayName'   : displayName
+				'displayName': displayName
 			}
 		}
 
-		device = Device(data)
+		skillImport = importlib.import_module(f'skills.{skillName}.devices.{deviceType}')
+		klass = getattr(skillImport, deviceType)
+		device = klass(data)
 		self._devices[device.id] = device
 
 		if device.deviceType.allowLocationLinks:
@@ -884,3 +886,7 @@ class DeviceManager(Manager):
 
 	def getLinksForDevice(self, device: Device) -> List[DeviceLink]:
 		return [link for link in self._deviceLinks.values() if link.deviceId == device.id]
+
+
+	def generateUuid3(self, skillName: str, unique: str):
+		return uuid.uuid3(uuid.uuid3(uuid.NAMESPACE_OID, skillName), unique)
