@@ -178,7 +178,4 @@ class DeviceType(ProjectAliceObject):
 
 	@classmethod
 	def getDeviceTypeDefinition(cls) -> dict:
-		try:
-			return cls.getDeviceTypeDefinition()
-		except:
 			raise NotImplementedError
