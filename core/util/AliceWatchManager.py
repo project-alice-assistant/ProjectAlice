@@ -240,9 +240,13 @@ class AliceWatchManager(Manager):
 		self.MqttManager.publish(topic=topic, payload=payload)
 
 
-	def getDisplayName(self, deviceUid):
-		# This method should not be moved to DeviceManager or Device, as the output options are specific for AliceWatch
-		# Others need seperate handling
+	def getDisplayName(self, deviceUid: str) -> str:
+		"""
+		This method should not be moved to DeviceManager or Device, as the output options are specific for AliceWatch
+		Others need seperate handling
+		:param deviceUid: The device uid to get the name from
+		:return: device name
+		"""
 		device = self.DeviceManager.getDevice(uid=deviceUid)
 		if device:
 			return device.displayName
