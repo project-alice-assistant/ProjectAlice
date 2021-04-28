@@ -17,17 +17,16 @@
 #
 #  Last modified: 2021.04.13 at 12:56:49 CEST
 
-from pathlib import Path
-from typing import Union
-
 from flask import jsonify, request, send_from_directory
 from flask_classful import route
+from pathlib import Path
+from typing import Union
 
 from core.commons import constants
 from core.device.model.Device import Device
 from core.device.model.DeviceType import DeviceType
-from core.webApi.model.Api import Api
 from core.util.Decorators import ApiAuthenticated
+from core.webApi.model.Api import Api
 
 
 class MyHomeApi(Api):
@@ -269,7 +268,7 @@ class MyHomeApi(Api):
 			file = device.getDeviceIcon()
 			return send_from_directory(file.parent, f'{file.stem}{constants.PNG_EXT}')
 		except Exception as e:
-			self.logError(f'Failed to retrieve icon for device id **{deviceId}** :{e}') #NOSONAR
+			self.logError(f'Failed to retrieve icon for device id **{deviceId}** ({file}) :{e}')  # NOSONAR
 			file = Path(self.Commons.rootDir(), 'core/webApi/static/images/missing-icon.png')
 			return send_from_directory(file.parent, f'{file.stem}{constants.PNG_EXT}')
 
