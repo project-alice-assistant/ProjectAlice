@@ -63,6 +63,8 @@ class DeviceManager(Manager):
 	def __init__(self):
 		super().__init__(databaseSchema=self.DATABASE)
 
+		self.loadingDone = False
+
 		self._devices: Dict[int, Device] = dict()
 		self._deviceLinks: Dict[int, DeviceLink] = dict()
 		self._deviceTypes: Dict[str, Dict[str, DeviceType]] = dict()
@@ -112,6 +114,7 @@ class DeviceManager(Manager):
 			device.onStart()
 
 		self.logInfo(f'Loaded **{len(self._devices)}** device instance', plural='instance')
+		self.loadingDone = True
 
 
 	def onBooted(self):
@@ -201,15 +204,22 @@ class DeviceManager(Manager):
 		:param uid: The device uid
 		:return: Device instance if any or None
 		"""
+		ret = None
 		if deviceId:
-			return self._devices.get(deviceId, None)
+			ret = self._devices.get(deviceId, None)
 		elif uid:
+			if not isinstance(uid, str):
+				uid = str(uid)
 			for device in self._devices.values():
 				if device.uid == uid:
-					return device
-			return None
+					ret = device
 		else:
 			raise Exception('Cannot get a device without id or uid')
+		if ret is None and not self.loadingDone:
+			time.sleep(0.1)
+			return self.getDevice(deviceId=deviceId, uid=uid)
+		else:
+			return ret
 
 
 	def registerDeviceType(self, skillName: str, data: dict):
