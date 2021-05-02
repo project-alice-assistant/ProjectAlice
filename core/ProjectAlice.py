@@ -186,6 +186,8 @@ class ProjectAlice(Singleton):
 		else:
 			candidate = Version.fromString(constants.VERSION)
 			for branch in req.json():
+				if 'dependabot' in branch['name']:
+					continue
 				repoVersion = Version.fromString(branch['name'])
 				if not repoVersion.isVersionNumber:
 					continue
