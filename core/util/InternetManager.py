@@ -42,7 +42,7 @@ class InternetManager(Manager):
 			self._checkFrequency = internetQuality * 2
 			self._checkThread = self.ThreadManager.newThread(name='internetCheckThread', target=self.checkInternet)
 		else:
-			self.logInfo('Configurations set to stay completly offline')
+			self.logInfo('Configurations set to stay completely offline')
 
 
 	@property

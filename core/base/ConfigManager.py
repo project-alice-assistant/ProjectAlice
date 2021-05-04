@@ -306,13 +306,13 @@ class ConfigManager(Manager):
 					value = self._skillsTemplateConfigurations[skillName][key]['defaultValue']
 					self.logWarning(f'Value for config **{key}** in skill **{skillName}** is out of bound, reverted to default')
 			except:
-				self.logWarning(f'Value missmatch for config **{key}** in skill **{skillName}**')
+				self.logWarning(f'Value mismatch for config **{key}** in skill **{skillName}**')
 				value = 0
 		elif vartype in {'string', 'email', 'password', 'longstring'}:
 			try:
 				value = str(value)
 			except:
-				self.logWarning(f'Value missmatch for config **{key}** in skill **{skillName}**')
+				self.logWarning(f'Value mismatch for config **{key}** in skill **{skillName}**')
 				value = ''
 
 		skillInstance = self.SkillManager.getSkillInstance(skillName=skillName, silent=True)
