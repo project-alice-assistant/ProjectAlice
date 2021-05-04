@@ -291,135 +291,135 @@ class ProjectAliceObject:
 
 
 	def onStart(self):
-		pass  # Super object function is overriden only if needed
+		pass  # Super object function is overridden only if needed
 
 
 	def onStop(self, **kwargs):
-		pass  # Super object function is overriden only if needed
+		pass  # Super object function is overridden only if needed
 
 
 	def onBooted(self):
-		pass  # Super object function is overriden only if needed
+		pass  # Super object function is overridden only if needed
 
 
 	def onSkillInstalled(self, skill: str):
-		pass  # Super object function is overriden only if needed
+		pass  # Super object function is overridden only if needed
 
 
 	def onSkillDeleted(self, skill: str):
-		pass  # Super object function is overriden only if needed
+		pass  # Super object function is overridden only if needed
 
 
 	def onSkillUpdated(self, skill: str):
-		pass  # Super object function is overriden only if needed
+		pass  # Super object function is overridden only if needed
 
 
 	def onInternetConnected(self):
-		pass  # Super object function is overriden only if needed
+		pass  # Super object function is overridden only if needed
 
 
 	def onInternetLost(self):
-		pass  # Super object function is overriden only if needed
+		pass  # Super object function is overridden only if needed
 
 
 	def onHotword(self, deviceUid: str, user: str = constants.UNKNOWN_USER):
-		pass  # Super object function is overriden only if needed
+		pass  # Super object function is overridden only if needed
 
 
 	def onHotwordToggleOn(self, deviceUid: str, session):
-		pass  # Super object function is overriden only if needed
+		pass  # Super object function is overridden only if needed
 
 
 	def onHotwordToggleOff(self, deviceUid: str, session):
-		pass  # Super object function is overriden only if needed
+		pass  # Super object function is overridden only if needed
 
 
 	def onSessionStarted(self, session):
-		pass  # Super object function is overriden only if needed
+		pass  # Super object function is overridden only if needed
 
 
 	def onContinueSession(self, session):
-		pass  # Super object function is overriden only if needed
+		pass  # Super object function is overridden only if needed
 
 
 	def onAsrToggleOn(self, deviceUid: str):
-		pass  # Super object function is overriden only if needed
+		pass  # Super object function is overridden only if needed
 
 
 	def onAsrToggleOff(self, deviceUid: str):
-		pass  # Super object function is overriden only if needed
+		pass  # Super object function is overridden only if needed
 
 
 	def onStartListening(self, session):
-		pass  # Super object function is overriden only if needed
+		pass  # Super object function is overridden only if needed
 
 
 	def onStopListening(self, session):
-		pass  # Super object function is overriden only if needed
+		pass  # Super object function is overridden only if needed
 
 
 	def onCaptured(self, session):
-		pass  # Super object function is overriden only if needed
+		pass  # Super object function is overridden only if needed
 
 
 	def onNluQuery(self, session):
-		pass  # Super object function is overriden only if needed
+		pass  # Super object function is overridden only if needed
 
 
 	def onIntentParsed(self, session):
-		pass  # Super object function is overriden only if needed
+		pass  # Super object function is overridden only if needed
 
 
 	def onIntent(self, session):
-		pass  # Super object function is overriden only if needed
+		pass  # Super object function is overridden only if needed
 
 
 	def onConfigureIntent(self, intents: list):
-		pass  # Super object function is overriden only if needed
+		pass  # Super object function is overridden only if needed
 
 
 	def onUserCancel(self, session):
-		pass  # Super object function is overriden only if needed
+		pass  # Super object function is overridden only if needed
 
 
 	def onSessionTimeout(self, session):
-		pass  # Super object function is overriden only if needed
+		pass  # Super object function is overridden only if needed
 
 
 	def onIntentNotRecognized(self, session):
-		pass  # Super object function is overriden only if needed
+		pass  # Super object function is overridden only if needed
 
 
 	def onNluIntentNotRecognized(self, session):
-		pass  # Super object function is overriden only if needed
+		pass  # Super object function is overridden only if needed
 
 
 	def onNluError(self, session):
-		pass  # Super object function is overriden only if needed
+		pass  # Super object function is overridden only if needed
 
 
 	def onSessionError(self, session):
-		pass  # Super object function is overriden only if needed
+		pass  # Super object function is overridden only if needed
 
 
 	def onStartSession(self, deviceUid: str, payload: dict):
-		pass  # Super object function is overriden only if needed
+		pass  # Super object function is overridden only if needed
 
 
 	def onSessionEnded(self, session):
-		pass  # Super object function is overriden only if needed
+		pass  # Super object function is overridden only if needed
 
 
 	def onSay(self, session):
-		pass  # Super object function is overriden only if needed
+		pass  # Super object function is overridden only if needed
 
 
 	def onSayFinished(self, session, uid: str = None):
-		pass  # Super object function is overriden only if needed
+		pass  # Super object function is overridden only if needed
 
 
 	def onSessionQueued(self, session):
-		pass  # Super object function is overriden only if needed
+		pass  # Super object function is overridden only if needed
 
 
 	def onMessage(self, session) -> bool:  # NOSONAR
@@ -428,249 +428,249 @@ class ProjectAliceObject:
 
 
 	def onSleep(self):
-		pass  # Super object function is overriden only if needed
+		pass  # Super object function is overridden only if needed
 
 
 	def onWakeup(self):
-		pass  # Super object function is overriden only if needed
+		pass  # Super object function is overridden only if needed
 
 
 	def onGoingBed(self):
-		pass  # Super object function is overriden only if needed
+		pass  # Super object function is overridden only if needed
 
 
 	def onLeavingHome(self):
-		pass  # Super object function is overriden only if needed
+		pass  # Super object function is overridden only if needed
 
 
 	def onReturningHome(self):
-		pass  # Super object function is overriden only if needed
+		pass  # Super object function is overridden only if needed
 
 
 	def onEating(self):
-		pass  # Super object function is overriden only if needed
+		pass  # Super object function is overridden only if needed
 
 
 	def onWatchingTV(self):
-		pass  # Super object function is overriden only if needed
+		pass  # Super object function is overridden only if needed
 
 
 	def onCooking(self):
-		pass  # Super object function is overriden only if needed
+		pass  # Super object function is overridden only if needed
 
 
 	def onMakeup(self):
-		pass  # Super object function is overriden only if needed
+		pass  # Super object function is overridden only if needed
 
 
 	def onContextSensitiveDelete(self, session):
-		pass  # Super object function is overriden only if needed
+		pass  # Super object function is overridden only if needed
 
 
 	def onContextSensitiveEdit(self, session):
-		pass  # Super object function is overriden only if needed
+		pass  # Super object function is overridden only if needed
 
 
 	def onFullMinute(self):
-		pass  # Super object function is overriden only if needed
+		pass  # Super object function is overridden only if needed
 
 
 	def onFiveMinute(self):
-		pass  # Super object function is overriden only if needed
+		pass  # Super object function is overridden only if needed
 
 
 	def onQuarterHour(self):
-		pass  # Super object function is overriden only if needed
+		pass  # Super object function is overridden only if needed
 
 
 	def onFullHour(self):
-		pass  # Super object function is overriden only if needed
+		pass  # Super object function is overridden only if needed
 
 
 	def onWakeword(self, deviceUid: str, user: str = constants.UNKNOWN_USER):
-		pass  # Super object function is overriden only if needed
+		pass  # Super object function is overridden only if needed
 
 
 	def onMotionDetected(self):
-		pass  # Super object function is overriden only if needed
+		pass  # Super object function is overridden only if needed
 
 
 	def onMotionStopped(self):
-		pass  # Super object function is overriden only if needed
+		pass  # Super object function is overridden only if needed
 
 
 	def onButtonPressed(self):
-		pass  # Super object function is overriden only if needed
+		pass  # Super object function is overridden only if needed
 
 
 	def onButtonReleased(self):
-		pass  # Super object function is overriden only if needed
+		pass  # Super object function is overridden only if needed
 
 
 	def onDeviceDiscovered(self, device, uid: str):
-		pass  # Super object function is overriden only if needed
+		pass  # Super object function is overridden only if needed
 
 
 	def onDeviceAdded(self, device, uid: str):
-		pass  # Super object function is overriden only if needed
+		pass  # Super object function is overridden only if needed
 
 
 	def onDeviceRemoved(self, device, uid: str):
-		pass  # Super object function is overriden only if needed
+		pass  # Super object function is overridden only if needed
 
 
 	def onDeviceConnecting(self):
-		pass  # Super object function is overriden only if needed
+		pass  # Super object function is overridden only if needed
 
 
 	def onDeviceDisconnecting(self):
-		pass  # Super object function is overriden only if needed
+		pass  # Super object function is overridden only if needed
 
 
 	def onUVIndexAlert(self, *args, **kwargs):
-		pass  # Super object function is overriden only if needed
+		pass  # Super object function is overridden only if needed
 
 
 	def onRaining(self, *args, **kwargs):
-		pass  # Super object function is overriden only if needed
+		pass  # Super object function is overridden only if needed
 
 
 	def onTooMuchRain(self, *args, **kwargs):
-		pass  # Super object function is overriden only if needed
+		pass  # Super object function is overridden only if needed
 
 
 	def onWindy(self, *args, **kwargs):
-		pass  # Super object function is overriden only if needed
+		pass  # Super object function is overridden only if needed
 
 
 	def onFreezing(self, *args, **kwargs):
-		pass  # Super object function is overriden only if needed
+		pass  # Super object function is overridden only if needed
 
 
 	def onTemperatureHighAlert(self, *args, **kwargs):
-		pass  # Super object function is overriden only if needed
+		pass  # Super object function is overridden only if needed
 
 
 	def onTemperatureLowAlert(self, *args, **kwargs):
-		pass  # Super object function is overriden only if needed
+		pass  # Super object function is overridden only if needed
 
 
 	def onCOTwoAlert(self, *args, **kwargs):
-		pass  # Super object function is overriden only if needed
+		pass  # Super object function is overridden only if needed
 
 
 	def onHumidityHighAlert(self, *args, **kwargs):
-		pass  # Super object function is overriden only if needed
+		pass  # Super object function is overridden only if needed
 
 
 	def onHumidityLowAlert(self, *args, **kwargs):
-		pass  # Super object function is overriden only if needed
+		pass  # Super object function is overridden only if needed
 
 
 	def onNoiseAlert(self, *args, **kwargs):
-		pass  # Super object function is overriden only if needed
+		pass  # Super object function is overridden only if needed
 
 
 	def onPressureHighAlert(self, *args, **kwargs):
-		pass  # Super object function is overriden only if needed
+		pass  # Super object function is overridden only if needed
 
 
 	def onGasAlert(self, *args, **kwargs):
-		pass  # Super object function is overriden only if needed
+		pass  # Super object function is overridden only if needed
 
 
 	def onPressureLowAlert(self, *args, **kwargs):
-		pass  # Super object function is overriden only if needed
+		pass  # Super object function is overridden only if needed
 
 
 	def onBroadcastingForNewDeviceStart(self):
-		pass  # Super object function is overriden only if needed
+		pass  # Super object function is overridden only if needed
 
 
 	def onBroadcastingForNewDeviceStop(self, *args):
-		pass  # Super object function is overriden only if needed
+		pass  # Super object function is overridden only if needed
 
 
 	def onAuthenticated(self, session):
-		pass  # Super object function is overriden only if needed
+		pass  # Super object function is overridden only if needed
 
 
 	def onAuthenticationFailed(self, session):
-		pass  # Super object function is overriden only if needed
+		pass  # Super object function is overridden only if needed
 
 
 	def onAudioFrame(self, **kwargs):
-		pass  # Super object function is overriden only if needed
+		pass  # Super object function is overridden only if needed
 
 
 	def onAssistantInstalled(self, **kwargs):
-		pass  # Super object function is overriden only if needed
+		pass  # Super object function is overridden only if needed
 
 
 	def onAssistantFailedTraining(self, **kwargs):
-		pass  # Super object function is overriden only if needed
+		pass  # Super object function is overridden only if needed
 
 
 	def onSkillInstallFailed(self, skill: str):
-		pass  # Super object function is overriden only if needed
+		pass  # Super object function is overridden only if needed
 
 
 	def onNluTrained(self, **kwargs):
-		pass  # Super object function is overriden only if needed
+		pass  # Super object function is overridden only if needed
 
 
 	def onVadUp(self, **kwargs):
-		pass  # Super object function is overriden only if needed
+		pass  # Super object function is overridden only if needed
 
 
 	def onVadDown(self, **kwargs):
-		pass  # Super object function is overriden only if needed
+		pass  # Super object function is overridden only if needed
 
 
 	def onPlayBytes(self, payload: bytearray, deviceUid: str, sessionId: str = None):
-		pass  # Super object function is overriden only if needed
+		pass  # Super object function is overridden only if needed
 
 
 	def onPlayBytesFinished(self, deviceUid: str, sessionId: str = None):
-		pass  # Super object function is overriden only if needed
+		pass  # Super object function is overridden only if needed
 
 
 	def onToggleFeedbackOn(self, deviceUid: str):
-		pass  # Super object function is overriden only if needed
+		pass  # Super object function is overridden only if needed
 
 
 	def onToggleFeedbackOff(self, deviceUid: str):
-		pass  # Super object function is overriden only if needed
+		pass  # Super object function is overridden only if needed
 
 
 	def onPartialTextCaptured(self, session, text: str, likelihood: float, seconds: float):
-		pass  # Super object function is overriden only if needed
+		pass  # Super object function is overridden only if needed
 
 
 	def onEndSession(self, session, reason: str = 'nominal'):
-		pass  # Super object function is overriden only if needed
+		pass  # Super object function is overridden only if needed
 
 
 	def onDeviceHeartbeat(self, uid: str, deviceUid: str = None):
-		pass  # Super object function is overriden only if needed
+		pass  # Super object function is overridden only if needed
 
 
 	def onDeviceStatus(self, session):
-		pass  # Super object function is overriden only if needed
+		pass  # Super object function is overridden only if needed
 
 
 	def onSkillStarted(self, skill):
 		"""
 		param skill: AliceSkill instance
 		"""
-		pass  # Super object function is overriden only if needed
+		pass  # Super object function is overridden only if needed
 
 
 	def onSkillStopped(self, skill):
 		"""
 		:param skill: AliceSkill instance
 		"""
-		pass  # Super object function is overriden only if needed
+		pass  # Super object function is overridden only if needed
 
 
 	@property
