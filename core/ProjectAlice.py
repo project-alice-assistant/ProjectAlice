@@ -15,13 +15,12 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>
 #
-#  Last modified: 2021.04.13 at 12:56:47 CEST
+#  Last modified: 2021.05.05 at 12:56:47 CEST
 
 import hashlib
+import requests
 import subprocess
 from pathlib import Path
-
-import requests
 
 from core.base.SuperManager import SuperManager
 from core.base.model.StateType import StateType
