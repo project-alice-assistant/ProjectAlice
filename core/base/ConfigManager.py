@@ -315,6 +315,9 @@ class ConfigManager(Manager):
 				self.logWarning(f'Value mismatch for config **{key}** in skill **{skillName}**')
 				value = ''
 
+		if self._skillsConfigurations[skillName][key] == value:
+			return  # don't call any before/onUpdate if nothing changed
+
 		skillInstance = self.SkillManager.getSkillInstance(skillName=skillName, silent=True)
 		if self._skillsTemplateConfigurations[skillName][key].get('beforeUpdate', None):
 			if not skillInstance:
