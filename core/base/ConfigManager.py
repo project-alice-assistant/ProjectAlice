@@ -20,10 +20,9 @@ import inspect
 import json
 import logging
 import re
+import sounddevice as sd
 import typing
 from pathlib import Path
-
-import sounddevice as sd
 
 from core.ProjectAliceExceptions import ConfigurationUpdateFailed, VitalConfigMissing
 from core.base.SuperManager import SuperManager
@@ -43,6 +42,7 @@ class ConfigManager(Manager):
 		super().__init__()
 
 		self.configFileExists = False
+		self._loadingDone = False
 
 		self._vitalConfigs = list()
 		self._aliceConfigurationCategories = list()
@@ -409,6 +409,8 @@ class ConfigManager(Manager):
 
 
 	def getSkillConfigByName(self, skillName: str, configName: str) -> typing.Any:
+		if not self._loadingDone:
+			raise Exception(f'Loading skill configs is not yet done! Don\'t load configs in __init__, but only after onStart is called')
 		return self._skillsConfigurations.get(skillName, dict()).get(configName, None)
 
 
@@ -500,6 +502,7 @@ class ConfigManager(Manager):
 			self._skillsConfigurations = skillsConfigurations.copy()
 		else:
 			self._skillsConfigurations[skillToLoad] = skillsConfigurations[skillToLoad].copy()
+		self._loadingDone = True
 
 
 	def _newSkillConfigFile(self, skillName: str, skillConfigTemplate: Path):
