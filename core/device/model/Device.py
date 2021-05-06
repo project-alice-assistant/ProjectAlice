@@ -260,23 +260,25 @@ class Device(ProjectAliceObject):
 					'deviceConfigs'  : json.dumps(self._deviceConfigs)
 				}
 			)
-			self.publishDevice()
 		else:
 			deviceId = self.DatabaseManager.insert(
 				tableName=self.DeviceManager.DB_DEVICE,
 				callerName=self.DeviceManager.name,
 				values={
-					'uid'            : self._uid,
-					'parentLocation' : self._parentLocation,
-					'typeName'       : self._typeName,
-					'skillName'      : self._skillName,
-					'settings'       : json.dumps(self._settings),
-					'deviceParams'   : json.dumps(self._deviceParams),
-					'deviceConfigs'  : json.dumps(self._deviceConfigs)
+					'uid'           : self._uid,
+					'parentLocation': self._parentLocation,
+					'typeName'      : self._typeName,
+					'skillName'     : self._skillName,
+					'settings'      : json.dumps(self._settings),
+					'deviceParams'  : json.dumps(self._deviceParams),
+					'deviceConfigs' : json.dumps(self._deviceConfigs)
 				}
 			)
 
 			self._id = deviceId
+
+		self.publishDevice()
+
 
 	def getLocation(self) -> Optional[Location]:
 		return self.LocationManager.getLocation(locId=self.parentLocation)

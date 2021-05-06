@@ -517,6 +517,8 @@ class DeviceManager(Manager):
 			self._devices.pop(device.id, None)
 			self.DatabaseManager.delete(tableName=self.DB_DEVICE, callerName=self.name, values={'id': device.id})
 
+		self.MqttManager.publish(constants.TOPIC_DEVICE_DELETED, payload={'uid': device.uid, 'id': device.id})
+
 
 	def findUSBPort(self, timeout: int) -> str:
 		"""
