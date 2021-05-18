@@ -650,7 +650,7 @@ class SkillManager(Manager):
 	def _installSkills(self, skills: list) -> dict:
 		root = Path(self.Commons.rootDir(), constants.SKILL_INSTALL_TICKET_PATH)
 		skillsToBoot = dict()
-		self.MqttManager.mqttBroadcast(topic='hermes/leds/systemUpdate', payload={'sticky': True})
+		self.MqttManager.mqttBroadcast(topic=constants.TOPIC_SYSTEM_UPDATE, payload={'sticky': True})
 		for file in skills:
 			skillName = Path(file).stem
 
