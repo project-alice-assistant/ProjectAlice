@@ -15,12 +15,11 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>
 #
-#  Last modified: 2021.04.13 at 12:56:45 CEST
-
-import threading
-import time
+#  Last modified: 2021.05.19 at 12:56:45 CEST
 
 import subprocess
+import threading
+import time
 from typing import Optional
 
 from core.asr.model.Asr import Asr
@@ -111,6 +110,10 @@ class SnipsAsr(Asr):
 		self._flag.set()
 		try:
 			while self._flag.is_set():
-				time.sleep(0.5)
+				if process.poll() is None:
+					time.sleep(0.5)
+				else:
+					process = subprocess.Popen(cmd.split(), stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+					self.logWarning("Restarted Snips-ASR")
 		finally:
 			process.terminate()

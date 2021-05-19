@@ -15,17 +15,16 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>
 #
-#  Last modified: 2021.04.13 at 12:56:47 CEST
+#  Last modified: 2021.05.19 at 12:56:47 CEST
 
 import json
 import re
 import shutil
+import subprocess
 import threading
 import time
 from pathlib import Path
 from subprocess import CompletedProcess
-
-import subprocess
 from typing import Optional
 
 from core.commons import constants
@@ -78,7 +77,11 @@ class SnipsNlu(NluEngine):
 		self._flag.set()
 		try:
 			while self._flag.is_set():
-				time.sleep(0.5)
+				if process.poll() is None:
+					time.sleep(0.5)
+				else:
+					process = subprocess.Popen(cmd.split(), stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+					self.logWarning("Restarted Snips-NLU")
 		finally:
 			process.terminate()
 
