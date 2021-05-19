@@ -72,6 +72,7 @@ TOPIC_TOGGLE_FEEDBACK = 'hermes/feedback/sound/toggle{}'
 TOPIC_NLU_QUERY = 'hermes/nlu/query'
 TOPIC_VAD_UP = 'hermes/voiceActivity/{}/vadUp'
 TOPIC_VAD_DOWN = 'hermes/voiceActivity/{}/vadDown'
+TOPIC_SYSTEM_UPDATE = 'hermes/leds/systemUpdate'
 
 TOPIC_NEW_HOTWORD = 'projectalice/devices/alice/newHotword'
 TOPIC_DEVICE_HEARTBEAT = 'projectalice/devices/heartbeat'
