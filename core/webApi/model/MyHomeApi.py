@@ -264,11 +264,12 @@ class MyHomeApi(Api):
 		:return:
 		"""
 		try:
+			file = None
 			device: Device = self.DeviceManager.getDevice(deviceId=int(deviceId))
 			file = device.getDeviceIcon()
 			return send_from_directory(file.parent, f'{file.stem}{constants.PNG_EXT}')
 		except Exception as e:
-			self.logError(f'Failed to retrieve icon for device id **{deviceId}** ({file}) :{e}')  # NOSONAR
+			self.logError(f'Failed to retrieve icon for device id **{deviceId}** ({file if file else "error while getting filename"}) :{e}')  # NOSONAR
 			file = Path(self.Commons.rootDir(), 'core/webApi/static/images/missing-icon.png')
 			return send_from_directory(file.parent, f'{file.stem}{constants.PNG_EXT}')
 
