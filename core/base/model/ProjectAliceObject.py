@@ -22,19 +22,15 @@ from __future__ import annotations
 import json
 import re
 from copy import copy
-from pathlib import Path
-from typing import Union
-
 from importlib_metadata import PackageNotFoundError, version as packageVersion
+from pathlib import Path
+from typing import TYPE_CHECKING, Union
 
 import core.base.SuperManager as SM
-
 from core.base.model.Version import Version
 from core.commons import constants
-
 from core.util.model.Logger import Logger
 
-from typing import TYPE_CHECKING
 if TYPE_CHECKING:
 	from core.device.DeviceManager import DeviceManager
 	from core.ProjectAlice import ProjectAlice
@@ -827,6 +823,12 @@ class ProjectAliceObject:
 	def StateManager(self) -> StateManager:  # NOSONAR
 		return SM.SuperManager.getInstance().stateManager
 
+
 	@property
 	def WebUIManager(self) -> WebUIManager:  # NOSONAR
 		return SM.SuperManager.getInstance().webUiManager
+
+
+	@property
+	def SubprocessManager(self) -> SubprocessManager:  # NOSONAR
+		return SM.SuperManager.getInstance().subprocessManager

@@ -78,22 +78,7 @@ class SnipsAsr(Asr):
 		if self.LanguageManager.activeLanguage != 'en':
 			raise Exception('Snips generic ASR only for english')
 
-		self._flag.clear()
-		if self._thread and self._thread.is_alive():
-			self._thread.join(timeout=5)
 
-		self._thread: threading.Thread = self.ThreadManager.newThread(name='asrEngine', target=self.run, autostart=False)
-		self._thread.start()
-
-
-	def onStop(self):
-		super().onStop()
-		self._flag.clear()
-		if self._thread and self._thread.is_alive():
-			self.ThreadManager.terminateThread(name='asrEngine')
-
-
-	def run(self):
 		cmd = f'snips-asr --assistant {self.Commons.rootDir()}/assistant --mqtt {self.ConfigManager.getAliceConfigByName("mqttHost")}:{self.ConfigManager.getAliceConfigByName("mqttPort")}'
 
 		if self.ConfigManager.getAliceConfigByName('mqttUser'):
@@ -105,15 +90,9 @@ class SnipsAsr(Asr):
 		cmd += f' --model /usr/share/snips/snips-asr-model-en-500MB'
 		cmd += f' --partial'
 
-		process = subprocess.Popen(cmd.split(), stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+		self.SubprocessManager.runSubprocess(name='SnipsASR', cmd=cmd, autoRestart=True)
 
-		self._flag.set()
-		try:
-			while self._flag.is_set():
-				if process.poll() is None:
-					time.sleep(0.5)
-				else:
-					process = subprocess.Popen(cmd.split(), stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
-					self.logWarning("Restarted Snips-ASR")
-		finally:
-			process.terminate()
+
+	def onStop(self):
+		super().onStop()
+		self.SubProcessManager.terminateSubprocess(name='SnipsASR')

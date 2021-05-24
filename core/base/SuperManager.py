@@ -76,6 +76,7 @@ class SuperManager:
 		self.wakewordManager = None
 		self.assistantManager = None
 		self.stateManager = None
+		self.subprocessManager = None
 
 
 	def onStart(self):
@@ -85,6 +86,9 @@ class SuperManager:
 
 			stateManager = self._managers.pop('StateManager')
 			stateManager.onStart()
+
+			subprocessManager = self._managers.pop('SubprocessManager')
+			subprocessManager.onStart()
 
 			configManager = self._managers.pop('ConfigManager')
 			configManager.onStart()
@@ -149,6 +153,7 @@ class SuperManager:
 			self._managers[internetManager.name] = internetManager
 			self._managers[nodeRedManager.name] = nodeRedManager
 			self._managers[stateManager.name] = stateManager
+			self._managers[subprocessManager.name] = subprocessManager
 		except Exception as e:
 			import traceback
 
@@ -206,10 +211,12 @@ class SuperManager:
 		from core.voice.WakewordManager import WakewordManager
 		from core.webui.WebUIManager import WebUIManager
 		from core.base.StateManager import StateManager
+		from core.util.SubprocessManager import SubprocessManager
 
 		self.commonsManager = CommonsManager()
 		self.commons = self.commonsManager
 		self.stateManager = StateManager()
+		self.subprocessManager = SubprocessManager()
 		self.configManager = ConfigManager()
 		self.databaseManager = DatabaseManager()
 		self.skillManager = SkillManager()

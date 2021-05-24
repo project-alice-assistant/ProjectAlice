@@ -42,28 +42,11 @@ class SnipsNlu(NluEngine):
 		super().__init__()
 		self._cachePath = Path(self.Commons.rootDir(), f'var/cache/nlu/trainingData')
 		self._timer = None
-		self._thread: Optional[threading.Thread] = None
-		self._flag = threading.Event()
 
 
 	def start(self):
 		super().start()
-		self._flag.clear()
-		if self._thread and self._thread.is_alive():
-			self._thread.join(timeout=5)
 
-		self._thread: threading.Thread = self.ThreadManager.newThread(name='nluEngine', target=self.run, autostart=False)
-		self._thread.start()
-
-
-	def stop(self):
-		super().stop()
-		self._flag.clear()
-		if self._thread and self._thread.is_alive():
-			self.ThreadManager.terminateThread(name='nluEngine')
-
-
-	def run(self):
 		cmd = f'snips-nlu -a {self.Commons.rootDir()}/assistant --mqtt {self.ConfigManager.getAliceConfigByName("mqttHost")}:{self.ConfigManager.getAliceConfigByName("mqttPort")}'
 
 		if self.ConfigManager.getAliceConfigByName('mqttUser'):
@@ -72,18 +55,12 @@ class SnipsNlu(NluEngine):
 		if self.ConfigManager.getAliceConfigByName('mqttTLSFile'):
 			cmd += f' --mqtt-tls-cafile {self.ConfigManager.getAliceConfigByName("mqttTLSFile")}'
 
-		process = subprocess.Popen(cmd.split(), stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+		self.SubprocessManager.runSubprocess(cmd=cmd, name='SnipsNLU', autoRestart=True)
 
-		self._flag.set()
-		try:
-			while self._flag.is_set():
-				if process.poll() is None:
-					time.sleep(0.5)
-				else:
-					process = subprocess.Popen(cmd.split(), stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
-					self.logWarning("Restarted Snips-NLU")
-		finally:
-			process.terminate()
+
+	def stop(self):
+		super().stop()
+		self.SubprocessManager.terminateProcess(name='SnipsNLU')
 
 
 	def convertDialogTemplate(self, file: Path):
