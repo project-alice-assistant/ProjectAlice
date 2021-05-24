@@ -1,4 +1,4 @@
-VERSION = 1.22
+VERSION = 1.23
 
 #  Copyright (c) 2021
 #
