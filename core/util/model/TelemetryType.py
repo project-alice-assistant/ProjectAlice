@@ -21,6 +21,7 @@ from enum import Enum
 
 class TelemetryType(Enum):
 	TEMPERATURE = 'temperature'
+	TARGETTEMPERATURE = 'targetTemperature'
 	PRESSURE = 'pressure'
 	HUMIDITY = 'humidity'
 	LIGHT = 'light'
@@ -44,3 +45,15 @@ class TelemetryType(Enum):
 	LATENCY = 'latency'
 	PACKET_LOSS = 'packetLoss'
 	STATE = 'state'
+	MODE = 'mode'
+
+
+	@classmethod
+	def _missing_(cls, value):
+		""" synonyms for different values """
+		if value in ['local_temperature']:
+			return TelemetryType.TEMPERATURE
+		if value in ['current_heating_setpoint']:
+			return TelemetryType.TARGETTEMPERATURE
+		if value in ['system_mode']:
+			return TelemetryType.MODE
