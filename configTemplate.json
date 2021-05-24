@@ -527,11 +527,11 @@
 		"dataType"    : "list",
 		"values"      : {
 			"en-US - male - en-US": "en-US",
-			"en-US - male - en-GB": "en-GB",
-			"en-US - male - de-DE": "de-DE",
-			"en-US - male - es-ES": "es-ES",
-			"en-US - male - fr-FR": "fr-FR",
-			"en-US - male - it-IT": "it-IT"
+			"en-GB - male - en-GB": "en-GB",
+			"de-DE - male - de-DE": "de-DE",
+			"es-ES - male - es-ES": "es-ES",
+			"fr-FR - male - fr-FR": "fr-FR",
+			"it-IT - male - it-IT": "it-IT"
 		},
 		"isSensitive" : false,
 		"description" : "The voice PICO Tts should use",

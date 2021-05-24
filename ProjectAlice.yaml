@@ -109,6 +109,7 @@ asr: pocketsphinx
 tts: pico
 ttsLanguage: en-US
 ttsVoice: en-US
+ttsType: female
 
 # Amazon Polly
 # https://docs.aws.amazon.com/en_us/general/latest/gr/rande.html
