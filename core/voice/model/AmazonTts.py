@@ -292,6 +292,7 @@ class AmazonTts(Tts):
 
 		tmpFile = self.TEMP_ROOT / self._cacheFile.with_suffix('.mp3')
 		if not self._cacheFile.exists():
+			self.logDebug(f'Downloading TTS file')
 			response = self._client.synthesize_speech(
 				Engine='standard',
 				LanguageCode=self._lang,
