@@ -146,6 +146,7 @@ class WatsonTts(Tts):
 		tmpFile = self.TEMP_ROOT / self._cacheFile.with_suffix('.mp3')
 		if not self._cacheFile.exists():
 			try:
+				self.logDebug(f'Downloading file **{self._cacheFile.stem}**')
 				response = self._client.synthesize(
 					text=self._text,
 					accept='audio/mp3',
