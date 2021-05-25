@@ -229,7 +229,7 @@ class GoogleTts(Tts):
 
 		tmpFile = self.TEMP_ROOT / self._cacheFile.with_suffix('.mp3')
 		if not self._cacheFile.exists():
-			self.logDebug(f'Downloading TTS file')
+			self.logDebug(f'Downloading file **{self._cacheFile.stem}**')
 			imput = texttospeech.types.module.SynthesisInput(ssml=self._text)
 			audio = texttospeech.types.module.AudioConfig(
 				audio_encoding=texttospeech.enums.AudioEncoding.MP3,
