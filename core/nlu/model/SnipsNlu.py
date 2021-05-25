@@ -60,7 +60,7 @@ class SnipsNlu(NluEngine):
 
 	def stop(self):
 		super().stop()
-		self.SubprocessManager.terminateProcess(name='SnipsNLU')
+		self.SubprocessManager.terminateSubprocess(name='SnipsNLU')
 
 
 	def convertDialogTemplate(self, file: Path):

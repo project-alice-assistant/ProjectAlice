@@ -49,9 +49,9 @@ class SubprocessManager(Manager):
 	def onStop(self):
 		super().onStop()
 
-		for process in self._subproc.values():
-			if process.poll() is None:
-				process.terminate()
+		for subproc in self._subproc.values():
+			if subproc.process is not None and subproc.process.poll() is None:
+				subproc.process.terminate()
 
 		self._flag.clear()
 		if self._thread and self._thread.is_alive():
@@ -59,7 +59,7 @@ class SubprocessManager(Manager):
 
 
 	def isSubprocessAlive(self, name: str) -> bool:
-		return self._subproc[name].poll() is None
+		return self._subproc[name].process.poll() is None
 
 
 	def runSubprocess(self, name: str, cmd: str, stoppedCallback: Callable = None, autoRestart: bool = False) -> bool:
