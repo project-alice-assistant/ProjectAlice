@@ -17,13 +17,11 @@
 #
 #  Last modified: 2021.05.20 at 12:56:48 CEST
 
-import subprocess
 import threading
 import time
-from typing import Callable
+from typing import Callable, Optional
 
 from core.base.model.Manager import Manager
-from core.util.Decorators import IfSetting
 from core.util.model.AliceSubprocess import AliceSubprocess
 
 
