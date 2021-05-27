@@ -46,7 +46,7 @@ class AmazonTts(Tts):
 		self._online = True
 		self._privacyMalus = -20
 		self._client = None
-		self._supportsSSML = True
+		self._supportsSSML = False if self.ConfigManager.getAliceConfigByName('ttsNeural') and self._neuralVoice else True
 
 		# TODO implement the others
 		# https://docs.aws.amazon.com/polly/latest/dg/voicelist.html
@@ -278,7 +278,7 @@ class AmazonTts(Tts):
 	def _checkText(self, session: DialogSession) -> str:
 		text = super()._checkText(session)
 
-		if not re.search('<amazon:auto-breaths>', text):
+		if self._supportsSSML and not re.search('<amazon:auto-breaths>', text):
 			text = re.sub(r'<speak>(.*)</speak>', r'<speak><amazon:auto-breaths>\1</amazon:auto-breaths></speak>', text)
 
 		return text
@@ -290,16 +290,18 @@ class AmazonTts(Tts):
 		if not self._text:
 			return
 
+		neural = self.ConfigManager.getAliceConfigByName('ttsNeural') and self._neuralVoice
+
 		tmpFile = self.TEMP_ROOT / self._cacheFile.with_suffix('.mp3')
 		if not self._cacheFile.exists():
 			self.logDebug(f'Downloading file **{self._cacheFile.stem}**')
 			response = self._client.synthesize_speech(
-				Engine='neural' if self._neuralVoice else 'standard',
+				Engine='neural' if neural else 'standard',
 				LanguageCode=self._lang,
 				OutputFormat='mp3',
 				SampleRate=str(self.AudioServer.SAMPLERATE),
-				Text=self._text if not self._neuralVoice else self._checkText(session),
-				TextType='ssml', #TextType='text' if self._neuralVoice else 'ssml',
+				Text=self._checkText(session) if neural else self._text,
+				TextType='text' if neural else 'ssml',
 				VoiceId=self._voice.title()
 			)
 
