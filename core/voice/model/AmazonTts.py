@@ -299,7 +299,7 @@ class AmazonTts(Tts):
 				OutputFormat='mp3',
 				SampleRate=str(self.AudioServer.SAMPLERATE),
 				Text=self._text if not self._neuralVoice else self._checkText(session),
-				TextType='text' if self._neuralVoice else 'ssml',
+				TextType='ssml', #TextType='text' if self._neuralVoice else 'ssml',
 				VoiceId=self._voice.title()
 			)
 
