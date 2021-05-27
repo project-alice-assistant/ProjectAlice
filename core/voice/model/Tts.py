@@ -33,6 +33,7 @@ from core.base.model.ProjectAliceObject import ProjectAliceObject
 from core.commons import constants
 from core.dialog.model.DialogSession import DialogSession
 from core.user.model.User import User
+from core.voice.model.TTSEnum import TTSEnum
 
 
 class Tts(ProjectAliceObject):
@@ -214,7 +215,7 @@ class Tts(ProjectAliceObject):
 
 	def _checkText(self, session: DialogSession) -> str:
 		text = session.payload['text']
-		if not self._supportsSSML:
+		if not self._supportsSSML: # or (self.ttsType == TTSEnum.AMAZON and self._neuralVoice):
 			# We need to remove all ssml tags but transform some first
 			text = re.sub(self.SPELL_OUT, self._replaceSpellOuts, text)
 			return ' '.join(re.sub('<.*?>', ' ', text).split())

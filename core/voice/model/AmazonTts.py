@@ -294,12 +294,12 @@ class AmazonTts(Tts):
 		if not self._cacheFile.exists():
 			self.logDebug(f'Downloading file **{self._cacheFile.stem}**')
 			response = self._client.synthesize_speech(
-				Engine=self._neuralVoice,
+				Engine='neural' if self._neuralVoice else 'standard',
 				LanguageCode=self._lang,
 				OutputFormat='mp3',
 				SampleRate=str(self.AudioServer.SAMPLERATE),
-				Text=self._text,
-				TextType='ssml',
+				Text=self._text if not self._neuralVoice else self._checkText(session),
+				TextType='text' if self._neuralVoice else 'ssml',
 				VoiceId=self._voice.title()
 			)
 
