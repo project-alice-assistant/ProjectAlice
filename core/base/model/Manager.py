@@ -86,6 +86,15 @@ class Manager(ProjectAliceObject):
 		self._isActive = False
 
 
+	def restart(self):
+		"""
+		Stops and starts the manager
+		:return:
+		"""
+		self.onStop()
+		self.onStart()
+
+
 	def _initDB(self):
 		if self._databaseSchema:
 			return SuperManager.getInstance().databaseManager.initDB(schema=self._databaseSchema, callerName=self.name)
