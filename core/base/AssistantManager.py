@@ -278,3 +278,17 @@ class AssistantManager(Manager):
 				continue
 
 			yield resource
+
+
+	def switchLanguage(self, targetLang: str):
+		"""
+		Switches the assistant language to targetLang
+		:param targetLang: str, the language to switch to
+		:return:
+		"""
+		self.ConfigManager.updateAliceConfiguration(key='activeLanguage', value=targetLang)
+		self.LanguageManager.restart()
+		self.TalkManager.restart()
+		self.ASRManager.restart()
+		self.linkAssistant()
+		self.checkAssistant()

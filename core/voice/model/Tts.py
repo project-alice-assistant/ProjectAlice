@@ -19,7 +19,6 @@
 
 import getpass
 import re
-import uuid
 from pathlib import Path
 from re import Match
 from typing import Optional
@@ -54,6 +53,7 @@ class Tts(ProjectAliceObject):
 		self._lang = ''
 		self._type = ''
 		self._voice = ''
+		self._neuralVoice = False
 
 		self._cacheFile: Path = Path()
 		self._text = ''
@@ -99,7 +99,10 @@ class Tts(ProjectAliceObject):
 		if self._voice not in self._supportedLangAndVoices[self._lang][self._type]:
 			voice = self._voice
 			self._voice = next(iter(self._supportedLangAndVoices[self._lang][self._type]))
+			self._neuralVoice = self._supportedLangAndVoices[self._lang][self._type][self._voice]['neural']
 			self.logWarning(f'Voice **{voice}** not found for the language and type, falling back to **{self._voice}**')
+		else:
+			self._neuralVoice = self._supportedLangAndVoices[self._lang][self._type][self._voice]['neural']
 
 		if not self.TEMP_ROOT.is_dir():
 			self.Commons.runRootSystemCommand(['mkdir', str(self.TEMP_ROOT)])

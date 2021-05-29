@@ -471,6 +471,13 @@
 		"onUpdate"    : "reloadTTS",
 		"category"    : "tts"
 	},
+	"ttsNeural"             : {
+	  "defaultValue": false,
+	  "dataType"    : "boolean",
+	  "isSensitive" : false,
+	  "description" : "Use neural TTS voice if available",
+	  "category"    : "tts"
+	},
 	"ttsVoice"                : {
 		"defaultValue": "en-US",
 		"dataType"    : "string",
