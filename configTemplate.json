@@ -355,6 +355,7 @@
 		"dataType"    : "list",
 		"isSensitive" : false,
 		"values"      : [
+			"coqui",
 			"deepspeech",
 			"pocketsphinx",
 			"google",
@@ -369,6 +370,7 @@
 		"dataType"    : "list",
 		"isSensitive" : false,
 		"values"      : [
+			"coqui",
 			"deepspeech",
 			"pocketsphinx",
 			"google",

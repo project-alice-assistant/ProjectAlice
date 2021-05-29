@@ -17,13 +17,12 @@
 #
 #  Last modified: 2021.04.13 at 12:56:45 CEST
 
-from importlib import import_module, reload
-from pathlib import Path
-from typing import Dict
-
 import paho.mqtt.client as mqtt
 from googletrans import Translator
+from importlib import import_module, reload
 from langdetect import detect
+from pathlib import Path
+from typing import Dict
 
 from core.asr.model import Asr
 from core.asr.model.ASRResult import ASRResult
@@ -74,6 +73,8 @@ class ASRManager(Manager):
 			package = 'core.asr.model.DeepSpeechAsr'
 		elif userASR == 'snips':
 			package = 'core.asr.model.SnipsAsr'
+		elif userASR == 'coqui':
+			package = 'core.asr.model.CoquiAsr'
 		else:
 			package = 'core.asr.model.PocketSphinxAsr'
 

@@ -59,9 +59,12 @@ class CoquiAsr(Asr):
 		self.installDependencies()
 		if not self.checkLanguage():
 			self.downloadLanguage()
+		self.logInfo(f'Loading Model')
+		self._model = stt.Model(f'{self._langPath}/output_graph.tflite')
 
-		self._model = stt.Model(f'{self._langPath}/output_graph.tflite', 500)
+		self.logInfo(f'Model Loaded')
 		self._model.enableExternalScorer(f'{self._langPath}/lm.scorer')
+		self.logInfo(f'Scorer Loaded')
 
 
 	def installDependencies(self) -> bool:
@@ -82,6 +85,7 @@ class CoquiAsr(Asr):
 	def downloadLanguage(self) -> bool:
 		self.logInfo(f'Downloading language model for "{self.LanguageManager.activeLanguage}", hold on, this is going to take some time!')
 		url = 'error'  # TODO adjust path in respect to language
+		self.logError(f'WIP! Please install language manually into PA/trained/asr/Coqui/<languange>/!')
 
 		downloadPath = (self._langPath / url.rsplit('/')[-1])
 		try:

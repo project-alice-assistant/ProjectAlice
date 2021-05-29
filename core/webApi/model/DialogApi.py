@@ -18,15 +18,14 @@
 #  Last modified: 2021.04.13 at 12:56:49 CEST
 
 import json
-
 from flask import jsonify, request
 from flask_classful import route
 from paho.mqtt.client import MQTTMessage
 
 from core.commons import constants
 from core.device.model.DeviceAbility import DeviceAbility
-from core.webApi.model.Api import Api
 from core.util.Decorators import ApiAuthenticated
+from core.webApi.model.Api import Api
 
 
 class DialogApi(Api):
@@ -49,7 +48,7 @@ class DialogApi(Api):
 			return jsonify(success=True)
 		except Exception as e:
 			self.logError(f'Failed speaking: {e}')
-			return jsonify(success=False)
+			return jsonify(success=False, message=str(e))
 
 
 	@route('/ask/', methods=['POST'])
