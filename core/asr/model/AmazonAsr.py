@@ -31,8 +31,8 @@ class AmazonAsr(Asr):
 	NAME = 'Amazon Asr'
 	DEPENDENCIES = {
 		'system': [],
-		'pip'   : {
-			'boto3==1.13.19'
+		'pip': 	  {
+			'boto3==1.17.84'
 		}
 	}
 
