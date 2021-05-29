@@ -7,9 +7,17 @@ from core.voice.model.Tts import Tts
 
 try:
 	# noinspection PyUnresolvedReferences
+	import botocore
+	from botocore.config import Config
 	import boto3
 except ModuleNotFoundError:
-	pass # Auto installeed
+	pass  # Auto installed
+
+# boto3.set_stream_logger('', 10) # enable this to debug boto3
+
+AWS_CONF_CONNECT_TIMEOUT = 10
+AWS_CONF_READ_TIMEOUT = 5
+AWS_CONF_MAX_POOL_CONNECTIONS = 1
 
 
 class AmazonTts(Tts):
@@ -17,8 +25,9 @@ class AmazonTts(Tts):
 
 	DEPENDENCIES = {
 		'system': [],
-		'pip'   : {
-			'boto3==1.13.19'
+		'pip': {
+			'botocore==1.20.84',
+			'boto3==1.17.84'
 		}
 	}
 
@@ -243,12 +252,18 @@ class AmazonTts(Tts):
 
 	def onStart(self):
 		super().onStart()
-		self._client = boto3.client(
-			'polly',
-			region_name=self.ConfigManager.getAliceConfigByName('awsRegion'),
-			aws_access_key_id=self.ConfigManager.getAliceConfigByName('awsAccessKey'),
-			aws_secret_access_key=self.ConfigManager.getAliceConfigByName('awsSecretKey')
-		)
+		aws_config = {
+			'region_name': self.ConfigManager.getAliceConfigByName('awsRegion'),
+			'aws_access_key_id': self.ConfigManager.getAliceConfigByName('awsAccessKey'),
+			'aws_secret_access_key': self.ConfigManager.getAliceConfigByName('awsSecretKey'),
+			'config': botocore.config.Config(
+				connect_timeout=AWS_CONF_CONNECT_TIMEOUT,
+				read_timeout=AWS_CONF_READ_TIMEOUT,
+				max_pool_connections=AWS_CONF_MAX_POOL_CONNECTIONS,
+			),
+		}
+
+		self._client = boto3.client('polly', **aws_config)
 
 
 	@staticmethod
