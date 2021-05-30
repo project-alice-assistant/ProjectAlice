@@ -68,8 +68,12 @@ class CoquiAsr(Asr):
 
 
 	def installDependencies(self) -> bool:
-		if not super().installDependencies():
-			return False
+		#		if not super().installDependencies():
+		#	return False
+		# TODO TEMP! as long as the whl is not on pypi
+		self.logInfo(self.Commons.runSystemCommand(['wget', 'https://github.com/coqui-ai/STT/releases/download/v0.10.0-alpha.6/stt_tflite-0.10.0a6-cp37-cp37m-linux_armv7l.whl']))
+		self.logInfo(self.Commons.runSystemCommand(['./venv/bin/pip', 'install', 'stt_tflite-0.10.0a6-cp37-cp37m-linux_armv7l.whl']))
+		self.logInfo(self.Commons.runSystemCommand(['rm', 'stt_tflite-0.10.0a6-cp37-cp37m-linux_armv7l.whl']))
 
 		return self.downloadLanguage() if not self.checkLanguage() else True
 
@@ -84,6 +88,12 @@ class CoquiAsr(Asr):
 
 	def downloadLanguage(self) -> bool:
 		self.logInfo(f'Downloading language model for "{self.LanguageManager.activeLanguage}", hold on, this is going to take some time!')
+		# TODO TEMP! until real model zoo exists
+		if self.LanguageManager.activeLanguage == 'de':
+			self.Commons.downloadFile('https://github.com/coqui-ai/STT-models/releases/download/german/AASHISHAG/v0.9.0/model.tflite', str(self._langPath / 'output_graph.tflite'))
+			self.Commons.downloadFile('https://github.com/philipp2310/Coqui-models/releases/download/de_v093/lm.scorer', str(self._langPath / 'lm.scorer'))
+			return True
+
 		url = 'error'  # TODO adjust path in respect to language
 		self.logError(f'WIP! Please install language manually into PA/trained/asr/Coqui/<languange>/!')
 
