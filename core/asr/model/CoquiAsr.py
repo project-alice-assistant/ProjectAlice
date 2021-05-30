@@ -93,9 +93,13 @@ class CoquiAsr(Asr):
 			self.Commons.downloadFile('https://github.com/coqui-ai/STT-models/releases/download/german/AASHISHAG/v0.9.0/model.tflite', str(self._langPath / 'output_graph.tflite'))
 			self.Commons.downloadFile('https://github.com/philipp2310/Coqui-models/releases/download/de_v093/lm.scorer', str(self._langPath / 'lm.scorer'))
 			return True
+		if self.LanguageManager.activeLanguage == 'en':
+			self.Commons.downloadFile('https://github.com/coqui-ai/STT/releases/download/v0.9.3/coqui-stt-0.9.3-models.tflite', str(self._langPath / 'output_graph.tflite'))
+			self.Commons.downloadFile('https://github.com/coqui-ai/STT/releases/download/v0.9.3/coqui-stt-0.9.3-models.scorer', str(self._langPath / 'lm.scorer'))
+			return True
 
 		url = 'error'  # TODO adjust path in respect to language
-		self.logError(f'WIP! Please install language manually into PA/trained/asr/Coqui/<languange>/!')
+		self.logError(f'WIP! Only de/en supported for now - Please install language manually into PA/trained/asr/Coqui/<languange>/!')
 
 		downloadPath = (self._langPath / url.rsplit('/')[-1])
 		try:
