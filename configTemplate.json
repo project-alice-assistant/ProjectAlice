@@ -30,7 +30,7 @@
 		"defaultValue": "",
 		"dataType"    : "string",
 		"isSensitive" : false,
-		"hidden"      : true,
+		"display"     : "hidden",
 		"description" : "Attributed device uuid",
 		"category"    : "device"
 	},
