@@ -95,4 +95,4 @@ class SnipsAsr(Asr):
 
 	def onStop(self):
 		super().onStop()
-		self.SubProcessManager.terminateSubprocess(name='SnipsASR')
+		self.SubprocessManager.terminateSubprocess(name='SnipsASR')

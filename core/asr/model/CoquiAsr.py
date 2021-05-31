@@ -71,9 +71,9 @@ class CoquiAsr(Asr):
 		#		if not super().installDependencies():
 		#	return False
 		# TODO TEMP! as long as the whl is not on pypi
-		self.logInfo(self.Commons.runSystemCommand(['wget', 'https://github.com/coqui-ai/STT/releases/download/v0.10.0-alpha.6/stt_tflite-0.10.0a6-cp37-cp37m-linux_armv7l.whl']))
-		self.logInfo(self.Commons.runSystemCommand(['./venv/bin/pip', 'install', 'stt_tflite-0.10.0a6-cp37-cp37m-linux_armv7l.whl']))
-		self.logInfo(self.Commons.runSystemCommand(['rm', 'stt_tflite-0.10.0a6-cp37-cp37m-linux_armv7l.whl']))
+		self.Commons.runSystemCommand(['wget', 'https://github.com/coqui-ai/STT/releases/download/v0.10.0-alpha.6/stt_tflite-0.10.0a6-cp37-cp37m-linux_armv7l.whl'])
+		self.Commons.runSystemCommand(['./venv/bin/pip', 'install', 'stt_tflite-0.10.0a6-cp37-cp37m-linux_armv7l.whl'])
+		self.Commons.runSystemCommand(['rm', 'stt_tflite-0.10.0a6-cp37-cp37m-linux_armv7l.whl'])
 
 		return self.downloadLanguage() if not self.checkLanguage() else True
 
