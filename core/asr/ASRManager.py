@@ -60,6 +60,7 @@ class ASRManager(Manager):
 
 
 	def _startASREngine(self, forceAsr = None):
+		self._usingFallback = False if forceAsr is None else True
 		userASR = self.ConfigManager.getAliceConfigByName(configName='asr').lower() if forceAsr is None else forceAsr
 		keepASROffline = self.ConfigManager.getAliceConfigByName('keepASROffline')
 		stayOffline = self.ConfigManager.getAliceConfigByName('stayCompletlyOffline')
@@ -124,7 +125,7 @@ class ASRManager(Manager):
 
 
 	def onInternetConnected(self):
-		if self.ConfigManager.getAliceConfigByName('stayCompletlyOffline') or self.ConfigManager.getAliceConfigByName('keepASROffline') or \
+		if not self._usingFallback or self.ConfigManager.getAliceConfigByName('stayCompletlyOffline') or self.ConfigManager.getAliceConfigByName('keepASROffline') or \
 				self.ConfigManager.getAliceConfigByName('asrFallback') == self.ConfigManager.getAliceConfigByName('asr'):
 			return
 
