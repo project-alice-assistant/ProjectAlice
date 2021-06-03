@@ -730,9 +730,12 @@
 		"description" : "Your Amazon services access key",
 		"category"    : "credentials",
 		"parent"      : {
-			"config"   : ["tts", "ttsFallback"],
+			"config"   : [
+				"tts",
+				"ttsFallback"
+			],
 			"condition": "is",
-			"value"    : false
+			"value"    : "amazon"
 		}
 	},
 	"awsSecretKey"            : {
@@ -742,9 +745,12 @@
 		"description" : "Your Amazon services secret key",
 		"category"    : "credentials",
 		"parent"      : {
-			"config"   : ["tts", "ttsFallback"],
+			"config"   : [
+				"tts",
+				"ttsFallback"
+			],
 			"condition": "is",
-			"value"    : false
+			"value"    : "amazon"
 		}
 	},
 	"useHLC"                  : {
