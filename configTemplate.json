@@ -734,6 +734,7 @@
 				"tts",
 				"ttsFallback"
 			],
+			"checkType": "or",
 			"condition": "is",
 			"value"    : "amazon"
 		}
@@ -749,6 +750,7 @@
 				"tts",
 				"ttsFallback"
 			],
+			"checkType": "or",
 			"condition": "is",
 			"value"    : "amazon"
 		}
