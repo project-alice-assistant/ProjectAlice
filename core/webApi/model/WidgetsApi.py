@@ -20,8 +20,8 @@
 from flask import jsonify, request, send_from_directory
 from flask_classful import route
 
-from core.webApi.model.Api import Api
 from core.util.Decorators import ApiAuthenticated
+from core.webApi.model.Api import Api
 
 
 class WidgetsApi(Api):
@@ -54,7 +54,7 @@ class WidgetsApi(Api):
 			if not widget:
 				raise Exception
 
-			return jsonify(success=True, widget=widget.toDict())
+			return jsonify(success=True, widget=widget.toDict(isAuth=True))
 		except Exception as e:
 			self.logError(f'Failed adding widget instance: {e}')
 			return jsonify(success=False, message=str(e))
@@ -180,7 +180,9 @@ class WidgetsApi(Api):
 	@ApiAuthenticated
 	def saveSettings(self, widgetId: str):
 		try:
-			return jsonify(success=self.WidgetManager.saveWidgetSettings(int(widgetId), request.json))
+			self.WidgetManager.saveWidgetSettings(int(widgetId), request.json['settings'])
+			self.WidgetManager.saveWidgetConfigs(int(widgetId), request.json['configs'])
+			return jsonify(success=True)
 		except Exception as e:
 			self.logError(f'Failed saving widget settings: {e}')
 			return jsonify(success=False, message=str(e))

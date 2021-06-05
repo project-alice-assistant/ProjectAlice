@@ -336,6 +336,18 @@ class WidgetManager(Manager):
 		return True
 
 
+	def saveWidgetConfigs(self, widgetId: int, configs: dict) -> bool:  # NOSONAR
+		widget: Widget = self._widgets.get(widgetId, None)
+
+		if not widget:
+			self.logWarning('Tried to save widget settings but widget doesn\'t exist')
+			return False
+
+		widget._configs = configs
+		widget.saveToDB()
+		return True
+
+
 	def getWidgetInstance(self, widgetId: int) -> Optional[Widget]:
 		return self._widgets.get(widgetId, None)
 
