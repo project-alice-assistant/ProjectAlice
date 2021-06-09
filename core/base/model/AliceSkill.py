@@ -19,18 +19,17 @@
 
 from __future__ import annotations
 
+import flask
 import importlib
 import inspect
 import json
 import re
 import sqlite3
 from copy import copy
-from pathlib import Path
-from typing import Any, Dict, Iterable, List, Optional, Union
-
-import flask
 from markdown import markdown
 from paho.mqtt import client as MQTTClient
+from pathlib import Path
+from typing import Any, Dict, Iterable, List, Optional, Union
 
 from core.ProjectAliceExceptions import AccessLevelTooLow, SkillStartingFailed
 from core.base.model.Intent import Intent
@@ -77,6 +76,7 @@ class AliceSkill(ProjectAliceObject):
 		self._failedStarting = False
 		self._databaseSchema = databaseSchema
 		self._widgets = list()
+		self._widgetTemplates = dict()
 		self._deviceTypes = list()
 		self._intentsDefinitions = dict()
 		self._scenarioPackageName = ''
@@ -233,6 +233,31 @@ class AliceSkill(ProjectAliceObject):
 					continue
 
 				self._widgets.append(Path(file).stem)
+				self.loadWidgetConfigTemplate(Path(file).stem)
+
+
+	def loadWidgetConfigTemplate(self, widgetType):
+		self.logInfo(f'trying to load widget config template for {widgetType}')
+		try:
+			filepath = Path(f'skills/{self._name}/widgets/{widgetType}.config.template')
+			if not filepath.exists():
+				self.logInfo(f'File doesn\'t exist {f"skills/{self._name}/widgets/{widgetType}.config.template"}')
+				return
+
+			data = json.loads(filepath.read_text())
+
+			self._widgetTemplates[widgetType] = data
+		except Exception as e:
+			self.logError(f'Error loading widget config template for widget type **{widgetType}** {e}')
+
+
+	def getWidgetTemplate(self, name: str):
+		self.logInfo(self._widgetTemplates)
+		self.logInfo(f'searching for {name}')
+		if name in self._widgetTemplates:
+			return self._widgetTemplates[name]
+		else:
+			return dict()
 
 
 	def loadDeviceTypes(self):

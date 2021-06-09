@@ -17,16 +17,15 @@
 #
 #  Last modified: 2021.04.13 at 12:56:49 CEST
 
+import htmlmin as htmlmin
 import inspect
 import json
 import re
 import sqlite3
-from pathlib import Path
-from typing import Dict, Match, Optional, Union
-
-import htmlmin as htmlmin
 from cssmin import cssmin
 from jsmin import jsmin
+from pathlib import Path
+from typing import Dict, Match, Optional, Union
 
 from core.base.model.AliceSkill import AliceSkill
 from core.base.model.ProjectAliceObject import ProjectAliceObject
@@ -311,13 +310,14 @@ class Widget(ProjectAliceObject):
 
 	def toDict(self, isAuth: bool = False) -> dict:
 		return {
-			'id'      : self._id,
-			'skill'   : self._skill,
-			'name'    : self._name,
-			'settings': self._settings,
-			'configs' : self._configs if isAuth else dict(),
-			'page'    : self._page,
-			'icon'    : self.icon(),
-			'html'    : self.html(),
-			'css'     : self.css()
+			'id'            : self._id,
+			'skill'         : self._skill,
+			'name'          : self._name,
+			'settings'      : self._settings,
+			'configs'       : self._configs if isAuth else dict(),
+			'configTemplate': self.skillInstance.getWidgetTemplate(self._name),
+			'page'          : self._page,
+			'icon'          : self.icon(),
+			'html'          : self.html(),
+			'css'           : self.css()
 		}
