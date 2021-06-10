@@ -36,7 +36,7 @@ class ConfigManager(Manager):
 	CONFIG_FILE = Path('config.json')
 
 	CONFIG_FUNCTION_REGEX = re.compile(r'^(?:(?P<manager>\w+)\.)?(?P<function>\w+)(?:\((?P<args>.*)\))?')
-	CONFIRG_FUNCTION_ARG_REGEX = re.compile(r'(?:\w+)')
+	CONFIG_FUNCTION_ARG_REGEX = re.compile(r'(?:\w+)')
 
 	def __init__(self):
 		super().__init__()
@@ -567,7 +567,7 @@ class ConfigManager(Manager):
 						return False
 
 				if result.group('args'):
-					args = self.CONFIRG_FUNCTION_ARG_REGEX.findall(result.group('args'))
+					args = self.CONFIG_FUNCTION_ARG_REGEX.findall(result.group('args'))
 
 				func = getattr(mngr, function)
 			else:
@@ -607,7 +607,7 @@ class ConfigManager(Manager):
 							return False
 
 					if result.group('args'):
-						args = self.CONFIRG_FUNCTION_ARG_REGEX.findall(result.group('args'))
+						args = self.CONFIG_FUNCTION_ARG_REGEX.findall(result.group('args'))
 
 					func = getattr(mngr, function)
 				else:
