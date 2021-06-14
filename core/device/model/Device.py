@@ -147,6 +147,10 @@ class Device(ProjectAliceObject):
 
 
 	def _loadConfigs(self):
+		"""
+		Load the config files for this device. Fill the initial values when required and save changes to the DB
+		:return:
+		"""
 		displayName = self._deviceConfigs.get('displayName', self._data.get('displayName', None))
 		if not displayName or displayName.lower() == 'none':
 			displayName = self._typeName if self._typeName else self._deviceType.deviceTypeName
@@ -281,6 +285,10 @@ class Device(ProjectAliceObject):
 
 
 	def getLocation(self) -> Optional[Location]:
+		"""
+		Returns the location this device is directly assigned to.
+		:return:
+		"""
 		return self.LocationManager.getLocation(locId=self.parentLocation)
 
 

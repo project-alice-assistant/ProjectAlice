@@ -18,13 +18,12 @@
 #  Last modified: 2021.04.13 at 12:56:47 CEST
 
 import io
+import sounddevice as sd
 import time
 import uuid
 import wave
 from pathlib import Path
 from typing import Dict, Optional
-
-import sounddevice as sd
 # noinspection PyUnresolvedReferences
 from webrtcvad import Vad
 
@@ -140,7 +139,12 @@ class AudioManager(Manager):
 		self._waves[deviceUid].writeframes(frame)
 
 
-	def publishAudio(self):
+	def publishAudio(self) -> None:
+		"""
+		captures the audio and broadcasts it via publishAudioFrames to the topic 'hermes/audioServer/{}/audioFrame'
+		furtherfmore it will publish VAD_UP and VAD_DOWN when detected
+		:return:
+		"""
 		self.logInfo('Starting audio publisher')
 		self._audioInputStream = sd.RawInputStream(
 			dtype='int16',
@@ -193,7 +197,12 @@ class AudioManager(Manager):
 				self.logDebug(f'Error publishing frame: {e}')
 
 
-	def publishAudioFrames(self, frames: bytes):
+	def publishAudioFrames(self, frames: bytes) -> None:
+		"""
+		receives some audioframes, adds them to the buffer and publishes them to MQTT
+		:param frames:
+		:return:
+		"""
 		with io.BytesIO() as buffer:
 			with wave.open(buffer, 'wb') as wav:
 				wav.setnchannels(1)
@@ -206,6 +215,16 @@ class AudioManager(Manager):
 
 
 	def onPlayBytes(self, payload: bytearray, deviceUid: str, sessionId: str = None, requestId: str = None):
+		"""
+		Handles the playing of arbitrary bytes, be it sound, voice or even music.
+		Triggered via MQTT onPlayBytes topic.
+		Ignoring any request when sound is disabled via config
+		:param payload:
+		:param deviceUid:
+		:param sessionId:
+		:param requestId:
+		:return:
+		"""
 		if deviceUid != self.DeviceManager.getMainDevice().uid or self.ConfigManager.getAliceConfigByName('disableSound'):
 			return
 

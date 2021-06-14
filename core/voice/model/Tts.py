@@ -18,15 +18,14 @@
 #  Last modified: 2021.04.13 at 12:56:48 CEST
 
 import getpass
-import re
-from pathlib import Path
-from re import Match
-from typing import Optional
-
 import hashlib
+import re
 import tempfile
+from pathlib import Path
 from pydub import AudioSegment
 from pydub.exceptions import CouldntDecodeError
+from re import Match
+from typing import Optional
 
 from core.base.model.ProjectAliceObject import ProjectAliceObject
 from core.commons import constants
@@ -228,7 +227,13 @@ class Tts(ProjectAliceObject):
 		return '<break time="160ms"/>'.join(matching.group(1))
 
 
-	def onSay(self, session: DialogSession):
+	def onSay(self, session: DialogSession) -> None:
+		"""
+		cleans the requested text for speaking if required and prepares the cache
+		Tts provides must redefine this method, but should call it at the start of their redefinition.
+		:param session:
+		:return:
+		"""
 		self._text = self._checkText(session)
 		if self._text:
 			self._cacheFile = self.cacheDirectory() / (self._hash(text=self._text) + '.wav')

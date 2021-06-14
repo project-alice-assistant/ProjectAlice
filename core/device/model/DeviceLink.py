@@ -66,6 +66,10 @@ class DeviceLink(ProjectAliceObject):
 
 
 	def _loadConfigs(self):
+		"""
+		Loads and updates the config files for device links
+		:return:
+		"""
 		templates = self._deviceType.linkConfigsTemplates
 		changes = False
 		for configName, configData in templates.items():

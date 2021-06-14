@@ -113,8 +113,16 @@ class AliceSkill(ProjectAliceObject):
 		return flask.Markup(markdown(self._instructions))
 
 
-	def addUtterance(self, text: str, intent: str) -> bool:
-		file = self.getResource(f'dialogTemplate/{self.activeLanguage()}.json')
+	def addUtterance(self, text: str, intent: str, language: str = None) -> bool:
+		"""
+		Add the supplied utterance for a given skill to the dialogTemplate file of the current active language if no specific language is supplied.
+		:param text:
+		:param intent:
+		:param language: default None will load the active Language from language manager
+		:return:
+		"""
+		lang = language if language is not None else self.activeLanguage()
+		file = self.getResource(f'dialogTemplate/{lang}.json')
 		if not file:
 			return False
 
@@ -136,7 +144,11 @@ class AliceSkill(ProjectAliceObject):
 		return False
 
 
-	def loadScenarioNodes(self):
+	def loadScenarioNodes(self) -> None:
+		"""
+		Load the scenario nodes (folder scenarioNodes) for Node-Red and store them in _scenarioPackageName
+		:return:
+		"""
 		path = self.getResource('scenarioNodes/package.json')
 		if not path.exists():
 			return
@@ -224,7 +236,12 @@ class AliceSkill(ProjectAliceObject):
 		return intentMappings
 
 
-	def loadWidgets(self):
+	def loadWidgets(self) -> None:
+		"""
+		Load all .py files in the widgets folder and load them as instances of Widget.
+		Loaded widget types are added to self._widgets
+		:return:
+		"""
 		fp = self.getResource('widgets')
 		if fp.exists():
 			self.logInfo(f"Found **{len(list(fp.glob('*.py'))) - 1}** widget", plural='widget')
@@ -237,6 +254,12 @@ class AliceSkill(ProjectAliceObject):
 
 
 	def loadWidgetConfigTemplate(self, widgetType):
+		"""
+		Load the config file of the current widget type.
+		The config has to be in the default alice json format containing the config value names, default value and value type.
+		:param widgetType:
+		:return:
+		"""
 		self.logInfo(f'trying to load widget config template for {widgetType}')
 		try:
 			filepath = Path(f'skills/{self._name}/widgets/{widgetType}.config.template')
@@ -251,16 +274,24 @@ class AliceSkill(ProjectAliceObject):
 			self.logError(f'Error loading widget config template for widget type **{widgetType}** {e}')
 
 
-	def getWidgetTemplate(self, name: str):
-		self.logInfo(self._widgetTemplates)
-		self.logInfo(f'searching for {name}')
+	def getWidgetTemplate(self, name: str) -> dict:
+		"""
+		Get the config template for the given widget type in the current skill instance.
+		:param name:
+		:return:
+		"""
 		if name in self._widgetTemplates:
 			return self._widgetTemplates[name]
 		else:
 			return dict()
 
 
-	def loadDeviceTypes(self):
+	def loadDeviceTypes(self) -> None:
+		"""
+		Load all .py files in the devices folder and load them as instances of DeviceType.
+		Loaded devices types are added to self._deviceTypes
+		:return:
+		"""
 		fp = self.getResource('devices')
 		if fp.exists():
 			self.logInfo(f"Found **{len(list(fp.glob('*.py'))) - 1}** device type", plural='type')
