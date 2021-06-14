@@ -38,10 +38,6 @@ class SnipsWakeword(WakewordEngine):
 	}
 
 
-	def __init__(self):
-		super().__init__()
-
-
 	def installDependencies(self) -> bool:
 		installed = self.Commons.runRootSystemCommand(['apt-get', 'install', '-y', f'{self.Commons.rootDir()}/system/snips/snips-hotword_0.64.0_armhf.deb'])
 		installed2 = self.Commons.runRootSystemCommand(['apt-get', 'install', '-y', f'{self.Commons.rootDir()}/system/snips/snips-hotword-model-heysnipsv4_0.64.0_armhf.deb'])

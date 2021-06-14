@@ -54,6 +54,7 @@ if TYPE_CHECKING:
 	from core.util.TelemetryManager import TelemetryManager
 	from core.util.ThreadManager import ThreadManager
 	from core.util.TimeManager import TimeManager
+	from core.util.SubprocessManager import SubprocessManager
 	from core.voice.LanguageManager import LanguageManager
 	from core.voice.TTSManager import TTSManager
 	from core.voice.TalkManager import TalkManager
