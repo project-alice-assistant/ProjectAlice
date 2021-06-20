@@ -20,8 +20,8 @@
 from flask import jsonify, request
 from flask_classful import route
 
-from core.webApi.model.Api import Api
 from core.util.Decorators import ApiAuthenticated
+from core.webApi.model.Api import Api
 
 
 class SkillsApi(Api):
@@ -60,24 +60,24 @@ class SkillsApi(Api):
 	def createSkill(self):
 		try:
 			newSkill = {
-				'name'                  : request.form.get('skillName', ''),
-				'speakableName'         : request.form.get('skillSpeakableName', ''),
-				'description'           : request.form.get('skillDescription', 'Missing description'),
-				'category'              : request.form.get('skillCategory', 'undefined'),
-				'fr'                    : request.form.get('fr', False),
-				'de'                    : request.form.get('de', False),
-				'it'                    : request.form.get('it', False),
-				'pl'                    : request.form.get('pl', False),
-				'instructions'          : request.form.get('skillInstructions', False),
-				'pipreq'                : request.form.get('skillPipRequirements', ''),
-				'sysreq'                : request.form.get('skillSystemRequirements', ''),
-				'conditionOnline'       : request.form.get('skillOnline', False),
-				'conditionASRArbitrary' : request.form.get('skillArbitrary', False),
-				'conditionSkill'        : request.form.get('skillRequiredSkills', ''),
-				'conditionNotSkill'     : request.form.get('skillConflictingSkills', ''),
-				'conditionActiveManager': request.form.get('skillRequiredManagers', ''),
-				'widgets'               : request.form.get('skillWidgets', ''),
-				'nodes'                 : request.form.get('skillScenarioNodes', ''),
+				'name'                  : request.form.get('name', ''),
+				'speakableName'         : request.form.get('speakableName', ''),
+				'description'           : request.form.get('description', 'Missing description'),
+				'category'              : request.form.get('category', 'undefined'),
+				'fr'                    : request.form.get('french', False),
+				'de'                    : request.form.get('german', False),
+				'it'                    : request.form.get('italian', False),
+				'pl'                    : request.form.get('polish', False),
+				'instructions'          : request.form.get('instructions', False),
+				'pipreq'                : request.form.get('pipreq', ''),
+				'sysreq'                : request.form.get('sysreq', ''),
+				'conditionOnline'       : request.form.get('conditionOnline', False),
+				'conditionASRArbitrary' : request.form.get('conditionASRArbitrary', False),
+				'conditionSkill'        : request.form.get('conditionSkill', ''),
+				'conditionNotSkill'     : request.form.get('conditionNotSkill', ''),
+				'conditionActiveManager': request.form.get('conditionActiveManager', ''),
+				'widgets'               : request.form.get('widgets', ''),
+				'nodes'                 : request.form.get('nodes', ''),
 				'devices'               : request.form.get('devices', '')
 			}
 
@@ -251,3 +251,21 @@ class SkillsApi(Api):
 			return self.skillNotFound()
 
 		return jsonify(success=self.SkillManager.checkForSkillUpdates(skillToCheck=skillName))
+
+
+	@route('/<skillName>/setModified/')
+	@ApiAuthenticated
+	def setModified(self, skillName: str):
+		if skillName not in self.SkillManager.allSkills:
+			return self.skillNotFound()
+		self.SkillManager.getSkillInstance(skillName=skillName).modified = True
+		return jsonify(success=True)
+
+
+	@route('/<skillName>/revert/')
+	@ApiAuthenticated
+	def revert(self, skillName: str):
+		if skillName not in self.SkillManager.allSkills:
+			return self.skillNotFound()
+		self.SkillManager.getSkillInstance(skillName=skillName).modified = False
+		return self.checkUpdate(skillName)

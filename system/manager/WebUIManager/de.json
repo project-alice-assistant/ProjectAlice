@@ -34,7 +34,12 @@
 		"info"            : "Info",
 		"instructions"    : "Anleitung",
 		"demoDesc"        : "Dies ist ein Demo-Skill",
-		"demoInstructions": "Dies ist nur ein Beispiel!"
+		"demoInstructions": "Dies ist nur ein Beispiel!",
+		"utilities"       : {
+			"revert": "Revert",
+			"upload": "Upload",
+			"modify": "Modify"
+		}
 	},
 	"tooltips"     : {
 		"settings"         : "Einstellungen",

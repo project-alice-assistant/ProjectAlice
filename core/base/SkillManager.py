@@ -21,15 +21,14 @@ import getpass
 import importlib
 import json
 import os
+import requests
 import shutil
 import sqlite3
 import threading
 import traceback
+import typing
 from pathlib import Path
 from typing import Dict, Optional
-
-import requests
-import typing
 
 from core.ProjectAliceExceptions import AccessLevelTooLow, GithubNotFound, GithubRateLimit, GithubTokenFailed, SkillNotConditionCompliant, SkillStartDelayed, SkillStartingFailed
 from core.base.SuperManager import SuperManager
@@ -46,6 +45,7 @@ from core.webui.model.UINotificationType import UINotificationType
 
 
 class SkillManager(Manager):
+	DB_SKILLS = 'skills'
 
 	NEEDED_SKILLS = [
 		'AliceCore',
@@ -54,10 +54,11 @@ class SkillManager(Manager):
 	]
 
 	DATABASE = {
-		'skills' : [
+		DB_SKILLS: [
 			'skillName TEXT NOT NULL UNIQUE',
 			'active INTEGER NOT NULL DEFAULT 1',
 			'scenarioVersion TEXT NOT NULL DEFAULT "0.0.0"',
+			'modified INTEGER NOT NULL DEFAULT 0'
 		]
 	}
 
@@ -69,7 +70,7 @@ class SkillManager(Manager):
 		self._skillInstallThread: Optional[threading.Thread] = None
 		self._supportedIntents = list()
 
-		# This is only a dict of the skills, with name: dict(status, install file)
+		# This is only a dict of the skills, with name: dict(status, install file, modified)
 		self._skillList = dict()
 
 		# These are dict of the skills, with name: skill instance
@@ -139,6 +140,7 @@ class SkillManager(Manager):
 				installer = json.loads(Path(self.Commons.rootDir(), f'skills/{skill["skillName"]}/{skill["skillName"]}.install').read_text())
 				data[skill['skillName']] = {
 					'active'   : skill['active'],
+					'modified' : skill['modified'] == 1,
 					'installer': installer
 				}
 			except Exception as e:
@@ -308,6 +310,7 @@ class SkillManager(Manager):
 					self.checkSkillConditions(self._skillList[skillName]['installer'])
 
 				skillInstance = self.instanciateSkill(skillName=skillName, reload=reload)
+				skillInstance.modified = data['modified']
 				if skillInstance:
 					if skillName in self.NEEDED_SKILLS:
 						skillInstance.required = True
@@ -524,6 +527,12 @@ class SkillManager(Manager):
 	@Online(catchOnly=True)
 	@IfSetting(settingName='stayCompletlyOffline', settingValue=False)
 	def checkForSkillUpdates(self, skillToCheck: str = None) -> bool:
+		"""
+		Check all installed skills for availability of updates.
+		Includes failed skills but not inactive.
+		:param skillToCheck:
+		:return:
+		"""
 		self.logInfo('Checking for skill updates')
 		updateCount = 0
 
@@ -539,7 +548,6 @@ class SkillManager(Manager):
 				localVersion = Version.fromString(self._skillList[skillName]['installer']['version'])
 				if localVersion < remoteVersion:
 					updateCount += 1
-					self.logInfo(f'![yellow]({skillName}) - Version {self._skillList[skillName]["installer"]["version"]} < {str(remoteVersion)} in {self.ConfigManager.getAliceConfigByName("skillsUpdateChannel")}')
 
 					self.WebUIManager.newNotification(
 						tipe=UINotificationType.INFO,
@@ -548,6 +556,13 @@ class SkillManager(Manager):
 						replaceBody=[skillName, str(remoteVersion)]
 					)
 
+					if data['modified']:
+						self.allSkills[skillName].updateAvailable = True
+						self.logInfo(f'![blue]({skillName}) - Version {self._skillList[skillName]["installer"]["version"]} < {str(remoteVersion)} in {self.ConfigManager.getAliceConfigByName("skillsUpdateChannel")} - ![blue](LOCKED) for local changes!')
+						continue
+
+					self.logInfo(f'![yellow]({skillName}) - Version {self._skillList[skillName]["installer"]["version"]} < {str(remoteVersion)} in {self.ConfigManager.getAliceConfigByName("skillsUpdateChannel")}')
+
 					if not self.ConfigManager.getAliceConfigByName('skillAutoUpdate'):
 						if skillName in self.allSkills:
 							self.allSkills[skillName].updateAvailable = True
@@ -555,7 +570,10 @@ class SkillManager(Manager):
 						if not self.downloadInstallTicket(skillName, isUpdate=True):
 							raise Exception
 				else:
-					self.logInfo(f'![green]({skillName}) - Version {self._skillList[skillName]["installer"]["version"]} in {self.ConfigManager.getAliceConfigByName("skillsUpdateChannel")}')
+					if data['modified']:
+						self.logInfo(f'![blue]({skillName}) - Version {self._skillList[skillName]["installer"]["version"]} in {self.ConfigManager.getAliceConfigByName("skillsUpdateChannel")} - ![blue](LOCKED) for local changes!')
+					else:
+						self.logInfo(f'![green]({skillName}) - Version {self._skillList[skillName]["installer"]["version"]} in {self.ConfigManager.getAliceConfigByName("skillsUpdateChannel")}')
 
 			except GithubNotFound:
 				self.logInfo(f'![red](Skill **{skillName}**) is not available on Github. Deprecated or is it a dev skill?')

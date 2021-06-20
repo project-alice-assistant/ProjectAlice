@@ -40,7 +40,12 @@
 		"info"            : "info",
 		"instructions"    : "instructions",
 		"demoDesc"        : "This is a UI tour demo skill",
-		"demoInstructions": "This is a demo"
+		"demoInstructions": "This is a demo",
+		"utilities"       : {
+			"revert": "Revert",
+			"upload": "Upload",
+			"modify": "Modify"
+		}
 	},
 	"tooltips"     : {
 		"settings"         : "Settings",

@@ -70,6 +70,7 @@ class AliceSkill(ProjectAliceObject):
 		self._category = self._installer.get('category', constants.UNKNOWN)
 		self._conditions = self._installer.get('conditions', dict())
 		self._updateAvailable = False
+		self._modified = False
 		self._active = False
 		self._delayed = False
 		self._required = False
@@ -435,6 +436,21 @@ class AliceSkill(ProjectAliceObject):
 
 
 	@property
+	def modified(self) -> bool:
+		return self._modified
+
+
+	@modified.setter
+	def modified(self, value: bool):
+		self._modified = value
+		dbVal = 1 if value else 0
+		self.DatabaseManager.update(tableName=self.SkillManager.DB_SKILLS,
+		                            callerName=self.SkillManager.name,
+		                            row=('skillname', self.name),
+		                            values={'modified': dbVal})
+
+
+	@property
 	def scenarioNodeName(self) -> str:
 		return self._scenarioPackageName
 
@@ -715,6 +731,7 @@ class AliceSkill(ProjectAliceObject):
 			'name'            : self._name,
 			'author'          : self._author,
 			'version'         : self._version,
+			'modified'        : self._modified,
 			'updateAvailable' : self._updateAvailable,
 			'active'          : self._active,
 			'delayed'         : self._delayed,
