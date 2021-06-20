@@ -260,11 +260,10 @@ class AliceSkill(ProjectAliceObject):
 		:param widgetType:
 		:return:
 		"""
-		self.logInfo(f'trying to load widget config template for {widgetType}')
 		try:
 			filepath = Path(f'skills/{self._name}/widgets/{widgetType}.config.template')
 			if not filepath.exists():
-				self.logInfo(f'File doesn\'t exist {f"skills/{self._name}/widgets/{widgetType}.config.template"}')
+				self.logInfo(f'No config template for {widgetType} loaded (ok)')
 				return
 
 			data = json.loads(filepath.read_text())
