@@ -45,7 +45,7 @@ from core.webui.model.UINotificationType import UINotificationType
 
 
 class SkillManager(Manager):
-	DB_SKILLS = 'skills'
+	DBTAB_SKILLS = 'skills'
 
 	NEEDED_SKILLS = [
 		'AliceCore',
@@ -54,7 +54,7 @@ class SkillManager(Manager):
 	]
 
 	DATABASE = {
-		DB_SKILLS: [
+		DBTAB_SKILLS: [
 			'skillName TEXT NOT NULL UNIQUE',
 			'active INTEGER NOT NULL DEFAULT 1',
 			'scenarioVersion TEXT NOT NULL DEFAULT "0.0.0"',

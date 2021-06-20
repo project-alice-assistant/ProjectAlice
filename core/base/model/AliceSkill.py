@@ -442,9 +442,15 @@ class AliceSkill(ProjectAliceObject):
 
 	@modified.setter
 	def modified(self, value: bool):
+		"""
+		As the skill has no writeToDB method and this is the only value that has to be saved right away
+		a update of the value on the DB is performed. This should only occure manually triggered when the user starts to make local changes
+		:param value:
+		:return:
+		"""
 		self._modified = value
 		dbVal = 1 if value else 0
-		self.DatabaseManager.update(tableName=self.SkillManager.DB_SKILLS,
+		self.DatabaseManager.update(tableName=self.SkillManager.DBTAB_SKILLS,
 		                            callerName=self.SkillManager.name,
 		                            row=('skillname', self.name),
 		                            values={'modified': dbVal})
