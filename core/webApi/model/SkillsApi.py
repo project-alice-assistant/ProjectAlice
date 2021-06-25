@@ -269,3 +269,36 @@ class SkillsApi(Api):
 			return self.skillNotFound()
 		self.SkillManager.getSkillInstance(skillName=skillName).modified = False
 		return self.checkUpdate(skillName)
+
+
+	@route('/<skillName>/getInstructions/', methods=['GET', 'POST'])
+	@ApiAuthenticated
+	def getInstructions(self, skillName: str):
+		if skillName not in self.SkillManager.allSkills:
+			return self.skillNotFound()
+
+		data = request.json
+		skill = self.SkillManager.getSkillInstance(skillName=skillName)
+
+		instructionsFile = skill.getResource(f'instructions/{data["lang"]}.md')
+		if not instructionsFile.exists():
+			instructionsFile = skill.getResource(f'instructions/en.md')
+
+		return jsonify(success=True, instruction=instructionsFile.read_text() if instructionsFile.exists() else '')
+
+
+	@route('/<skillName>/setInstructions/', methods=['PATCH'])
+	@ApiAuthenticated
+	def setInstructions(self, skillName: str):
+		if skillName not in self.SkillManager.allSkills:
+			return self.skillNotFound()
+
+		data = request.json
+		skill = self.SkillManager.getSkillInstance(skillName=skillName)
+
+		instructionsFile = skill.getResource(f'instructions/{data["lang"]}.md')
+		if not instructionsFile.exists():
+			instructionsFile.touch(exist_ok=True)
+		instructionsFile.write_text(data['instruction'])
+
+		return jsonify(success=True, instruction=instructionsFile.read_text() if instructionsFile.exists() else '')
