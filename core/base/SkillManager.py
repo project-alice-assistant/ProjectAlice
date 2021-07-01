@@ -679,7 +679,6 @@ class SkillManager(Manager):
 				installFile = json.loads(res.read_text())
 
 				skillName = installFile['name']
-				path = Path(installFile['author'], skillName)
 
 				if not skillName:
 					self.logError('Skill name to install not found, aborting to avoid casualties!')
@@ -717,7 +716,7 @@ class SkillManager(Manager):
 						self.logError(f'Error stopping "{skillName}" for update: {e}')
 						raise
 
-				gitCloner = GithubCloner(baseUrl=f'{constants.GITHUB_URL}/skill_{skillName}.git', path=path, dest=directory)
+				gitCloner = GithubCloner(baseUrl=f'{constants.GITHUB_URL}/skill_{skillName}.git', dest=directory)
 
 				try:
 					gitCloner.clone(skillName=skillName)

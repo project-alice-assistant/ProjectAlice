@@ -17,9 +17,11 @@
 #
 #  Last modified: 2021.04.13 at 12:56:49 CEST
 
+import json
 from flask import jsonify, request
 from flask_classful import route
 
+from core.base.model.GithubCloner import GithubCloner
 from core.util.Decorators import ApiAuthenticated
 from core.webApi.model.Api import Api
 
@@ -258,7 +260,12 @@ class SkillsApi(Api):
 	def setModified(self, skillName: str):
 		if skillName not in self.SkillManager.allSkills:
 			return self.skillNotFound()
+
+		gitCloner = GithubCloner(baseUrl=f'{constants.GITHUB_URL}/skill_{skillName}.git', path=path, dest=directory)
 		self.SkillManager.getSkillInstance(skillName=skillName).modified = True
+		if not GithubCloner.checkOwnRepoAvailable(skillName=skillName):
+			self.SkillManager.createForkForSkill(skillName=skillName)
+		gitCloner.checkoutOwnFork()
 		return jsonify(success=True)
 
 
@@ -302,3 +309,36 @@ class SkillsApi(Api):
 		instructionsFile.write_text(data['instruction'])
 
 		return jsonify(success=True, instruction=instructionsFile.read_text() if instructionsFile.exists() else '')
+
+
+	@route('/<skillName>/getDialogTemplate/', methods=['GET', 'POST'])
+	@ApiAuthenticated
+	def getTemplate(self, skillName: str):
+		if skillName not in self.SkillManager.allSkills:
+			return self.skillNotFound()
+
+		data = request.json
+		skill = self.SkillManager.getSkillInstance(skillName=skillName)
+
+		dialogTemplate = skill.getResource(f'dialogTemplate/{data["lang"]}.json')
+		if not dialogTemplate.exists():
+			dialogTemplate = skill.getResource(f'dialogTemplate/en.json')
+
+		return jsonify(success=True, dialogTemplate=dialogTemplate.read_text() if dialogTemplate.exists() else '')
+
+
+	@route('/<skillName>/setDialogTemplate/', methods=['PATCH'])
+	@ApiAuthenticated
+	def setTemplate(self, skillName: str):
+		if skillName not in self.SkillManager.allSkills:
+			return self.skillNotFound()
+
+		data = request.json
+		skill = self.SkillManager.getSkillInstance(skillName=skillName)
+
+		dialogTemplate = skill.getResource(f'dialogTemplate/{data["lang"]}.json')
+		if not dialogTemplate.exists():
+			dialogTemplate.touch(exist_ok=True)
+		dialogTemplate.write_text(json.dumps(data['dialogTemplate']))
+
+		return jsonify(success=True, instruction=dialogTemplate.read_text() if dialogTemplate.exists() else '')

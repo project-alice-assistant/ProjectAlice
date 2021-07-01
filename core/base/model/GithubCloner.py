@@ -28,21 +28,31 @@ class GithubCloner(ProjectAliceObject):
 	NAME = 'GithubCloner'
 
 
-	def __init__(self, baseUrl: str, path: Path, dest: Path):
+	def __init__(self, baseUrl: str, dest: Path):
 		super().__init__()
 		self._baseUrl = baseUrl
-		self._path = path
 		self._dest = dest
 
 
 	@classmethod
 	def getGithubAuth(cls) -> tuple:
+		"""
+		Returns the users configured username and token for github as a tuple
+		When one of the values is not supplied None is returned.
+		:return:
+		"""
 		username = SuperManager.getInstance().configManager.getAliceConfigByName('githubUsername')
 		token = SuperManager.getInstance().configManager.getAliceConfigByName('githubToken')
 		return (username, token) if (username and token) else None
 
 
 	def clone(self, skillName: str) -> bool:
+		"""
+		Clone a skill from github to the skills folder
+		This will stash and clean all changes that have been made locally
+		:param skillName:
+		:return:
+		"""
 		if not self._dest.exists():
 			self._dest.mkdir(parents=True)
 		else:
@@ -57,6 +67,11 @@ class GithubCloner(ProjectAliceObject):
 
 
 	def _doClone(self, skillName: str) -> bool:
+		"""
+		internal method to perform the clone of a skill - assumes there are no pending changes
+		:param skillName:
+		:return:
+		"""
 		try:
 			updateTag = self.SkillStoreManager.getSkillUpdateTag(skillName)
 			if not Path(self._dest / '.git').exists():
@@ -66,6 +81,60 @@ class GithubCloner(ProjectAliceObject):
 
 			self.Commons.runSystemCommand(['git', '-C', str(self._dest), 'checkout', updateTag])
 			self.Commons.runSystemCommand(['git', '-C', str(self._dest), 'pull', 'origin', updateTag])
+
+			return True
+		except Exception as e:
+			self.logWarning(f'Something went wrong cloning github repo: {e}')
+			return False
+
+
+	@classmethod
+	def checkOwnRepoAvailable(cls, skillName: str) -> bool:
+		"""
+		check if a repository for the given skill name exists in the users github
+		:param skillName:
+		:return:
+		"""
+		req = requests.get(f'https://api.github.com/repos/{self.ConfigManager.getAliceConfigByName("githubUsername")}/skill_{skillName}', auth=GithubCloner.getGithubAuth())
+		if req.status_code != 200:
+			cls.logInfo("Couldn't find repository on github")
+			return False
+		return True
+
+
+	@classmethod
+	def createForkForSkill(cls, skillName: str) -> bool:
+		"""
+		create a fork of the skill from alice official github to the users github.
+		:param skillName:
+		:return:
+		"""
+		data = {
+			'owner': self.ConfigManager.getAliceConfigByName("githubUsername"),
+			'repo' : f'skill_{skillName}'
+		}
+		req = requests.post(f'https://api.github.com/repos/project-alice-assistant/skill_{skillName}/forks', data=json.dumps(data), auth=GithubCloner.getGithubAuth())
+		if req.status_code != 202:
+			cls.logError("Couldn't create fork for repository!")
+
+
+	def checkoutOwnFork(self, skillName: str) -> bool:
+		"""
+		Assumes there is already a fork for the current skill on the users repository.
+		Clone that repository, set upstream to the original repository.
+		Will only work on master!
+		:param skillName:
+		:return:
+		"""
+		try:
+			if not Path(self._dest / '.git').exists():
+				self.Commons.runSystemCommand(['git', '-C', str(self._dest), 'init'])
+				self.Commons.runSystemCommand(['git', '-C', str(self._dest), 'remote', 'add', 'origin', self._baseUrl])
+				self.Commons.runSystemCommand(['git', '-C', str(self._dest), 'pull'])
+
+			self.Commons.runSystemCommand(['git', '-C', str(self._dest), 'remote', 'add', 'AliceSK', f'https://api.github.com/repos/{self.ConfigManager.getAliceConfigByName("githubUsername")}/skill_{skillName}'])
+			self.Commons.runSystemCommand(['git', '-C', str(self._dest), 'checkout', 'master'])
+			self.Commons.runSystemCommand(['git', '-C', str(self._dest), 'pull', 'AliceSK', 'master'])
 
 			return True
 		except Exception as e:
