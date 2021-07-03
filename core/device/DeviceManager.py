@@ -700,7 +700,7 @@ class DeviceManager(Manager):
 		:param skillName: str
 		:return: Dict deviceTypeName:DeviceType
 		"""
-		return self._deviceTypes.get(skillName, dict())
+		return self._deviceTypes.get(skillName.lower(), dict())
 
 
 	def removeDeviceTypesForSkill(self, skillName: str):
@@ -848,17 +848,17 @@ class DeviceManager(Manager):
 	# 	return [x for x in self._deviceLinks.values() if x.getDevice().deviceTypeId == deviceType and (not connectedOnly or x.getDevice().connected)]
 	#
 	#
-	def getDeviceLinks(self, locationId: int, deviceTypeId: int = None, connectedOnly: bool = False, pairedOnly: bool = False) -> List[DeviceLink]:
+	def getDeviceLinks(self, locationId: int, devTypeNames: int = None, connectedOnly: bool = False, pairedOnly: bool = False) -> List[DeviceLink]:
 		if locationId and not isinstance(locationId, List):
 			locationId = [locationId]
 
-		if deviceTypeId and not isinstance(deviceTypeId, List):
-			deviceTypeId = [deviceTypeId]
+		if devTypeNames and not isinstance(devTypeNames, List):
+			devTypeNames = [devTypeNames]
 
 		return [x for x in self._deviceLinks.values()
 		        if (not locationId or x.targetLocation in locationId)
 		        and x.device is not None
-		        and (not deviceTypeId or x.device.deviceTypeId in deviceTypeId)
+		        and (not devTypeNames or x.device.deviceTypeName.lower() in devTypeNames)
 		        and (not connectedOnly or x.device.connected)
 		        and (not pairedOnly or x.device.paired)]
 
@@ -866,13 +866,15 @@ class DeviceManager(Manager):
 	def getDeviceLinksForSession(self, session: DialogSession, skill: str, noneIsEverywhere: bool = False):
 		# get all relevant deviceTypes
 		devTypes = self.DeviceManager.getDeviceTypesForSkill(skillName=skill)
-		devTypeIds = [dev for dev in devTypes]  # keys in dict are Ids
+		devTypeNames = [dev for dev in devTypes]  # keys in dict are Ids
+		self.logDebug(f'device type for skill {skill} are {devTypeNames}')
 
 		# get all required locations
 		locations = self.LocationManager.getLocationsForSession(session=session, noneIsEverywhere=noneIsEverywhere)
 		locationIds = [loc.id for loc in locations]
+		self.logDebug(f'And the locations are {locationIds}')
 
-		return self.DeviceManager.getDeviceLinks(deviceTypeId=devTypeIds, locationId=locationIds)
+		return self.DeviceManager.getDeviceLinks(devTypeNames=devTypeNames, locationId=locationIds)
 
 
 	@staticmethod

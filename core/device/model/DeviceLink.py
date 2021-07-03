@@ -179,6 +179,10 @@ class DeviceLink(ProjectAliceObject):
 		return self._configs.get(key, default)
 
 
+	def __repr__(self):
+		return f'[id: {self._id} from device {self._deviceId} to location {self._targetLocation}. Config: {self._configs}'
+
+
 	def toDict(self):
 		return {
 			'id'            : self._id,
