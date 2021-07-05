@@ -342,3 +342,21 @@ class SkillsApi(Api):
 		dialogTemplate.write_text(json.dumps(data['dialogTemplate']))
 
 		return jsonify(success=True, instruction=dialogTemplate.read_text() if dialogTemplate.exists() else '')
+
+
+	@route('/<skillName>/setConfigTemplate/', methods=['PATCH'])
+	@ApiAuthenticated
+	def setTemplate(self, skillName: str):
+		if skillName not in self.SkillManager.allSkills:
+			return self.skillNotFound()
+
+		data = request.json
+		skill = self.SkillManager.getSkillInstance(skillName=skillName)
+
+		configTemplate = skill.getResource(f'config.json.template')
+		if not configTemplate.exists():
+			configTemplate.touch(exist_ok=True)
+		configTemplate.write_text(json.dumps(data['configTemplate']))
+		self.ConfigManager.loadCheckAndUpdateSkillConfigurations(skillToLoad=skillName)
+
+		return jsonify(success=True, configTemplate=skill.getSkillConfigsTemplate())
