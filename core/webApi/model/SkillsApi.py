@@ -20,6 +20,7 @@
 import json
 from flask import jsonify, request
 from flask_classful import route
+from pathlib import Path
 
 from core.base.model.GithubCloner import GithubCloner
 from core.util.Decorators import ApiAuthenticated
@@ -360,3 +361,21 @@ class SkillsApi(Api):
 		self.ConfigManager.loadCheckAndUpdateSkillConfigurations(skillToLoad=skillName)
 
 		return jsonify(success=True, configTemplate=skill.getSkillConfigsTemplate())
+
+
+	@route('/<skillName>/getTalkFiles/', methods=['GET', 'POST'])
+	@ApiAuthenticated
+	def getTalkFiles(self, skillName: str):
+		if skillName not in self.SkillManager.allSkills:
+			return self.skillNotFound()
+
+		data = request.json
+		skill = self.SkillManager.getSkillInstance(skillName=skillName)
+		talkFiles = dict()
+
+		fp = skill.getResource('talks')
+		if fp.exists():
+			for file in fp.glob('*.json'):
+				talkFiles[Path(file).stem] = json.loads(file.read_text())
+
+		return jsonify(success=True, talkFiles=talkFiles)
