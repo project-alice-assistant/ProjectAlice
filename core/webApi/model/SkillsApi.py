@@ -379,3 +379,51 @@ class SkillsApi(Api):
 				talkFiles[Path(file).stem] = json.loads(file.read_text())
 
 		return jsonify(success=True, talkFiles=talkFiles)
+
+
+	@route('/<skillName>/setTalkFile/', methods=['PATCH'])
+	@ApiAuthenticated
+	def setTemplate(self, skillName: str):
+		if skillName not in self.SkillManager.allSkills:
+			return self.skillNotFound()
+
+		data = request.json
+		skill = self.SkillManager.getSkillInstance(skillName=skillName)
+
+		talkFile = skill.getResource(f'talks/{data["lang"]}.json')
+		if not talkFile.exists():
+			talkFile.touch(exist_ok=True)
+		talkFile.write_text(json.dumps(data['talkFile']))
+
+		return jsonify(success=True, talkFile=talkFile.read_text() if talkFile.exists() else '')
+
+
+	@route('/<skillName>/getInstallFile/', methods=['GET', 'POST'])
+	@ApiAuthenticated
+	def getInstallFile(self, skillName: str):
+		if skillName not in self.SkillManager.allSkills:
+			return self.skillNotFound()
+
+		data = request.json
+		skill = self.SkillManager.getSkillInstance(skillName=skillName)
+
+		installFile = skill.getResource(f'{skillName}.install')
+
+		return jsonify(success=True, installFile=json.loads(installFile.read_text()))
+
+
+	@route('/<skillName>/setInstalLFile/', methods=['PATCH'])
+	@ApiAuthenticated
+	def setInstallFile(self, skillName: str):
+		if skillName not in self.SkillManager.allSkills:
+			return self.skillNotFound()
+
+		data = request.json
+		skill = self.SkillManager.getSkillInstance(skillName=skillName)
+
+		installFile = skill.getResource(f'{skillName}.install')
+		if not installFile.exists():
+			installFile.touch(exist_ok=True)
+		installFile.write_text(json.dumps(data['installFile']))
+
+		return jsonify(success=True, installFile=installFile.read_text() if installFile.exists() else '')
