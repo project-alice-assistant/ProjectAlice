@@ -34,7 +34,7 @@ from pathlib import Path
 YAML = '/boot/ProjectAlice.yaml'
 ASOUND = '/etc/asound.conf'
 TEMP = Path('/tmp/service')
-
+ALLOWED_LANGUAGES = {'en', 'de', 'fr', 'it', 'pt', 'pl'}
 
 class InitDict(dict):
 
@@ -454,12 +454,12 @@ class Initializer:
 			confs['keepASROffline'] = bool(initConfs['keepASROffline'])
 			confs['keepTTSOffline'] = bool(initConfs['keepTTSOffline'])
 			confs['skillAutoUpdate'] = bool(initConfs['skillAutoUpdate'])
-			confs['tts'] = initConfs['tts'] if initConfs['tts'] in {'pico', 'mycroft', 'amazon', 'google', 'watson'} else 'pico'
+			confs['tts'] = initConfs['tts'] if initConfs['tts'] in {'pico', 'mycroft', 'amazon', 'google', 'watson', 'coqui'} else 'pico'
 			confs['awsRegion'] = initConfs['awsRegion']
 			confs['awsAccessKey'] = initConfs['awsAccessKey']
 			confs['awsSecretKey'] = initConfs['awsSecretKey']
 
-			confs['asr'] = initConfs['asr'] if initConfs['asr'] in {'pocketsphinx', 'google', 'deepspeech', 'snips'} else 'deepspeech'
+			confs['asr'] = initConfs['asr'] if initConfs['asr'] in {'pocketsphinx', 'google', 'deepspeech', 'snips', 'coqui'} else 'deepspeech'
 			if confs['asr'] == 'google' and not initConfs['googleServiceFile']:
 				self._logger.logInfo('You cannot use Google Asr without a google service file, falling back to Deepspeech')
 				confs['asr'] = 'deepspeech'
@@ -479,7 +479,7 @@ class Initializer:
 		confs['webInterfaceActive'] = bool(initConfs['webInterfaceActive'])
 		confs['devMode'] = bool(initConfs['devMode'])
 		confs['newDeviceBroadcastPort'] = int(initConfs['newDeviceBroadcastPort'] or 12354)
-		confs['activeLanguage'] = initConfs['activeLanguage'] if initConfs['activeLanguage'] in {'en', 'de', 'fr'} else 'en'
+		confs['activeLanguage'] = initConfs['activeLanguage'] if initConfs['activeLanguage'] in ALLOWED_LANGUAGES else 'en'
 		confs['activeCountryCode'] = initConfs['activeCountryCode'] or 'US'
 		confs['baseCurrency'] = initConfs['baseCurrency'] or 'USD'
 		confs['baseUnits'] = initConfs['baseUnits'] if initConfs['baseUnits'] in {'metric', 'kelvin', 'imperial'} else 'metric'

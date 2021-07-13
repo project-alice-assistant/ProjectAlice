@@ -611,26 +611,36 @@
 			"de-DE - male - de-DE-Wavenet-B":  "de-DE-Wavenet-B",
 			"de-DE - male - de-DE-Wavenet-D":  "de-DE-Wavenet-D",
 			"de-DE - female - de-DE-Standard-A":  "de-DE-Standard-A",
-			"de-DE - female - de-DE-Wavenet-A":  "de-DE-Wavenet-A",
-			"de-DE - female - de-DE-Wavenet-C":  "de-DE-Wavenet-C",
-			"it-IT - male - it-IT-Standard-C":  "it-IT-Standard-C",
-			"it-IT - male - it-IT-Standard-D":  "it-IT-Standard-D",
-			"it-IT - male - it-IT-Wavenet-C":  "it-IT-Wavenet-C",
-			"it-IT - male - it-IT-Wavenet-D":  "it-IT-Wavenet-D",
+			"de-DE - female - de-DE-Wavenet-A" :  "de-DE-Wavenet-A",
+			"de-DE - female - de-DE-Wavenet-C" :  "de-DE-Wavenet-C",
+			"it-IT - male - it-IT-Standard-C"  :  "it-IT-Standard-C",
+			"it-IT - male - it-IT-Standard-D"  :  "it-IT-Standard-D",
+			"it-IT - male - it-IT-Wavenet-C"   :  "it-IT-Wavenet-C",
+			"it-IT - male - it-IT-Wavenet-D"   :  "it-IT-Wavenet-D",
 			"it-IT - female - it-IT-Standard-A":  "it-IT-Standard-A",
 			"it-IT - female - it-IT-Standard-B":  "it-IT-Standard-B",
-			"it-IT - female - it-IT-Wavenet-A":  "it-IT-Wavenet-A",
-			"it-IT - female - it-IT-Wavenet-B":  "it-IT-Wavenet-B",
-			"pl-PL - male - pl-PL-Standard-B":  "pl-PL-Standard-B",
-			"pl-PL - male - pl-PL-Standard-C":  "pl-PL-Standard-C",
-			"pl-PL - male - pl-PL-Wavenet-B":  "pl-PL-Wavenet-B",
-			"pl-PL - male - pl-PL-Wavenet-C":  "pl-PL-Wavenet-C",
-			"pl-PL - female - pl-PL-Standard-A":  "pl-PL-Standard-A",
-			"pl-PL - female - pl-PL-Standard-D":  "pl-PL-Standard-D",
-			"pl-PL - female - pl-PL-Standard-E":  "pl-PL-Standard-E",
-			"pl-PL - female - pl-PL-Wavenet-A":  "pl-PL-Wavenet-A",
-			"pl-PL - female - pl-PL-Wavenet-D":  "pl-PL-Wavenet-D",
-			"pl-PL - female - pl-PL-Wavenet-E":  "pl-PL-Wavenet-E"
+			"it-IT - female - it-IT-Wavenet-A" :  "it-IT-Wavenet-A",
+			"it-IT - female - it-IT-Wavenet-B" : "it-IT-Wavenet-B",
+			"pl-PL - male - pl-PL-Standard-B"  : "pl-PL-Standard-B",
+			"pl-PL - male - pl-PL-Standard-C"  : "pl-PL-Standard-C",
+			"pl-PL - male - pl-PL-Wavenet-B"   : "pl-PL-Wavenet-B",
+			"pl-PL - male - pl-PL-Wavenet-C"   : "pl-PL-Wavenet-C",
+			"pl-PL - female - pl-PL-Standard-A": "pl-PL-Standard-A",
+			"pl-PL - female - pl-PL-Standard-D": "pl-PL-Standard-D",
+			"pl-PL - female - pl-PL-Standard-E": "pl-PL-Standard-E",
+			"pl-PL - female - pl-PL-Wavenet-A" : "pl-PL-Wavenet-A",
+			"pl-PL - female - pl-PL-Wavenet-D" : "pl-PL-Wavenet-D",
+			"pl-PL - female - pl-PL-Wavenet-E" : "pl-PL-Wavenet-E",
+			"pt-BR - female - pt-BR-Standard-A": "pt-BR-Standard-A",
+			"pt-BR - female - pt-BR-Wavenet-A" : "pt-BR-Wavenet-A",
+			"pt-PT - female - pt-PT-Standard-A": "pt-PT-Standard-A",
+			"pt-PT - male - pt-PT-Standard-B"  : "pt-PT-Standard-B",
+			"pt-PT - male - pt-PT-Standard-C"  : "pt-PT-Standard-C",
+			"pt-PT - female - pt-PT-Standard-D": "pt-PT-Standard-D",
+			"pt-PT - female - pt-PT-Wavenet-A" : "pt-PT-Wavenet-A",
+			"pt-PT - male - pt-PT-Wavenet-B"   : "pt-PT-Wavenet-B",
+			"pt-PT - male - pt-PT-Wavenet-C"   : "pt-PT-Wavenet-C",
+			"pt-PT - female - pt-PT-Wavenet-D" : "pt-PT-Wavenet-D"
 		},
 		"isSensitive" : false,
 		"description" : "The voice Google Tts should use",
@@ -918,6 +928,14 @@
 					"CH"
 				]
 			},
+			"pt": {
+				"default"           : false,
+				"defaultCountryCode": "PT",
+				"countryCodes"      : [
+					"PT",
+					"BR"
+				]
+			},
 			"pl": {
 				"default"           : false,
 				"defaultCountryCode": "PL",
@@ -960,6 +978,14 @@
 				"countryCodes"      : [
 					"IT",
 					"CH"
+				]
+			},
+			"pt": {
+				"default"           : false,
+				"defaultCountryCode": "PT",
+				"countryCodes"      : [
+					"PT",
+					"BR"
 				]
 			},
 			"pl": {
