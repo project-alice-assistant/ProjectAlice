@@ -68,7 +68,7 @@ class SnipsNlu(NluEngine):
 		dialogTemplate = json.loads(file.read_text())
 
 		nluTrainingSample = dict()
-		nluTrainingSample['language'] = self.LanguageManager.activeLanguage
+		nluTrainingSample['language'] = self.getLanguage()
 		nluTrainingSample['entities'] = dict()
 		nluTrainingSample['intents'] = dict()
 
@@ -125,7 +125,7 @@ class SnipsNlu(NluEngine):
 					# noinspection PyTypeChecker
 					nluTrainingSample['intents'][intentName]['utterances'].append({'data': data})
 
-		with Path(self._cachePath / f'{self.LanguageManager.activeLanguage}.json').open('w') as fp:
+		with Path(self._cachePath / f'{self.getLanguage()}.json').open('w') as fp:
 			json.dump(nluTrainingSample, fp, ensure_ascii=False)
 
 
@@ -140,10 +140,10 @@ class SnipsNlu(NluEngine):
 			dataset = {
 				'entities': dict(),
 				'intents' : dict(),
-				'language': self.LanguageManager.activeLanguage,
+				'language': self.getLanguage(),
 			}
 
-			with Path(self._cachePath / f'{self.LanguageManager.activeLanguage}.json').open() as fp:
+			with Path(self._cachePath / f'{self.getLanguage()}.json').open() as fp:
 				trainingData = json.load(fp)
 				dataset['entities'].update(trainingData['entities'])
 				dataset['intents'].update(trainingData['intents'])
@@ -250,3 +250,15 @@ class SnipsNlu(NluEngine):
 			notification='nluTrainingFailed',
 			key='nluTraining'
 		)
+
+
+	def getLanguage(self) -> str:
+		"""
+		get the language that should be used for the training.
+		Currently only portuguese needs a special handling
+		:return:
+		"""
+		lang = self.LanguageManager.activeLanguage
+		if lang == 'pt':
+			lang = lang + '_' + self.LanguageManager.activeCountryCode.lower()
+		return lang
