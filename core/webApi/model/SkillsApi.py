@@ -23,6 +23,7 @@ from flask_classful import route
 from pathlib import Path
 
 from core.base.model.GithubCloner import GithubCloner
+from core.commons import constants
 from core.util.Decorators import ApiAuthenticated
 from core.webApi.model.Api import Api
 
@@ -39,6 +40,11 @@ class SkillsApi(Api):
 	# noinspection PyMethodMayBeStatic
 	def skillNotFound(self):
 		return jsonify(success=False, reason='skill not found')
+
+
+	# noinspection PyMethodMayBeStatic
+	def githubMissing(self):
+		return jsonify(success=False, reason='github auth not found')
 
 
 	@ApiAuthenticated
@@ -262,11 +268,14 @@ class SkillsApi(Api):
 		if skillName not in self.SkillManager.allSkills:
 			return self.skillNotFound()
 
-		gitCloner = GithubCloner(baseUrl=f'{constants.GITHUB_URL}/skill_{skillName}.git', path=path, dest=directory)
+		if not GithubCloner.hasAuth():
+			return self.githubMissing()
+
+		gitCloner = GithubCloner(baseUrl=f'{constants.GITHUB_URL}/skill_{skillName}.git', dest=Path(self.Commons.rootDir()) / 'skills' / skillName)
 		self.SkillManager.getSkillInstance(skillName=skillName).modified = True
-		if not GithubCloner.checkOwnRepoAvailable(skillName=skillName):
+		if not gitCloner.checkOwnRepoAvailable(skillName=skillName):
 			self.SkillManager.createForkForSkill(skillName=skillName)
-		gitCloner.checkoutOwnFork()
+		gitCloner.checkoutOwnFork(skillName=skillName)
 		return jsonify(success=True)
 
 
@@ -276,7 +285,20 @@ class SkillsApi(Api):
 		if skillName not in self.SkillManager.allSkills:
 			return self.skillNotFound()
 		self.SkillManager.getSkillInstance(skillName=skillName).modified = False
+		gitCloner = GithubCloner(baseUrl=f'{constants.GITHUB_URL}/skill_{skillName}.git', dest=Path(self.Commons.rootDir()) / 'skills' / skillName)
+		gitCloner.checkoutMaster()
 		return self.checkUpdate(skillName)
+
+
+	@route('/<skillName>/upload/')
+	@ApiAuthenticated
+	def upload(self, skillName: str):
+		if skillName not in self.SkillManager.allSkills:
+			return self.skillNotFound()
+		self.SkillManager.getSkillInstance(skillName=skillName).modified = False
+		gitCloner = GithubCloner(baseUrl=f'{constants.GITHUB_URL}/skill_{skillName}.git', dest=Path(self.Commons.rootDir()) / 'skills' / skillName)
+		gitCloner.gitPush()
+		return jsonify(success=True)
 
 
 	@route('/<skillName>/getInstructions/', methods=['GET', 'POST'])
@@ -303,8 +325,10 @@ class SkillsApi(Api):
 
 		data = request.json
 		skill = self.SkillManager.getSkillInstance(skillName=skillName)
-
+		instructionsFolder = skill.getResource(f'instructions/')
 		instructionsFile = skill.getResource(f'instructions/{data["lang"]}.md')
+		if not instructionsFolder.exists():
+			instructionsFolder.mkdir(parents=True, exist_ok=True)
 		if not instructionsFile.exists():
 			instructionsFile.touch(exist_ok=True)
 		instructionsFile.write_text(data['instruction'])
@@ -320,18 +344,30 @@ class SkillsApi(Api):
 
 		data = request.json
 		skill = self.SkillManager.getSkillInstance(skillName=skillName)
+		allLang = {}
+		tempOut = ""
 
-		dialogTemplate = skill.getResource(f'dialogTemplate/{data["lang"]}.json')
-		if not dialogTemplate.exists():
-			dialogTemplate = skill.getResource(f'dialogTemplate/en.json')
+		if not 'lang' in data:
+			fp = skill.getResource('dialogTemplate')
+			if fp.exists():
+				for file in fp.glob('*.json'):
+					allLang[Path(file).stem] = json.loads(file.read_text())
 
-		return jsonify(success=True, dialogTemplate=dialogTemplate.read_text() if dialogTemplate.exists() else '')
+		else:
+			dialogTemplate = skill.getResource(f'dialogTemplate/{data["lang"]}.json')
+			if not dialogTemplate.exists():
+				dialogTemplate = skill.getResource(f'dialogTemplate/en.json')
+			tempOut = dialogTemplate.read_text() if dialogTemplate.exists() else ''
+
+		return jsonify(success=True, dialogTemplate=tempOut, dialogTemplates=allLang)
 
 
 	@route('/<skillName>/setDialogTemplate/', methods=['PATCH'])
 	@ApiAuthenticated
 	def setTemplate(self, skillName: str):
+		self.logInfo(f'DialogTemplate API access for skill {skillName}')
 		if skillName not in self.SkillManager.allSkills:
+			self.logError(f'Skill {skillName} not found')
 			return self.skillNotFound()
 
 		data = request.json
@@ -339,15 +375,14 @@ class SkillsApi(Api):
 
 		dialogTemplate = skill.getResource(f'dialogTemplate/{data["lang"]}.json')
 		if not dialogTemplate.exists():
-			dialogTemplate.touch(exist_ok=True)
-		dialogTemplate.write_text(json.dumps(data['dialogTemplate']))
+			dialogTemplate.write_text(json.dumps(data['dialogTemplate']))
 
-		return jsonify(success=True, instruction=dialogTemplate.read_text() if dialogTemplate.exists() else '')
+		return jsonify(success=True, dialogTemplate=dialogTemplate.read_text() if dialogTemplate.exists() else '')
 
 
 	@route('/<skillName>/setConfigTemplate/', methods=['PATCH'])
 	@ApiAuthenticated
-	def setTemplate(self, skillName: str):
+	def setConfig(self, skillName: str):
 		if skillName not in self.SkillManager.allSkills:
 			return self.skillNotFound()
 
@@ -383,7 +418,7 @@ class SkillsApi(Api):
 
 	@route('/<skillName>/setTalkFile/', methods=['PATCH'])
 	@ApiAuthenticated
-	def setTemplate(self, skillName: str):
+	def setTalkFile(self, skillName: str):
 		if skillName not in self.SkillManager.allSkills:
 			return self.skillNotFound()
 
@@ -412,9 +447,10 @@ class SkillsApi(Api):
 		return jsonify(success=True, installFile=json.loads(installFile.read_text()))
 
 
-	@route('/<skillName>/setInstalLFile/', methods=['PATCH'])
+	@route('/<skillName>/setInstallFile/', methods=['PATCH'])
 	@ApiAuthenticated
 	def setInstallFile(self, skillName: str):
+		self.logInfo(f'installFile API access for skill {skillName}')
 		if skillName not in self.SkillManager.allSkills:
 			return self.skillNotFound()
 

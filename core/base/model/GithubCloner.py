@@ -17,6 +17,7 @@
 #
 #  Last modified: 2021.04.13 at 12:56:45 CEST
 
+import requests
 import shutil
 from pathlib import Path
 
@@ -44,6 +45,15 @@ class GithubCloner(ProjectAliceObject):
 		username = SuperManager.getInstance().configManager.getAliceConfigByName('githubUsername')
 		token = SuperManager.getInstance().configManager.getAliceConfigByName('githubToken')
 		return (username, token) if (username and token) else None
+
+
+	@classmethod
+	def hasAuth(cls) -> bool:
+		"""
+		Returns if the user has entered the github data for authentification
+		:return:
+		"""
+		return cls.getGithubAuth() is not None
 
 
 	def clone(self, skillName: str) -> bool:
@@ -88,22 +98,20 @@ class GithubCloner(ProjectAliceObject):
 			return False
 
 
-	@classmethod
-	def checkOwnRepoAvailable(cls, skillName: str) -> bool:
+	def checkOwnRepoAvailable(self, skillName: str) -> bool:
 		"""
 		check if a repository for the given skill name exists in the users github
 		:param skillName:
 		:return:
 		"""
-		req = requests.get(f'https://api.github.com/repos/{self.ConfigManager.getAliceConfigByName("githubUsername")}/skill_{skillName}', auth=GithubCloner.getGithubAuth())
+		req = requests.get(f'https://api.github.com/repos/{self.getGithubAuth()[0]}/skill_{skillName}', auth=GithubCloner.getGithubAuth())
 		if req.status_code != 200:
 			cls.logInfo("Couldn't find repository on github")
 			return False
 		return True
 
 
-	@classmethod
-	def createForkForSkill(cls, skillName: str) -> bool:
+	def createForkForSkill(self, skillName: str) -> bool:
 		"""
 		create a fork of the skill from alice official github to the users github.
 		:param skillName:
@@ -132,10 +140,48 @@ class GithubCloner(ProjectAliceObject):
 				self.Commons.runSystemCommand(['git', '-C', str(self._dest), 'remote', 'add', 'origin', self._baseUrl])
 				self.Commons.runSystemCommand(['git', '-C', str(self._dest), 'pull'])
 
-			self.Commons.runSystemCommand(['git', '-C', str(self._dest), 'remote', 'add', 'AliceSK', f'https://api.github.com/repos/{self.ConfigManager.getAliceConfigByName("githubUsername")}/skill_{skillName}'])
+			remote = f'https://{self.ConfigManager.getAliceConfigByName("githubUsername")}:{self.ConfigManager.getAliceConfigByName("githubToken")}@github.com/{self.ConfigManager.getAliceConfigByName("githubUsername")}/skill_{skillName}.git'
+			self.Commons.runSystemCommand(['git', '-C', str(self._dest), 'remote', 'add', 'AliceSK', remote])
 			self.Commons.runSystemCommand(['git', '-C', str(self._dest), 'checkout', 'master'])
-			self.Commons.runSystemCommand(['git', '-C', str(self._dest), 'pull', 'AliceSK', 'master'])
+			self.Commons.runSystemCommand(['git', '-C', str(self._dest), 'branch', '--set-upstream-to=AliceSK/master'])
+			self.Commons.runSystemCommand(['git', '-C', str(self._dest), 'pull'])
 
+			return True
+		except Exception as e:
+			self.logWarning(f'Something went wrong cloning github repo: {e}')
+			return False
+
+
+	def checkoutMaster(self) -> bool:
+		"""
+		set upstream to origin/master
+		:param skillName:
+		:return:
+		"""
+		try:
+			self.Commons.runSystemCommand(['git', '-C', str(self._dest), 'branch', '--set-upstream-to=origin/master'])
+			return True
+		except Exception as e:
+			self.logWarning(f'Something went wrong cloning github repo: {e}')
+			return False
+
+
+	def gitDefaults(self) -> bool:
+		try:
+			self.Commons.runSystemCommand(['git', '-C', str(self._dest), 'config', 'user.email', self.ConfigManager.getAliceConfigByName('githubMail') or 'githubbot@projectalice.io'])
+			self.Commons.runSystemCommand(['git', '-C', str(self._dest), 'config', 'user.name', self.ConfigManager.getAliceConfigByName('githubUsername') or 'ProjectAliceBot'])
+			return True
+		except Exception as e:
+			self.logWarning(f'Something went wrong cloning github repo: {e}')
+			return False
+
+
+	def gitPush(self) -> bool:
+		try:
+			self.gitDefaults()
+			self.Commons.runSystemCommand(['git', '-C', str(self._dest), 'add', '.'])
+			self.Commons.runSystemCommand(['git', '-C', str(self._dest), 'commit', '-m', 'pushed by AliceSK'])
+			self.Commons.runSystemCommand(['git', '-C', str(self._dest), 'push', '--set-upstream', 'AliceSK', 'master'])
 			return True
 		except Exception as e:
 			self.logWarning(f'Something went wrong cloning github repo: {e}')
