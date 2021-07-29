@@ -15,6 +15,25 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>
 #
+#  Last modified: 2021.07.28 at 16:07:59 CEST
+
+#  Copyright (c) 2021
+#
+#  This file, MqttManager.py, is part of Project Alice.
+#
+#  Project Alice is free software: you can redistribute it and/or modify
+#  it under the terms of the GNU General Public License as published by
+#  the Free Software Foundation, either version 3 of the License, or
+#  (at your option) any later version.
+#
+#  This program is distributed in the hope that it will be useful,
+#  but WITHOUT ANY WARRANTY; without even the implied warranty of
+#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#  GNU General Public License for more details.
+#
+#  You should have received a copy of the GNU General Public License
+#  along with this program.  If not, see <https://www.gnu.org/licenses/>
+#
 #  Last modified: 2021.04.13 at 12:56:47 CEST
 
 import json
@@ -587,7 +606,7 @@ class MqttManager(Manager):
 
 	def topicPlayBytes(self, _client, _data, msg: mqtt.MQTTMessage):
 		"""
-		SessionId is completly custom and does not belong in the Hermes Protocol
+		SessionId is completely custom and does not belong in the Hermes Protocol
 		:param _client:
 		:param _data:
 		:param msg:
