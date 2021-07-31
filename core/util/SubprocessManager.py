@@ -15,6 +15,25 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>
 #
+#  Last modified: 2021.07.31 at 15:40:13 CEST
+
+#  Copyright (c) 2021
+#
+#  This file, SubprocessManager.py, is part of Project Alice.
+#
+#  Project Alice is free software: you can redistribute it and/or modify
+#  it under the terms of the GNU General Public License as published by
+#  the Free Software Foundation, either version 3 of the License, or
+#  (at your option) any later version.
+#
+#  This program is distributed in the hope that it will be useful,
+#  but WITHOUT ANY WARRANTY; without even the implied warranty of
+#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#  GNU General Public License for more details.
+#
+#  You should have received a copy of the GNU General Public License
+#  along with this program.  If not, see <https://www.gnu.org/licenses/>
+#
 #  Last modified: 2021.05.20 at 12:56:48 CEST
 
 import threading
@@ -87,6 +106,10 @@ class SubprocessManager(Manager):
 		self._flag.set()
 		while self._flag.is_set():
 			for subproc in self._subproc.values():
+				if self.ProjectAlice.shuttingDown:
+					self._flag.clear()
+					return
+
 				if subproc.process is not None and subproc.process.poll() is not None:
 					self.logInfo(f'Subprocess {subproc.name} went defunct')
 					subproc.process = None
