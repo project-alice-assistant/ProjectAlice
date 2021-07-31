@@ -15,6 +15,44 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>
 #
+#  Last modified: 2021.07.31 at 15:54:28 CEST
+
+#  Copyright (c) 2021
+#
+#  This file, Device.py, is part of Project Alice.
+#
+#  Project Alice is free software: you can redistribute it and/or modify
+#  it under the terms of the GNU General Public License as published by
+#  the Free Software Foundation, either version 3 of the License, or
+#  (at your option) any later version.
+#
+#  This program is distributed in the hope that it will be useful,
+#  but WITHOUT ANY WARRANTY; without even the implied warranty of
+#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#  GNU General Public License for more details.
+#
+#  You should have received a copy of the GNU General Public License
+#  along with this program.  If not, see <https://www.gnu.org/licenses/>
+#
+#  Last modified: 2021.07.31 at 15:52:35 CEST
+
+#  Copyright (c) 2021
+#
+#  This file, Device.py, is part of Project Alice.
+#
+#  Project Alice is free software: you can redistribute it and/or modify
+#  it under the terms of the GNU General Public License as published by
+#  the Free Software Foundation, either version 3 of the License, or
+#  (at your option) any later version.
+#
+#  This program is distributed in the hope that it will be useful,
+#  but WITHOUT ANY WARRANTY; without even the implied warranty of
+#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#  GNU General Public License for more details.
+#
+#  You should have received a copy of the GNU General Public License
+#  along with this program.  If not, see <https://www.gnu.org/licenses/>
+#
 #  Last modified: 2021.04.13 at 12:56:46 CEST
 
 import json
@@ -38,7 +76,7 @@ class Device(ProjectAliceObject):
 	def __init__(self, data: Union[sqlite3.Row, Dict]):
 
 		# settings: Holds the device display settings, such as x and y position, size and that stuff
-		# deviceParams: Holds the device non declared params, such as sound muted and so on. These are not controlled values that can be completly random
+		# deviceParams: Holds the device non declared params, such as sound muted and so on. These are not controlled values that can be completely random
 		# deviceConfigs: Holds the device configurations, provided by the device's .config.template. These configs and values are controlled and cannot be random at all!
 		super().__init__()
 

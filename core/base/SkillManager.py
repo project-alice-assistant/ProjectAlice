@@ -15,13 +15,50 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>
 #
+#  Last modified: 2021.07.31 at 15:54:28 CEST
+
+#  Copyright (c) 2021
+#
+#  This file, SkillManager.py, is part of Project Alice.
+#
+#  Project Alice is free software: you can redistribute it and/or modify
+#  it under the terms of the GNU General Public License as published by
+#  the Free Software Foundation, either version 3 of the License, or
+#  (at your option) any later version.
+#
+#  This program is distributed in the hope that it will be useful,
+#  but WITHOUT ANY WARRANTY; without even the implied warranty of
+#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#  GNU General Public License for more details.
+#
+#  You should have received a copy of the GNU General Public License
+#  along with this program.  If not, see <https://www.gnu.org/licenses/>
+#
+#  Last modified: 2021.07.31 at 15:54:27 CEST
+
+#  Copyright (c) 2021
+#
+#  This file, SkillManager.py, is part of Project Alice.
+#
+#  Project Alice is free software: you can redistribute it and/or modify
+#  it under the terms of the GNU General Public License as published by
+#  the Free Software Foundation, either version 3 of the License, or
+#  (at your option) any later version.
+#
+#  This program is distributed in the hope that it will be useful,
+#  but WITHOUT ANY WARRANTY; without even the implied warranty of
+#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#  GNU General Public License for more details.
+#
+#  You should have received a copy of the GNU General Public License
+#  along with this program.  If not, see <https://www.gnu.org/licenses/>
+#
 #  Last modified: 2021.04.13 at 12:56:46 CEST
 
 import getpass
 import importlib
 import json
 import os
-import requests
 import shutil
 import sqlite3
 import threading
@@ -29,6 +66,8 @@ import traceback
 import typing
 from pathlib import Path
 from typing import Dict, Optional
+
+import requests
 
 from core.ProjectAliceExceptions import AccessLevelTooLow, GithubNotFound, GithubRateLimit, GithubTokenFailed, SkillNotConditionCompliant, SkillStartDelayed, SkillStartingFailed
 from core.base.SuperManager import SuperManager
@@ -525,7 +564,7 @@ class SkillManager(Manager):
 
 
 	@Online(catchOnly=True)
-	@IfSetting(settingName='stayCompletlyOffline', settingValue=False)
+	@IfSetting(settingName='stayCompletelyOffline', settingValue=False)
 	def checkForSkillUpdates(self, skillToCheck: str = None) -> bool:
 		"""
 		Check all installed skills for availability of updates.
@@ -820,8 +859,8 @@ class SkillManager(Manager):
 				raise SkillNotConditionCompliant(message=notCompliant, skillName=installer['name'], condition=conditionName, conditionValue=conditionValue)
 
 			elif conditionName == 'online':
-				if conditionValue and self.ConfigManager.getAliceConfigByName('stayCompletlyOffline') \
-						or not conditionValue and not self.ConfigManager.getAliceConfigByName('stayCompletlyOffline'):
+				if conditionValue and self.ConfigManager.getAliceConfigByName('stayCompletelyOffline') \
+						or not conditionValue and not self.ConfigManager.getAliceConfigByName('stayCompletelyOffline'):
 					raise SkillNotConditionCompliant(message=notCompliant, skillName=installer['name'], condition=conditionName, conditionValue=conditionValue)
 
 			elif conditionName == 'skill':

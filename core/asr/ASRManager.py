@@ -15,14 +15,53 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>
 #
+#  Last modified: 2021.07.31 at 15:54:28 CEST
+
+#  Copyright (c) 2021
+#
+#  This file, ASRManager.py, is part of Project Alice.
+#
+#  Project Alice is free software: you can redistribute it and/or modify
+#  it under the terms of the GNU General Public License as published by
+#  the Free Software Foundation, either version 3 of the License, or
+#  (at your option) any later version.
+#
+#  This program is distributed in the hope that it will be useful,
+#  but WITHOUT ANY WARRANTY; without even the implied warranty of
+#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#  GNU General Public License for more details.
+#
+#  You should have received a copy of the GNU General Public License
+#  along with this program.  If not, see <https://www.gnu.org/licenses/>
+#
+#  Last modified: 2021.07.31 at 15:54:27 CEST
+
+#  Copyright (c) 2021
+#
+#  This file, ASRManager.py, is part of Project Alice.
+#
+#  Project Alice is free software: you can redistribute it and/or modify
+#  it under the terms of the GNU General Public License as published by
+#  the Free Software Foundation, either version 3 of the License, or
+#  (at your option) any later version.
+#
+#  This program is distributed in the hope that it will be useful,
+#  but WITHOUT ANY WARRANTY; without even the implied warranty of
+#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#  GNU General Public License for more details.
+#
+#  You should have received a copy of the GNU General Public License
+#  along with this program.  If not, see <https://www.gnu.org/licenses/>
+#
 #  Last modified: 2021.04.13 at 12:56:45 CEST
+
+from importlib import import_module, reload
+from pathlib import Path
+from typing import Dict
 
 import paho.mqtt.client as mqtt
 from googletrans import Translator
-from importlib import import_module, reload
 from langdetect import detect
-from pathlib import Path
-from typing import Dict
 
 from core.asr.model import Asr
 from core.asr.model.ASRResult import ASRResult
@@ -63,7 +102,7 @@ class ASRManager(Manager):
 		self._usingFallback = False if forceAsr is None else True
 		userASR = self.ConfigManager.getAliceConfigByName(configName='asr').lower() if forceAsr is None else forceAsr
 		keepASROffline = self.ConfigManager.getAliceConfigByName('keepASROffline')
-		stayOffline = self.ConfigManager.getAliceConfigByName('stayCompletlyOffline')
+		stayOffline = self.ConfigManager.getAliceConfigByName('stayCompletelyOffline')
 		online = self.InternetManager.online
 
 		self._asr = None
@@ -125,7 +164,7 @@ class ASRManager(Manager):
 
 
 	def onInternetConnected(self):
-		if not self._usingFallback or self.ConfigManager.getAliceConfigByName('stayCompletlyOffline') or self.ConfigManager.getAliceConfigByName('keepASROffline') or \
+		if not self._usingFallback or self.ConfigManager.getAliceConfigByName('stayCompletelyOffline') or self.ConfigManager.getAliceConfigByName('keepASROffline') or \
 				self.ConfigManager.getAliceConfigByName('asrFallback') == self.ConfigManager.getAliceConfigByName('asr'):
 			return
 
@@ -166,7 +205,7 @@ class ASRManager(Manager):
 			self.logDebug(f'Asr captured: {result.text}')
 
 			text = result.text
-			if self.LanguageManager.overrideLanguage and not self.ConfigManager.getAliceConfigByName('stayCompletlyOffline') and not self.ConfigManager.getAliceConfigByName('keepASROffline'):
+			if self.LanguageManager.overrideLanguage and not self.ConfigManager.getAliceConfigByName('stayCompletelyOffline') and not self.ConfigManager.getAliceConfigByName('keepASROffline'):
 				language = detect(text)
 				if language != 'en':
 					text = self._translator.translate(text=text, src=language, dest='en').text
