@@ -22,9 +22,10 @@ import socket
 import threading
 import time
 import uuid
+from typing import Dict, List, Optional, Union
+
 from paho.mqtt.client import MQTTMessage
 from serial.tools import list_ports
-from typing import Dict, List, Optional, Union
 
 from core.base.model.Manager import Manager
 from core.commons import constants
@@ -750,7 +751,7 @@ class DeviceManager(Manager):
 		:return:
 		"""
 		self._broadcastFlag.set()
-		while self._broadcastFlag.isSet():
+		while self._broadcastFlag.is_set():
 			self._broadcastSocket.sendto(bytes(f'{self.Commons.getLocalIp()}:{self._listenPort}:{uid}', encoding='utf8'), ('<broadcast>', self._broadcastPort))
 			try:
 				sock, address = self._listenSocket.accept()
@@ -892,5 +893,6 @@ class DeviceManager(Manager):
 		return [link for link in self._deviceLinks.values() if link.deviceId == device.id]
 
 
-	def generateUuid3(self, skillName: str, unique: str):
+	@staticmethod
+	def generateUuid3(skillName: str, unique: str):
 		return uuid.uuid3(uuid.uuid3(uuid.NAMESPACE_OID, skillName), unique)
