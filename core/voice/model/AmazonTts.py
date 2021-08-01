@@ -35,7 +35,7 @@ except ModuleNotFoundError:
 # boto3.set_stream_logger('', 10) # enable this to debug boto3
 
 AWS_CONF_CONNECT_TIMEOUT = 10
-AWS_CONF_READ_TIMEOUT = 5
+AWS_CONF_READ_TIMEOUT = 1
 AWS_CONF_MAX_POOL_CONNECTIONS = 1
 
 
@@ -45,8 +45,8 @@ class AmazonTts(Tts):
 	DEPENDENCIES = {
 		'system': [],
 		'pip': {
-			'botocore==1.20.84',
-			'boto3==1.17.84'
+			'botocore==1.20.85',
+			'boto3==1.17.85'
 		}
 	}
 

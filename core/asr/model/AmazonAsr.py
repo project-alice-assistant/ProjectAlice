@@ -32,7 +32,7 @@ class AmazonAsr(Asr):
 	DEPENDENCIES = {
 		'system': [],
 		'pip': 	  {
-			'boto3==1.17.84'
+			'boto3==1.17.85'
 		}
 	}
 
