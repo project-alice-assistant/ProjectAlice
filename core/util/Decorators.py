@@ -27,6 +27,7 @@ from flask import jsonify, request
 
 from core.base.SuperManager import SuperManager
 from core.base.model.Intent import Intent
+from core.commons import constants
 from core.user.model.AccessLevels import AccessLevel
 from core.util.model.Logger import Logger
 
@@ -82,7 +83,7 @@ def MqttHandler(intent: Union[str, Intent], requiredState: str = None, authLevel
 	return wrapper
 
 
-def _exceptHandler(*args, text: str, exceptHandler: Callable, returnText: bool, **kwargs):
+def _exceptHandler(*args, text: str, exceptHandler: Optional[Callable], returnText: bool, **kwargs):
 	if exceptHandler:
 		return exceptHandler(*args, **kwargs)
 
@@ -188,6 +189,23 @@ def ApiAuthenticated(func: Callable): #NOSONAR
 		else:
 			return jsonify(message='ERROR: Unauthorized')
 
+	return wrapper
+
+
+def KnownUser(func: Callable): #NOSONAR
+	"""
+	Checks if the session is started by a know user or not. This is important for skills that are security
+	sensitive and you need to make sure Alice is not talking to someone unknown
+	:param func:
+	:return:
+	"""
+	@functools.wraps(func)
+	def wrapper(*args, **kwargs):
+		session = kwargs.get('session', None)
+		if session and session.user != constants.UNKNOWN_USER:
+			return func(*args, **kwargs)
+
+		return _exceptHandler(text='unknowUser', exceptHandler=None, returnText=False)
 	return wrapper
 
 
