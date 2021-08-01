@@ -57,6 +57,7 @@ class DialogSession:
 	textOnly: bool = False # The session doesn't use audio, but text only. Per exemple, for Telegram messages sent to Alice
 	textInput: bool = False # The session is started, user side, by a text input, not with voice capture, like dialogview on web ui
 	lastWasSoundPlayOnly: bool = False # We don't use request ids for play bytes topic. Both say and playaudio use play bytes, therefor we need to track if the last play bytes was sound only or TTS
+	locationId: int = -1 # Where this session is taking place
 
 
 	def __post_init__(self):  # NOSONAR
@@ -98,6 +99,15 @@ class DialogSession:
 			self.customData.update(commonsManager.parseCustomData(message))
 		else:
 			self.customData = dict()
+
+		deviceManager = SuperManager.getInstance().deviceManager
+		if deviceManager:
+			device = deviceManager.getDevice(uid=self.deviceUid)
+			if not device:
+				return
+
+			self.locationId = device.getLocation()
+
 
 
 	def slotValue(self, slotName: str, index: int = 0, defaultValue: Any = None) -> Any:
