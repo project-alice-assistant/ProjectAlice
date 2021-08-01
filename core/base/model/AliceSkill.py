@@ -15,21 +15,41 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>
 #
+#  Last modified: 2021.08.01 at 20:13:02 CEST
+
+#  Copyright (c) 2021
+#
+#  This file, AliceSkill.py, is part of Project Alice.
+#
+#  Project Alice is free software: you can redistribute it and/or modify
+#  it under the terms of the GNU General Public License as published by
+#  the Free Software Foundation, either version 3 of the License, or
+#  (at your option) any later version.
+#
+#  This program is distributed in the hope that it will be useful,
+#  but WITHOUT ANY WARRANTY; without even the implied warranty of
+#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#  GNU General Public License for more details.
+#
+#  You should have received a copy of the GNU General Public License
+#  along with this program.  If not, see <https://www.gnu.org/licenses/>
+#
 #  Last modified: 2021.04.13 at 12:56:45 CEST
 
 from __future__ import annotations
 
-import flask
 import importlib
 import inspect
 import json
 import re
 import sqlite3
 from copy import copy
-from markdown import markdown
-from paho.mqtt import client as MQTTClient
 from pathlib import Path
 from typing import Any, Dict, Iterable, List, Optional, Union
+
+import flask
+from markdown import markdown
+from paho.mqtt import client as MQTTClient
 
 from core.ProjectAliceExceptions import AccessLevelTooLow, SkillStartingFailed
 from core.base.model.Intent import Intent
@@ -94,6 +114,11 @@ class AliceSkill(ProjectAliceObject):
 	@property
 	def failedStarting(self) -> bool:
 		return self._failedStarting
+
+
+	@property
+	def myDevices(self) -> Dict[str, Device]:
+		return self._myDevices
 
 
 	@failedStarting.setter
