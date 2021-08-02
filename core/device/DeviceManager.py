@@ -65,6 +65,7 @@ class DeviceManager(Manager):
 		super().__init__(databaseSchema=self.DATABASE)
 
 		self.loadingDone = False
+		self._loopCounter = 0
 
 		self._devices: Dict[int, Device] = dict()
 		self._deviceLinks: Dict[int, DeviceLink] = dict()
@@ -216,7 +217,13 @@ class DeviceManager(Manager):
 					ret = device
 		else:
 			raise Exception('Cannot get a device without id or uid')
+
 		if ret is None and not self.loadingDone:
+			self._loopCounter += 1
+			if self._loopCounter > 20:
+				self.logWarning('Impossible to find device instance, skipping')
+				return None
+
 			time.sleep(0.1)
 			return self.getDevice(deviceId=deviceId, uid=uid)
 		else:
