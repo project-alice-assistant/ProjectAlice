@@ -15,6 +15,25 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>
 #
+#  Last modified: 2021.08.02 at 06:38:49 CEST
+
+#  Copyright (c) 2021
+#
+#  This file, Device.py, is part of Project Alice.
+#
+#  Project Alice is free software: you can redistribute it and/or modify
+#  it under the terms of the GNU General Public License as published by
+#  the Free Software Foundation, either version 3 of the License, or
+#  (at your option) any later version.
+#
+#  This program is distributed in the hope that it will be useful,
+#  but WITHOUT ANY WARRANTY; without even the implied warranty of
+#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#  GNU General Public License for more details.
+#
+#  You should have received a copy of the GNU General Public License
+#  along with this program.  If not, see <https://www.gnu.org/licenses/>
+#
 #  Last modified: 2021.07.31 at 15:54:28 CEST
 
 
@@ -296,7 +315,7 @@ class Device(ProjectAliceObject):
 	def publishDevice(self):
 		"""
 		Whenever something changes on the device, the device data are published over mqtt
-		to refresh the UI per exemple
+		to refresh the UI per example
 		:return:
 		"""
 		self.MqttManager.publish(constants.TOPIC_DEVICE_UPDATED, payload={'uid': self._uid, 'device': self.toDict()})
@@ -319,7 +338,7 @@ class Device(ProjectAliceObject):
 		:param data:
 		:return:
 		"""
-		pass # Implemented by childs
+		pass  # Implemented by children
 
 
 	@property
@@ -330,7 +349,7 @@ class Device(ProjectAliceObject):
 	@property
 	def connected(self) -> bool:
 		"""
-		Returns wheather or not this device is connected
+		Returns whether or not this device is connected
 		:return:
 		"""
 		return self._connected
