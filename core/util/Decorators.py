@@ -205,13 +205,13 @@ def KnownUser(func: Callable): #NOSONAR
 		if session and session.user != constants.UNKNOWN_USER:
 			return func(*args, **kwargs)
 
-		return _exceptHandler(text='unknowUser', exceptHandler=None, returnText=False)
+		return _exceptHandler(text='unknownUser', exceptHandler=None, returnText=False)
 	return wrapper
 
 
 def IfSetting(func: Callable = None, settingName: str = None, settingValue: Any = None, inverted: bool = False, skillName: str = None, returnValue: Optional[Any] = None): #NOSONAR
 	"""
-	Checks wheter a setting is equal to the given value before executing the wrapped method
+	Checks whether a setting is equal to the given value before executing the wrapped method
 	If the setting is not equal to the given value, the wrapped method is not called
 	By providing a skill name the wrapper searches for a skill setting, otherwise for a system setting
 	By setting inverted to True one can check for "not equal to", in other words, if the settingName is not equal to the settingValue

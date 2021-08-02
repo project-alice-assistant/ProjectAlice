@@ -639,7 +639,7 @@ class DeviceManager(Manager):
 		if not device:
 			raise Exception('Unknown device requested for link.')
 
-		if targetLocation <= 0:
+		if targetLocation < 0:
 			raise Exception('Cannot add a device link to no location')
 
 		if device.linkedTo(targetLocation):

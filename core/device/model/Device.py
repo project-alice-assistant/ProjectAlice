@@ -468,11 +468,21 @@ class Device(ProjectAliceObject):
 		self.saveToDB()
 
 
+	def updateConfig(self, key: str, value: Any):
+		self._deviceConfigs[key] = value
+		self.saveToDB()
+
+
 	def getParam(self, key: str, default: Any = False) -> Any:
 		return self._deviceParams.get(key, default)
 
 
-	def updateParams(self, key: str, value: Any):
+	def updateParams(self, params: dict):
+		self._deviceParams = {**self._deviceParams, **params}
+		self.saveToDB()
+
+
+	def updateParam(self, key: str, value: Any):
 		self._deviceParams[key] = value
 		self.saveToDB()
 
