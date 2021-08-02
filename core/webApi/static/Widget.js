@@ -21,42 +21,42 @@
 
 class Mqtt {
 	constructor() {
-		this.subscribers = {};
-		this.topics = new Set();
-		this.connected = false;
+		this.subscribers = {}
+		this.topics = new Set()
+		this.connected = false
 	}
 
 	parseSettings() {
-		this.aliceSettings = JSON.parse(window.sessionStorage.aliceSettings);
+		this.aliceSettings = JSON.parse(window.sessionStorage.aliceSettings)
 	}
 
 	connect() {
 		if (window.sessionStorage.aliceSettings) {
 			this.parseSettings()
 		} else {
-			setTimeout(this.connect, 3);
-			return;
+			setTimeout(this.connect, 3)
+			return
 		}
 
-		this.mqtt = new Paho.MQTT.Client(this.aliceSettings['mqttHost'], Number(this.aliceSettings['mqttPort']), `widgets_${Date.now()}`);
+		this.mqtt = new Paho.MQTT.Client(this.aliceSettings['mqttHost'], Number(this.aliceSettings['mqttPort']), `widgets_${Date.now()}`)
 		this.mqtt.onMessageArrived = (msg) => {
-			this.onMessage(msg);
-		};
+			this.onMessage(msg)
+		}
 
 		this.mqtt.connect({
 			onSuccess: () => {
-				this.onConnect();
+				this.onConnect()
 			},
 			onFailure: () => {
-				this.onConnectionFailed();
+				this.onConnectionFailed()
 			},
-			timeout  : 5
-		});
+			timeout: 5
+		})
 	}
 
 	onConnect() {
-		console.log('Mqtt connection for widgets established');
-		this.connected = true;
+		console.log('Mqtt connection for widgets established')
+		this.connected = true
 
 		const self = this
 		this.topics.forEach(topic =>
@@ -73,30 +73,30 @@ class Mqtt {
 	}
 
 	onConnectionFailed() {
-		console.error('Mqtt connection for widgets failed');
+		console.error('Mqtt connection for widgets failed')
 	}
 
 	subscribe(widgetUid, destinationName, callback) {
 		if (!this.subscribers.hasOwnProperty(destinationName)) {
-			this.subscribers[destinationName] = {};
+			this.subscribers[destinationName] = {}
 		}
 
-		this.subscribers[destinationName][widgetUid] = callback;
-		this.topics.add(destinationName);
+		this.subscribers[destinationName][widgetUid] = callback
+		this.topics.add(destinationName)
 
 		if (this.connected) {
-			this.mqtt.subscribe(destinationName);
+			this.mqtt.subscribe(destinationName)
 		}
 	}
 
 	unsubscribe(widgetUid, destinationName) {
 		if (this.subscribers.hasOwnProperty(destinationName)) {
-			delete this.subscribers[destinationName][widgetUid];
+			delete this.subscribers[destinationName][widgetUid]
 
 			if (Object.keys(this.subscribers[destinationName]).length === 0 && this.mqtt.connected) {
-				this.mqtt.unsubscribe(destinationName);
-				delete this.subscribers[destinationName];
-				this.topics.delete(destinationName);
+				this.mqtt.unsubscribe(destinationName)
+				delete this.subscribers[destinationName]
+				this.topics.delete(destinationName)
 			}
 		}
 	}
@@ -108,35 +108,60 @@ class Widget {
 		The uid is dynamically attributed by the UI when the script is loaded. This ensures the uniqueness of the widget main div
 		The widget id is the widget database insert id on Alice's main unit
 		 */
-		this.uid = uid;
-		this.widgetId = widgetId;
-		this.myDiv = document.querySelector(`[data-ref="${this.constructor.name}_${this.uid}"]`);
+		this.uid = uid
+		this.widgetId = widgetId
+		this.myDiv = document.querySelector(`[data-ref="${this.constructor.name}_${this.uid}"]`)
+
+		this.aliceSettings = JSON.parse(window.sessionStorage.aliceSettings)
+		let self = this
+		this.skillAPIHandler = {
+			get(target, skillMethod) {
+				return fetch(`http://${self.aliceSettings['aliceIp']}:${self.aliceSettings['apiPort']}/api/v1.0.1/widgets/${self.widgetId}/function/${skillMethod}/`, {
+					method: 'POST',
+					body: '{}',
+					headers: {
+						'auth': localStorage.getItem('apiToken'),
+						'content-type': 'application/json'
+					}
+				})
+			}
+		}
 	}
 
 	subscribe(destinationName, callback) {
 		if (Array.isArray(destinationName)) {
 			for (const topic of destinationName) {
-				mqtt.subscribe(this.uid, topic, callback.bind(this));
+				mqtt.subscribe(this.uid, topic, callback.bind(this))
 			}
 		} else {
-			mqtt.subscribe(this.uid, destinationName, callback.bind(this));
+			mqtt.subscribe(this.uid, destinationName, callback.bind(this))
 		}
 	}
+
 
 	unsubscribe(destinationName) {
 		if (Array.isArray(destinationName)) {
 			for (const topic of destinationName) {
-				mqtt.unsubscribe(this.uid, topic);
+				mqtt.unsubscribe(this.uid, topic)
 			}
 		} else {
-			mqtt.unsubscribe(this.uid, destinationName);
+			mqtt.unsubscribe(this.uid, destinationName)
 		}
+	}
+
+
+	mySkill() {
+		/**
+		 * This function is a trap, it catches anything that comes after, such as mySkill.fooBar, mySkill.baz and calls the API
+		 * with that function. See it as a wildcard
+		 */
+		return new Proxy({}, this.skillAPIHandler)
 	}
 }
 
 
 // Prepare que mqtt object for direct access, and connect after only, so Widget can already use it
-const mqtt = new Mqtt();
+const mqtt = new Mqtt()
 setTimeout(() => {
-	mqtt.connect();
-}, 1000);
+	mqtt.connect()
+}, 1000)
