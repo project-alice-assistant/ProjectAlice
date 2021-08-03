@@ -114,18 +114,21 @@ class Widget {
 
 		this.aliceSettings = JSON.parse(window.sessionStorage.aliceSettings)
 		let self = this
-		this.skillAPIHandler = {
-			get(target, skillMethod) {
-				return fetch(`http://${self.aliceSettings['aliceIp']}:${self.aliceSettings['apiPort']}/api/v1.0.1/widgets/${self.widgetId}/function/${skillMethod}/`, {
-					method: 'POST',
-					body: '{}',
-					headers: {
-						'auth': localStorage.getItem('apiToken'),
-						'content-type': 'application/json'
-					}
-				})
+		this.mySkill = new Proxy({}, {
+			get: function (target, property, receiver) {
+				return function () {
+					const args = arguments[0] || {}
+					return fetch(`http://${self.aliceSettings['aliceIp']}:${self.aliceSettings['apiPort']}/api/v1.0.1/widgets/${self.widgetId}/function/${property}/`, {
+						method: 'POST',
+						body: JSON.stringify(args),
+						headers: {
+							'auth': localStorage.getItem('apiToken'),
+							'content-type': 'application/json'
+						}
+					})
+				}
 			}
-		}
+		})
 	}
 
 	subscribe(destinationName, callback) {
@@ -147,15 +150,6 @@ class Widget {
 		} else {
 			mqtt.unsubscribe(this.uid, destinationName)
 		}
-	}
-
-
-	mySkill() {
-		/**
-		 * This function is a trap, it catches anything that comes after, such as mySkill.fooBar, mySkill.baz and calls the API
-		 * with that function. See it as a wildcard
-		 */
-		return new Proxy({}, this.skillAPIHandler)
 	}
 }
 
