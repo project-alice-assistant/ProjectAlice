@@ -83,15 +83,18 @@ def MqttHandler(intent: Union[str, Intent], requiredState: str = None, authLevel
 	return wrapper
 
 
-def _exceptHandler(*args, text: str, exceptHandler: Optional[Callable], returnText: bool, **kwargs):
+def _exceptHandler(*args, text: str, exceptHandler: Optional[Callable], returnText: bool, **kwargs) -> Union[Callable, str]:
 	if exceptHandler:
 		return exceptHandler(*args, **kwargs)
 
 	caller = args[0] if args else None
 	skill = getattr(caller, 'name', 'system')
 	newText = SuperManager.getInstance().talkManager.randomTalk(text, skill=skill)
-	if not newText and skill != 'system':
+	if not newText:
 		newText = SuperManager.getInstance().talkManager.randomTalk(text, skill='system') or text
+
+	if not newText:
+		raise Exception(f'String **text** not found in either skill or system strings')
 
 	if returnText:
 		return newText
@@ -192,21 +195,26 @@ def ApiAuthenticated(func: Callable): #NOSONAR
 	return wrapper
 
 
-def KnownUser(func: Callable): #NOSONAR
+def KnownUser(func: Callable = None): #NOSONAR
 	"""
 	Checks if the session is started by a know user or not. This is important for skills that are security
 	sensitive and you need to make sure Alice is not talking to someone unknown
 	:param func:
 	:return:
 	"""
-	@functools.wraps(func)
-	def wrapper(*args, **kwargs):
-		session = kwargs.get('session', None)
-		if session and session.user != constants.UNKNOWN_USER:
-			return func(*args, **kwargs)
+	# noinspection PyShadowingNames
+	def argumentWrapper(func: Callable):
+		@functools.wraps(func)
+		def decorator(*args, **kwargs):
+			session = kwargs.get('session', None)
+			if session and session.user != constants.UNKNOWN_USER:
+				return func(*args, **kwargs)
 
-		return _exceptHandler(text='unknownUser', exceptHandler=None, returnText=False)
-	return wrapper
+			SuperManager.getInstance().mqttManager.endDialog(sessionId=session.sessionId, text=SuperManager.getInstance().talkManager.randomTalk('unknownUser', skill='system'))
+
+		return decorator
+
+	return argumentWrapper(func) if func else argumentWrapper
 
 
 def IfSetting(func: Callable = None, settingName: str = None, settingValue: Any = None, inverted: bool = False, skillName: str = None, returnValue: Optional[Any] = None): #NOSONAR
