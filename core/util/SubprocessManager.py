@@ -73,7 +73,7 @@ class SubprocessManager(Manager):
 
 	def terminateSubprocess(self, name: str) -> bool:
 		if name not in self._subproc:
-			self.logError(f'Tried terminating the subprocess {name}, but it was not found')
+			self.logWarning(f'Tried terminating the subprocess {name}, but it was not found')
 			return False
 
 		# save to tmp to prevent thread reading terminated process and restarting it
