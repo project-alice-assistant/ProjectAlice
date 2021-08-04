@@ -797,7 +797,8 @@ class SkillManager(Manager):
 			self.addSkillToDB(installFile['name'])
 			self._skillList[installFile['name']] = {
 				'active'   : 1,
-				'installer': installFile
+				'installer': installFile,
+				'modified' : False
 			}
 
 			os.unlink(str(res))

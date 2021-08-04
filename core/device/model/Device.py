@@ -107,12 +107,14 @@ class Device(ProjectAliceObject):
 
 	def onStart(self):
 		super().onStart()
-		self.skillInstance.registerDeviceInstance(self)
+		if self.skillInstance:
+			self.skillInstance.registerDeviceInstance(self)
 
 
 	def onStop(self):
 		super().onStop()
-		self.skillInstance.unregisterDeviceInstance(self)
+		if self.skillInstance:
+			self.skillInstance.unregisterDeviceInstance(self)
 
 
 	def onBooted(self):
