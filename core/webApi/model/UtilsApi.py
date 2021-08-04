@@ -23,8 +23,8 @@ from flask_classful import route
 from core.ProjectAliceExceptions import ConfigurationUpdateFailed
 from core.commons import constants
 from core.device.model.DeviceAbility import DeviceAbility
-from core.webApi.model.Api import Api
 from core.util.Decorators import ApiAuthenticated
+from core.webApi.model.Api import Api
 
 
 class UtilsApi(Api):
@@ -78,8 +78,8 @@ class UtilsApi(Api):
 			configs['aliceIp'] = self.Commons.getLocalIp()
 			configs['apiPort'] = self.ConfigManager.getAliceConfigByName('apiPort')
 			configs['aliceVersion'] = constants.VERSION
-			if not self.UserManager.apiTokenValid(request.headers.get('auth', '') or self.UserManager.apiTokenLevel(request.headers.get('auth')) != 'admin'):
-				configs = {key: value for key, value in configs.items() if not self.ConfigManager.isAliceConfSensitive(key)}
+
+			configs = {key: value if not self.ConfigManager.isAliceConfSensitive(key) else "********" for key, value in configs.items()}
 
 			return jsonify(success=True, config=configs, templates=self.ConfigManager.aliceTemplateConfigurations, categories=self.ConfigManager.aliceConfigurationCategories)
 		except Exception as e:
@@ -95,7 +95,7 @@ class UtilsApi(Api):
 			confs.pop('apiPort', None)
 			confs.pop('aliceVersion', None)
 			for conf, value in confs.items():
-				if value == self.ConfigManager.getAliceConfigByName(conf):
+				if value == self.ConfigManager.getAliceConfigByName(conf) or value == "********":
 					continue
 
 				try:
