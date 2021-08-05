@@ -270,7 +270,7 @@ class AliceSkill(ProjectAliceObject):
 		try:
 			filepath = Path(f'skills/{self._name}/widgets/{widgetType}.config.template')
 			if not filepath.exists():
-				self.logInfo(f'No config template for {widgetType} loaded (ok)')
+				self.logInfo(f'![green](No widget config template for widget type {widgetType} found)')
 				return
 
 			data = json.loads(filepath.read_text())
