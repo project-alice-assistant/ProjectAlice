@@ -8,15 +8,15 @@
 			"No access"
 		]
 	},
-	"unknowUser": {
-		"default": [
-			"I'm sorry but I don't know who you are",
-			"Sorry, I can't, I don't know you",
-			"You should call me by my name so I would know who you are"
-		],
-		"short": [
-			"I don't know you"
-		]
+	"unknownUser": {
+	  "default": [
+		"I'm sorry but I don't know who you are",
+		"Sorry, I can't, I don't know you",
+		"You should call me by my name so I would know who you are"
+	  ],
+	  "short": [
+		"I don't know you"
+	  ]
 	},
 	"notUnderstood": {
 		"default": [
@@ -43,13 +43,13 @@
 			"Ok, stop, I just don't understand"
 		]
 	},
-	"youreWelcome": {
-		"default": [
-			"You're welcome!",
-			"My pleasure!",
-			"No problem, anytime!"
-		]
-	},
+  "youAreWelcome": {
+	"default": [
+	  "You're welcome!",
+	  "My pleasure!",
+	  "No problem, anytime!"
+	]
+  },
 	"error": {
 		"default": [
 			"Something went wrong, please check my logs"

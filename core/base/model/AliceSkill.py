@@ -514,7 +514,7 @@ class AliceSkill(ProjectAliceObject):
 		if session.user == constants.UNKNOWN_USER:
 			self.endDialog(
 				sessionId=session.sessionId,
-				text=self.TalkManager.randomTalk(talk='unknowUser', skill='system')
+				text=self.TalkManager.randomTalk(talk='unknownUser', skill='system')
 			)
 			raise AccessLevelTooLow()
 		# Return if intent is for auth users only and the user doesn't have the accesslevel for it

@@ -8,15 +8,15 @@
 			"Pas d'accès"
 		]
 	},
-	"unknowUser": {
-		"default": [
-			"Désolée, mais je ne sais pas qui tu es",
-			"Pardon, je ne peux pas, je ne te connais pas",
-			"Tu devrais m'appeller par mon nom pour que je te reconnaisse"
-		],
-		"short": [
-			"Je ne te connais pas"
-		]
+	"unknownUser": {
+	  "default": [
+		"Désolée, mais je ne sais pas qui tu es",
+		"Pardon, je ne peux pas, je ne te connais pas",
+		"Tu devrais m'appeller par mon nom pour que je te reconnaisse"
+	  ],
+	  "short": [
+		"Je ne te connais pas"
+	  ]
 	},
 	"notUnderstood": {
 		"default": [
@@ -39,13 +39,13 @@
 			"Je ne comprend pas, on s'arrête là"
 		]
 	},
-	"youreWelcome": {
-		"default": [
-			"De rien",
-			"Tout le plaisir est pour moi !",
-			"Aucun problème !"
-		]
-	},
+  "youAreWelcome": {
+	"default": [
+	  "De rien",
+	  "Tout le plaisir est pour moi !",
+	  "Aucun problème !"
+	]
+  },
 	"error": {
 		"default": [
 			"Il y a eu un problème, contrôle mes logs"

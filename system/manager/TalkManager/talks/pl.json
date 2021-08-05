@@ -8,15 +8,15 @@
 			"Brak dostępu"
 		]
 	},
-	"unknowUser": {
-		"default": [
-			"Przepraszam ale nie wiem kim jesteś",
-			"Przepraszam, nie mogę. Nie znam cię",
-			"Musisz zwracać się do mnie po imieniu abym wiedział kim jesteś"
-		],
-		"short": [
-			"Nie znam cię"
-		]
+	"unknownUser": {
+	  "default": [
+		"Przepraszam ale nie wiem kim jesteś",
+		"Przepraszam, nie mogę. Nie znam cię",
+		"Musisz zwracać się do mnie po imieniu abym wiedział kim jesteś"
+	  ],
+	  "short": [
+		"Nie znam cię"
+	  ]
 	},
 	"notUnderstood": {
 		"default": [
@@ -40,14 +40,14 @@
 			"Nie rozumiem"
 		]
 	},
-	"youreWelcome": {
+	  "youAreWelcome": {
 		"default": [
-			"Proszę bardzo!",
-			"Cała przyjemność po mojej stronie!",
-			"Nie ma sprawy!",
-			"W porządku!"
+		  "Proszę bardzo!",
+		  "Cała przyjemność po mojej stronie!",
+		  "Nie ma sprawy!",
+		  "W porządku!"
 		]
-	},
+	  },
 	"error": {
 		"default": [
 			"Coś poszło nie tak, sprawdź logi"
