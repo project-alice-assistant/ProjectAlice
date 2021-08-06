@@ -677,8 +677,8 @@ class MqttManager(Manager):
 		"""
 		Initiates a new session by asking something and waiting on user answer
 		:param probabilityThreshold: The override threshold for the user's answer to this question
-		:param currentDialogState: a str representing a state in the dialog, usefull for multiturn dialogs
-		:param canBeEnqueued: wheter or not this can be played later if the dialog manager is busy
+		:param currentDialogState: a str representing a state in the dialog, useful for multi-turn dialogs
+		:param canBeEnqueued: whether or not this can be played later if the dialog manager is busy
 		:param text: str The text to speak
 		:param deviceUid: str Where to ask
 		:param intentFilter: array Filter to force user intents
@@ -687,7 +687,7 @@ class MqttManager(Manager):
 		"""
 
 		if customData is not None and not isinstance(customData, dict):
-			self.logWarning(f'Ask was provided customdata of unsupported type: {customData}')
+			self.logWarning(f'Ask was provided custom data of unsupported type: {customData}')
 			customData = dict()
 
 		user = customData.get('user', constants.UNKNOWN_USER) if customData else constants.UNKNOWN_USER
@@ -705,6 +705,9 @@ class MqttManager(Manager):
 
 			customData = json.loads(customData)
 			customData['wideAskingSession'] = True
+
+		if not deviceUid:
+			deviceUid = self.DeviceManager.getMainDevice().uid
 
 		jsonDict = {
 			'siteId': deviceUid,
