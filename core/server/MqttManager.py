@@ -707,7 +707,13 @@ class MqttManager(Manager):
 			customData['wideAskingSession'] = True
 
 		if not deviceUid:
-			deviceUid = self.DeviceManager.getMainDevice().uid
+			device = self.DeviceManager.getMainDevice()
+
+			if not device:
+				self.logWarning('Tried to use **ask** but no device uid found')
+				return
+
+			deviceUid = device.uid
 
 		jsonDict = {
 			'siteId': deviceUid,
