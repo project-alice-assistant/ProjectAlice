@@ -99,9 +99,7 @@ class UserManager(Manager):
 
 	# noinspection SqlResolve
 	def addNewUser(self, name: str, access: str = 'guest', state: str = 'home', pinCode: int = None):
-		print(pinCode, self.ConfigManager.getAliceConfigByName('adminPinCode'))
 		hashedPassword = self.getHashedPassword(pinCode or 1234)
-		print(hashedPassword)
 
 		insertId = self.databaseInsert(
 			tableName='users',
