@@ -181,6 +181,7 @@ class ASRManager(Manager):
 				deviceUid=session.deviceUid,
 				sessionId=session.sessionId
 			)
+			self.MqttManager.endSession(sessionId=session.sessionId)
 
 
 	def onAudioFrame(self, message: mqtt.MQTTMessage, deviceUid: str):
