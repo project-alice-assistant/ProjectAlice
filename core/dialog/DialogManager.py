@@ -241,7 +241,7 @@ class DialogManager(Manager):
 			self.onEndSession(session=session, reason='abortedByUser')
 			return
 
-		if self._captureFeedback:
+		if self._captureFeedback and not session.textOnly and not session.textInput:
 			self.MqttManager.publish(
 				topic=constants.TOPIC_PLAY_BYTES.format(session.deviceUid).replace('#', session.sessionId),
 				payload=bytearray(Path(f'system/sounds/{self.LanguageManager.activeLanguage}/end_of_input.wav').read_bytes())
@@ -472,10 +472,11 @@ class DialogManager(Manager):
 
 
 	def onSessionError(self, session: DialogSession):
-		self.MqttManager.publish(
-			topic=constants.TOPIC_PLAY_BYTES.format(session.deviceUid).replace('#', session.sessionId),
-			payload=bytearray(Path(f'system/sounds/{self.LanguageManager.activeLanguage}/error.wav').read_bytes())
-		)
+		if not session.textOnly and not session.textInput:
+			self.MqttManager.publish(
+				topic=constants.TOPIC_PLAY_BYTES.format(session.deviceUid).replace('#', session.sessionId),
+				payload=bytearray(Path(f'system/sounds/{self.LanguageManager.activeLanguage}/error.wav').read_bytes())
+			)
 
 
 	def toggleFeedbackSound(self, state: str, deviceUid: str = constants.ALL):

@@ -72,7 +72,6 @@ class MultiIntentManager(Manager):
 		if not intent:
 			return False
 
-		#self.queryNLU(multiIntent.session, string=intent)
 		self.MqttManager.publish(
 			topic=constants.TOPIC_TEXT_CAPTURED,
 			payload={

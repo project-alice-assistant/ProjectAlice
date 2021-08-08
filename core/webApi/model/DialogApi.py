@@ -18,12 +18,14 @@
 #  Last modified: 2021.04.13 at 12:56:49 CEST
 
 import json
+
 from flask import jsonify, request
 from flask_classful import route
 from paho.mqtt.client import MQTTMessage
 
 from core.commons import constants
 from core.device.model.DeviceAbility import DeviceAbility
+from core.dialog.model.DialogSession import DialogSession
 from core.util.Decorators import ApiAuthenticated
 from core.webApi.model.Api import Api
 
@@ -74,6 +76,8 @@ class DialogApi(Api):
 
 			user = self.UserManager.getUserByAPIToken(request.headers.get('auth', ''))
 			session = self.DialogManager.newSession(deviceUid=deviceUid, user=user.name)
+			session.deviceUid = deviceUid
+			session.input = request.form.get('query')
 
 			device = self.DeviceManager.getDevice(uid=deviceUid)
 			if not device.hasAbilities([DeviceAbility.PLAY_SOUND]):
@@ -91,16 +95,7 @@ class DialogApi(Api):
 				}
 			)
 
-			message = MQTTMessage()
-			message.payload = json.dumps({'sessionId': session.sessionId, 'siteId': deviceUid, 'text': request.form.get('query')})
-			session.extend(message=message)
-
-			self.MqttManager.publish(topic=constants.TOPIC_NLU_QUERY, payload={
-				'input'    : request.form.get('query'),
-				'intentFilter': list(self.DialogManager.getEnabledByDefaultIntents()),
-				'sessionId': session.sessionId
-			})
-			return jsonify(success=True, sessionId=session.sessionId)
+			return self.publishText(session=session)
 		except Exception as e:
 			self.logError(f'Failed processing: {e}')
 			return jsonify(success=False)
@@ -114,22 +109,31 @@ class DialogApi(Api):
 
 			sessionId = request.form.get('sessionId')
 			session = self.DialogManager.getSession(sessionId=sessionId)
+			session.deviceUid = deviceUid
+			session.input = request.form.get('query')
 
 			if not session or session.hasEnded:
 				return self.process()
 
 			self.DialogManager.startSessionTimeout(sessionId=session.sessionId)
-
-			message = MQTTMessage()
-			message.payload = json.dumps({'sessionId': session.sessionId, 'siteId': deviceUid, 'text': request.form.get('query')})
-			session.extend(message=message)
-
-			self.MqttManager.publish(topic=constants.TOPIC_NLU_QUERY, payload={
-				'input'       : request.form.get('query'),
-				'sessionId'   : session.sessionId,
-				'intentFilter': session.intentFilter if session.intentFilter else list(self.DialogManager.getEnabledByDefaultIntents())
-			})
-			return jsonify(success=True, sessionId=session.sessionId)
+			return self.publishText(session=session)
 		except Exception as e:
 			self.logError(f'Failed processing: {e}')
 			return jsonify(success=False)
+
+
+	def publishText(self, session: DialogSession):
+		message = MQTTMessage()
+		message.payload = json.dumps({'sessionId': session.sessionId, 'siteId': session.deviceUid, 'text': session.input})
+		session.extend(message=message)
+
+		self.MqttManager.publish(
+			topic=constants.TOPIC_TEXT_CAPTURED,
+			payload={
+				'sessionId' : session.sessionId,
+				'text'      : session.input,
+				'device'    : session.deviceUid,
+				'likelihood': 1,
+				'seconds'   : 1
+			})
+		return jsonify(success=True, sessionId=session.sessionId)
