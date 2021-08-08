@@ -279,13 +279,17 @@ class SkillManager(Manager):
 				traceback.print_exc()
 				return True
 
-			if self.MultiIntentManager.isProcessing(session.sessionId):
-				self.MultiIntentManager.processNextIntent(session=session)
+			if consumed:
+				self.logDebug(f'The intent "{session.intentName.split("/")[-1]}" was consumed by {skillName}')
+
+				if self.MultiIntentManager.isProcessing(session.sessionId):
+					self.MultiIntentManager.processNextIntent(session=session)
+
 				return True
 
-			elif consumed:
-				self.logDebug(f'The intent "{session.intentName.split("/")[-1]}" was consumed by {skillName}')
-				return True
+		if self.MultiIntentManager.isProcessing(session.sessionId):
+			self.MultiIntentManager.processNextIntent(session=session)
+			return True
 
 		return False
 

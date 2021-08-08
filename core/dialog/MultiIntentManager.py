@@ -50,10 +50,10 @@ class MultiIntentManager(Manager):
 		if 'input' in payload:
 			separators = self.LanguageManager.getStrings('intentSeparator')
 			GLUE_SPLITTER = '__multi_intent__'
-			userInput = payload['input']
+			userInput = payload['input'].lower()
 
 			for separator in separators:
-				userInput.replace(separator, GLUE_SPLITTER)
+				userInput = userInput.replace(separator, GLUE_SPLITTER)
 
 			if GLUE_SPLITTER in userInput:
 				self._multiIntents[session.sessionId] = MultiIntent(
@@ -72,6 +72,7 @@ class MultiIntentManager(Manager):
 		if not intent:
 			return False
 
+		session.input = intent
 		self.MqttManager.publish(
 			topic=constants.TOPIC_TEXT_CAPTURED,
 			payload={
