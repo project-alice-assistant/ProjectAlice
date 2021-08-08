@@ -25,6 +25,7 @@ from core.base.model.Manager import Manager
 from core.commons import constants
 from core.dialog.model import DialogSession
 from core.dialog.model.MultiIntent import MultiIntent
+from core.util.Decorators import deprecated
 
 
 class MultiIntentManager(Manager):
@@ -60,21 +61,31 @@ class MultiIntentManager(Manager):
 					processedString=userInput,
 					intents=deque(userInput.split(GLUE_SPLITTER)))
 
-				return self.processNextIntent(session.sessionId)
+				return self.processNextIntent(session)
 
 		return False
 
 
-	def processNextIntent(self, sessionId: str) -> bool:
-		multiIntent = self._multiIntents[sessionId]
+	def processNextIntent(self, session: DialogSession) -> bool:
+		multiIntent = self._multiIntents[session.sessionId]
 		intent = multiIntent.getNextIntent()
 		if not intent:
 			return False
 
-		self.queryNLU(multiIntent.session, string=intent)
+		#self.queryNLU(multiIntent.session, string=intent)
+		self.MqttManager.publish(
+			topic=constants.TOPIC_TEXT_CAPTURED,
+			payload={
+				'sessionId': session.sessionId,
+				'text': intent,
+				'device': session.deviceUid,
+				'likelihood': 1,
+				'seconds': 1
+			})
 		return True
 
 
+	@deprecated
 	def queryNLU(self, session: DialogSession, string: str):
 		self.MqttManager.publish(topic=constants.TOPIC_NLU_QUERY, payload={
 			'input'       : string,

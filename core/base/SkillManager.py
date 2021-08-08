@@ -280,7 +280,7 @@ class SkillManager(Manager):
 				return True
 
 			if self.MultiIntentManager.isProcessing(session.sessionId):
-				self.MultiIntentManager.processNextIntent(session.sessionId)
+				self.MultiIntentManager.processNextIntent(session=session)
 				return True
 
 			elif consumed:
