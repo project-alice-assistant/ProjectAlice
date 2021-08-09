@@ -122,31 +122,29 @@ class AliceSkill(ProjectAliceObject):
 
 	def addUtterance(self, text: str, intent: str, language: str = None) -> bool:
 		"""
-		Add the supplied utterance for a given skill to the dialogTemplate file of the current active language if no specific language is supplied.
+		Add the supplied utterance for a given skill to the dialogTemplate extending file of the
+		current active language if no specific language is supplied.
 		:param text:
 		:param intent:
 		:param language: default None will load the active Language from language manager
 		:return:
 		"""
+		raise NotImplementedError('This function has been deactivated until proper implementation of extender files')
 		lang = language if language is not None else self.activeLanguage()
-		file = self.getResource(f'dialogTemplate/{lang}.json')
-		if not file:
-			return False
+		file = self.getResource(f'dialogTemplate/{lang}.ext')
+		file.touch()
 
-		data = json.loads(file.read_text())
-		if 'intents' not in data:
-			return False
+		data: Dict = json.loads(file.read_text())
+		data.setdefault('intents', dict())
+		data['intents'].setdefault(intent, dict())
+		data['intents'][intent].setdefault('utterances', list())
 
-		for i, declaredIntent in enumerate(data['intents']):
-			if declaredIntent['name'].lower() != intent.lower():
-				continue
-
-			utterances = declaredIntent.get('utterances', list())
-			if not text in utterances:
-				utterances.append(text)
-				data['intents'][i]['utterances'] = utterances
-				file.write_text(json.dumps(data, ensure_ascii=False, indent='\t'))
-				return True
+		utterances = data['intents'][intent]['utterances']
+		if not text in utterances:
+			utterances.append(text)
+			data['intents'][intent]['utterances'] = utterances
+			file.write_text(json.dumps(data, ensure_ascii=False, indent='\t'))
+			return True
 
 		return False
 
