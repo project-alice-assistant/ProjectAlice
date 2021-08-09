@@ -56,11 +56,11 @@
 		}
 	},
 	"recordAudioAfterWakeword": {
-		"defaultValue": false,
-		"dataType"    : "boolean",
-		"isSensitive" : false,
-		"description" : "Allow audio record after a wakeword is detected to keep the last user speech. Can be usefull for recording skills",
-		"category"    : "audio"
+	  "defaultValue": false,
+	  "dataType": "boolean",
+	  "isSensitive": false,
+	  "description": "Allow audio record after a wakeword is detected to keep the last user speech. Can be useful for recording skills",
+	  "category": "audio"
 	},
 	"outputDevice"            : {
 		"defaultValue": "",
@@ -197,16 +197,16 @@
 		"category"    : "advanced debug"
 	},
 	"methodTracing"           : {
-		"defaultValue": false,
-		"dataType"    : "boolean",
-		"isSensitive" : false,
-		"description" : "If true method tracing will be availble for dev debugging.",
-		"category"    : "advanced debug",
-		"parent"      : {
-			"config"   : "advancedDebug",
-			"condition": "is",
-			"value"    : true
-		}
+	  "defaultValue": false,
+	  "dataType": "boolean",
+	  "isSensitive": false,
+	  "description": "If true method tracing will be available for dev debugging.",
+	  "category": "advanced debug",
+	  "parent": {
+		"config": "advancedDebug",
+		"condition": "is",
+		"value": true
+	  }
 	},
 	"memoryProfiling"         : {
 		"defaultValue": false,
@@ -240,12 +240,12 @@
 		"category"    : "device"
 	},
 	"mqttHost"                : {
-		"defaultValue": "localhost",
-		"dataType"    : "string",
-		"isSensitive" : false,
-		"description" : "Mqtt server ip adress",
-		"onUpdate"    : "updateMqttSettings",
-		"category"    : "mqtt"
+	  "defaultValue": "localhost",
+	  "dataType": "string",
+	  "isSensitive": false,
+	  "description": "Mqtt server ip address",
+	  "onUpdate": "updateMqttSettings",
+	  "category": "mqtt"
 	},
 	"mqttPort"                : {
 		"defaultValue": 1883,
@@ -843,28 +843,28 @@
 		}
 	},
 	"githubUsername"          : {
-		"defaultValue": "",
-		"dataType"    : "string",
-		"isSensitive" : false,
-		"description" : "Not mendatory, your github username and token allows you to use Github API much more, such as checking for skills, updating them etc etc",
-		"category"    : "credentials",
-		"parent"      : {
-		  "config": "stayCompletelyOffline",
-		  "condition": "is",
-		  "value": false
-		}
+	  "defaultValue": "",
+	  "dataType": "string",
+	  "isSensitive": false,
+	  "description": "Not mandatory, your github username and token allows you to use Github API much more, such as checking for skills, updating them etc etc",
+	  "category": "credentials",
+	  "parent": {
+		"config": "stayCompletelyOffline",
+		"condition": "is",
+		"value": false
+	  }
 	},
 	"githubToken"             : {
-		"defaultValue": "",
-		"dataType"    : "string",
-		"isSensitive" : true,
-		"description" : "Not mendatory, your github username and token allows you to use Github API much more, such as checking for skills, updating them etc etc",
-		"category"    : "credentials",
-		"parent"      : {
-		  "config": "stayCompletelyOffline",
-		  "condition": "is",
-		  "value": false
-		}
+	  "defaultValue": "",
+	  "dataType": "string",
+	  "isSensitive": true,
+	  "description": "Not mandatory, your github username and token allows you to use Github API much more, such as checking for skills, updating them etc etc",
+	  "category": "credentials",
+	  "parent": {
+		"config": "stayCompletelyOffline",
+		"condition": "is",
+		"value": false
+	  }
 	},
 	"aliceUpdateChannel"      : {
 		"defaultValue": "master",

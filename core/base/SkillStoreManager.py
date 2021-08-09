@@ -95,7 +95,7 @@ class SkillStoreManager(Manager):
 	def _getSkillUpdateVersion(self, skillName: str) -> Optional[tuple]:
 		"""
 		Get the highest skill version number a user can install.
-		This is based on the user preferences, dependending on the current Alice version
+		This is based on the user preferences, depending on the current Alice version
 		and the user's selected update channel for skills
 		In case nothing is found, DO NOT FALLBACK TO MASTER
 
@@ -161,6 +161,7 @@ class SkillStoreManager(Manager):
 
 		for skillName, samples in self._skillSamplesData.items():
 			for sample in samples:
+				sample = sample.split()
 				for userInput in userInputs:
 					diff = difflib.SequenceMatcher(None, userInput, sample).ratio()
 					if diff >= self.SUGGESTIONS_DIFF_LIMIT:
@@ -172,6 +173,7 @@ class SkillStoreManager(Manager):
 			speakableName = self._skillStoreData.get(suggestedSkillName, dict()).get('speakableName', '')
 
 			if not speakableName:
+				self.logDebug(f'No speakable name for skill suggestion **{suggestedSkillName}** in install file. Please add or ask the author to do so.')
 				continue
 
 			ret.add((suggestedSkillName, speakableName))
