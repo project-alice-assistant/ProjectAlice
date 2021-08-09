@@ -87,17 +87,7 @@ class SnipsNlu(NluEngine):
 				slots = self.loadSlots(intent)
 				nluTrainingSample['intents'][intentName] = {'utterances': list()}
 
-				intentExtender = skill.getResource(f'dialogTemplate/{self.getLanguage()}.ext')
-				if intentExtender.exists():
-					data = json.loads(intentExtender.read_text())
-					data.setdefault('intents', dict())
-					data['intents'].setdefault(intent, dict())
-					data['intents'][intent].setdefault('utterances', list())
-					utterances = [*intent['utterances'], *data['intents'][intent]['utterances']]
-				else:
-					utterances = intent['utterances']
-
-				for utterance in utterances:
+				for utterance in intent['utterances']:
 					data = list()
 					result = self.UTTERANCE_REGEX.split(utterance)
 					if not result:

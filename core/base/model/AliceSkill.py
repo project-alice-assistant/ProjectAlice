@@ -129,9 +129,8 @@ class AliceSkill(ProjectAliceObject):
 		:param language: default None will load the active Language from language manager
 		:return:
 		"""
-		raise NotImplementedError('This function has been deactivated until proper implementation of extender files')
 		lang = language if language is not None else self.activeLanguage()
-		file = self.getResource(f'dialogTemplate/{lang}.ext')
+		file = self.getResource(f'dialogTemplate/{lang}.ext.json')
 		file.touch()
 
 		data: Dict = json.loads(file.read_text())

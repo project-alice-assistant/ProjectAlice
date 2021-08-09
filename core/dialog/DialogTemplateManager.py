@@ -85,6 +85,12 @@ class DialogTemplateManager(Manager):
 		for resource in self.skillResource():
 			data = json.loads(resource.read_text())
 			dialogTemplate = DialogTemplate(**data)
+
+			# If we have an utterance extender, apply it
+			extender = Path(resource.parent, resource.stem).with_suffix(f'.ext{constants.JSON_EXT}')
+			if extender.exists():
+				dialogTemplate.addUtterancesExtender(extender)
+
 			self._dialogTemplates[dialogTemplate.skill] = dialogTemplate
 
 			# Generate a list of slots with skills using it
@@ -145,9 +151,12 @@ class DialogTemplateManager(Manager):
 					if filename == language:
 						self.logInfo(f'Skill **{skillName}** has new language support **{filename}**')
 						uptodate = False
+					elif '.ext' in filename and filename.replace('.ext', '') == language:
+						self.logInfo(f'Skill **{skillName}** has a new utterance extender **{filename}**')
+						uptodate = False
 					continue
 
-				if self.Commons.fileChecksum(file) != checksums[skillName][filename] and filename == language:
+				if self.Commons.fileChecksum(file) != checksums[skillName][filename] and (filename == language or filename.replace('.ext', '') == language):
 					# Trigger a change only if the change concerns the language in use
 					self.logInfo(f'Skill **{skillName}** has changes in language **{filename}**')
 					uptodate = False
@@ -161,7 +170,10 @@ class DialogTemplateManager(Manager):
 
 			for lang in languages:
 				if not Path(self.Commons.rootDir(), f'skills/{skillName}/dialogTemplate/{lang}{constants.JSON_EXT}').exists() and lang == language:
-					self.logInfo(f'Skill **{skillName}** has dropped language **{lang}**')
+					if '.ext' in lang:
+						self.logInfo(f'Skill **{skillName}** has dropped utterance extender in **{lang}**')
+					else:
+						self.logInfo(f'Skill **{skillName}** has dropped language **{lang}**')
 					uptodate = False
 
 		return uptodate
@@ -192,7 +204,7 @@ class DialogTemplateManager(Manager):
 			if file.stem.startswith(f'{skillName}_'):
 				file.unlink()
 
-		checksums = json.load(self._pathToChecksums)
+		checksums = json.loads(self._pathToChecksums.read_text())
 		checksums.pop(skillName, None)
 
 		self._pathToChecksums.write_text(json.dumps(checksums, indent='\t', sort_keys=True))
@@ -242,7 +254,7 @@ class DialogTemplateManager(Manager):
 
 		language = languageManager.activeLanguage
 		for skillName, skillInstance in skillManager.allWorkingSkills.items():
-			resource = skillInstance.getResource(f'dialogTemplate/{language}.json')
+			resource = skillInstance.getResource(f'dialogTemplate/{language}{constants.JSON_EXT}')
 			if not resource.exists():
 				continue
 

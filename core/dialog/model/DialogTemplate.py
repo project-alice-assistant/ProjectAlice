@@ -19,7 +19,9 @@
 
 from __future__ import annotations
 
+import json
 from dataclasses import dataclass, field
+from pathlib import Path
 from typing import Generator, List
 
 from core.dialog.model.DialogTemplateIntent import DialogTemplateIntent
@@ -100,6 +102,14 @@ class DialogTemplate:
 
 	def removeSlotType(self, slotTypeName: str):
 		self.mySlotTypes.pop(slotTypeName, None)
+
+
+	def addUtterancesExtender(self, extender: Path):
+		data = json.loads(extender.read_text())
+
+		for intentName, intent in data.get('intents', dict()).items():
+			for utterance in intent.get('utterances', list()):
+				self.myIntents[intentName].addUtterance(utterance)
 
 
 	def addUtterance(self, text: str, intentName: str):
