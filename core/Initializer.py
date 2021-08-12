@@ -423,8 +423,8 @@ class Initializer:
 			subprocess.run(['sudo', 'cp', str(Path(self._rootDir, 'system/websockets.conf')), str(confPath)])
 
 		subprocess.run(['sudo', 'systemctl', 'stop', 'mosquitto'])
-		subprocess.run(['sudo', 'sed', '-i', '-e', 's/persistence true/persistence false/', '/etc/mosquitto/mosquitto.conf'])
-		subprocess.run(['sudo', 'rm', '/var/lib/mosquitto/mosquitto.db '])
+		subprocess.run('sudo sed -i -e \'s/persistence true/persistence false/\' /etc/mosquitto/mosquitto.conf'.split())
+		subprocess.run(['sudo', 'rm', '/var/lib/mosquitto/mosquitto.db'])
 
 		# Now let's dump some values to their respective places
 		# First those that need some checks and self filling in case unspecified
