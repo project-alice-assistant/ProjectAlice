@@ -226,7 +226,7 @@ class DeviceManager(Manager):
 
 				return None
 
-			time.sleep(0.1)
+			time.sleep(1)
 			return self.getDevice(deviceId=deviceId, uid=uid)
 		else:
 			return ret
