@@ -462,4 +462,4 @@ class SkillsApi(Api):
 			installFile.touch(exist_ok=True)
 		installFile.write_text(json.dumps(data['installFile'], indent=2))
 
-		return jsonify(success=True, installFile=installFile.read_text() if installFile.exists() else '')
+		return jsonify(success=True, installFile=json.loads(installFile.read_text()) if installFile.exists() else '')
