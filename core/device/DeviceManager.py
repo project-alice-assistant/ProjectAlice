@@ -221,7 +221,9 @@ class DeviceManager(Manager):
 		if ret is None and not self.loadingDone:
 			self._loopCounter += 1
 			if self._loopCounter > 20:
-				self.logWarning('Impossible to find device instance, skipping')
+				self.logWarning(f'Impossible to find device instance for id/uid {deviceId}/{uid}, skipping')
+				self._loopCounter = 0
+
 				return None
 
 			time.sleep(0.1)
