@@ -19,10 +19,9 @@
 
 
 import json
-from pathlib import Path
-
 from flask import jsonify, request
 from flask_classful import route
+from pathlib import Path
 
 from core.base.model.GithubCloner import GithubCloner
 from core.commons import constants
@@ -377,7 +376,7 @@ class SkillsApi(Api):
 
 		dialogTemplate = skill.getResource(f'dialogTemplate/{data["lang"]}.json')
 		if not dialogTemplate.exists():
-			dialogTemplate.write_text(json.dumps(data['dialogTemplate']))
+			dialogTemplate.write_text(json.dumps(data['dialogTemplate'], indent=2))
 
 		return jsonify(success=True, dialogTemplate=dialogTemplate.read_text() if dialogTemplate.exists() else '')
 
@@ -394,7 +393,7 @@ class SkillsApi(Api):
 		configTemplate = skill.getResource(f'config.json.template')
 		if not configTemplate.exists():
 			configTemplate.touch(exist_ok=True)
-		configTemplate.write_text(json.dumps(data['configTemplate']))
+		configTemplate.write_text(json.dumps(data['configTemplate'], indent=2))
 		self.ConfigManager.loadCheckAndUpdateSkillConfigurations(skillToLoad=skillName)
 
 		return jsonify(success=True, configTemplate=skill.getSkillConfigsTemplate())
@@ -429,7 +428,7 @@ class SkillsApi(Api):
 		talkFile = skill.getResource(f'talks/{data["lang"]}.json')
 		if not talkFile.exists():
 			talkFile.touch(exist_ok=True)
-		talkFile.write_text(json.dumps(data['talkFile']))
+		talkFile.write_text(json.dumps(data['talkFile'], indent=2))
 
 		return jsonify(success=True, talkFile=talkFile.read_text() if talkFile.exists() else '')
 
@@ -460,6 +459,6 @@ class SkillsApi(Api):
 		installFile = skill.getResource(f'{skillName}.install')
 		if not installFile.exists():
 			installFile.touch(exist_ok=True)
-		installFile.write_text(json.dumps(data['installFile']))
+		installFile.write_text(json.dumps(data['installFile'], indent=2))
 
 		return jsonify(success=True, installFile=installFile.read_text() if installFile.exists() else '')
