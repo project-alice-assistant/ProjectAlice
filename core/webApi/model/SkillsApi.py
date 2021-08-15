@@ -358,7 +358,7 @@ class SkillsApi(Api):
 			dialogTemplate = skill.getResource(f'dialogTemplate/{data["lang"]}.json')
 			if not dialogTemplate.exists():
 				dialogTemplate = skill.getResource(f'dialogTemplate/en.json')
-			tempOut = dialogTemplate.read_text() if dialogTemplate.exists() else ''
+			tempOut = json.loads(dialogTemplate.read_text()) if dialogTemplate.exists() else ''
 
 		return jsonify(success=True, dialogTemplate=tempOut, dialogTemplates=allLang)
 
@@ -376,9 +376,10 @@ class SkillsApi(Api):
 
 		dialogTemplate = skill.getResource(f'dialogTemplate/{data["lang"]}.json')
 		if not dialogTemplate.exists():
-			dialogTemplate.write_text(json.dumps(data['dialogTemplate'], indent=2))
+			dialogTemplate.touch(exist_ok=True)
+		dialogTemplate.write_text(json.dumps(data['dialogTemplate'], indent=2))
 
-		return jsonify(success=True, dialogTemplate=dialogTemplate.read_text() if dialogTemplate.exists() else '')
+		return jsonify(success=True, dialogTemplate=json.loads(dialogTemplate.read_text()) if dialogTemplate.exists() else '')
 
 
 	@route('/<skillName>/setConfigTemplate/', methods=['PATCH'])
