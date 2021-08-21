@@ -106,7 +106,7 @@ class GithubCloner(ProjectAliceObject):
 		"""
 		req = requests.get(f'https://api.github.com/repos/{self.getGithubAuth()[0]}/skill_{skillName}', auth=GithubCloner.getGithubAuth())
 		if req.status_code != 200:
-			cls.logInfo("Couldn't find repository on github")
+			self.logInfo("Couldn't find repository on github")
 			return False
 		return True
 
@@ -123,7 +123,7 @@ class GithubCloner(ProjectAliceObject):
 		}
 		req = requests.post(f'https://api.github.com/repos/project-alice-assistant/skill_{skillName}/forks', data=json.dumps(data), auth=GithubCloner.getGithubAuth())
 		if req.status_code != 202:
-			cls.logError("Couldn't create fork for repository!")
+			self.logError("Couldn't create fork for repository!")
 
 
 	def checkoutOwnFork(self, skillName: str) -> bool:
