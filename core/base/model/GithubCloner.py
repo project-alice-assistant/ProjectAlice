@@ -177,6 +177,10 @@ class GithubCloner(ProjectAliceObject):
 
 
 	def gitPush(self) -> bool:
+		"""
+		add all changes to git, commit and push to AliceSK upstream
+		:return:
+		"""
 		try:
 			self.gitDefaults()
 			self.Commons.runSystemCommand(['git', '-C', str(self._dest), 'add', '.'])
