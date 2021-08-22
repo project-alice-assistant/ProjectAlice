@@ -275,7 +275,7 @@ class SkillsApi(Api):
 		gitCloner = GithubCloner(baseUrl=f'{constants.GITHUB_URL}/skill_{skillName}.git', dest=Path(self.Commons.rootDir()) / 'skills' / skillName)
 		self.SkillManager.getSkillInstance(skillName=skillName).modified = True
 		if not gitCloner.checkOwnRepoAvailable(skillName=skillName):
-			self.SkillManager.createForkForSkill(skillName=skillName)
+			gitCloner.createForkForSkill(skillName=skillName)
 		gitCloner.checkoutOwnFork(skillName=skillName)
 		return jsonify(success=True)
 
@@ -420,6 +420,7 @@ class SkillsApi(Api):
 	@route('/<skillName>/setTalkFile/', methods=['PATCH'])
 	@ApiAuthenticated
 	def setTalkFile(self, skillName: str):
+		self.logInfo(f'writing talkFile API access for skill {skillName}')
 		if skillName not in self.SkillManager.allSkills:
 			return self.skillNotFound()
 
@@ -429,7 +430,7 @@ class SkillsApi(Api):
 		talkFile = skill.getResource(f'talks/{data["lang"]}.json')
 		if not talkFile.exists():
 			talkFile.touch(exist_ok=True)
-		talkFile.write_text(json.dumps(data['talkFile'], indent=2))
+		talkFile.write_text(json.dumps(data['talkFile'], indent=2), encoding='utf-8')
 
 		return jsonify(success=True, talkFile=talkFile.read_text() if talkFile.exists() else '')
 

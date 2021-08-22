@@ -22,6 +22,7 @@ import getpass
 import importlib
 import json
 import os
+import requests
 import shutil
 import sqlite3
 import threading
@@ -29,8 +30,6 @@ import traceback
 import typing
 from pathlib import Path
 from typing import Dict, Optional
-
-import requests
 
 from core.ProjectAliceExceptions import AccessLevelTooLow, GithubNotFound, GithubRateLimit, GithubTokenFailed, SkillNotConditionCompliant, SkillStartDelayed, SkillStartingFailed
 from core.base.SuperManager import SuperManager
@@ -1117,3 +1116,7 @@ class SkillManager(Manager):
 		except Exception as e:
 			self.logError(f'Error downloading install ticket for skill "{skillName}": {e}')
 			return False
+
+
+	def setSkillModified(self, skillName: str, modified: bool):
+		self._skillList[skillName][modified] = modified

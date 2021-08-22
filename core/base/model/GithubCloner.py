@@ -17,6 +17,7 @@
 #
 #  Last modified: 2021.08.21 at 12:56:45 CEST
 
+import json
 import requests
 import shutil
 from pathlib import Path

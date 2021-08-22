@@ -19,18 +19,17 @@
 
 from __future__ import annotations
 
+import flask
 import importlib
 import inspect
 import json
 import re
 import sqlite3
 from copy import copy
-from pathlib import Path
-from typing import Any, Dict, Iterable, List, Optional, Union
-
-import flask
 from markdown import markdown
 from paho.mqtt import client as MQTTClient
+from pathlib import Path
+from typing import Any, Dict, Iterable, List, Optional, Union
 
 from core.ProjectAliceExceptions import AccessLevelTooLow, SkillStartingFailed
 from core.base.model.Intent import Intent
@@ -452,6 +451,7 @@ class AliceSkill(ProjectAliceObject):
 		:return:
 		"""
 		self._modified = value
+		self.SkillManager.setSkillModified(skillName=self.name, modified=self._modified)
 		dbVal = 1 if value else 0
 		self.DatabaseManager.update(tableName=self.SkillManager.DBTAB_SKILLS,
 		                            callerName=self.SkillManager.name,
