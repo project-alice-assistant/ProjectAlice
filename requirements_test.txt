@@ -24,4 +24,4 @@ langdetect~=1.0.9
 webrtcvad~=2.0.10
 pyjwt~=2.0.1
 markdown~=3.3.4
-sounddevice==0.4.1
+sounddevice==0.4.2
