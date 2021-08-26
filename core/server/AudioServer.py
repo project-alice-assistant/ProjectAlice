@@ -26,6 +26,7 @@ from typing import Dict, Optional
 
 import sounddevice as sd
 # noinspection PyUnresolvedReferences
+from scipy._lib._ccallback import CData
 from webrtcvad import Vad
 
 from core.ProjectAliceExceptions import PlayBytesStopped
@@ -143,7 +144,7 @@ class AudioManager(Manager):
 	def publishAudio(self) -> None:
 		"""
 		captures the audio and broadcasts it via publishAudioFrames to the topic 'hermes/audioServer/{}/audioFrame'
-		furtherfmore it will publish VAD_UP and VAD_DOWN when detected
+		furthermore it will publish VAD_UP and VAD_DOWN when detected
 		:return:
 		"""
 		self.logInfo('Starting audio publisher')
@@ -200,7 +201,7 @@ class AudioManager(Manager):
 
 	def publishAudioFrames(self, frames: bytes) -> None:
 		"""
-		receives some audioframes, adds them to the buffer and publishes them to MQTT
+		receives some audio frames, adds them to the buffer and publishes them to MQTT
 		:param frames:
 		:return:
 		"""
@@ -231,6 +232,10 @@ class AudioManager(Manager):
 
 		requestId = requestId or sessionId or str(uuid.uuid4())
 
+		if self.ConfigManager.getAliceConfigByName('debug'):
+			with Path('/tmp/onPlayBytes.wav').open('wb') as file:
+				file.write(payload)
+
 		self._playing = True
 		with io.BytesIO(payload) as buffer:
 			try:
@@ -238,14 +243,16 @@ class AudioManager(Manager):
 					channels = wav.getnchannels()
 					framerate = wav.getframerate()
 
-					def streamCallback(outdata, frameCount, _timeInfo, _status):
-						data = wav.readframes(frameCount)
-						if len(data) < len(outdata):
-							outdata[:len(data)] = data
-							outdata[len(data):] = b'\x00' * (len(outdata) - len(data))
+
+					def streamCallback(outData: buffer, frames: int, _time: CData, _status: sd.CallbackFlags):
+						data = wav.readframes(frames)
+						if len(data) < len(outData):
+							outData[:len(data)] = data
+							outData[len(data):] = b'\x00' * (len(outData) - len(data))
 							raise sd.CallbackStop
 						else:
-							outdata[:] = data
+							outData[:] = data
+
 
 					stream = sd.RawOutputStream(
 						dtype='int16',
@@ -258,9 +265,6 @@ class AudioManager(Manager):
 					stream.start()
 					while stream.active:
 						if self._stopPlayingFlag.is_set():
-							stream.stop()
-							stream.close()
-
 							if not sessionId:
 								raise PlayBytesStopped
 
@@ -279,14 +283,14 @@ class AudioManager(Manager):
 							self.DialogManager.onEndSession(session)
 
 						time.sleep(0.1)
-
-					stream.stop()
-					stream.close()
 			except PlayBytesStopped:
 				self.logDebug('Playing bytes stopped')
 			except Exception as e:
 				self.logError(f'Playing wav failed with error: {e}')
 			finally:
+				self.logDebug('Playing bytes finished')
+				stream.stop()
+				stream.close()
 				self._stopPlayingFlag.clear()
 				self._playing = False
 
