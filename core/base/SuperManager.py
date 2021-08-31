@@ -260,6 +260,8 @@ class SuperManager:
 
 			managerName = mqttManager.name
 			mqttManager.onStop()
+		except KeyError as e:
+			Logger().logWarning(f'Manager **{managerName}** was not running: {e}')
 		except Exception as e:
 			Logger().logError(f'Error while shutting down manager **{managerName}**: {e}')
 			traceback.print_exc()
