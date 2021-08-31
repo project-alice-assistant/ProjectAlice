@@ -22,7 +22,6 @@ import getpass
 import importlib
 import json
 import os
-import requests
 import shutil
 import sqlite3
 import threading
@@ -30,6 +29,8 @@ import traceback
 import typing
 from pathlib import Path
 from typing import Dict, Optional
+
+import requests
 
 from core.ProjectAliceExceptions import AccessLevelTooLow, GithubNotFound, GithubRateLimit, GithubTokenFailed, SkillNotConditionCompliant, SkillStartDelayed, SkillStartingFailed
 from core.base.SuperManager import SuperManager
@@ -805,6 +806,11 @@ class SkillManager(Manager):
 			}
 
 			os.unlink(str(res))
+
+			if installFile.get('rebootAfterInstall', False):
+				self.Commons.runRootSystemCommand('sudo shutdown -r now'.split())
+				return
+
 		except Exception:
 			raise
 

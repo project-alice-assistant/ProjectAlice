@@ -35,7 +35,7 @@
 	"notUnderstoodEnd": {
 		"default": [
 			"Sorry but I can't understand you",
-			"Sorry, I can understand what you want",
+			"Sorry, I can't understand what you want",
 			"Ok, we stop here, I can't understand your request",
 			"Ok, stop, I just don't understand"
 		],

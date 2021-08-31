@@ -24,6 +24,7 @@ class TelemetryType(Enum):
 	TARGETTEMPERATURE = 'targetTemperature'
 	PRESSURE = 'pressure'
 	HUMIDITY = 'humidity'
+	ALTITUDE = 'altitude'
 	LIGHT = 'light'
 	GAS = 'gas'
 	AIR_QUALITY = 'airQuality'
