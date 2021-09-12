@@ -21,7 +21,6 @@ import time
 from typing import Iterable, List
 
 from core.base.model.Manager import Manager
-from core.myHome.model.Location import Location
 from core.util.model.TelemetryData import TelemetryData
 from core.util.model.TelemetryType import TelemetryType
 
@@ -185,7 +184,7 @@ class TelemetryManager(Manager):
 
 
 	def getData(self, ttype: TelemetryType = None, deviceId: str = None, service: str = None, locationId: int = None, historyFrom: int = None, historyTo: int = None, all: bool = False) -> Iterable:
-		values = {}
+		values = dict()
 		if ttype:
 			values['type'] = ttype
 		if locationId:
@@ -216,10 +215,9 @@ class TelemetryManager(Manager):
 		)
 
 	def getDistinct(self, ttype: TelemetryType = None, deviceId: str = None, service: str = None, locationId: int = None) -> Iterable:
-		values = {}
-		group = []
+		values = dict()
 		if ttype:
-			values['type'] = ttype
+			values['type'] = ttype.value
 		if locationId:
 			values['locationId'] = locationId
 		if deviceId:
@@ -248,6 +246,6 @@ class TelemetryManager(Manager):
 
 
 	def getAllCombinationsForAPI(self):
-		list = [val.forApi() for val in self._currentValues]
-		list = [l for l in list if l is not None]  # workaround until obsolet telemetry is purged
-		return list
+		llist = [val.forApi() for val in self._currentValues]
+		llist = [l for l in llist if l is not None]  # workaround until obsolete telemetry is purged
+		return llist
