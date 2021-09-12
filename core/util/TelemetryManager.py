@@ -120,7 +120,7 @@ class TelemetryManager(Manager):
 				match = current
 		if match:
 			if match.timestamp == timestamp and match.value == value:
-				# skip exact dublicates
+				# skip exact duplicates
 				return False
 			else:
 				match.timestamp = timestamp
@@ -139,7 +139,7 @@ class TelemetryManager(Manager):
 	def storeData(self, ttype: TelemetryType, value: str, service: str, deviceId: int, timestamp=None, locationId: int = None) -> bool:
 		"""
 		Store telemetry data to the database and the list of current values.
-		Dublicates are filtered out.
+		Duplicates are filtered out.
 		If a new entry was added, true is returned, if not false
 		:param ttype:
 		:param value:
@@ -183,7 +183,7 @@ class TelemetryManager(Manager):
 		return True
 
 
-	def getData(self, ttype: TelemetryType = None, deviceId: str = None, service: str = None, locationId: int = None, historyFrom: int = None, historyTo: int = None, all: bool = False) -> Iterable:
+	def getData(self, ttype: TelemetryType = None, deviceId: str = None, service: str = None, locationId: int = None, historyFrom: int = None, historyTo: int = None, everything: bool = False) -> Iterable:
 		values = dict()
 		if ttype:
 			values['type'] = ttype
@@ -204,7 +204,7 @@ class TelemetryManager(Manager):
 			dynWhere.append(f'timestamp >= {historyFrom}')
 
 		# noinspection SqlResolve
-		query = f'SELECT * FROM :__table__ WHERE {" and ".join(dynWhere)} ORDER BY `timestamp` DESC{" LIMIT 1" if not historyFrom and not historyTo and not all else ""}'
+		query = f'SELECT * FROM :__table__ WHERE {" and ".join(dynWhere)} ORDER BY `timestamp` DESC{" LIMIT 1" if not historyFrom and not historyTo and not everything else ""}'
 
 		# noinspection SqlResolve
 		return self.databaseFetch(
