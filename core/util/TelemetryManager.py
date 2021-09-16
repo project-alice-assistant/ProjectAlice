@@ -187,7 +187,7 @@ class TelemetryManager(Manager):
 	def getData(self, ttype: TelemetryType = None, deviceId: str = None, service: str = None, locationId: int = None, historyFrom: int = None, historyTo: int = None, everything: bool = False) -> List:
 		values = dict()
 		if ttype:
-			values['type'] = ttype
+			values['type'] = ttype.value
 		if locationId:
 			values['locationId'] = locationId
 		if deviceId:
