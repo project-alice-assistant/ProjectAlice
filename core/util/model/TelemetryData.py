@@ -34,6 +34,7 @@ class TelemetryData(ProjectAliceObject):
 	timestamp: str= field(init=False)
 	type: TelemetryType = field(init=False)
 
+
 	def __post_init__(self):  # NOSONAR
 		self.service = self.data['service']
 		self.deviceId = self.data['deviceId']
@@ -58,8 +59,10 @@ class TelemetryData(ProjectAliceObject):
 		except AttributeError:
 			return None
 
+
 	def getDeviceName(self):
 		return self.DeviceManager.getDevice(deviceId=int(self.deviceId)).displayName
+
 
 	def getLocationName(self):
 		return self.LocationManager.getLocation(locId=self.locationId).name

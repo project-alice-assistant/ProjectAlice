@@ -82,9 +82,9 @@ class WidgetManager(Manager):
 			allTemplates += widgets
 
 		# Cleanup possible deprecated widgets
-		data = self.databaseFetch(tableName=self.WIDGETS_TABLE, method='all')
+		rows = self.databaseFetch(tableName=self.WIDGETS_TABLE)
 
-		for widget in data:
+		for widget in rows:
 			if widget['skill'] not in self._widgetTemplates or widget['name'] not in allTemplates:
 
 				self.logInfo(f'Widget **{widget["name"]}** is deprecated, removing')
@@ -116,7 +116,7 @@ class WidgetManager(Manager):
 
 		skill = self.SkillManager.getSkillInstance(widgetData['skill'])
 		if not skill:
-			self.logWarning(f'Skill {widgetData["skill"]} for widget {widgetData["name"]} is not instanciated, skipping widget')
+			self.logWarning(f'Skill {widgetData["skill"]} for widget {widgetData["name"]} is not instantiated, skipping widget')
 			return None
 
 		try:
@@ -142,7 +142,7 @@ class WidgetManager(Manager):
 			return None
 
 		if pageId not in self._pages:
-			self.logWarning(f'Tried to add widget **{widgetName}** from skill **{skillName}** to page id **{pageId}** but the page doesn\'t exist')
+			self.logWarning(f'Tried to add widget **{widgetName}** from skill **{skillName}** to page id **{pageId}** but the page does not exist')
 			return None
 
 		instance = self.instanciateWidget({
@@ -159,14 +159,14 @@ class WidgetManager(Manager):
 
 
 	def loadPages(self):
-		data = self.databaseFetch(tableName=self.WIDGET_PAGES_TABLE, method='all')
-		if data:
-			self._pages = {row['id']: WidgetPage(row) for row in data}
+		rows = self.databaseFetch(tableName=self.WIDGET_PAGES_TABLE)
+		if rows:
+			self._pages = {row['id']: WidgetPage(row) for row in rows}
 		else:
 			# Insert default page
 			self.databaseInsert(
 				tableName=self.WIDGET_PAGES_TABLE,
-				values = {
+				values={
 					'icon'    : self.DEFAULT_ICON,
 					'position': 0
 				}
@@ -300,7 +300,7 @@ class WidgetManager(Manager):
 		widget: Widget = self._widgets.get(widgetId, None)
 
 		if not widget:
-			self.logWarning('Tried to save a widget position but widget doesn\'t exist')
+			self.logWarning('Tried to save a widget position but widget does not exist')
 			return False
 
 		widget.x = x
@@ -313,7 +313,7 @@ class WidgetManager(Manager):
 		widget: Widget = self._widgets.get(widgetId, None)
 
 		if not widget:
-			self.logWarning('Tried to save a widget size but widget doesn\'t exist')
+			self.logWarning('Tried to save a widget size but widget does not exist')
 			return False
 
 		widget.x = x
@@ -328,7 +328,7 @@ class WidgetManager(Manager):
 		widget: Widget = self._widgets.get(widgetId, None)
 
 		if not widget:
-			self.logWarning('Tried to save widget settings but widget doesn\'t exist')
+			self.logWarning('Tried to save widget settings but widget does not exist')
 			return False
 
 		widget.settings = settings
@@ -340,7 +340,7 @@ class WidgetManager(Manager):
 		widget: Widget = self._widgets.get(widgetId, None)
 
 		if not widget:
-			self.logWarning('Tried to save widget settings but widget doesn\'t exist')
+			self.logWarning('Tried to save widget settings but widget does not exist')
 			return False
 
 		widget._configs = configs

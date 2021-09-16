@@ -84,19 +84,19 @@ class LocationManager(Manager):
 
 
 	def loadLocations(self):
-		for row in self.databaseFetch(tableName=self.LOCATIONS_TABLE, method='all'): #NOSONAR
-			self._locations[row['id']] = Location(self.Commons.dictFromRow(row))
+		for row in self.databaseFetch(tableName=self.LOCATIONS_TABLE):
+			self._locations[row['id']] = Location(row)
 			self.logInfo(f'Loaded location **{row["name"]}**')
 
 
 	def loadConstructions(self):
-		for row in self.databaseFetch(tableName=self.CONSTRUCTIONS_TABLE, method='all'): #NOSONAR
-			self._constructions[row['id']] = Construction(self.Commons.dictFromRow(row))
+		for row in self.databaseFetch(tableName=self.CONSTRUCTIONS_TABLE):
+			self._constructions[row['id']] = Construction(row)
 
 
 	def loadFurnitures(self):
-		for row in self.databaseFetch(tableName=self.FURNITURE_TABLE, method='all'): #NOSONAR
-			self._furnitures[row['id']] = Furniture(self.Commons.dictFromRow(row))
+		for row in self.databaseFetch(tableName=self.FURNITURE_TABLE):
+			self._furnitures[row['id']] = Furniture(row)
 
 
 	def addNewConstruction(self, data: dict) -> Optional[Construction]:

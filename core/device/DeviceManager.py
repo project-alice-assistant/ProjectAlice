@@ -15,7 +15,7 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>
 #
-#  Last modified: 2021.04.15 at 00:08:34 MESZ
+#  Last modified: 2021.04.15 at 00:08:34
 
 import importlib
 import socket
@@ -153,9 +153,8 @@ class DeviceManager(Manager):
 		Loads devices from database
 		:return: None
 		"""
-		for row in self.databaseFetch(tableName=self.DB_DEVICE, method='all'):
+		for data in self.databaseFetch(tableName=self.DB_DEVICE):
 			try:
-				data = self.Commons.dictFromRow(row)
 				skillImport = importlib.import_module(f'skills.{data.get("skillName")}.devices.{data.get("typeName")}')
 				klass = getattr(skillImport, data.get('typeName'))
 				device = klass(data)
@@ -169,7 +168,7 @@ class DeviceManager(Manager):
 		Loads location links from database
 		:return: None
 		"""
-		for row in self.databaseFetch(tableName=self.DB_LINKS, method='all'):
+		for row in self.databaseFetch(tableName=self.DB_LINKS):
 			link: DeviceLink = DeviceLink(row)
 			if link.invalid:
 				self.logWarning(f'Device link id **{link.id}** seems deprecated, removing')
@@ -858,7 +857,7 @@ class DeviceManager(Manager):
 	# 	return [x for x in self._deviceLinks.values() if x.getDevice().deviceTypeId == deviceType and (not connectedOnly or x.getDevice().connected)]
 	#
 	#
-	def getDeviceLinks(self, locationId: int, devTypeNames: int = None, connectedOnly: bool = False, pairedOnly: bool = False) -> List[DeviceLink]:
+	def getDeviceLinks(self, locationId: int, devTypeNames: Union[str, List] = None, connectedOnly: bool = False, pairedOnly: bool = False) -> List[DeviceLink]:
 		if locationId and not isinstance(locationId, List):
 			locationId = [locationId]
 
@@ -884,7 +883,8 @@ class DeviceManager(Manager):
 		locationIds = [loc.id for loc in locations]
 		self.logDebug(f'And the locations are {locationIds}')
 
-		return self.DeviceManager.getDeviceLinks(devTypeNames=devTypeNames, locationId=locationIds)
+		# TODO debug me, locationId is not a list
+		return self.DeviceManager.getDeviceLinks(locationId=locationIds, devTypeNames=devTypeNames)
 
 
 	@staticmethod

@@ -61,7 +61,7 @@ class UserManager(Manager):
 
 
 	def _loadUsers(self):
-		rows = self.databaseFetch(tableName='users', query='SELECT * FROM :__table__', method='all')
+		rows = self.databaseFetch(tableName='users', query='SELECT * FROM :__table__')
 		for row in rows:
 			user = User(row)
 			self._users[user.name] = user

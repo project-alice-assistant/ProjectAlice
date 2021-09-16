@@ -19,17 +19,17 @@
 
 from __future__ import annotations
 
-import flask
 import importlib
 import inspect
 import json
 import re
-import sqlite3
 from copy import copy
-from markdown import markdown
-from paho.mqtt import client as MQTTClient
 from pathlib import Path
 from typing import Any, Dict, Iterable, List, Optional, Union
+
+import flask
+from markdown import markdown
+from paho.mqtt import client as MQTTClient
 
 from core.ProjectAliceExceptions import AccessLevelTooLow, SkillStartingFailed
 from core.base.model.Intent import Intent
@@ -659,8 +659,8 @@ class AliceSkill(ProjectAliceObject):
 		return self.LanguageManager.defaultLanguage
 
 
-	def databaseFetch(self, tableName: str, query: str, values: dict = None, method: str = 'one') -> sqlite3.Row:
-		return self.DatabaseManager.fetch(tableName=tableName, query=query, values=values, callerName=self.name, method=method)
+	def databaseFetch(self, tableName: str, query: str, values: dict = None) -> List:
+		return self.DatabaseManager.fetch(tableName=tableName, query=query, values=values, callerName=self.name)
 
 
 	def databaseInsert(self, tableName: str, query: str = None, values: dict = None) -> int:

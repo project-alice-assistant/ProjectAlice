@@ -17,10 +17,7 @@
 #
 #  Last modified: 2021.04.13 at 12:56:46 CEST
 
-import sqlite3
-from typing import Optional
-
-import typing
+from typing import List, Optional
 
 from core.base.SuperManager import SuperManager
 from core.base.model.ProjectAliceObject import ProjectAliceObject
@@ -102,11 +99,11 @@ class Manager(ProjectAliceObject):
 
 
 	# HELPERS
-	def databaseFetch(self, tableName: str, query: str = None, values: dict = None, method: str = 'one') -> typing.Union[typing.Dict, sqlite3.Row]:
+	def databaseFetch(self, tableName: str, query: str = None, values: dict = None) -> List:
 		if not query:
 			query = 'SELECT * FROM :__table__'
 
-		return self.DatabaseManager.fetch(tableName=tableName, query=query, values=values, callerName=self.name, method=method)
+		return self.DatabaseManager.fetch(tableName=tableName, query=query, values=values, callerName=self.name)
 
 
 	def databaseInsert(self, tableName: str, query: str = None, values: dict = None) -> int:

@@ -27,11 +27,6 @@ from core.webApi.model.Api import Api
 class TelemetryApi(Api):
 	route_base = f'/api/{Api.version()}/telemetry/'
 
-
-	def __init__(self):
-		super().__init__()
-
-
 	@route('/', methods=['GET'])
 	@ApiAuthenticated
 	def get(self):
@@ -43,11 +38,7 @@ class TelemetryApi(Api):
 			historyTo = request.args.get('historyTo', None)
 			getAll = request.args.get('all', False)
 			rows = self.TelemetryManager.getData(ttype=ttype, deviceId=deviceId, locationId=locationId, historyTo=historyTo, historyFrom=historyFrom, everything=getAll)
-			rowarrayList = []
-			for row in rows:
-				dic = dict(zip(row.keys(), row))  # a dict with column names as keys
-				rowarrayList.append(dic)
-			return jsonify(rowarrayList)
+			return jsonify(rows)
 		except Exception as e:
 			self.logError(f'Failed getting telemetry data: {e}')
 			return jsonify(success=False, message=str(e))

@@ -19,7 +19,7 @@
 
 import json
 import sqlite3
-from typing import Any, Dict, Optional, Union
+from typing import Any, Dict, Optional
 
 from core.base.model.ProjectAliceObject import ProjectAliceObject
 from core.device.model.Device import Device
@@ -28,7 +28,7 @@ from core.device.model.DeviceType import DeviceType
 
 class DeviceLink(ProjectAliceObject):
 
-	def __init__(self, data: Union[sqlite3.Row, Dict]):
+	def __init__(self, data: Dict):
 		super().__init__()
 		self._invalid = True
 

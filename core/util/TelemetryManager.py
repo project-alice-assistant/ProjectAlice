@@ -18,7 +18,7 @@
 #  Last modified: 2021.04.13 at 12:56:48 CEST
 
 import time
-from typing import Iterable, List
+from typing import List
 
 from core.base.model.Manager import Manager
 from core.util.model.TelemetryData import TelemetryData
@@ -101,7 +101,8 @@ class TelemetryManager(Manager):
 		if not self._isActive:
 			return
 
-		self._currentValues = [ TelemetryData(val) for val in self.getDistinct()]
+		self._currentValues = [TelemetryData(val) for val in self.getDistinct()]
+
 
 	def currentValue(self, ttype: TelemetryType, value: str, service: str, deviceId: int, timestamp=None, locationId: int = None) -> bool:
 		"""
@@ -183,7 +184,7 @@ class TelemetryManager(Manager):
 		return True
 
 
-	def getData(self, ttype: TelemetryType = None, deviceId: str = None, service: str = None, locationId: int = None, historyFrom: int = None, historyTo: int = None, everything: bool = False) -> Iterable:
+	def getData(self, ttype: TelemetryType = None, deviceId: str = None, service: str = None, locationId: int = None, historyFrom: int = None, historyTo: int = None, everything: bool = False) -> List:
 		values = dict()
 		if ttype:
 			values['type'] = ttype
@@ -210,11 +211,11 @@ class TelemetryManager(Manager):
 		return self.databaseFetch(
 			tableName='telemetry',
 			query=query,
-			values=values,
-			method='all'
+			values=values
 		)
 
-	def getDistinct(self, ttype: TelemetryType = None, deviceId: str = None, service: str = None, locationId: int = None) -> Iterable:
+
+	def getDistinct(self, ttype: TelemetryType = None, deviceId: str = None, service: str = None, locationId: int = None) -> List:
 		values = dict()
 		if ttype:
 			values['type'] = ttype.value
@@ -240,8 +241,7 @@ class TelemetryManager(Manager):
 		return self.databaseFetch(
 			tableName='telemetry',
 			query=query,
-			values=values,
-			method='all'
+			values=values
 		)
 
 

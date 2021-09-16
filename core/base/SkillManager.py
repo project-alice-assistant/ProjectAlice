@@ -23,12 +23,10 @@ import importlib
 import json
 import os
 import shutil
-import sqlite3
 import threading
 import traceback
-import typing
 from pathlib import Path
-from typing import Dict, Optional
+from typing import Dict, List, Optional
 
 import requests
 
@@ -151,11 +149,8 @@ class SkillManager(Manager):
 		return dict(sorted(data.items()))
 
 
-	def loadSkillsFromDB(self) -> typing.Union[typing.Dict, sqlite3.Row]:
-		return self.databaseFetch(
-			tableName='skills',
-			method='all'
-		)
+	def loadSkillsFromDB(self) -> List:
+		return self.databaseFetch(tableName='skills')
 
 
 	def changeSkillStateInDB(self, skillName: str, newState: bool):
@@ -953,7 +948,7 @@ class SkillManager(Manager):
 			if not data:
 				return Version.fromString('0.0.0')
 
-			return Version.fromString(data['scenarioVersion'])
+			return Version.fromString(data[0]['scenarioVersion'])
 
 
 	def wipeSkills(self, addDefaults: bool = True):
