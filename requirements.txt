@@ -23,5 +23,5 @@ markdown==3.3.4
 ProjectAlice-sk
 sounddevice==0.4.2
 htmlmin==0.1.12
-jsmin==2.2.2
+jsmin==3.0.0
 cssmin==0.2.0
