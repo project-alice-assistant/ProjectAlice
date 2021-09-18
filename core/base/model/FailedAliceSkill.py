@@ -20,11 +20,12 @@
 from __future__ import annotations
 
 import json
+from pathlib import Path
 
 from core.base.model.ProjectAliceObject import ProjectAliceObject
-from core.dialog.model.DialogSession import DialogSession
 from core.base.model.Version import Version
 from core.commons import constants
+from core.dialog.model.DialogSession import DialogSession
 
 
 class FailedAliceSkill(ProjectAliceObject):
@@ -40,6 +41,7 @@ class FailedAliceSkill(ProjectAliceObject):
 		self._description = self._installer.get('desc', '')
 		self._category = self._installer.get('category', constants.UNKNOWN)
 		self._conditions = self._installer.get('conditions', dict())
+		self._skillPath = Path('skills') / self._name
 		super().__init__()
 
 
@@ -76,14 +78,23 @@ class FailedAliceSkill(ProjectAliceObject):
 		return self.__repr__()
 
 
+	@property
+	def skillPath(self) -> Path:
+		return self._skillPath
+
+
+	def getResource(self, resourcePathFile: str = '') -> Path:
+		return self.skillPath / resourcePathFile
+
+
 	def toDict(self) -> dict:
 		return {
-			'name'           : self._name,
-			'author'         : self._installer['author'],
-			'version'        : self._installer['version'],
-			'updateAvailable': self._updateAvailable,
-			'maintainers'    : self._maintainers,
-			'settings'       : self.ConfigManager.getSkillConfigs(self._name),
+			'name'            : self._name,
+			'author'          : self._installer['author'],
+			'version'         : self._installer['version'],
+			'updateAvailable' : self._updateAvailable,
+			'maintainers'     : self._maintainers,
+			'settings'        : self.ConfigManager.getSkillConfigs(self._name),
 			'icon'            : self._icon,
 			'description'     : self._description,
 			'category'        : self._category,
