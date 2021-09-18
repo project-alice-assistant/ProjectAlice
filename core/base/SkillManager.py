@@ -311,7 +311,7 @@ class SkillManager(Manager):
 					self.checkSkillConditions(self._skillList[skillName]['installer'])
 
 				skillInstance = self.instanciateSkill(skillName=skillName, reload=reload)
-				skillInstance.modified = data['modified']
+				skillInstance.modified = data.get('modified', False)
 				if skillInstance:
 					if skillName in self.NEEDED_SKILLS:
 						skillInstance.required = True
@@ -328,7 +328,7 @@ class SkillManager(Manager):
 				self._failedSkills[skillName] = FailedAliceSkill(data['installer'])
 				continue
 			except SkillNotConditionCompliant as e:
-				self.logInfo(f'Skill {skillName} does not comply to "{e.condition}" condition, required "{e.conditionValue}"')
+				self.logInfo(f'Skill {skillName} does not comply to "{e.condition}" condition, offers only "{e.conditionValue}"')
 				self._failedSkills[skillName] = FailedAliceSkill(data['installer'])
 				continue
 			except Exception as e:
@@ -448,6 +448,10 @@ class SkillManager(Manager):
 	def getSkillInstance(self, skillName: str, silent: bool = False) -> Optional[AliceSkill]:
 		if skillName in self._activeSkills:
 			return self._activeSkills[skillName]
+		elif skillName in self._deactivatedSkills:
+			return self._deactivatedSkills[skillName]
+		elif skillName in self._failedSkills:
+			return self._failedSkills[skillName]
 		else:
 			if not silent:
 				self.logWarning(f'Skill "{skillName}" is disabled, failed or does not exist in skills manager')
@@ -557,7 +561,7 @@ class SkillManager(Manager):
 						replaceBody=[skillName, str(remoteVersion)]
 					)
 
-					if data['modified']:
+					if data.get('modified', False):
 						self.allSkills[skillName].updateAvailable = True
 						self.logInfo(f'![blue]({skillName}) - Version {self._skillList[skillName]["installer"]["version"]} < {str(remoteVersion)} in {self.ConfigManager.getAliceConfigByName("skillsUpdateChannel")} - ![blue](LOCKED) for local changes!')
 						continue
@@ -571,7 +575,7 @@ class SkillManager(Manager):
 						if not self.downloadInstallTicket(skillName, isUpdate=True):
 							raise Exception
 				else:
-					if data['modified']:
+					if data.get('modified', False):
 						self.logInfo(f'![blue]({skillName}) - Version {self._skillList[skillName]["installer"]["version"]} in {self.ConfigManager.getAliceConfigByName("skillsUpdateChannel")} - ![blue](LOCKED) for local changes!')
 					else:
 						self.logInfo(f'![green]({skillName}) - Version {self._skillList[skillName]["installer"]["version"]} in {self.ConfigManager.getAliceConfigByName("skillsUpdateChannel")}')
@@ -985,23 +989,27 @@ class SkillManager(Manager):
 			supportedLanguages = [
 				'en'
 			]
-			if skillDefinition['fr'] == 'true':
+			if skillDefinition.get('fr', 'false') == 'true':
 				supportedLanguages.append('fr')
-			if skillDefinition['de'] == 'true':
+			if skillDefinition.get('de', 'false') == 'true':
 				supportedLanguages.append('de')
-			if skillDefinition['it'] == 'true':
+			if skillDefinition.get('it', 'false') == 'true':
 				supportedLanguages.append('it')
-			if skillDefinition['pl'] == 'true':
+			if skillDefinition.get('pl', 'false') == 'true':
 				supportedLanguages.append('pl')
+			if skillDefinition.get('pt', 'false') == 'true':
+				supportedLanguages.append('pt')
+			if skillDefinition.get('pt_br', 'false') == 'true':
+				supportedLanguages.append('pt_br')
 
 			conditions = {
 				'lang': supportedLanguages
 			}
 
-			if skillDefinition['conditionOnline']:
+			if skillDefinition.get('conditionOnline', False):
 				conditions['online'] = True
 
-			if skillDefinition['conditionASRArbitrary']:
+			if skillDefinition.get('conditionASRArbitrary', False):
 				conditions['asrArbitraryCapture'] = True
 
 			if skillDefinition['conditionSkill']:
@@ -1035,9 +1043,9 @@ class SkillManager(Manager):
 				'category'          : skillDefinition['category'],
 				'speakableName'     : skillDefinition['speakableName'],
 				'langs'             : supportedLanguages,
-				'createInstructions': skillDefinition['instructions'],
-				'pipreq'            : [req.strip() for req in skillDefinition['pipreq'].split(',')],
-				'sysreq'            : [req.strip() for req in skillDefinition['sysreq'].split(',')],
+				'createInstructions': skillDefinition.get('instructions', False),
+				'pipreq'            : [req.strip() for req in skillDefinition.get('pipreq', "").split(',')],
+				'sysreq'            : [req.strip() for req in skillDefinition.get('sysreq', "").split(',')],
 				'widgets'           : widgets,
 				'scenarioNodes'     : scenarioNodes,
 				'devices'           : devices,
