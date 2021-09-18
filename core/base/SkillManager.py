@@ -22,13 +22,12 @@ import getpass
 import importlib
 import json
 import os
+import requests
 import shutil
 import threading
 import traceback
 from pathlib import Path
 from typing import Dict, List, Optional
-
-import requests
 
 from core.ProjectAliceExceptions import AccessLevelTooLow, GithubNotFound, GithubRateLimit, GithubTokenFailed, SkillNotConditionCompliant, SkillStartDelayed, SkillStartingFailed
 from core.base.SuperManager import SuperManager
