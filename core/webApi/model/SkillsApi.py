@@ -265,8 +265,8 @@ class SkillsApi(Api):
 		if not GithubCloner.hasAuth():
 			return self.githubMissing()
 
-		gitCloner = GithubCloner(baseUrl=f'{constants.GITHUB_URL}/skill_{skillName}.git', dest=Path(self.Commons.rootDir()) / 'skills' / skillName)
 		self.SkillManager.getSkillInstance(skillName=skillName).modified = True
+		gitCloner = GithubCloner(baseUrl=f'{constants.GITHUB_URL}/skill_{skillName}.git', dest=Path(self.Commons.rootDir()) / 'skills' / skillName)
 		if not gitCloner.checkOwnRepoAvailable(skillName=skillName):
 			gitCloner.createForkForSkill(skillName=skillName)
 		gitCloner.checkoutOwnFork(skillName=skillName)
