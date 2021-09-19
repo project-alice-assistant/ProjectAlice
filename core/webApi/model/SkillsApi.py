@@ -70,23 +70,24 @@ class SkillsApi(Api):
 	def createSkill(self):
 		try:
 			newSkill = {
-				'name'                  : request.form.get('name', ''),
-				'speakableName'         : request.form.get('speakableName', ''),
-				'description'           : request.form.get('description', 'Missing description'),
-				'category'              : request.form.get('category', 'undefined'),
-				'fr'                    : request.form.get('french', False),
-				'de'                    : request.form.get('german', False),
-				'it'                    : request.form.get('italian', False),
-				'pl'                    : request.form.get('polish', False),
-				'widgets'               : request.form.get('widgets', ''),
-				'nodes'                 : request.form.get('nodes', ''),
-				'devices'               : request.form.get('devices', '')
+				'name'         : request.form.get('name', '').capitalize(),
+				'speakableName': request.form.get('speakableName', ''),
+				'description'  : request.form.get('description', 'Missing description'),
+				'category'     : request.form.get('category', 'undefined'),
+				'fr'           : request.form.get('french', False),
+				'de'           : request.form.get('german', False),
+				'it'           : request.form.get('italian', False),
+				'pl'           : request.form.get('polish', False),
+				'widgets'      : request.form.get('widgets', ''),
+				'nodes'        : request.form.get('nodes', ''),
+				'devices'      : request.form.get('devices', '')
 			}
 
 			if not self.SkillManager.createNewSkill(newSkill):
 				raise Exception
-
-			return jsonify(success=True)
+			skillName = request.form.get('name', '').capitalize()
+			skill = self.SkillManager.getSkillInstance(skillName=skillName, silent=False)
+			return jsonify(success=True, skill=skill.toDict() if skill else dict())
 
 		except Exception as e:
 			self.logError(f'Something went wrong creating a new skill: {e}')
@@ -290,8 +291,14 @@ class SkillsApi(Api):
 			return self.skillNotFound()
 		self.SkillManager.getSkillInstance(skillName=skillName).modified = False
 		gitCloner = GithubCloner(baseUrl=f'{constants.GITHUB_URL}/skill_{skillName}.git', dest=Path(self.Commons.rootDir()) / 'skills' / skillName)
-		gitCloner.gitPush()
-		return jsonify(success=True)
+		if not gitCloner.add():
+			return jsonify(success=False, message="Failed adding to git")
+		elif not gitCloner.commit(message="pushed via API"):
+			return jsonify(success=False, message="Failed creating commit")
+		elif not gitCloner.push():
+			return jsonify(success=False, message="Failed pushing to git")
+		else:
+			return jsonify(success=True)
 
 
 	@route('/<skillName>/getInstructions/', methods=['GET', 'POST'])
