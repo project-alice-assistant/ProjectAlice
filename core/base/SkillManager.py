@@ -453,7 +453,7 @@ class SkillManager(Manager):
 			return self._failedSkills[skillName]
 		else:
 			if not silent:
-				self.logWarning(f'Skill "{skillName}" is disabled, failed or does not exist in skills manager')
+				self.logWarning(f'Skill "{skillName}" does not exist in skills manager')
 
 			return None
 
@@ -979,7 +979,7 @@ class SkillManager(Manager):
 		try:
 			self.logInfo(f'Creating new skill "{skillDefinition["name"]}"')
 
-			skillName = skillDefinition['name'][0].upper() + skillDefinition['name'][1:]
+			skillName = skillDefinition['name'].capitalize()
 
 			localDirectory = Path('/home', getpass.getuser(), f'ProjectAlice/skills/{skillName}')
 			if localDirectory.exists():
@@ -1011,34 +1011,34 @@ class SkillManager(Manager):
 			if skillDefinition.get('conditionASRArbitrary', False):
 				conditions['asrArbitraryCapture'] = True
 
-			if skillDefinition['conditionSkill']:
+			if skillDefinition.get('conditionSkill', []):
 				conditions['skill'] = [skill.strip() for skill in skillDefinition['conditionSkill'].split(',')]
 
-			if skillDefinition['conditionNotSkill']:
+			if skillDefinition.get('conditionNotSkill', []):
 				conditions['notSkill'] = [skill.strip() for skill in skillDefinition['conditionNotSkill'].split(',')]
 
-			if skillDefinition['conditionActiveManager']:
+			if skillDefinition.get('conditionActiveManager', []):
 				conditions['activeManager'] = [manager.strip() for manager in skillDefinition['conditionActiveManager'].split(',')]
 
-			if skillDefinition['widgets']:
+			if skillDefinition.get('widgets', []):
 				widgets = [self.Commons.toPascalCase(widget).strip() for widget in skillDefinition['widgets'].split(',')]
 			else:
 				widgets = list()
 
-			if skillDefinition['nodes']:
+			if skillDefinition.get('nodes', []):
 				scenarioNodes = [self.Commons.toPascalCase(node).strip() for node in skillDefinition['nodes'].split(',')]
 			else:
 				scenarioNodes = list()
 
-			if skillDefinition['devices']:
+			if skillDefinition.get('devices', []):
 				devices = [self.Commons.toPascalCase(device).strip() for device in skillDefinition['devices'].split(',')]
 			else:
 				devices = list()
 
 			data = {
 				'username'          : self.ConfigManager.getAliceConfigByName('githubUsername'),
-				'skillName'         : skillName,
-				'description'       : skillDefinition['description'].capitalize(),
+				'skillName'         : skillName.capitalize(),
+				'description'       : skillDefinition['description'],
 				'category'          : skillDefinition['category'],
 				'speakableName'     : skillDefinition['speakableName'],
 				'langs'             : supportedLanguages,
@@ -1058,6 +1058,21 @@ class SkillManager(Manager):
 			self.Commons.runSystemCommand(['./venv/bin/pip', '--upgrade', 'projectalice-sk'])
 			self.Commons.runSystemCommand(['./venv/bin/projectalice-sk', 'create', '--file', f'{str(dump)}'])
 			self.logInfo(f'Created **{skillName}** skill')
+
+			# todo: ugly..
+			data['name'] = data['skillName']
+			data['author'] = data['username']
+			data['desc'] = data['description']
+			# ok, version never filled in frontend and every skill should be created in initial version
+			data['version'] = '0.0.1'
+
+			self._failedSkills[skillName] = FailedAliceSkill(data)
+			self._skillList[skillName] = {
+				'active'   : False,
+				'modified' : True,
+				'installer': data
+			}
+			self._failedSkills[skillName].modified = True
 
 			return True
 		except Exception as e:
