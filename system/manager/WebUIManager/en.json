@@ -84,27 +84,29 @@
 	},
 	"notifications": {
 		"errors"   : {
-			"uiError"              : "Sorry, something went wrong",
-			"unexpectedServerError": "An unexpected server error occured",
-			"noDeviceToDeviceLink" : "Cannot link a device to another",
-			"deviceUnlinkFailed"   : "Device unlinking failed",
-			"deviceLinked"         : "Device linking failed",
-			"somethingWentWrong"   : "Something went wrong, please check your logs",
-			"deviceSavingFailed"   : "Failed saving device",
-			"cannotLinkDevice"     : "This device cannot be linked",
-			"skillDeleteFailed"    : "Failed deleting the skill",
-			"noLocationEmptyName"  : "The location name cannot be empty",
-			"widgetSavingFailed"   : "Failed saving widget"
+		  "uiError": "Sorry, something went wrong",
+		  "unexpectedServerError": "An unexpected server error occurred",
+		  "noDeviceToDeviceLink": "Cannot link a device to another",
+		  "deviceUnlinkFailed": "Device unlinking failed",
+		  "deviceLinked": "Device linking failed",
+		  "somethingWentWrong": "Something went wrong, please check your logs",
+		  "deviceSavingFailed": "Failed saving device",
+		  "cannotLinkDevice": "This device cannot be linked",
+		  "skillDeleteFailed": "Failed deleting the skill",
+		  "noLocationEmptyName": "The location name cannot be empty",
+		  "widgetSavingFailed": "Failed saving widget",
+		  "newTileFailed": "Failed uploading new tile"
 		},
 		"successes": {
-			"deviceUnlinked" : "Device successfully unlinked",
-			"deviceDeleted"  : "Device successfully deleted",
-			"deviceLinked"   : "Device successfully linked",
-			"pageDeleted"    : "The page has been deleted",
-			"deviceSaved"    : "Device settings succesfully saved",
-			"skillDeleted"   : "The skill was correctly deleted",
-			"reloadTriggered": "Reload triggered",
-			"widgetSaved"    : "Widget succesfully saved"
+		  "deviceUnlinked": "Device successfully unlinked",
+		  "deviceDeleted": "Device successfully deleted",
+		  "deviceLinked": "Device successfully linked",
+		  "pageDeleted": "The page has been deleted",
+		  "deviceSaved": "Device settings successfully saved",
+		  "skillDeleted": "The skill was correctly deleted",
+		  "reloadTriggered": "Reload triggered",
+		  "widgetSaved": "Widget successfully saved",
+		  "newTileAdded": "New tile uploaded!"
 		},
 		"info"     : {
 			"deviceNotLinkedToLocation"    : "This device is not linked to this location",

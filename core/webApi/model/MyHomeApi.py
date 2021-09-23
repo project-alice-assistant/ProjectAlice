@@ -16,11 +16,13 @@
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>
 #
 #  Last modified: 2021.04.13 at 12:56:49 CEST
+import time
+from pathlib import Path
+from typing import Optional, Union
 
 from flask import jsonify, request, send_from_directory
 from flask_classful import route
-from pathlib import Path
-from typing import Union
+from werkzeug.datastructures import FileStorage
 
 from core.commons import constants
 from core.device.model.Device import Device
@@ -37,14 +39,31 @@ class MyHomeApi(Api):
 		super().__init__()
 
 
+	@staticmethod
+	def isAllowedExtension(filename):
+		return '.' in filename and filename.rsplit('.', 1)[1].lower() == 'png'
+
+
+	def fileCheck(self) -> Optional[FileStorage]:
+		if 'newTile' not in request.files:
+			return None
+		else:
+			file = request.files['newTile']
+			if not file.filename:
+				return None
+			if not self.isAllowedExtension(file.filename):
+				return None
+			return file
+
+
 	@route('/', methods=['GET'])
 	def getData(self):
 		try:
 			return jsonify(data={
-				'locations': {location.id: location.toDict() for location in self.LocationManager.locations.values()},
+				'locations'    : {location.id: location.toDict() for location in self.LocationManager.locations.values()},
 				'constructions': {construction.id: construction.toDict() for construction in self.LocationManager.constructions.values()},
-				'furnitures': {furniture.id: furniture.toDict() for furniture in self.LocationManager.furnitures.values()},
-				'devices': {device.id: device.toDict() for device in self.DeviceManager.devices.values()},
+				'furnitures'   : {furniture.id: furniture.toDict() for furniture in self.LocationManager.furnitures.values()},
+				'devices'      : {device.id: device.toDict() for device in self.DeviceManager.devices.values()},
 				'links': {link.id: link.toDict() for link in self.DeviceManager.deviceLinks.values()}
 			})
 		except:
@@ -239,12 +258,41 @@ class MyHomeApi(Api):
 			return jsonify(success=False)
 
 
+	@route('/locations/floor/', methods=['PUT'])
+	@ApiAuthenticated
+	def addFloorTile(self):
+		try:
+			file = self.fileCheck()
+			if not file:
+				return jsonify(success=False, message='Incompatible file')
+			else:
+				file.save(f'{self.Commons.rootDir()}/core/webApi/static/images/floors/0000_{int(time.time())}.png')
+				return jsonify(success=True)
+		except Exception as e:
+			self.logError('Error saving new floor tile:', str(e))
+			return jsonify(success=False, message=str(e))
+
+
 	@route('/furniture/<imageId>.png', methods=['GET'])
 	def getFurniture(self, imageId: str):
 		try:
 			return send_from_directory('static/images/furniture', f'{imageId}{constants.PNG_EXT}')
 		except:
 			return jsonify(success=False)
+
+
+	@route('/locations/furniture/', methods=['PUT'])
+	@ApiAuthenticated
+	def addFurnitureTile(self):
+		try:
+			file = self.fileCheck()
+			if not file:
+				return jsonify(success=False, message='Incompatible file')
+			else:
+				file.save(f'{self.Commons.rootDir()}/core/webApi/static/images/furniture/0000_{int(time.time())}.png')
+				return jsonify(success=True)
+		except Exception as e:
+			return jsonify(success=False, message=str(e))
 
 
 	@route('/constructions/<imageId>.png', methods=['GET'])
@@ -255,6 +303,20 @@ class MyHomeApi(Api):
 			return jsonify(success=False)
 
 
+	@route('/locations/construction/', methods=['PUT'])
+	@ApiAuthenticated
+	def addConstructionTile(self):
+		try:
+			file = self.fileCheck()
+			if not file:
+				return jsonify(success=False, message='Incompatible file')
+			else:
+				file.save(f'{self.Commons.rootDir()}/core/webApi/static/images/constructions/0000_{int(time.time())}.png')
+				return jsonify(success=True)
+		except Exception as e:
+			return jsonify(success=False, message=str(e))
+
+
 	@route('/devices/<deviceId>/<_rndStr>/device.png', methods=['GET'])
 	def getDeviceIcon(self, deviceId: str, _rndStr: str):
 		"""
@@ -263,8 +325,8 @@ class MyHomeApi(Api):
 		:param _rndStr: Is only used to bypass browser caching
 		:return:
 		"""
+		file = None
 		try:
-			file = None
 			device: Device = self.DeviceManager.getDevice(deviceId=int(deviceId))
 			file = device.getDeviceIcon()
 			return send_from_directory(file.parent, f'{file.stem}{constants.PNG_EXT}')
@@ -311,7 +373,7 @@ class MyHomeApi(Api):
 	def removeDeviceLink(self):
 		"""
 		API method for deleting an existing device link to a location
-		:return: success value and error mesasge
+		:return: success value and error message
 		"""
 		try:
 			self.DeviceManager.deleteDeviceLinks(deviceId=request.json.get('deviceId'), targetLocationId=request.json.get('targetLocation'))

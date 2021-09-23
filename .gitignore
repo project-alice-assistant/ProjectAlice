@@ -132,6 +132,7 @@ var/cache/*
 var/logs/*
 system/database/*
 system/myHouse/*
+core/webApi/static/images/*/0000_*.png
 
 test.py
 
