@@ -19,7 +19,7 @@
 
 import json
 
-from flask import jsonify, request
+from flask import Response, jsonify, request
 from flask_classful import route
 from paho.mqtt.client import MQTTMessage
 
@@ -40,7 +40,7 @@ class DialogApi(Api):
 
 	@route('/say/', methods=['POST'])
 	@ApiAuthenticated
-	def say(self):
+	def say(self) -> Response:
 		try:
 			deviceUid = request.form.get('deviceUid') if request.form.get('deviceUid', None) is not None else self.DeviceManager.getMainDevice().uid
 			self.MqttManager.say(
@@ -55,7 +55,7 @@ class DialogApi(Api):
 
 	@route('/ask/', methods=['POST'])
 	@ApiAuthenticated
-	def ask(self):
+	def ask(self) -> Response:
 		try:
 			deviceUid = request.form.get('deviceUid') if request.form.get('deviceUid', None) is not None else self.DeviceManager.getMainDevice().uid
 			self.MqttManager.ask(
@@ -70,7 +70,7 @@ class DialogApi(Api):
 
 	@route('/process/', methods=['POST'])
 	@ApiAuthenticated
-	def process(self):
+	def process(self) -> Response:
 		try:
 			deviceUid = request.form.get('deviceUid') if request.form.get('deviceUid', None) is not None else self.DeviceManager.getMainDevice().uid
 
@@ -103,7 +103,7 @@ class DialogApi(Api):
 
 	@route('/continue/', methods=['POST'])
 	@ApiAuthenticated
-	def continueDialog(self):
+	def continueDialog(self) -> Response:
 		try:
 			deviceUid = request.form.get('deviceUid') if request.form.get('deviceUid', None) is not None else self.DeviceManager.getMainDevice().uid
 
@@ -122,7 +122,7 @@ class DialogApi(Api):
 			return jsonify(success=False)
 
 
-	def publishText(self, session: DialogSession):
+	def publishText(self, session: DialogSession) -> Response:
 		message = MQTTMessage()
 		message.payload = json.dumps({'sessionId': session.sessionId, 'siteId': session.deviceUid, 'text': session.input})
 		session.extend(message=message)

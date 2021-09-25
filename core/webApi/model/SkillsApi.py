@@ -19,9 +19,10 @@
 
 
 import json
-from flask import jsonify, request
-from flask_classful import route
 from pathlib import Path
+
+from flask import Response, jsonify, request
+from flask_classful import route
 
 from core.base.model.GithubCloner import GithubCloner
 from core.commons import constants
@@ -39,7 +40,7 @@ class SkillsApi(Api):
 
 
 	# noinspection PyMethodMayBeStatic
-	def skillNotFound(self):
+	def skillNotFound(self) -> Response:
 		return jsonify(success=False, reason='skill not found')
 
 
@@ -49,7 +50,7 @@ class SkillsApi(Api):
 
 
 	@ApiAuthenticated
-	def delete(self, skillName: str):
+	def delete(self, skillName: str) -> Response:
 		if skillName in self.SkillManager.neededSkills:
 			return jsonify(success=False, reason='skill cannot be deleted')
 
@@ -61,13 +62,13 @@ class SkillsApi(Api):
 
 
 	@route('/getStore/')
-	def getStore(self):
+	def getStore(self) -> Response:
 		return jsonify(store=self.SkillStoreManager.getStoreData())
 
 
 	@ApiAuthenticated
 	@route('/createSkill/', methods=['PUT'])
-	def createSkill(self):
+	def createSkill(self) -> Response:
 		try:
 			newSkill = {
 				'name'         : request.form.get('name', '').capitalize(),
@@ -96,7 +97,7 @@ class SkillsApi(Api):
 
 	@ApiAuthenticated
 	@route('/uploadSkill/', methods=['POST'])
-	def uploadToGithub(self):
+	def uploadToGithub(self) -> Response:
 		try:
 			skillName = request.form.get('skillName', '')
 			skillDesc = request.form.get('skillDesc', '')
@@ -115,7 +116,7 @@ class SkillsApi(Api):
 
 	@ApiAuthenticated
 	@route('/installSkills/', methods=['PUT'])
-	def installSkills(self):
+	def installSkills(self) -> Response:
 		try:
 			skills = request.json
 
@@ -134,7 +135,7 @@ class SkillsApi(Api):
 
 	@route('/<skillName>/', methods=['PATCH'])
 	@ApiAuthenticated
-	def saveSkillSettings(self, skillName: str):
+	def saveSkillSettings(self, skillName: str) -> Response:
 		try:
 			for confName, confValue in request.json.items():
 				self.ConfigManager.updateSkillConfigurationFile(
@@ -151,7 +152,7 @@ class SkillsApi(Api):
 
 	@route('/<skillName>/')
 	@ApiAuthenticated
-	def get(self, skillName: str):
+	def get(self, skillName: str) -> Response:
 		try:
 			skill = self.SkillManager.getSkillInstance(skillName=skillName, silent=True)
 			if not skill:
@@ -164,7 +165,7 @@ class SkillsApi(Api):
 
 	@route('/<skillName>/toggleActiveState/')
 	@ApiAuthenticated
-	def toggleActiveState(self, skillName: str):
+	def toggleActiveState(self, skillName: str) -> Response:
 		try:
 			if skillName not in self.SkillManager.allSkills:
 				return self.skillNotFound()
@@ -185,7 +186,7 @@ class SkillsApi(Api):
 
 	@route('/<skillName>/activate/', methods=['GET', 'POST'])
 	@ApiAuthenticated
-	def activate(self, skillName: str):
+	def activate(self, skillName: str) -> Response:
 		if skillName not in self.SkillManager.allSkills:
 			return self.skillNotFound()
 
@@ -199,7 +200,7 @@ class SkillsApi(Api):
 
 	@route('/<skillName>/deactivate/', methods=['GET', 'POST'])
 	@ApiAuthenticated
-	def deactivate(self, skillName: str):
+	def deactivate(self, skillName: str) -> Response:
 		if skillName not in self.SkillManager.allSkills:
 			return self.skillNotFound()
 
@@ -216,7 +217,7 @@ class SkillsApi(Api):
 
 	@route('/<skillName>/reload/', methods=['GET', 'POST'])
 	@ApiAuthenticated
-	def reload(self, skillName: str):
+	def reload(self, skillName: str) -> Response:
 		if skillName not in self.SkillManager.allSkills:
 			return self.skillNotFound()
 
@@ -231,7 +232,7 @@ class SkillsApi(Api):
 
 
 	@ApiAuthenticated
-	def put(self, skillName: str):
+	def put(self, skillName: str) -> Response:
 		if not self.SkillStoreManager.skillExists(skillName):
 			return self.skillNotFound()
 		elif self.SkillManager.getSkillInstance(skillName, True) is not None:
@@ -249,7 +250,7 @@ class SkillsApi(Api):
 
 	@route('/<skillName>/checkUpdate/')
 	@ApiAuthenticated
-	def checkUpdate(self, skillName: str):
+	def checkUpdate(self, skillName: str) -> Response:
 		if skillName not in self.SkillManager.allSkills:
 			return self.skillNotFound()
 
@@ -258,7 +259,7 @@ class SkillsApi(Api):
 
 	@route('/<skillName>/setModified/')
 	@ApiAuthenticated
-	def setModified(self, skillName: str):
+	def setModified(self, skillName: str) -> Response:
 		if skillName not in self.SkillManager.allSkills:
 			return self.skillNotFound()
 
@@ -275,7 +276,7 @@ class SkillsApi(Api):
 
 	@route('/<skillName>/revert/')
 	@ApiAuthenticated
-	def revert(self, skillName: str):
+	def revert(self, skillName: str) -> Response:
 		if skillName not in self.SkillManager.allSkills:
 			return self.skillNotFound()
 		self.SkillManager.getSkillInstance(skillName=skillName).modified = False
@@ -286,7 +287,7 @@ class SkillsApi(Api):
 
 	@route('/<skillName>/upload/')
 	@ApiAuthenticated
-	def upload(self, skillName: str):
+	def upload(self, skillName: str) -> Response:
 		if skillName not in self.SkillManager.allSkills:
 			return self.skillNotFound()
 		self.SkillManager.getSkillInstance(skillName=skillName).modified = False
@@ -303,7 +304,7 @@ class SkillsApi(Api):
 
 	@route('/<skillName>/getInstructions/', methods=['GET', 'POST'])
 	@ApiAuthenticated
-	def getInstructions(self, skillName: str):
+	def getInstructions(self, skillName: str) -> Response:
 		if skillName not in self.SkillManager.allSkills:
 			return self.skillNotFound()
 
@@ -319,7 +320,7 @@ class SkillsApi(Api):
 
 	@route('/<skillName>/setInstructions/', methods=['PATCH'])
 	@ApiAuthenticated
-	def setInstructions(self, skillName: str):
+	def setInstructions(self, skillName: str) -> Response:
 		if skillName not in self.SkillManager.allSkills:
 			return self.skillNotFound()
 
@@ -338,7 +339,7 @@ class SkillsApi(Api):
 
 	@route('/<skillName>/getDialogTemplate/', methods=['GET', 'POST'])
 	@ApiAuthenticated
-	def getTemplate(self, skillName: str):
+	def getTemplate(self, skillName: str) -> Response:
 		if skillName not in self.SkillManager.allSkills:
 			return self.skillNotFound()
 
@@ -364,7 +365,7 @@ class SkillsApi(Api):
 
 	@route('/<skillName>/setDialogTemplate/', methods=['PATCH'])
 	@ApiAuthenticated
-	def setTemplate(self, skillName: str):
+	def setTemplate(self, skillName: str) -> Response:
 		self.logInfo(f'DialogTemplate API access for skill {skillName}')
 		if skillName not in self.SkillManager.allSkills:
 			self.logError(f'Skill {skillName} not found')
@@ -383,7 +384,7 @@ class SkillsApi(Api):
 
 	@route('/<skillName>/setConfigTemplate/', methods=['PATCH'])
 	@ApiAuthenticated
-	def setConfig(self, skillName: str):
+	def setConfig(self, skillName: str) -> Response:
 		if skillName not in self.SkillManager.allSkills:
 			return self.skillNotFound()
 
@@ -401,7 +402,7 @@ class SkillsApi(Api):
 
 	@route('/<skillName>/getTalkFiles/', methods=['GET', 'POST'])
 	@ApiAuthenticated
-	def getTalkFiles(self, skillName: str):
+	def getTalkFiles(self, skillName: str) -> Response:
 		if skillName not in self.SkillManager.allSkills:
 			return self.skillNotFound()
 
@@ -418,7 +419,7 @@ class SkillsApi(Api):
 
 	@route('/<skillName>/setTalkFile/', methods=['PATCH'])
 	@ApiAuthenticated
-	def setTalkFile(self, skillName: str):
+	def setTalkFile(self, skillName: str) -> Response:
 		self.logInfo(f'writing talkFile API access for skill {skillName}')
 		if skillName not in self.SkillManager.allSkills:
 			return self.skillNotFound()
@@ -436,7 +437,7 @@ class SkillsApi(Api):
 
 	@route('/<skillName>/getInstallFile/', methods=['GET', 'POST'])
 	@ApiAuthenticated
-	def getInstallFile(self, skillName: str):
+	def getInstallFile(self, skillName: str) -> Response:
 		if skillName not in self.SkillManager.allSkills:
 			return self.skillNotFound()
 
@@ -449,7 +450,7 @@ class SkillsApi(Api):
 
 	@route('/<skillName>/setInstallFile/', methods=['PATCH'])
 	@ApiAuthenticated
-	def setInstallFile(self, skillName: str):
+	def setInstallFile(self, skillName: str) -> Response:
 		self.logInfo(f'installFile API access for skill {skillName}')
 		if skillName not in self.SkillManager.allSkills:
 			return self.skillNotFound()

@@ -17,7 +17,7 @@
 #
 #  Last modified: 2021.04.13 at 12:56:49 CEST
 
-from flask import jsonify, request, send_from_directory
+from flask import Response, jsonify, request, send_from_directory
 from flask_classful import route
 
 from core.ProjectAliceExceptions import ConfigurationUpdateFailed
@@ -37,7 +37,7 @@ class UtilsApi(Api):
 
 	@route('/restart/')
 	@ApiAuthenticated
-	def restart(self):
+	def restart(self) -> Response:
 		try:
 			self.ThreadManager.doLater(interval=2, func=self.ProjectAlice.doRestart)
 			return jsonify(success=True)
@@ -48,7 +48,7 @@ class UtilsApi(Api):
 
 	@route('/reboot/')
 	@ApiAuthenticated
-	def reboot(self):
+	def reboot(self) -> Response:
 		try:
 			self.ThreadManager.doLater(interval=2, func=self.Commons.runRootSystemCommand, args=[['shutdown', '-r', 'now']])
 			return jsonify(success=True)
@@ -59,7 +59,7 @@ class UtilsApi(Api):
 
 	@route('/update/')
 	@ApiAuthenticated
-	def update(self):
+	def update(self) -> Response:
 		try:
 			self.ProjectAlice.updateProjectAlice()
 			return jsonify(success=True)
@@ -69,7 +69,7 @@ class UtilsApi(Api):
 
 
 	@route('/config/', methods=['GET'])
-	def config(self):
+	def config(self) -> Response:
 		"""
 		Returns Alice configs. If authenticated, with passwords, if not, sensitive data is removed
 		"""
@@ -88,7 +88,7 @@ class UtilsApi(Api):
 
 
 	@route('/config/', methods=['PATCH'])
-	def setConfig(self):
+	def setConfig(self) -> Response:
 		try:
 			confs = request.json
 			confs.pop('aliceIp', None)
@@ -112,7 +112,7 @@ class UtilsApi(Api):
 
 
 	@route('/mqttConfig/', methods=['GET'])
-	def mqttConfig(self):
+	def mqttConfig(self) -> Response:
 		mqttHost = self.ConfigManager.getAliceConfigByName('mqttHost')
 
 		if mqttHost == 'localhost' or mqttHost == '127.0.0.1':
@@ -126,7 +126,7 @@ class UtilsApi(Api):
 
 
 	@route('/i18n/', methods=['GET'])
-	def i18n(self):
+	def i18n(self) -> Response:
 		return jsonify(success=True, data=self.LanguageManager.loadWebUIStrings())
 
 
@@ -136,7 +136,7 @@ class UtilsApi(Api):
 
 
 	@route('/sysCmd/', methods=['POST'])
-	def sysCmd(self):
+	def sysCmd(self) -> Response:
 		cmd = request.form.get('cmd', '')
 		cmd = cmd.split() if ' ' in cmd else [cmd]
 
@@ -149,7 +149,7 @@ class UtilsApi(Api):
 
 
 	@ApiAuthenticated
-	def addWakeword(self) -> dict:
+	def addWakeword(self) -> Response:
 		try:
 			self.SkillManager.getSkillInstance('AliceCore').addNewWakeword()
 			return jsonify(success=True)
@@ -159,7 +159,7 @@ class UtilsApi(Api):
 
 
 	@ApiAuthenticated
-	def tuneWakeword(self) -> dict:
+	def tuneWakeword(self) -> Response:
 		try:
 			self.SkillManager.getSkillInstance('AliceCore').tuneWakeword()
 			return jsonify(success=True)
@@ -169,7 +169,7 @@ class UtilsApi(Api):
 
 
 	@ApiAuthenticated
-	def wipeAll(self) -> dict:
+	def wipeAll(self) -> Response:
 		try:
 			self.ProjectAlice.wipeAll()
 			self.ThreadManager.doLater(interval=2, func=self.ProjectAlice.doRestart)
@@ -180,7 +180,7 @@ class UtilsApi(Api):
 
 
 	@ApiAuthenticated
-	def addUser(self) -> dict:
+	def addUser(self) -> Response:
 		try:
 			uid = request.headers.get('uid', '')
 			if not uid:
@@ -199,7 +199,7 @@ class UtilsApi(Api):
 
 
 	@ApiAuthenticated
-	def train(self) -> dict:
+	def train(self) -> Response:
 		try:
 			self.AssistantManager.checkAssistant(forceRetrain=True)
 			return jsonify(success=True)
@@ -208,7 +208,7 @@ class UtilsApi(Api):
 			return jsonify(success=False, message=str(e))
 
 
-	def pahows(self) -> dict:
+	def pahows(self) -> Response:
 		try:
 			return send_from_directory(f'{self.Commons.rootDir()}/core/webApi/static', 'pahows.js')
 		except Exception as e:
@@ -216,7 +216,7 @@ class UtilsApi(Api):
 			return jsonify(success=False, message=str(e))
 
 
-	def Widget(self) -> dict:
+	def Widget(self) -> Response:
 		try:
 			return send_from_directory(f'{self.Commons.rootDir()}/core/webApi/static', 'Widget.js')
 		except Exception as e:

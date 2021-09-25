@@ -17,7 +17,7 @@
 #
 #  Last modified: 2021.04.13 at 12:56:48 CEST
 
-from flask import jsonify, request
+from flask import Response, jsonify, request
 from flask_classful import route
 
 from core.util.Decorators import ApiAuthenticated
@@ -29,7 +29,7 @@ class DevicesApi(Api):
 
 
 	@route('/<uid>/hello/', methods=['GET'])
-	def hello(self, uid: str) -> dict:
+	def hello(self, uid: str) -> Response:
 		try:
 			device = self.DeviceManager.getDevice(uid=uid)
 			if not device:
@@ -44,7 +44,7 @@ class DevicesApi(Api):
 
 
 	@route('/<uid>/bye/', methods=['GET'])
-	def bye(self, uid: str) -> dict:
+	def bye(self, uid: str) -> Response:
 		try:
 			device = self.DeviceManager.getDevice(uid=uid)
 			if not device:
@@ -60,7 +60,7 @@ class DevicesApi(Api):
 
 	@route('/<uid>/', methods=['PUT'])
 	@ApiAuthenticated
-	def addDevice(self, uid: str) -> dict:
+	def addDevice(self, uid: str) -> Response:
 		try:
 			device = self.DeviceManager.addNewDevice(
 				deviceType=request.json.get('deviceType'),
