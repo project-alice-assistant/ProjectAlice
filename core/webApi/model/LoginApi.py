@@ -17,7 +17,7 @@
 #
 #  Last modified: 2021.04.13 at 12:56:49 CEST
 
-from flask import jsonify, request
+from flask import Response, jsonify, request
 from flask_classful import route
 
 from core.util.Decorators import ApiAuthenticated
