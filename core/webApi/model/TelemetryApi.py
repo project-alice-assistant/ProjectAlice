@@ -17,7 +17,7 @@
 #
 #  Last modified: 2021.04.13 at 12:56:49 CEST
 
-from flask import jsonify, request
+from flask import Response, jsonify, request
 from flask_classful import route
 
 from core.util.Decorators import ApiAuthenticated
@@ -27,9 +27,10 @@ from core.webApi.model.Api import Api
 class TelemetryApi(Api):
 	route_base = f'/api/{Api.version()}/telemetry/'
 
+
 	@route('/', methods=['GET'])
 	@ApiAuthenticated
-	def get(self):
+	def get(self) -> Response:
 		try:
 			ttype = request.args.get('telemetryType', None)
 			deviceId = request.args.get('deviceId', None)
@@ -46,5 +47,5 @@ class TelemetryApi(Api):
 
 	@route('/overview/', methods=['GET'])
 	@ApiAuthenticated
-	def getOverview(self):
+	def getOverview(self) -> Response:
 		return jsonify(self.TelemetryManager.getAllCombinationsForAPI())

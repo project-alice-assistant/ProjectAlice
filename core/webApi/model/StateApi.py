@@ -20,8 +20,8 @@
 from flask import jsonify
 from flask_classful import route
 
-from core.webApi.model.Api import Api
 from core.util.Decorators import ApiAuthenticated
+from core.webApi.model.Api import Api
 
 
 class StateApi(Api):
@@ -35,7 +35,7 @@ class StateApi(Api):
 
 	@route('/<statePath>/', methods=['GET'])
 	@ApiAuthenticated
-	def get(self, statePath: str):
+	def get(self, statePath: str) -> Response:
 		try:
 			state = self.StateManager.getState(statePath)
 			if not state:

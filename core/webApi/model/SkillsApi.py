@@ -362,12 +362,7 @@ class SkillsApi(Api):
 
 	@route('/<skillName>/getInstructions/', methods=['GET', 'POST'])
 	@ApiAuthenticated
-	def getInstructions(self, skillName: str) -> Response:
-		"""
-		returns the instructions file for a given skill and language
-		:param skillName:
-		:return:
-		"""
+	def getInstructions(self, skillName: str):
 		if skillName not in self.SkillManager.allSkills:
 			return self.skillNotFound()
 

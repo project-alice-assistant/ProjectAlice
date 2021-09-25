@@ -17,11 +17,11 @@
 #
 #  Last modified: 2021.04.13 at 12:56:49 CEST
 
-from flask import jsonify, request
+from flask import Response, jsonify, request
 
-from core.webApi.model.Api import Api
 from core.user.model.AccessLevels import AccessLevel
 from core.util.Decorators import ApiAuthenticated
+from core.webApi.model.Api import Api
 
 
 class UsersApi(Api):
@@ -33,17 +33,17 @@ class UsersApi(Api):
 
 
 	@ApiAuthenticated
-	def index(self):
+	def index(self) -> Response:
 		return jsonify(data=[user.toJson() for user in self.UserManager.users.values()])
 
 
 	@ApiAuthenticated
-	def get(self, userId: int):
+	def get(self, userId: int) -> Response:
 		return jsonify(data=self.UserManager.getUserById(userId).toJson())
 
 
 	@ApiAuthenticated
-	def put(self):
+	def put(self) -> Response:
 		try:
 			username = request.form.get('username', '').lower()
 			pin = int(request.form.get('pin'))
@@ -66,7 +66,7 @@ class UsersApi(Api):
 
 
 	@ApiAuthenticated
-	def delete(self):
+	def delete(self) -> Response:
 		try:
 			if not self.UserManager.hasAccessLevel(self.UserManager.getUserByAPIToken(request.headers.get('auth')).name, AccessLevel.ADMIN):
 				return jsonify(message='ERROR: You need admin access to delete a user')
