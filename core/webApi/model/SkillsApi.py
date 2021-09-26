@@ -564,7 +564,7 @@ class SkillsApi(Api):
 
 		return jsonify(success=True, installFile=json.loads(installFile.read_text()) if installFile.exists() else '')
 
-	@route('/<skillName/createWidget/<widgetName>/', methods=['PATCH'])
+	@route('/<skillName>/createWidget/<widgetName>/', methods=['PATCH'])
 	@ApiAuthenticated
 	def createWidget(self, skillName: str, widgetName: str) -> Response:
 		"""
@@ -580,3 +580,5 @@ class SkillsApi(Api):
 
 		self.Commons.runSystemCommand(['./venv/bin/pip', '--upgrade', 'projectalice-sk'])
 		self.Commons.runSystemCommand(['./venv/bin/projectalice-sk', 'createWidget', '--widget', widgetName, '--path', f'{dest}'])
+
+		return jsonify(success=True)
