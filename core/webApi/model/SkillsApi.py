@@ -563,3 +563,20 @@ class SkillsApi(Api):
 		installFile.write_text(json.dumps(data['installFile'], indent=2))
 
 		return jsonify(success=True, installFile=json.loads(installFile.read_text()) if installFile.exists() else '')
+
+	@route('/<skillName/createWidget/<widgetName>/', methods=['PATCH'])
+	@ApiAuthenticated
+	def createWidget(self, skillName: str, widgetName: str) -> Response:
+		"""
+		Create the empty hull for a new widget in the skills folders
+		:param skillName:
+		:return:
+		"""
+		self.logInfo(f'Creating new widget {widgetName} for skill {skillName}')
+		if skillName not in self.SkillManager.allSkills:
+			return self.skillNotFound()
+
+		dest = str(Path(self.Commons.rootDir()) / 'skills' / skillName)
+
+		self.Commons.runSystemCommand(['./venv/bin/pip', '--upgrade', 'projectalice-sk'])
+		self.Commons.runSystemCommand(['./venv/bin/projectalice-sk', 'createWidget', '--widget', widgetName, '--path', f'{dest}'])
