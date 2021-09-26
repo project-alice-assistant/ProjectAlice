@@ -52,6 +52,7 @@ class Device(ProjectAliceObject):
 		self._skillName: str = data.get('skillName', '')
 		self._parentLocation: int = data.get('parentLocation', 0)
 		self._deviceType: DeviceType = self.DeviceManager.getDeviceType(self._skillName, self._typeName)
+		self._iconEtag: str = str(uuid.uuid4())
 
 		self._secret = ''  # Used to verify devices reply from UI
 
@@ -67,7 +68,7 @@ class Device(ProjectAliceObject):
 		self._deviceParams: Dict = self.loadJson(data.get('deviceParams'))
 		self._connected: bool = False
 
-		# Settings are for UI, all the components use the same variable
+		# Settings are for UI, all the components use the same variables
 		self._settings: Dict = self.loadJson(data.get('settings'))
 		settings = {
 			'x': 0,
@@ -146,6 +147,20 @@ class Device(ProjectAliceObject):
 
 		self._secret = ''
 		return True
+
+
+	@property
+	def etag(self) -> str:
+		return self._iconEtag
+
+
+	def refreshEtag(self) -> str:
+		self._iconEtag = str(uuid.uuid4())
+		return self._iconEtag
+
+
+	def checkIconValidity(self, cmp: str) -> bool:
+		return self._iconEtag == cmp
 
 
 	def _loadConfigs(self):

@@ -20,7 +20,7 @@ import time
 from pathlib import Path
 from typing import Optional, Union
 
-from flask import Response, jsonify, request, send_from_directory
+from flask import Response, jsonify, make_response, request, send_from_directory
 from flask_classful import route
 from werkzeug.datastructures import FileStorage
 
@@ -322,19 +322,25 @@ class MyHomeApi(Api):
 			return jsonify(success=False, message=str(e))
 
 
-	@route('/devices/<deviceId>/<_rndStr>/device.png', methods=['GET'])
-	def getDeviceIcon(self, deviceId: str, _rndStr: str) -> Response:
+	@route('/devices/<deviceId>/<etag>/device.png', methods=['GET'])
+	def getDeviceIcon(self, deviceId: str, etag: str) -> Response:
 		"""
 		Returns the icon of a device.
 		:param deviceId:
-		:param _rndStr: Is only used to bypass browser caching
+		:param etag: Used to determine if cached icon should be used or not
 		:return:
 		"""
 		file = None
 		try:
+			print('fetch icon')
 			device: Device = self.DeviceManager.getDevice(deviceId=int(deviceId))
 			file = device.getDeviceIcon()
-			return send_from_directory(file.parent, f'{file.stem}{constants.PNG_EXT}')
+			if not device.checkIconValidity(self.Commons.fileChecksum(file)):
+				return send_from_directory(file.parent, f'{file.stem}{constants.PNG_EXT}')
+			else:
+				response = make_response(send_from_directory(file.parent, f'{file.stem}{constants.PNG_EXT}'))
+				response.status_code = 304
+				return response
 		except Exception as e:
 			self.logError(f'Failed to retrieve icon for device id **{deviceId}** ({file if file else "error while getting filename"}) :{e}')  # NOSONAR
 			file = Path(self.Commons.rootDir(), 'core/webApi/static/images/missing-icon.png')
