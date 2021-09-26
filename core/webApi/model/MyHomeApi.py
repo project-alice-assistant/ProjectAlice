@@ -39,11 +39,7 @@ class MyHomeApi(Api):
 		super().__init__()
 
 
-	@staticmethod
-	def isAllowedExtension(filename):
-		return '.' in filename and filename.rsplit('.', 1)[1].lower() == 'png'
-
-
+	# noinspection PyMethodMayBeStatic
 	def fileCheck(self) -> Optional[FileStorage]:
 		if 'newTile' not in request.files:
 			return None
@@ -51,7 +47,7 @@ class MyHomeApi(Api):
 			file = request.files['newTile']
 			if not file.filename:
 				return None
-			if not self.isAllowedExtension(file.filename):
+			if not '.' in file.filename or file.filename.rsplit('.', 1)[1].lower() != 'png':
 				return None
 			return file
 
@@ -258,8 +254,8 @@ class MyHomeApi(Api):
 			return jsonify(success=False)
 
 
-	@staticmethod
-	def incompatibleFile() -> Response:
+	# noinspection PyMethodMayBeStatic
+	def incompatibleFile(self) -> Response:
 		return jsonify(success=False, message='Incompatible file')
 
 
@@ -332,15 +328,19 @@ class MyHomeApi(Api):
 		"""
 		file = None
 		try:
-			print('fetch icon')
 			device: Device = self.DeviceManager.getDevice(deviceId=int(deviceId))
 			file = device.getDeviceIcon()
-			if not device.checkIconValidity(self.Commons.fileChecksum(file)):
-				return send_from_directory(file.parent, f'{file.stem}{constants.PNG_EXT}')
+			response = make_response(send_from_directory(file.parent, f'{file.stem}{constants.PNG_EXT}'))
+			response.headers.add('Access-Control-Allow-Headers', 'X-Etag')
+			response.access_control_allow_headers = ['X-Etag']
+
+			if not device.checkIconValidity(etag):
+				device.refreshEtag()
 			else:
-				response = make_response(send_from_directory(file.parent, f'{file.stem}{constants.PNG_EXT}'))
 				response.status_code = 304
-				return response
+
+			response.headers['X-Etag'] = device.etag
+			return response
 		except Exception as e:
 			self.logError(f'Failed to retrieve icon for device id **{deviceId}** ({file if file else "error while getting filename"}) :{e}')  # NOSONAR
 			file = Path(self.Commons.rootDir(), 'core/webApi/static/images/missing-icon.png')
