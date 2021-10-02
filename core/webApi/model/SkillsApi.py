@@ -578,7 +578,7 @@ class SkillsApi(Api):
 
 		dest = str(Path(self.Commons.rootDir()) / 'skills' / skillName)
 
-		self.Commons.runSystemCommand(['./venv/bin/pip', '--upgrade', 'projectalice-sk'])
-		self.Commons.runSystemCommand(['./venv/bin/projectalice-sk', 'createWidget', '--widget', widgetName, '--path', f'{dest}'])
+		self.Commons.runSystemCommand(['./venv/bin/pip', 'install', '--upgrade', 'projectalice-sk'])
+		self.Commons.runSystemCommand(['./venv/bin/projectalice-sk', 'createwidget', '--widget', widgetName, '--path', f'{dest}'])
 
 		return jsonify(success=True)
