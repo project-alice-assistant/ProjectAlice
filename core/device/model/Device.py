@@ -52,6 +52,7 @@ class Device(ProjectAliceObject):
 		self._skillName: str = data.get('skillName', '')
 		self._parentLocation: int = data.get('parentLocation', 0)
 		self._deviceType: DeviceType = self.DeviceManager.getDeviceType(self._skillName, self._typeName)
+		self._lastIcon: Optional[Path] = None
 		self._iconEtag: str = str(uuid.uuid4())
 
 		self._secret = ''  # Used to verify devices reply from UI
@@ -442,13 +443,25 @@ class Device(ProjectAliceObject):
 		}
 
 
-	def getDeviceIcon(self) -> Path:
+	def getDeviceIcon(self, path: Optional[Path] = None) -> Path:
 		"""
 		Return the path of the icon representing the current status of the device
 		e.g. a light bulb can be on or off and display its status
+		:warning: YOU MUST CALL THIS SUPER FUNCTION IF YOUR ICON IS DYNAMIC
 		:return: the icon file path
 		"""
-		return Path(f'{self.Commons.rootDir()}/skills/{self.skillName}/devices/img/{self._typeName}.png')
+		if path:
+			if path != self._lastIcon:
+				self._lastIcon = path
+				self.refreshEtag()
+			icon = path
+		else:
+			icon = Path(f'{self.Commons.rootDir()}/skills/{self.skillName}/devices/img/{self._typeName}.png')
+			if icon != self._lastIcon:
+				self._lastIcon = icon
+				self.refreshEtag()
+
+		return icon
 
 
 	def updateSettings(self, settings: dict):
