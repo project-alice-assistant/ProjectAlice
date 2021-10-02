@@ -30,17 +30,17 @@ from core.webApi.model.DialogApi import DialogApi
 from core.webApi.model.LoginApi import LoginApi
 from core.webApi.model.MyHomeApi import MyHomeApi
 from core.webApi.model.SkillsApi import SkillsApi
+from core.webApi.model.StateApi import StateApi
 from core.webApi.model.TelemetryApi import TelemetryApi
 from core.webApi.model.UsersApi import UsersApi
 from core.webApi.model.UtilsApi import UtilsApi
 from core.webApi.model.WidgetsApi import WidgetsApi
-from core.webApi.model.StateApi import StateApi
 
 
 class ApiManager(Manager):
 	app = Flask(__name__)
 	app.config['SEND_FILE_MAX_AGE_DEFAULT'] = 0
-	CORS(app, resources={r'/api/*': {'origins': '*'}})
+	CORS(app, resources={r'/api/*': {'origins': '*'}}, expose_headers='*', allow_headers='*')
 
 	_APIS = [UtilsApi, LoginApi, UsersApi, SkillsApi, DialogApi, TelemetryApi, WidgetsApi, StateApi, MyHomeApi, DevicesApi]
 

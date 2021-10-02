@@ -18,14 +18,13 @@
 #  Last modified: 2021.08.21 at 12:56:45 CEST
 
 import json
-import requests
 import shutil
-import time
 from pathlib import Path
-from dulwich.porcelain import commit, push, status, open_repo, clone, remote_add, pull, RemoteExists
-from dulwich import porcelain
-from dulwich.repo import Repo
+
+import requests
 from dulwich.errors import NotGitRepository
+from dulwich.porcelain import RemoteExists, clone, commit, pull, push, remote_add, status
+from dulwich.repo import Repo
 
 from core.base.SuperManager import SuperManager
 from core.base.model.ProjectAliceObject import ProjectAliceObject
@@ -59,7 +58,7 @@ class GithubCloner(ProjectAliceObject):
 	@classmethod
 	def hasAuth(cls) -> bool:
 		"""
-		Returns if the user has entered the github data for authentification
+		Returns if the user has entered the github data for authentication
 		:return:
 		"""
 		return cls.getGithubAuth() is not None
