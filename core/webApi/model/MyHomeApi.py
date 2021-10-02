@@ -332,10 +332,6 @@ class MyHomeApi(Api):
 			file = device.getDeviceIcon()
 			response = make_response(send_from_directory(file.parent, f'{file.stem}{constants.PNG_EXT}'))
 			response.headers.add('Access-Control-Allow-Headers', 'x-etag')
-
-			if not device.checkIconValidity(etag):
-				device.refreshEtag()
-
 			response.headers.add('x-etag', device.etag)
 			return response
 		except Exception as e:
