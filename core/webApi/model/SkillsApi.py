@@ -582,3 +582,23 @@ class SkillsApi(Api):
 		self.Commons.runSystemCommand(['./venv/bin/projectalice-sk', 'createwidget', '--widget', widgetName, '--path', f'{dest}'])
 
 		return jsonify(success=True)
+
+
+	@route('/<skillName>/createDeviceType/<deviceName>/', methods=['PATCH'])
+	@ApiAuthenticated
+	def createDeviceType(self, skillName: str, deviceName: str) -> Response:
+		"""
+		Create the empty hull for a new device type in the skills folders
+		:param skillName:
+		:return:
+		"""
+		self.logInfo(f'Creating new device type {deviceName} for skill {skillName}')
+		if skillName not in self.SkillManager.allSkills:
+			return self.skillNotFound()
+
+		dest = str(Path(self.Commons.rootDir()) / 'skills' / skillName)
+
+		self.Commons.runSystemCommand(['./venv/bin/pip', 'install', '--upgrade', 'projectalice-sk'])
+		self.Commons.runSystemCommand(['./venv/bin/projectalice-sk', 'createdevicetype', '--device', deviceName, '--path', f'{dest}'])
+
+		return jsonify(success=True)
