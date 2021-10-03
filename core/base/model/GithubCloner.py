@@ -40,7 +40,10 @@ class GithubCloner(ProjectAliceObject):
 		self._dest = dest
 		self._skillName = skillName
 		self._repo = None
-		self._modified = True
+		if skillName:
+			self._modified = self.SkillManager._skillList[skillName]['modified']
+		else:
+			self._modified = False
 
 
 	@classmethod
