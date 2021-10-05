@@ -23,7 +23,7 @@ from pathlib import Path
 
 import requests
 from dulwich.errors import NotGitRepository
-from dulwich.porcelain import RemoteExists, clone, commit, pull, push, remote_add, status
+from dulwich.porcelain import RemoteExists, clone, commit, pull, push, remote_add, status, tag_list, fetch
 from dulwich.repo import Repo
 
 from core.base.SuperManager import SuperManager
@@ -100,14 +100,13 @@ class GithubCloner(ProjectAliceObject):
 					pass
 			except NotGitRepository as e:
 				self.init()
-			self.pull()
+			self.fetch()
 
-			self.Commons.runSystemCommand(['git', '-C', str(self._dest), 'checkout', updateTag])
-			self.Commons.runSystemCommand(['git', '-C', str(self._dest), 'pull', 'origin', updateTag])
+			self.pull(refspecs=updateTag)
 
 			return True
 		except Exception as e:
-			self.logWarning(f'Something went wrong cloning github repo: {e}')
+			self.logWarning(f'Something went wrong cloning github repo cln: {e}')
 			return False
 
 
@@ -163,7 +162,7 @@ class GithubCloner(ProjectAliceObject):
 
 			return True
 		except Exception as e:
-			self.logWarning(f'Something went wrong cloning github repo: {e}')
+			self.logWarning(f'Something went wrong cloning github repo frk: {e}')
 			return False
 
 
@@ -197,7 +196,7 @@ class GithubCloner(ProjectAliceObject):
 			self.Commons.runSystemCommand(['git', '-C', str(self._dest), 'branch', '--set-upstream-to=origin/master'])
 			return True
 		except Exception as e:
-			self.logWarning(f'Something went wrong cloning github repo: {e}')
+			self.logWarning(f'Something went wrong cloning github repo chk: {e}')
 			return False
 
 
@@ -207,7 +206,7 @@ class GithubCloner(ProjectAliceObject):
 			self.Commons.runSystemCommand(['git', '-C', str(self._dest), 'config', 'user.name', self.ConfigManager.getAliceConfigByName('githubUsername') or 'ProjectAliceBot'])
 			return True
 		except Exception as e:
-			self.logWarning(f'Something went wrong cloning github repo: {e}')
+			self.logWarning(f'Something went wrong cloning github repo def: {e}')
 			return False
 
 
@@ -224,8 +223,14 @@ class GithubCloner(ProjectAliceObject):
 		self._repo = repo
 
 
-	def pull(self):
-		pull(repo=self.repo, remote_location=self.getRemote(), refspecs=b'master')
+	def pull(self, refspecs:str = b'master'):
+		pull(repo=self.repo, remote_location=self.getRemote(), refspecs=refspecs)
+
+
+	def fetch(self):
+		remote_refs = fetch(repo=self.repo, remote_location=self.getRemote())
+		for key, value in remote_refs.items():
+			self.repo.refs[key] = value
 
 
 	def getPath(self):
