@@ -330,7 +330,7 @@ class MyHomeApi(Api):
 		try:
 			device: Device = self.DeviceManager.getDevice(deviceId=int(deviceId))
 			file = device.getDeviceIcon()
-			response = make_response(send_from_directory(file.parent, f'{file.stem}{constants.PNG_EXT}'))
+			response = make_response(send_from_directory(file.parent, f'{file.name}'))
 			response.headers.add('Access-Control-Allow-Headers', 'x-etag')
 			response.headers.add('x-etag', device.etag)
 			return response
