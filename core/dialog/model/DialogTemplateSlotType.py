@@ -28,6 +28,7 @@ class DialogTemplateSlotType:
 	values: list = field(default_factory=list)
 	matchingStrictness: float = 0
 	myValues: dict = field(default_factory=dict)
+	technicalValue: bool = False
 
 
 	def __post_init__(self): #NOSONAR
