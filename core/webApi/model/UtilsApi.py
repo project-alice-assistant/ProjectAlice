@@ -239,7 +239,9 @@ class UtilsApi(Api):
 	@ApiAuthenticated
 	def notifications(self) -> Response:
 		try:
-			return jsonify(success=True, data=self.WebUINotificationManager.notifications)
+			uid = request.headers.get('uid', '')
+			self.WebUINotificationManager.publishAllNotifications(deviceUid=uid)
+			return jsonify(success=True)
 		except Exception as e:
 			self.logError(f'Failed training assistant: {e}')
 			return jsonify(success=False, message=str(e))

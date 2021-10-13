@@ -16,6 +16,7 @@
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>
 #
 #  Last modified: 2021.10.13 at 15:06:55 CEST
+
 import json
 from typing import Dict, Union
 
@@ -48,22 +49,14 @@ class WebUINotificationManager(Manager):
 		super().onStart()
 		notifications = self.databaseFetch(tableName=self.NOTIFICATIONS_TABLE, query=f'SELECT * FROM :__table__ WHERE read = 0')
 		for notification in notifications:
-			if notification['read']:
+			if notification['read'] == '1':
 				continue
+			print(notification)
 			self._notifications[notification['id']] = notification
 
 
 	def onBooted(self):
-		for notification in self._notifications.values():
-			self.newNotification(
-				typ=notification['type'],
-				notification={
-					'title': notification['title'],
-					'body': notification['body']
-				},
-				key=notification['key'],
-				options=json.loads(notification['options'])
-			)
+		self.publishAllNotifications()
 
 
 	@property
@@ -100,19 +93,42 @@ class WebUINotificationManager(Manager):
 		if isinstance(typ, UINotificationType):
 			typ = typ.value
 
-		self.databaseInsert(tableName=self.NOTIFICATIONS_TABLE, values={
-			'type': typ,
-			'title': title,
-			'body': body,
+		id = self.databaseInsert(tableName=self.NOTIFICATIONS_TABLE, values={
+			'type'   : typ,
+			'title'  : title,
+			'body'   : body,
 			'options': json.dumps(options) if options else '{}'
 		})
 
-		self.MqttManager.publish(topic=constants.TOPIC_UI_NOTIFICATION, payload={
-			'type': typ,
-			'title': title,
-			'text': body,
-			'key': key
-		})
+		self.publishNotification(id, typ, title, body, key)
+
+
+	def publishAllNotifications(self, deviceUid: str = 'all'):
+		for notification in self._notifications.values():
+			self.publishNotification(
+				notificationId=notification['id'],
+				typ=notification['type'],
+				title=notification['title'],
+				body=notification['body'],
+				key=notification['key'],
+				options=json.loads(notification['options']),
+				deviceUid=deviceUid
+			)
+
+
+	def publishNotification(self, notificationId: int, typ: str, title: str, body: str, key: str = None, options: dict = None, deviceUid: str = None):
+		payload = {
+			'id'     : notificationId,
+			'type'   : typ,
+			'title'  : title,
+			'text'   : body,
+			'key'    : key,
+			'options': options if options else '{}'
+		}
+		if deviceUid:
+			payload['deviceUid'] = deviceUid
+
+		self.MqttManager.publish(topic=constants.TOPIC_UI_NOTIFICATION, payload=payload)
 
 
 	def markAsRead(self, notificationId: int):
@@ -120,3 +136,4 @@ class WebUINotificationManager(Manager):
 			return
 
 		self.DatabaseManager.update(tableName=self.NOTIFICATIONS_TABLE, callerName=self.name, values={'read': 1}, row=('id', notificationId))
+		self._notifications.pop(notificationId, None)
