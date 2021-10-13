@@ -51,7 +51,6 @@ class WebUINotificationManager(Manager):
 		for notification in notifications:
 			if notification['read'] == '1':
 				continue
-			print(notification)
 			self._notifications[notification['id']] = notification
 
 
@@ -93,14 +92,14 @@ class WebUINotificationManager(Manager):
 		if isinstance(typ, UINotificationType):
 			typ = typ.value
 
-		id = self.databaseInsert(tableName=self.NOTIFICATIONS_TABLE, values={
+		notificationId = self.databaseInsert(tableName=self.NOTIFICATIONS_TABLE, values={
 			'type'   : typ,
 			'title'  : title,
 			'body'   : body,
 			'options': json.dumps(options) if options else '{}'
 		})
 
-		self.publishNotification(id, typ, title, body, key)
+		self.publishNotification(notificationId, typ, title, body, key)
 
 
 	def publishAllNotifications(self, deviceUid: str = 'all'):
