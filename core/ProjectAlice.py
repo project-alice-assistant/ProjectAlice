@@ -63,6 +63,10 @@ class ProjectAlice(Singleton):
 
 			self._logger.logInfo(f'Started in {stopWatch} seconds')
 			self._booted = True
+			self._superManager.webUINotificationManager.newNotification(typ=UINotificationType.INFO, notification={
+				'title': 'Alice started',
+				'body': 'Project Alice is up and running!'
+			})
 
 
 	def checkDependencies(self) -> bool:
@@ -222,8 +226,8 @@ class ProjectAlice(Singleton):
 		if currentHash != newHash:
 			self._logger.logWarning('New Alice version installed, need to restart...')
 
-			self._superManager.webUiManager.newNotification(
-				tipe=UINotificationType.INFO,
+			self._superManager.webUINotificationManager.newNotification(
+				typ=UINotificationType.INFO,
 				notification='aliceUpdated'
 			)
 			self.doRestart()

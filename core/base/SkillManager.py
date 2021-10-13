@@ -553,8 +553,8 @@ class SkillManager(Manager):
 				if localVersion < remoteVersion:
 					updateCount += 1
 
-					self.WebUIManager.newNotification(
-						tipe=UINotificationType.INFO,
+					self.WebUINotificationManager.newNotification(
+						typ=UINotificationType.INFO,
 						notification='skillUpdateAvailable',
 						key='skillUpdate_{}'.format(skillName),
 						replaceBody=[skillName, str(remoteVersion)]
@@ -648,8 +648,8 @@ class SkillManager(Manager):
 					}
 				)
 
-				self.WebUIManager.newNotification(
-					tipe=UINotificationType.INFO,
+				self.WebUINotificationManager.newNotification(
+					typ=UINotificationType.INFO,
 					notification='skillUpdated',
 					key='skillUpdate_{}'.format(skillName),
 					replaceBody=[skillName, self._skillList[skillName]['installer']['version']]

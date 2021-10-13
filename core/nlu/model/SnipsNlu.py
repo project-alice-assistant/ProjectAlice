@@ -193,8 +193,8 @@ class SnipsNlu(NluEngine):
 
 			self._timer.cancel()
 			self.MqttManager.publish(constants.TOPIC_NLU_TRAINING_STATUS, payload={'status': 'done'})
-			self.WebUIManager.newNotification(
-				tipe=UINotificationType.INFO,
+			self.WebUINotificationManager.newNotification(
+				typ=UINotificationType.INFO,
 				notification='nluTrainingDone',
 				key='nluTraining'
 			)
@@ -219,11 +219,11 @@ class SnipsNlu(NluEngine):
 
 		self.MqttManager.publish(constants.TOPIC_NLU_TRAINING_STATUS, payload={'status': 'training'})
 
-		self.WebUIManager.newNotification(
-			tipe=UINotificationType.INFO,
+		self.WebUINotificationManager.newNotification(
+			typ=UINotificationType.INFO,
 			notification='nluTraining',
 			key='nluTraining',
-			replaceBody=dots
+			replaceBody=[dots]
 		)
 
 		self._timer = self.ThreadManager.newTimer(interval=1, func=self.trainingStatus, args=[dots])
@@ -241,8 +241,8 @@ class SnipsNlu(NluEngine):
 		self.logError('Snips NLU training failed')
 		self.MqttManager.publish(constants.TOPIC_NLU_TRAINING_STATUS, payload={'status': 'failed'})
 
-		self.WebUIManager.newNotification(
-			tipe=UINotificationType.ERROR,
+		self.WebUINotificationManager.newNotification(
+			typ=UINotificationType.ERROR,
 			notification='nluTrainingFailed',
 			key='nluTraining'
 		)

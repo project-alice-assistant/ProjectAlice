@@ -77,6 +77,7 @@ class SuperManager:
 		self.assistantManager = None
 		self.stateManager = None
 		self.subprocessManager = None
+		self.webUINotificationManager = None
 
 
 	def onStart(self):
@@ -95,6 +96,9 @@ class SuperManager:
 
 			languageManager = self._managers.pop('LanguageManager')
 			languageManager.onStart()
+
+			webUINotificationManager = self._managers.pop('WebUINotificationManager')
+			webUINotificationManager.onStart()
 
 			locationManager = self._managers.pop('LocationManager')
 			locationManager.onStart()
@@ -145,6 +149,7 @@ class SuperManager:
 			self._managers[databaseManager.name] = databaseManager
 			self._managers[userManager.name] = userManager
 			self._managers[mqttManager.name] = mqttManager
+			self._managers[webUINotificationManager.name] = webUINotificationManager
 			self._managers[skillManager.name] = skillManager
 			self._managers[widgetManager.name] = widgetManager
 			self._managers[dialogTemplateManager.name] = dialogTemplateManager
@@ -212,6 +217,7 @@ class SuperManager:
 		from core.webui.WebUIManager import WebUIManager
 		from core.base.StateManager import StateManager
 		from core.util.SubprocessManager import SubprocessManager
+		from core.webui.WebUINotificationManager import WebUINotificationManager
 
 		self.commonsManager = CommonsManager()
 		self.commons = self.commonsManager
@@ -246,6 +252,7 @@ class SuperManager:
 		self.aliceWatchManager = AliceWatchManager()
 		self.dialogManager = DialogManager()
 		self.wakewordManager = WakewordManager()
+		self.webUINotificationManager = WebUINotificationManager()
 
 		self._managers = {name[0].upper() + name[1:]: manager for name, manager in self.__dict__.items() if name.endswith('Manager')}
 

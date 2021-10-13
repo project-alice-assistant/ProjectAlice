@@ -222,3 +222,24 @@ class UtilsApi(Api):
 		except Exception as e:
 			self.logError(f'Error fetching Widget.js {e}')
 			return jsonify(success=False, message=str(e))
+
+
+	@route('/markNotificationRead/<notificationId>/', methods=['PATCH'])
+	@ApiAuthenticated
+	def markNotificationRead(self, notificationId: str) -> Response:
+		try:
+			self.WebUINotificationManager.markAsRead(notificationId=int(notificationId))
+			return jsonify(success=True)
+		except Exception as e:
+			self.logError(f'Failed training assistant: {e}')
+			return jsonify(success=False, message=str(e))
+
+
+	@route('/notifications/', methods=['GET'])
+	@ApiAuthenticated
+	def notifications(self) -> Response:
+		try:
+			return jsonify(success=True, data=self.WebUINotificationManager.notifications)
+		except Exception as e:
+			self.logError(f'Failed training assistant: {e}')
+			return jsonify(success=False, message=str(e))
