@@ -18,9 +18,10 @@
 #  Last modified: 2021.05.05 at 12:56:47 CEST
 
 import hashlib
-import requests
 import subprocess
 from pathlib import Path
+
+import requests
 
 from core.base.SuperManager import SuperManager
 from core.base.model.StateType import StateType
@@ -63,10 +64,6 @@ class ProjectAlice(Singleton):
 
 			self._logger.logInfo(f'Started in {stopWatch} seconds')
 			self._booted = True
-			self._superManager.webUINotificationManager.newNotification(typ=UINotificationType.INFO, notification={
-				'title': 'Alice started',
-				'body': 'Project Alice is up and running!'
-			})
 
 
 	def checkDependencies(self) -> bool:
