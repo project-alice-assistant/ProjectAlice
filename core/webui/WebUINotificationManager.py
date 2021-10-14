@@ -42,6 +42,7 @@ class WebUINotificationManager(Manager):
 
 	def __init__(self):
 		self._notifications = dict()
+		self._keysToIds = dict()
 		super().__init__(databaseSchema=self.DATABASE)
 
 
@@ -63,7 +64,7 @@ class WebUINotificationManager(Manager):
 		return self._notifications
 
 
-	def newNotification(self, typ: Union[UINotificationType, str], notification: Union[str, Dict[str, str]], key: str = None, replaceTitle: list = None, replaceBody: list = None, options: dict = None):
+	def newNotification(self, typ: Union[UINotificationType, str], notification: Union[str, Dict[str, str]], key: str = None, replaceTitle: list = None, replaceBody: list = None, options: dict = None, deviceUid: str = 'all'):
 		"""
 		Stores and sends a UI notification
 		:param typ: The notification type, either as the enum or a string when coming from the database
@@ -72,6 +73,7 @@ class WebUINotificationManager(Manager):
 		:param replaceTitle: A list of strings to format the original title string
 		:param replaceBody: A list of strings to format the original body string
 		:param options: Options in a form of a dict for this notification, used by the UI
+		:param deviceUid: If only a certain device should get this notification
 		:return:
 		"""
 
@@ -92,14 +94,25 @@ class WebUINotificationManager(Manager):
 		if isinstance(typ, UINotificationType):
 			typ = typ.value
 
-		notificationId = self.databaseInsert(tableName=self.NOTIFICATIONS_TABLE, values={
+		if not options:
+			options = dict()
+
+		values = {
 			'type'   : typ,
 			'title'  : title,
 			'body'   : body,
-			'options': json.dumps(options) if options else '{}'
-		})
+			'options': json.dumps(options),
+			'key'    : key
+		}
 
-		self.publishNotification(notificationId, typ, title, body, key)
+		if key and key in self._keysToIds:
+			notificationId = self._keysToIds[key]
+			self.DatabaseManager.update(tableName=self.NOTIFICATIONS_TABLE, callerName=self.name, values=values, row=('id', notificationId))
+		else:
+			notificationId = self.databaseInsert(tableName=self.NOTIFICATIONS_TABLE, values=values)
+			self._keysToIds[key] = notificationId
+
+		self.publishNotification(notificationId=notificationId, typ=typ, title=title, body=body, key=key, options=options, deviceUid=deviceUid)
 
 
 	def publishAllNotifications(self, deviceUid: str = 'all'):
@@ -115,24 +128,22 @@ class WebUINotificationManager(Manager):
 			)
 
 
-	def publishNotification(self, notificationId: int, typ: str, title: str, body: str, key: str = None, options: dict = None, deviceUid: str = None):
+	def publishNotification(self, notificationId: int, typ: str, title: str, body: str, key: str = None, options: dict = None, deviceUid: str = 'all'):
 		payload = {
-			'id'     : notificationId,
-			'type'   : typ,
-			'title'  : title,
-			'text'   : body,
-			'key'    : key,
-			'options': options if options else '{}'
+			'id'       : notificationId,
+			'type'     : typ,
+			'title'    : title,
+			'text'     : body,
+			'key'      : key,
+			'options'  : options if options else '{}',
+			'deviceUid': deviceUid
 		}
-		if deviceUid:
-			payload['deviceUid'] = deviceUid
 
 		self.MqttManager.publish(topic=constants.TOPIC_UI_NOTIFICATION, payload=payload)
 
 
 	def markAsRead(self, notificationId: int):
-		if notificationId not in self._notifications:
-			return
-
 		self.DatabaseManager.update(tableName=self.NOTIFICATIONS_TABLE, callerName=self.name, values={'read': 1}, row=('id', notificationId))
-		self._notifications.pop(notificationId, None)
+		notification = self._notifications.pop(notificationId, None)
+		if notification:
+			self._keysToIds.pop(notification.get('key', 'dummy'), None)
