@@ -224,7 +224,7 @@ class UtilsApi(Api):
 			return jsonify(success=False, message=str(e))
 
 
-	@route('/markNotificationRead/<notificationId>/', methods=['PATCH'])
+	@route('/notifications/<notificationId>/', methods=['PATCH'])
 	@ApiAuthenticated
 	def markNotificationRead(self, notificationId: str) -> Response:
 		try:
