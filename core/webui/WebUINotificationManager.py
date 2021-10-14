@@ -48,6 +48,7 @@ class WebUINotificationManager(Manager):
 
 	def onStart(self):
 		super().onStart()
+		# noinspection SqlResolve
 		notifications = self.databaseFetch(tableName=self.NOTIFICATIONS_TABLE, query=f'SELECT * FROM :__table__ WHERE read = 0')
 		for notification in notifications:
 			if notification['read'] == '1':
@@ -116,6 +117,11 @@ class WebUINotificationManager(Manager):
 
 
 	def publishAllNotifications(self, deviceUid: str = 'all'):
+		"""
+		Publishes all unread notifications
+		:param deviceUid: if targeted to a specific device
+		:return: none
+		"""
 		for notification in self._notifications.values():
 			self.publishNotification(
 				notificationId=notification['id'],
@@ -129,6 +135,17 @@ class WebUINotificationManager(Manager):
 
 
 	def publishNotification(self, notificationId: int, typ: str, title: str, body: str, key: str = None, options: dict = None, deviceUid: str = 'all'):
+		"""
+		Publishes the notification over MQTT
+		:param notificationId: database id
+		:param typ: the notification typ as a string
+		:param title: notification title
+		:param body: notification content
+		:param key: the key is used for notifications that can update over time, to differentiate them
+		:param options: for future purposes
+		:param deviceUid: if target to a specific device only
+		:return:
+		"""
 		payload = {
 			'id'       : notificationId,
 			'type'     : typ,
@@ -143,6 +160,11 @@ class WebUINotificationManager(Manager):
 
 
 	def markAsRead(self, notificationId: int):
+		"""
+		Marks the notification as read in the database
+		:param notificationId: the notification id to mark
+		:return:
+		"""
 		self.DatabaseManager.update(tableName=self.NOTIFICATIONS_TABLE, callerName=self.name, values={'read': 1}, row=('id', notificationId))
 		notification = self._notifications.pop(notificationId, None)
 		if notification:
