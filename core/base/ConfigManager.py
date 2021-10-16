@@ -220,7 +220,7 @@ class ConfigManager(Manager):
 				self._pendingAliceConfUpdates[key] = value
 				self.logWarning(f'Skill **{skillName}** is trying to modify a core configuration')
 
-				self.WebUIManager.newNotification(tipe=UINotificationType.ALERT, notification='coreConfigUpdateWarning', replaceBody=[skillName, key, value])
+				self.WebUINotificationManager.newNotification(typ=UINotificationType.ALERT, notification='coreConfigUpdateWarning', replaceBody=[skillName, key, value])
 				return
 
 		# 		self.ThreadManager.doLater(

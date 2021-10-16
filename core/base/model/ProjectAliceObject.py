@@ -63,6 +63,7 @@ if TYPE_CHECKING:
 	from core.webApi.ApiManager import ApiManager
 	from core.webui.NodeRedManager import NodeRedManager
 	from core.webui.WidgetManager import WidgetManager
+	from core.webui.WebUINotificationManager import WebUINotificationManager
 
 
 class ProjectAliceObject:
@@ -833,3 +834,8 @@ class ProjectAliceObject:
 	@property
 	def SubprocessManager(self) -> SubprocessManager:  # NOSONAR
 		return SM.SuperManager.getInstance().subprocessManager
+
+
+	@property
+	def WebUINotificationManager(self) -> WebUINotificationManager:  # NOSONAR
+		return SM.SuperManager.getInstance().webUINotificationManager
