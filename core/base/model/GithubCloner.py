@@ -242,17 +242,6 @@ class GithubCloner(ProjectAliceObject):
 		create a repository online and clone it to the skills folder - only afterwards fill it with files by AliceSK
 		:return:
 		"""
-		data = {
-			'name'       : f'skill_{self._skillName}',
-			'description': 'Bout Fritz!Box',
-			'has-issues' : True,
-			'has-wiki'   : False
-		}
-		req = requests.post('https://api.github.com/user/repos', data=json.dumps(data), auth=GithubCloner.getGithubAuth())
-
-		if req.status_code != 201:
-			raise Exception("Couldn't create the repository on Github")
-
 		clone(source=self.getRemote(), target=f'skills/{self._skillName}')
 
 		self.repo = Repo.init(f'skills/{self._skillName}')
