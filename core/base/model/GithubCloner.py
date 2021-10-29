@@ -23,7 +23,7 @@ from pathlib import Path
 
 import requests
 from dulwich.errors import NotGitRepository
-from dulwich.porcelain import RemoteExists, clone, commit, pull, push, remote_add, status, tag_list, fetch
+from dulwich.porcelain import RemoteExists, clone, commit, fetch, pull, push, remote_add, status
 from dulwich.repo import Repo
 
 from core.base.SuperManager import SuperManager
@@ -40,8 +40,8 @@ class GithubCloner(ProjectAliceObject):
 		self._dest = dest
 		self._skillName = skillName
 		self._repo = None
-		if skillName and skillName in self.SkillManager._skillList:
-			self._modified = self.SkillManager._skillList[skillName]['modified']
+		if skillName and skillName in self.SkillManager.allSkills:
+			self._modified = self.SkillManager.allSkills[skillName]['modified']
 		else:
 			self._modified = False
 
@@ -97,12 +97,13 @@ class GithubCloner(ProjectAliceObject):
 			updateTag = self.SkillStoreManager.getSkillUpdateTag(skillName)
 			try:
 				if self.repo:
-					pass
-			except NotGitRepository as e:
+					pass  # It is already a repo, so continue
+			except NotGitRepository:
 				self.init()
+
 			self.fetch()
 
-			self.pull(refspecs=updateTag)
+			self.pull(refSpecs=updateTag)
 
 			return True
 		except Exception as e:
@@ -138,14 +139,16 @@ class GithubCloner(ProjectAliceObject):
 			self.createRepo(aliceSK=True)
 		if req.status_code != 202:
 			self.logError(f'Couldn\'t create fork for repository! {req.status_code}')
+			return False
+
+		return True
 
 
-	def checkoutOwnFork(self, skillName: str) -> bool:
+	def checkoutOwnFork(self) -> bool:
 		"""
 		Assumes there is already a fork for the current skill on the users repository.
 		Clone that repository, set upstream to the original repository.
 		Will only work on master!
-		:param skillName:
 		:return:
 		"""
 		try:
@@ -166,7 +169,7 @@ class GithubCloner(ProjectAliceObject):
 			return False
 
 
-	def getRemote(self, AliceSK:bool=False, origin:bool=False, noToken:bool=False):
+	def getRemote(self, AliceSK: bool = False, origin: bool = False, noToken: bool = False):  # NOSONAR
 		tokenPrefix = f'{self.ConfigManager.getAliceConfigByName("githubUsername")}:{self.ConfigManager.getAliceConfigByName("githubToken")}@'
 		if self._skillName:
 			if AliceSK:
@@ -180,16 +183,17 @@ class GithubCloner(ProjectAliceObject):
 		else:
 			raise Exception("Skillname not set. Can't find git remote!")
 
-	def checkRemote(self, AliceSK:bool=False, origin:bool=False):
+
+	def checkRemote(self, AliceSK: bool = False, origin: bool = False):  # NOSONAR
 		req = requests.get(self.getRemote(AliceSK=AliceSK, origin=origin), auth=GithubCloner.getGithubAuth())
 		if req.status_code != 200:
 			return False
 		return True
 
+
 	def checkoutMaster(self) -> bool:
 		"""
 		set upstream to origin/master
-		:param skillName:
 		:return:
 		"""
 		try:
@@ -223,13 +227,13 @@ class GithubCloner(ProjectAliceObject):
 		self._repo = repo
 
 
-	def pull(self, refspecs:str = b'master'):
-		pull(repo=self.repo, remote_location=self.getRemote(), refspecs=refspecs)
+	def pull(self, refSpecs: str = b'master'):
+		pull(repo=self.repo, remote_location=self.getRemote(), refspecs=refSpecs)
 
 
 	def fetch(self):
-		remote_refs = fetch(repo=self.repo, remote_location=self.getRemote())
-		for key, value in remote_refs.items():
+		remoteRefs = fetch(repo=self.repo, remote_location=self.getRemote())
+		for key, value in remoteRefs.items():
 			self.repo.refs[key] = value
 
 
@@ -258,6 +262,8 @@ class GithubCloner(ProjectAliceObject):
 		self.repo = Repo.init(f'skills/{self._skillName}')
 		remote_add(repo=self.repo, name=f'AliceSK', url=self.getRemote())
 
+		return True
+
 
 	def add(self) -> bool:
 		"""
@@ -269,7 +275,7 @@ class GithubCloner(ProjectAliceObject):
 		return True
 
 
-	def commit(self, message : str = "pushed by AliceSK") -> bool:
+	def commit(self, message: str = "pushed by AliceSK") -> bool:
 		"""
 		commit the current changes for that skill
 		:param message:
@@ -294,11 +300,13 @@ class GithubCloner(ProjectAliceObject):
 		:return:
 		"""
 		try:
-			self.repo
+			# noinspection PyStatementEffect
+			self.repo  # NOSONAR
 			return True
 		except NotGitRepository as e:
-			self.logInfo(e)
+			self.logInfo(f'Error repository: {e}')
 			return False
+
 
 	def createRepo(self, aliceSK: bool = False) -> bool:
 		"""
@@ -322,6 +330,7 @@ class GithubCloner(ProjectAliceObject):
 			pass
 		return True
 
+
 	def createRemote(self) -> bool:
 		"""
 		create the remote repository for the current user
@@ -329,7 +338,7 @@ class GithubCloner(ProjectAliceObject):
 		"""
 		data = {
 			'name'       : f'skill_{self._skillName}',
-			'description': "test",
+			'description': 'test',
 			'has-issues' : True,
 			'has-wiki'   : False
 		}
@@ -338,9 +347,12 @@ class GithubCloner(ProjectAliceObject):
 		if req.status_code != 201:
 			raise Exception("Couldn't create the repository on Github")
 
-	def gitDoMytest(self):
+		return True
+
+
+	def gitDoMyTest(self):
 		skillName = 'FritzBox'
-		rep : Repo = Repo(f'skills/{skillName}')
+		rep: Repo = Repo(f'skills/{skillName}')
 		self.logInfo(f'got {rep} in {rep.path}')
 
 		stat = status(rep)
