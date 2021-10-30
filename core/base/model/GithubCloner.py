@@ -264,7 +264,7 @@ class GithubCloner(ProjectAliceObject):
 		return True
 
 
-	def commit(self, message: str = "pushed by AliceSK") -> bool:
+	def commit(self, message: str = 'pushed by AliceSK') -> bool:
 		"""
 		commit the current changes for that skill
 		:param message:
@@ -279,7 +279,7 @@ class GithubCloner(ProjectAliceObject):
 		push the skills changes to AliceSK upstream
 		:return:
 		"""
-		push(repo=self.repo, remote_location=self.getRemote(), refspecs=b"master")
+		push(repo=self.repo, remote_location=self.getRemote(), refspecs=b'master')
 		return True
 
 
@@ -309,12 +309,12 @@ class GithubCloner(ProjectAliceObject):
 		except Exception:
 			return False
 		try:
-			remote_add(repo=self.repo, name=b"origin", url=self.getRemote(origin=True))
+			remote_add(repo=self.repo, name=b'origin', url=self.getRemote(origin=True))
 		except RemoteExists:
 			pass
 		try:
 			if aliceSK:
-				remote_add(repo=self.repo, name=b"AliceSK", url=self.getRemote(AliceSK=True))
+				remote_add(repo=self.repo, name=b'AliceSK', url=self.getRemote(AliceSK=True))
 		except RemoteExists:
 			pass
 		return True
