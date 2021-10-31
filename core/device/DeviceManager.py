@@ -160,7 +160,7 @@ class DeviceManager(Manager):
 				device = klass(data)
 				self._devices[device.id] = device
 			except Exception as e:
-				self.logError(f"Couldn't create device instance for database device id {data.get['id']}: {e}")
+				self.logError(f"Couldn't create device instance: {e}")
 
 
 	def loadLinks(self):
