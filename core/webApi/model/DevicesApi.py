@@ -80,3 +80,14 @@ class DevicesApi(Api):
 		except Exception as e:
 			self.logError(f'Error adding new device {e}')
 			return jsonify(success=False, message=str(e))
+
+
+	@route('/', methods=['GET'])
+	@ApiAuthenticated
+	def getDevices(self) -> Response:
+		try:
+			devices = {device.id: device.toDict() for device in self.DeviceManager.devices.values()}
+			return jsonify(success=True, devices=devices)
+		except Exception as e:
+			self.logError(f'Error getting devices {e}')
+			return jsonify(success=False, message=str(e))
