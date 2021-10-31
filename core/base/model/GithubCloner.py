@@ -215,7 +215,7 @@ class GithubCloner(ProjectAliceObject):
 
 
 	@property
-	def repo(self):
+	def repo(self) -> Repo:
 		if self._repo:
 			return self._repo
 		self._repo = Repo(f'skills/{self._skillName}')
@@ -237,7 +237,7 @@ class GithubCloner(ProjectAliceObject):
 			self.repo.refs[key] = value
 
 
-	def getPath(self):
+	def getPath(self) -> Path:
 		return Path(f'skills/{self._skillName}')
 
 
