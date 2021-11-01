@@ -22,10 +22,9 @@ import socket
 import threading
 import time
 import uuid
-from typing import Dict, List, Optional, Union
-
 from paho.mqtt.client import MQTTMessage
 from serial.tools import list_ports
+from typing import Dict, List, Optional, Union
 
 from core.base.model.Manager import Manager
 from core.commons import constants
@@ -146,6 +145,26 @@ class DeviceManager(Manager):
 		if self._heartbeat:
 			self._heartbeat.stopHeartBeat()
 		self.MqttManager.publish(topic=constants.TOPIC_CORE_DISCONNECTION)
+
+
+	def onSkillDeleted(self, skill: str):
+		self.skillDeactivated(skillName=skill)
+		# noinspection SqlResolve
+		self.DatabaseManager.delete(
+			tableName=self.DB_DEVICE,
+			callerName=self.name,
+			values={
+				'skillName': skill
+			}
+		)
+
+
+	def skillDeactivated(self, skillName: str):
+		self.removeDeviceTypesForSkill(skillName=skillName)
+		tmp = self._devices.copy()
+		for deviceUid, device in tmp.items():
+			if device.skillName == skillName:
+				self._devices.pop(deviceUid, None)
 
 
 	def loadDevices(self):

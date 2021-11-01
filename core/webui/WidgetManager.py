@@ -266,24 +266,22 @@ class WidgetManager(Manager):
 		self._widgets.pop(widgetId, None)
 
 
-	def skillRemoved(self, skillName: str):
+	def onSkillDeleted(self, skill: str):
 		# noinspection SqlResolve
 		self.DatabaseManager.delete(
 			tableName=self.WIDGETS_TABLE,
 			callerName=self.name,
 			values={
-				'skill': skillName
+				'skill': skill
 			}
 		)
 
+
+	def skillDeactivated(self, skillName: str):
 		tmp = self._widgets.copy()
 		for wid, widget in tmp.items():
 			if widget.skill == skillName:
 				self._widgets.pop(wid, None)
-
-
-	def skillDeactivated(self, skillName: str):
-		self.skillRemoved(skillName)
 
 
 	def getNextZIndex(self, pageId: int):

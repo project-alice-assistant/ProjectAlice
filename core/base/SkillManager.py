@@ -19,13 +19,14 @@
 
 
 import getpass
+import traceback
+
 import importlib
 import json
 import os
 import requests
 import shutil
 import threading
-import traceback
 from pathlib import Path
 from typing import Dict, List, Optional
 
@@ -166,7 +167,7 @@ class SkillManager(Manager):
 
 		if not newState:
 			self.WidgetManager.skillDeactivated(skillName=skillName)
-			self.DeviceManager.removeDeviceTypesForSkill(skillName=skillName)
+			self.DeviceManager.skillDeactivated(skillName=skillName)
 
 
 	def addSkillToDB(self, skillName: str, active: int = 1):
@@ -184,9 +185,6 @@ class SkillManager(Manager):
 			query='DELETE FROM :__table__ WHERE skillName = :skill',
 			values={'skill': skillName}
 		)
-
-		self.WidgetManager.skillRemoved(skillName=skillName)
-		self.DeviceManager.removeDeviceTypesForSkill(skillName=skillName)
 
 
 	def onAssistantInstalled(self, **kwargs):
@@ -939,6 +937,13 @@ class SkillManager(Manager):
 			ret[skillName] = (skillInstance.scenarioNodeName, skillInstance.scenarioNodeVersion, skillInstance.getResource('scenarioNodes'))
 
 		return ret
+
+
+	def skillScenarioNode(self, skillName: str) -> Optional[Path]:
+		if skillName not in self.allWorkingSkills:
+			return None
+
+		return self.allWorkingSkills[skillName].getResource('scenarioNodes')
 
 
 	def getSkillScenarioVersion(self, skillName: str) -> Version:

@@ -139,6 +139,17 @@ class NodeRedManager(Manager):
 		self.Commons.runRootSystemCommand(['systemctl', 'restart', 'nodered'])
 
 
+	def onSkillDeleted(self, skill: str):
+		if not self.PACKAGE_PATH.exists() or not self.SkillManager.skillScenarioNode(skillName=skill):
+			return
+
+		uninstall = self.Commons.runSystemCommand(f'cd ~/.node-red && npm uninstall {self.SkillManager.skillScenarioNode(skillName=skill)}', shell=True)
+		if uninstall.returncode == 1:
+			self.logWarning(f'Something went wrong uninstalling node for skill {skill}: {uninstall.stderr}')
+		else:
+			self.reloadServer()
+
+
 	def injectSkillNodes(self):
 		restart = False
 
