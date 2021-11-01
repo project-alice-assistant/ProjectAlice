@@ -102,10 +102,11 @@ class GithubCloner(ProjectAliceObject):
 				self.init()
 
 			self.fetch()
-
 			self.pull(refSpecs=updateTag)
 
 			return True
+		except FileExistsError:
+			pass  # The repo was just created
 		except Exception as e:
 			self.logWarning(f'Something went wrong cloning github repo cln: {e}')
 			return False
