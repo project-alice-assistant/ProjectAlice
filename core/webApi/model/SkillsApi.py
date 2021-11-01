@@ -157,7 +157,10 @@ class SkillsApi(Api):
 			skill = self.SkillManager.getSkillInstance(skillName=skillName, silent=True)
 			if not skill:
 				skill = self.SkillManager.allSkills.get(skillName, dict())
-			return jsonify(success=True, skill=skill.toDict())
+				if isinstance(skill, dict):
+					raise Exception('Skill not found')
+
+			return jsonify(success=True, skill=skill)
 		except Exception as e:
 			self.logWarning(f'Failed fetching skill: {e}', printStack=True)
 			return jsonify(success=False, message=str(e))
