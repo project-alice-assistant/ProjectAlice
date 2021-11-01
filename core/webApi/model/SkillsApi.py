@@ -286,7 +286,7 @@ class SkillsApi(Api):
 		                         skillName=skillName)
 		if not gitCloner.checkOwnRepoAvailable(skillName=skillName):
 			gitCloner.createForkForSkill(skillName=skillName)
-		gitCloner.checkoutOwnFork(skillName=skillName)
+		gitCloner.checkoutOwnFork()
 		return jsonify(success=True)
 
 
@@ -355,11 +355,11 @@ class SkillsApi(Api):
 		                         skillName=skillName)
 
 		return jsonify(success=True,
-		               result={'Public': {'name':'Public',
-		                                  'url': gitCloner.getRemote(origin=True, noToken=True),
-		                                  'status': gitCloner.checkRemote(origin=True)},
-		                       'Private': {'name': 'Private',
-		                                   'url': gitCloner.getRemote(AliceSK=True, noToken=True),
+		               result={'Public' : {'name'  : 'Public',
+		                                   'url'   : gitCloner.getRemote(origin=True, noToken=True),
+		                                   'status': gitCloner.checkRemote(origin=True)},
+		                       'Private': {'name'  : 'Private',
+		                                   'url'   : gitCloner.getRemote(AliceSK=True, noToken=True),
 		                                   'status': gitCloner.checkRemote(AliceSK=True)}})
 
 
@@ -567,24 +567,24 @@ class SkillsApi(Api):
 
 		return jsonify(success=True, installFile=json.loads(installFile.read_text()) if installFile.exists() else '')
 
+
 	@route('/<skillName>/createWidget/<widgetName>/', methods=['PATCH'])
 	@ApiAuthenticated
 	def createWidget(self, skillName: str, widgetName: str) -> Response:
 		"""
 		Create the empty hull for a new widget in the skills folders
+		:param widgetName:
 		:param skillName:
 		:return:
 		"""
 		self.logInfo(f'Creating new widget {widgetName} for skill {skillName}')
-		if skillName not in self.SkillManager.allSkills:
+		try:
+			dest = self.getSkillDest(skillName=skillName)
+			self.Commons.runSystemCommand(['./venv/bin/pip', 'install', '--upgrade', 'projectalice-sk'])
+			self.Commons.runSystemCommand(['./venv/bin/projectalice-sk', 'createwidget', '--widget', widgetName, '--path', f'{dest}'])
+			return jsonify(success=True)
+		except:
 			return self.skillNotFound()
-
-		dest = str(Path(self.Commons.rootDir()) / 'skills' / skillName)
-
-		self.Commons.runSystemCommand(['./venv/bin/pip', 'install', '--upgrade', 'projectalice-sk'])
-		self.Commons.runSystemCommand(['./venv/bin/projectalice-sk', 'createwidget', '--widget', widgetName, '--path', f'{dest}'])
-
-		return jsonify(success=True)
 
 
 	@route('/<skillName>/createDeviceType/<deviceName>/', methods=['PATCH'])
@@ -592,16 +592,27 @@ class SkillsApi(Api):
 	def createDeviceType(self, skillName: str, deviceName: str) -> Response:
 		"""
 		Create the empty hull for a new device type in the skills folders
+		:param deviceName:
 		:param skillName:
 		:return:
 		"""
 		self.logInfo(f'Creating new device type {deviceName} for skill {skillName}')
-		if skillName not in self.SkillManager.allSkills:
+		try:
+			dest = self.getSkillDest(skillName=skillName)
+			self.Commons.runSystemCommand(['./venv/bin/pip', 'install', '--upgrade', 'projectalice-sk'])
+			self.Commons.runSystemCommand(['./venv/bin/projectalice-sk', 'createdevicetype', '--device', deviceName, '--path', f'{dest}'])
+			return jsonify(success=True)
+		except:
 			return self.skillNotFound()
 
-		dest = str(Path(self.Commons.rootDir()) / 'skills' / skillName)
 
-		self.Commons.runSystemCommand(['./venv/bin/pip', 'install', '--upgrade', 'projectalice-sk'])
-		self.Commons.runSystemCommand(['./venv/bin/projectalice-sk', 'createdevicetype', '--device', deviceName, '--path', f'{dest}'])
-
-		return jsonify(success=True)
+	def getSkillDest(self, skillName: str):
+		"""
+		Returns skill resource
+		:param skillName:
+		:return:
+		"""
+		try:
+			return self.SkillManager.allSkills.get(skillName, None).getResource()
+		except:
+			raise  # Let caller handle it
