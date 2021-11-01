@@ -17,15 +17,17 @@
 #
 #  Last modified: 2021.04.13 at 12:56:45 CEST
 
-import numpy as np
 from pathlib import Path
 from typing import Generator, Optional
+
+import numpy as np
 
 from core.asr.model.ASRResult import ASRResult
 from core.asr.model.Asr import Asr
 from core.asr.model.Recorder import Recorder
 from core.dialog.model.DialogSession import DialogSession
 from core.util.Stopwatch import Stopwatch
+
 
 try:
 	import stt
@@ -60,7 +62,7 @@ class CoquiAsr(Asr):
 		if not self.checkLanguage():
 			self.downloadLanguage()
 		self.logInfo(f'Loading Model')
-		self._model = stt.Model(f'{self._langPath}/output_graph.tflite')
+		self._model = stt.Model(str(self.tFlite))
 
 		self.logInfo(f'Model Loaded')
 		self._model.enableExternalScorer(f'{self._langPath}/lm.scorer')
@@ -83,18 +85,24 @@ class CoquiAsr(Asr):
 			self._langPath.mkdir(parents=True)
 			return False
 
-		return False if not (self._langPath / 'output_graph.tflite').exists() else True
+		return self.tFlite.exists()
 
 
-	def downloadLanguage(self) -> bool:
+	@property
+	def tFlite(self) -> Path:
+		return self._langPath / 'output_graph.tflite'
+
+
+	# noinspection DuplicatedCode
+	def downloadLanguage(self) -> bool:  # NOSONAR
 		self.logInfo(f'Downloading language model for "{self.LanguageManager.activeLanguage}", hold on, this is going to take some time!')
 		# TODO TEMP! until real model zoo exists
 		if self.LanguageManager.activeLanguage == 'de':
-			self.Commons.downloadFile('https://github.com/coqui-ai/STT-models/releases/download/german/AASHISHAG/v0.9.0/model.tflite', str(self._langPath / 'output_graph.tflite'))
+			self.Commons.downloadFile('https://github.com/coqui-ai/STT-models/releases/download/german/AASHISHAG/v0.9.0/model.tflite', str(self.tFlite))
 			self.Commons.downloadFile('https://github.com/philipp2310/Coqui-models/releases/download/de_v093/lm.scorer', str(self._langPath / 'lm.scorer'))
 			return True
 		if self.LanguageManager.activeLanguage == 'en':
-			self.Commons.downloadFile('https://github.com/coqui-ai/STT/releases/download/v0.9.3/coqui-stt-0.9.3-models.tflite', str(self._langPath / 'output_graph.tflite'))
+			self.Commons.downloadFile('https://github.com/coqui-ai/STT/releases/download/v0.9.3/coqui-stt-0.9.3-models.tflite', str(self.tFlite))
 			self.Commons.downloadFile('https://github.com/coqui-ai/STT/releases/download/v0.9.3/coqui-stt-0.9.3-models.scorer', str(self._langPath / 'lm.scorer'))
 			return True
 
@@ -160,7 +168,8 @@ class CoquiAsr(Asr):
 		) if result else None
 
 
-	def _checkResponses(self, session: DialogSession, responses: Generator) -> Optional[tuple]:
+	# noinspection DuplicatedCode
+	def _checkResponses(self, session: DialogSession, responses: Generator) -> Optional[tuple]:  # NOSONAR
 		if responses is None:
 			return None
 

@@ -24,6 +24,7 @@ from core.user.model.User import User
 from core.voice.model.TTSEnum import TTSEnum
 from core.voice.model.Tts import Tts
 
+
 try:
 	# noinspection PyUnresolvedReferences
 	import botocore
@@ -271,18 +272,18 @@ class AmazonTts(Tts):
 
 	def onStart(self):
 		super().onStart()
-		aws_config = {
-			'region_name': self.ConfigManager.getAliceConfigByName('awsRegion'),
-			'aws_access_key_id': self.ConfigManager.getAliceConfigByName('awsAccessKey'),
+		awsConfig = {
+			'region_name'          : self.ConfigManager.getAliceConfigByName('awsRegion'),
+			'aws_access_key_id'    : self.ConfigManager.getAliceConfigByName('awsAccessKey'),
 			'aws_secret_access_key': self.ConfigManager.getAliceConfigByName('awsSecretKey'),
-			'config': botocore.config.Config(
+			'config'               : botocore.config.Config(
 				connect_timeout=AWS_CONF_CONNECT_TIMEOUT,
 				read_timeout=AWS_CONF_READ_TIMEOUT,
 				max_pool_connections=AWS_CONF_MAX_POOL_CONNECTIONS,
 			),
 		}
 
-		self._client = boto3.client('polly', **aws_config)
+		self._client = boto3.client('polly', **awsConfig)
 
 
 	@staticmethod
