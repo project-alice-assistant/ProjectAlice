@@ -109,7 +109,7 @@ class ProjectAlice(Singleton):
 
 
 	@property
-	def name(self) -> str: #NOSONAR
+	def name(self) -> str:  # NOSONAR
 		return self.NAME
 
 

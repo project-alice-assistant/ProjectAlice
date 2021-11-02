@@ -31,7 +31,7 @@ class DialogTemplateSlotType:
 	technicalValue: bool = False
 
 
-	def __post_init__(self): #NOSONAR
+	def __post_init__(self):  # NOSONAR
 		for value in self.values:
 			self.myValues[value['value']] = value
 

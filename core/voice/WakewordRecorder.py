@@ -268,7 +268,6 @@ class WakewordRecorder(Manager):
 	#
 	# return update
 
-
 	@property
 	def state(self) -> WakewordRecorderState:
 		return self._state

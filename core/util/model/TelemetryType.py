@@ -19,6 +19,7 @@
 
 from enum import Enum
 
+
 class TelemetryType(Enum):
 	TEMPERATURE = 'temperature'
 	TARGETTEMPERATURE = 'targetTemperature'

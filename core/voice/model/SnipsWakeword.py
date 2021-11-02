@@ -23,7 +23,6 @@ from core.voice.model.WakewordEngine import WakewordEngine
 
 
 class SnipsWakeword(WakewordEngine):
-
 	NAME = 'Snips hotword'
 	DEPENDENCIES = {
 		'system': [

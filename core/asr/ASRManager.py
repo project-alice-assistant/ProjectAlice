@@ -60,7 +60,7 @@ class ASRManager(Manager):
 		self._startASREngine()
 
 
-	def _startASREngine(self, forceAsr = None):
+	def _startASREngine(self, forceAsr=None):
 		self._usingFallback = False if forceAsr is None else True
 		userASR = self.ConfigManager.getAliceConfigByName(configName='asr').lower() if forceAsr is None else forceAsr
 		keepASROffline = self.ConfigManager.getAliceConfigByName('keepASROffline')

@@ -44,6 +44,7 @@ class MycroftTts(Tts):
 		'pip'   : {}
 	}
 
+
 	def __init__(self, user: User = None):
 		super().__init__(user)
 

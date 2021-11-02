@@ -38,12 +38,12 @@ from core.voice.WakewordRecorder import WakewordRecorderState
 
 
 class AudioManager(Manager):
-
 	SAMPLERATE = 16000
 	FRAMES_PER_BUFFER = 320
 
 	LAST_USER_SPEECH = 'var/cache/lastUserpeech_{}_{}.wav'
 	SECOND_LAST_USER_SPEECH = 'var/cache/secondLastUserSpeech_{}_{}.wav'
+
 
 	def __init__(self):
 		super().__init__()

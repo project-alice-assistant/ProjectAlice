@@ -30,6 +30,7 @@ class MultiIntent:
 	processedString: str
 	intents: Deque[str] = field(default_factory=deque)
 
+
 	@property
 	def originalString(self) -> str:
 		return self.session['payload']['input']

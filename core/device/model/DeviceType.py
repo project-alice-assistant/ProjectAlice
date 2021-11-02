@@ -163,19 +163,19 @@ class DeviceType(ProjectAliceObject):
 
 	def toDict(self) -> dict:
 		return {
-			'deviceTypeName'         : self._deviceTypeName,
-			'skillName'              : self._skillName,
-			'perLocationLimit'       : self._perLocationLimit,
-			'totalDeviceLimit'       : self._totalDeviceLimit,
-			'allowLocationLinks'     : self._allowLocationLinks,
-			'heartbeatRate'          : self._heartbeatRate,
-			'allowHeartbeatOverride' : self._allowHeartbeatOverride,
-			'abilities'              : bin(self._abilities),
-			'deviceConfigsTemplates' : self._deviceConfigsTemplates,
-			'linkConfigsTemplates'   : self._linkConfigsTemplates
+			'deviceTypeName'        : self._deviceTypeName,
+			'skillName'             : self._skillName,
+			'perLocationLimit'      : self._perLocationLimit,
+			'totalDeviceLimit'      : self._totalDeviceLimit,
+			'allowLocationLinks'    : self._allowLocationLinks,
+			'heartbeatRate'         : self._heartbeatRate,
+			'allowHeartbeatOverride': self._allowHeartbeatOverride,
+			'abilities'             : bin(self._abilities),
+			'deviceConfigsTemplates': self._deviceConfigsTemplates,
+			'linkConfigsTemplates'  : self._linkConfigsTemplates
 		}
 
 
 	@classmethod
 	def getDeviceTypeDefinition(cls) -> dict:
-			raise NotImplementedError
+		raise NotImplementedError

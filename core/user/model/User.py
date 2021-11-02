@@ -29,7 +29,7 @@ class User(ProjectAliceObject):
 	def __init__(self, row: typing.Optional[dict]):
 		super().__init__()
 
-		#TODO is it correct to init these values only when row exists?
+		# TODO is it correct to init these values only when row exists?
 		# -> will throw exception when property is called or should they be
 		# inited to None instead
 		# how about replace with: row.get('id',None)

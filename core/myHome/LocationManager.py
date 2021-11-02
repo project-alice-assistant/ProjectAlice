@@ -27,14 +27,13 @@ from core.myHome.model.Location import Location
 
 
 class LocationManager(Manager):
-
 	LOCATIONS_TABLE = 'locations'
 	CONSTRUCTIONS_TABLE = 'constructions'
 	FURNITURE_TABLE = 'furnitures'
 
 	DATABASE = {
-		LOCATIONS_TABLE: [
-			'id INTEGER PRIMARY KEY', #NOSONAR
+		LOCATIONS_TABLE    : [
+			'id INTEGER PRIMARY KEY',  # NOSONAR
 			'name TEXT NOT NULL',
 			"synonyms TEXT NOT NULL DEFAULT '{}'",
 			'parentLocation INTEGER NOT NULL DEFAULT 0',
@@ -45,7 +44,7 @@ class LocationManager(Manager):
 			'parentLocation INTEGER',
 			"settings TEXT DEFAULT '{}'"
 		],
-		FURNITURE_TABLE: [
+		FURNITURE_TABLE    : [
 			'id INTEGER PRIMARY KEY',
 			'parentLocation INTEGER',
 			"settings TEXT DEFAULT '{}'"
@@ -68,7 +67,7 @@ class LocationManager(Manager):
 
 		if not self._locations:
 			location = self.addNewLocation(data={
-				'name': 'The Hive',
+				'name'          : 'The Hive',
 				'parentLocation': 0
 			})
 			if not location:
@@ -109,10 +108,10 @@ class LocationManager(Manager):
 	def deleteConstruction(self, conId: int):
 		self.DatabaseManager.delete(
 			tableName=self.CONSTRUCTIONS_TABLE,
-		    callerName=self.name,
-		    values={
-			    'id': conId
-		    }
+			callerName=self.name,
+			values={
+				'id': conId
+			}
 		)
 		self._constructions.pop(conId, None)
 
@@ -150,10 +149,10 @@ class LocationManager(Manager):
 	def deleteFurniture(self, furId: int):
 		self.DatabaseManager.delete(
 			tableName=self.FURNITURE_TABLE,
-		    callerName=self.name,
-		    values={
-			    'id': furId
-		    }
+			callerName=self.name,
+			values={
+				'id': furId
+			}
 		)
 		self._furnitures.pop(furId, None)
 
@@ -201,10 +200,10 @@ class LocationManager(Manager):
 	def deleteLocation(self, locId: int):
 		self.DatabaseManager.delete(
 			tableName=self.LOCATIONS_TABLE,
-		    callerName=self.name,
-		    values={
-			    'id': locId
-		    }
+			callerName=self.name,
+			values={
+				'id': locId
+			}
 		)
 		self._locations.pop(locId, None)
 
@@ -220,7 +219,6 @@ class LocationManager(Manager):
 			if construction.parentLocation == locId:
 				self._constructions.pop(construction.id, None)
 
-
 		self.DatabaseManager.delete(
 			tableName=self.FURNITURE_TABLE,
 			callerName=self.name,
@@ -233,13 +231,12 @@ class LocationManager(Manager):
 			if furniture.parentLocation == locId:
 				self._furnitures.pop(furniture.id, None)
 
-
 		self.DatabaseManager.delete(
 			tableName=self.DeviceManager.DB_LINKS,
-		    callerName=self.DeviceManager.name,
-		    values={
-			    'targetLocation': locId
-		    }
+			callerName=self.DeviceManager.name,
+			values={
+				'targetLocation': locId
+			}
 		)
 
 

@@ -30,7 +30,6 @@ from core.dialog.model.DialogSession import DialogSession
 
 class FailedAliceSkill(ProjectAliceObject):
 
-
 	def __init__(self, installer: dict):
 		self._installer = installer
 		self._updateAvailable = False
@@ -52,7 +51,7 @@ class FailedAliceSkill(ProjectAliceObject):
 
 
 	def onStart(self):
-		pass # Is always handeled by the sibling
+		pass  # Is always handled by the sibling
 
 
 	def onStop(self):

@@ -22,8 +22,8 @@ from core.commons import constants
 
 
 class WakewordEngine(ProjectAliceObject):
-
 	NAME = constants.UNKNOWN
+
 
 	def __init__(self):
 		super().__init__()

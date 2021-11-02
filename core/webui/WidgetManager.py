@@ -34,7 +34,7 @@ class WidgetManager(Manager):
 	WIDGET_PAGES_TABLE = 'widgetPages'
 
 	DATABASE = {
-		WIDGETS_TABLE              : [
+		WIDGETS_TABLE     : [
 			'id INTEGER PRIMARY KEY',  # NOSONAR
 			'skill TEXT NOT NULL',
 			'name TEXT NOT NULL',
@@ -42,7 +42,7 @@ class WidgetManager(Manager):
 			"configs TEXT NOT NULL DEFAULT '{}'",
 			'page INTEGER NOT NULL DEFAULT 0'
 		],
-		WIDGET_PAGES_TABLE         : [
+		WIDGET_PAGES_TABLE: [
 			'id INTEGER PRIMARY KEY',
 			'icon TEXT NOT NULL',
 			'position INTEGER NOT NULL'
@@ -68,7 +68,7 @@ class WidgetManager(Manager):
 	def loadWidgets(self):
 		count = 0
 		for skill in self.SkillManager.allSkills.values():
-			try: #failed skills don't have any .widgets at all and crash the manager!
+			try:  # failed skills don't have any .widgets at all and crash the manager!
 				if not skill.widgets:
 					continue
 			except:
@@ -185,7 +185,7 @@ class WidgetManager(Manager):
 
 			pageId = self.databaseInsert(
 				tableName=self.WIDGET_PAGES_TABLE,
-				values = {
+				values={
 					'icon'    : self.DEFAULT_ICON,
 					'position': maxPos + 1
 				}

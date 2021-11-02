@@ -34,10 +34,10 @@ from core.voice.model.WakewordEngine import WakewordEngine
 try:
 	import pvporcupine
 except ModuleNotFoundError:
-	pass # Will autoinstall
+	pass  # Will autoinstall
+
 
 class PorcupineWakeword(WakewordEngine):
-
 	NAME = 'Porcupine'
 	DEPENDENCIES = {
 		'system': [],
@@ -45,6 +45,7 @@ class PorcupineWakeword(WakewordEngine):
 			'pvporcupine==1.7.0'
 		}
 	}
+
 
 	def __init__(self):
 		super().__init__()
@@ -117,10 +118,10 @@ class PorcupineWakeword(WakewordEngine):
 					self.MqttManager.publish(
 						topic=constants.TOPIC_HOTWORD_DETECTED.format('default'),
 						payload={
-							'siteId': self.DeviceManager.getMainDevice().uid,
-							'modelId': f'porcupine_{result}',
-							'modelVersion': self._handler.version,
-							'modelType': 'universal',
+							'siteId'            : self.DeviceManager.getMainDevice().uid,
+							'modelId'           : f'porcupine_{result}',
+							'modelVersion'      : self._handler.version,
+							'modelType'         : 'universal',
 							'currentSensitivity': self.ConfigManager.getAliceConfigByName('wakewordSensitivity')
 						}
 					)

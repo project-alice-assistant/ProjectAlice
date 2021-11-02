@@ -91,7 +91,7 @@ class ProjectAliceObject:
 		return self.__repr__()
 
 
-	def broadcast(self, method: str, exceptions: list = None, manager = None, propagateToSkills: bool = False, **kwargs):  # NOSONAR
+	def broadcast(self, method: str, exceptions: list = None, manager=None, propagateToSkills: bool = False, **kwargs):  # NOSONAR
 		if not exceptions:
 			exceptions = list()
 

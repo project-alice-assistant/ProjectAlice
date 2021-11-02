@@ -50,8 +50,8 @@ from core.dialog.model.DialogSession import DialogSession
 
 
 class CommonsManager(Manager):
-
 	ERROR_HANDLER_FUNC = CFUNCTYPE(None, c_char_p, c_int, c_char_p, c_int, c_char_p)
+
 
 	def __init__(self):
 		super().__init__(name='Commons')
@@ -98,6 +98,7 @@ class CommonsManager(Manager):
 
 		self.logInfo("")
 		self.logInfo(f"![red](**Remember to remove this devCode** from '{step1[1]}' line '{step1[2]}')")
+
 
 	def isEqualTranslated(self, baseString: str, compareTo: str, skill: str = 'system') -> bool:
 		"""
@@ -341,7 +342,7 @@ class CommonsManager(Manager):
 		return [result.text for result in Translator().translate(**kwargs)]
 
 
-	def runRootSystemCommand(self, commands: Union[list, str], shell: bool = False, stdout = subprocess.PIPE, stderr = subprocess.PIPE) -> subprocess.CompletedProcess:
+	def runRootSystemCommand(self, commands: Union[list, str], shell: bool = False, stdout=subprocess.PIPE, stderr=subprocess.PIPE) -> subprocess.CompletedProcess:
 		if isinstance(commands, str) and not shell:
 			commands = commands.split()
 
@@ -351,7 +352,7 @@ class CommonsManager(Manager):
 
 
 	@staticmethod
-	def runSystemCommand(commands: Union[list, str], shell: bool = False, stdout = subprocess.PIPE, stderr = subprocess.PIPE) -> subprocess.CompletedProcess:
+	def runSystemCommand(commands: Union[list, str], shell: bool = False, stdout=subprocess.PIPE, stderr=subprocess.PIPE) -> subprocess.CompletedProcess:
 		return subprocess.run(commands, shell=shell, stdout=stdout, stderr=stderr)
 
 
@@ -421,10 +422,10 @@ class CommonsManager(Manager):
 
 
 # noinspection PyUnusedLocal
-def py_error_handler(filename, line, function, err, fmt): #NOSONAR
+def py_error_handler(filename, line, function, err, fmt):  # NOSONAR
 	# Errors are handled by our loggers
 	pass
 
 
 # noinspection PyTypeChecker
-c_error_handler = CommonsManager.ERROR_HANDLER_FUNC(py_error_handler) #NOSONAR
+c_error_handler = CommonsManager.ERROR_HANDLER_FUNC(py_error_handler)  # NOSONAR

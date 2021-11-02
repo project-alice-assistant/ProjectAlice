@@ -87,7 +87,6 @@ class TasmotaConfigs(ProjectAliceObject):
 		'envSensor': 'https://github.com/arendst/Tasmota/releases/download/v8.3.1/tasmota-sensors.bin'
 	}
 
-
 	BACKLOG_CONFIGS = [
 		{
 			'cmds'     : [
@@ -209,11 +208,11 @@ class TasmotaConfigs(ProjectAliceObject):
 						'payload': '0'
 					},
 					{
-						'topic'  : BASE_TOPIC + '/rule1', #NOSONAR
+						'topic'  : BASE_TOPIC + '/rule1',  # NOSONAR
 						'payload': 'on switch1#state do publish projectalice/devices/tasmota/feedback/{identifier} {{"deviceUid":"{room}","deviceType":"{type}","feedback":%value%,"uid":"{identifier}"}} endon'
 					},
 					{
-						'topic'  : BASE_TOPIC + '/rule1', #NOSONAR
+						'topic'  : BASE_TOPIC + '/rule1',  # NOSONAR
 						'payload': '1'
 					},
 					{
@@ -255,11 +254,11 @@ class TasmotaConfigs(ProjectAliceObject):
 						'payload': '0'
 					},
 					{
-						'topic'  : BASE_TOPIC + '/rule1', #NOSONAR
+						'topic'  : BASE_TOPIC + '/rule1',  # NOSONAR
 						'payload': 'on switch1#state do publish projectalice/devices/tasmota/feedback/{identifier} {{"siteId":"{room}","deviceType":"{type}","feedback":%value%,"uid":"{identifier}"}} endon'
 					},
 					{
-						'topic'  : BASE_TOPIC + '/rule1', #NOSONAR
+						'topic'  : BASE_TOPIC + '/rule1',  # NOSONAR
 						'payload': '1'
 					},
 					{

@@ -43,7 +43,7 @@ class TTSManager(Manager):
 		self._loadTTS(self.ConfigManager.getAliceConfigByName('tts').lower())
 
 
-	def _loadTTS(self, userTTS: str = None, user: User = None, forceTts = None):
+	def _loadTTS(self, userTTS: str = None, user: User = None, forceTts=None):
 		self._fallback = None
 		if forceTts:
 			systemTTS = forceTts
@@ -87,6 +87,7 @@ class TTSManager(Manager):
 		if self._tts is None:
 			self.logWarning("Couldn't install Tts, falling back to PicoTts")
 			from core.voice.model.PicoTts import PicoTts
+
 			self._tts = PicoTts(user)
 
 		if self._tts.online and (not online or keepTTSOffline or stayOffline):

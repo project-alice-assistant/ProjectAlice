@@ -30,10 +30,10 @@ from core.voice.model.WakewordEngine import WakewordEngine
 try:
 	from precise_runner import PreciseEngine, PreciseRunner, ReadWriteStream
 except ModuleNotFoundError:
-	pass # Autoinstall
+	pass  # Autoinstall
+
 
 class PreciseWakeword(WakewordEngine):
-
 	NAME = 'Precise'
 	DEPENDENCIES = {
 		'system': [],
@@ -41,6 +41,7 @@ class PreciseWakeword(WakewordEngine):
 			'mycroft-precise==0.3.0'
 		}
 	}
+
 
 	def __init__(self):
 		super().__init__()

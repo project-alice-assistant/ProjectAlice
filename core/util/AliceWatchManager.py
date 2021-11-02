@@ -66,14 +66,14 @@ class AliceWatchManager(Manager):
 			text = f'{text}'
 
 		self.publish(payload={
-			'text': text,
+			'text'     : text,
 			'component': 'Nlu',
 			'verbosity': 1
 		})
 
 
 	def onSessionStarted(self, session: DialogSession):
-		#todo @psycho - Some situations like self.ask() from gui (addUser) theres no session.deviceUid
+		# todo @psycho - Some situations like self.ask() from gui (addUser) theres no session.deviceUid
 		# which results in getMainDevice().uid being None. the below is a temp fix
 		if not session.deviceUid:
 			session.deviceUid = self.DeviceManager.getMainDevice().uid
@@ -86,7 +86,7 @@ class AliceWatchManager(Manager):
 
 	def onCaptured(self, session: DialogSession):
 		self.publish(payload={
-			'text': f'Captured text "![yellow]({session.payload["text"]})" in {round(session.payload["seconds"], 1)}s',
+			'text'     : f'Captured text "![yellow]({session.payload["text"]})" in {round(session.payload["seconds"], 1)}s',
 			'component': 'Asr',
 			'verbosity': 1
 		})
@@ -94,7 +94,7 @@ class AliceWatchManager(Manager):
 
 	def onPartialTextCaptured(self, session, text: str, likelihood: float, seconds: float):
 		self.publish(payload={
-			'text': f'Capturing text: "![yellow]({text})"',
+			'text'     : f'Capturing text: "![yellow]({text})"',
 			'component': 'Asr',
 			'verbosity': 2
 		})
@@ -134,7 +134,7 @@ class AliceWatchManager(Manager):
 
 	def onContinueSession(self, session):
 		self.publish(payload={
-			'text': f'Was asked to continue session with id "**{session.sessionId}**" by saying "![yellow]({session.text})"',
+			'text'     : f'Was asked to continue session with id "**{session.sessionId}**" by saying "![yellow]({session.text})"',
 			'component': 'Dialogue',
 			'verbosity': 1
 		})
@@ -143,13 +143,13 @@ class AliceWatchManager(Manager):
 	def onEndSession(self, session: DialogSession, reason: str = 'nominal'):
 		if 'text' in session.payload:
 			self.publish(payload={
-				'text': f'Was asked to end session with id "**{session.sessionId}**" by saying "![yellow]({session.payload["text"]})"',
+				'text'     : f'Was asked to end session with id "**{session.sessionId}**" by saying "![yellow]({session.payload["text"]})"',
 				'component': 'Dialogue',
 				'verbosity': 1
 			})
 		else:
 			self.publish(payload={
-				'text': f'Was asked to end session with id "**{session.sessionId}**" by without text!',
+				'text'     : f'Was asked to end session with id "**{session.sessionId}**" by without text!',
 				'component': 'Dialogue',
 				'verbosity': 1
 			})
@@ -157,7 +157,7 @@ class AliceWatchManager(Manager):
 
 	def onSay(self, session: DialogSession):
 		self.publish(payload={
-			'text': f'Was asked to say "![yellow]({session.payload["text"]})"',
+			'text'     : f'Was asked to say "![yellow]({session.payload["text"]})"',
 			'component': 'Tts',
 			'verbosity': 1
 		})
@@ -165,7 +165,7 @@ class AliceWatchManager(Manager):
 
 	def onIntentNotRecognized(self, session: DialogSession):
 		self.publish(payload={
-			'text': f'![red](Intent not recognized) for "![yellow]({session.text})"',
+			'text'     : f'![red](Intent not recognized) for "![yellow]({session.text})"',
 			'component': 'Nlu',
 			'verbosity': 1
 		})
@@ -188,7 +188,7 @@ class AliceWatchManager(Manager):
 				text = f'{text} The session ended as expected.'
 
 		self.publish(payload={
-			'text': text,
+			'text'     : text,
 			'component': 'Dialogue',
 			'verbosity': 1
 		})
@@ -219,7 +219,7 @@ class AliceWatchManager(Manager):
 		text = f'{text}'
 
 		self.publish(payload={
-			'text': text,
+			'text'     : text,
 			'component': 'Dialogue',
 			'verbosity': 1
 		})

@@ -39,6 +39,7 @@ class MqttManager(Manager):
 	DEFAULT_CLIENT_EXTENSION = '@mqtt'
 	TOPIC_AUDIO_FRAME = constants.TOPIC_AUDIO_FRAME.replace('{}', '+')
 
+
 	def __init__(self):
 		super().__init__()
 
@@ -824,7 +825,6 @@ class MqttManager(Manager):
 				deviceUid=deviceUid
 			)
 			return
-
 
 		if text:
 			self._mqttClient.publish(constants.TOPIC_END_SESSION, json.dumps({

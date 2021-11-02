@@ -356,9 +356,9 @@ class DeviceManager(Manager):
 		for device in self._devices.values():
 			if (locationId and device.parentLocation != locationId) \
 					or (skillName and device.skillName != skillName) \
-					or (deviceType and device.deviceType != deviceType)\
-				or (connectedOnly and not device.connected)\
-				or (abilities and not device.hasAbilities(abilities)):
+					or (deviceType and device.deviceType != deviceType) \
+					or (connectedOnly and not device.connected) \
+					or (abilities and not device.hasAbilities(abilities)):
 				continue
 
 			ret.append(device)
@@ -425,7 +425,6 @@ class DeviceManager(Manager):
 
 			if 0 < dType.perLocationLimit <= len(self.getDevicesByLocation(locationId, deviceType=dType, connectedOnly=False)):
 				raise MaxDevicePerLocationReached(dType.perLocationLimit)
-
 
 		if not displaySettings:
 			if locationId == 0:
@@ -668,7 +667,7 @@ class DeviceManager(Manager):
 			raise Exception('This device is already linked to that location')
 
 		data = {
-			'deviceId': device.id,
+			'deviceId'      : device.id,
 			'targetLocation': targetLocation
 		}
 
@@ -801,7 +800,7 @@ class DeviceManager(Manager):
 				if replyOnDeviceUid:
 					self.MqttManager.say(text=self.TalkManager.randomTalk('newDeviceAdditionSuccess', skill='system'), deviceUid=replyOnDeviceUid)
 
-				#self.ThreadManager.doLater(interval=5, func=self.WakewordRecorder.uploadToNewDevice, args=[uid])
+				# self.ThreadManager.doLater(interval=5, func=self.WakewordRecorder.uploadToNewDevice, args=[uid])
 
 				self._broadcastSocket.sendto(bytes('ok', encoding='utf8'), (deviceIp, self._broadcastPort))
 				self._stopBroadcasting()
@@ -848,7 +847,7 @@ class DeviceManager(Manager):
 		return next((dev for dev in self._devices.values() if dev.displayName == name), None)
 
 
-# def broadcastToDevices(self, topic: str, payload: dict = None, deviceType: DeviceType = None, location: Location = None, connectedOnly: bool = True):
+	# def broadcastToDevices(self, topic: str, payload: dict = None, deviceType: DeviceType = None, location: Location = None, connectedOnly: bool = True):
 	# 	if not payload:
 	# 		payload = dict()
 	#

@@ -27,6 +27,7 @@ from core.voice.model.Tts import Tts
 class PicoTts(Tts):
 	TTS = TTSEnum.PICO
 
+
 	def __init__(self, user: User = None):
 		super().__init__(user)
 		self._online = False

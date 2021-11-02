@@ -26,7 +26,6 @@ from core.util.model.TelemetryType import TelemetryType
 
 
 class TelemetryManager(Manager):
-
 	DATABASE = {
 		'telemetry': [
 			'id integer PRIMARY KEY',
@@ -45,33 +44,33 @@ class TelemetryManager(Manager):
 		},
 		TelemetryType.TEMPERATURE: {
 			'onTemperatureHighAlert': ['upperThreshold', 'TemperatureAlertHigh'],
-			'onTemperatureLowAlert': ['lowerThreshold', 'TemperatureAlertLow'],
-			'onFreezing': ['lowerThreshold', 0]
+			'onTemperatureLowAlert' : ['lowerThreshold', 'TemperatureAlertLow'],
+			'onFreezing'            : ['lowerThreshold', 0]
 		},
-		TelemetryType.CO2: {
+		TelemetryType.CO2        : {
 			'onCO2Alert': ['upperThreshold', 'CO2AlertHigh']
 		},
-		TelemetryType.GAS: {
+		TelemetryType.GAS        : {
 			'onGasAlert': ['upperThreshold', 'GasAlertHigh']
 		},
-		TelemetryType.HUMIDITY: {
+		TelemetryType.HUMIDITY   : {
 			'onHumidityHighAlert': ['upperThreshold', 'HumidityAlertHigh'],
-			'onHumidityLowAlert': ['lowerThreshold', 'HumidityAlertLow']
+			'onHumidityLowAlert' : ['lowerThreshold', 'HumidityAlertLow']
 		},
-		TelemetryType.PRESSURE: {
+		TelemetryType.PRESSURE   : {
 			'onPressureHighAlert': ['upperThreshold', 'PressureAlertHigh'],
-			'onPressureLowAlert': ['lowerThreshold', 'PressureAlertLow']
+			'onPressureLowAlert' : ['lowerThreshold', 'PressureAlertLow']
 		},
-		TelemetryType.NOISE: {
+		TelemetryType.NOISE      : {
 			'onNoiseAlert': ['upperThreshold', 'NoiseAlert']
 		},
-		TelemetryType.RAIN: {
+		TelemetryType.RAIN       : {
 			'onRaining': None
 		},
-		TelemetryType.SUM_RAIN_1: {
+		TelemetryType.SUM_RAIN_1 : {
 			'onTooMuchRain': ['upperThreshold', 'TooMuchRainAlert']
 		},
-		TelemetryType.UV_INDEX: {
+		TelemetryType.UV_INDEX   : {
 			'onUVIndexAlert': ['upperThreshold', 'UVIndexAlert']
 		}
 	}
@@ -128,13 +127,14 @@ class TelemetryManager(Manager):
 				match.value = value
 				return True
 		else:
-			self._currentValues.append(TelemetryData({'type': ttype,
-			                                          'value': value,
-			                                          'service': service,
-			                                          'deviceId': deviceId,
-			                                          'timestamp': timestamp,
+			self._currentValues.append(TelemetryData({'type'      : ttype,
+			                                          'value'     : value,
+			                                          'service'   : service,
+			                                          'deviceId'  : deviceId,
+			                                          'timestamp' : timestamp,
 			                                          'locationId': locationId}))
 			return True
+
 
 	# noinspection SqlResolve
 	def storeData(self, ttype: TelemetryType, value: str, service: str, deviceId: int, timestamp=None, locationId: int = None) -> bool:
@@ -155,7 +155,7 @@ class TelemetryManager(Manager):
 
 		timestamp = timestamp or time.time()
 
-		if not self.currentValue(ttype, value, service, deviceId,timestamp, locationId):
+		if not self.currentValue(ttype, value, service, deviceId, timestamp, locationId):
 			return False
 
 		self.databaseInsert(
@@ -178,7 +178,7 @@ class TelemetryManager(Manager):
 			value = float(value)
 			if settings[0] == 'upperThreshold' and value > threshold or \
 					settings[0] == 'lowerThreshold' and value < threshold:
-				self.broadcast(method=message, exceptions=[self.name], propagateToSkills=True, service=service, trigger=settings[0], value=value, threshold=threshold, area=deviceId )
+				self.broadcast(method=message, exceptions=[self.name], propagateToSkills=True, service=service, trigger=settings[0], value=value, threshold=threshold, area=deviceId)
 				break
 
 		return True
@@ -197,7 +197,6 @@ class TelemetryManager(Manager):
 			values['service'] = service
 
 		dynWhere = [f'{col} = :{col}' for col in values.keys()]
-
 
 		if historyTo:
 			dynWhere.append(f'timestamp <= {historyTo}')
@@ -232,7 +231,7 @@ class TelemetryManager(Manager):
 		query = f'SELECT t1.* FROM :__table__ t1 ' \
 		        f'INNER JOIN ' \
 		        f'(SELECT max(id) id, service, deviceId, locationId, type ' \
-				f'FROM :__table__ { where } ' \
+		        f'FROM :__table__ {where} ' \
 		        f'GROUP BY `service`, `deviceId`, `locationId`, `type`) t2 ' \
 		        f'ON t1.id  = t2.id ' \
 		        f'ORDER BY `timestamp` DESC '

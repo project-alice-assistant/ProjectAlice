@@ -65,7 +65,7 @@ class Logger:
 		self.doLog(function='critical', msg=msg, plural=plural)
 
 
-	def doLog(self, function: callable, msg: str, printStack = True, plural: Union[list, str] = None):
+	def doLog(self, function: callable, msg: str, printStack=True, plural: Union[list, str] = None):
 		if not msg:
 			return
 

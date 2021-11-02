@@ -124,10 +124,9 @@ class TalkManager(Manager):
 		if not string:
 			return ''
 
-
 		if self.ConfigManager.getAliceConfigByName('whisperWhenSleeping') and \
-			self.TTSManager.tts.getWhisperMarkup() and \
-			self.UserManager.checkIfAllUser('sleeping'):
+				self.TTSManager.tts.getWhisperMarkup() and \
+				self.UserManager.checkIfAllUser('sleeping'):
 
 			start, end = self.TTSManager.tts.getWhisperMarkup()
 			string = f'{start}{string}{end}'

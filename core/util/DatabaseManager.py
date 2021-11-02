@@ -30,8 +30,8 @@ from core.commons.CommonsManager import CommonsManager
 
 # noinspection SqlResolve
 class DatabaseManager(Manager):
-
 	TABLE_TAG = ':__table__'
+
 
 	def __init__(self):
 		super().__init__()

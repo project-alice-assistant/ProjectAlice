@@ -204,7 +204,7 @@ class Tts(ProjectAliceObject):
 		self.MqttManager.publish(
 			topic=constants.TOPIC_TTS_FINISHED,
 			payload={
-				'id': session.sessionId,
+				'id'       : session.sessionId,
 				'sessionId': session.sessionId,
 				'deviceUid': session.deviceUid
 			}

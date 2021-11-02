@@ -19,22 +19,22 @@
 
 from core.asr.model.Asr import Asr
 
+
 try:
 	from boto3 import client
 except:
-	pass # Auto installed
-
+	pass  # Auto installed
 
 
 class AmazonAsr(Asr):
-
 	NAME = 'Amazon Asr'
 	DEPENDENCIES = {
 		'system': [],
-		'pip': 	  {
+		'pip': {
 			'boto3==1.17.85'
 		}
 	}
+
 
 	def __init__(self):
 		super().__init__()

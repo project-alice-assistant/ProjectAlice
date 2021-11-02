@@ -34,12 +34,11 @@ try:
 	# noinspection PyUnresolvedReferences,PyPackageRequirements
 	from google.cloud.speech import SpeechClient, enums, types
 except:
-	pass # Auto installed
+	pass  # Auto installed
 
 
 # noinspection PyAbstractClass
 class GoogleAsr(Asr):
-
 	NAME = 'Google Asr'
 	DEPENDENCIES = {
 		'system': [],
@@ -61,10 +60,10 @@ class GoogleAsr(Asr):
 		if self._credentialsFile.exists() and not self.ConfigManager.getAliceConfigByName('googleASRCredentials'):
 			self.ConfigManager.updateAliceConfiguration(key='googleASRCredentials', value=self._credentialsFile.read_text(), doPreAndPostProcessing=False)
 
-		self._internetLostFlag = Event() # Set if internet goes down, cut the decoding
-		self._lastResultCheck = 0 # The time the intermediate results were last checked. If actual time is greater than this value + 3, stop processing, internet issues
+		self._internetLostFlag = Event()  # Set if internet goes down, cut the decoding
+		self._lastResultCheck = 0  # The time the intermediate results were last checked. If actual time is greater than this value + 3, stop processing, internet issues
 
-		self._previousCapture = '' # The text that was last captured in the iteration
+		self._previousCapture = ''  # The text that was last captured in the iteration
 
 
 	def onStart(self):

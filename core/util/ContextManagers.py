@@ -24,7 +24,7 @@ from core.base.SuperManager import SuperManager
 
 
 @contextmanager
-def Online(): #NOSONAR
+def Online():  # NOSONAR
 	internetManager = SuperManager.getInstance().internetManager
 	if internetManager.online:
 		try:

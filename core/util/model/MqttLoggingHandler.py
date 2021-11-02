@@ -26,8 +26,8 @@ from core.commons import constants
 
 
 class MqttLoggingHandler(logging.Handler):
-
 	REGEX = re.compile(r'\[(?P<component>.*?)]\s*(?P<msg>.*)$')
+
 
 	def __init__(self):
 		super().__init__()
@@ -46,9 +46,9 @@ class MqttLoggingHandler(logging.Handler):
 			msg = record.msg
 
 		payload = {
-			'time': datetime.now().strftime('%H:%M:%S.%f')[:-3],
-			'level': record.levelname,
-			'msg' : msg,
+			'time'     : datetime.now().strftime('%H:%M:%S.%f')[:-3],
+			'level'    : record.levelname,
+			'msg'      : msg,
 			'component': component
 		}
 

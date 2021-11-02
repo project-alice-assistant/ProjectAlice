@@ -30,6 +30,7 @@ class Wakeword(ProjectAliceObject):
 	A wakeword is a hotword that is unique to the user. We can identify a user with it
 	"""
 
+
 	def __init__(self, username: str):
 		super().__init__()
 		self._rawSamples = dict()

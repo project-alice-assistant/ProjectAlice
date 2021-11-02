@@ -38,6 +38,7 @@ class ConfigManager(Manager):
 	CONFIG_FUNCTION_REGEX = re.compile(r'^(?:(?P<manager>\w+)\.)?(?P<function>\w+)(?:\((?P<args>.*)\))?')
 	CONFIG_FUNCTION_ARG_REGEX = re.compile(r'(?:\w+)')
 
+
 	def __init__(self):
 		super().__init__()
 
@@ -150,7 +151,6 @@ class ConfigManager(Manager):
 					except Exception as e:
 						self.logError(f'Configuration onInit method **{function}** failed: {e}')
 
-
 		# Setting logger level immediately
 		if aliceConfigs['advancedDebug'] and not aliceConfigs['debug']:
 			aliceConfigs['debug'] = True
@@ -199,7 +199,7 @@ class ConfigManager(Manager):
 
 
 	def updateAliceConfiguration(self, key: str, value: typing.Any, dump: bool = True,
-								 doPreAndPostProcessing: bool = True):
+	                             doPreAndPostProcessing: bool = True):
 		"""
 		Updating a core config is sensitive, if the request comes from a skill.
 		First check if the request came from a skill at anytime and if so ask permission
@@ -211,7 +211,7 @@ class ConfigManager(Manager):
 		:return: None
 		"""
 
-		#TODO reimplement UI side
+		# TODO reimplement UI side
 		rootSkills = [name.lower() for name in self.SkillManager.NEEDED_SKILLS]
 		callers = [inspect.getmodulename(frame[1]).lower() for frame in inspect.stack()]
 		if 'aliceskill' in callers:

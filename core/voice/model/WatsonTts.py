@@ -22,11 +22,12 @@ from core.user.model.User import User
 from core.voice.model.TTSEnum import TTSEnum
 from core.voice.model.Tts import Tts
 
+
 try:
 	from ibm_watson import TextToSpeechV1
 	from ibm_cloud_sdk_core.authenticators import IAMAuthenticator
 except ModuleNotFoundError:
-	pass # Installed automagically through Tts Manager
+	pass  # Installed automagically through Tts Manager
 
 
 class WatsonTts(Tts):
@@ -39,6 +40,7 @@ class WatsonTts(Tts):
 		}
 	}
 
+
 	def __init__(self, user: User = None):
 		super().__init__(user)
 		self._online = True
@@ -50,14 +52,14 @@ class WatsonTts(Tts):
 		# https://cloud.ibm.com/apidocs/text-to-speech?code=python#list-voices
 		self._supportedLangAndVoices = {
 			'en-US': {
-				'male': {
-					'en-US_HenryV3Voice': {
+				'male'  : {
+					'en-US_HenryV3Voice'  : {
 						'neural': True
 					},
-					'en-US_KevinV3Voice': {
+					'en-US_KevinV3Voice'  : {
 						'neural': True
 					},
-					'en-US_MichaelVoice': {
+					'en-US_MichaelVoice'  : {
 						'neural': True
 					},
 					'en-US_MichaelV3Voice': {
@@ -65,22 +67,22 @@ class WatsonTts(Tts):
 					}
 				},
 				'female': {
-					'en-US_AllisonVoice': {
+					'en-US_AllisonVoice'  : {
 						'neural': True
 					},
 					'en-US_AllisonV3Voice': {
 						'neural': True
 					},
-					'en-US_EmilyV3Voice': {
+					'en-US_EmilyV3Voice'  : {
 						'neural': True
 					},
-					'en-US_LisaVoice': {
+					'en-US_LisaVoice'     : {
 						'neural': True
 					},
-					'en-US_LisaV3Voice': {
+					'en-US_LisaV3Voice'   : {
 						'neural': True
 					},
-					'en-US_OliviaV3Voice': {
+					'en-US_OliviaV3Voice' : {
 						'neural': True
 					}
 				}
@@ -96,8 +98,8 @@ class WatsonTts(Tts):
 				}
 			},
 			'de-DE': {
-				'male': {
-					'de-DE_DieterVoice': {
+				'male'  : {
+					'de-DE_DieterVoice'  : {
 						'neural': True
 					},
 					'de-DE_DieterV3Voice': {
@@ -105,20 +107,20 @@ class WatsonTts(Tts):
 					}
 				},
 				'female': {
-					'de-DE_BirgitVoice': {
+					'de-DE_BirgitVoice'  : {
 						'neural': True
 					},
 					'de-DE_BirgitV3Voice': {
 						'neural': True
 					},
-					'de-DE_ErikaV3Voice': {
+					'de-DE_ErikaV3Voice' : {
 						'neural': True
 					}
 				}
 			},
 			'it-IT': {
 				'female': {
-					'it-IT_FrancescaVoice' : {
+					'it-IT_FrancescaVoice': {
 						'neural': True
 					},
 					'it-IT_FrancescaV3Voice': {

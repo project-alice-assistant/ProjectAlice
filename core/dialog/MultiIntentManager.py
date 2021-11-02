@@ -76,11 +76,11 @@ class MultiIntentManager(Manager):
 		self.MqttManager.publish(
 			topic=constants.TOPIC_TEXT_CAPTURED,
 			payload={
-				'sessionId': session.sessionId,
-				'text': intent,
-				'device': session.deviceUid,
+				'sessionId' : session.sessionId,
+				'text'      : intent,
+				'device'    : session.deviceUid,
 				'likelihood': 1,
-				'seconds': 1
+				'seconds'   : 1
 			})
 		return True
 

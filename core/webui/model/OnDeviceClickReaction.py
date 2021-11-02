@@ -26,7 +26,6 @@ from core.webui.model.DeviceClickReactionAction import DeviceClickReactionAction
 
 @dataclass
 class OnDeviceClickReaction(ProjectAliceObject):
-
 	action: DeviceClickReactionAction
 	data: Any = ''
 	reply: dict = field(default_factory=dict)

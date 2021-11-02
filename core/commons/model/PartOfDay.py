@@ -19,6 +19,7 @@
 
 from enum import Enum
 
+
 class PartOfDay(Enum):
 	EARLY_MORNING = 'Early morning'
 	MORNING = 'Morning'

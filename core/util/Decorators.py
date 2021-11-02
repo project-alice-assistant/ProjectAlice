@@ -40,14 +40,16 @@ def deprecated(func):
 	when the function is used.
 	"""
 
+
 	@functools.wraps(func)
 	def wrapper(*args, **kwargs):
 		warnings.simplefilter('always', DeprecationWarning)  # turn off filter
 		warnings.warn(f'Call to deprecated function {func.__name__}.',
-			category=DeprecationWarning,
-			stacklevel=2)
+		              category=DeprecationWarning,
+		              stacklevel=2)
 		warnings.simplefilter('default', DeprecationWarning)  # reset filter
 		return func(*args, **kwargs)
+
 
 	return wrapper
 
@@ -65,13 +67,15 @@ def IntentHandler(intent: Union[str, Intent], requiredState: str = None, authLev
 		func.intents.append({'intent': intent, 'requiredState': requiredState})
 		return func
 
+
 	return wrapper
 
 
-def MqttHandler(intent: Union[str, Intent], requiredState: str = None, authLevel: AccessLevel = AccessLevel.ZERO): #NOSONAR
+def MqttHandler(intent: Union[str, Intent], requiredState: str = None, authLevel: AccessLevel = AccessLevel.ZERO):  # NOSONAR
 	"""Decorator for adding a method as a mqtt handler."""
 	if isinstance(intent, str):
 		intent = Intent(intent, userIntent=False, authLevel=authLevel)
+
 
 	def wrapper(func):
 		# store the intent in the function
@@ -79,6 +83,7 @@ def MqttHandler(intent: Union[str, Intent], requiredState: str = None, authLevel
 			func.intents = []
 		func.intents.append({'intent': intent, 'requiredState': requiredState})
 		return func
+
 
 	return wrapper
 
@@ -109,7 +114,7 @@ def _exceptHandler(*args, text: str, exceptHandler: Optional[Callable], returnTe
 		return newText
 
 
-def Online(func: Callable = None, text: str = 'offline', offlineHandler: Callable = None, returnText: bool = False, catchOnly: bool = False): #NOSONAR
+def Online(func: Callable = None, text: str = 'offline', offlineHandler: Callable = None, returnText: bool = False, catchOnly: bool = False):  # NOSONAR
 	"""
 	(return a) decorator to mark a function that requires ethernet.
 
@@ -161,12 +166,14 @@ def Online(func: Callable = None, text: str = 'offline', offlineHandler: Callabl
 
 			return _exceptHandler(*args, text=text, exceptHandler=offlineHandler, returnText=returnText, **kwargs)
 
+
 		return offlineDecorator
+
 
 	return argumentWrapper(func) if func else argumentWrapper
 
 
-def AnyExcept(func: Callable = None, text: str = 'error', exceptions: Tuple[BaseException, ...] = None, exceptHandler: Callable = None, returnText: bool = False, printStack: bool = False): #NOSONAR
+def AnyExcept(func: Callable = None, text: str = 'error', exceptions: Tuple[BaseException, ...] = None, exceptHandler: Callable = None, returnText: bool = False, printStack: bool = False):  # NOSONAR
 	# noinspection PyShadowingNames
 	def argumentWrapper(func):
 		@functools.wraps(func)
@@ -180,11 +187,12 @@ def AnyExcept(func: Callable = None, text: str = 'error', exceptions: Tuple[Base
 
 		return exceptionDecorator
 
+
 	exceptions = exceptions or Exception
 	return argumentWrapper(func) if func else argumentWrapper
 
 
-def ApiAuthenticated(func: Callable): #NOSONAR
+def ApiAuthenticated(func: Callable):  # NOSONAR
 	@functools.wraps(func)
 	def wrapper(*args, **kwargs):
 		if SuperManager.getInstance().userManager.apiTokenValid(request.headers.get('auth', '')):
@@ -192,16 +200,19 @@ def ApiAuthenticated(func: Callable): #NOSONAR
 		else:
 			return jsonify(message='ERROR: Unauthorized')
 
+
 	return wrapper
 
 
-def KnownUser(func: Callable = None): #NOSONAR
+def KnownUser(func: Callable = None):  # NOSONAR
 	"""
 	Checks if the session is started by a know user or not. This is important for skills that are security
 	sensitive and you need to make sure Alice is not talking to someone unknown
 	:param func:
 	:return:
 	"""
+
+
 	# noinspection PyShadowingNames
 	def argumentWrapper(func: Callable):
 		@functools.wraps(func)
@@ -212,12 +223,14 @@ def KnownUser(func: Callable = None): #NOSONAR
 
 			SuperManager.getInstance().mqttManager.endDialog(sessionId=session.sessionId, text=SuperManager.getInstance().talkManager.randomTalk('unknownUser', skill='system'))
 
+
 		return decorator
+
 
 	return argumentWrapper(func) if func else argumentWrapper
 
 
-def IfSetting(func: Callable = None, settingName: str = None, settingValue: Any = None, inverted: bool = False, skillName: str = None, returnValue: Optional[Any] = None): #NOSONAR
+def IfSetting(func: Callable = None, settingName: str = None, settingValue: Any = None, inverted: bool = False, skillName: str = None, returnValue: Optional[Any] = None):  # NOSONAR
 	"""
 	Checks whether a setting is equal to the given value before executing the wrapped method
 	If the setting is not equal to the given value, the wrapped method is not called
@@ -248,10 +261,11 @@ def IfSetting(func: Callable = None, settingName: str = None, settingValue: Any 
 				return returnValue
 
 			if (not inverted and value == settingValue) or \
-				(inverted and value != settingValue):
+					(inverted and value != settingValue):
 				return func(*args, **kwargs)
 			else:
-				return  returnValue
+				return returnValue
+
 
 		return settingDecorator
 

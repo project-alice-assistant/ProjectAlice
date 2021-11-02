@@ -37,6 +37,7 @@ ASOUND = '/etc/asound.conf'
 TEMP = Path('/tmp/service')
 ALLOWED_LANGUAGES = {'en', 'de', 'fr', 'it', 'pt', 'pl'}
 
+
 class InitDict(dict):
 
 	def __init__(self, default: dict):
@@ -85,6 +86,7 @@ class PreInit:
 	"""
 
 	PIP = './venv/bin/pip'
+
 
 	def __init__(self):
 		self._logger = SimpleLogger(prepend='PreInitializer')
@@ -291,6 +293,7 @@ class PreInit:
 
 		versions = list()
 		from core.base.model.Version import Version
+
 		for branch in result:
 			repoVersion = Version.fromString(branch['name'])
 
@@ -355,6 +358,7 @@ class PreInit:
 class Initializer:
 	PIP = './venv/bin/pip'
 
+
 	def __init__(self):
 		super().__init__()
 		self._logger = SimpleLogger('Initializer')
@@ -394,13 +398,11 @@ class Initializer:
 
 			self._confsFile.write_text(json.dumps(self._confsSample.read_text(), indent='\t'))
 
-
 		try:
 			confs = json.loads(self._confsFile.read_text())
 		except Exception as e:
 			self._logger.logFatal(f'Something went wrong loading configs: {e}')
 			return False
-
 
 		subprocess.run(['sudo', 'apt', 'install', '-y', f'./system/snips/snips-platform-common_0.64.0_armhf.deb'])
 		subprocess.run(['sudo', 'apt', 'install', '-y', f'./system/snips/snips-nlu_0.64.0_armhf.deb'])

@@ -199,7 +199,7 @@ class UserManager(Manager):
 		if user == 'all':
 			for user in self._users:
 				self.updateUserState(name=user, state='goingBed')
-			# self._users[user].state('goingBed')
+		# self._users[user].state('goingBed')
 		else:
 			self._users[user].home = True
 			self._users[user].goingBed = True
@@ -210,7 +210,7 @@ class UserManager(Manager):
 		if user == 'all':
 			for user in self._users:
 				self.updateUserState(name=user, state='sleeping')
-			# self._users[user].state('sleeping')
+		# self._users[user].state('sleeping')
 		else:
 			self._users[user].home = True
 			self._users[user].goingBed = False
@@ -221,7 +221,7 @@ class UserManager(Manager):
 		if user == 'all':
 			for user in self._users:
 				self.updateUserState(name=user, state='home')
-			# self._users[user].state('home')
+		# self._users[user].state('home')
 		else:
 			self._users[user].home = True
 			self._users[user].goingBed = False
@@ -232,7 +232,7 @@ class UserManager(Manager):
 		if user == 'all':
 			for user in self._users:
 				self.updateUserState(name=user, state='out')
-			# self._users[user].state('out')
+		# self._users[user].state('out')
 		else:
 			self._users[user].home = False
 			self._users[user].goingBed = False

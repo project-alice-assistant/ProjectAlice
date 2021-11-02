@@ -62,6 +62,7 @@ class SkillManager(Manager):
 		]
 	}
 
+
 	def __init__(self):
 		super().__init__(databaseSchema=self.DATABASE)
 

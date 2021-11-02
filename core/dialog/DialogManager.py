@@ -33,12 +33,12 @@ from core.voice.WakewordRecorder import WakewordRecorderState
 
 
 class DialogManager(Manager):
-
 	DATABASE = {
-		'notRecognizedIntents' : [
+		'notRecognizedIntents': [
 			'text TEXT NOT NULL'
 		]
 	}
+
 
 	def __init__(self):
 		super().__init__(databaseSchema=self.DATABASE)
@@ -272,7 +272,7 @@ class DialogManager(Manager):
 		:param session:
 		:return:
 		"""
-		if 'text' in session.payload: #todo figure out why text sometimes is not filled although input is
+		if 'text' in session.payload:  # todo figure out why text sometimes is not filled although input is
 			session.payload['input'] = session.payload['text']
 		session.payload.setdefault('intent', dict())
 		session.payload['intent']['intentName'] = 'UserRandomAnswer'

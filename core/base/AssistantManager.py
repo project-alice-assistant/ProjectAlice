@@ -30,6 +30,7 @@ from core.base.model.StateType import StateType
 class AssistantManager(Manager):
 	STATE = 'projectalice.core.training'
 
+
 	def __init__(self):
 		super().__init__()
 

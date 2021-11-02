@@ -37,6 +37,7 @@ class Widget(ProjectAliceObject):
 	DEFAULT_SIZE = WidgetSizes.w_small
 	DEFAULT_OPTIONS = dict()
 
+
 	def __init__(self, data: Union[sqlite3.Row, dict]):
 		super().__init__()
 

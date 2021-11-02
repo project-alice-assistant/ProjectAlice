@@ -26,7 +26,6 @@ from core.util.model.Logger import Logger
 
 @dataclass
 class State:
-
 	name: str
 	currentState: StateType = StateType.BORN
 	logger: Logger = Logger(prepend='[State]')
@@ -53,4 +52,3 @@ class State:
 
 	def __repr__(self) -> str:
 		return f'State "{self.name}" Current state "{self.currentState.value}"'
-

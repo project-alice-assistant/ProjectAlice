@@ -26,7 +26,6 @@ from core.dialog.model.DialogSession import DialogSession
 
 
 class SnipsAsr(Asr):
-
 	NAME = 'Snips Asr'
 	DEPENDENCIES = {
 		'internal': {
@@ -36,7 +35,7 @@ class SnipsAsr(Asr):
 		'external': {
 			'snips-asr-model-en-500mb': 'https://raspbian.snips.ai/stretch/pool/s/sn/snips-asr-model-en-500MB_0.6.0-alpha.4_armhf.deb'
 		},
-		'system': [
+		'system'  : [
 			'libgfortran3'
 		],
 		'pip'     : []
@@ -76,7 +75,6 @@ class SnipsAsr(Asr):
 
 		if self.LanguageManager.activeLanguage != 'en':
 			raise Exception('Snips generic ASR only for english')
-
 
 		cmd = f'snips-asr --assistant {self.Commons.rootDir()}/assistant --mqtt {self.ConfigManager.getAliceConfigByName("mqttHost")}:{self.ConfigManager.getAliceConfigByName("mqttPort")}'
 

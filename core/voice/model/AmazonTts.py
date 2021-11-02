@@ -51,6 +51,7 @@ class AmazonTts(Tts):
 		}
 	}
 
+
 	def __init__(self, user: User = None):
 		super().__init__(user)
 		self._online = True
@@ -61,22 +62,22 @@ class AmazonTts(Tts):
 		# TODO implement the others
 		# https://docs.aws.amazon.com/polly/latest/dg/voicelist.html
 		self._supportedLangAndVoices = {
-			'arb': {
+			'arb'      : {
 				'female': {
 					'Zeina': {
 						'neural': False
 					}
 				}
 			},
-			'cmn-CN': {
+			'cmn-CN'   : {
 				'female': {
 					'Zhiyu': {
 						'neural': False
 					}
 				}
 			},
-			'da-DK': {
-				'male': {
+			'da-DK'    : {
+				'male'  : {
 					'Mads': {
 						'neural': False
 					}
@@ -87,8 +88,8 @@ class AmazonTts(Tts):
 					}
 				}
 			},
-			'nl-NL': {
-				'male': {
+			'nl-NL'    : {
+				'male'  : {
 					'Ruben': {
 						'neural': False
 					}
@@ -99,8 +100,8 @@ class AmazonTts(Tts):
 					}
 				}
 			},
-			'en-AU': {
-				'male': {
+			'en-AU'    : {
+				'male'  : {
 					'Russell': {
 						'neural': False
 					}
@@ -111,14 +112,14 @@ class AmazonTts(Tts):
 					}
 				}
 			},
-			'en-GB': {
-				'male': {
+			'en-GB'    : {
+				'male'  : {
 					'Brian': {
 						'neural': True
 					}
 				},
 				'female': {
-					'Amy': {
+					'Amy' : {
 						'neural': True
 					},
 					'Emma': {
@@ -126,9 +127,9 @@ class AmazonTts(Tts):
 					}
 				}
 			},
-			'en-IN': {
+			'en-IN'    : {
 				'female': {
-					'Aditi': {
+					'Aditi'  : {
 						'neural': False
 					},
 					'Raveena': {
@@ -136,12 +137,12 @@ class AmazonTts(Tts):
 					}
 				}
 			},
-			'en-US': {
-				'male': {
-					'Joey': {
+			'en-US'    : {
+				'male'  : {
+					'Joey'   : {
 						'neural': True
 					},
-					'Justin': {
+					'Justin' : {
 						'neural': True
 					},
 					'Matthew': {
@@ -149,19 +150,19 @@ class AmazonTts(Tts):
 					},
 				},
 				'female': {
-					'Ivy': {
+					'Ivy'     : {
 						'neural': True
 					},
-					'Joanna': {
+					'Joanna'  : {
 						'neural': True
 					},
-					'Kendra': {
+					'Kendra'  : {
 						'neural': True
 					},
 					'Kimberly': {
 						'neural': True
 					},
-					'Salli': {
+					'Salli'   : {
 						'neural': True
 					}
 				}
@@ -173,8 +174,8 @@ class AmazonTts(Tts):
 					}
 				}
 			},
-			'fr-FR': {
-				'male': {
+			'fr-FR'    : {
+				'male'  : {
 					'Mathieu': {
 						'neural': False
 					}
@@ -185,15 +186,15 @@ class AmazonTts(Tts):
 					}
 				}
 			},
-			'fr-CA': {
+			'fr-CA'    : {
 				'female': {
 					'Chantal': {
 						'neural': False
 					}
 				}
 			},
-			'de-DE': {
-				'male': {
+			'de-DE'    : {
+				'male'  : {
 					'Hans': {
 						'neural': False
 					}
@@ -202,12 +203,12 @@ class AmazonTts(Tts):
 					'Marlene': {
 						'neural': False
 					},
-					'Vicki': {
+					'Vicki'  : {
 						'neural': False
 					}
 				}
 			},
-			'it-IT': {
+			'it-IT'    : {
 				'male'  : {
 					'Giorgio': {
 						'neural': False
@@ -222,7 +223,7 @@ class AmazonTts(Tts):
 					}
 				}
 			},
-			'pl-PL': {
+			'pl-PL'    : {
 				'male'  : {
 					'Jacek': {
 						'neural': False
@@ -240,7 +241,7 @@ class AmazonTts(Tts):
 					}
 				}
 			},
-			'pt-BR': {
+			'pt-BR'    : {
 				'male'  : {
 					'Ricardo': {
 						'neural': False
@@ -255,7 +256,7 @@ class AmazonTts(Tts):
 					}
 				}
 			},
-			'pt-PT': {
+			'pt-PT'    : {
 				'male'  : {
 					'Cristiano': {
 						'neural': False

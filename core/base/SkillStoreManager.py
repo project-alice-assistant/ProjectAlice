@@ -32,8 +32,8 @@ from core.util.Decorators import Online
 
 
 class SkillStoreManager(Manager):
-
 	SUGGESTIONS_DIFF_LIMIT = 0.75
+
 
 	def __init__(self):
 		super().__init__()

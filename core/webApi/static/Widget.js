@@ -26,9 +26,11 @@ class Mqtt {
 		this.connected = false
 	}
 
+
 	parseSettings() {
 		this.aliceSettings = JSON.parse(window.sessionStorage.aliceSettings)
 	}
+
 
 	connect() {
 		if (window.sessionStorage.aliceSettings) {
@@ -54,6 +56,7 @@ class Mqtt {
 		})
 	}
 
+
 	onConnect() {
 		console.log('Mqtt connection for widgets established')
 		this.connected = true
@@ -64,6 +67,7 @@ class Mqtt {
 		)
 	}
 
+
 	onMessage(message) {
 		if (this.subscribers.hasOwnProperty(message.destinationName)) {
 			for (const callback of Object.values(this.subscribers[message.destinationName])) {
@@ -72,9 +76,11 @@ class Mqtt {
 		}
 	}
 
+
 	onConnectionFailed() {
 		console.error('Mqtt connection for widgets failed')
 	}
+
 
 	subscribe(widgetUid, destinationName, callback) {
 		if (!this.subscribers.hasOwnProperty(destinationName)) {
@@ -89,6 +95,7 @@ class Mqtt {
 		}
 	}
 
+
 	unsubscribe(widgetUid, destinationName) {
 		if (this.subscribers.hasOwnProperty(destinationName)) {
 			delete this.subscribers[destinationName][widgetUid]
@@ -101,6 +108,7 @@ class Mqtt {
 		}
 	}
 }
+
 
 class Widget {
 	constructor(uid, widgetId) {
@@ -119,10 +127,10 @@ class Widget {
 				return function () {
 					const args = arguments[0] || {}
 					return fetch(`http://${self.aliceSettings['aliceIp']}:${self.aliceSettings['apiPort']}/api/v1.0.1/widgets/${self.widgetId}/function/${property}/`, {
-						method: 'POST',
-						body: JSON.stringify(args),
+						method:  'POST',
+						body:    JSON.stringify(args),
 						headers: {
-							'auth': localStorage.getItem('apiToken'),
+							'auth':         localStorage.getItem('apiToken'),
 							'content-type': 'application/json'
 						}
 					})
@@ -130,6 +138,7 @@ class Widget {
 			}
 		})
 	}
+
 
 	subscribe(destinationName, callback) {
 		if (Array.isArray(destinationName)) {

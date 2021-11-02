@@ -49,6 +49,7 @@ class Manager(ProjectAliceObject):
 	def isActive(self, value: bool):
 		self._isActive = value
 
+
 	def getMethodCaller(self, **kwargs):
 		"""
 		Used to print out the calling methods to aid in diagnosing code flow.
@@ -61,7 +62,6 @@ class Manager(ProjectAliceObject):
 				return self.Commons.getMethodCaller()
 			except Exception as e:
 				self.logError(f'Something went wrong retrieving method caller: {e}')
-
 
 
 	def getFunctionCaller(self) -> Optional[str]:

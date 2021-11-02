@@ -30,7 +30,7 @@ class WebUINotificationManager(Manager):
 
 	DATABASE = {
 		NOTIFICATIONS_TABLE: [
-			'id INTEGER PRIMARY KEY', # NOSONAR
+			'id INTEGER PRIMARY KEY',  # NOSONAR
 			'type TEXT NOT NULL',
 			'read INTEGER NOT NULL DEFAULT 0',
 			'title TEXT NOT NULL',
@@ -39,6 +39,7 @@ class WebUINotificationManager(Manager):
 			'options TEXT NULL DEFAULT "{}"'
 		]
 	}
+
 
 	def __init__(self):
 		self._notifications = dict()
@@ -82,7 +83,6 @@ class WebUINotificationManager(Manager):
 			notification = self.LanguageManager.getWebUINotification(notification)
 			if not notification:
 				return
-
 
 		title = notification['title']
 		if replaceTitle:

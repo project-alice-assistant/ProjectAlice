@@ -272,14 +272,14 @@ class Device(ProjectAliceObject):
 				query='REPLACE INTO :__table__ (id, uid, parentLocation, typeName, skillName, settings, deviceParams, deviceConfigs) VALUES (:id, :uid, :parentLocation, :typeName, :skillName, :settings, :deviceParams, :deviceConfigs)',
 				callerName=self.DeviceManager.name,
 				values={
-					'id'             : self._id,
-					'uid'            : self._uid,
-					'parentLocation' : self._parentLocation,
-					'typeName'       : self._typeName,
-					'skillName'      : self._skillName,
-					'settings'       : json.dumps(self._settings),
-					'deviceParams'   : json.dumps(self._deviceParams),
-					'deviceConfigs'  : json.dumps(self._deviceConfigs)
+					'id'            : self._id,
+					'uid'           : self._uid,
+					'parentLocation': self._parentLocation,
+					'typeName'      : self._typeName,
+					'skillName'     : self._skillName,
+					'settings'      : json.dumps(self._settings),
+					'deviceParams'  : json.dumps(self._deviceParams),
+					'deviceConfigs' : json.dumps(self._deviceConfigs)
 				}
 			)
 		else:

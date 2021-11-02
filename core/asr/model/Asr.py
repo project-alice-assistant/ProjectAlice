@@ -92,7 +92,7 @@ class Asr(ProjectAliceObject):
 
 
 	def updateCredentials(self):
-		pass # Superseeded
+		pass  # Superseeded
 
 
 	def partialTextCaptured(self, session: DialogSession, text: str, likelihood: float, seconds: float):

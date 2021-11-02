@@ -21,6 +21,7 @@ import time
 
 
 class Stopwatch:
+
 	def __init__(self, precision: int = 2):
 		self._startTime = None
 		self._time = None

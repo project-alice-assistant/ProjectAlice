@@ -118,7 +118,7 @@ class DialogTemplate:
 
 	def dump(self) -> dict:
 		return {
-			'skill'      : self.skill,
-			'slotTypes'  : [slot.dump() for slot in self.mySlotTypes.values()],
-			'intents'    : [intent.dump() for intent in self.myIntents.values()]
+			'skill'    : self.skill,
+			'slotTypes': [slot.dump() for slot in self.mySlotTypes.values()],
+			'intents'  : [intent.dump() for intent in self.myIntents.values()]
 		}

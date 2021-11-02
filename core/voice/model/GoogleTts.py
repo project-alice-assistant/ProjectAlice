@@ -32,7 +32,7 @@ try:
 	# noinspection PyUnresolvedReferences,PyPackageRequirements
 	from google.cloud import texttospeech
 except:
-	pass # Auto installed
+	pass  # Auto installed
 
 
 class GoogleTts(Tts):
@@ -46,6 +46,7 @@ class GoogleTts(Tts):
 		}
 	}
 
+
 	def __init__(self, user: User = None):
 		super().__init__(user)
 		self._online = True
@@ -57,20 +58,20 @@ class GoogleTts(Tts):
 		# https://cloud.google.com/text-to-speech/docs/voices
 		self._supportedLangAndVoices = {
 			'en-US': {
-				'male': {
+				'male'  : {
 					'en-US-Standard-B': {
 						'neural': False
 					},
 					'en-US-Standard-D': {
 						'neural': False
 					},
-					'en-US-Wavenet-A': {
+					'en-US-Wavenet-A' : {
 						'neural': True
 					},
-					'en-US-Wavenet-B': {
+					'en-US-Wavenet-B' : {
 						'neural': True
 					},
-					'en-US-Wavenet-D': {
+					'en-US-Wavenet-D' : {
 						'neural': True
 					}
 				},
@@ -93,17 +94,17 @@ class GoogleTts(Tts):
 				}
 			},
 			'fr-FR': {
-				'male': {
+				'male'  : {
 					'fr-FR-Standard-B': {
 						'neural': False
 					},
 					'fr-FR-Standard-D': {
 						'neural': False
 					},
-					'fr-FR-Wavenet-B': {
+					'fr-FR-Wavenet-B' : {
 						'neural': True
 					},
-					'fr-FR-Wavenet-D': {
+					'fr-FR-Wavenet-D' : {
 						'neural': True
 					}
 				},
@@ -123,14 +124,14 @@ class GoogleTts(Tts):
 				}
 			},
 			'de-DE': {
-				'male': {
+				'male'  : {
 					'de-DE-Standard-B': {
 						'neural': False
 					},
-					'de-DE-Wavenet-B': {
+					'de-DE-Wavenet-B' : {
 						'neural': True
 					},
-					'de-DE-Wavenet-D': {
+					'de-DE-Wavenet-D' : {
 						'neural': True
 					}
 				},
@@ -151,13 +152,13 @@ class GoogleTts(Tts):
 					'it-IT-Standard-C': {
 						'neural': False
 					},
-					'it-IT-Standard-D' : {
+					'it-IT-Standard-D': {
 						'neural': False
 					},
 					'it-IT-Wavenet-C' : {
 						'neural': True
 					},
-					'it-IT-Wavenet-D': {
+					'it-IT-Wavenet-D' : {
 						'neural': True
 					}
 				},

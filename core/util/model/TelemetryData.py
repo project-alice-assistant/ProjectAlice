@@ -31,7 +31,7 @@ class TelemetryData(ProjectAliceObject):
 	deviceId: str = field(init=False)
 	locationId: int = field(init=False)
 	value: str = field(init=False)
-	timestamp: str= field(init=False)
+	timestamp: str = field(init=False)
 	type: TelemetryType = field(init=False)
 
 

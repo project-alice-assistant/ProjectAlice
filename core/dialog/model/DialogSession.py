@@ -54,10 +54,10 @@ class DialogSession:
 	payload: dict = field(default_factory=dict)
 	intentHistory: list = field(default_factory=list)
 	intentFilter: list = field(default_factory=list)
-	textOnly: bool = False # The session doesn't use audio, but text only. Per exemple, for Telegram messages sent to Alice
-	textInput: bool = False # The session is started, user side, by a text input, not with voice capture, like dialogview on web ui
-	lastWasSoundPlayOnly: bool = False # We don't use request ids for play bytes topic. Both say and playaudio use play bytes, therefor we need to track if the last play bytes was sound only or TTS
-	locationId: int = -1 # Where this session is taking place
+	textOnly: bool = False  # The session doesn't use audio, but text only. Per exemple, for Telegram messages sent to Alice
+	textInput: bool = False  # The session is started, user side, by a text input, not with voice capture, like dialogview on web ui
+	lastWasSoundPlayOnly: bool = False  # We don't use request ids for play bytes topic. Both say and playaudio use play bytes, therefor we need to track if the last play bytes was sound only or TTS
+	locationId: int = -1  # Where this session is taking place
 
 
 	def __post_init__(self):  # NOSONAR
@@ -107,7 +107,6 @@ class DialogSession:
 				return
 
 			self.locationId = device.getLocation()
-
 
 
 	def slotValue(self, slotName: str, index: int = 0, defaultValue: Any = None) -> Any:

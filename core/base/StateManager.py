@@ -31,6 +31,7 @@ class StateManager(Manager):
 	keep track of.
 	"""
 
+
 	def __init__(self):
 		super().__init__()
 		self._states = dict()
