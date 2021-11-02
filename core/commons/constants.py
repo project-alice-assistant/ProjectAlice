@@ -17,7 +17,7 @@
 #
 #  Last modified: 2021.04.13 at 12:56:46 CEST
 
-VERSION = '1.0.0-rc1'
+VERSION = '1.0.0-rc2'
 
 # System
 ALL = 'all'
