@@ -8,15 +8,15 @@
 			"Keine Berechtigung"
 		]
 	},
-	"unknowUser": {
-		"default": [
-			"Entschuldigung, aber ich weiß nicht wer du bist",
-			"Entschuldigung, ich kann nicht. Ich weiß nicht wer du bist",
-			"Du solltest mich beim Namen nennen, nur dann kenne ich auch deinen Namen!"
-		],
-		"short": [
-			"Ich kenne dich nicht"
-		]
+	"unknownUser": {
+	  "default": [
+		"Entschuldigung, aber ich weiß nicht wer du bist",
+		"Entschuldigung, ich kann nicht. Ich weiß nicht wer du bist",
+		"Du solltest mich beim Namen nennen, nur dann kenne ich auch deinen Namen!"
+	  ],
+	  "short": [
+		"Ich kenne dich nicht"
+	  ]
 	},
 	"notUnderstood": {
 		"default": [
@@ -39,16 +39,16 @@
 			"Stop... Ich verstehe es nicht"
 		]
 	},
-	"youreWelcome": {
-		"default": [
-			"Gern geschehen!",
-			"Mit Vergnügen!",
-			"Kein Problem, jeder Zeit wieder!"
-		],
-		"short": [
-			"Gerne"
-		]
-	},
+  "youAreWelcome": {
+	"default": [
+	  "Gern geschehen!",
+	  "Mit Vergnügen!",
+	  "Kein Problem, jeder Zeit wieder!"
+	],
+	"short": [
+	  "Gerne"
+	]
+  },
 	"error": {
 		"default": [
 			"Da ist was schief gelaufen, prüfe bitte meine Logs!"

@@ -1,5 +1,9 @@
 """
-    This program is free software: you can redistribute it and/or modify
+    Copyright (c) 2021
+
+    This file, main.py, is part of Project Alice.
+
+    Project Alice is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation, either version 3 of the License, or
     (at your option) any later version.
@@ -18,7 +22,11 @@
 	retired or
 	inactive authors:       Jierka <https://github.com/jr-k>
 							maxbachmann <https://github.com/maxbachmann>
+
+	Last modified: 2021.04.13 at 12:56:49 CEST
 """
+
+
 import os
 import subprocess
 

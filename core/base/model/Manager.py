@@ -1,7 +1,23 @@
-import sqlite3
-from typing import Optional
+#  Copyright (c) 2021
+#
+#  This file, Manager.py, is part of Project Alice.
+#
+#  Project Alice is free software: you can redistribute it and/or modify
+#  it under the terms of the GNU General Public License as published by
+#  the Free Software Foundation, either version 3 of the License, or
+#  (at your option) any later version.
+#
+#  This program is distributed in the hope that it will be useful,
+#  but WITHOUT ANY WARRANTY; without even the implied warranty of
+#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#  GNU General Public License for more details.
+#
+#  You should have received a copy of the GNU General Public License
+#  along with this program.  If not, see <https://www.gnu.org/licenses/>
+#
+#  Last modified: 2021.04.13 at 12:56:46 CEST
 
-import typing
+from typing import List, Optional
 
 from core.base.SuperManager import SuperManager
 from core.base.model.ProjectAliceObject import ProjectAliceObject
@@ -33,6 +49,7 @@ class Manager(ProjectAliceObject):
 	def isActive(self, value: bool):
 		self._isActive = value
 
+
 	def getMethodCaller(self, **kwargs):
 		"""
 		Used to print out the calling methods to aid in diagnosing code flow.
@@ -45,7 +62,6 @@ class Manager(ProjectAliceObject):
 				return self.Commons.getMethodCaller()
 			except Exception as e:
 				self.logError(f'Something went wrong retrieving method caller: {e}')
-
 
 
 	def getFunctionCaller(self) -> Optional[str]:
@@ -67,6 +83,15 @@ class Manager(ProjectAliceObject):
 		self._isActive = False
 
 
+	def restart(self):
+		"""
+		Stops and starts the manager
+		:return:
+		"""
+		self.onStop()
+		self.onStart()
+
+
 	def _initDB(self):
 		if self._databaseSchema:
 			return SuperManager.getInstance().databaseManager.initDB(schema=self._databaseSchema, callerName=self.name)
@@ -74,11 +99,11 @@ class Manager(ProjectAliceObject):
 
 
 	# HELPERS
-	def databaseFetch(self, tableName: str, query: str = None, values: dict = None, method: str = 'one') -> typing.Union[typing.Dict, sqlite3.Row]:
+	def databaseFetch(self, tableName: str, query: str = None, values: dict = None) -> List:
 		if not query:
 			query = 'SELECT * FROM :__table__'
 
-		return self.DatabaseManager.fetch(tableName=tableName, query=query, values=values, callerName=self.name, method=method)
+		return self.DatabaseManager.fetch(tableName=tableName, query=query, values=values, callerName=self.name)
 
 
 	def databaseInsert(self, tableName: str, query: str = None, values: dict = None) -> int:

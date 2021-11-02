@@ -1,3 +1,22 @@
+#  Copyright (c) 2021
+#
+#  This file, ProjectAlice.py, is part of Project Alice.
+#
+#  Project Alice is free software: you can redistribute it and/or modify
+#  it under the terms of the GNU General Public License as published by
+#  the Free Software Foundation, either version 3 of the License, or
+#  (at your option) any later version.
+#
+#  This program is distributed in the hope that it will be useful,
+#  but WITHOUT ANY WARRANTY; without even the implied warranty of
+#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#  GNU General Public License for more details.
+#
+#  You should have received a copy of the GNU General Public License
+#  along with this program.  If not, see <https://www.gnu.org/licenses/>
+#
+#  Last modified: 2021.05.05 at 12:56:47 CEST
+
 import hashlib
 import subprocess
 from pathlib import Path
@@ -11,6 +30,7 @@ from core.commons import constants
 from core.commons.model.Singleton import Singleton
 from core.util.Stopwatch import Stopwatch
 from core.util.model.Logger import Logger
+from core.webui.model.UINotificationType import UINotificationType
 
 
 class ProjectAlice(Singleton):
@@ -89,7 +109,7 @@ class ProjectAlice(Singleton):
 
 
 	@property
-	def name(self) -> str: #NOSONAR
+	def name(self) -> str:  # NOSONAR
 		return self.NAME
 
 
@@ -166,6 +186,8 @@ class ProjectAlice(Singleton):
 		else:
 			candidate = Version.fromString(constants.VERSION)
 			for branch in req.json():
+				if 'dependabot' in branch['name']:
+					continue
 				repoVersion = Version.fromString(branch['name'])
 				if not repoVersion.isVersionNumber:
 					continue
@@ -200,6 +222,11 @@ class ProjectAlice(Singleton):
 
 		if currentHash != newHash:
 			self._logger.logWarning('New Alice version installed, need to restart...')
+
+			self._superManager.webUINotificationManager.newNotification(
+				typ=UINotificationType.INFO,
+				notification='aliceUpdated'
+			)
 			self.doRestart()
 
 		self._logger.logInfo('Update checks completed.')

@@ -1,23 +1,43 @@
+#  Copyright (c) 2021
+#
+#  This file, PorcupineWakeword.py, is part of Project Alice.
+#
+#  Project Alice is free software: you can redistribute it and/or modify
+#  it under the terms of the GNU General Public License as published by
+#  the Free Software Foundation, either version 3 of the License, or
+#  (at your option) any later version.
+#
+#  This program is distributed in the hope that it will be useful,
+#  but WITHOUT ANY WARRANTY; without even the implied warranty of
+#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#  GNU General Public License for more details.
+#
+#  You should have received a copy of the GNU General Public License
+#  along with this program.  If not, see <https://www.gnu.org/licenses/>
+#
+#  Last modified: 2021.04.13 at 12:56:48 CEST
+
+import io
 import queue
+import struct
 import wave
 from typing import Optional
 
-import io
 import pyaudio
-import struct
 from paho.mqtt.client import MQTTMessage
 
 from core.commons import constants
 from core.dialog.model.DialogSession import DialogSession
 from core.voice.model.WakewordEngine import WakewordEngine
 
+
 try:
 	import pvporcupine
 except ModuleNotFoundError:
-	pass # Will autoinstall
+	pass  # Will autoinstall
+
 
 class PorcupineWakeword(WakewordEngine):
-
 	NAME = 'Porcupine'
 	DEPENDENCIES = {
 		'system': [],
@@ -25,6 +45,7 @@ class PorcupineWakeword(WakewordEngine):
 			'pvporcupine==1.7.0'
 		}
 	}
+
 
 	def __init__(self):
 		super().__init__()
@@ -97,10 +118,10 @@ class PorcupineWakeword(WakewordEngine):
 					self.MqttManager.publish(
 						topic=constants.TOPIC_HOTWORD_DETECTED.format('default'),
 						payload={
-							'siteId': self.DeviceManager.getMainDevice().uid,
-							'modelId': f'porcupine_{result}',
-							'modelVersion': self._handler.version,
-							'modelType': 'universal',
+							'siteId'            : self.DeviceManager.getMainDevice().uid,
+							'modelId'           : f'porcupine_{result}',
+							'modelVersion'      : self._handler.version,
+							'modelType'         : 'universal',
 							'currentSensitivity': self.ConfigManager.getAliceConfigByName('wakewordSensitivity')
 						}
 					)

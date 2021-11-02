@@ -1,3 +1,22 @@
+#  Copyright (c) 2021
+#
+#  This file, WakewordRecorder.py, is part of Project Alice.
+#
+#  Project Alice is free software: you can redistribute it and/or modify
+#  it under the terms of the GNU General Public License as published by
+#  the Free Software Foundation, either version 3 of the License, or
+#  (at your option) any later version.
+#
+#  This program is distributed in the hope that it will be useful,
+#  but WITHOUT ANY WARRANTY; without even the implied warranty of
+#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#  GNU General Public License for more details.
+#
+#  You should have received a copy of the GNU General Public License
+#  along with this program.  If not, see <https://www.gnu.org/licenses/>
+#
+#  Last modified: 2021.04.13 at 12:56:48 CEST
+
 import shutil
 from enum import Enum
 from pathlib import Path
@@ -202,12 +221,12 @@ class WakewordRecorder(Manager):
 			zipPath.unlink()
 
 		self.logInfo(f'Packing wakeword {wakewordName}')
-		shutil.make_archive(base_name=zipPath.with_suffix(''), format='zip', root_dir=str(path))
+		shutil.make_archive(base_name=str(zipPath.with_suffix('')), format='zip', root_dir=str(path))
 
 		return wakewordName, zipPath
 
 
-	def getUserWakeword(self, username: str) -> Optional[str]:
+	def getUserWakeword(self, username: str) -> Optional[Path]:
 		wakeword = Path(f'{self.Commons.rootDir()}/trained/hotwords/snips_hotword/{username}')
 		if not wakeword.exists():
 			return None
@@ -248,7 +267,6 @@ class WakewordRecorder(Manager):
 	# 	self.WakewordManager.restartEngine()
 	#
 	# return update
-
 
 	@property
 	def state(self) -> WakewordRecorderState:

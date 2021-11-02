@@ -1,3 +1,22 @@
+#  Copyright (c) 2021
+#
+#  This file, ConfigManager.py, is part of Project Alice.
+#
+#  Project Alice is free software: you can redistribute it and/or modify
+#  it under the terms of the GNU General Public License as published by
+#  the Free Software Foundation, either version 3 of the License, or
+#  (at your option) any later version.
+#
+#  This program is distributed in the hope that it will be useful,
+#  but WITHOUT ANY WARRANTY; without even the implied warranty of
+#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#  GNU General Public License for more details.
+#
+#  You should have received a copy of the GNU General Public License
+#  along with this program.  If not, see <https://www.gnu.org/licenses/>
+#
+#  Last modified: 2021.04.13 at 12:56:45 CEST
+import inspect
 import json
 import logging
 import re
@@ -9,20 +28,22 @@ import sounddevice as sd
 from core.ProjectAliceExceptions import ConfigurationUpdateFailed, VitalConfigMissing
 from core.base.SuperManager import SuperManager
 from core.base.model.Manager import Manager
+from core.webui.model.UINotificationType import UINotificationType
 
 
 class ConfigManager(Manager):
-
 	TEMPLATE_FILE = Path('configTemplate.json')
 	CONFIG_FILE = Path('config.json')
 
 	CONFIG_FUNCTION_REGEX = re.compile(r'^(?:(?P<manager>\w+)\.)?(?P<function>\w+)(?:\((?P<args>.*)\))?')
-	CONFIRG_FUNCTION_ARG_REGEX = re.compile(r'(?:\w+)')
+	CONFIG_FUNCTION_ARG_REGEX = re.compile(r'(?:\w+)')
+
 
 	def __init__(self):
 		super().__init__()
 
 		self.configFileExists = False
+		self._loadingDone = False
 
 		self._vitalConfigs = list()
 		self._aliceConfigurationCategories = list()
@@ -130,7 +151,6 @@ class ConfigManager(Manager):
 					except Exception as e:
 						self.logError(f'Configuration onInit method **{function}** failed: {e}')
 
-
 		# Setting logger level immediately
 		if aliceConfigs['advancedDebug'] and not aliceConfigs['debug']:
 			aliceConfigs['debug'] = True
@@ -179,12 +199,12 @@ class ConfigManager(Manager):
 
 
 	def updateAliceConfiguration(self, key: str, value: typing.Any, dump: bool = True,
-								 doPreAndPostProcessing: bool = True):
+	                             doPreAndPostProcessing: bool = True):
 		"""
 		Updating a core config is sensitive, if the request comes from a skill.
 		First check if the request came from a skill at anytime and if so ask permission
 		to the user
-		:param doPreAndPostProcessing: If set to false, all pre and post processings won't be called
+		:param doPreAndPostProcessing: If set to false, all pre and post processing won't be called
 		:param key: str
 		:param value: str
 		:param dump: bool If set to False, the configs won't be dumped to the json file
@@ -192,14 +212,17 @@ class ConfigManager(Manager):
 		"""
 
 		# TODO reimplement UI side
-		# rootSkills = [name.lower() for name in self.SkillManager.NEEDED_SKILLS]
-		# callers = [inspect.getmodulename(frame[1]).lower() for frame in inspect.stack()]
-		# if 'aliceskill' in callers:
-		# 	skillName = callers[callers.index("aliceskill") + 1]
-		# 	if skillName not in rootSkills:
-		# 		self._pendingAliceConfUpdates[key] = value
-		# 		self.logWarning(f'Skill **{skillName}** is trying to modify a core configuration')
-		#
+		rootSkills = [name.lower() for name in self.SkillManager.NEEDED_SKILLS]
+		callers = [inspect.getmodulename(frame[1]).lower() for frame in inspect.stack()]
+		if 'aliceskill' in callers:
+			skillName = callers[callers.index('aliceskill') + 1]
+			if skillName not in rootSkills:
+				self._pendingAliceConfUpdates[key] = value
+				self.logWarning(f'Skill **{skillName}** is trying to modify a core configuration')
+
+				self.WebUINotificationManager.newNotification(typ=UINotificationType.ALERT, notification='coreConfigUpdateWarning', replaceBody=[skillName, key, value])
+				return
+
 		# 		self.ThreadManager.doLater(
 		# 			interval=2,
 		# 			func=self.MqttManager.publish,
@@ -283,14 +306,17 @@ class ConfigManager(Manager):
 					value = self._skillsTemplateConfigurations[skillName][key]['defaultValue']
 					self.logWarning(f'Value for config **{key}** in skill **{skillName}** is out of bound, reverted to default')
 			except:
-				self.logWarning(f'Value missmatch for config **{key}** in skill **{skillName}**')
+				self.logWarning(f'Value mismatch for config **{key}** in skill **{skillName}**')
 				value = 0
 		elif vartype in {'string', 'email', 'password', 'longstring'}:
 			try:
 				value = str(value)
 			except:
-				self.logWarning(f'Value missmatch for config **{key}** in skill **{skillName}**')
+				self.logWarning(f'Value mismatch for config **{key}** in skill **{skillName}**')
 				value = ''
+
+		if self._skillsConfigurations[skillName][key] == value:
+			return  # don't call any before/onUpdate if nothing changed
 
 		skillInstance = self.SkillManager.getSkillInstance(skillName=skillName, silent=True)
 		if self._skillsTemplateConfigurations[skillName][key].get('beforeUpdate', None):
@@ -386,6 +412,8 @@ class ConfigManager(Manager):
 
 
 	def getSkillConfigByName(self, skillName: str, configName: str) -> typing.Any:
+		if not self._loadingDone:
+			raise Exception(f'Loading skill configs is not yet done! Don\'t load configs in __init__, but only after onStart is called')
 		return self._skillsConfigurations.get(skillName, dict()).get(configName, None)
 
 
@@ -477,6 +505,7 @@ class ConfigManager(Manager):
 			self._skillsConfigurations = skillsConfigurations.copy()
 		else:
 			self._skillsConfigurations[skillToLoad] = skillsConfigurations[skillToLoad].copy()
+		self._loadingDone = True
 
 
 	def _newSkillConfigFile(self, skillName: str, skillConfigTemplate: Path):
@@ -538,7 +567,7 @@ class ConfigManager(Manager):
 						return False
 
 				if result.group('args'):
-					args = self.CONFIRG_FUNCTION_ARG_REGEX.findall(result.group('args'))
+					args = self.CONFIG_FUNCTION_ARG_REGEX.findall(result.group('args'))
 
 				func = getattr(mngr, function)
 			else:
@@ -578,7 +607,7 @@ class ConfigManager(Manager):
 							return False
 
 					if result.group('args'):
-						args = self.CONFIRG_FUNCTION_ARG_REGEX.findall(result.group('args'))
+						args = self.CONFIG_FUNCTION_ARG_REGEX.findall(result.group('args'))
 
 					func = getattr(mngr, function)
 				else:
@@ -665,6 +694,8 @@ class ConfigManager(Manager):
 			tmp.write_text(newSettings)
 			self.Commons.runRootSystemCommand(['sudo', 'mv', tmp, '/etc/asound.conf'])
 			self.Commons.runRootSystemCommand(['sudo', 'alsactl', 'kill', 'rescan'])
+			self.logInfo("Wrote new asound.conf")
+			return True
 
 
 	def updateTimezone(self, newTimezone: str):

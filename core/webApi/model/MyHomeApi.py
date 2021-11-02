@@ -1,14 +1,34 @@
+#  Copyright (c) 2021
+#
+#  This file, MyHomeApi.py, is part of Project Alice.
+#
+#  Project Alice is free software: you can redistribute it and/or modify
+#  it under the terms of the GNU General Public License as published by
+#  the Free Software Foundation, either version 3 of the License, or
+#  (at your option) any later version.
+#
+#  This program is distributed in the hope that it will be useful,
+#  but WITHOUT ANY WARRANTY; without even the implied warranty of
+#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#  GNU General Public License for more details.
+#
+#  You should have received a copy of the GNU General Public License
+#  along with this program.  If not, see <https://www.gnu.org/licenses/>
+#
+#  Last modified: 2021.04.13 at 12:56:49 CEST
+import time
 from pathlib import Path
-from typing import Union
+from typing import Optional, Union
 
-from flask import jsonify, request, send_from_directory
+from flask import Response, jsonify, make_response, request, send_from_directory
 from flask_classful import route
+from werkzeug.datastructures import FileStorage
 
 from core.commons import constants
 from core.device.model.Device import Device
 from core.device.model.DeviceType import DeviceType
-from core.webApi.model.Api import Api
 from core.util.Decorators import ApiAuthenticated
+from core.webApi.model.Api import Api
 
 
 class MyHomeApi(Api):
@@ -19,15 +39,28 @@ class MyHomeApi(Api):
 		super().__init__()
 
 
+	# noinspection PyMethodMayBeStatic
+	def fileCheck(self) -> Optional[FileStorage]:
+		if 'newTile' not in request.files:
+			return None
+		else:
+			file = request.files['newTile']
+			if not file.filename:
+				return None
+			if not '.' in file.filename or file.filename.rsplit('.', 1)[1].lower() != 'png':
+				return None
+			return file
+
+
 	@route('/', methods=['GET'])
-	def getData(self):
+	def getData(self) -> Response:
 		try:
 			return jsonify(data={
-				'locations': {location.id: location.toDict() for location in self.LocationManager.locations.values()},
+				'locations'    : {location.id: location.toDict() for location in self.LocationManager.locations.values()},
 				'constructions': {construction.id: construction.toDict() for construction in self.LocationManager.constructions.values()},
-				'furnitures': {furniture.id: furniture.toDict() for furniture in self.LocationManager.furnitures.values()},
-				'devices': {device.id: device.toDict() for device in self.DeviceManager.devices.values()},
-				'links': {link.id: link.toDict() for link in self.DeviceManager.deviceLinks.values()}
+				'furnitures'   : {furniture.id: furniture.toDict() for furniture in self.LocationManager.furnitures.values()},
+				'devices'      : {device.id: device.toDict() for device in self.DeviceManager.devices.values()},
+				'links'        : {link.id: link.toDict() for link in self.DeviceManager.deviceLinks.values()}
 			})
 		except:
 			return jsonify(success=False)
@@ -35,7 +68,7 @@ class MyHomeApi(Api):
 
 	@route('/locations/<location>/', methods=['GET'])
 	@ApiAuthenticated
-	def getLocation(self, location: Union[int, str]):
+	def getLocation(self, location: Union[int, str]) -> Response:
 		try:
 			try:
 				locId = int(location)
@@ -56,7 +89,7 @@ class MyHomeApi(Api):
 
 	@route('/locations/', methods=['PUT'])
 	@ApiAuthenticated
-	def addLocation(self):
+	def addLocation(self) -> Response:
 		try:
 			location = self.LocationManager.addNewLocation(data=request.json)
 			if location:
@@ -70,7 +103,7 @@ class MyHomeApi(Api):
 
 	@route('/furniture/', methods=['PUT'])
 	@ApiAuthenticated
-	def addFurniture(self):
+	def addFurniture(self) -> Response:
 		try:
 			furniture = self.LocationManager.addNewFurniture(data=request.json)
 			if furniture:
@@ -84,7 +117,7 @@ class MyHomeApi(Api):
 
 	@route('/constructions/', methods=['PUT'])
 	@ApiAuthenticated
-	def addConstruction(self):
+	def addConstruction(self) -> Response:
 		try:
 			construction = self.LocationManager.addNewConstruction(data=request.json)
 			if construction:
@@ -98,7 +131,7 @@ class MyHomeApi(Api):
 
 	@route('/locations/<locationId>/', methods=['PATCH'])
 	@ApiAuthenticated
-	def updateLocation(self, locationId: str):
+	def updateLocation(self, locationId: str) -> Response:
 		try:
 			return jsonify(success=self.LocationManager.updateLocation(int(locationId), request.json).toDict())
 		except Exception as e:
@@ -108,7 +141,7 @@ class MyHomeApi(Api):
 
 	@route('/furniture/<furnitureId>/', methods=['PATCH'])
 	@ApiAuthenticated
-	def updateFurniture(self, furnitureId: str):
+	def updateFurniture(self, furnitureId: str) -> Response:
 		try:
 			return jsonify(success=self.LocationManager.updateFurniture(int(furnitureId), request.json).toDict())
 		except Exception as e:
@@ -118,7 +151,7 @@ class MyHomeApi(Api):
 
 	@route('/constructions/<constructionId>/', methods=['PATCH'])
 	@ApiAuthenticated
-	def updateConstruction(self, constructionId: str):
+	def updateConstruction(self, constructionId: str) -> Response:
 		try:
 			return jsonify(success=self.LocationManager.updateConstruction(int(constructionId), request.json).toDict())
 		except Exception as e:
@@ -128,7 +161,7 @@ class MyHomeApi(Api):
 
 	@route('/devices/<deviceId>/', methods=['PATCH'])
 	@ApiAuthenticated
-	def updateDevice(self, deviceId: str):
+	def updateDevice(self, deviceId: str) -> Response:
 		try:
 			device = self.DeviceManager.updateDeviceSettings(int(deviceId), request.json)
 			return jsonify(success=True, device=device.toDict(), links={link.id: link.toDict() for link in device.getLinks().values()})
@@ -139,7 +172,7 @@ class MyHomeApi(Api):
 
 	@route('/locations/<locationId>/', methods=['DELETE'])
 	@ApiAuthenticated
-	def deleteLocation(self, locationId: str):
+	def deleteLocation(self, locationId: str) -> Response:
 		"""
 		Delete requested location and any associated furniture or constructions, providing it is NOT
 		LocationId number 1. (the default and required location) .
@@ -158,7 +191,7 @@ class MyHomeApi(Api):
 
 	@route('/furniture/<furnitureId>/', methods=['DELETE'])
 	@ApiAuthenticated
-	def deleteFurniture(self, furnitureId: str):
+	def deleteFurniture(self, furnitureId: str) -> Response:
 		try:
 			self.LocationManager.deleteFurniture(int(furnitureId))
 			return jsonify(success=True)
@@ -169,7 +202,7 @@ class MyHomeApi(Api):
 
 	@route('/constructions/<constructionId>/', methods=['DELETE'])
 	@ApiAuthenticated
-	def deleteConstruction(self, constructionId: str):
+	def deleteConstruction(self, constructionId: str) -> Response:
 		try:
 			self.LocationManager.deleteConstruction(int(constructionId))
 			return jsonify(success=True)
@@ -180,7 +213,7 @@ class MyHomeApi(Api):
 
 	@route('/devices/<deviceId>/', methods=['DELETE'])
 	@ApiAuthenticated
-	def deleteDevice(self, deviceId: str):
+	def deleteDevice(self, deviceId: str) -> Response:
 		try:
 			self.DeviceManager.deleteDevice(deviceId=int(deviceId))
 			return jsonify(success=True)
@@ -190,7 +223,7 @@ class MyHomeApi(Api):
 
 
 	@route('/locations/floors/', methods=['GET'])
-	def getFloorsList(self):
+	def getFloorsList(self) -> Response:
 		try:
 			return jsonify(data=[image.stem for image in Path(self.Commons.rootDir(), 'core/webApi/static/images/floors/').glob(f'*{constants.PNG_EXT}')])
 		except:
@@ -198,7 +231,7 @@ class MyHomeApi(Api):
 
 
 	@route('/furniture/tiles/', methods=['GET'])
-	def getFurnitureList(self):
+	def getFurnitureList(self) -> Response:
 		try:
 			return jsonify(data=[image.stem for image in Path(self.Commons.rootDir(), 'core/webApi/static/images/furniture/').glob(f'*{constants.PNG_EXT}')])
 		except:
@@ -206,7 +239,7 @@ class MyHomeApi(Api):
 
 
 	@route('/constructions/tiles/', methods=['GET'])
-	def getConstructionList(self):
+	def getConstructionList(self) -> Response:
 		try:
 			return jsonify(data=[image.stem for image in Path(self.Commons.rootDir(), 'core/webApi/static/images/constructions/').glob(f'*{constants.PNG_EXT}')])
 		except:
@@ -214,50 +247,103 @@ class MyHomeApi(Api):
 
 
 	@route('/locations/floors/<imageId>.png', methods=['GET'])
-	def getFloor(self, imageId: str):
+	def getFloor(self, imageId: str) -> Response:
 		try:
 			return send_from_directory('static/images/floors', f'{imageId}{constants.PNG_EXT}')
 		except:
 			return jsonify(success=False)
 
 
+	# noinspection PyMethodMayBeStatic
+	def incompatibleFile(self) -> Response:
+		return jsonify(success=False, message='Incompatible file')
+
+
+	@route('/locations/floor/', methods=['PUT'])
+	@ApiAuthenticated
+	def addFloorTile(self) -> Response:
+		try:
+			file = self.fileCheck()
+			if not file:
+				return self.incompatibleFile()
+			else:
+				file.save(f'{self.Commons.rootDir()}/core/webApi/static/images/floors/0000_{int(time.time())}.png')
+				return jsonify(success=True)
+		except Exception as e:
+			self.logError('Error saving new floor tile:', str(e))
+			return jsonify(success=False, message=str(e))
+
+
 	@route('/furniture/<imageId>.png', methods=['GET'])
-	def getFurniture(self, imageId: str):
+	def getFurniture(self, imageId: str) -> Response:
 		try:
 			return send_from_directory('static/images/furniture', f'{imageId}{constants.PNG_EXT}')
 		except:
 			return jsonify(success=False)
 
 
+	@route('/locations/furniture/', methods=['PUT'])
+	@ApiAuthenticated
+	def addFurnitureTile(self) -> Response:
+		try:
+			file = self.fileCheck()
+			if not file:
+				return self.incompatibleFile()
+			else:
+				file.save(f'{self.Commons.rootDir()}/core/webApi/static/images/furniture/0000_{int(time.time())}.png')
+				return jsonify(success=True)
+		except Exception as e:
+			return jsonify(success=False, message=str(e))
+
+
 	@route('/constructions/<imageId>.png', methods=['GET'])
-	def getConstruction(self, imageId: str):
+	def getConstruction(self, imageId: str) -> Response:
 		try:
 			return send_from_directory('static/images/constructions', f'{imageId}{constants.PNG_EXT}')
 		except:
 			return jsonify(success=False)
 
 
-	@route('/devices/<deviceId>/<_rndStr>/device.png', methods=['GET'])
-	def getDeviceIcon(self, deviceId: str, _rndStr: str):
+	@route('/locations/construction/', methods=['PUT'])
+	@ApiAuthenticated
+	def addConstructionTile(self) -> Response:
+		try:
+			file = self.fileCheck()
+			if not file:
+				return self.incompatibleFile()
+			else:
+				file.save(f'{self.Commons.rootDir()}/core/webApi/static/images/constructions/0000_{int(time.time())}.png')
+				return jsonify(success=True)
+		except Exception as e:
+			return jsonify(success=False, message=str(e))
+
+
+	# noinspection PyUnusedLocal
+	@route('/devices/<deviceId>/<etag>/device.png', methods=['GET'])
+	def getDeviceIcon(self, deviceId: str, etag: str) -> Response:
 		"""
 		Returns the icon of a device.
 		:param deviceId:
-		:param _rndStr: Is only used to bypass browser caching
+		:param etag: Is only used by the browser caching mechanisms
 		:return:
 		"""
+		file = None
 		try:
 			device: Device = self.DeviceManager.getDevice(deviceId=int(deviceId))
 			file = device.getDeviceIcon()
-			return send_from_directory(file.parent, f'{file.stem}{constants.PNG_EXT}')
+			response = make_response(send_from_directory(file.parent, f'{file.name}'))
+			response.headers.add('Access-Control-Allow-Headers', 'x-etag')
+			response.headers.add('x-etag', device.etag)
+			return response
 		except Exception as e:
-			self.logError(f'Failed to retrieve icon for device id **{deviceId}** :{e}') #NOSONAR
+			self.logError(f'Failed to retrieve icon for device id **{deviceId}** ({file if file else "error while getting filename"}) :{e}')  # NOSONAR
 			file = Path(self.Commons.rootDir(), 'core/webApi/static/images/missing-icon.png')
 			return send_from_directory(file.parent, f'{file.stem}{constants.PNG_EXT}')
 
 
 	@route('/devices/', methods=['PUT'])
 	@ApiAuthenticated
-	def addDevice(self):
+	def addDevice(self) -> Response:
 		try:
 			device = self.DeviceManager.addNewDeviceFromWebUI(data=request.json)
 			if device:
@@ -271,7 +357,7 @@ class MyHomeApi(Api):
 
 	@route('/deviceLinks/', methods=['PUT'])
 	@ApiAuthenticated
-	def addDeviceLink(self):
+	def addDeviceLink(self) -> Response:
 		"""
 		 API method for creating a device link from a given deviceId to a targetLocation
 		:return: json object with success value and the created link or message containing an error message
@@ -289,10 +375,10 @@ class MyHomeApi(Api):
 
 	@route('/deviceLinks/', methods=['DELETE'])
 	@ApiAuthenticated
-	def removeDeviceLink(self):
+	def removeDeviceLink(self) -> Response:
 		"""
 		API method for deleting an existing device link to a location
-		:return: success value and error mesasge
+		:return: success value and error message
 		"""
 		try:
 			self.DeviceManager.deleteDeviceLinks(deviceId=request.json.get('deviceId'), targetLocationId=request.json.get('targetLocation'))
@@ -304,7 +390,7 @@ class MyHomeApi(Api):
 
 	@route('/devices/<deviceId>/onClick/', methods=['GET'])
 	@ApiAuthenticated
-	def deviceClick(self, deviceId: str):
+	def deviceClick(self, deviceId: str) -> Response:
 		try:
 			device = self.DeviceManager.getDevice(deviceId=int(deviceId))
 			if not device:
@@ -321,7 +407,7 @@ class MyHomeApi(Api):
 
 
 	@route('/deviceTypes/', methods=['GET'])
-	def getDeviceTypes(self):
+	def getDeviceTypes(self) -> Response:
 		try:
 			data = dict()
 			for skillName, deviceType in self.DeviceManager.deviceTypes.items():
@@ -335,7 +421,7 @@ class MyHomeApi(Api):
 
 
 	@route('/deviceTypes/<skillName>/<deviceType>.png', methods=['GET'])
-	def getDeviceTypeIcon(self, skillName: str, deviceType: str):
+	def getDeviceTypeIcon(self, skillName: str, deviceType: str) -> Response:
 		try:
 			dType: DeviceType = self.DeviceManager.getDeviceType(skillName=skillName, deviceType=deviceType)
 			file = dType.getDeviceTypeIcon()
@@ -348,7 +434,7 @@ class MyHomeApi(Api):
 
 	@route('/devices/<deviceId>/reply/', methods=['POST'])
 	@ApiAuthenticated
-	def deviceReply(self, deviceId: str):
+	def deviceReply(self, deviceId: str) -> Response:
 		try:
 			self.DeviceManager.getDevice(deviceId=int(deviceId)).onDeviceUIReply(request.json)
 			return jsonify(success=True)

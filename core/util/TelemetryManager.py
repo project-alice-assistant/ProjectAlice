@@ -1,14 +1,31 @@
+#  Copyright (c) 2021
+#
+#  This file, TelemetryManager.py, is part of Project Alice.
+#
+#  Project Alice is free software: you can redistribute it and/or modify
+#  it under the terms of the GNU General Public License as published by
+#  the Free Software Foundation, either version 3 of the License, or
+#  (at your option) any later version.
+#
+#  This program is distributed in the hope that it will be useful,
+#  but WITHOUT ANY WARRANTY; without even the implied warranty of
+#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#  GNU General Public License for more details.
+#
+#  You should have received a copy of the GNU General Public License
+#  along with this program.  If not, see <https://www.gnu.org/licenses/>
+#
+#  Last modified: 2021.04.13 at 12:56:48 CEST
+
 import time
-from typing import Iterable, List
+from typing import List
 
 from core.base.model.Manager import Manager
-from core.myHome.model.Location import Location
-from core.util.model.TelemetryType import TelemetryType
 from core.util.model.TelemetryData import TelemetryData
+from core.util.model.TelemetryType import TelemetryType
 
 
 class TelemetryManager(Manager):
-
 	DATABASE = {
 		'telemetry': [
 			'id integer PRIMARY KEY',
@@ -27,33 +44,33 @@ class TelemetryManager(Manager):
 		},
 		TelemetryType.TEMPERATURE: {
 			'onTemperatureHighAlert': ['upperThreshold', 'TemperatureAlertHigh'],
-			'onTemperatureLowAlert': ['lowerThreshold', 'TemperatureAlertLow'],
-			'onFreezing': ['lowerThreshold', 0]
+			'onTemperatureLowAlert' : ['lowerThreshold', 'TemperatureAlertLow'],
+			'onFreezing'            : ['lowerThreshold', 0]
 		},
-		TelemetryType.CO2: {
+		TelemetryType.CO2        : {
 			'onCO2Alert': ['upperThreshold', 'CO2AlertHigh']
 		},
-		TelemetryType.GAS: {
+		TelemetryType.GAS        : {
 			'onGasAlert': ['upperThreshold', 'GasAlertHigh']
 		},
-		TelemetryType.HUMIDITY: {
+		TelemetryType.HUMIDITY   : {
 			'onHumidityHighAlert': ['upperThreshold', 'HumidityAlertHigh'],
-			'onHumidityLowAlert': ['lowerThreshold', 'HumidityAlertLow']
+			'onHumidityLowAlert' : ['lowerThreshold', 'HumidityAlertLow']
 		},
-		TelemetryType.PRESSURE: {
+		TelemetryType.PRESSURE   : {
 			'onPressureHighAlert': ['upperThreshold', 'PressureAlertHigh'],
-			'onPressureLowAlert': ['lowerThreshold', 'PressureAlertLow']
+			'onPressureLowAlert' : ['lowerThreshold', 'PressureAlertLow']
 		},
-		TelemetryType.NOISE: {
+		TelemetryType.NOISE      : {
 			'onNoiseAlert': ['upperThreshold', 'NoiseAlert']
 		},
-		TelemetryType.RAIN: {
+		TelemetryType.RAIN       : {
 			'onRaining': None
 		},
-		TelemetryType.SUM_RAIN_1: {
+		TelemetryType.SUM_RAIN_1 : {
 			'onTooMuchRain': ['upperThreshold', 'TooMuchRainAlert']
 		},
-		TelemetryType.UV_INDEX: {
+		TelemetryType.UV_INDEX   : {
 			'onUVIndexAlert': ['upperThreshold', 'UVIndexAlert']
 		}
 	}
@@ -83,7 +100,8 @@ class TelemetryManager(Manager):
 		if not self._isActive:
 			return
 
-		self._currentValues = [ TelemetryData(val) for val in self.getDistinct()]
+		self._currentValues = [TelemetryData(val) for val in self.getDistinct()]
+
 
 	def currentValue(self, ttype: TelemetryType, value: str, service: str, deviceId: int, timestamp=None, locationId: int = None) -> bool:
 		"""
@@ -102,26 +120,27 @@ class TelemetryManager(Manager):
 				match = current
 		if match:
 			if match.timestamp == timestamp and match.value == value:
-				# skip exact dublicates
+				# skip exact duplicates
 				return False
 			else:
 				match.timestamp = timestamp
 				match.value = value
 				return True
 		else:
-			self._currentValues.append(TelemetryData({'type': ttype,
-			                                          'value': value,
-			                                          'service': service,
-			                                          'deviceId': deviceId,
-			                                          'timestamp': timestamp,
+			self._currentValues.append(TelemetryData({'type'      : ttype,
+			                                          'value'     : value,
+			                                          'service'   : service,
+			                                          'deviceId'  : deviceId,
+			                                          'timestamp' : timestamp,
 			                                          'locationId': locationId}))
 			return True
+
 
 	# noinspection SqlResolve
 	def storeData(self, ttype: TelemetryType, value: str, service: str, deviceId: int, timestamp=None, locationId: int = None) -> bool:
 		"""
 		Store telemetry data to the database and the list of current values.
-		Dublicates are filtered out.
+		Duplicates are filtered out.
 		If a new entry was added, true is returned, if not false
 		:param ttype:
 		:param value:
@@ -136,7 +155,7 @@ class TelemetryManager(Manager):
 
 		timestamp = timestamp or time.time()
 
-		if not self.currentValue(ttype, value, service, deviceId,timestamp, locationId):
+		if not self.currentValue(ttype, value, service, deviceId, timestamp, locationId):
 			return False
 
 		self.databaseInsert(
@@ -159,16 +178,16 @@ class TelemetryManager(Manager):
 			value = float(value)
 			if settings[0] == 'upperThreshold' and value > threshold or \
 					settings[0] == 'lowerThreshold' and value < threshold:
-				self.broadcast(method=message, exceptions=[self.name], propagateToSkills=True, service=service, trigger=settings[0], value=value, threshold=threshold, area=deviceId )
+				self.broadcast(method=message, exceptions=[self.name], propagateToSkills=True, service=service, trigger=settings[0], value=value, threshold=threshold, area=deviceId)
 				break
 
 		return True
 
 
-	def getData(self, ttype: TelemetryType = None, deviceId: str = None, service: str = None, locationId: int = None, historyFrom: int = None, historyTo: int = None, all: bool = False) -> Iterable:
-		values = {}
+	def getData(self, ttype: TelemetryType = None, deviceId: str = None, service: str = None, locationId: int = None, historyFrom: int = None, historyTo: int = None, everything: bool = False) -> List:
+		values = dict()
 		if ttype:
-			values['type'] = ttype
+			values['type'] = ttype.value
 		if locationId:
 			values['locationId'] = locationId
 		if deviceId:
@@ -179,28 +198,26 @@ class TelemetryManager(Manager):
 
 		dynWhere = [f'{col} = :{col}' for col in values.keys()]
 
-
 		if historyTo:
 			dynWhere.append(f'timestamp <= {historyTo}')
 		if historyFrom:
 			dynWhere.append(f'timestamp >= {historyFrom}')
 
 		# noinspection SqlResolve
-		query = f'SELECT * FROM :__table__ WHERE {" and ".join(dynWhere)} ORDER BY `timestamp` DESC{" LIMIT 1" if not historyFrom and not historyTo and not all else ""}'
+		query = f'SELECT * FROM :__table__ WHERE {" and ".join(dynWhere)} ORDER BY `timestamp` DESC{" LIMIT 1" if not historyFrom and not historyTo and not everything else ""}'
 
 		# noinspection SqlResolve
 		return self.databaseFetch(
 			tableName='telemetry',
 			query=query,
-			values=values,
-			method='all'
+			values=values
 		)
 
-	def getDistinct(self, ttype: TelemetryType = None, deviceId: str = None, service: str = None, locationId: int = None) -> Iterable:
-		values = {}
-		group = []
+
+	def getDistinct(self, ttype: TelemetryType = None, deviceId: str = None, service: str = None, locationId: int = None) -> List:
+		values = dict()
 		if ttype:
-			values['type'] = ttype
+			values['type'] = ttype.value
 		if locationId:
 			values['locationId'] = locationId
 		if deviceId:
@@ -214,7 +231,7 @@ class TelemetryManager(Manager):
 		query = f'SELECT t1.* FROM :__table__ t1 ' \
 		        f'INNER JOIN ' \
 		        f'(SELECT max(id) id, service, deviceId, locationId, type ' \
-				f'FROM :__table__ { where } ' \
+		        f'FROM :__table__ {where} ' \
 		        f'GROUP BY `service`, `deviceId`, `locationId`, `type`) t2 ' \
 		        f'ON t1.id  = t2.id ' \
 		        f'ORDER BY `timestamp` DESC '
@@ -223,9 +240,11 @@ class TelemetryManager(Manager):
 		return self.databaseFetch(
 			tableName='telemetry',
 			query=query,
-			values=values,
-			method='all'
+			values=values
 		)
 
+
 	def getAllCombinationsForAPI(self):
-		return [ val.forApi() for val in self._currentValues ]
+		llist = [val.forApi() for val in self._currentValues]
+		llist = [l for l in llist if l is not None]  # workaround until obsolete telemetry is purged
+		return llist

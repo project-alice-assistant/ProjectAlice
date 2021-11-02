@@ -1,3 +1,22 @@
+#  Copyright (c) 2021
+#
+#  This file, TasmotaConfigs.py, is part of Project Alice.
+#
+#  Project Alice is free software: you can redistribute it and/or modify
+#  it under the terms of the GNU General Public License as published by
+#  the Free Software Foundation, either version 3 of the License, or
+#  (at your option) any later version.
+#
+#  This program is distributed in the hope that it will be useful,
+#  but WITHOUT ANY WARRANTY; without even the implied warranty of
+#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#  GNU General Public License for more details.
+#
+#  You should have received a copy of the GNU General Public License
+#  along with this program.  If not, see <https://www.gnu.org/licenses/>
+#
+#  Last modified: 2021.04.13 at 12:56:46 CEST
+
 from core.base.model.ProjectAliceObject import ProjectAliceObject
 
 
@@ -67,7 +86,6 @@ class TasmotaConfigs(ProjectAliceObject):
 	SPECIFIC_VERSIONS = {
 		'envSensor': 'https://github.com/arendst/Tasmota/releases/download/v8.3.1/tasmota-sensors.bin'
 	}
-
 
 	BACKLOG_CONFIGS = [
 		{
@@ -190,11 +208,11 @@ class TasmotaConfigs(ProjectAliceObject):
 						'payload': '0'
 					},
 					{
-						'topic'  : BASE_TOPIC + '/rule1', #NOSONAR
+						'topic'  : BASE_TOPIC + '/rule1',  # NOSONAR
 						'payload': 'on switch1#state do publish projectalice/devices/tasmota/feedback/{identifier} {{"deviceUid":"{room}","deviceType":"{type}","feedback":%value%,"uid":"{identifier}"}} endon'
 					},
 					{
-						'topic'  : BASE_TOPIC + '/rule1', #NOSONAR
+						'topic'  : BASE_TOPIC + '/rule1',  # NOSONAR
 						'payload': '1'
 					},
 					{
@@ -236,11 +254,11 @@ class TasmotaConfigs(ProjectAliceObject):
 						'payload': '0'
 					},
 					{
-						'topic'  : BASE_TOPIC + '/rule1', #NOSONAR
+						'topic'  : BASE_TOPIC + '/rule1',  # NOSONAR
 						'payload': 'on switch1#state do publish projectalice/devices/tasmota/feedback/{identifier} {{"siteId":"{room}","deviceType":"{type}","feedback":%value%,"uid":"{identifier}"}} endon'
 					},
 					{
-						'topic'  : BASE_TOPIC + '/rule1', #NOSONAR
+						'topic'  : BASE_TOPIC + '/rule1',  # NOSONAR
 						'payload': '1'
 					},
 					{

@@ -1,3 +1,22 @@
+#  Copyright (c) 2021
+#
+#  This file, SuperManager.py, is part of Project Alice.
+#
+#  Project Alice is free software: you can redistribute it and/or modify
+#  it under the terms of the GNU General Public License as published by
+#  the Free Software Foundation, either version 3 of the License, or
+#  (at your option) any later version.
+#
+#  This program is distributed in the hope that it will be useful,
+#  but WITHOUT ANY WARRANTY; without even the implied warranty of
+#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#  GNU General Public License for more details.
+#
+#  You should have received a copy of the GNU General Public License
+#  along with this program.  If not, see <https://www.gnu.org/licenses/>
+#
+#  Last modified: 2021.04.13 at 12:56:46 CEST
+
 from __future__ import annotations
 
 import traceback
@@ -57,6 +76,8 @@ class SuperManager:
 		self.wakewordManager = None
 		self.assistantManager = None
 		self.stateManager = None
+		self.subprocessManager = None
+		self.webUINotificationManager = None
 
 
 	def onStart(self):
@@ -67,11 +88,17 @@ class SuperManager:
 			stateManager = self._managers.pop('StateManager')
 			stateManager.onStart()
 
+			subprocessManager = self._managers.pop('SubprocessManager')
+			subprocessManager.onStart()
+
 			configManager = self._managers.pop('ConfigManager')
 			configManager.onStart()
 
 			languageManager = self._managers.pop('LanguageManager')
 			languageManager.onStart()
+
+			webUINotificationManager = self._managers.pop('WebUINotificationManager')
+			webUINotificationManager.onStart()
 
 			locationManager = self._managers.pop('LocationManager')
 			locationManager.onStart()
@@ -122,6 +149,7 @@ class SuperManager:
 			self._managers[databaseManager.name] = databaseManager
 			self._managers[userManager.name] = userManager
 			self._managers[mqttManager.name] = mqttManager
+			self._managers[webUINotificationManager.name] = webUINotificationManager
 			self._managers[skillManager.name] = skillManager
 			self._managers[widgetManager.name] = widgetManager
 			self._managers[dialogTemplateManager.name] = dialogTemplateManager
@@ -130,6 +158,7 @@ class SuperManager:
 			self._managers[internetManager.name] = internetManager
 			self._managers[nodeRedManager.name] = nodeRedManager
 			self._managers[stateManager.name] = stateManager
+			self._managers[subprocessManager.name] = subprocessManager
 		except Exception as e:
 			import traceback
 
@@ -187,10 +216,13 @@ class SuperManager:
 		from core.voice.WakewordManager import WakewordManager
 		from core.webui.WebUIManager import WebUIManager
 		from core.base.StateManager import StateManager
+		from core.util.SubprocessManager import SubprocessManager
+		from core.webui.WebUINotificationManager import WebUINotificationManager
 
 		self.commonsManager = CommonsManager()
 		self.commons = self.commonsManager
 		self.stateManager = StateManager()
+		self.subprocessManager = SubprocessManager()
 		self.configManager = ConfigManager()
 		self.databaseManager = DatabaseManager()
 		self.skillManager = SkillManager()
@@ -220,6 +252,7 @@ class SuperManager:
 		self.aliceWatchManager = AliceWatchManager()
 		self.dialogManager = DialogManager()
 		self.wakewordManager = WakewordManager()
+		self.webUINotificationManager = WebUINotificationManager()
 
 		self._managers = {name[0].upper() + name[1:]: manager for name, manager in self.__dict__.items() if name.endswith('Manager')}
 
@@ -234,6 +267,8 @@ class SuperManager:
 
 			managerName = mqttManager.name
 			mqttManager.onStop()
+		except KeyError as e:
+			Logger().logWarning(f'Manager **{managerName}** was not running: {e}')
 		except Exception as e:
 			Logger().logError(f'Error while shutting down manager **{managerName}**: {e}')
 			traceback.print_exc()

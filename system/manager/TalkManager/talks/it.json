@@ -8,15 +8,15 @@
 			"Nessun accesso"
 		]
 	},
-	"unknowUser": {
-		"default": [
-			"Mi dispiace, ma non so chi sei",
-			"Mi dispiace, non posso, non ti conosco",
-			"Dovresti chiamarmi per nome, così saprei chi sei"
-		],
-		"short": [
-			"Non ti conosco"
-		]
+	"unknownUser": {
+	  "default": [
+		"Mi dispiace, ma non so chi sei",
+		"Mi dispiace, non posso, non ti conosco",
+		"Dovresti chiamarmi per nome, così saprei chi sei"
+	  ],
+	  "short": [
+		"Non ti conosco"
+	  ]
 	},
 	"notUnderstood": {
 		"default": [
@@ -40,13 +40,13 @@
 			"Ok, ferma, proprio non capisco"
 		]
 	},
-	"youreWelcome": {
-		"default": [
-			"Prego!",
-			"Ma figurati!",
-			"nessun problema, quando vuoi!"
-		]
-	},
+  "youAreWelcome": {
+	"default": [
+	  "Prego!",
+	  "Ma figurati!",
+	  "nessun problema, quando vuoi!"
+	]
+  },
 	"error": {
 		"default": [
 			"Qualcosa è andato storto, controlla i miei log"

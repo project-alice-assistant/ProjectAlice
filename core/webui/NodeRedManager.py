@@ -1,3 +1,22 @@
+#  Copyright (c) 2021
+#
+#  This file, NodeRedManager.py, is part of Project Alice.
+#
+#  Project Alice is free software: you can redistribute it and/or modify
+#  it under the terms of the GNU General Public License as published by
+#  the Free Software Foundation, either version 3 of the License, or
+#  (at your option) any later version.
+#
+#  This program is distributed in the hope that it will be useful,
+#  but WITHOUT ANY WARRANTY; without even the implied warranty of
+#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#  GNU General Public License for more details.
+#
+#  You should have received a copy of the GNU General Public License
+#  along with this program.  If not, see <https://www.gnu.org/licenses/>
+#
+#  Last modified: 2021.04.13 at 12:56:49 CEST
+
 import json
 import os
 import shutil
@@ -27,6 +46,7 @@ class NodeRedManager(Manager):
 		]
 	}
 
+
 	def __init__(self):
 		super().__init__()
 
@@ -41,7 +61,7 @@ class NodeRedManager(Manager):
 
 		if not self.PACKAGE_PATH.exists():
 			self.isActive = False
-			self.ThreadManager.newThread(name='installNodered', target=self.install)
+			self.install()
 			return
 
 		self.injectSkillNodes()
@@ -72,7 +92,7 @@ class NodeRedManager(Manager):
 			self.logError('Failed installing Node-red')
 			self.onStop()
 		else:
-			self.logInfo('Succesfully installed Node-red')
+			self.logInfo('Successfully installed Node-red')
 			self.configureNewNodeRed()
 			self.onStart()
 
@@ -118,6 +138,17 @@ class NodeRedManager(Manager):
 
 	def reloadServer(self):
 		self.Commons.runRootSystemCommand(['systemctl', 'restart', 'nodered'])
+
+
+	def onSkillDeleted(self, skill: str):
+		if not self.PACKAGE_PATH.exists() or not self.SkillManager.skillScenarioNode(skillName=skill):
+			return
+
+		uninstall = self.Commons.runSystemCommand(f'cd ~/.node-red && npm uninstall {self.SkillManager.skillScenarioNode(skillName=skill)}', shell=True)
+		if uninstall.returncode == 1:
+			self.logWarning(f'Something went wrong uninstalling node for skill {skill}: {uninstall.stderr}')
+		else:
+			self.reloadServer()
 
 
 	def injectSkillNodes(self):

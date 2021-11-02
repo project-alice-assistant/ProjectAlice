@@ -1,3 +1,22 @@
+#  Copyright (c) 2021
+#
+#  This file, SkillStoreManager.py, is part of Project Alice.
+#
+#  Project Alice is free software: you can redistribute it and/or modify
+#  it under the terms of the GNU General Public License as published by
+#  the Free Software Foundation, either version 3 of the License, or
+#  (at your option) any later version.
+#
+#  This program is distributed in the hope that it will be useful,
+#  but WITHOUT ANY WARRANTY; without even the implied warranty of
+#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#  GNU General Public License for more details.
+#
+#  You should have received a copy of the GNU General Public License
+#  along with this program.  If not, see <https://www.gnu.org/licenses/>
+#
+#  Last modified: 2021.04.13 at 12:56:46 CEST
+
 import difflib
 from random import shuffle
 from typing import Optional
@@ -13,8 +32,8 @@ from core.util.Decorators import Online
 
 
 class SkillStoreManager(Manager):
-
 	SUGGESTIONS_DIFF_LIMIT = 0.75
+
 
 	def __init__(self):
 		super().__init__()
@@ -76,7 +95,7 @@ class SkillStoreManager(Manager):
 	def _getSkillUpdateVersion(self, skillName: str) -> Optional[tuple]:
 		"""
 		Get the highest skill version number a user can install.
-		This is based on the user preferences, dependending on the current Alice version
+		This is based on the user preferences, depending on the current Alice version
 		and the user's selected update channel for skills
 		In case nothing is found, DO NOT FALLBACK TO MASTER
 
@@ -142,6 +161,7 @@ class SkillStoreManager(Manager):
 
 		for skillName, samples in self._skillSamplesData.items():
 			for sample in samples:
+				sample = sample.split()
 				for userInput in userInputs:
 					diff = difflib.SequenceMatcher(None, userInput, sample).ratio()
 					if diff >= self.SUGGESTIONS_DIFF_LIMIT:
@@ -153,6 +173,7 @@ class SkillStoreManager(Manager):
 			speakableName = self._skillStoreData.get(suggestedSkillName, dict()).get('speakableName', '')
 
 			if not speakableName:
+				self.logDebug(f'No speakable name for skill suggestion **{suggestedSkillName}** in install file. Please add or ask the author to do so.')
 				continue
 
 			ret.add((suggestedSkillName, speakableName))

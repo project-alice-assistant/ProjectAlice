@@ -1,17 +1,32 @@
+#  Copyright (c) 2021
+#
+#  This file, SnipsNlu.py, is part of Project Alice.
+#
+#  Project Alice is free software: you can redistribute it and/or modify
+#  it under the terms of the GNU General Public License as published by
+#  the Free Software Foundation, either version 3 of the License, or
+#  (at your option) any later version.
+#
+#  This program is distributed in the hope that it will be useful,
+#  but WITHOUT ANY WARRANTY; without even the implied warranty of
+#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#  GNU General Public License for more details.
+#
+#  You should have received a copy of the GNU General Public License
+#  along with this program.  If not, see <https://www.gnu.org/licenses/>
+#
+#  Last modified: 2021.05.19 at 12:56:47 CEST
+
 import json
 import re
 import shutil
-import threading
-import time
 from pathlib import Path
 from subprocess import CompletedProcess
-
-import subprocess
-from typing import Optional
 
 from core.commons import constants
 from core.nlu.model.NluEngine import NluEngine
 from core.util.Stopwatch import Stopwatch
+from core.webui.model.UINotificationType import UINotificationType
 
 
 class SnipsNlu(NluEngine):
@@ -23,28 +38,11 @@ class SnipsNlu(NluEngine):
 		super().__init__()
 		self._cachePath = Path(self.Commons.rootDir(), f'var/cache/nlu/trainingData')
 		self._timer = None
-		self._thread: Optional[threading.Thread] = None
-		self._flag = threading.Event()
 
 
 	def start(self):
 		super().start()
-		self._flag.clear()
-		if self._thread and self._thread.is_alive():
-			self._thread.join(timeout=5)
 
-		self._thread: threading.Thread = self.ThreadManager.newThread(name='nluEngine', target=self.run, autostart=False)
-		self._thread.start()
-
-
-	def stop(self):
-		super().stop()
-		self._flag.clear()
-		if self._thread and self._thread.is_alive():
-			self.ThreadManager.terminateThread(name='nluEngine')
-
-
-	def run(self):
 		cmd = f'snips-nlu -a {self.Commons.rootDir()}/assistant --mqtt {self.ConfigManager.getAliceConfigByName("mqttHost")}:{self.ConfigManager.getAliceConfigByName("mqttPort")}'
 
 		if self.ConfigManager.getAliceConfigByName('mqttUser'):
@@ -53,14 +51,12 @@ class SnipsNlu(NluEngine):
 		if self.ConfigManager.getAliceConfigByName('mqttTLSFile'):
 			cmd += f' --mqtt-tls-cafile {self.ConfigManager.getAliceConfigByName("mqttTLSFile")}'
 
-		process = subprocess.Popen(cmd.split(), stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+		self.SubprocessManager.runSubprocess(cmd=cmd, name='SnipsNLU', autoRestart=True)
 
-		self._flag.set()
-		try:
-			while self._flag.is_set():
-				time.sleep(0.5)
-		finally:
-			process.terminate()
+
+	def stop(self):
+		super().stop()
+		self.SubprocessManager.terminateSubprocess(name='SnipsNLU')
 
 
 	def convertDialogTemplate(self, file: Path):
@@ -68,7 +64,7 @@ class SnipsNlu(NluEngine):
 		dialogTemplate = json.loads(file.read_text())
 
 		nluTrainingSample = dict()
-		nluTrainingSample['language'] = self.LanguageManager.activeLanguage
+		nluTrainingSample['language'] = self.getLanguage()
 		nluTrainingSample['entities'] = dict()
 		nluTrainingSample['intents'] = dict()
 
@@ -81,9 +77,9 @@ class SnipsNlu(NluEngine):
 				nluTrainingSampleEntity['use_synonyms'] = entity['useSynonyms']
 
 				nluTrainingSampleEntity['data'] = [{
-						'value'   : value['value'],
-						'synonyms': value.get('synonyms', list())
-					} for value in entity['values']
+					'value'   : value['value'],
+					'synonyms': value.get('synonyms', list())
+				} for value in entity['values'] if value is not None
 				]
 
 			for intent in skill['intents']:
@@ -125,7 +121,7 @@ class SnipsNlu(NluEngine):
 					# noinspection PyTypeChecker
 					nluTrainingSample['intents'][intentName]['utterances'].append({'data': data})
 
-		with Path(self._cachePath / f'{self.LanguageManager.activeLanguage}.json').open('w') as fp:
+		with Path(self._cachePath / f'{self.getLanguage()}.json').open('w') as fp:
 			json.dump(nluTrainingSample, fp, ensure_ascii=False)
 
 
@@ -140,10 +136,10 @@ class SnipsNlu(NluEngine):
 			dataset = {
 				'entities': dict(),
 				'intents' : dict(),
-				'language': self.LanguageManager.activeLanguage,
+				'language': self.getLanguage()
 			}
 
-			with Path(self._cachePath / f'{self.LanguageManager.activeLanguage}.json').open() as fp:
+			with Path(self._cachePath / f'{self.getLanguage()}.json').open() as fp:
 				trainingData = json.load(fp)
 				dataset['entities'].update(trainingData['entities'])
 				dataset['intents'].update(trainingData['intents'])
@@ -182,8 +178,8 @@ class SnipsNlu(NluEngine):
 				assistantPath = Path(self.Commons.rootDir(), f'trained/assistants/{self.LanguageManager.activeLanguage}/nlu_engine')
 
 				if not tempTrainingData.exists():
-					self.logError('Snips NLU training failed')
-					self.MqttManager.publish(constants.TOPIC_NLU_TRAINING_STATUS, payload={'status': 'failed'})
+					self.trainingFailed()
+
 					if not assistantPath.exists():
 						self.logFatal('No NLU engine found, cannot start')
 
@@ -197,20 +193,40 @@ class SnipsNlu(NluEngine):
 
 			self._timer.cancel()
 			self.MqttManager.publish(constants.TOPIC_NLU_TRAINING_STATUS, payload={'status': 'done'})
+			self.WebUINotificationManager.newNotification(
+				typ=UINotificationType.INFO,
+				notification='nluTrainingDone',
+				key='nluTraining'
+			)
+
 			self.ThreadManager.getEvent('TrainAssistant').clear()
 			self.logInfo(f'Snips NLU trained in {stopWatch} seconds')
 
 			self.broadcast(method=constants.EVENT_NLU_TRAINED, exceptions=[constants.DUMMY], propagateToSkills=True)
 			self.NluManager.restartEngine()
 		except:
-			self.MqttManager.publish(constants.TOPIC_NLU_TRAINING_STATUS, payload={'status': 'failed'})
+			self.trainingFailed()
 		finally:
 			self.NluManager.training = False
 
 
-	def trainingStatus(self):
+	def trainingStatus(self, dots: str = ''):
+		count = dots.count('.')
+		if not dots or count > 7:
+			dots = '.'
+		else:
+			dots += '.'
+
 		self.MqttManager.publish(constants.TOPIC_NLU_TRAINING_STATUS, payload={'status': 'training'})
-		self._timer = self.ThreadManager.newTimer(interval=0.25, func=self.trainingStatus)
+
+		self.WebUINotificationManager.newNotification(
+			typ=UINotificationType.INFO,
+			notification='nluTraining',
+			key='nluTraining',
+			replaceBody=[dots]
+		)
+
+		self._timer = self.ThreadManager.newTimer(interval=1, func=self.trainingStatus, args=[dots])
 
 
 	@staticmethod
@@ -219,3 +235,26 @@ class SnipsNlu(NluEngine):
 			slot['name']: slot['type']
 			for slot in intent['slots']
 		}
+
+
+	def trainingFailed(self):
+		self.logError('Snips NLU training failed')
+		self.MqttManager.publish(constants.TOPIC_NLU_TRAINING_STATUS, payload={'status': 'failed'})
+
+		self.WebUINotificationManager.newNotification(
+			typ=UINotificationType.ERROR,
+			notification='nluTrainingFailed',
+			key='nluTraining'
+		)
+
+
+	def getLanguage(self) -> str:
+		"""
+		get the language that should be used for the training.
+		Currently only portuguese needs a special handling
+		:return:
+		"""
+		lang = self.LanguageManager.activeLanguage
+		if lang == 'pt':
+			lang = lang + '_' + self.LanguageManager.activeCountryCode.lower()
+		return lang

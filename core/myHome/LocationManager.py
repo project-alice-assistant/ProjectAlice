@@ -1,21 +1,39 @@
+#  Copyright (c) 2021
+#
+#  This file, LocationManager.py, is part of Project Alice.
+#
+#  Project Alice is free software: you can redistribute it and/or modify
+#  it under the terms of the GNU General Public License as published by
+#  the Free Software Foundation, either version 3 of the License, or
+#  (at your option) any later version.
+#
+#  This program is distributed in the hope that it will be useful,
+#  but WITHOUT ANY WARRANTY; without even the implied warranty of
+#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#  GNU General Public License for more details.
+#
+#  You should have received a copy of the GNU General Public License
+#  along with this program.  If not, see <https://www.gnu.org/licenses/>
+#
+#  Last modified: 2021.04.13 at 12:56:47 CEST
+
 from typing import Dict, List, Optional
 
 from core.base.model.Manager import Manager
+from core.dialog.model.DialogSession import DialogSession
 from core.myHome.model.Construction import Construction
 from core.myHome.model.Furniture import Furniture
 from core.myHome.model.Location import Location
-from core.dialog.model.DialogSession import DialogSession
 
 
 class LocationManager(Manager):
-
 	LOCATIONS_TABLE = 'locations'
 	CONSTRUCTIONS_TABLE = 'constructions'
 	FURNITURE_TABLE = 'furnitures'
 
 	DATABASE = {
-		LOCATIONS_TABLE: [
-			'id INTEGER PRIMARY KEY', #NOSONAR
+		LOCATIONS_TABLE    : [
+			'id INTEGER PRIMARY KEY',  # NOSONAR
 			'name TEXT NOT NULL',
 			"synonyms TEXT NOT NULL DEFAULT '{}'",
 			'parentLocation INTEGER NOT NULL DEFAULT 0',
@@ -26,7 +44,7 @@ class LocationManager(Manager):
 			'parentLocation INTEGER',
 			"settings TEXT DEFAULT '{}'"
 		],
-		FURNITURE_TABLE: [
+		FURNITURE_TABLE    : [
 			'id INTEGER PRIMARY KEY',
 			'parentLocation INTEGER',
 			"settings TEXT DEFAULT '{}'"
@@ -49,7 +67,7 @@ class LocationManager(Manager):
 
 		if not self._locations:
 			location = self.addNewLocation(data={
-				'name': 'The Hive',
+				'name'          : 'The Hive',
 				'parentLocation': 0
 			})
 			if not location:
@@ -65,19 +83,19 @@ class LocationManager(Manager):
 
 
 	def loadLocations(self):
-		for row in self.databaseFetch(tableName=self.LOCATIONS_TABLE, method='all'): #NOSONAR
-			self._locations[row['id']] = Location(self.Commons.dictFromRow(row))
+		for row in self.databaseFetch(tableName=self.LOCATIONS_TABLE):
+			self._locations[row['id']] = Location(row)
 			self.logInfo(f'Loaded location **{row["name"]}**')
 
 
 	def loadConstructions(self):
-		for row in self.databaseFetch(tableName=self.CONSTRUCTIONS_TABLE, method='all'): #NOSONAR
-			self._constructions[row['id']] = Construction(self.Commons.dictFromRow(row))
+		for row in self.databaseFetch(tableName=self.CONSTRUCTIONS_TABLE):
+			self._constructions[row['id']] = Construction(row)
 
 
 	def loadFurnitures(self):
-		for row in self.databaseFetch(tableName=self.FURNITURE_TABLE, method='all'): #NOSONAR
-			self._furnitures[row['id']] = Furniture(self.Commons.dictFromRow(row))
+		for row in self.databaseFetch(tableName=self.FURNITURE_TABLE):
+			self._furnitures[row['id']] = Furniture(row)
 
 
 	def addNewConstruction(self, data: dict) -> Optional[Construction]:
@@ -90,10 +108,10 @@ class LocationManager(Manager):
 	def deleteConstruction(self, conId: int):
 		self.DatabaseManager.delete(
 			tableName=self.CONSTRUCTIONS_TABLE,
-		    callerName=self.name,
-		    values={
-			    'id': conId
-		    }
+			callerName=self.name,
+			values={
+				'id': conId
+			}
 		)
 		self._constructions.pop(conId, None)
 
@@ -131,10 +149,10 @@ class LocationManager(Manager):
 	def deleteFurniture(self, furId: int):
 		self.DatabaseManager.delete(
 			tableName=self.FURNITURE_TABLE,
-		    callerName=self.name,
-		    values={
-			    'id': furId
-		    }
+			callerName=self.name,
+			values={
+				'id': furId
+			}
 		)
 		self._furnitures.pop(furId, None)
 
@@ -182,10 +200,10 @@ class LocationManager(Manager):
 	def deleteLocation(self, locId: int):
 		self.DatabaseManager.delete(
 			tableName=self.LOCATIONS_TABLE,
-		    callerName=self.name,
-		    values={
-			    'id': locId
-		    }
+			callerName=self.name,
+			values={
+				'id': locId
+			}
 		)
 		self._locations.pop(locId, None)
 
@@ -201,7 +219,6 @@ class LocationManager(Manager):
 			if construction.parentLocation == locId:
 				self._constructions.pop(construction.id, None)
 
-
 		self.DatabaseManager.delete(
 			tableName=self.FURNITURE_TABLE,
 			callerName=self.name,
@@ -214,13 +231,12 @@ class LocationManager(Manager):
 			if furniture.parentLocation == locId:
 				self._furnitures.pop(furniture.id, None)
 
-
 		self.DatabaseManager.delete(
 			tableName=self.DeviceManager.DB_LINKS,
-		    callerName=self.DeviceManager.name,
-		    values={
-			    'targetLocation': locId
-		    }
+			callerName=self.DeviceManager.name,
+			values={
+				'targetLocation': locId
+			}
 		)
 
 
@@ -348,7 +364,7 @@ class LocationManager(Manager):
 			else:
 				device = self.DeviceManager.getDevice(uid=session.deviceUid)
 				if device:
-					return [device.getMainLocation()]
+					return [self.getLocation(locId=device.parentLocation)]
 				else:
 					return list()
 		else:

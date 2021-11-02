@@ -1,3 +1,22 @@
+#  Copyright (c) 2021
+#
+#  This file, AmazonTts.py, is part of Project Alice.
+#
+#  Project Alice is free software: you can redistribute it and/or modify
+#  it under the terms of the GNU General Public License as published by
+#  the Free Software Foundation, either version 3 of the License, or
+#  (at your option) any later version.
+#
+#  This program is distributed in the hope that it will be useful,
+#  but WITHOUT ANY WARRANTY; without even the implied warranty of
+#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#  GNU General Public License for more details.
+#
+#  You should have received a copy of the GNU General Public License
+#  along with this program.  If not, see <https://www.gnu.org/licenses/>
+#
+#  Last modified: 2021.04.13 at 12:56:48 CEST
+
 import re
 
 from core.dialog.model.DialogSession import DialogSession
@@ -5,11 +24,20 @@ from core.user.model.User import User
 from core.voice.model.TTSEnum import TTSEnum
 from core.voice.model.Tts import Tts
 
+
 try:
 	# noinspection PyUnresolvedReferences
+	import botocore
+	from botocore.config import Config
 	import boto3
 except ModuleNotFoundError:
-	pass # Auto installeed
+	pass  # Auto installed
+
+# boto3.set_stream_logger('', 10) # enable this to debug boto3
+
+AWS_CONF_CONNECT_TIMEOUT = 10
+AWS_CONF_READ_TIMEOUT = 1
+AWS_CONF_MAX_POOL_CONNECTIONS = 1
 
 
 class AmazonTts(Tts):
@@ -17,37 +45,39 @@ class AmazonTts(Tts):
 
 	DEPENDENCIES = {
 		'system': [],
-		'pip'   : {
-			'boto3==1.13.19'
+		'pip': {
+			'botocore==1.20.85',
+			'boto3==1.17.85'
 		}
 	}
+
 
 	def __init__(self, user: User = None):
 		super().__init__(user)
 		self._online = True
 		self._privacyMalus = -20
 		self._client = None
-		self._supportsSSML = True
+		self._supportsSSML = False if self.ConfigManager.getAliceConfigByName('ttsNeural') and self._neuralVoice else True
 
 		# TODO implement the others
 		# https://docs.aws.amazon.com/polly/latest/dg/voicelist.html
 		self._supportedLangAndVoices = {
-			'arb': {
+			'arb'      : {
 				'female': {
 					'Zeina': {
 						'neural': False
 					}
 				}
 			},
-			'cmn-CN': {
+			'cmn-CN'   : {
 				'female': {
 					'Zhiyu': {
 						'neural': False
 					}
 				}
 			},
-			'da-DK': {
-				'male': {
+			'da-DK'    : {
+				'male'  : {
 					'Mads': {
 						'neural': False
 					}
@@ -58,8 +88,8 @@ class AmazonTts(Tts):
 					}
 				}
 			},
-			'nl-NL': {
-				'male': {
+			'nl-NL'    : {
+				'male'  : {
 					'Ruben': {
 						'neural': False
 					}
@@ -70,8 +100,8 @@ class AmazonTts(Tts):
 					}
 				}
 			},
-			'en-AU': {
-				'male': {
+			'en-AU'    : {
+				'male'  : {
 					'Russell': {
 						'neural': False
 					}
@@ -82,14 +112,14 @@ class AmazonTts(Tts):
 					}
 				}
 			},
-			'en-GB': {
-				'male': {
+			'en-GB'    : {
+				'male'  : {
 					'Brian': {
 						'neural': True
 					}
 				},
 				'female': {
-					'Amy': {
+					'Amy' : {
 						'neural': True
 					},
 					'Emma': {
@@ -97,9 +127,9 @@ class AmazonTts(Tts):
 					}
 				}
 			},
-			'en-IN': {
+			'en-IN'    : {
 				'female': {
-					'Aditi': {
+					'Aditi'  : {
 						'neural': False
 					},
 					'Raveena': {
@@ -107,12 +137,12 @@ class AmazonTts(Tts):
 					}
 				}
 			},
-			'en-US': {
-				'male': {
-					'Joey': {
+			'en-US'    : {
+				'male'  : {
+					'Joey'   : {
 						'neural': True
 					},
-					'Justin': {
+					'Justin' : {
 						'neural': True
 					},
 					'Matthew': {
@@ -120,19 +150,19 @@ class AmazonTts(Tts):
 					},
 				},
 				'female': {
-					'Ivy': {
+					'Ivy'     : {
 						'neural': True
 					},
-					'Joanna': {
+					'Joanna'  : {
 						'neural': True
 					},
-					'Kendra': {
+					'Kendra'  : {
 						'neural': True
 					},
 					'Kimberly': {
 						'neural': True
 					},
-					'Salli': {
+					'Salli'   : {
 						'neural': True
 					}
 				}
@@ -144,8 +174,8 @@ class AmazonTts(Tts):
 					}
 				}
 			},
-			'fr-FR': {
-				'male': {
+			'fr-FR'    : {
+				'male'  : {
 					'Mathieu': {
 						'neural': False
 					}
@@ -156,15 +186,15 @@ class AmazonTts(Tts):
 					}
 				}
 			},
-			'fr-CA': {
+			'fr-CA'    : {
 				'female': {
 					'Chantal': {
 						'neural': False
 					}
 				}
 			},
-			'de-DE': {
-				'male': {
+			'de-DE'    : {
+				'male'  : {
 					'Hans': {
 						'neural': False
 					}
@@ -173,12 +203,12 @@ class AmazonTts(Tts):
 					'Marlene': {
 						'neural': False
 					},
-					'Vicki': {
+					'Vicki'  : {
 						'neural': False
 					}
 				}
 			},
-			'it-IT': {
+			'it-IT'    : {
 				'male'  : {
 					'Giorgio': {
 						'neural': False
@@ -193,7 +223,7 @@ class AmazonTts(Tts):
 					}
 				}
 			},
-			'pl-PL': {
+			'pl-PL'    : {
 				'male'  : {
 					'Jacek': {
 						'neural': False
@@ -211,7 +241,7 @@ class AmazonTts(Tts):
 					}
 				}
 			},
-			'pt-BR': {
+			'pt-BR'    : {
 				'male'  : {
 					'Ricardo': {
 						'neural': False
@@ -226,7 +256,7 @@ class AmazonTts(Tts):
 					}
 				}
 			},
-			'pt-PT': {
+			'pt-PT'    : {
 				'male'  : {
 					'Cristiano': {
 						'neural': False
@@ -243,12 +273,18 @@ class AmazonTts(Tts):
 
 	def onStart(self):
 		super().onStart()
-		self._client = boto3.client(
-			'polly',
-			region_name=self.ConfigManager.getAliceConfigByName('awsRegion'),
-			aws_access_key_id=self.ConfigManager.getAliceConfigByName('awsAccessKey'),
-			aws_secret_access_key=self.ConfigManager.getAliceConfigByName('awsSecretKey')
-		)
+		awsConfig = {
+			'region_name'          : self.ConfigManager.getAliceConfigByName('awsRegion'),
+			'aws_access_key_id'    : self.ConfigManager.getAliceConfigByName('awsAccessKey'),
+			'aws_secret_access_key': self.ConfigManager.getAliceConfigByName('awsSecretKey'),
+			'config'               : botocore.config.Config(
+				connect_timeout=AWS_CONF_CONNECT_TIMEOUT,
+				read_timeout=AWS_CONF_READ_TIMEOUT,
+				max_pool_connections=AWS_CONF_MAX_POOL_CONNECTIONS,
+			),
+		}
+
+		self._client = boto3.client('polly', **awsConfig)
 
 
 	@staticmethod
@@ -259,7 +295,7 @@ class AmazonTts(Tts):
 	def _checkText(self, session: DialogSession) -> str:
 		text = super()._checkText(session)
 
-		if not re.search('<amazon:auto-breaths>', text):
+		if self._supportsSSML and not re.search('<amazon:auto-breaths>', text):
 			text = re.sub(r'<speak>(.*)</speak>', r'<speak><amazon:auto-breaths>\1</amazon:auto-breaths></speak>', text)
 
 		return text
@@ -271,15 +307,18 @@ class AmazonTts(Tts):
 		if not self._text:
 			return
 
+		neural = self.ConfigManager.getAliceConfigByName('ttsNeural') and self._neuralVoice
+
 		tmpFile = self.TEMP_ROOT / self._cacheFile.with_suffix('.mp3')
 		if not self._cacheFile.exists():
+			self.logDebug(f'Downloading file **{self._cacheFile.stem}**')
 			response = self._client.synthesize_speech(
-				Engine='standard',
+				Engine='neural' if neural else 'standard',
 				LanguageCode=self._lang,
 				OutputFormat='mp3',
 				SampleRate=str(self.AudioServer.SAMPLERATE),
-				Text=self._text,
-				TextType='ssml',
+				Text=self._checkText(session) if neural else self._text,
+				TextType='text' if neural else 'ssml',
 				VoiceId=self._voice.title()
 			)
 

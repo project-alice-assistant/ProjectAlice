@@ -1,7 +1,26 @@
-import json
-from pathlib import Path
+#  Copyright (c) 2021
+#
+#  This file, LanguageManager.py, is part of Project Alice.
+#
+#  Project Alice is free software: you can redistribute it and/or modify
+#  it under the terms of the GNU General Public License as published by
+#  the Free Software Foundation, either version 3 of the License, or
+#  (at your option) any later version.
+#
+#  This program is distributed in the hope that it will be useful,
+#  but WITHOUT ANY WARRANTY; without even the implied warranty of
+#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#  GNU General Public License for more details.
+#
+#  You should have received a copy of the GNU General Public License
+#  along with this program.  If not, see <https://www.gnu.org/licenses/>
+#
+#  Last modified: 2021.07.31 at 15:54:28 CEST
 
+import json
 import re
+from pathlib import Path
+from typing import Optional
 
 from core.ProjectAliceExceptions import LanguageManagerLangNotSupported
 from core.base.model.Manager import Manager
@@ -21,6 +40,7 @@ class LanguageManager(Manager):
 
 		self._stringsData = dict()
 		self._webUIData = dict()
+		self._webUINotifications = dict()
 		self._locals = list()
 
 		self._floatExpressionPattern = re.compile(r'([0-9]+\.[0-9]+)')
@@ -33,6 +53,7 @@ class LanguageManager(Manager):
 		super().onStart()
 		self.loadSystemStrings()
 		self.loadWebUIStrings()
+		self.loadWebUINotifications()
 
 
 	def onBooted(self):
@@ -61,6 +82,10 @@ class LanguageManager(Manager):
 		for file in Path('system/manager/WebUIManager/').glob('*.json'):
 			self._webUIData[file.stem] = json.loads(file.read_text())
 		return self._webUIData
+
+
+	def loadWebUINotifications(self):
+		self._webUINotifications = json.loads(Path('system/manager/LanguageManager/notifications.json').read_text())
 
 
 	def loadSkillStrings(self, skillName: str):
@@ -100,14 +125,38 @@ class LanguageManager(Manager):
 		return self.getTranslations(skill, key, self._activeLanguage)
 
 
+	def getString(self, key: str, skill: str = 'system') -> str:
+		strings = self.getTranslations(skill, key, self._activeLanguage)
+		return strings[0] or ''
+
+
+	def getWebUINotification(self, key: str) -> Optional[dict]:
+		if key not in self._webUINotifications:
+			self.logWarning(f'Tried to get notification "{key}" but it does not exist')
+			return None
+
+		if self._activeLanguage not in self._webUINotifications[key]['title']:
+			if self._defaultLanguage not in self._webUINotifications[key]['title']:
+
+				try:
+					return {'title': self._webUINotifications[key]['title']['en'], 'body': self._webUINotifications[key]['body']['en']}
+				except:
+					self.logWarning(f'Tried to get notification "{key}" in "en" but it does not exist')
+					return None
+			else:
+				return {'title': self._webUINotifications[key]['title'][self._defaultLanguage], 'body': self._webUINotifications[key]['body'][self._defaultLanguage]}
+		else:
+			return {'title': self._webUINotifications[key]['title'][self._activeLanguage], 'body': self._webUINotifications[key]['body'][self._activeLanguage]}
+
+
 	def _loadSupportedLanguages(self):
 		activeLangDef: str = self.ConfigManager.getAliceConfigByName('activeLanguage')
 		activeCountryCode = self.ConfigManager.getAliceConfigByName('activeCountryCode')
 		langDef: dict = self.ConfigManager.getAliceConfigByName('supportedLanguages')
 
 		if self.ConfigManager.getAliceConfigByName('nonNativeSupportLanguage'):
-			if self.ConfigManager.getAliceConfigByName('stayCompletlyOffline'):
-				self.logWarning(f'You cannot use a non natively support language if you have chosen to stay completly offline.')
+			if self.ConfigManager.getAliceConfigByName('stayCompletelyOffline'):
+				self.logWarning(f'You cannot use a non natively support language if you have chosen to stay completely offline.')
 			else:
 				self.logWarning(f'You are using a non natively supported language **{self.ConfigManager.getAliceConfigByName("nonNativeSupportLanguage")}**')
 				self._activeLanguage = 'en'

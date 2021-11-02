@@ -31,7 +31,7 @@
 		"myHome": {
 			"myHome": "My Home",
 			"data0" : "Welcome in your home! Well, at least what might soon be your home... Let's have a look around here together, shall we?",
-			"data1" : "This is your compass and as every compass, it helps you navigate. The only small difference with a real one, it that this one always points to the center of your floor plan!",
+			"data1" : "This compass always points to the center of your floor plan so that regardless of your zoom level, you will never be lost.",
 			"data2" : "This is the cursor, always pointing to the middle of the map. You can also click on to fast travel to middle of the map!"
 		}
 	},
@@ -40,7 +40,13 @@
 		"info"            : "info",
 		"instructions"    : "instructions",
 		"demoDesc"        : "This is a UI tour demo skill",
-		"demoInstructions": "This is a demo"
+		"demoInstructions": "This is a demo",
+		"utilities"       : {
+			"revert"  : "Revert",
+			"upload"  : "Upload",
+			"modify"  : "Modify",
+			"createPR": "Create PR"
+		}
 	},
 	"tooltips"     : {
 		"settings"         : "Settings",
@@ -78,27 +84,29 @@
 	},
 	"notifications": {
 		"errors"   : {
-			"uiError"              : "Sorry, something went wrong",
-			"unexpectedServerError": "An unexpected server error occured",
-			"noDeviceToDeviceLink" : "Cannot link a device to another",
-			"deviceUnlinkFailed"   : "Device unlinking failed",
-			"deviceLinked"         : "Device linking failed",
-			"somethingWentWrong"   : "Something went wrong, please check your logs",
-			"deviceSavingFailed"   : "Failed saving device",
-			"cannotLinkDevice"     : "This device cannot be linked",
-			"skillDeleteFailed"    : "Failed deleting the skill",
-			"noLocationEmptyName"  : "The location name cannot be empty",
-			"widgetSavingFailed"   : "Failed saving widget"
+		  "uiError": "Sorry, something went wrong",
+		  "unexpectedServerError": "An unexpected server error occurred",
+		  "noDeviceToDeviceLink": "Cannot link a device to another",
+		  "deviceUnlinkFailed": "Device unlinking failed",
+		  "deviceLinked": "Device linking failed",
+		  "somethingWentWrong": "Something went wrong, please check your logs",
+		  "deviceSavingFailed": "Failed saving device",
+		  "cannotLinkDevice": "This device cannot be linked",
+		  "skillDeleteFailed": "Failed deleting the skill",
+		  "noLocationEmptyName": "The location name cannot be empty",
+		  "widgetSavingFailed": "Failed saving widget",
+		  "newTileFailed": "Failed uploading new tile"
 		},
 		"successes": {
-			"deviceUnlinked" : "Device successfully unlinked",
-			"deviceDeleted"  : "Device successfully deleted",
-			"deviceLinked"   : "Device successfully linked",
-			"pageDeleted"    : "The page has been deleted",
-			"deviceSaved"    : "Device settings succesfully saved",
-			"skillDeleted"   : "The skill was correctly deleted",
-			"reloadTriggered": "Reload triggered",
-			"widgetSaved"    : "Widget succesfully saved"
+		  "deviceUnlinked": "Device successfully unlinked",
+		  "deviceDeleted": "Device successfully deleted",
+		  "deviceLinked": "Device successfully linked",
+		  "pageDeleted": "The page has been deleted",
+		  "deviceSaved": "Device settings successfully saved",
+		  "skillDeleted": "The skill was correctly deleted",
+		  "reloadTriggered": "Reload triggered",
+		  "widgetSaved": "Widget successfully saved",
+		  "newTileAdded": "New tile uploaded!"
 		},
 		"info"     : {
 			"deviceNotLinkedToLocation"    : "This device is not linked to this location",

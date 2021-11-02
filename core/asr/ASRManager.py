@@ -1,3 +1,22 @@
+#  Copyright (c) 2021
+#
+#  This file, ASRManager.py, is part of Project Alice.
+#
+#  Project Alice is free software: you can redistribute it and/or modify
+#  it under the terms of the GNU General Public License as published by
+#  the Free Software Foundation, either version 3 of the License, or
+#  (at your option) any later version.
+#
+#  This program is distributed in the hope that it will be useful,
+#  but WITHOUT ANY WARRANTY; without even the implied warranty of
+#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#  GNU General Public License for more details.
+#
+#  You should have received a copy of the GNU General Public License
+#  along with this program.  If not, see <https://www.gnu.org/licenses/>
+#
+#  Last modified: 2021.07.31 at 15:54:28 CEST
+
 from importlib import import_module, reload
 from pathlib import Path
 from typing import Dict
@@ -41,10 +60,11 @@ class ASRManager(Manager):
 		self._startASREngine()
 
 
-	def _startASREngine(self, forceAsr = None):
+	def _startASREngine(self, forceAsr=None):
+		self._usingFallback = False if forceAsr is None else True
 		userASR = self.ConfigManager.getAliceConfigByName(configName='asr').lower() if forceAsr is None else forceAsr
 		keepASROffline = self.ConfigManager.getAliceConfigByName('keepASROffline')
-		stayOffline = self.ConfigManager.getAliceConfigByName('stayCompletlyOffline')
+		stayOffline = self.ConfigManager.getAliceConfigByName('stayCompletelyOffline')
 		online = self.InternetManager.online
 
 		self._asr = None
@@ -55,6 +75,8 @@ class ASRManager(Manager):
 			package = 'core.asr.model.DeepSpeechAsr'
 		elif userASR == 'snips':
 			package = 'core.asr.model.SnipsAsr'
+		elif userASR == 'coqui':
+			package = 'core.asr.model.CoquiAsr'
 		else:
 			package = 'core.asr.model.PocketSphinxAsr'
 
@@ -104,7 +126,7 @@ class ASRManager(Manager):
 
 
 	def onInternetConnected(self):
-		if self.ConfigManager.getAliceConfigByName('stayCompletlyOffline') or self.ConfigManager.getAliceConfigByName('keepASROffline') or \
+		if not self._usingFallback or self.ConfigManager.getAliceConfigByName('stayCompletelyOffline') or self.ConfigManager.getAliceConfigByName('keepASROffline') or \
 				self.ConfigManager.getAliceConfigByName('asrFallback') == self.ConfigManager.getAliceConfigByName('asr'):
 			return
 
@@ -145,7 +167,7 @@ class ASRManager(Manager):
 			self.logDebug(f'Asr captured: {result.text}')
 
 			text = result.text
-			if self.LanguageManager.overrideLanguage and not self.ConfigManager.getAliceConfigByName('stayCompletlyOffline') and not self.ConfigManager.getAliceConfigByName('keepASROffline'):
+			if self.LanguageManager.overrideLanguage and not self.ConfigManager.getAliceConfigByName('stayCompletelyOffline') and not self.ConfigManager.getAliceConfigByName('keepASROffline'):
 				language = detect(text)
 				if language != 'en':
 					text = self._translator.translate(text=text, src=language, dest='en').text
@@ -159,6 +181,7 @@ class ASRManager(Manager):
 				deviceUid=session.deviceUid,
 				sessionId=session.sessionId
 			)
+			self.MqttManager.endSession(sessionId=session.sessionId)
 
 
 	def onAudioFrame(self, message: mqtt.MQTTMessage, deviceUid: str):
@@ -203,6 +226,7 @@ class ASRManager(Manager):
 
 
 	def updateASRCredentials(self, asr: str):
+		# TODO this belongs in the ASR itself
 		if asr == 'google':
 			Path(self.Commons.rootDir(), 'credentials/googlecredentials.json').write_text(self.ConfigManager.getAliceConfigByName('googleASRCredentials'))
 

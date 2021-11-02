@@ -1,4 +1,24 @@
-VERSION = 1.22
+VERSION = 1.24
+
+#  Copyright (c) 2021
+#
+#  This file, Initializer.py, is part of Project Alice.
+#
+#  Project Alice is free software: you can redistribute it and/or modify
+#  it under the terms of the GNU General Public License as published by
+#  the Free Software Foundation, either version 3 of the License, or
+#  (at your option) any later version.
+#
+#  This program is distributed in the hope that it will be useful,
+#  but WITHOUT ANY WARRANTY; without even the implied warranty of
+#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#  GNU General Public License for more details.
+#
+#  You should have received a copy of the GNU General Public License
+#  along with this program.  If not, see <https://www.gnu.org/licenses/>
+#
+#  Last modified: 2021.07.31 at 15:54:28 CEST
+
 
 import getpass
 
@@ -15,6 +35,7 @@ from pathlib import Path
 YAML = '/boot/ProjectAlice.yaml'
 ASOUND = '/etc/asound.conf'
 TEMP = Path('/tmp/service')
+ALLOWED_LANGUAGES = {'en', 'de', 'fr', 'it', 'pt', 'pl'}
 
 
 class InitDict(dict):
@@ -65,6 +86,7 @@ class PreInit:
 	"""
 
 	PIP = './venv/bin/pip'
+
 
 	def __init__(self):
 		self._logger = SimpleLogger(prepend='PreInitializer')
@@ -271,6 +293,7 @@ class PreInit:
 
 		versions = list()
 		from core.base.model.Version import Version
+
 		for branch in result:
 			repoVersion = Version.fromString(branch['name'])
 
@@ -335,6 +358,7 @@ class PreInit:
 class Initializer:
 	PIP = './venv/bin/pip'
 
+
 	def __init__(self):
 		super().__init__()
 		self._logger = SimpleLogger('Initializer')
@@ -374,13 +398,11 @@ class Initializer:
 
 			self._confsFile.write_text(json.dumps(self._confsSample.read_text(), indent='\t'))
 
-
 		try:
 			confs = json.loads(self._confsFile.read_text())
 		except Exception as e:
 			self._logger.logFatal(f'Something went wrong loading configs: {e}')
 			return False
-
 
 		subprocess.run(['sudo', 'apt', 'install', '-y', f'./system/snips/snips-platform-common_0.64.0_armhf.deb'])
 		subprocess.run(['sudo', 'apt', 'install', '-y', f'./system/snips/snips-nlu_0.64.0_armhf.deb'])
@@ -403,8 +425,8 @@ class Initializer:
 			subprocess.run(['sudo', 'cp', str(Path(self._rootDir, 'system/websockets.conf')), str(confPath)])
 
 		subprocess.run(['sudo', 'systemctl', 'stop', 'mosquitto'])
-		subprocess.run(['sudo', 'sed', '-i', '-e', 's/persistence true/persistence false/', '/etc/mosquitto/mosquitto.conf'])
-		subprocess.run(['sudo', 'rm', '/var/lib/mosquitto/mosquitto.db '])
+		subprocess.run('sudo sed -i -e \'s/persistence true/persistence false/\' /etc/mosquitto/mosquitto.conf'.split())
+		subprocess.run(['sudo', 'rm', '/var/lib/mosquitto/mosquitto.db'])
 
 		# Now let's dump some values to their respective places
 		# First those that need some checks and self filling in case unspecified
@@ -421,8 +443,8 @@ class Initializer:
 
 		confs['adminPinCode'] = int(pinCode)
 
-		confs['stayCompletlyOffline'] = bool(initConfs['stayCompletlyOffline'] or False)
-		if confs['stayCompletlyOffline']:
+		confs['stayCompletelyOffline'] = bool(initConfs['stayCompletelyOffline'] or False)
+		if confs['stayCompletelyOffline']:
 			confs['keepASROffline'] = True
 			confs['keepTTSOffline'] = True
 			confs['skillAutoUpdate'] = False
@@ -435,12 +457,12 @@ class Initializer:
 			confs['keepASROffline'] = bool(initConfs['keepASROffline'])
 			confs['keepTTSOffline'] = bool(initConfs['keepTTSOffline'])
 			confs['skillAutoUpdate'] = bool(initConfs['skillAutoUpdate'])
-			confs['tts'] = initConfs['tts'] if initConfs['tts'] in {'pico', 'mycroft', 'amazon', 'google', 'watson'} else 'pico'
+			confs['tts'] = initConfs['tts'] if initConfs['tts'] in {'pico', 'mycroft', 'amazon', 'google', 'watson', 'coqui'} else 'pico'
 			confs['awsRegion'] = initConfs['awsRegion']
 			confs['awsAccessKey'] = initConfs['awsAccessKey']
 			confs['awsSecretKey'] = initConfs['awsSecretKey']
 
-			confs['asr'] = initConfs['asr'] if initConfs['asr'] in {'pocketsphinx', 'google', 'deepspeech', 'snips'} else 'deepspeech'
+			confs['asr'] = initConfs['asr'] if initConfs['asr'] in {'pocketsphinx', 'google', 'deepspeech', 'snips', 'coqui'} else 'deepspeech'
 			if confs['asr'] == 'google' and not initConfs['googleServiceFile']:
 				self._logger.logInfo('You cannot use Google Asr without a google service file, falling back to Deepspeech')
 				confs['asr'] = 'deepspeech'
@@ -460,7 +482,7 @@ class Initializer:
 		confs['webInterfaceActive'] = bool(initConfs['webInterfaceActive'])
 		confs['devMode'] = bool(initConfs['devMode'])
 		confs['newDeviceBroadcastPort'] = int(initConfs['newDeviceBroadcastPort'] or 12354)
-		confs['activeLanguage'] = initConfs['activeLanguage'] if initConfs['activeLanguage'] in {'en', 'de', 'fr'} else 'en'
+		confs['activeLanguage'] = initConfs['activeLanguage'] if initConfs['activeLanguage'] in ALLOWED_LANGUAGES else 'en'
 		confs['activeCountryCode'] = initConfs['activeCountryCode'] or 'US'
 		confs['baseCurrency'] = initConfs['baseCurrency'] or 'USD'
 		confs['baseUnits'] = initConfs['baseUnits'] if initConfs['baseUnits'] in {'metric', 'kelvin', 'imperial'} else 'metric'
@@ -536,6 +558,8 @@ class Initializer:
 			confs['disableCapture'] = False
 
 		hlcServiceFilePath = Path('/etc/systemd/system/hermesledcontrol.service')
+		hlcConfigFilePath = Path(f'/home/{getpass.getuser()}/hermesLedControl/configuration.yml')
+		hlcConfig = dict()
 		if initConfs['useHLC']:
 
 			hlcDir = Path('/home', getpass.getuser(), 'hermesLedControl')
@@ -548,6 +572,7 @@ class Initializer:
 				subprocess.run(['git', '-C', hlcDir, 'stash', 'clear'])
 
 			if hlcServiceFilePath.exists():
+				subprocess.run(['sudo', 'systemctl', 'stop', 'hermesledcontrol'])
 				subprocess.run(['sudo', 'rm', hlcServiceFilePath])
 
 			subprocess.run(['python3.7', '-m', 'venv', f'/home/{getpass.getuser()}/hermesLedControl/venv'])
@@ -557,106 +582,123 @@ class Initializer:
 				'spidev',
 				'gpiozero',
 				'paho-mqtt',
-				'toml',
-				'numpy'
+				'numpy',
+				'pyyaml'
 			]
 			for req in reqs:
 				subprocess.run([f'/home/{getpass.getuser()}/hermesLedControl/venv/bin/pip', 'install', req])
 
-			serviceFile = Path(f'/home/{getpass.getuser()}/hermesLedControl/hermesledcontrol.service').read_text()
-			serviceFile = serviceFile.replace('%WORKING_DIR%', f'/home/{getpass.getuser()}/hermesLedControl')
-			serviceFile = serviceFile.replace('%EXECSTART%', f'/home/{getpass.getuser()}/hermesLedControl/venv/bin/python main.py --hardware=%HARDWARE% --pattern=projectalice')
-			serviceFile = serviceFile.replace('%USER%', f'{getpass.getuser()}')
+			import yaml
 
-			TEMP.write_text(serviceFile)
-			subprocess.run(['sudo', 'mv', TEMP, hlcServiceFilePath])
+			try:
+				hlcConfig = yaml.safe_load(hlcConfigFilePath.read_text())
+			except yaml.YAMLError as e:
+				self._logger.logFatal(f'Failed loading HLC configurations: {e}')
+			else:
+				hlcConfig['engine'] = 'projectalice'
+				hlcConfig['pathToConfig'] = f'/home/{getpass.getuser()}/ProjectAlice/config.json'
+				hlcConfig['pattern'] = 'projectalice'
+				hlcConfig['enableDoA'] = False
 
 		useFallbackHLC = False
-		if audioHardware in {'respeaker2', 'respeaker4', 'respeaker6MicArray'}:
-			subprocess.run(['sudo', Path(self._rootDir, 'system/scripts/audioHardware/respeakers.sh')])
-			if initConfs['useHLC']:
-				subprocess.run(['sudo', 'sed', '-i', '-e', f's/%HARDWARE%/{audioHardware}/', str(hlcServiceFilePath)])
+		if initConfs['installSound']:
+			if audioHardware in {'respeaker2', 'respeaker4', 'respeaker6MicArray'}:
+				subprocess.run(['sudo', Path(self._rootDir, 'system/scripts/audioHardware/respeakers.sh')])
+				if initConfs['useHLC']:
+					hlcConfig['hardware'] = audioHardware
 
-			settings = Path(f'system/asounds/{audioHardware.lower()}.conf').read_text()
-			confs['asoundConfig'] = settings
+				settings = Path(f'system/asounds/{audioHardware.lower()}.conf').read_text()
+				confs['asoundConfig'] = settings
 
-			dest = Path('/etc/voicecard/asound_2mic.conf')
-			if audioHardware == 'respeaker4':
-				dest = Path('/etc/voicecard/asound_4mic.conf')
-			elif audioHardware == 'respeaker6MicArray':
-				dest = Path('/etc/voicecard/asound_6mic.conf')
+				dest = Path('/etc/voicecard/asound_2mic.conf')
+				if audioHardware == 'respeaker4':
+					dest = Path('/etc/voicecard/asound_4mic.conf')
+				elif audioHardware == 'respeaker6MicArray':
+					dest = Path('/etc/voicecard/asound_6mic.conf')
 
-			subprocess.run(['sudo', 'cp', Path(self._rootDir, 'system', 'asounds', f'{audioHardware.lower()}.conf'), dest])
-			subprocess.run(['sudo', 'cp', Path(self._rootDir, 'system', 'asounds', f'{audioHardware.lower()}.conf'), Path(ASOUND)])
+				subprocess.run(['sudo', 'cp', Path(self._rootDir, 'system', 'asounds', f'{audioHardware.lower()}.conf'), dest])
+				subprocess.run(['sudo', 'cp', Path(self._rootDir, 'system', 'asounds', f'{audioHardware.lower()}.conf'), Path(ASOUND)])
 
-		elif audioHardware == 'respeaker7':
-			subprocess.run(['sudo', Path(self._rootDir, 'system/scripts/audioHardware/respeaker7.sh')])
-			if initConfs['useHLC']:
-				subprocess.run(['sudo', 'sed', '-i', '-e', 's/%HARDWARE%/respeaker7MicArray/', str(hlcServiceFilePath)])
+			elif audioHardware == 'respeaker7':
+				subprocess.run(['sudo', Path(self._rootDir, 'system/scripts/audioHardware/respeaker7.sh')])
+				if initConfs['useHLC']:
+					hlcConfig['hardware'] = 'respeaker7MicArray'
 
-		elif audioHardware == 'respeakerCoreV2':
-			subprocess.run(['sudo', Path(self._rootDir, 'system/scripts/audioHardware/respeakerCoreV2.sh')])
-			if initConfs['useHLC']:
-				subprocess.run(['sudo', 'sed', '-i', '-e', f's/%HARDWARE%/{audioHardware}/', str(hlcServiceFilePath)])
+			elif audioHardware == 'respeakerCoreV2':
+				subprocess.run(['sudo', Path(self._rootDir, 'system/scripts/audioHardware/respeakerCoreV2.sh')])
+				if initConfs['useHLC']:
+					hlcConfig['hardware'] = audioHardware
 
-		elif audioHardware in {'matrixCreator', 'matrixVoice'}:
-			subprocess.run(['sudo', Path(self._rootDir, 'system/scripts/audioHardware/matrix.sh')])
-			subprocess.run(['sudo', 'cp', Path(self._rootDir, 'system', 'asounds', 'matrix.conf'), Path(ASOUND)])
+			elif audioHardware in {'matrixCreator', 'matrixVoice'}:
+				subprocess.run(['sudo', Path(self._rootDir, 'system/scripts/audioHardware/matrix.sh')])
+				subprocess.run(['sudo', 'cp', Path(self._rootDir, 'system', 'asounds', 'matrix.conf'), Path(ASOUND)])
 
-			settings = Path(f'system/asounds/matrix.conf').read_text()
-			confs['asoundConfig'] = settings
+				settings = Path(f'system/asounds/matrix.conf').read_text()
+				confs['asoundConfig'] = settings
 
-			if initConfs['useHLC']:
-				subprocess.run(['sudo', 'sed', '-i', '-e', f's/%HARDWARE%/{audioHardware.lower()}/', str(hlcServiceFilePath)])
+				if initConfs['useHLC']:
+					hlcConfig['hardware'] = audioHardware.lower()
 
-		elif audioHardware == 'googleAIY':
-			subprocess.run(['sudo', Path(self._rootDir, 'system/scripts/audioHardware/aiy.sh')])
-			if initConfs['useHLC']:
-				subprocess.run(['sudo', 'sed', '-i', '-e', 's/%HARDWARE%/googleAIY/', str(hlcServiceFilePath)])
+			elif audioHardware == 'googleAIY':
+				subprocess.run(['sudo', Path(self._rootDir, 'system/scripts/audioHardware/aiy.sh')])
+				if initConfs['useHLC']:
+					hlcConfig['hardware'] = 'googleAIY'
 
-			subprocess.run(['sudo', 'cp', Path(self._rootDir, 'system', 'asounds', 'aiy.conf'), Path(ASOUND)])
-			settings = Path(f'system/asounds/aiy.conf').read_text()
-			confs['asoundConfig'] = settings
+				subprocess.run(['sudo', 'cp', Path(self._rootDir, 'system', 'asounds', 'aiy.conf'), Path(ASOUND)])
+				settings = Path(f'system/asounds/aiy.conf').read_text()
+				confs['asoundConfig'] = settings
 
-		elif audioHardware == 'usbMic':
-			subprocess.run(['sudo', Path(self._rootDir, 'system/scripts/audioHardware/usbmic.sh')])
-			subprocess.run(['sudo', 'cp', Path(self._rootDir, 'system', 'asounds', 'usbmic.conf'), Path(ASOUND)])
+			elif audioHardware == 'usbMic':
+				subprocess.run(['sudo', Path(self._rootDir, 'system/scripts/audioHardware/usbmic.sh')])
+				subprocess.run(['sudo', 'cp', Path(self._rootDir, 'system', 'asounds', 'usbmic.conf'), Path(ASOUND)])
 
-			settings = Path(f'system/asounds/usbmic.conf').read_text()
-			confs['asoundConfig'] = settings
+				settings = Path(f'system/asounds/usbmic.conf').read_text()
+				confs['asoundConfig'] = settings
 
-			useFallbackHLC = True
+				useFallbackHLC = True
 
-		elif audioHardware == 'ps3eye':
-			subprocess.run(['sudo', 'cp', Path(self._rootDir, 'system', 'asounds', 'ps3eye.conf'), Path(ASOUND)])
-			asoundrc = f'/home/{getpass.getuser()}/.asoundrc'
-			subprocess.run(['echo', 'pcm.dsp0 {', '>', asoundrc])
-			subprocess.run(['echo', '    type plug', '>>', asoundrc])
-			subprocess.run(['echo', '    slave.pcm "dmix"', '>>', asoundrc])
-			subprocess.run(['echo', '}', '>>', asoundrc])
+			elif audioHardware == 'ps3eye':
+				subprocess.run(['sudo', 'cp', Path(self._rootDir, 'system', 'asounds', 'ps3eye.conf'), Path(ASOUND)])
+				asoundrc = f'/home/{getpass.getuser()}/.asoundrc'
+				subprocess.run(['echo', 'pcm.dsp0 {', '>', asoundrc])
+				subprocess.run(['echo', '    type plug', '>>', asoundrc])
+				subprocess.run(['echo', '    slave.pcm "dmix"', '>>', asoundrc])
+				subprocess.run(['echo', '}', '>>', asoundrc])
 
-			settings = Path(f'system/asounds/ps3eye.conf').read_text()
-			confs['asoundConfig'] = settings
+				settings = Path(f'system/asounds/ps3eye.conf').read_text()
+				confs['asoundConfig'] = settings
 
-			useFallbackHLC = True
+				useFallbackHLC = True
 
-		elif audioHardware == 'jabra410':
-			subprocess.run(['sudo', 'cp', Path(self._rootDir, 'system', 'asounds', 'jabra410.conf'), Path(ASOUND)])
+			elif audioHardware == 'jabra410':
+				subprocess.run(['sudo', 'cp', Path(self._rootDir, 'system', 'asounds', 'jabra410.conf'), Path(ASOUND)])
 
-			settings = Path(f'system/asounds/jabra410.conf').read_text()
-			confs['asoundConfig'] = settings
+				settings = Path(f'system/asounds/jabra410.conf').read_text()
+				confs['asoundConfig'] = settings
 
-			useFallbackHLC = True
+				useFallbackHLC = True
 
-		if initConfs['useHLC'] and useFallbackHLC:
-			subprocess.run(['sudo', 'sed', '-i', '-e', 's/%HARDWARE%/dummy/', str(hlcServiceFilePath)])
+		if initConfs['useHLC']:
+			if useFallbackHLC:
+				hlcConfig['hardware'] = 'dummy'
+
+			import yaml
+
+			try:
+				confPath = Path(f'/home/{getpass.getuser()}/.config/hermesLedControl/configuration.yml')
+				confPath.parent.mkdir(parents=True, exist_ok=True)
+				confPath.touch(exist_ok=True)
+				confPath.write_text(yaml.safe_dump(hlcConfig))
+			except Exception as e:
+				self._logger.logError(f'Error writing HLC config file: {e}')
+				confs['useHLC'] = False
 
 		sort = dict(sorted(confs.items()))
 
 		try:
 			self._confsFile.write_text(json.dumps(sort, indent='\t'))
 		except Exception as e:
-			self._logger.logFatal(f'An error occured while writting final configuration file: {e}')
+			self._logger.logFatal(f'An error occurred while writing final configuration file: {e}')
 
 		subprocess.run(['sudo', 'rm', '-rf', Path(self._rootDir, 'assistant')])
 
@@ -672,8 +714,6 @@ class Initializer:
 
 		subprocess.run(['sudo', 'systemctl', 'daemon-reload'])
 		subprocess.run(['sudo', 'systemctl', 'enable', 'ProjectAlice'])
-		if initConfs['useHLC']:
-			subprocess.run(['sudo', 'systemctl', 'enable', hlcServiceFilePath.stem])
 
 		self._logger.logWarning('Initializer done with configuring')
 		time.sleep(2)

@@ -1,12 +1,30 @@
+#  Copyright (c) 2021
+#
+#  This file, Tts.py, is part of Project Alice.
+#
+#  Project Alice is free software: you can redistribute it and/or modify
+#  it under the terms of the GNU General Public License as published by
+#  the Free Software Foundation, either version 3 of the License, or
+#  (at your option) any later version.
+#
+#  This program is distributed in the hope that it will be useful,
+#  but WITHOUT ANY WARRANTY; without even the implied warranty of
+#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#  GNU General Public License for more details.
+#
+#  You should have received a copy of the GNU General Public License
+#  along with this program.  If not, see <https://www.gnu.org/licenses/>
+#
+#  Last modified: 2021.04.13 at 12:56:48 CEST
+
 import getpass
+import hashlib
 import re
-import uuid
+import tempfile
 from pathlib import Path
 from re import Match
 from typing import Optional
 
-import hashlib
-import tempfile
 from pydub import AudioSegment
 from pydub.exceptions import CouldntDecodeError
 
@@ -35,6 +53,7 @@ class Tts(ProjectAliceObject):
 		self._lang = ''
 		self._type = ''
 		self._voice = ''
+		self._neuralVoice = False
 
 		self._cacheFile: Path = Path()
 		self._text = ''
@@ -80,7 +99,10 @@ class Tts(ProjectAliceObject):
 		if self._voice not in self._supportedLangAndVoices[self._lang][self._type]:
 			voice = self._voice
 			self._voice = next(iter(self._supportedLangAndVoices[self._lang][self._type]))
+			self._neuralVoice = self._supportedLangAndVoices[self._lang][self._type][self._voice]['neural']
 			self.logWarning(f'Voice **{voice}** not found for the language and type, falling back to **{self._voice}**')
+		else:
+			self._neuralVoice = self._supportedLangAndVoices[self._lang][self._type][self._voice]['neural']
 
 		if not self.TEMP_ROOT.is_dir():
 			self.Commons.runRootSystemCommand(['mkdir', str(self.TEMP_ROOT)])
@@ -182,7 +204,7 @@ class Tts(ProjectAliceObject):
 		self.MqttManager.publish(
 			topic=constants.TOPIC_TTS_FINISHED,
 			payload={
-				'id': session.sessionId,
+				'id'       : session.sessionId,
 				'sessionId': session.sessionId,
 				'deviceUid': session.deviceUid
 			}
@@ -206,7 +228,13 @@ class Tts(ProjectAliceObject):
 		return '<break time="160ms"/>'.join(matching.group(1))
 
 
-	def onSay(self, session: DialogSession):
+	def onSay(self, session: DialogSession) -> None:
+		"""
+		cleans the requested text for speaking if required and prepares the cache
+		Tts provides must redefine this method, but should call it at the start of their redefinition.
+		:param session:
+		:return:
+		"""
 		self._text = self._checkText(session)
 		if self._text:
 			self._cacheFile = self.cacheDirectory() / (self._hash(text=self._text) + '.wav')

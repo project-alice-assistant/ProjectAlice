@@ -1,3 +1,22 @@
+#  Copyright (c) 2021
+#
+#  This file, WidgetManager.py, is part of Project Alice.
+#
+#  Project Alice is free software: you can redistribute it and/or modify
+#  it under the terms of the GNU General Public License as published by
+#  the Free Software Foundation, either version 3 of the License, or
+#  (at your option) any later version.
+#
+#  This program is distributed in the hope that it will be useful,
+#  but WITHOUT ANY WARRANTY; without even the implied warranty of
+#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#  GNU General Public License for more details.
+#
+#  You should have received a copy of the GNU General Public License
+#  along with this program.  If not, see <https://www.gnu.org/licenses/>
+#
+#  Last modified: 2021.04.13 at 12:56:49 CEST
+
 import importlib
 import sqlite3
 from pathlib import Path
@@ -15,7 +34,7 @@ class WidgetManager(Manager):
 	WIDGET_PAGES_TABLE = 'widgetPages'
 
 	DATABASE = {
-		WIDGETS_TABLE              : [
+		WIDGETS_TABLE     : [
 			'id INTEGER PRIMARY KEY',  # NOSONAR
 			'skill TEXT NOT NULL',
 			'name TEXT NOT NULL',
@@ -23,7 +42,7 @@ class WidgetManager(Manager):
 			"configs TEXT NOT NULL DEFAULT '{}'",
 			'page INTEGER NOT NULL DEFAULT 0'
 		],
-		WIDGET_PAGES_TABLE         : [
+		WIDGET_PAGES_TABLE: [
 			'id INTEGER PRIMARY KEY',
 			'icon TEXT NOT NULL',
 			'position INTEGER NOT NULL'
@@ -49,7 +68,7 @@ class WidgetManager(Manager):
 	def loadWidgets(self):
 		count = 0
 		for skill in self.SkillManager.allSkills.values():
-			try: #failed skills don't have any .widgets at all and crash the manager!
+			try:  # failed skills don't have any .widgets at all and crash the manager!
 				if not skill.widgets:
 					continue
 			except:
@@ -63,9 +82,9 @@ class WidgetManager(Manager):
 			allTemplates += widgets
 
 		# Cleanup possible deprecated widgets
-		data = self.databaseFetch(tableName=self.WIDGETS_TABLE, method='all')
+		rows = self.databaseFetch(tableName=self.WIDGETS_TABLE)
 
-		for widget in data:
+		for widget in rows:
 			if widget['skill'] not in self._widgetTemplates or widget['name'] not in allTemplates:
 
 				self.logInfo(f'Widget **{widget["name"]}** is deprecated, removing')
@@ -97,7 +116,7 @@ class WidgetManager(Manager):
 
 		skill = self.SkillManager.getSkillInstance(widgetData['skill'])
 		if not skill:
-			self.logWarning(f'Skill {widgetData["skill"]} for widget {widgetData["name"]} is not instanciated, skipping widget')
+			self.logWarning(f'Skill {widgetData["skill"]} for widget {widgetData["name"]} is not instantiated, skipping widget')
 			return None
 
 		try:
@@ -123,7 +142,7 @@ class WidgetManager(Manager):
 			return None
 
 		if pageId not in self._pages:
-			self.logWarning(f'Tried to add widget **{widgetName}** from skill **{skillName}** to page id **{pageId}** but the page doesn\'t exist')
+			self.logWarning(f'Tried to add widget **{widgetName}** from skill **{skillName}** to page id **{pageId}** but the page does not exist')
 			return None
 
 		instance = self.instanciateWidget({
@@ -140,14 +159,14 @@ class WidgetManager(Manager):
 
 
 	def loadPages(self):
-		data = self.databaseFetch(tableName=self.WIDGET_PAGES_TABLE, method='all')
-		if data:
-			self._pages = {row['id']: WidgetPage(row) for row in data}
+		rows = self.databaseFetch(tableName=self.WIDGET_PAGES_TABLE)
+		if rows:
+			self._pages = {row['id']: WidgetPage(row) for row in rows}
 		else:
 			# Insert default page
 			self.databaseInsert(
 				tableName=self.WIDGET_PAGES_TABLE,
-				values = {
+				values={
 					'icon'    : self.DEFAULT_ICON,
 					'position': 0
 				}
@@ -166,7 +185,7 @@ class WidgetManager(Manager):
 
 			pageId = self.databaseInsert(
 				tableName=self.WIDGET_PAGES_TABLE,
-				values = {
+				values={
 					'icon'    : self.DEFAULT_ICON,
 					'position': maxPos + 1
 				}
@@ -247,24 +266,22 @@ class WidgetManager(Manager):
 		self._widgets.pop(widgetId, None)
 
 
-	def skillRemoved(self, skillName: str):
+	def onSkillDeleted(self, skill: str):
 		# noinspection SqlResolve
 		self.DatabaseManager.delete(
 			tableName=self.WIDGETS_TABLE,
 			callerName=self.name,
 			values={
-				'skill': skillName
+				'skill': skill
 			}
 		)
 
+
+	def skillDeactivated(self, skillName: str):
 		tmp = self._widgets.copy()
 		for wid, widget in tmp.items():
 			if widget.skill == skillName:
 				self._widgets.pop(wid, None)
-
-
-	def skillDeactivated(self, skillName: str):
-		self.skillRemoved(skillName)
 
 
 	def getNextZIndex(self, pageId: int):
@@ -281,7 +298,7 @@ class WidgetManager(Manager):
 		widget: Widget = self._widgets.get(widgetId, None)
 
 		if not widget:
-			self.logWarning('Tried to save a widget position but widget doesn\'t exist')
+			self.logWarning('Tried to save a widget position but widget does not exist')
 			return False
 
 		widget.x = x
@@ -294,7 +311,7 @@ class WidgetManager(Manager):
 		widget: Widget = self._widgets.get(widgetId, None)
 
 		if not widget:
-			self.logWarning('Tried to save a widget size but widget doesn\'t exist')
+			self.logWarning('Tried to save a widget size but widget does not exist')
 			return False
 
 		widget.x = x
@@ -309,10 +326,22 @@ class WidgetManager(Manager):
 		widget: Widget = self._widgets.get(widgetId, None)
 
 		if not widget:
-			self.logWarning('Tried to save widget settings but widget doesn\'t exist')
+			self.logWarning('Tried to save widget settings but widget does not exist')
 			return False
 
 		widget.settings = settings
+		widget.saveToDB()
+		return True
+
+
+	def saveWidgetConfigs(self, widgetId: int, configs: dict) -> bool:  # NOSONAR
+		widget: Widget = self._widgets.get(widgetId, None)
+
+		if not widget:
+			self.logWarning('Tried to save widget settings but widget does not exist')
+			return False
+
+		widget._configs = configs
 		widget.saveToDB()
 		return True
 

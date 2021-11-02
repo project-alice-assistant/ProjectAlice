@@ -1,3 +1,22 @@
+#  Copyright (c) 2021
+#
+#  This file, ApiManager.py, is part of Project Alice.
+#
+#  Project Alice is free software: you can redistribute it and/or modify
+#  it under the terms of the GNU General Public License as published by
+#  the Free Software Foundation, either version 3 of the License, or
+#  (at your option) any later version.
+#
+#  This program is distributed in the hope that it will be useful,
+#  but WITHOUT ANY WARRANTY; without even the implied warranty of
+#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#  GNU General Public License for more details.
+#
+#  You should have received a copy of the GNU General Public License
+#  along with this program.  If not, see <https://www.gnu.org/licenses/>
+#
+#  Last modified: 2021.04.13 at 12:56:48 CEST
+
 import logging
 import random
 import string
@@ -11,17 +30,17 @@ from core.webApi.model.DialogApi import DialogApi
 from core.webApi.model.LoginApi import LoginApi
 from core.webApi.model.MyHomeApi import MyHomeApi
 from core.webApi.model.SkillsApi import SkillsApi
+from core.webApi.model.StateApi import StateApi
 from core.webApi.model.TelemetryApi import TelemetryApi
 from core.webApi.model.UsersApi import UsersApi
 from core.webApi.model.UtilsApi import UtilsApi
 from core.webApi.model.WidgetsApi import WidgetsApi
-from core.webApi.model.StateApi import StateApi
 
 
 class ApiManager(Manager):
 	app = Flask(__name__)
 	app.config['SEND_FILE_MAX_AGE_DEFAULT'] = 0
-	CORS(app, resources={r'/api/*': {'origins': '*'}})
+	CORS(app, resources={r'/api/*': {'origins': '*'}}, expose_headers='*', allow_headers='*')
 
 	_APIS = [UtilsApi, LoginApi, UsersApi, SkillsApi, DialogApi, TelemetryApi, WidgetsApi, StateApi, MyHomeApi, DevicesApi]
 

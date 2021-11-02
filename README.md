@@ -54,11 +54,18 @@ This is only scratching the surface of Project Alice can and will be able to do.
 
 
 ## Project Alice, as in "Resident Evil", isn't that scary?
-Ok, yes, I do admit if you’re familiar with the game it may sound a bit scary, but you have my word no one will get hurt fighting against the Umbrella Corporation :). Bottom line, I just really like the Red Queen in that movie/game series so I decided to name the voice assistant Alice, and that naturally lead to me calling the project, Project Alice.
+Ok, yes, I do admit if you’re familiar with the game it may sound a bit scary, but you have my word no one will get hurt
+fighting against the Umbrella Corporation :). Bottom line, I just really like the Red Queen in that movie/game series,
+so I decided to name the voice assistant Alice, and that naturally lead to me calling the project, Project Alice.
 
 
 ## Where does it run?
-Well, since it's written in Python, as of now on Linux architecture. This means a Raspberry Pi and some other platforms such as the respeaker core or the Matrix Creator are the best choices for a hardware platform. As for which Raspberry Pi, a raspberry 3, 3b, 3b+, 3A+ or 4 for the main unit are good choices. You cannot run Alice on a pi zero but pi zero is more than enough for satellites. A satellite runs a subset of the Alice platform, and sends and receives interactions to the main unit.
+
+Well, since it's written in Python, as of now on Linux architecture. This means a Raspberry Pi and some other platforms
+such as the Respeaker core or the Matrix Creator is the best choices for a hardware platform. As for which Raspberry Pi,
+a raspberry 3, 3b, 3b+, 3A+ or 4 for the main unit are good choices. You cannot run Alice on a pi zero but pi zero is
+more than enough for satellites. A satellite runs a subset of the Alice platform, and sends and receives interactions to
+the main unit.
 
 
 ## Can we contribute?
@@ -71,8 +78,12 @@ Please file an [Issue](https://github.com/project-alice-assistant/ProjectAlice/i
 See our [Roadmap](https://github.com/project-alice-assistant/ProjectAlice/milestones).
 
 ## 📜 License
-Project Alice ships under GPLv3, it means you are free to use and redistribute our code but are not allowed to use any part of it under a closed license. Give the community back what you've been given!
-Regarding third party tools, scripts, material we use, I took care to mention original creators in files and respect their copyright. If something has slept under my supervision know that it was in no case intended and is the result of a mistake and I ask you to contact me directly to solve the issue asap.
+
+Project Alice ships under GPLv3, it means you are free to use and redistribute our code but are not allowed to use any
+part of it under a closed license. Give the community back what you've been given!
+Regarding third party tools, scripts, material we use, I took care to mention original creators in files and respect
+their copyright. If something has slept under my supervision know that it was in no case intended and is the result of a
+mistake, and I ask you to contact me directly to solve the issue asap.
 
 ## Third party copyrights
 If you see or find a copyright breach, feel free to contact us immediately. It is not our intention to steal anyone else's work or plagiarize your work and is just the result of a misunderstanding that we will gladly fix immediately!

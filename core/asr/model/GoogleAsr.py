@@ -1,3 +1,22 @@
+#  Copyright (c) 2021
+#
+#  This file, GoogleAsr.py, is part of Project Alice.
+#
+#  Project Alice is free software: you can redistribute it and/or modify
+#  it under the terms of the GNU General Public License as published by
+#  the Free Software Foundation, either version 3 of the License, or
+#  (at your option) any later version.
+#
+#  This program is distributed in the hope that it will be useful,
+#  but WITHOUT ANY WARRANTY; without even the implied warranty of
+#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#  GNU General Public License for more details.
+#
+#  You should have received a copy of the GNU General Public License
+#  along with this program.  If not, see <https://www.gnu.org/licenses/>
+#
+#  Last modified: 2021.04.13 at 12:56:45 CEST
+
 import os
 from pathlib import Path
 from threading import Event
@@ -10,16 +29,16 @@ from core.asr.model.Recorder import Recorder
 from core.dialog.model.DialogSession import DialogSession
 from core.util.Stopwatch import Stopwatch
 
+
 try:
 	# noinspection PyUnresolvedReferences,PyPackageRequirements
 	from google.cloud.speech import SpeechClient, enums, types
 except:
-	pass # Auto installed
+	pass  # Auto installed
 
 
 # noinspection PyAbstractClass
 class GoogleAsr(Asr):
-
 	NAME = 'Google Asr'
 	DEPENDENCIES = {
 		'system': [],
@@ -41,10 +60,10 @@ class GoogleAsr(Asr):
 		if self._credentialsFile.exists() and not self.ConfigManager.getAliceConfigByName('googleASRCredentials'):
 			self.ConfigManager.updateAliceConfiguration(key='googleASRCredentials', value=self._credentialsFile.read_text(), doPreAndPostProcessing=False)
 
-		self._internetLostFlag = Event() # Set if internet goes down, cut the decoding
-		self._lastResultCheck = 0 # The time the intermediate results were last checked. If actual time is greater than this value + 3, stop processing, internet issues
+		self._internetLostFlag = Event()  # Set if internet goes down, cut the decoding
+		self._lastResultCheck = 0  # The time the intermediate results were last checked. If actual time is greater than this value + 3, stop processing, internet issues
 
-		self._previousCapture = '' # The text that was last captured in the iteration
+		self._previousCapture = ''  # The text that was last captured in the iteration
 
 
 	def onStart(self):
@@ -77,9 +96,9 @@ class GoogleAsr(Asr):
 					requests = (types.StreamingRecognizeRequest(audio_content=content) for content in audioStream)
 					responses = self._client.streaming_recognize(self._streamingConfig, requests)
 					result = self._checkResponses(session, responses)
-				except:
+				except Exception as e:
 					self._internetLostFlag.clear()
-					self.logWarning('Failed ASR request')
+					self.logWarning(f'Failed ASR request: {e}')
 
 			self.end()
 

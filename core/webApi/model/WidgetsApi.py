@@ -1,8 +1,27 @@
+#  Copyright (c) 2021
+#
+#  This file, WidgetsApi.py, is part of Project Alice.
+#
+#  Project Alice is free software: you can redistribute it and/or modify
+#  it under the terms of the GNU General Public License as published by
+#  the Free Software Foundation, either version 3 of the License, or
+#  (at your option) any later version.
+#
+#  This program is distributed in the hope that it will be useful,
+#  but WITHOUT ANY WARRANTY; without even the implied warranty of
+#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#  GNU General Public License for more details.
+#
+#  You should have received a copy of the GNU General Public License
+#  along with this program.  If not, see <https://www.gnu.org/licenses/>
+#
+#  Last modified: 2021.04.13 at 12:56:49 CEST
+
 from flask import jsonify, request, send_from_directory
 from flask_classful import route
 
-from core.webApi.model.Api import Api
 from core.util.Decorators import ApiAuthenticated
+from core.webApi.model.Api import Api
 
 
 class WidgetsApi(Api):
@@ -35,7 +54,7 @@ class WidgetsApi(Api):
 			if not widget:
 				raise Exception
 
-			return jsonify(success=True, widget=widget.toDict())
+			return jsonify(success=True, widget=widget.toDict(isAuth=True))
 		except Exception as e:
 			self.logError(f'Failed adding widget instance: {e}')
 			return jsonify(success=False, message=str(e))
@@ -161,7 +180,9 @@ class WidgetsApi(Api):
 	@ApiAuthenticated
 	def saveSettings(self, widgetId: str):
 		try:
-			return jsonify(success=self.WidgetManager.saveWidgetSettings(int(widgetId), request.json))
+			self.WidgetManager.saveWidgetSettings(int(widgetId), request.json['settings'])
+			self.WidgetManager.saveWidgetConfigs(int(widgetId), request.json['configs'])
+			return jsonify(success=True)
 		except Exception as e:
 			self.logError(f'Failed saving widget settings: {e}')
 			return jsonify(success=False, message=str(e))

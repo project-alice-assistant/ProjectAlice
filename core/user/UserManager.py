@@ -1,3 +1,22 @@
+#  Copyright (c) 2021
+#
+#  This file, UserManager.py, is part of Project Alice.
+#
+#  Project Alice is free software: you can redistribute it and/or modify
+#  it under the terms of the GNU General Public License as published by
+#  the Free Software Foundation, either version 3 of the License, or
+#  (at your option) any later version.
+#
+#  This program is distributed in the hope that it will be useful,
+#  but WITHOUT ANY WARRANTY; without even the implied warranty of
+#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#  GNU General Public License for more details.
+#
+#  You should have received a copy of the GNU General Public License
+#  along with this program.  If not, see <https://www.gnu.org/licenses/>
+#
+#  Last modified: 2021.04.13 at 12:56:47 CEST
+
 from pathlib import Path
 from time import time
 from typing import Any, Dict, Optional
@@ -42,7 +61,7 @@ class UserManager(Manager):
 
 
 	def _loadUsers(self):
-		rows = self.databaseFetch(tableName='users', query='SELECT * FROM :__table__', method='all')
+		rows = self.databaseFetch(tableName='users', query='SELECT * FROM :__table__')
 		for row in rows:
 			user = User(row)
 			self._users[user.name] = user
@@ -80,9 +99,7 @@ class UserManager(Manager):
 
 	# noinspection SqlResolve
 	def addNewUser(self, name: str, access: str = 'guest', state: str = 'home', pinCode: int = None):
-		print(pinCode, self.ConfigManager.getAliceConfigByName('adminPinCode'))
 		hashedPassword = self.getHashedPassword(pinCode or 1234)
-		print(hashedPassword)
 
 		insertId = self.databaseInsert(
 			tableName='users',
@@ -182,7 +199,7 @@ class UserManager(Manager):
 		if user == 'all':
 			for user in self._users:
 				self.updateUserState(name=user, state='goingBed')
-			# self._users[user].state('goingBed')
+		# self._users[user].state('goingBed')
 		else:
 			self._users[user].home = True
 			self._users[user].goingBed = True
@@ -193,7 +210,7 @@ class UserManager(Manager):
 		if user == 'all':
 			for user in self._users:
 				self.updateUserState(name=user, state='sleeping')
-			# self._users[user].state('sleeping')
+		# self._users[user].state('sleeping')
 		else:
 			self._users[user].home = True
 			self._users[user].goingBed = False
@@ -204,7 +221,7 @@ class UserManager(Manager):
 		if user == 'all':
 			for user in self._users:
 				self.updateUserState(name=user, state='home')
-			# self._users[user].state('home')
+		# self._users[user].state('home')
 		else:
 			self._users[user].home = True
 			self._users[user].goingBed = False
@@ -215,7 +232,7 @@ class UserManager(Manager):
 		if user == 'all':
 			for user in self._users:
 				self.updateUserState(name=user, state='out')
-			# self._users[user].state('out')
+		# self._users[user].state('out')
 		else:
 			self._users[user].home = False
 			self._users[user].goingBed = False

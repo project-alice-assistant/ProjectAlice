@@ -1,8 +1,27 @@
+#  Copyright (c) 2021
+#
+#  This file, DialogManager.py, is part of Project Alice.
+#
+#  Project Alice is free software: you can redistribute it and/or modify
+#  it under the terms of the GNU General Public License as published by
+#  the Free Software Foundation, either version 3 of the License, or
+#  (at your option) any later version.
+#
+#  This program is distributed in the hope that it will be useful,
+#  but WITHOUT ANY WARRANTY; without even the implied warranty of
+#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#  GNU General Public License for more details.
+#
+#  You should have received a copy of the GNU General Public License
+#  along with this program.  If not, see <https://www.gnu.org/licenses/>
+#
+#  Last modified: 2021.04.13 at 12:56:46 CEST
+
 import json
 import uuid
 from pathlib import Path
 from threading import Timer
-from typing import Dict, Optional
+from typing import Dict, Optional, Set
 
 from paho.mqtt.client import MQTTMessage
 
@@ -14,12 +33,12 @@ from core.voice.WakewordRecorder import WakewordRecorderState
 
 
 class DialogManager(Manager):
-
 	DATABASE = {
-		'notRecognizedIntents' : [
+		'notRecognizedIntents': [
 			'text TEXT NOT NULL'
 		]
 	}
+
 
 	def __init__(self):
 		super().__init__(databaseSchema=self.DATABASE)
@@ -134,17 +153,18 @@ class DialogManager(Manager):
 			else:
 				self.startSessionTimeout(sessionId=session.sessionId)
 
-				self.MqttManager.publish(
-					topic=constants.TOPIC_ASR_TOGGLE_ON
-				)
+				if not session.textInput:
+					self.MqttManager.publish(
+						topic=constants.TOPIC_ASR_TOGGLE_ON
+					)
 
-				self.MqttManager.publish(
-					topic=constants.TOPIC_ASR_START_LISTENING,
-					payload={
-						'siteId'   : session.deviceUid,
-						'sessionId': session.sessionId
-					}
-				)
+					self.MqttManager.publish(
+						topic=constants.TOPIC_ASR_START_LISTENING,
+						payload={
+							'siteId'   : session.deviceUid,
+							'sessionId': session.sessionId
+						}
+					)
 
 
 	def startSessionTimeout(self, sessionId: str, tempSession: bool = False, delay: float = 0.0):
@@ -221,7 +241,7 @@ class DialogManager(Manager):
 			self.onEndSession(session=session, reason='abortedByUser')
 			return
 
-		if self._captureFeedback:
+		if self._captureFeedback and not session.textOnly and not session.textInput:
 			self.MqttManager.publish(
 				topic=constants.TOPIC_PLAY_BYTES.format(session.deviceUid).replace('#', session.sessionId),
 				payload=bytearray(Path(f'system/sounds/{self.LanguageManager.activeLanguage}/end_of_input.wav').read_bytes())
@@ -252,7 +272,7 @@ class DialogManager(Manager):
 		:param session:
 		:return:
 		"""
-		if 'text' in session.payload: #todo figure out why text sometimes is not filled although input is
+		if 'text' in session.payload:  # todo figure out why text sometimes is not filled although input is
 			session.payload['input'] = session.payload['text']
 		session.payload.setdefault('intent', dict())
 		session.payload['intent']['intentName'] = 'UserRandomAnswer'
@@ -452,10 +472,11 @@ class DialogManager(Manager):
 
 
 	def onSessionError(self, session: DialogSession):
-		self.MqttManager.publish(
-			topic=constants.TOPIC_PLAY_BYTES.format(session.deviceUid).replace('#', session.sessionId),
-			payload=bytearray(Path(f'system/sounds/{self.LanguageManager.activeLanguage}/error.wav').read_bytes())
-		)
+		if not session.textOnly and not session.textInput:
+			self.MqttManager.publish(
+				topic=constants.TOPIC_PLAY_BYTES.format(session.deviceUid).replace('#', session.sessionId),
+				payload=bytearray(Path(f'system/sounds/{self.LanguageManager.activeLanguage}/error.wav').read_bytes())
+			)
 
 
 	def toggleFeedbackSound(self, state: str, deviceUid: str = constants.ALL):
@@ -550,7 +571,7 @@ class DialogManager(Manager):
 		)
 
 
-	def getEnabledByDefaultIntents(self):
+	def getEnabledByDefaultIntents(self) -> Set:
 		return self._enabledByDefaultIntents
 
 

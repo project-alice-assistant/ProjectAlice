@@ -1,11 +1,30 @@
-from flask import jsonify, request, send_from_directory
+#  Copyright (c) 2021
+#
+#  This file, UtilsApi.py, is part of Project Alice.
+#
+#  Project Alice is free software: you can redistribute it and/or modify
+#  it under the terms of the GNU General Public License as published by
+#  the Free Software Foundation, either version 3 of the License, or
+#  (at your option) any later version.
+#
+#  This program is distributed in the hope that it will be useful,
+#  but WITHOUT ANY WARRANTY; without even the implied warranty of
+#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#  GNU General Public License for more details.
+#
+#  You should have received a copy of the GNU General Public License
+#  along with this program.  If not, see <https://www.gnu.org/licenses/>
+#
+#  Last modified: 2021.04.13 at 12:56:49 CEST
+
+from flask import Response, jsonify, request, send_from_directory
 from flask_classful import route
 
 from core.ProjectAliceExceptions import ConfigurationUpdateFailed
 from core.commons import constants
 from core.device.model.DeviceAbility import DeviceAbility
-from core.webApi.model.Api import Api
 from core.util.Decorators import ApiAuthenticated
+from core.webApi.model.Api import Api
 
 
 class UtilsApi(Api):
@@ -18,7 +37,7 @@ class UtilsApi(Api):
 
 	@route('/restart/')
 	@ApiAuthenticated
-	def restart(self):
+	def restart(self) -> Response:
 		try:
 			self.ThreadManager.doLater(interval=2, func=self.ProjectAlice.doRestart)
 			return jsonify(success=True)
@@ -29,7 +48,7 @@ class UtilsApi(Api):
 
 	@route('/reboot/')
 	@ApiAuthenticated
-	def reboot(self):
+	def reboot(self) -> Response:
 		try:
 			self.ThreadManager.doLater(interval=2, func=self.Commons.runRootSystemCommand, args=[['shutdown', '-r', 'now']])
 			return jsonify(success=True)
@@ -40,7 +59,7 @@ class UtilsApi(Api):
 
 	@route('/update/')
 	@ApiAuthenticated
-	def update(self):
+	def update(self) -> Response:
 		try:
 			self.ProjectAlice.updateProjectAlice()
 			return jsonify(success=True)
@@ -50,7 +69,7 @@ class UtilsApi(Api):
 
 
 	@route('/config/', methods=['GET'])
-	def config(self):
+	def config(self) -> Response:
 		"""
 		Returns Alice configs. If authenticated, with passwords, if not, sensitive data is removed
 		"""
@@ -59,8 +78,8 @@ class UtilsApi(Api):
 			configs['aliceIp'] = self.Commons.getLocalIp()
 			configs['apiPort'] = self.ConfigManager.getAliceConfigByName('apiPort')
 			configs['aliceVersion'] = constants.VERSION
-			if not self.UserManager.apiTokenValid(request.headers.get('auth', '') or self.UserManager.apiTokenLevel(request.headers.get('auth')) != 'admin'):
-				configs = {key: value for key, value in configs.items() if not self.ConfigManager.isAliceConfSensitive(key)}
+
+			configs = {key: value if not self.ConfigManager.isAliceConfSensitive(key) else "********" for key, value in configs.items()}
 
 			return jsonify(success=True, config=configs, templates=self.ConfigManager.aliceTemplateConfigurations, categories=self.ConfigManager.aliceConfigurationCategories)
 		except Exception as e:
@@ -69,14 +88,14 @@ class UtilsApi(Api):
 
 
 	@route('/config/', methods=['PATCH'])
-	def setConfig(self):
+	def setConfig(self) -> Response:
 		try:
 			confs = request.json
 			confs.pop('aliceIp', None)
 			confs.pop('apiPort', None)
 			confs.pop('aliceVersion', None)
 			for conf, value in confs.items():
-				if value == self.ConfigManager.getAliceConfigByName(conf):
+				if value == self.ConfigManager.getAliceConfigByName(conf) or value == "********":
 					continue
 
 				try:
@@ -93,7 +112,7 @@ class UtilsApi(Api):
 
 
 	@route('/mqttConfig/', methods=['GET'])
-	def mqttConfig(self):
+	def mqttConfig(self) -> Response:
 		mqttHost = self.ConfigManager.getAliceConfigByName('mqttHost')
 
 		if mqttHost == 'localhost' or mqttHost == '127.0.0.1':
@@ -107,7 +126,7 @@ class UtilsApi(Api):
 
 
 	@route('/i18n/', methods=['GET'])
-	def i18n(self):
+	def i18n(self) -> Response:
 		return jsonify(success=True, data=self.LanguageManager.loadWebUIStrings())
 
 
@@ -117,7 +136,7 @@ class UtilsApi(Api):
 
 
 	@route('/sysCmd/', methods=['POST'])
-	def sysCmd(self):
+	def sysCmd(self) -> Response:
 		cmd = request.form.get('cmd', '')
 		cmd = cmd.split() if ' ' in cmd else [cmd]
 
@@ -130,7 +149,7 @@ class UtilsApi(Api):
 
 
 	@ApiAuthenticated
-	def addWakeword(self) -> dict:
+	def addWakeword(self) -> Response:
 		try:
 			self.SkillManager.getSkillInstance('AliceCore').addNewWakeword()
 			return jsonify(success=True)
@@ -140,7 +159,7 @@ class UtilsApi(Api):
 
 
 	@ApiAuthenticated
-	def tuneWakeword(self) -> dict:
+	def tuneWakeword(self) -> Response:
 		try:
 			self.SkillManager.getSkillInstance('AliceCore').tuneWakeword()
 			return jsonify(success=True)
@@ -150,7 +169,7 @@ class UtilsApi(Api):
 
 
 	@ApiAuthenticated
-	def wipeAll(self) -> dict:
+	def wipeAll(self) -> Response:
 		try:
 			self.ProjectAlice.wipeAll()
 			self.ThreadManager.doLater(interval=2, func=self.ProjectAlice.doRestart)
@@ -161,7 +180,7 @@ class UtilsApi(Api):
 
 
 	@ApiAuthenticated
-	def addUser(self) -> dict:
+	def addUser(self) -> Response:
 		try:
 			uid = request.headers.get('uid', '')
 			if not uid:
@@ -180,7 +199,7 @@ class UtilsApi(Api):
 
 
 	@ApiAuthenticated
-	def train(self) -> dict:
+	def train(self) -> Response:
 		try:
 			self.AssistantManager.checkAssistant(forceRetrain=True)
 			return jsonify(success=True)
@@ -189,7 +208,7 @@ class UtilsApi(Api):
 			return jsonify(success=False, message=str(e))
 
 
-	def pahows(self) -> dict:
+	def pahows(self) -> Response:
 		try:
 			return send_from_directory(f'{self.Commons.rootDir()}/core/webApi/static', 'pahows.js')
 		except Exception as e:
@@ -197,9 +216,32 @@ class UtilsApi(Api):
 			return jsonify(success=False, message=str(e))
 
 
-	def Widget(self) -> dict:
+	def Widget(self) -> Response:
 		try:
 			return send_from_directory(f'{self.Commons.rootDir()}/core/webApi/static', 'Widget.js')
 		except Exception as e:
 			self.logError(f'Error fetching Widget.js {e}')
+			return jsonify(success=False, message=str(e))
+
+
+	@route('/notifications/<notificationId>/', methods=['PATCH'])
+	@ApiAuthenticated
+	def markNotificationRead(self, notificationId: str) -> Response:
+		try:
+			self.WebUINotificationManager.markAsRead(notificationId=int(notificationId))
+			return jsonify(success=True)
+		except Exception as e:
+			self.logError(f'Failed training assistant: {e}')
+			return jsonify(success=False, message=str(e))
+
+
+	@route('/notifications/', methods=['GET'])
+	@ApiAuthenticated
+	def notifications(self) -> Response:
+		try:
+			uid = request.headers.get('uid', '')
+			self.WebUINotificationManager.publishAllNotifications(deviceUid=uid)
+			return jsonify(success=True)
+		except Exception as e:
+			self.logError(f'Failed training assistant: {e}')
 			return jsonify(success=False, message=str(e))

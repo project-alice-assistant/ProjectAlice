@@ -1,3 +1,22 @@
+#  Copyright (c) 2021
+#
+#  This file, TTSManager.py, is part of Project Alice.
+#
+#  Project Alice is free software: you can redistribute it and/or modify
+#  it under the terms of the GNU General Public License as published by
+#  the Free Software Foundation, either version 3 of the License, or
+#  (at your option) any later version.
+#
+#  This program is distributed in the hope that it will be useful,
+#  but WITHOUT ANY WARRANTY; without even the implied warranty of
+#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#  GNU General Public License for more details.
+#
+#  You should have received a copy of the GNU General Public License
+#  along with this program.  If not, see <https://www.gnu.org/licenses/>
+#
+#  Last modified: 2021.07.31 at 15:54:28 CEST
+
 from importlib import import_module, reload
 from pathlib import Path
 
@@ -24,7 +43,7 @@ class TTSManager(Manager):
 		self._loadTTS(self.ConfigManager.getAliceConfigByName('tts').lower())
 
 
-	def _loadTTS(self, userTTS: str = None, user: User = None, forceTts = None):
+	def _loadTTS(self, userTTS: str = None, user: User = None, forceTts=None):
 		self._fallback = None
 		if forceTts:
 			systemTTS = forceTts
@@ -35,7 +54,7 @@ class TTSManager(Manager):
 				systemTTS = userTTS.lower()
 
 		keepTTSOffline = self.ConfigManager.getAliceConfigByName('keepTTSOffline')
-		stayOffline = self.ConfigManager.getAliceConfigByName('stayCompletlyOffline')
+		stayOffline = self.ConfigManager.getAliceConfigByName('stayCompletelyOffline')
 		online = self.InternetManager.online
 
 		self._tts = None
@@ -68,6 +87,7 @@ class TTSManager(Manager):
 		if self._tts is None:
 			self.logWarning("Couldn't install Tts, falling back to PicoTts")
 			from core.voice.model.PicoTts import PicoTts
+
 			self._tts = PicoTts(user)
 
 		if self._tts.online and (not online or keepTTSOffline or stayOffline):
@@ -107,7 +127,7 @@ class TTSManager(Manager):
 
 
 	def onInternetConnected(self):
-		if self.ConfigManager.getAliceConfigByName('stayCompletlyOffline') or self.ConfigManager.getAliceConfigByName('keepTTSOffline'):
+		if self.ConfigManager.getAliceConfigByName('stayCompletelyOffline') or self.ConfigManager.getAliceConfigByName('keepTTSOffline'):
 			return
 
 		if not self._tts.online:

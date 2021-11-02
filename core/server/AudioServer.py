@@ -1,3 +1,22 @@
+#  Copyright (c) 2021
+#
+#  This file, AudioServer.py, is part of Project Alice.
+#
+#  Project Alice is free software: you can redistribute it and/or modify
+#  it under the terms of the GNU General Public License as published by
+#  the Free Software Foundation, either version 3 of the License, or
+#  (at your option) any later version.
+#
+#  This program is distributed in the hope that it will be useful,
+#  but WITHOUT ANY WARRANTY; without even the implied warranty of
+#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#  GNU General Public License for more details.
+#
+#  You should have received a copy of the GNU General Public License
+#  along with this program.  If not, see <https://www.gnu.org/licenses/>
+#
+#  Last modified: 2021.07.28 at 17:03:33 CEST
+
 import io
 import time
 import uuid
@@ -6,7 +25,8 @@ from pathlib import Path
 from typing import Dict, Optional
 
 import sounddevice as sd
-# noinspection PyUnresolvedReferences
+# noinspection PyUnresolvedReferences,PyProtectedMember
+from scipy._lib._ccallback import CData
 from webrtcvad import Vad
 
 from core.ProjectAliceExceptions import PlayBytesStopped
@@ -18,12 +38,12 @@ from core.voice.WakewordRecorder import WakewordRecorderState
 
 
 class AudioManager(Manager):
-
 	SAMPLERATE = 16000
 	FRAMES_PER_BUFFER = 320
 
 	LAST_USER_SPEECH = 'var/cache/lastUserpeech_{}_{}.wav'
 	SECOND_LAST_USER_SPEECH = 'var/cache/secondLastUserSpeech_{}_{}.wav'
+
 
 	def __init__(self):
 		super().__init__()
@@ -121,7 +141,12 @@ class AudioManager(Manager):
 		self._waves[deviceUid].writeframes(frame)
 
 
-	def publishAudio(self):
+	def publishAudio(self) -> None:
+		"""
+		captures the audio and broadcasts it via publishAudioFrames to the topic 'hermes/audioServer/{}/audioFrame'
+		furthermore it will publish VAD_UP and VAD_DOWN when detected
+		:return:
+		"""
 		self.logInfo('Starting audio publisher')
 		self._audioInputStream = sd.RawInputStream(
 			dtype='int16',
@@ -174,7 +199,12 @@ class AudioManager(Manager):
 				self.logDebug(f'Error publishing frame: {e}')
 
 
-	def publishAudioFrames(self, frames: bytes):
+	def publishAudioFrames(self, frames: bytes) -> None:
+		"""
+		receives some audio frames, adds them to the buffer and publishes them to MQTT
+		:param frames:
+		:return:
+		"""
 		with io.BytesIO() as buffer:
 			with wave.open(buffer, 'wb') as wav:
 				wav.setnchannels(1)
@@ -187,10 +217,24 @@ class AudioManager(Manager):
 
 
 	def onPlayBytes(self, payload: bytearray, deviceUid: str, sessionId: str = None, requestId: str = None):
-		if deviceUid != self.DeviceManager.getMainDevice().uid or self.ConfigManager.getAliceConfigByName('disableSound'):
+		"""
+		Handles the playing of arbitrary bytes, be it sound, voice or even music.
+		Triggered via MQTT onPlayBytes topic.
+		Ignoring any request when sound is disabled via config
+		:param payload:
+		:param deviceUid:
+		:param sessionId:
+		:param requestId:
+		:return:
+		"""
+		if deviceUid != self.DeviceManager.getMainDevice().uid or self.ConfigManager.getAliceConfigByName('disableSound') or self.DeviceManager.getDevice(uid=deviceUid).getParam('soundMuted'):
 			return
 
 		requestId = requestId or sessionId or str(uuid.uuid4())
+
+		if self.ConfigManager.getAliceConfigByName('debug'):
+			with Path('/tmp/onPlayBytes.wav').open('wb') as file:
+				file.write(payload)
 
 		self._playing = True
 		with io.BytesIO(payload) as buffer:
@@ -199,14 +243,16 @@ class AudioManager(Manager):
 					channels = wav.getnchannels()
 					framerate = wav.getframerate()
 
-					def streamCallback(outdata, frameCount, _timeInfo, _status):
-						data = wav.readframes(frameCount)
-						if len(data) < len(outdata):
-							outdata[:len(data)] = data
-							outdata[len(data):] = b'\x00' * (len(outdata) - len(data))
+
+					def streamCallback(outData: buffer, frames: int, _time: CData, _status: sd.CallbackFlags):
+						data = wav.readframes(frames)
+						if len(data) < len(outData):
+							outData[:len(data)] = data
+							outData[len(data):] = b'\x00' * (len(outData) - len(data))
 							raise sd.CallbackStop
 						else:
-							outdata[:] = data
+							outData[:] = data
+
 
 					stream = sd.RawOutputStream(
 						dtype='int16',
@@ -219,9 +265,6 @@ class AudioManager(Manager):
 					stream.start()
 					while stream.active:
 						if self._stopPlayingFlag.is_set():
-							stream.stop()
-							stream.close()
-
 							if not sessionId:
 								raise PlayBytesStopped
 
@@ -240,14 +283,14 @@ class AudioManager(Manager):
 							self.DialogManager.onEndSession(session)
 
 						time.sleep(0.1)
-
-					stream.stop()
-					stream.close()
 			except PlayBytesStopped:
 				self.logDebug('Playing bytes stopped')
 			except Exception as e:
 				self.logError(f'Playing wav failed with error: {e}')
 			finally:
+				self.logDebug('Playing bytes finished')
+				stream.stop()
+				stream.close()
 				self._stopPlayingFlag.clear()
 				self._playing = False
 

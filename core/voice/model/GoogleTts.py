@@ -1,3 +1,22 @@
+#  Copyright (c) 2021
+#
+#  This file, GoogleTts.py, is part of Project Alice.
+#
+#  Project Alice is free software: you can redistribute it and/or modify
+#  it under the terms of the GNU General Public License as published by
+#  the Free Software Foundation, either version 3 of the License, or
+#  (at your option) any later version.
+#
+#  This program is distributed in the hope that it will be useful,
+#  but WITHOUT ANY WARRANTY; without even the implied warranty of
+#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#  GNU General Public License for more details.
+#
+#  You should have received a copy of the GNU General Public License
+#  along with this program.  If not, see <https://www.gnu.org/licenses/>
+#
+#  Last modified: 2021.04.13 at 12:56:48 CEST
+
 from pathlib import Path
 
 from core.base.SuperManager import SuperManager
@@ -6,13 +25,14 @@ from core.user.model.User import User
 from core.voice.model.TTSEnum import TTSEnum
 from core.voice.model.Tts import Tts
 
+
 try:
 	# noinspection PyUnresolvedReferences,PyPackageRequirements
 	from google.oauth2.service_account import Credentials
 	# noinspection PyUnresolvedReferences,PyPackageRequirements
 	from google.cloud import texttospeech
 except:
-	pass # Auto installed
+	pass  # Auto installed
 
 
 class GoogleTts(Tts):
@@ -26,6 +46,7 @@ class GoogleTts(Tts):
 		}
 	}
 
+
 	def __init__(self, user: User = None):
 		super().__init__(user)
 		self._online = True
@@ -37,20 +58,20 @@ class GoogleTts(Tts):
 		# https://cloud.google.com/text-to-speech/docs/voices
 		self._supportedLangAndVoices = {
 			'en-US': {
-				'male': {
+				'male'  : {
 					'en-US-Standard-B': {
 						'neural': False
 					},
 					'en-US-Standard-D': {
 						'neural': False
 					},
-					'en-US-Wavenet-A': {
+					'en-US-Wavenet-A' : {
 						'neural': True
 					},
-					'en-US-Wavenet-B': {
+					'en-US-Wavenet-B' : {
 						'neural': True
 					},
-					'en-US-Wavenet-D': {
+					'en-US-Wavenet-D' : {
 						'neural': True
 					}
 				},
@@ -73,17 +94,17 @@ class GoogleTts(Tts):
 				}
 			},
 			'fr-FR': {
-				'male': {
+				'male'  : {
 					'fr-FR-Standard-B': {
 						'neural': False
 					},
 					'fr-FR-Standard-D': {
 						'neural': False
 					},
-					'fr-FR-Wavenet-B': {
+					'fr-FR-Wavenet-B' : {
 						'neural': True
 					},
-					'fr-FR-Wavenet-D': {
+					'fr-FR-Wavenet-D' : {
 						'neural': True
 					}
 				},
@@ -103,14 +124,14 @@ class GoogleTts(Tts):
 				}
 			},
 			'de-DE': {
-				'male': {
+				'male'  : {
 					'de-DE-Standard-B': {
 						'neural': False
 					},
-					'de-DE-Wavenet-B': {
+					'de-DE-Wavenet-B' : {
 						'neural': True
 					},
-					'de-DE-Wavenet-D': {
+					'de-DE-Wavenet-D' : {
 						'neural': True
 					}
 				},
@@ -131,13 +152,13 @@ class GoogleTts(Tts):
 					'it-IT-Standard-C': {
 						'neural': False
 					},
-					'it-IT-Standard-D' : {
+					'it-IT-Standard-D': {
 						'neural': False
 					},
 					'it-IT-Wavenet-C' : {
 						'neural': True
 					},
-					'it-IT-Wavenet-D': {
+					'it-IT-Wavenet-D' : {
 						'neural': True
 					}
 				},
@@ -198,7 +219,7 @@ class GoogleTts(Tts):
 	def onStart(self):
 		super().onStart()
 		self._client = texttospeech.TextToSpeechClient(
-			credentials=Credentials.from_service_account_file(filename=Path(SuperManager.getInstance().commons.rootDir(), 'credentials/googlecredentials.json'))
+			credentials=Credentials.from_service_account_file(filename=str(Path(SuperManager.getInstance().commons.rootDir(), 'credentials/googlecredentials.json')))
 		)
 
 
@@ -210,6 +231,7 @@ class GoogleTts(Tts):
 
 		tmpFile = self.TEMP_ROOT / self._cacheFile.with_suffix('.mp3')
 		if not self._cacheFile.exists():
+			self.logDebug(f'Downloading file **{self._cacheFile.stem}**')
 			imput = texttospeech.types.module.SynthesisInput(ssml=self._text)
 			audio = texttospeech.types.module.AudioConfig(
 				audio_encoding=texttospeech.enums.AudioEncoding.MP3,

@@ -1,3 +1,22 @@
+#  Copyright (c) 2021
+#
+#  This file, DeviceManager.py, is part of Project Alice.
+#
+#  Project Alice is free software: you can redistribute it and/or modify
+#  it under the terms of the GNU General Public License as published by
+#  the Free Software Foundation, either version 3 of the License, or
+#  (at your option) any later version.
+#
+#  This program is distributed in the hope that it will be useful,
+#  but WITHOUT ANY WARRANTY; without even the implied warranty of
+#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#  GNU General Public License for more details.
+#
+#  You should have received a copy of the GNU General Public License
+#  along with this program.  If not, see <https://www.gnu.org/licenses/>
+#
+#  Last modified: 2021.04.15 at 00:08:34
+
 import importlib
 import socket
 import threading
@@ -44,6 +63,9 @@ class DeviceManager(Manager):
 
 	def __init__(self):
 		super().__init__(databaseSchema=self.DATABASE)
+
+		self.loadingDone = False
+		self._loopCounter = 0
 
 		self._devices: Dict[int, Device] = dict()
 		self._deviceLinks: Dict[int, DeviceLink] = dict()
@@ -94,6 +116,7 @@ class DeviceManager(Manager):
 			device.onStart()
 
 		self.logInfo(f'Loaded **{len(self._devices)}** device instance', plural='instance')
+		self.loadingDone = True
 
 
 	def onBooted(self):
@@ -125,14 +148,33 @@ class DeviceManager(Manager):
 		self.MqttManager.publish(topic=constants.TOPIC_CORE_DISCONNECTION)
 
 
+	def onSkillDeleted(self, skill: str):
+		self.skillDeactivated(skillName=skill)
+		# noinspection SqlResolve
+		self.DatabaseManager.delete(
+			tableName=self.DB_DEVICE,
+			callerName=self.name,
+			values={
+				'skillName': skill
+			}
+		)
+
+
+	def skillDeactivated(self, skillName: str):
+		self.removeDeviceTypesForSkill(skillName=skillName)
+		tmp = self._devices.copy()
+		for deviceUid, device in tmp.items():
+			if device.skillName == skillName:
+				self._devices.pop(deviceUid, None)
+
+
 	def loadDevices(self):
 		"""
 		Loads devices from database
 		:return: None
 		"""
-		for row in self.databaseFetch(tableName=self.DB_DEVICE, method='all'):
+		for data in self.databaseFetch(tableName=self.DB_DEVICE):
 			try:
-				data = self.Commons.dictFromRow(row)
 				skillImport = importlib.import_module(f'skills.{data.get("skillName")}.devices.{data.get("typeName")}')
 				klass = getattr(skillImport, data.get('typeName'))
 				device = klass(data)
@@ -146,7 +188,7 @@ class DeviceManager(Manager):
 		Loads location links from database
 		:return: None
 		"""
-		for row in self.databaseFetch(tableName=self.DB_LINKS, method='all'):
+		for row in self.databaseFetch(tableName=self.DB_LINKS):
 			link: DeviceLink = DeviceLink(row)
 			if link.invalid:
 				self.logWarning(f'Device link id **{link.id}** seems deprecated, removing')
@@ -176,22 +218,38 @@ class DeviceManager(Manager):
 		self._heartbeatsCheckTimer = self.ThreadManager.newTimer(interval=2, func=self.checkHeartbeats)
 
 
-	def getDevice(self, deviceId: int = None, uid: str = None) -> Optional[Device]:
+	def getDevice(self, deviceId: int = None, uid: [str, uuid.UUID] = None) -> Optional[Device]:
 		"""
 		Returns a Device with the provided id or uid, if any
 		:param deviceId: The device id
 		:param uid: The device uid
 		:return: Device instance if any or None
 		"""
+		ret = None
 		if deviceId:
-			return self._devices.get(deviceId, None)
+			ret = self._devices.get(deviceId, None)
 		elif uid:
+			if not isinstance(uid, str):
+				uid = str(uid)
 			for device in self._devices.values():
 				if device.uid == uid:
-					return device
-			return None
+					ret = device
 		else:
 			raise Exception('Cannot get a device without id or uid')
+
+		if ret is None and not self.loadingDone:
+			self._loopCounter += 1
+			self.logInfo(f'waiting for deviceManager ({self._loopCounter})')
+			if self._loopCounter > 20:
+				self.logWarning(f'Impossible to find device instance for id/uid {deviceId}/{uid}, skipping')
+				self._loopCounter = 0
+
+				return None
+
+			time.sleep(1)
+			return self.getDevice(deviceId=deviceId, uid=uid)
+		else:
+			return ret
 
 
 	def registerDeviceType(self, skillName: str, data: dict):
@@ -296,11 +354,11 @@ class DeviceManager(Manager):
 
 		ret = list()
 		for device in self._devices.values():
-			if (locationId and device.parentLocation != locationId)\
-			    or (skillName and device.skillName != skillName)\
-				or (deviceType and device.deviceType != deviceType)\
-				or (connectedOnly and not device.connected)\
-				or (abilities and not device.hasAbilities(abilities)):
+			if (locationId and device.parentLocation != locationId) \
+					or (skillName and device.skillName != skillName) \
+					or (deviceType and device.deviceType != deviceType) \
+					or (connectedOnly and not device.connected) \
+					or (abilities and not device.hasAbilities(abilities)):
 				continue
 
 			ret.append(device)
@@ -368,7 +426,6 @@ class DeviceManager(Manager):
 			if 0 < dType.perLocationLimit <= len(self.getDevicesByLocation(locationId, deviceType=dType, connectedOnly=False)):
 				raise MaxDevicePerLocationReached(dType.perLocationLimit)
 
-
 		if not displaySettings:
 			if locationId == 0:
 				displaySettings = {
@@ -383,16 +440,20 @@ class DeviceManager(Manager):
 
 		data = {
 			'abilities'     : abilities,
-			'displayName'   : displayName,
 			'parentLocation': locationId,
 			'settings'      : displaySettings,
 			'deviceParams'  : deviceParam,
 			'skillName'     : skillName,
 			'typeName'      : deviceType,
-			'uid'           : uid or str(uuid.uuid4())
+			'uid'           : uid or str(uuid.uuid4()),
+			'deviceConfigs' : {
+				'displayName': displayName
+			}
 		}
 
-		device = Device(data)
+		skillImport = importlib.import_module(f'skills.{skillName}.devices.{deviceType}')
+		klass = getattr(skillImport, deviceType)
+		device = klass(data)
 		self._devices[device.id] = device
 
 		if device.deviceType.allowLocationLinks:
@@ -421,10 +482,19 @@ class DeviceManager(Manager):
 		if 'parentLocation' in data and data['parentLocation'] != device.parentLocation:
 			self.assertLocationChange(device=device, locationId=data['parentLocation'])
 
+			oldParent = device.parentLocation
 			device.parentLocation = data['parentLocation']
 
 			if not device.linkedTo(data['parentLocation']) and device.getDeviceTypeDefinition().get('allowLocationLinks', False):
-				self.addDeviceLink(targetLocation=data['parentLocation'], deviceId=device.id)
+				# if there is no link to the new parent location, take the current link to the old parent for the
+				linkToOldParent = device.getLink(oldParent)
+				if linkToOldParent:
+					self.logInfo(f'Moving device link {linkToOldParent.id} from {oldParent} to {data["parentLocation"]} ')
+					linkToOldParent.targetLocation = data['parentLocation']
+					linkToOldParent.saveToDB()
+				else:
+					self.logInfo(f'Adding new device link for new parent location {data["parentLocation"]} ')
+					self.addDeviceLink(targetLocation=data['parentLocation'], deviceId=device.id)
 
 		if 'settings' in data:
 			device.updateSettings(data['settings'])
@@ -432,8 +502,8 @@ class DeviceManager(Manager):
 		if 'deviceConfigs' in data:
 			device.updateConfigs(data['deviceConfigs'])
 
-		if 'linksConfigs' in data:
-			for linkId, link in data['linksConfigs'].items():
+		if 'linkConfigs' in data:
+			for linkId, link in data['linkConfigs'].items():
 				self._deviceLinks[int(linkId)].updateConfigs(link['configs'])
 				self._deviceLinks[int(linkId)].saveToDB()
 
@@ -475,6 +545,8 @@ class DeviceManager(Manager):
 			self.deleteDeviceLinks(deviceId=device.id)
 			self._devices.pop(device.id, None)
 			self.DatabaseManager.delete(tableName=self.DB_DEVICE, callerName=self.name, values={'id': device.id})
+
+		self.MqttManager.publish(constants.TOPIC_DEVICE_DELETED, payload={'uid': device.uid, 'id': device.id})
 
 
 	def findUSBPort(self, timeout: int) -> str:
@@ -595,7 +667,7 @@ class DeviceManager(Manager):
 			raise Exception('This device is already linked to that location')
 
 		data = {
-			'deviceId': device.id,
+			'deviceId'      : device.id,
 			'targetLocation': targetLocation
 		}
 
@@ -657,7 +729,7 @@ class DeviceManager(Manager):
 		:param skillName: str
 		:return: Dict deviceTypeName:DeviceType
 		"""
-		return self._deviceTypes.get(skillName, dict())
+		return self._deviceTypes.get(skillName.lower(), dict())
 
 
 	def removeDeviceTypesForSkill(self, skillName: str):
@@ -707,7 +779,7 @@ class DeviceManager(Manager):
 		:return:
 		"""
 		self._broadcastFlag.set()
-		while self._broadcastFlag.isSet():
+		while self._broadcastFlag.is_set():
 			self._broadcastSocket.sendto(bytes(f'{self.Commons.getLocalIp()}:{self._listenPort}:{uid}', encoding='utf8'), ('<broadcast>', self._broadcastPort))
 			try:
 				sock, address = self._listenSocket.accept()
@@ -728,7 +800,7 @@ class DeviceManager(Manager):
 				if replyOnDeviceUid:
 					self.MqttManager.say(text=self.TalkManager.randomTalk('newDeviceAdditionSuccess', skill='system'), deviceUid=replyOnDeviceUid)
 
-				#self.ThreadManager.doLater(interval=5, func=self.WakewordRecorder.uploadToNewDevice, args=[uid])
+				# self.ThreadManager.doLater(interval=5, func=self.WakewordRecorder.uploadToNewDevice, args=[uid])
 
 				self._broadcastSocket.sendto(bytes('ok', encoding='utf8'), (deviceIp, self._broadcastPort))
 				self._stopBroadcasting()
@@ -775,7 +847,7 @@ class DeviceManager(Manager):
 		return next((dev for dev in self._devices.values() if dev.displayName == name), None)
 
 
-# def broadcastToDevices(self, topic: str, payload: dict = None, deviceType: DeviceType = None, location: Location = None, connectedOnly: bool = True):
+	# def broadcastToDevices(self, topic: str, payload: dict = None, deviceType: DeviceType = None, location: Location = None, connectedOnly: bool = True):
 	# 	if not payload:
 	# 		payload = dict()
 	#
@@ -805,43 +877,54 @@ class DeviceManager(Manager):
 	# 	return [x for x in self._deviceLinks.values() if x.getDevice().deviceTypeId == deviceType and (not connectedOnly or x.getDevice().connected)]
 	#
 	#
-	# def getDeviceLinks(self, locationId: int, deviceTypeId: int = None, connectedOnly: bool = False, pairedOnly: bool = False) -> List[DeviceLink]:
-	# 	if locationId and not isinstance(locationId, List):
-	# 		locationId = [locationId]
-	#
-	# 	if deviceTypeId and not isinstance(deviceTypeId, List):
-	# 		deviceTypeId = [deviceTypeId]
-	#
-	# 	return [x for x in self._deviceLinks.values()
-	# 	        if (not locationId or x.locationId in locationId)
-	# 	        and x.getDevice()
-	# 	        and (not deviceTypeId or x.getDevice().deviceTypeId in deviceTypeId)
-	# 	        and (not connectedOnly or x.getDevice().connected)
-	# 	        and (not pairedOnly or x.getDevice().uid)]
-	#
-	#
-	# def getDeviceLinksForSession(self, session: DialogSession, skill: str, noneIsEverywhere: bool = False):
-	# 	#get all relevant deviceTypes
-	# 	devTypes = self.DeviceManager.getDeviceTypesForSkill(skillName=skill)
-	# 	devTypeIds = [dev for dev in devTypes] # keys in dict are Ids
-	#
-	# 	#get all required locations
-	# 	locations = self.LocationManager.getLocationsForSession(session=session, noneIsEverywhere=noneIsEverywhere)
-	# 	locationIds = [loc.id for loc in locations]
-	#
-	# 	return self.DeviceManager.getDeviceLinks(deviceTypeId=devTypeIds, locationId=locationIds)
-	#
-	#
-	# @staticmethod
-	# def groupDeviceLinksByDevice(links: List[DeviceLink]) -> Dict[int, DeviceLink]:
-	# 	# group links by device
-	# 	devGrouped = dict()
-	# 	for link in links:
-	# 		devGrouped.setdefault(link.deviceId,[]).append(link)
-	# 	return devGrouped
-	#
-	#
-	#
-	#
-	# def getLinksForDevice(self, device: Device) -> List[DeviceLink]:
-	# 	return [link for link in self._deviceLinks.values() if link.deviceId == device.id]
+	def getDeviceLinks(self, locationId: int, devTypeNames: Union[str, List] = None, connectedOnly: bool = False, pairedOnly: bool = False) -> List[DeviceLink]:
+		if locationId and not isinstance(locationId, List):
+			locationId = [locationId]
+
+		if devTypeNames and not isinstance(devTypeNames, List):
+			devTypeNames = [devTypeNames]
+
+		return [x for x in self._deviceLinks.values()
+		        if (not locationId or x.targetLocation in locationId)
+		        and x.device is not None
+		        and (not devTypeNames or x.device.deviceTypeName.lower() in devTypeNames)
+		        and (not connectedOnly or x.device.connected)
+		        and (not pairedOnly or x.device.paired)]
+
+
+	def getDeviceLinksForSession(self, session: DialogSession, skill: str, noneIsEverywhere: bool = False):
+		# get all relevant deviceTypes
+		devTypes = self.DeviceManager.getDeviceTypesForSkill(skillName=skill)
+		devTypeNames = [dev for dev in devTypes]  # keys in dict are Ids
+		self.logDebug(f'device type for skill {skill} are {devTypeNames}')
+
+		# get all required locations
+		locations = self.LocationManager.getLocationsForSession(session=session, noneIsEverywhere=noneIsEverywhere)
+		locationIds = [loc.id for loc in locations]
+		self.logDebug(f'And the locations are {locationIds}')
+
+		links = list()
+		for locationId in locationIds:
+			links = links + self.DeviceManager.getDeviceLinks(locationId=locationId, devTypeNames=devTypeNames)
+
+		return links
+
+
+	@staticmethod
+	def groupDeviceLinksByDevice(links: List[DeviceLink]) -> Dict[int, DeviceLink]:
+		if not links or links is None:
+			return dict()
+		# group links by device
+		devGrouped = dict()
+		for link in links:
+			devGrouped.setdefault(link.deviceId, []).append(link)
+		return devGrouped
+
+
+	def getLinksForDevice(self, device: Device) -> List[DeviceLink]:
+		return [link for link in self._deviceLinks.values() if link.deviceId == device.id]
+
+
+	@staticmethod
+	def generateUuid3(skillName: str, unique: str):
+		return uuid.uuid3(uuid.uuid3(uuid.NAMESPACE_OID, skillName), unique)

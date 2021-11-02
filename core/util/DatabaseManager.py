@@ -1,7 +1,26 @@
+#  Copyright (c) 2021
+#
+#  This file, DatabaseManager.py, is part of Project Alice.
+#
+#  Project Alice is free software: you can redistribute it and/or modify
+#  it under the terms of the GNU General Public License as published by
+#  the Free Software Foundation, either version 3 of the License, or
+#  (at your option) any later version.
+#
+#  This program is distributed in the hope that it will be useful,
+#  but WITHOUT ANY WARRANTY; without even the implied warranty of
+#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#  GNU General Public License for more details.
+#
+#  You should have received a copy of the GNU General Public License
+#  along with this program.  If not, see <https://www.gnu.org/licenses/>
+#
+#  Last modified: 2021.04.13 at 12:56:47 CEST
+
 import sqlite3
 import time
-import typing
 from pathlib import Path
+from typing import Any, Dict, List, Optional
 
 from core.ProjectAliceExceptions import DbConnectionError, InvalidQuery
 from core.base.model.Manager import Manager
@@ -11,8 +30,8 @@ from core.commons.CommonsManager import CommonsManager
 
 # noinspection SqlResolve
 class DatabaseManager(Manager):
-
 	TABLE_TAG = ':__table__'
+
 
 	def __init__(self):
 		super().__init__()
@@ -49,7 +68,7 @@ class DatabaseManager(Manager):
 	def getConnection(self) -> sqlite3.Connection:
 		try:
 			if self.ConfigManager.getAliceConfigByName('databaseProfiling'):
-				self.logDebug(f'DB lock aquired by {CommonsManager.getFunctionCaller(depth=5)}->{CommonsManager.getFunctionCaller(depth=4)}->{CommonsManager.getFunctionCaller(depth=3)}')
+				self.logDebug(f'DB lock acquired by {CommonsManager.getFunctionCaller(depth=5)}->{CommonsManager.getFunctionCaller(depth=4)}->{CommonsManager.getFunctionCaller(depth=3)}')
 			con = sqlite3.connect(constants.DATABASE_FILE, timeout=10)
 		except sqlite3.Error as e:
 			self.logError(f'Failed to connect to DB ({constants.DATABASE_FILE}): {e}')
@@ -306,35 +325,31 @@ class DatabaseManager(Manager):
 		return ret
 
 
-	def fetch(self, tableName: str, query: str, callerName: str, values: dict = None, method: str = 'one') -> typing.Union[typing.Dict, sqlite3.Row]:
+	def fetch(self, tableName: str, query: str, callerName: str, values: dict = None) -> List[Dict[str, Any]]:
 		"""
-		Fetch data from database
+		Fetch data from database. Returns a list of results in form of a dict
 		:param values:
 		:param tableName:
 		:param query:
 		:param callerName:
-		:param method: one or all
 		:return: list
 		"""
 		if not values:
 			values = dict()
 
+		rows = list()
 		query = self.basicChecks(tableName, query, callerName, values)
 		if not query:
-			return sqlite3.Row()
+			return rows
 
 		database = self.getConnection()
 		cursor = database.cursor()
-		data = dict()
 
 		try:
 			startTime = time.time()
 			cursor.execute(query, values)
-
-			if method == 'one':
-				data = cursor.fetchone()
-			else:
-				data = cursor.fetchall()
+			for row in cursor:
+				rows.append(self.Commons.dictFromRow(row))
 
 			if self.ConfigManager.getAliceConfigByName('databaseProfiling'):
 				self.logDebug(f'It took {time.time() - startTime} seconds to FETCH from {tableName} DB ')
@@ -347,7 +362,7 @@ class DatabaseManager(Manager):
 			except:
 				pass  # Well, what's to do here....
 
-		return data
+		return rows
 
 
 	def purge(self, tableName: str, callerName: str):
@@ -417,7 +432,7 @@ class DatabaseManager(Manager):
 			database.close()
 
 
-	def basicChecks(self, tableName: str, query: str, callerName: str, values: dict = None) -> typing.Optional[str]:
+	def basicChecks(self, tableName: str, query: str, callerName: str, values: dict = None) -> Optional[str]:
 		if self.TABLE_TAG not in query:
 			self.logWarning(f'The query must use \':__table__\' for the table name. Caller: {callerName}')
 			return None

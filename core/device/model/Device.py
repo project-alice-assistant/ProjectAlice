@@ -1,8 +1,27 @@
+#  Copyright (c) 2021
+#
+#  This file, Device.py, is part of Project Alice.
+#
+#  Project Alice is free software: you can redistribute it and/or modify
+#  it under the terms of the GNU General Public License as published by
+#  the Free Software Foundation, either version 3 of the License, or
+#  (at your option) any later version.
+#
+#  This program is distributed in the hope that it will be useful,
+#  but WITHOUT ANY WARRANTY; without even the implied warranty of
+#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#  GNU General Public License for more details.
+#
+#  You should have received a copy of the GNU General Public License
+#  along with this program.  If not, see <https://www.gnu.org/licenses/>
+#
+#  Last modified: 2021.08.02 at 06:38:49 CEST
+
 import json
 import sqlite3
 import uuid
 from pathlib import Path
-from typing import Any, Dict, List, Union, Optional
+from typing import Any, Dict, List, Optional, Union
 
 from core.base.model.ProjectAliceObject import ProjectAliceObject
 from core.commons import constants
@@ -10,8 +29,8 @@ from core.device.model.DeviceAbility import DeviceAbility
 from core.device.model.DeviceException import DeviceTypeUndefined
 from core.device.model.DeviceType import DeviceType
 from core.myHome.model.Location import Location
-from core.webui.model.ClickReactionAction import ClickReactionAction
-from core.webui.model.OnClickReaction import OnClickReaction
+from core.webui.model.DeviceClickReactionAction import DeviceClickReactionAction
+from core.webui.model.OnDeviceClickReaction import OnDeviceClickReaction
 
 
 class Device(ProjectAliceObject):
@@ -19,7 +38,7 @@ class Device(ProjectAliceObject):
 	def __init__(self, data: Union[sqlite3.Row, Dict]):
 
 		# settings: Holds the device display settings, such as x and y position, size and that stuff
-		# deviceParams: Holds the device non declared params, such as sound muted and so on. These are not controlled values that can be completly random
+		# deviceParams: Holds the device non declared params, such as sound muted and so on. These are not controlled values that can be completely random
 		# deviceConfigs: Holds the device configurations, provided by the device's .config.template. These configs and values are controlled and cannot be random at all!
 		super().__init__()
 
@@ -33,6 +52,8 @@ class Device(ProjectAliceObject):
 		self._skillName: str = data.get('skillName', '')
 		self._parentLocation: int = data.get('parentLocation', 0)
 		self._deviceType: DeviceType = self.DeviceManager.getDeviceType(self._skillName, self._typeName)
+		self._lastIcon: Optional[Path] = None
+		self._iconEtag: str = str(uuid.uuid4())
 
 		self._secret = ''  # Used to verify devices reply from UI
 
@@ -48,7 +69,7 @@ class Device(ProjectAliceObject):
 		self._deviceParams: Dict = self.loadJson(data.get('deviceParams'))
 		self._connected: bool = False
 
-		# Settings are for UI, all the components use the same variable
+		# Settings are for UI, all the components use the same variables
 		self._settings: Dict = self.loadJson(data.get('settings'))
 		settings = {
 			'x': 0,
@@ -88,12 +109,14 @@ class Device(ProjectAliceObject):
 
 	def onStart(self):
 		super().onStart()
-		self.skillInstance.registerDeviceInstance(self)
+		if self.skillInstance:
+			self.skillInstance.registerDeviceInstance(self)
 
 
 	def onStop(self):
 		super().onStop()
-		self.skillInstance.unregisterDeviceInstance(self)
+		if self.skillInstance:
+			self.skillInstance.unregisterDeviceInstance(self)
 
 
 	def onBooted(self):
@@ -127,8 +150,26 @@ class Device(ProjectAliceObject):
 		return True
 
 
+	@property
+	def etag(self) -> str:
+		return self._iconEtag
+
+
+	def refreshEtag(self) -> str:
+		self._iconEtag = str(uuid.uuid4())
+		return self._iconEtag
+
+
+	def checkIconValidity(self, cmp: str) -> bool:
+		return self._iconEtag == cmp
+
+
 	def _loadConfigs(self):
-		displayName = self._deviceConfigs.get('displayName', None)
+		"""
+		Load the config files for this device. Fill the initial values when required and save changes to the DB
+		:return:
+		"""
+		displayName = self._deviceConfigs.get('displayName', self._data.get('displayName', None))
 		if not displayName or displayName.lower() == 'none':
 			displayName = self._typeName if self._typeName else self._deviceType.deviceTypeName
 
@@ -231,42 +272,48 @@ class Device(ProjectAliceObject):
 				query='REPLACE INTO :__table__ (id, uid, parentLocation, typeName, skillName, settings, deviceParams, deviceConfigs) VALUES (:id, :uid, :parentLocation, :typeName, :skillName, :settings, :deviceParams, :deviceConfigs)',
 				callerName=self.DeviceManager.name,
 				values={
-					'id'             : self._id,
-					'uid'            : self._uid,
-					'parentLocation' : self._parentLocation,
-					'typeName'       : self._typeName,
-					'skillName'      : self._skillName,
-					'settings'       : json.dumps(self._settings),
-					'deviceParams'   : json.dumps(self._deviceParams),
-					'deviceConfigs'  : json.dumps(self._deviceConfigs)
+					'id'            : self._id,
+					'uid'           : self._uid,
+					'parentLocation': self._parentLocation,
+					'typeName'      : self._typeName,
+					'skillName'     : self._skillName,
+					'settings'      : json.dumps(self._settings),
+					'deviceParams'  : json.dumps(self._deviceParams),
+					'deviceConfigs' : json.dumps(self._deviceConfigs)
 				}
 			)
-			self.publishDevice()
 		else:
 			deviceId = self.DatabaseManager.insert(
 				tableName=self.DeviceManager.DB_DEVICE,
 				callerName=self.DeviceManager.name,
 				values={
-					'uid'            : self._uid,
-					'parentLocation' : self._parentLocation,
-					'typeName'       : self._typeName,
-					'skillName'      : self._skillName,
-					'settings'       : json.dumps(self._settings),
-					'deviceParams'   : json.dumps(self._deviceParams),
-					'deviceConfigs'  : json.dumps(self._deviceConfigs)
+					'uid'           : self._uid,
+					'parentLocation': self._parentLocation,
+					'typeName'      : self._typeName,
+					'skillName'     : self._skillName,
+					'settings'      : json.dumps(self._settings),
+					'deviceParams'  : json.dumps(self._deviceParams),
+					'deviceConfigs' : json.dumps(self._deviceConfigs)
 				}
 			)
 
 			self._id = deviceId
 
+		self.publishDevice()
+
+
 	def getLocation(self) -> Optional[Location]:
+		"""
+		Returns the location this device is directly assigned to.
+		:return:
+		"""
 		return self.LocationManager.getLocation(locId=self.parentLocation)
 
 
 	def publishDevice(self):
 		"""
 		Whenever something changes on the device, the device data are published over mqtt
-		to refresh the UI per exemple
+		to refresh the UI per example
 		:return:
 		"""
 		self.MqttManager.publish(constants.TOPIC_DEVICE_UPDATED, payload={'uid': self._uid, 'device': self.toDict()})
@@ -280,6 +327,7 @@ class Device(ProjectAliceObject):
 		"""
 		self._uid = uid
 		self.saveToDB()
+		self.broadcastUpdated()
 
 
 	def onDeviceUIReply(self, data: dict):
@@ -288,7 +336,7 @@ class Device(ProjectAliceObject):
 		:param data:
 		:return:
 		"""
-		pass # Implemented by childs
+		pass  # Implemented by children
 
 
 	@property
@@ -299,7 +347,7 @@ class Device(ProjectAliceObject):
 	@property
 	def connected(self) -> bool:
 		"""
-		Returns wheather or not this device is connected
+		Returns whether or not this device is connected
 		:return:
 		"""
 		return self._connected
@@ -395,28 +443,56 @@ class Device(ProjectAliceObject):
 		}
 
 
-	def getDeviceIcon(self) -> Path:
+	def getDeviceIcon(self, path: Optional[Path] = None) -> Path:
 		"""
 		Return the path of the icon representing the current status of the device
 		e.g. a light bulb can be on or off and display its status
+		:warning: YOU MUST CALL THIS SUPER FUNCTION IF YOUR ICON IS DYNAMIC
 		:return: the icon file path
 		"""
-		return Path(f'{self.Commons.rootDir()}/skills/{self.skillName}/devices/img/{self._typeName}.png')
+		if path:
+			if path != self._lastIcon:
+				self._lastIcon = path
+				self.refreshEtag()
+			icon = path
+		else:
+			icon = Path(f'{self.Commons.rootDir()}/skills/{self.skillName}/devices/img/{self._typeName}.png')
+			if icon != self._lastIcon:
+				self._lastIcon = icon
+				self.refreshEtag()
+
+		return icon
 
 
 	def updateSettings(self, settings: dict):
 		self._settings = {**self._settings, **settings}
 		self.saveToDB()
 
+
+	def getConfig(self, key: str, default: Any = False) -> Any:
+		return self._deviceConfigs.get(key, default)
+
+
 	def updateConfigs(self, configs: dict):
 		self._deviceConfigs = {**self._deviceConfigs, **configs}
 		self.saveToDB()
+
+
+	def updateConfig(self, key: str, value: Any):
+		self._deviceConfigs[key] = value
+		self.saveToDB()
+
 
 	def getParam(self, key: str, default: Any = False) -> Any:
 		return self._deviceParams.get(key, default)
 
 
-	def updateParams(self, key: str, value: Any):
+	def updateParams(self, params: dict):
+		self._deviceParams = {**self._deviceParams, **params}
+		self.saveToDB()
+
+
+	def updateParam(self, key: str, value: Any):
 		self._deviceParams[key] = value
 		self.saveToDB()
 
@@ -428,13 +504,13 @@ class Device(ProjectAliceObject):
 		"""
 		if not self.paired:
 			self.DeviceManager.startBroadcastingForNewDevice(self)
-			reaction = OnClickReaction(
-				action=ClickReactionAction.INFO_NOTIFICATION.value,
+			reaction = OnDeviceClickReaction(
+				action=DeviceClickReactionAction.INFO_NOTIFICATION.value,
 				data='notifications.info.pleasePlugDevice'
 			)
 			return reaction.toDict()
 
-		return OnClickReaction(action=ClickReactionAction.NONE.value).toDict()
+		return OnDeviceClickReaction(action=DeviceClickReactionAction.NONE.value).toDict()
 
 
 	def linkedTo(self, targetLocation: int) -> bool:
@@ -457,6 +533,19 @@ class Device(ProjectAliceObject):
 		return links
 
 
+	def getLink(self, targetLocation: int):
+		"""
+		return the link to target location if it exists
+		:param targetLocation: int
+		:return: DeviceLink
+		"""
+		for link in self.DeviceManager.deviceLinks.values():
+			"""self.logInfo(f'I\'m {self.id}, the link is for {link.deviceId} to location {link.targetLocation} ({targetLocation}?)')"""
+			if link.deviceId == self.id and link.targetLocation == targetLocation:
+				return link
+		return None
+
+
 	def __repr__(self):
 		return f'Device({self._id} - {self._deviceConfigs["displayName"]}, uid({self._uid}), Location({self._parentLocation}))'
 
@@ -467,3 +556,7 @@ class Device(ProjectAliceObject):
 
 	def getDeviceTypeDefinition(self) -> dict:
 		return self._deviceType.getDeviceTypeDefinition()
+
+
+	def broadcastUpdated(self):
+		self.MqttManager.publish(constants.TOPIC_DEVICE_UPDATED, payload={'device': self.toDict()})

@@ -1,3 +1,22 @@
+#  Copyright (c) 2021
+#
+#  This file, MqttManager.py, is part of Project Alice.
+#
+#  Project Alice is free software: you can redistribute it and/or modify
+#  it under the terms of the GNU General Public License as published by
+#  the Free Software Foundation, either version 3 of the License, or
+#  (at your option) any later version.
+#
+#  This program is distributed in the hope that it will be useful,
+#  but WITHOUT ANY WARRANTY; without even the implied warranty of
+#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#  GNU General Public License for more details.
+#
+#  You should have received a copy of the GNU General Public License
+#  along with this program.  If not, see <https://www.gnu.org/licenses/>
+#
+#  Last modified: 2021.07.28 at 16:07:59 CEST
+
 import json
 import random
 import re
@@ -19,6 +38,7 @@ from core.device.model.DeviceAbility import DeviceAbility
 class MqttManager(Manager):
 	DEFAULT_CLIENT_EXTENSION = '@mqtt'
 	TOPIC_AUDIO_FRAME = constants.TOPIC_AUDIO_FRAME.replace('{}', '+')
+
 
 	def __init__(self):
 		super().__init__()
@@ -222,12 +242,13 @@ class MqttManager(Manager):
 				if session.notUnderstood <= self.ConfigManager.getAliceConfigByName('notUnderstoodRetries'):
 					session.notUnderstood = session.notUnderstood + 1
 
-					self.continueDialog(
-						sessionId=sessionId,
-						text=self.TalkManager.randomTalk('notUnderstood', skill='system'),
-						probabilityThreshold=session.probabilityThreshold,
-						intentFilter=session.intentFilter
-					)
+					if not self.ConfigManager.getAliceConfigByName('suggestSkillsToInstall'):
+						self.continueDialog(
+							sessionId=sessionId,
+							text=self.TalkManager.randomTalk('notUnderstood', skill='system'),
+							probabilityThreshold=session.probabilityThreshold,
+							intentFilter=session.intentFilter
+						)
 
 					self.broadcast(method=constants.EVENT_INTENT_NOT_RECOGNIZED, exceptions=[self.name], propagateToSkills=True, session=session)
 				else:
@@ -568,7 +589,7 @@ class MqttManager(Manager):
 
 	def topicPlayBytes(self, _client, _data, msg: mqtt.MQTTMessage):
 		"""
-		SessionId is completly custom and does not belong in the Hermes Protocol
+		SessionId is completely custom and does not belong in the Hermes Protocol
 		:param _client:
 		:param _data:
 		:param msg:
@@ -658,8 +679,8 @@ class MqttManager(Manager):
 		"""
 		Initiates a new session by asking something and waiting on user answer
 		:param probabilityThreshold: The override threshold for the user's answer to this question
-		:param currentDialogState: a str representing a state in the dialog, usefull for multiturn dialogs
-		:param canBeEnqueued: wheter or not this can be played later if the dialog manager is busy
+		:param currentDialogState: a str representing a state in the dialog, useful for multi-turn dialogs
+		:param canBeEnqueued: whether or not this can be played later if the dialog manager is busy
 		:param text: str The text to speak
 		:param deviceUid: str Where to ask
 		:param intentFilter: array Filter to force user intents
@@ -668,7 +689,7 @@ class MqttManager(Manager):
 		"""
 
 		if customData is not None and not isinstance(customData, dict):
-			self.logWarning(f'Ask was provided customdata of unsupported type: {customData}')
+			self.logWarning(f'Ask was provided custom data of unsupported type: {customData}')
 			customData = dict()
 
 		user = customData.get('user', constants.UNKNOWN_USER) if customData else constants.UNKNOWN_USER
@@ -686,6 +707,15 @@ class MqttManager(Manager):
 
 			customData = json.loads(customData)
 			customData['wideAskingSession'] = True
+
+		if not deviceUid:
+			device = self.DeviceManager.getMainDevice()
+
+			if not device:
+				self.logWarning('Tried to use **ask** but no device uid found')
+				return
+
+			deviceUid = device.uid
 
 		jsonDict = {
 			'siteId': deviceUid,
@@ -795,7 +825,6 @@ class MqttManager(Manager):
 				deviceUid=deviceUid
 			)
 			return
-
 
 		if text:
 			self._mqttClient.publish(constants.TOPIC_END_SESSION, json.dumps({

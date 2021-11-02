@@ -1,3 +1,22 @@
+#  Copyright (c) 2021
+#
+#  This file, Widget.py, is part of Project Alice.
+#
+#  Project Alice is free software: you can redistribute it and/or modify
+#  it under the terms of the GNU General Public License as published by
+#  the Free Software Foundation, either version 3 of the License, or
+#  (at your option) any later version.
+#
+#  This program is distributed in the hope that it will be useful,
+#  but WITHOUT ANY WARRANTY; without even the implied warranty of
+#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#  GNU General Public License for more details.
+#
+#  You should have received a copy of the GNU General Public License
+#  along with this program.  If not, see <https://www.gnu.org/licenses/>
+#
+#  Last modified: 2021.04.13 at 12:56:49 CEST
+
 import inspect
 import json
 import re
@@ -17,6 +36,7 @@ from core.webui.model.WidgetSizes import WidgetSizes
 class Widget(ProjectAliceObject):
 	DEFAULT_SIZE = WidgetSizes.w_small
 	DEFAULT_OPTIONS = dict()
+
 
 	def __init__(self, data: Union[sqlite3.Row, dict]):
 		super().__init__()
@@ -292,13 +312,14 @@ class Widget(ProjectAliceObject):
 
 	def toDict(self, isAuth: bool = False) -> dict:
 		return {
-			'id'      : self._id,
-			'skill'   : self._skill,
-			'name'    : self._name,
-			'settings': self._settings,
-			'configs' : self._configs if isAuth else dict(),
-			'page'    : self._page,
-			'icon'    : self.icon(),
-			'html'    : self.html(),
-			'css'     : self.css()
+			'id'            : self._id,
+			'skill'         : self._skill,
+			'name'          : self._name,
+			'settings'      : self._settings,
+			'configs'       : self._configs if isAuth else dict(),
+			'configTemplate': self.skillInstance.getWidgetTemplate(self._name),
+			'page'          : self._page,
+			'icon'          : self.icon(),
+			'html'          : self.html(),
+			'css'           : self.css()
 		}

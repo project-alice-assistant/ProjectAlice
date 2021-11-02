@@ -1,7 +1,24 @@
+#  Copyright (c) 2021
+#
+#  This file, SnipsAsr.py, is part of Project Alice.
+#
+#  Project Alice is free software: you can redistribute it and/or modify
+#  it under the terms of the GNU General Public License as published by
+#  the Free Software Foundation, either version 3 of the License, or
+#  (at your option) any later version.
+#
+#  This program is distributed in the hope that it will be useful,
+#  but WITHOUT ANY WARRANTY; without even the implied warranty of
+#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#  GNU General Public License for more details.
+#
+#  You should have received a copy of the GNU General Public License
+#  along with this program.  If not, see <https://www.gnu.org/licenses/>
+#
+#  Last modified: 2021.05.19 at 12:56:45 CEST
+
 import threading
 import time
-
-import subprocess
 from typing import Optional
 
 from core.asr.model.Asr import Asr
@@ -9,7 +26,6 @@ from core.dialog.model.DialogSession import DialogSession
 
 
 class SnipsAsr(Asr):
-
 	NAME = 'Snips Asr'
 	DEPENDENCIES = {
 		'internal': {
@@ -19,7 +35,7 @@ class SnipsAsr(Asr):
 		'external': {
 			'snips-asr-model-en-500mb': 'https://raspbian.snips.ai/stretch/pool/s/sn/snips-asr-model-en-500MB_0.6.0-alpha.4_armhf.deb'
 		},
-		'system': [
+		'system'  : [
 			'libgfortran3'
 		],
 		'pip'     : []
@@ -60,22 +76,6 @@ class SnipsAsr(Asr):
 		if self.LanguageManager.activeLanguage != 'en':
 			raise Exception('Snips generic ASR only for english')
 
-		self._flag.clear()
-		if self._thread and self._thread.is_alive():
-			self._thread.join(timeout=5)
-
-		self._thread: threading.Thread = self.ThreadManager.newThread(name='asrEngine', target=self.run, autostart=False)
-		self._thread.start()
-
-
-	def onStop(self):
-		super().onStop()
-		self._flag.clear()
-		if self._thread and self._thread.is_alive():
-			self.ThreadManager.terminateThread(name='asrEngine')
-
-
-	def run(self):
 		cmd = f'snips-asr --assistant {self.Commons.rootDir()}/assistant --mqtt {self.ConfigManager.getAliceConfigByName("mqttHost")}:{self.ConfigManager.getAliceConfigByName("mqttPort")}'
 
 		if self.ConfigManager.getAliceConfigByName('mqttUser'):
@@ -87,11 +87,9 @@ class SnipsAsr(Asr):
 		cmd += f' --model /usr/share/snips/snips-asr-model-en-500MB'
 		cmd += f' --partial'
 
-		process = subprocess.Popen(cmd.split(), stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+		self.SubprocessManager.runSubprocess(name='SnipsASR', cmd=cmd, autoRestart=True)
 
-		self._flag.set()
-		try:
-			while self._flag.is_set():
-				time.sleep(0.5)
-		finally:
-			process.terminate()
+
+	def onStop(self):
+		super().onStop()
+		self.SubprocessManager.terminateSubprocess(name='SnipsASR')

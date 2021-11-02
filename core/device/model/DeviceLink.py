@@ -1,6 +1,25 @@
+#  Copyright (c) 2021
+#
+#  This file, DeviceLink.py, is part of Project Alice.
+#
+#  Project Alice is free software: you can redistribute it and/or modify
+#  it under the terms of the GNU General Public License as published by
+#  the Free Software Foundation, either version 3 of the License, or
+#  (at your option) any later version.
+#
+#  This program is distributed in the hope that it will be useful,
+#  but WITHOUT ANY WARRANTY; without even the implied warranty of
+#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#  GNU General Public License for more details.
+#
+#  You should have received a copy of the GNU General Public License
+#  along with this program.  If not, see <https://www.gnu.org/licenses/>
+#
+#  Last modified: 2021.04.13 at 12:56:46 CEST
+
 import json
 import sqlite3
-from typing import Dict, Optional, Union
+from typing import Any, Dict, Optional
 
 from core.base.model.ProjectAliceObject import ProjectAliceObject
 from core.device.model.Device import Device
@@ -9,7 +28,7 @@ from core.device.model.DeviceType import DeviceType
 
 class DeviceLink(ProjectAliceObject):
 
-	def __init__(self, data: Union[sqlite3.Row, Dict]):
+	def __init__(self, data: Dict):
 		super().__init__()
 		self._invalid = True
 
@@ -47,6 +66,10 @@ class DeviceLink(ProjectAliceObject):
 
 
 	def _loadConfigs(self):
+		"""
+		Loads and updates the config files for device links
+		:return:
+		"""
 		templates = self._deviceType.linkConfigsTemplates
 		changes = False
 		for configName, configData in templates.items():
@@ -133,6 +156,16 @@ class DeviceLink(ProjectAliceObject):
 		return self._targetLocation
 
 
+	@targetLocation.setter
+	def targetLocation(self, newTarget: int):
+		self._targetLocation = newTarget
+
+
+	@property
+	def deviceType(self) -> Optional[DeviceType]:
+		return self._deviceType
+
+
 	@property
 	def device(self) -> Optional[Device]:
 		return self.DeviceManager.getDevice(deviceId=self._deviceId)
@@ -140,6 +173,14 @@ class DeviceLink(ProjectAliceObject):
 
 	def updateConfigs(self, configs: dict):
 		self._configs = {**self._configs, **configs}
+
+
+	def getConfig(self, key: str, default: Any = False) -> Any:
+		return self._configs.get(key, default)
+
+
+	def __repr__(self):
+		return f'[id: {self._id} from device {self._deviceId} to location {self._targetLocation}. Config: {self._configs}'
 
 
 	def toDict(self):

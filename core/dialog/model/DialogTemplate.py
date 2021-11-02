@@ -1,6 +1,27 @@
+#  Copyright (c) 2021
+#
+#  This file, DialogTemplate.py, is part of Project Alice.
+#
+#  Project Alice is free software: you can redistribute it and/or modify
+#  it under the terms of the GNU General Public License as published by
+#  the Free Software Foundation, either version 3 of the License, or
+#  (at your option) any later version.
+#
+#  This program is distributed in the hope that it will be useful,
+#  but WITHOUT ANY WARRANTY; without even the implied warranty of
+#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#  GNU General Public License for more details.
+#
+#  You should have received a copy of the GNU General Public License
+#  along with this program.  If not, see <https://www.gnu.org/licenses/>
+#
+#  Last modified: 2021.04.13 at 12:56:46 CEST
+
 from __future__ import annotations
 
+import json
 from dataclasses import dataclass, field
+from pathlib import Path
 from typing import Generator, List
 
 from core.dialog.model.DialogTemplateIntent import DialogTemplateIntent
@@ -70,8 +91,6 @@ class DialogTemplate:
 				mySynonyms: List = mySlot.myValues.get('synonyms', {})
 				otherSynonyms: List = otherValue.get('synonyms', list)
 
-				print(mySynonyms)
-
 				for otherSynonym in otherSynonyms:
 					if otherSynonym in mySynonyms:
 						continue
@@ -85,13 +104,21 @@ class DialogTemplate:
 		self.mySlotTypes.pop(slotTypeName, None)
 
 
+	def addUtterancesExtender(self, extender: Path):
+		data = json.loads(extender.read_text())
+
+		for intentName, intent in data.get('intents', dict()).items():
+			for utterance in intent.get('utterances', list()):
+				self.myIntents[intentName].addUtterance(utterance)
+
+
 	def addUtterance(self, text: str, intentName: str):
 		self.myIntents[intentName].addUtterance(text)
 
 
 	def dump(self) -> dict:
 		return {
-			'skill'      : self.skill,
-			'slotTypes'  : [slot.dump() for slot in self.mySlotTypes.values()],
-			'intents'    : [intent.dump() for intent in self.myIntents.values()]
+			'skill'    : self.skill,
+			'slotTypes': [slot.dump() for slot in self.mySlotTypes.values()],
+			'intents'  : [intent.dump() for intent in self.myIntents.values()]
 		}

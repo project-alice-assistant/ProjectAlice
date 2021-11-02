@@ -1,3 +1,22 @@
+#  Copyright (c) 2021
+#
+#  This file, AssistantManager.py, is part of Project Alice.
+#
+#  Project Alice is free software: you can redistribute it and/or modify
+#  it under the terms of the GNU General Public License as published by
+#  the Free Software Foundation, either version 3 of the License, or
+#  (at your option) any later version.
+#
+#  This program is distributed in the hope that it will be useful,
+#  but WITHOUT ANY WARRANTY; without even the implied warranty of
+#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#  GNU General Public License for more details.
+#
+#  You should have received a copy of the GNU General Public License
+#  along with this program.  If not, see <https://www.gnu.org/licenses/>
+#
+#  Last modified: 2021.04.13 at 12:56:45 CEST
+
 import json
 import os
 from datetime import datetime
@@ -10,6 +29,7 @@ from core.base.model.StateType import StateType
 
 class AssistantManager(Manager):
 	STATE = 'projectalice.core.training'
+
 
 	def __init__(self):
 		super().__init__()
@@ -259,3 +279,17 @@ class AssistantManager(Manager):
 				continue
 
 			yield resource
+
+
+	def switchLanguage(self, targetLang: str):
+		"""
+		Switches the assistant language to targetLang
+		:param targetLang: str, the language to switch to
+		:return:
+		"""
+		self.ConfigManager.updateAliceConfiguration(key='activeLanguage', value=targetLang)
+		self.LanguageManager.restart()
+		self.TalkManager.restart()
+		self.ASRManager.restart()
+		self.linkAssistant()
+		self.checkAssistant()

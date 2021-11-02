@@ -1,0 +1,84 @@
+{
+  "nluTraining": {
+	"title": {
+	  "en": "NLU training",
+	  "fr": "NLU training",
+	  "de": "NLU Training"
+	},
+	"body": {
+	  "en": "The NLU is training{}",
+	  "fr": "Entrainement du NLU{}",
+	  "de": "NLU trainiert{}"
+	}
+  },
+  "nluTrainingFailed": {
+	"title": {
+	  "en": "NLU training",
+	  "fr": "NLU training",
+	  "de": "NLU Training"
+	},
+	"body": {
+	  "en": "NLU training failed",
+	  "fr": "Entrainement du NLU échoué",
+	  "de": "NLU Training fehlgeschlagen"
+	}
+  },
+  "nluTrainingDone": {
+	"title": {
+	  "en": "NLU training",
+	  "fr": "NLU training",
+	  "de": "NLU Training"
+	},
+	"body": {
+	  "en": "NLU training done!",
+	  "fr": "Entrainement du NLU terminé!",
+	  "de": "NLU Training abgeschlossen!"
+	}
+  },
+  "skillUpdateAvailable": {
+	"title": {
+	  "en": "Skill update available",
+	  "fr": "Mise à jour skill",
+	  "de": "Skill Update verfügbar"
+	},
+	"body": {
+	  "en": "The skill \"{}\" can be updated to version {}",
+	  "fr": "Le skill \"{}\" peut être mis à jours vers la version {}",
+	  "de": "Der Skill \"{}\" ist in Version {} verfügbar!"
+	}
+  },
+  "skillUpdated": {
+	"title": {
+	  "en": "Skill update",
+	  "fr": "Mise à jour skill",
+	  "de": "Skill Update"
+	},
+	"body": {
+	  "en": "The skill \"{}\" has been updated to version {}",
+	  "fr": "Le skill \"{}\" a été mis à jours vers la version {}",
+	  "de": "Der Skill \"{}\" wurde auf Version {} aktualisiert."
+	}
+  },
+  "aliceUpdated": {
+	"title": {
+	  "en": "Project Alice update",
+	  "fr": "Mise à jours Project Alice",
+	  "de": "Project Alice Update"
+	},
+	"body": {
+	  "en": "Project Alice was just updated",
+	  "fr": "Project Alice a été mis à jours!",
+	  "de": "Project Alice wurde gerade aktualisiert!"
+	}
+  },
+  "coreConfigUpdateWarning": {
+	"title": {
+	  "en": "Core configuration update",
+	  "fr": "Mise à jours configuration système"
+	},
+	"body": {
+	  "en": "The skill\"{}\" wants to modify the setting \"{}\" to the new value \"{}\"",
+	  "fr": "The skill\"{}\" veut modifier le parametre \"{}\" à la valeure \"{}\""
+	}
+  }
+}
