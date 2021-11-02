@@ -17,11 +17,12 @@
 #
 #  Last modified: 2021.04.13 at 12:56:47 CEST
 
+from collections import deque
 from dataclasses import dataclass, field
 from typing import Deque
-from collections import deque
 
 from core.dialog.model import DialogSession
+
 
 @dataclass
 class MultiIntent:

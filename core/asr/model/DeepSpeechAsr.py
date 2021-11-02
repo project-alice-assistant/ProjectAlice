@@ -28,6 +28,7 @@ from core.asr.model.Recorder import Recorder
 from core.dialog.model.DialogSession import DialogSession
 from core.util.Stopwatch import Stopwatch
 
+
 try:
 	import deepspeech
 except:

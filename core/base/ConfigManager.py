@@ -20,9 +20,10 @@ import inspect
 import json
 import logging
 import re
-import sounddevice as sd
 import typing
 from pathlib import Path
+
+import sounddevice as sd
 
 from core.ProjectAliceExceptions import ConfigurationUpdateFailed, VitalConfigMissing
 from core.base.SuperManager import SuperManager
@@ -31,7 +32,6 @@ from core.webui.model.UINotificationType import UINotificationType
 
 
 class ConfigManager(Manager):
-
 	TEMPLATE_FILE = Path('configTemplate.json')
 	CONFIG_FILE = Path('config.json')
 

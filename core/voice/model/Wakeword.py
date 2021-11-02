@@ -18,17 +18,14 @@
 #  Last modified: 2021.04.13 at 12:56:48 CEST
 
 import json
-from pathlib import Path
-
-import tempfile
-
 import shutil
+import tempfile
+from pathlib import Path
 
 from core.base.model.ProjectAliceObject import ProjectAliceObject
 
 
 class Wakeword(ProjectAliceObject):
-
 	"""
 	A wakeword is a hotword that is unique to the user. We can identify a user with it
 	"""

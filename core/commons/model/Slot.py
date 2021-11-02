@@ -18,7 +18,8 @@
 #  Last modified: 2021.04.13 at 12:56:46 CEST
 
 from dataclasses import dataclass, field
-from typing import Dict, Union, Optional
+from typing import Dict, Optional, Union
+
 
 @dataclass
 class Slot:

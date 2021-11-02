@@ -17,18 +17,19 @@
 #
 #  Last modified: 2021.04.13 at 12:56:48 CEST
 
+import io
 import queue
+import struct
 import wave
 from typing import Optional
 
-import io
 import pyaudio
-import struct
 from paho.mqtt.client import MQTTMessage
 
 from core.commons import constants
 from core.dialog.model.DialogSession import DialogSession
 from core.voice.model.WakewordEngine import WakewordEngine
+
 
 try:
 	import pvporcupine

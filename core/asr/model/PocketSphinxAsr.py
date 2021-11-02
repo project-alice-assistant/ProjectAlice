@@ -17,11 +17,10 @@
 #
 #  Last modified: 2021.04.13 at 12:56:45 CEST
 
-from pathlib import Path
-from typing import Optional
-
 import shutil
 import tarfile
+from pathlib import Path
+from typing import Optional
 
 from core.asr.model.ASRResult import ASRResult
 from core.asr.model.Asr import Asr
@@ -29,6 +28,7 @@ from core.asr.model.Recorder import Recorder
 from core.commons import constants
 from core.dialog.model.DialogSession import DialogSession
 from core.util.Stopwatch import Stopwatch
+
 
 try:
 	from pocketsphinx import Decoder

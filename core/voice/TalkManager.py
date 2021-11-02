@@ -18,9 +18,8 @@
 #  Last modified: 2021.04.13 at 12:56:48 CEST
 
 import json
-from pathlib import Path
-
 import random
+from pathlib import Path
 
 from core.base.model.Manager import Manager
 

@@ -22,10 +22,11 @@ import hashlib
 import re
 import tempfile
 from pathlib import Path
-from pydub import AudioSegment
-from pydub.exceptions import CouldntDecodeError
 from re import Match
 from typing import Optional
+
+from pydub import AudioSegment
+from pydub.exceptions import CouldntDecodeError
 
 from core.base.model.ProjectAliceObject import ProjectAliceObject
 from core.commons import constants

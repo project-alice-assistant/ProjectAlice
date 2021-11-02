@@ -17,14 +17,15 @@
 #
 #  Last modified: 2021.04.13 at 12:56:48 CEST
 
+import io
 import wave
 
-import io
 from paho.mqtt.client import MQTTMessage
 
 from core.commons import constants
 from core.dialog.model.DialogSession import DialogSession
 from core.voice.model.WakewordEngine import WakewordEngine
+
 
 try:
 	from precise_runner import PreciseEngine, PreciseRunner, ReadWriteStream
