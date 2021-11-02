@@ -1,7 +1,7 @@
 ---
 ################################################
 #                                              #
-#       Project Alice quick install file       #
+#    Project Alice quick installation file     #
 #           For advanced users only            #
 # Edit the content of  this file to your needs #
 # and   place   it in  /boot/ProjectAlice.yaml #
@@ -30,7 +30,7 @@ keepYAMLBackup: no
 # Set the admin pin code. This code will allow you to access the interface. Only numbers, 4 digits
 adminPinCode: 1234
 
-# Enter Wifi credentials for automatic adding of tasmota/zigbee/netatmo devices even when Alice has wired access
+# Enter Wi-Fi credentials for automatic adding of tasmota/zigbee/netatmo devices even when Alice has wired access
 useWifi: yes
 wifiNetworkName:
 wifiWPAPass:
@@ -100,7 +100,7 @@ probabilityThreshold: 0.5
 # If set to yes Alice will only answer with shorter answers, when available
 shortReplies: no
 
-# If set to yes Alice will whisper instead of using short answers when you are sleeping. Currently only available with Amazon Tts
+# If set to yes Alice will whisper instead of using short answers when you are sleeping. Currently, only available with Amazon Tts
 whisperWhenSleeping: no
 
 # Either 'pocketsphinx', 'deepspeech', 'snips' (EN only) or 'google'
@@ -118,9 +118,9 @@ awsRegion: eu-central-1
 awsAccessKey:
 awsSecretKey:
 
-# Github - Github limits the api calls to 60 per hour unless you create a token (free) for your account
-# Github is used to keep your skills up to date and install new ones as well as updating Project Alice
-# This is not mendatory but strongly recommanded https://help.github.com/en/articles/creating-a-personal-access-token-for-the-command-line
+# GitHub - GitHub limits the api calls to 60 per hour unless you create a token (free) for your account
+# GitHub is used to keep your skills up to date and install new ones as well as updating Project Alice
+# This is not mandatory but strongly recommended https://help.github.com/en/articles/creating-a-personal-access-token-for-the-command-line
 githubUsername:
 githubToken:
 

@@ -18,7 +18,6 @@
 #  Last modified: 2021.04.13 at 12:56:48 CEST
 
 import getpass
-import re
 from pathlib import Path
 
 from core.base.SuperManager import SuperManager

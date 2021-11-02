@@ -22,9 +22,10 @@ import socket
 import threading
 import time
 import uuid
+from typing import Dict, List, Optional, Union
+
 from paho.mqtt.client import MQTTMessage
 from serial.tools import list_ports
-from typing import Dict, List, Optional, Union
 
 from core.base.model.Manager import Manager
 from core.commons import constants
@@ -903,8 +904,11 @@ class DeviceManager(Manager):
 		locationIds = [loc.id for loc in locations]
 		self.logDebug(f'And the locations are {locationIds}')
 
-		# TODO debug me, locationId is not a list
-		return self.DeviceManager.getDeviceLinks(locationId=locationIds, devTypeNames=devTypeNames)
+		links = list()
+		for locationId in locationIds:
+			links = links + self.DeviceManager.getDeviceLinks(locationId=locationId, devTypeNames=devTypeNames)
+
+		return links
 
 
 	@staticmethod

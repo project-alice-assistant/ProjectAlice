@@ -221,12 +221,12 @@ class WakewordRecorder(Manager):
 			zipPath.unlink()
 
 		self.logInfo(f'Packing wakeword {wakewordName}')
-		shutil.make_archive(base_name=zipPath.with_suffix(''), format='zip', root_dir=str(path))
+		shutil.make_archive(base_name=str(zipPath.with_suffix('')), format='zip', root_dir=str(path))
 
 		return wakewordName, zipPath
 
 
-	def getUserWakeword(self, username: str) -> Optional[str]:
+	def getUserWakeword(self, username: str) -> Optional[Path]:
 		wakeword = Path(f'{self.Commons.rootDir()}/trained/hotwords/snips_hotword/{username}')
 		if not wakeword.exists():
 			return None

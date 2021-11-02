@@ -23,7 +23,6 @@ import psutil as psutil
 
 from core.base.model.Manager import Manager
 from core.commons import constants
-from core.webui.model.UINotificationType import UINotificationType
 
 
 class WebUIManager(Manager):

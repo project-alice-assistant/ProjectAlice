@@ -19,16 +19,16 @@
 
 
 import getpass
-import traceback
-
 import importlib
 import json
 import os
-import requests
 import shutil
 import threading
+import traceback
 from pathlib import Path
-from typing import Dict, List, Optional
+from typing import Dict, List, Optional, Union
+
+import requests
 
 from core.ProjectAliceExceptions import AccessLevelTooLow, GithubNotFound, GithubRateLimit, GithubTokenFailed, SkillNotConditionCompliant, SkillStartDelayed, SkillStartingFailed
 from core.base.SuperManager import SuperManager
@@ -76,7 +76,7 @@ class SkillManager(Manager):
 		# These are dict of the skills, with name: skill instance
 		self._activeSkills: Dict[str, AliceSkill] = dict()
 		self._deactivatedSkills: Dict[str, AliceSkill] = dict()
-		self._failedSkills: Dict[str, FailedAliceSkill] = dict()
+		self._failedSkills: Dict[str, Union[AliceSkill, FailedAliceSkill]] = dict()
 
 		self._postBootSkillActions = dict()
 

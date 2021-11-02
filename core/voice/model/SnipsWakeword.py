@@ -17,11 +17,7 @@
 #
 #  Last modified: 2021.05.19 at 12:56:48 CEST
 
-import subprocess
-import threading
-import time
 from pathlib import Path
-from typing import Optional
 
 from core.voice.model.WakewordEngine import WakewordEngine
 

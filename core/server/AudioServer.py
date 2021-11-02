@@ -25,7 +25,7 @@ from pathlib import Path
 from typing import Dict, Optional
 
 import sounddevice as sd
-# noinspection PyUnresolvedReferences
+# noinspection PyUnresolvedReferences,PyProtectedMember
 from scipy._lib._ccallback import CData
 from webrtcvad import Vad
 

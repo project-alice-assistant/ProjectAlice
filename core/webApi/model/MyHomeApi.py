@@ -318,12 +318,13 @@ class MyHomeApi(Api):
 			return jsonify(success=False, message=str(e))
 
 
+	# noinspection PyUnusedLocal
 	@route('/devices/<deviceId>/<etag>/device.png', methods=['GET'])
 	def getDeviceIcon(self, deviceId: str, etag: str) -> Response:
 		"""
 		Returns the icon of a device.
 		:param deviceId:
-		:param etag:
+		:param etag: Is only used by the browser caching mechanisms
 		:return:
 		"""
 		file = None

@@ -25,6 +25,7 @@ from core.user.model.User import User
 from core.voice.model.TTSEnum import TTSEnum
 from core.voice.model.Tts import Tts
 
+
 try:
 	# noinspection PyUnresolvedReferences,PyPackageRequirements
 	from google.oauth2.service_account import Credentials
@@ -217,7 +218,7 @@ class GoogleTts(Tts):
 	def onStart(self):
 		super().onStart()
 		self._client = texttospeech.TextToSpeechClient(
-			credentials=Credentials.from_service_account_file(filename=Path(SuperManager.getInstance().commons.rootDir(), 'credentials/googlecredentials.json'))
+			credentials=Credentials.from_service_account_file(filename=str(Path(SuperManager.getInstance().commons.rootDir(), 'credentials/googlecredentials.json')))
 		)
 
 

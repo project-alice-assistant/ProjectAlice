@@ -17,7 +17,6 @@
 #
 #  Last modified: 2021.05.19 at 12:56:45 CEST
 
-import subprocess
 import threading
 import time
 from typing import Optional

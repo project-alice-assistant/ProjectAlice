@@ -17,8 +17,6 @@
 #
 #  Last modified: 2021.04.13 at 12:56:48 CEST
 
-import re
-
 from core.base.SuperManager import SuperManager
 from core.dialog.model.DialogSession import DialogSession
 from core.user.model.User import User
