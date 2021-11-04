@@ -719,34 +719,36 @@ class SkillManager(Manager):
 						self.logError(f'Error stopping "{skillName}" for update: {e}')
 						raise
 
-				gitCloner = GithubCloner(baseUrl=f'{constants.GITHUB_URL}/skill_{skillName}.git', dest=directory, skillName=skillName)
+				skill = AliceSkill()
 
-				try:
-					gitCloner.clone(skillName=skillName)
-					self.logInfo('Skill successfully downloaded')
-					self._installSkill(res)
-					skillsToBoot[skillName] = {
-						'update': updating
-					}
-				except (GithubTokenFailed, GithubRateLimit):
-					self.logError('Failed cloning skill')
-					raise
-				except GithubNotFound:
-					if self.ConfigManager.getAliceConfigByName('devMode'):
-						if not Path(f'{self.Commons.rootDir}/skills/{skillName}').exists() or not \
-								Path(f'{self.Commons.rootDir}/skills/{skillName}/{skillName.py}').exists() or not \
-								Path(f'{self.Commons.rootDir}/skills/{skillName}/dialogTemplate').exists() or not \
-								Path(f'{self.Commons.rootDir}/skills/{skillName}/talks').exists():
-							self.logWarning(f'Skill "{skillName}" cannot be installed in dev mode due to missing base files')
-						else:
-							self._installSkill(res)
-							skillsToBoot[skillName] = {
-								'update': updating
-							}
-						continue
-					else:
-						self.logWarning(f'Skill "{skillName}" is not available on Github, cannot install')
-						raise
+				# gitCloner = GithubCloner(baseUrl=f'{constants.GITHUB_URL}/skill_{skillName}.git', dest=directory, skillName=skillName)
+				#
+				# try:
+				# 	gitCloner.cloneSkill()
+				# 	self.logInfo('Skill successfully downloaded')
+				# 	self._installSkill(res)
+				# 	skillsToBoot[skillName] = {
+				# 		'update': updating
+				# 	}
+				# except (GithubTokenFailed, GithubRateLimit):
+				# 	self.logError('Failed cloning skill')
+				# 	raise
+				# except GithubNotFound:
+				# 	if self.ConfigManager.getAliceConfigByName('devMode'):
+				# 		if not Path(f'{self.Commons.rootDir}/skills/{skillName}').exists() or not \
+				# 				Path(f'{self.Commons.rootDir}/skills/{skillName}/{skillName.py}').exists() or not \
+				# 				Path(f'{self.Commons.rootDir}/skills/{skillName}/dialogTemplate').exists() or not \
+				# 				Path(f'{self.Commons.rootDir}/skills/{skillName}/talks').exists():
+				# 			self.logWarning(f'Skill "{skillName}" cannot be installed in dev mode due to missing base files')
+				# 		else:
+				# 			self._installSkill(res)
+				# 			skillsToBoot[skillName] = {
+				# 				'update': updating
+				# 			}
+				# 		continue
+				# 	else:
+				# 		self.logWarning(f'Skill "{skillName}" is not available on Github, cannot install')
+				# 		raise
 
 			except SkillNotConditionCompliant as e:
 				self.logInfo(f'Skill "{skillName}" does not comply to "{e.condition}" condition, required "{e.conditionValue}"')

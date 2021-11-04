@@ -43,8 +43,12 @@ from core.user.model.AccessLevels import AccessLevel
 
 class AliceSkill(ProjectAliceObject):
 
-	def __init__(self, supportedIntents: Iterable = None, databaseSchema: dict = None, **kwargs):
+	def __init__(self, supportedIntents: Iterable = None, databaseSchema: dict = None, isNew: bool = False, **kwargs):
 		super().__init__(**kwargs)
+
+		if isNew:
+			return
+
 		try:
 			self._skillPath = Path(inspect.getfile(self.__class__)).parent
 			self._installFile = Path(inspect.getfile(self.__class__)).with_suffix('.install')

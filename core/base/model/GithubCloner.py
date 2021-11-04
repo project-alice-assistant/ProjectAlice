@@ -23,7 +23,7 @@ from pathlib import Path
 
 import requests
 from dulwich.errors import NotGitRepository
-from dulwich.porcelain import RemoteExists, clone, commit, fetch, pull, push, remote_add, status
+from dulwich import porcelain as git
 from dulwich.repo import Repo
 
 from core.base.SuperManager import SuperManager
@@ -39,9 +39,14 @@ class GithubCloner(ProjectAliceObject):
 		self._baseUrl = baseUrl
 		self._dest = dest
 		self._skillName = skillName
-		self._repo = None
-		if skillName and skillName in self.SkillManager.allSkills:
-			self._modified = self.SkillManager.allSkills[skillName]['modified']
+
+		if dest.exists():
+			self._repo = Repo(dest)
+		else:
+			self._repo = Repo.init(dest, mkdir=True)
+
+		if skillName:
+			self._modified = self.SkillManager.allSkills.get(skillName, dict()).get('modified', False)
 		else:
 			self._modified = False
 
@@ -67,24 +72,20 @@ class GithubCloner(ProjectAliceObject):
 		return cls.getGithubAuth() is not None
 
 
-	def clone(self, skillName: str) -> bool:
+	def cloneSkill(self):
 		"""
-		Clone a skill from github to the skills folder
+		Clones a skill from github to the skills folder
 		This will stash and clean all changes that have been made locally
-		:param skillName:
 		:return:
 		"""
-		if not self._dest.exists():
-			self._dest.mkdir(parents=True)
-		else:
-			if Path(self._dest / '.git').exists():
-				self.Commons.runSystemCommand(['git', '-C', str(self._dest), 'stash'])
-				self.Commons.runSystemCommand(['git', '-C', str(self._dest), 'clean', '-df'])
-			else:
-				shutil.rmtree(str(self._dest))
-				self._dest.mkdir(parents=True)
+		try:
+			self._repo = Repo.init(self._dest, mkdir=True)
 
-		return self._doClone(skillName)
+			git.stash_push(self._repo)
+			git.clean(self._repo)
+			git.clone(source=self._baseUrl, target=f'skills/{self._skillName}')
+		except Exception:
+			raise
 
 
 	def _doClone(self, skillName: str) -> bool:
@@ -171,7 +172,10 @@ class GithubCloner(ProjectAliceObject):
 
 
 	def getRemote(self, AliceSK: bool = False, origin: bool = False, noToken: bool = False):  # NOSONAR
-		tokenPrefix = f'{self.ConfigManager.getAliceConfigByName("githubUsername")}:{self.ConfigManager.getAliceConfigByName("githubToken")}@'
+		tokenPrefix = ''
+		if self.ConfigManager.getAliceConfigByName('githubUsername') and self.ConfigManager.getAliceConfigByName('githubToken'):
+			tokenPrefix = f'{self.ConfigManager.getAliceConfigByName("githubUsername")}:{self.ConfigManager.getAliceConfigByName("githubToken")}@'
+
 		if self._skillName:
 			if AliceSK:
 				return f'https://{"" if noToken else tokenPrefix}github.com/{self.ConfigManager.getAliceConfigByName("githubUsername")}/skill_{self._skillName}.git'
@@ -229,11 +233,11 @@ class GithubCloner(ProjectAliceObject):
 
 
 	def pull(self, refSpecs: str = b'master'):
-		pull(repo=self.repo, remote_location=self.getRemote(), refspecs=refSpecs)
+		git.pull(repo=self.repo, remote_location=self.getRemote(), refspecs=refSpecs)
 
 
 	def fetch(self):
-		remoteRefs = fetch(repo=self.repo, remote_location=self.getRemote())
+		remoteRefs = git.fetch(repo=self.repo, remote_location=self.getRemote())
 		for key, value in remoteRefs.items():
 			self.repo.refs[key] = value
 
@@ -247,10 +251,10 @@ class GithubCloner(ProjectAliceObject):
 		create a repository online and clone it to the skills folder - only afterwards fill it with files by AliceSK
 		:return:
 		"""
-		clone(source=self.getRemote(), target=f'skills/{self._skillName}')
+		git.clone(source=self.getRemote(), target=f'skills/{self._skillName}')
 
 		self.repo = Repo.init(f'skills/{self._skillName}')
-		remote_add(repo=self.repo, name=f'AliceSK', url=self.getRemote())
+		git.remote_add(repo=self.repo, name=f'AliceSK', url=self.getRemote())
 
 		return True
 
@@ -260,7 +264,7 @@ class GithubCloner(ProjectAliceObject):
 		add all changes to the current tree
 		:return:
 		"""
-		stat = status(self.repo)
+		stat = git.status(self.repo)
 		self.repo.stage(stat.unstaged + stat.untracked)
 		return True
 
@@ -271,7 +275,7 @@ class GithubCloner(ProjectAliceObject):
 		:param message:
 		:return:
 		"""
-		commit(repo=self.repo, message=message)
+		git.commit(repo=self.repo, message=message)
 		return True
 
 
@@ -280,7 +284,7 @@ class GithubCloner(ProjectAliceObject):
 		push the skills changes to AliceSK upstream
 		:return:
 		"""
-		push(repo=self.repo, remote_location=self.getRemote(), refspecs=b'master')
+		git.push(repo=self.repo, remote_location=self.getRemote(), refspecs=b'master')
 		return True
 
 
@@ -310,13 +314,13 @@ class GithubCloner(ProjectAliceObject):
 		except Exception:
 			return False
 		try:
-			remote_add(repo=self.repo, name=b'origin', url=self.getRemote(origin=True))
-		except RemoteExists:
+			git.remote_add(repo=self.repo, name=b'origin', url=self.getRemote(origin=True))
+		except git.RemoteExists:
 			pass
 		try:
 			if aliceSK:
-				remote_add(repo=self.repo, name=b'AliceSK', url=self.getRemote(AliceSK=True))
-		except RemoteExists:
+				git.remote_add(repo=self.repo, name=b'AliceSK', url=self.getRemote(AliceSK=True))
+		except git.RemoteExists:
 			pass
 		return True
 
@@ -345,10 +349,10 @@ class GithubCloner(ProjectAliceObject):
 		rep: Repo = Repo(f'skills/{skillName}')
 		self.logInfo(f'got {rep} in {rep.path}')
 
-		stat = status(rep)
+		stat = git.status(rep)
 		self.logInfo(f'statstaged {stat.staged}')
 		self.logInfo(f'statuntrack {stat.untracked}')
 		self.logInfo(f'statunstag {stat.unstaged}')
 		rep.stage(stat.unstaged + stat.untracked)
-		self.logInfo(f'commit {commit(repo=rep, message="pushed by AliceSK")}')
-		self.logInfo(f'push {push(repo=rep, remote_location=self.getRemote(), refspecs=b"master")}')
+		self.logInfo(f'commit {git.commit(repo=rep, message="pushed by AliceSK")}')
+		self.logInfo(f'push {git.push(repo=rep, remote_location=self.getRemote(), refspecs=b"master")}')
