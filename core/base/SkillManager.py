@@ -30,7 +30,7 @@ from typing import Dict, List, Optional, Union
 
 import requests
 
-from core.ProjectAliceExceptions import AccessLevelTooLow, GithubNotFound, GithubRateLimit, GithubTokenFailed, SkillNotConditionCompliant, SkillStartDelayed, SkillStartingFailed
+from core.ProjectAliceExceptions import AccessLevelTooLow, GithubNotFound, SkillNotConditionCompliant, SkillStartDelayed, SkillStartingFailed
 from core.base.SuperManager import SuperManager
 from core.base.model import Intent
 from core.base.model.AliceSkill import AliceSkill
@@ -712,14 +712,18 @@ class SkillManager(Manager):
 
 				self.checkSkillConditions(installFile)
 
-				if skillName in self._activeSkills:
-					try:
-						self._activeSkills[skillName].onStop()
-					except Exception as e:
-						self.logError(f'Error stopping "{skillName}" for update: {e}')
-						raise
+				if not updating:
+					skill = AliceSkill(isNew=True)
+				else:
+					skill = self._skillList[skillName]
+					if skillName in self._activeSkills:
+						try:
+							self._activeSkills[skillName].onStop()
+						except Exception as e:
+							self.logError(f'Error stopping "{skillName}" for update: {e}')
+							raise
 
-				skill = AliceSkill()
+				skill.clone(f'{constants.GITHUB_URL}/skill_{skillName}.git', skillName=skillName)
 
 				# gitCloner = GithubCloner(baseUrl=f'{constants.GITHUB_URL}/skill_{skillName}.git', dest=directory, skillName=skillName)
 				#

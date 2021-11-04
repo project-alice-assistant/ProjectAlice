@@ -28,6 +28,8 @@ from pathlib import Path
 from typing import Any, Dict, Iterable, List, Optional, Union
 
 import flask
+from dulwich import porcelain as git
+from dulwich.repo import Repo
 from markdown import markdown
 from paho.mqtt import client as MQTTClient
 
@@ -46,11 +48,14 @@ class AliceSkill(ProjectAliceObject):
 	def __init__(self, supportedIntents: Iterable = None, databaseSchema: dict = None, isNew: bool = False, **kwargs):
 		super().__init__(**kwargs)
 
+		self._remote = ''
+		self._repo = None
+		self._skillPath = Path(inspect.getfile(self.__class__)).parent
+
 		if isNew:
 			return
 
 		try:
-			self._skillPath = Path(inspect.getfile(self.__class__)).parent
 			self._installFile = Path(inspect.getfile(self.__class__)).with_suffix('.install')
 			self._installer = json.loads(self._installFile.read_text())
 		except FileNotFoundError:
@@ -108,6 +113,17 @@ class AliceSkill(ProjectAliceObject):
 	@failedStarting.setter
 	def failedStarting(self, value: bool):
 		self._failedStarting = value
+
+
+	def clone(self, remote: str, skillName: str):
+		self._remote = remote
+		self._name = skillName
+		if self.getResource().exists():
+			self._repo = Repo(self.getResource())
+			git.stash_push(self._repo)
+			git.pull(self._repo)
+		else:
+			self._repo = git.clone(source=remote, target=self.getResource())
 
 
 	def registerDeviceInstance(self, device: Device):
