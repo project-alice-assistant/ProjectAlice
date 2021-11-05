@@ -28,8 +28,6 @@ from pathlib import Path
 from typing import Any, Dict, Iterable, List, Optional, Union
 
 import flask
-from dulwich import porcelain as git
-from dulwich.repo import Repo
 from markdown import markdown
 from paho.mqtt import client as MQTTClient
 
@@ -45,17 +43,11 @@ from core.user.model.AccessLevels import AccessLevel
 
 class AliceSkill(ProjectAliceObject):
 
-	def __init__(self, supportedIntents: Iterable = None, databaseSchema: dict = None, isNew: bool = False, **kwargs):
+	def __init__(self, supportedIntents: Iterable = None, databaseSchema: dict = None, **kwargs):
 		super().__init__(**kwargs)
 
-		self._remote = ''
-		self._repo = None
-		self._skillPath = Path(inspect.getfile(self.__class__)).parent
-
-		if isNew:
-			return
-
 		try:
+			self._skillPath = Path(inspect.getfile(self.__class__)).parent
 			self._installFile = Path(inspect.getfile(self.__class__)).with_suffix('.install')
 			self._installer = json.loads(self._installFile.read_text())
 		except FileNotFoundError:

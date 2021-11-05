@@ -29,6 +29,8 @@ from pathlib import Path
 from typing import Dict, List, Optional, Union
 
 import requests
+from dulwich import errors as gitErrors
+from dulwich import porcelain as git
 
 from core.ProjectAliceExceptions import AccessLevelTooLow, GithubNotFound, SkillNotConditionCompliant, SkillStartDelayed, SkillStartingFailed
 from core.base.SuperManager import SuperManager
@@ -712,9 +714,7 @@ class SkillManager(Manager):
 
 				self.checkSkillConditions(installFile)
 
-				if not updating:
-					skill = AliceSkill(isNew=True)
-				else:
+				if updating:
 					skill = self._skillList[skillName]
 					if skillName in self._activeSkills:
 						try:
@@ -723,9 +723,22 @@ class SkillManager(Manager):
 							self.logError(f'Error stopping "{skillName}" for update: {e}')
 							raise
 
+				try:
+					repository = git.Repo(directory)
+					git.stash_push(repository)
+					git.clean(repository)
+					git.update_head(repo=repository, target=self.SkillStoreManager.getSkillUpdateTag(skillName))
+					git.pull(repository)
+				except gitErrors.NotGitRepository:
+					repository = git.clone(
+						source=f'{constants.GITHUB_URL}/skill_{skillName}.git',
+						target='skills/AliceCore',
+						checkout=self.SkillStoreManager.getSkillUpdateTag(skillName)
+					)
+
 				skill.clone(f'{constants.GITHUB_URL}/skill_{skillName}.git', skillName=skillName)
 
-				# gitCloner = GithubCloner(baseUrl=f'{constants.GITHUB_URL}/skill_{skillName}.git', dest=directory, skillName=skillName)
+				gitCloner = GithubCloner(baseUrl=f'{constants.GITHUB_URL}/skill_{skillName}.git', dest=directory, skillName=skillName)
 				#
 				# try:
 				# 	gitCloner.cloneSkill()
