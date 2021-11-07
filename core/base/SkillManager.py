@@ -42,7 +42,7 @@ from core.base.model.Manager import Manager
 from core.base.model.Version import Version
 from core.commons import constants
 from core.dialog.model.DialogSession import DialogSession
-from core.util.Decorators import IfSetting, Online
+from core.util.Decorators import IfSetting, Online, deprecated
 from core.webui.model.UINotificationType import UINotificationType
 
 
@@ -95,17 +95,8 @@ class SkillManager(Manager):
 	def onStart(self):
 		super().onStart()
 
-		self._busyInstalling = self.ThreadManager.newEvent('skillInstallation')
+		self._busyInstalling = self.ThreadManager.newEvent(name='skillInstallation', onSetCallback=self.notifyInstalling, onClearCallback=self.notifyFinishedInstalling)
 		self._skillList = self._loadSkills()
-
-		# If it's the first time we start, don't delay skill install and do it on main thread
-		# if not self._skillList:
-		# 	self.logInfo('Looks like a fresh install or skills were nuked. Let\'s install the basic skills!')
-		# 	self.wipeSkills(True)
-		# 	self._checkForSkillInstall()
-		# elif self.checkForSkillUpdates():
-		# 	self._checkForSkillInstall()
-		#self._skillInstallThread = self.ThreadManager.newThread(name='SkillInstallThread', target=self._checkForSkillInstall, autostart=False)
 
 		if not self._skillList:
 			self.logInfo('Looks like a fresh install or skills were nuked. Let\'s install the basic skills!')
@@ -126,6 +117,14 @@ class SkillManager(Manager):
 		self.ConfigManager.loadCheckAndUpdateSkillConfigurations()
 
 		self.startAllSkills()
+
+
+	def notifyInstalling(self):
+		self.MqttManager.mqttBroadcast(topic=constants.TOPIC_SYSTEM_UPDATE, payload={'sticky': True})
+
+
+	def notifyFinishedInstalling(self):
+		self.MqttManager.mqttBroadcast(topic='hermes/leds/clear')
 
 
 	# noinspection SqlResolve
@@ -176,10 +175,11 @@ class SkillManager(Manager):
 		:param skills:
 		:return:
 		"""
+		self._busyInstalling.set()
+
 		if isinstance(skills, str):
 			skills = [skills]
 
-		self.MqttManager.mqttBroadcast(topic=constants.TOPIC_SYSTEM_UPDATE, payload={'sticky': True})
 		for skillName in skills:
 			try:
 				repository = self.getSkillRepository(skillName=skillName)
@@ -189,6 +189,7 @@ class SkillManager(Manager):
 			except Exception as e:
 				self.logError(f'Error updating skill **{skillName}** : {e}')
 				continue
+		self._busyInstalling.clear()
 
 
 	def downloadSkills(self, skills: Union[str, List[str]]):
@@ -197,10 +198,11 @@ class SkillManager(Manager):
 		:param skills:
 		:return:
 		"""
+		self._busyInstalling.set()
+
 		if isinstance(skills, str):
 			skills = [skills]
 
-		self.MqttManager.mqttBroadcast(topic=constants.TOPIC_SYSTEM_UPDATE, payload={'sticky': True})
 		for skillName in skills:
 			try:
 				source = self.getGitRemoteSourceUrl(skillName=skillName, doAuth=False)
@@ -217,7 +219,7 @@ class SkillManager(Manager):
 				}
 			except GithubNotFound:
 				if skillName in self.NEEDED_SKILLS:
-					self.MqttManager.mqttBroadcast(topic='hermes/leds/clear')
+					self._busyInstalling.clear()
 					self.logFatal(f"Skill **{skillName}** is required but wasn't found in released skills, cannot continue")
 					return
 				else:
@@ -225,15 +227,14 @@ class SkillManager(Manager):
 					continue
 			except Exception as e:
 				if skillName in self.NEEDED_SKILLS:
-					self.MqttManager.mqttBroadcast(topic='hermes/leds/clear')
+					self._busyInstalling.clear()
 					self.logFatal(f'Error downloading skill **{skillName}** but skill is required, cannot continue: {e}')
 					return
 				else:
 					self.logError(f'Error downloading skill "{skillName}": {e}')
 					continue
 
-
-		self.MqttManager.mqttBroadcast(topic='hermes/leds/clear')
+		self._busyInstalling.clear()
 
 
 	def loadSkillsFromDB(self) -> List:
@@ -275,8 +276,6 @@ class SkillManager(Manager):
 
 
 	def onAssistantInstalled(self, **kwargs):
-		self.MqttManager.mqttBroadcast(topic='hermes/leds/clear')
-
 		argv = kwargs.get('skillsInfos', dict())
 		if not argv:
 			return
@@ -399,7 +398,7 @@ class SkillManager(Manager):
 				else:
 					self.checkSkillConditions(data['installer'])
 
-				skillInstance = self.instanciateSkill(skillName=skillName, reload=reload)
+				skillInstance = self.instantiateSkill(skillName=skillName, reload=reload)
 				if skillInstance:
 					if skillName in self.NEEDED_SKILLS:
 						skillInstance.required = True
@@ -431,7 +430,7 @@ class SkillManager(Manager):
 
 
 	# noinspection PyTypeChecker
-	def instanciateSkill(self, skillName: str, skillResource: str = '', reload: bool = False) -> Optional[AliceSkill]:
+	def instantiateSkill(self, skillName: str, skillResource: str = '', reload: bool = False) -> Optional[AliceSkill]:
 		instance: Optional[AliceSkill] = None
 		skillResource = skillResource or skillName
 
@@ -448,10 +447,10 @@ class SkillManager(Manager):
 			traceback.print_exc()
 		except AttributeError as e:
 			self.logError(f"Couldn't find main class for skill {skillName}.{skillResource}: {e}")
-		except SkillInstanceFailed as e:
+		except SkillInstanceFailed:
 			self.logError(f"Couldn't instanciate skill {skillName}.{skillResource}")
 		except Exception as e:
-			self.logError(f"Unknown error instanciating {skillName}.{skillResource}: {e} {traceback.print_exc()}")
+			self.logError(f"Unknown error instantiating {skillName}.{skillResource}: {e} {traceback.print_exc()}")
 
 		return instance
 
@@ -465,14 +464,18 @@ class SkillManager(Manager):
 
 
 	def onQuarterHour(self):
-		self.checkForSkillUpdates()
+		if self._busyInstalling.isSet() or self.ProjectAlice.restart or self.ProjectAlice.updating or self.NluManager.training:
+			return
+
+		updates = self.checkForSkillUpdates()
+		if updates:
+			self.updateSkills(skills=updates)
 
 
 	def startAllSkills(self):
 		supportedIntents = list()
 
-		tmp = self._activeSkills.copy()
-		for skillName in tmp:
+		for skillName in self._activeSkills.copy():
 			try:
 				supportedIntents += self._startSkill(skillName)
 			except SkillStartingFailed:
@@ -481,7 +484,6 @@ class SkillManager(Manager):
 				self.logInfo(f'Skill {skillName} start is delayed')
 
 		supportedIntents = list(set(supportedIntents))
-
 		self._supportedIntents = supportedIntents
 
 		self.logInfo(f'Skills started. {len(supportedIntents)} intents supported')
@@ -492,13 +494,13 @@ class SkillManager(Manager):
 			skillInstance = self._activeSkills[skillName]
 		elif skillName in self._deactivatedSkills:
 			self._deactivatedSkills.pop(skillName, None)
-			skillInstance = self.instanciateSkill(skillName=skillName)
+			skillInstance = self.instantiateSkill(skillName=skillName)
 			if skillInstance:
 				self.activeSkills[skillName] = skillInstance
 			else:
 				return dict()
 		elif skillName in self._failedSkills:
-			skillInstance = self.instanciateSkill(skillName=skillName)
+			skillInstance = self.instantiateSkill(skillName=skillName)
 			if skillInstance:
 				self.activeSkills[skillName] = skillInstance
 			else:
@@ -647,7 +649,6 @@ class SkillManager(Manager):
 				remoteVersion = self.SkillStoreManager.getSkillUpdateVersion(skillName)
 				localVersion = Version.fromString(self._skillList[skillName]['installer']['version'])
 				if localVersion < remoteVersion:
-					skillsToUpdate.append(skillName)
 
 					self.WebUINotificationManager.newNotification(
 						typ=UINotificationType.INFO,
@@ -667,8 +668,7 @@ class SkillManager(Manager):
 						if skillName in self.allSkills:
 							self.allSkills[skillName].updateAvailable = True
 					else:
-						if not self.downloadInstallTicket(skillName, isUpdate=True):
-							raise Exception
+						skillsToUpdate.append(skillName)
 				else:
 					if data.get('modified', False):
 						self.logInfo(f'![blue]({skillName}) - Version {self._skillList[skillName]["installer"]["version"]} in {self.ConfigManager.getAliceConfigByName("skillsUpdateChannel")} - Locked for local changes!')
@@ -706,8 +706,6 @@ class SkillManager(Manager):
 		except Exception as e:
 			self._logger.logError(f'Error installing skill: {e}')
 		finally:
-			self.MqttManager.mqttBroadcast(topic='hermes/leds/clear')
-
 			if skillsToBoot and self.ProjectAlice.isBooted:
 				self._finishInstall(skillsToBoot, True)
 			else:
@@ -765,6 +763,7 @@ class SkillManager(Manager):
 		self.AssistantManager.checkAssistant()
 
 
+	@deprecated
 	def _installSkillTickets(self, skills: list) -> dict:
 		"""
 		Installs the skills from found install tickets

@@ -18,7 +18,7 @@
 #  Last modified: 2021.04.13 at 12:56:48 CEST
 
 import threading
-from typing import Callable
+from typing import Callable, Union
 
 from core.base.model.Manager import Manager
 from core.util.Decorators import IfSetting
@@ -169,7 +169,7 @@ class ThreadManager(Manager):
 		return self._threads[name].isAlive()
 
 
-	def newEvent(self, name: str, onSetCallback: str = None, onClearCallback: str = None) -> AliceEvent:
+	def newEvent(self, name: str, onSetCallback: Union[str, Callable] = None, onClearCallback: Union[str, Callable] = None) -> AliceEvent:
 		if name in self._events:
 			self._events[name].clear()
 
