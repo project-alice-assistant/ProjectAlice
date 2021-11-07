@@ -19,18 +19,18 @@
 
 
 import getpass
-import traceback
-
 import importlib
 import json
 import os
-import requests
 import shutil
 import threading
-from dulwich import errors as gitErrors, porcelain as git
-from dulwich.repo import Repo
+import traceback
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Union
+
+import requests
+from dulwich import errors as gitErrors, porcelain as git
+from dulwich.repo import Repo
 
 from core.ProjectAliceExceptions import AccessLevelTooLow, GithubNotFound, SkillInstanceFailed, SkillNotConditionCompliant, SkillStartDelayed, SkillStartingFailed
 from core.base.SuperManager import SuperManager
@@ -81,7 +81,7 @@ class SkillManager(Manager):
 		self._skillInstallThread: Optional[threading.Thread] = None
 		self._supportedIntents = list()
 
-		# This is only a dict of the skills, with name: dict(status, install file, modified)
+		# This is a dict of the skills, with name: dict(status, install file, modified)
 		self._skillList = dict()
 
 		# These are dict of the skills, with name: skill instance
@@ -206,14 +206,14 @@ class SkillManager(Manager):
 				source = self.getGitRemoteSourceUrl(skillName=skillName, doAuth=False)
 				repository = self.getSkillRepository(skillName=skillName)
 				if not repository:
-					git.clone(source=source, target=self.getSkillDirectory(skillName=skillName), checkout=True)
+					repository = git.clone(source=source, target=self.getSkillDirectory(skillName=skillName), checkout=True)
 
 				git.pull(repo=repository, refspecs=self.SkillStoreManager.getSkillUpdateTag(skillName=skillName))
 
 				self._skillList[skillName] = {
 					'active'   : 1,
 					'modified' : 0,
-					'installer': self.getSkillDirectory(skillName=skillName) / f'{skillName}/{skillName}.install'
+					'installer': json.loads(Path(self.getSkillDirectory(skillName=skillName), f'{skillName}.install').read_text())
 				}
 			except GithubNotFound:
 				if skillName in self.NEEDED_SKILLS:
@@ -377,7 +377,7 @@ class SkillManager(Manager):
 		"""
 		Loops over the available skills, creates their instances
 		:param onlyInit: If specified, will only init the given skill name
-		:param reload: If the skill is already instanciated, performs a module reload, after an update per example.
+		:param reload: If the skill is already instantiated, performs a module reload, after an update per example.
 		:return:
 		"""
 
@@ -397,7 +397,7 @@ class SkillManager(Manager):
 					else:
 						self.logInfo(f'Skill {skillName} is disabled')
 				else:
-					self.checkSkillConditions(self._skillList[skillName]['installer'])
+					self.checkSkillConditions(data['installer'])
 
 				skillInstance = self.instanciateSkill(skillName=skillName, reload=reload)
 				if skillInstance:
@@ -941,7 +941,7 @@ class SkillManager(Manager):
 			url = url.replace('://', f'://{tokenPrefix}')
 
 		response = requests.get(url=url)
-		if response.status_code != '200':
+		if response.status_code != 200:
 			raise GithubNotFound
 
 		return url
