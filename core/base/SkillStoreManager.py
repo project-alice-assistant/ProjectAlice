@@ -18,10 +18,9 @@
 #  Last modified: 2021.04.13 at 12:56:46 CEST
 
 import difflib
-from random import shuffle
-from typing import Optional
-
 import requests
+from random import shuffle
+from typing import Optional, Tuple
 
 from core.ProjectAliceExceptions import GithubNotFound
 from core.base.model.Manager import Manager
@@ -92,7 +91,7 @@ class SkillStoreManager(Manager):
 			self._skillSamplesData.setdefault(skillName, skill.get(self.LanguageManager.activeLanguage, list()))
 
 
-	def _getSkillUpdateVersion(self, skillName: str) -> Optional[tuple]:
+	def _getSkillUpdateVersion(self, skillName: str) -> Optional[Tuple[Version, str]]:
 		"""
 		Get the highest skill version number a user can install.
 		This is based on the user preferences, depending on the current Alice version
@@ -100,7 +99,7 @@ class SkillStoreManager(Manager):
 		In case nothing is found, DO NOT FALLBACK TO MASTER
 
 		:param skillName: The skill to look for
-		:return: tuple
+		:return: tuple (Version object, tag string)
 		"""
 		versionMapping = self._skillStoreData.get(skillName, dict()).get('versionMapping', dict())
 

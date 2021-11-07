@@ -19,19 +19,19 @@
 
 from __future__ import annotations
 
+from copy import copy
+
+import flask
 import importlib
 import inspect
 import json
 import re
-from copy import copy
+from markdown import markdown
+from paho.mqtt import client as MQTTClient
 from pathlib import Path
 from typing import Any, Dict, Iterable, List, Optional, Union
 
-import flask
-from markdown import markdown
-from paho.mqtt import client as MQTTClient
-
-from core.ProjectAliceExceptions import AccessLevelTooLow, SkillStartingFailed
+from core.ProjectAliceExceptions import AccessLevelTooLow, SkillInstanceFailed
 from core.base.model.Intent import Intent
 from core.base.model.ProjectAliceObject import ProjectAliceObject
 from core.base.model.Version import Version
@@ -51,9 +51,9 @@ class AliceSkill(ProjectAliceObject):
 			self._installFile = Path(inspect.getfile(self.__class__)).with_suffix('.install')
 			self._installer = json.loads(self._installFile.read_text())
 		except FileNotFoundError:
-			raise SkillStartingFailed(skillName=constants.UNKNOWN, error=f'[{type(self).__name__}] Cannot find install file')
+			raise SkillInstanceFailed(skillName=constants.UNKNOWN, error=f'[{type(self).__name__}] Cannot find install file')
 		except Exception as e:
-			raise SkillStartingFailed(skillName=constants.UNKNOWN, error=f'[{type(self).__name__}] Failed loading skill: {e}')
+			raise SkillInstanceFailed(skillName=constants.UNKNOWN, error=f'[{type(self).__name__}] Failed loading skill: {e}')
 
 		instructionsFile = self.getResource(f'instructions/{self.LanguageManager.activeLanguage}.md')
 		if not instructionsFile.exists():
@@ -105,17 +105,6 @@ class AliceSkill(ProjectAliceObject):
 	@failedStarting.setter
 	def failedStarting(self, value: bool):
 		self._failedStarting = value
-
-
-	def clone(self, remote: str, skillName: str):
-		self._remote = remote
-		self._name = skillName
-		if self.getResource().exists():
-			self._repo = Repo(self.getResource())
-			git.stash_push(self._repo)
-			git.pull(self._repo)
-		else:
-			self._repo = git.clone(source=remote, target=self.getResource())
 
 
 	def registerDeviceInstance(self, device: Device):
