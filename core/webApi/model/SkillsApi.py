@@ -19,10 +19,9 @@
 
 
 import json
-from pathlib import Path
-
 from flask import Response, jsonify, request
 from flask_classful import route
+from pathlib import Path
 
 from core.base.model.GithubCloner import GithubCloner
 from core.commons import constants
@@ -122,7 +121,7 @@ class SkillsApi(Api):
 
 			status = dict()
 			for skill in skills:
-				self.SkillManager.installSkill(skills=skill)
+				self.SkillManager.installSkills(skills=skill)
 				status[skill] = 'ok'
 
 			return jsonify(success=True, status=status)
