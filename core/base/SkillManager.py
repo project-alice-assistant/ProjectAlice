@@ -21,7 +21,6 @@
 import getpass
 import importlib
 import json
-import os
 import shutil
 import threading
 import traceback
@@ -89,8 +88,6 @@ class SkillManager(Manager):
 		self._deactivatedSkills: Dict[str, AliceSkill] = dict()
 		self._failedSkills: Dict[str, Union[AliceSkill, FailedAliceSkill]] = dict()
 
-		self._postBootSkillActions = dict()
-
 
 	def onStart(self):
 		super().onStart()
@@ -100,12 +97,12 @@ class SkillManager(Manager):
 
 		if not self._skillList:
 			self.logInfo('Looks like a fresh install or skills were nuked. Let\'s install the basic skills!')
-			self.downloadSkills(skills=self.BASE_SKILLS)
+			self.installSkill(skills=self.BASE_SKILLS)
 		elif sorted(list(self._skillList.keys())) != sorted(self.BASE_SKILLS):
 			self.logInfo('Some required skills are missing, let\'s download them!')
-			self.downloadSkills(skills=list(set(self.NEEDED_SKILLS) - set(list(self._skillList.keys()))))
+			self.installSkill(skills=list(set(self.NEEDED_SKILLS) - set(list(self._skillList.keys()))))
 
-		self._initSkills()
+		self.initSkills()
 
 		for skillName in self._deactivatedSkills:
 			self.configureSkillIntents(skillName=skillName, state=False)
@@ -169,10 +166,11 @@ class SkillManager(Manager):
 		return dict(sorted(data.items()))
 
 
-	def updateSkills(self, skills: Union[str, List[str]]):
+	def updateSkills(self, skills: Union[str, List[str]], withSkillRestart: bool = True):
 		"""
 		Updates skills to latest available version for this Alice version
 		:param skills:
+		:param withSkillRestart: Whether or not to start the skill after updating it
 		:return:
 		"""
 		self._busyInstalling.set()
@@ -181,6 +179,10 @@ class SkillManager(Manager):
 			skills = [skills]
 
 		for skillName in skills:
+			if skillName in self._activeSkills:
+				self._activeSkills[skillName].onStop()
+				self._activeSkills.pop(skillName, None)
+
 			try:
 				repository = self.getSkillRepository(skillName=skillName)
 				git.stash_push(repository)
@@ -189,6 +191,25 @@ class SkillManager(Manager):
 			except Exception as e:
 				self.logError(f'Error updating skill **{skillName}** : {e}')
 				continue
+
+			self.allSkills[skillName].onSkillUpdated(skill=skillName)
+			self.MqttManager.mqttBroadcast(
+				topic=constants.TOPIC_SKILL_UPDATED,
+				payload={
+					'skillName': skillName
+				}
+			)
+
+			self.WebUINotificationManager.newNotification(
+				typ=UINotificationType.INFO,
+				notification='skillUpdated',
+				key=f'skillUpdate_{skillName}',
+				replaceBody=[skillName, self._skillList[skillName]['installer']['version']]
+			)
+
+			if withSkillRestart:
+				self._startSkill(skillName=skillName)
+
 		self._busyInstalling.clear()
 
 
@@ -372,7 +393,7 @@ class SkillManager(Manager):
 		return False
 
 
-	def _initSkills(self, onlyInit: str = '', reload: bool = False):
+	def initSkills(self, onlyInit: str = '', reload: bool = False):
 		"""
 		Loops over the available skills, creates their instances
 		:param onlyInit: If specified, will only init the given skill name
@@ -724,7 +745,7 @@ class SkillManager(Manager):
 		for skillName, info in skills.items():
 
 			if startSkill:
-				self._initSkills(onlyInit=skillName, reload=info['update'])
+				self.initSkills(onlyInit=skillName, reload=info['update'])
 				self.ConfigManager.loadCheckAndUpdateSkillConfigurations(skillToLoad=skillName)
 
 				try:
@@ -946,42 +967,48 @@ class SkillManager(Manager):
 		return url
 
 
-	def _installSkill(self, res: Path):
-		try:
-			installFile = json.loads(res.read_text())
-			pipReqs = installFile.get('pipRequirements', list())
-			sysReqs = installFile.get('systemRequirements', list())
-			scriptReq = installFile.get('script')
-			directory = Path(self.Commons.rootDir()) / 'skills' / installFile['name']
+	def installSkill(self, skills: Union[str, List[str]]):
+		self._busyInstalling.set()
+		if isinstance(skills, str):
+			skills = [skills]
 
-			for requirement in pipReqs:
-				self.logInfo(f'Installing pip requirement: {requirement}')
-				self.Commons.runSystemCommand(['./venv/bin/pip3', 'install', requirement])
+		for skillName in skills:
+			try:
+				repository = self.getSkillRepository(skillName=skillName)
+				if not repository:
+					self.downloadSkills(skills=skillName)
 
-			for requirement in sysReqs:
-				self.logInfo(f'Installing system requirement: {requirement}')
-				self.Commons.runRootSystemCommand(['apt-get', 'install', '-y', requirement])
+				directory   = repository.path
+				installFile = json.loads(Path(directory, f'{skillName}.install').read_text())
+				pipReqs     = installFile.get('pipRequirements', list())
+				sysReqs     = installFile.get('systemRequirements', list())
+				scriptReq   = installFile.get('script')
 
-			if scriptReq:
-				self.logInfo('Running post install script')
-				self.Commons.runRootSystemCommand(['chmod', '+x', str(directory / scriptReq)])
-				self.Commons.runRootSystemCommand([str(directory / scriptReq)])
+				for requirement in pipReqs:
+					self.logInfo(f'Installing pip requirement: {requirement}')
+					self.Commons.runSystemCommand(['./venv/bin/pip3', 'install', requirement])
 
-			self.addSkillToDB(installFile['name'])
-			self._skillList[installFile['name']] = {
-				'active'   : 1,
-				'installer': installFile,
-				'modified' : False
-			}
+				for requirement in sysReqs:
+					self.logInfo(f'Installing system requirement: {requirement}')
+					self.Commons.runRootSystemCommand(['apt-get', 'install', '-y', requirement])
 
-			os.unlink(str(res))
+				if scriptReq:
+					self.logInfo('Running post install script')
+					self.Commons.runRootSystemCommand(['chmod', '+x', str(directory / scriptReq)])
+					self.Commons.runRootSystemCommand([str(directory / scriptReq)])
 
-			if installFile.get('rebootAfterInstall', False):
-				self.Commons.runRootSystemCommand('sudo shutdown -r now'.split())
-				return
+				self.addSkillToDB(installFile['name'])
+				self._skillList[skillName] = {
+					'active'   : 1,
+					'installer': installFile
+				}
 
-		except Exception:
-			raise
+				if installFile.get('rebootAfterInstall', False):
+					self.Commons.runRootSystemCommand('sudo shutdown -r now'.split())
+			except:
+				raise
+			else:
+				self._busyInstalling.clear()
 
 
 	def checkSkillConditions(self, installer: dict = None) -> bool:
@@ -1094,7 +1121,7 @@ class SkillManager(Manager):
 			self._activeSkills[skillName].onStop()
 			self.broadcast(method=constants.EVENT_SKILL_STOPPED, exceptions=[self.name], propagateToSkills=True, skill=self)
 
-		self._initSkills(onlyInit=skillName, reload=True)
+		self.initSkills(onlyInit=skillName, reload=True)
 
 		self.AssistantManager.checkAssistant()
 

@@ -122,10 +122,8 @@ class SkillsApi(Api):
 
 			status = dict()
 			for skill in skills:
-				if self.SkillManager.downloadInstallTicket(skill):
-					status[skill] = 'ok'
-				else:
-					status[skill] = 'ko'
+				self.SkillManager.installSkill(skills=skill)
+				status[skill] = 'ok'
 
 			return jsonify(success=True, status=status)
 		except Exception as e:
