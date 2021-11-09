@@ -520,6 +520,7 @@ class SkillManager(Manager):
 			else:
 				return dict()
 		elif skillName in self._failedSkills:
+			self._failedSkills.pop(skillName, None)
 			skillInstance = self.instantiateSkill(skillName=skillName)
 			if skillInstance:
 				self.activeSkills[skillName] = skillInstance
@@ -538,7 +539,7 @@ class SkillManager(Manager):
 			try:
 				skillInstance.failedStarting = True
 			except:
-				self._failedSkills[skillName] = FailedAliceSkill(self._skillList[skillName]['installer'])
+				self._failedSkills[skillName] = FailedAliceSkill(skillInstance.installer)
 		except SkillStartDelayed:
 			raise
 		except Exception as e:
@@ -551,7 +552,7 @@ class SkillManager(Manager):
 				self._activeSkills.pop(skillName, None)
 				self._deactivatedSkills.pop(skillName, None)
 
-			self._failedSkills[skillName] = FailedAliceSkill(self._skillList[skillName]['installer'])
+			self._failedSkills[skillName] = FailedAliceSkill(skillInstance.installer)
 
 		return skillInstance.supportedIntents
 
@@ -684,7 +685,7 @@ class SkillManager(Manager):
 						replaceBody=[skillName, str(remoteVersion)]
 					)
 
-					if data.get('modified', False):
+					if self.isSkillUserModified(skillName=skillName):
 						self.allSkills[skillName].updateAvailable = True
 						self.logInfo(f'![blue]({skillName}) - Version {installer["version"]} < {str(remoteVersion)} in {self.ConfigManager.getAliceConfigByName("skillsUpdateChannel")} - Locked for local changes!')
 						continue
@@ -697,7 +698,7 @@ class SkillManager(Manager):
 					else:
 						skillsToUpdate.append(skillName)
 				else:
-					if data.get('modified', False):
+					if self.isSkillUserModified(skillName=skillName):
 						self.logInfo(f'![blue]({skillName}) - Version {installer["version"]} in {self.ConfigManager.getAliceConfigByName("skillsUpdateChannel")} - Locked for local changes!')
 					else:
 						self.logInfo(f'![green]({skillName}) - Version {installer["installer"]["version"]} in {self.ConfigManager.getAliceConfigByName("skillsUpdateChannel")}')
@@ -773,7 +774,7 @@ class SkillManager(Manager):
 					typ=UINotificationType.INFO,
 					notification='skillUpdated',
 					key='skillUpdate_{}'.format(skillName),
-					replaceBody=[skillName, self._skillList[skillName]['installer']['version']]
+					replaceBody=[skillName, json.loads(self.getSkillInstallFile(skillName=skillName).read_text())['version']]
 				)
 			else:
 				self.allSkills[skillName].onSkillInstalled(skill=skillName)

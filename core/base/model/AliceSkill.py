@@ -481,6 +481,11 @@ class AliceSkill(ProjectAliceObject):
 
 
 	@property
+	def installer(self) -> Dict:
+		return self._installer
+
+
+	@property
 	def skillPath(self) -> Path:
 		return self._skillPath
 
