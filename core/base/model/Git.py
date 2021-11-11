@@ -246,8 +246,11 @@ class Git:
 		self.execute('git add --all')
 
 
-	def commit(self, message: str = 'Commit by ProjectAliceBot'):
-		self.execute(f'git commit -m "{message}"')
+	def commit(self, message: str = 'Commit by ProjectAliceBot', autoAdd: bool = False):
+		cmd = f'git commit -m "{message}"'
+		if autoAdd:
+			cmd += ' --all'
+		self.execute(cmd)
 
 
 	def push(self, repository: str = None):
