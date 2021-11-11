@@ -200,12 +200,14 @@ class Git:
 		self.execute(f'git pull')
 
 
-	def clean(self, removeUntrackedFiles: bool = True, removeUntrackedDirectory: bool = True):
+	def clean(self, removeUntrackedFiles: bool = True, removeUntrackedDirectory: bool = True, removeIgnored: bool = False):
 		options = ''
 		if removeUntrackedFiles:
 			options += 'f'
 		if removeUntrackedDirectory:
 			options += 'd'
+		if removeIgnored:
+			options += 'x'
 		if options:
 			options = f'-{options}'
 
