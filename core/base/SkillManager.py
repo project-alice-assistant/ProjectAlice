@@ -19,23 +19,18 @@
 
 
 import getpass
-import traceback
-
 import importlib
 import json
-import requests
-import shutil
 import threading
-from dulwich import errors as gitErrors, porcelain as git
-from dulwich.repo import Repo
-from pathlib import Path
-from typing import Dict, List, Optional, Union
+import traceback
+from typing import Dict, Optional
 
 from core.ProjectAliceExceptions import AccessLevelTooLow, GithubNotFound, SkillInstanceFailed, SkillNotConditionCompliant, SkillStartDelayed, SkillStartingFailed
 from core.base.SuperManager import SuperManager
 from core.base.model import Intent
 from core.base.model.AliceSkill import AliceSkill
 from core.base.model.FailedAliceSkill import FailedAliceSkill
+from core.base.model.Git import *
 from core.base.model.GithubCloner import GithubCloner
 from core.base.model.Manager import Manager
 from core.base.model.Version import Version
@@ -153,7 +148,8 @@ class SkillManager(Manager):
 		data = list()
 		for skill in skills:
 			try:
-				Path(self.Commons.rootDir(), f'skills/{skill["skillName"]}').read_text() # Just test is the directory exists
+				if not Path(self.Commons.rootDir(), f'skills/{skill["skillName"]}').exists():
+					raise Exception('Skill directory not existing')
 				data.append(skill['skillName'])
 			except Exception as e:
 				self.logError(f'Error loading skill **{skill["skillName"]}**: {e}')
@@ -180,10 +176,7 @@ class SkillManager(Manager):
 
 			try:
 				repository = self.getSkillRepository(skillName=skillName)
-				git.stash_push(repository)
-				git.reset(repository, mode='hard')
-				self.Commons.runSystemCommand(f'git -C {str(repository.path)} clean -dfx')
-				git.pull(repo=repository, refspecs=self.SkillStoreManager.getSkillUpdateTag(skillName=skillName))
+				repository.checkout(tag=self.SkillStoreManager.getSkillUpdateTag(skillName=skillName), force=True)
 			except Exception as e:
 				self.logError(f'Error updating skill **{skillName}** : {e}')
 				continue
@@ -223,9 +216,9 @@ class SkillManager(Manager):
 				source = self.getGitRemoteSourceUrl(skillName=skillName, doAuth=False)
 				repository = self.getSkillRepository(skillName=skillName)
 				if not repository:
-					repository = git.clone(source=source, target=self.getSkillDirectory(skillName=skillName), checkout=True)
+					repository = Git.clone(url=source, directory=self.getSkillDirectory(skillName=skillName), makeDir=True)
 
-				git.pull(repo=repository, refspecs=self.SkillStoreManager.getSkillUpdateTag(skillName=skillName))
+				repository.checkout(tag=self.SkillStoreManager.getSkillUpdateTag(skillName=skillName))
 			except GithubNotFound:
 				if skillName in self.NEEDED_SKILLS:
 					self._busyInstalling.clear()
@@ -407,7 +400,7 @@ class SkillManager(Manager):
 
 			try:
 				skillActiveState = self.isSkillActive(skillName=skillName)
-				if skillActiveState:
+				if not skillActiveState:
 					if skillName in self.NEEDED_SKILLS:
 						self.logFatal(f"Skill {skillName} marked as disabled but it shouldn't be")
 						return
@@ -561,10 +554,11 @@ class SkillManager(Manager):
 		if skillName in self._activeSkills:
 			return self._activeSkills[skillName].active
 		elif skillName in self._skillList:
-			row = self.databaseFetch(tableName=self.DBTAB_SKILLS, values={'skillName': skillName})
+			# noinspection SqlResolve
+			row = self.databaseFetch(tableName=self.DBTAB_SKILLS, query='SELECT active FROM :__table__ WHERE skillName = :skillName LIMIT 1', values={'skillName': skillName})
 			if not row:
 				return False
-			return row[0]['active'] == 1
+			return int(row[0]['active']) == 1
 		return False
 
 
@@ -701,7 +695,7 @@ class SkillManager(Manager):
 					if self.isSkillUserModified(skillName=skillName):
 						self.logInfo(f'![blue]({skillName}) - Version {installer["version"]} in {self.ConfigManager.getAliceConfigByName("skillsUpdateChannel")} - Locked for local changes!')
 					else:
-						self.logInfo(f'![green]({skillName}) - Version {installer["installer"]["version"]} in {self.ConfigManager.getAliceConfigByName("skillsUpdateChannel")}')
+						self.logInfo(f'![green]({skillName}) - Version {installer["version"]} in {self.ConfigManager.getAliceConfigByName("skillsUpdateChannel")}')
 
 			except GithubNotFound:
 				self.logInfo(f'![red](Skill **{skillName}**) is not available on Github. Deprecated or is it a dev skill?')
@@ -932,9 +926,9 @@ class SkillManager(Manager):
 		return Path(self.Commons.rootDir()) / 'skills' / skillName
 
 
-	def getSkillRepository(self, skillName: str, directory: str = None) -> Optional[Repo]:
+	def getSkillRepository(self, skillName: str, directory: str = None) -> Optional[Git]:
 		"""
-		Returns a dulwich repository object for the given skill
+		Returns a Git object for the given skill
 		:param skillName:
 		:param directory: where to look for that skill, if not standard directory
 		:return:
@@ -944,8 +938,8 @@ class SkillManager(Manager):
 			directory = self.getSkillDirectory(skillName=skillName)
 
 		try:
-			return Repo(directory)
-		except gitErrors.NotGitRepository:
+			return Git(directory=directory)
+		except:
 			return None
 
 
@@ -990,8 +984,7 @@ class SkillManager(Manager):
 				if not repository:
 					self.downloadSkills(skills=skillName)
 
-				directory   = repository.path
-				installFile = json.loads(Path(directory, f'{skillName}.install').read_text())
+				installFile = json.loads(repository.file(f'{skillName}.install').read_text())
 				pipReqs     = installFile.get('pipRequirements', list())
 				sysReqs     = installFile.get('systemRequirements', list())
 				scriptReq   = installFile.get('script')
@@ -1006,8 +999,12 @@ class SkillManager(Manager):
 
 				if scriptReq:
 					self.logInfo('Running post install script')
-					self.Commons.runRootSystemCommand(['chmod', '+x', str(directory / scriptReq)])
-					self.Commons.runRootSystemCommand([str(directory / scriptReq)])
+					req = repository.file(scriptReq)
+					if not req:
+						self.logWarning(f'Missing post install script **{str(req)}** as declared in install file')
+						continue
+					self.Commons.runRootSystemCommand(['chmod', '+x', str(req)])
+					self.Commons.runRootSystemCommand([str(req)])
 
 				self.addSkillToDB(skillName)
 				self._skillList.append(skillName)
@@ -1329,6 +1326,7 @@ class SkillManager(Manager):
 			return False
 
 
+	@deprecated
 	def downloadInstallTicket(self, skillName: str, isUpdate: bool = False) -> bool:
 		try:
 			tmpFile = Path(self.Commons.rootDir(), f'system/skillInstallTickets/{skillName}.install')
@@ -1348,8 +1346,9 @@ class SkillManager(Manager):
 			return False
 
 
+	@deprecated
 	def setSkillModified(self, skillName: str, modified: bool):
-		self._skillList[skillName][modified] = modified
+		return
 
 
 	def isSkillUserModified(self, skillName: str) -> bool:
@@ -1359,6 +1358,7 @@ class SkillManager(Manager):
 		:return:
 		"""
 		try:
-			status = git.status(self.getSkillRepository(skillName=skillName))
-		except gitErrors.NotGitRepository:
+			repository = self.getSkillRepository(skillName=skillName)
+			return repository.isDirty()
+		except:
 			return False
