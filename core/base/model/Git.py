@@ -21,7 +21,7 @@ from __future__ import annotations
 import shutil
 import subprocess
 from pathlib import Path
-from typing import Union
+from typing import List, Union
 
 import requests
 
@@ -30,17 +30,25 @@ class PathNotFoundException(Exception):
 	def __init__(self, path: Path):
 		super().__init__(f'Path "{path}" does not exist')
 
+
 class NotGitRepository(Exception):
 	def __init__(self, path: Path):
 		super().__init__(f'Directory "{path}" is not a git repository')
+
 
 class AlreadyGitRepository(Exception):
 	def __init__(self, path: Path):
 		super().__init__(f'Directory "{path}" is already a git repository')
 
+
 class InvalidUrl(Exception):
 	def __init__(self, url: str):
 		super().__init__(f'The provided url "{url}" is not valid')
+
+
+class DirtyRepository(Exception):
+	def __init__(self):
+		super().__init__(f'The repository is dirty. Either use the force option or stash your changes before trying again')
 
 
 class Git:
@@ -60,20 +68,17 @@ class Git:
 		if not Path(directory, '.git').exists() and not init:
 			raise NotGitRepository(directory)
 
-		self.path = directory
-		self._quiet = quiet
-		self._url = url
-		self._tags = set()
-		self._branches = set()
+		self.path      = directory
+		self._quiet    = quiet
+		self._url      = url
 
 		if not Path(directory, '.git').exists():
-			self.execute(f'git -C {str(directory)} init')
+			self.execute(f'git init')
 
-
-		tags = self.execute('git tag')
-		self._tags = set(tags.split('\n'))
-		branches = self.execute('git branch')
-		self._branches = set(branches.split('\n'))
+		tags           = self.execute('git tag')
+		self.tags      = set(tags.split('\n'))
+		branches       = self.execute('git branch')
+		self.branches  = set(branches.split('\n'))
 
 
 	@classmethod
@@ -108,14 +113,13 @@ class Git:
 		else:
 			target = branch
 
-		self.execute(f'git -C {str(self.path)} checkout {target} --recurse-submodules')
+		if self.isDirty():
+			if not force:
+				raise DirtyRepository()
+			else:
+				self.stash()
 
-
-	def execute(self, command: str) -> str:
-		if self._quiet:
-			command = f'{command} --quiet'
-		result = subprocess.run(command.split(), capture_output=True, text=True)
-		return result.stdout.strip()
+		self.execute(f'git checkout {target} --recurse-submodules')
 
 
 	def status(self) -> Status:
@@ -125,6 +129,50 @@ class Git:
 	def isDirty(self) -> bool:
 		status = self.status()
 		return status.isDirty()
+
+
+	def listStash(self) -> List[str]:
+		result = self.execute(f'git stash list')
+		return result.split('\n')
+
+
+	def stash(self) -> int:
+		self.execute(f'git stash push')
+		return len(self.listStash()) - 1
+
+
+	def dropStash(self, index: Union[int, str] = -1) -> List[str]:
+		if index == 'all':
+			self.execute(f'git stash clear')
+			return list()
+		else:
+			self.execute(f'git stash drop {index}')
+			return self.listStash()
+
+
+	def pull(self, force: bool = False):
+		if self.isDirty():
+			if not force:
+				raise DirtyRepository()
+			else:
+				self.stash()
+
+		self.execute(f'git pull')
+
+
+	def destroy(self):
+		shutil.rmtree(self.path, ignore_errors=True)
+
+
+	def execute(self, command: str) -> str:
+		if not command.startswith('git -C'):
+			command = command.replace('git', f'git -C {str(self.path)}', 1)
+
+		if self._quiet:
+			command = f'{command} --quiet'
+
+		result = subprocess.run(command.split(), capture_output=True, text=True)
+		return result.stdout.strip()
 
 
 class Status:
