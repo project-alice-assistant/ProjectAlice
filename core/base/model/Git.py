@@ -117,7 +117,8 @@ class Git:
 			if not force:
 				raise DirtyRepository()
 			else:
-				self.stash()
+				self.restore()
+				self.clean()
 
 		self.execute(f'git checkout {target} --recurse-submodules')
 
@@ -137,7 +138,7 @@ class Git:
 
 
 	def stash(self) -> int:
-		self.execute(f'git stash push')
+		self.execute(f'git stash push {str(self.path)}/')
 		return len(self.listStash()) - 1
 
 
@@ -155,9 +156,26 @@ class Git:
 			if not force:
 				raise DirtyRepository()
 			else:
-				self.stash()
+				self.restore()
+				self.clean()
 
 		self.execute(f'git pull')
+
+
+	def clean(self, removeUntrackedFiles: bool = True, removeUntrackedDirectory: bool = True):
+		options = ''
+		if removeUntrackedFiles:
+			options += 'f'
+		if removeUntrackedDirectory:
+			options += 'd'
+		if options:
+			options = f'-{options}'
+
+		self.execute(f'git clean {options}')
+
+
+	def restore(self):
+		self.execute(f'git restore {str(self.path)}')
 
 
 	def destroy(self):
