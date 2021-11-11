@@ -18,10 +18,12 @@
 #  Last modified: 2021.11.10 at 14:35:51 CET
 from __future__ import annotations
 
+import os
 import shutil
+import stat
 import subprocess
 from pathlib import Path
-from typing import List, Union
+from typing import Callable, List, Union
 
 import requests
 
@@ -54,7 +56,7 @@ class DirtyRepository(Exception):
 class Git:
 
 	def __init__(self, directory: Union[str, Path], makeDir: bool = False, init: bool = False, url: str = '', quiet: bool = True):
-		if directory and isinstance(directory, str):
+		if isinstance(directory, str):
 			directory = Path(directory)
 
 		if not directory.exists() and not makeDir:
@@ -65,15 +67,19 @@ class Git:
 
 		directory.mkdir(parents=True, exist_ok=True)
 
-		if not Path(directory, '.git').exists() and not init:
-			raise NotGitRepository(directory)
+		isRepository = self.isRepository(directory=directory)
+		if init:
+			if not isRepository:
+				self.execute(f'git init')
+			else:
+				raise AlreadyGitRepository
+		else:
+			if not isRepository:
+				raise NotGitRepository
 
 		self.path      = directory
 		self._quiet    = quiet
 		self._url      = url
-
-		if not Path(directory, '.git').exists():
-			self.execute(f'git init')
 
 		tags           = self.execute('git tag')
 		self.tags      = set(tags.split('\n'))
@@ -83,7 +89,7 @@ class Git:
 
 	@classmethod
 	def clone(cls, url: str, directory: Union[str, Path], branch: str = 'master', makeDir: bool = False, force: bool = False, quiet: bool = True) -> Git:
-		if directory and isinstance(directory, str):
+		if isinstance(directory, str):
 			directory = Path(directory)
 
 		response = requests.get(url)
@@ -93,11 +99,11 @@ class Git:
 		if not directory.exists() and not makeDir:
 			raise PathNotFoundException(directory)
 
-		if Path(directory, '.git').exists():
+		if cls.isRepository(directory=directory):
 			if not force:
 				raise AlreadyGitRepository(directory)
 			else:
-				shutil.rmtree(str(directory), ignore_errors=True)
+				shutil.rmtree(str(directory), onerror=cls.fixPermissions)
 
 		directory.mkdir(parents=True, exist_ok=True)
 		cmd = f'git clone {url} {str(directory)} --branch {branch} --recurse-submodules'
@@ -105,6 +111,34 @@ class Git:
 			cmd = f'{cmd} --quiet'
 		subprocess.run(cmd)
 		return Git(directory=directory, url=url, quiet=quiet)
+
+
+	@staticmethod
+	def isRepository(directory: Union[str, Path]) -> bool:
+		if directory and isinstance(directory, str):
+			directory = Path(directory)
+
+		gitDir = directory / '.git'
+		if not gitDir.exists():
+			return False
+
+		expected = [
+			'hooks',
+			'info',
+			'logs',
+			'objects',
+			'refs',
+			'config',
+			'description',
+			'HEAD',
+			'index',
+			'packed-refs'
+		]
+
+		for item in expected:
+			if not Path(gitDir, item).exists():
+				return False
+		return True
 
 
 	def checkout(self, branch: str = 'master', tag: str = '', force: bool = False):
@@ -117,8 +151,7 @@ class Git:
 			if not force:
 				raise DirtyRepository()
 			else:
-				self.restore()
-				self.clean()
+				self.revert()
 
 		self.execute(f'git checkout {target} --recurse-submodules')
 
@@ -130,6 +163,12 @@ class Git:
 	def isDirty(self) -> bool:
 		status = self.status()
 		return status.isDirty()
+
+
+	def revert(self):
+		self.restore()
+		self.clean()
+		self.execute('git checkout HEAD')
 
 
 	def listStash(self) -> List[str]:
@@ -156,8 +195,7 @@ class Git:
 			if not force:
 				raise DirtyRepository()
 			else:
-				self.restore()
-				self.clean()
+				self.revert()
 
 		self.execute(f'git pull')
 
@@ -179,7 +217,16 @@ class Git:
 
 
 	def destroy(self):
-		shutil.rmtree(self.path, ignore_errors=True)
+		shutil.rmtree(self.path, onerror=self.fixPermissions)
+
+
+	@staticmethod
+	def fixPermissions(func: Callable, path: Path, *_args):
+		if not os.access(path, os.W_OK):
+			os.chmod(path, stat.S_IWUSR)
+			func(path)
+		else:
+			raise # NOSONAR
 
 
 	def execute(self, command: str) -> str:
@@ -196,7 +243,7 @@ class Git:
 class Status:
 
 	def __init__(self, directory: Union[str, Path]):
-		if directory and isinstance(directory, str):
+		if isinstance(directory, str):
 			directory = Path(directory)
 
 		self._status = subprocess.run(f'git -C {str(directory)} status'.split(), capture_output=True, text=True).stdout.strip()
