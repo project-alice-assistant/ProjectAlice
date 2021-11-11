@@ -79,7 +79,7 @@ class Git:
 
 		self.path      = directory
 		self._quiet    = quiet
-		self._url      = url
+		self.url       = url
 
 		tags           = self.execute('git tag')
 		self.tags      = set(tags.split('\n'))
@@ -238,6 +238,37 @@ class Git:
 
 		result = subprocess.run(command.split(), capture_output=True, text=True)
 		return result.stdout.strip()
+
+
+	def add(self):
+		self.execute('git add --all')
+
+
+	def commit(self, message: str = 'Commit by ProjectAliceBot'):
+		self.execute(f'git commit -m "{message}"')
+
+
+	def push(self, repository: str = None):
+		if not repository:
+			repository = self.url
+		self.execute(f'git push --repo={repository} origin')
+
+
+	def file(self, filePath: Union[str, Path]) -> Path:
+		if isinstance(filePath, str):
+			filePath = Path(filePath)
+
+		return self.path / filePath
+
+
+	@property
+	def quiet(self) -> bool:
+		return self._quiet
+
+
+	@quiet.setter
+	def quiet(self, value: bool):
+		self._quiet = value
 
 
 class Status:
