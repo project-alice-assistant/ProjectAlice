@@ -23,6 +23,7 @@ import importlib
 import json
 import threading
 import traceback
+from contextlib import suppress
 from typing import Dict, Optional
 
 from core.ProjectAliceExceptions import AccessLevelTooLow, GithubNotFound, SkillInstanceFailed, SkillNotConditionCompliant, SkillStartDelayed, SkillStartingFailed
@@ -212,13 +213,23 @@ class SkillManager(Manager):
 			skills = [skills]
 
 		for skillName in skills:
+			installFile = dict()
 			try:
+				tag = self.SkillStoreManager.getSkillUpdateTag(skillName=skillName)
+
+				response = requests.get(f'{constants.GITHUB_RAW_URL}/skill_{skillName}/{tag}/{skillName}.install')
+				if response.status_code != 200:
+					raise GithubNotFound
+
+				installFile = json.loads(response.json())
+				self.checkSkillConditions(installer=installFile)
+
 				source = self.getGitRemoteSourceUrl(skillName=skillName, doAuth=False)
 				repository = self.getSkillRepository(skillName=skillName)
 				if not repository:
 					repository = Git.clone(url=source, directory=self.getSkillDirectory(skillName=skillName), makeDir=True)
 
-				repository.checkout(tag=self.SkillStoreManager.getSkillUpdateTag(skillName=skillName))
+				repository.checkout(tag=tag)
 			except GithubNotFound:
 				if skillName in self.NEEDED_SKILLS:
 					self._busyInstalling.clear()
@@ -227,14 +238,35 @@ class SkillManager(Manager):
 				else:
 					self.logError(f'Skill "{skillName}" not found in released skills')
 					continue
+			except SkillNotConditionCompliant as e:
+				if self.notCompliantSkill(skillName=skillName, exception=e):
+					self._failedSkills[skillName] = FailedAliceSkill(installFile)
+					continue
+				else:
+					return
 			except Exception as e:
 				if skillName in self.NEEDED_SKILLS:
 					self._busyInstalling.clear()
-					self.logFatal(f'Error downloading skill **{skillName}** but skill is required, cannot continue: {e}')
+					self.logFatal(f'Error downloading skill **{skillName}** and it is required, cannot continue: {e}')
 					return
 				else:
 					self.logError(f'Error downloading skill "{skillName}": {e}')
 					continue
+
+
+	def notCompliantSkill(self, skillName: str,  exception: SkillNotConditionCompliant) -> bool:
+		"""
+		Print out the fact a skill is not compliant and return false if Alice cannot continue as it's a needed skill
+		:param skillName
+		:param exception:
+		:return:
+		"""
+		if skillName in self.NEEDED_SKILLS:
+			self.logFatal(f'Skill {skillName} does not comply to "{exception.condition}" condition, offers only "{exception.conditionValue}". The skill is required to continue')
+			return False
+		else:
+			self.logInfo(f'Skill {skillName} does not comply to "{exception.condition}" condition, offers only "{exception.conditionValue}"')
+			return True
 
 
 	def loadSkillsFromDB(self) -> List:
@@ -425,13 +457,11 @@ class SkillManager(Manager):
 					else:
 						self._failedSkills[skillName] = FailedAliceSkill(installFile)
 			except SkillNotConditionCompliant as e:
-				if skillName in self.NEEDED_SKILLS:
-					self.logFatal(f'Skill {skillName} does not comply to "{e.condition}" condition, offers only "{e.conditionValue}". The skill is required to continue')
-					return
-				else:
-					self.logInfo(f'Skill {skillName} does not comply to "{e.condition}" condition, offers only "{e.conditionValue}"')
+				if self.notCompliantSkill(skillName=skillName, exception=e):
 					self._failedSkills[skillName] = FailedAliceSkill(installFile)
 					continue
+				else:
+					return
 			except Exception as e:
 				self.logWarning(f'Something went wrong loading skill {skillName}: {e}')
 				self._failedSkills[skillName] = FailedAliceSkill(installFile)
@@ -749,11 +779,8 @@ class SkillManager(Manager):
 				self.initSkills(onlyInit=skillName, reload=info['update'])
 				self.ConfigManager.loadCheckAndUpdateSkillConfigurations(skillToLoad=skillName)
 
-				try:
+				with suppress(SkillStartDelayed):
 					self._startSkill(skillName)
-				except SkillStartDelayed:
-					# The skill start was delayed
-					pass
 
 			if info['update']:
 				self.allSkills[skillName].onSkillUpdated(skill=skillName)
@@ -971,7 +998,7 @@ class SkillManager(Manager):
 				if installFile.get('rebootAfterInstall', False):
 					self.Commons.runRootSystemCommand('sudo shutdown -r now'.split())
 					break
-			except SkillNotConditionCompliant as e:
+			except SkillNotConditionCompliant:
 				self.broadcast(
 					method=constants.EVENT_SKILL_INSTALL_FAILED,
 					exceptions=self._name,
