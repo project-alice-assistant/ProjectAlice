@@ -853,49 +853,6 @@ class SkillManager(Manager):
 						raise
 
 
-				if updating:
-					try:
-						self._skillList[skillName].onStop()
-					except Exception as e:
-						self.logError(f'Error stopping "{skillName}" for update: {e}')
-						raise
-
-					git.stash_push(skillRepository)
-					git.reset(skillRepository, mode='hard')
-
-				try:
-					git.pull(skillRepository, refspecs=self.SkillStoreManager.getSkillUpdateTag(skillName))
-				except:
-					pass
-
-			#
-			# try:
-			# 	gitCloner.cloneSkill()
-			# 	self.logInfo('Skill successfully downloaded')
-			# 	self._installSkill(res)
-			# 	skillsToBoot[skillName] = {
-			# 		'update': updating
-			# 	}
-			# except (GithubTokenFailed, GithubRateLimit):
-			# 	self.logError('Failed cloning skill')
-			# 	raise
-			# except GithubNotFound:
-			# 	if self.ConfigManager.getAliceConfigByName('devMode'):
-			# 		if not Path(f'{self.Commons.rootDir}/skills/{skillName}').exists() or not \
-			# 				Path(f'{self.Commons.rootDir}/skills/{skillName}/{skillName.py}').exists() or not \
-			# 				Path(f'{self.Commons.rootDir}/skills/{skillName}/dialogTemplate').exists() or not \
-			# 				Path(f'{self.Commons.rootDir}/skills/{skillName}/talks').exists():
-			# 			self.logWarning(f'Skill "{skillName}" cannot be installed in dev mode due to missing base files')
-			# 		else:
-			# 			self._installSkill(res)
-			# 			skillsToBoot[skillName] = {
-			# 				'update': updating
-			# 			}
-			# 		continue
-			# 	else:
-			# 		self.logWarning(f'Skill "{skillName}" is not available on Github, cannot install')
-			# 		raise
-
 			except SkillNotConditionCompliant as e:
 				self.logInfo(f'Skill "{skillName}" does not comply to "{e.condition}" condition, required "{e.conditionValue}"')
 				if res.exists():
@@ -989,6 +946,8 @@ class SkillManager(Manager):
 				sysReqs     = installFile.get('systemRequirements', list())
 				scriptReq   = installFile.get('script')
 
+				self.checkSkillConditions(installFile)
+
 				for requirement in pipReqs:
 					self.logInfo(f'Installing pip requirement: {requirement}')
 					self.Commons.runSystemCommand(['./venv/bin/pip3', 'install', requirement])
@@ -1012,8 +971,19 @@ class SkillManager(Manager):
 				if installFile.get('rebootAfterInstall', False):
 					self.Commons.runRootSystemCommand('sudo shutdown -r now'.split())
 					break
+			except SkillNotConditionCompliant as e:
+				self.broadcast(
+					method=constants.EVENT_SKILL_INSTALL_FAILED,
+					exceptions=self._name,
+					skill=skillName
+				)
 			except Exception as e:
 				self.logError(f'Error installing skill **{skillName}**: {e}')
+				self.broadcast(
+					method=constants.EVENT_SKILL_INSTALL_FAILED,
+					exceptions=self._name,
+					skill=skillName
+				)
 
 		self._busyInstalling.clear()
 
