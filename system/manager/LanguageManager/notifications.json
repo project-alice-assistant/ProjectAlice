@@ -59,6 +59,18 @@
 	  "de": "Der Skill \"{}\" wurde auf Version {} aktualisiert."
 	}
   },
+  "skillInstalled": {
+	"title": {
+	  "en": "New skill",
+	  "fr": "Nouveau skill",
+	  "de": "Neue Skill"
+	},
+	"body": {
+	  "en": "The skill \"{}\" was just installed",
+	  "fr": "Le skill \"{}\" vient d'être installé",
+	  "de": "Der Skill \"{}\" wurde gerade installiert."
+	}
+  },
   "aliceUpdated": {
 	"title": {
 	  "en": "Project Alice update",

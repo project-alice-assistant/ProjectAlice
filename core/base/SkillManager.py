@@ -182,19 +182,13 @@ class SkillManager(Manager):
 				self.logError(f'Error updating skill **{skillName}** : {e}')
 				continue
 
-			self.allSkills[skillName].onSkillUpdated(skill=skillName)
+			self.broadcast(constants.EVENT_SKILL_UPDATED, propagateToSkills=True, skill=skillName)
+			#self.allSkills[skillName].onSkillUpdated(skill=skillName) # Not sure why this was here
 			self.MqttManager.mqttBroadcast(
 				topic=constants.TOPIC_SKILL_UPDATED,
 				payload={
 					'skillName': skillName
 				}
-			)
-
-			self.WebUINotificationManager.newNotification(
-				typ=UINotificationType.INFO,
-				notification='skillUpdated',
-				key=f'skillUpdate_{skillName}',
-				replaceBody=[skillName, json.loads(self.getSkillInstallFile(skillName=skillName).read_text())['version']]
 			)
 
 			if withSkillRestart:
@@ -1018,8 +1012,32 @@ class SkillManager(Manager):
 					exceptions=self._name,
 					skill=skillName
 				)
+			else:
+				self.broadcast(
+					method=constants.EVENT_SKILL_INSTALLED,
+					exceptions=[constants.DUMMY],
+					skill=skillName
+				)
 
 		self._busyInstalling.clear()
+
+
+	def onSkillInstalled(self, skill: str):
+		self.WebUINotificationManager.newNotification(
+			typ=UINotificationType.INFO,
+			notification='skillInstalled',
+			key=f'skillUpdate_{skill}',
+			replaceBody=[skill]
+		)
+
+
+	def onSkillUpdated(self, skill: str):
+		self.WebUINotificationManager.newNotification(
+			typ=UINotificationType.INFO,
+			notification='skillUpdated',
+			key=f'skillUpdate_{skill}',
+			replaceBody=[skill, json.loads(self.getSkillInstallFile(skillName=skill).read_text())['version']]
+		)
 
 
 	def checkSkillConditions(self, installer: dict = None) -> bool:
