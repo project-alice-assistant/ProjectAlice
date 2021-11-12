@@ -203,14 +203,16 @@ class SkillManager(Manager):
 		self._busyInstalling.clear()
 
 
-	def downloadSkills(self, skills: Union[str, List[str]]):
+	def downloadSkills(self, skills: Union[str, List[str]]) -> Optional[Dict]:
 		"""
 		Clones skills
 		:param skills:
-		:return:
+		:return: Dict: a dict of created repositories
 		"""
 		if isinstance(skills, str):
 			skills = [skills]
+
+		repositories = dict()
 
 		for skillName in skills:
 			installFile = dict()
@@ -230,28 +232,29 @@ class SkillManager(Manager):
 					repository = Git.clone(url=source, directory=self.getSkillDirectory(skillName=skillName), makeDir=True)
 
 				repository.checkout(tag=tag)
+				repositories[skillName] = repository
 			except GithubNotFound:
 				if skillName in self.NEEDED_SKILLS:
 					self._busyInstalling.clear()
 					self.logFatal(f"Skill **{skillName}** is required but wasn't found in released skills, cannot continue")
-					return
+					return None
 				else:
 					self.logError(f'Skill "{skillName}" not found in released skills')
 					continue
 			except SkillNotConditionCompliant as e:
 				if self.notCompliantSkill(skillName=skillName, exception=e):
-					self._failedSkills[skillName] = FailedAliceSkill(installFile)
 					continue
 				else:
-					return
+					return None
 			except Exception as e:
 				if skillName in self.NEEDED_SKILLS:
 					self._busyInstalling.clear()
 					self.logFatal(f'Error downloading skill **{skillName}** and it is required, cannot continue: {e}')
-					return
+					return None
 				else:
 					self.logError(f'Error downloading skill "{skillName}": {e}')
 					continue
+		return repositories
 
 
 	def notCompliantSkill(self, skillName: str,  exception: SkillNotConditionCompliant) -> bool:
@@ -955,7 +958,7 @@ class SkillManager(Manager):
 	def installSkills(self, skills: Union[str, List[str]]):
 		"""
 		Installs the given skills
-		:param skills: Either a list of skillnames to install or a single skill name
+		:param skills: Either a list of skill names to install or a single skill name
 		:return:
 		"""
 		self._busyInstalling.set()
@@ -966,7 +969,11 @@ class SkillManager(Manager):
 			try:
 				repository = self.getSkillRepository(skillName=skillName)
 				if not repository:
-					self.downloadSkills(skills=skillName)
+					repositories = self.downloadSkills(skills=skillName)
+					repository = repositories.get(skillName, None)
+
+				if not repository:
+					raise Exception(f'Failed downloading skill **{skillName}** for some unknown reason')
 
 				installFile = json.loads(repository.file(f'{skillName}.install').read_text())
 				pipReqs     = installFile.get('pipRequirements', list())
