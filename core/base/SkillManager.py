@@ -209,7 +209,6 @@ class SkillManager(Manager):
 		repositories = dict()
 
 		for skillName in skills:
-			installFile = dict()
 			try:
 				tag = self.SkillStoreManager.getSkillUpdateTag(skillName=skillName)
 
@@ -239,6 +238,7 @@ class SkillManager(Manager):
 				if self.notCompliantSkill(skillName=skillName, exception=e):
 					continue
 				else:
+					self._busyInstalling.clear()
 					return None
 			except Exception as e:
 				if skillName in self.NEEDED_SKILLS:
@@ -319,12 +319,6 @@ class SkillManager(Manager):
 				continue
 
 			self._activeSkills[skillName].onBooted()
-
-			self.broadcast(
-				method=constants.EVENT_SKILL_UPDATED if skill['update'] else constants.EVENT_SKILL_INSTALLED,
-				exceptions=[constants.DUMMY],
-				skill=skillName
-			)
 
 
 	@property
@@ -442,6 +436,8 @@ class SkillManager(Manager):
 				if skillInstance:
 					if skillName in self.NEEDED_SKILLS:
 						skillInstance.required = True
+
+					self.ConfigManager.loadCheckAndUpdateSkillConfigurations(skillToLoad=skillName)
 
 					if skillActiveState:
 						self._activeSkills[skillInstance.name] = skillInstance
