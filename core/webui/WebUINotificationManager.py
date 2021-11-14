@@ -169,3 +169,21 @@ class WebUINotificationManager(Manager):
 		notification = self._notifications.pop(notificationId, None)
 		if notification:
 			self._keysToIds.pop(notification.get('key', 'dummy'), None)
+
+
+	def onSkillUpdated(self, skill: str):
+		self.newNotification(
+			typ=UINotificationType.INFO,
+			notification='skillUpdated',
+			key='skillUpdate_{}'.format(skill),
+			replaceBody=[skill, self.SkillManager.getSkillInstance(skillName=skill).version]
+		)
+
+
+	def onSkillInstalled(self, skill: str):
+		self.newNotification(
+			typ=UINotificationType.INFO,
+			notification='skillInstalled',
+			key=f'skillUpdate_{skill}',
+			replaceBody=[skill]
+		)

@@ -239,8 +239,8 @@ class SkillsApi(Api):
 			return jsonify(success=False, reason='skill already installed')
 
 		try:
-			if not self.SkillManager.downloadInstallTicket(skillName):
-				return jsonify(success=False, reason='skill not found')
+			self.SkillManager.downloadSkills(skills=skillName)
+			self.SkillManager.startSkill(skillName=skillName)
 		except Exception as e:
 			self.logWarning(f'Failed installing skill: {e}', printStack=True)
 			return jsonify(success=False, message=str(e))

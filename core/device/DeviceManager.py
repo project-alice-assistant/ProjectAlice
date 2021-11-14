@@ -22,10 +22,9 @@ import socket
 import threading
 import time
 import uuid
-from typing import Dict, List, Optional, Union
-
 from paho.mqtt.client import MQTTMessage
 from serial.tools import list_ports
+from typing import Dict, List, Optional, Union
 
 from core.base.model.Manager import Manager
 from core.commons import constants
@@ -160,11 +159,11 @@ class DeviceManager(Manager):
 		)
 
 
-	def skillDeactivated(self, skillName: str):
-		self.removeDeviceTypesForSkill(skillName=skillName)
+	def onSkillDeactivated(self, skill):
+		self.removeDeviceTypesForSkill(skillName=skill.name)
 		tmp = self._devices.copy()
 		for deviceUid, device in tmp.items():
-			if device.skillName == skillName:
+			if device.skillName == skill.name:
 				self._devices.pop(deviceUid, None)
 
 

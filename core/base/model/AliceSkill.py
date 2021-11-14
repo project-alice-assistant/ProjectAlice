@@ -599,7 +599,6 @@ class AliceSkill(ProjectAliceObject):
 		self._active = False
 		self.SkillManager.configureSkillIntents(self._name, False)
 		self.logInfo(f'![green](Stopped)')
-		self.broadcast(method=constants.EVENT_SKILL_STOPPED, exceptions=[self.name], propagateToSkills=True, skill=self)
 
 
 	def onBooted(self) -> bool:
@@ -608,6 +607,11 @@ class AliceSkill(ProjectAliceObject):
 			self.ThreadManager.doLater(interval=5, func=self.onStart)
 
 		return True
+
+
+	def onSkillStopped(self, skill):
+		if skill == self._name:
+			self.onStop()
 
 
 	def onSkillInstalled(self, **kwargs):
