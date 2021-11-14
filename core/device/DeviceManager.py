@@ -22,9 +22,10 @@ import socket
 import threading
 import time
 import uuid
+from typing import Dict, List, Optional, Union
+
 from paho.mqtt.client import MQTTMessage
 from serial.tools import list_ports
-from typing import Dict, List, Optional, Union
 
 from core.base.model.Manager import Manager
 from core.commons import constants
@@ -148,7 +149,6 @@ class DeviceManager(Manager):
 
 
 	def onSkillDeleted(self, skill: str):
-		self.skillDeactivated(skillName=skill)
 		# noinspection SqlResolve
 		self.DatabaseManager.delete(
 			tableName=self.DB_DEVICE,
@@ -178,8 +178,8 @@ class DeviceManager(Manager):
 				klass = getattr(skillImport, data.get('typeName'))
 				device = klass(data)
 				self._devices[device.id] = device
-			except Exception as e:
-				self.logError(f"Couldn't create device instance: {e}")
+			except Exception:
+				self.logError("Couldn't create device instance")
 
 
 	def loadLinks(self):
@@ -263,7 +263,7 @@ class DeviceManager(Manager):
 			self.logError('Cannot register new device type without a type name and a skill name')
 			return
 
-		# Try to create the device type, if overriden by the user, else fallback to default generic type
+		# Try to create the device type, if overridden by the user, else fallback to default generic type
 		try:
 			skillImport = importlib.import_module(f'skills.{skillName}.device.type.{data.get("deviceTypeName")}')
 			klass = getattr(skillImport, data.get('deviceTypeName'))

@@ -260,7 +260,10 @@ class SuperManager:
 	def onStop(self):
 		managerName = constants.UNKNOWN_MANAGER
 		try:
-			mqttManager = self._managers.pop('MqttManager')
+			mqttManager = self._managers.pop('MqttManager') # Mqtt goes down as last
+
+			skillManager = self._managers.pop('SkillManager') # Skill manager goes down first, to tell the skills
+			skillManager.onStop()
 
 			for managerName, manager in self._managers.items():
 				manager.onStop()
@@ -269,8 +272,7 @@ class SuperManager:
 			mqttManager.onStop()
 		except KeyError as e:
 			Logger().logWarning(f'Manager **{managerName}** was not running: {e}')
-		except RuntimeError:
-			pass # We know, the dict changed size during iteration blabla
+
 		except Exception as e:
 			Logger().logError(f'Error while shutting down manager **{managerName}**: {e}')
 			traceback.print_exc()

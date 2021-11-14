@@ -150,7 +150,7 @@ class SkillManager(Manager):
 	def onStop(self):
 		super().onStop()
 
-		for skillName in self._activeSkills:
+		for skillName in list(self._activeSkills.keys()):
 			self.stopSkill(skillName=skillName)
 
 
@@ -635,6 +635,7 @@ class SkillManager(Manager):
 		skill = None
 		if skillName in self._activeSkills:
 			skill = self._activeSkills.pop(skillName, None)
+			skill.onStop()
 			self.broadcast(
 				method=constants.EVENT_SKILL_STOPPED,
 				exceptions=[constants.DUMMY],
@@ -659,7 +660,8 @@ class SkillManager(Manager):
 			else:
 				skills[skillName].unsubscribeIntents()
 		except Exception as e:
-			self.logWarning(f'Intent configuration failed: {e}')
+			if not self.ProjectAlice.shuttingDown:
+				self.logWarning(f'Intent configuration failed: {e}')
 
 
 	def isIntentInUse(self, intent: Intent, filtered: list) -> bool:
@@ -902,7 +904,7 @@ class SkillManager(Manager):
 		elif skillName in self._failedSkills:
 			return self._failedSkills[skillName]
 		else:
-			if not silent:
+			if not silent and not self.ProjectAlice.shuttingDown:
 				self.logWarning(f'Skill "{skillName}" does not exist in skills manager')
 
 			return None
