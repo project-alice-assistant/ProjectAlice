@@ -1203,6 +1203,7 @@ class SkillManager(Manager):
 			return False
 
 
+	@deprecated # this is available on AliceSK
 	def uploadSkillToGithub(self, skillName: str, skillDesc: str) -> bool:
 		try:
 			self.logInfo(f'Uploading {skillName} to Github')
