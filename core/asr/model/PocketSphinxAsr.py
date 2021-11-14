@@ -69,15 +69,25 @@ class PocketSphinxAsr(Asr):
 		if not self.checkLanguage():
 			self.downloadLanguage()
 
+		try:
+			pocketSphinxPath = self.getPocketSphinxPath()
+		except:
+			raise
+
 		self._config = Decoder.default_config()
-		self._config.set_string('-hmm', f'{self.Commons.rootDir()}/venv/lib/python3.7/site-packages/pocketsphinx/model/{self.LanguageManager.activeLanguageAndCountryCode.lower()}')
-		self._config.set_string('-lm', f'{self.Commons.rootDir()}/venv/lib/python3.7/site-packages/pocketsphinx/model/{self.LanguageManager.activeLanguageAndCountryCode.lower()}.lm.bin')
-		self._config.set_string('-dict', f'{self.Commons.rootDir()}/venv/lib/python3.7/site-packages/pocketsphinx/model/cmudict-{self.LanguageManager.activeLanguageAndCountryCode.lower()}.dict')
+		self._config.set_string('-hmm', f'{pocketSphinxPath}/model/{self.LanguageManager.activeLanguageAndCountryCode.lower()}')
+		self._config.set_string('-lm', f'{pocketSphinxPath}/model/{self.LanguageManager.activeLanguageAndCountryCode.lower()}.lm.bin')
+		self._config.set_string('-dict', f'{pocketSphinxPath}/model/cmudict-{self.LanguageManager.activeLanguageAndCountryCode.lower()}.dict')
 		self._decoder = Decoder(self._config)
 
 
 	def checkLanguage(self) -> bool:
-		if not Path(self.Commons.rootDir(), f'venv/lib/python3.7/site-packages/pocketsphinx/model/{self.LanguageManager.activeLanguageAndCountryCode.lower()}').exists():
+		try:
+			pocketSphinxPath = self.getPocketSphinxPath()
+		except:
+			raise
+
+		if not Path(self.Commons.rootDir(), f'{pocketSphinxPath}/model/{self.LanguageManager.activeLanguageAndCountryCode.lower()}').exists():
 			self.logInfo('Missing language model')
 			return False
 
@@ -97,11 +107,15 @@ class PocketSphinxAsr(Asr):
 		lang = forceLang or self.LanguageManager.activeLanguageAndCountryCode
 		self.logInfo(f'Downloading language model for "{lang}"')
 
-		venv = Path(self.Commons.rootDir(), 'venv/lib/python3.7/site-packages/pocketsphinx/')
+		try:
+			pocketSphinxPath = self.getPocketSphinxPath()
+		except:
+			raise
+
 		for url in self.LANGUAGE_PACK:
 			url = url.replace('%lang%', lang.lower())
 			filename = Path(url).name
-			download = Path(venv, 'model', filename)
+			download = Path(pocketSphinxPath, 'model', filename)
 			result = self.Commons.downloadFile(url=f'{url}?raw=true', dest=str(download))
 			if not result:
 				if forceLang:
@@ -111,7 +125,7 @@ class PocketSphinxAsr(Asr):
 					self.downloadLanguage(forceLang='en-US')
 			else:
 				if download.suffix == '.tar':
-					dest = Path(venv, 'model', lang.lower())
+					dest = Path(pocketSphinxPath, 'model', lang.lower())
 
 					if dest.exists():
 						shutil.rmtree(dest)
@@ -137,7 +151,7 @@ class PocketSphinxAsr(Asr):
 				self._decoder.start_utt()
 				inSpeech = False
 				for chunk in recorder:
-					if self._timeout.isSet():
+					if self._timeout.is_set():
 						break
 
 					self._decoder.process_raw(chunk, False, False)
@@ -162,3 +176,12 @@ class PocketSphinxAsr(Asr):
 			likelihood=self._decoder.hyp().prob,
 			processingTime=processingTime.time
 		) if result else None
+
+
+	def getPocketSphinxPath(self) -> Path:
+		if Path(f'{self.Commons.rootDir()}/venv/lib/python3.7/').exists():
+			return Path(f'{self.Commons.rootDir()}/venv/lib/python3.7/site-packages/pocketsphinx')
+		elif Path(f'{self.Commons.rootDir()}/venv/lib/python3.9/').exists():
+			return Path(f'{self.Commons.rootDir()}/venv/lib/python3.9/site-packages/pocketsphinx')
+		else:
+			raise Exception('Python 3.7 or 3.9 not found')

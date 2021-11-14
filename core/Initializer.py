@@ -316,7 +316,7 @@ class PreInit:
 		if not Path('venv').exists():
 			self._logger.logInfo('Not running with venv, I need to create it')
 			subprocess.run(['sudo', 'apt-get', 'install', 'python3-dev', 'python3-pip', 'python3-venv', 'python3-wheel', '-y'])
-			subprocess.run(['python3.7', '-m', 'venv', 'venv'])
+			subprocess.run(['python3', '-m', 'venv', 'venv'])
 			self.updateVenv()
 			self._logger.logInfo('Installed virtual environement, restarting...')
 			return False
@@ -575,7 +575,7 @@ class Initializer:
 				subprocess.run(['sudo', 'systemctl', 'stop', 'hermesledcontrol'])
 				subprocess.run(['sudo', 'rm', hlcServiceFilePath])
 
-			subprocess.run(['python3.7', '-m', 'venv', f'/home/{getpass.getuser()}/hermesLedControl/venv'])
+			subprocess.run(['python3', '-m', 'venv', f'/home/{getpass.getuser()}/hermesLedControl/venv'])
 
 			reqs = [
 				'RPi.GPIO',
