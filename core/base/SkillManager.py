@@ -19,10 +19,9 @@
 
 
 import getpass
-import traceback
-
 import importlib
 import json
+import traceback
 from contextlib import suppress
 from typing import Dict, Optional
 
@@ -467,12 +466,12 @@ class SkillManager(Manager):
 					if skillName in self.NEEDED_SKILLS:
 						skillInstance.required = True
 
-					self.ConfigManager.loadCheckAndUpdateSkillConfigurations(skillToLoad=skillName)
-
 					if skillActiveState:
 						self._activeSkills[skillInstance.name] = skillInstance
 					else:
 						self._deactivatedSkills[skillName] = skillInstance
+
+					self.ConfigManager.loadCheckAndUpdateSkillConfigurations(skillToLoad=skillName)
 				else:
 					if skillName in self.NEEDED_SKILLS:
 						self.logFatal(f'The skill is required to continue...')
@@ -623,6 +622,9 @@ class SkillManager(Manager):
 			)
 
 			self.initSkills(onlyInit=skillName, reload=True)
+			if skillName in self.activeSkills:
+				self.logInfo(f'Updated skill **{skillName}** to version **{self.activeSkills[skillName].version}**')
+
 			if withSkillRestart:
 				self.startSkill(skillName=skillName)
 
@@ -862,8 +864,10 @@ class SkillManager(Manager):
 						replaceBody=[skillName, str(remoteVersion)]
 					)
 
-					if self.isSkillUserModified(skillName=skillName):
-						self.allSkills[skillName].updateAvailable = True
+					if self.isSkillUserModified(skillName=skillName) and self.ConfigManager.getAliceConfigByName('devMode'):
+						if skillName in self.allSkills:
+							self.allSkills[skillName].updateAvailable = True
+
 						self.logInfo(f'![blue]({skillName}) - Version {installer["version"]} < {str(remoteVersion)} in {self.ConfigManager.getAliceConfigByName("skillsUpdateChannel")} - Locked for local changes!')
 						continue
 
@@ -875,7 +879,7 @@ class SkillManager(Manager):
 					else:
 						skillsToUpdate.append(skillName)
 				else:
-					if self.isSkillUserModified(skillName=skillName):
+					if self.isSkillUserModified(skillName=skillName) and self.ConfigManager.getAliceConfigByName('devMode'):
 						self.logInfo(f'![blue]({skillName}) - Version {installer["version"]} in {self.ConfigManager.getAliceConfigByName("skillsUpdateChannel")} - Locked for local changes!')
 					else:
 						self.logInfo(f'![green]({skillName}) - Version {installer["version"]} in {self.ConfigManager.getAliceConfigByName("skillsUpdateChannel")}')

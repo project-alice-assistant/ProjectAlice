@@ -23,7 +23,7 @@ import shutil
 import stat
 import subprocess
 from pathlib import Path
-from typing import Callable, List, Union
+from typing import Callable, List, Tuple, Union
 
 import requests
 
@@ -81,9 +81,9 @@ class Git:
 		self._quiet    = quiet
 		self.url       = url
 
-		tags           = self.execute('git tag')
+		tags           = self.execute('git tag')[0]
 		self.tags      = set(tags.split('\n'))
-		branches       = self.execute('git branch')
+		branches       = self.execute('git branch')[0]
 		self.branches  = set(branches.split('\n'))
 
 
@@ -125,14 +125,11 @@ class Git:
 		expected = [
 			'hooks',
 			'info',
-			'logs',
 			'objects',
 			'refs',
 			'config',
 			'description',
-			'HEAD',
-			'index',
-			'packed-refs'
+			'HEAD'
 		]
 
 		for item in expected:
@@ -146,6 +143,9 @@ class Git:
 			target = f'tags/{tag} -B Branch_{tag}'
 		else:
 			target = branch
+
+		if not target:
+			raise Exception('Checkout target cannot be empty§')
 
 		if self.isDirty():
 			if not force:
@@ -166,13 +166,13 @@ class Git:
 
 
 	def revert(self):
-		self.restore()
+		self.reset()
 		self.clean()
 		self.execute('git checkout HEAD')
 
 
 	def listStash(self) -> List[str]:
-		result = self.execute(f'git stash list')
+		result = self.execute(f'git stash list')[0]
 		return result.split('\n')
 
 
@@ -197,7 +197,11 @@ class Git:
 			else:
 				self.revert()
 
-		self.execute(f'git pull')
+		self.execute('git pull')
+
+
+	def reset(self):
+		self.execute('git reset --hard')
 
 
 	def clean(self, removeUntrackedFiles: bool = True, removeUntrackedDirectory: bool = True, removeIgnored: bool = False):
@@ -215,7 +219,7 @@ class Git:
 
 
 	def restore(self):
-		self.execute(f'git restore {str(self.path)}')
+		self.execute(f'git restore {str(self.path)}', noDashCOption=True)
 
 
 	def destroy(self):
@@ -231,15 +235,15 @@ class Git:
 			raise # NOSONAR
 
 
-	def execute(self, command: str) -> str:
-		if not command.startswith('git -C'):
+	def execute(self, command: str, noDashCOption: bool = False) -> Tuple[str, str]:
+		if not command.startswith('git -C') and not noDashCOption:
 			command = command.replace('git', f'git -C {str(self.path)}', 1)
 
 		if self._quiet:
 			command = f'{command} --quiet'
 
 		result = subprocess.run(command.split(), capture_output=True, text=True)
-		return result.stdout.strip()
+		return result.stdout.strip(), result.stderr.strip()
 
 
 	def add(self):
