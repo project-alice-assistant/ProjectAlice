@@ -33,7 +33,7 @@ sudo -u "$(logname)" bash <<EOF
 EOF
 
 apt-get update
-apt-get dist-upgrade
+#apt-get dist-upgrade
 apt-get clean
 apt-get autoclean
 apt-get autoremove -y
