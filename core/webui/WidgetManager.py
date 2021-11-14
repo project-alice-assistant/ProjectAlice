@@ -93,7 +93,7 @@ class WidgetManager(Manager):
 					tableName=self.WIDGETS_TABLE,
 					callerName=self.name,
 					values={
-						'parent': widget['skill'],
+						'skill' : widget['skill'],
 						'name'  : widget['name']
 					}
 				)

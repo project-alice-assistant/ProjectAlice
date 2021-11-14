@@ -269,6 +269,8 @@ class SuperManager:
 			mqttManager.onStop()
 		except KeyError as e:
 			Logger().logWarning(f'Manager **{managerName}** was not running: {e}')
+		except RuntimeError:
+			pass # We know, the dict changed size during iteration blabla
 		except Exception as e:
 			Logger().logError(f'Error while shutting down manager **{managerName}**: {e}')
 			traceback.print_exc()
