@@ -18,24 +18,22 @@
 #  Last modified: 2021.08.02 at 06:12:17 CEST
 
 
-import getpass
-import traceback
-
 import importlib
 import json
-import requests
 import shutil
+import traceback
 from contextlib import suppress
 from pathlib import Path
 from typing import Dict, List, Optional, Union
 
-from AliceGit import AliceGit
+import requests
+
+from AliceGit import AliceGit, Exceptions as GitErrors
 from core.ProjectAliceExceptions import AccessLevelTooLow, GithubNotFound, SkillInstanceFailed, SkillNotConditionCompliant, SkillStartDelayed, SkillStartingFailed
 from core.base.SuperManager import SuperManager
 from core.base.model import Intent
 from core.base.model.AliceSkill import AliceSkill
 from core.base.model.FailedAliceSkill import FailedAliceSkill
-from core.base.model.GithubCloner import GithubCloner
 from core.base.model.Manager import Manager
 from core.base.model.Version import Version
 from core.commons import constants
@@ -247,8 +245,9 @@ class SkillManager(Manager):
 
 		for skillName in skills:
 			try:
-				repository = self.getSkillRepository(skillName=skillName)
-				if not repository:
+				try:
+					repository = self.getSkillRepository(skillName=skillName)
+				except:
 					repositories = self.downloadSkills(skills=skillName)
 					repository = repositories.get(skillName, None)
 
@@ -325,7 +324,7 @@ class SkillManager(Manager):
 		try:
 			return AliceGit(directory=directory)
 		except:
-			return None
+			raise
 
 
 	def downloadSkills(self, skills: Union[str, List[str]]) -> Optional[Dict]:
@@ -354,8 +353,10 @@ class SkillManager(Manager):
 				self.checkSkillConditions(installer=installFile)
 
 				source = self.getGitRemoteSourceUrl(skillName=skillName, doAuth=False)
-				repository = self.getSkillRepository(skillName=skillName)
-				if not repository:
+
+				try:
+					repository = self.getSkillRepository(skillName=skillName)
+				except:
 					repository = AliceGit.clone(url=source, directory=self.getSkillDirectory(skillName=skillName), makeDir=True)
 
 				repository.checkout(tag=tag)
@@ -444,15 +445,16 @@ class SkillManager(Manager):
 			self._failedSkills.pop(skillName, None)
 			self._deactivatedSkills.pop(skillName, None)
 
-			installFile = self.getSkillInstallFile(skillName=skillName)
-			if not installFile.exists():
+			installFilePath = self.getSkillInstallFilePath(skillName=skillName)
+			if not installFilePath.exists():
 				if skillName in self.NEEDED_SKILLS:
 					self.logFatal(f'Cannot find skill install file for skill **{skillName}**. The skill is required to continue')
 					return
 				else:
 					self.logWarning(f'Cannot find skill install file for skill **{skillName}**, skipping.')
+					continue
 			else:
-				installFile = json.loads(installFile.read_text())
+				installFile = json.loads(installFilePath.read_text())
 
 			try:
 				skillActiveState = self.isSkillActive(skillName=skillName)
@@ -498,8 +500,8 @@ class SkillManager(Manager):
 					continue
 
 
-	def getSkillInstallFile(self, skillName: str) -> Path:
-		return Path(self.Commons.rootDir(), f'skills/{skillName}/{skillName}.install')
+	def getSkillInstallFilePath(self, skillName: str) -> Path:
+		return self.getSkillDirectory(skillName=skillName) / f'{skillName}.install'
 
 
 	# noinspection PyTypeChecker
@@ -857,7 +859,7 @@ class SkillManager(Manager):
 				if skillToCheck and skillName != skillToCheck:
 					continue
 
-				installer = json.loads(self.getSkillInstallFile(skillName=skillName).read_text())
+				installer = json.loads(self.getSkillInstallFilePath(skillName=skillName).read_text())
 
 				remoteVersion = self.SkillStoreManager.getSkillUpdateVersion(skillName)
 				localVersion = Version.fromString(installer['version'])
@@ -961,8 +963,9 @@ class SkillManager(Manager):
 		self._failedSkills.pop(skillName, None)
 
 		self.removeSkillFromDB(skillName=skillName)
-		repo = self.getSkillRepository(skillName=skillName)
-		if repo:
+
+		with suppress:
+			repo = self.getSkillRepository(skillName=skillName)
 			repo.destroy()
 
 		self.AssistantManager.checkAssistant()
@@ -1038,80 +1041,15 @@ class SkillManager(Manager):
 			return False
 
 
-
-
-
-
-
-
-
-
-
-	# def onAssistantInstalled(self, **kwargs):
-	# 	argv = kwargs.get('skillsInfos', dict())
-	# 	if not argv:
-	# 		return
-	#
-	# 	for skillName, skill in argv.items():
-	# 		try:
-	# 			self._startSkill(skillName=skillName)
-	# 		except SkillStartDelayed:
-	# 			self.logInfo(f'Skill "{skillName}" start is delayed')
-	# 		except KeyError as e:
-	# 			self.logError(f'Skill "{skillName} not found, skipping: {e}')
-	# 			continue
-	#
-	# 		self._activeSkills[skillName].onBooted()
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 	def createNewSkill(self, skillDefinition: dict) -> bool:
 		try:
 			self.logInfo(f'Creating new skill "{skillDefinition["name"]}"')
 
 			skillName = skillDefinition['name'].capitalize()
 
-			localDirectory = Path('/home', getpass.getuser(), f'ProjectAlice/skills/{skillName}')
+			localDirectory = self.getSkillDirectory(skillName=skillName)
 			if localDirectory.exists():
-				raise Exception("Skill name exists locally")
+				raise Exception('Skill name exists locally')
 
 			supportedLanguages = [
 				'en'
@@ -1171,35 +1109,25 @@ class SkillManager(Manager):
 				'speakableName'     : skillDefinition['speakableName'],
 				'langs'             : supportedLanguages,
 				'createInstructions': skillDefinition.get('instructions', False),
-				'pipreq'            : [req.strip() for req in skillDefinition.get('pipreq', "").split(',')],
-				'sysreq'            : [req.strip() for req in skillDefinition.get('sysreq', "").split(',')],
+				'pipreq'            : [req.strip() for req in skillDefinition.get('pipreq', '').split(',')],
+				'sysreq'            : [req.strip() for req in skillDefinition.get('sysreq', '').split(',')],
 				'widgets'           : widgets,
 				'scenarioNodes'     : scenarioNodes,
 				'devices'           : devices,
-				'outputDestination' : str(Path(self.Commons.rootDir()) / 'skills' / skillName),
+				'outputDestination' : str(localDirectory),
 				'conditions'        : conditions
 			}
 
 			dump = Path(f'/tmp/{skillName}.json')
 			dump.write_text(json.dumps(data, ensure_ascii=False))
 
-			self.Commons.runSystemCommand(['./venv/bin/pip', 'install', '--upgrade', 'projectalice-sk'])
 			self.Commons.runSystemCommand(['./venv/bin/projectalice-sk', 'create', '--file', f'{str(dump)}'])
 			self.logInfo(f'Created **{skillName}** skill')
 
-			# todo: ugly..
-			data['name'] = data['skillName']
-			data['author'] = data['username']
-			data['desc'] = data['description']
-			# ok, version never filled in frontend and every skill should be created in initial version
-			data['version'] = '0.0.1'
-
-			self._failedSkills[skillName] = FailedAliceSkill(data)
 			self._skillList[skillName] = {
 				'active'   : False,
-				'installer': data
+				'installer': json.loads(self.getSkillInstallFilePath(skillName=skillName).read_text())
 			}
-			self._failedSkills[skillName].modified = True
 
 			return True
 		except Exception as e:
@@ -1207,47 +1135,53 @@ class SkillManager(Manager):
 			return False
 
 
-	@deprecated # this is available on AliceSK
 	def uploadSkillToGithub(self, skillName: str, skillDesc: str) -> bool:
 		try:
 			self.logInfo(f'Uploading {skillName} to Github')
 
 			skillName = skillName[0].upper() + skillName[1:]
 
-			localDirectory = Path('/home', getpass.getuser(), f'ProjectAlice/skills/{skillName}')
-			if not localDirectory.exists():
-				raise Exception("Local skill doesn't exist")
+			try:
+				repository = self.getSkillRepository(skillName=skillName)
+			except GitErrors.PathNotFoundException:
+				raise Exception(f"Local skill **{skillName}** doesn't exist")
+			except GitErrors.NotGitRepository:
+				raise Exception(f'Skill **{skillName}** found but is not a git repository')
 
-			data = {
-				'name'       : f'skill_{skillName}',
-				'description': skillDesc,
-				'has-issues' : True,
-				'has-wiki'   : False
-			}
-			req = requests.post('https://api.github.com/user/repos', data=json.dumps(data), auth=GithubCloner.getGithubAuth())
+			auth = self.ConfigManager.githubAuth
+			self.Commons.runSystemCommand(f'./venv/bin/projectalice-sk uploadToGithub --token {auth[1]} --author {auth[0]} --path {str(repository.path)} --desc {skillDesc}')
 
-			if req.status_code != 201:
-				raise Exception("Couldn't create the repository on Github")
-
-			self.Commons.runSystemCommand(['rm', '-rf', f'{str(localDirectory)}/.git'])
-			self.Commons.runSystemCommand(['git', '-C', str(localDirectory), 'init'])
-
-			self.Commons.runSystemCommand(['git', 'config', '--global', 'user.email', 'githubbot@projectalice.io'])
-			self.Commons.runSystemCommand(['git', 'config', '--global', 'user.name', 'githubbot@projectalice.io'])
-
-			remote = f'https://{self.ConfigManager.getAliceConfigByName("githubUsername")}:{self.ConfigManager.getAliceConfigByName("githubToken")}@github.com/{self.ConfigManager.getAliceConfigByName("githubUsername")}/skill_{skillName}.git'
-			self.Commons.runSystemCommand(['git', '-C', str(localDirectory), 'remote', 'add', 'origin', remote])
-
-			self.Commons.runSystemCommand(['git', '-C', str(localDirectory), 'add', '--all'])
-			self.Commons.runSystemCommand(['git', '-C', str(localDirectory), 'commit', '-m', '"Initial upload by Project Alice Skill Kit"'])
-			self.Commons.runSystemCommand(['git', '-C', str(localDirectory), 'push', '--set-upstream', 'origin', 'master'])
-
-			url = f'https://github.com/{self.ConfigManager.getAliceConfigByName("githubUsername")}/skill_{skillName}.git'
+			url = f'https://github.com/{auth[0]}/skill_{skillName}.git'
 			self.logInfo(f'Skill uploaded! You can find it on {url}')
 			return True
 		except Exception as e:
 			self.logWarning(f'Something went wrong uploading skill to Github: {e}')
 			return False
+
+
+
+
+
+
+
+
+
+	# def onAssistantInstalled(self, **kwargs):
+	# 	argv = kwargs.get('skillsInfos', dict())
+	# 	if not argv:
+	# 		return
+	#
+	# 	for skillName, skill in argv.items():
+	# 		try:
+	# 			self._startSkill(skillName=skillName)
+	# 		except SkillStartDelayed:
+	# 			self.logInfo(f'Skill "{skillName}" start is delayed')
+	# 		except KeyError as e:
+	# 			self.logError(f'Skill "{skillName} not found, skipping: {e}')
+	# 			continue
+	#
+	# 		self._activeSkills[skillName].onBooted()
+
 
 
 	@deprecated

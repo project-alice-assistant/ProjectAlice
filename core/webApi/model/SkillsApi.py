@@ -19,11 +19,10 @@
 
 
 import json
+from pathlib import Path
 
-import ProjectAliceSK.ProjectAliceSkillKit
 from flask import Response, jsonify, request
 from flask_classful import route
-from pathlib import Path
 
 from core.base.model.GithubCloner import GithubCloner
 from core.commons import constants
@@ -87,7 +86,8 @@ class SkillsApi(Api):
 
 			if not self.SkillManager.createNewSkill(newSkill):
 				raise Exception
-			skillName = request.form.get('name', '').capitalize()
+
+			skillName = newSkill['name']
 			skill = self.SkillManager.getSkillInstance(skillName=skillName, silent=False)
 			return jsonify(success=True, skill=skill.toDict() if skill else dict())
 
@@ -105,7 +105,6 @@ class SkillsApi(Api):
 
 			if not skillName:
 				raise Exception('Missing skill name')
-
 
 			if self.SkillManager.uploadSkillToGithub(skillName, skillDesc):
 				return jsonify(success=True, url=f'https://github.com/{self.ConfigManager.getAliceConfigByName("githubUsername")}/skill_{skillName}.git')
