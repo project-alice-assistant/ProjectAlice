@@ -86,7 +86,8 @@ class SkillsApi(Api):
 
 			if not self.SkillManager.createNewSkill(newSkill):
 				raise Exception
-			skillName = request.form.get('name', '').capitalize()
+
+			skillName = newSkill['name']
 			skill = self.SkillManager.getSkillInstance(skillName=skillName, silent=False)
 			return jsonify(success=True, skill=skill.toDict() if skill else dict())
 
@@ -122,10 +123,8 @@ class SkillsApi(Api):
 
 			status = dict()
 			for skill in skills:
-				if self.SkillManager.downloadInstallTicket(skill):
-					status[skill] = 'ok'
-				else:
-					status[skill] = 'ko'
+				self.SkillManager.installSkills(skills=skill)
+				status[skill] = 'ok'
 
 			return jsonify(success=True, status=status)
 		except Exception as e:
@@ -242,8 +241,8 @@ class SkillsApi(Api):
 			return jsonify(success=False, reason='skill already installed')
 
 		try:
-			if not self.SkillManager.downloadInstallTicket(skillName):
-				return jsonify(success=False, reason='skill not found')
+			self.SkillManager.downloadSkills(skills=skillName)
+			self.SkillManager.startSkill(skillName=skillName)
 		except Exception as e:
 			self.logWarning(f'Failed installing skill: {e}', printStack=True)
 			return jsonify(success=False, message=str(e))

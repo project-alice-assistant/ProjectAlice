@@ -17,16 +17,16 @@
 #
 #  Last modified: 2021.07.28 at 16:07:59 CEST
 
+import traceback
+
 import json
+import paho.mqtt.client as mqtt
+import paho.mqtt.publish as publish
 import random
 import re
-import traceback
 import uuid
 from pathlib import Path
 from typing import List, Union
-
-import paho.mqtt.client as mqtt
-import paho.mqtt.publish as publish
 
 from core.base.model.Intent import Intent
 from core.base.model.Manager import Manager
@@ -953,3 +953,84 @@ class MqttManager(Manager):
 
 		for deviceUid in deviceList:
 			publish.single(constants.TOPIC_TOGGLE_FEEDBACK.format(state.title()), payload=json.dumps({'siteId': deviceUid}), hostname=self.ConfigManager.getAliceConfigByName('mqttHost'))
+
+
+	def onSkillInstalled(self, skill: str):
+		self.mqttBroadcast(
+			topic=constants.TOPIC_SKILL_INSTALLED,
+			payload={
+				'skillName': skill
+			}
+		)
+
+
+	def onSkillUpdated(self, skill: str):
+		self.mqttBroadcast(
+			topic=constants.TOPIC_SKILL_UPDATED,
+			payload={
+				'skillName': skill
+			}
+		)
+
+
+	def onSkillUpdating(self, skill: str):
+		self.mqttBroadcast(
+			topic=constants.TOPIC_SKILL_UPDATING,
+			payload={
+				'skillName': skill
+			}
+		)
+
+
+	def onSkillDeleted(self, skill: str):
+		self.mqttBroadcast(
+			topic=constants.TOPIC_SKILL_DELETED,
+			payload={
+				'skillName': skill
+			}
+		)
+
+
+	def onSkillInstallFailed(self, skill: str):
+		self.mqttBroadcast(
+			topic=constants.TOPIC_SKILL_INSTALL_FAILED,
+			payload={
+				'skillName': skill
+			}
+		)
+
+
+	def onSkillDeactivated(self, skill):
+		self.mqttBroadcast(
+			topic=constants.TOPIC_SKILL_DEACTIVATED,
+			payload={
+				'skillName': skill
+			}
+		)
+
+
+	def onSkillActivated(self, skill):
+		self.mqttBroadcast(
+			topic=constants.TOPIC_SKILL_ACTIVATED,
+			payload={
+				'skillName': skill
+			}
+		)
+
+
+	def onSkillStopped(self, skill):
+		self.mqttBroadcast(
+			topic=constants.TOPIC_SKILL_STOPPED,
+			payload={
+				'skillName': skill
+			}
+		)
+
+
+	def onSkillStarted(self, skill):
+		self.mqttBroadcast(
+			topic=constants.TOPIC_SKILL_STARTED,
+			payload={
+				'skillName': skill
+			}
+		)

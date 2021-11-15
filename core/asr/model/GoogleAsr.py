@@ -32,7 +32,7 @@ from core.util.Stopwatch import Stopwatch
 
 try:
 	# noinspection PyPackageRequirements
-	from google.cloud import speech
+	from google.cloud.speech import SpeechClient, RecognitionConfig, StreamingRecognitionConfig, StreamingRecognizeRequest
 except:
 	pass  # Auto installed
 
@@ -54,8 +54,8 @@ class GoogleAsr(Asr):
 		self._capableOfArbitraryCapture = True
 		self._isOnlineASR = True
 
-		self._client: Optional[speech.SpeechClient] = None
-		self._streamingConfig: Optional[speech.RecognitionConfig] = None
+		self._client: Optional[SpeechClient] = None
+		self._streamingConfig: Optional[RecognitionConfig] = None
 
 		if self._credentialsFile.exists() and not self.ConfigManager.getAliceConfigByName('googleASRCredentials'):
 			self.ConfigManager.updateAliceConfiguration(key='googleASRCredentials', value=self._credentialsFile.read_text(), doPreAndPostProcessing=False)
@@ -70,7 +70,7 @@ class GoogleAsr(Asr):
 		super().onStart()
 		os.environ['GOOGLE_APPLICATION_CREDENTIALS'] = str(self._credentialsFile)
 
-		self._client = speech.SpeechClient()
+		self._client = SpeechClient()
 		# noinspection PyUnresolvedReferences
 		config = speech.RecognitionConfig(
 			encoding=speech.RecognitionConfig.AudioEncoding.LINEAR16,
@@ -80,7 +80,7 @@ class GoogleAsr(Asr):
 			model='command_and_search'
 		)
 
-		self._streamingConfig = speech.StreamingRecognitionConfig(config=config, interim_results=True)
+		self._streamingConfig = StreamingRecognitionConfig(config=config, interim_results=True)
 
 
 	def decodeStream(self, session: DialogSession) -> Optional[ASRResult]:
@@ -95,7 +95,7 @@ class GoogleAsr(Asr):
 				audioStream = stream.audioStream()
 				# noinspection PyUnresolvedReferences
 				try:
-					requests = (speech.StreamingRecognizeRequest(audio_content=content) for content in audioStream)
+					requests = (StreamingRecognizeRequest(audio_content=content) for content in audioStream)
 					responses = self._client.streaming_recognize(self._streamingConfig, requests)
 					result = self._checkResponses(session, responses)
 				except Exception as e:

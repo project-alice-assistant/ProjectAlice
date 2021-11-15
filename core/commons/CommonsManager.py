@@ -17,10 +17,15 @@
 #
 #  Last modified: 2021.04.13 at 12:56:46 CEST
 
+from collections import defaultdict
+from ctypes import *
+
 import hashlib
 import inspect
+import jinja2
 import json
 import random
+import requests
 import socket
 import sqlite3
 import string
@@ -28,18 +33,13 @@ import subprocess
 import tempfile
 import time
 import uuid
-from collections import defaultdict
 from contextlib import contextmanager, suppress
-from ctypes import *
 from datetime import datetime
+from googletrans import Translator
+from paho.mqtt.client import MQTTMessage
 from pathlib import Path
 from typing import Any, Union
 from uuid import UUID
-
-import jinja2
-import requests
-from googletrans import Translator
-from paho.mqtt.client import MQTTMessage
 
 import core.base.SuperManager as SuperManager
 import core.commons.model.Slot as slotModel
@@ -419,6 +419,17 @@ class CommonsManager(Manager):
 	@staticmethod
 	def dictFromRow(row: sqlite3.Row) -> dict:
 		return dict(zip(row.keys(), row))
+
+
+	def getGithubAuth(self) -> tuple:
+		"""
+		Returns the users configured username and token for github as a tuple
+		When one of the values is not supplied None is returned.
+		:return:
+		"""
+		username = self.ConfigManager.getAliceConfigByName('githubUsername')
+		token = self.ConfigManager.getAliceConfigByName('githubToken')
+		return (username, token) if (username and token) else None
 
 
 # noinspection PyUnusedLocal

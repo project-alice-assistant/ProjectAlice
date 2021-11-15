@@ -19,19 +19,19 @@
 
 from __future__ import annotations
 
+from copy import copy
+
+import flask
 import importlib
 import inspect
 import json
 import re
-from copy import copy
+from markdown import markdown
+from paho.mqtt import client as MQTTClient
 from pathlib import Path
 from typing import Any, Dict, Iterable, List, Optional, Union
 
-import flask
-from markdown import markdown
-from paho.mqtt import client as MQTTClient
-
-from core.ProjectAliceExceptions import AccessLevelTooLow, SkillStartingFailed
+from core.ProjectAliceExceptions import AccessLevelTooLow, SkillInstanceFailed
 from core.base.model.Intent import Intent
 from core.base.model.ProjectAliceObject import ProjectAliceObject
 from core.base.model.Version import Version
@@ -45,14 +45,15 @@ class AliceSkill(ProjectAliceObject):
 
 	def __init__(self, supportedIntents: Iterable = None, databaseSchema: dict = None, **kwargs):
 		super().__init__(**kwargs)
+
 		try:
 			self._skillPath = Path(inspect.getfile(self.__class__)).parent
 			self._installFile = Path(inspect.getfile(self.__class__)).with_suffix('.install')
 			self._installer = json.loads(self._installFile.read_text())
 		except FileNotFoundError:
-			raise SkillStartingFailed(skillName=constants.UNKNOWN, error=f'[{type(self).__name__}] Cannot find install file')
+			raise SkillInstanceFailed(skillName=constants.UNKNOWN, error=f'[{type(self).__name__}] Cannot find install file')
 		except Exception as e:
-			raise SkillStartingFailed(skillName=constants.UNKNOWN, error=f'[{type(self).__name__}] Failed loading skill: {e}')
+			raise SkillInstanceFailed(skillName=constants.UNKNOWN, error=f'[{type(self).__name__}] Failed loading skill: {e}')
 
 		instructionsFile = self.getResource(f'instructions/{self.LanguageManager.activeLanguage}.md')
 		if not instructionsFile.exists():
@@ -480,6 +481,11 @@ class AliceSkill(ProjectAliceObject):
 
 
 	@property
+	def installer(self) -> Dict:
+		return self._installer
+
+
+	@property
 	def skillPath(self) -> Path:
 		return self._skillPath
 
@@ -593,7 +599,6 @@ class AliceSkill(ProjectAliceObject):
 		self._active = False
 		self.SkillManager.configureSkillIntents(self._name, False)
 		self.logInfo(f'![green](Stopped)')
-		self.broadcast(method=constants.EVENT_SKILL_STOPPED, exceptions=[self.name], propagateToSkills=True, skill=self)
 
 
 	def onBooted(self) -> bool:
@@ -602,6 +607,11 @@ class AliceSkill(ProjectAliceObject):
 			self.ThreadManager.doLater(interval=5, func=self.onStart)
 
 		return True
+
+
+	def onSkillStopped(self, skill):
+		if skill == self._name:
+			self.onStop()
 
 
 	def onSkillInstalled(self, **kwargs):

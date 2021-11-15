@@ -19,13 +19,13 @@
 
 from __future__ import annotations
 
+from copy import copy
+
 import json
 import re
-from copy import copy
+from importlib_metadata import PackageNotFoundError, version as packageVersion
 from pathlib import Path
 from typing import TYPE_CHECKING, Union
-
-from importlib_metadata import PackageNotFoundError, version as packageVersion
 
 import core.base.SuperManager as SM
 from core.base.model.Version import Version
@@ -311,6 +311,10 @@ class ProjectAliceObject:
 
 
 	def onSkillUpdated(self, skill: str):
+		pass  # Super object function is overridden only if needed
+
+
+	def onSkillUpdating(self, skill: str):
 		pass  # Super object function is overridden only if needed
 
 
@@ -667,6 +671,20 @@ class ProjectAliceObject:
 
 
 	def onSkillStopped(self, skill):
+		"""
+		:param skill: AliceSkill instance
+		"""
+		pass  # Super object function is overridden only if needed
+
+
+	def onSkillActivated(self, skill):
+		"""
+		:param skill: AliceSkill instance
+		"""
+		pass  # Super object function is overridden only if needed
+
+
+	def onSkillDeactivated(self, skill):
 		"""
 		:param skill: AliceSkill instance
 		"""

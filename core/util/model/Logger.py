@@ -78,7 +78,7 @@ class Logger:
 		match = re.match(r'^(\[[\w ]+])(.*)$', msg)
 		if match:
 			tag, log = match.groups()
-			space = ''.join([' ' for _ in range(25 - len(tag))])
+			space = ''.join([' ' for _ in range(35 - len(tag))])
 			msg = f'{tag}{space}{log}'
 
 		func = getattr(self._logger, function)

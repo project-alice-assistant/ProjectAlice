@@ -47,11 +47,12 @@ class SubprocessManager(Manager):
 	def onStop(self):
 		super().onStop()
 
+		self._flag.clear()
+
 		for subproc in self._subproc.values():
 			if subproc.process is not None and subproc.process.poll() is None:
 				subproc.process.terminate()
 
-		self._flag.clear()
 		if self._thread and self._thread.is_alive():
 			self.ThreadManager.terminateThread(name='subprocessManager')
 

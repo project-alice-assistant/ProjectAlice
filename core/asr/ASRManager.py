@@ -116,7 +116,7 @@ class ASRManager(Manager):
 				self.logFatal("Couldn't start any ASR, going down")
 				return
 
-			self.logWarning(f'Something went wrong starting user ASR, falling back to **{fallback}**: {e}')
+			self.logWarning(f'Something went wrong starting user ASR, falling back to **{fallback}**: {e}', printStack=True)
 			self._startASREngine(forceAsr=fallback)
 
 
