@@ -19,6 +19,8 @@
 
 
 import json
+
+import ProjectAliceSK.ProjectAliceSkillKit
 from flask import Response, jsonify, request
 from flask_classful import route
 from pathlib import Path
@@ -103,6 +105,7 @@ class SkillsApi(Api):
 
 			if not skillName:
 				raise Exception('Missing skill name')
+
 
 			if self.SkillManager.uploadSkillToGithub(skillName, skillDesc):
 				return jsonify(success=True, url=f'https://github.com/{self.ConfigManager.getAliceConfigByName("githubUsername")}/skill_{skillName}.git')
