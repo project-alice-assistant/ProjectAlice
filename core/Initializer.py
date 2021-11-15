@@ -58,25 +58,31 @@ class InitDict(dict):
 class SimpleLogger:
 
 	def __init__(self, prepend: str = None):
-		self._prepend = f'[{prepend}]\t '
+		self._prepend = f'[{prepend}]'
 		self._logger = logging.getLogger('ProjectAlice')
 
 
 	def logInfo(self, text: str):
-		self._logger.info(f'{self._prepend} {text}')
+		self._logger.info(f'{self.spacer(text)}')
 
 
 	def logWarning(self, text: str):
-		self._logger.warning(f'{self._prepend} {text}')
+		self._logger.warning(f'{self.spacer(text)}')
 
 
 	def logError(self, text: str):
-		self._logger.error(f'{self._prepend} {text}')
+		self._logger.error(f'{self.spacer(text)}')
 
 
 	def logFatal(self, text: str):
-		self._logger.fatal(f'{self._prepend} {text}')
+		self._logger.fatal(f'{self.spacer(text)}')
 		exit(1)
+
+
+	def spacer(self, msg: str) -> str:
+		space = ''.join([' ' for _ in range(35 - len(self._prepend) + 1)])
+		msg = f'{self._prepend}{space}{msg}'
+		return msg
 
 
 class PreInit:

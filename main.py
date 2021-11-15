@@ -92,7 +92,7 @@ _logger.addHandler(mqttHandler)
 
 def exceptionListener(*exc_info):  # NOSONAR
 	global _logger
-	_logger.error('[Project Alice]           An unhandled exception occured')
+	_logger.error('[Project Alice]                     An unhandled exception occurred')
 	text = ''.join(traceback.format_exception(*exc_info))
 	_logger.error(f'- Traceback: {text}')
 
@@ -125,7 +125,7 @@ def restartProcess():
 			os.close(handler.fd)
 
 	except Exception as e:
-		print(f'Failed restarting Project Alice: {e}')
+		print(f'[Project Alice]                     Failed restarting Project Alice: {e}')
 
 	python = sys.executable
 	os.execl(python, python, *sys.argv)
@@ -143,13 +143,13 @@ def main():
 		while RUNNING:
 			time.sleep(0.1)
 	except KeyboardInterrupt:
-		_logger.info('[Project Alice]           Interruption detected, preparing shutdown')
+		_logger.info('[Project Alice]                     Interruption detected, preparing shutdown')
 
 	finally:
 		if projectAlice.isBooted:
 			projectAlice.onStop()
 
-	_logger.info('[Project Alice]           Shutdown completed, see you soon!')
+	_logger.info('[Project Alice]                     Shutdown completed, see you soon!')
 	if projectAlice.restart:
 		time.sleep(3)
 		restartProcess()
