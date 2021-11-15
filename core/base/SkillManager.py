@@ -19,18 +19,22 @@
 
 
 import getpass
+import traceback
+
 import importlib
 import json
-import traceback
+import requests
+import shutil
 from contextlib import suppress
-from typing import Dict, Optional
+from pathlib import Path
+from typing import Dict, List, Optional, Union
 
+from AliceGit import AliceGit
 from core.ProjectAliceExceptions import AccessLevelTooLow, GithubNotFound, SkillInstanceFailed, SkillNotConditionCompliant, SkillStartDelayed, SkillStartingFailed
 from core.base.SuperManager import SuperManager
 from core.base.model import Intent
 from core.base.model.AliceSkill import AliceSkill
 from core.base.model.FailedAliceSkill import FailedAliceSkill
-from core.base.model.Git import *
 from core.base.model.GithubCloner import GithubCloner
 from core.base.model.Manager import Manager
 from core.base.model.Version import Version
@@ -307,7 +311,7 @@ class SkillManager(Manager):
 		self._busyInstalling.clear()
 
 
-	def getSkillRepository(self, skillName: str, directory: str = None) -> Optional[Git]:
+	def getSkillRepository(self, skillName: str, directory: str = None) -> Optional[AliceGit]:
 		"""
 		Returns a Git object for the given skill
 		:param skillName:
@@ -319,7 +323,7 @@ class SkillManager(Manager):
 			directory = self.getSkillDirectory(skillName=skillName)
 
 		try:
-			return Git(directory=directory)
+			return AliceGit(directory=directory)
 		except:
 			return None
 
@@ -352,7 +356,7 @@ class SkillManager(Manager):
 				source = self.getGitRemoteSourceUrl(skillName=skillName, doAuth=False)
 				repository = self.getSkillRepository(skillName=skillName)
 				if not repository:
-					repository = Git.clone(url=source, directory=self.getSkillDirectory(skillName=skillName), makeDir=True)
+					repository = AliceGit.clone(url=source, directory=self.getSkillDirectory(skillName=skillName), makeDir=True)
 
 				repository.checkout(tag=tag)
 				repositories[skillName] = repository
