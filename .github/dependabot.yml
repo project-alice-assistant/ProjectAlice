@@ -6,7 +6,7 @@ updates:
       interval: "daily"
     # Include a list of updated dependencies
     # with a prefix determined by the dependency group
-    target-branch: "1.0.0-rc1"
+    target-branch: "1.0.0-rc2"
     commit-message:
       prefix: "pip prod"
       prefix-development: "pip dev"
