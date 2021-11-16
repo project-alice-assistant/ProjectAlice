@@ -2,7 +2,7 @@ wheel==0.37.0
 python-dateutil==2.8.2
 paho-mqtt==1.5.1
 requests==2.26.0
-esptool==3.1
+esptool==3.2
 pyserial==3.5
 pydub==0.25.1
 PyYAML==5.4.1
