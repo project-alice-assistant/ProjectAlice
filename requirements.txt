@@ -21,7 +21,7 @@ PyAudio==0.2.11
 pyjwt==2.1.0
 markdown==3.3.4
 ProjectAlice-sk
-sounddevice==0.4.2
+sounddevice==0.4.3
 htmlmin==0.1.12
 jsmin==3.0.0
 cssmin==0.2.0
