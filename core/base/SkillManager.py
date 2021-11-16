@@ -28,7 +28,8 @@ from typing import Dict, List, Optional, Union
 
 import requests
 
-from AliceGit import AliceGit, Exceptions as GitErrors
+from AliceGit import Exceptions as GitErrors
+from AliceGit.Git import Repository
 from core.ProjectAliceExceptions import AccessLevelTooLow, GithubNotFound, SkillInstanceFailed, SkillNotConditionCompliant, SkillStartDelayed, SkillStartingFailed
 from core.base.SuperManager import SuperManager
 from core.base.model import Intent
@@ -310,7 +311,7 @@ class SkillManager(Manager):
 		self._busyInstalling.clear()
 
 
-	def getSkillRepository(self, skillName: str, directory: str = None) -> Optional[AliceGit]:
+	def getSkillRepository(self, skillName: str, directory: str = None) -> Optional[Repository]:
 		"""
 		Returns a Git object for the given skill
 		:param skillName:
@@ -322,7 +323,7 @@ class SkillManager(Manager):
 			directory = self.getSkillDirectory(skillName=skillName)
 
 		try:
-			return AliceGit(directory=directory)
+			return Repository(directory=directory)
 		except:
 			raise
 
@@ -357,7 +358,7 @@ class SkillManager(Manager):
 				try:
 					repository = self.getSkillRepository(skillName=skillName)
 				except:
-					repository = AliceGit.clone(url=source, directory=self.getSkillDirectory(skillName=skillName), makeDir=True)
+					repository = Repository.clone(url=source, directory=self.getSkillDirectory(skillName=skillName), makeDir=True)
 
 				repository.checkout(tag=tag)
 				repositories[skillName] = repository
