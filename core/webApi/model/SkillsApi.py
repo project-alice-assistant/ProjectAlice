@@ -88,6 +88,7 @@ class SkillsApi(Api):
 				raise Exception
 
 			skillName = newSkill['name']
+			self.SkillManager.startSkill(skillName=skillName)
 			skill = self.SkillManager.getSkillInstance(skillName=skillName, silent=False)
 			return jsonify(success=True, skill=skill.toDict() if skill else dict())
 
