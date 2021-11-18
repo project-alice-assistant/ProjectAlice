@@ -19,6 +19,13 @@
 		"description" : "Displays the current system usage on the interface",
 		"category"    : "system"
 	},
+	"enableSSL"       : {
+	  "defaultValue": false,
+	  "dataType"    : "boolean",
+	  "isSensitive" : false,
+	  "description" : "Enables SSL for both the UI and API",
+	  "category"    : "system"
+	},
 	"delegateNluTraining"     : {
 		"defaultValue": false,
 		"dataType"    : "boolean",

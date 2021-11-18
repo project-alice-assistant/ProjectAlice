@@ -77,13 +77,18 @@ class ApiManager(Manager):
 		if not self.isActive:
 			return
 
+		options = {
+			'debug'       : self.ConfigManager.getAliceConfigByName('debug'),
+			'port'        : int(self.ConfigManager.getAliceConfigByName('apiPort')),
+			'host'        : '0.0.0.0',
+			'use_reloader': False
+		}
+
+		if self.ConfigManager.getAliceConfigByName('enableSSL'):
+			options['ssl_context'] = 'adhoc'
+
 		self.ThreadManager.newThread(
 			name='API',
 			target=self.app.run,
-			kwargs={
-				'debug'       : self.ConfigManager.getAliceConfigByName('debug'),
-				'port'        : int(self.ConfigManager.getAliceConfigByName('apiPort')),
-				'host'        : '0.0.0.0',
-				'use_reloader': False
-			}
+			kwargs=options
 		)
