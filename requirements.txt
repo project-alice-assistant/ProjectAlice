@@ -26,6 +26,6 @@ jsmin==3.0.0
 cssmin==0.2.0
 dulwich~=0.20.25
 scipy~=1.7.1
-Werkzeug~=2.0.1
+Werkzeug~=2.0.2
 projectalice-sk~=2.1.2
 AliceGit~=0.0.6
