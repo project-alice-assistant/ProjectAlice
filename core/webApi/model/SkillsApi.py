@@ -25,7 +25,7 @@ from pathlib import Path
 from flask import Response, jsonify, request
 from flask_classful import route
 
-from AliceGit.Exceptions import AlreadyGitRepository, GithubRepoNotFound, GithubUserNotFound
+from AliceGit.Exceptions import AlreadyGitRepository, GithubRepoNotFound, GithubUserNotFound, NotGitRepository
 from AliceGit.Git import Repository
 from AliceGit.Github import Github
 from core.base.model.GithubCloner import GithubCloner
@@ -97,25 +97,6 @@ class SkillsApi(Api):
 
 		except Exception as e:
 			self.logError(f'Something went wrong creating a new skill: {e}')
-			return jsonify(success=False, message=str(e))
-
-
-	@ApiAuthenticated
-	@route('/uploadSkill/', methods=['POST'])
-	def uploadToGithub(self) -> Response:
-		try:
-			skillName = request.form.get('skillName', '')
-			skillDesc = request.form.get('skillDesc', '')
-
-			if not skillName:
-				raise Exception('Missing skill name')
-
-			if self.SkillManager.uploadSkillToGithub(skillName, skillDesc):
-				return jsonify(success=True, url=f'https://github.com/{self.ConfigManager.getAliceConfigByName("githubUsername")}/skill_{skillName}.git')
-
-			return jsonify(success=False, message=f'Error while uploading to github!')
-		except Exception as e:
-			self.logError(f'Failed uploading to github: {e}')
 			return jsonify(success=False, message=str(e))
 
 
@@ -268,6 +249,19 @@ class SkillsApi(Api):
 		return jsonify(success=self.SkillManager.checkForSkillUpdates(skillToCheck=skillName))
 
 
+	@route('/<skillName>/isDirty/', methods=['GET'])
+	@ApiAuthenticated
+	def isDirty(self, skillName: str) -> Response:
+		try:
+			repo = self.SkillManager.getSkillRepository(skillName=skillName)
+			if repo.isDirty():
+				return jsonify(success=True, message='dirty')
+			else:
+				return jsonify(success=True, message='clean')
+		except NotGitRepository:
+			return jsonify(success=True, message='dirty')
+
+
 	@route('/<skillName>/setModified/')
 	@ApiAuthenticated
 	def setModified(self, skillName: str) -> Response:
@@ -283,7 +277,6 @@ class SkillsApi(Api):
 		if not GithubCloner.hasAuth():
 			return self.githubMissing()
 
-		self.SkillManager.getSkillInstance(skillName=skillName).modified = True
 		gitCloner = GithubCloner(baseUrl=f'{constants.GITHUB_URL}/skill_{skillName}.git',
 		                         dest=Path(self.Commons.rootDir()) / 'skills' / skillName,
 		                         skillName=skillName)
@@ -303,11 +296,9 @@ class SkillsApi(Api):
 		"""
 		if skillName not in self.SkillManager.allSkills:
 			return self.skillNotFound()
-		self.SkillManager.getSkillInstance(skillName=skillName).modified = False
-		gitCloner = GithubCloner(baseUrl=f'{constants.GITHUB_URL}/skill_{skillName}.git',
-		                         dest=Path(self.Commons.rootDir()) / 'skills' / skillName,
-		                         skillName=skillName)
-		gitCloner.checkoutMaster()
+
+		skill = self.SkillManager.getSkillInstance(skillName=skillName)
+		skill.repository.revert()
 		return self.checkUpdate(skillName)
 
 
@@ -352,20 +343,41 @@ class SkillsApi(Api):
 		:param skillName:
 		:return:
 		"""
-		if skillName not in self.SkillManager.allSkills:
+
+		skill = self.SkillManager.getSkillInstance(skillName=skillName)
+		if not skill:
 			return self.skillNotFound()
 
-		gitCloner = GithubCloner(baseUrl=f'{constants.GITHUB_URL}/skill_{skillName}.git',
-		                         dest=Path(self.Commons.rootDir()) / 'skills' / skillName,
-		                         skillName=skillName)
+		try:
+			Github(useUrlInstead=skill.repository.url)
+			privateStatus = True
+		except:
+			privateStatus = False
+
+
+		explode = skill.repository.url.split('/')
+		explode[len(explode) - 2] = 'project-alice-assistant'
+		url = '/'.join(explode)
+		try:
+			Github(useUrlInstead=url)
+			publicStatus = True
+		except:
+			publicStatus = False
 
 		return jsonify(success=True,
-		               result={'Public' : {'name'  : 'Public',
-		                                   'url'   : gitCloner.getRemote(origin=True, noToken=True),
-		                                   'status': gitCloner.checkRemote(origin=True)},
-		                       'Private': {'name'  : 'Private',
-		                                   'url'   : gitCloner.getRemote(AliceSK=True, noToken=True),
-		                                   'status': gitCloner.checkRemote(AliceSK=True)}})
+		               result={
+			               'Public' : {
+				               'name'  : 'Public',
+		                        'url'   : url,
+		                        'status': publicStatus
+			               },
+		                   'Private': {
+			                   'name'  : 'Private',
+		                        'url'   : skill.repository.url,
+		                        'status': privateStatus
+		                   }
+		               }
+		            )
 
 
 	@route('/<skillName>/getInstructions/', methods=['GET', 'POST'])

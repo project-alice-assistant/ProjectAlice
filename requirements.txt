@@ -28,4 +28,4 @@ dulwich~=0.20.25
 scipy~=1.7.1
 Werkzeug~=2.0.1
 projectalice-sk~=2.1.2
-AliceGit~=0.0.5
+AliceGit~=0.0.6

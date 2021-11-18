@@ -19,18 +19,19 @@
 
 from __future__ import annotations
 
-from copy import copy
-
-import flask
 import importlib
 import inspect
 import json
 import re
-from markdown import markdown
-from paho.mqtt import client as MQTTClient
+from copy import copy
 from pathlib import Path
 from typing import Any, Dict, Iterable, List, Optional, Union
 
+import flask
+from markdown import markdown
+from paho.mqtt import client as MQTTClient
+
+from AliceGit.Git import Repository
 from core.ProjectAliceExceptions import AccessLevelTooLow, SkillInstanceFailed
 from core.base.model.Intent import Intent
 from core.base.model.ProjectAliceObject import ProjectAliceObject
@@ -71,7 +72,6 @@ class AliceSkill(ProjectAliceObject):
 		self._category = self._installer.get('category', constants.UNKNOWN)
 		self._conditions = self._installer.get('conditions', dict())
 		self._updateAvailable = False
-		self._modified = False
 		self._active = False
 		self._delayed = False
 		self._required = False
@@ -83,13 +83,23 @@ class AliceSkill(ProjectAliceObject):
 		self._intentsDefinitions = dict()
 		self._scenarioPackageName = ''
 		self._scenarioPackageVersion = Version(mainVersion=0, updateVersion=0, hotfix=0)
-
 		self._supportedIntents: Dict[str, Intent] = self.buildIntentList(supportedIntents)
+		self._repository = Repository(directory=self._skillPath, init=True, raiseIfExisting=False)
 		self.loadIntentsDefinition()
 
 		self._utteranceSlotCleaner = re.compile('{(.+?):=>.+?}')
 		self._myDevicesTemplates = dict()
 		self._myDevices: Dict[str, Device] = dict()
+
+
+	@property
+	def modified(self) -> bool:
+		return self._repository.isDirty()
+
+
+	@property
+	def repository(self) -> Repository:
+		return self._repository
 
 
 	@property
@@ -439,28 +449,6 @@ class AliceSkill(ProjectAliceObject):
 
 
 	@property
-	def modified(self) -> bool:
-		return self._modified
-
-
-	@modified.setter
-	def modified(self, value: bool):
-		"""
-		As the skill has no writeToDB method and this is the only value that has to be saved right away
-		a update of the value on the DB is performed. This should only occure manually triggered when the user starts to make local changes
-		:param value:
-		:return:
-		"""
-		self._modified = value
-		self.SkillManager.setSkillModified(skillName=self.name, modified=self._modified)
-		dbVal = 1 if value else 0
-		self.DatabaseManager.update(tableName=self.SkillManager.DBTAB_SKILLS,
-		                            callerName=self.SkillManager.name,
-		                            row=('skillname', self.name),
-		                            values={'modified': dbVal})
-
-
-	@property
 	def scenarioNodeName(self) -> str:
 		return self._scenarioPackageName
 
@@ -520,7 +508,7 @@ class AliceSkill(ProjectAliceObject):
 				text=self.TalkManager.randomTalk(talk='unknownUser', skill='system')
 			)
 			raise AccessLevelTooLow()
-		# Return if intent is for auth users only and the user doesn't have the accesslevel for it
+		# Return if intent is for auth users only and the user doesn't have the access level for it
 		if not self.UserManager.hasAccessLevel(session.user, intent.authLevel):
 			self.endDialog(
 				sessionId=session.sessionId,
@@ -750,7 +738,7 @@ class AliceSkill(ProjectAliceObject):
 			'name'            : self._name,
 			'author'          : self._author,
 			'version'         : self._version,
-			'modified'        : self._modified,
+			'modified'        : self.modified,
 			'updateAvailable' : self._updateAvailable,
 			'active'          : self._active,
 			'delayed'         : self._delayed,
