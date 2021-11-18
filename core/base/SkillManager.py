@@ -1122,13 +1122,13 @@ class SkillManager(Manager):
 			dump = Path(f'/tmp/{skillName}.json')
 			dump.write_text(json.dumps(data, ensure_ascii=False))
 
-			self.Commons.runSystemCommand(['./venv/bin/projectalice-sk', 'create', '--file', f'{str(dump)}'])
+			result = self.Commons.runSystemCommand(['./venv/bin/projectalice-sk', 'create', '--file', f'{str(dump)}'])
+			if result.stderr:
+				raise Exception('SK create failed')
+
 			self.logInfo(f'Created **{skillName}** skill')
 
-			self._skillList[skillName] = {
-				'active'   : False,
-				'installer': json.loads(self.getSkillInstallFilePath(skillName=skillName).read_text())
-			}
+			self._skillList.append(skillName)
 
 			return True
 		except Exception as e:
@@ -1148,6 +1148,7 @@ class SkillManager(Manager):
 				raise Exception(f"Local skill **{skillName}** doesn't exist")
 			except GitErrors.NotGitRepository:
 				raise Exception(f'Skill **{skillName}** found but is not a git repository')
+
 
 			auth = self.ConfigManager.githubAuth
 			self.Commons.runSystemCommand(f'./venv/bin/projectalice-sk uploadToGithub --token {auth[1]} --author {auth[0]} --path {str(repository.path)} --desc {skillDesc}')

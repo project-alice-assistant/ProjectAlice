@@ -537,10 +537,7 @@ class SkillsApi(Api):
 		if skillName not in self.SkillManager.allSkills:
 			return self.skillNotFound()
 
-		skill = self.SkillManager.getSkillInstance(skillName=skillName)
-
-		installFile = skill.getResource(f'{skillName}.install')
-
+		installFile = self.SkillManager.getSkillInstallFilePath(skillName=skillName)
 		return jsonify(success=True, installFile=json.loads(installFile.read_text()))
 
 

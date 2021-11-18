@@ -20,15 +20,12 @@ webrtcvad==2.0.10
 PyAudio==0.2.11
 pyjwt==2.3.0
 markdown==3.3.4
-ProjectAlice-sk
 sounddevice==0.4.3
 htmlmin==0.1.12
 jsmin==3.0.0
 cssmin==0.2.0
-boto3==1.20.6
 dulwich~=0.20.25
-botocore==1.23.6
 scipy~=1.7.1
 Werkzeug~=2.0.1
-projectalice-sk
-AliceGit
+projectalice-sk~=2.2.1
+AliceGit~=0.0.4
