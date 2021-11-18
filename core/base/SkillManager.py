@@ -1126,9 +1126,10 @@ class SkillManager(Manager):
 			if result.stderr:
 				raise Exception('SK create failed')
 
-			self.logInfo(f'Created **{skillName}** skill')
-
 			self._skillList.append(skillName)
+			self.addSkillToDB(skillName=skillName)
+
+			self.logInfo(f'Created **{skillName}** skill')
 
 			return True
 		except Exception as e:

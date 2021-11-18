@@ -87,9 +87,8 @@ class SkillsApi(Api):
 			if not self.SkillManager.createNewSkill(newSkill):
 				raise Exception
 
-			skillName = newSkill['name']
-			self.SkillManager.startSkill(skillName=skillName)
-			skill = self.SkillManager.getSkillInstance(skillName=skillName, silent=False)
+			self.SkillManager.initSkills(onlyInit=newSkill['name'])
+			skill = self.SkillManager.getSkillInstance(skillName=newSkill['name'])
 			return jsonify(success=True, skill=skill.toDict() if skill else dict())
 
 		except Exception as e:
@@ -535,7 +534,6 @@ class SkillsApi(Api):
 		:param skillName:
 		:return:
 		"""
-		print(skillName)
 		try:
 			installFile = self.SkillManager.getSkillInstallFilePath(skillName=skillName)
 			if not installFile.exists:
