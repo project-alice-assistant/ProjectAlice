@@ -442,7 +442,7 @@ class SkillsApi(Api):
 		:param skillName:
 		:return:
 		"""
-		self.logInfo(f'DialogTemplate API access for skill {skillName}')
+		self.logDebug(f'DialogTemplate API access for skill {skillName}')
 		if skillName not in self.SkillManager.allSkills:
 			self.logError(f'Skill {skillName} not found')
 			return self.skillNotFound()
@@ -511,7 +511,7 @@ class SkillsApi(Api):
 		:param skillName:
 		:return:
 		"""
-		self.logInfo(f'writing talkFile API access for skill {skillName}')
+		self.logDebug(f'Writing talkFile API access for skill {skillName}')
 		if skillName not in self.SkillManager.allSkills:
 			return self.skillNotFound()
 
@@ -534,12 +534,14 @@ class SkillsApi(Api):
 		:param skillName:
 		:return:
 		"""
-		if skillName not in self.SkillManager.allSkills:
+		print(skillName)
+		try:
+			installFile = self.SkillManager.getSkillInstallFilePath(skillName=skillName)
+			if not installFile.exists:
+				raise Exception
+			return jsonify(success=True, installFile=json.loads(installFile.read_text()))
+		except:
 			return self.skillNotFound()
-
-		installFile = self.SkillManager.getSkillInstallFilePath(skillName=skillName)
-		return jsonify(success=True, installFile=json.loads(installFile.read_text()))
-
 
 	@route('/<skillName>/setInstallFile/', methods=['PATCH'])
 	@ApiAuthenticated
@@ -549,7 +551,7 @@ class SkillsApi(Api):
 		:param skillName:
 		:return:
 		"""
-		self.logInfo(f'installFile API access for skill {skillName}')
+		self.logDebug(f'InstallFile API access for skill {skillName}')
 		if skillName not in self.SkillManager.allSkills:
 			return self.skillNotFound()
 
@@ -573,7 +575,7 @@ class SkillsApi(Api):
 		:param skillName:
 		:return:
 		"""
-		self.logInfo(f'Creating new widget {widgetName} for skill {skillName}')
+		self.logDebug(f'Creating new widget {widgetName} for skill {skillName}')
 		try:
 			dest = self.getSkillDest(skillName=skillName)
 			self.Commons.runSystemCommand(['./venv/bin/pip', 'install', '--upgrade', 'projectalice-sk'])
@@ -592,7 +594,7 @@ class SkillsApi(Api):
 		:param skillName:
 		:return:
 		"""
-		self.logInfo(f'Creating new device type {deviceName} for skill {skillName}')
+		self.logDebug(f'Creating new device type {deviceName} for skill {skillName}')
 		try:
 			dest = self.getSkillDest(skillName=skillName)
 			self.Commons.runSystemCommand(['./venv/bin/pip', 'install', '--upgrade', 'projectalice-sk'])
