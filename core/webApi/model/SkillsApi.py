@@ -19,11 +19,15 @@
 
 
 import json
+from contextlib import suppress
 from pathlib import Path
 
 from flask import Response, jsonify, request
 from flask_classful import route
 
+from AliceGit.Exceptions import AlreadyGitRepository, GithubRepoNotFound, GithubUserNotFound
+from AliceGit.Git import Repository
+from AliceGit.Github import Github
 from core.base.model.GithubCloner import GithubCloner
 from core.commons import constants
 from core.util.Decorators import ApiAuthenticated
@@ -318,21 +322,23 @@ class SkillsApi(Api):
 		"""
 		if skillName not in self.SkillManager.allSkills:
 			return self.skillNotFound()
-		self.SkillManager.getSkillInstance(skillName=skillName).modified = True
 
-		gitCloner = GithubCloner(baseUrl=f'{constants.GITHUB_URL}/skill_{skillName}.git',
-		                         dest=Path(self.Commons.rootDir()) / 'skills' / skillName,
-		                         skillName=skillName)
-		if not gitCloner.isRepo() and not gitCloner.createRepo():
-			return jsonify(success=False, message="Failed creating repository")
-		elif not gitCloner.add():
-			return jsonify(success=False, message="Failed adding to git")
-		elif not gitCloner.commit(message="pushed via API"):
-			return jsonify(success=False, message="Failed creating commit")
-		elif not gitCloner.push():
-			return jsonify(success=False, message="Failed pushing to git")
-		else:
-			return jsonify(success=True)
+		installFilePath = self.SkillManager.getSkillInstallFilePath(skillName=skillName)
+		try:
+			with suppress(AlreadyGitRepository):
+				repository = Repository(directory=self.SkillManager.getSkillDirectory(skillName=skillName), init=True)
+
+			auth = self.ConfigManager.githubAuth
+			github = Github(username=auth[0], token=auth[1], repositoryName=f'skill_{skillName}')
+			repository.remoteAdd(url=github.url, name='master')
+			repository.commit(message='Save through Alice web UI', autoAdd=True)
+			repository.push()
+		except GithubUserNotFound:
+			return jsonify(success=False, message='The provided Github user is not existing')
+		except GithubRepoNotFound:
+			if not self.SkillManager.uploadSkillToGithub(skillName=skillName, skillDesc=json.loads(installFilePath.read_text())['desc']):
+				return jsonify(success=False, message='Failed uploading to Github')
+		return jsonify(success=True)
 
 
 	@route('/<skillName>/gitStatus/')
@@ -541,6 +547,7 @@ class SkillsApi(Api):
 			return jsonify(success=True, installFile=json.loads(installFile.read_text()))
 		except:
 			return self.skillNotFound()
+
 
 	@route('/<skillName>/setInstallFile/', methods=['PATCH'])
 	@ApiAuthenticated
