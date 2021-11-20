@@ -347,10 +347,10 @@ class SkillManager(Manager):
 				if response.status_code != 200:
 					raise GithubNotFound
 
-				with suppress: # Increment download counter
+				with suppress(): # Increment download counter
 					requests.get(f'https://skills.projectalice.ch/{skillName}')
 
-				installFile = json.loads(response.json())
+				installFile = response.json()
 				self.checkSkillConditions(installer=installFile)
 
 				source = self.getGitRemoteSourceUrl(skillName=skillName, doAuth=False)
@@ -366,7 +366,7 @@ class SkillManager(Manager):
 				if skillName in self.NEEDED_SKILLS:
 					self._busyInstalling.clear()
 					self.logFatal(f"Skill **{skillName}** is required but wasn't found in released skills, cannot continue")
-					return None
+					return repositories
 				else:
 					self.logError(f'Skill "{skillName}" not found in released skills')
 					continue
@@ -375,12 +375,12 @@ class SkillManager(Manager):
 					continue
 				else:
 					self._busyInstalling.clear()
-					return None
+					return repositories
 			except Exception as e:
 				if skillName in self.NEEDED_SKILLS:
 					self._busyInstalling.clear()
 					self.logFatal(f'Error downloading skill **{skillName}** and it is required, cannot continue: {e}')
-					return None
+					return repositories
 				else:
 					self.logError(f'Error downloading skill "{skillName}": {e}')
 					continue
@@ -965,7 +965,7 @@ class SkillManager(Manager):
 
 		self.removeSkillFromDB(skillName=skillName)
 
-		with suppress:
+		with suppress():
 			repo = self.getSkillRepository(skillName=skillName)
 			repo.destroy()
 
