@@ -29,6 +29,7 @@ from typing import Dict, List, Optional, Union
 import requests
 
 from AliceGit import Exceptions as GitErrors
+from AliceGit.Exceptions import NotGitRepository, PathNotFoundException
 from AliceGit.Git import Repository
 from core.ProjectAliceExceptions import AccessLevelTooLow, GithubNotFound, SkillInstanceFailed, SkillNotConditionCompliant, SkillStartDelayed, SkillStartingFailed
 from core.base.SuperManager import SuperManager
@@ -357,8 +358,13 @@ class SkillManager(Manager):
 
 				try:
 					repository = self.getSkillRepository(skillName=skillName)
-				except:
+				except PathNotFoundException:
 					repository = Repository.clone(url=source, directory=self.getSkillDirectory(skillName=skillName), makeDir=True)
+				except NotGitRepository:
+					shutil.rmtree(self.getSkillDirectory(skillName=skillName), ignore_errors=True)
+					repository = Repository.clone(url=source, directory=self.getSkillDirectory(skillName=skillName), makeDir=True)
+				except:
+					raise
 
 				repository.checkout(tag=tag)
 				repositories[skillName] = repository
