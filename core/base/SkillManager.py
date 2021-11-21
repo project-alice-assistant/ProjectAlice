@@ -129,9 +129,12 @@ class SkillManager(Manager):
 		if not self._skillList:
 			self.logInfo('Looks like a fresh install or skills were nuked. Let\'s install the basic skills!')
 			self.installSkills(skills=self.BASE_SKILLS)
-		elif sorted(self._skillList) != sorted(self.BASE_SKILLS):
-			self.logInfo('Some required skills are missing, let\'s download them!')
-			self.installSkills(skills=list(set(self.NEEDED_SKILLS) - set(self._skillList)))
+
+		for skill in self.NEEDED_SKILLS:
+			if skill not in self._skillList:
+				self.logInfo('Some required skills are missing, let\'s download them!')
+				self.installSkills(skills=list(set(self.NEEDED_SKILLS) - set(self._skillList)))
+				break
 
 		updates = self.checkForSkillUpdates()
 		if updates:
@@ -141,8 +144,6 @@ class SkillManager(Manager):
 
 		for skillName in self._deactivatedSkills:
 			self.configureSkillIntents(skillName=skillName, state=False)
-
-		self.ConfigManager.loadCheckAndUpdateSkillConfigurations()
 
 		self.startAllSkills()
 
@@ -347,6 +348,8 @@ class SkillManager(Manager):
 				response = requests.get(f'{constants.GITHUB_RAW_URL}/skill_{skillName}/{tag}/{skillName}.install')
 				if response.status_code != 200:
 					raise GithubNotFound
+
+				self.logInfo(f'Now downloading **{skillName}** version **{tag}**')
 
 				with suppress(): # Increment download counter
 					requests.get(f'https://skills.projectalice.ch/{skillName}')
