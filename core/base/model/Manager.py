@@ -17,7 +17,7 @@
 #
 #  Last modified: 2021.04.13 at 12:56:46 CEST
 
-from typing import List, Optional
+from typing import Any, Dict, List, Optional
 
 from core.base.SuperManager import SuperManager
 from core.base.model.ProjectAliceObject import ProjectAliceObject
@@ -99,7 +99,7 @@ class Manager(ProjectAliceObject):
 
 
 	# HELPERS
-	def databaseFetch(self, tableName: str, query: str = None, values: dict = None) -> List:
+	def databaseFetch(self, tableName: str, query: str = None, values: dict = None) -> List[Dict[str, Any]]:
 		if not query:
 			query = 'SELECT * FROM :__table__'
 

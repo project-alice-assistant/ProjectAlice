@@ -18,15 +18,15 @@
 #  Last modified: 2021.08.02 at 06:12:17 CEST
 
 
+import traceback
+
 import importlib
 import json
+import requests
 import shutil
-import traceback
 from contextlib import suppress
 from pathlib import Path
-from typing import Dict, List, Optional, Union
-
-import requests
+from typing import Any, Dict, List, Optional, Union
 
 from AliceGit import Exceptions as GitErrors
 from AliceGit.Exceptions import NotGitRepository, PathNotFoundException
@@ -41,6 +41,7 @@ from core.base.model.Version import Version
 from core.commons import constants
 from core.dialog.model.DialogSession import DialogSession
 from core.util.Decorators import IfSetting, Online, deprecated
+from core.util.model.AliceEvent import AliceEvent
 from core.webui.model.UINotificationType import UINotificationType
 
 
@@ -73,11 +74,11 @@ class SkillManager(Manager):
 	def __init__(self):
 		super().__init__(databaseSchema=self.DATABASE)
 
-		self._busyInstalling = None
-		self._supportedIntents = list()
+		self._busyInstalling: Optional[AliceEvent] = None
+		self._supportedIntents: List[Dict[str, Intent]] = list()
 
 		# This is a list of the skill names installed
-		self._skillList = list()
+		self._skillList: List[str] = list()
 
 		# These are dict of the skills, with name: skill instance
 		self._activeSkills: Dict[str, AliceSkill] = dict()
@@ -86,37 +87,65 @@ class SkillManager(Manager):
 
 
 	@property
-	def supportedIntents(self) -> list:
+	def supportedIntents(self) -> List[Dict[str, Intent]]:
+		"""
+		Returns a list of all supported intents
+		:return:
+		"""
 		return self._supportedIntents
 
 
 	@property
-	def neededSkills(self) -> list:
+	def neededSkills(self) -> List[str]:
+		"""
+		List of skills that are needed for Alice to start
+		:return:
+		"""
 		return self.NEEDED_SKILLS
 
 
 	@property
 	def activeSkills(self) -> Dict[str, AliceSkill]:
+		"""
+		Returns skills that inited and are active
+		:return:
+		"""
 		return self._activeSkills
 
 
 	@property
 	def deactivatedSkills(self) -> Dict[str, AliceSkill]:
+		"""
+		Returns skills that inited but are disabled by user
+		:return:
+		"""
 		return self._deactivatedSkills
 
 
 	@property
-	def failedSkills(self) -> dict:
+	def failedSkills(self) -> Dict[str, FailedAliceSkill]:
+		"""
+		Returns skills that failed init
+		:return:
+		"""
 		return self._failedSkills
 
 
 	@property
-	def allSkills(self) -> dict:
+	def allSkills(self) -> Dict[str, Union[AliceSkill, FailedAliceSkill]]:
+		"""
+		Returns all skill that inited. This might not contain skills that are physically present but weren't inited
+		:return:
+		"""
 		return {**self._activeSkills, **self._deactivatedSkills, **self._failedSkills}
 
 
 	@property
-	def allWorkingSkills(self) -> dict:
+	def allWorkingSkills(self) -> Dict[str, AliceSkill]:
+		"""
+		Returns a list of skills that are functional, but might be activated or deactivated. These skills passed init
+		:return:
+		"""
 		return {**self._activeSkills, **self._deactivatedSkills}
 
 
@@ -160,7 +189,7 @@ class SkillManager(Manager):
 
 
 	def onQuarterHour(self):
-		if self._busyInstalling.isSet() or self.ProjectAlice.restart or self.ProjectAlice.updating or self.NluManager.training:
+		if self._busyInstalling.is_set() or self.ProjectAlice.restart or self.ProjectAlice.updating or self.NluManager.training:
 			return
 
 		updates = self.checkForSkillUpdates()
@@ -169,15 +198,29 @@ class SkillManager(Manager):
 
 
 	def notifyInstalling(self):
+		"""
+		Sends a MQTT message to notify that Alice is updating
+		:return:
+		"""
 		self.MqttManager.mqttBroadcast(topic=constants.TOPIC_SYSTEM_UPDATE, payload={'sticky': True})
 
 
 	def notifyFinishedInstalling(self):
+		"""
+			Sends a MQTT message to notify that Alice finished installing something
+			:return:
+		"""
 		self.MqttManager.mqttBroadcast(topic=constants.TOPIC_HLC_CLEAR_LEDS)
 
 
 	# noinspection SqlResolve
 	def _loadSkills(self) -> List[str]:
+		"""
+		Loads skills present on the disk and checks if they are declared in DB and cleans offenders
+		Loads skills that are in DB and check if they are on the disk and cleans offenders
+		Returns a sorted list of potentially usable skill names
+		:return:
+		"""
 		skills = self.loadSkillsFromDB()
 		skills = [skill['skillName'] for skill in skills]
 
@@ -215,11 +258,21 @@ class SkillManager(Manager):
 		return sorted(data)
 
 
-	def loadSkillsFromDB(self) -> List:
+	def loadSkillsFromDB(self) -> List[Dict[str, Any]]:
+		"""
+		Loads skills from the database
+		:return:
+		"""
 		return self.databaseFetch(tableName='skills')
 
 
 	def addSkillToDB(self, skillName: str, active: int = 1):
+		"""
+		Adds given skill to database
+		:param skillName:
+		:param active:
+		:return:
+		"""
 		self.DatabaseManager.replace(
 			tableName='skills',
 			values={'skillName': skillName, 'active': active}
@@ -228,6 +281,11 @@ class SkillManager(Manager):
 
 	# noinspection SqlResolve
 	def removeSkillFromDB(self, skillName: str):
+		"""
+		Removes given skill from database
+		:param skillName:
+		:return:
+		"""
 		self.DatabaseManager.delete(
 			tableName='skills',
 			callerName=self.name,
@@ -332,7 +390,7 @@ class SkillManager(Manager):
 
 	def downloadSkills(self, skills: Union[str, List[str]]) -> Optional[Dict]:
 		"""
-		Clones skills
+		Clones skills. Existance of the skill on line is checked
 		:param skills:
 		:return: Dict: a dict of created repositories
 		"""
@@ -412,6 +470,11 @@ class SkillManager(Manager):
 
 
 	def getSkillDirectory(self, skillName: str) -> Path:
+		"""
+		Returns the full path to a skill
+		:param skillName:
+		:return:
+		"""
 		return Path(self.Commons.rootDir()) / 'skills' / skillName
 
 
@@ -442,6 +505,8 @@ class SkillManager(Manager):
 
 	def initSkills(self, onlyInit: str = '', reload: bool = False):
 		"""
+		Initializing skills by checking their condition compliance and instantiating them.
+		Does check if a skill fails and is required
 		:param onlyInit: If specified, will only init the given skill name
 		:param reload: If the skill is already instantiated, performs a module reload, after an update per example.
 		:return:
@@ -511,11 +576,23 @@ class SkillManager(Manager):
 
 
 	def getSkillInstallFilePath(self, skillName: str) -> Path:
+		"""
+		Returns the full path to a skill's install file
+		:param skillName:
+		:return:
+		"""
 		return self.getSkillDirectory(skillName=skillName) / f'{skillName}.install'
 
 
 	# noinspection PyTypeChecker
 	def instantiateSkill(self, skillName: str, skillResource: str = '', reload: bool = False) -> Optional[AliceSkill]:
+		"""
+		Instantiates the given skill at the gien path
+		:param skillName:
+		:param skillResource:
+		:param reload:
+		:return:
+		"""
 		instance: Optional[AliceSkill] = None
 		skillResource = skillResource or skillName
 
@@ -541,6 +618,11 @@ class SkillManager(Manager):
 
 
 	def isSkillActive(self, skillName: str) -> bool:
+		"""
+		Returns true or false depending if the skill is declared as active
+		:param skillName:
+		:return:
+		"""
 		if skillName in self._activeSkills:
 			return self._activeSkills[skillName].active
 		elif skillName in self._skillList:
@@ -553,6 +635,11 @@ class SkillManager(Manager):
 
 
 	def checkSkillConditions(self, installer: dict = None) -> bool:
+		"""
+		Checks if the given skill is compliant to it's conditions
+		:param installer:
+		:return:
+		"""
 		conditions = {
 			'aliceMinVersion': installer['aliceMinVersion'],
 			**installer.get('conditions', dict())
@@ -649,6 +736,11 @@ class SkillManager(Manager):
 
 
 	def stopSkill(self, skillName: str) -> Optional[AliceSkill]:
+		"""
+		Stops the given skill
+		:param skillName:
+		:return:
+		"""
 		skill = None
 		if skillName in self._activeSkills:
 			skill = self._activeSkills.pop(skillName, None)
@@ -663,6 +755,12 @@ class SkillManager(Manager):
 
 
 	def configureSkillIntents(self, skillName: str, state: bool):
+		"""
+		Subs or unsubs the skill intents. Alice only recognizes subscribed intents
+		:param skillName:
+		:param state:
+		:return:
+		"""
 		try:
 			skills = self.allWorkingSkills
 			confs = [{
@@ -682,11 +780,21 @@ class SkillManager(Manager):
 
 
 	def isIntentInUse(self, intent: Intent, filtered: list) -> bool:
+		"""
+		Returns whether an intent is used by any WORKING skill
+		:param intent:
+		:param filtered:
+		:return:
+		"""
 		skills = self.allWorkingSkills
 		return any(intent in skill.supportedIntents for name, skill in skills.items() if name not in filtered)
 
 
 	def startAllSkills(self):
+		"""
+		Starts all the discoverd skills
+		:return:
+		"""
 		supportedIntents = list()
 
 		for skillName in self._activeSkills.copy():
@@ -703,7 +811,12 @@ class SkillManager(Manager):
 		self.logInfo(f'Skills started. {len(supportedIntents)} intents supported')
 
 
-	def startSkill(self, skillName: str) -> dict:
+	def startSkill(self, skillName: str) -> Dict[str, Intent]:
+		"""
+		Starts a skill
+		:param skillName:
+		:return:
+		"""
 		if skillName in self._activeSkills:
 			skillInstance = self._activeSkills[skillName]
 		elif skillName in self._deactivatedSkills:
@@ -758,6 +871,12 @@ class SkillManager(Manager):
 
 
 	def deactivateSkill(self, skillName: str, persistent: bool = False):
+		"""
+		Deactivates a skill and broadcasts it
+		:param skillName:
+		:param persistent:
+		:return:
+		"""
 		if skillName in self._activeSkills:
 			skillInstance = self.stopSkill(skillName=skillName)
 			if skillInstance:
@@ -779,6 +898,12 @@ class SkillManager(Manager):
 
 
 	def activateSkill(self, skillName: str, persistent: bool = False):
+		"""
+		Activates a skill and broadcasts it
+		:param skillName:
+		:param persistent:
+		:return:
+		"""
 		if skillName not in self._deactivatedSkills and skillName not in self._failedSkills:
 			self.logWarning(f'Skill "{skillName} is not deactivated or failed')
 			return
@@ -804,6 +929,12 @@ class SkillManager(Manager):
 
 
 	def toggleSkillState(self, skillName: str, persistent: bool = False):
+		"""
+		Activate the given skill if deactivated or deactivates the given skill if actived
+		:param skillName:
+		:param persistent:
+		:return:
+		"""
 		if self.isSkillActive(skillName):
 			self.deactivateSkill(skillName=skillName, persistent=persistent)
 		else:
@@ -811,7 +942,12 @@ class SkillManager(Manager):
 
 
 	def changeSkillStateInDB(self, skillName: str, newState: bool):
-		# Changes the state of a skill in db
+		"""
+		Updates the given skill DB entry state
+		:param skillName:
+		:param newState:
+		:return:
+		"""
 		self.DatabaseManager.update(
 			tableName='skills',
 			callerName=self.name,
@@ -823,6 +959,11 @@ class SkillManager(Manager):
 
 
 	def dispatchMessage(self, session: DialogSession) -> bool:
+		"""
+		Dispatches a MQTT message to skills until one accepts it and returns True. If the intent wasn't consumed, return False
+		:param session:
+		:return:
+		"""
 		for skillName, skillInstance in self._activeSkills.items():
 			try:
 				consumed = skillInstance.onMessageDispatch(session)
@@ -857,7 +998,7 @@ class SkillManager(Manager):
 	@IfSetting(settingName='stayCompletelyOffline', settingValue=False)
 	def checkForSkillUpdates(self, skillToCheck: str = None) -> List[str]:
 		"""
-		Check all installed skills for availability of updates.
+		Checks all installed skills for availability of updates.
 		Includes failed skills but not inactive.
 		:param skillToCheck:
 		:return:
@@ -914,6 +1055,12 @@ class SkillManager(Manager):
 
 
 	def getSkillInstance(self, skillName: str, silent: bool = False) -> Optional[AliceSkill]:
+		"""
+		Retuns a skill instance, if available
+		:param skillName:
+		:param silent:
+		:return:
+		"""
 		if skillName in self._activeSkills:
 			return self._activeSkills[skillName]
 		elif skillName in self._deactivatedSkills:
@@ -957,6 +1104,11 @@ class SkillManager(Manager):
 
 
 	def removeSkill(self, skillName: str):
+		"""
+		Deletes a skill completely
+		:param skillName:
+		:return:
+		"""
 		if skillName not in self.allSkills:
 			return
 
@@ -983,6 +1135,11 @@ class SkillManager(Manager):
 
 
 	def reloadSkill(self, skillName: str):
+		"""
+		Reloads a skill
+		:param skillName:
+		:return:
+		"""
 		self.logInfo(f'Reloading skill "{skillName}"')
 
 		self.stopSkill(skillName=skillName)
@@ -992,6 +1149,10 @@ class SkillManager(Manager):
 
 
 	def allScenarioNodes(self) -> Dict[str, tuple]:
+		"""
+		Retunrs list of Node-Red nodes added by skills
+		:return:
+		"""
 		ret = dict()
 		for skillName, skillInstance in self._activeSkills.items():
 			if not skillInstance.hasScenarioNodes():
@@ -1003,6 +1164,11 @@ class SkillManager(Manager):
 
 
 	def skillScenarioNode(self, skillName: str) -> Optional[Path]:
+		"""
+		Returns  list of Node-Red nodes for the given skill
+		:param skillName:
+		:return:
+		"""
 		if skillName not in self.allWorkingSkills:
 			return None
 
@@ -1010,6 +1176,11 @@ class SkillManager(Manager):
 
 
 	def getSkillScenarioVersion(self, skillName: str) -> Version:
+		"""
+		Return Node Red scenario node version for the given skill
+		:param skillName:
+		:return:
+		"""
 		if skillName not in self._skillList:
 			return Version.fromString('0.0.0')
 		else:
@@ -1053,6 +1224,11 @@ class SkillManager(Manager):
 
 
 	def createNewSkill(self, skillDefinition: dict) -> bool:
+		"""
+		Used to create a new skill by the usr
+		:param skillDefinition:
+		:return:
+		"""
 		try:
 			self.logInfo(f'Creating new skill "{skillDefinition["name"]}"')
 
@@ -1148,6 +1324,12 @@ class SkillManager(Manager):
 
 
 	def uploadSkillToGithub(self, skillName: str, skillDesc: str) -> bool:
+		"""
+		sends skill name oin Github
+		:param skillName:
+		:param skillDesc:
+		:return:
+		"""
 		try:
 			self.logInfo(f'Uploading {skillName} to Github')
 
@@ -1170,31 +1352,6 @@ class SkillManager(Manager):
 		except Exception as e:
 			self.logWarning(f'Something went wrong uploading skill to Github: {e}')
 			return False
-
-
-
-
-
-
-
-
-
-	# def onAssistantInstalled(self, **kwargs):
-	# 	argv = kwargs.get('skillsInfos', dict())
-	# 	if not argv:
-	# 		return
-	#
-	# 	for skillName, skill in argv.items():
-	# 		try:
-	# 			self._startSkill(skillName=skillName)
-	# 		except SkillStartDelayed:
-	# 			self.logInfo(f'Skill "{skillName}" start is delayed')
-	# 		except KeyError as e:
-	# 			self.logError(f'Skill "{skillName} not found, skipping: {e}')
-	# 			continue
-	#
-	# 		self._activeSkills[skillName].onBooted()
-
 
 
 	@deprecated
