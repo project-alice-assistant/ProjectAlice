@@ -18,10 +18,11 @@
 #  Last modified: 2021.04.13 at 12:56:45 CEST
 
 import os
+from contextlib import suppress
 from pathlib import Path
 from threading import Event
 from time import time
-from typing import Generator, Optional
+from typing import Iterable, Optional
 
 from core.asr.model.ASRResult import ASRResult
 from core.asr.model.Asr import Asr
@@ -30,11 +31,11 @@ from core.dialog.model.DialogSession import DialogSession
 from core.util.Stopwatch import Stopwatch
 
 
-try:
+with suppress(ModuleNotFoundError):
 	# noinspection PyPackageRequirements
-	from google.cloud.speech import SpeechClient, RecognitionConfig, StreamingRecognitionConfig, StreamingRecognizeRequest
-except:
-	pass  # Auto installed
+	from google.cloud.speech import SpeechClient
+	# noinspection PyPackageRequirements
+	from google.cloud.speech_v1 import RecognitionConfig, StreamingRecognitionConfig, StreamingRecognizeRequest
 
 
 # noinspection PyAbstractClass
@@ -72,15 +73,18 @@ class GoogleAsr(Asr):
 
 		self._client = SpeechClient()
 		# noinspection PyUnresolvedReferences
-		config = speech.RecognitionConfig(
-			encoding=speech.RecognitionConfig.AudioEncoding.LINEAR16,
-			sample_rate_hertz=self.AudioServer.SAMPLERATE,
-			language_code=self.LanguageManager.getLanguageAndCountryCode(),
-			max_alternatives=1,
-			model='command_and_search'
-		)
+		config = RecognitionConfig({
+				'encoding': RecognitionConfig.AudioEncoding.LINEAR16,
+				'sample_rate_hertz': self.AudioServer.SAMPLERATE,
+				'language_code': self.LanguageManager.getLanguageAndCountryCode(),
+				'max_alternatives': 1,
+				'model': 'command_and_search'
+		})
 
-		self._streamingConfig = StreamingRecognitionConfig(config=config, interim_results=True)
+		self._streamingConfig = StreamingRecognitionConfig({
+			'config': config,
+			'interim_results': True
+		})
 
 
 	def decodeStream(self, session: DialogSession) -> Optional[ASRResult]:
@@ -96,7 +100,7 @@ class GoogleAsr(Asr):
 				# noinspection PyUnresolvedReferences
 				try:
 					requests = (StreamingRecognizeRequest(audio_content=content) for content in audioStream)
-					responses = self._client.streaming_recognize(self._streamingConfig, requests)
+					responses = self._client.streaming_recognize(config=self._streamingConfig, requests=requests)
 					result = self._checkResponses(session, responses)
 				except Exception as e:
 					self._internetLostFlag.clear()
@@ -116,7 +120,7 @@ class GoogleAsr(Asr):
 		self._internetLostFlag.set()
 
 
-	def _checkResponses(self, session: DialogSession, responses: Generator) -> Optional[tuple]:
+	def _checkResponses(self, session: DialogSession, responses: Iterable) -> Optional[tuple]:
 		if responses is None:
 			return None
 

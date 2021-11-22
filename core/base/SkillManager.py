@@ -625,6 +625,7 @@ class SkillManager(Manager):
 
 			try:
 				repository = self.getSkillRepository(skillName=skillName)
+				repository.fetch(force=True)
 				repository.checkout(tag=self.SkillStoreManager.getSkillUpdateTag(skillName=skillName), force=True)
 			except Exception as e:
 				self.logError(f'Error updating skill **{skillName}** : {e}')
