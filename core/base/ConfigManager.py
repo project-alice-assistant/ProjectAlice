@@ -159,6 +159,13 @@ class ConfigManager(Manager):
 		if aliceConfigs['debug']:
 			logging.getLogger('ProjectAlice').setLevel(logging.DEBUG)
 
+		# Load asound if needed
+		if not aliceConfigs['asoundConfig']:
+			asound = Path('/etc/asound.conf')
+			if asound.exists():
+				changes = True
+				aliceConfigs['asoundConfig'] = asound.read_text()
+
 		temp = aliceConfigs.copy()
 		for key in temp:
 			if key not in self._aliceTemplateConfigurations:
@@ -690,7 +697,7 @@ class ConfigManager(Manager):
 
 	def injectAsound(self, newSettings: str):
 		newSettings = newSettings.replace('\r\n', '\n')
-		if self.getAliceConfigByName('asoundConfig') != newSettings:
+		if self.getAliceConfigByName('asoundConfig') and self.getAliceConfigByName('asoundConfig') != newSettings:
 			tmp = Path('/tmp/asound')
 			tmp.write_text(newSettings)
 			self.Commons.runRootSystemCommand(['sudo', 'mv', tmp, '/etc/asound.conf'])
