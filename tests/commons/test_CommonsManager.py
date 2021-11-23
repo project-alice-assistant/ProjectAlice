@@ -49,7 +49,7 @@ class TestCommonsManager(unittest.TestCase):
 
 
 	def test_payload(self):
-		class MQTTMessage:
+		class MQTTMessage(object):
 
 			def __init__(self, payload):
 				self.payload = payload
@@ -87,7 +87,7 @@ class TestCommonsManager(unittest.TestCase):
 
 
 	def test_parseSlotsToObjects(self):
-		class MQTTMessage:
+		class MQTTMessage(object):
 
 			def __init__(self, payload):
 				self.payload = payload
@@ -101,7 +101,7 @@ class TestCommonsManager(unittest.TestCase):
 
 
 	def test_parseSlots(self):
-		class MQTTMessage:
+		class MQTTMessage(object):
 
 			def __init__(self, payload):
 				self.payload = payload
@@ -122,7 +122,7 @@ class TestCommonsManager(unittest.TestCase):
 
 
 	def test_parseSessionId(self):
-		class MQTTMessage:
+		class MQTTMessage(object):
 
 			def __init__(self, payload):
 				self.payload = payload
@@ -136,7 +136,7 @@ class TestCommonsManager(unittest.TestCase):
 
 
 	def test_parseCustomData(self):
-		class MQTTMessage:
+		class MQTTMessage(object):
 
 			def __init__(self, payload):
 				self.payload = payload
@@ -163,7 +163,7 @@ class TestCommonsManager(unittest.TestCase):
 
 	@mock.patch('core.base.SuperManager.SuperManager')
 	def test_parseDeviceUid(self, mock_superManager):
-		class MQTTMessage:
+		class MQTTMessage(object):
 
 			def __init__(self, payload):
 				self.payload = payload
@@ -195,13 +195,13 @@ class TestCommonsManager(unittest.TestCase):
 		"""Test getDuration method"""
 
 
-		class DialogSession:
+		class DialogSession(object):
 
 			def __init__(self, slotsAsObjects: dict):
 				self.slotsAsObjects = slotsAsObjects
 
 
-		class TimeObject:
+		class TimeObject(object):
 
 			def __init__(self, value: dict, entity: str = 'snips/duration'):
 				self.value = value
@@ -267,13 +267,13 @@ class TestCommonsManager(unittest.TestCase):
 
 
 	def test_isYes(self):
-		class DialogSession:
+		class DialogSession(object):
 
 			def __init__(self, slotsAsObjects: dict):
 				self.slotsAsObjects = slotsAsObjects
 
 
-		class Slot:
+		class Slot(object):
 
 			def __init__(self, value):
 				self.value = {'value': value}

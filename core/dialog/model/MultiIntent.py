@@ -25,7 +25,7 @@ from core.dialog.model import DialogSession
 
 
 @dataclass
-class MultiIntent:
+class MultiIntent(object):
 	session: DialogSession
 	processedString: str
 	intents: Deque[str] = field(default_factory=deque)

@@ -20,7 +20,7 @@
 import time
 
 
-class Stopwatch:
+class Stopwatch(object):
 
 	def __init__(self, precision: int = 2):
 		self._startTime = None

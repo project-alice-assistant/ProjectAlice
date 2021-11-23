@@ -55,7 +55,7 @@ class InitDict(dict):
 			return ''
 
 
-class SimpleLogger:
+class SimpleLogger(object):
 
 	def __init__(self, prepend: str = None):
 		self._prepend = f'[{prepend}]'
@@ -85,7 +85,7 @@ class SimpleLogger:
 		return msg
 
 
-class PreInit:
+class PreInit(object):
 	"""
 	Pre init checks and makes sure vital stuff is installed and running. Not much, but internet, venv and so on
 	Pre init is meant to run on the system python and not on the venv
@@ -361,7 +361,7 @@ class PreInit:
 		time.sleep(1)
 
 
-class Initializer:
+class Initializer(object):
 	PIP = './venv/bin/pip'
 
 

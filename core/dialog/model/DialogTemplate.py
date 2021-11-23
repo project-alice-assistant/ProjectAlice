@@ -29,7 +29,7 @@ from core.dialog.model.DialogTemplateSlotType import DialogTemplateSlotType
 
 
 @dataclass
-class DialogTemplate:
+class DialogTemplate(object):
 	skill: str
 	slotTypes: list
 	intents: list

@@ -26,7 +26,7 @@ from core.device.model.DeviceAbility import DeviceAbility
 from core.util.model.Logger import Logger
 
 
-class SuperManager:
+class SuperManager(object):
 	NAME = 'SuperManager'
 	_INSTANCE = None
 

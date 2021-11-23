@@ -68,7 +68,7 @@ if TYPE_CHECKING:
 	from core.webui.WebUINotificationManager import WebUINotificationManager
 
 
-class ProjectAliceObject:
+class ProjectAliceObject(object):
 	DEPENDENCIES = {
 		'internal': {},
 		'external': {},

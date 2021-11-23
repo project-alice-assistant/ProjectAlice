@@ -38,7 +38,7 @@ class TestDecorators(unittest.TestCase):
 
 	@mock.patch('core.util.Decorators.SuperManager')
 	def test_online(self, mock_superManager):
-		class AliceSkill:
+		class AliceSkill(object):
 			@property
 			def name(self):
 				return 'AliceSkill'
@@ -63,7 +63,7 @@ class TestDecorators(unittest.TestCase):
 			def catch_staticMethod(*args, **kwargs):
 				raise Exception
 
-		class InternetManager:
+		class InternetManager(object):
 			def __init__(self, online: bool, keepOffline: bool = False):
 				self.online = online
 				self.keepOffline = keepOffline
@@ -161,7 +161,7 @@ class TestDecorators(unittest.TestCase):
 	@mock.patch('core.util.Decorators.Logger')
 	@mock.patch('core.util.Decorators.SuperManager')
 	def test_anyExcept(self, mock_superManager, mock_logger):
-		class AliceSkill:
+		class AliceSkill(object):
 			@property
 			def name(self):
 				return 'AliceSkill'
@@ -257,7 +257,7 @@ class TestDecorators(unittest.TestCase):
 
 	@mock.patch('core.util.Decorators.Intent')
 	def test_IntentHandler(self, mock_intent):
-		class Example:
+		class Example(object):
 			@IntentHandler('intent1')
 			def single_decorator(self, *args, **kwargs):
 				return self, args, kwargs

@@ -23,7 +23,7 @@ from typing import Callable
 
 
 @dataclass
-class ThreadTimer:
+class ThreadTimer(object):
 	callback: Callable
 	args: list = field(default_factory=list)
 	kwargs: dict = field(default_factory=dict)

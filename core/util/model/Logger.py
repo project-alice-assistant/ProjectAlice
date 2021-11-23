@@ -23,7 +23,7 @@ import traceback
 from typing import Match, Union
 
 
-class Logger:
+class Logger(object):
 
 	def __init__(self, prepend: str = None, **kwargs):
 		self._prepend = prepend

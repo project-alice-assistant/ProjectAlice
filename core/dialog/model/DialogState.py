@@ -20,7 +20,7 @@
 from core.base.SuperManager import SuperManager
 
 
-class DialogState:
+class DialogState(object):
 
 	def __init__(self, state: str):
 		if ':' not in state:
