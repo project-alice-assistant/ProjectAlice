@@ -634,10 +634,11 @@ class SkillManager(Manager):
 		return False
 
 
-	def checkSkillConditions(self, installer: dict = None) -> bool:
+	def checkSkillConditions(self, installer: dict = None, checkOnly=False) -> Union[bool, Dict[str, str]]:
 		"""
 		Checks if the given skill is compliant to it's conditions
 		:param installer:
+		:param checkOnly: Do not perform any other action (download other skill, etc) but checking conditions
 		:return:
 		"""
 		conditions = {
@@ -646,40 +647,60 @@ class SkillManager(Manager):
 		}
 
 		notCompliant = 'Skill is not compliant'
+		notCompliantRules = list()
 
-		if 'aliceMinVersion' in conditions and \
-				Version.fromString(conditions['aliceMinVersion']) > Version.fromString(constants.VERSION):
-			raise SkillNotConditionCompliant(message=notCompliant, skillName=installer['name'], condition='Alice minimum version', conditionValue=conditions['aliceMinVersion'])
+		if 'aliceMinVersion' in conditions and Version.fromString(conditions['aliceMinVersion']) > Version.fromString(constants.VERSION):
+			if not checkOnly:
+				raise SkillNotConditionCompliant(message=notCompliant, skillName=installer['name'], condition='Alice minimum version', conditionValue=conditions['aliceMinVersion'])
+			else:
+				notCompliantRules.append({'Alice version': conditions['aliceMinVersion']})
 
 		for conditionName, conditionValue in conditions.items():
 			if conditionName == 'lang' and self.LanguageManager.activeLanguage not in conditionValue:
-				raise SkillNotConditionCompliant(message=notCompliant, skillName=installer['name'], condition=conditionName, conditionValue=conditionValue)
+				if not checkOnly:
+					raise SkillNotConditionCompliant(message=notCompliant, skillName=installer['name'], condition=conditionName, conditionValue=conditionValue)
+				else:
+					notCompliantRules.append({conditionName: conditionValue})
 
 			elif conditionName == 'online':
-				if conditionValue and self.ConfigManager.getAliceConfigByName('stayCompletelyOffline') \
-						or not conditionValue and not self.ConfigManager.getAliceConfigByName('stayCompletelyOffline'):
-					raise SkillNotConditionCompliant(message=notCompliant, skillName=installer['name'], condition=conditionName, conditionValue=conditionValue)
+				if conditionValue and self.ConfigManager.getAliceConfigByName('stayCompletelyOffline') or not conditionValue and not self.ConfigManager.getAliceConfigByName('stayCompletelyOffline'):
+					if not checkOnly:
+						raise SkillNotConditionCompliant(message=notCompliant, skillName=installer['name'], condition=conditionName, conditionValue=conditionValue)
+					else:
+						notCompliantRules.append({conditionName: conditionValue})
 
 			elif conditionName == 'skill':
 				for requiredSkill in conditionValue:
 					if requiredSkill in self._skillList and not self.isSkillActive(skillName=installer['name']):
-						raise SkillNotConditionCompliant(message=notCompliant, skillName=installer['name'], condition=conditionName, conditionValue=conditionValue)
-					elif requiredSkill not in self._skillList:
-						self.logInfo(f'Skill {installer["name"]} has another skill as dependency, adding download')
-						try:
-							self.downloadSkills(skills=requiredSkill)
-						except:
+						if not checkOnly:
 							raise SkillNotConditionCompliant(message=notCompliant, skillName=installer['name'], condition=conditionName, conditionValue=conditionValue)
+						else:
+							notCompliantRules.append({conditionName: conditionValue})
+					elif requiredSkill not in self._skillList:
+						if not checkOnly:
+							self.logInfo(f'Skill {installer["name"]} has another skill as dependency, adding download')
+							try:
+								self.downloadSkills(skills=requiredSkill)
+							except:
+								raise SkillNotConditionCompliant(message=notCompliant, skillName=installer['name'], condition=conditionName, conditionValue=conditionValue)
+						else:
+							notCompliantRules.append({conditionName: conditionValue})
 
 			elif conditionName == 'notSkill':
 				for excludedSkill in conditionValue:
 					author, name = excludedSkill.split('/')
 					if name in self._skillList and self.isSkillActive(skillName=installer['name']):
-						raise SkillNotConditionCompliant(message=notCompliant, skillName=installer['name'], condition=conditionName, conditionValue=conditionValue)
+						if not checkOnly:
+							raise SkillNotConditionCompliant(message=notCompliant, skillName=installer['name'], condition=conditionName, conditionValue=conditionValue)
+						else:
+							notCompliantRules.append({conditionName: conditionValue})
 
 			elif conditionName == 'asrArbitraryCapture':
 				if conditionValue and not self.ASRManager.asr.capableOfArbitraryCapture:
-					raise SkillNotConditionCompliant(message=notCompliant, skillName=installer['name'], condition=conditionName, conditionValue=conditionValue)
+					if not checkOnly:
+						raise SkillNotConditionCompliant(message=notCompliant, skillName=installer['name'], condition=conditionName, conditionValue=conditionValue)
+					else:
+						notCompliantRules.append({conditionName: conditionValue})
 
 			elif conditionName == 'activeManager':
 				for manager in conditionValue:
@@ -688,9 +709,12 @@ class SkillManager(Manager):
 
 					man = SuperManager.getInstance().getManager(manager)
 					if not man or not man.isActive:
-						raise SkillNotConditionCompliant(message=notCompliant, skillName=installer['name'], condition=conditionName, conditionValue=conditionValue)
+						if not checkOnly:
+							raise SkillNotConditionCompliant(message=notCompliant, skillName=installer['name'], condition=conditionName, conditionValue=conditionValue)
+						else:
+							notCompliantRules.append({conditionName: conditionValue})
 
-		return True
+		return True if checkOnly else notCompliantRules
 
 
 	def updateSkills(self, skills: Union[str, List[str]], withSkillRestart: bool = True):

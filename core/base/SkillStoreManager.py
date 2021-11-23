@@ -66,7 +66,7 @@ class SkillStoreManager(Manager):
 			return
 
 		self._skillStoreData = req.json()
-		self.markInstalledSkills()
+		self.checkConditions()
 
 		if not self.ConfigManager.getAliceConfigByName('suggestSkillsToInstall'):
 			return
@@ -78,9 +78,13 @@ class SkillStoreManager(Manager):
 		self.prepareSamplesData(req.json())
 
 
-	def markInstalledSkills(self):
+	def checkConditions(self):
 		for skillName, skillData in self._skillStoreData.items():
 			skillData['installed'] = skillName in self.SkillManager.allSkills.keys()
+
+			offendingConditions = self.SkillManager.checkSkillConditions(installer=skillData, checkOnly=True)
+			skillData['offendingConditions'] = offendingConditions
+			skillData['compatible'] = False if offendingConditions else True
 
 
 	def prepareSamplesData(self, data: dict):
