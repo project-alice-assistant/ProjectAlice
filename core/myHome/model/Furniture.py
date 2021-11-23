@@ -17,74 +17,16 @@
 #
 #  Last modified: 2021.04.13 at 12:56:47 CEST
 
-import json
-from dataclasses import dataclass, field
+from dataclasses import dataclass
+from typing import Dict
 
-from core.base.model.ProjectAliceObject import ProjectAliceObject
+from core.myHome.model.MyHomeObject import MyHomeObject
 
 
 @dataclass
-class Furniture(ProjectAliceObject):
+class Furniture(MyHomeObject):
 	data: dict
 
-	id: int = field(init=False)
-	parentLocation: int = field(init=False)
-	settings: dict = field(init=False)
-
-
-	def __post_init__(self):
-		self.id = self.data.get('id', -1)
-		self.parentLocation = self.data['parentLocation']
-		self.settings = json.loads(self.data.get('settings', '{}')) if isinstance(self.data.get('settings', '{}'), str) else self.data.get('settings', dict)
-
-		settings = {
-			'x': 0,
-			'y': 0,
-			'z': 0,
-			'w': 25,
-			'h': 25,
-			'r': 0,
-			't': ''
-		}
-		self.settings = {**settings, **self.settings}
-
-		if self.id == -1:
-			self.saveToDB()
-
-
-	# noinspection SqlResolve
-	def saveToDB(self):
-		if self.id != -1:
-			self.DatabaseManager.replace(
-				tableName=self.LocationManager.FURNITURE_TABLE,
-				query='REPLACE INTO :__table__ (id, parentLocation, settings) VALUES (:id, :parentLocation, :settings)',
-				callerName=self.LocationManager.name,
-				values={
-					'id'            : self.id,
-					'parentLocation': self.parentLocation,
-					'settings'      : json.dumps(self.settings)
-				}
-			)
-		else:
-			constructionId = self.DatabaseManager.insert(
-				tableName=self.LocationManager.FURNITURE_TABLE,
-				callerName=self.LocationManager.name,
-				values={
-					'parentLocation': self.parentLocation,
-					'settings'      : json.dumps(self.settings)
-				}
-			)
-
-			self.id = constructionId
-
-
-	def updateSettings(self, settings: dict):
-		self.settings = {**self.settings, **settings}
-
-
-	def toDict(self) -> dict:
-		return {
-			'id'            : self.id,
-			'parentLocation': self.parentLocation,
-			'settings'      : self.settings
-		}
+	def __init__(self, data: Dict):
+		self.myDatabase = self.LocationManager.FURNITURE_TABLE
+		super().__init__(data)

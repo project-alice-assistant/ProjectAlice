@@ -137,7 +137,7 @@ class PocketSphinxAsr(Asr):
 				self._decoder.start_utt()
 				inSpeech = False
 				for chunk in recorder:
-					if self._timeout.isSet():
+					if self._timeout.is_set():
 						break
 
 					self._decoder.process_raw(chunk, False, False)

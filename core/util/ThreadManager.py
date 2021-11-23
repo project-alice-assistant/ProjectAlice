@@ -49,7 +49,7 @@ class ThreadManager(Manager):
 				thread.join(timeout=1)
 
 		for event in self._events.values():
-			if event.isSet():
+			if event.is_set():
 				event.clear()
 
 
