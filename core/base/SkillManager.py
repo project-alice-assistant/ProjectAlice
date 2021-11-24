@@ -714,7 +714,7 @@ class SkillManager(Manager):
 						else:
 							notCompliantRules.append({conditionName: conditionValue})
 
-		return True if checkOnly else notCompliantRules
+		return True if not checkOnly else notCompliantRules
 
 
 	def updateSkills(self, skills: Union[str, List[str]], withSkillRestart: bool = True):

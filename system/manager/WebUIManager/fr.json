@@ -67,7 +67,9 @@
 		"addDevice"        : "Ajouter nouvel appareil",
 		"removeDevice"     : "Supprimer appareil",
 		"linkDevice"       : "Lier un appareil à plusieures endroits",
-		"unlinkDevice"     : "Délier appareil"
+		"unlinkDevice"     : "Délier appareil",
+		"compatible"       : "Compatible",
+		"notCompatible"    : "Pas compatible"
 	},
 	"notifications": {
 		"errors"   : {

@@ -18,9 +18,10 @@
 #  Last modified: 2021.04.13 at 12:56:46 CEST
 
 import difflib
-import requests
 from random import shuffle
 from typing import Optional, Tuple
+
+import requests
 
 from core.ProjectAliceExceptions import GithubNotFound
 from core.base.model.Manager import Manager
@@ -84,7 +85,7 @@ class SkillStoreManager(Manager):
 
 			offendingConditions = self.SkillManager.checkSkillConditions(installer=skillData, checkOnly=True)
 			skillData['offendingConditions'] = offendingConditions
-			skillData['compatible'] = False if offendingConditions else True
+			skillData['compatible'] = False if len(offendingConditions) > 0 else True
 
 
 	def prepareSamplesData(self, data: dict):
