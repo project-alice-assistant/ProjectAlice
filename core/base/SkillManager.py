@@ -18,15 +18,15 @@
 #  Last modified: 2021.08.02 at 06:12:17 CEST
 
 
-import traceback
-
 import importlib
 import json
-import requests
 import shutil
+import traceback
 from contextlib import suppress
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Union
+
+import requests
 
 from AliceGit import Exceptions as GitErrors
 from AliceGit.Exceptions import NotGitRepository, PathNotFoundException
@@ -87,7 +87,7 @@ class SkillManager(Manager):
 
 
 	@property
-	def supportedIntents(self) -> List[Dict[str, Intent]]:
+	def supportedIntents(self) -> List[Dict]:
 		"""
 		Returns a list of all supported intents
 		:return:
@@ -835,7 +835,7 @@ class SkillManager(Manager):
 		self.logInfo(f'Skills started. {len(supportedIntents)} intents supported')
 
 
-	def startSkill(self, skillName: str) -> Dict[str, Intent]:
+	def startSkill(self, skillName: str) -> Dict:
 		"""
 		Starts a skill
 		:param skillName:
