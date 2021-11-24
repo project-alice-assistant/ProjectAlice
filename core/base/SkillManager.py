@@ -309,8 +309,11 @@ class SkillManager(Manager):
 				try:
 					repository = self.getSkillRepository(skillName=skillName)
 				except:
-					repositories = self.downloadSkills(skills=skillName)
-					repository = repositories.get(skillName, None)
+					try:
+						repositories = self.downloadSkills(skills=skillName)
+						repository = repositories.get(skillName, None)
+					except SkillNotConditionCompliant:
+						continue
 
 				if not repository:
 					raise Exception(f'Failed downloading skill **{skillName}** for some unknown reason')
@@ -390,7 +393,7 @@ class SkillManager(Manager):
 
 	def downloadSkills(self, skills: Union[str, List[str]]) -> Optional[Dict]:
 		"""
-		Clones skills. Existance of the skill on line is checked
+		Clones skills. Existence of the skill on line is checked
 		:param skills:
 		:return: Dict: a dict of created repositories
 		"""
@@ -413,7 +416,9 @@ class SkillManager(Manager):
 					requests.get(f'https://skills.projectalice.ch/{skillName}')
 
 				installFile = response.json()
-				self.checkSkillConditions(installer=installFile)
+
+				if not self.ConfigManager.getAliceConfigByName('devMode'):
+					self.checkSkillConditions(installer=installFile)
 
 				source = self.getGitRemoteSourceUrl(skillName=skillName, doAuth=False)
 
