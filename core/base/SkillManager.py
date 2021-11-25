@@ -405,7 +405,6 @@ class SkillManager(Manager):
 		for skillName in skills:
 			try:
 				tag = self.SkillStoreManager.getSkillUpdateTag(skillName=skillName)
-
 				response = requests.get(f'{constants.GITHUB_RAW_URL}/skill_{skillName}/{tag}/{skillName}.install')
 				if response.status_code != 200:
 					raise GithubNotFound
@@ -639,7 +638,7 @@ class SkillManager(Manager):
 		return False
 
 
-	def checkSkillConditions(self, installer: dict = None, checkOnly=False) -> Union[bool, Dict[str, str]]:
+	def checkSkillConditions(self, installer: dict = None, checkOnly=False) -> Union[bool, List[Dict[str, str]]]:
 		"""
 		Checks if the given skill is compliant to it's conditions
 		:param installer:
@@ -821,7 +820,7 @@ class SkillManager(Manager):
 
 	def startAllSkills(self):
 		"""
-		Starts all the discoverd skills
+		Starts all the discovered skills
 		:return:
 		"""
 		supportedIntents = list()
@@ -1085,7 +1084,7 @@ class SkillManager(Manager):
 
 	def getSkillInstance(self, skillName: str, silent: bool = False) -> Optional[AliceSkill]:
 		"""
-		Retuns a skill instance, if available
+		Returns a skill instance, if available
 		:param skillName:
 		:param silent:
 		:return:
@@ -1179,7 +1178,7 @@ class SkillManager(Manager):
 
 	def allScenarioNodes(self) -> Dict[str, tuple]:
 		"""
-		Retunrs list of Node-Red nodes added by skills
+		Returns list of Node-Red nodes added by skills
 		:return:
 		"""
 		ret = dict()

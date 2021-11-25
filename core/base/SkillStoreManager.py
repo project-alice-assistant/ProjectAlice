@@ -84,6 +84,11 @@ class SkillStoreManager(Manager):
 			skillData['installed'] = skillName in self.SkillManager.allSkills.keys()
 
 			offendingConditions = self.SkillManager.checkSkillConditions(installer=skillData, checkOnly=True)
+
+			for offender in offendingConditions.copy():
+				if offender.get('skill', False):
+					offendingConditions.remove(offender)
+
 			skillData['offendingConditions'] = offendingConditions
 			skillData['compatible'] = False if len(offendingConditions) > 0 else True
 
@@ -132,7 +137,10 @@ class SkillStoreManager(Manager):
 				skillUpdateVersion = (repoVersion, f'{str(repoVersion)}_{str(aliceMinVersion)}')
 
 		if not skillUpdateVersion[0].isVersionNumber:
-			raise GithubNotFound
+			if self.ConfigManager.getAliceConfigByName('devMode'):
+				return Version.fromString('master'), 'master'
+			else:
+				raise GithubNotFound
 
 		return skillUpdateVersion
 
