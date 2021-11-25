@@ -18,15 +18,15 @@
 #  Last modified: 2021.08.02 at 06:12:17 CEST
 
 
+import traceback
+
 import importlib
 import json
+import requests
 import shutil
-import traceback
 from contextlib import suppress
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Union
-
-import requests
 
 from AliceGit import Exceptions as GitErrors
 from AliceGit.Exceptions import NotGitRepository, PathNotFoundException
@@ -138,6 +138,15 @@ class SkillManager(Manager):
 		:return:
 		"""
 		return {**self._activeSkills, **self._deactivatedSkills, **self._failedSkills}
+
+
+	@property
+	def skillList(self) -> List:
+		"""
+		Returns all skills present in the skill directory. These might not be inited, might have failed etc etc
+		:return:
+		"""
+		return self._skillList
 
 
 	@property
