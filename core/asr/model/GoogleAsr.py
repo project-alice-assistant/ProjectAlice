@@ -18,7 +18,6 @@
 #  Last modified: 2021.04.13 at 12:56:45 CEST
 
 import os
-from contextlib import suppress
 from pathlib import Path
 from threading import Event
 from time import time
@@ -31,11 +30,11 @@ from core.dialog.model.DialogSession import DialogSession
 from core.util.Stopwatch import Stopwatch
 
 
-with suppress(ModuleNotFoundError):
-	# noinspection PyPackageRequirements
-	from google.cloud.speech import SpeechClient
-	# noinspection PyPackageRequirements
-	from google.cloud.speech_v1 import RecognitionConfig, StreamingRecognitionConfig, StreamingRecognizeRequest
+try:
+	# noinspection PyUnresolvedReferences,PyPackageRequirements
+	from google.cloud.speech import SpeechClient, enums, types
+except:
+	pass  # Auto installed
 
 
 # noinspection PyAbstractClass
@@ -44,7 +43,7 @@ class GoogleAsr(Asr):
 	DEPENDENCIES = {
 		'system': [],
 		'pip'   : {
-			'google-cloud-speech==2.11.1'
+			'google-cloud-speech==1.3.1'
 		}
 	}
 
@@ -56,7 +55,7 @@ class GoogleAsr(Asr):
 		self._isOnlineASR = True
 
 		self._client: Optional[SpeechClient] = None
-		self._streamingConfig: Optional[RecognitionConfig] = None
+		self._streamingConfig: Optional[types.StreamingRecognitionConfig] = None
 
 		if self._credentialsFile.exists() and not self.ConfigManager.getAliceConfigByName('googleASRCredentials'):
 			self.ConfigManager.updateAliceConfiguration(key='googleASRCredentials', value=self._credentialsFile.read_text(), doPreAndPostProcessing=False)
@@ -73,18 +72,13 @@ class GoogleAsr(Asr):
 
 		self._client = SpeechClient()
 		# noinspection PyUnresolvedReferences
-		config = RecognitionConfig({
-				'encoding': RecognitionConfig.AudioEncoding.LINEAR16,
-				'sample_rate_hertz': self.AudioServer.SAMPLERATE,
-				'language_code': self.LanguageManager.getLanguageAndCountryCode(),
-				'max_alternatives': 1,
-				'model': 'command_and_search'
-		})
+		config = types.RecognitionConfig(
+			encoding=enums.RecognitionConfig.AudioEncoding.LINEAR16,
+			sample_rate_hertz=self.AudioServer.SAMPLERATE,
+			language_code=self.LanguageManager.getLanguageAndCountryCode()
+		)
 
-		self._streamingConfig = StreamingRecognitionConfig({
-			'config': config,
-			'interim_results': True
-		})
+		self._streamingConfig = types.StreamingRecognitionConfig(config=config, interim_results=True)
 
 
 	def decodeStream(self, session: DialogSession) -> Optional[ASRResult]:
@@ -99,8 +93,8 @@ class GoogleAsr(Asr):
 				audioStream = stream.audioStream()
 				# noinspection PyUnresolvedReferences
 				try:
-					requests = (StreamingRecognizeRequest(audio_content=content) for content in audioStream)
-					responses = self._client.streaming_recognize(config=self._streamingConfig, requests=requests)
+					requests = (types.StreamingRecognizeRequest(audio_content=content) for content in audioStream)
+					responses = self._client.streaming_recognize(self._streamingConfig, requests)
 					result = self._checkResponses(session, responses)
 				except Exception as e:
 					self._internetLostFlag.clear()
