@@ -20,10 +20,9 @@
 
 import json
 from contextlib import suppress
-from pathlib import Path
-
 from flask import Response, jsonify, request
 from flask_classful import route
+from pathlib import Path
 
 from AliceGit.Exceptions import AlreadyGitRepository, GithubRepoNotFound, GithubUserNotFound, NotGitRepository
 from AliceGit.Git import Repository
@@ -108,8 +107,11 @@ class SkillsApi(Api):
 
 			status = dict()
 			for skill in skills:
-				self.SkillManager.installSkills(skills=skill)
-				status[skill] = 'ok'
+				try:
+					self.SkillManager.installSkills(skills=skill)
+					status[skill] = 'ok'
+				except:
+					status[skill] = 'nok'
 
 			return jsonify(success=True, status=status)
 		except Exception as e:
