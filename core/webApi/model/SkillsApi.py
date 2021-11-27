@@ -108,33 +108,28 @@ class SkillsApi(Api):
 			status = dict()
 			for skill in skills:
 				try:
-					self.SkillManager.installSkills(skills=skill)
+					self.SkillManager.installSkills(skills=skill, startSkill=True)
 					status[skill] = 'ok'
 				except:
 					status[skill] = 'nok'
 
-			for skillName, status in status.copy().items():
-				if status != 'ok':
-					continue
-				try:
-					self.SkillManager.initSkills(onlyInit=skillName)
-					status[skillName] = 'ok'
-				except:
-					status[skillName] = 'nok'
-
-			for skillName, status in status.copy().items():
-				if status != 'ok':
-					continue
-				try:
-					self.SkillManager.startSkill(skillName=skillName)
-					status[skillName] = 'ok'
-				except:
-					status[skillName] = 'nok'
-
+			self.AssistantManager.checkAssistant()
 			return jsonify(success=True, status=status)
 		except Exception as e:
 			self.logWarning(f'Failed installing skill: {e}', printStack=True)
 			return jsonify(success=False, message=str(e))
+
+
+	@ApiAuthenticated
+	def put(self, skillName: str) -> Response:
+		try:
+			self.SkillManager.installSkills(skills=skillName, startSkill=True)
+			self.AssistantManager.checkAssistant()
+		except Exception as e:
+			self.logWarning(f'Failed installing skill: {e}', printStack=True)
+			return jsonify(success=False, message=str(e))
+
+		return jsonify(success=True)
 
 
 	@route('/<skillName>/', methods=['PATCH'])
@@ -164,7 +159,7 @@ class SkillsApi(Api):
 				if isinstance(skill, dict):
 					raise Exception('Skill not found')
 
-			return jsonify(success=True, skill=skill)
+			return jsonify(success=True, skill=skill.toDict())
 		except Exception as e:
 			self.logWarning(f'Failed fetching skill: {e}', printStack=True)
 			return jsonify(success=False, message=str(e))
@@ -236,23 +231,6 @@ class SkillsApi(Api):
 		except Exception as e:
 			self.logWarning(f'Failed reloading skill: {e}', printStack=True)
 			return jsonify(success=False, message=str(e))
-
-
-	@ApiAuthenticated
-	def put(self, skillName: str) -> Response:
-		if not self.SkillStoreManager.skillExists(skillName):
-			return self.skillNotFound()
-		elif self.SkillManager.getSkillInstance(skillName, True) is not None:
-			return jsonify(success=False, reason='skill already installed')
-
-		try:
-			self.SkillManager.downloadSkills(skills=skillName)
-			self.SkillManager.startSkill(skillName=skillName)
-		except Exception as e:
-			self.logWarning(f'Failed installing skill: {e}', printStack=True)
-			return jsonify(success=False, message=str(e))
-
-		return jsonify(success=True)
 
 
 	@route('/<skillName>/checkUpdate/')

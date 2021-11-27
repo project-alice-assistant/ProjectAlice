@@ -303,10 +303,11 @@ class SkillManager(Manager):
 		)
 
 
-	def installSkills(self, skills: Union[str, List[str]]):
+	def installSkills(self, skills: Union[str, List[str]], startSkill: bool = False):
 		"""
 		Installs the given skills
 		:param skills: Either a list of skill names to install or a single skill name
+		:param startSkill: If the skill should be immediately started
 		:return:
 		"""
 		self._busyInstalling.set()
@@ -357,6 +358,9 @@ class SkillManager(Manager):
 				if installFile.get('rebootAfterInstall', False):
 					self.Commons.runRootSystemCommand('sudo shutdown -r now'.split())
 					break
+				elif startSkill:
+					self.initSkills(onlyInit=skillName)
+					self.startSkill(skillName=skillName)
 			except SkillNotConditionCompliant:
 				self.broadcast(
 					method=constants.EVENT_SKILL_INSTALL_FAILED,
