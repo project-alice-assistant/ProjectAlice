@@ -113,6 +113,24 @@ class SkillsApi(Api):
 				except:
 					status[skill] = 'nok'
 
+			for skillName, status in status.copy().items():
+				if status != 'ok':
+					continue
+				try:
+					self.SkillManager.initSkills(onlyInit=skillName)
+					status[skillName] = 'ok'
+				except:
+					status[skillName] = 'nok'
+
+			for skillName, status in status.copy().items():
+				if status != 'ok':
+					continue
+				try:
+					self.SkillManager.startSkill(skillName=skillName)
+					status[skillName] = 'ok'
+				except:
+					status[skillName] = 'nok'
+
 			return jsonify(success=True, status=status)
 		except Exception as e:
 			self.logWarning(f'Failed installing skill: {e}', printStack=True)
