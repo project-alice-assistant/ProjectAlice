@@ -17,7 +17,8 @@
 		"dataType"    : "boolean",
 		"isSensitive" : false,
 		"description" : "Displays the current system usage on the interface",
-		"category"    : "system"
+		"category"    : "system",
+	  	"onUpdate"    : "WebUIManager.toggleSystemUsage"
 	},
 	"enableSSL"       : {
 	  "defaultValue": false,

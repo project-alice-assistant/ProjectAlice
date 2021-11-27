@@ -18,6 +18,7 @@
 #  Last modified: 2021.04.13 at 12:56:49 CEST
 
 from pathlib import Path
+from threading import Event
 
 import psutil as psutil
 
@@ -26,6 +27,11 @@ from core.commons import constants
 
 
 class WebUIManager(Manager):
+
+
+	def __init__(self):
+		self._systemUsageThreadFlag = Event()
+		super().__init__()
 
 	def onStart(self):
 		super().onStart()
@@ -37,16 +43,38 @@ class WebUIManager(Manager):
 			try:
 				self.startWebserver()
 				if self.ConfigManager.getAliceConfigByName('displaySystemUsage'):
-					self.ThreadManager.newThread(
-						name='DisplayResourceUsage',
-						target=self.publishResourceUsage
-					)
+					self.startSystemUsagePublisher()
 			except Exception as e:
 				self.logWarning(f'WebUI starting failed: {e}')
 				self.onStop()
 
 
+	def toggleSystemUsage(self):
+		if self.ConfigManager.getAliceConfigByName('displaySystemUsage'):
+			self._systemUsageThreadFlag.clear()
+			self.ThreadManager.terminateThread(name='DisplayResourceUsage')
+			self.ThreadManager.doLater(interval=3, func=self.startSystemUsagePublisher)
+		else:
+			self.ThreadManager.terminateThread(name='DisplayResourceUsage')
+			self._systemUsageThreadFlag.clear()
+
+
+	def startSystemUsagePublisher(self):
+		"""
+		Starts publishing system resource usage over mqtt
+		:return:
+		"""
+		self._systemUsageThreadFlag.set()
+		self.ThreadManager.newThread(
+			name='DisplayResourceUsage',
+			target=self.publishResourceUsage
+		)
+
+
 	def publishResourceUsage(self):
+		if not self._systemUsageThreadFlag.is_set():
+			return
+
 		self.MqttManager.publish(
 			topic=constants.TOPIC_RESOURCE_USAGE,
 			payload={
