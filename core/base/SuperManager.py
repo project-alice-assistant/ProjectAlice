@@ -19,8 +19,6 @@
 
 from __future__ import annotations
 
-import traceback
-
 from core.commons import constants
 from core.device.model.DeviceAbility import DeviceAbility
 from core.util.model.Logger import Logger
@@ -259,23 +257,26 @@ class SuperManager(object):
 
 	def onStop(self):
 		managerName = constants.UNKNOWN_MANAGER
-		try:
-			mqttManager = self._managers.pop('MqttManager') # Mqtt goes down as last
+		mqttManager = self._managers.pop('MqttManager', None) # Mqtt goes down as last
 
-			skillManager = self._managers.pop('SkillManager') # Skill manager goes down first, to tell the skills
-			skillManager.onStop()
+		skillManager = self._managers.pop('SkillManager', None) # Skill manager goes down first, to tell the skills
+		if skillManager:
+			try:
+				skillManager.onStop()
+			except Exception as e:
+				Logger().logError(f'Error stopping SkillManager: {e}')
 
-			for managerName, manager in self._managers.items():
+		for managerName, manager in self._managers.items():
+			try:
 				manager.onStop()
+			except Exception as e:
+				Logger().logError(f'Error while shutting down manager **{managerName}**: {e}')
 
-			managerName = mqttManager.name
-			mqttManager.onStop()
-		except KeyError as e:
-			Logger().logWarning(f'Manager **{managerName}** was not running: {e}')
-
-		except Exception as e:
-			Logger().logError(f'Error while shutting down manager **{managerName}**: {e}')
-			traceback.print_exc()
+		if mqttManager:
+			try:
+				mqttManager.onStop()
+			except Exception as e:
+				Logger().logError(f'Error stopping MqttManager: {e}')
 
 
 	def getManager(self, managerName: str):
