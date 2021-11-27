@@ -19,7 +19,6 @@
 
 from __future__ import annotations
 
-from core.commons import constants
 from core.device.model.DeviceAbility import DeviceAbility
 from core.util.model.Logger import Logger
 
@@ -256,7 +255,6 @@ class SuperManager(object):
 
 
 	def onStop(self):
-		managerName = constants.UNKNOWN_MANAGER
 		mqttManager = self._managers.pop('MqttManager', None) # Mqtt goes down as last
 
 		skillManager = self._managers.pop('SkillManager', None) # Skill manager goes down first, to tell the skills

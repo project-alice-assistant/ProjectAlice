@@ -717,7 +717,7 @@ class SkillManager(Manager):
 							notCompliantRules.append({conditionName: conditionValue})
 
 			elif conditionName == 'asrArbitraryCapture':
-				if conditionValue and not self.ASRManager.asr.capableOfArbitraryCapture:
+				if conditionValue and self.ASRManager.asr and not self.ASRManager.asr.capableOfArbitraryCapture:
 					if not checkOnly:
 						raise SkillNotConditionCompliant(message=notCompliant, skillName=installer['name'], condition=conditionName, conditionValue=conditionValue)
 					else:
