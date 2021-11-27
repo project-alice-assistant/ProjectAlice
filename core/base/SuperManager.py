@@ -175,7 +175,7 @@ class SuperManager(object):
 		except Exception as e:
 			Logger().logError(f'Error while sending onBooted to manager **{manager.name}**: {e}')
 
-		deviceList = self.deviceManager.getDevicesWithAbilities([DeviceAbility.IS_SATELITTE, DeviceAbility.IS_CORE])
+		deviceList = self.deviceManager.getDevicesWithAbilities([DeviceAbility.IS_SATELITTE, DeviceAbility.IS_CORE], connectedOnly=False)
 		self.mqttManager.playSound(soundFilename='boot', deviceUid=deviceList)
 
 

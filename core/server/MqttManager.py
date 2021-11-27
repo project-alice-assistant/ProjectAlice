@@ -17,16 +17,16 @@
 #
 #  Last modified: 2021.07.28 at 16:07:59 CEST
 
-import traceback
-
 import json
-import paho.mqtt.client as mqtt
-import paho.mqtt.publish as publish
 import random
 import re
+import traceback
 import uuid
 from pathlib import Path
 from typing import List, Union
+
+import paho.mqtt.client as mqtt
+import paho.mqtt.publish as publish
 
 from core.base.model.Intent import Intent
 from core.base.model.Manager import Manager
@@ -870,9 +870,8 @@ class MqttManager(Manager):
 			location = Path(self.Commons.rootDir()) / location
 
 		if deviceUid == constants.ALL or isinstance(deviceUid, list):
-
 			if not isinstance(deviceUid, list):
-				deviceList = [device.uid for device in self.DeviceManager.getDevicesWithAbilities(abilities=[DeviceAbility.PLAY_SOUND, DeviceAbility.CAPTURE_SOUND])]
+				deviceList = [device.uid for device in self.DeviceManager.getDevicesWithAbilities(abilities=[DeviceAbility.PLAY_SOUND])]
 			else:
 				deviceList = [uid if isinstance(uid, str) else uid.uid for uid in deviceUid]
 
