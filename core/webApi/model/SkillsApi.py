@@ -176,11 +176,11 @@ class SkillsApi(Api):
 				if skillName in self.SkillManager.neededSkills:
 					return jsonify(success=False, message='Required skill cannot be deactivated!')
 
-				self.SkillManager.deactivateSkill(skillName=skillName, persistent=True)
+				result = self.SkillManager.deactivateSkill(skillName=skillName, persistent=True)
 			else:
-				self.SkillManager.activateSkill(skillName=skillName, persistent=True)
+				result = self.SkillManager.activateSkill(skillName=skillName, persistent=True)
 
-			return jsonify(success=True)
+			return jsonify(success=result)
 		except Exception as e:
 			self.logWarning(f'Failed toggling skill: {e}', printStack=True)
 			return jsonify(success=False, message=str(e))

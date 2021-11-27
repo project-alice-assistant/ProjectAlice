@@ -579,6 +579,7 @@ class SkillManager(Manager):
 			except SkillNotConditionCompliant as e:
 				if self.notCompliantSkill(skillName=skillName, exception=e):
 					self._failedSkills[skillName] = FailedAliceSkill(installFile)
+					self.changeSkillStateInDB(skillName=skillName, newState=False)
 					continue
 				else:
 					return
@@ -589,6 +590,7 @@ class SkillManager(Manager):
 					return
 				else:
 					self._failedSkills[skillName] = FailedAliceSkill(installFile)
+					self.changeSkillStateInDB(skillName=skillName, newState=False)
 					continue
 
 
@@ -604,7 +606,7 @@ class SkillManager(Manager):
 	# noinspection PyTypeChecker
 	def instantiateSkill(self, skillName: str, skillResource: str = '', reload: bool = False) -> Optional[AliceSkill]:
 		"""
-		Instantiates the given skill at the gien path
+		Instantiates the given skill at the given path
 		:param skillName:
 		:param skillResource:
 		:param reload:
@@ -642,6 +644,8 @@ class SkillManager(Manager):
 		"""
 		if skillName in self._activeSkills:
 			return self._activeSkills[skillName].active
+		elif skillName in self._failedSkills or skillName in self._deactivatedSkills:
+			return False
 		elif skillName in self._skillList:
 			# noinspection SqlResolve
 			row = self.databaseFetch(tableName=self.DBTAB_SKILLS, query='SELECT active FROM :__table__ WHERE skillName = :skillName LIMIT 1', values={'skillName': skillName})
@@ -860,16 +864,19 @@ class SkillManager(Manager):
 		"""
 		if skillName in self._activeSkills:
 			skillInstance = self._activeSkills[skillName]
-		elif skillName in self._deactivatedSkills:
-			self._deactivatedSkills.pop(skillName, None)
-			skillInstance = self.instantiateSkill(skillName=skillName)
-			if skillInstance:
-				self.activeSkills[skillName] = skillInstance
+		elif skillName in self._deactivatedSkills or skillName in self._failedSkills:
+			if skillName in self._failedSkills:
+				skill = self._failedSkills.pop(skillName, None)
 			else:
+				skill = self._deactivatedSkills.pop(skillName, None)
+
+			try:
+				skillInstance = self.instantiateSkill(skillName=skillName)
+				self.checkSkillConditions(installer=json.loads(self.getSkillInstallFilePath(skillName=skillName).read_text()))
+			except:
+				self._failedSkills[skillName] = FailedAliceSkill(json.loads(skill.getResource(f'{skillName}.install').read_text()))
 				return dict()
-		elif skillName in self._failedSkills:
-			self._failedSkills.pop(skillName, None)
-			skillInstance = self.instantiateSkill(skillName=skillName)
+
 			if skillInstance:
 				self.activeSkills[skillName] = skillInstance
 			else:
@@ -911,7 +918,7 @@ class SkillManager(Manager):
 		return skillInstance.supportedIntents
 
 
-	def deactivateSkill(self, skillName: str, persistent: bool = False):
+	def deactivateSkill(self, skillName: str, persistent: bool = False) -> bool:
 		"""
 		Deactivates a skill and broadcasts it
 		:param skillName:
@@ -934,11 +941,14 @@ class SkillManager(Manager):
 				self.logInfo(f'Deactivated skill "{skillName}" with persistence')
 			else:
 				self.logInfo(f'Deactivated skill "{skillName}" without persistence')
+
+			return True
 		else:
 			self.logWarning(f'Skill "{skillName} is not active')
+			return False
 
 
-	def activateSkill(self, skillName: str, persistent: bool = False):
+	def activateSkill(self, skillName: str, persistent: bool = False) -> bool:
 		"""
 		Activates a skill and broadcasts it
 		:param skillName:
@@ -947,10 +957,13 @@ class SkillManager(Manager):
 		"""
 		if skillName not in self._deactivatedSkills and skillName not in self._failedSkills:
 			self.logWarning(f'Skill "{skillName} is not deactivated or failed')
-			return
+			return False
 
 		try:
 			self.startSkill(skillName)
+
+			if skillName not in self._activeSkills:
+				return False
 
 			if persistent:
 				self.changeSkillStateInDB(skillName=skillName, newState=True)
@@ -964,9 +977,10 @@ class SkillManager(Manager):
 				propagateToSkills=True,
 				skill=self.activeSkills[skillName]
 			)
+			return True
 		except:
 			self.logError(f'Failed activating skill "{skillName}"')
-			return
+			return False
 
 
 	def toggleSkillState(self, skillName: str, persistent: bool = False):

@@ -98,7 +98,8 @@
 		  "noLocationEmptyName": "The location name cannot be empty",
 		  "widgetSavingFailed": "Failed saving widget",
 		  "newTileFailed": "Failed uploading new tile",
-		  "skillIncompatible" : "Unfortunately this skill is not compatible with your current Alice. If you still want to install it, please turn on dev mode."
+		  "skillIncompatible": "Unfortunately this skill is not compatible with your current Alice. If you still want to install it, please turn on dev mode.",
+		  "skillNotActivated": "Skill activation failed"
 		},
 		"successes": {
 		  "deviceUnlinked": "Device successfully unlinked",
