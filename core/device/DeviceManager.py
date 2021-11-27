@@ -159,11 +159,11 @@ class DeviceManager(Manager):
 		)
 
 
-	def onSkillDeactivated(self, skill):
-		self.removeDeviceTypesForSkill(skillName=skill.name)
+	def onSkillDeactivated(self, skill: str):
+		self.removeDeviceTypesForSkill(skillName=skill)
 		tmp = self._devices.copy()
 		for deviceUid, device in tmp.items():
-			if device.skillName == skill.name:
+			if device.skillName == skill:
 				self._devices.pop(deviceUid, None)
 
 

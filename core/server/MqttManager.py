@@ -999,7 +999,7 @@ class MqttManager(Manager):
 		)
 
 
-	def onSkillDeactivated(self, skill):
+	def onSkillDeactivated(self, skill: str):
 		self.mqttBroadcast(
 			topic=constants.TOPIC_SKILL_DEACTIVATED,
 			payload={
@@ -1008,7 +1008,7 @@ class MqttManager(Manager):
 		)
 
 
-	def onSkillActivated(self, skill):
+	def onSkillActivated(self, skill: str):
 		self.mqttBroadcast(
 			topic=constants.TOPIC_SKILL_ACTIVATED,
 			payload={
@@ -1017,7 +1017,7 @@ class MqttManager(Manager):
 		)
 
 
-	def onSkillStopped(self, skill):
+	def onSkillStopped(self, skill: str):
 		self.mqttBroadcast(
 			topic=constants.TOPIC_SKILL_STOPPED,
 			payload={
@@ -1026,7 +1026,7 @@ class MqttManager(Manager):
 		)
 
 
-	def onSkillStarted(self, skill):
+	def onSkillStarted(self, skill: str):
 		self.mqttBroadcast(
 			topic=constants.TOPIC_SKILL_STARTED,
 			payload={

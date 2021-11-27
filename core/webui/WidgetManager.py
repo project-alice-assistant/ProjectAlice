@@ -280,7 +280,7 @@ class WidgetManager(Manager):
 	def onSkillDeactivated(self, skill):
 		tmp = self._widgets.copy()
 		for wid, widget in tmp.items():
-			if widget.skill == skill.name:
+			if widget.skill == skill:
 				self._widgets.pop(wid, None)
 
 

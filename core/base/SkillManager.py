@@ -18,15 +18,15 @@
 #  Last modified: 2021.08.02 at 06:12:17 CEST
 
 
-import traceback
-
 import importlib
 import json
-import requests
 import shutil
+import traceback
 from contextlib import suppress
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Union
+
+import requests
 
 from AliceGit import Exceptions as GitErrors
 from AliceGit.Exceptions import NotGitRepository, PathNotFoundException
@@ -933,7 +933,7 @@ class SkillManager(Manager):
 					method=constants.EVENT_SKILL_DEACTIVATED,
 					exceptions=[constants.DUMMY],
 					propagateToSkills=True,
-					skill=skillInstance
+					skill=skillInstance.name
 				)
 
 			if persistent:
@@ -975,7 +975,7 @@ class SkillManager(Manager):
 				method=constants.EVENT_SKILL_ACTIVATED,
 				exceptions=[constants.DUMMY],
 				propagateToSkills=True,
-				skill=self.activeSkills[skillName]
+				skill=skillName
 			)
 			return True
 		except:
@@ -985,7 +985,7 @@ class SkillManager(Manager):
 
 	def toggleSkillState(self, skillName: str, persistent: bool = False):
 		"""
-		Activate the given skill if deactivated or deactivates the given skill if actived
+		Activate the given skill if deactivated or deactivates the given skill if activated
 		:param skillName:
 		:param persistent:
 		:return:
