@@ -237,12 +237,14 @@ class DeviceManager(Manager):
 			raise Exception('Cannot get a device without id or uid')
 
 		if ret is None and not self.loadingDone:
+			if self.ProjectAlice.shuttingDown:
+				return None
+
 			self._loopCounter += 1
-			self.logInfo(f'waiting for deviceManager ({self._loopCounter})')
+			self.logInfo(f'Waiting for {self.name} ({self._loopCounter})')
 			if self._loopCounter > 20:
 				self.logWarning(f'Impossible to find device instance for id/uid {deviceId}/{uid}, skipping')
 				self._loopCounter = 0
-
 				return None
 
 			time.sleep(1)
