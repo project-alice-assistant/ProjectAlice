@@ -122,7 +122,7 @@ class ProjectAliceObject(object):
 			self.logWarning(f'Failed to broadcast event **{method}** to **DialogManager**: {e}')
 
 		deadManagers = list()
-		for name, man in SM.SuperManager.getInstance().managers.items():
+		for name, man in SM.SuperManager.getInstance().managers.copy().items():
 			if not man:
 				deadManagers.append(name)
 				continue
