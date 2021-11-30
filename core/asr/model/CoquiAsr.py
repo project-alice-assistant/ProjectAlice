@@ -101,13 +101,29 @@ class CoquiAsr(Asr):
 			self.Commons.downloadFile('https://github.com/coqui-ai/STT-models/releases/download/german/AASHISHAG/v0.9.0/model.tflite', str(self.tFlite))
 			self.Commons.downloadFile('https://github.com/philipp2310/Coqui-models/releases/download/de_v093/lm.scorer', str(self._langPath / 'lm.scorer'))
 			return True
-		if self.LanguageManager.activeLanguage == 'en':
-			self.Commons.downloadFile('https://github.com/coqui-ai/STT/releases/download/v0.9.3/coqui-stt-0.9.3-models.tflite', str(self.tFlite))
-			self.Commons.downloadFile('https://github.com/coqui-ai/STT/releases/download/v0.9.3/coqui-stt-0.9.3-models.scorer', str(self._langPath / 'lm.scorer'))
+		elif self.LanguageManager.activeLanguage == 'en':
+			self.Commons.downloadFile('https://github.com/coqui-ai/STT-models/releases/download/english%2Fcoqui%2Fv1.0.0-large-vocab/model.tflite', str(self.tFlite))
+			self.Commons.downloadFile('https://github.com/coqui-ai/STT-models/releases/download/english%2Fcoqui%2Fv1.0.0-large-vocab/large_vocabulary.scorer', str(self._langPath / 'lm.scorer'))
 			return True
-
-		url = 'error'  # TODO adjust path in respect to language
-		self.logError(f'WIP! Only de/en supported for now - Please install language manually into PA/trained/asr/Coqui/<languange>/!')
+		elif self.LanguageManager.activeLanguage == 'fr':
+			self.Commons.downloadFile('https://github.com/coqui-ai/STT-models/releases/download/french/commonvoice-fr/v0.6/model.tflite', str(self.tFlite))
+			self.Commons.downloadFile('https://github.com/coqui-ai/STT-models/releases/download/french/commonvoice-fr/v0.6/fr-cvfr-2-prune-kenlm.scorer', str(self._langPath / 'lm.scorer'))
+			return True
+		elif self.LanguageManager.activeLanguage == 'it':
+			self.Commons.downloadFile('https://github.com/coqui-ai/STT-models/releases/download/italian/mozillaitalia/2020.8.7/model.tflite', str(self.tFlite))
+			self.Commons.downloadFile('https://github.com/coqui-ai/STT-models/releases/download/italian/mozillaitalia/2020.8.7/it-mzit-1-prune-kenlm.scorer', str(self._langPath / 'lm.scorer'))
+			return True
+		elif self.LanguageManager.activeLanguage == 'pl':
+			self.Commons.downloadFile('https://github.com/coqui-ai/STT-models/releases/download/polish/jaco-assistant/v0.0.1/model.tflite', str(self.tFlite))
+			self.Commons.downloadFile('https://github.com/coqui-ai/STT-models/releases/download/polish/jaco-assistant/v0.0.1/kenlm_pl.scorer', str(self._langPath / 'lm.scorer'))
+			return True
+		elif self.LanguageManager.activeLanguage == 'pt':
+			self.Commons.downloadFile('https://github.com/coqui-ai/STT-models/releases/download/portuguese/itml/v0.1.0/model.tflite', str(self.tFlite))
+			self.Commons.downloadFile('https://github.com/coqui-ai/STT-models/releases/download/portuguese/itml/v0.1.0/pt-itml-0-prune-kenlm.scorer', str(self._langPath / 'lm.scorer'))
+			return True
+		else:
+			self.logError(f'WIP! Only de/en supported for now - Please install language manually into PA/trained/asr/Coqui/<languange>/!')
+			return False
 
 		downloadPath = (self._langPath / url.rsplit('/')[-1])
 		try:
