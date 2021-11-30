@@ -89,8 +89,38 @@
 	  "fr": "Mise à jours configuration système"
 	},
 	"body": {
-	  "en": "The skill\"{}\" wants to modify the setting \"{}\" to the new value \"{}\"",
-	  "fr": "The skill\"{}\" veut modifier le parametre \"{}\" à la valeure \"{}\""
+	  "en": "The skill \"{}\" wants to modify the setting \"{}\" to the new value \"{}\"",
+	  "fr": "The skill \"{}\" veux modifier le paramètre \"{}\" à la valeure \"{}\""
+	}
+  },
+  "startedDownload": {
+	"title": {
+	  "en": "Download",
+	  "fr": "Téléchargement"
+	},
+	"body": {
+	  "en": "Downloading \"{}\"",
+	  "fr": "Téléchargement de \"{}\""
+	}
+  },
+  "doneDownload": {
+	"title": {
+	  "en": "Download",
+	  "fr": "Téléchargement"
+	},
+	"body": {
+	  "en": "Finished downloading \"{}\"",
+	  "fr": "Téléchargement de \"{}\" terminé"
+	}
+  },
+  "failedDownload": {
+	"title": {
+	  "en": "Download",
+	  "fr": "Téléchargement"
+	},
+	"body": {
+	  "en": "Failed downloading \"{}\"",
+	  "fr": "Téléchargement de \"{}\" échoué"
 	}
   }
 }
