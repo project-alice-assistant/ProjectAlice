@@ -315,6 +315,9 @@ class SkillManager(Manager):
 			skills = [skills]
 
 		for skillName in skills:
+			if skillName in self._skillList:
+				continue
+
 			try:
 				try:
 					repository = self.getSkillRepository(skillName=skillName)
