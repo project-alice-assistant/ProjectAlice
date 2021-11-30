@@ -182,6 +182,9 @@ class SkillStoreManager(Manager):
 
 		ret = set()
 		for suggestedSkillName in suggestions:
+			if suggestedSkillName in self.SkillManager.allSkills.keys():
+				continue
+
 			speakableName = self._skillStoreData.get(suggestedSkillName, dict()).get('speakableName', '')
 
 			if not speakableName:

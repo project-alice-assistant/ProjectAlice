@@ -316,6 +316,7 @@ class SkillManager(Manager):
 
 		for skillName in skills:
 			if skillName in self._skillList:
+				self.logDebug(f'Skill **{skillName}** already installed, skipping')
 				continue
 
 			try:
