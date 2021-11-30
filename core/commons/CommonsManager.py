@@ -17,15 +17,10 @@
 #
 #  Last modified: 2021.04.13 at 12:56:46 CEST
 
-from collections import defaultdict
-from ctypes import *
-
 import hashlib
 import inspect
-import jinja2
 import json
 import random
-import requests
 import socket
 import sqlite3
 import string
@@ -33,13 +28,18 @@ import subprocess
 import tempfile
 import time
 import uuid
+from collections import defaultdict
 from contextlib import contextmanager, suppress
+from ctypes import *
 from datetime import datetime
-from googletrans import Translator
-from paho.mqtt.client import MQTTMessage
 from pathlib import Path
 from typing import Any, Union
 from uuid import UUID
+
+import jinja2
+import requests
+from googletrans import Translator
+from paho.mqtt.client import MQTTMessage
 
 import core.base.SuperManager as SuperManager
 import core.commons.model.Slot as slotModel
@@ -47,6 +47,7 @@ from core.base.model.Manager import Manager
 from core.commons import constants
 from core.commons.model.PartOfDay import PartOfDay
 from core.dialog.model.DialogSession import DialogSession
+from core.webui.model.UINotificationType import UINotificationType
 
 
 class CommonsManager(Manager):
@@ -360,16 +361,20 @@ class CommonsManager(Manager):
 		if not self.Commons.rootDir() in dest:
 			dest = f'{self.Commons.rootDir()}/{dest}'
 
+		key = f'download_{time.time()}'
 		try:
+			self.WebUINotificationManager.newNotification(typ=UINotificationType.INFO, notification='startedDownload', replaceBody=[Path(dest).stem], key=key)
 			with requests.get(url, stream=True) as r:
 				r.raise_for_status()
 				with Path(dest).open('wb') as fp:
 					for chunk in r.iter_content(chunk_size=8192):
 						if chunk:
 							fp.write(chunk)
+			self.WebUINotificationManager.newNotification(typ=UINotificationType.INFO, notification='doneDownload', replaceBody=[Path(dest).stem], key=key)
 			return True
 		except Exception as e:
 			self.logWarning(f'Failed downloading file: {e}')
+			self.WebUINotificationManager.newNotification(typ=UINotificationType.ALERT, notification='failedDownload', replaceBody=[Path(dest).stem], key=key)
 			return False
 
 
