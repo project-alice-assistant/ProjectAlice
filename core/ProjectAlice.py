@@ -68,7 +68,7 @@ class ProjectAlice(Singleton):
 
 	def checkDependencies(self) -> bool:
 		"""
-		Compares .hash files against requirements.txt and sysrrequirement.txt. Updates dependencies if necessary
+		Compares .hash files against requirements.txt and sysrequirement.txt. Updates dependencies if necessary
 		:return: boolean False if the check failed, new deps were installed (reboot maybe? :) )
 		"""
 		HASH_SUFFIX = '.hash'

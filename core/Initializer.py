@@ -564,14 +564,15 @@ class Initializer(object):
 			confs['disableCapture'] = False
 
 		hlcServiceFilePath = Path('/etc/systemd/system/hermesledcontrol.service')
-		hlcConfigFilePath = Path(f'/home/{getpass.getuser()}/hermesLedControl/configuration.yml')
+		hlcDistributedServiceFilePath = Path(f'/home/{getpass.getuser()}/HermesLedControl/hermesledcontrol.service')
+		hlcConfigFilePath = Path(f'/home/{getpass.getuser()}/HermesLedControl/configuration.yml')
 		hlcConfig = dict()
 		if initConfs['useHLC']:
 
-			hlcDir = Path('/home', getpass.getuser(), 'hermesLedControl')
+			hlcDir = Path('/home', getpass.getuser(), 'HermesLedControl')
 
 			if not hlcDir.exists():
-				subprocess.run(['git', 'clone', 'https://github.com/project-alice-assistant/hermesLedControl.git', str(Path('/home', getpass.getuser(), 'hermesLedControl'))])
+				subprocess.run(['git', 'clone', 'https://github.com/project-alice-assistant/hermesLedControl.git', str(Path('/home', getpass.getuser(), 'HermesLedControl'))])
 			else:
 				subprocess.run(['git', '-C', hlcDir, 'stash'])
 				subprocess.run(['git', '-C', hlcDir, 'pull'])
@@ -579,20 +580,11 @@ class Initializer(object):
 
 			if hlcServiceFilePath.exists():
 				subprocess.run(['sudo', 'systemctl', 'stop', 'hermesledcontrol'])
+				subprocess.run(['sudo', 'systemctl', 'disable', 'hermesledcontrol'])
 				subprocess.run(['sudo', 'rm', hlcServiceFilePath])
 
 			subprocess.run(['python3.7', '-m', 'venv', f'/home/{getpass.getuser()}/hermesLedControl/venv'])
-
-			reqs = [
-				'RPi.GPIO',
-				'spidev',
-				'gpiozero',
-				'paho-mqtt',
-				'numpy',
-				'pyyaml'
-			]
-			for req in reqs:
-				subprocess.run([f'/home/{getpass.getuser()}/hermesLedControl/venv/bin/pip', 'install', req])
+			subprocess.run([f'{str(hlcDir)}/venv/bin/pip', 'install', '-r', f'{str(hlcDir / "requirements.txt")}', '--no-cache-dir'])
 
 			import yaml
 
@@ -605,6 +597,14 @@ class Initializer(object):
 				hlcConfig['pathToConfig'] = f'/home/{getpass.getuser()}/ProjectAlice/config.json'
 				hlcConfig['pattern'] = 'projectalice'
 				hlcConfig['enableDoA'] = False
+
+			serviceFile = hlcDistributedServiceFilePath.read_text()
+			serviceFile = serviceFile.replace('%WORKING_DIR%', f'WorkingDirectory=/home/{getpass.getuser()}/HermesLedControl')
+			serviceFile = serviceFile.replace('%EXECSTART%', f'WorkingDirectory=/home/{getpass.getuser()}/HermesLedControl/venv/bin/python main.py --hermesLedControlConfig=/home/{getpass.getuser()}/.config/hermesLedControl/configuration.yml')
+			serviceFile = serviceFile.replace('%USER%', f'User={getpass.getuser()}')
+			hlcDistributedServiceFilePath.write_text(serviceFile)
+			subprocess.run(['sudo', 'cp', hlcDistributedServiceFilePath, hlcServiceFilePath])
+
 
 		useFallbackHLC = False
 		if initConfs['installSound']:
