@@ -25,7 +25,7 @@ from typing import Match, Union
 
 class Logger(object):
 
-	def __init__(self, prepend: str = None, **kwargs):
+	def __init__(self, prepend: str = None, **_kwargs):
 		self._prepend = prepend
 		self._logger = logging.getLogger('ProjectAlice')
 
@@ -74,6 +74,8 @@ class Logger(object):
 
 		if self._prepend:
 			msg = f'{self._prepend} {msg}'
+		elif not msg.startswith('['):
+			msg = f'[Project Alice Logger] {msg}'
 
 		match = re.match(r'^(\[[\w ]+])(.*)$', msg)
 		if match:
@@ -82,9 +84,18 @@ class Logger(object):
 			msg = f'{tag}{space}{log}'
 
 		func = getattr(self._logger, function)
-		func(msg, exc_info=printStack)
+		func(msg)
 		if printStack:
-			traceback.print_exc()
+			for line in traceback.format_exc().split('\n'):
+				if not line.strip():
+					continue
+				self.doLog(function=function, msg=f'[Traceback] {line}', printStack=False)
+
+		try:
+			from core.base.SuperManager import SuperManager
+			SuperManager.getInstance().bugReportManager.addToHistory(msg)
+		except:
+			pass # We really can't do anything here
 
 
 	@staticmethod

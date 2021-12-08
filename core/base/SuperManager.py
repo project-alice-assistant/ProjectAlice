@@ -39,46 +39,52 @@ class SuperManager(object):
 		SuperManager._INSTANCE = self
 		self._managers = dict()
 
-		self.projectAlice = mainClass
-		self.commons = None
-		self.commonsManager = None
-		self.configManager = None
-		self.databaseManager = None
-		self.languageManager = None
-		self.asrManager = None
-		self.ttsManager = None
-		self.threadManager = None
-		self.mqttManager = None
-		self.timeManager = None
-		self.multiIntentManager = None
-		self.telemetryManager = None
-		self.skillManager = None
-		self.widgetManager = None
-		self.deviceManager = None
-		self.locationManager = None
-		self.internetManager = None
-		self.wakewordRecorder = None
-		self.userManager = None
-		self.talkManager = None
-		self.webUiManager = None
-		self.apiManager = None
-		self.nodeRedManager = None
-		self.skillStoreManager = None
-		self.nluManager = None
-		self.dialogTemplateManager = None
-		self.aliceWatchManager = None
-		self.audioManager = None
-		self.dialogManager = None
-		self.locationManager = None
-		self.wakewordManager = None
-		self.assistantManager = None
-		self.stateManager = None
-		self.subprocessManager = None
+		self.projectAlice             = mainClass
+		self.aliceWatchManager        = None
+		self.apiManager               = None
+		self.asrManager               = None
+		self.assistantManager         = None
+		self.audioManager             = None
+		self.bugReportManager         = None
+		self.commons                  = None
+		self.commonsManager           = None
+		self.configManager            = None
+		self.databaseManager          = None
+		self.deviceManager            = None
+		self.dialogManager            = None
+		self.dialogTemplateManager    = None
+		self.internetManager          = None
+		self.languageManager          = None
+		self.locationManager          = None
+		self.locationManager          = None
+		self.mqttManager              = None
+		self.multiIntentManager       = None
+		self.nluManager               = None
+		self.nodeRedManager           = None
+		self.skillManager             = None
+		self.skillStoreManager        = None
+		self.stateManager             = None
+		self.subprocessManager        = None
+		self.talkManager              = None
+		self.telemetryManager         = None
+		self.threadManager            = None
+		self.timeManager              = None
+		self.ttsManager               = None
+		self.userManager              = None
+		self.wakewordManager          = None
+		self.wakewordRecorder         = None
+		self.webUiManager             = None
 		self.webUINotificationManager = None
+		self.widgetManager            = None
+
 
 
 	def onStart(self):
 		try:
+			bugReportManager = self._managers.pop('BugReportManager')
+			bugReportManager.onStart()
+			self._managers[bugReportManager.name] = bugReportManager
+
 			commons = self._managers.pop('CommonsManager')
 			commons.onStart()
 
@@ -125,7 +131,7 @@ class SuperManager(object):
 			nodeRedManager = self._managers.pop('NodeRedManager')
 
 			for manager in self._managers.values():
-				if manager:
+				if manager and manager.name != self.bugReportManager.name:
 					manager.onStart()
 
 			talkManager.onStart()
@@ -156,6 +162,7 @@ class SuperManager(object):
 			self._managers[nodeRedManager.name] = nodeRedManager
 			self._managers[stateManager.name] = stateManager
 			self._managers[subprocessManager.name] = subprocessManager
+			self._managers[bugReportManager.name] = bugReportManager
 		except Exception as e:
 			import traceback
 
@@ -215,7 +222,9 @@ class SuperManager(object):
 		from core.base.StateManager import StateManager
 		from core.util.SubprocessManager import SubprocessManager
 		from core.webui.WebUINotificationManager import WebUINotificationManager
+		from core.util.BugReportManager import BugReportManager
 
+		self.bugReportManager = BugReportManager()
 		self.commonsManager = CommonsManager()
 		self.commons = self.commonsManager
 		self.stateManager = StateManager()
@@ -255,7 +264,8 @@ class SuperManager(object):
 
 
 	def onStop(self):
-		mqttManager = self._managers.pop('MqttManager', None) # Mqtt goes down as last
+		mqttManager = self._managers.pop('MqttManager', None) # Mqtt goes down last with bug reporter
+		bugReporterManager = self._managers.pop('BugReporterManager', None) # bug reporter goes down as last
 
 		skillManager = self._managers.pop('SkillManager', None) # Skill manager goes down first, to tell the skills
 		if skillManager:
@@ -266,7 +276,8 @@ class SuperManager(object):
 
 		for managerName, manager in self._managers.items():
 			try:
-				manager.onStop()
+				if manager.isActive:
+					manager.onStop()
 			except Exception as e:
 				Logger().logError(f'Error while shutting down manager **{managerName}**: {e}')
 
@@ -275,6 +286,12 @@ class SuperManager(object):
 				mqttManager.onStop()
 			except Exception as e:
 				Logger().logError(f'Error stopping MqttManager: {e}')
+
+		if bugReporterManager:
+			try:
+				bugReporterManager.onStop()
+			except Exception as e:
+				Logger().logError(f'Error stopping BugReporterManager: {e}')
 
 
 	def getManager(self, managerName: str):

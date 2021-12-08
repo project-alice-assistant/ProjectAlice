@@ -772,7 +772,7 @@ class ConfigManager(Manager):
 	@property
 	def githubAuth(self) -> Tuple[str, str]:
 		"""
-		Returns the users configured username and token for github as a tuple
+		Returns the users configured username and token for Github as a tuple
 		When one of the values is not supplied None is returned.
 		:return:
 		"""
