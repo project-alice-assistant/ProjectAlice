@@ -30,21 +30,16 @@ from core.commons import constants
 class BugReportManager(Manager):
 
 	def __init__(self):
+		super().__init__(name='BugReportManager')
+
 		self._flagFile = Path('alice.bugreport')
 		if self._flagFile.exists():
 			self._recording = True
+			self.logInfo('Flag file detected, recording errors for this run')
 		else:
 			self._recording = False
 		self._history = list()
 		self._title = ''
-
-		super().__init__(name='BugReportManager')
-
-
-	def onStart(self):
-		super().onStart()
-		if self._recording:
-			self.logInfo('Flag file detected, recording errors for this run')
 
 
 	@property
