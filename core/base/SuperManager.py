@@ -265,7 +265,7 @@ class SuperManager(object):
 
 	def onStop(self):
 		mqttManager = self._managers.pop('MqttManager', None) # Mqtt goes down last with bug reporter
-		bugReporterManager = self._managers.pop('BugReporterManager', None) # bug reporter goes down as last
+		bugReportManager = self._managers.pop('BugReportManager', None) # bug reporter goes down as last
 
 		skillManager = self._managers.pop('SkillManager', None) # Skill manager goes down first, to tell the skills
 		if skillManager:
@@ -287,11 +287,11 @@ class SuperManager(object):
 			except Exception as e:
 				Logger().logError(f'Error stopping MqttManager: {e}')
 
-		if bugReporterManager:
+		if bugReportManager:
 			try:
-				bugReporterManager.onStop()
+				bugReportManager.onStop()
 			except Exception as e:
-				Logger().logError(f'Error stopping BugReporterManager: {e}')
+				Logger().logError(f'Error stopping BugReportManager: {e}')
 
 
 	def getManager(self, managerName: str):

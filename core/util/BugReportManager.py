@@ -37,6 +37,9 @@ class BugReportManager(Manager):
 		if self._flagFile.exists():
 			self._recording = True
 			self.logInfo('Flag file detected, recording errors for this run')
+			version = subprocess.run(f'git rev-parse HEAD', capture_output=True, text=True, shell=True).stdout.strip()
+			self.logInfo(f'Project Alice logs')
+			self.logInfo(f'Git commit id: {version}')
 		else:
 			self._recording = False
 		self._history = list()
@@ -51,11 +54,6 @@ class BugReportManager(Manager):
 	def addToHistory(self, log: str):
 		if not self._recording:
 			return
-
-		if len(self._history) <= 0:
-			self._history.append('Project Alice logs')
-			version = subprocess.run(f'git rev-parse HEAD', capture_output=True, text=True, shell=True).stdout.strip()
-			self.logInfo(f'Git commit id: {version}')
 
 		if len(self._history) > 2500:
 			del self._history[1] # Don't delete first line, it's the git commit id
@@ -89,4 +87,4 @@ class BugReportManager(Manager):
 			else:
 				self.logInfo(f'Created new issue: {request.json()["html_url"]}')
 
-			os.remove(self._flagFile)
+		os.remove(self._flagFile)
