@@ -18,6 +18,7 @@
 #  Last modified: 2021.04.24 at 12:56:47 CEST
 import json
 import os
+import subprocess
 import traceback
 from pathlib import Path
 
@@ -51,8 +52,13 @@ class BugReportManager(Manager):
 		if not self._recording:
 			return
 
+		if len(self._history) <= 0:
+			self._history.append('Project Alice logs')
+			version = subprocess.run(f'git rev-parse HEAD', capture_output=True, text=True, shell=True).stdout.strip()
+			self.logInfo(f'Git commit id: {version}')
+
 		if len(self._history) > 2500:
-			del self._history[0]
+			del self._history[1] # Don't delete first line, it's the git commit id
 
 		self._history.append(log)
 
@@ -74,13 +80,13 @@ class BugReportManager(Manager):
 			body = '\n'.join(self._history)
 			data = {
 				'title': title,
-				'body': f'```{body}\n```'
+				'body': f'```\n{body}\n```'
 			}
 
 			request = requests.post(url=f'{constants.GITHUB_API_URL}/ProjectAlice/issues', data=json.dumps(data), auth=self.ConfigManager.githubAuth)
 			if request.status_code != 201:
 				self.logError(f'Something went wrong reporting a bug, status: {request.status_code}, error: {request.json()}')
 			else:
-				self.logInfo(f'Created new issue: {request.json()["url"]}')
+				self.logInfo(f'Created new issue: {request.json()["html_url"]}')
 
 			os.remove(self._flagFile)
