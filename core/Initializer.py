@@ -435,6 +435,9 @@ class Initializer(object):
 		subprocess.run(['sudo', 'rm', '/var/lib/mosquitto/mosquitto.db'])
 		subprocess.run(['sudo', 'systemctl', 'start', 'mosquitto'])
 
+		subprocess.run(['sudo', 'systemctl', 'stop', 'nginx'])
+		subprocess.run(['sudo', 'systemctl', 'disable', 'nginx'])
+
 		# Now let's dump some values to their respective places
 		# First those that need some checks and self filling in case unspecified
 		confs['mqttHost'] = str(initConfs['mqttHost']) or 'localhost'
