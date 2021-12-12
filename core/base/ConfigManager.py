@@ -62,9 +62,6 @@ class ConfigManager(Manager):
 	def onStart(self):
 		super().onStart()
 
-		if self.BugReportManager.isRecording:
-			self._aliceConfigurations['debug'] = True
-
 		for conf in self._vitalConfigs:
 			if conf not in self._aliceConfigurations or self._aliceConfigurations[conf] == '':
 				raise VitalConfigMissing(conf)
@@ -181,9 +178,6 @@ class ConfigManager(Manager):
 			self.writeToAliceConfigurationFile(aliceConfigs)
 		else:
 			self._aliceConfigurations = aliceConfigs
-
-		if self.BugReportManager.isRecording:
-			self._aliceConfigurations['debug'] = True
 
 
 	def updateAliceConfigDefinitionValues(self, setting: str, value: Any):
