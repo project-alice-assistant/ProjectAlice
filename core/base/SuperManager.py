@@ -130,7 +130,7 @@ class SuperManager(object):
 			nluManager = self._managers.pop('NluManager')
 			nodeRedManager = self._managers.pop('NodeRedManager')
 
-			for manager in self._managers.values():
+			for manager in self._managers.copy().values():
 				if manager and manager.name != self.bugReportManager.name:
 					manager.onStart()
 
