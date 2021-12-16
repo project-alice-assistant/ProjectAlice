@@ -567,16 +567,16 @@ class Initializer(object):
 			confs['disableSound'] = False
 			confs['disableCapture'] = False
 
+		hlcDir = Path('/home', getpass.getuser(), 'HermesLedControl')
 		hlcServiceFilePath = Path('/etc/systemd/system/hermesledcontrol.service')
-		hlcDistributedServiceFilePath = Path(f'/home/{getpass.getuser()}/HermesLedControl/hermesledcontrol.service')
-		hlcConfigFilePath = Path(f'/home/{getpass.getuser()}/HermesLedControl/configuration.yml')
+		hlcDistributedServiceFilePath = hlcDir / 'hermesledcontrol.service'
+		hlcConfigTemplatePath = hlcDir / 'configuration.yml'
 		hlcConfig = dict()
 		if initConfs['useHLC']:
 
-			hlcDir = Path('/home', getpass.getuser(), 'HermesLedControl')
-
 			if not hlcDir.exists():
-				subprocess.run(['git', 'clone', 'https://github.com/project-alice-assistant/hermesLedControl.git', str(Path('/home', getpass.getuser(), 'HermesLedControl'))])
+				#todo: replace with AliceGit maybe?
+				subprocess.run(['git', 'clone', 'https://github.com/project-alice-assistant/hermesLedControl.git', str(hlcDir)])
 			else:
 				subprocess.run(['git', '-C', hlcDir, 'stash'])
 				subprocess.run(['git', '-C', hlcDir, 'pull'])
@@ -587,13 +587,13 @@ class Initializer(object):
 				subprocess.run(['sudo', 'systemctl', 'disable', 'hermesledcontrol'])
 				subprocess.run(['sudo', 'rm', hlcServiceFilePath])
 
-			subprocess.run(['python3.7', '-m', 'venv', f'/home/{getpass.getuser()}/hermesLedControl/venv'])
-			subprocess.run([f'{str(hlcDir)}/venv/bin/pip', 'install', '-r', f'{str(hlcDir / "requirements.txt")}', '--no-cache-dir'])
+			subprocess.run(['python3.7', '-m', 'venv', f'{str(hlcDir)}/venv'])
+			subprocess.run([f'{str(hlcDir)}/venv/bin/pip', 'install', '-r', f'{str(hlcDir)}/requirements.txt', '--no-cache-dir'])
 
 			import yaml
 
 			try:
-				hlcConfig = yaml.safe_load(hlcConfigFilePath.read_text())
+				hlcConfig = yaml.safe_load(hlcConfigTemplatePath.read_text())
 			except yaml.YAMLError as e:
 				self._logger.logFatal(f'Failed loading HLC configurations: {e}')
 			else:
@@ -603,8 +603,8 @@ class Initializer(object):
 				hlcConfig['enableDoA'] = False
 
 			serviceFile = hlcDistributedServiceFilePath.read_text()
-			serviceFile = serviceFile.replace('%WORKING_DIR%', f'WorkingDirectory=/home/{getpass.getuser()}/HermesLedControl')
-			serviceFile = serviceFile.replace('%EXECSTART%', f'WorkingDirectory=/home/{getpass.getuser()}/HermesLedControl/venv/bin/python main.py --hermesLedControlConfig=/home/{getpass.getuser()}/.config/hermesLedControl/configuration.yml')
+			serviceFile = serviceFile.replace('%WORKING_DIR%', f'{str(hlcDir)}')
+			serviceFile = serviceFile.replace('%EXECSTART%', f'WorkingDirectory={str(hlcDir)}/venv/bin/python main.py --hermesLedControlConfig=/home/{getpass.getuser()}/.config/HermesLedControl/configuration.yml')
 			serviceFile = serviceFile.replace('%USER%', f'User={getpass.getuser()}')
 			hlcDistributedServiceFilePath.write_text(serviceFile)
 			subprocess.run(['sudo', 'cp', hlcDistributedServiceFilePath, hlcServiceFilePath])
