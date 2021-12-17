@@ -46,10 +46,10 @@ class InitDict(dict):
 
 	def __getitem__(self, item):
 		try:
-			item = super().__getitem__(item)
-			if not item:
+			value = super().__getitem__(item)
+			if value is None:
 				raise Exception
-			return item
+			return value
 		except:
 			print(f'Missing key **{item}** in provided yaml file.')
 			return ''
