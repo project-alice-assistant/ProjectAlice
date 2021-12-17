@@ -402,7 +402,7 @@ class Initializer(object):
 				self._logger.logFatal('Unfortunately it won\'t be possible, config sample is not existing')
 				return False
 
-			self._confsFile.write_text(json.dumps(self._confsSample.read_text(), indent='\t'))
+			self._confsFile.write_text(self._confsSample.read_text())
 
 		try:
 			confs = json.loads(self._confsFile.read_text())
