@@ -36,6 +36,7 @@ YAML = '/boot/ProjectAlice.yaml'
 ASOUND = '/etc/asound.conf'
 TEMP = Path('/tmp/service')
 ALLOWED_LANGUAGES = {'en', 'de', 'fr', 'it', 'pt', 'pl'}
+FALLBACK_ASR = 'coqui'
 
 
 class InitDict(dict):
@@ -46,10 +47,10 @@ class InitDict(dict):
 
 	def __getitem__(self, item):
 		try:
-			item = super().__getitem__(item)
-			if not item:
+			value = super().__getitem__(item)
+			if value is None:
 				raise Exception
-			return item
+			return value
 		except:
 			print(f'Missing key **{item}** in provided yaml file.')
 			return ''
@@ -402,7 +403,7 @@ class Initializer(object):
 				self._logger.logFatal('Unfortunately it won\'t be possible, config sample is not existing')
 				return False
 
-			self._confsFile.write_text(json.dumps(self._confsSample.read_text(), indent='\t'))
+			self._confsFile.write_text(self._confsSample.read_text())
 
 		try:
 			confs = json.loads(self._confsFile.read_text())
@@ -445,20 +446,20 @@ class Initializer(object):
 
 		pinCode = initConfs['adminPinCode']
 		try:
-			pin = int(pinCode)
-			if len(str(pin)) != 4:
+			if len(str(pinCode)) != 4:
 				raise Exception
+			pin = int(pinCode)
 		except:
 			self._logger.logFatal('Pin code must be 4 digits')
 
-		confs['adminPinCode'] = int(pinCode)
+		confs['adminPinCode'] = pinCode
 
 		confs['stayCompletelyOffline'] = bool(initConfs['stayCompletelyOffline'] or False)
 		if confs['stayCompletelyOffline']:
 			confs['keepASROffline'] = True
 			confs['keepTTSOffline'] = True
 			confs['skillAutoUpdate'] = False
-			confs['asr'] = 'deepspeech'
+			confs['asr'] = FALLBACK_ASR
 			confs['tts'] = 'pico'
 			confs['awsRegion'] = ''
 			confs['awsAccessKey'] = ''
@@ -472,14 +473,14 @@ class Initializer(object):
 			confs['awsAccessKey'] = initConfs['awsAccessKey']
 			confs['awsSecretKey'] = initConfs['awsSecretKey']
 
-			confs['asr'] = initConfs['asr'] if initConfs['asr'] in {'pocketsphinx', 'google', 'deepspeech', 'snips', 'coqui'} else 'deepspeech'
+			confs['asr'] = initConfs['asr'] if initConfs['asr'] in {'pocketsphinx', 'google', 'deepspeech', 'snips', 'coqui'} else FALLBACK_ASR
 			if confs['asr'] == 'google' and not initConfs['googleServiceFile']:
-				self._logger.logInfo('You cannot use Google Asr without a google service file, falling back to Deepspeech')
-				confs['asr'] = 'deepspeech'
+				self._logger.logInfo(f'You cannot use Google Asr without a google service file, falling back to {FALLBACK_ASR}')
+				confs['asr'] = FALLBACK_ASR
 
 			if confs['asr'] == 'snips' and confs['activeLanguage'] != 'en':
-				self._logger.logInfo('You can only use Snips Asr for english, falling back to Deepspeech')
-				confs['asr'] = 'deepspeech'
+				self._logger.logInfo(f'You can only use Snips Asr for english, falling back to {FALLBACK_ASR}')
+				confs['asr'] = FALLBACK_ASR
 
 			if initConfs['googleServiceFile']:
 				googleCreds = Path(self._rootDir, 'credentials/googlecredentials.json')
@@ -529,6 +530,7 @@ class Initializer(object):
 		try:
 			import pkg_resources
 
+			self._logger.logInfo("*** Trying to load SNIPS-NLU.")
 			pkg_resources.require('snips-nlu')
 			subprocess.run(['./venv/bin/snips-nlu', 'download', confs['activeLanguage']])
 		except:
@@ -567,16 +569,17 @@ class Initializer(object):
 			confs['disableSound'] = False
 			confs['disableCapture'] = False
 
+		hlcDir = Path('/home', getpass.getuser(), 'HermesLedControl')
 		hlcServiceFilePath = Path('/etc/systemd/system/hermesledcontrol.service')
-		hlcDistributedServiceFilePath = Path(f'/home/{getpass.getuser()}/HermesLedControl/hermesledcontrol.service')
-		hlcConfigFilePath = Path(f'/home/{getpass.getuser()}/HermesLedControl/configuration.yml')
+		hlcDistributedServiceFilePath = hlcDir / 'hermesledcontrol.service'
+		hlcConfigTemplatePath = hlcDir / 'configuration.yml'
 		hlcConfig = dict()
 		if initConfs['useHLC']:
-
-			hlcDir = Path('/home', getpass.getuser(), 'HermesLedControl')
+			self._logger.logInfo("*** Taking care of HLC.")
 
 			if not hlcDir.exists():
-				subprocess.run(['git', 'clone', 'https://github.com/project-alice-assistant/hermesLedControl.git', str(Path('/home', getpass.getuser(), 'HermesLedControl'))])
+				#todo: replace with AliceGit maybe?
+				subprocess.run(['git', 'clone', 'https://github.com/project-alice-assistant/hermesLedControl.git', str(hlcDir)])
 			else:
 				subprocess.run(['git', '-C', hlcDir, 'stash'])
 				subprocess.run(['git', '-C', hlcDir, 'pull'])
@@ -587,24 +590,25 @@ class Initializer(object):
 				subprocess.run(['sudo', 'systemctl', 'disable', 'hermesledcontrol'])
 				subprocess.run(['sudo', 'rm', hlcServiceFilePath])
 
-			subprocess.run(['python3.7', '-m', 'venv', f'/home/{getpass.getuser()}/hermesLedControl/venv'])
-			subprocess.run([f'{str(hlcDir)}/venv/bin/pip', 'install', '-r', f'{str(hlcDir / "requirements.txt")}', '--no-cache-dir'])
+			subprocess.run(['python3.7', '-m', 'venv', f'{str(hlcDir)}/venv'])
+			subprocess.run([f'{str(hlcDir)}/venv/bin/pip', 'install', '-r', f'{str(hlcDir)}/requirements.txt', '--no-cache-dir'])
 
 			import yaml
 
 			try:
-				hlcConfig = yaml.safe_load(hlcConfigFilePath.read_text())
+				hlcConfig = yaml.safe_load(hlcConfigTemplatePath.read_text())
 			except yaml.YAMLError as e:
-				self._logger.logFatal(f'Failed loading HLC configurations: {e}')
-			else:
-				hlcConfig['engine'] = 'projectalice'
-				hlcConfig['pathToConfig'] = f'/home/{getpass.getuser()}/ProjectAlice/config.json'
-				hlcConfig['pattern'] = 'projectalice'
-				hlcConfig['enableDoA'] = False
+				self._logger.logWarning(f'Failed loading HLC configurations - creating new: {e}')
+				hlcConfig = dict()
+
+			hlcConfig['engine'] = 'projectalice'
+			hlcConfig['pathToConfig'] = f'/home/{getpass.getuser()}/ProjectAlice/config.json'
+			hlcConfig['pattern'] = 'projectalice'
+			hlcConfig['enableDoA'] = False
 
 			serviceFile = hlcDistributedServiceFilePath.read_text()
-			serviceFile = serviceFile.replace('%WORKING_DIR%', f'WorkingDirectory=/home/{getpass.getuser()}/HermesLedControl')
-			serviceFile = serviceFile.replace('%EXECSTART%', f'WorkingDirectory=/home/{getpass.getuser()}/HermesLedControl/venv/bin/python main.py --hermesLedControlConfig=/home/{getpass.getuser()}/.config/hermesLedControl/configuration.yml')
+			serviceFile = serviceFile.replace('%WORKING_DIR%', f'{str(hlcDir)}')
+			serviceFile = serviceFile.replace('%EXECSTART%', f'WorkingDirectory={str(hlcDir)}/venv/bin/python main.py --hermesLedControlConfig=/home/{getpass.getuser()}/.config/HermesLedControl/configuration.yml')
 			serviceFile = serviceFile.replace('%USER%', f'User={getpass.getuser()}')
 			hlcDistributedServiceFilePath.write_text(serviceFile)
 			subprocess.run(['sudo', 'cp', hlcDistributedServiceFilePath, hlcServiceFilePath])

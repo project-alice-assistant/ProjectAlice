@@ -61,6 +61,7 @@ class ConfigManager(Manager):
 
 	def onStart(self):
 		super().onStart()
+
 		for conf in self._vitalConfigs:
 			if conf not in self._aliceConfigurations or self._aliceConfigurations[conf] == '':
 				raise VitalConfigMissing(conf)
@@ -205,8 +206,7 @@ class ConfigManager(Manager):
 			device.updateConfigs(configs={'displayName': value})
 
 
-	def updateAliceConfiguration(self, key: str, value: Any, dump: bool = True,
-	                             doPreAndPostProcessing: bool = True):
+	def updateAliceConfiguration(self, key: str, value: Any, dump: bool = True, doPreAndPostProcessing: bool = True):
 		"""
 		Updating a core config is sensitive, if the request comes from a skill.
 		First check if the request came from a skill at anytime and if so ask permission
@@ -218,7 +218,6 @@ class ConfigManager(Manager):
 		:return: None
 		"""
 
-		# TODO reimplement UI side
 		rootSkills = [name.lower() for name in self.SkillManager.NEEDED_SKILLS]
 		callers = [inspect.getmodulename(frame[1]).lower() for frame in inspect.stack()]
 		if 'aliceskill' in callers:
@@ -229,20 +228,6 @@ class ConfigManager(Manager):
 
 				self.WebUINotificationManager.newNotification(typ=UINotificationType.ALERT, notification='coreConfigUpdateWarning', replaceBody=[skillName, key, value])
 				return
-
-		# 		self.ThreadManager.doLater(
-		# 			interval=2,
-		# 			func=self.MqttManager.publish,
-		# 			kwargs={
-		# 				'topic': constants.TOPIC_SKILL_UPDATE_CORE_CONFIG_WARNING,
-		# 				'payload': {
-		# 					'skill': skillName,
-		# 					'key'  : key,
-		# 					'value': value
-		# 				}
-		# 			}
-		# 		)
-		# 		return
 
 		if key not in self._aliceConfigurations:
 			self.logWarning(f"Was asked to update **{key}** but key doesn't exist")
