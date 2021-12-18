@@ -445,9 +445,9 @@ class Initializer(object):
 
 		pinCode = initConfs['adminPinCode']
 		try:
-			pin = int(pinCode)
-			if len(str(pin)) != 4:
+			if len(str(pinCode)) != 4:
 				raise Exception
+			pin = int(pinCode).zfill(4)
 		except:
 			self._logger.logFatal('Pin code must be 4 digits')
 
