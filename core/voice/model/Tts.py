@@ -96,7 +96,7 @@ class Tts(ProjectAliceObject):
 			ttsType = self._type
 			self._type = next(iter(self._supportedLangAndVoices[self._lang]))
 			self.logWarning(f'Type **{ttsType}** not found for the language, falling back to **{self._type}**')
-			self.ConfigManager.updateAliceConfiguration(key='ttsType', value={self._type})
+			self.ConfigManager.updateAliceConfiguration(key='ttsType', value=self._type)
 
 		if self._voice not in self._supportedLangAndVoices[self._lang][self._type]:
 			voice = self._voice
