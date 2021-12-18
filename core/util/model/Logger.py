@@ -65,7 +65,7 @@ class Logger(object):
 		self.doLog(function='critical', msg=msg, plural=plural)
 
 
-	def doLog(self, function: callable, msg: str, printStack=True, plural: Union[list, str] = None):
+	def doLog(self, function: str, msg: str, printStack=True, plural: Union[list, str] = None):
 		if not msg:
 			return
 
@@ -93,7 +93,7 @@ class Logger(object):
 
 		try:
 			from core.base.SuperManager import SuperManager
-			SuperManager.getInstance().bugReportManager.addToHistory(msg)
+			SuperManager.getInstance().bugReportManager.addToHistory(function, msg)
 		except:
 			pass # We really can't do anything here
 

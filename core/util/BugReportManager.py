@@ -29,6 +29,12 @@ from core.commons import constants
 
 class BugReportManager(Manager):
 
+	ERROR_LOGS = [
+		'fatal',
+		'error',
+		'critical'
+	]
+
 	def __init__(self):
 		super().__init__(name='BugReportManager')
 
@@ -50,13 +56,13 @@ class BugReportManager(Manager):
 		return self._recording
 
 
-	def addToHistory(self, log: str):
+	def addToHistory(self, function: str, log: str):
 		if not self._recording:
 			return
 
 		self._history.append(log)
 
-		if not self._title and traceback.format_exc().strip() != 'NoneType: None':
+		if function in self.ERROR_LOGS and not self._title and traceback.format_exc().strip() != 'NoneType: None':
 			self._title = traceback.format_exc().strip().split('\n').pop()
 
 
