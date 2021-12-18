@@ -447,11 +447,11 @@ class Initializer(object):
 		try:
 			if len(str(pinCode)) != 4:
 				raise Exception
-			pin = int(pinCode).zfill(4)
+			pin = int(pinCode)
 		except:
 			self._logger.logFatal('Pin code must be 4 digits')
 
-		confs['adminPinCode'] = int(pinCode)
+		confs['adminPinCode'] = int(pinCode).zfill(4)
 
 		confs['stayCompletelyOffline'] = bool(initConfs['stayCompletelyOffline'] or False)
 		if confs['stayCompletelyOffline']:
@@ -529,6 +529,7 @@ class Initializer(object):
 		try:
 			import pkg_resources
 
+			self._logger.logInfo("*** Trying to load SNIPS-NLU.")
 			pkg_resources.require('snips-nlu')
 			subprocess.run(['./venv/bin/snips-nlu', 'download', confs['activeLanguage']])
 		except:
