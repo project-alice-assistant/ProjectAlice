@@ -55,9 +55,6 @@ class BugReportManager(Manager):
 		if not self._recording:
 			return
 
-		if len(self._history) > 2500:
-			del self._history[1] # Don't delete first line, it's the git commit id
-
 		self._history.append(log)
 
 		if not self._title and traceback.format_exc().strip() != 'NoneType: None':
