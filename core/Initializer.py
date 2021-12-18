@@ -36,6 +36,7 @@ YAML = '/boot/ProjectAlice.yaml'
 ASOUND = '/etc/asound.conf'
 TEMP = Path('/tmp/service')
 ALLOWED_LANGUAGES = {'en', 'de', 'fr', 'it', 'pt', 'pl'}
+FALLBACK_ASR = 'coqui'
 
 
 class InitDict(dict):
@@ -458,7 +459,7 @@ class Initializer(object):
 			confs['keepASROffline'] = True
 			confs['keepTTSOffline'] = True
 			confs['skillAutoUpdate'] = False
-			confs['asr'] = 'deepspeech'
+			confs['asr'] = FALLBACK_ASR
 			confs['tts'] = 'pico'
 			confs['awsRegion'] = ''
 			confs['awsAccessKey'] = ''
@@ -472,14 +473,14 @@ class Initializer(object):
 			confs['awsAccessKey'] = initConfs['awsAccessKey']
 			confs['awsSecretKey'] = initConfs['awsSecretKey']
 
-			confs['asr'] = initConfs['asr'] if initConfs['asr'] in {'pocketsphinx', 'google', 'deepspeech', 'snips', 'coqui'} else 'deepspeech'
+			confs['asr'] = initConfs['asr'] if initConfs['asr'] in {'pocketsphinx', 'google', 'deepspeech', 'snips', 'coqui'} else FALLBACK_ASR
 			if confs['asr'] == 'google' and not initConfs['googleServiceFile']:
-				self._logger.logInfo('You cannot use Google Asr without a google service file, falling back to Deepspeech')
-				confs['asr'] = 'deepspeech'
+				self._logger.logInfo(f'You cannot use Google Asr without a google service file, falling back to {FALLBACK_ASR}')
+				confs['asr'] = FALLBACK_ASR
 
 			if confs['asr'] == 'snips' and confs['activeLanguage'] != 'en':
-				self._logger.logInfo('You can only use Snips Asr for english, falling back to Deepspeech')
-				confs['asr'] = 'deepspeech'
+				self._logger.logInfo(f'You can only use Snips Asr for english, falling back to {FALLBACK_ASR}')
+				confs['asr'] = FALLBACK_ASR
 
 			if initConfs['googleServiceFile']:
 				googleCreds = Path(self._rootDir, 'credentials/googlecredentials.json')
