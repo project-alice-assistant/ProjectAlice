@@ -574,6 +574,7 @@ class Initializer(object):
 		hlcConfigTemplatePath = hlcDir / 'configuration.yml'
 		hlcConfig = dict()
 		if initConfs['useHLC']:
+			self._logger.logInfo("*** Taking care of HLC.")
 
 			if not hlcDir.exists():
 				#todo: replace with AliceGit maybe?
@@ -596,12 +597,13 @@ class Initializer(object):
 			try:
 				hlcConfig = yaml.safe_load(hlcConfigTemplatePath.read_text())
 			except yaml.YAMLError as e:
-				self._logger.logFatal(f'Failed loading HLC configurations: {e}')
-			else:
-				hlcConfig['engine'] = 'projectalice'
-				hlcConfig['pathToConfig'] = f'/home/{getpass.getuser()}/ProjectAlice/config.json'
-				hlcConfig['pattern'] = 'projectalice'
-				hlcConfig['enableDoA'] = False
+				self._logger.logWarning(f'Failed loading HLC configurations - creating new: {e}')
+				hlcConfig = dict()
+
+			hlcConfig['engine'] = 'projectalice'
+			hlcConfig['pathToConfig'] = f'/home/{getpass.getuser()}/ProjectAlice/config.json'
+			hlcConfig['pattern'] = 'projectalice'
+			hlcConfig['enableDoA'] = False
 
 			serviceFile = hlcDistributedServiceFilePath.read_text()
 			serviceFile = serviceFile.replace('%WORKING_DIR%', f'{str(hlcDir)}')
