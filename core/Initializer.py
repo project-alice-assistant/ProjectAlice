@@ -451,7 +451,7 @@ class Initializer(object):
 		except:
 			self._logger.logFatal('Pin code must be 4 digits')
 
-		confs['adminPinCode'] = int(pinCode).zfill(4)
+		confs['adminPinCode'] = pinCode
 
 		confs['stayCompletelyOffline'] = bool(initConfs['stayCompletelyOffline'] or False)
 		if confs['stayCompletelyOffline']:
