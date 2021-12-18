@@ -18,11 +18,10 @@
 #  Last modified: 2021.04.24 at 12:56:47 CEST
 import json
 import os
+import requests
 import subprocess
 import traceback
 from pathlib import Path
-
-import requests
 
 from core.base.model.Manager import Manager
 from core.commons import constants
@@ -64,6 +63,10 @@ class BugReportManager(Manager):
 	def onStop(self):
 		super().onStop()
 		if not self._recording:
+			return
+
+		if not self.InternetManager.online:
+			self.logInfo('We are currently offline, cannot send log reports')
 			return
 
 		if not self._history or not self._title:
