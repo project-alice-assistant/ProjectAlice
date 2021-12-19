@@ -22,10 +22,9 @@ import socket
 import threading
 import time
 import uuid
-from typing import Dict, List, Optional, Union
-
 from paho.mqtt.client import MQTTMessage
 from serial.tools import list_ports
+from typing import Dict, List, Optional, Union
 
 from core.base.model.Manager import Manager
 from core.commons import constants
@@ -173,6 +172,10 @@ class DeviceManager(Manager):
 		:return: None
 		"""
 		for data in self.databaseFetch(tableName=self.DB_DEVICE):
+			if data.get('skillName') not in self.SkillManager.allWorkingSkills:
+				self.logInfo(f'Device of type **{data.get("typeName")}** skipped because skill **{data.get("skillName")}** is not working')
+				continue
+
 			try:
 				skillImport = importlib.import_module(f'skills.{data.get("skillName")}.devices.{data.get("typeName")}')
 				klass = getattr(skillImport, data.get('typeName'))
