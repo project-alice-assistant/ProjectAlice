@@ -73,7 +73,7 @@ class BugReportManager(Manager):
 			return
 
 		try:
-			online = requests.get('https://clients3.google.com/generate_204').status_code == 204
+			online = requests.get('https://api.projectalice.io/generate_204').status_code == 204
 		except:
 			online = False
 
