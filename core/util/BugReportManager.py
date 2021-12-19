@@ -23,7 +23,7 @@ import subprocess
 import traceback
 from pathlib import Path
 
-from AliceGit import Git
+from AliceGit.Git import Repository
 from core.base.model.Manager import Manager
 from core.commons import constants
 
@@ -72,13 +72,18 @@ class BugReportManager(Manager):
 		if not self._recording:
 			return
 
-		if not self.InternetManager.online:
+		try:
+			online = requests.get('https://clients3.google.com/generate_204').status_code == 204
+		except:
+			online = False
+
+		if not online:
 			self.logInfo('We are currently offline, cannot send log reports')
 			return
 
-		repo = Git(directory=self.Commons.rootDir())
+		repo = Repository(directory=self.Commons.rootDir())
 		if not repo.isUpToDate():
-			self.logInfo('You are currently no up to date with you Alice install. Please first update to latest version and retry before trying to submit a bug report again.')
+			self.logInfo('Alice is not up to date. Please first update to latest version and retry before trying to submit a bug report again.')
 			return
 
 		if not self._history or not self._title:
