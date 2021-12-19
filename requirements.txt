@@ -8,7 +8,6 @@ Flask-Classful~=0.14.2
 Markdown~=3.3.6
 AliceGit~=0.0.13
 requests~=2.26.0
-dulwich~=0.20.26
 sounddevice~=0.4.3
 bcrypt~=3.2.0
 PyJWT~=2.3.0

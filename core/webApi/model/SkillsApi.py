@@ -27,8 +27,6 @@ from pathlib import Path
 from AliceGit.Exceptions import AlreadyGitRepository, GithubRepoNotFound, GithubUserNotFound, NotGitRepository
 from AliceGit.Git import Repository
 from AliceGit.Github import Github
-from core.base.model.GithubCloner import GithubCloner
-from core.commons import constants
 from core.util.Decorators import ApiAuthenticated
 from core.webApi.model.Api import Api
 
@@ -272,15 +270,20 @@ class SkillsApi(Api):
 		if skillName not in self.SkillManager.allSkills:
 			return self.skillNotFound()
 
-		if not GithubCloner.hasAuth():
+		if not self.ConfigManager.githubAuth:
 			return self.githubMissing()
 
-		gitCloner = GithubCloner(baseUrl=f'{constants.GITHUB_URL}/skill_{skillName}.git',
-		                         dest=Path(self.Commons.rootDir()) / 'skills' / skillName,
-		                         skillName=skillName)
-		if not gitCloner.checkOwnRepoAvailable(skillName=skillName):
-			gitCloner.createForkForSkill(skillName=skillName)
-		gitCloner.checkoutOwnFork()
+		try:
+			auth = self.ConfigManager.githubAuth
+			Github(
+				username=auth[0],
+				token=auth[1],
+				repositoryName=f'skill_{skillName}',
+				createRepository=True
+			)
+		except GithubUserNotFound:
+			return jsonify(success=False, reason='Github user not existing')
+
 		return jsonify(success=True)
 
 
