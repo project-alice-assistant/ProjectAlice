@@ -448,7 +448,7 @@ class Initializer(object):
 		try:
 			if len(str(pinCode)) != 4:
 				raise Exception
-			pin = int(pinCode)
+			int(pinCode)
 		except:
 			self._logger.logFatal('Pin code must be 4 digits')
 
