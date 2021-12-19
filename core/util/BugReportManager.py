@@ -79,11 +79,13 @@ class BugReportManager(Manager):
 
 		if not online:
 			self.logInfo('We are currently offline, cannot send log reports')
+			os.remove(self._flagFile)
 			return
 
 		repo = Repository(directory=self.Commons.rootDir())
 		if not repo.isUpToDate():
 			self.logInfo('Alice is not up to date. Please first update to latest version and retry before trying to submit a bug report again.')
+			os.remove(self._flagFile)
 			return
 
 		if not self._history or not self._title:
