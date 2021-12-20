@@ -20,17 +20,16 @@
 
 import importlib
 import json
+import requests
 import shutil
 import traceback
+from AliceGit import Exceptions as GitErrors
+from AliceGit.Exceptions import NotGitRepository, PathNotFoundException
+from AliceGit.Git import Repository
 from contextlib import suppress
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Union
 
-import requests
-
-from AliceGit import Exceptions as GitErrors
-from AliceGit.Exceptions import NotGitRepository, PathNotFoundException
-from AliceGit.Git import Repository
 from core.ProjectAliceExceptions import AccessLevelTooLow, GithubNotFound, SkillInstanceFailed, SkillNotConditionCompliant, SkillStartDelayed, SkillStartingFailed
 from core.base.SuperManager import SuperManager
 from core.base.model import Intent
@@ -744,9 +743,9 @@ class SkillManager(Manager):
 
 	def updateSkills(self, skills: Union[str, List[str]], withSkillRestart: bool = True):
 		"""
-		Updates skills to latest available version for this Alice version
+		Updates skills to the latest available version for this Alice version
 		:param skills:
-		:param withSkillRestart: Whether or not to start the skill after updating it
+		:param withSkillRestart: Whether to start the skill after updating it
 		:return:
 		"""
 		self._busyInstalling.set()
@@ -775,11 +774,11 @@ class SkillManager(Manager):
 			)
 
 			self.initSkills(onlyInit=skillName, reload=True)
-			if skillName in self.activeSkills:
-				self.logInfo(f'Updated skill **{skillName}** to version **{self.activeSkills[skillName].version}**')
-
 			if withSkillRestart:
 				self.startSkill(skillName=skillName)
+
+			if skillName in self.activeSkills:
+				self.logInfo(f'Updated skill **{skillName}** to version **{self.activeSkills[skillName].version}**')
 
 		self._busyInstalling.clear()
 
@@ -793,6 +792,7 @@ class SkillManager(Manager):
 		skill = None
 		if skillName in self._activeSkills:
 			skill = self._activeSkills.pop(skillName, None)
+			self.deactivatedSkills[skillName] = skill
 			skill.onStop()
 			self.broadcast(
 				method=constants.EVENT_SKILL_STOPPED,

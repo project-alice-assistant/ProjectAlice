@@ -19,14 +19,14 @@
 
 
 import json
+from AliceGit.Exceptions import AlreadyGitRepository, GithubRepoNotFound, GithubUserNotFound, NotGitRepository
+from AliceGit.Git import Repository
+from AliceGit.Github import Github
 from contextlib import suppress
 from flask import Response, jsonify, request
 from flask_classful import route
 from pathlib import Path
 
-from AliceGit.Exceptions import AlreadyGitRepository, GithubRepoNotFound, GithubUserNotFound, NotGitRepository
-from AliceGit.Git import Repository
-from AliceGit.Github import Github
 from core.util.Decorators import ApiAuthenticated
 from core.webApi.model.Api import Api
 
@@ -242,7 +242,11 @@ class SkillsApi(Api):
 		if skillName not in self.SkillManager.allSkills:
 			return self.skillNotFound()
 
-		return jsonify(success=self.SkillManager.checkForSkillUpdates(skillToCheck=skillName))
+		update = self.SkillManager.checkForSkillUpdates(skillToCheck=skillName)
+		if update:
+			self.SkillManager.updateSkills(skills=update)
+
+		return jsonify(success=True)
 
 
 	@route('/<skillName>/isDirty/', methods=['GET'])

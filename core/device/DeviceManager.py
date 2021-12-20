@@ -618,7 +618,7 @@ class DeviceManager(Manager):
 			device.connected = True
 			self.broadcast(method=constants.EVENT_DEVICE_CONNECTING, exceptions=[self.name], propagateToSkills=True)
 			self.MqttManager.publish(constants.TOPIC_DEVICE_UPDATED, payload={'device': device.toDict()})
-			self.logInfo(f'Device named **{device.displayName}** in the {self.LocationManager.getLocation(locId=device.parentLocation).name} connected')
+			self.logInfo(f'Device named **{device.displayName}** ({device.uid}) in the {self.LocationManager.getLocation(locId=device.parentLocation).name} connected')
 
 		self._heartbeats[uid] = round(time.time())
 		if not self._heartbeatsCheckTimer:
@@ -641,7 +641,7 @@ class DeviceManager(Manager):
 			return
 
 		if device.connected:
-			self.logInfo(f'Device with uid **{uid}** disconnected')
+			self.logInfo(f'Device named **{device.displayName}** ({device.uid}) in the {self.LocationManager.getLocation(locId=device.parentLocation).name} disconnected')
 			device.connected = False
 			self.broadcast(method=constants.EVENT_DEVICE_DISCONNECTING, exceptions=[self.name], propagateToSkills=True)
 			self.MqttManager.publish(constants.TOPIC_DEVICE_UPDATED, payload={'device': device.toDict()})
