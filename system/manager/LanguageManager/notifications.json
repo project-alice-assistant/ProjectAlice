@@ -122,5 +122,35 @@
 	  "en": "Failed downloading \"{}\"",
 	  "fr": "Téléchargement de \"{}\" échoué"
 	}
+  },
+  "installNodeRed": {
+	"title": {
+	  "en": "Node-Red",
+	  "fr": "Node-Red"
+	},
+	"body": {
+	  "en": "Installing...",
+	  "fr": "Installation..."
+	}
+  },
+  "failedInstallNodeRed": {
+	"title": {
+	  "en": "Node-Red",
+	  "fr": "Node-Red"
+	},
+	"body": {
+	  "en": "Install failed",
+	  "fr": "L'installation a échoué."
+	}
+  },
+  "installedNodeRed": {
+	"title": {
+	  "en": "Node-Red",
+	  "fr": "Node-Red"
+	},
+	"body": {
+	  "en": "Install successful",
+	  "fr": "Installation terminée"
+	}
   }
 }
