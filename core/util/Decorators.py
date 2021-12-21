@@ -21,9 +21,8 @@ from __future__ import annotations
 
 import functools
 import warnings
-from typing import Any, Callable, Optional, Tuple, Union
-
 from flask import jsonify, request
+from typing import Any, Callable, Optional, Tuple, Union
 
 from core.base.SuperManager import SuperManager
 from core.base.model.Intent import Intent
@@ -118,19 +117,19 @@ def Online(func: Callable = None, text: str = 'offline', offlineHandler: Callabl
 	"""
 	(return a) decorator to mark a function that requires ethernet.
 
-	This decorator can be used (with or or without parameters) to define
+	This decorator can be used (with or without parameters) to define
 	a function that requires ethernet. In the Default mode without arguments shown
-	in the example it will either execute whats in the function or when alice is
+	in the example it will either execute what's in the function or when alice is
 	offline ends the dialog with a random offline answer.
 	Using the parameters:
 		@online(text=<myText>)
-	a own text can be used when being offline aswell and using the parameters:
+	An own text can be used when being offline as well and using the parameters:
 		@online(offlineHandler=<myFunc>)
-	a own offline handler can be called, which is helpful when not only endDialog has to be called,
-	but some other cleanup is required aswell
+	An own offline handler can be called, which is helpful when not only endDialog has to be called,
+	but some other cleanup is required as well
 
 	When there is no named argument 'session' of type DialogSession in the arguments of the decorated function,
-	the decorator will return the text instead. This behaviour can be enforced aswell using:
+	the decorator will return the text instead. This behaviour can be enforced as well using:
 		@online(returnText=True)
 
 	:param catchOnly: If catch only, do not raise anything
@@ -207,7 +206,7 @@ def ApiAuthenticated(func: Callable):  # NOSONAR
 def KnownUser(func: Callable = None):  # NOSONAR
 	"""
 	Checks if the session is started by a know user or not. This is important for skills that are security
-	sensitive and you need to make sure Alice is not talking to someone unknown
+	sensitive, and you need to make sure Alice is not talking to someone unknown
 	:param func:
 	:return:
 	"""

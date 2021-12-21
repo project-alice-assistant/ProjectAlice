@@ -18,10 +18,9 @@
 #  Last modified: 2021.04.13 at 12:56:46 CEST
 
 import difflib
+import requests
 from random import shuffle
 from typing import Optional, Tuple
-
-import requests
 
 from core.ProjectAliceExceptions import GithubNotFound
 from core.base.model.Manager import Manager
@@ -106,7 +105,7 @@ class SkillStoreManager(Manager):
 		Get the highest skill version number a user can install.
 		This is based on the user preferences, depending on the current Alice version
 		and the user's selected update channel for skills
-		In case nothing is found, DO NOT FALLBACK TO MASTER
+		In case nothing is found, DO NOT FALL BACK TO MASTER
 
 		:param skillName: The skill to look for
 		:return: tuple (Version object, tag string)

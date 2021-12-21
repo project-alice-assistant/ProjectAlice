@@ -250,8 +250,8 @@ class SnipsNlu(NluEngine):
 
 	def getLanguage(self) -> str:
 		"""
-		get the language that should be used for the training.
-		Currently only portuguese needs a special handling
+		Get the language that should be used for the training.
+		Currently, only portuguese needs a special handling
 		:return:
 		"""
 		lang = self.LanguageManager.activeLanguage

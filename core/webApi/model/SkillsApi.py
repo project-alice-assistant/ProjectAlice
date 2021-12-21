@@ -19,14 +19,14 @@
 
 
 import json
-from AliceGit.Exceptions import AlreadyGitRepository, GithubRepoNotFound, GithubUserNotFound, NotGitRepository
-from AliceGit.Git import Repository
-from AliceGit.Github import Github
 from contextlib import suppress
 from flask import Response, jsonify, request
 from flask_classful import route
 from pathlib import Path
 
+from AliceGit.Exceptions import AlreadyGitRepository, GithubRepoNotFound, GithubUserNotFound, NotGitRepository
+from AliceGit.Git import Repository
+from AliceGit.Github import Github
 from core.util.Decorators import ApiAuthenticated
 from core.webApi.model.Api import Api
 
@@ -341,7 +341,7 @@ class SkillsApi(Api):
 	@ApiAuthenticated
 	def getGitStatus(self, skillName: str) -> Response:
 		"""
-		returns a list containing the public and private github URL of that skill.
+		returns a list containing the public and private GitHub URL of that skill.
 		The repository does not have to exist yet!
 		The current status of the repository is included as well
 		Currently possible status: True/False

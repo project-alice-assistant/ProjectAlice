@@ -23,13 +23,13 @@ import json
 import requests
 import shutil
 import traceback
-from AliceGit import Exceptions as GitErrors
-from AliceGit.Exceptions import NotGitRepository, PathNotFoundException
-from AliceGit.Git import Repository
 from contextlib import suppress
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Union
 
+from AliceGit import Exceptions as GitErrors
+from AliceGit.Exceptions import NotGitRepository, PathNotFoundException
+from AliceGit.Git import Repository
 from core.ProjectAliceExceptions import AccessLevelTooLow, GithubNotFound, SkillInstanceFailed, SkillNotConditionCompliant, SkillStartDelayed, SkillStartingFailed
 from core.base.SuperManager import SuperManager
 from core.base.model import Intent
@@ -142,7 +142,7 @@ class SkillManager(Manager):
 	@property
 	def skillList(self) -> List:
 		"""
-		Returns all skills present in the skill directory. These might not be inited, might have failed etc etc
+		Returns all skills present in the skill directory. These might not be inited, might have failed etc.
 		:return:
 		"""
 		return self._skillList
@@ -409,7 +409,7 @@ class SkillManager(Manager):
 
 	def downloadSkills(self, skills: Union[str, List[str]]) -> Optional[Dict]:
 		"""
-		Clones skills. Existence of the skill on line is checked
+		Clones skills. Existence of the skill online is checked
 		:param skills:
 		:return: Dict: a dict of created repositories
 		"""
@@ -500,7 +500,7 @@ class SkillManager(Manager):
 
 	def getGitRemoteSourceUrl(self, skillName: str, doAuth: bool = True) -> str:
 		"""
-		Returns the url for the skill name, taking into account if the user provided github auth
+		Returns the url for the skill name, taking into account if the user provided GitHub auth
 		This does check if the remote exists and raises an exception in case it does not
 		:param skillName:
 		:param doAuth: Pull, clone, fetch, non oauth requests, aren't concerned by rate limit
@@ -641,7 +641,7 @@ class SkillManager(Manager):
 
 	def isSkillActive(self, skillName: str) -> bool:
 		"""
-		Returns true or false depending if the skill is declared as active
+		Returns true or false depending on if the skill is declared as active
 		:param skillName:
 		:return:
 		"""
@@ -660,9 +660,9 @@ class SkillManager(Manager):
 
 	def checkSkillConditions(self, installer: dict = None, checkOnly=False) -> Union[bool, List[Dict[str, str]]]:
 		"""
-		Checks if the given skill is compliant to it's conditions
+		Checks if the given skill is compliant to its conditions
 		:param installer:
-		:param checkOnly: Do not perform any other action (download other skill, etc) but checking conditions
+		:param checkOnly: Do not perform any other action (download other skill, etc.) but checking conditions
 		:return:
 		"""
 		conditions = {

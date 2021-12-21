@@ -20,10 +20,9 @@ import inspect
 import json
 import logging
 import re
+import sounddevice as sd
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple, Union
-
-import sounddevice as sd
 
 from core.ProjectAliceExceptions import ConfigurationUpdateFailed, VitalConfigMissing
 from core.base.SuperManager import SuperManager
@@ -211,7 +210,7 @@ class ConfigManager(Manager):
 		Updating a core config is sensitive, if the request comes from a skill.
 		First check if the request came from a skill at anytime and if so ask permission
 		to the user
-		:param doPreAndPostProcessing: If set to false, all pre and post processing won't be called
+		:param doPreAndPostProcessing: If set to false, all pre- and post-processing won't be called
 		:param key: str
 		:param value: str
 		:param dump: bool If set to False, the configs won't be dumped to the json file
@@ -538,7 +537,7 @@ class ConfigManager(Manager):
 
 
 	def getAliceConfUpdatePostProcessing(self, confName: str) -> Optional[str]:
-		# Some config need some post processing if updated while Alice is running
+		# Some config need some post-processing if updated while Alice is running
 		return self._aliceTemplateConfigurations.get(confName, dict()).get('onUpdate', None)
 
 
@@ -577,7 +576,7 @@ class ConfigManager(Manager):
 
 
 	def doConfigUpdatePostProcessing(self, functions: Union[str, set]):
-		# Call alice config post processing functions. This will call methods that are needed after a certain setting was
+		# Call alice config post-processing functions. This will call methods that are needed after a certain setting was
 		# updated while Project Alice was running
 
 		if isinstance(functions, str):
@@ -757,7 +756,7 @@ class ConfigManager(Manager):
 	@property
 	def githubAuth(self) -> Tuple[str, str]:
 		"""
-		Returns the users configured username and token for Github as a tuple
+		Returns the users configured username and token for GitHub as a tuple
 		When one of the values is not supplied None is returned.
 		:return:
 		"""

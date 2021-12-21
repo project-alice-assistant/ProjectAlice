@@ -288,7 +288,7 @@ class DeviceManager(Manager):
 		"""
 		Returns a list of Device instances having AT LEAST the provided abilities
 		:param abilities: A list of DeviceAbility the device must have
-		:param connectedOnly: Whether or not to return non connected devices
+		:param connectedOnly: Whether to return non-connected devices
 		:return: A list of Device instances
 		"""
 		ret = list()
@@ -305,7 +305,7 @@ class DeviceManager(Manager):
 	def getDevicesByType(self, deviceType: DeviceType, connectedOnly: bool = True) -> List[Device]:
 		"""
 		Returns a list of devices that are of the given type from the given skill
-		:param connectedOnly: Whether or not to return non connected devices
+		:param connectedOnly: Whether to return non-connected devices
 		:param deviceType: DeviceType
 		:return: list of Device instances
 		"""
@@ -324,10 +324,10 @@ class DeviceManager(Manager):
 	def getDevicesByLocation(self, locationId: int, deviceType: DeviceType = None, abilities: List[DeviceAbility] = None, connectedOnly: bool = True) -> List[Device]:
 		"""
 		Returns a list of devices fitting the locationId and the optional arguments
-		:param locationId: the location Id, only mandatory argument
+		:param locationId: the location id, only mandatory argument
 		:param deviceType: The device type that it must be
 		:param abilities: The abilities the device has to have
-		:param connectedOnly: Whether or not to return non connected devices
+		:param connectedOnly: Whether to return non-connected devices
 		:return: list of Device instances
 		"""
 		return self._filterDevices(locationId=locationId, deviceType=deviceType, abilities=abilities, connectedOnly=connectedOnly)
@@ -336,10 +336,10 @@ class DeviceManager(Manager):
 	def getDevicesBySkill(self, skillName: str, deviceType: DeviceType = None, abilities: List[DeviceAbility] = None, connectedOnly: bool = True) -> List[Device]:
 		"""
 		Returns a list of devices fitting the skill name and the optional arguments
-		:param skillName: the location Id, only mandatory argument
+		:param skillName: the location id, only mandatory argument
 		:param deviceType: The device type that it must be
 		:param abilities: The abilities the device has to have
-		:param connectedOnly: Whether or not to return non connected devices
+		:param connectedOnly: Whether to return non-connected devices
 		:return: list of Device instances
 		"""
 		return self._filterDevices(skillName=skillName, deviceType=deviceType, abilities=abilities, connectedOnly=connectedOnly)
@@ -348,11 +348,11 @@ class DeviceManager(Manager):
 	def _filterDevices(self, locationId: int = None, skillName: str = None, deviceType: DeviceType = None, abilities: List[DeviceAbility] = None, connectedOnly: bool = True) -> List[Device]:
 		"""
 		Returns a list of devices fitting the optional arguments
-		:param locationId: the location Id, only mandatory argument
+		:param locationId: the location id, only mandatory argument
 		:param skillName: the skill the device belongs to
 		:param deviceType: The device type that it must be
 		:param abilities: The abilities the device has to have
-		:param connectedOnly: Whether or not to return non connected devices
+		:param connectedOnly: Whether to return non-connected devices
 		:return: list of Device instances
 		"""
 
