@@ -18,15 +18,14 @@
 #  Last modified: 2021.07.28 at 16:07:59 CEST
 
 import json
+import paho.mqtt.client as mqtt
+import paho.mqtt.publish as publish
 import random
 import re
 import traceback
 import uuid
 from pathlib import Path
 from typing import List, Union
-
-import paho.mqtt.client as mqtt
-import paho.mqtt.publish as publish
 
 from core.base.model.Intent import Intent
 from core.base.model.Manager import Manager
@@ -680,7 +679,7 @@ class MqttManager(Manager):
 		Initiates a new session by asking something and waiting on user answer
 		:param probabilityThreshold: The override threshold for the user's answer to this question
 		:param currentDialogState: a str representing a state in the dialog, useful for multi-turn dialogs
-		:param canBeEnqueued: whether or not this can be played later if the dialog manager is busy
+		:param canBeEnqueued: whether this can be played later if the dialog manager is busy
 		:param text: str The text to speak
 		:param deviceUid: str Where to ask
 		:param intentFilter: array Filter to force user intents
@@ -754,12 +753,12 @@ class MqttManager(Manager):
 		"""
 		Continues a dialog
 		:param probabilityThreshold: The probability threshold override for the user's answer to this coming conversation round
-		:param currentDialogState: a str representing a state in the dialog, usefull for multiturn dialogs
+		:param currentDialogState: a str representing a state in the dialog, useful for multi-turn dialogs
 		:param sessionId: int session id to continue
 		:param customData: json str
 		:param text: str text spoken
 		:param intentFilter: array intent filter for user randomTalk
-		:param slot: Optional String, requires intentFilter to contain a single value - If set, the dialogue engine will not run the the intent classification on the user response and go straight to slot filling, assuming the intent is the one passed in the intentFilter, and searching the value of the given slot
+		:param slot: Optional String, requires intentFilter to contain a single value - If set, the dialogue engine will not run the intent classification on the user response and go straight to slot filling, assuming the intent is the one passed in the intentFilter, and searching the value of the given slot
 		"""
 
 		jsonDict = {
@@ -870,9 +869,8 @@ class MqttManager(Manager):
 			location = Path(self.Commons.rootDir()) / location
 
 		if deviceUid == constants.ALL or isinstance(deviceUid, list):
-
 			if not isinstance(deviceUid, list):
-				deviceList = [device.uid for device in self.DeviceManager.getDevicesWithAbilities(abilities=[DeviceAbility.PLAY_SOUND, DeviceAbility.CAPTURE_SOUND])]
+				deviceList = [device.uid for device in self.DeviceManager.getDevicesWithAbilities(abilities=[DeviceAbility.PLAY_SOUND])]
 			else:
 				deviceList = [uid if isinstance(uid, str) else uid.uid for uid in deviceUid]
 
@@ -953,3 +951,84 @@ class MqttManager(Manager):
 
 		for deviceUid in deviceList:
 			publish.single(constants.TOPIC_TOGGLE_FEEDBACK.format(state.title()), payload=json.dumps({'siteId': deviceUid}), hostname=self.ConfigManager.getAliceConfigByName('mqttHost'))
+
+
+	def onSkillInstalled(self, skill: str):
+		self.mqttBroadcast(
+			topic=constants.TOPIC_SKILL_INSTALLED,
+			payload={
+				'skillName': skill
+			}
+		)
+
+
+	def onSkillUpdated(self, skill: str):
+		self.mqttBroadcast(
+			topic=constants.TOPIC_SKILL_UPDATED,
+			payload={
+				'skillName': skill
+			}
+		)
+
+
+	def onSkillUpdating(self, skill: str):
+		self.mqttBroadcast(
+			topic=constants.TOPIC_SKILL_UPDATING,
+			payload={
+				'skillName': skill
+			}
+		)
+
+
+	def onSkillDeleted(self, skill: str):
+		self.mqttBroadcast(
+			topic=constants.TOPIC_SKILL_DELETED,
+			payload={
+				'skillName': skill
+			}
+		)
+
+
+	def onSkillInstallFailed(self, skill: str):
+		self.mqttBroadcast(
+			topic=constants.TOPIC_SKILL_INSTALL_FAILED,
+			payload={
+				'skillName': skill
+			}
+		)
+
+
+	def onSkillDeactivated(self, skill: str):
+		self.mqttBroadcast(
+			topic=constants.TOPIC_SKILL_DEACTIVATED,
+			payload={
+				'skillName': skill
+			}
+		)
+
+
+	def onSkillActivated(self, skill: str):
+		self.mqttBroadcast(
+			topic=constants.TOPIC_SKILL_ACTIVATED,
+			payload={
+				'skillName': skill
+			}
+		)
+
+
+	def onSkillStopped(self, skill: str):
+		self.mqttBroadcast(
+			topic=constants.TOPIC_SKILL_STOPPED,
+			payload={
+				'skillName': skill
+			}
+		)
+
+
+	def onSkillStarted(self, skill: str):
+		self.mqttBroadcast(
+			topic=constants.TOPIC_SKILL_STARTED,
+			payload={
+				'skillName': skill
+			}
+		)

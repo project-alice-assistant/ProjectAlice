@@ -20,7 +20,7 @@
 import io
 import queue
 import wave
-from typing import Optional
+from typing import Generator
 
 import paho.mqtt.client as mqtt
 
@@ -109,7 +109,7 @@ class Recorder(ProjectAliceObject):
 		yield b''.join(data)
 
 
-	def audioStream(self) -> Optional[bytes]:
+	def audioStream(self) -> Generator:
 		while not self._buffer.empty() or self._recording:
 			if self._timeoutFlag.is_set():
 				return

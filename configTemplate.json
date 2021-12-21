@@ -17,7 +17,15 @@
 		"dataType"    : "boolean",
 		"isSensitive" : false,
 		"description" : "Displays the current system usage on the interface",
-		"category"    : "system"
+		"category"    : "system",
+	  	"onUpdate"    : "WebUIManager.toggleSystemUsage"
+	},
+	"enableSSL"       : {
+	  "defaultValue": false,
+	  "dataType"    : "boolean",
+	  "isSensitive" : false,
+	  "description" : "Enables SSL for both the UI and API",
+	  "category"    : "system"
 	},
 	"delegateNluTraining"     : {
 		"defaultValue": false,
@@ -435,7 +443,7 @@
 			"IBM Watson"    : "watson"
 		},
 		"description" : "The Tts to use. Can't use an online Tts if you have set keepTTSOffline!",
-		"onUpdate"    : "reloadTTS",
+		"onUpdate"    : "reloadTTSManager",
 		"category"    : "tts"
 	},
 	"ttsFallback"             : {
@@ -450,7 +458,7 @@
 			"IBM Watson"    : "watson"
 		},
 		"description" : "The Tts to use in case the default Tts becomes unavailable.",
-		"onUpdate"    : "reloadTTS",
+		"onUpdate"    : "reloadTTSManager",
 		"category"    : "tts"
 	},
 	"ttsLanguage"             : {
@@ -458,7 +466,7 @@
 		"dataType"    : "string",
 		"isSensitive" : false,
 		"description" : "Language for the Tts to use",
-		"onUpdate"    : "reloadTTS",
+		"onUpdate"    : "reloadTTSManager",
 		"category"    : "tts"
 	},
 	"ttsType"                 : {
@@ -470,7 +478,7 @@
 			"female"
 		],
 		"description" : "Choose the voice gender you want",
-		"onUpdate"    : "reloadTTS",
+		"onUpdate"    : "reloadTTSManager",
 		"category"    : "tts"
 	},
 	"ttsNeural"             : {
@@ -485,7 +493,7 @@
 		"dataType"    : "string",
 		"isSensitive" : false,
 		"description" : "The voice the Tts should use",
-		"onUpdate"    : "reloadTTS",
+		"onUpdate"    : "reloadTTSManager",
 		"category"    : "tts",
 		"display"     : "hidden"
 	},

@@ -21,7 +21,7 @@ from dataclasses import dataclass, field
 
 
 @dataclass
-class DialogTemplateIntent:
+class DialogTemplateIntent(object):
 	name: str
 	enabledByDefault: bool
 	utterances: list = field(default_factory=list)

@@ -18,10 +18,9 @@
 #  Last modified: 2021.04.13 at 12:56:46 CEST
 
 import difflib
-from random import shuffle
-from typing import Optional
-
 import requests
+from random import shuffle
+from typing import Optional, Tuple
 
 from core.ProjectAliceExceptions import GithubNotFound
 from core.base.model.Manager import Manager
@@ -67,7 +66,7 @@ class SkillStoreManager(Manager):
 			return
 
 		self._skillStoreData = req.json()
-		self.markInstalledSkills()
+		self.checkConditions()
 
 		if not self.ConfigManager.getAliceConfigByName('suggestSkillsToInstall'):
 			return
@@ -79,9 +78,18 @@ class SkillStoreManager(Manager):
 		self.prepareSamplesData(req.json())
 
 
-	def markInstalledSkills(self):
+	def checkConditions(self):
 		for skillName, skillData in self._skillStoreData.items():
 			skillData['installed'] = skillName in self.SkillManager.allSkills.keys()
+
+			offendingConditions = self.SkillManager.checkSkillConditions(installer=skillData, checkOnly=True)
+
+			for offender in offendingConditions.copy():
+				if offender.get('skill', False):
+					offendingConditions.remove(offender)
+
+			skillData['offendingConditions'] = offendingConditions
+			skillData['compatible'] = False if len(offendingConditions) > 0 else True
 
 
 	def prepareSamplesData(self, data: dict):
@@ -92,15 +100,15 @@ class SkillStoreManager(Manager):
 			self._skillSamplesData.setdefault(skillName, skill.get(self.LanguageManager.activeLanguage, list()))
 
 
-	def _getSkillUpdateVersion(self, skillName: str) -> Optional[tuple]:
+	def _getSkillUpdateVersion(self, skillName: str) -> Optional[Tuple[Version, str]]:
 		"""
 		Get the highest skill version number a user can install.
 		This is based on the user preferences, depending on the current Alice version
 		and the user's selected update channel for skills
-		In case nothing is found, DO NOT FALLBACK TO MASTER
+		In case nothing is found, DO NOT FALL BACK TO MASTER
 
 		:param skillName: The skill to look for
-		:return: tuple
+		:return: tuple (Version object, tag string)
 		"""
 		versionMapping = self._skillStoreData.get(skillName, dict()).get('versionMapping', dict())
 
@@ -128,7 +136,10 @@ class SkillStoreManager(Manager):
 				skillUpdateVersion = (repoVersion, f'{str(repoVersion)}_{str(aliceMinVersion)}')
 
 		if not skillUpdateVersion[0].isVersionNumber:
-			raise GithubNotFound
+			if self.ConfigManager.getAliceConfigByName('devMode'):
+				return Version.fromString('master'), 'master'
+			else:
+				raise GithubNotFound
 
 		return skillUpdateVersion
 
@@ -170,6 +181,9 @@ class SkillStoreManager(Manager):
 
 		ret = set()
 		for suggestedSkillName in suggestions:
+			if suggestedSkillName in self.SkillManager.allSkills.keys():
+				continue
+
 			speakableName = self._skillStoreData.get(suggestedSkillName, dict()).get('speakableName', '')
 
 			if not speakableName:

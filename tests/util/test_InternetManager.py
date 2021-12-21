@@ -17,11 +17,11 @@
 #
 #  Last modified: 2021.04.13 at 12:56:52 CEST
 
-import unittest
 from unittest import mock
-from unittest.mock import MagicMock, PropertyMock
 
+import unittest
 from requests.exceptions import RequestException
+from unittest.mock import MagicMock, PropertyMock
 
 from core.util.InternetManager import InternetManager
 
@@ -33,6 +33,8 @@ class TestInternetManager(unittest.TestCase):
 	@mock.patch('core.util.InternetManager.InternetManager.Commons', new_callable=PropertyMock)
 	@mock.patch('core.base.SuperManager.SuperManager')
 	def test_checkOnlineState(self, mock_superManager, mock_commons, mock_requests, mock_broadcast):
+		address = 'https://api.projectalice.io/generate_204'
+
 		common_mock = MagicMock()
 		common_mock.getFunctionCaller.return_value = 'InternetManager'
 		mock_commons.return_value = common_mock
@@ -50,7 +52,7 @@ class TestInternetManager(unittest.TestCase):
 		type(mock_requestsResult).status_code = mock_statusCode
 		mock_requests.get.return_value = mock_requestsResult
 
-		# Not called if stay completly offline
+		# Not called if stay completely offline
 		mock_instance.configManager.getAliceConfigByName.return_value = True
 		internetManager.checkOnlineState()
 		mock_requests.get.asset_not_called()
@@ -58,7 +60,7 @@ class TestInternetManager(unittest.TestCase):
 		mock_instance.configManager.getAliceConfigByName.return_value = False
 		internetManager.checkOnlineState()
 
-		mock_requests.get.assert_called_once_with('https://clients3.google.com/generate_204')
+		mock_requests.get.assert_called_once_with(address)
 		mock_broadcast.assert_called_once_with(method='internetConnected', exceptions=['InternetManager'], propagateToSkills=True)
 		self.assertEqual(internetManager.online, True)
 		mock_broadcast.reset_mock()
@@ -66,7 +68,7 @@ class TestInternetManager(unittest.TestCase):
 
 		# when calling check online state a second time it does not broadcast again
 		internetManager.checkOnlineState()
-		mock_requests.get.assert_called_once_with('https://clients3.google.com/generate_204')
+		mock_requests.get.assert_called_once_with(address)
 		mock_broadcast.assert_not_called()
 		self.assertEqual(internetManager.online, True)
 		mock_broadcast.reset_mock()
@@ -80,7 +82,7 @@ class TestInternetManager(unittest.TestCase):
 
 		# when wrong status code is returned (and currently online)
 		internetManager.checkOnlineState()
-		mock_requests.get.assert_called_once_with('https://clients3.google.com/generate_204')
+		mock_requests.get.assert_called_once_with(address)
 		mock_broadcast.assert_called_once_with(method='internetLost', exceptions=['InternetManager'], propagateToSkills=True)
 		self.assertEqual(internetManager.online, False)
 		mock_broadcast.reset_mock()
@@ -88,7 +90,7 @@ class TestInternetManager(unittest.TestCase):
 
 		# when calling check online state a second time it does not broadcast again
 		internetManager.checkOnlineState()
-		mock_requests.get.assert_called_once_with('https://clients3.google.com/generate_204')
+		mock_requests.get.assert_called_once_with(address)
 		mock_broadcast.assert_not_called()
 		self.assertEqual(internetManager.online, False)
 		mock_broadcast.reset_mock()
@@ -106,7 +108,7 @@ class TestInternetManager(unittest.TestCase):
 		# request raises exception is the same as non 204 status code
 		mock_requests.get.side_effect = RequestException
 		internetManager.checkOnlineState()
-		mock_requests.get.assert_called_once_with('https://clients3.google.com/generate_204')
+		mock_requests.get.assert_called_once_with(address)
 		mock_broadcast.assert_called_once_with(method='internetLost', exceptions=['InternetManager'], propagateToSkills=True)
 		self.assertEqual(internetManager.online, False)
 

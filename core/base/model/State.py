@@ -25,7 +25,7 @@ from core.util.model.Logger import Logger
 
 
 @dataclass
-class State:
+class State(object):
 	name: str
 	currentState: StateType = StateType.BORN
 	logger: Logger = Logger(prepend='[State]')

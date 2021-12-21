@@ -306,7 +306,7 @@ class LocationManager(Manager):
 			location.parentLocation = data['parentLocation']
 
 		if 'synonyms' in data:
-			location.updatesynonyms(set(data['synonyms']))
+			location.updateSynonyms(set(data['synonyms']))
 
 		if 'settings' in data:
 			location.updateSettings(data['settings'])

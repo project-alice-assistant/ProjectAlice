@@ -68,7 +68,7 @@ class ProjectAlice(Singleton):
 
 	def checkDependencies(self) -> bool:
 		"""
-		Compares .hash files against requirements.txt and sysrrequirement.txt. Updates dependencies if necessary
+		Compares .hash files against requirements.txt and sysrequirement.txt. Updates dependencies if necessary
 		:return: boolean False if the check failed, new deps were installed (reboot maybe? :) )
 		"""
 		HASH_SUFFIX = '.hash'
@@ -173,7 +173,7 @@ class ProjectAlice(Singleton):
 		self._superManager.stateManager.setState(STATE, newState=StateType.RUNNING)
 
 		self._isUpdating = True
-		req = requests.get(url=f'{constants.GITHUB_API_URL}/ProjectAlice/branches', auth=SuperManager.getInstance().configManager.getGithubAuth())
+		req = requests.get(url=f'{constants.GITHUB_API_URL}/ProjectAlice/branches', auth=SuperManager.getInstance().configManager.githubAuth)
 		if req.status_code != 200:
 			self._logger.logWarning('Failed checking for updates')
 			self._superManager.stateManager.setState(STATE, newState=StateType.ERROR)

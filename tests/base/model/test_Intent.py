@@ -98,7 +98,7 @@ class TestAliceSkill(TestCase):
 	@patch('core.base.SuperManager.SuperManager')
 	def test_get_mapping(self, mock_superManager):
 		@dataclass
-		class Session:
+		class Session(object):
 			currentState: str
 
 

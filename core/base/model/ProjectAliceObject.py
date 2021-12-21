@@ -56,6 +56,7 @@ if TYPE_CHECKING:
 	from core.util.TelemetryManager import TelemetryManager
 	from core.util.ThreadManager import ThreadManager
 	from core.util.TimeManager import TimeManager
+	from core.util.BugReportManager import BugReportManager
 	from core.util.SubprocessManager import SubprocessManager
 	from core.voice.LanguageManager import LanguageManager
 	from core.voice.TTSManager import TTSManager
@@ -68,7 +69,7 @@ if TYPE_CHECKING:
 	from core.webui.WebUINotificationManager import WebUINotificationManager
 
 
-class ProjectAliceObject:
+class ProjectAliceObject(object):
 	DEPENDENCIES = {
 		'internal': {},
 		'external': {},
@@ -122,7 +123,7 @@ class ProjectAliceObject:
 			self.logWarning(f'Failed to broadcast event **{method}** to **DialogManager**: {e}')
 
 		deadManagers = list()
-		for name, man in SM.SuperManager.getInstance().managers.items():
+		for name, man in SM.SuperManager.getInstance().managers.copy().items():
 			if not man:
 				deadManagers.append(name)
 				continue
@@ -311,6 +312,26 @@ class ProjectAliceObject:
 
 
 	def onSkillUpdated(self, skill: str):
+		pass  # Super object function is overridden only if needed
+
+
+	def onSkillUpdating(self, skill: str):
+		pass  # Super object function is overridden only if needed
+
+
+	def onSkillStarted(self, skill: str):
+		pass  # Super object function is overridden only if needed
+
+
+	def onSkillStopped(self, skill: str):
+		pass  # Super object function is overridden only if needed
+
+
+	def onSkillActivated(self, skill: str):
+		pass  # Super object function is overridden only if needed
+
+
+	def onSkillDeactivated(self, skill: str):
 		pass  # Super object function is overridden only if needed
 
 
@@ -659,20 +680,6 @@ class ProjectAliceObject:
 		pass  # Super object function is overridden only if needed
 
 
-	def onSkillStarted(self, skill):
-		"""
-		param skill: AliceSkill instance
-		"""
-		pass  # Super object function is overridden only if needed
-
-
-	def onSkillStopped(self, skill):
-		"""
-		:param skill: AliceSkill instance
-		"""
-		pass  # Super object function is overridden only if needed
-
-
 	@property
 	def ProjectAlice(self) -> ProjectAlice:  # NOSONAR
 		return SM.SuperManager.getInstance().projectAlice
@@ -841,3 +848,7 @@ class ProjectAliceObject:
 	@property
 	def WebUINotificationManager(self) -> WebUINotificationManager:  # NOSONAR
 		return SM.SuperManager.getInstance().webUINotificationManager
+
+	@property
+	def BugReportManager(self) -> BugReportManager:  # NOSONAR
+		return SM.SuperManager.getInstance().bugReportManager

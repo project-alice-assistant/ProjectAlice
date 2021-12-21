@@ -30,7 +30,7 @@ from core.commons import constants
 
 
 @dataclass
-class DialogSession:
+class DialogSession(object):
 	deviceUid: str
 	sessionId: str = ''
 	increaseTimeout: int = 0

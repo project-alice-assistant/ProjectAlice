@@ -56,11 +56,25 @@ class FunctionNotImplemented(ProjectAliceException):
 
 class SkillStartingFailed(ProjectAliceException):
 
-	def __init__(self, skillName: str = '', error: str = ''):
+	def __init__(self, skillName: str, error: str = ''):
 		super().__init__(message=error)
 		self._logger.logWarning(f'[{skillName}] Error starting skill: {error}')
 
-		if skillName:
+		if skillName in SuperManager.getInstance().skillManager.NEEDED_SKILLS:
+			self._logger.logFatal(f'Skill **{skillName}** is required to continue, sorry')
+		else:
+			SuperManager.getInstance().skillManager.deactivateSkill(skillName)
+
+
+class SkillInstanceFailed(ProjectAliceException):
+
+	def __init__(self, skillName: str, error: str = ''):
+		super().__init__(message=error)
+		self._logger.logWarning(f'[{skillName}] Error creating skill instance: {error}')
+
+		if skillName in SuperManager.getInstance().skillManager.NEEDED_SKILLS:
+			self._logger.logFatal(f'Skill **{skillName}** is required to continue, sorry')
+		else:
 			SuperManager.getInstance().skillManager.deactivateSkill(skillName)
 
 

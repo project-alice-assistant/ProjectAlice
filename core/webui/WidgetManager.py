@@ -93,7 +93,7 @@ class WidgetManager(Manager):
 					tableName=self.WIDGETS_TABLE,
 					callerName=self.name,
 					values={
-						'parent': widget['skill'],
+						'skill' : widget['skill'],
 						'name'  : widget['name']
 					}
 				)
@@ -277,10 +277,10 @@ class WidgetManager(Manager):
 		)
 
 
-	def skillDeactivated(self, skillName: str):
+	def onSkillDeactivated(self, skill):
 		tmp = self._widgets.copy()
 		for wid, widget in tmp.items():
-			if widget.skill == skillName:
+			if widget.skill == skill:
 				self._widgets.pop(wid, None)
 
 

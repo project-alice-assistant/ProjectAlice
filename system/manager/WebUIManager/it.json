@@ -67,7 +67,9 @@
 		"addDevice"        : "Aggiungi nuovi dispositivo",
 		"removeDevice"     : "Rimuovi dispositivo",
 		"linkDevice"       : "Collega dispositivi con posizioni multiple",
-		"unlinkDevice"     : "Sblocca dispositivi"
+		"unlinkDevice"     : "Sblocca dispositivi",
+		"compatible"       : "Compatible",
+		"notCompatible"    : "Not compatible"
 	},
 	"notifications": {
 		"errors"   : {

@@ -25,7 +25,7 @@ from core.user.model.AccessLevels import AccessLevel
 
 
 @dataclass
-class Intent:
+class Intent(object):
 	topic: str = field(init=False)
 	action: str = field(repr=False)
 	userIntent: bool = True

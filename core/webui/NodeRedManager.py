@@ -25,6 +25,7 @@ from pathlib import Path
 from subprocess import PIPE, Popen
 
 from core.base.model.Manager import Manager
+from core.webui.model.UINotificationType import UINotificationType
 
 
 class NodeRedManager(Manager):
@@ -70,6 +71,7 @@ class NodeRedManager(Manager):
 
 	def install(self):
 		self.logInfo('Node-RED not found, installing, this might take a while...')
+		self.WebUINotificationManager.newNotification(typ=UINotificationType.INFO, notification='installNodeRed', key='nodered')
 		self.Commons.downloadFile(
 			url='https://raw.githubusercontent.com/node-red/linux-installers/master/deb/update-nodejs-and-nodered',
 			dest='var/cache/node-red.sh'
@@ -82,6 +84,7 @@ class NodeRedManager(Manager):
 			process.stdin.write(b'n\n')
 		except IOError:
 			self.logError('Failed installing Node-RED')
+			self.WebUINotificationManager.newNotification(typ=UINotificationType.ERROR, notification='failedInstallNodeRed', key='nodered')
 			self.onStop()
 			return
 
@@ -90,6 +93,7 @@ class NodeRedManager(Manager):
 
 		if returnCode:
 			self.logError('Failed installing Node-red')
+			self.WebUINotificationManager.newNotification(typ=UINotificationType.ERROR, notification='failedInstallNodeRed', key='nodered')
 			self.onStop()
 		else:
 			self.logInfo('Successfully installed Node-red')
@@ -104,7 +108,6 @@ class NodeRedManager(Manager):
 		time.sleep(5)
 		self.Commons.runRootSystemCommand(['systemctl', 'stop', 'nodered'])
 		time.sleep(3)
-
 		config = Path(self.PACKAGE_PATH.parent, '.config.nodes.json')
 		data = json.loads(config.read_text())
 		for package in data.values():
@@ -118,9 +121,10 @@ class NodeRedManager(Manager):
 		self.logInfo('Nodes configured')
 		self.logInfo('Applying Project Alice settings')
 
-		self.Commons.runSystemCommand('npm install --prefix ~/.node-red @node-red-contrib-themes/midnight-red'.split())
+		self.Commons.runSystemCommand('npm install --prefix ~/.node-red @node-red-contrib-themes/midnight-red'.split(), shell=True)
 		shutil.copy(Path('system/node-red/settings.js'), Path(os.path.expanduser('~/.node-red'), 'settings.js'))
 		self.logInfo("All done, let's start all this")
+		self.WebUINotificationManager.newNotification(typ=UINotificationType.INFO, notification='installedNodeRed', key='nodered')
 
 
 	def onStop(self):

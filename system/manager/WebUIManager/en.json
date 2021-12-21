@@ -80,7 +80,9 @@
 		"addDevice"        : "Add new device",
 		"removeDevice"     : "Remove devices",
 		"linkDevice"       : "Link devices with multiple locations",
-		"unlinkDevice"     : "Unlink devices"
+		"unlinkDevice"     : "Unlink devices",
+	  	"compatible"       : "Compatible",
+	  	"notCompatible"    : "Not compatible"
 	},
 	"notifications": {
 		"errors"   : {
@@ -95,7 +97,9 @@
 		  "skillDeleteFailed": "Failed deleting the skill",
 		  "noLocationEmptyName": "The location name cannot be empty",
 		  "widgetSavingFailed": "Failed saving widget",
-		  "newTileFailed": "Failed uploading new tile"
+		  "newTileFailed": "Failed uploading new tile",
+		  "skillIncompatible": "Unfortunately this skill is not compatible with your current Alice. If you still want to install it, please turn on dev mode.",
+		  "skillNotActivated": "Skill activation failed"
 		},
 		"successes": {
 		  "deviceUnlinked": "Device successfully unlinked",

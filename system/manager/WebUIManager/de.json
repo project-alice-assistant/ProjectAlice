@@ -72,7 +72,9 @@
 		"addDevice"        : "Neues Gerät hinzufügen",
 		"removeDevice"     : "Gerät entfernen",
 		"linkDevice"       : "Gerät mit Lokationen verknüpfen",
-		"unlinkDevice"     : "Gerätelink entfernen"
+		"unlinkDevice"     : "Gerätelink entfernen",
+		"compatible"       : "Compatible",
+		"notCompatible"    : "Not compatible"
 	},
 	"notifications": {
 		"errors"   : {

@@ -17,10 +17,15 @@
 #
 #  Last modified: 2021.04.13 at 12:56:46 CEST
 
+from collections import defaultdict
+from ctypes import *
+
 import hashlib
 import inspect
+import jinja2
 import json
 import random
+import requests
 import socket
 import sqlite3
 import string
@@ -28,18 +33,13 @@ import subprocess
 import tempfile
 import time
 import uuid
-from collections import defaultdict
 from contextlib import contextmanager, suppress
-from ctypes import *
 from datetime import datetime
+from googletrans import Translator
+from paho.mqtt.client import MQTTMessage
 from pathlib import Path
 from typing import Any, Union
 from uuid import UUID
-
-import jinja2
-import requests
-from googletrans import Translator
-from paho.mqtt.client import MQTTMessage
 
 import core.base.SuperManager as SuperManager
 import core.commons.model.Slot as slotModel
@@ -47,6 +47,7 @@ from core.base.model.Manager import Manager
 from core.commons import constants
 from core.commons.model.PartOfDay import PartOfDay
 from core.dialog.model.DialogSession import DialogSession
+from core.webui.model.UINotificationType import UINotificationType
 
 
 class CommonsManager(Manager):
@@ -316,8 +317,8 @@ class CommonsManager(Manager):
 	def translate(self, text: Union[str, list], destLang: str = None, srcLang: str = None) -> Union[str, list]:
 		"""
 		Translates a string or a list of strings into a different language using
-		google translator. Especially helpful when a api is only available in one
-		language, but the skill should support other languages aswell.
+		google translator. Especially helpful when an api is only available in one
+		language, but the skill should support other languages as well.
 
 		:param text: string or list of strings to translate
 		:param destLang: language to translate to (ISO639-1 code)
@@ -360,16 +361,20 @@ class CommonsManager(Manager):
 		if not self.Commons.rootDir() in dest:
 			dest = f'{self.Commons.rootDir()}/{dest}'
 
+		key = f'download_{time.time()}'
 		try:
+			self.WebUINotificationManager.newNotification(typ=UINotificationType.INFO, notification='startedDownload', replaceBody=[Path(dest).stem], key=key)
 			with requests.get(url, stream=True) as r:
 				r.raise_for_status()
 				with Path(dest).open('wb') as fp:
 					for chunk in r.iter_content(chunk_size=8192):
 						if chunk:
 							fp.write(chunk)
+			self.WebUINotificationManager.newNotification(typ=UINotificationType.INFO, notification='doneDownload', replaceBody=[Path(dest).stem], key=key)
 			return True
 		except Exception as e:
 			self.logWarning(f'Failed downloading file: {e}')
+			self.WebUINotificationManager.newNotification(typ=UINotificationType.ALERT, notification='failedDownload', replaceBody=[Path(dest).stem], key=key)
 			return False
 
 
@@ -419,6 +424,17 @@ class CommonsManager(Manager):
 	@staticmethod
 	def dictFromRow(row: sqlite3.Row) -> dict:
 		return dict(zip(row.keys(), row))
+
+
+	def getGithubAuth(self) -> tuple:
+		"""
+		Returns the users configured username and token for GitHub as a tuple
+		When one of the values is not supplied None is returned.
+		:return:
+		"""
+		username = self.ConfigManager.getAliceConfigByName('githubUsername')
+		token = self.ConfigManager.getAliceConfigByName('githubToken')
+		return (username, token) if (username and token) else None
 
 
 # noinspection PyUnusedLocal

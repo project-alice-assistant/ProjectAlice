@@ -22,7 +22,7 @@ from typing import Dict, Optional, Union
 
 
 @dataclass
-class Slot:
+class Slot(object):
 	slotName: str
 	entity: str
 	rawValue: str

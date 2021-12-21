@@ -21,7 +21,7 @@ import os
 from pathlib import Path
 from threading import Event
 from time import time
-from typing import Generator, Optional
+from typing import Iterable, Optional
 
 from core.asr.model.ASRResult import ASRResult
 from core.asr.model.Asr import Asr
@@ -114,7 +114,7 @@ class GoogleAsr(Asr):
 		self._internetLostFlag.set()
 
 
-	def _checkResponses(self, session: DialogSession, responses: Generator) -> Optional[tuple]:
+	def _checkResponses(self, session: DialogSession, responses: Iterable) -> Optional[tuple]:
 		if responses is None:
 			return None
 
