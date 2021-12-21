@@ -1,4 +1,4 @@
 [submodule "core/webui/public"]
 	path = core/webui/public
 	url = https://github.com/project-alice-assistant/webui.git
-	branch = master
+	branch = 1.0.0-rc3
