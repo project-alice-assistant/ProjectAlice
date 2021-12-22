@@ -18,10 +18,9 @@
 #  Last modified: 2021.05.05 at 12:56:47 CEST
 
 import hashlib
+import requests
 import subprocess
 from pathlib import Path
-
-import requests
 
 from core.base.SuperManager import SuperManager
 from core.base.model.StateType import StateType
@@ -57,8 +56,8 @@ class ProjectAlice(Singleton):
 				self._superManager.initManagers()
 				self._superManager.onStart()
 
-				if self._superManager.configManager.getAliceConfigByName('useHLC'):
-					self._superManager.commons.runRootSystemCommand(['systemctl', 'start', 'hermesledcontrol'])
+				if self._superManager.ConfigManager.getAliceConfigByName('useHLC'):
+					self._superManager.Commons.runRootSystemCommand(['systemctl', 'start', 'hermesledcontrol'])
 
 				self._superManager.onBooted()
 
@@ -137,8 +136,8 @@ class ProjectAlice(Singleton):
 		self._logger.logInfo('Shutting down')
 		self._shuttingDown = True
 		self._superManager.onStop()
-		if self._superManager.configManager.getAliceConfigByName('useHLC'):
-			self._superManager.commons.runRootSystemCommand(['systemctl', 'stop', 'hermesledcontrol'])
+		if self._superManager.ConfigManager.getAliceConfigByName('useHLC'):
+			self._superManager.Commons.runRootSystemCommand(['systemctl', 'stop', 'hermesledcontrol'])
 
 		self._booted = False
 		self.INSTANCE = None
@@ -153,33 +152,33 @@ class ProjectAlice(Singleton):
 		# Set as restarting so skills don't install / update
 		self._restart = True
 
-		self._superManager.skillManager.wipeSkills()
-		self._superManager.databaseManager.clearDB()
-		self._superManager.assistantManager.clearAssistant()
-		self._superManager.dialogTemplateManager.clearCache(False)
-		self._superManager.nluManager.clearCache()
+		self._superManager.SkillManager.wipeSkills()
+		self._superManager.DatabaseManager.clearDB()
+		self._superManager.AssistantManager.clearAssistant()
+		self._superManager.DialogTemplateManager.clearCache(False)
+		self._superManager.NluManager.clearCache()
 
 
 	def updateProjectAlice(self):
 		self._logger.logInfo('Checking for core updates')
 		STATE = 'projectalice.core.updating'
-		state = self._superManager.stateManager.getState(STATE)
+		state = self._superManager.StateManager.getState(STATE)
 		if not state:
-			self._superManager.stateManager.register(STATE, initialState=StateType.RUNNING)
+			self._superManager.StateManager.register(STATE, initialState=StateType.RUNNING)
 		elif state.currentState == StateType.RUNNING:
 			self._logger.logInfo('Update cancelled, already running')
 			return
 
-		self._superManager.stateManager.setState(STATE, newState=StateType.RUNNING)
+		self._superManager.StateManager.setState(STATE, newState=StateType.RUNNING)
 
 		self._isUpdating = True
-		req = requests.get(url=f'{constants.GITHUB_API_URL}/ProjectAlice/branches', auth=SuperManager.getInstance().configManager.githubAuth)
+		req = requests.get(url=f'{constants.GITHUB_API_URL}/ProjectAlice/branches', auth=SuperManager.getInstance().ConfigManager.githubAuth)
 		if req.status_code != 200:
 			self._logger.logWarning('Failed checking for updates')
-			self._superManager.stateManager.setState(STATE, newState=StateType.ERROR)
+			self._superManager.StateManager.setState(STATE, newState=StateType.ERROR)
 			return
 
-		userUpdatePref = SuperManager.getInstance().configManager.getAliceConfigByName('aliceUpdateChannel')
+		userUpdatePref = SuperManager.getInstance().ConfigManager.getAliceConfigByName('aliceUpdateChannel')
 
 		if userUpdatePref == 'master':
 			candidate = 'master'
@@ -200,7 +199,7 @@ class ProjectAlice(Singleton):
 					candidate = repoVersion
 
 		self._logger.logInfo(f'Checking on "{str(candidate)}" update channel')
-		commons = SuperManager.getInstance().commons
+		commons = SuperManager.getInstance().Commons
 
 		currentHash = subprocess.check_output(['git', 'rev-parse', '--short HEAD'])
 
@@ -218,12 +217,12 @@ class ProjectAlice(Singleton):
 		# Remove install tickets
 		[file.unlink() for file in Path(commons.rootDir(), 'system/skillInstallTickets').glob('*') if file.is_file()]
 
-		self._superManager.stateManager.setState(STATE, newState=StateType.FINISHED)
+		self._superManager.StateManager.setState(STATE, newState=StateType.FINISHED)
 
 		if currentHash != newHash:
 			self._logger.logWarning('New Alice version installed, need to restart...')
 
-			self._superManager.webUINotificationManager.newNotification(
+			self._superManager.WebUINotificationManager.newNotification(
 				typ=UINotificationType.INFO,
 				notification='aliceUpdated'
 			)

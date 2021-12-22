@@ -219,7 +219,7 @@ class GoogleTts(Tts):
 	def onStart(self):
 		super().onStart()
 		self._client = texttospeech.TextToSpeechClient(
-			credentials=Credentials.from_service_account_file(filename=str(Path(SuperManager.getInstance().commons.rootDir(), 'credentials/googlecredentials.json')))
+			credentials=Credentials.from_service_account_file(filename=str(Path(SuperManager.getInstance().Commons.rootDir(), 'credentials/googlecredentials.json')))
 		)
 
 

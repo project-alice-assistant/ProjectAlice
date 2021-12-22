@@ -55,7 +55,7 @@ class Logger(object):
 	def logWarning(self, msg: str, printStack: bool = False, plural: Union[list, str] = None):
 		from core.base.SuperManager import SuperManager
 
-		if SuperManager.getInstance().configManager.getAliceConfigByName('debug'):
+		if SuperManager.getInstance().ConfigManager.getAliceConfigByName('debug'):
 			self.doLog(function='warning', msg=msg, printStack=True, plural=plural)
 		else:
 			self.doLog(function='warning', msg=msg, printStack=printStack, plural=plural)
@@ -93,7 +93,7 @@ class Logger(object):
 
 		try:
 			from core.base.SuperManager import SuperManager
-			SuperManager.getInstance().bugReportManager.addToHistory(function, msg)
+			SuperManager.getInstance().BugReportManager.addToHistory(function, msg)
 		except:
 			pass # We really can't do anything here
 

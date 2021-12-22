@@ -40,42 +40,41 @@ class SuperManager(object):
 		self._managers = dict()
 
 		self.projectAlice             = mainClass
-		self.aliceWatchManager        = None
-		self.apiManager               = None
-		self.asrManager               = None
-		self.assistantManager         = None
-		self.audioManager             = None
-		self.bugReportManager         = None
-		self.commons                  = None
-		self.commonsManager           = None
-		self.configManager            = None
-		self.databaseManager          = None
-		self.deviceManager            = None
-		self.dialogManager            = None
-		self.dialogTemplateManager    = None
-		self.internetManager          = None
-		self.languageManager          = None
-		self.locationManager          = None
-		self.locationManager          = None
-		self.mqttManager              = None
-		self.multiIntentManager       = None
-		self.nluManager               = None
-		self.nodeRedManager           = None
-		self.skillManager             = None
-		self.skillStoreManager        = None
-		self.stateManager             = None
-		self.subprocessManager        = None
-		self.talkManager              = None
-		self.telemetryManager         = None
-		self.threadManager            = None
-		self.timeManager              = None
-		self.ttsManager               = None
-		self.userManager              = None
-		self.wakewordManager          = None
-		self.wakewordRecorder         = None
-		self.webUiManager             = None
-		self.webUINotificationManager = None
-		self.widgetManager            = None
+		self.AliceWatchManager        = None #NOSONAR
+		self.ApiManager               = None #NOSONAR
+		self.ASRManager               = None #NOSONAR
+		self.AssistantManager         = None #NOSONAR
+		self.AudioManager             = None #NOSONAR
+		self.BugReportManager         = None #NOSONAR
+		self.Commons                  = None #NOSONAR
+		self.CommonsManager           = None #NOSONAR
+		self.ConfigManager            = None #NOSONAR
+		self.DatabaseManager          = None #NOSONAR
+		self.DeviceManager            = None #NOSONAR
+		self.DialogManager            = None #NOSONAR
+		self.DialogTemplateManager    = None #NOSONAR
+		self.InternetManager          = None #NOSONAR
+		self.LanguageManager          = None #NOSONAR
+		self.LocationManager          = None #NOSONAR
+		self.MqttManager              = None #NOSONAR
+		self.MultiIntentManager       = None #NOSONAR
+		self.NluManager               = None #NOSONAR
+		self.NodeRedManager           = None #NOSONAR
+		self.SkillManager             = None #NOSONAR
+		self.SkillStoreManager        = None #NOSONAR
+		self.StateManager             = None #NOSONAR
+		self.SubprocessManager        = None #NOSONAR
+		self.TalkManager              = None #NOSONAR
+		self.TelemetryManager         = None #NOSONAR
+		self.ThreadManager            = None #NOSONAR
+		self.TimeManager              = None #NOSONAR
+		self.TTSManager               = None #NOSONAR
+		self.UserManager              = None #NOSONAR
+		self.WakewordManager          = None #NOSONAR
+		self.WakewordRecorder         = None #NOSONAR
+		self.WebUiManager             = None #NOSONAR
+		self.WebUINotificationManager = None #NOSONAR
+		self.WidgetManager            = None #NOSONAR
 
 
 
@@ -131,7 +130,7 @@ class SuperManager(object):
 			nodeRedManager = self._managers.pop('NodeRedManager')
 
 			for manager in self._managers.copy().values():
-				if manager and manager.name != self.bugReportManager.name:
+				if manager and manager.name != self.BugReportManager.name:
 					manager.onStart()
 
 			talkManager.onStart()
@@ -179,8 +178,8 @@ class SuperManager(object):
 		except Exception as e:
 			Logger().logError(f'Error while sending onBooted to manager **{manager.name}**: {e}')
 
-		deviceList = self.deviceManager.getDevicesWithAbilities([DeviceAbility.IS_SATELITTE, DeviceAbility.IS_CORE], connectedOnly=False)
-		self.mqttManager.playSound(soundFilename='boot', deviceUid=deviceList)
+		deviceList = self.DeviceManager.getDevicesWithAbilities([DeviceAbility.IS_SATELITTE, DeviceAbility.IS_CORE], connectedOnly=False)
+		self.MqttManager.playSound(soundFilename='boot', deviceUid=deviceList)
 
 
 	@staticmethod
@@ -224,43 +223,43 @@ class SuperManager(object):
 		from core.webui.WebUINotificationManager import WebUINotificationManager
 		from core.util.BugReportManager import BugReportManager
 
-		self.bugReportManager = BugReportManager()
-		self.commonsManager = CommonsManager()
-		self.commons = self.commonsManager
-		self.stateManager = StateManager()
-		self.subprocessManager = SubprocessManager()
-		self.configManager = ConfigManager()
-		self.databaseManager = DatabaseManager()
-		self.skillManager = SkillManager()
-		self.widgetManager = WidgetManager()
-		self.deviceManager = DeviceManager()
-		self.audioManager = AudioManager()
-		self.languageManager = LanguageManager()
-		self.asrManager = ASRManager()
-		self.ttsManager = TTSManager()
-		self.threadManager = ThreadManager()
-		self.mqttManager = MqttManager()
-		self.timeManager = TimeManager()
-		self.userManager = UserManager()
-		self.multiIntentManager = MultiIntentManager()
-		self.telemetryManager = TelemetryManager()
-		self.locationManager = LocationManager()
-		self.internetManager = InternetManager()
-		self.wakewordRecorder = WakewordRecorder()
-		self.talkManager = TalkManager()
-		self.webUiManager = WebUIManager()
-		self.apiManager = ApiManager()
-		self.nodeRedManager = NodeRedManager()
-		self.skillStoreManager = SkillStoreManager()
-		self.dialogTemplateManager = DialogTemplateManager()
-		self.assistantManager = AssistantManager()
-		self.nluManager = NluManager()
-		self.aliceWatchManager = AliceWatchManager()
-		self.dialogManager = DialogManager()
-		self.wakewordManager = WakewordManager()
-		self.webUINotificationManager = WebUINotificationManager()
+		self.BugReportManager = BugReportManager()
+		self.CommonsManager = CommonsManager()
+		self.Commons = self.CommonsManager
+		self.StateManager = StateManager()
+		self.SubprocessManager = SubprocessManager()
+		self.ConfigManager = ConfigManager()
+		self.DatabaseManager = DatabaseManager()
+		self.SkillManager = SkillManager()
+		self.WidgetManager = WidgetManager()
+		self.DeviceManager = DeviceManager()
+		self.AudioManager = AudioManager()
+		self.LanguageManager = LanguageManager()
+		self.ASRManager = ASRManager()
+		self.TTSManager = TTSManager()
+		self.ThreadManager = ThreadManager()
+		self.MqttManager = MqttManager()
+		self.TimeManager = TimeManager()
+		self.UserManager = UserManager()
+		self.MultiIntentManager = MultiIntentManager()
+		self.TelemetryManager = TelemetryManager()
+		self.LocationManager = LocationManager()
+		self.InternetManager = InternetManager()
+		self.WakewordRecorder = WakewordRecorder()
+		self.TalkManager = TalkManager()
+		self.WebUiManager = WebUIManager()
+		self.ApiManager = ApiManager()
+		self.NodeRedManager = NodeRedManager()
+		self.SkillStoreManager = SkillStoreManager()
+		self.DialogTemplateManager = DialogTemplateManager()
+		self.AssistantManager = AssistantManager()
+		self.NluManager = NluManager()
+		self.AliceWatchManager = AliceWatchManager()
+		self.DialogManager = DialogManager()
+		self.WakewordManager = WakewordManager()
+		self.WebUINotificationManager = WebUINotificationManager()
 
-		self._managers = {name[0].upper() + name[1:]: manager for name, manager in self.__dict__.items() if name.endswith('Manager')}
+		self._managers = {name: manager for name, manager in self.__dict__.items() if name.endswith('Manager')}
 
 
 	def onStop(self):
@@ -299,13 +298,14 @@ class SuperManager(object):
 
 
 	def restartManager(self, manager: str):
-		if not manager in self._managers:
+		managerInstance = self._managers.get(manager, None)
+		if not managerInstance:
 			Logger().logWarning(f'Was asking to restart manager **{manager}** but it doesn\'t exist')
 			return
 
-		self._managers[manager].onStop()
-		self._managers[manager].onStart()
-		self._managers[manager].onBooted()
+		managerInstance.onStop()
+		managerInstance.onStart()
+		managerInstance.onBooted()
 
 
 	@property

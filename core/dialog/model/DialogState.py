@@ -24,7 +24,7 @@ class DialogState(object):
 
 	def __init__(self, state: str):
 		if ':' not in state:
-			caller = SuperManager.getInstance().commons.getFunctionCaller(depth=2)
+			caller = SuperManager.getInstance().Commons.getFunctionCaller(depth=2)
 			state = f'{caller}:{state}'
 
 		self._state = state
@@ -32,7 +32,7 @@ class DialogState(object):
 
 	def __eq__(self, other) -> bool:
 		if ':' not in other:
-			caller = SuperManager.getInstance().commons.getFunctionCaller()
+			caller = SuperManager.getInstance().Commons.getFunctionCaller()
 			other = f'{caller}:{other}'
 
 		return self._state == other

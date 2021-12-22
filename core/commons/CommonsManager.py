@@ -193,7 +193,7 @@ class CommonsManager(Manager):
 		if not isinstance(data, dict):
 			return constants.UNKNOWN
 
-		return data.get('siteId', data.get('IPAddress', SuperManager.SuperManager.getInstance().configManager.getAliceConfigByName('uuid')))
+		return data.get('siteId', data.get('IPAddress', SuperManager.SuperManager.getInstance().ConfigManager.getAliceConfigByName('uuid')))
 
 
 	@staticmethod

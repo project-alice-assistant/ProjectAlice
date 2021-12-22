@@ -70,7 +70,7 @@ class Intent(object):
 
 	@dialogMapping.setter
 	def dialogMapping(self, value: Union[Dict[str, Callable], property]):
-		skillName = SM.SuperManager.getInstance().commonsManager.getFunctionCaller(depth=2)
+		skillName = SM.SuperManager.getInstance().CommonsManager.getFunctionCaller(depth=2)
 		if isinstance(value, property):
 			self._dialogMapping = dict()
 		else:

@@ -20,9 +20,8 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from typing import Any, Optional
-
 from paho.mqtt.client import MQTTMessage
+from typing import Any, Optional
 
 from core.base.SuperManager import SuperManager
 from core.base.model import Intent
@@ -61,7 +60,7 @@ class DialogSession(object):
 
 
 	def __post_init__(self):  # NOSONAR
-		self.probabilityThreshold = SuperManager.getInstance().configManager.getAliceConfigByName('probabilityThreshold')
+		self.probabilityThreshold = SuperManager.getInstance().ConfigManager.getAliceConfigByName('probabilityThreshold')
 
 
 	def extend(self, message: MQTTMessage, sessionId: str = None):
@@ -70,7 +69,7 @@ class DialogSession(object):
 
 		self.addToHistory(self.intentName)
 
-		commonsManager = SuperManager.getInstance().commonsManager
+		commonsManager = SuperManager.getInstance().CommonsManager
 		self.message = message
 		self.intentName = message.topic
 		self.payload = commonsManager.payload(message)
@@ -82,7 +81,7 @@ class DialogSession(object):
 	def update(self, message: MQTTMessage):
 		self.addToHistory(self.intentName)
 
-		commonsManager = SuperManager.getInstance().commonsManager
+		commonsManager = SuperManager.getInstance().CommonsManager
 		self.message = message
 		self.intentName = message.topic
 		self.payload = commonsManager.payload(message)
@@ -100,7 +99,7 @@ class DialogSession(object):
 		else:
 			self.customData = dict()
 
-		deviceManager = SuperManager.getInstance().deviceManager
+		deviceManager = SuperManager.getInstance().DeviceManager
 		if deviceManager:
 			device = deviceManager.getDevice(uid=self.deviceUid)
 			if not device:
