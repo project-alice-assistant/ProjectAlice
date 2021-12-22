@@ -17,8 +17,9 @@
 #
 #  Last modified: 2021.04.13 at 12:56:52 CEST
 
-import unittest
 from unittest import mock
+
+import unittest
 from unittest.mock import MagicMock
 
 from core.util.Decorators import AnyExcept, IntentHandler, Online, deprecated
@@ -79,9 +80,9 @@ class TestDecorators(unittest.TestCase):
 		# mock Managers
 		mock_instance = MagicMock()
 		mock_superManager.getInstance.return_value = mock_instance
-		mock_instance.talkManager.randomTalk.return_value = 'offline'
+		mock_instance.TalkManager.randomTalk.return_value = 'offline'
 		mock_internetManager = mock.PropertyMock(return_value=InternetManager(False))
-		type(mock_instance).internetManager = mock_internetManager
+		type(mock_instance).InternetManager = mock_internetManager
 
 
 		# mock DialogSession
@@ -93,7 +94,7 @@ class TestDecorators(unittest.TestCase):
 
 		# when there is already no internet
 		self.assertEqual(exampleObject.offline(), 'offline')
-		mock_instance.talkManager.randomTalk.assert_called_once_with('offline', skill='AliceSkill')
+		mock_instance.TalkManager.randomTalk.assert_called_once_with('offline', skill='AliceSkill')
 		mock_instance.reset_mock()
 
 		# when Internet is lost
