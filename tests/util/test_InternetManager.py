@@ -42,7 +42,7 @@ class TestInternetManager(unittest.TestCase):
 		# mock SuperManager
 		mock_instance = MagicMock()
 		mock_superManager.getInstance.return_value = mock_instance
-		mock_instance.configManager.getAliceConfigByName.return_value = False
+		mock_instance.ConfigManager.getAliceConfigByName.return_value = False
 
 		internetManager = InternetManager()
 
@@ -53,11 +53,11 @@ class TestInternetManager(unittest.TestCase):
 		mock_requests.get.return_value = mock_requestsResult
 
 		# Not called if stay completely offline
-		mock_instance.configManager.getAliceConfigByName.return_value = True
+		mock_instance.ConfigManager.getAliceConfigByName.return_value = True
 		internetManager.checkOnlineState()
 		mock_requests.get.asset_not_called()
 
-		mock_instance.configManager.getAliceConfigByName.return_value = False
+		mock_instance.ConfigManager.getAliceConfigByName.return_value = False
 		internetManager.checkOnlineState()
 
 		mock_requests.get.assert_called_once_with(address)
