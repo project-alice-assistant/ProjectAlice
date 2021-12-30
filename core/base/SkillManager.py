@@ -1353,6 +1353,7 @@ class SkillManager(Manager):
 				'description'       : skillDefinition['description'],
 				'category'          : skillDefinition['category'],
 				'speakableName'     : skillDefinition['speakableName'],
+				'icon'              : skillDefinition.get('icon', 'fas fa-biohazard'),
 				'langs'             : supportedLanguages,
 				'createInstructions': skillDefinition.get('instructions', False),
 				'pipreq'            : [req.strip() for req in skillDefinition.get('pipreq', '').split(',')],
@@ -1361,12 +1362,14 @@ class SkillManager(Manager):
 				'scenarioNodes'     : scenarioNodes,
 				'devices'           : devices,
 				'outputDestination' : str(localDirectory),
-				'conditions'        : conditions
+				'conditions'        : conditions,
+				'aliceMinVersion'   : constants.VERSION
 			}
 
 			dump = Path(f'/tmp/{skillName}.json')
 			dump.write_text(json.dumps(data, ensure_ascii=False))
 
+			self.Commons.runSystemCommand(['./venv/bin/pip', 'install', '--upgrade', 'projectalice-sk'])
 			result = self.Commons.runSystemCommand(['./venv/bin/projectalice-sk', 'create', '--file', f'{str(dump)}'])
 			if result.stderr:
 				raise Exception('SK create failed')
