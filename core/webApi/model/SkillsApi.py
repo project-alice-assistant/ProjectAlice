@@ -72,7 +72,7 @@ class SkillsApi(Api):
 	def createSkill(self) -> Response:
 		try:
 			newSkill = {
-				'name'         : request.form.get('name', '').capitalize(),
+				'name'         : request.form.get('name', ''),
 				'speakableName': request.form.get('speakableName', ''),
 				'description'  : request.form.get('description', 'Missing description'),
 				'category'     : request.form.get('category', 'undefined'),
