@@ -440,8 +440,8 @@ class SkillsApi(Api):
 
 		data = request.json
 		skill = self.SkillManager.getSkillInstance(skillName=skillName)
-		allLang = {}
-		tempOut = ""
+		allLang = dict()
+		tempOut = ''
 
 		if not 'lang' in data:
 			fp = skill.getResource('dialogTemplate')
@@ -473,11 +473,12 @@ class SkillsApi(Api):
 
 		data = request.json
 		skill = self.SkillManager.getSkillInstance(skillName=skillName)
+		print(data)
 
 		dialogTemplate = skill.getResource(f'dialogTemplate/{data["lang"]}.json')
 		if not dialogTemplate.exists():
 			dialogTemplate.touch(exist_ok=True)
-		dialogTemplate.write_text(json.dumps(data['dialogTemplate'], indent=2))
+		dialogTemplate.write_text(json.dumps(data['dialogTemplate'], indent='\t', ensure_ascii=False))
 
 		return jsonify(success=True, dialogTemplate=json.loads(dialogTemplate.read_text()) if dialogTemplate.exists() else '')
 
@@ -499,7 +500,7 @@ class SkillsApi(Api):
 		configTemplate = skill.getResource(f'config.json.template')
 		if not configTemplate.exists():
 			configTemplate.touch(exist_ok=True)
-		configTemplate.write_text(json.dumps(data['configTemplate'], indent=2))
+		configTemplate.write_text(json.dumps(data['configTemplate'], indent='\t', ensure_ascii=False))
 		self.ConfigManager.loadCheckAndUpdateSkillConfigurations(skillToLoad=skillName)
 
 		return jsonify(success=True, configTemplate=skill.getSkillConfigsTemplate())
@@ -545,7 +546,7 @@ class SkillsApi(Api):
 		talkFile = skill.getResource(f'talks/{data["lang"]}.json')
 		if not talkFile.exists():
 			talkFile.touch(exist_ok=True)
-		talkFile.write_text(json.dumps(data['talkFile'], indent=2), encoding='utf-8')
+		talkFile.write_text(json.dumps(data['talkFile'], indent='\t', ensure_ascii=False))
 
 		return jsonify(success=True, talkFile=talkFile.read_text() if talkFile.exists() else '')
 
@@ -585,7 +586,7 @@ class SkillsApi(Api):
 		installFile = skill.getResource(f'{skillName}.install')
 		if not installFile.exists():
 			installFile.touch(exist_ok=True)
-		installFile.write_text(json.dumps(data['installFile'], indent=2))
+		installFile.write_text(json.dumps(data['installFile'], indent='\t', ensure_ascii=False))
 
 		return jsonify(success=True, installFile=json.loads(installFile.read_text()) if installFile.exists() else '')
 
