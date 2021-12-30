@@ -82,7 +82,8 @@ class SkillsApi(Api):
 				'pl'           : request.form.get('pl', False),
 				'widgets'      : request.form.get('widgets', ''),
 				'nodes'        : request.form.get('nodes', ''),
-				'devices'      : request.form.get('devices', '')
+				'devices'      : request.form.get('devices', ''),
+				'icon'         : request.form.get('icon', 'fas fa-biohazard')
 			}
 
 			if not self.SkillManager.createNewSkill(newSkill):
