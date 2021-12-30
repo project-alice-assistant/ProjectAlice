@@ -1291,7 +1291,7 @@ class SkillManager(Manager):
 		try:
 			self.logInfo(f'Creating new skill "{skillDefinition["name"]}"')
 
-			skillName = skillDefinition['name'].capitalize()
+			skillName = skillDefinition['name'][0].upper() + skillDefinition['name'][1:]
 
 			localDirectory = self.getSkillDirectory(skillName=skillName)
 			if localDirectory.exists():
