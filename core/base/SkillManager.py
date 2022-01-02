@@ -174,7 +174,7 @@ class SkillManager(Manager):
 				break
 
 		updates = self.checkForSkillUpdates()
-		if updates:
+		if updates and self.ConfigManager.getAliceConfigByName('skillAutoUpdate'):
 			self.updateSkills(skills=updates, withSkillRestart=False)
 
 		self.initSkills()
@@ -201,7 +201,7 @@ class SkillManager(Manager):
 			return
 
 		updates = self.checkForSkillUpdates()
-		if updates:
+		if updates and self.ConfigManager.getAliceConfigByName('skillAutoUpdate'):
 			self.updateSkills(skills=updates)
 
 
@@ -1092,11 +1092,10 @@ class SkillManager(Manager):
 
 					self.logInfo(f'![yellow]({skillName}) - Version {installer["version"]} < {str(remoteVersion)} in {self.ConfigManager.getAliceConfigByName("skillsUpdateChannel")}')
 
-					if not self.ConfigManager.getAliceConfigByName('skillAutoUpdate'):
-						if skillName in self.allSkills:
-							self.allSkills[skillName].updateAvailable = True
-					else:
-						skillsToUpdate.append(skillName)
+					if skillName in self.allSkills:
+						self.allSkills[skillName].updateAvailable = True
+
+					skillsToUpdate.append(skillName)
 				else:
 					if self.isSkillUserModified(skillName=skillName) and self.ConfigManager.getAliceConfigByName('devMode'):
 						self.logInfo(f'![blue]({skillName}) - Version {installer["version"]} in {self.ConfigManager.getAliceConfigByName("skillsUpdateChannel")} - Locked for local changes!')
