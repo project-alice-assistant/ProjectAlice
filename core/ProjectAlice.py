@@ -39,7 +39,7 @@ class ProjectAlice(Singleton):
 	def __init__(self, restartHandler: callable):
 		Singleton.__init__(self, self.NAME)
 		self._logger = Logger(prepend='[Project Alice]')
-		self._logger.logInfo('Starting Alice main unit')
+		self._logger.logInfo(f'Starting Alice main unit (version {constants.VERSION})')
 		self._booted = False
 		self._isUpdating = False
 		self._shuttingDown = False

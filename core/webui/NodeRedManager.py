@@ -108,22 +108,36 @@ class NodeRedManager(Manager):
 		time.sleep(5)
 		self.Commons.runRootSystemCommand(['systemctl', 'stop', 'nodered'])
 		time.sleep(3)
-		config = Path(self.PACKAGE_PATH.parent, '.config.nodes.json')
-		data = json.loads(config.read_text())
-		for package in data.values():
-			keeper = self.DEFAULT_NODES_ACTIVE.get(package['name'], list())
-			for node in package['nodes'].values():
-				if node['name'] in keeper:
-					continue
-				node['enabled'] = False
 
-		config.write_text(json.dumps(data))
-		self.logInfo('Nodes configured')
-		self.logInfo('Applying Project Alice settings')
+		try:
+			config = Path(self.PACKAGE_PATH.parent, '.config.nodes.json')
 
-		self.Commons.runSystemCommand('npm install --prefix ~/.node-red @node-red-contrib-themes/midnight-red'.split(), shell=True)
-		shutil.copy(Path('system/node-red/settings.js'), Path(os.path.expanduser('~/.node-red'), 'settings.js'))
-		self.logInfo("All done, let's start all this")
+			if not config.exists():
+				data = json.loads(Path('system/node-red/settings.js').read_text())
+			else:
+				data = json.loads(config.read_text())
+
+			for package in data.values():
+				keeper = self.DEFAULT_NODES_ACTIVE.get(package['name'], list())
+				for node in package['nodes'].values():
+					if node['name'] in keeper:
+						continue
+					node['enabled'] = False
+
+			config.write_text(json.dumps(data))
+			self.logInfo('Nodes configured')
+		except Exception as e:
+			self.logError(f'Failed configuring nodes: {e}')
+
+		try:
+			self.logInfo('Applying Project Alice settings')
+
+			self.Commons.runSystemCommand('npm install @node-red-contrib-themes/midnight-red'.split(), shell=True)
+			shutil.copy(Path('system/node-red/settings.js'), Path(os.path.expanduser('~/.node-red'), 'settings.js'))
+			self.logInfo("All done, let's start all this")
+		except Exception as e:
+			self.logError(f'Failed applying settings: {e}')
+
 		self.WebUINotificationManager.newNotification(typ=UINotificationType.INFO, notification='installedNodeRed', key='nodered')
 
 
