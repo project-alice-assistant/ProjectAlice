@@ -45,7 +45,8 @@
 			"revert"  : "Revert",
 			"upload"  : "Upload",
 			"modify"  : "Modify",
-			"createPR": "Create PR"
+			"createPR": "Create PR",
+		  	"update"  : "Update"
 		}
 	},
 	"tooltips"     : {
