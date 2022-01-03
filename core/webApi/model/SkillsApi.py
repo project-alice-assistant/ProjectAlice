@@ -243,11 +243,13 @@ class SkillsApi(Api):
 		if skillName not in self.SkillManager.allSkills:
 			return self.skillNotFound()
 
+		updated = False
 		update = self.SkillManager.checkForSkillUpdates(skillToCheck=skillName)
 		if update:
 			self.SkillManager.updateSkills(skills=update)
+			updated = True
 
-		return jsonify(success=True)
+		return jsonify(success=True, updated=updated)
 
 
 	@route('/<skillName>/isDirty/', methods=['GET'])
