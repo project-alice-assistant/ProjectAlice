@@ -307,6 +307,7 @@ class SkillsApi(Api):
 
 		skill = self.SkillManager.getSkillInstance(skillName=skillName)
 		skill.repository.revert()
+		skill.repository.checkout(tag=self.SkillStoreManager.getSkillUpdateTag(skillName=skillName), force=True)
 		return self.checkUpdate(skillName)
 
 
