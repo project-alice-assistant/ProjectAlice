@@ -24,7 +24,7 @@ from flask import Response, jsonify, request
 from flask_classful import route
 from pathlib import Path
 
-from AliceGit.Exceptions import AlreadyGitRepository, GithubRepoNotFound, GithubUserNotFound, NotGitRepository
+from AliceGit.Exceptions import AlreadyGitRepository, GithubRepoNotFound, GithubUserNotFound, NotGitRepository, RemoteAlreadyExists
 from AliceGit.Git import Repository
 from AliceGit.Github import Github
 from core.util.Decorators import ApiAuthenticated
@@ -328,10 +328,22 @@ class SkillsApi(Api):
 			repository = Repository(directory=self.SkillManager.getSkillDirectory(skillName=skillName), init=True, raiseIfExisting=False)
 
 			auth = self.ConfigManager.githubAuth
-			github = Github(username=auth[0], token=auth[1], repositoryName=f'skill_{skillName}')
-			repository.remoteAdd(url=github.usersUrl, name='AliceSK')
-			repository.commit(message='Save through Alice web UI', autoAdd=True)
-			repository.push()
+			github = Github(username=auth[0], token=auth[1], repositoryName=f'skill_{skillName}', createRepository=True)
+			try:
+				repository.remoteAdd(url=github.usersUrl, name='AliceSK')
+			except RemoteAlreadyExists as e:
+				self.logInfo(e)
+				pass
+
+			if repository.isDirty():
+				if repository.commit(message='Save through Alice web UI', autoAdd=True):
+					self.logError('Commit failed!')
+			else:
+				self.logInfo('Nothing to commit')
+
+			out, err = repository.push()
+			self.logInfo(out)
+			self.logError(err)
 		except GithubUserNotFound:
 			return jsonify(success=False, message='The provided Github user is not existing')
 		except GithubRepoNotFound:
