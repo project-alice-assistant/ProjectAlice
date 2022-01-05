@@ -325,12 +325,11 @@ class SkillsApi(Api):
 
 		installFilePath = self.SkillManager.getSkillInstallFilePath(skillName=skillName)
 		try:
-			with suppress(AlreadyGitRepository):
-				repository = Repository(directory=self.SkillManager.getSkillDirectory(skillName=skillName), init=True)
+			repository = Repository(directory=self.SkillManager.getSkillDirectory(skillName=skillName), init=True, raiseIfExisting=False)
 
 			auth = self.ConfigManager.githubAuth
 			github = Github(username=auth[0], token=auth[1], repositoryName=f'skill_{skillName}')
-			repository.remoteAdd(url=github.url, name='master')
+			repository.remoteAdd(url=github.usersUrl, name='AliceSK')
 			repository.commit(message='Save through Alice web UI', autoAdd=True)
 			repository.push()
 		except GithubUserNotFound:
