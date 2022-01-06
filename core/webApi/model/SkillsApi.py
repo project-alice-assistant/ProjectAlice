@@ -383,14 +383,14 @@ class SkillsApi(Api):
 				               'name'    : 'Public',
 		                        'url'    : github.officialUrl,
 		                        'status' : github.officialRemote is not None,
-				                'commitsBehind' : github.officialRemote.getCommitCount()
+				                'commitsBehind' : github.officialRemote.getCommitCount() if github.officialRemote is not None else 0
 			               },
 		                   'Private': {
 			                   'name'  : 'Private',
 			                   # don't send the token unencrypted to the frontend!
 		                        'url'   : re.sub(r"https:\/\/.*:(.*)@github\.com\/", 'https://github.com/', github.usersUrl),
 		                        'status': github.usersRemote is not None,
-				                'commitsBehind' : github.usersRemote.getCommitCount()
+				                'commitsBehind' : github.usersRemote.getCommitCount() if github.usersRemote is not None else 0
 		                   }
 		               }
 		            )
