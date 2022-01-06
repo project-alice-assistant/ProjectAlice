@@ -375,25 +375,19 @@ class SkillsApi(Api):
 							 token=auth[1],
 							 repositoryName=f'skill_{skillName}')
 		except Exception as e:
-			return jsonify(success=False,message=e)
+			return jsonify(success=False, message=e)
 
-		return jsonify(success=True,
-		               result={
-			               'Public' : {
-				               'name'    : 'Public',
-		                        'url'    : github.officialUrl,
-		                        'status' : github.officialRemote is not None,
-				                'commitsBehind' : github.officialRemote.getCommitCount() if github.officialRemote is not None else 0
-			               },
-		                   'Private': {
-			                   'name'  : 'Private',
-			                   # don't send the token unencrypted to the frontend!
-		                        'url'   : re.sub(r"https:\/\/.*:(.*)@github\.com\/", 'https://github.com/', github.usersUrl),
-		                        'status': github.usersRemote is not None,
-				                'commitsBehind' : github.usersRemote.getCommitCount() if github.usersRemote is not None else 0
-		                   }
-		               }
-		            )
+		git = Repository(directory=skill.skillPath)
+
+		res = dict()
+		for (name, rem) in git.remote.items():
+			status = Github.getStatusForUrl(url=rem.url, silent=True) is not False
+			res[name] = {'name': 'Public' if name == 'project-alice-assistant' else 'Private',
+		                        'url': re.sub(r"https:\/\/.*:(.*)@github\.com\/", 'https://github.com/', rem.url),
+		                        'status': status,
+		                        'commitsBehind': rem.getCommitCount() if status else '-1' }
+
+		return jsonify(success=True, result=res)
 
 
 	@route('/<skillName>/getInstructions/', methods=['GET', 'POST'])
