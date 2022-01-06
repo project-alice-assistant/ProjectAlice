@@ -19,6 +19,7 @@
 
 
 import json
+import re
 from contextlib import suppress
 from flask import Response, jsonify, request
 from flask_classful import route
@@ -369,32 +370,27 @@ class SkillsApi(Api):
 			return self.skillNotFound()
 
 		try:
-			Github(useUrlInstead=skill.repository.url)
-			privateStatus = True
-		except:
-			privateStatus = False
-
-
-		explode = skill.repository.url.split('/')
-		explode[len(explode) - 2] = 'project-alice-assistant'
-		url = '/'.join(explode)
-		try:
-			Github(useUrlInstead=url)
-			publicStatus = True
-		except:
-			publicStatus = False
+			auth = self.ConfigManager.githubAuth
+			github = Github( username=auth[0],
+							 token=auth[1],
+							 repositoryName=f'skill_{skillName}')
+		except Exception as e:
+			return jsonify(success=False,message=e)
 
 		return jsonify(success=True,
 		               result={
 			               'Public' : {
-				               'name'  : 'Public',
-		                        'url'   : url,
-		                        'status': publicStatus
+				               'name'    : 'Public',
+		                        'url'    : github.officialUrl,
+		                        'status' : github.officialRemote is not None,
+				                'commitsBehind' : github.officialRemote.getCommitCount()
 			               },
 		                   'Private': {
 			                   'name'  : 'Private',
-		                        'url'   : skill.repository.url,
-		                        'status': privateStatus
+			                   # don't send the token unencrypted to the frontend!
+		                        'url'   : re.sub(r"https:\/\/.*:(.*)@github\.com\/", 'https://github.com/', github.usersUrl),
+		                        'status': github.usersRemote is not None,
+				                'commitsBehind' : github.usersRemote.getCommitCount()
 		                   }
 		               }
 		            )
