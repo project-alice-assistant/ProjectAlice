@@ -367,12 +367,12 @@ class LocationManager(Manager):
 					self.logInfo(f'falling back to location for device {device}')
 					loc = self.getLocation(locId=device.parentLocation)
 					self.logInfo(f'using {loc}')
-					return [loc]
-				else:
-					return list()
+					if loc:
+						return [loc]
+					else:
+						return list()
 		else:
 			return [self.getLocation(locationName=loc) for loc in slotValues]
-
 
 	@property
 	def locations(self) -> Dict[int, Location]:
