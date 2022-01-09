@@ -364,7 +364,10 @@ class LocationManager(Manager):
 			else:
 				device = self.DeviceManager.getDevice(uid=session.deviceUid)
 				if device:
-					return [self.getLocation(locId=device.parentLocation)]
+					self.logInfo(f'falling back to location for device {device}')
+					loc = self.getLocation(locId=device.parentLocation)
+					self.logInfo(f'using {loc}')
+					return [loc]
 				else:
 					return list()
 		else:
