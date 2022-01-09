@@ -18,14 +18,15 @@
 #  Last modified: 2021.07.28 at 16:07:59 CEST
 
 import json
-import paho.mqtt.client as mqtt
-import paho.mqtt.publish as publish
 import random
 import re
 import traceback
 import uuid
 from pathlib import Path
 from typing import List, Union
+
+import paho.mqtt.client as mqtt
+import paho.mqtt.publish as publish
 
 from core.base.model.Intent import Intent
 from core.base.model.Manager import Manager
@@ -625,7 +626,7 @@ class MqttManager(Manager):
 
 	def say(self, text, deviceUid: str = None, customData: dict = None, canBeEnqueued: bool = True):
 		"""
-		Initiate a notification session which is termniated once the text is spoken
+		Initiate a notification session which is terminated once the text is spoken
 		:param canBeEnqueued: bool
 		:param text: str Text to say
 		:param deviceUid: str Where to speak
