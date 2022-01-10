@@ -330,12 +330,15 @@ class MyHomeApi(Api):
 		file = None
 		try:
 			device: Device = self.DeviceManager.getDevice(deviceId=int(deviceId))
+			if not device:
+				raise Exception('Device not found - maybe not yet loaded (Alice Startup?)')
 			file = device.getDeviceIcon()
 			response = make_response(send_from_directory(file.parent, f'{file.name}'))
 			response.headers.add('Access-Control-Allow-Headers', 'x-etag')
 			response.headers.add('x-etag', device.etag)
 			return response
 		except Exception as e:
+			self.logError(e)
 			self.logError(f'Failed to retrieve icon for device id **{deviceId}** ({file if file else "error while getting filename"}) :{e}')  # NOSONAR
 			file = Path(self.Commons.rootDir(), 'core/webApi/static/images/missing-icon.png')
 			return send_from_directory(file.parent, f'{file.stem}{constants.PNG_EXT}')
