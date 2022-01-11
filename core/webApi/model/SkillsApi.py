@@ -25,7 +25,7 @@ from flask import Response, jsonify, request
 from flask_classful import route
 from pathlib import Path
 
-from AliceGit.Exceptions import AlreadyGitRepository, GithubRepoNotFound, GithubUserNotFound, NotGitRepository, RemoteAlreadyExists
+from AliceGit.Exceptions import AlreadyGitRepository, GithubRepoNotFound, GithubUserNotFound, NotGitRepository, RemoteAlreadyExists, GithubCreateFailed
 from AliceGit.Git import Repository
 from AliceGit.Github import Github
 from core.util.Decorators import ApiAuthenticated
@@ -337,7 +337,7 @@ class SkillsApi(Api):
 				pass
 
 			if repository.isDirty():
-				if repository.commit(message='Save through Alice web UI', autoAdd=True):
+				if not repository.commit(message='Save through Alice web UI', autoAdd=True):
 					self.logError('Commit failed!')
 			else:
 				self.logInfo('Nothing to commit')
@@ -350,6 +350,9 @@ class SkillsApi(Api):
 		except GithubRepoNotFound:
 			if not self.SkillManager.uploadSkillToGithub(skillName=skillName, skillDesc=json.loads(installFilePath.read_text())['desc']):
 				return jsonify(success=False, message='Failed uploading to Github')
+		except GithubCreateFailed as e:
+			self.logError(e)
+			return jsonify(success=False, message=str(e))
 		return jsonify(success=True)
 
 
@@ -392,11 +395,14 @@ class SkillsApi(Api):
 			status = Github.getStatusForUrl(url=rem.url, silent=True) is not False
 			res[name] = {'name': 'Public' if name == 'project-alice-assistant' else 'Private',
 		                        'url': re.sub(r"https:\/\/.*:(.*)@github\.com\/", 'https://github.com/', rem.url),
+			                    'user': name,
 		                        'status': status,
 		                        'commitsBehind': rem.getCommitCount() if status else '-1',
 		                        'commitsAhead': rem.getCommitCount(ahead=False) if status else '-1'  }
 
-		return jsonify(success=True, result=res)
+		changes = git.status().changes()
+
+		return jsonify(success=True, result=res, changes=changes)
 
 
 	@route('/<skillName>/getInstructions/', methods=['GET', 'POST'])
