@@ -370,14 +370,22 @@ class SkillsApi(Api):
 			return self.skillNotFound()
 
 		try:
-			auth = self.ConfigManager.githubAuth
-			github = Github( username=auth[0],
-							 token=auth[1],
-							 repositoryName=f'skill_{skillName}')
-		except Exception as e:
-			return jsonify(success=False, message=e)
+			git = Repository(directory=skill.skillPath)
+		except NotGitRepository as e:
+			return jsonify(success=False, noGit=True, message=str(e))
 
-		git = Repository(directory=skill.skillPath)
+		try:
+			auth = self.ConfigManager.githubAuth
+			github = Github(username=auth[0],
+							token=auth[1],
+							repositoryName=f'skill_{skillName}')
+		except Exception as e:
+			if len(git.remote) > 0:
+				return jsonify(success=False, message=str(e))
+			else:
+				return jsonify(success=False, noRemote=True, message=str(e))
+
+
 
 		res = dict()
 		for (name, rem) in git.remote.items():
@@ -385,7 +393,8 @@ class SkillsApi(Api):
 			res[name] = {'name': 'Public' if name == 'project-alice-assistant' else 'Private',
 		                        'url': re.sub(r"https:\/\/.*:(.*)@github\.com\/", 'https://github.com/', rem.url),
 		                        'status': status,
-		                        'commitsBehind': rem.getCommitCount() if status else '-1' }
+		                        'commitsBehind': rem.getCommitCount() if status else '-1',
+		                        'commitsAhead': rem.getCommitCount(ahead=False) if status else '-1'  }
 
 		return jsonify(success=True, result=res)
 
