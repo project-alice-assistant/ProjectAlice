@@ -212,6 +212,39 @@ class GoogleTts(Tts):
 						'neural': True
 					}
 				}
+			},
+			'pt-BR': {
+				'male'  : {
+					'pt-PT-Standard-B': {
+						'neural': False
+					},
+					'pt-PT-Standard-C': {
+						'neural': False
+					},
+					'pt-PT-Wavenet-B' : {
+						'neural': True
+					},
+					'pt-PT-Wavenet-C' : {
+						'neural': True
+					}
+				},
+				'female': {
+					'pt-BR-Standard-A': {
+						'neural': False
+					},
+					'pt-BR-Wavenet-A' : {
+						'neural': True
+					},
+					'pt-PT-Standard-A': {
+						'neural': False
+					},
+					'pt-PT-Standard-D': {
+						'neural': False
+					},
+					'pt-PT-Wavenet-A' : {
+						'neural': True
+					}
+				}
 			}
 		}
 
