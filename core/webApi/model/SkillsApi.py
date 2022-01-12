@@ -283,12 +283,13 @@ class SkillsApi(Api):
 
 		try:
 			auth = self.ConfigManager.githubAuth
-			Github(
-				username=auth[0],
-				token=auth[1],
-				repositoryName=f'skill_{skillName}',
-				createRepository=True
-			)
+			github = Github( username=auth[0],
+							token=auth[1],
+							repositoryName=f'skill_{skillName}',
+							createRepository=True )
+
+			repo = self.SkillManager.getSkillRepository(skillName=skillName)
+			repo.remoteAdd(url=github.usersUrl, name='AliceSK')
 		except GithubUserNotFound:
 			return jsonify(success=False, reason='Github user not existing')
 
