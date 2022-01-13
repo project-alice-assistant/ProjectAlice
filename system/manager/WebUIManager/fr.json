@@ -1,0 +1,207 @@
+{
+	"nav"          : {
+		"widgets"   : "widgets",
+		"skills"    : "skills",
+		"myhome"    : "ma maison",
+		"scenarios" : "scénarios",
+		"syslog"    : "syslog",
+		"alicewatch": "alicewatch",
+		"devmode"   : "devmode",
+		"admin"     : "admin",
+		"login"     : "login",
+		"logout"    : "logout",
+		"dialogView": "dialogue",
+		"telemetry" : "télémetrie"
+	},
+	"tours"        : {
+		"skills": {
+			"yourSkills": "Tes skills",
+			"data0"     : "Ca c'est un skill installé sur Project Alice.",
+			"data1"     : "Si ce skill a des options utilisateur, ce bouton apparaitra. Clique dessus pour configurer ton skill!",
+			"data2"     : "Tu peux arrêter n'importe quel skill qui n'est pas indispensable au fonctionnement d'Alice en utilisant ce bouton.",
+			"data3"     : "Tu peux aussi recharger un skill qui n'est pas critique pour Alice.",
+			"data4"     : "Tu as désactivé la mise à jour automatique des skills? Dans ce cas tu pourras quand même mettre à jour ton skill avec ce bouton qui n'est affiché que si une mise à jours est disponible.",
+			"data5"     : "Tu n'utilises plus ce skill? Alors supprime le! Les skills indispensables à Alice ne sont pas supprimable.",
+			"data6"     : "Ceci montre le status du skill.<br/><br/><div style=\"text-align: left;\">Vert: Tout en ordre<br/>Jaune: Le skill est désactivé<br/>Rouge: Le skill n'a pas pu démarrer.</div>",
+			"data7"     : "Tu ne sais pas quels commandes utiliser pour ce skill? Découvre le ici!",
+			"data8"     : "Trouves des infos sur le skill, qui l'a fait, la version etc.",
+			"data9"     : "Si le développeur a ajouté des instructions pour ce skill, tu les trouveras ici.",
+			"data10"    : "Tu as besoin d'autres skills? C'est ici que tu les trouveras!"
+		}
+	},
+	"skill"        : {
+		"intents"         : "intents",
+		"info"            : "info",
+		"instructions"    : "instructions",
+		"demoDesc"        : "C'est un skill de démo",
+		"demoInstructions": "C'est une démo"
+	},
+	"tooltips"     : {
+		"settings"         : "Configurations",
+		"start"            : "Démarrer",
+		"stop"             : "Arrêter",
+		"reload"           : "Recharger",
+		"update"           : "Mettre à jours",
+		"remove"           : "Enlever",
+		"shop"             : "Shop",
+		"download"         : "Télécharger",
+		"close"            : "Fermer",
+		"edit"             : "Éditer",
+		"theaterMode"      : "Mode cinéma",
+		"addWidgets"       : "Ajouter des widgets",
+		"removeWidgets"    : "Enlever des widgets",
+		"yes"              : "Oui",
+		"no"               : "Non",
+		"follow"           : "Suivre",
+		"lock"             : "Verrouiller",
+		"decreaseVerbosity": "Augmenter informations",
+		"increaseVerbosity": "Diminuer informations",
+		"save"             : "Sauvegarder",
+		"manageLocations"  : "Gérer les endroits",
+		"manageDevices"    : "Gérer les appareils",
+		"addLocations"     : "Ajouter endroits",
+		"removeLocations"  : "Supprimer endroits",
+		"paintFloors"      : "Peindre les sols",
+		"buildMode"        : "Construire",
+		"manageFurniture"  : "Gérer les meubles",
+		"addDevice"        : "Ajouter nouvel appareil",
+		"removeDevice"     : "Supprimer appareil",
+		"linkDevice"       : "Lier un appareil à plusieures endroits",
+		"unlinkDevice"     : "Délier appareil",
+		"compatible"       : "Compatible",
+		"notCompatible"    : "Pas compatible"
+	},
+	"notifications": {
+		"errors"   : {
+			"uiError"              : "Désolée, quelque chose n'a pas fonctionné",
+			"unexpectedServerError": "Erreur serveur innatendue",
+			"noDeviceToDeviceLink" : "Impossible de lier un appareil à un autre",
+			"deviceUnlinkFailed"   : "Déliage à échoué",
+			"deviceLinked"         : "Liaison échouée",
+			"somethingWentWrong"   : "Quelque chose à merdé, controle tes logs",
+			"deviceSavingFailed"   : "Sauvegarde d'appareil échouée",
+			"cannotLinkDevice"     : "Cet appareil ne peux pas être lié",
+			"skillDeleteFailed"    : "Suppression de skill échoué",
+			"noLocationEmptyName"  : "Le nom de l'endroit ne peux pas être vide",
+			"widgetSavingFailed"   : "Sauvegarde du widget échouée"
+		},
+		"successes": {
+			"deviceUnlinked"               : "L'appereil a été délié",
+			"deviceDeleted"                : "Appareil supprimé",
+			"deviceLinked"                 : "Appareil lié",
+			"pageDeleted"                  : "La page a été supprimée",
+			"deviceSaved"                  : "Appareil sauvegardé",
+			"deviceAlreadyLinkedToLocation": "Cet appareil est déjà lié à cet endroit",
+			"skillDeleted"                 : "Le skill a été supprimé",
+			"reloadTriggered"              : "Rechargement demandé",
+			"widgetSaved"                  : "Widget sauvegardé"
+		},
+		"info"     : {
+			"deviceNotLinkedToLocation": "Cet appareil n'est pas lié à cet endroit",
+			"pleasePlugDevice"         : "Enclanche l'appareil que tu veux pairer"
+		}
+	},
+	"buttons"      : {
+		"cancel"        : "Annulé",
+		"confirm"       : "Confirmer",
+		"ok"            : "Ok",
+		"login"         : "Login",
+		"send"          : "Envoyer",
+		"create"        : "Créer",
+		"reset"         : "Réinitialiser",
+		"uploadToGithub": "Envoyer sur Github",
+		"checkOnGithub" : "Voir sur Github",
+		"minimize"      : "Minimiser",
+		"search"        : "Chercher"
+	},
+	"labels"       : {
+		"searchSetting"          : "Options de recherche",
+		"keyword"                : "Mot clef",
+		"sendCommand"            : "Envoyer commande linux",
+		"skillName"              : "Nom du skill",
+		"skillSpeakableName"     : "Nom du skill prononçable",
+		"skillDescription"       : "Description du skill",
+		"skillCategory"          : "Categorie du skill",
+		"skillLanguages"         : "Langues supportée",
+		"skillInstructions"      : "Instructions",
+		"skillPipRequirements"   : "Dépendances PIP",
+		"skillSystemRequirements": "Dépendances système",
+		"skillWidgets"           : "Widgets",
+		"skillScenarioNodes"     : "Nodes pour scénarios",
+		"skillDevices"           : "Appareils",
+		"skillOnline"            : "Ce skill nécessite internet",
+		"skillArbitrary"         : "Ce skill doit pouvoir capturer des mots non entrainés",
+		"skillRequiredSkills"    : "Ce skill dépend des ces skills",
+		"skillConflictingSkills" : "Ce skill n'est pas compatible avec ces skills",
+		"skillRequiredManagers"  : "Ce skill dépend de ces managers"
+	},
+	"devMode"      : {
+		"listExplain"       : "Entre une liste séparée par des virgules, exemple 'foo, bar, baz'",
+		"skillAlreadyExists": "Ce skill existe déjà"
+	},
+	"misc"         : {
+		"english": "Anglais",
+		"german" : "Allemand",
+		"french" : "Français",
+		"italian": "Italien",
+		"polish" : "Polonais"
+	},
+	"dialogs"      : {
+		"titles"      : {
+			"addWidgets"          : "Ajout de widget",
+			"widgetOptions"       : "Options de widgets",
+			"skillSettings"       : "Configuration de skill",
+			"confirmSkillDeletion": "Es-tu sûr de vouloir supprimer ce skill?",
+			"enterLocationName"   : "Donne un nom à ce nouvel endroit",
+			"enterNewLocationName": "Entre le nouveau nom de l'endroit",
+			"locationSetting"     : "Configuration endroit",
+			"addDevice"           : "Ajout d'appareil",
+			"newIcon"             : "Nouvelle icone",
+			"deviceSettings"      : "Configuration appareil",
+			"generalSettings"     : "Configuration générale",
+			"deviceLinksSettings" : "Configuration liens",
+			"linkTo"              : "Lien vers"
+		},
+		"bodies"      : {
+			"clickToAddLocation"               : "Et clique sur OK. Clique sur le plan de sol là où tu veux ajouter l'endroit pour créer un endroit de taille définie. Tu peux aussi cliquer et tirer pour créer un endroit de taille et forme différente!",
+			"locationNameOrSynonymAlreadyExist": "Il y a déjà un endroit avec ce nom ou ce synonyme.",
+			"chooseDevice"                     : "Choisis un appareil a ajouter.",
+			"noDevices"                        : "Il n'y a pas d'appareil disponible a ajouter. Installes de nouveaux skills pour plus d'appareil!",
+			"enterNewIcon"                     : "Entres la nouvelle icone Font Awesome, avec le préfix.<br>Tu peux les trouver sur: <a href=\"https://fontawesome.com/icons?d=gallery&m=free\" target=\"_blank\" class=\"clickable\">Font Awesome</a>",
+			"confirmPageDelete"                : "Tu veux vraiment supprimer cette page?",
+			"cannotDeleteDefaultPage"          : "Tu ne peux pas supprimer la page par défaut."
+		},
+		"labels"      : {
+			"displayTitle"      : "Montrer le titre",
+			"displayBorders"    : "Montrer les bordures",
+			"rotation"          : "Rotation",
+			"backgroundColor"   : "Couleur de fond",
+			"backgroundOpacity" : "Opacité du fond",
+			"fontSize"          : "Taille de texte",
+			"fontColor"         : "Couleur du texte",
+			"username"          : "Nom d'utilisateur",
+			"pinCode"           : "Code pin",
+			"rememberMe"        : "Se rappeler",
+			"yes"               : "oui",
+			"no"                : "non",
+			"cancel"            : "annuler",
+			"addLocationSynonym": "Ajouter un synonyme",
+			"faExample"         : "Example: fas fa-biohazard",
+			"heartbeatRate"     : "Fréquence cardiaque en secondes",
+			"deviceDisplayName" : "Nom de l'appareil"
+		},
+		"placeholders": {
+			"typeAndPressEnter": "Entre le nom et tape Entrée"
+		}
+	},
+	"utilities"    : {
+		"restart"     : "Relancer",
+		"reboot"      : "Redémarrer",
+		"train"       : "Entrainer l'assistant",
+		"update"      : "Mettre à jours",
+		"addUser"     : "Ajouter utilisateur",
+		"addWakeword" : "Ajouter wakeword",
+		"tuneWakeword": "Réglage wakeword",
+		"wipe"        : "Tout supprimer"
+	}
+}

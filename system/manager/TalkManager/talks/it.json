@@ -1,0 +1,86 @@
+{
+	"noAccess": {
+		"default": [
+			"Mi dispiace, non posso, non hai abbastanza privilegi per farlo",
+			"Non è possibile, il tuo livello di accesso è troppo basso"
+		],
+		"short":[
+			"Nessun accesso"
+		]
+	},
+	"unknownUser": {
+	  "default": [
+		"Mi dispiace, ma non so chi sei",
+		"Mi dispiace, non posso, non ti conosco",
+		"Dovresti chiamarmi per nome, così saprei chi sei"
+	  ],
+	  "short": [
+		"Non ti conosco"
+	  ]
+	},
+	"notUnderstood": {
+		"default": [
+			"Mi dispiace ma non sono sicuro di capire cosa vuoi",
+			"Non ho capito cosa vuoi",
+			"Come? puoi ripetere?",
+			"Come??"
+		],
+		"short": [
+			"Come?"
+		]
+	},
+	"notUnderstoodEnd": {
+		"default": [
+			"Mi dispiace, ma non ti capisco",
+			"Mi disipace, non capisco cosa vuoi",
+			"Ok, ferma, non ho capito la richiesta",
+			"Ok, ferma, proprio non capisco"
+		],
+		"short": [
+			"Ok, ferma, proprio non capisco"
+		]
+	},
+  "youAreWelcome": {
+	"default": [
+	  "Prego!",
+	  "Ma figurati!",
+	  "nessun problema, quando vuoi!"
+	]
+  },
+	"error": {
+		"default": [
+			"Qualcosa è andato storto, controlla i miei log"
+		]
+	},
+	"newDeviceAdditionFailed": {
+		"default": [
+			"Mi disipiace, c'è stato un problema nell'aggiungere il nuovo dispositivo"
+		]
+	},
+	"newDeviceAdditionSuccess": {
+		"default": [
+			"Il nuovo dispositivo è stato trovato e aggiunto con successo!"
+		]
+	},
+	"maxOneAlicePerRoom": {
+		"default": [
+			"Mi dispiace ma non puoi avere più di una Alice satellite per stanza",
+			"Mi disipace molto, ma posso solo avere una Alice satellite per stanza"
+		]
+	},
+	"wakewordCaptured": [
+		"Ho registrato ed estrapolato la parola di attivazione, controlliamola",
+		"Ok, registrato e tagliato, te la faccio sentire",
+		"Cel'ho! l'ho aggiustata un pò, ascoltiamola"
+	],
+	"isWakewordSampleOk": [
+		"Pensi che vada bene? Troppo tagliata, o troppo poco?"
+	],
+	"offline": [
+		"Mi dispiace, ma non posso farlo se sono offline"
+	],
+	"notification": [
+		"si?",
+		"pronto?"
+	]
+}
