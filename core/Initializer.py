@@ -37,6 +37,7 @@ ASOUND = '/etc/asound.conf'
 TEMP = Path('/tmp/service')
 ALLOWED_LANGUAGES = {'en', 'de', 'fr', 'it', 'pt', 'pl'}
 FALLBACK_ASR = 'coqui'
+PYTHON = 'python3.7'
 
 
 class InitDict(dict):
@@ -323,13 +324,13 @@ class PreInit(object):
 		if not Path('venv').exists():
 			self._logger.logInfo('Not running with venv, I need to create it')
 			subprocess.run(['sudo', 'apt-get', 'install', 'python3-dev', 'python3-pip', 'python3-venv', 'python3-wheel', '-y'])
-			subprocess.run(['python3.7', '-m', 'venv', 'venv'])
+			subprocess.run([PYTHON, '-m', 'venv', 'venv'])
 			self.updateVenv()
-			self._logger.logInfo('Installed virtual environement, restarting...')
+			self._logger.logInfo('Installed virtual environment, restarting...')
 			return False
 		elif not self.isVenv():
 			self.updateVenv()
-			self._logger.logWarning('Restarting to run using virtual environement: "./venv/bin/python main.py"')
+			self._logger.logWarning('Restarting to run using virtual environment: "./venv/bin/python main.py"')
 			return False
 
 		return True
@@ -590,7 +591,7 @@ class Initializer(object):
 				subprocess.run(['sudo', 'systemctl', 'disable', 'hermesledcontrol'])
 				subprocess.run(['sudo', 'rm', hlcServiceFilePath])
 
-			subprocess.run(['python3.7', '-m', 'venv', f'{str(hlcDir)}/venv'])
+			subprocess.run([PYTHON, '-m', 'venv', f'{str(hlcDir)}/venv'])
 			subprocess.run([f'{str(hlcDir)}/venv/bin/pip', 'install', '-r', f'{str(hlcDir)}/requirements.txt', '--no-cache-dir'])
 
 			import yaml
