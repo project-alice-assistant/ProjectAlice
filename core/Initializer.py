@@ -1,3 +1,6 @@
+import shutil
+
+
 VERSION = 1.24
 
 #  Copyright (c) 2021
@@ -578,18 +581,23 @@ class Initializer(object):
 		if initConfs['useHLC']:
 			self._logger.logInfo("*** Taking care of HLC.")
 
-			if not hlcDir.exists():
-				#todo: replace with AliceGit maybe?
-				subprocess.run(['git', 'clone', 'https://github.com/project-alice-assistant/hermesLedControl.git', str(hlcDir)])
-			else:
-				subprocess.run(['git', '-C', hlcDir, 'stash'])
-				subprocess.run(['git', '-C', hlcDir, 'pull'])
-				subprocess.run(['git', '-C', hlcDir, 'stash', 'clear'])
+			from AliceGit.Git import NotGitRepository, PathNotFoundException, Repository
+
+			url = 'https://github.com/project-alice-assistant/hermesLedControl.git'
+			try:
+				repository = Repository(directory=hlcDir)
+			except PathNotFoundException:
+				repository = Repository.clone(url=url, directory=hlcDir, makeDir=True)
+			except NotGitRepository:
+				shutil.rmtree(hlcDir, ignore_errors=True)
+				repository = Repository.clone(url=url, directory=hlcDir, makeDir=True)
+
+			repository.checkout(branch='master')
+			repository.pull()
 
 			if hlcServiceFilePath.exists():
 				subprocess.run(['sudo', 'systemctl', 'stop', 'hermesledcontrol'])
 				subprocess.run(['sudo', 'systemctl', 'disable', 'hermesledcontrol'])
-				subprocess.run(['sudo', 'rm', hlcServiceFilePath])
 
 			subprocess.run([PYTHON, '-m', 'venv', f'{str(hlcDir)}/venv'])
 			subprocess.run([f'{str(hlcDir)}/venv/bin/pip', 'install', '-r', f'{str(hlcDir)}/requirements.txt', '--no-cache-dir'])
