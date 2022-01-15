@@ -543,16 +543,16 @@ class SkillManager(Manager):
 
 			try:
 				installFilePath = self.getSkillInstallFilePath(skillName=skillName)
-				if not installFilePath.exists():
-					if skillName in self.NEEDED_SKILLS:
-						self.logFatal(f'Cannot find skill install file for skill **{skillName}**. The skill is required to continue')
-						return
-					else:
-						self.logWarning(f'Cannot find skill install file for skill **{skillName}**, skipping.')
-						continue
+				installFile = json.loads(installFilePath.read_text())
+			except Exception as e:
+				if skillName in self.NEEDED_SKILLS:
+					self.logFatal(f'Cannot load skill install file for skill **{skillName}**. The skill is required to continue: {e}')
+					return
 				else:
-					installFile = json.loads(installFilePath.read_text())
+					self.logWarning(f'Cannot load skill install file for skill **{skillName}**, skipping: {e}')
+					continue
 
+			try:
 				skillActiveState = self.isSkillActive(skillName=skillName)
 				if not skillActiveState:
 					if skillName in self.NEEDED_SKILLS:
