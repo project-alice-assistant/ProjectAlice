@@ -20,16 +20,17 @@
 
 import importlib
 import json
-import requests
 import shutil
 import traceback
 from contextlib import suppress
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Union
 
+import requests
 from AliceGit import Exceptions as GitErrors
 from AliceGit.Exceptions import NotGitRepository, PathNotFoundException
 from AliceGit.Git import Repository
+
 from core.ProjectAliceExceptions import AccessLevelTooLow, GithubNotFound, SkillInstanceFailed, SkillNotConditionCompliant, SkillStartDelayed, SkillStartingFailed
 from core.base.SuperManager import SuperManager
 from core.base.model import Intent
@@ -540,18 +541,18 @@ class SkillManager(Manager):
 			self._failedSkills.pop(skillName, None)
 			self._deactivatedSkills.pop(skillName, None)
 
-			installFilePath = self.getSkillInstallFilePath(skillName=skillName)
-			if not installFilePath.exists():
-				if skillName in self.NEEDED_SKILLS:
-					self.logFatal(f'Cannot find skill install file for skill **{skillName}**. The skill is required to continue')
-					return
-				else:
-					self.logWarning(f'Cannot find skill install file for skill **{skillName}**, skipping.')
-					continue
-			else:
-				installFile = json.loads(installFilePath.read_text())
-
 			try:
+				installFilePath = self.getSkillInstallFilePath(skillName=skillName)
+				if not installFilePath.exists():
+					if skillName in self.NEEDED_SKILLS:
+						self.logFatal(f'Cannot find skill install file for skill **{skillName}**. The skill is required to continue')
+						return
+					else:
+						self.logWarning(f'Cannot find skill install file for skill **{skillName}**, skipping.')
+						continue
+				else:
+					installFile = json.loads(installFilePath.read_text())
+
 				skillActiveState = self.isSkillActive(skillName=skillName)
 				if not skillActiveState:
 					if skillName in self.NEEDED_SKILLS:
