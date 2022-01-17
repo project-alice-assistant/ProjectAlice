@@ -20,6 +20,7 @@
 from __future__ import annotations
 
 import json
+import os.path
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Generator, List
@@ -114,7 +115,7 @@ class DialogTemplate(object):
 				for utterance in intent.get('utterances', list()):
 					self.myIntents[intentName].addUtterance(utterance)
 		except Exception as e:
-			self.logger.logWarning(f'Failed loading utterance extender for skill {extender.parent.parent}: {e}')
+			self.logger.logWarning(f'Failed loading utterance extender for skill **{str(extender.parent.parent).split(os.path.sep)[-1]}**: {e}')
 
 
 	def addUtterance(self, text: str, intentName: str):
