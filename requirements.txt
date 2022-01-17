@@ -1,4 +1,4 @@
-numpy~=1.21.4
+numpy~=1.22.1
 paho-mqtt~=1.6.1
 googletrans~=3.0.0
 langdetect~=1.0.9
