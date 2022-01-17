@@ -26,6 +26,7 @@ from typing import Generator, List
 
 from core.dialog.model.DialogTemplateIntent import DialogTemplateIntent
 from core.dialog.model.DialogTemplateSlotType import DialogTemplateSlotType
+from core.util.model.Logger import Logger
 
 
 @dataclass
@@ -36,6 +37,7 @@ class DialogTemplate(object):
 
 	mySlotTypes: dict = field(default_factory=dict)
 	myIntents: dict = field(default_factory=dict)
+	logger: Logger = Logger(prepend='[DialogTemplate]')
 
 	# TODO remove me
 	icon: str = ''
@@ -105,11 +107,14 @@ class DialogTemplate(object):
 
 
 	def addUtterancesExtender(self, extender: Path):
-		data = json.loads(extender.read_text())
+		try:
+			data = json.loads(extender.read_text())
 
-		for intentName, intent in data.get('intents', dict()).items():
-			for utterance in intent.get('utterances', list()):
-				self.myIntents[intentName].addUtterance(utterance)
+			for intentName, intent in data.get('intents', dict()).items():
+				for utterance in intent.get('utterances', list()):
+					self.myIntents[intentName].addUtterance(utterance)
+		except Exception as e:
+			self.logger.logWarning(f'Failed loading utterance extender for skill {extender.parent.parent}: {e}')
 
 
 	def addUtterance(self, text: str, intentName: str):

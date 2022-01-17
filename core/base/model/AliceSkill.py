@@ -28,10 +28,10 @@ from pathlib import Path
 from typing import Any, Dict, Iterable, List, Optional, Union
 
 import flask
+from AliceGit.Git import Repository
 from markdown import markdown
 from paho.mqtt import client as MQTTClient
 
-from AliceGit.Git import Repository
 from core.ProjectAliceExceptions import AccessLevelTooLow, SkillInstanceFailed
 from core.base.model.Intent import Intent
 from core.base.model.ProjectAliceObject import ProjectAliceObject
@@ -141,9 +141,9 @@ class AliceSkill(ProjectAliceObject):
 		"""
 		lang = language if language is not None else self.activeLanguage()
 		file = self.getResource(f'dialogTemplate/{lang}.ext.json')
+		data: Dict = json.loads(file.read_text()) if file.exists() else dict()
 		file.touch()
 
-		data: Dict = json.loads(file.read_text())
 		data.setdefault('intents', dict())
 		data['intents'].setdefault(intent, dict())
 		data['intents'][intent].setdefault('utterances', list())
