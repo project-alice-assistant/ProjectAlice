@@ -20,8 +20,9 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from paho.mqtt.client import MQTTMessage
 from typing import Any, Optional
+
+from paho.mqtt.client import MQTTMessage
 
 from core.base.SuperManager import SuperManager
 from core.base.model import Intent
@@ -75,7 +76,9 @@ class DialogSession(object):
 		self.payload = commonsManager.payload(message)
 		self.slots = commonsManager.parseSlots(message)
 		self.slotsAsObjects = commonsManager.parseSlotsToObjects(message)
-		self.customData = commonsManager.parseCustomData(message)
+
+		customData = commonsManager.parseCustomData(message)
+		self.customData = {**self.customData, **customData}
 
 
 	def update(self, message: MQTTMessage):
@@ -94,10 +97,8 @@ class DialogSession(object):
 		self.text = self.payload.get('text', '')
 		self.input = self.payload.get('input', '')
 
-		if self.customData:
-			self.customData.update(commonsManager.parseCustomData(message))
-		else:
-			self.customData = dict()
+		customData = commonsManager.parseCustomData(message)
+		self.customData = {**self.customData, **customData}
 
 		deviceManager = SuperManager.getInstance().DeviceManager
 		if deviceManager:

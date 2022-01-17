@@ -660,7 +660,7 @@ class MqttManager(Manager):
 				if isinstance(customData, dict):
 					customData = json.dumps(customData)
 				elif not isinstance(customData, str):
-					self.logWarning(f'Ask was provided customdata of unsupported type: {customData}')
+					self.logWarning(f'Say was provided custom data of unsupported type: {customData}')
 					customData = ''
 
 			self._mqttClient.publish(constants.TOPIC_START_SESSION, json.dumps({
@@ -765,23 +765,20 @@ class MqttManager(Manager):
 		jsonDict = {
 			'sessionId'              : sessionId,
 			'text'                   : text,
-			'sendIntentNotRecognized': True,
+			'sendIntentNotRecognized': True
 		}
 
 		session = self.DialogManager.getSession(sessionId=sessionId)
 
 		if customData is not None:
 			if isinstance(customData, dict):
-				jsonDict['customData'] = json.dumps(customData)
 				session.customData = {**session.customData, **customData}
 			elif isinstance(customData, str):
-				jsonDict['customData'] = customData
 				session.customData = {**session.customData, **json.loads(customData)}
 			else:
 				self.logWarning(f'ContinueDialog was provided custom data of unsupported type: {customData}')
-				jsonDict['customData'] = session.customData
-		else:
-			jsonDict['customData'] = session.customData
+
+		jsonDict['customData'] = session.customData
 
 		intentList = list()
 		if intentFilter:
