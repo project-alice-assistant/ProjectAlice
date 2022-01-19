@@ -262,8 +262,8 @@ class ProjectAliceObject(object):
 		self._logger.doLog(function='info', msg=self.decorateLogs(msg), printStack=False, plural=plural)
 
 
-	def logError(self, msg: str, plural: Union[list, str] = None):
-		self._logger.doLog(function='error', msg=self.decorateLogs(msg), plural=plural)
+	def logError(self, msg: str, plural: Union[list, str] = None, printStack: bool = True):
+		self._logger.doLog(function='error', msg=self.decorateLogs(msg), plural=plural, printStack=printStack)
 
 
 	def logDebug(self, msg: str, plural: Union[list, str] = None):

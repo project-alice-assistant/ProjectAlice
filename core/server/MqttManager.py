@@ -18,15 +18,14 @@
 #  Last modified: 2021.07.28 at 16:07:59 CEST
 
 import json
+import paho.mqtt.client as mqtt
+import paho.mqtt.publish as publish
 import random
 import re
 import traceback
 import uuid
 from pathlib import Path
 from typing import List, Union
-
-import paho.mqtt.client as mqtt
-import paho.mqtt.publish as publish
 
 from core.base.model.Intent import Intent
 from core.base.model.Manager import Manager
@@ -90,6 +89,11 @@ class MqttManager(Manager):
 		self._mqttClient.message_callback_add(constants.TOPIC_TOGGLE_FEEDBACK_OFF, self.toggleFeedback)
 		self._mqttClient.message_callback_add(constants.TOPIC_NLU_INTENT_NOT_RECOGNIZED, self.nluIntentNotRecognized)
 		self._mqttClient.message_callback_add(constants.TOPIC_NLU_ERROR, self.nluError)
+		self._mqttClient.message_callback_add(constants.TOPIC_NLU_TRAINER_READY, self.nluOffshoreTrainerReady)
+		self._mqttClient.message_callback_add(constants.TOPIC_NLU_TRAINER_STOPPED, self.nluOffshoreTrainerStopped)
+		self._mqttClient.message_callback_add(constants.TOPIC_NLU_TRAINER_TRAINING_RESULT, self.nluOffshoreTrainerResult)
+		self._mqttClient.message_callback_add(constants.TOPIC_NLU_TRAINER_REFUSE_FAILED, self.nluOffshoreTrainerRefusedFailed)
+		self._mqttClient.message_callback_add(constants.TOPIC_NLU_TRAINER_TRAINING, self.nluOffshoreTrainerTraining)
 
 		self.connect()
 
@@ -142,6 +146,11 @@ class MqttManager(Manager):
 			(constants.TOPIC_NLU_INTENT_NOT_RECOGNIZED, 0),
 			(constants.TOPIC_START_SESSION, 0),
 			(constants.TOPIC_NLU_ERROR, 0),
+			(constants.TOPIC_NLU_TRAINER_TRAINING_RESULT, 0),
+			(constants.TOPIC_NLU_TRAINER_READY, 0),
+			(constants.TOPIC_NLU_TRAINER_STOPPED, 0),
+			(constants.TOPIC_NLU_TRAINER_REFUSE_FAILED, 0),
+			(constants.TOPIC_NLU_TRAINER_TRAINING, 0),
 			(self.TOPIC_AUDIO_FRAME, 0)
 		]
 
@@ -563,6 +572,30 @@ class MqttManager(Manager):
 			deviceUid=self.Commons.parseDeviceUid(msg),
 			payload=self.Commons.payload(msg)
 		)
+
+
+	def nluOffshoreTrainerReady(self, _client, _data, _msg: mqtt.MQTTMessage):
+		self.NluManager.offshoreTrainerReady()
+
+
+	def nluOffshoreTrainerStopped(self, _client, _data, _msg: mqtt.MQTTMessage):
+		self.NluManager.offshoreTrainerStopped()
+
+
+	def nluOffshoreTrainerStatus(self, _client, _data, _msg: mqtt.MQTTMessage):
+		self.NluManager.offshoreTrainerStopped()
+
+
+	def nluOffshoreTrainerTraining(self, _client, _data, _msg: mqtt.MQTTMessage):
+		self.NluManager.offshoreTrainerTraining()
+
+
+	def nluOffshoreTrainerResult(self, _client, _data, msg: mqtt.MQTTMessage):
+		self.NluManager.offshoreTrainerResult(msg)
+
+
+	def nluOffshoreTrainerRefusedFailed(self, _client, _data, msg: mqtt.MQTTMessage):
+		self.NluManager.offshoreTrainerRefusedFailed(msg.payload)
 
 
 	def onVADUp(self, _client, _data, msg: mqtt.MQTTMessage):

@@ -132,7 +132,6 @@ class SnipsNlu(NluEngine):
 
 		self.logInfo('Training Snips NLU')
 		try:
-			self.NluManager.training = True
 			dataset = {
 				'entities': dict(),
 				'intents' : dict(),
@@ -144,18 +143,19 @@ class SnipsNlu(NluEngine):
 				dataset['entities'].update(trainingData['entities'])
 				dataset['intents'].update(trainingData['intents'])
 
-			datasetFile = Path('/tmp/snipsNluDataset.json')
-
-			with datasetFile.open('w') as fp:
-				json.dump(dataset, fp, ensure_ascii=False, indent='\t')
-
 			self.logInfo('Generated dataset for training')
-
 			# Now that we have generated the dataset, let's train in the background if we are already booted, else do it directly
-			if self.ProjectAlice.isBooted:
-				self.ThreadManager.newThread(name='NLUTraining', target=self.nluTrainingThread, args=[datasetFile])
+			if self.ConfigManager.getAliceConfigByName('delegateNluTraining'):
+				self.NluManager.startOffshoreTraining(dataset)
 			else:
-				self.nluTrainingThread(datasetFile)
+				datasetFile = Path('/tmp/snipsNluDataset.json')
+				with datasetFile.open('w') as fp:
+					json.dump(dataset, fp, ensure_ascii=False, indent='\t')
+
+				if self.ProjectAlice.isBooted:
+					self.ThreadManager.newThread(name='NLUTraining', target=self.nluTrainingThread, args=[datasetFile])
+				else:
+					self.nluTrainingThread(datasetFile)
 		except:
 			self.NluManager.training = False
 
@@ -164,6 +164,7 @@ class SnipsNlu(NluEngine):
 		try:
 			with Stopwatch() as stopWatch:
 				self.logInfo('Begin training...')
+				self.NluManager.training = True
 				self._timer = self.ThreadManager.newTimer(interval=0.25, func=self.trainingStatus)
 
 				tempTrainingData = Path('/tmp/snipsNLU')
@@ -182,28 +183,11 @@ class SnipsNlu(NluEngine):
 
 					if not assistantPath.exists():
 						self.logFatal('No NLU engine found, cannot start')
+						return
 
 					self._timer.cancel()
 					return
-
-				if assistantPath.exists():
-					shutil.rmtree(assistantPath)
-
-				shutil.move(tempTrainingData, assistantPath)
-
-			self._timer.cancel()
-			self.MqttManager.publish(constants.TOPIC_NLU_TRAINING_STATUS, payload={'status': 'done'})
-			self.WebUINotificationManager.newNotification(
-				typ=UINotificationType.INFO,
-				notification='nluTrainingDone',
-				key='nluTraining'
-			)
-
-			self.ThreadManager.getEvent('TrainAssistant').clear()
-			self.logInfo(f'Snips NLU trained in {stopWatch} seconds')
-
-			self.broadcast(method=constants.EVENT_NLU_TRAINED, exceptions=[constants.DUMMY], propagateToSkills=True)
-			self.NluManager.restartEngine()
+			self.trainingFinished(trainedData=tempTrainingData, timer=stopWatch)
 		except:
 			self.trainingFailed()
 		finally:
@@ -237,24 +221,22 @@ class SnipsNlu(NluEngine):
 		}
 
 
-	def trainingFailed(self):
-		self.logError('Snips NLU training failed')
-		self.MqttManager.publish(constants.TOPIC_NLU_TRAINING_STATUS, payload={'status': 'failed'})
+	def trainingFinished(self, trainedData: Path, timer: float):
+		assistantPath = Path(self.Commons.rootDir(), f'trained/assistants/{self.LanguageManager.activeLanguage}/nlu_engine')
 
+		if assistantPath.exists():
+			shutil.rmtree(assistantPath)
+
+		shutil.move(trainedData, assistantPath)
+		self.MqttManager.publish(constants.TOPIC_NLU_TRAINING_STATUS, payload={'status': 'done'})
 		self.WebUINotificationManager.newNotification(
-			typ=UINotificationType.ERROR,
-			notification='nluTrainingFailed',
+			typ=UINotificationType.INFO,
+			notification='nluTrainingDone',
 			key='nluTraining'
 		)
 
+		self.ThreadManager.getEvent('TrainAssistant').clear()
+		self.logInfo(f'Snips NLU trained in {timer} seconds')
 
-	def getLanguage(self) -> str:
-		"""
-		Get the language that should be used for the training.
-		Currently, only portuguese needs a special handling
-		:return:
-		"""
-		lang = self.LanguageManager.activeLanguage
-		if lang == 'pt':
-			lang = lang + '_' + self.LanguageManager.activeCountryCode.lower()
-		return lang
+		self.broadcast(method=constants.EVENT_NLU_TRAINED, exceptions=[constants.DUMMY], propagateToSkills=True)
+		self.NluManager.restartEngine()

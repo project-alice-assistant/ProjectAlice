@@ -16,12 +16,17 @@
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>
 #
 #  Last modified: 2021.04.13 at 12:56:47 CEST
-
+import hashlib
 import shutil
+import threading
+from paho.mqtt import client as mqtt
 from pathlib import Path
+from typing import Optional
 
 from core.base.model.Manager import Manager
 from core.base.model.StateType import StateType
+from core.commons import constants
+from core.nlu.model.NluEngine import NluEngine
 
 
 class NluManager(Manager):
@@ -33,6 +38,8 @@ class NluManager(Manager):
 		if not self._pathToCache.exists():
 			self._pathToCache.mkdir(parents=True)
 		self._training = False
+		self._offshoreTrainerReady = False
+		self._offshoreRespondTimer: threading.Timer = Optional[None]
 
 
 	def onStart(self):
@@ -55,6 +62,71 @@ class NluManager(Manager):
 	def onBooted(self):
 		super().onBooted()
 		self._nluEngine.start()
+
+
+	def offshoreTrainerReady(self):
+		self._offshoreTrainerReady = True
+
+
+	def offshoreTrainerStopped(self):
+		self._offshoreTrainerReady = False
+
+
+	def offshoreTrainerResult(self, msg: mqtt.MQTTMessage):
+		try:
+			controlHash = Path(msg.topic).stem
+			timer = float(str(Path(msg.topic).parent.stem))
+			tempTrainingData = Path('/tmp/snipsNLU')
+
+			with open(tempTrainingData.with_suffix('.zip'), 'wb') as fp:
+				fp.write(msg.payload)
+
+			self.logInfo('Received trained NLU from offshore trainer')
+			fileHash = hashlib.blake2b(tempTrainingData.with_suffix('.zip').read_bytes()).hexdigest()
+
+			if fileHash == controlHash:
+				self.logInfo('File control hashes match')
+			else:
+				self.logWarning('File control hashes do not match')
+				self.nluEngine.trainingFailed()
+				return
+
+			shutil.unpack_archive(tempTrainingData.with_suffix('.zip'), tempTrainingData, 'zip')
+			self.nluEngine.trainingFinished(trainedData=tempTrainingData, timer=timer)
+		except Exception as e:
+			self.nluEngine.trainingFailed()
+			self.logError(str(e))
+
+
+	def offshoreTrainerRefusedFailed(self, reason: str):
+		self._nluEngine.trainingFailed(reason)
+
+
+	def offshoreTrainerTraining(self):
+		if self._offshoreRespondTimer:
+			self._offshoreRespondTimer.cancel()
+		self.training = True
+		self.logInfo('Offshore trainer answered and is training')
+
+
+	def startOffshoreTraining(self, dataset: dict):
+		self.logInfo('Asking offshore NLU trainer')
+		self._offshoreRespondTimer = self.ThreadManager.newTimer(interval=5, func=self.offshoreTrainerFailedResponding)
+
+		self.MqttManager.publish(
+			topic=constants.TOPIC_NLU_TRAINER_TRAIN,
+			payload={
+				'data': dataset,
+				'language': self._nluEngine.getLanguage()
+			}
+		)
+
+
+	def offshoreTrainerFailedResponding(self):
+		if self.training:
+			return
+
+		self.offshoreTrainerRefusedFailed('No response')
 
 
 	def checkEngine(self) -> bool:
@@ -111,3 +183,8 @@ class NluManager(Manager):
 
 		if not value:
 			self.StateManager.setState('projectalice.core.training', newState=StateType.FINISHED)
+
+
+	@property
+	def nluEngine(self) -> NluEngine:
+		return self._nluEngine

@@ -20,6 +20,8 @@
 from pathlib import Path
 
 from core.base.model.ProjectAliceObject import ProjectAliceObject
+from core.commons import constants
+from core.webui.model.UINotificationType import UINotificationType
 
 
 class NluEngine(ProjectAliceObject):
@@ -44,3 +46,31 @@ class NluEngine(ProjectAliceObject):
 
 	def convertDialogTemplate(self, file: Path):
 		self.logFatal(f'NLU Engine {self.NAME} is missing implementation of "convertDialogTemplate"')
+
+
+	def trainingFailed(self, reason: str = ''):
+		self.logError(f'{self.NAME} training failed: {reason}', printStack=False)
+		self.NluManager.training = False
+		self.MqttManager.publish(constants.TOPIC_NLU_TRAINING_STATUS, payload={'status': 'failed'})
+
+		self.WebUINotificationManager.newNotification(
+			typ=UINotificationType.ERROR,
+			notification='nluTrainingFailed',
+			key='nluTraining'
+		)
+
+
+	def trainingFinished(self, trainedData: Path, timer: float):
+		self.logFatal(f'NLU Engine {self.NAME} is missing implementation of "trainingFinished"')
+
+
+	def getLanguage(self) -> str:
+		"""
+		Get the language that should be used for the training.
+		Currently, only portuguese needs a special handling
+		:return:
+		"""
+		lang = self.LanguageManager.activeLanguage
+		if lang == 'pt':
+			lang = lang + '_' + self.LanguageManager.activeCountryCode.lower()
+		return lang
