@@ -92,6 +92,7 @@ class NluManager(Manager):
 				return
 
 			shutil.unpack_archive(tempTrainingData.with_suffix('.zip'), tempTrainingData, 'zip')
+			self.training = False
 			self.nluEngine.trainingFinished(trainedData=tempTrainingData, timer=timer)
 		except Exception as e:
 			self.nluEngine.trainingFailed()
