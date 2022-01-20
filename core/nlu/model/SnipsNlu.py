@@ -23,10 +23,7 @@ import shutil
 from pathlib import Path
 from subprocess import CompletedProcess
 
-from core.commons import constants
 from core.nlu.model.NluEngine import NluEngine
-from core.util.Stopwatch import Stopwatch
-from core.webui.model.UINotificationType import UINotificationType
 
 
 class SnipsNlu(NluEngine):
@@ -37,7 +34,6 @@ class SnipsNlu(NluEngine):
 	def __init__(self):
 		super().__init__()
 		self._cachePath = Path(self.Commons.rootDir(), f'var/cache/nlu/trainingData')
-		self._timer = None
 
 
 	def start(self):
@@ -126,11 +122,9 @@ class SnipsNlu(NluEngine):
 
 
 	def train(self):
-		if self.NluManager.training:
-			self.logWarning("NLU is already training, can't train again now")
+		if not super().train():
 			return
 
-		self.logInfo('Training Snips NLU')
 		try:
 			dataset = {
 				'entities': dict(),
@@ -156,61 +150,33 @@ class SnipsNlu(NluEngine):
 					self.ThreadManager.newThread(name='NLUTraining', target=self.nluTrainingThread, args=[datasetFile])
 				else:
 					self.nluTrainingThread(datasetFile)
-		except:
-			self.NluManager.training = False
+		except Exception as e:
+			self.trainingFailed(str(e))
 
 
 	def nluTrainingThread(self, datasetFile: Path):
 		try:
-			with Stopwatch() as stopWatch:
-				self.logInfo('Begin training...')
-				self.NluManager.training = True
-				self._timer = self.ThreadManager.newTimer(interval=0.25, func=self.trainingStatus)
+			self.logInfo('Begin training...')
+			tempTrainingData = Path('/tmp/snipsNLU')
 
-				tempTrainingData = Path('/tmp/snipsNLU')
+			if tempTrainingData.exists():
+				shutil.rmtree(tempTrainingData)
 
-				if tempTrainingData.exists():
-					shutil.rmtree(tempTrainingData)
+			training: CompletedProcess = self.Commons.runSystemCommand([f'./venv/bin/snips-nlu', 'train', str(datasetFile), str(tempTrainingData)])
+			if training.returncode != 0:
+				self.logError(f'Error while training Snips NLU: {training.stderr.decode()}')
 
-				training: CompletedProcess = self.Commons.runSystemCommand([f'./venv/bin/snips-nlu', 'train', str(datasetFile), str(tempTrainingData)])
-				if training.returncode != 0:
-					self.logError(f'Error while training Snips NLU: {training.stderr.decode()}')
+			assistantPath = Path(self.Commons.rootDir(), f'trained/assistants/{self.LanguageManager.activeLanguage}/nlu_engine')
 
-				assistantPath = Path(self.Commons.rootDir(), f'trained/assistants/{self.LanguageManager.activeLanguage}/nlu_engine')
+			if not tempTrainingData.exists():
+				self.trainingFailed()
+				if not assistantPath.exists():
+					self.logFatal('No NLU engine found, cannot start')
 
-				if not tempTrainingData.exists():
-					self.trainingFailed()
-
-					if not assistantPath.exists():
-						self.logFatal('No NLU engine found, cannot start')
-						return
-
-					self._timer.cancel()
-					return
-			self.trainingFinished(trainedData=tempTrainingData, timer=stopWatch)
-		except:
-			self.trainingFailed()
-		finally:
-			self.NluManager.training = False
-
-
-	def trainingStatus(self, dots: str = ''):
-		count = dots.count('.')
-		if not dots or count > 7:
-			dots = '.'
-		else:
-			dots += '.'
-
-		self.MqttManager.publish(constants.TOPIC_NLU_TRAINING_STATUS, payload={'status': 'training'})
-
-		self.WebUINotificationManager.newNotification(
-			typ=UINotificationType.INFO,
-			notification='nluTraining',
-			key='nluTraining',
-			replaceBody=[dots]
-		)
-
-		self._timer = self.ThreadManager.newTimer(interval=1, func=self.trainingStatus, args=[dots])
+				return
+			self.trainingFinished(trainedData=tempTrainingData)
+		except Exception as e:
+			self.trainingFailed(str(e))
 
 
 	@staticmethod
@@ -221,22 +187,10 @@ class SnipsNlu(NluEngine):
 		}
 
 
-	def trainingFinished(self, trainedData: Path, timer: float):
+	def trainingFinished(self, trainedData: Path):
 		assistantPath = Path(self.Commons.rootDir(), f'trained/assistants/{self.LanguageManager.activeLanguage}/nlu_engine')
-
 		if assistantPath.exists():
 			shutil.rmtree(assistantPath)
-
 		shutil.move(trainedData, assistantPath)
-		self.MqttManager.publish(constants.TOPIC_NLU_TRAINING_STATUS, payload={'status': 'done'})
-		self.WebUINotificationManager.newNotification(
-			typ=UINotificationType.INFO,
-			notification='nluTrainingDone',
-			key='nluTraining'
-		)
 
-		self.ThreadManager.getEvent('TrainAssistant').clear()
-		self.logInfo(f'Snips NLU trained in {timer} seconds')
-
-		self.broadcast(method=constants.EVENT_NLU_TRAINED, exceptions=[constants.DUMMY], propagateToSkills=True)
-		self.NluManager.restartEngine()
+		super().trainingFinished(trainedData=trainedData)

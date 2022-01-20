@@ -75,7 +75,6 @@ class NluManager(Manager):
 	def offshoreTrainerResult(self, msg: mqtt.MQTTMessage):
 		try:
 			controlHash = Path(msg.topic).stem
-			timer = float(str(Path(msg.topic).parent.stem))
 			tempTrainingData = Path('/tmp/snipsNLU')
 
 			with open(tempTrainingData.with_suffix('.zip'), 'wb') as fp:
@@ -93,10 +92,9 @@ class NluManager(Manager):
 
 			shutil.unpack_archive(tempTrainingData.with_suffix('.zip'), tempTrainingData, 'zip')
 			self.training = False
-			self.nluEngine.trainingFinished(trainedData=tempTrainingData, timer=timer)
+			self.nluEngine.trainingFinished(trainedData=tempTrainingData)
 		except Exception as e:
-			self.nluEngine.trainingFailed()
-			self.logError(str(e))
+			self.nluEngine.trainingFailed(str(e))
 
 
 	def offshoreTrainerRefusedFailed(self, reason: str):
@@ -127,7 +125,7 @@ class NluManager(Manager):
 		if self.training:
 			return
 
-		self.offshoreTrainerRefusedFailed('No response')
+		self.offshoreTrainerRefusedFailed('No response from offshore trainer')
 
 
 	def checkEngine(self) -> bool:
