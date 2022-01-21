@@ -122,9 +122,6 @@ class NluManager(Manager):
 
 
 	def offshoreTrainerFailedResponding(self):
-		if self.training:
-			return
-
 		self.offshoreTrainerRefusedFailed('No response from offshore trainer')
 
 
