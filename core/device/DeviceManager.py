@@ -213,9 +213,7 @@ class DeviceManager(Manager):
 			else:
 				if lastTime < now - (device.heartbeatRate * 2):
 					self.logWarning(f'Device **{device.displayName}** has not given a signal since {device.deviceType.heartbeatRate} seconds or more')
-					self._heartbeats.pop(uid, None)
-					device.connected = False
-					self.MqttManager.publish(constants.TOPIC_DEVICE_UPDATED, payload={'device': device.toDict()})
+					self.deviceDisconnecting(device.uid)
 
 		self._heartbeatsCheckTimer = self.ThreadManager.newTimer(interval=2, func=self.checkHeartbeats)
 
