@@ -121,8 +121,8 @@ class SnipsNlu(NluEngine):
 			json.dump(nluTrainingSample, fp, ensure_ascii=False)
 
 
-	def train(self):
-		if not super().train():
+	def train(self, forceLocalTraining: bool = False):
+		if not super().train(forceLocalTraining):
 			return
 
 		try:
@@ -139,7 +139,7 @@ class SnipsNlu(NluEngine):
 
 			self.logInfo('Generated dataset for training')
 			# Now that we have generated the dataset, let's train in the background if we are already booted, else do it directly
-			if self.ConfigManager.getAliceConfigByName('delegateNluTraining'):
+			if self.ConfigManager.getAliceConfigByName('delegateNluTraining') and not forceLocalTraining:
 				self.NluManager.startOffshoreTraining(dataset)
 			else:
 				datasetFile = Path('/tmp/snipsNluDataset.json')

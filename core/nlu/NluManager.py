@@ -123,6 +123,9 @@ class NluManager(Manager):
 
 	def offshoreTrainerFailedResponding(self):
 		self.offshoreTrainerRefusedFailed('No response from offshore trainer')
+		self.logInfo('Start local training')
+		self.trainNLU(forceLocalTraining=True)
+
 
 
 	def checkEngine(self) -> bool:
@@ -159,8 +162,8 @@ class NluManager(Manager):
 		self.trainNLU()
 
 
-	def trainNLU(self):
-		self._nluEngine.train()
+	def trainNLU(self, forceLocalTraining: bool = False):
+		self._nluEngine.train(forceLocalTraining=forceLocalTraining)
 
 
 	def clearCache(self):

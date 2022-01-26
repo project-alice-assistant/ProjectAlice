@@ -42,7 +42,7 @@ class NluEngine(ProjectAliceObject):
 		self.logInfo(f'Stopping {self.NAME}')
 
 
-	def train(self) -> bool:
+	def train(self, forceLocalTraining: bool = False) -> bool:
 		if self.NluManager.training:
 			self.logWarning("NLU is already training, can't train again now")
 			return False
