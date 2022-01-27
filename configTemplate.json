@@ -5,12 +5,38 @@
 		"isSensitive" : true,
 		"description" : "Your Google service file content",
 		"onUpdate"    : "ASRManager.updateASRCredentials('google')",
-		"category"    : "asr",
+		"category"    : "credentials",
 		"parent"      : {
 			"config"   : "asr",
 			"condition": "is",
 			"value"    : "google"
 		}
+	},
+	"azureKey" : {
+	  "defaultValue": "",
+	  "dataType"    : "string",
+	  "isSensitive" : true,
+	  "description" : "You Azure subscription Key",
+	  "onUpdate"    : "ASRManager.restartEngine",
+	  "category"    : "credentials",
+	  "parent"      : {
+		"config"   : "asr",
+		"condition": "is",
+		"value"    : "azure"
+	  }
+	},
+	"azureRegion" : {
+	  "defaultValue": "",
+	  "dataType"    : "string",
+	  "isSensitive" : false,
+	  "description" : "You Azure location/region",
+	  "onUpdate"    : "ASRManager.restartEngine",
+	  "category"    : "credentials",
+	  "parent"      : {
+		"config"   : "asr",
+		"condition": "is",
+		"value"    : "azure"
+	  }
 	},
 	"displaySystemUsage"      : {
 		"defaultValue": false,
@@ -121,7 +147,7 @@
 		"description" : "Admin pin code, only numbers, 4 digits",
 		"beforeUpdate": "checkNewAdminPinCode",
 		"onUpdate"    : "updateAdminPinCode",
-		"category"    : "system"
+		"category"    : "credentials"
 	},
 	"ibmCloudAPIKey"          : {
 		"defaultValue": "",
@@ -130,9 +156,10 @@
 		"description" : "API key for IBM Cloud Watson Tts and ASR",
 		"category"    : "credentials",
 		"parent"      : {
-		  "config": "stayCompletelyOffline",
+		  "config"   : ["tts", "ttsFallback", "asr"],
+		  "checkType": "or",
 		  "condition": "is",
-		  "value": false
+		  "value"    : "watson"
 		}
 	},
 	"ibmCloudAPIURL"          : {
@@ -142,9 +169,10 @@
 		"description" : "API url for IBM Cloud Watson Tts and ASR",
 		"category"    : "credentials",
 		"parent"      : {
-		  "config": "stayCompletelyOffline",
+		  "config"   : ["tts", "ttsFallback", "asr"],
+		  "checkType": "or",
 		  "condition": "is",
-		  "value": false
+		  "value"    : "watson"
 		}
 	},
 	"autoReportSkillErrors"   : {
@@ -359,7 +387,7 @@
 		"category"    : "device"
 	},
 	"asr"                     : {
-		"defaultValue": "deepspeech",
+		"defaultValue": "coqui",
 		"dataType"    : "list",
 		"isSensitive" : false,
 		"values"      : [
@@ -367,6 +395,7 @@
 			"deepspeech",
 			"pocketsphinx",
 			"google",
+		  	"azure",
 			"snips"
 		],
 		"description" : "The Asr to use. Can't use an online Asr if you have set keepASROffline to true!",
@@ -374,7 +403,7 @@
 		"category"    : "asr"
 	},
 	"asrFallback"             : {
-		"defaultValue": "pocketsphinx",
+		"defaultValue": "coqui",
 		"dataType"    : "list",
 		"isSensitive" : false,
 		"values"      : [
@@ -382,6 +411,7 @@
 			"deepspeech",
 			"pocketsphinx",
 			"google",
+		  	"azure",
 			"snips"
 		],
 		"description" : "The Asr to use in case the default ASR becomes unavailable",

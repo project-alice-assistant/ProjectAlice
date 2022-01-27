@@ -18,12 +18,12 @@
 #  Last modified: 2021.07.31 at 15:54:28 CEST
 
 from importlib import import_module, reload
-from pathlib import Path
-from typing import Dict
 
 import paho.mqtt.client as mqtt
 from googletrans import Translator
 from langdetect import detect
+from pathlib import Path
+from typing import Dict
 
 from core.asr.model import Asr
 from core.asr.model.ASRResult import ASRResult
@@ -77,6 +77,8 @@ class ASRManager(Manager):
 			package = 'core.asr.model.SnipsAsr'
 		elif userASR == 'coqui':
 			package = 'core.asr.model.CoquiAsr'
+		elif userASR == 'azure':
+			package = 'core.asr.model.AzureAsr'
 		else:
 			package = 'core.asr.model.PocketSphinxAsr'
 
