@@ -52,8 +52,6 @@ class WebUINotificationManager(Manager):
 		# noinspection SqlResolve
 		notifications = self.databaseFetch(tableName=self.NOTIFICATIONS_TABLE, query=f'SELECT * FROM :__table__ WHERE read = 0')
 		for notification in notifications:
-			if notification['read'] == '1':
-				continue
 			self._notifications[notification['id']] = notification
 
 

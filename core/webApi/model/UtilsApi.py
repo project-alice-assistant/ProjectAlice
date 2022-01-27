@@ -231,7 +231,7 @@ class UtilsApi(Api):
 			self.WebUINotificationManager.markAsRead(notificationId=int(notificationId))
 			return jsonify(success=True)
 		except Exception as e:
-			self.logError(f'Failed training assistant: {e}')
+			self.logError(f'Failed marking notification: {e}')
 			return jsonify(success=False, message=str(e))
 
 
@@ -243,5 +243,5 @@ class UtilsApi(Api):
 			self.WebUINotificationManager.publishAllNotifications(deviceUid=uid)
 			return jsonify(success=True)
 		except Exception as e:
-			self.logError(f'Failed training assistant: {e}')
+			self.logError(f'Failed publishing notifications: {e}')
 			return jsonify(success=False, message=str(e))
