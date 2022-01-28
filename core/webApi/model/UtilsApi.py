@@ -79,7 +79,7 @@ class UtilsApi(Api):
 			configs['apiPort'] = self.ConfigManager.getAliceConfigByName('apiPort')
 			configs['aliceVersion'] = constants.VERSION
 
-			configs = {key: value if not self.ConfigManager.isAliceConfSensitive(key) else "********" for key, value in configs.items()}
+			configs = {key: value if not self.ConfigManager.isAliceConfSensitive(key) else '*' * len(str(value)) for key, value in configs.items()}
 
 			return jsonify(success=True, config=configs, templates=self.ConfigManager.aliceTemplateConfigurations, categories=self.ConfigManager.aliceConfigurationCategories)
 		except Exception as e:
@@ -95,7 +95,8 @@ class UtilsApi(Api):
 			confs.pop('apiPort', None)
 			confs.pop('aliceVersion', None)
 			for conf, value in confs.items():
-				if value == self.ConfigManager.getAliceConfigByName(conf) or value == "********":
+				strComp = '*' * len(str(value))
+				if value == self.ConfigManager.getAliceConfigByName(conf) or str(value) == strComp:
 					continue
 
 				try:
