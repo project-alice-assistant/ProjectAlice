@@ -46,6 +46,9 @@ class AzureAsr(Asr):
 
 	def onStart(self):
 		super().onStart()
+		if not self.ConfigManager.getAliceConfigByName('azureRegion') or not self.ConfigManager.getAliceConfigByName('azureKey'):
+			raise Exception('Please provide Azure Key and Region in settings')
+
 		self._apiUrl = f'https://{self.ConfigManager.getAliceConfigByName("azureRegion")}.stt.speech.microsoft.com/speech/recognition/conversation/cognitiveservices/v1?language={self.LanguageManager.getLanguageAndCountryCode()}&profanity=raw&format=detailed'
 		self._headers = {
 			'Accept': 'application/json;text/xml',
