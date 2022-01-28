@@ -137,8 +137,11 @@ class CommonsManager(Manager):
 				message.payload = payload
 				raise TypeError
 		except (ValueError, TypeError):
-			var = message.topic.split('/')[-1]
-			payload = {var: message.payload}
+			if message.payload:
+				var = message.topic.split('/')[-1]
+				payload = {var: message.payload}
+			else:
+				payload = dict()
 
 		return payload
 
