@@ -16,10 +16,12 @@
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>
 #
 #  Last modified: 2021.04.13 at 12:56:45 CEST
-
 import json
 import requests
-import traceback
+import time
+import wave
+from pathlib import Path
+from threading import Event
 from typing import Optional
 
 from core.asr.model.ASRResult import ASRResult
@@ -42,8 +44,11 @@ class AzureAsr(Asr):
 		super().__init__()
 		self._capableOfArbitraryCapture = True
 		self._isOnlineASR = True
+		self._isStreamAble = False
 		self._apiUrl = ''
 		self._headers = dict()
+		self._wav: Optional[wave.Wave_write] = None
+		self._recording: Event = Event()
 
 
 	def onStart(self):
@@ -60,29 +65,48 @@ class AzureAsr(Asr):
 		}
 
 
+	def onStartListening(self, session: DialogSession):
+		self._wav = wave.open(str(Path('var/asrCapture.wav')), 'wb')
+		self._wav.setsampwidth(2)
+		self._wav.setframerate(self.AudioServer.SAMPLERATE)
+		self._wav.setnchannels(1)
+
+
+	def recordFrame(self, frame: bytes):
+		if not self._wav or not self._recorder or not self._recorder.isRecording:
+			return
+		self._wav.writeframes(frame)
+
+
+	def onVadUp(self, **kwargs):
+		if self._recorder and not self._recording:
+			self._recording = True
+
+
+	def onVadDown(self, **kwargs):
+		if self._recording:
+			self._wav.close()
+			self.end()
+
+
 	def decodeStream(self, session: DialogSession) -> Optional[ASRResult]:
 		super().decodeStream(session)
-
 		recorder = Recorder(self._timeout, session.user, session.deviceUid)
 		self.ASRManager.addRecorder(session.deviceUid, recorder)
 		self._recorder = recorder
-		result = None
-		with Stopwatch() as processingTime:
-			# response = requests.post(url=self._apiUrl, data=Path('test.wav').read_bytes(), headers=self._headers)
-			# print(response.text)
-			# print(response.reason)
-			# print(response.content)
-			# self.end()
-			with recorder as stream:
-				try:
-					with requests.post(url=self._apiUrl, data=stream.audioStream(), headers=self._headers) as response:
-						print(response.text)
-						result = json.loads(response.text)
-				except Exception as e:
-					traceback.print_exc()
-					self.logWarning(f'Failed ASR request: {e}')
+		self._recorder.startRecording()
+		self._recording = False
 
-			self.end()
+		with Stopwatch() as processingTime:
+			while self._recorder.isRecording:
+				time.sleep(0.1)
+
+			result = None
+			try:
+				response = requests.post(url=self._apiUrl, data=Path('var/asrCapture.wav').read_bytes(), headers=self._headers)
+				result = json.loads(response.text)
+			except Exception as e:
+				self.logWarning(f'Failed ASR request: {e}')
 
 		return ASRResult(
 			text=result['NBest'][0]['ITN'],
