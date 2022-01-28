@@ -328,6 +328,8 @@ class MqttManager(Manager):
 		sessions = self.DialogManager.sessions
 		for sessionId in sessions:
 			payload = self.Commons.payload(sessions[sessionId].message)
+			if not payload:
+				continue
 			if payload['siteId'] != self._multiDetectionsHolder[0]:
 				self.endSession(sessionId=sessionId)
 
