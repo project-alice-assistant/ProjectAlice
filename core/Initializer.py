@@ -617,7 +617,7 @@ class Initializer(object):
 
 			serviceFile = hlcDistributedServiceFilePath.read_text()
 			serviceFile = serviceFile.replace('%WORKING_DIR%', f'{str(hlcDir)}')
-			serviceFile = serviceFile.replace('%EXECSTART%', f'WorkingDirectory={str(hlcDir)}/venv/bin/python main.py --hermesLedControlConfig=/home/{getpass.getuser()}/.config/HermesLedControl/configuration.yml')
+			serviceFile = serviceFile.replace('%EXECSTART%', f'{str(hlcDir)}/venv/bin/python main.py --hermesLedControlConfig=/home/{getpass.getuser()}/.config/HermesLedControl/configuration.yml')
 			serviceFile = serviceFile.replace('%USER%', f'User={getpass.getuser()}')
 			hlcDistributedServiceFilePath.write_text(serviceFile)
 			subprocess.run(['sudo', 'cp', hlcDistributedServiceFilePath, hlcServiceFilePath])
