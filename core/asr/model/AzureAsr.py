@@ -16,8 +16,10 @@
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>
 #
 #  Last modified: 2021.04.13 at 12:56:45 CEST
+
 import json
 import requests
+import traceback
 from typing import Optional
 
 from core.asr.model.ASRResult import ASRResult
@@ -48,14 +50,12 @@ class AzureAsr(Asr):
 		super().onStart()
 		if not self.ConfigManager.getAliceConfigByName('azureRegion') or not self.ConfigManager.getAliceConfigByName('azureKey'):
 			raise Exception('Please provide Azure Key and Region in settings')
-
 		self._apiUrl = f'https://{self.ConfigManager.getAliceConfigByName("azureRegion")}.stt.speech.microsoft.com/speech/recognition/conversation/cognitiveservices/v1?language={self.LanguageManager.getLanguageAndCountryCode()}&profanity=raw&format=detailed'
 		self._headers = {
 			'Accept': 'application/json;text/xml',
-		    'Connection': 'Keep-Alive',
 		    'Content-Type': 'audio/wav; codecs=audio/pcm; samplerate=16000',
 		    'Ocp-Apim-Subscription-Key': self.ConfigManager.getAliceConfigByName('azureKey'),
-		    'Transfer-Encoding': 'chunked',
+		    #'Transfer-Encoding': 'chunked',
 		    'Expect': '100-continue'
 		}
 
@@ -68,11 +68,18 @@ class AzureAsr(Asr):
 		self._recorder = recorder
 		result = None
 		with Stopwatch() as processingTime:
+			# response = requests.post(url=self._apiUrl, data=Path('test.wav').read_bytes(), headers=self._headers)
+			# print(response.text)
+			# print(response.reason)
+			# print(response.content)
+			# self.end()
 			with recorder as stream:
 				try:
-					response = requests.post(url=self._apiUrl, data=stream.audioStream(), headers=self._headers)
-					result = json.loads(response.text)
+					with requests.post(url=self._apiUrl, data=stream.audioStream(), headers=self._headers) as response:
+						print(response.text)
+						result = json.loads(response.text)
 				except Exception as e:
+					traceback.print_exc()
 					self.logWarning(f'Failed ASR request: {e}')
 
 			self.end()
