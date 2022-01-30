@@ -59,7 +59,7 @@ class TestCommonsManager(unittest.TestCase):
 
 		self.assertEqual(
 			CommonsManager.payload(MQTTMessage(None)),
-			{'test': dict()}
+			{'test': None}
 		)
 		self.assertEqual(
 			CommonsManager.payload(MQTTMessage(b'\x81')),

@@ -38,7 +38,7 @@ from datetime import datetime
 from googletrans import Translator
 from paho.mqtt.client import MQTTMessage
 from pathlib import Path
-from typing import Any, Union
+from typing import Any, Optional, Union
 from uuid import UUID
 
 import core.base.SuperManager as SuperManager
@@ -130,7 +130,7 @@ class CommonsManager(Manager):
 
 
 	@staticmethod
-	def payload(message: MQTTMessage) -> dict:
+	def payload(message: MQTTMessage) -> Optional[dict]:
 		try:
 			payload = json.loads(message.payload)
 			if isinstance(payload, bool):
@@ -141,7 +141,7 @@ class CommonsManager(Manager):
 				var = message.topic.split('/')[-1]
 				payload = {var: message.payload}
 			else:
-				payload = dict()
+				payload = None
 
 		return payload
 
