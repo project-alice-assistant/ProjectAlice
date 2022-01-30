@@ -19,14 +19,14 @@
 
 import json
 import uuid
+from paho.mqtt.client import MQTTMessage
 from pathlib import Path
 from threading import Timer
 from typing import Dict, Optional, Set
 
-from paho.mqtt.client import MQTTMessage
-
 from core.base.model.Manager import Manager
 from core.commons import constants
+from core.commons.model.PartOfDay import PartOfDay
 from core.device.model.DeviceAbility import DeviceAbility
 from core.dialog.model.DialogSession import DialogSession
 from core.voice.WakewordRecorder import WakewordRecorderState
@@ -241,7 +241,7 @@ class DialogManager(Manager):
 			self.onEndSession(session=session, reason='abortedByUser')
 			return
 
-		if self._captureFeedback and not session.textOnly and not session.textInput:
+		if self._captureFeedback and not session.textOnly and not session.textInput and self.Commons.partOfTheDay() != PartOfDay.SLEEPING.value:
 			self.MqttManager.publish(
 				topic=constants.TOPIC_PLAY_BYTES.format(session.deviceUid).replace('#', session.sessionId),
 				payload=bytearray(Path(f'system/sounds/{self.LanguageManager.activeLanguage}/end_of_input.wav').read_bytes())
@@ -472,6 +472,9 @@ class DialogManager(Manager):
 
 
 	def onSessionError(self, session: DialogSession):
+		if self.Commons.partOfTheDay() == PartOfDay.SLEEPING.value:
+			return
+
 		if not session.textOnly and not session.textInput:
 			self.MqttManager.publish(
 				topic=constants.TOPIC_PLAY_BYTES.format(session.deviceUid).replace('#', session.sessionId),
