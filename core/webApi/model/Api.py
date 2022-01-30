@@ -16,7 +16,7 @@
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>
 #
 #  Last modified: 2021.04.13 at 12:56:48 CEST
-
+from flask import jsonify
 from flask_classful import FlaskView
 
 from core.base.model.ProjectAliceObject import ProjectAliceObject
@@ -30,7 +30,7 @@ class Api(FlaskView, ProjectAliceObject):
 	def before_request(self, _name: str, **_kwargs):
 		# refuse requests if Alice is not yet booted
 		if not self.ProjectAlice.isBooted:
-			return
+			return jsonify(success=False, data=423)
 
 
 	@classmethod
