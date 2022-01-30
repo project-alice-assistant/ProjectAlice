@@ -692,8 +692,6 @@ class ConfigManager(Manager):
 
 	def updateTimezone(self):
 		result = self.Commons.runRootSystemCommand(['timedatectl', 'set-timezone', self.getAliceConfigByName('timezone')])
-		print(result.stdout)
-		print(result.stderr)
 		if result.returncode:
 			raise Exception('Unsupported timezone format')
 
