@@ -27,6 +27,12 @@ class Api(FlaskView, ProjectAliceObject):
 	_version = '1.0.1'
 
 
+	def before_request(self, _name: str):
+		# refuse requests if Alice is not yet booted
+		if not self.ProjectAlice.isBooted:
+			return
+
+
 	@classmethod
 	def version(cls) -> str:
 		return f'v{cls._version}'
