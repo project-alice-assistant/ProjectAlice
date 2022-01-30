@@ -22,14 +22,12 @@ import hashlib
 import re
 import tempfile
 from pathlib import Path
+from pydub import AudioSegment
+from pydub.exceptions import CouldntDecodeError
 from re import Match
 from typing import Optional
 
-from pydub import AudioSegment
-from pydub.exceptions import CouldntDecodeError
-
 from core.base.model.ProjectAliceObject import ProjectAliceObject
-from core.commons import constants
 from core.dialog.model.DialogSession import DialogSession
 from core.user.model.User import User
 
@@ -195,20 +193,24 @@ class Tts(ProjectAliceObject):
 			file.unlink()
 			self.onSay(session)
 		else:
-			self.DialogManager.increaseSessionTimeout(session=session, interval=duration + 0.2)
-			self.ThreadManager.doLater(interval=duration + 0.1, func=self._sayFinished, args=[session])
+			self.DialogManager.increaseSessionTimeout(session=session, interval=duration + 1)
+			#self.ThreadManager.doLater(interval=duration + 0.1, func=self._sayFinished, args=[session])
 
 
-	def _sayFinished(self, session: DialogSession):
+	# def _sayFinished(self, session: DialogSession):
+	# 	self._speaking = False
+	# 	self.MqttManager.publish(
+	# 		topic=constants.TOPIC_TTS_FINISHED,
+	# 		payload={
+	# 			'id'       : session.sessionId,
+	# 			'sessionId': session.sessionId,
+	# 			'deviceUid': session.deviceUid
+	# 		}
+	# 	)
+
+
+	def onSayFinished(self, session: DialogSession, uid: str = None):
 		self._speaking = False
-		self.MqttManager.publish(
-			topic=constants.TOPIC_TTS_FINISHED,
-			payload={
-				'id'       : session.sessionId,
-				'sessionId': session.sessionId,
-				'deviceUid': session.deviceUid
-			}
-		)
 
 
 	def _checkText(self, session: DialogSession) -> str:
