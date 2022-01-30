@@ -113,16 +113,15 @@ class NodeRedManager(Manager):
 			config = Path(self.PACKAGE_PATH.parent, '.config.nodes.json')
 
 			if not config.exists():
-				data = json.loads(Path('system/node-red/settings.js').read_text())
+				data = json.loads(Path('system/node-red/.config.nodes.json').read_text())
 			else:
 				data = json.loads(config.read_text())
-
-			for package in data.values():
-				keeper = self.DEFAULT_NODES_ACTIVE.get(package['name'], list())
-				for node in package['nodes'].values():
-					if node['name'] in keeper:
-						continue
-					node['enabled'] = False
+				for package in data.values():
+					keeper = self.DEFAULT_NODES_ACTIVE.get(package['name'], list())
+					for node in package['nodes'].values():
+						if node['name'] in keeper:
+							continue
+						node['enabled'] = False
 
 			config.write_text(json.dumps(data))
 			self.logInfo('Nodes configured')
@@ -132,8 +131,10 @@ class NodeRedManager(Manager):
 		try:
 			self.logInfo('Applying Project Alice settings')
 
-			self.Commons.runSystemCommand('npm install @node-red-contrib-themes/midnight-red'.split(), shell=True)
+			self.Commons.runSystemCommand('npm install @node-red-contrib-themes/theme-collection'.split(), shell=True)
 			shutil.copy(Path('system/node-red/settings.js'), Path(os.path.expanduser('~/.node-red'), 'settings.js'))
+			time.sleep(2)
+			self.Commons.runSystemCommand('node-red-restart'.split(), shell=True)
 			self.logInfo("All done, let's start all this")
 		except Exception as e:
 			self.logError(f'Failed applying settings: {e}')

@@ -327,8 +327,7 @@ module.exports = {
 		 * See https://github.com/node-red-contrib-themes/theme-collection for
 		 * a collection of themes to chose from.
 		 */
-		//theme: "",
-		theme: "midnight-red",
+		theme: "dark-scroll",
 		page: {
 			title: 'Project Alice Node-RED',
 			favicon: '~/ProjectAlice/core/interface/static/favicon.ico'
