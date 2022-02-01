@@ -266,13 +266,13 @@ class AudioManager(Manager):
 					stream.start()
 					while stream.active:
 						if self._stopPlayingFlag.is_set():
-							if not sessionId:
+							if not sessionId or not session:
 								raise PlayBytesStopped
 
-							if session and session.lastWasSoundPlayOnly:
+							if session.lastWasSoundPlayOnly:
 								raise PlayBytesStopped
 
-							if session and not session.lastWasSoundPlayOnly:
+							if not session.lastWasSoundPlayOnly:
 								self.MqttManager.publish(
 									topic=constants.TOPIC_TTS_FINISHED,
 									payload={
@@ -281,6 +281,7 @@ class AudioManager(Manager):
 										'siteId'   : deviceUid
 									}
 								)
+
 							self.DialogManager.onEndSession(session)
 						time.sleep(0.1)
 			except PlayBytesStopped:
