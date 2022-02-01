@@ -272,8 +272,16 @@ class AudioManager(Manager):
 							if session and session.lastWasSoundPlayOnly:
 								raise PlayBytesStopped
 
+							if session and not session.lastWasSoundPlayOnly:
+								self.MqttManager.publish(
+									topic=constants.TOPIC_TTS_FINISHED,
+									payload={
+										'id'       : requestId,
+										'sessionId': sessionId,
+										'siteId'   : deviceUid
+									}
+								)
 							self.DialogManager.onEndSession(session)
-
 						time.sleep(0.1)
 			except PlayBytesStopped:
 				self.logDebug('Playing bytes stopped')
@@ -295,16 +303,6 @@ class AudioManager(Manager):
 				'sessionId': sessionId
 			}
 		)
-
-		# if session and not session.lastWasSoundPlayOnly:
-		# 	self.MqttManager.publish(
-		# 		topic=constants.TOPIC_TTS_FINISHED,
-		# 		payload={
-		# 			'id'       : requestId,
-		# 			'sessionId': sessionId,
-		# 			'siteId'   : deviceUid
-		# 		}
-		# 	)
 
 
 	def stopPlaying(self):
