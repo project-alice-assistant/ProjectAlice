@@ -296,15 +296,15 @@ class AudioManager(Manager):
 			}
 		)
 
-		if session and not session.lastWasSoundPlayOnly:
-			self.MqttManager.publish(
-				topic=constants.TOPIC_TTS_FINISHED,
-				payload={
-					'id'       : requestId,
-					'sessionId': sessionId,
-					'siteId'   : deviceUid
-				}
-			)
+		# if session and not session.lastWasSoundPlayOnly:
+		# 	self.MqttManager.publish(
+		# 		topic=constants.TOPIC_TTS_FINISHED,
+		# 		payload={
+		# 			'id'       : requestId,
+		# 			'sessionId': sessionId,
+		# 			'siteId'   : deviceUid
+		# 		}
+		# 	)
 
 
 	def stopPlaying(self):
