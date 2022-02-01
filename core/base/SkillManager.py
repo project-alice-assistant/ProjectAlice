@@ -1349,7 +1349,7 @@ class SkillManager(Manager):
 
 			data = {
 				'username'          : self.ConfigManager.getAliceConfigByName('githubUsername'),
-				'skillName'         : skillName.capitalize(),
+				'skillName'         : skillName,
 				'description'       : skillDefinition['description'],
 				'category'          : skillDefinition['category'],
 				'speakableName'     : skillDefinition['speakableName'],
