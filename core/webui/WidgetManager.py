@@ -65,11 +65,24 @@ class WidgetManager(Manager):
 		self.getNextZIndex(1)
 
 
-	def loadWidgets(self):
+	def onSkillInstalled(self, skill: str):
+		self.loadWidgets(skillName=skill)
+
+
+	def onSkillUpdated(self, skill: str):
+		self.loadWidgets(skillName=skill)
+
+
+	def loadWidgets(self, skillName: str = ''):
+		"""
+		Loads all widgets by iterating over the skill directories. If skillName is given, will only load the said one
+		:param skillName: if provided, only load this one
+		:return:
+		"""
 		count = 0
 		for skill in self.SkillManager.allSkills.values():
-			try:  # failed skills don't have any .widgets at all and crash the manager!
-				if not skill.widgets:
+			try:  # failed skills don't have any widgets at all and crash the manager!
+				if (skillName and skill.name != skillName) or not skill.widgets:
 					continue
 			except:
 				continue
@@ -81,12 +94,13 @@ class WidgetManager(Manager):
 		for widgets in self._widgetTemplates.values():
 			allTemplates += widgets
 
-		# Cleanup possible deprecated widgets
 		rows = self.databaseFetch(tableName=self.WIDGETS_TABLE)
-
 		for widget in rows:
-			if widget['skill'] not in self._widgetTemplates or widget['name'] not in allTemplates:
+			if skillName and widget['skill'] != skillName:
+				continue
 
+			# Cleanup possible deprecated widgets
+			if widget['skill'] not in self._widgetTemplates or widget['name'] not in allTemplates:
 				self.logInfo(f'Widget **{widget["name"]}** is deprecated, removing')
 				# noinspection SqlResolve
 				self.DatabaseManager.delete(
@@ -267,6 +281,8 @@ class WidgetManager(Manager):
 
 
 	def onSkillDeleted(self, skill: str):
+		self.onSkillDeactivated(skill=skill)
+		self._widgetTemplates.pop(skill, None)
 		# noinspection SqlResolve
 		self.DatabaseManager.delete(
 			tableName=self.WIDGETS_TABLE,
