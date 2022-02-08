@@ -295,6 +295,25 @@ class SkillsApi(Api):
 
 		return jsonify(success=True)
 
+	@route('/<skillName>/checkout/<remote>/<branch>/')
+	@ApiAuthenticated
+	def checkout(self, skillName: str, remote: str, branch: str) -> Response:
+		"""
+		checkout the given remote
+		:param skillName:
+		:param remote:
+		:param branch:
+		:return:
+		"""
+		if skillName not in self.SkillManager.allSkills:
+			return self.skillNotFound()
+
+		repository = Repository(directory=self.SkillManager.getSkillDirectory(skillName=skillName), init=False, raiseIfExisting=False)
+		repository.clean()
+		repository.setUpstream(branch=branch, remote=remote)
+		repository.reset(f'{remote}/{branch}')
+		return jsonify(success=True)
+
 
 	@route('/<skillName>/revert/')
 	@ApiAuthenticated
@@ -394,16 +413,18 @@ class SkillsApi(Api):
 		res = dict()
 		for (name, rem) in git.remote.items():
 			status = Github.getStatusForUrl(url=rem.url, silent=True) is not False
-			res[name] = {'name': 'Public' if name == 'project-alice-assistant' else 'Private',
-		                        'url': re.sub(r"https:\/\/.*:(.*)@github\.com\/", 'https://github.com/', rem.url),
-			                    'user': name,
-		                        'status': status,
-		                        'commitsBehind': rem.getCommitCount() if status else '-1',
-		                        'commitsAhead': rem.getCommitCount(ahead=False) if status else '-1'  }
+			res[name] = {   'repoType': 'Public' if name == 'project-alice-assistant' else 'Private',
+			                'name': rem.name,
+	                        'url': re.sub(r"https:\/\/.*:(.*)@github\.com\/", 'https://github.com/', rem.url),
+		                    'user': name,
+	                        'status': status,
+	                        'commitsBehind': rem.getCommitCount() if status else '-1',
+	                        'commitsAhead': rem.getCommitCount(ahead=False) if status else '-1',
+		                    'lsRemote': rem.lsRemote(tags=False)}
 
 		changes = git.status().changes()
 
-		return jsonify(success=True, result=res, changes=changes)
+		return jsonify(success=True, result=res, changes=changes, upstream=git.status().getUpstream())
 
 
 	@route('/<skillName>/getInstructions/', methods=['GET', 'POST'])
