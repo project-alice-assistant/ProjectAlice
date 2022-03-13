@@ -1,5 +1,5 @@
 pytest~=6.2.5
-coverage~=5.5
+coverage~=6.3
 pytest-cov~=3.0.0
 coveralls~=3.3.1
 numpy~=1.21.4
@@ -20,7 +20,7 @@ Pympler~=0.9
 pydub~=0.25.1
 htmlmin~=0.1.12
 cssmin~=0.2.0
-jsmin~=3.0.0
+jsmin~=3.0.1
 psutil~=5.9.0
 pyserial~=3.5
 pyyaml~=6.0
