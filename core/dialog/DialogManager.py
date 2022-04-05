@@ -379,20 +379,30 @@ class DialogManager(Manager):
 				'customData': json.dumps(dict())
 			}
 		)
+		init = payload.get('init', False)
+		if init:
+			text = init.get('text', '')
+			if not text:
+				randomText_skill = init.get('skill', '')
+				randomText_talk = init.get('talk', '')
+				randomText_replace = init.get('replace', [])
+				if randomText_skill and randomText_talk:
+					text = self.TalkManager.randomTalk(skill=randomText_skill, talk=randomText_talk)
+					if randomText_replace:
+						text = text.format(*randomText_replace)
 
-		text = payload.get('init', dict()).get('text', '')
-		if text:
-			self.MqttManager.publish(
-				topic=constants.TOPIC_TTS_SAY,
-				payload={
-					'text'                 : payload['init']['text'],
-					'lang'                 : self.LanguageManager.activeLanguageAndCountryCode,
-					'siteId'               : deviceUid,
-					'sessionId'            : session.sessionId,
-					'uid'                  : str(uuid.uuid4()),
-					'isHotwordNotification': hotwordNotification
-				}
-			)
+			if text:
+				self.MqttManager.publish(
+					topic=constants.TOPIC_TTS_SAY,
+					payload={
+						'text'                 : text,
+						'lang'                 : self.LanguageManager.activeLanguageAndCountryCode,
+						'siteId'               : deviceUid,
+						'sessionId'            : session.sessionId,
+						'uid'                  : str(uuid.uuid4()),
+						'isHotwordNotification': hotwordNotification
+					}
+				)
 
 
 	def onContinueSession(self, session: DialogSession):

@@ -568,6 +568,27 @@ class SkillsApi(Api):
 		return jsonify(success=True, talkFiles=talkFiles)
 
 
+	@route('/<skillName>/getTalkTopics/', methods=['GET', 'POST'])
+	@ApiAuthenticated
+	def getTalkTopics(self, skillName: str) -> Response:
+		"""
+		get the talk topics for one skill
+		:param skillName:
+		:return:
+		"""
+		if skillName not in self.SkillManager.allSkills:
+			return self.skillNotFound()
+
+		skill = self.SkillManager.getSkillInstance(skillName=skillName)
+		talkFiles = dict()
+
+		fp = skill.getResource(f'talks/{self.LanguageManager.activeLanguage}.json')
+		if fp.exists():
+			talkFile = json.loads(fp.read_text())
+
+		return jsonify(success=True, talkTopics=list(talkFile))
+
+
 	@route('/<skillName>/setTalkFile/', methods=['PATCH'])
 	@ApiAuthenticated
 	def setTalkFile(self, skillName: str) -> Response:
