@@ -2,7 +2,7 @@ numpy~=1.21.4
 paho-mqtt~=1.6.1
 googletrans~=3.0.0
 langdetect~=1.0.9
-Flask~=2.0.2
+Flask~=2.1.1
 Flask-Cors~=3.0.10
 Flask-Classful~=0.14.2
 Markdown~=3.3.6
@@ -24,5 +24,5 @@ scipy~=1.7.3
 webrtcvad~=2.0.10
 Werkzeug~=2.1.1
 Jinja2~=3.0.3
-pyopenssl~=21.0.0
+pyopenssl~=22.0.0
 projectalice-sk
