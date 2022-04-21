@@ -100,11 +100,11 @@ class MqttManager(Manager):
 
 	def onBooted(self):
 		super().onBooted()
+		# listen to all VAD messages - if the device is unknown nothing bad will happen -> reduced amount of subscriptions
+		self._mqttClient.message_callback_add(constants.TOPIC_VAD_UP.format('+'), self.onVADUp)
+		self._mqttClient.message_callback_add(constants.TOPIC_VAD_DOWN.format('+'), self.onVADDown)
 
 		for device in self.DeviceManager.getDevicesWithAbilities(abilities=[DeviceAbility.PLAY_SOUND, DeviceAbility.CAPTURE_SOUND], connectedOnly=False):
-			self._mqttClient.message_callback_add(constants.TOPIC_VAD_UP.format(device.uid), self.onVADUp)
-			self._mqttClient.message_callback_add(constants.TOPIC_VAD_DOWN.format(device.uid), self.onVADDown)
-
 			self._mqttClient.message_callback_add(constants.TOPIC_PLAY_BYTES.format(device.uid), self.topicPlayBytes)
 			self._mqttClient.message_callback_add(constants.TOPIC_PLAY_BYTES_FINISHED.format(device.uid), self.topicPlayBytesFinished)
 
@@ -163,9 +163,10 @@ class MqttManager(Manager):
 		subscribedEvents.append((constants.TOPIC_PLAY_BYTES.format(self.ConfigManager.getAliceConfigByName('uuid')), 0))
 		subscribedEvents.append((constants.TOPIC_PLAY_BYTES_FINISHED.format(self.ConfigManager.getAliceConfigByName('uuid')), 0))
 
+		subscribedEvents.append((constants.TOPIC_VAD_UP.format('+'), 0))
+		subscribedEvents.append((constants.TOPIC_VAD_DOWN.format('+'), 0))
+
 		for device in self.DeviceManager.getDevicesWithAbilities(abilities=[DeviceAbility.PLAY_SOUND, DeviceAbility.CAPTURE_SOUND], connectedOnly=False):
-			subscribedEvents.append((constants.TOPIC_VAD_UP.format(device.id), 0))
-			subscribedEvents.append((constants.TOPIC_VAD_DOWN.format(device.id), 0))
 
 			subscribedEvents.append((constants.TOPIC_PLAY_BYTES.format(device.id), 0))
 			subscribedEvents.append((constants.TOPIC_PLAY_BYTES_FINISHED.format(device.id), 0))
