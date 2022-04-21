@@ -134,8 +134,8 @@ class CommonsManager(Manager):
 		try:
 			payload = json.loads(message.payload)
 			if isinstance(payload, bool):
-				message.payload = payload
-				raise TypeError
+				var = message.topic.split('/')[-1]
+				payload = {var: payload}
 		except (ValueError, TypeError):
 			if message.payload:
 				var = message.topic.split('/')[-1]
