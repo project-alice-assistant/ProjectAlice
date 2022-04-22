@@ -172,7 +172,12 @@ class ProjectAlice(Singleton):
 		self._superManager.StateManager.setState(STATE, newState=StateType.RUNNING)
 
 		self._isUpdating = True
-		req = requests.get(url=f'{constants.GITHUB_API_URL}/ProjectAlice/branches', auth=SuperManager.getInstance().ConfigManager.githubAuth)
+		try:
+			req = requests.get(url=f'{constants.GITHUB_API_URL}/ProjectAlice/branches', auth=SuperManager.getInstance().ConfigManager.githubAuth)
+		except requests.exceptions.ConnectionError as e:
+			self._logger.logError(f'Could not check for update: {e}')
+			self._superManager.StateManager.setState(STATE, newState=StateType.ERROR)
+			return
 		if req.status_code != 200:
 			self._logger.logWarning('Failed checking for updates')
 			self._superManager.StateManager.setState(STATE, newState=StateType.ERROR)
