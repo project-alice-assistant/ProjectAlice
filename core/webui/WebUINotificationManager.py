@@ -86,6 +86,8 @@ class WebUINotificationManager(Manager):
 		if replaceTitle:
 			title = title.format(replaceTitle)
 
+		self.logInfo(f'Adding notification: {title}')
+
 		body = notification['body']
 		if replaceBody:
 			body = body.format(*replaceBody)
@@ -173,7 +175,7 @@ class WebUINotificationManager(Manager):
 		self.newNotification(
 			typ=UINotificationType.INFO,
 			notification='skillUpdated',
-			key='skillUpdate_{}'.format(skill),
+			key=f'skillUpdate_{skill}',
 			replaceBody=[skill, self.SkillManager.getSkillInstance(skillName=skill).version]
 		)
 

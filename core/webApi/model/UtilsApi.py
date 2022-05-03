@@ -25,6 +25,7 @@ from core.commons import constants
 from core.device.model.DeviceAbility import DeviceAbility
 from core.util.Decorators import ApiAuthenticated
 from core.webApi.model.Api import Api
+from core.webui.model.UINotificationType import UINotificationType
 
 
 class UtilsApi(Api):
@@ -245,4 +246,23 @@ class UtilsApi(Api):
 			return jsonify(success=True)
 		except Exception as e:
 			self.logError(f'Failed publishing notifications: {e}')
+			return jsonify(success=False, message=str(e))
+
+
+	@route('/addNotification/', methods=['PUT'])
+	@ApiAuthenticated
+	def addNotification(self) -> Response:
+		try:
+			form = request.form
+			header = form["header"]
+			message = form["message"]
+			key = f'apinotif_{form["key"]}'
+			deviceUid = form.get('deviceUid', 'all')
+			self.WebUINotificationManager.newNotification(typ=UINotificationType.INFO,
+			                                              notification={'title': header, 'body': message},
+			                                              key=key,
+			                                              deviceUid=deviceUid)
+			return jsonify(success=True)
+		except Exception as e:
+			self.logError(f'Failed adding notification: {e}')
 			return jsonify(success=False, message=str(e))
