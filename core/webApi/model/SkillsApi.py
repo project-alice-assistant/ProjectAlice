@@ -564,8 +564,10 @@ class SkillsApi(Api):
 		if fp.exists():
 			for file in fp.glob('*.json'):
 				talkFiles[Path(file).stem] = json.loads(file.read_text())
-
-		return jsonify(success=True, talkFiles=talkFiles)
+		if talkFiles:
+			return jsonify(success=True, talkFiles=talkFiles)
+		else:
+			return jsonify(success=False, message='no talkfile found.')
 
 
 	@route('/<skillName>/getTalkTopics/', methods=['GET', 'POST'])
