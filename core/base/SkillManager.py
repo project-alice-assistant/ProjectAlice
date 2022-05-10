@@ -588,7 +588,7 @@ class SkillManager(Manager):
 				else:
 					return
 			except Exception as e:
-				self.logWarning(f'Something went wrong loading skill {skillName}: {e}')
+				self.logError(f'Something went wrong loading skill {skillName}: {repr(e)}', printStack=True)
 				if skillName in self.NEEDED_SKILLS:
 					self.logFatal(f'The skill is required to continue...')
 					return
