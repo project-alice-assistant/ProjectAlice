@@ -752,5 +752,5 @@ class AliceSkill(ProjectAliceObject):
 			'category'        : self._category,
 			'aliceMinVersion' : str(self._aliceMinVersion),
 			'maintainers'     : self._maintainers,
-			'intents'         : self.supportedIntentsWithUtterances()
+			'intents'         : [intent for intent in self._intentsDefinitions[self.activeLanguage()]] if self.activeLanguage() in self._intentsDefinitions else []
 		}
