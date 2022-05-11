@@ -288,6 +288,7 @@ class DialogManager(Manager):
 		:param session:
 		:return:
 		"""
+		self.startSessionTimeout(sessionId=session.sessionId)
 
 		self.MqttManager.publish(
 			topic=f'hermes/intent/{session.payload["intent"]["intentName"]}',
