@@ -734,6 +734,7 @@ class AliceSkill(ProjectAliceObject):
 
 
 	def toDict(self) -> dict:
+		intents = {intent: [] for intent in self._intentsDefinitions[self.activeLanguage()]} if self.activeLanguage() in self._intentsDefinitions else {}
 		return {
 			'name'            : self._name,
 			'author'          : self._author,
@@ -752,5 +753,5 @@ class AliceSkill(ProjectAliceObject):
 			'category'        : self._category,
 			'aliceMinVersion' : str(self._aliceMinVersion),
 			'maintainers'     : self._maintainers,
-			'intents'         : [intent for intent in self._intentsDefinitions[self.activeLanguage()]] if self.activeLanguage() in self._intentsDefinitions else []
+			'intents'         : intents
 		}

@@ -86,7 +86,6 @@ class WebUINotificationManager(Manager):
 		if replaceTitle:
 			title = title.format(replaceTitle)
 
-		self.logInfo(f'Adding notification: {title}')
 
 		body = notification['body']
 		if replaceBody:
@@ -112,6 +111,7 @@ class WebUINotificationManager(Manager):
 		else:
 			notificationId = self.databaseInsert(tableName=self.NOTIFICATIONS_TABLE, values=values)
 			self._keysToIds[key] = notificationId
+			self.logInfo(f'Adding notification[{notificationId}]: {title}')
 
 		self.publishNotification(notificationId=notificationId, typ=typ, title=title, body=body, key=key, options=options, deviceUid=deviceUid)
 
