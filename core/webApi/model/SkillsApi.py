@@ -587,6 +587,8 @@ class SkillsApi(Api):
 		fp = skill.getResource(f'talks/{self.LanguageManager.activeLanguage}.json')
 		if fp.exists():
 			talkFile = json.loads(fp.read_text())
+		else:
+			talkFile = []
 
 		return jsonify(success=True, talkTopics=list(talkFile))
 
