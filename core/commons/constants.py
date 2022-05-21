@@ -18,6 +18,7 @@
 #  Last modified: 2021.04.13 at 12:56:46 CEST
 
 VERSION                                = '1.0.0-rc3'
+DEVICETYPE                             = 'ProjectAlice'
 
 # System
 ALL                                    = 'all'
@@ -40,6 +41,8 @@ UNKNOWN                                = 'unknown'
 UNKNOWN_MANAGER                        = 'unknownManager'
 UNKNOWN_USER                           = 'unknownUser'
 UNKNOWN_WORD                           = 'unknownword'
+
+PYTHON                                 = 'python3.7'
 
 # Hermes
 TOPIC_ASR_START_LISTENING              = 'hermes/asr/startListening'
