@@ -782,7 +782,7 @@ class DeviceManager(Manager):
 		"""
 		self._broadcastFlag.set()
 		while self._broadcastFlag.is_set():
-			self._broadcastSocket.sendto(bytes(f'{self.Commons.getLocalIp()}:{self._listenPort}:{uid}', encoding='utf8'), ('<broadcast>', self._broadcastPort))
+			self._broadcastSocket.sendto(bytes(f'pair:{self.Commons.getLocalIp()}:{self._listenPort}:{uid}', encoding='utf8'), ('<broadcast>', self._broadcastPort))
 			try:
 				sock, address = self._listenSocket.accept()
 				sock.settimeout(None)
