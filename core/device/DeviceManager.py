@@ -802,7 +802,7 @@ class DeviceManager(Manager):
 				if replyOnDeviceUid:
 					self.MqttManager.say(text=self.TalkManager.randomTalk('newDeviceAdditionSuccess', skill='system'), deviceUid=replyOnDeviceUid)
 
-				# self.ThreadManager.doLater(interval=5, func=self.WakewordRecorder.uploadToNewDevice, args=[uid])
+				self.ThreadManager.doLater(interval=5, func=self.WakewordRecorder.uploadToNewDevice, args=[uid])
 
 				self._broadcastSocket.sendto(bytes('ok', encoding='utf8'), (deviceIp, self._broadcastPort))
 				self._stopBroadcasting()
