@@ -1,7 +1,7 @@
 import shutil
 
 
-VERSION = 1.24
+VERSION = 1.26
 
 #  Copyright (c) 2021
 #
