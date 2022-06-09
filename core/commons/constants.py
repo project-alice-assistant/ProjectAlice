@@ -18,6 +18,8 @@
 #  Last modified: 2022.06.08 at 12:56:46 CEST
 
 # Keep this import! It interfaces the ProjectAlice package constants to the project specific constants!
+# noinspection PyUnresolvedReferences
+from ProjectAlice.core.commons.constants import *
 
 VERSION              = '1.0.0-rc3'
 DEVICETYPE           = 'ProjectAlice'
