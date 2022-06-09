@@ -20,16 +20,16 @@
 
 import importlib
 import json
+import requests
 import shutil
 import traceback
-from contextlib import suppress
-from pathlib import Path
-from typing import Any, Dict, List, Optional, Union
-
-import requests
 from AliceGit import Exceptions as GitErrors
 from AliceGit.Exceptions import NotGitRepository, PathNotFoundException
 from AliceGit.Git import Repository
+from ProjectAlice.core.base.model.Version import Version
+from contextlib import suppress
+from pathlib import Path
+from typing import Any, Dict, List, Optional, Union
 
 from core.ProjectAliceExceptions import AccessLevelTooLow, GithubNotFound, SkillInstanceFailed, SkillNotConditionCompliant, SkillStartDelayed, SkillStartingFailed
 from core.base.SuperManager import SuperManager
@@ -37,7 +37,6 @@ from core.base.model import Intent
 from core.base.model.AliceSkill import AliceSkill
 from core.base.model.FailedAliceSkill import FailedAliceSkill
 from core.base.model.Manager import Manager
-from core.base.model.Version import Version
 from core.commons import constants
 from core.dialog.model.DialogSession import DialogSession
 from core.util.Decorators import IfSetting, Online, deprecated

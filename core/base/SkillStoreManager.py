@@ -19,12 +19,12 @@
 
 import difflib
 import requests
+from ProjectAlice.core.base.model.Version import Version
 from random import shuffle
 from typing import Optional, Tuple
 
 from core.ProjectAliceExceptions import GithubNotFound
 from core.base.model.Manager import Manager
-from core.base.model.Version import Version
 from core.commons import constants
 from core.dialog.model.DialogSession import DialogSession
 from core.util.Decorators import Online

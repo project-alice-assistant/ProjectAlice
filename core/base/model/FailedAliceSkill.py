@@ -20,11 +20,11 @@
 from __future__ import annotations
 
 import json
+from AliceGit.Git import Repository
+from ProjectAlice.core.base.model.Version import Version
 from pathlib import Path
 
-from AliceGit.Git import Repository
 from core.base.model.ProjectAliceObject import ProjectAliceObject
-from core.base.model.Version import Version
 from core.commons import constants
 from core.dialog.model.DialogSession import DialogSession
 

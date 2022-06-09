@@ -19,7 +19,7 @@
 
 import unittest
 
-from core.base.model.Version import Version
+from ProjectAlice.core.base.model.Version import Version
 
 
 class TestVersion(unittest.TestCase):

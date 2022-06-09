@@ -19,23 +19,22 @@
 
 from __future__ import annotations
 
+import flask
 import importlib
 import inspect
 import json
 import re
-from copy import copy
-from pathlib import Path
-from typing import Any, Dict, Iterable, List, Optional, Union
-
-import flask
 from AliceGit.Git import Repository
+from ProjectAlice.core.base.model.Version import Version
+from copy import copy
 from markdown import markdown
 from paho.mqtt import client as MQTTClient
+from pathlib import Path
+from typing import Any, Dict, Iterable, List, Optional, Union
 
 from core.ProjectAliceExceptions import AccessLevelTooLow, SkillInstanceFailed
 from core.base.model.Intent import Intent
 from core.base.model.ProjectAliceObject import ProjectAliceObject
-from core.base.model.Version import Version
 from core.commons import constants
 from core.device.model.Device import Device
 from core.dialog.model.DialogSession import DialogSession

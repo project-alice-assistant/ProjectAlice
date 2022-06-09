@@ -21,13 +21,13 @@ from __future__ import annotations
 
 import json
 import re
+from ProjectAlice.core.base.model.Version import Version
 from copy import copy
 from importlib_metadata import PackageNotFoundError, version as packageVersion
 from pathlib import Path
 from typing import TYPE_CHECKING, Union
 
 import core.base.SuperManager as SM
-from core.base.model.Version import Version
 from core.commons import constants
 from core.util.model.Logger import Logger
 

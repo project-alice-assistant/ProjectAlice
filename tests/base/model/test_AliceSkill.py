@@ -17,13 +17,14 @@
 #
 #  Last modified: 2021.04.13 at 12:56:50 CEST
 
-import unittest
 from unittest import mock
+
+import unittest
+from ProjectAlice.core.base.model.Version import Version
 from unittest.mock import MagicMock, PropertyMock
 
 from core.base.model.AliceSkill import AliceSkill
 from core.base.model.Intent import Intent
-from core.base.model.Version import Version
 from core.user.model.AccessLevels import AccessLevel
 from core.util.Decorators import IntentHandler, MqttHandler
 

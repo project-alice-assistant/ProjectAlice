@@ -71,7 +71,7 @@ _logger.addHandler(logFileHandler)
 _logger.addHandler(rotatingHandler)
 _logger.addHandler(streamHandler)
 
-from core.Initializer import Initializer
+from ProjectAlice.core.Initializer import Initializer
 
 Initializer().initProjectAlice()
 
