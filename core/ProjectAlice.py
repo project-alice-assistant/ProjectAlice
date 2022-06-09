@@ -21,11 +21,11 @@ import hashlib
 import requests
 import subprocess
 from ProjectAlice.core.base.model import Version
-from ProjectAlice.core.commons import constants
 from pathlib import Path
 
 from core.base.SuperManager import SuperManager
 from core.base.model.StateType import StateType
+from core.commons import constants
 from core.commons.model.Singleton import Singleton
 from core.util.Stopwatch import Stopwatch
 from core.util.model.Logger import Logger
