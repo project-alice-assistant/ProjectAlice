@@ -1,3 +1,4 @@
+ProjectAlice>=0.0.1
 numpy~=1.21.4
 paho-mqtt~=1.6.1
 googletrans~=3.0.0
