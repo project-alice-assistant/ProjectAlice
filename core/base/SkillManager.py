@@ -20,16 +20,15 @@
 
 import importlib
 import json
+import requests
 import shutil
 import traceback
-from contextlib import suppress
-from pathlib import Path
-from typing import Any, Dict, List, Optional, Union
-
-import requests
 from AliceGit import Exceptions as GitErrors
 from AliceGit.Exceptions import NotGitRepository, PathNotFoundException
 from AliceGit.Git import Repository
+from contextlib import suppress
+from pathlib import Path
+from typing import Any, Dict, List, Optional, Union
 
 from core.ProjectAliceExceptions import AccessLevelTooLow, GithubNotFound, SkillInstanceFailed, SkillNotConditionCompliant, SkillStartDelayed, SkillStartingFailed
 from core.base.SuperManager import SuperManager
@@ -58,6 +57,7 @@ class SkillManager(Manager):
 
 	BASE_SKILLS = [
 		'AliceCore',
+		'AliceSatellite',
 		'ContextSensitive',
 		'DateDayTimeYear',
 		'RedQueen',
