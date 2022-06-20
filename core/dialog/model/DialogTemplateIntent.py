@@ -27,9 +27,6 @@ class DialogTemplateIntent(object):
 	utterances: list = field(default_factory=list)
 	slots: list = field(default_factory=list)
 
-	# TODO remove me
-	description: str = ''
-
 
 	def addUtterance(self, text: str):
 		self.utterances.append(text)
