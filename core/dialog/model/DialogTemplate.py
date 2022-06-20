@@ -40,11 +40,6 @@ class DialogTemplate(object):
 	myIntents: dict = field(default_factory=dict)
 	logger: Logger = Logger(prepend='[DialogTemplate]')
 
-	# TODO remove me
-	icon: str = ''
-	description: str = ''
-
-
 	def __post_init__(self):  # NOSONAR
 		for slotType in self.slotTypes:
 			instance = DialogTemplateSlotType(**slotType)
