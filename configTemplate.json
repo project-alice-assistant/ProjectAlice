@@ -367,7 +367,8 @@
 			"deepspeech",
 			"pocketsphinx",
 			"google",
-			"snips"
+			"snips",
+			"vosk"
 		],
 		"description" : "The Asr to use. Can't use an online Asr if you have set keepASROffline to true!",
 		"onUpdate"    : "ASRManager.restartEngine",
@@ -382,6 +383,7 @@
 			"deepspeech",
 			"pocketsphinx",
 			"google",
+			"vosk",
 			"snips"
 		],
 		"description" : "The Asr to use in case the default ASR becomes unavailable",

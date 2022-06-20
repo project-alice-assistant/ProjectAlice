@@ -75,6 +75,8 @@ class ASRManager(Manager):
 			package = 'core.asr.model.DeepSpeechAsr'
 		elif userASR == 'snips':
 			package = 'core.asr.model.SnipsAsr'
+		elif userASR == 'vosk':
+			package = 'core.asr.model.VoskAsr'
 		elif userASR == 'coqui':
 			package = 'core.asr.model.CoquiAsr'
 		else:
