@@ -54,7 +54,6 @@ class GoogleTts(Tts):
 		self._client = None
 		self._supportsSSML = True
 
-		# TODO implement the others
 		# https://cloud.google.com/text-to-speech/docs/voices
 		self._supportedLangAndVoices = {
 			'en-US': {

@@ -53,7 +53,6 @@ class MycroftTts(Tts):
 
 		self._mimicDirectory = Path(Path(SuperManager.getInstance().Commons.rootDir()).parent, 'mimic/mimic')
 
-		# TODO => classify genders and countries. First is always default
 		self._supportedLangAndVoices = {
 			'en-US': {
 				'male': {
