@@ -228,9 +228,7 @@ class ASRManager(Manager):
 
 
 	def updateASRCredentials(self, asr: str):
-		# TODO this belongs in the ASR itself
-		if asr == 'google':
-			Path(self.Commons.rootDir(), 'credentials/googlecredentials.json').write_text(self.ConfigManager.getAliceConfigByName('googleASRCredentials'))
+		if not self._asr:
+			return
 
-			self.ASRManager.onStop()
-			self.ASRManager.onStart()
+		self._asr.updateCredentials()
