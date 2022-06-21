@@ -316,7 +316,7 @@ class LocationManager(Manager):
 
 
 	# noinspection PyUnusedLocal
-	def getLocation(self, locId: int = None, locationName: str = None, locationSynonym: str = None, deviceUid: str = None, deviceTypeId: int = None, noContext: bool = false) -> Optional[Location]:
+	def getLocation(self, locId: int = None, locationName: str = None, locationSynonym: str = None, deviceUid: str = None, deviceTypeId: int = None, noContext: bool = False) -> Optional[Location]:
 		# 1a) check name vs locations - done
 		# 1b) check name vs location synonyms - done
 		# 2) get device for siteID, get main location of device - done
