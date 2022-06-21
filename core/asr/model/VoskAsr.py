@@ -72,7 +72,7 @@ class VoskAsr(Asr):
 					if not chunk:
 						break
 
-					endOfSpeech = recognizer.AcceptWavefrom(chunk)
+					endOfSpeech = recognizer.AcceptWaveform(chunk)
 					if endOfSpeech:
 						break
 
