@@ -17,16 +17,15 @@
 #
 #  Last modified: 2022.06.20 at 13:00:00 CEST
 
-import numpy as np
 import json
-from pathlib import Path
-from typing import Generator, Optional
+from typing import Optional
 
 from core.asr.model.ASRResult import ASRResult
 from core.asr.model.Asr import Asr
 from core.asr.model.Recorder import Recorder
 from core.dialog.model.DialogSession import DialogSession
 from core.util.Stopwatch import Stopwatch
+
 
 try:
 	import vosk
@@ -53,9 +52,9 @@ class VoskAsr(Asr):
 	def onStart(self):
 		super().onStart()
 		self.installDependencies()
-		self.logInfo(f'Loading Model')
+		self.logInfo(f'Loading model')
 		self._model = vosk.Model(lang=self.LanguageManager.activeLanguage)
-		self.logInfo(f'Model Loaded')
+		self.logInfo(f'Model loaded')
 
 
 	def decodeStream(self, session: DialogSession) -> Optional[ASRResult]:
@@ -69,16 +68,15 @@ class VoskAsr(Asr):
 				self._recorder = recorder
 				recognizer = vosk.KaldiRecognizer(self._model, 16000.0)
 				for chunk in recorder:
-
 					if not chunk:
 						break
 
-					end_of_speech = recognizer.AcceptWavefrom(chunk)
-					if end_of_speech:
+					endOfSpeech = recognizer.AcceptWavefrom(chunk)
+					if endOfSpeech:
 						break
 
 					result = json.loads(recognizer.PartialResult())
-					if result['parial'] and result['partial'] != previous:
+					if result['partial'] and result['partial'] != previous:
 						previous = result
 						self.partialTextCaptured(session=session, text=result['partial'], likelihood=1, seconds=0)
 
