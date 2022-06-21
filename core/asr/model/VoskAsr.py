@@ -53,32 +53,9 @@ class VoskAsr(Asr):
 
 	def onStart(self):
 		super().onStart()
-		self.installDependencies()
-		if not self.checkLanguage():
-			self.downloadLanguage()
-
 		self.logInfo(f'Loading model')
 		self._model = vosk.Model(lang=self.LanguageManager.activeLanguageAndCountryCode.lower())
 		self.logInfo(f'Model loaded')
-
-
-	def checkLanguage(self) -> bool:
-		if not self._langPath.exists():
-			self._langPath.mkdir(parents=True)
-			return False
-
-		return self.modelFile.exists()
-
-
-	@property
-	def modelFile(self) -> Path:
-		return self._langPath / 'output_graph.tflite'
-
-
-	# noinspection DuplicatedCode
-	def downloadLanguage(self) -> bool:  # NOSONAR
-		self.logInfo(f'Downloading language model for "{self.LanguageManager.activeLanguageAndCountryCode}"')
-		return True
 
 
 	def decodeStream(self, session: DialogSession) -> Optional[ASRResult]:
