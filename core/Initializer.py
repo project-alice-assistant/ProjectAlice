@@ -477,7 +477,7 @@ class Initializer(object):
 			confs['awsAccessKey'] = initConfs['awsAccessKey']
 			confs['awsSecretKey'] = initConfs['awsSecretKey']
 
-			confs['asr'] = initConfs['asr'] if initConfs['asr'] in {'pocketsphinx', 'google', 'deepspeech', 'snips', 'coqui'} else FALLBACK_ASR
+			confs['asr'] = initConfs['asr'] if initConfs['asr'] in {'pocketsphinx', 'google', 'deepspeech', 'snips', 'coqui', 'vosk'} else FALLBACK_ASR
 			if confs['asr'] == 'google' and not initConfs['googleServiceFile']:
 				self._logger.logInfo(f'You cannot use Google Asr without a google service file, falling back to {FALLBACK_ASR}')
 				confs['asr'] = FALLBACK_ASR

@@ -104,9 +104,8 @@ shortReplies: no
 # If set to yes Alice will whisper instead of using short answers when you are sleeping. Currently, only available with Amazon Tts
 whisperWhenSleeping: no
 
-# Either 'coqui', 'pocketsphinx', 'deepspeech', 'snips' (EN only) or 'google'
-asr: coqui
-
+# Either 'coqui', 'pocketsphinx', 'deepspeech', 'snips' (EN only), 'vosk' or 'google'
+asr: 'coqui'
 # Either 'pico', 'mycroft', 'amazon', 'google' or 'watson'
 tts: pico
 ttsLanguage: en-US
