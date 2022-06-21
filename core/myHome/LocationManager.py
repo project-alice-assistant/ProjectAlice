@@ -316,13 +316,11 @@ class LocationManager(Manager):
 
 
 	# noinspection PyUnusedLocal
-	def getLocation(self, locId: int = None, locationName: str = None, locationSynonym: str = None, deviceUid: str = None, deviceTypeId: int = None) -> Optional[Location]:
-		# todo implement location det. logic
+	def getLocation(self, locId: int = None, locationName: str = None, locationSynonym: str = None, deviceUid: str = None, deviceTypeId: int = None, noContext: bool = false) -> Optional[Location]:
 		# 1a) check name vs locations - done
 		# 1b) check name vs location synonyms - done
 		# 2) get device for siteID, get main location of device - done
-		# 3) try to get the location context sensitive
-		# 4) check if there is only one room that has that type of device
+		# 3) try to get the location context-sensitive - done
 		# if 1 or 2 provides names
 		"""
 		:param locationName: a location name issued by the user
@@ -330,6 +328,7 @@ class LocationManager(Manager):
 		:param locId:
 		:param deviceUid: the current devices site NAME
 		:param deviceTypeId: only rooms with that type of device can be found - linked is allowed as well
+		:param noContext: do not check the context-sensitive skill
 		:return: Location
 		"""
 
@@ -352,6 +351,15 @@ class LocationManager(Manager):
 		if deviceUid:
 			locId = self.DeviceManager.getDevice(uid=deviceUid).parentLocation
 			return self.getLocation(locId=locId)
+
+		if noContext:
+			return None
+
+		ctx = self.SkillManager.getSkillInstance('ContextSensitive')
+		if ctx:
+			lastLocation = ctx.getLastLocation()
+			if lastLocation:
+				return self.getLocation(locationName=lastLocation, noContext=True)
 
 		return None
 
