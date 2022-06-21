@@ -18,6 +18,7 @@
 #  Last modified: 2022.06.20 at 13:00:00 CEST
 
 import json
+from pathlib import Path
 from typing import Optional
 
 from core.asr.model.ASRResult import ASRResult
@@ -47,14 +48,37 @@ class VoskAsr(Asr):
 		self._capableOfArbitraryCapture = True
 		self._isOnlineASR = False
 		self._model: Optional[vosk.Model] = None
+		self._langPath = Path(self.Commons.rootDir(), f'trained/asr/vosk/{self.LanguageManager.activeLanguage}')
 
 
 	def onStart(self):
 		super().onStart()
 		self.installDependencies()
+		if not self.checkLanguage():
+			self.downloadLanguage()
+
 		self.logInfo(f'Loading model')
-		self._model = vosk.Model(lang=self.LanguageManager.activeLanguage)
+		self._model = vosk.Model(lang=self.LanguageManager.activeLanguageAndCountryCode.lower())
 		self.logInfo(f'Model loaded')
+
+
+	def checkLanguage(self) -> bool:
+		if not self._langPath.exists():
+			self._langPath.mkdir(parents=True)
+			return False
+
+		return self.modelFile.exists()
+
+
+	@property
+	def modelFile(self) -> Path:
+		return self._langPath / 'output_graph.tflite'
+
+
+	# noinspection DuplicatedCode
+	def downloadLanguage(self) -> bool:  # NOSONAR
+		self.logInfo(f'Downloading language model for "{self.LanguageManager.activeLanguageAndCountryCode}"')
+		return True
 
 
 	def decodeStream(self, session: DialogSession) -> Optional[ASRResult]:
@@ -66,7 +90,7 @@ class VoskAsr(Asr):
 			with Recorder(self._timeout, session.user, session.deviceUid) as recorder:
 				self.ASRManager.addRecorder(session.deviceUid, recorder)
 				self._recorder = recorder
-				recognizer = vosk.KaldiRecognizer(self._model, 16000.0)
+				recognizer = vosk.KaldiRecognizer(self._model, 16000)
 				for chunk in recorder:
 					if not chunk:
 						break
