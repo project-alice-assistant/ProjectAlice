@@ -136,12 +136,12 @@ class DialogManager(Manager):
 		if not session or session.hasEnded:
 			return
 
-		if session.isEnding or session.isNotification:
-			if session.isEnding and 0 < session.notUnderstood < int(self.ConfigManager.getAliceConfigByName('notUnderstoodRetries')):
-				session.isEnding = False
-				self.SkillManager.getSkillInstance('AliceCore').askUpdateUtterance(session=session)
-				return
+		if session.isEnding and 0 < session.notUnderstood < int(self.ConfigManager.getAliceConfigByName('notUnderstoodRetries')):
+			session.isEnding = False
+			self.SkillManager.getSkillInstance('AliceCore').askUpdateUtterance(session=session)
+			return
 
+		if not session.keptOpen and session.isEnding or session.isNotification:
 			session.payload['text'] = ''
 			self.onEndSession(session=session, reason='nominal')
 		else:

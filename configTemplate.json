@@ -187,6 +187,19 @@
 	  "value": false
 	}
   },
+  "keepSessionOpen": {
+	"defaultValue": "Never",
+	"dataType": "list",
+	"isSensitive": false,
+	"values": [
+	  "Never",
+	  "Allowed",
+	  "Always"
+	],
+	"description": "Control if Alice is allowed to listen for another prompt after your previous conversation has ended",
+	"category": "system"
+  },
+
   "disableSound": {
 	"defaultValue": false,
 	"dataType": "boolean",

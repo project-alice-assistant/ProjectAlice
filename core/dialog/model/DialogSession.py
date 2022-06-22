@@ -56,6 +56,7 @@ class DialogSession(object):
 	intentFilter: list = field(default_factory=list)
 	textOnly: bool = False  # The session doesn't use audio, but text only. Per exemple, for Telegram messages sent to Alice
 	textInput: bool = False  # The session is started, user side, by a text input, not with voice capture, like dialogview on web ui
+	keptOpen: bool = False  # The session has ended, but is kept open for a new promt
 	lastWasSoundPlayOnly: bool = False  # We don't use request ids for play bytes topic. Both say and playaudio use play bytes, therefor we need to track if the last play bytes was sound only or TTS
 	locationId: int = -1  # Where this session is taking place
 
@@ -96,6 +97,13 @@ class DialogSession(object):
 		self.slotsAsObjects.update(commonsManager.parseSlotsToObjects(message))
 		self.text = self.payload.get('text', '')
 		self.input = self.payload.get('input', '')
+
+		if message.topic == constants.TOPIC_END_SESSION:
+			keepSessionOpen = SuperManager.getInstance().ConfigManager.getAliceConfigByName('keepSessionOpen')
+
+			self.keptOpen = not self.payload.get('forceEnd', False) \
+			                and ( keepSessionOpen == 'Always'
+			                      or keepSessionOpen == 'Allowed' and self.payload.get('requestContinue', False) )
 
 		customData = commonsManager.parseCustomData(message)
 		self.customData = {**self.customData, **customData}

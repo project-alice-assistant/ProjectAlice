@@ -179,13 +179,14 @@ class ASRManager(Manager):
 
 			self.MqttManager.publish(topic=constants.TOPIC_TEXT_CAPTURED, payload={'sessionId': session.sessionId, 'text': text, 'device': session.deviceUid, 'likelihood': result.likelihood, 'seconds': result.processingTime})
 		else:
-			self.MqttManager.playSound(
-				soundFilename='error',
-				location=Path(f'system/sounds/{self.LanguageManager.activeLanguage}'),
-				deviceUid=session.deviceUid,
-				sessionId=session.sessionId
-			)
-			self.MqttManager.endSession(sessionId=session.sessionId)
+			if not session.keptOpen:
+				self.MqttManager.playSound(
+					soundFilename='error',
+					location=Path(f'system/sounds/{self.LanguageManager.activeLanguage}'),
+					deviceUid=session.deviceUid,
+					sessionId=session.sessionId
+				)
+			self.MqttManager.endSession(sessionId=session.sessionId, forceEnd=True)
 
 
 	def onAudioFrame(self, message: mqtt.MQTTMessage, deviceUid: str):

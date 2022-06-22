@@ -249,7 +249,14 @@ class MqttManager(Manager):
 
 			if 'intent' in payload and float(payload['intent']['confidenceScore']) < session.probabilityThreshold:
 				self.logDebug(f'Intent **{message.topic}** detected but confidence score too low ({payload["intent"]["confidenceScore"]})')
-				if session.notUnderstood <= self.ConfigManager.getAliceConfigByName('notUnderstoodRetries'):
+
+				# if the session has ended but was kept open for further prompts, don't use "not understood" logic
+				if session.keptOpen:
+					session.notUnderstood = 0
+					self.endSession(sessionId=sessionId, forceEnd=True)
+					return
+
+				elif session.notUnderstood <= self.ConfigManager.getAliceConfigByName('notUnderstoodRetries'):
 					session.notUnderstood = session.notUnderstood + 1
 
 					if not self.ConfigManager.getAliceConfigByName('suggestSkillsToInstall'):
@@ -332,7 +339,7 @@ class MqttManager(Manager):
 			if not payload:
 				continue
 			if payload['siteId'] != self._multiDetectionsHolder[0]:
-				self.endSession(sessionId=sessionId)
+				self.endSession(sessionId=sessionId, forceEnd=True)
 
 		self._multiDetectionsHolder = list()
 
@@ -872,9 +879,11 @@ class MqttManager(Manager):
 			}))
 
 
-	def endSession(self, sessionId):
+	def endSession(self, sessionId, requestContinue: bool = False, forceEnd: bool = True):
 		self._mqttClient.publish(constants.TOPIC_END_SESSION, json.dumps({
-			'sessionId': sessionId
+			'sessionId': sessionId,
+			'requestContinue': requestContinue,
+			'forceEnd': forceEnd
 		}))
 
 

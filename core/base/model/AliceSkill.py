@@ -700,8 +700,8 @@ class AliceSkill(ProjectAliceObject):
 		self.MqttManager.endDialog(sessionId=sessionId, text=text, deviceUid=deviceUid)
 
 
-	def endSession(self, sessionId):
-		self.MqttManager.endSession(sessionId=sessionId)
+	def endSession(self, sessionId, requestContinue: bool = False, forceEnd: bool = True):
+		self.MqttManager.endSession(sessionId=sessionId, requestContinue=requestContinue, forceEnd=forceEnd)
 
 
 	def playSound(self, soundFilename: str, location: Path = None, sessionId: str = '', deviceUid: Union[str, List[Union[str, Device]]] = None):
