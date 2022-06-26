@@ -29,6 +29,14 @@ from core.dialog.model.DialogSession import DialogSession
 from core.util.Stopwatch import Stopwatch
 
 
+#https://github.com/Azure-Samples/cognitive-services-speech-sdk/blob/master/samples/python/console/speech_sample.py
+try:
+	# noinspection PyUnresolvedReferences,PyPackageRequirements
+	import azure.cognitiveservices.speech as speechSdk
+except:
+	pass  # Auto installed
+
+
 # noinspection PyAbstractClass
 class AzureAsr(Asr):
 	NAME = 'Azure Asr'
@@ -42,7 +50,12 @@ class AzureAsr(Asr):
 		super().__init__()
 		self._capableOfArbitraryCapture = True
 		self._isOnlineASR = True
-		self._isStreamAble = False
+		self._speechConfig = None
+		self._speechRecognizer = None
+		self._stream = None
+		self._audioConfig = None
+
+
 		self._apiUrl = ''
 		self._headers = dict()
 		self._wav: Optional[wave.Wave_write] = None
@@ -53,14 +66,21 @@ class AzureAsr(Asr):
 		super().onStart()
 		if not self.ConfigManager.getAliceConfigByName('azureRegion') or not self.ConfigManager.getAliceConfigByName('azureKey'):
 			raise Exception('Please provide Azure Key and Region in settings')
-		self._apiUrl = f'https://{self.ConfigManager.getAliceConfigByName("azureRegion")}.stt.speech.microsoft.com/speech/recognition/conversation/cognitiveservices/v1?language={self.LanguageManager.getLanguageAndCountryCode()}&profanity=raw&format=detailed'
-		self._headers = {
-			'Accept': 'application/json;text/xml',
-		    'Content-Type': 'audio/wav; codecs=audio/pcm; samplerate=16000',
-		    'Ocp-Apim-Subscription-Key': self.ConfigManager.getAliceConfigByName('azureKey'),
-		    #'Transfer-Encoding': 'chunked',
-		    'Expect': '100-continue'
-		}
+
+		self._stream = speechSdk.audio.PushAudioInputStream()
+		self._audioConfig = speechSdk.audio.AudioConfig(stream = self._stream)
+		self._speechConfig = speechSdk.SpeechConfig(subscription=self.ConfigManager.getAliceConfigByName('azureKey'), region=self.ConfigManager.getAliceConfigByName('azureRegion'))
+		self._speechRecognizer = speechSdk.SpeechRecognizer(speech_config = self._speechConfig, audio_config = self._audioConfig)
+
+
+		# self._apiUrl = f'https://{self.ConfigManager.getAliceConfigByName("azureRegion")}.stt.speech.microsoft.com/speech/recognition/conversation/cognitiveservices/v1?language={self.LanguageManager.getLanguageAndCountryCode()}&profanity=raw&format=detailed'
+		# self._headers = {
+		# 	'Accept': 'application/json;text/xml',
+		#     'Content-Type': 'audio/wav; codecs=audio/pcm; samplerate=16000',
+		#     'Ocp-Apim-Subscription-Key': self.ConfigManager.getAliceConfigByName('azureKey'),
+		#     #'Transfer-Encoding': 'chunked',
+		#     'Expect': '100-continue'
+		# }
 
 
 	def recordFrame(self, frame: bytes):
