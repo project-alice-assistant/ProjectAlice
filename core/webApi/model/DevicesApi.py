@@ -19,6 +19,7 @@
 
 from flask import Response, jsonify, request
 from flask_classful import route
+from core.device.model.DeviceAbility import DeviceAbility
 
 from core.util.Decorators import ApiAuthenticated
 from core.webApi.model.Api import Api
@@ -87,6 +88,16 @@ class DevicesApi(Api):
 	def getDevices(self) -> Response:
 		try:
 			devices = {device.id: device.toDict() for device in self.DeviceManager.devices.values()}
+			return jsonify(success=True, devices=devices)
+		except Exception as e:
+			self.logError(f'Error getting devices {e}')
+			return jsonify(success=False, message=str(e))
+
+	@route('/allPlaySound/', methods=['GET'])
+	@ApiAuthenticated
+	def getDevices(self) -> Response:
+		try:
+			devices = {device.id: device.toDict() for device in self.DeviceManager.getDevicesWithAbilities(abilities=[DeviceAbility.PLAY_SOUND])}
 			return jsonify(success=True, devices=devices)
 		except Exception as e:
 			self.logError(f'Error getting devices {e}')

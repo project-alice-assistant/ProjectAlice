@@ -84,6 +84,8 @@ class DialogTemplateManager(Manager):
 
 		for resource in self.skillResource():
 			data = json.loads(resource.read_text())
+			if 'slotTypes' not in data:
+				data['slotTypes'] = []
 			dialogTemplate = DialogTemplate(**data)
 
 			# If we have an utterance extender, apply it
@@ -246,8 +248,8 @@ class DialogTemplateManager(Manager):
 
 	@classmethod
 	def skillResource(cls) -> Generator[Path, None, None]:
-		languageManager = SuperManager.getInstance().languageManager
-		skillManager = SuperManager.getInstance().skillManager
+		languageManager = SuperManager.getInstance().LanguageManager
+		skillManager = SuperManager.getInstance().SkillManager
 
 		if not languageManager or not skillManager:
 			return

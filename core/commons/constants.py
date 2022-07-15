@@ -17,7 +17,8 @@
 #
 #  Last modified: 2021.04.13 at 12:56:46 CEST
 
-VERSION                                = '1.0.0-rc2'
+VERSION                                = '1.0.0-rc3'
+DEVICETYPE                             = 'ProjectAlice'
 
 # System
 ALL                                    = 'all'
@@ -40,6 +41,8 @@ UNKNOWN                                = 'unknown'
 UNKNOWN_MANAGER                        = 'unknownManager'
 UNKNOWN_USER                           = 'unknownUser'
 UNKNOWN_WORD                           = 'unknownword'
+
+PYTHON                                 = 'python3.7'
 
 # Hermes
 TOPIC_ASR_START_LISTENING              = 'hermes/asr/startListening'
@@ -106,6 +109,13 @@ TOPIC_STOP_DND                         = 'projectalice/devices/startListen'
 TOPIC_SYSLOG                           = 'projectalice/logging/syslog'
 TOPIC_TOGGLE_DND                       = 'projectalice/devices/toggleListen'
 TOPIC_UI_NOTIFICATION                  = 'projectalice/notifications/ui/notification'
+TOPIC_NLU_TRAINER_READY                = 'projectalice/nlu/trainerReady'
+TOPIC_NLU_TRAINER_STOPPED              = 'projectalice/nlu/trainerStopped'
+TOPIC_NLU_TRAINER_TRAIN                = 'projectalice/nlu/doTrain'
+TOPIC_NLU_TRAINER_REFUSE_FAILED        = 'projectalice/nlu/trainingFailed'
+TOPIC_NLU_TRAINER_TRAINING_RESULT      = 'projectalice/nlu/trainingResult/#'
+TOPIC_NLU_TRAINER_TRAINING             = 'projectalice/nlu/training'
+TOPIC_NLU_TRAINER_TRAINING_STATUS      = 'projectalice/nlu/trainingStatus'
 
 # Events
 EVENT_ASR_TOGGLE_OFF                   = 'asrToggleOff'

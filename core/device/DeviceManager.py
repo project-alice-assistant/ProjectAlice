@@ -213,9 +213,7 @@ class DeviceManager(Manager):
 			else:
 				if lastTime < now - (device.heartbeatRate * 2):
 					self.logWarning(f'Device **{device.displayName}** has not given a signal since {device.deviceType.heartbeatRate} seconds or more')
-					self._heartbeats.pop(uid, None)
-					device.connected = False
-					self.MqttManager.publish(constants.TOPIC_DEVICE_UPDATED, payload={'device': device.toDict()})
+					self.deviceDisconnecting(device.uid)
 
 		self._heartbeatsCheckTimer = self.ThreadManager.newTimer(interval=2, func=self.checkHeartbeats)
 
@@ -784,7 +782,7 @@ class DeviceManager(Manager):
 		"""
 		self._broadcastFlag.set()
 		while self._broadcastFlag.is_set():
-			self._broadcastSocket.sendto(bytes(f'{self.Commons.getLocalIp()}:{self._listenPort}:{uid}', encoding='utf8'), ('<broadcast>', self._broadcastPort))
+			self._broadcastSocket.sendto(bytes(f'pair:{self.Commons.getLocalIp()}:{self._listenPort}:{uid}', encoding='utf8'), ('<broadcast>', self._broadcastPort))
 			try:
 				sock, address = self._listenSocket.accept()
 				sock.settimeout(None)
@@ -804,7 +802,7 @@ class DeviceManager(Manager):
 				if replyOnDeviceUid:
 					self.MqttManager.say(text=self.TalkManager.randomTalk('newDeviceAdditionSuccess', skill='system'), deviceUid=replyOnDeviceUid)
 
-				# self.ThreadManager.doLater(interval=5, func=self.WakewordRecorder.uploadToNewDevice, args=[uid])
+				self.ThreadManager.doLater(interval=5, func=self.WakewordRecorder.uploadToNewDevice, args=[uid])
 
 				self._broadcastSocket.sendto(bytes('ok', encoding='utf8'), (deviceIp, self._broadcastPort))
 				self._stopBroadcasting()

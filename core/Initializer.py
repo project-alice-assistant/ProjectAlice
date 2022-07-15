@@ -1,4 +1,7 @@
-VERSION = 1.24
+import shutil
+
+
+VERSION = 1.26
 
 #  Copyright (c) 2021
 #
@@ -37,6 +40,7 @@ ASOUND = '/etc/asound.conf'
 TEMP = Path('/tmp/service')
 ALLOWED_LANGUAGES = {'en', 'de', 'fr', 'it', 'pt', 'pl'}
 FALLBACK_ASR = 'coqui'
+PYTHON = 'python3.7'
 
 
 class InitDict(dict):
@@ -323,13 +327,13 @@ class PreInit(object):
 		if not Path('venv').exists():
 			self._logger.logInfo('Not running with venv, I need to create it')
 			subprocess.run(['sudo', 'apt-get', 'install', 'python3-dev', 'python3-pip', 'python3-venv', 'python3-wheel', '-y'])
-			subprocess.run(['python3.7', '-m', 'venv', 'venv'])
+			subprocess.run([PYTHON, '-m', 'venv', 'venv'])
 			self.updateVenv()
-			self._logger.logInfo('Installed virtual environement, restarting...')
+			self._logger.logInfo('Installed virtual environment, restarting...')
 			return False
 		elif not self.isVenv():
 			self.updateVenv()
-			self._logger.logWarning('Restarting to run using virtual environement: "./venv/bin/python main.py"')
+			self._logger.logWarning('Restarting to run using virtual environment: "./venv/bin/python main.py"')
 			return False
 
 		return True
@@ -338,6 +342,7 @@ class PreInit(object):
 	def updateVenv(self):
 		subprocess.run([self.PIP, 'uninstall', '-y', '-r', str(Path(self.rootDir, 'pipuninstalls.txt'))])
 		subprocess.run([self.PIP, 'install', 'wheel'])
+		subprocess.run([self.PIP, 'install', 'https://www.piwheels.org/simple/numpy/numpy-1.21.4-cp39-cp39-linux_armv7l.whl'])
 		subprocess.run([self.PIP, 'install', '-r', str(Path(self.rootDir, 'requirements.txt')), '--upgrade', '--no-cache-dir'])
 
 
@@ -473,7 +478,7 @@ class Initializer(object):
 			confs['awsAccessKey'] = initConfs['awsAccessKey']
 			confs['awsSecretKey'] = initConfs['awsSecretKey']
 
-			confs['asr'] = initConfs['asr'] if initConfs['asr'] in {'pocketsphinx', 'google', 'deepspeech', 'snips', 'coqui'} else FALLBACK_ASR
+			confs['asr'] = initConfs['asr'] if initConfs['asr'] in {'pocketsphinx', 'google', 'deepspeech', 'snips', 'coqui', 'vosk'} else FALLBACK_ASR
 			if confs['asr'] == 'google' and not initConfs['googleServiceFile']:
 				self._logger.logInfo(f'You cannot use Google Asr without a google service file, falling back to {FALLBACK_ASR}')
 				confs['asr'] = FALLBACK_ASR
@@ -577,20 +582,25 @@ class Initializer(object):
 		if initConfs['useHLC']:
 			self._logger.logInfo("*** Taking care of HLC.")
 
-			if not hlcDir.exists():
-				#todo: replace with AliceGit maybe?
-				subprocess.run(['git', 'clone', 'https://github.com/project-alice-assistant/hermesLedControl.git', str(hlcDir)])
-			else:
-				subprocess.run(['git', '-C', hlcDir, 'stash'])
-				subprocess.run(['git', '-C', hlcDir, 'pull'])
-				subprocess.run(['git', '-C', hlcDir, 'stash', 'clear'])
+			from AliceGit.Git import NotGitRepository, PathNotFoundException, Repository
+
+			url = 'https://github.com/project-alice-assistant/hermesLedControl.git'
+			try:
+				repository = Repository(directory=hlcDir)
+			except PathNotFoundException:
+				repository = Repository.clone(url=url, directory=hlcDir, makeDir=True)
+			except NotGitRepository:
+				shutil.rmtree(hlcDir, ignore_errors=True)
+				repository = Repository.clone(url=url, directory=hlcDir, makeDir=True)
+
+			repository.checkout(branch='master')
+			repository.pull()
 
 			if hlcServiceFilePath.exists():
 				subprocess.run(['sudo', 'systemctl', 'stop', 'hermesledcontrol'])
 				subprocess.run(['sudo', 'systemctl', 'disable', 'hermesledcontrol'])
-				subprocess.run(['sudo', 'rm', hlcServiceFilePath])
 
-			subprocess.run(['python3.7', '-m', 'venv', f'{str(hlcDir)}/venv'])
+			subprocess.run([PYTHON, '-m', 'venv', f'{str(hlcDir)}/venv'])
 			subprocess.run([f'{str(hlcDir)}/venv/bin/pip', 'install', '-r', f'{str(hlcDir)}/requirements.txt', '--no-cache-dir'])
 
 			import yaml
@@ -608,16 +618,20 @@ class Initializer(object):
 
 			serviceFile = hlcDistributedServiceFilePath.read_text()
 			serviceFile = serviceFile.replace('%WORKING_DIR%', f'{str(hlcDir)}')
-			serviceFile = serviceFile.replace('%EXECSTART%', f'WorkingDirectory={str(hlcDir)}/venv/bin/python main.py --hermesLedControlConfig=/home/{getpass.getuser()}/.config/HermesLedControl/configuration.yml')
-			serviceFile = serviceFile.replace('%USER%', f'User={getpass.getuser()}')
+			serviceFile = serviceFile.replace('%EXECSTART%', f'{str(hlcDir)}/venv/bin/python main.py --hermesLedControlConfig=/home/{getpass.getuser()}/.config/HermesLedControl/configuration.yml')
+			serviceFile = serviceFile.replace('%USER%', f'{getpass.getuser()}')
 			hlcDistributedServiceFilePath.write_text(serviceFile)
 			subprocess.run(['sudo', 'cp', hlcDistributedServiceFilePath, hlcServiceFilePath])
 
 
 		useFallbackHLC = False
 		if initConfs['installSound']:
-			if audioHardware in {'respeaker2', 'respeaker4', 'respeaker6MicArray'}:
+			if audioHardware in {'respeaker2', 'respeaker4', 'respeaker4MicLinear', 'respeaker6MicArray'}:
 				subprocess.run(['sudo', Path(self._rootDir, 'system/scripts/audioHardware/respeakers.sh')])
+
+				if audioHardware == 'respeaker4MicLinear' and initConfs['useHLC']:
+					initConfs['useHLC'] = False
+
 				if initConfs['useHLC']:
 					hlcConfig['hardware'] = audioHardware
 
@@ -627,6 +641,9 @@ class Initializer(object):
 				dest = Path('/etc/voicecard/asound_2mic.conf')
 				if audioHardware == 'respeaker4':
 					dest = Path('/etc/voicecard/asound_4mic.conf')
+				elif audioHardware == 'respeaker4MicLinear':
+					confs['outputDevice'] = 'playback'
+					dest = Path('/etc/voicecard/asound_6mic.conf')
 				elif audioHardware == 'respeaker6MicArray':
 					dest = Path('/etc/voicecard/asound_6mic.conf')
 

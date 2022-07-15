@@ -154,3 +154,11 @@ class GoogleAsr(Asr):
 				self._lastResultCheck = now
 
 		return None
+
+
+	def updateCredentials(self):
+		Path(self.Commons.rootDir(), 'credentials/googlecredentials.json').write_text(
+			self.ConfigManager.getAliceConfigByName('googleASRCredentials'))
+
+		self.ASRManager.onStop()
+		self.ASRManager.onStart()

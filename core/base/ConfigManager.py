@@ -496,7 +496,11 @@ class ConfigManager(Manager):
 		if not skillToLoad:
 			self._skillsConfigurations = skillsConfigurations.copy()
 		else:
-			self._skillsConfigurations[skillToLoad] = skillsConfigurations[skillToLoad].copy()
+			if not skillToLoad in skillsConfigurations:
+				self.logError(f'Specific skill config for {skillToLoad} not loaded.')
+				self._skillsConfigurations[skillToLoad] = dict()
+			else:
+				self._skillsConfigurations[skillToLoad] = skillsConfigurations[skillToLoad].copy()
 		self._loadingDone = True
 
 
@@ -690,10 +694,10 @@ class ConfigManager(Manager):
 			return True
 
 
-	def updateTimezone(self, newTimezone: str):
-		result = self.Commons.runRootSystemCommand(['timedatectl', 'set-timezone', newTimezone])
+	def updateTimezone(self):
+		result = self.Commons.runRootSystemCommand(['timedatectl', 'set-timezone', self.getAliceConfigByName('timezone')])
 		if result.returncode:
-			self.logError('Unsupported timezone format')
+			raise Exception('Unsupported timezone format')
 
 
 	def toggleDebugLogs(self):

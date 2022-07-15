@@ -1,4 +1,5 @@
 git
+python3-numpy
 python3-pip
 python3-wheel
 libffi-dev

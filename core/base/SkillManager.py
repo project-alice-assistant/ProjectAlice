@@ -23,13 +23,13 @@ import json
 import requests
 import shutil
 import traceback
+from AliceGit import Exceptions as GitErrors
+from AliceGit.Exceptions import NotGitRepository, PathNotFoundException
+from AliceGit.Git import Repository
 from contextlib import suppress
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Union
 
-from AliceGit import Exceptions as GitErrors
-from AliceGit.Exceptions import NotGitRepository, PathNotFoundException
-from AliceGit.Git import Repository
 from core.ProjectAliceExceptions import AccessLevelTooLow, GithubNotFound, SkillInstanceFailed, SkillNotConditionCompliant, SkillStartDelayed, SkillStartingFailed
 from core.base.SuperManager import SuperManager
 from core.base.model import Intent
@@ -57,6 +57,7 @@ class SkillManager(Manager):
 
 	BASE_SKILLS = [
 		'AliceCore',
+		'AliceSatellite',
 		'ContextSensitive',
 		'DateDayTimeYear',
 		'RedQueen',
@@ -174,7 +175,7 @@ class SkillManager(Manager):
 				break
 
 		updates = self.checkForSkillUpdates()
-		if updates:
+		if updates and self.ConfigManager.getAliceConfigByName('skillAutoUpdate'):
 			self.updateSkills(skills=updates, withSkillRestart=False)
 
 		self.initSkills()
@@ -201,7 +202,7 @@ class SkillManager(Manager):
 			return
 
 		updates = self.checkForSkillUpdates()
-		if updates:
+		if updates and self.ConfigManager.getAliceConfigByName('skillAutoUpdate'):
 			self.updateSkills(skills=updates)
 
 
@@ -540,16 +541,16 @@ class SkillManager(Manager):
 			self._failedSkills.pop(skillName, None)
 			self._deactivatedSkills.pop(skillName, None)
 
-			installFilePath = self.getSkillInstallFilePath(skillName=skillName)
-			if not installFilePath.exists():
+			try:
+				installFilePath = self.getSkillInstallFilePath(skillName=skillName)
+				installFile = json.loads(installFilePath.read_text())
+			except Exception as e:
 				if skillName in self.NEEDED_SKILLS:
-					self.logFatal(f'Cannot find skill install file for skill **{skillName}**. The skill is required to continue')
+					self.logFatal(f'Cannot load skill install file for skill **{skillName}**. The skill is required to continue: {e}')
 					return
 				else:
-					self.logWarning(f'Cannot find skill install file for skill **{skillName}**, skipping.')
+					self.logWarning(f'Cannot load skill install file for skill **{skillName}**, skipping: {e}')
 					continue
-			else:
-				installFile = json.loads(installFilePath.read_text())
 
 			try:
 				skillActiveState = self.isSkillActive(skillName=skillName)
@@ -587,7 +588,7 @@ class SkillManager(Manager):
 				else:
 					return
 			except Exception as e:
-				self.logWarning(f'Something went wrong loading skill {skillName}: {e}')
+				self.logError(f'Something went wrong loading skill {skillName}: {repr(e)}', printStack=True)
 				if skillName in self.NEEDED_SKILLS:
 					self.logFatal(f'The skill is required to continue...')
 					return
@@ -760,7 +761,7 @@ class SkillManager(Manager):
 
 			try:
 				repository = self.getSkillRepository(skillName=skillName)
-				repository.fetch(force=True)
+				repository.fetch()
 				repository.checkout(tag=self.SkillStoreManager.getSkillUpdateTag(skillName=skillName), force=True)
 			except Exception as e:
 				self.logError(f'Error updating skill **{skillName}** : {e}')
@@ -1092,11 +1093,10 @@ class SkillManager(Manager):
 
 					self.logInfo(f'![yellow]({skillName}) - Version {installer["version"]} < {str(remoteVersion)} in {self.ConfigManager.getAliceConfigByName("skillsUpdateChannel")}')
 
-					if not self.ConfigManager.getAliceConfigByName('skillAutoUpdate'):
-						if skillName in self.allSkills:
-							self.allSkills[skillName].updateAvailable = True
-					else:
-						skillsToUpdate.append(skillName)
+					if skillName in self.allSkills:
+						self.allSkills[skillName].updateAvailable = True
+
+					skillsToUpdate.append(skillName)
 				else:
 					if self.isSkillUserModified(skillName=skillName) and self.ConfigManager.getAliceConfigByName('devMode'):
 						self.logInfo(f'![blue]({skillName}) - Version {installer["version"]} in {self.ConfigManager.getAliceConfigByName("skillsUpdateChannel")} - Locked for local changes!')
@@ -1291,7 +1291,7 @@ class SkillManager(Manager):
 		try:
 			self.logInfo(f'Creating new skill "{skillDefinition["name"]}"')
 
-			skillName = skillDefinition['name'].capitalize()
+			skillName = skillDefinition['name'][0].upper() + skillDefinition['name'][1:]
 
 			localDirectory = self.getSkillDirectory(skillName=skillName)
 			if localDirectory.exists():
@@ -1349,10 +1349,11 @@ class SkillManager(Manager):
 
 			data = {
 				'username'          : self.ConfigManager.getAliceConfigByName('githubUsername'),
-				'skillName'         : skillName.capitalize(),
+				'skillName'         : skillName,
 				'description'       : skillDefinition['description'],
 				'category'          : skillDefinition['category'],
 				'speakableName'     : skillDefinition['speakableName'],
+				'icon'              : skillDefinition.get('icon', 'fas fa-biohazard'),
 				'langs'             : supportedLanguages,
 				'createInstructions': skillDefinition.get('instructions', False),
 				'pipreq'            : [req.strip() for req in skillDefinition.get('pipreq', '').split(',')],
@@ -1361,12 +1362,14 @@ class SkillManager(Manager):
 				'scenarioNodes'     : scenarioNodes,
 				'devices'           : devices,
 				'outputDestination' : str(localDirectory),
-				'conditions'        : conditions
+				'conditions'        : conditions,
+				'aliceMinVersion'   : constants.VERSION
 			}
 
 			dump = Path(f'/tmp/{skillName}.json')
 			dump.write_text(json.dumps(data, ensure_ascii=False))
 
+			self.Commons.runSystemCommand(['./venv/bin/pip', 'install', '--upgrade', 'projectalice-sk'])
 			result = self.Commons.runSystemCommand(['./venv/bin/projectalice-sk', 'create', '--file', f'{str(dump)}'])
 			if result.stderr:
 				raise Exception('SK create failed')

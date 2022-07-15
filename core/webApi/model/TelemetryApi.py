@@ -22,6 +22,7 @@ from flask_classful import route
 
 from core.util.Decorators import ApiAuthenticated
 from core.webApi.model.Api import Api
+from core.util.model.TelemetryType import TelemetryType
 
 
 class TelemetryApi(Api):
@@ -32,7 +33,7 @@ class TelemetryApi(Api):
 	@ApiAuthenticated
 	def get(self) -> Response:
 		try:
-			ttype = request.args.get('telemetryType', None)
+			ttype: TelemetryType = TelemetryType(request.args.get('telemetryType', None))
 			deviceId = request.args.get('deviceId', None)
 			locationId = request.args.get('locationId', None)
 			historyFrom = request.args.get('historyFrom', None)

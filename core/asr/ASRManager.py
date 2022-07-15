@@ -18,12 +18,12 @@
 #  Last modified: 2021.07.31 at 15:54:28 CEST
 
 from importlib import import_module, reload
-from pathlib import Path
-from typing import Dict
 
 import paho.mqtt.client as mqtt
 from googletrans import Translator
 from langdetect import detect
+from pathlib import Path
+from typing import Dict
 
 from core.asr.model import Asr
 from core.asr.model.ASRResult import ASRResult
@@ -75,8 +75,12 @@ class ASRManager(Manager):
 			package = 'core.asr.model.DeepSpeechAsr'
 		elif userASR == 'snips':
 			package = 'core.asr.model.SnipsAsr'
+		elif userASR == 'vosk':
+			package = 'core.asr.model.VoskAsr'
 		elif userASR == 'coqui':
 			package = 'core.asr.model.CoquiAsr'
+		elif userASR == 'azure':
+			package = 'core.asr.model.AzureAsr'
 		else:
 			package = 'core.asr.model.PocketSphinxAsr'
 
@@ -175,13 +179,14 @@ class ASRManager(Manager):
 
 			self.MqttManager.publish(topic=constants.TOPIC_TEXT_CAPTURED, payload={'sessionId': session.sessionId, 'text': text, 'device': session.deviceUid, 'likelihood': result.likelihood, 'seconds': result.processingTime})
 		else:
-			self.MqttManager.playSound(
-				soundFilename='error',
-				location=Path(f'system/sounds/{self.LanguageManager.activeLanguage}'),
-				deviceUid=session.deviceUid,
-				sessionId=session.sessionId
-			)
-			self.MqttManager.endSession(sessionId=session.sessionId)
+			if not session.keptOpen:
+				self.MqttManager.playSound(
+					soundFilename='error',
+					location=Path(f'system/sounds/{self.LanguageManager.activeLanguage}'),
+					deviceUid=session.deviceUid,
+					sessionId=session.sessionId
+				)
+			self.MqttManager.endSession(sessionId=session.sessionId, forceEnd=True)
 
 
 	def onAudioFrame(self, message: mqtt.MQTTMessage, deviceUid: str):
@@ -226,9 +231,7 @@ class ASRManager(Manager):
 
 
 	def updateASRCredentials(self, asr: str):
-		# TODO this belongs in the ASR itself
-		if asr == 'google':
-			Path(self.Commons.rootDir(), 'credentials/googlecredentials.json').write_text(self.ConfigManager.getAliceConfigByName('googleASRCredentials'))
+		if not self._asr:
+			return
 
-			self.ASRManager.onStop()
-			self.ASRManager.onStart()
+		self._asr.updateCredentials()

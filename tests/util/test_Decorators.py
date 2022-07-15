@@ -17,8 +17,9 @@
 #
 #  Last modified: 2021.04.13 at 12:56:52 CEST
 
-import unittest
 from unittest import mock
+
+import unittest
 from unittest.mock import MagicMock
 
 from core.util.Decorators import AnyExcept, IntentHandler, Online, deprecated
@@ -79,9 +80,9 @@ class TestDecorators(unittest.TestCase):
 		# mock Managers
 		mock_instance = MagicMock()
 		mock_superManager.getInstance.return_value = mock_instance
-		mock_instance.talkManager.randomTalk.return_value = 'offline'
+		mock_instance.TalkManager.randomTalk.return_value = 'offline'
 		mock_internetManager = mock.PropertyMock(return_value=InternetManager(False))
-		type(mock_instance).internetManager = mock_internetManager
+		type(mock_instance).InternetManager = mock_internetManager
 
 
 		# mock DialogSession
@@ -93,57 +94,57 @@ class TestDecorators(unittest.TestCase):
 
 		# when there is already no internet
 		self.assertEqual(exampleObject.offline(), 'offline')
-		mock_instance.talkManager.randomTalk.assert_called_once_with('offline', skill='AliceSkill')
+		mock_instance.TalkManager.randomTalk.assert_called_once_with('offline', skill='AliceSkill')
 		mock_instance.reset_mock()
 
 		# when Internet is lost
 		mock_internetManager = mock.PropertyMock(return_value=InternetManager(True))
-		type(mock_instance).internetManager = mock_internetManager
+		type(mock_instance).InternetManager = mock_internetManager
 
 		self.assertEqual(exampleObject.offline(), 'offline')
-		mock_instance.talkManager.randomTalk.assert_called_once_with('offline', skill='AliceSkill')
+		mock_instance.TalkManager.randomTalk.assert_called_once_with('offline', skill='AliceSkill')
 
 		mock_internetManager = mock.PropertyMock(return_value=InternetManager(False))
-		type(mock_instance).internetManager = mock_internetManager
+		type(mock_instance).InternetManager = mock_internetManager
 		mock_instance.reset_mock()
 
 		# when session is still active use endDialog
 		mock_sessions = mock.PropertyMock(return_value=['sessionId'])
-		type(mock_instance.dialogManager).sessions = mock_sessions
+		type(mock_instance.DialogManager).sessions = mock_sessions
 
 		exampleObject.offline(session=mock_session)
-		mock_instance.talkManager.randomTalk.assert_called_once_with('offline', skill='AliceSkill')
-		mock_instance.mqttManager.endDialog.assert_called_once_with(sessionId='sessionId', text='offline')
+		mock_instance.TalkManager.randomTalk.assert_called_once_with('offline', skill='AliceSkill')
+		mock_instance.MqttManager.endDialog.assert_called_once_with(sessionId='sessionId', text='offline')
 		mock_instance.reset_mock()
 
 		# when session is finished use say
 		mock_sessions = mock.PropertyMock(return_value=[])
-		type(mock_instance.dialogManager).sessions = mock_sessions
+		type(mock_instance.DialogManager).sessions = mock_sessions
 
 		exampleObject.offline(session=mock_session)
-		mock_instance.talkManager.randomTalk.assert_called_once_with('offline', skill='AliceSkill')
-		mock_instance.mqttManager.say.assert_called_once_with(text='offline', deviceUid='deviceUid')
+		mock_instance.TalkManager.randomTalk.assert_called_once_with('offline', skill='AliceSkill')
+		mock_instance.MqttManager.say.assert_called_once_with(text='offline', deviceUid='deviceUid')
 		mock_instance.reset_mock()
 
 		# raise exception when it is not offline
 		mock_internetManager = mock.PropertyMock(return_value=InternetManager(True, True))
-		type(mock_instance).internetManager = mock_internetManager
+		type(mock_instance).InternetManager = mock_internetManager
 
 		self.assertRaises(Exception, exampleObject.offline)
 
 		mock_internetManager = mock.PropertyMock(return_value=InternetManager(False))
-		type(mock_instance).internetManager = mock_internetManager
+		type(mock_instance).InternetManager = mock_internetManager
 		mock_instance.reset_mock()
 
 		# when returnText is true always return the text instead of saying it
-		mock_instance.talkManager.randomTalk.return_value = None
+		mock_instance.TalkManager.randomTalk.return_value = None
 		self.assertEqual(exampleObject.offline_return(), 'offline')
-		mock_instance.talkManager.randomTalk.assert_has_calls([
+		mock_instance.TalkManager.randomTalk.assert_has_calls([
 			mock.call('offline', skill='AliceSkill'),
 			mock.call('offline', skill='system')],
 			any_order=True
 		)
-		mock_instance.talkManager.randomTalk.return_value = 'offline'
+		mock_instance.TalkManager.randomTalk.return_value = 'offline'
 		mock_instance.reset_mock()
 
 		# when offline handler is specified it is called correctly
@@ -155,7 +156,7 @@ class TestDecorators(unittest.TestCase):
 
 		# decorator works with staticmethod, but falls back to system
 		self.assertEqual(exampleObject.catch_staticMethod(), 'offline')
-		mock_instance.talkManager.randomTalk.assert_called_once_with('offline', skill='system')
+		mock_instance.TalkManager.randomTalk.assert_called_once_with('offline', skill='system')
 
 
 	@mock.patch('core.util.Decorators.Logger')
@@ -195,7 +196,7 @@ class TestDecorators(unittest.TestCase):
 		# mock Managers
 		mock_instance = MagicMock()
 		mock_superManager.getInstance.return_value = mock_instance
-		mock_instance.talkManager.randomTalk.return_value = 'error'
+		mock_instance.TalkManager.randomTalk.return_value = 'error'
 
 		# mock DialogSession
 		mock_session = MagicMock()
@@ -206,25 +207,25 @@ class TestDecorators(unittest.TestCase):
 
 		# when no DialogSession is provided return text
 		self.assertEqual(exampleObject.catch_all(), 'error')
-		mock_instance.talkManager.randomTalk.assert_called_once_with('error', skill='AliceSkill')
+		mock_instance.TalkManager.randomTalk.assert_called_once_with('error', skill='AliceSkill')
 		mock_instance.reset_mock()
 
 		# when session is still active use endDialog
 		mock_sessions = mock.PropertyMock(return_value=['sessionId'])
-		type(mock_instance.dialogManager).sessions = mock_sessions
+		type(mock_instance.DialogManager).sessions = mock_sessions
 
 		exampleObject.catch_all(session=mock_session)
-		mock_instance.talkManager.randomTalk.assert_called_once_with('error', skill='AliceSkill')
-		mock_instance.mqttManager.endDialog.assert_called_once_with(sessionId='sessionId', text='error')
+		mock_instance.TalkManager.randomTalk.assert_called_once_with('error', skill='AliceSkill')
+		mock_instance.MqttManager.endDialog.assert_called_once_with(sessionId='sessionId', text='error')
 		mock_instance.reset_mock()
 
 		# when session is finished use say
 		mock_sessions = mock.PropertyMock(return_value=[])
-		type(mock_instance.dialogManager).sessions = mock_sessions
+		type(mock_instance.DialogManager).sessions = mock_sessions
 
 		exampleObject.catch_all(session=mock_session)
-		mock_instance.talkManager.randomTalk.assert_called_once_with('error', skill='AliceSkill')
-		mock_instance.mqttManager.say.assert_called_once_with(text='error', deviceUid='deviceUid')
+		mock_instance.TalkManager.randomTalk.assert_called_once_with('error', skill='AliceSkill')
+		mock_instance.MqttManager.say.assert_called_once_with(text='error', deviceUid='deviceUid')
 		mock_instance.reset_mock()
 
 		# raise exception when it is not in the exceptions list
@@ -232,14 +233,14 @@ class TestDecorators(unittest.TestCase):
 		mock_instance.reset_mock()
 
 		# when returnText is true always return the text instead of saying it
-		mock_instance.talkManager.randomTalk.return_value = None
+		mock_instance.TalkManager.randomTalk.return_value = None
 		self.assertEqual(exampleObject.catch_returnText(), 'error')
-		mock_instance.talkManager.randomTalk.assert_has_calls([
+		mock_instance.TalkManager.randomTalk.assert_has_calls([
 			mock.call('error', skill='AliceSkill'),
 			mock.call('error', skill='system')],
 			any_order=True
 		)
-		mock_instance.talkManager.randomTalk.return_value = 'error'
+		mock_instance.TalkManager.randomTalk.return_value = 'error'
 		mock_instance.reset_mock()
 
 		# when except handler is specified it is called correctly
@@ -251,7 +252,7 @@ class TestDecorators(unittest.TestCase):
 
 		# decorator works with staticmethod, but falls back to system
 		self.assertEqual(exampleObject.catch_staticMethod(), 'error')
-		mock_instance.talkManager.randomTalk.assert_called_once_with('error', skill='system')
+		mock_instance.TalkManager.randomTalk.assert_called_once_with('error', skill='system')
 
 
 

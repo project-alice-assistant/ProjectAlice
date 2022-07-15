@@ -28,10 +28,10 @@ from pathlib import Path
 from typing import Any, Dict, Iterable, List, Optional, Union
 
 import flask
+from AliceGit.Git import Repository
 from markdown import markdown
 from paho.mqtt import client as MQTTClient
 
-from AliceGit.Git import Repository
 from core.ProjectAliceExceptions import AccessLevelTooLow, SkillInstanceFailed
 from core.base.model.Intent import Intent
 from core.base.model.ProjectAliceObject import ProjectAliceObject
@@ -141,9 +141,9 @@ class AliceSkill(ProjectAliceObject):
 		"""
 		lang = language if language is not None else self.activeLanguage()
 		file = self.getResource(f'dialogTemplate/{lang}.ext.json')
+		data: Dict = json.loads(file.read_text()) if file.exists() else dict()
 		file.touch()
 
-		data: Dict = json.loads(file.read_text())
 		data.setdefault('intents', dict())
 		data['intents'].setdefault(intent, dict())
 		data['intents'][intent].setdefault('utterances', list())
@@ -700,8 +700,8 @@ class AliceSkill(ProjectAliceObject):
 		self.MqttManager.endDialog(sessionId=sessionId, text=text, deviceUid=deviceUid)
 
 
-	def endSession(self, sessionId):
-		self.MqttManager.endSession(sessionId=sessionId)
+	def endSession(self, sessionId, requestContinue: bool = False, forceEnd: bool = True):
+		self.MqttManager.endSession(sessionId=sessionId, requestContinue=requestContinue, forceEnd=forceEnd)
 
 
 	def playSound(self, soundFilename: str, location: Path = None, sessionId: str = '', deviceUid: Union[str, List[Union[str, Device]]] = None):
@@ -734,6 +734,9 @@ class AliceSkill(ProjectAliceObject):
 
 
 	def toDict(self) -> dict:
+		intents = {intent: self.getUtterancesByIntent(intent, True, True) for intent in self._intentsDefinitions[self.activeLanguage()]} \
+			if self.activeLanguage() in self._intentsDefinitions else {}
+
 		return {
 			'name'            : self._name,
 			'author'          : self._author,
@@ -752,5 +755,5 @@ class AliceSkill(ProjectAliceObject):
 			'category'        : self._category,
 			'aliceMinVersion' : str(self._aliceMinVersion),
 			'maintainers'     : self._maintainers,
-			'intents'         : self.supportedIntentsWithUtterances()
+			'intents'         : intents
 		}

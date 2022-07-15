@@ -19,12 +19,13 @@
 
 
 import json
+import re
 from contextlib import suppress
 from flask import Response, jsonify, request
 from flask_classful import route
 from pathlib import Path
 
-from AliceGit.Exceptions import AlreadyGitRepository, GithubRepoNotFound, GithubUserNotFound, NotGitRepository
+from AliceGit.Exceptions import AlreadyGitRepository, GithubRepoNotFound, GithubUserNotFound, NotGitRepository, RemoteAlreadyExists, GithubCreateFailed
 from AliceGit.Git import Repository
 from AliceGit.Github import Github
 from core.util.Decorators import ApiAuthenticated
@@ -72,17 +73,18 @@ class SkillsApi(Api):
 	def createSkill(self) -> Response:
 		try:
 			newSkill = {
-				'name'         : request.form.get('name', '').capitalize(),
+				'name'         : request.form.get('name', ''),
 				'speakableName': request.form.get('speakableName', ''),
 				'description'  : request.form.get('description', 'Missing description'),
 				'category'     : request.form.get('category', 'undefined'),
-				'fr'           : request.form.get('french', False),
-				'de'           : request.form.get('german', False),
-				'it'           : request.form.get('italian', False),
-				'pl'           : request.form.get('polish', False),
+				'fr'           : request.form.get('fr', False),
+				'de'           : request.form.get('de', False),
+				'it'           : request.form.get('it', False),
+				'pl'           : request.form.get('pl', False),
 				'widgets'      : request.form.get('widgets', ''),
 				'nodes'        : request.form.get('nodes', ''),
-				'devices'      : request.form.get('devices', '')
+				'devices'      : request.form.get('devices', ''),
+				'icon'         : request.form.get('icon', 'fas fa-biohazard')
 			}
 
 			if not self.SkillManager.createNewSkill(newSkill):
@@ -242,11 +244,13 @@ class SkillsApi(Api):
 		if skillName not in self.SkillManager.allSkills:
 			return self.skillNotFound()
 
+		updated = False
 		update = self.SkillManager.checkForSkillUpdates(skillToCheck=skillName)
 		if update:
 			self.SkillManager.updateSkills(skills=update)
+			updated = True
 
-		return jsonify(success=True)
+		return jsonify(success=True, updated=updated)
 
 
 	@route('/<skillName>/isDirty/', methods=['GET'])
@@ -279,15 +283,35 @@ class SkillsApi(Api):
 
 		try:
 			auth = self.ConfigManager.githubAuth
-			Github(
-				username=auth[0],
-				token=auth[1],
-				repositoryName=f'skill_{skillName}',
-				createRepository=True
-			)
+			github = Github( username=auth[0],
+							token=auth[1],
+							repositoryName=f'skill_{skillName}',
+							createRepository=True )
+
+			repo = self.SkillManager.getSkillRepository(skillName=skillName)
+			repo.remoteAdd(url=github.usersUrl, name='AliceSK')
 		except GithubUserNotFound:
 			return jsonify(success=False, reason='Github user not existing')
 
+		return jsonify(success=True)
+
+	@route('/<skillName>/checkout/<remote>/<branch>/')
+	@ApiAuthenticated
+	def checkout(self, skillName: str, remote: str, branch: str) -> Response:
+		"""
+		checkout the given remote
+		:param skillName:
+		:param remote:
+		:param branch:
+		:return:
+		"""
+		if skillName not in self.SkillManager.allSkills:
+			return self.skillNotFound()
+
+		repository = Repository(directory=self.SkillManager.getSkillDirectory(skillName=skillName), init=False, raiseIfExisting=False)
+		repository.clean()
+		repository.setUpstream(branch=branch, remote=remote)
+		repository.reset(f'{remote}/{branch}')
 		return jsonify(success=True)
 
 
@@ -304,6 +328,7 @@ class SkillsApi(Api):
 
 		skill = self.SkillManager.getSkillInstance(skillName=skillName)
 		skill.repository.revert()
+		skill.repository.checkout(tag=self.SkillStoreManager.getSkillUpdateTag(skillName=skillName), force=True)
 		return self.checkUpdate(skillName)
 
 
@@ -321,19 +346,33 @@ class SkillsApi(Api):
 
 		installFilePath = self.SkillManager.getSkillInstallFilePath(skillName=skillName)
 		try:
-			with suppress(AlreadyGitRepository):
-				repository = Repository(directory=self.SkillManager.getSkillDirectory(skillName=skillName), init=True)
+			repository = Repository(directory=self.SkillManager.getSkillDirectory(skillName=skillName), init=True, raiseIfExisting=False)
 
 			auth = self.ConfigManager.githubAuth
-			github = Github(username=auth[0], token=auth[1], repositoryName=f'skill_{skillName}')
-			repository.remoteAdd(url=github.url, name='master')
-			repository.commit(message='Save through Alice web UI', autoAdd=True)
-			repository.push()
+			github = Github(username=auth[0], token=auth[1], repositoryName=f'skill_{skillName}', createRepository=True)
+			try:
+				repository.remoteAdd(url=github.usersUrl, name='AliceSK')
+			except RemoteAlreadyExists as e:
+				self.logInfo(e)
+				pass
+
+			if repository.isDirty():
+				if not repository.commit(message='Save through Alice web UI', autoAdd=True):
+					self.logError('Commit failed!')
+			else:
+				self.logInfo('Nothing to commit')
+
+			out, err = repository.push()
+			self.logInfo(out)
+			self.logError(err)
 		except GithubUserNotFound:
 			return jsonify(success=False, message='The provided Github user is not existing')
 		except GithubRepoNotFound:
 			if not self.SkillManager.uploadSkillToGithub(skillName=skillName, skillDesc=json.loads(installFilePath.read_text())['desc']):
 				return jsonify(success=False, message='Failed uploading to Github')
+		except GithubCreateFailed as e:
+			self.logError(e)
+			return jsonify(success=False, message=str(e))
 		return jsonify(success=True)
 
 
@@ -354,35 +393,38 @@ class SkillsApi(Api):
 			return self.skillNotFound()
 
 		try:
-			Github(useUrlInstead=skill.repository.url)
-			privateStatus = True
-		except:
-			privateStatus = False
+			git = Repository(directory=skill.skillPath)
+		except NotGitRepository as e:
+			return jsonify(success=False, noGit=True, message=str(e))
 
-
-		explode = skill.repository.url.split('/')
-		explode[len(explode) - 2] = 'project-alice-assistant'
-		url = '/'.join(explode)
 		try:
-			Github(useUrlInstead=url)
-			publicStatus = True
-		except:
-			publicStatus = False
+			auth = self.ConfigManager.githubAuth
+			github = Github(username=auth[0],
+							token=auth[1],
+							repositoryName=f'skill_{skillName}')
+		except Exception as e:
+			if len(git.remote) > 0:
+				return jsonify(success=False, message=str(e))
+			else:
+				return jsonify(success=False, noRemote=True, message=str(e))
 
-		return jsonify(success=True,
-		               result={
-			               'Public' : {
-				               'name'  : 'Public',
-		                        'url'   : url,
-		                        'status': publicStatus
-			               },
-		                   'Private': {
-			                   'name'  : 'Private',
-		                        'url'   : skill.repository.url,
-		                        'status': privateStatus
-		                   }
-		               }
-		            )
+
+
+		res = dict()
+		for (name, rem) in git.remote.items():
+			status = Github.getStatusForUrl(url=rem.url, silent=True) is not False
+			res[name] = {   'repoType': 'Public' if name == 'project-alice-assistant' else 'Private',
+			                'name': rem.name,
+	                        'url': re.sub(r"https:\/\/.*:(.*)@github\.com\/", 'https://github.com/', rem.url),
+		                    'user': name,
+	                        'status': status,
+	                        'commitsBehind': rem.getCommitCount() if status else '-1',
+	                        'commitsAhead': rem.getCommitCount(ahead=False) if status else '-1',
+		                    'lsRemote': rem.lsRemote(tags=False)}
+
+		changes = git.status().changes()
+
+		return jsonify(success=True, result=res, changes=changes, upstream=git.status().getUpstream())
 
 
 	@route('/<skillName>/getInstructions/', methods=['GET', 'POST'])
@@ -439,8 +481,8 @@ class SkillsApi(Api):
 
 		data = request.json
 		skill = self.SkillManager.getSkillInstance(skillName=skillName)
-		allLang = {}
-		tempOut = ""
+		allLang = dict()
+		tempOut = ''
 
 		if not 'lang' in data:
 			fp = skill.getResource('dialogTemplate')
@@ -476,7 +518,7 @@ class SkillsApi(Api):
 		dialogTemplate = skill.getResource(f'dialogTemplate/{data["lang"]}.json')
 		if not dialogTemplate.exists():
 			dialogTemplate.touch(exist_ok=True)
-		dialogTemplate.write_text(json.dumps(data['dialogTemplate'], indent=2))
+		dialogTemplate.write_text(json.dumps(data['dialogTemplate'], indent='\t', ensure_ascii=False))
 
 		return jsonify(success=True, dialogTemplate=json.loads(dialogTemplate.read_text()) if dialogTemplate.exists() else '')
 
@@ -498,7 +540,7 @@ class SkillsApi(Api):
 		configTemplate = skill.getResource(f'config.json.template')
 		if not configTemplate.exists():
 			configTemplate.touch(exist_ok=True)
-		configTemplate.write_text(json.dumps(data['configTemplate'], indent=2))
+		configTemplate.write_text(json.dumps(data['configTemplate'], indent='\t', ensure_ascii=False))
 		self.ConfigManager.loadCheckAndUpdateSkillConfigurations(skillToLoad=skillName)
 
 		return jsonify(success=True, configTemplate=skill.getSkillConfigsTemplate())
@@ -522,8 +564,33 @@ class SkillsApi(Api):
 		if fp.exists():
 			for file in fp.glob('*.json'):
 				talkFiles[Path(file).stem] = json.loads(file.read_text())
+		if talkFiles:
+			return jsonify(success=True, talkFiles=talkFiles)
+		else:
+			return jsonify(success=False, message='no talkfile found.')
 
-		return jsonify(success=True, talkFiles=talkFiles)
+
+	@route('/<skillName>/getTalkTopics/', methods=['GET', 'POST'])
+	@ApiAuthenticated
+	def getTalkTopics(self, skillName: str) -> Response:
+		"""
+		get the talk topics for one skill
+		:param skillName:
+		:return:
+		"""
+		if skillName not in self.SkillManager.allSkills:
+			return self.skillNotFound()
+
+		skill = self.SkillManager.getSkillInstance(skillName=skillName)
+		talkFiles = dict()
+
+		fp = skill.getResource(f'talks/{self.LanguageManager.activeLanguage}.json')
+		if fp.exists():
+			talkFile = json.loads(fp.read_text())
+		else:
+			talkFile = []
+
+		return jsonify(success=True, talkTopics=list(talkFile))
 
 
 	@route('/<skillName>/setTalkFile/', methods=['PATCH'])
@@ -544,7 +611,7 @@ class SkillsApi(Api):
 		talkFile = skill.getResource(f'talks/{data["lang"]}.json')
 		if not talkFile.exists():
 			talkFile.touch(exist_ok=True)
-		talkFile.write_text(json.dumps(data['talkFile'], indent=2), encoding='utf-8')
+		talkFile.write_text(json.dumps(data['talkFile'], indent='\t', ensure_ascii=False))
 
 		return jsonify(success=True, talkFile=talkFile.read_text() if talkFile.exists() else '')
 
@@ -584,7 +651,7 @@ class SkillsApi(Api):
 		installFile = skill.getResource(f'{skillName}.install')
 		if not installFile.exists():
 			installFile.touch(exist_ok=True)
-		installFile.write_text(json.dumps(data['installFile'], indent=2))
+		installFile.write_text(json.dumps(data['installFile'], indent='\t', ensure_ascii=False))
 
 		return jsonify(success=True, installFile=json.loads(installFile.read_text()) if installFile.exists() else '')
 

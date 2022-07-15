@@ -17,8 +17,9 @@
 #
 #  Last modified: 2021.04.13 at 12:56:50 CEST
 
-import unittest
 from unittest import mock
+
+import unittest
 from unittest.mock import MagicMock
 from uuid import UUID
 
@@ -58,7 +59,7 @@ class TestCommonsManager(unittest.TestCase):
 
 		self.assertEqual(
 			CommonsManager.payload(MQTTMessage(None)),
-			{'test': None}
+			None
 		)
 		self.assertEqual(
 			CommonsManager.payload(MQTTMessage(b'\x81')),
@@ -173,7 +174,7 @@ class TestCommonsManager(unittest.TestCase):
 		# mock SuperManager
 		mock_instance = MagicMock()
 		mock_superManager.getInstance.return_value = mock_instance
-		mock_instance.configManager.getAliceConfigByName.return_value = 'uuid'
+		mock_instance.ConfigManager.getAliceConfigByName.return_value = 'uuid'
 
 		self.assertEqual(
 			CommonsManager.parseDeviceUid(MQTTMessage('{"siteId": "uid", "IPAddress": "127.0.0.1"}')),

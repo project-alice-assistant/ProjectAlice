@@ -89,17 +89,22 @@ class MqttManager(Manager):
 		self._mqttClient.message_callback_add(constants.TOPIC_TOGGLE_FEEDBACK_OFF, self.toggleFeedback)
 		self._mqttClient.message_callback_add(constants.TOPIC_NLU_INTENT_NOT_RECOGNIZED, self.nluIntentNotRecognized)
 		self._mqttClient.message_callback_add(constants.TOPIC_NLU_ERROR, self.nluError)
+		self._mqttClient.message_callback_add(constants.TOPIC_NLU_TRAINER_READY, self.nluOffshoreTrainerReady)
+		self._mqttClient.message_callback_add(constants.TOPIC_NLU_TRAINER_STOPPED, self.nluOffshoreTrainerStopped)
+		self._mqttClient.message_callback_add(constants.TOPIC_NLU_TRAINER_TRAINING_RESULT, self.nluOffshoreTrainerResult)
+		self._mqttClient.message_callback_add(constants.TOPIC_NLU_TRAINER_REFUSE_FAILED, self.nluOffshoreTrainerRefusedFailed)
+		self._mqttClient.message_callback_add(constants.TOPIC_NLU_TRAINER_TRAINING, self.nluOffshoreTrainerTraining)
 
 		self.connect()
 
 
 	def onBooted(self):
 		super().onBooted()
+		# listen to all VAD messages - if the device is unknown nothing bad will happen -> reduced amount of subscriptions
+		self._mqttClient.message_callback_add(constants.TOPIC_VAD_UP.format('+'), self.onVADUp)
+		self._mqttClient.message_callback_add(constants.TOPIC_VAD_DOWN.format('+'), self.onVADDown)
 
 		for device in self.DeviceManager.getDevicesWithAbilities(abilities=[DeviceAbility.PLAY_SOUND, DeviceAbility.CAPTURE_SOUND], connectedOnly=False):
-			self._mqttClient.message_callback_add(constants.TOPIC_VAD_UP.format(device.uid), self.onVADUp)
-			self._mqttClient.message_callback_add(constants.TOPIC_VAD_DOWN.format(device.uid), self.onVADDown)
-
 			self._mqttClient.message_callback_add(constants.TOPIC_PLAY_BYTES.format(device.uid), self.topicPlayBytes)
 			self._mqttClient.message_callback_add(constants.TOPIC_PLAY_BYTES_FINISHED.format(device.uid), self.topicPlayBytesFinished)
 
@@ -141,6 +146,11 @@ class MqttManager(Manager):
 			(constants.TOPIC_NLU_INTENT_NOT_RECOGNIZED, 0),
 			(constants.TOPIC_START_SESSION, 0),
 			(constants.TOPIC_NLU_ERROR, 0),
+			(constants.TOPIC_NLU_TRAINER_TRAINING_RESULT, 0),
+			(constants.TOPIC_NLU_TRAINER_READY, 0),
+			(constants.TOPIC_NLU_TRAINER_STOPPED, 0),
+			(constants.TOPIC_NLU_TRAINER_REFUSE_FAILED, 0),
+			(constants.TOPIC_NLU_TRAINER_TRAINING, 0),
 			(self.TOPIC_AUDIO_FRAME, 0)
 		]
 
@@ -153,9 +163,10 @@ class MqttManager(Manager):
 		subscribedEvents.append((constants.TOPIC_PLAY_BYTES.format(self.ConfigManager.getAliceConfigByName('uuid')), 0))
 		subscribedEvents.append((constants.TOPIC_PLAY_BYTES_FINISHED.format(self.ConfigManager.getAliceConfigByName('uuid')), 0))
 
+		subscribedEvents.append((constants.TOPIC_VAD_UP.format('+'), 0))
+		subscribedEvents.append((constants.TOPIC_VAD_DOWN.format('+'), 0))
+
 		for device in self.DeviceManager.getDevicesWithAbilities(abilities=[DeviceAbility.PLAY_SOUND, DeviceAbility.CAPTURE_SOUND], connectedOnly=False):
-			subscribedEvents.append((constants.TOPIC_VAD_UP.format(device.id), 0))
-			subscribedEvents.append((constants.TOPIC_VAD_DOWN.format(device.id), 0))
 
 			subscribedEvents.append((constants.TOPIC_PLAY_BYTES.format(device.id), 0))
 			subscribedEvents.append((constants.TOPIC_PLAY_BYTES_FINISHED.format(device.id), 0))
@@ -238,7 +249,14 @@ class MqttManager(Manager):
 
 			if 'intent' in payload and float(payload['intent']['confidenceScore']) < session.probabilityThreshold:
 				self.logDebug(f'Intent **{message.topic}** detected but confidence score too low ({payload["intent"]["confidenceScore"]})')
-				if session.notUnderstood <= self.ConfigManager.getAliceConfigByName('notUnderstoodRetries'):
+
+				# if the session has ended but was kept open for further prompts, don't use "not understood" logic
+				if session.keptOpen:
+					session.notUnderstood = 0
+					self.endSession(sessionId=sessionId, forceEnd=True)
+					return
+
+				elif session.notUnderstood <= self.ConfigManager.getAliceConfigByName('notUnderstoodRetries'):
 					session.notUnderstood = session.notUnderstood + 1
 
 					if not self.ConfigManager.getAliceConfigByName('suggestSkillsToInstall'):
@@ -318,8 +336,10 @@ class MqttManager(Manager):
 		sessions = self.DialogManager.sessions
 		for sessionId in sessions:
 			payload = self.Commons.payload(sessions[sessionId].message)
+			if not payload:
+				continue
 			if payload['siteId'] != self._multiDetectionsHolder[0]:
-				self.endSession(sessionId=sessionId)
+				self.endSession(sessionId=sessionId, forceEnd=True)
 
 		self._multiDetectionsHolder = list()
 
@@ -564,6 +584,30 @@ class MqttManager(Manager):
 		)
 
 
+	def nluOffshoreTrainerReady(self, _client, _data, _msg: mqtt.MQTTMessage):
+		self.NluManager.offshoreTrainerReady()
+
+
+	def nluOffshoreTrainerStopped(self, _client, _data, _msg: mqtt.MQTTMessage):
+		self.NluManager.offshoreTrainerStopped()
+
+
+	def nluOffshoreTrainerStatus(self, _client, _data, _msg: mqtt.MQTTMessage):
+		self.NluManager.offshoreTrainerStopped()
+
+
+	def nluOffshoreTrainerTraining(self, _client, _data, _msg: mqtt.MQTTMessage):
+		self.NluManager.offshoreTrainerTraining()
+
+
+	def nluOffshoreTrainerResult(self, _client, _data, msg: mqtt.MQTTMessage):
+		self.NluManager.offshoreTrainerResult(msg)
+
+
+	def nluOffshoreTrainerRefusedFailed(self, _client, _data, msg: mqtt.MQTTMessage):
+		self.NluManager.offshoreTrainerRefusedFailed(msg.payload)
+
+
 	def onVADUp(self, _client, _data, msg: mqtt.MQTTMessage):
 		self.broadcast(
 			method=constants.EVENT_VAD_UP,
@@ -625,7 +669,7 @@ class MqttManager(Manager):
 
 	def say(self, text, deviceUid: str = None, customData: dict = None, canBeEnqueued: bool = True):
 		"""
-		Initiate a notification session which is termniated once the text is spoken
+		Initiate a notification session which is terminated once the text is spoken
 		:param canBeEnqueued: bool
 		:param text: str Text to say
 		:param deviceUid: str Where to speak
@@ -659,7 +703,7 @@ class MqttManager(Manager):
 				if isinstance(customData, dict):
 					customData = json.dumps(customData)
 				elif not isinstance(customData, str):
-					self.logWarning(f'Ask was provided customdata of unsupported type: {customData}')
+					self.logWarning(f'Say was provided custom data of unsupported type: {customData}')
 					customData = ''
 
 			self._mqttClient.publish(constants.TOPIC_START_SESSION, json.dumps({
@@ -764,18 +808,20 @@ class MqttManager(Manager):
 		jsonDict = {
 			'sessionId'              : sessionId,
 			'text'                   : text,
-			'sendIntentNotRecognized': True,
+			'sendIntentNotRecognized': True
 		}
+
+		session = self.DialogManager.getSession(sessionId=sessionId)
 
 		if customData is not None:
 			if isinstance(customData, dict):
-				jsonDict['customData'] = json.dumps(customData)
+				session.customData = {**session.customData, **customData}
 			elif isinstance(customData, str):
-				jsonDict['customData'] = customData
+				session.customData = {**session.customData, **json.loads(customData)}
 			else:
-				self.logWarning(f'ContinueDialog was provided customdata of unsupported type: {customData}')
-		else:
-			customData = dict()
+				self.logWarning(f'ContinueDialog was provided custom data of unsupported type: {customData}')
+
+		jsonDict['customData'] = session.customData
 
 		intentList = list()
 		if intentFilter:
@@ -790,15 +836,12 @@ class MqttManager(Manager):
 			else:
 				jsonDict['slot'] = slot
 
-		session = self.DialogManager.getSession(sessionId=sessionId)
 		session.intentFilter = intentList
 		if probabilityThreshold is not None:
 			session.probabilityThreshold = probabilityThreshold
 
 		if currentDialogState:
 			session.currentState = currentDialogState
-
-		session.customData = {**session.customData, **customData}
 
 		self._mqttClient.publish(constants.TOPIC_CONTINUE_SESSION, json.dumps(jsonDict))
 
@@ -836,9 +879,11 @@ class MqttManager(Manager):
 			}))
 
 
-	def endSession(self, sessionId):
+	def endSession(self, sessionId, requestContinue: bool = False, forceEnd: bool = True):
 		self._mqttClient.publish(constants.TOPIC_END_SESSION, json.dumps({
-			'sessionId': sessionId
+			'sessionId': sessionId,
+			'requestContinue': requestContinue,
+			'forceEnd': forceEnd
 		}))
 
 

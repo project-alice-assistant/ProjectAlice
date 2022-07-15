@@ -22,11 +22,10 @@ import hashlib
 import re
 import tempfile
 from pathlib import Path
-from re import Match
-from typing import Optional
-
 from pydub import AudioSegment
 from pydub.exceptions import CouldntDecodeError
+from re import Match
+from typing import Optional
 
 from core.base.model.ProjectAliceObject import ProjectAliceObject
 from core.commons import constants
@@ -90,19 +89,16 @@ class Tts(ProjectAliceObject):
 		if self._lang not in self._supportedLangAndVoices:
 			self.logWarning(f'Language **{self._lang}** not found, falling back to **en-US**')
 			self._lang = 'en-US'
-			self.ConfigManager.updateAliceConfiguration(key='ttsLanguage', value=self._lang)
 
 		if self._type not in self._supportedLangAndVoices[self._lang]:
 			ttsType = self._type
 			self._type = next(iter(self._supportedLangAndVoices[self._lang]))
 			self.logWarning(f'Type **{ttsType}** not found for the language, falling back to **{self._type}**')
-			self.ConfigManager.updateAliceConfiguration(key='ttsType', value=self._type)
 
 		if self._voice not in self._supportedLangAndVoices[self._lang][self._type]:
 			voice = self._voice
 			self._voice = next(iter(self._supportedLangAndVoices[self._lang][self._type]))
 			self._neuralVoice = self._supportedLangAndVoices[self._lang][self._type][self._voice]['neural']
-			self.ConfigManager.updateAliceConfiguration(key='ttsVoice', value=self._voice)
 			self.logWarning(f'Voice **{voice}** not found for the language and type, falling back to **{self._voice}**')
 		else:
 			self._neuralVoice = self._supportedLangAndVoices[self._lang][self._type][self._voice]['neural']
@@ -198,8 +194,8 @@ class Tts(ProjectAliceObject):
 			file.unlink()
 			self.onSay(session)
 		else:
-			self.DialogManager.increaseSessionTimeout(session=session, interval=duration + 0.2)
-			self.ThreadManager.doLater(interval=duration + 0.1, func=self._sayFinished, args=[session])
+			self.DialogManager.increaseSessionTimeout(session=session, interval=duration + 1)
+			self.ThreadManager.doLater(interval=duration + 0.2, func=self._sayFinished, args=[session])
 
 
 	def _sayFinished(self, session: DialogSession):
@@ -212,6 +208,10 @@ class Tts(ProjectAliceObject):
 				'deviceUid': session.deviceUid
 			}
 		)
+
+
+	def onSayFinished(self, session: DialogSession, uid: str = None):
+		self._speaking = False
 
 
 	def _checkText(self, session: DialogSession) -> str:

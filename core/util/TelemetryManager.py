@@ -174,7 +174,10 @@ class TelemetryManager(Manager):
 			if not telemetrySkill:
 				continue
 
-			threshold = float(self.ConfigManager.getSkillConfigByName('Telemetry', settings[1]) if isinstance(settings[1], str) else settings[1])
+			unconverted = self.ConfigManager.getSkillConfigByName('Telemetry', settings[1]) if isinstance(settings[1], str) else settings[1]
+			if unconverted is None:
+				return True
+			threshold = float(unconverted)
 			value = float(value)
 			if settings[0] == 'upperThreshold' and value > threshold or \
 					settings[0] == 'lowerThreshold' and value < threshold:

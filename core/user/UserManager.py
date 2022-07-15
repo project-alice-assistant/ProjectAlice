@@ -249,7 +249,6 @@ class UserManager(Manager):
 			self._users[user].sleeping = False
 
 
-	# todo - Store user state in memory and write it to database onStop
 	def updateUserState(self, name, state):
 		self.DatabaseManager.update(
 			tableName='users',

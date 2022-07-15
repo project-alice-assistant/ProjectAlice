@@ -23,10 +23,7 @@ import shutil
 from pathlib import Path
 from subprocess import CompletedProcess
 
-from core.commons import constants
 from core.nlu.model.NluEngine import NluEngine
-from core.util.Stopwatch import Stopwatch
-from core.webui.model.UINotificationType import UINotificationType
 
 
 class SnipsNlu(NluEngine):
@@ -37,7 +34,6 @@ class SnipsNlu(NluEngine):
 	def __init__(self):
 		super().__init__()
 		self._cachePath = Path(self.Commons.rootDir(), f'var/cache/nlu/trainingData')
-		self._timer = None
 
 
 	def start(self):
@@ -125,14 +121,11 @@ class SnipsNlu(NluEngine):
 			json.dump(nluTrainingSample, fp, ensure_ascii=False)
 
 
-	def train(self):
-		if self.NluManager.training:
-			self.logWarning("NLU is already training, can't train again now")
+	def train(self, forceLocalTraining: bool = False):
+		if not super().train(forceLocalTraining):
 			return
 
-		self.logInfo('Training Snips NLU')
 		try:
-			self.NluManager.training = True
 			dataset = {
 				'entities': dict(),
 				'intents' : dict(),
@@ -144,89 +137,46 @@ class SnipsNlu(NluEngine):
 				dataset['entities'].update(trainingData['entities'])
 				dataset['intents'].update(trainingData['intents'])
 
-			datasetFile = Path('/tmp/snipsNluDataset.json')
-
-			with datasetFile.open('w') as fp:
-				json.dump(dataset, fp, ensure_ascii=False, indent='\t')
-
 			self.logInfo('Generated dataset for training')
-
 			# Now that we have generated the dataset, let's train in the background if we are already booted, else do it directly
-			if self.ProjectAlice.isBooted:
-				self.ThreadManager.newThread(name='NLUTraining', target=self.nluTrainingThread, args=[datasetFile])
+			if self.ConfigManager.getAliceConfigByName('delegateNluTraining') and not forceLocalTraining:
+				self.NluManager.startOffshoreTraining(dataset)
 			else:
-				self.nluTrainingThread(datasetFile)
-		except:
-			self.NluManager.training = False
+				datasetFile = Path('/tmp/snipsNluDataset.json')
+				with datasetFile.open('w') as fp:
+					json.dump(dataset, fp, ensure_ascii=False, indent='\t')
+
+				if self.ProjectAlice.isBooted:
+					self.ThreadManager.newThread(name='NLUTraining', target=self.nluTrainingThread, args=[datasetFile])
+				else:
+					self.nluTrainingThread(datasetFile)
+		except Exception as e:
+			self.trainingFailed(str(e))
 
 
 	def nluTrainingThread(self, datasetFile: Path):
 		try:
-			with Stopwatch() as stopWatch:
-				self.logInfo('Begin training...')
-				self._timer = self.ThreadManager.newTimer(interval=0.25, func=self.trainingStatus)
+			self.logInfo('Begin training...')
+			tempTrainingData = Path('/tmp/snipsNLU')
 
-				tempTrainingData = Path('/tmp/snipsNLU')
+			if tempTrainingData.exists():
+				shutil.rmtree(tempTrainingData)
 
-				if tempTrainingData.exists():
-					shutil.rmtree(tempTrainingData)
+			training: CompletedProcess = self.Commons.runSystemCommand([f'./venv/bin/snips-nlu', 'train', str(datasetFile), str(tempTrainingData)])
+			if training.returncode != 0:
+				self.logError(f'Error while training Snips NLU: {training.stderr.decode()}')
 
-				training: CompletedProcess = self.Commons.runSystemCommand([f'./venv/bin/snips-nlu', 'train', str(datasetFile), str(tempTrainingData)])
-				if training.returncode != 0:
-					self.logError(f'Error while training Snips NLU: {training.stderr.decode()}')
+			assistantPath = Path(self.Commons.rootDir(), f'trained/assistants/{self.LanguageManager.activeLanguage}/nlu_engine')
 
-				assistantPath = Path(self.Commons.rootDir(), f'trained/assistants/{self.LanguageManager.activeLanguage}/nlu_engine')
+			if not tempTrainingData.exists():
+				self.trainingFailed()
+				if not assistantPath.exists():
+					self.logFatal('No NLU engine found, cannot start')
 
-				if not tempTrainingData.exists():
-					self.trainingFailed()
-
-					if not assistantPath.exists():
-						self.logFatal('No NLU engine found, cannot start')
-
-					self._timer.cancel()
-					return
-
-				if assistantPath.exists():
-					shutil.rmtree(assistantPath)
-
-				shutil.move(tempTrainingData, assistantPath)
-
-			self._timer.cancel()
-			self.MqttManager.publish(constants.TOPIC_NLU_TRAINING_STATUS, payload={'status': 'done'})
-			self.WebUINotificationManager.newNotification(
-				typ=UINotificationType.INFO,
-				notification='nluTrainingDone',
-				key='nluTraining'
-			)
-
-			self.ThreadManager.getEvent('TrainAssistant').clear()
-			self.logInfo(f'Snips NLU trained in {stopWatch} seconds')
-
-			self.broadcast(method=constants.EVENT_NLU_TRAINED, exceptions=[constants.DUMMY], propagateToSkills=True)
-			self.NluManager.restartEngine()
-		except:
-			self.trainingFailed()
-		finally:
-			self.NluManager.training = False
-
-
-	def trainingStatus(self, dots: str = ''):
-		count = dots.count('.')
-		if not dots or count > 7:
-			dots = '.'
-		else:
-			dots += '.'
-
-		self.MqttManager.publish(constants.TOPIC_NLU_TRAINING_STATUS, payload={'status': 'training'})
-
-		self.WebUINotificationManager.newNotification(
-			typ=UINotificationType.INFO,
-			notification='nluTraining',
-			key='nluTraining',
-			replaceBody=[dots]
-		)
-
-		self._timer = self.ThreadManager.newTimer(interval=1, func=self.trainingStatus, args=[dots])
+				return
+			self.trainingFinished(trainedData=tempTrainingData)
+		except Exception as e:
+			self.trainingFailed(str(e))
 
 
 	@staticmethod
@@ -237,24 +187,10 @@ class SnipsNlu(NluEngine):
 		}
 
 
-	def trainingFailed(self):
-		self.logError('Snips NLU training failed')
-		self.MqttManager.publish(constants.TOPIC_NLU_TRAINING_STATUS, payload={'status': 'failed'})
+	def trainingFinished(self, trainedData: Path):
+		assistantPath = Path(self.Commons.rootDir(), f'trained/assistants/{self.LanguageManager.activeLanguage}/nlu_engine')
+		if assistantPath.exists():
+			shutil.rmtree(assistantPath)
+		shutil.move(trainedData, assistantPath)
 
-		self.WebUINotificationManager.newNotification(
-			typ=UINotificationType.ERROR,
-			notification='nluTrainingFailed',
-			key='nluTraining'
-		)
-
-
-	def getLanguage(self) -> str:
-		"""
-		Get the language that should be used for the training.
-		Currently, only portuguese needs a special handling
-		:return:
-		"""
-		lang = self.LanguageManager.activeLanguage
-		if lang == 'pt':
-			lang = lang + '_' + self.LanguageManager.activeCountryCode.lower()
-		return lang
+		super().trainingFinished(trainedData=trainedData)

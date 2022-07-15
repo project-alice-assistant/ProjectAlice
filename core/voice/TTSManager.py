@@ -18,6 +18,7 @@
 #  Last modified: 2021.07.31 at 15:54:28 CEST
 
 from importlib import import_module, reload
+
 from pathlib import Path
 
 from core.base.model.Manager import Manager
@@ -106,7 +107,12 @@ class TTSManager(Manager):
 		try:
 			self._tts.onStart()
 		except Exception as e:
-			self.logFatal(f"Tts failed starting: {e}")
+			if not forceTts:
+				fallback = self.ConfigManager.getAliceConfigByName('ttsFallback')
+				self.logWarning(f'Tts failed starting, falling back to **{fallback}**')
+				self._loadTTS(userTTS=userTTS, user=user, forceTts=fallback)
+			else:
+				self.logFatal(f"Tts failed starting: {e}")
 
 
 	@property
@@ -147,7 +153,7 @@ class TTSManager(Manager):
 
 		if 'text' not in session.payload:
 			self.logWarning('Was asked to say something but no text provided')
-			self.MqttManager.endSession(sessionId=session.sessionId)
+			self.MqttManager.endSession(sessionId=session.sessionIdl, forceEnd=True)
 			return
 
 		if session and session.user != constants.UNKNOWN_USER:

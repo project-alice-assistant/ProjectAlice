@@ -93,9 +93,9 @@ def _exceptHandler(*args, text: str, exceptHandler: Optional[Callable], returnTe
 
 	caller = args[0] if args else None
 	skill = getattr(caller, 'name', 'system')
-	newText = SuperManager.getInstance().talkManager.randomTalk(text, skill=skill)
+	newText = SuperManager.getInstance().TalkManager.randomTalk(text, skill=skill)
 	if not newText:
-		newText = SuperManager.getInstance().talkManager.randomTalk(text, skill='system') or text
+		newText = SuperManager.getInstance().TalkManager.randomTalk(text, skill='system') or text
 
 	if not newText:
 		raise Exception(f'String **text** not found in either skill or system strings')
@@ -105,10 +105,10 @@ def _exceptHandler(*args, text: str, exceptHandler: Optional[Callable], returnTe
 
 	session = kwargs.get('session')
 	try:
-		if session.sessionId in SuperManager.getInstance().dialogManager.sessions:
-			SuperManager.getInstance().mqttManager.endDialog(sessionId=session.sessionId, text=newText)
+		if session.sessionId in SuperManager.getInstance().DialogManager.sessions:
+			SuperManager.getInstance().MqttManager.endDialog(sessionId=session.sessionId, text=newText)
 		else:
-			SuperManager.getInstance().mqttManager.say(text=newText, deviceUid=session.deviceUid)
+			SuperManager.getInstance().MqttManager.say(text=newText, deviceUid=session.deviceUid)
 	except AttributeError:
 		return newText
 
@@ -152,7 +152,7 @@ def Online(func: Callable = None, text: str = 'offline', offlineHandler: Callabl
 	def argumentWrapper(func):
 		@functools.wraps(func)
 		def offlineDecorator(*args, **kwargs):
-			internetManager = SuperManager.getInstance().internetManager
+			internetManager = SuperManager.getInstance().InternetManager
 			if internetManager.online:
 				try:
 					return func(*args, **kwargs)
@@ -194,7 +194,7 @@ def AnyExcept(func: Callable = None, text: str = 'error', exceptions: Tuple[Base
 def ApiAuthenticated(func: Callable):  # NOSONAR
 	@functools.wraps(func)
 	def wrapper(*args, **kwargs):
-		if SuperManager.getInstance().userManager.apiTokenValid(request.headers.get('auth', '')):
+		if SuperManager.getInstance().UserManager.apiTokenValid(request.headers.get('auth', '')):
 			return func(*args, **kwargs)
 		else:
 			return jsonify(message='ERROR: Unauthorized')
@@ -220,7 +220,7 @@ def KnownUser(func: Callable = None):  # NOSONAR
 			if session and session.user != constants.UNKNOWN_USER:
 				return func(*args, **kwargs)
 
-			SuperManager.getInstance().mqttManager.endDialog(sessionId=session.sessionId, text=SuperManager.getInstance().talkManager.randomTalk('unknownUser', skill='system'))
+			SuperManager.getInstance().MqttManager.endDialog(sessionId=session.sessionId, text=SuperManager.getInstance().TalkManager.randomTalk('unknownUser', skill='system'))
 
 
 		return decorator
@@ -253,7 +253,7 @@ def IfSetting(func: Callable = None, settingName: str = None, settingValue: Any 
 				Logger().logWarning(msg='Cannot use IfSetting decorator without settingName')
 				return None
 
-			configManager = SuperManager.getInstance().configManager
+			configManager = SuperManager.getInstance().ConfigManager
 			value = configManager.getSkillConfigByName(skillName, settingName) if skillName else configManager.getAliceConfigByName(settingName)
 
 			if value is None:

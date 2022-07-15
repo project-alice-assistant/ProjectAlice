@@ -17,8 +17,9 @@
 #
 #  Last modified: 2021.04.13 at 12:56:50 CEST
 
-from dataclasses import dataclass
 from unittest import TestCase
+
+from dataclasses import dataclass
 from unittest.mock import MagicMock, patch
 
 from core.base.model.Intent import Intent
@@ -63,7 +64,7 @@ class TestAliceSkill(TestCase):
 		# mock SuperManager
 		mock_instance = MagicMock()
 		mock_superManager.getInstance.return_value = mock_instance
-		mock_instance.commonsManager.getFunctionCaller.return_value = 'unittest'
+		mock_instance.CommonsManager.getFunctionCaller.return_value = 'unittest'
 
 		dialogMapping1 = {
 			'unittest': dummyCallable

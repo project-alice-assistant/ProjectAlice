@@ -25,6 +25,7 @@ from core.commons import constants
 from core.device.model.DeviceAbility import DeviceAbility
 from core.util.Decorators import ApiAuthenticated
 from core.webApi.model.Api import Api
+from core.webui.model.UINotificationType import UINotificationType
 
 
 class UtilsApi(Api):
@@ -79,7 +80,7 @@ class UtilsApi(Api):
 			configs['apiPort'] = self.ConfigManager.getAliceConfigByName('apiPort')
 			configs['aliceVersion'] = constants.VERSION
 
-			configs = {key: value if not self.ConfigManager.isAliceConfSensitive(key) else "********" for key, value in configs.items()}
+			configs = {key: value if not self.ConfigManager.isAliceConfSensitive(key) else '*' * len(str(value)) for key, value in configs.items()}
 
 			return jsonify(success=True, config=configs, templates=self.ConfigManager.aliceTemplateConfigurations, categories=self.ConfigManager.aliceConfigurationCategories)
 		except Exception as e:
@@ -95,7 +96,8 @@ class UtilsApi(Api):
 			confs.pop('apiPort', None)
 			confs.pop('aliceVersion', None)
 			for conf, value in confs.items():
-				if value == self.ConfigManager.getAliceConfigByName(conf) or value == "********":
+				strComp = '*' * len(str(value))
+				if value == self.ConfigManager.getAliceConfigByName(conf) or str(value) == strComp:
 					continue
 
 				try:
@@ -231,7 +233,7 @@ class UtilsApi(Api):
 			self.WebUINotificationManager.markAsRead(notificationId=int(notificationId))
 			return jsonify(success=True)
 		except Exception as e:
-			self.logError(f'Failed training assistant: {e}')
+			self.logError(f'Failed marking notification: {e}')
 			return jsonify(success=False, message=str(e))
 
 
@@ -243,5 +245,24 @@ class UtilsApi(Api):
 			self.WebUINotificationManager.publishAllNotifications(deviceUid=uid)
 			return jsonify(success=True)
 		except Exception as e:
-			self.logError(f'Failed training assistant: {e}')
+			self.logError(f'Failed publishing notifications: {e}')
+			return jsonify(success=False, message=str(e))
+
+
+	@route('/addNotification/', methods=['PUT'])
+	@ApiAuthenticated
+	def addNotification(self) -> Response:
+		try:
+			form = request.form
+			header = form["header"]
+			message = form["message"]
+			key = f'apinotif_{form["key"]}'
+			deviceUid = form.get('deviceUid', 'all')
+			self.WebUINotificationManager.newNotification(typ=UINotificationType.INFO,
+			                                              notification={'title': header, 'body': message},
+			                                              key=key,
+			                                              deviceUid=deviceUid)
+			return jsonify(success=True)
+		except Exception as e:
+			self.logError(f'Failed adding notification: {e}')
 			return jsonify(success=False, message=str(e))

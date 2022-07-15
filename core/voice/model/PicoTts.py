@@ -85,7 +85,7 @@ class PicoTts(Tts):
 			return
 
 		if not self._cacheFile.exists():
-			result = SuperManager.getInstance().commonsManager.runRootSystemCommand(['pico2wave', '-l', self._lang, '-w', self._cacheFile, f'"{self._text}"'])
+			result = SuperManager.getInstance().CommonsManager.runRootSystemCommand(['pico2wave', '-l', self._lang, '-w', self._cacheFile, f'"{self._text}"'])
 			if result.returncode:
 				self.logError(f'Something went wrong generating speech file: {result.stderr}')
 				return

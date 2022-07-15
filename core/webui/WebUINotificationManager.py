@@ -52,8 +52,6 @@ class WebUINotificationManager(Manager):
 		# noinspection SqlResolve
 		notifications = self.databaseFetch(tableName=self.NOTIFICATIONS_TABLE, query=f'SELECT * FROM :__table__ WHERE read = 0')
 		for notification in notifications:
-			if notification['read'] == '1':
-				continue
 			self._notifications[notification['id']] = notification
 
 
@@ -88,6 +86,7 @@ class WebUINotificationManager(Manager):
 		if replaceTitle:
 			title = title.format(replaceTitle)
 
+
 		body = notification['body']
 		if replaceBody:
 			body = body.format(*replaceBody)
@@ -112,6 +111,7 @@ class WebUINotificationManager(Manager):
 		else:
 			notificationId = self.databaseInsert(tableName=self.NOTIFICATIONS_TABLE, values=values)
 			self._keysToIds[key] = notificationId
+			self.logInfo(f'Adding notification[{notificationId}]: {title}')
 
 		self.publishNotification(notificationId=notificationId, typ=typ, title=title, body=body, key=key, options=options, deviceUid=deviceUid)
 
@@ -175,7 +175,7 @@ class WebUINotificationManager(Manager):
 		self.newNotification(
 			typ=UINotificationType.INFO,
 			notification='skillUpdated',
-			key='skillUpdate_{}'.format(skill),
+			key=f'skillUpdate_{skill}',
 			replaceBody=[skill, self.SkillManager.getSkillInstance(skillName=skill).version]
 		)
 

@@ -51,9 +51,8 @@ class MycroftTts(Tts):
 		self._online = False
 		self._privacyMalus = 0
 
-		self._mimicDirectory = Path(Path(SuperManager.getInstance().commons.rootDir()).parent, 'mimic/mimic')
+		self._mimicDirectory = Path(Path(SuperManager.getInstance().Commons.rootDir()).parent, 'mimic/mimic')
 
-		# TODO => classify genders and countries. First is always default
 		self._supportedLangAndVoices = {
 			'en-US': {
 				'male': {
@@ -136,7 +135,7 @@ class MycroftTts(Tts):
 			if not Path(self._mimicDirectory, 'voices', self._voice + '.flitevox').exists():
 				htsvoice = Path(self._mimicDirectory, 'voices', self._voice + '.htsvoice')
 				if htsvoice.exists():
-					SuperManager.getInstance().commonsManager.runRootSystemCommand([
+					SuperManager.getInstance().CommonsManager.runRootSystemCommand([
 						'-u', getpass.getuser(),
 						self._mimicDirectory,
 						'-t', self._text,
@@ -144,7 +143,7 @@ class MycroftTts(Tts):
 						'-voice', htsvoice
 					])
 				else:
-					SuperManager.getInstance().commonsManager.runRootSystemCommand([
+					SuperManager.getInstance().CommonsManager.runRootSystemCommand([
 						'-u', getpass.getuser(),
 						self._mimicDirectory,
 						'-t', self._text,
@@ -152,7 +151,7 @@ class MycroftTts(Tts):
 						'-voice', 'slt'
 					])
 			else:
-				SuperManager.getInstance().commonsManager.runRootSystemCommand([
+				SuperManager.getInstance().CommonsManager.runRootSystemCommand([
 					'-u', getpass.getuser(),
 					self._mimicDirectory,
 					'-t', self._text,

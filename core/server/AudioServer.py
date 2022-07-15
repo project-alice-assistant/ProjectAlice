@@ -18,15 +18,14 @@
 #  Last modified: 2021.07.28 at 17:03:33 CEST
 
 import io
+import sounddevice as sd
 import time
 import uuid
 import wave
 from pathlib import Path
-from typing import Dict, Optional
-
-import sounddevice as sd
 # noinspection PyUnresolvedReferences,PyProtectedMember
 from scipy._lib._ccallback import CData
+from typing import Dict, Optional
 from webrtcvad import Vad
 
 from core.ProjectAliceExceptions import PlayBytesStopped
@@ -173,19 +172,21 @@ class AudioManager(Manager):
 						speechFrames += 1
 					elif speechFrames >= minSpeechFrames:
 						speech = True
+						silence = self.SAMPLERATE / self.FRAMES_PER_BUFFER
+						speechFrames = 0
 						self.MqttManager.publish(
 							topic=constants.TOPIC_VAD_UP.format(self.DeviceManager.getMainDevice().uid),
 							payload={
 								'siteId': self.DeviceManager.getMainDevice().uid
 							})
-						silence = self.SAMPLERATE / self.FRAMES_PER_BUFFER
-						speechFrames = 0
 				else:
 					if speech:
 						if silence > 0:
 							silence -= 1
 						else:
 							speech = False
+							silence = 0
+							speechFrames = 0
 							self.MqttManager.publish(
 								topic=constants.TOPIC_VAD_DOWN.format(self.DeviceManager.getMainDevice().uid),
 								payload={
@@ -231,18 +232,19 @@ class AudioManager(Manager):
 			return
 
 		requestId = requestId or sessionId or str(uuid.uuid4())
+		session = self.DialogManager.getSession(sessionId=sessionId)
 
 		if self.ConfigManager.getAliceConfigByName('debug'):
 			with Path('/tmp/onPlayBytes.wav').open('wb') as file:
 				file.write(payload)
 
+		stream = None
 		self._playing = True
 		with io.BytesIO(payload) as buffer:
 			try:
 				with wave.open(buffer, 'rb') as wav:
 					channels = wav.getnchannels()
 					framerate = wav.getframerate()
-
 
 					def streamCallback(outData: buffer, frames: int, _time: CData, _status: sd.CallbackFlags):
 						data = wav.readframes(frames)
@@ -252,7 +254,6 @@ class AudioManager(Manager):
 							raise sd.CallbackStop
 						else:
 							outData[:] = data
-
 
 					stream = sd.RawOutputStream(
 						dtype='int16',
@@ -265,23 +266,23 @@ class AudioManager(Manager):
 					stream.start()
 					while stream.active:
 						if self._stopPlayingFlag.is_set():
-							if not sessionId:
+							if not sessionId or not session:
 								raise PlayBytesStopped
 
-							session = self.DialogManager.getSession(sessionId=sessionId)
 							if session.lastWasSoundPlayOnly:
 								raise PlayBytesStopped
 
-							self.MqttManager.publish(
-								topic=constants.TOPIC_TTS_FINISHED,
-								payload={
-									'id'       : requestId,
-									'sessionId': sessionId,
-									'siteId'   : deviceUid
-								}
-							)
-							self.DialogManager.onEndSession(session)
+							if not session.lastWasSoundPlayOnly:
+								self.MqttManager.publish(
+									topic=constants.TOPIC_TTS_FINISHED,
+									payload={
+										'id'       : requestId,
+										'sessionId': sessionId,
+										'siteId'   : deviceUid
+									}
+								)
 
+							self.DialogManager.onEndSession(session)
 						time.sleep(0.1)
 			except PlayBytesStopped:
 				self.logDebug('Playing bytes stopped')
@@ -289,10 +290,11 @@ class AudioManager(Manager):
 				self.logError(f'Playing wav failed with error: {e}')
 			finally:
 				self.logDebug('Playing bytes finished')
-				stream.stop()
-				stream.close()
 				self._stopPlayingFlag.clear()
 				self._playing = False
+				if stream:
+					stream.stop()
+					stream.close()
 
 		# Session id support is not Hermes protocol official
 		self.MqttManager.publish(

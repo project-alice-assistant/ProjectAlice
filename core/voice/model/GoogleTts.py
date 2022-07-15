@@ -54,7 +54,6 @@ class GoogleTts(Tts):
 		self._client = None
 		self._supportsSSML = True
 
-		# TODO implement the others
 		# https://cloud.google.com/text-to-speech/docs/voices
 		self._supportedLangAndVoices = {
 			'en-US': {
@@ -212,6 +211,39 @@ class GoogleTts(Tts):
 						'neural': True
 					}
 				}
+			},
+			'pt-BR': {
+				'male'  : {
+					'pt-PT-Standard-B': {
+						'neural': False
+					},
+					'pt-PT-Standard-C': {
+						'neural': False
+					},
+					'pt-PT-Wavenet-B' : {
+						'neural': True
+					},
+					'pt-PT-Wavenet-C' : {
+						'neural': True
+					}
+				},
+				'female': {
+					'pt-BR-Standard-A': {
+						'neural': False
+					},
+					'pt-BR-Wavenet-A' : {
+						'neural': True
+					},
+					'pt-PT-Standard-A': {
+						'neural': False
+					},
+					'pt-PT-Standard-D': {
+						'neural': False
+					},
+					'pt-PT-Wavenet-A' : {
+						'neural': True
+					}
+				}
 			}
 		}
 
@@ -219,7 +251,7 @@ class GoogleTts(Tts):
 	def onStart(self):
 		super().onStart()
 		self._client = texttospeech.TextToSpeechClient(
-			credentials=Credentials.from_service_account_file(filename=str(Path(SuperManager.getInstance().commons.rootDir(), 'credentials/googlecredentials.json')))
+			credentials=Credentials.from_service_account_file(filename=str(Path(SuperManager.getInstance().Commons.rootDir(), 'credentials/googlecredentials.json')))
 		)
 
 

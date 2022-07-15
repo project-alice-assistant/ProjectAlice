@@ -38,7 +38,7 @@ from datetime import datetime
 from googletrans import Translator
 from paho.mqtt.client import MQTTMessage
 from pathlib import Path
-from typing import Any, Union
+from typing import Any, Optional, Union
 from uuid import UUID
 
 import core.base.SuperManager as SuperManager
@@ -130,15 +130,18 @@ class CommonsManager(Manager):
 
 
 	@staticmethod
-	def payload(message: MQTTMessage) -> dict:
+	def payload(message: MQTTMessage) -> Optional[dict]:
 		try:
 			payload = json.loads(message.payload)
 			if isinstance(payload, bool):
-				message.payload = payload
-				raise TypeError
+				var = message.topic.split('/')[-1]
+				payload = {var: payload}
 		except (ValueError, TypeError):
-			var = message.topic.split('/')[-1]
-			payload = {var: message.payload}
+			if message.payload:
+				var = message.topic.split('/')[-1]
+				payload = {var: message.payload}
+			else:
+				payload = None
 
 		return payload
 
@@ -193,7 +196,7 @@ class CommonsManager(Manager):
 		if not isinstance(data, dict):
 			return constants.UNKNOWN
 
-		return data.get('siteId', data.get('IPAddress', SuperManager.SuperManager.getInstance().configManager.getAliceConfigByName('uuid')))
+		return data.get('siteId', data.get('IPAddress', SuperManager.SuperManager.getInstance().ConfigManager.getAliceConfigByName('uuid')))
 
 
 	@staticmethod

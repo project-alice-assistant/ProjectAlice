@@ -48,7 +48,6 @@ class WatsonTts(Tts):
 		self._client = None
 		self._supportsSSML = True
 
-		# TODO implement the others
 		# https://cloud.ibm.com/apidocs/text-to-speech?code=python#list-voices
 		self._supportedLangAndVoices = {
 			'en-US': {

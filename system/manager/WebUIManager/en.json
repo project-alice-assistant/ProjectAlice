@@ -45,7 +45,8 @@
 			"revert"  : "Revert",
 			"upload"  : "Upload",
 			"modify"  : "Modify",
-			"createPR": "Create PR"
+			"createPR": "Create PR",
+		  	"update"  : "Update"
 		}
 	},
 	"tooltips"     : {
@@ -73,7 +74,7 @@
 		"manageLocations"  : "Manage locations",
 		"manageDevices"    : "Manage devices",
 		"addLocations"     : "Add locations",
-		"removeLocations"  : "Remove locations",
+		"removeLocations"  : "Remove",
 		"paintFloors"      : "Paint floors",
 		"buildMode"        : "Build",
 		"manageFurniture"  : "Manage furniture",

@@ -36,8 +36,10 @@ class LoginApi(Api):
 	def login(self) -> Response:
 		try:
 			username = request.form.get('username')
+			if not username:
+				raise Exception("No Username given")
 			if not self.UserManager.checkPinCode(self.UserManager.getUser(username), request.form.get('pin')):
-				raise Exception
+				raise Exception("Data not correct.")
 
 			token = self.UserManager.getUser(username).apiToken or self.UserManager.createApiToken(self.UserManager.getUser(username))
 

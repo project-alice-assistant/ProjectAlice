@@ -13,7 +13,7 @@
 #                                              #
 ################################################
 #            DON'T CHANGE ME                   #
-version: 1.24
+version: 1.26
 installSound: yes
 ################################################
 
@@ -45,18 +45,19 @@ mqttTLSFile:
 
 # hardware - Turn only one to yes!
 audioHardware:
-    usbMic:             no
-    respeaker2:         no
-    respeaker4:         no
-    respeaker6MicArray: no
-    respeaker7:         no
-    respeakerCoreV2:    no
-    googleAIY:          no
-    googleAIY2:         no
-    matrixCreator:      no
-    matrixVoice:        no
-    ps3eye:             no
-    jabra410:           no
+    usbMic:              no
+    respeaker2:          no
+    respeaker4:          no
+    respeaker4MicLinear: no
+    respeaker6MicArray:  no
+    respeaker7:          no
+    respeakerCoreV2:     no
+    googleAIY:           no
+    googleAIY2:          no
+    matrixCreator:       no
+    matrixVoice:         no
+    ps3eye:              no
+    jabra410:            no
 
 # System
 # Whether to install Hermes Led Control or not. HLC is the best way to manage your device leds if you have any
@@ -103,9 +104,8 @@ shortReplies: no
 # If set to yes Alice will whisper instead of using short answers when you are sleeping. Currently, only available with Amazon Tts
 whisperWhenSleeping: no
 
-# Either 'pocketsphinx', 'deepspeech', 'snips' (EN only) or 'google'
-asr: pocketsphinx
-
+# Either 'coqui', 'pocketsphinx', 'deepspeech', 'snips' (EN only), 'vosk' or 'google'
+asr: 'coqui'
 # Either 'pico', 'mycroft', 'amazon', 'google' or 'watson'
 tts: pico
 ttsLanguage: en-US

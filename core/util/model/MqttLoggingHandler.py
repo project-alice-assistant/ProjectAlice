@@ -54,8 +54,8 @@ class MqttLoggingHandler(logging.Handler):
 
 		self.saveToHistory(payload)
 
-		if SuperManager.getInstance() and SuperManager.getInstance().mqttManager:
-			SuperManager.getInstance().mqttManager.publish(
+		if SuperManager.getInstance() and SuperManager.getInstance().MqttManager:
+			SuperManager.getInstance().MqttManager.publish(
 				topic=constants.TOPIC_SYSLOG,
 				payload=payload
 			)

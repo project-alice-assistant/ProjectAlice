@@ -181,7 +181,9 @@ class PocketSphinxAsr(Asr):
 	def getPocketSphinxPath(self) -> Path:
 		if Path(f'{self.Commons.rootDir()}/venv/lib/python3.7/').exists():
 			return Path(f'{self.Commons.rootDir()}/venv/lib/python3.7/site-packages/pocketsphinx')
+		elif Path(f'{self.Commons.rootDir()}/venv/lib/python3.8/').exists():
+			return Path(f'{self.Commons.rootDir()}/venv/lib/python3.8/site-packages/pocketsphinx')
 		elif Path(f'{self.Commons.rootDir()}/venv/lib/python3.9/').exists():
 			return Path(f'{self.Commons.rootDir()}/venv/lib/python3.9/site-packages/pocketsphinx')
 		else:
-			raise Exception('Python 3.7 or 3.9 not found')
+			raise Exception('Python 3.7, 3.8 or 3.9 not found')
