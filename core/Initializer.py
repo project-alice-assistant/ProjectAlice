@@ -342,6 +342,7 @@ class PreInit(object):
 	def updateVenv(self):
 		subprocess.run([self.PIP, 'uninstall', '-y', '-r', str(Path(self.rootDir, 'pipuninstalls.txt'))])
 		subprocess.run([self.PIP, 'install', 'wheel'])
+		subprocess.run([self.PIP, 'install', 'https://www.piwheels.org/simple/numpy/numpy-1.21.4-cp39-cp39-linux_armv7l.whl'])
 		subprocess.run([self.PIP, 'install', '-r', str(Path(self.rootDir, 'requirements.txt')), '--upgrade', '--no-cache-dir'])
 
 
