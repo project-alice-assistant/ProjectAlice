@@ -3,7 +3,7 @@
 #
 # Copyright (c) 2021
 #
-# This file, respeaker7.sh, is part of Project Alice.
+# This file, respeaker7MicArray.sh, is part of Project Alice.
 #
 # Project Alice is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
