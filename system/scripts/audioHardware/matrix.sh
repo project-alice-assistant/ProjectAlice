@@ -28,5 +28,5 @@ apt-get update -y
 apt-get install -y matrixio-creator-init libmatrixio-creator-hal libmatrixio-creator-hal-dev
 
 sudo -u "$(logname)" bash <<EOF
-    /home/pi/hermesLedControl/venv/bin/pip3 --no-cache-dir install matrix-lite
+    /home/pi/HermesLedControl/venv/bin/pip3 --no-cache-dir install matrix-lite
 EOF

@@ -716,7 +716,7 @@ class Initializer(object):
 			import yaml
 
 			try:
-				confPath = Path(f'/home/{getpass.getuser()}/.config/hermesLedControl/configuration.yml')
+				confPath = Path(f'/home/{getpass.getuser()}/.config/HermesLedControl/configuration.yml')
 				confPath.parent.mkdir(parents=True, exist_ok=True)
 				confPath.touch(exist_ok=True)
 				confPath.write_text(yaml.safe_dump(hlcConfig))
