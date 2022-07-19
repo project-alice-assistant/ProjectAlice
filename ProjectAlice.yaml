@@ -46,8 +46,8 @@ mqttTLSFile:
 # hardware - Turn only one to yes!
 audioHardware:
     usbMic:              no
-    respeaker2:          no
-    respeaker4:          no
+    respeaker2Mics:      no
+    respeaker4Mics:      no
     respeaker4MicLinear: no
     respeaker6MicArray:  no
     respeaker7:          no
