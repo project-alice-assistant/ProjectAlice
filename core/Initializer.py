@@ -1,7 +1,6 @@
 import shutil
 
-
-VERSION = 1.26
+VERSION = 1.27
 
 #  Copyright (c) 2021
 #
@@ -626,7 +625,7 @@ class Initializer(object):
 
 		useFallbackHLC = False
 		if initConfs['installSound']:
-			if audioHardware in {'respeaker2Mics', 'respeaker4Mics', 'respeaker4MicLinear', 'respeaker6MicArray'}:
+			if audioHardware in {'respeaker2Mics', 'respeaker4MicArray', 'respeaker4MicLinear', 'respeaker6MicArray'}:
 				subprocess.run(['sudo', Path(self._rootDir, 'system/scripts/audioHardware/respeakers.sh')])
 
 				if audioHardware == 'respeaker4MicLinear' and initConfs['useHLC']:
@@ -639,7 +638,7 @@ class Initializer(object):
 				confs['asoundConfig'] = settings
 
 				dest = Path('/etc/voicecard/asound_2mic.conf')
-				if audioHardware == 'respeaker4Mics':
+				if audioHardware == 'respeaker4MicArray':
 					dest = Path('/etc/voicecard/asound_4mic.conf')
 				elif audioHardware == 'respeaker4MicLinear':
 					confs['outputDevice'] = 'playback'
@@ -650,10 +649,10 @@ class Initializer(object):
 				subprocess.run(['sudo', 'cp', Path(self._rootDir, 'system', 'asounds', f'{audioHardware.lower()}.conf'), dest])
 				subprocess.run(['sudo', 'cp', Path(self._rootDir, 'system', 'asounds', f'{audioHardware.lower()}.conf'), Path(ASOUND)])
 
-			elif audioHardware == 'respeaker7':
-				subprocess.run(['sudo', Path(self._rootDir, 'system/scripts/audioHardware/respeaker7.sh')])
+			elif audioHardware == 'respeaker7MicArray':
+				subprocess.run(['sudo', Path(self._rootDir, 'system/scripts/audioHardware/respeaker7MicArray.sh')])
 				if initConfs['useHLC']:
-					hlcConfig['hardware'] = 'respeaker7MicArray'
+					hlcConfig['hardware'] = audioHardware
 
 			elif audioHardware == 'respeakerCoreV2':
 				subprocess.run(['sudo', Path(self._rootDir, 'system/scripts/audioHardware/respeakerCoreV2.sh')])
