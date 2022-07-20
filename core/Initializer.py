@@ -626,7 +626,7 @@ class Initializer(object):
 
 		useFallbackHLC = False
 		if initConfs['installSound']:
-			if audioHardware in {'respeaker2', 'respeaker4', 'respeaker4MicLinear', 'respeaker6MicArray'}:
+			if audioHardware in {'respeaker2Mics', 'respeaker4Mics', 'respeaker4MicLinear', 'respeaker6MicArray'}:
 				subprocess.run(['sudo', Path(self._rootDir, 'system/scripts/audioHardware/respeakers.sh')])
 
 				if audioHardware == 'respeaker4MicLinear' and initConfs['useHLC']:
@@ -639,7 +639,7 @@ class Initializer(object):
 				confs['asoundConfig'] = settings
 
 				dest = Path('/etc/voicecard/asound_2mic.conf')
-				if audioHardware == 'respeaker4':
+				if audioHardware == 'respeaker4Mics':
 					dest = Path('/etc/voicecard/asound_4mic.conf')
 				elif audioHardware == 'respeaker4MicLinear':
 					confs['outputDevice'] = 'playback'
