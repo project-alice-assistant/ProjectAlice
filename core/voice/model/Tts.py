@@ -195,7 +195,9 @@ class Tts(ProjectAliceObject):
 			self.onSay(session)
 		else:
 			self.DialogManager.increaseSessionTimeout(session=session, interval=duration + 1)
-			self.ThreadManager.doLater(interval=duration + 0.2, func=self._sayFinished, args=[session])
+
+			if session.deviceUid == self.DeviceManager.getMainDevice().uid:
+				self.ThreadManager.doLater(interval=duration + 0.2, func=self._sayFinished, args=[session])
 
 
 	def _sayFinished(self, session: DialogSession):
