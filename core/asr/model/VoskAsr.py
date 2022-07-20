@@ -61,7 +61,6 @@ class VoskAsr(Asr):
 	def decodeStream(self, session: DialogSession) -> Optional[ASRResult]:
 		super().decodeStream(session)
 		result = None
-		previous = ''
 
 		with Stopwatch() as processingTime:
 			with Recorder(self._timeout, session.user, session.deviceUid) as recorder:
@@ -77,8 +76,7 @@ class VoskAsr(Asr):
 						break
 
 					result = json.loads(recognizer.PartialResult())
-					if result['partial'] and result['partial'] != previous:
-						previous = result
+					if result['partial']:
 						self.partialTextCaptured(session=session, text=result['partial'], likelihood=1, seconds=0)
 
 				result = json.loads(recognizer.FinalResult())['text']

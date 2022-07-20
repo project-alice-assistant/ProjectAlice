@@ -20,7 +20,6 @@
 import os
 from pathlib import Path
 from threading import Event
-from time import time
 from typing import Iterable, Optional
 
 from core.asr.model.ASRResult import ASRResult
@@ -62,8 +61,6 @@ class GoogleAsr(Asr):
 
 		self._internetLostFlag = Event()  # Set if internet goes down, cut the decoding
 		self._lastResultCheck = 0  # The time the intermediate results were last checked. If actual time is greater than this value + 3, stop processing, internet issues
-
-		self._previousCapture = ''  # The text that was last captured in the iteration
 
 
 	def onStart(self):
@@ -137,21 +134,8 @@ class GoogleAsr(Asr):
 
 			if result.is_final:
 				return result.alternatives[0].transcript, result.alternatives[0].confidence
-			elif result.alternatives[0].transcript != self._previousCapture:
+			else:
 				self.partialTextCaptured(session=session, text=result.alternatives[0].transcript, likelihood=result.alternatives[0].confidence, seconds=0)
-				self._previousCapture = result.alternatives[0].transcript
-			elif result.alternatives[0].transcript == self._previousCapture:
-				now = int(time())
-
-				if self._lastResultCheck == 0:
-					self._lastResultCheck = 0
-					continue
-
-				if now > self._lastResultCheck + 3:
-					self.logDebug(f'Stopping process as there seems to be connectivity issues')
-					return result.alternatives[0].transcript, result.alternatives[0].confidence
-
-				self._lastResultCheck = now
 
 		return None
 

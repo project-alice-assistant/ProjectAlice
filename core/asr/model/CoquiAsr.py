@@ -140,7 +140,6 @@ class CoquiAsr(Asr):
 	def decodeStream(self, session: DialogSession) -> Optional[ASRResult]:
 		super().decodeStream(session)
 		result = None
-		previous = ''
 
 		with Stopwatch() as processingTime:
 			with Recorder(self._timeout, session.user, session.deviceUid) as recorder:
@@ -154,9 +153,7 @@ class CoquiAsr(Asr):
 					streamContext.feedAudioContent(np.frombuffer(chunk, np.int16))
 
 					result = streamContext.intermediateDecode()
-					if result and result != previous:
-						previous = result
-						self.partialTextCaptured(session=session, text=result, likelihood=1, seconds=0)
+					self.partialTextCaptured(session=session, text=result, likelihood=1, seconds=0)
 
 			text = streamContext.finishStream()
 			self._triggerFlag.clear()

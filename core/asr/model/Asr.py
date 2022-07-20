@@ -42,6 +42,7 @@ class Asr(ProjectAliceObject):
 		self._timeout: AliceEvent = self.ThreadManager.newEvent('asrTimeout')
 		self._timeoutTimer: Optional[threading.Timer] = None
 		self._recorder: Optional[Recorder] = None
+		self._previousPartialRecord = ''
 		super().__init__()
 
 
@@ -118,6 +119,9 @@ class Asr(ProjectAliceObject):
 
 
 	def partialTextCaptured(self, session: DialogSession, text: str, likelihood: float, seconds: float):
+		if not text or text.strip() == self._previousPartialRecord:
+			return
+		self._previousPartialRecord = text.strip()
 		self.MqttManager.publish(constants.TOPIC_PARTIAL_TEXT_CAPTURED, json.dumps({
 			'text'      : text,
 			'likelihood': likelihood,

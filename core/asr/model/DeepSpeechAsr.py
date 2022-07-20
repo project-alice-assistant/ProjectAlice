@@ -17,10 +17,9 @@
 #
 #  Last modified: 2021.04.13 at 12:56:45 CEST
 
+import numpy as np
 from pathlib import Path
 from typing import Generator, Optional
-
-import numpy as np
 
 from core.asr.model.ASRResult import ASRResult
 from core.asr.model.Asr import Asr
@@ -114,7 +113,6 @@ class DeepSpeechAsr(Asr):
 	def decodeStream(self, session: DialogSession) -> Optional[ASRResult]:
 		super().decodeStream(session)
 		result = None
-		previous = ''
 
 		with Stopwatch() as processingTime:
 			with Recorder(self._timeout, session.user, session.deviceUid) as recorder:
@@ -128,9 +126,7 @@ class DeepSpeechAsr(Asr):
 					self._model.feedAudioContent(streamContext, np.frombuffer(chunk, np.int16))
 
 					result = self._model.intermediateDecode(streamContext)
-					if result and result != previous:
-						previous = result
-						self.partialTextCaptured(session=session, text=result, likelihood=1, seconds=0)
+					self.partialTextCaptured(session=session, text=result, likelihood=1, seconds=0)
 
 			text = self._model.finishStream(streamContext)
 			self._triggerFlag.clear()
