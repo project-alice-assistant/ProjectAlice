@@ -12,6 +12,14 @@
 		"it": [
 			"fuori"
 		],
+		"pt": [
+			"fora",
+			"lado de fora"
+		],
+		"pt_br": [
+			"fora",
+			"lado de fora"
+		],
 		"pl": [
 			"na zewnątrz",
 			"na dworze"
@@ -29,6 +37,12 @@
 		],
 		"it": [
 			" ed anche "
+		],
+		"pt": [
+			" e também "
+		],
+		"pt_br": [
+			" e também "
 		],
 		"pl": [
 			" a także "
@@ -61,6 +75,22 @@
 			"dentro ",
 			"in "
 		],
+		"pt": [
+			"no quarto ",
+			"na sala ",
+			"dentro ",
+			"no ",
+			"nele ",
+			"dentro dele"
+		],
+		"pt_br": [
+			"no quarto ",
+			"na sala ",
+			"dentro ",
+			"no ",
+			"nele ",
+			"dentro dele"
+		],
 		"pl": [
 			"w pokoju ",
 			"w ",
@@ -81,6 +111,16 @@
 			"dappertutto",
 			"ovunque"
 		],
+		"pt": [
+			"em toda parte",
+			"em todo lugar",
+			"ao redor"
+		],
+		"pt_br": [
+			"em toda parte",
+			"em todo lugar",
+			"ao redor"
+		],
 		"pl": [
 			"wszędzie"
 		]
@@ -97,6 +137,12 @@
 		],
 		"it": [
 			"più"
+		],
+		"pt": [
+			"mais"
+		],
+		"pt_br": [
+			"mais"
 		],
 		"pl": [
 			"plus"
@@ -115,6 +161,12 @@
 		"it": [
 			"meno"
 		],
+		"pt": [
+			"menos"
+		],
+		"pt_br": [
+			"menos"
+		],
 		"pl": [
 			"minus"
 		]
@@ -131,6 +183,12 @@
 		],
 		"it": [
 			"per"
+		],
+		"pt": [
+			"vezes"
+		],
+		"pt_br": [
+			"vezes"
 		],
 		"pl": [
 			"razy"
@@ -149,6 +207,12 @@
 		"it": [
 			"diviso"
 		],
+		"pt": [
+			"dividir"
+		],
+		"pt_br": [
+			"dividir"
+		],
 		"pl": [
 			"dzielone przez"
 		]
@@ -165,6 +229,14 @@
 		],
 		"it": [
 			"modulo"
+		],
+		"pt": [
+			"modulo",
+			"porcentagem"
+		],
+		"pt_br": [
+			"modulo",
+			"porcentagem"
 		]
 	},
 	"cancelIntent": {
@@ -193,6 +265,19 @@
 			"annulla",
 			"sta 'zitto",
 			"silenzio"
+		],
+		"pt": [
+			"anular comando",
+			"cancelar",
+			"pare"
+		],
+		"pt_br": [
+			"anular comando",
+			"cancelar",
+			"pare",
+			"quieta",
+			"cancele",
+			"esquece"
 		],
 		"pl": [
 			"anuluj",
@@ -225,6 +310,19 @@
 		],
 		"it": [
 			"per favore"
+		],
+		"pt": [
+			"por favor",
+			"por gentileza",
+			"faria esse favor",
+			"por obsequio"
+		],
+		"pt_br": [
+			"por favor",
+			"por gentileza",
+			"faria esse favor",
+			"por obsequio",
+			"faz favor"
 		]
 	}
 }
