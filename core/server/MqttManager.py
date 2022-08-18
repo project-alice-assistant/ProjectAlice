@@ -310,6 +310,9 @@ class MqttManager(Manager):
 		deviceUid = self.Commons.parseDeviceUid(msg)
 		payload = self.Commons.payload(msg)
 
+		if self.DialogManager.uidBusy(deviceUid):
+			return
+
 		if not self._multiDetectionsHolder:
 			self.ThreadManager.doLater(interval=0.5, func=self.handleMultiDetection)
 

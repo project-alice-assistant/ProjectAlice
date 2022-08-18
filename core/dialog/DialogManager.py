@@ -530,6 +530,14 @@ class DialogManager(Manager):
 		return self._sessionsById.get(sessionId, None)
 
 
+	def uidBusy(self, uid: str) -> bool:
+		session = self._sessionsByDeviceUids.get(uid, None)
+		if session:
+			return True
+		else:
+			return False
+
+
 	def removeSession(self, sessionId: str):
 		self.cancelSessionTimeout(sessionId=sessionId)
 

@@ -292,6 +292,17 @@ class AudioManager(Manager):
 				self.logDebug('Playing bytes finished')
 				self._stopPlayingFlag.clear()
 				self._playing = False
+
+				if not session.lastWasSoundPlayOnly:
+					self.MqttManager.publish(
+						topic=constants.TOPIC_TTS_FINISHED,
+						payload={
+							'id'       : requestId,
+							'sessionId': sessionId,
+							'siteId'   : deviceUid
+						}
+					)
+
 				if stream:
 					stream.stop()
 					stream.close()

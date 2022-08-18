@@ -28,7 +28,6 @@ from re import Match
 from typing import Optional
 
 from core.base.model.ProjectAliceObject import ProjectAliceObject
-from core.commons import constants
 from core.dialog.model.DialogSession import DialogSession
 from core.user.model.User import User
 
@@ -194,7 +193,7 @@ class Tts(ProjectAliceObject):
 			file.unlink()
 			self.onSay(session)
 		else:
-			self.DialogManager.increaseSessionTimeout(session=session, interval=duration + 1)
+			self.DialogManager.increaseSessionTimeout(session=session, interval=duration + self.ConfigManager.getAliceConfigByName('sessionTimeout'))
 
 			if session.deviceUid == self.DeviceManager.getMainDevice().uid:
 				self.ThreadManager.doLater(interval=duration + 0.2, func=self._sayFinished, args=[session])
@@ -202,14 +201,14 @@ class Tts(ProjectAliceObject):
 
 	def _sayFinished(self, session: DialogSession):
 		self._speaking = False
-		self.MqttManager.publish(
-			topic=constants.TOPIC_TTS_FINISHED,
-			payload={
-				'id'       : session.sessionId,
-				'sessionId': session.sessionId,
-				'deviceUid': session.deviceUid
-			}
-		)
+		# self.MqttManager.publish(
+		# 	topic=constants.TOPIC_TTS_FINISHED,
+		# 	payload={
+		# 		'id'       : session.sessionId,
+		# 		'sessionId': session.sessionId,
+		# 		'deviceUid': session.deviceUid
+		# 	}
+		# )
 
 
 	def onSayFinished(self, session: DialogSession, uid: str = None):
