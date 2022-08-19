@@ -55,7 +55,7 @@ class User(ProjectAliceObject):
 			except:
 				self.logError(f"Invalid state \"{row['state']}\" for user \"{self._name}\"")
 		except Exception as e:
-			self.logError('Error instantiating user')
+			self.logError(f'Error instantiating user: {e}')
 			return
 
 
