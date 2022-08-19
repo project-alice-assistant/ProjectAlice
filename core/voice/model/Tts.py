@@ -16,11 +16,11 @@
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>
 #
 #  Last modified: 2021.04.13 at 12:56:48 CEST
-
 import getpass
 import hashlib
 import re
 import tempfile
+import threading
 from pathlib import Path
 from pydub import AudioSegment
 from pydub.exceptions import CouldntDecodeError
@@ -28,6 +28,7 @@ from re import Match
 from typing import Optional
 
 from core.base.model.ProjectAliceObject import ProjectAliceObject
+from core.commons import constants
 from core.dialog.model.DialogSession import DialogSession
 from core.user.model.User import User
 
@@ -56,6 +57,7 @@ class Tts(ProjectAliceObject):
 		self._cacheFile: Path = Path()
 		self._text = ''
 		self._speaking = False
+		self._ttsFailureTimer: Optional[threading.Timer] = None
 
 		self._supportsSSML = False
 
@@ -195,21 +197,30 @@ class Tts(ProjectAliceObject):
 		else:
 			self.DialogManager.increaseSessionTimeout(session=session, interval=duration + self.ConfigManager.getAliceConfigByName('sessionTimeout'))
 
+			# If something goes wrong, let's manually terminate the TTS speaking
 			if session.deviceUid == self.DeviceManager.getMainDevice().uid:
-				self.ThreadManager.doLater(interval=duration + 0.2, func=self._sayFinished, args=[session])
+				self.resetFailureTimer()
+				self._ttsFailureTimer = self.ThreadManager.newTimer(interval=duration * 2, func=self._sayFinished, args=[session])
 
 
 	def _sayFinished(self, session: DialogSession):
-		self._speaking = False
-		# self.MqttManager.publish(
-		# 	topic=constants.TOPIC_TTS_FINISHED,
-		# 	payload={
-		# 		'id'       : session.sessionId,
-		# 		'sessionId': session.sessionId,
-		# 		'deviceUid': session.deviceUid
-		# 	}
-		# )
+		if self._speaking:
+			self.resetFailureTimer()
+			self._speaking = False
+			self.MqttManager.publish(
+				topic=constants.TOPIC_TTS_FINISHED,
+				payload={
+					'id'       : session.sessionId,
+					'sessionId': session.sessionId,
+					'deviceUid': session.deviceUid
+				}
+			)
 
+
+	def resetFailureTimer(self):
+		if self._ttsFailureTimer:
+			self._ttsFailureTimer.join(1)
+		self._ttsFailureTimer = None
 
 	def onSayFinished(self, session: DialogSession, uid: str = None):
 		self._speaking = False
