@@ -17,9 +17,9 @@
   <img src="https://img.shields.io/liberapay/receives/Psycho.svg?logo=liberapay">
 </p>
 
-Project Alice is a smart voice home assistant that is completely modular and extensible. It was first built around Snips therefore runs entirely offline and never sends or shares your voice interactions with anyone, Project Alice **guarantees** your privacy in your home or wherever you’re using Project Alice.
+Project Alice is a smart voice home assistant that is completely modular and extensible. It was first built around Snips (now belonging to Sonos) therefore runs entirely offline and never sends or shares your voice interactions with anyone, Project Alice **guarantees** your privacy in your home or wherever you’re using Project Alice.
 
-However, as an option, since we've built Project Alice on top of Snips, Project Alice can be configured to use some online alternatives and fall backs (for example, using Amazon or Google’s Text to Speech engines), just like Snips. Since Snips (and the Project Alice team) strongly believe that decisions about your privacy should be made by you and you alone, these options are all disabled by default.
+However, as an option, Project Alice can be configured to use some online alternatives and fall backs (for example, using Amazon or Google’s Text to Speech engines). Since we strongly believe that decisions about your privacy should be made by you and you alone, these options are all disabled by default.
 
 ## Installing
 Please follow the [documentation](https://docs.projectalice.io/setup/)
@@ -36,7 +36,9 @@ Either directly on your device on the interface, or on [https://store.projectali
 ## Who made this?
 The original code base was started at the end 2015 and several rewrites made it what it is today. It was entirely written by me *Psycho* until recently, where I decided to make the code openly available to the world.
 
-In of May 2019, *Jierka* joined the project to prepare Project Alice for a public release by providing quality code, fresh ideas and insights for the project. At the same time *maxbachmann* also joined the project, at first to translate to German for the release, but soon moved beyond his initial commitment and started contributing to the refactoring, rewrite and skill production.
+In May 2019, *Jierka* joined the project to prepare Project Alice for a public release by providing quality code, fresh ideas and insights for the project. At the same time *maxbachmann* also joined the project, at first to translate to German for the release, but soon moved beyond his initial commitment and started contributing to the refactoring, rewrite and skill production.
+
+In 2022 and since 2020, the Project Alice Core team is made of *Psycho* and *philipp2310* who joined and brought a lot to this project over the years.
 
 If you want to use Project Alice in a non-commercial setting, I’m not asking you for any money, or a financial contribution, but as the license states, you should try to give back for what you've been given; please share your improvements and add-ons with the rest of us, in the form of pull requests.
 
