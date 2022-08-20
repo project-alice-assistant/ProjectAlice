@@ -35,6 +35,9 @@ from core.device.model.DeviceAbility import DeviceAbility
 
 
 class MqttManager(Manager):
+	"""
+	Handles all mqtt traffic
+	"""
 	DEFAULT_CLIENT_EXTENSION = '@mqtt'
 	TOPIC_AUDIO_FRAME = constants.TOPIC_AUDIO_FRAME.replace('{}', '+')
 
@@ -115,12 +118,17 @@ class MqttManager(Manager):
 
 
 	def onLog(self, _client, _userdata, level, buf):
+		"""
+		Handles mqtt logs
+		"""
 		if level != 16:
 			self.logError(buf)
 
 
 	def onConnect(self, _client, _userdata, _flags, _rc):
-
+		"""
+		When Mqtt connects, subscribes to topics
+		"""
 		subscribedEvents = [
 			(constants.TOPIC_SESSION_ENDED, 0),
 			(constants.TOPIC_SESSION_STARTED, 0),
@@ -176,6 +184,9 @@ class MqttManager(Manager):
 
 
 	def connect(self):
+		"""
+		Connect Mqtt client to broker as a forever running loop
+		"""
 		if self.ConfigManager.getAliceConfigByName('mqttUser') and self.ConfigManager.getAliceConfigByName('mqttPassword'):
 			self._mqttClient.username_pw_set(self.ConfigManager.getAliceConfigByName('mqttUser'), self.ConfigManager.getAliceConfigByName('mqttPassword'))
 
@@ -189,22 +200,34 @@ class MqttManager(Manager):
 
 
 	def disconnect(self):
+		"""
+		Disconnect Mqtt client
+		"""
 		self._mqttClient.loop_stop()
 		self._mqttClient.disconnect()
 
 
 	def reconnect(self):
+		"""
+		Disconnects and reconnects Mqtt
+		"""
 		self.disconnect()
 		self.connect()
 
 
 	def subscribeSkillIntents(self, intents: dict):
+		"""
+		Each skill subscribes it's supported intent topics
+		"""
 		# Have to send them one at a time, as intents is a list of Intent objects and mqtt doesn't want that
 		for intent in intents:
 			self.mqttClient.subscribe(str(intent))
 
 
 	def unsubscribeSkillIntents(self, intents: dict):
+		"""
+		Unsubscribe skill intents
+		"""
 		# Have to send them one at a time, as intents is a list of Intent objects and mqtt doesn't want that
 		for intent in intents:
 			self.mqttClient.unsubscribe(str(intent))
