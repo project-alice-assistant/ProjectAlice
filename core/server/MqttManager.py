@@ -332,17 +332,14 @@ class MqttManager(Manager):
 
 
 	def handleMultiDetection(self):
-		if len(self._multiDetectionsHolder) <= 1:
+		if not self._multiDetectionsHolder:
 			self._multiDetectionsHolder = list()
 			return
 
 		sessions = self.DialogManager.sessions
-		for sessionId in sessions:
-			payload = self.Commons.payload(sessions[sessionId].message)
-			if not payload:
-				continue
-			if payload['siteId'] != self._multiDetectionsHolder[0]:
-				self.endSession(sessionId=sessionId, forceEnd=True)
+		for session in sessions.values():
+			if session.deviceUid != self._multiDetectionsHolder[0]:
+				self.endSession(sessionId=session.sessionId, forceEnd=True)
 
 		self._multiDetectionsHolder = list()
 
