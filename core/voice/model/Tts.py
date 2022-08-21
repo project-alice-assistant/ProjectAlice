@@ -218,8 +218,8 @@ class Tts(ProjectAliceObject):
 
 
 	def resetFailureTimer(self):
-		if self._ttsFailureTimer:
-			self._ttsFailureTimer.join(1)
+		if self._ttsFailureTimer and self._ttsFailureTimer.is_alive():
+			self._ttsFailureTimer.cancel()
 		self._ttsFailureTimer = None
 
 

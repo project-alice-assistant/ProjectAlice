@@ -123,19 +123,19 @@ class ASRManager(Manager):
 
 	@staticmethod
 	def getASRPackage(asr: str) -> str:
-		if asr == ASREnum.GOOGLE:
+		if asr == ASREnum.GOOGLE.value:
 			return 'core.asr.model.GoogleAsr'
-		elif asr == ASREnum.DEEPSPEECH:
+		elif asr == ASREnum.DEEPSPEECH.value:
 			return 'core.asr.model.DeepSpeechAsr'
-		elif asr == ASREnum.SNIPS:
+		elif asr == ASREnum.SNIPS.value:
 			return 'core.asr.model.SnipsAsr'
-		elif asr == ASREnum.VOSK:
+		elif asr == ASREnum.VOSK.value:
 			return 'core.asr.model.VoskAsr'
-		elif asr == ASREnum.COQUI:
+		elif asr == ASREnum.COQUI.value:
 			return 'core.asr.model.CoquiAsr'
-		elif asr == ASREnum.AZURE:
+		elif asr == ASREnum.AZURE.value:
 			return 'core.asr.model.AzureAsr'
-		elif asr == ASREnum.POCKETSPHINX:
+		elif asr == ASREnum.POCKETSPHINX.value:
 			return 'core.asr.model.PocketSphinxAsr'
 		else:
 			return 'core.asr.model.CoquiAsr'
