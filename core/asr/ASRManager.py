@@ -26,6 +26,7 @@ from pathlib import Path
 from typing import Dict
 
 from core.asr.model import Asr
+from core.asr.model.ASREnum import ASREnum
 from core.asr.model.ASRResult import ASRResult
 from core.asr.model.Recorder import Recorder
 from core.base.model.Manager import Manager
@@ -48,6 +49,7 @@ class ASRManager(Manager):
 	def onStart(self):
 		super().onStart()
 		self._startASREngine()
+		self.readyFallbackASR()
 
 
 	def onStop(self):
@@ -68,21 +70,7 @@ class ASRManager(Manager):
 		online = self.InternetManager.online
 
 		self._asr = None
-
-		if userASR == 'google':
-			package = 'core.asr.model.GoogleAsr'
-		elif userASR == 'deepspeech':
-			package = 'core.asr.model.DeepSpeechAsr'
-		elif userASR == 'snips':
-			package = 'core.asr.model.SnipsAsr'
-		elif userASR == 'vosk':
-			package = 'core.asr.model.VoskAsr'
-		elif userASR == 'coqui':
-			package = 'core.asr.model.CoquiAsr'
-		elif userASR == 'azure':
-			package = 'core.asr.model.AzureAsr'
-		else:
-			package = 'core.asr.model.PocketSphinxAsr'
+		package = self.getASRPackage(userASR)
 
 		module = import_module(package)
 		asr = getattr(module, package.rsplit('.', 1)[-1])
@@ -122,6 +110,35 @@ class ASRManager(Manager):
 
 			self.logWarning(f'Something went wrong starting user ASR, falling back to **{fallback}**: {e}', printStack=True)
 			self._startASREngine(forceAsr=fallback)
+
+
+	def readyFallbackASR(self):
+		package = self.getASRPackage(self.ConfigManager.getAliceConfigByName('asrFallback'))
+		module = import_module(package)
+		asr = getattr(module, package.rsplit('.', 1)[-1])
+		fallbackASR = asr()
+		if not fallbackASR.checkDependencies() and not fallbackASR.installDependencies():
+			self.logWarning('Fallback ASR could not be installed')
+
+
+	@staticmethod
+	def getASRPackage(asr: str) -> str:
+		if asr == ASREnum.GOOGLE:
+			return 'core.asr.model.GoogleAsr'
+		elif asr == ASREnum.DEEPSPEECH:
+			return 'core.asr.model.DeepSpeechAsr'
+		elif asr == ASREnum.SNIPS:
+			return 'core.asr.model.SnipsAsr'
+		elif asr == ASREnum.VOSK:
+			return 'core.asr.model.VoskAsr'
+		elif asr == ASREnum.COQUI:
+			return 'core.asr.model.CoquiAsr'
+		elif asr == ASREnum.AZURE:
+			return 'core.asr.model.AzureAsr'
+		elif asr == ASREnum.POCKETSPHINX:
+			return 'core.asr.model.PocketSphinxAsr'
+		else:
+			return 'core.asr.model.CoquiAsr'
 
 
 	@property
