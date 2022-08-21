@@ -276,12 +276,9 @@ class PreInit(object):
 	def checkInternet(self):
 		try:
 			socket.create_connection(('www.google.com', 80))
-			connected = True
 		except:
-			connected = False
-
-		if not connected:
 			self._logger.logFatal('Your device needs internet access to continue')
+
 
 
 	def getUpdateSource(self, definedSource: str) -> str:
