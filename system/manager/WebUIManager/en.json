@@ -222,6 +222,7 @@
 		"addUser"     : "Add user",
 		"addWakeword" : "Add wakeword",
 		"tuneWakeword": "Tune wakeword",
-		"wipe"        : "Wipe all"
+		"wipe"        : "Wipe all",
+	  	"dismissAllNotification" : "Dismiss all"
 	}
 }

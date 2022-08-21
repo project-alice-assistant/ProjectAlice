@@ -202,6 +202,7 @@
 		"addUser"     : "Aggiungi utente",
 		"addWakeword" : "Aggiungi wakeword",
 		"tuneWakeword": "Regola wakeword",
-		"wipe"        : "Cancella tutto"
+		"wipe"        : "Cancella tutto",
+	  	"dismissAllNotification" : "Dismiss all"
 	}
 }

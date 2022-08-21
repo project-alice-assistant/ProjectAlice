@@ -207,6 +207,7 @@
 		"addUser"     : "Neuer Benutzer",
 		"addWakeword" : "Neues Wakeword",
 		"tuneWakeword": "Wakeword einstellen",
-		"wipe"        : "Alles löschen"
+		"wipe"        : "Alles löschen",
+	  	"dismissAllNotification" : "Alle löschen"
 	}
 }
