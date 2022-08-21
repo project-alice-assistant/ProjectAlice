@@ -380,7 +380,7 @@ class DialogManager(Manager):
 				'customData': json.dumps(dict())
 			}
 		)
-		init = payload.get('init', False)
+		init = payload.get('init', dict())
 		if init:
 			text = init.get('text', '')
 			if not text:
