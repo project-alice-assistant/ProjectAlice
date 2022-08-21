@@ -222,8 +222,10 @@ class Tts(ProjectAliceObject):
 			self._ttsFailureTimer.join(1)
 		self._ttsFailureTimer = None
 
+
 	def onSayFinished(self, session: DialogSession, uid: str = None):
 		self._speaking = False
+		self.resetFailureTimer()
 
 
 	def _checkText(self, session: DialogSession) -> str:
