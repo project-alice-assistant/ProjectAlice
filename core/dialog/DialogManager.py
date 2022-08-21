@@ -381,29 +381,31 @@ class DialogManager(Manager):
 			}
 		)
 		init = payload.get('init', dict())
-		if init:
-			text = init.get('text', '')
-			if not text:
-				randomTextSkill = init.get('skill', '')
-				randomTextTalk = init.get('talk', '')
-				randomTextReplace = init.get('replace', [])
-				if randomTextSkill and randomTextTalk:
-					text = self.TalkManager.randomTalk(skill=randomTextSkill, talk=randomTextTalk)
-					if randomTextReplace:
-						text = text.format(*randomTextReplace)
+		if not init:
+			return
 
-			if text:
-				self.MqttManager.publish(
-					topic=constants.TOPIC_TTS_SAY,
-					payload={
-						'text'                 : text,
-						'lang'                 : self.LanguageManager.activeLanguageAndCountryCode,
-						'siteId'               : deviceUid,
-						'sessionId'            : session.sessionId,
-						'uid'                  : str(uuid.uuid4()),
-						'isHotwordNotification': hotwordNotification
-					}
-				)
+		text = init.get('text', '')
+		if not text:
+			randomTextSkill = init.get('skill', '')
+			randomTextTalk = init.get('talk', '')
+			randomTextReplace = init.get('replace', [])
+			if randomTextSkill and randomTextTalk:
+				text = self.TalkManager.randomTalk(skill=randomTextSkill, talk=randomTextTalk)
+				if randomTextReplace:
+					text = text.format(*randomTextReplace)
+
+		if text:
+			self.MqttManager.publish(
+				topic=constants.TOPIC_TTS_SAY,
+				payload={
+					'text'                 : text,
+					'lang'                 : self.LanguageManager.activeLanguageAndCountryCode,
+					'siteId'               : deviceUid,
+					'sessionId'            : session.sessionId,
+					'uid'                  : str(uuid.uuid4()),
+					'isHotwordNotification': hotwordNotification
+				}
+			)
 
 
 	def onContinueSession(self, session: DialogSession):
