@@ -62,7 +62,7 @@ def IntentHandler(intent: Union[str, Intent], requiredState: str = None, authLev
 	def wrapper(func):
 		# store the intent in the function
 		if not hasattr(func, 'intents'):
-			func.intents = []
+			func.intents = list()
 		func.intents.append({'intent': intent, 'requiredState': requiredState})
 		return func
 
@@ -79,7 +79,7 @@ def MqttHandler(intent: Union[str, Intent], requiredState: str = None, authLevel
 	def wrapper(func):
 		# store the intent in the function
 		if not hasattr(func, 'intents'):
-			func.intents = []
+			func.intents = list()
 		func.intents.append({'intent': intent, 'requiredState': requiredState})
 		return func
 

@@ -85,7 +85,7 @@ class DialogTemplateManager(Manager):
 		for resource in self.skillResource():
 			data = json.loads(resource.read_text())
 			if 'slotTypes' not in data:
-				data['slotTypes'] = []
+				data['slotTypes'] = list()
 			dialogTemplate = DialogTemplate(**data)
 
 			# If we have an utterance extender, apply it
