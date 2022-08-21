@@ -64,7 +64,7 @@ class WebUINotificationManager(Manager):
 		return self._notifications
 
 
-	def newNotification(self, typ: Union[UINotificationType, str], notification: Union[str, Dict[str, str]], key: str = None, replaceTitle: list = None, replaceBody: list = None, options: dict = None, deviceUid: str = 'all'):
+	def newNotification(self, typ: Union[UINotificationType, str], notification: Union[str, Dict[str, str]], key: str = None, replaceTitle: list = None, replaceBody: list = None, options: dict = None, deviceUid: str = 'all', allowDuplicates: bool = False):
 		"""
 		Stores and sends a UI notification
 		:param typ: The notification type, either as the enum or a string when coming from the database
@@ -74,6 +74,7 @@ class WebUINotificationManager(Manager):
 		:param replaceBody: A list of strings to format the original body string
 		:param options: Options in a form of a dict for this notification, used by the UI
 		:param deviceUid: If only a certain device should get this notification
+		:param allowDuplicates: If false, by default, do not add a same notification more than once
 		:return:
 		"""
 
@@ -85,7 +86,6 @@ class WebUINotificationManager(Manager):
 		title = notification['title']
 		if replaceTitle:
 			title = title.format(replaceTitle)
-
 
 		body = notification['body']
 		if replaceBody:
