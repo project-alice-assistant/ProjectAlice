@@ -419,6 +419,7 @@
 	"defaultValue": "vosk",
 	"dataType": "list",
 	"isSensitive": false,
+	"onUpdate": "ASRManager.readyFallbackASR",
 	"values": [
 	  "coqui",
 	  "deepspeech",
@@ -494,6 +495,7 @@
 	"defaultValue": "pico",
 	"dataType": "list",
 	"isSensitive": false,
+	"onUpdate": "TTSManager.readyFallbackTTS",
 	"values": {
 	  "Pico": "pico",
 	  "Mycroft": "mycroft",
@@ -502,7 +504,6 @@
 	  "IBM Watson": "watson"
 	},
 	"description": "The Tts to use in case the default Tts becomes unavailable.",
-	"onUpdate": "reloadTTSManager",
 	"category": "tts"
   },
   "ttsLanguage": {
