@@ -635,8 +635,7 @@ class SkillsApi(Api):
 		try:
 			dest = self.getSkillDest(skillName=skillName)
 			self.Commons.runSystemCommand(['./venv/bin/pip', 'install', '--upgrade', 'projectalice-sk'])
-			self.Commons.runSystemCommand(
-				['./venv/bin/projectalice-sk', 'createwidget', '--widget', widgetName, '--path', f'{dest}'])
+			self.Commons.runSystemCommand(['./venv/bin/projectalice-sk', 'createwidget', '--widget', widgetName, '--path', f'{dest}'])
 			return jsonify(success=True)
 		except:
 			return self.skillNotFound()
@@ -654,8 +653,7 @@ class SkillsApi(Api):
 		try:
 			dest = self.getSkillDest(skillName=skillName)
 			self.Commons.runSystemCommand(['./venv/bin/pip', 'install', '--upgrade', 'projectalice-sk'])
-			self.Commons.runSystemCommand(
-				['./venv/bin/projectalice-sk', 'createdevicetype', '--device', deviceName, '--path', f'{dest}'])
+			self.Commons.runSystemCommand(['./venv/bin/projectalice-sk', 'createdevicetype', '--device', deviceName, '--path', f'{dest}'])
 			return jsonify(success=True)
 		except:
 			return self.skillNotFound()
