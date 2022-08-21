@@ -272,10 +272,7 @@ class AudioManager(Manager):
 					stream.start()
 					while stream.active:
 						if self._stopPlayingFlag.is_set():
-							if not sessionId or not session:
-								raise PlayBytesStopped
-
-							if session.lastWasSoundPlayOnly:
+							if not sessionId or not session or session.lastWasSoundPlayOnly:
 								raise PlayBytesStopped
 
 							self.DialogManager.onEndSession(session)
