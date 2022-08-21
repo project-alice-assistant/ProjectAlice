@@ -371,6 +371,7 @@ class DialogManager(Manager):
 
 			if 'isHotwordNotification' in payload['init'] and payload['init']['isHotwordNotification']:
 				hotwordNotification = True
+				session.lastWasSoundPlayOnly = False
 
 		self.MqttManager.publish(
 			topic=constants.TOPIC_SESSION_STARTED,

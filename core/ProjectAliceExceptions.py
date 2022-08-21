@@ -174,6 +174,13 @@ class PlayBytesStopped(ProjectAliceException):
 	pass  # Raised for capture only
 
 
+class PlayBytesFinished(ProjectAliceException):
+	pass  # Ra
+
+class TTSFinished(ProjectAliceException):
+	pass  # Raised for capture only
+
+
 class VitalConfigMissing(ProjectAliceException):
 
 	def __init__(self, message: str = None):

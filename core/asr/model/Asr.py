@@ -97,7 +97,7 @@ class Asr(ProjectAliceObject):
 
 	def end(self):
 		self._recorder.stopRecording()
-		if self._timeoutTimer and self._timeoutTimer.is_alive():
+		if self._timeoutTimer:
 			self._timeoutTimer.cancel()
 
 

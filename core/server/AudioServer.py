@@ -28,7 +28,7 @@ from scipy._lib._ccallback import CData
 from typing import Dict, Optional
 from webrtcvad import Vad
 
-from core.ProjectAliceExceptions import PlayBytesStopped
+from core.ProjectAliceExceptions import PlayBytesFinished, PlayBytesStopped, TTSFinished
 from core.base.model.Manager import Manager
 from core.commons import constants
 from core.dialog.model.DialogSession import DialogSession
@@ -277,37 +277,42 @@ class AudioManager(Manager):
 
 							self.DialogManager.onEndSession(session)
 						time.sleep(0.1)
+
+					if not session or session.lastWasSoundPlayOnly:
+						raise PlayBytesFinished
+					else:
+						raise TTSFinished
 			except PlayBytesStopped:
 				self.logDebug('Playing bytes stopped')
+			except TTSFinished:
+				self.logDebug('TTS finished speaking')
+				self.MqttManager.publish(
+					topic=constants.TOPIC_TTS_FINISHED,
+					payload={
+						'id'       : requestId,
+						'sessionId': sessionId,
+						'siteId'   : deviceUid
+					}
+				)
+			except PlayBytesFinished:
+				self.logDebug('Playing bytes finished')
+				# Session id support is not Hermes protocol official
+				self.MqttManager.publish(
+					topic=constants.TOPIC_PLAY_BYTES_FINISHED.format(deviceUid),
+					payload={
+						'id'       : requestId,
+						'sessionId': sessionId
+					}
+				)
 			except Exception as e:
 				self.logError(f'Playing wav failed with error: {e}')
 			finally:
-				self.logDebug('Playing bytes finished')
 				self._stopPlayingFlag.clear()
 				self._playing = False
-
-				if session and not session.lastWasSoundPlayOnly:
-					self.MqttManager.publish(
-						topic=constants.TOPIC_TTS_FINISHED,
-						payload={
-							'id'       : requestId,
-							'sessionId': sessionId,
-							'siteId'   : deviceUid
-						}
-					)
 
 				if stream:
 					stream.stop()
 					stream.close()
-
-		# Session id support is not Hermes protocol official
-		self.MqttManager.publish(
-			topic=constants.TOPIC_PLAY_BYTES_FINISHED.format(deviceUid),
-			payload={
-				'id'       : requestId,
-				'sessionId': sessionId
-			}
-		)
 
 
 	def stopPlaying(self):
