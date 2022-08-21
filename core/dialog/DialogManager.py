@@ -384,13 +384,13 @@ class DialogManager(Manager):
 		if init:
 			text = init.get('text', '')
 			if not text:
-				randomText_skill = init.get('skill', '')
-				randomText_talk = init.get('talk', '')
-				randomText_replace = init.get('replace', [])
-				if randomText_skill and randomText_talk:
-					text = self.TalkManager.randomTalk(skill=randomText_skill, talk=randomText_talk)
-					if randomText_replace:
-						text = text.format(*randomText_replace)
+				randomTextSkill = init.get('skill', '')
+				randomTextTalk = init.get('talk', '')
+				randomTextReplace = init.get('replace', [])
+				if randomTextSkill and randomTextTalk:
+					text = self.TalkManager.randomTalk(skill=randomTextSkill, talk=randomTextTalk)
+					if randomTextReplace:
+						text = text.format(*randomTextReplace)
 
 			if text:
 				self.MqttManager.publish(
