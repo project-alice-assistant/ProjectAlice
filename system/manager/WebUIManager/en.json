@@ -132,7 +132,8 @@
 		"uploadToGithub": "Upload to github",
 		"checkOnGithub" : "Check on Github",
 		"minimize"      : "Minimize",
-		"search"        : "Search"
+		"search"        : "Search",
+	  	"dismissAllNotification" : "Dismiss all"
 	},
 	"labels"       : {
 		"searchSetting"          : "Search setting",
@@ -222,7 +223,6 @@
 		"addUser"     : "Add user",
 		"addWakeword" : "Add wakeword",
 		"tuneWakeword": "Tune wakeword",
-		"wipe"        : "Wipe all",
-	  	"dismissAllNotification" : "Dismiss all"
+		"wipe"        : "Wipe all"
 	}
 }

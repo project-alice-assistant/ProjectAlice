@@ -117,7 +117,8 @@
 		"uploadToGithub": "Upload nach Github",
 		"checkOnGithub" : "Auf Github prüfen",
 		"minimize"      : "Minimieren",
-		"search"        : "Suchen"
+		"search"        : "Suchen",
+		"dismissAllNotification" : "Tout supprimer"
 	},
 	"labels"       : {
 		"searchSetting"          : "Einstellungen durchsuchen",
@@ -207,7 +208,6 @@
 		"addUser"     : "Neuer Benutzer",
 		"addWakeword" : "Neues Wakeword",
 		"tuneWakeword": "Wakeword einstellen",
-		"wipe"        : "Alles löschen",
-	  	"dismissAllNotification" : "Alle löschen"
+		"wipe"        : "Alles löschen"
 	}
 }
