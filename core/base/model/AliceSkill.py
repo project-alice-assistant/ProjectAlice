@@ -28,10 +28,11 @@ from pathlib import Path
 from typing import Any, Dict, Iterable, List, Optional, Union
 
 import flask
+from AliceGit.Git import Repository
 from markdown import markdown
 from paho.mqtt import client as MQTTClient
 
-from core.ProjectAliceExceptions import AccessLevelTooLow, SkillStartingFailed
+from core.ProjectAliceExceptions import AccessLevelTooLow, SkillInstanceFailed
 from core.base.model.Intent import Intent
 from core.base.model.ProjectAliceObject import ProjectAliceObject
 from core.base.model.Version import Version
@@ -45,14 +46,15 @@ class AliceSkill(ProjectAliceObject):
 
 	def __init__(self, supportedIntents: Iterable = None, databaseSchema: dict = None, **kwargs):
 		super().__init__(**kwargs)
+
 		try:
 			self._skillPath = Path(inspect.getfile(self.__class__)).parent
 			self._installFile = Path(inspect.getfile(self.__class__)).with_suffix('.install')
 			self._installer = json.loads(self._installFile.read_text())
 		except FileNotFoundError:
-			raise SkillStartingFailed(skillName=constants.UNKNOWN, error=f'[{type(self).__name__}] Cannot find install file')
+			raise SkillInstanceFailed(skillName=constants.UNKNOWN, error=f'[{type(self).__name__}] Cannot find install file')
 		except Exception as e:
-			raise SkillStartingFailed(skillName=constants.UNKNOWN, error=f'[{type(self).__name__}] Failed loading skill: {e}')
+			raise SkillInstanceFailed(skillName=constants.UNKNOWN, error=f'[{type(self).__name__}] Failed loading skill: {e}')
 
 		instructionsFile = self.getResource(f'instructions/{self.LanguageManager.activeLanguage}.md')
 		if not instructionsFile.exists():
@@ -70,7 +72,6 @@ class AliceSkill(ProjectAliceObject):
 		self._category = self._installer.get('category', constants.UNKNOWN)
 		self._conditions = self._installer.get('conditions', dict())
 		self._updateAvailable = False
-		self._modified = False
 		self._active = False
 		self._delayed = False
 		self._required = False
@@ -82,13 +83,23 @@ class AliceSkill(ProjectAliceObject):
 		self._intentsDefinitions = dict()
 		self._scenarioPackageName = ''
 		self._scenarioPackageVersion = Version(mainVersion=0, updateVersion=0, hotfix=0)
-
 		self._supportedIntents: Dict[str, Intent] = self.buildIntentList(supportedIntents)
+		self._repository = Repository(directory=self._skillPath, init=True, raiseIfExisting=False)
 		self.loadIntentsDefinition()
 
 		self._utteranceSlotCleaner = re.compile('{(.+?):=>.+?}')
 		self._myDevicesTemplates = dict()
 		self._myDevices: Dict[str, Device] = dict()
+
+
+	@property
+	def modified(self) -> bool:
+		return self._repository.isDirty()
+
+
+	@property
+	def repository(self) -> Repository:
+		return self._repository
 
 
 	@property
@@ -130,9 +141,9 @@ class AliceSkill(ProjectAliceObject):
 		"""
 		lang = language if language is not None else self.activeLanguage()
 		file = self.getResource(f'dialogTemplate/{lang}.ext.json')
+		data: Dict = json.loads(file.read_text()) if file.exists() else dict()
 		file.touch()
 
-		data: Dict = json.loads(file.read_text())
 		data.setdefault('intents', dict())
 		data['intents'].setdefault(intent, dict())
 		data['intents'][intent].setdefault('utterances', list())
@@ -438,28 +449,6 @@ class AliceSkill(ProjectAliceObject):
 
 
 	@property
-	def modified(self) -> bool:
-		return self._modified
-
-
-	@modified.setter
-	def modified(self, value: bool):
-		"""
-		As the skill has no writeToDB method and this is the only value that has to be saved right away
-		a update of the value on the DB is performed. This should only occure manually triggered when the user starts to make local changes
-		:param value:
-		:return:
-		"""
-		self._modified = value
-		self.SkillManager.setSkillModified(skillName=self.name, modified=self._modified)
-		dbVal = 1 if value else 0
-		self.DatabaseManager.update(tableName=self.SkillManager.DBTAB_SKILLS,
-		                            callerName=self.SkillManager.name,
-		                            row=('skillname', self.name),
-		                            values={'modified': dbVal})
-
-
-	@property
 	def scenarioNodeName(self) -> str:
 		return self._scenarioPackageName
 
@@ -477,6 +466,11 @@ class AliceSkill(ProjectAliceObject):
 	@property
 	def installFile(self) -> Path:
 		return self._installFile
+
+
+	@property
+	def installer(self) -> Dict:
+		return self._installer
 
 
 	@property
@@ -514,7 +508,7 @@ class AliceSkill(ProjectAliceObject):
 				text=self.TalkManager.randomTalk(talk='unknownUser', skill='system')
 			)
 			raise AccessLevelTooLow()
-		# Return if intent is for auth users only and the user doesn't have the accesslevel for it
+		# Return if intent is for auth users only and the user doesn't have the access level for it
 		if not self.UserManager.hasAccessLevel(session.user, intent.authLevel):
 			self.endDialog(
 				sessionId=session.sessionId,
@@ -593,7 +587,6 @@ class AliceSkill(ProjectAliceObject):
 		self._active = False
 		self.SkillManager.configureSkillIntents(self._name, False)
 		self.logInfo(f'![green](Stopped)')
-		self.broadcast(method=constants.EVENT_SKILL_STOPPED, exceptions=[self.name], propagateToSkills=True, skill=self)
 
 
 	def onBooted(self) -> bool:
@@ -602,6 +595,11 @@ class AliceSkill(ProjectAliceObject):
 			self.ThreadManager.doLater(interval=5, func=self.onStart)
 
 		return True
+
+
+	def onSkillStopped(self, skill):
+		if skill == self._name:
+			self.onStop()
 
 
 	def onSkillInstalled(self, **kwargs):
@@ -702,8 +700,8 @@ class AliceSkill(ProjectAliceObject):
 		self.MqttManager.endDialog(sessionId=sessionId, text=text, deviceUid=deviceUid)
 
 
-	def endSession(self, sessionId):
-		self.MqttManager.endSession(sessionId=sessionId)
+	def endSession(self, sessionId, requestContinue: bool = False, forceEnd: bool = True):
+		self.MqttManager.endSession(sessionId=sessionId, requestContinue=requestContinue, forceEnd=forceEnd)
 
 
 	def playSound(self, soundFilename: str, location: Path = None, sessionId: str = '', deviceUid: Union[str, List[Union[str, Device]]] = None):
@@ -736,11 +734,14 @@ class AliceSkill(ProjectAliceObject):
 
 
 	def toDict(self) -> dict:
+		intents = {intent: self.getUtterancesByIntent(intent, True, True) for intent in self._intentsDefinitions[self.activeLanguage()]} \
+			if self.activeLanguage() in self._intentsDefinitions else {}
+
 		return {
 			'name'            : self._name,
 			'author'          : self._author,
 			'version'         : self._version,
-			'modified'        : self._modified,
+			'modified'        : self.modified,
 			'updateAvailable' : self._updateAvailable,
 			'active'          : self._active,
 			'delayed'         : self._delayed,
@@ -754,5 +755,5 @@ class AliceSkill(ProjectAliceObject):
 			'category'        : self._category,
 			'aliceMinVersion' : str(self._aliceMinVersion),
 			'maintainers'     : self._maintainers,
-			'intents'         : self.supportedIntentsWithUtterances()
+			'intents'         : intents
 		}

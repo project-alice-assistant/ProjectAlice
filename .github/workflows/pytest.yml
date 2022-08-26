@@ -21,7 +21,7 @@ jobs:
         with:
           python-version: 3.7
       - name: Install dependencies
-        uses: py-actions/py-dependency-install@v2
+        uses: py-actions/py-dependency-install@v3
         with:
           path: requirements_test.txt
       - name: Install Portaudio

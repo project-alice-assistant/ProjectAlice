@@ -18,6 +18,7 @@
 #  Last modified: 2021.04.13 at 12:56:47 CEST
 
 from threading import Event
+from typing import Callable, Union
 
 from core.base.model.ProjectAliceObject import ProjectAliceObject
 from core.commons import constants
@@ -25,7 +26,7 @@ from core.commons import constants
 
 class AliceEvent(Event, ProjectAliceObject):
 
-	def __init__(self, name: str, onSet: str = None, onClear: str = None):
+	def __init__(self, name: str, onSet: Union[str, Callable] = None, onClear: Union[str, Callable] = None):
 		super().__init__()
 		self._name = name
 		self._onSet = onSet
@@ -44,12 +45,15 @@ class AliceEvent(Event, ProjectAliceObject):
 		if not self._onSet:
 			self.doBroadcast(state='set', **kwargs)
 		else:
-			self.broadcast(
-				method=self._onSet,
-				exceptions=[constants.DUMMY],
-				propagateToSkills=True,
-				**kwargs
-			)
+			if isinstance(self._onSet, str):
+				self.broadcast(
+					method=self._onSet,
+					exceptions=[constants.DUMMY],
+					propagateToSkills=True,
+					**kwargs
+				)
+			else:
+				self._onSet()
 
 
 	def clear(self, **kwargs) -> None:
@@ -66,12 +70,15 @@ class AliceEvent(Event, ProjectAliceObject):
 		if not self._onClear:
 			self.doBroadcast(state='clear', **self._kwargs)
 		else:
-			self.broadcast(
-				method=self._onClear,
-				exceptions=[constants.DUMMY],
-				propagateToSkills=True,
-				**self._kwargs
-			)
+			if isinstance(self._onClear, str):
+				self.broadcast(
+					method=self._onClear,
+					exceptions=[constants.DUMMY],
+					propagateToSkills=True,
+					**self._kwargs
+				)
+			else:
+				self._onClear()
 
 
 	def cancel(self) -> None:

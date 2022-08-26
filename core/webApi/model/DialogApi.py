@@ -109,6 +109,10 @@ class DialogApi(Api):
 
 			sessionId = request.form.get('sessionId')
 			session = self.DialogManager.getSession(sessionId=sessionId)
+			if not session:
+				self.logError(f'Session not found: {sessionId}')
+				return jsonify(success=False)
+
 			session.deviceUid = deviceUid
 			session.input = request.form.get('query')
 

@@ -22,10 +22,9 @@ import socket
 import threading
 import time
 import uuid
-from typing import Dict, List, Optional, Union
-
 from paho.mqtt.client import MQTTMessage
 from serial.tools import list_ports
+from typing import Dict, List, Optional, Union
 
 from core.base.model.Manager import Manager
 from core.commons import constants
@@ -149,7 +148,6 @@ class DeviceManager(Manager):
 
 
 	def onSkillDeleted(self, skill: str):
-		self.skillDeactivated(skillName=skill)
 		# noinspection SqlResolve
 		self.DatabaseManager.delete(
 			tableName=self.DB_DEVICE,
@@ -160,11 +158,11 @@ class DeviceManager(Manager):
 		)
 
 
-	def skillDeactivated(self, skillName: str):
-		self.removeDeviceTypesForSkill(skillName=skillName)
+	def onSkillDeactivated(self, skill: str):
+		self.removeDeviceTypesForSkill(skillName=skill)
 		tmp = self._devices.copy()
 		for deviceUid, device in tmp.items():
-			if device.skillName == skillName:
+			if device.skillName == skill:
 				self._devices.pop(deviceUid, None)
 
 
@@ -174,13 +172,17 @@ class DeviceManager(Manager):
 		:return: None
 		"""
 		for data in self.databaseFetch(tableName=self.DB_DEVICE):
+			if data.get('skillName') not in self.SkillManager.allWorkingSkills:
+				self.logInfo(f'Device of type **{data.get("typeName")}** skipped because skill **{data.get("skillName")}** is not working')
+				continue
+
 			try:
 				skillImport = importlib.import_module(f'skills.{data.get("skillName")}.devices.{data.get("typeName")}')
 				klass = getattr(skillImport, data.get('typeName'))
 				device = klass(data)
 				self._devices[device.id] = device
-			except Exception as e:
-				self.logError(f"Couldn't create device instance: {e}")
+			except Exception:
+				self.logError("Couldn't create device instance")
 
 
 	def loadLinks(self):
@@ -211,9 +213,7 @@ class DeviceManager(Manager):
 			else:
 				if lastTime < now - (device.heartbeatRate * 2):
 					self.logWarning(f'Device **{device.displayName}** has not given a signal since {device.deviceType.heartbeatRate} seconds or more')
-					self._heartbeats.pop(uid, None)
-					device.connected = False
-					self.MqttManager.publish(constants.TOPIC_DEVICE_UPDATED, payload={'device': device.toDict()})
+					self.deviceDisconnecting(device.uid)
 
 		self._heartbeatsCheckTimer = self.ThreadManager.newTimer(interval=2, func=self.checkHeartbeats)
 
@@ -238,12 +238,14 @@ class DeviceManager(Manager):
 			raise Exception('Cannot get a device without id or uid')
 
 		if ret is None and not self.loadingDone:
+			if self.ProjectAlice.shuttingDown:
+				return None
+
 			self._loopCounter += 1
-			self.logInfo(f'waiting for deviceManager ({self._loopCounter})')
+			self.logInfo(f'Waiting for {self.name} ({self._loopCounter})')
 			if self._loopCounter > 20:
 				self.logWarning(f'Impossible to find device instance for id/uid {deviceId}/{uid}, skipping')
 				self._loopCounter = 0
-
 				return None
 
 			time.sleep(1)
@@ -264,7 +266,7 @@ class DeviceManager(Manager):
 			self.logError('Cannot register new device type without a type name and a skill name')
 			return
 
-		# Try to create the device type, if overriden by the user, else fallback to default generic type
+		# Try to create the device type, if overridden by the user, else fallback to default generic type
 		try:
 			skillImport = importlib.import_module(f'skills.{skillName}.device.type.{data.get("deviceTypeName")}')
 			klass = getattr(skillImport, data.get('deviceTypeName'))
@@ -284,7 +286,7 @@ class DeviceManager(Manager):
 		"""
 		Returns a list of Device instances having AT LEAST the provided abilities
 		:param abilities: A list of DeviceAbility the device must have
-		:param connectedOnly: Whether or not to return non connected devices
+		:param connectedOnly: Whether to return non-connected devices
 		:return: A list of Device instances
 		"""
 		ret = list()
@@ -301,7 +303,7 @@ class DeviceManager(Manager):
 	def getDevicesByType(self, deviceType: DeviceType, connectedOnly: bool = True) -> List[Device]:
 		"""
 		Returns a list of devices that are of the given type from the given skill
-		:param connectedOnly: Whether or not to return non connected devices
+		:param connectedOnly: Whether to return non-connected devices
 		:param deviceType: DeviceType
 		:return: list of Device instances
 		"""
@@ -320,10 +322,10 @@ class DeviceManager(Manager):
 	def getDevicesByLocation(self, locationId: int, deviceType: DeviceType = None, abilities: List[DeviceAbility] = None, connectedOnly: bool = True) -> List[Device]:
 		"""
 		Returns a list of devices fitting the locationId and the optional arguments
-		:param locationId: the location Id, only mandatory argument
+		:param locationId: the location id, only mandatory argument
 		:param deviceType: The device type that it must be
 		:param abilities: The abilities the device has to have
-		:param connectedOnly: Whether or not to return non connected devices
+		:param connectedOnly: Whether to return non-connected devices
 		:return: list of Device instances
 		"""
 		return self._filterDevices(locationId=locationId, deviceType=deviceType, abilities=abilities, connectedOnly=connectedOnly)
@@ -332,10 +334,10 @@ class DeviceManager(Manager):
 	def getDevicesBySkill(self, skillName: str, deviceType: DeviceType = None, abilities: List[DeviceAbility] = None, connectedOnly: bool = True) -> List[Device]:
 		"""
 		Returns a list of devices fitting the skill name and the optional arguments
-		:param skillName: the location Id, only mandatory argument
+		:param skillName: the location id, only mandatory argument
 		:param deviceType: The device type that it must be
 		:param abilities: The abilities the device has to have
-		:param connectedOnly: Whether or not to return non connected devices
+		:param connectedOnly: Whether to return non-connected devices
 		:return: list of Device instances
 		"""
 		return self._filterDevices(skillName=skillName, deviceType=deviceType, abilities=abilities, connectedOnly=connectedOnly)
@@ -344,11 +346,11 @@ class DeviceManager(Manager):
 	def _filterDevices(self, locationId: int = None, skillName: str = None, deviceType: DeviceType = None, abilities: List[DeviceAbility] = None, connectedOnly: bool = True) -> List[Device]:
 		"""
 		Returns a list of devices fitting the optional arguments
-		:param locationId: the location Id, only mandatory argument
+		:param locationId: the location id, only mandatory argument
 		:param skillName: the skill the device belongs to
 		:param deviceType: The device type that it must be
 		:param abilities: The abilities the device has to have
-		:param connectedOnly: Whether or not to return non connected devices
+		:param connectedOnly: Whether to return non-connected devices
 		:return: list of Device instances
 		"""
 
@@ -614,7 +616,7 @@ class DeviceManager(Manager):
 			device.connected = True
 			self.broadcast(method=constants.EVENT_DEVICE_CONNECTING, exceptions=[self.name], propagateToSkills=True)
 			self.MqttManager.publish(constants.TOPIC_DEVICE_UPDATED, payload={'device': device.toDict()})
-			self.logInfo(f'Device named **{device.displayName}** in the {self.LocationManager.getLocation(locId=device.parentLocation).name} connected')
+			self.logInfo(f'Device named **{device.displayName}** ({device.uid}) in {self.LocationManager.getLocation(locId=device.parentLocation).name} connected')
 
 		self._heartbeats[uid] = round(time.time())
 		if not self._heartbeatsCheckTimer:
@@ -637,7 +639,7 @@ class DeviceManager(Manager):
 			return
 
 		if device.connected:
-			self.logInfo(f'Device with uid **{uid}** disconnected')
+			self.logInfo(f'Device named **{device.displayName}** ({device.uid}) in {self.LocationManager.getLocation(locId=device.parentLocation).name} disconnected')
 			device.connected = False
 			self.broadcast(method=constants.EVENT_DEVICE_DISCONNECTING, exceptions=[self.name], propagateToSkills=True)
 			self.MqttManager.publish(constants.TOPIC_DEVICE_UPDATED, payload={'device': device.toDict()})
@@ -780,7 +782,7 @@ class DeviceManager(Manager):
 		"""
 		self._broadcastFlag.set()
 		while self._broadcastFlag.is_set():
-			self._broadcastSocket.sendto(bytes(f'{self.Commons.getLocalIp()}:{self._listenPort}:{uid}', encoding='utf8'), ('<broadcast>', self._broadcastPort))
+			self._broadcastSocket.sendto(bytes(f'pair:{self.Commons.getLocalIp()}:{self._listenPort}:{uid}', encoding='utf8'), ('<broadcast>', self._broadcastPort))
 			try:
 				sock, address = self._listenSocket.accept()
 				sock.settimeout(None)
@@ -800,7 +802,7 @@ class DeviceManager(Manager):
 				if replyOnDeviceUid:
 					self.MqttManager.say(text=self.TalkManager.randomTalk('newDeviceAdditionSuccess', skill='system'), deviceUid=replyOnDeviceUid)
 
-				# self.ThreadManager.doLater(interval=5, func=self.WakewordRecorder.uploadToNewDevice, args=[uid])
+				self.ThreadManager.doLater(interval=5, func=self.WakewordRecorder.uploadToNewDevice, args=[uid])
 
 				self._broadcastSocket.sendto(bytes('ok', encoding='utf8'), (deviceIp, self._broadcastPort))
 				self._stopBroadcasting()

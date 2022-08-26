@@ -21,7 +21,7 @@ from dataclasses import dataclass, field
 
 
 @dataclass
-class DialogTemplateSlotType:
+class DialogTemplateSlotType(object):
 	name: str
 	automaticallyExtensible: bool
 	useSynonyms: bool

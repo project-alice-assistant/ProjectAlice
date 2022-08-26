@@ -56,12 +56,26 @@ class FunctionNotImplemented(ProjectAliceException):
 
 class SkillStartingFailed(ProjectAliceException):
 
-	def __init__(self, skillName: str = '', error: str = ''):
+	def __init__(self, skillName: str, error: str = ''):
 		super().__init__(message=error)
 		self._logger.logWarning(f'[{skillName}] Error starting skill: {error}')
 
-		if skillName:
-			SuperManager.getInstance().skillManager.deactivateSkill(skillName)
+		if skillName in SuperManager.getInstance().SkillManager.NEEDED_SKILLS:
+			self._logger.logFatal(f'Skill **{skillName}** is required to continue, sorry')
+		else:
+			SuperManager.getInstance().SkillManager.deactivateSkill(skillName)
+
+
+class SkillInstanceFailed(ProjectAliceException):
+
+	def __init__(self, skillName: str, error: str = ''):
+		super().__init__(message=error)
+		self._logger.logWarning(f'[{skillName}] Error creating skill instance: {error}')
+
+		if skillName in SuperManager.getInstance().SkillManager.NEEDED_SKILLS:
+			self._logger.logFatal(f'Skill **{skillName}** is required to continue, sorry')
+		else:
+			SuperManager.getInstance().SkillManager.deactivateSkill(skillName)
 
 
 class SkillStartDelayed(ProjectAliceException):
@@ -69,7 +83,7 @@ class SkillStartDelayed(ProjectAliceException):
 	def __init__(self, skillName):
 		super().__init__(skillName)
 		self._logger.logWarning(f'[{skillName}] Delaying skill start')
-		SuperManager.getInstance().skillManager.getSkillInstance(skillName).delayed = True
+		SuperManager.getInstance().SkillManager.getSkillInstance(skillName).delayed = True
 
 
 class IntentError(ProjectAliceException):
@@ -160,11 +174,18 @@ class PlayBytesStopped(ProjectAliceException):
 	pass  # Raised for capture only
 
 
+class PlayBytesFinished(ProjectAliceException):
+	pass  # Ra
+
+class TTSFinished(ProjectAliceException):
+	pass  # Raised for capture only
+
+
 class VitalConfigMissing(ProjectAliceException):
 
 	def __init__(self, message: str = None):
 		super().__init__(message)
-		self._logger.logWarning(f'A vital configuration --{message}-- is missing. Make sure the following configurations are set: {" / ".join(SuperManager.getInstance().configManager.vitalConfigs)}')
+		self._logger.logWarning(f'A vital configuration --{message}-- is missing. Make sure the following configurations are set: {" / ".join(SuperManager.getInstance().ConfigManager.vitalConfigs)}')
 		SuperManager.getInstance().projectAlice.onStop()
 
 

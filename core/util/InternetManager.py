@@ -59,7 +59,7 @@ class InternetManager(Manager):
 		self.ThreadManager.doLater(interval=self._checkFrequency, func=self.checkInternet)
 
 
-	def checkOnlineState(self, addr: str = 'https://clients3.google.com/generate_204', silent: bool = False) -> bool:
+	def checkOnlineState(self, addr: str = 'https://api.projectalice.io/generate_204', silent: bool = False) -> bool:
 		if self.ConfigManager.getAliceConfigByName('stayCompletelyOffline'):
 			return False
 

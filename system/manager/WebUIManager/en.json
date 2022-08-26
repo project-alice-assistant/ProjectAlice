@@ -45,7 +45,8 @@
 			"revert"  : "Revert",
 			"upload"  : "Upload",
 			"modify"  : "Modify",
-			"createPR": "Create PR"
+			"createPR": "Create PR",
+		  	"update"  : "Update"
 		}
 	},
 	"tooltips"     : {
@@ -73,14 +74,16 @@
 		"manageLocations"  : "Manage locations",
 		"manageDevices"    : "Manage devices",
 		"addLocations"     : "Add locations",
-		"removeLocations"  : "Remove locations",
+		"removeLocations"  : "Remove",
 		"paintFloors"      : "Paint floors",
 		"buildMode"        : "Build",
 		"manageFurniture"  : "Manage furniture",
 		"addDevice"        : "Add new device",
 		"removeDevice"     : "Remove devices",
 		"linkDevice"       : "Link devices with multiple locations",
-		"unlinkDevice"     : "Unlink devices"
+		"unlinkDevice"     : "Unlink devices",
+	  	"compatible"       : "Compatible",
+	  	"notCompatible"    : "Not compatible"
 	},
 	"notifications": {
 		"errors"   : {
@@ -95,7 +98,9 @@
 		  "skillDeleteFailed": "Failed deleting the skill",
 		  "noLocationEmptyName": "The location name cannot be empty",
 		  "widgetSavingFailed": "Failed saving widget",
-		  "newTileFailed": "Failed uploading new tile"
+		  "newTileFailed": "Failed uploading new tile",
+		  "skillIncompatible": "Unfortunately this skill is not compatible with your current Alice. If you still want to install it, please turn on dev mode.",
+		  "skillNotActivated": "Skill activation failed"
 		},
 		"successes": {
 		  "deviceUnlinked": "Device successfully unlinked",
@@ -127,7 +132,8 @@
 		"uploadToGithub": "Upload to github",
 		"checkOnGithub" : "Check on Github",
 		"minimize"      : "Minimize",
-		"search"        : "Search"
+		"search"        : "Search",
+	  	"dismissAllNotification" : "Dismiss all"
 	},
 	"labels"       : {
 		"searchSetting"          : "Search setting",

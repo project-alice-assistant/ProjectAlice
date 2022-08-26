@@ -18,14 +18,15 @@
 #  Last modified: 2021.07.31 at 15:54:28 CEST
 
 from importlib import import_module, reload
-from pathlib import Path
-from typing import Dict
 
 import paho.mqtt.client as mqtt
 from googletrans import Translator
 from langdetect import detect
+from pathlib import Path
+from typing import Dict
 
 from core.asr.model import Asr
+from core.asr.model.ASREnum import ASREnum
 from core.asr.model.ASRResult import ASRResult
 from core.asr.model.Recorder import Recorder
 from core.base.model.Manager import Manager
@@ -48,6 +49,7 @@ class ASRManager(Manager):
 	def onStart(self):
 		super().onStart()
 		self._startASREngine()
+		self.readyFallbackASR()
 
 
 	def onStop(self):
@@ -68,17 +70,7 @@ class ASRManager(Manager):
 		online = self.InternetManager.online
 
 		self._asr = None
-
-		if userASR == 'google':
-			package = 'core.asr.model.GoogleAsr'
-		elif userASR == 'deepspeech':
-			package = 'core.asr.model.DeepSpeechAsr'
-		elif userASR == 'snips':
-			package = 'core.asr.model.SnipsAsr'
-		elif userASR == 'coqui':
-			package = 'core.asr.model.CoquiAsr'
-		else:
-			package = 'core.asr.model.PocketSphinxAsr'
+		package = self.getASRPackage(userASR)
 
 		module = import_module(package)
 		asr = getattr(module, package.rsplit('.', 1)[-1])
@@ -116,8 +108,37 @@ class ASRManager(Manager):
 				self.logFatal("Couldn't start any ASR, going down")
 				return
 
-			self.logWarning(f'Something went wrong starting user ASR, falling back to **{fallback}**: {e}')
+			self.logWarning(f'Something went wrong starting user ASR, falling back to **{fallback}**: {e}', printStack=True)
 			self._startASREngine(forceAsr=fallback)
+
+
+	def readyFallbackASR(self):
+		package = self.getASRPackage(self.ConfigManager.getAliceConfigByName('asrFallback'))
+		module = import_module(package)
+		asr = getattr(module, package.rsplit('.', 1)[-1])
+		fallbackASR = asr()
+		if not fallbackASR.checkDependencies() and not fallbackASR.installDependencies():
+			self.logWarning('Fallback ASR could not be installed')
+
+
+	@staticmethod
+	def getASRPackage(asr: str) -> str:
+		if asr == ASREnum.GOOGLE.value:
+			return 'core.asr.model.GoogleAsr'
+		elif asr == ASREnum.DEEPSPEECH.value:
+			return 'core.asr.model.DeepSpeechAsr'
+		elif asr == ASREnum.SNIPS.value:
+			return 'core.asr.model.SnipsAsr'
+		elif asr == ASREnum.VOSK.value:
+			return 'core.asr.model.VoskAsr'
+		elif asr == ASREnum.COQUI.value:
+			return 'core.asr.model.CoquiAsr'
+		elif asr == ASREnum.AZURE.value:
+			return 'core.asr.model.AzureAsr'
+		elif asr == ASREnum.POCKETSPHINX.value:
+			return 'core.asr.model.PocketSphinxAsr'
+		else:
+			return 'core.asr.model.CoquiAsr'
 
 
 	@property
@@ -175,13 +196,14 @@ class ASRManager(Manager):
 
 			self.MqttManager.publish(topic=constants.TOPIC_TEXT_CAPTURED, payload={'sessionId': session.sessionId, 'text': text, 'device': session.deviceUid, 'likelihood': result.likelihood, 'seconds': result.processingTime})
 		else:
-			self.MqttManager.playSound(
-				soundFilename='error',
-				location=Path(f'system/sounds/{self.LanguageManager.activeLanguage}'),
-				deviceUid=session.deviceUid,
-				sessionId=session.sessionId
-			)
-			self.MqttManager.endSession(sessionId=session.sessionId)
+			if not session.keptOpen:
+				self.MqttManager.playSound(
+					soundFilename='error',
+					location=Path(f'system/sounds/{self.LanguageManager.activeLanguage}'),
+					deviceUid=session.deviceUid,
+					sessionId=session.sessionId
+				)
+			self.MqttManager.endSession(sessionId=session.sessionId, forceEnd=True)
 
 
 	def onAudioFrame(self, message: mqtt.MQTTMessage, deviceUid: str):
@@ -226,9 +248,7 @@ class ASRManager(Manager):
 
 
 	def updateASRCredentials(self, asr: str):
-		# TODO this belongs in the ASR itself
-		if asr == 'google':
-			Path(self.Commons.rootDir(), 'credentials/googlecredentials.json').write_text(self.ConfigManager.getAliceConfigByName('googleASRCredentials'))
+		if not self._asr:
+			return
 
-			self.ASRManager.onStop()
-			self.ASRManager.onStart()
+		self._asr.updateCredentials()

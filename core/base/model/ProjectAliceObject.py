@@ -22,10 +22,9 @@ from __future__ import annotations
 import json
 import re
 from copy import copy
+from importlib_metadata import PackageNotFoundError, version as packageVersion
 from pathlib import Path
 from typing import TYPE_CHECKING, Union
-
-from importlib_metadata import PackageNotFoundError, version as packageVersion
 
 import core.base.SuperManager as SM
 from core.base.model.Version import Version
@@ -56,6 +55,7 @@ if TYPE_CHECKING:
 	from core.util.TelemetryManager import TelemetryManager
 	from core.util.ThreadManager import ThreadManager
 	from core.util.TimeManager import TimeManager
+	from core.util.BugReportManager import BugReportManager
 	from core.util.SubprocessManager import SubprocessManager
 	from core.voice.LanguageManager import LanguageManager
 	from core.voice.TTSManager import TTSManager
@@ -68,7 +68,7 @@ if TYPE_CHECKING:
 	from core.webui.WebUINotificationManager import WebUINotificationManager
 
 
-class ProjectAliceObject:
+class ProjectAliceObject(object):
 	DEPENDENCIES = {
 		'internal': {},
 		'external': {},
@@ -122,7 +122,7 @@ class ProjectAliceObject:
 			self.logWarning(f'Failed to broadcast event **{method}** to **DialogManager**: {e}')
 
 		deadManagers = list()
-		for name, man in SM.SuperManager.getInstance().managers.items():
+		for name, man in SM.SuperManager.getInstance().managers.copy().items():
 			if not man:
 				deadManagers.append(name)
 				continue
@@ -262,8 +262,8 @@ class ProjectAliceObject:
 		self._logger.doLog(function='info', msg=self.decorateLogs(msg), printStack=False, plural=plural)
 
 
-	def logError(self, msg: str, plural: Union[list, str] = None):
-		self._logger.doLog(function='error', msg=self.decorateLogs(msg), plural=plural)
+	def logError(self, msg: str, plural: Union[list, str] = None, printStack: bool = True):
+		self._logger.doLog(function='error', msg=self.decorateLogs(msg), plural=plural, printStack=printStack)
 
 
 	def logDebug(self, msg: str, plural: Union[list, str] = None):
@@ -311,6 +311,26 @@ class ProjectAliceObject:
 
 
 	def onSkillUpdated(self, skill: str):
+		pass  # Super object function is overridden only if needed
+
+
+	def onSkillUpdating(self, skill: str):
+		pass  # Super object function is overridden only if needed
+
+
+	def onSkillStarted(self, skill: str):
+		pass  # Super object function is overridden only if needed
+
+
+	def onSkillStopped(self, skill: str):
+		pass  # Super object function is overridden only if needed
+
+
+	def onSkillActivated(self, skill: str):
+		pass  # Super object function is overridden only if needed
+
+
+	def onSkillDeactivated(self, skill: str):
 		pass  # Super object function is overridden only if needed
 
 
@@ -659,20 +679,6 @@ class ProjectAliceObject:
 		pass  # Super object function is overridden only if needed
 
 
-	def onSkillStarted(self, skill):
-		"""
-		param skill: AliceSkill instance
-		"""
-		pass  # Super object function is overridden only if needed
-
-
-	def onSkillStopped(self, skill):
-		"""
-		:param skill: AliceSkill instance
-		"""
-		pass  # Super object function is overridden only if needed
-
-
 	@property
 	def ProjectAlice(self) -> ProjectAlice:  # NOSONAR
 		return SM.SuperManager.getInstance().projectAlice
@@ -680,164 +686,168 @@ class ProjectAliceObject:
 
 	@property
 	def ConfigManager(self) -> ConfigManager:  # NOSONAR
-		return SM.SuperManager.getInstance().configManager
+		return SM.SuperManager.getInstance().ConfigManager
 
 
 	@property
 	def SkillManager(self) -> SkillManager:  # NOSONAR
-		return SM.SuperManager.getInstance().skillManager
+		return SM.SuperManager.getInstance().SkillManager
 
 
 	@property
 	def DeviceManager(self) -> DeviceManager:  # NOSONAR
-		return SM.SuperManager.getInstance().deviceManager
+		return SM.SuperManager.getInstance().DeviceManager
 
 
 	@property
 	def MultiIntentManager(self) -> MultiIntentManager:  # NOSONAR
-		return SM.SuperManager.getInstance().multiIntentManager
+		return SM.SuperManager.getInstance().MultiIntentManager
 
 
 	@property
 	def MqttManager(self) -> MqttManager:  # NOSONAR
-		return SM.SuperManager.getInstance().mqttManager
+		return SM.SuperManager.getInstance().MqttManager
 
 
 	@property
 	def UserManager(self) -> UserManager:  # NOSONAR
-		return SM.SuperManager.getInstance().userManager
+		return SM.SuperManager.getInstance().UserManager
 
 
 	@property
 	def DatabaseManager(self) -> DatabaseManager:  # NOSONAR
-		return SM.SuperManager.getInstance().databaseManager
+		return SM.SuperManager.getInstance().DatabaseManager
 
 
 	@property
 	def InternetManager(self) -> InternetManager:  # NOSONAR
-		return SM.SuperManager.getInstance().internetManager
+		return SM.SuperManager.getInstance().InternetManager
 
 
 	@property
 	def TelemetryManager(self) -> TelemetryManager:  # NOSONAR
-		return SM.SuperManager.getInstance().telemetryManager
+		return SM.SuperManager.getInstance().TelemetryManager
 
 
 	@property
 	def ThreadManager(self) -> ThreadManager:  # NOSONAR
-		return SM.SuperManager.getInstance().threadManager
+		return SM.SuperManager.getInstance().ThreadManager
 
 
 	@property
 	def TimeManager(self) -> TimeManager:  # NOSONAR
-		return SM.SuperManager.getInstance().timeManager
+		return SM.SuperManager.getInstance().TimeManager
 
 
 	@property
 	def ASRManager(self) -> ASRManager:  # NOSONAR
-		return SM.SuperManager.getInstance().asrManager
+		return SM.SuperManager.getInstance().ASRManager
 
 
 	@property
 	def LanguageManager(self) -> LanguageManager:  # NOSONAR
-		return SM.SuperManager.getInstance().languageManager
+		return SM.SuperManager.getInstance().LanguageManager
 
 
 	@property
 	def TalkManager(self) -> TalkManager:  # NOSONAR
-		return SM.SuperManager.getInstance().talkManager
+		return SM.SuperManager.getInstance().TalkManager
 
 
 	@property
 	def TTSManager(self) -> TTSManager:  # NOSONAR
-		return SM.SuperManager.getInstance().ttsManager
+		return SM.SuperManager.getInstance().TTSManager
 
 
 	@property
 	def WakewordRecorder(self) -> WakewordRecorder:  # NOSONAR
-		return SM.SuperManager.getInstance().wakewordRecorder
+		return SM.SuperManager.getInstance().WakewordRecorder
 
 
 	@property
 	def ApiManager(self) -> ApiManager:  # NOSONAR
-		return SM.SuperManager.getInstance().apiManager
+		return SM.SuperManager.getInstance().ApiManager
 
 
 	@property
 	def Commons(self) -> CommonsManager:  # NOSONAR
-		return SM.SuperManager.getInstance().commonsManager
+		return SM.SuperManager.getInstance().CommonsManager
 
 
 	@property
 	def SkillStoreManager(self) -> SkillStoreManager:  # NOSONAR
-		return SM.SuperManager.getInstance().skillStoreManager
+		return SM.SuperManager.getInstance().SkillStoreManager
 
 
 	@property
 	def NluManager(self) -> NluManager:  # NOSONAR
-		return SM.SuperManager.getInstance().nluManager
+		return SM.SuperManager.getInstance().NluManager
 
 
 	@property
 	def DialogTemplateManager(self) -> DialogTemplateManager:  # NOSONAR
-		return SM.SuperManager.getInstance().dialogTemplateManager
+		return SM.SuperManager.getInstance().DialogTemplateManager
 
 
 	@property
 	def AssistantManager(self) -> AssistantManager:  # NOSONAR
-		return SM.SuperManager.getInstance().assistantManager
+		return SM.SuperManager.getInstance().AssistantManager
 
 
 	@property
 	def AliceWatchManager(self) -> AliceWatchManager:  # NOSONAR
-		return SM.SuperManager.getInstance().aliceWatchManager
+		return SM.SuperManager.getInstance().AliceWatchManager
 
 
 	@property
 	def AudioServer(self) -> AudioManager:  # NOSONAR
-		return SM.SuperManager.getInstance().audioManager
+		return SM.SuperManager.getInstance().AudioManager
 
 
 	@property
 	def DialogManager(self) -> DialogManager:  # NOSONAR
-		return SM.SuperManager.getInstance().dialogManager
+		return SM.SuperManager.getInstance().DialogManager
 
 
 	@property
 	def LocationManager(self) -> LocationManager:  # NOSONAR
-		return SM.SuperManager.getInstance().locationManager
+		return SM.SuperManager.getInstance().LocationManager
 
 
 	@property
 	def WakewordManager(self) -> WakewordManager:  # NOSONAR
-		return SM.SuperManager.getInstance().wakewordManager
+		return SM.SuperManager.getInstance().WakewordManager
 
 
 	@property
 	def NodeRedManager(self) -> NodeRedManager:  # NOSONAR
-		return SM.SuperManager.getInstance().nodeRedManager
+		return SM.SuperManager.getInstance().NodeRedManager
 
 
 	@property
 	def WidgetManager(self) -> WidgetManager:  # NOSONAR
-		return SM.SuperManager.getInstance().widgetManager
+		return SM.SuperManager.getInstance().WidgetManager
 
 
 	@property
 	def StateManager(self) -> StateManager:  # NOSONAR
-		return SM.SuperManager.getInstance().stateManager
+		return SM.SuperManager.getInstance().StateManager
 
 
 	@property
 	def WebUIManager(self) -> WebUIManager:  # NOSONAR
-		return SM.SuperManager.getInstance().webUiManager
+		return SM.SuperManager.getInstance().WebUiManager
 
 
 	@property
 	def SubprocessManager(self) -> SubprocessManager:  # NOSONAR
-		return SM.SuperManager.getInstance().subprocessManager
+		return SM.SuperManager.getInstance().SubprocessManager
 
 
 	@property
 	def WebUINotificationManager(self) -> WebUINotificationManager:  # NOSONAR
-		return SM.SuperManager.getInstance().webUINotificationManager
+		return SM.SuperManager.getInstance().WebUINotificationManager
+
+	@property
+	def BugReportManager(self) -> BugReportManager:  # NOSONAR
+		return SM.SuperManager.getInstance().BugReportManager

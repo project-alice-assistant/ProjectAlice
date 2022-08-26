@@ -38,7 +38,7 @@ class Device(ProjectAliceObject):
 	def __init__(self, data: Union[sqlite3.Row, Dict]):
 
 		# settings: Holds the device display settings, such as x and y position, size and that stuff
-		# deviceParams: Holds the device non declared params, such as sound muted and so on. These are not controlled values that can be completely random
+		# deviceParams: Holds the device non-declared params, such as sound muted and so on. These are not controlled values that can be completely random
 		# deviceConfigs: Holds the device configurations, provided by the device's .config.template. These configs and values are controlled and cannot be random at all!
 		super().__init__()
 
@@ -332,7 +332,7 @@ class Device(ProjectAliceObject):
 
 	def onDeviceUIReply(self, data: dict):
 		"""
-		When a device is clicked in the UI, it receive an optional reply directive that calls this method
+		When a device is clicked in the UI, it receives an optional reply directive that calls this method
 		:param data:
 		:return:
 		"""
@@ -347,7 +347,7 @@ class Device(ProjectAliceObject):
 	@property
 	def connected(self) -> bool:
 		"""
-		Returns whether or not this device is connected
+		Returns whether this device is connected
 		:return:
 		"""
 		return self._connected

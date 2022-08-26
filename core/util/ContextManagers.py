@@ -25,7 +25,7 @@ from core.base.SuperManager import SuperManager
 
 @contextmanager
 def Online():  # NOSONAR
-	internetManager = SuperManager.getInstance().internetManager
+	internetManager = SuperManager.getInstance().InternetManager
 	if internetManager.online:
 		try:
 			yield

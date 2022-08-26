@@ -52,8 +52,6 @@ class WebUINotificationManager(Manager):
 		# noinspection SqlResolve
 		notifications = self.databaseFetch(tableName=self.NOTIFICATIONS_TABLE, query=f'SELECT * FROM :__table__ WHERE read = 0')
 		for notification in notifications:
-			if notification['read'] == '1':
-				continue
 			self._notifications[notification['id']] = notification
 
 
@@ -66,7 +64,7 @@ class WebUINotificationManager(Manager):
 		return self._notifications
 
 
-	def newNotification(self, typ: Union[UINotificationType, str], notification: Union[str, Dict[str, str]], key: str = None, replaceTitle: list = None, replaceBody: list = None, options: dict = None, deviceUid: str = 'all'):
+	def newNotification(self, typ: Union[UINotificationType, str], notification: Union[str, Dict[str, str]], key: str = None, replaceTitle: list = None, replaceBody: list = None, options: dict = None, deviceUid: str = 'all', allowDuplicates: bool = False):
 		"""
 		Stores and sends a UI notification
 		:param typ: The notification type, either as the enum or a string when coming from the database
@@ -76,6 +74,7 @@ class WebUINotificationManager(Manager):
 		:param replaceBody: A list of strings to format the original body string
 		:param options: Options in a form of a dict for this notification, used by the UI
 		:param deviceUid: If only a certain device should get this notification
+		:param allowDuplicates: If false, by default, do not add a same notification more than once
 		:return:
 		"""
 
@@ -112,6 +111,7 @@ class WebUINotificationManager(Manager):
 		else:
 			notificationId = self.databaseInsert(tableName=self.NOTIFICATIONS_TABLE, values=values)
 			self._keysToIds[key] = notificationId
+			self.logInfo(f'Adding notification[{notificationId}]: {title}')
 
 		self.publishNotification(notificationId=notificationId, typ=typ, title=title, body=body, key=key, options=options, deviceUid=deviceUid)
 
@@ -169,3 +169,21 @@ class WebUINotificationManager(Manager):
 		notification = self._notifications.pop(notificationId, None)
 		if notification:
 			self._keysToIds.pop(notification.get('key', 'dummy'), None)
+
+
+	def onSkillUpdated(self, skill: str):
+		self.newNotification(
+			typ=UINotificationType.INFO,
+			notification='skillUpdated',
+			key=f'skillUpdate_{skill}',
+			replaceBody=[skill, self.SkillManager.getSkillInstance(skillName=skill).version]
+		)
+
+
+	def onSkillInstalled(self, skill: str):
+		self.newNotification(
+			typ=UINotificationType.INFO,
+			notification='skillInstalled',
+			key=f'skillUpdate_{skill}',
+			replaceBody=[skill]
+		)

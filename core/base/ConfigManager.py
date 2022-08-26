@@ -20,10 +20,9 @@ import inspect
 import json
 import logging
 import re
-import typing
-from pathlib import Path
-
 import sounddevice as sd
+from pathlib import Path
+from typing import Any, Dict, List, Optional, Tuple, Union
 
 from core.ProjectAliceExceptions import ConfigurationUpdateFailed, VitalConfigMissing
 from core.base.SuperManager import SuperManager
@@ -48,19 +47,20 @@ class ConfigManager(Manager):
 		self._vitalConfigs = list()
 		self._aliceConfigurationCategories = list()
 
-		self._aliceTemplateConfigurations: typing.Dict[str, dict] = self.loadJsonFromFile(self.TEMPLATE_FILE)
-		self._aliceConfigurations: typing.Dict[str, typing.Any] = dict()
+		self._aliceTemplateConfigurations: Dict[str, dict] = self.loadJsonFromFile(self.TEMPLATE_FILE)
+		self._aliceConfigurations: Dict[str, Any] = dict()
 
 		self._loadCheckAndUpdateAliceConfigFile()
 
 		self._skillsConfigurations = dict()
-		self._skillsTemplateConfigurations: typing.Dict[str, dict] = dict()
+		self._skillsTemplateConfigurations: Dict[str, dict] = dict()
 
 		self._pendingAliceConfUpdates = dict()
 
 
 	def onStart(self):
 		super().onStart()
+
 		for conf in self._vitalConfigs:
 			if conf not in self._aliceConfigurations or self._aliceConfigurations[conf] == '':
 				raise VitalConfigMissing(conf)
@@ -101,7 +101,7 @@ class ConfigManager(Manager):
 		if not aliceConfigs.get('uuid', None):
 			import uuid
 
-			##uuid4: no collission expected until extinction of all life (only on earth though!)
+			##uuid4: no collision expected until extinction of all life (only on earth though!)
 			aliceConfigs['uuid'] = str(uuid.uuid4())
 			changes = True
 
@@ -124,17 +124,17 @@ class ConfigManager(Manager):
 						try:
 							# First try to cast the setting we have to the new type
 							aliceConfigs[setting] = type(definition['defaultValue'])(aliceConfigs[setting])
-							self.logWarning(f'Existing configuration type missmatch: **{setting}**, cast variable to template configuration type')
+							self.logWarning(f'Existing configuration type mismatch: **{setting}**, cast variable to template configuration type')
 						except Exception:
 							# If casting failed let's fall back to the new default value
-							self.logWarning(f'Existing configuration type missmatch: **{setting}**, replaced with template configuration')
+							self.logWarning(f'Existing configuration type mismatch: **{setting}**, replaced with template configuration')
 							aliceConfigs[setting] = definition['defaultValue']
 				elif definition['dataType'] == 'list' and 'onInit' not in definition:
 					values = definition['values'].values() if isinstance(definition['values'], dict) else definition['values']
 
 					if aliceConfigs[setting] and aliceConfigs[setting] not in values:
 						changes = True
-						self.logWarning(f'Selected value **{aliceConfigs[setting]}** for setting **{setting}** doesn\'t exist, reverted to default value --{definition["defaultValue"]}--')
+						self.logWarning(f"Selected value **{aliceConfigs[setting]}** for setting **{setting}** doesn't exist, reverted to default value --{definition['defaultValue']}--")
 						aliceConfigs[setting] = definition['defaultValue']
 
 				function = definition.get('onInit', None)
@@ -159,6 +159,13 @@ class ConfigManager(Manager):
 		if aliceConfigs['debug']:
 			logging.getLogger('ProjectAlice').setLevel(logging.DEBUG)
 
+		# Load asound if needed
+		if not aliceConfigs['asoundConfig']:
+			asound = Path('/etc/asound.conf')
+			if asound.exists():
+				changes = True
+				aliceConfigs['asoundConfig'] = asound.read_text()
+
 		temp = aliceConfigs.copy()
 		for key in temp:
 			if key not in self._aliceTemplateConfigurations:
@@ -172,9 +179,9 @@ class ConfigManager(Manager):
 			self._aliceConfigurations = aliceConfigs
 
 
-	def updateAliceConfigDefinitionValues(self, setting: str, value: typing.Any):
+	def updateAliceConfigDefinitionValues(self, setting: str, value: Any):
 		if setting not in self._aliceTemplateConfigurations:
-			self.logWarning(f'Was asked to update **{setting}** from config templates, but setting doesn\'t exist')
+			self.logWarning(f"Was asked to update **{setting}** from config templates, but setting doesn't exist")
 			return
 
 		self._aliceTemplateConfigurations[setting]['values'] = value
@@ -189,7 +196,7 @@ class ConfigManager(Manager):
 			raise
 
 
-	def updateMainDeviceName(self, value: typing.Any):
+	def updateMainDeviceName(self, value: Any):
 		device = self.DeviceManager.getMainDevice()
 
 		if not device.displayName:
@@ -198,20 +205,18 @@ class ConfigManager(Manager):
 			device.updateConfigs(configs={'displayName': value})
 
 
-	def updateAliceConfiguration(self, key: str, value: typing.Any, dump: bool = True,
-	                             doPreAndPostProcessing: bool = True):
+	def updateAliceConfiguration(self, key: str, value: Any, dump: bool = True, doPreAndPostProcessing: bool = True):
 		"""
 		Updating a core config is sensitive, if the request comes from a skill.
 		First check if the request came from a skill at anytime and if so ask permission
 		to the user
-		:param doPreAndPostProcessing: If set to false, all pre and post processing won't be called
+		:param doPreAndPostProcessing: If set to false, all pre- and post-processing won't be called
 		:param key: str
 		:param value: str
 		:param dump: bool If set to False, the configs won't be dumped to the json file
 		:return: None
 		"""
 
-		# TODO reimplement UI side
 		rootSkills = [name.lower() for name in self.SkillManager.NEEDED_SKILLS]
 		callers = [inspect.getmodulename(frame[1]).lower() for frame in inspect.stack()]
 		if 'aliceskill' in callers:
@@ -223,22 +228,8 @@ class ConfigManager(Manager):
 				self.WebUINotificationManager.newNotification(typ=UINotificationType.ALERT, notification='coreConfigUpdateWarning', replaceBody=[skillName, key, value])
 				return
 
-		# 		self.ThreadManager.doLater(
-		# 			interval=2,
-		# 			func=self.MqttManager.publish,
-		# 			kwargs={
-		# 				'topic': constants.TOPIC_SKILL_UPDATE_CORE_CONFIG_WARNING,
-		# 				'payload': {
-		# 					'skill': skillName,
-		# 					'key'  : key,
-		# 					'value': value
-		# 				}
-		# 			}
-		# 		)
-		# 		return
-
 		if key not in self._aliceConfigurations:
-			self.logWarning(f'Was asked to update **{key}** but key doesn\'t exist')
+			self.logWarning(f"Was asked to update **{key}** but key doesn't exist")
 			raise ConfigurationUpdateFailed()
 
 		pre = self.getAliceConfUpdatePreProcessing(key)
@@ -264,7 +255,7 @@ class ConfigManager(Manager):
 
 		for key, value in self._pendingAliceConfUpdates.items():
 			if key not in self._aliceConfigurations:
-				self.logWarning(f'Was asked to update **{key}** but key doesn\'t exist')
+				self.logWarning(f"Was asked to update **{key}** but key doesn't exist")
 				continue
 			self.updateAliceConfiguration(key, value, False)
 
@@ -276,13 +267,13 @@ class ConfigManager(Manager):
 		self._pendingAliceConfUpdates = dict()
 
 
-	def updateSkillConfigurationFile(self, skillName: str, key: str, value: typing.Any):
+	def updateSkillConfigurationFile(self, skillName: str, key: str, value: Any):
 		if skillName not in self._skillsConfigurations:
-			self.logWarning(f'Was asked to update **{key}** in skill **{skillName}** but skill doesn\'t exist')
+			self.logWarning(f"Was asked to update **{key}** in skill **{skillName}** but skill doesn't exist")
 			return
 
 		if key not in self._skillsConfigurations[skillName]:
-			self.logWarning(f'Was asked to update **{key}** in skill **{skillName}** but key doesn\'t exist')
+			self.logWarning(f"Was asked to update **{key}** in skill **{skillName}** but key doesn't exist")
 			return
 
 		# Cast value to template defined type
@@ -297,7 +288,7 @@ class ConfigManager(Manager):
 			try:
 				value = int(value)
 			except:
-				self.logWarning(f'Value missmatch for config **{key}** in skill **{skillName}**')
+				self.logWarning(f'Value mismatch for config **{key}** in skill **{skillName}**')
 				value = 0
 		elif vartype == 'float' or vartype == 'range':
 			try:
@@ -363,6 +354,7 @@ class ConfigManager(Manager):
 		"""
 		confs = confs if confs else self._aliceConfigurations
 
+		# noinspection PyTypeChecker
 		sort = dict(sorted(confs.items()))
 		self._aliceConfigurations = sort
 
@@ -395,7 +387,7 @@ class ConfigManager(Manager):
 		return skillName in self._skillsConfigurations and configName in self._skillsConfigurations[skillName]
 
 
-	def getAliceConfigByName(self, configName: str) -> typing.Any:
+	def getAliceConfigByName(self, configName: str) -> Any:
 		if configName in self._aliceConfigurations:
 			return self._aliceConfigurations[configName]
 		else:
@@ -403,7 +395,7 @@ class ConfigManager(Manager):
 			return ''
 
 
-	def getAliceConfigTemplateByName(self, configName: str) -> typing.Any:
+	def getAliceConfigTemplateByName(self, configName: str) -> Any:
 		if configName in self._aliceTemplateConfigurations:
 			return self._aliceTemplateConfigurations[configName]
 		else:
@@ -411,7 +403,7 @@ class ConfigManager(Manager):
 			return ''
 
 
-	def getSkillConfigByName(self, skillName: str, configName: str) -> typing.Any:
+	def getSkillConfigByName(self, skillName: str, configName: str) -> Any:
 		if not self._loadingDone:
 			raise Exception(f'Loading skill configs is not yet done! Don\'t load configs in __init__, but only after onStart is called')
 		return self._skillsConfigurations.get(skillName, dict()).get(configName, None)
@@ -421,7 +413,7 @@ class ConfigManager(Manager):
 		return self._skillsConfigurations.get(skillName, dict())
 
 
-	def getSkillConfigsTemplateByName(self, skillName: str, configName: str) -> typing.Any:
+	def getSkillConfigsTemplateByName(self, skillName: str, configName: str) -> Any:
 		return self._skillsTemplateConfigurations.get(skillName, dict()).get(configName, None)
 
 
@@ -471,10 +463,10 @@ class ConfigManager(Manager):
 							try:
 								# First try to cast the setting we have to the new type
 								config[setting] = type(definition['defaultValue'])(config[setting])
-								self.logInfo(f'- Existing configuration type missmatch for skill **{skillName}**: {setting}, cast variable to template configuration type')
+								self.logInfo(f'- Existing configuration type mismatch for skill **{skillName}**: {setting}, cast variable to template configuration type')
 							except Exception:
 								# If casting failed let's fall back to the new default value
-								self.logInfo(f'- Existing configuration type missmatch for skill **{skillName}**: {setting}, replaced with template configuration')
+								self.logInfo(f'- Existing configuration type mismatch for skill **{skillName}**: {setting}, replaced with template configuration')
 								config[setting] = definition['defaultValue']
 
 					temp = config.copy()
@@ -504,7 +496,11 @@ class ConfigManager(Manager):
 		if not skillToLoad:
 			self._skillsConfigurations = skillsConfigurations.copy()
 		else:
-			self._skillsConfigurations[skillToLoad] = skillsConfigurations[skillToLoad].copy()
+			if not skillToLoad in skillsConfigurations:
+				self.logError(f'Specific skill config for {skillToLoad} not loaded.')
+				self._skillsConfigurations[skillToLoad] = dict()
+			else:
+				self._skillsConfigurations[skillToLoad] = skillsConfigurations[skillToLoad].copy()
 		self._loadingDone = True
 
 
@@ -526,7 +522,7 @@ class ConfigManager(Manager):
 		return False
 
 
-	def getAliceConfigType(self, confName: str) -> typing.Optional[str]:
+	def getAliceConfigType(self, confName: str) -> Optional[str]:
 		# noinspection PyTypeChecker
 		return self._aliceConfigurations.get(confName['dataType'])
 
@@ -539,17 +535,17 @@ class ConfigManager(Manager):
 		return self._aliceTemplateConfigurations.get(confName, dict()).get('isSensitive', False)
 
 
-	def getAliceConfUpdatePreProcessing(self, confName: str) -> typing.Optional[str]:
+	def getAliceConfUpdatePreProcessing(self, confName: str) -> Optional[str]:
 		# Some config need some pre processing to run some checks before saving
 		return self._aliceTemplateConfigurations.get(confName, dict()).get('beforeUpdate', None)
 
 
-	def getAliceConfUpdatePostProcessing(self, confName: str) -> typing.Optional[str]:
-		# Some config need some post processing if updated while Alice is running
+	def getAliceConfUpdatePostProcessing(self, confName: str) -> Optional[str]:
+		# Some config need some post-processing if updated while Alice is running
 		return self._aliceTemplateConfigurations.get(confName, dict()).get('onUpdate', None)
 
 
-	def doConfigUpdatePreProcessing(self, function: str, value: typing.Any) -> bool:
+	def doConfigUpdatePreProcessing(self, function: str, value: Any) -> bool:
 		# Call alice config pre processing functions.
 		try:
 			mngr = self
@@ -583,8 +579,8 @@ class ConfigManager(Manager):
 				return False
 
 
-	def doConfigUpdatePostProcessing(self, functions: typing.Union[str, set]):
-		# Call alice config post processing functions. This will call methods that are needed after a certain setting was
+	def doConfigUpdatePostProcessing(self, functions: Union[str, set]):
+		# Call alice config post-processing functions. This will call methods that are needed after a certain setting was
 		# updated while Project Alice was running
 
 		if isinstance(functions, str):
@@ -689,7 +685,7 @@ class ConfigManager(Manager):
 
 	def injectAsound(self, newSettings: str):
 		newSettings = newSettings.replace('\r\n', '\n')
-		if self.getAliceConfigByName('asoundConfig') != newSettings:
+		if self.getAliceConfigByName('asoundConfig') and self.getAliceConfigByName('asoundConfig') != newSettings:
 			tmp = Path('/tmp/asound')
 			tmp.write_text(newSettings)
 			self.Commons.runRootSystemCommand(['sudo', 'mv', tmp, '/etc/asound.conf'])
@@ -698,10 +694,10 @@ class ConfigManager(Manager):
 			return True
 
 
-	def updateTimezone(self, newTimezone: str):
-		result = self.Commons.runRootSystemCommand(['timedatectl', 'set-timezone', newTimezone])
+	def updateTimezone(self):
+		result = self.Commons.runRootSystemCommand(['timedatectl', 'set-timezone', self.getAliceConfigByName('timezone')])
 		if result.returncode:
-			self.logError('Unsupported timezone format')
+			raise Exception('Unsupported timezone format')
 
 
 	def toggleDebugLogs(self):
@@ -709,12 +705,6 @@ class ConfigManager(Manager):
 			logging.getLogger('ProjectAlice').setLevel(logging.DEBUG)
 		else:
 			logging.getLogger('ProjectAlice').setLevel(logging.WARN)
-
-
-	def getGithubAuth(self) -> tuple:
-		username = self.getAliceConfigByName('githubUsername')
-		token = self.getAliceConfigByName('githubToken')
-		return (username, token) if (username and token) else None
 
 
 	def populateAudioInputConfig(self):
@@ -736,7 +726,7 @@ class ConfigManager(Manager):
 
 
 	@staticmethod
-	def _listAudioDevices() -> list:
+	def _listAudioDevices() -> List:
 		try:
 			devices = [device['name'] for device in sd.query_devices()]
 			if not devices:
@@ -748,20 +738,32 @@ class ConfigManager(Manager):
 
 
 	@property
-	def aliceConfigurations(self) -> dict:
+	def aliceConfigurations(self) -> Dict:
 		return self._aliceConfigurations
 
 
 	@property
-	def aliceConfigurationCategories(self) -> list:
+	def aliceConfigurationCategories(self) -> List:
 		return sorted(self._aliceConfigurationCategories)
 
 
 	@property
-	def vitalConfigs(self) -> list:
+	def vitalConfigs(self) -> List:
 		return self._vitalConfigs
 
 
 	@property
-	def aliceTemplateConfigurations(self) -> dict:
+	def aliceTemplateConfigurations(self) -> Dict:
 		return self._aliceTemplateConfigurations
+
+
+	@property
+	def githubAuth(self) -> Tuple[str, str]:
+		"""
+		Returns the users configured username and token for GitHub as a tuple
+		When one of the values is not supplied None is returned.
+		:return:
+		"""
+		username = self.getAliceConfigByName('githubUsername')
+		token = self.getAliceConfigByName('githubToken')
+		return (username, token) if (username and token) else None

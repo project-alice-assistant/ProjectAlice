@@ -18,6 +18,7 @@
 #  Last modified: 2021.07.31 at 15:54:28 CEST
 
 from importlib import import_module, reload
+
 from pathlib import Path
 
 from core.base.model.Manager import Manager
@@ -41,6 +42,7 @@ class TTSManager(Manager):
 	def onStart(self):
 		super().onStart()
 		self._loadTTS(self.ConfigManager.getAliceConfigByName('tts').lower())
+		self.readyFallbackTTS()
 
 
 	def _loadTTS(self, userTTS: str = None, user: User = None, forceTts=None):
@@ -58,20 +60,7 @@ class TTSManager(Manager):
 		online = self.InternetManager.online
 
 		self._tts = None
-
-		if systemTTS == TTSEnum.PICO.value:
-			package = 'core.voice.model.PicoTts'
-		elif systemTTS == TTSEnum.MYCROFT.value:
-			package = 'core.voice.model.MycroftTts'
-		elif systemTTS == TTSEnum.AMAZON.value:
-			package = 'core.voice.model.AmazonTts'
-		elif systemTTS == TTSEnum.WATSON.value:
-			package = 'core.voice.model.WatsonTts'
-		elif systemTTS == TTSEnum.GOOGLE.value:
-			package = 'core.voice.model.GoogleTts'
-		else:
-			package = 'core.voice.model.SnipsTts'
-
+		package = self.getTTSPackage(systemTTS)
 		module = import_module(package)
 		tts = getattr(module, package.rsplit('.', 1)[-1])
 		self._tts = tts(user)
@@ -106,7 +95,37 @@ class TTSManager(Manager):
 		try:
 			self._tts.onStart()
 		except Exception as e:
-			self.logFatal(f"Tts failed starting: {e}")
+			if not forceTts:
+				fallback = self.ConfigManager.getAliceConfigByName('ttsFallback')
+				self.logWarning(f'Tts failed starting, falling back to **{fallback}**')
+				self._loadTTS(userTTS=userTTS, user=user, forceTts=fallback)
+			else:
+				self.logFatal(f"Tts failed starting: {e}")
+
+
+	def readyFallbackTTS(self):
+		package = self.getTTSPackage(self.ConfigManager.getAliceConfigByName('ttsFallback'))
+		module = import_module(package)
+		tts = getattr(module, package.rsplit('.', 1)[-1])
+		fallbackTTS = tts()
+		if not fallbackTTS.checkDependencies() and not fallbackTTS.installDependencies():
+			self.logWarning('Fallback TTS could not be installed')
+
+
+	@staticmethod
+	def getTTSPackage(tts: str) -> str:
+		if tts == TTSEnum.PICO.value:
+			return 'core.voice.model.PicoTts'
+		elif tts == TTSEnum.MYCROFT.value:
+			return 'core.voice.model.MycroftTts'
+		elif tts == TTSEnum.AMAZON.value:
+			return 'core.voice.model.AmazonTts'
+		elif tts == TTSEnum.WATSON.value:
+			return 'core.voice.model.WatsonTts'
+		elif tts == TTSEnum.GOOGLE.value:
+			return 'core.voice.model.GoogleTts'
+		else:
+			return 'core.voice.model.SnipsTts'
 
 
 	@property
@@ -147,7 +166,7 @@ class TTSManager(Manager):
 
 		if 'text' not in session.payload:
 			self.logWarning('Was asked to say something but no text provided')
-			self.MqttManager.endSession(sessionId=session.sessionId)
+			self.MqttManager.endSession(sessionId=session.sessionId, forceEnd=True)
 			return
 
 		if session and session.user != constants.UNKNOWN_USER:

@@ -111,6 +111,42 @@ class Mqtt {
 
 
 class Widget {
+
+	TOPIC_ASR_START_LISTENING              = 'hermes/asr/startListening'
+	TOPIC_ASR_STOP_LISTENING               = 'hermes/asr/stopListening'
+	TOPIC_ASR_TOGGLE_OFF                   = 'hermes/asr/toggleOff'
+	TOPIC_ASR_TOGGLE_ON                    = 'hermes/asr/toggleOn'
+	TOPIC_AUDIO_FRAME                      = 'hermes/audioServer/{}/audioFrame'
+	TOPIC_CONTINUE_SESSION                 = 'hermes/dialogueManager/continueSession'
+	TOPIC_DIALOGUE_MANAGER_CONFIGURE       = 'hermes/dialogueManager/configure'
+	TOPIC_END_SESSION                      = 'hermes/dialogueManager/endSession'
+	TOPIC_HOTWORD_DETECTED                 = 'hermes/hotword/default/detected'
+	TOPIC_HOTWORD_TOGGLE_OFF               = 'hermes/hotword/toggleOff'
+	TOPIC_HOTWORD_TOGGLE_ON                = 'hermes/hotword/toggleOn'
+	TOPIC_INTENT_NOT_RECOGNIZED            = 'hermes/dialogueManager/intentNotRecognized'
+	TOPIC_INTENT_PARSED                    = 'hermes/nlu/intentParsed'
+	TOPIC_NLU_ERROR                        = 'hermes/error/nlu'
+	TOPIC_NLU_INTENT_NOT_RECOGNIZED        = 'hermes/nlu/intentNotRecognized'
+	TOPIC_NLU_QUERY                        = 'hermes/nlu/query'
+	TOPIC_PARTIAL_TEXT_CAPTURED            = 'hermes/asr/partialTextCaptured'
+	TOPIC_PLAY_BYTES                       = 'hermes/audioServer/{}/playBytes/#'
+	TOPIC_PLAY_BYTES_FINISHED              = 'hermes/audioServer/{}/playFinished'
+	TOPIC_SESSION_ENDED                    = 'hermes/dialogueManager/sessionEnded'
+	TOPIC_SESSION_QUEUED                   = 'hermes/dialogueManager/sessionQueued'
+	TOPIC_SESSION_STARTED                  = 'hermes/dialogueManager/sessionStarted'
+	TOPIC_START_SESSION                    = 'hermes/dialogueManager/startSession'
+	TOPIC_SYSTEM_UPDATE                    = 'hermes/leds/systemUpdate'
+	TOPIC_HLC_CLEAR_LEDS                   = 'hermes/leds/clear'
+	TOPIC_TEXT_CAPTURED                    = 'hermes/asr/textCaptured'
+	TOPIC_TOGGLE_FEEDBACK                  = 'hermes/feedback/sound/toggle{}'
+	TOPIC_TOGGLE_FEEDBACK_OFF              = 'hermes/feedback/sound/toggleOff'
+	TOPIC_TOGGLE_FEEDBACK_ON               = 'hermes/feedback/sound/toggleOn'
+	TOPIC_TTS_FINISHED                     = 'hermes/tts/sayFinished'
+	TOPIC_TTS_SAY                          = 'hermes/tts/say'
+	TOPIC_VAD_DOWN                         = 'hermes/voiceActivity/{}/vadDown'
+	TOPIC_VAD_UP                           = 'hermes/voiceActivity/{}/vadUp'
+	TOPIC_WAKEWORD_DETECTED                = 'hermes/hotword/{}/detected'
+
 	constructor(uid, widgetId) {
 		/*
 		The uid is dynamically attributed by the UI when the script is loaded. This ensures the uniqueness of the widget main div

@@ -23,7 +23,7 @@ from core.dialog.model.DialogSession import DialogSession
 
 
 @dataclass
-class ASRResult:
+class ASRResult(object):
 	text: str
 	session: DialogSession
 	likelihood: float

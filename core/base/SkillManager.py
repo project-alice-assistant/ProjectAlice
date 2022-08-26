@@ -18,34 +18,51 @@
 #  Last modified: 2021.08.02 at 06:12:17 CEST
 
 
-import getpass
 import importlib
 import json
-import os
-import shutil
-import threading
-import traceback
-from pathlib import Path
-from typing import Dict, List, Optional, Union
-
 import requests
+import shutil
+import traceback
+from AliceGit import Exceptions as GitErrors
+from AliceGit.Exceptions import NotGitRepository, PathNotFoundException
+from AliceGit.Git import Repository
+from contextlib import suppress
+from pathlib import Path
+from typing import Any, Dict, List, Optional, Union
 
-from core.ProjectAliceExceptions import AccessLevelTooLow, GithubNotFound, GithubRateLimit, GithubTokenFailed, SkillNotConditionCompliant, SkillStartDelayed, SkillStartingFailed
+from core.ProjectAliceExceptions import AccessLevelTooLow, GithubNotFound, SkillInstanceFailed, SkillNotConditionCompliant, SkillStartDelayed, SkillStartingFailed
 from core.base.SuperManager import SuperManager
 from core.base.model import Intent
 from core.base.model.AliceSkill import AliceSkill
 from core.base.model.FailedAliceSkill import FailedAliceSkill
-from core.base.model.GithubCloner import GithubCloner
 from core.base.model.Manager import Manager
 from core.base.model.Version import Version
 from core.commons import constants
 from core.dialog.model.DialogSession import DialogSession
-from core.util.Decorators import IfSetting, Online
+from core.util.Decorators import IfSetting, Online, deprecated
+from core.util.model.AliceEvent import AliceEvent
 from core.webui.model.UINotificationType import UINotificationType
 
 
 class SkillManager(Manager):
 	DBTAB_SKILLS = 'skills'
+
+	DATABASE = {
+		DBTAB_SKILLS: [
+			'skillName TEXT NOT NULL UNIQUE',
+			'active INTEGER NOT NULL DEFAULT 1',
+			'scenarioVersion TEXT NOT NULL DEFAULT "0.0.0"'
+		]
+	}
+
+	BASE_SKILLS = [
+		'AliceCore',
+		'AliceSatellite',
+		'ContextSensitive',
+		'DateDayTimeYear',
+		'RedQueen',
+		'Telemetry'
+	]
 
 	NEEDED_SKILLS = [
 		'AliceCore',
@@ -53,63 +70,166 @@ class SkillManager(Manager):
 		'RedQueen'
 	]
 
-	DATABASE = {
-		DBTAB_SKILLS: [
-			'skillName TEXT NOT NULL UNIQUE',
-			'active INTEGER NOT NULL DEFAULT 1',
-			'scenarioVersion TEXT NOT NULL DEFAULT "0.0.0"',
-			'modified INTEGER NOT NULL DEFAULT 0'
-		]
-	}
-
 
 	def __init__(self):
 		super().__init__(databaseSchema=self.DATABASE)
 
-		self._busyInstalling = None
+		self._busyInstalling: Optional[AliceEvent] = None
+		self._supportedIntents: List[Dict[str, Intent]] = list()
 
-		self._skillInstallThread: Optional[threading.Thread] = None
-		self._supportedIntents = list()
-
-		# This is only a dict of the skills, with name: dict(status, install file, modified)
-		self._skillList = dict()
+		# This is a list of the skill names installed
+		self._skillList: List[str] = list()
 
 		# These are dict of the skills, with name: skill instance
 		self._activeSkills: Dict[str, AliceSkill] = dict()
 		self._deactivatedSkills: Dict[str, AliceSkill] = dict()
 		self._failedSkills: Dict[str, Union[AliceSkill, FailedAliceSkill]] = dict()
 
-		self._postBootSkillActions = dict()
+
+	@property
+	def supportedIntents(self) -> List[Dict]:
+		"""
+		Returns a list of all supported intents
+		:return:
+		"""
+		return self._supportedIntents
+
+
+	@property
+	def neededSkills(self) -> List[str]:
+		"""
+		List of skills that are needed for Alice to start
+		:return:
+		"""
+		return self.NEEDED_SKILLS
+
+
+	@property
+	def activeSkills(self) -> Dict[str, AliceSkill]:
+		"""
+		Returns skills that inited and are active
+		:return:
+		"""
+		return self._activeSkills
+
+
+	@property
+	def deactivatedSkills(self) -> Dict[str, AliceSkill]:
+		"""
+		Returns skills that inited but are disabled by user
+		:return:
+		"""
+		return self._deactivatedSkills
+
+
+	@property
+	def failedSkills(self) -> Dict[str, FailedAliceSkill]:
+		"""
+		Returns skills that failed init
+		:return:
+		"""
+		return self._failedSkills
+
+
+	@property
+	def allSkills(self) -> Dict[str, Union[AliceSkill, FailedAliceSkill]]:
+		"""
+		Returns all skill that inited. This might not contain skills that are physically present but weren't inited
+		:return:
+		"""
+		return {**self._activeSkills, **self._deactivatedSkills, **self._failedSkills}
+
+
+	@property
+	def skillList(self) -> List:
+		"""
+		Returns all skills present in the skill directory. These might not be inited, might have failed etc.
+		:return:
+		"""
+		return self._skillList
+
+
+	@property
+	def allWorkingSkills(self) -> Dict[str, AliceSkill]:
+		"""
+		Returns a list of skills that are functional, but might be activated or deactivated. These skills passed init
+		:return:
+		"""
+		return {**self._activeSkills, **self._deactivatedSkills}
 
 
 	def onStart(self):
 		super().onStart()
 
-		self._busyInstalling = self.ThreadManager.newEvent('skillInstallation')
-
+		self._busyInstalling = self.ThreadManager.newEvent(name='skillInstallation', onSetCallback=self.notifyInstalling, onClearCallback=self.notifyFinishedInstalling)
 		self._skillList = self._loadSkills()
 
-		# If it's the first time we start, don't delay skill install and do it on main thread
 		if not self._skillList:
 			self.logInfo('Looks like a fresh install or skills were nuked. Let\'s install the basic skills!')
-			self.wipeSkills(True)
-			self._checkForSkillInstall()
-		elif self.checkForSkillUpdates():
-			self._checkForSkillInstall()
+			self.installSkills(skills=self.BASE_SKILLS)
 
-		self._skillInstallThread = self.ThreadManager.newThread(name='SkillInstallThread', target=self._checkForSkillInstall, autostart=False)
-		self._initSkills()
+		for skill in self.NEEDED_SKILLS:
+			if skill not in self._skillList:
+				self.logInfo('Some required skills are missing, let\'s download them!')
+				self.installSkills(skills=list(set(self.NEEDED_SKILLS) - set(self._skillList)))
+				break
+
+		updates = self.checkForSkillUpdates()
+		if updates and self.ConfigManager.getAliceConfigByName('skillAutoUpdate'):
+			self.updateSkills(skills=updates, withSkillRestart=False)
+
+		self.initSkills()
 
 		for skillName in self._deactivatedSkills:
 			self.configureSkillIntents(skillName=skillName, state=False)
 
-		self.ConfigManager.loadCheckAndUpdateSkillConfigurations()
-
 		self.startAllSkills()
 
 
+	def onBooted(self):
+		self.skillBroadcast(constants.EVENT_BOOTED)
+
+
+	def onStop(self):
+		super().onStop()
+
+		for skillName in list(self._activeSkills.keys()):
+			self.stopSkill(skillName=skillName)
+
+
+	def onQuarterHour(self):
+		if self._busyInstalling.is_set() or self.ProjectAlice.restart or self.ProjectAlice.updating or self.NluManager.training:
+			return
+
+		updates = self.checkForSkillUpdates()
+		if updates and self.ConfigManager.getAliceConfigByName('skillAutoUpdate'):
+			self.updateSkills(skills=updates)
+
+
+	def notifyInstalling(self):
+		"""
+		Sends a MQTT message to notify that Alice is updating
+		:return:
+		"""
+		self.MqttManager.mqttBroadcast(topic=constants.TOPIC_SYSTEM_UPDATE, payload={'sticky': True})
+
+
+	def notifyFinishedInstalling(self):
+		"""
+			Sends a MQTT message to notify that Alice finished installing something
+			:return:
+		"""
+		self.MqttManager.mqttBroadcast(topic=constants.TOPIC_HLC_CLEAR_LEDS)
+
+
 	# noinspection SqlResolve
-	def _loadSkills(self) -> dict:
+	def _loadSkills(self) -> List[str]:
+		"""
+		Loads skills present on the disk and checks if they are declared in DB and cleans offenders
+		Loads skills that are in DB and check if they are on the disk and cleans offenders
+		Returns a sorted list of potentially usable skill names
+		:return:
+		"""
 		skills = self.loadSkillsFromDB()
 		skills = [skill['skillName'] for skill in skills]
 
@@ -135,28 +255,759 @@ class SkillManager(Manager):
 		# Those represent the skills we have
 		skills = self.loadSkillsFromDB()
 
-		data = dict()
-		for skill in skills.copy():
+		data = list()
+		for skill in skills:
 			try:
-				installer = json.loads(Path(self.Commons.rootDir(), f'skills/{skill["skillName"]}/{skill["skillName"]}.install').read_text())
-				data[skill['skillName']] = {
-					'active'   : skill['active'],
-					'modified' : skill['modified'] == 1,
-					'installer': installer
-				}
+				if not self.getSkillDirectory(skill['skillName']).exists():
+					raise Exception('Skill directory not existing')
+				data.append(skill['skillName'])
 			except Exception as e:
 				self.logError(f'Error loading skill **{skill["skillName"]}**: {e}')
 
-		return dict(sorted(data.items()))
+		return sorted(data)
 
 
-	def loadSkillsFromDB(self) -> List:
+	def loadSkillsFromDB(self) -> List[Dict[str, Any]]:
+		"""
+		Loads skills from the database
+		:return:
+		"""
 		return self.databaseFetch(tableName='skills')
 
 
+	def addSkillToDB(self, skillName: str, active: int = 1):
+		"""
+		Adds given skill to database
+		:param skillName:
+		:param active:
+		:return:
+		"""
+		self.DatabaseManager.replace(
+			tableName='skills',
+			values={'skillName': skillName, 'active': active}
+		)
+
+
+	# noinspection SqlResolve
+	def removeSkillFromDB(self, skillName: str):
+		"""
+		Removes given skill from database
+		:param skillName:
+		:return:
+		"""
+		self.DatabaseManager.delete(
+			tableName='skills',
+			callerName=self.name,
+			query='DELETE FROM :__table__ WHERE skillName = :skill',
+			values={'skill': skillName}
+		)
+
+
+	def installSkills(self, skills: Union[str, List[str]], startSkill: bool = False):
+		"""
+		Installs the given skills
+		:param skills: Either a list of skill names to install or a single skill name
+		:param startSkill: If the skill should be immediately started
+		:return:
+		"""
+		self._busyInstalling.set()
+		if isinstance(skills, str):
+			skills = [skills]
+
+		for skillName in skills:
+			if skillName in self._skillList:
+				self.logDebug(f'Skill **{skillName}** already installed, skipping')
+				continue
+
+			try:
+				try:
+					repository = self.getSkillRepository(skillName=skillName)
+				except:
+					try:
+						repositories = self.downloadSkills(skills=skillName)
+						repository = repositories.get(skillName, None)
+					except SkillNotConditionCompliant:
+						continue
+
+				if not repository:
+					raise Exception(f'Failed downloading skill **{skillName}** for some unknown reason')
+
+				installFile = json.loads(repository.file(f'{skillName}.install').read_text())
+				pipReqs     = installFile.get('pipRequirements', list())
+				sysReqs     = installFile.get('systemRequirements', list())
+				scriptReq   = installFile.get('script')
+
+				self.checkSkillConditions(installFile)
+
+				for requirement in pipReqs:
+					self.logInfo(f'Installing pip requirement: {requirement}')
+					self.Commons.runSystemCommand(['./venv/bin/pip3', 'install', requirement])
+
+				for requirement in sysReqs:
+					self.logInfo(f'Installing system requirement: {requirement}')
+					self.Commons.runRootSystemCommand(['apt-get', 'install', '-y', requirement])
+
+				if scriptReq:
+					self.logInfo('Running post install script')
+					req = repository.file(scriptReq)
+					if not req:
+						self.logWarning(f'Missing post install script **{str(req)}** as declared in install file')
+						continue
+					self.Commons.runRootSystemCommand(['chmod', '+x', str(req)])
+					self.Commons.runRootSystemCommand([str(req)])
+
+				self.addSkillToDB(skillName)
+				self._skillList.append(skillName)
+
+				if installFile.get('rebootAfterInstall', False):
+					self.Commons.runRootSystemCommand('sudo shutdown -r now'.split())
+					break
+				elif startSkill:
+					self.initSkills(onlyInit=skillName)
+					self.startSkill(skillName=skillName)
+			except SkillNotConditionCompliant:
+				self.broadcast(
+					method=constants.EVENT_SKILL_INSTALL_FAILED,
+					exceptions=self._name,
+					propagateToSkills=True,
+					skill=skillName
+				)
+			except Exception as e:
+				self.logError(f'Error installing skill **{skillName}**: {e}')
+				self.broadcast(
+					method=constants.EVENT_SKILL_INSTALL_FAILED,
+					exceptions=[constants.DUMMY],
+					propagateToSkills=True,
+					skill=skillName
+				)
+			else:
+				self.broadcast(
+					method=constants.EVENT_SKILL_INSTALLED,
+					exceptions=[constants.DUMMY],
+					propagateToSkills=True,
+					skill=skillName
+				)
+
+		self._busyInstalling.clear()
+
+
+	def getSkillRepository(self, skillName: str, directory: str = None) -> Optional[Repository]:
+		"""
+		Returns a Git object for the given skill
+		:param skillName:
+		:param directory: where to look for that skill, if not standard directory
+		:return:
+		"""
+
+		if not directory:
+			directory = self.getSkillDirectory(skillName=skillName)
+
+		try:
+			return Repository(directory=directory)
+		except:
+			raise
+
+
+	def downloadSkills(self, skills: Union[str, List[str]]) -> Optional[Dict]:
+		"""
+		Clones skills. Existence of the skill online is checked
+		:param skills:
+		:return: Dict: a dict of created repositories
+		"""
+		if isinstance(skills, str):
+			skills = [skills]
+
+		repositories = dict()
+
+		for skillName in skills:
+			try:
+				tag = self.SkillStoreManager.getSkillUpdateTag(skillName=skillName)
+				response = requests.get(f'{constants.GITHUB_RAW_URL}/skill_{skillName}/{tag}/{skillName}.install')
+				if response.status_code != 200:
+					raise GithubNotFound
+
+				self.logInfo(f'Now downloading **{skillName}** version **{tag}**')
+
+				with suppress(): # Increment download counter
+					requests.get(f'https://skills.projectalice.ch/{skillName}')
+
+				installFile = response.json()
+
+				if not self.ConfigManager.getAliceConfigByName('devMode'):
+					self.checkSkillConditions(installer=installFile)
+
+				source = self.getGitRemoteSourceUrl(skillName=skillName, doAuth=False)
+
+				try:
+					repository = self.getSkillRepository(skillName=skillName)
+				except PathNotFoundException:
+					repository = Repository.clone(url=source, directory=self.getSkillDirectory(skillName=skillName), makeDir=True)
+				except NotGitRepository:
+					shutil.rmtree(self.getSkillDirectory(skillName=skillName), ignore_errors=True)
+					repository = Repository.clone(url=source, directory=self.getSkillDirectory(skillName=skillName), makeDir=True)
+				except:
+					raise
+
+				repository.checkout(tag=tag)
+				repositories[skillName] = repository
+			except GithubNotFound:
+				if skillName in self.NEEDED_SKILLS:
+					self._busyInstalling.clear()
+					self.logFatal(f"Skill **{skillName}** is required but wasn't found in released skills, cannot continue")
+					return repositories
+				else:
+					self.logError(f'Skill "{skillName}" not found in released skills')
+					continue
+			except SkillNotConditionCompliant as e:
+				if self.notCompliantSkill(skillName=skillName, exception=e):
+					continue
+				else:
+					self._busyInstalling.clear()
+					return repositories
+			except Exception as e:
+				if skillName in self.NEEDED_SKILLS:
+					self._busyInstalling.clear()
+					self.logFatal(f'Error downloading skill **{skillName}** and it is required, cannot continue: {e}')
+					return repositories
+				else:
+					self.logError(f'Error downloading skill "{skillName}": {e}')
+					continue
+		return repositories
+
+
+	def notCompliantSkill(self, skillName: str,  exception: SkillNotConditionCompliant) -> bool:
+		"""
+		Print out the fact a skill is not compliant and return false if Alice cannot continue as it's a needed skill
+		:param skillName
+		:param exception:
+		:return:
+		"""
+		if skillName in self.NEEDED_SKILLS:
+			self.logFatal(f'Skill {skillName} does not comply to "{exception.condition}" condition, offers only "{exception.conditionValue}". The skill is required to continue')
+			return False
+		else:
+			self.logInfo(f'Skill {skillName} does not comply to "{exception.condition}" condition, offers only "{exception.conditionValue}"')
+			return True
+
+
+	def getSkillDirectory(self, skillName: str) -> Path:
+		"""
+		Returns the full path to a skill
+		:param skillName:
+		:return:
+		"""
+		return Path(self.Commons.rootDir()) / 'skills' / skillName
+
+
+	def getGitRemoteSourceUrl(self, skillName: str, doAuth: bool = True) -> str:
+		"""
+		Returns the url for the skill name, taking into account if the user provided GitHub auth
+		This does check if the remote exists and raises an exception in case it does not
+		:param skillName:
+		:param doAuth: Pull, clone, fetch, non oauth requests, aren't concerned by rate limit
+		:return:
+		"""
+		tokenPrefix = ''
+		if doAuth:
+			auth = self.Commons.getGithubAuth()
+			if auth:
+				tokenPrefix = f'{auth[0]}:{auth[1]}@'
+
+		url = f'{constants.GITHUB_URL}/skill_{skillName}.git'
+		if tokenPrefix:
+			url = url.replace('://', f'://{tokenPrefix}')
+
+		response = requests.get(url=url)
+		if response.status_code != 200:
+			raise GithubNotFound
+
+		return url
+
+
+	def initSkills(self, onlyInit: str = '', reload: bool = False):
+		"""
+		Initializing skills by checking their condition compliance and instantiating them.
+		Does check if a skill fails and is required
+		:param onlyInit: If specified, will only init the given skill name
+		:param reload: If the skill is already instantiated, performs a module reload, after an update per example.
+		:return:
+		"""
+
+		for skillName in self._skillList:
+			if onlyInit and skillName != onlyInit:
+				continue
+
+			self._activeSkills.pop(skillName, None)
+			self._failedSkills.pop(skillName, None)
+			self._deactivatedSkills.pop(skillName, None)
+
+			try:
+				installFilePath = self.getSkillInstallFilePath(skillName=skillName)
+				installFile = json.loads(installFilePath.read_text())
+			except Exception as e:
+				if skillName in self.NEEDED_SKILLS:
+					self.logFatal(f'Cannot load skill install file for skill **{skillName}**. The skill is required to continue: {e}')
+					return
+				else:
+					self.logWarning(f'Cannot load skill install file for skill **{skillName}**, skipping: {e}')
+					continue
+
+			try:
+				skillActiveState = self.isSkillActive(skillName=skillName)
+				if not skillActiveState:
+					if skillName in self.NEEDED_SKILLS:
+						self.logFatal(f"Skill {skillName} marked as disabled but it cannot be")
+						return
+					else:
+						self.logInfo(f'Skill {skillName} is disabled')
+				else:
+					self.checkSkillConditions(installFile)
+
+				skillInstance = self.instantiateSkill(skillName=skillName, reload=reload)
+				if skillInstance:
+					if skillName in self.NEEDED_SKILLS:
+						skillInstance.required = True
+
+					if skillActiveState:
+						self._activeSkills[skillInstance.name] = skillInstance
+					else:
+						self._deactivatedSkills[skillName] = skillInstance
+
+					self.ConfigManager.loadCheckAndUpdateSkillConfigurations(skillToLoad=skillName)
+				else:
+					if skillName in self.NEEDED_SKILLS:
+						self.logFatal(f'The skill is required to continue...')
+						return
+					else:
+						self._failedSkills[skillName] = FailedAliceSkill(installFile)
+			except SkillNotConditionCompliant as e:
+				if self.notCompliantSkill(skillName=skillName, exception=e):
+					self._failedSkills[skillName] = FailedAliceSkill(installFile)
+					self.changeSkillStateInDB(skillName=skillName, newState=False)
+					continue
+				else:
+					return
+			except Exception as e:
+				self.logError(f'Something went wrong loading skill {skillName}: {repr(e)}', printStack=True)
+				if skillName in self.NEEDED_SKILLS:
+					self.logFatal(f'The skill is required to continue...')
+					return
+				else:
+					self._failedSkills[skillName] = FailedAliceSkill(installFile)
+					self.changeSkillStateInDB(skillName=skillName, newState=False)
+					continue
+
+
+	def getSkillInstallFilePath(self, skillName: str) -> Path:
+		"""
+		Returns the full path to a skill's install file
+		:param skillName:
+		:return:
+		"""
+		return self.getSkillDirectory(skillName=skillName) / f'{skillName}.install'
+
+
+	# noinspection PyTypeChecker
+	def instantiateSkill(self, skillName: str, skillResource: str = '', reload: bool = False) -> Optional[AliceSkill]:
+		"""
+		Instantiates the given skill at the given path
+		:param skillName:
+		:param skillResource:
+		:param reload:
+		:return:
+		"""
+		instance: Optional[AliceSkill] = None
+		skillResource = skillResource or skillName
+
+		try:
+			skillImport = importlib.import_module(f'skills.{skillName}.{skillResource}')
+
+			if reload:
+				skillImport = importlib.reload(skillImport)
+
+			klass = getattr(skillImport, skillName)
+			instance: AliceSkill = klass()
+		except ImportError as e:
+			self.logError(f"Couldn't import skill {skillName}.{skillResource}: {e}")
+			traceback.print_exc()
+		except AttributeError as e:
+			self.logError(f"Couldn't find main class for skill {skillName}.{skillResource}: {e}")
+		except SkillInstanceFailed:
+			self.logError(f"Couldn't instanciate skill {skillName}.{skillResource}")
+		except Exception as e:
+			self.logError(f"Unknown error instantiating {skillName}.{skillResource}: {e} {traceback.print_exc()}")
+
+		return instance
+
+
+	def isSkillActive(self, skillName: str) -> bool:
+		"""
+		Returns true or false depending on if the skill is declared as active
+		:param skillName:
+		:return:
+		"""
+		if skillName in self._activeSkills:
+			return self._activeSkills[skillName].active
+		elif skillName in self._failedSkills or skillName in self._deactivatedSkills:
+			return False
+		elif skillName in self._skillList:
+			# noinspection SqlResolve
+			row = self.databaseFetch(tableName=self.DBTAB_SKILLS, query='SELECT active FROM :__table__ WHERE skillName = :skillName LIMIT 1', values={'skillName': skillName})
+			if not row:
+				return False
+			return int(row[0]['active']) == 1
+		return False
+
+
+	def checkSkillConditions(self, installer: dict = None, checkOnly=False) -> Union[bool, List[Dict[str, str]]]:
+		"""
+		Checks if the given skill is compliant to its conditions
+		:param installer:
+		:param checkOnly: Do not perform any other action (download other skill, etc.) but checking conditions
+		:return:
+		"""
+		conditions = {
+			'aliceMinVersion': installer['aliceMinVersion'],
+			**installer.get('conditions', dict())
+		}
+
+		notCompliant = 'Skill is not compliant'
+		notCompliantRules = list()
+
+		if 'aliceMinVersion' in conditions and Version.fromString(conditions['aliceMinVersion']) > Version.fromString(constants.VERSION):
+			if not checkOnly:
+				raise SkillNotConditionCompliant(message=notCompliant, skillName=installer['name'], condition='Alice minimum version', conditionValue=conditions['aliceMinVersion'])
+			else:
+				notCompliantRules.append({'Alice version': conditions['aliceMinVersion']})
+
+		for conditionName, conditionValue in conditions.items():
+			if conditionName == 'lang' and self.LanguageManager.activeLanguage not in conditionValue:
+				if not checkOnly:
+					raise SkillNotConditionCompliant(message=notCompliant, skillName=installer['name'], condition=conditionName, conditionValue=conditionValue)
+				else:
+					notCompliantRules.append({conditionName: conditionValue})
+
+			elif conditionName == 'online':
+				if conditionValue and self.ConfigManager.getAliceConfigByName('stayCompletelyOffline') or not conditionValue and not self.ConfigManager.getAliceConfigByName('stayCompletelyOffline'):
+					if not checkOnly:
+						raise SkillNotConditionCompliant(message=notCompliant, skillName=installer['name'], condition=conditionName, conditionValue=conditionValue)
+					else:
+						notCompliantRules.append({conditionName: conditionValue})
+
+			elif conditionName == 'skill':
+				for requiredSkill in conditionValue:
+					if requiredSkill in self._skillList and not self.isSkillActive(skillName=installer['name']):
+						if not checkOnly:
+							raise SkillNotConditionCompliant(message=notCompliant, skillName=installer['name'], condition=conditionName, conditionValue=conditionValue)
+						else:
+							notCompliantRules.append({conditionName: conditionValue})
+					elif requiredSkill not in self._skillList:
+						if not checkOnly:
+							self.logInfo(f'Skill {installer["name"]} has another skill as dependency, adding download')
+							try:
+								self.downloadSkills(skills=requiredSkill)
+							except:
+								raise SkillNotConditionCompliant(message=notCompliant, skillName=installer['name'], condition=conditionName, conditionValue=conditionValue)
+						else:
+							notCompliantRules.append({conditionName: conditionValue})
+
+			elif conditionName == 'notSkill':
+				for excludedSkill in conditionValue:
+					author, name = excludedSkill.split('/')
+					if name in self._skillList and self.isSkillActive(skillName=installer['name']):
+						if not checkOnly:
+							raise SkillNotConditionCompliant(message=notCompliant, skillName=installer['name'], condition=conditionName, conditionValue=conditionValue)
+						else:
+							notCompliantRules.append({conditionName: conditionValue})
+
+			elif conditionName == 'asrArbitraryCapture':
+				if conditionValue and self.ASRManager.asr and not self.ASRManager.asr.capableOfArbitraryCapture:
+					if not checkOnly:
+						raise SkillNotConditionCompliant(message=notCompliant, skillName=installer['name'], condition=conditionName, conditionValue=conditionValue)
+					else:
+						notCompliantRules.append({conditionName: conditionValue})
+
+			elif conditionName == 'activeManager':
+				for manager in conditionValue:
+					if not manager:
+						continue
+
+					man = SuperManager.getInstance().getManager(manager)
+					if not man or not man.isActive:
+						if not checkOnly:
+							raise SkillNotConditionCompliant(message=notCompliant, skillName=installer['name'], condition=conditionName, conditionValue=conditionValue)
+						else:
+							notCompliantRules.append({conditionName: conditionValue})
+
+		return True if not checkOnly else notCompliantRules
+
+
+	def updateSkills(self, skills: Union[str, List[str]], withSkillRestart: bool = True):
+		"""
+		Updates skills to the latest available version for this Alice version
+		:param skills:
+		:param withSkillRestart: Whether to start the skill after updating it
+		:return:
+		"""
+		self._busyInstalling.set()
+
+		if isinstance(skills, str):
+			skills = [skills]
+
+		for skillName in skills:
+			self.logInfo(f'Now updating skill **{skillName}**')
+			self.stopSkill(skillName=skillName)
+			self._failedSkills.pop(skillName, None)
+
+			try:
+				repository = self.getSkillRepository(skillName=skillName)
+				repository.fetch()
+				repository.checkout(tag=self.SkillStoreManager.getSkillUpdateTag(skillName=skillName), force=True)
+			except Exception as e:
+				self.logError(f'Error updating skill **{skillName}** : {e}')
+				continue
+
+			self.broadcast(
+				method=constants.EVENT_SKILL_UPDATED,
+				exceptions=[constants.DUMMY],
+				propagateToSkills=True,
+				skill=skillName
+			)
+
+			self.initSkills(onlyInit=skillName, reload=True)
+			if withSkillRestart:
+				self.startSkill(skillName=skillName)
+
+			if skillName in self.activeSkills:
+				self.logInfo(f'Updated skill **{skillName}** to version **{self.activeSkills[skillName].version}**')
+
+		self._busyInstalling.clear()
+
+
+	def stopSkill(self, skillName: str) -> Optional[AliceSkill]:
+		"""
+		Stops the given skill
+		:param skillName:
+		:return:
+		"""
+		skill = None
+		if skillName in self._activeSkills:
+			skill = self._activeSkills.pop(skillName, None)
+			self.deactivatedSkills[skillName] = skill
+			skill.onStop()
+			self.broadcast(
+				method=constants.EVENT_SKILL_STOPPED,
+				exceptions=[constants.DUMMY],
+				propagateToSkills=True,
+				skill=skillName
+			)
+		return skill
+
+
+	def configureSkillIntents(self, skillName: str, state: bool):
+		"""
+		Subs or unsubs the skill intents. Alice only recognizes subscribed intents
+		:param skillName:
+		:param state:
+		:return:
+		"""
+		try:
+			skills = self.allWorkingSkills
+			confs = [{
+				'intentId': intent.justTopic if isinstance(intent, Intent.Intent) else intent.split('/')[-1],
+				'enable'  : state
+			} for intent in skills[skillName].supportedIntents if not self.isIntentInUse(intent=intent, filtered=[skillName])]
+
+			self.MqttManager.configureIntents(confs)
+
+			if state:
+				skills[skillName].subscribeIntents()
+			else:
+				skills[skillName].unsubscribeIntents()
+		except Exception as e:
+			if not self.ProjectAlice.shuttingDown:
+				self.logWarning(f'Intent configuration failed: {e}')
+
+
+	def isIntentInUse(self, intent: Intent, filtered: list) -> bool:
+		"""
+		Returns whether an intent is used by any WORKING skill
+		:param intent:
+		:param filtered:
+		:return:
+		"""
+		skills = self.allWorkingSkills
+		return any(intent in skill.supportedIntents for name, skill in skills.items() if name not in filtered)
+
+
+	def startAllSkills(self):
+		"""
+		Starts all the discovered skills
+		:return:
+		"""
+		supportedIntents = list()
+
+		for skillName in self._activeSkills.copy():
+			try:
+				supportedIntents += self.startSkill(skillName)
+			except SkillStartingFailed:
+				continue
+			except SkillStartDelayed:
+				self.logInfo(f'Skill {skillName} start is delayed')
+
+		supportedIntents = list(set(supportedIntents))
+		self._supportedIntents = supportedIntents
+
+		self.logInfo(f'Skills started. {len(supportedIntents)} intents supported')
+
+
+	def startSkill(self, skillName: str) -> Dict:
+		"""
+		Starts a skill
+		:param skillName:
+		:return:
+		"""
+		if skillName in self._activeSkills:
+			skillInstance = self._activeSkills[skillName]
+		elif skillName in self._deactivatedSkills or skillName in self._failedSkills:
+			if skillName in self._failedSkills:
+				skill = self._failedSkills.pop(skillName, None)
+			else:
+				skill = self._deactivatedSkills.pop(skillName, None)
+
+			try:
+				skillInstance = self.instantiateSkill(skillName=skillName)
+				self.checkSkillConditions(installer=json.loads(self.getSkillInstallFilePath(skillName=skillName).read_text()))
+			except:
+				self._failedSkills[skillName] = FailedAliceSkill(json.loads(skill.getResource(f'{skillName}.install').read_text()))
+				return dict()
+
+			if skillInstance:
+				self.activeSkills[skillName] = skillInstance
+			else:
+				return dict()
+		else:
+			self.logWarning(f'Skill "{skillName}" is unknown')
+			return dict()
+
+		try:
+			skillInstance.onStart()
+			if self.ProjectAlice.isBooted:
+				skillInstance.onBooted()
+
+			self.broadcast(
+				method=constants.EVENT_SKILL_STARTED,
+				exceptions=[constants.DUMMY],
+				propagateToSkills=True,
+				skill=skillName
+			)
+		except SkillStartingFailed:
+			try:
+				skillInstance.failedStarting = True
+			except:
+				self._failedSkills[skillName] = FailedAliceSkill(skillInstance.installer)
+		except SkillStartDelayed:
+			raise
+		except Exception as e:
+			self.logError(f'- Couldn\'t start skill "{skillName}". Error: {e}')
+			traceback.print_exc()
+
+			try:
+				self.deactivateSkill(skillName=skillName)
+			except:
+				self._activeSkills.pop(skillName, None)
+				self._deactivatedSkills.pop(skillName, None)
+
+			self._failedSkills[skillName] = FailedAliceSkill(skillInstance.installer)
+
+		return skillInstance.supportedIntents
+
+
+	def deactivateSkill(self, skillName: str, persistent: bool = False) -> bool:
+		"""
+		Deactivates a skill and broadcasts it
+		:param skillName:
+		:param persistent:
+		:return:
+		"""
+		if skillName in self._activeSkills:
+			skillInstance = self.stopSkill(skillName=skillName)
+			if skillInstance:
+				self._deactivatedSkills[skillName] = skillInstance
+				self.broadcast(
+					method=constants.EVENT_SKILL_DEACTIVATED,
+					exceptions=[constants.DUMMY],
+					propagateToSkills=True,
+					skill=skillInstance.name
+				)
+
+			if persistent:
+				self.changeSkillStateInDB(skillName=skillName, newState=False)
+				self.logInfo(f'Deactivated skill "{skillName}" with persistence')
+			else:
+				self.logInfo(f'Deactivated skill "{skillName}" without persistence')
+
+			return True
+		else:
+			self.logWarning(f'Skill "{skillName} is not active')
+			return False
+
+
+	def activateSkill(self, skillName: str, persistent: bool = False) -> bool:
+		"""
+		Activates a skill and broadcasts it
+		:param skillName:
+		:param persistent:
+		:return:
+		"""
+		if skillName not in self._deactivatedSkills and skillName not in self._failedSkills:
+			self.logWarning(f'Skill "{skillName} is not deactivated or failed')
+			return False
+
+		try:
+			self.startSkill(skillName)
+
+			if skillName not in self._activeSkills:
+				return False
+
+			if persistent:
+				self.changeSkillStateInDB(skillName=skillName, newState=True)
+				self.logInfo(f'Activated skill "{skillName}" with persistence')
+			else:
+				self.logInfo(f'Activated skill "{skillName}" without persistence')
+
+			self.broadcast(
+				method=constants.EVENT_SKILL_ACTIVATED,
+				exceptions=[constants.DUMMY],
+				propagateToSkills=True,
+				skill=skillName
+			)
+			return True
+		except:
+			self.logError(f'Failed activating skill "{skillName}"')
+			return False
+
+
+	def toggleSkillState(self, skillName: str, persistent: bool = False):
+		"""
+		Activate the given skill if deactivated or deactivates the given skill if activated
+		:param skillName:
+		:param persistent:
+		:return:
+		"""
+		if self.isSkillActive(skillName):
+			self.deactivateSkill(skillName=skillName, persistent=persistent)
+		else:
+			self.activateSkill(skillName=skillName, persistent=persistent)
+
+
 	def changeSkillStateInDB(self, skillName: str, newState: bool):
-		# Changes the state of a skill in db and also deactivates widgets
-		# and device types if state is False
+		"""
+		Updates the given skill DB entry state
+		:param skillName:
+		:param newState:
+		:return:
+		"""
 		self.DatabaseManager.update(
 			tableName='skills',
 			callerName=self.name,
@@ -166,97 +1017,13 @@ class SkillManager(Manager):
 			row=('skillName', skillName)
 		)
 
-		if not newState:
-			self.WidgetManager.skillDeactivated(skillName=skillName)
-			self.DeviceManager.skillDeactivated(skillName=skillName)
-
-
-	def addSkillToDB(self, skillName: str, active: int = 1):
-		self.DatabaseManager.replace(
-			tableName='skills',
-			values={'skillName': skillName, 'active': active}
-		)
-
-
-	# noinspection SqlResolve
-	def removeSkillFromDB(self, skillName: str):
-		self.DatabaseManager.delete(
-			tableName='skills',
-			callerName=self.name,
-			query='DELETE FROM :__table__ WHERE skillName = :skill',
-			values={'skill': skillName}
-		)
-
-
-	def onAssistantInstalled(self, **kwargs):
-		self.MqttManager.mqttBroadcast(topic='hermes/leds/clear')
-
-		argv = kwargs.get('skillsInfos', dict())
-		if not argv:
-			return
-
-		for skillName, skill in argv.items():
-			try:
-				self._startSkill(skillName=skillName)
-			except SkillStartDelayed:
-				self.logInfo(f'Skill "{skillName}" start is delayed')
-			except KeyError as e:
-				self.logError(f'Skill "{skillName} not found, skipping: {e}')
-				continue
-
-			self._activeSkills[skillName].onBooted()
-
-			self.broadcast(
-				method=constants.EVENT_SKILL_UPDATED if skill['update'] else constants.EVENT_SKILL_INSTALLED,
-				exceptions=[constants.DUMMY],
-				skill=skillName
-			)
-
-
-	@property
-	def supportedIntents(self) -> list:
-		return self._supportedIntents
-
-
-	@property
-	def neededSkills(self) -> list:
-		return self.NEEDED_SKILLS
-
-
-	@property
-	def activeSkills(self) -> Dict[str, AliceSkill]:
-		return self._activeSkills
-
-
-	@property
-	def deactivatedSkills(self) -> Dict[str, AliceSkill]:
-		return self._deactivatedSkills
-
-
-	@property
-	def failedSkills(self) -> dict:
-		return self._failedSkills
-
-
-	@property
-	def allSkills(self) -> dict:
-		return {**self._activeSkills, **self._deactivatedSkills, **self._failedSkills}
-
-
-	@property
-	def allWorkingSkills(self) -> dict:
-		return {**self._activeSkills, **self._deactivatedSkills}
-
-
-	def onBooted(self):
-		self.skillBroadcast(constants.EVENT_BOOTED)
-		self._finishInstall()
-
-		if self._skillInstallThread:
-			self._skillInstallThread.start()
-
 
 	def dispatchMessage(self, session: DialogSession) -> bool:
+		"""
+		Dispatches a MQTT message to skills until one accepts it and returns True. If the intent wasn't consumed, return False
+		:param session:
+		:return:
+		"""
 		for skillName, skillInstance in self._activeSkills.items():
 			try:
 				consumed = skillInstance.onMessageDispatch(session)
@@ -287,163 +1054,72 @@ class SkillManager(Manager):
 		return False
 
 
-	def _initSkills(self, loadOnly: str = '', reload: bool = False):
-		for skillName, data in self._skillList.items():
-			if loadOnly and skillName != loadOnly:
-				continue
+	@Online(catchOnly=True)
+	@IfSetting(settingName='stayCompletelyOffline', settingValue=False)
+	def checkForSkillUpdates(self, skillToCheck: str = None) -> List[str]:
+		"""
+		Checks all installed skills for availability of updates.
+		Includes failed skills but not inactive.
+		:param skillToCheck:
+		:return:
+		"""
+		self.logInfo('Checking for skill updates')
+		skillsToUpdate = list()
 
-			self._activeSkills.pop(skillName, None)
-			self._failedSkills.pop(skillName, None)
-			self._deactivatedSkills.pop(skillName, None)
-
+		for skillName in self._skillList:
 			try:
-				if not data['active']:
-					if skillName in self.NEEDED_SKILLS:
-						self.logInfo(f"Skill {skillName} marked as disabled but it shouldn't be")
-						self.ProjectAlice.onStop()
-						break
+				if skillToCheck and skillName != skillToCheck:
+					continue
 
-					self.logInfo(f'Skill {skillName} is disabled')
+				installer = json.loads(self.getSkillInstallFilePath(skillName=skillName).read_text())
 
-				if data['active']:
-					self.checkSkillConditions(self._skillList[skillName]['installer'])
+				remoteVersion = self.SkillStoreManager.getSkillUpdateVersion(skillName)
+				localVersion = Version.fromString(installer['version'])
+				if localVersion < remoteVersion:
 
-				skillInstance = self.instanciateSkill(skillName=skillName, reload=reload)
-				skillInstance.modified = data.get('modified', False)
-				if skillInstance:
-					if skillName in self.NEEDED_SKILLS:
-						skillInstance.required = True
+					self.WebUINotificationManager.newNotification(
+						typ=UINotificationType.INFO,
+						notification='skillUpdateAvailable',
+						key='skillUpdate_{}'.format(skillName),
+						replaceBody=[skillName, str(remoteVersion)]
+					)
 
-					if data['active']:
-						self._activeSkills[skillInstance.name] = skillInstance
-					else:
-						self._deactivatedSkills[skillName] = skillInstance
+					if self.isSkillUserModified(skillName=skillName) and self.ConfigManager.getAliceConfigByName('devMode'):
+						if skillName in self.allSkills:
+							self.allSkills[skillName].updateAvailable = True
+
+						self.logInfo(f'![blue]({skillName}) - Version {installer["version"]} < {str(remoteVersion)} in {self.ConfigManager.getAliceConfigByName("skillsUpdateChannel")} - Locked for local changes!')
+						continue
+
+					self.logInfo(f'![yellow]({skillName}) - Version {installer["version"]} < {str(remoteVersion)} in {self.ConfigManager.getAliceConfigByName("skillsUpdateChannel")}')
+
+					if skillName in self.allSkills:
+						self.allSkills[skillName].updateAvailable = True
+
+					skillsToUpdate.append(skillName)
 				else:
-					self._failedSkills[skillName] = FailedAliceSkill(data['installer'])
+					if self.isSkillUserModified(skillName=skillName) and self.ConfigManager.getAliceConfigByName('devMode'):
+						self.logInfo(f'![blue]({skillName}) - Version {installer["version"]} in {self.ConfigManager.getAliceConfigByName("skillsUpdateChannel")} - Locked for local changes!')
+					else:
+						self.logInfo(f'![green]({skillName}) - Version {installer["version"]} in {self.ConfigManager.getAliceConfigByName("skillsUpdateChannel")}')
 
-			except SkillStartingFailed as e:
-				self.logWarning(f'Failed loading skill: {e}')
-				self._failedSkills[skillName] = FailedAliceSkill(data['installer'])
-				continue
-			except SkillNotConditionCompliant as e:
-				self.logInfo(f'Skill {skillName} does not comply to "{e.condition}" condition, offers only "{e.conditionValue}"')
-				self._failedSkills[skillName] = FailedAliceSkill(data['installer'])
-				continue
+			except GithubNotFound:
+				self.logInfo(f'![red](Skill **{skillName}**) is not available on Github. Deprecated or is it a dev skill?')
+
 			except Exception as e:
-				self.logWarning(f'Something went wrong loading skill {skillName}: {e}')
-				self._failedSkills[skillName] = FailedAliceSkill(data['installer'])
-				continue
+				self.logError(f'Error checking updates for skill **{skillName}**: {e}')
 
-
-	# noinspection PyTypeChecker
-	def instanciateSkill(self, skillName: str, skillResource: str = '', reload: bool = False) -> AliceSkill:
-		instance: AliceSkill = None
-		skillResource = skillResource or skillName
-
-		try:
-			skillImport = importlib.import_module(f'skills.{skillName}.{skillResource}')
-
-			if reload:
-				skillImport = importlib.reload(skillImport)
-
-			klass = getattr(skillImport, skillName)
-			instance: AliceSkill = klass()
-		except ImportError as e:
-			self.logError(f"Couldn't import skill {skillName}.{skillResource}: {e}")
-			traceback.print_exc()
-		except AttributeError as e:
-			self.logError(f"Couldn't find main class for skill {skillName}.{skillResource}: {e}")
-		except Exception as e:
-			self.logError(f"Couldn't instanciate skill {skillName}.{skillResource}: {e} {traceback.print_exc()}")
-
-		return instance
-
-
-	def onStop(self):
-		super().onStop()
-
-		for skillItem in self._activeSkills.values():
-			skillItem.onStop()
-			self.broadcast(method=constants.EVENT_SKILL_STOPPED, exceptions=[self.name], propagateToSkills=True, skill=self)
-
-
-	def onQuarterHour(self):
-		self.checkForSkillUpdates()
-
-
-	def startAllSkills(self):
-		supportedIntents = list()
-
-		tmp = self._activeSkills.copy()
-		for skillName in tmp:
-			try:
-				supportedIntents += self._startSkill(skillName)
-			except SkillStartingFailed:
-				continue
-			except SkillStartDelayed:
-				self.logInfo(f'Skill {skillName} start is delayed')
-
-		supportedIntents = list(set(supportedIntents))
-
-		self._supportedIntents = supportedIntents
-
-		self.logInfo(f'Skills started. {len(supportedIntents)} intents supported')
-
-
-	def _startSkill(self, skillName: str) -> dict:
-		if skillName in self._activeSkills:
-			skillInstance = self._activeSkills[skillName]
-		elif skillName in self._deactivatedSkills:
-			self._deactivatedSkills.pop(skillName, None)
-			skillInstance = self.instanciateSkill(skillName=skillName)
-			if skillInstance:
-				self.activeSkills[skillName] = skillInstance
-			else:
-				return dict()
-		elif skillName in self._failedSkills:
-			skillInstance = self.instanciateSkill(skillName=skillName)
-			if skillInstance:
-				self.activeSkills[skillName] = skillInstance
-			else:
-				return dict()
-		else:
-			self.logWarning(f'Skill "{skillName}" is unknown')
-			return dict()
-
-		try:
-			skillInstance.onStart()
-			if self.ProjectAlice.isBooted:
-				skillInstance.onBooted()
-			self.broadcast(method=constants.EVENT_SKILL_STARTED, exceptions=[self.name], propagateToSkills=True, skill=self)
-		except SkillStartingFailed:
-			try:
-				skillInstance.failedStarting = True
-			except:
-				self._failedSkills[skillName] = FailedAliceSkill(self._skillList[skillName]['installer'])
-		except SkillStartDelayed:
-			raise
-		except Exception as e:
-			self.logError(f'- Couldn\'t start skill "{skillName}". Error: {e}')
-			traceback.print_exc()
-
-			try:
-				self.deactivateSkill(skillName=skillName)
-			except:
-				self._activeSkills.pop(skillName, None)
-				self._deactivatedSkills.pop(skillName, None)
-
-			self._failedSkills[skillName] = FailedAliceSkill(self._skillList[skillName]['installer'])
-
-		return skillInstance.supportedIntents
-
-
-	def isSkillActive(self, skillName: str) -> bool:
-		if skillName in self._activeSkills:
-			return self._activeSkills[skillName].active
-		return False
+		self.logInfo(f'Found {len(skillsToUpdate)} skill update', plural='update')
+		return skillsToUpdate
 
 
 	def getSkillInstance(self, skillName: str, silent: bool = False) -> Optional[AliceSkill]:
+		"""
+		Returns a skill instance, if available
+		:param skillName:
+		:param silent:
+		:return:
+		"""
 		if skillName in self._activeSkills:
 			return self._activeSkills[skillName]
 		elif skillName in self._deactivatedSkills:
@@ -451,7 +1127,7 @@ class SkillManager(Manager):
 		elif skillName in self._failedSkills:
 			return self._failedSkills[skillName]
 		else:
-			if not silent:
+			if not silent and not self.ProjectAlice.shuttingDown:
 				self.logWarning(f'Skill "{skillName}" does not exist in skills manager')
 
 			return None
@@ -486,450 +1162,56 @@ class SkillManager(Manager):
 				self.logWarning(f'Failed to broadcast event {method} to {skillName}: {e}')
 
 
-	def deactivateSkill(self, skillName: str, persistent: bool = False):
-		if skillName in self._activeSkills:
-			skillInstance = self._activeSkills.pop(skillName)
-			self._deactivatedSkills[skillName] = skillInstance
-			skillInstance.onStop()
-			self.broadcast(method=constants.EVENT_SKILL_STOPPED, exceptions=[self.name], propagateToSkills=True, skill=self)
-
-			if persistent:
-				self.changeSkillStateInDB(skillName=skillName, newState=False)
-				self.logInfo(f'Deactivated skill "{skillName}" with persistence')
-			else:
-				self.logInfo(f'Deactivated skill "{skillName}" without persistence')
-		else:
-			self.logWarning(f'Skill "{skillName} is not active')
-
-
-	def activateSkill(self, skillName: str, persistent: bool = False):
-		if skillName not in self._deactivatedSkills and skillName not in self._failedSkills:
-			self.logWarning(f'Skill "{skillName} is not deactivated or failed')
-			return
-
-		try:
-			self._startSkill(skillName)
-
-			if persistent:
-				self.changeSkillStateInDB(skillName=skillName, newState=True)
-				self.logInfo(f'Activated skill "{skillName}" with persistence')
-			else:
-				self.logInfo(f'Activated skill "{skillName}" without persistence')
-		except:
-			self.logError(f'Failed activating skill "{skillName}"')
-			return
-
-
-	def toggleSkillState(self, skillName: str, persistent: bool = False):
-		if self.isSkillActive(skillName):
-			self.deactivateSkill(skillName=skillName, persistent=persistent)
-		else:
-			self.activateSkill(skillName=skillName, persistent=persistent)
-
-
-	@Online(catchOnly=True)
-	@IfSetting(settingName='stayCompletelyOffline', settingValue=False)
-	def checkForSkillUpdates(self, skillToCheck: str = None) -> bool:
+	def removeSkill(self, skillName: str):
 		"""
-		Check all installed skills for availability of updates.
-		Includes failed skills but not inactive.
-		:param skillToCheck:
+		Deletes a skill completely
+		:param skillName:
 		:return:
 		"""
-		self.logInfo('Checking for skill updates')
-		updateCount = 0
-
-		for skillName, data in self._skillList.items():
-			if not data['active']:
-				continue
-
-			try:
-				if skillToCheck and skillName != skillToCheck:
-					continue
-
-				remoteVersion = self.SkillStoreManager.getSkillUpdateVersion(skillName)
-				localVersion = Version.fromString(self._skillList[skillName]['installer']['version'])
-				if localVersion < remoteVersion:
-					updateCount += 1
-
-					self.WebUINotificationManager.newNotification(
-						typ=UINotificationType.INFO,
-						notification='skillUpdateAvailable',
-						key='skillUpdate_{}'.format(skillName),
-						replaceBody=[skillName, str(remoteVersion)]
-					)
-
-					if data.get('modified', False):
-						self.allSkills[skillName].updateAvailable = True
-						self.logInfo(f'![blue]({skillName}) - Version {self._skillList[skillName]["installer"]["version"]} < {str(remoteVersion)} in {self.ConfigManager.getAliceConfigByName("skillsUpdateChannel")} - ![blue](LOCKED) for local changes!')
-						continue
-
-					self.logInfo(f'![yellow]({skillName}) - Version {self._skillList[skillName]["installer"]["version"]} < {str(remoteVersion)} in {self.ConfigManager.getAliceConfigByName("skillsUpdateChannel")}')
-
-					if not self.ConfigManager.getAliceConfigByName('skillAutoUpdate'):
-						if skillName in self.allSkills:
-							self.allSkills[skillName].updateAvailable = True
-					else:
-						if not self.downloadInstallTicket(skillName, isUpdate=True):
-							raise Exception
-				else:
-					if data.get('modified', False):
-						self.logInfo(f'![blue]({skillName}) - Version {self._skillList[skillName]["installer"]["version"]} in {self.ConfigManager.getAliceConfigByName("skillsUpdateChannel")} - ![blue](LOCKED) for local changes!')
-					else:
-						self.logInfo(f'![green]({skillName}) - Version {self._skillList[skillName]["installer"]["version"]} in {self.ConfigManager.getAliceConfigByName("skillsUpdateChannel")}')
-
-			except GithubNotFound:
-				self.logInfo(f'![red](Skill **{skillName}**) is not available on Github. Deprecated or is it a dev skill?')
-
-			except Exception as e:
-				self.logError(f'Error checking updates for skill **{skillName}**: {e}')
-
-		self.logInfo(f'Found {updateCount} skill update', plural='update')
-		return updateCount > 0
-
-
-	@Online(catchOnly=True)
-	def _checkForSkillInstall(self):
-		# Don't start the install timer from the main thread in case it's the first start
-		if self._skillInstallThread:
-			self.ThreadManager.newTimer(interval=10, func=self._checkForSkillInstall, autoStart=True)
-
-		root = Path(self.Commons.rootDir(), constants.SKILL_INSTALL_TICKET_PATH)
-		files = [f for f in root.iterdir() if f.suffix == '.install']
-
-		if self._busyInstalling.isSet() or not files or self.ProjectAlice.restart or self.ProjectAlice.updating or self.NluManager.training:
-			return
-
-		self.logInfo(f'Found {len(files)} install ticket', plural='ticket')
-		self._busyInstalling.set()
-
-		skillsToBoot = dict()
-		try:
-			skillsToBoot = self._installSkills(files)
-		except Exception as e:
-			self._logger.logError(f'Error installing skill: {e}')
-		finally:
-			self.MqttManager.mqttBroadcast(topic='hermes/leds/clear')
-
-			if skillsToBoot and self.ProjectAlice.isBooted:
-				self._finishInstall(skillsToBoot, True)
-			else:
-				self._postBootSkillActions = skillsToBoot.copy()
-
-			self._busyInstalling.clear()
-
-
-	def _finishInstall(self, skills: dict = None, startSkill: bool = False):
-		if not skills and not self._postBootSkillActions:
-			return
-
-		if not skills and self._postBootSkillActions:
-			skills = self._postBootSkillActions
-
-		for skillName, info in skills.items():
-
-			if startSkill:
-				self._initSkills(loadOnly=skillName, reload=info['update'])
-				self.ConfigManager.loadCheckAndUpdateSkillConfigurations(skillToLoad=skillName)
-
-				try:
-					self._startSkill(skillName)
-				except SkillStartDelayed:
-					# The skill start was delayed
-					pass
-
-			if info['update']:
-				self.allSkills[skillName].onSkillUpdated(skill=skillName)
-				self.MqttManager.mqttBroadcast(
-					topic=constants.TOPIC_SKILL_UPDATED,
-					payload={
-						'skillName': skillName
-					}
-				)
-
-				self.WebUINotificationManager.newNotification(
-					typ=UINotificationType.INFO,
-					notification='skillUpdated',
-					key='skillUpdate_{}'.format(skillName),
-					replaceBody=[skillName, self._skillList[skillName]['installer']['version']]
-				)
-			else:
-				self.allSkills[skillName].onSkillInstalled(skill=skillName)
-				self.MqttManager.mqttBroadcast(
-					topic=constants.TOPIC_SKILL_INSTALLED,
-					payload={
-						'skillName': skillName
-					}
-				)
-
-			self.allSkills[skillName].onBooted()
-
-		self._postBootSkillActions = dict()
-		self.AssistantManager.checkAssistant()
-
-
-	def _installSkills(self, skills: list) -> dict:
-		root = Path(self.Commons.rootDir(), constants.SKILL_INSTALL_TICKET_PATH)
-		skillsToBoot = dict()
-		self.MqttManager.mqttBroadcast(topic=constants.TOPIC_SYSTEM_UPDATE, payload={'sticky': True})
-		for file in skills:
-			skillName = Path(file).stem
-
-			self.logInfo(f'Now taking care of skill {skillName}')
-			res = root / file
-
-			try:
-				installFile = json.loads(res.read_text())
-
-				skillName = installFile['name']
-
-				if not skillName:
-					self.logError('Skill name to install not found, aborting to avoid casualties!')
-					continue
-
-				directory = Path(self.Commons.rootDir()) / 'skills' / skillName
-
-				if skillName in self._skillList:
-					installedVersion = Version.fromString(self._skillList[skillName]['installer']['version'])
-					remoteVersion = Version.fromString(installFile['version'])
-
-					if installedVersion >= remoteVersion:
-						self.logWarning(f'Skill "{skillName}" is already installed, skipping')
-						self.Commons.runRootSystemCommand(['rm', res])
-						continue
-					else:
-						self.logWarning(f'Skill "{skillName}" needs updating')
-						updating = True
-
-						self.MqttManager.mqttBroadcast(
-							topic=constants.TOPIC_SKILL_UPDATING,
-							payload={
-								'skillName': skillName
-							}
-						)
-				else:
-					updating = False
-
-				self.checkSkillConditions(installFile)
-
-				if skillName in self._activeSkills:
-					try:
-						self._activeSkills[skillName].onStop()
-					except Exception as e:
-						self.logError(f'Error stopping "{skillName}" for update: {e}')
-						raise
-
-				gitCloner = GithubCloner(baseUrl=f'{constants.GITHUB_URL}/skill_{skillName}.git', dest=directory, skillName=skillName)
-
-				try:
-					gitCloner.clone(skillName=skillName)
-					self.logInfo('Skill successfully downloaded')
-					self._installSkill(res)
-					skillsToBoot[skillName] = {
-						'update': updating
-					}
-				except (GithubTokenFailed, GithubRateLimit):
-					self.logError('Failed cloning skill')
-					raise
-				except GithubNotFound:
-					if self.ConfigManager.getAliceConfigByName('devMode'):
-						if not Path(f'{self.Commons.rootDir}/skills/{skillName}').exists() or not \
-								Path(f'{self.Commons.rootDir}/skills/{skillName}/{skillName.py}').exists() or not \
-								Path(f'{self.Commons.rootDir}/skills/{skillName}/dialogTemplate').exists() or not \
-								Path(f'{self.Commons.rootDir}/skills/{skillName}/talks').exists():
-							self.logWarning(f'Skill "{skillName}" cannot be installed in dev mode due to missing base files')
-						else:
-							self._installSkill(res)
-							skillsToBoot[skillName] = {
-								'update': updating
-							}
-						continue
-					else:
-						self.logWarning(f'Skill "{skillName}" is not available on Github, cannot install')
-						raise
-
-			except SkillNotConditionCompliant as e:
-				self.logInfo(f'Skill "{skillName}" does not comply to "{e.condition}" condition, required "{e.conditionValue}"')
-				if res.exists():
-					res.unlink()
-
-				self.broadcast(
-					method=constants.EVENT_SKILL_INSTALL_FAILED,
-					exceptions=self._name,
-					skill=skillName
-				)
-
-			except Exception:
-				self.logError(f'Failed installing skill "{skillName}"')
-				if res.exists():
-					res.unlink()
-
-				self.broadcast(
-					method=constants.EVENT_SKILL_INSTALL_FAILED,
-					exceptions=self.name,
-					skill=skillName
-				)
-				raise
-
-		return skillsToBoot
-
-
-	def _installSkill(self, res: Path):
-		try:
-			installFile = json.loads(res.read_text())
-			pipReqs = installFile.get('pipRequirements', list())
-			sysReqs = installFile.get('systemRequirements', list())
-			scriptReq = installFile.get('script')
-			directory = Path(self.Commons.rootDir()) / 'skills' / installFile['name']
-
-			for requirement in pipReqs:
-				self.logInfo(f'Installing pip requirement: {requirement}')
-				self.Commons.runSystemCommand(['./venv/bin/pip3', 'install', requirement])
-
-			for requirement in sysReqs:
-				self.logInfo(f'Installing system requirement: {requirement}')
-				self.Commons.runRootSystemCommand(['apt-get', 'install', '-y', requirement])
-
-			if scriptReq:
-				self.logInfo('Running post install script')
-				self.Commons.runRootSystemCommand(['chmod', '+x', str(directory / scriptReq)])
-				self.Commons.runRootSystemCommand([str(directory / scriptReq)])
-
-			self.addSkillToDB(installFile['name'])
-			self._skillList[installFile['name']] = {
-				'active'   : 1,
-				'installer': installFile,
-				'modified' : False
-			}
-
-			os.unlink(str(res))
-
-			if installFile.get('rebootAfterInstall', False):
-				self.Commons.runRootSystemCommand('sudo shutdown -r now'.split())
-				return
-
-		except Exception:
-			raise
-
-
-	def checkSkillConditions(self, installer: dict = None) -> bool:
-		conditions = {
-			'aliceMinVersion': installer['aliceMinVersion'],
-			**installer.get('conditions', dict())
-		}
-
-		notCompliant = 'Skill is not compliant'
-
-		if 'aliceMinVersion' in conditions and \
-				Version.fromString(conditions['aliceMinVersion']) > Version.fromString(constants.VERSION):
-			raise SkillNotConditionCompliant(message=notCompliant, skillName=installer['name'], condition='Alice minimum version', conditionValue=conditions['aliceMinVersion'])
-
-		for conditionName, conditionValue in conditions.items():
-			if conditionName == 'lang' and self.LanguageManager.activeLanguage not in conditionValue:
-				raise SkillNotConditionCompliant(message=notCompliant, skillName=installer['name'], condition=conditionName, conditionValue=conditionValue)
-
-			elif conditionName == 'online':
-				if conditionValue and self.ConfigManager.getAliceConfigByName('stayCompletelyOffline') \
-						or not conditionValue and not self.ConfigManager.getAliceConfigByName('stayCompletelyOffline'):
-					raise SkillNotConditionCompliant(message=notCompliant, skillName=installer['name'], condition=conditionName, conditionValue=conditionValue)
-
-			elif conditionName == 'skill':
-				for requiredSkill in conditionValue:
-					if requiredSkill in self._skillList and not self._skillList[requiredSkill]['active']:
-						raise SkillNotConditionCompliant(message=notCompliant, skillName=installer['name'], condition=conditionName, conditionValue=conditionValue)
-					elif requiredSkill not in self._skillList:
-						self.logInfo(f'Skill {installer["name"]} has another skill as dependency, adding download')
-						if not self.downloadInstallTicket(requiredSkill):
-							raise SkillNotConditionCompliant(message=notCompliant, skillName=installer['name'], condition=conditionName, conditionValue=conditionValue)
-
-			elif conditionName == 'notSkill':
-				for excludedSkill in conditionValue:
-					author, name = excludedSkill.split('/')
-					if name in self._skillList and self._skillList[name]['active']:
-						raise SkillNotConditionCompliant(message=notCompliant, skillName=installer['name'], condition=conditionName, conditionValue=conditionValue)
-
-			elif conditionName == 'asrArbitraryCapture':
-				if conditionValue and not self.ASRManager.asr.capableOfArbitraryCapture:
-					raise SkillNotConditionCompliant(message=notCompliant, skillName=installer['name'], condition=conditionName, conditionValue=conditionValue)
-
-			elif conditionName == 'activeManager':
-				for manager in conditionValue:
-					if not manager:
-						continue
-
-					man = SuperManager.getInstance().getManager(manager)
-					if not man or not man.isActive:
-						raise SkillNotConditionCompliant(message=notCompliant, skillName=installer['name'], condition=conditionName, conditionValue=conditionValue)
-
-		return True
-
-
-	def configureSkillIntents(self, skillName: str, state: bool):
-		try:
-			skills = self.allWorkingSkills
-			confs = [{
-				'intentId': intent.justTopic if isinstance(intent, Intent.Intent) else intent.split('/')[-1],
-				'enable'  : state
-			} for intent in skills[skillName].supportedIntents if not self.isIntentInUse(intent=intent, filtered=[skillName])]
-
-			self.MqttManager.configureIntents(confs)
-
-			if state:
-				skills[skillName].subscribeIntents()
-			else:
-				skills[skillName].unsubscribeIntents()
-		except Exception as e:
-			self.logWarning(f'Intent configuration failed: {e}')
-
-
-	def isIntentInUse(self, intent: Intent, filtered: list) -> bool:
-		skills = self.allWorkingSkills
-		return any(intent in skill.supportedIntents for name, skill in skills.items() if name not in filtered)
-
-
-	def removeSkill(self, skillName: str):
 		if skillName not in self.allSkills:
 			return
 
-		if skillName in self._activeSkills:
-			self._activeSkills[skillName].onStop()
-			self.broadcast(method=constants.EVENT_SKILL_STOPPED, exceptions=[self.name], propagateToSkills=True, skill=self)
-
-		self.broadcast(method=constants.EVENT_SKILL_DELETED, exceptions=[self.name], propagateToSkills=True, skill=skillName)
-
-		self.MqttManager.mqttBroadcast(
-			topic=constants.TOPIC_SKILL_DELETED,
-			payload={
-				'skillName': skillName
-			}
+		self.deactivateSkill(skillName=skillName, persistent=False)
+		self.broadcast(
+			method=constants.EVENT_SKILL_DELETED,
+			exceptions=[self.name],
+			propagateToSkills=True,
+			skill=skillName
 		)
 
-		self._skillList.pop(skillName, None)
+		self._skillList.remove(skillName)
 		self._activeSkills.pop(skillName, None)
 		self._deactivatedSkills.pop(skillName, None)
 		self._failedSkills.pop(skillName, None)
 
 		self.removeSkillFromDB(skillName=skillName)
-		shutil.rmtree(Path(self.Commons.rootDir(), 'skills', skillName))
+
+		with suppress():
+			repo = self.getSkillRepository(skillName=skillName)
+			repo.destroy()
 
 		self.AssistantManager.checkAssistant()
 
 
 	def reloadSkill(self, skillName: str):
+		"""
+		Reloads a skill
+		:param skillName:
+		:return:
+		"""
 		self.logInfo(f'Reloading skill "{skillName}"')
 
-		if skillName in self._activeSkills:
-			self._activeSkills[skillName].onStop()
-			self.broadcast(method=constants.EVENT_SKILL_STOPPED, exceptions=[self.name], propagateToSkills=True, skill=self)
-
-		self._initSkills(loadOnly=skillName, reload=True)
-
+		self.stopSkill(skillName=skillName)
+		self.initSkills(onlyInit=skillName, reload=True)
 		self.AssistantManager.checkAssistant()
-
-		self._startSkill(skillName=skillName)
+		self.startSkill(skillName=skillName)
 
 
 	def allScenarioNodes(self) -> Dict[str, tuple]:
+		"""
+		Returns list of Node-Red nodes added by skills
+		:return:
+		"""
 		ret = dict()
 		for skillName, skillInstance in self._activeSkills.items():
 			if not skillInstance.hasScenarioNodes():
@@ -941,6 +1223,11 @@ class SkillManager(Manager):
 
 
 	def skillScenarioNode(self, skillName: str) -> Optional[Path]:
+		"""
+		Returns  list of Node-Red nodes for the given skill
+		:param skillName:
+		:return:
+		"""
 		if skillName not in self.allWorkingSkills:
 			return None
 
@@ -948,6 +1235,11 @@ class SkillManager(Manager):
 
 
 	def getSkillScenarioVersion(self, skillName: str) -> Version:
+		"""
+		Return Node Red scenario node version for the given skill
+		:param skillName:
+		:return:
+		"""
 		if skillName not in self._skillList:
 			return Version.fromString('0.0.0')
 		else:
@@ -960,36 +1252,50 @@ class SkillManager(Manager):
 			return Version.fromString(data[0]['scenarioVersion'])
 
 
-	def wipeSkills(self, addDefaults: bool = True):
+	def wipeSkills(self):
+		"""
+		Lazy version to delete all skill, remove the entire directory and recreate it
+		:return:
+		"""
 		shutil.rmtree(Path(self.Commons.rootDir(), 'skills'))
 		Path(self.Commons.rootDir(), 'skills').mkdir()
 
-		if addDefaults:
-			tickets = [
-				'https://skills.projectalice.ch/AliceCore',
-				'https://skills.projectalice.ch/ContextSensitive',
-				'https://skills.projectalice.ch/RedQueen',
-				'https://skills.projectalice.ch/Telemetry',
-				'https://skills.projectalice.ch/DateDayTimeYear'
-			]
-			for link in tickets:
-				self.downloadInstallTicket(link.rsplit('/')[-1])
+		for skillName in self._skillList:
+			self.removeSkillFromDB(skillName=skillName)
 
 		self._activeSkills = dict()
 		self._deactivatedSkills = dict()
 		self._failedSkills = dict()
-		self._loadSkills()
+		self._skillList = dict()
+
+
+	def isSkillUserModified(self, skillName: str) -> bool:
+		"""
+		Checks git status to see if the skill was modified from original online
+		:param skillName:
+		:return:
+		"""
+		try:
+			repository = self.getSkillRepository(skillName=skillName)
+			return repository.isDirty()
+		except:
+			return False
 
 
 	def createNewSkill(self, skillDefinition: dict) -> bool:
+		"""
+		Used to create a new skill by the usr
+		:param skillDefinition:
+		:return:
+		"""
 		try:
 			self.logInfo(f'Creating new skill "{skillDefinition["name"]}"')
 
-			skillName = skillDefinition['name'].capitalize()
+			skillName = skillDefinition['name'][0].upper() + skillDefinition['name'][1:]
 
-			localDirectory = Path('/home', getpass.getuser(), f'ProjectAlice/skills/{skillName}')
+			localDirectory = self.getSkillDirectory(skillName=skillName)
 			if localDirectory.exists():
-				raise Exception("Skill name exists locally")
+				raise Exception('Skill name exists locally')
 
 			supportedLanguages = [
 				'en'
@@ -1043,42 +1349,35 @@ class SkillManager(Manager):
 
 			data = {
 				'username'          : self.ConfigManager.getAliceConfigByName('githubUsername'),
-				'skillName'         : skillName.capitalize(),
+				'skillName'         : skillName,
 				'description'       : skillDefinition['description'],
 				'category'          : skillDefinition['category'],
 				'speakableName'     : skillDefinition['speakableName'],
+				'icon'              : skillDefinition.get('icon', 'fas fa-biohazard'),
 				'langs'             : supportedLanguages,
 				'createInstructions': skillDefinition.get('instructions', False),
-				'pipreq'            : [req.strip() for req in skillDefinition.get('pipreq', "").split(',')],
-				'sysreq'            : [req.strip() for req in skillDefinition.get('sysreq', "").split(',')],
+				'pipreq'            : [req.strip() for req in skillDefinition.get('pipreq', '').split(',')],
+				'sysreq'            : [req.strip() for req in skillDefinition.get('sysreq', '').split(',')],
 				'widgets'           : widgets,
 				'scenarioNodes'     : scenarioNodes,
 				'devices'           : devices,
-				'outputDestination' : str(Path(self.Commons.rootDir()) / 'skills' / skillName),
-				'conditions'        : conditions
+				'outputDestination' : str(localDirectory),
+				'conditions'        : conditions,
+				'aliceMinVersion'   : constants.VERSION
 			}
 
 			dump = Path(f'/tmp/{skillName}.json')
 			dump.write_text(json.dumps(data, ensure_ascii=False))
 
 			self.Commons.runSystemCommand(['./venv/bin/pip', 'install', '--upgrade', 'projectalice-sk'])
-			self.Commons.runSystemCommand(['./venv/bin/projectalice-sk', 'create', '--file', f'{str(dump)}'])
+			result = self.Commons.runSystemCommand(['./venv/bin/projectalice-sk', 'create', '--file', f'{str(dump)}'])
+			if result.stderr:
+				raise Exception('SK create failed')
+
+			self._skillList.append(skillName)
+			self.addSkillToDB(skillName=skillName)
+
 			self.logInfo(f'Created **{skillName}** skill')
-
-			# todo: ugly..
-			data['name'] = data['skillName']
-			data['author'] = data['username']
-			data['desc'] = data['description']
-			# ok, version never filled in frontend and every skill should be created in initial version
-			data['version'] = '0.0.1'
-
-			self._failedSkills[skillName] = FailedAliceSkill(data)
-			self._skillList[skillName] = {
-				'active'   : False,
-				'modified' : True,
-				'installer': data
-			}
-			self._failedSkills[skillName].modified = True
 
 			return True
 		except Exception as e:
@@ -1087,40 +1386,29 @@ class SkillManager(Manager):
 
 
 	def uploadSkillToGithub(self, skillName: str, skillDesc: str) -> bool:
+		"""
+		sends skill name oin Github
+		:param skillName:
+		:param skillDesc:
+		:return:
+		"""
 		try:
 			self.logInfo(f'Uploading {skillName} to Github')
 
 			skillName = skillName[0].upper() + skillName[1:]
 
-			localDirectory = Path('/home', getpass.getuser(), f'ProjectAlice/skills/{skillName}')
-			if not localDirectory.exists():
-				raise Exception("Local skill doesn't exist")
+			try:
+				repository = self.getSkillRepository(skillName=skillName)
+			except GitErrors.PathNotFoundException:
+				raise Exception(f"Local skill **{skillName}** doesn't exist")
+			except GitErrors.NotGitRepository:
+				raise Exception(f'Skill **{skillName}** found but is not a git repository')
 
-			data = {
-				'name'       : f'skill_{skillName}',
-				'description': skillDesc,
-				'has-issues' : True,
-				'has-wiki'   : False
-			}
-			req = requests.post('https://api.github.com/user/repos', data=json.dumps(data), auth=GithubCloner.getGithubAuth())
 
-			if req.status_code != 201:
-				raise Exception("Couldn't create the repository on Github")
+			auth = self.ConfigManager.githubAuth
+			self.Commons.runSystemCommand(f'./venv/bin/projectalice-sk uploadToGithub --token {auth[1]} --author {auth[0]} --path {str(repository.path)} --desc {skillDesc}')
 
-			self.Commons.runSystemCommand(['rm', '-rf', f'{str(localDirectory)}/.git'])
-			self.Commons.runSystemCommand(['git', '-C', str(localDirectory), 'init'])
-
-			self.Commons.runSystemCommand(['git', 'config', '--global', 'user.email', 'githubbot@projectalice.io'])
-			self.Commons.runSystemCommand(['git', 'config', '--global', 'user.name', 'githubbot@projectalice.io'])
-
-			remote = f'https://{self.ConfigManager.getAliceConfigByName("githubUsername")}:{self.ConfigManager.getAliceConfigByName("githubToken")}@github.com/{self.ConfigManager.getAliceConfigByName("githubUsername")}/skill_{skillName}.git'
-			self.Commons.runSystemCommand(['git', '-C', str(localDirectory), 'remote', 'add', 'origin', remote])
-
-			self.Commons.runSystemCommand(['git', '-C', str(localDirectory), 'add', '--all'])
-			self.Commons.runSystemCommand(['git', '-C', str(localDirectory), 'commit', '-m', '"Initial upload by Project Alice Skill Kit"'])
-			self.Commons.runSystemCommand(['git', '-C', str(localDirectory), 'push', '--set-upstream', 'origin', 'master'])
-
-			url = f'https://github.com/{self.ConfigManager.getAliceConfigByName("githubUsername")}/skill_{skillName}.git'
+			url = f'https://github.com/{auth[0]}/skill_{skillName}.git'
 			self.logInfo(f'Skill uploaded! You can find it on {url}')
 			return True
 		except Exception as e:
@@ -1128,24 +1416,9 @@ class SkillManager(Manager):
 			return False
 
 
-	def downloadInstallTicket(self, skillName: str, isUpdate: bool = False) -> bool:
-		try:
-			tmpFile = Path(self.Commons.rootDir(), f'system/skillInstallTickets/{skillName}.install')
-			if not self.Commons.downloadFile(
-					url=f'{constants.GITHUB_RAW_URL}/skill_{skillName}/{self.SkillStoreManager.getSkillUpdateTag(skillName)}/{skillName}.install',
-					dest=str(tmpFile.with_suffix('.tmp'))
-			):
-				raise Exception
-
-			if not isUpdate:
-				requests.get(f'https://skills.projectalice.ch/{skillName}')
-
-			shutil.move(tmpFile.with_suffix('.tmp'), tmpFile)
-			return True
-		except Exception as e:
-			self.logError(f'Error downloading install ticket for skill "{skillName}": {e}')
-			return False
-
-
+	@deprecated
 	def setSkillModified(self, skillName: str, modified: bool):
-		self._skillList[skillName][modified] = modified
+		return
+
+
+

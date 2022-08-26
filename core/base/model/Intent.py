@@ -25,7 +25,7 @@ from core.user.model.AccessLevels import AccessLevel
 
 
 @dataclass
-class Intent:
+class Intent(object):
 	topic: str = field(init=False)
 	action: str = field(repr=False)
 	userIntent: bool = True
@@ -33,14 +33,9 @@ class Intent:
 	fallbackFunction: Optional[Callable] = None
 	_dialogMapping: dict = field(default_factory=dict)
 
-	# TODO remove me
-	isProtected: bool = False
-
 
 	def __post_init__(self):
 		self.topic = f'hermes/intent/{self.action}' if self.userIntent else self.action
-		if self.isProtected:
-			print('Usage of `isProtected` is deprecated')
 
 
 	def __str__(self) -> str:
@@ -70,7 +65,7 @@ class Intent:
 
 	@dialogMapping.setter
 	def dialogMapping(self, value: Union[Dict[str, Callable], property]):
-		skillName = SM.SuperManager.getInstance().commonsManager.getFunctionCaller(depth=2)
+		skillName = SM.SuperManager.getInstance().CommonsManager.getFunctionCaller(depth=2)
 		if isinstance(value, property):
 			self._dialogMapping = dict()
 		else:

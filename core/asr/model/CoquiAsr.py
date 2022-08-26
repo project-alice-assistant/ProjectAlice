@@ -17,10 +17,9 @@
 #
 #  Last modified: 2021.04.13 at 12:56:45 CEST
 
+import numpy as np
 from pathlib import Path
 from typing import Generator, Optional
-
-import numpy as np
 
 from core.asr.model.ASRResult import ASRResult
 from core.asr.model.Asr import Asr
@@ -97,30 +96,33 @@ class CoquiAsr(Asr):
 	def downloadLanguage(self) -> bool:  # NOSONAR
 		self.logInfo(f'Downloading language model for "{self.LanguageManager.activeLanguage}", hold on, this is going to take some time!')
 		# TODO TEMP! until real model zoo exists
+		target = str(self._langPath / 'lm.scorer')
 		if self.LanguageManager.activeLanguage == 'de':
 			self.Commons.downloadFile('https://github.com/coqui-ai/STT-models/releases/download/german/AASHISHAG/v0.9.0/model.tflite', str(self.tFlite))
-			self.Commons.downloadFile('https://github.com/philipp2310/Coqui-models/releases/download/de_v093/lm.scorer', str(self._langPath / 'lm.scorer'))
+			self.Commons.downloadFile('https://github.com/philipp2310/Coqui-models/releases/download/de_v093/lm.scorer', target)
 			return True
-		if self.LanguageManager.activeLanguage == 'en':
-			self.Commons.downloadFile('https://github.com/coqui-ai/STT/releases/download/v0.9.3/coqui-stt-0.9.3-models.tflite', str(self.tFlite))
-			self.Commons.downloadFile('https://github.com/coqui-ai/STT/releases/download/v0.9.3/coqui-stt-0.9.3-models.scorer', str(self._langPath / 'lm.scorer'))
+		elif self.LanguageManager.activeLanguage == 'en':
+			self.Commons.downloadFile('https://github.com/coqui-ai/STT-models/releases/download/english%2Fcoqui%2Fv1.0.0-large-vocab/model.tflite', str(self.tFlite))
+			self.Commons.downloadFile('https://github.com/coqui-ai/STT-models/releases/download/english%2Fcoqui%2Fv1.0.0-large-vocab/large_vocabulary.scorer', target)
 			return True
-
-		url = 'error'  # TODO adjust path in respect to language
-		self.logError(f'WIP! Only de/en supported for now - Please install language manually into PA/trained/asr/Coqui/<languange>/!')
-
-		downloadPath = (self._langPath / url.rsplit('/')[-1])
-		try:
-			self.Commons.downloadFile(url, str(downloadPath))
-
-			self.logInfo(f'Language model for "{self.LanguageManager.activeLanguage}" downloaded, now extracting...')
-			self.Commons.runSystemCommand(['tar', '-C', f'{str(downloadPath.parent)}', '-zxvf', str(downloadPath)])  # TODO adjust to new dl requirements
-
-			downloadPath.unlink()
+		elif self.LanguageManager.activeLanguage == 'fr':
+			self.Commons.downloadFile('https://github.com/coqui-ai/STT-models/releases/download/french/commonvoice-fr/v0.6/model.tflite', str(self.tFlite))
+			self.Commons.downloadFile('https://github.com/coqui-ai/STT-models/releases/download/french/commonvoice-fr/v0.6/fr-cvfr-2-prune-kenlm.scorer', target)
 			return True
-		except Exception as e:
-			self.logError(f'Error installing language model: {e}')
-			downloadPath.unlink()
+		elif self.LanguageManager.activeLanguage == 'it':
+			self.Commons.downloadFile('https://github.com/coqui-ai/STT-models/releases/download/italian/mozillaitalia/2020.8.7/model.tflite', str(self.tFlite))
+			self.Commons.downloadFile('https://github.com/coqui-ai/STT-models/releases/download/italian/mozillaitalia/2020.8.7/it-mzit-1-prune-kenlm.scorer', target)
+			return True
+		elif self.LanguageManager.activeLanguage == 'pl':
+			self.Commons.downloadFile('https://github.com/coqui-ai/STT-models/releases/download/polish/jaco-assistant/v0.0.1/model.tflite', str(self.tFlite))
+			self.Commons.downloadFile('https://github.com/coqui-ai/STT-models/releases/download/polish/jaco-assistant/v0.0.1/kenlm_pl.scorer', target)
+			return True
+		elif self.LanguageManager.activeLanguage == 'pt':
+			self.Commons.downloadFile('https://github.com/coqui-ai/STT-models/releases/download/portuguese/itml/v0.1.0/model.tflite', str(self.tFlite))
+			self.Commons.downloadFile('https://github.com/coqui-ai/STT-models/releases/download/portuguese/itml/v0.1.0/pt-itml-0-prune-kenlm.scorer', target)
+			return True
+		else:
+			self.logError(f'WIP! Only de/en supported for now - Please install language manually into PA/trained/asr/Coqui/<language>/!')
 			return False
 
 
@@ -138,7 +140,6 @@ class CoquiAsr(Asr):
 	def decodeStream(self, session: DialogSession) -> Optional[ASRResult]:
 		super().decodeStream(session)
 		result = None
-		previous = ''
 
 		with Stopwatch() as processingTime:
 			with Recorder(self._timeout, session.user, session.deviceUid) as recorder:
@@ -152,9 +153,7 @@ class CoquiAsr(Asr):
 					streamContext.feedAudioContent(np.frombuffer(chunk, np.int16))
 
 					result = streamContext.intermediateDecode()
-					if result and result != previous:
-						previous = result
-						self.partialTextCaptured(session=session, text=result, likelihood=1, seconds=0)
+					self.partialTextCaptured(session=session, text=result, likelihood=1, seconds=0)
 
 			text = streamContext.finishStream()
 			self._triggerFlag.clear()

@@ -19,14 +19,14 @@
 
 import json
 import uuid
+from paho.mqtt.client import MQTTMessage
 from pathlib import Path
 from threading import Timer
 from typing import Dict, Optional, Set
 
-from paho.mqtt.client import MQTTMessage
-
 from core.base.model.Manager import Manager
 from core.commons import constants
+from core.commons.model.PartOfDay import PartOfDay
 from core.device.model.DeviceAbility import DeviceAbility
 from core.dialog.model.DialogSession import DialogSession
 from core.voice.WakewordRecorder import WakewordRecorderState
@@ -136,12 +136,12 @@ class DialogManager(Manager):
 		if not session or session.hasEnded:
 			return
 
-		if session.isEnding or session.isNotification:
-			if session.isEnding and 0 < session.notUnderstood < int(self.ConfigManager.getAliceConfigByName('notUnderstoodRetries')):
-				session.isEnding = False
-				self.SkillManager.getSkillInstance('AliceCore').askUpdateUtterance(session=session)
-				return
+		if session.isEnding and 0 < session.notUnderstood < int(self.ConfigManager.getAliceConfigByName('notUnderstoodRetries')):
+			session.isEnding = False
+			self.SkillManager.getSkillInstance('AliceCore').askUpdateUtterance(session=session)
+			return
 
+		if not session.keptOpen and session.isEnding or session.isNotification:
 			session.payload['text'] = ''
 			self.onEndSession(session=session, reason='nominal')
 		else:
@@ -241,7 +241,7 @@ class DialogManager(Manager):
 			self.onEndSession(session=session, reason='abortedByUser')
 			return
 
-		if self._captureFeedback and not session.textOnly and not session.textInput:
+		if self._captureFeedback and not session.textOnly and not session.textInput and self.Commons.partOfTheDay() != PartOfDay.SLEEPING.value:
 			self.MqttManager.publish(
 				topic=constants.TOPIC_PLAY_BYTES.format(session.deviceUid).replace('#', session.sessionId),
 				payload=bytearray(Path(f'system/sounds/{self.LanguageManager.activeLanguage}/end_of_input.wav').read_bytes())
@@ -272,7 +272,7 @@ class DialogManager(Manager):
 		:param session:
 		:return:
 		"""
-		if 'text' in session.payload:  # todo figure out why text sometimes is not filled although input is
+		if 'text' in session.payload:
 			session.payload['input'] = session.payload['text']
 		session.payload.setdefault('intent', dict())
 		session.payload['intent']['intentName'] = 'UserRandomAnswer'
@@ -288,6 +288,7 @@ class DialogManager(Manager):
 		:param session:
 		:return:
 		"""
+		self.startSessionTimeout(sessionId=session.sessionId)
 
 		self.MqttManager.publish(
 			topic=f'hermes/intent/{session.payload["intent"]["intentName"]}',
@@ -370,6 +371,7 @@ class DialogManager(Manager):
 
 			if 'isHotwordNotification' in payload['init'] and payload['init']['isHotwordNotification']:
 				hotwordNotification = True
+				session.lastWasSoundPlayOnly = False
 
 		self.MqttManager.publish(
 			topic=constants.TOPIC_SESSION_STARTED,
@@ -379,13 +381,25 @@ class DialogManager(Manager):
 				'customData': json.dumps(dict())
 			}
 		)
+		init = payload.get('init', dict())
+		if not init:
+			return
 
-		text = payload.get('init', dict()).get('text', '')
+		text = init.get('text', '')
+		if not text:
+			randomTextSkill = init.get('skill', '')
+			randomTextTalk = init.get('talk', '')
+			randomTextReplace = init.get('replace', [])
+			if randomTextSkill and randomTextTalk:
+				text = self.TalkManager.randomTalk(skill=randomTextSkill, talk=randomTextTalk)
+				if randomTextReplace:
+					text = text.format(*randomTextReplace)
+
 		if text:
 			self.MqttManager.publish(
 				topic=constants.TOPIC_TTS_SAY,
 				payload={
-					'text'                 : payload['init']['text'],
+					'text'                 : text,
 					'lang'                 : self.LanguageManager.activeLanguageAndCountryCode,
 					'siteId'               : deviceUid,
 					'sessionId'            : session.sessionId,
@@ -472,6 +486,9 @@ class DialogManager(Manager):
 
 
 	def onSessionError(self, session: DialogSession):
+		if self.Commons.partOfTheDay() == PartOfDay.SLEEPING.value:
+			return
+
 		if not session.textOnly and not session.textInput:
 			self.MqttManager.publish(
 				topic=constants.TOPIC_PLAY_BYTES.format(session.deviceUid).replace('#', session.sessionId),
@@ -514,6 +531,14 @@ class DialogManager(Manager):
 
 	def getSession(self, sessionId: str) -> Optional[DialogSession]:
 		return self._sessionsById.get(sessionId, None)
+
+
+	def uidBusy(self, uid: str) -> bool:
+		session = self._sessionsByDeviceUids.get(uid, None)
+		if session:
+			return True
+		else:
+			return False
 
 
 	def removeSession(self, sessionId: str):

@@ -21,7 +21,7 @@ from dataclasses import dataclass
 
 
 @dataclass
-class WidgetPage:
+class WidgetPage(object):
 	data: dict
 	id: int = 0
 	icon: str = ''

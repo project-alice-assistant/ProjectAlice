@@ -18,11 +18,10 @@
 #  Last modified: 2021.07.30 at 19:56:37 CEST
 
 import io
+import paho.mqtt.client as mqtt
 import queue
 import wave
-from typing import Optional
-
-import paho.mqtt.client as mqtt
+from typing import Generator
 
 from core.base.model.ProjectAliceObject import ProjectAliceObject
 from core.dialog.model.DialogSession import DialogSession
@@ -79,6 +78,9 @@ class Recorder(ProjectAliceObject):
 						if self.ConfigManager.getAliceConfigByName('recordAudioAfterWakeword') or self.WakewordRecorder.state == WakewordRecorderState.RECORDING:
 							self.AudioServer.recordFrame(deviceUid, frame)
 
+						if not self.ASRManager.asr.isStreamAble:
+							self.ASRManager.asr.recordFrame(frame)
+
 						frame = wav.readframes(512)
 
 			except Exception as e:
@@ -109,7 +111,7 @@ class Recorder(ProjectAliceObject):
 		yield b''.join(data)
 
 
-	def audioStream(self) -> Optional[bytes]:
+	def audioStream(self) -> Generator:
 		while not self._buffer.empty() or self._recording:
 			if self._timeoutFlag.is_set():
 				return

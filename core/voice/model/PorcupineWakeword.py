@@ -21,7 +21,7 @@ import io
 import queue
 import struct
 import wave
-from typing import Optional
+from typing import Generator
 
 import pyaudio
 from paho.mqtt.client import MQTTMessage
@@ -34,7 +34,7 @@ from core.voice.model.WakewordEngine import WakewordEngine
 try:
 	import pvporcupine
 except ModuleNotFoundError:
-	pass  # Will autoinstall
+	pass  # Will auto install
 
 
 class PorcupineWakeword(WakewordEngine):
@@ -128,7 +128,7 @@ class PorcupineWakeword(WakewordEngine):
 					return
 
 
-	def audioStream(self) -> Optional[bytes]:
+	def audioStream(self) -> Generator:
 		while self._working.is_set():
 			chunk = self._buffer.get()
 			if not chunk:

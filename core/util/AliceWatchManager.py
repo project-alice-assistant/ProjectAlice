@@ -73,10 +73,9 @@ class AliceWatchManager(Manager):
 
 
 	def onSessionStarted(self, session: DialogSession):
-		# todo @psycho - Some situations like self.ask() from gui (addUser) theres no session.deviceUid
-		# which results in getMainDevice().uid being None. the below is a temp fix
 		if not session.deviceUid:
 			session.deviceUid = self.DeviceManager.getMainDevice().uid
+
 		self.publish(payload={
 			'text'     : f'Session with id "**{session.sessionId}**" was started on device **{self.getDisplayName(session.deviceUid)}**',
 			'component': 'Dialogue',
@@ -179,7 +178,7 @@ class AliceWatchManager(Manager):
 			if reason == 'abortedByUser':
 				text = f'{text} The session was aborted by the user.'
 			elif reason == 'timeout':
-				text = f'{text} The session timed out because the ASR component did not respond in a timely manner. Please ensure that the Asr is started and running correctly.'
+				text = f'{text} The session timed out because a component did not respond in a timely manner. Please ensure that the Asr is started and running correctly.'
 			elif reason == 'intentNotRecognized':
 				text = f'{text} The session was ended because the platform didn\'t understand the user.'
 			elif reason == 'error':
@@ -210,7 +209,6 @@ class AliceWatchManager(Manager):
 		})
 
 
-	# TODO Should support site configuration
 	def onConfigureIntent(self, intents: list):
 		text = f'Was asked to configure all devices:'
 		for intent in intents:  # NOSONAR

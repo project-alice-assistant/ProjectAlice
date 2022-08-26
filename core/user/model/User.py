@@ -29,11 +29,7 @@ class User(ProjectAliceObject):
 	def __init__(self, row: typing.Optional[dict]):
 		super().__init__()
 
-		# TODO is it correct to init these values only when row exists?
-		# -> will throw exception when property is called or should they be
-		# inited to None instead
-		# how about replace with: row.get('id',None)
-		if row:
+		try:
 			self._id = row['id']
 			self._name = row['username']
 			self._accessLevel = row['accessLevel']
@@ -46,18 +42,22 @@ class User(ProjectAliceObject):
 			self._ttsVoice = row['ttsVoice']
 			self._apiToken = row['apiToken']
 
-		self._home = False
-		self._goingBed = False
-		self._sleeping = False
-		self._cooking = False
-		self._makeUp = False
-		self._watchingTV = False
-		self._eating = False
+			self._home = False
+			self._goingBed = False
+			self._sleeping = False
+			self._cooking = False
+			self._makeUp = False
+			self._watchingTV = False
+			self._eating = False
 
-		try:
-			exec(f"self._{self._state} = 'True'")
-		except:
-			self.logError(f"Invalid state \"{row['state']}\" for user \"{self._name}\"")
+			try:
+				exec(f"self._{self._state} = 'True'")
+			except:
+				self.logError(f"Invalid state \"{row['state']}\" for user \"{self._name}\"")
+		except Exception as e:
+			self.logError(f'Error instantiating user: {e}')
+			return
+
 
 		# flask login reqs
 		self._isAuthenticated = False

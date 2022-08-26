@@ -59,7 +59,6 @@ class AmazonTts(Tts):
 		self._client = None
 		self._supportsSSML = False if self.ConfigManager.getAliceConfigByName('ttsNeural') and self._neuralVoice else True
 
-		# TODO implement the others
 		# https://docs.aws.amazon.com/polly/latest/dg/voicelist.html
 		self._supportedLangAndVoices = {
 			'arb'      : {

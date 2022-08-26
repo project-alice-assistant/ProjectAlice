@@ -60,14 +60,16 @@
 		"manageLocations"  : "Gestisci posizioni",
 		"manageDevices"    : "Gestisci dispositivi",
 		"addLocations"     : "Aggiungi posizioni",
-		"removeLocations"  : "Rimuovi posizioni",
+		"removeLocations"  : "Rimuovi",
 		"paintFloors"      : "Dipingi i piani",
 		"buildMode"        : "Costruisci",
 		"manageFurniture"  : "Gestisci mobilio",
 		"addDevice"        : "Aggiungi nuovi dispositivo",
 		"removeDevice"     : "Rimuovi dispositivo",
 		"linkDevice"       : "Collega dispositivi con posizioni multiple",
-		"unlinkDevice"     : "Sblocca dispositivi"
+		"unlinkDevice"     : "Sblocca dispositivi",
+		"compatible"       : "Compatible",
+		"notCompatible"    : "Not compatible"
 	},
 	"notifications": {
 		"errors"   : {
@@ -110,7 +112,8 @@
 		"uploadToGithub": "Carica su github",
 		"checkOnGithub" : "Controlla su Github",
 		"minimize"      : "Minimizza",
-		"search"        : "Cerca"
+		"search"        : "Cerca",
+	  	"dismissAllNotification" : "Dismiss all"
 	},
 	"labels"       : {
 		"searchSetting"          : "Impostazioni di ricerca",

@@ -21,7 +21,7 @@ import subprocess
 from typing import Callable
 
 
-class AliceSubprocess:
+class AliceSubprocess(object):
 
 	def __init__(self, name: str, cmd: str, stoppedCallback: Callable, autoRestart: bool):
 		self.name = name

@@ -20,27 +20,25 @@
 from __future__ import annotations
 
 import json
+import os.path
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Generator, List
 
 from core.dialog.model.DialogTemplateIntent import DialogTemplateIntent
 from core.dialog.model.DialogTemplateSlotType import DialogTemplateSlotType
+from core.util.model.Logger import Logger
 
 
 @dataclass
-class DialogTemplate:
+class DialogTemplate(object):
 	skill: str
 	slotTypes: list
 	intents: list
 
 	mySlotTypes: dict = field(default_factory=dict)
 	myIntents: dict = field(default_factory=dict)
-
-	# TODO remove me
-	icon: str = ''
-	description: str = ''
-
+	logger: Logger = Logger(prepend='[DialogTemplate]')
 
 	def __post_init__(self):  # NOSONAR
 		for slotType in self.slotTypes:
@@ -105,11 +103,14 @@ class DialogTemplate:
 
 
 	def addUtterancesExtender(self, extender: Path):
-		data = json.loads(extender.read_text())
+		try:
+			data = json.loads(extender.read_text())
 
-		for intentName, intent in data.get('intents', dict()).items():
-			for utterance in intent.get('utterances', list()):
-				self.myIntents[intentName].addUtterance(utterance)
+			for intentName, intent in data.get('intents', dict()).items():
+				for utterance in intent.get('utterances', list()):
+					self.myIntents[intentName].addUtterance(utterance)
+		except Exception as e:
+			self.logger.logWarning(f'Failed loading utterance extender for skill **{str(extender.parent.parent).split(os.path.sep)[-1]}**: {e}')
 
 
 	def addUtterance(self, text: str, intentName: str):

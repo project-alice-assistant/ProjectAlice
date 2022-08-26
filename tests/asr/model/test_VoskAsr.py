@@ -1,6 +1,6 @@
-#  Copyright (c) 2021
+#  Copyright (c) 2022
 #
-#  This file, Furniture.py, is part of Project Alice.
+#  This file, test_PocketSphinxAsr.py, is part of Project Alice.
 #
 #  Project Alice is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
@@ -15,18 +15,17 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>
 #
-#  Last modified: 2021.04.13 at 12:56:47 CEST
+#  Last modified: 2022.06.20 at 13:00:00 CEST
 
-from dataclasses import dataclass
-from typing import Dict
+import unittest
 
-from core.myHome.model.MyHomeObject import MyHomeObject
+class TestVoskAsr(unittest.TestCase):
 
+	def test_on_start(self):
+		pass # Nothing to test
 
-@dataclass
-class Construction(MyHomeObject):
-	data: dict
+	def test_timeout(self):
+		pass # Nothing to test
 
-	def __init__(self, data: Dict):
-		self.myDatabase = self.LocationManager.CONSTRUCTIONS_TABLE
-		super().__init__(data)
+	def test_decode_stream(self):
+		pass # Nothing to test

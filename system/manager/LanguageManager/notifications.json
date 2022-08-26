@@ -59,6 +59,18 @@
 	  "de": "Der Skill \"{}\" wurde auf Version {} aktualisiert."
 	}
   },
+  "skillInstalled": {
+	"title": {
+	  "en": "New skill",
+	  "fr": "Nouveau skill",
+	  "de": "Neue Skill"
+	},
+	"body": {
+	  "en": "The skill \"{}\" was just installed",
+	  "fr": "Le skill \"{}\" vient d'être installé",
+	  "de": "Der Skill \"{}\" wurde gerade installiert."
+	}
+  },
   "aliceUpdated": {
 	"title": {
 	  "en": "Project Alice update",
@@ -77,8 +89,68 @@
 	  "fr": "Mise à jours configuration système"
 	},
 	"body": {
-	  "en": "The skill\"{}\" wants to modify the setting \"{}\" to the new value \"{}\"",
-	  "fr": "The skill\"{}\" veut modifier le parametre \"{}\" à la valeure \"{}\""
+	  "en": "The skill \"{}\" wants to modify the setting \"{}\" to the new value \"{}\"",
+	  "fr": "The skill \"{}\" veux modifier le paramètre \"{}\" à la valeure \"{}\""
+	}
+  },
+  "startedDownload": {
+	"title": {
+	  "en": "Download",
+	  "fr": "Téléchargement"
+	},
+	"body": {
+	  "en": "Downloading \"{}\"",
+	  "fr": "Téléchargement de \"{}\""
+	}
+  },
+  "doneDownload": {
+	"title": {
+	  "en": "Download",
+	  "fr": "Téléchargement"
+	},
+	"body": {
+	  "en": "Finished downloading \"{}\"",
+	  "fr": "Téléchargement de \"{}\" terminé"
+	}
+  },
+  "failedDownload": {
+	"title": {
+	  "en": "Download",
+	  "fr": "Téléchargement"
+	},
+	"body": {
+	  "en": "Failed downloading \"{}\"",
+	  "fr": "Téléchargement de \"{}\" échoué"
+	}
+  },
+  "installNodeRed": {
+	"title": {
+	  "en": "Node-Red",
+	  "fr": "Node-Red"
+	},
+	"body": {
+	  "en": "Installing...",
+	  "fr": "Installation..."
+	}
+  },
+  "failedInstallNodeRed": {
+	"title": {
+	  "en": "Node-Red",
+	  "fr": "Node-Red"
+	},
+	"body": {
+	  "en": "Install failed",
+	  "fr": "L'installation a échoué."
+	}
+  },
+  "installedNodeRed": {
+	"title": {
+	  "en": "Node-Red",
+	  "fr": "Node-Red"
+	},
+	"body": {
+	  "en": "Install successful",
+	  "fr": "Installation terminée"
 	}
   }
 }

@@ -67,16 +67,18 @@
 		"addDevice"        : "Ajouter nouvel appareil",
 		"removeDevice"     : "Supprimer appareil",
 		"linkDevice"       : "Lier un appareil à plusieures endroits",
-		"unlinkDevice"     : "Délier appareil"
+		"unlinkDevice"     : "Délier appareil",
+		"compatible"       : "Compatible",
+		"notCompatible"    : "Pas compatible"
 	},
 	"notifications": {
 		"errors"   : {
 			"uiError"              : "Désolée, quelque chose n'a pas fonctionné",
-			"unexpectedServerError": "Erreur serveur innatendue",
+			"unexpectedServerError": "Erreur serveur innattendue",
 			"noDeviceToDeviceLink" : "Impossible de lier un appareil à un autre",
 			"deviceUnlinkFailed"   : "Déliage à échoué",
 			"deviceLinked"         : "Liaison échouée",
-			"somethingWentWrong"   : "Quelque chose à merdé, controle tes logs",
+			"somethingWentWrong"   : "Quelque chose a merdé, controle tes logs",
 			"deviceSavingFailed"   : "Sauvegarde d'appareil échouée",
 			"cannotLinkDevice"     : "Cet appareil ne peux pas être lié",
 			"skillDeleteFailed"    : "Suppression de skill échoué",
@@ -110,7 +112,8 @@
 		"uploadToGithub": "Envoyer sur Github",
 		"checkOnGithub" : "Voir sur Github",
 		"minimize"      : "Minimiser",
-		"search"        : "Chercher"
+		"search"        : "Chercher",
+		"dismissAllNotification" : "Tout supprimer"
 	},
 	"labels"       : {
 		"searchSetting"          : "Options de recherche",

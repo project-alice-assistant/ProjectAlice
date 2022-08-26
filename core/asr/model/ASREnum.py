@@ -1,6 +1,6 @@
 #  Copyright (c) 2021
 #
-#  This file, Furniture.py, is part of Project Alice.
+#  This file, TTSEnum.py, is part of Project Alice.
 #
 #  Project Alice is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
@@ -15,18 +15,16 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>
 #
-#  Last modified: 2021.04.13 at 12:56:47 CEST
+#  Last modified: 2021.04.13 at 12:56:48 CEST
 
-from dataclasses import dataclass
-from typing import Dict
-
-from core.myHome.model.MyHomeObject import MyHomeObject
+from enum import Enum
 
 
-@dataclass
-class Construction(MyHomeObject):
-	data: dict
-
-	def __init__(self, data: Dict):
-		self.myDatabase = self.LocationManager.CONSTRUCTIONS_TABLE
-		super().__init__(data)
+class ASREnum(Enum):
+	GOOGLE = 'google'
+	DEEPSPEECH = 'deepspeech'
+	SNIPS = 'snips'
+	VOSK = 'vosk'
+	COQUI = 'coqui'
+	AZURE = 'azure'
+	POCKETSPHINX = 'pocketsphinx'

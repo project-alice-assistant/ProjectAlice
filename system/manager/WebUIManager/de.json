@@ -65,14 +65,16 @@
 		"manageLocations"  : "Verwalte Lokationen",
 		"manageDevices"    : "Verwalte Geräte",
 		"addLocations"     : "Lokation hinzufügen",
-		"removeLocations"  : "Lokation entfernen",
+		"removeLocations"  : "Entfernen",
 		"paintFloors"      : "Paint floors",
 		"buildMode"        : "Bauen",
 		"manageFurniture"  : "Verwalte Möbel",
 		"addDevice"        : "Neues Gerät hinzufügen",
 		"removeDevice"     : "Gerät entfernen",
 		"linkDevice"       : "Gerät mit Lokationen verknüpfen",
-		"unlinkDevice"     : "Gerätelink entfernen"
+		"unlinkDevice"     : "Gerätelink entfernen",
+		"compatible"       : "Compatible",
+		"notCompatible"    : "Not compatible"
 	},
 	"notifications": {
 		"errors"   : {
@@ -115,7 +117,8 @@
 		"uploadToGithub": "Upload nach Github",
 		"checkOnGithub" : "Auf Github prüfen",
 		"minimize"      : "Minimieren",
-		"search"        : "Suchen"
+		"search"        : "Suchen",
+		"dismissAllNotification" : "Tout supprimer"
 	},
 	"labels"       : {
 		"searchSetting"          : "Einstellungen durchsuchen",

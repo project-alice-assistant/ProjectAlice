@@ -18,18 +18,17 @@
 #  Last modified: 2021.07.28 at 17:03:33 CEST
 
 import io
+import sounddevice as sd
 import time
 import uuid
 import wave
 from pathlib import Path
-from typing import Dict, Optional
-
-import sounddevice as sd
 # noinspection PyUnresolvedReferences,PyProtectedMember
 from scipy._lib._ccallback import CData
+from typing import Dict, Optional
 from webrtcvad import Vad
 
-from core.ProjectAliceExceptions import PlayBytesStopped
+from core.ProjectAliceExceptions import PlayBytesFinished, PlayBytesStopped, TTSFinished
 from core.base.model.Manager import Manager
 from core.commons import constants
 from core.dialog.model.DialogSession import DialogSession
@@ -63,27 +62,33 @@ class AudioManager(Manager):
 	def onStart(self):
 		super().onStart()
 
-		if not self.ConfigManager.getAliceConfigByName('inputDevice'):
-			self.logWarning('Input device not set in config, trying to find default device')
-			try:
-				self._audioInput = sd.query_devices(kind='input')['name']
-			except:
-				self.logFatal('Audio input not found, cannot continue')
-				return
-			self.ConfigManager.updateAliceConfiguration(key='inputDevice', value=self._audioInput)
+		if not self.ConfigManager.getAliceConfigByName('disableCapture'):
+			if not self.ConfigManager.getAliceConfigByName('inputDevice'):
+				self.logWarning('Input device not set in config, trying to find default device')
+				try:
+					self._audioInput = sd.query_devices(kind='input')['name']
+				except:
+					self.logFatal('Audio input not found, cannot continue')
+					return
+				self.ConfigManager.updateAliceConfiguration(key='inputDevice', value=self._audioInput)
+			else:
+				self._audioInput = self.ConfigManager.getAliceConfigByName('inputDevice')
 		else:
-			self._audioInput = self.ConfigManager.getAliceConfigByName('inputDevice')
+			self.logInfo('Capture disabled in configs')
 
-		if not self.ConfigManager.getAliceConfigByName('outputDevice'):
-			self.logWarning('Output device not set in config, trying to find default device')
-			try:
-				self._audioOutput = sd.query_devices(kind='output')['name']
-			except:
-				self.logFatal('Audio output not found, cannot continue')
-				return
-			self.ConfigManager.updateAliceConfiguration(key='outputDevice', value=self._audioOutput)
+		if not self.ConfigManager.getAliceConfigByName('disableSound'):
+			if not self.ConfigManager.getAliceConfigByName('outputDevice'):
+				self.logWarning('Output device not set in config, trying to find default device')
+				try:
+					self._audioOutput = sd.query_devices(kind='output')['name']
+				except:
+					self.logFatal('Audio output not found, cannot continue')
+					return
+				self.ConfigManager.updateAliceConfiguration(key='outputDevice', value=self._audioOutput)
+			else:
+				self._audioOutput = self.ConfigManager.getAliceConfigByName('outputDevice')
 		else:
-			self._audioOutput = self.ConfigManager.getAliceConfigByName('outputDevice')
+			self.logInfo('Sound disabled in configs')
 
 		self.setDefaults()
 
@@ -173,19 +178,21 @@ class AudioManager(Manager):
 						speechFrames += 1
 					elif speechFrames >= minSpeechFrames:
 						speech = True
+						silence = self.SAMPLERATE / self.FRAMES_PER_BUFFER
+						speechFrames = 0
 						self.MqttManager.publish(
 							topic=constants.TOPIC_VAD_UP.format(self.DeviceManager.getMainDevice().uid),
 							payload={
 								'siteId': self.DeviceManager.getMainDevice().uid
 							})
-						silence = self.SAMPLERATE / self.FRAMES_PER_BUFFER
-						speechFrames = 0
 				else:
 					if speech:
 						if silence > 0:
 							silence -= 1
 						else:
 							speech = False
+							silence = 0
+							speechFrames = 0
 							self.MqttManager.publish(
 								topic=constants.TOPIC_VAD_DOWN.format(self.DeviceManager.getMainDevice().uid),
 								payload={
@@ -231,18 +238,19 @@ class AudioManager(Manager):
 			return
 
 		requestId = requestId or sessionId or str(uuid.uuid4())
+		session = self.DialogManager.getSession(sessionId=sessionId)
 
 		if self.ConfigManager.getAliceConfigByName('debug'):
 			with Path('/tmp/onPlayBytes.wav').open('wb') as file:
 				file.write(payload)
 
+		stream = None
 		self._playing = True
 		with io.BytesIO(payload) as buffer:
 			try:
 				with wave.open(buffer, 'rb') as wav:
 					channels = wav.getnchannels()
 					framerate = wav.getframerate()
-
 
 					def streamCallback(outData: buffer, frames: int, _time: CData, _status: sd.CallbackFlags):
 						data = wav.readframes(frames)
@@ -252,7 +260,6 @@ class AudioManager(Manager):
 							raise sd.CallbackStop
 						else:
 							outData[:] = data
-
 
 					stream = sd.RawOutputStream(
 						dtype='int16',
@@ -265,43 +272,47 @@ class AudioManager(Manager):
 					stream.start()
 					while stream.active:
 						if self._stopPlayingFlag.is_set():
-							if not sessionId:
+							if not sessionId or not session or session.lastWasSoundPlayOnly:
 								raise PlayBytesStopped
 
-							session = self.DialogManager.getSession(sessionId=sessionId)
-							if session.lastWasSoundPlayOnly:
-								raise PlayBytesStopped
-
-							self.MqttManager.publish(
-								topic=constants.TOPIC_TTS_FINISHED,
-								payload={
-									'id'       : requestId,
-									'sessionId': sessionId,
-									'siteId'   : deviceUid
-								}
-							)
 							self.DialogManager.onEndSession(session)
-
 						time.sleep(0.1)
+
+					if not session or session.lastWasSoundPlayOnly:
+						raise PlayBytesFinished
+					else:
+						raise TTSFinished
 			except PlayBytesStopped:
 				self.logDebug('Playing bytes stopped')
+			except TTSFinished:
+				self.logDebug('TTS finished speaking')
+				self.MqttManager.publish(
+					topic=constants.TOPIC_TTS_FINISHED,
+					payload={
+						'id'       : requestId,
+						'sessionId': sessionId,
+						'siteId'   : deviceUid
+					}
+				)
+			except PlayBytesFinished:
+				self.logDebug('Playing bytes finished')
+				# Session id support is not Hermes protocol official
+				self.MqttManager.publish(
+					topic=constants.TOPIC_PLAY_BYTES_FINISHED.format(deviceUid),
+					payload={
+						'id'       : requestId,
+						'sessionId': sessionId
+					}
+				)
 			except Exception as e:
 				self.logError(f'Playing wav failed with error: {e}')
 			finally:
-				self.logDebug('Playing bytes finished')
-				stream.stop()
-				stream.close()
 				self._stopPlayingFlag.clear()
 				self._playing = False
 
-		# Session id support is not Hermes protocol official
-		self.MqttManager.publish(
-			topic=constants.TOPIC_PLAY_BYTES_FINISHED.format(deviceUid),
-			payload={
-				'id'       : requestId,
-				'sessionId': sessionId
-			}
-		)
+				if stream:
+					stream.stop()
+					stream.close()
 
 
 	def stopPlaying(self):

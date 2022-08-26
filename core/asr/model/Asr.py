@@ -18,6 +18,7 @@
 #  Last modified: 2021.04.13 at 12:56:45 CEST
 
 import json
+import paho.mqtt.client as mqtt
 import threading
 from pathlib import Path
 from typing import Optional
@@ -37,9 +38,11 @@ class Asr(ProjectAliceObject):
 	def __init__(self):
 		self._capableOfArbitraryCapture = False
 		self._isOnlineASR = False
+		self._isStreamAble = True
 		self._timeout: AliceEvent = self.ThreadManager.newEvent('asrTimeout')
 		self._timeoutTimer: Optional[threading.Timer] = None
 		self._recorder: Optional[Recorder] = None
+		self._previousPartialRecord = ''
 		super().__init__()
 
 
@@ -53,6 +56,11 @@ class Asr(ProjectAliceObject):
 		return self._isOnlineASR
 
 
+	@property
+	def isStreamAble(self) -> bool:
+		return self._isStreamAble
+
+
 	def onStart(self):
 		self.logInfo(f'Starting {self.NAME}')
 
@@ -60,6 +68,21 @@ class Asr(ProjectAliceObject):
 	def onStop(self):
 		self.logInfo(f'Stopping {self.NAME}')
 		self._timeout.set()
+
+
+	def onAudioFrame(self, message: mqtt.MQTTMessage, deviceUid: str):
+		# Superseeded if needed
+		pass
+
+
+	def onVadUp(self, **kwargs):
+		# Superseeded if needed
+		pass
+
+
+	def onVadDown(self, **kwargs):
+		# Superseeded if needed
+		pass
 
 
 	def decodeFile(self, filepath: Path, session: DialogSession):
@@ -74,7 +97,7 @@ class Asr(ProjectAliceObject):
 
 	def end(self):
 		self._recorder.stopRecording()
-		if self._timeoutTimer and self._timeoutTimer.is_alive():
+		if self._timeoutTimer:
 			self._timeoutTimer.cancel()
 
 
@@ -96,6 +119,9 @@ class Asr(ProjectAliceObject):
 
 
 	def partialTextCaptured(self, session: DialogSession, text: str, likelihood: float, seconds: float):
+		if not text or text.strip() == self._previousPartialRecord:
+			return
+		self._previousPartialRecord = text.strip()
 		self.MqttManager.publish(constants.TOPIC_PARTIAL_TEXT_CAPTURED, json.dumps({
 			'text'      : text,
 			'likelihood': likelihood,

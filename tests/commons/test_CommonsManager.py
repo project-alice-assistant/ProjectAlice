@@ -17,8 +17,9 @@
 #
 #  Last modified: 2021.04.13 at 12:56:50 CEST
 
-import unittest
 from unittest import mock
+
+import unittest
 from unittest.mock import MagicMock
 from uuid import UUID
 
@@ -49,7 +50,7 @@ class TestCommonsManager(unittest.TestCase):
 
 
 	def test_payload(self):
-		class MQTTMessage:
+		class MQTTMessage(object):
 
 			def __init__(self, payload):
 				self.payload = payload
@@ -58,7 +59,7 @@ class TestCommonsManager(unittest.TestCase):
 
 		self.assertEqual(
 			CommonsManager.payload(MQTTMessage(None)),
-			{'test': None}
+			None
 		)
 		self.assertEqual(
 			CommonsManager.payload(MQTTMessage(b'\x81')),
@@ -87,7 +88,7 @@ class TestCommonsManager(unittest.TestCase):
 
 
 	def test_parseSlotsToObjects(self):
-		class MQTTMessage:
+		class MQTTMessage(object):
 
 			def __init__(self, payload):
 				self.payload = payload
@@ -101,7 +102,7 @@ class TestCommonsManager(unittest.TestCase):
 
 
 	def test_parseSlots(self):
-		class MQTTMessage:
+		class MQTTMessage(object):
 
 			def __init__(self, payload):
 				self.payload = payload
@@ -122,7 +123,7 @@ class TestCommonsManager(unittest.TestCase):
 
 
 	def test_parseSessionId(self):
-		class MQTTMessage:
+		class MQTTMessage(object):
 
 			def __init__(self, payload):
 				self.payload = payload
@@ -136,7 +137,7 @@ class TestCommonsManager(unittest.TestCase):
 
 
 	def test_parseCustomData(self):
-		class MQTTMessage:
+		class MQTTMessage(object):
 
 			def __init__(self, payload):
 				self.payload = payload
@@ -163,7 +164,7 @@ class TestCommonsManager(unittest.TestCase):
 
 	@mock.patch('core.base.SuperManager.SuperManager')
 	def test_parseDeviceUid(self, mock_superManager):
-		class MQTTMessage:
+		class MQTTMessage(object):
 
 			def __init__(self, payload):
 				self.payload = payload
@@ -173,7 +174,7 @@ class TestCommonsManager(unittest.TestCase):
 		# mock SuperManager
 		mock_instance = MagicMock()
 		mock_superManager.getInstance.return_value = mock_instance
-		mock_instance.configManager.getAliceConfigByName.return_value = 'uuid'
+		mock_instance.ConfigManager.getAliceConfigByName.return_value = 'uuid'
 
 		self.assertEqual(
 			CommonsManager.parseDeviceUid(MQTTMessage('{"siteId": "uid", "IPAddress": "127.0.0.1"}')),
@@ -195,13 +196,13 @@ class TestCommonsManager(unittest.TestCase):
 		"""Test getDuration method"""
 
 
-		class DialogSession:
+		class DialogSession(object):
 
 			def __init__(self, slotsAsObjects: dict):
 				self.slotsAsObjects = slotsAsObjects
 
 
-		class TimeObject:
+		class TimeObject(object):
 
 			def __init__(self, value: dict, entity: str = 'snips/duration'):
 				self.value = value
@@ -267,13 +268,13 @@ class TestCommonsManager(unittest.TestCase):
 
 
 	def test_isYes(self):
-		class DialogSession:
+		class DialogSession(object):
 
 			def __init__(self, slotsAsObjects: dict):
 				self.slotsAsObjects = slotsAsObjects
 
 
-		class Slot:
+		class Slot(object):
 
 			def __init__(self, value):
 				self.value = {'value': value}

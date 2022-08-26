@@ -20,7 +20,7 @@
 from core.util.model.Logger import Logger
 
 
-class Singleton:
+class Singleton(object):
 	INSTANCE = None
 
 

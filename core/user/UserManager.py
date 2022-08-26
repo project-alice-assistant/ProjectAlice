@@ -17,12 +17,11 @@
 #
 #  Last modified: 2021.04.13 at 12:56:47 CEST
 
-from pathlib import Path
-from time import time
-from typing import Any, Dict, Optional
-
 import bcrypt
 import jwt
+from pathlib import Path
+from time import time
+from typing import Any, Dict, Optional, Union
 
 from core.base.model.Manager import Manager
 from core.commons import constants
@@ -250,7 +249,6 @@ class UserManager(Manager):
 			self._users[user].sleeping = False
 
 
-	# todo - Store user state in memory and write it to database onStop
 	def updateUserState(self, name, state):
 		self.DatabaseManager.update(
 			tableName='users',
@@ -260,7 +258,7 @@ class UserManager(Manager):
 		self._loadUsers()
 
 
-	def hasAccessLevel(self, user: str, requiredAccessLevel: int) -> bool:
+	def hasAccessLevel(self, user: str, requiredAccessLevel: Union[AccessLevel, int]) -> bool:
 		if isinstance(requiredAccessLevel, AccessLevel):
 			requiredAccessLevel = requiredAccessLevel.value
 

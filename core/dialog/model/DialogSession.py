@@ -30,7 +30,7 @@ from core.commons import constants
 
 
 @dataclass
-class DialogSession:
+class DialogSession(object):
 	deviceUid: str
 	sessionId: str = ''
 	increaseTimeout: int = 0
@@ -56,12 +56,13 @@ class DialogSession:
 	intentFilter: list = field(default_factory=list)
 	textOnly: bool = False  # The session doesn't use audio, but text only. Per exemple, for Telegram messages sent to Alice
 	textInput: bool = False  # The session is started, user side, by a text input, not with voice capture, like dialogview on web ui
+	keptOpen: bool = False  # The session has ended, but is kept open for a new promt
 	lastWasSoundPlayOnly: bool = False  # We don't use request ids for play bytes topic. Both say and playaudio use play bytes, therefor we need to track if the last play bytes was sound only or TTS
 	locationId: int = -1  # Where this session is taking place
 
 
 	def __post_init__(self):  # NOSONAR
-		self.probabilityThreshold = SuperManager.getInstance().configManager.getAliceConfigByName('probabilityThreshold')
+		self.probabilityThreshold = SuperManager.getInstance().ConfigManager.getAliceConfigByName('probabilityThreshold')
 
 
 	def extend(self, message: MQTTMessage, sessionId: str = None):
@@ -70,19 +71,21 @@ class DialogSession:
 
 		self.addToHistory(self.intentName)
 
-		commonsManager = SuperManager.getInstance().commonsManager
+		commonsManager = SuperManager.getInstance().CommonsManager
 		self.message = message
 		self.intentName = message.topic
 		self.payload = commonsManager.payload(message)
 		self.slots = commonsManager.parseSlots(message)
 		self.slotsAsObjects = commonsManager.parseSlotsToObjects(message)
-		self.customData = commonsManager.parseCustomData(message)
+
+		customData = commonsManager.parseCustomData(message)
+		self.customData = {**self.customData, **customData}
 
 
 	def update(self, message: MQTTMessage):
 		self.addToHistory(self.intentName)
 
-		commonsManager = SuperManager.getInstance().commonsManager
+		commonsManager = SuperManager.getInstance().CommonsManager
 		self.message = message
 		self.intentName = message.topic
 		self.payload = commonsManager.payload(message)
@@ -95,12 +98,17 @@ class DialogSession:
 		self.text = self.payload.get('text', '')
 		self.input = self.payload.get('input', '')
 
-		if self.customData:
-			self.customData.update(commonsManager.parseCustomData(message))
-		else:
-			self.customData = dict()
+		if message.topic == constants.TOPIC_END_SESSION:
+			keepSessionOpen = SuperManager.getInstance().ConfigManager.getAliceConfigByName('keepSessionOpen')
 
-		deviceManager = SuperManager.getInstance().deviceManager
+			self.keptOpen = not self.payload.get('forceEnd', False) \
+			                and ( keepSessionOpen == 'Always'
+			                      or keepSessionOpen == 'Allowed' and self.payload.get('requestContinue', False) )
+
+		customData = commonsManager.parseCustomData(message)
+		self.customData = {**self.customData, **customData}
+
+		deviceManager = SuperManager.getInstance().DeviceManager
 		if deviceManager:
 			device = deviceManager.getDevice(uid=self.deviceUid)
 			if not device:

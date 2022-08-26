@@ -1,4 +1,6 @@
-VERSION = 1.24
+import shutil
+
+VERSION = 1.27
 
 #  Copyright (c) 2021
 #
@@ -36,6 +38,8 @@ YAML = '/boot/ProjectAlice.yaml'
 ASOUND = '/etc/asound.conf'
 TEMP = Path('/tmp/service')
 ALLOWED_LANGUAGES = {'en', 'de', 'fr', 'it', 'pt', 'pl'}
+FALLBACK_ASR = 'coqui'
+PYTHON = 'python3.7'
 
 
 class InitDict(dict):
@@ -46,40 +50,46 @@ class InitDict(dict):
 
 	def __getitem__(self, item):
 		try:
-			item = super().__getitem__(item)
-			if not item:
+			value = super().__getitem__(item)
+			if value is None:
 				raise Exception
-			return item
+			return value
 		except:
 			print(f'Missing key **{item}** in provided yaml file.')
 			return ''
 
 
-class SimpleLogger:
+class SimpleLogger(object):
 
 	def __init__(self, prepend: str = None):
-		self._prepend = f'[{prepend}]\t '
+		self._prepend = f'[{prepend}]'
 		self._logger = logging.getLogger('ProjectAlice')
 
 
 	def logInfo(self, text: str):
-		self._logger.info(f'{self._prepend} {text}')
+		self._logger.info(f'{self.spacer(text)}')
 
 
 	def logWarning(self, text: str):
-		self._logger.warning(f'{self._prepend} {text}')
+		self._logger.warning(f'{self.spacer(text)}')
 
 
 	def logError(self, text: str):
-		self._logger.error(f'{self._prepend} {text}')
+		self._logger.error(f'{self.spacer(text)}')
 
 
 	def logFatal(self, text: str):
-		self._logger.fatal(f'{self._prepend} {text}')
+		self._logger.fatal(f'{self.spacer(text)}')
 		exit(1)
 
 
-class PreInit:
+	def spacer(self, msg: str) -> str:
+		space = ''.join([' ' for _ in range(35 - len(self._prepend) + 1)])
+		msg = f'{self._prepend}{space}{msg}'
+		return msg
+
+
+class PreInit(object):
 	"""
 	Pre init checks and makes sure vital stuff is installed and running. Not much, but internet, venv and so on
 	Pre init is meant to run on the system python and not on the venv
@@ -209,7 +219,7 @@ class PreInit:
 		updateSource = self.getUpdateSource(updateChannel)
 		# Update our system and sources
 		subprocess.run(['sudo', 'apt-get', 'update'])
-		#subprocess.run(['sudo', 'apt-get', 'dist-upgrade', '-y'])
+		subprocess.run(['sudo', 'apt-get', 'dist-upgrade', '-y'])
 		subprocess.run(['sudo', 'apt', 'autoremove', '-y'])
 		subprocess.run(['git', 'clean', '-df'])
 		subprocess.run(['git', 'stash'])
@@ -266,12 +276,9 @@ class PreInit:
 	def checkInternet(self):
 		try:
 			socket.create_connection(('www.google.com', 80))
-			connected = True
 		except:
-			connected = False
-
-		if not connected:
 			self._logger.logFatal('Your device needs internet access to continue')
+
 
 
 	def getUpdateSource(self, definedSource: str) -> str:
@@ -316,13 +323,13 @@ class PreInit:
 		if not Path('venv').exists():
 			self._logger.logInfo('Not running with venv, I need to create it')
 			subprocess.run(['sudo', 'apt-get', 'install', 'python3-dev', 'python3-pip', 'python3-venv', 'python3-wheel', '-y'])
-			subprocess.run(['python3', '-m', 'venv', 'venv'])
+			subprocess.run([PYTHON, '-m', 'venv', 'venv'])
 			self.updateVenv()
-			self._logger.logInfo('Installed virtual environement, restarting...')
+			self._logger.logInfo('Installed virtual environment, restarting...')
 			return False
 		elif not self.isVenv():
 			self.updateVenv()
-			self._logger.logWarning('Restarting to run using virtual environement: "./venv/bin/python main.py"')
+			self._logger.logWarning('Restarting to run using virtual environment: "./venv/bin/python main.py"')
 			return False
 
 		return True
@@ -331,7 +338,8 @@ class PreInit:
 	def updateVenv(self):
 		subprocess.run([self.PIP, 'uninstall', '-y', '-r', str(Path(self.rootDir, 'pipuninstalls.txt'))])
 		subprocess.run([self.PIP, 'install', 'wheel'])
-		subprocess.run([self.PIP, 'install', '-r', str(Path(self.rootDir, 'requirements.txt'))])
+		subprocess.run([self.PIP, 'install', 'https://www.piwheels.org/simple/numpy/numpy-1.21.4-cp39-cp39-linux_armv7l.whl'])
+		subprocess.run([self.PIP, 'install', '-r', str(Path(self.rootDir, 'requirements.txt')), '--upgrade', '--no-cache-dir'])
 
 
 	@staticmethod
@@ -355,7 +363,7 @@ class PreInit:
 		time.sleep(1)
 
 
-class Initializer:
+class Initializer(object):
 	PIP = './venv/bin/pip'
 
 
@@ -396,7 +404,7 @@ class Initializer:
 				self._logger.logFatal('Unfortunately it won\'t be possible, config sample is not existing')
 				return False
 
-			self._confsFile.write_text(json.dumps(self._confsSample.read_text(), indent='\t'))
+			self._confsFile.write_text(self._confsSample.read_text())
 
 		try:
 			confs = json.loads(self._confsFile.read_text())
@@ -427,6 +435,10 @@ class Initializer:
 		subprocess.run(['sudo', 'systemctl', 'stop', 'mosquitto'])
 		subprocess.run('sudo sed -i -e \'s/persistence true/persistence false/\' /etc/mosquitto/mosquitto.conf'.split())
 		subprocess.run(['sudo', 'rm', '/var/lib/mosquitto/mosquitto.db'])
+		subprocess.run(['sudo', 'systemctl', 'start', 'mosquitto'])
+
+		subprocess.run(['sudo', 'systemctl', 'stop', 'nginx'])
+		subprocess.run(['sudo', 'systemctl', 'disable', 'nginx'])
 
 		# Now let's dump some values to their respective places
 		# First those that need some checks and self filling in case unspecified
@@ -435,20 +447,20 @@ class Initializer:
 
 		pinCode = initConfs['adminPinCode']
 		try:
-			pin = int(pinCode)
-			if len(str(pin)) != 4:
+			if len(str(pinCode)) != 4:
 				raise Exception
+			int(pinCode)
 		except:
 			self._logger.logFatal('Pin code must be 4 digits')
 
-		confs['adminPinCode'] = int(pinCode)
+		confs['adminPinCode'] = pinCode
 
 		confs['stayCompletelyOffline'] = bool(initConfs['stayCompletelyOffline'] or False)
 		if confs['stayCompletelyOffline']:
 			confs['keepASROffline'] = True
 			confs['keepTTSOffline'] = True
 			confs['skillAutoUpdate'] = False
-			confs['asr'] = 'deepspeech'
+			confs['asr'] = FALLBACK_ASR
 			confs['tts'] = 'pico'
 			confs['awsRegion'] = ''
 			confs['awsAccessKey'] = ''
@@ -462,14 +474,14 @@ class Initializer:
 			confs['awsAccessKey'] = initConfs['awsAccessKey']
 			confs['awsSecretKey'] = initConfs['awsSecretKey']
 
-			confs['asr'] = initConfs['asr'] if initConfs['asr'] in {'pocketsphinx', 'google', 'deepspeech', 'snips', 'coqui'} else 'deepspeech'
+			confs['asr'] = initConfs['asr'] if initConfs['asr'] in {'pocketsphinx', 'google', 'deepspeech', 'snips', 'coqui', 'vosk'} else FALLBACK_ASR
 			if confs['asr'] == 'google' and not initConfs['googleServiceFile']:
-				self._logger.logInfo('You cannot use Google Asr without a google service file, falling back to Deepspeech')
-				confs['asr'] = 'deepspeech'
+				self._logger.logInfo(f'You cannot use Google Asr without a google service file, falling back to {FALLBACK_ASR}')
+				confs['asr'] = FALLBACK_ASR
 
 			if confs['asr'] == 'snips' and confs['activeLanguage'] != 'en':
-				self._logger.logInfo('You can only use Snips Asr for english, falling back to Deepspeech')
-				confs['asr'] = 'deepspeech'
+				self._logger.logInfo(f'You can only use Snips Asr for english, falling back to {FALLBACK_ASR}')
+				confs['asr'] = FALLBACK_ASR
 
 			if initConfs['googleServiceFile']:
 				googleCreds = Path(self._rootDir, 'credentials/googlecredentials.json')
@@ -519,6 +531,7 @@ class Initializer:
 		try:
 			import pkg_resources
 
+			self._logger.logInfo("*** Trying to load SNIPS-NLU.")
 			pkg_resources.require('snips-nlu')
 			subprocess.run(['./venv/bin/snips-nlu', 'download', confs['activeLanguage']])
 		except:
@@ -557,53 +570,64 @@ class Initializer:
 			confs['disableSound'] = False
 			confs['disableCapture'] = False
 
+		hlcDir = Path('/home', getpass.getuser(), 'HermesLedControl')
 		hlcServiceFilePath = Path('/etc/systemd/system/hermesledcontrol.service')
-		hlcConfigFilePath = Path(f'/home/{getpass.getuser()}/hermesLedControl/configuration.yml')
+		hlcDistributedServiceFilePath = hlcDir / 'hermesledcontrol.service'
+		hlcConfigTemplatePath = hlcDir / 'configuration.yml'
 		hlcConfig = dict()
 		if initConfs['useHLC']:
+			self._logger.logInfo("*** Taking care of HLC.")
 
-			hlcDir = Path('/home', getpass.getuser(), 'hermesLedControl')
+			from AliceGit.Git import NotGitRepository, PathNotFoundException, Repository
 
-			if not hlcDir.exists():
-				subprocess.run(['git', 'clone', 'https://github.com/project-alice-assistant/hermesLedControl.git', str(Path('/home', getpass.getuser(), 'hermesLedControl'))])
-			else:
-				subprocess.run(['git', '-C', hlcDir, 'stash'])
-				subprocess.run(['git', '-C', hlcDir, 'pull'])
-				subprocess.run(['git', '-C', hlcDir, 'stash', 'clear'])
+			url = 'https://github.com/project-alice-assistant/hermesLedControl.git'
+			try:
+				repository = Repository(directory=hlcDir)
+			except PathNotFoundException:
+				repository = Repository.clone(url=url, directory=hlcDir, makeDir=True)
+			except NotGitRepository:
+				shutil.rmtree(hlcDir, ignore_errors=True)
+				repository = Repository.clone(url=url, directory=hlcDir, makeDir=True)
+
+			repository.checkout(branch='master')
+			repository.pull()
 
 			if hlcServiceFilePath.exists():
 				subprocess.run(['sudo', 'systemctl', 'stop', 'hermesledcontrol'])
-				subprocess.run(['sudo', 'rm', hlcServiceFilePath])
+				subprocess.run(['sudo', 'systemctl', 'disable', 'hermesledcontrol'])
 
-			subprocess.run(['python3', '-m', 'venv', f'/home/{getpass.getuser()}/hermesLedControl/venv'])
-
-			reqs = [
-				'RPi.GPIO',
-				'spidev',
-				'gpiozero',
-				'paho-mqtt',
-				'numpy',
-				'pyyaml'
-			]
-			for req in reqs:
-				subprocess.run([f'/home/{getpass.getuser()}/hermesLedControl/venv/bin/pip', 'install', req])
+			subprocess.run([PYTHON, '-m', 'venv', f'{str(hlcDir)}/venv'])
+			subprocess.run([f'{str(hlcDir)}/venv/bin/pip', 'install', '-r', f'{str(hlcDir)}/requirements.txt', '--no-cache-dir'])
 
 			import yaml
 
 			try:
-				hlcConfig = yaml.safe_load(hlcConfigFilePath.read_text())
+				hlcConfig = yaml.safe_load(hlcConfigTemplatePath.read_text())
 			except yaml.YAMLError as e:
-				self._logger.logFatal(f'Failed loading HLC configurations: {e}')
-			else:
-				hlcConfig['engine'] = 'projectalice'
-				hlcConfig['pathToConfig'] = f'/home/{getpass.getuser()}/ProjectAlice/config.json'
-				hlcConfig['pattern'] = 'projectalice'
-				hlcConfig['enableDoA'] = False
+				self._logger.logWarning(f'Failed loading HLC configurations - creating new: {e}')
+				hlcConfig = dict()
+
+			hlcConfig['engine'] = 'projectalice'
+			hlcConfig['pathToConfig'] = f'/home/{getpass.getuser()}/ProjectAlice/config.json'
+			hlcConfig['pattern'] = 'projectalice'
+			hlcConfig['enableDoA'] = False
+
+			serviceFile = hlcDistributedServiceFilePath.read_text()
+			serviceFile = serviceFile.replace('%WORKING_DIR%', f'{str(hlcDir)}')
+			serviceFile = serviceFile.replace('%EXECSTART%', f'{str(hlcDir)}/venv/bin/python main.py --hermesLedControlConfig=/home/{getpass.getuser()}/.config/HermesLedControl/configuration.yml')
+			serviceFile = serviceFile.replace('%USER%', f'{getpass.getuser()}')
+			hlcDistributedServiceFilePath.write_text(serviceFile)
+			subprocess.run(['sudo', 'cp', hlcDistributedServiceFilePath, hlcServiceFilePath])
+
 
 		useFallbackHLC = False
 		if initConfs['installSound']:
-			if audioHardware in {'respeaker2', 'respeaker4', 'respeaker6MicArray'}:
+			if audioHardware in {'respeaker2Mics', 'respeaker4MicArray', 'respeaker4MicLinear', 'respeaker6MicArray'}:
 				subprocess.run(['sudo', Path(self._rootDir, 'system/scripts/audioHardware/respeakers.sh')])
+
+				if audioHardware == 'respeaker4MicLinear' and initConfs['useHLC']:
+					initConfs['useHLC'] = False
+
 				if initConfs['useHLC']:
 					hlcConfig['hardware'] = audioHardware
 
@@ -611,18 +635,21 @@ class Initializer:
 				confs['asoundConfig'] = settings
 
 				dest = Path('/etc/voicecard/asound_2mic.conf')
-				if audioHardware == 'respeaker4':
+				if audioHardware == 'respeaker4MicArray':
 					dest = Path('/etc/voicecard/asound_4mic.conf')
+				elif audioHardware == 'respeaker4MicLinear':
+					confs['outputDevice'] = 'playback'
+					dest = Path('/etc/voicecard/asound_6mic.conf')
 				elif audioHardware == 'respeaker6MicArray':
 					dest = Path('/etc/voicecard/asound_6mic.conf')
 
 				subprocess.run(['sudo', 'cp', Path(self._rootDir, 'system', 'asounds', f'{audioHardware.lower()}.conf'), dest])
 				subprocess.run(['sudo', 'cp', Path(self._rootDir, 'system', 'asounds', f'{audioHardware.lower()}.conf'), Path(ASOUND)])
 
-			elif audioHardware == 'respeaker7':
-				subprocess.run(['sudo', Path(self._rootDir, 'system/scripts/audioHardware/respeaker7.sh')])
+			elif audioHardware == 'respeaker7MicArray':
+				subprocess.run(['sudo', Path(self._rootDir, 'system/scripts/audioHardware/respeaker7MicArray.sh')])
 				if initConfs['useHLC']:
-					hlcConfig['hardware'] = 'respeaker7MicArray'
+					hlcConfig['hardware'] = audioHardware
 
 			elif audioHardware == 'respeakerCoreV2':
 				subprocess.run(['sudo', Path(self._rootDir, 'system/scripts/audioHardware/respeakerCoreV2.sh')])
@@ -685,7 +712,7 @@ class Initializer:
 			import yaml
 
 			try:
-				confPath = Path(f'/home/{getpass.getuser()}/.config/hermesLedControl/configuration.yml')
+				confPath = Path(f'/home/{getpass.getuser()}/.config/HermesLedControl/configuration.yml')
 				confPath.parent.mkdir(parents=True, exist_ok=True)
 				confPath.touch(exist_ok=True)
 				confPath.write_text(yaml.safe_dump(hlcConfig))

@@ -19,13 +19,14 @@
 
 
 import json
-from pathlib import Path
-
+import re
 from flask import Response, jsonify, request
 from flask_classful import route
+from pathlib import Path
 
-from core.base.model.GithubCloner import GithubCloner
-from core.commons import constants
+from AliceGit.Exceptions import GithubRepoNotFound, GithubUserNotFound, NotGitRepository, RemoteAlreadyExists, GithubCreateFailed
+from AliceGit.Git import Repository
+from AliceGit.Github import Github
 from core.util.Decorators import ApiAuthenticated
 from core.webApi.model.Api import Api
 
@@ -33,21 +34,17 @@ from core.webApi.model.Api import Api
 class SkillsApi(Api):
 	route_base = f'/api/{Api.version()}/skills/'
 
-
 	@route('/')
 	def index(self):
 		return jsonify(skills={skillName: skill.toDict() for skillName, skill in self.SkillManager.allSkills.items()})
-
 
 	# noinspection PyMethodMayBeStatic
 	def skillNotFound(self) -> Response:
 		return jsonify(success=False, reason='skill not found')
 
-
 	# noinspection PyMethodMayBeStatic
 	def githubMissing(self) -> Response:
 		return jsonify(success=False, reason='github auth not found')
-
 
 	@ApiAuthenticated
 	def delete(self, skillName: str) -> Response:
@@ -60,59 +57,39 @@ class SkillsApi(Api):
 		except Exception as e:
 			return jsonify(success=False, reason=f'Failed deleting skill: {e}')
 
-
 	@route('/getStore/')
 	def getStore(self) -> Response:
 		return jsonify(store=self.SkillStoreManager.getStoreData())
-
 
 	@ApiAuthenticated
 	@route('/createSkill/', methods=['PUT'])
 	def createSkill(self) -> Response:
 		try:
 			newSkill = {
-				'name'         : request.form.get('name', '').capitalize(),
+				'name': request.form.get('name', ''),
 				'speakableName': request.form.get('speakableName', ''),
-				'description'  : request.form.get('description', 'Missing description'),
-				'category'     : request.form.get('category', 'undefined'),
-				'fr'           : request.form.get('french', False),
-				'de'           : request.form.get('german', False),
-				'it'           : request.form.get('italian', False),
-				'pl'           : request.form.get('polish', False),
-				'widgets'      : request.form.get('widgets', ''),
-				'nodes'        : request.form.get('nodes', ''),
-				'devices'      : request.form.get('devices', '')
+				'description': request.form.get('description', 'Missing description'),
+				'category': request.form.get('category', 'undefined'),
+				'fr': request.form.get('fr', False),
+				'de': request.form.get('de', False),
+				'it': request.form.get('it', False),
+				'pl': request.form.get('pl', False),
+				'widgets': request.form.get('widgets', ''),
+				'nodes': request.form.get('nodes', ''),
+				'devices': request.form.get('devices', ''),
+				'icon': request.form.get('icon', 'fas fa-biohazard')
 			}
 
 			if not self.SkillManager.createNewSkill(newSkill):
 				raise Exception
-			skillName = request.form.get('name', '').capitalize()
-			skill = self.SkillManager.getSkillInstance(skillName=skillName, silent=False)
+
+			self.SkillManager.initSkills(onlyInit=newSkill['name'])
+			skill = self.SkillManager.getSkillInstance(skillName=newSkill['name'])
 			return jsonify(success=True, skill=skill.toDict() if skill else dict())
 
 		except Exception as e:
 			self.logError(f'Something went wrong creating a new skill: {e}')
 			return jsonify(success=False, message=str(e))
-
-
-	@ApiAuthenticated
-	@route('/uploadSkill/', methods=['POST'])
-	def uploadToGithub(self) -> Response:
-		try:
-			skillName = request.form.get('skillName', '')
-			skillDesc = request.form.get('skillDesc', '')
-
-			if not skillName:
-				raise Exception('Missing skill name')
-
-			if self.SkillManager.uploadSkillToGithub(skillName, skillDesc):
-				return jsonify(success=True, url=f'https://github.com/{self.ConfigManager.getAliceConfigByName("githubUsername")}/skill_{skillName}.git')
-
-			return jsonify(success=False, message=f'Error while uploading to github!')
-		except Exception as e:
-			self.logError(f'Failed uploading to github: {e}')
-			return jsonify(success=False, message=str(e))
-
 
 	@ApiAuthenticated
 	@route('/installSkills/', methods=['PUT'])
@@ -122,16 +99,28 @@ class SkillsApi(Api):
 
 			status = dict()
 			for skill in skills:
-				if self.SkillManager.downloadInstallTicket(skill):
+				try:
+					self.SkillManager.installSkills(skills=skill, startSkill=True)
 					status[skill] = 'ok'
-				else:
-					status[skill] = 'ko'
+				except:
+					status[skill] = 'nok'
 
+			self.AssistantManager.checkAssistant()
 			return jsonify(success=True, status=status)
 		except Exception as e:
 			self.logWarning(f'Failed installing skill: {e}', printStack=True)
 			return jsonify(success=False, message=str(e))
 
+	@ApiAuthenticated
+	def put(self, skillName: str) -> Response:
+		try:
+			self.SkillManager.installSkills(skills=skillName, startSkill=True)
+			self.AssistantManager.checkAssistant()
+		except Exception as e:
+			self.logWarning(f'Failed installing skill: {e}', printStack=True)
+			return jsonify(success=False, message=str(e))
+
+		return jsonify(success=True)
 
 	@route('/<skillName>/', methods=['PATCH'])
 	@ApiAuthenticated
@@ -149,7 +138,6 @@ class SkillsApi(Api):
 			self.logWarning(f'Failed updating skill settings: {e}', printStack=True)
 			return jsonify(success=False, message=str(e))
 
-
 	@route('/<skillName>/')
 	@ApiAuthenticated
 	def get(self, skillName: str) -> Response:
@@ -160,11 +148,10 @@ class SkillsApi(Api):
 				if isinstance(skill, dict):
 					raise Exception('Skill not found')
 
-			return jsonify(success=True, skill=skill)
+			return jsonify(success=True, skill=skill.toDict())
 		except Exception as e:
 			self.logWarning(f'Failed fetching skill: {e}', printStack=True)
 			return jsonify(success=False, message=str(e))
-
 
 	@route('/<skillName>/toggleActiveState/')
 	@ApiAuthenticated
@@ -177,15 +164,14 @@ class SkillsApi(Api):
 				if skillName in self.SkillManager.neededSkills:
 					return jsonify(success=False, message='Required skill cannot be deactivated!')
 
-				self.SkillManager.deactivateSkill(skillName=skillName, persistent=True)
+				result = self.SkillManager.deactivateSkill(skillName=skillName, persistent=True)
 			else:
-				self.SkillManager.activateSkill(skillName=skillName, persistent=True)
+				result = self.SkillManager.activateSkill(skillName=skillName, persistent=True)
 
-			return jsonify(success=True)
+			return jsonify(success=result)
 		except Exception as e:
 			self.logWarning(f'Failed toggling skill: {e}', printStack=True)
 			return jsonify(success=False, message=str(e))
-
 
 	@route('/<skillName>/activate/', methods=['GET', 'POST'])
 	@ApiAuthenticated
@@ -199,7 +185,6 @@ class SkillsApi(Api):
 			persistent = request.form.get('persistent') is not None and request.form.get('persistent') == 'true'
 			self.SkillManager.activateSkill(skillName=skillName, persistent=persistent)
 			return jsonify(success=True)
-
 
 	@route('/<skillName>/deactivate/', methods=['GET', 'POST'])
 	@ApiAuthenticated
@@ -217,7 +202,6 @@ class SkillsApi(Api):
 		else:
 			return jsonify(success=False, reason='not active')
 
-
 	@route('/<skillName>/reload/', methods=['GET', 'POST'])
 	@ApiAuthenticated
 	def reload(self, skillName: str) -> Response:
@@ -233,24 +217,6 @@ class SkillsApi(Api):
 			self.logWarning(f'Failed reloading skill: {e}', printStack=True)
 			return jsonify(success=False, message=str(e))
 
-
-	@ApiAuthenticated
-	def put(self, skillName: str) -> Response:
-		if not self.SkillStoreManager.skillExists(skillName):
-			return self.skillNotFound()
-		elif self.SkillManager.getSkillInstance(skillName, True) is not None:
-			return jsonify(success=False, reason='skill already installed')
-
-		try:
-			if not self.SkillManager.downloadInstallTicket(skillName):
-				return jsonify(success=False, reason='skill not found')
-		except Exception as e:
-			self.logWarning(f'Failed installing skill: {e}', printStack=True)
-			return jsonify(success=False, message=str(e))
-
-		return jsonify(success=True)
-
-
 	@route('/<skillName>/checkUpdate/')
 	@ApiAuthenticated
 	def checkUpdate(self, skillName: str) -> Response:
@@ -262,8 +228,25 @@ class SkillsApi(Api):
 		if skillName not in self.SkillManager.allSkills:
 			return self.skillNotFound()
 
-		return jsonify(success=self.SkillManager.checkForSkillUpdates(skillToCheck=skillName))
+		updated = False
+		update = self.SkillManager.checkForSkillUpdates(skillToCheck=skillName)
+		if update:
+			self.SkillManager.updateSkills(skills=update)
+			updated = True
 
+		return jsonify(success=True, updated=updated)
+
+	@route('/<skillName>/isDirty/', methods=['GET'])
+	@ApiAuthenticated
+	def isDirty(self, skillName: str) -> Response:
+		try:
+			repo = self.SkillManager.getSkillRepository(skillName=skillName)
+			if repo.isDirty():
+				return jsonify(success=True, message='dirty')
+			else:
+				return jsonify(success=True, message='clean')
+		except NotGitRepository:
+			return jsonify(success=True, message='dirty')
 
 	@route('/<skillName>/setModified/')
 	@ApiAuthenticated
@@ -277,18 +260,42 @@ class SkillsApi(Api):
 		if skillName not in self.SkillManager.allSkills:
 			return self.skillNotFound()
 
-		if not GithubCloner.hasAuth():
+		if not self.ConfigManager.githubAuth:
 			return self.githubMissing()
 
-		self.SkillManager.getSkillInstance(skillName=skillName).modified = True
-		gitCloner = GithubCloner(baseUrl=f'{constants.GITHUB_URL}/skill_{skillName}.git',
-		                         dest=Path(self.Commons.rootDir()) / 'skills' / skillName,
-		                         skillName=skillName)
-		if not gitCloner.checkOwnRepoAvailable(skillName=skillName):
-			gitCloner.createForkForSkill(skillName=skillName)
-		gitCloner.checkoutOwnFork()
+		try:
+			auth = self.ConfigManager.githubAuth
+			github = Github(username=auth[0],
+							token=auth[1],
+							repositoryName=f'skill_{skillName}',
+							createRepository=True)
+
+			repo = self.SkillManager.getSkillRepository(skillName=skillName)
+			repo.remoteAdd(url=github.usersUrl, name='AliceSK')
+		except GithubUserNotFound:
+			return jsonify(success=False, reason='Github user not existing')
+
 		return jsonify(success=True)
 
+	@route('/<skillName>/checkout/<remote>/<branch>/')
+	@ApiAuthenticated
+	def checkout(self, skillName: str, remote: str, branch: str) -> Response:
+		"""
+		checkout the given remote
+		:param skillName:
+		:param remote:
+		:param branch:
+		:return:
+		"""
+		if skillName not in self.SkillManager.allSkills:
+			return self.skillNotFound()
+
+		repository = Repository(directory=self.SkillManager.getSkillDirectory(skillName=skillName), init=False,
+								raiseIfExisting=False)
+		repository.clean()
+		repository.setUpstream(branch=branch, remote=remote)
+		repository.reset(f'{remote}/{branch}')
+		return jsonify(success=True)
 
 	@route('/<skillName>/revert/')
 	@ApiAuthenticated
@@ -300,13 +307,11 @@ class SkillsApi(Api):
 		"""
 		if skillName not in self.SkillManager.allSkills:
 			return self.skillNotFound()
-		self.SkillManager.getSkillInstance(skillName=skillName).modified = False
-		gitCloner = GithubCloner(baseUrl=f'{constants.GITHUB_URL}/skill_{skillName}.git',
-		                         dest=Path(self.Commons.rootDir()) / 'skills' / skillName,
-		                         skillName=skillName)
-		gitCloner.checkoutMaster()
-		return self.checkUpdate(skillName)
 
+		skill = self.SkillManager.getSkillInstance(skillName=skillName)
+		skill.repository.revert()
+		skill.repository.checkout(tag=self.SkillStoreManager.getSkillUpdateTag(skillName=skillName), force=True)
+		return self.checkUpdate(skillName)
 
 	@route('/<skillName>/upload/')
 	@ApiAuthenticated
@@ -319,49 +324,84 @@ class SkillsApi(Api):
 		"""
 		if skillName not in self.SkillManager.allSkills:
 			return self.skillNotFound()
-		self.SkillManager.getSkillInstance(skillName=skillName).modified = True
 
-		gitCloner = GithubCloner(baseUrl=f'{constants.GITHUB_URL}/skill_{skillName}.git',
-		                         dest=Path(self.Commons.rootDir()) / 'skills' / skillName,
-		                         skillName=skillName)
-		if not gitCloner.isRepo() and not gitCloner.createRepo():
-			return jsonify(success=False, message="Failed creating repository")
-		elif not gitCloner.add():
-			return jsonify(success=False, message="Failed adding to git")
-		elif not gitCloner.commit(message="pushed via API"):
-			return jsonify(success=False, message="Failed creating commit")
-		elif not gitCloner.push():
-			return jsonify(success=False, message="Failed pushing to git")
-		else:
-			return jsonify(success=True)
+		installFilePath = self.SkillManager.getSkillInstallFilePath(skillName=skillName)
+		try:
+			repository = Repository(directory=self.SkillManager.getSkillDirectory(skillName=skillName), init=True,
+									raiseIfExisting=False)
 
+			auth = self.ConfigManager.githubAuth
+			github = Github(username=auth[0], token=auth[1], repositoryName=f'skill_{skillName}', createRepository=True)
+			try:
+				repository.remoteAdd(url=github.usersUrl, name='AliceSK')
+			except RemoteAlreadyExists as e:
+				self.logInfo(f'Error uploading to git: {e}')
+
+			if repository.isDirty():
+				if not repository.commit(message='Save through Alice web UI', autoAdd=True):
+					self.logError('Commit failed!')
+			else:
+				self.logInfo('Nothing to commit')
+
+			out, err = repository.push()
+			self.logInfo(out)
+			self.logError(err)
+		except GithubUserNotFound:
+			return jsonify(success=False, message='The provided Github user is not existing')
+		except GithubRepoNotFound:
+			if not self.SkillManager.uploadSkillToGithub(skillName=skillName,
+														 skillDesc=json.loads(installFilePath.read_text())['desc']):
+				return jsonify(success=False, message='Failed uploading to Github')
+		except GithubCreateFailed as e:
+			self.logError(e)
+			return jsonify(success=False, message=str(e))
+		return jsonify(success=True)
 
 	@route('/<skillName>/gitStatus/')
 	@ApiAuthenticated
 	def getGitStatus(self, skillName: str) -> Response:
 		"""
-		returns a list containing the public and private github URL of that skill.
+		returns a list containing the public and private GitHub URL of that skill.
 		The repository does not have to exist yet!
 		The current status of the repository is included as well
 		Currently possible status: True/False
 		:param skillName:
 		:return:
 		"""
-		if skillName not in self.SkillManager.allSkills:
+
+		skill = self.SkillManager.getSkillInstance(skillName=skillName)
+		if not skill:
 			return self.skillNotFound()
 
-		gitCloner = GithubCloner(baseUrl=f'{constants.GITHUB_URL}/skill_{skillName}.git',
-		                         dest=Path(self.Commons.rootDir()) / 'skills' / skillName,
-		                         skillName=skillName)
+		try:
+			git = Repository(directory=skill.skillPath)
+		except NotGitRepository as e:
+			return jsonify(success=False, noGit=True, message=str(e))
 
-		return jsonify(success=True,
-		               result={'Public' : {'name'  : 'Public',
-		                                   'url'   : gitCloner.getRemote(origin=True, noToken=True),
-		                                   'status': gitCloner.checkRemote(origin=True)},
-		                       'Private': {'name'  : 'Private',
-		                                   'url'   : gitCloner.getRemote(AliceSK=True, noToken=True),
-		                                   'status': gitCloner.checkRemote(AliceSK=True)}})
+		try:
+			auth = self.ConfigManager.githubAuth
+			Github(username=auth[0], token=auth[1], repositoryName=f'skill_{skillName}')
+		except Exception as e:
+			if len(git.remote) > 0:
+				return jsonify(success=False, message=str(e))
+			else:
+				return jsonify(success=False, noRemote=True, message=str(e))
 
+		res = dict()
+		for name, rem in git.remote.items():
+			status = Github.getStatusForUrl(url=rem.url, silent=True) is not False
+			res[name] = {'repoType': 'Public' if name == 'project-alice-assistant' else 'Private',
+						 'name': rem.name,
+						 'url': re.sub(r"https:\/\/.*:(.*)@github\.com\/", 'https://github.com/', rem.url),
+						 'user': name,
+						 'status': status,
+						 'commitsBehind': rem.getCommitCount() if status else '-1',
+						 'commitsAhead': rem.getCommitCount(ahead=False) if status else '-1',
+						 'lsRemote': rem.lsRemote(tags=False)}
+
+		changes = git.status().changes()
+
+		return jsonify(success=True, result=res, changes=changes, upstream=git.status().getUpstream())
 
 	@route('/<skillName>/getInstructions/', methods=['GET', 'POST'])
 	@ApiAuthenticated
@@ -377,7 +417,6 @@ class SkillsApi(Api):
 			instructionsFile = skill.getResource(f'instructions/en.md')
 
 		return jsonify(success=True, instruction=instructionsFile.read_text() if instructionsFile.exists() else '')
-
 
 	@route('/<skillName>/setInstructions/', methods=['PATCH'])
 	@ApiAuthenticated
@@ -402,7 +441,6 @@ class SkillsApi(Api):
 
 		return jsonify(success=True, instruction=instructionsFile.read_text() if instructionsFile.exists() else '')
 
-
 	@route('/<skillName>/getDialogTemplate/', methods=['GET', 'POST'])
 	@ApiAuthenticated
 	def getTemplate(self, skillName: str) -> Response:
@@ -417,8 +455,8 @@ class SkillsApi(Api):
 
 		data = request.json
 		skill = self.SkillManager.getSkillInstance(skillName=skillName)
-		allLang = {}
-		tempOut = ""
+		allLang = dict()
+		tempOut = ''
 
 		if not 'lang' in data:
 			fp = skill.getResource('dialogTemplate')
@@ -434,7 +472,6 @@ class SkillsApi(Api):
 
 		return jsonify(success=True, dialogTemplate=tempOut, dialogTemplates=allLang)
 
-
 	@route('/<skillName>/setDialogTemplate/', methods=['PATCH'])
 	@ApiAuthenticated
 	def setTemplate(self, skillName: str) -> Response:
@@ -443,7 +480,7 @@ class SkillsApi(Api):
 		:param skillName:
 		:return:
 		"""
-		self.logInfo(f'DialogTemplate API access for skill {skillName}')
+		self.logDebug(f'DialogTemplate API access for skill {skillName}')
 		if skillName not in self.SkillManager.allSkills:
 			self.logError(f'Skill {skillName} not found')
 			return self.skillNotFound()
@@ -454,10 +491,10 @@ class SkillsApi(Api):
 		dialogTemplate = skill.getResource(f'dialogTemplate/{data["lang"]}.json')
 		if not dialogTemplate.exists():
 			dialogTemplate.touch(exist_ok=True)
-		dialogTemplate.write_text(json.dumps(data['dialogTemplate'], indent=2))
+		dialogTemplate.write_text(json.dumps(data['dialogTemplate'], indent='\t', ensure_ascii=False))
 
-		return jsonify(success=True, dialogTemplate=json.loads(dialogTemplate.read_text()) if dialogTemplate.exists() else '')
-
+		return jsonify(success=True,
+					   dialogTemplate=json.loads(dialogTemplate.read_text()) if dialogTemplate.exists() else '')
 
 	@route('/<skillName>/setConfigTemplate/', methods=['PATCH'])
 	@ApiAuthenticated
@@ -476,11 +513,10 @@ class SkillsApi(Api):
 		configTemplate = skill.getResource(f'config.json.template')
 		if not configTemplate.exists():
 			configTemplate.touch(exist_ok=True)
-		configTemplate.write_text(json.dumps(data['configTemplate'], indent=2))
+		configTemplate.write_text(json.dumps(data['configTemplate'], indent='\t', ensure_ascii=False))
 		self.ConfigManager.loadCheckAndUpdateSkillConfigurations(skillToLoad=skillName)
 
 		return jsonify(success=True, configTemplate=skill.getSkillConfigsTemplate())
-
 
 	@route('/<skillName>/getTalkFiles/', methods=['GET', 'POST'])
 	@ApiAuthenticated
@@ -500,9 +536,31 @@ class SkillsApi(Api):
 		if fp.exists():
 			for file in fp.glob('*.json'):
 				talkFiles[Path(file).stem] = json.loads(file.read_text())
+		if talkFiles:
+			return jsonify(success=True, talkFiles=talkFiles)
+		else:
+			return jsonify(success=False, message='no talkfile found.')
 
-		return jsonify(success=True, talkFiles=talkFiles)
+	@route('/<skillName>/getTalkTopics/', methods=['GET', 'POST'])
+	@ApiAuthenticated
+	def getTalkTopics(self, skillName: str) -> Response:
+		"""
+		get the talk topics for one skill
+		:param skillName:
+		:return:
+		"""
+		if skillName not in self.SkillManager.allSkills:
+			return self.skillNotFound()
 
+		skill = self.SkillManager.getSkillInstance(skillName=skillName)
+
+		fp = skill.getResource(f'talks/{self.LanguageManager.activeLanguage}.json')
+		if fp.exists():
+			talkFile = json.loads(fp.read_text())
+		else:
+			talkFile = list()
+
+		return jsonify(success=True, talkTopics=list(talkFile))
 
 	@route('/<skillName>/setTalkFile/', methods=['PATCH'])
 	@ApiAuthenticated
@@ -512,7 +570,7 @@ class SkillsApi(Api):
 		:param skillName:
 		:return:
 		"""
-		self.logInfo(f'writing talkFile API access for skill {skillName}')
+		self.logDebug(f'Writing talkFile API access for skill {skillName}')
 		if skillName not in self.SkillManager.allSkills:
 			return self.skillNotFound()
 
@@ -522,10 +580,9 @@ class SkillsApi(Api):
 		talkFile = skill.getResource(f'talks/{data["lang"]}.json')
 		if not talkFile.exists():
 			talkFile.touch(exist_ok=True)
-		talkFile.write_text(json.dumps(data['talkFile'], indent=2), encoding='utf-8')
+		talkFile.write_text(json.dumps(data['talkFile'], indent='\t', ensure_ascii=False))
 
 		return jsonify(success=True, talkFile=talkFile.read_text() if talkFile.exists() else '')
-
 
 	@route('/<skillName>/getInstallFile/', methods=['GET', 'POST'])
 	@ApiAuthenticated
@@ -535,15 +592,13 @@ class SkillsApi(Api):
 		:param skillName:
 		:return:
 		"""
-		if skillName not in self.SkillManager.allSkills:
+		try:
+			installFile = self.SkillManager.getSkillInstallFilePath(skillName=skillName)
+			if not installFile.exists:
+				raise Exception
+			return jsonify(success=True, installFile=json.loads(installFile.read_text()))
+		except:
 			return self.skillNotFound()
-
-		skill = self.SkillManager.getSkillInstance(skillName=skillName)
-
-		installFile = skill.getResource(f'{skillName}.install')
-
-		return jsonify(success=True, installFile=json.loads(installFile.read_text()))
-
 
 	@route('/<skillName>/setInstallFile/', methods=['PATCH'])
 	@ApiAuthenticated
@@ -553,7 +608,7 @@ class SkillsApi(Api):
 		:param skillName:
 		:return:
 		"""
-		self.logInfo(f'installFile API access for skill {skillName}')
+		self.logDebug(f'InstallFile API access for skill {skillName}')
 		if skillName not in self.SkillManager.allSkills:
 			return self.skillNotFound()
 
@@ -563,10 +618,9 @@ class SkillsApi(Api):
 		installFile = skill.getResource(f'{skillName}.install')
 		if not installFile.exists():
 			installFile.touch(exist_ok=True)
-		installFile.write_text(json.dumps(data['installFile'], indent=2))
+		installFile.write_text(json.dumps(data['installFile'], indent='\t', ensure_ascii=False))
 
 		return jsonify(success=True, installFile=json.loads(installFile.read_text()) if installFile.exists() else '')
-
 
 	@route('/<skillName>/createWidget/<widgetName>/', methods=['PATCH'])
 	@ApiAuthenticated
@@ -577,7 +631,7 @@ class SkillsApi(Api):
 		:param skillName:
 		:return:
 		"""
-		self.logInfo(f'Creating new widget {widgetName} for skill {skillName}')
+		self.logDebug(f'Creating new widget {widgetName} for skill {skillName}')
 		try:
 			dest = self.getSkillDest(skillName=skillName)
 			self.Commons.runSystemCommand(['./venv/bin/pip', 'install', '--upgrade', 'projectalice-sk'])
@@ -585,7 +639,6 @@ class SkillsApi(Api):
 			return jsonify(success=True)
 		except:
 			return self.skillNotFound()
-
 
 	@route('/<skillName>/createDeviceType/<deviceName>/', methods=['PATCH'])
 	@ApiAuthenticated
@@ -596,7 +649,7 @@ class SkillsApi(Api):
 		:param skillName:
 		:return:
 		"""
-		self.logInfo(f'Creating new device type {deviceName} for skill {skillName}')
+		self.logDebug(f'Creating new device type {deviceName} for skill {skillName}')
 		try:
 			dest = self.getSkillDest(skillName=skillName)
 			self.Commons.runSystemCommand(['./venv/bin/pip', 'install', '--upgrade', 'projectalice-sk'])
@@ -604,7 +657,6 @@ class SkillsApi(Api):
 			return jsonify(success=True)
 		except:
 			return self.skillNotFound()
-
 
 	def getSkillDest(self, skillName: str):
 		"""
