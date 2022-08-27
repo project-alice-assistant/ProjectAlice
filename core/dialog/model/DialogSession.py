@@ -39,10 +39,13 @@ class DialogSession(object):
 	intentName: str = ''
 	notUnderstood: int = 0
 	currentState: str = constants.DEFAULT
+
+	# TODO rework with clear states
 	hasEnded: bool = False
 	hasStarted: bool = False
 	isEnding: bool = False
 	inDialog = False
+
 	probabilityThreshold: float = 0.5
 	text: str = ''
 	input: str = ''
@@ -59,6 +62,7 @@ class DialogSession(object):
 	keptOpen: bool = False  # The session has ended, but is kept open for a new promt
 	lastWasSoundPlayOnly: bool = False  # We don't use request ids for play bytes topic. Both say and playaudio use play bytes, therefor we need to track if the last play bytes was sound only or TTS
 	locationId: int = -1  # Where this session is taking place
+	init: dict = field(default_factory=dict)
 
 
 	def __post_init__(self):  # NOSONAR

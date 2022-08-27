@@ -90,8 +90,7 @@ class DialogApi(Api):
 			self.MqttManager.publish(
 				topic=constants.TOPIC_HOTWORD_TOGGLE_OFF,
 				payload={
-					'siteId'   : deviceUid,
-					'sessionId': session.sessionId
+					'siteId': deviceUid
 				}
 			)
 

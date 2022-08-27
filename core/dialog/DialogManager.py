@@ -63,6 +63,8 @@ class DialogManager(Manager):
 
 		self._sessionsById[session.sessionId] = session
 		self._sessionsByDeviceUids[deviceUid] = session
+
+		self.logDebug(f'Started new session with id **{session.sessionId}**')
 		return session
 
 
@@ -94,8 +96,7 @@ class DialogManager(Manager):
 		self.MqttManager.publish(
 			topic=constants.TOPIC_HOTWORD_TOGGLE_OFF,
 			payload={
-				'siteId'   : deviceUid,
-				'sessionId': session.sessionId
+				'siteId': deviceUid
 			}
 		)
 		# Personalise the notification if able to
@@ -115,13 +116,14 @@ class DialogManager(Manager):
 						'type'                   : 'action',
 						'text'                   : talkNotification,
 						'sendIntentNotRecognized': True,
-						'canBeEnqueued'          : False,
-						'isHotwordNotification'  : True
+						'canBeEnqueued'          : False
 					},
 					'customData': json.dumps(dict())
 				})
 		else:
-			self.onSayFinished(session=session, uid=str(uuid.uuid4()))
+			# TODO we should just start listening....
+			return
+			#self.onSayFinished(session=session, uid=str(uuid.uuid4()))
 
 
 	def onSayFinished(self, session: DialogSession, uid: str = None):
@@ -207,12 +209,39 @@ class DialogManager(Manager):
 
 	def onSessionStarted(self, session: DialogSession):
 		"""
-		Session has started, enable Asr and tell it to listen
-		:param session:
+		TODO: if no text, how do we go further here?
+		Session has started, start session timeout countdown. If text is set in init, say it
+		:param session: DialogSession
 		:return:
 		"""
 		self.startSessionTimeout(sessionId=session.sessionId)
 		session.hasStarted = True
+
+		init = session.init
+		if not init:
+			return
+
+		text = init.get('text', '')
+		if not text:
+			randomTextSkill = init.get('skill', '')
+			randomTextTalk = init.get('talk', '')
+			randomTextReplace = init.get('replace', [])
+			if randomTextSkill and randomTextTalk:
+				text = self.TalkManager.randomTalk(skill=randomTextSkill, talk=randomTextTalk)
+				if randomTextReplace:
+					text = text.format(*randomTextReplace)
+
+		if text:
+			self.MqttManager.publish(
+				topic=constants.TOPIC_TTS_SAY,
+				payload={
+					'text'                 : text,
+					'lang'                 : self.LanguageManager.activeLanguageAndCountryCode,
+					'siteId'               : session.deviceUid,
+					'sessionId'            : session.sessionId,
+					'uid'                  : str(uuid.uuid4())
+				}
+			)
 
 
 	def onCaptured(self, session: DialogSession):
@@ -352,26 +381,20 @@ class DialogManager(Manager):
 
 		session = self._sessionsByDeviceUids.get(deviceUid, None)
 		if not session:
-			# The session was started programmatically, we need to create one
 			session = self.newSession(deviceUid=deviceUid)
 		else:
 			if session.hasStarted and not session.hasEnded and 'init' in payload and payload['init'].get('canBeEnqueued', True):
 				self.ThreadManager.doLater(interval=1, func=self.onStartSession, kwargs={'deviceUid': deviceUid, 'payload': payload})
 				return
 
-		hotwordNotification = False
-
 		if 'init' in payload:
+			session.init = payload['init']
 			if payload['init']['type'] == 'notification':
 				session.isNotification = True
 				session.inDialog = False
 			else:
 				session.isNotification = False
 				session.inDialog = True
-
-			if 'isHotwordNotification' in payload['init'] and payload['init']['isHotwordNotification']:
-				hotwordNotification = True
-				session.lastWasSoundPlayOnly = False
 
 		self.MqttManager.publish(
 			topic=constants.TOPIC_SESSION_STARTED,
@@ -381,32 +404,6 @@ class DialogManager(Manager):
 				'customData': json.dumps(dict())
 			}
 		)
-		init = payload.get('init', dict())
-		if not init:
-			return
-
-		text = init.get('text', '')
-		if not text:
-			randomTextSkill = init.get('skill', '')
-			randomTextTalk = init.get('talk', '')
-			randomTextReplace = init.get('replace', [])
-			if randomTextSkill and randomTextTalk:
-				text = self.TalkManager.randomTalk(skill=randomTextSkill, talk=randomTextTalk)
-				if randomTextReplace:
-					text = text.format(*randomTextReplace)
-
-		if text:
-			self.MqttManager.publish(
-				topic=constants.TOPIC_TTS_SAY,
-				payload={
-					'text'                 : text,
-					'lang'                 : self.LanguageManager.activeLanguageAndCountryCode,
-					'siteId'               : deviceUid,
-					'sessionId'            : session.sessionId,
-					'uid'                  : str(uuid.uuid4()),
-					'isHotwordNotification': hotwordNotification
-				}
-			)
 
 
 	def onContinueSession(self, session: DialogSession):
@@ -432,13 +429,12 @@ class DialogManager(Manager):
 
 
 	def onEndSession(self, session: DialogSession, reason: str = 'nominal'):
+		self.cancelSessionTimeout(sessionId=session.sessionId)
 		self.enableCaptureFeedback()
+		session.isEnding = True
+
 		text = session.payload.get('text', '')
-
 		if text:
-			session.isEnding = True
-			self.cancelSessionTimeout(sessionId=session.sessionId)
-
 			self.MqttManager.publish(
 				topic=constants.TOPIC_TTS_SAY,
 				payload={
@@ -468,21 +464,29 @@ class DialogManager(Manager):
 		:param session:
 		:return:
 		"""
+
+		self.cancelSessionTimeout(sessionId=session.sessionId)
 		session.hasEnded = True
 
 		self.MqttManager.publish(
 			topic=constants.TOPIC_ASR_TOGGLE_OFF
 		)
 
+		self.removeSession(sessionId=session.sessionId)
+
+
+	def onAsrToggleOff(self, deviceUid: str):
+		"""
+		Asr is toggled off, the hotword is allowed to capture the hotword again on that device
+		:param deviceUid:
+		:return:
+		"""
 		self.MqttManager.publish(
 			topic=constants.TOPIC_HOTWORD_TOGGLE_ON,
 			payload={
-				'siteId'   : session.deviceUid,
-				'sessionId': session.sessionId
+				'siteId'   : deviceUid
 			}
 		)
-
-		self.removeSession(sessionId=session.sessionId)
 
 
 	def onSessionError(self, session: DialogSession):

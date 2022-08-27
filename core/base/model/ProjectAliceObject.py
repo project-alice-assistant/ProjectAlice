@@ -346,11 +346,11 @@ class ProjectAliceObject(object):
 		pass  # Super object function is overridden only if needed
 
 
-	def onHotwordToggleOn(self, deviceUid: str, session):
+	def onHotwordToggleOn(self, deviceUid: str):
 		pass  # Super object function is overridden only if needed
 
 
-	def onHotwordToggleOff(self, deviceUid: str, session):
+	def onHotwordToggleOff(self, deviceUid: str):
 		pass  # Super object function is overridden only if needed
 
 

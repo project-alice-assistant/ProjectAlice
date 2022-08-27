@@ -55,14 +55,14 @@ class WakewordManager(Manager):
 			self._engine.onAudioFrame(message=message, deviceUid=deviceUid)
 
 
-	def onHotwordToggleOn(self, deviceUid: str, session: DialogSession):
+	def onHotwordToggleOn(self, deviceUid: str):
 		if self._engine:
-			self._engine.onHotwordToggleOn(deviceUid=deviceUid, session=DialogSession)
+			self._engine.onHotwordToggleOn(deviceUid=deviceUid)
 
 
-	def onHotwordToggleOff(self, deviceUid: str, session: DialogSession):
+	def onHotwordToggleOff(self, deviceUid: str):
 		if self._engine:
-			self._engine.onHotwordToggleOff(deviceUid=deviceUid, session=DialogSession)
+			self._engine.onHotwordToggleOff(deviceUid=deviceUid)
 
 
 	def _startWakewordEngine(self):

@@ -65,38 +65,38 @@ class MqttManager(Manager):
 		self._mqttClient.on_log = self.onLog
 
 		self._mqttClient.message_callback_add(constants.TOPIC_HOTWORD_DETECTED, self.onHotwordDetected)
-		for username in self.UserManager.getAllUserNames():
-			self._mqttClient.message_callback_add(constants.TOPIC_WAKEWORD_DETECTED.replace('{user}', username), self.onHotwordDetected)
-
+		# for username in self.UserManager.getAllUserNames():
+		# 	self._mqttClient.message_callback_add(constants.TOPIC_WAKEWORD_DETECTED.replace('{user}', username), self.onHotwordDetected)
+		#
 		self._mqttClient.message_callback_add(constants.TOPIC_SESSION_STARTED, self.sessionStarted)
-		self._mqttClient.message_callback_add(constants.TOPIC_ASR_START_LISTENING, self.startListening)
-		self._mqttClient.message_callback_add(constants.TOPIC_ASR_STOP_LISTENING, self.stopListening)
-		self._mqttClient.message_callback_add(constants.TOPIC_ASR_TOGGLE_ON, self.asrToggleOn)
+		# self._mqttClient.message_callback_add(constants.TOPIC_ASR_START_LISTENING, self.startListening)
+		# self._mqttClient.message_callback_add(constants.TOPIC_ASR_STOP_LISTENING, self.stopListening)
+		# self._mqttClient.message_callback_add(constants.TOPIC_ASR_TOGGLE_ON, self.asrToggleOn)
 		self._mqttClient.message_callback_add(constants.TOPIC_ASR_TOGGLE_OFF, self.asrToggleOff)
-		self._mqttClient.message_callback_add(constants.TOPIC_INTENT_PARSED, self.intentParsed)
-		self._mqttClient.message_callback_add(constants.TOPIC_TEXT_CAPTURED, self.captured)
-		self._mqttClient.message_callback_add(constants.TOPIC_TTS_SAY, self.intentSay)
-		self._mqttClient.message_callback_add(constants.TOPIC_TTS_FINISHED, self.sayFinished)
+		# self._mqttClient.message_callback_add(constants.TOPIC_INTENT_PARSED, self.intentParsed)
+		# self._mqttClient.message_callback_add(constants.TOPIC_TEXT_CAPTURED, self.captured)
+		# self._mqttClient.message_callback_add(constants.TOPIC_TTS_SAY, self.intentSay)
+		# self._mqttClient.message_callback_add(constants.TOPIC_TTS_FINISHED, self.sayFinished)
 		self._mqttClient.message_callback_add(constants.TOPIC_SESSION_ENDED, self.sessionEnded)
-		self._mqttClient.message_callback_add(constants.TOPIC_CONTINUE_SESSION, self.continueSession)
-		self._mqttClient.message_callback_add(constants.TOPIC_INTENT_NOT_RECOGNIZED, self.intentNotRecognized)
-		self._mqttClient.message_callback_add(constants.TOPIC_SESSION_QUEUED, self.sessionQueued)
-		self._mqttClient.message_callback_add(constants.TOPIC_NLU_QUERY, self.nluQuery)
-		self._mqttClient.message_callback_add(constants.TOPIC_PARTIAL_TEXT_CAPTURED, self.nluPartialCapture)
+		# self._mqttClient.message_callback_add(constants.TOPIC_CONTINUE_SESSION, self.continueSession)
+		# self._mqttClient.message_callback_add(constants.TOPIC_INTENT_NOT_RECOGNIZED, self.intentNotRecognized)
+		# self._mqttClient.message_callback_add(constants.TOPIC_SESSION_QUEUED, self.sessionQueued)
+		# self._mqttClient.message_callback_add(constants.TOPIC_NLU_QUERY, self.nluQuery)
+		# self._mqttClient.message_callback_add(constants.TOPIC_PARTIAL_TEXT_CAPTURED, self.nluPartialCapture)
 		self._mqttClient.message_callback_add(constants.TOPIC_HOTWORD_TOGGLE_ON, self.hotwordToggleOn)
 		self._mqttClient.message_callback_add(constants.TOPIC_HOTWORD_TOGGLE_OFF, self.hotwordToggleOff)
-		self._mqttClient.message_callback_add(constants.TOPIC_END_SESSION, self.eventEndSession)
+		# self._mqttClient.message_callback_add(constants.TOPIC_END_SESSION, self.eventEndSession)
 		self._mqttClient.message_callback_add(constants.TOPIC_START_SESSION, self.startSession)
-		self._mqttClient.message_callback_add(constants.TOPIC_DEVICE_HEARTBEAT, self.deviceHeartbeat)
-		self._mqttClient.message_callback_add(constants.TOPIC_TOGGLE_FEEDBACK_ON, self.toggleFeedback)
-		self._mqttClient.message_callback_add(constants.TOPIC_TOGGLE_FEEDBACK_OFF, self.toggleFeedback)
-		self._mqttClient.message_callback_add(constants.TOPIC_NLU_INTENT_NOT_RECOGNIZED, self.nluIntentNotRecognized)
-		self._mqttClient.message_callback_add(constants.TOPIC_NLU_ERROR, self.nluError)
-		self._mqttClient.message_callback_add(constants.TOPIC_NLU_TRAINER_READY, self.nluOffshoreTrainerReady)
-		self._mqttClient.message_callback_add(constants.TOPIC_NLU_TRAINER_STOPPED, self.nluOffshoreTrainerStopped)
-		self._mqttClient.message_callback_add(constants.TOPIC_NLU_TRAINER_TRAINING_RESULT, self.nluOffshoreTrainerResult)
-		self._mqttClient.message_callback_add(constants.TOPIC_NLU_TRAINER_REFUSE_FAILED, self.nluOffshoreTrainerRefusedFailed)
-		self._mqttClient.message_callback_add(constants.TOPIC_NLU_TRAINER_TRAINING, self.nluOffshoreTrainerTraining)
+		# self._mqttClient.message_callback_add(constants.TOPIC_DEVICE_HEARTBEAT, self.deviceHeartbeat)
+		# self._mqttClient.message_callback_add(constants.TOPIC_TOGGLE_FEEDBACK_ON, self.toggleFeedback)
+		# self._mqttClient.message_callback_add(constants.TOPIC_TOGGLE_FEEDBACK_OFF, self.toggleFeedback)
+		# self._mqttClient.message_callback_add(constants.TOPIC_NLU_INTENT_NOT_RECOGNIZED, self.nluIntentNotRecognized)
+		# self._mqttClient.message_callback_add(constants.TOPIC_NLU_ERROR, self.nluError)
+		# self._mqttClient.message_callback_add(constants.TOPIC_NLU_TRAINER_READY, self.nluOffshoreTrainerReady)
+		# self._mqttClient.message_callback_add(constants.TOPIC_NLU_TRAINER_STOPPED, self.nluOffshoreTrainerStopped)
+		# self._mqttClient.message_callback_add(constants.TOPIC_NLU_TRAINER_TRAINING_RESULT, self.nluOffshoreTrainerResult)
+		# self._mqttClient.message_callback_add(constants.TOPIC_NLU_TRAINER_REFUSE_FAILED, self.nluOffshoreTrainerRefusedFailed)
+		# self._mqttClient.message_callback_add(constants.TOPIC_NLU_TRAINER_TRAINING, self.nluOffshoreTrainerTraining)
 
 		self.connect()
 
@@ -133,51 +133,50 @@ class MqttManager(Manager):
 			(constants.TOPIC_SESSION_ENDED, 0),
 			(constants.TOPIC_SESSION_STARTED, 0),
 			(constants.TOPIC_HOTWORD_DETECTED, 0),
-			(constants.TOPIC_INTENT_NOT_RECOGNIZED, 0),
-			(constants.TOPIC_INTENT_PARSED, 0),
-			(constants.TOPIC_TTS_FINISHED, 0),
-			(constants.TOPIC_ASR_START_LISTENING, 0),
-			(constants.TOPIC_ASR_STOP_LISTENING, 0),
-			(constants.TOPIC_TTS_SAY, 0),
-			(constants.TOPIC_TEXT_CAPTURED, 0),
-			(constants.TOPIC_PARTIAL_TEXT_CAPTURED, 0),
+			# (constants.TOPIC_INTENT_NOT_RECOGNIZED, 0),
+			# (constants.TOPIC_INTENT_PARSED, 0),
+			# (constants.TOPIC_TTS_FINISHED, 0),
+			# (constants.TOPIC_ASR_START_LISTENING, 0),
+			# (constants.TOPIC_ASR_STOP_LISTENING, 0),
+			# (constants.TOPIC_TTS_SAY, 0),
+			# (constants.TOPIC_TEXT_CAPTURED, 0),
+			# (constants.TOPIC_PARTIAL_TEXT_CAPTURED, 0),
 			(constants.TOPIC_HOTWORD_TOGGLE_ON, 0),
 			(constants.TOPIC_HOTWORD_TOGGLE_OFF, 0),
-			(constants.TOPIC_NLU_QUERY, 0),
-			(constants.TOPIC_CONTINUE_SESSION, 0),
-			(constants.TOPIC_END_SESSION, 0),
-			(constants.TOPIC_DEVICE_HEARTBEAT, 0),
-			(constants.TOPIC_ASR_TOGGLE_ON, 0),
+			# (constants.TOPIC_NLU_QUERY, 0),
+			# (constants.TOPIC_CONTINUE_SESSION, 0),
+			# (constants.TOPIC_END_SESSION, 0),
+			# (constants.TOPIC_DEVICE_HEARTBEAT, 0),
+			# (constants.TOPIC_ASR_TOGGLE_ON, 0),
 			(constants.TOPIC_ASR_TOGGLE_OFF, 0),
-			(constants.TOPIC_TOGGLE_FEEDBACK_ON, 0),
-			(constants.TOPIC_TOGGLE_FEEDBACK_OFF, 0),
-			(constants.TOPIC_NLU_INTENT_NOT_RECOGNIZED, 0),
+			# (constants.TOPIC_TOGGLE_FEEDBACK_ON, 0),
+			# (constants.TOPIC_TOGGLE_FEEDBACK_OFF, 0),
+			# (constants.TOPIC_NLU_INTENT_NOT_RECOGNIZED, 0),
 			(constants.TOPIC_START_SESSION, 0),
-			(constants.TOPIC_NLU_ERROR, 0),
-			(constants.TOPIC_NLU_TRAINER_TRAINING_RESULT, 0),
-			(constants.TOPIC_NLU_TRAINER_READY, 0),
-			(constants.TOPIC_NLU_TRAINER_STOPPED, 0),
-			(constants.TOPIC_NLU_TRAINER_REFUSE_FAILED, 0),
-			(constants.TOPIC_NLU_TRAINER_TRAINING, 0),
-			(self.TOPIC_AUDIO_FRAME, 0)
+			# (constants.TOPIC_NLU_ERROR, 0),
+			# (constants.TOPIC_NLU_TRAINER_TRAINING_RESULT, 0),
+			# (constants.TOPIC_NLU_TRAINER_READY, 0),
+			# (constants.TOPIC_NLU_TRAINER_STOPPED, 0),
+			# (constants.TOPIC_NLU_TRAINER_REFUSE_FAILED, 0),
+			# (constants.TOPIC_NLU_TRAINER_TRAINING, 0),
+			# (self.TOPIC_AUDIO_FRAME, 0)
 		]
 
-		for username in self.UserManager.getAllUserNames():
-			subscribedEvents.append((constants.TOPIC_WAKEWORD_DETECTED.format(username), 0))
-
-		subscribedEvents.append((constants.TOPIC_VAD_UP.format(self.ConfigManager.getAliceConfigByName('uuid')), 0))
-		subscribedEvents.append((constants.TOPIC_VAD_DOWN.format(self.ConfigManager.getAliceConfigByName('uuid')), 0))
-
-		subscribedEvents.append((constants.TOPIC_PLAY_BYTES.format(self.ConfigManager.getAliceConfigByName('uuid')), 0))
-		subscribedEvents.append((constants.TOPIC_PLAY_BYTES_FINISHED.format(self.ConfigManager.getAliceConfigByName('uuid')), 0))
-
-		subscribedEvents.append((constants.TOPIC_VAD_UP.format('+'), 0))
-		subscribedEvents.append((constants.TOPIC_VAD_DOWN.format('+'), 0))
-
-		for device in self.DeviceManager.getDevicesWithAbilities(abilities=[DeviceAbility.PLAY_SOUND, DeviceAbility.CAPTURE_SOUND], connectedOnly=False):
-
-			subscribedEvents.append((constants.TOPIC_PLAY_BYTES.format(device.id), 0))
-			subscribedEvents.append((constants.TOPIC_PLAY_BYTES_FINISHED.format(device.id), 0))
+		# for username in self.UserManager.getAllUserNames():
+		# 	subscribedEvents.append((constants.TOPIC_WAKEWORD_DETECTED.format(username), 0))
+		#
+		# subscribedEvents.append((constants.TOPIC_VAD_UP.format(self.ConfigManager.getAliceConfigByName('uuid')), 0))
+		# subscribedEvents.append((constants.TOPIC_VAD_DOWN.format(self.ConfigManager.getAliceConfigByName('uuid')), 0))
+		#
+		# subscribedEvents.append((constants.TOPIC_PLAY_BYTES.format(self.ConfigManager.getAliceConfigByName('uuid')), 0))
+		# subscribedEvents.append((constants.TOPIC_PLAY_BYTES_FINISHED.format(self.ConfigManager.getAliceConfigByName('uuid')), 0))
+		#
+		# subscribedEvents.append((constants.TOPIC_VAD_UP.format('+'), 0))
+		# subscribedEvents.append((constants.TOPIC_VAD_DOWN.format('+'), 0))
+		#
+		# for device in self.DeviceManager.getDevicesWithAbilities(abilities=[DeviceAbility.PLAY_SOUND, DeviceAbility.CAPTURE_SOUND], connectedOnly=False):
+		# 	subscribedEvents.append((constants.TOPIC_PLAY_BYTES.format(device.id), 0))
+		# 	subscribedEvents.append((constants.TOPIC_PLAY_BYTES_FINISHED.format(device.id), 0))
 
 		self._mqttClient.subscribe(subscribedEvents)
 		self.toggleFeedbackSounds()
@@ -245,6 +244,7 @@ class MqttManager(Manager):
 				)
 				return
 
+			print('Received mqtt message: ', message.topic)
 			if message.topic == constants.TOPIC_INTENT_PARSED:
 				return
 

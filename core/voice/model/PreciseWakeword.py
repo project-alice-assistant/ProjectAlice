@@ -93,7 +93,7 @@ class PreciseWakeword(WakewordEngine):
 		)
 
 
-	def onHotwordToggleOn(self, deviceUid: str, session: DialogSession):
+	def onHotwordToggleOn(self, deviceUid: str):
 		if self._enabled and self._handler:
 			self._handler.start()
 

@@ -99,7 +99,7 @@ class AliceWatchManager(Manager):
 		})
 
 
-	def onHotwordToggleOn(self, deviceUid: str, session: DialogSession):
+	def onHotwordToggleOn(self, deviceUid: str):
 		self.publish(payload={
 			'text'     : f'Was asked to toggle itself **on** on device **{self.getDisplayName(deviceUid)}**',
 			'component': 'Hotword',
@@ -107,7 +107,7 @@ class AliceWatchManager(Manager):
 		})
 
 
-	def onHotwordToggleOff(self, deviceUid: str, session: DialogSession):
+	def onHotwordToggleOff(self, deviceUid: str):
 		self.publish(payload={
 			'text'     : f'Was asked to toggle itself **off** on device **{self.getDisplayName(deviceUid)}**',
 			'component': 'Hotword',
