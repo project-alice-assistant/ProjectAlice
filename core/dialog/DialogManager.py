@@ -39,7 +39,6 @@ class DialogManager(Manager):
 		]
 	}
 
-
 	def __init__(self):
 		super().__init__(databaseSchema=self.DATABASE)
 		self._sessionsById: Dict[str: DialogSession] = dict()
@@ -54,7 +53,6 @@ class DialogManager(Manager):
 
 		self._captureFeedback = True
 
-
 	def newSession(self, deviceUid: str, user: str = constants.UNKNOWN_USER, message: MQTTMessage = None, increaseTimeout: int = 0) -> DialogSession:
 		session = DialogSession(deviceUid=deviceUid, user=user, sessionId=str(uuid.uuid4()), increaseTimeout=increaseTimeout)
 
@@ -67,17 +65,14 @@ class DialogManager(Manager):
 		self.logDebug(f'Started new session with id **{session.sessionId}**')
 		return session
 
-
 	def newTempSession(self, message: MQTTMessage = None) -> DialogSession:
 		deviceUid = self.Commons.parseDeviceUid(message)
 		session = self.newSession(deviceUid=deviceUid, message=message)
 		self.startSessionTimeout(sessionId=session.sessionId, tempSession=True)
 		return session
 
-
 	def onWakeword(self, deviceUid: str, user: str = constants.UNKNOWN_USER):
 		self.onHotword(deviceUid=deviceUid, user=user)
-
 
 	def onHotword(self, deviceUid: str, user: str = constants.UNKNOWN_USER):
 		if self.WakewordRecorder.state != WakewordRecorderState.IDLE:
@@ -111,20 +106,20 @@ class DialogManager(Manager):
 			self.MqttManager.publish(
 				topic=constants.TOPIC_START_SESSION,
 				payload={
-					'siteId'    : deviceUid,
-					'init'      : {
-						'type'                   : 'action',
-						'text'                   : talkNotification,
+					'siteId':     deviceUid,
+					'init':       {
+						'type':                    'action',
+						'text':                    talkNotification,
 						'sendIntentNotRecognized': True,
-						'canBeEnqueued'          : False
+						'canBeEnqueued':           False
 					},
 					'customData': json.dumps(dict())
 				})
 		else:
 			# TODO we should just start listening....
 			return
-			#self.onSayFinished(session=session, uid=str(uuid.uuid4()))
 
+	# self.onSayFinished(session=session, uid=str(uuid.uuid4()))
 
 	def onSayFinished(self, session: DialogSession, uid: str = None):
 		"""
@@ -163,11 +158,10 @@ class DialogManager(Manager):
 					self.MqttManager.publish(
 						topic=constants.TOPIC_ASR_START_LISTENING,
 						payload={
-							'siteId'   : session.deviceUid,
+							'siteId':    session.deviceUid,
 							'sessionId': session.sessionId
 						}
 					)
-
 
 	def startSessionTimeout(self, sessionId: str, tempSession: bool = False, delay: float = 0.0):
 		self.cancelSessionTimeout(sessionId=sessionId)
@@ -176,17 +170,15 @@ class DialogManager(Manager):
 			interval=self.ConfigManager.getAliceConfigByName('sessionTimeout') + delay + self._sessionsById[sessionId].increaseTimeout,
 			func=self.sessionTimeout,
 			kwargs={
-				'sessionId'  : sessionId,
+				'sessionId':   sessionId,
 				'tempSession': tempSession
 			}
 		)
-
 
 	def cancelSessionTimeout(self, sessionId: str):
 		timer = self._sessionTimeouts.pop(sessionId, None)
 		if timer:
 			timer.cancel()
-
 
 	def sessionTimeout(self, sessionId: str, tempSession: bool = False):
 		"""
@@ -205,7 +197,6 @@ class DialogManager(Manager):
 
 		session.payload['text'] = ''
 		self.onEndSession(session=session, reason='timeout')
-
 
 	def onSessionStarted(self, session: DialogSession):
 		"""
@@ -235,14 +226,13 @@ class DialogManager(Manager):
 			self.MqttManager.publish(
 				topic=constants.TOPIC_TTS_SAY,
 				payload={
-					'text'                 : text,
-					'lang'                 : self.LanguageManager.activeLanguageAndCountryCode,
-					'siteId'               : session.deviceUid,
-					'sessionId'            : session.sessionId,
-					'uid'                  : str(uuid.uuid4())
+					'text':      text,
+					'lang':      self.LanguageManager.activeLanguageAndCountryCode,
+					'siteId':    session.deviceUid,
+					'sessionId': session.sessionId,
+					'uid':       str(uuid.uuid4())
 				}
 			)
-
 
 	def onCaptured(self, session: DialogSession):
 		"""
@@ -255,7 +245,7 @@ class DialogManager(Manager):
 		self.MqttManager.publish(
 			topic=constants.TOPIC_ASR_STOP_LISTENING,
 			payload={
-				'siteId'   : session.deviceUid,
+				'siteId':    session.deviceUid,
 				'sessionId': session.sessionId
 			}
 		)
@@ -284,16 +274,15 @@ class DialogManager(Manager):
 		self.MqttManager.publish(
 			topic=constants.TOPIC_NLU_QUERY,
 			payload={
-				'input'       : session.payload['text'],
+				'input':        session.payload['text'],
 				'intentFilter': session.intentFilter if session.intentFilter else list(self._enabledByDefaultIntents),
-				'sessionId'   : session.sessionId
+				'sessionId':    session.sessionId
 			}
 		)
 
 		skill = self.SkillManager.getSkillInstance('ContextSensitive')
 		if skill:
 			skill.addUserChat(text=session.payload['text'], deviceUid=session.deviceUid)
-
 
 	def forgeUserRandomAnswer(self, session: DialogSession):
 		"""
@@ -310,7 +299,6 @@ class DialogManager(Manager):
 		session.payload['slots'] = list()
 		self.onIntentParsed(session)
 
-
 	def onIntentParsed(self, session: DialogSession):
 		"""
 		The NLU has parsed an intent, send that intent
@@ -322,18 +310,17 @@ class DialogManager(Manager):
 		self.MqttManager.publish(
 			topic=f'hermes/intent/{session.payload["intent"]["intentName"]}',
 			payload={
-				'sessionId'    : session.sessionId,
-				'customData'   : json.dumps(session.customData),
-				'siteId'       : session.deviceUid,
-				'input'        : session.payload['input'],
-				'intent'       : session.payload['intent'],
-				'slots'        : session.payload['slots'],
-				'asrTokens'    : json.dumps(list()),
+				'sessionId':     session.sessionId,
+				'customData':    json.dumps(session.customData),
+				'siteId':        session.deviceUid,
+				'input':         session.payload['input'],
+				'intent':        session.payload['intent'],
+				'slots':         session.payload['slots'],
+				'asrTokens':     json.dumps(list()),
 				'asrConfidence': session.payload['intent']['confidenceScore'],
-				'alternatives' : session.payload['alternatives']
+				'alternatives':  session.payload['alternatives']
 			}
 		)
-
 
 	def onNluIntentNotRecognized(self, session: DialogSession):
 		"""
@@ -349,13 +336,12 @@ class DialogManager(Manager):
 		self.MqttManager.publish(
 			topic=constants.TOPIC_INTENT_NOT_RECOGNIZED,
 			payload={
-				'siteId'    : session.deviceUid,
+				'siteId':     session.deviceUid,
 				'customData': json.dumps(session.customData),
-				'sessionId' : session.sessionId,
-				'input'     : session.payload['input']
+				'sessionId':  session.sessionId,
+				'input':      session.payload['input']
 			}
 		)
-
 
 	def onNluError(self, session: DialogSession):
 		"""
@@ -370,7 +356,6 @@ class DialogManager(Manager):
 		session.payload['text'] = ''
 		self.onEndSession(session=session, reason='error')
 
-
 	def onStartSession(self, deviceUid: str, payload: dict):
 		"""
 		Starts a new session
@@ -384,6 +369,14 @@ class DialogManager(Manager):
 			session = self.newSession(deviceUid=deviceUid)
 		else:
 			if session.hasStarted and not session.hasEnded and 'init' in payload and payload['init'].get('canBeEnqueued', True):
+				self.MqttManager.publish(
+					topic=constants.TOPIC_SESSION_QUEUED,
+					payload={
+						'siteId':     deviceUid,
+						'sessionId':  session.sessionId,
+						'customData': json.dumps(dict())
+					}
+				)
 				self.ThreadManager.doLater(interval=1, func=self.onStartSession, kwargs={'deviceUid': deviceUid, 'payload': payload})
 				return
 
@@ -399,12 +392,11 @@ class DialogManager(Manager):
 		self.MqttManager.publish(
 			topic=constants.TOPIC_SESSION_STARTED,
 			payload={
-				'siteId'    : deviceUid,
-				'sessionId' : session.sessionId,
+				'siteId':     deviceUid,
+				'sessionId':  session.sessionId,
 				'customData': json.dumps(dict())
 			}
 		)
-
 
 	def onContinueSession(self, session: DialogSession):
 		if not session.hasStarted:
@@ -420,13 +412,12 @@ class DialogManager(Manager):
 			self.MqttManager.publish(
 				topic=constants.TOPIC_TTS_SAY,
 				payload={
-					'text'     : session.payload['text'],
-					'lang'     : self.LanguageManager.activeLanguageAndCountryCode,
-					'siteId'   : session.deviceUid,
+					'text':      session.payload['text'],
+					'lang':      self.LanguageManager.activeLanguageAndCountryCode,
+					'siteId':    session.deviceUid,
 					'sessionId': session.sessionId
 				}
 			)
-
 
 	def onEndSession(self, session: DialogSession, reason: str = 'nominal'):
 		self.cancelSessionTimeout(sessionId=session.sessionId)
@@ -438,9 +429,9 @@ class DialogManager(Manager):
 			self.MqttManager.publish(
 				topic=constants.TOPIC_TTS_SAY,
 				payload={
-					'text'     : session.payload['text'],
-					'lang'     : self.LanguageManager.activeLanguageAndCountryCode,
-					'siteId'   : session.deviceUid,
+					'text':      session.payload['text'],
+					'lang':      self.LanguageManager.activeLanguageAndCountryCode,
+					'siteId':    session.deviceUid,
 					'sessionId': session.sessionId
 				}
 			)
@@ -448,15 +439,14 @@ class DialogManager(Manager):
 			self.MqttManager.publish(
 				topic=constants.TOPIC_SESSION_ENDED,
 				payload={
-					'siteId'     : session.deviceUid,
-					'sessionId'  : session.sessionId,
-					'customData' : json.dumps(session.customData),
+					'siteId':      session.deviceUid,
+					'sessionId':   session.sessionId,
+					'customData':  json.dumps(session.customData),
 					'termination': {
 						'reason': reason
 					}
 				}
 			)
-
 
 	def onSessionEnded(self, session: DialogSession):
 		"""
@@ -474,7 +464,6 @@ class DialogManager(Manager):
 
 		self.removeSession(sessionId=session.sessionId)
 
-
 	def onAsrToggleOff(self, deviceUid: str):
 		"""
 		Asr is toggled off, the hotword is allowed to capture the hotword again on that device
@@ -484,10 +473,9 @@ class DialogManager(Manager):
 		self.MqttManager.publish(
 			topic=constants.TOPIC_HOTWORD_TOGGLE_ON,
 			payload={
-				'siteId'   : deviceUid
+				'siteId': deviceUid
 			}
 		)
-
 
 	def onSessionError(self, session: DialogSession):
 		if self.Commons.partOfTheDay() == PartOfDay.SLEEPING.value:
@@ -498,7 +486,6 @@ class DialogManager(Manager):
 				topic=constants.TOPIC_PLAY_BYTES.format(session.deviceUid).replace('#', session.sessionId),
 				payload=bytearray(Path(f'system/sounds/{self.LanguageManager.activeLanguage}/error.wav').read_bytes())
 			)
-
 
 	def toggleFeedbackSound(self, state: str, deviceUid: str = constants.ALL):
 		topic = constants.TOPIC_TOGGLE_FEEDBACK_ON if state == 'on' else constants.TOPIC_TOGGLE_FEEDBACK_OFF
@@ -511,14 +498,11 @@ class DialogManager(Manager):
 		else:
 			self.MqttManager.publish(topic=topic, payload={'siteId': deviceUid})
 
-
 	def onToggleFeedbackOn(self, deviceUid: str):
 		self._feedbackSounds[deviceUid] = True
 
-
 	def onToggleFeedbackOff(self, deviceUid: str):
 		self._feedbackSounds[deviceUid] = False
-
 
 	def onIntentNotRecognized(self, session: DialogSession):
 		if not session.input:
@@ -532,10 +516,8 @@ class DialogManager(Manager):
 			}
 		)
 
-
 	def getSession(self, sessionId: str) -> Optional[DialogSession]:
 		return self._sessionsById.get(sessionId, None)
-
 
 	def uidBusy(self, uid: str) -> bool:
 		session = self._sessionsByDeviceUids.get(uid, None)
@@ -543,7 +525,6 @@ class DialogManager(Manager):
 			return True
 		else:
 			return False
-
 
 	def removeSession(self, sessionId: str):
 		self.cancelSessionTimeout(sessionId=sessionId)
@@ -554,7 +535,6 @@ class DialogManager(Manager):
 
 		self._endedSessions[sessionId] = session
 		self._sessionsByDeviceUids.pop(session.deviceUid, None)
-
 
 	def increaseSessionTimeout(self, session: DialogSession, interval: float):
 		"""
@@ -568,16 +548,13 @@ class DialogManager(Manager):
 
 		self.startSessionTimeout(sessionId=session.sessionId, delay=interval)
 
-
 	@property
 	def sessions(self) -> Dict[str, DialogSession]:
 		return self._sessionsById
 
-
 	@property
 	def sessionsBySites(self) -> Dict[str, DialogSession]:
 		return self._sessionsByDeviceUids
-
 
 	def addDisabledByDefaultIntent(self, intent: str):
 		self._disabledByDefaultIntents.add(intent)
@@ -585,10 +562,8 @@ class DialogManager(Manager):
 		if intent in self._enabledByDefaultIntents:
 			self._enabledByDefaultIntents.remove(intent)
 
-
 	def addEnabledByDefaultIntent(self, intent: str):
 		self._enabledByDefaultIntents.add(intent)
-
 
 	def cleanNotRecognizedIntent(self, text: str):
 		self.DatabaseManager.delete(
@@ -599,14 +574,11 @@ class DialogManager(Manager):
 			}
 		)
 
-
 	def getEnabledByDefaultIntents(self) -> Set:
 		return self._enabledByDefaultIntents
 
-
 	def disableCaptureFeedback(self):
 		self._captureFeedback = False
-
 
 	def enableCaptureFeedback(self):
 		self._captureFeedback = True

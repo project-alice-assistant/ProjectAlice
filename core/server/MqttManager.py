@@ -518,7 +518,7 @@ class MqttManager(Manager):
 		self.broadcast(method=constants.EVENT_SESSION_ENDED, exceptions=[self.name], propagateToSkills=True, session=session)
 
 
-	def intentSay(self, _client, _data, msg: mqtt.MQTTMessage):
+	def intentSay(self, _client, _data, msg: mqtt.MQTTMessage): # TODO rename => sayStart
 		sessionId = self.Commons.parseSessionId(msg)
 		payload = self.Commons.payload(msg)
 
