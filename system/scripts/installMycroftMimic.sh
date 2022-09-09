@@ -27,13 +27,13 @@ if [[ -d "mimic" ]]; then
   rm -rf mimic
 fi
 
-git clone https://github.com/MycroftAI/mimic.git
-cd mimic || exit
+git clone https://github.com/MycroftAI/mimic1.git
+cd mimic1 || exit
 ./dependencies.sh --prefix="/usr/local"
 ./autogen.sh
 ./configure --prefix="/usr/local"
 make
 /sbin/ldconfig
 make check
-
+mv ~/mimic1 ~/mimic
 sleep 1
