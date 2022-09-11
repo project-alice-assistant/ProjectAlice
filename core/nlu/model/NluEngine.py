@@ -16,6 +16,8 @@
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>
 #
 #  Last modified: 2021.04.13 at 12:56:47 CEST
+import importlib
+import subprocess
 import time
 from pathlib import Path
 
@@ -42,11 +44,17 @@ class NluEngine(ProjectAliceObject):
 		self.logInfo(f'Stopping {self.NAME}')
 
 
+	def checkLanguage(self):
+		if importlib.util.find_spec(f"snips_nlu_{self.LanguageManager.activeLanguage}") is None:
+			subprocess.run(['./venv/bin/snips-nlu', 'download', self.LanguageManager.activeLanguage])
+
+
 	def train(self, forceLocalTraining: bool = False) -> bool:
 		if self.NluManager.training:
 			self.logWarning("NLU is already training, can't train again now")
 			return False
 
+		self.checkLanguage()
 		self.logInfo(f'Training {self.NAME}')
 		self._trainingStartTime = time.time()
 		self.startTraining()
