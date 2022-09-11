@@ -95,12 +95,12 @@ class TalkManager(Manager):
 		except KeyError:
 			# Fallback to default language then
 			if activeLanguage != defaultLanguage:
-				self.logError(f'Was asked to get **{talk}** from **{skill}** skill in **{activeLanguage}** but it doesn\'t exist, falling back to **{defaultLanguage}** version instead')
+				self.logError(f'Was asked to get **{talk}** from **{skill}** skill in **{activeLanguage}** but it doesn\'t exist, falling back to **{defaultLanguage}** version instead', printStack=False)
 				# call itself again with default language and then exit because activeLanguage == defaultLanguage
 				return self.chooseTalk(talk, skill, defaultLanguage, defaultLanguage, shortReplyMode)
 
 			# Give up, that text does not exist...
-			self.logError(f'Was asked to get **{talk}** from **{skill}** skill but language string doesn\'t exist')
+			self.logError(f'Was asked to get **{talk}** from **{skill}** skill but language string doesn\'t exist', printStack=False)
 			return ''
 
 
