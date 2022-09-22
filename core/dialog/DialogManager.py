@@ -144,7 +144,7 @@ class DialogManager(Manager):
 			session.payload['text'] = ''
 			self.onEndSession(session=session, reason='nominal')
 		else:
-			if session.state.value < DialogSessionState.LISTENING:
+			if session.state.value < DialogSessionState.LISTENING.value:
 				self.onStartSession(
 					deviceUid=session.deviceUid,
 					payload=dict()
@@ -403,7 +403,7 @@ class DialogManager(Manager):
 		)
 
 	def onContinueSession(self, session: DialogSession):
-		if session.state.value < DialogSessionState.LISTENING:
+		if session.state.value < DialogSessionState.LISTENING.value:
 			self.onStartSession(
 				deviceUid=session.deviceUid,
 				payload=session.payload

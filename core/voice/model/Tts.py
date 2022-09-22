@@ -197,16 +197,15 @@ class Tts(ProjectAliceObject):
 
 
 	def _sayFinished(self, session: DialogSession):
-		if self._speaking:
-			self.resetFailureTimer()
-			self.MqttManager.publish(
-				topic=constants.TOPIC_TTS_FINISHED,
-				payload={
-					'id'       : session.sessionId,
-					'sessionId': session.sessionId,
-					'deviceUid': session.deviceUid
-				}
-			)
+		self.resetFailureTimer()
+		self.MqttManager.publish(
+			topic=constants.TOPIC_TTS_FINISHED,
+			payload={
+				'id'       : session.sessionId,
+				'sessionId': session.sessionId,
+				'deviceUid': session.deviceUid
+			}
+		)
 
 
 	def resetFailureTimer(self):

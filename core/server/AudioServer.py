@@ -272,16 +272,18 @@ class AudioManager(Manager):
 					stream.start()
 					while stream.active:
 						if self._stopPlayingFlag.is_set():
-							if not sessionId or not session or session.lastWasSoundPlayOnly:
+							self.DialogManager.onEndSession(session)
+							if self.TTSManager.isTalking(deviceUid=deviceUid):
+								raise TTSFinished
+							else:
 								raise PlayBytesStopped
 
-							self.DialogManager.onEndSession(session)
 						time.sleep(0.1)
 
-					if not session or session.lastWasSoundPlayOnly:
-						raise PlayBytesFinished
-					else:
+					if self.TTSManager.isTalking(deviceUid=deviceUid):
 						raise TTSFinished
+					else:
+						raise PlayBytesFinished
 			except PlayBytesStopped:
 				self.logDebug('Playing bytes stopped')
 			except TTSFinished:
