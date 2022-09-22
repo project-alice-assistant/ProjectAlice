@@ -66,9 +66,9 @@ class MqttManager(Manager):
 		self._mqttClient.on_log = self.onLog
 
 		self._mqttClient.message_callback_add(constants.TOPIC_HOTWORD_DETECTED, self.onHotwordDetected)
-		# for username in self.UserManager.getAllUserNames():
-		# 	self._mqttClient.message_callback_add(constants.TOPIC_WAKEWORD_DETECTED.replace('{user}', username), self.onHotwordDetected)
-		#
+		for username in self.UserManager.getAllUserNames():
+			self._mqttClient.message_callback_add(constants.TOPIC_WAKEWORD_DETECTED.replace('{user}', username), self.onHotwordDetected)
+
 		self._mqttClient.message_callback_add(constants.TOPIC_SESSION_STARTED, self.sessionStarted)
 		# self._mqttClient.message_callback_add(constants.TOPIC_ASR_START_LISTENING, self.startListening)
 		# self._mqttClient.message_callback_add(constants.TOPIC_ASR_STOP_LISTENING, self.stopListening)
@@ -93,11 +93,11 @@ class MqttManager(Manager):
 		# self._mqttClient.message_callback_add(constants.TOPIC_TOGGLE_FEEDBACK_OFF, self.toggleFeedback)
 		# self._mqttClient.message_callback_add(constants.TOPIC_NLU_INTENT_NOT_RECOGNIZED, self.nluIntentNotRecognized)
 		# self._mqttClient.message_callback_add(constants.TOPIC_NLU_ERROR, self.nluError)
-		# self._mqttClient.message_callback_add(constants.TOPIC_NLU_TRAINER_READY, self.nluOffshoreTrainerReady)
-		# self._mqttClient.message_callback_add(constants.TOPIC_NLU_TRAINER_STOPPED, self.nluOffshoreTrainerStopped)
-		# self._mqttClient.message_callback_add(constants.TOPIC_NLU_TRAINER_TRAINING_RESULT, self.nluOffshoreTrainerResult)
-		# self._mqttClient.message_callback_add(constants.TOPIC_NLU_TRAINER_REFUSE_FAILED, self.nluOffshoreTrainerRefusedFailed)
-		# self._mqttClient.message_callback_add(constants.TOPIC_NLU_TRAINER_TRAINING, self.nluOffshoreTrainerTraining)
+		self._mqttClient.message_callback_add(constants.TOPIC_NLU_TRAINER_READY, self.nluOffshoreTrainerReady)
+		self._mqttClient.message_callback_add(constants.TOPIC_NLU_TRAINER_STOPPED, self.nluOffshoreTrainerStopped)
+		self._mqttClient.message_callback_add(constants.TOPIC_NLU_TRAINER_TRAINING_RESULT, self.nluOffshoreTrainerResult)
+		self._mqttClient.message_callback_add(constants.TOPIC_NLU_TRAINER_REFUSE_FAILED, self.nluOffshoreTrainerRefusedFailed)
+		self._mqttClient.message_callback_add(constants.TOPIC_NLU_TRAINER_TRAINING, self.nluOffshoreTrainerTraining)
 
 		self.connect()
 
@@ -155,11 +155,11 @@ class MqttManager(Manager):
 			# (constants.TOPIC_NLU_INTENT_NOT_RECOGNIZED, 0),
 			(constants.TOPIC_START_SESSION, 0),
 			# (constants.TOPIC_NLU_ERROR, 0),
-			# (constants.TOPIC_NLU_TRAINER_TRAINING_RESULT, 0),
-			# (constants.TOPIC_NLU_TRAINER_READY, 0),
-			# (constants.TOPIC_NLU_TRAINER_STOPPED, 0),
-			# (constants.TOPIC_NLU_TRAINER_REFUSE_FAILED, 0),
-			# (constants.TOPIC_NLU_TRAINER_TRAINING, 0),
+			(constants.TOPIC_NLU_TRAINER_TRAINING_RESULT, 0),
+			(constants.TOPIC_NLU_TRAINER_READY, 0),
+			(constants.TOPIC_NLU_TRAINER_STOPPED, 0),
+			(constants.TOPIC_NLU_TRAINER_REFUSE_FAILED, 0),
+			(constants.TOPIC_NLU_TRAINER_TRAINING, 0),
 			# (self.TOPIC_AUDIO_FRAME, 0)
 		]
 
