@@ -288,6 +288,7 @@ class AudioManager(Manager):
 				self.logDebug('Playing bytes stopped')
 			except TTSFinished:
 				self.logDebug('TTS finished speaking')
+
 				self.MqttManager.publish(
 					topic=constants.TOPIC_TTS_FINISHED,
 					payload={

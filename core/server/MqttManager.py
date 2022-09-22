@@ -163,21 +163,21 @@ class MqttManager(Manager):
 			(self.TOPIC_AUDIO_FRAME, 0)
 		]
 
-		# for username in self.UserManager.getAllUserNames():
-		# 	subscribedEvents.append((constants.TOPIC_WAKEWORD_DETECTED.format(username), 0))
-		#
-		# subscribedEvents.append((constants.TOPIC_VAD_UP.format(self.ConfigManager.getAliceConfigByName('uuid')), 0))
-		# subscribedEvents.append((constants.TOPIC_VAD_DOWN.format(self.ConfigManager.getAliceConfigByName('uuid')), 0))
-		#
-		# subscribedEvents.append((constants.TOPIC_PLAY_BYTES.format(self.ConfigManager.getAliceConfigByName('uuid')), 0))
-		# subscribedEvents.append((constants.TOPIC_PLAY_BYTES_FINISHED.format(self.ConfigManager.getAliceConfigByName('uuid')), 0))
-		#
-		# subscribedEvents.append((constants.TOPIC_VAD_UP.format('+'), 0))
-		# subscribedEvents.append((constants.TOPIC_VAD_DOWN.format('+'), 0))
-		#
-		# for device in self.DeviceManager.getDevicesWithAbilities(abilities=[DeviceAbility.PLAY_SOUND, DeviceAbility.CAPTURE_SOUND], connectedOnly=False):
-		# 	subscribedEvents.append((constants.TOPIC_PLAY_BYTES.format(device.id), 0))
-		# 	subscribedEvents.append((constants.TOPIC_PLAY_BYTES_FINISHED.format(device.id), 0))
+		for username in self.UserManager.getAllUserNames():
+			subscribedEvents.append((constants.TOPIC_WAKEWORD_DETECTED.format(username), 0))
+
+		subscribedEvents.append((constants.TOPIC_VAD_UP.format(self.ConfigManager.getAliceConfigByName('uuid')), 0))
+		subscribedEvents.append((constants.TOPIC_VAD_DOWN.format(self.ConfigManager.getAliceConfigByName('uuid')), 0))
+
+		subscribedEvents.append((constants.TOPIC_PLAY_BYTES.format(self.ConfigManager.getAliceConfigByName('uuid')), 0))
+		subscribedEvents.append((constants.TOPIC_PLAY_BYTES_FINISHED.format(self.ConfigManager.getAliceConfigByName('uuid')), 0))
+
+		subscribedEvents.append((constants.TOPIC_VAD_UP.format('+'), 0))
+		subscribedEvents.append((constants.TOPIC_VAD_DOWN.format('+'), 0))
+
+		for device in self.DeviceManager.getDevicesWithAbilities(abilities=[DeviceAbility.PLAY_SOUND, DeviceAbility.CAPTURE_SOUND], connectedOnly=False):
+			subscribedEvents.append((constants.TOPIC_PLAY_BYTES.format(device.id), 0))
+			subscribedEvents.append((constants.TOPIC_PLAY_BYTES_FINISHED.format(device.id), 0))
 
 		self._mqttClient.subscribe(subscribedEvents)
 		self.toggleFeedbackSounds()
@@ -925,10 +925,6 @@ class MqttManager(Manager):
 
 		if not sessionId:
 			sessionId = str(uuid.uuid4())
-
-		session = self.DialogManager.getSession(sessionId=sessionId)
-		#if session and not self.TTSManager.speaking:
-		#	session.lastWasSoundPlayOnly = True
 
 		if not location:
 			location = Path(self.Commons.rootDir()) / 'system' / 'sounds'

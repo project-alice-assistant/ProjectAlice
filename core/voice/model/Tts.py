@@ -20,7 +20,6 @@ import getpass
 import hashlib
 import re
 import tempfile
-import threading
 from pathlib import Path
 from pydub import AudioSegment
 from pydub.exceptions import CouldntDecodeError
@@ -28,7 +27,6 @@ from re import Match
 from typing import Optional
 
 from core.base.model.ProjectAliceObject import ProjectAliceObject
-from core.commons import constants
 from core.dialog.model.DialogSession import DialogSession
 from core.user.model.User import User
 
@@ -56,7 +54,6 @@ class Tts(ProjectAliceObject):
 
 		self._cacheFile: Path = Path()
 		self._text = ''
-		self._ttsFailureTimer: Optional[threading.Timer] = None
 
 		self._supportsSSML = False
 
@@ -172,8 +169,6 @@ class Tts(ProjectAliceObject):
 
 
 	def _speak(self, file: Path, session: DialogSession):
-		session.lastWasSoundPlayOnly = False
-
 		self.MqttManager.playSound(
 			soundFilename=file.stem,
 			location=file.parent,
@@ -189,33 +184,6 @@ class Tts(ProjectAliceObject):
 			self.onSay(session)
 		else:
 			self.DialogManager.increaseSessionTimeout(session=session, interval=duration + self.ConfigManager.getAliceConfigByName('sessionTimeout'))
-
-			# If something goes wrong, let's manually terminate the TTS speaking
-			if session.deviceUid == self.DeviceManager.getMainDevice().uid:
-				self.resetFailureTimer()
-				self._ttsFailureTimer = self.ThreadManager.newTimer(interval=duration * 2, func=self._sayFinished, args=[session])
-
-
-	def _sayFinished(self, session: DialogSession):
-		self.resetFailureTimer()
-		self.MqttManager.publish(
-			topic=constants.TOPIC_TTS_FINISHED,
-			payload={
-				'id'       : session.sessionId,
-				'sessionId': session.sessionId,
-				'deviceUid': session.deviceUid
-			}
-		)
-
-
-	def resetFailureTimer(self):
-		if self._ttsFailureTimer and self._ttsFailureTimer.is_alive():
-			self._ttsFailureTimer.cancel()
-		self._ttsFailureTimer = None
-
-
-	def onSayFinished(self, session: DialogSession, uid: str = None):
-		self.resetFailureTimer()
 
 
 	def _checkText(self, session: DialogSession) -> str:

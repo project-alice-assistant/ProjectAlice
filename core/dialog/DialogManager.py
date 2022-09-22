@@ -144,26 +144,20 @@ class DialogManager(Manager):
 			session.payload['text'] = ''
 			self.onEndSession(session=session, reason='nominal')
 		else:
-			if session.state.value < DialogSessionState.LISTENING.value:
-				self.onStartSession(
-					deviceUid=session.deviceUid,
-					payload=dict()
+			self.startSessionTimeout(sessionId=session.sessionId)
+
+			if not session.textInput:
+				self.MqttManager.publish(
+					topic=constants.TOPIC_ASR_TOGGLE_ON
 				)
-			else:
-				self.startSessionTimeout(sessionId=session.sessionId)
 
-				if not session.textInput:
-					self.MqttManager.publish(
-						topic=constants.TOPIC_ASR_TOGGLE_ON
-					)
-
-					self.MqttManager.publish(
-						topic=constants.TOPIC_ASR_START_LISTENING,
-						payload={
-							'siteId':    session.deviceUid,
-							'sessionId': session.sessionId
-						}
-					)
+				self.MqttManager.publish(
+					topic=constants.TOPIC_ASR_START_LISTENING,
+					payload={
+						'siteId':    session.deviceUid,
+						'sessionId': session.sessionId
+					}
+				)
 
 	def startSessionTimeout(self, sessionId: str, tempSession: bool = False, delay: float = 0.0):
 		self.cancelSessionTimeout(sessionId=sessionId)

@@ -164,6 +164,7 @@ class ASRManager(Manager):
 
 
 	def onStartListening(self, session: DialogSession):
+		session.state = DialogSessionState.LISTENING
 		self._asr.onStartListening(session)
 		self.ThreadManager.newThread(name=f'streamdecode_{session.deviceUid}', target=self.decodeStream, args=[session])
 
