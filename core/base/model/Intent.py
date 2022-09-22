@@ -89,4 +89,4 @@ class Intent(object):
 
 
 	def getMapping(self, session) -> Optional[Callable]:
-		return self.dialogMapping.get(session.currentState, self.fallbackFunction)
+		return self.dialogMapping.get(session.currentDialogState, self.fallbackFunction)

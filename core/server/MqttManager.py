@@ -32,6 +32,7 @@ from core.base.model.Manager import Manager
 from core.commons import constants
 from core.device.model.Device import Device
 from core.device.model.DeviceAbility import DeviceAbility
+from core.dialog.model.DialogSessionState import DialogSessionState
 
 
 class MqttManager(Manager):
@@ -75,7 +76,7 @@ class MqttManager(Manager):
 		self._mqttClient.message_callback_add(constants.TOPIC_ASR_TOGGLE_OFF, self.asrToggleOff)
 		# self._mqttClient.message_callback_add(constants.TOPIC_INTENT_PARSED, self.intentParsed)
 		# self._mqttClient.message_callback_add(constants.TOPIC_TEXT_CAPTURED, self.captured)
-		# self._mqttClient.message_callback_add(constants.TOPIC_TTS_SAY, self.intentSay)
+		self._mqttClient.message_callback_add(constants.TOPIC_TTS_SAY, self.intentSay)
 		# self._mqttClient.message_callback_add(constants.TOPIC_TTS_FINISHED, self.sayFinished)
 		self._mqttClient.message_callback_add(constants.TOPIC_SESSION_ENDED, self.sessionEnded)
 		# self._mqttClient.message_callback_add(constants.TOPIC_CONTINUE_SESSION, self.continueSession)
@@ -138,7 +139,7 @@ class MqttManager(Manager):
 			# (constants.TOPIC_TTS_FINISHED, 0),
 			# (constants.TOPIC_ASR_START_LISTENING, 0),
 			# (constants.TOPIC_ASR_STOP_LISTENING, 0),
-			# (constants.TOPIC_TTS_SAY, 0),
+			(constants.TOPIC_TTS_SAY, 0),
 			# (constants.TOPIC_TEXT_CAPTURED, 0),
 			# (constants.TOPIC_PARTIAL_TEXT_CAPTURED, 0),
 			(constants.TOPIC_HOTWORD_TOGGLE_ON, 0),
@@ -369,14 +370,12 @@ class MqttManager(Manager):
 
 	def hotwordToggleOn(self, _client, _data, msg: mqtt.MQTTMessage):
 		deviceUid = self.Commons.parseDeviceUid(msg)
-		session = self.DialogManager.getSession(self.Commons.parseSessionId(msg))
-		self.broadcast(method=constants.EVENT_HOTWORD_TOGGLE_ON, exceptions=[constants.DUMMY], propagateToSkills=True, deviceUid=deviceUid, session=session)
+		self.broadcast(method=constants.EVENT_HOTWORD_TOGGLE_ON, exceptions=[constants.DUMMY], propagateToSkills=True, deviceUid=deviceUid)
 
 
 	def hotwordToggleOff(self, _client, _data, msg: mqtt.MQTTMessage):
 		deviceUid = self.Commons.parseDeviceUid(msg)
-		session = self.DialogManager.getSession(self.Commons.parseSessionId(msg))
-		self.broadcast(method=constants.EVENT_HOTWORD_TOGGLE_OFF, exceptions=[constants.DUMMY], propagateToSkills=True, deviceUid=deviceUid, session=session)
+		self.broadcast(method=constants.EVENT_HOTWORD_TOGGLE_OFF, exceptions=[constants.DUMMY], propagateToSkills=True, deviceUid=deviceUid)
 
 
 	def sessionStarted(self, _client, _data, msg: mqtt.MQTTMessage):
@@ -495,7 +494,7 @@ class MqttManager(Manager):
 		if not session:
 			return
 
-		session.hasEnded = True
+		session.state = DialogSessionState.ENDED
 		session.update(msg)
 
 		reason = session.payload['termination']['reason']
@@ -518,7 +517,7 @@ class MqttManager(Manager):
 		self.broadcast(method=constants.EVENT_SESSION_ENDED, exceptions=[self.name], propagateToSkills=True, session=session)
 
 
-	def intentSay(self, _client, _data, msg: mqtt.MQTTMessage): # TODO rename => sayStart
+	def intentSay(self, _client, _data, msg: mqtt.MQTTMessage):
 		sessionId = self.Commons.parseSessionId(msg)
 		payload = self.Commons.payload(msg)
 
@@ -762,7 +761,7 @@ class MqttManager(Manager):
 		session = self.DialogManager.newSession(deviceUid, user)
 
 		if currentDialogState:
-			session.currentState = currentDialogState
+			session.currentDialogState = currentDialogState
 
 		if probabilityThreshold is not None:
 			session.probabilityThreshold = probabilityThreshold
@@ -864,7 +863,7 @@ class MqttManager(Manager):
 			session.probabilityThreshold = probabilityThreshold
 
 		if currentDialogState:
-			session.currentState = currentDialogState
+			session.currentDialogState = currentDialogState
 
 		self._mqttClient.publish(constants.TOPIC_CONTINUE_SESSION, json.dumps(jsonDict))
 

@@ -165,7 +165,7 @@ class ProjectAlice(Singleton):
 		state = self._superManager.StateManager.getState(STATE)
 		if not state:
 			self._superManager.StateManager.register(STATE, initialState=StateType.RUNNING)
-		elif state.currentState == StateType.RUNNING:
+		elif state.currentDialogState == StateType.RUNNING:
 			self._logger.logInfo('Update cancelled, already running')
 			return
 

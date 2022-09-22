@@ -32,6 +32,7 @@ from core.asr.model.Recorder import Recorder
 from core.base.model.Manager import Manager
 from core.commons import constants
 from core.dialog.model.DialogSession import DialogSession
+from core.dialog.model.DialogSessionState import DialogSessionState
 
 
 class ASRManager(Manager):
@@ -182,7 +183,7 @@ class ASRManager(Manager):
 		result: ASRResult = self._asr.decodeStream(session)
 
 		if result and result.text:
-			if session.hasEnded:
+			if session.state == DialogSessionState.ENDED:
 				return
 
 			self.logDebug(f'Asr captured: {result.text}')

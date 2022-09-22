@@ -27,6 +27,7 @@ from paho.mqtt.client import MQTTMessage
 from core.base.SuperManager import SuperManager
 from core.base.model import Intent
 from core.commons import constants
+from core.dialog.model.DialogSessionState import DialogSessionState
 
 
 @dataclass
@@ -38,31 +39,31 @@ class DialogSession(object):
 	message: MQTTMessage = None
 	intentName: str = ''
 	notUnderstood: int = 0
-	currentState: str = constants.DEFAULT
-
-	# TODO rework with clear states
-	hasEnded: bool = False
-	hasStarted: bool = False
-	isEnding: bool = False
-	inDialog = False
-
+	state: DialogSessionState = DialogSessionState.CREATED
+	currentDialogState: str = constants.DEFAULT
 	probabilityThreshold: float = 0.5
 	text: str = ''
 	input: str = ''
 	previousInput: str = ''
-	isNotification: bool = False
 	slots: dict = field(default_factory=dict)
 	slotsAsObjects: dict = field(default_factory=dict)
 	customData: dict = field(default_factory=dict)
 	payload: dict = field(default_factory=dict)
 	intentHistory: list = field(default_factory=list)
 	intentFilter: list = field(default_factory=list)
-	textOnly: bool = False  # The session doesn't use audio, but text only. Per exemple, for Telegram messages sent to Alice
-	textInput: bool = False  # The session is started, user side, by a text input, not with voice capture, like dialogview on web ui
-	keptOpen: bool = False  # The session has ended, but is kept open for a new promt
-	lastWasSoundPlayOnly: bool = False  # We don't use request ids for play bytes topic. Both say and playaudio use play bytes, therefor we need to track if the last play bytes was sound only or TTS
+	textOnly: bool = False  # The session doesn't use audio, but text only. Per example, for Telegram messages sent to Alice
+	textInput: bool = False  # The session is started, user side, by a text input, not with voice capture, like dialog view on web ui
+	keptOpen: bool = False  # The session has ended, but is kept open for a new prompt
 	locationId: int = -1  # Where this session is taking place
 	init: dict = field(default_factory=dict)
+
+	# TODO remove
+	hasEnded: bool = False
+	hasStarted: bool = False
+	isEnding: bool = False
+	inDialog = False
+	isNotification: bool = False
+	lastWasSoundPlayOnly: bool = False  # We don't use request ids for play bytes topic. Both say and play audio use play bytes, therefor we need to track if the last play bytes was sound only or TTS
 
 
 	def __post_init__(self):  # NOSONAR
@@ -105,9 +106,7 @@ class DialogSession(object):
 		if message.topic == constants.TOPIC_END_SESSION:
 			keepSessionOpen = SuperManager.getInstance().ConfigManager.getAliceConfigByName('keepSessionOpen')
 
-			self.keptOpen = not self.payload.get('forceEnd', False) \
-			                and ( keepSessionOpen == 'Always'
-			                      or keepSessionOpen == 'Allowed' and self.payload.get('requestContinue', False) )
+			self.keptOpen = not self.payload.get('forceEnd', False) and (keepSessionOpen == 'Always' or keepSessionOpen == 'Allowed' and self.payload.get('requestContinue', False))
 
 		customData = commonsManager.parseCustomData(message)
 		self.customData = {**self.customData, **customData}

@@ -29,6 +29,7 @@ from core.commons import constants
 from core.commons.model.PartOfDay import PartOfDay
 from core.device.model.DeviceAbility import DeviceAbility
 from core.dialog.model.DialogSession import DialogSession
+from core.dialog.model.DialogSessionState import DialogSessionState
 from core.voice.WakewordRecorder import WakewordRecorderState
 
 
@@ -130,19 +131,19 @@ class DialogManager(Manager):
 		:return:
 		"""
 
-		if not session or session.hasEnded:
+		if not session or session.state == DialogSessionState.ENDED:
 			return
 
-		if session.isEnding and 0 < session.notUnderstood < int(self.ConfigManager.getAliceConfigByName('notUnderstoodRetries')):
-			session.isEnding = False
+		if session.state == DialogSessionState.ENDING and 0 < session.notUnderstood < int(self.ConfigManager.getAliceConfigByName('notUnderstoodRetries')):
+			session.state = DialogSessionState.IN_DIALOG
 			self.SkillManager.getSkillInstance('AliceCore').askUpdateUtterance(session=session)
 			return
 
-		if not session.keptOpen and session.isEnding or session.isNotification:
+		if not session.keptOpen and session.state == DialogSessionState.ENDING or session.isNotification:
 			session.payload['text'] = ''
 			self.onEndSession(session=session, reason='nominal')
 		else:
-			if not session.hasStarted:
+			if session.state.value < DialogSessionState.LISTENING:
 				self.onStartSession(
 					deviceUid=session.deviceUid,
 					payload=dict()
@@ -206,7 +207,7 @@ class DialogManager(Manager):
 		:return:
 		"""
 		self.startSessionTimeout(sessionId=session.sessionId)
-		session.hasStarted = True
+		session.state = DialogSessionState.STARTED
 
 		init = session.init
 		if not init:
@@ -380,6 +381,8 @@ class DialogManager(Manager):
 				self.ThreadManager.doLater(interval=1, func=self.onStartSession, kwargs={'deviceUid': deviceUid, 'payload': payload})
 				return
 
+		session.state = DialogSessionState.STARTING
+		# TODO
 		if 'init' in payload:
 			session.init = payload['init']
 			if payload['init']['type'] == 'notification':
@@ -399,14 +402,14 @@ class DialogManager(Manager):
 		)
 
 	def onContinueSession(self, session: DialogSession):
-		if not session.hasStarted:
+		if session.state.value < DialogSessionState.LISTENING:
 			self.onStartSession(
 				deviceUid=session.deviceUid,
 				payload=session.payload
 			)
 
 		self.startSessionTimeout(sessionId=session.sessionId)
-		session.inDialog = True
+		session.state = DialogSessionState.IN_DIALOG
 
 		if 'text' in session.payload and session.payload['text']:
 			self.MqttManager.publish(
@@ -456,7 +459,7 @@ class DialogManager(Manager):
 		"""
 
 		self.cancelSessionTimeout(sessionId=session.sessionId)
-		session.hasEnded = True
+		session.state = DialogSessionState.ENDED
 
 		self.MqttManager.publish(
 			topic=constants.TOPIC_ASR_TOGGLE_OFF

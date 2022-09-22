@@ -1,6 +1,6 @@
 #  Copyright (c) 2021
 #
-#  This file, ASREnum.py, is part of Project Alice.
+#  This file, DialogSessionState.py, is part of Project Alice.
 #
 #  Project Alice is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
@@ -15,16 +15,17 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>
 #
-#  Last modified: 2021.04.13 at 12:56:48 CEST
+#  Last modified: 2022.09.07 at 12:56:48 CEST
 
 from enum import Enum
 
 
-class ASREnum(Enum):
-	GOOGLE = 'google'
-	DEEPSPEECH = 'deepspeech'
-	SNIPS = 'snips'
-	VOSK = 'vosk'
-	COQUI = 'coqui'
-	AZURE = 'azure'
-	POCKETSPHINX = 'pocketsphinx'
+class DialogSessionState(Enum):
+	CREATED = 0
+	STARTING = 1
+	STARTED = 2
+	LISTENING = 3
+	IN_DIALOG = 4
+	ENDING = 5
+	ENDED = 6
+	REVIVED = 7

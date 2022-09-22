@@ -26,6 +26,7 @@ from paho.mqtt.client import MQTTMessage
 from core.commons import constants
 from core.device.model.DeviceAbility import DeviceAbility
 from core.dialog.model.DialogSession import DialogSession
+from core.dialog.model.DialogSessionState import DialogSessionState
 from core.util.Decorators import ApiAuthenticated
 from core.webApi.model.Api import Api
 
@@ -115,7 +116,7 @@ class DialogApi(Api):
 			session.deviceUid = deviceUid
 			session.input = request.form.get('query')
 
-			if not session or session.hasEnded:
+			if not session or session.state == DialogSessionState.ENDED:
 				return self.process()
 
 			self.DialogManager.startSessionTimeout(sessionId=session.sessionId)
