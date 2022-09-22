@@ -927,8 +927,8 @@ class MqttManager(Manager):
 			sessionId = str(uuid.uuid4())
 
 		session = self.DialogManager.getSession(sessionId=sessionId)
-		if session and not self.TTSManager.speaking:
-			session.lastWasSoundPlayOnly = True
+		#if session and not self.TTSManager.speaking:
+		#	session.lastWasSoundPlayOnly = True
 
 		if not location:
 			location = Path(self.Commons.rootDir()) / 'system' / 'sounds'

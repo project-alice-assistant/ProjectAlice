@@ -18,6 +18,7 @@
 #  Last modified: 2021.07.31 at 15:54:28 CEST
 
 from importlib import import_module, reload
+from typing import Dict
 
 from pathlib import Path
 
@@ -37,6 +38,7 @@ class TTSManager(Manager):
 		self._fallback = None
 		self._tts = None
 		self._cacheRoot = Path(self.Commons.rootDir(), 'var/cache')
+		self._devicesState: Dict[str, bool] = dict() # Tracks devices currently playing TTS
 
 
 	def onStart(self):
@@ -134,13 +136,6 @@ class TTSManager(Manager):
 
 
 	@property
-	def speaking(self) -> bool:
-		if not self._tts:
-			return False
-		return self._tts.speaking
-
-
-	@property
 	def cacheRoot(self) -> Path:
 		return self._cacheRoot
 
@@ -174,4 +169,13 @@ class TTSManager(Manager):
 			if user and user.tts:
 				self._loadTTS(user.tts, user)
 
+		self._devicesState[session.deviceUid] = True
 		self._tts.onSay(session)
+
+
+	def onSayFinished(self, session, uid: str = None):
+		self._devicesState[uid] = False
+
+
+	def isTalking(self, deviceUid: str) -> bool:
+		return self._devicesState.get(deviceUid, False)

@@ -95,6 +95,7 @@ class DialogManager(Manager):
 				'siteId': deviceUid
 			}
 		)
+
 		# Personalise the notification if able to
 		talkNotification = self.TalkManager.randomTalk(talk='notification', skill='system')
 		if session.user != constants.UNKNOWN_USER:

@@ -56,7 +56,6 @@ class Tts(ProjectAliceObject):
 
 		self._cacheFile: Path = Path()
 		self._text = ''
-		self._speaking = False
 		self._ttsFailureTimer: Optional[threading.Timer] = None
 
 		self._supportsSSML = False
@@ -158,11 +157,6 @@ class Tts(ProjectAliceObject):
 		return self._supportedLangAndVoices
 
 
-	@property
-	def speaking(self) -> bool:
-		return self._speaking
-
-
 	@staticmethod
 	def getWhisperMarkup() -> Optional[tuple]:
 		return None
@@ -178,7 +172,6 @@ class Tts(ProjectAliceObject):
 
 
 	def _speak(self, file: Path, session: DialogSession):
-		self._speaking = True
 		session.lastWasSoundPlayOnly = False
 
 		self.MqttManager.playSound(
@@ -206,7 +199,6 @@ class Tts(ProjectAliceObject):
 	def _sayFinished(self, session: DialogSession):
 		if self._speaking:
 			self.resetFailureTimer()
-			self._speaking = False
 			self.MqttManager.publish(
 				topic=constants.TOPIC_TTS_FINISHED,
 				payload={
@@ -224,7 +216,6 @@ class Tts(ProjectAliceObject):
 
 
 	def onSayFinished(self, session: DialogSession, uid: str = None):
-		self._speaking = False
 		self.resetFailureTimer()
 
 
