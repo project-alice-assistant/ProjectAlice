@@ -132,7 +132,8 @@
 		"uploadToGithub": "Upload to github",
 		"checkOnGithub" : "Check on Github",
 		"minimize"      : "Minimize",
-		"search"        : "Search"
+		"search"        : "Search",
+	  	"dismissAllNotification": "Dismiss All"
 	},
 	"labels"       : {
 		"searchSetting"          : "Search setting",

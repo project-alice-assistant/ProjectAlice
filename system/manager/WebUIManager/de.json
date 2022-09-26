@@ -117,7 +117,8 @@
 		"uploadToGithub": "Upload nach Github",
 		"checkOnGithub" : "Auf Github prüfen",
 		"minimize"      : "Minimieren",
-		"search"        : "Suchen"
+		"search"        : "Suchen",
+	  	"dismissAllNotification": "Alle bestätigen"
 	},
 	"labels"       : {
 		"searchSetting"          : "Einstellungen durchsuchen",
