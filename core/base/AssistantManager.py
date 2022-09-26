@@ -104,7 +104,12 @@ class AssistantManager(Manager):
 		declaredSlots = dict()
 		passed = True
 		with self._assistantPath.open() as fp:
-			data = json.load(fp)
+			try:
+				data = json.load(fp)
+			except json.decoder.JSONDecodeError as e:
+				self.logError('Found assistant to be empty or corrupted! [JSONDecodeError]')
+				return False
+
 			for intent in data['intents']:
 				declaredIntents[intent['name']] = intent
 
