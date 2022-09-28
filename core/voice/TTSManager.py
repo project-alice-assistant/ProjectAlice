@@ -136,9 +136,10 @@ class TTSManager(Manager):
 		if self.ConfigManager.getAliceConfigByName('stayCompletelyOffline') or self.ConfigManager.getAliceConfigByName('keepTTSOffline'):
 			return
 
-		if not self._tts.online:
+		confValue = self.ConfigManager.getAliceConfigByName('tts').lower()
+		if not self._tts.online and confValue != self._tts.TTS.value:
 			self.logInfo('Connected to internet, switching TTS')
-			self._loadTTS(self.ConfigManager.getAliceConfigByName('tts').lower())
+			self._loadTTS(confValue)
 
 
 	def onInternetLost(self):
