@@ -21,9 +21,9 @@ import os
 import requests
 import subprocess
 import traceback
+from AliceGit.Git import Repository
 from pathlib import Path
 
-from AliceGit.Git import Repository
 from core.base.model.Manager import Manager
 from core.commons import constants
 
@@ -43,8 +43,8 @@ class BugReportManager(Manager):
 		if self._flagFile.exists():
 			self._recording = True
 			self.logInfo('Flag file detected, recording errors for this run')
-			version = subprocess.run(f'git rev-parse HEAD', capture_output=True, text=True, shell=True).stdout.strip()
-			self.logInfo(f'Project Alice logs')
+			version = subprocess.run('git rev-parse HEAD', capture_output=True, text=True, shell=True).stdout.strip()
+			self.logInfo('Project Alice logs')
 			self.logInfo(f'Git commit id: {version}')
 		else:
 			self._recording = False

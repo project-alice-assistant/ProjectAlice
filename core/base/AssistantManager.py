@@ -34,11 +34,11 @@ class AssistantManager(Manager):
 	def __init__(self):
 		super().__init__()
 
-		self._assistantPath = Path(self.Commons.rootDir(), f'assistant/assistant.json')
+		self._assistantPath = Path(self.Commons.rootDir(), 'assistant/assistant.json')
 		if not self._assistantPath.exists():
 			self.logInfo('Assistant not found, generating')
 			self.linkAssistant()
-			self._assistantPath = Path(self.Commons.rootDir(), f'assistant/assistant.json')
+			self._assistantPath = Path(self.Commons.rootDir(), 'assistant/assistant.json')
 			self._assistantPath.write_text(json.dumps(self.newAssistant()))
 
 
@@ -106,7 +106,7 @@ class AssistantManager(Manager):
 		with self._assistantPath.open() as fp:
 			try:
 				data = json.load(fp)
-			except json.decoder.JSONDecodeError as e:
+			except json.decoder.JSONDecodeError:
 				self.logError('Found assistant to be empty or corrupted! [JSONDecodeError]')
 				return False
 
@@ -176,7 +176,7 @@ class AssistantManager(Manager):
 					data = json.load(fp)
 
 				if 'intents' not in data:
-					self.logDebug(f'Skill has no intent')
+					self.logDebug('Skill has no intent')
 					continue
 
 				for intent in data['intents']:

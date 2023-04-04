@@ -156,7 +156,7 @@ class LanguageManager(Manager):
 
 		if self.ConfigManager.getAliceConfigByName('nonNativeSupportLanguage'):
 			if self.ConfigManager.getAliceConfigByName('stayCompletelyOffline'):
-				self.logWarning(f'You cannot use a non natively support language if you have chosen to stay completely offline.')
+				self.logWarning('You cannot use a non natively support language if you have chosen to stay completely offline.')
 			else:
 				self.logWarning(f'You are using a non natively supported language **{self.ConfigManager.getAliceConfigByName("nonNativeSupportLanguage")}**')
 				self._activeLanguage = 'en'
@@ -212,6 +212,7 @@ class LanguageManager(Manager):
 
 		for key in self._locals:
 			if key in string:
+				# noinspection PyTypeChecker
 				string = string.replace(key, self._locals[key][self._activeLanguage])
 				break
 

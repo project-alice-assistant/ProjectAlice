@@ -129,7 +129,7 @@ class NluManager(Manager):
 
 
 	def checkEngine(self) -> bool:
-		if not Path(self.Commons.rootDir(), f'assistant/nlu_engine').exists():
+		if not Path(self.Commons.rootDir(), 'assistant/nlu_engine').exists():
 			if Path(self.Commons.rootDir(), f'trained/assistants/{self.LanguageManager.activeLanguage}/nlu_engine').exists():
 				self.AssistantManager.linkAssistant()
 				return True

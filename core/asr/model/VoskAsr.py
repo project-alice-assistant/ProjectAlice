@@ -53,9 +53,9 @@ class VoskAsr(Asr):
 
 	def onStart(self):
 		super().onStart()
-		self.logInfo(f'Loading model')
+		self.logInfo('Loading model')
 		self._model = vosk.Model(lang=self.LanguageManager.activeLanguageAndCountryCode.lower())
-		self.logInfo(f'Model loaded')
+		self.logInfo('Model loaded')
 
 
 	def decodeStream(self, session: DialogSession) -> Optional[ASRResult]:

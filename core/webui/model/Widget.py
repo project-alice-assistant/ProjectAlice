@@ -17,16 +17,15 @@
 #
 #  Last modified: 2021.04.13 at 12:56:49 CEST
 
+import htmlmin as htmlmin
 import inspect
 import json
 import re
 import sqlite3
-from pathlib import Path
-from typing import Dict, Match, Optional, Union
-
-import htmlmin as htmlmin
 from cssmin import cssmin
 from jsmin import jsmin
+from pathlib import Path
+from typing import Dict, Match, Optional, Union
 
 from core.base.model.AliceSkill import AliceSkill
 from core.base.model.ProjectAliceObject import ProjectAliceObject
@@ -87,8 +86,8 @@ class Widget(ProjectAliceObject):
 
 	def loadLanguageFile(self) -> Optional[Dict]:
 		try:
-			file = self.getCurrentDir() / f'lang/{self.name}.lang.json'
-			with file.open() as fp:
+			ffile = self.getCurrentDir() / f'lang/{self.name}.lang.json'
+			with ffile.open() as fp:
 				return json.load(fp)
 		except FileNotFoundError:
 			self.logWarning(f'Missing language file for widget {self.name}')
@@ -136,23 +135,23 @@ class Widget(ProjectAliceObject):
 
 	def icon(self) -> str:
 		try:
-			file = Path(self.getCurrentDir(), f'templates/{self.name}.html')
-			content = cssmin(file.read_text())
+			ffile = Path(self.getCurrentDir(), f'templates/{self.name}.html')
+			content = cssmin(ffile.read_text())
 			header = re.search(r'<icon>(.*)</icon>', content)
 			if header:
 				return header.group(1)
 
 			return ''
 		except:
-			self.logWarning(f"Widget doesn't have any icon")
+			self.logWarning("Widget doesn't have any icon")
 			return ''
 
 
 	def html(self) -> str:
 		try:
-			file = Path(self.getCurrentDir(), f'templates/{self.name}.html')
-			content = file.read_text()
-			content = re.sub(r'{{ lang\.([\w]*) }}', self.langReplace, content)
+			ffile = Path(self.getCurrentDir(), f'templates/{self.name}.html')
+			content = ffile.read_text()
+			content = re.sub(r'{{ lang\.(\w*) }}', self.langReplace, content)
 			content = re.sub(r'<widget>(.*)</widget>', r'\1', content, flags=re.S)
 			content = re.sub(r'<icon>.*</icon>(.*)', r'\1', content)
 			content = htmlmin.minify(content,
@@ -167,14 +166,14 @@ class Widget(ProjectAliceObject):
 			                         )
 			return content
 		except:
-			self.logWarning(f"Widget doesn't have html file")
+			self.logWarning("Widget doesn't have html file")
 			return ''
 
 
 	def css(self) -> str:
 		try:
-			file = Path(self.getCurrentDir(), f'css/{self.name}.css')
-			content = cssmin(file.read_text())
+			ffile = Path(self.getCurrentDir(), f'css/{self.name}.css')
+			content = cssmin(ffile.read_text())
 			return content
 		except:
 			return ''
@@ -182,8 +181,8 @@ class Widget(ProjectAliceObject):
 
 	def js(self) -> str:
 		try:
-			file = Path(self.getCurrentDir(), f'js/{self.name}.js')
-			content = jsmin(file.read_text())
+			ffile = Path(self.getCurrentDir(), f'js/{self.name}.js')
+			content = jsmin(ffile.read_text())
 			return content
 		except:
 			return ''

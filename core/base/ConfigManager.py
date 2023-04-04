@@ -35,6 +35,7 @@ class ConfigManager(Manager):
 	CONFIG_FILE = Path('config.json')
 
 	CONFIG_FUNCTION_REGEX = re.compile(r'^(?:(?P<manager>\w+)\.)?(?P<function>\w+)(?:\((?P<args>.*)\))?')
+	# noinspection RegExpUnnecessaryNonCapturingGroup
 	CONFIG_FUNCTION_ARG_REGEX = re.compile(r'(?:\w+)')
 
 
@@ -58,6 +59,7 @@ class ConfigManager(Manager):
 		self._pendingAliceConfUpdates = dict()
 
 
+	# noinspection DuplicatedCode
 	def onStart(self):
 		super().onStart()
 
@@ -66,21 +68,22 @@ class ConfigManager(Manager):
 				raise VitalConfigMissing(conf)
 
 		for setting, definition in {**self._aliceTemplateConfigurations, **self._skillsTemplateConfigurations}.items():
-			function = definition.get('onStart', None)
-			if function:
+			onStartFunction = definition.get('onStart', None)
+			if onStartFunction:
 				try:
-					if '.' in function:
+					if '.' in onStartFunction:
 						self.logWarning(f'Use of manager for configuration **onStart** for config "{setting}" is not allowed')
-						function = function.split('.')[-1]
+						onStartFunction = onStartFunction.split('.')[-1]
 
-					func = getattr(self, function)
+					func = getattr(self, onStartFunction)
 					func()
 				except AttributeError:
-					self.logWarning(f'Configuration onStart method **{function}** does not exist')
+					self.logWarning(f'Configuration onStart method **{onStartFunction}** does not exist')
 				except Exception as e:
-					self.logError(f'Configuration onStart method **{function}** failed: {e}')
+					self.logError(f'Configuration onStart method **{onStartFunction}** failed: {e}')
 
 
+	# noinspection DuplicatedCode
 	def _loadCheckAndUpdateAliceConfigFile(self):
 		self.logInfo('Checking Alice configuration file')
 
@@ -137,19 +140,19 @@ class ConfigManager(Manager):
 						self.logWarning(f"Selected value **{aliceConfigs[setting]}** for setting **{setting}** doesn't exist, reverted to default value --{definition['defaultValue']}--")
 						aliceConfigs[setting] = definition['defaultValue']
 
-				function = definition.get('onInit', None)
-				if function:
+				onInitFunction = definition.get('onInit', None)
+				if onInitFunction:
 					try:
-						if '.' in function:
+						if '.' in onInitFunction:
 							self.logWarning(f'Use of manager for configuration **onInit** for config "{setting}" is not allowed')
-							function = function.split('.')[-1]
+							onInitFunction = onInitFunction.split('.')[-1]
 
-						func = getattr(self, function)
+						func = getattr(self, onInitFunction)
 						func()
 					except AttributeError:
-						self.logWarning(f'Configuration onInit method **{function}** does not exist')
+						self.logWarning(f'Configuration onInit method **{onInitFunction}** does not exist')
 					except Exception as e:
-						self.logError(f'Configuration onInit method **{function}** failed: {e}')
+						self.logError(f'Configuration onInit method **{onInitFunction}** failed: {e}')
 
 		# Setting logger level immediately
 		if aliceConfigs['advancedDebug'] and not aliceConfigs['debug']:
@@ -314,18 +317,18 @@ class ConfigManager(Manager):
 			if not skillInstance:
 				self.logWarning(f'Needed to execute an action before updating a config value for skill **{skillName}** but the skill is not running')
 			else:
-				function = self._skillsTemplateConfigurations[skillName][key]['beforeUpdate']
+				beforeUpdateFunction = self._skillsTemplateConfigurations[skillName][key]['beforeUpdate']
 				try:
-					func = getattr(skillInstance, function)
+					func = getattr(skillInstance, beforeUpdateFunction)
 				except AttributeError:
-					self.logWarning(f'Configuration pre processing method **{function}** for skill **{skillName}** does not exist')
+					self.logWarning(f'Configuration pre processing method **{beforeUpdateFunction}** for skill **{skillName}** does not exist')
 				else:
 					try:
 						if not func(value):
-							self.logWarning(f'Configuration pre processing method **{function}** for skill **{skillName}** returned False, cancel setting update')
+							self.logWarning(f'Configuration pre processing method **{beforeUpdateFunction}** for skill **{skillName}** returned False, cancel setting update')
 							return
 					except Exception as e:
-						self.logError(f'Configuration pre processing method **{function}** for skill **{skillName}** failed: {e}')
+						self.logError(f'Configuration pre processing method **{beforeUpdateFunction}** for skill **{skillName}** failed: {e}')
 
 		self._skillsConfigurations[skillName][key] = value
 		self._writeToSkillConfigurationFile(skillName, self._skillsConfigurations[skillName])
@@ -334,17 +337,17 @@ class ConfigManager(Manager):
 			if not skillInstance:
 				self.logWarning(f'Needed to execute an action after updating a config value for skill **{skillName}** but the skill is not running')
 			else:
-				function = self._skillsTemplateConfigurations[skillName][key]['onUpdate']
+				onUpdateFunction = self._skillsTemplateConfigurations[skillName][key]['onUpdate']
 				try:
-					func = getattr(skillInstance, function)
+					func = getattr(skillInstance, onUpdateFunction)
 				except AttributeError:
-					self.logWarning(f'Configuration post processing method **{function}** for skill **{skillName}** does not exist')
+					self.logWarning(f'Configuration post processing method **{onUpdateFunction}** for skill **{skillName}** does not exist')
 				else:
 					try:
 						if not func(value):
-							self.logWarning(f'Configuration post processing method **{function}** for skill **{skillName}** returned False')
+							self.logWarning(f'Configuration post processing method **{onUpdateFunction}** for skill **{skillName}** returned False')
 					except Exception as e:
-						self.logError(f'Configuration post processing method **{function}** for skill **{skillName}** failed: {e}')
+						self.logError(f'Configuration post processing method **{onUpdateFunction}** for skill **{skillName}** failed: {e}')
 
 
 	def writeToAliceConfigurationFile(self, confs: dict = None):
@@ -405,7 +408,7 @@ class ConfigManager(Manager):
 
 	def getSkillConfigByName(self, skillName: str, configName: str) -> Any:
 		if not self._loadingDone:
-			raise Exception(f'Loading skill configs is not yet done! Don\'t load configs in __init__, but only after onStart is called')
+			raise Exception('Loading skill configs is not yet done! Don\'t load configs in __init__, but only after onStart is called')
 		return self._skillsConfigurations.get(skillName, dict()).get(configName, None)
 
 
@@ -545,15 +548,16 @@ class ConfigManager(Manager):
 		return self._aliceTemplateConfigurations.get(confName, dict()).get('onUpdate', None)
 
 
-	def doConfigUpdatePreProcessing(self, function: str, value: Any) -> bool:
+	# noinspection DuplicatedCode
+	def doConfigUpdatePreProcessing(self, func: str, value: Any) -> bool:
 		# Call alice config pre processing functions.
 		try:
 			mngr = self
 			args = list()
 
-			result = self.CONFIG_FUNCTION_REGEX.search(function)
+			result = self.CONFIG_FUNCTION_REGEX.search(func)
 			if result:
-				function = result.group('function')
+				func = result.group('function')
 
 				if result.group('manager'):
 					try:
@@ -565,35 +569,36 @@ class ConfigManager(Manager):
 				if result.group('args'):
 					args = self.CONFIG_FUNCTION_ARG_REGEX.findall(result.group('args'))
 
-				func = getattr(mngr, function)
+				fun = getattr(mngr, func)
 			else:
 				raise AttributeError
 		except AttributeError:
-			self.logWarning(f'Configuration pre processing method **{function}** does not exist')
+			self.logWarning(f'Configuration pre processing method **{func}** does not exist')
 			return False
 		else:
 			try:
-				return func(value, *args)
+				return fun(value, *args)
 			except Exception as e:
-				self.logError(f'Configuration pre processing method **{function}** failed: {e}')
+				self.logError(f'Configuration pre processing method **{func}** failed: {e}')
 				return False
 
 
-	def doConfigUpdatePostProcessing(self, functions: Union[str, set]):
+	# noinspection DuplicatedCode
+	def doConfigUpdatePostProcessing(self, funcs: Union[str, set]):
 		# Call alice config post-processing functions. This will call methods that are needed after a certain setting was
 		# updated while Project Alice was running
 
-		if isinstance(functions, str):
-			functions = {functions}
+		if isinstance(funcs, str):
+			funcs = {funcs}
 
-		for function in functions:
+		for func in funcs:
 			try:
 				mngr = self
 				args = list()
 
-				result = self.CONFIG_FUNCTION_REGEX.search(function)
+				result = self.CONFIG_FUNCTION_REGEX.search(func)
 				if result:
-					function = result.group('function')
+					func = result.group('function')
 
 					if result.group('manager'):
 						try:
@@ -605,17 +610,17 @@ class ConfigManager(Manager):
 					if result.group('args'):
 						args = self.CONFIG_FUNCTION_ARG_REGEX.findall(result.group('args'))
 
-					func = getattr(mngr, function)
+					fun = getattr(mngr, func)
 				else:
 					raise AttributeError
 			except AttributeError:
-				self.logWarning(f'Configuration post processing method **{function}** does not exist')
+				self.logWarning(f'Configuration post processing method **{func}** does not exist')
 				continue
 			else:
 				try:
-					func(*args)
+					fun(*args)
 				except Exception as e:
-					self.logError(f'Configuration post processing method **{function}** failed: {e}')
+					self.logError(f'Configuration post processing method **{func}** failed: {e}')
 					continue
 
 

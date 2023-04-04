@@ -20,14 +20,13 @@
 
 import json
 import re
-from contextlib import suppress
+from AliceGit.Exceptions import GithubCreateFailed, GithubRepoNotFound, GithubUserNotFound, NotGitRepository, RemoteAlreadyExists
+from AliceGit.Git import Repository
+from AliceGit.Github import Github
 from flask import Response, jsonify, request
 from flask_classful import route
 from pathlib import Path
 
-from AliceGit.Exceptions import AlreadyGitRepository, GithubRepoNotFound, GithubUserNotFound, NotGitRepository, RemoteAlreadyExists, GithubCreateFailed
-from AliceGit.Git import Repository
-from AliceGit.Github import Github
 from core.util.Decorators import ApiAuthenticated
 from core.webApi.model.Api import Api
 
@@ -353,8 +352,7 @@ class SkillsApi(Api):
 			try:
 				repository.remoteAdd(url=github.usersUrl, name='AliceSK')
 			except RemoteAlreadyExists as e:
-				self.logInfo(e)
-				pass
+				self.logInfo(f'{e}')
 
 			if repository.isDirty():
 				if not repository.commit(message='Save through Alice web UI', autoAdd=True):
@@ -371,7 +369,7 @@ class SkillsApi(Api):
 			if not self.SkillManager.uploadSkillToGithub(skillName=skillName, skillDesc=json.loads(installFilePath.read_text())['desc']):
 				return jsonify(success=False, message='Failed uploading to Github')
 		except GithubCreateFailed as e:
-			self.logError(e)
+			self.logError(f'{e}')
 			return jsonify(success=False, message=str(e))
 		return jsonify(success=True)
 
@@ -399,7 +397,7 @@ class SkillsApi(Api):
 
 		try:
 			auth = self.ConfigManager.githubAuth
-			github = Github(username=auth[0],
+			_ = Github(username=auth[0],
 							token=auth[1],
 							repositoryName=f'skill_{skillName}')
 		except Exception as e:
@@ -411,8 +409,9 @@ class SkillsApi(Api):
 
 
 		res = dict()
-		for (name, rem) in git.remote.items():
+		for name, rem in git.remote.items():
 			status = Github.getStatusForUrl(url=rem.url, silent=True) is not False
+			# noinspection RegExpRedundantEscape
 			res[name] = {   'repoType': 'Public' if name == 'project-alice-assistant' else 'Private',
 			                'name': rem.name,
 	                        'url': re.sub(r"https:\/\/.*:(.*)@github\.com\/", 'https://github.com/', rem.url),
@@ -438,7 +437,7 @@ class SkillsApi(Api):
 
 		instructionsFile = skill.getResource(f'instructions/{data["lang"]}.md')
 		if not instructionsFile.exists():
-			instructionsFile = skill.getResource(f'instructions/en.md')
+			instructionsFile = skill.getResource('instructions/en.md')
 
 		return jsonify(success=True, instruction=instructionsFile.read_text() if instructionsFile.exists() else '')
 
@@ -456,7 +455,7 @@ class SkillsApi(Api):
 
 		data = request.json
 		skill = self.SkillManager.getSkillInstance(skillName=skillName)
-		instructionsFolder = skill.getResource(f'instructions/')
+		instructionsFolder = skill.getResource('instructions/')
 		instructionsFile = skill.getResource(f'instructions/{data["lang"]}.md')
 		if not instructionsFolder.exists():
 			instructionsFolder.mkdir(parents=True, exist_ok=True)
@@ -493,7 +492,7 @@ class SkillsApi(Api):
 		else:
 			dialogTemplate = skill.getResource(f'dialogTemplate/{data["lang"]}.json')
 			if not dialogTemplate.exists():
-				dialogTemplate = skill.getResource(f'dialogTemplate/en.json')
+				dialogTemplate = skill.getResource('dialogTemplate/en.json')
 			tempOut = json.loads(dialogTemplate.read_text()) if dialogTemplate.exists() else ''
 
 		return jsonify(success=True, dialogTemplate=tempOut, dialogTemplates=allLang)
@@ -537,7 +536,7 @@ class SkillsApi(Api):
 		data = request.json
 		skill = self.SkillManager.getSkillInstance(skillName=skillName)
 
-		configTemplate = skill.getResource(f'config.json.template')
+		configTemplate = skill.getResource('config.json.template')
 		if not configTemplate.exists():
 			configTemplate.touch(exist_ok=True)
 		configTemplate.write_text(json.dumps(data['configTemplate'], indent='\t', ensure_ascii=False))
@@ -582,7 +581,6 @@ class SkillsApi(Api):
 			return self.skillNotFound()
 
 		skill = self.SkillManager.getSkillInstance(skillName=skillName)
-		talkFiles = dict()
 
 		fp = skill.getResource(f'talks/{self.LanguageManager.activeLanguage}.json')
 		if fp.exists():

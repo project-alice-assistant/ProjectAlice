@@ -210,7 +210,7 @@ class AliceWatchManager(Manager):
 
 
 	def onConfigureIntent(self, intents: list):
-		text = f'Was asked to configure all devices:'
+		text = 'Was asked to configure all devices:'
 		for intent in intents:  # NOSONAR
 			text = f'{text}\n[=>]{"![green](enable)" if intent["enable"] else "![red](disable)"} {intent["intentId"]}'
 
@@ -232,7 +232,7 @@ class AliceWatchManager(Manager):
 
 
 	def publish(self, payload: dict = None):
-		topic = f'projectalice/logging/alicewatch'
+		topic = 'projectalice/logging/alicewatch'
 		payload['time'] = datetime.strftime(datetime.now(), '%H:%M:%S')
 
 		self.MqttManager.publish(topic=topic, payload=payload)
@@ -241,7 +241,7 @@ class AliceWatchManager(Manager):
 	def getDisplayName(self, deviceUid: str) -> str:
 		"""
 		This method should not be moved to DeviceManager or Device, as the output options are specific for AliceWatch
-		Others need seperate handling
+		Others need separate handling
 		:param deviceUid: The device uid to get the name from
 		:return: device name
 		"""

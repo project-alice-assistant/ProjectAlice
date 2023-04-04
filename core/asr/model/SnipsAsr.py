@@ -76,6 +76,7 @@ class SnipsAsr(Asr):
 		if self.LanguageManager.activeLanguage != 'en':
 			raise Exception('Snips generic ASR only for english')
 
+		# noinspection DuplicatedCode
 		cmd = f'snips-asr --assistant {self.Commons.rootDir()}/assistant --mqtt {self.ConfigManager.getAliceConfigByName("mqttHost")}:{self.ConfigManager.getAliceConfigByName("mqttPort")}'
 
 		if self.ConfigManager.getAliceConfigByName('mqttUser'):
@@ -84,8 +85,8 @@ class SnipsAsr(Asr):
 		if self.ConfigManager.getAliceConfigByName('mqttTLSFile'):
 			cmd += f' --mqtt-tls-cafile {self.ConfigManager.getAliceConfigByName("mqttTLSFile")}'
 
-		cmd += f' --model /usr/share/snips/snips-asr-model-en-500MB'
-		cmd += f' --partial'
+		cmd += ' --model /usr/share/snips/snips-asr-model-en-500MB'
+		cmd += ' --partial'
 
 		self.SubprocessManager.runSubprocess(name='SnipsASR', cmd=cmd, autoRestart=True)
 

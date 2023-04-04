@@ -98,7 +98,7 @@ def _exceptHandler(*args, text: str, exceptHandler: Optional[Callable], returnTe
 		newText = SuperManager.getInstance().TalkManager.randomTalk(text, skill='system') or text
 
 	if not newText:
-		raise Exception(f'String **text** not found in either skill or system strings')
+		raise Exception('String **text** not found in either skill or system strings')
 
 	if returnText:
 		return newText
@@ -114,38 +114,39 @@ def _exceptHandler(*args, text: str, exceptHandler: Optional[Callable], returnTe
 
 
 def Online(func: Callable = None, text: str = 'offline', offlineHandler: Callable = None, returnText: bool = False, catchOnly: bool = False):  # NOSONAR
+	# noinspection HttpUrlsUsage
 	"""
-	(return a) decorator to mark a function that requires ethernet.
+		(return a) decorator to mark a function that requires ethernet.
 
-	This decorator can be used (with or without parameters) to define
-	a function that requires ethernet. In the Default mode without arguments shown
-	in the example it will either execute what's in the function or when alice is
-	offline ends the dialog with a random offline answer.
-	Using the parameters:
-		@online(text=<myText>)
-	An own text can be used when being offline as well and using the parameters:
-		@online(offlineHandler=<myFunc>)
-	An own offline handler can be called, which is helpful when not only endDialog has to be called,
-	but some other cleanup is required as well
+		This decorator can be used (with or without parameters) to define
+		a function that requires ethernet. In the Default mode without arguments shown
+		in the example it will either execute what's in the function or when alice is
+		offline ends the dialog with a random offline answer.
+		Using the parameters:
+			@online(text=<myText>)
+		An own text can be used when being offline as well and using the parameters:
+			@online(offlineHandler=<myFunc>)
+		An own offline handler can be called, which is helpful when not only endDialog has to be called,
+		but some other cleanup is required as well
 
-	When there is no named argument 'session' of type DialogSession in the arguments of the decorated function,
-	the decorator will return the text instead. This behaviour can be enforced as well using:
-		@online(returnText=True)
+		When there is no named argument 'session' of type DialogSession in the arguments of the decorated function,
+		the decorator will return the text instead. This behaviour can be enforced as well using:
+			@online(returnText=True)
 
-	:param catchOnly: If catch only, do not raise anything
-	:param func:
-	:param text:
-	:param offlineHandler:
-	:param returnText:
-	:return: return value of function or random offline string in the current language
-	Examples:
-		An intent that requires ethernet can be defined the following way:
+		:param catchOnly: If catch only, do not raise anything
+		:param func:
+		:param text:
+		:param offlineHandler:
+		:param returnText:
+		:return: return value of function or random offline string in the current language
+		Examples:
+			An intent that requires ethernet can be defined the following way:
 
-		@online
-		def exampleIntent(self, session: DialogSession, **_kwargs):
-			request = requests.get('http://api.open-notify.org')
-			self.endDialog(sessionId=session.sessionId, text=request.text)
-	"""
+			@online
+			def exampleIntent(self, session: DialogSession, **_kwargs):
+				request = requests.get('http://api.open-notify.org')
+				self.endDialog(sessionId=session.sessionId, text=request.text)
+		"""
 
 
 	# noinspection PyShadowingNames

@@ -50,7 +50,7 @@ class WebUINotificationManager(Manager):
 	def onStart(self):
 		super().onStart()
 		# noinspection SqlResolve
-		notifications = self.databaseFetch(tableName=self.NOTIFICATIONS_TABLE, query=f'SELECT * FROM :__table__ WHERE read = 0')
+		notifications = self.databaseFetch(tableName=self.NOTIFICATIONS_TABLE, query='SELECT * FROM :__table__ WHERE read = 0')
 		for notification in notifications:
 			self._notifications[notification['id']] = notification
 

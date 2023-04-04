@@ -17,9 +17,8 @@
 #
 #  Last modified: 2021.04.13 at 12:56:47 CEST
 
-import typing
-
 import bcrypt
+import typing
 
 from core.base.model.ProjectAliceObject import ProjectAliceObject
 
@@ -54,7 +53,7 @@ class User(ProjectAliceObject):
 				exec(f"self._{self._state} = 'True'")
 			except:
 				self.logError(f"Invalid state \"{row['state']}\" for user \"{self._name}\"")
-		except Exception as e:
+		except Exception:
 			self.logError('Error instantiating user')
 			return
 

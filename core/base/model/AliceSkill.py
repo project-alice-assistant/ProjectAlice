@@ -19,18 +19,17 @@
 
 from __future__ import annotations
 
+import flask
 import importlib
 import inspect
 import json
 import re
-from copy import copy
-from pathlib import Path
-from typing import Any, Dict, Iterable, List, Optional, Union
-
-import flask
 from AliceGit.Git import Repository
+from copy import copy
 from markdown import markdown
 from paho.mqtt import client as MQTTClient
+from pathlib import Path
+from typing import Any, Dict, Iterable, List, Optional, Union
 
 from core.ProjectAliceExceptions import AccessLevelTooLow, SkillInstanceFailed
 from core.base.model.Intent import Intent
@@ -58,7 +57,7 @@ class AliceSkill(ProjectAliceObject):
 
 		instructionsFile = self.getResource(f'instructions/{self.LanguageManager.activeLanguage}.md')
 		if not instructionsFile.exists():
-			instructionsFile = self.getResource(f'instructions/en.md')
+			instructionsFile = self.getResource('instructions/en.md')
 
 		self._instructions = instructionsFile.read_text() if instructionsFile.exists() else ''
 
@@ -140,9 +139,9 @@ class AliceSkill(ProjectAliceObject):
 		:return:
 		"""
 		lang = language if language is not None else self.activeLanguage()
-		file = self.getResource(f'dialogTemplate/{lang}.ext.json')
-		data: Dict = json.loads(file.read_text()) if file.exists() else dict()
-		file.touch()
+		ffile = self.getResource(f'dialogTemplate/{lang}.ext.json')
+		data: Dict = json.loads(ffile.read_text()) if ffile.exists() else dict()
+		ffile.touch()
 
 		data.setdefault('intents', dict())
 		data['intents'].setdefault(intent, dict())
@@ -152,7 +151,7 @@ class AliceSkill(ProjectAliceObject):
 		if not text in utterances:
 			utterances.append(text)
 			data['intents'][intent]['utterances'] = utterances
-			file.write_text(json.dumps(data, ensure_ascii=False, indent='\t'))
+			ffile.write_text(json.dumps(data, ensure_ascii=False, indent='\t'))
 			return True
 
 		return False
@@ -230,8 +229,8 @@ class AliceSkill(ProjectAliceObject):
 		intentMappings = dict()
 		functionNames = [name for name, func in self.__class__.__dict__.items() if callable(func)]
 		for name in functionNames:
-			function = getattr(self, name)
-			intents = getattr(function, 'intents', list())
+			func = getattr(self, name)
+			intents = getattr(func, 'intents', list())
 			for intentMapping in intents:
 				intent = intentMapping['intent']
 				requiredState = intentMapping['requiredState']
@@ -239,9 +238,9 @@ class AliceSkill(ProjectAliceObject):
 					intentMappings[str(intent)] = intent
 
 				if requiredState:
-					intentMappings[str(intent)].addDialogMapping({requiredState: function}, skillName=self.name)
+					intentMappings[str(intent)].addDialogMapping({requiredState: func}, skillName=self.name)
 				else:
-					intentMappings[str(intent)].fallbackFunction = function
+					intentMappings[str(intent)].fallbackFunction = func
 
 				# always use the highest auth level specified (low values mean a higher auth level)
 				if intent.authLevel < intentMappings[str(intent)].authLevel:
@@ -551,8 +550,8 @@ class AliceSkill(ProjectAliceObject):
 			except AccessLevelTooLow:
 				raise
 
-		function = intent.getMapping(session) or self.onMessage
-		ret = function(session=session)
+		func = intent.getMapping(session) or self.onMessage
+		ret = func(session=session)
 		return True if ret is None or ret == True else False
 
 
@@ -567,7 +566,7 @@ class AliceSkill(ProjectAliceObject):
 
 
 	def onStart(self):
-		self.logInfo(f'Starting')
+		self.logInfo('Starting')
 		self._active = True
 
 		self._initDB()
@@ -580,13 +579,13 @@ class AliceSkill(ProjectAliceObject):
 		self.loadScenarioNodes()
 
 		self._failedStarting = False
-		self.logInfo(f'![green](Started!)')
+		self.logInfo('![green](Started!)')
 
 
 	def onStop(self):
 		self._active = False
 		self.SkillManager.configureSkillIntents(self._name, False)
-		self.logInfo(f'![green](Stopped)')
+		self.logInfo('![green](Stopped)')
 
 
 	def onBooted(self) -> bool:

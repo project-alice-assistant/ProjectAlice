@@ -17,10 +17,9 @@
 #
 #  Last modified: 2021.04.13 at 12:56:49 CEST
 
+import psutil as psutil
 from pathlib import Path
 from threading import Event
-
-import psutil as psutil
 
 from core.base.model.Manager import Manager
 from core.commons import constants
@@ -117,7 +116,7 @@ class WebUIManager(Manager):
 	def stopWebserver(self):
 		status = self.Commons.runRootSystemCommand('systemctl stop nginx')
 		if status.returncode != 0:
-			self.logWarning(f'Nginx stopping failed. Is it even installed?')
+			self.logWarning('Nginx stopping failed. Is it even installed?')
 		self.logInfo('Stopped nginx server')
 
 
@@ -127,6 +126,6 @@ class WebUIManager(Manager):
 
 		status = self.Commons.runRootSystemCommand('systemctl start nginx')
 		if status.returncode != 0:
-			raise Exception(f'Nginx starting failed. Is it even installed?')
+			raise Exception('Nginx starting failed. Is it even installed?')
 
 		self.logInfo('Started nginx server')

@@ -576,7 +576,7 @@ class SkillManager(Manager):
 					self.ConfigManager.loadCheckAndUpdateSkillConfigurations(skillToLoad=skillName)
 				else:
 					if skillName in self.NEEDED_SKILLS:
-						self.logFatal(f'The skill is required to continue...')
+						self.logFatal('The skill is required to continue...')
 						return
 					else:
 						self._failedSkills[skillName] = FailedAliceSkill(installFile)
@@ -590,7 +590,7 @@ class SkillManager(Manager):
 			except Exception as e:
 				self.logError(f'Something went wrong loading skill {skillName}: {repr(e)}', printStack=True)
 				if skillName in self.NEEDED_SKILLS:
-					self.logFatal(f'The skill is required to continue...')
+					self.logFatal('The skill is required to continue...')
 					return
 				else:
 					self._failedSkills[skillName] = FailedAliceSkill(installFile)

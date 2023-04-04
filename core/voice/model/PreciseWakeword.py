@@ -19,7 +19,6 @@
 
 import io
 import wave
-
 from paho.mqtt.client import MQTTMessage
 
 from core.commons import constants
@@ -85,7 +84,7 @@ class PreciseWakeword(WakewordEngine):
 			topic=constants.TOPIC_HOTWORD_DETECTED.format('default'),
 			payload={
 				'siteId'            : self.DeviceManager.getMainDevice().uid,
-				'modelId'           : f'precise_athena',
+				'modelId'           : 'precise_athena',
 				'modelVersion'      : '0.3.0',
 				'modelType'         : 'universal',
 				'currentSensitivity': self.ConfigManager.getAliceConfigByName('wakewordSensitivity')

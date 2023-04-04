@@ -60,12 +60,12 @@ class CoquiAsr(Asr):
 		self.installDependencies()
 		if not self.checkLanguage():
 			self.downloadLanguage()
-		self.logInfo(f'Loading Model')
+		self.logInfo('Loading Model')
 		self._model = stt.Model(str(self.tFlite))
 
-		self.logInfo(f'Model Loaded')
+		self.logInfo('Model Loaded')
 		self._model.enableExternalScorer(f'{self._langPath}/lm.scorer')
-		self.logInfo(f'Scorer Loaded')
+		self.logInfo('Scorer Loaded')
 
 
 	def installDependencies(self) -> bool:
@@ -122,7 +122,7 @@ class CoquiAsr(Asr):
 			self.Commons.downloadFile('https://github.com/coqui-ai/STT-models/releases/download/portuguese/itml/v0.1.0/pt-itml-0-prune-kenlm.scorer', target)
 			return True
 		else:
-			self.logError(f'WIP! Only de/en supported for now - Please install language manually into PA/trained/asr/Coqui/<language>/!')
+			self.logError('WIP! Only de/en supported for now - Please install language manually into PA/trained/asr/Coqui/<language>/!')
 			return False
 
 

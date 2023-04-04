@@ -172,6 +172,7 @@ class ProjectAliceObject(object):
 				return False
 
 		for dep in self.DEPENDENCIES['pip']:
+			# noinspection RegExpUnnecessaryNonCapturingGroup
 			match = re.match(r'^([a-zA-Z0-9-_]*)(?:([=><]{0,2})([\d.]*)$)', dep)
 			if not match:
 				continue
@@ -212,6 +213,7 @@ class ProjectAliceObject(object):
 
 	def installDependencies(self) -> bool:
 		self.logInfo('Installing dependencies')
+		installedString = 'Installed!'
 
 		try:
 			for dep, link in self.DEPENDENCIES.get('internal', dict()).items():
@@ -220,7 +222,7 @@ class ProjectAliceObject(object):
 				if result.returncode:
 					raise Exception(result.stderr)
 
-				self.logInfo(f'Installed!')
+				self.logInfo(installedString)
 
 			for dep, link in self.DEPENDENCIES.get('external', dict()).items():
 				self.logInfo(f'Downloading "{dep}"')
@@ -234,7 +236,7 @@ class ProjectAliceObject(object):
 
 				Path(link.rsplit('/')[-1]).unlink()
 
-				self.logInfo(f'Installed!')
+				self.logInfo(installedString)
 
 			for dep in self.DEPENDENCIES['system']:
 				self.logInfo(f'Installing "{dep}"')
@@ -242,7 +244,7 @@ class ProjectAliceObject(object):
 				if result.returncode:
 					raise Exception(result.stderr)
 
-				self.logInfo(f'Installed!')
+				self.logInfo(installedString)
 
 			for dep in self.DEPENDENCIES['pip']:
 				self.logInfo(f'Installing "{dep}"')
@@ -250,7 +252,7 @@ class ProjectAliceObject(object):
 				if result.returncode:
 					raise Exception(result.stderr)
 
-				self.logInfo(f'Installed!')
+				self.logInfo(installedString)
 
 			return True
 		except Exception as e:
@@ -442,6 +444,7 @@ class ProjectAliceObject(object):
 		pass  # Super object function is overridden only if needed
 
 
+	# noinspection PyMethodMayBeStatic
 	def onMessage(self, session) -> bool:  # NOSONAR
 		""" Do not consume the intent by default """
 		return False

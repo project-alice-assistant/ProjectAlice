@@ -33,12 +33,13 @@ class SnipsNlu(NluEngine):
 
 	def __init__(self):
 		super().__init__()
-		self._cachePath = Path(self.Commons.rootDir(), f'var/cache/nlu/trainingData')
+		self._cachePath = Path(self.Commons.rootDir(), 'var/cache/nlu/trainingData')
 
 
 	def start(self):
 		super().start()
 
+		# noinspection DuplicatedCode
 		cmd = f'snips-nlu -a {self.Commons.rootDir()}/assistant --mqtt {self.ConfigManager.getAliceConfigByName("mqttHost")}:{self.ConfigManager.getAliceConfigByName("mqttPort")}'
 
 		if self.ConfigManager.getAliceConfigByName('mqttUser'):
@@ -56,7 +57,7 @@ class SnipsNlu(NluEngine):
 
 
 	def convertDialogTemplate(self, file: Path):
-		self.logInfo(f'Preparing NLU training file')
+		self.logInfo('Preparing NLU training file')
 		dialogTemplate = json.loads(file.read_text())
 
 		nluTrainingSample = dict()
@@ -114,7 +115,7 @@ class SnipsNlu(NluEngine):
 								'text'     : text
 							})
 
-					# noinspection PyTypeChecker
+					# noinspection PyTypeChecker,PyUnresolvedReferences
 					nluTrainingSample['intents'][intentName]['utterances'].append({'data': data})
 
 		with Path(self._cachePath / f'{self.getLanguage()}.json').open('w') as fp:
@@ -162,7 +163,7 @@ class SnipsNlu(NluEngine):
 			if tempTrainingData.exists():
 				shutil.rmtree(tempTrainingData)
 
-			training: CompletedProcess = self.Commons.runSystemCommand([f'./venv/bin/snips-nlu', 'train', str(datasetFile), str(tempTrainingData)])
+			training: CompletedProcess = self.Commons.runSystemCommand(['./venv/bin/snips-nlu', 'train', str(datasetFile), str(tempTrainingData)])
 			if training.returncode != 0:
 				self.logError(f'Error while training Snips NLU: {training.stderr.decode()}')
 

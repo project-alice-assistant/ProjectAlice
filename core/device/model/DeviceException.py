@@ -55,10 +55,10 @@ class MaxDevicePerLocationReached(DeviceException):
 class RequiresGuiSettings(DeviceException):
 
 	def __init__(self):
-		super().__init__(f'This device type needs additional information in the my home web interface.')
+		super().__init__('This device type needs additional information in the my home web interface.')
 
 
 class DeviceNotPaired(DeviceException):
 
 	def __init__(self):
-		super().__init__(f'This device is currently not paired.')
+		super().__init__('This device is currently not paired.')

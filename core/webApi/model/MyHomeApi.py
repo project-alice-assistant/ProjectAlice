@@ -17,11 +17,10 @@
 #
 #  Last modified: 2021.04.13 at 12:56:49 CEST
 import time
-from pathlib import Path
-from typing import Optional, Union
-
 from flask import Response, jsonify, make_response, request, send_from_directory
 from flask_classful import route
+from pathlib import Path
+from typing import Optional, Union
 from werkzeug.datastructures import FileStorage
 
 from core.commons import constants
@@ -44,12 +43,12 @@ class MyHomeApi(Api):
 		if 'newTile' not in request.files:
 			return None
 		else:
-			file = request.files['newTile']
-			if not file.filename:
+			ffile = request.files['newTile']
+			if not ffile.filename:
 				return None
-			if not '.' in file.filename or file.filename.rsplit('.', 1)[1].lower() != 'png':
+			if not '.' in ffile.filename or ffile.filename.rsplit('.', 1)[1].lower() != 'png':
 				return None
-			return file
+			return ffile
 
 
 	@route('/', methods=['GET'])
@@ -263,11 +262,11 @@ class MyHomeApi(Api):
 	@ApiAuthenticated
 	def addFloorTile(self) -> Response:
 		try:
-			file = self.fileCheck()
-			if not file:
+			ffile = self.fileCheck()
+			if not ffile:
 				return self.incompatibleFile()
 			else:
-				file.save(f'{self.Commons.rootDir()}/core/webApi/static/images/floors/0000_{int(time.time())}.png')
+				ffile.save(f'{self.Commons.rootDir()}/core/webApi/static/images/floors/0000_{int(time.time())}.png')
 				return jsonify(success=True)
 		except Exception as e:
 			self.logError('Error saving new floor tile:', str(e))
@@ -285,12 +284,13 @@ class MyHomeApi(Api):
 	@route('/locations/furniture/', methods=['PUT'])
 	@ApiAuthenticated
 	def addFurnitureTile(self) -> Response:
+		# noinspection DuplicatedCode
 		try:
-			file = self.fileCheck()
-			if not file:
+			ffile = self.fileCheck()
+			if not ffile:
 				return self.incompatibleFile()
 			else:
-				file.save(f'{self.Commons.rootDir()}/core/webApi/static/images/furniture/0000_{int(time.time())}.png')
+				ffile.save(f'{self.Commons.rootDir()}/core/webApi/static/images/furniture/0000_{int(time.time())}.png')
 				return jsonify(success=True)
 		except Exception as e:
 			return jsonify(success=False, message=str(e))
@@ -307,12 +307,13 @@ class MyHomeApi(Api):
 	@route('/locations/construction/', methods=['PUT'])
 	@ApiAuthenticated
 	def addConstructionTile(self) -> Response:
+		# noinspection DuplicatedCode
 		try:
-			file = self.fileCheck()
-			if not file:
+			ffile = self.fileCheck()
+			if not ffile:
 				return self.incompatibleFile()
 			else:
-				file.save(f'{self.Commons.rootDir()}/core/webApi/static/images/constructions/0000_{int(time.time())}.png')
+				ffile.save(f'{self.Commons.rootDir()}/core/webApi/static/images/constructions/0000_{int(time.time())}.png')
 				return jsonify(success=True)
 		except Exception as e:
 			return jsonify(success=False, message=str(e))
@@ -327,21 +328,21 @@ class MyHomeApi(Api):
 		:param etag: Is only used by the browser caching mechanisms
 		:return:
 		"""
-		file = None
+		ffile = None
 		try:
 			device: Device = self.DeviceManager.getDevice(deviceId=int(deviceId))
 			if not device:
 				raise Exception('Device not found - maybe not yet loaded (Alice Startup?)')
-			file = device.getDeviceIcon()
-			response = make_response(send_from_directory(file.parent, f'{file.name}'))
+			ffile = device.getDeviceIcon()
+			response = make_response(send_from_directory(ffile.parent, f'{ffile.name}'))
 			response.headers.add('Access-Control-Allow-Headers', 'x-etag')
 			response.headers.add('x-etag', device.etag)
 			return response
 		except Exception as e:
-			self.logError(e)
-			self.logError(f'Failed to retrieve icon for device id **{deviceId}** ({file if file else "error while getting filename"}) :{e}')  # NOSONAR
-			file = Path(self.Commons.rootDir(), 'core/webApi/static/images/missing-icon.png')
-			return send_from_directory(file.parent, f'{file.stem}{constants.PNG_EXT}')
+			self.logError(f'{e}')
+			self.logError(f'Failed to retrieve icon for device id **{deviceId}** ({ffile if ffile else "error while getting filename"}) :{e}')  # NOSONAR
+			ffile = Path(self.Commons.rootDir(), 'core/webApi/static/images/missing-icon.png')
+			return send_from_directory(ffile.parent, f'{ffile.stem}{constants.PNG_EXT}')
 
 
 	@route('/devices/', methods=['PUT'])
@@ -370,7 +371,7 @@ class MyHomeApi(Api):
 			if link:
 				return jsonify(success=True, link=link.toDict())
 			else:
-				raise Exception(f'Failed adding device with unknown error.')
+				raise Exception('Failed adding device with unknown error.')
 		except Exception as e:
 			self.logError(f'Failed adding new device link {e}')
 			return jsonify(success=False, message=str(e))
@@ -427,12 +428,12 @@ class MyHomeApi(Api):
 	def getDeviceTypeIcon(self, skillName: str, deviceType: str) -> Response:
 		try:
 			dType: DeviceType = self.DeviceManager.getDeviceType(skillName=skillName, deviceType=deviceType)
-			file = dType.getDeviceTypeIcon()
-			return send_from_directory(file.parent, f'{file.stem}{constants.PNG_EXT}')
+			ffile = dType.getDeviceTypeIcon()
+			return send_from_directory(ffile.parent, f'{ffile.stem}{constants.PNG_EXT}')
 		except Exception as e:
 			self.logError(f'Failed retrieving device type icon {e}')
-			file = Path(self.Commons.rootDir(), 'core/webApi/static/images/missing-icon.png')
-			return send_from_directory(file.parent, f'{file.stem}{constants.PNG_EXT}')
+			ffile = Path(self.Commons.rootDir(), 'core/webApi/static/images/missing-icon.png')
+			return send_from_directory(ffile.parent, f'{ffile.stem}{constants.PNG_EXT}')
 
 
 	@route('/devices/<deviceId>/reply/', methods=['POST'])

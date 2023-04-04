@@ -32,7 +32,7 @@ class Manager(ProjectAliceObject):
 		self._databaseSchema = databaseSchema
 		self._isActive = True
 
-		self.logInfo(f'--Initializing--')
+		self.logInfo('--Initializing--')
 
 
 	@property
@@ -73,13 +73,13 @@ class Manager(ProjectAliceObject):
 
 
 	def onStart(self):
-		self.logInfo(f'Starting')
+		self.logInfo('Starting')
 		self._isActive = True
 		return self._initDB()
 
 
 	def onStop(self):
-		self.logInfo(f'Stopping')
+		self.logInfo('Stopping')
 		self._isActive = False
 
 

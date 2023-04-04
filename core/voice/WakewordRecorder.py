@@ -20,9 +20,8 @@
 import shutil
 from enum import Enum
 from pathlib import Path
-from typing import Optional
-
 from pydub import AudioSegment
+from typing import Optional
 
 from core.base.model.Manager import Manager
 from core.commons import constants
@@ -171,7 +170,7 @@ class WakewordRecorder(Manager):
 
 
 	def finalizeWakeword(self):
-		self.logInfo(f'Finalyzing wakeword')
+		self.logInfo('Finalyzing wakeword')
 		self._state = WakewordRecorderState.FINALIZING
 		path = self._wakeword.save()
 		self.ThreadManager.newThread(name='SatelliteWakewordUpload', target=self._upload, args=[path, self._wakeword.username], autostart=True)

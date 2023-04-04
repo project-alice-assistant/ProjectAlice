@@ -541,7 +541,7 @@ class DeviceManager(Manager):
 		if not device:
 			raise Exception(f'Device with uid {deviceUid} not found')
 		elif device.hasAbilities([DeviceAbility.IS_CORE]):
-			raise Exception(f'Cannot delete main unit')
+			raise Exception('Cannot delete main unit')
 		else:
 			device.onStop()
 			self.deleteDeviceLinks(deviceId=device.id)
