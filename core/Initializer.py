@@ -203,10 +203,10 @@ class PreInit(object):
 				.replace('%wifiNetworkName%', str(self.initConfs['wifiNetworkName'])) \
 				.replace('%wifiWPAPass%', str(self.initConfs['wifiWPAPass']))
 
-			file = Path(self.rootDir, 'wifi.conf')
-			file.write_text(wpaFile)
+			ffile = Path(self.rootDir, 'wifi.conf')
+			ffile.write_text(wpaFile)
 
-			subprocess.run(['sudo', 'mv', str(file), bootWpaSupplicant])
+			subprocess.run(['sudo', 'mv', str(ffile), bootWpaSupplicant])
 			self._logger.logInfo('Successfully initialized wpa_supplicant.conf')
 			self.reboot()
 
@@ -284,6 +284,7 @@ class PreInit(object):
 			self._logger.logFatal('Your device needs internet access to continue')
 
 
+	# noinspection DuplicatedCode
 	def getUpdateSource(self, definedSource: str) -> str:
 		updateSource = 'master'
 		if definedSource in {'master', 'release'}:
@@ -356,7 +357,7 @@ class PreInit(object):
 		if pointer == 'venv':
 			serviceFile = serviceFile.replace('#EXECSTART', f'ExecStart=/home/{getpass.getuser()}/ProjectAlice/venv/bin/python main.py')
 		else:
-			serviceFile = serviceFile.replace('#EXECSTART', f'ExecStart=python3 main.py')
+			serviceFile = serviceFile.replace('#EXECSTART', 'ExecStart=python3 main.py')
 
 		serviceFile = serviceFile.replace('#WORKINGDIR', f'WorkingDirectory=/home/{getpass.getuser()}/ProjectAlice')
 		serviceFile = serviceFile.replace('#USER', f'User={getpass.getuser()}')
@@ -415,16 +416,18 @@ class Initializer(object):
 			self._logger.logFatal(f'Something went wrong loading configs: {e}')
 			return False
 
-		subprocess.run(['sudo', 'apt', 'install', '-y', f'./system/snips/snips-platform-common_0.64.0_armhf.deb'])
-		subprocess.run(['sudo', 'apt', 'install', '-y', f'./system/snips/snips-nlu_0.64.0_armhf.deb'])
+		subprocess.run(['sudo', 'apt', 'install', '-y', './system/snips/snips-platform-common_0.64.0_armhf.deb'])
+		subprocess.run(['sudo', 'apt', 'install', '-y', './system/snips/snips-nlu_0.64.0_armhf.deb'])
 		subprocess.run(['sudo', 'systemctl', 'stop', 'snips-nlu'])
 		subprocess.run(['sudo', 'systemctl', 'disable', 'snips-nlu'])
-		subprocess.run(['sudo', 'apt', 'install', '-y', f'./system/snips/snips-hotword_0.64.0_armhf.deb'])
+		subprocess.run(['sudo', 'apt', 'install', '-y', './system/snips/snips-hotword_0.64.0_armhf.deb'])
 		subprocess.run(['sudo', 'systemctl', 'stop', 'snips-hotword'])
 		subprocess.run(['sudo', 'systemctl', 'disable', 'snips-hotword'])
-		subprocess.run(['sudo', 'apt', 'install', '-y', f'./system/snips/snips-hotword-model-heysnipsv4_0.64.0_armhf.deb'])
+		subprocess.run(['sudo', 'apt', 'install', '-y', './system/snips/snips-hotword-model-heysnipsv4_0.64.0_armhf.deb'])
 
+		# noinspection HttpUrlsUsage
 		subprocess.run(['wget', 'http://ftp.us.debian.org/debian/pool/non-free/s/svox/libttspico0_1.0+git20130326-9_armhf.deb'])
+		# noinspection HttpUrlsUsage
 		subprocess.run(['wget', 'http://ftp.us.debian.org/debian/pool/non-free/s/svox/libttspico-utils_1.0+git20130326-9_armhf.deb'])
 		subprocess.run(['sudo', 'apt', 'install', '-y', './libttspico0_1.0+git20130326-9_armhf.deb', './libttspico-utils_1.0+git20130326-9_armhf.deb'])
 
@@ -663,7 +666,7 @@ class Initializer(object):
 				subprocess.run(['sudo', Path(self._rootDir, 'system/scripts/audioHardware/matrix.sh')])
 				subprocess.run(['sudo', 'cp', Path(self._rootDir, 'system', 'asounds', 'matrix.conf'), Path(ASOUND)])
 
-				settings = Path(f'system/asounds/matrix.conf').read_text()
+				settings = Path('system/asounds/matrix.conf').read_text()
 				confs['asoundConfig'] = settings
 
 				if initConfs['useHLC']:
@@ -675,14 +678,14 @@ class Initializer(object):
 					hlcConfig['hardware'] = 'googleAIY'
 
 				subprocess.run(['sudo', 'cp', Path(self._rootDir, 'system', 'asounds', 'aiy.conf'), Path(ASOUND)])
-				settings = Path(f'system/asounds/aiy.conf').read_text()
+				settings = Path('system/asounds/aiy.conf').read_text()
 				confs['asoundConfig'] = settings
 
 			elif audioHardware == 'usbMic':
 				subprocess.run(['sudo', Path(self._rootDir, 'system/scripts/audioHardware/usbmic.sh')])
 				subprocess.run(['sudo', 'cp', Path(self._rootDir, 'system', 'asounds', 'usbmic.conf'), Path(ASOUND)])
 
-				settings = Path(f'system/asounds/usbmic.conf').read_text()
+				settings = Path('system/asounds/usbmic.conf').read_text()
 				confs['asoundConfig'] = settings
 
 				useFallbackHLC = True
@@ -695,7 +698,7 @@ class Initializer(object):
 				subprocess.run(['echo', '    slave.pcm "dmix"', '>>', asoundrc])
 				subprocess.run(['echo', '}', '>>', asoundrc])
 
-				settings = Path(f'system/asounds/ps3eye.conf').read_text()
+				settings = Path('system/asounds/ps3eye.conf').read_text()
 				confs['asoundConfig'] = settings
 
 				useFallbackHLC = True
@@ -703,7 +706,7 @@ class Initializer(object):
 			elif audioHardware == 'jabra410':
 				subprocess.run(['sudo', 'cp', Path(self._rootDir, 'system', 'asounds', 'jabra410.conf'), Path(ASOUND)])
 
-				settings = Path(f'system/asounds/jabra410.conf').read_text()
+				settings = Path('system/asounds/jabra410.conf').read_text()
 				confs['asoundConfig'] = settings
 
 				useFallbackHLC = True
