@@ -20,9 +20,8 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from typing import Any, Optional
-
 from paho.mqtt.client import MQTTMessage
+from typing import Any, Optional
 
 from core.base.SuperManager import SuperManager
 from core.base.model import Intent
@@ -106,6 +105,9 @@ class DialogSession(object):
 			                      or keepSessionOpen == 'Allowed' and self.payload.get('requestContinue', False) )
 
 		customData = commonsManager.parseCustomData(message)
+		if not self.customData:
+			self.customData = dict()
+
 		self.customData = {**self.customData, **customData}
 
 		deviceManager = SuperManager.getInstance().DeviceManager
