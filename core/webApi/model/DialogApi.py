@@ -18,7 +18,6 @@
 #  Last modified: 2021.04.13 at 12:56:49 CEST
 
 import json
-
 from flask import Response, jsonify, request
 from flask_classful import route
 from paho.mqtt.client import MQTTMessage
@@ -80,10 +79,14 @@ class DialogApi(Api):
 			session.input = request.form.get('query')
 
 			device = self.DeviceManager.getDevice(uid=deviceUid)
-			if not device.hasAbilities([DeviceAbility.PLAY_SOUND]):
-				session.textOnly = True
+			if device:
+				if not device.hasAbilities([DeviceAbility.PLAY_SOUND]):
+					session.textOnly = True
 
-			if not device.hasAbilities([DeviceAbility.CAPTURE_SOUND]):
+				if not device.hasAbilities([DeviceAbility.CAPTURE_SOUND]):
+					session.textInput = True
+			else:
+				session.textOnly = True
 				session.textInput = True
 
 			# Turn off the wakeword component
