@@ -72,6 +72,8 @@ class DialogApi(Api):
 	def process(self) -> Response:
 		try:
 			deviceUid = request.form.get('deviceUid') if request.form.get('deviceUid', None) is not None else self.DeviceManager.getMainDevice().uid
+			if not deviceUid:
+				return jsonify(success=False, message=f'DeviceUid not found for requested uid {request.form.get("deviceUid", None)}')
 
 			user = self.UserManager.getUserByAPIToken(request.headers.get('auth', ''))
 			session = self.DialogManager.newSession(deviceUid=deviceUid, user=user.name)
