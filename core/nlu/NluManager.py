@@ -127,7 +127,6 @@ class NluManager(Manager):
 		self.trainNLU(forceLocalTraining=True)
 
 
-
 	def checkEngine(self) -> bool:
 		if not Path(self.Commons.rootDir(), 'assistant/nlu_engine').exists():
 			if Path(self.Commons.rootDir(), f'trained/assistants/{self.LanguageManager.activeLanguage}/nlu_engine').exists():
@@ -163,6 +162,9 @@ class NluManager(Manager):
 
 
 	def trainNLU(self, forceLocalTraining: bool = False):
+		if not self.ProjectAlice.isBooted:
+			forceLocalTraining = True
+
 		self._nluEngine.train(forceLocalTraining=forceLocalTraining)
 
 
