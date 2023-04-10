@@ -272,6 +272,10 @@ class AmazonTts(Tts):
 
 	def onStart(self):
 		super().onStart()
+		if not self.ConfigManager.getAliceConfigByName('awsAccessKey') or not self.ConfigManager.getAliceConfigByName('awsAccessKey') or not self.ConfigManager.getAliceConfigByName('awsSecretKey'):
+			self.logWarning('Please provide your AWS access key, secret key and region in your configs to use Amazon Polly')
+			raise Exception()
+
 		awsConfig = {
 			'region_name'          : self.ConfigManager.getAliceConfigByName('awsRegion'),
 			'aws_access_key_id'    : self.ConfigManager.getAliceConfigByName('awsAccessKey'),
