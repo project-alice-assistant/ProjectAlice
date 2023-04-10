@@ -112,7 +112,6 @@ class SkillsApi(Api):
 				except:
 					status[skill] = 'nok'
 
-			self.AssistantManager.checkAssistant()
 			return jsonify(success=True, status=status)
 		except Exception as e:
 			self.logWarning(f'Failed installing skill: {e}', printStack=True)
@@ -123,7 +122,6 @@ class SkillsApi(Api):
 	def put(self, skillName: str) -> Response:
 		try:
 			self.SkillManager.installSkills(skills=skillName, startSkill=True)
-			self.AssistantManager.checkAssistant()
 		except Exception as e:
 			self.logWarning(f'Failed installing skill: {e}', printStack=True)
 			return jsonify(success=False, message=str(e))

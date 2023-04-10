@@ -389,6 +389,7 @@ class SkillManager(Manager):
 				)
 
 		self._busyInstalling.clear()
+		self.AssistantManager.checkAssistant()
 
 
 	def getSkillRepository(self, skillName: str, directory: str = None) -> Optional[Repository]:
