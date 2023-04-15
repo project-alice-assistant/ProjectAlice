@@ -42,6 +42,8 @@ class GoogleAsr(Asr):
 	DEPENDENCIES = {
 		'system': [],
 		'pip'   : {
+			'grpcio==1.44.0 --no-binary=grpcio',
+			'grpcio-status==1.44.0 --no-binary=grpcio-status',
 			'google-cloud-speech==1.3.1'
 		}
 	}
