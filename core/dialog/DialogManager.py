@@ -465,6 +465,7 @@ class DialogManager(Manager):
 		:param session:
 		:return:
 		"""
+		self.cancelSessionTimeout(sessionId=session.sessionId)
 		session.hasEnded = True
 
 		self.MqttManager.publish(
