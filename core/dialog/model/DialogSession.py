@@ -53,11 +53,12 @@ class DialogSession(object):
 	payload: dict = field(default_factory=dict)
 	intentHistory: list = field(default_factory=list)
 	intentFilter: list = field(default_factory=list)
-	textOnly: bool = False  # The session doesn't use audio, but text only. Per exemple, for Telegram messages sent to Alice
+	textOnly: bool = False  # The session doesn't use audio, but text only. Per example, for Telegram messages sent to Alice
 	textInput: bool = False  # The session is started, user side, by a text input, not with voice capture, like dialogview on web ui
-	keptOpen: bool = False  # The session has ended, but is kept open for a new promt
+	keptOpen: bool = False  # The session has ended, but is kept open for a new prompt
 	lastWasSoundPlayOnly: bool = False  # We don't use request ids for play bytes topic. Both say and playaudio use play bytes, therefor we need to track if the last play bytes was sound only or TTS
 	locationId: int = -1  # Where this session is taking place
+	init: dict = field(default_factory=dict)
 
 
 	def __post_init__(self):  # NOSONAR

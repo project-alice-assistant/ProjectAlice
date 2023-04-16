@@ -327,7 +327,6 @@ class DialogManager(Manager):
 			}
 		)
 
-
 	def onNluError(self, session: DialogSession):
 		"""
 		NLU reported an error
@@ -472,15 +471,19 @@ class DialogManager(Manager):
 			topic=constants.TOPIC_ASR_TOGGLE_OFF
 		)
 
+		self.removeSession(sessionId=session.sessionId)
+
+
+	def onAsrToggleOff(self, deviceUid: str):
+		"""
+		Asr toggled off, hotword is allowed to capture again
+		"""
 		self.MqttManager.publish(
 			topic=constants.TOPIC_HOTWORD_TOGGLE_ON,
 			payload={
-				'siteId'   : session.deviceUid,
-				'sessionId': session.sessionId
+				'siteId'   : deviceUid
 			}
 		)
-
-		self.removeSession(sessionId=session.sessionId)
 
 
 	def onSessionError(self, session: DialogSession):
