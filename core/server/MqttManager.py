@@ -346,14 +346,12 @@ class MqttManager(Manager):
 
 	def hotwordToggleOn(self, _client, _data, msg: mqtt.MQTTMessage):
 		deviceUid = self.Commons.parseDeviceUid(msg)
-		session = self.DialogManager.getSession(self.Commons.parseSessionId(msg))
-		self.broadcast(method=constants.EVENT_HOTWORD_TOGGLE_ON, exceptions=[constants.DUMMY], propagateToSkills=True, deviceUid=deviceUid, session=session)
+		self.broadcast(method=constants.EVENT_HOTWORD_TOGGLE_ON, exceptions=[constants.DUMMY], propagateToSkills=True, deviceUid=deviceUid)
 
 
 	def hotwordToggleOff(self, _client, _data, msg: mqtt.MQTTMessage):
 		deviceUid = self.Commons.parseDeviceUid(msg)
-		session = self.DialogManager.getSession(self.Commons.parseSessionId(msg))
-		self.broadcast(method=constants.EVENT_HOTWORD_TOGGLE_OFF, exceptions=[constants.DUMMY], propagateToSkills=True, deviceUid=deviceUid, session=session)
+		self.broadcast(method=constants.EVENT_HOTWORD_TOGGLE_OFF, exceptions=[constants.DUMMY], propagateToSkills=True, deviceUid=deviceUid)
 
 
 	def sessionStarted(self, _client, _data, msg: mqtt.MQTTMessage):

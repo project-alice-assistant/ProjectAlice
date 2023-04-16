@@ -75,13 +75,13 @@ class PorcupineWakeword(WakewordEngine):
 			self._buffer = queue.Queue()
 
 
-	def onHotwordToggleOff(self, deviceUid: str, session: DialogSession):
+	def onHotwordToggleOff(self, deviceUid: str):
 		if self._enabled:
 			self._working.clear()
 			self._buffer = queue.Queue()
 
 
-	def onHotwordToggleOn(self, deviceUid: str, session: DialogSession):
+	def onHotwordToggleOn(self, deviceUid: str):
 		if self._enabled:
 			self._working.set()
 			self._buffer = queue.Queue()
