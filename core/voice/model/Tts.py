@@ -180,13 +180,6 @@ class Tts(ProjectAliceObject):
 		self._speaking = True
 		session.lastWasSoundPlayOnly = False
 
-		self.MqttManager.playSound(
-			soundFilename=file.stem,
-			location=file.parent,
-			sessionId=session.sessionId,
-			deviceUid=session.deviceUid
-		)
-
 		try:
 			duration = round(len(AudioSegment.from_file(file)) / 1000, 2)
 		except CouldntDecodeError:
@@ -195,9 +188,15 @@ class Tts(ProjectAliceObject):
 			self.onSay(session)
 		else:
 			self.DialogManager.increaseSessionTimeout(session=session, interval=duration + 1)
-
 			if session.deviceUid == self.DeviceManager.getMainDevice().uid:
 				self.ThreadManager.doLater(interval=duration + 0.2, func=self._sayFinished, args=[session])
+
+			self.MqttManager.playSound(
+				soundFilename=file.stem,
+				location=file.parent,
+				sessionId=session.sessionId,
+				deviceUid=session.deviceUid
+			)
 
 
 	def _sayFinished(self, session: DialogSession):
