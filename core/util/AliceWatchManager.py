@@ -97,7 +97,6 @@ class AliceWatchManager(Manager):
 			'component': 'Asr',
 			'verbosity': 2
 		})
-		})
 
 
 	def onHotwordToggleOn(self, deviceUid: str):
