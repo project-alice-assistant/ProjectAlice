@@ -178,11 +178,11 @@ class AliceWatchManager(Manager):
 			if reason == 'abortedByUser':
 				text = f'{text} The session was aborted by the user.'
 			elif reason == 'timeout':
-				text = f'{text} The session timed out because a component did not respond in a timely manner. Please ensure that the Asr is started and running correctly.'
+				text = f'{text} The session timed out because a component did not respond in a timely manner.'
 			elif reason == 'intentNotRecognized':
-				text = f'{text} The session was ended because the platform didn\'t understand the user.'
+				text = f'{text} The session was ended because the Alice did not understand the user.'
 			elif reason == 'error':
-				text = f'{text} The session was ended because there was a platform error.'
+				text = f'{text} The session was ended because Alice encountered an error.'
 			else:
 				text = f'{text} The session ended as expected.'
 
