@@ -431,11 +431,11 @@ class DialogManager(Manager):
 	def onEndSession(self, session: DialogSession, reason: str = 'nominal'):
 		self.cancelSessionTimeout(sessionId=session.sessionId)
 		self.enableCaptureFeedback()
+
+		session.isEnding = True
 		text = session.payload.get('text', '')
 
 		if text:
-			session.isEnding = True
-
 			self.MqttManager.publish(
 				topic=constants.TOPIC_TTS_SAY,
 				payload={
