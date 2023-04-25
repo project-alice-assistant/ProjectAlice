@@ -433,7 +433,7 @@ class MqttManager(Manager):
 
 				if 'alternatives' in session.payload:
 					for alt in session.payload['alternatives']:
-						if str(Intent(alt["intentName"])) in self._deactivatedIntents or alt['confidenceScore'] < self.ConfigManager.getAliceConfigByName('probabilityThreshold'):
+						if str(Intent(alt['intentName'])) in self._deactivatedIntents or alt['confidenceScore'] < self.ConfigManager.getAliceConfigByName('probabilityThreshold'):
 							continue
 						alternative = alt
 						break
@@ -502,6 +502,7 @@ class MqttManager(Manager):
 			session.update(msg)
 		else:
 			session = self.DialogManager.newSession(deviceUid=self.Commons.parseDeviceUid(msg), message=msg)
+			session.hasStarted = True
 
 		if 'text' in payload and not payload.get('isHotwordNotification', False):
 			skill = self.SkillManager.getSkillInstance('ContextSensitive')

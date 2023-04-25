@@ -79,6 +79,7 @@ class DialogApi(Api):
 			session = self.DialogManager.newSession(deviceUid=deviceUid, user=user.name)
 			session.deviceUid = deviceUid
 			session.input = request.form.get('query')
+			session.hasStarted = True
 
 			device = self.DeviceManager.getDevice(uid=deviceUid)
 			if device:
@@ -145,3 +146,20 @@ class DialogApi(Api):
 				'seconds'   : 1
 			})
 		return jsonify(success=True, sessionId=session.sessionId)
+
+	@ApiAuthenticated
+	def playBytesFinished(self) -> Response:
+		try:
+			sessionId = request.form.get('sessionId')
+			session = self.DialogManager.getSession(sessionId=sessionId)
+			if not session:
+				self.logError(f'Session not found: {sessionId}')
+				return jsonify(success=False, reason='Session not found')
+
+			if session and not session.hasEnded:
+				self.broadcast(method=constants.EVENT_PLAY_BYTES_FINISHED, propagateToSkills=True, session=session)
+
+			return jsonify(success=True)
+		except Exception as e:
+			self.logError(f'Failed processing: {e}')
+			return jsonify(success=False, reason=f'Failed processing: {e}')
