@@ -157,7 +157,25 @@ class DialogApi(Api):
 				return jsonify(success=False, reason='Session not found')
 
 			if session and not session.hasEnded:
-				self.broadcast(method=constants.EVENT_PLAY_BYTES_FINISHED, propagateToSkills=True, session=session)
+				self.broadcast(method=constants.EVENT_PLAY_BYTES_FINISHED, exceptions=constants.DUMMY, propagateToSkills=True, deviceUid=session.deviceUid, sessionId=sessionId)
+
+			return jsonify(success=True)
+		except Exception as e:
+			self.logError(f'Failed processing: {e}')
+			return jsonify(success=False, reason=f'Failed processing: {e}')
+
+	@ApiAuthenticated
+	def ttsFinished(self) -> Response:
+		try:
+			sessionId = request.form.get('sessionId')
+			uid = request.form.get('uid')
+			session = self.DialogManager.getSession(sessionId=sessionId)
+			if not session:
+				self.logError(f'Session not found: {sessionId}')
+				return jsonify(success=False, reason='Session not found')
+
+			if session and not session.hasEnded:
+				self.broadcast(method=constants.EVENT_SAY_FINISHED, exceptions=constants.DUMMY, propagateToSkills=True, session=session, uid=uid)
 
 			return jsonify(success=True)
 		except Exception as e:
