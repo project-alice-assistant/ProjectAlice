@@ -467,7 +467,10 @@ class DialogManager(Manager):
 		session.hasEnded = True
 
 		self.MqttManager.publish(
-			topic=constants.TOPIC_ASR_TOGGLE_OFF
+			topic=constants.TOPIC_ASR_TOGGLE_OFF,
+			payload={
+				'siteId': session.deviceUid
+			}
 		)
 
 		self.removeSession(sessionId=session.sessionId)
