@@ -459,7 +459,7 @@ class DialogManager(Manager):
 
 	def onSessionEnded(self, session: DialogSession):
 		"""
-		Session has ended, enable hotword capture and disable Asr
+		Session has ended, disable Asr
 		:param session:
 		:return:
 		"""
