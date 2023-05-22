@@ -188,8 +188,7 @@ class Tts(ProjectAliceObject):
 			self.onSay(session)
 		else:
 			self.DialogManager.increaseSessionTimeout(session=session, interval=duration + 1)
-			if session.deviceUid == self.DeviceManager.getMainDevice().uid:
-				self.ThreadManager.doLater(interval=duration + 0.2, func=self._sayFinished, args=[session])
+			self.ThreadManager.doLater(interval=duration + 0.2, func=self._sayFinished, args=[session])
 
 			self.MqttManager.playSound(
 				soundFilename=file.stem,
