@@ -1,5 +1,5 @@
 pytest~=6.2.5
-coverage~=6.3
+coverage~=7.3
 pytest-cov~=3.0.0
 coveralls~=3.3.1
 numpy~=1.22.4
