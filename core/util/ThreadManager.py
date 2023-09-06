@@ -107,15 +107,15 @@ class ThreadManager(Manager):
 
 
 	def onTimerEnd(self, timer: ThreadTimer):
-		if not timer or not timer.callback:
-			return
-
-		timer.callback(*timer.args, **timer.kwargs)
-		self.removeTimer(timer)
-
+		try:
+			timer.callback(*timer.args, **timer.kwargs)
+			self.removeTimer(timer)
+		except:
+			# timer has no callback
+			pass
 
 	def removeTimer(self, timer: ThreadTimer):
-		if not timer or not timer.callback:
+		if not timer:
 			return
 
 		if timer.timer.is_alive():
