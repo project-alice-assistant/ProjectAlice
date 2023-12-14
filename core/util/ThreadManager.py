@@ -41,11 +41,11 @@ class ThreadManager(Manager):
 	def onStop(self):
 		super().onStop()
 		for timer in self._timers:
-			if timer.timer.isAlive():
+			if timer.timer.is_alive():
 				timer.timer.cancel()
 
 		for thread in self._threads.values():
-			if thread.isAlive():
+			if thread.is_alive():
 				thread.join(timeout=1)
 
 		for event in self._events.values():
@@ -69,7 +69,7 @@ class ThreadManager(Manager):
 		deadThreads = 0
 		timers = self._timers.copy()
 		for threadTimer in timers:
-			if not threadTimer.timer.isAlive():
+			if not threadTimer.timer.is_alive():
 				self._timers.remove(threadTimer)
 				deadTimers += 1
 
@@ -166,7 +166,7 @@ class ThreadManager(Manager):
 		if name not in self._threads:
 			return any(t.name == name and t.is_alive() for t in threading.enumerate())
 
-		return self._threads[name].isAlive()
+		return self._threads[name].is_alive()
 
 
 	def newEvent(self, name: str, onSetCallback: Union[str, Callable] = None, onClearCallback: Union[str, Callable] = None) -> AliceEvent:

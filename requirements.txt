@@ -1,4 +1,6 @@
 #numpy==1.21.6
+numpy~=1.26
+importlib-metadata~=7.0
 pyopenssl>22.1.0
 paho-mqtt~=1.6.1
 googletrans~=3.0.0
@@ -21,9 +23,8 @@ jsmin~=3.0.1
 psutil~=5.9.0
 pyserial~=3.5
 pyyaml~=6.0
-scipy~=1.7.3
+scipy~=1.11
 webrtcvad~=2.0.10
 Werkzeug~=2.1.1
 Jinja2~=3.1.1
-numpy~=1.26
 projectalice-sk

@@ -65,7 +65,7 @@ class WakewordRecorder(Manager):
 		super().onStop()
 
 		for thread in self._wakewordUploadThreads:
-			if thread.isAlive():
+			if thread.is_alive():
 				thread.join(timeout=2)
 
 
