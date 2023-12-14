@@ -286,8 +286,8 @@ class PreInit(object):
 
 	# noinspection DuplicatedCode
 	def getUpdateSource(self, definedSource: str) -> str:
-		updateSource = 'master'
-		#TODO remove 'bookworm'
+		#TODO remove bookworm shortcut
+		updateSource = 'bookworm'
 		if definedSource in {'master', 'release', 'bookworm'}:
 			return updateSource
 
