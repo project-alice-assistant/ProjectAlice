@@ -226,7 +226,7 @@ class PreInit(object):
 
 		result = subprocess.run(['git', 'checkout', updateSource], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 		if 'switched' in result.stderr.decode().lower():
-			print('Switched branch, restarting...')
+			print(f'Switched branch to "{updateSource}", restarting...')
 			self.restart()
 
 		result = subprocess.run(['git', 'pull'], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
@@ -287,7 +287,8 @@ class PreInit(object):
 	# noinspection DuplicatedCode
 	def getUpdateSource(self, definedSource: str) -> str:
 		updateSource = 'master'
-		if definedSource in {'master', 'release'}:
+		#TODO remove 'bookworm'
+		if definedSource in {'master', 'release', 'bookworm'}:
 			return updateSource
 
 		try:
