@@ -1,6 +1,6 @@
 import shutil
 
-VERSION = 1.27
+VERSION = 1.28
 
 #  Copyright (c) 2021
 #
@@ -39,7 +39,7 @@ ASOUND = '/etc/asound.conf'
 TEMP = Path('/tmp/service')
 ALLOWED_LANGUAGES = {'en', 'de', 'fr', 'it', 'pt', 'pl'}
 FALLBACK_ASR = 'coqui'
-PYTHON = 'python3.7'
+PYTHON = 'python3.11'
 
 
 class InitDict(dict):
@@ -145,7 +145,7 @@ class PreInit(object):
 
 
 	def informUser(self):
-		self._logger.logInfo('I am now restarting and will use my service file. To continue checking what I do, please type "tail -f /var/log/syslog"')
+		self._logger.logInfo('I am now restarting and will use my service file. To continue checking what I do, please type "journalctl -u ProjectAlice.service -f"')
 
 
 	def installSystemDependencies(self):
@@ -160,7 +160,7 @@ class PreInit(object):
 		except:
 			subprocess.run(['sudo', 'apt-get', 'update'])
 			subprocess.run(['sudo', 'apt-get', 'install', 'python3-pip', 'python3-wheel', '-y'])
-			subprocess.run(['pip3', 'install', 'PyYAML==5.3.1'])
+			subprocess.run(['pip3', 'install', 'PyYAML==6.0.1', '--break-system-packages'])
 
 			self.setServiceFileTo('system')
 			subprocess.run(['sudo', 'systemctl', 'enable', 'ProjectAlice'])
@@ -342,7 +342,7 @@ class PreInit(object):
 	def updateVenv(self):
 		subprocess.run([self.PIP, 'uninstall', '-y', '-r', str(Path(self.rootDir, 'pipuninstalls.txt'))])
 		subprocess.run([self.PIP, 'install', 'wheel'])
-		subprocess.run([self.PIP, 'install', 'https://www.piwheels.org/simple/numpy/numpy-1.21.4-cp39-cp39-linux_armv7l.whl'])
+		#subprocess.run([self.PIP, 'install', 'https://www.piwheels.org/simple/numpy/numpy-1.21.4-cp39-cp39-linux_armv7l.whl'])
 		subprocess.run([self.PIP, 'install', '-r', str(Path(self.rootDir, 'requirements.txt')), '--upgrade', '--no-cache-dir'])
 
 

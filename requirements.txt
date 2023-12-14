@@ -25,4 +25,5 @@ scipy~=1.7.3
 webrtcvad~=2.0.10
 Werkzeug~=2.1.1
 Jinja2~=3.1.1
+numpy~=1.26
 projectalice-sk
